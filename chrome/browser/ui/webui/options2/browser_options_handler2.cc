@@ -7,16 +7,19 @@
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/command_line.h"
 #include "base/memory/singleton.h"
 #include "base/path_service.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "base/value_conversions.h"
 #include "chrome/browser/auto_launch_trial.h"
 #include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/custom_home_pages_table_model.h"
+#include "chrome/browser/google/google_util.h"
 #include "chrome/browser/instant/instant_confirm_dialog.h"
 #include "chrome/browser/instant/instant_controller.h"
 #include "chrome/browser/instant/instant_field_trial.h"
@@ -24,17 +27,26 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_info_cache.h"
+#include "chrome/browser/profiles/profile_info_util.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/sync/sync_setup_flow.h"
+#include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
+#include "chrome/browser/ui/webui/web_ui_util.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/user_metrics.h"
+#include "content/public/browser/web_contents.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -53,12 +65,18 @@ BrowserOptionsHandler::BrowserOptionsHandler()
       startup_custom_pages_table_model_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_for_file_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_for_ui_(this)) {
+  multiprofile_ = ProfileManager::IsMultipleProfilesEnabled();
 #if !defined(OS_MACOSX)
   default_browser_worker_ = new ShellIntegration::DefaultBrowserWorker(this);
 #endif
 }
 
 BrowserOptionsHandler::~BrowserOptionsHandler() {
+  ProfileSyncService* sync_service =
+      Profile::FromWebUI(web_ui())->GetProfileSyncService();
+  if (sync_service)
+    sync_service->RemoveObserver(this);
+
   if (default_browser_worker_.get())
     default_browser_worker_->ObserverDestroyed();
   if (template_url_service_)
@@ -70,6 +88,14 @@ void BrowserOptionsHandler::GetLocalizedValues(
   DCHECK(localized_strings);
 
   static OptionsStringResource resources[] = {
+    { "syncSection", IDS_SYNC_OPTIONS_GROUP_NAME },
+    { "customizeSync", IDS_SYNC_CUSTOMIZE_BUTTON_LABEL },
+    { "profiles", IDS_PROFILES_OPTIONS_GROUP_NAME },
+    { "profilesCreate", IDS_PROFILES_CREATE_BUTTON_LABEL },
+    { "profilesManage", IDS_PROFILES_MANAGE_BUTTON_LABEL },
+    { "profilesDelete", IDS_PROFILES_DELETE_BUTTON_LABEL },
+    { "profilesDeleteSingle", IDS_PROFILES_DELETE_SINGLE_BUTTON_LABEL },
+    { "profilesListItemCurrent", IDS_PROFILES_LIST_ITEM_CURRENT },
     { "startupGroupName", IDS_OPTIONS_STARTUP_GROUP_NAME },
     { "startupShowDefaultAndNewTab",
       IDS_OPTIONS_STARTUP_SHOW_DEFAULT_AND_NEWTAB},
@@ -95,6 +121,17 @@ void BrowserOptionsHandler::GetLocalizedValues(
   RegisterStrings(localized_strings, resources, arraysize(resources));
   RegisterTitle(localized_strings, "browserPage",
                 IDS_OPTIONS_GENERAL_TAB_LABEL);
+
+  localized_strings->SetString(
+      "syncOverview",
+      l10n_util::GetStringFUTF16(IDS_SYNC_OVERVIEW,
+                                 l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
+  localized_strings->SetString("syncLearnMoreURL",
+      google_util::StringAppendGoogleLocaleParam(chrome::kSyncLearnMoreURL));
+
+  localized_strings->SetString("profilesSingleUser",
+      l10n_util::GetStringFUTF16(IDS_PROFILES_SINGLE_USER_MESSAGE,
+                                 l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
 
   localized_strings->SetString("defaultSearchGroupLabel",
       l10n_util::GetStringFUTF16(IDS_SEARCH_PREF_EXPLANATION,
@@ -152,10 +189,113 @@ void BrowserOptionsHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("getInstantFieldTrialStatus",
       base::Bind(&BrowserOptionsHandler::GetInstantFieldTrialStatus,
                  base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "createProfile",
+      base::Bind(&BrowserOptionsHandler::CreateProfile,
+                 base::Unretained(this)));
+}
+
+void BrowserOptionsHandler::OnStateChanged() {
+  string16 status_label;
+  string16 link_label;
+  ProfileSyncService* service =
+      Profile::FromWebUI(web_ui())->GetProfileSyncService();
+  DCHECK(service);
+  bool managed = service->IsManaged();
+  bool sync_setup_completed = service->HasSyncSetupCompleted();
+  bool status_has_error = sync_ui_util::GetStatusLabels(
+      service, sync_ui_util::WITH_HTML, &status_label, &link_label) ==
+          sync_ui_util::SYNC_ERROR;
+
+  string16 start_stop_button_label;
+  bool is_start_stop_button_visible = false;
+  bool is_start_stop_button_enabled = false;
+  if (sync_setup_completed) {
+    start_stop_button_label =
+        l10n_util::GetStringUTF16(IDS_SYNC_STOP_SYNCING_BUTTON_LABEL);
+#if defined(OS_CHROMEOS)
+    is_start_stop_button_visible = false;
+#else
+    is_start_stop_button_visible = true;
+#endif  // defined(OS_CHROMEOS)
+    is_start_stop_button_enabled = !managed;
+  } else if (service->SetupInProgress()) {
+    start_stop_button_label =
+        l10n_util::GetStringUTF16(IDS_SYNC_NTP_SETUP_IN_PROGRESS);
+    is_start_stop_button_visible = true;
+    is_start_stop_button_enabled = false;
+  } else {
+    start_stop_button_label =
+        l10n_util::GetStringFUTF16(IDS_SYNC_START_SYNC_BUTTON_LABEL,
+            l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME));
+    is_start_stop_button_visible = true;
+    is_start_stop_button_enabled = !managed;
+  }
+
+  scoped_ptr<Value> completed(Value::CreateBooleanValue(sync_setup_completed));
+  web_ui()->CallJavascriptFunction("BrowserOptions.setSyncSetupCompleted",
+                                   *completed);
+
+  scoped_ptr<Value> label(Value::CreateStringValue(status_label));
+  web_ui()->CallJavascriptFunction("BrowserOptions.setSyncStatus", *label);
+
+  scoped_ptr<Value> enabled(
+      Value::CreateBooleanValue(is_start_stop_button_enabled));
+  web_ui()->CallJavascriptFunction("BrowserOptions.setStartStopButtonEnabled",
+                                   *enabled);
+
+  scoped_ptr<Value> visible(
+      Value::CreateBooleanValue(is_start_stop_button_visible));
+  web_ui()->CallJavascriptFunction("BrowserOptions.setStartStopButtonVisible",
+                                   *visible);
+
+  label.reset(Value::CreateStringValue(start_stop_button_label));
+  web_ui()->CallJavascriptFunction("BrowserOptions.setStartStopButtonLabel",
+                                   *label);
+
+  label.reset(Value::CreateStringValue(link_label));
+  web_ui()->CallJavascriptFunction("BrowserOptions.setSyncActionLinkLabel",
+                                   *label);
+
+  enabled.reset(Value::CreateBooleanValue(!managed));
+  web_ui()->CallJavascriptFunction("BrowserOptions.setSyncActionLinkEnabled",
+                                   *enabled);
+
+  visible.reset(Value::CreateBooleanValue(status_has_error));
+  web_ui()->CallJavascriptFunction("BrowserOptions.setSyncStatusErrorVisible",
+                                   *visible);
+
+  enabled.reset(Value::CreateBooleanValue(
+      !service->unrecoverable_error_detected()));
+  web_ui()->CallJavascriptFunction(
+      "BrowserOptions.setCustomizeSyncButtonEnabled",
+      *enabled);
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableAutologin)) {
+    visible.reset(Value::CreateBooleanValue(
+        service->AreCredentialsAvailable()));
+    web_ui()->CallJavascriptFunction("BrowserOptions.setAutoLoginVisible",
+                                     *visible);
+  }
+
+  // Set profile creation text and button if multi-profiles switch is on.
+  visible.reset(Value::CreateBooleanValue(multiprofile_));
+  web_ui()->CallJavascriptFunction("BrowserOptions.setProfilesSectionVisible",
+                                   *visible);
+  if (multiprofile_)
+    SendProfilesInfo();
 }
 
 void BrowserOptionsHandler::Initialize() {
   Profile* profile = Profile::FromWebUI(web_ui());
+
+  ProfileSyncService* sync_service = profile->GetProfileSyncService();
+  if (sync_service) {
+    sync_service->AddObserver(this);
+    OnStateChanged();
+  } else {
+    web_ui()->CallJavascriptFunction("options.PersonalOptions.hideSyncSection");
+  }
 
   // Create our favicon data source.
   profile->GetChromeURLDataManager()->AddDataSource(
@@ -416,6 +556,9 @@ void BrowserOptionsHandler::Observe(
     } else {
       NOTREACHED();
     }
+  } else if (multiprofile_ &&
+             type == chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED) {
+    SendProfilesInfo();
   } else {
     NOTREACHED();
   }
@@ -576,6 +719,44 @@ void BrowserOptionsHandler::OnResultChanged(bool default_match_changed) {
 
   web_ui()->CallJavascriptFunction(
       "BrowserOptions.updateAutocompleteSuggestions", suggestions);
+}
+
+void BrowserOptionsHandler::SendProfilesInfo() {
+  ProfileInfoCache& cache =
+      g_browser_process->profile_manager()->GetProfileInfoCache();
+  ListValue profile_info_list;
+  FilePath current_profile_path =
+      web_ui()->web_contents()->GetBrowserContext()->GetPath();
+  for (size_t i = 0, e = cache.GetNumberOfProfiles(); i < e; ++i) {
+    DictionaryValue* profile_value = new DictionaryValue();
+    FilePath profile_path = cache.GetPathOfProfileAtIndex(i);
+    profile_value->SetString("name", cache.GetNameOfProfileAtIndex(i));
+    profile_value->Set("filePath", base::CreateFilePathValue(profile_path));
+    profile_value->SetBoolean("isCurrentProfile",
+                              profile_path == current_profile_path);
+
+    bool is_gaia_picture =
+        cache.IsUsingGAIAPictureOfProfileAtIndex(i) &&
+        cache.GetGAIAPictureOfProfileAtIndex(i);
+    if (is_gaia_picture) {
+      gfx::Image icon = profiles::GetAvatarIconForWebUI(
+          cache.GetAvatarIconOfProfileAtIndex(i), true);
+      profile_value->SetString("iconURL", web_ui_util::GetImageDataUrl(icon));
+    } else {
+      size_t icon_index = cache.GetAvatarIconIndexOfProfileAtIndex(i);
+      profile_value->SetString("iconURL",
+                               cache.GetDefaultAvatarIconUrl(icon_index));
+    }
+
+    profile_info_list.Append(profile_value);
+  }
+
+  web_ui()->CallJavascriptFunction("PersonalOptions.setProfilesInfo",
+                                   profile_info_list);
+}
+
+void BrowserOptionsHandler::CreateProfile(const ListValue* args) {
+  ProfileManager::CreateMultiProfileAsync();
 }
 
 }  // namespace options2

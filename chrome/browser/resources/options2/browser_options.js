@@ -22,6 +22,10 @@ cr.define('options', function() {
     // Inherit BrowserOptions from OptionsPage.
     __proto__: options.OptionsPage.prototype,
 
+    // State variables.
+    syncEnabled: false,
+    syncSetupCompleted: false,
+
     startup_pages_pref_: {
       'name': 'session.urls_to_restore_on_startup',
       'disabled': false
@@ -43,6 +47,20 @@ cr.define('options', function() {
     initializePage: function() {
       // Call base class implementation to start preference initialization.
       OptionsPage.prototype.initializePage.call(this);
+
+      // Sync.
+      $('sync-action-link').onclick = function(event) {
+        SyncSetupOverlay.showErrorUI();
+      };
+      $('start-stop-sync').onclick = function(event) {
+        if (self.syncSetupCompleted)
+          SyncSetupOverlay.showStopSyncingUI();
+        else
+          SyncSetupOverlay.showSetupUI();
+      };
+      $('customize-sync').onclick = function(event) {
+        SyncSetupOverlay.showSetupUI();
+      };
 
       // Wire up controls.
       $('startupUseCurrentButton').onclick = function(event) {
@@ -146,6 +164,82 @@ cr.define('options', function() {
       $('main-content').appendChild(suggestionList);
       this.autocompleteList_ = suggestionList;
       startupPagesList.autocompleteList = suggestionList;
+    },
+
+    setSyncEnabled_: function(enabled) {
+      this.syncEnabled = enabled;
+    },
+
+    setAutoLoginVisible_ : function(visible) {
+      $('enable-auto-login-checkbox').hidden = !visible;
+    },
+
+    setSyncSetupCompleted_: function(completed) {
+      this.syncSetupCompleted = completed;
+      $('customize-sync').hidden = !completed;
+    },
+
+    setSyncStatus_: function(status) {
+      var statusSet = status != '';
+      $('sync-overview').hidden = statusSet;
+      $('sync-status').hidden = !statusSet;
+      $('sync-status-text').innerHTML = status;
+    },
+
+    setSyncStatusErrorVisible_: function(visible) {
+      visible ? $('sync-status').classList.add('sync-error') :
+                $('sync-status').classList.remove('sync-error');
+    },
+
+    /**
+     * Display or hide the profiles section of the page. This is used for
+     * multi-profile settings.
+     * @param {boolean} visible True to show the section.
+     * @private
+     */
+    setProfilesSectionVisible_: function(visible) {
+      $('profiles-section').hidden = !visible;
+    },
+
+    setCustomizeSyncButtonEnabled_: function(enabled) {
+      $('customize-sync').disabled = !enabled;
+    },
+
+    setSyncActionLinkEnabled_: function(enabled) {
+      $('sync-action-link').disabled = !enabled;
+    },
+
+    setSyncActionLinkLabel_: function(status) {
+      $('sync-action-link').textContent = status;
+
+      // link-button does is not zero-area when the contents of the button are
+      // empty, so explicitly hide the element.
+      $('sync-action-link').hidden = !status.length;
+    },
+
+    setStartStopButtonVisible_: function(visible) {
+      $('start-stop-sync').hidden = !visible;
+    },
+
+    setStartStopButtonEnabled_: function(enabled) {
+      $('start-stop-sync').disabled = !enabled;
+    },
+
+    setStartStopButtonLabel_: function(label) {
+      $('start-stop-sync').textContent = label;
+    },
+
+    hideSyncSection_: function() {
+      $('sync-section').hidden = true;
+    },
+
+    /**
+     * Get the start/stop sync button DOM element.
+     * @return {DOMElement} The start/stop sync button.
+     * @private
+     */
+    getStartStopSyncButton_: function() {
+      return $('start-stop-sync');
     },
 
     /**
@@ -336,6 +430,32 @@ cr.define('options', function() {
     },
   };
 
+  //Forward public APIs to private implementations.
+  [
+    'getStartStopSyncButton',
+    'hideSyncSection',
+    'setAutoLoginVisible',
+    'setCustomizeSyncButtonEnabled',
+    'setStartStopButtonEnabled',
+    'setStartStopButtonLabel',
+    'setStartStopButtonVisible',
+    'setSyncActionLinkEnabled',
+    'setSyncActionLinkLabel',
+    'setSyncEnabled',
+    'setSyncSetupCompleted',
+    'setSyncStatus',
+    'setSyncStatusErrorVisible',
+    'setProfilesSectionVisible',
+    'updateSearchEngines',
+    'updateStartupPages',
+    'updateAutocompleteSuggestions',
+    'setInstantFieldTrialStatus',
+  ].forEach(function(name) {
+    BrowserOptions[name] = function(value) {
+      return BrowserOptions.getInstance()[name + '_'](value);
+    };
+  });
+
   BrowserOptions.updateDefaultBrowserState = function(statusString, isDefault,
                                                       canBeDefault) {
     if (!cr.isChromeOS) {
@@ -343,24 +463,6 @@ cr.define('options', function() {
                                                               isDefault,
                                                               canBeDefault);
     }
-  };
-
-  BrowserOptions.updateSearchEngines = function(engines, defaultValue,
-                                                defaultManaged) {
-    BrowserOptions.getInstance().updateSearchEngines_(engines, defaultValue,
-                                                      defaultManaged);
-  };
-
-  BrowserOptions.updateStartupPages = function(pages) {
-    BrowserOptions.getInstance().updateStartupPages_(pages);
-  };
-
-  BrowserOptions.updateAutocompleteSuggestions = function(suggestions) {
-    BrowserOptions.getInstance().updateAutocompleteSuggestions_(suggestions);
-  };
-
-  BrowserOptions.setInstantFieldTrialStatus = function(enabled) {
-    BrowserOptions.getInstance().setInstantFieldTrialStatus_(enabled);
   };
 
   // Export

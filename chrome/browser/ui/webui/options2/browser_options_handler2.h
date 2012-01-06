@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,6 +14,7 @@
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/search_engines/template_url_service_observer.h"
 #include "chrome/browser/shell_integration.h"
+#include "chrome/browser/sync/profile_sync_service_observer.h"
 #include "chrome/browser/ui/webui/options2/options_ui2.h"
 #include "ui/base/models/table_model_observer.h"
 
@@ -25,6 +26,7 @@ namespace options2 {
 
 // Chrome browser options page UI handler.
 class BrowserOptionsHandler : public OptionsPageUIHandler,
+                              public ProfileSyncServiceObserver,
                               public AutocompleteControllerDelegate,
                               public ShellIntegration::DefaultWebClientObserver,
                               public TemplateURLServiceObserver,
@@ -38,6 +40,9 @@ class BrowserOptionsHandler : public OptionsPageUIHandler,
   // OptionsPageUIHandler implementation.
   virtual void GetLocalizedValues(DictionaryValue* localized_strings) OVERRIDE;
   virtual void RegisterMessages() OVERRIDE;
+
+  // ProfileSyncServiceObserver implementation.
+  virtual void OnStateChanged() OVERRIDE;
 
   // AutocompleteControllerDelegate implementation.
   virtual void OnResultChanged(bool default_match_changed) OVERRIDE;
@@ -130,6 +135,20 @@ class BrowserOptionsHandler : public OptionsPageUIHandler,
   // Writes the current set of startup pages to prefs.
   void SaveStartupPagesPref();
 
+  // Sends an array of Profile objects to javascript.
+  // Each object is of the form:
+  //   profileInfo = {
+  //     name: "Profile Name",
+  //     iconURL: "chrome://path/to/icon/image",
+  //     filePath: "/path/to/profile/data/on/disk",
+  //     isCurrentProfile: false
+  //   };
+  void SendProfilesInfo();
+
+  // Asynchronously opens a new browser window to create a new profile.
+  // |args| is not used.
+  void CreateProfile(const ListValue* args);
+
   scoped_refptr<ShellIntegration::DefaultBrowserWorker>
       default_browser_worker_;
 
@@ -153,6 +172,9 @@ class BrowserOptionsHandler : public OptionsPageUIHandler,
   base::WeakPtrFactory<BrowserOptionsHandler> weak_ptr_factory_for_file_;
   // Used to post update tasks to the UI thread.
   base::WeakPtrFactory<BrowserOptionsHandler> weak_ptr_factory_for_ui_;
+
+  // True if the multiprofiles switch is enabled.
+  bool multiprofile_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserOptionsHandler);
 };

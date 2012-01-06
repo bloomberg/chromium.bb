@@ -169,7 +169,7 @@ function load() {
   OptionsPage.registerOverlay(InstantConfirmOverlay.getInstance(),
                               BrowserOptions.getInstance());
   OptionsPage.registerOverlay(SyncSetupOverlay.getInstance(),
-                              PersonalOptions.getInstance());
+                              BrowserOptions.getInstance());
   OptionsPage.registerOverlay(ManageProfileOverlay.getInstance(),
                               PersonalOptions.getInstance());
 

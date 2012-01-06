@@ -1,9 +1,8 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 cr.define('options', function() {
-
   var OptionsPage = options.OptionsPage;
   var ArrayDataModel = cr.ui.ArrayDataModel;
 
@@ -28,30 +27,12 @@ cr.define('options', function() {
     // Inherit PersonalOptions from OptionsPage.
     __proto__: options.OptionsPage.prototype,
 
-    // State variables.
-    syncEnabled: false,
-    syncSetupCompleted: false,
-
     // Initialize PersonalOptions page.
     initializePage: function() {
       // Call base class implementation to start preference initialization.
       OptionsPage.prototype.initializePage.call(this);
 
       var self = this;
-
-      // Sync.
-      $('sync-action-link').onclick = function(event) {
-        SyncSetupOverlay.showErrorUI();
-      };
-      $('start-stop-sync').onclick = function(event) {
-        if (self.syncSetupCompleted)
-          SyncSetupOverlay.showStopSyncingUI();
-        else
-          SyncSetupOverlay.showSetupUI();
-      };
-      $('customize-sync').onclick = function(event) {
-        SyncSetupOverlay.showSetupUI();
-      };
 
       // Profiles.
       var profilesList = $('profiles-list');
@@ -149,57 +130,6 @@ cr.define('options', function() {
       }
     },
 
-    setSyncEnabled_: function(enabled) {
-      this.syncEnabled = enabled;
-    },
-
-    setAutoLoginVisible_ : function(visible) {
-      $('enable-auto-login-checkbox').hidden = !visible;
-    },
-
-    setSyncSetupCompleted_: function(completed) {
-      this.syncSetupCompleted = completed;
-      $('customize-sync').hidden = !completed;
-    },
-
-    setSyncStatus_: function(status) {
-      var statusSet = status != '';
-      $('sync-overview').hidden = statusSet;
-      $('sync-status').hidden = !statusSet;
-      $('sync-status-text').innerHTML = status;
-    },
-
-    setSyncStatusErrorVisible_: function(visible) {
-      visible ? $('sync-status').classList.add('sync-error') :
-                $('sync-status').classList.remove('sync-error');
-    },
-
-    setCustomizeSyncButtonEnabled_: function(enabled) {
-      $('customize-sync').disabled = !enabled;
-    },
-
-    setSyncActionLinkEnabled_: function(enabled) {
-      $('sync-action-link').disabled = !enabled;
-    },
-
-    setSyncActionLinkLabel_: function(status) {
-      $('sync-action-link').textContent = status;
-
-      // link-button does is not zero-area when the contents of the button are
-      // empty, so explicitly hide the element.
-      $('sync-action-link').hidden = !status.length;
-    },
-
-    /**
-     * Display or hide the profiles section of the page. This is used for
-     * multi-profile settings.
-     * @param {boolean} visible True to show the section.
-     * @private
-     */
-    setProfilesSectionVisible_: function(visible) {
-      $('profiles-section').hidden = !visible;
-    },
-
     /**
      * Get the selected profile item from the profile list. This also works
      * correctly if the list is not displayed.
@@ -266,18 +196,6 @@ cr.define('options', function() {
       this.setProfileViewButtonsStatus_();
     },
 
-    setStartStopButtonVisible_: function(visible) {
-      $('start-stop-sync').hidden = !visible;
-    },
-
-    setStartStopButtonEnabled_: function(enabled) {
-      $('start-stop-sync').disabled = !enabled;
-    },
-
-    setStartStopButtonLabel_: function(label) {
-      $('start-stop-sync').textContent = label;
-    },
-
     setGtkThemeButtonEnabled_: function(enabled) {
       if (!cr.isChromeOS && navigator.platform.match(/linux|BSD/i)) {
         $('themes-GTK-button').disabled = !enabled;
@@ -286,19 +204,6 @@ cr.define('options', function() {
 
     setThemesResetButtonEnabled_: function(enabled) {
       $('themes-reset').disabled = !enabled;
-    },
-
-    hideSyncSection_: function() {
-      $('sync-section').hidden = true;
-    },
-
-    /**
-     * Get the start/stop sync button DOM element.
-     * @return {DOMElement} The start/stop sync button.
-     * @private
-     */
-    getStartStopSyncButton_: function() {
-      return $('start-stop-sync');
     },
 
     /**
@@ -340,22 +245,9 @@ cr.define('options', function() {
 
   // Forward public APIs to private implementations.
   [
-    'getStartStopSyncButton',
-    'hideSyncSection',
-    'setAutoLoginVisible',
-    'setCustomizeSyncButtonEnabled',
     'setGtkThemeButtonEnabled',
     'setProfilesInfo',
     'setProfilesSectionVisible',
-    'setStartStopButtonEnabled',
-    'setStartStopButtonLabel',
-    'setStartStopButtonVisible',
-    'setSyncActionLinkEnabled',
-    'setSyncActionLinkLabel',
-    'setSyncEnabled',
-    'setSyncSetupCompleted',
-    'setSyncStatus',
-    'setSyncStatusErrorVisible',
     'setThemesResetButtonEnabled',
     'updateAccountPicture',
   ].forEach(function(name) {
