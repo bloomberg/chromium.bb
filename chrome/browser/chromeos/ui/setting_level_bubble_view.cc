@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/setting_level_bubble_view.h"
+#include "chrome/browser/chromeos/ui/setting_level_bubble_view.h"
 
 #include <string>
 

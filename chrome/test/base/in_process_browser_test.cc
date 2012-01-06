@@ -39,7 +39,7 @@
 #include "net/test/test_server.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/audio_handler.h"
+#include "chrome/browser/chromeos/audio/audio_handler.h"
 #elif defined(OS_MACOSX)
 #include "base/mac/scoped_nsautorelease_pool.h"
 #endif

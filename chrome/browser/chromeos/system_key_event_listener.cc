@@ -10,14 +10,14 @@
 #include <X11/XKBlib.h>
 
 #include "chrome/browser/accessibility/accessibility_events.h"
-#include "chrome/browser/chromeos/audio_handler.h"
-#include "chrome/browser/chromeos/brightness_bubble.h"
+#include "chrome/browser/chromeos/audio/audio_handler.h"
 #include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
 #include "chrome/browser/chromeos/dbus/power_manager_client.h"
 #include "chrome/browser/chromeos/input_method/hotkey_manager.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/input_method/xkeyboard.h"
-#include "chrome/browser/chromeos/volume_bubble.h"
+#include "chrome/browser/chromeos/ui/brightness_bubble.h"
+#include "chrome/browser/chromeos/ui/volume_bubble.h"
 #include "content/public/browser/user_metrics.h"
 #include "third_party/cros_system_api/window_manager/chromeos_wm_ipc_enums.h"
 #include "ui/base/x/x11_util.h"

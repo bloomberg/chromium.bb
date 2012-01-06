@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/volume_bubble.h"
+#include "chrome/browser/chromeos/ui/brightness_bubble.h"
 
 #include "base/memory/singleton.h"
 #include "grit/theme_resources.h"
@@ -10,19 +10,19 @@
 
 namespace chromeos {
 
-VolumeBubble::VolumeBubble()
+BrightnessBubble::BrightnessBubble()
     : SettingLevelBubble(
           ResourceBundle::GetSharedInstance().GetBitmapNamed(
-              IDR_VOLUME_BUBBLE_UP_ICON),
+              IDR_BRIGHTNESS_BUBBLE_ICON),
           ResourceBundle::GetSharedInstance().GetBitmapNamed(
-              IDR_VOLUME_BUBBLE_DOWN_ICON),
+              IDR_BRIGHTNESS_BUBBLE_ICON),
           ResourceBundle::GetSharedInstance().GetBitmapNamed(
-              IDR_VOLUME_BUBBLE_MUTE_ICON)) {
+              IDR_BRIGHTNESS_BUBBLE_ICON)) {
 }
 
 // static
-VolumeBubble* VolumeBubble::GetInstance() {
-  return Singleton<VolumeBubble>::get();
+BrightnessBubble* BrightnessBubble::GetInstance() {
+  return Singleton<BrightnessBubble>::get();
 }
 
 }  // namespace chromeos

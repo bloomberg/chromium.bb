@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/audio_handler.h"
+#include "chrome/browser/chromeos/audio/audio_handler.h"
 
 #include <algorithm>
 #include <cmath>
 
 #include "base/logging.h"
 #include "base/memory/singleton.h"
-#include "chrome/browser/chromeos/audio_mixer_alsa.h"
+#include "chrome/browser/chromeos/audio/audio_mixer_alsa.h"
 #include "content/public/browser/browser_thread.h"
 
 using std::max;

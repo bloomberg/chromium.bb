@@ -82,7 +82,7 @@
 #endif
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/audio_mixer_alsa.h"
+#include "chrome/browser/chromeos/audio/audio_mixer_alsa.h"
 #include "chrome/browser/chromeos/customization_document.h"
 #include "chrome/browser/chromeos/login/base_login_display_host.h"
 #include "chrome/browser/chromeos/login/signed_settings_cache.h"

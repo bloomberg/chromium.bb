@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/setting_level_bubble.h"
+#include "chrome/browser/chromeos/ui/setting_level_bubble.h"
 
 #include <algorithm>
 
@@ -11,7 +11,7 @@
 #include "chrome/browser/chromeos/login/login_display_host.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/webui_login_display.h"
-#include "chrome/browser/chromeos/setting_level_bubble_view.h"
+#include "chrome/browser/chromeos/ui/setting_level_bubble_view.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"

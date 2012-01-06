@@ -107,8 +107,8 @@
 #include "chrome/browser/chromeos/customization_document.h"
 #include "chrome/browser/chromeos/enterprise_extension_observer.h"
 #include "chrome/browser/chromeos/gview_request_interceptor.h"
-#include "chrome/browser/chromeos/low_battery_observer.h"
 #include "chrome/browser/chromeos/network_message_observer.h"
+#include "chrome/browser/chromeos/power/low_battery_observer.h"
 #include "chrome/browser/chromeos/sms_observer.h"
 #if defined(TOOLKIT_USES_GTK)
 #include "chrome/browser/chromeos/legacy_window_manager/wm_message_listener.h"

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_LOW_BATTERY_OBSERVER_H_
-#define CHROME_BROWSER_CHROMEOS_LOW_BATTERY_OBSERVER_H_
+#ifndef CHROME_BROWSER_CHROMEOS_POWER_LOW_BATTERY_OBSERVER_H_
+#define CHROME_BROWSER_CHROMEOS_POWER_LOW_BATTERY_OBSERVER_H_
 #pragma once
 
 #include "base/basictypes.h"
@@ -16,9 +16,7 @@ class Profile;
 
 namespace chromeos {
 
-// The low battery observer displays a system notification when the battery
-// is low.
-
+// Displays a system notification when the battery is low.
 class LowBatteryObserver : public PowerManagerClient::Observer {
  public:
   explicit LowBatteryObserver(Profile* profile);
@@ -38,4 +36,4 @@ class LowBatteryObserver : public PowerManagerClient::Observer {
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_LOW_BATTERY_OBSERVER_H_
+#endif  // CHROME_BROWSER_CHROMEOS_POWER_LOW_BATTERY_OBSERVER_H_

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/low_battery_observer.h"
+#include "chrome/browser/chromeos/power/low_battery_observer.h"
 
 #include "base/utf_string_conversions.h"
 #include "chrome/common/time_format.h"

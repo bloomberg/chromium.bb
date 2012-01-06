@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_VOLUME_BUBBLE_H_
-#define CHROME_BROWSER_CHROMEOS_VOLUME_BUBBLE_H_
+#ifndef CHROME_BROWSER_CHROMEOS_UI_VOLUME_BUBBLE_H_
+#define CHROME_BROWSER_CHROMEOS_UI_VOLUME_BUBBLE_H_
 #pragma once
 
 #include "base/basictypes.h"
-#include "chrome/browser/chromeos/setting_level_bubble.h"
+#include "chrome/browser/chromeos/ui/setting_level_bubble.h"
 
 template <typename T> struct DefaultSingletonTraits;
 
@@ -29,4 +29,4 @@ class VolumeBubble : public SettingLevelBubble {
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_VOLUME_BUBBLE_H_
+#endif  // CHROME_BROWSER_CHROMEOS_UI_VOLUME_BUBBLE_H_

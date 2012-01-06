@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/message_loop.h"
-#include "chrome/browser/chromeos/brightness_bubble.h"
-#include "chrome/browser/chromeos/setting_level_bubble_view.h"
+#include "chrome/browser/chromeos/ui/brightness_bubble.h"
+#include "chrome/browser/chromeos/ui/setting_level_bubble_view.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "ui/views/view.h"
 

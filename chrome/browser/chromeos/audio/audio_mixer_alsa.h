@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_AUDIO_MIXER_ALSA_H_
-#define CHROME_BROWSER_CHROMEOS_AUDIO_MIXER_ALSA_H_
+#ifndef CHROME_BROWSER_CHROMEOS_AUDIO_AUDIO_MIXER_ALSA_H_
+#define CHROME_BROWSER_CHROMEOS_AUDIO_AUDIO_MIXER_ALSA_H_
 #pragma once
 
 #include <string>
@@ -14,7 +14,7 @@
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
-#include "chrome/browser/chromeos/audio_mixer.h"
+#include "chrome/browser/chromeos/audio/audio_mixer.h"
 
 class PrefService;
 
@@ -126,4 +126,4 @@ class AudioMixerAlsa : public AudioMixer {
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_AUDIO_MIXER_ALSA_H_
+#endif  // CHROME_BROWSER_CHROMEOS_AUDIO_AUDIO_MIXER_ALSA_H_
