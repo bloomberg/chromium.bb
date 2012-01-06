@@ -13,10 +13,10 @@
 #include "ppapi/c/pp_var.h"
 #include "ppapi/c/ppb_url_loader.h"
 #include "ppapi/c/trusted/ppb_url_loader_trusted.h"
-#include "ppapi/cpp/completion_callback.h"
 #include "ppapi/proxy/interface_proxy.h"
 #include "ppapi/proxy/proxy_non_thread_safe_ref_count.h"
 #include "ppapi/shared_impl/host_resource.h"
+#include "ppapi/utility/completion_callback_factory.h"
 
 namespace ppapi {
 

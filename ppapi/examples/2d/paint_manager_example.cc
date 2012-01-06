@@ -8,8 +8,8 @@
 #include "ppapi/cpp/input_event.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/module.h"
-#include "ppapi/cpp/paint_manager.h"
 #include "ppapi/cpp/size.h"
+#include "ppapi/utility/graphics/paint_manager.h"
 
 // Number of pixels to each side of the center of the square that we draw.
 static const int kSquareRadius = 2;

@@ -14,7 +14,7 @@
 #include "net/base/net_log.h"
 #include "net/socket/stream_socket.h"
 #include "ppapi/c/pp_stdint.h"
-#include "ppapi/cpp/completion_callback.h"
+#include "ppapi/utility/completion_callback_factory.h"
 
 namespace pp {
 class Transport_Dev;

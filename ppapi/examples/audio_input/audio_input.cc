@@ -8,7 +8,6 @@
 #include <limits>
 
 #include "ppapi/cpp/audio_config.h"
-#include "ppapi/cpp/completion_callback.h"
 #include "ppapi/cpp/dev/audio_input_dev.h"
 #include "ppapi/cpp/graphics_2d.h"
 #include "ppapi/cpp/image_data.h"
@@ -17,6 +16,7 @@
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/rect.h"
 #include "ppapi/cpp/size.h"
+#include "ppapi/utility/completion_callback_factory.h"
 
 class MyInstance : public pp::Instance {
  public:

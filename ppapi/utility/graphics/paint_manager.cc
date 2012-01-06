@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ppapi/cpp/paint_manager.h"
+#include "ppapi/utility/graphics/paint_manager.h"
 
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/cpp/instance.h"

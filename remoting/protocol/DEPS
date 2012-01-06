@@ -4,6 +4,7 @@ include_rules = [
   "+net",
   "+ppapi/c",
   "+ppapi/cpp",
+  "+ppapi/utility",
   "+remoting/jingle_glue",
   "+third_party/protobuf/src",
 ]

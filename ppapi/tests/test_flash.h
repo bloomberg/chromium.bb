@@ -7,10 +7,10 @@
 
 #include <string>
 
-#include "ppapi/cpp/completion_callback.h"
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/c/private/ppb_flash.h"
 #include "ppapi/tests/test_case.h"
+#include "ppapi/utility/completion_callback_factory.h"
 
 class TestFlash : public TestCase {
  public:
