@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -418,10 +418,7 @@ void AutofillAgent::QueryAutofillSuggestions(const WebInputElement& element,
     WebFormControlElementToFormField(element, EXTRACT_VALUE, &field);
   }
 
-  // TODO(csharp): Stop using the hardcoded value once the WebKit change to
-  // expose the position lands.
-  // gfx::Rect bounding_box(autofill_query_element_.boundsInRootViewSpace());
-  gfx::Rect bounding_box(26, 51, 155, 22);
+  gfx::Rect bounding_box(autofill_query_element_.boundsInViewportSpace());
 
   Send(new AutofillHostMsg_QueryFormFieldAutofill(routing_id(),
                                                   autofill_query_id_,
