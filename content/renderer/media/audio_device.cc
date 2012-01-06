@@ -62,6 +62,8 @@ void AudioDevice::Initialize(size_t buffer_size,
   CHECK_EQ(0, stream_id_) <<
       "AudioDevice::Initialize() must be called before Start()";
 
+  CHECK(!is_initialized_);
+
   buffer_size_ = buffer_size;
   channels_ = channels;
   sample_rate_ = sample_rate;
@@ -79,10 +81,6 @@ void AudioDevice::Initialize(size_t buffer_size,
   }
 
   is_initialized_ = true;
-}
-
-bool AudioDevice::IsInitialized() {
-  return is_initialized_;
 }
 
 AudioDevice::~AudioDevice() {

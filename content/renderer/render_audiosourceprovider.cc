@@ -1,0 +1,148 @@
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "content/renderer/render_audiosourceprovider.h"
+
+#include "base/basictypes.h"
+#include "base/logging.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebAudioSourceProviderClient.h"
+
+using std::vector;
+using WebKit::WebVector;
+
+RenderAudioSourceProvider::RenderAudioSourceProvider()
+    : is_initialized_(false),
+      channels_(0),
+      sample_rate_(0.0),
+      is_running_(false),
+      volume_(1.0),
+      renderer_(NULL),
+      client_(NULL) {
+  // We create the AudioDevice here because it must be created in the
+  // main thread.  But we don't yet know the audio format (sample-rate, etc.)
+  // at this point.  Later, when Initialize() is called, we have
+  // the audio format information and call the AudioDevice::Initialize()
+  // method to fully initialize it.
+  default_sink_ = new AudioDevice();
+}
+
+RenderAudioSourceProvider::~RenderAudioSourceProvider() {}
+
+void RenderAudioSourceProvider::Start() {
+  base::AutoLock auto_lock(sink_lock_);
+  if (!client_)
+    default_sink_->Start();
+  is_running_ = true;
+}
+
+void RenderAudioSourceProvider::Stop() {
+  base::AutoLock auto_lock(sink_lock_);
+  if (!client_)
+    default_sink_->Stop();
+  is_running_ = false;
+}
+
+void RenderAudioSourceProvider::Play() {
+  base::AutoLock auto_lock(sink_lock_);
+  if (!client_)
+    default_sink_->Play();
+  is_running_ = true;
+}
+
+void RenderAudioSourceProvider::Pause(bool flush) {
+  base::AutoLock auto_lock(sink_lock_);
+  if (!client_)
+    default_sink_->Pause(flush);
+  is_running_ = false;
+}
+
+bool RenderAudioSourceProvider::SetVolume(double volume) {
+  base::AutoLock auto_lock(sink_lock_);
+  if (!client_)
+    default_sink_->SetVolume(volume);
+  volume_ = volume;
+  return true;
+}
+
+void RenderAudioSourceProvider::GetVolume(double* volume) {
+  if (!client_)
+    default_sink_->GetVolume(volume);
+  else if (volume)
+    *volume = volume_;
+}
+
+void RenderAudioSourceProvider::Initialize(
+    size_t buffer_size,
+    int channels,
+    double sample_rate,
+    AudioParameters::Format latency_format,
+    RenderCallback* renderer) {
+  base::AutoLock auto_lock(sink_lock_);
+  CHECK(!is_initialized_);
+  renderer_ = renderer;
+
+  default_sink_->Initialize(buffer_size,
+                            channels,
+                            sample_rate,
+                            latency_format,
+                            renderer);
+
+  if (client_) {
+    // Inform WebKit about the audio stream format.
+    client_->setFormat(channels, sample_rate);
+  }
+
+  // Keep track of the format in case the client hasn't yet been set.
+  channels_ = channels;
+  sample_rate_ = sample_rate;
+  is_initialized_ = true;
+}
+
+void RenderAudioSourceProvider::setClient(
+    WebKit::WebAudioSourceProviderClient* client) {
+  // Synchronize with other uses of client_ and default_sink_.
+  base::AutoLock auto_lock(sink_lock_);
+
+  if (client && client != client_) {
+    // Detach the audio renderer from normal playback.
+    default_sink_->Pause(true);
+
+    // The client will now take control by calling provideInput() periodically.
+    client_ = client;
+
+    if (is_initialized_) {
+      // The client needs to be notified of the audio format, if available.
+      // If the format is not yet available, we'll be notified later
+      // when Initialize() is called.
+
+      // Inform WebKit about the audio stream format.
+      client->setFormat(channels_, sample_rate_);
+    }
+  } else if (!client && client_) {
+    // Restore normal playback.
+    client_ = NULL;
+    // TODO(crogers): We should call default_sink_->Play() if we're
+    // in the playing state.
+  }
+}
+
+void RenderAudioSourceProvider::provideInput(
+    const WebVector<float*>& audio_data, size_t number_of_frames) {
+  DCHECK(client_);
+
+  if (renderer_ && is_initialized_ && is_running_) {
+    // Wrap WebVector as std::vector.
+    vector<float*> v(audio_data.size());
+    for (size_t i = 0; i < audio_data.size(); ++i)
+      v[i] = audio_data[i];
+
+    // TODO(crogers): figure out if we should volume scale here or in common
+    // WebAudio code.  In any case we need to take care of volume.
+    renderer_->Render(v, number_of_frames, 0);
+  } else {
+    // Provide silence if the source is not running.
+    for (size_t i = 0; i < audio_data.size(); ++i)
+      memset(audio_data[i], 0, sizeof(float) * number_of_frames);
+  }
+}

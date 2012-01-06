@@ -139,6 +139,8 @@
     'renderer/pepper_plugin_delegate_impl.h',
     'renderer/plugin_channel_host.cc',
     'renderer/plugin_channel_host.h',
+    'renderer/render_audiosourceprovider.cc',
+    'renderer/render_audiosourceprovider.h',
     'renderer/render_process.h',
     'renderer/render_process_impl.cc',
     'renderer/render_process_impl.h',

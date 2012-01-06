@@ -35,16 +35,12 @@ static size_t GetBufferSizeForSampleRate(int sample_rate) {
   return kNominalBufferSize * 4;
 }
 
-AudioRendererImpl::AudioRendererImpl()
+AudioRendererImpl::AudioRendererImpl(media::AudioRendererSink* sink)
     : AudioRendererBase(),
       bytes_per_second_(0),
-      stopped_(false) {
-  // We create the AudioDevice here because it must be created in the
-  // main thread.  But we don't yet know the audio format (sample-rate, etc.)
-  // at this point.  Later, when OnInitialize() is called, we have
-  // the audio format information and call the AudioDevice::Initialize()
-  // method to fully initialize it.
-  audio_device_ = new AudioDevice();
+      stopped_(false),
+      sink_(sink),
+      is_initialized_(false) {
 }
 
 AudioRendererImpl::~AudioRendererImpl() {
@@ -90,28 +86,30 @@ bool AudioRendererImpl::OnInitialize(int bits_per_channel,
 
   bytes_per_second_ = audio_parameters_.GetBytesPerSecond();
 
-  DCHECK(audio_device_.get());
+  DCHECK(sink_.get());
 
-  if (!audio_device_->IsInitialized()) {
-    audio_device_->Initialize(
+  if (!is_initialized_) {
+    sink_->Initialize(
         GetBufferSizeForSampleRate(sample_rate),
         audio_parameters_.channels,
         audio_parameters_.sample_rate,
         audio_parameters_.format,
         this);
 
-    audio_device_->Start();
+    sink_->Start();
+    is_initialized_ = true;
+    return true;
   }
 
-  return true;
+  return false;
 }
 
 void AudioRendererImpl::OnStop() {
   if (stopped_)
     return;
 
-  DCHECK(audio_device_.get());
-  audio_device_->Stop();
+  DCHECK(sink_.get());
+  sink_->Stop();
 
   stopped_ = true;
 }
@@ -169,27 +167,27 @@ void AudioRendererImpl::Play(const base::Closure& callback) {
 void AudioRendererImpl::SetVolume(float volume) {
   if (stopped_)
     return;
-  DCHECK(audio_device_.get());
-  audio_device_->SetVolume(volume);
+  DCHECK(sink_.get());
+  sink_->SetVolume(volume);
 }
 
 void AudioRendererImpl::DoPlay() {
   earliest_end_time_ = base::Time::Now();
-  DCHECK(audio_device_.get());
-  audio_device_->Play();
+  DCHECK(sink_.get());
+  sink_->Play();
 }
 
 void AudioRendererImpl::DoPause() {
-  DCHECK(audio_device_.get());
-  audio_device_->Pause(false);
+  DCHECK(sink_.get());
+  sink_->Pause(false);
 }
 
 void AudioRendererImpl::DoSeek() {
   earliest_end_time_ = base::Time::Now();
 
   // Pause and flush the stream when we seek to a new location.
-  DCHECK(audio_device_.get());
-  audio_device_->Pause(true);
+  DCHECK(sink_.get());
+  sink_->Pause(true);
 }
 
 size_t AudioRendererImpl::Render(const std::vector<float*>& audio_data,
