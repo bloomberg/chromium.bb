@@ -105,7 +105,9 @@ void ProxySettingsUI::InitializeHandlers() {
   for (iter = handlers_.begin() + 1; iter != handlers_.end(); ++iter) {
     (static_cast<OptionsPageUIHandler*>(*iter))->Initialize();
   }
-  PrefProxyConfigTracker* proxy_tracker = GetProfile()->GetProxyConfigTracker();
+  Profile* profile =
+    Profile::FromBrowserContext(web_contents()->GetBrowserContext());
+  PrefProxyConfigTracker* proxy_tracker = profile->GetProxyConfigTracker();
   proxy_tracker->UIMakeActiveNetworkCurrent();
   std::string network_name;
   proxy_tracker->UIGetCurrentNetworkName(&network_name);

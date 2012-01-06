@@ -259,6 +259,10 @@ NewTabUI* NewTabUI::FromWebUI(WebUI* ui) {
   return static_cast<NewTabUI*>(ui);
 }
 
+Profile* NewTabUI::GetProfile() const {
+  return Profile::FromBrowserContext(web_contents()->GetBrowserContext());
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // NewTabHTMLSource
 

@@ -329,7 +329,9 @@ RefCountedMemory* OptionsUI::GetFaviconResourceBytes() {
 }
 
 void OptionsUI::InitializeHandlers() {
-  DCHECK(!GetProfile()->IsOffTheRecord() || Profile::IsGuestSession());
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
+  DCHECK(!profile->IsOffTheRecord() || Profile::IsGuestSession());
 
   // The reinitialize call from DidBecomeActiveForReusedRenderView end up being
   // delivered after a new web page DOM has been brought up in an existing

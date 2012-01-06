@@ -124,12 +124,12 @@ AppListUI::AppListUI(WebContents* contents)
       delegate_(NULL) {
   AddMessageHandler(new AppListHandler);
 
-  ExtensionService* service = GetProfile()->GetExtensionService();
+  Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
+  ExtensionService* service = profile->GetExtensionService();
   if (service)
     AddMessageHandler(new AppLauncherHandler(service));
 
   // Set up the source.
-  Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
   PrefService* prefs = profile->GetPrefs();
   profile->GetChromeURLDataManager()->AddDataSource(
       CreateAppListUIHTMLSource(prefs));

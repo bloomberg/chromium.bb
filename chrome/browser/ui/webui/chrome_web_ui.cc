@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/webui/chrome_web_ui.h"
 
 #include "base/command_line.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -28,10 +27,6 @@ ChromeWebUI::ChromeWebUI(WebContents* contents)
 }
 
 ChromeWebUI::~ChromeWebUI() {
-}
-
-Profile* ChromeWebUI::GetProfile() const {
-  return Profile::FromBrowserContext(web_contents()->GetBrowserContext());
 }
 
 void ChromeWebUI::RenderViewCreated(RenderViewHost* render_view_host) {

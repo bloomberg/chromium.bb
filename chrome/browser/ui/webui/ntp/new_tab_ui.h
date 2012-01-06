@@ -87,6 +87,8 @@ class NewTabUI : public ChromeWebUI,
   void StartTimingPaint(RenderViewHost* render_view_host);
   void PaintTimeout();
 
+  Profile* GetProfile() const;
+
   content::NotificationRegistrar registrar_;
 
   // The time when we started benchmarking.

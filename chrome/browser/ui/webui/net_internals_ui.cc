@@ -44,6 +44,7 @@
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "grit/generated_resources.h"
 #include "grit/net_internals_resources.h"
@@ -1640,6 +1641,7 @@ NetInternalsUI::NetInternalsUI(WebContents* contents) : ChromeWebUI(contents) {
   AddMessageHandler(new NetInternalsMessageHandler());
 
   // Set up the chrome://net-internals/ source.
-  GetProfile()->GetChromeURLDataManager()->AddDataSource(
+  Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
+  profile->GetChromeURLDataManager()->AddDataSource(
       CreateNetInternalsHTMLSource());
 }

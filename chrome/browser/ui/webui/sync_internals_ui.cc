@@ -108,7 +108,9 @@ void SyncInternalsUI::OnWebUISend(const GURL& source_url,
     ListValue return_args;
     DictionaryValue* about_info = new DictionaryValue();
     return_args.Append(about_info);
-    ProfileSyncService* service = GetProfileSyncService(GetProfile());
+    Profile* profile =
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
+    ProfileSyncService* service = GetProfileSyncService(profile);
     sync_ui_util::ConstructAboutInformation(service, about_info);
     HandleJsReply(name, JsArgList(&return_args));
   } else {

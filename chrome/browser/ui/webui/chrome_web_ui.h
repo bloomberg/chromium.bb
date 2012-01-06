@@ -8,15 +8,10 @@
 
 #include "content/browser/webui/web_ui.h"
 
-class Profile;
-
 class ChromeWebUI : public WebUI {
  public:
   explicit ChromeWebUI(content::WebContents* contents);
   virtual ~ChromeWebUI();
-
-  // Returns the profile for this WebUI.
-  Profile* GetProfile() const;
 
   // Overridden from WebUI:
   virtual void RenderViewCreated(RenderViewHost* render_view_host) OVERRIDE;
