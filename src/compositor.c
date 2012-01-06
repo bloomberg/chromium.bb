@@ -410,10 +410,6 @@ weston_buffer_attach(struct wl_buffer *buffer, struct wl_surface *surface)
 	glBindTexture(GL_TEXTURE_2D, es->texture);
 
 	if (wl_buffer_is_shm(buffer)) {
-		/* Unbind any EGLImage texture that may be bound, so we don't
-		 * overwrite it.*/
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_BGRA_EXT,
-			     0, 0, 0, GL_BGRA_EXT, GL_UNSIGNED_BYTE, NULL);
 		es->pitch = wl_shm_buffer_get_stride(buffer) / 4;
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_BGRA_EXT,
 			     es->pitch, buffer->height, 0,
