@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,8 +25,6 @@ using content::BrowserThread;
 
 namespace {
 
-// TODO(dominich): Set hits/misses to match expected action if the test switches
-// to the Exact Algorithm.
 struct TestUrlInfo {
   GURL url;
   string16 title;
@@ -91,9 +89,6 @@ class NetworkActionPredictorTest : public testing::Test {
         switches::kPrerenderFromOmnibox,
         switches::kPrerenderFromOmniboxSwitchValueEnabled);
 
-    ASSERT_TRUE(prerender::GetOmniboxHeuristicToUse() ==
-          prerender::OMNIBOX_HEURISTIC_EXACT)
-        << "The heuristic has changed so the expectations need to be updated.";
     profile_.CreateHistoryService(true, false);
     profile_.BlockUntilHistoryProcessesPendingRequests();
 

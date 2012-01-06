@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -236,9 +236,7 @@ void AutocompleteEditModel::OnChanged() {
         network_action_predictor->RecommendAction(user_text_, current_match);
   }
 
-  UMA_HISTOGRAM_ENUMERATION("NetworkActionPredictor.Action_" +
-                            prerender::GetOmniboxHistogramSuffix(),
-                            recommended_action,
+  UMA_HISTOGRAM_ENUMERATION("NetworkActionPredictor.Action", recommended_action,
                             NetworkActionPredictor::LAST_PREDICT_ACTION);
   string16 suggested_text;
 

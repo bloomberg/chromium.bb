@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -66,10 +66,6 @@ var PrerenderView = (function() {
       if (prerenderInfo && ('omnibox_enabled' in prerenderInfo)) {
         this.prerenderOmniboxEnabledSpan_.textContent =
             prerenderInfo.omnibox_enabled.toString();
-        if (prerenderInfo.omnibox_heuristic) {
-          this.prerenderOmniboxEnabledSpan_.textContent +=
-              ' ' + prerenderInfo.omnibox_heuristic;
-        }
       }
 
       if (!isValidPrerenderInfo(prerenderInfo))

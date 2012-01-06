@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -81,7 +81,7 @@ TEST(PrerenderHistoryTest, GetAsValue)  {
   // Add a second entry and make sure both first and second appear.
   const char* const kSecondUrl = "http://www.beta.com/";
   const FinalStatus kSecondFinalStatus = FINAL_STATUS_INVALID_HTTP_METHOD;
-  const Origin kSecondOrigin = ORIGIN_OMNIBOX_EXACT;
+  const Origin kSecondOrigin = ORIGIN_OMNIBOX;
   PrerenderHistory::Entry entry_second(
       GURL(kSecondUrl), kSecondFinalStatus, kSecondOrigin,
       epoch_start + base::TimeDelta::FromMilliseconds(1));

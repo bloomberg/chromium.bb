@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -338,23 +338,8 @@ bool PrerenderManager::AddPrerenderFromOmnibox(
   DCHECK(session_storage_namespace);
   if (!IsOmniboxEnabled(profile_))
     return false;
-
-  Origin origin = ORIGIN_MAX;
-  switch (GetOmniboxHeuristicToUse()) {
-    case OMNIBOX_HEURISTIC_EXACT:
-      origin = ORIGIN_OMNIBOX_EXACT;
-      break;
-
-    case OMNIBOX_HEURISTIC_EXACT_FULL:
-      origin = ORIGIN_OMNIBOX_EXACT_FULL;
-      break;
-
-    default:
-      NOTREACHED();
-      break;
-  };
-  return AddPrerender(origin, std::make_pair(-1, -1), url, content::Referrer(),
-                      session_storage_namespace);
+  return AddPrerender(ORIGIN_OMNIBOX, std::make_pair(-1, -1), url,
+                      content::Referrer(), session_storage_namespace);
 }
 
 bool PrerenderManager::AddPrerender(
@@ -1063,19 +1048,6 @@ DictionaryValue* PrerenderManager::GetAsValue() const {
   dict_value->Set("active", GetActivePrerendersAsValue());
   dict_value->SetBoolean("enabled", enabled_);
   dict_value->SetBoolean("omnibox_enabled", IsOmniboxEnabled(profile_));
-  if (IsOmniboxEnabled(profile_)) {
-    switch (GetOmniboxHeuristicToUse()) {
-      case OMNIBOX_HEURISTIC_EXACT:
-        dict_value->SetString("omnibox_heuristic", "(exact)");
-        break;
-      case OMNIBOX_HEURISTIC_EXACT_FULL:
-        dict_value->SetString("omnibox_heuristic", "(exact full)");
-        break;
-      default:
-        NOTREACHED();
-        break;
-    }
-  }
   // If prerender is disabled via a flag this method is not even called.
   if (IsControlGroup())
     dict_value->SetString("disabled_reason", "(Disabled for testing)");

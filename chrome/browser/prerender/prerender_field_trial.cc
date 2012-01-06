@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,25 +20,7 @@ namespace prerender {
 
 namespace {
 
-int omnibox_exact_group_id = 0;
-int omnibox_exact_full_group_id = 0;
-
-const char* kOmniboxHeuristicNames[] = {
-  "Exact",
-  "Exact_Full"
-};
-COMPILE_ASSERT(arraysize(kOmniboxHeuristicNames) == OMNIBOX_HEURISTIC_MAX,
-               OmniboxHeuristic_name_count_mismatch);
-
 const char kPrerenderFromOmniboxTrialName[] = "PrerenderFromOmnibox";
-const char kPrerenderFromOmniboxHeuristicTrialName[] =
-    "PrerenderFromOmniboxHeuristic";
-
-const char* NameFromOmniboxHeuristic(OmniboxHeuristic heuristic) {
-  DCHECK_LT(static_cast<unsigned int>(heuristic),
-            arraysize(kOmniboxHeuristicNames));
-  return kOmniboxHeuristicNames[heuristic];
-}
 
 void SetupPrefetchFieldTrial() {
   chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
@@ -196,15 +178,6 @@ void ConfigurePrerenderFromOmnibox() {
       new base::FieldTrial(kPrerenderFromOmniboxTrialName, kDivisor,
                            "OmniboxPrerenderDisabled", 2012, 8, 30));
   enabled_trial->AppendGroup("OmniboxPrerenderEnabled", kEnabledProbability);
-
-  // Field trial to see which heuristic to use.
-  const base::FieldTrial::Probability kExactFullProbability = 90;
-  scoped_refptr<base::FieldTrial> heuristic_trial(
-      new base::FieldTrial(kPrerenderFromOmniboxHeuristicTrialName, kDivisor,
-                           "OriginalAlgorithm", 2012, 8, 30));
-  omnibox_exact_group_id = base::FieldTrial::kDefaultGroupNumber;
-  omnibox_exact_full_group_id =
-      heuristic_trial->AppendGroup("ExactFullAlgorithm", kExactFullProbability);
 }
 
 bool IsOmniboxEnabled(Profile* profile) {
@@ -237,22 +210,6 @@ bool IsOmniboxEnabled(Profile* profile) {
       base::FieldTrialList::FindValue(kPrerenderFromOmniboxTrialName);
   return group != base::FieldTrial::kNotFinalized &&
          group != base::FieldTrial::kDefaultGroupNumber;
-}
-
-OmniboxHeuristic GetOmniboxHeuristicToUse() {
-  const int group =
-      base::FieldTrialList::FindValue(kPrerenderFromOmniboxHeuristicTrialName);
-  if (group == omnibox_exact_group_id)
-    return OMNIBOX_HEURISTIC_EXACT;
-  if (group == omnibox_exact_full_group_id)
-    return OMNIBOX_HEURISTIC_EXACT_FULL;
-
-  // If we don't have a group just return the exact heuristic.
-  return OMNIBOX_HEURISTIC_EXACT;
-}
-
-std::string GetOmniboxHistogramSuffix() {
-  return NameFromOmniboxHeuristic(prerender::GetOmniboxHeuristicToUse());
 }
 
 }  // namespace prerender

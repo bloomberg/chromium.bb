@@ -93,10 +93,6 @@ NetworkActionPredictor::~NetworkActionPredictor() {
 void NetworkActionPredictor::RegisterTransitionalMatches(
     const string16& user_text,
     const AutocompleteResult& result) {
-  if (prerender::GetOmniboxHeuristicToUse() !=
-      prerender::OMNIBOX_HEURISTIC_EXACT_FULL) {
-    return;
-  }
   if (user_text.length() < kMinimumUserTextLength)
     return;
   const string16 lower_user_text(base::i18n::ToLower(user_text));
@@ -130,11 +126,6 @@ void NetworkActionPredictor::ClearTransitionalMatches() {
 NetworkActionPredictor::Action NetworkActionPredictor::RecommendAction(
     const string16& user_text,
     const AutocompleteMatch& match) const {
-  DCHECK(prerender::GetOmniboxHeuristicToUse() ==
-           prerender::OMNIBOX_HEURISTIC_EXACT ||
-         prerender::GetOmniboxHeuristicToUse() ==
-           prerender::OMNIBOX_HEURISTIC_EXACT_FULL);
-
   bool is_in_db = false;
   const double confidence = CalculateConfidence(user_text, match, &is_in_db);
   DCHECK(confidence >= 0.0 && confidence <= 1.0);
@@ -143,8 +134,7 @@ NetworkActionPredictor::Action NetworkActionPredictor::RecommendAction(
     // Multiple enties with the same URL are fine as the confidence may be
     // different.
     tracked_urls_.push_back(std::make_pair(match.destination_url, confidence));
-    UMA_HISTOGRAM_COUNTS_100("NetworkActionPredictor.Confidence_" +
-                             prerender::GetOmniboxHistogramSuffix(),
+    UMA_HISTOGRAM_COUNTS_100("NetworkActionPredictor.Confidence",
                              confidence * 100);
   }
 
@@ -241,23 +231,12 @@ void NetworkActionPredictor::OnOmniboxOpenedUrl(const AutocompleteLog& log) {
   if (log.text.length() < kMinimumUserTextLength)
     return;
 
-  UMA_HISTOGRAM_COUNTS("NetworkActionPredictor.NavigationCount_" +
-                       prerender::GetOmniboxHistogramSuffix(), 1);
+  UMA_HISTOGRAM_COUNTS("NetworkActionPredictor.NavigationCount", 1);
 
   const GURL& opened_url =
       log.result.match_at(log.selected_index).destination_url;
 
   const string16 lower_user_text(base::i18n::ToLower(log.text));
-
-  // Add the current match as the only transitional match.
-  if (prerender::GetOmniboxHeuristicToUse() !=
-      prerender::OMNIBOX_HEURISTIC_EXACT_FULL) {
-    DCHECK(transitional_matches_.empty());
-    TransitionalMatch dummy_match;
-    dummy_match.user_text = lower_user_text;
-    dummy_match.urls.push_back(opened_url);
-    transitional_matches_.push_back(dummy_match);
-  }
 
   BeginTransaction();
   // Traverse transitional matches for those that have a user_text that is a
@@ -306,8 +285,7 @@ void NetworkActionPredictor::OnOmniboxOpenedUrl(const AutocompleteLog& log) {
        tracked_urls_.begin(); it != tracked_urls_.end();
        ++it) {
     if (opened_url == it->first) {
-      UMA_HISTOGRAM_COUNTS_100("NetworkActionPredictor.AccurateCount_" +
-                               prerender::GetOmniboxHistogramSuffix(),
+      UMA_HISTOGRAM_COUNTS_100("NetworkActionPredictor.AccurateCount",
                                it->second * 100);
     }
   }

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -42,10 +42,8 @@ std::string GetHistogramName(Origin origin, uint8 experiment_id,
     return ComposeHistogramName("wash", name);
 
   switch (origin) {
-    case ORIGIN_OMNIBOX_EXACT:
-      return ComposeHistogramName("omnibox_exact", name);
-    case ORIGIN_OMNIBOX_EXACT_FULL:
-      return ComposeHistogramName("omnibox_exact_full", name);
+    case ORIGIN_OMNIBOX:
+      return ComposeHistogramName("omnibox", name);
     case ORIGIN_LINK_REL_PRERENDER:
       return ComposeHistogramName("web", name);
     case ORIGIN_GWS_PRERENDER:  // Handled above.
@@ -60,7 +58,7 @@ std::string GetHistogramName(Origin origin, uint8 experiment_id,
 }
 
 bool OriginIsOmnibox(Origin origin) {
-  return origin == ORIGIN_OMNIBOX_EXACT || origin == ORIGIN_OMNIBOX_EXACT_FULL;
+  return origin == ORIGIN_OMNIBOX;
 }
 
 }  // namespace
@@ -99,8 +97,7 @@ bool OriginIsOmnibox(Origin origin) {
               experiment != recording_experiment)) { \
   } else if (origin == ORIGIN_LINK_REL_PRERENDER) { \
     HISTOGRAM; \
-  } else if (origin == ORIGIN_OMNIBOX_EXACT || \
-             origin == ORIGIN_OMNIBOX_EXACT_FULL) { \
+  } else if (origin == ORIGIN_OMNIBOX) { \
     HISTOGRAM; \
   } else if (experiment != kNoExperiment) { \
     HISTOGRAM; \
@@ -147,17 +144,13 @@ void PrerenderHistograms::RecordPrerender(Origin origin, const GURL& url) {
 }
 
 void PrerenderHistograms::RecordPrerenderStarted(Origin origin) const {
-  if (OriginIsOmnibox(origin)) {
-    UMA_HISTOGRAM_COUNTS("Prerender.OmniboxPrerenderCount_" +
-                         GetOmniboxHistogramSuffix(), 1);
-  }
+  if (OriginIsOmnibox(origin))
+    UMA_HISTOGRAM_COUNTS("Prerender.OmniboxPrerenderCount", 1);
 }
 
 void PrerenderHistograms::RecordUsedPrerender(Origin origin) const {
-  if (OriginIsOmnibox(origin)) {
-    UMA_HISTOGRAM_COUNTS("Prerender.OmniboxNavigationsUsedPrerenderCount_" +
-                         GetOmniboxHistogramSuffix(), 1);
-  }
+  if (OriginIsOmnibox(origin))
+    UMA_HISTOGRAM_COUNTS("Prerender.OmniboxNavigationsUsedPrerenderCount", 1);
 }
 
 base::TimeTicks PrerenderHistograms::GetCurrentTimeTicks() const {

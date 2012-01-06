@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -343,13 +343,12 @@ void PrerenderContents::StartPrerendering(
   DCHECK(load_start_time_.is_null());
   load_start_time_ = base::TimeTicks::Now();
 
-  content::PageTransition transition = content::PAGE_TRANSITION_LINK;
-  if (origin_ == ORIGIN_OMNIBOX_EXACT || origin_ == ORIGIN_OMNIBOX_EXACT_FULL)
-    transition = content::PAGE_TRANSITION_TYPED;
   new_contents->GetController().LoadURL(
       prerender_url_,
       referrer_,
-      transition, std::string());
+      (origin_ == ORIGIN_OMNIBOX ? content::PAGE_TRANSITION_TYPED :
+                                   content::PAGE_TRANSITION_LINK),
+      std::string());
 }
 
 bool PrerenderContents::GetChildId(int* child_id) const {
