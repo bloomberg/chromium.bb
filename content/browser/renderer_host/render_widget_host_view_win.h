@@ -10,7 +10,7 @@
 #include <atlapp.h>
 #include <atlcrack.h>
 #include <atlmisc.h>
-
+#include <peninputpanel.h>
 #include <vector>
 
 #include "base/compiler_specific.h"
@@ -346,6 +346,13 @@ class RenderWidgetHostViewWin
   LRESULT OnDocumentFeed(RECONVERTSTRING* reconv);
   LRESULT OnReconvertString(RECONVERTSTRING* reconv);
 
+  // Displays the on screen keyboard for editable fields.
+  void DisplayOnScreenKeyboardIfNeeded();
+
+  // Invoked in a delayed task to reset the fact that we are in the context of
+  // a WM_POINTERDOWN message.
+  void ResetPointerDownContext();
+
   // The associated Model.  While |this| is being Destroyed,
   // |render_widget_host_| is NULL and the Windows message loop is run one last
   // time. Message handlers must check for a NULL |render_widget_host_|.
@@ -506,9 +513,29 @@ class RenderWidgetHostViewWin
   // WM_POINTERXX handler. We do this to ensure that we don't send out
   // duplicate lbutton down messages to the renderer.
   bool ignore_next_lbutton_message_at_same_location;
+
+  // TODO(ananta)
+  // The WM_POINTERDOWN and on screen keyboard handling related members should
+  // be moved to an independent class to reduce the clutter. This includes all
+  // members starting from last_pointer_down_location_ to the
+  // received_focus_change_after_pointer_down_.
+
   // The location of the last WM_POINTERDOWN message. We ignore the subsequent
   // lbutton down only if the locations match.
   LPARAM last_pointer_down_location_;
+
+  // IPenInputPanel to allow us to show the Windows virtual keyboard when a
+  // user touches an editable field on the page.
+  base::win::ScopedComPtr<IPenInputPanel> virtual_keyboard_;
+
+  // Set to true if we are in the context of a WM_POINTERDOWN message
+  bool pointer_down_context_;
+
+  // Set to true if the focus is currently on an editable field on the page.
+  bool focus_on_editable_field_;
+
+  // Set to true if we received a focus change after a WM_POINTERDOWN message.
+  bool received_focus_change_after_pointer_down_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewWin);
 };

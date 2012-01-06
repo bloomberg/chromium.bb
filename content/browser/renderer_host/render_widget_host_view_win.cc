@@ -5,6 +5,7 @@
 #include "content/browser/renderer_host/render_widget_host_view_win.h"
 
 #include <algorithm>
+#include <peninputpanel_i.c>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -95,6 +96,13 @@ const int kDestroyCompositorHostWindowDelay = 10000;
 // if it approaches the border. |kMouseLockBorderPercentage| specifies the width
 // of the border area, in percentage of the corresponding dimension.
 const int kMouseLockBorderPercentage = 15;
+
+// We display the onscreen keyboard in the context of a WM_POINTERDOWN message.
+// This context is reset in a delayed task. Theory being that the page should
+// have enough time to change focus before this context is reset.
+// TODO(ananta)
+// Refine this.
+const int kPointerDownContextResetDelay = 200;
 
 // A callback function for EnumThreadWindows to enumerate and dismiss
 // any owned popup windows.
@@ -318,10 +326,16 @@ RenderWidgetHostViewWin::RenderWidgetHostViewWin(RenderWidgetHost* widget)
       composition_range_(ui::Range::InvalidRange()),
       ignore_next_lbutton_message_at_same_location(false),
       last_pointer_down_location_(0),
-      touch_state_(this) {
+      touch_state_(this),
+      pointer_down_context_(false),
+      focus_on_editable_field_(false),
+      received_focus_change_after_pointer_down_(false) {
   render_widget_host_->SetView(this);
   registrar_.Add(this,
                  content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
+                 content::NotificationService::AllBrowserContextsAndSources());
+  registrar_.Add(this,
+                 content::NOTIFICATION_FOCUS_CHANGED_IN_PAGE,
                  content::NotificationService::AllBrowserContextsAndSources());
 }
 
@@ -333,6 +347,24 @@ RenderWidgetHostViewWin::~RenderWidgetHostViewWin() {
 void RenderWidgetHostViewWin::CreateWnd(HWND parent) {
   // ATL function to create the window.
   Create(parent);
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8) {
+    // MSDN recommends using the ITextInputPanel interface to display the on
+    // screen keyboard. This interface does not work predictably due to focus
+    // and activation bugs. We use the deprecated IPenInputPanel interface for
+    // now which works reliably with the caveat being that the keyboard cannot
+    // be closed via the system close menu. Esc or clicking elsewhere works.
+    // TODO(ananta): Revisit this.
+    virtual_keyboard_.CreateInstance(CLSID_PenInputPanel, NULL, CLSCTX_INPROC);
+    if (virtual_keyboard_) {
+      virtual_keyboard_->put_AttachedEditWindow(
+          reinterpret_cast<int>(m_hWnd));
+      virtual_keyboard_->put_DefaultPanel(PT_Keyboard);
+      virtual_keyboard_->put_Visible(VARIANT_FALSE);
+      virtual_keyboard_->put_AutoShow(VARIANT_FALSE);
+    } else {
+      NOTREACHED() << "Failed to create instance of pen input panel";
+    }
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -891,7 +923,6 @@ LRESULT RenderWidgetHostViewWin::OnCreate(CREATESTRUCT* create_struct) {
       }
     }
   }
-
   return 0;
 }
 
@@ -1883,21 +1914,30 @@ void RenderWidgetHostViewWin::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  DCHECK(type == content::NOTIFICATION_RENDERER_PROCESS_TERMINATED);
+  DCHECK(type == content::NOTIFICATION_RENDERER_PROCESS_TERMINATED ||
+         type == content::NOTIFICATION_FOCUS_CHANGED_IN_PAGE);
 
-  // Get the RenderProcessHost that posted this notification, and exit
-  // if it's not the one associated with this host view.
-  content::RenderProcessHost* render_process_host =
-      content::Source<content::RenderProcessHost>(source).ptr();
-  DCHECK(render_process_host);
-  if (!render_widget_host_ ||
-      render_process_host != render_widget_host_->process())
-    return;
+  if (type == content::NOTIFICATION_FOCUS_CHANGED_IN_PAGE) {
+    if (pointer_down_context_)
+      received_focus_change_after_pointer_down_ = true;
+    focus_on_editable_field_ = *content::Details<bool>(details).ptr();
+    if (virtual_keyboard_)
+      DisplayOnScreenKeyboardIfNeeded();
+  } else {
+    // Get the RenderProcessHost that posted this notification, and exit
+    // if it's not the one associated with this host view.
+    content::RenderProcessHost* render_process_host =
+        content::Source<content::RenderProcessHost>(source).ptr();
+    DCHECK(render_process_host);
+    if (!render_widget_host_ ||
+        render_process_host != render_widget_host_->process())
+      return;
 
-  // If it was our RenderProcessHost that posted the notification,
-  // clear the BrowserAccessibilityManager, because the renderer is
-  // dead and any accessibility information we have is now stale.
-  SetBrowserAccessibilityManager(NULL);
+    // If it was our RenderProcessHost that posted the notification,
+    // clear the BrowserAccessibilityManager, because the renderer is
+    // dead and any accessibility information we have is now stale.
+    SetBrowserAccessibilityManager(NULL);
+  }
 }
 
 static void PaintCompositorHostWindow(HWND hWnd) {
@@ -2176,6 +2216,12 @@ LRESULT RenderWidgetHostViewWin::OnPointerMessage(
     OnMouseEvent(WM_LBUTTONDOWN, MK_LBUTTON, lparam, handled);
     ignore_next_lbutton_message_at_same_location = true;
     last_pointer_down_location_ = lparam;
+    SetFocus();
+    pointer_down_context_ = true;
+    received_focus_change_after_pointer_down_ = false;
+    MessageLoop::current()->PostDelayedTask(FROM_HERE,
+        base::Bind(&RenderWidgetHostViewWin::ResetPointerDownContext,
+                   weak_factory_.GetWeakPtr()), kPointerDownContextResetDelay);
   } else if (message == WM_POINTERUP) {
     OnMouseEvent(WM_LBUTTONUP, MK_LBUTTON, lparam, handled);
   }
@@ -2504,3 +2550,25 @@ RenderWidgetHostView* RenderWidgetHostView::CreateViewForWidget(
     RenderWidgetHost* widget) {
   return new RenderWidgetHostViewWin(widget);
 }
+
+void RenderWidgetHostViewWin::DisplayOnScreenKeyboardIfNeeded() {
+  if (focus_on_editable_field_) {
+    if (pointer_down_context_) {
+      virtual_keyboard_->put_Visible(VARIANT_TRUE);
+    }
+  } else {
+    virtual_keyboard_->put_Visible(VARIANT_FALSE);
+  }
+}
+
+void RenderWidgetHostViewWin::ResetPointerDownContext() {
+  // If the default focus on the page is on an edit field and we did not
+  // receive a focus change in the context of a pointer down message, it means
+  // that the pointer down message occurred on the edit field and we should
+  // display the on screen keyboard
+  if (!received_focus_change_after_pointer_down_ && virtual_keyboard_)
+    DisplayOnScreenKeyboardIfNeeded();
+  received_focus_change_after_pointer_down_ = false;
+  pointer_down_context_ = false;
+}
+
