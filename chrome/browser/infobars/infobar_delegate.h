@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,6 +17,7 @@ class InfoBarTabHelper;
 class InsecureContentInfoBarDelegate;
 class LinkInfoBarDelegate;
 class PluginInstallerInfoBarDelegate;
+class RegisterProtocolHandlerInfoBarDelegate;
 class ThemeInstalledInfoBarDelegate;
 class TranslateInfoBarDelegate;
 
@@ -88,6 +89,8 @@ class InfoBarDelegate {
   virtual InsecureContentInfoBarDelegate* AsInsecureContentInfoBarDelegate();
   virtual LinkInfoBarDelegate* AsLinkInfoBarDelegate();
   virtual PluginInstallerInfoBarDelegate* AsPluginInstallerInfoBarDelegate();
+  virtual RegisterProtocolHandlerInfoBarDelegate*
+      AsRegisterProtocolHandlerInfoBarDelegate();
   virtual ThemeInstalledInfoBarDelegate* AsThemePreviewInfobarDelegate();
   virtual TranslateInfoBarDelegate* AsTranslateInfoBarDelegate();
 

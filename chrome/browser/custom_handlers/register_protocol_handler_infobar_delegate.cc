@@ -97,3 +97,14 @@ bool RegisterProtocolHandlerInfoBarDelegate::LinkClicked(
   owner()->web_contents()->OpenURL(params);
   return false;
 }
+
+bool RegisterProtocolHandlerInfoBarDelegate::IsReplacedBy(
+    RegisterProtocolHandlerInfoBarDelegate* delegate) {
+  return handler_.IsEquivalent(delegate->handler_);
+}
+
+RegisterProtocolHandlerInfoBarDelegate*
+    RegisterProtocolHandlerInfoBarDelegate::
+        AsRegisterProtocolHandlerInfoBarDelegate() {
+  return this;
+}

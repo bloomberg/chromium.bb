@@ -30,6 +30,11 @@ class RegisterProtocolHandlerInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual string16 GetLinkText() const OVERRIDE;
   virtual bool LinkClicked(WindowOpenDisposition disposition) OVERRIDE;
 
+  virtual RegisterProtocolHandlerInfoBarDelegate*
+      AsRegisterProtocolHandlerInfoBarDelegate() OVERRIDE;
+
+  bool IsReplacedBy(RegisterProtocolHandlerInfoBarDelegate* delegate);
+
  private:
   // Returns a user-friendly name for the protocol of this protocol handler.
   string16 GetProtocolName(const ProtocolHandler& handler) const;

@@ -2612,10 +2612,25 @@ void Browser::RegisterProtocolHandlerHelper(WebContents* tab,
     content::RecordAction(
         UserMetricsAction("RegisterProtocolHandler.InfoBar_Shown"));
     InfoBarTabHelper* infobar_helper = tcw->infobar_tab_helper();
-    infobar_helper->AddInfoBar(
+
+    RegisterProtocolHandlerInfoBarDelegate* rph_delegate =
         new RegisterProtocolHandlerInfoBarDelegate(infobar_helper,
                                                    registry,
-                                                   handler));
+                                                   handler);
+
+    for (size_t i = 0; i < infobar_helper->infobar_count(); i++) {
+      InfoBarDelegate* delegate = infobar_helper->GetInfoBarDelegateAt(i);
+      RegisterProtocolHandlerInfoBarDelegate* cast_delegate =
+          delegate->AsRegisterProtocolHandlerInfoBarDelegate();
+      if (cast_delegate != NULL && cast_delegate->IsReplacedBy(rph_delegate)) {
+        infobar_helper->ReplaceInfoBar(cast_delegate, rph_delegate);
+        rph_delegate = NULL;
+        break;
+      }
+    }
+
+    if (rph_delegate != NULL)
+      infobar_helper->AddInfoBar(rph_delegate);
   }
 }
 
