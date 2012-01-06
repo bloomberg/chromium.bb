@@ -23,10 +23,6 @@ if env.Bit('nacl_glibc'):
 if env.Bit('use_sandboxed_translator'):
   Return()
 
-# Temporarily disable this test until the TC has been updated
-# BUG: http://code.google.com/p/nativeclient/issues/detail?id=1968
-if env.Bit('target_arm') and env.Bit('bitcode'):
-  Return()
 # ----------------------------------------------------------
 # Tests that require a NaCl module
 # ----------------------------------------------------------
