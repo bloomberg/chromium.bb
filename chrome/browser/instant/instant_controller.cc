@@ -217,7 +217,7 @@ void InstantController::DestroyPreviewContents() {
   }
 
   delegate_->HideInstant();
-  delete ReleasePreviewContents(INSTANT_COMMIT_DESTROY);
+  delete ReleasePreviewContents(INSTANT_COMMIT_DESTROY, NULL);
 }
 
 void InstantController::Hide() {
@@ -270,7 +270,7 @@ bool InstantController::PrepareForCommit() {
 TabContentsWrapper* InstantController::CommitCurrentPreview(
     InstantCommitType type) {
   DCHECK(loader_.get());
-  TabContentsWrapper* tab = ReleasePreviewContents(type);
+  TabContentsWrapper* tab = ReleasePreviewContents(type, tab_contents_);
   tab->web_contents()->GetController().CopyStateFromAndPrune(
       &tab_contents_->web_contents()->GetController());
   delegate_->CommitInstant(tab);
@@ -398,11 +398,12 @@ void InstantController::OnAutocompleteGotFocus(
 }
 
 TabContentsWrapper* InstantController::ReleasePreviewContents(
-    InstantCommitType type) {
+    InstantCommitType type,
+    TabContentsWrapper* current_tab) {
   if (!loader_.get())
     return NULL;
 
-  TabContentsWrapper* tab = loader_->ReleasePreviewContents(type);
+  TabContentsWrapper* tab = loader_->ReleasePreviewContents(type, current_tab);
   ClearBlacklist();
   is_out_of_date_ = true;
   is_displayable_ = false;

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -136,10 +136,13 @@ class InstantController : public InstantLoaderDelegate {
 
   // Releases the preview TabContents passing ownership to the caller. This is
   // intended to be called when the preview TabContents is committed. This does
-  // not notify the delegate.
+  // not notify the delegate. |tab_contents| is the underlying tab onto which
+  // the preview will be committed. It can be NULL when the underlying tab is
+  // irrelevant, for example when |type| is INSTANT_COMMIT_DESTROY.
   // WARNING: be sure and invoke CompleteRelease after adding the returned
   // TabContents to a tabstrip.
-  TabContentsWrapper* ReleasePreviewContents(InstantCommitType type);
+  TabContentsWrapper* ReleasePreviewContents(InstantCommitType type,
+                                             TabContentsWrapper* tab_contents);
 
   // Does cleanup after the preview contents has been added to the tabstrip.
   // Invoke this if you explicitly invoke ReleasePreviewContents.

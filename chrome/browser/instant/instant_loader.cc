@@ -31,6 +31,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/render_messages.h"
+#include "content/browser/in_process_webkit/session_storage_namespace.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
@@ -84,6 +85,10 @@ void AddPreviewUsageForHistogram(TemplateURLID template_url_id,
     UMA_HISTOGRAM_ENUMERATION("Instant.Previews" + group, usage,
                               PREVIEW_NUM_TYPES);
   }
+}
+
+SessionStorageNamespace* GetSessionStorageNamespace(TabContentsWrapper* tab) {
+  return tab->web_contents()->GetController().GetSessionStorageNamespace();
 }
 
 }  // namespace
@@ -742,7 +747,8 @@ bool InstantLoader::IsMouseDownFromActivate() {
 }
 
 TabContentsWrapper* InstantLoader::ReleasePreviewContents(
-    InstantCommitType type) {
+    InstantCommitType type,
+    TabContentsWrapper* tab_contents) {
   if (!preview_contents_.get())
     return NULL;
 
@@ -795,6 +801,14 @@ TabContentsWrapper* InstantLoader::ReleasePreviewContents(
   AddPreviewUsageForHistogram(template_url_id_,
       type == INSTANT_COMMIT_DESTROY ? PREVIEW_DELETED : PREVIEW_COMMITTED,
       group_);
+  if (type != INSTANT_COMMIT_DESTROY) {
+    UMA_HISTOGRAM_ENUMERATION(
+        "Instant.SessionStorageNamespace" + group_,
+        tab_contents == NULL || session_storage_namespace_ ==
+            GetSessionStorageNamespace(tab_contents),
+        2);
+  }
+  session_storage_namespace_ = NULL;
   return preview_contents_.release();
 }
 
@@ -995,6 +1009,7 @@ void InstantLoader::ReplacePreviewContents(TabContentsWrapper* old_tc,
   // for deleting the TabContentsWrapper.
   ignore_result(preview_contents_.release());
   preview_contents_.reset(new_tc);
+  session_storage_namespace_ = GetSessionStorageNamespace(new_tc);
 
   // Make sure the new preview contents acts like the old one.
   SetupPreviewContents(old_tc);
@@ -1074,6 +1089,7 @@ void InstantLoader::CreatePreviewContents(TabContentsWrapper* tab_contents) {
       tab_contents->profile(), NULL, MSG_ROUTING_NONE, NULL, NULL);
   preview_contents_.reset(new TabContentsWrapper(new_contents));
   AddPreviewUsageForHistogram(template_url_id_, PREVIEW_CREATED, group_);
+  session_storage_namespace_ = GetSessionStorageNamespace(tab_contents);
   preview_tab_contents_delegate_.reset(new TabContentsDelegateImpl(this));
   SetupPreviewContents(tab_contents);
 

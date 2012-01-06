@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
 #include "base/timer.h"
@@ -23,6 +24,7 @@
 
 class InstantLoaderDelegate;
 class InstantLoaderManagerTest;
+class SessionStorageNamespace;
 class TabContents;
 class TabContentsWrapper;
 class TemplateURL;
@@ -72,8 +74,11 @@ class InstantLoader : public content::NotificationObserver {
 
   // Releases the preview TabContents passing ownership to the caller. This is
   // intended to be called when the preview TabContents is committed. This does
-  // not notify the delegate.
-  TabContentsWrapper* ReleasePreviewContents(InstantCommitType type);
+  // not notify the delegate. |tab_contents| is the underlying tab onto which
+  // the preview will be committed. It can be NULL when the underlying tab is
+  // irrelevant, for example when |type| is INSTANT_COMMIT_DESTROY.
+  TabContentsWrapper* ReleasePreviewContents(InstantCommitType type,
+                                             TabContentsWrapper* tab_contents);
 
   // Calls through to method of same name on delegate.
   bool ShouldCommitInstantOnMouseUp();
@@ -247,6 +252,10 @@ class InstantLoader : public content::NotificationObserver {
 
   // See description above constructor.
   std::string group_;
+
+  // The session storage namespace identifier of the original tab contents that
+  // the preview_contents_ was based upon.
+  scoped_refptr<SessionStorageNamespace> session_storage_namespace_;
 
   DISALLOW_COPY_AND_ASSIGN(InstantLoader);
 };
