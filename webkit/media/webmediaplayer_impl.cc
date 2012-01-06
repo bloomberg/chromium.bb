@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -758,6 +758,8 @@ void WebMediaPlayerImpl::OnPipelineInitialize(PipelineStatus status) {
     if (hasVideo()) {
       UMA_HISTOGRAM_BOOLEAN("Media.AcceleratedCompositingActive",
                             is_accelerated_compositing_active_);
+    } else {
+      GetClient()->disableAcceleratedCompositing();
     }
 
     if (pipeline_->IsLocalSource())
