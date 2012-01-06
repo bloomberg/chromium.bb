@@ -1,4 +1,4 @@
- // Copyright (c) 2011 The Chromium Authors. All rights reserved.
+ // Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -283,14 +283,18 @@ void GpuCommandBufferStub::OnInitialize(
 
 void GpuCommandBufferStub::OnSetGetBuffer(
     int32 shm_id, IPC::Message* reply_message) {
-  command_buffer_->SetGetBuffer(shm_id);
+  if (command_buffer_.get()) {
+    command_buffer_->SetGetBuffer(shm_id);
+  } else {
+    DLOG(ERROR) << "no command_buffer.";
+    reply_message->set_reply_error();
+  }
   Send(reply_message);
 }
 
 void GpuCommandBufferStub::OnSetParent(int32 parent_route_id,
                                        uint32 parent_texture_id,
                                        IPC::Message* reply_message) {
-
   GpuCommandBufferStub* parent_stub = NULL;
   if (parent_route_id != MSG_ROUTING_NONE) {
     parent_stub = channel_->LookupCommandBuffer(parent_route_id);
@@ -314,17 +318,23 @@ void GpuCommandBufferStub::OnSetParent(int32 parent_route_id,
 }
 
 void GpuCommandBufferStub::OnGetState(IPC::Message* reply_message) {
-  gpu::CommandBuffer::State state = command_buffer_->GetState();
-  if (state.error == gpu::error::kLostContext &&
-      gfx::GLContext::LosesAllContextsOnContextLost())
-    channel_->LoseAllContexts();
+  if (command_buffer_.get()) {
+    gpu::CommandBuffer::State state = command_buffer_->GetState();
+    if (state.error == gpu::error::kLostContext &&
+        gfx::GLContext::LosesAllContextsOnContextLost())
+      channel_->LoseAllContexts();
 
-  GpuCommandBufferMsg_GetState::WriteReplyParams(reply_message, state);
+    GpuCommandBufferMsg_GetState::WriteReplyParams(reply_message, state);
+  } else {
+    DLOG(ERROR) << "no command_buffer.";
+    reply_message->set_reply_error();
+  }
   Send(reply_message);
 }
 
 void GpuCommandBufferStub::OnParseError() {
   TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnParseError");
+  DCHECK(command_buffer_.get());
   gpu::CommandBuffer::State state = command_buffer_->GetState();
   IPC::Message* msg = new GpuCommandBufferMsg_Destroyed(
       route_id_, state.context_lost_reason);
@@ -334,6 +344,7 @@ void GpuCommandBufferStub::OnParseError() {
 
 void GpuCommandBufferStub::OnGetStateFast(IPC::Message* reply_message) {
   TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnGetStateFast");
+  DCHECK(command_buffer_.get());
   gpu::CommandBuffer::State state = command_buffer_->GetState();
   if (state.error == gpu::error::kLostContext &&
       gfx::GLContext::LosesAllContextsOnContextLost())
@@ -347,6 +358,7 @@ void GpuCommandBufferStub::OnAsyncFlush(int32 put_offset,
                                         uint32 flush_count) {
   TRACE_EVENT1("gpu", "GpuCommandBufferStub::OnAsyncFlush",
                "put_offset", put_offset);
+  DCHECK(command_buffer_.get());
   if (flush_count - last_flush_count_ < 0x8000000U) {
     last_flush_count_ = flush_count;
     command_buffer_->Flush(put_offset);
@@ -371,8 +383,13 @@ void GpuCommandBufferStub::OnRescheduled() {
 void GpuCommandBufferStub::OnCreateTransferBuffer(int32 size,
                                                   int32 id_request,
                                                   IPC::Message* reply_message) {
-  int32 id = command_buffer_->CreateTransferBuffer(size, id_request);
-  GpuCommandBufferMsg_CreateTransferBuffer::WriteReplyParams(reply_message, id);
+  if (command_buffer_.get()) {
+    int32 id = command_buffer_->CreateTransferBuffer(size, id_request);
+    GpuCommandBufferMsg_CreateTransferBuffer::WriteReplyParams(
+        reply_message, id);
+  } else {
+    reply_message->set_reply_error();
+  }
   Send(reply_message);
 }
 
@@ -393,44 +410,56 @@ void GpuCommandBufferStub::OnRegisterTransferBuffer(
   base::SharedMemory shared_memory(transfer_buffer, false);
 #endif
 
-  int32 id = command_buffer_->RegisterTransferBuffer(&shared_memory,
-                                                     size,
-                                                     id_request);
+  if (command_buffer_.get()) {
+    int32 id = command_buffer_->RegisterTransferBuffer(&shared_memory,
+                                                       size,
+                                                       id_request);
+    GpuCommandBufferMsg_RegisterTransferBuffer::WriteReplyParams(reply_message,
+                                                                 id);
+  } else {
+    reply_message->set_reply_error();
+  }
 
-  GpuCommandBufferMsg_RegisterTransferBuffer::WriteReplyParams(reply_message,
-                                                               id);
   Send(reply_message);
 }
 
 void GpuCommandBufferStub::OnDestroyTransferBuffer(
     int32 id,
     IPC::Message* reply_message) {
-  command_buffer_->DestroyTransferBuffer(id);
+  if (command_buffer_.get()) {
+    command_buffer_->DestroyTransferBuffer(id);
+  } else {
+    reply_message->set_reply_error();
+  }
   Send(reply_message);
 }
 
 void GpuCommandBufferStub::OnGetTransferBuffer(
     int32 id,
     IPC::Message* reply_message) {
-  base::SharedMemoryHandle transfer_buffer = base::SharedMemoryHandle();
-  uint32 size = 0;
-
   // Fail if the renderer process has not provided its process handle.
   if (!channel_->renderer_process())
     return;
 
-  gpu::Buffer buffer = command_buffer_->GetTransferBuffer(id);
-  if (buffer.shared_memory) {
-    // Assume service is responsible for duplicating the handle to the calling
-    // process.
-    buffer.shared_memory->ShareToProcess(channel_->renderer_process(),
-                                         &transfer_buffer);
-    size = buffer.size;
-  }
+  if (command_buffer_.get()) {
+    base::SharedMemoryHandle transfer_buffer = base::SharedMemoryHandle();
+    uint32 size = 0;
 
-  GpuCommandBufferMsg_GetTransferBuffer::WriteReplyParams(reply_message,
-                                                          transfer_buffer,
-                                                          size);
+    gpu::Buffer buffer = command_buffer_->GetTransferBuffer(id);
+    if (buffer.shared_memory) {
+      // Assume service is responsible for duplicating the handle to the calling
+      // process.
+      buffer.shared_memory->ShareToProcess(channel_->renderer_process(),
+                                           &transfer_buffer);
+      size = buffer.size;
+    }
+
+    GpuCommandBufferMsg_GetTransferBuffer::WriteReplyParams(reply_message,
+                                                            transfer_buffer,
+                                                            size);
+  } else {
+    reply_message->set_reply_error();
+  }
   Send(reply_message);
 }
 
