@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,10 +23,10 @@ class NSArray;
 
 namespace content {
 
-class GamepadDataFetcherMac : public GamepadDataFetcher {
+class GamepadPlatformDataFetcherMac : public GamepadDataFetcher {
  public:
-  GamepadDataFetcherMac();
-  virtual ~GamepadDataFetcherMac();
+  GamepadPlatformDataFetcherMac();
+  virtual ~GamepadPlatformDataFetcherMac();
   virtual void GetGamepadData(WebKit::WebGamepads* pads,
                               bool devices_changed_hint) OVERRIDE;
   virtual void PauseHint(bool paused) OVERRIDE;
@@ -34,7 +34,7 @@ class GamepadDataFetcherMac : public GamepadDataFetcher {
   bool enabled_;
   base::mac::ScopedCFTypeRef<IOHIDManagerRef> hid_manager_ref_;
 
-  static GamepadDataFetcherMac* InstanceFromContext(void* context);
+  static GamepadPlatformDataFetcherMac* InstanceFromContext(void* context);
   static void DeviceAddCallback(void* context,
                                 IOReturn result,
                                 void* sender,

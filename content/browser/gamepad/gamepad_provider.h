@@ -1,9 +1,9 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_GAMEPAD_PROVIDER_H_
-#define CONTENT_BROWSER_GAMEPAD_PROVIDER_H_
+#ifndef CONTENT_BROWSER_GAMEPAD_GAMEPAD_PROVIDER_H_
+#define CONTENT_BROWSER_GAMEPAD_GAMEPAD_PROVIDER_H_
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -89,4 +89,4 @@ class CONTENT_EXPORT GamepadProvider :
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_GAMEPAD_PROVIDER_H_
+#endif  // CONTENT_BROWSER_GAMEPAD_GAMEPAD_PROVIDER_H_

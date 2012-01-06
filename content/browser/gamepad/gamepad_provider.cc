@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,40 +12,13 @@
 #include "base/task.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
-#include "content/public/browser/browser_thread.h"
-#include "content/browser/gamepad/gamepad_provider.h"
 #include "content/browser/gamepad/data_fetcher.h"
+#include "content/browser/gamepad/gamepad_provider.h"
+#include "content/browser/gamepad/platform_data_fetcher.h"
 #include "content/common/gamepad_messages.h"
-
-#if defined(OS_WIN)
-#include "content/browser/gamepad/data_fetcher_win.h"
-#elif defined(OS_MACOSX)
-#include "content/browser/gamepad/data_fetcher_mac.h"
-#endif
+#include "content/public/browser/browser_thread.h"
 
 namespace content {
-
-// Define the default data fetcher that GamepadProvider will use if none is
-// supplied. (GamepadPlatformDataFetcher).
-#if defined(OS_WIN)
-
-typedef GamepadDataFetcherWindows GamepadPlatformDataFetcher;
-
-#elif defined(OS_MACOSX)
-
-typedef GamepadDataFetcherMac GamepadPlatformDataFetcher;
-
-#else
-
-class GamepadEmptyDataFetcher : public GamepadDataFetcher {
- public:
-  void GetGamepadData(WebKit::WebGamepads* pads, bool) {
-    pads->length = 0;
-  }
-};
-typedef GamepadEmptyDataFetcher GamepadPlatformDataFetcher;
-
-#endif
 
 GamepadProvider::GamepadProvider(GamepadDataFetcher* fetcher)
     : is_paused_(false),
@@ -62,7 +35,8 @@ GamepadProvider::GamepadProvider(GamepadDataFetcher* fetcher)
   memset(hwbuf, 0, sizeof(GamepadHardwareBuffer));
 
   polling_thread_.reset(new base::Thread("Gamepad polling thread"));
-  polling_thread_->Start();
+  polling_thread_->StartWithOptions(
+      base::Thread::Options(MessageLoop::TYPE_IO, 0));
 
   MessageLoop* polling_loop = polling_thread_->message_loop();
   polling_loop->PostTask(
