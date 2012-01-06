@@ -490,7 +490,7 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_PER_TILE_PAINTING_NAME,
     IDS_FLAGS_PER_TILE_PAINTING_DESCRIPTION,
 #if defined(USE_SKIA)
-    kOsAll,
+    kOsMac | kOsLinux | kOsCrOS,
 #else
     0,
 #endif
