@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -23,6 +23,10 @@ class SelectFileDialogImpl : public SelectFileDialog {
   static SelectFileDialogImpl* NewSelectFileDialogImplKDE(
       Listener* listener,
       base::nix::DesktopEnvironment desktop);
+
+  // Returns true if the SelectFileDialog class returned by
+  // NewSelectFileDialogImplKDE will actually work.
+  static bool CheckKDEDialogWorksOnUIThread();
 
   // BaseShellDialog implementation.
   virtual bool IsRunning(gfx::NativeWindow parent_window) const OVERRIDE;

@@ -1,8 +1,6 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-
-#include "content/public/browser/browser_thread.h"
 
 #include <set>
 
@@ -32,6 +30,8 @@ namespace {
 std::string GetTitle(const std::string& title, int message_id) {
   return title.empty() ? l10n_util::GetStringUTF8(message_id) : title;
 }
+
+const char kKdialogBinary[] = "kdialog";
 
 }  // namespace
 
@@ -139,6 +139,20 @@ class SelectFileDialogImplKDE : public SelectFileDialogImpl {
 };
 
 // static
+bool SelectFileDialogImpl::CheckKDEDialogWorksOnUIThread() {
+  // No choice. UI thread can't continue without an answer here. Fortunately we
+  // only do this once, the first time a file dialog is displayed.
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
+
+  CommandLine::StringVector cmd_vector;
+  cmd_vector.push_back(kKdialogBinary);
+  cmd_vector.push_back("--version");
+  CommandLine command_line(cmd_vector);
+  std::string dummy;
+  return base::GetAppOutput(command_line, &dummy);
+}
+
+// static
 SelectFileDialogImpl* SelectFileDialogImpl::NewSelectFileDialogImplKDE(
     Listener* listener, base::nix::DesktopEnvironment desktop) {
   return new SelectFileDialogImplKDE(listener, desktop);
@@ -237,7 +251,9 @@ std::string SelectFileDialogImplKDE::GetMimeTypeFilterString() {
 
 void SelectFileDialogImplKDE::CallKDialogOutput(const KDialogParams& params) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  CommandLine command_line(FilePath("kdialog"));
+  CommandLine::StringVector cmd_vector;
+  cmd_vector.push_back(kKdialogBinary);
+  CommandLine command_line(cmd_vector);
   GetKDialogCommandLine(params.type, params.title, params.default_path,
                         params.parent, params.file_operation,
                         params.multiple_selection, &command_line);
@@ -262,10 +278,8 @@ void SelectFileDialogImplKDE::GetKDialogCommandLine(const std::string& type,
     const std::string& title, const FilePath& path,
     gfx::NativeWindow parent, bool file_operation, bool multiple_selection,
     CommandLine* command_line) {
-  if (!command_line) {
-    VLOG(1) << "Command line for KDialog is NULL" << std::endl;
-    return;
-  }
+  CHECK(command_line);
+
   // Attach to the current Chrome window.
   GdkWindow* gdk_window = gtk_widget_get_window(GTK_WIDGET((parent)));
   int window_id = GDK_DRAWABLE_XID(gdk_window);
@@ -290,8 +304,7 @@ void SelectFileDialogImplKDE::GetKDialogCommandLine(const std::string& type,
   // file/folder and set up mime type filters.
   if (file_operation)
     command_line->AppendArg(GetMimeTypeFilterString());
-  VLOG(1) << "KDialog command line: "
-          << command_line->GetCommandLineString() << std::endl;
+  VLOG(1) << "KDialog command line: " << command_line->GetCommandLineString();
 }
 
 void SelectFileDialogImplKDE::FileSelected(const FilePath& path, void* params) {
@@ -387,7 +400,7 @@ void SelectFileDialogImplKDE::CreateSaveAsDialog(
 
 void SelectFileDialogImplKDE::SelectSingleFileHelper(const std::string& output,
     int exit_code, void* params, bool allow_folder) {
-  VLOG(1) << "[kdialog] SingleFileResponse: " << output << std::endl;
+  VLOG(1) << "[kdialog] SingleFileResponse: " << output;
   if (exit_code != 0 || output.empty()) {
     FileNotSelected(params);
     return;
@@ -420,7 +433,7 @@ void SelectFileDialogImplKDE::OnSelectSingleFolderDialogResponse(
 void SelectFileDialogImplKDE::OnSelectMultiFileDialogResponse(
     const std::string& output, int exit_code, void* params) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  VLOG(1) << "[kdialog] MultiFileResponse: " << output << std::endl;
+  VLOG(1) << "[kdialog] MultiFileResponse: " << output;
 
   if (exit_code != 0 || output.empty()) {
     FileNotSelected(params);

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -14,20 +14,51 @@
 
 using content::BrowserThread;
 
+namespace {
+
+enum UseKdeFileDialogStatus {
+  UNKNOWN,
+  NO_KDE,
+  YES_KDE
+};
+
+UseKdeFileDialogStatus use_kde_ = UNKNOWN;
+
+}  // namespace
+
 FilePath* SelectFileDialogImpl::last_saved_path_ = NULL;
 FilePath* SelectFileDialogImpl::last_opened_path_ = NULL;
 
 // static
 SelectFileDialog* SelectFileDialog::Create(Listener* listener) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (use_kde_ == UNKNOWN) {
+    // Start out assumimg we are not going to use KDE.
+    use_kde_ = NO_KDE;
+
+    // Check to see if KDE is the desktop environment.
+    scoped_ptr<base::Environment> env(base::Environment::Create());
+    base::nix::DesktopEnvironment desktop =
+        base::nix::GetDesktopEnvironment(env.get());
+    if (desktop == base::nix::DESKTOP_ENVIRONMENT_KDE3 ||
+        desktop == base::nix::DESKTOP_ENVIRONMENT_KDE4) {
+      // Check to see if the user dislikes the KDE file dialog.
+      if (!env->HasVar("NO_CHROME_KDE_FILE_DIALOG")) {
+        // Check to see if the KDE dialog works.
+        if (SelectFileDialogImpl::CheckKDEDialogWorksOnUIThread()) {
+          use_kde_ = YES_KDE;
+        }
+      }
+    }
+  }
+
+  if (use_kde_ == NO_KDE)
+    return SelectFileDialogImpl::NewSelectFileDialogImplGTK(listener);
+
   scoped_ptr<base::Environment> env(base::Environment::Create());
   base::nix::DesktopEnvironment desktop =
       base::nix::GetDesktopEnvironment(env.get());
-  if (desktop == base::nix::DESKTOP_ENVIRONMENT_KDE3 ||
-      desktop == base::nix::DESKTOP_ENVIRONMENT_KDE4) {
-    return SelectFileDialogImpl::NewSelectFileDialogImplKDE(listener, desktop);
-  }
-  return SelectFileDialogImpl::NewSelectFileDialogImplGTK(listener);
+  return SelectFileDialogImpl::NewSelectFileDialogImplKDE(listener, desktop);
 }
 
 SelectFileDialogImpl::SelectFileDialogImpl(Listener* listener)
