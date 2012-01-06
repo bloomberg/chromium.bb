@@ -43,11 +43,14 @@ class GpuFeatureTest : public InProcessBrowserTest {
 
     InProcessBrowserTest::SetUpCommandLine(command_line);
 
+    // Do not use mesa if real GPU is required.
+    if (!command_line->HasSwitch("enable-gpu")) {
 #if !defined(OS_MACOSX)
-    CHECK(test_launcher_utils::OverrideGLImplementation(
-        command_line, gfx::kGLImplementationOSMesaName)) <<
-        "kUseGL must not be set by test framework code!";
+      CHECK(test_launcher_utils::OverrideGLImplementation(
+          command_line, gfx::kGLImplementationOSMesaName)) <<
+          "kUseGL must not be set by test framework code!";
 #endif
+    }
     command_line->AppendSwitch(switches::kDisablePopupBlocking);
   }
 
@@ -60,24 +63,39 @@ class GpuFeatureTest : public InProcessBrowserTest {
     GpuDataManager::GetInstance()->SetGpuBlacklist(blacklist);
   }
 
-  void RunTest(const FilePath& url, GpuResultFlags expectations) {
-    using namespace trace_analyzer;
-
+  // If expected_reply is NULL, we don't check the reply content.
+  void RunTest(const FilePath& url,
+               const char* expected_reply,
+               bool new_tab) {
     FilePath test_path;
     test_path = gpu_test_dir_.Append(url);
-
     ASSERT_TRUE(file_util::PathExists(test_path))
         << "Missing test file: " << test_path.value();
 
+    ui_test_utils::DOMMessageQueue message_queue;
+    if (new_tab) {
+      ui_test_utils::NavigateToURLWithDisposition(
+          browser(), net::FilePathToFileURL(test_path),
+          NEW_FOREGROUND_TAB, ui_test_utils::BROWSER_TEST_NONE);
+    } else {
+      ui_test_utils::NavigateToURL(
+          browser(), net::FilePathToFileURL(test_path));
+    }
+
+    std::string result;
+    // Wait for message indicating the test has finished running.
+    ASSERT_TRUE(message_queue.WaitForMessage(&result));
+    if (expected_reply)
+      EXPECT_STREQ(expected_reply, result.c_str());
+  }
+
+  void RunTest(const FilePath& url, GpuResultFlags expectations) {
+    using namespace trace_analyzer;
+
     ASSERT_TRUE(tracing::BeginTracing("test_gpu"));
 
-    ui_test_utils::DOMMessageQueue message_queue;
     // Have to use a new tab for the blacklist to work.
-    ui_test_utils::NavigateToURLWithDisposition(
-        browser(), net::FilePathToFileURL(test_path), NEW_FOREGROUND_TAB,
-        ui_test_utils::BROWSER_TEST_NONE);
-    // Wait for message indicating the test has finished running.
-    ASSERT_TRUE(message_queue.WaitForMessage(NULL));
+    RunTest(url, NULL, true);
 
     std::string json_events;
     ASSERT_TRUE(tracing::EndTracing(&json_events));
@@ -196,6 +214,57 @@ IN_PROC_BROWSER_TEST_F(WebGLTest, WebGLDisabled) {
   RunTest(url, EXPECT_NO_GPU_PROCESS);
 }
 
+IN_PROC_BROWSER_TEST_F(GpuFeatureTest, MultisamplingAllowed) {
+  GpuFeatureFlags flags = GpuDataManager::GetInstance()->GetGpuFeatureFlags();
+  EXPECT_EQ(flags.flags(), 0u);
+
+  // Multisampling is not supported if running on top of osmesa.
+  std::string use_gl = CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+      switches::kUseGL);
+  if (use_gl == gfx::kGLImplementationOSMesaName)
+    return;
+
+  const FilePath url(FILE_PATH_LITERAL("feature_multisampling.html"));
+  RunTest(url, "\"TRUE\"", true);
+}
+
+IN_PROC_BROWSER_TEST_F(GpuFeatureTest, MultisamplingBlocked) {
+  const std::string json_blacklist =
+      "{\n"
+      "  \"name\": \"gpu blacklist\",\n"
+      "  \"version\": \"1.0\",\n"
+      "  \"entries\": [\n"
+      "    {\n"
+      "      \"id\": 1,\n"
+      "      \"blacklist\": [\n"
+      "        \"multisampling\"\n"
+      "      ]\n"
+      "    }\n"
+      "  ]\n"
+      "}";
+  SetupBlacklist(json_blacklist);
+  GpuFeatureFlags flags = GpuDataManager::GetInstance()->GetGpuFeatureFlags();
+  EXPECT_EQ(
+      flags.flags(),
+      static_cast<uint32>(GpuFeatureFlags::kGpuFeatureMultisampling));
+
+  const FilePath url(FILE_PATH_LITERAL("feature_multisampling.html"));
+  RunTest(url, "\"FALSE\"", true);
+}
+
+class WebGLMultisamplingTest : public GpuFeatureTest {
+ public:
+  virtual void SetUpCommandLine(CommandLine* command_line) {
+    GpuFeatureTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitch(switches::kDisableGLMultisampling);
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(WebGLMultisamplingTest, MultisamplingDisabled) {
+  const FilePath url(FILE_PATH_LITERAL("feature_multisampling.html"));
+  RunTest(url, "\"FALSE\"", true);
+}
+
 IN_PROC_BROWSER_TEST_F(GpuFeatureTest, Canvas2DAllowed) {
   GpuFeatureFlags flags = GpuDataManager::GetInstance()->GetGpuFeatureFlags();
   EXPECT_EQ(flags.flags(), 0u);
@@ -243,27 +312,13 @@ IN_PROC_BROWSER_TEST_F(Canvas2DTest, Canvas2DDisabled) {
 
 IN_PROC_BROWSER_TEST_F(GpuFeatureTest,
                        CanOpenPopupAndRenderWithWebGLCanvas) {
-  ui_test_utils::DOMMessageQueue message_queue;
-
-  ui_test_utils::NavigateToURL(
-      browser(),
-      net::FilePathToFileURL(gpu_test_dir_.AppendASCII("webgl_popup.html")));
-
-  std::string result;
-  ASSERT_TRUE(message_queue.WaitForMessage(&result));
-  EXPECT_EQ("\"SUCCESS\"", result);
+  const FilePath url(FILE_PATH_LITERAL("webgl_popup.html"));
+  RunTest(url, "\"SUCCESS\"", false);
 }
 
 IN_PROC_BROWSER_TEST_F(GpuFeatureTest, CanOpenPopupAndRenderWith2DCanvas) {
-  ui_test_utils::DOMMessageQueue message_queue;
-
-  ui_test_utils::NavigateToURL(
-      browser(),
-      net::FilePathToFileURL(gpu_test_dir_.AppendASCII("canvas_popup.html")));
-
-  std::string result;
-  ASSERT_TRUE(message_queue.WaitForMessage(&result));
-  EXPECT_EQ("\"SUCCESS\"", result);
+  const FilePath url(FILE_PATH_LITERAL("canvas_popup.html"));
+  RunTest(url, "\"SUCCESS\"", false);
 }
 
 }  // namespace anonymous
