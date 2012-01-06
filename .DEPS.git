@@ -33,9 +33,9 @@ deps = {
     'third_party/jsoncpp':
         Var('git_url') + '/chromium/src/third_party/jsoncpp.git@6afbf9c12dbaa104dfd71dd6dd7b23d2efa4560f',
     'third_party/jsoncpp/source/include':
-        Var('git_url') + '/external/jsoncpp/jsoncpp/include.git@e0f5afd960a964e76ef18d69d27a8c3e551baeb3',
+        Var('git_url') + '/external/jsoncpp/jsoncpp/include.git@b00a00f21f3df8908b07893b127f9bb9896b0f2b',
     'third_party/jsoncpp/source/src/lib_json':
-        Var('git_url') + '/external/jsoncpp/jsoncpp/src/lib_json.git@ad13e4ea168dc1321047afb48a5ac87b34457eda',
+        Var('git_url') + '/external/jsoncpp/jsoncpp/src/lib_json.git@a8caa51ba2f80971a45880425bf2ae864a786784',
     'third_party/khronos':
         Var('git_url') + '/chromium/src/third_party/khronos.git@372870a47a55fcab0cfcbaeff991f369c21f4b29',
     'third_party/lcov':
