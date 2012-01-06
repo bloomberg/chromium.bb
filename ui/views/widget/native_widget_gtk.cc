@@ -381,12 +381,18 @@ NativeWidgetGtk::~NativeWidgetGtk() {
     // Disconnect from GObjectDestructorFILO because we're
     // deleting the NativeWidgetGtk.
     bool has_widget = !!widget_;
-    if (has_widget)
+    if (has_widget) {
       ui::GObjectDestructorFILO::GetInstance()->Disconnect(
           G_OBJECT(widget_), &OnDestroyedThunk, this);
+
+      signal_registrar_.reset();
+      // Call OnDestroy now because we're not calling
+      // OnDestroyThunk.
+      OnDestroy(widget_);
+    }
     CloseNow();
     // Call OnNativeWidgetDestroyed because we're not calling
-    // OnDestroyedThunk
+    // OnDestroyedThunk.
     if (has_widget)
       delegate_->OnNativeWidgetDestroyed();
   }
@@ -1686,7 +1692,7 @@ void NativeWidgetGtk::OnGrabNotify(GtkWidget* widget, gboolean was_grabbed) {
     HandleGtkGrabBroke();
 }
 
-void NativeWidgetGtk::OnDestroy(GtkWidget* object) {
+void NativeWidgetGtk::OnDestroy(GtkWidget* widget) {
   signal_registrar_.reset();
   if (grab_notify_signal_id_) {
     g_signal_handler_disconnect(window_contents_, grab_notify_signal_id_);
