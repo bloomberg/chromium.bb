@@ -65,6 +65,7 @@ EXTRA_ENV = {
                           # using the -isystem flag.
 
   'ISYSTEM_BUILTIN':
+    '${BASE_USR}/include ' +
     '${BASE_SDK}/include ' +
     '${ISYSTEM_%FRONTEND%} ' +
     '${ISYSTEM_%LIBMODE%}',

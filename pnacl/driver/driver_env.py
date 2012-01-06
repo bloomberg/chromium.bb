@@ -29,6 +29,7 @@ INITIAL_ENV = {
   # Directories
   'BASE_PKG'        : '${BASE}/pkg',
   'BASE_SDK'        : '${BASE}/sdk',
+  'BASE_USR'        : '${BASE}/usr',
   'BASE_LLVM'       : '${BASE_PKG}/llvm',
   'BASE_NEWLIB'     : '${BASE_PKG}/newlib',
   'BASE_GLIBC'      : '${BASE_PKG}/glibc',

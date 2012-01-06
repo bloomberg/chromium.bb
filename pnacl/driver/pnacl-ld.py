@@ -74,19 +74,21 @@ EXTRA_ENV = {
 
   'SEARCH_DIRS'        : '${SEARCH_DIRS_USER} ${SEARCH_DIRS_BUILTIN}',
   'SEARCH_DIRS_USER'   : '',
-  'SEARCH_DIRS_BUILTIN': '${STDLIB ? ' +
-                         '${LIBS_SDK_BC}/ ${LIBS_BC}/ ${SEARCH_DIRS_NATIVE}}',
 
   # Standard Library Directories
-  'LIBS_BC'          : '${BASE}/lib',
-  'LIBS_SDK_BC'      : '${BASE_SDK}/lib',
+  'SEARCH_DIRS_BUILTIN': '${STDLIB ? ' +
+                         '  ${BASE_USR}/lib/ ' +
+                         '  ${BASE_SDK}/lib/ ' +
+                         '  ${BASE}/lib/ ' +
+                         '  ${SEARCH_DIRS_NATIVE} ' +
+                         '}',
 
   # HACK-BEGIN
   # Add lib-<arch>/ to the search path.
   # These are here to let the bitcode link find the native objects
   # used in the GLibC toolchain.
   # TODO(pdox): Remove these when the bitcode link is pure bitcode.
-  'SEARCH_DIRS_NATIVE': '${STDLIB ? ${LIBS_SDK_ARCH}/ ${LIBS_ARCH}/}',
+  'SEARCH_DIRS_NATIVE': '${LIBS_SDK_ARCH}/ ${LIBS_ARCH}/',
 
   'LIBS_ARCH'        : '${LIBS_%ARCH%}',
   'LIBS_ARM'         : '${BASE}/lib-arm',
