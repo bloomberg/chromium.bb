@@ -27,13 +27,6 @@ RegisterProtocolHandlerInfoBarDelegate::RegisterProtocolHandlerInfoBarDelegate(
       handler_(handler) {
 }
 
-bool RegisterProtocolHandlerInfoBarDelegate::ShouldExpire(
-    const content::LoadCommittedDetails& details) const {
-  // We expire the infobar on navigation because otherwise we can get multiple
-  // infobars stacked up.
-  return true;
-}
-
 InfoBarDelegate::Type
 RegisterProtocolHandlerInfoBarDelegate::GetInfoBarType() const {
   return PAGE_ACTION_TYPE;

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,8 +21,6 @@ class RegisterProtocolHandlerInfoBarDelegate : public ConfirmInfoBarDelegate {
                                          const ProtocolHandler& handler);
 
   // ConfirmInfoBarDelegate:
-  virtual bool ShouldExpire(const content::LoadCommittedDetails&
-      details) const OVERRIDE;
   virtual Type GetInfoBarType() const OVERRIDE;
   virtual string16 GetMessageText() const OVERRIDE;
   virtual string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
