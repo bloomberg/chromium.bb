@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -148,6 +148,22 @@ using content::DownloadManager;
 using content::UserMetricsAction;
 
 namespace {
+
+// Constrict us to a very specific platform and architecture to make sure
+// ifdefs don't cause problems with the check.
+#if defined(OS_LINUX) && defined(TOOLKIT_GTK) && defined(ARCH_CPU_X86_64)
+// Make sure that the ProfileImpl doesn't grow. We're currently trying to drive
+// the number of services that are included in ProfileImpl (instead of using
+// ProfileKeyedServiceFactory) to zero.
+//
+// If you don't know about this effort, please read:
+//   https://sites.google.com/a/chromium.org/dev/developers/design-documents/profile-architecture
+//
+// REVIEWERS: Do not let anyone increment this. We need to drive the number of
+// raw accessed services down to zero. DO NOT LET PEOPLE REGRESS THIS UNLESS
+// THE PATCH ITSELF IS MAKING PROGRESS ON PKSF REFACTORING.
+COMPILE_ASSERT(sizeof(ProfileImpl) <= 656u, profile_impl_size_unexpected);
+#endif
 
 // Delay, in milliseconds, before we explicitly create the SessionService.
 static const int kCreateSessionServiceDelayMS = 500;

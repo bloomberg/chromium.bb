@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -315,6 +315,20 @@ class ProfileImpl : public Profile,
   scoped_ptr<PrefProxyConfigTracker> pref_proxy_config_tracker_;
 
   scoped_ptr<ChromeURLDataManager> chrome_url_data_manager_;
+
+  // STOP!!!! DO NOT ADD ANY MORE ITEMS HERE!!!!
+  //
+  // Instead, make your Service/Manager/whatever object you're hanging off the
+  // Profile use our new ProfileKeyedServiceFactory system instead. You can
+  // find the design document here:
+  //
+  //   https://sites.google.com/a/chromium.org/dev/developers/design-documents/profile-architecture
+  //
+  // and you can read the raw headers here:
+  //
+  //   chrome/browser/profile/profile_keyed_service.h
+  //   chrome/browser/profile/profile_keyed_service_factory.{h,cc}
+  //   chrome/browser/profile/profile_keyed_dependency_manager.{h,cc}
 
   Profile::Delegate* delegate_;
 
