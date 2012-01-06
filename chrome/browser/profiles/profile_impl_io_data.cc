@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,6 +19,7 @@
 #include "chrome/browser/net/sqlite_persistent_cookie_store.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/transport_security_persister.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -261,6 +262,11 @@ void ProfileImplIOData::LazyInitializeInternal(
 
   if (http_server_properties_manager_.get())
     http_server_properties_manager_->InitializeOnIOThread();
+
+  transport_security_persister_.reset(
+      new TransportSecurityPersister(transport_security_state(),
+                                     profile_params->path,
+                                     profile_params->is_incognito));
 
   main_context->set_transport_security_state(transport_security_state());
   media_request_context_->set_transport_security_state(

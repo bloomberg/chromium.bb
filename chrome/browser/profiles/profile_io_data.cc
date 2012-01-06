@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -34,7 +34,6 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/transport_security_persister.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager_backend.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
@@ -445,10 +444,6 @@ void ProfileIOData::LazyInitialize() const {
 
   transport_security_state_.reset(new net::TransportSecurityState(
       command_line.GetSwitchValueASCII(switches::kHstsHosts)));
-  transport_security_persister_.reset(
-      new TransportSecurityPersister(transport_security_state_.get(),
-                                     profile_params_->path,
-                                     profile_params_->is_incognito));
 
   // NOTE(willchan): Keep these protocol handlers in sync with
   // ProfileIOData::IsHandledProtocol().

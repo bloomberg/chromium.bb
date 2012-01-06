@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,8 @@
 #include "base/hash_tables.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/profiles/profile_io_data.h"
+
+class TransportSecurityPersister;
 
 namespace chrome_browser_net {
 class HttpServerPropertiesManager;
@@ -146,6 +148,7 @@ class ProfileImplIOData : public ProfileIOData {
   mutable scoped_ptr<net::HttpTransactionFactory> main_http_factory_;
   mutable scoped_ptr<net::HttpTransactionFactory> media_http_factory_;
   mutable scoped_ptr<net::FtpTransactionFactory> ftp_factory_;
+  mutable scoped_ptr<TransportSecurityPersister> transport_security_persister_;
 
   mutable scoped_ptr<chrome_browser_net::Predictor> predictor_;
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,7 +32,6 @@ class HostZoomMap;
 class IOThread;
 class Profile;
 class ProtocolHandlerRegistry;
-class TransportSecurityPersister;
 
 namespace fileapi {
 class FileSystemContext;
@@ -301,9 +300,6 @@ class ProfileIOData {
   mutable DesktopNotificationService* notification_service_;
 
   mutable ResourceContext resource_context_;
-
-  mutable scoped_ptr<TransportSecurityPersister>
-      transport_security_persister_;
 
   // These are only valid in between LazyInitialize() and their accessor being
   // called.
