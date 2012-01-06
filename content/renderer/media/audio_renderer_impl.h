@@ -25,18 +25,16 @@
 #include "content/renderer/media/audio_device.h"
 #include "media/audio/audio_io.h"
 #include "media/audio/audio_parameters.h"
-#include "media/base/audio_renderer_sink.h"
 #include "media/filters/audio_renderer_base.h"
 
 class AudioMessageFilter;
 
 class CONTENT_EXPORT AudioRendererImpl
     : public media::AudioRendererBase,
-      public media::AudioRendererSink::RenderCallback {
+      public AudioDevice::RenderCallback {
  public:
   // Methods called on Render thread ------------------------------------------
-  // An AudioRendererSink is used as the destination for the rendered audio.
-  explicit AudioRendererImpl(media::AudioRendererSink* sink);
+  AudioRendererImpl();
   virtual ~AudioRendererImpl();
 
   // Methods called on pipeline thread ----------------------------------------
@@ -76,7 +74,7 @@ class CONTENT_EXPORT AudioRendererImpl
   void DoPause();
   void DoSeek();
 
-  // media::AudioRendererSink::RenderCallback implementation.
+  // AudioDevice::RenderCallback implementation.
   virtual size_t Render(const std::vector<float*>& audio_data,
                         size_t number_of_frames,
                         size_t audio_delay_milliseconds) OVERRIDE;
@@ -105,11 +103,8 @@ class CONTENT_EXPORT AudioRendererImpl
   // A flag that indicates this filter is called to stop.
   bool stopped_;
 
-  // The sink (destination) for rendered audio.
-  scoped_refptr<media::AudioRendererSink> sink_;
-
-  // Set to true when OnInitialize() is called.
-  bool is_initialized_;
+  // audio_device_ is the sink (destination) for rendered audio.
+  scoped_refptr<AudioDevice> audio_device_;
 
   // We're supposed to know amount of audio data OS or hardware buffered, but
   // that is not always so -- on my Linux box

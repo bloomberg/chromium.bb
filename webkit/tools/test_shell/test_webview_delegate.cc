@@ -652,7 +652,6 @@ WebMediaPlayer* TestWebViewDelegate::createMediaPlayer(
           client,
           base::WeakPtr<webkit_media::WebMediaPlayerDelegate>(),
           collection.release(),
-          NULL,
           message_loop_factory.release(),
           NULL,
           new media::MediaLog()));

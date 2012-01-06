@@ -65,7 +65,6 @@
 #include "content/renderer/notification_provider.h"
 #include "content/renderer/p2p/socket_dispatcher.h"
 #include "content/renderer/plugin_channel_host.h"
-#include "content/renderer/render_audiosourceprovider.h"
 #include "content/renderer/render_process.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_widget_fullscreen_pepper.h"
@@ -1932,20 +1931,11 @@ WebMediaPlayer* RenderViewImpl::createMediaPlayer(
   media::FilterCollection* collection = new media::FilterCollection();
   RenderMediaLog* render_media_log = new RenderMediaLog();
 
-  RenderAudioSourceProvider* audio_source_provider = NULL;
-
   // Add in any custom filter factories first.
   const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
   if (!cmd_line->HasSwitch(switches::kDisableAudio)) {
-    // audio_source_provider is a "provider" to WebKit, and a sink
-    // from the perspective of the audio renderer.
-    audio_source_provider = new RenderAudioSourceProvider();
-
-    // Add the chrome specific audio renderer, using audio_source_provider
-    // as the sink.
-    AudioRendererImpl* audio_renderer =
-        new AudioRendererImpl(audio_source_provider);
-    collection->AddAudioRenderer(audio_renderer);
+    // Add the chrome specific audio renderer.
+    collection->AddAudioRenderer(new AudioRendererImpl());
   }
 
 #if defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL)
@@ -1969,12 +1959,11 @@ WebMediaPlayer* RenderViewImpl::createMediaPlayer(
 
   webkit_media::WebMediaPlayerImpl* result_ptr;
   if (!content::GetContentClient()->renderer()->OverrideCreateWebMediaPlayer(
-      this, client, AsWeakPtr(), collection, audio_source_provider,
-      message_loop_factory, media_stream_impl_.get(), render_media_log,
-      &result_ptr)) {
+      this, client, AsWeakPtr(), collection, message_loop_factory,
+      media_stream_impl_.get(), render_media_log, &result_ptr)) {
     result_ptr = new webkit_media::WebMediaPlayerImpl(
-        client, AsWeakPtr(), collection, audio_source_provider,
-        message_loop_factory, media_stream_impl_.get(), render_media_log);
+        client, AsWeakPtr(), collection, message_loop_factory,
+        media_stream_impl_.get(), render_media_log);
   }
 
   DCHECK(result_ptr);

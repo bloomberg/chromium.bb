@@ -52,19 +52,14 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
-#include "media/base/audio_renderer_sink.h"
 #include "media/base/filters.h"
 #include "media/base/message_loop_factory.h"
 #include "media/base/pipeline.h"
 #include "skia/ext/platform_canvas.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebAudioSourceProvider.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaPlayer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaPlayerClient.h"
 
-class RenderAudioSourceProvider;
-
 namespace WebKit {
-class WebAudioSourceProvider;
 class WebFrame;
 }
 
@@ -103,13 +98,11 @@ class WebMediaPlayerImpl
   // audio renderer is a fake audio device that plays silence. Provider of the
   // |collection| can override the default filters by adding extra filters to
   // |collection| before calling this method.
-  // This object takes ownership of the |audio_source_provider|.
   //
   // Callers must call |Initialize()| before they can use the object.
   WebMediaPlayerImpl(WebKit::WebMediaPlayerClient* client,
                      base::WeakPtr<WebMediaPlayerDelegate> delegate,
                      media::FilterCollection* collection,
-                     WebKit::WebAudioSourceProvider* audio_source_provider,
                      media::MessageLoopFactory* message_loop_factory,
                      MediaStreamClient* media_stream_client,
                      media::MediaLog* media_log);
@@ -178,8 +171,6 @@ class WebMediaPlayerImpl
 
   virtual WebKit::WebVideoFrame* getCurrentFrame();
   virtual void putCurrentFrame(WebKit::WebVideoFrame* web_video_frame);
-
-  virtual WebKit::WebAudioSourceProvider* audioSourceProvider();
 
   virtual bool sourceAppend(const unsigned char* data, unsigned length);
   virtual void sourceEndOfStream(EndOfStreamStatus status);
@@ -273,8 +264,6 @@ class WebMediaPlayerImpl
   bool is_accelerated_compositing_active_;
 
   bool incremented_externally_allocated_memory_;
-
-  WebKit::WebAudioSourceProvider* audio_source_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(WebMediaPlayerImpl);
 };

@@ -102,7 +102,6 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
     WebKit::WebMediaPlayerClient* client,
     base::WeakPtr<WebMediaPlayerDelegate> delegate,
     media::FilterCollection* collection,
-    WebKit::WebAudioSourceProvider* audio_source_provider,
     media::MessageLoopFactory* message_loop_factory,
     MediaStreamClient* media_stream_client,
     media::MediaLog* media_log)
@@ -123,8 +122,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       media_stream_client_(media_stream_client),
       media_log_(media_log),
       is_accelerated_compositing_active_(false),
-      incremented_externally_allocated_memory_(false),
-      audio_source_provider_(audio_source_provider) {
+      incremented_externally_allocated_memory_(false) {
   // Saves the current message loop.
   DCHECK(!main_loop_);
   main_loop_ = MessageLoop::current();
@@ -934,10 +932,6 @@ WebKit::WebMediaPlayerClient* WebMediaPlayerImpl::GetClient() {
   DCHECK_EQ(main_loop_, MessageLoop::current());
   DCHECK(client_);
   return client_;
-}
-
-WebKit::WebAudioSourceProvider* WebMediaPlayerImpl::audioSourceProvider() {
-  return audio_source_provider_;
 }
 
 void WebMediaPlayerImpl::IncrementExternallyAllocatedMemory() {

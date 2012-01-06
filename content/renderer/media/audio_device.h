@@ -73,13 +73,25 @@
 #include "content/common/content_export.h"
 #include "content/renderer/media/audio_message_filter.h"
 #include "media/audio/audio_parameters.h"
-#include "media/base/audio_renderer_sink.h"
 
 class CONTENT_EXPORT AudioDevice
-    : public media::AudioRendererSink,
-      public AudioMessageFilter::Delegate,
-      public base::DelegateSimpleThread::Delegate {
+    : public AudioMessageFilter::Delegate,
+      public base::DelegateSimpleThread::Delegate,
+      public base::RefCountedThreadSafe<AudioDevice> {
  public:
+  class CONTENT_EXPORT RenderCallback {
+   public:
+    // Fills entire buffer of length |number_of_frames| but returns actual
+    // number of frames it got from its source (|number_of_frames| in case of
+    // continuous stream). That actual number of frames is passed to host
+    // together with PCM audio data and host is free to use or ignore it.
+    virtual size_t Render(const std::vector<float*>& audio_data,
+                          size_t number_of_frames,
+                          size_t audio_delay_milliseconds) = 0;
+   protected:
+    virtual ~RenderCallback() {}
+  };
+
   // Methods called on main render thread -------------------------------------
 
   // Minimal constructor where Initialize() must be called later.
@@ -91,38 +103,38 @@ class CONTENT_EXPORT AudioDevice
               RenderCallback* callback);
   virtual ~AudioDevice();
 
-  // AudioRendererSink implementation.
+  void Initialize(size_t buffer_size,
+                  int channels,
+                  double sample_rate,
+                  AudioParameters::Format latency_format,
+                  RenderCallback* callback);
+  bool IsInitialized();
 
-  virtual void Initialize(size_t buffer_size,
-                          int channels,
-                          double sample_rate,
-                          AudioParameters::Format latency_format,
-                          RenderCallback* callback) OVERRIDE;
   // Starts audio playback.
-  virtual void Start() OVERRIDE;
+  void Start();
 
   // Stops audio playback.
-  virtual void Stop() OVERRIDE;
+  void Stop();
 
   // Resumes playback if currently paused.
   // TODO(crogers): it should be possible to remove the extra complexity
   // of Play() and Pause() with additional re-factoring work in
   // AudioRendererImpl.
-  virtual void Play() OVERRIDE;
+  void Play();
 
   // Pauses playback.
   // If |flush| is true then any pending audio that is in the pipeline
   // (has not yet reached the hardware) will be discarded.  In this case,
   // when Play() is later called, no previous pending audio will be
   // rendered.
-  virtual void Pause(bool flush) OVERRIDE;
+  void Pause(bool flush);
 
   // Sets the playback volume, with range [0.0, 1.0] inclusive.
   // Returns |true| on success.
-  virtual bool SetVolume(double volume) OVERRIDE;
+  bool SetVolume(double volume);
 
   // Gets the playback volume, with range [0.0, 1.0] inclusive.
-  virtual void GetVolume(double* volume) OVERRIDE;
+  void GetVolume(double* volume);
 
   double sample_rate() const { return sample_rate_; }
   size_t buffer_size() const { return buffer_size_; }
