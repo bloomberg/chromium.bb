@@ -583,7 +583,8 @@ def _CreateOptParser():
                     help='Filter by team; colon-separated %s' % teamhelp)
   parser.add_option('--owner', dest='owner', type='string', action='store',
                     default=None,
-                    help='Filter by owner; colon-separated chromium.org accts')
+                    help='Filter by package owner;'
+                    ' colon-separated chromium.org accounts')
   parser.add_option('--verbose', dest='verbose', action='store_true',
                     default=False,
                     help='Enable verbose output (for debugging)')
@@ -596,6 +597,11 @@ def main():
   (options, _args) = parser.parse_args()
 
   oper.verbose = options.verbose
+
+  if not options.email and not os.path.exists(options.cred_file):
+    options.email = os.environ['USER']
+    oper.Notice('Assuming your chromium email is %s@chromium.org.'
+                '  Override with --email.' % options.email)
 
   creds = gdata_lib.Creds(cred_file=options.cred_file, user=options.email)
   tcomm = TrackerComm(creds)
@@ -618,7 +624,8 @@ def main():
   # password must be entered), give the option of saving to a creds file for
   # next time.
   if options.email and options.cred_file:
-    prompt = 'Do you want to save credentials to %r?' % options.cred_file
+    prompt = ('Do you want to save credentials for next time to %r?' %
+              options.cred_file)
     if 'yes' == cros_lib.YesNoPrompt(default='no', prompt=prompt):
       creds.StoreCreds(options.cred_file)
       oper.Notice('Be sure to save the creds file to the same location'

@@ -50,7 +50,6 @@ class Creds(object):
   """Class to manage user/password credentials."""
 
   __slots__ = [
-    'cred_file',   # Path to credentials file
     'password',    # User password
     'user',        # User account (foo@chromium.org)
     ]
@@ -69,6 +68,9 @@ class Creds(object):
 
     elif cred_file and os.path.exists(cred_file):
       self.LoadCreds(cred_file)
+
+    else:
+      raise TypeError('Invalid use of Creds - no user or credentials file')
 
   def LoadCreds(self, filepath):
     """Load email/password credentials from |filepath|."""
