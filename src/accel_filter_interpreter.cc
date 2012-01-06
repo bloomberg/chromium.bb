@@ -18,7 +18,11 @@ AccelFilterInterpreter::AccelFilterInterpreter(PropRegistry* prop_reg,
                                                Interpreter* next)
     : sensitivity_(prop_reg, "Sensitivity", 3),
       custom_point_str_(prop_reg, "Pointer Accel Curve", ""),
-      custom_scroll_str_(prop_reg, "Scroll Accel Curve", "") {
+      custom_scroll_str_(prop_reg, "Scroll Accel Curve", ""),
+      point_x_out_scale_(prop_reg, "Point X Out Scale", 1.0),
+      point_y_out_scale_(prop_reg, "Point Y Out Scale", 1.0),
+      scroll_x_out_scale_(prop_reg, "Scroll X Out Scale", 3.0),
+      scroll_y_out_scale_(prop_reg, "Scroll Y Out Scale", 3.0) {
   next_.reset(next);
 
   // Set up default curves.
@@ -109,6 +113,8 @@ void AccelFilterInterpreter::ScaleGesture(Gesture* gs) {
   float* dy = NULL;
   float dt = gs->end_time - gs->start_time;
   size_t max_segs = kMaxCurveSegs;
+  float x_scale = 1.0;
+  float y_scale = 1.0;
 
   switch (gs->type) {
     case kGestureTypeMove:
@@ -123,6 +129,8 @@ void AccelFilterInterpreter::ScaleGesture(Gesture* gs) {
                          custom_point_);
         max_segs = kMaxCustomCurveSegs;
       }
+      x_scale = point_x_out_scale_.val_;
+      y_scale = point_y_out_scale_.val_;
       break;
     case kGestureTypeScroll:
       dx = &gs->details.scroll.dx;
@@ -136,6 +144,8 @@ void AccelFilterInterpreter::ScaleGesture(Gesture* gs) {
                          custom_scroll_);
         max_segs = kMaxCustomCurveSegs;
       }
+      x_scale = scroll_x_out_scale_.val_;
+      y_scale = scroll_y_out_scale_.val_;
       break;
     default:  // Nothing to accelerate
       return;
@@ -150,8 +160,8 @@ void AccelFilterInterpreter::ScaleGesture(Gesture* gs) {
     if (mag > segs[i].x_)
       continue;
     float ratio = segs[i].sqr_ * mag + segs[i].mul_ + segs[i].int_ / mag;
-    *dx *= ratio;
-    *dy *= ratio;
+    *dx *= ratio * x_scale;
+    *dy *= ratio * y_scale;
 
     return;
   }

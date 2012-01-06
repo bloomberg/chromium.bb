@@ -20,9 +20,10 @@ namespace gestures {
 // an acceleration curve and the user's sensitivity setting.
 
 class AccelFilterInterpreter : public Interpreter {
+  FRIEND_TEST(AccelFilterInterpreterTest, CustomAccelTest);
   FRIEND_TEST(AccelFilterInterpreterTest, SimpleTest);
   FRIEND_TEST(AccelFilterInterpreterTest, TimingTest);
-  FRIEND_TEST(AccelFilterInterpreterTest, CustomAccelTest);
+  FRIEND_TEST(AccelFilterInterpreterTest, TinyMoveTest);
  public:
   // Takes ownership of |next|:
   AccelFilterInterpreter(PropRegistry* prop_reg, Interpreter* next);
@@ -74,6 +75,11 @@ class AccelFilterInterpreter : public Interpreter {
   char last_parsed_custom_point_str_[kCacheStrLen];
   StringProperty custom_scroll_str_;
   char last_parsed_custom_scroll_str_[kCacheStrLen];
+
+  DoubleProperty point_x_out_scale_;
+  DoubleProperty point_y_out_scale_;
+  DoubleProperty scroll_x_out_scale_;
+  DoubleProperty scroll_y_out_scale_;
 };
 
 }  // namespace gestures

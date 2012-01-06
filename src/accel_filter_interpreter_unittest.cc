@@ -120,6 +120,11 @@ TEST(AccelFilterInterpreterTest, TinyMoveTest) {
                                                      3,  // end time
                                                      4,  // dx
                                                      0));  // dy
+  base_interpreter->return_values_.push_back(Gesture(kGestureScroll,
+                                                     2,  // start time
+                                                     3,  // end time
+                                                     4,  // dx
+                                                     0));  // dy
 
   Gesture* out = interpreter.SyncInterpret(NULL, NULL);
   ASSERT_NE(reinterpret_cast<Gesture*>(NULL), out);
@@ -129,6 +134,13 @@ TEST(AccelFilterInterpreterTest, TinyMoveTest) {
   ASSERT_NE(reinterpret_cast<Gesture*>(NULL), out);
   EXPECT_EQ(kGestureTypeScroll, out->type);
   EXPECT_GT(fabsf(out->details.scroll.dx), 2);
+  float orig_x_scroll = out->details.scroll.dx;
+  interpreter.scroll_x_out_scale_.val_ = 2.0;
+  out = interpreter.SyncInterpret(NULL, NULL);
+  ASSERT_NE(reinterpret_cast<Gesture*>(NULL), out);
+  EXPECT_EQ(kGestureTypeScroll, out->type);
+  EXPECT_FLOAT_EQ(orig_x_scroll * interpreter.scroll_x_out_scale_.val_,
+                  out->details.scroll.dx);
 }
 
 TEST(AccelFilterInterpreterTest, TimingTest) {
