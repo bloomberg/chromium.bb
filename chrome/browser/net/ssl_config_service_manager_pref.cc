@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 #include "chrome/browser/net/ssl_config_service_manager.h"
@@ -93,7 +93,6 @@ class SSLConfigServicePref : public net::SSLConfigService {
 
 void SSLConfigServicePref::GetSSLConfig(net::SSLConfig* config) {
   *config = cached_config_;
-  config->crl_set = GetCRLSet();
 }
 
 void SSLConfigServicePref::SetNewSSLConfig(

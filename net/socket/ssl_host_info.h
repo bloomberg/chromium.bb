@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,7 +20,6 @@
 
 namespace net {
 
-class CRLSet;
 class X509Certificate;
 struct SSLConfig;
 
@@ -121,7 +120,6 @@ class NET_EXPORT_PRIVATE SSLHostInfo {
   // These three members are taken from the SSLConfig.
   bool rev_checking_enabled_;
   bool verify_ev_cert_;
-  scoped_refptr<CRLSet> crl_set_;
   base::TimeTicks verification_start_time_;
   base::TimeTicks verification_end_time_;
   CertVerifyResult cert_verify_result_;
