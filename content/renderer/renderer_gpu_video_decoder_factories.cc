@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -45,6 +45,10 @@ bool RendererGpuVideoDecoderFactories::CreateTextures(
     gles2->TexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, size.width(), size.height(),
                       0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
   }
+  // We need a glFlush here to guarantee the decoder (in the GPU process) can
+  // use the texture ids we return here.  Since textures are expected to be
+  // reused, this should not be unacceptably expensive.
+  gles2->Flush();
   DCHECK_EQ(gles2->GetError(), static_cast<GLenum>(GL_NO_ERROR));
   return true;
 }
