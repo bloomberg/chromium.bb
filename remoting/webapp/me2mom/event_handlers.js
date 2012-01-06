@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,6 +19,11 @@ function onLoad() {
     remoting.tryConnect();
     event.preventDefault();
   };
+  /** @param {Event} event */
+  var connectHostWithPin = function(event) {
+    remoting.connectHostWithPin();
+    event.preventDefault();
+  };
   var doAuthRedirect = function() {
     remoting.oauth2.doAuthRedirect();
   }
@@ -36,7 +41,8 @@ function onLoad() {
       { event: 'click', id: 'client-finished-button', fn: goClient },
       { event: 'click', id: 'cancel-button',
         fn: remoting.cancelPendingOperation },
-      { event: 'submit', id: 'access-code-form', fn: sendAccessCode }
+      { event: 'submit', id: 'access-code-form', fn: sendAccessCode },
+      { event: 'submit', id: 'pin-form', fn: connectHostWithPin }
   ];
 
   for (var i = 0; i < actions.length; ++i) {

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -358,7 +358,7 @@ Var ChromotingScriptableObject::DoConnect(const std::vector<Var>& args,
   //   host_jid
   //   host_public_key
   //   client_jid
-  //   access_code (optional)
+  //   authentication_code (optional)
   unsigned int arg = 0;
   if (!args[arg].is_string()) {
     *exception = Var("The host_jid must be a string.");
@@ -378,13 +378,13 @@ Var ChromotingScriptableObject::DoConnect(const std::vector<Var>& args,
   }
   std::string client_jid = args[arg++].AsString();
 
-  std::string access_code;
+  std::string authentication_code;
   if (args.size() > arg) {
     if (!args[arg].is_string()) {
-      *exception = Var("The access code must be a string.");
+      *exception = Var("The authentication code must be a string.");
       return Var();
     }
-    access_code = args[arg++].AsString();
+    authentication_code = args[arg++].AsString();
   }
 
   if (args.size() != arg) {
@@ -394,12 +394,12 @@ Var ChromotingScriptableObject::DoConnect(const std::vector<Var>& args,
 
   VLOG(1) << "Connecting to host. "
           << "client_jid: " << client_jid << ", host_jid: " << host_jid
-          << ", access_code: " << access_code;
+          << ", authentication_code: " << authentication_code;
   ClientConfig config;
   config.local_jid = client_jid;
   config.host_jid = host_jid;
   config.host_public_key = host_public_key;
-  config.access_code = access_code;
+  config.authentication_code = authentication_code;
   instance_->Connect(config);
 
   return Var();

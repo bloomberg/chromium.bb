@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,6 +18,7 @@ remoting.AppMode = {
   UNAUTHENTICATED: 'auth',
   CLIENT: 'client',
     CLIENT_UNCONNECTED: 'client.unconnected',
+    CLIENT_PIN_PROMPT: 'client.pin-prompt',
     CLIENT_CONNECTING: 'client.connecting',
     CLIENT_CONNECT_FAILED_IT2ME: 'client.connect-failed.it2me',
     CLIENT_CONNECT_FAILED_ME2ME: 'client.connect-failed.me2me',

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -34,10 +34,15 @@ remoting.accessCode = '';
 remoting.hostJid = '';
 
 /**
- * @type {string} For Me2Me connections, the id of the current host, used when
- *     (re-)connecting, as the JID may have changed.
+ * @type {string} For Me2Me connections, the id of the current host.
  */
 remoting.hostId = '';
+
+/**
+ * @type {boolean} For Me2Me connections. Set to true if connection
+ * must be retried on failure.
+ */
+remoting.retryIfOffline = false;
 
 /**
  * @type {string} The host's public key, returned by the server.
@@ -283,7 +288,7 @@ function onClientStateChange_(oldState, newState) {
  * @return {void} Nothing.
  */
 function retryConnectOrReportOffline_() {
-  if (remoting.hostId) {
+  if (remoting.hostId && remoting.retryIfOffline) {
     console.log('Connection failed. Retrying.');
     /** @param {boolean} success True if the refresh was successful. */
     var onDone = function(success) {
@@ -428,7 +433,7 @@ function updateStatistics_() {
 
 
 /**
- * Start a connection to the specified host, using the cached details.
+ * Shows PIN entry screen.
  *
  * @param {string} hostId The unique id of the host.
  * @param {boolean} retryIfOffline If true and the host can't be contacted,
@@ -437,14 +442,24 @@ function updateStatistics_() {
  * @return {void} Nothing.
  */
 remoting.connectHost = function(hostId, retryIfOffline) {
-  remoting.debug.log('Connecting to host...');
   remoting.currentConnectionType = remoting.ConnectionType.Me2Me;
+  remoting.hostId = hostId;
+  remoting.retryIfOffline = retryIfOffline;
 
-  // Storing the hostId indicates that it should be retried on failure.
-  remoting.hostId = retryIfOffline ? hostId : '';
+  remoting.setMode(remoting.AppMode.CLIENT_PIN_PROMPT);
+}
+
+/**
+ * Start a connection to the specified host, using the cached details
+ * and the PIN entered by the user.
+ *
+ * @return {void} Nothing.
+ */
+remoting.connectHostWithPin = function() {
+  remoting.debug.log('Connecting to host...');
   remoting.setMode(remoting.AppMode.CLIENT_CONNECTING);
 
-  var host = remoting.hostList.getHostForId(hostId);
+  var host = remoting.hostList.getHostForId(remoting.hostId);
   if (!host) {
     retryConnectOrReportOffline_();
     return;
@@ -470,10 +485,14 @@ remoting.connectHost = function(hostId, retryIfOffline) {
  * @return {void} Nothing.
  */
 remoting.connectHostWithWcs = function() {
+  /** @type {string} */
+  var pin = document.getElementById('pin-entry').value;
+  document.getElementById('pin-entry').value = '';
+
   remoting.clientSession =
       new remoting.ClientSession(
           remoting.hostJid, remoting.hostPublicKey,
-          '', /** @type {string} */ (remoting.oauth2.getCachedEmail()),
+          pin, /** @type {string} */ (remoting.oauth2.getCachedEmail()),
           onClientStateChange_);
   /** @param {string} token The auth token. */
   var createPluginAndConnect = function(token) {

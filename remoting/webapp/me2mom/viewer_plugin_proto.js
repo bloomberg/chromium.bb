@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,11 +26,12 @@ remoting.ViewerPlugin.prototype.releaseAllKeys = function() {};
  * @param {string} hostJid The host's JID.
  * @param {string} hostPublicKey The host's public key.
  * @param {string} clientJid The client's JID.
- * @param {string} accessCode The access code.
+ * @param {string} authenticationCode The access code for IT2Me or the
+ * PIN for Me2Me.
  * @return {void} Nothing.
 */
 remoting.ViewerPlugin.prototype.connect =
-    function(hostJid, hostPublicKey, clientJid, accessCode) {};
+    function(hostJid, hostPublicKey, clientJid, authenticationCode) {};
 
 /** @type {function(number, number): void} State change callback function. */
 remoting.ViewerPlugin.prototype.connectionInfoUpdate;

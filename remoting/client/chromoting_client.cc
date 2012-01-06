@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -45,7 +45,7 @@ void ChromotingClient::Start(scoped_refptr<XmppProxy> xmpp_proxy) {
   DCHECK(message_loop()->BelongsToCurrentThread());
 
   connection_->Connect(xmpp_proxy, config_.local_jid, config_.host_jid,
-                       config_.host_public_key, config_.access_code,
+                       config_.host_public_key, config_.authentication_code,
                        this, this, this);
 
   if (!view_->Initialize()) {

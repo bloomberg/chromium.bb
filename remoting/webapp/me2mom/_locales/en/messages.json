@@ -197,6 +197,10 @@
     "message": "Offline",
     "description": "Label indicating that a host in the list is not currently available for remote access."
   },
+  "PIN": {
+    "message": "PIN",
+    "description": "Label for the PIN entry box."
+  },
   "PRODUCT_DESCRIPTION": {
     "message": "Access other computers or allow another user to access your computer securely over the Internet.",
     "description": "Web-app description. Displayed in Chromium's extensions page."

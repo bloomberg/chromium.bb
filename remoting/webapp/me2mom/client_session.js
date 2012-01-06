@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,20 +20,21 @@ var remoting = remoting || {};
  * @param {string} hostJid The jid of the host to connect to.
  * @param {string} hostPublicKey The base64 encoded version of the host's
  *     public key.
- * @param {string} accessCode The access code for the IT2Me connection.
+ * @param {string} authenticationCode The access code for IT2Me or the
+ *     PIN for Me2Me.
  * @param {string} email The username for the talk network.
  * @param {function(remoting.ClientSession.State,
                     remoting.ClientSession.State):void} onStateChange
  *     The callback to invoke when the session changes state.
  * @constructor
  */
-remoting.ClientSession = function(hostJid, hostPublicKey, accessCode, email,
-                                  onStateChange) {
+remoting.ClientSession = function(hostJid, hostPublicKey, authenticationCode,
+                                  email, onStateChange) {
   this.state = remoting.ClientSession.State.CREATED;
 
   this.hostJid = hostJid;
   this.hostPublicKey = hostPublicKey;
-  this.accessCode = accessCode;
+  this.authenticationCode = authenticationCode;
   this.email = email;
   this.clientJid = '';
   this.sessionId = '';
@@ -316,7 +317,7 @@ remoting.ClientSession.prototype.connectPluginToWcs_ =
   }
   remoting.wcs.setOnIq(onIq);
   that.plugin.connect(this.hostJid, this.hostPublicKey, this.clientJid,
-                      this.accessCode);
+                      this.authenticationCode);
 };
 
 /**
