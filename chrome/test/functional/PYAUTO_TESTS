@@ -195,6 +195,10 @@
       # crbug.com/98526
       '-pyauto_webdriver.PyAutoWebDriverTest.testCanConnectToRestartedBrowser',
       '-pyauto_webdriver.PyAutoWebDriverTest.testTypeIntoTextBox',
+      # crbug.com/109035
+      '-youtube.YoutubeTest.testPlayerBytes',
+      # crbug.com/109035
+      '-youtube.YoutubeTest.testPlayerResolution',
     ],
 
     'linux': [  # linux != chromeos
@@ -246,6 +250,10 @@
       '-notifications.NotificationsTest.testNotificationOrderAfterClosingOne',
       # crbug.com/103379
       '-policy.PolicyTest.testDisable3DAPIs',
+      # crbug.com/109035
+      '-youtube.YoutubeTest.testPlayerBytes',
+      # crbug.com/109035
+      '-youtube.YoutubeTest.testPlayerResolution',
     ],
 
     # ChromeOS is linux, but note that this section does not include the
@@ -350,10 +358,6 @@
       '-notifications.NotificationsTest.testOriginPrefsNotSavedInIncognito',
       # crbug.com/103379
       '-policy.PolicyTest.testDisable3DAPIs',
-      # crbug.com/109035
-      '-youtube.YoutubeTest.testPlayerBytes',
-      # crbug.com/109035
-      '-youtube.YoutubeTest.testPlayerResolution',
     ],
   },
 
