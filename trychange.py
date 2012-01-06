@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -696,8 +696,10 @@ def TryChange(argv,
     checkouts.append(GuessVCS(options, path, file_list))
     checkouts[0].AutomagicalSettings()
     for item in options.sub_rep:
-      checkout = GuessVCS(options, os.path.join(checkouts[0].checkout_root,
-                                                item), file_list)
+      # Pass file_list=None because we don't know the sub repo's file list.
+      checkout = GuessVCS(options,
+                          os.path.join(checkouts[0].checkout_root, item),
+                          None)
       if checkout.checkout_root in [c.checkout_root for c in checkouts]:
         parser.error('Specified the root %s two times.' %
                      checkout.checkout_root)
