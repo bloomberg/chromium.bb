@@ -1624,12 +1624,9 @@ void Browser::Stop() {
 }
 
 void Browser::NewWindow() {
-  IncognitoModePrefs::Availability incognito_avail =
-      IncognitoModePrefs::GetAvailability(profile_->GetPrefs());
   if (browser_defaults::kAlwaysOpenIncognitoWindow &&
-      incognito_avail != IncognitoModePrefs::DISABLED &&
-      (CommandLine::ForCurrentProcess()->HasSwitch(switches::kIncognito) ||
-       incognito_avail == IncognitoModePrefs::FORCED)) {
+      IncognitoModePrefs::ShouldLaunchIncognito(
+          *CommandLine::ForCurrentProcess(), profile_->GetPrefs())) {
     NewIncognitoWindow();
     return;
   }

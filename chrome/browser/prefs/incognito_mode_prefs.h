@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 
 #include "base/basictypes.h"
 
+class CommandLine;
 class PrefService;
 
 // Specifies Incognito mode availability preferences.
@@ -45,6 +46,10 @@ class IncognitoModePrefs {
   // if conversion is successful (in_value is valid). Otherwise, returns false
   // and *out_value is set to ENABLED.
   static bool IntToAvailability(int in_value, Availability* out_value);
+
+  // Returns true if the browser should start in incognito mode.
+  static bool ShouldLaunchIncognito(const CommandLine& command_line,
+                                    const PrefService* prefs);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(IncognitoModePrefs);

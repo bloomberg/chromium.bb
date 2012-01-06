@@ -1,11 +1,13 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 
 // static
@@ -42,4 +44,14 @@ void IncognitoModePrefs::RegisterUserPrefs(PrefService* pref_service) {
   pref_service->RegisterIntegerPref(prefs::kIncognitoModeAvailability,
                                     IncognitoModePrefs::ENABLED,
                                     PrefService::UNSYNCABLE_PREF);
+}
+
+// static
+bool IncognitoModePrefs::ShouldLaunchIncognito(
+    const CommandLine& command_line,
+    const PrefService* prefs) {
+  Availability incognito_avail = GetAvailability(prefs);
+  return incognito_avail != IncognitoModePrefs::DISABLED &&
+         (command_line.HasSwitch(switches::kIncognito) ||
+          incognito_avail == IncognitoModePrefs::FORCED);
 }

@@ -466,15 +466,6 @@ bool SessionCrashedInfoBarDelegate::Accept() {
 
 // Utility functions ----------------------------------------------------------
 
-bool IncognitoIsForced(const CommandLine& command_line,
-                       const PrefService* prefs) {
-  IncognitoModePrefs::Availability incognito_avail =
-      IncognitoModePrefs::GetAvailability(prefs);
-  return incognito_avail != IncognitoModePrefs::DISABLED &&
-         (command_line.HasSwitch(switches::kIncognito) ||
-          incognito_avail == IncognitoModePrefs::FORCED);
-}
-
 SessionStartupPref GetSessionStartupPref(const CommandLine& command_line,
                                          Profile* profile) {
   SessionStartupPref pref = SessionStartupPref::GetStartupPref(profile);
@@ -483,7 +474,8 @@ SessionStartupPref GetSessionStartupPref(const CommandLine& command_line,
     pref.type = SessionStartupPref::LAST;
   }
   if (pref.type == SessionStartupPref::LAST &&
-      IncognitoIsForced(command_line, profile->GetPrefs())) {
+      IncognitoModePrefs::ShouldLaunchIncognito(command_line,
+                                                profile->GetPrefs())) {
     // We don't store session information when incognito. If the user has
     // chosen to restore last session and launched incognito, fallback to
     // default launch behavior.
@@ -676,7 +668,8 @@ bool BrowserInit::LaunchBrowser(const CommandLine& command_line,
 
   // Continue with the incognito profile from here on if Incognito mode
   // is forced.
-  if (IncognitoIsForced(command_line, profile->GetPrefs())) {
+  if (IncognitoModePrefs::ShouldLaunchIncognito(command_line,
+                                                profile->GetPrefs())) {
     profile = profile->GetOffTheRecordProfile();
   } else if (command_line.HasSwitch(switches::kIncognito)) {
     LOG(WARNING) << "Incognito mode disabled by policy, launching a normal "
@@ -1093,8 +1086,10 @@ Browser* BrowserInit::LaunchWithProfile::ProcessSpecifiedURLs(
   std::vector<Tab> tabs;
   // Pinned tabs should not be displayed when chrome is launched
   // in icognito mode.
-  if (!IncognitoIsForced(command_line_, profile_->GetPrefs()))
+  if (!IncognitoModePrefs::ShouldLaunchIncognito(command_line_,
+                                                 profile_->GetPrefs())) {
     tabs = PinnedTabCodec::ReadPinnedTabs(profile_);
+  }
 
   RecordAppLaunches(profile_, urls_to_open, tabs);
 

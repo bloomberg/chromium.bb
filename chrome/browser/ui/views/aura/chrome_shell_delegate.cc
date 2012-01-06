@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,9 @@
 
 #include "ash/launcher/launcher_types.h"
 #include "ash/wm/window_util.h"
+#include "base/command_line.h"
+#include "chrome/browser/defaults.h"
+#include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/aura/app_list_window.h"
@@ -47,9 +50,14 @@ bool ChromeShellDelegate::ShouldCreateLauncherItemForBrowser(
 }
 
 void ChromeShellDelegate::CreateNewWindow() {
-  Browser* browser = Browser::Create(ProfileManager::GetDefaultProfile());
-  browser->AddSelectedTabWithURL(GURL(), content::PAGE_TRANSITION_START_PAGE);
-  browser->window()->Show();
+  Profile* profile = ProfileManager::GetDefaultProfile();
+  if (browser_defaults::kAlwaysOpenIncognitoWindow &&
+      IncognitoModePrefs::ShouldLaunchIncognito(
+          *CommandLine::ForCurrentProcess(),
+          profile->GetPrefs())) {
+    profile = profile->GetOffTheRecordProfile();
+  }
+  Browser::OpenEmptyWindow(profile);
 }
 
 views::Widget* ChromeShellDelegate::CreateStatusArea() {
