@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,7 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/platform_file.h"
-#include "content/browser/renderer_host/resource_handler.h"
+#include "content/browser/renderer_host/layered_resource_handler.h"
 #include "net/url_request/url_request_status.h"
 
 class ResourceDispatcherHost;
@@ -24,9 +24,11 @@ namespace webkit_blob {
 class DeletableFileReference;
 }
 
+namespace content {
+
 // Redirects network data to a file.  This is intended to be layered in front
 // of either the AsyncResourceHandler or the SyncResourceHandler.
-class RedirectToFileResourceHandler : public ResourceHandler {
+class RedirectToFileResourceHandler : public LayeredResourceHandler {
  public:
   RedirectToFileResourceHandler(
       ResourceHandler* next_handler,
@@ -34,15 +36,8 @@ class RedirectToFileResourceHandler : public ResourceHandler {
       ResourceDispatcherHost* resource_dispatcher_host);
 
   // ResourceHandler implementation:
-  virtual bool OnUploadProgress(int request_id,
-                                uint64 position,
-                                uint64 size) OVERRIDE;
-  virtual bool OnRequestRedirected(int request_id,
-                                   const GURL& new_url,
-                                   content::ResourceResponse* response,
-                                   bool* defer) OVERRIDE;
   virtual bool OnResponseStarted(int request_id,
-                                 content::ResourceResponse* response) OVERRIDE;
+                                 ResourceResponse* response) OVERRIDE;
   virtual bool OnWillStart(int request_id,
                            const GURL& url,
                            bool* defer) OVERRIDE;
@@ -69,7 +64,6 @@ class RedirectToFileResourceHandler : public ResourceHandler {
   base::WeakPtrFactory<RedirectToFileResourceHandler> weak_factory_;
 
   ResourceDispatcherHost* host_;
-  scoped_refptr<ResourceHandler> next_handler_;
   int process_id_;
   int request_id_;
 
@@ -100,5 +94,7 @@ class RedirectToFileResourceHandler : public ResourceHandler {
 
   DISALLOW_COPY_AND_ASSIGN(RedirectToFileResourceHandler);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_RENDERER_HOST_REDIRECT_TO_FILE_RESOURCE_HANDLER_H_

@@ -29,6 +29,8 @@
 #include "net/http/http_response_headers.h"
 #include "webkit/plugins/webplugininfo.h"
 
+namespace content {
+
 namespace {
 
 void RecordSnifferMetrics(bool sniffing_blocked,
@@ -61,7 +63,7 @@ void RecordSnifferMetrics(bool sniffing_blocked,
 BufferedResourceHandler::BufferedResourceHandler(ResourceHandler* handler,
                                                  ResourceDispatcherHost* host,
                                                  net::URLRequest* request)
-    : real_handler_(handler),
+    : LayeredResourceHandler(handler),
       host_(host),
       request_(request),
       read_buffer_size_(0),
@@ -72,46 +74,18 @@ BufferedResourceHandler::BufferedResourceHandler(ResourceHandler* handler,
       finished_(false) {
 }
 
-bool BufferedResourceHandler::OnUploadProgress(int request_id,
-                                               uint64 position,
-                                               uint64 size) {
-  return real_handler_->OnUploadProgress(request_id, position, size);
-}
-
-bool BufferedResourceHandler::OnRequestRedirected(
-    int request_id,
-    const GURL& new_url,
-    content::ResourceResponse* response,
-    bool* defer) {
-  return real_handler_->OnRequestRedirected(
-      request_id, new_url, response, defer);
-}
-
 bool BufferedResourceHandler::OnResponseStarted(
     int request_id,
-    content::ResourceResponse* response) {
+    ResourceResponse* response) {
   response_ = response;
   if (!DelayResponse())
     return CompleteResponseStarted(request_id);
   return true;
 }
 
-bool BufferedResourceHandler::OnResponseCompleted(
-    int request_id,
-    const net::URLRequestStatus& status,
-    const std::string& security_info) {
-  return real_handler_->OnResponseCompleted(request_id, status, security_info);
-}
-
 void BufferedResourceHandler::OnRequestClosed() {
   request_ = NULL;
-  real_handler_->OnRequestClosed();
-}
-
-bool BufferedResourceHandler::OnWillStart(int request_id,
-                                          const GURL& url,
-                                          bool* defer) {
-  return real_handler_->OnWillStart(request_id, url, defer);
+  next_handler_->OnRequestClosed();
 }
 
 // We'll let the original event handler provide a buffer, and reuse it for
@@ -129,7 +103,7 @@ bool BufferedResourceHandler::OnWillRead(int request_id, net::IOBuffer** buf,
   if (finished_)
     return false;
 
-  if (!real_handler_->OnWillRead(request_id, buf, buf_size, min_size)) {
+  if (!next_handler_->OnWillRead(request_id, buf, buf_size, min_size)) {
     return false;
   }
   read_buffer_ = *buf;
@@ -161,7 +135,7 @@ bool BufferedResourceHandler::OnReadCompleted(int request_id, int* bytes_read) {
 
   // Release the reference that we acquired at OnWillRead.
   read_buffer_ = NULL;
-  return real_handler_->OnReadCompleted(request_id, bytes_read);
+  return next_handler_->OnReadCompleted(request_id, bytes_read);
 }
 
 BufferedResourceHandler::~BufferedResourceHandler() {}
@@ -342,7 +316,7 @@ bool BufferedResourceHandler::CompleteResponseStarted(int request_id) {
 
     UseAlternateResourceHandler(request_id, handler);
   }
-  return real_handler_->OnResponseStarted(request_id, response_);
+  return next_handler_->OnResponseStarted(request_id, response_);
 }
 
 bool BufferedResourceHandler::ShouldWaitForPlugins() {
@@ -449,9 +423,9 @@ void BufferedResourceHandler::UseAlternateResourceHandler(
 
   // Inform the original ResourceHandler that this will be handled entirely by
   // the new ResourceHandler.
-  real_handler_->OnResponseStarted(info->request_id(), response_);
+  next_handler_->OnResponseStarted(info->request_id(), response_);
   net::URLRequestStatus status(net::URLRequestStatus::HANDLED_EXTERNALLY, 0);
-  real_handler_->OnResponseCompleted(info->request_id(), status, std::string());
+  next_handler_->OnResponseCompleted(info->request_id(), status, std::string());
 
   // Remove the non-owning pointer to the CrossSiteResourceHandler, if any,
   // from the extra request info because the CrossSiteResourceHandler (part of
@@ -460,7 +434,7 @@ void BufferedResourceHandler::UseAlternateResourceHandler(
 
   // This is handled entirely within the new ResourceHandler, so just reset the
   // original ResourceHandler.
-  real_handler_ = handler;
+  next_handler_ = handler;
 }
 
 void BufferedResourceHandler::OnPluginsLoaded(
@@ -475,3 +449,5 @@ void BufferedResourceHandler::OnPluginsLoaded(
   if (!CompleteResponseStarted(info->request_id()))
     host_->CancelRequest(info->child_id(), info->request_id(), false);
 }
+
+}  // namespace content

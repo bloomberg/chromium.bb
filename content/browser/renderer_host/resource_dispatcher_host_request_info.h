@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,13 +18,13 @@
 #include "net/url_request/url_request.h"
 #include "webkit/glue/resource_type.h"
 
-class CrossSiteResourceHandler;
 class ResourceDispatcherHost;
 class ResourceDispatcherHostLoginDelegate;
 class ResourceHandler;
 class SSLClientAuthHandler;
 
 namespace content {
+class CrossSiteResourceHandler;
 class ResourceContext;
 }
 
@@ -64,10 +64,10 @@ class ResourceDispatcherHostRequestInfo : public net::URLRequest::UserData {
   // CrossSiteResourceHandler for this request, if it is a cross-site request.
   // (NULL otherwise.) This handler is part of the chain of ResourceHandlers
   // pointed to by resource_handler, and is not owned by this class.
-  CrossSiteResourceHandler* cross_site_handler() {
+  content::CrossSiteResourceHandler* cross_site_handler() {
     return cross_site_handler_;
   }
-  void set_cross_site_handler(CrossSiteResourceHandler* h) {
+  void set_cross_site_handler(content::CrossSiteResourceHandler* h) {
     cross_site_handler_ = h;
   }
 
@@ -222,7 +222,10 @@ class ResourceDispatcherHostRequestInfo : public net::URLRequest::UserData {
   void set_paused_read_bytes(int bytes) { paused_read_bytes_ = bytes; }
 
   scoped_refptr<ResourceHandler> resource_handler_;
-  CrossSiteResourceHandler* cross_site_handler_;  // Non-owning, may be NULL.
+
+  // Non-owning, may be NULL.
+  content::CrossSiteResourceHandler* cross_site_handler_;
+
   scoped_refptr<ResourceDispatcherHostLoginDelegate> login_delegate_;
   scoped_refptr<SSLClientAuthHandler> ssl_client_auth_handler_;
   content::ProcessType process_type_;

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,8 +19,9 @@
 #include "net/base/net_errors.h"
 #include "webkit/blob/deletable_file_reference.h"
 
-using content::BrowserThread;
 using webkit_blob::DeletableFileReference;
+
+namespace content {
 
 // TODO(darin): Use the buffer sizing algorithm from AsyncResourceHandler.
 static const int kReadBufSize = 32768;
@@ -29,9 +30,9 @@ RedirectToFileResourceHandler::RedirectToFileResourceHandler(
     ResourceHandler* next_handler,
     int process_id,
     ResourceDispatcherHost* host)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
+    : LayeredResourceHandler(next_handler),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
       host_(host),
-      next_handler_(next_handler),
       process_id_(process_id),
       request_id_(-1),
       buf_(new net::GrowableIOBuffer()),
@@ -40,21 +41,6 @@ RedirectToFileResourceHandler::RedirectToFileResourceHandler(
       write_callback_pending_(false),
       request_was_closed_(false),
       completed_during_write_(false) {
-}
-
-bool RedirectToFileResourceHandler::OnUploadProgress(int request_id,
-                                                     uint64 position,
-                                                     uint64 size) {
-  return next_handler_->OnUploadProgress(request_id, position, size);
-}
-
-bool RedirectToFileResourceHandler::OnRequestRedirected(
-    int request_id,
-    const GURL& new_url,
-    content::ResourceResponse* response,
-    bool* defer) {
-  return next_handler_->OnRequestRedirected(request_id, new_url, response,
-                                            defer);
 }
 
 bool RedirectToFileResourceHandler::OnResponseStarted(
@@ -246,3 +232,5 @@ bool RedirectToFileResourceHandler::BufIsFull() const {
   // TODO(darin): Fix this retardation!
   return buf_->RemainingCapacity() <= (2 * net::kMaxBytesToSniff);
 }
+
+}  // namespace content

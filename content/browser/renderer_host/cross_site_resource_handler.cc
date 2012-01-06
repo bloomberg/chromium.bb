@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,7 +18,7 @@
 #include "net/base/io_buffer.h"
 #include "net/http/http_response_headers.h"
 
-using content::GlobalRequestID;
+namespace content {
 
 namespace {
 
@@ -40,7 +40,7 @@ CrossSiteResourceHandler::CrossSiteResourceHandler(
     int render_process_host_id,
     int render_view_id,
     ResourceDispatcherHost* resource_dispatcher_host)
-    : next_handler_(handler),
+    : LayeredResourceHandler(handler),
       render_process_host_id_(render_process_host_id),
       render_view_id_(render_view_id),
       has_started_response_(false),
@@ -49,18 +49,13 @@ CrossSiteResourceHandler::CrossSiteResourceHandler(
       completed_during_transition_(false),
       completed_status_(),
       response_(NULL),
-      rdh_(resource_dispatcher_host) {}
-
-bool CrossSiteResourceHandler::OnUploadProgress(int request_id,
-                                                uint64 position,
-                                                uint64 size) {
-  return next_handler_->OnUploadProgress(request_id, position, size);
+      rdh_(resource_dispatcher_host) {
 }
 
 bool CrossSiteResourceHandler::OnRequestRedirected(
     int request_id,
     const GURL& new_url,
-    content::ResourceResponse* response,
+    ResourceResponse* response,
     bool* defer) {
   // We should not have started the transition before being redirected.
   DCHECK(!in_cross_site_transition_);
@@ -70,7 +65,7 @@ bool CrossSiteResourceHandler::OnRequestRedirected(
 
 bool CrossSiteResourceHandler::OnResponseStarted(
     int request_id,
-    content::ResourceResponse* response) {
+    ResourceResponse* response) {
   // At this point, we know that the response is safe to send back to the
   // renderer: it is not a download, and it has passed the SSL and safe
   // browsing checks.
@@ -110,17 +105,6 @@ bool CrossSiteResourceHandler::OnResponseStarted(
   return true;
 }
 
-bool CrossSiteResourceHandler::OnWillStart(int request_id,
-                                           const GURL& url,
-                                           bool* defer) {
-  return next_handler_->OnWillStart(request_id, url, defer);
-}
-
-bool CrossSiteResourceHandler::OnWillRead(int request_id, net::IOBuffer** buf,
-                                          int* buf_size, int min_size) {
-  return next_handler_->OnWillRead(request_id, buf, buf_size, min_size);
-}
-
 bool CrossSiteResourceHandler::OnReadCompleted(int request_id,
                                                int* bytes_read) {
   if (!in_cross_site_transition_) {
@@ -158,10 +142,6 @@ bool CrossSiteResourceHandler::OnResponseCompleted(
   // Return false to tell RDH not to notify the world or clean up the
   // pending request.  We will do so in ResumeResponse.
   return false;
-}
-
-void CrossSiteResourceHandler::OnRequestClosed() {
-  next_handler_->OnRequestClosed();
 }
 
 // We can now send the response to the new renderer, which will cause
@@ -209,7 +189,7 @@ CrossSiteResourceHandler::~CrossSiteResourceHandler() {}
 // telling the old RenderViewHost to run its onunload handler.
 void CrossSiteResourceHandler::StartCrossSiteTransition(
     int request_id,
-    content::ResourceResponse* response,
+    ResourceResponse* response,
     const GlobalRequestID& global_id) {
   in_cross_site_transition_ = true;
   request_id_ = request_id;
@@ -238,8 +218,8 @@ void CrossSiteResourceHandler::StartCrossSiteTransition(
   // Tell the tab responsible for this request that a cross-site response is
   // starting, so that it can tell its old renderer to run its onunload
   // handler now.  We will wait to hear the corresponding ClosePage_ACK.
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI,
+  BrowserThread::PostTask(
+      BrowserThread::UI,
       FROM_HERE,
       base::Bind(
           &OnCrossSiteResponseHelper,
@@ -250,3 +230,5 @@ void CrossSiteResourceHandler::StartCrossSiteTransition(
   // TODO(creis): If the above call should fail, then we need to notify the IO
   // thread to proceed anyway, using ResourceDispatcherHost::OnClosePageACK.
 }
+
+}  // namespace content

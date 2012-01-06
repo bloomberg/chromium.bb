@@ -527,7 +527,8 @@ void ResourceDispatcherHost::BeginRequest(
 
   // The RedirectToFileResourceHandler depends on being next in the chain.
   if (request_data.download_to_file)
-    handler = new RedirectToFileResourceHandler(handler, child_id, this);
+    handler = new content::RedirectToFileResourceHandler(handler, child_id,
+                                                         this);
 
   if (HandleExternalProtocol(request_id, child_id, route_id,
                              request_data.url, request_data.resource_type,
@@ -608,14 +609,14 @@ void ResourceDispatcherHost::BeginRequest(
           HasPendingCrossSiteRequest(child_id, route_id)) {
     // Wrap the event handler to be sure the current page's onunload handler
     // has a chance to run before we render the new page.
-    handler = new CrossSiteResourceHandler(handler,
-                                           child_id,
-                                           route_id,
-                                           this);
+    handler = new content::CrossSiteResourceHandler(handler,
+                                                    child_id,
+                                                    route_id,
+                                                    this);
   }
 
   // Insert a buffered event handler before the actual one.
-  handler = new BufferedResourceHandler(handler, this, request);
+  handler = new content::BufferedResourceHandler(handler, this, request);
 
   if (delegate_) {
     bool sub = request_data.resource_type != ResourceType::MAIN_FRAME;
