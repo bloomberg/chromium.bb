@@ -446,9 +446,9 @@ class TestGypNinja(TestGypBase):
     # Enclosing the name in a list avoids prepending the original dir.
     program = [self.built_file_path(name, type=self.EXECUTABLE, **kw)]
     if sys.platform == 'darwin':
-      libdir = os.path.join('out', 'Default', 'lib')
+      libdir = os.path.join('out', 'Default')
       if self.configuration:
-        libdir = os.path.join('out', self.configuration, 'lib')
+        libdir = os.path.join('out', self.configuration)
       os.environ['DYLD_LIBRARY_PATH'] = libdir
     return self.run(program=program, *args, **kw)
 
@@ -463,7 +463,8 @@ class TestGypNinja(TestGypBase):
       if sys.platform != 'darwin':
         result.append('obj')
     elif type == self.SHARED_LIB:
-      result.append('lib')
+      if sys.platform != 'darwin':
+        result.append('lib')
     subdir = kw.get('subdir')
     if subdir:
       result.append(subdir)

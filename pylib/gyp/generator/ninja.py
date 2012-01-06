@@ -669,7 +669,6 @@ class NinjaWriter:
     path = self.ExpandSpecial(generator_default_variables['PRODUCT_DIR'])
     return os.path.join(path, self.xcode_settings.GetExecutablePath())
 
-
   def ComputeOutputFileName(self, spec):
     """Compute the filename of the final output for the current target."""
 
@@ -727,19 +726,19 @@ class NinjaWriter:
       path = os.path.join(spec['product_dir'], filename)
       return self.ExpandSpecial(path)
 
-    # Executables and loadable modules go into the output root,
-    # libraries go into shared library dir, and everything else
-    # goes into the normal place.
-    if spec['type'] in ('executable', 'loadable_module'):
+    # Some products go into the output root, libraries go into shared library
+    # dir, and everything else goes into the normal place.
+    type_in_output_root = ['executable', 'loadable_module']
+    if self.flavor == 'mac' and self.toolset == 'target':
+      type_in_output_root += ['shared_library', 'static_library']
+
+    if spec['type'] in type_in_output_root:
       return filename
     elif spec['type'] == 'shared_library':
       libdir = 'lib'
       if self.toolset != 'target':
         libdir = 'lib/%s' % self.toolset
       return os.path.join(libdir, filename)
-    elif spec['type'] == 'static_library' and self.flavor == 'mac':
-      # Static libraries go into the output root on mac, too.
-      return filename
     else:
       return self.GypPathToUniqueOutput(filename, qualified=False)
 
