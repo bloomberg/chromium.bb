@@ -5,7 +5,6 @@
 #include "content/browser/renderer_host/media/media_stream_device_settings.h"
 
 #include "base/stl_util.h"
-#include "base/task.h"
 #include "content/browser/renderer_host/media/media_stream_settings_requester.h"
 #include "content/common/media/media_stream_options.h"
 #include "content/public/browser/browser_thread.h"

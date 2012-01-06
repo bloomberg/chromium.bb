@@ -14,7 +14,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/process.h"
-#include "base/task.h"
 #include "chrome/common/metrics_helpers.h"
 #include "content/public/renderer/render_process_observer.h"
 

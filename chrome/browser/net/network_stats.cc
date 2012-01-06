@@ -10,7 +10,6 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/stringprintf.h"
-#include "base/task.h"
 #include "base/threading/platform_thread.h"
 #include "base/time.h"
 #include "base/tuple.h"

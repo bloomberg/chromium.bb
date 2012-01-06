@@ -13,7 +13,6 @@
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/task.h"
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
 

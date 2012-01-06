@@ -8,7 +8,6 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/task.h"
 #include "content/browser/geolocation/location_provider.h"
 #include "content/browser/geolocation/win7_location_api_win.h"
 #include "content/common/content_export.h"

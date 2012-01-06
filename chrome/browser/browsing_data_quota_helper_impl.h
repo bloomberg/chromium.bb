@@ -14,6 +14,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/time.h"
 #include "chrome/browser/browsing_data_quota_helper.h"
 #include "content/public/browser/browser_thread.h"

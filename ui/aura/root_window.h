@@ -10,7 +10,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
-#include "base/task.h"
 #include "ui/aura/aura_export.h"
 #include "ui/aura/cursor.h"
 #include "ui/aura/focus_manager.h"

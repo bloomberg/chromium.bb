@@ -16,7 +16,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/process.h"
-#include "base/task.h"
 #include "ipc/ipc_channel.h"
 #include "content/public/common/child_process_host_delegate.h"
 #include "printing/pdf_render_settings.h"

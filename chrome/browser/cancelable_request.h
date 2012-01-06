@@ -102,7 +102,6 @@
 #include "base/message_loop.h"
 #include "base/synchronization/cancellation_flag.h"
 #include "base/synchronization/lock.h"
-#include "base/task.h"
 #include "build/build_config.h"
 
 class CancelableRequestBase;

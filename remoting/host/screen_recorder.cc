@@ -255,7 +255,7 @@ void ScreenRecorder::DoSendVideoPacket(VideoPacket* packet) {
     } else {
       // TODO(hclam): Fix this code since it causes multiple deletion if there's
       // more than one connection.
-      done_task = base::Bind(&DeletePointer<VideoPacket>, packet);
+      done_task = base::Bind(&base::DeletePointer<VideoPacket>, packet);
     }
 
     (*i)->video_stub()->ProcessVideoPacket(packet, done_task);

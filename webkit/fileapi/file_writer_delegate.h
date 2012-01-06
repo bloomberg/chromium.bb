@@ -10,7 +10,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop_proxy.h"
 #include "base/platform_file.h"
-#include "base/task.h"
 #include "base/time.h"
 #include "net/base/file_stream.h"
 #include "net/base/io_buffer.h"

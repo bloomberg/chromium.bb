@@ -6,7 +6,6 @@
 
 #include "base/message_loop.h"
 #include "base/string_util.h"
-#include "base/task.h"
 #include "chrome/browser/extensions/extension_devtools_bridge.h"
 #include "chrome/browser/extensions/extension_devtools_events.h"
 

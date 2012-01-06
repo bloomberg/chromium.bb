@@ -8,7 +8,6 @@
 #include "base/json/json_writer.h"
 #include "base/message_loop.h"
 #include "base/string_number_conversions.h"
-#include "base/task.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 

@@ -10,7 +10,6 @@
 #include <list>
 
 #include "base/basictypes.h"
-#include "base/task.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/timer.h"
 #include "net/base/completion_callback.h"

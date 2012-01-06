@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <vector>
 
+#include "base/debug/alias.h"
 #include "base/hash_tables.h"
 #include "base/logging.h"
 #include "base/shared_memory.h"

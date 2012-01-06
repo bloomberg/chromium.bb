@@ -15,7 +15,6 @@
 #include "base/memory/scoped_handle.h"
 #include "base/stack_container.h"
 #include "base/synchronization/lock.h"
-#include "base/task.h"
 #include "base/threading/thread.h"
 #include "base/timer.h"
 #include "chrome/test/automation/automation_proxy.h"

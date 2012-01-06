@@ -5,7 +5,6 @@
 #include "chrome/browser/net/net_pref_observer.h"
 
 #include "base/bind.h"
-#include "base/task.h"
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prerender/prerender_manager.h"

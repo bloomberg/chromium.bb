@@ -12,7 +12,6 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/task.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/tab_contents/background_contents.h"
 #include "content/public/browser/notification_observer.h"

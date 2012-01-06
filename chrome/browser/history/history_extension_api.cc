@@ -10,7 +10,6 @@
 #include "base/json/json_writer.h"
 #include "base/message_loop.h"
 #include "base/string_number_conversions.h"
-#include "base/task.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_event_router.h"
 #include "chrome/browser/history/history.h"

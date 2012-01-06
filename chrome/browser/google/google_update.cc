@@ -13,7 +13,6 @@
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
-#include "base/task.h"
 #include "base/threading/thread.h"
 #include "base/win/scoped_comptr.h"
 #include "base/win/windows_version.h"

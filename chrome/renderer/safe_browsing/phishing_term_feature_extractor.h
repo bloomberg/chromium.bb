@@ -23,9 +23,9 @@
 #include "base/hash_tables.h"
 #include "base/memory/mru_cache.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/string_piece.h"
 #include "base/string16.h"
-#include "base/task.h"
 
 namespace safe_browsing {
 class FeatureExtractorClock;

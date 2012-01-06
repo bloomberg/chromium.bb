@@ -5,6 +5,7 @@
 #include "chrome/test/webdriver/webdriver_key_converter.h"
 
 #include "base/format_macros.h"
+#include "base/logging.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/automation_constants.h"

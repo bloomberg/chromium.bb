@@ -5,6 +5,7 @@
 #include "content/browser/renderer_host/render_process_host_browsertest.h"
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/process.h"
 #include "chrome/browser/ui/browser.h"
@@ -37,8 +38,6 @@ void PostQuit(MessageLoop* loop) {
   loop->PostTask(FROM_HERE, MessageLoop::QuitClosure());
 }
 
-void DoNothing() {}
-
 // Show a tab, activating the current one if there is one, and wait for
 // the renderer process to be created or foregrounded, returning the process
 // handle.
@@ -50,7 +49,7 @@ base::ProcessHandle RenderProcessHostTest::ShowSingletonTab(const GURL& page) {
   // Ensure that the backgrounding / foregrounding gets a chance to run.
   content::BrowserThread::PostTaskAndReply(
       content::BrowserThread::PROCESS_LAUNCHER, FROM_HERE,
-      base::Bind(DoNothing), MessageLoop::QuitClosure());
+      base::Bind(&base::DoNothing), MessageLoop::QuitClosure());
   MessageLoop::current()->Run();
 
   return wc->GetRenderProcessHost()->GetHandle();

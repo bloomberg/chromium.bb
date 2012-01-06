@@ -12,7 +12,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/singleton.h"
 #include "base/string16.h"
-#include "base/task.h"
 #include "chrome/browser/accessibility/accessibility_events.h"
 #include "ui/base/accessibility/accessibility_types.h"
 

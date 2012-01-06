@@ -9,7 +9,6 @@
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "base/task.h"
 #include "chrome/browser/tab_contents/chrome_interstitial_page.h"
 #include "net/base/network_change_notifier.h"
 

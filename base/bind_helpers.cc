@@ -2,9 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/task.h"
+#include "base/bind_helpers.h"
+
+#include "base/callback.h"
 
 namespace base {
+
+void DoNothing() {
+}
 
 ScopedClosureRunner::ScopedClosureRunner(const Closure& closure)
     : closure_(closure) {

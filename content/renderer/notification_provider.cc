@@ -5,7 +5,6 @@
 #include "content/renderer/notification_provider.h"
 
 #include "base/string_util.h"
-#include "base/task.h"
 #include "content/common/desktop_notification_messages.h"
 #include "content/common/view_messages.h"
 #include "content/renderer/render_view_impl.h"

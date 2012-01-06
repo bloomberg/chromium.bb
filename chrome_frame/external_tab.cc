@@ -7,7 +7,6 @@
 #include "base/lazy_instance.h"
 #include "base/location.h"
 #include "chrome_frame/external_tab.h"
-#include "base/task.h"
 #include "base/synchronization/waitable_event.h"
 #include "chrome/common/automation_messages.h"
 #include "chrome_frame/chrome_frame_delegate.h"

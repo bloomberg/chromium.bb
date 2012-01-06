@@ -14,7 +14,6 @@
 #include "base/memory/singleton.h"
 #include "base/observer_list_threadsafe.h"
 #include "base/synchronization/lock.h"
-#include "base/task.h"
 #include "base/values.h"
 #include "content/common/content_export.h"
 #include "content/common/gpu/gpu_feature_flags.h"

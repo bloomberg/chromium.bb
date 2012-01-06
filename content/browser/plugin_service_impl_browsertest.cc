@@ -5,6 +5,7 @@
 #include "content/browser/plugin_service_impl.h"
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/path_service.h"
 #include "chrome/browser/ui/browser.h"
@@ -148,8 +149,6 @@ class MockCanceledPluginServiceClient : public PluginProcessHost::Client {
   DISALLOW_COPY_AND_ASSIGN(MockCanceledPluginServiceClient);
 };
 
-void DoNothing() {}
-
 void QuitUIMessageLoopFromIOThread() {
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                           MessageLoop::QuitClosure());
@@ -168,7 +167,7 @@ void OpenChannelAndThenCancel(PluginProcessHost::Client* client) {
   // the UI thread to stop and exit the test.
   BrowserThread::PostTaskAndReply(
       BrowserThread::FILE, FROM_HERE,
-      base::Bind(&DoNothing),
+      base::Bind(&base::DoNothing),
       base::Bind(&QuitUIMessageLoopFromIOThread));
 }
 

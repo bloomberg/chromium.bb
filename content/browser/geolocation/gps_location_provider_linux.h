@@ -14,7 +14,6 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/task.h"
 #include "content/browser/geolocation/location_provider.h"
 #include "content/common/content_export.h"
 #include "content/common/geoposition.h"

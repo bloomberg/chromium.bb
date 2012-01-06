@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
@@ -36,9 +37,6 @@ class BrowserThreadTest : public testing::Test {
   static void BasicFunction(MessageLoop* message_loop) {
     CHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
     message_loop->PostTask(FROM_HERE, MessageLoop::QuitClosure());
-  }
-
-  static void DoNothing() {
   }
 
   class DeletedOnFile
@@ -119,7 +117,7 @@ TEST_F(BrowserThreadTest, PostTaskAndReply) {
   ASSERT_TRUE(BrowserThread::PostTaskAndReply(
       BrowserThread::FILE,
       FROM_HERE,
-      base::Bind(&BrowserThreadTest::DoNothing),
+      base::Bind(&base::DoNothing),
       base::Bind(&MessageLoop::Quit,
                  base::Unretained(MessageLoop::current()->current()))));
   MessageLoop::current()->Run();

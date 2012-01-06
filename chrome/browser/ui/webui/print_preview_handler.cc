@@ -189,8 +189,9 @@ void ReportPrintSettingsStats(const DictionaryValue& settings) {
 void PrintToPdfCallback(Metafile* metafile, const FilePath& path) {
   metafile->SaveTo(path);
   // |metafile| must be deleted on the UI thread.
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::Bind(&DeletePointer<Metafile>, metafile));
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&base::DeletePointer<Metafile>, metafile));
 }
 
 }  // namespace

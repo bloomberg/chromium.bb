@@ -5,8 +5,8 @@
 #include "chrome/browser/platform_util.h"
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/file_util.h"
-#include "base/task.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/file_manager_util.h"
 #include "chrome/browser/tabs/tab_strip_model.h"

@@ -15,7 +15,6 @@
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
-#include "base/task.h"
 #include "base/utf_string_conversions.h"
 #include "net/base/net_util.h"
 

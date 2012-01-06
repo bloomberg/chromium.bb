@@ -5,7 +5,6 @@
 #include "remoting/protocol/protobuf_video_writer.h"
 
 #include "base/bind.h"
-#include "base/task.h"
 #include "net/socket/stream_socket.h"
 #include "remoting/base/constants.h"
 #include "remoting/proto/video.pb.h"

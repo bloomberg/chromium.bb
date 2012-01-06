@@ -9,6 +9,7 @@
 #include "content/gpu/gpu_watchdog_thread.h"
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/process_util.h"
 #include "base/process.h"
@@ -17,10 +18,7 @@
 
 namespace {
 const int64 kCheckPeriod = 2000;
-
-void DoNothing() {
-}
-}
+}  // namespace
 
 GpuWatchdogThread::GpuWatchdogThread(int timeout)
     : base::Thread("Watchdog"),
@@ -179,7 +177,7 @@ void GpuWatchdogThread::OnCheck() {
   // also wake up the observer. This simply ensures there is at least one.
   watched_message_loop_->PostTask(
       FROM_HERE,
-      base::Bind(&DoNothing));
+      base::Bind(&base::DoNothing));
 
   // Post a task to the watchdog thread to exit if the monitored thread does
   // not respond in time.

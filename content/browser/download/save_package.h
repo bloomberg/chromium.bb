@@ -16,7 +16,6 @@
 #include "base/hash_tables.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/task.h"
 #include "base/time.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/download_item.h"

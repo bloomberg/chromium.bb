@@ -9,7 +9,6 @@
 #include "base/command_line.h"
 #include "base/hash_tables.h"
 #include "base/logging.h"
-#include "base/task.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"

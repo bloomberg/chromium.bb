@@ -5,7 +5,6 @@
 #include "remoting/jingle_glue/jingle_info_request.h"
 
 #include "base/bind.h"
-#include "base/task.h"
 #include "base/message_loop.h"
 #include "base/stl_util.h"
 #include "base/string_number_conversions.h"

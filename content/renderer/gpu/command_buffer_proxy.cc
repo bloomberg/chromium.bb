@@ -4,12 +4,12 @@
 
 #include "content/renderer/gpu/command_buffer_proxy.h"
 
+#include "base/callback.h"
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/process_util.h"
 #include "base/shared_memory.h"
 #include "base/stl_util.h"
-#include "base/task.h"
 #include "content/common/child_process_messages.h"
 #include "content/common/child_thread.h"
 #include "content/common/gpu/gpu_messages.h"

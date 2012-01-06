@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_UI_VIEWS_LOGIN_VIEW_H_
 #pragma once
 
-#include "base/task.h"
 #include "chrome/browser/ui/login/login_model.h"
 #include "ui/views/view.h"
 

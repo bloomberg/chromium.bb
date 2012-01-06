@@ -23,7 +23,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/process.h"
 #include "base/synchronization/lock.h"
-#include "base/task.h"
 #include "content/browser/renderer_host/media/video_capture_controller_event_handler.h"
 #include "content/common/media/video_capture.h"
 #include "media/video/capture/video_capture.h"

@@ -12,7 +12,6 @@
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/task.h"
 #include "chrome/browser/extensions/settings/settings_storage.h"
 #include "chrome/browser/extensions/settings/settings_storage_factory.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"

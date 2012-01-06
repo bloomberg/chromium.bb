@@ -11,7 +11,6 @@
 #include "base/bind.h"
 #include "base/file_path.h"
 #include "base/message_loop.h"
-#include "base/task.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"

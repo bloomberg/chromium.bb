@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_UI_PANELS_BASE_PANEL_BROWSER_TEST_H_
 #pragma once
 
-#include "base/task.h"
 #include "base/values.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/panels/auto_hiding_desktop_bar.h"

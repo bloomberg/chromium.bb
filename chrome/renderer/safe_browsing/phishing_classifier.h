@@ -19,9 +19,10 @@
 #define CHROME_RENDERER_SAFE_BROWSING_PHISHING_CLASSIFIER_H_
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/string16.h"
-#include "base/task.h"
 
 namespace content {
 class RenderView;

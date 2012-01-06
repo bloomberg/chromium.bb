@@ -8,7 +8,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/string_util.h"
-#include "base/task.h"
 #include "content/browser/net/url_request_abort_on_end_job.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/io_buffer.h"

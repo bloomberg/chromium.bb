@@ -4,6 +4,8 @@
 
 #include "remoting/protocol/client_control_dispatcher.h"
 
+#include "base/bind_helpers.h"
+#include "base/callback.h"
 #include "base/message_loop_proxy.h"
 #include "net/socket/stream_socket.h"
 #include "remoting/base/constants.h"

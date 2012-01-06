@@ -5,7 +5,6 @@
 #import "chrome/browser/ui/cocoa/extensions/extension_action_context_menu.h"
 
 #include "base/sys_string_conversions.h"
-#include "base/task.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"

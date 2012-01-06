@@ -5,7 +5,7 @@
 #ifndef WEBKIT_PLUGINS_PPAPI_MESSAGE_CHANNEL_H_
 #define WEBKIT_PLUGINS_PPAPI_MESSAGE_CHANNEL_H_
 
-#include "base/task.h"
+#include "base/memory/weak_ptr.h"
 #include "ppapi/shared_impl/resource.h"
 #include "third_party/npapi/bindings/npruntime.h"
 
@@ -102,4 +102,3 @@ class MessageChannel {
 }  // namespace webkit
 
 #endif  // WEBKIT_PLUGINS_PPAPI_MESSAGE_CHANNEL_H_
-

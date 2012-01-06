@@ -33,7 +33,6 @@
 #include "base/message_loop.h"
 #include "base/string16.h"
 #include "base/string_util.h"
-#include "base/task.h"
 #include "base/threading/non_thread_safe.h"
 #include "content/common/content_export.h"
 

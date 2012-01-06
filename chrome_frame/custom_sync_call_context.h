@@ -9,6 +9,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/tuple.h"
 #include "chrome_frame/sync_msg_reply_dispatcher.h"
 #include "chrome_frame/chrome_frame_automation.h"
 #include "ipc/ipc_sync_message.h"

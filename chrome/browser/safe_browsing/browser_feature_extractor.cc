@@ -12,7 +12,6 @@
 #include "base/format_macros.h"
 #include "base/stl_util.h"
 #include "base/stringprintf.h"
-#include "base/task.h"
 #include "base/time.h"
 #include "chrome/browser/cancelable_request.h"
 #include "chrome/browser/history/history.h"

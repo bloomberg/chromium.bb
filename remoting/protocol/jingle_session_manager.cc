@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/message_loop_proxy.h"
 #include "base/string_util.h"
-#include "base/task.h"
 #include "remoting/base/constants.h"
 #include "remoting/jingle_glue/jingle_info_request.h"
 #include "remoting/jingle_glue/jingle_signaling_connector.h"

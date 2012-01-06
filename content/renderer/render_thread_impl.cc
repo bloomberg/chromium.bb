@@ -18,7 +18,6 @@
 #include "base/metrics/stats_table.h"
 #include "base/shared_memory.h"
 #include "base/string_number_conversions.h"  // Temporary
-#include "base/task.h"
 #include "base/threading/thread_local.h"
 #include "base/values.h"
 #include "base/win/scoped_com_initializer.h"

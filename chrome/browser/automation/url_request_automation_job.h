@@ -8,7 +8,6 @@
 #pragma once
 
 #include "base/memory/weak_ptr.h"
-#include "base/task.h"
 #include "chrome/common/ref_counted_util.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_job.h"

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/message_loop_proxy.h"
 #include "base/time.h"
 #include "net/socket/socket.h"
@@ -261,8 +262,6 @@ class JingleSessionTest : public testing::Test {
     client_socket_.reset(client_socket);
     host_socket_.reset(host_socket);
   }
-
-  static void DoNothing() { }
 
   JingleThreadMessageLoop message_loop_;
 

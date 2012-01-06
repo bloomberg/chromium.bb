@@ -5,6 +5,7 @@
 #include "chrome/common/net/gaia/gaia_oauth_client.h"
 
 #include "base/json/json_reader.h"
+#include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/common/net/http_return.h"

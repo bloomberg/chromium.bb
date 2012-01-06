@@ -10,7 +10,6 @@
 #include "base/rand_util.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
-#include "base/task.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/service/cloud_print/cloud_print_consts.h"

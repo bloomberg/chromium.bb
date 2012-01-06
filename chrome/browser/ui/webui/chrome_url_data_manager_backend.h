@@ -12,7 +12,6 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/task.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "net/url_request/url_request_job_factory.h"
 

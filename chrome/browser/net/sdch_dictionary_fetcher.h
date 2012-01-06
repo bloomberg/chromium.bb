@@ -15,7 +15,7 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
-#include "base/task.h"
+#include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "content/public/common/url_fetcher_delegate.h"
 #include "net/base/sdch_manager.h"

@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/message_loop.h"
-#include "base/task.h"
 #include "media/base/demuxer.h"
 #include "media/base/filter_host.h"
 #include "media/base/filters.h"

@@ -10,7 +10,6 @@
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/task.h"
 #include "base/time.h"
 #include "chrome/browser/chromeos/system/name_value_pairs_parser.h"
 #include "chrome/browser/chromeos/system/runtime_environment.h"

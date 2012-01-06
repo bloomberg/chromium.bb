@@ -9,6 +9,7 @@
 #include "base/callback.h"
 #include "base/file_util.h"
 #include "base/json/json_value_serializer.h"
+#include "base/memory/weak_ptr.h"
 #include "base/path_service.h"
 #include "base/stl_util.h"
 #include "base/utf_string_conversions.h"
@@ -62,7 +63,7 @@ class TestIPCSender : public IPC::Message::Sender {
 
   // Adds a Task to the queue. We will fire these in order as events are
   // dispatched.
-  void PushTask(base::Closure task) {
+  void PushTask(const base::Closure& task) {
     task_queue_.push(task);
   }
 
@@ -361,9 +362,6 @@ class ExtensionWebRequestHeaderModificationTest :
   scoped_refptr<TestURLRequestContext> context_;
 };
 
-static void DoNothing() {
-}
-
 TEST_P(ExtensionWebRequestHeaderModificationTest, TestModifications) {
   std::string extension1_id("1");
   std::string extension2_id("2");
@@ -439,7 +437,7 @@ TEST_P(ExtensionWebRequestHeaderModificationTest, TestModifications) {
   }
 
   // Don't do anything for the onSendHeaders message.
-  ipc_sender_.PushTask(base::Bind(&DoNothing));
+  ipc_sender_.PushTask(base::Bind(&base::DoNothing));
 
   // Note that we mess up the headers slightly:
   // request.Start() will first add additional headers (e.g. the User-Agent)

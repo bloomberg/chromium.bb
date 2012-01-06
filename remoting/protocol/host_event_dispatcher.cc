@@ -4,6 +4,7 @@
 
 #include "remoting/protocol/host_event_dispatcher.h"
 
+#include "base/bind_helpers.h"
 #include "net/socket/stream_socket.h"
 #include "remoting/base/constants.h"
 #include "remoting/proto/event.pb.h"

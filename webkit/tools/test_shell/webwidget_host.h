@@ -8,7 +8,6 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/task.h"
 #include "skia/ext/platform_canvas.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"

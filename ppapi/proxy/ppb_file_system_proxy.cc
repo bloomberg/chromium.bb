@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/message_loop.h"
-#include "base/task.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_file_system.h"
 #include "ppapi/proxy/enter_proxy.h"

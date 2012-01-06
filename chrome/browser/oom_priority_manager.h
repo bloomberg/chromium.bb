@@ -14,7 +14,6 @@
 #include "base/process.h"
 #include "base/string16.h"
 #include "base/synchronization/lock.h"
-#include "base/task.h"
 #include "base/time.h"
 #include "base/timer.h"
 #include "content/public/browser/notification_observer.h"

@@ -10,7 +10,6 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
-#include "base/task.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
 

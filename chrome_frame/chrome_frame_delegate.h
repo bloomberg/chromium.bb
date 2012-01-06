@@ -17,7 +17,6 @@
 #include "base/location.h"
 #include "base/pending_task.h"
 #include "base/synchronization/lock.h"
-#include "base/task.h"
 #include "chrome/common/automation_constants.h"
 #include "ipc/ipc_message.h"
 

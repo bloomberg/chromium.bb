@@ -15,7 +15,6 @@
 #include "base/file_path.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop_proxy.h"
-#include "base/task.h"
 #include "webkit/appcache/appcache_database.h"
 #include "webkit/appcache/appcache_disk_cache.h"
 #include "webkit/appcache/appcache_export.h"

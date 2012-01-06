@@ -5,7 +5,7 @@
 #include "remoting/protocol/rtp_video_reader.h"
 
 #include "base/bind.h"
-#include "base/task.h"
+#include "base/bind_helpers.h"
 #include "remoting/base/constants.h"
 #include "remoting/proto/video.pb.h"
 #include "remoting/protocol/session.h"
@@ -216,7 +216,7 @@ void RtpVideoReader::RebuildVideoPacket(const PacketsQueue::iterator& first,
   packet->mutable_format()->set_encoding(VideoPacketFormat::ENCODING_VP8);
 
   video_stub_->ProcessVideoPacket(
-      packet, base::Bind(&DeletePointer<VideoPacket>, packet));
+      packet, base::Bind(&base::DeletePointer<VideoPacket>, packet));
 
   SendReceiverReportIf();
 }

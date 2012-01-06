@@ -4,6 +4,7 @@
 
 #include "webkit/plugins/ppapi/mock_plugin_delegate.h"
 
+#include "base/logging.h"
 #include "base/message_loop_proxy.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/shared_impl/ppapi_preferences.h"

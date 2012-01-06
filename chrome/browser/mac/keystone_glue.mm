@@ -18,7 +18,6 @@
 #include "base/mac/scoped_nsexception_enabler.h"
 #include "base/memory/ref_counted.h"
 #include "base/sys_string_conversions.h"
-#include "base/task.h"
 #include "base/threading/worker_pool.h"
 #include "chrome/browser/mac/authorization_util.h"
 #import "chrome/browser/mac/keystone_registration.h"

@@ -10,7 +10,6 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/task.h"
 #include "base/time.h"
 #include "chrome/browser/component_updater/component_updater_service.h"
 

@@ -13,7 +13,6 @@
 #include "base/json/json_writer.h"
 #include "base/message_loop.h"
 #include "base/stl_util.h"
-#include "base/task.h"
 #include "base/time.h"
 #include "chrome/browser/extensions/extension_event_router.h"
 #include "chrome/browser/extensions/extension_host.h"

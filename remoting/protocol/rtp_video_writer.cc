@@ -5,7 +5,7 @@
 #include "remoting/protocol/rtp_video_writer.h"
 
 #include "base/bind.h"
-#include "base/task.h"
+#include "base/callback.h"
 #include "net/base/io_buffer.h"
 #include "remoting/base/compound_buffer.h"
 #include "remoting/base/constants.h"

@@ -22,13 +22,12 @@ namespace media {
 static const int kChannels = 1;
 static const int kSampleRate = 1000;
 static const int kSampleBits = 8;
-static void DoNothing() {}
 
 TEST(AudioRendererAlgorithmBaseTest, FillBuffer_NormalRate) {
   // When playback rate == 1.0f: straight copy of whatever is in |queue_|.
   AudioRendererAlgorithmBase algorithm;
   algorithm.Initialize(kChannels, kSampleRate, kSampleBits, 1.0f,
-                       base::Bind(&DoNothing));
+                       base::Bind(&base::DoNothing));
 
   // Enqueue a buffer of any size since it doesn't matter.
   const size_t kDataSize = 1024;
@@ -45,7 +44,7 @@ TEST(AudioRendererAlgorithmBaseTest, FillBuffer_DoubleRate) {
   // When playback rate > 1.0f: input is read faster than output is written.
   AudioRendererAlgorithmBase algorithm;
   algorithm.Initialize(kChannels, kSampleRate, kSampleBits, 2.0f,
-                       base::Bind(&DoNothing));
+                       base::Bind(&base::DoNothing));
 
   // First parameter is the input buffer size, second parameter is how much data
   // we expect to consume in order to have no data left in the |algorithm|.
@@ -77,7 +76,7 @@ TEST(AudioRendererAlgorithmBaseTest, FillBuffer_HalfRate) {
   // When playback rate < 1.0f: input is read slower than output is written.
   AudioRendererAlgorithmBase algorithm;
   algorithm.Initialize(kChannels, kSampleRate, kSampleBits, 0.5f,
-                       base::Bind(&DoNothing));
+                       base::Bind(&base::DoNothing));
 
   // First parameter is the input buffer size, second parameter is how much data
   // we expect to consume in order to have no data left in the |algorithm|.
@@ -109,7 +108,7 @@ TEST(AudioRendererAlgorithmBaseTest, FillBuffer_QuarterRate) {
   // When playback rate is very low the audio is simply muted.
   AudioRendererAlgorithmBase algorithm;
   algorithm.Initialize(kChannels, kSampleRate, kSampleBits, 0.25f,
-                       base::Bind(&DoNothing));
+                       base::Bind(&base::DoNothing));
 
   // First parameter is the input buffer size, second parameter is how much data
   // we expect to consume in order to have no data left in the |algorithm|.

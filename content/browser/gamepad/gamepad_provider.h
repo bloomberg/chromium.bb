@@ -11,7 +11,6 @@
 #include "base/shared_memory.h"
 #include "base/synchronization/lock.h"
 #include "base/system_monitor/system_monitor.h"
-#include "base/task.h"
 #include "content/browser/gamepad/data_fetcher.h"
 #include "content/common/content_export.h"
 #include "content/common/gamepad_hardware_buffer.h"

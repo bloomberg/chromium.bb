@@ -7,7 +7,6 @@
 #include <gtk/gtk.h>
 
 #include "base/logging.h"
-#include "base/task.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"

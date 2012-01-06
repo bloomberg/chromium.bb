@@ -15,7 +15,6 @@
 #include "base/message_loop_proxy.h"
 #include "base/metrics/histogram.h"
 #include "base/string_number_conversions.h"
-#include "base/task.h"
 #include "base/threading/thread.h"
 #include "base/time.h"
 

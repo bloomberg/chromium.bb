@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind_helpers.h"
+
+#include "base/callback.h"
 #include "base/bind.h"
-#include "base/memory/ref_counted.h"
-#include "base/task.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -13,7 +14,7 @@ void Increment(int* value) {
   (*value)++;
 }
 
-TEST(TaskTest, TestScopedClosureRunnerExitScope) {
+TEST(BindHelpersTest, TestScopedClosureRunnerExitScope) {
   int run_count = 0;
   {
     base::ScopedClosureRunner runner(base::Bind(&Increment, &run_count));
@@ -22,7 +23,7 @@ TEST(TaskTest, TestScopedClosureRunnerExitScope) {
   EXPECT_EQ(1, run_count);
 }
 
-TEST(TaskTest, TestScopedClosureRunnerRelease) {
+TEST(BindHelpersTest, TestScopedClosureRunnerRelease) {
   int run_count = 0;
   base::Closure c;
   {

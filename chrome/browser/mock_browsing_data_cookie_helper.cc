@@ -4,6 +4,8 @@
 
 #include "chrome/browser/mock_browsing_data_cookie_helper.h"
 
+#include "base/logging.h"
+
 MockBrowsingDataCookieHelper::MockBrowsingDataCookieHelper(Profile* profile)
     : BrowsingDataCookieHelper(profile),
       profile_(profile) {

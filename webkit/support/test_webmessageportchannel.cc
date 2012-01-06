@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
-#include "base/task.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMessagePortChannelClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 

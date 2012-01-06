@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/json/json_writer.h"
-#include "base/task.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_cookies_api_constants.h"
 #include "chrome/browser/extensions/extension_cookies_helpers.h"

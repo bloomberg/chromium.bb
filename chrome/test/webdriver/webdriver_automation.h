@@ -13,7 +13,6 @@
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/task.h"
 #include "chrome/common/automation_constants.h"
 #include "chrome/test/webdriver/webdriver_logging.h"
 #include "ui/base/keycodes/keyboard_codes.h"

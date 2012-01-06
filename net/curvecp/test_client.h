@@ -6,7 +6,6 @@
 #define NET_CURVECP_TEST_CLIENT_H_
 #pragma once
 
-#include "base/task.h"
 #include "net/base/completion_callback.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/io_buffer.h"

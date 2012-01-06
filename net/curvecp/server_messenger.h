@@ -10,7 +10,6 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/task.h"
 #include "net/curvecp/messenger.h"
 #include "net/curvecp/packetizer.h"
 #include "net/socket/socket.h"

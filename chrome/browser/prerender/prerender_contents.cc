@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/process_util.h"
-#include "base/task.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/history/history_tab_helper.h"
 #include "chrome/browser/history/history_types.h"

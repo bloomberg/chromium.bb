@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 #include "chrome_frame/task_marshaller.h"
-#include "base/task.h"
+
+#include "base/callback.h"
+#include "base/logging.h"
 
 TaskMarshallerThroughMessageQueue::TaskMarshallerThroughMessageQueue()
     : wnd_(NULL),

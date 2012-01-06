@@ -9,7 +9,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/task.h"
 #include "base/threading/thread.h"
 #include "printing/page_number.h"
 #include "printing/printing_context.h"

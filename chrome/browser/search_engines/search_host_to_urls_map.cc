@@ -5,7 +5,6 @@
 #include "chrome/browser/search_engines/search_host_to_urls_map.h"
 
 #include "base/memory/scoped_ptr.h"
-#include "base/task.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 

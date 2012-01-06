@@ -6,7 +6,6 @@
 
 #include "base/message_loop.h"
 #include "base/synchronization/lock.h"
-#include "base/task.h"
 #include "content/browser/device_orientation/data_fetcher.h"
 #include "content/browser/device_orientation/orientation.h"
 #include "content/browser/device_orientation/provider.h"

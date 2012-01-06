@@ -12,7 +12,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop_proxy.h"
 #include "base/platform_file.h"
-#include "base/task.h"
 #include "net/http/http_byte_range.h"
 #include "net/url_request/url_request_job.h"
 

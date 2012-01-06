@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/file_path.h"
+#include "base/memory/weak_ptr.h"
 #include "base/string16.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/cros/burn_library.h"
@@ -58,8 +59,6 @@ class WebUIHandlerTaskProxy
   // WebUIHandlerTaskProxy is created on the UI thread, so in some cases,
   // we need to post back to the UI thread for destruction.
   void DeleteOnUIThread();
-
-  void DoNothing() {}
 
  private:
   base::WeakPtr<Delegate> delegate_;

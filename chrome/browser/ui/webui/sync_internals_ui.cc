@@ -9,7 +9,6 @@
 
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
-#include "base/task.h"
 #include "base/tracked_objects.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"

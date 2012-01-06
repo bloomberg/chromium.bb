@@ -27,7 +27,6 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/task.h"
 #include "jingle/notifier/base/notifier_options.h"
 #include "jingle/notifier/listener/mediator_thread.h"
 
