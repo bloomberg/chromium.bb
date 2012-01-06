@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,6 +26,7 @@ class ChromeFrameUnittestsModule
 
 ChromeFrameUnittestsModule _AtlModule;
 
+const char kNoCrashService[] = "no-crash-service";
 const char kNoRegistrationSwitch[] = "no-registration";
 
 void PureCall() {
@@ -43,10 +44,14 @@ int main(int argc, char **argv) {
   SetConfigBool(kChromeFrameHeadlessMode, true);
   SetConfigBool(kChromeFrameAccessibleMode, true);
 
-  base::ProcessHandle crash_service = chrome_frame_test::StartCrashService();
+  base::ProcessHandle crash_service = NULL;
+  google_breakpad::scoped_ptr<google_breakpad::ExceptionHandler> breakpad;
 
-  google_breakpad::scoped_ptr<google_breakpad::ExceptionHandler> breakpad(
-      InitializeCrashReporting(HEADLESS));
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(kNoCrashService)) {
+    crash_service = chrome_frame_test::StartCrashService();
+
+    breakpad.reset(InitializeCrashReporting(HEADLESS));
+  }
 
   int ret = -1;
   // If mini_installer is used to register CF, we use the switch
