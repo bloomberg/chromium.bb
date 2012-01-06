@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -924,6 +924,9 @@ var testing = {};
   function preloadJavascriptLibraries(testFixture, testName) {
     deferGlobalOverrides = true;
 
+    // The document seems to change from the point of preloading to the point of
+    // events (and doesn't fire), whereas the window does not. Listening to the
+    // capture phase allows this event to fire first.
     window.addEventListener('DOMContentLoaded', function() {
       overrideChrome();
 
@@ -932,7 +935,7 @@ var testing = {};
       deferGlobalOverrides = false;
       for (var funcName in globalOverrides)
         overrideGlobal(funcName);
-    });
+    }, true);
     currentTestCase = createTestCase(testFixture, testName);
     currentTestCase.preLoad();
   }
