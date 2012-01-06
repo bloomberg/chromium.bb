@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -28,7 +28,9 @@ ChildProcess::ChildProcess()
   DCHECK(!child_process_);
   child_process_ = this;
 
-  io_thread_.StartWithOptions(base::Thread::Options(MessageLoop::TYPE_IO, 0));
+  // We can't recover from failing to start the IO thread.
+  CHECK(io_thread_.StartWithOptions(
+            base::Thread::Options(MessageLoop::TYPE_IO, 0)));
 }
 
 ChildProcess::~ChildProcess() {
