@@ -55,6 +55,7 @@
         'base/gtk/gtk_expanded_container_unittest.cc',
         'base/gtk/gtk_im_context_util_unittest.cc',
         'base/ime/character_composer_unittest.cc',
+        'base/ime/input_method_ibus_unittest.cc',
         'base/l10n/l10n_util_mac_unittest.mm',
         'base/l10n/l10n_util_unittest.cc',
         'base/models/list_model_unittest.cc',
@@ -155,6 +156,12 @@
             }],
           ],
         }],
+        ['use_x11 == 0', {
+          'sources!': [
+            'base/ime/character_composer_unittest.cc',
+            'base/ime/input_method_ibus_unittest.cc',
+          ],
+        }],
         ['toolkit_uses_gtk == 1', {
           'sources': [
             'base/dragdrop/gtk_dnd_util_unittest.cc',
@@ -173,10 +180,10 @@
             'base/view_prop_unittest.cc',
             'gfx/screen_unittest.cc',
           ],
-        }],
-        ['use_ibus != 1', {
+        }, { # else: use_aura != 1
           'sources/': [
             ['exclude', 'base/ime/character_composer_unittest.cc'],
+            ['exclude', 'base/ime/input_method_ibus_unittest.cc'],
           ],
         }],
       ],

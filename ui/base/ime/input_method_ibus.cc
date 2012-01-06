@@ -1,14 +1,16 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "ui/base/ime/input_method_ibus.h"
 
-#include <ibus.h>
-
+#include <glib.h>
+#include <glib-object.h>
 #include <X11/X.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
+#undef FocusIn
+#undef FocusOut
 
 #include <algorithm>
 #include <cstring>
@@ -16,16 +18,17 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/i18n/char_iterator.h"
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "base/third_party/icu/icu_utf.h"
 #include "base/utf_string_conversions.h"
 #include "ui/base/events.h"
+#include "ui/base/ime/ibus_client_impl.h"
+#include "ui/base/ime/mock_ibus_client.h"
 #include "ui/base/ime/text_input_client.h"
-#include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/keycodes/keyboard_code_conversion.h"
 #include "ui/base/keycodes/keyboard_code_conversion_x.h"
+#include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/gfx/rect.h"
 
 namespace {
@@ -35,31 +38,21 @@ XKeyEvent* GetKeyEvent(XEvent* event) {
   return &event->xkey;
 }
 
-// Converts ibus key state flags to event flags.
-int EventFlagsFromIBusState(guint32 state) {
-  return (state & IBUS_LOCK_MASK ? ui::EF_CAPS_LOCK_DOWN : 0) |
-         (state & IBUS_CONTROL_MASK ? ui::EF_CONTROL_DOWN : 0) |
-         (state & IBUS_SHIFT_MASK ? ui::EF_SHIFT_DOWN : 0) |
-         (state & IBUS_MOD1_MASK ? ui::EF_ALT_DOWN : 0) |
-         (state & IBUS_BUTTON1_MASK ? ui::EF_LEFT_MOUSE_BUTTON : 0) |
-         (state & IBUS_BUTTON2_MASK ? ui::EF_MIDDLE_MOUSE_BUTTON : 0) |
-         (state & IBUS_BUTTON3_MASK ? ui::EF_RIGHT_MOUSE_BUTTON : 0);
+// Converts X (and ibus) flags to event flags.
+int EventFlagsFromXFlags(unsigned int flags) {
+  return (flags & LockMask ? ui::EF_CAPS_LOCK_DOWN : 0) |
+      (flags & ControlMask ? ui::EF_CONTROL_DOWN : 0) |
+      (flags & ShiftMask ? ui::EF_SHIFT_DOWN : 0) |
+      (flags & Mod1Mask ? ui::EF_ALT_DOWN : 0) |
+      (flags & Button1Mask ? ui::EF_LEFT_MOUSE_BUTTON : 0) |
+      (flags & Button2Mask ? ui::EF_MIDDLE_MOUSE_BUTTON : 0) |
+      (flags & Button3Mask ? ui::EF_RIGHT_MOUSE_BUTTON : 0);
 }
 
 // Converts X flags to ibus key state flags.
 guint32 IBusStateFromXFlags(unsigned int flags) {
-  return (flags & LockMask ? IBUS_LOCK_MASK : 0U) |
-      (flags & ControlMask ? IBUS_CONTROL_MASK : 0U) |
-      (flags & ShiftMask ? IBUS_SHIFT_MASK : 0U) |
-      (flags & Mod1Mask ? IBUS_MOD1_MASK : 0U) |
-      (flags & Button1Mask ? IBUS_BUTTON1_MASK : 0U) |
-      (flags & Button2Mask ? IBUS_BUTTON2_MASK : 0U) |
-      (flags & Button3Mask ? IBUS_BUTTON3_MASK : 0U);
-}
-
-// Converts X flags to event flags.
-guint32 EventFlagsFromXFlags(unsigned int flags) {
-  return EventFlagsFromIBusState(IBusStateFromXFlags(flags));
+  return (flags & (LockMask | ControlMask | ShiftMask | Mod1Mask |
+                   Button1Mask | Button2Mask | Button3Mask));
 }
 
 void IBusKeyEventFromNativeKeyEvent(const base::NativeEvent& native_event,
@@ -77,102 +70,29 @@ void IBusKeyEventFromNativeKeyEvent(const base::NativeEvent& native_event,
   *ibus_keycode = x_key->keycode;
   *ibus_state = IBusStateFromXFlags(x_key->state);
   if (native_event->type == KeyRelease)
-    *ibus_state |= IBUS_RELEASE_MASK;
-}
-
-void ExtractCompositionTextFromIBusPreedit(IBusText* text,
-                                           guint cursor_position,
-                                           ui::CompositionText* composition) {
-  composition->Clear();
-  composition->text = UTF8ToUTF16(text->text);
-
-  if (composition->text.empty())
-    return;
-
-  // ibus uses character index for cursor position and attribute range, but we
-  // use char16 offset for them. So we need to do conversion here.
-  std::vector<size_t> char16_offsets;
-  size_t length = composition->text.length();
-  base::i18n::UTF16CharIterator char_iterator(&composition->text);
-  do {
-    char16_offsets.push_back(char_iterator.array_pos());
-  } while (char_iterator.Advance());
-
-  // The text length in Unicode characters.
-  guint char_length = static_cast<guint>(char16_offsets.size());
-  // Make sure we can convert the value of |char_length| as well.
-  char16_offsets.push_back(length);
-
-  size_t cursor_offset =
-      char16_offsets[std::min(char_length, cursor_position)];
-
-  composition->selection = ui::Range(cursor_offset);
-  if (text->attrs) {
-    guint i = 0;
-    while (true) {
-      IBusAttribute* attr = ibus_attr_list_get(text->attrs, i++);
-      if (!attr)
-        break;
-      if (attr->type != IBUS_ATTR_TYPE_UNDERLINE &&
-          attr->type != IBUS_ATTR_TYPE_BACKGROUND) {
-        continue;
-      }
-      guint start = std::min(char_length, attr->start_index);
-      guint end = std::min(char_length, attr->end_index);
-      if (start >= end)
-        continue;
-      ui::CompositionUnderline underline(
-          char16_offsets[start], char16_offsets[end],
-          SK_ColorBLACK, false /* thick */);
-      if (attr->type == IBUS_ATTR_TYPE_BACKGROUND) {
-        underline.thick = true;
-        // If the cursor is at start or end of this underline, then we treat
-        // it as the selection range as well, but make sure to set the cursor
-        // position to the selection end.
-        if (underline.start_offset == cursor_offset) {
-          composition->selection.set_start(underline.end_offset);
-          composition->selection.set_end(cursor_offset);
-        } else if (underline.end_offset == cursor_offset) {
-          composition->selection.set_start(underline.start_offset);
-          composition->selection.set_end(cursor_offset);
-        }
-      } else if (attr->type == IBUS_ATTR_TYPE_UNDERLINE) {
-        if (attr->value == IBUS_ATTR_UNDERLINE_DOUBLE)
-          underline.thick = true;
-        else if (attr->value == IBUS_ATTR_UNDERLINE_ERROR)
-          underline.color = SK_ColorRED;
-      }
-      composition->underlines.push_back(underline);
-    }
-  }
-
-  // Use a black thin underline by default.
-  if (composition->underlines.empty()) {
-    composition->underlines.push_back(ui::CompositionUnderline(
-        0, length, SK_ColorBLACK, false /* thick */));
-  }
+    *ibus_state |= ui::kIBusReleaseMask;
 }
 
 }  // namespace
 
 namespace ui {
 
-// InputMethodIBus::PendingKeyEvent implementation ------------------------
-class InputMethodIBus::PendingKeyEvent {
+// InputMethodIBus::PendingKeyEventImpl implementation ------------------------
+class InputMethodIBus::PendingKeyEventImpl
+    : public internal::IBusClient::PendingKeyEvent {
  public:
-  PendingKeyEvent(InputMethodIBus* input_method,
-                  const base::NativeEvent& native_event,
-                  guint32 ibus_keyval);
-  ~PendingKeyEvent();
+  PendingKeyEventImpl(InputMethodIBus* input_method,
+                      const base::NativeEvent& native_event,
+                      guint32 ibus_keyval);
+  virtual ~PendingKeyEventImpl();
+
+  // internal::IBusClient::PendingKeyEvent overrides:
+  virtual void ProcessPostIME(bool handled) OVERRIDE;
 
   // Abandon this pending key event. Its result will just be discarded.
   void Abandon() { input_method_ = NULL; }
 
   InputMethodIBus* input_method() const { return input_method_; }
-
-  // Process this pending key event after we receive its result from the input
-  // method. It just call through InputMethodIBus::ProcessKeyEventPostIME().
-  void ProcessPostIME(bool handled);
 
  private:
   InputMethodIBus* input_method_;
@@ -188,10 +108,10 @@ class InputMethodIBus::PendingKeyEvent {
 
   const guint32 ibus_keyval_;
 
-  DISALLOW_COPY_AND_ASSIGN(PendingKeyEvent);
+  DISALLOW_COPY_AND_ASSIGN(PendingKeyEventImpl);
 };
 
-InputMethodIBus::PendingKeyEvent::PendingKeyEvent(
+InputMethodIBus::PendingKeyEventImpl::PendingKeyEventImpl(
     InputMethodIBus* input_method,
     const base::NativeEvent& native_event,
     guint32 ibus_keyval)
@@ -204,12 +124,12 @@ InputMethodIBus::PendingKeyEvent::PendingKeyEvent(
   x_event_ = *GetKeyEvent(native_event);
 }
 
-InputMethodIBus::PendingKeyEvent::~PendingKeyEvent() {
+InputMethodIBus::PendingKeyEventImpl::~PendingKeyEventImpl() {
   if (input_method_)
     input_method_->FinishPendingKeyEvent(this);
 }
 
-void InputMethodIBus::PendingKeyEvent::ProcessPostIME(bool handled) {
+void InputMethodIBus::PendingKeyEventImpl::ProcessPostIME(bool handled) {
   if (!input_method_)
     return;
 
@@ -225,50 +145,64 @@ void InputMethodIBus::PendingKeyEvent::ProcessPostIME(bool handled) {
   // and 'unmodified_character_' to support i18n VKs like a French VK!
 }
 
-// InputMethodIBus::PendingCreateICRequest implementation -----------------
-class InputMethodIBus::PendingCreateICRequest {
+// InputMethodIBus::PendingCreateICRequestImpl implementation -----------------
+class InputMethodIBus::PendingCreateICRequestImpl
+    : public internal::IBusClient::PendingCreateICRequest {
  public:
-  PendingCreateICRequest(InputMethodIBus* input_method,
-                         PendingCreateICRequest** request_ptr);
-  ~PendingCreateICRequest();
+  PendingCreateICRequestImpl(InputMethodIBus* input_method,
+                             internal::IBusClient* ibus_client,
+                             PendingCreateICRequestImpl** request_ptr);
+  virtual ~PendingCreateICRequestImpl();
+
+  // internal::IBusClient::PendingCreateICRequest overrides:
+  virtual void StoreOrAbandonInputContext(IBusInputContext* ic) OVERRIDE;
 
   // Abandon this pending key event. Its result will just be discarded.
   void Abandon() {
     input_method_ = NULL;
     request_ptr_ = NULL;
+    // Do not reset |ibus_client_| here.
   }
-
-  // Stores the result input context to |input_method_|, or abandon it if
-  // |input_method_| is NULL.
-  void StoreOrAbandonInputContext(IBusInputContext* ic);
 
  private:
   InputMethodIBus* input_method_;
-  PendingCreateICRequest** request_ptr_;
+  internal::IBusClient* ibus_client_;
+  PendingCreateICRequestImpl** request_ptr_;
+
+  DISALLOW_COPY_AND_ASSIGN(PendingCreateICRequestImpl);
 };
 
-InputMethodIBus::PendingCreateICRequest::PendingCreateICRequest(
+InputMethodIBus::PendingCreateICRequestImpl::PendingCreateICRequestImpl(
     InputMethodIBus* input_method,
-    PendingCreateICRequest** request_ptr)
+    internal::IBusClient* ibus_client,
+    PendingCreateICRequestImpl** request_ptr)
     : input_method_(input_method),
+      ibus_client_(ibus_client),
       request_ptr_(request_ptr) {
 }
 
-InputMethodIBus::PendingCreateICRequest::~PendingCreateICRequest() {
+InputMethodIBus::PendingCreateICRequestImpl::~PendingCreateICRequestImpl() {
   if (request_ptr_) {
     DCHECK_EQ(*request_ptr_, this);
     *request_ptr_ = NULL;
   }
 }
 
-void InputMethodIBus::PendingCreateICRequest::StoreOrAbandonInputContext(
+void InputMethodIBus::PendingCreateICRequestImpl::StoreOrAbandonInputContext(
     IBusInputContext* ic) {
+  // TODO(yusukes): If the connection between Chrome and ibus-daemon terminates
+  // for some reason, the create ic request will fail. In that case, NULL ic
+  // will be passed to this function. We might want to call
+  // ibus_client_->CreateContext() again after some delay.
+  if (!ic)
+    return;
+
   if (input_method_) {
     input_method_->SetContext(ic);
   } else {
-    // ibus_proxy_destroy() will not really release the object, we still need
+    // Since DestroyProxy() will not really release the object, we still need
     // to call g_object_unref() explicitly.
-    ibus_proxy_destroy(reinterpret_cast<IBusProxy *>(ic));
+    ibus_client_->DestroyProxy(ic);
     g_object_unref(ic);
   }
 }
@@ -276,7 +210,13 @@ void InputMethodIBus::PendingCreateICRequest::StoreOrAbandonInputContext(
 // InputMethodIBus implementation -----------------------------------------
 InputMethodIBus::InputMethodIBus(
     internal::InputMethodDelegate* delegate)
-    : context_(NULL),
+    :
+#if defined(HAVE_IBUS)
+      ibus_client_(new internal::IBusClientImpl),
+#else
+      ibus_client_(new internal::MockIBusClient),
+#endif
+      context_(NULL),
       pending_create_ic_request_(NULL),
       context_focused_(false),
       composing_text_(false),
@@ -291,9 +231,18 @@ InputMethodIBus::~InputMethodIBus() {
 
   // Disconnect bus signals
   g_signal_handlers_disconnect_by_func(
-      GetIBus(), reinterpret_cast<gpointer>(OnIBusConnectedThunk), this);
+      GetBus(), reinterpret_cast<gpointer>(OnIBusConnectedThunk), this);
   g_signal_handlers_disconnect_by_func(
-      GetIBus(), reinterpret_cast<gpointer>(OnIBusDisconnectedThunk), this);
+      GetBus(), reinterpret_cast<gpointer>(OnIBusDisconnectedThunk), this);
+}
+
+void InputMethodIBus::set_ibus_client(
+    scoped_ptr<internal::IBusClient> new_client) {
+  ibus_client_.swap(new_client);
+}
+
+internal::IBusClient* InputMethodIBus::ibus_client() const {
+  return ibus_client_.get();
 }
 
 void InputMethodIBus::OnFocus() {
@@ -311,7 +260,7 @@ void InputMethodIBus::Init(bool focused) {
   // Initializes the connection to ibus daemon. It may happen asynchronously,
   // and as soon as the connection is established, the |context_| will be
   // created automatically.
-  IBusBus* bus = GetIBus();
+  IBusBus* bus = GetBus();
 
   // connect bus signals
   g_signal_connect(bus, "connected",
@@ -321,7 +270,7 @@ void InputMethodIBus::Init(bool focused) {
 
   // Creates the |context_| if the connection is already established. In such
   // case, we will not get "connected" signal.
-  if (ibus_bus_is_connected(bus))
+  if (ibus_client_->IsConnected(bus))
     CreateContext();
 
   InputMethodBase::Init(focused);
@@ -352,32 +301,15 @@ void InputMethodIBus::DispatchKeyEvent(const base::NativeEvent& native_event) {
     return;
   }
 
-  PendingKeyEvent* pending_key =
-      new PendingKeyEvent(this, native_event, ibus_keyval);
+  PendingKeyEventImpl* pending_key =
+      new PendingKeyEventImpl(this, native_event, ibus_keyval);
   pending_key_events_.insert(pending_key);
 
-  // Note:
-  // 1. We currently set timeout to -1, because ibus doesn't have a mechanism to
-  // associate input method results to corresponding key event, thus there is
-  // actually no way to abandon results generated by a specific key event. So we
-  // actually cannot abandon a specific key event and its result but accept
-  // following key events and their results. So a timeout to abandon a key event
-  // will not work.
-  // 2. We set GCancellable to NULL, because the operation of cancelling a async
-  // request also happens asynchronously, thus it's actually useless to us.
-  //
-  // The fundemental problem of ibus' async API is: it uses Glib's GIO API to
-  // realize async communication, but in fact, GIO API is specially designed for
-  // concurrent tasks, though it supports async communication as well, the API
-  // is much more complicated than an ordinary message based async communication
-  // API (such as Chrome's IPC).
-  // Thus it's very complicated, if not impossible, to implement a client that
-  // fully utilize asynchronous communication without potential problem.
-  ibus_input_context_process_key_event_async(
-      context_,
-      ibus_keyval, ibus_keycode, ibus_state, -1, NULL,
-      reinterpret_cast<GAsyncReadyCallback>(ProcessKeyEventDone),
-      pending_key);
+  ibus_client_->SendKeyEvent(context_,
+                             ibus_keyval,
+                             ibus_keycode,
+                             ibus_state,
+                             pending_key);
 
   // We don't want to suppress the result generated by this key event, but it
   // may cause problem. See comment in ResetContext() method.
@@ -401,7 +333,7 @@ void InputMethodIBus::OnCaretBoundsChanged(const TextInputClient* client) {
   const gfx::Rect rect = GetTextInputClient()->GetCaretBounds();
 
   // This function runs asynchronously.
-  ibus_input_context_set_cursor_location(
+  ibus_client_->SetCursorLocation(
       context_, rect.x(), rect.y(), rect.width(), rect.height());
 }
 
@@ -439,23 +371,19 @@ void InputMethodIBus::OnDidChangeFocusedClient(TextInputClient* focused_before,
   UpdateContextFocusState();
   // Force to update caret bounds, in case the client thinks that the caret
   // bounds has not changed.
-  if (context_focused_)
-    OnCaretBoundsChanged(focused);
+  OnCaretBoundsChanged(focused);
 }
 
 void InputMethodIBus::CreateContext() {
   DCHECK(!context_);
-  DCHECK(GetIBus());
-  DCHECK(ibus_bus_is_connected(GetIBus()));
+  DCHECK(GetBus());
+  DCHECK(ibus_client_->IsConnected(GetBus()));
   DCHECK(!pending_create_ic_request_);
 
   // Creates the input context asynchronously.
-  pending_create_ic_request_ = new PendingCreateICRequest(
-      this, &pending_create_ic_request_);
-  ibus_bus_create_input_context_async(
-      GetIBus(), "chrome", -1, NULL,
-      reinterpret_cast<GAsyncReadyCallback>(CreateInputContextDone),
-      pending_create_ic_request_);
+  pending_create_ic_request_ = new PendingCreateICRequestImpl(
+      this, ibus_client_.get(), &pending_create_ic_request_);
+  ibus_client_->CreateContext(GetBus(), pending_create_ic_request_);
 }
 
 void InputMethodIBus::SetContext(IBusInputContext* ic) {
@@ -477,11 +405,13 @@ void InputMethodIBus::SetContext(IBusInputContext* ic) {
   g_signal_connect(ic, "destroy",
                    G_CALLBACK(OnDestroyThunk), this);
 
-  // TODO(suzhe): support surrounding text.
-  guint32 caps = IBUS_CAP_PREEDIT_TEXT | IBUS_CAP_FOCUS;
-  ibus_input_context_set_capabilities(ic, caps);
+  ibus_client_->SetCapabilities(ic);
 
   UpdateContextFocusState();
+  // Since ibus-daemon is launched in an on-demand basis on Chrome OS, RWHVA (or
+  // equivalents) might call OnCaretBoundsChanged() before the daemon starts. To
+  // save the case, call OnCaretBoundsChanged() here.
+  OnCaretBoundsChanged(GetTextInputClient());
   OnInputMethodChanged();
 }
 
@@ -492,10 +422,10 @@ void InputMethodIBus::DestroyContext() {
     pending_create_ic_request_->Abandon();
     pending_create_ic_request_ = NULL;
   } else if (context_) {
-    // ibus_proxy_destroy() will not really release the resource of |context_|
+    // DestroyProxy() will not really release the resource of |context_|
     // object. We still need to handle "destroy" signal and call
     // g_object_unref() there.
-    ibus_proxy_destroy(reinterpret_cast<IBusProxy *>(context_));
+    ibus_client_->DestroyProxy(context_);
     DCHECK(!context_);
   }
 }
@@ -538,7 +468,7 @@ void InputMethodIBus::ResetContext() {
   // Note: some input method engines may not support reset method, such as
   // ibus-anthy. But as we control all input method engines by ourselves, we can
   // make sure that all of the engines we are using support it correctly.
-  ibus_input_context_reset(context_);
+  ibus_client_->Reset(context_);
 
   character_composer_.Reset();
 }
@@ -564,9 +494,9 @@ void InputMethodIBus::UpdateContextFocusState() {
   // We only focus in |context_| when the focus is in a normal textfield.
   // ibus_input_context_focus_{in|out}() run asynchronously.
   if (old_context_focused && !context_focused_)
-    ibus_input_context_focus_out(context_);
+    ibus_client_->FocusOut(context_);
   else if (!old_context_focused && context_focused_)
-    ibus_input_context_focus_in(context_);
+    ibus_client_->FocusIn(context_);
 }
 
 void InputMethodIBus::ProcessKeyEventPostIME(
@@ -743,7 +673,7 @@ void InputMethodIBus::SendFakeProcessKeyEvent(bool pressed) const {
                                     0);
 }
 
-void InputMethodIBus::FinishPendingKeyEvent(PendingKeyEvent* pending_key) {
+void InputMethodIBus::FinishPendingKeyEvent(PendingKeyEventImpl* pending_key) {
   DCHECK(pending_key_events_.count(pending_key));
 
   // |pending_key| will be deleted in ProcessKeyEventDone().
@@ -751,8 +681,8 @@ void InputMethodIBus::FinishPendingKeyEvent(PendingKeyEvent* pending_key) {
 }
 
 void InputMethodIBus::AbandonAllPendingKeyEvents() {
-  for (std::set<PendingKeyEvent*>::iterator i = pending_key_events_.begin();
-       i != pending_key_events_.end(); ++i) {
+  std::set<PendingKeyEventImpl*>::iterator i;
+  for (i = pending_key_events_.begin(); i != pending_key_events_.end(); ++i) {
     // The object will be deleted in ProcessKeyEventDone().
     (*i)->Abandon();
   }
@@ -762,7 +692,7 @@ void InputMethodIBus::AbandonAllPendingKeyEvents() {
 void InputMethodIBus::OnCommitText(
     IBusInputContext* context, IBusText* text) {
   DCHECK_EQ(context_, context);
-  if (suppress_next_result_ || !text || !text->text)
+  if (suppress_next_result_ || !text)
     return;
 
   // We need to receive input method result even if the text input type is
@@ -771,7 +701,9 @@ void InputMethodIBus::OnCommitText(
   if (!GetTextInputClient())
     return;
 
-  string16 utf16_text(UTF8ToUTF16(text->text));
+  const string16 utf16_text = ibus_client_->ExtractCommitText(text);
+  if (utf16_text.empty())
+    return;
 
   // Append the text to the buffer, because commit signal might be fired
   // multiple times when processing a key event.
@@ -797,19 +729,21 @@ void InputMethodIBus::OnForwardKeyEvent(IBusInputContext* context,
   if (!ui_key_code)
     return;
 
-  const EventType event =
-      (state & IBUS_RELEASE_MASK) ? ET_KEY_RELEASED : ET_KEY_PRESSED;
-  const int flags = EventFlagsFromIBusState(state);
+  const EventType event_type =
+      (state & kIBusReleaseMask) ? ET_KEY_RELEASED : ET_KEY_PRESSED;
+  const int event_flags = EventFlagsFromXFlags(state);
 
   // It is not clear when the input method will forward us a fake key event.
   // If there is a pending key event, then we may already received some input
   // method results, so we dispatch this fake key event directly rather than
   // calling ProcessKeyEventPostIME(), which will clear pending input method
   // results.
-  if (event == ET_KEY_PRESSED)
-    ProcessUnfilteredFabricatedKeyPressEvent(event, ui_key_code, flags, keyval);
-  else
-    DispatchFabricatedKeyEventPostIME(event, ui_key_code, flags);
+  if (event_type == ET_KEY_PRESSED) {
+    ProcessUnfilteredFabricatedKeyPressEvent(
+        event_type, ui_key_code, event_flags, keyval);
+  } else {
+    DispatchFabricatedKeyEventPostIME(event_type, ui_key_code, event_flags);
+  }
 }
 
 void InputMethodIBus::OnShowPreeditText(IBusInputContext* context) {
@@ -840,7 +774,7 @@ void InputMethodIBus::OnUpdatePreeditText(IBusInputContext* context,
     return;
   }
 
-  ExtractCompositionTextFromIBusPreedit(text, cursor_pos, &composition_);
+  ibus_client_->ExtractCompositionText(text, cursor_pos, &composition_);
 
   composition_changed_ = true;
 
@@ -891,60 +825,31 @@ void InputMethodIBus::OnDestroy(IBusInputContext* context) {
 }
 
 void InputMethodIBus::OnIBusConnected(IBusBus* bus) {
-  DCHECK_EQ(GetIBus(), bus);
-  DCHECK(ibus_bus_is_connected(bus));
+  DCHECK_EQ(GetBus(), bus);
+  DCHECK(ibus_client_->IsConnected(bus));
 
   DestroyContext();
   CreateContext();
 }
 
 void InputMethodIBus::OnIBusDisconnected(IBusBus* bus) {
-  DCHECK_EQ(GetIBus(), bus);
+  DCHECK_EQ(GetBus(), bus);
 
   // TODO(suzhe): Make sure if we really do not need to handle this signal.
   // And I'm actually wondering if ibus-daemon will release the resource of the
   // |context_| correctly when the connection is lost.
 }
 
-// static
-IBusBus* InputMethodIBus::GetIBus() {
+IBusBus* InputMethodIBus::GetBus() {
   // Everything happens in UI thread, so we do not need to care about
   // synchronization issue.
   static IBusBus* ibus = NULL;
 
   if (!ibus) {
-    ibus_init();
-    ibus = ibus_bus_new();
+    ibus = ibus_client_->GetConnection();
     DCHECK(ibus);
   }
   return ibus;
-}
-
-// static
-void InputMethodIBus::ProcessKeyEventDone(IBusInputContext* context,
-                                          GAsyncResult* res,
-                                          PendingKeyEvent* data) {
-  DCHECK(data);
-  DCHECK(!data->input_method() ||
-         data->input_method()->context_ == context);
-
-  gboolean handled = ibus_input_context_process_key_event_async_finish(
-      context, res, NULL);
-  data->ProcessPostIME(handled);
-  delete data;
-}
-
-// static
-void InputMethodIBus::CreateInputContextDone(IBusBus* bus,
-                                             GAsyncResult* res,
-                                             PendingCreateICRequest* data) {
-  DCHECK_EQ(GetIBus(), bus);
-  DCHECK(data);
-  IBusInputContext* ic =
-      ibus_bus_create_input_context_async_finish(bus, res, NULL);
-  if (ic)
-    data->StoreOrAbandonInputContext(ic);
-  delete data;
 }
 
 }  // namespace ui

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,6 +26,17 @@ struct CompositionUnderline {
       end_offset(e),
       color(c),
       thick(t) {}
+
+  bool operator==(const CompositionUnderline& rhs) const {
+    return (this->start_offset == rhs.start_offset) &&
+        (this->end_offset == rhs.end_offset) &&
+        (this->color == rhs.color) &&
+        (this->thick == rhs.thick);
+  }
+
+  bool operator!=(const CompositionUnderline& rhs) const {
+    return !(*this == rhs);
+  }
 
   // Though use of unsigned is discouraged, we use it here to make sure it's
   // identical to WebKit::WebCompositionUnderline.
