@@ -340,6 +340,13 @@ SyncError AppNotificationManager::ProcessSyncChanges(
       Add(new_notif.release());
     } else if (change_type == SyncChange::ACTION_DELETE && existing_notif) {
       Remove(new_notif->extension_id(), new_notif->guid());
+    } else if (change_type == SyncChange::ACTION_DELETE && !existing_notif) {
+      // This should never happen. But we are seeting this sometimes, and it
+      // stops all of sync. See bug http://crbug.com/108088
+      // So until we figure out the root cause, just log an error and ignore.
+      NOTREACHED() << "ERROR: Got delete change for non-existing item.";
+      LOG(ERROR) << "ERROR: Got delete change for non-existing item.";
+      continue;
     } else {
       // Something really unexpected happened. Either we received an
       // ACTION_INVALID, or Sync is in a crazy state:
