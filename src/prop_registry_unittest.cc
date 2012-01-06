@@ -8,6 +8,7 @@
 #include <base/logging.h>
 #include <gtest/gtest.h>
 
+#include "gestures/include/activity_log.h"
 #include "gestures/include/prop_registry.h"
 
 using std::string;
@@ -92,6 +93,17 @@ TEST(PropRegistryTest, SimpleTest) {
   EXPECT_TRUE(strstr(ValueForProperty(stp2).c_str(), "bar"));
   stp2.HandleGesturesPropWritten();
   EXPECT_EQ(expected_call_cnt, delegate.call_cnt_);
+}
+
+TEST(PropRegistryTest, PropChangeTest) {
+  PropRegistry reg;
+  ActivityLog log(&reg);
+  reg.set_activity_log(&log);
+
+  DoubleProperty dp(&reg, "hi", 1234.0, NULL);
+  EXPECT_EQ(0, log.size());
+  dp.HandleGesturesPropWritten();
+  EXPECT_EQ(1, log.size());
 }
 
 }  // namespace gestures

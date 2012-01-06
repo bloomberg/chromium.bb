@@ -16,11 +16,12 @@
 
 namespace gestures {
 
+class ActivityLog;
 class Property;
 
 class PropRegistry {
  public:
-  PropRegistry() : prop_provider_(NULL) {}
+  PropRegistry() : prop_provider_(NULL), activity_log_(NULL) {}
 
   void Register(Property* prop);
   void Unregister(Property* prop);
@@ -30,10 +31,16 @@ class PropRegistry {
   void* PropProviderData() const { return prop_provider_data_; }
   const std::set<Property*>& props() const { return props_; }
 
+  void set_activity_log(ActivityLog* activity_log) {
+    activity_log_ = activity_log;
+  }
+  ActivityLog* activity_log() const { return activity_log_; }
+
  private:
   GesturesPropProvider* prop_provider_;
   void* prop_provider_data_;
   std::set<Property*> props_;
+  ActivityLog* activity_log_;
 };
 
 class PropertyDelegate;

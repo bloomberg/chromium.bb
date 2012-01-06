@@ -12,6 +12,8 @@ LoggingFilterInterpreter::LoggingFilterInterpreter(PropRegistry* prop_reg,
                                                    Interpreter* next)
   : log_(prop_reg), logging_notify_(prop_reg, "Logging Notify", 0, this) {
   next_.reset(next);
+  if (prop_reg)
+    prop_reg->set_activity_log(&log_);
 }
 
 LoggingFilterInterpreter::~LoggingFilterInterpreter() {}

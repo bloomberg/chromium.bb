@@ -24,12 +24,30 @@ class ActivityLog {
   FRIEND_TEST(ActivityLogTest, WrapAroundTest);
   FRIEND_TEST(ActivityLogTest, VersionTest);
   FRIEND_TEST(LoggingFilterInterpreterTest, SimpleTest);
+  FRIEND_TEST(PropRegistryTest, PropChangeTest);
  public:
   enum EntryType {
     kHardwareState = 0,
     kTimerCallback,
     kCallbackRequest,
-    kGesture
+    kGesture,
+    kPropChange
+  };
+  struct PropChangeEntry {
+    const char* name;
+    enum {
+      kBoolProp = 0,
+      kDoubleProp,
+      kIntProp,
+      kShortProp
+    } type;
+    union {
+      GesturesPropBool bool_val;
+      double double_val;
+      int int_val;
+      short short_val;
+      // No string because string values can't change
+    } value;
   };
   struct Entry {
     EntryType type;
@@ -37,6 +55,7 @@ class ActivityLog {
       HardwareState hwstate;  // kHardwareState
       stime_t timestamp;  // kTimerCallback, kCallbackRequest
       Gesture gesture;  // kGesture
+      PropChangeEntry prop_change;  // kPropChange
     } details;
   };
 
@@ -48,6 +67,7 @@ class ActivityLog {
   void LogTimerCallback(stime_t now);
   void LogCallbackRequest(stime_t when);
   void LogGesture(const Gesture& gesture);
+  void LogPropChange(const PropChangeEntry& prop_change);
 
   // Dump allocates, and thus must not be called on a signal handler.
   void Dump(const char* filename);
@@ -65,6 +85,7 @@ class ActivityLog {
   static const char kKeyTimerCallback[];
   static const char kKeyCallbackRequest[];
   static const char kKeyGesture[];
+  static const char kKeyPropChange[];
   // HardwareState keys:
   static const char kKeyHardwareStateTimestamp[];
   static const char kKeyHardwareStateButtonsDown[];
@@ -98,6 +119,14 @@ class ActivityLog {
   static const char kKeyGestureScrollDY[];
   static const char kKeyGestureButtonsChangeDown[];
   static const char kKeyGestureButtonsChangeUp[];
+  // PropChange keys:
+  static const char kKeyPropChangeType[];
+  static const char kKeyPropChangeName[];
+  static const char kKeyPropChangeValue[];
+  static const char kValuePropChangeTypeBool[];
+  static const char kValuePropChangeTypeDouble[];
+  static const char kValuePropChangeTypeInt[];
+  static const char kValuePropChangeTypeShort[];
 
   // Hardware Properties keys:
   static const char kKeyHardwarePropRoot[];
@@ -130,6 +159,7 @@ class ActivityLog {
   ::Value* EncodeTimerCallback(stime_t timestamp);
   ::Value* EncodeCallbackRequest(stime_t timestamp);
   ::Value* EncodeGesture(const Gesture& gesture);
+  ::Value* EncodePropChange(const PropChangeEntry& prop_change);
 
   // Encode user-configurable properties
   ::Value* EncodePropRegistry();

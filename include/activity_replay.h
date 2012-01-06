@@ -6,6 +6,7 @@
 #define GESTURES_ACTIVITY_REPLAY_H_
 
 #include <string>
+#include <tr1/memory>
 
 #include <base/values.h>
 
@@ -44,10 +45,14 @@ class ActivityReplay {
   bool ParseGestureMove(DictionaryValue* entry, Gesture* out_gs);
   bool ParseGestureScroll(DictionaryValue* entry, Gesture* out_gs);
   bool ParseGestureButtonsChange(DictionaryValue* entry, Gesture* out_gs);
+  bool ParsePropChange(DictionaryValue* entry);
+
+  bool ReplayPropChange(const ActivityLog::PropChangeEntry& entry);
 
   ActivityLog log_;
   HardwareProperties hwprops_;
   PropRegistry* prop_reg_;
+  std::vector<std::tr1::shared_ptr<const std::string> > names_;
 };
 
 }  // namespace gestures

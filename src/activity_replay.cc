@@ -22,6 +22,9 @@ ActivityReplay::ActivityReplay(PropRegistry* prop_reg)
     : log_(NULL), prop_reg_(prop_reg) {}
 
 bool ActivityReplay::Parse(const string& data) {
+  log_.Clear();
+  names_.clear();
+
   int error_code;
   string error_msg;
   Value* root = base::JSONReader::ReadAndReturnError(data, true, &error_code,
@@ -148,6 +151,8 @@ bool ActivityReplay::ParseEntry(DictionaryValue* entry) {
     return ParseCallbackRequest(entry);
   if (type == ActivityLog::kKeyGesture)
     return ParseGesture(entry);
+  if (type == ActivityLog::kKeyPropChange)
+    return ParsePropChange(entry);
   Err("Unknown entry type");
   return false;
 }
@@ -359,6 +364,62 @@ bool ActivityReplay::ParseGestureButtonsChange(DictionaryValue* entry,
   return true;
 }
 
+bool ActivityReplay::ParsePropChange(DictionaryValue* entry) {
+  ActivityLog::PropChangeEntry prop_change;
+  string type;
+  if (!entry->GetString(ActivityLog::kKeyPropChangeType, &type)) {
+    Err("Can't get prop change type");
+    return false;
+  }
+
+  if (type == ActivityLog::kValuePropChangeTypeBool) {
+    prop_change.type = ActivityLog::PropChangeEntry::kBoolProp;
+    bool val;
+    if (!entry->GetBoolean(ActivityLog::kKeyPropChangeValue, &val)) {
+      Err("Can't parse prop change value");
+      return false;
+    }
+    prop_change.value.bool_val = val;
+  } else if (type == ActivityLog::kValuePropChangeTypeDouble) {
+    prop_change.type = ActivityLog::PropChangeEntry::kDoubleProp;
+    if (!entry->GetDouble(ActivityLog::kKeyPropChangeValue,
+                          &prop_change.value.double_val)) {
+      Err("Can't parse prop change value");
+      return false;
+    }
+  } else if (type == ActivityLog::kValuePropChangeTypeInt) {
+    prop_change.type = ActivityLog::PropChangeEntry::kIntProp;
+    if (!entry->GetInteger(ActivityLog::kKeyPropChangeValue,
+                           &prop_change.value.int_val)) {
+      Err("Can't parse prop change value");
+      return false;
+    }
+  } else if (type == ActivityLog::kValuePropChangeTypeShort) {
+    prop_change.type = ActivityLog::PropChangeEntry::kIntProp;
+    int val;
+    if (!entry->GetInteger(ActivityLog::kKeyPropChangeValue,
+                           &val)) {
+      Err("Can't parse prop change value");
+      return false;
+    }
+    prop_change.value.short_val = val;
+  } else {
+    Err("Unable to parse prop change type %s", type.c_str());
+    return false;
+  }
+  string name;
+  if (!entry->GetString(ActivityLog::kKeyPropChangeName, &name)) {
+    Err("Unable to parse prop change name.");
+    return false;
+  }
+  const string* stored_name = new string(name.c_str());  // alloc
+  // transfer ownership:
+  names_.push_back(std::tr1::shared_ptr<const string>(stored_name));
+  prop_change.name = stored_name->c_str();
+  log_.LogPropChange(prop_change);
+  return true;
+}
+
 bool ActivityReplay::Replay(Interpreter* interpreter) {
   bool all_correct = true;
   interpreter->SetHardwareProperties(hwprops_);
@@ -382,7 +443,7 @@ bool ActivityReplay::Replay(Interpreter* interpreter) {
         last_gs = interpreter->HandleTimer(entry->details.timestamp,
                                            &last_timeout_req);
         if (last_gs)
-         Log("Ouput Gesture: %s", last_gs->String().c_str());
+          Log("Ouput Gesture: %s", last_gs->String().c_str());
         break;
       case ActivityLog::kCallbackRequest:
         if (!DoubleEq(last_timeout_req, entry->details.timestamp)) {
@@ -399,9 +460,52 @@ bool ActivityReplay::Replay(Interpreter* interpreter) {
           all_correct = false;
         }
         break;
+      case ActivityLog::kPropChange:
+        if (!ReplayPropChange(entry->details.prop_change))
+          all_correct = false;
+        break;
     }
   }
   return all_correct;
+}
+
+bool ActivityReplay::ReplayPropChange(
+    const ActivityLog::PropChangeEntry& entry) {
+  if (!prop_reg_) {
+    Err("Missing prop registry.");
+    return false;
+  }
+  set<Property*> props = prop_reg_->props();
+  Property* prop = NULL;
+  for (set<Property*>::iterator it = props.begin(), e = props.end(); it != e;
+       ++it) {
+    prop = *it;
+    if (strcmp(prop->name(), entry.name) == 0)
+      break;
+    prop = NULL;
+  }
+  if (!prop) {
+    Err("Unable to find prop %s to set.", entry.name);
+    return false;
+  }
+  scoped_ptr< ::Value> value;
+  switch (entry.type) {
+    case ActivityLog::PropChangeEntry::kBoolProp:
+      value.reset(::Value::CreateBooleanValue(entry.value.bool_val));
+      break;
+    case ActivityLog::PropChangeEntry::kDoubleProp:
+      value.reset(::Value::CreateDoubleValue(entry.value.double_val));
+      break;
+    case ActivityLog::PropChangeEntry::kIntProp:
+      value.reset(::Value::CreateIntegerValue(entry.value.int_val));
+      break;
+    case ActivityLog::PropChangeEntry::kShortProp:
+      value.reset(::Value::CreateIntegerValue(entry.value.short_val));
+      break;
+  }
+  prop->SetValue(value.get());
+  prop->HandleGesturesPropWritten();
+  return true;
 }
 
 }  // namespace gestures

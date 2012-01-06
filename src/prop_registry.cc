@@ -9,6 +9,7 @@
 
 #include <base/string_util.h>
 
+#include "gestures/include/activity_log.h"
 #include "gestures/include/gestures.h"
 
 using std::set;
@@ -40,21 +41,17 @@ void PropRegistry::SetPropProvider(GesturesPropProvider* prop_provider,
   }
   prop_provider_ = prop_provider;
   prop_provider_data_ = data;
-  if (prop_provider_) {
-    Err("creating props");
+  if (prop_provider_)
     for (std::set<Property*>::iterator it = props_.begin(), e= props_.end();
-         it != e; ++it) {
+         it != e; ++it)
       (*it)->CreateProp();
-      Err("created one");
-    }
-  }
 }
 
 void Property::CreateProp() {
   if (gprop_)
     Err("Property already created");
   CreatePropImpl();
-  if (delegate_) {
+  if (parent_) {
     parent_->PropProvider()->register_handlers_fn(
         parent_->PropProviderData(),
         gprop_,
@@ -98,6 +95,13 @@ bool BoolProperty::SetValue(::Value* value) {
 }
 
 void BoolProperty::HandleGesturesPropWritten() {
+  if (parent_ && parent_->activity_log()) {
+    ActivityLog::PropChangeEntry entry = {
+      name(), ActivityLog::PropChangeEntry::kBoolProp, { 0 }
+    };
+    entry.value.bool_val = val_;
+    parent_->activity_log()->LogPropChange(entry);
+  }
   if (delegate_)
     delegate_->BoolWasWritten(this);
 }
@@ -123,6 +127,13 @@ bool DoubleProperty::SetValue(::Value* value) {
 }
 
 void DoubleProperty::HandleGesturesPropWritten() {
+  if (parent_ && parent_->activity_log()) {
+    ActivityLog::PropChangeEntry entry = {
+      name(), ActivityLog::PropChangeEntry::kDoubleProp, { 0 }
+    };
+    entry.value.double_val = val_;
+    parent_->activity_log()->LogPropChange(entry);
+  }
   if (delegate_)
     delegate_->DoubleWasWritten(this);
 }
@@ -148,6 +159,13 @@ bool IntProperty::SetValue(::Value* value) {
 }
 
 void IntProperty::HandleGesturesPropWritten() {
+  if (parent_ && parent_->activity_log()) {
+    ActivityLog::PropChangeEntry entry = {
+      name(), ActivityLog::PropChangeEntry::kIntProp, { 0 }
+    };
+    entry.value.int_val = val_;
+    parent_->activity_log()->LogPropChange(entry);
+  }
   if (delegate_)
     delegate_->IntWasWritten(this);
 }
@@ -177,6 +195,13 @@ bool ShortProperty::SetValue(::Value* value) {
 }
 
 void ShortProperty::HandleGesturesPropWritten() {
+  if (parent_ && parent_->activity_log()) {
+    ActivityLog::PropChangeEntry entry = {
+      name(), ActivityLog::PropChangeEntry::kShortProp, { 0 }
+    };
+    entry.value.short_val = val_;
+    parent_->activity_log()->LogPropChange(entry);
+  }
   if (delegate_)
     delegate_->ShortWasWritten(this);
 }

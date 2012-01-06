@@ -69,6 +69,12 @@ void ActivityLog::LogGesture(const Gesture& gesture) {
   entry->details.gesture = gesture;
 }
 
+void ActivityLog::LogPropChange(const PropChangeEntry& prop_change) {
+  Entry* entry = PushBack();
+  entry->type = kPropChange;
+  entry->details.prop_change = prop_change;
+}
+
 void ActivityLog::Dump(const char* filename) {
   int fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC, 0644);
   if (fd < 0) {
@@ -233,6 +239,37 @@ const char kSubSubEntryPadding[] = "      ";
   return ret;
 }
 
+::Value* ActivityLog::EncodePropChange(const PropChangeEntry& prop_change) {
+  DictionaryValue* ret = new DictionaryValue;
+  ret->Set(kKeyType, new StringValue(kKeyPropChange));
+  ret->Set(kKeyPropChangeName, new StringValue(prop_change.name));
+  FundamentalValue* val = NULL;
+  StringValue* type = NULL;
+  switch (prop_change.type) {
+    case PropChangeEntry::kBoolProp:
+      val = new FundamentalValue(static_cast<bool>(prop_change.value.bool_val));
+      type = new StringValue(kValuePropChangeTypeBool);
+      break;
+    case PropChangeEntry::kDoubleProp:
+      val = new FundamentalValue(prop_change.value.double_val);
+      type = new StringValue(kValuePropChangeTypeDouble);
+      break;
+    case PropChangeEntry::kIntProp:
+      val = new FundamentalValue(prop_change.value.int_val);
+      type = new StringValue(kValuePropChangeTypeInt);
+      break;
+    case PropChangeEntry::kShortProp:
+      val = new FundamentalValue(prop_change.value.short_val);
+      type = new StringValue(kValuePropChangeTypeShort);
+      break;
+  }
+  if (val)
+    ret->Set(kKeyPropChangeValue, val);
+  if (type)
+    ret->Set(kKeyPropChangeType, type);
+  return ret;
+}
+
 ::Value* ActivityLog::EncodePropRegistry() {
   DictionaryValue* ret = new DictionaryValue;
   if (!prop_reg_)
@@ -273,6 +310,9 @@ string ActivityLog::Encode() {
       case kGesture:
         entries->Append(EncodeGesture(entry.details.gesture));
         continue;
+      case kPropChange:
+        entries->Append(EncodePropChange(entry.details.prop_change));
+        continue;
     }
     Err("Unknown entry type %d", entry.type);
   }
@@ -288,6 +328,7 @@ const char ActivityLog::kKeyHardwareState[] = "hardwareState";
 const char ActivityLog::kKeyTimerCallback[] = "timerCallback";
 const char ActivityLog::kKeyCallbackRequest[] = "callbackRequest";
 const char ActivityLog::kKeyGesture[] = "gesture";
+const char ActivityLog::kKeyPropChange[] = "propertyChange";
 const char ActivityLog::kKeyHardwareStateTimestamp[] = "timestamp";
 const char ActivityLog::kKeyHardwareStateButtonsDown[] = "buttonsDown";
 const char ActivityLog::kKeyHardwareStateTouchCnt[] = "touchCount";
@@ -317,6 +358,13 @@ const char ActivityLog::kKeyGestureScrollDX[] = "dx";
 const char ActivityLog::kKeyGestureScrollDY[] = "dy";
 const char ActivityLog::kKeyGestureButtonsChangeDown[] = "down";
 const char ActivityLog::kKeyGestureButtonsChangeUp[] = "up";
+const char ActivityLog::kKeyPropChangeType[] = "propChangeType";
+const char ActivityLog::kKeyPropChangeName[] = "name";
+const char ActivityLog::kKeyPropChangeValue[] = "value";
+const char ActivityLog::kValuePropChangeTypeBool[] = "bool";
+const char ActivityLog::kValuePropChangeTypeDouble[] = "double";
+const char ActivityLog::kValuePropChangeTypeInt[] = "int";
+const char ActivityLog::kValuePropChangeTypeShort[] = "short";
 const char ActivityLog::kKeyHardwarePropRoot[] = "hardwareProperties";
 const char ActivityLog::kKeyHardwarePropLeft[] = "left";
 const char ActivityLog::kKeyHardwarePropTop[] = "top";
