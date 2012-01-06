@@ -7,6 +7,8 @@ This module contains classes that help to emulate xcodebuild behavior on top of
 other build systems, such as make and ninja.
 """
 
+from __future__ import with_statement
+
 import os.path
 import shlex
 
