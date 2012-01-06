@@ -52,7 +52,6 @@ public:
 #else
 #define MAYBE_EmptyDefaultLocale EmptyDefaultLocale
 #endif
-
 TEST_F(ExtensionUnpackerTest, MAYBE_EmptyDefaultLocale) {
   SetupUnpacker("empty_default_locale.crx");
   EXPECT_FALSE(unpacker_->Run());
@@ -75,7 +74,13 @@ TEST_F(ExtensionUnpackerTest, MAYBE_HasDefaultLocaleMissingLocalesFolder) {
             unpacker_->error_message());
 }
 
-TEST_F(ExtensionUnpackerTest, InvalidDefaultLocale) {
+// Crashes intermittently on Windows, see http://crbug.com/109238
+#if defined(OS_WIN)
+#define MAYBE_InvalidDefaultLocale DISABLED_InvalidDefaultLocale
+#else
+#define MAYBE_InvalidDefaultLocale InvalidDefaultLocale
+#endif
+TEST_F(ExtensionUnpackerTest, MAYBE_InvalidDefaultLocale) {
   SetupUnpacker("invalid_default_locale.crx");
   EXPECT_FALSE(unpacker_->Run());
   EXPECT_EQ(ASCIIToUTF16(errors::kInvalidDefaultLocale),
