@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -150,6 +150,9 @@ class MockGLInterface : public GLInterface {
       GLenum mode, GLsizei count, GLenum type, const void* indices));
 
   MOCK_METHOD2(EGLImageTargetTexture2DOES, void(
+      GLenum target, GLeglImageOES image));
+
+  MOCK_METHOD2(EGLImageTargetRenderbufferStorageOES, void(
       GLenum target, GLeglImageOES image));
 
   MOCK_METHOD1(Enable, void(GLenum cap));

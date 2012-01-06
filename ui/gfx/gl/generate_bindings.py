@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -190,6 +190,9 @@ GL_FUNCTIONS = [
       'GLenum mode, GLsizei count, GLenum type, const void* indices', },
 { 'return_type': 'void',
   'names': ['glEGLImageTargetTexture2DOES'],
+  'arguments': 'GLenum target, GLeglImageOES image', },
+{ 'return_type': 'void',
+  'names': ['glEGLImageTargetRenderbufferStorageOES'],
   'arguments': 'GLenum target, GLeglImageOES image', },
 { 'return_type': 'void',
   'names': ['glEnable'],
@@ -708,10 +711,12 @@ EGL_FUNCTIONS = [
   'names': ['eglCreateImageKHR'],
   'arguments':
       'EGLDisplay dpy, EGLContext ctx, EGLenum target, EGLClientBuffer buffer, '
-      'const EGLint* attrib_list', },
+      'const EGLint* attrib_list',
+  'other_extensions': ['EGL_KHR_image_base'] },
 { 'return_type': 'EGLBoolean',
   'names': ['eglDestroyImageKHR'],
-  'arguments': 'EGLDisplay dpy, EGLImageKHR image', },
+  'arguments': 'EGLDisplay dpy, EGLImageKHR image',
+  'other_extensions': ['EGL_KHR_image_base'] },
 { 'return_type': 'EGLSurface',
   'names': ['eglCreateWindowSurface'],
   'arguments': 'EGLDisplay dpy, EGLConfig config, EGLNativeWindowType win, '
@@ -1421,7 +1426,7 @@ def GetUsedExtensionFunctions(functions, extension_headers, extra_extensions):
   """
   # Parse known extensions.
   extensions = GetExtensionFunctions(extension_headers)
-  functions_to_extensions = GetFunctionToExtensionMap(extensions)
+  functions_to_extension = GetFunctionToExtensionMap(extensions)
 
   # Collect all used extension functions.
   used_extension_functions = collections.defaultdict(lambda: [])
@@ -1429,12 +1434,15 @@ def GetUsedExtensionFunctions(functions, extension_headers, extra_extensions):
     for name in func['names']:
       # Make sure we know about all extension functions.
       if (LooksLikeExtensionFunction(name) and
-          not name in functions_to_extensions):
+          not name in functions_to_extension):
         raise RuntimeError('%s looks like an extension function but does not '
             'belong to any of the known extensions.' % name)
-      if name in functions_to_extensions:
-        extension = functions_to_extensions[name]
-        used_extension_functions[extension].append((func['names'][0], name))
+      if name in functions_to_extension:
+        extensions = [functions_to_extension[name]]
+        if 'other_extensions' in func:
+          extensions.extend(func['other_extensions'])
+        for extension in extensions:
+          used_extension_functions[extension].append((func['names'][0], name))
 
   # Add extensions that do not have any functions.
   used_extension_functions.update(dict(
