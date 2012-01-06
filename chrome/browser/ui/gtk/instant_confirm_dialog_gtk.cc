@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -37,7 +37,7 @@ InstantConfirmDialogGtk::InstantConfirmDialogGtk(
       NULL);
   g_signal_connect(dialog_, "response", G_CALLBACK(OnResponseThunk), this);
 
-  GtkBox* vbox = GTK_BOX(GTK_DIALOG(dialog_)->vbox);
+  GtkBox* vbox = GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog_)));
   gtk_box_set_spacing(vbox, ui::kControlSpacing);
 
   GtkWidget* label = gtk_label_new(
@@ -50,7 +50,7 @@ InstantConfirmDialogGtk::InstantConfirmDialogGtk(
   g_signal_connect(link_button, "clicked",
                    G_CALLBACK(OnLinkButtonClickedThunk), this);
 
-  GtkWidget* action_area = GTK_DIALOG(dialog_)->action_area;
+  GtkWidget* action_area = gtk_dialog_get_action_area(GTK_DIALOG(dialog_));
   gtk_container_add(GTK_CONTAINER(action_area), link_button);
   gtk_button_box_set_child_secondary(GTK_BUTTON_BOX(action_area),
                                      link_button,

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -148,8 +148,9 @@ CertificateViewer::CertificateViewer(
       GTK_STOCK_CLOSE,
       GTK_RESPONSE_CLOSE,
       NULL);
-  gtk_box_set_spacing(GTK_BOX(GTK_DIALOG(dialog_)->vbox),
-                      ui::kContentAreaSpacing);
+
+  GtkWidget* content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog_));
+  gtk_box_set_spacing(GTK_BOX(content_area), ui::kContentAreaSpacing);
 
   x509_certificate_model::RegisterDynamicOids();
   InitGeneralPage();

@@ -434,13 +434,14 @@ void BookmarkBarGtk::Show(BookmarkBar::State old_state,
   // probably be improved.
   if (bookmark_bar_state_ == BookmarkBar::DETACHED) {
     if (theme_service_->UsingNativeTheme()) {
-      if (gtk_widget_get_realized(event_box_->parent))
-        gdk_window_lower(event_box_->parent->window);
+      GtkWidget* parent = gtk_widget_get_parent(event_box_.get());
+      if (gtk_widget_get_realized(parent))
+        gdk_window_lower(gtk_widget_get_window(parent));
       if (gtk_widget_get_realized(event_box_.get()))
-        gdk_window_lower(event_box_->window);
+        gdk_window_lower(gtk_widget_get_window(event_box_.get()));
     } else {  // Chromium theme mode.
       if (gtk_widget_get_realized(paint_box_)) {
-        gdk_window_lower(paint_box_->window);
+        gdk_window_lower(gtk_widget_get_window(paint_box_));
         // The event box won't stay below its children's GdkWindows unless we
         // toggle the above-child property here. If the event box doesn't stay
         // below its children then events will be routed to it rather than the

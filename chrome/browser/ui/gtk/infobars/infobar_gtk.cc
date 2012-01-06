@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -261,8 +261,9 @@ void InfoBarGtk::PlatformSpecificShow(bool animate) {
   gtk_widget_show_all(widget_.get());
   gtk_widget_set_size_request(widget_.get(), -1, bar_height());
 
-  if (bg_box_->window)
-    gdk_window_lower(bg_box_->window);
+  GdkWindow* gdk_window = gtk_widget_get_window(bg_box_);
+  if (gdk_window)
+    gdk_window_lower(gdk_window);
 }
 
 void InfoBarGtk::PlatformSpecificOnCloseSoon() {

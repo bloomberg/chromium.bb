@@ -311,7 +311,7 @@ void BookmarkEditorGtk::Init(GtkWindow* parent_window) {
 #endif
 
   if (show_tree_) {
-    GtkWidget* action_area = GTK_DIALOG(dialog_)->action_area;
+    GtkWidget* action_area = gtk_dialog_get_action_area(GTK_DIALOG(dialog_));
     new_folder_button_ = gtk_button_new_with_label(
         l10n_util::GetStringUTF8(
             IDS_BOOKMARK_EDITOR_NEW_FOLDER_BUTTON).c_str());

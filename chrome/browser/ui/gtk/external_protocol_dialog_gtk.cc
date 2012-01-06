@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -96,8 +96,8 @@ ExternalProtocolDialogGtk::ExternalProtocolDialogGtk(const GURL& url)
                      FALSE, FALSE, 0);
 
   // Add our vbox to the dialog.
-  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog_)->vbox), vbox,
-                     FALSE, FALSE, 0);
+  GtkWidget* content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog_));
+  gtk_box_pack_start(GTK_BOX(content_area), vbox, FALSE, FALSE, 0);
 
   g_signal_connect(dialog_, "response", G_CALLBACK(OnResponseThunk), this);
 

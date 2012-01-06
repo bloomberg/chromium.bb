@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -179,8 +179,9 @@ void EditSearchEngineDialog::Init(GtkWindow* parent_window, Profile* profile) {
       l10n_util::GetStringUTF8(IDS_SEARCH_ENGINES_EDITOR_URL_LABEL).c_str(),
       gtk_util::CreateEntryImageHBox(url_entry_, url_image_),
       NULL);
-  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog_)->vbox), controls,
-                     FALSE, FALSE, 0);
+
+  GtkWidget* content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog_));
+  gtk_box_pack_start(GTK_BOX(content_area), controls, FALSE, FALSE, 0);
 
   // On RTL UIs (such as Arabic and Hebrew) the description text is not
   // displayed correctly since it contains the substring "%s". This substring
@@ -204,11 +205,10 @@ void EditSearchEngineDialog::Init(GtkWindow* parent_window, Profile* profile) {
   }
 
   GtkWidget* description_label = gtk_label_new(description.c_str());
-  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog_)->vbox), description_label,
+  gtk_box_pack_start(GTK_BOX(content_area), description_label,
                      FALSE, FALSE, 0);
 
-  gtk_box_set_spacing(GTK_BOX(GTK_DIALOG(dialog_)->vbox),
-                      ui::kContentAreaSpacing);
+  gtk_box_set_spacing(GTK_BOX(content_area), ui::kContentAreaSpacing);
 
   EnableControls();
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -39,8 +39,9 @@ UpdateRecommendedDialog::UpdateRecommendedDialog(GtkWindow* parent) {
                                 l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
   GtkWidget* label = gtk_label_new(text.c_str());
   gtk_util::SetLabelWidth(label, kMessageWidth);
-  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog_)->vbox), label,
-                     FALSE, FALSE, 0);
+
+  GtkWidget* content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog_));
+  gtk_box_pack_start(GTK_BOX(content_area), label, FALSE, FALSE, 0);
 
   gtk_window_set_resizable(GTK_WINDOW(dialog_), FALSE);
 
