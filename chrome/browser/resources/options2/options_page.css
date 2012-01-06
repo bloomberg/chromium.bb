@@ -338,41 +338,27 @@ html[dir='rtl'] .action-area {
   min-height: 192px;
 }
 
-/**
- * TODO(kevers): Standardize formatting of sections to use display tables.
- * For now, we require separate specialized rules for sections that are
- * formatted as table rows.
- */
 section {
-  -webkit-box-orient: horizontal;
-  display: -webkit-box;
-  margin-top: 17px;
-  padding-bottom: 20px;
-}
-
-h3 {
-  font-size: 105%;
-  font-weight: bold;
-  margin: 20px 0 10px 0;
+  -webkit-padding-start: 18px;
+  margin-top: 8px;
+  margin-bottom: 24px;
+  max-width: 600px;
 }
 
 section > h3 {
-  margin: 0;
-  vertical-align: middle;
-  width: 130px;
-  -webkit-padding-end: 10px;
+  -webkit-margin-start: -18px;
+  color: black;
+  font-size: 14px;
+  font-weight: normal;
+  margin-bottom: 4px;
 }
 
 section > div:only-of-type {
   -webkit-box-flex: 1;
 }
 
-/* Don't allow edge margin on the first/last child of a section. */
-section > h3 + * > *:last-child {
-  margin-bottom: 0;
-}
-section > h3 + * > *:first-child {
-  margin-top: 0;
+.section-description {
+  margin-top: 4px;
 }
 
 .option {
@@ -386,7 +372,6 @@ section > h3 + * > *:first-child {
 .touch-slider {
   -webkit-appearance: slider-horizontal;
 }
-
 
 .settings-list,
 .settings-list-empty {
@@ -635,36 +620,6 @@ html[flashPluginSupportsClearSiteData] .flash-plugin-area,
 html:not([flashPluginSupportsClearSiteData]) .clear-plugin-lso-data-enabled,
 html[flashPluginSupportsClearSiteData] .clear-plugin-lso-data-disabled {
   display: none;
-}
-
-
-/* Display a collection of sections as a table in order to display nicely
- * in multiple locales.
- */
-.displaytable {
-  display: table;
-  width: 100%;
-}
-
-.displaytable > section {
-  display: table-row;
-}
-
-/* right table column containing settable options */
-.displaytable > section > h3 + div,
-.displaytable > section > h3 + table {
-  padding-bottom: 20px;
-}
-
-/* Setting the padding on the header so the alignment doesn't depend on the
- * contents of the right table column.  */
-.displaytable > section > h3 {
-  padding-top: 17px;
-}
-
-.displaytable > section > * {
-  display: table-cell;
-  vertical-align: baseline;
 }
 
 /* Controlled setting indicator and bubble. */

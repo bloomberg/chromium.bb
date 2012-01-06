@@ -1,173 +1,172 @@
 <div id="advancedPage" class="page" hidden>
   <h1 i18n-content="advancedPage"></h1>
-  <div class="displaytable">
-    <section>
-      <h3 i18n-content="advancedSectionTitlePrivacy"></h3>
+  <section>
+    <h3 i18n-content="advancedSectionTitlePrivacy"></h3>
+    <div>
+      <div class="section-group">
+        <button id="privacyContentSettingsButton"
+            i18n-content="privacyContentSettingsButton"></button>
+        <button id="privacyClearDataButton"
+            i18n-content="privacyClearDataButton"></button>
+      </div>
+      <div i18n-content="improveBrowsingExperience"
+          class="informational-text">
+      </div>
       <div>
-        <div class="section-group">
-          <button id="privacyContentSettingsButton"
-              i18n-content="privacyContentSettingsButton"></button>
-          <button id="privacyClearDataButton"
-              i18n-content="privacyClearDataButton"></button>
-        </div>
-        <div i18n-content="improveBrowsingExperience"
+        <span i18n-content="disableWebServices"
             class="informational-text">
-        </div>
-        <div>
-          <span i18n-content="disableWebServices"
-              class="informational-text">
-          </span>
-          <a target="_blank" i18n-content="learnMore"
-              i18n-values="href:privacyLearnMoreURL"></a>
-        </div>
-        <div class="checkbox">
-          <label>
-            <input id="alternateErrorPagesEnabled"
-                pref="alternate_error_pages.enabled"
-                metric="Options_LinkDoctorCheckbox" type="checkbox">
-            <span i18n-content="linkDoctorPref"></span>
-          </label>
-        </div>
-        <div class="checkbox">
-          <label>
-            <input id="searchSuggestEnabled" pref="search.suggest_enabled"
-                metric="Options_UseSuggestCheckbox" type="checkbox">
-            <span i18n-content="suggestPref"></span>
-          </label>
-        </div>
-        <div class="checkbox">
-          <label>
-            <input id="dnsPrefetchingEnabled" pref="dns_prefetching.enabled"
-                metric="Options_DnsPrefetchCheckbox" type="checkbox">
-            <span i18n-content="networkPredictionEnabledDescription"></span>
-          </label>
-        </div>
-        <div class="checkbox">
-          <label>
-            <input id="safeBrowsingEnabled" pref="safebrowsing.enabled"
-                metric="Options_SafeBrowsingCheckbox" type="checkbox">
-            <span i18n-content="safeBrowsingEnableProtection"></span>
-          </label>
-        </div>
-<if expr="pp_ifdef('_google_chrome') and pp_ifdef('chromeos')">
-        <div id="metricsReportingSetting" class="checkbox">
-          <label>
-            <input id="metricsReportingEnabled"
-                pref="cros.metrics.reportingEnabled" type="checkbox">
-            <span id="metricsReportingEnabledText"
-                i18n-content="enableLogging">
-            </span>
-          </label>
-        </div>
-</if>
-<if expr="pp_ifdef('_google_chrome') and not pp_ifdef('chromeos')">
-        <div id="metricsReportingSetting" class="checkbox">
-          <label>
-            <input id="metricsReportingEnabled" type="checkbox">
-            <span i18n-content="enableLogging"></span>
-          </label>
-        </div>
-</if>
+        </span>
+        <a target="_blank" i18n-content="learnMore"
+            i18n-values="href:privacyLearnMoreURL"></a>
       </div>
-    </section>
-    <section>
-      <h3 i18n-content="advancedSectionTitleContent"></h3>
-      <div>
-        <div class="section-group">
-          <label class="web-content-select-label">
-            <span i18n-content="defaultFontSizeLabel"></span>
-            <select id="defaultFontSize">
-              <option value="9" i18n-content="fontSizeLabelVerySmall">
-              </option>
-              <option value="12" i18n-content="fontSizeLabelSmall"></option>
-              <option value="16" i18n-content="fontSizeLabelMedium"></option>
-              <option value="20" i18n-content="fontSizeLabelLarge"></option>
-              <option value="24" i18n-content="fontSizeLabelVeryLarge">
-              </option>
-            </select>
-          </label>
-          <button id="fontSettingsCustomizeFontsButton"
-              i18n-content="fontSettingsCustomizeFontsButton"></button>
-        </div>
-        <div class="section-group">
-          <label class="web-content-select-label">
-            <span i18n-content="defaultZoomFactorLabel"></span>
-            <select id="defaultZoomFactor" dataType="double"></select>
-          </label>
-        </div>
-<if expr="not pp_ifdef('chromeos') or os == 'win32'">
-        <div class="section-group">
-</if>
-<if expr="not pp_ifdef('chromeos')">
-          <button id="language-button"
-              i18n-content="languageAndSpellCheckSettingsButton"></button>
-</if>
-<if expr="not pp_ifdef('chromeos') or os == 'win32'">
-        </div>
-</if>
-<if expr="os == 'darwin'">
-        <div class="checkbox">
-          <label>
-            <input id="tabsToLinksPref" pref="webkit.webprefs.tabs_to_links"
-                metric="Options_TabsToLinks" type="checkbox">
-            <span i18n-content="tabsToLinksPref"></span>
-          </label>
-        </div>
-</if>
-      </div>
-    </section>
-<if expr="not pp_ifdef('chromeos')">
-    <section>
-      <h3 i18n-content="advancedSectionTitleNetwork"></h3>
-      <div>
-        <div id="proxiesLabel"></div>
-        <div class="section-group">
-          <button id="proxiesConfigureButton"
-              i18n-content="proxiesConfigureButton"></button>
-        </div>
-      </div>
-    </section>
-</if>
-    <section>
-      <h3 i18n-content="advancedSectionTitleTranslate"></h3>
       <div class="checkbox">
         <label>
-          <input id="enableTranslate" pref="translate.enabled"
-              metric="Options_Translate" type="checkbox">
-          <span i18n-content="translateEnableTranslate"></span>
+          <input id="alternateErrorPagesEnabled"
+              pref="alternate_error_pages.enabled"
+              metric="Options_LinkDoctorCheckbox" type="checkbox">
+          <span i18n-content="linkDoctorPref"></span>
         </label>
       </div>
-    </section>
-<if expr="not pp_ifdef('chromeos')">
-    <section>
-      <h3 i18n-content="downloadLocationGroupName"></h3>
-      <div>
-        <div id="download-location-group">
-          <label>
-            <span i18n-content="downloadLocationBrowseTitle"></span>
-            <input id="downloadLocationPath" class="weakrtl" type="text"
-                pref="download.default_directory" size="36">
-          </label>
-          <button id="downloadLocationChangeButton"
-              pref="download.prompt_for_download"
-              i18n-content="downloadLocationChangeButton"></button>
-        </div>
-        <div class="checkbox">
-          <label>
-            <input type="checkbox"
-                pref="download.prompt_for_download"
-                metric="Options_AskForSaveLocation">
-            <span i18n-content="downloadLocationAskForSaveLocation"></span>
-          </label>
-        </div>
-        <div id="auto-open-file-types-label"
-            i18n-content="autoOpenFileTypesInfo"></div>
-        <div class="section-group">
-          <button id="autoOpenFileTypesResetToDefault"
-              i18n-content="autoOpenFileTypesResetToDefault"></button>
-        </div>
+      <div class="checkbox">
+        <label>
+          <input id="searchSuggestEnabled" pref="search.suggest_enabled"
+              metric="Options_UseSuggestCheckbox" type="checkbox">
+          <span i18n-content="suggestPref"></span>
+        </label>
       </div>
-    </section>
+      <div class="checkbox">
+        <label>
+          <input id="dnsPrefetchingEnabled" pref="dns_prefetching.enabled"
+              metric="Options_DnsPrefetchCheckbox" type="checkbox">
+          <span i18n-content="networkPredictionEnabledDescription"></span>
+        </label>
+      </div>
+      <div class="checkbox">
+        <label>
+          <input id="safeBrowsingEnabled" pref="safebrowsing.enabled"
+              metric="Options_SafeBrowsingCheckbox" type="checkbox">
+          <span i18n-content="safeBrowsingEnableProtection"></span>
+        </label>
+      </div>
+<if expr="pp_ifdef('_google_chrome') and pp_ifdef('chromeos')">
+      <div id="metricsReportingSetting" class="checkbox">
+        <label>
+          <input id="metricsReportingEnabled"
+              pref="cros.metrics.reportingEnabled" type="checkbox">
+          <span id="metricsReportingEnabledText"
+              i18n-content="enableLogging">
+          </span>
+        </label>
+      </div>
+</if>
+<if expr="pp_ifdef('_google_chrome') and not pp_ifdef('chromeos')">
+      <div id="metricsReportingSetting" class="checkbox">
+        <label>
+          <input id="metricsReportingEnabled" type="checkbox">
+          <span i18n-content="enableLogging"></span>
+        </label>
+      </div>
+</if>
+    </div>
+  </section>
+  <section>
+    <h3 i18n-content="advancedSectionTitleContent"></h3>
+    <div>
+      <div class="section-group">
+        <label class="web-content-select-label">
+          <span i18n-content="defaultFontSizeLabel"></span>
+          <select id="defaultFontSize">
+            <option value="9" i18n-content="fontSizeLabelVerySmall">
+            </option>
+            <option value="12" i18n-content="fontSizeLabelSmall"></option>
+            <option value="16" i18n-content="fontSizeLabelMedium"></option>
+            <option value="20" i18n-content="fontSizeLabelLarge"></option>
+            <option value="24" i18n-content="fontSizeLabelVeryLarge">
+            </option>
+          </select>
+        </label>
+        <button id="fontSettingsCustomizeFontsButton"
+            i18n-content="fontSettingsCustomizeFontsButton"></button>
+      </div>
+      <div class="section-group">
+        <label class="web-content-select-label">
+          <span i18n-content="defaultZoomFactorLabel"></span>
+          <select id="defaultZoomFactor" dataType="double"></select>
+        </label>
+      </div>
+<if expr="not pp_ifdef('chromeos') or os == 'win32'">
+      <div class="section-group">
+</if>
+<if expr="not pp_ifdef('chromeos')">
+        <button id="language-button"
+            i18n-content="languageAndSpellCheckSettingsButton"></button>
+</if>
+<if expr="not pp_ifdef('chromeos') or os == 'win32'">
+      </div>
+</if>
+<if expr="os == 'darwin'">
+      <div class="checkbox">
+        <label>
+          <input id="tabsToLinksPref" pref="webkit.webprefs.tabs_to_links"
+              metric="Options_TabsToLinks" type="checkbox">
+          <span i18n-content="tabsToLinksPref"></span>
+        </label>
+      </div>
+</if>
+    </div>
+  </section>
+<if expr="not pp_ifdef('chromeos')">
+  <section>
+    <h3 i18n-content="advancedSectionTitleNetwork"></h3>
+    <div>
+      <div id="proxiesLabel"></div>
+      <div class="section-group">
+        <button id="proxiesConfigureButton"
+            i18n-content="proxiesConfigureButton"></button>
+      </div>
+    </div>
+  </section>
+</if>
+  <section>
+    <h3 i18n-content="advancedSectionTitleTranslate"></h3>
+    <div class="checkbox">
+      <label>
+        <input id="enableTranslate" pref="translate.enabled"
+            metric="Options_Translate" type="checkbox">
+        <span i18n-content="translateEnableTranslate"></span>
+      </label>
+    </div>
+  </section>
+<if expr="not pp_ifdef('chromeos')">
+  <section>
+    <h3 i18n-content="downloadLocationGroupName"></h3>
+    <div>
+      <div id="download-location-group">
+        <label>
+          <span i18n-content="downloadLocationBrowseTitle"></span>
+          <input id="downloadLocationPath" class="weakrtl" type="text"
+              pref="download.default_directory" size="36">
+        </label>
+        <button id="downloadLocationChangeButton"
+            pref="download.prompt_for_download"
+            i18n-content="downloadLocationChangeButton"></button>
+      </div>
+      <div class="checkbox">
+        <label>
+          <input type="checkbox"
+              pref="download.prompt_for_download"
+              metric="Options_AskForSaveLocation">
+          <span i18n-content="downloadLocationAskForSaveLocation"></span>
+        </label>
+      </div>
+      <div id="auto-open-file-types-label"
+          i18n-content="autoOpenFileTypesInfo"></div>
+      <div class="section-group">
+        <button id="autoOpenFileTypesResetToDefault"
+            i18n-content="autoOpenFileTypesResetToDefault"></button>
+      </div>
+    </div>
+  </section>
 </if>
   <section>
       <h3 i18n-content="advancedSectionTitleSecurity"></h3>
@@ -218,15 +217,14 @@
   </section>
 </if>
 <if expr="os != 'darwin' and not pp_ifdef('chromeos')">
-    <section id="background-section">
-      <h3 i18n-content="advancedSectionTitleBackground"></h3>
-      <div class="checkbox">
-        <label>
-          <input id="backgroundModeCheckbox" type="checkbox">
-          <span i18n-content="backgroundModeCheckbox"></span>
-        </label>
-      </div>
-    </section>
+  <section id="background-section">
+    <h3 i18n-content="advancedSectionTitleBackground"></h3>
+    <div class="checkbox">
+      <label>
+        <input id="backgroundModeCheckbox" type="checkbox">
+        <span i18n-content="backgroundModeCheckbox"></span>
+      </label>
+    </div>
+  </section>
 </if>
-  </div>
 </div>

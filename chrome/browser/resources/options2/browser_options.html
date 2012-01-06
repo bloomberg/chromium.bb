@@ -1,173 +1,169 @@
 <div id="browserPage" class="page" hidden>
   <h1 i18n-content="settingsTitle"></h1>
-  <div class="displaytable">
-    <section id="sync-section">
-      <h3 i18n-content="syncSection"></h3>
-      <div>
-        <div id="sync-overview" hidden>
-          <span i18n-content="syncOverview"></span>
-          <a i18n-values="href:syncLearnMoreURL" i18n-content="learnMore"></a>
-        </div>
-        <div id="sync-status" hidden>
-          <span id="sync-status-text"></span>
-          <button id="sync-action-link" class="link-button"></button>
-        </div>
-        <div id="sync-buttons">
-          <button id="start-stop-sync" hidden></button>
-          <button id="customize-sync" i18n-content="customizeSync" hidden>
-          </button>
-          <div id="enable-auto-login-checkbox" class="checkbox" hidden>
-            <label>
-              <input id="enable-auto-login" pref="autologin.enabled"
-                  metric="Options_Autologin" type="checkbox">
-              <span i18n-content="autologinEnabled"></span>
-            </label>
+  <section id="sync-section">
+    <h3 i18n-content="syncSection"></h3>
+    <div id="sync-overview" class="section-description" hidden>
+      <span i18n-content="syncOverview"></span>
+      <a i18n-values="href:syncLearnMoreURL" i18n-content="learnMore"></a>
+    </div>
+    <div id="sync-status" hidden>
+      <span id="sync-status-text"></span>
+      <button id="sync-action-link" class="link-button"></button>
+    </div>
+    <div id="sync-buttons">
+      <button id="start-stop-sync" hidden></button>
+      <button id="customize-sync" i18n-content="customizeSync" hidden>
+      </button>
+      <div id="enable-auto-login-checkbox" class="checkbox" hidden>
+        <label>
+          <input id="enable-auto-login" pref="autologin.enabled"
+              metric="Options_Autologin" type="checkbox">
+          <span i18n-content="autologinEnabled"></span>
+        </label>
+      </div>
+    </div>
+  </section>
+  <section id="profiles-section" hidden>
+    <h3 i18n-content="profiles"></h3>
+    <div>
+      <list id="profiles-list" class="settings-list" hidden></list>
+      <div id="profiles-single-message" i18n-content="profilesSingleUser">
+      </div>
+      <div id="profiles-buttons">
+        <button id="profiles-create" i18n-content="profilesCreate"></button>
+        <button id="profiles-manage" i18n-content="profilesManage" disabled>
+        </button>
+        <button id="profiles-delete" i18n-content="profilesDelete">
+        </button>
+      </div>
+    </div>
+  </section>
+  <section id="startupSection">
+    <h3 i18n-content="startupGroupName"></h3>
+    <div>
+      <div class="radio">
+        <label>
+          <input type="radio" name="startup" value="0"
+              pref="session.restore_on_startup"
+              metric="Options_Startup_Homepage">
+          <span i18n-content="startupShowDefaultAndNewTab"></span>
+        </label>
+      </div>
+      <div class="radio">
+        <label>
+          <input type="radio" name="startup" value="1"
+              pref="session.restore_on_startup"
+              metric="Options_Startup_LastSession">
+          <span i18n-content="startupShowLastSession"></span>
+        </label>
+      </div>
+      <div class="radio">
+        <label>
+          <input id="startupShowPagesButton" type="radio" name="startup"
+              pref="session.restore_on_startup"
+              value="4" metric="Options_Startup_Custom">
+          <span id="startupShowPagesLabel"
+              i18n-content="startupShowPages"></span>
+        </label>
+      </div>
+      <div class="suboption">
+        <div id="startupPageManagement" class="settings-list">
+          <list id="startupPagesList"></list>
+          <div>
+            <button id="startupUseCurrentButton"
+                i18n-content="startupUseCurrent"></button>
           </div>
         </div>
+        <div id="startupPagesListDropmarker"></div>
       </div>
-    </section>
-    <section id="profiles-section" hidden>
-      <h3 i18n-content="profiles"></h3>
-      <div>
-        <list id="profiles-list" class="settings-list" hidden></list>
-        <div id="profiles-single-message" i18n-content="profilesSingleUser">
-        </div>
-        <div id="profiles-buttons">
-          <button id="profiles-create" i18n-content="profilesCreate"></button>
-          <button id="profiles-manage" i18n-content="profilesManage" disabled>
-          </button>
-          <button id="profiles-delete" i18n-content="profilesDelete">
-          </button>
-        </div>
+    </div>
+  </section>
+  <section>
+    <h3 i18n-content="homepageGroupName"></h3>
+    <div>
+      <div class="radio">
+        <label>
+          <input id="homepageUseNTPButton" type="radio" name="homepage"
+              value="true" metric="Options_Homepage_IsNewTabPage"
+              pref="homepage_is_newtabpage">
+          <span i18n-content="homepageUseNewTab"></span>
+        </label>
       </div>
-    </section>
-    <section id="startupSection">
-      <h3 i18n-content="startupGroupName"></h3>
-      <div>
+      <div id="customHomePageGroup">
         <div class="radio">
           <label>
-            <input type="radio" name="startup" value="0"
-                pref="session.restore_on_startup"
-                metric="Options_Startup_Homepage">
-            <span i18n-content="startupShowDefaultAndNewTab"></span>
-          </label>
-        </div>
-        <div class="radio">
-          <label>
-            <input type="radio" name="startup" value="1"
-                pref="session.restore_on_startup"
-                metric="Options_Startup_LastSession">
-            <span i18n-content="startupShowLastSession"></span>
-          </label>
-        </div>
-        <div class="radio">
-          <label>
-            <input id="startupShowPagesButton" type="radio" name="startup"
-                pref="session.restore_on_startup"
-                value="4" metric="Options_Startup_Custom">
-            <span id="startupShowPagesLabel"
-                i18n-content="startupShowPages"></span>
-          </label>
-        </div>
-        <div class="suboption">
-          <div id="startupPageManagement" class="settings-list">
-            <list id="startupPagesList"></list>
-            <div>
-              <button id="startupUseCurrentButton"
-                  i18n-content="startupUseCurrent"></button>
-            </div>
-          </div>
-          <div id="startupPagesListDropmarker"></div>
-        </div>
-      </div>
-    </section>
-    <section>
-      <h3 i18n-content="homepageGroupName"></h3>
-      <div>
-        <div class="radio">
-          <label>
-            <input id="homepageUseNTPButton" type="radio" name="homepage"
-                value="true" metric="Options_Homepage_IsNewTabPage"
+            <input id="homepageUseURLButton" type="radio" name="homepage"
+                value="false" metric="Options_Homepage_IsNewTabPage"
                 pref="homepage_is_newtabpage">
-            <span i18n-content="homepageUseNewTab"></span>
+            <span i18n-content="homepageUseURL"></span>
           </label>
         </div>
-        <div id="customHomePageGroup">
-          <div class="radio">
-            <label>
-              <input id="homepageUseURLButton" type="radio" name="homepage"
-                  value="false" metric="Options_Homepage_IsNewTabPage"
-                  pref="homepage_is_newtabpage">
-              <span i18n-content="homepageUseURL"></span>
-            </label>
-          </div>
-          <div>
-            <input id="homepageURL" class="weakrtl favicon-cell" type="url"
-                data-type="url" pref="homepage">
-          </div>
+        <div>
+          <input id="homepageURL" class="weakrtl favicon-cell" type="url"
+              data-type="url" pref="homepage">
         </div>
       </div>
-    </section>
-    <section>
-      <h3 i18n-content="toolbarGroupName"></h3>
-      <div>
-        <div class="checkbox">
-          <label>
-            <input id="toolbarShowHomeButton" pref="browser.show_home_button"
-                metric="Options_Homepage_HomeButton" type="checkbox">
-            <span i18n-content="toolbarShowHomeButton"></span>
-          </label>
+    </div>
+  </section>
+  <section>
+    <h3 i18n-content="toolbarGroupName"></h3>
+    <div>
+      <div class="checkbox">
+        <label>
+          <input id="toolbarShowHomeButton" pref="browser.show_home_button"
+              metric="Options_Homepage_HomeButton" type="checkbox">
+          <span i18n-content="toolbarShowHomeButton"></span>
+        </label>
+      </div>
+      <div class="checkbox">
+        <label>
+          <input id="toolbarShowBookmarksBar"
+              pref="bookmark_bar.show_on_all_tabs"
+              metric="Options_ShowBookmarksBar" type="checkbox">
+          <span i18n-content="toolbarShowBookmarksBar"></span>
+        </label>
+      </div>
+    </div>
+  </section>
+  <section>
+    <h3 i18n-content="defaultSearchGroupName"></h3>
+      <div id="defaultSearchEngineGroup">
+        <div id="defaultSearchGroupLabel"
+             i18n-values=".innerHTML:defaultSearchGroupLabel"></div>
+        <div>
+          <select id="defaultSearchEngine" class="weakrtl"></select>
+          <button id="defaultSearchManageEnginesButton"
+              i18n-content="defaultSearchManageEngines"></button>
         </div>
-        <div class="checkbox">
-          <label>
-            <input id="toolbarShowBookmarksBar"
-                pref="bookmark_bar.show_on_all_tabs"
-                metric="Options_ShowBookmarksBar" type="checkbox">
-            <span i18n-content="toolbarShowBookmarksBar"></span>
+        <div id="instantOption" class="checkbox">
+          <label id="instantLabel">
+            <!-- TODO(estade): metric? -->
+            <input id="instantFieldTrialCheckbox" type="checkbox"
+                checked="checked" hidden>
+            <input id="instantEnabledCheckbox" type="checkbox"
+                pref="instant.enabled">
+            <span i18n-values=".innerHTML:instantPrefAndWarning"></span>
           </label>
         </div>
       </div>
-    </section>
-    <section>
-      <h3 i18n-content="defaultSearchGroupName"></h3>
-        <div id="defaultSearchEngineGroup">
-          <div id="defaultSearchGroupLabel"
-               i18n-values=".innerHTML:defaultSearchGroupLabel"></div>
-          <div>
-            <select id="defaultSearchEngine" class="weakrtl"></select>
-            <button id="defaultSearchManageEnginesButton"
-                i18n-content="defaultSearchManageEngines"></button>
-          </div>
-          <div id="instantOption" class="checkbox">
-            <label id="instantLabel">
-              <!-- TODO(estade): metric? -->
-              <input id="instantFieldTrialCheckbox" type="checkbox"
-                  checked="checked" hidden>
-              <input id="instantEnabledCheckbox" type="checkbox"
-                  pref="instant.enabled">
-              <span i18n-values=".innerHTML:instantPrefAndWarning"></span>
-            </label>
-          </div>
-        </div>
-    </section>
+  </section>
 <if expr="not pp_ifdef('chromeos')">
-    <section>
-      <h3 i18n-content="defaultBrowserGroupName"></h3>
-      <div>
-        <button id="defaultBrowserUseAsDefaultButton"
-            i18n-content="defaultBrowserUseAsDefault"></button>
-        <div id="defaultBrowserState"
-            i18n-content="defaultBrowserUnknown"></div>
-      </div>
-    </section>
+  <section>
+    <h3 i18n-content="defaultBrowserGroupName"></h3>
+    <div>
+      <button id="defaultBrowserUseAsDefaultButton"
+          i18n-content="defaultBrowserUseAsDefault"></button>
+      <div id="defaultBrowserState"
+          i18n-content="defaultBrowserUnknown"></div>
+    </div>
+  </section>
 </if>
-    <section>
-      <h3 i18n-content="advancedGroupName"></h3>
-      <div>
-        <div i18n-content="advancedGroupDescription"></div>
-        <button id="advancedOptionsButton"
-            i18n-content="advancedOptionsButtonTitle"></button>
-      </div>
-    </section>
-  </div>
+  <section>
+    <h3 i18n-content="advancedGroupName"></h3>
+    <div>
+      <div i18n-content="advancedGroupDescription"></div>
+      <button id="advancedOptionsButton"
+          i18n-content="advancedOptionsButtonTitle"></button>
+    </div>
+  </section>
 </div>

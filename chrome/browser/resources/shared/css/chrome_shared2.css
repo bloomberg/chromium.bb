@@ -16,7 +16,7 @@ body {
   cursor: default;
   font-family: Open Sans, sans-serif;
   font-size: 12px;
-  margin: 0;
+  line-height: 22px;
 }
 
 h1 {
