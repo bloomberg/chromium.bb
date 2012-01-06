@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -49,7 +49,7 @@ void PnaclResources::StartDownloads() {
     if (!manifest_->ResolveURL(resource_urls_[i], &full_url, &error_info)) {
       coordinator_->ReportNonPpapiError(nacl::string("failed to resolve ") +
                                         resource_urls_[i] + ": " +
-                                        error_info.message() + "\n");
+                                        error_info.message() + ".");
       break;
     }
     pp::CompletionCallback ready_callback =
@@ -60,7 +60,7 @@ void PnaclResources::StartDownloads() {
                                manifest_->PermitsExtensionUrls(),
                                ready_callback.pp_completion_callback())) {
       coordinator_->ReportNonPpapiError(nacl::string("failed to download ") +
-                                        resource_urls_[i] + "\n");
+                                        resource_urls_[i] + ".");
       break;
     }
   }
@@ -77,7 +77,7 @@ void PnaclResources::ResourceReady(int32_t pp_error,
                                                "resource " + url);
   if (fd < 0) {
     coordinator_->ReportPpapiError(pp_error,
-                                   "PnaclResources::ResourceReady failed.\n");
+                                   "PnaclResources::ResourceReady failed.");
   } else {
     resource_wrappers_[url] =
         plugin_->wrapper_factory()->MakeFileDesc(fd, O_RDONLY);

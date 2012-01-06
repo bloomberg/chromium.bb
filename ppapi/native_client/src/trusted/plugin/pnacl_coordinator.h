@@ -67,8 +67,14 @@ class PnaclFileDescPair {
   // Accessors.
   // The nacl::DescWrapper* for the writeable version of the file.
   nacl::DescWrapper* write_wrapper() { return write_wrapper_.get(); }
+  nacl::DescWrapper* release_write_wrapper() {
+    return write_wrapper_.release();
+  }
   // The nacl::DescWrapper* for the read-only version of the file.
   nacl::DescWrapper* read_wrapper() { return read_wrapper_.get(); }
+  nacl::DescWrapper* release_read_wrapper() {
+    return read_wrapper_.release();
+  }
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(PnaclFileDescPair);
@@ -99,7 +105,7 @@ class PnaclFileDescPair {
   // The callback invoked when both file I/O objects are created.
   pp::CompletionCallback done_callback_;
   // Random number generator used to create filenames.
-  struct NaClDescRng rng_desc_;
+  struct NaClDescRng *rng_desc_;
 };
 
 // A thread safe reference counting class Needed for CompletionCallbackFactory
@@ -275,6 +281,9 @@ class PnaclCoordinator {
 
   // Used to report information when errors (PPAPI or otherwise) are reported.
   ErrorInfo error_info_;
+  // True if an error was already reported, and translate_notify_callback_
+  // was already run/consumed.
+  bool error_already_reported_;
 };
 
 //----------------------------------------------------------------------

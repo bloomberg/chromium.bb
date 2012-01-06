@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -80,16 +80,18 @@ PnaclFileDescPair::PnaclFileDescPair(Plugin* plugin,
                  static_cast<void*>(plugin), static_cast<void*>(file_system),
                  static_cast<void*>(coordinator)));
   callback_factory_.Initialize(this);
-  CHECK(NaClDescRngCtor(&rng_desc_));
+  rng_desc_ = (struct NaClDescRng *) malloc(sizeof *rng_desc_);
+  CHECK(rng_desc_ != NULL);
+  CHECK(NaClDescRngCtor(rng_desc_));
   file_io_trusted_ = static_cast<const PPB_FileIOTrusted*>(
       pp::Module::Get()->GetBrowserInterface(PPB_FILEIOTRUSTED_INTERFACE));
   // Get a random temp file name.
-  filename_ = "/" + Random32CharHexString(&rng_desc_);
+  filename_ = "/" + Random32CharHexString(rng_desc_);
 }
 
 PnaclFileDescPair::~PnaclFileDescPair() {
   PLUGIN_PRINTF(("PnaclFileDescPair::~PnaclFileDescPair\n"));
-  NaClDescUnref(reinterpret_cast<NaClDesc*>(&rng_desc_));
+  NaClDescUnref(reinterpret_cast<NaClDesc*>(rng_desc_));
 }
 
 void PnaclFileDescPair::Open(const pp::CompletionCallback& cb) {
@@ -146,7 +148,7 @@ void PnaclFileDescPair::WriteFileDidOpen(int32_t pp_error) {
   // Remember the object temporary file descriptor.
   int32_t fd = GetFD(pp_error, *write_io_, kWriteable);
   if (fd < 0) {
-    coordinator_->ReportNonPpapiError("could not open write temp file\n");
+    coordinator_->ReportNonPpapiError("could not open write temp file.");
     return;
   }
   write_wrapper_.reset(plugin_->wrapper_factory()->MakeFileDesc(fd, O_RDWR));
@@ -162,7 +164,7 @@ void PnaclFileDescPair::ReadFileDidOpen(int32_t pp_error) {
   // Remember the object temporary file descriptor.
   int32_t fd = GetFD(pp_error, *read_io_, kReadOnly);
   if (fd < 0) {
-    coordinator_->ReportNonPpapiError("could not open read temp file\n");
+    coordinator_->ReportNonPpapiError("could not open read temp file.");
     return;
   }
   read_wrapper_.reset(plugin_->wrapper_factory()->MakeFileDesc(fd, O_RDONLY));
@@ -190,7 +192,7 @@ class PnaclManifest : public Manifest {
     UNREFERENCED_PARAMETER(is_portable);
     PLUGIN_PRINTF(("PnaclManifest does not contain a program\n"));
     error_info->SetReport(ERROR_MANIFEST_GET_NEXE_URL,
-                          "pnacl manifest does not contain a program");
+                          "pnacl manifest does not contain a program.");
     return false;
   }
 
@@ -282,13 +284,13 @@ int32_t PnaclCoordinator::GetLoadedFileDesc(int32_t pp_error,
     if (pp_error == PP_ERROR_ABORTED) {
       plugin_->ReportLoadAbort();
     } else {
-      ReportPpapiError(pp_error, component + " load failed.\n");
+      ReportPpapiError(pp_error, component + " load failed.");
     }
     return -1;
   }
   int32_t file_desc_ok_to_close = DUP(file_desc);
   if (file_desc_ok_to_close == NACL_NO_FILE_DESC) {
-    ReportPpapiError(PP_ERROR_FAILED, component + " could not dup fd.\n");
+    ReportPpapiError(PP_ERROR_FAILED, component + " could not dup fd.");
     return -1;
   }
   return file_desc_ok_to_close;
@@ -305,7 +307,8 @@ PnaclCoordinator::PnaclCoordinator(
     subprocesses_should_die_(false),
     file_system_(new pp::FileSystem(plugin, PP_FILESYSTEMTYPE_LOCALTEMPORARY)),
     manifest_(new PnaclManifest(plugin->url_util())),
-    pexe_url_(pexe_url) {
+    pexe_url_(pexe_url),
+    error_already_reported_(false) {
   PLUGIN_PRINTF(("PnaclCoordinator::PnaclCoordinator (this=%p, plugin=%p)\n",
                  static_cast<void*>(this), static_cast<void*>(plugin)));
   callback_factory_.Initialize(this);
@@ -344,8 +347,19 @@ void PnaclCoordinator::ReportPpapiError(int32_t pp_error) {
                  error_info_.message().c_str()));
   plugin_->ReportLoadError(error_info_);
   // Free all the intermediate callbacks we ever created.
+  // Note: this doesn't *cancel* the callbacks from the factories attached
+  // to the various helper classes (e.g., pnacl_resources). Thus, those
+  // callbacks may still run asynchronously.  We let those run but ignore
+  // any other errors they may generate so that they do not end up running
+  // translate_notify_callback_, which has already been freed.
   callback_factory_.CancelAll();
-  translate_notify_callback_.Run(pp_error);
+  if (!error_already_reported_) {
+    error_already_reported_ = true;
+    translate_notify_callback_.Run(pp_error);
+  } else {
+    PLUGIN_PRINTF(("PnaclCoordinator::ReportPpapiError an earlier error was "
+                   "already reported -- Skipping.\n"));
+  }
 }
 
 void PnaclCoordinator::TranslateFinished(int32_t pp_error) {
@@ -356,8 +370,8 @@ void PnaclCoordinator::TranslateFinished(int32_t pp_error) {
     return;
   }
   // Transfer ownership of the nexe wrapper to the coordinator.
-  // TODO(sehr): need to release the translation unit here while transferring.
-  translated_fd_.reset(nexe_file_->read_wrapper());
+  // TODO(sehr): figure out when/how to delete/reap these temporary files.
+  translated_fd_.reset(nexe_file_->release_read_wrapper());
   plugin_->EnqueueProgressEvent(Plugin::kProgressEventProgress);
   translate_notify_callback_.Run(pp_error);
 }
@@ -376,7 +390,7 @@ void PnaclCoordinator::ResourcesDidLoad(int32_t pp_error) {
   PLUGIN_PRINTF(("PnaclCoordinator::ResourcesDidLoad (pp_error=%"
                  NACL_PRId32")\n", pp_error));
   if (pp_error != PP_OK) {
-    ReportPpapiError(pp_error, "resources failed to load\n");
+    ReportPpapiError(pp_error, "resources failed to load.");
     return;
   }
   // Open the local temporary file system to create the temporary files
@@ -384,7 +398,7 @@ void PnaclCoordinator::ResourcesDidLoad(int32_t pp_error) {
   pp::CompletionCallback cb =
       callback_factory_.NewCallback(&PnaclCoordinator::FileSystemDidOpen);
   if (!file_system_->Open(0, cb)) {
-    ReportNonPpapiError("failed to open file system.\n");
+    ReportNonPpapiError("failed to open file system.");
   }
 }
 
@@ -392,7 +406,7 @@ void PnaclCoordinator::FileSystemDidOpen(int32_t pp_error) {
   PLUGIN_PRINTF(("PnaclCoordinator::FileSystemDidOpen (pp_error=%"
                  NACL_PRId32")\n", pp_error));
   if (pp_error != PP_OK) {
-    ReportPpapiError(pp_error, "file system didn't open.\n");
+    ReportPpapiError(pp_error, "file system didn't open.");
     return;
   }
   // Create the object file pair for connecting llc and ld.
@@ -430,7 +444,7 @@ void PnaclCoordinator::NexePairDidOpen(int32_t pp_error) {
   if (!plugin_->StreamAsFile(pexe_url_,
                              manifest_->PermitsExtensionUrls(),
                              cb.pp_completion_callback())) {
-    ReportNonPpapiError(nacl::string("failed to download ") + pexe_url_ + "\n");
+    ReportNonPpapiError(nacl::string("failed to download ") + pexe_url_ + ".");
   }
 }
 
@@ -461,7 +475,7 @@ void PnaclCoordinator::RunTranslate(int32_t pp_error) {
       callback_factory_.NewCallback(&PnaclCoordinator::TranslateFinished);
   translate_thread_.reset(new NaClThread);
   if (translate_thread_ == NULL) {
-    ReportNonPpapiError("could not allocate thread struct\n");
+    ReportNonPpapiError("could not allocate thread struct.");
     return;
   }
   const int32_t kArbitraryStackSize = 128 * 1024;
@@ -469,7 +483,7 @@ void PnaclCoordinator::RunTranslate(int32_t pp_error) {
                                 DoTranslateThread,
                                 this,
                                 kArbitraryStackSize)) {
-    ReportNonPpapiError("could not create thread\n");
+    ReportNonPpapiError("could not create thread.");
   }
 }
 
