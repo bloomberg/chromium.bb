@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -186,7 +186,10 @@ class PanelOverflowBrowserTest : public BasePanelBrowserTest {
 #define MAYBE_CloseNormalPanels CloseNormalPanels
 #define MAYBE_CloseWithDelayedOverflow CloseWithDelayedOverflow
 #define MAYBE_ActivateOverflowPanels ActivateOverflowPanels
-#define MAYBE_HoverOverOverflowArea HoverOverOverflowArea
+#define MAYBE_HoverOverOverflowAreaWithoutOverflowOfOverflow \
+    HoverOverOverflowAreaWithoutOverflowOfOverflow
+#define MAYBE_HoverOverOverflowAreaWithOverflowOfOverflow \
+    HoverOverOverflowAreaWithOverflowOfOverflow
 #define MAYBE_ResizePanel ResizePanel
 #define MAYBE_OverflowIndicatorCount OverflowIndicatorCount
 #define MAYBE_DrawOverflowAttention DrawOverflowAttention
@@ -200,7 +203,10 @@ class PanelOverflowBrowserTest : public BasePanelBrowserTest {
 #define MAYBE_CloseNormalPanels DISABLED_CloseNormalPanels
 #define MAYBE_CloseWithDelayedOverflow DISABLED_CloseWithDelayedOverflow
 #define MAYBE_ActivateOverflowPanels DISABLED_ActivateOverflowPanels
-#define MAYBE_HoverOverOverflowArea DISABLED_HoverOverOverflowArea
+#define MAYBE_HoverOverOverflowAreaWithoutOverflowOfOverflow \
+    DISABLED_HoverOverOverflowAreaWithoutOverflowOfOverflow
+#define MAYBE_HoverOverOverflowAreaWithOverflowOfOverflow \
+    DISABLED_HoverOverOverflowAreaWithOverflowOfOverflow
 #define MAYBE_ResizePanel DISABLED_ResizePanel
 #define MAYBE_OverflowIndicatorCount DISABLED_OverflowIndicatorCount
 #define MAYBE_DrawOverflowAttention DISABLED_DrawOverflowAttention
@@ -760,7 +766,79 @@ IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest, MAYBE_ActivateOverflowPanels) {
   PanelManager::GetInstance()->RemoveAll();
 }
 
-IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest, MAYBE_HoverOverOverflowArea) {
+IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest,
+                       MAYBE_HoverOverOverflowAreaWithoutOverflowOfOverflow) {
+  PanelManager* panel_manager = PanelManager::GetInstance();
+  PanelOverflowStrip* panel_overflow_strip =
+      panel_manager->panel_overflow_strip();
+  int iconified_width = panel_overflow_strip->current_display_width();
+
+  // Create normal and overflow panels.
+  //   normal:               P0, P1, P2
+  //   overflow:             P3, P4
+  const int panel_widths[] = {
+      250, 260, 200,  // normal
+      255, 220        // overflow
+  };
+  std::vector<Panel*> panels = CreateOverflowPanels(3, 2, panel_widths);
+
+  // Move mouse beyond the right edge of the top overflow panel.
+  // Expect the overflow area remains shrunk.
+  MoveMouse(gfx::Point(panels[4]->GetBounds().right() + 1,
+                       panels[4]->GetBounds().y()));
+  EXPECT_EQ(iconified_width, panel_overflow_strip->current_display_width());
+
+  // Move mouse above the top overflow panel. Expect the overflow area
+  // remains shrunk.
+  MoveMouse(gfx::Point(panels[4]->GetBounds().x(),
+                       panels[4]->GetBounds().y() - 1));
+  EXPECT_EQ(iconified_width, panel_overflow_strip->current_display_width());
+
+  // Move mouse below the bottom overflow panel. Expect the overflow area
+  // remains shrunk.
+  MoveMouse(gfx::Point(panels[3]->GetBounds().right(),
+                       panels[3]->GetBounds().bottom() + 1));
+  EXPECT_EQ(iconified_width, panel_overflow_strip->current_display_width());
+
+  // Move mouse to the origin of an overflow panel. Expect the overflow area
+  // gets expanded.
+  MoveMouseAndWaitForOverflowAnimationEnded(
+      panels[4]->GetBounds().origin());
+  int hover_width = panel_overflow_strip->current_display_width();
+  EXPECT_GT(hover_width, iconified_width);
+  EXPECT_EQ(hover_width, panels[3]->GetBounds().width());
+  EXPECT_EQ(hover_width, panels[4]->GetBounds().width());
+
+  // Move mouse to the origin of another overflow panel. Expect the overflow
+  // area remains expanded.
+  MoveMouse(panels[3]->GetBounds().origin());
+  EXPECT_EQ(hover_width, panel_overflow_strip->current_display_width());
+
+  // Move mouse beyond the left edge of an overflow panel. Expect the overflow
+  // area remains expanded.
+  MoveMouse(gfx::Point(panels[4]->GetBounds().x() - 5,
+                       panels[4]->GetBounds().y()));
+  EXPECT_EQ(hover_width, panel_overflow_strip->current_display_width());
+
+  // Move mouse to the bottom-right corner of the bottom overflow panel.
+  // Expect the overflow area remains expanded.
+  MoveMouse(gfx::Point(panels[3]->GetBounds().right(),
+                       panels[3]->GetBounds().bottom()));
+  EXPECT_EQ(hover_width, panel_overflow_strip->current_display_width());
+
+  // Move mouse beyond the right edge of the hover panel. Expect the overflow
+  // area gets shrunk.
+  MoveMouseAndWaitForOverflowAnimationEnded(gfx::Point(
+      panels[4]->GetBounds().right() + 5, panels[4]->GetBounds().y()));
+  EXPECT_EQ(iconified_width, panel_overflow_strip->current_display_width());
+  EXPECT_EQ(iconified_width, panels[3]->GetBounds().width());
+  EXPECT_EQ(iconified_width, panels[4]->GetBounds().width());
+
+  panel_manager->RemoveAll();
+}
+
+IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest,
+                       MAYBE_HoverOverOverflowAreaWithOverflowOfOverflow) {
   PanelManager* panel_manager = PanelManager::GetInstance();
   PanelOverflowStrip* panel_overflow_strip =
       panel_manager->panel_overflow_strip();

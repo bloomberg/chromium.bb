@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -53,21 +53,20 @@ void PanelOverflowStrip::SetDisplayArea(const gfx::Rect& display_area) {
 
   UpdateCurrentWidth();
 
-  if (overflow_indicator_.get()) {
-    max_visible_panels_on_hover_ = 0;  // reset this value for recomputation.
-    UpdateMaxVisiblePanelsOnHover();
+  max_visible_panels_on_hover_ = 0;  // reset this value for recomputation.
+  UpdateMaxVisiblePanelsOnHover();
+
+  if (overflow_indicator_.get())
     UpdateOverflowIndicatorCount();
-  }
 
   Refresh();
 }
 
 void PanelOverflowStrip::UpdateMaxVisiblePanelsOnHover() {
   // No need to recompute this value.
-  if (max_visible_panels_on_hover_)
+  if (max_visible_panels_on_hover_ || panels_.empty())
     return;
 
-  DCHECK(!panels_.empty());
   max_visible_panels_on_hover_ =
       kHeightRatioForMaxVisibleOverflowPanelsOnHover *
       display_area_.height() /
@@ -96,15 +95,16 @@ void PanelOverflowStrip::AddPanel(Panel* panel) {
     Refresh();
   }
 
-  if (num_panels() == 1)
+  if (num_panels() == 1) {
     panel_manager_->mouse_watcher()->AddObserver(this);
+    UpdateMaxVisiblePanelsOnHover();
+  }
 
   // Update the overflow indicator only when the number of overflow panels go
   // beyond the maximum visible limit.
   if (num_panels() > max_visible_panels_) {
     if (!overflow_indicator_.get()) {
       overflow_indicator_.reset(PanelOverflowIndicator::Create());
-      UpdateMaxVisiblePanelsOnHover();
     }
     UpdateOverflowIndicatorCount();
   }
@@ -181,6 +181,9 @@ void PanelOverflowStrip::DoRefresh(size_t start_index, size_t end_index) {
 }
 
 void PanelOverflowStrip::UpdateOverflowIndicatorCount() {
+  if (!overflow_indicator_.get())
+    return;
+
   int max_panels = max_visible_panels();
 
   // Setting the count to 0 will hide the indicator.
@@ -204,6 +207,9 @@ void PanelOverflowStrip::UpdateOverflowIndicatorCount() {
 }
 
 void PanelOverflowStrip::UpdateOverflowIndicatorAttention() {
+  if (!overflow_indicator_.get())
+    return;
+
   int max_panels = max_visible_panels();
 
   // The overflow indicator is painted as drawing attention only when there is
@@ -265,13 +271,14 @@ void PanelOverflowStrip::ShowOverflowTitles(bool show_overflow_titles) {
     return;
   are_overflow_titles_shown_ = show_overflow_titles;
 
+  int start_width = current_display_width_;
   UpdateCurrentWidth();
 
   if (panels_.empty())
     return;
 
   if (show_overflow_titles) {
-    overflow_hover_animator_start_width_ = current_display_width_;
+    overflow_hover_animator_start_width_ = start_width;
     overflow_hover_animator_end_width_ = kOverflowAreaHoverWidth;
 
     // We need to bring all overflow panels to the top of z-order since the
@@ -281,7 +288,7 @@ void PanelOverflowStrip::ShowOverflowTitles(bool show_overflow_titles) {
       (*iter)->EnsureFullyVisible();
     }
   } else {
-    overflow_hover_animator_start_width_ = current_display_width_;
+    overflow_hover_animator_start_width_ = start_width;
     overflow_hover_animator_end_width_ = display_area_.width();
   }
 
