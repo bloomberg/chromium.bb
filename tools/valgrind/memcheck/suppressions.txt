@@ -91,6 +91,15 @@
    fun:pango_itemize_with_base_dir
 }
 {
+   # Similar to fontconfig_bug_8428 below. Reported in
+   # https://bugs.freedesktop.org/show_bug.cgi?id=8215
+   fontconfig_bug_8215
+   Memcheck:Leak
+   fun:malloc
+   fun:FcPatternObjectInsertElt
+   fun:FcPatternObjectAddWithBinding
+}
+{
    # Fontconfig leak, seen in shard 16 of 20 of ui_tests
    # See https://bugs.freedesktop.org/show_bug.cgi?id=8428
    # and http://www.gnome.org/~johan/gtk.suppression
@@ -117,10 +126,7 @@
    fun:malloc
    fun:FcConfigValues
    fun:FcConfigValues
-   fun:FcConfigValues
-   fun:FcConfigValues
-   fun:FcConfigValues
-   fun:FcConfigValues
+   ...
    fun:FcConfigValues
    fun:FcConfigValues
    fun:FcConfigSubstituteWithPat
