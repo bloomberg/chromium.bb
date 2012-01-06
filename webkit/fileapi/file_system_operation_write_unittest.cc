@@ -267,7 +267,7 @@ TEST_F(FileSystemOperationWriteTest, TestWriteInvalidBlobUrl) {
   MessageLoop::current()->Run();
 
   EXPECT_EQ(0, bytes_written());
-  EXPECT_EQ(base::PLATFORM_FILE_OK, status());
+  EXPECT_EQ(base::PLATFORM_FILE_ERROR_FAILED, status());
   EXPECT_TRUE(complete());
 }
 

@@ -168,7 +168,7 @@ void FileWriterDelegate::OnResponseStarted(net::URLRequest* request) {
   // file_stream_->Seek() blocks the IO thread.
   // See http://crbug.com/75548.
   base::ThreadRestrictions::ScopedAllowIO allow_io;
-  if (!request->status().is_success()) {
+  if (!request->status().is_success() || request->GetResponseCode() != 200) {
     OnError(base::PLATFORM_FILE_ERROR_FAILED);
     return;
   }
