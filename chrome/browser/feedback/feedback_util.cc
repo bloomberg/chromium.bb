@@ -1,11 +1,12 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/bug_report_util.h"
+#include "chrome/browser/feedback/feedback_util.h"
 
 #include <sstream>
 #include <string>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -41,13 +42,13 @@ using content::WebContents;
 
 namespace {
 
-const int kBugReportVersion = 1;
+const int kFeedbackVersion = 1;
 
 const char kReportPhishingUrl[] =
     "http://www.google.com/safebrowsing/report_phish/";
 
 // URL to post bug reports to.
-static char const kBugReportPostUrl[] =
+static char const kFeedbackPostUrl[] =
     "https://www.google.com/tools/feedback/chrome/__submit";
 
 static char const kProtBufMimeType[] = "application/x-protobuf";
@@ -56,8 +57,6 @@ static char const kPngMimeType[] = "image/png";
 // Tags we use in product specific data
 static char const kChromeVersionTag[] = "CHROME VERSION";
 static char const kOsVersionTag[] = "OS VERSION";
-
-static char const kNotificationId[] = "feedback.chromeos";
 
 static int const kHttpPostSuccessNoContent = 204;
 static int const kHttpPostFailNoConnection = -1;
@@ -75,16 +74,16 @@ const size_t kMaxLineCount       = 40;
 const size_t kMaxSystemLogLength = 4 * 1024;
 #endif
 
-const int64 kInitialRetryDelay = 900000; // 15 minutes
+const int64 kInitialRetryDelay = 900000;  // 15 minutes
 const int64 kRetryDelayIncreaseFactor = 2;
-const int64 kRetryDelayLimit = 14400000; // 4 hours
+const int64 kRetryDelayLimit = 14400000;  // 4 hours
 
 
 }  // namespace
 
 
 // Simple content::URLFetcherDelegate to clean up URLFetcher on completion.
-class BugReportUtil::PostCleanup : public content::URLFetcherDelegate {
+class FeedbackUtil::PostCleanup : public content::URLFetcherDelegate {
  public:
   PostCleanup(Profile* profile, std::string* post_body,
               int64 previous_delay) : profile_(profile),
@@ -107,7 +106,7 @@ class BugReportUtil::PostCleanup : public content::URLFetcherDelegate {
 // Don't use the data parameter, instead use the pointer we pass into every
 // post cleanup object - that pointer will be deleted and deleted only on a
 // successful post to the feedback server.
-void BugReportUtil::PostCleanup::OnURLFetchComplete(
+void FeedbackUtil::PostCleanup::OnURLFetchComplete(
     const content::URLFetcher* source) {
   std::stringstream error_stream;
   int response_code = source->GetResponseCode();
@@ -124,7 +123,7 @@ void BugReportUtil::PostCleanup::OnURLFetchComplete(
     } else {
       previous_delay_ = kInitialRetryDelay;
     }
-    BugReportUtil::DispatchFeedback(profile_, post_body_, previous_delay_);
+    FeedbackUtil::DispatchFeedback(profile_, post_body_, previous_delay_);
 
     // Process the error for debug output
     if (response_code == kHttpPostFailNoConnection) {
@@ -149,7 +148,7 @@ void BugReportUtil::PostCleanup::OnURLFetchComplete(
 }
 
 // static
-void BugReportUtil::SetOSVersion(std::string* os_version) {
+void FeedbackUtil::SetOSVersion(std::string* os_version) {
 #if defined(OS_WIN)
   base::win::OSInfo* os_info = base::win::OSInfo::GetInstance();
   base::win::OSInfo::VersionNumber version_number = os_info->version_number();
@@ -168,17 +167,17 @@ void BugReportUtil::SetOSVersion(std::string* os_version) {
 }
 
 // static
-void BugReportUtil::DispatchFeedback(Profile* profile,
+void FeedbackUtil::DispatchFeedback(Profile* profile,
                                      std::string* post_body,
                                      int64 delay) {
   DCHECK(post_body);
 
   MessageLoop::current()->PostDelayedTask(FROM_HERE, base::Bind(
-      &BugReportUtil::SendFeedback, profile, post_body, delay), delay);
+      &FeedbackUtil::SendFeedback, profile, post_body, delay), delay);
 }
 
 // static
-void BugReportUtil::SendFeedback(Profile* profile,
+void FeedbackUtil::SendFeedback(Profile* profile,
                                  std::string* post_body,
                                  int64 previous_delay) {
   DCHECK(post_body);
@@ -189,11 +188,11 @@ void BugReportUtil::SendFeedback(Profile* profile,
     post_url = GURL(CommandLine::ForCurrentProcess()->
         GetSwitchValueASCII(switches::kFeedbackServer));
   else
-    post_url = GURL(kBugReportPostUrl);
+    post_url = GURL(kFeedbackPostUrl);
 
   content::URLFetcher* fetcher = content::URLFetcher::Create(
       post_url, content::URLFetcher::POST,
-      new BugReportUtil::PostCleanup(profile, post_body, previous_delay));
+      new FeedbackUtil::PostCleanup(profile, post_body, previous_delay));
   fetcher->SetRequestContext(profile->GetRequestContext());
 
   fetcher->SetUploadData(std::string(kProtBufMimeType), *post_body);
@@ -202,11 +201,11 @@ void BugReportUtil::SendFeedback(Profile* profile,
 
 
 // static
-void BugReportUtil::AddFeedbackData(
-    userfeedback::ExternalExtensionSubmit* feedback_data,
+void FeedbackUtil::AddFeedbackData(
+    userfeedback::ExtensionSubmit* feedback_data,
     const std::string& key, const std::string& value) {
   // Don't bother with empty keys or values
-  if (key=="" || value == "") return;
+  if (key == "" || value == "") return;
   // Create log_value object and add it to the web_data object
   userfeedback::ProductSpecificData log_value;
   log_value.set_key(key);
@@ -216,7 +215,7 @@ void BugReportUtil::AddFeedbackData(
 }
 
 #if defined(OS_CHROMEOS)
-bool BugReportUtil::ValidFeedbackSize(const std::string& content) {
+bool FeedbackUtil::ValidFeedbackSize(const std::string& content) {
   if (content.length() > kMaxSystemLogLength)
     return false;
   size_t line_count = 0;
@@ -233,9 +232,9 @@ bool BugReportUtil::ValidFeedbackSize(const std::string& content) {
 #endif
 
 // static
-void BugReportUtil::SendReport(
+void FeedbackUtil::SendReport(
     Profile* profile
-    , int problem_type
+    , const std::string& category_tag
     , const std::string& page_url_text
     , const std::string& description
     , ScreenshotDataPtr image_data_ptr
@@ -249,7 +248,7 @@ void BugReportUtil::SendReport(
 #endif
     ) {
   // Create google feedback protocol buffer objects
-  userfeedback::ExternalExtensionSubmit feedback_data;
+  userfeedback::ExtensionSubmit feedback_data;
   // type id set to 0, unused field but needs to be initialized to 0
   feedback_data.set_type_id(0);
 
@@ -287,10 +286,14 @@ void BugReportUtil::SendReport(
                     chrome_version);
   }
 
+  // We don't need the OS version for ChromeOS since we get it in
+  // CHROMEOS_RELEASE_VERSION from /etc/lsb-release
+#if !defined(OS_CHROMEOS)
   // Add OS version (eg, for WinXP SP2: "5.1.2600 Service Pack 2").
   std::string os_version = "";
   SetOSVersion(&os_version);
   AddFeedbackData(&feedback_data, std::string(kOsVersionTag), os_version);
+#endif
 
   // Include the page image if we have one.
   if (image_data_ptr.get() && image_data_ptr->size()) {
@@ -333,21 +336,24 @@ void BugReportUtil::SendReport(
   }
 #endif
 
+  // Set our category tag if we have one
+  if (category_tag.size())
+    feedback_data.set_category_tag(category_tag);
+
   // Set our Chrome specific data
   userfeedback::ChromeData chrome_data;
-#if defined(OS_CHROMEOS)
   chrome_data.set_chrome_platform(
+#if defined(OS_CHROMEOS)
       userfeedback::ChromeData_ChromePlatform_CHROME_OS);
   userfeedback::ChromeOsData chrome_os_data;
   chrome_os_data.set_category(
-      (userfeedback::ChromeOsData_ChromeOsCategory) problem_type);
+      userfeedback::ChromeOsData_ChromeOsCategory_OTHER);
   *(chrome_data.mutable_chrome_os_data()) = chrome_os_data;
 #else
-  chrome_data.set_chrome_platform(
       userfeedback::ChromeData_ChromePlatform_CHROME_BROWSER);
   userfeedback::ChromeBrowserData chrome_browser_data;
   chrome_browser_data.set_category(
-      (userfeedback::ChromeBrowserData_ChromeBrowserCategory) problem_type);
+      userfeedback::ChromeBrowserData_ChromeBrowserCategory_OTHER);
   *(chrome_data.mutable_chrome_browser_data()) = chrome_browser_data;
 #endif
 
@@ -363,7 +369,7 @@ void BugReportUtil::SendReport(
 
 #if defined(ENABLE_SAFE_BROWSING)
 // static
-void BugReportUtil::ReportPhishing(WebContents* current_tab,
+void FeedbackUtil::ReportPhishing(WebContents* current_tab,
                                    const std::string& phishing_url) {
   current_tab->GetController().LoadURL(
       safe_browsing_util::GeneratePhishingReportUrl(
@@ -379,27 +385,27 @@ static std::vector<unsigned char>* screenshot_png = NULL;
 static gfx::Rect* screenshot_size = NULL;
 
 // static
-std::vector<unsigned char>* BugReportUtil::GetScreenshotPng() {
+std::vector<unsigned char>* FeedbackUtil::GetScreenshotPng() {
   if (screenshot_png == NULL)
     screenshot_png = new std::vector<unsigned char>;
   return screenshot_png;
 }
 
 // static
-void BugReportUtil::ClearScreenshotPng() {
+void FeedbackUtil::ClearScreenshotPng() {
   if (screenshot_png)
     screenshot_png->clear();
 }
 
 // static
-gfx::Rect& BugReportUtil::GetScreenshotSize() {
+gfx::Rect& FeedbackUtil::GetScreenshotSize() {
   if (screenshot_size == NULL)
     screenshot_size = new gfx::Rect();
   return *screenshot_size;
 }
 
 // static
-void BugReportUtil::SetScreenshotSize(const gfx::Rect& rect) {
+void FeedbackUtil::SetScreenshotSize(const gfx::Rect& rect) {
   gfx::Rect& screen_size = GetScreenshotSize();
   screen_size = rect;
 }

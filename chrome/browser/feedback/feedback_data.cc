@@ -1,10 +1,10 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/bug_report_data.h"
+#include "chrome/browser/feedback/feedback_data.h"
 
-#include "chrome/browser/bug_report_util.h"
+#include "chrome/browser/feedback/feedback_util.h"
 #include "content/public/browser/browser_thread.h"
 
 #if defined(OS_CHROMEOS)
@@ -13,9 +13,8 @@
 
 using content::BrowserThread;
 
-BugReportData::BugReportData()
-    : profile_(NULL),
-      problem_type_(0)
+FeedbackData::FeedbackData()
+    : profile_(NULL)
 #if defined(OS_CHROMEOS)
     , sys_info_(NULL)
     , zip_content_(NULL)
@@ -25,11 +24,11 @@ BugReportData::BugReportData()
 {
 }
 
-BugReportData::~BugReportData() {}
+FeedbackData::~FeedbackData() {}
 
-void BugReportData::UpdateData(Profile* profile,
+void FeedbackData::UpdateData(Profile* profile,
                                const std::string& target_tab_url,
-                               const int problem_type,
+                               const std::string& category_tag,
                                const std::string& page_url,
                                const std::string& description,
                                ScreenshotDataPtr image
@@ -42,7 +41,7 @@ void BugReportData::UpdateData(Profile* profile,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   profile_ = profile;
   target_tab_url_ = target_tab_url;
-  problem_type_ = problem_type;
+  category_tag_ = category_tag;
   page_url_ = page_url;
   description_ = description;
   image_ = image;
@@ -53,7 +52,7 @@ void BugReportData::UpdateData(Profile* profile,
 #endif
 }
 
-void BugReportData::SendReport() {
+void FeedbackData::SendReport() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 #if defined(OS_CHROMEOS)
   if (sent_report_)
@@ -63,9 +62,9 @@ void BugReportData::SendReport() {
   sent_report_ = true;
 #endif
 
-  gfx::Rect& screen_size = BugReportUtil::GetScreenshotSize();
-  BugReportUtil::SendReport(profile_
-                            , problem_type_
+  gfx::Rect& screen_size = FeedbackUtil::GetScreenshotSize();
+  FeedbackUtil::SendReport(profile_
+                            , category_tag_
                             , page_url_
                             , description_
                             , image_
@@ -77,7 +76,7 @@ void BugReportData::SendReport() {
                             , zip_content_ ? zip_content_->length() : 0
                             , send_sys_info_ ? sys_info_ : NULL
 #endif
-                            );
+                          );
 
 #if defined(OS_CHROMEOS)
   if (sys_info_) {
@@ -98,7 +97,7 @@ void BugReportData::SendReport() {
 // SyslogsComplete may be called before UpdateData, in which case, we do not
 // want to delete the logs that were gathered, and we do not want to send the
 // report either. Instead simply populate |sys_info_| and |zip_content_|.
-void BugReportData::SyslogsComplete(chromeos::system::LogDictionaryType* logs,
+void FeedbackData::SyslogsComplete(chromeos::system::LogDictionaryType* logs,
                                     std::string* zip_content) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (sent_report_) {

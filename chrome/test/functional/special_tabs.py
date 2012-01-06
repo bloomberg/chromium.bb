@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -44,8 +44,8 @@ class SpecialTabsTest(pyauto.PyUITest):
     'chrome://about': { 'title': 'Chrome URLs' },
     'chrome://appcache-internals': { 'title': 'AppCache Internals' },
     'chrome://blob-internals': { 'title': 'Blob Storage Internals' },
-    'chrome://bugreport': {},
-    'chrome://bugreport/#0': { 'title': 'Feedback' },
+    'chrome://feedback': {},
+    'chrome://feedback/#0': { 'title': 'Feedback' },
     'chrome://chrome-urls': { 'title': 'Chrome URLs' },
     'chrome://crashes': { 'title': 'Crashes' },
     'chrome://credits': { 'title': 'Credits', 'CSP': False },

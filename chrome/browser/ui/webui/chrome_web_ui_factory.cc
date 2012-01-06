@@ -14,13 +14,13 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/webui/about_ui.h"
 #include "chrome/browser/ui/webui/bookmarks_ui.h"
-#include "chrome/browser/ui/webui/bug_report_ui.h"
 #include "chrome/browser/ui/webui/constrained_html_ui.h"
 #include "chrome/browser/ui/webui/crashes_ui.h"
 #include "chrome/browser/ui/webui/devtools_ui.h"
 #include "chrome/browser/ui/webui/downloads_ui.h"
 #include "chrome/browser/ui/webui/edit_search_engine_dialog_ui_webui.h"
 #include "chrome/browser/ui/webui/extensions/extensions_ui.h"
+#include "chrome/browser/ui/webui/feedback_ui.h"
 #include "chrome/browser/ui/webui/task_manager_ui.h"
 #include "chrome/browser/ui/webui/flags_ui.h"
 #include "chrome/browser/ui/webui/flash_ui.h"
@@ -167,8 +167,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(TabContents* tab_contents,
   // after the host name.
   if (url.host() == chrome::kChromeUIBookmarksHost)
     return &NewWebUI<BookmarksUI>;
-  if (url.host() == chrome::kChromeUIBugReportHost)
-    return &NewWebUI<BugReportUI>;
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   if (url.host() == chrome::kChromeUICertificateViewerHost)
     return &NewWebUI<CertificateViewerUI>;
@@ -187,6 +185,8 @@ WebUIFactoryFunction GetWebUIFactoryFunction(TabContents* tab_contents,
     return &NewWebUI<EditSearchEngineDialogUI>;
   if (url.host() == chrome::kChromeUIExtensionsFrameHost)
     return &NewWebUI<ExtensionsUI>;
+  if (url.host() == chrome::kChromeUIFeedbackHost)
+    return &NewWebUI<FeedbackUI>;
   if (url.host() == chrome::kChromeUIFlagsHost)
     return &NewWebUI<FlagsUI>;
   if (url.host() == chrome::kChromeUIFlashHost)

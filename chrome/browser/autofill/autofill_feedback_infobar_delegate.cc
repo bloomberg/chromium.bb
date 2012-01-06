@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,12 +7,14 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/webui/bug_report_ui.h"
-#include "chrome/browser/userfeedback/proto/extension.pb.h"
+#include "chrome/browser/ui/webui/feedback_ui.h"
+#include "chrome/browser/feedback/proto/extension.pb.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/web_contents.h"
 #include "googleurl/src/gurl.h"
+
+const char kCategoryTagAutofill[] = "Autofill";
 
 AutofillFeedbackInfoBarDelegate::AutofillFeedbackInfoBarDelegate(
     InfoBarTabHelper* infobar_helper,
@@ -42,17 +44,10 @@ string16 AutofillFeedbackInfoBarDelegate::GetLinkText() const {
 
 bool AutofillFeedbackInfoBarDelegate::LinkClicked(
     WindowOpenDisposition disposition) {
-#if defined(OS_CHROMEOS)
-  size_t issue_type = userfeedback::ChromeOsData_ChromeOsCategory_AUTOFILL;
-#else
-  size_t issue_type =
-      userfeedback::ChromeBrowserData_ChromeBrowserCategory_AUTOFILL;
-#endif
-
-  browser::ShowHtmlBugReportView(
+  browser::ShowHtmlFeedbackView(
       Browser::GetBrowserForController(
           &owner()->web_contents()->GetController(), NULL),
       feedback_message_,
-      issue_type);
+      std::string(kCategoryTagAutofill));
   return true;
 }

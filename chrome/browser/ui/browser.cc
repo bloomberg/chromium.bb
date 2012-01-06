@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -122,8 +122,8 @@
 #include "chrome/browser/ui/tabs/dock_info.h"
 #include "chrome/browser/ui/tabs/tab_menu_model.h"
 #include "chrome/browser/ui/web_applications/web_app_ui.h"
-#include "chrome/browser/ui/webui/bug_report_ui.h"
 #include "chrome/browser/ui/webui/chrome_web_ui.h"
+#include "chrome/browser/ui/webui/feedback_ui.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_page_handler.h"
 #include "chrome/browser/ui/webui/options/content_settings_handler.h"
 #include "chrome/browser/ui/window_sizer.h"
@@ -2103,9 +2103,9 @@ void Browser::OpenTaskManager(bool highlight_background_resources) {
     window_->ShowTaskManager();
 }
 
-void Browser::OpenBugReportDialog() {
-  content::RecordAction(UserMetricsAction("ReportBug"));
-  browser::ShowHtmlBugReportView(this, std::string(), 0);
+void Browser::OpenFeedbackDialog() {
+  content::RecordAction(UserMetricsAction("Feedback"));
+  browser::ShowHtmlFeedbackView(this, std::string(), std::string());
 }
 
 void Browser::ToggleBookmarkBar() {
@@ -2180,7 +2180,7 @@ void Browser::ShowAboutConflictsTab() {
 }
 
 void Browser::ShowBrokenPageTab(TabContents* contents) {
-  content::RecordAction(UserMetricsAction("ReportBug"));
+  content::RecordAction(UserMetricsAction("Feedback"));
   string16 page_title = contents->GetTitle();
   NavigationEntry* entry = contents->GetController().GetActiveEntry();
   if (!entry)
@@ -2877,7 +2877,7 @@ void Browser::ExecuteCommandWithDisposition(
                                     break;
     case IDC_TASK_MANAGER:          OpenTaskManager(false);           break;
     case IDC_VIEW_BACKGROUND_PAGES: OpenTaskManager(true);            break;
-    case IDC_FEEDBACK:              OpenBugReportDialog();            break;
+    case IDC_FEEDBACK:              OpenFeedbackDialog();            break;
 
     case IDC_SHOW_BOOKMARK_BAR:     ToggleBookmarkBar();              break;
     case IDC_PROFILING_ENABLED:     Profiling::Toggle();              break;

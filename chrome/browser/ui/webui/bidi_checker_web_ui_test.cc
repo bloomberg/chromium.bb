@@ -137,25 +137,24 @@ IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestLTR, TestAboutPage) {
 //==============================
 // chrome://bugreport
 //==============================
-// TestBugReportPage fails on chromeos Debug build. crbug.com/105631
+// TestFeedbackPage fails on chromeos Debug build. crbug.com/105631
 #if defined(OS_CHROMEOS)
-#define MAYBE_TestBugReportPage DISABLED_TestBugReportPage
+#define MAYBE_TestFeedbackPage DISABLED_TestFeedbackPage
 #else
-#define MAYBE_TestBugReportPage TestBugReportPage
+#define MAYBE_TestFeedbackPage TestFeedbackPage
 #endif
 
-IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestLTR, MAYBE_TestBugReportPage)
-{
+IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestLTR,
+                       MAYBE_TestFeedbackPage) {
   // The bugreport page receives its contents as GET arguments. Here we provide
   // a custom, Hebrew typed, description message.
   RunBidiCheckerOnPage(
-      "chrome://bugreport#0?description=%D7%91%D7%93%D7%99%D7%A7%D7%94"
-      "&issueType=1");
+      "chrome://feedback#0?description=%D7%91%D7%93%D7%99%D7%A7%D7%94");
 }
 
 IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestRTL,
-                       MAYBE_TestBugReportPage) {
-  RunBidiCheckerOnPage("chrome://bugreport#0?description=test&issueType=1");
+                       MAYBE_TestFeedbackPage) {
+  RunBidiCheckerOnPage("chrome://feedback#0?description=test");
 }
 
 //==============================

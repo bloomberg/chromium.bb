@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -63,14 +63,14 @@ function filtersForPage(pageName, isRTL) {
         bidichecker.FilterFactory.atText("File Manager")
       ]
     },
-"chrome://bugreport#0?description=%D7%91%D7%93%D7%99%D7%A7%D7%94&issueType=1" :
+    "chrome://feedback#0?description=%D7%91%D7%93%D7%99%D7%A7%D7%94" :
     {
       "LTR" : [
         // BUG: http://crbug.com/90835
         bidichecker.FilterFactory.atText("בדיקה")
       ]
     },
-    "chrome://bugreport#0?description=test&issueType=1" : {
+    "chrome://feedback#0?description=test" : {
       "RTL" : [
         // BUG: http://crbug.com/90835
         bidichecker.FilterFactory.atText("test"),

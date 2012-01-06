@@ -5504,9 +5504,6 @@ Because search results are requested even while you're typing your query, your d
       <message name="IDS_TOOLTIP_RELOAD" desc="The tooltip for reload button">
         Reload this page
       </message>
-      <message name="IDS_TOOLTIP_FEEDBACK" desc="Tooltip for the feedback button.">
-        Report an Issue
-      </message>
       <message name="IDS_TOOLTIP_STOP" desc="The tooltip for the stop button">
         Stop loading this page
       </message>
@@ -5817,234 +5814,79 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       </message>
 
       <!-- Report Bug or Broken Website Dialog -->
-      <message name="IDS_BUGREPORT_TITLE" desc="Dialog title for bug report dialog">
+      <message name="IDS_FEEDBACK_TITLE" desc="Dialog title for bug report dialog">
         Whoops. Let's fix that.
       </message>
-      <message name="IDS_BUGREPORT_REPORT_PAGE_TITLE" desc="Label showing the title of the page that will be reported">
+      <message name="IDS_FEEDBACK_REPORT_PAGE_TITLE" desc="Label showing the title of the page that will be reported">
         Feedback
       </message>
-      <message name="IDS_BUGREPORT_REPORT_URL_LABEL" desc="Label showing the URL that will be reported">
+      <message name="IDS_FEEDBACK_REPORT_URL_LABEL" desc="Label showing the URL that will be reported">
         Include this URL:
       </message>
-      <message name="IDS_BUGREPORT_USER_EMAIL_LABEL" desc="Label showing the e-mail address that will be reported">
+      <message name="IDS_FEEDBACK_USER_EMAIL_LABEL" desc="Label showing the e-mail address that will be reported">
         Include this email:
       </message>
-      <message name="IDS_BUGREPORT_DESCRIPTION_LABEL" desc="Label for the description field">
+      <message name="IDS_FEEDBACK_DESCRIPTION_LABEL" desc="Label for the description field">
         Tell us what is happening. (required)
       </message>
       <if expr="pp_ifdef('chromeos')">
-      <message name="IDS_BUGREPORT_SCREENSHOT_LABEL" desc="Label for the screenshot field if current screenshots are being shown">
+      <message name="IDS_FEEDBACK_SCREENSHOT_LABEL" desc="Label for the screenshot field if current screenshots are being shown">
         Include the current screenshot:
       </message>
       </if>
       <if expr="not pp_ifdef('chromeos')">
-      <message name="IDS_BUGREPORT_SCREENSHOT_LABEL" desc="Label for the screenshot field if current screenshots are being shown">
+      <message name="IDS_FEEDBACK_SCREENSHOT_LABEL" desc="Label for the screenshot field if current screenshots are being shown">
         Include this screenshot:
       </message>
       </if>
-      <message name="IDS_BUGREPORT_SAVED_SCREENSHOT_LABEL" desc="Label for the screenshot field if saved screenshots are being shown">
+      <message name="IDS_FEEDBACK_SAVED_SCREENSHOT_LABEL" desc="Label for the screenshot field if saved screenshots are being shown">
         Include a saved screenshot:
       </message>
-      <!-- For Mac compatibility -->
-      <message name="IDS_BUGREPORT_SOMETHING_MISSING" desc="In Title Case: Report a bug/problem type: Something's missing">
-        Something's Missing
-      </message>
-      <message name="IDS_BUGREPORT_BROWSER_CRASH" desc="Report a bug/problem type: Browser crashed">
-        Browser crash... go boom
-      </message>
-      <message name="IDS_BUGREPORT_OTHER_PROBLEM" desc="Report a bug/problem type: General feedback/other">
-        General feedback/other
-      </message>
-      <message name="IDS_BUGREPORT_PAGE_LOOKS_ODD" desc="Report a bug/problem type: Page looks odd">
-        Page looks odd
-      </message>
-      <message name="IDS_BUGREPORT_PAGE_WONT_LOAD" desc="Report a bug/problem type: Page won't load">
-        Page won't load
-      </message>
-      <message name="IDS_BUGREPORT_CANT_SIGN_IN" desc="Report a bug/problem type: Can't sign in">
-        Can't sign in
-      </message>
-      <!-- /Mac Compat -->
-      <message name="IDS_BUGREPORT_NOTIFICATION_TITLE" desc="Title for the notification given to the user on completion (successful or failed) of user feedback">
-        Feedback submission status
-      </message>
-      <message name="IDS_BUGREPORT_FEEDBACK_STATUS_SUCCESS" desc="Message for the status of a feedback submission on success">
-        User Feedback submission succeeded
-      </message>
-      <message name="IDS_BUGREPORT_FEEDBACK_STATUS_FAIL" desc="Message for the status of a feedback submission failure">
-        User feedback submission failed: $1
-      </message>
-      <message name="IDS_BUGREPORT_INCLUDE_LAST_SCREEN_IMAGE" desc="Radio button for including the last screen image on the bug report dialog box">
-        Send last saved screen shot
-      </message>
-      <message name="IDS_BUGREPORT_CURRENT_SCREENSHOTS" desc="Radio button for including the last screen image on the bug report dialog box">
+      <message name="IDS_FEEDBACK_CURRENT_SCREENSHOTS" desc="Radio button for including the last screen image on the bug report dialog box">
         Send a current page screen shot
       </message>
-      <message name="IDS_BUGREPORT_SAVED_SCREENSHOTS" desc="Radio button for including the last screen image on the bug report dialog box">
+      <message name="IDS_FEEDBACK_SAVED_SCREENSHOTS" desc="Radio button for including the last screen image on the bug report dialog box">
         Send a saved screen shot
       </message>
-      <message name="IDS_BUGREPORT_INCLUDE_SYSTEM_INFORMATION_CHKBOX" desc="Checkbox for including system information on the bug report dialog box">
+      <message name="IDS_FEEDBACK_INCLUDE_SYSTEM_INFORMATION_CHKBOX" desc="Checkbox for including system information on the bug report dialog box">
         Send system information
       </message>
-      <message name="IDS_BUGREPORT_SYSTEM_INFORMATION_URL_TEXT" desc="Text for system information url on the bug report dialog box">
-        Include System Information
-      </message>
-      <message name="IDS_BUGREPORT_CHOOSE_DIFFERENT_SCREENSHOT" desc="Text for changing the screenshot selection from current to saved">
+      <message name="IDS_FEEDBACK_CHOOSE_DIFFERENT_SCREENSHOT" desc="Text for changing the screenshot selection from current to saved">
         (Choose a different screenshot)
       </message>
-      <message name="IDS_BUGREPORT_CHOOSE_ORIGINAL_SCREENSHOT" desc="Text for changing the screenshot selection from saved to current">
+      <message name="IDS_FEEDBACK_CHOOSE_ORIGINAL_SCREENSHOT" desc="Text for changing the screenshot selection from saved to current">
         (Go back to original screenshot)
       </message>
-      <if expr="pp_ifdef('chromeos')">
-      <message name="IDS_BUGREPORT_PRIVACY_NOTE" desc="Text for the privacy note included with Chrome OS">
-        Note: When you click "Send Feedback," Chrome OS includes a log of
-        system events from your device. This information is used by
-        us to diagnose problems, understand how you interact with
-        the device, and to help us improve its performance. Any
-        personal information included with the feedback report,
-        whether explicitly in your comments or incidentally in the
-        system logs and the screenshot, will be protected in
-        accordance with our <ph name="BEGIN_LINK">&lt;a target="_blank"
-        href="http://www.google.com/intl/en/chromeos/privacy.html"&gt;</ph>
-        privacy policies.<ph name="END_LINK">&lt;/a&gt;</ph>
-        To not send any system logs at all, please uncheck the
-        "Include System Information" box.
+      <message name="IDS_FEEDBACK_PRIVACY_NOTE" desc="Text for the privacy note included with Chrome OS">
+        Your Chrome and Operating system version will be submitted in addition
+        to any information you choose to include above. This feedback is used to
+        diagnose problems and help improve Chrome. Any personal information you
+        submit, whether explicitly or incidentally will be protected in
+        accordance with our privacy policies.<ph name="BEGIN_BOLD">&lt;strong&gt;
+        </ph> By submitting this feedback, you agree that Google may use feedback
+        that you provide to improve any Google product or service.
+        <ph name="END_BOLD">&lt;/strong&gt;</ph>
       </message>
-      </if>
-      <if expr="not pp_ifdef('chromeos')">
-      <message name="IDS_BUGREPORT_PRIVACY_NOTE" desc="Text for the privacy note included with Chrome OS">
-        Note: When you click "Send Feedback," Chrome includes a log of your
-        Chrome version and OS version and the URL associated with your feedback.
-        You may also choose to include a screenshot associated with your
-        feedback.  This information is used by us to diagnose problems and to
-        help us improve Chrome’s performance.  Any personal information included
-        with the feedback report, whether explicitly in your comments or
-        incidentally in the log, URL or screenshot, will be protected in
-        accordance with our privacy policies.  To not send the URL, please
-        uncheck the “Include this URL:” box.  To not send the screenshot, leave the box
-        “Include this screenshot:” unchecked.  You agree that Google may use any feedback that you
-        provide to improve any Google products or services.
-      </message>
-      </if>
-      <message name="IDS_BUGREPORT_INCLUDE_PAGE_SOURCE_CHKBOX" desc="Checkbox for including page source">
-        Send source of current page
-      </message>
-      <message name="IDS_BUGREPORT_INCLUDE_PAGE_IMAGE_CHKBOX" desc="Checkbox for including page image">
-        Send screen shot of current page
-      </message>
-      <message name="IDS_BUGREPORT_INCLUDE_NEW_SCREEN_IMAGE" desc="Radio button for including a new screen image on the bug report dialog box">
+      <message name="IDS_FEEDBACK_INCLUDE_NEW_SCREEN_IMAGE" desc="Radio button for including a new screen image on the bug report dialog box">
         Send last active tab screen shot
       </message>
-      <message name="IDS_BUGREPORT_INCLUDE_NO_SCREENSHOT" desc="Radio button for not including a screen image on the bug report dialog box">
+      <message name="IDS_FEEDBACK_INCLUDE_NO_SCREENSHOT" desc="Radio button for not including a screen image on the bug report dialog box">
         Do not send a screen shot
       </message>
-      <message name="IDS_BUGFEEDBACK_TYPE" desc="Label for bug type">
-        Bug type:
-      </message>
-      <message name="IDS_BUGREPORT_PHISHING_PAGE" desc="Report a bug/problem type: Phishing page">
-        Phishing page
-      </message>
-      <message name="IDS_BUGREPORT_NO_ISSUE_SELECTED" desc="Message shown when no issue is selected before hitting send feedback">
-        Please tell where you are having problems before sending the feedback.
-      </message>
-      <message name="IDS_BUGREPORT_NO_DESCRIPTION" desc="Message shown when no text is entered before hitting send feedback">
+      <message name="IDS_FEEDBACK_NO_DESCRIPTION" desc="Message shown when no text is entered before hitting send feedback">
         Please tell us what is happening before sending the feedback.
       </message>
-      <message name="IDS_BUGREPORT_NO_SAVED_SCREENSHOTS_HELP" desc="Message shown when no screenshots are available for selection">
+      <message name="IDS_FEEDBACK_NO_SAVED_SCREENSHOTS_HELP" desc="Message shown when no screenshots are available for selection">
         You can select saved screenshots from here. Currently there are no screenshots available. You can press Ctrl + the "Overview Mode" key together to take a screenshot. The last three screenshots that you have taken will appear here.
       </message>
-      <message name="IDS_BUGREPORT_ISSUE_WITH" desc="Label for issue with">
-        Where are you having problems? (required)
-      </message>
-      <message name="IDS_BUGREPORT_CHOOSE_ISSUE" desc="Report a bug/problem type: Choose issue with">
-        (choose an issue below)
-      </message>
       <if expr="not pp_ifdef('use_titlecase')">
-        <message name="IDS_BUGREPORT_SEND_REPORT" desc="In sentence case: Text for OK button on dialog">
+        <message name="IDS_FEEDBACK_SEND_REPORT" desc="In sentence case: Text for OK button on dialog">
           Send feedback
-        </message>
-        <message name="IDS_BUGREPORT_SEND_PHISHING_REPORT" desc="In sentence case: Text for report phishing button">
-          Open phishing report
-        </message>
-        <message name="IDS_BUGREPORT_PAGE_FORMATTING" desc="In sentence case: Report a bug/problem type: Page formatting or layout">
-          Page formatting or layout
-        </message>
-        <message name="IDS_BUGREPORT_PAGE_LOAD" desc="In sentence case: Report a bug/problem type: Pages not loading">
-          Pages not loading
-        </message>
-        <message name="IDS_BUGREPORT_PLUGINS" desc="In sentence case: Report a bug/problem type: Plug-ins">
-          Plug-ins (e.g. Adobe Flash Player, Quicktime, etc)
-        </message>
-        <message name="IDS_BUGREPORT_TABS" desc="In sentence case: Report a bug/problem type: Tabs or windows">
-          Tabs or windows
-        </message>
-        <message name="IDS_BUGREPORT_NETWORK" desc="In sentence case: Report a bug/problem type: Network connection">
-          Network connection
-        </message>
-        <message name="IDS_BUGREPORT_CONNECTIVITY" desc="In Setence Case: Report a bug/problem type: Connectivity issues">
-          Network connection
-        </message>
-        <message name="IDS_BUGREPORT_STANDBY_RESUME" desc="In sentence case: Report a bug/problem type: Standby or Resume">
-          Standby or Resume
-        </message>
-        <message name="IDS_BUGREPORT_SYNC" desc="In sentence case: Report a bug/problem type: Synced preferences">
-          Synced preferences
-        </message>
-        <message name="IDS_BUGREPORT_CRASHES" desc="In sentence case: Report a bug/problem type: Crashes">
-          Crashes
-        </message>
-        <message name="IDS_BUGREPORT_EXTENSIONS" desc="In sentence case: Report a bug/problem type: Extensions or apps">
-          Extensions or apps
-        </message>
-        <message name="IDS_BUGREPORT_OTHER" desc="In sentence case: Report a bug/problem type: Other">
-          Other
-        </message>
-        <message name="IDS_BUGREPORT_AUTOFILL" desc="In sentence case: Report a bug/problem type: Autofill">
-          Autofill
-        </message>
-        <message name="IDS_BUGREPORT_GENERAL" desc="In sentence case: Report a bug/problem type: General feedback/other">
-          General feedback/other
-        </message>
-        <message name="IDS_BUGREPORT_PREVIEW_REPORT" desc="In sentence case: Text for the preview report button on dialog">
-          Preview report
         </message>
       </if>
       <if expr="pp_ifdef('use_titlecase')">
-        <message name="IDS_BUGREPORT_SEND_REPORT" desc="Text for the send report button on dialog">
+        <message name="IDS_FEEDBACK_SEND_REPORT" desc="Text for the send report button on dialog">
           Send Feedback
-        </message>
-        <message name="IDS_BUGREPORT_SEND_PHISHING_REPORT" desc="Text for report phishing button">
-          Open Phishing Report
-        </message>
-        <message name="IDS_BUGREPORT_PAGE_FORMATTING" desc="In Title Case: Report a bug/problem type: Page formatting or layout">
-          Page Formatting or Layout
-        </message>
-        <message name="IDS_BUGREPORT_PAGE_LOAD" desc="In Title Case: Report a bug/problem type: Pages not loading">
-          Pages not Loading
-        </message>
-        <message name="IDS_BUGREPORT_PLUGINS" desc="In Title Case: Report a bug/problem type: Plug-ins">
-          Plug-ins (e.g. Adobe Flash Player, Quicktime, etc)
-        </message>
-        <message name="IDS_BUGREPORT_TABS" desc="In Title Case: Report a bug/problem type: Tabs or windows">
-          Tabs or Windows
-        </message>
-        <message name="IDS_BUGREPORT_NETWORK" desc="In Title Case: Report a bug/problem type: Network connection">
-          Network Connection
-        </message>
-        <message name="IDS_BUGREPORT_SYNC" desc="In Title Case: Report a bug/problem type: Synced preferences">
-          Synced Preferences
-        </message>
-        <message name="IDS_BUGREPORT_CRASHES" desc="In Title Case: Report a bug/problem type: Crashes">
-          Crashes
-        </message>
-        <message name="IDS_BUGREPORT_EXTENSIONS" desc="In Title Case: Report a bug/problem type: Extensions or apps">
-          Extensions or Apps
-        </message>
-        <message name="IDS_BUGREPORT_OTHER" desc="In Title Case: Report a bug/problem type: Other">
-          Other
-        </message>
-        <message name="IDS_BUGREPORT_AUTOFILL" desc="In Title Case: Report a bug/problem type: Autofill">
-          Autofill
         </message>
       </if>
 
@@ -13493,9 +13335,6 @@ Calculating remaining time
       <message name="IDS_STATUSBAR_BATTERY_IS_CHARGED" desc="In the power menu button, the battery is charged message.">
 Charging
 Battery full
-      </message>
-      <message name="IDS_STATUSBAR_FEEDBACK_TOOLTIP" desc="Tooltip for the feedback status bar icon.">
-        Report a bug
       </message>
       <message name="IDS_STATUSBAR_NETWORK_NO_NETWORK_TOOLTIP" desc="Tooltip for the network menu status bar icon when no network is connected.">
         No network

@@ -1,18 +1,18 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_BUG_REPORT_UTIL_H_
-#define CHROME_BROWSER_BUG_REPORT_UTIL_H_
+#ifndef CHROME_BROWSER_FEEDBACK_FEEDBACK_UTIL_H_
+#define CHROME_BROWSER_FEEDBACK_FEEDBACK_UTIL_H_
 #pragma once
 
 #include <string>
 
 #include "base/basictypes.h"
+#include "chrome/browser/feedback/proto/common.pb.h"
+#include "chrome/browser/feedback/proto/extension.pb.h"
+#include "chrome/browser/feedback/proto/math.pb.h"
 #include "chrome/browser/ui/webui/screenshot_source.h"
-#include "chrome/browser/userfeedback/proto/common.pb.h"
-#include "chrome/browser/userfeedback/proto/extension.pb.h"
-#include "chrome/browser/userfeedback/proto/math.pb.h"
 #include "ui/gfx/rect.h"
 
 #if defined(OS_MACOSX)
@@ -30,7 +30,7 @@ namespace content {
 class WebContents;
 }
 
-class BugReportUtil {
+class FeedbackUtil {
  public:
 
 #if defined(OS_MACOSX)
@@ -66,7 +66,7 @@ class BugReportUtil {
   // Generates bug report data.
   static void SendReport(
       Profile* profile
-      , int problem_type
+      , const std::string& category_tag
       , const std::string& page_url_text
       , const std::string& description
       , ScreenshotDataPtr png_data
@@ -93,7 +93,7 @@ class BugReportUtil {
  private:
   // Add a key value pair to the feedback object
   static void AddFeedbackData(
-      userfeedback::ExternalExtensionSubmit* feedback_data,
+      userfeedback::ExtensionSubmit* feedback_data,
       const std::string& key, const std::string& value);
 
   // Send the feedback report
@@ -104,7 +104,7 @@ class BugReportUtil {
   static bool ValidFeedbackSize(const std::string& content);
 #endif
 
-  DISALLOW_IMPLICIT_CONSTRUCTORS(BugReportUtil);
+  DISALLOW_IMPLICIT_CONSTRUCTORS(FeedbackUtil);
 };
 
-#endif  // CHROME_BROWSER_BUG_REPORT_UTIL_H_
+#endif  // CHROME_BROWSER_FEEDBACK_FEEDBACK_UTIL_H_

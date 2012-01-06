@@ -1,9 +1,9 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_BUG_REPORT_DATA_H_
-#define CHROME_BROWSER_BUG_REPORT_DATA_H_
+#ifndef CHROME_BROWSER_FEEDBACK_FEEDBACK_DATA_H_
+#define CHROME_BROWSER_FEEDBACK_FEEDBACK_DATA_H_
 
 #include <string>
 #include <vector>
@@ -17,16 +17,16 @@
 
 class Profile;
 
-class BugReportData {
+class FeedbackData {
  public:
-  BugReportData();
-  ~BugReportData();
+  FeedbackData();
+  ~FeedbackData();
 
   void SendReport();
 
   void UpdateData(Profile* profile,
                   const std::string& target_tab_url,
-                  const int problem_type,
+                  const std::string& category_tag,
                   const std::string& page_url,
                   const std::string& description,
                   ScreenshotDataPtr image
@@ -44,7 +44,7 @@ class BugReportData {
 
   const std::string& target_tab_url() const { return target_tab_url_; }
 
-  int problem_type() const { return problem_type_; }
+  const std::string& category_tag() const { return category_tag_; }
   const std::string& page_url() const { return page_url_; }
   const std::string& description() const { return description_; }
   ScreenshotDataPtr image() const { return image_; }
@@ -63,7 +63,7 @@ class BugReportData {
   // Target tab url.
   std::string target_tab_url_;
 
-  int problem_type_;
+  std::string category_tag_;
   std::string page_url_;
   std::string description_;
   ScreenshotDataPtr image_;
@@ -82,4 +82,4 @@ class BugReportData {
 #endif
 };
 
-#endif  // CHROME_BROWSER_BUG_REPORT_DATA_H_
+#endif  // CHROME_BROWSER_FEEDBACK_FEEDBACK_DATA_H_

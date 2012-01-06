@@ -254,7 +254,6 @@
                 'app/nibs/Notification.xib',
                 'app/nibs/Panel.xib',
                 'app/nibs/PreviewableContents.xib',
-                'app/nibs/ReportBug.xib',
                 'app/nibs/SaveAccessoryView.xib',
                 'app/nibs/SadTab.xib',
                 'app/nibs/SearchEngineDialog.xib',

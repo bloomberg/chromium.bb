@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,6 +13,8 @@ var selectedImageUrl;
 var savedThumbnailIds = [];
 savedThumbnailIds['current-screenshots'] = '';
 savedThumbnailIds['saved-screenshots'] = '';
+
+var categoryTag = "";
 
 var localStrings = new LocalStrings();
 
@@ -77,10 +79,7 @@ function addScreenshot(divId, screenshot) {
  * we open the landing page in a new tab and sendReport closes this tab.
  */
 function sendReport() {
-  if (!$('issue-with-combo').selectedIndex) {
-    alert(localStrings.getString('no-issue-selected'));
-    return false;
-  } else if ($('description-text').value.length == 0) {
+  if ($('description-text').value.length == 0) {
     alert(localStrings.getString('no-description'));
     return false;
   }
@@ -92,10 +91,8 @@ function sendReport() {
   if (!$('page-url-checkbox').checked)
     pageUrl = '';
 
-  // Note, categories are based from 1 in our protocol buffers, so no
-  // adjustment is needed on selectedIndex.
-  var reportArray = [String($('issue-with-combo').selectedIndex),
-                     pageUrl,
+  var reportArray = [pageUrl,
+                     categoryTag,
                      $('description-text').value,
                      imagePath];
 
@@ -213,7 +210,7 @@ function load() {
   // values from the URL hash.
   var parameters = {
     'description': '',
-    'issueType': 0,
+    'categoryTag': '',
   };
   var queryPos = window.location.hash.indexOf('?');
   if (queryPos !== -1) {
@@ -232,48 +229,8 @@ function load() {
   // Set the initial description text.
   $('description-text').textContent = parameters['description'];
 
-  // Get a list of issues that we allow the user to select from.
-  // Note, the order and the issues types themselves are different
-  // between Chromium and Chromium OS, so this code needs to be
-  // maintained individually between in these two sections.
-  var issueTypeText = [];
-  issueTypeText[0] = localStrings.getString('issue-choose');
-<if expr="not pp_ifdef('chromeos')">
-  issueTypeText[1] = localStrings.getString('issue-page-formatting');
-  issueTypeText[2] = localStrings.getString('issue-page-load');
-  issueTypeText[3] = localStrings.getString('issue-plugins');
-  issueTypeText[4] = localStrings.getString('issue-tabs');
-  issueTypeText[5] = localStrings.getString('issue-sync');
-  issueTypeText[6] = localStrings.getString('issue-crashes');
-  issueTypeText[7] = localStrings.getString('issue-extensions');
-  issueTypeText[8] = localStrings.getString('issue-phishing');
-  issueTypeText[9] = localStrings.getString('issue-other');
-  var numDefaultIssues = issueTypeText.length;
-  issueTypeText[10] = localStrings.getString('issue-autofill');
-</if>
-<if expr="pp_ifdef('chromeos')">
-  issueTypeText[1] = localStrings.getString('issue-connectivity');
-  issueTypeText[2] = localStrings.getString('issue-sync');
-  issueTypeText[3] = localStrings.getString('issue-crashes');
-  issueTypeText[4] = localStrings.getString('issue-page-formatting');
-  issueTypeText[5] = localStrings.getString('issue-extensions');
-  issueTypeText[6] = localStrings.getString('issue-standby');
-  issueTypeText[7] = localStrings.getString('issue-phishing');
-  issueTypeText[8] = localStrings.getString('issue-other');
-  var numDefaultIssues = issueTypeText.length;
-  issueTypeText[9] = localStrings.getString('issue-autofill');
-</if>
-  // Add all the issues to the selection box.
-  for (var i = 0; i < issueTypeText.length; i++) {
-    var option = document.createElement('option');
-    option.className = 'bug-report-text';
-    option.textContent = issueTypeText[i];
-    if (('' + i) === parameters['issueType'])
-      option.selected = true;
-
-    if (i < numDefaultIssues || option.selected)
-      $('issue-with-combo').add(option);
-  }
+  // Pick up the category tag (for most cases this will be an empty string)
+  categoryTag = parameters['categoryTag'];
 
   chrome.send('getDialogDefaults', []);
   chrome.send('refreshCurrentScreenshot', []);

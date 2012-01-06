@@ -8,12 +8,12 @@
 <link rel="stylesheet" href="chrome://resources/css/checkbox.css">
 <link rel="stylesheet" href="chrome://resources/css/select.css">
 <link rel="stylesheet" href="chrome://resources/css/chrome_shared.css">
-<link rel="stylesheet" href="bug_report.css">
+<link rel="stylesheet" href="feedback.css">
 
 <script src="chrome://resources/js/local_strings.js"></script>
 <script src="chrome://resources/js/util.js"></script>
-<script src="chrome://bugreport/bug_report.js"></script>
-<script src="chrome://bugreport/strings.js"></script>
+<script src="chrome://feedback/feedback.js"></script>
+<script src="chrome://feedback/strings.js"></script>
 </head>
 <body i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
 <div id="main-content">
@@ -30,27 +30,15 @@
         <div id="feedback-page" class="page">
           <h1 i18n-content="title"></h1>
           <table id="main-table">
-            <!--  Issue type dropdown -->
-            <tbody>
+             <!--  Description -->
               <tr>
-                <th id="issue-with" class="bug-report-label"
-                    i18n-content="issue-with"></th>
-              </tr>
-              <tr>
-                <td>
-                  <select id="issue-with-combo" class="bug-report-text">
-                  </select>
-                </td>
-              </tr>
-              <!--  Description -->
-              <tr>
-                <th id="description" colspan="2" class="bug-report-label"
+                <th id="description" colspan="2" class="feedback-label"
                     i18n-content="description"></th>
               </tr>
               <tr>
                 <td colspan="2">
                   <textarea id="description-text" rows="10"
-                      class="bug-report-text"></textarea>
+                      class="feedback-text"></textarea>
                 </td>
               </tr>
               <tr>
@@ -59,9 +47,9 @@
                     <!--  Page URL -->
                     <tr>
                       <td>
-                        <table class="bug-report-table">
+                        <table class="feedback-table">
                           <tr>
-                            <td class="bug-report-fieldlabel">
+                            <td class="feedback-fieldlabel">
                               <label>
                                 <input id="page-url-checkbox" type="checkbox"
                                     value="pageurl" checked>
@@ -70,7 +58,7 @@
                               </label>
                             </td>
                             <td>
-                              <input id="page-url-text" class="bug-report-field"
+                              <input id="page-url-text" class="feedback-field"
                                   maxlength="200">
                             </td>
                           </tr>
@@ -81,9 +69,9 @@
                     <!--  User e-mail -->
                     <tr>
                       <td>
-                        <table id="user-email-table" class="bug-report-table">
+                        <table id="user-email-table" class="feedback-table">
                           <tr>
-                            <td class="bug-report-fieldlabel">
+                            <td class="feedback-fieldlabel">
                               <label>
                                 <input id="user-email-checkbox" type="checkbox"
                                     checked>
@@ -93,7 +81,7 @@
                             </td>
                             <td>
                               <label id="user-email-text"
-                                  class="bug-report-field"></label>
+                                  class="feedback-field"></label>
                             </td>
                           </tr>
                         </table>
@@ -102,9 +90,9 @@
                     <!--  System Information -->
                     <tr>
                       <td>
-                        <table class="bug-report-table">
+                        <table class="feedback-table">
                           <tr>
-                            <td class="bug-report-fieldlabel">
+                            <td class="feedback-fieldlabel">
                               <label>
                                 <input id="sys-info-checkbox" type="checkbox"
                                     checked>
@@ -122,9 +110,9 @@
                     <!--  Screenshot -->
                     <tr>
                       <td>
-                        <table class="bug-report-table">
+                        <table class="feedback-table">
                           <tr>
-                            <td class="bug-report-fieldlabel">
+                            <td class="feedback-fieldlabel">
                               <label>
                                 <input id="screenshot-checkbox" type="checkbox">
                                 <span id="screenshot-label-current"
@@ -163,15 +151,15 @@
               </tr>
               <tr>
                 <td>
+                  <div id="privacy-note" i18n-values=".innerHTML:privacy-note">
+                  </div>
                   <div id="buttons-pane">
                     <!--  Buttons -->
                     <input id="send-report-button" type="submit"
-                        class="bug-report-button"
+                        class="feedback-button"
                         i18n-values="value:send-report">
                     <input id="cancel-button" type="submit"
-                        class="bug-report-button" i18n-values="value:cancel">
-                  </div>
-                  <div id="privacy-note" i18n-values=".innerHTML:privacy-note">
+                        class="feedback-button" i18n-values="value:cancel">
                   </div>
                 </td>
               </tr>

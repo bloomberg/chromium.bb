@@ -1,15 +1,17 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/views/sad_tab_view.h"
 
+#include <string>
+
 #include "base/metrics/histogram.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/feedback/feedback_util.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/webui/bug_report_ui.h"
-#include "chrome/browser/userfeedback/proto/extension.pb.h"
+#include "chrome/browser/ui/webui/feedback_ui.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/navigation_controller.h"
@@ -32,6 +34,8 @@ static const float kMessageSize = 0.65f;
 static const SkColor kTextColor = SK_ColorWHITE;
 static const SkColor kCrashColor = SkColorSetRGB(35, 48, 64);
 static const SkColor kKillColor = SkColorSetRGB(57, 48, 88);
+
+const char kCategoryTagCrash[] = "Crash";
 
 // Font size correction.
 #if defined(CROS_FONTS_USING_BCI)
@@ -79,10 +83,10 @@ void SadTabView::LinkClicked(views::Link* source, int event_flags) {
         content::PAGE_TRANSITION_LINK,
         false /* is renderer initiated */));
   } else if (source == feedback_link_) {
-    browser::ShowHtmlBugReportView(
+    browser::ShowHtmlFeedbackView(
         Browser::GetBrowserForController(&web_contents_->GetController(), NULL),
         l10n_util::GetStringUTF8(IDS_KILLED_TAB_FEEDBACK_MESSAGE),
-        userfeedback::ChromeOsData_ChromeOsCategory_CRASH);
+        std::string(kCategoryTagCrash));
   }
 }
 
@@ -203,5 +207,3 @@ views::Link* SadTabView::CreateLink(const string16& text) {
   link->set_listener(this);
   return link;
 }
-
-

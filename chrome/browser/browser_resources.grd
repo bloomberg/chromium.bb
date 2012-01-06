@@ -30,9 +30,6 @@
       <include name="IDR_ABOUT_VERSION_HTML" file="resources\about_version.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
       <include name="IDR_ABOUT_VERSION_JS" file="resources\about_version.js" type="BINDATA" />
       <include name="IDR_BOOKMARKS_MANIFEST" file="resources\bookmark_manager\manifest.json" type="BINDATA" />
-      <include name="IDR_BUGREPORT_HTML" file="resources\bug_report.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
-      <include name="IDR_BUGREPORT_HTML_INVALID" file="resources\bug_report_invalid.html" allowexternalscript="true" flattenhtml="true" type="BINDATA" />
-      <include name="IDR_BUGREPORT_JS" file="resources\bug_report.js" flattenhtml="true" type="BINDATA" />
       <if expr="is_posix and not is_macosx">
         <include name="IDR_CERTIFICATE_VIEWER_HTML" file="resources\certificate_viewer.html" type="BINDATA" />
         <include name="IDR_CERTIFICATE_VIEWER_JS" file="resources\certificate_viewer.js" type="BINDATA" />
@@ -124,6 +121,9 @@
       <include name="IDR_TRACING_HTML" file="resources\tracing.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
       <include name="IDR_TRACING_JS" file="resources\tracing.js" flattenhtml="true" type="BINDATA" />
       <include name="IDR_TRANSLATE_JS" file="resources\translate.js" type="BINDATA" />
+      <include name="IDR_FEEDBACK_HTML" file="resources\feedback.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
+      <include name="IDR_FEEDBACK_HTML_INVALID" file="resources\feedback_invalid.html" allowexternalscript="true" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_FEEDBACK_JS" file="resources\feedback.js" flattenhtml="true" type="BINDATA" />
       <include name="IDR_UBER_HTML" file="resources\uber\uber.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_UBER_JS" file="resources\uber\uber.js" type="BINDATA" />
       <include name="IDR_WEBSTORE_MANIFEST" file="resources\webstore_app\manifest.json" type="BINDATA" />

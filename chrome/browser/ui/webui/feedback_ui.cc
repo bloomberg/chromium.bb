@@ -1,8 +1,8 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/bug_report_ui.h"
+#include "chrome/browser/ui/webui/feedback_ui.h"
 
 #include <vector>
 
@@ -14,8 +14,8 @@
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/bug_report_data.h"
-#include "chrome/browser/bug_report_util.h"
+#include "chrome/browser/feedback/feedback_data.h"
+#include "chrome/browser/feedback/feedback_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -111,10 +111,10 @@ std::string GetUserEmail() {
 
 // Returns the index of the feedback tab if already open, -1 otherwise
 int GetIndexOfFeedbackTab(Browser* browser) {
-  GURL bug_report_url(chrome::kChromeUIBugReportURL);
+  GURL feedback_url(chrome::kChromeUIFeedbackURL);
   for (int i = 0; i < browser->tab_count(); ++i) {
     WebContents* tab = browser->GetTabContentsWrapperAt(i)->web_contents();
-    if (tab && tab->GetURL().GetWithEmptyPath() == bug_report_url)
+    if (tab && tab->GetURL().GetWithEmptyPath() == feedback_url)
       return i;
   }
 
@@ -126,9 +126,9 @@ int GetIndexOfFeedbackTab(Browser* browser) {
 
 namespace browser {
 
-void ShowHtmlBugReportView(Browser* browser,
+void ShowHtmlFeedbackView(Browser* browser,
                            const std::string& description_template,
-                           size_t issue_type) {
+                           const std::string& category_tag) {
   // First check if we're already open (we cannot depend on ShowSingletonTab
   // for this functionality since we need to make *sure* we never get
   // instantiated again while we are open - with singleton tabs, that can
@@ -141,7 +141,7 @@ void ShowHtmlBugReportView(Browser* browser,
   }
 
   std::vector<unsigned char>* last_screenshot_png =
-      BugReportUtil::GetScreenshotPng();
+      FeedbackUtil::GetScreenshotPng();
   last_screenshot_png->clear();
 
   gfx::NativeWindow native_window = browser->window()->GetNativeHandle();
@@ -149,23 +149,23 @@ void ShowHtmlBugReportView(Browser* browser,
   bool success = browser::GrabWindowSnapshot(native_window,
                                              last_screenshot_png,
                                              snapshot_bounds);
-  BugReportUtil::SetScreenshotSize(success ? snapshot_bounds : gfx::Rect());
+  FeedbackUtil::SetScreenshotSize(success ? snapshot_bounds : gfx::Rect());
 
-  std::string bug_report_url = std::string(chrome::kChromeUIBugReportURL) +
+  std::string feedback_url = std::string(chrome::kChromeUIFeedbackURL) +
       "#" + base::IntToString(browser->active_index()) +
       "?description=" + net::EscapeUrlEncodedData(description_template, false) +
-      "&issueType=" + base::IntToString(issue_type);
-  browser->ShowSingletonTab(GURL(bug_report_url));
+      "&categoryTag=" + net::EscapeUrlEncodedData(category_tag, false);
+  browser->ShowSingletonTab(GURL(feedback_url));
 }
 
 }  // namespace browser
 
 // The handler for Javascript messages related to the "bug report" dialog
-class BugReportHandler : public WebUIMessageHandler,
-                         public base::SupportsWeakPtr<BugReportHandler> {
+class FeedbackHandler : public WebUIMessageHandler,
+                         public base::SupportsWeakPtr<FeedbackHandler> {
  public:
-  explicit BugReportHandler(content::WebContents* tab);
-  virtual ~BugReportHandler();
+  explicit FeedbackHandler(content::WebContents* tab);
+  virtual ~FeedbackHandler();
 
   // Init work after Attach.  Returns true on success.
   bool Init();
@@ -192,7 +192,7 @@ class BugReportHandler : public WebUIMessageHandler,
   WebContents* tab_;
   ScreenshotSource* screenshot_source_;
 
-  BugReportData* bug_report_data_;
+  FeedbackData* feedback_data_;
   std::string target_tab_url_;
 #if defined(OS_CHROMEOS)
   // Variables to track SyslogsProvider::RequestSyslogs callback.
@@ -200,167 +200,110 @@ class BugReportHandler : public WebUIMessageHandler,
   CancelableRequestConsumer syslogs_consumer_;
 #endif
 
-  DISALLOW_COPY_AND_ASSIGN(BugReportHandler);
+  DISALLOW_COPY_AND_ASSIGN(FeedbackHandler);
 };
 
-ChromeWebUIDataSource* CreateBugReportUIHTMLSource(bool successful_init) {
+ChromeWebUIDataSource* CreateFeedbackUIHTMLSource(bool successful_init) {
   ChromeWebUIDataSource* source =
-      new ChromeWebUIDataSource(chrome::kChromeUIBugReportHost);
+      new ChromeWebUIDataSource(chrome::kChromeUIFeedbackHost);
 
-  source->AddLocalizedString("title", IDS_BUGREPORT_TITLE);
-  source->AddLocalizedString("page-title", IDS_BUGREPORT_REPORT_PAGE_TITLE);
-  source->AddLocalizedString("issue-with", IDS_BUGREPORT_ISSUE_WITH);
-  source->AddLocalizedString("page-url", IDS_BUGREPORT_REPORT_URL_LABEL);
-  source->AddLocalizedString("description", IDS_BUGREPORT_DESCRIPTION_LABEL);
+  source->AddLocalizedString("title", IDS_FEEDBACK_TITLE);
+  source->AddLocalizedString("page-title", IDS_FEEDBACK_REPORT_PAGE_TITLE);
+  source->AddLocalizedString("page-url", IDS_FEEDBACK_REPORT_URL_LABEL);
+  source->AddLocalizedString("description", IDS_FEEDBACK_DESCRIPTION_LABEL);
   source->AddLocalizedString("current-screenshot",
-                             IDS_BUGREPORT_SCREENSHOT_LABEL);
+                             IDS_FEEDBACK_SCREENSHOT_LABEL);
   source->AddLocalizedString("saved-screenshot",
-                             IDS_BUGREPORT_SAVED_SCREENSHOT_LABEL);
+                             IDS_FEEDBACK_SAVED_SCREENSHOT_LABEL);
 #if defined(OS_CHROMEOS)
-  source->AddLocalizedString("user-email", IDS_BUGREPORT_USER_EMAIL_LABEL);
+  source->AddLocalizedString("user-email", IDS_FEEDBACK_USER_EMAIL_LABEL);
   source->AddLocalizedString("sysinfo",
-                             IDS_BUGREPORT_INCLUDE_SYSTEM_INFORMATION_CHKBOX);
+                             IDS_FEEDBACK_INCLUDE_SYSTEM_INFORMATION_CHKBOX);
   source->AddLocalizedString("currentscreenshots",
-                             IDS_BUGREPORT_CURRENT_SCREENSHOTS);
+                             IDS_FEEDBACK_CURRENT_SCREENSHOTS);
   source->AddLocalizedString("savedscreenshots",
-                             IDS_BUGREPORT_SAVED_SCREENSHOTS);
+                             IDS_FEEDBACK_SAVED_SCREENSHOTS);
   source->AddLocalizedString("choose-different-screenshot",
-                             IDS_BUGREPORT_CHOOSE_DIFFERENT_SCREENSHOT);
+                             IDS_FEEDBACK_CHOOSE_DIFFERENT_SCREENSHOT);
   source->AddLocalizedString("choose-original-screenshot",
-                             IDS_BUGREPORT_CHOOSE_ORIGINAL_SCREENSHOT);
+                             IDS_FEEDBACK_CHOOSE_ORIGINAL_SCREENSHOT);
 #else
   source->AddLocalizedString("currentscreenshots",
-                             IDS_BUGREPORT_INCLUDE_NEW_SCREEN_IMAGE);
+                             IDS_FEEDBACK_INCLUDE_NEW_SCREEN_IMAGE);
 #endif
   source->AddLocalizedString("noscreenshot",
-                             IDS_BUGREPORT_INCLUDE_NO_SCREENSHOT);
+                             IDS_FEEDBACK_INCLUDE_NO_SCREENSHOT);
 
-  source->AddLocalizedString("send-report", IDS_BUGREPORT_SEND_REPORT);
+  source->AddLocalizedString("send-report", IDS_FEEDBACK_SEND_REPORT);
   source->AddLocalizedString("cancel", IDS_CANCEL);
 
-  // Option strings for the "issue with" drop-down.
-  source->AddLocalizedString("issue-choose", IDS_BUGREPORT_CHOOSE_ISSUE);
-  source->AddLocalizedString("no-issue-selected",
-                             IDS_BUGREPORT_NO_ISSUE_SELECTED);
-  source->AddLocalizedString("no-description", IDS_BUGREPORT_NO_DESCRIPTION);
+  source->AddLocalizedString("no-description", IDS_FEEDBACK_NO_DESCRIPTION);
   source->AddLocalizedString("no-saved-screenshots",
-                             IDS_BUGREPORT_NO_SAVED_SCREENSHOTS_HELP);
-  source->AddLocalizedString("privacy-note", IDS_BUGREPORT_PRIVACY_NOTE);
-
-  // TODO(rkc): Find some way to ensure this order of dropdowns is in sync
-  // with the order in the userfeedback ChromeData proto buffer
-#if defined(OS_CHROMEOS)
-  // Dropdown for ChromeOS:
-  //
-  // Connectivity
-  // Sync
-  // Crash
-  // Page Formatting
-  // Extensions or Apps
-  // Standby or Resume
-  // Phishing Page
-  // General Feedback/Other
-  // Autofill (hidden by default)
-
-  source->AddLocalizedString("issue-connectivity", IDS_BUGREPORT_CONNECTIVITY);
-  source->AddLocalizedString("issue-sync", IDS_BUGREPORT_SYNC);
-  source->AddLocalizedString("issue-crashes", IDS_BUGREPORT_CRASHES);
-  source->AddLocalizedString("issue-page-formatting",
-                             IDS_BUGREPORT_PAGE_FORMATTING);
-  source->AddLocalizedString("issue-extensions", IDS_BUGREPORT_EXTENSIONS);
-  source->AddLocalizedString("issue-standby", IDS_BUGREPORT_STANDBY_RESUME);
-  source->AddLocalizedString("issue-phishing", IDS_BUGREPORT_PHISHING_PAGE);
-  source->AddLocalizedString("issue-other", IDS_BUGREPORT_GENERAL);
-  source->AddLocalizedString("issue-autofill", IDS_BUGREPORT_AUTOFILL);
-#else
-  // Dropdown for Chrome:
-  //
-  // Page formatting or layout
-  // Pages not loading
-  // Plug-ins (e.g. Adobe Flash Player, Quicktime, etc)
-  // Tabs or windows
-  // Synced preferences
-  // Crashes
-  // Extensions or apps
-  // Phishing
-  // Other
-  // Autofill (hidden by default)
-
-  source->AddLocalizedString("issue-page-formatting",
-                             IDS_BUGREPORT_PAGE_FORMATTING);
-  source->AddLocalizedString("issue-page-load", IDS_BUGREPORT_PAGE_LOAD);
-  source->AddLocalizedString("issue-plugins", IDS_BUGREPORT_PLUGINS);
-  source->AddLocalizedString("issue-tabs", IDS_BUGREPORT_TABS);
-  source->AddLocalizedString("issue-sync", IDS_BUGREPORT_SYNC);
-  source->AddLocalizedString("issue-crashes", IDS_BUGREPORT_CRASHES);
-  source->AddLocalizedString("issue-extensions", IDS_BUGREPORT_EXTENSIONS);
-  source->AddLocalizedString("issue-phishing", IDS_BUGREPORT_PHISHING_PAGE);
-  source->AddLocalizedString("issue-other", IDS_BUGREPORT_OTHER);
-  source->AddLocalizedString("issue-autofill", IDS_BUGREPORT_AUTOFILL);
-#endif
+                             IDS_FEEDBACK_NO_SAVED_SCREENSHOTS_HELP);
+  source->AddLocalizedString("privacy-note", IDS_FEEDBACK_PRIVACY_NOTE);
 
   source->set_json_path("strings.js");
-  source->add_resource_path("bug_report.js", IDR_BUGREPORT_JS);
+  source->add_resource_path("feedback.js", IDR_FEEDBACK_JS);
   source->set_default_resource(
-      successful_init ? IDR_BUGREPORT_HTML : IDR_BUGREPORT_HTML_INVALID);
+      successful_init ? IDR_FEEDBACK_HTML : IDR_FEEDBACK_HTML_INVALID);
 
   return source;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 //
-// BugReportHandler
+// FeedbackHandler
 //
 ////////////////////////////////////////////////////////////////////////////////
-BugReportHandler::BugReportHandler(WebContents* tab)
+FeedbackHandler::FeedbackHandler(WebContents* tab)
     : tab_(tab),
       screenshot_source_(NULL),
-      bug_report_data_(NULL)
+      feedback_data_(NULL)
 #if defined(OS_CHROMEOS)
     , syslogs_handle_(0)
 #endif
 {
 }
 
-BugReportHandler::~BugReportHandler() {
-  // Just in case we didn't send off bug_report_data_ to SendReport
-  if (bug_report_data_) {
+FeedbackHandler::~FeedbackHandler() {
+  // Just in case we didn't send off feedback_data_ to SendReport
+  if (feedback_data_) {
     // If we're deleting the report object, cancel feedback collection first
     CancelFeedbackCollection();
-    delete bug_report_data_;
+    delete feedback_data_;
   }
   // Make sure we don't leave any screenshot data around.
-  BugReportUtil::ClearScreenshotPng();
+  FeedbackUtil::ClearScreenshotPng();
 }
 
-void BugReportHandler::ClobberScreenshotsSource() {
+void FeedbackHandler::ClobberScreenshotsSource() {
   // Re-create our screenshots data source (this clobbers the last source)
   // setting the screenshot to NULL, effectively disabling the source
   // TODO(rkc): Once there is a method to 'remove' a source, change this code
   Profile* profile = Profile::FromBrowserContext(tab_->GetBrowserContext());
   profile->GetChromeURLDataManager()->AddDataSource(new ScreenshotSource(NULL));
 
-  BugReportUtil::ClearScreenshotPng();
+  FeedbackUtil::ClearScreenshotPng();
 }
 
-void BugReportHandler::SetupScreenshotsSource() {
+void FeedbackHandler::SetupScreenshotsSource() {
   // If we don't already have a screenshot source object created, create one.
   if (!screenshot_source_) {
     screenshot_source_ =
-        new ScreenshotSource(BugReportUtil::GetScreenshotPng());
+        new ScreenshotSource(FeedbackUtil::GetScreenshotPng());
   }
   // Add the source to the data manager.
   Profile* profile = Profile::FromBrowserContext(tab_->GetBrowserContext());
   profile->GetChromeURLDataManager()->AddDataSource(screenshot_source_);
 }
 
-bool BugReportHandler::Init() {
+bool FeedbackHandler::Init() {
   std::string page_url;
   if (tab_->GetController().GetActiveEntry()) {
      page_url = tab_->GetController().GetActiveEntry()->GetURL().spec();
   }
 
-  std::string params = page_url.substr(strlen(chrome::kChromeUIBugReportURL));
+  std::string params = page_url.substr(strlen(chrome::kChromeUIFeedbackURL));
   // Erase the # - the first character.
   if (params.length())
     params.erase(params.begin(), params.begin() + 1);
@@ -392,34 +335,34 @@ bool BugReportHandler::Init() {
   return true;
 }
 
-void BugReportHandler::RegisterMessages() {
+void FeedbackHandler::RegisterMessages() {
   SetupScreenshotsSource();
 
   web_ui()->RegisterMessageCallback("getDialogDefaults",
-      base::Bind(&BugReportHandler::HandleGetDialogDefaults,
+      base::Bind(&FeedbackHandler::HandleGetDialogDefaults,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("refreshCurrentScreenshot",
-      base::Bind(&BugReportHandler::HandleRefreshCurrentScreenshot,
+      base::Bind(&FeedbackHandler::HandleRefreshCurrentScreenshot,
                  base::Unretained(this)));
 #if defined(OS_CHROMEOS)
   web_ui()->RegisterMessageCallback("refreshSavedScreenshots",
-      base::Bind(&BugReportHandler::HandleRefreshSavedScreenshots,
+      base::Bind(&FeedbackHandler::HandleRefreshSavedScreenshots,
                  base::Unretained(this)));
 #endif
   web_ui()->RegisterMessageCallback("sendReport",
-      base::Bind(&BugReportHandler::HandleSendReport,
+      base::Bind(&FeedbackHandler::HandleSendReport,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("cancel",
-      base::Bind(&BugReportHandler::HandleCancel,
+      base::Bind(&FeedbackHandler::HandleCancel,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("openSystemTab",
-      base::Bind(&BugReportHandler::HandleOpenSystemTab,
+      base::Bind(&FeedbackHandler::HandleOpenSystemTab,
                  base::Unretained(this)));
 }
 
-void BugReportHandler::HandleGetDialogDefaults(const ListValue*) {
-  // Will delete itself when bug_report_data_->SendReport() is called.
-  bug_report_data_ = new BugReportData();
+void FeedbackHandler::HandleGetDialogDefaults(const ListValue*) {
+  // Will delete itself when feedback_data_->SendReport() is called.
+  feedback_data_ = new FeedbackData();
 
   // send back values which the dialog js needs initially
   ListValue dialog_defaults;
@@ -441,8 +384,8 @@ void BugReportHandler::HandleGetDialogDefaults(const ListValue*) {
         true,  // don't compress.
         chromeos::system::SyslogsProvider::SYSLOGS_FEEDBACK,
         &syslogs_consumer_,
-        base::Bind(&BugReportData::SyslogsComplete,
-                   base::Unretained(bug_report_data_)));
+        base::Bind(&FeedbackData::SyslogsComplete,
+                   base::Unretained(feedback_data_)));
   }
   // 2: user e-mail
   dialog_defaults.Append(new StringValue(GetUserEmail()));
@@ -451,7 +394,7 @@ void BugReportHandler::HandleGetDialogDefaults(const ListValue*) {
   web_ui()->CallJavascriptFunction("setupDialogDefaults", dialog_defaults);
 }
 
-void BugReportHandler::HandleRefreshCurrentScreenshot(const ListValue*) {
+void FeedbackHandler::HandleRefreshCurrentScreenshot(const ListValue*) {
   std::string current_screenshot(kCurrentScreenshotUrl);
   StringValue screenshot(current_screenshot);
   web_ui()->CallJavascriptFunction("setupCurrentScreenshot", screenshot);
@@ -459,7 +402,7 @@ void BugReportHandler::HandleRefreshCurrentScreenshot(const ListValue*) {
 
 
 #if defined(OS_CHROMEOS)
-void BugReportHandler::HandleRefreshSavedScreenshots(const ListValue*) {
+void FeedbackHandler::HandleRefreshSavedScreenshots(const ListValue*) {
   std::vector<std::string> saved_screenshots;
   GetScreenshotUrls(&saved_screenshots);
 
@@ -471,50 +414,30 @@ void BugReportHandler::HandleRefreshSavedScreenshots(const ListValue*) {
 #endif
 
 
-void BugReportHandler::HandleSendReport(const ListValue* list_value) {
-  if (!bug_report_data_) {
+void FeedbackHandler::HandleSendReport(const ListValue* list_value) {
+  if (!feedback_data_) {
     LOG(ERROR) << "Bug report hasn't been intialized yet.";
+    return;
+  }
+  // TODO(rkc): Find a better way to do this check.
+#if defined(OS_CHROMEOS)
+  if (list_value->GetSize() != 6) {
+#else
+  if (list_value->GetSize() != 4) {
+#endif
+    LOG(ERROR) << "Feedback data corrupt! Feedback not sent.";
     return;
   }
 
   ListValue::const_iterator i = list_value->begin();
-  if (i == list_value->end()) {
-    LOG(ERROR) << "Incorrect data passed to sendReport.";
-    return;
-  }
-
-  // #0 - Problem type.
-  int problem_type;
-  std::string problem_type_str;
-  (*i)->GetAsString(&problem_type_str);
-  if (!base::StringToInt(problem_type_str, &problem_type)) {
-    LOG(ERROR) << "Incorrect data passed to sendReport.";
-    return;
-  }
-  if (++i == list_value->end()) {
-    LOG(ERROR) << "Incorrect data passed to sendReport.";
-    return;
-  }
-
-  // #1 - Page url.
   std::string page_url;
-  (*i)->GetAsString(&page_url);
-  if (++i == list_value->end()) {
-    LOG(ERROR) << "Incorrect data passed to sendReport.";
-    return;
-  }
-
-  // #2 - Description.
+  (*i++)->GetAsString(&page_url);
+  std::string category_tag;
+  (*i++)->GetAsString(&category_tag);
   std::string description;
-  (*i)->GetAsString(&description);
-  if (++i == list_value->end()) {
-    LOG(ERROR) << "Incorrect data passed to sendReport.";
-    return;
-  }
-
-  // #3 -  Screenshot to send.
+  (*i++)->GetAsString(&description);
   std::string screenshot_path;
-  (*i)->GetAsString(&screenshot_path);
+  (*i++)->GetAsString(&screenshot_path);
   screenshot_path.erase(0, strlen(kScreenshotBaseUrl));
 
   // Get the image to send in the report.
@@ -523,22 +446,10 @@ void BugReportHandler::HandleSendReport(const ListValue* list_value) {
     image_ptr = screenshot_source_->GetCachedScreenshot(screenshot_path);
 
 #if defined(OS_CHROMEOS)
-  if (++i == list_value->end()) {
-    LOG(ERROR) << "Incorrect data passed to sendReport.";
-    return;
-  }
-
-  // #4 - User e-mail
   std::string user_email;
-  (*i)->GetAsString(&user_email);
-  if (++i == list_value->end()) {
-    LOG(ERROR) << "Incorrect data passed to sendReport.";
-    return;
-  }
-
-  // #5 - System info checkbox.
+  (*i++)->GetAsString(&user_email);
   std::string sys_info_checkbox;
-  (*i)->GetAsString(&sys_info_checkbox);
+  (*i++)->GetAsString(&sys_info_checkbox);
   bool send_sys_info = (sys_info_checkbox == "true");
 
   // If we aren't sending the sys_info, cancel the gathering of the syslogs.
@@ -546,17 +457,17 @@ void BugReportHandler::HandleSendReport(const ListValue* list_value) {
     CancelFeedbackCollection();
 #endif
 
-  // Update the data in bug_report_data_ so it can be sent
-  bug_report_data_->UpdateData(Profile::FromWebUI(web_ui())
+  // Update the data in feedback_data_ so it can be sent
+  feedback_data_->UpdateData(Profile::FromWebUI(web_ui())
                                , target_tab_url_
-                               , problem_type
+                               , std::string()
                                , page_url
                                , description
                                , image_ptr
 #if defined(OS_CHROMEOS)
                                , user_email
                                , send_sys_info
-                               , false // sent_report
+                               , false  // sent_report
 #endif
                                );
 
@@ -564,45 +475,45 @@ void BugReportHandler::HandleSendReport(const ListValue* list_value) {
   // If we don't require sys_info, or we have it, or we never requested it
   // (because libcros failed to load), then send the report now.
   // Otherwise, the report will get sent when we receive sys_info.
-  if (!send_sys_info || bug_report_data_->sys_info() != NULL ||
+  if (!send_sys_info || feedback_data_->sys_info() != NULL ||
       syslogs_handle_ == 0) {
-    bug_report_data_->SendReport();
+    feedback_data_->SendReport();
   }
 #else
-  bug_report_data_->SendReport();
+  feedback_data_->SendReport();
 #endif
-  // Lose the pointer to the BugReportData object; the object will delete itself
+  // Lose the pointer to the FeedbackData object; the object will delete itself
   // from SendReport, whether we called it, or will be called by the log
   // completion routine.
-  bug_report_data_ = NULL;
+  feedback_data_ = NULL;
 
   // Whether we sent the report, or if it will be sent by the Syslogs complete
   // function, close our feedback tab anyway, we have no more use for it.
   CloseFeedbackTab();
 }
 
-void BugReportHandler::HandleCancel(const ListValue*) {
+void FeedbackHandler::HandleCancel(const ListValue*) {
   CloseFeedbackTab();
 }
 
-void BugReportHandler::HandleOpenSystemTab(const ListValue* args) {
+void FeedbackHandler::HandleOpenSystemTab(const ListValue* args) {
 #if defined(OS_CHROMEOS)
   BrowserList::GetLastActive()->OpenSystemTabAndActivate();
 #endif
 }
 
-void BugReportHandler::CancelFeedbackCollection() {
+void FeedbackHandler::CancelFeedbackCollection() {
 #if defined(OS_CHROMEOS)
   if (syslogs_handle_ != 0) {
     chromeos::system::SyslogsProvider* provider =
         chromeos::system::SyslogsProvider::GetInstance();
-    if (provider)
+    if (provider && syslogs_consumer_.HasPendingRequests())
       provider->CancelRequest(syslogs_handle_);
   }
 #endif
 }
 
-void BugReportHandler::CloseFeedbackTab() {
+void FeedbackHandler::CloseFeedbackTab() {
   ClobberScreenshotsSource();
 
   Browser* browser = BrowserList::GetLastActive();
@@ -615,18 +526,18 @@ void BugReportHandler::CloseFeedbackTab() {
 
 ////////////////////////////////////////////////////////////////////////////////
 //
-// BugReportUI
+// FeedbackUI
 //
 ////////////////////////////////////////////////////////////////////////////////
-BugReportUI::BugReportUI(WebContents* tab) : HtmlDialogUI(tab) {
-  BugReportHandler* handler = new BugReportHandler(tab);
+FeedbackUI::FeedbackUI(WebContents* tab) : HtmlDialogUI(tab) {
+  FeedbackHandler* handler = new FeedbackHandler(tab);
   AddMessageHandler(handler);
 
   // The handler's init will determine whether we show the error html page.
   ChromeWebUIDataSource* html_source =
-      CreateBugReportUIHTMLSource(handler->Init());
+      CreateFeedbackUIHTMLSource(handler->Init());
 
-  // Set up the chrome://bugreport/ source.
+  // Set up the chrome://feedback/ source.
   Profile* profile = Profile::FromBrowserContext(tab->GetBrowserContext());
   profile->GetChromeURLDataManager()->AddDataSource(html_source);
 }
