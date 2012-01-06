@@ -1003,8 +1003,7 @@ int OmniboxViewWin::OnPerformDropImpl(const views::DropTargetEvent& event,
     if (data.GetURLAndTitle(&url, &title)) {
       string16 text(StripJavascriptSchemas(UTF8ToUTF16(url.spec())));
       SetUserText(text);
-      if (url.spec().length() == text.length())
-        model()->AcceptInput(CURRENT_TAB, true);
+      model()->AcceptInput(CURRENT_TAB, true);
       return CopyOrLinkDragOperation(event.source_operations());
     }
   } else if (data.HasString()) {
