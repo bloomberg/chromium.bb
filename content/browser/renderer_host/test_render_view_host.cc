@@ -12,6 +12,7 @@
 #include "content/browser/tab_contents/test_tab_contents.h"
 #include "content/common/dom_storage_common.h"
 #include "content/common/view_messages.h"
+#include "content/public/browser/navigation_controller.h"
 #include "content/public/common/content_client.h"
 #include "content/test/test_browser_context.h"
 #include "ui/gfx/rect.h"
@@ -19,6 +20,7 @@
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webpreferences.h"
 
+using content::NavigationController;
 using content::NavigationEntry;
 using webkit::forms::PasswordForm;
 
@@ -310,8 +312,8 @@ RenderViewHostTestHarness::RenderViewHostTestHarness()
 RenderViewHostTestHarness::~RenderViewHostTestHarness() {
 }
 
-NavigationControllerImpl& RenderViewHostTestHarness::controller() {
-  return contents()->GetControllerImpl();
+NavigationController& RenderViewHostTestHarness::controller() {
+  return contents()->GetController();
 }
 
 TestTabContents* RenderViewHostTestHarness::contents() {

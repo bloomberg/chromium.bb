@@ -234,12 +234,14 @@ class TabContentsTest : public RenderViewHostTestHarness {
 
 // Test to make sure that title updates get stripped of whitespace.
 TEST_F(TabContentsTest, UpdateTitle) {
+  NavigationControllerImpl& cont = 
+      static_cast<NavigationControllerImpl&>(controller());
   ViewHostMsg_FrameNavigate_Params params;
   InitNavigateParams(&params, 0, GURL(chrome::kAboutBlankURL),
                      content::PAGE_TRANSITION_TYPED);
 
   content::LoadCommittedDetails details;
-  controller().RendererDidNavigate(params, &details);
+  cont.RendererDidNavigate(params, &details);
 
   contents()->UpdateTitle(rvh(), 0, ASCIIToUTF16("    Lots O' Whitespace\n"),
                           base::i18n::LEFT_TO_RIGHT);
@@ -248,12 +250,14 @@ TEST_F(TabContentsTest, UpdateTitle) {
 
 // Test view source mode for a webui page.
 TEST_F(TabContentsTest, NTPViewSource) {
+  NavigationControllerImpl& cont = 
+      static_cast<NavigationControllerImpl&>(controller());
   const char kUrl[] = "view-source:tabcontentstest://blah";
   const GURL kGURL(kUrl);
 
   process()->sink().ClearMessages();
 
-  controller().LoadURL(
+  cont.LoadURL(
       kGURL, content::Referrer(), content::PAGE_TRANSITION_TYPED,
       std::string());
   rvh()->delegate()->RenderViewCreated(rvh());
@@ -264,7 +268,7 @@ TEST_F(TabContentsTest, NTPViewSource) {
   ViewHostMsg_FrameNavigate_Params params;
   InitNavigateParams(&params, 0, kGURL, content::PAGE_TRANSITION_TYPED);
   content::LoadCommittedDetails details;
-  controller().RendererDidNavigate(params, &details);
+  cont.RendererDidNavigate(params, &details);
   // Also check title and url.
   EXPECT_EQ(ASCIIToUTF16(kUrl), contents()->GetTitle());
 }

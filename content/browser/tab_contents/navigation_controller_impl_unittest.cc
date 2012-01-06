@@ -44,10 +44,14 @@ using content::WebContents;
 class NavigationControllerTest : public RenderViewHostTestHarness {
  public:
   NavigationControllerTest() {}
+
+  NavigationControllerImpl& controller_impl() {
+    return static_cast<NavigationControllerImpl&>(controller());
+  }
 };
 
 void RegisterForAllNavNotifications(TestNotificationTracker* tracker,
-                                    NavigationControllerImpl* controller) {
+                                    NavigationController* controller) {
   tracker->ListenFor(content::NOTIFICATION_NAV_ENTRY_COMMITTED,
                      content::Source<NavigationController>(
                          controller));
@@ -82,36 +86,39 @@ class TestWebContentsDelegate : public content::WebContentsDelegate {
 // -----------------------------------------------------------------------------
 
 TEST_F(NavigationControllerTest, Defaults) {
-  EXPECT_FALSE(controller().GetPendingEntry());
-  EXPECT_FALSE(controller().GetLastCommittedEntry());
-  EXPECT_EQ(controller().GetPendingEntryIndex(), -1);
-  EXPECT_EQ(controller().GetLastCommittedEntryIndex(), -1);
-  EXPECT_EQ(controller().GetEntryCount(), 0);
-  EXPECT_FALSE(controller().CanGoBack());
-  EXPECT_FALSE(controller().CanGoForward());
+  NavigationControllerImpl& controller = controller_impl();
+
+  EXPECT_FALSE(controller.GetPendingEntry());
+  EXPECT_FALSE(controller.GetLastCommittedEntry());
+  EXPECT_EQ(controller.GetPendingEntryIndex(), -1);
+  EXPECT_EQ(controller.GetLastCommittedEntryIndex(), -1);
+  EXPECT_EQ(controller.GetEntryCount(), 0);
+  EXPECT_FALSE(controller.CanGoBack());
+  EXPECT_FALSE(controller.CanGoForward());
 }
 
 TEST_F(NavigationControllerTest, LoadURL) {
+  NavigationControllerImpl& controller = controller_impl();
   TestNotificationTracker notifications;
-  RegisterForAllNavNotifications(&notifications, &controller());
+  RegisterForAllNavNotifications(&notifications, &controller);
 
   const GURL url1("http://foo1");
   const GURL url2("http://foo2");
 
-  controller().LoadURL(
+  controller.LoadURL(
       url1, content::Referrer(), content::PAGE_TRANSITION_TYPED, std::string());
   // Creating a pending notification should not have issued any of the
   // notifications we're listening for.
   EXPECT_EQ(0U, notifications.size());
 
   // The load should now be pending.
-  EXPECT_EQ(controller().GetEntryCount(), 0);
-  EXPECT_EQ(controller().GetLastCommittedEntryIndex(), -1);
-  EXPECT_EQ(controller().GetPendingEntryIndex(), -1);
-  EXPECT_FALSE(controller().GetLastCommittedEntry());
-  EXPECT_TRUE(controller().GetPendingEntry());
-  EXPECT_FALSE(controller().CanGoBack());
-  EXPECT_FALSE(controller().CanGoForward());
+  EXPECT_EQ(controller.GetEntryCount(), 0);
+  EXPECT_EQ(controller.GetLastCommittedEntryIndex(), -1);
+  EXPECT_EQ(controller.GetPendingEntryIndex(), -1);
+  EXPECT_FALSE(controller.GetLastCommittedEntry());
+  EXPECT_TRUE(controller.GetPendingEntry());
+  EXPECT_FALSE(controller.CanGoBack());
+  EXPECT_FALSE(controller.CanGoForward());
   EXPECT_EQ(contents()->GetMaxPageID(), -1);
 
   // We should have gotten no notifications from the preceeding checks.
@@ -122,28 +129,28 @@ TEST_F(NavigationControllerTest, LoadURL) {
       content::NOTIFICATION_NAV_ENTRY_COMMITTED));
 
   // The load should now be committed.
-  EXPECT_EQ(controller().GetEntryCount(), 1);
-  EXPECT_EQ(controller().GetLastCommittedEntryIndex(), 0);
-  EXPECT_EQ(controller().GetPendingEntryIndex(), -1);
-  EXPECT_TRUE(controller().GetLastCommittedEntry());
-  EXPECT_FALSE(controller().GetPendingEntry());
-  EXPECT_FALSE(controller().CanGoBack());
-  EXPECT_FALSE(controller().CanGoForward());
+  EXPECT_EQ(controller.GetEntryCount(), 1);
+  EXPECT_EQ(controller.GetLastCommittedEntryIndex(), 0);
+  EXPECT_EQ(controller.GetPendingEntryIndex(), -1);
+  EXPECT_TRUE(controller.GetLastCommittedEntry());
+  EXPECT_FALSE(controller.GetPendingEntry());
+  EXPECT_FALSE(controller.CanGoBack());
+  EXPECT_FALSE(controller.CanGoForward());
   EXPECT_EQ(contents()->GetMaxPageID(), 0);
 
   // Load another...
-  controller().LoadURL(
+  controller.LoadURL(
       url2, content::Referrer(), content::PAGE_TRANSITION_TYPED, std::string());
 
   // The load should now be pending.
-  EXPECT_EQ(controller().GetEntryCount(), 1);
-  EXPECT_EQ(controller().GetLastCommittedEntryIndex(), 0);
-  EXPECT_EQ(controller().GetPendingEntryIndex(), -1);
-  EXPECT_TRUE(controller().GetLastCommittedEntry());
-  EXPECT_TRUE(controller().GetPendingEntry());
+  EXPECT_EQ(controller.GetEntryCount(), 1);
+  EXPECT_EQ(controller.GetLastCommittedEntryIndex(), 0);
+  EXPECT_EQ(controller.GetPendingEntryIndex(), -1);
+  EXPECT_TRUE(controller.GetLastCommittedEntry());
+  EXPECT_TRUE(controller.GetPendingEntry());
   // TODO(darin): maybe this should really be true?
-  EXPECT_FALSE(controller().CanGoBack());
-  EXPECT_FALSE(controller().CanGoForward());
+  EXPECT_FALSE(controller.CanGoBack());
+  EXPECT_FALSE(controller.CanGoForward());
   EXPECT_EQ(contents()->GetMaxPageID(), 0);
 
   // Simulate the beforeunload ack for the cross-site transition, and then the
@@ -154,13 +161,13 @@ TEST_F(NavigationControllerTest, LoadURL) {
       content::NOTIFICATION_NAV_ENTRY_COMMITTED));
 
   // The load should now be committed.
-  EXPECT_EQ(controller().GetEntryCount(), 2);
-  EXPECT_EQ(controller().GetLastCommittedEntryIndex(), 1);
-  EXPECT_EQ(controller().GetPendingEntryIndex(), -1);
-  EXPECT_TRUE(controller().GetLastCommittedEntry());
-  EXPECT_FALSE(controller().GetPendingEntry());
-  EXPECT_TRUE(controller().CanGoBack());
-  EXPECT_FALSE(controller().CanGoForward());
+  EXPECT_EQ(controller.GetEntryCount(), 2);
+  EXPECT_EQ(controller.GetLastCommittedEntryIndex(), 1);
+  EXPECT_EQ(controller.GetPendingEntryIndex(), -1);
+  EXPECT_TRUE(controller.GetLastCommittedEntry());
+  EXPECT_FALSE(controller.GetPendingEntry());
+  EXPECT_TRUE(controller.CanGoBack());
+  EXPECT_FALSE(controller.CanGoForward());
   EXPECT_EQ(contents()->GetMaxPageID(), 1);
 }
 
@@ -169,19 +176,20 @@ TEST_F(NavigationControllerTest, LoadURL) {
 // URL bar to reload: a pending entry is created and then it is discarded when
 // the load commits (because WebCore didn't actually make a new entry).
 TEST_F(NavigationControllerTest, LoadURL_SamePage) {
+  NavigationControllerImpl& controller = controller_impl();
   TestNotificationTracker notifications;
-  RegisterForAllNavNotifications(&notifications, &controller());
+  RegisterForAllNavNotifications(&notifications, &controller);
 
   const GURL url1("http://foo1");
 
-  controller().LoadURL(
+  controller.LoadURL(
       url1, content::Referrer(), content::PAGE_TRANSITION_TYPED, std::string());
   EXPECT_EQ(0U, notifications.size());
   rvh()->SendNavigate(0, url1);
   EXPECT_TRUE(notifications.Check1AndReset(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED));
 
-  controller().LoadURL(
+  controller.LoadURL(
       url1, content::Referrer(), content::PAGE_TRANSITION_TYPED, std::string());
   EXPECT_EQ(0U, notifications.size());
   rvh()->SendNavigate(0, url1);
@@ -189,55 +197,57 @@ TEST_F(NavigationControllerTest, LoadURL_SamePage) {
       content::NOTIFICATION_NAV_ENTRY_COMMITTED));
 
   // We should not have produced a new session history entry.
-  EXPECT_EQ(controller().GetEntryCount(), 1);
-  EXPECT_EQ(controller().GetLastCommittedEntryIndex(), 0);
-  EXPECT_EQ(controller().GetPendingEntryIndex(), -1);
-  EXPECT_TRUE(controller().GetLastCommittedEntry());
-  EXPECT_FALSE(controller().GetPendingEntry());
-  EXPECT_FALSE(controller().CanGoBack());
-  EXPECT_FALSE(controller().CanGoForward());
+  EXPECT_EQ(controller.GetEntryCount(), 1);
+  EXPECT_EQ(controller.GetLastCommittedEntryIndex(), 0);
+  EXPECT_EQ(controller.GetPendingEntryIndex(), -1);
+  EXPECT_TRUE(controller.GetLastCommittedEntry());
+  EXPECT_FALSE(controller.GetPendingEntry());
+  EXPECT_FALSE(controller.CanGoBack());
+  EXPECT_FALSE(controller.CanGoForward());
 }
 
 // Tests loading a URL but discarding it before the load commits.
 TEST_F(NavigationControllerTest, LoadURL_Discarded) {
+  NavigationControllerImpl& controller = controller_impl();
   TestNotificationTracker notifications;
-  RegisterForAllNavNotifications(&notifications, &controller());
+  RegisterForAllNavNotifications(&notifications, &controller);
 
   const GURL url1("http://foo1");
   const GURL url2("http://foo2");
 
-  controller().LoadURL(
+  controller.LoadURL(
       url1, content::Referrer(), content::PAGE_TRANSITION_TYPED, std::string());
   EXPECT_EQ(0U, notifications.size());
   rvh()->SendNavigate(0, url1);
   EXPECT_TRUE(notifications.Check1AndReset(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED));
 
-  controller().LoadURL(
+  controller.LoadURL(
       url2, content::Referrer(), content::PAGE_TRANSITION_TYPED, std::string());
-  controller().DiscardNonCommittedEntries();
+  controller.DiscardNonCommittedEntries();
   EXPECT_EQ(0U, notifications.size());
 
   // Should not have produced a new session history entry.
-  EXPECT_EQ(controller().GetEntryCount(), 1);
-  EXPECT_EQ(controller().GetLastCommittedEntryIndex(), 0);
-  EXPECT_EQ(controller().GetPendingEntryIndex(), -1);
-  EXPECT_TRUE(controller().GetLastCommittedEntry());
-  EXPECT_FALSE(controller().GetPendingEntry());
-  EXPECT_FALSE(controller().CanGoBack());
-  EXPECT_FALSE(controller().CanGoForward());
+  EXPECT_EQ(controller.GetEntryCount(), 1);
+  EXPECT_EQ(controller.GetLastCommittedEntryIndex(), 0);
+  EXPECT_EQ(controller.GetPendingEntryIndex(), -1);
+  EXPECT_TRUE(controller.GetLastCommittedEntry());
+  EXPECT_FALSE(controller.GetPendingEntry());
+  EXPECT_FALSE(controller.CanGoBack());
+  EXPECT_FALSE(controller.CanGoForward());
 }
 
 // Tests navigations that come in unrequested. This happens when the user
 // navigates from the web page, and here we test that there is no pending entry.
 TEST_F(NavigationControllerTest, LoadURL_NoPending) {
+  NavigationControllerImpl& controller = controller_impl();
   TestNotificationTracker notifications;
-  RegisterForAllNavNotifications(&notifications, &controller());
+  RegisterForAllNavNotifications(&notifications, &controller);
 
   // First make an existing committed entry.
   const GURL kExistingURL1("http://eh");
-  controller().LoadURL(kExistingURL1, content::Referrer(),
-                       content::PAGE_TRANSITION_TYPED, std::string());
+  controller.LoadURL(kExistingURL1, content::Referrer(),
+                     content::PAGE_TRANSITION_TYPED, std::string());
   rvh()->SendNavigate(0, kExistingURL1);
   EXPECT_TRUE(notifications.Check1AndReset(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED));
@@ -250,9 +260,9 @@ TEST_F(NavigationControllerTest, LoadURL_NoPending) {
   // just made should be committed.
   EXPECT_TRUE(notifications.Check1AndReset(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED));
-  EXPECT_EQ(-1, controller().GetPendingEntryIndex());
-  EXPECT_EQ(1, controller().GetLastCommittedEntryIndex());
-  EXPECT_EQ(kNewURL, controller().GetActiveEntry()->GetURL());
+  EXPECT_EQ(-1, controller.GetPendingEntryIndex());
+  EXPECT_EQ(1, controller.GetLastCommittedEntryIndex());
+  EXPECT_EQ(kNewURL, controller.GetActiveEntry()->GetURL());
 }
 
 // Tests navigating to a new URL when there is a new pending navigation that is
@@ -260,21 +270,22 @@ TEST_F(NavigationControllerTest, LoadURL_NoPending) {
 // somewhere slow, and then navigates the current page before the typed URL
 // commits.
 TEST_F(NavigationControllerTest, LoadURL_NewPending) {
+  NavigationControllerImpl& controller = controller_impl();
   TestNotificationTracker notifications;
-  RegisterForAllNavNotifications(&notifications, &controller());
+  RegisterForAllNavNotifications(&notifications, &controller);
 
   // First make an existing committed entry.
   const GURL kExistingURL1("http://eh");
-  controller().LoadURL(kExistingURL1, content::Referrer(),
-                       content::PAGE_TRANSITION_TYPED, std::string());
+  controller.LoadURL(kExistingURL1, content::Referrer(),
+                     content::PAGE_TRANSITION_TYPED, std::string());
   rvh()->SendNavigate(0, kExistingURL1);
   EXPECT_TRUE(notifications.Check1AndReset(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED));
 
   // Make a pending entry to somewhere new.
   const GURL kExistingURL2("http://bee");
-  controller().LoadURL(kExistingURL2, content::Referrer(),
-                       content::PAGE_TRANSITION_TYPED, std::string());
+  controller.LoadURL(kExistingURL2, content::Referrer(),
+                     content::PAGE_TRANSITION_TYPED, std::string());
   EXPECT_EQ(0U, notifications.size());
 
   // After the beforeunload but before it commits, do a new navigation.
@@ -286,39 +297,40 @@ TEST_F(NavigationControllerTest, LoadURL_NewPending) {
   // just made should be committed.
   EXPECT_TRUE(notifications.Check1AndReset(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED));
-  EXPECT_EQ(-1, controller().GetPendingEntryIndex());
-  EXPECT_EQ(1, controller().GetLastCommittedEntryIndex());
-  EXPECT_EQ(kNewURL, controller().GetActiveEntry()->GetURL());
+  EXPECT_EQ(-1, controller.GetPendingEntryIndex());
+  EXPECT_EQ(1, controller.GetLastCommittedEntryIndex());
+  EXPECT_EQ(kNewURL, controller.GetActiveEntry()->GetURL());
 }
 
 // Tests navigating to a new URL when there is a pending back/forward
 // navigation. This will happen if the user hits back, but before that commits,
 // they navigate somewhere new.
 TEST_F(NavigationControllerTest, LoadURL_ExistingPending) {
+  NavigationControllerImpl& controller = controller_impl();
   TestNotificationTracker notifications;
-  RegisterForAllNavNotifications(&notifications, &controller());
+  RegisterForAllNavNotifications(&notifications, &controller);
 
   // First make some history.
   const GURL kExistingURL1("http://foo/eh");
-  controller().LoadURL(kExistingURL1, content::Referrer(),
-                       content::PAGE_TRANSITION_TYPED, std::string());
+  controller.LoadURL(kExistingURL1, content::Referrer(),
+                     content::PAGE_TRANSITION_TYPED, std::string());
   rvh()->SendNavigate(0, kExistingURL1);
   EXPECT_TRUE(notifications.Check1AndReset(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED));
 
   const GURL kExistingURL2("http://foo/bee");
-  controller().LoadURL(kExistingURL2, content::Referrer(),
-                       content::PAGE_TRANSITION_TYPED, std::string());
+  controller.LoadURL(kExistingURL2, content::Referrer(),
+                     content::PAGE_TRANSITION_TYPED, std::string());
   rvh()->SendNavigate(1, kExistingURL2);
   EXPECT_TRUE(notifications.Check1AndReset(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED));
 
   // Now make a pending back/forward navigation. The zeroth entry should be
   // pending.
-  controller().GoBack();
+  controller.GoBack();
   EXPECT_EQ(0U, notifications.size());
-  EXPECT_EQ(0, controller().GetPendingEntryIndex());
-  EXPECT_EQ(1, controller().GetLastCommittedEntryIndex());
+  EXPECT_EQ(0, controller.GetPendingEntryIndex());
+  EXPECT_EQ(1, controller.GetLastCommittedEntryIndex());
 
   // Before that commits, do a new navigation.
   const GURL kNewURL("http://foo/see");
@@ -329,41 +341,42 @@ TEST_F(NavigationControllerTest, LoadURL_ExistingPending) {
   // just made should be committed.
   EXPECT_TRUE(notifications.Check1AndReset(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED));
-  EXPECT_EQ(-1, controller().GetPendingEntryIndex());
-  EXPECT_EQ(2, controller().GetLastCommittedEntryIndex());
-  EXPECT_EQ(kNewURL, controller().GetActiveEntry()->GetURL());
+  EXPECT_EQ(-1, controller.GetPendingEntryIndex());
+  EXPECT_EQ(2, controller.GetLastCommittedEntryIndex());
+  EXPECT_EQ(kNewURL, controller.GetActiveEntry()->GetURL());
 }
 
 // Tests navigating to an existing URL when there is a pending new navigation.
 // This will happen if the user enters a URL, but before that commits, the
 // current page fires history.back().
 TEST_F(NavigationControllerTest, LoadURL_BackPreemptsPending) {
+  NavigationControllerImpl& controller = controller_impl();
   TestNotificationTracker notifications;
-  RegisterForAllNavNotifications(&notifications, &controller());
+  RegisterForAllNavNotifications(&notifications, &controller);
 
   // First make some history.
   const GURL kExistingURL1("http://foo/eh");
-  controller().LoadURL(kExistingURL1, content::Referrer(),
-                       content::PAGE_TRANSITION_TYPED, std::string());
+  controller.LoadURL(kExistingURL1, content::Referrer(),
+                     content::PAGE_TRANSITION_TYPED, std::string());
   rvh()->SendNavigate(0, kExistingURL1);
   EXPECT_TRUE(notifications.Check1AndReset(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED));
 
   const GURL kExistingURL2("http://foo/bee");
-  controller().LoadURL(kExistingURL2, content::Referrer(),
-                       content::PAGE_TRANSITION_TYPED, std::string());
+  controller.LoadURL(kExistingURL2, content::Referrer(),
+                     content::PAGE_TRANSITION_TYPED, std::string());
   rvh()->SendNavigate(1, kExistingURL2);
   EXPECT_TRUE(notifications.Check1AndReset(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED));
 
   // Now make a pending new navigation.
   const GURL kNewURL("http://foo/see");
-  controller().LoadURL(
+  controller.LoadURL(
       kNewURL, content::Referrer(), content::PAGE_TRANSITION_TYPED,
       std::string());
   EXPECT_EQ(0U, notifications.size());
-  EXPECT_EQ(-1, controller().GetPendingEntryIndex());
-  EXPECT_EQ(1, controller().GetLastCommittedEntryIndex());
+  EXPECT_EQ(-1, controller.GetPendingEntryIndex());
+  EXPECT_EQ(1, controller.GetLastCommittedEntryIndex());
 
   // Before that commits, a back navigation from the renderer commits.
   rvh()->SendNavigate(0, kExistingURL1);
@@ -372,17 +385,18 @@ TEST_F(NavigationControllerTest, LoadURL_BackPreemptsPending) {
   // just made should be committed.
   EXPECT_TRUE(notifications.Check1AndReset(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED));
-  EXPECT_EQ(-1, controller().GetPendingEntryIndex());
-  EXPECT_EQ(0, controller().GetLastCommittedEntryIndex());
-  EXPECT_EQ(kExistingURL1, controller().GetActiveEntry()->GetURL());
+  EXPECT_EQ(-1, controller.GetPendingEntryIndex());
+  EXPECT_EQ(0, controller.GetLastCommittedEntryIndex());
+  EXPECT_EQ(kExistingURL1, controller.GetActiveEntry()->GetURL());
 }
 
 // Tests an ignored navigation when there is a pending new navigation.
 // This will happen if the user enters a URL, but before that commits, the
 // current blank page reloads.  See http://crbug.com/77507.
 TEST_F(NavigationControllerTest, LoadURL_IgnorePreemptsPending) {
+  NavigationControllerImpl& controller = controller_impl();
   TestNotificationTracker notifications;
-  RegisterForAllNavNotifications(&notifications, &controller());
+  RegisterForAllNavNotifications(&notifications, &controller);
 
   // Set a WebContentsDelegate to listen for state changes.
   scoped_ptr<TestWebContentsDelegate> delegate(new TestWebContentsDelegate());
@@ -394,13 +408,13 @@ TEST_F(NavigationControllerTest, LoadURL_IgnorePreemptsPending) {
 
   // Now make a pending new navigation.
   const GURL kNewURL("http://eh");
-  controller().LoadURL(
+  controller.LoadURL(
       kNewURL, content::Referrer(), content::PAGE_TRANSITION_TYPED,
       std::string());
   EXPECT_EQ(0U, notifications.size());
-  EXPECT_EQ(-1, controller().GetPendingEntryIndex());
-  EXPECT_TRUE(controller().GetPendingEntry());
-  EXPECT_EQ(-1, controller().GetLastCommittedEntryIndex());
+  EXPECT_EQ(-1, controller.GetPendingEntryIndex());
+  EXPECT_TRUE(controller.GetPendingEntry());
+  EXPECT_EQ(-1, controller.GetLastCommittedEntryIndex());
   EXPECT_EQ(1, delegate->navigation_state_change_count());
 
   // Before that commits, a document.write and location.reload can cause the
@@ -409,9 +423,9 @@ TEST_F(NavigationControllerTest, LoadURL_IgnorePreemptsPending) {
 
   // This should clear the pending entry and notify of a navigation state
   // change, so that we do not keep displaying kNewURL.
-  EXPECT_EQ(-1, controller().GetPendingEntryIndex());
-  EXPECT_FALSE(controller().GetPendingEntry());
-  EXPECT_EQ(-1, controller().GetLastCommittedEntryIndex());
+  EXPECT_EQ(-1, controller.GetPendingEntryIndex());
+  EXPECT_FALSE(controller.GetPendingEntry());
+  EXPECT_EQ(-1, controller.GetLastCommittedEntryIndex());
   EXPECT_EQ(2, delegate->navigation_state_change_count());
 
   contents()->SetDelegate(NULL);
@@ -419,8 +433,9 @@ TEST_F(NavigationControllerTest, LoadURL_IgnorePreemptsPending) {
 
 // Tests that the pending entry state is correct after an abort.
 TEST_F(NavigationControllerTest, LoadURL_AbortCancelsPending) {
+  NavigationControllerImpl& controller = controller_impl();
   TestNotificationTracker notifications;
-  RegisterForAllNavNotifications(&notifications, &controller());
+  RegisterForAllNavNotifications(&notifications, &controller);
 
   // Set a WebContentsDelegate to listen for state changes.
   scoped_ptr<TestWebContentsDelegate> delegate(new TestWebContentsDelegate());
@@ -432,13 +447,13 @@ TEST_F(NavigationControllerTest, LoadURL_AbortCancelsPending) {
 
   // Now make a pending new navigation.
   const GURL kNewURL("http://eh");
-  controller().LoadURL(
+  controller.LoadURL(
       kNewURL, content::Referrer(), content::PAGE_TRANSITION_TYPED,
       std::string());
   EXPECT_EQ(0U, notifications.size());
-  EXPECT_EQ(-1, controller().GetPendingEntryIndex());
-  EXPECT_TRUE(controller().GetPendingEntry());
-  EXPECT_EQ(-1, controller().GetLastCommittedEntryIndex());
+  EXPECT_EQ(-1, controller.GetPendingEntryIndex());
+  EXPECT_TRUE(controller.GetPendingEntry());
+  EXPECT_EQ(-1, controller.GetLastCommittedEntryIndex());
   EXPECT_EQ(1, delegate->navigation_state_change_count());
 
   // It may abort before committing, if it's a download or due to a stop or
@@ -456,9 +471,9 @@ TEST_F(NavigationControllerTest, LoadURL_AbortCancelsPending) {
 
   // This should clear the pending entry and notify of a navigation state
   // change, so that we do not keep displaying kNewURL.
-  EXPECT_EQ(-1, controller().GetPendingEntryIndex());
-  EXPECT_FALSE(controller().GetPendingEntry());
-  EXPECT_EQ(-1, controller().GetLastCommittedEntryIndex());
+  EXPECT_EQ(-1, controller.GetPendingEntryIndex());
+  EXPECT_FALSE(controller.GetPendingEntry());
+  EXPECT_EQ(-1, controller.GetLastCommittedEntryIndex());
   EXPECT_EQ(2, delegate->navigation_state_change_count());
 
   contents()->SetDelegate(NULL);
@@ -467,8 +482,9 @@ TEST_F(NavigationControllerTest, LoadURL_AbortCancelsPending) {
 // Tests that the pending entry state is correct after a redirect and abort.
 // http://crbug.com/83031.
 TEST_F(NavigationControllerTest, LoadURL_RedirectAbortCancelsPending) {
+  NavigationControllerImpl& controller = controller_impl();
   TestNotificationTracker notifications;
-  RegisterForAllNavNotifications(&notifications, &controller());
+  RegisterForAllNavNotifications(&notifications, &controller);
 
   // Set a WebContentsDelegate to listen for state changes.
   scoped_ptr<TestWebContentsDelegate> delegate(new TestWebContentsDelegate());
@@ -480,13 +496,13 @@ TEST_F(NavigationControllerTest, LoadURL_RedirectAbortCancelsPending) {
 
   // Now make a pending new navigation.
   const GURL kNewURL("http://eh");
-  controller().LoadURL(
+  controller.LoadURL(
       kNewURL, content::Referrer(), content::PAGE_TRANSITION_TYPED,
       std::string());
   EXPECT_EQ(0U, notifications.size());
-  EXPECT_EQ(-1, controller().GetPendingEntryIndex());
-  EXPECT_TRUE(controller().GetPendingEntry());
-  EXPECT_EQ(-1, controller().GetLastCommittedEntryIndex());
+  EXPECT_EQ(-1, controller.GetPendingEntryIndex());
+  EXPECT_TRUE(controller.GetPendingEntry());
+  EXPECT_EQ(-1, controller.GetLastCommittedEntryIndex());
   EXPECT_EQ(1, delegate->navigation_state_change_count());
 
   // Now the navigation redirects.
@@ -500,7 +516,7 @@ TEST_F(NavigationControllerTest, LoadURL_RedirectAbortCancelsPending) {
 
   // We don't want to change the NavigationEntry's url, in case it cancels.
   // Prevents regression of http://crbug.com/77786.
-  EXPECT_EQ(kNewURL, controller().GetPendingEntry()->GetURL());
+  EXPECT_EQ(kNewURL, controller.GetPendingEntry()->GetURL());
 
   // It may abort before committing, if it's a download or due to a stop or
   // a new navigation from the user.
@@ -517,68 +533,70 @@ TEST_F(NavigationControllerTest, LoadURL_RedirectAbortCancelsPending) {
 
   // This should clear the pending entry and notify of a navigation state
   // change, so that we do not keep displaying kNewURL.
-  EXPECT_EQ(-1, controller().GetPendingEntryIndex());
-  EXPECT_FALSE(controller().GetPendingEntry());
-  EXPECT_EQ(-1, controller().GetLastCommittedEntryIndex());
+  EXPECT_EQ(-1, controller.GetPendingEntryIndex());
+  EXPECT_FALSE(controller.GetPendingEntry());
+  EXPECT_EQ(-1, controller.GetLastCommittedEntryIndex());
   EXPECT_EQ(2, delegate->navigation_state_change_count());
 
   contents()->SetDelegate(NULL);
 }
 
 TEST_F(NavigationControllerTest, Reload) {
+  NavigationControllerImpl& controller = controller_impl();
   TestNotificationTracker notifications;
-  RegisterForAllNavNotifications(&notifications, &controller());
+  RegisterForAllNavNotifications(&notifications, &controller);
 
   const GURL url1("http://foo1");
 
-  controller().LoadURL(
+  controller.LoadURL(
       url1, content::Referrer(), content::PAGE_TRANSITION_TYPED, std::string());
   EXPECT_EQ(0U, notifications.size());
   rvh()->SendNavigate(0, url1);
   EXPECT_TRUE(notifications.Check1AndReset(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED));
 
-  controller().Reload(true);
+  controller.Reload(true);
   EXPECT_EQ(0U, notifications.size());
 
   // The reload is pending.
-  EXPECT_EQ(controller().GetEntryCount(), 1);
-  EXPECT_EQ(controller().GetLastCommittedEntryIndex(), 0);
-  EXPECT_EQ(controller().GetPendingEntryIndex(), 0);
-  EXPECT_TRUE(controller().GetLastCommittedEntry());
-  EXPECT_TRUE(controller().GetPendingEntry());
-  EXPECT_FALSE(controller().CanGoBack());
-  EXPECT_FALSE(controller().CanGoForward());
+  EXPECT_EQ(controller.GetEntryCount(), 1);
+  EXPECT_EQ(controller.GetLastCommittedEntryIndex(), 0);
+  EXPECT_EQ(controller.GetPendingEntryIndex(), 0);
+  EXPECT_TRUE(controller.GetLastCommittedEntry());
+  EXPECT_TRUE(controller.GetPendingEntry());
+  EXPECT_FALSE(controller.CanGoBack());
+  EXPECT_FALSE(controller.CanGoForward());
 
   rvh()->SendNavigate(0, url1);
   EXPECT_TRUE(notifications.Check1AndReset(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED));
 
   // Now the reload is committed.
-  EXPECT_EQ(controller().GetEntryCount(), 1);
-  EXPECT_EQ(controller().GetLastCommittedEntryIndex(), 0);
-  EXPECT_EQ(controller().GetPendingEntryIndex(), -1);
-  EXPECT_TRUE(controller().GetLastCommittedEntry());
-  EXPECT_FALSE(controller().GetPendingEntry());
-  EXPECT_FALSE(controller().CanGoBack());
-  EXPECT_FALSE(controller().CanGoForward());
+  EXPECT_EQ(controller.GetEntryCount(), 1);
+  EXPECT_EQ(controller.GetLastCommittedEntryIndex(), 0);
+  EXPECT_EQ(controller.GetPendingEntryIndex(), -1);
+  EXPECT_TRUE(controller.GetLastCommittedEntry());
+  EXPECT_FALSE(controller.GetPendingEntry());
+  EXPECT_FALSE(controller.CanGoBack());
+  EXPECT_FALSE(controller.CanGoForward());
 }
 
 // Tests what happens when a reload navigation produces a new page.
 TEST_F(NavigationControllerTest, Reload_GeneratesNewPage) {
+  NavigationControllerImpl& controller = controller_impl();
   TestNotificationTracker notifications;
-  RegisterForAllNavNotifications(&notifications, &controller());
+  RegisterForAllNavNotifications(&notifications, &controller);
 
   const GURL url1("http://foo1");
   const GURL url2("http://foo2");
 
-  controller().LoadURL(
+  controller.LoadURL(
       url1, content::Referrer(), content::PAGE_TRANSITION_TYPED, std::string());
   rvh()->SendNavigate(0, url1);
   EXPECT_TRUE(notifications.Check1AndReset(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED));
 
-  controller().Reload(true);
+  controller.Reload(true);
   EXPECT_EQ(0U, notifications.size());
 
   rvh()->SendNavigate(1, url2);
@@ -586,19 +604,20 @@ TEST_F(NavigationControllerTest, Reload_GeneratesNewPage) {
       content::NOTIFICATION_NAV_ENTRY_COMMITTED));
 
   // Now the reload is committed.
-  EXPECT_EQ(controller().GetEntryCount(), 2);
-  EXPECT_EQ(controller().GetLastCommittedEntryIndex(), 1);
-  EXPECT_EQ(controller().GetPendingEntryIndex(), -1);
-  EXPECT_TRUE(controller().GetLastCommittedEntry());
-  EXPECT_FALSE(controller().GetPendingEntry());
-  EXPECT_TRUE(controller().CanGoBack());
-  EXPECT_FALSE(controller().CanGoForward());
+  EXPECT_EQ(controller.GetEntryCount(), 2);
+  EXPECT_EQ(controller.GetLastCommittedEntryIndex(), 1);
+  EXPECT_EQ(controller.GetPendingEntryIndex(), -1);
+  EXPECT_TRUE(controller.GetLastCommittedEntry());
+  EXPECT_FALSE(controller.GetPendingEntry());
+  EXPECT_TRUE(controller.CanGoBack());
+  EXPECT_FALSE(controller.CanGoForward());
 }
 
 // Tests what happens when we navigate back successfully
 TEST_F(NavigationControllerTest, Back) {
+  NavigationControllerImpl& controller = controller_impl();
   TestNotificationTracker notifications;
-  RegisterForAllNavNotifications(&notifications, &controller());
+  RegisterForAllNavNotifications(&notifications, &controller);
 
   const GURL url1("http://foo1");
   rvh()->SendNavigate(0, url1);
@@ -610,64 +629,65 @@ TEST_F(NavigationControllerTest, Back) {
   EXPECT_TRUE(notifications.Check1AndReset(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED));
 
-  controller().GoBack();
+  controller.GoBack();
   EXPECT_EQ(0U, notifications.size());
 
   // We should now have a pending navigation to go back.
-  EXPECT_EQ(controller().GetEntryCount(), 2);
-  EXPECT_EQ(controller().GetLastCommittedEntryIndex(), 1);
-  EXPECT_EQ(controller().GetPendingEntryIndex(), 0);
-  EXPECT_TRUE(controller().GetLastCommittedEntry());
-  EXPECT_TRUE(controller().GetPendingEntry());
-  EXPECT_FALSE(controller().CanGoBack());
-  EXPECT_TRUE(controller().CanGoForward());
+  EXPECT_EQ(controller.GetEntryCount(), 2);
+  EXPECT_EQ(controller.GetLastCommittedEntryIndex(), 1);
+  EXPECT_EQ(controller.GetPendingEntryIndex(), 0);
+  EXPECT_TRUE(controller.GetLastCommittedEntry());
+  EXPECT_TRUE(controller.GetPendingEntry());
+  EXPECT_FALSE(controller.CanGoBack());
+  EXPECT_TRUE(controller.CanGoForward());
 
   rvh()->SendNavigate(0, url2);
   EXPECT_TRUE(notifications.Check1AndReset(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED));
 
   // The back navigation completed successfully.
-  EXPECT_EQ(controller().GetEntryCount(), 2);
-  EXPECT_EQ(controller().GetLastCommittedEntryIndex(), 0);
-  EXPECT_EQ(controller().GetPendingEntryIndex(), -1);
-  EXPECT_TRUE(controller().GetLastCommittedEntry());
-  EXPECT_FALSE(controller().GetPendingEntry());
-  EXPECT_FALSE(controller().CanGoBack());
-  EXPECT_TRUE(controller().CanGoForward());
+  EXPECT_EQ(controller.GetEntryCount(), 2);
+  EXPECT_EQ(controller.GetLastCommittedEntryIndex(), 0);
+  EXPECT_EQ(controller.GetPendingEntryIndex(), -1);
+  EXPECT_TRUE(controller.GetLastCommittedEntry());
+  EXPECT_FALSE(controller.GetPendingEntry());
+  EXPECT_FALSE(controller.CanGoBack());
+  EXPECT_TRUE(controller.CanGoForward());
 }
 
 // Tests what happens when a back navigation produces a new page.
 TEST_F(NavigationControllerTest, Back_GeneratesNewPage) {
+  NavigationControllerImpl& controller = controller_impl();
   TestNotificationTracker notifications;
-  RegisterForAllNavNotifications(&notifications, &controller());
+  RegisterForAllNavNotifications(&notifications, &controller);
 
   const GURL url1("http://foo/1");
   const GURL url2("http://foo/2");
   const GURL url3("http://foo/3");
 
-  controller().LoadURL(
+  controller.LoadURL(
       url1, content::Referrer(), content::PAGE_TRANSITION_TYPED, std::string());
   rvh()->SendNavigate(0, url1);
   EXPECT_TRUE(notifications.Check1AndReset(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED));
 
-  controller().LoadURL(
+  controller.LoadURL(
       url2, content::Referrer(), content::PAGE_TRANSITION_TYPED, std::string());
   rvh()->SendNavigate(1, url2);
   EXPECT_TRUE(notifications.Check1AndReset(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED));
 
-  controller().GoBack();
+  controller.GoBack();
   EXPECT_EQ(0U, notifications.size());
 
   // We should now have a pending navigation to go back.
-  EXPECT_EQ(controller().GetEntryCount(), 2);
-  EXPECT_EQ(controller().GetLastCommittedEntryIndex(), 1);
-  EXPECT_EQ(controller().GetPendingEntryIndex(), 0);
-  EXPECT_TRUE(controller().GetLastCommittedEntry());
-  EXPECT_TRUE(controller().GetPendingEntry());
-  EXPECT_FALSE(controller().CanGoBack());
-  EXPECT_TRUE(controller().CanGoForward());
+  EXPECT_EQ(controller.GetEntryCount(), 2);
+  EXPECT_EQ(controller.GetLastCommittedEntryIndex(), 1);
+  EXPECT_EQ(controller.GetPendingEntryIndex(), 0);
+  EXPECT_TRUE(controller.GetLastCommittedEntry());
+  EXPECT_TRUE(controller.GetPendingEntry());
+  EXPECT_FALSE(controller.CanGoBack());
+  EXPECT_TRUE(controller.CanGoForward());
 
   rvh()->SendNavigate(2, url3);
   EXPECT_TRUE(notifications.Check1AndReset(
@@ -675,19 +695,20 @@ TEST_F(NavigationControllerTest, Back_GeneratesNewPage) {
 
   // The back navigation resulted in a completely new navigation.
   // TODO(darin): perhaps this behavior will be confusing to users?
-  EXPECT_EQ(controller().GetEntryCount(), 3);
-  EXPECT_EQ(controller().GetLastCommittedEntryIndex(), 2);
-  EXPECT_EQ(controller().GetPendingEntryIndex(), -1);
-  EXPECT_TRUE(controller().GetLastCommittedEntry());
-  EXPECT_FALSE(controller().GetPendingEntry());
-  EXPECT_TRUE(controller().CanGoBack());
-  EXPECT_FALSE(controller().CanGoForward());
+  EXPECT_EQ(controller.GetEntryCount(), 3);
+  EXPECT_EQ(controller.GetLastCommittedEntryIndex(), 2);
+  EXPECT_EQ(controller.GetPendingEntryIndex(), -1);
+  EXPECT_TRUE(controller.GetLastCommittedEntry());
+  EXPECT_FALSE(controller.GetPendingEntry());
+  EXPECT_TRUE(controller.CanGoBack());
+  EXPECT_FALSE(controller.CanGoForward());
 }
 
 // Receives a back message when there is a new pending navigation entry.
 TEST_F(NavigationControllerTest, Back_NewPending) {
+  NavigationControllerImpl& controller = controller_impl();
   TestNotificationTracker notifications;
-  RegisterForAllNavNotifications(&notifications, &controller());
+  RegisterForAllNavNotifications(&notifications, &controller);
 
   const GURL kUrl1("http://foo1");
   const GURL kUrl2("http://foo2");
@@ -698,28 +719,29 @@ TEST_F(NavigationControllerTest, Back_NewPending) {
   EXPECT_TRUE(notifications.Check1AndReset(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED));
 
-  // controller().LoadURL(kUrl2, content::PAGE_TRANSITION_TYPED);
+  // controller.LoadURL(kUrl2, content::PAGE_TRANSITION_TYPED);
   rvh()->SendNavigate(1, kUrl2);
   EXPECT_TRUE(notifications.Check1AndReset(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED));
 
   // Now start a new pending navigation and go back before it commits.
-  controller().LoadURL(
+  controller.LoadURL(
       kUrl3, content::Referrer(), content::PAGE_TRANSITION_TYPED,
       std::string());
-  EXPECT_EQ(-1, controller().GetPendingEntryIndex());
-  EXPECT_EQ(kUrl3, controller().GetPendingEntry()->GetURL());
-  controller().GoBack();
+  EXPECT_EQ(-1, controller.GetPendingEntryIndex());
+  EXPECT_EQ(kUrl3, controller.GetPendingEntry()->GetURL());
+  controller.GoBack();
 
   // The pending navigation should now be the "back" item and the new one
   // should be gone.
-  EXPECT_EQ(0, controller().GetPendingEntryIndex());
-  EXPECT_EQ(kUrl1, controller().GetPendingEntry()->GetURL());
+  EXPECT_EQ(0, controller.GetPendingEntryIndex());
+  EXPECT_EQ(kUrl1, controller.GetPendingEntry()->GetURL());
 }
 
 // Receives a back message when there is a different renavigation already
 // pending.
 TEST_F(NavigationControllerTest, Back_OtherBackPending) {
+  NavigationControllerImpl& controller = controller_impl();
   const GURL kUrl1("http://foo/1");
   const GURL kUrl2("http://foo/2");
   const GURL kUrl3("http://foo/3");
@@ -735,39 +757,40 @@ TEST_F(NavigationControllerTest, Back_OtherBackPending) {
   // We know all the entries have the same site instance, so we can just grab
   // a random one for looking up other entries.
   SiteInstance* site_instance = NavigationEntryImpl::FromNavigationEntry(
-      controller().GetLastCommittedEntry())->site_instance();
+      controller.GetLastCommittedEntry())->site_instance();
 
   // That second URL should be the last committed and it should have gotten the
   // new title.
-  EXPECT_EQ(kUrl2, controller().GetEntryWithPageID(site_instance, 1)->GetURL());
-  EXPECT_EQ(1, controller().GetLastCommittedEntryIndex());
-  EXPECT_EQ(-1, controller().GetPendingEntryIndex());
+  EXPECT_EQ(kUrl2, controller.GetEntryWithPageID(site_instance, 1)->GetURL());
+  EXPECT_EQ(1, controller.GetLastCommittedEntryIndex());
+  EXPECT_EQ(-1, controller.GetPendingEntryIndex());
 
   // Now go forward to the last item again and say it was committed.
-  controller().GoForward();
+  controller.GoForward();
   rvh()->SendNavigate(2, kUrl3);
 
   // Now start going back one to the second page. It will be pending.
-  controller().GoBack();
-  EXPECT_EQ(1, controller().GetPendingEntryIndex());
-  EXPECT_EQ(2, controller().GetLastCommittedEntryIndex());
+  controller.GoBack();
+  EXPECT_EQ(1, controller.GetPendingEntryIndex());
+  EXPECT_EQ(2, controller.GetLastCommittedEntryIndex());
 
   // Not synthesize a totally new back event to the first page. This will not
   // match the pending one.
   rvh()->SendNavigate(0, kUrl1);
 
   // The committed navigation should clear the pending entry.
-  EXPECT_EQ(-1, controller().GetPendingEntryIndex());
+  EXPECT_EQ(-1, controller.GetPendingEntryIndex());
 
   // But the navigated entry should be the last committed.
-  EXPECT_EQ(0, controller().GetLastCommittedEntryIndex());
-  EXPECT_EQ(kUrl1, controller().GetLastCommittedEntry()->GetURL());
+  EXPECT_EQ(0, controller.GetLastCommittedEntryIndex());
+  EXPECT_EQ(kUrl1, controller.GetLastCommittedEntry()->GetURL());
 }
 
 // Tests what happens when we navigate forward successfully.
 TEST_F(NavigationControllerTest, Forward) {
+  NavigationControllerImpl& controller = controller_impl();
   TestNotificationTracker notifications;
-  RegisterForAllNavNotifications(&notifications, &controller());
+  RegisterForAllNavNotifications(&notifications, &controller);
 
   const GURL url1("http://foo1");
   const GURL url2("http://foo2");
@@ -780,40 +803,41 @@ TEST_F(NavigationControllerTest, Forward) {
   EXPECT_TRUE(notifications.Check1AndReset(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED));
 
-  controller().GoBack();
+  controller.GoBack();
   rvh()->SendNavigate(0, url1);
   EXPECT_TRUE(notifications.Check1AndReset(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED));
 
-  controller().GoForward();
+  controller.GoForward();
 
   // We should now have a pending navigation to go forward.
-  EXPECT_EQ(controller().GetEntryCount(), 2);
-  EXPECT_EQ(controller().GetLastCommittedEntryIndex(), 0);
-  EXPECT_EQ(controller().GetPendingEntryIndex(), 1);
-  EXPECT_TRUE(controller().GetLastCommittedEntry());
-  EXPECT_TRUE(controller().GetPendingEntry());
-  EXPECT_TRUE(controller().CanGoBack());
-  EXPECT_FALSE(controller().CanGoForward());
+  EXPECT_EQ(controller.GetEntryCount(), 2);
+  EXPECT_EQ(controller.GetLastCommittedEntryIndex(), 0);
+  EXPECT_EQ(controller.GetPendingEntryIndex(), 1);
+  EXPECT_TRUE(controller.GetLastCommittedEntry());
+  EXPECT_TRUE(controller.GetPendingEntry());
+  EXPECT_TRUE(controller.CanGoBack());
+  EXPECT_FALSE(controller.CanGoForward());
 
   rvh()->SendNavigate(1, url2);
   EXPECT_TRUE(notifications.Check1AndReset(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED));
 
   // The forward navigation completed successfully.
-  EXPECT_EQ(controller().GetEntryCount(), 2);
-  EXPECT_EQ(controller().GetLastCommittedEntryIndex(), 1);
-  EXPECT_EQ(controller().GetPendingEntryIndex(), -1);
-  EXPECT_TRUE(controller().GetLastCommittedEntry());
-  EXPECT_FALSE(controller().GetPendingEntry());
-  EXPECT_TRUE(controller().CanGoBack());
-  EXPECT_FALSE(controller().CanGoForward());
+  EXPECT_EQ(controller.GetEntryCount(), 2);
+  EXPECT_EQ(controller.GetLastCommittedEntryIndex(), 1);
+  EXPECT_EQ(controller.GetPendingEntryIndex(), -1);
+  EXPECT_TRUE(controller.GetLastCommittedEntry());
+  EXPECT_FALSE(controller.GetPendingEntry());
+  EXPECT_TRUE(controller.CanGoBack());
+  EXPECT_FALSE(controller.CanGoForward());
 }
 
 // Tests what happens when a forward navigation produces a new page.
 TEST_F(NavigationControllerTest, Forward_GeneratesNewPage) {
+  NavigationControllerImpl& controller = controller_impl();
   TestNotificationTracker notifications;
-  RegisterForAllNavNotifications(&notifications, &controller());
+  RegisterForAllNavNotifications(&notifications, &controller);
 
   const GURL url1("http://foo1");
   const GURL url2("http://foo2");
@@ -826,48 +850,49 @@ TEST_F(NavigationControllerTest, Forward_GeneratesNewPage) {
   EXPECT_TRUE(notifications.Check1AndReset(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED));
 
-  controller().GoBack();
+  controller.GoBack();
   rvh()->SendNavigate(0, url1);
   EXPECT_TRUE(notifications.Check1AndReset(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED));
 
-  controller().GoForward();
+  controller.GoForward();
   EXPECT_EQ(0U, notifications.size());
 
   // Should now have a pending navigation to go forward.
-  EXPECT_EQ(controller().GetEntryCount(), 2);
-  EXPECT_EQ(controller().GetLastCommittedEntryIndex(), 0);
-  EXPECT_EQ(controller().GetPendingEntryIndex(), 1);
-  EXPECT_TRUE(controller().GetLastCommittedEntry());
-  EXPECT_TRUE(controller().GetPendingEntry());
-  EXPECT_TRUE(controller().CanGoBack());
-  EXPECT_FALSE(controller().CanGoForward());
+  EXPECT_EQ(controller.GetEntryCount(), 2);
+  EXPECT_EQ(controller.GetLastCommittedEntryIndex(), 0);
+  EXPECT_EQ(controller.GetPendingEntryIndex(), 1);
+  EXPECT_TRUE(controller.GetLastCommittedEntry());
+  EXPECT_TRUE(controller.GetPendingEntry());
+  EXPECT_TRUE(controller.CanGoBack());
+  EXPECT_FALSE(controller.CanGoForward());
 
   rvh()->SendNavigate(2, url3);
   EXPECT_TRUE(notifications.Check2AndReset(
       content::NOTIFICATION_NAV_LIST_PRUNED,
       content::NOTIFICATION_NAV_ENTRY_COMMITTED));
 
-  EXPECT_EQ(controller().GetEntryCount(), 2);
-  EXPECT_EQ(controller().GetLastCommittedEntryIndex(), 1);
-  EXPECT_EQ(controller().GetPendingEntryIndex(), -1);
-  EXPECT_TRUE(controller().GetLastCommittedEntry());
-  EXPECT_FALSE(controller().GetPendingEntry());
-  EXPECT_TRUE(controller().CanGoBack());
-  EXPECT_FALSE(controller().CanGoForward());
+  EXPECT_EQ(controller.GetEntryCount(), 2);
+  EXPECT_EQ(controller.GetLastCommittedEntryIndex(), 1);
+  EXPECT_EQ(controller.GetPendingEntryIndex(), -1);
+  EXPECT_TRUE(controller.GetLastCommittedEntry());
+  EXPECT_FALSE(controller.GetPendingEntry());
+  EXPECT_TRUE(controller.CanGoBack());
+  EXPECT_FALSE(controller.CanGoForward());
 }
 
 // Two consequent navigation for the same URL entered in should be considered
 // as SAME_PAGE navigation even when we are redirected to some other page.
 TEST_F(NavigationControllerTest, Redirect) {
+  NavigationControllerImpl& controller = controller_impl();
   TestNotificationTracker notifications;
-  RegisterForAllNavNotifications(&notifications, &controller());
+  RegisterForAllNavNotifications(&notifications, &controller);
 
   const GURL url1("http://foo1");
   const GURL url2("http://foo2");  // Redirection target
 
   // First request
-  controller().LoadURL(
+  controller.LoadURL(
       url1, content::Referrer(), content::PAGE_TRANSITION_TYPED, std::string());
 
   EXPECT_EQ(0U, notifications.size());
@@ -876,12 +901,12 @@ TEST_F(NavigationControllerTest, Redirect) {
       content::NOTIFICATION_NAV_ENTRY_COMMITTED));
 
   // Second request
-  controller().LoadURL(
+  controller.LoadURL(
       url1, content::Referrer(), content::PAGE_TRANSITION_TYPED, std::string());
 
-  EXPECT_TRUE(controller().GetPendingEntry());
-  EXPECT_EQ(controller().GetPendingEntryIndex(), -1);
-  EXPECT_EQ(url1, controller().GetActiveEntry()->GetURL());
+  EXPECT_TRUE(controller.GetPendingEntry());
+  EXPECT_EQ(controller.GetPendingEntryIndex(), -1);
+  EXPECT_EQ(url1, controller.GetActiveEntry()->GetURL());
 
   ViewHostMsg_FrameNavigate_Params params;
   params.page_id = 0;
@@ -897,36 +922,37 @@ TEST_F(NavigationControllerTest, Redirect) {
   content::LoadCommittedDetails details;
 
   EXPECT_EQ(0U, notifications.size());
-  EXPECT_TRUE(controller().RendererDidNavigate(params, &details));
+  EXPECT_TRUE(controller.RendererDidNavigate(params, &details));
   EXPECT_TRUE(notifications.Check1AndReset(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED));
 
   EXPECT_TRUE(details.type == content::NAVIGATION_TYPE_SAME_PAGE);
-  EXPECT_EQ(controller().GetEntryCount(), 1);
-  EXPECT_EQ(controller().GetLastCommittedEntryIndex(), 0);
-  EXPECT_TRUE(controller().GetLastCommittedEntry());
-  EXPECT_EQ(controller().GetPendingEntryIndex(), -1);
-  EXPECT_FALSE(controller().GetPendingEntry());
-  EXPECT_EQ(url2, controller().GetActiveEntry()->GetURL());
+  EXPECT_EQ(controller.GetEntryCount(), 1);
+  EXPECT_EQ(controller.GetLastCommittedEntryIndex(), 0);
+  EXPECT_TRUE(controller.GetLastCommittedEntry());
+  EXPECT_EQ(controller.GetPendingEntryIndex(), -1);
+  EXPECT_FALSE(controller.GetPendingEntry());
+  EXPECT_EQ(url2, controller.GetActiveEntry()->GetURL());
 
-  EXPECT_FALSE(controller().CanGoBack());
-  EXPECT_FALSE(controller().CanGoForward());
+  EXPECT_FALSE(controller.CanGoBack());
+  EXPECT_FALSE(controller.CanGoForward());
 }
 
 // Similar to Redirect above, but the first URL is requested by POST,
 // the second URL is requested by GET. NavigationEntry::has_post_data_
 // must be cleared. http://crbug.com/21245
 TEST_F(NavigationControllerTest, PostThenRedirect) {
+  NavigationControllerImpl& controller = controller_impl();
   TestNotificationTracker notifications;
-  RegisterForAllNavNotifications(&notifications, &controller());
+  RegisterForAllNavNotifications(&notifications, &controller);
 
   const GURL url1("http://foo1");
   const GURL url2("http://foo2");  // Redirection target
 
   // First request as POST
-  controller().LoadURL(
+  controller.LoadURL(
       url1, content::Referrer(), content::PAGE_TRANSITION_TYPED, std::string());
-  controller().GetActiveEntry()->SetHasPostData(true);
+  controller.GetActiveEntry()->SetHasPostData(true);
 
   EXPECT_EQ(0U, notifications.size());
   rvh()->SendNavigate(0, url2);
@@ -934,12 +960,12 @@ TEST_F(NavigationControllerTest, PostThenRedirect) {
       content::NOTIFICATION_NAV_ENTRY_COMMITTED));
 
   // Second request
-  controller().LoadURL(
+  controller.LoadURL(
       url1, content::Referrer(), content::PAGE_TRANSITION_TYPED, std::string());
 
-  EXPECT_TRUE(controller().GetPendingEntry());
-  EXPECT_EQ(controller().GetPendingEntryIndex(), -1);
-  EXPECT_EQ(url1, controller().GetActiveEntry()->GetURL());
+  EXPECT_TRUE(controller.GetPendingEntry());
+  EXPECT_EQ(controller.GetPendingEntryIndex(), -1);
+  EXPECT_EQ(url1, controller.GetActiveEntry()->GetURL());
 
   ViewHostMsg_FrameNavigate_Params params;
   params.page_id = 0;
@@ -955,38 +981,39 @@ TEST_F(NavigationControllerTest, PostThenRedirect) {
   content::LoadCommittedDetails details;
 
   EXPECT_EQ(0U, notifications.size());
-  EXPECT_TRUE(controller().RendererDidNavigate(params, &details));
+  EXPECT_TRUE(controller.RendererDidNavigate(params, &details));
   EXPECT_TRUE(notifications.Check1AndReset(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED));
 
   EXPECT_TRUE(details.type == content::NAVIGATION_TYPE_SAME_PAGE);
-  EXPECT_EQ(controller().GetEntryCount(), 1);
-  EXPECT_EQ(controller().GetLastCommittedEntryIndex(), 0);
-  EXPECT_TRUE(controller().GetLastCommittedEntry());
-  EXPECT_EQ(controller().GetPendingEntryIndex(), -1);
-  EXPECT_FALSE(controller().GetPendingEntry());
-  EXPECT_EQ(url2, controller().GetActiveEntry()->GetURL());
-  EXPECT_FALSE(controller().GetActiveEntry()->GetHasPostData());
+  EXPECT_EQ(controller.GetEntryCount(), 1);
+  EXPECT_EQ(controller.GetLastCommittedEntryIndex(), 0);
+  EXPECT_TRUE(controller.GetLastCommittedEntry());
+  EXPECT_EQ(controller.GetPendingEntryIndex(), -1);
+  EXPECT_FALSE(controller.GetPendingEntry());
+  EXPECT_EQ(url2, controller.GetActiveEntry()->GetURL());
+  EXPECT_FALSE(controller.GetActiveEntry()->GetHasPostData());
 
-  EXPECT_FALSE(controller().CanGoBack());
-  EXPECT_FALSE(controller().CanGoForward());
+  EXPECT_FALSE(controller.CanGoBack());
+  EXPECT_FALSE(controller.CanGoForward());
 }
 
 // A redirect right off the bat should be a NEW_PAGE.
 TEST_F(NavigationControllerTest, ImmediateRedirect) {
+  NavigationControllerImpl& controller = controller_impl();
   TestNotificationTracker notifications;
-  RegisterForAllNavNotifications(&notifications, &controller());
+  RegisterForAllNavNotifications(&notifications, &controller);
 
   const GURL url1("http://foo1");
   const GURL url2("http://foo2");  // Redirection target
 
   // First request
-  controller().LoadURL(
+  controller.LoadURL(
       url1, content::Referrer(), content::PAGE_TRANSITION_TYPED, std::string());
 
-  EXPECT_TRUE(controller().GetPendingEntry());
-  EXPECT_EQ(controller().GetPendingEntryIndex(), -1);
-  EXPECT_EQ(url1, controller().GetActiveEntry()->GetURL());
+  EXPECT_TRUE(controller.GetPendingEntry());
+  EXPECT_EQ(controller.GetPendingEntryIndex(), -1);
+  EXPECT_EQ(url1, controller.GetActiveEntry()->GetURL());
 
   ViewHostMsg_FrameNavigate_Params params;
   params.page_id = 0;
@@ -1002,27 +1029,28 @@ TEST_F(NavigationControllerTest, ImmediateRedirect) {
   content::LoadCommittedDetails details;
 
   EXPECT_EQ(0U, notifications.size());
-  EXPECT_TRUE(controller().RendererDidNavigate(params, &details));
+  EXPECT_TRUE(controller.RendererDidNavigate(params, &details));
   EXPECT_TRUE(notifications.Check1AndReset(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED));
 
   EXPECT_TRUE(details.type == content::NAVIGATION_TYPE_NEW_PAGE);
-  EXPECT_EQ(controller().GetEntryCount(), 1);
-  EXPECT_EQ(controller().GetLastCommittedEntryIndex(), 0);
-  EXPECT_TRUE(controller().GetLastCommittedEntry());
-  EXPECT_EQ(controller().GetPendingEntryIndex(), -1);
-  EXPECT_FALSE(controller().GetPendingEntry());
-  EXPECT_EQ(url2, controller().GetActiveEntry()->GetURL());
+  EXPECT_EQ(controller.GetEntryCount(), 1);
+  EXPECT_EQ(controller.GetLastCommittedEntryIndex(), 0);
+  EXPECT_TRUE(controller.GetLastCommittedEntry());
+  EXPECT_EQ(controller.GetPendingEntryIndex(), -1);
+  EXPECT_FALSE(controller.GetPendingEntry());
+  EXPECT_EQ(url2, controller.GetActiveEntry()->GetURL());
 
-  EXPECT_FALSE(controller().CanGoBack());
-  EXPECT_FALSE(controller().CanGoForward());
+  EXPECT_FALSE(controller.CanGoBack());
+  EXPECT_FALSE(controller.CanGoForward());
 }
 
 // Tests navigation via link click within a subframe. A new navigation entry
 // should be created.
 TEST_F(NavigationControllerTest, NewSubframe) {
+  NavigationControllerImpl& controller = controller_impl();
   TestNotificationTracker notifications;
-  RegisterForAllNavNotifications(&notifications, &controller());
+  RegisterForAllNavNotifications(&notifications, &controller);
 
   const GURL url1("http://foo1");
   rvh()->SendNavigate(0, url1);
@@ -1040,7 +1068,7 @@ TEST_F(NavigationControllerTest, NewSubframe) {
   params.content_state = webkit_glue::CreateHistoryStateForURL(GURL(url2));
 
   content::LoadCommittedDetails details;
-  EXPECT_TRUE(controller().RendererDidNavigate(params, &details));
+  EXPECT_TRUE(controller.RendererDidNavigate(params, &details));
   EXPECT_TRUE(notifications.Check1AndReset(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED));
   EXPECT_EQ(url1, details.previous_url);
@@ -1048,7 +1076,7 @@ TEST_F(NavigationControllerTest, NewSubframe) {
   EXPECT_FALSE(details.is_main_frame);
 
   // The new entry should be appended.
-  EXPECT_EQ(2, controller().GetEntryCount());
+  EXPECT_EQ(2, controller.GetEntryCount());
 
   // New entry should refer to the new page, but the old URL (entries only
   // reflect the toplevel URL).
@@ -1060,8 +1088,9 @@ TEST_F(NavigationControllerTest, NewSubframe) {
 // subframe navigation without having any committed entry. Such navigations
 // just get thrown on the ground, but we shouldn't crash.
 TEST_F(NavigationControllerTest, SubframeOnEmptyPage) {
+  NavigationControllerImpl& controller = controller_impl();
   TestNotificationTracker notifications;
-  RegisterForAllNavNotifications(&notifications, &controller());
+  RegisterForAllNavNotifications(&notifications, &controller);
 
   // Navigation controller currently has no entries.
   const GURL url("http://foo2");
@@ -1075,15 +1104,16 @@ TEST_F(NavigationControllerTest, SubframeOnEmptyPage) {
   params.content_state = webkit_glue::CreateHistoryStateForURL(GURL(url));
 
   content::LoadCommittedDetails details;
-  EXPECT_FALSE(controller().RendererDidNavigate(params, &details));
+  EXPECT_FALSE(controller.RendererDidNavigate(params, &details));
   EXPECT_EQ(0U, notifications.size());
 }
 
 // Auto subframes are ones the page loads automatically like ads. They should
 // not create new navigation entries.
 TEST_F(NavigationControllerTest, AutoSubframe) {
+  NavigationControllerImpl& controller = controller_impl();
   TestNotificationTracker notifications;
-  RegisterForAllNavNotifications(&notifications, &controller());
+  RegisterForAllNavNotifications(&notifications, &controller);
 
   const GURL url1("http://foo1");
   rvh()->SendNavigate(0, url1);
@@ -1102,17 +1132,18 @@ TEST_F(NavigationControllerTest, AutoSubframe) {
 
   // Navigating should do nothing.
   content::LoadCommittedDetails details;
-  EXPECT_FALSE(controller().RendererDidNavigate(params, &details));
+  EXPECT_FALSE(controller.RendererDidNavigate(params, &details));
   EXPECT_EQ(0U, notifications.size());
 
   // There should still be only one entry.
-  EXPECT_EQ(1, controller().GetEntryCount());
+  EXPECT_EQ(1, controller.GetEntryCount());
 }
 
 // Tests navigation and then going back to a subframe navigation.
 TEST_F(NavigationControllerTest, BackSubframe) {
+  NavigationControllerImpl& controller = controller_impl();
   TestNotificationTracker notifications;
-  RegisterForAllNavNotifications(&notifications, &controller());
+  RegisterForAllNavNotifications(&notifications, &controller);
 
   // Main page.
   const GURL url1("http://foo1");
@@ -1133,45 +1164,46 @@ TEST_F(NavigationControllerTest, BackSubframe) {
 
   // This should generate a new entry.
   content::LoadCommittedDetails details;
-  EXPECT_TRUE(controller().RendererDidNavigate(params, &details));
+  EXPECT_TRUE(controller.RendererDidNavigate(params, &details));
   EXPECT_TRUE(notifications.Check1AndReset(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED));
-  EXPECT_EQ(2, controller().GetEntryCount());
+  EXPECT_EQ(2, controller.GetEntryCount());
 
   // Second manual subframe navigation should also make a new entry.
   const GURL url3("http://foo3");
   params.page_id = 2;
   params.url = url3;
-  EXPECT_TRUE(controller().RendererDidNavigate(params, &details));
+  EXPECT_TRUE(controller.RendererDidNavigate(params, &details));
   EXPECT_TRUE(notifications.Check1AndReset(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED));
-  EXPECT_EQ(3, controller().GetEntryCount());
-  EXPECT_EQ(2, controller().GetCurrentEntryIndex());
+  EXPECT_EQ(3, controller.GetEntryCount());
+  EXPECT_EQ(2, controller.GetCurrentEntryIndex());
 
   // Go back one.
-  controller().GoBack();
+  controller.GoBack();
   params.url = url2;
   params.page_id = 1;
-  EXPECT_TRUE(controller().RendererDidNavigate(params, &details));
+  EXPECT_TRUE(controller.RendererDidNavigate(params, &details));
   EXPECT_TRUE(notifications.Check1AndReset(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED));
-  EXPECT_EQ(3, controller().GetEntryCount());
-  EXPECT_EQ(1, controller().GetCurrentEntryIndex());
+  EXPECT_EQ(3, controller.GetEntryCount());
+  EXPECT_EQ(1, controller.GetCurrentEntryIndex());
 
   // Go back one more.
-  controller().GoBack();
+  controller.GoBack();
   params.url = url1;
   params.page_id = 0;
-  EXPECT_TRUE(controller().RendererDidNavigate(params, &details));
+  EXPECT_TRUE(controller.RendererDidNavigate(params, &details));
   EXPECT_TRUE(notifications.Check1AndReset(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED));
-  EXPECT_EQ(3, controller().GetEntryCount());
-  EXPECT_EQ(0, controller().GetCurrentEntryIndex());
+  EXPECT_EQ(3, controller.GetEntryCount());
+  EXPECT_EQ(0, controller.GetCurrentEntryIndex());
 }
 
 TEST_F(NavigationControllerTest, LinkClick) {
+  NavigationControllerImpl& controller = controller_impl();
   TestNotificationTracker notifications;
-  RegisterForAllNavNotifications(&notifications, &controller());
+  RegisterForAllNavNotifications(&notifications, &controller);
 
   const GURL url1("http://foo1");
   const GURL url2("http://foo2");
@@ -1185,18 +1217,19 @@ TEST_F(NavigationControllerTest, LinkClick) {
       content::NOTIFICATION_NAV_ENTRY_COMMITTED));
 
   // Should not have produced a new session history entry.
-  EXPECT_EQ(controller().GetEntryCount(), 2);
-  EXPECT_EQ(controller().GetLastCommittedEntryIndex(), 1);
-  EXPECT_EQ(controller().GetPendingEntryIndex(), -1);
-  EXPECT_TRUE(controller().GetLastCommittedEntry());
-  EXPECT_FALSE(controller().GetPendingEntry());
-  EXPECT_TRUE(controller().CanGoBack());
-  EXPECT_FALSE(controller().CanGoForward());
+  EXPECT_EQ(controller.GetEntryCount(), 2);
+  EXPECT_EQ(controller.GetLastCommittedEntryIndex(), 1);
+  EXPECT_EQ(controller.GetPendingEntryIndex(), -1);
+  EXPECT_TRUE(controller.GetLastCommittedEntry());
+  EXPECT_FALSE(controller.GetPendingEntry());
+  EXPECT_TRUE(controller.CanGoBack());
+  EXPECT_FALSE(controller.CanGoForward());
 }
 
 TEST_F(NavigationControllerTest, InPage) {
+  NavigationControllerImpl& controller = controller_impl();
   TestNotificationTracker notifications;
-  RegisterForAllNavNotifications(&notifications, &controller());
+  RegisterForAllNavNotifications(&notifications, &controller);
 
   // Main page.
   const GURL url1("http://foo");
@@ -1217,67 +1250,68 @@ TEST_F(NavigationControllerTest, InPage) {
 
   // This should generate a new entry.
   content::LoadCommittedDetails details;
-  EXPECT_TRUE(controller().RendererDidNavigate(params, &details));
+  EXPECT_TRUE(controller.RendererDidNavigate(params, &details));
   EXPECT_TRUE(notifications.Check1AndReset(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED));
   EXPECT_TRUE(details.is_in_page);
   EXPECT_FALSE(details.did_replace_entry);
-  EXPECT_EQ(2, controller().GetEntryCount());
+  EXPECT_EQ(2, controller.GetEntryCount());
 
   // Go back one.
   ViewHostMsg_FrameNavigate_Params back_params(params);
-  controller().GoBack();
+  controller.GoBack();
   back_params.url = url1;
   back_params.page_id = 0;
-  EXPECT_TRUE(controller().RendererDidNavigate(back_params, &details));
+  EXPECT_TRUE(controller.RendererDidNavigate(back_params, &details));
   EXPECT_TRUE(notifications.Check1AndReset(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED));
   // is_in_page is false in that case but should be true.
   // See comment in AreURLsInPageNavigation() in navigation_controller.cc
   // EXPECT_TRUE(details.is_in_page);
-  EXPECT_EQ(2, controller().GetEntryCount());
-  EXPECT_EQ(0, controller().GetCurrentEntryIndex());
-  EXPECT_EQ(back_params.url, controller().GetActiveEntry()->GetURL());
+  EXPECT_EQ(2, controller.GetEntryCount());
+  EXPECT_EQ(0, controller.GetCurrentEntryIndex());
+  EXPECT_EQ(back_params.url, controller.GetActiveEntry()->GetURL());
 
   // Go forward
   ViewHostMsg_FrameNavigate_Params forward_params(params);
-  controller().GoForward();
+  controller.GoForward();
   forward_params.url = url2;
   forward_params.page_id = 1;
-  EXPECT_TRUE(controller().RendererDidNavigate(forward_params, &details));
+  EXPECT_TRUE(controller.RendererDidNavigate(forward_params, &details));
   EXPECT_TRUE(notifications.Check1AndReset(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED));
   EXPECT_TRUE(details.is_in_page);
-  EXPECT_EQ(2, controller().GetEntryCount());
-  EXPECT_EQ(1, controller().GetCurrentEntryIndex());
+  EXPECT_EQ(2, controller.GetEntryCount());
+  EXPECT_EQ(1, controller.GetCurrentEntryIndex());
   EXPECT_EQ(forward_params.url,
-            controller().GetActiveEntry()->GetURL());
+            controller.GetActiveEntry()->GetURL());
 
   // Now go back and forward again. This is to work around a bug where we would
   // compare the incoming URL with the last committed entry rather than the
   // one identified by an existing page ID. This would result in the second URL
   // losing the reference fragment when you navigate away from it and then back.
-  controller().GoBack();
-  EXPECT_TRUE(controller().RendererDidNavigate(back_params, &details));
-  controller().GoForward();
-  EXPECT_TRUE(controller().RendererDidNavigate(forward_params, &details));
+  controller.GoBack();
+  EXPECT_TRUE(controller.RendererDidNavigate(back_params, &details));
+  controller.GoForward();
+  EXPECT_TRUE(controller.RendererDidNavigate(forward_params, &details));
   EXPECT_EQ(forward_params.url,
-            controller().GetActiveEntry()->GetURL());
+            controller.GetActiveEntry()->GetURL());
 
   // Finally, navigate to an unrelated URL to make sure in_page is not sticky.
   const GURL url3("http://bar");
   params.page_id = 2;
   params.url = url3;
   notifications.Reset();
-  EXPECT_TRUE(controller().RendererDidNavigate(params, &details));
+  EXPECT_TRUE(controller.RendererDidNavigate(params, &details));
   EXPECT_TRUE(notifications.Check1AndReset(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED));
   EXPECT_FALSE(details.is_in_page);
 }
 
 TEST_F(NavigationControllerTest, InPage_Replace) {
+  NavigationControllerImpl& controller = controller_impl();
   TestNotificationTracker notifications;
-  RegisterForAllNavNotifications(&notifications, &controller());
+  RegisterForAllNavNotifications(&notifications, &controller);
 
   // Main page.
   const GURL url1("http://foo");
@@ -1298,12 +1332,12 @@ TEST_F(NavigationControllerTest, InPage_Replace) {
 
   // This should NOT generate a new entry, nor prune the list.
   content::LoadCommittedDetails details;
-  EXPECT_TRUE(controller().RendererDidNavigate(params, &details));
+  EXPECT_TRUE(controller.RendererDidNavigate(params, &details));
   EXPECT_TRUE(notifications.Check1AndReset(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED));
   EXPECT_TRUE(details.is_in_page);
   EXPECT_TRUE(details.did_replace_entry);
-  EXPECT_EQ(1, controller().GetEntryCount());
+  EXPECT_EQ(1, controller.GetEntryCount());
 }
 
 // Tests for http://crbug.com/40395
@@ -1313,8 +1347,9 @@ TEST_F(NavigationControllerTest, InPage_Replace) {
 //     window.location='http://foo3/';
 //   </script>
 TEST_F(NavigationControllerTest, ClientRedirectAfterInPageNavigation) {
+  NavigationControllerImpl& controller = controller_impl();
   TestNotificationTracker notifications;
-  RegisterForAllNavNotifications(&notifications, &controller());
+  RegisterForAllNavNotifications(&notifications, &controller);
 
   // Load an initial page.
   {
@@ -1328,7 +1363,7 @@ TEST_F(NavigationControllerTest, ClientRedirectAfterInPageNavigation) {
   {
     const GURL url("http://foo2/");
     rvh()->SendNavigate(1, url);
-    controller().DocumentLoadedInFrame();
+    controller.DocumentLoadedInFrame();
     EXPECT_TRUE(notifications.Check1AndReset(
         content::NOTIFICATION_NAV_ENTRY_COMMITTED));
   }
@@ -1348,12 +1383,12 @@ TEST_F(NavigationControllerTest, ClientRedirectAfterInPageNavigation) {
 
     // This should NOT generate a new entry, nor prune the list.
     content::LoadCommittedDetails details;
-    EXPECT_TRUE(controller().RendererDidNavigate(params, &details));
+    EXPECT_TRUE(controller.RendererDidNavigate(params, &details));
     EXPECT_TRUE(notifications.Check1AndReset(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED));
     EXPECT_TRUE(details.is_in_page);
     EXPECT_TRUE(details.did_replace_entry);
-    EXPECT_EQ(2, controller().GetEntryCount());
+    EXPECT_EQ(2, controller.GetEntryCount());
   }
 
   // Perform a client redirect to a new page.
@@ -1372,21 +1407,21 @@ TEST_F(NavigationControllerTest, ClientRedirectAfterInPageNavigation) {
 
     // This SHOULD generate a new entry.
     content::LoadCommittedDetails details;
-    EXPECT_TRUE(controller().RendererDidNavigate(params, &details));
+    EXPECT_TRUE(controller.RendererDidNavigate(params, &details));
     EXPECT_TRUE(notifications.Check1AndReset(
         content::NOTIFICATION_NAV_ENTRY_COMMITTED));
     EXPECT_FALSE(details.is_in_page);
-    EXPECT_EQ(3, controller().GetEntryCount());
+    EXPECT_EQ(3, controller.GetEntryCount());
   }
 
   // Verify that BACK brings us back to http://foo2/.
   {
     const GURL url("http://foo2/");
-    controller().GoBack();
+    controller.GoBack();
     rvh()->SendNavigate(1, url);
     EXPECT_TRUE(notifications.Check1AndReset(
         content::NOTIFICATION_NAV_ENTRY_COMMITTED));
-    EXPECT_EQ(url, controller().GetActiveEntry()->GetURL());
+    EXPECT_EQ(url, controller.GetActiveEntry()->GetURL());
   }
 }
 
@@ -1423,6 +1458,7 @@ class PrunedListener : public content::NotificationObserver {
 
 // Tests that we limit the number of navigation entries created correctly.
 TEST_F(NavigationControllerTest, EnforceMaxNavigationCount) {
+  NavigationControllerImpl& controller = controller_impl();
   size_t original_count = NavigationControllerImpl::max_entry_count();
   const int kMaxEntryCount = 5;
 
@@ -1432,20 +1468,20 @@ TEST_F(NavigationControllerTest, EnforceMaxNavigationCount) {
   // Load up to the max count, all entries should be there.
   for (url_index = 0; url_index < kMaxEntryCount; url_index++) {
     GURL url(StringPrintf("http://www.a.com/%d", url_index));
-    controller().LoadURL(
+    controller.LoadURL(
         url, content::Referrer(), content::PAGE_TRANSITION_TYPED,
         std::string());
     rvh()->SendNavigate(url_index, url);
   }
 
-  EXPECT_EQ(controller().GetEntryCount(), kMaxEntryCount);
+  EXPECT_EQ(controller.GetEntryCount(), kMaxEntryCount);
 
   // Created a PrunedListener to observe prune notifications.
-  PrunedListener listener(&controller());
+  PrunedListener listener(&controller);
 
   // Navigate some more.
   GURL url(StringPrintf("http://www.a.com/%d", url_index));
-  controller().LoadURL(
+  controller.LoadURL(
       url, content::Referrer(), content::PAGE_TRANSITION_TYPED, std::string());
   rvh()->SendNavigate(url_index, url);
   url_index++;
@@ -1456,21 +1492,21 @@ TEST_F(NavigationControllerTest, EnforceMaxNavigationCount) {
   EXPECT_EQ(1, listener.details_.count);
 
   // We expect http://www.a.com/0 to be gone.
-  EXPECT_EQ(controller().GetEntryCount(), kMaxEntryCount);
-  EXPECT_EQ(controller().GetEntryAtIndex(0)->GetURL(),
+  EXPECT_EQ(controller.GetEntryCount(), kMaxEntryCount);
+  EXPECT_EQ(controller.GetEntryAtIndex(0)->GetURL(),
             GURL("http:////www.a.com/1"));
 
   // More navigations.
   for (int i = 0; i < 3; i++) {
     url = GURL(StringPrintf("http:////www.a.com/%d", url_index));
-    controller().LoadURL(
+    controller.LoadURL(
         url, content::Referrer(), content::PAGE_TRANSITION_TYPED,
         std::string());
     rvh()->SendNavigate(url_index, url);
     url_index++;
   }
-  EXPECT_EQ(controller().GetEntryCount(), kMaxEntryCount);
-  EXPECT_EQ(controller().GetEntryAtIndex(0)->GetURL(),
+  EXPECT_EQ(controller.GetEntryCount(), kMaxEntryCount);
+  EXPECT_EQ(controller.GetEntryAtIndex(0)->GetURL(),
             GURL("http:////www.a.com/4"));
 
   NavigationControllerImpl::set_max_entry_count_for_testing(original_count);
@@ -1626,17 +1662,18 @@ TEST_F(NavigationControllerTest, RestoreNavigateAfterFailure) {
 
 // Make sure that the page type and stuff is correct after an interstitial.
 TEST_F(NavigationControllerTest, Interstitial) {
+  NavigationControllerImpl& controller = controller_impl();
   // First navigate somewhere normal.
   const GURL url1("http://foo");
-  controller().LoadURL(
+  controller.LoadURL(
       url1, content::Referrer(), content::PAGE_TRANSITION_TYPED, std::string());
   rvh()->SendNavigate(0, url1);
 
   // Now navigate somewhere with an interstitial.
   const GURL url2("http://bar");
-  controller().LoadURL(
+  controller.LoadURL(
       url1, content::Referrer(), content::PAGE_TRANSITION_TYPED, std::string());
-  NavigationEntryImpl::FromNavigationEntry(controller().GetPendingEntry())->
+  NavigationEntryImpl::FromNavigationEntry(controller.GetPendingEntry())->
       set_page_type(content::PAGE_TYPE_INTERSTITIAL);
 
   // At this point the interstitial will be displayed and the load will still
@@ -1644,12 +1681,13 @@ TEST_F(NavigationControllerTest, Interstitial) {
   rvh()->SendNavigate(1, url2);
 
   // The page should be a normal page again.
-  EXPECT_EQ(url2, controller().GetLastCommittedEntry()->GetURL());
+  EXPECT_EQ(url2, controller.GetLastCommittedEntry()->GetURL());
   EXPECT_EQ(content::PAGE_TYPE_NORMAL,
-            controller().GetLastCommittedEntry()->GetPageType());
+            controller.GetLastCommittedEntry()->GetPageType());
 }
 
 TEST_F(NavigationControllerTest, RemoveEntry) {
+  NavigationControllerImpl& controller = controller_impl();
   const GURL url1("http://foo/1");
   const GURL url2("http://foo/2");
   const GURL url3("http://foo/3");
@@ -1658,54 +1696,55 @@ TEST_F(NavigationControllerTest, RemoveEntry) {
   const GURL pending_url("http://foo/pending");
   const GURL default_url("http://foo/default");
 
-  controller().LoadURL(
+  controller.LoadURL(
       url1, content::Referrer(), content::PAGE_TRANSITION_TYPED, std::string());
   rvh()->SendNavigate(0, url1);
-  controller().LoadURL(
+  controller.LoadURL(
       url2, content::Referrer(), content::PAGE_TRANSITION_TYPED, std::string());
   rvh()->SendNavigate(1, url2);
-  controller().LoadURL(
+  controller.LoadURL(
       url3, content::Referrer(), content::PAGE_TRANSITION_TYPED, std::string());
   rvh()->SendNavigate(2, url3);
-  controller().LoadURL(
+  controller.LoadURL(
       url4, content::Referrer(), content::PAGE_TRANSITION_TYPED, std::string());
   rvh()->SendNavigate(3, url4);
-  controller().LoadURL(
+  controller.LoadURL(
       url5, content::Referrer(), content::PAGE_TRANSITION_TYPED, std::string());
   rvh()->SendNavigate(4, url5);
 
   // Try to remove the last entry.  Will fail because it is the current entry.
-  controller().RemoveEntryAtIndex(controller().GetEntryCount() - 1);
-  EXPECT_EQ(5, controller().GetEntryCount());
-  EXPECT_EQ(4, controller().GetLastCommittedEntryIndex());
+  controller.RemoveEntryAtIndex(controller.GetEntryCount() - 1);
+  EXPECT_EQ(5, controller.GetEntryCount());
+  EXPECT_EQ(4, controller.GetLastCommittedEntryIndex());
 
   // Go back and remove the last entry.
-  controller().GoBack();
+  controller.GoBack();
   rvh()->SendNavigate(3, url4);
-  controller().RemoveEntryAtIndex(controller().GetEntryCount() - 1);
-  EXPECT_EQ(4, controller().GetEntryCount());
-  EXPECT_EQ(3, controller().GetLastCommittedEntryIndex());
-  EXPECT_FALSE(controller().GetPendingEntry());
+  controller.RemoveEntryAtIndex(controller.GetEntryCount() - 1);
+  EXPECT_EQ(4, controller.GetEntryCount());
+  EXPECT_EQ(3, controller.GetLastCommittedEntryIndex());
+  EXPECT_FALSE(controller.GetPendingEntry());
 
   // Remove an entry which is not the last committed one.
-  controller().RemoveEntryAtIndex(0);
-  EXPECT_EQ(3, controller().GetEntryCount());
-  EXPECT_EQ(2, controller().GetLastCommittedEntryIndex());
-  EXPECT_FALSE(controller().GetPendingEntry());
+  controller.RemoveEntryAtIndex(0);
+  EXPECT_EQ(3, controller.GetEntryCount());
+  EXPECT_EQ(2, controller.GetLastCommittedEntryIndex());
+  EXPECT_FALSE(controller.GetPendingEntry());
 
   // Remove the 2 remaining entries.
-  controller().RemoveEntryAtIndex(1);
-  controller().RemoveEntryAtIndex(0);
+  controller.RemoveEntryAtIndex(1);
+  controller.RemoveEntryAtIndex(0);
 
   // This should leave us with only the last committed entry.
-  EXPECT_EQ(1, controller().GetEntryCount());
-  EXPECT_EQ(0, controller().GetLastCommittedEntryIndex());
+  EXPECT_EQ(1, controller.GetEntryCount());
+  EXPECT_EQ(0, controller.GetLastCommittedEntryIndex());
 }
 
 // Tests the transient entry, making sure it goes away with all navigations.
 TEST_F(NavigationControllerTest, TransientEntry) {
+  NavigationControllerImpl& controller = controller_impl();
   TestNotificationTracker notifications;
-  RegisterForAllNavNotifications(&notifications, &controller());
+  RegisterForAllNavNotifications(&notifications, &controller);
 
   const GURL url0("http://foo/0");
   const GURL url1("http://foo/1");
@@ -1714,10 +1753,10 @@ TEST_F(NavigationControllerTest, TransientEntry) {
   const GURL url4("http://foo/4");
   const GURL transient_url("http://foo/transient");
 
-  controller().LoadURL(
+  controller.LoadURL(
       url0, content::Referrer(), content::PAGE_TRANSITION_TYPED, std::string());
   rvh()->SendNavigate(0, url0);
-  controller().LoadURL(
+  controller.LoadURL(
       url1, content::Referrer(), content::PAGE_TRANSITION_TYPED, std::string());
   rvh()->SendNavigate(1, url1);
 
@@ -1726,151 +1765,152 @@ TEST_F(NavigationControllerTest, TransientEntry) {
   // Adding a transient with no pending entry.
   NavigationEntryImpl* transient_entry = new NavigationEntryImpl;
   transient_entry->SetURL(transient_url);
-  controller().AddTransientEntry(transient_entry);
+  controller.AddTransientEntry(transient_entry);
 
   // We should not have received any notifications.
   EXPECT_EQ(0U, notifications.size());
 
   // Check our state.
-  EXPECT_EQ(transient_url, controller().GetActiveEntry()->GetURL());
-  EXPECT_EQ(controller().GetEntryCount(), 3);
-  EXPECT_EQ(controller().GetLastCommittedEntryIndex(), 1);
-  EXPECT_EQ(controller().GetPendingEntryIndex(), -1);
-  EXPECT_TRUE(controller().GetLastCommittedEntry());
-  EXPECT_FALSE(controller().GetPendingEntry());
-  EXPECT_TRUE(controller().CanGoBack());
-  EXPECT_FALSE(controller().CanGoForward());
+  EXPECT_EQ(transient_url, controller.GetActiveEntry()->GetURL());
+  EXPECT_EQ(controller.GetEntryCount(), 3);
+  EXPECT_EQ(controller.GetLastCommittedEntryIndex(), 1);
+  EXPECT_EQ(controller.GetPendingEntryIndex(), -1);
+  EXPECT_TRUE(controller.GetLastCommittedEntry());
+  EXPECT_FALSE(controller.GetPendingEntry());
+  EXPECT_TRUE(controller.CanGoBack());
+  EXPECT_FALSE(controller.CanGoForward());
   EXPECT_EQ(contents()->GetMaxPageID(), 1);
 
   // Navigate.
-  controller().LoadURL(
+  controller.LoadURL(
       url2, content::Referrer(), content::PAGE_TRANSITION_TYPED, std::string());
   rvh()->SendNavigate(2, url2);
 
   // We should have navigated, transient entry should be gone.
-  EXPECT_EQ(url2, controller().GetActiveEntry()->GetURL());
-  EXPECT_EQ(controller().GetEntryCount(), 3);
+  EXPECT_EQ(url2, controller.GetActiveEntry()->GetURL());
+  EXPECT_EQ(controller.GetEntryCount(), 3);
 
   // Add a transient again, then navigate with no pending entry this time.
   transient_entry = new NavigationEntryImpl;
   transient_entry->SetURL(transient_url);
-  controller().AddTransientEntry(transient_entry);
-  EXPECT_EQ(transient_url, controller().GetActiveEntry()->GetURL());
+  controller.AddTransientEntry(transient_entry);
+  EXPECT_EQ(transient_url, controller.GetActiveEntry()->GetURL());
   rvh()->SendNavigate(3, url3);
   // Transient entry should be gone.
-  EXPECT_EQ(url3, controller().GetActiveEntry()->GetURL());
-  EXPECT_EQ(controller().GetEntryCount(), 4);
+  EXPECT_EQ(url3, controller.GetActiveEntry()->GetURL());
+  EXPECT_EQ(controller.GetEntryCount(), 4);
 
   // Initiate a navigation, add a transient then commit navigation.
-  controller().LoadURL(
+  controller.LoadURL(
       url4, content::Referrer(), content::PAGE_TRANSITION_TYPED, std::string());
   transient_entry = new NavigationEntryImpl;
   transient_entry->SetURL(transient_url);
-  controller().AddTransientEntry(transient_entry);
-  EXPECT_EQ(transient_url, controller().GetActiveEntry()->GetURL());
+  controller.AddTransientEntry(transient_entry);
+  EXPECT_EQ(transient_url, controller.GetActiveEntry()->GetURL());
   rvh()->SendNavigate(4, url4);
-  EXPECT_EQ(url4, controller().GetActiveEntry()->GetURL());
-  EXPECT_EQ(controller().GetEntryCount(), 5);
+  EXPECT_EQ(url4, controller.GetActiveEntry()->GetURL());
+  EXPECT_EQ(controller.GetEntryCount(), 5);
 
   // Add a transient and go back.  This should simply remove the transient.
   transient_entry = new NavigationEntryImpl;
   transient_entry->SetURL(transient_url);
-  controller().AddTransientEntry(transient_entry);
-  EXPECT_EQ(transient_url, controller().GetActiveEntry()->GetURL());
-  EXPECT_TRUE(controller().CanGoBack());
-  EXPECT_FALSE(controller().CanGoForward());
-  controller().GoBack();
+  controller.AddTransientEntry(transient_entry);
+  EXPECT_EQ(transient_url, controller.GetActiveEntry()->GetURL());
+  EXPECT_TRUE(controller.CanGoBack());
+  EXPECT_FALSE(controller.CanGoForward());
+  controller.GoBack();
   // Transient entry should be gone.
-  EXPECT_EQ(url4, controller().GetActiveEntry()->GetURL());
-  EXPECT_EQ(controller().GetEntryCount(), 5);
+  EXPECT_EQ(url4, controller.GetActiveEntry()->GetURL());
+  EXPECT_EQ(controller.GetEntryCount(), 5);
   rvh()->SendNavigate(3, url3);
 
   // Add a transient and go to an entry before the current one.
   transient_entry = new NavigationEntryImpl;
   transient_entry->SetURL(transient_url);
-  controller().AddTransientEntry(transient_entry);
-  EXPECT_EQ(transient_url, controller().GetActiveEntry()->GetURL());
-  controller().GoToIndex(1);
+  controller.AddTransientEntry(transient_entry);
+  EXPECT_EQ(transient_url, controller.GetActiveEntry()->GetURL());
+  controller.GoToIndex(1);
   // The navigation should have been initiated, transient entry should be gone.
-  EXPECT_EQ(url1, controller().GetActiveEntry()->GetURL());
+  EXPECT_EQ(url1, controller.GetActiveEntry()->GetURL());
   // Visible entry does not update for history navigations until commit.
-  EXPECT_EQ(url3, controller().GetVisibleEntry()->GetURL());
+  EXPECT_EQ(url3, controller.GetVisibleEntry()->GetURL());
   rvh()->SendNavigate(1, url1);
-  EXPECT_EQ(url1, controller().GetVisibleEntry()->GetURL());
+  EXPECT_EQ(url1, controller.GetVisibleEntry()->GetURL());
 
   // Add a transient and go to an entry after the current one.
   transient_entry = new NavigationEntryImpl;
   transient_entry->SetURL(transient_url);
-  controller().AddTransientEntry(transient_entry);
-  EXPECT_EQ(transient_url, controller().GetActiveEntry()->GetURL());
-  controller().GoToIndex(3);
+  controller.AddTransientEntry(transient_entry);
+  EXPECT_EQ(transient_url, controller.GetActiveEntry()->GetURL());
+  controller.GoToIndex(3);
   // The navigation should have been initiated, transient entry should be gone.
   // Because of the transient entry that is removed, going to index 3 makes us
   // land on url2 (which is visible after the commit).
-  EXPECT_EQ(url2, controller().GetActiveEntry()->GetURL());
-  EXPECT_EQ(url1, controller().GetVisibleEntry()->GetURL());
+  EXPECT_EQ(url2, controller.GetActiveEntry()->GetURL());
+  EXPECT_EQ(url1, controller.GetVisibleEntry()->GetURL());
   rvh()->SendNavigate(2, url2);
-  EXPECT_EQ(url2, controller().GetVisibleEntry()->GetURL());
+  EXPECT_EQ(url2, controller.GetVisibleEntry()->GetURL());
 
   // Add a transient and go forward.
   transient_entry = new NavigationEntryImpl;
   transient_entry->SetURL(transient_url);
-  controller().AddTransientEntry(transient_entry);
-  EXPECT_EQ(transient_url, controller().GetActiveEntry()->GetURL());
-  EXPECT_TRUE(controller().CanGoForward());
-  controller().GoForward();
+  controller.AddTransientEntry(transient_entry);
+  EXPECT_EQ(transient_url, controller.GetActiveEntry()->GetURL());
+  EXPECT_TRUE(controller.CanGoForward());
+  controller.GoForward();
   // We should have navigated, transient entry should be gone.
-  EXPECT_EQ(url3, controller().GetActiveEntry()->GetURL());
-  EXPECT_EQ(url2, controller().GetVisibleEntry()->GetURL());
+  EXPECT_EQ(url3, controller.GetActiveEntry()->GetURL());
+  EXPECT_EQ(url2, controller.GetVisibleEntry()->GetURL());
   rvh()->SendNavigate(3, url3);
-  EXPECT_EQ(url3, controller().GetVisibleEntry()->GetURL());
+  EXPECT_EQ(url3, controller.GetVisibleEntry()->GetURL());
 
   // Ensure the URLS are correct.
-  EXPECT_EQ(controller().GetEntryCount(), 5);
-  EXPECT_EQ(controller().GetEntryAtIndex(0)->GetURL(), url0);
-  EXPECT_EQ(controller().GetEntryAtIndex(1)->GetURL(), url1);
-  EXPECT_EQ(controller().GetEntryAtIndex(2)->GetURL(), url2);
-  EXPECT_EQ(controller().GetEntryAtIndex(3)->GetURL(), url3);
-  EXPECT_EQ(controller().GetEntryAtIndex(4)->GetURL(), url4);
+  EXPECT_EQ(controller.GetEntryCount(), 5);
+  EXPECT_EQ(controller.GetEntryAtIndex(0)->GetURL(), url0);
+  EXPECT_EQ(controller.GetEntryAtIndex(1)->GetURL(), url1);
+  EXPECT_EQ(controller.GetEntryAtIndex(2)->GetURL(), url2);
+  EXPECT_EQ(controller.GetEntryAtIndex(3)->GetURL(), url3);
+  EXPECT_EQ(controller.GetEntryAtIndex(4)->GetURL(), url4);
 }
 
 // Tests that the URLs for renderer-initiated navigations are not displayed to
 // the user until the navigation commits, to prevent URL spoof attacks.
 // See http://crbug.com/99016.
 TEST_F(NavigationControllerTest, DontShowRendererURLUntilCommit) {
+  NavigationControllerImpl& controller = controller_impl();
   TestNotificationTracker notifications;
-  RegisterForAllNavNotifications(&notifications, &controller());
+  RegisterForAllNavNotifications(&notifications, &controller);
 
   const GURL url0("http://foo/0");
   const GURL url1("http://foo/1");
 
   // For typed navigations (browser-initiated), both active and visible entries
   // should update before commit.
-  controller().LoadURL(url0, content::Referrer(),
-                       content::PAGE_TRANSITION_TYPED, std::string());
-  EXPECT_EQ(url0, controller().GetActiveEntry()->GetURL());
-  EXPECT_EQ(url0, controller().GetVisibleEntry()->GetURL());
+  controller.LoadURL(url0, content::Referrer(),
+                     content::PAGE_TRANSITION_TYPED, std::string());
+  EXPECT_EQ(url0, controller.GetActiveEntry()->GetURL());
+  EXPECT_EQ(url0, controller.GetVisibleEntry()->GetURL());
   rvh()->SendNavigate(0, url0);
 
   // For link clicks (renderer-initiated navigations), the active entry should
   // update before commit but the visible should not.
-  controller().LoadURLFromRenderer(url1, content::Referrer(),
-                                   content::PAGE_TRANSITION_LINK,
-                                   std::string());
-  EXPECT_EQ(url1, controller().GetActiveEntry()->GetURL());
-  EXPECT_EQ(url0, controller().GetVisibleEntry()->GetURL());
+  controller.LoadURLFromRenderer(url1, content::Referrer(),
+                                 content::PAGE_TRANSITION_LINK,
+                                 std::string());
+  EXPECT_EQ(url1, controller.GetActiveEntry()->GetURL());
+  EXPECT_EQ(url0, controller.GetVisibleEntry()->GetURL());
   EXPECT_TRUE(
-      NavigationEntryImpl::FromNavigationEntry(controller().GetPendingEntry())->
+      NavigationEntryImpl::FromNavigationEntry(controller.GetPendingEntry())->
           is_renderer_initiated());
 
   // After commit, both should be updated, and we should no longer treat the
   // entry as renderer-initiated.
   rvh()->SendNavigate(1, url1);
-  EXPECT_EQ(url1, controller().GetActiveEntry()->GetURL());
-  EXPECT_EQ(url1, controller().GetVisibleEntry()->GetURL());
+  EXPECT_EQ(url1, controller.GetActiveEntry()->GetURL());
+  EXPECT_EQ(url1, controller.GetVisibleEntry()->GetURL());
   EXPECT_FALSE(
       NavigationEntryImpl::FromNavigationEntry(
-          controller().GetLastCommittedEntry())->is_renderer_initiated());
+          controller.GetLastCommittedEntry())->is_renderer_initiated());
 
   notifications.Reset();
 }
@@ -1878,26 +1918,27 @@ TEST_F(NavigationControllerTest, DontShowRendererURLUntilCommit) {
 // Tests that IsInPageNavigation returns appropriate results.  Prevents
 // regression for bug 1126349.
 TEST_F(NavigationControllerTest, IsInPageNavigation) {
+  NavigationControllerImpl& controller = controller_impl();
   // Navigate to URL with no refs.
   const GURL url("http://www.google.com/home.html");
   rvh()->SendNavigate(0, url);
 
   // Reloading the page is not an in-page navigation.
-  EXPECT_FALSE(controller().IsURLInPageNavigation(url));
+  EXPECT_FALSE(controller.IsURLInPageNavigation(url));
   const GURL other_url("http://www.google.com/add.html");
-  EXPECT_FALSE(controller().IsURLInPageNavigation(other_url));
+  EXPECT_FALSE(controller.IsURLInPageNavigation(other_url));
   const GURL url_with_ref("http://www.google.com/home.html#my_ref");
-  EXPECT_TRUE(controller().IsURLInPageNavigation(url_with_ref));
+  EXPECT_TRUE(controller.IsURLInPageNavigation(url_with_ref));
 
   // Navigate to URL with refs.
   rvh()->SendNavigate(1, url_with_ref);
 
   // Reloading the page is not an in-page navigation.
-  EXPECT_FALSE(controller().IsURLInPageNavigation(url_with_ref));
-  EXPECT_FALSE(controller().IsURLInPageNavigation(url));
-  EXPECT_FALSE(controller().IsURLInPageNavigation(other_url));
+  EXPECT_FALSE(controller.IsURLInPageNavigation(url_with_ref));
+  EXPECT_FALSE(controller.IsURLInPageNavigation(url));
+  EXPECT_FALSE(controller.IsURLInPageNavigation(other_url));
   const GURL other_url_with_ref("http://www.google.com/home.html#my_other_ref");
-  EXPECT_TRUE(controller().IsURLInPageNavigation(
+  EXPECT_TRUE(controller.IsURLInPageNavigation(
       other_url_with_ref));
 }
 
@@ -1906,13 +1947,14 @@ TEST_F(NavigationControllerTest, IsInPageNavigation) {
 // these subframe navigations to affect the toplevel document. They should
 // instead be ignored.  http://crbug.com/5585
 TEST_F(NavigationControllerTest, SameSubframe) {
+  NavigationControllerImpl& controller = controller_impl();
   // Navigate the main frame.
   const GURL url("http://www.google.com/");
   rvh()->SendNavigate(0, url);
 
   // We should be at the first navigation entry.
-  EXPECT_EQ(controller().GetEntryCount(), 1);
-  EXPECT_EQ(controller().GetLastCommittedEntryIndex(), 0);
+  EXPECT_EQ(controller.GetEntryCount(), 1);
+  EXPECT_EQ(controller.GetLastCommittedEntryIndex(), 0);
 
   // Navigate a subframe that would normally count as in-page.
   const GURL subframe("http://www.google.com/#");
@@ -1925,22 +1967,23 @@ TEST_F(NavigationControllerTest, SameSubframe) {
   params.is_post = false;
   params.content_state = webkit_glue::CreateHistoryStateForURL(GURL(subframe));
   content::LoadCommittedDetails details;
-  EXPECT_FALSE(controller().RendererDidNavigate(params, &details));
+  EXPECT_FALSE(controller.RendererDidNavigate(params, &details));
 
   // Nothing should have changed.
-  EXPECT_EQ(controller().GetEntryCount(), 1);
-  EXPECT_EQ(controller().GetLastCommittedEntryIndex(), 0);
+  EXPECT_EQ(controller.GetEntryCount(), 1);
+  EXPECT_EQ(controller.GetLastCommittedEntryIndex(), 0);
 }
 
 // Make sure that on cloning a tabcontents and going back needs_reload is false.
 TEST_F(NavigationControllerTest, CloneAndGoBack) {
+  NavigationControllerImpl& controller = controller_impl();
   const GURL url1("http://foo1");
   const GURL url2("http://foo2");
 
   NavigateAndCommit(url1);
   NavigateAndCommit(url2);
 
-  scoped_ptr<WebContents> clone(controller().GetWebContents()->Clone());
+  scoped_ptr<WebContents> clone(controller.GetWebContents()->Clone());
 
   ASSERT_EQ(2, clone->GetController().GetEntryCount());
   EXPECT_TRUE(clone->GetController().NeedsReload());
@@ -1951,6 +1994,7 @@ TEST_F(NavigationControllerTest, CloneAndGoBack) {
 
 // Make sure that cloning a tabcontents doesn't copy interstitials.
 TEST_F(NavigationControllerTest, CloneOmitsInterstitials) {
+  NavigationControllerImpl& controller = controller_impl();
   const GURL url1("http://foo1");
   const GURL url2("http://foo2");
 
@@ -1960,9 +2004,9 @@ TEST_F(NavigationControllerTest, CloneOmitsInterstitials) {
   // Add an interstitial entry.  Should be deleted with controller.
   NavigationEntryImpl* interstitial_entry = new NavigationEntryImpl();
   interstitial_entry->set_page_type(content::PAGE_TYPE_INTERSTITIAL);
-  controller().AddTransientEntry(interstitial_entry);
+  controller.AddTransientEntry(interstitial_entry);
 
-  scoped_ptr<WebContents> clone(controller().GetWebContents()->Clone());
+  scoped_ptr<WebContents> clone(controller.GetWebContents()->Clone());
 
   ASSERT_EQ(2, clone->GetController().GetEntryCount());
 }
@@ -1970,20 +2014,21 @@ TEST_F(NavigationControllerTest, CloneOmitsInterstitials) {
 // Tests a subframe navigation while a toplevel navigation is pending.
 // http://crbug.com/43967
 TEST_F(NavigationControllerTest, SubframeWhilePending) {
+  NavigationControllerImpl& controller = controller_impl();
   // Load the first page.
   const GURL url1("http://foo/");
   NavigateAndCommit(url1);
 
   // Now start a pending load to a totally different page, but don't commit it.
   const GURL url2("http://bar/");
-  controller().LoadURL(
+  controller.LoadURL(
       url2, content::Referrer(), content::PAGE_TRANSITION_TYPED, std::string());
 
   // Send a subframe update from the first page, as if one had just
   // automatically loaded. Auto subframes don't increment the page ID.
   const GURL url1_sub("http://foo/subframe");
   ViewHostMsg_FrameNavigate_Params params;
-  params.page_id = controller().GetLastCommittedEntry()->GetPageID();
+  params.page_id = controller.GetLastCommittedEntry()->GetPageID();
   params.url = url1_sub;
   params.transition = content::PAGE_TRANSITION_AUTO_SUBFRAME;
   params.should_update_history = false;
@@ -1993,18 +2038,19 @@ TEST_F(NavigationControllerTest, SubframeWhilePending) {
   content::LoadCommittedDetails details;
 
   // This should return false meaning that nothing was actually updated.
-  EXPECT_FALSE(controller().RendererDidNavigate(params, &details));
+  EXPECT_FALSE(controller.RendererDidNavigate(params, &details));
 
   // The notification should have updated the last committed one, and not
   // the pending load.
-  EXPECT_EQ(url1, controller().GetLastCommittedEntry()->GetURL());
+  EXPECT_EQ(url1, controller.GetLastCommittedEntry()->GetURL());
 
   // The active entry should be unchanged by the subframe load.
-  EXPECT_EQ(url2, controller().GetActiveEntry()->GetURL());
+  EXPECT_EQ(url2, controller.GetActiveEntry()->GetURL());
 }
 
 // Tests CopyStateFromAndPrune with 2 urls in source, 1 in dest.
 TEST_F(NavigationControllerTest, CopyStateFromAndPrune) {
+  NavigationControllerImpl& controller = controller_impl();
   const GURL url1("http://foo1");
   const GURL url2("http://foo2");
   const GURL url3("http://foo3");
@@ -2020,7 +2066,7 @@ TEST_F(NavigationControllerTest, CopyStateFromAndPrune) {
       NavigationEntryImpl::FromNavigationEntry(
           other_controller.GetEntryAtIndex(0))->site_instance(), 2,
       other_controller.GetEntryAtIndex(0)->GetPageID());
-  other_controller.CopyStateFromAndPrune(&controller());
+  other_controller.CopyStateFromAndPrune(&controller);
 
   // other_controller should now contain the 3 urls: url1, url2 and url3.
 
@@ -2036,19 +2082,20 @@ TEST_F(NavigationControllerTest, CopyStateFromAndPrune) {
 // Test CopyStateFromAndPrune with 2 urls, the first selected and nothing in
 // the target.
 TEST_F(NavigationControllerTest, CopyStateFromAndPrune2) {
+  NavigationControllerImpl& controller = controller_impl();
   const GURL url1("http://foo1");
   const GURL url2("http://foo2");
   const GURL url3("http://foo3");
 
   NavigateAndCommit(url1);
   NavigateAndCommit(url2);
-  controller().GoBack();
+  controller.GoBack();
 
   scoped_ptr<TestTabContents> other_contents(CreateTestTabContents());
   NavigationControllerImpl& other_controller =
       other_contents->GetControllerImpl();
   other_contents->ExpectSetHistoryLengthAndPrune(NULL, 1, -1);
-  other_controller.CopyStateFromAndPrune(&controller());
+  other_controller.CopyStateFromAndPrune(&controller);
 
   // other_controller should now contain the 1 url: url1.
 
@@ -2062,13 +2109,14 @@ TEST_F(NavigationControllerTest, CopyStateFromAndPrune2) {
 // Test CopyStateFromAndPrune with 2 urls, the first selected and nothing in
 // the target.
 TEST_F(NavigationControllerTest, CopyStateFromAndPrune3) {
+  NavigationControllerImpl& controller = controller_impl();
   const GURL url1("http://foo1");
   const GURL url2("http://foo2");
   const GURL url3("http://foo3");
 
   NavigateAndCommit(url1);
   NavigateAndCommit(url2);
-  controller().GoBack();
+  controller.GoBack();
 
   scoped_ptr<TestTabContents> other_contents(CreateTestTabContents());
   NavigationControllerImpl& other_controller =
@@ -2076,7 +2124,7 @@ TEST_F(NavigationControllerTest, CopyStateFromAndPrune3) {
   other_controller.LoadURL(
       url3, content::Referrer(), content::PAGE_TRANSITION_TYPED, std::string());
   other_contents->ExpectSetHistoryLengthAndPrune(NULL, 1, -1);
-  other_controller.CopyStateFromAndPrune(&controller());
+  other_controller.CopyStateFromAndPrune(&controller);
 
   // other_controller should now contain 1 entry for url1, and a pending entry
   // for url3.
@@ -2096,6 +2144,7 @@ TEST_F(NavigationControllerTest, CopyStateFromAndPrune3) {
 // Tests that navigations initiated from the page (with the history object)
 // work as expected without navigation entries.
 TEST_F(NavigationControllerTest, HistoryNavigate) {
+  NavigationControllerImpl& controller = controller_impl();
   const GURL url1("http://foo/1");
   const GURL url2("http://foo/2");
   const GURL url3("http://foo/3");
@@ -2103,13 +2152,13 @@ TEST_F(NavigationControllerTest, HistoryNavigate) {
   NavigateAndCommit(url1);
   NavigateAndCommit(url2);
   NavigateAndCommit(url3);
-  controller().GoBack();
+  controller.GoBack();
   contents()->CommitPendingNavigation();
 
   // Simulate the page calling history.back(), it should not create a pending
   // entry.
   contents()->OnGoToEntryAtOffset(-1);
-  EXPECT_EQ(-1, controller().GetPendingEntryIndex());
+  EXPECT_EQ(-1, controller.GetPendingEntryIndex());
   // The actual cross-navigation is suspended until the current RVH tells us
   // it unloaded, simulate that.
   contents()->ProceedWithCrossSiteNavigation();
@@ -2124,7 +2173,7 @@ TEST_F(NavigationControllerTest, HistoryNavigate) {
 
   // Now test history.forward()
   contents()->OnGoToEntryAtOffset(1);
-  EXPECT_EQ(-1, controller().GetPendingEntryIndex());
+  EXPECT_EQ(-1, controller.GetPendingEntryIndex());
   // The actual cross-navigation is suspended until the current RVH tells us
   // it unloaded, simulate that.
   contents()->ProceedWithCrossSiteNavigation();
@@ -2136,23 +2185,25 @@ TEST_F(NavigationControllerTest, HistoryNavigate) {
 
   // Make sure an extravagant history.go() doesn't break.
   contents()->OnGoToEntryAtOffset(120);  // Out of bounds.
-  EXPECT_EQ(-1, controller().GetPendingEntryIndex());
+  EXPECT_EQ(-1, controller.GetPendingEntryIndex());
   message = process()->sink().GetFirstMessageMatching(ViewMsg_Navigate::ID);
   EXPECT_TRUE(message == NULL);
 }
 
 // Test call to PruneAllButActive for the only entry.
 TEST_F(NavigationControllerTest, PruneAllButActiveForSingle) {
+  NavigationControllerImpl& controller = controller_impl();
   const GURL url1("http://foo1");
   NavigateAndCommit(url1);
-  controller().PruneAllButActive();
+  controller.PruneAllButActive();
 
-  EXPECT_EQ(-1, controller().GetPendingEntryIndex());
-  EXPECT_EQ(controller().GetEntryAtIndex(0)->GetURL(), url1);
+  EXPECT_EQ(-1, controller.GetPendingEntryIndex());
+  EXPECT_EQ(controller.GetEntryAtIndex(0)->GetURL(), url1);
 }
 
 // Test call to PruneAllButActive for last entry.
 TEST_F(NavigationControllerTest, PruneAllButActiveForLast) {
+  NavigationControllerImpl& controller = controller_impl();
   const GURL url1("http://foo/1");
   const GURL url2("http://foo/2");
   const GURL url3("http://foo/3");
@@ -2160,18 +2211,19 @@ TEST_F(NavigationControllerTest, PruneAllButActiveForLast) {
   NavigateAndCommit(url1);
   NavigateAndCommit(url2);
   NavigateAndCommit(url3);
-  controller().GoBack();
-  controller().GoBack();
+  controller.GoBack();
+  controller.GoBack();
   contents()->CommitPendingNavigation();
 
-  controller().PruneAllButActive();
+  controller.PruneAllButActive();
 
-  EXPECT_EQ(-1, controller().GetPendingEntryIndex());
-  EXPECT_EQ(controller().GetEntryAtIndex(0)->GetURL(), url1);
+  EXPECT_EQ(-1, controller.GetPendingEntryIndex());
+  EXPECT_EQ(controller.GetEntryAtIndex(0)->GetURL(), url1);
 }
 
 // Test call to PruneAllButActive for intermediate entry.
 TEST_F(NavigationControllerTest, PruneAllButActiveForIntermediate) {
+  NavigationControllerImpl& controller = controller_impl();
   const GURL url1("http://foo/1");
   const GURL url2("http://foo/2");
   const GURL url3("http://foo/3");
@@ -2179,17 +2231,18 @@ TEST_F(NavigationControllerTest, PruneAllButActiveForIntermediate) {
   NavigateAndCommit(url1);
   NavigateAndCommit(url2);
   NavigateAndCommit(url3);
-  controller().GoBack();
+  controller.GoBack();
   contents()->CommitPendingNavigation();
 
-  controller().PruneAllButActive();
+  controller.PruneAllButActive();
 
-  EXPECT_EQ(-1, controller().GetPendingEntryIndex());
-  EXPECT_EQ(controller().GetEntryAtIndex(0)->GetURL(), url2);
+  EXPECT_EQ(-1, controller.GetPendingEntryIndex());
+  EXPECT_EQ(controller.GetEntryAtIndex(0)->GetURL(), url2);
 }
 
 // Test call to PruneAllButActive for intermediate entry.
 TEST_F(NavigationControllerTest, PruneAllButActiveForPending) {
+  NavigationControllerImpl& controller = controller_impl();
   const GURL url1("http://foo/1");
   const GURL url2("http://foo/2");
   const GURL url3("http://foo/3");
@@ -2197,35 +2250,36 @@ TEST_F(NavigationControllerTest, PruneAllButActiveForPending) {
   NavigateAndCommit(url1);
   NavigateAndCommit(url2);
   NavigateAndCommit(url3);
-  controller().GoBack();
+  controller.GoBack();
 
-  controller().PruneAllButActive();
+  controller.PruneAllButActive();
 
-  EXPECT_EQ(0, controller().GetPendingEntryIndex());
+  EXPECT_EQ(0, controller.GetPendingEntryIndex());
 }
 
 // Test call to PruneAllButActive for transient entry.
 TEST_F(NavigationControllerTest, PruneAllButActiveForTransient) {
+  NavigationControllerImpl& controller = controller_impl();
   const GURL url0("http://foo/0");
   const GURL url1("http://foo/1");
   const GURL transient_url("http://foo/transient");
 
-  controller().LoadURL(
+  controller.LoadURL(
       url0, content::Referrer(), content::PAGE_TRANSITION_TYPED, std::string());
   rvh()->SendNavigate(0, url0);
-  controller().LoadURL(
+  controller.LoadURL(
       url1, content::Referrer(), content::PAGE_TRANSITION_TYPED, std::string());
   rvh()->SendNavigate(1, url1);
 
   // Adding a transient with no pending entry.
   NavigationEntryImpl* transient_entry = new NavigationEntryImpl;
   transient_entry->SetURL(transient_url);
-  controller().AddTransientEntry(transient_entry);
+  controller.AddTransientEntry(transient_entry);
 
-  controller().PruneAllButActive();
+  controller.PruneAllButActive();
 
-  EXPECT_EQ(-1, controller().GetPendingEntryIndex());
-  EXPECT_EQ(controller().GetTransientEntry()->GetURL(), transient_url);
+  EXPECT_EQ(-1, controller.GetPendingEntryIndex());
+  EXPECT_EQ(controller.GetTransientEntry()->GetURL(), transient_url);
 }
 
 // Test to ensure that when we do a history navigation back to the current
@@ -2235,6 +2289,7 @@ TEST_F(NavigationControllerTest, PruneAllButActiveForTransient) {
 // start, but WebKit essentially ignores the navigation and never sends a
 // message to stop the throbber.
 TEST_F(NavigationControllerTest, StopOnHistoryNavigationToCurrentPage) {
+  NavigationControllerImpl& controller = controller_impl();
   const GURL url0("http://foo/0");
   const GURL url1("http://foo/1");
 
@@ -2242,14 +2297,14 @@ TEST_F(NavigationControllerTest, StopOnHistoryNavigationToCurrentPage) {
   NavigateAndCommit(url1);
 
   // Go back to the original page, then forward to the slow page, then back
-  controller().GoBack();
+  controller.GoBack();
   contents()->CommitPendingNavigation();
 
-  controller().GoForward();
-  EXPECT_EQ(1, controller().GetPendingEntryIndex());
+  controller.GoForward();
+  EXPECT_EQ(1, controller.GetPendingEntryIndex());
 
-  controller().GoBack();
-  EXPECT_EQ(-1, controller().GetPendingEntryIndex());
+  controller.GoBack();
+  EXPECT_EQ(-1, controller.GetPendingEntryIndex());
 }
 
 /* TODO(brettw) These test pass on my local machine but fail on the XP buildbot
@@ -2283,8 +2338,8 @@ class NavigationControllerHistoryTest : public NavigationControllerTest {
     service->SetWindowType(window_id, Browser::TYPE_TABBED);
     service->SetWindowBounds(window_id, gfx::Rect(0, 1, 2, 3), false);
     service->SetTabIndexInWindow(window_id,
-                                 controller().session_id(), 0);
-    controller().SetWindowID(window_id);
+                                 controller.session_id(), 0);
+    controller.SetWindowID(window_id);
 
     session_helper_.set_service(service);
   }
@@ -2324,7 +2379,7 @@ class NavigationControllerHistoryTest : public NavigationControllerTest {
 
   void GetLastSession() {
     SessionServiceFactory::GetForProfile(profile())->TabClosed(
-        controller().window_id(), controller().session_id(), false);
+        controller.window_id(), controller.session_id(), false);
 
     ReopenDatabase();
     Time close_time;
@@ -2353,7 +2408,8 @@ class NavigationControllerHistoryTest : public NavigationControllerTest {
 // A basic test case. Navigates to a single url, and make sure the history
 // db matches.
 TEST_F(NavigationControllerHistoryTest, Basic) {
-  controller().LoadURL(url0, GURL(), content::PAGE_TRANSITION_LINK);
+  NavigationControllerImpl& controller = controller_impl();
+  controller.LoadURL(url0, GURL(), content::PAGE_TRANSITION_LINK);
   rvh()->SendNavigate(0, url0);
 
   GetLastSession();
@@ -2370,11 +2426,12 @@ TEST_F(NavigationControllerHistoryTest, Basic) {
 // Navigates to three urls, then goes back and make sure the history database
 // is in sync.
 TEST_F(NavigationControllerHistoryTest, NavigationThenBack) {
+  NavigationControllerImpl& controller = controller_impl();
   rvh()->SendNavigate(0, url0);
   rvh()->SendNavigate(1, url1);
   rvh()->SendNavigate(2, url2);
 
-  controller().GoBack();
+  controller.GoBack();
   rvh()->SendNavigate(1, url1);
 
   GetLastSession();
@@ -2397,14 +2454,15 @@ TEST_F(NavigationControllerHistoryTest, NavigationThenBack) {
 
 // Navigates to three urls, then goes back twice, then loads a new url.
 TEST_F(NavigationControllerHistoryTest, NavigationPruning) {
+  NavigationControllerImpl& controller = controller_impl();
   rvh()->SendNavigate(0, url0);
   rvh()->SendNavigate(1, url1);
   rvh()->SendNavigate(2, url2);
 
-  controller().GoBack();
+  controller.GoBack();
   rvh()->SendNavigate(1, url1);
 
-  controller().GoBack();
+  controller.GoBack();
   rvh()->SendNavigate(0, url0);
 
   rvh()->SendNavigate(3, url2);

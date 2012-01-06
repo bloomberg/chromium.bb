@@ -29,7 +29,6 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_details.h"
@@ -171,20 +170,20 @@ class TabStripModelTest : public ChromeRenderViewHostTestHarness {
 
   // Forwards a URL "load" request through to our dummy TabContents
   // implementation.
-  void LoadURL(TabContents* con, const std::wstring& url) {
+  void LoadURL(WebContents* con, const std::wstring& url) {
     controller().LoadURL(GURL(WideToUTF16(url)), content::Referrer(),
                          content::PAGE_TRANSITION_LINK, std::string());
   }
 
-  void GoBack(TabContents* contents) {
+  void GoBack(WebContents* contents) {
     controller().GoBack();
   }
 
-  void GoForward(TabContents* contents) {
+  void GoForward(WebContents* contents) {
     controller().GoForward();
   }
 
-  void SwitchTabTo(TabContents* contents) {
+  void SwitchTabTo(WebContents* contents) {
     // contents()->DidBecomeSelected();
   }
 
@@ -268,7 +267,6 @@ class TabStripModelTest : public ChromeRenderViewHostTestHarness {
 
   std::wstring test_dir_;
   std::wstring profile_path_;
-  std::map<TabContents*, int> foo_;
 };
 
 class MockTabStripModelObserver : public TabStripModelObserver {

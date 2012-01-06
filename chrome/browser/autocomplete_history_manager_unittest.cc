@@ -23,6 +23,7 @@
 #include "webkit/forms/form_data.h"
 
 using content::BrowserThread;
+using content::WebContents;
 using testing::_;
 using webkit::forms::FormData;
 
@@ -179,10 +180,10 @@ class MockAutofillExternalDelegate : public AutofillExternalDelegate {
 
 class AutocompleteHistoryManagerStubSend : public AutocompleteHistoryManager {
  public:
-  explicit AutocompleteHistoryManagerStubSend(TabContents* tab_contents,
+  explicit AutocompleteHistoryManagerStubSend(WebContents* web_contents,
                                               Profile* profile,
                                               WebDataService* wds)
-      : AutocompleteHistoryManager(tab_contents, profile, wds) {}
+      : AutocompleteHistoryManager(web_contents, profile, wds) {}
 
   // Intentionally swallow the message.
   virtual bool Send(IPC::Message* message) { delete message; return true; }

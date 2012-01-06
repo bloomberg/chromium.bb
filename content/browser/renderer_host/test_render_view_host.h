@@ -17,10 +17,9 @@
 #include "content/public/common/page_transition_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-class NavigationControllerImpl;
-
 namespace content {
 class BrowserContext;
+class NavigationController;
 class RenderProcessHostFactory;
 }
 
@@ -296,7 +295,7 @@ class RenderViewHostTestHarness : public testing::Test {
   RenderViewHostTestHarness();
   virtual ~RenderViewHostTestHarness();
 
-  NavigationControllerImpl& controller();
+  content::NavigationController& controller();
   virtual TestTabContents* contents();
   TestRenderViewHost* rvh();
   TestRenderViewHost* pending_rvh();
