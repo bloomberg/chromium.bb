@@ -95,7 +95,6 @@ class ASH_EXPORT Shell {
 
   ShellDelegate* delegate() { return delegate_.get(); }
 
-  // May return NULL if we're not using a launcher (e.g. laptop-mode).
   Launcher* launcher() { return launcher_.get(); }
 
   // Made available for tests.

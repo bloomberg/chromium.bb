@@ -1984,8 +1984,7 @@ void BrowserView::Init() {
   // Add launcher item if we're using the launcher and this type of browser
   // needs an item.
   ash::LauncherItemType type;
-  if (ash::Shell::GetInstance()->launcher() &&
-      ChromeShellDelegate::ShouldCreateLauncherItemForBrowser(browser_.get(),
+  if (ChromeShellDelegate::ShouldCreateLauncherItemForBrowser(browser_.get(),
                                                               &type)) {
     icon_updater_.reset(new LauncherIconUpdater(
         browser_->tabstrip_model(),

@@ -280,9 +280,11 @@ void Shell::InitLayoutManagers(aura::RootWindow* root_window) {
 
   aura::Window* default_container =
       GetContainer(internal::kShellWindowId_DefaultContainer);
+  launcher_.reset(new Launcher(default_container));
 
-  // Compact mode has a simplified layout manager and doesn't use the launcher,
-  // desktop background, shelf, etc.
+  // Compact mode has a simplified layout manager and doesn't use the shelf,
+  // desktop background, etc.  The launcher still exists so we can use its
+  // data model and list of open windows, but we hide the UI to save space.
   if (IsWindowModeCompact()) {
     default_container->SetLayoutManager(
         new internal::CompactLayoutManager(status_widget));
@@ -290,12 +292,12 @@ void Shell::InitLayoutManagers(aura::RootWindow* root_window) {
         new internal::CompactStatusAreaLayoutManager(status_widget);
     GetContainer(internal::kShellWindowId_StatusContainer)->
         SetLayoutManager(status_area_layout_manager);
+    launcher_->widget()->Hide();
     return;
   }
 
   root_window_layout->set_background_widget(
       internal::CreateDesktopBackground());
-  launcher_.reset(new Launcher(default_container));
 
   internal::ShelfLayoutManager* shelf_layout_manager =
       new internal::ShelfLayoutManager(launcher_->widget(), status_widget);

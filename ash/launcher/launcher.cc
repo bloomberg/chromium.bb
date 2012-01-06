@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -157,7 +157,7 @@ void Launcher::OnWindowAdded(aura::Window* new_window) {
   known_windows_[new_window] = false;
   new_window->AddObserver(this);
   // Windows are created initially invisible. Wait until the window is made
-  // visible before asking, as othewise the delegate likely doesn't know about
+  // visible before asking, as otherwise the delegate likely doesn't know about
   // window (it's still creating it).
   if (new_window->IsVisible())
     MaybeAdd(new_window);
