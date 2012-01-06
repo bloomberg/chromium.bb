@@ -1,8 +1,10 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/extensions/extension_metrics_module.h"
+
+#include <algorithm>
 
 #include "base/metrics/histogram.h"
 #include "chrome/common/extensions/extension.h"
@@ -11,6 +13,10 @@
 using base::Histogram;
 using base::LinearHistogram;
 using content::UserMetricsAction;
+
+const size_t kMaxBuckets = 10000; // We don't ever want more than these many
+                                  // buckets; there is no real need for them
+                                  // and would cause crazy memory usage
 
 bool MetricsRecordUserActionFunction::RunImpl() {
   std::string name;
@@ -33,6 +39,19 @@ bool MetricsHistogramHelperFunction::RecordValue(const std::string& name,
                                                  int max,
                                                  size_t buckets,
                                                  int sample) {
+  // Make sure toxic values don't get to internal code.
+  // Fix for maximums
+  min = std::min(min, INT_MAX - 3);
+  max = std::min(max, INT_MAX - 3);
+  buckets = std::min(buckets, kMaxBuckets);
+  // Fix for minimums.
+  min = std::max(min, 1);
+  max = std::max(max, min + 1);
+  buckets = std::max(buckets, static_cast<size_t>(3));
+  // Trim buckets down to a maximum of the given range + over/underflow buckets
+  if (buckets > static_cast<size_t>(max - min + 2))
+    buckets = max - min + 2;
+
   Histogram* counter;
   if (type == Histogram::LINEAR_HISTOGRAM) {
     counter = LinearHistogram::FactoryGet(name,
