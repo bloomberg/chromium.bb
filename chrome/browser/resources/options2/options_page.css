@@ -56,7 +56,6 @@ input[type='text']:disabled {
 .page h1 {
   -webkit-padding-end: 24px;
   -webkit-user-select: none;
-  border-bottom: 1px solid #eeeeee;
   color: #333;
   font-size: 200%;
   font-weight: normal;
@@ -346,14 +345,9 @@ html[dir='rtl'] .action-area {
  */
 section {
   -webkit-box-orient: horizontal;
-  border-bottom: 1px solid #eeeeee;
   display: -webkit-box;
   margin-top: 17px;
   padding-bottom: 20px;
-}
-
-div.page section:last-child {
-  border-bottom: none;
 }
 
 h3 {
@@ -671,12 +665,6 @@ html[flashPluginSupportsClearSiteData] .clear-plugin-lso-data-disabled {
 .displaytable > section > * {
   display: table-cell;
   vertical-align: baseline;
-  border-bottom: 1px solid #eeeeee;
-}
-
-/* do not display a border after the last section in the table */
-.displaytable:not([searching='true']) > section:last-child > *  {
-  border-bottom: none;
 }
 
 /* Controlled setting indicator and bubble. */
