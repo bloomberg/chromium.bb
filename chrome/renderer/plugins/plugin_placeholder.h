@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,10 +32,11 @@ class PluginPlaceholder : public content::RenderViewObserver,
 
   webkit::WebViewPlugin* plugin() { return plugin_; }
   WebKit::WebFrame* frame() { return frame_; }
+  const WebKit::WebPluginParams& plugin_params() { return plugin_params_; }
 
-  // Can be called by a subclass to replace this placeholder with an actual
-  // plugin from |plugin_info|.
-  void LoadPluginInternal(const webkit::WebPluginInfo& plugin_info);
+  // Can be called by a subclass to replace this placeholder with a different
+  // plugin (which could be a placeholder again).
+  void LoadPluginInternal(WebKit::WebPlugin* new_plugin);
 
   // WebViewPlugin::Delegate methods:
   // Can be called by a subclass to hide this placeholder.

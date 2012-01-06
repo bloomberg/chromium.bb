@@ -24,6 +24,8 @@ class SpellCheck;
 class SpellCheckProvider;
 class VisitedLinkSlave;
 
+struct ChromeViewHostMsg_GetPluginInfo_Status;
+
 namespace safe_browsing {
 class PhishingClassifierFilter;
 }
@@ -123,12 +125,15 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
 
   SpellCheck* spellcheck() const { return spellcheck_.get(); }
 
- private:
   WebKit::WebPlugin* CreatePlugin(
       content::RenderView* render_view,
       WebKit::WebFrame* frame,
-      const WebKit::WebPluginParams& params);
+      const WebKit::WebPluginParams& params,
+      const ChromeViewHostMsg_GetPluginInfo_Status& status,
+      const webkit::WebPluginInfo& plugin,
+      const std::string& actual_mime_type);
 
+ private:
   // Returns true if the frame is navigating to an URL either into or out of an
   // extension app's extent.
   bool CrossesExtensionExtents(WebKit::WebFrame* frame,

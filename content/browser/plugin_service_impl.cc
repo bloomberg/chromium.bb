@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -38,7 +38,7 @@
 #include "webkit/plugins/npapi/plugin_list.h"
 #include "webkit/plugins/webplugininfo.h"
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_OPENBSD)
+#if defined(OS_POSIX) && !defined(OS_OPENBSD)
 using ::base::files::FilePathWatcher;
 #endif
 
@@ -89,7 +89,8 @@ static void NotifyPluginsOfActivation() {
     plugin->OnAppActivation();
   }
 }
-#elif defined(OS_POSIX) && !defined(OS_OPENBSD)
+#endif
+#if defined(OS_POSIX) && !defined(OS_OPENBSD)
 // Delegate class for monitoring directories.
 class PluginDirWatcherDelegate : public FilePathWatcher::Delegate {
   virtual void OnFilePathChanged(const FilePath& path) OVERRIDE {
@@ -203,9 +204,7 @@ void PluginServiceImpl::StartWatchingPlugins() {
       hklm_watcher_.StartWatching(hklm_event_.get(), this);
     }
   }
-#elif defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_OPENBSD)
-// The FilePathWatcher produces too many false positives on MacOS (access time
-// updates?) which will lead to enforcing updates of the plugins way too often.
+#elif defined(OS_POSIX) && !defined(OS_OPENBSD)
 // On ChromeOS the user can't install plugins anyway and on Windows all
 // important plugins register themselves in the registry so no need to do that.
   file_watcher_delegate_ = new PluginDirWatcherDelegate();
@@ -629,7 +628,7 @@ content::PepperPluginInfo* PluginServiceImpl::GetRegisteredPpapiPluginInfo(
   return &ppapi_plugins_[ppapi_plugins_.size() - 1];
 }
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_OPENBSD)
+#if defined(OS_POSIX) && !defined(OS_OPENBSD)
 // static
 void PluginServiceImpl::RegisterFilePathWatcher(
     FilePathWatcher *watcher,

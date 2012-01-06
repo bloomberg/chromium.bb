@@ -8,26 +8,21 @@
 
 #include "base/string16.h"
 #include "chrome/renderer/plugins/plugin_placeholder.h"
+#include "content/public/renderer/render_process_observer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 
 namespace content {
 class RenderThread;
 }
 
-class MissingPlugin : public PluginPlaceholder {
+class MissingPlugin : public PluginPlaceholder,
+                      public content::RenderProcessObserver {
  public:
   // Creates a new WebViewPlugin with a MissingPlugin as a delegate.
   static webkit::WebViewPlugin* Create(
       content::RenderView* render_view,
       WebKit::WebFrame* frame,
       const WebKit::WebPluginParams& params);
-
- private:
-  MissingPlugin(content::RenderView* render_view,
-                WebKit::WebFrame* frame,
-                const WebKit::WebPluginParams& params,
-                const std::string& html_data);
-  virtual ~MissingPlugin();
 
   // WebViewPlugin::Delegate methods:
   virtual void BindWebFrame(WebKit::WebFrame* frame) OVERRIDE;
@@ -40,6 +35,16 @@ class MissingPlugin : public PluginPlaceholder {
   // content::RenderViewObserver methods:
   virtual void ContextMenuAction(unsigned id) OVERRIDE;
 
+  // content::RenderProcessObserver methods:
+  virtual void PluginListChanged() OVERRIDE;
+
+ private:
+  MissingPlugin(content::RenderView* render_view,
+                WebKit::WebFrame* frame,
+                const WebKit::WebPluginParams& params,
+                const std::string& html_data);
+  virtual ~MissingPlugin();
+
   void HideCallback(const CppArgumentList& args, CppVariant* result);
 
   void OnFoundMissingPlugin(const string16& plugin_name);
@@ -49,8 +54,6 @@ class MissingPlugin : public PluginPlaceholder {
 
   void SetMessage(const string16& message);
   void UpdateMessage();
-
-  WebKit::WebString mime_type_;
 
   // |routing_id()| is the routing ID of our associated RenderView, but we have
   // a separate routing ID for messages specific to this placeholder.

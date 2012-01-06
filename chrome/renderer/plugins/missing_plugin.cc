@@ -13,11 +13,13 @@
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/custom_menu_commands.h"
+#include "chrome/renderer/chrome_content_renderer_client.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
 #include "grit/generated_resources.h"
 #include "grit/renderer_resources.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebContextMenuData.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMenuItemInfo.h"
@@ -72,15 +74,16 @@ MissingPlugin::MissingPlugin(RenderView* render_view,
                              const WebPluginParams& params,
                              const std::string& html_data)
     : PluginPlaceholder(render_view, frame, params, html_data),
-      mime_type_(params.mimeType),
       placeholder_routing_id_(RenderThread::Get()->GenerateRoutingID()) {
+  RenderThread::Get()->AddObserver(this);
   RenderThread::Get()->AddRoute(placeholder_routing_id_, this);
   RenderThread::Get()->Send(new ChromeViewHostMsg_FindMissingPlugin(
-      routing_id(), placeholder_routing_id_, mime_type_.utf8()));
+      routing_id(), placeholder_routing_id_, params.mimeType.utf8()));
 }
 
 MissingPlugin::~MissingPlugin() {
   RenderThread::Get()->RemoveRoute(placeholder_routing_id_);
+  RenderThread::Get()->RemoveObserver(this);
 }
 
 void MissingPlugin::BindWebFrame(WebFrame* frame) {
@@ -102,7 +105,7 @@ void MissingPlugin::ShowContextMenu(const WebKit::WebMouseEvent& event) {
 
   size_t i = 0;
   WebMenuItemInfo mime_type_item;
-  mime_type_item.label = mime_type_;
+  mime_type_item.label = plugin_params().mimeType;
   mime_type_item.hasTextDirectionOverride = false;
   mime_type_item.textDirection = WebKit::WebTextDirectionDefault;
   custom_items[i++] = mime_type_item;
@@ -157,6 +160,25 @@ void MissingPlugin::OnStartedDownloadingPlugin() {
 
 void MissingPlugin::OnFinishedDownloadingPlugin() {
   SetMessage(l10n_util::GetStringUTF16(IDS_PLUGIN_INSTALLING));
+}
+
+void MissingPlugin::PluginListChanged() {
+  ChromeViewHostMsg_GetPluginInfo_Status status;
+  webkit::WebPluginInfo plugin_info;
+  std::string mime_type(plugin_params().mimeType.utf8());
+  std::string actual_mime_type;
+  render_view()->Send(new ChromeViewHostMsg_GetPluginInfo(
+      routing_id(), GURL(plugin_params().url), frame()->top()->document().url(),
+      mime_type, &status, &plugin_info, &actual_mime_type));
+  if (status.value == ChromeViewHostMsg_GetPluginInfo_Status::kNotFound)
+    return;
+  chrome::ChromeContentRendererClient* client =
+      static_cast<chrome::ChromeContentRendererClient*>(
+          content::GetContentClient()->renderer());
+  WebPlugin* new_plugin =
+      client->CreatePlugin(render_view(), frame(), plugin_params(),
+                           status, plugin_info, actual_mime_type);
+  LoadPluginInternal(new_plugin);
 }
 
 void MissingPlugin::SetMessage(const string16& message) {

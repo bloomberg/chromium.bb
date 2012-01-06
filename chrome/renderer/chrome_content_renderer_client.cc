@@ -285,8 +285,16 @@ bool ChromeContentRendererClient::OverrideCreatePlugin(
     content::RenderView* render_view,
     WebFrame* frame,
     const WebPluginParams& params,
-    WebKit::WebPlugin** plugin) {
-  *plugin = CreatePlugin(render_view, frame, params);
+    WebPlugin** plugin) {
+  ChromeViewHostMsg_GetPluginInfo_Status status;
+  webkit::WebPluginInfo plugin_info;
+  std::string actual_mime_type;
+  render_view->Send(new ChromeViewHostMsg_GetPluginInfo(
+      render_view->GetRoutingId(), GURL(params.url),
+      frame->top()->document().url(), params.mimeType.utf8(),
+      &status, &plugin_info, &actual_mime_type));
+  *plugin = CreatePlugin(render_view, frame, params,
+                         status, plugin_info, actual_mime_type);
   return true;
 }
 
@@ -311,17 +319,13 @@ bool ChromeContentRendererClient::OverrideCreateWebMediaPlayer(
 WebPlugin* ChromeContentRendererClient::CreatePlugin(
     content::RenderView* render_view,
     WebFrame* frame,
-    const WebPluginParams& original_params) {
+    const WebPluginParams& original_params,
+    const ChromeViewHostMsg_GetPluginInfo_Status& status,
+    const webkit::WebPluginInfo& plugin,
+    const std::string& actual_mime_type) {
   CommandLine* cmd = CommandLine::ForCurrentProcess();
   GURL url(original_params.url);
   std::string orig_mime_type = original_params.mimeType.utf8();
-  ChromeViewHostMsg_GetPluginInfo_Status status;
-  webkit::WebPluginInfo plugin;
-  std::string actual_mime_type;
-  render_view->Send(new ChromeViewHostMsg_GetPluginInfo(
-      render_view->GetRoutingId(), url, frame->top()->document().url(),
-      orig_mime_type, &status, &plugin, &actual_mime_type));
-
   if (status.value == ChromeViewHostMsg_GetPluginInfo_Status::kNotFound) {
     MissingPluginReporter::GetInstance()->ReportPluginMissing(
         orig_mime_type, url);

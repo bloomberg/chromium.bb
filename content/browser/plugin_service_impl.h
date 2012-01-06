@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,7 +31,7 @@
 #include "base/win/registry.h"
 #endif
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_OPENBSD)
+#if defined(OS_POSIX) && !defined(OS_OPENBSD)
 #include "base/files/file_path_watcher.h"
 #endif
 
@@ -189,7 +189,7 @@ class CONTENT_EXPORT PluginServiceImpl
       const FilePath& plugin_path,
       PluginProcessHost::Client* client);
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_OPENBSD)
+#if defined(OS_POSIX) && !defined(OS_OPENBSD)
   // Registers a new FilePathWatcher for a given path.
   static void RegisterFilePathWatcher(
       base::files::FilePathWatcher* watcher,
@@ -215,7 +215,7 @@ class CONTENT_EXPORT PluginServiceImpl
   base::WaitableEventWatcher hklm_watcher_;
 #endif
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_OPENBSD)
+#if defined(OS_POSIX) && !defined(OS_OPENBSD)
   ScopedVector<base::files::FilePathWatcher> file_watchers_;
   scoped_refptr<PluginDirWatcherDelegate> file_watcher_delegate_;
 #endif

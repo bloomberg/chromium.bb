@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -50,11 +50,9 @@ void PluginPlaceholder::BindWebFrame(WebFrame* frame) {
   BindToJavascript(frame, "plugin");
 }
 
-void PluginPlaceholder::LoadPluginInternal(const WebPluginInfo& plugin_info) {
+void PluginPlaceholder::LoadPluginInternal(WebPlugin* new_plugin) {
   CHECK(plugin_);
   WebPluginContainer* container = plugin_->container();
-  WebPlugin* new_plugin =
-      render_view()->CreatePlugin(frame_, plugin_info, plugin_params_);
   if (new_plugin && new_plugin->initialize(container)) {
     plugin_->RestoreTitleText();
     container->setPlugin(new_plugin);
