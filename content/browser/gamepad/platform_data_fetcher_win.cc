@@ -1,8 +1,8 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/gamepad/data_fetcher_win.h"
+#include "content/browser/gamepad/platform_data_fetcher_win.h"
 
 #include "base/debug/trace_event.h"
 #include "content/common/gamepad_messages.h"
@@ -78,11 +78,11 @@ bool EnableXInput() {
 
 }
 
-GamepadDataFetcherWindows::GamepadDataFetcherWindows()
+GamepadPlatformDataFetcherWin::GamepadPlatformDataFetcherWin()
     : xinput_available_(EnableXInput()) {
 }
 
-void GamepadDataFetcherWindows::GetGamepadData(WebGamepads* pads,
+void GamepadPlatformDataFetcherWin::GetGamepadData(WebGamepads* pads,
                                         bool devices_changed_hint) {
   TRACE_EVENT0("GAMEPAD", "GetGamepadData");
 
@@ -113,7 +113,7 @@ void GamepadDataFetcherWindows::GetGamepadData(WebGamepads* pads,
         pad.connected = true;
         base::swprintf(pad.id,
                        WebGamepad::idLengthCap,
-                       L"Xbox 360 Controller (XInput %ls)",
+                       L"Xbox 360 Controller (XInput STANDARD %ls)",
                        GamepadSubTypeName(caps.SubType));
       }
     }

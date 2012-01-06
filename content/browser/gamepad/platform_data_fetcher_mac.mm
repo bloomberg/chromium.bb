@@ -1,8 +1,8 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/gamepad/data_fetcher_mac.h"
+#include "content/browser/gamepad/platform_data_fetcher_mac.h"
 
 #include "base/mac/foundation_util.h"
 #include "base/memory/scoped_nsobject.h"
@@ -41,7 +41,8 @@ const uint32_t kAxisMaximumUsageNumber = 0x35;
 
 }  // namespace
 
-GamepadDataFetcherMac::GamepadDataFetcherMac() : enabled_(true) {
+GamepadPlatformDataFetcherMac::GamepadPlatformDataFetcherMac()
+    : enabled_(true) {
   hid_manager_ref_.reset(IOHIDManagerCreate(kCFAllocatorDefault,
                                             kIOHIDOptionsTypeNone));
   if (CFGetTypeID(hid_manager_ref_) != IOHIDManagerGetTypeID()) {
@@ -61,7 +62,7 @@ GamepadDataFetcherMac::GamepadDataFetcherMac() : enabled_(true) {
   RegisterForNotifications();
 }
 
-void GamepadDataFetcherMac::RegisterForNotifications() {
+void GamepadPlatformDataFetcherMac::RegisterForNotifications() {
   // Register for plug/unplug notifications.
   IOHIDManagerRegisterDeviceMatchingCallback(
       hid_manager_ref_,
@@ -87,7 +88,7 @@ void GamepadDataFetcherMac::RegisterForNotifications() {
                               kIOHIDOptionsTypeSeizeDevice) == kIOReturnSuccess;
 }
 
-void GamepadDataFetcherMac::UnregisterFromNotifications() {
+void GamepadPlatformDataFetcherMac::UnregisterFromNotifications() {
   IOHIDManagerUnscheduleFromRunLoop(
       hid_manager_ref_,
       CFRunLoopGetCurrent(),
@@ -95,44 +96,45 @@ void GamepadDataFetcherMac::UnregisterFromNotifications() {
   IOHIDManagerClose(hid_manager_ref_, kIOHIDOptionsTypeNone);
 }
 
-void GamepadDataFetcherMac::PauseHint(bool pause) {
+void GamepadPlatformDataFetcherMac::PauseHint(bool pause) {
   if (pause)
     UnregisterFromNotifications();
   else
     RegisterForNotifications();
 }
 
-GamepadDataFetcherMac::~GamepadDataFetcherMac() {
+GamepadPlatformDataFetcherMac::~GamepadPlatformDataFetcherMac() {
   UnregisterFromNotifications();
 }
 
-GamepadDataFetcherMac* GamepadDataFetcherMac::InstanceFromContext(
+GamepadPlatformDataFetcherMac*
+GamepadPlatformDataFetcherMac::InstanceFromContext(
     void* context) {
-  return reinterpret_cast<GamepadDataFetcherMac*>(context);
+  return reinterpret_cast<GamepadPlatformDataFetcherMac*>(context);
 }
 
-void GamepadDataFetcherMac::DeviceAddCallback(void* context,
+void GamepadPlatformDataFetcherMac::DeviceAddCallback(void* context,
                                               IOReturn result,
                                               void* sender,
                                               IOHIDDeviceRef ref) {
   InstanceFromContext(context)->DeviceAdd(ref);
 }
 
-void GamepadDataFetcherMac::DeviceRemoveCallback(void* context,
+void GamepadPlatformDataFetcherMac::DeviceRemoveCallback(void* context,
                                                  IOReturn result,
                                                  void* sender,
                                                  IOHIDDeviceRef ref) {
   InstanceFromContext(context)->DeviceRemove(ref);
 }
 
-void GamepadDataFetcherMac::ValueChangedCallback(void* context,
+void GamepadPlatformDataFetcherMac::ValueChangedCallback(void* context,
                                                  IOReturn result,
                                                  void* sender,
                                                  IOHIDValueRef ref) {
   InstanceFromContext(context)->ValueChanged(ref);
 }
 
-void GamepadDataFetcherMac::AddButtonsAndAxes(NSArray* elements,
+void GamepadPlatformDataFetcherMac::AddButtonsAndAxes(NSArray* elements,
                                               size_t slot) {
   WebKit::WebGamepad& pad = data_.items[slot];
   AssociatedData& associated = associated_[slot];
@@ -168,7 +170,7 @@ void GamepadDataFetcherMac::AddButtonsAndAxes(NSArray* elements,
   }
 }
 
-void GamepadDataFetcherMac::DeviceAdd(IOHIDDeviceRef device) {
+void GamepadPlatformDataFetcherMac::DeviceAdd(IOHIDDeviceRef device) {
   using WebKit::WebGamepad;
   using WebKit::WebGamepads;
   using base::mac::CFToNSCast;
@@ -221,7 +223,7 @@ void GamepadDataFetcherMac::DeviceAdd(IOHIDDeviceRef device) {
     data_.length = slot + 1;
 }
 
-void GamepadDataFetcherMac::DeviceRemove(IOHIDDeviceRef device) {
+void GamepadPlatformDataFetcherMac::DeviceRemove(IOHIDDeviceRef device) {
   using WebKit::WebGamepads;
   size_t slot;
   if (!enabled_)
@@ -238,7 +240,7 @@ void GamepadDataFetcherMac::DeviceRemove(IOHIDDeviceRef device) {
   data_.items[slot].connected = false;
 }
 
-void GamepadDataFetcherMac::ValueChanged(IOHIDValueRef value) {
+void GamepadPlatformDataFetcherMac::ValueChanged(IOHIDValueRef value) {
   if (!enabled_)
     return;
 
@@ -276,7 +278,9 @@ void GamepadDataFetcherMac::ValueChanged(IOHIDValueRef value) {
   }
 }
 
-void GamepadDataFetcherMac::GetGamepadData(WebKit::WebGamepads* pads, bool) {
+void GamepadPlatformDataFetcherMac::GetGamepadData(
+    WebKit::WebGamepads* pads,
+    bool) {
   if (!enabled_) {
     pads->length = 0;
     return;
