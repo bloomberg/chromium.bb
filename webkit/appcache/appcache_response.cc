@@ -248,7 +248,7 @@ void AppCacheResponseReader::OpenEntryIfNeededAndContinue() {
   } else if (!disk_cache_) {
     rv = net::ERR_FAILED;
   } else {
-    entry_ptr = new(AppCacheDiskCacheInterface::Entry*);
+    entry_ptr = new AppCacheDiskCacheInterface::Entry*;
     open_callback_ =
         base::Bind(&AppCacheResponseReader::OnOpenEntryComplete,
                    weak_factory_.GetWeakPtr(), base::Owned(entry_ptr));
@@ -368,10 +368,10 @@ void AppCacheResponseWriter::CreateEntryIfNeededAndContinue() {
     rv = net::ERR_FAILED;
   } else {
     creation_phase_ = INITIAL_ATTEMPT;
-    entry_ptr = new(AppCacheDiskCacheInterface::Entry*);
+    entry_ptr = new AppCacheDiskCacheInterface::Entry*;
     create_callback_ =
         base::Bind(&AppCacheResponseWriter::OnCreateEntryComplete,
-                   base::Unretained(this), base::Owned(entry_ptr));
+                   weak_factory_.GetWeakPtr(), base::Owned(entry_ptr));
     rv = disk_cache_->CreateEntry(response_id_, entry_ptr, create_callback_);
   }
   if (rv != net::ERR_IO_PENDING)
@@ -381,8 +381,6 @@ void AppCacheResponseWriter::CreateEntryIfNeededAndContinue() {
 void AppCacheResponseWriter::OnCreateEntryComplete(
     AppCacheDiskCacheInterface::Entry** entry, int rv) {
   DCHECK(info_buffer_.get() || buffer_.get());
-
-  AppCacheDiskCacheInterface::Entry** entry_ptr = NULL;
 
   if (creation_phase_ == INITIAL_ATTEMPT) {
     if (rv != net::OK) {
@@ -395,10 +393,11 @@ void AppCacheResponseWriter::OnCreateEntryComplete(
     }
   } else if (creation_phase_ == DOOM_EXISTING) {
     creation_phase_ = SECOND_ATTEMPT;
-    entry_ptr = new(AppCacheDiskCacheInterface::Entry*);
+    AppCacheDiskCacheInterface::Entry** entry_ptr =
+        new AppCacheDiskCacheInterface::Entry*;
     create_callback_ =
         base::Bind(&AppCacheResponseWriter::OnCreateEntryComplete,
-                   base::Unretained(this), base::Owned(entry_ptr));
+                   weak_factory_.GetWeakPtr(), base::Owned(entry_ptr));
     rv = disk_cache_->CreateEntry(response_id_, entry_ptr, create_callback_);
     if (rv != net::ERR_IO_PENDING)
       OnCreateEntryComplete(entry_ptr, rv);
