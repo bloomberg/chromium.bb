@@ -12,6 +12,7 @@
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/shared_impl/resource.h"
 #include "ppapi/shared_impl/scoped_pp_resource.h"
+#include "ppapi/shared_impl/tracked_callback.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 
@@ -28,8 +29,8 @@ class AudioHelper : public PluginDelegate::PlatformAudioCommonClient {
                              size_t shared_memory_size_,
                              base::SyncSocket::Handle socket) OVERRIDE;
 
-  void SetCallbackInfo(bool create_callback_pending,
-                       PP_CompletionCallback create_callback);
+  void SetCreateCallback(
+      scoped_refptr< ::ppapi::TrackedCallback> create_callback);
 
  protected:
   // TODO(viettrungluu): This is all very poorly thought out. Refactor.
@@ -44,11 +45,7 @@ class AudioHelper : public PluginDelegate::PlatformAudioCommonClient {
                                base::SyncSocket::Handle socket_handle) = 0;
 
  private:
-  // Is a create callback pending to fire?
-  bool create_callback_pending_;
-
-  // Trusted callback invoked from StreamCreated.
-  PP_CompletionCallback create_callback_;
+  scoped_refptr< ::ppapi::TrackedCallback> create_callback_;
 
   // When a create callback is being issued, these will save the info for
   // querying from the callback. The proxy uses this to get the handles to the

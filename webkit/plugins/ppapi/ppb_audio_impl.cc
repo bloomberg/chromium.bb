@@ -20,6 +20,7 @@ using ppapi::PpapiGlobals;
 using ppapi::thunk::EnterResourceNoLock;
 using ppapi::thunk::PPB_Audio_API;
 using ppapi::thunk::PPB_AudioConfig_API;
+using ppapi::TrackedCallback;
 
 namespace webkit {
 namespace ppapi {
@@ -131,7 +132,7 @@ int32_t PPB_Audio_Impl::OpenTrusted(PP_Resource config,
   // At this point, we are guaranteeing ownership of the completion
   // callback.  Audio promises to fire the completion callback
   // once and only once.
-  SetCallbackInfo(true, create_callback);
+  SetCreateCallback(new TrackedCallback(this, create_callback));
 
   return PP_OK_COMPLETIONPENDING;
 }

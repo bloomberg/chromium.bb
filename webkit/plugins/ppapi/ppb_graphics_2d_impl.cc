@@ -33,6 +33,7 @@
 
 using ppapi::thunk::EnterResourceNoLock;
 using ppapi::thunk::PPB_ImageData_API;
+using ppapi::TrackedCallback;
 
 namespace webkit {
 namespace ppapi {
@@ -348,9 +349,11 @@ int32_t PPB_Graphics2D_Impl::Flush(PP_CompletionCallback callback) {
   if (nothing_visible) {
     // There's nothing visible to invalidate so just schedule the callback to
     // execute in the next round of the message loop.
-    ScheduleOffscreenCallback(FlushCallbackData(callback));
+    ScheduleOffscreenCallback(FlushCallbackData(
+        scoped_refptr<TrackedCallback>(new TrackedCallback(this, callback))));
   } else {
-    unpainted_flush_callback_.Set(callback);
+    unpainted_flush_callback_.Set(
+        scoped_refptr<TrackedCallback>(new TrackedCallback(this, callback)));
   }
   return PP_OK_COMPLETIONPENDING;
 }

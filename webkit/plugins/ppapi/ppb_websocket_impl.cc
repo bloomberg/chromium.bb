@@ -33,6 +33,7 @@ using ppapi::ArrayBufferVar;
 using ppapi::PpapiGlobals;
 using ppapi::StringVar;
 using ppapi::thunk::PPB_WebSocket_API;
+using ppapi::TrackedCallback;
 using ppapi::VarTracker;
 using WebKit::WebData;
 using WebKit::WebDocument;
@@ -82,15 +83,9 @@ PPB_WebSocket_Impl::PPB_WebSocket_Impl(PP_Instance instance)
       wait_for_receive_(false),
       close_code_(0),
       close_was_clean_(PP_FALSE),
+      empty_string_(new StringVar("", 0)),
       buffered_amount_(0),
       buffered_amount_after_close_(0) {
-  connect_callback_.func = NULL;
-  connect_callback_.user_data = NULL;
-  receive_callback_.func = NULL;
-  receive_callback_.user_data = NULL;
-  close_callback_.func = NULL;
-  close_callback_.user_data = NULL;
-  empty_string_ = new StringVar("", 0);
 }
 
 PPB_WebSocket_Impl::~PPB_WebSocket_Impl() {
@@ -209,7 +204,7 @@ int32_t PPB_WebSocket_Impl::Connect(PP_Var url,
   state_ = PP_WEBSOCKETREADYSTATE_CONNECTING_DEV;
 
   // Install callback.
-  connect_callback_ = callback;
+  connect_callback_ = new TrackedCallback(this, callback);
 
   return PP_OK_COMPLETIONPENDING;
 }
@@ -250,12 +245,14 @@ int32_t PPB_WebSocket_Impl::Close(uint16_t code,
     return PP_ERROR_BLOCKS_MAIN_THREAD;
 
   // Install |callback|.
-  close_callback_ = callback;
+  close_callback_ = new TrackedCallback(this, callback);
 
   // Abort ongoing connect.
   if (state_ == PP_WEBSOCKETREADYSTATE_CONNECTING_DEV) {
     state_ = PP_WEBSOCKETREADYSTATE_CLOSING_DEV;
-    PP_RunAndClearCompletionCallback(&connect_callback_, PP_ERROR_ABORTED);
+    // Need to do a "Post" to avoid reentering the plugin.
+    connect_callback_->PostAbort();
+    connect_callback_ = NULL;
     websocket_->fail(
         "WebSocket was closed before the connection was established.");
     return PP_OK_COMPLETIONPENDING;
@@ -265,7 +262,10 @@ int32_t PPB_WebSocket_Impl::Close(uint16_t code,
   if (wait_for_receive_) {
     wait_for_receive_ = false;
     receive_callback_var_ = NULL;
-    PP_RunAndClearCompletionCallback(&receive_callback_, PP_ERROR_ABORTED);
+
+    // Need to do a "Post" to avoid reentering the plugin.
+    receive_callback_->PostAbort();
+    receive_callback_ = NULL;
   }
 
   // Close connection.
@@ -305,7 +305,7 @@ int32_t PPB_WebSocket_Impl::ReceiveMessage(PP_Var* message,
   // Or retain |message| as buffer to store and install |callback|.
   wait_for_receive_ = true;
   receive_callback_var_ = message;
-  receive_callback_ = callback;
+  receive_callback_ = new TrackedCallback(this, callback);
 
   return PP_OK_COMPLETIONPENDING;
 }
@@ -422,7 +422,7 @@ PP_Var PPB_WebSocket_Impl::GetURL() {
 void PPB_WebSocket_Impl::didConnect() {
   DCHECK_EQ(PP_WEBSOCKETREADYSTATE_CONNECTING_DEV, state_);
   state_ = PP_WEBSOCKETREADYSTATE_OPEN_DEV;
-  PP_RunAndClearCompletionCallback(&connect_callback_, PP_OK);
+  TrackedCallback::ClearAndRun(&connect_callback_, PP_OK);
 }
 
 void PPB_WebSocket_Impl::didReceiveMessage(const WebString& message) {
@@ -438,7 +438,7 @@ void PPB_WebSocket_Impl::didReceiveMessage(const WebString& message) {
   if (!wait_for_receive_)
     return;
 
-  PP_RunAndClearCompletionCallback(&receive_callback_, DoReceive());
+  TrackedCallback::ClearAndRun(&receive_callback_, DoReceive());
 }
 
 void PPB_WebSocket_Impl::didReceiveBinaryData(const WebData& binaryData) {
@@ -457,7 +457,7 @@ void PPB_WebSocket_Impl::didReceiveBinaryData(const WebData& binaryData) {
   if (!wait_for_receive_)
     return;
 
-  PP_RunAndClearCompletionCallback(&receive_callback_, DoReceive());
+  TrackedCallback::ClearAndRun(&receive_callback_, DoReceive());
 }
 
 void PPB_WebSocket_Impl::didReceiveMessageError() {
@@ -476,7 +476,7 @@ void PPB_WebSocket_Impl::didReceiveMessageError() {
   // We must invoke the callback with error code here.
   wait_for_receive_ = false;
   receive_callback_var_ = NULL;
-  PP_RunAndClearCompletionCallback(&receive_callback_, PP_ERROR_FAILED);
+  TrackedCallback::ClearAndRun(&receive_callback_, PP_ERROR_FAILED);
 }
 
 void PPB_WebSocket_Impl::didUpdateBufferedAmount(
@@ -515,16 +515,16 @@ void PPB_WebSocket_Impl::didClose(unsigned long unhandled_buffered_amount,
   state_ = PP_WEBSOCKETREADYSTATE_CLOSED_DEV;
 
   if (state == PP_WEBSOCKETREADYSTATE_CONNECTING_DEV)
-    PP_RunAndClearCompletionCallback(&connect_callback_, PP_ERROR_FAILED);
+    TrackedCallback::ClearAndRun(&connect_callback_, PP_ERROR_FAILED);
 
   if (wait_for_receive_) {
     wait_for_receive_ = false;
     receive_callback_var_ = NULL;
-    PP_RunAndClearCompletionCallback(&receive_callback_, PP_ERROR_ABORTED);
+    TrackedCallback::ClearAndAbort(&receive_callback_);
   }
 
   if (state == PP_WEBSOCKETREADYSTATE_CLOSING_DEV)
-    PP_RunAndClearCompletionCallback(&close_callback_, PP_OK);
+    TrackedCallback::ClearAndRun(&close_callback_, PP_OK);
 
   // Disconnect.
   if (websocket_.get())

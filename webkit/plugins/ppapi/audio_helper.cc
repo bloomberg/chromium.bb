@@ -7,24 +7,17 @@
 #include "webkit/plugins/ppapi/common.h"
 #include "webkit/plugins/ppapi/resource_helper.h"
 
+using ppapi::TrackedCallback;
+
 namespace webkit {
 namespace ppapi {
 
 // AudioHelper -----------------------------------------------------------------
 
-AudioHelper::AudioHelper()
-    : create_callback_pending_(false),
-      shared_memory_size_for_create_callback_(0) {
-  create_callback_ = PP_MakeCompletionCallback(NULL, NULL);
+AudioHelper::AudioHelper() {
 }
 
 AudioHelper::~AudioHelper() {
-  // If the completion callback hasn't fired yet, do so here
-  // with an error condition.
-  if (create_callback_pending_) {
-    PP_RunCompletionCallback(&create_callback_, PP_ERROR_ABORTED);
-    create_callback_pending_ = false;
-  }
 }
 
 int32_t AudioHelper::GetSyncSocketImpl(int* sync_socket) {
@@ -61,7 +54,7 @@ void AudioHelper::StreamCreated(
     base::SharedMemoryHandle shared_memory_handle,
     size_t shared_memory_size,
     base::SyncSocket::Handle socket_handle) {
-  if (create_callback_pending_) {
+  if (TrackedCallback::IsPending(create_callback_)) {
     // Trusted side of proxy can specify a callback to recieve handles. In
     // this case we don't need to map any data or start the thread since it
     // will be handled by the proxy.
@@ -70,8 +63,7 @@ void AudioHelper::StreamCreated(
     shared_memory_size_for_create_callback_ = shared_memory_size;
     socket_for_create_callback_.reset(new base::SyncSocket(socket_handle));
 
-    PP_RunCompletionCallback(&create_callback_, 0);
-    create_callback_pending_ = false;
+    ::ppapi::TrackedCallback::ClearAndRun(&create_callback_, PP_OK);
 
     // It might be nice to close the handles here to free up some system
     // resources, but we can't since there's a race condition. The handles must
@@ -85,9 +77,9 @@ void AudioHelper::StreamCreated(
   }
 }
 
-void AudioHelper::SetCallbackInfo(bool create_callback_pending,
-                                  PP_CompletionCallback create_callback) {
-  create_callback_pending_ = create_callback_pending;
+void AudioHelper::SetCreateCallback(
+    scoped_refptr< ::ppapi::TrackedCallback> create_callback) {
+  DCHECK(!TrackedCallback::IsPending(create_callback_));
   create_callback_ = create_callback;
 }
 

@@ -9,6 +9,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "ppapi/shared_impl/resource.h"
+#include "ppapi/shared_impl/tracked_callback.h"
 #include "ppapi/thunk/ppb_websocket_api.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSocketClient.h"
 
@@ -75,15 +76,15 @@ class PPB_WebSocket_Impl : public ::ppapi::Resource,
   PP_WebSocketReadyState_Dev state_;
   bool error_was_received_;
 
-  PP_CompletionCallback connect_callback_;
+  scoped_refptr< ::ppapi::TrackedCallback> connect_callback_;
 
-  PP_CompletionCallback receive_callback_;
+  scoped_refptr< ::ppapi::TrackedCallback> receive_callback_;
   PP_Var* receive_callback_var_;
   bool wait_for_receive_;
   // TODO(toyoshim): Use std::queue<Var> when it supports binary.
   std::queue<PP_Var> received_messages_;
 
-  PP_CompletionCallback close_callback_;
+  scoped_refptr< ::ppapi::TrackedCallback> close_callback_;
   uint16_t close_code_;
   scoped_refptr< ::ppapi::StringVar> close_reason_;
   PP_Bool close_was_clean_;

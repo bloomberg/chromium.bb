@@ -12,6 +12,7 @@
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/ppb_graphics_2d.h"
 #include "ppapi/shared_impl/resource.h"
+#include "ppapi/shared_impl/tracked_callback.h"
 #include "ppapi/thunk/ppb_graphics_2d_api.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebCanvas.h"
 
@@ -83,26 +84,29 @@ class PPB_Graphics2D_Impl : public ::ppapi::Resource,
       Clear();
     }
 
-    explicit FlushCallbackData(const PP_CompletionCallback& callback) {
+    explicit FlushCallbackData(
+        scoped_refptr< ::ppapi::TrackedCallback> callback) {
       Set(callback);
     }
 
-    bool is_null() const { return !callback_.func; }
+    bool is_null() const {
+      return !::ppapi::TrackedCallback::IsPending(callback_);
+    }
 
-    void Set(const PP_CompletionCallback& callback) {
+    void Set(scoped_refptr< ::ppapi::TrackedCallback> callback) {
       callback_ = callback;
     }
 
     void Clear() {
-      callback_ = PP_MakeCompletionCallback(NULL, 0);
+      callback_ = NULL;
     }
 
     void Execute(int32_t result) {
-      PP_RunAndClearCompletionCallback(&callback_, result);
+      ::ppapi::TrackedCallback::ClearAndRun(&callback_, result);
     }
 
    private:
-    PP_CompletionCallback callback_;
+    scoped_refptr< ::ppapi::TrackedCallback> callback_;
   };
 
   // Called internally to execute the different queued commands. The
