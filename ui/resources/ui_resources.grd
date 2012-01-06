@@ -127,6 +127,7 @@
         <include name="IDR_CLOSE_SA" file="close_sa.png" type="BINDATA" />
         <include name="IDR_CLOSE_SA_H" file="close_sa_h.png" type="BINDATA" />
         <include name="IDR_CLOSE_SA_P" file="close_sa_p.png" type="BINDATA" />
+        <include name="IDR_DISCLOSURE_ARROW" file="discloure_arrow.png" type="BINDATA" />
         <include name="IDR_MENU_ARROW" file="menu_arrow.png" type="BINDATA" />
         <include name="IDR_MENU_CHECK" file="menu_check.png" type="BINDATA" />
       </if>

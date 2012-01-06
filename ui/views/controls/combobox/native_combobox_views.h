@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -67,10 +67,6 @@ class NativeComboboxViews : public views::View,
   // Returns the Combobox's font.
   const gfx::Font& GetFont() const;
 
-  // Draw an arrow
-  void DrawArrow(gfx::Canvas* canvas,
-                 int tip_x, int tip_y, int shift_x, int shift_y) const;
-
   // Draw the selected value of the drop down list
   void PaintText(gfx::Canvas* canvas);
 
@@ -82,6 +78,9 @@ class NativeComboboxViews : public views::View,
 
   // The reference to the border class. The object is owned by View::border_.
   FocusableBorder* text_border_;
+
+  // The disclosure arrow next to the currently selected item from the list.
+  const SkBitmap* disclosure_arrow_;
 
   // Responsible for showing the context menu.
   scoped_ptr<MenuRunner> dropdown_list_menu_runner_;

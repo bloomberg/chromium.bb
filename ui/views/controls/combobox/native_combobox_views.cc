@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 
 #include "base/command_line.h"
 #include "base/utf_string_conversions.h"
+#include "grit/ui_resources.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/models/combobox_model.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -24,10 +25,6 @@
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget.h"
 
-#if defined(OS_LINUX)
-#include "ui/gfx/gtk_util.h"
-#endif
-
 namespace {
 
 // Define the size of the insets.
@@ -39,15 +36,13 @@ const int kRightInsetSize = 4;
 // Limit how small a combobox can be.
 const int kMinComboboxWidth = 148;
 
-// Size of the combobox arrow.
-const int kComboboxArrowSize = 9;
-const int kComboboxArrowOffset = 7;
-const int kComboboxArrowMargin = 12;
+// Size of the combobox arrow margins
+const int kDisclosureArrowLeftPadding = 7;
+const int kDisclosureArrowRightPadding = 7;
 
 // Color settings for text and border.
 // These are tentative, and should be derived from theme, system
 // settings and current settings.
-const SkColor kDefaultBorderColor = SK_ColorGRAY;
 const SkColor kTextColor = SK_ColorBLACK;
 
 // Define the id of the first item in the menu (since it needs to be > 0)
@@ -63,6 +58,8 @@ const char NativeComboboxViews::kViewClassName[] =
 NativeComboboxViews::NativeComboboxViews(Combobox* parent)
     : combobox_(parent),
       text_border_(new FocusableBorder()),
+      disclosure_arrow_(ResourceBundle::GetSharedInstance().GetBitmapNamed(
+          IDR_DISCLOSURE_ARROW)),
       dropdown_open_(false),
       selected_item_(-1),
       content_width_(0),
@@ -205,12 +202,14 @@ gfx::Size NativeComboboxViews::GetPreferredSize() {
   if (content_width_ == 0)
     UpdateFromModel();
 
-  // TODO(saintlou) the preferred size will drive the local bounds
-  // which in turn is used to set the minimum width for the dropdown
+  // The preferred size will drive the local bounds which in turn is used to set
+  // the minimum width for the dropdown list.
   gfx::Insets insets = GetInsets();
-  return gfx::Size(std::min(kMinComboboxWidth,
-                            content_width_ + 2 * (insets.width())),
-                   content_height_ + 2 * (insets.height()));
+  int total_width = content_width_ + (2 * insets.width())
+      + kDisclosureArrowLeftPadding + disclosure_arrow_->width()
+      + kDisclosureArrowRightPadding;
+  return gfx::Size(std::min(kMinComboboxWidth, total_width),
+                   content_height_ + (2 * insets.height()));
 }
 
 View* NativeComboboxViews::GetView() {
@@ -274,30 +273,6 @@ const gfx::Font& NativeComboboxViews::GetFont() const {
   return rb.GetFont(ResourceBundle::BaseFont);
 }
 
-// tip_x and tip_y are the coordinates of the tip of an arrow head which is
-// drawn as an isoscele triangle
-// shift_x and shift_y are offset from tip_x and tip_y to specify the relative
-// positions of the 2 equal angles (ie not the angle at the tip of the arrow)
-// Note: the width of the base (the side opposite the tip) is 2 * shift_x
-void NativeComboboxViews::DrawArrow(gfx::Canvas* canvas,
-                                     int tip_x,
-                                     int tip_y,
-                                     int shift_x,
-                                     int shift_y) const {
-  SkPaint paint;
-  paint.setStyle(SkPaint::kStrokeAndFill_Style);
-  paint.setColor(kTextColor);
-  paint.setAntiAlias(true);
-  gfx::Path path;
-  path.incReserve(4);
-  path.moveTo(SkIntToScalar(tip_x), SkIntToScalar(tip_y));
-  path.lineTo(SkIntToScalar(tip_x + shift_x), SkIntToScalar(tip_y + shift_y));
-  path.lineTo(SkIntToScalar(tip_x - shift_x), SkIntToScalar(tip_y + shift_y));
-  path.close();
-  canvas->GetSkCanvas()->drawPath(path, paint);
-}
-
-
 void NativeComboboxViews::PaintText(gfx::Canvas* canvas) {
   gfx::Insets insets = GetInsets();
 
@@ -314,30 +289,21 @@ void NativeComboboxViews::PaintText(gfx::Canvas* canvas) {
     index = 0;
   string16 text = combobox_->model()->GetItemAt(index);
 
+  int disclosure_arrow_offset = width() - disclosure_arrow_->width()
+      - kDisclosureArrowLeftPadding - kDisclosureArrowRightPadding;
+
   const gfx::Font& font = GetFont();
-  int width = font.GetStringWidth(text);
+  int text_width = font.GetStringWidth(text);
+  if ((text_width + insets.width()) > disclosure_arrow_offset)
+    text_width = disclosure_arrow_offset - insets.width();
 
-  canvas->DrawStringInt(text, font, text_color, x, y, width, text_height);
+  canvas->DrawStringInt(text, font, text_color, x, y, text_width, text_height);
 
-  // draw the double arrow
-  gfx::Rect lb = GetLocalBounds();
-  DrawArrow(canvas,
-      lb.width() - (kComboboxArrowSize / 2) - kComboboxArrowOffset,
-      lb.height() / 2 - kComboboxArrowSize,
-      kComboboxArrowSize / 2,
-      kComboboxArrowSize - 2);
-  DrawArrow(canvas,
-      lb.width() - (kComboboxArrowSize / 2) - kComboboxArrowOffset,
-      lb.height() / 2 + kComboboxArrowSize,
-      -kComboboxArrowSize / 2,
-      -(kComboboxArrowSize - 2));
-
-  // draw the margin
-  canvas->DrawLineInt(kDefaultBorderColor,
-      lb.width() - kComboboxArrowSize - kComboboxArrowMargin,
-      kTopInsetSize,
-      lb.width() - kComboboxArrowSize - kComboboxArrowMargin,
-      lb.height() - kBottomInsetSize);
+  gfx::Rect arrow_bounds(disclosure_arrow_offset + kDisclosureArrowLeftPadding,
+                         height() / 2 - disclosure_arrow_->height() / 2,
+                         disclosure_arrow_->width(),
+                         disclosure_arrow_->height());
+  canvas->DrawBitmapInt(*disclosure_arrow_, arrow_bounds.x(), arrow_bounds.y());
 
   canvas->Restore();
 }
