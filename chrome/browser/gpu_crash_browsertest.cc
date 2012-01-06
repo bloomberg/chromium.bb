@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -74,7 +74,7 @@ IN_PROC_BROWSER_TEST_F(GPUCrashTest, WebkitLoseContext) {
       browser(),
       ui_test_utils::GetFileUrlWithQuery(
           gpu_test_dir_.AppendASCII("webgl.html"),
-          "query=WEBKIT_lose_context"));
+          "query=WEBGL_lose_context"));
 
   std::string m;
   ASSERT_TRUE(message_queue.WaitForMessage(&m));

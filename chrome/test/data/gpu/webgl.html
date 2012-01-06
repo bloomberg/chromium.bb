@@ -4,6 +4,7 @@
 var canvas;
 var w, h;
 var gl;
+var extension;
 
 function testHorizontalBands() {
   gl.enable(gl.SCISSOR_TEST);
@@ -28,11 +29,14 @@ function testHorizontalBands() {
 
 function testContextLost(e) {
   e.preventDefault();
+  setTimeout(function() {
+    extension.restoreContext();
+  }, 0);
 }
 
 function testContextRestored() {
   gl = canvas.getContext("experimental-webgl");
-  if (!gl) {
+  if (!gl || gl.isContextLost()) {
     document.title = "FAILED: could not get recovered context";
     return;
   }
@@ -49,14 +53,13 @@ function testContextRestored() {
     window.domAutomationController.send("FAILED");
 }
 
-function contetLostTest(kind)
+function contextLostTest(kind)
 {
   switch (kind) {
-    case "WEBKIT_lose_context": {
-      var extension = gl.getExtension("WEBKIT_lose_context");
+    case "WEBGL_lose_context": {
+      extension = gl.getExtension("WEBKIT_WEBGL_lose_context") ||
+                  gl.getExtension("WEBGL_lose_context");
       extension.loseContext();
-      if (extension.restoreContext)
-        extension.restoreContext();
       break;
     }
     case "kill":
@@ -69,7 +72,7 @@ function contetLostTest(kind)
 function onLoad() {
   canvas = document.getElementById("canvas1");
   w = canvas.width;
-  h = canvas.height
+  h = canvas.height;
   if (!canvas) {
     document.title = "FAILED: canvas element not found";
     return;
@@ -90,10 +93,10 @@ function onLoad() {
 
   var query = /query=(.*)/.exec(window.location.href);
   if (query) {
-    contetLostTest(query[1]);
+    contextLostTest(query[1]);
   } else {
-      var renderer = gl.getParameter(gl.RENDERER);
-      document.title = "SUCCESS: " + renderer;
+    var renderer = gl.getParameter(gl.RENDERER);
+    document.title = "SUCCESS: " + renderer;
   }
 }
 </script>
