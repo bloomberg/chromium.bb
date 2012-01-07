@@ -312,8 +312,6 @@ class ExtensionImpl : public ChromeV8Extension {
       view_type = chrome::VIEW_TYPE_EXTENSION_POPUP;
     } else if (view_type_string == chrome::kViewTypeExtensionDialog) {
       view_type = chrome::VIEW_TYPE_EXTENSION_DIALOG;
-    } else if (view_type_string == chrome::kViewTypeAppShell) {
-      view_type = chrome::VIEW_TYPE_APP_SHELL;
     } else if (view_type_string != chrome::kViewTypeAll) {
       return v8::Undefined();
     }

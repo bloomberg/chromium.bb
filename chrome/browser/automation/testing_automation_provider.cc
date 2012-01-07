@@ -2954,9 +2954,6 @@ void TestingAutomationProvider::GetBrowserInfo(
         case chrome::VIEW_TYPE_EXTENSION_DIALOG:
           type = "EXTENSION_DIALOG";
           break;
-        case chrome::VIEW_TYPE_APP_SHELL:
-          type = "APP_SHELL";
-          break;
         default:
           type = "unknown";
           break;

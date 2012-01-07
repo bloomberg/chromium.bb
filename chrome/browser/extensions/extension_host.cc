@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -189,10 +189,6 @@ void ExtensionHost::CreateView(Browser* browser) {
 #endif
 }
 
-void ExtensionHost::CreateViewWithoutBrowser() {
-  CreateView(NULL);
-}
-
 WebContents* ExtensionHost::GetAssociatedWebContents() const {
   return associated_web_contents_;
 }
@@ -335,8 +331,7 @@ void ExtensionHost::DidStopLoading() {
   did_stop_loading_ = true;
   if (extension_host_type_ == chrome::VIEW_TYPE_EXTENSION_POPUP ||
       extension_host_type_ == chrome::VIEW_TYPE_EXTENSION_DIALOG ||
-      extension_host_type_ == chrome::VIEW_TYPE_EXTENSION_INFOBAR ||
-      extension_host_type_ == chrome::VIEW_TYPE_APP_SHELL) {
+      extension_host_type_ == chrome::VIEW_TYPE_EXTENSION_INFOBAR) {
 #if defined(TOOLKIT_VIEWS) || defined(OS_MACOSX)
     if (view_.get())
       view_->DidStopLoading();
@@ -359,8 +354,6 @@ void ExtensionHost::DidStopLoading() {
     } else if (extension_host_type_ == chrome::VIEW_TYPE_EXTENSION_INFOBAR) {
       UMA_HISTOGRAM_TIMES("Extensions.InfobarLoadTime",
         since_created_.Elapsed());
-    } else if (extension_host_type_ == chrome::VIEW_TYPE_APP_SHELL) {
-      UMA_HISTOGRAM_TIMES("Extensions.ShellLoadTime", since_created_.Elapsed());
     }
   }
 }
@@ -396,8 +389,7 @@ void ExtensionHost::CloseContents(WebContents* contents) {
   if (extension_host_type_ == chrome::VIEW_TYPE_EXTENSION_POPUP ||
       extension_host_type_ == chrome::VIEW_TYPE_EXTENSION_DIALOG ||
       extension_host_type_ == chrome::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE ||
-      extension_host_type_ == chrome::VIEW_TYPE_EXTENSION_INFOBAR ||
-      extension_host_type_ == chrome::VIEW_TYPE_APP_SHELL) {
+      extension_host_type_ == chrome::VIEW_TYPE_EXTENSION_INFOBAR) {
     content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE,
         content::Source<Profile>(profile_),

@@ -1,10 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "base/command_line.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
-#include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/profiles/profile.h"
@@ -48,7 +47,6 @@ class PlatformAppBrowserTest : public ExtensionBrowserTest {
     command_line->AppendSwitch(switches::kEnablePlatformApps);
   }
 
- protected:
   void LoadAndLaunchPlatformApp(const char* name) {
     web_app::SetDisableShortcutCreationForTests(true);
     EXPECT_TRUE(LoadExtension(test_data_dir_.AppendASCII("platform_apps").
@@ -59,7 +57,7 @@ class PlatformAppBrowserTest : public ExtensionBrowserTest {
         last_loaded_extension_id_, false);
     EXPECT_TRUE(extension);
 
-    size_t platform_app_count = GetPlatformAppCount();
+    size_t browser_count = BrowserList::size();
 
     Browser::OpenApplication(
         browser()->profile(),
@@ -68,57 +66,51 @@ class PlatformAppBrowserTest : public ExtensionBrowserTest {
         GURL(),
         NEW_WINDOW);
 
-    // Now we have a new platform app running.
-    EXPECT_EQ(platform_app_count + 1, GetPlatformAppCount());
-  }
-
-  // Gets the number of platform apps that are running.
-  size_t GetPlatformAppCount() {
-    int count = 0;
-    ExtensionProcessManager* process_manager =
-        browser()->profile()->GetExtensionProcessManager();
-    ExtensionProcessManager::const_iterator iter;
-    for (iter = process_manager->begin(); iter != process_manager->end();
-         ++iter) {
-      ExtensionHost* host = *iter;
-      if (host->extension() && host->extension()->is_platform_app())
-        count++;
-    }
-
-    return count;
-  }
-
-  // Gets the WebContents associated with the ExtensionHost of the first
-  // platform app that is found (most tests only deal with one platform
-  // app, so this is good enough).
-  WebContents* GetFirstPlatformAppWebContents() {
-    ExtensionProcessManager* process_manager =
-        browser()->profile()->GetExtensionProcessManager();
-    ExtensionProcessManager::const_iterator iter;
-    for (iter = process_manager->begin(); iter != process_manager->end();
-         ++iter) {
-      ExtensionHost* host = *iter;
-      if (host->extension() && host->extension()->is_platform_app())
-        return host->host_contents();
-    }
-
-    return NULL;
+    // Now we have a new browser instance.
+    EXPECT_EQ(browser_count + 1, BrowserList::size());
   }
 };
 
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, OpenAppInShellContainer) {
-  ASSERT_EQ(0u, GetPlatformAppCount());
+  // Start with one browser, new platform app will create another.
+  ASSERT_EQ(1u, BrowserList::size());
+
   LoadAndLaunchPlatformApp("empty");
-  ASSERT_EQ(1u, GetPlatformAppCount());
+
+  // The launch should have created a new browser, so there should be 2 now.
+  ASSERT_EQ(2u, BrowserList::size());
+
+  // The new browser is the last one.
+  BrowserList::const_reverse_iterator reverse_iterator(BrowserList::end());
+  Browser* new_browser = *(reverse_iterator++);
+
+  ASSERT_TRUE(new_browser);
+  ASSERT_TRUE(new_browser != browser());
+
+  // Expect an app in a shell window.
+  EXPECT_TRUE(new_browser->is_app());
+  EXPECT_TRUE(new_browser->is_type_shell());
 }
 
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, EmptyContextMenu) {
+  // Start with one browser, new platform app will create another.
+  ASSERT_EQ(1u, BrowserList::size());
+
   LoadAndLaunchPlatformApp("empty");
+
+  // The launch should have created a new browser, so there should be 2 now.
+  ASSERT_EQ(2u, BrowserList::size());
+
+  // The new browser is the last one.
+  BrowserList::const_reverse_iterator reverse_iterator(BrowserList::end());
+  Browser* new_browser = *(reverse_iterator++);
+
+  ASSERT_TRUE(new_browser);
+  ASSERT_TRUE(new_browser != browser());
 
   // The empty app doesn't add any context menu items, so its menu should
   // be empty.
-  WebContents* web_contents = GetFirstPlatformAppWebContents();
-  ASSERT_TRUE(web_contents);
+  WebContents* web_contents = new_browser->GetSelectedWebContents();
   WebKit::WebContextMenuData data;
   ContextMenuParams params(data);
   PlatformAppContextMenu* menu = new PlatformAppContextMenu(web_contents,
@@ -127,23 +119,29 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, EmptyContextMenu) {
   ASSERT_FALSE(menu->menu_model().GetItemCount());
 }
 
-// Disabled until shell windows are implemented on Windows.
-#if defined(OS_WIN)
-#define MAYBE_AppWithContextMenu DISABLED_AppWithContextMenu
-#else
-#define MAYBE_AppWithContextMenu AppWithContextMenu
-#endif
-IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MAYBE_AppWithContextMenu) {
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, AppWithContextMenu) {
+  // Start with one browser, new platform app will create another.
+  ASSERT_EQ(1u, BrowserList::size());
+
   ExtensionTestMessageListener listener1("created item", false);
   LoadAndLaunchPlatformApp("context_menu");
 
   // Wait for the extension to tell us it's created an item.
   ASSERT_TRUE(listener1.WaitUntilSatisfied());
 
+  // The launch should have created a new browser, so there should be 2 now.
+  ASSERT_EQ(2u, BrowserList::size());
+
+  // The new browser is the last one.
+  BrowserList::const_reverse_iterator reverse_iterator(BrowserList::end());
+  Browser* new_browser = *(reverse_iterator++);
+
+  ASSERT_TRUE(new_browser);
+  ASSERT_TRUE(new_browser != browser());
+
   // The context_menu app has one context menu item. This is all that should
   // be in the menu, there should be no seperator.
-  WebContents* web_contents = GetFirstPlatformAppWebContents();
-  ASSERT_TRUE(web_contents);
+  WebContents* web_contents = new_browser->GetSelectedWebContents();
   WebKit::WebContextMenuData data;
   ContextMenuParams params(data);
   PlatformAppContextMenu* menu = new PlatformAppContextMenu(web_contents,

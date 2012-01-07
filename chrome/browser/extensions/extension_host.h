@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -70,9 +70,6 @@ class ExtensionHost : public content::WebContentsDelegate,
   // tab-contents hosted in ExternalTabContainer objects, which do not
   // instantiate Browser objects.
   void CreateView(Browser* browser);
-
-  // Helper variant of the above for cases where no Browser is present.
-  void CreateViewWithoutBrowser();
 
   const Extension* extension() const { return extension_; }
   const std::string& extension_id() const { return extension_id_; }
