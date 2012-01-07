@@ -34,6 +34,8 @@ LogToServer::~LogToServer() {
 }
 
 void LogToServer::LogSessionStateChange(bool connected) {
+  DCHECK(CalledOnValidThread());
+
   scoped_ptr<ServerLogEntry> entry(ServerLogEntry::MakeSessionStateChange(
       connected));
   entry->AddHostFields();
@@ -41,6 +43,8 @@ void LogToServer::LogSessionStateChange(bool connected) {
 }
 
 void LogToServer::OnSignalStrategyStateChange(SignalStrategy::State state) {
+  DCHECK(CalledOnValidThread());
+
   if (state == SignalStrategy::CONNECTED) {
     iq_sender_.reset(new IqSender(signal_strategy_));
     SendPendingEntries();
@@ -50,10 +54,12 @@ void LogToServer::OnSignalStrategyStateChange(SignalStrategy::State state) {
 }
 
 void LogToServer::OnClientAuthenticated(const std::string& jid) {
+  DCHECK(CalledOnValidThread());
   LogSessionStateChange(true);
 }
 
 void LogToServer::OnClientDisconnected(const std::string& jid) {
+  DCHECK(CalledOnValidThread());
   LogSessionStateChange(false);
 }
 

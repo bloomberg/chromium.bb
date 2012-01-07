@@ -119,16 +119,18 @@ class HostNPScriptObject : public HostStatusObserver {
   void OnReceivedSupportID(bool success,
                            const std::string& support_id,
                            const base::TimeDelta& lifetime);
-  void NotifyAccessCode(bool success);
 
   // Helper functions that run on main thread. Can be called on any
   // other thread.
   void ReadPolicyAndConnect(const std::string& uid,
                             const std::string& auth_token,
                             const std::string& auth_service);
-  void FinishConnect(const std::string& uid,
-                       const std::string& auth_token,
-                       const std::string& auth_service);
+  void FinishConnectMainThread(const std::string& uid,
+                               const std::string& auth_token,
+                               const std::string& auth_service);
+  void FinishConnectNetworkThread(const std::string& uid,
+                                  const std::string& auth_token,
+                                  const std::string& auth_service);
   void DisconnectInternal();
 
   // Callback for ChromotingHost::Shutdown().
@@ -161,6 +163,7 @@ class HostNPScriptObject : public HostStatusObserver {
 
   NPP plugin_;
   NPObject* parent_;
+
   State state_;
 
   base::Lock access_code_lock_;

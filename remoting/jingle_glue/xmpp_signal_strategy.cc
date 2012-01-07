@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,6 +32,8 @@ XmppSignalStrategy::~XmppSignalStrategy() {
 }
 
 void XmppSignalStrategy::Connect() {
+  DCHECK(CalledOnValidThread());
+
   // Disconnect first if we are currently connected.
   Disconnect();
 
@@ -56,6 +58,8 @@ void XmppSignalStrategy::Connect() {
 }
 
 void XmppSignalStrategy::Disconnect() {
+  DCHECK(CalledOnValidThread());
+
   if (xmpp_client_) {
     xmpp_client_->engine()->RemoveStanzaHandler(this);
 
@@ -68,22 +72,27 @@ void XmppSignalStrategy::Disconnect() {
 }
 
 SignalStrategy::State XmppSignalStrategy::GetState() const {
+  DCHECK(CalledOnValidThread());
   return state_;
 }
 
 std::string XmppSignalStrategy::GetLocalJid() const {
+  DCHECK(CalledOnValidThread());
   return xmpp_client_->jid().Str();
 }
 
 void XmppSignalStrategy::AddListener(Listener* listener) {
+  DCHECK(CalledOnValidThread());
   listeners_.AddObserver(listener);
 }
 
 void XmppSignalStrategy::RemoveListener(Listener* listener) {
+  DCHECK(CalledOnValidThread());
   listeners_.RemoveObserver(listener);
 }
 
 bool XmppSignalStrategy::SendStanza(buzz::XmlElement* stanza) {
+  DCHECK(CalledOnValidThread());
   if (!xmpp_client_) {
     LOG(INFO) << "Dropping signalling message because XMPP "
         "connection has been terminated.";
@@ -96,6 +105,7 @@ bool XmppSignalStrategy::SendStanza(buzz::XmlElement* stanza) {
 }
 
 std::string XmppSignalStrategy::GetNextId() {
+  DCHECK(CalledOnValidThread());
   if (!xmpp_client_) {
     // If the connection has been terminated then it doesn't matter
     // what Id we return.
@@ -105,6 +115,7 @@ std::string XmppSignalStrategy::GetNextId() {
 }
 
 bool XmppSignalStrategy::HandleStanza(const buzz::XmlElement* stanza) {
+  DCHECK(CalledOnValidThread());
   ObserverListBase<Listener>::Iterator it(listeners_);
   Listener* listener;
   while ((listener = it.GetNext()) != NULL) {
@@ -116,6 +127,7 @@ bool XmppSignalStrategy::HandleStanza(const buzz::XmlElement* stanza) {
 
 void XmppSignalStrategy::OnConnectionStateChanged(
     buzz::XmppEngine::State state) {
+  DCHECK(CalledOnValidThread());
   State new_state;
 
   switch (state) {

@@ -145,10 +145,10 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
     kStopped,
   };
 
-  virtual ~ChromotingHost();
-
   // Creates encoder for the specified configuration.
-  Encoder* CreateEncoder(const protocol::SessionConfig& config);
+  static Encoder* CreateEncoder(const protocol::SessionConfig& config);
+
+  virtual ~ChromotingHost();
 
   std::string GenerateHostAuthToken(const std::string& encoded_client_token);
 

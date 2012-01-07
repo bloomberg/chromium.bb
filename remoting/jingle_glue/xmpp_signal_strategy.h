@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,6 +16,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/observer_list.h"
+#include "base/threading/non_thread_safe.h"
 #include "third_party/libjingle/source/talk/base/sigslot.h"
 #include "third_party/libjingle/source/talk/xmpp/xmppclient.h"
 
@@ -23,7 +24,8 @@ namespace remoting {
 
 class JingleThread;
 
-class XmppSignalStrategy : public SignalStrategy,
+class XmppSignalStrategy : public base::NonThreadSafe,
+                           public SignalStrategy,
                            public buzz::XmppStanzaHandler,
                            public sigslot::has_slots<> {
  public:

@@ -49,6 +49,7 @@ ChromotingHost::ChromotingHost(ChromotingHostContext* context,
   DCHECK(context_);
   DCHECK(signal_strategy);
   DCHECK(desktop_environment_);
+  DCHECK(context_->network_message_loop()->BelongsToCurrentThread());
   desktop_environment_->set_host(this);
 }
 
@@ -57,11 +58,7 @@ ChromotingHost::~ChromotingHost() {
 }
 
 void ChromotingHost::Start() {
-  if (!context_->network_message_loop()->BelongsToCurrentThread()) {
-    context_->network_message_loop()->PostTask(
-        FROM_HERE, base::Bind(&ChromotingHost::Start, this));
-    return;
-  }
+  DCHECK(context_->network_message_loop()->BelongsToCurrentThread());
 
   LOG(INFO) << "Starting host";
 
@@ -128,6 +125,7 @@ void ChromotingHost::Shutdown(const base::Closure& shutdown_task) {
 }
 
 void ChromotingHost::AddStatusObserver(HostStatusObserver* observer) {
+  DCHECK(context_->network_message_loop()->BelongsToCurrentThread());
   DCHECK_EQ(state_, kInitial);
   status_observers_.push_back(observer);
 }
@@ -182,6 +180,8 @@ void ChromotingHost::OnSessionAuthenticated(ClientSession* client) {
 }
 
 void ChromotingHost::OnSessionAuthenticationFailed(ClientSession* client) {
+  DCHECK(context_->network_message_loop()->BelongsToCurrentThread());
+
   // Notify observers.
   for (StatusObserverList::iterator it = status_observers_.begin();
        it != status_observers_.end(); ++it) {
@@ -273,6 +273,7 @@ void ChromotingHost::OnIncomingSession(
 
 void ChromotingHost::set_protocol_config(
     protocol::CandidateSessionConfig* config) {
+  DCHECK(context_->network_message_loop()->BelongsToCurrentThread());
   DCHECK(config);
   DCHECK_EQ(state_, kInitial);
   protocol_config_.reset(config);
@@ -305,13 +306,14 @@ void ChromotingHost::PauseSession(bool pause) {
 }
 
 void ChromotingHost::SetUiStrings(const UiStrings& ui_strings) {
-  DCHECK_EQ(context_->main_message_loop(), MessageLoop::current());
+  DCHECK(context_->network_message_loop()->BelongsToCurrentThread());
   DCHECK_EQ(state_, kInitial);
 
   ui_strings_ = ui_strings;
 }
 
 // TODO(sergeyu): Move this to SessionManager?
+// static
 Encoder* ChromotingHost::CreateEncoder(const protocol::SessionConfig& config) {
   const protocol::ChannelConfig& video_config = config.video_config();
 

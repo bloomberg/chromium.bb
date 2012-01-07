@@ -52,7 +52,13 @@ namespace remoting {
 
 class HostProcess {
  public:
-  HostProcess() {}
+  HostProcess()
+      : message_loop_(MessageLoop::TYPE_UI),
+        file_io_thread_("FileIO"),
+        context_(message_loop_.message_loop_proxy()) {
+    context_.Start();
+    file_io_thread_.Start();
+  }
 
   void InitWithCommandLine(const CommandLine* cmd_line) {
     FilePath default_config_dir =
@@ -76,100 +82,30 @@ class HostProcess {
   }
 
   int Run() {
-    // |message_loop| is declared early so that any code we call into which
-    // requires a current message-loop won't complain.
-    // It needs to be a UI message loop to keep runloops spinning on the Mac.
-    MessageLoop message_loop(MessageLoop::TYPE_UI);
-
-    remoting::ChromotingHostContext context(base::MessageLoopProxy::current());
-    context.Start();
-
-    base::Thread file_io_thread("FileIO");
-    file_io_thread.Start();
-
-    if (!LoadConfig(file_io_thread.message_loop_proxy())) {
-      context.Stop();
+    if (!LoadConfig(file_io_thread_.message_loop_proxy())) {
       return 1;
     }
 
-    // Use an XMPP connection to the Talk network for session signalling.
-    std::string xmpp_login;
-    std::string xmpp_auth_token;
-    if (!auth_config_->GetString(kXmppLoginConfigPath, &xmpp_login) ||
-        !auth_config_->GetString(kXmppAuthTokenConfigPath, &xmpp_auth_token)) {
-      LOG(ERROR) << "XMPP credentials are not defined in the config.";
-      return 1;
-    }
+    context_.network_message_loop()->PostTask(FROM_HERE, base::Bind(
+        &HostProcess::StartHost, base::Unretained(this)));
 
-    std::string xmpp_auth_service;
-    if (!auth_config_->GetString(remoting::kXmppAuthServiceConfigPath,
-                                 &xmpp_auth_service)) {
-      // For the me2me host, we assume we use the ClientLogin token for
-      // chromiumsync because we do not have an HTTP stack with which we can
-      // easily request an OAuth2 access token even if we had a RefreshToken for
-      // the account.
-      xmpp_auth_service = remoting::kChromotingTokenDefaultServiceName;
-    }
-
-    // Create and start XMPP connection.
-    scoped_ptr<SignalStrategy> signal_strategy(
-        new XmppSignalStrategy(context.jingle_thread(), xmpp_login,
-                               xmpp_auth_token, xmpp_auth_service));
-
-    // Create the DesktopEnvironment and ChromotingHost.
-    scoped_ptr<DesktopEnvironment> desktop_environment(
-        DesktopEnvironment::Create(&context));
-
-    host_ = new ChromotingHost(
-        &context, host_config_, signal_strategy.get(),
-        desktop_environment.get(), false);
-
-    // Initialize HeartbeatSender.
-    scoped_ptr<remoting::HeartbeatSender> heartbeat_sender(
-        new remoting::HeartbeatSender());
-    if (!heartbeat_sender->Init(signal_strategy.get(), host_config_)) {
-      context.Stop();
-      return 1;
-    }
-
-    // Post a task to start XMPP connection.
-    context.network_message_loop()->PostTask(
-        FROM_HERE, base::Bind(&remoting::SignalStrategy::Connect,
-                              base::Unretained(signal_strategy.get())));
-
-    // Run the ChromotingHost until the shutdown task is executed.
-    host_->Start();
-
-    // Set an empty shared-secret for Me2Me.
-    // TODO(lambroslambrou): This is a temporary fix, pending a Me2Me-specific
-    // AuthenticatorFactory - crbug.com/105214.
-    context.network_message_loop()->PostTask(
-        FROM_HERE, base::Bind(&ChromotingHost::SetSharedSecret, host_.get(),
-                              ""));
-
-    message_loop.MessageLoop::Run();
-
-    // And then stop the chromoting context.
-    context.Stop();
-    file_io_thread.Stop();
-
-    host_ = NULL;
+    message_loop_.Run();
 
     return 0;
   }
 
  private:
   // Read Host config from disk, returning true if successful.
-  bool LoadConfig(base::MessageLoopProxy* message_loop_proxy) {
+  bool LoadConfig(base::MessageLoopProxy* io_message_loop) {
     host_config_ =
-        new remoting::JsonHostConfig(host_config_path_, message_loop_proxy);
-    auth_config_ =
-        new remoting::JsonHostConfig(auth_config_path_, message_loop_proxy);
+        new remoting::JsonHostConfig(host_config_path_, io_message_loop);
+    scoped_refptr<remoting::JsonHostConfig> auth_config =
+        new remoting::JsonHostConfig(auth_config_path_, io_message_loop);
 
     std::string failed_path;
     if (!host_config_->Read()) {
       failed_path = host_config_path_.value();
-    } else if (!auth_config_->Read()) {
+    } else if (!auth_config->Read()) {
       failed_path = auth_config_path_.value();
     }
     if (!failed_path.empty()) {
@@ -177,15 +113,68 @@ class HostProcess {
       return false;
     }
 
+    // Use an XMPP connection to the Talk network for session signalling.
+    if (!auth_config->GetString(kXmppLoginConfigPath, &xmpp_login_) ||
+        !auth_config->GetString(kXmppAuthTokenConfigPath, &xmpp_auth_token_)) {
+      LOG(ERROR) << "XMPP credentials are not defined in the config.";
+      return false;
+    }
+
+    if (!auth_config->GetString(remoting::kXmppAuthServiceConfigPath,
+                                 &xmpp_auth_service_)) {
+      // For the me2me host, we assume we use the ClientLogin token for
+      // chromiumsync because we do not have an HTTP stack with which we can
+      // easily request an OAuth2 access token even if we had a RefreshToken for
+      // the account.
+      xmpp_auth_service_ = remoting::kChromotingTokenDefaultServiceName;
+    }
+
     return true;
   }
+
+  void StartHost() {
+    DCHECK(context_.network_message_loop()->BelongsToCurrentThread());
+
+    signal_strategy_.reset(
+        new XmppSignalStrategy(context_.jingle_thread(), xmpp_login_,
+                               xmpp_auth_token_, xmpp_auth_service_));
+
+    desktop_environment_.reset(DesktopEnvironment::Create(&context_));
+
+    host_ = new ChromotingHost(
+        &context_, host_config_, signal_strategy_.get(),
+        desktop_environment_.get(), false);
+
+    heartbeat_sender_.reset(new remoting::HeartbeatSender());
+    if (!heartbeat_sender_->Init(signal_strategy_.get(), host_config_)) {
+      LOG(ERROR) << "Failed to initialize heartbeat sender";
+    }
+
+    signal_strategy_->Connect();
+    host_->Start();
+
+    // Set an empty shared-secret for Me2Me.
+    // TODO(lambroslambrou): This is a temporary fix, pending a Me2Me-specific
+    // AuthenticatorFactory - crbug.com/105214.
+    host_->SetSharedSecret("");
+  }
+
+  MessageLoop message_loop_;
+  base::Thread file_io_thread_;
+  remoting::ChromotingHostContext context_;
 
   FilePath auth_config_path_;
   FilePath host_config_path_;
 
-  scoped_refptr<remoting::JsonHostConfig> auth_config_;
   scoped_refptr<remoting::JsonHostConfig> host_config_;
 
+  std::string xmpp_login_;
+  std::string xmpp_auth_token_;
+  std::string xmpp_auth_service_;
+
+  scoped_ptr<SignalStrategy> signal_strategy_;
+  scoped_ptr<DesktopEnvironment> desktop_environment_;
+  scoped_ptr<remoting::HeartbeatSender> heartbeat_sender_;
   scoped_refptr<ChromotingHost> host_;
 };
 

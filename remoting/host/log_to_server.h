@@ -9,6 +9,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/threading/non_thread_safe.h"
 #include "remoting/host/host_status_observer.h"
 #include "remoting/host/server_log_entry.h"
 #include "remoting/jingle_glue/signal_strategy.h"
@@ -27,14 +28,15 @@ class ChromotingHost;
 class IqSender;
 
 // LogToServer sends log entries to a server.
-class LogToServer : public HostStatusObserver,
+class LogToServer : public base::NonThreadSafe,
+                    public HostStatusObserver,
                     public SignalStrategy::Listener {
  public:
   explicit LogToServer(SignalStrategy* signal_strategy);
   virtual ~LogToServer();
 
-  // Logs a session state change.
-  // Currently, this is either connection or disconnection.
+  // Logs a session state change. Currently, this is either
+  // connection or disconnection.
   void LogSessionStateChange(bool connected);
 
   // SignalStrategy::Listener interface.
