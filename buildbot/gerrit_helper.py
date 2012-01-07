@@ -56,7 +56,7 @@ class GerritHelper():
     return self.ssh_prefix + ['gerrit', 'review'] + command_list
 
 
-  def GrabChangesReadyForCommit(self, branch):
+  def GrabChangesReadyForCommit(self):
     """Returns the list of changes to try.
 
     This methods returns a a list of GerritPatch's to try.
@@ -111,11 +111,11 @@ class GerritHelper():
     assert result_dict.get('id'), 'Code Review json missing change-id!'
     return cros_patch.GerritPatch(result_dict, self.internal)
 
-  def FilterProjectsNotInSourceTree(self, changes, buildroot):
-    """Returns new filtered set of relevant changes to this source checkout.
+  def FilterNonCrosProjects(self, changes, buildroot):
+    """Returns new filtered set of relevant changes for Chromium OS.
 
-    There may be many miscellaneous reviews in other Gerrit repos that are not
-    part of the checked out manifest.  This method returns a filtered list of
+    There are many code reviews that are not part of Chromium OS and/or
+    only relevant on a different branch. This method returns a filtered list of
     changes with such reviews removed.
 
     Args:
@@ -124,19 +124,29 @@ class GerritHelper():
 
     Returns filtered list of GerritPatch objects.
     """
+
+    def IsCrosReview(change):
+      return (change.project.startswith('chromiumos') or
+              change.project.startswith('chromeos'))
+
+    # First we filter to only Chromium OS repositories.
+    changes = [c for c in changes if IsCrosReview(c)]
+
     manifest_path = os.path.join(buildroot, '.repo', 'manifests/full.xml')
     handler = cros_build_lib.ManifestHandler.ParseManifest(manifest_path)
     projects = handler.projects
 
     changes_to_return = []
     for change in changes:
+      branch = handler.default.get('revision')
+      patch_branch = 'refs/heads/%s' % change.tracking_branch
       project = projects.get(change.project)
       if project:
-        branch = project.get('revision') or handler.default.get('revision')
-        patch_branch = 'refs/heads/%s' % change.tracking_branch
-        if branch == patch_branch:
-          changes_to_return.append(change)
-          continue
+        branch = project.get('revision') or branch
+
+      if branch == patch_branch:
+        changes_to_return.append(change)
+        continue
 
       logging.info('Filtered change %s', change)
 

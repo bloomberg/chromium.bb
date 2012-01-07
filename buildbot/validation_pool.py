@@ -108,14 +108,12 @@ class ValidationPool(object):
     return tree_open
 
   @classmethod
-  def AcquirePool(cls, branch, internal, buildroot, build_number, builder_name,
-                  dryrun):
+  def AcquirePool(cls, internal, buildroot, build_number, builder_name, dryrun):
     """Acquires the current pool from Gerrit.
 
     Polls Gerrit and checks for which change's are ready to be committed.
 
     Args:
-      branch: The branch for the validation pool.
       internal: If True, use gerrit-int.
       buildroot: The location of the buildroot used to filter projects.
       build_number: Corresponding build number for the build.
@@ -130,9 +128,9 @@ class ValidationPool(object):
       # Only master configurations should call this method.
       pool = ValidationPool(internal, build_number, builder_name, True, dryrun)
       pool.gerrit_helper = gerrit_helper.GerritHelper(internal)
-      raw_changes = pool.gerrit_helper.GrabChangesReadyForCommit(branch)
-      pool.changes = pool.gerrit_helper.FilterProjectsNotInSourceTree(
-          raw_changes, buildroot)
+      raw_changes = pool.gerrit_helper.GrabChangesReadyForCommit()
+      pool.changes = pool.gerrit_helper.FilterNonCrosProjects(raw_changes,
+                                                              buildroot)
       return pool
     else:
       raise TreeIsClosedException()

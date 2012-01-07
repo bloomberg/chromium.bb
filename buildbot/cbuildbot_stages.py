@@ -289,8 +289,8 @@ class CommitQueueSyncStage(LKGMCandidateSyncStage):
 
         internal = cbuildbot_config.IsInternalBuild(self._build_config)
         pool = validation_pool.ValidationPool.AcquirePool(
-            self._tracking_branch, internal, self._build_root,
-            self._options.buildnumber, self.builder_name, self._options.debug)
+            internal, self._build_root, self._options.buildnumber,
+            self.builder_name, self._options.debug)
 
         # We only have work to do if there are changes to try.
         if pool.changes:
