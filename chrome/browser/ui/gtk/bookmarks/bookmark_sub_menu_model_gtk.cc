@@ -123,6 +123,12 @@ BookmarkSubMenuModel::~BookmarkSubMenuModel() {
     model()->RemoveObserver(this);
 }
 
+void BookmarkSubMenuModel::Loaded(BookmarkModel* model, bool ids_reassigned) {
+  // For now, just close the menu when the bookmarks are finished loading.
+  // TODO(mdm): it would be slicker to just populate the menu while it's open.
+  BookmarkModelChanged();
+}
+
 void BookmarkSubMenuModel::BookmarkModelChanged() {
   if (menu_)
     menu_->Cancel();
@@ -149,9 +155,6 @@ void BookmarkSubMenuModel::MenuWillShow() {
     model()->AddObserver(this);
   }
   // We can't do anything further if the model isn't loaded yet.
-  // TODO(mdm): get notified when the load finishes and update the menu.
-  // Otherwise it will look like there are no bookmarks until the user closes
-  // the menu and opens it again.
   if (!model()->IsLoaded())
     return;
   // The node count includes the node itself, so 1 means empty.
