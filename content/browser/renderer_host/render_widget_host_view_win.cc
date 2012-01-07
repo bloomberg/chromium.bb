@@ -1122,21 +1122,26 @@ LRESULT RenderWidgetHostViewWin::OnSetCursor(HWND window, UINT hittest_code,
 }
 
 void RenderWidgetHostViewWin::OnSetFocus(HWND window) {
+  if (!render_widget_host_)
+    return;
+
   if (GetBrowserAccessibilityManager())
     GetBrowserAccessibilityManager()->GotFocus();
-  if (render_widget_host_) {
-    render_widget_host_->GotFocus();
-    render_widget_host_->SetActive(true);
-  }
+
+  render_widget_host_->GotFocus();
+  render_widget_host_->SetActive(true);
+
   if (touch_state_.ReleaseTouchPoints())
     render_widget_host_->ForwardTouchEvent(touch_state_.touch_event());
 }
 
 void RenderWidgetHostViewWin::OnKillFocus(HWND window) {
-  if (render_widget_host_) {
-    render_widget_host_->SetActive(false);
-    render_widget_host_->Blur();
-  }
+  if (!render_widget_host_)
+    return;
+
+  render_widget_host_->SetActive(false);
+  render_widget_host_->Blur();
+
   if (touch_state_.ReleaseTouchPoints())
     render_widget_host_->ForwardTouchEvent(touch_state_.touch_event());
 }
@@ -2571,4 +2576,3 @@ void RenderWidgetHostViewWin::ResetPointerDownContext() {
   received_focus_change_after_pointer_down_ = false;
   pointer_down_context_ = false;
 }
-
