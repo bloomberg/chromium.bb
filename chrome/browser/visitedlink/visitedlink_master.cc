@@ -191,7 +191,6 @@ void VisitedLinkMaster::InitMembers(Listener* listener, Profile* profile) {
   history_service_override_ = NULL;
   suppress_rebuild_ = false;
   profile_ = profile;
-  sequence_token_ = BrowserThread::GetBlockingPool()->GetSequenceToken();
 
 #ifndef NDEBUG
   posted_asynchronous_operation_ = false;
@@ -241,12 +240,6 @@ VisitedLinkMaster::Hash VisitedLinkMaster::TryToAddURL(const GURL& url) {
     return null_hash_;  // Table is more than 80% full.
 
   return AddFingerprint(fingerprint, true);
-}
-
-void VisitedLinkMaster::PostIOTask(const tracked_objects::Location& from_here,
-                                   const base::Closure& task) {
-  BrowserThread::GetBlockingPool()->PostSequencedWorkerTask(sequence_token_,
-                                                            from_here, task);
 }
 
 void VisitedLinkMaster::AddURL(const GURL& url) {
@@ -487,7 +480,10 @@ bool VisitedLinkMaster::WriteFullTable() {
               hash_table_, table_length_ * sizeof(Fingerprint));
 
   // The hash table may have shrunk, so make sure this is the end.
-  PostIOTask(FROM_HERE, base::Bind(base::IgnoreResult(&TruncateFile), file_));
+  BrowserThread::PostTask(
+      BrowserThread::FILE,
+      FROM_HERE,
+      base::Bind(base::IgnoreResult(&TruncateFile), file_));
   return true;
 }
 
@@ -677,7 +673,11 @@ void VisitedLinkMaster::FreeURLTable() {
   }
   if (!file_)
     return;
-  PostIOTask(FROM_HERE, base::Bind(base::IgnoreResult(&fclose), file_));
+
+  BrowserThread::PostTask(
+      BrowserThread::FILE,
+      FROM_HERE,
+      base::Bind(base::IgnoreResult(&fclose), file_));
 }
 
 bool VisitedLinkMaster::ResizeTableIfNecessary() {
@@ -860,7 +860,9 @@ void VisitedLinkMaster::WriteToFile(FILE* file,
 #ifndef NDEBUG
   posted_asynchronous_operation_ = true;
 #endif
-  PostIOTask(FROM_HERE,
+
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
       base::Bind(&AsyncWrite, file, offset,
                  std::string(static_cast<const char*>(data), data_size)));
 }

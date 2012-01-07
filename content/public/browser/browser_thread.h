@@ -20,7 +20,6 @@
 class MessageLoop;
 
 namespace base {
-class SequencedWorkerPool;
 class Thread;
 }
 
@@ -139,34 +138,6 @@ class CONTENT_EXPORT BrowserThread {
     return GetMessageLoopProxyForThread(identifier)->ReleaseSoon(
         from_here, object);
   }
-
-  // Simplified wrappers for posting to the blocking thread pool. Use this
-  // for doing things like blocking I/O.
-  //
-  // The first variant will run the task in the pool with no sequencing
-  // semantics, so may get run in parallel with other posted tasks. The
-  // second variant provides sequencing between tasks with the same
-  // sequence token name.
-  //
-  // These tasks are guaranteed to run before shutdown.
-  //
-  // If you need to provide different shutdown semantics (like you have
-  // something slow and noncritical that doesn't need to block shutdown),
-  // or you want to manually provide a sequence token (which saves a map
-  // lookup and is guaranteed unique without you having to come up with a
-  // unique string), you can access the sequenced worker pool directly via
-  // GetBlockingPool().
-  static bool PostBlockingPoolTask(const tracked_objects::Location& from_here,
-                                   const base::Closure& task);
-  static bool PostBlockingPoolSequencedTask(
-      const std::string& sequence_token_name,
-      const tracked_objects::Location& from_here,
-      const base::Closure& task);
-
-  // Returns the thread pool used for blocking file I/O. Use this object to
-  // perform random blocking operations such as file writes or querying the
-  // Windows registry.
-  static base::SequencedWorkerPool* GetBlockingPool();
 
   // Callable on any thread.  Returns whether the given ID corresponds to a well
   // known thread.

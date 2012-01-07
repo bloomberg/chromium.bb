@@ -9,7 +9,6 @@
 #include "base/lazy_instance.h"
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_restrictions.h"
 
 namespace content {
@@ -31,37 +30,24 @@ static const char* g_browser_thread_names[BrowserThread::ID_COUNT] = {
 #endif
 };
 
-struct BrowserThreadGlobals {
-  BrowserThreadGlobals()
-      : blocking_pool(new base::SequencedWorkerPool(3, "BrowserBlocking")) {
-    memset(threads, 0,
-           BrowserThread::ID_COUNT * sizeof(BrowserThreadImpl*));
-    memset(thread_delegates, 0,
-           BrowserThread::ID_COUNT * sizeof(BrowserThreadDelegate*));
-  }
+// This lock protects |g_browser_threads|.  Do not read or modify that
+// array without holding this lock.  Do not block while holding this
+// lock.
+base::LazyInstance<base::Lock,
+                   base::LeakyLazyInstanceTraits<base::Lock> >
+    g_lock = LAZY_INSTANCE_INITIALIZER;
 
-  // This lock protects |threads|. Do not read or modify that array
-  // without holding this lock. Do not block while holding this lock.
-  base::Lock lock;
+// This array is protected by |g_lock|.  The threads are not owned by this
+// array. Typically, the threads are owned on the UI thread by
+// content::BrowserMainLoop.  BrowserThreadImpl objects remove
+// themselves from this array upon destruction.
+static BrowserThreadImpl* g_browser_threads[BrowserThread::ID_COUNT];
 
-  // This array is protected by |lock|. The threads are not owned by this
-  // array. Typically, the threads are owned on the UI thread by
-  // content::BrowserMainLoop. BrowserThreadImpl objects remove themselves from
-  // this array upon destruction.
-  BrowserThreadImpl* threads[BrowserThread::ID_COUNT];
-
-  // Only atomic operations are used on this array. The delegates are not owned
-  // by this array, rather by whoever calls BrowserThread::SetDelegate.
-  BrowserThreadDelegate* thread_delegates[BrowserThread::ID_COUNT];
-
-  // This pointer is deliberately leaked on shutdown. This allows the pool to
-  // implement "continue on shutdown" semantics.
-  base::SequencedWorkerPool* blocking_pool;
-};
-
-base::LazyInstance<BrowserThreadGlobals,
-                   base::LeakyLazyInstanceTraits<BrowserThreadGlobals> >
-    g_globals = LAZY_INSTANCE_INITIALIZER;
+// Only atomic operations are used on this array.  The delegates are
+// not owned by this array, rather by whoever calls
+// BrowserThread::SetDelegate.
+static BrowserThreadDelegate* g_browser_thread_delegates[
+    BrowserThread::ID_COUNT];
 
 }  // namespace
 
@@ -79,18 +65,10 @@ BrowserThreadImpl::BrowserThreadImpl(ID identifier,
   Initialize();
 }
 
-// static
-void BrowserThreadImpl::ShutdownThreadPool() {
-  BrowserThreadGlobals& globals = g_globals.Get();
-  globals.blocking_pool->Shutdown();
-}
-
 void BrowserThreadImpl::Init() {
-  BrowserThreadGlobals& globals = g_globals.Get();
-
   using base::subtle::AtomicWord;
   AtomicWord* storage =
-      reinterpret_cast<AtomicWord*>(&globals.thread_delegates[identifier_]);
+      reinterpret_cast<AtomicWord*>(&g_browser_thread_delegates[identifier_]);
   AtomicWord stored_pointer = base::subtle::NoBarrier_Load(storage);
   BrowserThreadDelegate* delegate =
       reinterpret_cast<BrowserThreadDelegate*>(stored_pointer);
@@ -99,11 +77,9 @@ void BrowserThreadImpl::Init() {
 }
 
 void BrowserThreadImpl::CleanUp() {
-  BrowserThreadGlobals& globals = g_globals.Get();
-
   using base::subtle::AtomicWord;
   AtomicWord* storage =
-      reinterpret_cast<AtomicWord*>(&globals.thread_delegates[identifier_]);
+      reinterpret_cast<AtomicWord*>(&g_browser_thread_delegates[identifier_]);
   AtomicWord stored_pointer = base::subtle::NoBarrier_Load(storage);
   BrowserThreadDelegate* delegate =
       reinterpret_cast<BrowserThreadDelegate*>(stored_pointer);
@@ -113,12 +89,10 @@ void BrowserThreadImpl::CleanUp() {
 }
 
 void BrowserThreadImpl::Initialize() {
-  BrowserThreadGlobals& globals = g_globals.Get();
-
-  base::AutoLock lock(globals.lock);
+  base::AutoLock lock(g_lock.Get());
   DCHECK(identifier_ >= 0 && identifier_ < ID_COUNT);
-  DCHECK(globals.threads[identifier_] == NULL);
-  globals.threads[identifier_] = this;
+  DCHECK(g_browser_threads[identifier_] == NULL);
+  g_browser_threads[identifier_] = this;
 }
 
 BrowserThreadImpl::~BrowserThreadImpl() {
@@ -127,13 +101,12 @@ BrowserThreadImpl::~BrowserThreadImpl() {
   // the right BrowserThread.
   Stop();
 
-  BrowserThreadGlobals& globals = g_globals.Get();
-  base::AutoLock lock(globals.lock);
-  globals.threads[identifier_] = NULL;
+  base::AutoLock lock(g_lock.Get());
+  g_browser_threads[identifier_] = NULL;
 #ifndef NDEBUG
   // Double check that the threads are ordered correctly in the enumeration.
   for (int i = identifier_ + 1; i < ID_COUNT; ++i) {
-    DCHECK(!globals.threads[i]) <<
+    DCHECK(!g_browser_threads[i]) <<
         "Threads must be listed in the reverse order that they die";
   }
 #endif
@@ -158,12 +131,11 @@ bool BrowserThreadImpl::PostTaskHelper(
       GetCurrentThreadIdentifier(&current_thread) &&
       current_thread <= identifier;
 
-  BrowserThreadGlobals& globals = g_globals.Get();
   if (!guaranteed_to_outlive_target_thread)
-    globals.lock.Acquire();
+    g_lock.Get().Acquire();
 
-  MessageLoop* message_loop = globals.threads[identifier] ?
-      globals.threads[identifier]->message_loop() : NULL;
+  MessageLoop* message_loop = g_browser_threads[identifier] ?
+      g_browser_threads[identifier]->message_loop() : NULL;
   if (message_loop) {
     if (nestable) {
       message_loop->PostDelayedTask(from_here, task, delay_ms);
@@ -173,7 +145,7 @@ bool BrowserThreadImpl::PostTaskHelper(
   }
 
   if (!guaranteed_to_outlive_target_thread)
-    globals.lock.Release();
+    g_lock.Get().Release();
 
   return !!message_loop;
 }
@@ -220,32 +192,10 @@ class BrowserThreadMessageLoopProxy : public base::MessageLoopProxy {
 };
 
 // static
-bool BrowserThread::PostBlockingPoolTask(
-    const tracked_objects::Location& from_here,
-    const base::Closure& task) {
-  return g_globals.Get().blocking_pool->PostWorkerTask(from_here, task);
-}
-
-// static
-bool BrowserThread::PostBlockingPoolSequencedTask(
-    const std::string& sequence_token_name,
-    const tracked_objects::Location& from_here,
-    const base::Closure& task) {
-  return g_globals.Get().blocking_pool->PostNamedSequencedWorkerTask(
-      sequence_token_name, from_here, task);
-}
-
-// static
-base::SequencedWorkerPool* BrowserThread::GetBlockingPool() {
-  return g_globals.Get().blocking_pool;
-}
-
-// static
 bool BrowserThread::IsWellKnownThread(ID identifier) {
-  BrowserThreadGlobals& globals = g_globals.Get();
-  base::AutoLock lock(globals.lock);
+  base::AutoLock lock(g_lock.Get());
   return (identifier >= 0 && identifier < ID_COUNT &&
-          globals.threads[identifier]);
+          g_browser_threads[identifier]);
 }
 
 // static
@@ -255,21 +205,19 @@ bool BrowserThread::CurrentlyOn(ID identifier) {
   // function.
   // http://crbug.com/63678
   base::ThreadRestrictions::ScopedAllowSingleton allow_singleton;
-  BrowserThreadGlobals& globals = g_globals.Get();
-  base::AutoLock lock(globals.lock);
+  base::AutoLock lock(g_lock.Get());
   DCHECK(identifier >= 0 && identifier < ID_COUNT);
-  return globals.threads[identifier] &&
-         globals.threads[identifier]->message_loop() ==
+  return g_browser_threads[identifier] &&
+         g_browser_threads[identifier]->message_loop() ==
              MessageLoop::current();
 }
 
 // static
 bool BrowserThread::IsMessageLoopValid(ID identifier) {
-  BrowserThreadGlobals& globals = g_globals.Get();
-  base::AutoLock lock(globals.lock);
+  base::AutoLock lock(g_lock.Get());
   DCHECK(identifier >= 0 && identifier < ID_COUNT);
-  return globals.threads[identifier] &&
-         globals.threads[identifier]->message_loop();
+  return g_browser_threads[identifier] &&
+         g_browser_threads[identifier]->message_loop();
 }
 
 // static
@@ -327,11 +275,10 @@ bool BrowserThread::GetCurrentThreadIdentifier(ID* identifier) {
   // http://crbug.com/63678
   base::ThreadRestrictions::ScopedAllowSingleton allow_singleton;
   MessageLoop* cur_message_loop = MessageLoop::current();
-  BrowserThreadGlobals& globals = g_globals.Get();
   for (int i = 0; i < ID_COUNT; ++i) {
-    if (globals.threads[i] &&
-        globals.threads[i]->message_loop() == cur_message_loop) {
-      *identifier = globals.threads[i]->identifier_;
+    if (g_browser_threads[i] &&
+        g_browser_threads[i]->message_loop() == cur_message_loop) {
+      *identifier = g_browser_threads[i]->identifier_;
       return true;
     }
   }
@@ -341,7 +288,8 @@ bool BrowserThread::GetCurrentThreadIdentifier(ID* identifier) {
 
 // static
 scoped_refptr<base::MessageLoopProxy>
-BrowserThread::GetMessageLoopProxyForThread(ID identifier) {
+BrowserThread::GetMessageLoopProxyForThread(
+    ID identifier) {
   scoped_refptr<base::MessageLoopProxy> proxy(
       new BrowserThreadMessageLoopProxy(identifier));
   return proxy;
@@ -349,9 +297,8 @@ BrowserThread::GetMessageLoopProxyForThread(ID identifier) {
 
 // static
 MessageLoop* BrowserThread::UnsafeGetMessageLoopForThread(ID identifier) {
-  BrowserThreadGlobals& globals = g_globals.Get();
-  base::AutoLock lock(globals.lock);
-  base::Thread* thread = globals.threads[identifier];
+  base::AutoLock lock(g_lock.Get());
+  base::Thread* thread = g_browser_threads[identifier];
   DCHECK(thread);
   MessageLoop* loop = thread->message_loop();
   return loop;
@@ -361,9 +308,8 @@ MessageLoop* BrowserThread::UnsafeGetMessageLoopForThread(ID identifier) {
 void BrowserThread::SetDelegate(ID identifier,
                                 BrowserThreadDelegate* delegate) {
   using base::subtle::AtomicWord;
-  BrowserThreadGlobals& globals = g_globals.Get();
   AtomicWord* storage = reinterpret_cast<AtomicWord*>(
-      &globals.thread_delegates[identifier]);
+      &g_browser_thread_delegates[identifier]);
   AtomicWord old_pointer = base::subtle::NoBarrier_AtomicExchange(
       storage, reinterpret_cast<AtomicWord>(delegate));
 
