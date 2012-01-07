@@ -138,7 +138,7 @@ show_menu(struct panel *panel, struct input *input, uint32_t time)
 	input_get_position(input, &x, &y);
 	panel->menu = window_create_menu(window_get_display(panel->window),
 					 input, time, panel->window,
-					 x - 10, y - 10, entries, 4);
+					 x - 10, y - 10, NULL, entries, 4);
 
 	window_schedule_redraw(panel->menu);
 }

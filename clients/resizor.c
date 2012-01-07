@@ -167,6 +167,12 @@ key_handler(struct window *window, struct input *input, uint32_t time,
 }
 
 static void
+menu_func(struct window *window, int index, void *user_data)
+{
+	fprintf(stderr, "picked entry %d\n", index);
+}
+
+static void
 show_menu(struct resizor *resizor, struct input *input, uint32_t time)
 {
 	int32_t x, y;
@@ -177,7 +183,8 @@ show_menu(struct resizor *resizor, struct input *input, uint32_t time)
 	input_get_position(input, &x, &y);
 	resizor->menu = window_create_menu(resizor->display,
 					   input, time, resizor->window,
-					   x - 10, y - 10, entries, 4);
+					   x - 10, y - 10,
+					   menu_func, entries, 4);
 
 	window_schedule_redraw(resizor->menu);
 }

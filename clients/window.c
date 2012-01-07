@@ -137,10 +137,13 @@ struct window {
 	window_item_focus_handler_t item_focus_handler;
 	window_data_handler_t data_handler;
 	window_drop_handler_t drop_handler;
+	window_close_handler_t close_handler;
 
 	struct wl_list item_list;
 	struct item *focus_item;
 	uint32_t item_grab_button;
+
+	struct window *menu;
 
 	void *user_data;
 	struct wl_list link;
@@ -175,6 +178,15 @@ struct output {
 
 	display_output_handler_t destroy_handler;
 	void *user_data;
+};
+
+struct menu {
+	struct window *window;
+	const char **entries;
+	uint32_t time;
+	int current;
+	int count;
+	menu_func_t func;
 };
 
 enum {
@@ -1254,6 +1266,28 @@ input_handle_motion(void *data, struct wl_input_device *input_device,
 }
 
 static void
+window_menu_func(struct window *window, int index, void *data)
+{
+	switch (index) {
+	case 0: /* close */
+		if (window->close_handler)
+			window->close_handler(window->parent,
+					      window->user_data);
+		else
+			exit(0);
+		break;
+	case 1: /* fullscreen */
+		/* we don't have a way to get out of fullscreen for now */
+		window_set_fullscreen(window, 1);
+		break;
+	case 2: /* rotate */
+	case 3: /* scale */
+		break;
+	}
+}
+
+
+static void
 input_handle_button(void *data,
 		    struct wl_input_device *input_device,
 		    uint32_t time, uint32_t button, uint32_t state)
@@ -1262,14 +1296,17 @@ input_handle_button(void *data,
 	struct window *window = input->pointer_focus;
 	struct item *item;
 	int location;
+	int32_t x, y;
+	static const char *entries[] = {
+		"Close", "Fullscreen", "Rotate", "Scale"
+	};
 
 	if (window->focus_item && window->item_grab_button == 0 && state)
 		window->item_grab_button = button;
 
 	location = get_pointer_location(window, input->sx, input->sy);
 
-	if (window->display->shell &&
-	    button == BTN_LEFT && state == 1) {
+	if (window->display->shell && button == BTN_LEFT && state == 1) {
 		switch (location) {
 		case WINDOW_TITLEBAR:
 			if (!window->shell_surface)
@@ -1291,6 +1328,26 @@ input_handle_button(void *data,
 			wl_shell_surface_resize(window->shell_surface,
 						input_device, time,
 						location);
+			break;
+		case WINDOW_CLIENT_AREA:
+			if (window->button_handler)
+				(*window->button_handler)(window,
+							  input, time,
+							  button, state,
+							  window->user_data);
+			break;
+		}
+	} else if (button == BTN_RIGHT && state == 1) {
+		switch (location) {
+		default:
+			input_get_position(input, &x, &y);
+			window->menu = window_create_menu(window->display,
+							  input, time,
+							  window,
+							  x - 10, y - 10,
+							  window_menu_func,
+							  entries, 4);
+			window_schedule_redraw(window->menu);
 			break;
 		case WINDOW_CLIENT_AREA:
 			if (window->button_handler)
@@ -1803,10 +1860,11 @@ static void
 handle_popup_done(void *data, struct wl_shell_surface *shell_surface)
 {
 	struct window *window = data;
-
+	struct menu *menu = window_get_user_data(window);
 	/* FIXME: Need more context in this event, at least the input
 	 * device.  Or just use wl_callback. */
 
+	menu->func(window->parent, menu->current, window->parent->user_data);
 	window_destroy(window);
 }
 
@@ -2000,6 +2058,13 @@ window_set_drop_handler(struct window *window, window_drop_handler_t handler)
 }
 
 void
+window_set_close_handler(struct window *window,
+			 window_close_handler_t handler)
+{
+	window->close_handler = handler;
+}
+
+void
 window_set_transparent(struct window *window, int transparent)
 {
 	window->transparent = transparent;
@@ -2117,14 +2182,6 @@ window_create_transient(struct display *display, struct window *parent,
 	return window;
 }
 
-struct menu {
-	struct window *window;
-	const char **entries;
-	uint32_t time;
-	int current;
-	int count;
-};
-
 static int
 menu_set_item(struct window *window, struct menu *menu, int sy)
 {
@@ -2172,8 +2229,11 @@ menu_button_handler(struct window *window,
 	struct menu *menu = data;
 
 	/* Either relase after press-drag-release or click-motion-click. */
-	if (state == 0 && time - menu->time > 500)
+	if (state == 0 && time - menu->time > 500) {
+		menu->func(window->parent, 
+			   menu->current, window->parent->user_data);
 		window_destroy(window);
+	}
 }
 
 static void
@@ -2224,7 +2284,8 @@ menu_redraw_handler(struct window *window, void *data)
 struct window *
 window_create_menu(struct display *display,
 		   struct input *input, uint32_t time, struct window *parent,
-		   int32_t x, int32_t y, const char **entries, int count)
+		   int32_t x, int32_t y,
+		   menu_func_t func, const char **entries, int count)
 {
 	struct window *window;
 	struct menu *menu;
@@ -2241,6 +2302,7 @@ window_create_menu(struct display *display,
 	menu->entries = entries;
 	menu->count = count;
 	menu->time = time;
+	menu->func = func;
 	window->decoration = 0;
 	window->type = TYPE_MENU;
 	window->x = x;

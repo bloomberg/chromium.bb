@@ -197,15 +197,21 @@ typedef void (*window_drop_handler_t)(struct window *window,
 typedef void (*window_item_focus_handler_t)(struct window *window,
 					    struct item *focus, void *data);
 
+typedef void (*window_close_handler_t)(struct window *window, void *data);
+
 struct window *
 window_create(struct display *display, int32_t width, int32_t height);
 struct window *
 window_create_transient(struct display *display, struct window *parent,
 			int32_t x, int32_t y, int32_t width, int32_t height);
+
+typedef void (*menu_func_t)(struct window *window, int index, void *data);
+
 struct window *
 window_create_menu(struct display *display,
 		   struct input *input, uint32_t time, struct window *parent,
-		   int32_t x, int32_t y, const char **entries, int count);
+		   int32_t x, int32_t y,
+		   menu_func_t func, const char **entries, int count);
 
 void
 window_destroy(struct window *window);
@@ -339,6 +345,10 @@ window_set_data_handler(struct window *window,
 void
 window_set_drop_handler(struct window *window,
 			window_drop_handler_t handler);
+
+void
+window_set_close_handler(struct window *window,
+			 window_close_handler_t handler);
 
 void
 window_set_title(struct window *window, const char *title);
