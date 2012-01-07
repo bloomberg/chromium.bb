@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -182,6 +182,7 @@ class COMPOSITOR_EXPORT Compositor : public base::RefCounted<Compositor> {
   virtual void OnWidgetSizeChanged() = 0;
   virtual void OnRootLayerChanged();
   virtual void DrawTree();
+  virtual bool CompositesAsynchronously();
 
   CompositorDelegate* delegate() { return delegate_; }
 
@@ -190,13 +191,13 @@ class COMPOSITOR_EXPORT Compositor : public base::RefCounted<Compositor> {
   static void SwizzleRGBAToBGRAAndFlip(unsigned char* pixels,
                                        const gfx::Size& image_size);
 
+  // Notifies the compositor that compositing is complete.
+  void NotifyEnd();
+
  private:
   // Notifies the compositor that compositing is about to start. See Draw() for
   // notes about |force_clear|.
   void NotifyStart(bool force_clear);
-
-  // Notifies the compositor that compositing is complete.
-  void NotifyEnd();
 
   CompositorDelegate* delegate_;
   gfx::Size size_;
