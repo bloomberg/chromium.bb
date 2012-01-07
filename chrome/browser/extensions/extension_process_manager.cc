@@ -116,6 +116,19 @@ ExtensionProcessManager::~ExtensionProcessManager() {
   DCHECK(background_hosts_.empty());
 }
 
+ExtensionHost* ExtensionProcessManager::CreateShellHost(
+    const Extension* extension,
+    const GURL& url) {
+  DCHECK(extension);
+  ExtensionHost* host = new ExtensionHost(extension,
+                                          GetSiteInstanceForURL(url),
+                                          url,
+                                          chrome::VIEW_TYPE_APP_SHELL);
+  host->CreateViewWithoutBrowser();
+  OnExtensionHostCreated(host, false /* not a background host */);
+  return host;
+}
+
 ExtensionHost* ExtensionProcessManager::CreateViewHost(
     const Extension* extension,
     const GURL& url,

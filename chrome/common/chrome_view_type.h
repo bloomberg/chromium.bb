@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,6 +20,7 @@ enum ViewType {
   VIEW_TYPE_EXTENSION_INFOBAR,
   VIEW_TYPE_NOTIFICATION,
   VIEW_TYPE_EXTENSION_DIALOG,
+  VIEW_TYPE_APP_SHELL,
 };
 
 // Constant strings corresponding to the Type enumeration values.  Used
@@ -30,6 +31,7 @@ extern const char kViewTypePopup[];
 extern const char kViewTypeInfobar[];
 extern const char kViewTypeNotification[];
 extern const char kViewTypeExtensionDialog[];
+extern const char kViewTypeAppShell[];
 extern const char kViewTypeAll[];
 
 }  // namespace chrome

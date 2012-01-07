@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,6 +24,7 @@
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/extensions/extension_event_router.h"
+#include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/net/browser_url_util.h"
@@ -48,13 +49,12 @@
 #include "chrome/browser/translate/translate_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/prefs/prefs_tab_helper.h"
-#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/search_engines/search_engine_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
-#include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/extension.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/print_messages.h"
 #include "chrome/common/spellcheck_messages.h"
@@ -498,7 +498,8 @@ void RenderViewContextMenu::AppendAllExtensionItems() {
   std::vector<std::pair<std::string, std::string> > sorted_ids;
   for (std::set<std::string>::iterator i = ids.begin(); i != ids.end(); ++i) {
     const Extension* extension = service->GetExtensionById(*i, false);
-    // Platform apps have their context menus created directly in InitMenu.
+    // Platform apps have their context menus created directly in
+    // AppendPlatformAppItems.
     if (extension && !extension->is_platform_app())
       sorted_ids.push_back(
           std::pair<std::string, std::string>(extension->name(), *i));
@@ -522,22 +523,13 @@ void RenderViewContextMenu::AppendAllExtensionItems() {
 }
 
 void RenderViewContextMenu::InitMenu() {
+  if (GetPlatformApp()) {
+    AppendPlatformAppItems();
+    return;
+  }
+
   bool has_link = !params_.unfiltered_link_url.is_empty();
   bool has_selection = !params_.selection_text.empty();
-
-  Browser* active_browser = BrowserList::FindBrowserWithWebContents(
-      source_web_contents_);
-  if (active_browser && active_browser->is_app()) {
-    const std::string ext_id = web_app::GetExtensionIdFromApplicationName(
-        active_browser->app_name());
-    const Extension* app =
-        profile_->GetExtensionService()->GetInstalledExtension(ext_id);
-    if (app && app->is_platform_app()) {
-      int index = 0;
-      AppendExtensionItems(app->id(), &index);
-      return;
-    }
-  }
 
   if (AppendCustomItems()) {
     // If there's a selection, don't early return when there are custom items,
@@ -634,6 +626,35 @@ void RenderViewContextMenu::InitMenu() {
         new PrintPreviewContextMenuObserver(wrapper));
   }
   observers_.AddObserver(print_preview_menu_observer_.get());
+}
+
+const Extension* RenderViewContextMenu::GetPlatformApp() const {
+  ExtensionProcessManager* process_manager =
+      profile_->GetExtensionProcessManager();
+  // There is no process manager in some tests.
+  if (!process_manager) {
+    return NULL;
+  }
+
+  ExtensionProcessManager::const_iterator iter;
+  for (iter = process_manager->begin(); iter != process_manager->end();
+       ++iter) {
+    ExtensionHost* host = *iter;
+    if (host->host_contents() == source_web_contents_) {
+      if (host->extension() && host->extension()->is_platform_app()) {
+        return host->extension();
+      }
+    }
+  }
+
+  return NULL;
+}
+
+void RenderViewContextMenu::AppendPlatformAppItems() {
+  const Extension* platform_app = GetPlatformApp();
+  DCHECK(platform_app);
+  int index = 0;
+  AppendExtensionItems(platform_app->id(), &index);
 }
 
 void RenderViewContextMenu::LookUpInDictionary() {
