@@ -203,9 +203,6 @@ bool IsOmniboxEnabled(Profile* profile) {
     DCHECK(switch_value == switches::kPrerenderFromOmniboxSwitchValueAuto);
   }
 
-  if (!MetricsServiceHelper::IsMetricsReportingEnabled())
-    return false;
-
   const int group =
       base::FieldTrialList::FindValue(kPrerenderFromOmniboxTrialName);
   return group != base::FieldTrial::kNotFinalized &&
