@@ -2176,7 +2176,7 @@
    fun:_ZN2v88internalL6InvokeEbNS0_6HandleINS0_10JSFunctionEEENS1_INS0_6ObjectEEEiPS5_Pb
    fun:_ZN2v88internal9Execution4CallENS0_6HandleINS0_6ObjectEEES4_iPS4_Pbb
    fun:_ZN2v86Script3RunEv
-   fun:_ZN7WebCore7V8Proxy9runScriptEN2v86HandleINS1_6ScriptEEEb
+   fun:_ZN7WebCore7V8Proxy9runScriptEN2v86HandleINS1_6ScriptE*
    fun:_ZN7WebCore7V8Proxy8evaluateERKNS_16ScriptSourceCodeEPNS_4NodeE
    fun:_ZN7WebCore16ScriptController8evaluateERKNS_16ScriptSourceCodeE
 }
@@ -2189,7 +2189,7 @@
    fun:_ZN2v88internalL6InvokeEbNS0_6HandleINS0_10JSFunctionEEENS1_INS0_6ObjectEEEiPS5_Pb
    fun:_ZN2v88internal9Execution4CallENS0_6HandleINS0_6ObjectEEES4_iPS4_Pbb
    fun:_ZN2v86Script3RunEv
-   fun:_ZN7WebCore7V8Proxy9runScriptEN2v86HandleINS1_6ScriptEEEb
+   fun:_ZN7WebCore7V8Proxy9runScriptEN2v86HandleINS1_6ScriptE*
    fun:_ZN7WebCore7V8Proxy8evaluateERKNS_16ScriptSourceCodeEPNS_4NodeE
    fun:_ZN7WebCore16ScriptController8evaluateERKNS_16ScriptSourceCodeE
 }

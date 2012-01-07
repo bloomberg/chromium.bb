@@ -5418,6 +5418,33 @@
    fun:_ZNSt3setISsSt4lessISsESaISsEE6insertERKSs
    fun:_ZN19ExtensionDispatcher18OnSetFunctionNamesERKSt6vectorISsSaISsEE
 }
+{
+   bug_109463a
+   Memcheck:Leak
+   fun:malloc
+   fun:_ZN3WTF10fastMallocEm
+   fun:_ZN3WTF24ThreadSafeRefCountedBasenwEm
+   fun:_ZN7WebCore6IDBKey*
+   fun:_ZN7WebCore16IDBLevelDBCoding12decodeIDBKeyEPKcS2_RN3WTF6RefPtrINS_6IDBKeyEEE
+}
+{
+   bug_109463b
+   Memcheck:Leak
+   fun:malloc
+   fun:_ZN3WTF10fastMallocEm
+   fun:_ZN3WTF24ThreadSafeRefCountedBasenwEm
+   fun:_ZN7WebCore6IDBKey*
+   fun:_ZN7WebCore*createIDBKeyFromValueEN2v86HandleINS0_5ValueE*
+}
+{
+   bug_109463c
+   Memcheck:Leak
+   fun:malloc
+   fun:_ZN3WTF10fastMallocEm
+   fun:_ZN3WTF24ThreadSafeRefCountedBasenwEm
+   fun:_ZN7WebCore6IDBKey*
+   fun:_ZN7WebCore25IDBObjectStoreBackendImpl19genAutoIncrementKeyEv
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
