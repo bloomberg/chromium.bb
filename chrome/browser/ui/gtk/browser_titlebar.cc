@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -625,10 +625,6 @@ void BrowserTitlebar::UpdateTitleAndIcon() {
       }
       case Browser::TYPE_TABBED: {
         NOTREACHED() << "We should never have a tabbed app window.";
-        break;
-      }
-      case Browser::TYPE_SHELL: {
-        // Shell windows don't show titles and icons for now.
         break;
       }
       case Browser::TYPE_PANEL: {

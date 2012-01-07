@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,5 +11,6 @@ const char kViewTypePopup[] = "POPUP";
 const char kViewTypeInfobar[] = "INFOBAR";
 const char kViewTypeNotification[] = "NOTIFICATION";
 const char kViewTypeExtensionDialog[] = "EXTENSION_DIALOG";
+const char kViewTypeAppShell[] = "SHELL";
 const char kViewTypeAll[] = "ALL";
 }  // namespace chrome
