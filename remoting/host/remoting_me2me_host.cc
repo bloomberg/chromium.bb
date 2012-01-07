@@ -20,6 +20,7 @@
 #include "base/threading/thread.h"
 #include "build/build_config.h"
 #include "crypto/nss_util.h"
+#include "net/base/network_change_notifier.h"
 #include "remoting/base/constants.h"
 #include "remoting/host/capturer.h"
 #include "remoting/host/chromoting_host.h"
@@ -29,6 +30,7 @@
 #include "remoting/host/heartbeat_sender.h"
 #include "remoting/host/host_config.h"
 #include "remoting/host/json_host_config.h"
+#include "remoting/host/signaling_connector.h"
 #include "remoting/jingle_glue/xmpp_signal_strategy.h"
 
 #if defined(TOOLKIT_USES_GTK)
@@ -58,6 +60,7 @@ class HostProcess {
         context_(message_loop_.message_loop_proxy()) {
     context_.Start();
     file_io_thread_.Start();
+    network_change_notifier_.reset(net::NetworkChangeNotifier::Create());
   }
 
   void InitWithCommandLine(const CommandLine* cmd_line) {
@@ -138,6 +141,7 @@ class HostProcess {
     signal_strategy_.reset(
         new XmppSignalStrategy(context_.jingle_thread(), xmpp_login_,
                                xmpp_auth_token_, xmpp_auth_service_));
+    signaling_connector_.reset(new SignalingConnector(signal_strategy_.get()));
 
     desktop_environment_.reset(DesktopEnvironment::Create(&context_));
 
@@ -150,7 +154,6 @@ class HostProcess {
       LOG(ERROR) << "Failed to initialize heartbeat sender";
     }
 
-    signal_strategy_->Connect();
     host_->Start();
 
     // Set an empty shared-secret for Me2Me.
@@ -162,6 +165,7 @@ class HostProcess {
   MessageLoop message_loop_;
   base::Thread file_io_thread_;
   remoting::ChromotingHostContext context_;
+  scoped_ptr<net::NetworkChangeNotifier> network_change_notifier_;
 
   FilePath auth_config_path_;
   FilePath host_config_path_;
@@ -173,6 +177,7 @@ class HostProcess {
   std::string xmpp_auth_service_;
 
   scoped_ptr<SignalStrategy> signal_strategy_;
+  scoped_ptr<SignalingConnector> signaling_connector_;
   scoped_ptr<DesktopEnvironment> desktop_environment_;
   scoped_ptr<remoting::HeartbeatSender> heartbeat_sender_;
   scoped_refptr<ChromotingHost> host_;

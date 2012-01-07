@@ -49,9 +49,11 @@ class XmppSignalStrategy : public base::NonThreadSafe,
   virtual bool HandleStanza(const buzz::XmlElement* stanza) OVERRIDE;
 
  private:
-  void OnConnectionStateChanged(buzz::XmppEngine::State state);
   static buzz::PreXmppAuth* CreatePreXmppAuth(
       const buzz::XmppClientSettings& settings);
+
+  void OnConnectionStateChanged(buzz::XmppEngine::State state);
+  void SetState(State new_state);
 
   JingleThread* thread_;
 

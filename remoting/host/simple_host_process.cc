@@ -29,6 +29,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/threading/thread.h"
 #include "crypto/nss_util.h"
+#include "net/base/network_change_notifier.h"
 #include "remoting/base/constants.h"
 #include "remoting/host/capturer_fake.h"
 #include "remoting/host/chromoting_host.h"
@@ -38,9 +39,10 @@
 #include "remoting/host/heartbeat_sender.h"
 #include "remoting/host/host_secret.h"
 #include "remoting/host/it2me_host_user_interface.h"
-#include "remoting/host/log_to_server.h"
 #include "remoting/host/json_host_config.h"
+#include "remoting/host/log_to_server.h"
 #include "remoting/host/register_support_host_request.h"
+#include "remoting/host/signaling_connector.h"
 #include "remoting/jingle_glue/xmpp_signal_strategy.h"
 #include "remoting/proto/video.pb.h"
 
@@ -89,6 +91,7 @@ class SimpleHost {
         is_it2me_(false) {
     context_.Start();
     file_io_thread_.Start();
+    network_change_notifier_.reset(net::NetworkChangeNotifier::Create());
   }
 
   int Run() {
@@ -175,6 +178,7 @@ class SimpleHost {
     signal_strategy_.reset(
         new XmppSignalStrategy(context_.jingle_thread(), xmpp_login_,
                                xmpp_auth_token_, xmpp_auth_service_));
+    signaling_connector_.reset(new SignalingConnector(signal_strategy_.get()));
 
     if (fake_) {
       Capturer* capturer = new CapturerFake();
@@ -218,7 +222,6 @@ class SimpleHost {
         LOG(ERROR) << "Failed to initialize HeartbeatSender.";
     }
 
-    signal_strategy_->Connect();
     host_->Start();
 
     // Set an empty shared-secret for Me2Me.
@@ -231,6 +234,7 @@ class SimpleHost {
   MessageLoop message_loop_;
   base::Thread file_io_thread_;
   ChromotingHostContext context_;
+  scoped_ptr<net::NetworkChangeNotifier> network_change_notifier_;
 
   FilePath config_path_;
   bool fake_;
@@ -243,6 +247,7 @@ class SimpleHost {
 
   scoped_refptr<JsonHostConfig> config_;
   scoped_ptr<SignalStrategy> signal_strategy_;
+  scoped_ptr<SignalingConnector> signaling_connector_;
   scoped_ptr<DesktopEnvironment> desktop_environment_;
   scoped_ptr<LogToServer> log_to_server_;
   scoped_ptr<It2MeHostUserInterface> it2me_host_user_interface_;

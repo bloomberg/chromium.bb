@@ -566,6 +566,8 @@
         'host/screen_recorder.h',
         'host/server_log_entry.cc',
         'host/server_log_entry.h',
+        'host/signaling_connector.cc',
+        'host/signaling_connector.h',
         'host/ui_strings.cc',
         'host/ui_strings.h',
         'host/user_authenticator.h',

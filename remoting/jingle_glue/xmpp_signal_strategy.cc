@@ -55,6 +55,8 @@ void XmppSignalStrategy::Connect() {
       this, &XmppSignalStrategy::OnConnectionStateChanged);
   xmpp_client_->engine()->AddStanzaHandler(this, buzz::XmppEngine::HL_TYPE);
   xmpp_client_->Start();
+
+  SetState(CONNECTING);
 }
 
 void XmppSignalStrategy::Disconnect() {
@@ -128,29 +130,17 @@ bool XmppSignalStrategy::HandleStanza(const buzz::XmlElement* stanza) {
 void XmppSignalStrategy::OnConnectionStateChanged(
     buzz::XmppEngine::State state) {
   DCHECK(CalledOnValidThread());
-  State new_state;
-
-  switch (state) {
-    case buzz::XmppEngine::STATE_START:
-      return;
-
-    case buzz::XmppEngine::STATE_OPENING:
-      new_state = CONNECTING;
-      break;
-    case buzz::XmppEngine::STATE_OPEN:
-      new_state = CONNECTED;
-      break;
-    case buzz::XmppEngine::STATE_CLOSED:
-      // Client is destroyed by the TaskRunner after the client is
-      // closed. Reset the pointer so we don't try to use it later.
-      xmpp_client_ = NULL;
-      new_state = DISCONNECTED;
-      break;
-    default:
-      NOTREACHED();
-      return;
+  if (state == buzz::XmppEngine::STATE_OPEN) {
+    SetState(CONNECTED);
+  } else if (state == buzz::XmppEngine::STATE_CLOSED) {
+    // Client is destroyed by the TaskRunner after the client is
+    // closed. Reset the pointer so we don't try to use it later.
+    xmpp_client_ = NULL;
+    SetState(DISCONNECTED);
   }
+}
 
+void XmppSignalStrategy::SetState(State new_state) {
   if (state_ != new_state) {
     state_ = new_state;
     FOR_EACH_OBSERVER(Listener, listeners_,
