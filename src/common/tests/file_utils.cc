@@ -27,72 +27,71 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-// Utility class for creating a temporary directory for unit tests
-// that is deleted in the destructor.
-#ifndef GOOGLE_BREAKPAD_COMMON_TESTS_AUTO_TEMPDIR
-#define GOOGLE_BREAKPAD_COMMON_TESTS_AUTO_TEMPDIR
+// file_utils.cc: Implement utility functions for file manipulation.
+// See file_utils.h for details.
 
-#include <dirent.h>
-#include <sys/types.h>
+#include <fcntl.h>
+#include <stdio.h>
+#include <string.h>
+#include <unistd.h>
 
-#include <string>
-
-#include "breakpad_googletest_includes.h"
-
-#if !defined(__ANDROID__)
-#define TEMPDIR "/tmp"
-#else
-#define TEMPDIR "/data/local/tmp"
-#endif
+#include "common/linux/eintr_wrapper.h"
+#include "common/tests/file_utils.h"
 
 namespace google_breakpad {
 
-class AutoTempDir {
- public:
-  AutoTempDir() {
-    char temp_dir[] = TEMPDIR "/breakpad.XXXXXXXXXX";
-    EXPECT_TRUE(mkdtemp(temp_dir) != NULL);
-    path_.assign(temp_dir);
+bool ReadFile(const char* path, void* buffer, ssize_t* buffer_size) {
+  int fd = HANDLE_EINTR(open(path, O_RDONLY));
+  if (fd == -1) {
+    perror("open");
+    return false;
   }
 
-  ~AutoTempDir() {
-    DeleteRecursively(path_);
-  }
-
-  const std::string& path() const {
-    return path_;
-  }
-
- private:
-  void DeleteRecursively(const std::string& path) {
-    // First remove any files in the dir
-    DIR* dir = opendir(path.c_str());
-    if (!dir)
-      return;
-
-    dirent* entry;
-    while ((entry = readdir(dir)) != NULL) {
-      if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0)
-        continue;
-      std::string entry_path = path + "/" + entry->d_name;
-      struct stat stats;
-      EXPECT_TRUE(lstat(entry_path.c_str(), &stats) == 0);
-      if (S_ISDIR(stats.st_mode))
-        DeleteRecursively(entry_path);
-      else
-        EXPECT_TRUE(unlink(entry_path.c_str()) == 0);
+  bool ok = true;
+  if (buffer && buffer_size && *buffer_size > 0) {
+    memset(buffer, 0, sizeof(*buffer_size));
+    *buffer_size = HANDLE_EINTR(read(fd, buffer, *buffer_size));
+    if (*buffer_size == -1) {
+      perror("read");
+      ok = false;
     }
-    EXPECT_TRUE(closedir(dir) == 0);
-    EXPECT_TRUE(rmdir(path.c_str()) == 0);
+  }
+  if (HANDLE_EINTR(close(fd)) == -1) {
+    perror("close");
+    ok = false;
+  }
+  return ok;
+}
+
+bool WriteFile(const char* path, const void* buffer, size_t buffer_size) {
+  int fd = HANDLE_EINTR(open(path, O_CREAT | O_TRUNC | O_WRONLY, S_IRWXU));
+  if (fd == -1) {
+    perror("open");
+    return false;
   }
 
-  // prevent copy construction and assignment
-  AutoTempDir(const AutoTempDir&);
-  AutoTempDir& operator=(const AutoTempDir&);
-
-  std::string path_;
-};
+  bool ok = true;
+  if (buffer) {
+    size_t bytes_written_total = 0;
+    ssize_t bytes_written_partial = 0;
+    const char* data = reinterpret_cast<const char*>(buffer);
+    while (bytes_written_total < buffer_size) {
+      bytes_written_partial =
+          HANDLE_EINTR(write(fd, data + bytes_written_total,
+                             buffer_size - bytes_written_total));
+      if (bytes_written_partial < 0) {
+        perror("write");
+        ok = false;
+        break;
+      }
+      bytes_written_total += bytes_written_partial;
+    }
+  }
+  if (HANDLE_EINTR(close(fd)) == -1) {
+    perror("close");
+    ok = false;
+  }
+  return ok;
+}
 
 }  // namespace google_breakpad
-
-#endif  // GOOGLE_BREAKPAD_COMMON_TESTS_AUTO_TEMPDIR

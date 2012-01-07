@@ -27,72 +27,23 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-// Utility class for creating a temporary directory for unit tests
-// that is deleted in the destructor.
-#ifndef GOOGLE_BREAKPAD_COMMON_TESTS_AUTO_TEMPDIR
-#define GOOGLE_BREAKPAD_COMMON_TESTS_AUTO_TEMPDIR
+// file_utils.h: Define utility functions for file manipulation, which
+// are used for testing.
 
-#include <dirent.h>
-#include <sys/types.h>
-
-#include <string>
-
-#include "breakpad_googletest_includes.h"
-
-#if !defined(__ANDROID__)
-#define TEMPDIR "/tmp"
-#else
-#define TEMPDIR "/data/local/tmp"
-#endif
+#ifndef COMMON_TESTS_FILE_UTILS_H_
+#define COMMON_TESTS_FILE_UTILS_H_
 
 namespace google_breakpad {
 
-class AutoTempDir {
- public:
-  AutoTempDir() {
-    char temp_dir[] = TEMPDIR "/breakpad.XXXXXXXXXX";
-    EXPECT_TRUE(mkdtemp(temp_dir) != NULL);
-    path_.assign(temp_dir);
-  }
+// Reads the content of a file at |path| into |buffer|. |buffer_size| specifies
+// the size of |buffer| in bytes and returns the number of bytes read from the
+// file on success. Returns true on success.
+bool ReadFile(const char* path, void* buffer, ssize_t* buffer_size);
 
-  ~AutoTempDir() {
-    DeleteRecursively(path_);
-  }
-
-  const std::string& path() const {
-    return path_;
-  }
-
- private:
-  void DeleteRecursively(const std::string& path) {
-    // First remove any files in the dir
-    DIR* dir = opendir(path.c_str());
-    if (!dir)
-      return;
-
-    dirent* entry;
-    while ((entry = readdir(dir)) != NULL) {
-      if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0)
-        continue;
-      std::string entry_path = path + "/" + entry->d_name;
-      struct stat stats;
-      EXPECT_TRUE(lstat(entry_path.c_str(), &stats) == 0);
-      if (S_ISDIR(stats.st_mode))
-        DeleteRecursively(entry_path);
-      else
-        EXPECT_TRUE(unlink(entry_path.c_str()) == 0);
-    }
-    EXPECT_TRUE(closedir(dir) == 0);
-    EXPECT_TRUE(rmdir(path.c_str()) == 0);
-  }
-
-  // prevent copy construction and assignment
-  AutoTempDir(const AutoTempDir&);
-  AutoTempDir& operator=(const AutoTempDir&);
-
-  std::string path_;
-};
+// Writes |buffer_size| bytes of the content in |buffer| to a file at |path|.
+// Returns true on success.
+bool WriteFile(const char* path, const void* buffer, size_t buffer_size);
 
 }  // namespace google_breakpad
 
-#endif  // GOOGLE_BREAKPAD_COMMON_TESTS_AUTO_TEMPDIR
+#endif  // COMMON_TESTS_FILE_UTILS_H_

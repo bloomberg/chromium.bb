@@ -40,31 +40,14 @@
 #include "common/linux/eintr_wrapper.h"
 #include "common/linux/memory_mapped_file.h"
 #include "common/tests/auto_tempdir.h"
+#include "common/tests/file_utils.h"
 
 using google_breakpad::AutoTempDir;
 using google_breakpad::MemoryMappedFile;
+using google_breakpad::WriteFile;
 using std::string;
 
 namespace {
-
-bool WriteFile(const string& path, const void* buffer, size_t buffer_size) {
-  int fd =
-      HANDLE_EINTR(open(path.c_str(), O_CREAT | O_TRUNC | O_WRONLY, S_IRWXU));
-  if (fd == -1) {
-    perror("open");
-    return false;
-  }
-
-  bool ok = true;
-  if (buffer && buffer_size > 0) {
-    if (HANDLE_EINTR(write(fd, buffer, buffer_size) != buffer_size)) {
-      perror("write");
-      ok = false;
-    }
-  }
-  close(fd);
-  return ok;
-}
 
 class MemoryMappedFileTest : public testing::Test {
  protected:
@@ -102,7 +85,7 @@ TEST_F(MemoryMappedFileTest, MapNonexistentFile) {
 TEST_F(MemoryMappedFileTest, MapEmptyFile) {
   AutoTempDir temp_dir;
   string test_file = temp_dir.path() + "/empty_file";
-  ASSERT_TRUE(WriteFile(test_file, NULL, 0));
+  ASSERT_TRUE(WriteFile(test_file.c_str(), NULL, 0));
 
   {
     MemoryMappedFile mapped_file(test_file.c_str());
@@ -124,7 +107,7 @@ TEST_F(MemoryMappedFileTest, MapNonEmptyFile) {
 
   AutoTempDir temp_dir;
   string test_file = temp_dir.path() + "/test_file";
-  ASSERT_TRUE(WriteFile(test_file, data, data_size));
+  ASSERT_TRUE(WriteFile(test_file.c_str(), data, data_size));
 
   {
     MemoryMappedFile mapped_file(test_file.c_str());
@@ -159,8 +142,8 @@ TEST_F(MemoryMappedFileTest, RemapAfterMap) {
   AutoTempDir temp_dir;
   string test_file1 = temp_dir.path() + "/test_file1";
   string test_file2 = temp_dir.path() + "/test_file2";
-  ASSERT_TRUE(WriteFile(test_file1, data1, data1_size));
-  ASSERT_TRUE(WriteFile(test_file2, data2, data2_size));
+  ASSERT_TRUE(WriteFile(test_file1.c_str(), data1, data1_size));
+  ASSERT_TRUE(WriteFile(test_file2.c_str(), data2, data2_size));
 
   {
     MemoryMappedFile mapped_file(test_file1.c_str());
