@@ -120,8 +120,13 @@ void CreateSpecialContainers(aura::Window::Windows* containers,
   containers->push_back(status_container);
 
   aura::Window* menu_container = new aura::Window(NULL);
-  menu_container->set_id(internal::kShellWindowId_MenusAndTooltipsContainer);
+  menu_container->set_id(internal::kShellWindowId_MenuAndTooltipContainer);
   containers->push_back(menu_container);
+
+  aura::Window* setting_bubble_container = new aura::Window(NULL);
+  setting_bubble_container->set_id(
+      internal::kShellWindowId_SettingBubbleContainer);
+  containers->push_back(setting_bubble_container);
 }
 
 }  // namespace

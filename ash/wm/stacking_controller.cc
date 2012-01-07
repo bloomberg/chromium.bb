@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -55,7 +55,7 @@ aura::Window* StackingController::GetDefaultParent(aura::Window* window) {
       return GetContainer(internal::kShellWindowId_PanelContainer);
     case aura::client::WINDOW_TYPE_MENU:
     case aura::client::WINDOW_TYPE_TOOLTIP:
-      return GetContainer(internal::kShellWindowId_MenusAndTooltipsContainer);
+      return GetContainer(internal::kShellWindowId_MenuAndTooltipContainer);
     default:
       NOTREACHED() << "Window " << window->id()
                    << " has unhandled type " << window->type();

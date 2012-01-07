@@ -71,7 +71,8 @@ const int kScreenLockerContainerIds[] = {
 // is locked.
 const int kRelatedContainerIds[] = {
   internal::kShellWindowId_StatusContainer,
-  internal::kShellWindowId_MenusAndTooltipsContainer,
+  internal::kShellWindowId_MenuAndTooltipContainer,
+  internal::kShellWindowId_SettingBubbleContainer,
 };
 
 // Is |window| a container that holds screen locker windows?

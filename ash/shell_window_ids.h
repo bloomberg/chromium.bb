@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -40,7 +40,11 @@ const int kShellWindowId_LockModalContainer = 7;
 const int kShellWindowId_StatusContainer = 8;
 
 // The container for menus and tooltips.
-const int kShellWindowId_MenusAndTooltipsContainer = 9;
+const int kShellWindowId_MenuAndTooltipContainer = 9;
+
+// The container for bubbles briefly overlaid onscreen to show settings changes
+// (volume, brightness, etc.).
+const int kShellWindowId_SettingBubbleContainer = 10;
 
 }  // namespace internal
 

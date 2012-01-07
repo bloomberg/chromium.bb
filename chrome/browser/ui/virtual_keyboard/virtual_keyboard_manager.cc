@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -188,7 +188,7 @@ KeyboardWidget::KeyboardWidget()
   Init(params);
 #if defined(USE_AURA)
   ash::Shell::GetInstance()->GetContainer(
-      ash::internal::kShellWindowId_MenusAndTooltipsContainer)->
+      ash::internal::kShellWindowId_MenuAndTooltipContainer)->
       AddChild(GetNativeView());
 #endif
 
