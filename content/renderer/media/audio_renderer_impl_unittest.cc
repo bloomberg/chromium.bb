@@ -54,8 +54,8 @@ void WaitCallback(base::WaitableEvent* event) {
 // Class we would be testing.
 class TestAudioRendererImpl : public AudioRendererImpl {
  public:
-  explicit TestAudioRendererImpl()
-      : AudioRendererImpl() {
+  explicit TestAudioRendererImpl(media::AudioRendererSink* sink)
+      : AudioRendererImpl(sink) {
   }
 };
 
@@ -100,8 +100,12 @@ class AudioRendererImplTest
     EXPECT_CALL(*decoder_, samples_per_second())
         .WillRepeatedly(Return(44100));
 
+    // Create a sink for the audio renderer.
+    scoped_refptr<media::AudioRendererSink> default_sink =
+        new AudioDevice();
+
     // Create and initialize the audio renderer.
-    renderer_ = new TestAudioRendererImpl();
+    renderer_ = new TestAudioRendererImpl(default_sink.get());
     renderer_->Initialize(decoder_, media::NewExpectedClosure(),
                           NewUnderflowClosure());
 
