@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -100,6 +100,9 @@ class ResourceCreationProxy : public InterfaceProxy,
       const PP_Point* mouse_position,
       int32_t click_count,
       const PP_Point* mouse_movement) OVERRIDE;
+  virtual PP_Resource CreateResourceArray(PP_Instance instance,
+                                          const PP_Resource elements[],
+                                          uint32_t size) OVERRIDE;
   virtual PP_Resource CreateScrollbar(PP_Instance instance,
                                       PP_Bool vertical) OVERRIDE;
   virtual PP_Resource CreateTCPSocketPrivate(PP_Instance instance) OVERRIDE;

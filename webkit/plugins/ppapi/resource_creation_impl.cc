@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 #include "ppapi/c/pp_size.h"
 #include "ppapi/shared_impl/ppb_audio_config_shared.h"
 #include "ppapi/shared_impl/ppb_input_event_shared.h"
+#include "ppapi/shared_impl/ppb_resource_array_shared.h"
 #include "ppapi/shared_impl/var.h"
 #include "webkit/plugins/ppapi/common.h"
 #include "webkit/plugins/ppapi/ppb_audio_impl.h"
@@ -37,6 +38,7 @@
 
 using ppapi::InputEventData;
 using ppapi::PPB_InputEvent_Shared;
+using ppapi::PPB_ResourceArray_Shared;
 using ppapi::StringVar;
 
 namespace webkit {
@@ -232,6 +234,15 @@ PP_Resource ResourceCreationImpl::CreateMouseInputEvent(
 PP_Resource ResourceCreationImpl::CreateScrollbar(PP_Instance instance,
                                                   PP_Bool vertical) {
   return PPB_Scrollbar_Impl::Create(instance, PP_ToBool(vertical));
+}
+
+PP_Resource ResourceCreationImpl::CreateResourceArray(
+    PP_Instance instance,
+    const PP_Resource elements[],
+    uint32_t size) {
+  PPB_ResourceArray_Shared* object = new PPB_ResourceArray_Shared(
+      PPB_ResourceArray_Shared::InitAsImpl(), instance, elements, size);
+  return object->GetReference();
 }
 
 PP_Resource ResourceCreationImpl::CreateTCPSocketPrivate(PP_Instance instance) {

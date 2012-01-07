@@ -1,0 +1,65 @@
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+/**
+ * This file defines the <code>PPB_ResourceArray_Dev</code> interface.
+ */
+label Chrome {
+  M18 = 0.1
+};
+
+/**
+ * A resource array holds a list of resources and retains a reference to each of
+ * them.
+ */
+interface PPB_ResourceArray_Dev {
+  /**
+   * Creates a resource array.
+   * Note: It will add a reference to each of the elements.
+   *
+   * @param[in] elements <code>PP_Resource</code>s to be stored in the created
+   * resource array.
+   * @param[in] size The number of elements.
+   *
+   * @return A <code>PP_Resource</code> corresponding to a resource array if
+   * successful; 0 if failed.
+   */
+  PP_Resource Create([in] PP_Instance instance,
+                     [in, size_as=size] PP_Resource[] elements,
+                     [in] uint32_t size);
+
+  /**
+   * Determines if the provided resource is a resource array.
+   *
+   * @param[in] resource A <code>PP_Resource</code> corresponding to a generic
+   * resource.
+   *
+   * @return A <code>PP_Bool</code> that is <code>PP_TRUE</code> if the given
+   * resource is a resource array, otherwise <code>PP_FALSE</code>.
+   */
+  PP_Bool IsResourceArray([in] PP_Resource resource);
+
+  /**
+   * Gets the array size.
+   *
+   * @param[in] resource_array The resource array.
+   *
+   * @return How many elements are there in the array.
+   */
+  uint32_t GetSize([in] PP_Resource resource_array);
+
+  /**
+   * Gets the element at the specified position.
+   * Note: It doesn't add a reference to the returned resource for the caller.
+   *
+   * @param[in] resource_array The resource array.
+   * @param[in] index An integer indicating a position in the array.
+   *
+   * @return A <code>PP_Resource</code>. Returns 0 if the index is out of range.
+   */
+  PP_Resource GetAt(
+      [in] PP_Resource resource_array,
+      [in] uint32_t index);
+};

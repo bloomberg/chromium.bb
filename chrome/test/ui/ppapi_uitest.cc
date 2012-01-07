@@ -743,4 +743,13 @@ TEST_PPAPI_IN_PROCESS(View_ClipChange);
 TEST_PPAPI_OUT_OF_PROCESS(View_ClipChange);
 TEST_PPAPI_NACL_VIA_HTTP(View_ClipChange);
 
+TEST_PPAPI_IN_PROCESS(ResourceArray_Basics)
+TEST_PPAPI_IN_PROCESS(ResourceArray_OutOfRangeAccess)
+TEST_PPAPI_IN_PROCESS(ResourceArray_EmptyArray)
+TEST_PPAPI_IN_PROCESS(ResourceArray_InvalidElement)
+TEST_PPAPI_OUT_OF_PROCESS(ResourceArray_Basics)
+TEST_PPAPI_OUT_OF_PROCESS(ResourceArray_OutOfRangeAccess)
+TEST_PPAPI_OUT_OF_PROCESS(ResourceArray_EmptyArray)
+TEST_PPAPI_OUT_OF_PROCESS(ResourceArray_InvalidElement)
+
 #endif // ADDRESS_SANITIZER

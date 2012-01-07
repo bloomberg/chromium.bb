@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,6 +35,7 @@
 #include "ppapi/shared_impl/ppb_audio_config_shared.h"
 #include "ppapi/shared_impl/ppb_font_shared.h"
 #include "ppapi/shared_impl/ppb_input_event_shared.h"
+#include "ppapi/shared_impl/ppb_resource_array_shared.h"
 #include "ppapi/shared_impl/ppb_url_request_info_shared.h"
 #include "ppapi/shared_impl/var.h"
 #include "ppapi/thunk/enter.h"
@@ -244,6 +245,15 @@ PP_Resource ResourceCreationProxy::CreateGraphics3DRaw(
   // Not proxied. The raw creation function is used only in the implementation
   // of the proxy on the host side.
   return 0;
+}
+
+PP_Resource ResourceCreationProxy::CreateResourceArray(
+    PP_Instance instance,
+    const PP_Resource elements[],
+    uint32_t size) {
+  PPB_ResourceArray_Shared* object = new PPB_ResourceArray_Shared(
+      PPB_ResourceArray_Shared::InitAsProxy(), instance, elements, size);
+  return object->GetReference();
 }
 
 PP_Resource ResourceCreationProxy::CreateScrollbar(PP_Instance instance,

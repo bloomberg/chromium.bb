@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -63,6 +63,7 @@
       'c/dev/ppb_fullscreen_dev.h',
       'c/dev/ppb_ime_input_event_dev.h',
       'c/dev/ppb_memory_dev.h',
+      'c/dev/ppb_resource_array_dev.h',
       'c/dev/ppb_scrollbar_dev.h',
       'c/dev/ppb_testing_dev.h',
       'c/dev/ppb_url_util_dev.h',
@@ -191,6 +192,8 @@
       'cpp/dev/memory_dev.h',
       'cpp/dev/printing_dev.cc',
       'cpp/dev/printing_dev.h',
+      'cpp/dev/resource_array_dev.cc',
+      'cpp/dev/resource_array_dev.h',
       'cpp/dev/scrollbar_dev.cc',
       'cpp/dev/scrollbar_dev.h',
       'cpp/dev/selection_dev.cc',
@@ -361,6 +364,8 @@
       'tests/test_paint_aggregator.h',
       'tests/test_post_message.cc',
       'tests/test_post_message.h',
+      'tests/test_resource_array.cc',
+      'tests/test_resource_array.h',
       'tests/test_scrollbar.cc',
       'tests/test_scrollbar.h',
       'tests/test_struct_sizes.c',

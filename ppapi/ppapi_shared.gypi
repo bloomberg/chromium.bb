@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -71,6 +71,8 @@
         'shared_impl/ppb_memory_shared.cc',
         'shared_impl/ppb_opengles2_shared.cc',
         'shared_impl/ppb_opengles2_shared.h',
+        'shared_impl/ppb_resource_array_shared.cc',
+        'shared_impl/ppb_resource_array_shared.h',
         'shared_impl/ppb_url_request_info_shared.cc',
         'shared_impl/ppb_url_request_info_shared.h',
         'shared_impl/ppb_url_util_shared.cc',
@@ -172,6 +174,8 @@
         'thunk/ppb_messaging_thunk.cc',
         'thunk/ppb_mouse_lock_thunk.cc',
         'thunk/ppb_pdf_api.h',
+        'thunk/ppb_resource_array_api.h',
+        'thunk/ppb_resource_array_thunk.cc',
         'thunk/ppb_scrollbar_api.h',
         'thunk/ppb_scrollbar_thunk.cc',
         'thunk/ppb_tcp_socket_private_api.h',
