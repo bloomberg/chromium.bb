@@ -1,12 +1,15 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/views/frame/browser_frame_aura.h"
 
 #include "ash/ash_switches.h"
+#include "ash/shell.h"
 #include "base/command_line.h"
+#include "chrome/browser/chromeos/status/status_area_view.h"
 #include "chrome/browser/themes/theme_service.h"
+#include "chrome/browser/ui/views/aura/chrome_shell_delegate.h"
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view_aura.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "grit/theme_resources_standard.h"
@@ -156,6 +159,62 @@ void ToolbarBackground::Paint(gfx::Canvas* canvas, views::View* view) const {
 
 }  // namespace
 
+////////////////////////////////////////////////////////////////////////////////
+// BrowserFrameAura::StatusAreaBoundsWatcher
+
+class BrowserFrameAura::StatusAreaBoundsWatcher : public aura::WindowObserver {
+ public:
+  explicit StatusAreaBoundsWatcher(BrowserFrame* frame)
+      : frame_(frame),
+        status_area_window_(NULL) {
+    StartWatch();
+  }
+
+  virtual ~StatusAreaBoundsWatcher() {
+    StopWatch();
+  }
+
+ private:
+  void StartWatch() {
+    DCHECK(ChromeShellDelegate::instance());
+
+    StatusAreaView* status_area =
+        ChromeShellDelegate::instance()->GetStatusArea();
+    if (!status_area)
+      return;
+
+    StopWatch();
+    status_area_window_ = status_area->GetWidget()->GetNativeWindow();
+    status_area_window_->AddObserver(this);
+  }
+
+  void StopWatch() {
+    if (status_area_window_) {
+      status_area_window_->RemoveObserver(this);
+      status_area_window_ = NULL;
+    }
+  }
+
+  // Overridden from aura::WindowObserver:
+  virtual void OnWindowBoundsChanged(aura::Window* window,
+                                     const gfx::Rect& bounds) OVERRIDE {
+    DCHECK(window == status_area_window_);
+
+    // Triggers frame layout when the bounds of status area changed.
+    frame_->TabStripDisplayModeChanged();
+  }
+
+  virtual void OnWindowDestroyed(aura::Window* window) OVERRIDE {
+    DCHECK(window == status_area_window_);
+    status_area_window_ = NULL;
+  }
+
+  BrowserFrame* frame_;
+  aura::Window* status_area_window_;
+
+  DISALLOW_COPY_AND_ASSIGN(StatusAreaBoundsWatcher);
+};
+
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserFrameAura, public:
 
@@ -224,6 +283,13 @@ void BrowserFrameAura::OnWindowPropertyChanged(aura::Window* window,
   // a layout on show state changes.  crbug.com/108073
   if (browser_frame_->non_client_view())
     browser_frame_->non_client_view()->Layout();
+
+  // Watch for status area bounds change for maximized browser window in Aura
+  // compact mode.
+  if (ash::Shell::GetInstance()->IsWindowModeCompact() && IsMaximized())
+    status_area_watcher_.reset(new StatusAreaBoundsWatcher(browser_frame_));
+  else
+    status_area_watcher_.reset();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

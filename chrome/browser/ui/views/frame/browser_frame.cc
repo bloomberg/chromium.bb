@@ -27,6 +27,8 @@
 #if defined(USE_AURA)
 #include "ash/ash_switches.h"
 #include "ash/shell.h"
+#include "chrome/browser/chromeos/status/status_area_view.h"
+#include "chrome/browser/ui/views/aura/chrome_shell_delegate.h"
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -95,7 +97,33 @@ int BrowserFrame::GetMinimizeButtonOffset() const {
 }
 
 gfx::Rect BrowserFrame::GetBoundsForTabStrip(views::View* tabstrip) const {
-  return browser_frame_view_->GetBoundsForTabStrip(tabstrip);
+  gfx::Rect tab_strip_bounds =
+      browser_frame_view_->GetBoundsForTabStrip(tabstrip);
+#if defined(USE_AURA)
+  // Leave space for status area when maximized under aura compact window mode.
+  if (ash::Shell::GetInstance()->IsWindowModeCompact() &&
+      IsMaximized() &&
+      ChromeShellDelegate::instance()) {
+    StatusAreaView* status_area =
+        ChromeShellDelegate::instance()->GetStatusArea();
+    if (status_area) {
+      // Non-client frameview origin of a maximized BrowserFrame is also the
+      // origin of the screen. So we can use StatusArea's screen bounds with
+      // the |tab_strip_bounds| directly.
+      DCHECK(gfx::Point(0, 0) == GetWindowScreenBounds().origin());
+      DCHECK(gfx::Point(0, 0) == browser_frame_view_->bounds().origin());
+
+      gfx::Rect status_rect = status_area->GetWidget()->GetWindowScreenBounds();
+      if (status_rect.Intersects(tab_strip_bounds)) {
+        status_rect.set_y(tab_strip_bounds.y());
+        status_rect.set_height(tab_strip_bounds.height());
+
+        tab_strip_bounds = tab_strip_bounds.Subtract(status_rect);
+      }
+    }
+  }
+#endif
+  return tab_strip_bounds;
 }
 
 int BrowserFrame::GetHorizontalTabStripVerticalOffset(bool restored) const {
