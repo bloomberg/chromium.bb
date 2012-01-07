@@ -13,9 +13,6 @@ bool TreeViewController::CanEdit(TreeView* tree_view, ui::TreeModelNode* node) {
   return true;
 }
 
-void TreeViewController::OnTreeViewKeyDown(ui::KeyboardCode keycode) {
-}
-
 TreeViewController::~TreeViewController() {
 }
 

@@ -276,8 +276,9 @@ views::View* CollectedCookiesWin::CreateAllowedPane() {
   layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
   layout->StartRow(1, single_column_layout_id);
-  layout->AddView(allowed_cookies_tree_, 1, 1, GridLayout::FILL,
-                  GridLayout::FILL, kTreeViewWidth, kTreeViewHeight);
+  layout->AddView(allowed_cookies_tree_->CreateParentIfNecessary(), 1, 1,
+                  GridLayout::FILL, GridLayout::FILL, kTreeViewWidth,
+                  kTreeViewHeight);
   layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
   layout->StartRow(0, single_column_layout_id);
@@ -342,8 +343,8 @@ views::View* CollectedCookiesWin::CreateBlockedPane() {
 
   layout->StartRow(1, single_column_layout_id);
   layout->AddView(
-      blocked_cookies_tree_, 1, 1, GridLayout::FILL, GridLayout::FILL,
-      kTreeViewWidth, kTreeViewHeight);
+      blocked_cookies_tree_->CreateParentIfNecessary(), 1, 1,
+      GridLayout::FILL, GridLayout::FILL, kTreeViewWidth, kTreeViewHeight);
   layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
   layout->StartRow(0, three_columns_layout_id);

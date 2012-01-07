@@ -400,7 +400,7 @@ void BookmarkEditorView::Init() {
   if (show_tree_) {
     layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
     layout->StartRow(1, single_column_view_set_id);
-    layout->AddView(tree_view_);
+    layout->AddView(tree_view_->CreateParentIfNecessary());
   }
 
   layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);

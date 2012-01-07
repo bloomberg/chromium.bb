@@ -2,34 +2,38 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_VIEWS_CONTROLS_TREE_TREE_VIEW_H_
-#define UI_VIEWS_CONTROLS_TREE_TREE_VIEW_H_
+#ifndef UI_VIEWS_CONTROLS_TREE_TREE_VIEW_VIEWS_H_
+#define UI_VIEWS_CONTROLS_TREE_TREE_VIEW_VIEWS_H_
 #pragma once
 
-#include <windows.h>
-#include <commctrl.h>
-
-#include <map>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "ui/base/keycodes/keyboard_codes.h"
-#include "ui/base/models/tree_model.h"
-#include "ui/views/controls/native_control.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/models/tree_node_model.h"
+#include "ui/gfx/font.h"
+#include "ui/views/view.h"
 
 namespace views {
+
+class Textfield;
+class TreeViewController;
 
 // TreeView displays hierarchical data as returned from a TreeModel. The user
 // can expand, collapse and edit the items. A Controller may be attached to
 // receive notification of selection changes and restrict editing.
-class VIEWS_EXPORT TreeView : public NativeControl, ui::TreeModelObserver {
+//
+// Note on implementation. This implementation doesn't scale well. In particular
+// it does not store any row information, but instead calculates it as
+// necessary. But it's more than adequate for current uses.
+class VIEWS_EXPORT TreeView : public View, public ui::TreeModelObserver {
  public:
   TreeView();
   virtual ~TreeView();
 
-  // Is dragging enabled? The default is false.
-  void set_drag_enabled(bool drag_enabled) { drag_enabled_ = drag_enabled; }
-  bool drag_enabled() const { return drag_enabled_; }
+  // Returns new ScrollPane that contains the receiver.
+  View* CreateParentIfNecessary();
 
   // Sets the model. TreeView does not take ownership of the model.
   void SetModel(ui::TreeModel* model);
@@ -48,19 +52,11 @@ class VIEWS_EXPORT TreeView : public NativeControl, ui::TreeModelObserver {
   // the Controller is queried to determine if a particular node can be edited.
   void SetEditable(bool editable);
 
-  // Sets whether lines are drawn from the root node to child nodes (and
-  // whether plus boxes show up next to the root node.) The default is false.
-  // If root_shown_ is false, the children of the root act as the roots in the
-  // native control, and so this setting takes effect for them.
-  void set_lines_at_root(bool lines_at_root) {
-    lines_at_root_ = lines_at_root;
-  }
+  // Does nothing, but required for compatibility with Windows implementation.
+  void set_lines_at_root(bool lines_at_root) {}
 
-  // Overridden from View:
-  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
-
-  // Edits the specified node. This cancels the current edit and expands
-  // all parents of node.
+  // Edits the specified node. This cancels the current edit and expands all
+  // parents of node.
   void StartEditing(ui::TreeModelNode* node);
 
   // Cancels the current edit. Does nothing if not editing.
@@ -74,10 +70,14 @@ class VIEWS_EXPORT TreeView : public NativeControl, ui::TreeModelObserver {
   ui::TreeModelNode* GetEditingNode();
 
   // Selects the specified node. This expands all the parents of node.
-  void SetSelectedNode(ui::TreeModelNode* node);
+  void SetSelectedNode(ui::TreeModelNode* model_node);
 
   // Returns the selected node, or NULL if nothing is selected.
   ui::TreeModelNode* GetSelectedNode();
+
+  // Marks |model_node| as collapsed. This only effects the UI if node and all
+  // it's parents are expanded (IsExpanded(model_node) returns true).
+  void Collapse(ui::TreeModelNode* model_node);
 
   // Make sure node and all its parents are expanded.
   void Expand(ui::TreeModelNode* node);
@@ -87,16 +87,26 @@ class VIEWS_EXPORT TreeView : public NativeControl, ui::TreeModelObserver {
   void ExpandAll(ui::TreeModelNode* node);
 
   // Returns true if the specified node is expanded.
-  bool IsExpanded(ui::TreeModelNode* node);
+  bool IsExpanded(ui::TreeModelNode* model_node);
 
   // Sets whether the root is shown. If true, the root node of the tree is
   // shown, if false only the children of the root are shown. The default is
   // true.
   void SetRootShown(bool root_visible);
 
-  // Begin TreeModelObserver implementation.
-  // These methods shouldn't be called directly. The model is responsible for
-  // firing them.
+  // Sets the controller, which may be null. TreeView does not take ownership
+  // of the controller.
+  void SetController(TreeViewController* controller) {
+    controller_ = controller;
+  }
+
+  // View overrides:
+  virtual void Layout() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual bool OnMousePressed(const MouseEvent& event) OVERRIDE;
+  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
+
+  // TreeModelObserver overrides:
   virtual void TreeNodesAdded(ui::TreeModel* model,
                               ui::TreeModelNode* parent,
                               int start,
@@ -106,163 +116,196 @@ class VIEWS_EXPORT TreeView : public NativeControl, ui::TreeModelObserver {
                                 int start,
                                 int count) OVERRIDE;
   virtual void TreeNodeChanged(ui::TreeModel* model,
-                               ui::TreeModelNode* node) OVERRIDE;
-  // End TreeModelObserver implementation.
-
-  // Sets the controller, which may be null. TreeView does not take ownership
-  // of the controller.
-  void SetController(TreeViewController* controller) {
-    controller_ = controller;
-  }
-
-  // Sets whether enter is processed when not editing. If true, enter will
-  // expand/collapse the node. If false, enter is passed to the focus manager
-  // so that an enter accelerator can be enabled. The default is false.
-  //
-  // NOTE: Changing this has no effect after the hwnd has been created.
-  void SetProcessesEnter(bool process_enter) {
-    process_enter_ = process_enter;
-  }
-  bool GetProcessedEnter() { return process_enter_; }
-
-  // Sets when the ContextMenuController is notified. If true, the
-  // ContextMenuController is only notified when a node is selected and the
-  // mouse is over a node. The default is true.
-  void SetShowContextMenuOnlyWhenNodeSelected(bool value) {
-    show_context_menu_only_when_node_selected_ = value;
-  }
-  bool GetShowContextMenuOnlyWhenNodeSelected() {
-    return show_context_menu_only_when_node_selected_;
-  }
-
-  // If true, a right click selects the node under the mouse. The default
-  // is true.
-  void SetSelectOnRightMouseDown(bool value) {
-    select_on_right_mouse_down_ = value;
-  }
-  bool GetSelectOnRightMouseDown() { return select_on_right_mouse_down_; }
+                               ui::TreeModelNode* model_node) OVERRIDE;
 
  protected:
-  // Overriden to return a location based on the selected node.
-  virtual gfx::Point GetKeyboardContextMenuLocation();
-
-  // Creates and configures the tree_view.
-  virtual HWND CreateNativeControl(HWND parent_container);
-
-  // Invoked when the native control sends a WM_NOTIFY message to its parent.
-  // Handles a variety of potential TreeView messages.
-  virtual LRESULT OnNotify(int w_param, LPNMHDR l_param);
-
-  // Invoked when the native control send a WM_DESTROY message to its parent.
-  virtual void OnDestroy();
-
-  // We pay attention to key down for two reasons: to circumvent VK_ENTER from
-  // toggling the expaned state when processes_enter_ is false, and to have F2
-  // start editting.
-  virtual bool OnKeyDown(ui::KeyboardCode virtual_key_code);
-
-  virtual void OnContextMenu(const POINT& location);
-
-  // Returns the TreeModelNode for |tree_item|.
-  ui::TreeModelNode* GetNodeForTreeItem(HTREEITEM tree_item);
-
-  // Returns the tree item for |node|.
-  HTREEITEM GetTreeItemForNode(ui::TreeModelNode* node);
+  // View overrides:
+  virtual gfx::Point GetKeyboardContextMenuLocation() OVERRIDE;
+  virtual bool OnKeyPressed(const KeyEvent& event) OVERRIDE;
+  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
+  virtual void OnFocus() OVERRIDE;
+  virtual void OnBlur() OVERRIDE;
 
  private:
-  // See notes in TableView::TableViewWrapper for why this is needed.
-  struct TreeViewWrapper {
-    explicit TreeViewWrapper(TreeView* view) : tree_view(view) { }
-    TreeView* tree_view;
-  };
+  friend class TreeViewViewsTest;
 
-  // Internally used to track the state of nodes. NodeDetails are lazily created
-  // as the user expands nodes.
-  struct NodeDetails {
-    NodeDetails(int id, ui::TreeModelNode* node)
-        : id(id), node(node), tree_item(NULL), loaded_children(false) {}
+  // InternalNode is used to track information about the set of nodes displayed
+  // by TreeViewViews.
+  class InternalNode : public ui::TreeNode<InternalNode> {
+   public:
+    InternalNode();
+    virtual ~InternalNode();
 
-    // Unique identifier for the node. This corresponds to the lParam of
-    // the tree item.
-    const int id;
+    // Resets the state from |node|.
+    void Reset(ui::TreeModelNode* node);
 
+    // The model node this InternalNode represents.
+    ui::TreeModelNode* model_node() { return model_node_; }
+
+    // Whether the node is expanded.
+    void set_is_expanded(bool expanded) { is_expanded_ = expanded; }
+    bool is_expanded() const { return is_expanded_; }
+
+    // Whether children have been loaded.
+    void set_loaded_children(bool value) { loaded_children_ = value; }
+    bool loaded_children() const { return loaded_children_; }
+
+    // Width needed to display the string.
+    void set_text_width(int width) { text_width_ = width; }
+    int text_width() const { return text_width_; }
+
+    // Returns the total number of descendants (including this node).
+    int NumExpandedNodes();
+
+    // Returns the max width of all descendants (including this node). |indent|
+    // is how many pixels each child is indented and |depth| is the depth of
+    // this node from it's parent.
+    int GetMaxWidth(int indent, int depth);
+
+   private:
     // The node from the model.
-    ui::TreeModelNode* node;
-
-    // From the native TreeView.
-    //
-    // This should be treated as const, but can't due to timing in creating the
-    // entry.
-    HTREEITEM tree_item;
+    ui::TreeModelNode* model_node_;
 
     // Whether the children have been loaded.
-    bool loaded_children;
+    bool loaded_children_;
+
+    bool is_expanded_;
+
+    int text_width_;
+
+    DISALLOW_COPY_AND_ASSIGN(InternalNode);
   };
 
-  // Cleanup all resources used by treeview.
-  void Cleanup();
+  // Used by GetInternalNodeForModelNode.
+  enum GetInternalNodeCreateType {
+    // If an InternalNode hasn't been created yet, create it.
+    CREATE_IF_NOT_LOADED,
 
-  // Make sure the tree view is observing the tree model.
-  void AddObserverToModel();
+    // Don't create an InternalNode if one hasn't been created yet.
+    DONT_CREATE_IF_NOT_LOADED,
+  };
 
-  // Make sure the tree view is no longer observing the tree model.
-  void RemoveObserverFromModel();
+  // Used by IncrementSelection.
+  enum IncrementType {
+    // Selects the next node.
+    INCREMENT_NEXT,
 
-  // Deletes the root items from the treeview. This is used when the model
-  // changes.
-  void DeleteRootItems();
+    // Selects the previous node.
+    INCREMENT_PREVIOUS
+  };
 
-  // Creates the root items in the treeview from the model. This is used when
-  // the model changes.
-  void CreateRootItems();
+  // Row of the root node. This varies depending upon whether the root is
+  // visible.
+  int root_row() const { return root_shown_ ? 0 : -1; }
 
-  // Creates and adds an item to the treeview. parent_item identifies the
-  // parent and is null for root items. after dictates where among the
-  // children of parent_item the item is to be created. node is the node from
-  // the model.
-  void CreateItem(HTREEITEM parent_item, HTREEITEM after,
-                  ui::TreeModelNode* node);
+  // Depth of the root node.
+  int root_depth() const { return root_shown_ ? 0 : -1; }
 
-  // Removes entries from the map for item. This method will also
-  // remove the items from the TreeView because the process of
-  // deleting an item will send an TVN_GETDISPINFO message, consulting
-  // our internal map data.
-  void RecursivelyDelete(NodeDetails* node);
+  // Loads the children of the specified node.
+  void LoadChildren(InternalNode* node);
 
-  // Returns the NodeDetails by node from the model.
-  NodeDetails* GetNodeDetails(ui::TreeModelNode* node);
+  // Configures an InternalNode from a node from the model. This is used
+  // when a node changes as well as when loading.
+  void ConfigureInternalNode(ui::TreeModelNode* model_node, InternalNode* node);
 
-  // Returns the NodeDetails by identifier (lparam of the HTREEITEM).
-  NodeDetails* GetNodeDetailsByID(int id);
+  // Sets |node|s text_width.
+  void UpdateNodeTextWidth(InternalNode* node);
 
-  // Returns the NodeDetails by HTREEITEM.
-  NodeDetails* GetNodeDetailsByTreeItem(HTREEITEM tree_item);
+  // Invoked when the set of drawn nodes changes.
+  void DrawnNodesChanged();
 
-  // Creates the image list to use for the tree.
-  HIMAGELIST CreateImageList();
+  // Updates |preferred_size_| from the state of the UI.
+  void UpdatePreferredSize();
 
-  // Returns the HTREEITEM for |node|. This is intended to be called when a
-  // model mutation event occur with |node| as the parent. This returns null
-  // if the user has never expanded |node| or all of its parents.
-  HTREEITEM GetTreeItemForNodeDuringMutation(ui::TreeModelNode* node);
+  // Schedules a paint for |node|.
+  void SchedulePaintForNode(InternalNode* node);
 
-  // The window function installed on the treeview.
-  static LRESULT CALLBACK TreeWndProc(HWND window,
-                                      UINT message,
-                                      WPARAM w_param,
-                                      LPARAM l_param);
+  // Recursively paints rows from |min_row| to |max_row|. |node| is the node for
+  // the row |*row|. |row| is updated as this walks the tree. Depth is the depth
+  // of |*row|.
+  void PaintRows(gfx::Canvas* canvas,
+                 int min_row,
+                 int max_row,
+                 InternalNode* node,
+                 int depth,
+                 int* row);
 
-  // Handle to the tree window.
-  HWND tree_view_;
+  // Invoked to paint a single node.
+  void PaintRow(gfx::Canvas* canvas,
+                InternalNode* node,
+                int row,
+                int depth);
+
+  // Paints the expand control given the specified nodes bounds.
+  void PaintExpandControl(gfx::Canvas* canvas,
+                          const gfx::Rect& node_bounds,
+                          bool expanded);
+
+  // Returns the InternalNode for a model node. |create_type| indicates wheter
+  // this should load InternalNode or not.
+  InternalNode* GetInternalNodeForModelNode(
+      ui::TreeModelNode* model_node,
+      GetInternalNodeCreateType create_type);
+
+  // Returns the bounds for a node.
+  gfx::Rect GetBoundsForNode(InternalNode* node);
+
+  // Implementation of GetBoundsForNode. Separated out as some callers already
+  // know the row/depth.
+  gfx::Rect GetBoundsForNodeImpl(InternalNode* node, int row, int depth);
+
+  // Returns the number of rows.
+  int GetRowCount();
+
+  // Returns the row and depth of a node.
+  int GetRowForNode(InternalNode* node, int* depth);
+
+  // Returns the row and depth of the specified node.
+  InternalNode* GetNodeByRow(int row, int* depth);
+
+  // Implementation of GetNodeByRow. |curent_row| is updated as we iterate.
+  InternalNode* GetNodeByRowImpl(InternalNode* node,
+                                 int target_row,
+                                 int current_depth,
+                                 int* current_row,
+                                 int* node_depth);
+
+  // Increments the selection. Invoked in response to up/down arrow.
+  void IncrementSelection(IncrementType type);
+
+  // If the current node is expanded, it's collapsed, otherwise selection is
+  // moved to the parent.
+  void CollapseOrSelectParent();
+
+  // If the selected node is collapsed, it's expanded. Otherwise the first child
+  // is seleected.
+  void ExpandOrSelectChild();
+
+  // Implementation of Expand(). Returns true if at least one node was expanded
+  // that previously wasn't.
+  bool ExpandImpl(ui::TreeModelNode* model_node);
 
   // The model, may be null.
   ui::TreeModel* model_;
 
-  // Maps from id to NodeDetails.
-  std::map<int, NodeDetails*> id_to_details_map_;
+  // Default icons for closed/open.
+  SkBitmap closed_icon_;
+  SkBitmap open_icon_;
 
-  // Maps from model entry to NodeDetails.
-  std::map<ui::TreeModelNode*, NodeDetails*> node_to_details_map_;
+  // Icons from the model.
+  std::vector<SkBitmap> icons_;
+
+  // The root node.
+  InternalNode root_;
+
+  // The selected node, may be NULL.
+  InternalNode* selected_node_;
+
+  // Node users is editing, NULL if not editing.
+  InternalNode* editing_node_;
+
+  // Used when editing.
+  Textfield* editor_;
 
   // Whether to automatically expand children when a parent node is expanded.
   bool auto_expand_children_;
@@ -270,50 +313,31 @@ class VIEWS_EXPORT TreeView : public NativeControl, ui::TreeModelObserver {
   // Whether the user can edit the items.
   bool editable_;
 
-  // Next id to create. Any time an item is added this is incremented by one.
-  int next_id_;
-
   // The controller.
   TreeViewController* controller_;
-
-  // Node being edited. If null, not editing.
-  ui::TreeModelNode* editing_node_;
 
   // Whether or not the root is shown in the tree.
   bool root_shown_;
 
-  // Whether lines are drawn from the root to the children.
-  bool lines_at_root_;
-
-  // Whether enter should be processed by the tree when not editing.
-  bool process_enter_;
-
-  // Whether we notify context menu controller only when mouse is over node
-  // and node is selected.
-  bool show_context_menu_only_when_node_selected_;
-
-  // Whether the selection is changed on right mouse down.
-  bool select_on_right_mouse_down_;
-
-  // A wrapper around 'this', used for subclassing the TreeView control.
-  TreeViewWrapper wrapper_;
-
-  // Original handler installed on the TreeView.
-  WNDPROC original_handler_;
-
-  bool drag_enabled_;
-
-  // Has an observer been added to the model?
-  bool observer_added_;
-
   // Did the model return a non-empty set of icons from GetIcons?
   bool has_custom_icons_;
 
-  HIMAGELIST image_list_;
+  // Cached preferred size.
+  gfx::Size preferred_size_;
+
+  // Font used to display text.
+  gfx::Font font_;
+
+  // Height of each row. Based on font and some padding.
+  int row_height_;
+
+  // Offset the text is drawn at. This accounts for the size of the expand
+  // control, icon and offsets.
+  int text_offset_;
 
   DISALLOW_COPY_AND_ASSIGN(TreeView);
 };
 
 }  // namespace views
 
-#endif  // UI_VIEWS_CONTROLS_TREE_TREE_VIEW_H_
+#endif  // UI_VIEWS_CONTROLS_TREE_TREE_VIEW_VIEWS_H_

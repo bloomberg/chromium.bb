@@ -238,6 +238,8 @@
         'controls/tree/tree_view.h',
         'controls/tree/tree_view_controller.cc',
         'controls/tree/tree_view_controller.h',
+        'controls/tree/tree_view_views.cc',
+        'controls/tree/tree_view_views.h',
         'controls/tree/tree_view_win.cc',
         'controls/tree/tree_view_win.h',
         #'debug_utils.cc',
@@ -405,9 +407,6 @@
             'controls/table/table_view2.cc',
             'controls/table/table_view2.h',
             'controls/table/table_view_observer.h',
-            'controls/tree/tree_view.h',
-            'controls/tree/tree_view_controller.cc',
-            'controls/tree/tree_view_controller.h',
             'drag_utils_win.cc',
             'widget/aero_tooltip_manager.cc',
             'widget/aero_tooltip_manager.h',
@@ -427,8 +426,6 @@
             'controls/scrollbar/bitmap_scroll_bar.cc',
             'controls/table/group_table_view.cc',
             'controls/table/table_view.cc',
-            'controls/tree/tree_view_controller.cc',
-            'controls/tree/tree_view_controller.h',
             'controls/tree/tree_view.h',
             'events/event_win.cc',
             'widget/aero_tooltip_manager.cc',
@@ -444,12 +441,13 @@
             'widget/tooltip_manager_views.cc',
           ],
         }],
-        # For these we still use platform code instead of Views code on Windows.
         ['use_aura==0 and OS=="win"', {
           'sources!': [
             'controls/menu/menu_config_views.cc',
             'controls/menu/menu_item_view_views.cc',
             'controls/menu/menu_separator_views.cc',
+            'controls/tree/tree_view_views.cc',
+            'controls/tree/tree_view_views.h',
           ],
         }],
         ['OS=="win"', {
@@ -510,6 +508,7 @@
         'controls/table/table_view_unittest.cc',
         'controls/textfield/native_textfield_views_unittest.cc',
         'controls/textfield/textfield_views_model_unittest.cc',
+        'controls/tree/tree_view_views_unittest.cc',
         'events/event_unittest.cc',
         'focus/accelerator_handler_gtk_unittest.cc',
         'focus/focus_manager_test.h',
@@ -560,6 +559,11 @@
           },
           'include_dirs': [
             '../third_party/wtl/include',
+          ],
+        }],
+        ['use_aura==0 and OS=="win"', {
+          'sources/': [
+            ['exclude', 'controls/tree/tree_view_views_unittest.cc'],
           ],
         }],
         [ 'use_aura==1', {
@@ -656,6 +660,8 @@
         'examples/textfield_example.h',
         'examples/throbber_example.cc',
         'examples/throbber_example.h',
+        'examples/tree_view_example.cc',
+        'examples/tree_view_example.h',
         'examples/widget_example.cc',
         'examples/widget_example.h',
       ],

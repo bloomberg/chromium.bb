@@ -29,6 +29,10 @@ class VIEWS_EXPORT TreeView : public NativeControl, ui::TreeModelObserver {
   TreeView();
   virtual ~TreeView();
 
+  // Returns this. Intended for implementations (such as TreeViewViews) that
+  // need to wrap the tree in a scrollview.
+  View* CreateParentIfNecessary();
+
   // Is dragging enabled? The default is false.
   void set_drag_enabled(bool drag_enabled) { drag_enabled_ = drag_enabled; }
   bool drag_enabled() const { return drag_enabled_; }

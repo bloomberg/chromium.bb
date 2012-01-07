@@ -57,6 +57,10 @@ TreeView::~TreeView() {
   Cleanup();
 }
 
+View* TreeView::CreateParentIfNecessary() {
+  return this;
+}
+
 void TreeView::GetAccessibleState(ui::AccessibleViewState* state) {
   state->role = ui::AccessibilityTypes::ROLE_OUTLINE;
   state->state = ui::AccessibilityTypes::STATE_READONLY;
@@ -445,15 +449,6 @@ LRESULT TreeView::OnNotify(int w_param, LPNMHDR l_param) {
       // Return value ignored.
       return 0;
     }
-
-    case TVN_KEYDOWN:
-      if (controller_) {
-        NMTVKEYDOWN* key_down_message =
-            reinterpret_cast<NMTVKEYDOWN*>(l_param);
-        controller_->OnTreeViewKeyDown(
-            ui::KeyboardCodeForWindowsKeyCode(key_down_message->wVKey));
-      }
-      break;
 
     default:
       break;

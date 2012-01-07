@@ -30,9 +30,6 @@ class VIEWS_EXPORT TreeViewController {
   // TreeView is editable.
   virtual bool CanEdit(TreeView* tree_view, ui::TreeModelNode* node);
 
-  // Invoked when a key is pressed on the tree view.
-  virtual void OnTreeViewKeyDown(ui::KeyboardCode keycode);
-
  protected:
   virtual ~TreeViewController();
 };

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,6 +31,7 @@
 #include "ui/views/examples/text_example.h"
 #include "ui/views/examples/textfield_example.h"
 #include "ui/views/examples/throbber_example.h"
+#include "ui/views/examples/tree_view_example.h"
 #include "ui/views/examples/widget_example.h"
 #include "ui/views/focus/accelerator_handler.h"
 #include "ui/views/layout/grid_layout.h"
@@ -110,6 +111,7 @@ class ExamplesWindowContents : public views::WidgetDelegateView {
 
   // Adds all the individual examples to the tab strip.
   void AddExamples() {
+    AddExample(new TreeViewExample);
     AddExample(new BubbleExample);
     AddExample(new ButtonExample);
     AddExample(new ComboboxExample);

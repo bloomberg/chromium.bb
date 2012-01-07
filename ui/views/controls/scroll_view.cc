@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,11 +18,11 @@ class Viewport : public View {
   Viewport() {}
   virtual ~Viewport() {}
 
-  virtual std::string GetClassName() const {
+  virtual std::string GetClassName() const OVERRIDE {
     return "views/Viewport";
   }
 
-  virtual void ScrollRectToVisible(const gfx::Rect& rect) {
+  virtual void ScrollRectToVisible(const gfx::Rect& rect) OVERRIDE {
     if (!has_children() || !parent())
       return;
 
@@ -31,6 +31,11 @@ class Viewport : public View {
     scroll_rect.Offset(-contents->x(), -contents->y());
     static_cast<ScrollView*>(parent())->ScrollContentsRegionToBeVisible(
         scroll_rect);
+  }
+
+  void ChildPreferredSizeChanged(View* child) OVERRIDE {
+    if (parent())
+      parent()->Layout();
   }
 
  private:
@@ -141,13 +146,13 @@ void ScrollView::ComputeScrollBarsVisibility(const gfx::Size& vp_size,
 
 void ScrollView::Layout() {
   // Most views will want to auto-fit the available space. Most of them want to
-  // use the all available width (without overflowing) and only overflow in
+  // use all available width (without overflowing) and only overflow in
   // height. Examples are HistoryView, MostVisitedView, DownloadTabView, etc.
   // Other views want to fit in both ways. An example is PrintView. To make both
-  // happy, assume a vertical scrollbar but no horizontal scrollbar. To
-  // override this default behavior, the inner view has to calculate the
-  // available space, used ComputeScrollBarsVisibility() to use the same
-  // calculation that is done here and sets its bound to fit within.
+  // happy, assume a vertical scrollbar but no horizontal scrollbar. To override
+  // this default behavior, the inner view has to calculate the available space,
+  // used ComputeScrollBarsVisibility() to use the same calculation that is done
+  // here and sets its bound to fit within.
   gfx::Rect viewport_bounds = GetLocalBounds();
   // Realign it to 0 so it can be used as-is for SetBounds().
   viewport_bounds.set_origin(gfx::Point(0, 0));
