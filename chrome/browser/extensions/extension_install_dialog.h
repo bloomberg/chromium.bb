@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -53,11 +53,5 @@ bool ShowExtensionInstallDialogForManifest(
     SkBitmap* icon,
     const ExtensionInstallUI::Prompt& prompt,
     scoped_refptr<Extension>* dummy_extension);
-
-// For use only in tests - sets a flag that makes invocations of
-// ShowExtensionInstallDialog* skip putting up a real dialog, and
-// instead act as if the dialog choice was to proceed or abort.
-void SetExtensionInstallDialogAutoConfirmForTests(
-    bool should_proceed);
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_INSTALL_DIALOG_H_

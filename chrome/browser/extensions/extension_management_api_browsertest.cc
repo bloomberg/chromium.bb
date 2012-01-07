@@ -1,7 +1,8 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/command_line.h"
 #include "base/stringprintf.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
@@ -13,6 +14,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/chrome_switches.h"
 
 namespace keys = extension_management_api_constants;
 namespace util = extension_function_test_utils;
@@ -121,10 +123,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiEscalationTest,
   ReEnable(false, keys::kGestureNeededForEscalationError);
 
   // Expect an error that user cancelled the dialog.
-  SetExtensionInstallDialogAutoConfirmForTests(false);
+  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kAppsGalleryInstallAutoConfirmForTests, "cancel");
   ReEnable(true, keys::kUserDidNotReEnableError);
 
   // This should succeed when user accepts dialog.
-  SetExtensionInstallDialogAutoConfirmForTests(true);
+  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kAppsGalleryInstallAutoConfirmForTests, "accept");
   ReEnable(true, "");
 }
