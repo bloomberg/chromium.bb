@@ -39,8 +39,7 @@ CrashUploadList::CrashUploadList(Delegate* delegate) : delegate_(delegate) {}
 CrashUploadList::~CrashUploadList() {}
 
 void CrashUploadList::LoadCrashListAsynchronously() {
-  BrowserThread::PostTask(
-      BrowserThread::FILE,
+  BrowserThread::PostBlockingPoolTask(
       FROM_HERE,
       base::Bind(&CrashUploadList::LoadCrashListAndInformDelegateOfCompletion,
                  this));
@@ -60,7 +59,6 @@ void CrashUploadList::LoadCrashListAndInformDelegateOfCompletion() {
 }
 
 void CrashUploadList::LoadCrashList() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   FilePath crash_dir_path;
   PathService::Get(chrome::DIR_CRASH_DUMPS, &crash_dir_path);
   FilePath upload_log_path = crash_dir_path.AppendASCII("uploads.log");

@@ -17,6 +17,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/shared_memory.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/common/visitedlink_common.h"
 
@@ -162,6 +163,10 @@ class VisitedLinkMaster : public VisitedLinkCommon {
 
   // File I/O functions
   // ------------------
+
+  // Posts the given task to the blocking worker pool with our options.
+  void PostIOTask(const tracked_objects::Location& from_here,
+                  const base::Closure& task);
 
   // Writes the entire table to disk, returning true on success. It will leave
   // the table file open and the handle to it in file_
@@ -311,6 +316,9 @@ class VisitedLinkMaster : public VisitedLinkCommon {
   // Reference to the user profile that this object belongs to
   // (it knows the path to where the data is stored)
   Profile* profile_;
+
+  // Lazily initialized sequence token for posting file tasks.
+  base::SequencedWorkerPool::SequenceToken sequence_token_;
 
   // When non-NULL, indicates we are in database rebuild mode and points to
   // the class collecting fingerprint information from the history system.
