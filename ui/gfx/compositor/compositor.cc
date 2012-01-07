@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -51,9 +51,7 @@ void Compositor::Draw(bool force_clear) {
 
   NotifyStart(force_clear);
   DrawTree();
-  if (!CompositesAsynchronously()) {
-    NotifyEnd();
-  }
+  NotifyEnd();
 }
 
 void Compositor::AddObserver(CompositorObserver* observer) {
@@ -74,10 +72,6 @@ void Compositor::OnRootLayerChanged() {
 
 void Compositor::DrawTree() {
   root_layer_->DrawTree();
-}
-
-bool Compositor::CompositesAsynchronously() {
-  return false;
 }
 
 void Compositor::SwizzleRGBAToBGRAAndFlip(unsigned char* pixels,
@@ -103,15 +97,15 @@ void Compositor::SwizzleRGBAToBGRAAndFlip(unsigned char* pixels,
   }
 }
 
+void Compositor::NotifyStart(bool clear) {
+  OnNotifyStart(clear);
+}
+
 void Compositor::NotifyEnd() {
   OnNotifyEnd();
   FOR_EACH_OBSERVER(CompositorObserver,
                     observer_list_,
                     OnCompositingEnded(this));
-}
-
-void Compositor::NotifyStart(bool clear) {
-  OnNotifyStart(clear);
 }
 
 }  // namespace ui
