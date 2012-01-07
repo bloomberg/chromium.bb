@@ -298,10 +298,10 @@ class GpuPixelBrowserTest : public InProcessBrowserTest {
 // platforms.
 // Bug tracking test failure on Windows/Mac: http://crbug.com/95214
 // Bug tracking test failure on Linux: http://crbug.com/95214
-#if defined(OS_WIN)
-#define MAYBE_WebGLTeapot WebGLTeapot
-#else
+#if defined(USE_AURA)
 #define MAYBE_WebGLTeapot DISABLED_WebGLTeapot
+#else
+#define MAYBE_WebGLTeapot WebGLTeapot
 #endif
 
 IN_PROC_BROWSER_TEST_F(GpuPixelBrowserTest, MAYBE_WebGLTeapot) {
