@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 #ifndef CHROME_BROWSER_WEBDATA_AUTOFILL_PROFILE_SYNCABLE_SERVICE_H_
@@ -13,6 +13,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/non_thread_safe.h"
+#include "chrome/browser/autofill/autofill_type.h"
 #include "chrome/browser/sync/api/sync_change.h"
 #include "chrome/browser/sync/api/sync_data.h"
 #include "chrome/browser/sync/api/sync_error.h"
@@ -26,6 +27,7 @@
 
 class AutofillProfile;
 class AutofillTable;
+class FormGroup;
 class ProfileSyncServiceAutofillTest;
 class WebDataService;
 
@@ -88,6 +90,12 @@ class AutofillProfileSyncableService
                            ProcessSyncChanges);
   FRIEND_TEST_ALL_PREFIXES(AutofillProfileSyncableServiceTest,
                            ActOnChange);
+  FRIEND_TEST_ALL_PREFIXES(AutofillProfileSyncableServiceTest,
+                           UpdateField);
+  FRIEND_TEST_ALL_PREFIXES(AutofillProfileSyncableServiceTest,
+                           UpdateMultivaluedField);
+  FRIEND_TEST_ALL_PREFIXES(AutofillProfileSyncableServiceTest,
+                           MergeProfile);
 
   // The map of the guid to profiles owned by the |profiles_| vector.
   typedef std::map<std::string, AutofillProfile*> GUIDToProfileMap;
@@ -123,6 +131,23 @@ class AutofillProfileSyncableService
 
   AutofillTable* GetAutofillTable() const;
 
+  // Helper to compare the local value and cloud value of a field, copy into
+  // the local value if they differ, and return whether the change happened.
+  static bool UpdateField(AutofillFieldType field_type,
+                          const std::string& new_value,
+                          AutofillProfile* autofill_profile);
+  // The same as |UpdateField|, but for multi-valued fields.
+  static bool UpdateMultivaluedField(
+      AutofillFieldType field_type,
+      const ::google::protobuf::RepeatedPtrField<std::string>& new_value,
+      AutofillProfile* autofill_profile);
+
+  // Calls merge_into->OverwriteWithOrAddTo() and then checks if the
+  // |merge_into| has extra data. Returns |true| if |merge_into| posseses some
+  // multi-valued field values that are not in |merge_from|, false otherwise.
+  static bool MergeProfile(const AutofillProfile& merge_from,
+                           AutofillProfile* merge_into);
+
   // For unit-tests.
   AutofillProfileSyncableService();
   void set_sync_processor(SyncChangeProcessor* sync_processor) {
@@ -150,6 +175,12 @@ struct AutofillProfileSyncableService::DataBundle {
   std::vector<std::string> profiles_to_delete;
   std::vector<AutofillProfile*> profiles_to_update;
   std::vector<AutofillProfile*> profiles_to_add;
+
+  // When we go through sync we find profiles that are similar but unmatched.
+  // Merge such profiles.
+  GUIDToProfileMap candidates_to_merge;
+  // Profiles that have multi-valued fields that are not in sync.
+  std::vector<AutofillProfile*> profiles_to_sync_back;
 };
 
 #endif  // CHROME_BROWSER_WEBDATA_AUTOFILL_PROFILE_SYNCABLE_SERVICE_H_

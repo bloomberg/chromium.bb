@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -114,13 +114,18 @@ class AutofillTableMock : public AutofillTable {
                bool(const std::vector<AutofillEntry>&));  // NOLINT
   MOCK_METHOD1(GetAutofillProfiles,
                bool(std::vector<AutofillProfile*>*));  // NOLINT
-  MOCK_METHOD1(UpdateAutofillProfile,
+  MOCK_METHOD1(UpdateAutofillProfileMulti,
                bool(const AutofillProfile&));  // NOLINT
   MOCK_METHOD1(AddAutofillProfile,
                bool(const AutofillProfile&));  // NOLINT
   MOCK_METHOD1(RemoveAutofillProfile,
                bool(const std::string&));  // NOLINT
 };
+
+MATCHER_P(MatchProfiles, profile, "") {
+  return (profile.CompareMulti(arg) == 0);
+}
+
 
 class WebDatabaseFake : public WebDatabase {
  public:
@@ -359,6 +364,10 @@ class ProfileSyncServiceAutofillTest : public AbstractProfileSyncServiceTest {
     personal_data_manager_ = static_cast<PersonalDataManagerMock*>(
         PersonalDataManagerFactory::GetInstance()->SetTestingFactoryAndUse(
             &profile_, PersonalDataManagerMock::Build));
+    // GetHistoryService() gets called indirectly, but the result is ignored, so
+    // it is safe to return NULL.
+    EXPECT_CALL(profile_, GetHistoryService(_)).
+        WillRepeatedly(Return(static_cast<HistoryService*>(NULL)));
     EXPECT_CALL(*personal_data_manager_, LoadProfiles()).Times(1);
     EXPECT_CALL(*personal_data_manager_, LoadCreditCards()).Times(1);
     EXPECT_CALL(profile_, GetWebDataService(_)).
@@ -723,6 +732,29 @@ class FakeServerUpdater : public base::RefCountedThreadSafe<FakeServerUpdater> {
   syncable::Id parent_id_;
 };
 
+namespace {
+
+// Checks if the field of type |field_type| in |profile1| includes all values
+// of the field in |profile2|.
+bool IncludesField(const AutofillProfile& profile1,
+                   const AutofillProfile& profile2,
+                   AutofillFieldType field_type) {
+  std::vector<string16> values1;
+  profile1.GetMultiInfo(field_type, &values1);
+  std::vector<string16> values2;
+  profile2.GetMultiInfo(field_type, &values2);
+
+  std::set<string16> values_set;
+  for (size_t i = 0; i < values1.size(); ++i)
+    values_set.insert(values1[i]);
+  for (size_t i = 0; i < values2.size(); ++i)
+    if (values_set.find(values2[i]) == values_set.end())
+      return false;
+  return true;
+}
+
+};
+
 // TODO(skrul): Test abort startup.
 // TODO(skrul): Test processing of cloud changes.
 // TODO(tim): Add autofill data type controller test, and a case to cover
@@ -897,7 +929,8 @@ TEST_F(ProfileSyncServiceAutofillTest, HasNativeHasSyncMergeProfile) {
   sync_profiles.push_back(sync_profile);
   AddAutofillHelper<AutofillProfile> add_autofill(this, sync_profiles);
 
-  EXPECT_CALL(autofill_table_, UpdateAutofillProfile(_)).
+  EXPECT_CALL(autofill_table_,
+              UpdateAutofillProfileMulti(MatchProfiles(sync_profile))).
       WillOnce(Return(true));
   EXPECT_CALL(*personal_data_manager_, Refresh());
   StartSyncService(add_autofill.callback(), false, syncable::AUTOFILL_PROFILE);
@@ -907,7 +940,57 @@ TEST_F(ProfileSyncServiceAutofillTest, HasNativeHasSyncMergeProfile) {
   ASSERT_TRUE(GetAutofillProfilesFromSyncDBUnderProfileNode(
       &new_sync_profiles));
   ASSERT_EQ(1U, new_sync_profiles.size());
-  EXPECT_EQ(0, sync_profile.Compare(new_sync_profiles[0]));
+  EXPECT_EQ(0, sync_profile.CompareMulti(new_sync_profiles[0]));
+}
+
+TEST_F(ProfileSyncServiceAutofillTest, HasNativeHasSyncMergeProfileCombine) {
+  AutofillProfile sync_profile;
+  autofill_test::SetProfileInfoWithGuid(&sync_profile,
+      "23355099-1170-4B71-8ED4-144470CC9EBE", "Billing",
+      "Mitchell", "Morrison",
+      "johnwayne@me.xyz", "Fox", "123 Zoo St.", "unit 5", "Hollywood", "CA",
+      "91601", "US", "12345678910");
+
+  AutofillProfile* native_profile = new AutofillProfile;
+  // Same address, but different names, phones and e-mails.
+  autofill_test::SetProfileInfoWithGuid(native_profile,
+      "23355099-1170-4B71-8ED4-144470CC9EBF", "Billing", "Alicia", "Saenz",
+      "joewayne@me.xyz", "Fox", "123 Zoo St.", "unit 5", "Hollywood", "CA",
+      "91601", "US", "19482937549");
+
+  AutofillProfile expected_profile(sync_profile);
+  expected_profile.OverwriteWithOrAddTo(*native_profile);
+
+  std::vector<AutofillProfile*> native_profiles;
+  native_profiles.push_back(native_profile);
+  EXPECT_CALL(autofill_table_, GetAutofillProfiles(_)).
+      WillOnce(DoAll(SetArgumentPointee<0>(native_profiles), Return(true)));
+  EXPECT_CALL(autofill_table_,
+              AddAutofillProfile(MatchProfiles(expected_profile))).
+      WillOnce(Return(true));
+  EXPECT_CALL(autofill_table_,
+              RemoveAutofillProfile("23355099-1170-4B71-8ED4-144470CC9EBF")).
+      WillOnce(Return(true));
+  std::vector<AutofillProfile> sync_profiles;
+  sync_profiles.push_back(sync_profile);
+  AddAutofillHelper<AutofillProfile> add_autofill(this, sync_profiles);
+
+  EXPECT_CALL(*personal_data_manager_, Refresh());
+  StartSyncService(add_autofill.callback(), false, syncable::AUTOFILL_PROFILE);
+  ASSERT_TRUE(add_autofill.success());
+
+  std::vector<AutofillProfile> new_sync_profiles;
+  ASSERT_TRUE(GetAutofillProfilesFromSyncDBUnderProfileNode(
+      &new_sync_profiles));
+  ASSERT_EQ(1U, new_sync_profiles.size());
+  // Check that key fields are the same.
+  EXPECT_TRUE(new_sync_profiles[0].IsSubsetOf(sync_profile));
+  // Check that multivalued fields of the synced back data include original
+  // data.
+  EXPECT_TRUE(IncludesField(new_sync_profiles[0], sync_profile, NAME_FULL));
+  EXPECT_TRUE(IncludesField(new_sync_profiles[0], sync_profile, EMAIL_ADDRESS));
+  EXPECT_TRUE(IncludesField(new_sync_profiles[0], sync_profile,
+                            PHONE_HOME_WHOLE_NUMBER));
 }
 
 TEST_F(ProfileSyncServiceAutofillTest, MergeProfileWithDifferentGuid) {
@@ -1114,10 +1197,6 @@ TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeRemoveProfile) {
 }
 
 TEST_F(ProfileSyncServiceAutofillTest, FLAKY_ServerChangeRace) {
-  // GetHistoryService() gets called indirectly, but the result is ignored, so
-  // it is safe to return NULL.
-  EXPECT_CALL(profile_, GetHistoryService(_)).
-      WillRepeatedly(Return(static_cast<HistoryService*>(NULL)));
   // Once for MergeDataAndStartSyncing() and twice for ProcessSyncChanges(), via
   // LoadAutofillData().
   EXPECT_CALL(autofill_table_, GetAllAutofillEntries(_)).

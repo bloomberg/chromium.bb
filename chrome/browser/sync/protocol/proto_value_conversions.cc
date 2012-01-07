@@ -84,6 +84,13 @@ ListValue* MakeRepeatedValue(const F& fields, V* (*converter_fn)(T)) {
 #define SET_INT64(field) SET(field, MakeInt64Value)
 #define SET_INT64_REP(field) SET_REP(field, MakeInt64Value)
 #define SET_STR(field) SET(field, Value::CreateStringValue)
+#define SET_STR_REP(field) \
+  value->Set(#field, \
+             MakeRepeatedValue<const std::string&, \
+                               google::protobuf::RepeatedPtrField< \
+                                   std::string >, \
+                               StringValue>(proto.field(), \
+                                            Value::CreateStringValue))
 
 #define SET_EXTENSION(ns, field, fn)                                    \
   do {                                                                  \
@@ -232,10 +239,10 @@ DictionaryValue* AutofillProfileSpecificsToValue(
   SET_STR(label);
   SET_STR(guid);
 
-  SET_STR(name_first);
-  SET_STR(name_middle);
-  SET_STR(name_last);
-  SET_STR(email_address);
+  SET_STR_REP(name_first);
+  SET_STR_REP(name_middle);
+  SET_STR_REP(name_last);
+  SET_STR_REP(email_address);
   SET_STR(company_name);
 
   SET_STR(address_home_line1);
@@ -245,8 +252,7 @@ DictionaryValue* AutofillProfileSpecificsToValue(
   SET_STR(address_home_zip);
   SET_STR(address_home_country);
 
-  SET_STR(phone_home_whole_number);
-  SET_STR(phone_fax_whole_number);
+  SET_STR_REP(phone_home_whole_number);
   return value;
 }
 
@@ -400,6 +406,7 @@ DictionaryValue* EntitySpecificsToValue(
 #undef SET_INT64
 #undef SET_INT64_REP
 #undef SET_STR
+#undef SET_STR_REP
 
 #undef SET_EXTENSION
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -109,7 +109,8 @@ class AutofillProfile : public FormGroup {
   // multi-valued items.
   int Compare(const AutofillProfile& profile) const;
 
-  // Comparison for Sync.  Same as |Compare| but includes multi-valued fields.
+  // Full profile comparision, use instead of |Compare|. Same as |Compare| but
+  // includes multi-valued fields.
   int CompareMulti(const AutofillProfile& profile) const;
 
   // Equality operators compare GUIDs and the contents in the comparison.

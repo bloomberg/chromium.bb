@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -26,10 +26,10 @@ message AutofillProfileSpecifics {
   optional string guid = 15;
 
   // Contact info.
-  optional string name_first = 2;
-  optional string name_middle = 3;
-  optional string name_last = 4;
-  optional string email_address = 5;
+  repeated string name_first = 2;
+  repeated string name_middle = 3;
+  repeated string name_last = 4;
+  repeated string email_address = 5;
   optional string company_name = 6;
 
   // Home address.
@@ -41,11 +41,10 @@ message AutofillProfileSpecifics {
   optional string address_home_country = 12;
 
   // Phone.
-  optional string phone_home_whole_number = 13;
+  repeated string phone_home_whole_number = 13;
 
   // Deprecated.
-  // TODO(jhawkins): Determine if this is safe to remove.
-  optional string phone_fax_whole_number = 14;
+  optional string phone_fax_whole_number = 14 [deprecated=true];
 }
 
 message AutofillSpecifics {

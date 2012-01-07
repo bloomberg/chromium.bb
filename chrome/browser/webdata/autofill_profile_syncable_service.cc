@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,17 +23,6 @@
 using content::BrowserThread;
 
 namespace {
-
-// Helper to compare the local value and cloud value of a field, merge into
-// the local value if they differ, and return whether the merge happened.
-bool MergeField(FormGroup* form_group,
-                AutofillFieldType field_type,
-                const std::string& specifics_field) {
-  if (UTF16ToUTF8(form_group->GetInfo(field_type)) == specifics_field)
-    return false;
-  form_group->SetInfo(field_type, UTF8ToUTF16(specifics_field));
-  return true;
-}
 
 std::string LimitData(const std::string& data) {
   std::string sanitized_value(data);
@@ -72,7 +61,7 @@ SyncError AutofillProfileSyncableService::MergeDataAndStartSyncing(
     SyncChangeProcessor* sync_processor) {
   DCHECK(CalledOnValidThread());
   DCHECK(!sync_processor_.get());
-  VLOG(1) << "Associating Autofill: MergeDataAndStartSyncing";
+  DVLOG(1) << "Associating Autofill: MergeDataAndStartSyncing";
 
   if (!LoadAutofillData(&profiles_.get())) {
     return SyncError(
@@ -80,17 +69,17 @@ SyncError AutofillProfileSyncableService::MergeDataAndStartSyncing(
         model_type());
   }
 
-  if (VLOG_IS_ON(2)) {
-    VLOG(2) << "[AUTOFILL MIGRATION]"
-            << "Printing profiles from web db";
+  if (DLOG_IS_ON(INFO)) {
+    DVLOG(2) << "[AUTOFILL MIGRATION]"
+             << "Printing profiles from web db";
 
     for (ScopedVector<AutofillProfile>::const_iterator ix =
-        profiles_.begin(); ix != profiles_.end(); ++ix) {
+         profiles_.begin(); ix != profiles_.end(); ++ix) {
       AutofillProfile* p = *ix;
-      VLOG(2) << "[AUTOFILL MIGRATION]  "
-              << p->GetInfo(NAME_FIRST)
-              << p->GetInfo(NAME_LAST)
-              << p->guid();
+      DVLOG(2) << "[AUTOFILL MIGRATION]  "
+               << p->GetInfo(NAME_FIRST)
+               << p->GetInfo(NAME_LAST)
+               << p->guid();
     }
   }
 
@@ -106,8 +95,33 @@ SyncError AutofillProfileSyncableService::MergeDataAndStartSyncing(
        ++sync_iter) {
     GUIDToProfileMap::iterator it =
         CreateOrUpdateProfile(*sync_iter, &remaining_profiles, &bundle);
+    // |it| points to created/updated profile. Add it to the |profiles_map_| and
+    // then remove it from |remaining_profiles|. After this loop is completed
+    // |remaining_profiles| will have only those profiles that are not in the
+    // sync.
     profiles_map_[it->first] = it->second;
     remaining_profiles.erase(it);
+  }
+
+  // Check for similar unmatched profiles - they are created independently on
+  // two systems, so merge them.
+  for (GUIDToProfileMap::iterator it = bundle.candidates_to_merge.begin();
+       it != bundle.candidates_to_merge.end(); ++it) {
+    GUIDToProfileMap::iterator profile_to_merge =
+        remaining_profiles.find(it->first);
+    if (profile_to_merge != remaining_profiles.end()) {
+      bundle.profiles_to_delete.push_back(profile_to_merge->second->guid());
+      if (MergeProfile(*(profile_to_merge->second), it->second))
+        bundle.profiles_to_sync_back.push_back(it->second);
+      DVLOG(2) << "[AUTOFILL SYNC]"
+               << "Found similar profile in sync db but with a different guid: "
+               << UTF16ToUTF8(it->second->GetInfo(NAME_FIRST))
+               << UTF16ToUTF8(it->second->GetInfo(NAME_LAST))
+               << "New guid " << it->second->guid()
+               << ". Profile to be deleted "
+               << profile_to_merge->second->guid();
+      remaining_profiles.erase(profile_to_merge);
+    }
   }
 
   if (!SaveChangesToWebData(bundle))
@@ -119,6 +133,12 @@ SyncError AutofillProfileSyncableService::MergeDataAndStartSyncing(
     new_changes.push_back(
         SyncChange(SyncChange::ACTION_ADD, CreateData(*(i->second))));
     profiles_map_[i->first] = i->second;
+  }
+
+  for (size_t i = 0; i < bundle.profiles_to_sync_back.size(); ++i) {
+    new_changes.push_back(
+        SyncChange(SyncChange::ACTION_UPDATE,
+                   CreateData(*(bundle.profiles_to_sync_back[i]))));
   }
 
   SyncError error;
@@ -222,24 +242,25 @@ bool AutofillProfileSyncableService::SaveChangesToWebData(
     const DataBundle& bundle) {
   DCHECK(CalledOnValidThread());
 
-  for (size_t i = 0; i < bundle.profiles_to_add.size(); i++) {
-    if (!GetAutofillTable()->AddAutofillProfile(
-        *bundle.profiles_to_add[i]))
-      return false;
-  }
-
-  for (size_t i = 0; i < bundle.profiles_to_update.size(); i++) {
-    if (!GetAutofillTable()->UpdateAutofillProfile(
-        *bundle.profiles_to_update[i]))
-      return false;
-  }
-
+  bool success = true;
   for (size_t i = 0; i< bundle.profiles_to_delete.size(); ++i) {
     if (!GetAutofillTable()->RemoveAutofillProfile(
         bundle.profiles_to_delete[i]))
-      return false;
+      success = false;
   }
-  return true;
+
+  for (size_t i = 0; i < bundle.profiles_to_add.size(); i++) {
+    if (!GetAutofillTable()->AddAutofillProfile(
+        *bundle.profiles_to_add[i]))
+      success = false;
+  }
+
+  for (size_t i = 0; i < bundle.profiles_to_update.size(); i++) {
+    if (!GetAutofillTable()->UpdateAutofillProfileMulti(
+        *bundle.profiles_to_update[i]))
+      success = false;
+  }
+  return success;
 }
 
 // static
@@ -247,25 +268,30 @@ bool AutofillProfileSyncableService::OverwriteProfileWithServerData(
     const sync_pb::AutofillProfileSpecifics& specifics,
     AutofillProfile* profile) {
   bool diff = false;
-  diff = MergeField(profile, NAME_FIRST, specifics.name_first()) || diff;
-  diff = MergeField(profile, NAME_LAST, specifics.name_last()) || diff;
-  diff = MergeField(profile, NAME_MIDDLE, specifics.name_middle()) || diff;
-  diff = MergeField(profile, ADDRESS_HOME_LINE1,
-                    specifics.address_home_line1()) || diff;
-  diff = MergeField(profile, ADDRESS_HOME_LINE2,
-                    specifics.address_home_line2()) || diff;
-  diff = MergeField(profile, ADDRESS_HOME_CITY,
-                    specifics.address_home_city()) || diff;
-  diff = MergeField(profile, ADDRESS_HOME_STATE,
-                    specifics.address_home_state()) || diff;
-  diff = MergeField(profile, ADDRESS_HOME_COUNTRY,
-                    specifics.address_home_country()) || diff;
-  diff = MergeField(profile, ADDRESS_HOME_ZIP,
-                    specifics.address_home_zip()) || diff;
-  diff = MergeField(profile, EMAIL_ADDRESS, specifics.email_address()) || diff;
-  diff = MergeField(profile, COMPANY_NAME, specifics.company_name()) || diff;
-  diff = MergeField(profile, PHONE_HOME_WHOLE_NUMBER,
-                    specifics.phone_home_whole_number()) || diff;
+  diff = UpdateMultivaluedField(NAME_FIRST,
+                                specifics.name_first(), profile) || diff;
+  diff = UpdateMultivaluedField(NAME_MIDDLE,
+                                specifics.name_middle(), profile) || diff;
+  diff = UpdateMultivaluedField(NAME_LAST,
+                                specifics.name_last(), profile) || diff;
+  diff = UpdateField(ADDRESS_HOME_LINE1,
+                     specifics.address_home_line1(), profile) || diff;
+  diff = UpdateField(ADDRESS_HOME_LINE2,
+                     specifics.address_home_line2(), profile) || diff;
+  diff = UpdateField(ADDRESS_HOME_CITY,
+                     specifics.address_home_city(), profile) || diff;
+  diff = UpdateField(ADDRESS_HOME_STATE,
+                     specifics.address_home_state(), profile) || diff;
+  diff = UpdateField(ADDRESS_HOME_COUNTRY,
+                     specifics.address_home_country(), profile) || diff;
+  diff = UpdateField(ADDRESS_HOME_ZIP,
+                     specifics.address_home_zip(), profile) || diff;
+  diff = UpdateMultivaluedField(EMAIL_ADDRESS,
+                                specifics.email_address(), profile) || diff;
+  diff = UpdateField(COMPANY_NAME, specifics.company_name(), profile) || diff;
+  diff = UpdateMultivaluedField(PHONE_HOME_WHOLE_NUMBER,
+                                specifics.phone_home_whole_number(),
+                                profile) || diff;
   return diff;
 }
 
@@ -278,12 +304,24 @@ void AutofillProfileSyncableService::WriteAutofillProfile(
 
   DCHECK(guid::IsValidGUID(profile.guid()));
 
+  // Reset all multi-valued fields in the protobuf.
+  specifics->clear_name_first();
+  specifics->clear_name_middle();
+  specifics->clear_name_last();
+  specifics->clear_email_address();
+  specifics->clear_phone_home_whole_number();
+
   specifics->set_guid(profile.guid());
-  specifics->set_name_first(
-      LimitData(UTF16ToUTF8(profile.GetInfo(NAME_FIRST))));
-  specifics->set_name_middle(
-      LimitData(UTF16ToUTF8(profile.GetInfo(NAME_MIDDLE))));
-  specifics->set_name_last(LimitData(UTF16ToUTF8(profile.GetInfo(NAME_LAST))));
+  std::vector<string16> values;
+  profile.GetMultiInfo(NAME_FIRST, &values);
+  for (size_t i = 0; i < values.size(); ++i)
+    specifics->add_name_first(LimitData(UTF16ToUTF8(values[i])));
+  profile.GetMultiInfo(NAME_MIDDLE, &values);
+  for (size_t i = 0; i < values.size(); ++i)
+    specifics->add_name_middle(LimitData(UTF16ToUTF8(values[i])));
+  profile.GetMultiInfo(NAME_LAST, &values);
+  for (size_t i = 0; i < values.size(); ++i)
+    specifics->add_name_last(LimitData(UTF16ToUTF8(values[i])));
   specifics->set_address_home_line1(
       LimitData(UTF16ToUTF8(profile.GetInfo(ADDRESS_HOME_LINE1))));
   specifics->set_address_home_line2(
@@ -296,12 +334,14 @@ void AutofillProfileSyncableService::WriteAutofillProfile(
       LimitData(UTF16ToUTF8(profile.GetInfo(ADDRESS_HOME_COUNTRY))));
   specifics->set_address_home_zip(
       LimitData(UTF16ToUTF8(profile.GetInfo(ADDRESS_HOME_ZIP))));
-  specifics->set_email_address(
-      LimitData(UTF16ToUTF8(profile.GetInfo(EMAIL_ADDRESS))));
+  profile.GetMultiInfo(EMAIL_ADDRESS, &values);
+  for (size_t i = 0; i < values.size(); ++i)
+    specifics->add_email_address(LimitData(UTF16ToUTF8(values[i])));
   specifics->set_company_name(
       LimitData(UTF16ToUTF8(profile.GetInfo(COMPANY_NAME))));
-  specifics->set_phone_home_whole_number(
-      LimitData(UTF16ToUTF8(profile.GetInfo(PHONE_HOME_WHOLE_NUMBER))));
+  profile.GetMultiInfo(PHONE_HOME_WHOLE_NUMBER, &values);
+  for (size_t i = 0; i < values.size(); ++i)
+    specifics->add_phone_home_whole_number(LimitData(UTF16ToUTF8(values[i])));
 }
 
 void AutofillProfileSyncableService::CreateGUIDToProfileMap(
@@ -340,16 +380,21 @@ AutofillProfileSyncableService::CreateOrUpdateProfile(
     // Check if profile appears under a different guid.
     for (GUIDToProfileMap::iterator i = profile_map->begin();
          i != profile_map->end(); ++i) {
-      if (i->second->Compare(*new_profile) == 0) {
+      if (i->second->CompareMulti(*new_profile) == 0) {
         bundle->profiles_to_delete.push_back(i->second->guid());
-        VLOG(2) << "[AUTOFILL SYNC]"
-                << "Found in sync db but with a different guid: "
-                << UTF16ToUTF8(it->second->GetInfo(NAME_FIRST))
-                << UTF16ToUTF8(it->second->GetInfo(NAME_LAST))
-                << "New guid " << new_profile->guid()
-                << ". Profile to be deleted " << it->second->guid();
+        DVLOG(2) << "[AUTOFILL SYNC]"
+                 << "Found in sync db but with a different guid: "
+                 << UTF16ToUTF8(i->second->GetInfo(NAME_FIRST))
+                 << UTF16ToUTF8(i->second->GetInfo(NAME_LAST))
+                 << "New guid " << new_profile->guid()
+                 << ". Profile to be deleted " << i->second->guid();
         profile_map->erase(i);
         break;
+      } else if (i->second->PrimaryValue() == new_profile->PrimaryValue()) {
+        // Add it to candidates for merge - if there is no profile with this
+        // guid we will merge them.
+        bundle->candidates_to_merge.insert(std::make_pair(i->second->guid(),
+                                                          new_profile));
       }
     }
     profiles_.push_back(new_profile);
@@ -399,10 +444,10 @@ void AutofillProfileSyncableService::ActOnChange(
   }
   SyncError error = sync_processor_->ProcessSyncChanges(FROM_HERE, new_changes);
   if (error.IsSet()) {
-    LOG(WARNING) << "[AUTOFILL SYNC]"
-                 << " Failed processing change:"
-                 << " Error:" << error.message()
-                 << " Guid:" << change.key();
+    DLOG(WARNING) << "[AUTOFILL SYNC]"
+                  << " Failed processing change:"
+                  << " Error:" << error.message()
+                  << " Guid:" << change.key();
   }
 }
 
@@ -411,6 +456,48 @@ SyncData AutofillProfileSyncableService::CreateData(
   sync_pb::EntitySpecifics specifics;
   WriteAutofillProfile(profile, &specifics);
   return SyncData::CreateLocalData(profile.guid(), profile.guid(), specifics);
+}
+
+bool AutofillProfileSyncableService::UpdateField(
+    AutofillFieldType field_type,
+    const std::string& new_value,
+    AutofillProfile* autofill_profile) {
+  if (UTF16ToUTF8(autofill_profile->GetInfo(field_type)) == new_value)
+    return false;
+  autofill_profile->SetInfo(field_type, UTF8ToUTF16(new_value));
+  return true;
+}
+
+bool AutofillProfileSyncableService::UpdateMultivaluedField(
+    AutofillFieldType field_type,
+    const ::google::protobuf::RepeatedPtrField<std::string>& new_values,
+    AutofillProfile* autofill_profile) {
+  std::vector<string16> values;
+  autofill_profile->GetMultiInfo(field_type, &values);
+  bool changed = false;
+  if (static_cast<size_t>(new_values.size()) != values.size()) {
+    values.clear();
+    values.resize(static_cast<size_t>(new_values.size()));
+    changed = true;
+  }
+  for (size_t i = 0; i < values.size(); ++i) {
+    string16 synced_value(
+        UTF8ToUTF16(new_values.Get(static_cast<int>(i))));
+    if (values[i] != synced_value) {
+      values[i] = synced_value;
+      changed = true;
+    }
+  }
+  if (changed)
+    autofill_profile->SetMultiInfo(field_type, values);
+  return changed;
+}
+
+bool AutofillProfileSyncableService::MergeProfile(
+    const AutofillProfile& merge_from,
+    AutofillProfile* merge_into) {
+  merge_into->OverwriteWithOrAddTo(merge_from);
+  return (merge_into->CompareMulti(merge_from) != 0);
 }
 
 AutofillTable* AutofillProfileSyncableService::GetAutofillTable() const {
