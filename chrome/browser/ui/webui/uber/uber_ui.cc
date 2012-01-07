@@ -13,7 +13,7 @@
 #include "chrome/browser/ui/webui/extensions/extensions_ui.h"
 #include "chrome/browser/ui/webui/options2/options_ui2.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/web_contents.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -59,7 +59,7 @@ UberUI::~UberUI() {
 
 void UberUI::RegisterSubpage(const std::string& page_url) {
   WebUI* web_ui = ChromeWebUIFactory::GetInstance()->CreateWebUIForURL(
-          static_cast<TabContents*>(web_contents_), GURL(page_url));
+          web_contents_, GURL(page_url));
 
   web_ui->set_frame_xpath("//iframe[@src='" + page_url + "']");
   sub_uis_[page_url] = web_ui;

@@ -32,7 +32,6 @@
 #include "content/browser/tab_contents/provisional_load_details.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/browser/tab_contents/title_updated_details.h"
-#include "content/browser/webui/web_ui_factory.h"
 #include "content/common/intents_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_context.h"
@@ -45,6 +44,7 @@
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/browser/web_ui_factory.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_restriction.h"
@@ -1060,8 +1060,8 @@ int TabContents::GetContentRestrictions() const {
 }
 
 WebUI::TypeID TabContents::GetWebUITypeForCurrentState() {
-  return content::WebUIFactory::Get()->GetWebUIType(GetBrowserContext(),
-                                                    GetURL());
+  return content::GetContentClient()->browser()->GetWebUIFactory()->
+      GetWebUIType(GetBrowserContext(), GetURL());
 }
 
 WebUI* TabContents::GetWebUIForCurrentState() {
@@ -2170,7 +2170,8 @@ NavigationControllerImpl& TabContents::GetControllerForRenderManager() {
 }
 
 WebUI* TabContents::CreateWebUIForRenderManager(const GURL& url) {
-  return content::WebUIFactory::Get()->CreateWebUIForURL(this, url);
+  return content::GetContentClient()->browser()->GetWebUIFactory()->
+      CreateWebUIForURL(this, url);
 }
 
 NavigationEntry*

@@ -44,7 +44,7 @@ class TestChromeWebUIFactory : public ChromeWebUIFactory {
   // ChromeWebUIFactory overrides.
   virtual WebUI::TypeID GetWebUIType(content::BrowserContext* browser_context,
                                      const GURL& url) const OVERRIDE;
-  virtual WebUI* CreateWebUIForURL(TabContents* tab_contents,
+  virtual WebUI* CreateWebUIForURL(content::WebContents* web_contents,
                                    const GURL& url) const OVERRIDE;
 
   // Return the singleton instance.

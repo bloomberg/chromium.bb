@@ -28,13 +28,14 @@
 using content::BrowserThread;
 using content::NavigationEntry;
 using content::NavigationEntryImpl;
+using content::WebContents;
 using webkit::forms::PasswordForm;
 
 namespace {
 
 class TabContentsTestWebUIFactory : public content::EmptyWebUIFactory {
  public:
-  virtual WebUI* CreateWebUIForURL(TabContents* source,
+  virtual WebUI* CreateWebUIForURL(WebContents* source,
                                    const GURL& url) const OVERRIDE {
    if (!HasWebUIScheme(url))
      return NULL;

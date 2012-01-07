@@ -16,11 +16,11 @@
 #include "content/browser/tab_contents/navigation_entry_impl.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/browser/webui/web_ui.h"
-#include "content/browser/webui/web_ui_factory.h"
 #include "content/public/browser/notification_service.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/web_ui_factory.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 
@@ -344,7 +344,8 @@ bool RenderViewHostManager::ShouldSwapProcessesForNavigation(
       render_view_host_->site_instance()->site();
   content::BrowserContext* browser_context =
       delegate_->GetControllerForRenderManager().GetBrowserContext();
-  const content::WebUIFactory* web_ui_factory = content::WebUIFactory::Get();
+  const content::WebUIFactory* web_ui_factory =
+      content::GetContentClient()->browser()->GetWebUIFactory();
   if (web_ui_factory->UseWebUIForURL(browser_context, current_url)) {
     // Force swap if it's not an acceptable URL for Web UI.
     if (!web_ui_factory->IsURLAcceptableForWebUI(browser_context,

@@ -5,7 +5,9 @@
 #include "chrome/browser/ui/webui/test_chrome_web_ui_factory.h"
 
 #include "chrome/browser/profiles/profile.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/web_contents.h"
+
+using content::WebContents;
 
 TestChromeWebUIFactory::WebUIProvider::~WebUIProvider() {
 }
@@ -35,13 +37,13 @@ WebUI::TypeID TestChromeWebUIFactory::GetWebUIType(
       ChromeWebUIFactory::GetWebUIType(profile, url);
 }
 
-WebUI* TestChromeWebUIFactory::CreateWebUIForURL(TabContents* tab_contents,
+WebUI* TestChromeWebUIFactory::CreateWebUIForURL(WebContents* web_contents,
                                                  const GURL& url) const {
   Profile* profile =
-      Profile::FromBrowserContext(tab_contents->GetBrowserContext());
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
   WebUIProvider* provider = GetWebUIProvider(profile, url);
-  return provider ? provider->NewWebUI(tab_contents, url) :
-      ChromeWebUIFactory::CreateWebUIForURL(tab_contents, url);
+  return provider ? provider->NewWebUI(web_contents, url) :
+      ChromeWebUIFactory::CreateWebUIForURL(web_contents, url);
 }
 
 TestChromeWebUIFactory* TestChromeWebUIFactory::GetInstance() {

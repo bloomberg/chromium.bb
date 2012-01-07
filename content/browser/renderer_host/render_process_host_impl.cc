@@ -79,12 +79,12 @@
 #include "content/browser/resource_context.h"
 #include "content/browser/speech/speech_input_dispatcher_host.h"
 #include "content/browser/trace_message_filter.h"
-#include "content/browser/webui/web_ui_factory.h"
 #include "content/browser/worker_host/worker_message_filter.h"
 #include "content/common/child_process_host_impl.h"
 #include "content/common/child_process_messages.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/web_ui_factory.h"
 #include "content/common/resource_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_context.h"
@@ -1108,8 +1108,8 @@ bool RenderProcessHostImpl::IsSuitableHost(
 
   if (ChildProcessSecurityPolicy::GetInstance()->HasWebUIBindings(
           host->GetID()) !=
-      content::WebUIFactory::Get()->UseWebUIBindingsForURL(
-          browser_context, site_url))
+      content::GetContentClient()->browser()->GetWebUIFactory()->
+          UseWebUIBindingsForURL(browser_context, site_url))
     return false;
 
   return content::GetContentClient()->browser()->IsSuitableHost(host, site_url);

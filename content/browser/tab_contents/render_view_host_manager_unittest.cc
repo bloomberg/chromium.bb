@@ -30,6 +30,7 @@ using content::BrowserThreadImpl;
 using content::NavigationController;
 using content::NavigationEntry;
 using content::NavigationEntryImpl;
+using content::WebContents;
 
 namespace {
 
@@ -48,7 +49,7 @@ class RenderViewHostManagerTestWebUIFactory
   }
 
   // WebUIFactory implementation.
-  virtual WebUI* CreateWebUIForURL(TabContents* source,
+  virtual WebUI* CreateWebUIForURL(WebContents* source,
                                    const GURL& url) const OVERRIDE {
     if (!(should_create_webui_ && HasWebUIScheme(url)))
       return NULL;

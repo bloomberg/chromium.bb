@@ -6,8 +6,8 @@
 #define CONTENT_BROWSER_WEBUI_EMPTY_WEB_UI_FACTORY_H_
 
 #include "base/memory/singleton.h"
-#include "content/browser/webui/web_ui_factory.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/web_ui_factory.h"
 
 namespace content {
 
@@ -17,7 +17,7 @@ class CONTENT_EXPORT EmptyWebUIFactory : public content::WebUIFactory {
   // Returns the singleton instance.
   static EmptyWebUIFactory* GetInstance();
 
-  virtual WebUI* CreateWebUIForURL(TabContents* source,
+  virtual WebUI* CreateWebUIForURL(WebContents* source,
                                    const GURL& url) const OVERRIDE;
   virtual WebUI::TypeID GetWebUIType(content::BrowserContext* browser_context,
                                      const GURL& url) const OVERRIDE;

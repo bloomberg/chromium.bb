@@ -12,7 +12,7 @@ EmptyWebUIFactory::EmptyWebUIFactory() {
 EmptyWebUIFactory::~EmptyWebUIFactory() {
 }
 
-WebUI* EmptyWebUIFactory::CreateWebUIForURL(TabContents* source,
+WebUI* EmptyWebUIFactory::CreateWebUIForURL(WebContents* source,
                                             const GURL& url) const {
   return NULL;
 }

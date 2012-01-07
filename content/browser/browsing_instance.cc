@@ -7,9 +7,9 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "content/browser/site_instance.h"
-#include "content/browser/webui/web_ui_factory.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/web_ui_factory.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 
@@ -44,7 +44,8 @@ bool BrowsingInstance::ShouldUseProcessPerSite(const GURL& url) {
     return true;
 
   // DevTools pages have WebUI type but should not reuse the same host.
-  if (content::WebUIFactory::Get()->UseWebUIForURL(browser_context_, url) &&
+  if (content::GetContentClient()->browser()->GetWebUIFactory()->
+          UseWebUIForURL(browser_context_, url) &&
       !url.SchemeIs(chrome::kChromeDevToolsScheme)) {
     return true;
   }

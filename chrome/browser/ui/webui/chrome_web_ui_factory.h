@@ -9,7 +9,7 @@
 #include "base/basictypes.h"
 #include "base/memory/singleton.h"
 #include "content/browser/webui/web_ui.h"
-#include "content/browser/webui/web_ui_factory.h"
+#include "content/public/browser/web_ui_factory.h"
 #include "chrome/browser/favicon/favicon_service.h"
 
 class WebUI;
@@ -29,7 +29,7 @@ class ChromeWebUIFactory : public content::WebUIFactory {
   virtual bool HasWebUIScheme(const GURL& url) const OVERRIDE;
   virtual bool IsURLAcceptableForWebUI(content::BrowserContext* browser_context,
                                        const GURL& url) const OVERRIDE;
-  virtual WebUI* CreateWebUIForURL(TabContents* tab_contents,
+  virtual WebUI* CreateWebUIForURL(content::WebContents* tab_contents,
                                    const GURL& url) const OVERRIDE;
 
   // Get the favicon for |page_url| and forward the result to the |request|

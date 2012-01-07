@@ -17,7 +17,6 @@
 class GURL;
 class PrefService;
 class Profile;
-class TabContents;
 
 namespace base {
 class ListValue;
@@ -32,7 +31,7 @@ class ExtensionWebUI : public WebUI {
  public:
   static const char kExtensionURLOverrides[];
 
-  ExtensionWebUI(content::WebContents* tab_contents, const GURL& url);
+  ExtensionWebUI(content::WebContents* web_contents, const GURL& url);
 
   virtual ~ExtensionWebUI();
 
