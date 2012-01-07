@@ -13897,6 +13897,9 @@ Battery full
       <message name="IDS_KEYBOARD_OVERLAY_JAVASCRIPT_CONSOLE" desc="The text in the keyboard overlay to explain the shortcut.">
         JavaScript Console
       </message>
+      <message name="IDS_KEYBOARD_OVERLAY_LOCK_SCREEN" desc="The text in the keyboard overlay to explain the shortcut (lock the screen).">
+        Lock screen
+      </message>
       <message name="IDS_KEYBOARD_OVERLAY_LOCK_SCREEN_OR_POWER_OFF" desc="The text in the keyboard overlay to explain the shortcut.">
         Lock screen or power off
       </message>

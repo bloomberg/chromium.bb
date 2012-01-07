@@ -126,6 +126,7 @@ struct I18nContentToMessage {
     IDS_KEYBOARD_OVERLAY_INPUT_UNICODE_CHARACTERS },
   { "keyboardOverlayJavascriptConsole",
     IDS_KEYBOARD_OVERLAY_JAVASCRIPT_CONSOLE },
+  { "keyboardOverlayLockScreen", IDS_KEYBOARD_OVERLAY_LOCK_SCREEN },
   { "keyboardOverlayLockScreenOrPowerOff",
     IDS_KEYBOARD_OVERLAY_LOCK_SCREEN_OR_POWER_OFF },
   { "keyboardOverlayNewIncognitoWindow",
