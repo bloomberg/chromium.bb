@@ -1,3 +1,8 @@
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
 /* Styles common to WebUI pages that share the options pages style */
 body {
   cursor: default;
@@ -83,7 +88,7 @@ html.hide-menu #navbar-container {
 }
 
 .navbar-item-selected {
-  -webkit-box-shadow: 0px 1px 0px #f7f7f7;
+  -webkit-box-shadow: 0 1px 0 #f7f7f7;
   background-color: #bbcee9;
   border-bottom: 1px solid #8faad9;
   border-top: 1px solid #8faad9;
@@ -136,17 +141,6 @@ input:not([type]) {
 
 input[type='text']:disabled {
   color: #888;
-}
-
-/* CHECKBOX, RADIO */
-div.checkbox,
-div.radio {
-  margin: 5px 0;
-}
-
-input[type=radio] ~ span,
-input[type=checkbox] ~ span {
-  color: #444;
 }
 
 /* Elements that need to be LTR even in an RTL context, but should align

@@ -1,5 +1,10 @@
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
 menu {
-  -webkit-box-shadow: 0px 2px 4px rgba(0, 0, 0, .50);
+  -webkit-box-shadow: 0 2px 4px rgba(0, 0, 0, .50);
   background: white;
   color: black;
   cursor: default;

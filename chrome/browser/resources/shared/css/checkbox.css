@@ -1,4 +1,4 @@
-/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -110,6 +110,33 @@ input[type='radio']:active:checked::before {
   background: #606060;
 }
 
+/* .checkbox and .radio classes wrap labels. */
+
+.checkbox,
+.radio {
+  margin: 9px 0;
+}
+
+.checkbox label,
+.radio label {
+  display: -webkit-box;
+}
+
+/* Make sure long spans wrap at the same place they start. */
+.checkbox label input ~ span,
+.radio label input ~ span {
+  -webkit-box-flex: 1;
+  -webkit-margin-start: 0.4em;
+  display: block;
+}
+
+.checkbox label input[type=checkbox],
+.radio label input[type=radio] {
+  margin-top: 0;
+  top: 0;
+  vertical-align: top;
+}
+
 /* These rules are copied from button.css */
 input[type='checkbox']:not(.custom-appearance):focus,
 input[type='radio']:not(.custom-appearance):focus {
@@ -121,6 +148,11 @@ input[type='radio']:not(.custom-appearance):focus {
   -webkit-transition: border-color 200ms;
   border-color: #4080fa;
   outline: none;
+}
+
+label > input[type=radio] ~ span,
+label > input[type=checkbox] ~ span {
+  color: #444;
 }
 
 label:hover > input[type=checkbox]:disabled ~ span,
