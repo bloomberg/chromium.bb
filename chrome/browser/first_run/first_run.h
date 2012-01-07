@@ -83,6 +83,11 @@ void AutoImport(Profile* profile,
                 bool make_chrome_default,
                 ProcessSingleton* process_singleton);
 
+// Imports bookmarks and/or browser items (depending on platform support)
+// in this process. This function is paired with first_run::ImportSettings().
+// This function might or might not show a visible UI depending on the
+// cmdline parameters.
+int ImportNow(Profile* profile, const CommandLine& cmdline);
 
 }  // namespace first_run
 
@@ -120,12 +125,6 @@ class FirstRun {
     std::vector<GURL> bookmarks;
   };
 
-  // Import bookmarks and/or browser items (depending on platform support)
-  // in this process. This function is paired with FirstRun::ImportSettings().
-  // This function might or might not show a visible UI depending on the
-  // cmdline parameters.
-  static int ImportNow(Profile* profile, const CommandLine& cmdline);
-
   // The master preferences is a JSON file with the same entries as the
   // 'Default\Preferences' file. This function locates this file from a standard
   // location and processes it so it becomes the default preferences in the
@@ -159,13 +158,6 @@ class FirstRun {
   friend class FirstRunTest;
   FRIEND_TEST_ALL_PREFIXES(Toolbar5ImporterTest, BookmarkParse);
 
-  // Import bookmarks from an html file. The path to the file is provided in
-  // the command line.
-  static int ImportFromFile(Profile* profile, const CommandLine& cmdline);
-
-  // Gives the full path to the sentinel file. The file might not exist.
-  static bool GetFirstRunSentinelFilePath(FilePath* path);
-
   // -- Platform-specific functions --
 
 #if defined(OS_WIN)
@@ -184,14 +176,6 @@ class FirstRun {
   // is running.
   static void DoDelayedInstallExtensions();
 
-#if !defined(USE_AURA)
-  // Import browser items in this process. The browser and the items to
-  // import are encoded in the command line.
-  static int ImportFromBrowser(Profile* profile, const CommandLine& cmdline);
-#endif
-
-#else
-  static bool ImportBookmarks(const FilePath& import_bookmarks_path);
 #endif
 
   // This class is for scoping purposes.

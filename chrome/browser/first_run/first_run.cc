@@ -108,6 +108,34 @@ void SetImportItem(PrefService* user_prefs,
   user_prefs->ClearPref(pref_path);
 }
 
+// Imports bookmarks from an html file. The path to the file is provided in
+// the command line.
+int ImportFromFile(Profile* profile, const CommandLine& cmdline) {
+  FilePath file_path = cmdline.GetSwitchValuePath(switches::kImportFromFile);
+  if (file_path.empty()) {
+    NOTREACHED();
+    return false;
+  }
+  scoped_refptr<ImporterHost> importer_host(new ImporterHost);
+  importer_host->set_headless();
+
+  importer::SourceProfile source_profile;
+  source_profile.importer_type = importer::TYPE_BOOKMARKS_FILE;
+  source_profile.source_path = file_path;
+
+  FirstRunImportObserver importer_observer;
+  importer::ShowImportProgressDialog(NULL,
+                                     importer::FAVORITES,
+                                     importer_host,
+                                     &importer_observer,
+                                     source_profile,
+                                     profile,
+                                     true);
+
+  importer_observer.RunLoop();
+  return importer_observer.import_result();
+}
+
 }  // namespace
 
 namespace first_run {
@@ -224,6 +252,17 @@ void AutoImportPlatformCommon(
 }
 #endif  // !defined(USE_AURA)
 
+int ImportBookmarkFromFileIfNeeded(Profile* profile,
+                                   const CommandLine& cmdline) {
+  int return_code = true;
+  if (cmdline.HasSwitch(switches::kImportFromFile)) {
+    // Silently import preset bookmarks from file.
+    // This is an OEM scenario.
+    return_code = ImportFromFile(profile, cmdline);
+  }
+  return return_code;
+}
+
 }  // namespace internal
 }  // namespace first_run
 
@@ -317,24 +356,6 @@ FirstRun::MasterPrefs::MasterPrefs()
 }
 
 FirstRun::MasterPrefs::~MasterPrefs() {}
-
-// TODO(port): Import switches need to be ported to both Mac and Linux. Not all
-// import switches here are implemented for Linux. None are implemented for Mac
-// (as this function will not be called on Mac).
-int FirstRun::ImportNow(Profile* profile, const CommandLine& cmdline) {
-  int return_code = true;
-  if (cmdline.HasSwitch(switches::kImportFromFile)) {
-    // Silently import preset bookmarks from file.
-    // This is an OEM scenario.
-    return_code = ImportFromFile(profile, cmdline);
-  }
-  if (cmdline.HasSwitch(switches::kImport)) {
-#if defined(OS_WIN) && !defined(USE_AURA)
-    return_code = ImportFromBrowser(profile, cmdline);
-#endif
-  }
-  return return_code;
-}
 
 // static
 bool FirstRun::ProcessMasterPreferences(const FilePath& user_data_dir,
@@ -546,7 +567,7 @@ bool FirstRun::ProcessMasterPreferences(const FilePath& user_data_dir,
     // There are bookmarks to import from a file.
     FilePath path = FilePath::FromWStringHack(UTF8ToWide(
         import_bookmarks_path));
-    if (!FirstRun::ImportBookmarks(path)) {
+    if (!first_run::internal::ImportBookmarks(path)) {
       LOG(WARNING) << "silent bookmark import failed";
     }
   }
@@ -586,31 +607,4 @@ bool FirstRun::SetOEMFirstRunBubblePref() {
     local_state->SetBoolean(prefs::kShouldUseOEMFirstRunBubble, true);
   }
   return true;
-}
-
-// static
-int FirstRun::ImportFromFile(Profile* profile, const CommandLine& cmdline) {
-  FilePath file_path = cmdline.GetSwitchValuePath(switches::kImportFromFile);
-  if (file_path.empty()) {
-    NOTREACHED();
-    return false;
-  }
-  scoped_refptr<ImporterHost> importer_host(new ImporterHost);
-  importer_host->set_headless();
-
-  importer::SourceProfile source_profile;
-  source_profile.importer_type = importer::TYPE_BOOKMARKS_FILE;
-  source_profile.source_path = file_path;
-
-  FirstRunImportObserver importer_observer;
-  importer::ShowImportProgressDialog(NULL,
-                                     importer::FAVORITES,
-                                     importer_host,
-                                     &importer_observer,
-                                     source_profile,
-                                     profile,
-                                     true);
-
-  importer_observer.RunLoop();
-  return importer_observer.import_result();
 }

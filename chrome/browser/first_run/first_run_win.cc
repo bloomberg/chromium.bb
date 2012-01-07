@@ -307,6 +307,49 @@ bool DecodeImportParams(const std::string& encoded,
   return true;
 }
 
+#if !defined(USE_AURA)
+// Imports browser items in this process. The browser and the items to
+// import are encoded in the command line.
+int ImportFromBrowser(Profile* profile,
+                      const CommandLine& cmdline) {
+  std::string import_info = cmdline.GetSwitchValueASCII(switches::kImport);
+  if (import_info.empty()) {
+    NOTREACHED();
+    return false;
+  }
+  int importer_type = 0;
+  int items_to_import = 0;
+  int skip_first_run_ui = 0;
+  HWND parent_window = NULL;
+  if (!DecodeImportParams(import_info, &importer_type, &items_to_import,
+                          &skip_first_run_ui, &parent_window)) {
+    NOTREACHED();
+    return false;
+  }
+  scoped_refptr<ImporterHost> importer_host(new ImporterHost);
+  FirstRunImportObserver importer_observer;
+
+  scoped_refptr<ImporterList> importer_list(new ImporterList(NULL));
+  importer_list->DetectSourceProfilesHack();
+
+  // If |skip_first_run_ui|, we run in headless mode.  This means that if
+  // there is user action required the import is automatically canceled.
+  if (skip_first_run_ui > 0)
+    importer_host->set_headless();
+
+  importer::ShowImportProgressDialog(
+      parent_window,
+      static_cast<uint16>(items_to_import),
+      importer_host,
+      &importer_observer,
+      importer_list->GetSourceProfileForImporterType(importer_type),
+      profile,
+      true);
+  importer_observer.RunLoop();
+  return importer_observer.import_result();
+}
+#endif  // !defined(USE_AURA)
+
 }  // namespace
 
 namespace first_run {
@@ -429,6 +472,16 @@ void AutoImport(
 #endif  // !defined(USE_AURA)
 }
 
+int ImportNow(Profile* profile, const CommandLine& cmdline) {
+  int return_code = internal::ImportBookmarkFromFileIfNeeded(profile, cmdline);
+#if !defined(USE_AURA)
+  if (cmdline.HasSwitch(switches::kImport)) {
+    return_code = ImportFromBrowser(profile, cmdline);
+  }
+#endif
+  return return_code;
+}
+
 }  // namespace first_run
 
 // static
@@ -439,44 +492,3 @@ FilePath FirstRun::MasterPrefsPath() {
     return FilePath();
   return master_prefs.AppendASCII(installer::kDefaultMasterPrefs);
 }
-
-#if !defined(USE_AURA)
-int FirstRun::ImportFromBrowser(Profile* profile,
-                                const CommandLine& cmdline) {
-  std::string import_info = cmdline.GetSwitchValueASCII(switches::kImport);
-  if (import_info.empty()) {
-    NOTREACHED();
-    return false;
-  }
-  int importer_type = 0;
-  int items_to_import = 0;
-  int skip_first_run_ui = 0;
-  HWND parent_window = NULL;
-  if (!DecodeImportParams(import_info, &importer_type, &items_to_import,
-                          &skip_first_run_ui, &parent_window)) {
-    NOTREACHED();
-    return false;
-  }
-  scoped_refptr<ImporterHost> importer_host(new ImporterHost);
-  FirstRunImportObserver importer_observer;
-
-  scoped_refptr<ImporterList> importer_list(new ImporterList(NULL));
-  importer_list->DetectSourceProfilesHack();
-
-  // If |skip_first_run_ui|, we run in headless mode.  This means that if
-  // there is user action required the import is automatically canceled.
-  if (skip_first_run_ui > 0)
-    importer_host->set_headless();
-
-  importer::ShowImportProgressDialog(
-      parent_window,
-      static_cast<uint16>(items_to_import),
-      importer_host,
-      &importer_observer,
-      importer_list->GetSourceProfileForImporterType(importer_type),
-      profile,
-      true);
-  importer_observer.RunLoop();
-  return importer_observer.import_result();
-}
-#endif  // !defined(USE_AURA)

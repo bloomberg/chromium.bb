@@ -82,6 +82,13 @@ void AutoImportPlatformCommon(
     bool make_chrome_default);
 #endif  // !defined(USE_AURA)
 
+int ImportBookmarkFromFileIfNeeded(Profile* profile,
+                                   const CommandLine& cmdline);
+
+#if !defined(OS_WIN)
+bool ImportBookmarks(const FilePath& import_bookmarks_path);
+#endif
+
 }  // namespace internal
 }  // namespace first_run
 

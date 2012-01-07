@@ -13,6 +13,17 @@
 #include "chrome/browser/process_singleton.h"
 
 namespace first_run {
+namespace internal {
+
+bool ImportBookmarks(const FilePath& import_bookmarks_path) {
+  // http://crbug.com/48880
+  return false;
+}
+
+}  // namespace internal
+}  // namespace first_run
+
+namespace first_run {
 
 void AutoImport(
     Profile* profile,
@@ -51,11 +62,6 @@ void AutoImport(
 }
 
 }  //namespace first_run
-
-bool FirstRun::ImportBookmarks(const FilePath& import_bookmarks_path) {
-  // http://crbug.com/48880
-  return false;
-}
 
 // static
 FilePath FirstRun::MasterPrefsPath() {

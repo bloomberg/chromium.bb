@@ -58,7 +58,6 @@ class ImportEndedObserver : public importer::ImporterProgressObserver {
 }  // namespace
 
 namespace first_run {
-
 namespace internal {
 
 bool GetFirstRunSentinelFilePath(FilePath* path) {
@@ -100,5 +99,16 @@ bool ImportSettings(Profile* profile,
 }
 
 }  // namespace internal
+}  // namespace first_run
+
+namespace first_run {
+
+// TODO(port): Import switches need to be ported to both Mac and Linux. Not all
+// import switches here are implemented for Linux. None are implemented for Mac
+// (as this function will not be called on Mac).
+int ImportNow(Profile* profile, const CommandLine& cmdline) {
+  return internal::ImportBookmarkFromFileIfNeeded(profile, cmdline);
+}
+
 
 }  // namespace first_run

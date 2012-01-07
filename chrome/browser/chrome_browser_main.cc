@@ -1511,7 +1511,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   //             replace this implementation. http://crbug.com/22142
   if (parsed_command_line().HasSwitch(switches::kImport) ||
       parsed_command_line().HasSwitch(switches::kImportFromFile)) {
-    return FirstRun::ImportNow(profile_, parsed_command_line());
+    return first_run::ImportNow(profile_, parsed_command_line());
   }
 #endif
 
