@@ -140,6 +140,18 @@ class PanelOverflowBrowserTest : public BasePanelBrowserTest {
     return !panel->GetBounds().IsEmpty();
   }
 
+  static bool IsPanelInOverflowStrip(Panel* panel) {
+    PanelOverflowStrip* overflow_strip =
+        PanelManager::GetInstance()->panel_overflow_strip();
+    int expected_x = overflow_strip->display_area().x();
+    gfx::Size expected_size(overflow_strip->current_display_width(),
+                            panel->IconOnlySize().height());
+    gfx::Rect bounds = panel->GetBounds();
+    EXPECT_EQ(expected_x, bounds.x());
+    EXPECT_EQ(expected_size, bounds.size());
+    return expected_x == bounds.x() && expected_size == bounds.size();
+  }
+
   std::vector<Panel*> CreateOverflowPanels(int num_normal_panels,
                                            int num_overflow_panels,
                                            const int* panel_widths) {
@@ -186,6 +198,7 @@ class PanelOverflowBrowserTest : public BasePanelBrowserTest {
 #define MAYBE_CloseNormalPanels CloseNormalPanels
 #define MAYBE_CloseWithDelayedOverflow CloseWithDelayedOverflow
 #define MAYBE_ActivateOverflowPanels ActivateOverflowPanels
+#define MAYBE_MoveMinimizedPanelToOverflow MoveMinimizedPanelToOverflow
 #define MAYBE_HoverOverOverflowAreaWithoutOverflowOfOverflow \
     HoverOverOverflowAreaWithoutOverflowOfOverflow
 #define MAYBE_HoverOverOverflowAreaWithOverflowOfOverflow \
@@ -203,6 +216,7 @@ class PanelOverflowBrowserTest : public BasePanelBrowserTest {
 #define MAYBE_CloseNormalPanels DISABLED_CloseNormalPanels
 #define MAYBE_CloseWithDelayedOverflow DISABLED_CloseWithDelayedOverflow
 #define MAYBE_ActivateOverflowPanels DISABLED_ActivateOverflowPanels
+#define MAYBE_MoveMinimizedPanelToOverflow DISABLED_MoveMinimizedPanelToOverflo
 #define MAYBE_HoverOverOverflowAreaWithoutOverflowOfOverflow \
     DISABLED_HoverOverOverflowAreaWithoutOverflowOfOverflow
 #define MAYBE_HoverOverOverflowAreaWithOverflowOfOverflow \
@@ -293,6 +307,8 @@ IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest, MAYBE_CreateOverflowPanels) {
   EXPECT_EQ(1, panel_overflow_strip->num_panels());
   EXPECT_FALSE(panel_overflow_strip->overflow_indicator());
   EXPECT_TRUE(IsPanelVisible(panel3));
+  EXPECT_TRUE(IsPanelInOverflowStrip(panel3));
+  EXPECT_EQ(gfx::Size(255, 200), panel3->restored_size());
 
   // Create 1 more overflow panel.
   params.name = "Panel4";
@@ -767,6 +783,107 @@ IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest, MAYBE_ActivateOverflowPanels) {
 }
 
 IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest,
+                       MAYBE_MoveMinimizedPanelToOverflow) {
+  // Create normal and overflow panels.
+  //   normal:               P0, P1, P2
+  //   overflow:             P3, P4
+  const int panel_widths[] = {
+      250, 260, 200,  // normal
+      210, 260        // overflow
+  };
+  std::vector<Panel*> panels = CreateOverflowPanels(3, 2, panel_widths);
+
+  PanelDataList expected_normal_list;
+  expected_normal_list.Add(panels[0], Panel::EXPANDED, true, false);
+  expected_normal_list.Add(panels[1], Panel::EXPANDED, true, false);
+  expected_normal_list.Add(panels[2], Panel::EXPANDED, true, false);
+  EXPECT_EQ(expected_normal_list, GetAllNormalPanelData());
+
+  PanelDataList expected_overflow_list;
+  expected_overflow_list.Add(panels[3], Panel::IN_OVERFLOW, true, false);
+  expected_overflow_list.Add(panels[4], Panel::IN_OVERFLOW, true, false);
+
+  // Minimize a normal panel and then bump it to overflow by activating an
+  // overflow panel.
+  //   normal:               P0, P1, P3
+  //   overflow:             P2, P4
+  panels[2]->SetExpansionState(Panel::MINIMIZED);
+  panels[3]->Activate();
+  WaitForPanelActiveState(panels[3], SHOW_AS_ACTIVE);
+  WaitForExpansionStateChanged(panels[3], Panel::EXPANDED);
+
+  expected_normal_list.clear();
+  expected_normal_list.Add(panels[0], Panel::EXPANDED, true, false);
+  expected_normal_list.Add(panels[1], Panel::EXPANDED, true, false);
+  expected_normal_list.Add(panels[3], Panel::EXPANDED, true, true);
+  EXPECT_EQ(expected_normal_list, GetAllNormalPanelData());
+
+  expected_overflow_list.clear();
+  expected_overflow_list.Add(panels[2], Panel::IN_OVERFLOW, true, false);
+  expected_overflow_list.Add(panels[4], Panel::IN_OVERFLOW, true, false);
+  EXPECT_EQ(expected_overflow_list, GetAllOverflowPanelData());
+
+  // Reactivate the formerly minimized panel. It will return to the panel
+  // strip in expanded state.
+  //   normal:               P0, P1, P2
+  //   overflow:             P3, P4
+  panels[2]->Activate();
+  WaitForPanelActiveState(panels[2], SHOW_AS_ACTIVE);
+  WaitForExpansionStateChanged(panels[2], Panel::EXPANDED);
+
+  expected_normal_list.clear();
+  expected_normal_list.Add(panels[0], Panel::EXPANDED, true, false);
+  expected_normal_list.Add(panels[1], Panel::EXPANDED, true, false);
+  expected_normal_list.Add(panels[2], Panel::EXPANDED, true, true);
+  EXPECT_EQ(expected_normal_list, GetAllNormalPanelData());
+
+  expected_overflow_list.clear();
+  expected_overflow_list.Add(panels[3], Panel::IN_OVERFLOW, true, false);
+  expected_overflow_list.Add(panels[4], Panel::IN_OVERFLOW, true, false);
+  EXPECT_EQ(expected_overflow_list, GetAllOverflowPanelData());
+
+  // Minimize a panel to title only mode, then bump it to overflow.
+  //   normal:               P0, P1, P3
+  //   overflow:             P2, P4
+  panels[2]->SetExpansionState(Panel::TITLE_ONLY);
+  panels[3]->Activate();
+  WaitForPanelActiveState(panels[3], SHOW_AS_ACTIVE);
+  WaitForExpansionStateChanged(panels[3], Panel::EXPANDED);
+
+  expected_normal_list.clear();
+  expected_normal_list.Add(panels[0], Panel::EXPANDED, true, false);
+  expected_normal_list.Add(panels[1], Panel::EXPANDED, true, false);
+  expected_normal_list.Add(panels[3], Panel::EXPANDED, true, true);
+  EXPECT_EQ(expected_normal_list, GetAllNormalPanelData());
+
+  expected_overflow_list.clear();
+  expected_overflow_list.Add(panels[2], Panel::IN_OVERFLOW, true, false);
+  expected_overflow_list.Add(panels[4], Panel::IN_OVERFLOW, true, false);
+  EXPECT_EQ(expected_overflow_list, GetAllOverflowPanelData());
+
+  // Reactivate the formerly minimized panel. It will return to the panel
+  // strip in expanded state.
+  //   normal:               P0, P1, P2
+  //   overflow:             P3, P4
+  panels[2]->Activate();
+  WaitForPanelActiveState(panels[2], SHOW_AS_ACTIVE);
+  WaitForExpansionStateChanged(panels[2], Panel::EXPANDED);
+
+  expected_normal_list.clear();
+  expected_normal_list.Add(panels[0], Panel::EXPANDED, true, false);
+  expected_normal_list.Add(panels[1], Panel::EXPANDED, true, false);
+  expected_normal_list.Add(panels[2], Panel::EXPANDED, true, true);
+  EXPECT_EQ(expected_normal_list, GetAllNormalPanelData());
+
+  expected_overflow_list.clear();
+  expected_overflow_list.Add(panels[3], Panel::IN_OVERFLOW, true, false);
+  expected_overflow_list.Add(panels[4], Panel::IN_OVERFLOW, true, false);
+  EXPECT_EQ(expected_overflow_list, GetAllOverflowPanelData());
+
+  PanelManager::GetInstance()->RemoveAll();
+}
+
+IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest,
                        MAYBE_HoverOverOverflowAreaWithoutOverflowOfOverflow) {
   PanelManager* panel_manager = PanelManager::GetInstance();
   PanelOverflowStrip* panel_overflow_strip =
@@ -962,10 +1079,13 @@ IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest, MAYBE_ResizePanel) {
   // Resize last panel so that it is too big to fit and overflows.
   // normal: P1 (250), P2 (200), P3 (100)
   // overflow: P4 (250)*
-  panel_manager->OnPreferredWindowSizeChanged(panel4, gfx::Size(250, 200));
+  gfx::Size new_size(250, 200);
+  panel_manager->OnPreferredWindowSizeChanged(panel4, new_size);
   EXPECT_EQ(3, panel_strip->num_panels());
   EXPECT_EQ(1, overflow_strip->num_panels());
   EXPECT_EQ(Panel::IN_OVERFLOW, panel4->expansion_state());
+  EXPECT_TRUE(IsPanelInOverflowStrip(panel4));
+  EXPECT_EQ(new_size, panel4->restored_size());
 
   // Open another panel that will fit.
   // normal: P1 (250), P2 (200), P3 (100), P5 (100)*
@@ -1005,6 +1125,19 @@ IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest, MAYBE_ResizePanel) {
   EXPECT_EQ(4, panel_strip->num_panels());
   EXPECT_EQ(1, overflow_strip->num_panels());
   EXPECT_EQ(Panel::IN_OVERFLOW, panel4->expansion_state());  // no change
+
+  // Resize overflow panel bigger. It should stay in overflow and bounds
+  // should not change.
+  // normal: P1 (250), P2 (100), P3 (100), P5 (100)
+  // overflow: P4 (251)*
+  gfx::Rect bounds_before_resize = panel4->GetBounds();
+  new_size.SetSize(251, 200);
+  panel_manager->OnPreferredWindowSizeChanged(panel4, new_size);
+  EXPECT_EQ(4, panel_strip->num_panels());
+  EXPECT_EQ(1, overflow_strip->num_panels());
+  EXPECT_EQ(Panel::IN_OVERFLOW, panel4->expansion_state());
+  EXPECT_EQ(bounds_before_resize, panel4->GetBounds());
+  EXPECT_EQ(new_size, panel4->restored_size());
 
   // Resize overflow panel to make it fit.
   // normal: P1 (250), P2 (100), P3 (100), P5 (100), P4 (100)*

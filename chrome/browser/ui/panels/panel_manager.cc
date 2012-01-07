@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -180,10 +180,8 @@ void PanelManager::EndDragging(bool cancelled) {
 
 void PanelManager::OnPanelExpansionStateChanged(
     Panel* panel, Panel::ExpansionState old_state) {
-  if (panel->expansion_state() == Panel::IN_OVERFLOW)
-    panel_overflow_strip_->OnPanelExpansionStateChanged(panel, old_state);
-  else
-    panel_strip_->OnPanelExpansionStateChanged(panel, old_state);
+  panel_strip_->OnPanelExpansionStateChanged(panel, old_state);
+  panel_overflow_strip_->OnPanelExpansionStateChanged(panel, old_state);
 }
 
 void PanelManager::OnPanelAttentionStateChanged(Panel* panel) {
@@ -195,7 +193,16 @@ void PanelManager::OnPreferredWindowSizeChanged(
     Panel* panel, const gfx::Size& preferred_window_size) {
   if (!auto_sizing_enabled_)
     return;
-  panel_strip_->OnPreferredWindowSizeChanged(panel, preferred_window_size);
+  panel_strip_->OnWindowSizeChanged(panel, preferred_window_size);
+}
+
+void PanelManager::ResizePanel(Panel* panel, const gfx::Size& new_size) {
+  // Explicit resizing is not allowed for auto-resizable panels for now.
+  // http://crbug.com/109343
+  if (panel->auto_resizable())
+    return;
+  panel_strip_->OnWindowSizeChanged(panel, new_size);
+
 }
 
 bool PanelManager::ShouldBringUpTitlebars(int mouse_x, int mouse_y) const {

@@ -841,6 +841,42 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, FLAKY_AutoResize) {
   panel->Close();
 }
 
+IN_PROC_BROWSER_TEST_F(PanelBrowserTest, ResizePanel) {
+  PanelManager* panel_manager = PanelManager::GetInstance();
+  panel_manager->enable_auto_sizing(true);
+
+  Panel* panel = CreatePanel("TestPanel");
+  EXPECT_TRUE(panel->auto_resizable());
+  EXPECT_EQ(Panel::EXPANDED, panel->expansion_state());
+
+  // Verify resizing an auto-resizable panel is a no-op for now.
+  // http://crbug.com/109343
+  gfx::Rect original_bounds = panel->GetBounds();
+  gfx::Rect original_restored_bounds = panel->GetRestoredBounds();
+  gfx::Size new_size(150, 200);
+  panel_manager->ResizePanel(panel, new_size);
+  EXPECT_EQ(original_bounds, panel->GetBounds());
+  EXPECT_EQ(original_restored_bounds, panel->GetRestoredBounds());
+
+  // Verify resizing adjusts bounds correctly when not auto-resizable.
+  panel->SetAutoResizable(false);
+  panel_manager->ResizePanel(panel, new_size);
+  EXPECT_FALSE(panel->auto_resizable());
+  EXPECT_EQ(new_size, panel->GetBounds().size());
+  EXPECT_EQ(new_size, panel->GetRestoredBounds().size());
+
+  // Verify current height unaffected when panel is not expanded.
+  panel->SetExpansionState(Panel::MINIMIZED);
+  int original_height = panel->GetBounds().height();
+  new_size.Enlarge(5, 5);
+  panel_manager->ResizePanel(panel, new_size);
+  EXPECT_EQ(new_size.width(), panel->GetBounds().width());
+  EXPECT_EQ(original_height, panel->GetBounds().height());
+  EXPECT_EQ(new_size, panel->GetRestoredBounds().size());
+
+  panel->Close();
+}
+
 IN_PROC_BROWSER_TEST_F(PanelBrowserTest, AnimateBounds) {
   Panel* panel = CreatePanelWithBounds("PanelTest", gfx::Rect(0, 0, 100, 100));
   scoped_ptr<NativePanelTesting> panel_testing(

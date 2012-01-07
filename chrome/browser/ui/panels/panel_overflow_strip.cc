@@ -148,7 +148,10 @@ void PanelOverflowStrip::RemoveAll() {
 
 void PanelOverflowStrip::OnPanelExpansionStateChanged(
     Panel* panel, Panel::ExpansionState old_state) {
-  DCHECK(panel->expansion_state() == Panel::IN_OVERFLOW);
+  // Only care about new state being overflow.
+  if (panel->expansion_state() != Panel::IN_OVERFLOW)
+    return;
+
   panel_manager_->panel_strip()->Remove(panel);
   AddPanel(panel);
   panel->SetAppIconVisibility(false);

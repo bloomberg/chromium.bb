@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -376,6 +376,10 @@ void PanelStrip::OnPanelExpansionStateChanged(
       if (old_state == Panel::EXPANDED)
         IncrementMinimizedPanels();
       break;
+    case Panel::IN_OVERFLOW:
+      if (old_state == Panel::TITLE_ONLY || old_state == Panel::MINIMIZED)
+        DecrementMinimizedPanels();
+      break;
     default:
       NOTREACHED();
       break;
@@ -404,10 +408,8 @@ void PanelStrip::DecrementMinimizedPanels() {
     panel_manager_->mouse_watcher()->RemoveObserver(this);
 }
 
-void PanelStrip::OnPreferredWindowSizeChanged(
+void PanelStrip::OnWindowSizeChanged(
     Panel* panel, const gfx::Size& preferred_window_size) {
-  gfx::Rect bounds = panel->GetBounds();
-
   // The panel width:
   // * cannot grow or shrink to go beyond [min_width, max_width]
   int new_width = preferred_window_size.width();
@@ -427,23 +429,26 @@ void PanelStrip::OnPreferredWindowSizeChanged(
   // Update restored size.
   gfx::Size new_size(new_width, new_height);
   if (new_size != panel->restored_size())
-    panel->set_restored_size(preferred_window_size);
+    panel->set_restored_size(new_size);
 
   // Only need to adjust bounds height when panel is expanded.
+  gfx::Rect bounds = panel->GetBounds();
+  Panel::ExpansionState expansion_state = panel->expansion_state();
   if (new_height != bounds.height() &&
-      panel->expansion_state() == Panel::EXPANDED) {
+      expansion_state == Panel::EXPANDED) {
     bounds.set_y(bounds.bottom() - new_height);
     bounds.set_height(new_height);
   }
 
-  // Adjust bounds width.
+  // Only need to adjust width if panel is in the panel strip.
   int delta_x = bounds.width() - new_width;
-  if (delta_x != 0) {
+  if (delta_x != 0 && expansion_state != Panel::IN_OVERFLOW) {
     bounds.set_width(new_width);
     bounds.set_x(bounds.x() + delta_x);
   }
 
-  panel->SetPanelBounds(bounds);
+  if (bounds != panel->GetBounds())
+    panel->SetPanelBounds(bounds);
 
   // Only need to rearrange if panel's width changed.
   if (delta_x != 0)

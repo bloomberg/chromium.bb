@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -58,6 +58,10 @@ class PanelManager : public AutoHidingDesktopBar::Observer {
   // get changed.
   void OnPreferredWindowSizeChanged(
       Panel* panel, const gfx::Size& preferred_window_size);
+
+  // Resizes the panel. Explicitly setting the panel size is not allowed
+  // for panels that are auto-sized.
+  void ResizePanel(Panel* panel, const gfx::Size& new_size);
 
   // Returns true if we should bring up the titlebars, given the current mouse
   // point.
