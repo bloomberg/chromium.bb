@@ -28,7 +28,6 @@ namespace remoting {
 class HostKeyPair;
 class IqRequest;
 class IqSender;
-class MutableHostConfig;
 
 // HeartbeatSender periodically sends heartbeat stanzas to the Chromoting Bot.
 // Each heartbeat stanza looks as follows:
@@ -64,14 +63,13 @@ class MutableHostConfig;
 // server.
 class HeartbeatSender : public SignalStrategy::Listener {
  public:
-  HeartbeatSender();
+  // Doesn't take ownership of |signal_strategy| or |key_pair|. Both
+  // parameters must outlive this object. Heartbeats will start when
+  // the supplied SignalStrategy enters the CONNECTED state.
+  HeartbeatSender(const std::string& host_id,
+                  SignalStrategy* signal_strategy,
+                  HostKeyPair* key_pair);
   virtual ~HeartbeatSender();
-
-  // Initializes the HeartbeatSender. Returns false if the |config| is
-  // invalid (e.g. private key cannot be parsed). SignalStrategy must
-  // outlive this object. Heartbeats will start when the supplied
-  // SignalStrategy enters the CONNECTED state.
-  bool Init(SignalStrategy* signal_strategy, MutableHostConfig* config);
 
   // SignalStrategy::Listener interface.
   virtual void OnSignalStrategyStateChange(
@@ -82,13 +80,6 @@ class HeartbeatSender : public SignalStrategy::Listener {
   FRIEND_TEST_ALL_PREFIXES(HeartbeatSenderTest, CreateHeartbeatMessage);
   FRIEND_TEST_ALL_PREFIXES(HeartbeatSenderTest, ProcessResponse);
 
-  enum State {
-    CREATED,
-    INITIALIZED,
-    STARTED,
-    STOPPED,
-  };
-
   void DoSendStanza();
   void ProcessResponse(const buzz::XmlElement* response);
   void SetInterval(int interval);
@@ -98,10 +89,9 @@ class HeartbeatSender : public SignalStrategy::Listener {
   buzz::XmlElement* CreateHeartbeatMessage();
   buzz::XmlElement* CreateSignature();
 
-  State state_;
-  SignalStrategy* signal_strategy_;
   std::string host_id_;
-  HostKeyPair key_pair_;
+  SignalStrategy* signal_strategy_;
+  HostKeyPair* key_pair_;
   scoped_ptr<IqSender> iq_sender_;
   scoped_ptr<IqRequest> request_;
   int interval_ms_;

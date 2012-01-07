@@ -10,7 +10,6 @@
 #include "base/string_number_conversions.h"
 #include "base/time.h"
 #include "remoting/base/constants.h"
-#include "remoting/host/host_config.h"
 #include "remoting/jingle_glue/iq_sender.h"
 #include "remoting/jingle_glue/jingle_thread.h"
 #include "remoting/jingle_glue/signal_strategy.h"
@@ -23,6 +22,7 @@ using buzz::XmlElement;
 namespace remoting {
 
 namespace {
+
 const char kHeartbeatQueryTag[] = "heartbeat";
 const char kHostIdAttr[] = "hostid";
 const char kHeartbeatSignatureTag[] = "signature";
@@ -32,56 +32,37 @@ const char kHeartbeatResultTag[] = "heartbeat-result";
 const char kSetIntervalTag[] = "set-interval";
 
 const int64 kDefaultHeartbeatIntervalMs = 5 * 60 * 1000;  // 5 minutes.
-}
 
-HeartbeatSender::HeartbeatSender()
-    : state_(CREATED),
-      signal_strategy_(NULL),
+}  // namespace
+
+HeartbeatSender::HeartbeatSender(
+    const std::string& host_id,
+    SignalStrategy* signal_strategy,
+    HostKeyPair* key_pair)
+    : host_id_(host_id),
+      signal_strategy_(signal_strategy),
+      key_pair_(key_pair),
       interval_ms_(kDefaultHeartbeatIntervalMs) {
+  DCHECK(signal_strategy_);
+  DCHECK(key_pair_);
+
+  signal_strategy_->AddListener(this);
+
+  // Start heartbeats if the |signal_strategy_| is already connected.
+  OnSignalStrategyStateChange(signal_strategy_->GetState());
 }
 
 HeartbeatSender::~HeartbeatSender() {
-  if (signal_strategy_)
-    signal_strategy_->RemoveListener(this);
-}
-
-bool HeartbeatSender::Init(SignalStrategy* signal_strategy,
-                           MutableHostConfig* config) {
-  DCHECK(state_ == CREATED);
-
-  if (!config->GetString(kHostIdConfigPath, &host_id_)) {
-    LOG(ERROR) << "host_id is not defined in the config.";
-    return false;
-  }
-
-  if (!key_pair_.Load(config)) {
-    return false;
-  }
-
-  DCHECK(signal_strategy);
-  signal_strategy_ = signal_strategy;
-  signal_strategy_->AddListener(this);
-
-  state_ = INITIALIZED;
-
-  // Update the state if the |signal_strategy_| is already connected.
-  OnSignalStrategyStateChange(signal_strategy_->GetState());
-
-  return true;
+  signal_strategy_->RemoveListener(this);
 }
 
 void HeartbeatSender::OnSignalStrategyStateChange(SignalStrategy::State state) {
   if (state == SignalStrategy::CONNECTED) {
-    DCHECK(state_ == INITIALIZED || state_ == STOPPED);
-    state_ = STARTED;
-
     iq_sender_.reset(new IqSender(signal_strategy_));
-
     DoSendStanza();
     timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(interval_ms_),
                  this, &HeartbeatSender::DoSendStanza);
   } else if (state == SignalStrategy::DISCONNECTED) {
-    state_ = STOPPED;
     request_.reset();
     iq_sender_.reset();
     timer_.Stop();
@@ -89,8 +70,6 @@ void HeartbeatSender::OnSignalStrategyStateChange(SignalStrategy::State state) {
 }
 
 void HeartbeatSender::DoSendStanza() {
-  DCHECK_EQ(state_, STARTED);
-
   VLOG(1) << "Sending heartbeat stanza to " << kChromotingBotJid;
   request_.reset(iq_sender_->SendIq(
       buzz::STR_SET, kChromotingBotJid, CreateHeartbeatMessage(),
@@ -133,7 +112,7 @@ void HeartbeatSender::SetInterval(int interval) {
     interval_ms_ = interval;
 
     // Restart the timer with the new interval.
-    if (state_ == STARTED) {
+    if (timer_.IsRunning()) {
       timer_.Stop();
       timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(interval_ms_),
                    this, &HeartbeatSender::DoSendStanza);
@@ -159,7 +138,7 @@ XmlElement* HeartbeatSender::CreateSignature() {
       QName(kChromotingXmlNamespace, kSignatureTimeAttr), time_str);
 
   std::string message = signal_strategy_->GetLocalJid() + ' ' + time_str;
-  std::string signature(key_pair_.GetSignature(message));
+  std::string signature(key_pair_->GetSignature(message));
   signature_tag->AddText(signature);
 
   return signature_tag;

@@ -5,8 +5,6 @@
 // This file implements a standalone host process for Me2Me, which is currently
 // used for the Linux-only Virtual Me2Me build.
 
-#include <stdlib.h>
-
 #include <string>
 
 #include "base/at_exit.h"
@@ -32,6 +30,7 @@
 #include "remoting/host/json_host_config.h"
 #include "remoting/host/signaling_connector.h"
 #include "remoting/jingle_glue/xmpp_signal_strategy.h"
+#include "remoting/protocol/v1_authenticator.h"
 
 #if defined(TOOLKIT_USES_GTK)
 #include "ui/gfx/gtk_util.h"
@@ -100,19 +99,28 @@ class HostProcess {
  private:
   // Read Host config from disk, returning true if successful.
   bool LoadConfig(base::MessageLoopProxy* io_message_loop) {
-    host_config_ =
+    scoped_refptr<remoting::JsonHostConfig> host_config =
         new remoting::JsonHostConfig(host_config_path_, io_message_loop);
     scoped_refptr<remoting::JsonHostConfig> auth_config =
         new remoting::JsonHostConfig(auth_config_path_, io_message_loop);
 
     std::string failed_path;
-    if (!host_config_->Read()) {
+    if (!host_config->Read()) {
       failed_path = host_config_path_.value();
     } else if (!auth_config->Read()) {
       failed_path = auth_config_path_.value();
     }
     if (!failed_path.empty()) {
       LOG(ERROR) << "Failed to read configuration file " << failed_path;
+      return false;
+    }
+
+    if (!host_config->GetString(kHostIdConfigPath, &host_id_)) {
+      LOG(ERROR) << "host_id is not defined in the config.";
+      return false;
+    }
+
+    if (!key_pair_.Load(host_config)) {
       return false;
     }
 
@@ -146,20 +154,21 @@ class HostProcess {
     desktop_environment_.reset(DesktopEnvironment::Create(&context_));
 
     host_ = new ChromotingHost(
-        &context_, host_config_, signal_strategy_.get(),
-        desktop_environment_.get(), false);
+        &context_, signal_strategy_.get(), desktop_environment_.get(), false);
 
-    heartbeat_sender_.reset(new remoting::HeartbeatSender());
-    if (!heartbeat_sender_->Init(signal_strategy_.get(), host_config_)) {
-      LOG(ERROR) << "Failed to initialize heartbeat sender";
-    }
+    heartbeat_sender_.reset(
+        new HeartbeatSender(host_id_, signal_strategy_.get(), &key_pair_));
 
     host_->Start();
 
     // Set an empty shared-secret for Me2Me.
-    // TODO(lambroslambrou): This is a temporary fix, pending a Me2Me-specific
-    // AuthenticatorFactory - crbug.com/105214.
-    host_->SetSharedSecret("");
+
+    // TODO(sergeyu): This is a temporary hack pending us adding a way
+    // to set a PIN. crbug.com/105214 .
+    scoped_ptr<protocol::AuthenticatorFactory> factory(
+        new protocol::V1HostAuthenticatorFactory(
+            key_pair_.GenerateCertificate(), key_pair_.private_key(), ""));
+    host_->SetAuthenticatorFactory(factory.Pass());
   }
 
   MessageLoop message_loop_;
@@ -170,8 +179,8 @@ class HostProcess {
   FilePath auth_config_path_;
   FilePath host_config_path_;
 
-  scoped_refptr<remoting::JsonHostConfig> host_config_;
-
+  std::string host_id_;
+  HostKeyPair key_pair_;
   std::string xmpp_login_;
   std::string xmpp_auth_token_;
   std::string xmpp_auth_service_;

@@ -19,6 +19,7 @@
 #include "remoting/host/ui_strings.h"
 #include "remoting/jingle_glue/jingle_thread.h"
 #include "remoting/jingle_glue/signal_strategy.h"
+#include "remoting/protocol/authenticator.h"
 #include "remoting/protocol/session_manager.h"
 #include "remoting/protocol/connection_to_client.h"
 
@@ -34,7 +35,6 @@ class Capturer;
 class ChromotingHostContext;
 class DesktopEnvironment;
 class Encoder;
-class MutableHostConfig;
 class ScreenRecorder;
 
 // A class to implement the functionality of a host process.
@@ -67,7 +67,6 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   // The caller must ensure that |context|, |signal_strategy| and
   // |environment| out-live the host.
   ChromotingHost(ChromotingHostContext* context,
-                 MutableHostConfig* config,
                  SignalStrategy* signal_strategy,
                  DesktopEnvironment* environment,
                  bool allow_nat_traversal);
@@ -90,10 +89,14 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   // started.
   void AddStatusObserver(HostStatusObserver* observer);
 
-  // Sets shared secret for the host. All incoming connections are
-  // rejected if shared secret isn't set. Must be called on the
-  // network thread after the host is started.
-  void SetSharedSecret(const std::string& shared_secret);
+  // Sets the authenticator factory to use for incoming
+  // connections. Incoming connections are rejected until
+  // authenticator factory is set. Must be called on the network
+  // thread after the host is started. Must not be called more than
+  // once per host instance because it may not be safe to delete
+  // factory before all authenticators it created are deleted.
+  void SetAuthenticatorFactory(
+      scoped_ptr<protocol::AuthenticatorFactory> authenticator_factory);
 
   ////////////////////////////////////////////////////////////////////////////
   // ClientSession::EventHandler implementation.
@@ -170,8 +173,6 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   // Parameters specified when the host was created.
   ChromotingHostContext* context_;
   DesktopEnvironment* desktop_environment_;
-  scoped_refptr<MutableHostConfig> config_;
-  HostKeyPair key_pair_;
   bool allow_nat_traversal_;
 
   // TODO(lambroslambrou): The following is a temporary fix for Me2Me

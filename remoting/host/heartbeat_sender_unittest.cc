@@ -12,7 +12,6 @@
 #include "base/string_number_conversions.h"
 #include "remoting/base/constants.h"
 #include "remoting/host/host_key_pair.h"
-#include "remoting/host/in_memory_host_config.h"
 #include "remoting/host/test_key_pair.h"
 #include "remoting/jingle_glue/iq_sender.h"
 #include "remoting/jingle_glue/mock_objects.h"
@@ -52,9 +51,7 @@ ACTION_P(RemoveListener, list) {
 class HeartbeatSenderTest : public testing::Test {
  protected:
   virtual void SetUp() OVERRIDE {
-    config_ = new InMemoryHostConfig();
-    config_->SetString(kHostIdConfigPath, kHostId);
-    config_->SetString(kPrivateKeyConfigPath, kTestHostKeyPair);
+    ASSERT_TRUE(key_pair_.LoadFromString(kTestHostKeyPair));
 
     EXPECT_CALL(signal_strategy_, GetState())
         .WillOnce(Return(SignalStrategy::DISCONNECTED));
@@ -65,8 +62,8 @@ class HeartbeatSenderTest : public testing::Test {
     EXPECT_CALL(signal_strategy_, GetLocalJid())
         .WillRepeatedly(Return(kTestJid));
 
-    heartbeat_sender_.reset(new HeartbeatSender());
-    ASSERT_TRUE(heartbeat_sender_->Init(&signal_strategy_, config_));
+    heartbeat_sender_.reset(
+        new HeartbeatSender(kHostId, &signal_strategy_, &key_pair_));
   }
 
   virtual void TearDown() OVERRIDE {
@@ -77,7 +74,7 @@ class HeartbeatSenderTest : public testing::Test {
   MessageLoop message_loop_;
   MockSignalStrategy signal_strategy_;
   std::set<SignalStrategy::Listener*> signal_strategy_listeners_;
-  scoped_refptr<InMemoryHostConfig> config_;
+  HostKeyPair key_pair_;
   scoped_ptr<HeartbeatSender> heartbeat_sender_;
 };
 

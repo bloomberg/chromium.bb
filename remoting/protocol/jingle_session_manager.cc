@@ -112,9 +112,11 @@ void JingleSessionManager::Close() {
 }
 
 void JingleSessionManager::set_authenticator_factory(
-    AuthenticatorFactory* authenticator_factory) {
+    scoped_ptr<AuthenticatorFactory> authenticator_factory) {
   DCHECK(CalledOnValidThread());
-  authenticator_factory_.reset(authenticator_factory);
+  DCHECK(authenticator_factory.get());
+  DCHECK(!authenticator_factory_.get());
+  authenticator_factory_ = authenticator_factory.Pass();
 }
 
 Session* JingleSessionManager::Connect(

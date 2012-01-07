@@ -24,7 +24,6 @@
 #include "remoting/protocol/input_stub.h"
 #include "remoting/protocol/jingle_session_manager.h"
 #include "remoting/protocol/session_config.h"
-#include "remoting/protocol/v1_authenticator.h"
 
 using remoting::protocol::ConnectionToClient;
 using remoting::protocol::InputStub;
@@ -32,13 +31,11 @@ using remoting::protocol::InputStub;
 namespace remoting {
 
 ChromotingHost::ChromotingHost(ChromotingHostContext* context,
-                               MutableHostConfig* config,
                                SignalStrategy* signal_strategy,
                                DesktopEnvironment* environment,
                                bool allow_nat_traversal)
     : context_(context),
       desktop_environment_(environment),
-      config_(config),
       allow_nat_traversal_(allow_nat_traversal),
       have_shared_secret_(false),
       signal_strategy_(signal_strategy),
@@ -66,12 +63,6 @@ void ChromotingHost::Start() {
   if (state_ != kInitial)
     return;
   state_ = kStarted;
-
-  // Assign key and certificate to server.
-  if (!key_pair_.Load(config_)) {
-    LOG(ERROR) << "Failed to load key pair for the host.";
-    return;
-  }
 
   // Create and start session manager.
   session_manager_.reset(
@@ -130,12 +121,10 @@ void ChromotingHost::AddStatusObserver(HostStatusObserver* observer) {
   status_observers_.push_back(observer);
 }
 
-void ChromotingHost::SetSharedSecret(const std::string& shared_secret) {
+void ChromotingHost::SetAuthenticatorFactory(
+    scoped_ptr<protocol::AuthenticatorFactory> authenticator_factory) {
   DCHECK(context_->network_message_loop()->BelongsToCurrentThread());
-  session_manager_->set_authenticator_factory(
-      new protocol::V1HostAuthenticatorFactory(
-          key_pair_.GenerateCertificate(), key_pair_.private_key(),
-          shared_secret));
+  session_manager_->set_authenticator_factory(authenticator_factory.Pass());
 }
 
 ////////////////////////////////////////////////////////////////////////////

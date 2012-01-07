@@ -15,14 +15,13 @@
 #include "remoting/host/chromoting_host.h"
 #include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/desktop_environment.h"
-#include "remoting/host/host_config.h"
 #include "remoting/host/host_key_pair.h"
 #include "remoting/host/host_secret.h"
-#include "remoting/host/in_memory_host_config.h"
 #include "remoting/host/it2me_host_user_interface.h"
 #include "remoting/host/plugin/host_log_handler.h"
 #include "remoting/host/plugin/policy_hack/nat_policy.h"
 #include "remoting/host/register_support_host_request.h"
+#include "remoting/protocol/it2me_host_authenticator_factory.h"
 
 namespace remoting {
 
@@ -501,13 +500,9 @@ void HostNPScriptObject::FinishConnectNetworkThread(
     return;
   }
 
-  scoped_refptr<MutableHostConfig> host_config = new InMemoryHostConfig();
-
   // Generate a key pair for the Host to use.
   // TODO(wez): Move this to the worker thread.
-  HostKeyPair host_key_pair;
-  host_key_pair.Generate();
-  host_key_pair.Save(host_config);
+  host_key_pair_.Generate();
 
   // Create XMPP connection.
   scoped_ptr<SignalStrategy> signal_strategy(
@@ -516,25 +511,19 @@ void HostNPScriptObject::FinishConnectNetworkThread(
 
   // Request registration of the host for support.
   scoped_ptr<RegisterSupportHostRequest> register_request(
-      new RegisterSupportHostRequest());
-  if (!register_request->Init(
-          signal_strategy.get(),
-          host_config.get(),
+      new RegisterSupportHostRequest(
+          signal_strategy.get(), &host_key_pair_,
           base::Bind(&HostNPScriptObject::OnReceivedSupportID,
-                     base::Unretained(this)))) {
-    SetState(kError);
-    return;
-  }
+                     base::Unretained(this))));
 
   // Beyond this point nothing can fail, so save the config and request.
-  host_config_ = host_config;
   signal_strategy_.reset(signal_strategy.release());
   register_request_.reset(register_request.release());
 
   // Create the Host.
   LOG(INFO) << "NAT state: " << nat_traversal_enabled_;
   host_ = new ChromotingHost(
-      &host_context_, host_config_, signal_strategy_.get(),
+      &host_context_, signal_strategy_.get(),
       desktop_environment_.get(), nat_traversal_enabled_);
   host_->AddStatusObserver(this);
   if (enable_log_to_server_) {
@@ -679,7 +668,11 @@ void HostNPScriptObject::OnReceivedSupportID(
 
   std::string host_secret = GenerateSupportHostSecret();
   std::string access_code = support_id + host_secret;
-  host_->SetSharedSecret(access_code);
+  scoped_ptr<protocol::AuthenticatorFactory> factory(
+      new protocol::It2MeHostAuthenticatorFactory(
+          host_key_pair_.GenerateCertificate(), host_key_pair_.private_key(),
+          access_code));
+  host_->SetAuthenticatorFactory(factory.Pass());
 
   {
     base::AutoLock lock(access_code_lock_);

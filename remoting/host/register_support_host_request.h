@@ -41,19 +41,18 @@ class RegisterSupportHostRequest : public SignalStrategy::Listener {
   typedef base::Callback<void(bool, const std::string&,
                               const base::TimeDelta&)> RegisterCallback;
 
-  RegisterSupportHostRequest();
-  virtual ~RegisterSupportHostRequest();
-
-  // Initializes the registration to use the |signal_startegy| and to
-  // notify |callback| upon completion or failure.  Returns false on
-  // falure (e.g. config is invalid). Callback is never called if the
-  // bot malfunctions and doesn't respond to the request.
+  // Doesn't take ownership of |signal_strategy| or |key_pair|. Both
+  // |signal_strategy| and |key_pair| must outlive this
+  // object. |callback| is called when registration response is
+  // received from the server. Callback is never called if the bot
+  // malfunctions and doesn't respond to the request.
   //
   // TODO(sergeyu): This class should have timeout for the bot
   // response.
-  bool Init(SignalStrategy* signal_strategy,
-            HostConfig* config,
-            const RegisterCallback& callback);
+  RegisterSupportHostRequest(SignalStrategy* signal_strategy,
+                             HostKeyPair* key_pair,
+                             const RegisterCallback& callback);
+  virtual ~RegisterSupportHostRequest();
 
   // HostStatusObserver implementation.
   virtual void OnSignalStrategyStateChange(
@@ -76,10 +75,11 @@ class RegisterSupportHostRequest : public SignalStrategy::Listener {
       bool success, const std::string& support_id, base::TimeDelta lifetime);
 
   SignalStrategy* signal_strategy_;
+  HostKeyPair* key_pair_;
   RegisterCallback callback_;
+
   scoped_ptr<IqSender> iq_sender_;
   scoped_ptr<IqRequest> request_;
-  HostKeyPair key_pair_;
 
   DISALLOW_COPY_AND_ASSIGN(RegisterSupportHostRequest);
 };

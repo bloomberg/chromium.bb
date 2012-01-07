@@ -35,28 +35,22 @@ const char kSupportIdTag[] = "support-id";
 const char kSupportIdLifetimeTag[] = "support-id-lifetime";
 }
 
-RegisterSupportHostRequest::RegisterSupportHostRequest()
-    : signal_strategy_(NULL) {
+RegisterSupportHostRequest::RegisterSupportHostRequest(
+    SignalStrategy* signal_strategy,
+    HostKeyPair* key_pair,
+    const RegisterCallback& callback)
+    : signal_strategy_(signal_strategy),
+      key_pair_(key_pair),
+      callback_(callback) {
+  DCHECK(signal_strategy_);
+  DCHECK(key_pair_);
+  signal_strategy_->AddListener(this);
+  iq_sender_.reset(new IqSender(signal_strategy_));
 }
 
 RegisterSupportHostRequest::~RegisterSupportHostRequest() {
   if (signal_strategy_)
     signal_strategy_->RemoveListener(this);
-}
-
-bool RegisterSupportHostRequest::Init(SignalStrategy* signal_strategy,
-                                      HostConfig* config,
-                                      const RegisterCallback& callback) {
-  if (!key_pair_.Load(config)) {
-    return false;
-  }
-
-  callback_ = callback;
-  signal_strategy_ = signal_strategy;
-  signal_strategy_->AddListener(this);
-  iq_sender_.reset(new IqSender(signal_strategy_));
-
-  return true;
 }
 
 void RegisterSupportHostRequest::OnSignalStrategyStateChange(
@@ -86,7 +80,7 @@ XmlElement* RegisterSupportHostRequest::CreateRegistrationRequest(
       QName(kChromotingXmlNamespace, kRegisterQueryTag));
   XmlElement* public_key = new XmlElement(
       QName(kChromotingXmlNamespace, kPublicKeyTag));
-  public_key->AddText(key_pair_.GetPublicKey());
+  public_key->AddText(key_pair_->GetPublicKey());
   query->AddElement(public_key);
   query->AddElement(CreateSignature(jid));
   return query;
@@ -103,7 +97,7 @@ XmlElement* RegisterSupportHostRequest::CreateSignature(
       QName(kChromotingXmlNamespace, kSignatureTimeAttr), time_str);
 
   std::string message = jid + ' ' + time_str;
-  std::string signature(key_pair_.GetSignature(message));
+  std::string signature(key_pair_->GetSignature(message));
   signature_tag->AddText(signature);
 
   return signature_tag;

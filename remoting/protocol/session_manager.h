@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -144,9 +144,11 @@ class SessionManager : public base::NonThreadSafe {
 
   // Set authenticator factory that should be used to authenticate
   // incoming connection. No connections will be accepted if
-  // authenticator factory isn't set.
+  // authenticator factory isn't set. Must not be called more than
+  // once per SessionManager because it may not be safe to delete
+  // factory before all authenticators it created are deleted.
   virtual void set_authenticator_factory(
-      AuthenticatorFactory* authenticator_factory) = 0;
+      scoped_ptr<AuthenticatorFactory> authenticator_factory) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SessionManager);

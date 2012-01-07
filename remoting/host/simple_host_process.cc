@@ -37,6 +37,7 @@
 #include "remoting/host/desktop_environment.h"
 #include "remoting/host/event_executor.h"
 #include "remoting/host/heartbeat_sender.h"
+#include "remoting/host/host_key_pair.h"
 #include "remoting/host/host_secret.h"
 #include "remoting/host/it2me_host_user_interface.h"
 #include "remoting/host/json_host_config.h"
@@ -45,6 +46,8 @@
 #include "remoting/host/signaling_connector.h"
 #include "remoting/jingle_glue/xmpp_signal_strategy.h"
 #include "remoting/proto/video.pb.h"
+#include "remoting/protocol/it2me_host_authenticator_factory.h"
+#include "remoting/protocol/v1_authenticator.h"
 
 #if defined(TOOLKIT_USES_GTK)
 #include "ui/gfx/gtk_util.h"
@@ -96,21 +99,30 @@ class SimpleHost {
 
   int Run() {
     FilePath config_path = GetConfigPath();
-    config_ = new JsonHostConfig(
+    scoped_refptr<JsonHostConfig> config = new JsonHostConfig(
         config_path, file_io_thread_.message_loop_proxy());
-    if (!config_->Read()) {
+    if (!config->Read()) {
       LOG(ERROR) << "Failed to read configuration file "
                  << config_path.value();
       return 1;
     }
 
+    if (!config->GetString(kHostIdConfigPath, &host_id_)) {
+      LOG(ERROR) << "host_id is not defined in the config.";
+      return 1;
+    }
+
+    if (!key_pair_.Load(config)) {
+      return 1;
+    }
+
     // Use an XMPP connection to the Talk network for session signalling.
-    if (!config_->GetString(kXmppLoginConfigPath, &xmpp_login_) ||
-        !config_->GetString(kXmppAuthTokenConfigPath, &xmpp_auth_token_)) {
+    if (!config->GetString(kXmppLoginConfigPath, &xmpp_login_) ||
+        !config->GetString(kXmppAuthTokenConfigPath, &xmpp_auth_token_)) {
       LOG(ERROR) << "XMPP credentials are not defined in the config.";
       return 1;
     }
-    if (!config_->GetString(kXmppAuthServiceConfigPath, &xmpp_auth_service_)) {
+    if (!config->GetString(kXmppAuthServiceConfigPath, &xmpp_auth_service_)) {
       // For the simple host, we assume we always use the ClientLogin token for
       // chromiumsync because we do not have an HTTP stack with which we can
       // easily request an OAuth2 access token even if we had a RefreshToken for
@@ -137,6 +149,7 @@ class SimpleHost {
 
  private:
   static void SetIT2MeAccessCode(scoped_refptr<ChromotingHost> host,
+                                 HostKeyPair* key_pair,
                                  bool successful,
                                  const std::string& support_id,
                                  const base::TimeDelta& lifetime) {
@@ -145,8 +158,11 @@ class SimpleHost {
       std::string access_code = support_id + host_secret;
       std::cout << "Support id: " << access_code << std::endl;
 
-      // Tell the ChromotingHost the access code, to use as shared-secret.
-      host->SetSharedSecret(access_code);
+      scoped_ptr<protocol::AuthenticatorFactory> factory(
+          new protocol::It2MeHostAuthenticatorFactory(
+              key_pair->GenerateCertificate(), key_pair->private_key(),
+              access_code));
+      host->SetAuthenticatorFactory(factory.Pass());
     } else {
       LOG(ERROR) << "If you haven't done so recently, try running"
                  << " remoting/tools/register_host.py.";
@@ -190,7 +206,7 @@ class SimpleHost {
       desktop_environment_.reset(DesktopEnvironment::Create(&context_));
     }
 
-    host_ = new ChromotingHost(&context_, config_, signal_strategy_.get(),
+    host_ = new ChromotingHost(&context_, signal_strategy_.get(),
                                desktop_environment_.get(), false);
     host_->set_it2me(is_it2me_);
 
@@ -209,26 +225,25 @@ class SimpleHost {
     }
 
     if (is_it2me_) {
-      register_request_.reset(new RegisterSupportHostRequest());
-      if (!register_request_->Init(
-              signal_strategy_.get(), config_, base::Bind(
-                  &SimpleHost::SetIT2MeAccessCode, host_))) {
-        LOG(ERROR) << "Failed to initialize RegisterSupportHostRequest.";
-      }
+      register_request_.reset(new RegisterSupportHostRequest(
+          signal_strategy_.get(), &key_pair_,
+          base::Bind(&SimpleHost::SetIT2MeAccessCode, host_, &key_pair_)));
     } else {
-      // Initialize HeartbeatSender.
-      heartbeat_sender_.reset(new HeartbeatSender());
-      if (!heartbeat_sender_->Init(signal_strategy_.get(), config_))
-        LOG(ERROR) << "Failed to initialize HeartbeatSender.";
+      heartbeat_sender_.reset(
+          new HeartbeatSender(host_id_, signal_strategy_.get(), &key_pair_));
     }
 
     host_->Start();
 
     // Set an empty shared-secret for Me2Me.
-    // TODO(lambroslambrou): This is a temporary fix, pending a Me2Me-specific
-    // AuthenticatorFactory - crbug.com/105214.
-    if (!is_it2me_)
-      host_->SetSharedSecret("");
+    // TODO(sergeyu): This is a temporary hack pending us adding a way
+    // to set a PIN. crbug.com/105214 .
+    if (!is_it2me_) {
+      scoped_ptr<protocol::AuthenticatorFactory> factory(
+          new protocol::V1HostAuthenticatorFactory(
+              key_pair_.GenerateCertificate(), key_pair_.private_key(), ""));
+      host_->SetAuthenticatorFactory(factory.Pass());
+    }
   }
 
   MessageLoop message_loop_;
@@ -241,11 +256,12 @@ class SimpleHost {
   bool is_it2me_;
   scoped_ptr<CandidateSessionConfig> protocol_config_;
 
+  std::string host_id_;
+  HostKeyPair key_pair_;
   std::string xmpp_login_;
   std::string xmpp_auth_token_;
   std::string xmpp_auth_service_;
 
-  scoped_refptr<JsonHostConfig> config_;
   scoped_ptr<SignalStrategy> signal_strategy_;
   scoped_ptr<SignalingConnector> signaling_connector_;
   scoped_ptr<DesktopEnvironment> desktop_environment_;

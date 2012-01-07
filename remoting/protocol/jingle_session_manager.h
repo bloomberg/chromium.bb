@@ -51,7 +51,7 @@ class JingleSessionManager : public SessionManager,
       const Session::StateChangeCallback& state_change_callback) OVERRIDE;
   virtual void Close() OVERRIDE;
   virtual void set_authenticator_factory(
-      AuthenticatorFactory* authenticator_factory) OVERRIDE;
+      scoped_ptr<AuthenticatorFactory> authenticator_factory) OVERRIDE;
 
   // cricket::SessionClient interface.
   virtual void OnSessionCreate(cricket::Session* cricket_session,

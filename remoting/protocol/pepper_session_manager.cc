@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -94,9 +94,9 @@ void PepperSessionManager::Close() {
 }
 
 void PepperSessionManager::set_authenticator_factory(
-    AuthenticatorFactory* authenticator_factory) {
+    scoped_ptr<AuthenticatorFactory> authenticator_factory) {
   DCHECK(CalledOnValidThread());
-  authenticator_factory_.reset(authenticator_factory);
+  authenticator_factory_ = authenticator_factory.Pass();
 }
 
 void PepperSessionManager::OnSignalStrategyStateChange(

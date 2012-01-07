@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -58,7 +58,7 @@ class PepperSessionManager : public SessionManager,
       const Session::StateChangeCallback& state_change_callback) OVERRIDE;
   virtual void Close() OVERRIDE;
   virtual void set_authenticator_factory(
-      AuthenticatorFactory* authenticator_factory) OVERRIDE;
+      scoped_ptr<AuthenticatorFactory> authenticator_factory) OVERRIDE;
 
   // SignalStrategy::Listener interface.
   virtual void OnSignalStrategyStateChange(

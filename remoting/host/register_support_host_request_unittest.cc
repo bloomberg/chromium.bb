@@ -57,8 +57,7 @@ class RegisterSupportHostRequestTest : public testing::Test {
  public:
  protected:
   virtual void SetUp() {
-    config_ = new InMemoryHostConfig();
-    config_->SetString(kPrivateKeyConfigPath, kTestHostKeyPair);
+    ASSERT_TRUE(key_pair_.LoadFromString(kTestHostKeyPair));
 
     EXPECT_CALL(signal_strategy_, AddListener(NotNull()))
         .WillRepeatedly(AddListener(&signal_strategy_listeners_));
@@ -71,7 +70,7 @@ class RegisterSupportHostRequestTest : public testing::Test {
   MessageLoop message_loop_;
   MockSignalStrategy signal_strategy_;
   ObserverList<SignalStrategy::Listener, true> signal_strategy_listeners_;
-  scoped_refptr<InMemoryHostConfig> config_;
+  HostKeyPair key_pair_;
   MockCallback callback_;
 };
 
@@ -81,10 +80,9 @@ TEST_F(RegisterSupportHostRequestTest, Send) {
   int64 start_time = static_cast<int64>(base::Time::Now().ToDoubleT());
 
   scoped_ptr<RegisterSupportHostRequest> request(
-      new RegisterSupportHostRequest());
-  ASSERT_TRUE(request->Init(
-      &signal_strategy_, config_, base::Bind(&MockCallback::OnResponse,
-                                            base::Unretained(&callback_))));
+      new RegisterSupportHostRequest(&signal_strategy_, &key_pair_,
+                                     base::Bind(&MockCallback::OnResponse,
+                                                base::Unretained(&callback_))));
 
   XmlElement* sent_iq = NULL;
   EXPECT_CALL(signal_strategy_, GetNextId())

@@ -94,8 +94,7 @@ class ChromotingHostTest : public testing::Test {
         new DesktopEnvironment(&context_, capturer, event_executor_));
 
     host_ = new ChromotingHost(
-        &context_, config_, &signal_strategy_,
-        desktop_environment_.get(), false);
+        &context_, &signal_strategy_, desktop_environment_.get(), false);
 
     disconnect_window_ = new MockDisconnectWindow();
     continue_window_ = new MockContinueWindow();
