@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -239,18 +239,22 @@ void WebClipboardImpl::writeImage(
 }
 
 void WebClipboardImpl::writeDataObject(const WebDragData& data) {
-  // TODO(dcheng): This actually results in a double clear of the clipboard.
-  // Once in WebKit, and once here when the clipboard writer goes out of scope.
-  // The same is true of the other WebClipboard::write* methods.
   ScopedClipboardWriterGlue scw(client_);
 
   WebDropData data_object(data);
   // TODO(dcheng): Properly support text/uri-list here.
   scw.WriteText(data_object.plain_text);
   scw.WriteHTML(data_object.text_html, "");
-  Pickle pickle;
-  ui::WriteCustomDataToPickle(data_object.custom_data, &pickle);
-  scw.WritePickledData(pickle, ui::Clipboard::GetWebCustomDataFormatType());
+  // If there is no custom data, avoid calling WritePickledData. This ensures
+  // that ScopedClipboardWriterGlue's dtor remains a no-op if the page didn't
+  // modify the DataTransfer object, which is important to avoid stomping on
+  // any clipboard contents written by extension functions such as
+  // chrome.experimental.bookmarkManager.copy.
+  if (!data_object.custom_data.empty()) {
+    Pickle pickle;
+    ui::WriteCustomDataToPickle(data_object.custom_data, &pickle);
+    scw.WritePickledData(pickle, ui::Clipboard::GetWebCustomDataFormatType());
+  }
 }
 
 bool WebClipboardImpl::ConvertBufferType(Buffer buffer,
