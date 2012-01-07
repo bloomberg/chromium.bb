@@ -4699,7 +4699,7 @@
    fun:_Znw*
    fun:_ZN15DownloadService18GetDownloadManagerEv
    fun:_ZN11DownloadsUIC1EPN7content11WebContentsE
-   fun:_ZN12_GLOBAL__N_18NewWebUII11DownloadsUIEEP11ChromeWebUIP11TabContentsRK4GURL
+   fun:_ZN12_GLOBAL__N_18NewWebUII11DownloadsUIEEP5WebUIP11TabContentsRK4GURL
    fun:_ZNK18ChromeWebUIFactory17CreateWebUIForURLEP11TabContentsRK4GURL
    fun:_ZNK22TestChromeWebUIFactory17CreateWebUIForURLEP11TabContentsRK4GURL
    fun:_ZN11TabContents27CreateWebUIForRenderManagerERK4GURL
@@ -4999,10 +4999,8 @@
    fun:_ZN4skia15ImageOperations6ResizeERK8SkBitmapNS0_12ResizeMethodEiiRK7SkIRect
    fun:_ZN4skia15ImageOperations6ResizeERK8SkBitmapNS0_12ResizeMethodEii
    fun:_ZNK7WebCore15NativeImageSkia13resizedBitmapERK7SkIRectiiS3_
-   fun:_ZN7WebCoreL19drawResampledBitmapER8SkCanvasR7SkPaintRKNS_15NativeImageSkiaERK7SkIRectRK6SkRect
-   fun:_ZN7WebCoreL13paintSkBitmapEPNS_19PlatformContextSkiaERKNS_15NativeImageSkiaERK7SkIRectRK6SkRectRKN10SkXfermode4ModeE
-   fun:_ZN7WebCore11BitmapImage4drawEPNS_15GraphicsContextERKNS_9FloatRectES5_NS_10ColorSpaceENS_17CompositeOperatorE
-   fun:_ZN7WebCore15GraphicsContext9drawImageEPNS_5ImageENS_10ColorSpaceERKNS_9FloatRectES6_NS_17CompositeOperatorEb
+   ...
+   fun:_ZN7WebCore15GraphicsContext*
 }
 {
    bug_106104
@@ -5444,6 +5442,41 @@
    fun:_ZN3WTF24ThreadSafeRefCountedBasenwEm
    fun:_ZN7WebCore6IDBKey*
    fun:_ZN7WebCore25IDBObjectStoreBackendImpl19genAutoIncrementKeyEv
+}
+{
+   bug_109466
+   Memcheck:Uninitialized
+   ...
+   fun:_ZN7WebCore16CSSStyleSelector31findFromMatchedDeclarationCacheEjRKNS0_11MatchResultE
+   fun:_ZN7WebCore16CSSStyleSelector24applyMatchedDeclarationsERKNS0_11MatchResultE
+   fun:_ZN7WebCore16CSSStyleSelector15styleForElementEPNS_7ElementEPNS_11RenderStyleEbb
+   fun:_ZN7WebCore7Element16styleForRendererEv
+}
+{
+   bug_109470
+   Memcheck:Uninitialized
+   ...
+   fun:_ZN7WebCore16CSSStyleSelector24applyMatchedDeclarationsERKNS0_11MatchResultE
+   fun:_ZN7WebCore16CSSStyleSelector15styleForElementEPNS_7ElementEPNS_11RenderStyleEbb
+   fun:_ZN7WebCore7Element16styleForRendererEv
+}
+{
+   bug_109481
+   Memcheck:Uninitialized
+   ...
+   fun:_ZN3WTF7HashMapIjN7WebCore16CSSStyleSelector32MatchedStyleDeclarationCacheItemENS_7IntHashIjEENS_10HashTraitsIjEENS6_IS3_EEED1Ev
+   fun:_ZN7WebCore16CSSStyleSelectorD1Ev
+   fun:_ZN3WTF14deleteOwnedPtrIN7WebCore16CSSStyleSelectorEEEvPT_
+   fun:_ZN3WTF6OwnPtrIN7WebCore16CSSStyleSelectorEE5clearEv
+   ...
+   fun:_ZN7WebCore8Document20styleSelectorChangedENS_23StyleSelectorUpdateFlagE
+}
+{
+   bug_109485
+   Memcheck:Unaddressable
+   ...
+   fun:_ZN8appcache22AppCacheResponseWriter17ContinueWriteInfoEv
+   fun:_ZN8appcache22AppCacheResponseWriter21OnCreateEntryCompleteEPPNS_26AppCacheDiskCacheInterface5EntryEi
 }
 
 #-----------------------------------------------------------------------
