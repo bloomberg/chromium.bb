@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -168,7 +168,9 @@ namespace safe_browsing_util {
 const char kMalwareList[] = "goog-malware-shavar";
 const char kPhishingList[] = "goog-phish-shavar";
 const char kBinUrlList[] = "goog-badbinurl-shavar";
-const char kBinHashList[] = "goog-badbin-digestvar";
+// We don't use the bad binary digest list anymore.  Use a fake listname to be
+// sure we don't request it accidentally.
+const char kBinHashList[] = "goog-badbin-digestvar-disabled";
 const char kCsdWhiteList[] = "goog-csdwhite-sha256";
 const char kDownloadWhiteList[] = "goog-downloadwhite-digest256";
 

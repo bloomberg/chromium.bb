@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -1069,6 +1069,14 @@ bool SafeBrowsingDatabaseNew::UpdateStarted(
     download_listnames.push_back(safe_browsing_util::kBinUrlList);
     download_listnames.push_back(safe_browsing_util::kBinHashList);
     UpdateChunkRanges(download_store_.get(), download_listnames, lists);
+    DCHECK_EQ(lists->back().name,
+              std::string(safe_browsing_util::kBinHashList));
+    // Remove kBinHashList entry so that we do not request updates for it from
+    // the server.  The existing data will still be retained by
+    // SafeBrowsingStoreFile::DoUpdate.
+    // TODO(mattm): write some code to remove the kBinHashList data from the
+    // file?
+    lists->pop_back();
   }
 
   if (csd_whitelist_store_.get()) {

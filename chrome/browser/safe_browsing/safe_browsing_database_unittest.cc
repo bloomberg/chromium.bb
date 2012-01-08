@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -424,7 +424,7 @@ TEST_F(SafeBrowsingDatabaseTest, ListNameForBrowseAndDownload) {
   database_->UpdateFinished(true);
 
   GetListsInfo(&lists);
-  EXPECT_EQ(6U, lists.size());
+  ASSERT_EQ(5U, lists.size());
   EXPECT_TRUE(lists[0].name == safe_browsing_util::kMalwareList);
   EXPECT_EQ(lists[0].adds, "1");
   EXPECT_TRUE(lists[0].subs.empty());
@@ -434,15 +434,13 @@ TEST_F(SafeBrowsingDatabaseTest, ListNameForBrowseAndDownload) {
   EXPECT_TRUE(lists[2].name == safe_browsing_util::kBinUrlList);
   EXPECT_EQ(lists[2].adds, "3");
   EXPECT_TRUE(lists[2].subs.empty());
-  EXPECT_TRUE(lists[3].name == safe_browsing_util::kBinHashList);
-  EXPECT_EQ(lists[3].adds, "4");
+  // kBinHashList is ignored.  (http://crbug.com/108130)
+  EXPECT_TRUE(lists[3].name == safe_browsing_util::kCsdWhiteList);
+  EXPECT_EQ(lists[3].adds, "5");
   EXPECT_TRUE(lists[3].subs.empty());
-  EXPECT_TRUE(lists[4].name == safe_browsing_util::kCsdWhiteList);
-  EXPECT_EQ(lists[4].adds, "5");
+  EXPECT_TRUE(lists[4].name == safe_browsing_util::kDownloadWhiteList);
+  EXPECT_EQ(lists[4].adds, "6");
   EXPECT_TRUE(lists[4].subs.empty());
-  EXPECT_TRUE(lists[5].name == safe_browsing_util::kDownloadWhiteList);
-  EXPECT_EQ(lists[5].adds, "6");
-  EXPECT_TRUE(lists[5].subs.empty());
   database_.reset();
 }
 
@@ -1524,45 +1522,6 @@ TEST_F(SafeBrowsingDatabaseTest, SameHostEntriesOkay) {
   EXPECT_FALSE(database_->ContainsBrowseUrl(
       GURL("http://www.evil.com/phishing2.html"),
       &listname, &prefixes, &full_hashes, now));
-}
-
-TEST_F(SafeBrowsingDatabaseTest, BinHashInsertLookup) {
-  const SBPrefix kPrefix1 = 0x31313131;
-  const SBPrefix kPrefix2 = 0x32323232;
-  const SBPrefix kPrefix3 = 0x33333333;
-  database_.reset();
-  MessageLoop loop(MessageLoop::TYPE_DEFAULT);
-  SafeBrowsingStoreFile* browse_store = new SafeBrowsingStoreFile();
-  SafeBrowsingStoreFile* download_store = new SafeBrowsingStoreFile();
-  database_.reset(new SafeBrowsingDatabaseNew(browse_store,
-                                              download_store,
-                                              NULL, NULL));
-  database_->Init(database_filename_);
-
-  SBChunkList chunks;
-  SBChunk chunk;
-  // Insert one host.
-  InsertAddChunkHostPrefixValue(&chunk, 1, 0, kPrefix1);
-  // Insert a second host, which has the same host prefix as the first one.
-  InsertAddChunkHostPrefixValue(&chunk, 1, 0, kPrefix2);
-  chunks.push_back(chunk);
-
-  // Insert the testing chunks into database.
-  std::vector<SBListChunkRanges> lists;
-  EXPECT_TRUE(database_->UpdateStarted(&lists));
-  database_->InsertChunks(safe_browsing_util::kBinHashList, chunks);
-  database_->UpdateFinished(true);
-
-  GetListsInfo(&lists);
-  ASSERT_EQ(4U, lists.size());
-  EXPECT_EQ(std::string(safe_browsing_util::kBinHashList), lists[3].name);
-  EXPECT_EQ("1", lists[3].adds);
-  EXPECT_TRUE(lists[3].subs.empty());
-
-  EXPECT_TRUE(database_->ContainsDownloadHashPrefix(kPrefix1));
-  EXPECT_TRUE(database_->ContainsDownloadHashPrefix(kPrefix2));
-  EXPECT_FALSE(database_->ContainsDownloadHashPrefix(kPrefix3));
-  database_.reset();
 }
 
 // Test that an empty update doesn't actually update the database.
