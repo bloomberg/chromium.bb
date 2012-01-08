@@ -194,8 +194,7 @@ typedef void (*window_drop_handler_t)(struct window *window,
 				      struct input *input,
 				      int32_t x, int32_t y, void *data);
 
-typedef void (*window_widget_focus_handler_t)(struct window *window,
-					      struct widget *focus, void *data);
+typedef void (*widget_focus_handler_t)(struct widget *widget, void *data);
 
 typedef void (*window_close_handler_t)(struct window *window, void *data);
 
@@ -335,10 +334,6 @@ window_set_keyboard_focus_handler(struct window *window,
 				  window_keyboard_focus_handler_t handler);
 
 void
-window_set_widget_focus_handler(struct window *window,
-				window_widget_focus_handler_t handler);
-
-void
 window_set_data_handler(struct window *window,
 			window_data_handler_t handler);
 
@@ -365,6 +360,13 @@ widget_set_allocation(struct widget *widget,
 
 void *
 widget_get_user_data(struct widget *widget);
+
+void
+widget_set_focus_handler(struct widget *widget,
+			 widget_focus_handler_t handler);
+
+void
+widget_schedule_redraw(struct widget *widget);
 
 void
 input_set_pointer_image(struct input *input, uint32_t time, int pointer);

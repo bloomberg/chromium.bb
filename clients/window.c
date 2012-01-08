@@ -134,7 +134,6 @@ struct window {
 	window_motion_handler_t motion_handler;
 	window_enter_handler_t enter_handler;
 	window_leave_handler_t leave_handler;
-	window_widget_focus_handler_t widget_focus_handler;
 	window_data_handler_t data_handler;
 	window_drop_handler_t drop_handler;
 	window_close_handler_t close_handler;
@@ -150,8 +149,10 @@ struct window {
 };
 
 struct widget {
+	struct window *window;
 	struct wl_list link;
 	struct rectangle allocation;
+	widget_focus_handler_t focus_handler;
 	void *user_data;
 };
 
@@ -1056,6 +1057,7 @@ window_add_widget(struct window *window, void *data)
 
 	widget = malloc(sizeof *widget);
 	memset(widget, 0, sizeof *widget);
+	widget->window = window;
 	widget->user_data = data;
 	wl_list_insert(window->widget_list.prev, &widget->link);
 
@@ -1097,6 +1099,18 @@ void *
 widget_get_user_data(struct widget *widget)
 {
 	return widget->user_data;
+}
+
+void
+widget_set_focus_handler(struct widget *widget, widget_focus_handler_t handler)
+{
+	widget->focus_handler = handler;
+}
+
+void
+widget_schedule_redraw(struct widget *widget)
+{
+	window_schedule_redraw(widget->window);
 }
 
 void
@@ -1232,8 +1246,8 @@ window_set_focus_widget(struct window *window, struct widget *focus)
 
 	window->focus_widget = focus;
 	data = focus ? focus->user_data : NULL;
-	if (window->widget_focus_handler)
-		window->widget_focus_handler(window, focus, data);
+	if (focus && focus->focus_handler)
+		focus->focus_handler(focus, data);
 }
 
 static void
@@ -2036,13 +2050,6 @@ window_set_keyboard_focus_handler(struct window *window,
 				  window_keyboard_focus_handler_t handler)
 {
 	window->keyboard_focus_handler = handler;
-}
-
-void
-window_set_widget_focus_handler(struct window *window,
-				window_widget_focus_handler_t handler)
-{
-	window->widget_focus_handler = handler;
 }
 
 void
