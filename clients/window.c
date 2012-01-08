@@ -1288,7 +1288,7 @@ window_menu_func(struct window *window, int index, void *data)
 			window->close_handler(window->parent,
 					      window->user_data);
 		else
-			exit(0);
+			display_exit(window->display);
 		break;
 	case 1: /* fullscreen */
 		/* we don't have a way to get out of fullscreen for now */
