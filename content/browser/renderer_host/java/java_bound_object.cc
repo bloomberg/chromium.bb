@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -193,7 +193,8 @@ NPVariant CallJNIMethod(jobject object, const JavaType& return_type,
 }
 
 jvalue CoerceJavaScriptNumberToJavaValue(const NPVariant& variant,
-                                         const JavaType& target_type) {
+                                         const JavaType& target_type,
+                                         bool coerce_to_string) {
   // See http://jdk6.java.net/plugin2/liveconnect/#JS_NUMBER_VALUES.
   jvalue result;
   DCHECK(variant.type == NPVariantType_Int32 ||
@@ -236,10 +237,12 @@ jvalue CoerceJavaScriptNumberToJavaValue(const NPVariant& variant,
       result.l = NULL;
       break;
     case JavaType::TypeString:
-      result.l = ConvertUTF8ToJavaString(
-          AttachCurrentThread(),
-          is_double ?  StringPrintf("%.6lg", NPVARIANT_TO_DOUBLE(variant)) :
-                       base::IntToString(NPVARIANT_TO_INT32(variant)));
+      result.l = coerce_to_string ?
+          ConvertUTF8ToJavaString(
+              AttachCurrentThread(),
+              is_double ? StringPrintf("%.6lg", NPVARIANT_TO_DOUBLE(variant)) :
+                          base::Int64ToString(NPVARIANT_TO_INT32(variant))) :
+          NULL;
       break;
     case JavaType::TypeBoolean:
       // LIVECONNECT_COMPLIANCE: Existing behavior is to convert to false. Spec
@@ -260,7 +263,8 @@ jvalue CoerceJavaScriptNumberToJavaValue(const NPVariant& variant,
 }
 
 jvalue CoerceJavaScriptBooleanToJavaValue(const NPVariant& variant,
-                                          const JavaType& target_type) {
+                                          const JavaType& target_type,
+                                          bool coerce_to_string) {
   // See http://jdk6.java.net/plugin2/liveconnect/#JS_BOOLEAN_VALUES.
   DCHECK_EQ(NPVariantType_Bool, variant.type);
   bool boolean_value = NPVARIANT_TO_BOOLEAN(variant);
@@ -275,8 +279,10 @@ jvalue CoerceJavaScriptBooleanToJavaValue(const NPVariant& variant,
       result.l = NULL;
       break;
     case JavaType::TypeString:
-      result.l = ConvertUTF8ToJavaString(AttachCurrentThread(),
-                                         boolean_value ? "true" : "false");
+      result.l = coerce_to_string ?
+          ConvertUTF8ToJavaString(AttachCurrentThread(),
+                                  boolean_value ? "true" : "false") :
+          NULL;
       break;
     case JavaType::TypeByte:
     case JavaType::TypeChar:
@@ -356,8 +362,168 @@ jvalue CoerceJavaScriptStringToJavaValue(const NPVariant& variant,
   return result;
 }
 
+// Note that this only handles primitive types and strings.
+jobject CreateJavaArray(const JavaType& type, jsize length) {
+  JNIEnv* env = AttachCurrentThread();
+  switch (type.type) {
+    case JavaType::TypeBoolean:
+      return env->NewBooleanArray(length);
+    case JavaType::TypeByte:
+      return env->NewByteArray(length);
+    case JavaType::TypeChar:
+      return env->NewCharArray(length);
+    case JavaType::TypeShort:
+      return env->NewShortArray(length);
+    case JavaType::TypeInt:
+      return env->NewIntArray(length);
+    case JavaType::TypeLong:
+      return env->NewLongArray(length);
+    case JavaType::TypeFloat:
+      return env->NewFloatArray(length);
+    case JavaType::TypeDouble:
+      return env->NewDoubleArray(length);
+    case JavaType::TypeString: {
+      ScopedJavaLocalRef<jclass> clazz(env, env->FindClass("java/lang/String"));
+      return env->NewObjectArray(length, clazz.obj(), NULL);
+    }
+    case JavaType::TypeVoid:
+      // Conversion to void must never happen.
+    case JavaType::TypeArray:
+    case JavaType::TypeObject:
+      // Not handled.
+      NOTREACHED();
+  }
+  return NULL;
+}
+
+// Note that this only handles primitive types and strings.
+void SetArrayElement(jobject array,
+                     const JavaType& type,
+                     jsize index,
+                     const jvalue& value) {
+  JNIEnv* env = AttachCurrentThread();
+  switch (type.type) {
+    case JavaType::TypeBoolean:
+      env->SetBooleanArrayRegion(static_cast<jbooleanArray>(array), index, 1,
+                                 &value.z);
+      break;
+    case JavaType::TypeByte:
+      env->SetByteArrayRegion(static_cast<jbyteArray>(array), index, 1,
+                              &value.b);
+      break;
+    case JavaType::TypeChar:
+      env->SetCharArrayRegion(static_cast<jcharArray>(array), index, 1,
+                              &value.c);
+      break;
+    case JavaType::TypeShort:
+      env->SetShortArrayRegion(static_cast<jshortArray>(array), index, 1,
+                               &value.s);
+      break;
+    case JavaType::TypeInt:
+      env->SetIntArrayRegion(static_cast<jintArray>(array), index, 1,
+                             &value.i);
+      break;
+    case JavaType::TypeLong:
+      env->SetLongArrayRegion(static_cast<jlongArray>(array), index, 1,
+                              &value.j);
+      break;
+    case JavaType::TypeFloat:
+      env->SetFloatArrayRegion(static_cast<jfloatArray>(array), index, 1,
+                               &value.f);
+      break;
+    case JavaType::TypeDouble:
+      env->SetDoubleArrayRegion(static_cast<jdoubleArray>(array), index, 1,
+                                &value.d);
+      break;
+    case JavaType::TypeString:
+      env->SetObjectArrayElement(static_cast<jobjectArray>(array), index,
+                                 value.l);
+      break;
+    case JavaType::TypeVoid:
+      // Conversion to void must never happen.
+    case JavaType::TypeArray:
+    case JavaType::TypeObject:
+      // Not handled.
+      NOTREACHED();
+  }
+  base::android::CheckException(env);
+}
+
+jvalue CoerceJavaScriptValueToJavaValue(const NPVariant& variant,
+                                        const JavaType& target_type,
+                                        bool coerce_to_string);
+
+jobject CoerceJavaScriptObjectToArray(const NPVariant& variant,
+                                      const JavaType& target_type) {
+  DCHECK_EQ(JavaType::TypeArray, target_type.type);
+  NPObject* object = NPVARIANT_TO_OBJECT(variant);
+  DCHECK_NE(&JavaNPObject::kNPClass, object->_class);
+
+  const JavaType& target_inner_type = *target_type.inner_type.get();
+  // LIVECONNECT_COMPLIANCE: Existing behavior is to return null for
+  // multi-dimensional arrays. Spec requires handling multi-demensional arrays.
+  if (target_inner_type.type == JavaType::TypeArray) {
+    return NULL;
+  }
+
+  // LIVECONNECT_COMPLIANCE: Existing behavior is to return null for object
+  // arrays. Spec requires handling object arrays.
+  if (target_inner_type.type == JavaType::TypeObject) {
+    return NULL;
+  }
+
+  // If the object does not have a length property, return null.
+  NPVariant length_variant;
+  if (!WebBindings::getProperty(0, object,
+                                WebBindings::getStringIdentifier("length"),
+                                &length_variant)) {
+    WebBindings::releaseVariantValue(&length_variant);
+    return NULL;
+  }
+
+  // If the length property does not have numeric type, or is outside the valid
+  // range for a Java array length, return null.
+  jsize length = -1;
+  if (NPVARIANT_IS_INT32(length_variant)
+      && NPVARIANT_TO_INT32(length_variant) >= 0) {
+    length = NPVARIANT_TO_INT32(length_variant);
+  } else if (NPVARIANT_IS_DOUBLE(length_variant)
+             && NPVARIANT_TO_DOUBLE(length_variant) >= 0.0
+             && NPVARIANT_TO_DOUBLE(length_variant) <= kint32max) {
+    length = static_cast<jsize>(NPVARIANT_TO_DOUBLE(length_variant));
+  }
+  WebBindings::releaseVariantValue(&length_variant);
+  if (length == -1) {
+    return NULL;
+  }
+
+  // Create the Java array. Note that we don't explicitly release the local
+  // ref to the result or any of its elements.
+  // TODO(steveblock): Handle failure to create the array.
+  jobject result = CreateJavaArray(target_inner_type, length);
+  NPVariant value_variant;
+  for (jsize i = 0; i < length; ++i) {
+    // It seems that getProperty() will set the variant to type void on failure,
+    // but this doesn't seem to be documented, so do it explicitly here for
+    // safety.
+    VOID_TO_NPVARIANT(value_variant);
+    // If this fails, for example due to a missing element, we simply treat the
+    // value as JavaScript undefined.
+    WebBindings::getProperty(0, object, WebBindings::getIntIdentifier(i),
+                             &value_variant);
+    SetArrayElement(result, target_inner_type, i,
+                    CoerceJavaScriptValueToJavaValue(value_variant,
+                                                     target_inner_type,
+                                                     false));
+    WebBindings::releaseVariantValue(&value_variant);
+  }
+
+  return result;
+}
+
 jvalue CoerceJavaScriptObjectToJavaValue(const NPVariant& variant,
-                                         const JavaType& target_type) {
+                                         const JavaType& target_type,
+                                         bool coerce_to_string) {
   // This covers both JavaScript objects (including arrays) and Java objects.
   // See http://jdk6.java.net/plugin2/liveconnect/#JS_OTHER_OBJECTS,
   // http://jdk6.java.net/plugin2/liveconnect/#JS_ARRAY_VALUES and
@@ -387,7 +553,9 @@ jvalue CoerceJavaScriptObjectToJavaValue(const NPVariant& variant,
     case JavaType::TypeString:
       // LIVECONNECT_COMPLIANCE: Existing behavior is to convert to
       // "undefined". Spec requires calling toString() on the Java object.
-      result.l = ConvertUTF8ToJavaString(AttachCurrentThread(), "undefined");
+      result.l = coerce_to_string ?
+          ConvertUTF8ToJavaString(AttachCurrentThread(), "undefined") :
+          NULL;
       break;
     case JavaType::TypeByte:
     case JavaType::TypeShort:
@@ -413,9 +581,7 @@ jvalue CoerceJavaScriptObjectToJavaValue(const NPVariant& variant,
         // requires raising a JavaScript exception.
         result.l = NULL;
       } else {
-        // TODO(steveblock): Handle converting JavaScript objects to Java
-        // arrays.
-        result.l = NULL;
+        result.l = CoerceJavaScriptObjectToArray(variant, target_type);
       }
       break;
     case JavaType::TypeVoid:
@@ -427,7 +593,8 @@ jvalue CoerceJavaScriptObjectToJavaValue(const NPVariant& variant,
 }
 
 jvalue CoerceJavaScriptNullOrUndefinedToJavaValue(const NPVariant& variant,
-                                                  const JavaType& target_type) {
+                                                  const JavaType& target_type,
+                                                  bool coerce_to_string) {
   // See http://jdk6.java.net/plugin2/liveconnect/#JS_NULL.
   DCHECK(variant.type == NPVariantType_Null ||
          variant.type == NPVariantType_Void);
@@ -437,13 +604,11 @@ jvalue CoerceJavaScriptNullOrUndefinedToJavaValue(const NPVariant& variant,
       result.l = NULL;
       break;
     case JavaType::TypeString:
-      if (variant.type == NPVariantType_Void) {
-        // LIVECONNECT_COMPLIANCE: Existing behavior is to convert undefined to
-        // "undefined". Spec requires converting undefined to NULL.
-        result.l =  ConvertUTF8ToJavaString(AttachCurrentThread(), "undefined");
-      } else {
-        result.l = NULL;
-      }
+      // LIVECONNECT_COMPLIANCE: Existing behavior is to convert undefined to
+      // "undefined". Spec requires converting undefined to NULL.
+      result.l = (coerce_to_string && variant.type == NPVariantType_Void) ?
+          ConvertUTF8ToJavaString(AttachCurrentThread(), "undefined") :
+          NULL;
       break;
     case JavaType::TypeByte:
     case JavaType::TypeChar:
@@ -472,8 +637,13 @@ jvalue CoerceJavaScriptNullOrUndefinedToJavaValue(const NPVariant& variant,
   return result;
 }
 
+// coerce_to_string means that we should try to coerce all JavaScript values to
+// strings when required, rather than simply converting to NULL. This is used
+// to maintain current behaviour, which differs slightly depending upon whether
+// or not the coercion in question is for an array element.
 jvalue CoerceJavaScriptValueToJavaValue(const NPVariant& variant,
-                                        const JavaType& target_type) {
+                                        const JavaType& target_type,
+                                        bool coerce_to_string) {
   // Note that in all these conversions, the relevant field of the jvalue must
   // always be explicitly set, as jvalue does not initialize its fields.
 
@@ -483,16 +653,20 @@ jvalue CoerceJavaScriptValueToJavaValue(const NPVariant& variant,
   switch (variant.type) {
     case NPVariantType_Int32:
     case NPVariantType_Double:
-      return CoerceJavaScriptNumberToJavaValue(variant, target_type);
+      return CoerceJavaScriptNumberToJavaValue(variant, target_type,
+                                               coerce_to_string);
     case NPVariantType_Bool:
-      return CoerceJavaScriptBooleanToJavaValue(variant, target_type);
+      return CoerceJavaScriptBooleanToJavaValue(variant, target_type,
+                                                coerce_to_string);
     case NPVariantType_String:
       return CoerceJavaScriptStringToJavaValue(variant, target_type);
     case NPVariantType_Object:
-      return CoerceJavaScriptObjectToJavaValue(variant, target_type);
+      return CoerceJavaScriptObjectToJavaValue(variant, target_type,
+                                               coerce_to_string);
     case NPVariantType_Null:
     case NPVariantType_Void:
-      return CoerceJavaScriptNullOrUndefinedToJavaValue(variant, target_type);
+      return CoerceJavaScriptNullOrUndefinedToJavaValue(variant, target_type,
+                                                        coerce_to_string);
   }
   NOTREACHED();
   return jvalue();
@@ -564,7 +738,8 @@ bool JavaBoundObject::Invoke(const std::string& name, const NPVariant* args,
   std::vector<jvalue> parameters(arg_count);
   for (size_t i = 0; i < arg_count; ++i) {
     parameters[i] = CoerceJavaScriptValueToJavaValue(args[i],
-                                                     method->parameter_type(i));
+                                                     method->parameter_type(i),
+                                                     true);
   }
 
   // Call

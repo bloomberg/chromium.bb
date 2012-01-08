@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -73,15 +73,20 @@ std::string BinaryNameToJNIName(const std::string& binary_name,
       return "D";
     case JavaType::TypeVoid:
       return "V";
-    case JavaType::TypeArray:
-      return "[";
-    default:
-      DCHECK(type->type == JavaType::TypeString ||
-             type->type == JavaType::TypeObject);
+    case JavaType::TypeArray: {
+      // For array types, the binary name uses the JNI name encodings.
+      std::string jni_name = binary_name;
+      ReplaceSubstringsAfterOffset(&jni_name, 0, ".", "/");
+      return jni_name;
+    }
+    case JavaType::TypeString:
+    case JavaType::TypeObject:
       std::string jni_name = "L" + binary_name + ";";
       ReplaceSubstringsAfterOffset(&jni_name, 0, ".", "/");
       return jni_name;
   }
+  NOTREACHED();
+  return EmptyString();
 }
 
 }  // namespace

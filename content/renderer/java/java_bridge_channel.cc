@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 
 #include "content/common/child_process.h"
 #include "content/common/java_bridge_messages.h"
+#include "content/common/plugin_messages.h"
 
 JavaBridgeChannel* JavaBridgeChannel::GetJavaBridgeChannel(
     const IPC::ChannelHandle& channel_handle,
@@ -28,4 +29,18 @@ int JavaBridgeChannel::GenerateRouteID() {
   // us.
   DCHECK_NE(MSG_ROUTING_NONE, route_id);
   return route_id;
+}
+
+bool JavaBridgeChannel::OnControlMessageReceived(const IPC::Message& msg) {
+  // We need to intercept these two message types because the default
+  // implementation of NPChannelBase::OnControlMessageReceived() is to
+  // DCHECK(false). However, we don't need to do anything, as we don't need to
+  // worry about the window system hanging when a modal dialog is displayed.
+  // This is because, unlike in the case of plugins, the host does not need to
+  // pump the message queue to avoid hangs.
+  if (msg.type() == PluginMsg_SignalModalDialogEvent::ID ||
+      msg.type() == PluginMsg_ResetModalDialogEvent::ID) {
+    return true;
+  }
+  return NPChannelBase::OnControlMessageReceived(msg);
 }
