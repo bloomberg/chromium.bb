@@ -39,8 +39,8 @@ struct some_struct2 {
 /*
  * static __attribute__((pnaclcall)) int32_t
  * Pnacl_M15_PPB_Iface_struct_wrap_foo1(int32_t a, struct some_struct b) {
- *   const struct PPB_Iface_struct_wrap *iface =
- *     Pnacl_WrapperInfo_PPB_Iface_struct_wrap.real_iface;
+ *   const struct PPB_Iface_struct_wrap_2_0 *iface =
+ *     Pnacl_WrapperInfo_PPB_Iface_struct_wrap_2_0.real_iface;
  *   return iface->foo1(a, b);
  * }
  */
@@ -52,8 +52,8 @@ interface PPB_Iface_struct_wrap {
 /*
  * static __attribute__((pnaclcall)) int32_t
  * Pnacl_M15_PPB_Iface_union_wrap_foo1(int32_t a, union some_union b) {
- *   const struct PPB_Iface_union_wrap *iface =
- *     Pnacl_WrapperInfo_PPB_Iface_union_wrap.real_iface;
+ *   const struct PPB_Iface_union_wrap_2_0 *iface =
+ *     Pnacl_WrapperInfo_PPB_Iface_union_wrap_2_0.real_iface;
  *   return iface->foo1(a, b);
  * }
  */

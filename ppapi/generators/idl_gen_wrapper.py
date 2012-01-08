@@ -230,9 +230,8 @@ const void *__%(wrapper_prefix)s_PPPGetInterface(const char *name) {
         releases_for_iface = iface.GetUniqueReleases(releases)
         for release in releases_for_iface:
           version = iface.GetVersion(release)
-          not_latest = release != releases_for_iface[-1]
           struct_name = self.cgen.GetStructName(iface, release,
-                                                include_version=not_latest)
+                                                include_version=True)
           needs_wrap = self.InterfaceVersionNeedsWrapping(iface, version)
           if not needs_wrap:
             InfoOut.Log('Interface %s ver %s does not need wrapping' %
