@@ -29,7 +29,7 @@
 #include <cairo.h>
 
 struct window;
-struct item;
+struct widget;
 struct display;
 struct input;
 struct output;
@@ -194,8 +194,8 @@ typedef void (*window_drop_handler_t)(struct window *window,
 				      struct input *input,
 				      int32_t x, int32_t y, void *data);
 
-typedef void (*window_item_focus_handler_t)(struct window *window,
-					    struct item *focus, void *data);
+typedef void (*window_widget_focus_handler_t)(struct window *window,
+					      struct widget *focus, void *data);
 
 typedef void (*window_close_handler_t)(struct window *window, void *data);
 
@@ -216,19 +216,19 @@ window_create_menu(struct display *display,
 void
 window_destroy(struct window *window);
 
-struct item *
-window_add_item(struct window *window, void *data);
+struct widget *
+window_add_widget(struct window *window, void *data);
 
-typedef void (*item_func_t)(struct item *item, void *data);
+typedef void (*widget_func_t)(struct widget *widget, void *data);
 
 typedef void (*data_func_t)(void *data, size_t len,
 			    int32_t x, int32_t y, void *user_data);
 
 void
-window_for_each_item(struct window *window, item_func_t func, void *data);
+window_for_each_widget(struct window *window, widget_func_t func, void *data);
 
-struct item *
-window_get_focus_item(struct window *window);
+struct widget *
+window_get_focus_widget(struct window *window);
 struct display *
 window_get_display(struct window *window);
 
@@ -335,8 +335,8 @@ window_set_keyboard_focus_handler(struct window *window,
 				  window_keyboard_focus_handler_t handler);
 
 void
-window_set_item_focus_handler(struct window *window,
-			      window_item_focus_handler_t handler);
+window_set_widget_focus_handler(struct window *window,
+				window_widget_focus_handler_t handler);
 
 void
 window_set_data_handler(struct window *window,
@@ -357,14 +357,14 @@ const char *
 window_get_title(struct window *window);
 
 void
-item_get_allocation(struct item *item, struct rectangle *allocation);
+widget_get_allocation(struct widget *widget, struct rectangle *allocation);
 
 void
-item_set_allocation(struct item *item,
-		    int32_t x, int32_t y, int32_t width, int32_t height);
+widget_set_allocation(struct widget *widget,
+		      int32_t x, int32_t y, int32_t width, int32_t height);
 
 void *
-item_get_user_data(struct item *item);
+widget_get_user_data(struct widget *widget);
 
 void
 input_set_pointer_image(struct input *input, uint32_t time, int pointer);

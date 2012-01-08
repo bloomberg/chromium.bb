@@ -75,8 +75,8 @@ struct output {
 	struct background *background;
 };
 
-struct panel_item {
-	struct item *item;
+struct panel_widget {
+	struct widget *widget;
 	struct panel *panel;
 	cairo_surface_t *icon;
 	int pressed;
@@ -85,7 +85,7 @@ struct panel_item {
 
 struct unlock_dialog {
 	struct window *window;
-	struct item *button;
+	struct widget *button;
 	int closing;
 
 	struct desktop *desktop;
@@ -144,7 +144,7 @@ show_menu(struct panel *panel, struct input *input, uint32_t time)
 }
 
 static void
-panel_activate_item(struct panel *panel, struct panel_item *item)
+panel_activate_widget(struct panel *panel, struct panel_widget *widget)
 {
 	pid_t pid;
 
@@ -157,21 +157,21 @@ panel_activate_item(struct panel *panel, struct panel_item *item)
 	if (pid)
 		return;
 
-	if (execl(item->path, item->path, NULL) < 0) {
+	if (execl(widget->path, widget->path, NULL) < 0) {
 		fprintf(stderr, "execl failed: %m\n");
 		exit(1);
 	}
 }
 
 static void
-panel_draw_item(struct item *item, void *data)
+panel_draw_widget(struct widget *widget, void *data)
 {
 	cairo_t *cr = data;
-	struct panel_item *pi;
+	struct panel_widget *pi;
 	int x, y, width, height;
 	double dx, dy;
 
-	pi = item_get_user_data(item);
+	pi = widget_get_user_data(widget);
 	width = cairo_image_surface_get_width(pi->icon);
 	height = cairo_image_surface_get_height(pi->icon);
 	x = 0;
@@ -184,12 +184,12 @@ panel_draw_item(struct item *item, void *data)
 	dx = x;
 	dy = y;
 	cairo_user_to_device(cr, &dx, &dy);
-	item_set_allocation(item, dx, dy, width, height);
+	widget_set_allocation(widget, dx, dy, width, height);
 
 	cairo_set_source_surface(cr, pi->icon, x, y);
 	cairo_paint(cr);
 
-	if (window_get_focus_item(pi->panel->window) == item) {
+	if (window_get_focus_widget(pi->panel->window) == widget) {
 		cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 0.4);
 		cairo_mask_surface(cr, pi->icon, x, y);
 	}
@@ -222,7 +222,7 @@ panel_redraw_handler(struct window *window, void *data)
 
 	cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
 	cairo_translate(cr, 10, 32 / 2);
-	window_for_each_item(window, panel_draw_item, cr);
+	window_for_each_widget(window, panel_draw_widget, cr);
 
 	cairo_destroy(cr);
 	cairo_surface_destroy(surface);
@@ -230,8 +230,8 @@ panel_redraw_handler(struct window *window, void *data)
 }
 
 static void
-panel_item_focus_handler(struct window *window,
-			 struct item *focus, void *data)
+panel_widget_focus_handler(struct window *window,
+			   struct widget *focus, void *data)
 {
 	window_schedule_redraw(window);
 }
@@ -242,15 +242,15 @@ panel_button_handler(struct window *window,
 		     int button, int state, void *data)
 {
 	struct panel *panel = data;
-	struct panel_item *pi;
-	struct item *focus;
+	struct panel_widget *pi;
+	struct widget *focus;
 
-	focus = window_get_focus_item(panel->window);
+	focus = window_get_focus_widget(panel->window);
 	if (focus && button == BTN_LEFT) {
-		pi = item_get_user_data(focus);
+		pi = widget_get_user_data(focus);
 		window_schedule_redraw(panel->window);
 		if (state == 0)
-			panel_activate_item(panel, pi);
+			panel_activate_widget(panel, pi);
 	} else if (button == BTN_RIGHT) {
 		if (state)
 			show_menu(panel, input, time);
@@ -285,22 +285,22 @@ panel_create(struct display *display)
 	window_set_custom(panel->window);
 	window_set_user_data(panel->window, panel);
 	window_set_button_handler(panel->window, panel_button_handler);
-	window_set_item_focus_handler(panel->window, panel_item_focus_handler);
+	window_set_widget_focus_handler(panel->window, panel_widget_focus_handler);
 
 	return panel;
 }
 
 static void
-panel_add_item(struct panel *panel, const char *icon, const char *path)
+panel_add_widget(struct panel *panel, const char *icon, const char *path)
 {
-	struct panel_item *item;
+	struct panel_widget *widget;
 
-	item = malloc(sizeof *item);
-	memset(item, 0, sizeof *item);
-	item->icon = cairo_image_surface_create_from_png(icon);
-	item->path = strdup(path);
-	item->panel = panel;
-	window_add_item(panel->window, item);
+	widget = malloc(sizeof *widget);
+	memset(widget, 0, sizeof *widget);
+	widget->icon = cairo_image_surface_create_from_png(icon);
+	widget->path = strdup(path);
+	widget->panel = panel;
+	window_add_widget(panel->window, widget);
 }
 
 static void
@@ -375,7 +375,7 @@ unlock_dialog_draw(struct unlock_dialog *dialog)
 	cairo_set_source_rgba(cr, 0, 0, 0, 0.6);
 	cairo_paint(cr);
 
-	if (window_get_focus_item(dialog->window) == dialog->button)
+	if (window_get_focus_widget(dialog->window) == dialog->button)
 		f = 1.0;
 	else
 		f = 0.7;
@@ -391,7 +391,7 @@ unlock_dialog_draw(struct unlock_dialog *dialog)
 	cairo_arc(cr, cx, cy, r, 0.0, 2.0 * M_PI);
 	cairo_fill(cr);
 
-	item_set_allocation(dialog->button,
+	widget_set_allocation(dialog->button,
 			    allocation.x + cx - r,
 			    allocation.y + cy - r, 2 * r, 2 * r);
 	cairo_pattern_destroy(pat);
@@ -411,9 +411,9 @@ unlock_dialog_button_handler(struct window *window,
 {
 	struct unlock_dialog *dialog = data;
 	struct desktop *desktop = dialog->desktop;
-	struct item *focus;
+	struct widget *focus;
 
-	focus = window_get_focus_item(dialog->window);
+	focus = window_get_focus_widget(dialog->window);
 	if (focus && button == BTN_LEFT) {
 		if (state == 0 && !dialog->closing) {
 			display_defer(desktop->display, &desktop->unlock_task);
@@ -438,8 +438,8 @@ unlock_dialog_keyboard_focus_handler(struct window *window,
 }
 
 static void
-unlock_dialog_item_focus_handler(struct window *window,
-				 struct item *focus, void *data)
+unlock_dialog_widget_focus_handler(struct window *window,
+				   struct widget *focus, void *data)
 {
 	window_schedule_redraw(window);
 }
@@ -464,9 +464,9 @@ unlock_dialog_create(struct desktop *desktop)
 	window_set_keyboard_focus_handler(dialog->window,
 					  unlock_dialog_keyboard_focus_handler);
 	window_set_button_handler(dialog->window, unlock_dialog_button_handler);
-	window_set_item_focus_handler(dialog->window,
-				      unlock_dialog_item_focus_handler);
-	dialog->button = window_add_item(dialog->window, NULL);
+	window_set_widget_focus_handler(dialog->window,
+				      unlock_dialog_widget_focus_handler);
+	dialog->button = window_add_widget(dialog->window, NULL);
 
 	desktop_shell_set_lock_surface(desktop->shell,
 	       window_get_wl_shell_surface(dialog->window));
@@ -588,7 +588,7 @@ launcher_section_done(void *data)
 	}
 
 	wl_list_for_each(output, &desktop->outputs, link)
-		panel_add_item(output->panel,
+		panel_add_widget(output->panel,
 			       key_launcher_icon, key_launcher_path);
 
 	free(key_launcher_icon);

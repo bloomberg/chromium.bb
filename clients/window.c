@@ -134,14 +134,14 @@ struct window {
 	window_motion_handler_t motion_handler;
 	window_enter_handler_t enter_handler;
 	window_leave_handler_t leave_handler;
-	window_item_focus_handler_t item_focus_handler;
+	window_widget_focus_handler_t widget_focus_handler;
 	window_data_handler_t data_handler;
 	window_drop_handler_t drop_handler;
 	window_close_handler_t close_handler;
 
-	struct wl_list item_list;
-	struct item *focus_item;
-	uint32_t item_grab_button;
+	struct wl_list widget_list;
+	struct widget *focus_widget;
+	uint32_t widget_grab_button;
 
 	struct window *menu;
 
@@ -149,7 +149,7 @@ struct window {
 	struct wl_list link;
 };
 
-struct item {
+struct widget {
 	struct wl_list link;
 	struct rectangle allocation;
 	void *user_data;
@@ -1032,71 +1032,71 @@ window_destroy(struct window *window)
 	free(window);
 }
 
-static struct item *
-window_find_item(struct window *window, int32_t x, int32_t y)
+static struct widget *
+window_find_widget(struct window *window, int32_t x, int32_t y)
 {
-	struct item *item;
+	struct widget *widget;
 
-	wl_list_for_each(item, &window->item_list, link) {
-		if (item->allocation.x <= x &&
-		    x < item->allocation.x + item->allocation.width &&
-		    item->allocation.y <= y &&
-		    y < item->allocation.y + item->allocation.height) {
-			return item;
+	wl_list_for_each(widget, &window->widget_list, link) {
+		if (widget->allocation.x <= x &&
+		    x < widget->allocation.x + widget->allocation.width &&
+		    widget->allocation.y <= y &&
+		    y < widget->allocation.y + widget->allocation.height) {
+			return widget;
 		}
 	}
 
 	return NULL;
 }
 
-struct item *
-window_add_item(struct window *window, void *data)
+struct widget *
+window_add_widget(struct window *window, void *data)
 {
-	struct item *item;
+	struct widget *widget;
 
-	item = malloc(sizeof *item);
-	memset(item, 0, sizeof *item);
-	item->user_data = data;
-	wl_list_insert(window->item_list.prev, &item->link);
+	widget = malloc(sizeof *widget);
+	memset(widget, 0, sizeof *widget);
+	widget->user_data = data;
+	wl_list_insert(window->widget_list.prev, &widget->link);
 
-	return item;
+	return widget;
 }
 
 void
-window_for_each_item(struct window *window, item_func_t func, void *data)
+window_for_each_widget(struct window *window, widget_func_t func, void *data)
 {
-	struct item *item;
+	struct widget *widget;
 
-	wl_list_for_each(item, &window->item_list, link)
-		func(item, data);
+	wl_list_for_each(widget, &window->widget_list, link)
+		func(widget, data);
 }
 
-struct item *
-window_get_focus_item(struct window *window)
+struct widget *
+window_get_focus_widget(struct window *window)
 {
-	return window->focus_item;
-}
-
-void
-item_get_allocation(struct item *item, struct rectangle *allocation)
-{
-	*allocation = item->allocation;
+	return window->focus_widget;
 }
 
 void
-item_set_allocation(struct item *item,
-		    int32_t x, int32_t y, int32_t width, int32_t height)
+widget_get_allocation(struct widget *widget, struct rectangle *allocation)
 {
-	item->allocation.x = x;
-	item->allocation.y = y;
-	item->allocation.width = width;
-	item->allocation.height = height;
+	*allocation = widget->allocation;
+}
+
+void
+widget_set_allocation(struct widget *widget,
+		      int32_t x, int32_t y, int32_t width, int32_t height)
+{
+	widget->allocation.x = x;
+	widget->allocation.y = y;
+	widget->allocation.width = width;
+	widget->allocation.height = height;
 }
 
 void *
-item_get_user_data(struct item *item)
+widget_get_user_data(struct widget *widget)
 {
-	return item->user_data;
+	return widget->user_data;
 }
 
 void
@@ -1223,17 +1223,17 @@ input_set_pointer_image(struct input *input, uint32_t time, int pointer)
 }
 
 static void
-window_set_focus_item(struct window *window, struct item *focus)
+window_set_focus_widget(struct window *window, struct widget *focus)
 {
 	void *data;
 
-	if (focus == window->focus_item)
+	if (focus == window->focus_widget)
 		return;
 
-	window->focus_item = focus;
+	window->focus_widget = focus;
 	data = focus ? focus->user_data : NULL;
-	if (window->item_focus_handler)
-		window->item_focus_handler(window, focus, data);
+	if (window->widget_focus_handler)
+		window->widget_focus_handler(window, focus, data);
 }
 
 static void
@@ -1243,7 +1243,7 @@ input_handle_motion(void *data, struct wl_input_device *input_device,
 {
 	struct input *input = data;
 	struct window *window = input->pointer_focus;
-	struct item *item;
+	struct widget *widget;
 	int pointer = POINTER_LEFT_PTR;
 
 	input->x = x;
@@ -1251,9 +1251,9 @@ input_handle_motion(void *data, struct wl_input_device *input_device,
 	input->sx = sx;
 	input->sy = sy;
 
-	if (!window->focus_item || !window->item_grab_button) {
-		item = window_find_item(window, sx, sy);
-		window_set_focus_item(window, item);
+	if (!window->focus_widget || !window->widget_grab_button) {
+		widget = window_find_widget(window, sx, sy);
+		window_set_focus_widget(window, widget);
 	}
 
 	if (window->motion_handler)
@@ -1294,15 +1294,15 @@ input_handle_button(void *data,
 {
 	struct input *input = data;
 	struct window *window = input->pointer_focus;
-	struct item *item;
+	struct widget *widget;
 	int location;
 	int32_t x, y;
 	static const char *entries[] = {
 		"Close", "Fullscreen", "Rotate", "Scale"
 	};
 
-	if (window->focus_item && window->item_grab_button == 0 && state)
-		window->item_grab_button = button;
+	if (window->focus_widget && window->widget_grab_button == 0 && state)
+		window->widget_grab_button = button;
 
 	location = get_pointer_location(window, input->sx, input->sy);
 
@@ -1365,11 +1365,11 @@ input_handle_button(void *data,
 						  window->user_data);
 	}
 
-	if (window->focus_item &&
-	    window->item_grab_button == button && !state) {
-		window->item_grab_button = 0;
-		item = window_find_item(window, input->sx, input->sy);
-		window_set_focus_item(window, item);
+	if (window->focus_widget &&
+	    window->widget_grab_button == button && !state) {
+		window->widget_grab_button = 0;
+		widget = window_find_widget(window, input->sx, input->sy);
+		window_set_focus_widget(window, widget);
 	}
 }
 
@@ -1411,7 +1411,7 @@ input_remove_pointer_focus(struct input *input, uint32_t time)
 	if (!window)
 		return;
 
-	window_set_focus_item(window, NULL);
+	window_set_focus_widget(window, NULL);
 
 	if (window->leave_handler)
 		window->leave_handler(window, input, time, window->user_data);
@@ -1427,7 +1427,7 @@ input_handle_pointer_focus(void *data,
 {
 	struct input *input = data;
 	struct window *window;
-	struct item *item;
+	struct widget *widget;
 	int pointer;
 
 	window = input->pointer_focus;
@@ -1449,8 +1449,8 @@ input_handle_pointer_focus(void *data,
 							time, sx, sy,
 							window->user_data);
 
-		item = window_find_item(window, x, y);
-		window_set_focus_item(window, item);
+		widget = window_find_widget(window, x, y);
+		window_set_focus_widget(window, widget);
 
 		pointer = input_get_pointer_image_for_location(input, pointer);
 		input_set_pointer_image(input, time, pointer);
@@ -2039,10 +2039,10 @@ window_set_keyboard_focus_handler(struct window *window,
 }
 
 void
-window_set_item_focus_handler(struct window *window,
-			      window_item_focus_handler_t handler)
+window_set_widget_focus_handler(struct window *window,
+				window_widget_focus_handler_t handler)
 {
-	window->item_focus_handler = handler;
+	window->widget_focus_handler = handler;
 }
 
 void
@@ -2128,7 +2128,7 @@ window_create_internal(struct display *display, struct window *parent,
 	window->margin = 16;
 	window->decoration = 1;
 	window->transparent = 1;
-	wl_list_init(&window->item_list);
+	wl_list_init(&window->widget_list);
 
 	if (display->dpy)
 #ifdef HAVE_CAIRO_EGL
@@ -2183,7 +2183,7 @@ window_create_transient(struct display *display, struct window *parent,
 }
 
 static int
-menu_set_item(struct window *window, struct menu *menu, int sy)
+menu_set_widget(struct window *window, struct menu *menu, int sy)
 {
 	int next;
 
@@ -2202,7 +2202,7 @@ menu_motion_handler(struct window *window,
 		    int32_t x, int32_t y,
 		    int32_t sx, int32_t sy, void *data)
 {
-	return menu_set_item(window, data, sy);
+	return menu_set_widget(window, data, sy);
 }
 
 static int
@@ -2210,14 +2210,14 @@ menu_enter_handler(struct window *window,
 		    struct input *input, uint32_t time,
 		    int32_t x, int32_t y, void *data)
 {
-	return menu_set_item(window, data, y);
+	return menu_set_widget(window, data, y);
 }
 
 static void
 menu_leave_handler(struct window *window,
 		   struct input *input, uint32_t time, void *data)
 {
-	menu_set_item(window, data, -200);
+	menu_set_widget(window, data, -200);
 }
 
 static void
