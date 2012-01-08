@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -90,8 +90,10 @@ class ExtensionWebstorePrivateApiTest : public ExtensionApiTest {
  public:
   void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     ExtensionApiTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitchASCII(switches::kAppsGalleryURL,
-        "http://www.example.com");
+    command_line->AppendSwitchASCII(
+        switches::kAppsGalleryURL, "http://www.example.com");
+    command_line->AppendSwitchASCII(
+        switches::kAppsGalleryInstallAutoConfirmForTests, "accept");
   }
 
   void SetUpInProcessBrowserTestFixture() OVERRIDE {
@@ -99,7 +101,6 @@ class ExtensionWebstorePrivateApiTest : public ExtensionApiTest {
     // API functions.
     host_resolver()->AddRule("www.example.com", "127.0.0.1");
     ASSERT_TRUE(test_server()->Start());
-    SetExtensionInstallDialogAutoConfirmForTests(true);
     ExtensionInstallUI::DisableFailureUIForTests();
   }
 
@@ -233,7 +234,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, InstallLocalized) {
 
 // Now test the case where the user cancels the confirmation dialog.
 IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, InstallCancelled) {
-  SetExtensionInstallDialogAutoConfirmForTests(false);
+  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kAppsGalleryInstallAutoConfirmForTests, "cancel");
   ASSERT_TRUE(RunInstallTest("cancelled.html", "extension.crx"));
 }
 
