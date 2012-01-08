@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -82,8 +82,7 @@ class WebstoreInlineInstallTest : public InProcessBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallTest, Install) {
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kAppsGalleryInstallAutoConfirmForTests, "accept");
+  SetExtensionInstallDialogAutoConfirmForTests(true);
 
   ui_test_utils::NavigateToURL(
       browser(), GenerateTestServerUrl(kAppDomain, "install.html"));
@@ -97,8 +96,7 @@ IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallTest, Install) {
 
 IN_PROC_BROWSER_TEST_F(
     WebstoreInlineInstallTest, InstallNotAllowedFromNonVerifiedDomains) {
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kAppsGalleryInstallAutoConfirmForTests, "cancel");
+  SetExtensionInstallDialogAutoConfirmForTests(false);
   ui_test_utils::NavigateToURL(
       browser(),
       GenerateTestServerUrl(kNonAppDomain, "install_non_verified_domain.html"));
@@ -115,8 +113,7 @@ IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallTest, FindLink) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallTest, ArgumentValidation) {
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kAppsGalleryInstallAutoConfirmForTests, "cancel");
+  SetExtensionInstallDialogAutoConfirmForTests(false);
   ui_test_utils::NavigateToURL(
       browser(), GenerateTestServerUrl(kAppDomain, "argument_validation.html"));
 
@@ -124,8 +121,7 @@ IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallTest, ArgumentValidation) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallTest, InstallNotSupported) {
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kAppsGalleryInstallAutoConfirmForTests, "cancel");
+  SetExtensionInstallDialogAutoConfirmForTests(false);
   ui_test_utils::NavigateToURL(
       browser(),
       GenerateTestServerUrl(kAppDomain, "install_not_supported.html"));
@@ -162,8 +158,7 @@ class WebstoreInlineInstallUnpackFailureTest
 };
 
 IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallUnpackFailureTest, Test) {
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kAppsGalleryInstallAutoConfirmForTests, "accept");
+  SetExtensionInstallDialogAutoConfirmForTests(true);
 
   ui_test_utils::NavigateToURL(browser(),
       GenerateTestServerUrl(kAppDomain, "install_unpack_failure.html"));

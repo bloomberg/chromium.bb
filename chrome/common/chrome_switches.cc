@@ -61,13 +61,13 @@ const char kAllowWebUICompositing[]         = "allow-webui-compositing";
 // but less commonly used plug-ins.
 const char kAlwaysAuthorizePlugins[]        = "always-authorize-plugins";
 
-// Specifies that the extension-app with the specified id should be launched
-// according to its configuration.
-const char kAppId[]                         = "app-id";
-
 // Specifies that the associated value should be launched in "application"
 // mode.
 const char kApp[]                           = "app";
+
+// Specifies that the extension-app with the specified id should be launched
+// according to its configuration.
+const char kAppId[]                         = "app-id";
 
 // A URL for the server which assigns channel ids for server pushed app
 // notifications.
@@ -77,23 +77,16 @@ const char kAppNotifyChannelServerURL[] = "app-notify-channel-server-url";
 // some private APIs.
 const char kAppsCheckoutURL[]               = "apps-checkout-url";
 
-// The URL that the webstore APIs download extensions from.
-// Note: the URL must contain one '%s' for the extension ID.
-const char kAppsGalleryDownloadURL[]        = "apps-gallery-download-url";
-
-// A setting to cause extension/app installs from the webstore skip the normal
-// confirmation dialog. A value of 'accept' means to always act as if the dialog
-// was accepted, and 'cancel' means to always act as if the dialog was
-// cancelled.
-const char kAppsGalleryInstallAutoConfirmForTests[] =
-    "apps-gallery-install-auto-confirm-for-tests";
-
 // Allows the webstorePrivate APIs to return browser (aka sync) login tokens to
 // be used for auto-login in the Web Store (normally they do not).
 const char kAppsGalleryReturnTokens[]       = "apps-gallery-return-tokens";
 
 // The URL to use for the gallery link in the app launcher.
 const char kAppsGalleryURL[]                = "apps-gallery-url";
+
+// The URL that the webstore APIs download extensions from.
+// Note: the URL must contain one '%s' for the extension ID.
+const char kAppsGalleryDownloadURL[]        = "apps-gallery-download-url";
 
 // The update url used by gallery/webstore extensions.
 const char kAppsGalleryUpdateURL[]          = "apps-gallery-update-url";
