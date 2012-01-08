@@ -5,7 +5,7 @@ vars = {
   "sourceforge_url": "http://%(repo)s.svn.sourceforge.net/svnroot/%(repo)s",
   "webkit_trunk": "http://svn.webkit.org/repository/webkit/trunk",
   "nacl_trunk": "http://src.chromium.org/native_client/trunk",
-  "webkit_revision": "104390",
+  "webkit_revision": "104394",
   "chromium_git": "http://git.chromium.org/git",
   "swig_revision": "69281",
   "nacl_revision": "7519",
