@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,8 +33,6 @@ class ExtensionProcessManager : public content::NotificationObserver {
   static ExtensionProcessManager* Create(Profile* profile);
   virtual ~ExtensionProcessManager();
 
-  ExtensionHost* CreateShellHost(const Extension* extension, const GURL& url);
-
   // Creates a new ExtensionHost with its associated view, grouping it in the
   // appropriate SiteInstance (and therefore process) based on the URL and
   // profile.
@@ -55,8 +53,6 @@ class ExtensionProcessManager : public content::NotificationObserver {
                                    Browser* browser);
   ExtensionHost* CreateInfobarHost(const GURL& url,
                                    Browser* browser);
-
-  ExtensionHost* CreateShellHost(const GURL& url, Browser* browser);
 
   // Open the extension's options page.
   void OpenOptionsPage(const Extension* extension, Browser* browser);

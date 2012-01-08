@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -1116,7 +1116,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, OpenAppWindowLikeNtp) {
 IN_PROC_BROWSER_TEST_F(BrowserTest, StartMaximized) {
   // Can't test TYPE_PANEL as they are currently created differently (and can't
   // end up maximized).
-  Browser::Type types[] = { Browser::TYPE_TABBED, Browser::TYPE_POPUP };
+  Browser::Type types[] =
+      { Browser::TYPE_TABBED, Browser::TYPE_POPUP, Browser::TYPE_SHELL };
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(types); ++i) {
     Browser* max_browser = new Browser(types[i], browser()->profile());
     max_browser->set_show_state(ui::SHOW_STATE_MAXIMIZED);
@@ -1136,7 +1137,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, StartMaximized) {
 IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_StartMinimized) {
   // Can't test TYPE_PANEL as they are currently created differently (and can't
   // end up minimized).
-  Browser::Type types[] = { Browser::TYPE_TABBED, Browser::TYPE_POPUP };
+  Browser::Type types[] =
+      { Browser::TYPE_TABBED, Browser::TYPE_POPUP, Browser::TYPE_SHELL };
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(types); ++i) {
     Browser* min_browser = new Browser(types[i], browser()->profile());
     min_browser->set_show_state(ui::SHOW_STATE_MINIMIZED);

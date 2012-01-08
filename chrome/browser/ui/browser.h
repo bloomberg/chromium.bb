@@ -102,7 +102,8 @@ class Browser : public TabHandlerDelegate,
     // BrowserTest.StartMaximized.
     TYPE_TABBED = 1,
     TYPE_POPUP = 2,
-    TYPE_PANEL = 3
+    TYPE_PANEL = 3,
+    TYPE_SHELL = 4
   };
 
   // Possible elements of the Browser window.
@@ -850,6 +851,7 @@ class Browser : public TabHandlerDelegate,
   bool is_type_tabbed() const { return type_ == TYPE_TABBED; }
   bool is_type_popup() const { return type_ == TYPE_POPUP; }
   bool is_type_panel() const { return type_ == TYPE_PANEL; }
+  bool is_type_shell() const { return type_ == TYPE_SHELL; }
 
   bool is_app() const;
   bool is_devtools() const;
