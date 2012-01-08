@@ -12,19 +12,20 @@
 #include "base/memory/ref_counted.h"
 #include "base/string16.h"
 #include "content/public/browser/browser_thread.h"
+#include "chrome/browser/extensions/extension_creator.h"
 
 
 // Manages packing an extension on the file thread and reporting the result
 // back to the UI.
 class PackExtensionJob : public base::RefCountedThreadSafe<PackExtensionJob> {
  public:
-
   // Interface for people who want to use PackExtensionJob to implement.
   class Client {
    public:
     virtual void OnPackSuccess(const FilePath& crx_file,
                                const FilePath& key_file) = 0;
-    virtual void OnPackFailure(const std::string& message) = 0;
+    virtual void OnPackFailure(const std::string& message,
+                               ExtensionCreator::ErrorType error_type) = 0;
 
    protected:
     virtual ~Client() {}
@@ -32,7 +33,8 @@ class PackExtensionJob : public base::RefCountedThreadSafe<PackExtensionJob> {
 
   PackExtensionJob(Client* client,
                    const FilePath& root_directory,
-                   const FilePath& key_file);
+                   const FilePath& key_file,
+                   int run_flags);
 
   // Starts the packing job.
   void Start();
@@ -55,7 +57,8 @@ class PackExtensionJob : public base::RefCountedThreadSafe<PackExtensionJob> {
   // If |asynchronous_| is false, this is run on whichever thread calls it.
   void Run();
   void ReportSuccessOnClientThread();
-  void ReportFailureOnClientThread(const std::string& error);
+  void ReportFailureOnClientThread(const std::string& error,
+                                   ExtensionCreator::ErrorType error_type);
 
   content::BrowserThread::ID client_thread_id_;
   Client* client_;
@@ -64,6 +67,7 @@ class PackExtensionJob : public base::RefCountedThreadSafe<PackExtensionJob> {
   FilePath crx_file_out_;
   FilePath key_file_out_;
   bool asynchronous_;
+  int run_flags_;  // Bitset of ExtensionCreator::RunFlags values
 
   DISALLOW_COPY_AND_ASSIGN(PackExtensionJob);
 };

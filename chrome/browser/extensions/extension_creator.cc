@@ -27,10 +27,15 @@ namespace {
   const int kRSAKeySize = 1024;
 };
 
+ExtensionCreator::ExtensionCreator() : error_type_(kOtherError) {
+}
+
 bool ExtensionCreator::InitializeInput(
     const FilePath& extension_dir,
+    const FilePath& crx_path,
     const FilePath& private_key_path,
-    const FilePath& private_key_output_path) {
+    const FilePath& private_key_output_path,
+    int run_flags) {
   // Validate input |extension_dir|.
   if (extension_dir.value().empty() ||
       !file_util::DirectoryExists(extension_dir)) {
@@ -62,6 +67,15 @@ bool ExtensionCreator::InitializeInput(
       error_message_ =
           l10n_util::GetStringUTF8(IDS_EXTENSION_PRIVATE_KEY_EXISTS);
       return false;
+  }
+
+  // Check whether crx file already exists. Should be last check, as this is
+  // a warning only.
+  if (!(run_flags & kOverwriteCRX) && file_util::PathExists(crx_path)) {
+    error_message_ = l10n_util::GetStringUTF8(IDS_EXTENSION_CRX_EXISTS);
+    error_type_ = kCRXExists;
+
+    return false;
   }
 
   // Load the extension once. We don't really need it, but this does a lot of
@@ -248,10 +262,11 @@ bool ExtensionCreator::WriteCRX(const FilePath& zip_path,
 bool ExtensionCreator::Run(const FilePath& extension_dir,
                            const FilePath& crx_path,
                            const FilePath& private_key_path,
-                           const FilePath& output_private_key_path) {
+                           const FilePath& output_private_key_path,
+                           int run_flags) {
   // Check input diretory and read manifest.
-  if (!InitializeInput(extension_dir, private_key_path,
-                       output_private_key_path)) {
+  if (!InitializeInput(extension_dir, crx_path, private_key_path,
+                       output_private_key_path, run_flags)) {
     return false;
   }
 

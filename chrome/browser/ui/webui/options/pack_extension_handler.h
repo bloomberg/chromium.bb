@@ -31,7 +31,8 @@ class PackExtensionHandler : public OptionsPageUIHandler,
   virtual void OnPackSuccess(const FilePath& crx_file,
                              const FilePath& key_file) OVERRIDE;
 
-  virtual void OnPackFailure(const std::string& error) OVERRIDE;
+  virtual void OnPackFailure(const std::string& error,
+                             ExtensionCreator::ErrorType) OVERRIDE;
 
  private:
   // Javascript callback to start packing an extension.
@@ -42,6 +43,12 @@ class PackExtensionHandler : public OptionsPageUIHandler,
 
   // Used to package the extension.
   scoped_refptr<PackExtensionJob> pack_job_;
+
+  // Path to root directory of extension
+  std::string extension_path_;
+
+  // Path to private key file, or null if none specified
+  std::string private_key_path_;
 
   DISALLOW_COPY_AND_ASSIGN(PackExtensionHandler);
 };

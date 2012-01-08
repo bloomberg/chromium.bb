@@ -190,7 +190,8 @@ FilePath ExtensionBrowserTest::PackExtensionWithOptions(
   if (!creator->Run(dir_path,
                     crx_path,
                     pem_path,
-                    pem_out_path)) {
+                    pem_out_path,
+                    ExtensionCreator::kOverwriteCRX)) {
     ADD_FAILURE() << "ExtensionCreator::Run() failed: "
                   << creator->error_message();
     return FilePath();
