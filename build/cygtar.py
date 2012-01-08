@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -11,6 +11,7 @@ import shutil
 import subprocess
 import sys
 import tarfile
+import zlib
 
 """A Cygwin aware version compress/extract object.
 
@@ -119,17 +120,20 @@ def CreateWin32Hardlink(filepath, targpath, try_mklink):
         shutil.copyfile(targpath, filepath)
         return False
       except EnvironmentError:
-        print 'Try %d: Failed hardlink %s -> %s\n' % (cnt, filepath, target)
+        print 'Try %d: Failed hardlink %s -> %s\n' % (cnt, filepath, targpath)
     print 'Giving up.'
   return try_mklink
 
 
 def ComputeFileHash(filepath):
-  """Generate a sha1 hash for the file at the given path."""
-  hashval = hashlib.sha1()
-  fileobj = open(filepath, 'rb')
-  hashval.update(fileobj.read())
-  return hashval.hexdigest()
+  """Generate a hash for the file at the given path."""
+  md5orig = hashlib.md5()
+  md5zlib = hashlib.md5()
+  data = open(filepath, 'rb').read()
+  comp = zlib.compress(data, 5)
+  md5orig.update(data)
+  md5zlib.update(comp)
+  return "%s::%s::%s" % (md5orig.hexdigest(), len(comp), md5zlib.hexdigest())
 
 
 def ReadableSizeOf(num):
@@ -231,18 +235,20 @@ class CygTar(object):
     # we get a bucket collision for the first time..
     if not nodelist:
       self.size_map[tarinfo.size] = [(tarinfo.name, None)]
-      self.__AddFile(tarinfo)
+      fp = open(tarinfo.name, 'rb')
+      self.__AddFile(tarinfo, fp)
+      fp.close()
       return True
 
     # If the size collides with anything, we'll need to check hashes.  We assume
-    # no hash collisions for SHA1 on a given bucket, since the number of files
-    # in a bucket over possible SHA1 values is near zero.
+    # no hash collisions for MD5 on a given bucket, since the number of files
+    # in a bucket over possible MD5 values is near zero.
     newhash = ComputeFileHash(tarinfo.name)
     for (oldname, oldhash) in nodelist:
       # if this is the first collision, we may need to compute the hash
       # for this first node.
       if oldhash is None:
-        oldhash = ComputeFileHash(tarinfo.name)
+        oldhash = ComputeFileHash(oldname)
 
       if oldhash == newhash:
         self.__AddLink(tarinfo, tarfile.LNKTYPE, oldname)
@@ -250,9 +256,10 @@ class CygTar(object):
 
     # Otherwise, we missed, so add it to the bucket for this size
     self.size_map[tarinfo.size].append((tarinfo.name, newhash))
-    self.__AddFile(tarinfo, open(tarinfo.name, 'rb'))
+    fp = open(tarinfo.name, 'rb')
+    self.__AddFile(tarinfo, fp)
+    fp.close()
     return True
-
 
   def Extract(self):
     """Extract the tarfile to the current directory."""
@@ -336,6 +343,7 @@ def Main(args):
     for filepath in args:
       if not tar.Add(filepath):
         return -1
+      tar.Close()
     return 0
 
   parser.error('Missing action c, t, or x.')
