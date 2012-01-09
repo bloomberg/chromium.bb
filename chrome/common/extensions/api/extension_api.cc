@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -76,7 +76,6 @@ ExtensionAPI::ExtensionAPI() {
     IDR_EXTENSION_API_JSON_EXPERIMENTAL_PRIVACY,
     IDR_EXTENSION_API_JSON_EXPERIMENTAL_PROCESSES,
     IDR_EXTENSION_API_JSON_EXPERIMENTAL_RLZ,
-    IDR_EXTENSION_API_JSON_EXPERIMENTAL_SIDEBAR,
     IDR_EXTENSION_API_JSON_EXPERIMENTAL_SOCKET,
     IDR_EXTENSION_API_JSON_EXPERIMENTAL_SPEECHINPUT,
     IDR_EXTENSION_API_JSON_EXPERIMENTAL_STORAGE,

@@ -31,7 +31,6 @@
       <include name="IDR_EXTENSION_API_JSON_EXPERIMENTAL_PRIVACY" file="extensions\api\experimental.privacy.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_EXPERIMENTAL_PROCESSES" file="extensions\api\experimental.processes.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_EXPERIMENTAL_RLZ" file="extensions\api\experimental.rlz.json" type="BINDATA" />
-      <include name="IDR_EXTENSION_API_JSON_EXPERIMENTAL_SIDEBAR" file="extensions\api\experimental.sidebar.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_EXPERIMENTAL_SOCKET" file="extensions\api\experimental.socket.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_EXPERIMENTAL_SPEECHINPUT" file="extensions\api\experimental.speechInput.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_EXPERIMENTAL_STORAGE" file="extensions\api\experimental.storage.json" type="BINDATA" />

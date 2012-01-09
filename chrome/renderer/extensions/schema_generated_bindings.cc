@@ -649,9 +649,9 @@ class ExtensionImpl : public ChromeV8Extension {
     return true;
   }
 
-  // A special request for setting the extension action icon and the sidebar
-  // mini tab icon. This function accepts a canvas ImageData object, so it needs
-  // to do extra processing before sending the request to the browser.
+  // A special request for setting the extension action icon. This function
+  // accepts a canvas ImageData object, so it needs to do extra processing
+  // before sending the request to the browser.
   static v8::Handle<v8::Value> SetIconCommon(
       const v8::Arguments& args) {
     Value* bitmap_value = NULL;

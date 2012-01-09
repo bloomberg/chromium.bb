@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,8 +14,6 @@
 #include "chrome/browser/download/download_shelf.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sidebar/sidebar_container.h"
-#include "chrome/browser/sidebar/sidebar_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #import "chrome/browser/ui/cocoa/browser/avatar_button_controller.h"
@@ -78,9 +76,6 @@ BrowserWindowCocoa::BrowserWindowCocoa(Browser* browser,
   : browser_(browser),
     controller_(controller),
     confirm_close_factory_(browser) {
-  registrar_.Add(
-      this, chrome::NOTIFICATION_SIDEBAR_CHANGED,
-      content::Source<SidebarManager>(SidebarManager::GetInstance()));
 
   pref_change_registrar_.Init(browser_->profile()->GetPrefs());
   pref_change_registrar_.Add(prefs::kShowBookmarkBar, this);
@@ -587,10 +582,6 @@ void BrowserWindowCocoa::Observe(int type,
       [controller_ updateBookmarkBarVisibilityWithAnimation:YES];
       break;
     }
-    case chrome::NOTIFICATION_SIDEBAR_CHANGED:
-      UpdateSidebarForContents(
-          content::Details<SidebarContainer>(details)->tab_contents());
-      break;
     default:
       NOTREACHED();  // we don't ask for anything else!
       break;
@@ -606,12 +597,6 @@ void BrowserWindowCocoa::DestroyBrowser() {
 
 NSWindow* BrowserWindowCocoa::window() const {
   return [controller_ window];
-}
-
-void BrowserWindowCocoa::UpdateSidebarForContents(TabContents* tab_contents) {
-  if (tab_contents == browser_->GetSelectedWebContents()) {
-    [controller_ updateSidebarForContents:tab_contents];
-  }
 }
 
 void BrowserWindowCocoa::ShowAvatarBubble(WebContents* web_contents,

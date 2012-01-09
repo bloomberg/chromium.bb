@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -398,9 +398,6 @@ class BrowserWindowTesting {
 
   // Returns the TabContentsContainer.
   virtual views::View* GetTabContentsContainerView() const = 0;
-
-  // Returns the TabContentsContainer.
-  virtual views::View* GetSidebarContainerView() const = 0;
 
   // Returns the ToolbarView.
   virtual ToolbarView* GetToolbarView() const = 0;

@@ -30,7 +30,6 @@
 
 class ExtensionAction;
 class ExtensionResource;
-class ExtensionSidebarDefaults;
 class FileBrowserHandler;
 class SkBitmap;
 class Version;
@@ -232,7 +231,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // Max size (both dimensions) for browser and page actions.
   static const int kPageActionIconMaxSize;
   static const int kBrowserActionIconMaxSize;
-  static const int kSidebarIconMaxSize;
 
   // Valid schemes for web extent URLPatterns.
   static const int kValidWebExtentSchemes;
@@ -518,9 +516,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   const UserScriptList& content_scripts() const { return content_scripts_; }
   ExtensionAction* page_action() const { return page_action_.get(); }
   ExtensionAction* browser_action() const { return browser_action_.get(); }
-  ExtensionSidebarDefaults* sidebar_defaults() const {
-    return sidebar_defaults_.get();
-  }
   const FileBrowserHandlerList* file_browser_handlers() const {
     return file_browser_handlers_.get();
   }
@@ -685,11 +680,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   FileBrowserHandler* LoadFileBrowserHandler(
       const base::DictionaryValue* file_browser_handlers, string16* error);
 
-  // Helper method to load an ExtensionSidebarDefaults from the sidebar manifest
-  // entry.
-  ExtensionSidebarDefaults* LoadExtensionSidebarDefaults(
-      const base::DictionaryValue* sidebar, string16* error);
-
   // Returns true if the extension has more than one "UI surface". For example,
   // an extension that has a browser action and a page action.
   bool HasMultipleUISurfaces() const;
@@ -789,9 +779,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
 
   // The extension's file browser actions, if any.
   scoped_ptr<FileBrowserHandlerList> file_browser_handlers_;
-
-  // The extension's sidebar, if any.
-  scoped_ptr<ExtensionSidebarDefaults> sidebar_defaults_;
 
   // Optional list of NPAPI plugins and associated properties.
   std::vector<PluginInfo> plugins_;

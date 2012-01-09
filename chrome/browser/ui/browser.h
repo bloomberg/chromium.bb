@@ -114,8 +114,7 @@ class Browser : public TabHandlerDelegate,
     FEATURE_LOCATIONBAR = 8,
     FEATURE_BOOKMARKBAR = 16,
     FEATURE_INFOBAR = 32,
-    FEATURE_SIDEBAR = 64,
-    FEATURE_DOWNLOADSHELF = 128
+    FEATURE_DOWNLOADSHELF = 64
   };
 
   // The context for a download blocked notification from

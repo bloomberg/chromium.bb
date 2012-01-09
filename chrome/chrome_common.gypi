@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -136,9 +136,6 @@
         'common/extensions/extension_resource.h',
         'common/extensions/extension_set.cc',
         'common/extensions/extension_set.h',
-        'common/extensions/extension_sidebar_defaults.h',
-        'common/extensions/extension_sidebar_utils.cc',
-        'common/extensions/extension_sidebar_utils.h',
         'common/extensions/extension_unpacker.cc',
         'common/extensions/extension_unpacker.h',
         'common/extensions/file_browser_handler.cc',

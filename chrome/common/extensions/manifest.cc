@@ -71,7 +71,6 @@ struct Restrictions {
     map[keys::kContentScripts] = ext_and_packaged;
     map[keys::kOmnibox] = ext_and_packaged;
     map[keys::kDevToolsPage] = ext_and_packaged;
-    map[keys::kSidebar] = ext_and_packaged;
     map[keys::kHomepageURL] = ext_and_packaged;
     map[keys::kChromeURLOverrides] = ext_and_packaged;
     map[keys::kInputComponents] = ext_and_packaged;

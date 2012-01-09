@@ -1463,7 +1463,7 @@ bool Browser::SupportsWindowFeatureImpl(WindowFeature feature,
       window_->IsFullscreen();
 #endif
 
-  unsigned int features = FEATURE_INFOBAR | FEATURE_SIDEBAR;
+  unsigned int features = FEATURE_INFOBAR;
 
 #if !defined(OS_CHROMEOS) || defined(USE_AURA)
   // Chrome OS opens a FileBrowse pop up instead of using download shelf.
@@ -2350,7 +2350,6 @@ void Browser::SetNewHomePagePrefs(PrefService* prefs) {
 // static
 void Browser::RegisterPrefs(PrefService* prefs) {
   prefs->RegisterIntegerPref(prefs::kOptionsWindowLastTabIndex, 0);
-  prefs->RegisterIntegerPref(prefs::kExtensionSidebarWidth, -1);
   prefs->RegisterBooleanPref(prefs::kAllowFileSelectionDialogs, true);
   prefs->RegisterBooleanPref(prefs::kShouldShowFirstRunBubble, false);
 }

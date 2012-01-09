@@ -2597,7 +2597,6 @@
         'browser/extensions/extension_processes_apitest.cc',
         'browser/extensions/extension_proxy_apitest.cc',
         'browser/extensions/extension_resource_request_policy_apitest.cc',
-        'browser/extensions/extension_sidebar_apitest.cc',
         'browser/extensions/extension_startup_browsertest.cc',
         'browser/extensions/extension_storage_apitest.cc',
         'browser/extensions/extension_tabs_apitest.cc',
@@ -2923,8 +2922,6 @@
             '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources_standard/ui_resources_standard.rc',
             '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_chromium_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_resources.rc',
-            # TODO(alekseys): port sidebar to linux/mac.
-            'browser/sidebar/sidebar_browsertest.cc',
           ],
           'include_dirs': [
             '<(DEPTH)/third_party/wtl/include',

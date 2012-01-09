@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -71,7 +71,6 @@ class BrowserProcessImpl : public BrowserProcess,
   virtual WatchDogThread* watchdog_thread() OVERRIDE;
   virtual ProfileManager* profile_manager() OVERRIDE;
   virtual PrefService* local_state() OVERRIDE;
-  virtual SidebarManager* sidebar_manager() OVERRIDE;
   virtual ui::Clipboard* clipboard() OVERRIDE;
   virtual net::URLRequestContextGetter* system_request_context() OVERRIDE;
 #if defined(OS_CHROMEOS)
@@ -144,7 +143,6 @@ class BrowserProcessImpl : public BrowserProcess,
   void CreateLocalState();
   void CreateViewedPageTracker();
   void CreateIconManager();
-  void CreateSidebarManager();
   void CreateGoogleURLTracker();
   void CreateIntranetRedirectDetector();
   void CreateNotificationUIManager();
@@ -185,9 +183,6 @@ class BrowserProcessImpl : public BrowserProcess,
       extension_event_router_forwarder_;
 
   scoped_ptr<RemoteDebuggingServer> remote_debugging_server_;
-
-  bool created_sidebar_manager_;
-  scoped_refptr<SidebarManager> sidebar_manager_;
 
   bool created_browser_policy_connector_;
   scoped_ptr<policy::BrowserPolicyConnector> browser_policy_connector_;

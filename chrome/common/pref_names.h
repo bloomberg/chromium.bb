@@ -469,8 +469,6 @@ extern const char kExtensionInstallForceList[];
 
 extern const char kExtensionBlacklistUpdateVersion[];
 
-extern const char kExtensionSidebarWidth[];
-
 extern const char kNTPTipsResourceServer[];
 
 extern const char kNTP4IntroDisplayCount[];

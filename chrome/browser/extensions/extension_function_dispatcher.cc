@@ -41,7 +41,6 @@
 #include "chrome/browser/extensions/extension_processes_api.h"
 #include "chrome/browser/extensions/extension_proxy_api.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_sidebar_api.h"
 #include "chrome/browser/extensions/extension_tabs_module.h"
 #include "chrome/browser/extensions/extension_test_api.h"
 #include "chrome/browser/extensions/extension_tts_api.h"
@@ -304,17 +303,6 @@ void FactoryRegistry::ResetFunctions() {
   // Omnibox.
   RegisterFunction<OmniboxSendSuggestionsFunction>();
   RegisterFunction<OmniboxSetDefaultSuggestionFunction>();
-
-  // Sidebar.
-  RegisterFunction<CollapseSidebarFunction>();
-  RegisterFunction<ExpandSidebarFunction>();
-  RegisterFunction<GetStateSidebarFunction>();
-  RegisterFunction<HideSidebarFunction>();
-  RegisterFunction<NavigateSidebarFunction>();
-  RegisterFunction<SetBadgeTextSidebarFunction>();
-  RegisterFunction<SetIconSidebarFunction>();
-  RegisterFunction<SetTitleSidebarFunction>();
-  RegisterFunction<ShowSidebarFunction>();
 
   // Speech input.
   RegisterFunction<StartSpeechInputFunction>();

@@ -1298,8 +1298,6 @@ const char kNextExtensionsUpdateCheck[] = "extensions.autoupdate.next_check";
 const char kExtensionBlacklistUpdateVersion[] =
     "extensions.blacklistupdate.version";
 
-const char kExtensionSidebarWidth[] = "extensions.sidebar.width";
-
 // Number of times the NTP4 informational bubble has been shown.
 const char kNTP4IntroDisplayCount[] = "ntp.intro_display_count";
 

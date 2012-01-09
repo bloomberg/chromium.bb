@@ -1021,14 +1021,6 @@ var chrome = chrome || {};
           details, this.name, this.definition.parameters, "page action");
     });
 
-    apiFunctions.setHandleRequest("experimental.sidebar.setIcon",
-        function(details) {
-      var SIDEBAR_ICON_SIZE = 16;
-      setIconCommon(
-          details, this.name, this.definition.parameters, "sidebar",
-          SIDEBAR_ICON_SIZE);
-    });
-
     apiFunctions.setHandleRequest("contextMenus.create",
         function() {
       var args = arguments;

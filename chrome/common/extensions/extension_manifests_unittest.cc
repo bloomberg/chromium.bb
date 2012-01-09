@@ -25,7 +25,6 @@
 #include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_error_utils.h"
-#include "chrome/common/extensions/extension_sidebar_defaults.h"
 #include "chrome/common/extensions/file_browser_handler.h"
 #include "chrome/common/extensions/url_pattern.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -544,37 +543,6 @@ TEST_F(ExtensionManifestTest, DevToolsExtensions) {
   EXPECT_EQ(extension->url().spec() + "devtools.html",
             extension->devtools_url().spec());
   EXPECT_TRUE(extension->HasEffectiveAccessToAllHosts());
-}
-
-TEST_F(ExtensionManifestTest, Sidebar) {
-  LoadAndExpectError("sidebar.json",
-      errors::kExperimentalFlagRequired);
-
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableExperimentalExtensionApis);
-
-  LoadAndExpectError("sidebar_no_permissions.json",
-      errors::kSidebarExperimental);
-
-  LoadAndExpectError("sidebar_icon_empty.json",
-      errors::kInvalidSidebarDefaultIconPath);
-  LoadAndExpectError("sidebar_icon_invalid_type.json",
-      errors::kInvalidSidebarDefaultIconPath);
-  LoadAndExpectError("sidebar_page_empty.json",
-      errors::kInvalidSidebarDefaultPage);
-  LoadAndExpectError("sidebar_page_invalid_type.json",
-      errors::kInvalidSidebarDefaultPage);
-  LoadAndExpectError("sidebar_title_invalid_type.json",
-      errors::kInvalidSidebarDefaultTitle);
-
-  scoped_refptr<Extension> extension(LoadAndExpectSuccess("sidebar.json"));
-  ASSERT_TRUE(extension->sidebar_defaults() != NULL);
-  EXPECT_EQ(extension->sidebar_defaults()->default_title(),
-            ASCIIToUTF16("Default title"));
-  EXPECT_EQ(extension->sidebar_defaults()->default_icon_path(),
-            "icon.png");
-  EXPECT_EQ(extension->url().spec() + "sidebar.html",
-            extension->sidebar_defaults()->default_page().spec());
 }
 
 TEST_F(ExtensionManifestTest, BackgroundPermission) {

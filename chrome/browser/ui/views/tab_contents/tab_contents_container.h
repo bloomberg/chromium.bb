@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -41,7 +41,7 @@ class TabContentsContainer : public views::View,
   void SetFastResize(bool fast_resize);
 
   // Updates the current reserved rect in view coordinates where contents
-  // should not be rendered to draw the resize corner, sidebar mini tabs etc.
+  // should not be rendered to draw the resize corner, etc.
   void SetReservedContentsRect(const gfx::Rect& reserved_rect);
 
   // Overridden from content::NotificationObserver:
@@ -90,7 +90,7 @@ class TabContentsContainer : public views::View,
   content::NotificationRegistrar registrar_;
 
   // The current reserved rect in view coordinates where contents should not be
-  // rendered to draw the resize corner, sidebar mini tabs etc.
+  // rendered to draw the resize corner, etc.
   // Cached here to update ever changing renderers.
   gfx::Rect cached_reserved_rect_;
 

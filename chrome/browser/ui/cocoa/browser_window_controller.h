@@ -42,7 +42,6 @@ class ConstrainedWindowMac;
 class LocationBarViewMac;
 @class PresentationModeController;
 @class PreviewableContentsController;
-@class SidebarController;
 class StatusBubbleMac;
 class TabContents;
 @class TabStripController;
@@ -75,7 +74,6 @@ class WebContents;
   scoped_nsobject<DownloadShelfController> downloadShelfController_;
   scoped_nsobject<BookmarkBarController> bookmarkBarController_;
   scoped_nsobject<DevToolsController> devToolsController_;
-  scoped_nsobject<SidebarController> sidebarController_;
   scoped_nsobject<PreviewableContentsController> previewableContentsController_;
   scoped_nsobject<PresentationModeController> presentationModeController_;
   scoped_nsobject<FullscreenExitBubbleController>
@@ -297,10 +295,6 @@ class WebContents;
 
 // Specifies whether devtools should dock to right.
 - (void)setDevToolsDockToRight:(bool)dock_to_right;
-
-// Displays the active sidebar linked to the |contents| or hides sidebar UI,
-// if there's no such sidebar.
-- (void)updateSidebarForContents:(TabContents*)contents;
 
 // Gets the current theme provider.
 - (ui::ThemeProvider*)themeProvider;

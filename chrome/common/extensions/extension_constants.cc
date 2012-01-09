@@ -86,10 +86,6 @@ const char kRequirements[] = "requirements";
 const char kRunAt[] = "run_at";
 const char kShiftKey[] = "shiftKey";
 const char kShortcutKey[] = "shortcutKey";
-const char kSidebar[] = "sidebar";
-const char kSidebarDefaultIcon[] = "default_icon";
-const char kSidebarDefaultPage[] = "default_page";
-const char kSidebarDefaultTitle[] = "default_title";
 const char kSignature[] = "signature";
 const char kTheme[] = "theme";
 const char kThemeColors[] = "colors";
@@ -345,14 +341,6 @@ const char kInvalidRequirements[] =
     "Invalid value for 'requirements'";
 const char kInvalidRunAt[] =
     "Invalid value for 'content_scripts[*].run_at'.";
-const char kInvalidSidebar[] =
-    "Invalid value for 'sidebar'.";
-const char kInvalidSidebarDefaultIconPath[] =
-    "Invalid value for 'sidebar.default_icon'.";
-const char kInvalidSidebarDefaultPage[] =
-    "Invalid value for 'sidebar.default_page'.";
-const char kInvalidSidebarDefaultTitle[] =
-    "Invalid value for 'sidebar.default_title'.";
 const char kInvalidSignature[] =
     "Value 'signature' is missing or invalid.";
 const char kInvalidTheme[] =
@@ -427,9 +415,6 @@ const char kPermissionNotAllowed[] =
     "Access to permission '*' denied.";
 const char kReservedMessageFound[] =
     "Reserved key * found in message catalog.";
-const char kSidebarExperimental[] =
-    "You must request the 'experimental' permission in order to use the"
-    " Sidebar API.";
 #if defined(OS_CHROMEOS)
 const char kIllegalPlugins[] =
     "Extensions cannot install plugins on Chrome OS";

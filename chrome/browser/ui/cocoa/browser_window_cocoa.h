@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -146,7 +146,6 @@ class BrowserWindowCocoa : public BrowserWindow,
 
  private:
   NSWindow* window() const;  // Accessor for the (current) |NSWindow|.
-  void UpdateSidebarForContents(TabContents* tab_contents);
 
   content::NotificationRegistrar registrar_;
   PrefChangeRegistrar pref_change_registrar_;

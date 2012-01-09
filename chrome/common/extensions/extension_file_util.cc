@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,7 +24,6 @@
 #include "chrome/common/extensions/extension_message_bundle.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/extension_resource.h"
-#include "chrome/common/extensions/extension_sidebar_defaults.h"
 #include "grit/generated_resources.h"
 #include "net/base/escape.h"
 #include "net/base/file_stream.h"
@@ -316,21 +315,6 @@ bool ValidateExtension(const Extension* extension, std::string* error) {
           l10n_util::GetStringFUTF8(
               IDS_EXTENSION_LOAD_OPTIONS_PAGE_FAILED,
               options_path.LossyDisplayName());
-      return false;
-    }
-  }
-
-  // Validate sidebar default page location.
-  ExtensionSidebarDefaults* sidebar_defaults = extension->sidebar_defaults();
-  if (sidebar_defaults && sidebar_defaults->default_page().is_valid()) {
-    FilePath page_path = ExtensionURLToRelativeFilePath(
-        sidebar_defaults->default_page());
-    const FilePath path = extension->GetResource(page_path).GetFilePath();
-    if (path.empty() || !file_util::PathExists(path)) {
-      *error =
-          l10n_util::GetStringFUTF8(
-              IDS_EXTENSION_LOAD_SIDEBAR_PAGE_FAILED,
-              page_path.LossyDisplayName());
       return false;
     }
   }

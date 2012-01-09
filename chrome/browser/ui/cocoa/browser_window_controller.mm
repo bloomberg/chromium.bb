@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -47,7 +47,6 @@
 #import "chrome/browser/ui/cocoa/infobars/infobar_container_controller.h"
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field_editor.h"
 #import "chrome/browser/ui/cocoa/presentation_mode_controller.h"
-#import "chrome/browser/ui/cocoa/sidebar_controller.h"
 #import "chrome/browser/ui/cocoa/status_bubble_mac.h"
 #import "chrome/browser/ui/cocoa/tab_contents/previewable_contents_controller.h"
 #import "chrome/browser/ui/cocoa/tab_contents/sad_tab_controller.h"
@@ -285,27 +284,19 @@ enum {
     [self installAvatar];
 
     // Create a sub-controller for the docked devTools and add its view to the
-    // hierarchy.  This must happen before the sidebar controller is
-    // instantiated.
+    // hierarchy.
     devToolsController_.reset(
         [[DevToolsController alloc] initWithDelegate:self]);
     [[devToolsController_ view] setFrame:[[self tabContentArea] bounds]];
     [[self tabContentArea] addSubview:[devToolsController_ view]];
-
-    // Create a sub-controller for the docked sidebar and add its view to the
-    // hierarchy.  This must happen before the previewable contents controller
-    // is instantiated.
-    sidebarController_.reset([[SidebarController alloc] initWithDelegate:self]);
-    [[sidebarController_ view] setFrame:[[devToolsController_ view] bounds]];
-    [[devToolsController_ view] addSubview:[sidebarController_ view]];
 
     // Create the previewable contents controller.  This provides the switch
     // view that TabStripController needs.
     previewableContentsController_.reset(
         [[PreviewableContentsController alloc] init]);
     [[previewableContentsController_ view]
-        setFrame:[[sidebarController_ view] bounds]];
-    [[sidebarController_ view]
+        setFrame:[[devToolsController_ view] bounds]];
+    [[devToolsController_ view]
         addSubview:[previewableContentsController_ view]];
 
     // Create a controller for the tab strip, giving it the model object for
@@ -534,11 +525,6 @@ enum {
 - (void)setDevToolsDockToRight:(bool)dock_to_right {
   [devToolsController_ setDockToRight:dock_to_right
                           withProfile:browser_->profile()];
-}
-
-- (void)updateSidebarForContents:(TabContents*)contents {
-  [sidebarController_ updateSidebarForTabContents:contents];
-  [sidebarController_ ensureContentsVisible];
 }
 
 // Called when the user wants to close a window or from the shutdown process.
@@ -1525,13 +1511,11 @@ enum {
   // Update all the UI bits.
   windowShim_->UpdateTitleBar();
 
-  [sidebarController_ updateSidebarForTabContents:
-      static_cast<TabContents*>(contents)];
   [devToolsController_ updateDevToolsForWebContents:contents
                                         withProfile:browser_->profile()];
 
   // Update the bookmark bar.
-  // Must do it after sidebar and devtools update, otherwise bookmark bar might
+  // Must do it after devtools updates, otherwise bookmark bar might
   // call resizeView -> layoutSubviews and cause unnecessary relayout.
   // TODO(viettrungluu): perhaps update to not terminate running animations (if
   // applicable)?
@@ -1542,8 +1526,7 @@ enum {
   // Without the .get(), xcode fails.
   [infoBarContainerController_.get() changeTabContents:wrapper];
 
-  // Update devTools and sidebar contents after size for all views is set.
-  [sidebarController_ ensureContentsVisible];
+  // Update devTools contents after size for all views is set.
   [devToolsController_ ensureContentsVisible];
 }
 

@@ -32,8 +32,6 @@
 #include "chrome/common/extensions/extension_error_utils.h"
 #include "chrome/common/extensions/extension_l10n_util.h"
 #include "chrome/common/extensions/extension_resource.h"
-#include "chrome/common/extensions/extension_sidebar_defaults.h"
-#include "chrome/common/extensions/extension_sidebar_utils.h"
 #include "chrome/common/extensions/file_browser_handler.h"
 #include "chrome/common/extensions/manifest.h"
 #include "chrome/common/extensions/user_script.h"
@@ -202,7 +200,6 @@ const int Extension::kIconSizes[] = {
 
 const int Extension::kPageActionIconMaxSize = 19;
 const int Extension::kBrowserActionIconMaxSize = 19;
-const int Extension::kSidebarIconMaxSize = 16;
 
 const int Extension::kValidWebExtentSchemes =
     URLPattern::SCHEME_HTTP | URLPattern::SCHEME_HTTPS;
@@ -857,56 +854,6 @@ FileBrowserHandler* Extension::LoadFileBrowserHandler(
       return NULL;
     }
     result->set_icon_path(default_icon);
-  }
-
-  return result.release();
-}
-
-ExtensionSidebarDefaults* Extension::LoadExtensionSidebarDefaults(
-    const DictionaryValue* extension_sidebar, string16* error) {
-  scoped_ptr<ExtensionSidebarDefaults> result(new ExtensionSidebarDefaults());
-
-  std::string default_icon;
-  // Read sidebar's |default_icon| (optional).
-  if (extension_sidebar->HasKey(keys::kSidebarDefaultIcon)) {
-    if (!extension_sidebar->GetString(keys::kSidebarDefaultIcon,
-                                      &default_icon) ||
-        default_icon.empty()) {
-      *error = ASCIIToUTF16(errors::kInvalidSidebarDefaultIconPath);
-      return NULL;
-    }
-    result->set_default_icon_path(default_icon);
-  }
-
-  // Read sidebar's |default_title| (optional).
-  string16 default_title;
-  if (extension_sidebar->HasKey(keys::kSidebarDefaultTitle)) {
-    if (!extension_sidebar->GetString(keys::kSidebarDefaultTitle,
-                                      &default_title)) {
-      *error = ASCIIToUTF16(errors::kInvalidSidebarDefaultTitle);
-      return NULL;
-    }
-  }
-  result->set_default_title(default_title);
-
-  // Read sidebar's |default_page| (optional).
-  // TODO(rdevlin.cronin): Continue removing std::string errors and replace
-  //  with string16
-  std::string default_page;
-  std::string utf8_error;
-  if (extension_sidebar->HasKey(keys::kSidebarDefaultPage)) {
-    if (!extension_sidebar->GetString(keys::kSidebarDefaultPage,
-                                      &default_page) ||
-        default_page.empty()) {
-      *error = ASCIIToUTF16(errors::kInvalidSidebarDefaultPage);
-      return NULL;
-    }
-    GURL url = extension_sidebar_utils::ResolveRelativePath(
-        default_page, this, &utf8_error);
-    *error = UTF8ToUTF16(utf8_error);
-    if (!url.is_valid())
-      return NULL;
-    result->set_default_page(url);
   }
 
   return result.release();
@@ -2252,22 +2199,6 @@ bool Extension::InitFromValue(extensions::Manifest* manifest, int flags,
       return false;
     }
     devtools_url_ = GetResourceURL(devtools_str);
-  }
-
-  // Initialize sidebar action (optional).
-  if (manifest->HasKey(keys::kSidebar)) {
-    DictionaryValue* sidebar_value = NULL;
-    if (!manifest->GetDictionary(keys::kSidebar, &sidebar_value)) {
-      *error = ASCIIToUTF16(errors::kInvalidSidebar);
-      return false;
-    }
-    if (!api_permissions.count(ExtensionAPIPermission::kExperimental)) {
-      *error = ASCIIToUTF16(errors::kSidebarExperimental);
-      return false;
-    }
-    sidebar_defaults_.reset(LoadExtensionSidebarDefaults(sidebar_value, error));
-    if (!sidebar_defaults_.get())
-      return false;  // Failed to parse sidebar definition.
   }
 
   // Initialize text-to-speech voices (optional).
