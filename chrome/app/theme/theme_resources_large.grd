@@ -11,6 +11,9 @@
       <!-- KEEP THESE IN ALPHABETICAL ORDER AND SYNCHRONIZED WITH
            theme_resources_standard.grd. THIS MEANS THAT EACH ICON IN THIS FILE
            MUST HAVE AN EQUIVALENT ICON IN THE OTHER FILE.-->
+      <include name="IDR_APP_NOTIFICATION_NUB" file="nub.png" type="BINDATA" />
+      <include name="IDR_APP_NOTIFICATION_NUB_MASK" file="nub_mask.png" type="BINDATA" />
+      <include name="IDR_APP_NOTIFICATION_SMALL_BUBBLE" file="small_bubble.png" type="BINDATA" />
       <include name="IDR_BACK" file="large_back.png" type="BINDATA" />
       <include name="IDR_BACK_D" file="large_back_d.png" type="BINDATA" />
       <include name="IDR_BACK_H" file="large_back_h.png" type="BINDATA" />

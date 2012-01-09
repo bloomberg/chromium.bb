@@ -4,57 +4,72 @@
  */
 
 .expandable-bubble {
+  -webkit-border-image: url('chrome://theme/IDR_APP_NOTIFICATION_SMALL_BUBBLE')
+                        5 5 7 6 stretch;
+  -webkit-box-sizing: border-box;
+  -webkit-user-select: none;
+  border-width: 5px 5px 7px 6px;
+  color: #444;
+  cursor: pointer;
+  display: inline-block;
+  font-size: 12px;
   position: absolute;
+  z-index: 1;
 }
 
-.expandable-bubble[expanded] {
-  width: 300px;
+.expandable-bubble::after {
+  bottom: -1px;
+  content: url('chrome://theme/IDR_APP_NOTIFICATION_NUB');
+  display: block;
+  height: 7px;
+  position: absolute;
+  right: 5px;  /* TODO(finnur): Need to handle RTL properly. */
+  width: 9px;
 }
 
-.expandable-bubble-contents {
-  color: black;
-  font-size: 12px;
-  left: 1px;
-  line-height: 150%;
-  padding: 6px 3px 5px 6px;
-  position: relative;
-  right: 1px;
-  top: 1px;
-  z-index: 3;
-}
-
-.expandable-bubble[expanded] > .expandable-bubble-close { 
-  z-index : 8;
-}
-.expandable-bubble[expanded] > .expandable-bubble-contents {
-  z-index : 7;
-}
-.expandable-bubble[expanded] > .expandable-bubble-arrow {
-  z-index : 6;
-}
-.expandable-bubble[expanded] > .expandable-bubble-shadow {
-  z-index : 5;  /* One higher then the close button on an unexpanded bubble. */
-}
-
-.expandable-bubble-title {
-  font-size: 12px;
+.expandable-bubble > .expandable-bubble-contents > .expandable-bubble-title {
+  display: inline-block;
+  margin-left: 1px;
+  margin-top : -3px;
   overflow: hidden;
-  text-align: center;
-  text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.expandable-bubble[expanded] > .expandable-bubble-contents > .expandable-bubble-title {
-  text-align: left;
+.expandable-bubble[masked] > .expandable-bubble-contents >
+    .expandable-bubble-title::after {
+  content: url('chrome://theme/IDR_APP_NOTIFICATION_NUB_MASK');
+  display: block;
+  height: 15px;
+  overflow: hidden;
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 12px;
+}
+
+.expandable-bubble[expanded] > .expandable-bubble-contents >
+    .expandable-bubble-title {
+  font-size: 13px;
+  margin-left: 0;
+  margin-bottom: 3px;
 }
 
 .expandable-bubble-close {
   background-image: no-repeat 50% 50%;  
   height: 16px;
   position: absolute;
-  right: 6px;
-  top: 6px;
+  right: 0;
+  top: 0;
   width: 16px;
+  z-index: 2;
+}
+
+.expandable-bubble[expanded] {
+  padding: 3px;
+  z-index: 3;  /* One higher then the close button on an unexpanded bubble. */
+}
+
+.expandable-bubble[expanded] > .expandable-bubble-close { 
   z-index: 4;
 }
 
@@ -68,46 +83,4 @@
 
 .expandable-bubble-close:active {
   background-image: url('chrome://theme/IDR_CLOSE_BAR_P');
-}
-
-.expandable-bubble-shadow {
-  bottom: -2px;
-  left: 0;
-  position: absolute;
-  right: 0;
-  top: 0;
-  z-index: 1;
-}
-
-.expandable-bubble-arrow {
-  /* The tip of the arrow.  */
-  border-bottom-right-radius: 1px;
-  /* No border on the right or top (inner sides of the rotated square) because
-   * it would overlap/darken the content shadow. */
-  border-right: none;
-  border-top: none;
-  bottom: -9px;
-  height: 15px;
-  position: absolute;
-  right: 15px;
-  width: 15px;
-  z-index: 2;
-  -webkit-transform: rotate(45deg);
-}
-
-.expandable-bubble-contents,
-.expandable-bubble-arrow {
-  background: white;
-}
-
-.expandable-bubble-shadow,
-.expandable-bubble-arrow {
-  border: 1px solid rgba(0, 0, 0, 0.3);
-  -webkit-box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.15);
-}
-
-.expandable-bubble-shadow,
-.expandable-bubble-contents {
-  border-radius: 6px;
-  box-sizing: border-box;
 }
