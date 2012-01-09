@@ -216,9 +216,21 @@ class UI_EXPORT NativeTheme {
 
   // Colors for GetSystemColor().
   enum ColorId {
+    // Dialogs
     kColorId_DialogBackground,
+    // FocusableBorder
     kColorId_FocusedBorderColor,
-    kColorId_UnfocusedBorderColor
+    kColorId_UnfocusedBorderColor,
+    // TextButton
+    kColorId_TextButtonBackgroundColor,
+    kColorId_TextButtonEnabledColor,
+    kColorId_TextButtonDisabledColor,
+    kColorId_TextButtonHighlightColor,
+    kColorId_TextButtonHoverColor,
+    // MenuItem
+    kColorId_EnabledMenuItemForegroundColor,
+    kColorId_DisabledMenuItemForegroundColor,
+    kColorId_FocusedMenuItemBackgroundColor
     // TODO(benrg): move other hardcoded colors here.
   };
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -206,12 +206,6 @@ class VIEWS_EXPORT TextButtonBase : public CustomButton,
   virtual int GetHeightForWidth(int w) OVERRIDE;
   virtual void OnEnabledChanged() OVERRIDE;
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
-
-  // Text colors.
-  static const SkColor kEnabledColor;
-  static const SkColor kHighlightColor;
-  static const SkColor kDisabledColor;
-  static const SkColor kHoverColor;
 
   // Returns views/TextButton.
   virtual std::string GetClassName() const OVERRIDE;
