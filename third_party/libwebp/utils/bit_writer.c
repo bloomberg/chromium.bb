@@ -10,14 +10,15 @@
 // Author: Skal (pascal.massimino@gmail.com)
 
 #include <assert.h>
+#include <string.h>   // for memcpy()
 #include <stdlib.h>
-#include "vp8enci.h"
+#include "./bit_writer.h"
 
 #if defined(__cplusplus) || defined(c_plusplus)
 extern "C" {
 #endif
 
-//-----------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 // VP8BitWriter
 
 static int BitWriterResize(VP8BitWriter* const bw, size_t extra_size) {
@@ -68,7 +69,7 @@ static void kFlush(VP8BitWriter* const bw) {
   }
 }
 
-//-----------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 // renormalization
 
 static const uint8_t kNorm[128] = {  // renorm_sizes[i] = 8 - log2(i)
@@ -84,7 +85,7 @@ static const uint8_t kNorm[128] = {  // renorm_sizes[i] = 8 - log2(i)
 };
 
 // range = ((range + 1) << kVP8Log2Range[range]) - 1
-const uint8_t kNewRange[128] = {
+static const uint8_t kNewRange[128] = {
   127, 127, 191, 127, 159, 191, 223, 127, 143, 159, 175, 191, 207, 223, 239,
   127, 135, 143, 151, 159, 167, 175, 183, 191, 199, 207, 215, 223, 231, 239,
   247, 127, 131, 135, 139, 143, 147, 151, 155, 159, 163, 167, 171, 175, 179,
@@ -147,7 +148,7 @@ void VP8PutSignedValue(VP8BitWriter* const bw, int value, int nb_bits) {
   }
 }
 
-//-----------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 
 int VP8BitWriterInit(VP8BitWriter* const bw, size_t expected_size) {
   bw->range_   = 255 - 1;
@@ -168,7 +169,17 @@ uint8_t* VP8BitWriterFinish(VP8BitWriter* const bw) {
   return bw->buf_;
 }
 
-//-----------------------------------------------------------------------------
+int VP8BitWriterAppend(VP8BitWriter* const bw,
+                       const uint8_t* data, size_t size) {
+  assert(data);
+  if (bw->nb_bits_ != -8) return 0;   // kFlush() must have been called
+  if (!BitWriterResize(bw, size)) return 0;
+  memcpy(bw->buf_ + bw->pos_, data, size);
+  bw->pos_ += size;
+  return 1;
+}
+
+//------------------------------------------------------------------------------
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }    // extern "C"

@@ -9,20 +9,21 @@
 //
 // Author: Skal (pascal.massimino@gmail.com)
 
-#ifndef WEBP_DEC_BITS_H_
-#define WEBP_DEC_BITS_H_
+#ifndef WEBP_UTILS_BIT_READER_H_
+#define WEBP_UTILS_BIT_READER_H_
 
 #include <assert.h>
-#include "webp/decode_vp8.h"
+#include "../webp/decode_vp8.h"
 
 #if defined(__cplusplus) || defined(c_plusplus)
 extern "C" {
 #endif
 
-//-----------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 // Bitreader and code-tree reader
 
-typedef struct {
+typedef struct VP8BitReader VP8BitReader;
+struct VP8BitReader {
   const uint8_t* buf_;        // next byte to be read
   const uint8_t* buf_end_;    // end of read buffer
   int eof_;                   // true if input is exhausted
@@ -31,7 +32,7 @@ typedef struct {
   uint32_t range_;            // current range minus 1. In [127, 254] interval.
   uint32_t value_;            // current value
   int missing_;               // number of missing bits in value_ (8bit)
-} VP8BitReader;
+};
 
 // Initialize the bit reader and the boolean decoder.
 void VP8InitBitReader(VP8BitReader* const br,
@@ -61,15 +62,16 @@ static inline uint32_t VP8GetByte(VP8BitReader* const br) {
 
 static inline uint32_t VP8BitUpdate(VP8BitReader* const br, uint32_t split) {
   uint32_t bit;
+  const uint32_t value_split = (split + 1) << 8;
   // Make sure we have a least 8 bits in 'value_'
   if (br->missing_ > 0) {
     br->value_ |= VP8GetByte(br) << br->missing_;
     br->missing_ -= 8;
   }
-  bit = ((br->value_ >> 8) > split);
+  bit = (br->value_ >= value_split);
   if (bit) {
     br->range_ -= split + 1;
-    br->value_ -= (split + 1) << 8;
+    br->value_ -= value_split;
   } else {
     br->range_ = split;
   }
@@ -104,4 +106,4 @@ static inline int VP8GetSigned(VP8BitReader* const br, int v) {
 }    // extern "C"
 #endif
 
-#endif  // WEBP_DEC_BITS_H_
+#endif  /* WEBP_UTILS_BIT_READER_H_ */
