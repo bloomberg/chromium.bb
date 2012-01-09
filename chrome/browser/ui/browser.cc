@@ -49,7 +49,6 @@
 #include "chrome/browser/extensions/default_apps_trial.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
 #include "chrome/browser/extensions/extension_disabled_infobar_delegate.h"
-#include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_helper.h"
@@ -103,6 +102,7 @@
 #include "chrome/browser/ui/browser_tab_restore_service_delegate.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/constrained_window_tab_helper.h"
+#include "chrome/browser/ui/extensions/shell_window.h"
 #include "chrome/browser/ui/find_bar/find_bar.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
@@ -649,9 +649,17 @@ WebContents* Browser::OpenApplication(
   UMA_HISTOGRAM_ENUMERATION("Extensions.AppLaunchContainer", container, 100);
 
   switch (container) {
+    case extension_misc::LAUNCH_SHELL: {
+      ShellWindow* shell_window = ShellWindow::Create(
+          profile,
+          extension,
+          UrlForExtension(extension, override_url));
+      if (shell_window)
+        tab = shell_window->web_contents();
+      break;
+    }
     case extension_misc::LAUNCH_WINDOW:
     case extension_misc::LAUNCH_PANEL:
-    case extension_misc::LAUNCH_SHELL:
       tab = Browser::OpenApplicationWindow(profile, extension, container,
                                            override_url, NULL);
       break;
@@ -682,18 +690,8 @@ WebContents* Browser::OpenApplicationWindow(
       web_app::GenerateApplicationNameFromExtensionId(extension->id()) :
       web_app::GenerateApplicationNameFromURL(url);
 
-  Type type = TYPE_POPUP;
-  if (extension) {
-    switch (container) {
-      case extension_misc::LAUNCH_PANEL:
-        type = TYPE_PANEL;
-        break;
-      case extension_misc::LAUNCH_SHELL:
-        type = TYPE_SHELL;
-        break;
-      default: break;
-    }
-  }
+  Type type = extension && (container == extension_misc::LAUNCH_PANEL) ?
+      TYPE_PANEL : TYPE_POPUP;
 
   gfx::Rect window_bounds;
   if (extension) {
@@ -914,8 +912,6 @@ bool Browser::ShouldSaveWindowPlacement() const {
     case TYPE_PANEL:
       // Do not save the window placement of panels.
       return false;
-    case TYPE_SHELL:
-      return true;
     default:
       return false;
   }
