@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,7 @@
 #include <atlcrack.h>
 #include <atlctrls.h>
 #include <atlmisc.h>
+#include <peninputpanel.h>
 #include <tom.h>  // For ITextDocument, a COM interface to CRichEditCtrl.
 
 #include "base/memory/scoped_ptr.h"
@@ -34,6 +35,12 @@ namespace views {
 class NativeViewHost;
 class View;
 }
+
+// TODO(abodenha): This should be removed once we have the new windows SDK
+// which defines these messages.
+#if !defined(WM_POINTERDOWN)
+#define WM_POINTERDOWN  0x0246
+#endif  // WM_POINTERDOWN
 
 // Provides the implementation of an edit control with a drop-down
 // autocomplete box. The box itself is implemented in autocomplete_popup.cc
@@ -172,6 +179,7 @@ class OmniboxViewWin
     MESSAGE_HANDLER_EX(WM_GETOBJECT, OnGetObject)
     MESSAGE_HANDLER_EX(WM_IME_COMPOSITION, OnImeComposition)
     MESSAGE_HANDLER_EX(WM_IME_NOTIFY, OnImeNotify)
+    MESSAGE_HANDLER_EX(WM_POINTERDOWN, OnPointerDown)
     MSG_WM_KEYDOWN(OnKeyDown)
     MSG_WM_KEYUP(OnKeyUp)
     MSG_WM_KILLFOCUS(OnKillFocus)
@@ -271,6 +279,7 @@ class OmniboxViewWin
   LRESULT OnGetObject(UINT message, WPARAM wparam, LPARAM lparam);
   LRESULT OnImeComposition(UINT message, WPARAM wparam, LPARAM lparam);
   LRESULT OnImeNotify(UINT message, WPARAM wparam, LPARAM lparam);
+  LRESULT OnPointerDown(UINT message, WPARAM wparam, LPARAM lparam);
   void OnKeyDown(TCHAR key, UINT repeat_count, UINT flags);
   void OnKeyUp(TCHAR key, UINT repeat_count, UINT flags);
   void OnKillFocus(HWND focus_wnd);
@@ -537,6 +546,10 @@ class OmniboxViewWin
 
   // The native view host.
   views::NativeViewHost* native_view_host_;
+
+  // ITextInputPanel to allow us to show the Windows virtual keyboard when a
+  // user touches the Omnibox.
+  base::win::ScopedComPtr<ITextInputPanel> keyboard_;
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxViewWin);
 };

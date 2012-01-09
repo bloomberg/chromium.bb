@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 #include <locale>
 #include <string>
 
+#include <peninputpanel.h>
 #include <richedit.h>
 #include <textserv.h>
 
@@ -473,6 +474,10 @@ OmniboxViewWin::OmniboxViewWin(AutocompleteEditController* controller,
          l10n_util::GetExtendedStyles());
   SetReadOnly(popup_window_mode_);
   SetFont(font_.GetNativeFont());
+
+  if (SUCCEEDED(keyboard_.CreateInstance(CLSID_TextInputPanel, NULL,
+                                         CLSCTX_INPROC)))
+    keyboard_->put_AttachedEditWindow(m_hWnd);
 
   // NOTE: Do not use SetWordBreakProcEx() here, that is no longer supported as
   // of Rich Edit 2.0 onward.
@@ -1416,6 +1421,16 @@ LRESULT OmniboxViewWin::OnImeNotify(UINT message,
     default:
       break;
   }
+  return DefWindowProc(message, wparam, lparam);
+}
+
+LRESULT OmniboxViewWin::OnPointerDown(UINT message,
+                                      WPARAM wparam,
+                                      LPARAM lparam) {
+  SetFocus();
+  // ITextInputPanel is not supported on all platforms.  NULL is fine.
+  if (keyboard_ != NULL)
+    keyboard_->SetInPlaceVisibility(true);
   return DefWindowProc(message, wparam, lparam);
 }
 
