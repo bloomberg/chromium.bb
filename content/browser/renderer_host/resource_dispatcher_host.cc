@@ -1259,7 +1259,12 @@ void ResourceDispatcherHost::RemovePendingRequest(
   transferred_navigations_.erase(
       GlobalRequestID(info->child_id(), info->request_id()));
 
-  delete iter->second;
+  // Delete lazily as this will also delete |info|, triggering the
+  // ResourceHandler::OnRequestClosed notification.  This way we avoid
+  // re-entering a ResourceHandler that is calling CancelRequest.
+  iter->second->set_delegate(NULL);
+  MessageLoop::current()->DeleteSoon(FROM_HERE, iter->second);
+
   pending_requests_.erase(iter);
 
   // If we have no more pending requests, then stop the load state monitor
