@@ -2998,25 +2998,25 @@ display_run(struct display *display)
 
 	display->running = 1;
 	while (1) {
-		while (display->mask & WL_DISPLAY_WRITABLE)
-			wl_display_iterate(display->display,
-					   WL_DISPLAY_WRITABLE);
-
-		if (!display->running)
-			break;
-
-		count = epoll_wait(display->epoll_fd,
-				   ep, ARRAY_LENGTH(ep), -1);
-		for (i = 0; i < count; i++) {
-			task = ep[i].data.ptr;
-			task->run(task, ep[i].events);
-		}
+		wl_display_flush(display->display);
 
 		while (!wl_list_empty(&display->deferred_list)) {
 			task = container_of(display->deferred_list.next,
 					    struct task, link);
 			wl_list_remove(&task->link);
 			task->run(task, 0);
+		}
+
+		if (!display->running)
+			break;
+
+		wl_display_flush(display->display);
+
+		count = epoll_wait(display->epoll_fd,
+				   ep, ARRAY_LENGTH(ep), -1);
+		for (i = 0; i < count; i++) {
+			task = ep[i].data.ptr;
+			task->run(task, ep[i].events);
 		}
 	}
 }
