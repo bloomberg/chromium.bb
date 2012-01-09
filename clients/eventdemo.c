@@ -222,7 +222,7 @@ key_handler(struct window *window, struct input *input, uint32_t time,
  * \param data user data associated to the window
  */
 static void
-button_handler(struct window *window, struct input *input, uint32_t time,
+button_handler(struct widget *widget, struct input *input, uint32_t time,
 	       int button, int state, void *data)
 {
 	int32_t x, y;
@@ -314,7 +314,8 @@ eventdemo_create(struct display *d)
 	window_set_key_handler(e->window, key_handler);
 
 	/* Set the callback button handler for the window */
-	window_set_button_handler(e->window, button_handler);
+	widget_set_button_handler(window_get_widget(e->window),
+				  button_handler);
 
 	/* Set the callback motion handler for the window */
 	widget_set_motion_handler(window_get_widget(e->window),

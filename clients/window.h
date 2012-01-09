@@ -168,15 +168,6 @@ typedef void (*window_key_handler_t)(struct window *window, struct input *input,
 typedef void (*window_keyboard_focus_handler_t)(struct window *window,
 						struct input *device, void *data);
 
-typedef void (*window_button_handler_t)(struct window *window,
-					struct input *input, uint32_t time,
-					int button, int state, void *data);
-
-typedef int (*window_motion_handler_t)(struct window *window,
-				       struct input *input, uint32_t time,
-				       int32_t x, int32_t y,
-				       int32_t sx, int32_t sy, void *data);
-
 typedef void (*window_data_handler_t)(struct window *window,
 				      struct input *input, uint32_t time,
 				      int32_t x, int32_t y,
@@ -197,6 +188,9 @@ typedef void (*widget_leave_handler_t)(struct widget *widget,
 typedef int (*widget_motion_handler_t)(struct widget *widget,
 				       struct input *input, uint32_t time,
 				       int32_t x, int32_t y, void *data);
+typedef void (*widget_button_handler_t)(struct widget *widget,
+					struct input *input, uint32_t time,
+					int button, int state, void *data);
 
 struct window *
 window_create(struct display *display, int32_t width, int32_t height);
@@ -317,14 +311,6 @@ window_set_key_handler(struct window *window,
 		       window_key_handler_t handler);
 
 void
-window_set_button_handler(struct window *window,
-			  window_button_handler_t handler);
-
-void
-window_set_motion_handler(struct window *window,
-			  window_motion_handler_t handler);
-
-void
 window_set_keyboard_focus_handler(struct window *window,
 				  window_keyboard_focus_handler_t handler);
 
@@ -365,6 +351,10 @@ widget_set_leave_handler(struct widget *widget,
 void
 widget_set_motion_handler(struct widget *widget,
 			  widget_motion_handler_t handler);
+void
+widget_set_button_handler(struct widget *widget,
+			  widget_button_handler_t handler);
+
 void
 widget_schedule_redraw(struct widget *widget);
 

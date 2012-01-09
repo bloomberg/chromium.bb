@@ -154,7 +154,8 @@ static void
 button_handler(struct window *window, struct input *input, uint32_t time,
                int button, int state, void *data)
 {
-        struct view *view = data;
+	struct window *window = data;
+a        struct view *view = window_get_user_data(window);
 
         if(!state)
                 return;
@@ -252,7 +253,8 @@ view_create(struct display *display,
 	window_set_key_handler(view->window, key_handler);
 	window_set_keyboard_focus_handler(view->window,
 					  keyboard_focus_handler);
-	window_set_button_handler(view->window, button_handler);
+	widget_set_button_handler(window_get_widget(view->window),
+				  button_handler);
 	view->page = 0;
 
 	view->fullscreen = fullscreen;

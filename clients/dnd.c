@@ -361,11 +361,12 @@ create_drag_cursor(struct dnd_drag *dnd_drag,
 }
 
 static void
-dnd_button_handler(struct window *window,
+dnd_button_handler(struct widget *widget,
 		   struct input *input, uint32_t time,
 		   int button, int state, void *data)
 {
-	struct dnd *dnd = data;
+	struct window *window = data;
+	struct dnd *dnd = window_get_user_data(window);
 	int32_t x, y;
 	struct item *item;
 	struct rectangle allocation;
@@ -537,13 +538,13 @@ dnd_create(struct display *display)
 	window_set_redraw_handler(dnd->window, redraw_handler);
 	window_set_keyboard_focus_handler(dnd->window,
 					  keyboard_focus_handler);
-	window_set_button_handler(dnd->window, dnd_button_handler);
 	window_set_data_handler(dnd->window, dnd_data_handler);
 	window_set_drop_handler(dnd->window, dnd_drop_handler);
 
 	widget = window_get_widget(dnd->window);
 	widget_set_enter_handler(widget, dnd_enter_handler);
 	widget_set_motion_handler(widget, dnd_motion_handler);
+	widget_set_button_handler(widget, dnd_button_handler);
 
 	width = 4 * (item_width + item_padding) + item_padding;
 	height = 4 * (item_height + item_padding) + item_padding;

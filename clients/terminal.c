@@ -2224,11 +2224,12 @@ keyboard_focus_handler(struct window *window,
 }
 
 static void
-button_handler(struct window *window,
+button_handler(struct widget *widget,
 	       struct input *input, uint32_t time,
 	       int button, int state, void *data)
 {
-	struct terminal *terminal = data;
+	struct window *window = data;
+	struct terminal *terminal = window_get_user_data(window);
 
 	switch (button) {
 	case 272:
@@ -2298,7 +2299,8 @@ terminal_create(struct display *display, int fullscreen)
 	window_set_key_handler(terminal->window, key_handler);
 	window_set_keyboard_focus_handler(terminal->window,
 					  keyboard_focus_handler);
-	window_set_button_handler(terminal->window, button_handler);
+	widget_set_button_handler(window_get_widget(terminal->window),
+				  button_handler);
 
 	widget_set_motion_handler(window_get_widget(terminal->window),
 				  motion_handler);

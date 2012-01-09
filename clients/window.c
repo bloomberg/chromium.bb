@@ -130,7 +130,6 @@ struct window {
 	window_resize_handler_t resize_handler;
 	window_redraw_handler_t redraw_handler;
 	window_key_handler_t key_handler;
-	window_button_handler_t button_handler;
 	window_keyboard_focus_handler_t keyboard_focus_handler;
 	window_data_handler_t data_handler;
 	window_drop_handler_t drop_handler;
@@ -153,6 +152,7 @@ struct widget {
 	widget_enter_handler_t enter_handler;
 	widget_leave_handler_t leave_handler;
 	widget_motion_handler_t motion_handler;
+	widget_button_handler_t button_handler;
 	void *user_data;
 };
 
@@ -1127,6 +1127,13 @@ widget_set_motion_handler(struct widget *widget,
 }
 
 void
+widget_set_button_handler(struct widget *widget,
+			  widget_button_handler_t handler)
+{
+	widget->button_handler = handler;
+}
+
+void
 widget_schedule_redraw(struct widget *widget)
 {
 	window_schedule_redraw(widget->window);
@@ -1349,6 +1356,7 @@ input_handle_button(void *data,
 
 	location = get_pointer_location(window, input->sx, input->sy);
 
+	widget = window->focus_widget;
 	if (window->display->shell && button == BTN_LEFT && state == 1) {
 		switch (location) {
 		case WINDOW_TITLEBAR:
@@ -1373,11 +1381,11 @@ input_handle_button(void *data,
 						location);
 			break;
 		case WINDOW_CLIENT_AREA:
-			if (window->button_handler)
-				(*window->button_handler)(window,
+			if (widget && widget->button_handler)
+				(*widget->button_handler)(widget,
 							  input, time,
 							  button, state,
-							  window->user_data);
+							  widget->user_data);
 			break;
 		}
 	} else if (button == BTN_RIGHT && state == 1) {
@@ -1393,19 +1401,19 @@ input_handle_button(void *data,
 			window_schedule_redraw(window->menu);
 			break;
 		case WINDOW_CLIENT_AREA:
-			if (window->button_handler)
-				(*window->button_handler)(window,
+			if (widget && widget->button_handler)
+				(*widget->button_handler)(widget,
 							  input, time,
 							  button, state,
-							  window->user_data);
+							  widget->user_data);
 			break;
 		}
 	} else {
-		if (window->button_handler)
-			(*window->button_handler)(window,
+		if (widget && widget->button_handler)
+			(*widget->button_handler)(widget,
 						  input, time,
 						  button, state,
-						  window->user_data);
+						  widget->user_data);
 	}
 
 	if (window->focus_widget &&
@@ -2043,13 +2051,6 @@ window_set_key_handler(struct window *window,
 }
 
 void
-window_set_button_handler(struct window *window,
-			  window_button_handler_t handler)
-{
-	window->button_handler = handler;
-}
-
-void
 window_set_keyboard_focus_handler(struct window *window,
 				  window_keyboard_focus_handler_t handler)
 {
@@ -2241,12 +2242,13 @@ menu_leave_handler(struct widget *widget, struct input *input, void *data)
 }
 
 static void
-menu_button_handler(struct window *window,
+menu_button_handler(struct widget *widget,
 		    struct input *input, uint32_t time,
 		    int button, int state, void *data)
 
 {
-	struct menu *menu = data;
+	struct window *window = data;
+	struct menu *menu = window_get_user_data(window);
 
 	/* Either relase after press-drag-release or click-motion-click. */
 	if (state == 0 && time - menu->time > 500) {
@@ -2333,13 +2335,13 @@ window_create_menu(struct display *display,
 				   window->parent->shell_surface,
 				   window->x, window->y, 0);
 
-	window_set_button_handler(window, menu_button_handler);
 	window_set_redraw_handler(window, menu_redraw_handler);
 	window_set_user_data(window, menu);
 
 	widget_set_enter_handler(window->widget, menu_enter_handler);
 	widget_set_leave_handler(window->widget, menu_leave_handler);
 	widget_set_motion_handler(window->widget, menu_motion_handler);
+	widget_set_button_handler(window->widget, menu_button_handler);
 
 	return window;
 }

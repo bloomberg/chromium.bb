@@ -105,10 +105,12 @@ motion_handler(struct widget *widget, struct input *input,
 }
 
 static void
-button_handler(struct window *window,
+button_handler(struct widget *widget,
 	       struct input *input, uint32_t time,
 	       int button, int state, void *data)
 {
+	struct window *window = data;
+
 	if (state)
 		window_move(window, input, time);
 }
@@ -156,7 +158,8 @@ int main(int argc, char *argv[])
 
 	widget_set_motion_handler(window_get_widget(flower.window),
 				  motion_handler);
-	window_set_button_handler(flower.window, button_handler);
+	widget_set_button_handler(window_get_widget(flower.window),
+				  button_handler);
 	window_set_user_data(flower.window, &flower);
 	display_run(d);
 

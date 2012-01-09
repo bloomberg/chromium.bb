@@ -244,24 +244,29 @@ panel_widget_leave_handler(struct widget *widget,
 }
 
 static void
-panel_button_handler(struct window *window,
-		     struct input *input, uint32_t time,
-		     int button, int state, void *data)
+panel_widget_button_handler(struct widget *widget,
+			    struct input *input, uint32_t time,
+			    int button, int state, void *data)
 {
 	struct panel *panel = data;
 	struct panel_widget *pi;
-	struct widget *focus;
 
-	focus = window_get_focus_widget(panel->window);
-	if (focus && button == BTN_LEFT) {
-		pi = widget_get_user_data(focus);
-		window_schedule_redraw(panel->window);
-		if (state == 0)
-			panel_activate_widget(panel, pi);
-	} else if (button == BTN_RIGHT) {
-		if (state)
-			show_menu(panel, input, time);
-	}
+	pi = widget_get_user_data(widget);
+	widget_schedule_redraw(widget);
+	if (state == 0)
+		panel_activate_widget(panel, pi);
+}
+
+static void
+panel_button_handler(struct widget *widget,
+		     struct input *input, uint32_t time,
+		     int button, int state, void *data)
+{
+	struct window *window = data;
+	struct panel *panel = window_get_user_data(window);
+
+	if (button == BTN_RIGHT && state)
+		show_menu(panel, input, time);
 }
 
 static void
@@ -291,7 +296,9 @@ panel_create(struct display *display)
 	window_set_redraw_handler(panel->window, panel_redraw_handler);
 	window_set_custom(panel->window);
 	window_set_user_data(panel->window, panel);
-	window_set_button_handler(panel->window, panel_button_handler);
+
+	widget_set_button_handler(window_get_widget(panel->window),
+				  panel_button_handler);
 
 	return panel;
 }
@@ -310,6 +317,7 @@ panel_add_widget(struct panel *panel, const char *icon, const char *path)
 	widget->widget = window_add_widget(panel->window, widget);
 	widget_set_enter_handler(widget->widget, panel_widget_enter_handler);
 	widget_set_leave_handler(widget->widget, panel_widget_leave_handler);
+	widget_set_button_handler(widget->widget, panel_widget_button_handler);
 }
 
 static void
@@ -414,16 +422,14 @@ unlock_dialog_draw(struct unlock_dialog *dialog)
 }
 
 static void
-unlock_dialog_button_handler(struct window *window,
+unlock_dialog_button_handler(struct widget *widget,
 			     struct input *input, uint32_t time,
 			     int button, int state, void *data)
 {
 	struct unlock_dialog *dialog = data;
 	struct desktop *desktop = dialog->desktop;
-	struct widget *focus;
 
-	focus = window_get_focus_widget(dialog->window);
-	if (focus && button == BTN_LEFT) {
+	if (button == BTN_LEFT) {
 		if (state == 0 && !dialog->closing) {
 			display_defer(desktop->display, &desktop->unlock_task);
 			dialog->closing = 1;
@@ -480,12 +486,13 @@ unlock_dialog_create(struct desktop *desktop)
 	window_set_redraw_handler(dialog->window, unlock_dialog_redraw_handler);
 	window_set_keyboard_focus_handler(dialog->window,
 					  unlock_dialog_keyboard_focus_handler);
-	window_set_button_handler(dialog->window, unlock_dialog_button_handler);
 	dialog->button = window_add_widget(dialog->window, NULL);
 	widget_set_enter_handler(dialog->button,
 				 unlock_dialog_widget_enter_handler);
 	widget_set_leave_handler(dialog->button,
 				 unlock_dialog_widget_leave_handler);
+	widget_set_button_handler(dialog->button,
+				  unlock_dialog_button_handler);
 
 	desktop_shell_set_lock_surface(desktop->shell,
 	       window_get_wl_shell_surface(dialog->window));

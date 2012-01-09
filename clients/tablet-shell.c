@@ -198,11 +198,12 @@ lockscreen_draw(struct tablet_shell *shell)
 }
 
 static void
-lockscreen_button_handler(struct window *window,
+lockscreen_button_handler(struct widget *widget,
 			  struct input *input, uint32_t time,
 			  int button, int state, void *data)
 {
-	struct tablet_shell *shell = data;
+	struct window *window = data;
+	struct tablet_shell *shell = window_get_user_data(window);
 
 	window_destroy(shell->lockscreen);
 	shell->lockscreen = NULL;
@@ -219,7 +220,7 @@ show_lockscreen(void *data, struct tablet_shell *tablet_shell)
 	window_set_user_data(shell->lockscreen, shell);
 	window_set_decoration(shell->lockscreen, 0);
 	window_set_custom(shell->lockscreen);
-	window_set_button_handler(shell->lockscreen,
+	widget_set_button_handler(window_get_widget(shell->lockscreen),
 				  lockscreen_button_handler);
 
 	tablet_shell_set_lockscreen(shell->tablet_shell,

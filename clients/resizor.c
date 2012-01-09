@@ -190,11 +190,12 @@ show_menu(struct resizor *resizor, struct input *input, uint32_t time)
 }
 
 static void
-button_handler(struct window *window,
+button_handler(struct widget *widget,
 	       struct input *input, uint32_t time,
 	       int button, int state, void *data)
 {
-	struct resizor *resizor = data;
+	struct window *window = data;
+	struct resizor *resizor = window_get_user_data(window);
 
 	switch (button) {
 	case BTN_RIGHT:
@@ -232,7 +233,8 @@ resizor_create(struct display *display)
 	height = resizor->height.current + 0.5;
 
 	window_set_child_size(resizor->window, resizor->width, height);
-	window_set_button_handler(resizor->window, button_handler);
+	widget_set_button_handler(window_get_widget(resizor->window),
+				  button_handler);
 
 	resizor_draw(resizor);
 
