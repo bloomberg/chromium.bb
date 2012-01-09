@@ -258,7 +258,6 @@ void RenderTextLinux::EnsureLayout() {
     // TODO(xji): If RenderText will be used for displaying purpose, such as
     // label, we will need to remove the single-line-mode setting.
     pango_layout_set_single_paragraph_mode(layout_, true);
-    SetupPangoAttributes(layout_);
 
     current_line_ = pango_layout_get_line_readonly(layout_, 0);
     pango_layout_line_ref(current_line_);
@@ -268,35 +267,6 @@ void RenderTextLinux::EnsureLayout() {
     layout_text_ = pango_layout_get_text(layout_);
     layout_text_len_ = strlen(layout_text_);
   }
-}
-
-void RenderTextLinux::SetupPangoAttributes(PangoLayout* layout) {
-  PangoAttrList* attrs = pango_attr_list_new();
-
-  int default_font_style = font_list().GetStyle();
-  for (StyleRanges::const_iterator i = style_ranges().begin();
-       i < style_ranges().end(); ++i) {
-    // In Pango, different fonts means different runs, and it breaks Arabic
-    // shaping across run boundaries. So, set font only when it is different
-    // from the default font.
-    // TODO(xji): We'll eventually need to split up StyleRange into components
-    // (ColorRange, FontRange, etc.) so that we can combine adjacent ranges
-    // with the same Fonts (to avoid unnecessarily splitting up runs).
-    if (i->font_style != default_font_style) {
-      FontList derived_font_list = font_list().DeriveFontList(i->font_style);
-      PangoFontDescription* desc = pango_font_description_from_string(
-          derived_font_list.GetFontDescriptionString().c_str());
-
-      PangoAttribute* pango_attr = pango_attr_font_desc_new(desc);
-      pango_attr->start_index = Utf16IndexToUtf8Index(i->range.start());
-      pango_attr->end_index = Utf16IndexToUtf8Index(i->range.end());
-      pango_attr_list_insert(attrs, pango_attr);
-      pango_font_description_free(desc);
-    }
-  }
-
-  pango_layout_set_attributes(layout, attrs);
-  pango_attr_list_unref(attrs);
 }
 
 void RenderTextLinux::DrawVisualText(Canvas* canvas) {
@@ -383,7 +353,6 @@ void RenderTextLinux::DrawVisualText(Canvas* canvas) {
         //                  styles evenly over the glyph. We can do this too by
         //                  clipping and drawing the glyph several times.
         renderer.SetForegroundColor(styles[style].foreground);
-        renderer.SetFontStyle(styles[style].font_style);
         renderer.DrawPosText(&pos[start], &glyphs[start], i - start);
         if (styles[style].underline || styles[style].strike) {
           renderer.DrawDecorations(start_x, y, glyph_x - start_x,
@@ -403,7 +372,6 @@ void RenderTextLinux::DrawVisualText(Canvas* canvas) {
 
     // Draw the remaining glyphs.
     renderer.SetForegroundColor(styles[style].foreground);
-    renderer.SetFontStyle(styles[style].font_style);
     renderer.DrawPosText(&pos[start], &glyphs[start], glyph_count - start);
     if (styles[style].underline || styles[style].strike) {
        renderer.DrawDecorations(start_x, y, glyph_x - start_x,

@@ -865,22 +865,6 @@ TEST_F(RenderTextTest, MoveLeftRightByWordInChineseText) {
   EXPECT_EQ(6U, render_text->GetCursorPosition());
 }
 
-TEST_F(RenderTextTest, StringWidthTest) {
-  scoped_ptr<RenderText> render_text(RenderText::CreateRenderText());
-  render_text->SetText(UTF8ToUTF16("Hello World"));
-
-  // Check that width is valid
-  int width = render_text->GetStringWidth();
-  EXPECT_GT(width, 0);
-
-  // Apply a bold style and check that the new width is greater.
-  StyleRange bold;
-  bold.font_style |= gfx::Font::BOLD;
-  render_text->set_default_style(bold);
-  render_text->ApplyDefaultStyle();
-  EXPECT_GT(render_text->GetStringWidth(), width);
-}
-
 #endif
 
 }  // namespace gfx

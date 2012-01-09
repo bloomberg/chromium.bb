@@ -77,16 +77,6 @@ void ApplyStyleRangeImpl(gfx::StyleRanges* style_ranges,
   style_ranges->insert(i, style_range);
 }
 
-// Converts |gfx::Font::FontStyle| flags to |SkTypeface::Style| flags.
-SkTypeface::Style ConvertFontStyleToSkiaTypefaceStyle(int font_style) {
-  int skia_style = SkTypeface::kNormal;
-  if (font_style & gfx::Font::BOLD)
-    skia_style |= SkTypeface::kBold;
-  if (font_style & gfx::Font::ITALIC)
-    skia_style |= SkTypeface::kItalic;
-  return static_cast<SkTypeface::Style>(skia_style);
-}
-
 }  // namespace
 
 namespace gfx {
@@ -114,26 +104,10 @@ void SkiaTextRenderer::SetTextSize(int size) {
   paint_.setTextSize(size);
 }
 
-void SkiaTextRenderer::SetFontStyle(int style) {
-  SkTypeface::Style skia_style = ConvertFontStyleToSkiaTypefaceStyle(style);
-  SkTypeface* current_typeface = paint_.getTypeface();
-
-  if (current_typeface->style() == skia_style)
-    return;
-
-  SkAutoTUnref<SkTypeface> typeface(
-      SkTypeface::CreateFromTypeface(current_typeface, skia_style));
-  if (typeface.get()) {
-    // |paint_| adds its own ref. So don't |release()| it from the ref ptr here.
-    SetTypeface(typeface.get());
-  }
-}
-
 void SkiaTextRenderer::SetFont(const gfx::Font& font) {
-  SkTypeface::Style skia_style =
-      ConvertFontStyleToSkiaTypefaceStyle(font.GetStyle());
   SkAutoTUnref<SkTypeface> typeface(
-      SkTypeface::CreateFromName(font.GetFontName().c_str(), skia_style));
+      SkTypeface::CreateFromName(font.GetFontName().c_str(),
+                                 SkTypeface::kNormal));
   if (typeface.get()) {
     // |paint_| adds its own ref. So don't |release()| it from the ref ptr here.
     SetTypeface(typeface.get());
@@ -190,7 +164,6 @@ void SkiaTextRenderer::DrawDecorations(int x, int y, int width,
 
 StyleRange::StyleRange()
     : foreground(SK_ColorBLACK),
-      font_style(gfx::Font::NORMAL),
       strike(false),
       underline(false) {
 }

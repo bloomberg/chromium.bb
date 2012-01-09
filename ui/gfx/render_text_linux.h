@@ -78,9 +78,6 @@ class RenderTextLinux : public RenderText {
   // Unref |layout_| and |pango_line_|. Set them to NULL.
   void ResetLayout();
 
-  // Setup pango attribute: foreground, background, font, strike.
-  void SetupPangoAttributes(PangoLayout* layout);
-
   // Returns |run|'s visually previous run.
   // The complexity is O(n) since it is a single-linked list.
   PangoLayoutRun* GetPreviousRun(PangoLayoutRun* run) const;

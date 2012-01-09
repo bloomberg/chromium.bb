@@ -39,13 +39,13 @@ class SkiaTextRenderer {
   void SetTypeface(SkTypeface* typeface);
   void SetTextSize(int size);
   void SetFont(const gfx::Font& font);
-  void SetFontStyle(int font_style);
   void SetForegroundColor(SkColor foreground);
   void DrawSelection(const std::vector<Rect>& selection, SkColor color);
   void DrawPosText(const SkPoint* pos,
                    const uint16* glyphs,
                    size_t glyph_count);
   void DrawDecorations(int x, int y, int width, bool underline, bool strike);
+  void DrawCursor(const gfx::Rect& bounds);
 
  private:
   SkCanvas* canvas_skia_;
@@ -70,9 +70,12 @@ const SkColor kCursorColor = SK_ColorBLACK;
 struct UI_EXPORT StyleRange {
   StyleRange();
 
+  // TODO(asvitkine): Add RenderText support for font weight. Add a |bold| style
+  // flag here, to be handled in RenderText's layout phase. For example, in
+  // RenderTextLinux, generate the new font description with font weight style
+  // option, create a Pango attribute from it, and append the attribute to
+  // layout.
   SkColor foreground;
-  // A gfx::Font::FontStyle flag to specify bold and italic styles.
-  int font_style;
   bool strike;
   bool underline;
   ui::Range range;

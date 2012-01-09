@@ -74,10 +74,7 @@ bool ChooseFallbackFont(HDC hdc,
     log_font.lfFaceName[0] = 0;
     EnumEnhMetaFile(0, meta_file, MetaFileEnumProc, &log_font, NULL);
     if (log_font.lfFaceName[0]) {
-      int font_style = font.GetStyle();
       *result = gfx::Font(UTF16ToUTF8(log_font.lfFaceName), font.GetFontSize());
-      if (result->GetStyle() != font_style)
-        *result = result->DeriveFont(0, font_style);
       found_fallback = true;
     }
   }
@@ -513,7 +510,7 @@ void RenderTextWin::ItemizeLogicalText() {
   for (int run_break = 0; run_break < text_length;) {
     internal::TextRun* run = new internal::TextRun();
     run->range.set_start(run_break);
-    run->font = GetFont().DeriveFont(0, style->font_style);
+    run->font = GetFont();
     run->foreground = style->foreground;
     run->strike = style->strike;
     run->underline = style->underline;

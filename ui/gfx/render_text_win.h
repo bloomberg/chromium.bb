@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -27,8 +27,6 @@ struct TextRun {
   //            Otherwise, this breaks the glyph shaping process.
   //            See the example at: http://www.catch22.net/tuts/neatpad/12.
   SkColor foreground;
-  // A gfx::Font::FontStyle flag to specify bold and italic styles.
-  int font_style;
   bool strike;
   bool underline;
 
