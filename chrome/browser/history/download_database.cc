@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,6 +15,16 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_item.h"
 #include "sql/statement.h"
+
+// TODO(benjhayden): Change this to DCHECK when we have more debugging
+// information from the next dev cycle, before the next stable/beta branch is
+// cut, in order to prevent unnecessary crashes on those channels. If we still
+// don't have root cause before the dev cycle after the next stable/beta
+// releases, uncomment it out to re-enable debugging checks. Whenever this macro
+// is toggled, the corresponding macro in download_manager_impl.cc should also
+// be toggled. When 96627 is fixed, this macro and all its usages and
+// returned_ids_ can be deleted or permanently changed to DCHECK as appropriate.
+#define CHECK_96627 CHECK
 
 using content::DownloadItem;
 
@@ -73,7 +83,7 @@ DownloadDatabase::~DownloadDatabase() {
 
 void DownloadDatabase::CheckThread() {
   if (owning_thread_set_) {
-    CHECK_EQ(owning_thread_, base::PlatformThread::CurrentId());
+    CHECK_96627(owning_thread_ == base::PlatformThread::CurrentId());
   } else {
     owning_thread_ = base::PlatformThread::CurrentId();
     owning_thread_set_ = true;
@@ -208,7 +218,6 @@ int64 DownloadDatabase::CreateDownload(
   if (statement.Run()) {
     int64 id = GetDB().GetLastInsertRowId();
 
-    // TODO(rdsmith): Remove when http://crbug.com/96627 is resolved.
     if (returned_ids_.count(id) != 0) {
       // We have an invariant violation and we're going to crash.  Take a
       // moment more before crashing to figure out if it's a returned_ids_/DB
@@ -216,14 +225,14 @@ int64 DownloadDatabase::CreateDownload(
       sql::Statement dbg_statement(GetDB().GetCachedStatement(
           SQL_FROM_HERE,
           "SELECT id FROM downloads;"));
-      CHECK(dbg_statement);
+      CHECK_96627(dbg_statement);
 
       std::set<int64> database_ids;
       while (dbg_statement.Step()) {
         bool success = database_ids.insert(dbg_statement.ColumnInt64(0)).second;
-        CHECK(success);
+        CHECK_96627(success);
       }
-      CHECK(false);
+      CHECK_96627(false);
     }
 
     returned_ids_.insert(id);
@@ -274,7 +283,7 @@ void DownloadDatabase::RemoveDownloadsBetween(base::Time delete_begin,
       int64 id_to_delete = dbg_statement.ColumnInt64(0);
       returned_ids_.erase(id_to_delete);
     }
-    CHECK(dbg_statement.Succeeded());
+    CHECK_96627(dbg_statement.Succeeded());
   }
 
   // This does not use an index. We currently aren't likely to have enough
