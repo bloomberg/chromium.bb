@@ -562,10 +562,20 @@
   fun:AudioDevice::AudioSocket::Close
   fun:AudioDevice::ShutDownAudioThread
   fun:AudioDevice::Stop
+  ...
   fun:AudioRendererImpl::OnStop
   fun:media::AudioRendererBase::Stop
   fun:media::CompositeFilter::CallFilter
   fun:media::CompositeFilter::SerialCallback
+}
+{
+  bug_95509_b
+  ThreadSanitizer:Race
+  fun:base::SyncSocket::Receive
+  fun:AudioDevice::Run
+  fun:base::DelegateSimpleThread::Run
+  fun:base::SimpleThread::ThreadMain
+  fun:base::::ThreadFunc
 }
 {
   bug_100020
