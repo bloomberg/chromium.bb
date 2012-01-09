@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -231,6 +231,8 @@ class TabStrip : public AbstractTabStripView,
   class RemoveTabDelegate;
 
   friend class DefaultTabDragController;
+  friend class TabDragController2;
+  friend class TabDragController2Test;
 
   // The Tabs we contain, and their last generated "good" bounds.
   struct TabData {
@@ -335,8 +337,15 @@ class TabStrip : public AbstractTabStripView,
   // See description above field for details.
   void set_attaching_dragged_tab(bool value) { attaching_dragged_tab_ = value; }
 
-  // Destroys the active drag controller.
+  // Takes ownership of |controller|.
+  void OwnDragController(TabDragController* controller);
+
+  // Destroys the current TabDragController. This cancel the existing drag
+  // operation.
   void DestroyDragController();
+
+  // Releases ownership of the current TabDragController.
+  TabDragController* ReleaseDragController();
 
   // -- Tab Resize Layout -----------------------------------------------------
 
@@ -357,6 +366,9 @@ class TabStrip : public AbstractTabStripView,
 
   // Perform an animated resize-relayout of the TabStrip immediately.
   void ResizeLayoutTabs();
+
+  // Sets the bounds of the tabs to |tab_bounds|.
+  void SetTabBoundsForDrag(const std::vector<gfx::Rect>& tab_bounds);
 
   // Ensure that the message loop observer used for event spying is added and
   // removed appropriately so we can tell when to resize layout the tab strip.

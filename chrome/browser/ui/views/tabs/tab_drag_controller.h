@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -52,6 +52,9 @@ class TabDragController {
   // NOTE: this returns false if the TabDragController is in the process of
   // finishing the drag.
   static bool IsAttachedTo(TabStrip* tab_strip);
+
+  // Returns true if there is a drag underway.
+  static bool IsActive();
 
   // Responds to drag events subsequent to StartDrag. If the mouse moves a
   // sufficient distance before the mouse is released, a drag session is

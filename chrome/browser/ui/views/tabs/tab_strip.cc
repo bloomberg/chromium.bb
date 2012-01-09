@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -568,19 +568,8 @@ void TabStrip::MaybeStartDrag(
 }
 
 void TabStrip::ContinueDrag(const views::MouseEvent& event) {
-  // We can get called even if |MaybeStartDrag| wasn't called in the event of
-  // a TabStrip animation when the mouse button is down. In this case we should
-  // _not_ continue the drag because it can lead to weird bugs.
-  if (drag_controller_.get()) {
-    bool started_drag = drag_controller_->GetStartedDrag();
+  if (drag_controller_.get())
     drag_controller_->Drag();
-    if (drag_controller_->GetStartedDrag() && !started_drag) {
-      // The drag just started. Redirect mouse events to us to that the tab that
-      // originated the drag can be safely deleted.
-      static_cast<views::internal::RootView*>(GetWidget()->GetRootView())->
-          SetMouseHandler(this);
-    }
-  }
 }
 
 bool TabStrip::EndDrag(bool canceled) {
@@ -672,6 +661,8 @@ views::View* TabStrip::GetNewTabButton() {
 void TabStrip::Layout() {
   // Only do a layout if our size changed.
   if (last_layout_size_ == size())
+    return;
+  if (IsDragSessionActive())
     return;
   DoLayout();
 }
@@ -1180,9 +1171,16 @@ void TabStrip::StoppedDraggingTab(BaseTab* tab, bool* is_first_tab) {
       tab, new ResetDraggingStateDelegate(tab), true);
 }
 
+void TabStrip::OwnDragController(TabDragController* controller) {
+  drag_controller_.reset(controller);
+}
+
 void TabStrip::DestroyDragController() {
-  if (IsDragSessionActive())
-    drag_controller_.reset(NULL);
+  drag_controller_.reset();
+}
+
+TabDragController* TabStrip::ReleaseDragController() {
+  return drag_controller_.release();
 }
 
 void TabStrip::GetDesiredTabWidths(int tab_count,
@@ -1294,6 +1292,13 @@ void TabStrip::ResizeLayoutTabs() {
   // size.
   if (abs(first_tab->width() - w) > 1)
     StartResizeLayoutAnimation();
+}
+
+void TabStrip::SetTabBoundsForDrag(const std::vector<gfx::Rect>& tab_bounds) {
+  StopAnimating(false);
+  DCHECK_EQ(tab_count(), static_cast<int>(tab_bounds.size()));
+  for (int i = 0; i < tab_count(); ++i)
+    base_tab_at_tab_index(i)->SetBoundsRect(tab_bounds[i]);
 }
 
 void TabStrip::AddMessageLoopObserver() {

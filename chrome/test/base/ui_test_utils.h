@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,6 +17,7 @@
 #include "base/process.h"
 #include "base/scoped_temp_dir.h"
 #include "base/string16.h"
+#include "chrome/browser/automation/ui_controls.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/test/automation/dom_element_proxy.h"
 #include "content/public/browser/browser_thread.h"
@@ -59,6 +60,7 @@ class WebContents;
 }
 
 namespace gfx {
+class Point;
 class Size;
 }
 
@@ -263,6 +265,13 @@ bool SendKeyPressAndWait(const Browser* browser,
                          int type,
                          const content::NotificationSource& source)
                              WARN_UNUSED_RESULT;
+
+// Sends a move event blocking until received. Returns true if the event was
+// successfully received. This uses ui_controls::SendMouse***NotifyWhenDone, see
+// it for details.
+bool SendMouseMoveSync(const gfx::Point& location) WARN_UNUSED_RESULT;
+bool SendMouseEventsSync(ui_controls::MouseButton type,
+                         int state) WARN_UNUSED_RESULT;
 
 // Run a message loop only for the specified amount of time.
 class TimedMessageLoopRunner {

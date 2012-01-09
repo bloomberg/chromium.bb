@@ -151,12 +151,14 @@ LRESULT CALLBACK MoveLoopMouseWatcher::KeyHook(int n_code,
                                                WPARAM w_param,
                                                LPARAM l_param) {
   if (n_code == HC_ACTION && w_param == VK_ESCAPE) {
-    int value = TRUE;
-    HRESULT result = DwmSetWindowAttribute(
-        instance_->host_->GetNativeView(),
-        DWMWA_TRANSITIONS_FORCEDISABLED,
-        &value,
-        sizeof(value));
+    if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
+      int value = TRUE;
+      HRESULT result = DwmSetWindowAttribute(
+          instance_->host_->GetNativeView(),
+          DWMWA_TRANSITIONS_FORCEDISABLED,
+          &value,
+          sizeof(value));
+    }
     // Hide the window on escape, otherwise the window is visibly going to snap
     // back to the original location before we close it.
     // This behavior is specific to tab dragging, in that we generally wouldn't
@@ -1127,9 +1129,11 @@ void NativeWidgetWin::EndMoveLoop() {
 }
 
 void NativeWidgetWin::SetVisibilityChangedAnimationsEnabled(bool value) {
-  int dwm_value = value ? FALSE : TRUE;
-  DwmSetWindowAttribute(
-      hwnd(), DWMWA_TRANSITIONS_FORCEDISABLED, &dwm_value, sizeof(dwm_value));
+  if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
+    int dwm_value = value ? FALSE : TRUE;
+    DwmSetWindowAttribute(
+        hwnd(), DWMWA_TRANSITIONS_FORCEDISABLED, &dwm_value, sizeof(dwm_value));
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

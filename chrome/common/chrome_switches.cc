@@ -1093,6 +1093,9 @@ const char kSyncThrowUnrecoverableError[]   = "sync-throw-unrecoverable-error";
 // Tries to connect to XMPP using SSLTCP first (for testing).
 const char kSyncTrySsltcpFirstForXmpp[]     = "sync-try-ssltcp-first-for-xmpp";
 
+// Enables tab dragging to create a real browser.
+const char kTabBrowserDragging[]            = "enable-tab-browser-dragging";
+
 // Passes the name of the current running automated test to Chrome.
 const char kTestName[]                      = "test-name";
 

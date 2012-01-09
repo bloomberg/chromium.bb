@@ -296,6 +296,7 @@ extern const char kSyncNotificationHost[];
 extern const char kSyncServiceURL[];
 extern const char kSyncThrowUnrecoverableError[];
 extern const char kSyncTrySsltcpFirstForXmpp[];
+extern const char kTabBrowserDragging[];
 extern const char kTestNaClSandbox[];
 extern const char kTestName[];
 extern const char kTestType[];
