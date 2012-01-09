@@ -1,6 +1,7 @@
-2011-12-01  Christian Egli  <christian.egli@sbs.ch>
+2012-01-09  Christian Egli  <christian.egli@sbs.ch>
 
-	* contrib/liblouis.el: Added an	Emacs mode for liblouis tables.
+	* tables/ar-ar-g1.utb: Added updates to Generic Arabic table by
+	Mesar Hameed <mhameed@src.gnome.org>
 
 2011-08-19  Bert Frees <bertfrees@gmail.com>
 

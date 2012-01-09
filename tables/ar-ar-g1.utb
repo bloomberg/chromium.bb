@@ -5,7 +5,7 @@
 # Copyright (C) 1995-2004 by The BRLTTY Team. 
 # Copyright (C) 2004 by ViewPlus Technologies, Inc.,  www.viewplustech.com
 # Copyright (C) 2004 by Computers to Help People, Inc., www.chpi.org  
-# Copyright (C) 2011 by Mesar Hameed <mhameed@src.gnome.org>
+# Copyright (C) 2011-2012 by Mesar Hameed <mhameed@src.gnome.org>
 #
 # liblouis comes with ABSOLUTELY NO WARRANTY.
 #
@@ -36,8 +36,6 @@ sign % 25-1234					# 37
 sign & 1234					# 38
 punctuation ' 3					# 39 apostrophe
 
-# punctuation ( 356				# 40
-# punctuation ) 236				# 41
 punctuation ) 356				# 40
 punctuation ( 236				# 41
 
@@ -46,7 +44,6 @@ math + 56-235					# 43
 punctuation , 46				# 44
 punctuation - 36				# 45
 
-# punctuation . 46				# 46
 punctuation \x06D4 256				# Arabic Full stop
 punctuation . 256				# 46
 
@@ -63,10 +60,9 @@ digit 8 236
 digit 9 35					# 57
 punctuation : 25				# 58
 punctuation ; 56				# 59
-math < 0-135-0					# 60
+math < 0-246-0					# 60
 math = 56-2356					# 61
-letter > 0-246-0
-math > 0-246-0					# 62
+math > 0-135-0					# 62
 punctuation ? 1456				# 63
 sign @ 4					# 64
 uplow Aa 1					# 65
@@ -95,16 +91,16 @@ uplow Ww 2456
 uplow Xx 1346
 uplow Yy 13456
 uplow Zz 1356					# 90 / 122
-punctuation [ 356-3				# 91
+punctuation [ 6-236				# 91
 sign \\ 6-34					# 92
-punctuation ] 6-236				# 93
+punctuation ] 356-6				# 93
 sign ^ 346					# 94 circumflex accent
 sign _ 456					# 95 underscore
 sign ` 4					# 96 grave accent
 # a - z						# 97 - 122
-punctuation { 356-2				# 123
+punctuation { 5-236				# 123
 sign | 1245					# 124
-punctuation } 5-236				# 125
+punctuation } 356-2				# 125
 math ~ 45					# 126
 
 space \X00A0 0					# 160 no-break space
@@ -289,8 +285,8 @@ postpunc : 25
 postpunc ! 235
 midnum / 34
 always / 34
-always < 0-135-0
-# always > 0-246-0
+always < 0-246-0
+always > 0-135-0
 postpunc ? 236
 endnum % 25-1234
 midnum ^ 346
@@ -299,10 +295,10 @@ always ~ 45
 always & 1234
 midnum * 56-35
 always * 56-35
-always [ 356-3
-always ] 6-236
-always { 356-2
-always } 5-236
+always [ 6-236
+always ] 356-3
+always { 5-236
+always } 356-2
 prepunc ` 6-236
 always @ 4
 always \\ 6-34
