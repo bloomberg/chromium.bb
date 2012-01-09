@@ -279,16 +279,16 @@ class NinjaWriter:
     # The final output of our target depends on the last output of the
     # above steps.
     output = output_binary = None
-    final_deps = link_deps or sources_depends or actions_depends
-    if final_deps:
+    if link_deps or sources_depends or actions_depends:
       output, output_binary = self.WriteTarget(
-          spec, config_name, config, final_deps, mac_bundle_depends,
+          spec, config_name, config, link_deps,
+          sources_depends or actions_depends, mac_bundle_depends,
           order_only=actions_depends)
-      if self.name != output and self.toolset == 'target':
-        # Write a short name to build this target.  This benefits both the
-        # "build chrome" case as well as the gyp tests, which expect to be
-        # able to run actions and build libraries by their short name.
-        self.ninja.build(self.name, 'phony', output)
+    if self.name != output and self.toolset == 'target':
+      # Write a short name to build this target.  This benefits both the
+      # "build chrome" case as well as the gyp tests, which expect to be
+      # able to run actions and build libraries by their short name.
+      self.ninja.build(self.name, 'phony', output)
     return output, output_binary, compile_depends
 
   def WriteActionsRulesCopies(self, spec, extra_sources, prebuild,
@@ -572,7 +572,7 @@ class NinjaWriter:
       cmd = { 'c': 'cc', 'cc': 'cxx', 'm': 'objc', 'mm': 'objcxx', }.get(lang)
       self.ninja.build(gch, cmd, input, variables=[(var_name, lang_flag)])
 
-  def WriteTarget(self, spec, config_name, config, final_deps,
+  def WriteTarget(self, spec, config_name, config, link_deps, final_deps,
                   mac_bundle_depends, order_only):
     if spec['type'] == 'none':
       # This target doesn't have any explicit final output, but is instead
@@ -581,13 +581,6 @@ class NinjaWriter:
       if len(final_deps) == 1:
         return final_deps[0], final_deps[0]
       # Otherwise, fall through to writing out a stamp file.
-
-    if self.is_mac_bundle:
-      output = self.ComputeMacBundleOutput(spec)
-      output_binary = self.ComputeMacBundleBinaryOutput(spec)
-      mac_bundle_depends.append(output_binary)
-    else:
-      output = output_binary = self.ComputeOutput(spec)
 
     output_uses_linker = spec['type'] in ('executable', 'loadable_module',
                                           'shared_library')
@@ -611,7 +604,17 @@ class NinjaWriter:
             # every build, but we don't want to rebuild when it runs.
             if 'lastchange' not in input:
               implicit_deps.add(input)
-        final_deps.extend(list(extra_deps))
+        link_deps.extend(list(extra_deps))
+
+    if self.is_mac_bundle:
+      output = self.ComputeMacBundleOutput(spec)
+      output_binary = self.ComputeMacBundleBinaryOutput(spec)
+      if not link_deps:
+        output_binary = self.ComputeOutput(spec, type='none')
+      mac_bundle_depends.append(output_binary)
+    else:
+      output = output_binary = self.ComputeOutput(spec)
+
     command_map = {
       'executable':      'link',
       'static_library':  'alink',
@@ -620,6 +623,13 @@ class NinjaWriter:
       'none':            'stamp',
     }
     command = command_map[spec['type']]
+
+    if link_deps:
+      final_deps = link_deps
+    else:
+      command = 'stamp'
+      order_only += final_deps
+      final_deps = []
 
     if output_uses_linker:
       if self.flavor == 'mac':
@@ -669,8 +679,10 @@ class NinjaWriter:
     path = self.ExpandSpecial(generator_default_variables['PRODUCT_DIR'])
     return os.path.join(path, self.xcode_settings.GetExecutablePath())
 
-  def ComputeOutputFileName(self, spec):
+  def ComputeOutputFileName(self, spec, type=None):
     """Compute the filename of the final output for the current target."""
+    if not type:
+      type = spec['type']
 
     # Compute filename prefix: the product prefix, or a default for
     # the product type.
@@ -679,7 +691,7 @@ class NinjaWriter:
       'shared_library': 'lib',
       'static_library': 'lib',
       }
-    prefix = spec.get('product_prefix', DEFAULT_PREFIX.get(spec['type'], ''))
+    prefix = spec.get('product_prefix', DEFAULT_PREFIX.get(type, ''))
 
     # Compute filename extension: the product extension, or a default
     # for the product type.
@@ -689,7 +701,7 @@ class NinjaWriter:
       'shared_library': 'so',
       }
     extension = spec.get('product_extension',
-                         DEFAULT_EXTENSION.get(spec['type'], ''))
+                         DEFAULT_EXTENSION.get(type, ''))
     if extension:
       extension = '.' + extension
 
@@ -703,24 +715,26 @@ class NinjaWriter:
         # Snip out an extra 'lib' from libs if appropriate.
         target = StripPrefix(target, 'lib')
 
-    if spec['type'] in ('static_library', 'loadable_module', 'shared_library',
+    if type in ('static_library', 'loadable_module', 'shared_library',
                         'executable'):
       return '%s%s%s' % (prefix, target, extension)
-    elif spec['type'] == 'none':
+    elif type == 'none':
       return '%s.stamp' % target
     else:
-      raise 'Unhandled output type', spec['type']
+      raise 'Unhandled output type', type
 
-  def ComputeOutput(self, spec):
+  def ComputeOutput(self, spec, type=None):
     """Compute the path for the final output of the spec."""
+    assert not self.is_mac_bundle or type
 
-    assert not self.is_mac_bundle
+    if not type:
+      type = spec['type']
 
-    if self.flavor == 'mac' and spec['type'] in (
+    if self.flavor == 'mac' and type in (
         'static_library', 'executable', 'shared_library', 'loadable_module'):
       filename = self.xcode_settings.GetExecutablePath()
     else:
-      filename = self.ComputeOutputFileName(spec)
+      filename = self.ComputeOutputFileName(spec, type)
 
     if 'product_dir' in spec:
       path = os.path.join(spec['product_dir'], filename)
@@ -732,9 +746,9 @@ class NinjaWriter:
     if self.flavor == 'mac' and self.toolset == 'target':
       type_in_output_root += ['shared_library', 'static_library']
 
-    if spec['type'] in type_in_output_root:
+    if type in type_in_output_root:
       return filename
-    elif spec['type'] == 'shared_library':
+    elif type == 'shared_library':
       libdir = 'lib'
       if self.toolset != 'target':
         libdir = 'lib/%s' % self.toolset
