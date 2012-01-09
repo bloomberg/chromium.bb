@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -49,6 +49,30 @@ static const int kPreferredNativeThemePaddingVertical = 5;
 // that draws a button with different padding may need to
 // override OnPaintFocusBorder and do something different.
 static const int kFocusRectInset = 3;
+
+// Default background color for buttons.
+const SkColor kBackgroundColor = SkColorSetRGB(0xde, 0xde, 0xde);
+
+#if defined(USE_AURA)
+// static
+const SkColor TextButtonBase::kEnabledColor = SkColorSetRGB(0x44, 0x44, 0x44);
+// static
+const SkColor TextButtonBase::kHighlightColor = SkColorSetRGB(0, 0, 0);
+// static
+const SkColor TextButtonBase::kDisabledColor = SkColorSetRGB(0x99, 0x99, 0x99);
+// static
+const SkColor TextButtonBase::kHoverColor = TextButton::kEnabledColor;
+#else  // !defined(USE_AURA)
+// static
+const SkColor TextButtonBase::kEnabledColor = SkColorSetRGB(6, 45, 117);
+// static
+const SkColor TextButtonBase::kHighlightColor =
+    SkColorSetARGB(200, 255, 255, 255);
+// static
+const SkColor TextButtonBase::kDisabledColor = SkColorSetRGB(161, 161, 146);
+// static
+const SkColor TextButtonBase::kHoverColor = TextButton::kEnabledColor;
+#endif  // defined(USE_AURA)
 
 // How long the hover fade animation should last.
 static const int kHoverAnimationDurationMs = 170;
@@ -252,16 +276,11 @@ TextButtonBase::TextButtonBase(ButtonListener* listener, const string16& text)
       alignment_(ALIGN_LEFT),
       font_(ResourceBundle::GetSharedInstance().GetFont(
           ResourceBundle::BaseFont)),
-      color_(gfx::NativeTheme::instance()->GetSystemColor(
-          gfx::NativeTheme::kColorId_TextButtonEnabledColor)),
-      color_enabled_(gfx::NativeTheme::instance()->GetSystemColor(
-          gfx::NativeTheme::kColorId_TextButtonEnabledColor)),
-      color_disabled_(gfx::NativeTheme::instance()->GetSystemColor(
-          gfx::NativeTheme::kColorId_TextButtonDisabledColor)),
-      color_highlight_(gfx::NativeTheme::instance()->GetSystemColor(
-          gfx::NativeTheme::kColorId_TextButtonHighlightColor)),
-      color_hover_(gfx::NativeTheme::instance()->GetSystemColor(
-          gfx::NativeTheme::kColorId_TextButtonHoverColor)),
+      color_(kEnabledColor),
+      color_enabled_(kEnabledColor),
+      color_disabled_(kDisabledColor),
+      color_highlight_(kHighlightColor),
+      color_hover_(kHoverColor),
       text_halo_color_(0),
       has_text_halo_(false),
       active_text_shadow_color_(0),
@@ -450,9 +469,7 @@ void TextButtonBase::GetExtraParams(
   params->button.is_default = false;
   params->button.has_border = false;
   params->button.classic_state = 0;
-  params->button.background_color =
-      gfx::NativeTheme::instance()->GetSystemColor(
-          gfx::NativeTheme::kColorId_TextButtonBackgroundColor);
+  params->button.background_color = kBackgroundColor;
 }
 
 gfx::Rect TextButtonBase::GetContentBounds(int extra_width) const {
