@@ -10,13 +10,11 @@
           # PPP_Initialize is called once to initialize the plugin.
           # It is effectively a class initializer for the plugin type.
           {'name': 'PPP_InitializeModule',
-           'inputs': [['pid', 'int32_t'],
-                      ['module', 'PP_Module'],
+           'inputs': [['module', 'PP_Module'],
                       ['upcall_channel_desc', 'handle'],
                       ['service_description', 'string'],
                      ],
-           'outputs': [['nacl_pid', 'int32_t'],
-                       ['success', 'int32_t'],
+           'outputs': [['success', 'int32_t'],
                       ]
           },
           # PPP_ShutdownModule stops the plugin.

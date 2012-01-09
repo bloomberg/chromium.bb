@@ -40,21 +40,17 @@ NaClSrpcError CompletionCallbackRpcClient::RunCompletionCallback(
 
 NaClSrpcError PppRpcClient::PPP_InitializeModule(
     NaClSrpcChannel* channel,
-    int32_t pid,
     PP_Module module,
     NaClSrpcImcDescType upcall_channel_desc,
     const char* service_description,
-    int32_t* nacl_pid,
     int32_t* success)  {
   NaClSrpcError retval;
   retval = NaClSrpcInvokeBySignature(
       channel,
-      "PPP_InitializeModule:iihs:ii",
-      pid,
+      "PPP_InitializeModule:ihs:i",
       module,
       upcall_channel_desc,
       service_description,
-      nacl_pid,
       success
   );
   return retval;

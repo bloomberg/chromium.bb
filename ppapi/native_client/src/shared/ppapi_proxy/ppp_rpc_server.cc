@@ -49,11 +49,9 @@ static void PPP_InitializeModuleDispatcher(
       rpc,
       done,
       inputs[0]->u.ival,
-      inputs[1]->u.ival,
-      inputs[2]->u.hval,
-      inputs[3]->arrays.str,
-      &(outputs[0]->u.ival),
-      &(outputs[1]->u.ival)
+      inputs[1]->u.hval,
+      inputs[2]->arrays.str,
+      &(outputs[0]->u.ival)
   );
 }
 
@@ -426,7 +424,7 @@ static void PPP_Zoom_ZoomDispatcher(
 
 NaClSrpcHandlerDesc PppRpcs::srpc_methods[] = {
   { "RunCompletionCallback:iiC:", RunCompletionCallbackDispatcher },
-  { "PPP_InitializeModule:iihs:ii", PPP_InitializeModuleDispatcher },
+  { "PPP_InitializeModule:ihs:i", PPP_InitializeModuleDispatcher },
   { "PPP_ShutdownModule::", PPP_ShutdownModuleDispatcher },
   { "PPP_GetInterface:s:i", PPP_GetInterfaceDispatcher },
   { "PPP_Audio_StreamCreated:ihih:", PPP_Audio_StreamCreatedDispatcher },

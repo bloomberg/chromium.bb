@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -97,15 +97,12 @@ int32_t BrowserPpp::InitializeModule(PP_Module module_id,
   SetModuleIdForSrpcChannel(main_channel_, module_id);
   SetInstanceIdForSrpcChannel(main_channel_, plugin_->pp_instance());
   // Do the RPC.
-  int32_t browser_pid = static_cast<int32_t>(GETPID());
   int32_t pp_error;
   NaClSrpcError srpc_result =
       PppRpcClient::PPP_InitializeModule(main_channel_,
-                                         browser_pid,
                                          module_id,
                                          wrapper->desc(),
                                          service_string,
-                                         &plugin_pid_,
                                          &pp_error);
   DebugPrintf("PPP_InitializeModule: %s\n", NaClSrpcErrorString(srpc_result));
   is_nexe_alive_ = (srpc_result != NACL_SRPC_RESULT_INTERNAL);

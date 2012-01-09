@@ -39,11 +39,9 @@ class PppRpcServer {
   static void PPP_InitializeModule(
       NaClSrpcRpc* rpc,
       NaClSrpcClosure* done,
-      int32_t pid,
       PP_Module module,
       NaClSrpcImcDescType upcall_channel_desc,
       const char* service_description,
-      int32_t* nacl_pid,
       int32_t* success);
   static void PPP_ShutdownModule(
       NaClSrpcRpc* rpc,

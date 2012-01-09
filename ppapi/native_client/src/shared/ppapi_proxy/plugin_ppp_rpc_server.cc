@@ -92,11 +92,9 @@ void StopUpcallSrpcChannel() {
 void PppRpcServer::PPP_InitializeModule(
     NaClSrpcRpc* rpc,
     NaClSrpcClosure* done,
-    int32_t pid,
     PP_Module module,
     NaClSrpcImcDescType upcall_channel_desc,
     const char* service_description,
-    int32_t* nacl_pid,
     int32_t* success) {
   NaClSrpcClosureRunner runner(done);
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
@@ -118,7 +116,6 @@ void PppRpcServer::PPP_InitializeModule(
   }
   ppapi_proxy::SetModuleIdForSrpcChannel(rpc->channel, module);
   *success = ::PPP_InitializeModule(module, ppapi_proxy::GetBrowserInterface);
-  *nacl_pid = GETPID();
   rpc->result = NACL_SRPC_RESULT_OK;
 }
 

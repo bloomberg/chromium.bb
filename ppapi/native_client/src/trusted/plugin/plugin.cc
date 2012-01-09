@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -1352,7 +1352,7 @@ bool Plugin::StartProxiedExecution(NaClSrpcChannel* srpc_channel,
   // Check that the .nexe exports the PPAPI intialization method.
   NaClSrpcService* client_service = srpc_channel->client;
   if (NaClSrpcServiceMethodIndex(client_service,
-                                 "PPP_InitializeModule:iihs:ii") ==
+                                 "PPP_InitializeModule:ihs:i") ==
       kNaClSrpcInvalidMethodIndex) {
     error_info->SetReport(
         ERROR_START_PROXY_CHECK_PPP,

@@ -37,11 +37,9 @@ class PppRpcClient {
  public:
   static NaClSrpcError PPP_InitializeModule(
       NaClSrpcChannel* channel,
-      int32_t pid,
       PP_Module module,
       NaClSrpcImcDescType upcall_channel_desc,
       const char* service_description,
-      int32_t* nacl_pid,
       int32_t* success);
   static NaClSrpcError PPP_ShutdownModule(
       NaClSrpcChannel* channel);

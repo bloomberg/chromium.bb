@@ -30,7 +30,6 @@ class BrowserPpp {
   BrowserPpp(NaClSrpcChannel* main_channel, plugin::Plugin* plugin)
       : main_channel_(main_channel),
         is_nexe_alive_(true),
-        plugin_pid_(0),
         plugin_(plugin),
         ppp_instance_interface_(NULL),
         ppp_messaging_interface_(NULL),
@@ -72,7 +71,6 @@ class BrowserPpp {
   }
 
   NaClSrpcChannel* main_channel() const { return main_channel_; }
-  int plugin_pid() const { return plugin_pid_; }
   plugin::Plugin* plugin() { return plugin_; }
 
   void ReportDeadNexe() { is_nexe_alive_ = false; }
@@ -82,8 +80,6 @@ class BrowserPpp {
   // NULL if proxy has been shut down.
   NaClSrpcChannel* main_channel_;
   bool is_nexe_alive_;
-  // The PID of the plugin.
-  int plugin_pid_;
   // Plugin that owns this proxy.
   plugin::Plugin* plugin_;
 
