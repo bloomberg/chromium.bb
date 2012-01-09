@@ -356,6 +356,7 @@ enum escape_state {
 
 struct terminal {
 	struct window *window;
+	struct widget *widget;
 	struct display *display;
 	union utf8_char *data;
 	struct task io_task;
@@ -2248,10 +2249,9 @@ button_handler(struct window *window,
 }
 
 static int
-motion_handler(struct window *window,
+motion_handler(struct widget *widget,
 	       struct input *input, uint32_t time,
-	       int32_t x, int32_t y,
-	       int32_t sx, int32_t sy, void *data)
+	       int32_t x, int32_t y, void *data)
 {
 	struct terminal *terminal = data;
 
@@ -2259,7 +2259,7 @@ motion_handler(struct window *window,
 		input_get_position(input,
 				   &terminal->selection_end_x,
 				   &terminal->selection_end_y);
-		window_schedule_redraw(window);
+		widget_schedule_redraw(widget);
 	}
 
 	return POINTER_IBEAM;
@@ -2299,7 +2299,9 @@ terminal_create(struct display *display, int fullscreen)
 	window_set_keyboard_focus_handler(terminal->window,
 					  keyboard_focus_handler);
 	window_set_button_handler(terminal->window, button_handler);
-	window_set_motion_handler(terminal->window, motion_handler);
+
+	terminal->widget = window_add_widget(terminal->window, terminal);
+	widget_set_motion_handler(terminal->widget, motion_handler);
 
 	surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 0, 0);
 	cr = cairo_create(surface);

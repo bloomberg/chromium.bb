@@ -440,12 +440,11 @@ dnd_enter_handler(struct widget *widget,
 }
 
 static int
-dnd_motion_handler(struct window *window,
+dnd_motion_handler(struct widget *widget,
 		   struct input *input, uint32_t time,
-		   int32_t x, int32_t y,
-		   int32_t sx, int32_t sy, void *data)
+		   int32_t x, int32_t y, void *data)
 {
-	return lookup_cursor(data, sx, sy);
+	return lookup_cursor(data, x, y);
 }
 
 static void
@@ -536,12 +535,12 @@ dnd_create(struct display *display)
 	window_set_keyboard_focus_handler(dnd->window,
 					  keyboard_focus_handler);
 	window_set_button_handler(dnd->window, dnd_button_handler);
-	window_set_motion_handler(dnd->window, dnd_motion_handler);
 	window_set_data_handler(dnd->window, dnd_data_handler);
 	window_set_drop_handler(dnd->window, dnd_drop_handler);
 
 	dnd->widget = window_add_widget(dnd->window, dnd);
 	widget_set_enter_handler(dnd->widget, dnd_enter_handler);
+	widget_set_motion_handler(dnd->widget, dnd_motion_handler);
 
 	width = 4 * (item_width + item_padding) + item_padding;
 	height = 4 * (item_height + item_padding) + item_padding;

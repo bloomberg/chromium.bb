@@ -2212,14 +2212,13 @@ menu_set_item(struct widget *widget, struct menu *menu, int sy)
 }
 
 static int
-menu_motion_handler(struct window *window,
+menu_motion_handler(struct widget *widget,
 		    struct input *input, uint32_t time,
-		    int32_t x, int32_t y,
-		    int32_t sx, int32_t sy, void *data)
+		    int32_t x, int32_t y, void *data)
 {
 	struct menu *menu = data;
 
-	return menu_set_item(menu->widget, menu, sy);
+	return menu_set_item(menu->widget, menu, y);
 }
 
 static void
@@ -2330,7 +2329,6 @@ window_create_menu(struct display *display,
 				   window->parent->shell_surface,
 				   window->x, window->y, 0);
 
-	window_set_motion_handler(window, menu_motion_handler);
 	window_set_button_handler(window, menu_button_handler);
 	window_set_redraw_handler(window, menu_redraw_handler);
 	window_set_user_data(window, menu);
@@ -2338,6 +2336,7 @@ window_create_menu(struct display *display,
 	menu->widget = window_add_widget(window, menu);
 	widget_set_enter_handler(menu->widget, menu_enter_handler);
 	widget_set_leave_handler(menu->widget, menu_leave_handler);
+	widget_set_motion_handler(menu->widget, menu_motion_handler);
 
 	return window;
 }

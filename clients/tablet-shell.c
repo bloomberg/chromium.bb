@@ -197,15 +197,6 @@ lockscreen_draw(struct tablet_shell *shell)
 	window_flush(shell->lockscreen);
 }
 
-static int
-lockscreen_motion_handler(struct window *window,
-			  struct input *input, uint32_t time,
-			  int32_t x, int32_t y,
-			  int32_t sx, int32_t sy, void *data)
-{
-	return POINTER_LEFT_PTR;
-}
-
 static void
 lockscreen_button_handler(struct window *window,
 			  struct input *input, uint32_t time,
@@ -230,8 +221,6 @@ show_lockscreen(void *data, struct tablet_shell *tablet_shell)
 	window_set_custom(shell->lockscreen);
 	window_set_button_handler(shell->lockscreen,
 				  lockscreen_button_handler);
-	window_set_motion_handler(shell->lockscreen,
-				  lockscreen_motion_handler);
 
 
 	tablet_shell_set_lockscreen(shell->tablet_shell,
