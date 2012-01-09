@@ -184,6 +184,7 @@ struct output {
 
 struct menu {
 	struct window *window;
+	struct widget *widget;
 	const char **entries;
 	uint32_t time;
 	int current;
@@ -2208,14 +2209,14 @@ window_create_transient(struct display *display, struct window *parent,
 }
 
 static int
-menu_set_widget(struct window *window, struct menu *menu, int sy)
+menu_set_item(struct widget *widget, struct menu *menu, int sy)
 {
 	int next;
 
 	next = (sy - 8) / 20;
 	if (menu->current != next) {
 		menu->current = next;
-		window_schedule_redraw(window);
+		widget_schedule_redraw(widget);
 	}
 
 	return POINTER_LEFT_PTR;
@@ -2227,22 +2228,23 @@ menu_motion_handler(struct window *window,
 		    int32_t x, int32_t y,
 		    int32_t sx, int32_t sy, void *data)
 {
-	return menu_set_widget(window, data, sy);
-}
+	struct menu *menu = data;
 
-static int
-menu_enter_handler(struct window *window,
-		    struct input *input, uint32_t time,
-		    int32_t x, int32_t y, void *data)
-{
-	return menu_set_widget(window, data, y);
+	return menu_set_item(menu->widget, menu, sy);
 }
 
 static void
-menu_leave_handler(struct window *window,
-		   struct input *input, uint32_t time, void *data)
+menu_enter_handler(struct widget *widget,
+		   struct input *input, uint32_t time,
+		   int32_t x, int32_t y, void *data)
 {
-	menu_set_widget(window, data, -200);
+	menu_set_item(widget, data, y);
+}
+
+static void
+menu_leave_handler(struct widget *widget, struct input *input, void *data)
+{
+	menu_set_item(widget, data, -200);
 }
 
 static void
@@ -2273,6 +2275,7 @@ menu_redraw_handler(struct window *window, void *data)
 	height = menu->count * 20 + margin * 2;
 	window_set_child_size(window, width, height);
 	window_create_surface(window);
+	widget_set_allocation(menu->widget, 0, 0, width, height);
 
 	cr = cairo_create(window->cairo_surface);
 	cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
@@ -2339,11 +2342,13 @@ window_create_menu(struct display *display,
 				   window->x, window->y, 0);
 
 	window_set_motion_handler(window, menu_motion_handler);
-	window_set_enter_handler(window, menu_enter_handler);
-	window_set_leave_handler(window, menu_leave_handler);
 	window_set_button_handler(window, menu_button_handler);
 	window_set_redraw_handler(window, menu_redraw_handler);
 	window_set_user_data(window, menu);
+
+	menu->widget = window_add_widget(window, menu);
+	widget_set_enter_handler(menu->widget, menu_enter_handler);
+	widget_set_leave_handler(menu->widget, menu_leave_handler);
 
 	return window;
 }
