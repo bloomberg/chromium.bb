@@ -750,6 +750,7 @@
     }],
     ['os_bsd==1', {
       'sources/': [
+        ['exclude', '^browser/gamepad/platform_data_fetcher_linux\\.cc$'],
         ['exclude', '^browser/geolocation/wifi_data_provider_linux\\.cc$'],
       ],
     }],
