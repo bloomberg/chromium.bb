@@ -19,6 +19,7 @@ import time
 import urllib2
 
 SOURCE_STAMP = 'SOURCE_URL'
+HASH_STAMP = 'SOURCE_SHA1'
 
 
 # Designed to handle more general inputs than sys.platform because the platform
@@ -125,8 +126,8 @@ def WriteStamp(stampfile, data):
   f.close()
 
 
-def SourceIsCurrent(path, url, min_time=None):
-  stampfile = os.path.join(path, SOURCE_STAMP)
+def StampIsCurrent(path, stamp_name, stamp_contents, min_time=None):
+  stampfile = os.path.join(path, stamp_name)
 
   # Check if the stampfile is older than the minimum last mod time
   if min_time:
@@ -137,12 +138,16 @@ def SourceIsCurrent(path, url, min_time=None):
     except OSError:
       return False
 
-  return DoesStampMatch(stampfile, url)
+  return DoesStampMatch(stampfile, stamp_contents)
 
 
 def WriteSourceStamp(path, url):
   stampfile = os.path.join(path, SOURCE_STAMP)
   WriteStamp(stampfile, url)
+
+def WriteHashStamp(path, hash):
+  hash_stampfile = os.path.join(path, HASH_STAMP)
+  WriteStamp(hash_stampfile, hash)
 
 
 def Retry(op, *args):
@@ -264,11 +269,20 @@ def SyncURL(url, filename=None, stamp_dir=None, min_time=None,
   tarball_ok = not keep or os.path.isfile(filename)
 
   # If we don't need the tarball and the stamp_file matches the url, then
-  # we must be up to date.
-  if tarball_ok and stamp_dir and SourceIsCurrent(stamp_dir, url, min_time):
-    if verbose:
-      print '%s is already up to date.' % filename
-    return False
+  # we must be up to date.  If the URL differs but the recorded hash matches
+  # the one we'll insist the tarball has, then that's good enough too.
+  # TODO(mcgrathr): Download the .sha1sum file first to compare with
+  # the cached hash, in case --file-hash options weren't used.
+  if tarball_ok and stamp_dir is not None:
+    if StampIsCurrent(stamp_dir, SOURCE_STAMP, url, min_time):
+      if verbose:
+        print '%s is already up to date.' % filename
+      return False
+    if (hash is not None and
+        StampIsCurrent(stamp_dir, HASH_STAMP, hash, min_time)):
+      if verbose:
+        print '%s is identical to the up to date file.' % filename
+      return False
 
   if verbose:
     print 'Updating %s\n\tfrom %s.' % (filename, url)
@@ -282,7 +296,3 @@ def SyncURL(url, filename=None, stamp_dir=None, min_time=None,
                       download_url=url)
 
   return True
-
-
-
-

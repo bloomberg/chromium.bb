@@ -102,6 +102,11 @@ def SyncFlavor(flavor, url, dst, hash, min_time, keep=False, force=False,
                                 keep=keep, verbose=verbose):
     return False
 
+  # If we didn't already have an expected hash (which must have matched the
+  # actual hash), compute one so we can store it in the stamp file.
+  if hash is None:
+    hash = download_utils.HashFile(filepath)
+
   tar = cygtar.CygTar(filepath, 'r:*')
   curdir = os.getcwd()
   if not os.path.exists(untar_dir):
@@ -126,6 +131,7 @@ def SyncFlavor(flavor, url, dst, hash, min_time, keep=False, force=False,
   download_utils.MoveDirCleanly(src ,dst)
   download_utils.RemoveDir(untar_dir)
   download_utils.WriteSourceStamp(dst, url)
+  download_utils.WriteHashStamp(dst, hash)
   return True
 
 
