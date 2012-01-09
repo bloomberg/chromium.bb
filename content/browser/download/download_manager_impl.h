@@ -135,11 +135,7 @@ class CONTENT_EXPORT DownloadManagerImpl
   friend class DownloadManagerTest;
   friend class DownloadTest;
 
-  friend class base::RefCountedThreadSafe<
-      DownloadManagerImpl, content::BrowserThread::DeleteOnUIThread>;
-  friend struct content::BrowserThread::DeleteOnThread<
-      content::BrowserThread::UI>;
-  friend class base::DeleteHelper<DownloadManagerImpl>;
+  friend class base::RefCountedThreadSafe<DownloadManagerImpl>;
 
   virtual ~DownloadManagerImpl();
 

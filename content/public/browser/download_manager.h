@@ -57,8 +57,7 @@ class WebContents;
 
 // Browser's download manager: manages all downloads and destination view.
 class CONTENT_EXPORT DownloadManager
-    : public base::RefCountedThreadSafe<
-          DownloadManager, content::BrowserThread::DeleteOnUIThread> {
+    : public base::RefCountedThreadSafe<DownloadManager> {
  public:
   virtual ~DownloadManager() {}
 
