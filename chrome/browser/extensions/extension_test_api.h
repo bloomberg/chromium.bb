@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,31 +11,40 @@
 
 template <typename T> struct DefaultSingletonTraits;
 
-class ExtensionTestPassFunction : public SyncExtensionFunction {
+// A function that is only available in tests.
+// Prior to running, checks that we are in an extension process.
+class TestExtensionFunction : public SyncExtensionFunction {
+ public:
+  virtual ~TestExtensionFunction();
+
+  virtual void Run() OVERRIDE;
+};
+
+class ExtensionTestPassFunction : public TestExtensionFunction {
   virtual ~ExtensionTestPassFunction();
   virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("test.notifyPass")
 };
 
-class ExtensionTestFailFunction : public SyncExtensionFunction {
+class ExtensionTestFailFunction : public TestExtensionFunction {
   virtual ~ExtensionTestFailFunction();
   virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("test.notifyFail")
 };
 
-class ExtensionTestLogFunction : public SyncExtensionFunction {
+class ExtensionTestLogFunction : public TestExtensionFunction {
   virtual ~ExtensionTestLogFunction();
   virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("test.log")
 };
 
-class ExtensionTestQuotaResetFunction : public SyncExtensionFunction {
+class ExtensionTestQuotaResetFunction : public TestExtensionFunction {
   virtual ~ExtensionTestQuotaResetFunction();
   virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("test.resetQuota")
 };
 
-class ExtensionTestCreateIncognitoTabFunction : public SyncExtensionFunction {
+class ExtensionTestCreateIncognitoTabFunction : public TestExtensionFunction {
   virtual ~ExtensionTestCreateIncognitoTabFunction();
   virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("test.createIncognitoTab")

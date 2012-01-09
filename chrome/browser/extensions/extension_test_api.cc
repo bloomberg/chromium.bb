@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/command_line.h"
 #include "base/memory/singleton.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
@@ -13,6 +14,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/chrome_switches.h"
 #include "content/public/browser/notification_service.h"
 
 namespace {
@@ -23,7 +25,21 @@ namespace {
 // in test set up.
 const char kNoTestConfigDataError[] = "Test configuration was not set.";
 
+const char kNotTestProcessError[] =
+    "The chrome.test namespace is only available in tests.";
+
 }  // namespace
+
+TestExtensionFunction::~TestExtensionFunction() {}
+
+void TestExtensionFunction::Run() {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kTestType)) {
+    error_ = kNotTestProcessError;
+    SendResponse(false);
+    return;
+  }
+  SendResponse(RunImpl());
+}
 
 ExtensionTestPassFunction::~ExtensionTestPassFunction() {}
 
