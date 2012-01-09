@@ -1771,3 +1771,9 @@
    Heapcheck:Leak
    fun:AutofillProfileSyncableServiceTest::SetUp
 }
+{
+   bug_109638
+   Heapcheck:Leak
+   ...
+   fun:views::TreeViewViewsTest::Add
+}
