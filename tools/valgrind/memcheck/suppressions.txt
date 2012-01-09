@@ -5573,6 +5573,12 @@
    fun:_ZN11webkit_glue25WebKitPlatformSupportImpl9DoTimeoutEv
    fun:_ZN4base9BaseTimerIN11webkit_glue25WebKitPlatformSupportImplELb0EE9TimerTask3RunEv
 }
+{
+   bug_109638
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN5views17TreeViewViewsTest3AddEPNS_8TestNodeEiRKSs
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
