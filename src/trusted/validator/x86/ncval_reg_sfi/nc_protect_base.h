@@ -26,9 +26,6 @@ struct NaClValidatorState;
 /* The state associated with a decoded instruction. */
 struct NaClInstState;
 
-/* The model of an iterator through instructions in a code segment. */
-struct NaClInstIter;
-
 /* Defines locals used by the NaClBaseRegisterValidator to
  * record registers set in the current instruction, that are
  * a problem if not used correctly in the next instruction.
@@ -69,8 +66,7 @@ typedef struct NaClBaseRegisterLocals {
 void NaClBaseRegisterMemoryInitialize(struct NaClValidatorState* state);
 
 /* Validator function to check that the base register is never set. */
-void NaClBaseRegisterValidator(struct NaClInstIter* iter,
-                               struct NaClValidatorState* state);
+void NaClBaseRegisterValidator(struct NaClValidatorState* state);
 
 
 /* Post iteration validator summarization function. */
@@ -87,8 +83,7 @@ void NaClBaseRegisterSummarize(struct NaClValidatorState* state);
  * Note: As a side effect, the instruction LEA is marked as
  * a non-entry point to the atomic sequence above.
  */
-Bool NaClAcceptLeaWithMoveLea32To64(struct NaClInstIter* iter,
-                                    struct NaClValidatorState* state,
+Bool NaClAcceptLeaWithMoveLea32To64(struct NaClValidatorState* state,
                                     NaClOpKind reg);
 
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCVAL_REG_SFI_NC_PROTECT_BASE_H__ */

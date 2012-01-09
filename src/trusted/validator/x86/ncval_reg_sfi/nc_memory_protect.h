@@ -21,7 +21,6 @@
  */
 
 struct NaClValidatorState;
-struct NaClInstIter;
 struct NaClInstState;
 
 /*
@@ -52,8 +51,7 @@ extern Bool NACL_FLAGS_read_sandbox;
  *
  * NOTE: in x86 code, displacements can't be larger than 32 bits.
  */
-void NaClMemoryReferenceValidator(struct NaClInstIter* iter,
-                                  struct NaClValidatorState* state);
+void NaClMemoryReferenceValidator(struct NaClValidatorState* state);
 
 /*
  * Returns true if the specified instruction is an LEA instruction that
@@ -68,7 +66,6 @@ void NaClMemoryReferenceValidator(struct NaClInstIter* iter,
  * r64.
  */
 Bool NaClIsLeaSafeAddress(
-    struct NaClInstIter* iter,         /* Instruction iterator used. */
     struct NaClValidatorState* state,  /* The validator state associated with
                                         * the instruction using the address to
                                         * check.

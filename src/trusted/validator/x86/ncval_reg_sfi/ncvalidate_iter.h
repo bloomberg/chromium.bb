@@ -118,6 +118,29 @@ NaClValidatorState* NaClValidatorStateCreate(const NaClPcAddress vbase,
                                              const NaClOpKind base_register,
                                              const CPUFeatures* features);
 
+/* Returns true if the instruction iterator of the validator has any more
+ * instructions. Also does any necessary internal caching if there are
+ * more instructions, based on the instruction iterator.
+ */
+Bool NaClValidatorStateIterHasNext(NaClValidatorState *vstate);
+
+/* Advances the instruction iterator of the validator to the next instruction.
+ * Also does necessary internal caching expected by the validator for the
+ * next instruction.
+ */
+void NaClValidatorStateIterAdvance(NaClValidatorState *vstate);
+
+/* Assumes that we have finished iterating through the instruction iterator
+ * of the validator and cleans up appropriate cached information that is
+ * only defined while iterating over instructions.
+ */
+void NaClValidatorStateIterFinish(NaClValidatorState *vstate);
+
+/* Resets the instruction iterator back to the beginning of the segment.
+ * Returns true on success.
+ */
+Bool NaClValidatorStateIterReset(NaClValidatorState *vstate);
+
 /* Returns the current maximum number of errors that can be reported.
  * Note: When > 0, the validator will only print that many errors before
  * quiting. When 0, the validator will not print any messages. When < 0,

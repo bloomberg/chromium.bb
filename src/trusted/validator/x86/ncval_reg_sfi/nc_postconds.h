@@ -19,7 +19,6 @@ struct NaClValidatorState;
  * to the instruction.
  */
 void NaClAddAssignsRegisterWithZeroExtendsPostconds(
-    struct NaClInstIter* iter,
     struct NaClValidatorState* state);
 
 /* Checks if the postcondition "SafeAddress(reg)" is generated for the
@@ -27,7 +26,6 @@ void NaClAddAssignsRegisterWithZeroExtendsPostconds(
  * added to the instruction.
  */
 void NaClAddLeaSafeAddressPostconds(
-    struct NaClInstIter* iter,
     struct NaClValidatorState* state);
 
 #endif

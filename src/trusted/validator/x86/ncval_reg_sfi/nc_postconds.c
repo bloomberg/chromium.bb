@@ -30,7 +30,6 @@ static const size_t kMaxBufferSize = 1024;
 
 #ifdef NCVAL_TESTING
 void NaClAddAssignsRegisterWithZeroExtendsPostconds(
-    struct NaClInstIter* iter,
     struct NaClValidatorState* state) {
   uint32_t i;
   NaClExpVector* vector = state->cur_inst_vector;
@@ -48,14 +47,13 @@ void NaClAddAssignsRegisterWithZeroExtendsPostconds(
     if (!NaClHasBit(node->flags, NACL_EFLAG(ExprSet))) continue;
     if (!NaClHasBit(node->flags, NACL_EFLAG(ExprSize32))) continue;
     NaClAssignsRegisterWithZeroExtends32(
-        iter, state, 0, NaClGetExpRegisterInline(node));
+        state, 0, NaClGetExpRegisterInline(node));
   }
   DEBUG(NaClValidatorMessage(
       LOG_INFO, state, "<- Finished ZeroExtends postconditions...\n"));
 }
 
 void NaClAddLeaSafeAddressPostconds(
-    struct NaClInstIter* iter,
     struct NaClValidatorState* state) {
   uint32_t i;
   NaClExpVector* vector = state->cur_inst_vector;
@@ -80,10 +78,10 @@ void NaClAddLeaSafeAddressPostconds(
        * information on how such LEA instructions are checked.
        */
       if (InstLea != NaClInstStateInst(state->cur_inst_state)->name) {
-        NaClAcceptLeaWithMoveLea32To64(iter, state, reg);
+        NaClAcceptLeaWithMoveLea32To64(state, reg);
       }
     } else {
-      NaClIsLeaSafeAddress(iter, state, 0, state->cur_inst_state,
+      NaClIsLeaSafeAddress(state, 0, state->cur_inst_state,
                            NaClGetExpRegisterInline(node));
     }
   }

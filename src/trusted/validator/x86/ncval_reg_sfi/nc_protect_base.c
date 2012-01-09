@@ -48,7 +48,6 @@ static void NaClReportIllegalChangeToRsp(NaClValidatorState* state,
  *
  * Parameters:
  *   state - The state of the validator.
- *   iter - The instruction iterator being used by the validator.
  */
 static INLINE void NaClMaybeReportPreviousBad(NaClValidatorState* state) {
   NaClInstState* prev_esp_set_inst =
@@ -128,7 +127,6 @@ static Bool NaClIsAddOrSubBoundedConstFromEsp(NaClInstState* state) {
  * where OP in { add , sub } and C is a 32 bit constant.
  */
 static Bool NaClIsAddOrSubBoundedConstFromEspPrecond(
-    struct NaClInstIter* iter,
     NaClValidatorState* state) {
 #ifdef NCVAL_TESTING
     char* buffer;
@@ -137,9 +135,9 @@ static Bool NaClIsAddOrSubBoundedConstFromEspPrecond(
     SNPRINTF(buffer, buffer_size, "EspBounded32");
     return TRUE;
 #else
-    if (NaClInstIterHasLookbackStateInline(iter,1) &&
+    if (NaClInstIterHasLookbackStateInline(state->cur_iter,1) &&
         NaClIsAddOrSubBoundedConstFromEsp(
-            NaClInstIterGetLookbackStateInline(iter, 1))) {
+            NaClInstIterGetLookbackStateInline(state->cur_iter, 1))) {
       NaClMarkInstructionJumpIllegal(state, state->cur_inst_state);
       return TRUE;
     }
@@ -204,13 +202,12 @@ static Bool NaClIsLeaAddressRegPlusRbase(NaClValidatorState* state,
   return result;
 }
 
-Bool NaClAcceptLeaWithMoveLea32To64(struct NaClInstIter* iter,
-                                    struct NaClValidatorState* state,
+Bool NaClAcceptLeaWithMoveLea32To64(struct NaClValidatorState* state,
                                     NaClOpKind reg) {
   NaClInstState* inst_state = state->cur_inst_state;
   Bool result = NaClOperandOneIsRegisterSet(inst_state, reg) &&
       NaClIsLeaAddressRegPlusRbase(state, inst_state, reg) &&
-      NaClAssignsRegisterWithZeroExtends64(iter, state, 1, reg);
+      NaClAssignsRegisterWithZeroExtends64(state, 1, reg);
   if (result) {
     DEBUG({
         const char* reg_name = NaClOpKindName(reg);
@@ -225,13 +222,11 @@ Bool NaClAcceptLeaWithMoveLea32To64(struct NaClInstIter* iter,
 /* Check if assignments to stack register RSP is legal.
  *
  * Parameters are:
- *   iter  - The instruction iterator (defining the current instruction).
  *   state - The state of the validator.
  *   i     - The index of the node (in the expression tree) that
  *           assigns the RSP register.
  */
-static void NaClCheckRspAssignments(NaClInstIter* iter,
-                                    struct NaClValidatorState* state,
+static void NaClCheckRspAssignments(struct NaClValidatorState* state,
                                     uint32_t i) {
   /*
    * Only allow one of:
@@ -312,15 +307,15 @@ static void NaClCheckRspAssignments(NaClInstIter* iter,
               state->decoder_tables,
               inst, inst_name, vector, RegRSP,
               state->base_register) &&
-          (NaClAssignsRegisterWithZeroExtends32(iter, state, 1, RegESP)
-           || NaClIsAddOrSubBoundedConstFromEspPrecond(iter, state))) {
+          (NaClAssignsRegisterWithZeroExtends32(state, 1, RegESP)
+           || NaClIsAddOrSubBoundedConstFromEspPrecond(state))) {
         state->set_base_registers.buffer[
             state->set_base_registers.previous_index].esp_set_inst = NULL;
         return;
       }
       break;
     case InstLea:
-      if (NaClAcceptLeaWithMoveLea32To64(iter, state, RegRSP)) {
+      if (NaClAcceptLeaWithMoveLea32To64(state, RegRSP)) {
         /* case 6. Found that the assignment to ESP in the previous
          * instruction is legal, so long as the two instructions
          * are atomic.
@@ -358,13 +353,11 @@ static void NaClCheckRspAssignments(NaClInstIter* iter,
 /* Check if assignments to rbp resister is legal.
  *
  * Parameters are:
- *   iter  - The instruction iterator (defining the current instruction).
  *   state - The state of the validator.
  *   i     - The index of the node (in the expression tree) that
  *           assigns the RSP register.
  */
-static void NaClCheckRbpAssignments(NaClInstIter* iter,
-                                    struct NaClValidatorState* state,
+static void NaClCheckRbpAssignments(struct NaClValidatorState* state,
                                     uint32_t i) {
   /* (1) mov %rbp, %rsp
    *
@@ -400,7 +393,7 @@ static void NaClCheckRbpAssignments(NaClInstIter* iter,
               state->decoder_tables,
               inst, InstAdd, vector,
               RegRBP, state->base_register)) {
-        if (NaClAssignsRegisterWithZeroExtends32(iter, state, 1, RegEBP)) {
+        if (NaClAssignsRegisterWithZeroExtends32(state, 1, RegEBP)) {
           /* case 2. */
           state->set_base_registers.buffer[
               state->set_base_registers.previous_index].ebp_set_inst = NULL;
@@ -409,7 +402,7 @@ static void NaClCheckRbpAssignments(NaClInstIter* iter,
       }
       break;
     case InstLea:
-      if (NaClAcceptLeaWithMoveLea32To64(iter, state, RegRBP)) {
+      if (NaClAcceptLeaWithMoveLea32To64(state, RegRBP)) {
         /* case 3 */
         state->set_base_registers.buffer[
             state->set_base_registers.previous_index].ebp_set_inst = NULL;
@@ -457,8 +450,7 @@ static void NaClCheckSubregChangeOfRspRbpOrBase(
   }
 }
 
-void NaClBaseRegisterValidator(struct NaClInstIter* iter,
-                               struct NaClValidatorState* state) {
+void NaClBaseRegisterValidator(struct NaClValidatorState* state) {
   uint32_t i;
   NaClInstState* inst_state = state->cur_inst_state;
   NaClExpVector* vector = state->cur_inst_vector;
@@ -485,10 +477,10 @@ void NaClBaseRegisterValidator(struct NaClInstIter* iter,
         } else {
           switch (reg_name) {
             case RegRSP:
-              NaClCheckRspAssignments(iter, state, i);
+              NaClCheckRspAssignments(state, i);
               break;
             case RegRBP:
-              NaClCheckRbpAssignments(iter, state, i);
+              NaClCheckRbpAssignments(state, i);
               break;
             case RegESP:
               /* Record that we must recheck this after we have

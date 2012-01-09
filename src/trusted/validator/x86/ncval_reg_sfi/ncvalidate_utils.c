@@ -125,7 +125,6 @@ static INLINE Bool NaClAssignsRegisterWithZeroExtends(NaClInstState* state,
 static const size_t kMaxBufferSize = 1024;
 
 Bool NaClAssignsRegisterWithZeroExtends32(
-    struct NaClInstIter* iter,
     struct NaClValidatorState* state,
     size_t distance,
     NaClOpKind reg32) {
@@ -156,9 +155,9 @@ Bool NaClAssignsRegisterWithZeroExtends32(
   }
   result = TRUE;
 #else
-  if (NaClInstIterHasLookbackStateInline(iter, distance)) {
+  if (NaClInstIterHasLookbackStateInline(state->cur_iter, distance)) {
     result = NaClAssignsRegisterWithZeroExtends(
-        NaClInstIterGetLookbackStateInline(iter, distance), reg32);
+        NaClInstIterGetLookbackStateInline(state->cur_iter, distance), reg32);
     if (result) {
       NaClMarkInstructionJumpIllegal(state, state->cur_inst_state);
     }
@@ -171,11 +170,10 @@ Bool NaClAssignsRegisterWithZeroExtends32(
 }
 
 Bool NaClAssignsRegisterWithZeroExtends64(
-    struct NaClInstIter* iter,
     struct NaClValidatorState* state,
     size_t distance,
     NaClOpKind reg64) {
   NaClOpKind reg32 = NaClGet32For64BitReg(reg64);
   return (RegUnknown != reg32) &&
-      NaClAssignsRegisterWithZeroExtends32(iter, state, distance, reg32);
+      NaClAssignsRegisterWithZeroExtends32(state, distance, reg32);
 }

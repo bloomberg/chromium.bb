@@ -82,7 +82,6 @@ The following scons targets are used for testing this code:
 
    > ncdis -self_document -commands=testdata/32/ncdis_examples1.input
 
-
 * To see the set of modeled instructions used by the iterator model of
 the decoder and validator, see testdata/XX/README (where XX is 32 or
 64).
@@ -133,3 +132,42 @@ the native_client directory):
 
 The output generated describes differences from NACL (legal)
 instructions, using the NACL decoder, and what xed finds.
+
+Debugging
+---------
+
+Many of the source files contain #define DEBUGGING flags. When
+DEBUGGING is set to 1, additional debugging print messages are
+compiled into the code. Unfortunately, by default, these message
+frequently call routines that are not compiled into corresponding
+executables (such as ncval and ncdis). To add the additional routines,
+edit file
+
+   native_client/site_scons/site_tools/library_deps.py
+
+For x86-32, edit lines
+
+            # When turning on the DEBUGGING flag in the x86-32 validator
+            # or decoder, add the following:
+            #'nc_opcode_modeling_verbose_x86_32',
+
+to
+
+            # When turning on the DEBUGGING flag in the x86-32 validator
+            # or decoder, add the following:
+            'nc_opcode_modeling_verbose_x86_32',
+
+For x86-64, edit lines
+
+            # When turning on the DEBUGGING flag in the x86-64 validator
+            # or decoder, add the following:
+            # 'nc_opcode_modeling_verbose_x86_64',
+
+to
+
+            # When turning on the DEBUGGING flag in the x86-64 validator
+            # or decoder, add the following:
+            'nc_opcode_modeling_verbose_x86_64',
+
+These changes will make sure that the corresponding print routines are
+added to the executables during link time.

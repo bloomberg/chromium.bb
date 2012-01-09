@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -73,6 +73,8 @@ struct NaClValidatorState {
    * NaClValidator is called. When not defined, is NULL.
    */
   struct NaClInstState* cur_inst_state;
+  /* The iterator currently being used, or NULL if no such iterator. */
+  struct NaClInstIter* cur_iter;
   /* Cached instruction. Only guaranteed to be defined when a NaClValidator is
    * called. When not defined, is NULL.
    */

@@ -11,7 +11,6 @@
 
 #include "native_client/src/trusted/validator/x86/decoder/ncopcode_desc.h"
 
-struct NaClInstIter;
 struct NaClInstState;
 struct NaClExpVector;
 struct NaClDecodeTables;
@@ -89,13 +88,11 @@ Bool NaClOperandOneIsRegisterSet(struct NaClInstState* state,
 Bool NaClOperandOneZeroExtends(struct NaClInstState* state);
 
 /* Applies the precondition "ZeroExtends(reg32)" to the specified instruction.
- * That is, returns true if the "distance" previous instruction (from the
- * instruction currently being processed using the given instruction iterator)
+ * That is, returns true if the "distance" previous instruction
  * is binary where the first operand is a register set on the given register,
  * and the second operand corresponds to a 32-bit value that is zero extended.
  */
 Bool NaClAssignsRegisterWithZeroExtends32(
-    struct NaClInstIter* iter,        /* Instruction iterator used. */
     struct NaClValidatorState* state, /* Validator state associated with
                                        * the current instruction.
                                        */
@@ -107,14 +104,12 @@ Bool NaClAssignsRegisterWithZeroExtends32(
                                        */
 
 /* Applies the precondition "ZeroExtends(reg32)" to the specified instruction.
- * That is, returns true if the "distance" previous instruction (from the
- * instruction currently being processed using the given instruction iterator),
+ * That is, returns true if the "distance" previous instruction
  * is binary where the first operand is the corresponding 32-bit register
  * of the given 64-bit register, and the second operand corresponds to a
  * 32-bit value that is zero extended.
  */
 Bool NaClAssignsRegisterWithZeroExtends64(
-    struct NaClInstIter* iter,        /* Instruction iterator used. */
     struct NaClValidatorState* state, /* Validator state associated with
                                        * the current instruction.
                                        */

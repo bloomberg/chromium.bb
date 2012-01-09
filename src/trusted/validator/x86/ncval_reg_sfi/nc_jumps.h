@@ -66,14 +66,12 @@ Bool NaClJumpValidatorInitialize(struct NaClValidatorState* state);
 /* Collects information on instruction addresses, and where explicit jumps
  * go to.
  */
-void NaClJumpValidator(struct NaClValidatorState* state,
-                       struct NaClInstIter* iter);
+void NaClJumpValidator(struct NaClValidatorState* state);
 
 /* Don't record anything but the instruction address, in order to validate
  * basic block alignment at the end of validation.
  */
-void NaClJumpValidatorRememberIpOnly(struct NaClValidatorState* state,
-                                     struct NaClInstIter* iter);
+void NaClJumpValidatorRememberIpOnly(struct NaClValidatorState* state);
 
 /* Compares the collected actual jumps and the set of possible jump points,
  * and reports any descrepancies that don't follow NACL rules.

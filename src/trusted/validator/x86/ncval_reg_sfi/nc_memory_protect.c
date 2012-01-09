@@ -46,7 +46,6 @@ static Bool IsPossibleSandboxingNode(NaClExp* node) {
  * a valid (sandboxed) memory offset, based on NACL rules, returning TRUE iff
  * the memory offset is NACL compliant.
  * parameters are:
- *    iter - The current value of the instruction iterator.
  *    state - The state of the validator,
  *    distance - number of instructions to lookback
  *      (within the iterator) in order to retrieve the instruction.
@@ -58,7 +57,6 @@ static Bool IsPossibleSandboxingNode(NaClExp* node) {
  *      error messages if the memory offset isn't NACL compliant.
  */
 static INLINE Bool NaClIsValidMemOffset(
-    NaClInstIter* iter,
     NaClValidatorState* state,
     size_t distance,
     NaClInstState* inst,
@@ -112,8 +110,7 @@ static INLINE Bool NaClIsValidMemOffset(
     Bool index_reg_is_good = FALSE;
     if ((base_reg != RegRIP) &&
         NaClHasBit(index_reg_node->flags, NACL_EFLAG(ExprSize64)) &&
-        NaClAssignsRegisterWithZeroExtends64(
-            iter, state, distance + 1, index_reg)) {
+        NaClAssignsRegisterWithZeroExtends64(state, distance + 1, index_reg)) {
         index_reg_is_good = TRUE;
     }
     if (!index_reg_is_good) {
@@ -141,7 +138,6 @@ static INLINE Bool NaClIsValidMemOffset(
 }
 
 Bool NaClIsLeaSafeAddress(
-    NaClInstIter* iter,
     NaClValidatorState* state,
     size_t distance,
     NaClInstState* inst_state,
@@ -170,8 +166,7 @@ Bool NaClIsLeaSafeAddress(
   memoff_index = NaClGetExpKidIndex(vector, memoff_index, 0);
   if (memoff_index >= (int) vector->number_expr_nodes) return FALSE;
   DEBUG(NaClLog(LOG_INFO, "check mem offset!\n"));
-  result = NaClIsValidMemOffset(iter,
-                                state,
+  result = NaClIsValidMemOffset(state,
                                 distance,
                                 inst_state,
                                 vector,
@@ -207,7 +202,6 @@ Bool NaClIsLeaSafeAddress(
  * adds the corresponding precondition to the current instruction.
  */
 static Bool NaClIsPreviousLeaSafeAddress(
-    NaClInstIter* iter,         /* Instruction iterator used. */
     NaClValidatorState* state,  /* The validator state associated with
                                  * the instruction using the address to
                                  * check.
@@ -225,9 +219,10 @@ static Bool NaClIsPreviousLeaSafeAddress(
   SNPRINTF(buffer, buffer_size, "SafeAddress(%s)", reg_name);
   result = TRUE;
 #else
-  if (NaClInstIterHasLookbackStateInline(iter, 1) &&
-      NaClIsLeaSafeAddress(iter, state, 1,
-                           NaClInstIterGetLookbackStateInline(iter, 1),
+  if (NaClInstIterHasLookbackStateInline(state->cur_iter, 1) &&
+      NaClIsLeaSafeAddress(state, 1,
+                           NaClInstIterGetLookbackStateInline(
+                               state->cur_iter, 1),
                            addr_reg)) {
     result = TRUE;
     NaClMarkInstructionJumpIllegal(state, state->cur_inst_state);
@@ -236,8 +231,7 @@ static Bool NaClIsPreviousLeaSafeAddress(
   return result;
 }
 
-void NaClMemoryReferenceValidator(NaClInstIter* iter,
-                                  NaClValidatorState* state) {
+void NaClMemoryReferenceValidator(NaClValidatorState* state) {
   uint32_t i;
   NaClInstState* inst_state = state->cur_inst_state;
   NaClExpVector* vector = state->cur_inst_vector;
@@ -259,7 +253,7 @@ void NaClMemoryReferenceValidator(NaClInstIter* iter,
     if (!IsPossibleSandboxingNode(node)) continue;
 
     DEBUG(NaClLog(LOG_INFO, "found possible sandboxing reference\n"));
-    if (NaClIsValidMemOffset(iter, state, 0, inst_state, vector, i, TRUE)) {
+    if (NaClIsValidMemOffset(state, 0, inst_state, vector, i, TRUE)) {
       /* Cases 1, 2, or 3 (see nc_memory_protect.h). */
       continue;
     }
@@ -306,7 +300,7 @@ void NaClMemoryReferenceValidator(NaClInstIter* iter,
                         NaClOpKindName(seg_prefix_reg), addr_reg_index));
           if ((-1 != addr_reg_index) &&
               NaClIsPreviousLeaSafeAddress(
-                  iter, state,
+                  state,
                   NaClGetExpVectorRegister(vector, addr_reg_index))) {
             /* Case 4 (see nc_memory_protect.h). */
             continue;
