@@ -41,7 +41,6 @@ struct dnd {
 	struct display *display;
 	uint32_t key;
 	struct item *items[16];
-	struct widget *widget;
 };
 
 struct dnd_drag {
@@ -444,7 +443,10 @@ dnd_motion_handler(struct widget *widget,
 		   struct input *input, uint32_t time,
 		   int32_t x, int32_t y, void *data)
 {
-	return lookup_cursor(data, x, y);
+	struct window *window = data;
+	struct dnd *dnd = window_get_user_data(window);
+
+	return lookup_cursor(dnd, x, y);
 }
 
 static void
@@ -509,6 +511,7 @@ dnd_create(struct display *display)
 	struct dnd *dnd;
 	int i, x, y;
 	int32_t width, height;
+	struct widget *widget;
 
 	dnd = malloc(sizeof *dnd);
 	if (dnd == NULL)
@@ -538,9 +541,9 @@ dnd_create(struct display *display)
 	window_set_data_handler(dnd->window, dnd_data_handler);
 	window_set_drop_handler(dnd->window, dnd_drop_handler);
 
-	dnd->widget = window_add_widget(dnd->window, dnd);
-	widget_set_enter_handler(dnd->widget, dnd_enter_handler);
-	widget_set_motion_handler(dnd->widget, dnd_motion_handler);
+	widget = window_get_widget(dnd->window);
+	widget_set_enter_handler(widget, dnd_enter_handler);
+	widget_set_motion_handler(widget, dnd_motion_handler);
 
 	width = 4 * (item_width + item_padding) + item_padding;
 	height = 4 * (item_height + item_padding) + item_padding;
