@@ -120,7 +120,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MAYBE_OpenAppInShellContainer) {
 
 // Disabled until shell windows are implemented for non-GTK toolkits.
 #if defined(TOOLKIT_GTK)
-#define MAYBE_EmptyContextMenu EmptyContextMenu
+#define MAYBE_EmptyContextMenu FLAKY_EmptyContextMenu
 #else
 #define MAYBE_EmptyContextMenu DISABLED_EmptyContextMenu
 #endif
