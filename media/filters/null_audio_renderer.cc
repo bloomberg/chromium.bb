@@ -1,10 +1,11 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include <algorithm>
 #include <cmath>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/threading/platform_thread.h"
 #include "media/base/filter_host.h"
@@ -21,43 +22,15 @@ NullAudioRenderer::NullAudioRenderer()
     : AudioRendererBase(),
       bytes_per_millisecond_(0),
       buffer_size_(0),
-      thread_(base::kNullThreadHandle),
-      shutdown_(false) {
+      thread_("AudioThread") {
 }
 
 NullAudioRenderer::~NullAudioRenderer() {
-  DCHECK_EQ(base::kNullThreadHandle, thread_);
+  DCHECK(!thread_.IsRunning());
 }
 
 void NullAudioRenderer::SetVolume(float volume) {
   // Do nothing.
-}
-
-void NullAudioRenderer::ThreadMain() {
-  // Loop until we're signaled to stop.
-  while (!shutdown_) {
-    float sleep_in_milliseconds = 0.0f;
-
-    // Only consume buffers when actually playing.
-    if (GetPlaybackRate() > 0.0f)  {
-      size_t bytes = FillBuffer(buffer_.get(),
-                                buffer_size_,
-                                base::TimeDelta(),
-                                true);
-
-      // Calculate our sleep duration, taking playback rate into consideration.
-      sleep_in_milliseconds =
-          floor(bytes / static_cast<float>(bytes_per_millisecond_));
-      sleep_in_milliseconds /= GetPlaybackRate();
-    } else {
-      // If paused, sleep for 10 milliseconds before polling again.
-      sleep_in_milliseconds = 10.0f;
-    }
-
-    // Sleep for at least one millisecond so we don't spin the CPU.
-    base::PlatformThread::Sleep(
-        std::max(1, static_cast<int>(sleep_in_milliseconds)));
-  }
 }
 
 bool NullAudioRenderer::OnInitialize(int bits_per_channel,
@@ -71,17 +44,41 @@ bool NullAudioRenderer::OnInitialize(int bits_per_channel,
   buffer_.reset(new uint8[buffer_size_]);
   DCHECK(buffer_.get());
 
-  // It's safe to start the thread now because it simply sleeps when playback
-  // rate is 0.0f.
-  return base::PlatformThread::Create(0, this, &thread_);
+  if (!thread_.Start())
+    return false;
+
+  thread_.message_loop()->PostTask(FROM_HERE, base::Bind(
+      &NullAudioRenderer::FillBufferTask, this));
+  return true;
 }
 
 void NullAudioRenderer::OnStop() {
-  shutdown_ = true;
-  if (thread_) {
-    base::PlatformThread::Join(thread_);
-    thread_ = base::kNullThreadHandle;
+  thread_.Stop();
+}
+
+void NullAudioRenderer::FillBufferTask() {
+  int64 sleep_in_milliseconds = 0;
+
+  // Only consume buffers when actually playing.
+  if (GetPlaybackRate() > 0.0f)  {
+    size_t bytes = FillBuffer(buffer_.get(),
+                              buffer_size_,
+                              base::TimeDelta(),
+                              true);
+
+    // Calculate our sleep duration, taking playback rate into consideration.
+    sleep_in_milliseconds =
+        bytes / (bytes_per_millisecond_ * GetPlaybackRate());
+  } else {
+    // If paused, sleep for 10 milliseconds before polling again.
+    sleep_in_milliseconds = 10;
   }
+
+  // Sleep for at least one millisecond so we don't spin the CPU.
+  MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&NullAudioRenderer::FillBufferTask, this),
+      std::max(sleep_in_milliseconds, static_cast<int64>(1)));
 }
 
 }  // namespace media
