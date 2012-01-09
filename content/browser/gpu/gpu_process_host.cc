@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -165,12 +165,8 @@ static bool HostIsValid(GpuProcessHost* host) {
     return false;
 
   // Check if the GPU process has died and the host is about to be destroyed.
-  if (host->disconnect_was_alive()) {
-    // Ensure that this GPU process host is not used again by removing it from
-    // the host-id map.
-    g_hosts_by_id.Pointer()->Remove(host->host_id());
+  if (host->disconnect_was_alive())
     return false;
-  }
 
   // The Gpu process is invalid if it's not using software, the card is
   // blacklisted, and we can kill it and start over.
@@ -196,10 +192,10 @@ GpuProcessHost* GpuProcessHost::GetForRenderer(
     return NULL;
 
   // The current policy is to ignore the renderer ID and use a single GPU
-  // process for all renderers. Later this will be extended to allow the
-  // use of multiple GPU processes.
-  if (!g_hosts_by_id.Pointer()->IsEmpty()) {
-    IDMap<GpuProcessHost>::iterator it(g_hosts_by_id.Pointer());
+  // process (the first valid host in the host-id map) for all renderers. Later
+  // this will be extended to allow the use of multiple GPU processes.
+  for (IDMap<GpuProcessHost>::iterator it(g_hosts_by_id.Pointer());
+       !it.IsAtEnd(); it.Advance()) {
     GpuProcessHost *host = it.GetCurrentValue();
 
     if (HostIsValid(host))
