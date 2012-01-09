@@ -75,7 +75,7 @@ struct output {
 	struct background *background;
 };
 
-struct panel_widget {
+struct panel_launcher {
 	struct widget *widget;
 	struct panel *panel;
 	cairo_surface_t *icon;
@@ -144,7 +144,7 @@ show_menu(struct panel *panel, struct input *input, uint32_t time)
 }
 
 static void
-panel_activate_widget(struct panel *panel, struct panel_widget *widget)
+panel_launcher_activate(struct panel_launcher *widget)
 {
 	pid_t pid;
 
@@ -164,10 +164,10 @@ panel_activate_widget(struct panel *panel, struct panel_widget *widget)
 }
 
 static void
-panel_draw_widget(struct widget *widget, void *data)
+panel_draw_launcher(struct widget *widget, void *data)
 {
 	cairo_t *cr = data;
-	struct panel_widget *pi;
+	struct panel_launcher *pi;
 	int x, y, width, height;
 	double dx, dy;
 
@@ -222,7 +222,7 @@ panel_redraw_handler(struct window *window, void *data)
 
 	cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
 	cairo_translate(cr, 10, 32 / 2);
-	window_for_each_widget(window, panel_draw_widget, cr);
+	window_for_each_widget(window, panel_draw_launcher, cr);
 
 	cairo_destroy(cr);
 	cairo_surface_destroy(surface);
@@ -230,31 +230,30 @@ panel_redraw_handler(struct window *window, void *data)
 }
 
 static void
-panel_widget_enter_handler(struct widget *widget, struct input *input,
-			   uint32_t time, int32_t x, int32_t y, void *data)
+panel_launcher_enter_handler(struct widget *widget, struct input *input,
+			     uint32_t time, int32_t x, int32_t y, void *data)
 {
 	widget_schedule_redraw(widget);
 }
 
 static void
-panel_widget_leave_handler(struct widget *widget,
-			   struct input *input, void *data)
+panel_launcher_leave_handler(struct widget *widget,
+			     struct input *input, void *data)
 {
 	widget_schedule_redraw(widget);
 }
 
 static void
-panel_widget_button_handler(struct widget *widget,
-			    struct input *input, uint32_t time,
-			    int button, int state, void *data)
+panel_launcher_button_handler(struct widget *widget,
+			      struct input *input, uint32_t time,
+			      int button, int state, void *data)
 {
-	struct panel *panel = data;
-	struct panel_widget *pi;
+	struct panel_launcher *launcher;
 
-	pi = widget_get_user_data(widget);
+	launcher = widget_get_user_data(widget);
 	widget_schedule_redraw(widget);
 	if (state == 0)
-		panel_activate_widget(panel, pi);
+		panel_launcher_activate(launcher);
 }
 
 static void
@@ -304,20 +303,23 @@ panel_create(struct display *display)
 }
 
 static void
-panel_add_widget(struct panel *panel, const char *icon, const char *path)
+panel_add_launcher(struct panel *panel, const char *icon, const char *path)
 {
-	struct panel_widget *widget;
+	struct panel_launcher *launcher;
 
-	widget = malloc(sizeof *widget);
-	memset(widget, 0, sizeof *widget);
-	widget->icon = cairo_image_surface_create_from_png(icon);
-	widget->path = strdup(path);
-	widget->panel = panel;
+	launcher = malloc(sizeof *launcher);
+	memset(launcher, 0, sizeof *launcher);
+	launcher->icon = cairo_image_surface_create_from_png(icon);
+	launcher->path = strdup(path);
+	launcher->panel = panel;
 
-	widget->widget = window_add_widget(panel->window, widget);
-	widget_set_enter_handler(widget->widget, panel_widget_enter_handler);
-	widget_set_leave_handler(widget->widget, panel_widget_leave_handler);
-	widget_set_button_handler(widget->widget, panel_widget_button_handler);
+	launcher->widget = window_add_widget(panel->window, launcher);
+	widget_set_enter_handler(launcher->widget,
+				 panel_launcher_enter_handler);
+	widget_set_leave_handler(launcher->widget,
+				   panel_launcher_leave_handler);
+	widget_set_button_handler(launcher->widget,
+				    panel_launcher_button_handler);
 }
 
 static void
@@ -614,8 +616,8 @@ launcher_section_done(void *data)
 	}
 
 	wl_list_for_each(output, &desktop->outputs, link)
-		panel_add_widget(output->panel,
-			       key_launcher_icon, key_launcher_path);
+		panel_add_launcher(output->panel,
+				   key_launcher_icon, key_launcher_path);
 
 	free(key_launcher_icon);
 	key_launcher_icon = NULL;
