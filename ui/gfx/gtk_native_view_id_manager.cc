@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -69,7 +69,7 @@ gfx::NativeViewId GtkNativeViewManager::GetIdForWidget(gfx::NativeView widget) {
   NativeViewInfo info;
   info.widget = widget;
   if (gtk_widget_get_realized(widget)) {
-    GdkWindow *gdk_window = widget->window;
+    GdkWindow *gdk_window = gtk_widget_get_window(widget);
     DCHECK(gdk_window);
     info.x_window_id = GDK_WINDOW_XID(gdk_window);
   }
@@ -128,7 +128,7 @@ bool GtkNativeViewManager::GetPermanentXIDForId(XID* output,
       reinterpret_cast<GtkPreserveWindow*>(i->second.widget);
   gtk_preserve_window_set_preserve(widget, TRUE);
 
-  *output = GDK_WINDOW_XID(i->second.widget->window);
+  *output = GDK_WINDOW_XID(gtk_widget_get_window(i->second.widget));
 
   // Update the reference count on the permanent XID.
   PermanentXIDInfo info;
@@ -207,9 +207,10 @@ void GtkNativeViewManager::OnRealize(gfx::NativeView widget) {
     id_to_info_.find(id);
 
   CHECK(i != id_to_info_.end());
-  CHECK(widget->window);
 
-  i->second.x_window_id = GDK_WINDOW_XID(widget->window);
+  GdkWindow* gdk_window = gtk_widget_get_window(widget);
+  CHECK(gdk_window);
+  i->second.x_window_id = GDK_WINDOW_XID(gdk_window);
 }
 
 void GtkNativeViewManager::OnUnrealize(gfx::NativeView widget) {
@@ -239,7 +240,7 @@ void GtkNativeViewManager::OnDestroy(gfx::NativeView widget) {
       gtk_preserve_window_get_preserve(
           reinterpret_cast<GtkPreserveWindow*>(widget))) {
     std::map<XID, PermanentXIDInfo>::iterator k =
-      perm_xid_to_info_.find(GDK_WINDOW_XID(widget->window));
+        perm_xid_to_info_.find(GDK_WINDOW_XID(gtk_widget_get_window(widget)));
 
     if (k != perm_xid_to_info_.end())
       k->second.widget = NULL;

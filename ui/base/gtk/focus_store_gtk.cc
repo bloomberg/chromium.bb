@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,7 +25,7 @@ void FocusStoreGtk::Store(GtkWidget* widget) {
     GtkWidget* toplevel = gtk_widget_get_ancestor(widget, GTK_TYPE_WINDOW);
     GtkWindow* window = GTK_IS_WINDOW(toplevel) ? GTK_WINDOW(toplevel) : NULL;
     if (window)
-      focus_widget = window->focus_widget;
+      focus_widget = gtk_window_get_focus(window);
   }
 
   SetWidget(focus_widget);

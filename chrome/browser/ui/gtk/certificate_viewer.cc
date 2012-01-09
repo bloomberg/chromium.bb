@@ -157,7 +157,7 @@ CertificateViewer::CertificateViewer(
   InitDetailsPage();
 
   notebook_ = gtk_notebook_new();
-  gtk_container_add(GTK_CONTAINER(GTK_DIALOG(dialog_)->vbox), notebook_);
+  gtk_container_add(GTK_CONTAINER(content_area), notebook_);
 
   gtk_notebook_append_page(
       GTK_NOTEBOOK(notebook_),

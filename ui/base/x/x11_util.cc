@@ -307,7 +307,7 @@ bool GetCurrentDesktop(int* desktop) {
 
 #if defined(TOOLKIT_USES_GTK)
 XID GetX11WindowFromGtkWidget(GtkWidget* widget) {
-  return GDK_WINDOW_XID(widget->window);
+  return GDK_WINDOW_XID(gtk_widget_get_window(widget));
 }
 
 XID GetX11WindowFromGdkWindow(GdkWindow* window) {
