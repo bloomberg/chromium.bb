@@ -3191,6 +3191,31 @@ newlib-nacl-headers-check() {
   fi
 }
 
+#+ ppapi-headers
+#+ Note, this is experimental for now and must be called manually to avoid
+#+ any unexpected interference with where scons picks up the ppapi headers
+#+ today.
+# TODO(robertm): harmonize this with whatever we do for the nacl-gcc TC
+ppapi-headers() {
+  local dst=${INSTALL_SDK_INCLUDE}/ppapi
+  StepBanner "PPAPI-HEADERS ${dst}"
+  # This is quick and dirty 1st cut.
+  local ppapi_base=${NACL_ROOT}/../ppapi
+  rm -rf ${dst}
+  mkdir -p ${dst}
+  cp -r ${ppapi_base}/c            ${dst}
+  cp -r ${ppapi_base}/cpp          ${dst}
+  cp -r ${ppapi_base}/lib/gl/gles2 ${dst}
+
+  # pruning (needs a lot more work)
+  rm -rf ${dst}/*/private
+  rm -rf ${dst}/*/trusted
+  rm -rf ${dst}/*/documentation
+  rm -rf ${dst}/*/.svn
+  rm -f ${dst}/*/*.c
+  rm -f ${dst}/*/*.cc
+  rm -f ${dst}/*/*/*.cc
+}
 #+-------------------------------------------------------------------------
 #@ driver                - Install driver scripts.
 driver() {
