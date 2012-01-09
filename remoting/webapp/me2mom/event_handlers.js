@@ -16,12 +16,12 @@ function onLoad() {
   };
   /** @param {Event} event */
   var sendAccessCode = function(event) {
-    remoting.tryConnect();
+    remoting.connectIt2Me();
     event.preventDefault();
   };
   /** @param {Event} event */
   var connectHostWithPin = function(event) {
-    remoting.connectHostWithPin();
+    remoting.connectMe2MeWithPin();
     event.preventDefault();
   };
   var doAuthRedirect = function() {

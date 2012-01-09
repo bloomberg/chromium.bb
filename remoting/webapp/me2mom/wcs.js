@@ -1,4 +1,4 @@
-/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -18,17 +18,12 @@ remoting.wcs = null;
 
 /**
  * @constructor
- *
  * @param {remoting.WcsIqClient} wcsIqClient The WCS client.
  * @param {string} token An OAuth2 access token.
  * @param {function(boolean): void} onReady A function called when the WCS
  *     client has received a full JID.
- * @param {function(function(string): void): void} tokenRefresh A function
- *     called when this object wants to see whether an updated access token is
- *     available. The passed function will be called asynchronously with a
- *     (possibly updated) access token.
  */
-remoting.Wcs = function(wcsIqClient, token, onReady, tokenRefresh) {
+remoting.Wcs = function(wcsIqClient, token, onReady) {
   /**
    * The WCS client.
    * @type {remoting.WcsIqClient}
@@ -67,8 +62,10 @@ remoting.Wcs = function(wcsIqClient, token, onReady, tokenRefresh) {
   this.pollForUpdatedToken_ = setInterval(
       function() {
         /** @param {string} token */
-        var setToken = function(token) { that.setToken_(token); }
-        tokenRefresh(setToken);
+        var updateAccessToken = function(token) {
+          that.updateAccessToken_(token);
+        }
+        remoting.oauth2.callWithToken(updateAccessToken);
       },
       60 * 1000);
 
@@ -95,7 +92,7 @@ remoting.Wcs = function(wcsIqClient, token, onReady, tokenRefresh) {
  * @return {void} Nothing.
  * @private
  */
-remoting.Wcs.prototype.setToken_ = function(tokenNew) {
+remoting.Wcs.prototype.updateAccessToken_ = function(tokenNew) {
   if (tokenNew != this.token_) {
     this.token_ = tokenNew;
     this.wcsIqClient_.updateAccessToken(this.token_);

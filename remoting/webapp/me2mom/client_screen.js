@@ -70,26 +70,13 @@ remoting.ConnectionType = {
 remoting.currentConnectionType = null;
 
 /**
- * Entry point for the 'connect' functionality. This function checks for the
- * existence of an OAuth2 token, and either requests one asynchronously, or
- * calls through directly to tryConnectWithAccessToken_.
+ * Entry point for the 'connect' functionality. This function defers to the
+ * WCS loader to call it back with an access token.
  */
-remoting.tryConnect = function() {
+remoting.connectIt2Me = function() {
   remoting.currentConnectionType = remoting.ConnectionType.It2Me;
   document.getElementById('cancel-button').disabled = false;
-  if (remoting.oauth2.needsNewAccessToken()) {
-    remoting.oauth2.refreshAccessToken(function(xhr) {
-      if (remoting.oauth2.needsNewAccessToken()) {
-        // Failed to get access token
-        remoting.debug.log('tryConnect: OAuth2 token fetch failed');
-        showConnectError_(remoting.Error.AUTHENTICATION_FAILED);
-        return;
-      }
-      tryConnectWithAccessToken_();
-    });
-  } else {
-    tryConnectWithAccessToken_();
-  }
+  remoting.WcsLoader.load(connectIt2MeWithAccessToken_);
 };
 
 /**
@@ -156,32 +143,14 @@ remoting.disconnect = function() {
 };
 
 /**
- * Second stage of the 'connect' functionality. Once an access token is
- * available, load the WCS widget asynchronously and call through to
- * tryConnectWithWcs_ when ready.
- */
-function tryConnectWithAccessToken_() {
-  if (!remoting.wcsLoader) {
-    remoting.wcsLoader = new remoting.WcsLoader();
-  }
-  /** @param {function(string):void} setToken The callback function. */
-  var callWithToken = function(setToken) {
-    remoting.oauth2.callWithToken(setToken);
-  };
-  remoting.wcsLoader.start(
-      remoting.oauth2.getAccessToken(),
-      callWithToken,
-      tryConnectWithWcs_);
-}
-
-/**
- * Final stage of the 'connect' functionality, called when the wcs widget has
- * been loaded, or on error.
+ * If WCS was successfully loaded, proceed with the connection, otherwise
+ * report an error.
  *
- * @param {boolean} success True if the script was loaded successfully.
+ * @param {string?} token The OAuth2 access token, or null if an error occurred.
+ * @return {void} Nothing.
  */
-function tryConnectWithWcs_(success) {
-  if (success) {
+function connectIt2MeWithAccessToken_(token) {
+  if (token) {
     var accessCode = document.getElementById('access-code-entry').value;
     remoting.accessCode = normalizeAccessCode_(accessCode);
     // At present, only 12-digit access codes are supported, of which the first
@@ -293,7 +262,7 @@ function retryConnectOrReportOffline_() {
     /** @param {boolean} success True if the refresh was successful. */
     var onDone = function(success) {
       if (success) {
-        remoting.connectHost(remoting.hostId, false);
+        remoting.connectMe2Me(remoting.hostId, false);
       } else {
         showConnectError_(remoting.Error.HOST_IS_OFFLINE);
       }
@@ -441,7 +410,7 @@ function updateStatistics_() {
  *     work even if they reregister with Talk and get a different Jid.
  * @return {void} Nothing.
  */
-remoting.connectHost = function(hostId, retryIfOffline) {
+remoting.connectMe2Me = function(hostId, retryIfOffline) {
   remoting.currentConnectionType = remoting.ConnectionType.Me2Me;
   remoting.hostId = hostId;
   remoting.retryIfOffline = retryIfOffline;
@@ -455,7 +424,7 @@ remoting.connectHost = function(hostId, retryIfOffline) {
  *
  * @return {void} Nothing.
  */
-remoting.connectHostWithPin = function() {
+remoting.connectMe2MeWithPin = function() {
   remoting.debug.log('Connecting to host...');
   remoting.setMode(remoting.AppMode.CLIENT_CONNECTING);
 
@@ -469,37 +438,30 @@ remoting.connectHostWithPin = function() {
   document.getElementById('connected-to').innerText = host.hostName;
   document.title = document.title + ': ' + host.hostName;
 
-  if (!remoting.wcsLoader) {
-    remoting.wcsLoader = new remoting.WcsLoader();
-  }
-  /** @param {function(string):void} setToken The callback function. */
-  var callWithToken = function(setToken) {
-    remoting.oauth2.callWithToken(setToken);
-  };
-  remoting.wcsLoader.startAsync(callWithToken, remoting.connectHostWithWcs);
+  remoting.WcsLoader.load(connectMe2MeWithAccessToken_);
 };
 
 /**
  * Continue making the connection to a host, once WCS has initialized.
  *
+ * @param {string?} token The OAuth2 access token, or null if an error occurred.
  * @return {void} Nothing.
  */
-remoting.connectHostWithWcs = function() {
-  /** @type {string} */
-  var pin = document.getElementById('pin-entry').value;
-  document.getElementById('pin-entry').value = '';
+function connectMe2MeWithAccessToken_(token) {
+  if (token) {
+    /** @type {string} */
+    var pin = document.getElementById('pin-entry').value;
+    document.getElementById('pin-entry').value = '';
 
-  remoting.clientSession =
-      new remoting.ClientSession(
-          remoting.hostJid, remoting.hostPublicKey,
-          pin, /** @type {string} */ (remoting.oauth2.getCachedEmail()),
-          onClientStateChange_);
-  /** @param {string} token The auth token. */
-  var createPluginAndConnect = function(token) {
+    remoting.clientSession =
+        new remoting.ClientSession(
+            remoting.hostJid, remoting.hostPublicKey,
+            pin, /** @type {string} */ (remoting.oauth2.getCachedEmail()),
+            onClientStateChange_);
     remoting.clientSession.createPluginAndConnect(
         document.getElementById('session-mode'),
         token);
-  };
-
-  remoting.oauth2.callWithToken(createPluginAndConnect);
-};
+  } else {
+    showConnectError_(remoting.Error.AUTHENTICATION_FAILED);
+  }
+}
