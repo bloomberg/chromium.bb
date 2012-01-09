@@ -132,8 +132,6 @@ struct window {
 	window_button_handler_t button_handler;
 	window_keyboard_focus_handler_t keyboard_focus_handler;
 	window_motion_handler_t motion_handler;
-	window_enter_handler_t enter_handler;
-	window_leave_handler_t leave_handler;
 	window_data_handler_t data_handler;
 	window_drop_handler_t drop_handler;
 	window_close_handler_t close_handler;
@@ -1446,8 +1444,6 @@ input_remove_pointer_focus(struct input *input, uint32_t time)
 
 	window_set_focus_widget(window, NULL, NULL, 0, 0, 0);
 
-	if (window->leave_handler)
-		window->leave_handler(window, input, time, window->user_data);
 	input->pointer_focus = NULL;
 	input->current_pointer_image = POINTER_UNSET;
 }
@@ -1477,11 +1473,6 @@ input_handle_pointer_focus(void *data,
 		input->sy = sy;
 
 		pointer = POINTER_LEFT_PTR;
-		if (window->enter_handler)
-			pointer = window->enter_handler(window, input,
-							time, sx, sy,
-							window->user_data);
-
 		widget = window_find_widget(window, x, y);
 		window_set_focus_widget(window, widget, input, time, sx, sy);
 
@@ -2048,20 +2039,6 @@ window_set_motion_handler(struct window *window,
 			  window_motion_handler_t handler)
 {
 	window->motion_handler = handler;
-}
-
-void
-window_set_enter_handler(struct window *window,
-			  window_enter_handler_t handler)
-{
-	window->enter_handler = handler;
-}
-
-void
-window_set_leave_handler(struct window *window,
-			  window_leave_handler_t handler)
-{
-	window->leave_handler = handler;
 }
 
 void
