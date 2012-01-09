@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -79,6 +79,8 @@ class BrowserMainLoop {
   // Members initialized in |InitializeMainThread()| ---------------------------
   // This must get destroyed before other threads that are created in parts_.
   scoped_ptr<BrowserThreadImpl> main_thread_;
+
+  // Members initialized in |RunMainMessageLoopParts()| ------------------------
   scoped_ptr<BrowserProcessSubThread> db_thread_;
   scoped_ptr<WebKitThread> webkit_thread_;
   scoped_ptr<BrowserProcessSubThread> file_user_blocking_thread_;
