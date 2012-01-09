@@ -11,6 +11,7 @@
 #include "ui/aura/event.h"
 #include "ui/aura/root_window.h"
 #include "ui/base/clipboard/clipboard.h"
+#include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/views/events/event.h"
@@ -429,6 +430,18 @@ TEST_F(DragDropControllerTest, ViewRemovedWhileInDragDropTest) {
 }
 
 TEST_F(DragDropControllerTest, DragCopiesDataToClipboardTest) {
+  ui::Clipboard* cb = views::ViewsDelegate::views_delegate->GetClipboard();
+  {
+    // We first clear the clipboard.
+    ui::ScopedClipboardWriter scw(cb);
+    scw.WriteWebSmartPaste();
+  }
+  EXPECT_FALSE(cb->IsFormatAvailable(ui::Clipboard::GetPlainTextFormatType(),
+      ui::Clipboard::BUFFER_STANDARD));
+  std::string result;
+  cb->ReadAsciiText(ui::Clipboard::BUFFER_STANDARD, &result);
+  EXPECT_EQ("", result);
+
   scoped_ptr<views::Widget> widget(CreateNewWidget());
   DragTestView* drag_view = new DragTestView;
   AddViewToWidgetAndResize(widget.get(), drag_view);
@@ -439,14 +452,13 @@ TEST_F(DragDropControllerTest, DragCopiesDataToClipboardTest) {
 
   aura::MouseEvent event(ui::ET_MOUSE_PRESSED, point, ui::EF_LEFT_MOUSE_BUTTON);
   aura::RootWindow::GetInstance()->DispatchMouseEvent(&event);
+  point.Offset(0, drag_view->VerticalDragThreshold() + 1);
   aura::MouseEvent drag_event(ui::ET_MOUSE_DRAGGED, point,
       ui::EF_LEFT_MOUSE_BUTTON);
   aura::RootWindow::GetInstance()->DispatchMouseEvent(&drag_event);
 
-  ui::Clipboard* cb = views::ViewsDelegate::views_delegate->GetClipboard();
   EXPECT_TRUE(cb->IsFormatAvailable(ui::Clipboard::GetPlainTextFormatType(),
       ui::Clipboard::BUFFER_STANDARD));
-  std::string result;
   cb->ReadAsciiText(ui::Clipboard::BUFFER_STANDARD, &result);
   EXPECT_EQ(data_str, result);
 }
