@@ -79,7 +79,7 @@ void WebUIBidiCheckerBrowserTestRTL::SetUpOnMainThread() {
   pak_path = pak_path.AppendASCII("fake-bidi");
   pak_path = pak_path.ReplaceExtension(FILE_PATH_LITERAL("pak"));
   ResourceBundle::GetSharedInstance().OverrideLocalePakForTest(pak_path);
-  ResourceBundle::ReloadSharedInstance("he");
+  ResourceBundle::GetSharedInstance().ReloadLocaleResources("he");
   base::i18n::SetICUDefaultLocale("he");
 #if defined(OS_POSIX) && defined(TOOLKIT_USES_GTK)
   gtk_widget_set_default_direction(GTK_TEXT_DIR_RTL);
@@ -93,7 +93,7 @@ void WebUIBidiCheckerBrowserTestRTL::CleanUpOnMainThread() {
 #endif
   base::i18n::SetICUDefaultLocale(app_locale_);
   ResourceBundle::GetSharedInstance().OverrideLocalePakForTest(FilePath());
-  ResourceBundle::ReloadSharedInstance(app_locale_);
+  ResourceBundle::GetSharedInstance().ReloadLocaleResources(app_locale_);
 }
 
 // Tests

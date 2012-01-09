@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -526,7 +526,7 @@ void ShowLoginWizard(const std::string& first_screen_name,
           manager->GetInputMethodUtil()->GetHardwareInputMethodId());
       base::ThreadRestrictions::ScopedAllowIO allow_io;
       const std::string loaded_locale =
-          ResourceBundle::ReloadSharedInstance(locale);
+          ResourceBundle::GetSharedInstance().ReloadLocaleResources(locale);
       g_browser_process->SetApplicationLocale(loaded_locale);
     }
     display_host->StartSignInScreen();
@@ -570,7 +570,7 @@ void ShowLoginWizard(const std::string& first_screen_name,
       // Temporarily allow it until we fix http://crosbug.com/11102
       base::ThreadRestrictions::ScopedAllowIO allow_io;
       const std::string loaded_locale =
-          ResourceBundle::ReloadSharedInstance(locale);
+          ResourceBundle::GetSharedInstance().ReloadLocaleResources(locale);
       CHECK(!loaded_locale.empty()) << "Locale could not be found for "
                                     << locale;
       // Set the application locale here so that the language switch

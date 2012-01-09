@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -72,7 +72,7 @@ FilePath ResourceBundle::GetLocaleFilePath(const std::string& app_locale) {
 gfx::Image& ResourceBundle::GetNativeImageNamed(int resource_id) {
   // Check to see if the image is already in the cache.
   {
-    base::AutoLock lock(*lock_);
+    base::AutoLock lock(*images_and_fonts_lock_);
     ImageMap::const_iterator found = images_.find(resource_id);
     if (found != images_.end()) {
       if (!found->second->HasRepresentation(gfx::Image::kImageRepCocoa)) {
@@ -113,7 +113,7 @@ gfx::Image& ResourceBundle::GetNativeImageNamed(int resource_id) {
       }
     }
 
-    base::AutoLock lock(*lock_);
+    base::AutoLock lock(*images_and_fonts_lock_);
 
     // Another thread raced the load and has already cached the image.
     if (images_.count(resource_id)) {

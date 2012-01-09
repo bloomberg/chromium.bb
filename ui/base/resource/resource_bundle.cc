@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -75,15 +75,6 @@ DataPack* ResourceBundle::LoadResourcesDataPak(const FilePath& path) {
     datapack = NULL;
   }
   return datapack;
-}
-
-// static
-std::string ResourceBundle::ReloadSharedInstance(
-    const std::string& pref_locale) {
-  DCHECK(g_shared_instance_ != NULL) << "ResourceBundle not initialized";
-
-  g_shared_instance_->UnloadLocaleResources();
-  return g_shared_instance_->LoadLocaleResources(pref_locale);
 }
 
 // static
@@ -167,7 +158,11 @@ void ResourceBundle::UnloadLocaleResources() {
 }
 
 string16 ResourceBundle::GetLocalizedString(int message_id) {
-  // If for some reason we were unable to load a resource pak, return an empty
+  // Ensure that ReloadLocaleResources() doesn't drop the resources while
+  // we're using them.
+  base::AutoLock lock_scope(*locale_resources_data_lock_);
+
+  // If for some reason we were unable to load the resources , return an empty
   // string (better than crashing).
   if (!locale_resources_data_.get()) {
     LOG(WARNING) << "locale resources are not loaded";
@@ -209,6 +204,13 @@ const FilePath& ResourceBundle::GetOverriddenPakPath() {
   return overridden_pak_path_;
 }
 
+std::string ResourceBundle::ReloadLocaleResources(
+    const std::string& pref_locale) {
+  base::AutoLock lock_scope(*locale_resources_data_lock_);
+  UnloadLocaleResources();
+  return LoadLocaleResources(pref_locale);
+}
+
 SkBitmap* ResourceBundle::GetBitmapNamed(int resource_id) {
   const SkBitmap* bitmap =
       static_cast<const SkBitmap*>(GetImageNamed(resource_id));
@@ -218,7 +220,7 @@ SkBitmap* ResourceBundle::GetBitmapNamed(int resource_id) {
 gfx::Image& ResourceBundle::GetImageNamed(int resource_id) {
   // Check to see if the image is already in the cache.
   {
-    base::AutoLock lock_scope(*lock_);
+    base::AutoLock lock_scope(*images_and_fonts_lock_);
     ImageMap::const_iterator found = images_.find(resource_id);
     if (found != images_.end())
       return *found->second;
@@ -233,7 +235,7 @@ gfx::Image& ResourceBundle::GetImageNamed(int resource_id) {
       large_bitmap.reset(LoadBitmap(large_icon_resources_data_, resource_id));
 
     // The load was successful, so cache the image.
-    base::AutoLock lock_scope(*lock_);
+    base::AutoLock lock_scope(*images_and_fonts_lock_);
 
     // Another thread raced the load and has already cached the image.
     if (images_.count(resource_id))
@@ -271,7 +273,7 @@ RefCountedStaticMemory* ResourceBundle::LoadDataResourceBytes(
 
 const gfx::Font& ResourceBundle::GetFont(FontStyle style) {
   {
-    base::AutoLock lock_scope(*lock_);
+    base::AutoLock lock_scope(*images_and_fonts_lock_);
     LoadFontsIfNecessary();
   }
   switch (style) {
@@ -293,13 +295,14 @@ const gfx::Font& ResourceBundle::GetFont(FontStyle style) {
 }
 
 void ResourceBundle::ReloadFonts() {
-  base::AutoLock lock_scope(*lock_);
+  base::AutoLock lock_scope(*images_and_fonts_lock_);
   base_font_.reset();
   LoadFontsIfNecessary();
 }
 
 ResourceBundle::ResourceBundle()
-    : lock_(new base::Lock),
+    : images_and_fonts_lock_(new base::Lock),
+      locale_resources_data_lock_(new base::Lock),
       resources_data_(NULL),
       large_icon_resources_data_(NULL) {
 }
@@ -311,7 +314,7 @@ void ResourceBundle::FreeImages() {
 }
 
 void ResourceBundle::LoadFontsIfNecessary() {
-  lock_->AssertAcquired();
+  images_and_fonts_lock_->AssertAcquired();
   if (!base_font_.get()) {
     base_font_.reset(new gfx::Font());
 
@@ -357,7 +360,7 @@ SkBitmap* ResourceBundle::LoadBitmap(DataHandle data_handle, int resource_id) {
 }
 
 gfx::Image* ResourceBundle::GetEmptyImage() {
-  base::AutoLock lock(*lock_);
+  base::AutoLock lock(*images_and_fonts_lock_);
 
   static gfx::Image* empty_image = NULL;
   if (!empty_image) {

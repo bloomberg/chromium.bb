@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -89,14 +89,6 @@ class UI_EXPORT ResourceBundle {
   // is responsible for deleting up this pointer.
   static DataPack* LoadResourcesDataPak(const FilePath& path);
 
-  // Changes the locale for an already-initialized ResourceBundle.  Future
-  // calls to get strings will return the strings for this new locale.  This
-  // has no effect on existing or future image resources.  This has no effect
-  // on existing or future image resources, and thus does not use the lock to
-  // guarantee thread-safety, since all string access is expected to happen on
-  // the UI thread.
-  static std::string ReloadSharedInstance(const std::string& pref_locale);
-
   // Registers additional data pack files with the global ResourceBundle.  When
   // looking for a DataResource, we will search these files after searching the
   // main module.  This method is not thread safe!  You should call it
@@ -114,6 +106,14 @@ class UI_EXPORT ResourceBundle {
 
   // Check if the .pak for the given locale exists.
   static bool LocaleDataPakExists(const std::string& locale);
+
+  // Changes the locale for an already-initialized ResourceBundle, returning the
+  // name of the newly-loaded locale.  Future calls to get strings will return
+  // the strings for this new locale.  This has no effect on existing or future
+  // image resources.  |locale_resources_data_| is protected by a lock for the
+  // duration of the swap, as GetLocalizedString() may be concurrently invoked
+  // on another thread.
+  std::string ReloadLocaleResources(const std::string& pref_locale);
 
   // Gets the bitmap with the specified resource_id from the current module
   // data. Returns a pointer to a shared instance of the SkBitmap. This shared
@@ -242,7 +242,7 @@ class UI_EXPORT ResourceBundle {
   void LoadTestResources(const FilePath& path);
 
   // Unload the locale specific strings and prepares to load new ones. See
-  // comments for ReloadSharedInstance().
+  // comments for ReloadLocaleResources().
   void UnloadLocaleResources();
 
   // Initialize all the gfx::Font members if they haven't yet been initialized.
@@ -278,9 +278,11 @@ class UI_EXPORT ResourceBundle {
 
   const FilePath& GetOverriddenPakPath();
 
-  // Class level lock.  Used to protect internal data structures that may be
-  // accessed from other threads (e.g., images_).
-  scoped_ptr<base::Lock> lock_;
+  // Protects |images_| and font-related members.
+  scoped_ptr<base::Lock> images_and_fonts_lock_;
+
+  // Protects |locale_resources_data_|.
+  scoped_ptr<base::Lock> locale_resources_data_lock_;
 
   // Handles for data sources.
   DataHandle resources_data_;
