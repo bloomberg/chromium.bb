@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,6 +16,7 @@
 #include "base/file_version_info.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
+#include "base/process.h"
 #include "base/process_util.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
@@ -361,13 +362,20 @@ HRESULT LaunchIEAsComServer(IWebBrowser2** web_browser) {
   HRESULT hr = S_OK;
   DWORD cocreate_flags = CLSCTX_LOCAL_SERVER;
   chrome_frame_test::LowIntegrityToken token;
+  base::IntegrityLevel integrity_level = base::INTEGRITY_UNKNOWN;
   // Vista has a bug which manifests itself when a medium integrity process
   // launches a COM server like IE which runs in protected mode due to UAC.
   // This causes the IWebBrowser2 interface which is returned to be useless,
   // i.e it does not receive any events, etc. Our workaround for this is
-  // to impersonate a low integrity token and then launch IE.
+  // to impersonate a low integrity token and then launch IE.  Skip this if the
+  // tests are running at high integrity, since the workaround results in the
+  // medium-integrity broker exiting, and the low-integrity IE is therefore
+  // unable to get chrome_launcher running at medium integrity.
   if (base::win::GetVersion() == base::win::VERSION_VISTA &&
-      GetInstalledIEVersion() == IE_7) {
+      GetInstalledIEVersion() == IE_7 &&
+      base::GetProcessIntegrityLevel(base::Process::Current().handle(),
+                                     &integrity_level) &&
+      integrity_level != base::HIGH_INTEGRITY) {
     // Create medium integrity browser that will launch IE broker.
     base::win::ScopedComPtr<IWebBrowser2> medium_integrity_browser;
     hr = medium_integrity_browser.CreateInstance(CLSID_InternetExplorer, NULL,
