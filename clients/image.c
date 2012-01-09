@@ -40,7 +40,6 @@
 struct image {
 	struct window *window;
 	struct display *display;
-	uint32_t key;
 	gchar *filename;
 };
 
@@ -198,7 +197,7 @@ keyboard_focus_handler(struct window *window,
 }
 
 static struct image *
-image_create(struct display *display, uint32_t key, const char *filename)
+image_create(struct display *display, const char *filename)
 {
 	struct image *image;
 	gchar *basename;
@@ -218,10 +217,6 @@ image_create(struct display *display, uint32_t key, const char *filename)
 	image->window = window_create(display, 500, 400);
 	window_set_title(image->window, title);
 	image->display = display;
-
-	/* FIXME: Window uses key 1 for moves, need some kind of
-	 * allocation scheme here.  Or maybe just a real toolkit. */
-	image->key = key + 100;
 
 	window_set_user_data(image->window, image);
 	window_set_redraw_handler(image->window, redraw_handler);
@@ -250,7 +245,7 @@ main(int argc, char *argv[])
 	}
 
 	for (i = 1; i < argc; i++)
-		image_create (d, i, argv[i]);
+		image_create (d, argv[i]);
 
 	display_run(d);
 
