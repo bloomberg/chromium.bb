@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,7 +16,6 @@
 #endif
 
 using testing::_;
-using testing::AnyNumber;
 using testing::DoAll;
 using testing::InSequence;
 using testing::Invoke;
@@ -448,9 +447,6 @@ class GLES2ImplementationTest : public GLES2CommandBufferTestBase {
   }
 
   virtual void TearDown() {
-    Mock::VerifyAndClear(gl_.get());
-    EXPECT_CALL(*command_buffer_, OnFlush(_)).Times(AnyNumber());
-    gl_.reset();
   }
 
   void Initialize(bool shared_resources, bool bind_generates_resource) {
