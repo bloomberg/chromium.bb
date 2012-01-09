@@ -6,5 +6,5 @@
   "background": {
     "page": "test.html"
   },
-  "permissions": ["bookmarks", "experimental"]
+  "permissions": ["bookmarks", "clipboardRead", "clipboardWrite", "experimental"]
 }
