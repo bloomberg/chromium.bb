@@ -579,6 +579,8 @@ TEST(ExtensionPermissionSetTest, HasLessPrivilegesThan) {
       false, true },  // http://a -> http://a,tabs
     { "permissions5", {"bookmarks", NULL},
       {NULL}, false, true },  // bookmarks -> bookmarks,history
+    { "equivalent_warnings", {NULL}, {NULL},
+      false, false },  // tabs --> tabs, webNavigation
 #if !defined(OS_CHROMEOS)  // plugins aren't allowed in ChromeOS
     { "permissions4", {NULL},
       {NULL}, true, false },  // plugin -> plugin,tabs

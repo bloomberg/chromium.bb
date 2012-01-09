@@ -831,23 +831,17 @@ bool ExtensionPermissionSet::HasLessAPIPrivilegesThan(
   if (permissions == NULL)
     return false;
 
-  ExtensionAPIPermissionSet new_apis = permissions->apis_;
-  ExtensionAPIPermissionSet new_apis_only;
-  std::set_difference(new_apis.begin(), new_apis.end(),
-                      apis_.begin(), apis_.end(),
-                      std::inserter(new_apis_only, new_apis_only.begin()));
+  std::set<ExtensionPermissionMessage> current_warnings =
+      GetSimplePermissionMessages();
+  std::set<ExtensionPermissionMessage> new_warnings =
+      permissions->GetSimplePermissionMessages();
+  std::set<ExtensionPermissionMessage> delta_warnings;
+  std::set_difference(new_warnings.begin(), new_warnings.end(),
+                      current_warnings.begin(), current_warnings.end(),
+                      std::inserter(delta_warnings, delta_warnings.begin()));
 
-  ExtensionPermissionsInfo* info = ExtensionPermissionsInfo::GetInstance();
-
-  // Ignore API permissions that don't require user approval when deciding if
-  // an extension has increased its privileges.
-  for (ExtensionAPIPermissionSet::iterator i = new_apis_only.begin();
-       i != new_apis_only.end(); ++i) {
-    ExtensionAPIPermission* perm = info->GetByID(*i);
-    if (perm && perm->message_id() > ExtensionPermissionMessage::kNone)
-      return true;
-  }
-  return false;
+  // We have less privileges if there are additional warnings present.
+  return !delta_warnings.empty();
 }
 
 bool ExtensionPermissionSet::HasLessHostPrivilegesThan(
