@@ -200,15 +200,6 @@ deps = {
   "src/chrome/test/data/layout_tests/LayoutTests/platform/chromium/fast/workers":
     Var("webkit_trunk") + "/LayoutTests/platform/chromium/fast/workers@" +
     Var("webkit_revision"),
-  "src/chrome/test/data/layout_tests/LayoutTests/platform/chromium-cg-mac/fast/events":
-    Var("webkit_trunk") + "/LayoutTests/platform/chromium-cg-mac/fast/events@" +
-    Var("webkit_revision"),
-  "src/chrome/test/data/layout_tests/LayoutTests/platform/chromium-cg-mac/http/tests/workers":
-    Var("webkit_trunk") + "/LayoutTests/platform/chromium-cg-mac/http/tests/workers@" +
-    Var("webkit_revision"),
-  "src/chrome/test/data/layout_tests/LayoutTests/platform/chromium-cg-mac/storage/domstorage":
-    Var("webkit_trunk") + "/LayoutTests/platform/chromium-cg-mac/storage/domstorage@" +
-    Var("webkit_revision"),
   "src/chrome/test/data/layout_tests/LayoutTests/platform/chromium-win/fast/events":
     Var("webkit_trunk") + "/LayoutTests/platform/chromium-win/fast/events@" +
     Var("webkit_revision"),
