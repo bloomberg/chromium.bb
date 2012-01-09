@@ -79,7 +79,7 @@ html[dir='rtl'] select.weakrtl option {
   direction: ltr;
 }
 
-/* WebKit does not honor alignment for text specified via placeholder attrib.
+/* WebKit does not honor alignment for text specified via placeholder attribute.
  * This CSS is a workaround. Please remove once WebKit bug is fixed.
  * https://bugs.webkit.org/show_bug.cgi?id=63367
  */

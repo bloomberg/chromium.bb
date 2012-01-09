@@ -8073,6 +8073,9 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
         <message name="IDS_OPTIONS_TOOLBAR_GROUP_NAME" desc="The title of the toolbar group">
           Toolbar
         </message>
+        <message name="IDS_OPTIONS2_TOOLBAR_GROUP_NAME" desc="The title of the toolbar group">
+          Toolbar appearance
+        </message>
       </if>
       <if expr="pp_ifdef('use_titlecase')">
         <message name="IDS_OPTIONS_HOMEPAGE_GROUP_NAME" desc="In Title Case: The title of the home pages group">
@@ -8080,6 +8083,9 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
         </message>
         <message name="IDS_OPTIONS_TOOLBAR_GROUP_NAME" desc="In Title Case: The title of the toolbar group">
           Toolbar
+        </message>
+        <message name="IDS_OPTIONS2_TOOLBAR_GROUP_NAME" desc="The title of the toolbar group">
+          Toolbar Appearance
         </message>
       </if>
       <message name="IDS_OPTIONS_HOMEPAGE_USE_NEWTAB" desc="The title of the 'Use the New Tab page' for the home page radio">
@@ -8090,6 +8096,9 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
       </message>
       <message name="IDS_OPTIONS_TOOLBAR_SHOW_HOME_BUTTON" desc="The label of the 'Show Home button' checkbox">
         Show Home button
+      </message>
+      <message name="IDS_OPTIONS_SHOW_HOME_BUTTON_WITH_URL" desc="The label of the 'Show Home button' checkbox">
+        Show Home button for &lt;b&gt;<ph name="HOME_PAGE_URL">$1<ex>google.com/search</ex></ph>&lt;/b&gt;.
       </message>
       <message name="IDS_OPTIONS_TOOLBAR_SHOW_BOOKMARKS_BAR" desc="The label of the 'Show bookmarks bar' checkbox">
         Always show the bookmarks bar

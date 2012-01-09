@@ -103,7 +103,7 @@ void BrowserOptionsHandler::GetLocalizedValues(
     { "startupShowPages", IDS_OPTIONS_STARTUP_SHOW_PAGES },
     { "startupAddLabel", IDS_OPTIONS_STARTUP_ADD_LABEL },
     { "startupUseCurrent", IDS_OPTIONS_STARTUP_USE_CURRENT },
-    { "toolbarGroupName", IDS_OPTIONS_TOOLBAR_GROUP_NAME },
+    { "toolbarGroupName", IDS_OPTIONS2_TOOLBAR_GROUP_NAME },
     { "toolbarShowHomeButton", IDS_OPTIONS_TOOLBAR_SHOW_HOME_BUTTON },
     { "toolbarShowBookmarksBar", IDS_OPTIONS_TOOLBAR_SHOW_BOOKMARKS_BAR },
     { "defaultSearchGroupName", IDS_OPTIONS_DEFAULTSEARCH_GROUP_NAME },
@@ -310,8 +310,10 @@ void BrowserOptionsHandler::Initialize() {
 
   pref_change_registrar_.Init(profile->GetPrefs());
   pref_change_registrar_.Add(prefs::kURLsToRestoreOnStartup, this);
+  pref_change_registrar_.Add(prefs::kHomePage, this);
 
   UpdateSearchEngines();
+  UpdateHomePageLabel();
 
   autocomplete_controller_.reset(new AutocompleteController(profile, this));
 
@@ -509,6 +511,17 @@ void BrowserOptionsHandler::UpdateStartupPages() {
   startup_custom_pages_table_model_->SetURLs(startup_pref.urls);
 }
 
+void BrowserOptionsHandler::UpdateHomePageLabel() const {
+  Profile* profile = Profile::FromWebUI(web_ui());
+  PrefService* prefs = profile->GetPrefs();
+  string16 str = l10n_util::GetStringFUTF16(
+      IDS_OPTIONS_SHOW_HOME_BUTTON_WITH_URL,
+      UTF8ToUTF16(prefs->GetString(prefs::kHomePage)));
+  scoped_ptr<Value> label(Value::CreateStringValue(str));
+  web_ui()->CallJavascriptFunction("BrowserOptions.updateHomePageLabel",
+                                   *label);
+}
+
 void BrowserOptionsHandler::OnModelChanged() {
   ListValue startup_pages;
   int page_count = startup_custom_pages_table_model_->RowCount();
@@ -549,6 +562,8 @@ void BrowserOptionsHandler::Observe(
       UpdateDefaultBrowserState();
     } else if (*pref == prefs::kURLsToRestoreOnStartup) {
       UpdateStartupPages();
+    } else if (*pref == prefs::kHomePage) {
+      UpdateHomePageLabel();
     } else {
       NOTREACHED();
     }

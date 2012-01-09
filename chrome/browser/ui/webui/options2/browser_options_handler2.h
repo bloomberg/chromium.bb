@@ -129,6 +129,9 @@ class BrowserOptionsHandler : public OptionsPageUIHandler,
   // Loads the current set of custom startup pages and reports it to the WebUI.
   void UpdateStartupPages();
 
+  // Updates the label of the 'Show Home page'.
+  void UpdateHomePageLabel() const;
+
   // Loads the possible default search engine list and reports it to the WebUI.
   void UpdateSearchEngines();
 

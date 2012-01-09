@@ -226,6 +226,15 @@ cr.define('options', function() {
     },
 
     /**
+     * Sets the label for the 'Show Home page' input.
+     * @param {string} label The HTML of the input label.
+     * @private
+     */
+    updateHomePageLabel_: function(label) {
+      $('home-page-label').innerHTML = label;
+    },
+
+    /**
      * Called when the value of the instant.confirm_dialog_shown preference
      * changes. Cache this value.
      * @param {Event} event Change event.
@@ -414,6 +423,7 @@ cr.define('options', function() {
     'setSyncStatus',
     'setSyncStatusErrorVisible',
     'setProfilesSectionVisible',
+    'updateHomePageLabel',
     'updateSearchEngines',
     'updateStartupPages',
     'updateAutocompleteSuggestions',
