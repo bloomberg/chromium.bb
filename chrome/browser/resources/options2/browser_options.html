@@ -23,21 +23,6 @@
       </div>
     </div>
   </section>
-  <section id="profiles-section" hidden>
-    <h3 i18n-content="profiles"></h3>
-    <div>
-      <list id="profiles-list" class="settings-list" hidden></list>
-      <div id="profiles-single-message" i18n-content="profilesSingleUser">
-      </div>
-      <div id="profiles-buttons">
-        <button id="profiles-create" i18n-content="profilesCreate"></button>
-        <button id="profiles-manage" i18n-content="profilesManage" disabled>
-        </button>
-        <button id="profiles-delete" i18n-content="profilesDelete">
-        </button>
-      </div>
-    </div>
-  </section>
   <section id="startupSection">
     <h3 i18n-content="startupGroupName"></h3>
     <div>
@@ -146,6 +131,21 @@
           </label>
         </div>
       </div>
+  </section>
+  <section id="profiles-section" hidden>
+    <h3 i18n-content="profiles"></h3>
+    <div>
+      <list id="profiles-list" class="settings-list" hidden></list>
+      <div id="profiles-single-message" i18n-content="profilesSingleUser">
+      </div>
+      <div id="profiles-buttons">
+        <button id="profiles-create" i18n-content="profilesCreate"></button>
+        <button id="profiles-manage" i18n-content="profilesManage" disabled>
+        </button>
+        <button id="profiles-delete" i18n-content="profilesDelete">
+        </button>
+      </div>
+    </div>
   </section>
 <if expr="not pp_ifdef('chromeos')">
   <section>
