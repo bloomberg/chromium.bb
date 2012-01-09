@@ -41,6 +41,7 @@ struct dnd {
 	struct display *display;
 	uint32_t key;
 	struct item *items[16];
+	struct widget *widget;
 };
 
 struct dnd_drag {
@@ -431,12 +432,11 @@ lookup_cursor(struct dnd *dnd, int x, int y)
 		return POINTER_LEFT_PTR;
 }
 
-static int
-dnd_enter_handler(struct window *window,
-		    struct input *input, uint32_t time,
-		    int32_t x, int32_t y, void *data)
+static void
+dnd_enter_handler(struct widget *widget,
+		  struct input *input, uint32_t time,
+		  int32_t x, int32_t y, void *data)
 {
-	return lookup_cursor(data, x, y);
 }
 
 static int
@@ -536,10 +536,12 @@ dnd_create(struct display *display)
 	window_set_keyboard_focus_handler(dnd->window,
 					  keyboard_focus_handler);
 	window_set_button_handler(dnd->window, dnd_button_handler);
-	window_set_enter_handler(dnd->window, dnd_enter_handler);
 	window_set_motion_handler(dnd->window, dnd_motion_handler);
 	window_set_data_handler(dnd->window, dnd_data_handler);
 	window_set_drop_handler(dnd->window, dnd_drop_handler);
+
+	dnd->widget = window_add_widget(dnd->window, dnd);
+	widget_set_enter_handler(dnd->widget, dnd_enter_handler);
 
 	width = 4 * (item_width + item_padding) + item_padding;
 	height = 4 * (item_height + item_padding) + item_padding;
