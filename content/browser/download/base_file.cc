@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -60,8 +60,8 @@ net::Error LogError(const char* file, int line, const char* func,
 
 #undef NET_ERROR
 
-  DVLOG(1) << " " << func << "(): " << operation
-           << "() returned error " << error << " (" << err_string << ")";
+  VLOG(1) << " " << func << "(): " << operation
+          << "() returned error " << error << " (" << err_string << ")";
 
   return net_error;
 }
