@@ -150,3 +150,56 @@ be found in the following files.
 For more information on the contents of these files, see
 
    native_client/src/trusted/validator/x86/decoder/README
+
+
+Pre/Post condition testing
+--------------------------
+
+The code in this directory is set up to allow instructions to be
+validated individually.  When run in this mode, pre/post conditions
+are generated rather than looking accross instructions to verify the
+conditions. This is intentional, and is intended for testing multiple
+validators. In such contexts, the pre/post conditions define what must
+be checked by a compatible validator.
+
+To generate these condition tests, one must compile the source using
+the scons command:
+
+    .> ./scons --mode=opt-linux platform=x86-64 ncval_testing=1
+
+Note: --mode=opt-linux is not necessary. Any applicable mode will
+work.
+
+When native_client/src/trusted/validator_x86/ncval.c is compiled with
+the above scons command, the corresponding executable will generate
+pre/post conditions.
+
+Code to generate pre/post conditions is conditionalized in the source
+(under '#ifdef NCVAL_TESTING') so that it is only added when scons
+option ncval_testing=1 is defined.
+
+The default error reportor is used by the validator. This is done so
+that only pre/post conditions will be printed.  Hence, if you are to
+add debugging code within NCVAL_TESTING, be sure to not redirect the
+output to the validator's error reporter. Rather, redirect using calls
+to NaClLog or printf. To override this presumption and see other
+debugging messages, change the line
+
+        #define DEBUGGING 0
+
+in native_client/src/trusted/validator_x86/ncval.c to be
+
+        #define DEBUGGING 1
+
+This will cause the validator to use the verbose error reporter within
+ncval.
+
+To run unit tests for the pre/post conditions, run the following scons
+build command:
+
+    .> ./scons --mode=opt-linux platform=x86-64 ncval_testing=1 \
+         ncval_testing
+
+Note: To see how to test scons builds with ncval_testing=1, see
+native_client/src/trusted/validator_x86/build.scons and look for the
+text 'test_env.Bit('ncval_testing')'.

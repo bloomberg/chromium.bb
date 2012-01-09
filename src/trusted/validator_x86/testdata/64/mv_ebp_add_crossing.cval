@@ -1,1 +1,2 @@
-20: pre: 'ZeroExtends(ebp)' post: ''
+1d: -> ZeroExtends(ebp)
+20: ZeroExtends(ebp)

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -88,29 +88,41 @@ Bool NaClOperandOneIsRegisterSet(struct NaClInstState* state,
  */
 Bool NaClOperandOneZeroExtends(struct NaClInstState* state);
 
-/* Returns true if the given instruction is binary where the first
- * operand of the instruction is a register set on the given register,
+/* Applies the precondition "ZeroExtends(reg32)" to the specified instruction.
+ * That is, returns true if the "distance" previous instruction (from the
+ * instruction currently being processed using the given instruction iterator)
+ * is binary where the first operand is a register set on the given register,
  * and the second operand corresponds to a 32-bit value that is zero extended.
- * Note: if reg_name isn't a 32-bit register, this function will return false.
  */
-Bool NaClAssignsRegisterWithZeroExtends(struct NaClInstState* state,
-                                        NaClOpKind reg_name);
-
-/* Returns true if the previous instruction (from the instruction currently
- * being processed using the given instruction iterator) is binary where the
- * first operand is a register set on the given register, and the
- * second operand corresponds to a 32-bit value that is zero extended.
- *
- * When NCVAL_TESTING is defined, this function always returns true, and
- * adds the corresponding precondition to the current instruction.
- */
-Bool NaClAssignsRegisterWithZeroExtendsInPrevious(
+Bool NaClAssignsRegisterWithZeroExtends32(
     struct NaClInstIter* iter,        /* Instruction iterator used. */
     struct NaClValidatorState* state, /* Validator state associated with
                                        * the current instruction.
                                        */
-    NaClOpKind reg);                  /* Register that gets extended by previous
-                                       * instruction.
+    size_t distance,                  /* Number of instruction to look back for
+                                       * zero-extending instruction.
+                                       */
+    NaClOpKind reg32);                /* 32-bit register that gets extended
+                                        * by the specified instruction.
+                                       */
+
+/* Applies the precondition "ZeroExtends(reg32)" to the specified instruction.
+ * That is, returns true if the "distance" previous instruction (from the
+ * instruction currently being processed using the given instruction iterator),
+ * is binary where the first operand is the corresponding 32-bit register
+ * of the given 64-bit register, and the second operand corresponds to a
+ * 32-bit value that is zero extended.
+ */
+Bool NaClAssignsRegisterWithZeroExtends64(
+    struct NaClInstIter* iter,        /* Instruction iterator used. */
+    struct NaClValidatorState* state, /* Validator state associated with
+                                       * the current instruction.
+                                       */
+    size_t distance,                  /* Number of instruction to look back for
+                                       * zero-extending instruction.
+                                       */
+    NaClOpKind reg64);                /* 64-bit register that gets extended
+                                        * by the specified instruction.
                                        */
 
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCVAL_REG_SFI_NCVALIDATE_UTILS_H__ */

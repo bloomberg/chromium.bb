@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -239,7 +239,8 @@ static void NaClAddRegisterJumpIndirect64(NaClValidatorState* state,
     /* Check that the mask is ok. */
     mask = NaClGetJumpMask(state);
     DEBUG(NaClLog(LOG_INFO, "mask = %"NACL_PRIx8"\n", mask));
-    assert(0 != mask);  /* alignment must be either 16 or 32. */
+    /* alignment must be either 16 or 32. */
+    assert(0xf0 == mask || 0xe0 == mask);
     node = &nodes->node[op_2];
     if (ExprConstant != node->kind || mask != node->value) break;
     DEBUG(NaClLog(LOG_INFO, "is mask constant\n"));
@@ -635,4 +636,15 @@ void NaClMarkInstructionJumpIllegal(struct NaClValidatorState* state,
                  pc));
     NaClAddressSetAddInline(state->jump_sets.removed_targets, pc, state);
   }
+}
+
+void NaClMarkInstructionJumpIllegalLookback(
+    struct NaClInstIter* iter,
+    struct NaClValidatorState* state,
+    size_t n) {
+  NaClMarkInstructionJumpIllegal(
+      state,
+      (n == 0)
+      ? state->cur_inst_state
+      : NaClInstIterGetLookbackStateInline(iter, n));
 }

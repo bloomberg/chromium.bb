@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -115,7 +115,7 @@ Bool NaClOperandOneZeroExtends(NaClInstState* state) {
   return result;
 }
 
-Bool NaClAssignsRegisterWithZeroExtends(NaClInstState* state,
+static INLINE Bool NaClAssignsRegisterWithZeroExtends(NaClInstState* state,
                                         NaClOpKind reg_name) {
   return NaClOperandOneIsRegisterSet(state, reg_name) &&
       NaClOperandOneZeroExtends(state);
@@ -124,26 +124,58 @@ Bool NaClAssignsRegisterWithZeroExtends(NaClInstState* state,
 /* Maximum character buffer size to use for generating messages. */
 static const size_t kMaxBufferSize = 1024;
 
-Bool NaClAssignsRegisterWithZeroExtendsInPrevious(
+Bool NaClAssignsRegisterWithZeroExtends32(
     struct NaClInstIter* iter,
     struct NaClValidatorState* state,
-    NaClOpKind reg) {
-  NaClOpKind reg32 = NaClGet32For64BitReg(reg);
-  if (RegUnknown != reg32) {
+    size_t distance,
+    NaClOpKind reg32) {
+  Bool result = FALSE;
+  DEBUG(NaClLog(LOG_INFO, "zero extend precond? %s %u\n",
+                NaClOpKindName(reg32), (unsigned) distance));
 #ifdef NCVAL_TESTING
+  /* Only report preconditions if for previous instruction of
+   * the current instruction.
+   */
+  if (0 == distance) {
+    if (NaClAssignsRegisterWithZeroExtends(state->cur_inst_state, reg32)) {
+      char* buffer;
+      size_t buffer_size;
+      char reg_name[kMaxBufferSize];
+      NaClOpRegName(reg32, reg_name, kMaxBufferSize);
+      NaClConditionAppend(state->postcond, &buffer, &buffer_size);
+      SNPRINTF(buffer, buffer_size, "ZeroExtends(%s)", reg_name);
+    }
+  }
+  else if (distance == 1) {
     char* buffer;
     size_t buffer_size;
     char reg_name[kMaxBufferSize];
     NaClOpRegName(reg32, reg_name, kMaxBufferSize);
     NaClConditionAppend(state->precond, &buffer, &buffer_size);
     SNPRINTF(buffer, buffer_size, "ZeroExtends(%s)", reg_name);
-    return TRUE;
-#else
-    if (NaClInstIterHasLookbackStateInline(iter, 1)) {
-      NaClInstState* prev_inst = NaClInstIterGetLookbackStateInline(iter, 1);
-      return NaClAssignsRegisterWithZeroExtends(prev_inst, reg32);
-    }
-#endif
   }
-  return FALSE;
+  result = TRUE;
+#else
+  if (NaClInstIterHasLookbackStateInline(iter, distance)) {
+    result = NaClAssignsRegisterWithZeroExtends(
+        NaClInstIterGetLookbackStateInline(iter, distance), reg32);
+    if (result) {
+      NaClMarkInstructionJumpIllegal(state, state->cur_inst_state);
+    }
+  }
+#endif
+  DEBUG(if (result)
+          NaClValidatorMessage(
+              LOG_INFO, state, "zero extends = %d\n", result));
+  return result;
+}
+
+Bool NaClAssignsRegisterWithZeroExtends64(
+    struct NaClInstIter* iter,
+    struct NaClValidatorState* state,
+    size_t distance,
+    NaClOpKind reg64) {
+  NaClOpKind reg32 = NaClGet32For64BitReg(reg64);
+  return (RegUnknown != reg32) &&
+      NaClAssignsRegisterWithZeroExtends32(iter, state, distance, reg32);
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -369,6 +369,11 @@ Bool NaClValidatorQuit(NaClValidatorState* state);
 void NaClConditionAppend(char* condition,
                          char** buffer,
                          size_t* buffer_size);
+
+/* Prints out the address of the current instruction, and the pre/post
+ * conditions associated with the current instruction.
+ */
+void NaClPrintConditions(NaClValidatorState *state);
 #endif
 
 EXTERN_C_END

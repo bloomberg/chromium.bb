@@ -150,3 +150,26 @@ ncval_reg_sfi_modeled_insts.txt
 
      > scons-out/.../obj/src/trusted/validator_x86/ncdecode_tablegen \
           -m64 -documentation -validator_decoder
+
+------------------------------------------------------------------
+
+Note: Files with a cval extension are experimental, and are gold files
+for pre/post conditions of individual instruction. Currently, these
+files are under construction and are incomplete with respect to all
+pre/post conditions.
+
+Known issues with cval files are:
+
+(1) Pre/Post conditions for jumps not (necessarily) being generated
+yet.
+
+(2) Printing Pre/Post conditions for instructions that are illegal.
+For testing purposes, only want if instruction is legal if
+preconditions are met.
+
+(3) Code doesn't handle notion of multiple Pre/Post condition rules
+for an instruction.
+
+(4) Sometimes the same Pre/Post condition is repeated.
+
+

@@ -321,8 +321,8 @@ for read_write in [False, True]:
 
 # Run segment sandboxing tests of pre/post conditions for the validator.
 if test_env.Bit('ncval_testing') and test_env.Bit('target_x86_64'):
-  options = ['--hex_text=-', '--max_errors=-1', '--detailed', '--cpuid-all',
-             '--readwrite_sfi', '--annotate=false', '--conds']
+  options = ['--hex_text=-', '--max_errors=-1', '--cpuid-all',
+             '--readwrite_sfi', '--annotate=false']
   ext = 'cval'
   test = 'ncval_conds'
   for base in __GoldenBases(ext):

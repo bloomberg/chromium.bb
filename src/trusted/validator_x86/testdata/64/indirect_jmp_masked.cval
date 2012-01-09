@@ -1,0 +1,2 @@
+0: -> ZeroExtends(edx)
+3: ZeroExtends(edx) -> SafeAddress(r9)

@@ -1,0 +1,8 @@
+3: -> ZeroExtends(r8d)
+6: -> ZeroExtends(eax)
+9: -> ZeroExtends(r8d)
+c: -> ZeroExtends(eax)
+f: -> ZeroExtends(r8d)
+12: -> ZeroExtends(eax)
+15: -> ZeroExtends(r8d)
+18: -> ZeroExtends(eax)

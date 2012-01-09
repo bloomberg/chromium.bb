@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -28,6 +28,9 @@
 #include "native_client/src/trusted/validator/x86/ncval_reg_sfi/nc_jumps.h"
 #include "native_client/src/trusted/validator/x86/ncval_reg_sfi/nc_jumps_detailed.h"
 #include "native_client/src/trusted/validator/x86/ncval_reg_sfi/nc_memory_protect.h"
+#ifdef NCVAL_TESTING
+#include "native_client/src/trusted/validator/x86/ncval_reg_sfi/nc_postconds.h"
+#endif
 #include "native_client/src/trusted/validator_x86/ncdis_decode_tables.h"
 
 /* To turn on debugging of instruction decoding, change value of
@@ -51,7 +54,6 @@ Bool NACL_FLAGS_validator_trace_inst_internals = FALSE;
 Bool NACL_FLAGS_ncval_annotate = TRUE;
 
 #ifdef NCVAL_TESTING
-Bool NACL_FLAGS_print_validator_conditions = FALSE;
 
 void NaClConditionAppend(char* condition,
                          char** buffer,
@@ -61,7 +63,7 @@ void NaClConditionAppend(char* condition,
   if (bsize > 0) {
     /* Add that we are adding an alternative. */
     SNPRINTF(*buffer, NCVAL_CONDITION_SIZE - bsize,
-             "|");
+             "&");
     bsize = strlen(condition);
     *buffer = condition + bsize;
   }
@@ -161,7 +163,8 @@ static void NaClValidatorTrace(NaClValidatorState* state,
                                NaClInstIter* iter) {
   struct Gio* g = NaClLogGetGio();
   NaClInstState* inst_state = NaClInstIterGetStateInline(iter);
-  gprintf(g, "-> visit: ");
+  (*state->error_reporter->printf)
+      (state->error_reporter, "-> visit: ");
   if (NaClValidatorStateGetTraceInstructions(state)) {
     (*state->error_reporter->print_inst)(state->error_reporter,
                                          (void*) NaClInstStateInst(inst_state));
@@ -492,6 +495,25 @@ NaClValidatorState *NaClValidatorStateCreate(const NaClPcAddress vbase,
   return return_value;
 }
 
+#ifdef NCVAL_TESTING
+void NaClPrintConditions(NaClValidatorState *state) {
+  /* To save space, only report on instructions that have non-empty
+   * pre/post conditions.
+   */
+  if ((strlen(state->precond) > 0) || (strlen(state->postcond) > 0)) {
+    printf("%"NACL_PRIxNaClPcAddress": ", state->cur_inst_state->vpc);
+    if ('\0' != state->precond[0]) {
+      printf("%s", state->precond);
+    }
+    if ('\0' != state->postcond[0]) {
+      if ('\0' != state->precond[0]) printf(" ");
+      printf("-> %s", state->postcond);
+    }
+    printf("\n");
+  }
+}
+#endif
+
 /* Given we are at the instruction defined by the instruction iterator, for
  * a segment, apply all applicable validator functions.
  */
@@ -505,21 +527,17 @@ static INLINE void NaClApplyValidators(NaClValidatorState *state,
   }
   NaClCpuCheck(state, iter);
   NaClValidateInstructionLegal(state);
-  NaClBaseRegisterValidator(state, iter);
-  NaClMemoryReferenceValidator(state, iter);
+  NaClBaseRegisterValidator(iter, state);
+  NaClMemoryReferenceValidator(iter, state);
   NaClJumpValidator(state, iter);
   if (state->print_opcode_histogram) {
     NaClOpcodeHistogramRecord(state);
   }
 #ifdef NCVAL_TESTING
-  /* To save space, only report on instructions that have non-empty
-   * pre/post conditions.
-   */
-  if (NACL_FLAGS_print_validator_conditions &&
-      ((strlen(state->precond) > 0) || (strlen(state->postcond) > 0))) {
-    printf("%"NACL_PRIxNaClPcAddress": pre: '%s' post: '%s'\n",
-           state->cur_inst_state->vpc, state->precond, state->postcond);
-  }
+  /* Collect post conditions for instructions that are non-last. */
+  NaClAddAssignsRegisterWithZeroExtendsPostconds(iter, state);
+  NaClAddLeaSafeAddressPostconds(iter, state);
+  NaClPrintConditions(state);
 #endif
 }
 
@@ -544,7 +562,8 @@ static INLINE void NaClApplyPostValidators(NaClValidatorState *state,
     NaClJumpValidatorSummarize(state);
   }
   if (NaClValidatorStateTrace(state)) {
-    gprintf(NaClLogGetGio(), "<- visit\n");
+    (state->error_reporter->printf)
+        (state->error_reporter, "<- visit\n");
   }
 }
 

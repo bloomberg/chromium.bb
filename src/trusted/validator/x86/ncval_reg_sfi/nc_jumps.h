@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -91,5 +91,13 @@ void NaClJumpValidatorCleanUp(struct NaClValidatorState* state);
  */
 void NaClMarkInstructionJumpIllegal(struct NaClValidatorState* state,
                                     struct NaClInstState* inst);
+
+/* Same as NaClMarkInstructionJumpIllegal, except that it marks the
+ * n-th instruction back from the current instruction.
+ */
+void NaClMarkInstructionJumpIllegalLookback(
+    struct NaClInstIter* iter,
+    struct NaClValidatorState* state,
+    size_t n);
 
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCVAL_REG_SFI_NC_JUMPS_H__ */

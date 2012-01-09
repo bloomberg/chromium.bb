@@ -1,0 +1,4 @@
+20: -> ZeroExtends(eax)
+22: ZeroExtends(eax)
+32: -> ZeroExtends(eax)
+34: ZeroExtends(eax)

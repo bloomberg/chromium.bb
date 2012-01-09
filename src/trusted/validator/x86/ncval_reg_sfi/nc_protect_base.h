@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -8,6 +8,7 @@
 #define NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCVAL_REG_SFI_NC_PROTECT_BASE_H__
 
 #include "native_client/src/shared/utils/types.h"
+#include "native_client/src/trusted/validator/x86/decoder/gen/ncopcode_operand_kind.h"
 
 /* nc_protect_base.h - For 64-bit mode, verifies that no instruction
  * changes the value of the base register.
@@ -68,10 +69,26 @@ typedef struct NaClBaseRegisterLocals {
 void NaClBaseRegisterMemoryInitialize(struct NaClValidatorState* state);
 
 /* Validator function to check that the base register is never set. */
-void NaClBaseRegisterValidator(struct NaClValidatorState* state,
-                               struct NaClInstIter* iter);
+void NaClBaseRegisterValidator(struct NaClInstIter* iter,
+                               struct NaClValidatorState* state);
+
 
 /* Post iteration validator summarization function. */
 void NaClBaseRegisterSummarize(struct NaClValidatorState* state);
+
+/* Checks for pattern
+ *     op %reg32), ...
+ *     lea %reg64, [%reg64+%rbase*1]
+ *
+ * where reg64 is the passed 64-bit register, reg32 is the
+ * corresponding 32-bit register, and op is a 32-bit zero-extending
+ * operation (such as mov).
+ *
+ * Note: As a side effect, the instruction LEA is marked as
+ * a non-entry point to the atomic sequence above.
+ */
+Bool NaClAcceptLeaWithMoveLea32To64(struct NaClInstIter* iter,
+                                    struct NaClValidatorState* state,
+                                    NaClOpKind reg);
 
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCVAL_REG_SFI_NC_PROTECT_BASE_H__ */

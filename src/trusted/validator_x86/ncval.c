@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -48,6 +48,24 @@
 #include "native_client/src/trusted/validator/x86/ncval_reg_sfi/ncval_decode_tables.h"
 #include "native_client/src/trusted/validator_x86/ncdis_decode_tables.h"
 #endif
+
+/* To turn on debugging of instruction decoding, change value of
+ * DEBUGGING to 1.
+ */
+#define DEBUGGING 0
+
+#include "native_client/src/shared/utils/debugging.h"
+
+/* When true, ncval will override the default reporter with the
+ * appropriate verbose reporter.
+ */
+static Bool override_reporter =
+#if DEBUGGING || !defined(NCVAL_TESTING)
+    TRUE
+#else
+    FALSE
+#endif
+    ;
 
 /* Forward declarations. */
 static void usage(int exit_code);
@@ -345,9 +363,9 @@ static Bool AnalyzeSegmentCodeSegments(ncfile *ncf, const char *fname) {
   GetVBaseAndLimit(ncf, &vbase, &vlimit);
   vstate = NCValInit(vbase, vlimit, ncf->ncalign);
   if (vstate == NULL) return FALSE;
-#ifndef NCVAL_TESTING
-  NCValidateSetErrorReporter(vstate, &kNCVerboseErrorReporter);
-#endif
+  if (override_reporter) {
+    NCValidateSetErrorReporter(vstate, &kNCVerboseErrorReporter);
+  }
   if (AnalyzeSegmentSections(ncf, vstate) < 0) {
     NaClLog(LOG_INFO, "%s: text validate failed\n", fname);
   }
@@ -379,7 +397,8 @@ struct NaClValidatorState* NaClValStateCreate(
     const NaClMemorySize sz,
     const uint8_t alignment,
     const NaClOpKind base_register) {
-  return NACL_FLAGS_detailed_errors
+  return
+      NACL_FLAGS_detailed_errors
       ? NaClValidatorStateCreateDetailed(vbase, sz, alignment,
                                          base_register, NULL)
       : NaClValidatorStateCreate(vbase, sz, alignment,
@@ -463,9 +482,9 @@ static Bool AnalyzeSfiCodeSegments(ncfile *ncf, const char *fname) {
     NaClValidatorMessage(LOG_ERROR, vstate, "Unable to create validator state");
     return FALSE;
   }
-#ifndef NCVAL_TESTING
-  NaClValidatorStateSetErrorReporter(vstate, &kNaClVerboseErrorReporter);
-#endif
+  if (override_reporter) {
+    NaClValidatorStateSetErrorReporter(vstate, &kNaClVerboseErrorReporter);
+  }
   if (NACL_FLAGS_analyze_segments) {
     AnalyzeSfiSegments(ncf, vstate);
   } else {
@@ -531,9 +550,9 @@ static Bool NaClValidateAnalyzeBytes(NaClValidateBytes* data) {
   if (NACL_FLAGS_stubout_memory) {
     NaClValidatorStateSetDoStubOut(state, TRUE);
   }
-#ifndef NCVAL_TESTING
-  NaClValidatorStateSetErrorReporter(state, &kNaClVerboseErrorReporter);
-#endif
+  if (override_reporter) {
+    NaClValidatorStateSetErrorReporter(state, &kNaClVerboseErrorReporter);
+  }
   NaClValidateSegmentUsingTables(data->bytes, data->base, data->num_bytes,
                                  state, NaClGetDecoderTables());
   return_value = NaClValidatesOk(state);
@@ -553,9 +572,9 @@ static Bool NaClValidateAnalyzeBytes(NaClValidateBytes* data) {
     if (NACL_FLAGS_stubout_memory) {
       NCValidateSetStubOutMode(vstate, 1);
     }
-#ifndef NCVAL_TESTING
-    NCValidateSetErrorReporter(vstate, &kNCVerboseErrorReporter);
-#endif
+    if (override_reporter) {
+      NCValidateSetErrorReporter(vstate, &kNCVerboseErrorReporter);
+    }
     NCValidateSegment(&data->bytes[0], data->base, data->num_bytes, vstate);
     return_value = (0 == NCValidateFinish(vstate)) ? TRUE : FALSE;
     if (vstate->stats.didstubout) {
@@ -745,7 +764,9 @@ static Bool GrokABoolFlag(const char *arg) {
     Bool *flag_ptr;
   } flags[] = {
     { "--segments" , &NACL_FLAGS_analyze_segments },
+#ifndef NCVAL_TESTING
     { "--detailed", &NACL_FLAGS_detailed_errors },
+#endif
     { "--stubout", &NACL_FLAGS_stubout_memory },
 #if NACL_TARGET_SUBARCH == 64
     { "--trace_insts", &NACL_FLAGS_validator_trace_instructions },
@@ -792,9 +813,6 @@ static Bool GrokABoolFlag(const char *arg) {
     { "--errors" , &NACL_FLAGS_errors },
     { "--fatal"  , &NACL_FLAGS_fatal },
     { "--validator_decoder", &NACL_FLAGS_validator_decoder },
-#endif
-#if NCVAL_TESTING
-    {"--conds", &NACL_FLAGS_print_validator_conditions },
 #endif
     { "--identity_mask", &NACL_FLAGS_identity_mask },
   };

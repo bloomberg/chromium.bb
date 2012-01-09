@@ -29,20 +29,25 @@ if env.AllBits('windows', 'debug'):
 env.FilterOut(CCFLAGS=['-Wextra', '-Wswitch-enum', '-Wsign-compare'])
 
 # SFI validator library.
+ncval_reg_sfi_sources = ['ncvalidate_iter.c',
+                         'ncvalidate_iter_detailed.c',
+                         'nc_cpu_checks.c',
+                         'nc_illegal.c',
+                         'nc_jumps.c',
+                         'address_sets.c',
+                         'nc_jumps_detailed.c',
+                         'nc_opcode_histogram.c',
+                         'nc_protect_base.c',
+                         'nc_memory_protect.c',
+                         'ncvalidate_utils.c',
+                         'ncval_decode_tables.c',
+                         ]
+
+if env.Bit('ncval_testing'):
+  ncval_reg_sfi_sources.append('nc_postconds.c')
+
 env.ComponentLibrary(env.NaClTargetArchSuffix('ncval_reg_sfi'),
-                     ['ncvalidate_iter.c',
-                      'ncvalidate_iter_detailed.c',
-                      'nc_cpu_checks.c',
-                      'nc_illegal.c',
-                      'nc_jumps.c',
-                      'address_sets.c',
-                      'nc_jumps_detailed.c',
-                      'nc_opcode_histogram.c',
-                      'nc_protect_base.c',
-                      'nc_memory_protect.c',
-                      'ncvalidate_utils.c',
-                      'ncval_decode_tables.c',
-                      ])
+                     ncval_reg_sfi_sources)
 
 # Verbose routines of SFI validator library.
 env.ComponentLibrary(env.NaClTargetArchSuffix('ncval_reg_sfi_verbose'),

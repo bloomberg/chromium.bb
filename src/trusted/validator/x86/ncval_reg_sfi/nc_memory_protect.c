@@ -1,11 +1,12 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
 
 #include "native_client/src/trusted/validator/x86/ncval_reg_sfi/nc_memory_protect.h"
 
+#include "native_client/src/include/portability_io.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/validator/x86/decoder/nc_inst_state.h"
 #include "native_client/src/trusted/validator/x86/decoder/nc_inst_trans.h"
@@ -19,10 +20,13 @@
  */
 #define DEBUGGING 0
 
-#include "native_client/src/trusted/validator/x86/decoder/nc_inst_iter_inl.c"
 #include "native_client/src/shared/utils/debugging.h"
 
+#include "native_client/src/trusted/validator/x86/decoder/nc_inst_iter_inl.c"
 #include "native_client/src/trusted/validator/x86/decoder/ncop_exps_inl.c"
+
+/* Maximum character buffer size to use for generating messages. */
+static const size_t kMaxBufferSize = 1024;
 
 /*
  * When true, check both uses and sets of memory. When false, only
@@ -38,14 +42,13 @@ static Bool IsPossibleSandboxingNode(NaClExp* node) {
           (node->flags & NACL_EFLAG(ExprSet)));
 }
 
-
 /* Checks if the given node index for the given instruction is
  * a valid (sandboxed) memory offset, based on NACL rules, returning TRUE iff
  * the memory offset is NACL compliant.
  * parameters are:
- *    state - The state of the validator,
  *    iter - The current value of the instruction iterator.
- *    lookback_index - number of instructions to lookback
+ *    state - The state of the validator,
+ *    distance - number of instructions to lookback
  *      (within the iterator) in order to retrieve the instruction.
  *    inst - The instruction that holds the memory offset.
  *    vector - The expression vector associated with the instruction.
@@ -55,9 +58,9 @@ static Bool IsPossibleSandboxingNode(NaClExp* node) {
  *      error messages if the memory offset isn't NACL compliant.
  */
 static INLINE Bool NaClIsValidMemOffset(
-    NaClValidatorState* state,
     NaClInstIter* iter,
-    int lookback_index,
+    NaClValidatorState* state,
+    size_t distance,
     NaClInstState* inst,
     NaClExpVector* vector,
     int node_index,
@@ -73,7 +76,8 @@ static INLINE Bool NaClIsValidMemOffset(
 
   if (ExprMemOffset != node->kind) return FALSE;
   DEBUG(NaClLog(LOG_INFO,
-                "found MemOffset at node %"NACL_PRIu32"\n", node_index));
+                "found MemOffset at node %"NACL_PRIu32" %d\n", node_index,
+                (int) distance));
   /* Only allow memory offset nodes with address size 64. */
   if (NACL_EMPTY_EFLAGS == (node->flags & NACL_EFLAG(ExprSize64))) {
     if (print_messages) {
@@ -107,22 +111,10 @@ static INLINE Bool NaClIsValidMemOffset(
   if (RegUnknown != index_reg) {
     Bool index_reg_is_good = FALSE;
     if ((base_reg != RegRIP) &&
-        (index_reg_node->flags & NACL_EFLAG(ExprSize64)) &&
-        NaClInstIterHasLookbackStateInline(iter, lookback_index + 1)) {
-      NaClInstState* prev_inst =
-          NaClInstIterGetLookbackStateInline(iter, lookback_index + 1);
-      DEBUG_OR_ERASE({
-          struct Gio* g = NaClLogGetGio();
-          NaClLog(LOG_INFO, "prev inst:\n");
-          NaClInstPrint(g, state->decoder_tables, NaClInstStateInst(prev_inst));
-          NaClExpVectorPrint(g, NaClInstStateExpVector(prev_inst));
-        });
-      if (NaClAssignsRegisterWithZeroExtends(
-              prev_inst, NaClGet32For64BitReg(index_reg))) {
-        DEBUG(NaClLog(LOG_INFO, "zero extends - safe!\n"));
-        NaClMarkInstructionJumpIllegal(state, inst);
+        NaClHasBit(index_reg_node->flags, NACL_EFLAG(ExprSize64)) &&
+        NaClAssignsRegisterWithZeroExtends64(
+            iter, state, distance + 1, index_reg)) {
         index_reg_is_good = TRUE;
-      }
     }
     if (!index_reg_is_good) {
       if (print_messages) {
@@ -148,8 +140,104 @@ static INLINE Bool NaClIsValidMemOffset(
   return TRUE;
 }
 
-void NaClMemoryReferenceValidator(NaClValidatorState* state,
-                                  NaClInstIter* iter) {
+Bool NaClIsLeaSafeAddress(
+    NaClInstIter* iter,
+    NaClValidatorState* state,
+    size_t distance,
+    NaClInstState* inst_state,
+    NaClOpKind addr_reg) {
+  Bool result;
+  NaClExpVector* vector;
+  NaClOpKind lea_reg;
+  int memoff_index;
+  const NaClInst* inst = NaClInstStateInst(inst_state);
+  DEBUG(NaClLog(LOG_INFO, "address reg = %s\n", NaClOpKindName(addr_reg)));
+  if (InstLea != inst->name) return FALSE;
+
+  /* Note that first argument of LEA is always a register,
+   * (under an OperandReference), and hence is always at
+   * index 1.
+   */
+  vector = NaClInstStateExpVector(inst_state);
+  lea_reg = NaClGetExpVectorRegister(vector, 1);
+  DEBUG(NaClLog(LOG_INFO, "lea reg = %s\n", NaClOpKindName(lea_reg)));
+  if (lea_reg != addr_reg) return FALSE;
+
+  /* Move to second argument which should be a memory address. */
+  memoff_index = NaClGetNthExpKind(vector, OperandReference, 2);
+  if (-1 == memoff_index) return FALSE;
+
+  memoff_index = NaClGetExpKidIndex(vector, memoff_index, 0);
+  if (memoff_index >= (int) vector->number_expr_nodes) return FALSE;
+  DEBUG(NaClLog(LOG_INFO, "check mem offset!\n"));
+  result = NaClIsValidMemOffset(iter,
+                                state,
+                                distance,
+                                inst_state,
+                                vector,
+                                memoff_index,
+                                FALSE);
+#ifdef NCVAL_TESTING
+  if (result && (0 == distance)) {
+    /* Add postcondition associated with the test. */
+    char* buffer;
+    size_t buffer_size;
+    char reg_name[kMaxBufferSize];
+    NaClOpRegName(addr_reg, reg_name, kMaxBufferSize);
+    NaClConditionAppend(state->postcond, &buffer, &buffer_size);
+    SNPRINTF(buffer, buffer_size, "SafeAddress(%s)", reg_name);
+  }
+#endif
+  return result;
+}
+
+/* Applies the precondition "SafeAddress(addr_reg)" to the current
+ * instruction. Returns true if the previous instruction is an LEA
+ * instruction that generates a nacl safe address. Assumes that the given
+ * register is a 64-bit register. That is, generated from a sequence of
+ * instructions of the form:
+ *
+ *    mov %r32, ..              ; zero out top half of r32
+ *    lea %r64, [%r15+%r32*1]   ; calculate address, put in r64
+ *
+ * where r32 is the corresponding 32-bit register for the 64-bit register
+ * r64.
+ *
+ * When NCVAL_TESTING is defined, this function always returns true, and
+ * adds the corresponding precondition to the current instruction.
+ */
+static Bool NaClIsPreviousLeaSafeAddress(
+    NaClInstIter* iter,         /* Instruction iterator used. */
+    NaClValidatorState* state,  /* The validator state associated with
+                                 * the instruction using the address to
+                                 * check.
+                                 */
+    NaClOpKind addr_reg) {      /* The register containing the address that
+                                 * must be safe.
+                                 */
+  Bool result = FALSE;
+#ifdef NCVAL_TESTING
+  char* buffer;
+  size_t buffer_size;
+  char reg_name[kMaxBufferSize];
+  NaClOpRegName(addr_reg, reg_name, kMaxBufferSize);
+  NaClConditionAppend(state->precond, &buffer, &buffer_size);
+  SNPRINTF(buffer, buffer_size, "SafeAddress(%s)", reg_name);
+  result = TRUE;
+#else
+  if (NaClInstIterHasLookbackStateInline(iter, 1) &&
+      NaClIsLeaSafeAddress(iter, state, 1,
+                           NaClInstIterGetLookbackStateInline(iter, 1),
+                           addr_reg)) {
+    result = TRUE;
+    NaClMarkInstructionJumpIllegal(state, state->cur_inst_state);
+  }
+#endif
+  return result;
+}
+
+void NaClMemoryReferenceValidator(NaClInstIter* iter,
+                                  NaClValidatorState* state) {
   uint32_t i;
   NaClInstState* inst_state = state->cur_inst_state;
   NaClExpVector* vector = state->cur_inst_vector;
@@ -166,128 +254,99 @@ void NaClMemoryReferenceValidator(NaClValidatorState* state,
   for (i = 0; i < vector->number_expr_nodes; ++i) {
     NaClExp* node = &vector->node[i];
     if (state->quit) break;
+
     DEBUG(NaClLog(LOG_INFO, "processing argument %"NACL_PRIu32"\n", i));
-    if (IsPossibleSandboxingNode(node)) {
-      DEBUG(NaClLog(LOG_INFO, "found possible sandboxing reference\n"));
-      if (NaClIsValidMemOffset(state, iter, 0, inst_state, vector, i, TRUE)) {
+    if (!IsPossibleSandboxingNode(node)) continue;
+
+    DEBUG(NaClLog(LOG_INFO, "found possible sandboxing reference\n"));
+    if (NaClIsValidMemOffset(iter, state, 0, inst_state, vector, i, TRUE)) {
+      /* Cases 1, 2, or 3 (see nc_memory_protect.h). */
+      continue;
+    }
+
+    if (ExprSegmentAddress == node->kind) {
+      /* Note that operations like stosb, stosw, stosd, and stoq use
+       * segment notation. In 64 bit mode, the second argument must
+       * be a register, and be computed (using lea) so that it matches
+       * a valid (sandboxed) memory offset. For example:
+       *
+       *    mov %edi, %edi           ; zero out top half of rdi
+       *    lea %rdi, [%r15+%edi*1]  ; calculate address, put in rdi
+       *    stos %eax                ; implicity uses %es:(%rdi)
+       *
+       * Note: we actually allow any zero-extending operations, not just
+       * an identity MOV.
+       */
+      int seg_prefix_reg_index;
+      NaClOpKind seg_prefix_reg;
+      DEBUG(NaClLog(LOG_INFO,
+                    "found segment assign at node %"NACL_PRIu32"\n", i));
+
+      /* Only allow if 64 bit segment addresses. */
+      if (NACL_EMPTY_EFLAGS == (node->flags & NACL_EFLAG(ExprSize64))) {
+        NaClValidatorInstMessage(
+            LOG_ERROR, state, inst_state,
+            "Assignment to non-64 bit segment address\n");
         continue;
-      } else if (ExprSegmentAddress == node->kind) {
-        /* Note that operations like stosb, stosw, stosd, and stoq use
-         * segment notation. In 64 bit mode, the second argument must
-         * be a register, and be computed (using lea) so that it matches
-         * a valid (sandboxed) memory offset. For example:
-         *
-         *    mov %edi, %edi           ; zero out top half of rdi
-         *    lea %rdi, (%r15, %edi, 1); calculate address, put in rdi
-         *    stos %eax                ; implicity uses %es:(%rdi)
-         *
-         * Note: we actually allow any zero-extending operation, not just
-         * an identity MOV.
-         */
-        int seg_prefix_reg_index;
-        NaClOpKind seg_prefix_reg;
-        DEBUG(NaClLog(LOG_INFO,
-                      "found segment assign at node %"NACL_PRIu32"\n", i));
+      }
 
-        /* Only allow if 64 bit segment addresses. */
-        if (NACL_EMPTY_EFLAGS == (node->flags & NACL_EFLAG(ExprSize64))) {
-          NaClValidatorInstMessage(
-              LOG_ERROR, state, inst_state,
-              "Assignment to non-64 bit segment address\n");
-          continue;
+      /* Only allow segment prefix registers that are treated as
+       * null prefixes.
+       */
+      seg_prefix_reg_index = NaClGetExpKidIndex(vector, i, 0);
+      seg_prefix_reg = NaClGetExpVectorRegister(vector, seg_prefix_reg_index);
+      switch (seg_prefix_reg) {
+        case RegCS:
+        case RegDS:
+        case RegES:
+        case RegSS: {
+          int addr_reg_index = NaClGetExpKidIndex(vector, i, 1);
+          DEBUG(NaClLog(LOG_INFO,
+                        "matched segment %s, address at index %d\n",
+                        NaClOpKindName(seg_prefix_reg), addr_reg_index));
+          if ((-1 != addr_reg_index) &&
+              NaClIsPreviousLeaSafeAddress(
+                  iter, state,
+                  NaClGetExpVectorRegister(vector, addr_reg_index))) {
+            /* Case 4 (see nc_memory_protect.h). */
+            continue;
+          }
+          break;
         }
+        default:
+          break;
+      }
 
-        /* Only allow segment prefix registers that are treated as
-         * null prefixes.
-         */
-        seg_prefix_reg_index = NaClGetExpKidIndex(vector, i, 0);
-        seg_prefix_reg = NaClGetExpVectorRegister(vector, seg_prefix_reg_index);
-        switch (seg_prefix_reg) {
-          case RegCS:
-          case RegDS:
-          case RegES:
-          case RegSS:
-            /* Check that we match lea constraints. */
-            if (NaClInstIterHasLookbackStateInline(iter, 1)) {
-              NaClInstState* prev_inst_state =
-                  NaClInstIterGetLookbackStateInline(iter, 1);
-              const NaClInst* prev_inst = NaClInstStateInst(prev_inst_state);
-              DEBUG(NaClLog(LOG_INFO, "look at previous\n"));
-              if (InstLea == prev_inst->name) {
-                int seg_reg_index = NaClGetExpKidIndex(vector, i, 1);
-                NaClOpKind seg_reg =
-                    NaClGetExpVectorRegister(vector, seg_reg_index);
-                DEBUG(NaClLog(LOG_INFO,
-                              "seg reg = %s\n", NaClOpKindName(seg_reg)));
-                if (seg_reg_index < (int) vector->number_expr_nodes) {
-                  NaClExpVector* prev_vector =
-                      NaClInstStateExpVector(prev_inst_state);
-                  /* Note that first argument of LEA is always a register,
-                   * (under an OperandReference), and hence is always at
-                   * index 1.
-                   */
-                  NaClOpKind lea_reg = NaClGetExpVectorRegister(prev_vector, 1);
-                  DEBUG(NaClLog(LOG_INFO,
-                                "lea reg = %s\n", NaClOpKindName(lea_reg)));
-                  if (lea_reg == seg_reg) {
-                    /* Move to first argument which should be a memory
-                     * address.
-                     */
-                    int memoff_index =
-                        NaClGetNthExpKind(prev_vector, OperandReference, 2);
-                    if (memoff_index < (int) prev_vector->number_expr_nodes) {
-                      memoff_index =
-                          NaClGetExpKidIndex(prev_vector, memoff_index, 0);
-                      if (memoff_index < (int) prev_vector->number_expr_nodes) {
-                        DEBUG(NaClLog(LOG_INFO, "check mem offset!\n"));
-                        if (NaClIsValidMemOffset(state,
-                                                 iter,
-                                                 1,
-                                                 prev_inst_state,
-                                                 prev_vector,
-                                                 memoff_index,
-                                                 FALSE)) {
-                          NaClMarkInstructionJumpIllegal(state, inst_state);
-                          continue;
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-            break;
-          default:
-            break;
-        }
-        /* If reached, we don't know how to handle the segment assign. */
-        NaClValidatorInstMessage(LOG_ERROR, state, inst_state,
+      /* If reached, we don't know how to handle the segment address. */
+      NaClValidatorInstMessage(LOG_ERROR, state, inst_state,
                                  "Segment memory reference not allowed\n");
-      } else if (UndefinedExp == node->kind ||
-                 (ExprRegister == node->kind &&
-                  RegUnknown == NaClGetExpRegisterInline(node))) {
-        /* First rule out case where the index registers of the memory
-         * offset may be unknown.
+      continue;
+    }
+
+    if (UndefinedExp == node->kind ||
+        (ExprRegister == node->kind &&
+         RegUnknown == NaClGetExpRegisterInline(node))) {
+      /* First rule out case where the index registers of the memory
+       * offset may be unknown.
+       */
+      int parent_index = NaClGetExpParentIndex(vector, i);
+      if (parent_index >= 0 &&
+          (i == NaClGetExpKidIndex(vector, parent_index, 1))) {
+        /* Special case of memory offsets that we allow. That is, memory
+         * offsets can optionally define index register. If the index
+         * register isn't specified, the value RegUnknown is used as
+         * a placeholder (and hence legal).
          */
-        int parent_index = NaClGetExpParentIndex(vector, i);
-        if (parent_index >= 0 &&
-            (i == NaClGetExpKidIndex(vector, parent_index, 1))) {
-          /* Special case of memory offsets that we allow. That is, memory
-           * offsets can optionally define index register. If the index
-           * register isn't specified, the value RegUnknown is used as
-           * a placeholder (and hence legal).
-           */
-        } else {
-          /* This shouldn't happpen, but if it does, its because either:
-           * (1) We couldn't translate the expression, and hence complain; or
-           * (2) It is an X87 instruction with a register address, which we
-           *     don't allow (in case these instructions get generalized in
-           *     the future).
-           */
-          NaClValidatorInstMessage(
-              LOG_ERROR, state, inst_state,
-              "Memory reference not understood, can't verify correctness.\n");
-        }
+      } else {
+        /* This shouldn't happpen, but if it does, its because either:
+         * (1) We couldn't translate the expression, and hence complain; or
+         * (2) It is an X87 instruction with a register address, which we
+         *     don't allow (in case these instructions get generalized in
+         *     the future).
+         */
+        NaClValidatorInstMessage(
+            LOG_ERROR, state, inst_state,
+            "Memory reference not understood, can't verify correctness.\n");
       }
     }
   }

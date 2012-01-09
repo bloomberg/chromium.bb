@@ -1,0 +1,2 @@
+0: -> ZeroExtends(edi)
+2: ZeroExtends(edi)
