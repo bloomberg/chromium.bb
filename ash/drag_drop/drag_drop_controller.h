@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,10 +12,15 @@
 #include "ui/aura/event_filter.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/events.h"
+#include "ui/gfx/compositor/layer_animation_observer.h"
 #include "ui/gfx/point.h"
 
 namespace aura {
 class Window;
+}
+
+namespace ui {
+class LayerAnimationSequence;
 }
 
 namespace ash {
@@ -30,7 +35,8 @@ class DragImageView;
 
 class ASH_EXPORT DragDropController
     : public aura::client::DragDropClient,
-      public aura::EventFilter {
+      public aura::EventFilter,
+      public ui::LayerAnimationObserver {
  public:
   DragDropController();
   virtual ~DragDropController();
@@ -60,6 +66,17 @@ class ASH_EXPORT DragDropController
  private:
   friend class ash::test::DragDropControllerTest;
 
+  // Overridden from ui::LayerAnimationObserver:
+  void OnLayerAnimationEnded(
+      const ui::LayerAnimationSequence* sequence) OVERRIDE;
+  void OnLayerAnimationAborted(
+      const ui::LayerAnimationSequence* sequence) OVERRIDE;
+  void OnLayerAnimationScheduled(
+      const ui::LayerAnimationSequence* sequence) OVERRIDE {}
+
+  // Helper method to start drag widget flying back animation.
+  void StartCanceledAnimation();
+
   // Helper method to reset everything.
   void Cleanup();
 
@@ -67,6 +84,7 @@ class ASH_EXPORT DragDropController
   const ui::OSExchangeData* drag_data_;
   int drag_operation_;
   aura::Window* dragged_window_;
+  gfx::Point drag_start_location_;
 
   bool drag_drop_in_progress_;
 

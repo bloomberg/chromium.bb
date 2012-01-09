@@ -12,6 +12,7 @@
 #include "ui/aura/window.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_aura.h"
+#include "ui/gfx/compositor/layer_animator.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
 #include "ui/views/views_delegate.h"
@@ -24,6 +25,8 @@ using aura::RootWindow;
 
 namespace {
 const gfx::Point kDragDropWidgetOffset(0, 0);
+const base::TimeDelta kDragDropAnimationDuration =
+    base::TimeDelta::FromMilliseconds(250);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -44,6 +47,11 @@ DragDropController::DragDropController()
 DragDropController::~DragDropController() {
   Shell::GetInstance()->RemoveRootWindowEventFilter(this);
   Cleanup();
+  if (drag_image_.get()) {
+    aura::Window* window = drag_image_->GetWidget()->GetNativeView();
+    window->layer()->GetAnimator()->RemoveObserver(this);
+    drag_image_.reset();
+  }
 }
 
 int DragDropController::StartDragAndDrop(const ui::OSExchangeData& data,
@@ -69,6 +77,7 @@ int DragDropController::StartDragAndDrop(const ui::OSExchangeData& data,
   drag_image_->SetWidgetVisible(true);
 
   dragged_window_ = NULL;
+  drag_start_location_ = RootWindow::GetInstance()->last_mouse_location();
 
   if (should_block_during_drag_drop_) {
     MessageLoopForUI::current()->RunWithDispatcher(
@@ -114,7 +123,12 @@ void DragDropController::Drop(aura::Window* target,
   if ((delegate = aura::client::GetDragDropDelegate(dragged_window_))) {
     aura::DropTargetEvent e(*drag_data_, event.location(), drag_operation_);
     drag_operation_ = delegate->OnPerformDrop(e);
-    // TODO(varunjain): if drag_op is 0, do drag widget flying back animation
+    if (drag_operation_ == 0)
+      StartCanceledAnimation();
+    else
+      drag_image_.reset();
+  } else {
+    drag_image_.reset();
   }
 
   Cleanup();
@@ -123,9 +137,9 @@ void DragDropController::Drop(aura::Window* target,
 }
 
 void DragDropController::DragCancel() {
-  // TODO(varunjain): Do drag widget flying back animation
   Cleanup();
   drag_operation_ = 0;
+  StartCanceledAnimation();
   if (should_block_during_drag_drop_)
     MessageLoop::current()->Quit();
 }
@@ -169,8 +183,30 @@ ui::TouchStatus DragDropController::PreHandleTouchEvent(
 ////////////////////////////////////////////////////////////////////////////////
 // DragDropController, private:
 
-void DragDropController::Cleanup() {
+void DragDropController::OnLayerAnimationEnded(
+    const ui::LayerAnimationSequence* sequence) {
+  DCHECK(drag_image_.get());
   drag_image_.reset();
+}
+
+void DragDropController::OnLayerAnimationAborted(
+    const ui::LayerAnimationSequence* sequence) {
+  DCHECK(drag_image_.get());
+  drag_image_.reset();
+}
+
+void DragDropController::StartCanceledAnimation() {
+  aura::Window* window = drag_image_->GetWidget()->GetNativeView();
+  ui::LayerAnimator* animator = window->layer()->GetAnimator();
+  animator->set_preemption_strategy(
+      ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+  animator->AddObserver(this);
+  ui::LayerAnimator::ScopedSettings animation_setter(animator);
+  animation_setter.SetTransitionDuration(kDragDropAnimationDuration);
+  window->SetBounds(gfx::Rect(drag_start_location_, window->bounds().size()));
+}
+
+void DragDropController::Cleanup() {
   drag_data_ = NULL;
   drag_drop_in_progress_ = false;
 }
