@@ -514,7 +514,13 @@ TEST_F(AutomationProxyTest, AcceleratorDownloads) {
   EXPECT_EQ(L"Downloads", GetActiveTabTitle());
 }
 
-TEST_F(AutomationProxyTest, AcceleratorExtensions) {
+// http://crbug.com/109642
+#if defined(OS_MACOSX)
+#define MAYBE_AcceleratorExtensions FLAKY_AcceleratorExtensions
+#else
+#define MAYBE_AcceleratorExtensions AcceleratorExtensions
+#endif
+TEST_F(AutomationProxyTest, MAYBE_AcceleratorExtensions) {
   scoped_refptr<BrowserProxy> window(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(window.get());
 
