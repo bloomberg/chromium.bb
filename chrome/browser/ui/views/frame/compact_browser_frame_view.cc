@@ -1,8 +1,8 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/frame/browser_frame_view_chromeos.h"
+#include "chrome/browser/ui/views/frame/compact_browser_frame_view.h"
 
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/themes/theme_service.h"
@@ -23,34 +23,32 @@ const int kTopPad = 4;
 const int kThemeOffset = -5;
 }
 
-namespace chromeos {
-
-// BrowserFrameViewChromeos adds a few pixels of pad to the top of the
+// CompactBrowserFrameView adds a few pixels of pad to the top of the
 // tabstrip and clicks left of first tab should be forwarded to the first tab.
 // To enable this we have to grab mouse events in that area and forward them on
 // to the NonClientView. We do this by overriding HitTest(), NonClientHitTest()
 // and GetEventHandlerForPoint().
-BrowserFrameViewChromeos::BrowserFrameViewChromeos(
+CompactBrowserFrameView::CompactBrowserFrameView(
     BrowserFrame* frame, BrowserView* browser_view)
     : OpaqueBrowserFrameView(frame, browser_view) {
 }
 
-BrowserFrameViewChromeos::~BrowserFrameViewChromeos() {
+CompactBrowserFrameView::~CompactBrowserFrameView() {
 }
 
-int BrowserFrameViewChromeos::NonClientHitTest(const gfx::Point& point) {
+int CompactBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
   if (point.x() < kLeftPad || point.y() < kTopPad)
     return HTNOWHERE;
   return OpaqueBrowserFrameView::NonClientHitTest(point);
 }
 
-bool BrowserFrameViewChromeos::HitTest(const gfx::Point& l) const {
+bool CompactBrowserFrameView::HitTest(const gfx::Point& l) const {
   if (l.x() < kLeftPad || l.y() < kTopPad)
     return true;
   return OpaqueBrowserFrameView::HitTest(l);
 }
 
-views::View* BrowserFrameViewChromeos::GetEventHandlerForPoint(
+views::View* CompactBrowserFrameView::GetEventHandlerForPoint(
     const gfx::Point& point) {
   if (point.x() < kLeftPad || point.y() < kTopPad) {
     gfx::Point nc_point(std::max(kLeftPad, point.x()),
@@ -62,12 +60,12 @@ views::View* BrowserFrameViewChromeos::GetEventHandlerForPoint(
   return OpaqueBrowserFrameView::GetEventHandlerForPoint(point);
 }
 
-int BrowserFrameViewChromeos::GetHorizontalTabStripVerticalOffset(
+int CompactBrowserFrameView::GetHorizontalTabStripVerticalOffset(
     bool restored) const {
   return NonClientTopBorderHeight(restored) + kTopPad;
 }
 
-void BrowserFrameViewChromeos::ModifyMaximizedFramePainting(
+void CompactBrowserFrameView::ModifyMaximizedFramePainting(
     int* top_offset, SkBitmap** left_corner, SkBitmap** right_corner) {
   *top_offset = kThemeOffset;
   ui::ThemeProvider* tp = GetThemeProvider();
@@ -83,4 +81,3 @@ void BrowserFrameViewChromeos::ModifyMaximizedFramePainting(
   }
 }
 
-}  // namespace chromeos

@@ -1,19 +1,17 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_FRAME_BROWSER_FRAME_VIEW_CHROMEOS_H_
-#define CHROME_BROWSER_CHROMEOS_FRAME_BROWSER_FRAME_VIEW_CHROMEOS_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_FRAME_COMPACT_BROWSER_FRAME_VIEW_H_
+#define CHROME_BROWSER_UI_VIEWS_FRAME_COMPACT_BROWSER_FRAME_VIEW_H_
 #pragma once
 
 #include "chrome/browser/ui/views/frame/opaque_browser_frame_view.h"
 
-namespace chromeos {
-
-class BrowserFrameViewChromeos : public OpaqueBrowserFrameView {
+class CompactBrowserFrameView : public OpaqueBrowserFrameView {
  public:
-  BrowserFrameViewChromeos(BrowserFrame* frame, BrowserView* browser_view);
-  virtual ~BrowserFrameViewChromeos();
+  CompactBrowserFrameView(BrowserFrame* frame, BrowserView* browser_view);
+  virtual ~CompactBrowserFrameView();
 
   // View overrides.
   virtual int NonClientHitTest(const gfx::Point& point) OVERRIDE;
@@ -29,9 +27,7 @@ class BrowserFrameViewChromeos : public OpaqueBrowserFrameView {
                                             SkBitmap** right_corner) OVERRIDE;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(BrowserFrameViewChromeos);
+  DISALLOW_COPY_AND_ASSIGN(CompactBrowserFrameView);
 };
 
-}  // namespace chromeos
-
-#endif  // CHROME_BROWSER_CHROMEOS_FRAME_BROWSER_FRAME_VIEW_CHROMEOS_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_FRAME_COMPACT_BROWSER_FRAME_VIEW_H_
