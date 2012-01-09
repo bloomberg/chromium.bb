@@ -244,8 +244,6 @@
       '-omnibox.OmniboxTest.testOmniboxSearchHistory',
       # Gnome / kwallet popups on linux break sync tests.  crbug.com/80329
       '-sync',
-      # crbug.com/87837
-      '-plugins.PluginsTest.testKillAndReloadAllPlugins',
       # crbug.com/66072
       '-notifications.NotificationsTest.testNotificationOrderAfterClosingOne',
       # crbug.com/103379
@@ -340,8 +338,6 @@
       '-prefs.PrefsTest.testSessionRestore',
       # sync tests were running into a secondary passphrase. crosbug.com/15016.
       '-sync',
-      # crbug.com/87837
-      '-plugins.PluginsTest.testKillAndReloadAllPlugins',
       # crbug.com/109035
       '-plugins.PluginsTest.testBlockPluginException',
       # Deal with i18n chars.  crosbug.com/12639
