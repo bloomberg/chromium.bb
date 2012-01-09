@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -233,7 +233,9 @@ bool PluginInfoMessageFilter::FindEnabledPlugin(
       *actual_mime_type = mime_types[i];
       allowed = true;
       break;
-    } else if (i == 0) {
+    } else if ((i == 0) &&
+               (matching_plugins[i].path !=
+                    FilePath(webkit::npapi::kDefaultPluginLibraryName))) {
       *plugin = matching_plugins[i];
       *actual_mime_type = mime_types[i];
     }
