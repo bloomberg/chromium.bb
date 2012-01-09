@@ -13,6 +13,8 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/models/tree_node_model.h"
 #include "ui/gfx/font.h"
+#include "ui/views/controls/textfield/textfield_controller.h"
+#include "ui/views/focus/focus_manager.h"
 #include "ui/views/view.h"
 
 namespace views {
@@ -27,7 +29,10 @@ class TreeViewController;
 // Note on implementation. This implementation doesn't scale well. In particular
 // it does not store any row information, but instead calculates it as
 // necessary. But it's more than adequate for current uses.
-class VIEWS_EXPORT TreeView : public View, public ui::TreeModelObserver {
+class VIEWS_EXPORT TreeView : public View,
+                              public ui::TreeModelObserver,
+                              public TextfieldController,
+                              public FocusChangeListener {
  public:
   TreeView();
   virtual ~TreeView();
@@ -117,6 +122,18 @@ class VIEWS_EXPORT TreeView : public View, public ui::TreeModelObserver {
                                 int count) OVERRIDE;
   virtual void TreeNodeChanged(ui::TreeModel* model,
                                ui::TreeModelNode* model_node) OVERRIDE;
+
+  // TextfieldController overrides:
+  virtual void ContentsChanged(Textfield* sender,
+                               const string16& new_contents) OVERRIDE;
+  virtual bool HandleKeyEvent(Textfield* sender,
+                              const KeyEvent& key_event) OVERRIDE;
+
+  // FocusChangeListener overrides:
+  virtual void OnWillChangeFocus(View* focused_before,
+                                 View* focused_now) OVERRIDE;
+  virtual void OnDidChangeFocus(View* focused_before,
+                                View* focused_now) OVERRIDE;
 
  protected:
   // View overrides:
@@ -217,6 +234,9 @@ class VIEWS_EXPORT TreeView : public View, public ui::TreeModelObserver {
   // Updates |preferred_size_| from the state of the UI.
   void UpdatePreferredSize();
 
+  // Positions |editor_|.
+  void LayoutEditor();
+
   // Schedules a paint for |node|.
   void SchedulePaintForNode(InternalNode* node);
 
@@ -301,11 +321,15 @@ class VIEWS_EXPORT TreeView : public View, public ui::TreeModelObserver {
   // The selected node, may be NULL.
   InternalNode* selected_node_;
 
-  // Node users is editing, NULL if not editing.
-  InternalNode* editing_node_;
-
-  // Used when editing.
+  // Non-null when editing.
   Textfield* editor_;
+
+  // Preferred size of |editor_| with no content.
+  gfx::Size empty_editor_size_;
+
+  // If non-NULL we've attached a listener to this focus manager. Used to know
+  // when focus is changing to another view so that we can cancel the edit.
+  FocusManager* focus_manager_;
 
   // Whether to automatically expand children when a parent node is expanded.
   bool auto_expand_children_;
