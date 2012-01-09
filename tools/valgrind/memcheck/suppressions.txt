@@ -5566,12 +5566,7 @@
    bug_109631
    Memcheck:Uninitialized
    fun:_ZN7WebCore16HTMLMediaElement25updateActiveTextTrackCuesEf
-   fun:_ZN7WebCore16HTMLMediaElement26playbackProgressTimerFiredEPNS_5TimerIS0_EE
-   fun:_ZN7WebCore5TimerINS_16HTMLMediaElementEE5firedEv
-   fun:_ZN7WebCore12ThreadTimers24sharedTimerFiredInternalEv
-   fun:_ZN7WebCore12ThreadTimers16sharedTimerFiredEv
-   fun:_ZN11webkit_glue25WebKitPlatformSupportImpl9DoTimeoutEv
-   fun:_ZN4base9BaseTimerIN11webkit_glue25WebKitPlatformSupportImplELb0EE9TimerTask3RunEv
+   fun:_ZN7WebCore16HTMLMediaElement*
 }
 {
    bug_109638
