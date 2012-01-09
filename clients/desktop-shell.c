@@ -229,11 +229,13 @@ panel_redraw_handler(struct window *window, void *data)
 	window_flush(window);
 }
 
-static void
+static int
 panel_launcher_enter_handler(struct widget *widget, struct input *input,
 			     uint32_t time, int32_t x, int32_t y, void *data)
 {
 	widget_schedule_redraw(widget);
+
+	return POINTER_LEFT_PTR;
 }
 
 static void
@@ -454,12 +456,14 @@ unlock_dialog_keyboard_focus_handler(struct window *window,
 	window_schedule_redraw(window);
 }
 
-static void
+static int
 unlock_dialog_widget_enter_handler(struct widget *widget,
 				   struct input *input, uint32_t time,
 				   int32_t x, int32_t y, void *data)
 {
 	widget_schedule_redraw(widget);
+
+	return POINTER_LEFT_PTR;
 }
 
 static void

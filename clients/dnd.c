@@ -432,11 +432,15 @@ lookup_cursor(struct dnd *dnd, int x, int y)
 		return POINTER_LEFT_PTR;
 }
 
-static void
+static int
 dnd_enter_handler(struct widget *widget,
 		  struct input *input, uint32_t time,
 		  int32_t x, int32_t y, void *data)
 {
+	struct window *window = data;
+	struct dnd *dnd = window_get_user_data(window);
+
+	return lookup_cursor(dnd, x, y);
 }
 
 static int

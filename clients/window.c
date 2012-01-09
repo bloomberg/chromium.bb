@@ -1267,6 +1267,7 @@ window_set_focus_widget(struct window *window, struct widget *focus,
 			struct input *input, uint32_t time, int32_t x, int32_t y)
 {
 	struct widget *old;
+	int pointer = POINTER_LEFT_PTR;
 
 	if (focus == window->focus_widget)
 		return;
@@ -1280,9 +1281,12 @@ window_set_focus_widget(struct window *window, struct widget *focus,
 
 	if (focus) {
 		if (focus->enter_handler)
-			focus->enter_handler(focus, input, time,
-					     x, y, focus->user_data);
+			pointer = focus->enter_handler(focus, input, time,
+						       x, y, focus->user_data);
 		window->focus_widget = focus;
+
+		pointer = input_get_pointer_image_for_location(input, pointer);
+		input_set_pointer_image(input, time, pointer);
 	}
 }
 
@@ -2221,7 +2225,7 @@ menu_motion_handler(struct widget *widget,
 	return menu_set_item(menu, y);
 }
 
-static void
+static int
 menu_enter_handler(struct widget *widget,
 		   struct input *input, uint32_t time,
 		   int32_t x, int32_t y, void *data)
@@ -2230,6 +2234,8 @@ menu_enter_handler(struct widget *widget,
 	struct menu *menu = window_get_user_data(window);
 
 	menu_set_item(menu, y);
+
+	return POINTER_LEFT_PTR;
 }
 
 static void
