@@ -120,9 +120,15 @@ IN_PROC_BROWSER_TEST_F(ErrorPageTest, DNSError_GoBack1) {
   GoBackAndWaitForTitle("Title Of Awesomeness", 1);
 }
 
+// See crbug.com/109669
+#if defined(USE_AURA)
+#define MAYBE_DNSError_GoBack2 FLAKY_DNSError_GoBack2
+#else
+#define MAYBE_DNSError_GoBack2 DNSError_GoBack2
+#endif
 // Test that a DNS error occuring in the main frame does not result in an
 // additional session history entry.
-IN_PROC_BROWSER_TEST_F(ErrorPageTest, DNSError_GoBack2) {
+IN_PROC_BROWSER_TEST_F(ErrorPageTest, MAYBE_DNSError_GoBack2) {
   GURL test_url(URLRequestFailedDnsJob::kTestUrl);
   NavigateToFileURL(FILE_PATH_LITERAL("title2.html"));
 
