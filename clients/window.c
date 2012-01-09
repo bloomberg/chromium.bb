@@ -107,6 +107,7 @@ enum {
 struct window {
 	struct display *display;
 	struct window *parent;
+	struct widget *widget;
 	struct wl_surface *surface;
 	struct wl_shell_surface *shell_surface;
 	char *title;
@@ -131,7 +132,6 @@ struct window {
 	window_key_handler_t key_handler;
 	window_button_handler_t button_handler;
 	window_keyboard_focus_handler_t keyboard_focus_handler;
-	window_motion_handler_t motion_handler;
 	window_data_handler_t data_handler;
 	window_drop_handler_t drop_handler;
 	window_close_handler_t close_handler;
@@ -919,6 +919,12 @@ window_get_display(struct window *window)
 	return window->display;
 }
 
+struct widget *
+window_get_widget(struct window *window)
+{
+	return window->widget;
+}
+
 void
 window_create_surface(struct window *window)
 {
@@ -1060,7 +1066,7 @@ window_add_widget(struct window *window, void *data)
 	memset(widget, 0, sizeof *widget);
 	widget->window = window;
 	widget->user_data = data;
-	wl_list_insert(window->widget_list.prev, &widget->link);
+	wl_list_insert(&window->widget_list, &widget->link);
 
 	return widget;
 }
@@ -1298,10 +1304,6 @@ input_handle_motion(void *data, struct wl_input_device *input_device,
 	if (widget && widget->motion_handler)
 		pointer = widget->motion_handler(widget, input, time, sx, sy,
 						 widget->user_data);
-	if (window->motion_handler)
-		pointer = (*window->motion_handler)(window, input, time,
-						    x, y, sx, sy,
-						    window->user_data);
 
 	pointer = input_get_pointer_image_for_location(input, pointer);
 	input_set_pointer_image(input, time, pointer);
@@ -1946,6 +1948,8 @@ window_set_child_size(struct window *window, int32_t width, int32_t height)
 		window->allocation.width = width;
 		window->allocation.height = height;
 	}
+
+	window->widget->allocation = window->allocation;
 }
 
 static void
@@ -2047,13 +2051,6 @@ window_set_button_handler(struct window *window,
 }
 
 void
-window_set_motion_handler(struct window *window,
-			  window_motion_handler_t handler)
-{
-	window->motion_handler = handler;
-}
-
-void
 window_set_keyboard_focus_handler(struct window *window,
 				  window_keyboard_focus_handler_t handler)
 {
@@ -2143,7 +2140,9 @@ window_create_internal(struct display *display, struct window *parent,
 	window->margin = 16;
 	window->decoration = 1;
 	window->transparent = 1;
+
 	wl_list_init(&window->widget_list);
+	window->widget = window_add_widget(window, window);
 
 	if (display->dpy)
 #ifdef HAVE_CAIRO_EGL

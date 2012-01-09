@@ -249,18 +249,17 @@ button_handler(struct window *window, struct input *input, uint32_t time,
  * Demonstrates the use of different cursors
  */
 static int
-motion_handler(struct window *window, struct input *input, uint32_t time,
-	       int32_t x, int32_t y, int32_t sx, int32_t sy, void *data)
+motion_handler(struct widget *widget, struct input *input, uint32_t time,
+	       int32_t x, int32_t y, void *data)
 {
 	struct eventdemo *e = data;
 
 	if (log_motion) {
-		printf("motion time: %d, x: %d, y: %d, sx: %d, sy: %d\n",
-		       time, x, y, sx, sy);
+		printf("motion time: %d, x: %d, y: %d\n", time, x, y);
 	}
 
-	if(sx > e->x && sx < e->x + e->w)
-		if(sy > e->y && sy < e->y + e->h)
+	if (x > e->x && x < e->x + e->w)
+		if (y > e->y && y < e->y + e->h)
 			return POINTER_HAND1;
 
 	return POINTER_LEFT_PTR;
@@ -318,7 +317,8 @@ eventdemo_create(struct display *d)
 	window_set_button_handler(e->window, button_handler);
 
 	/* Set the callback motion handler for the window */
-	window_set_motion_handler(e->window, motion_handler);
+	widget_set_motion_handler(window_get_widget(e->window),
+				  motion_handler);
 
 	/* Demonstrate how to create a borderless window.
 	   Move windows with META + left mouse button.

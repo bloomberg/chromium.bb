@@ -213,27 +213,25 @@ frame_callback(void *data, struct wl_callback *callback, uint32_t time)
 }
 
 static int
-smoke_motion_handler(struct window *window,
-		     struct input *input, uint32_t time,
-		     int32_t x, int32_t y,
-		     int32_t surface_x, int32_t surface_y, void *data)
+smoke_motion_handler(struct widget *widget, struct input *input,
+		     uint32_t time, int32_t x, int32_t y, void *data)
 {
 	struct smoke *smoke = data;
 	int i, i0, i1, j, j0, j1, k, d = 5;
 
-	if (surface_x - d < 1)
+	if (x - d < 1)
 		i0 = 1;
 	else
-		i0 = surface_x - d;
+		i0 = x - d;
 	if (i0 + 2 * d > smoke->width - 1)
 		i1 = smoke->width - 1;
 	else
 		i1 = i0 + 2 * d;
 
-	if (surface_y - d < 1)
+	if (y - d < 1)
 		j0 = 1;
 	else
-		j0 = surface_y - d;
+		j0 = y - d;
 	if (j0 + 2 * d > smoke->height - 1)
 		j1 = smoke->height - 1;
 	else
@@ -291,7 +289,7 @@ int main(int argc, char *argv[])
 
 	window_flush(smoke.window);
 
-	window_set_motion_handler(smoke.window,
+	widget_set_motion_handler(window_get_widget(smoke.window),
 				  smoke_motion_handler);
 
 	window_set_user_data(smoke.window, &smoke);

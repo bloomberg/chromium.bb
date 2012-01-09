@@ -230,6 +230,8 @@ struct widget *
 window_get_focus_widget(struct window *window);
 struct display *
 window_get_display(struct window *window);
+struct widget *
+window_get_widget(struct window *window);
 
 void
 window_move(struct window *window, struct input *input, uint32_t time);

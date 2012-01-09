@@ -98,10 +98,8 @@ draw_stuff(cairo_surface_t *surface, int width, int height)
 }
 
 static int
-motion_handler(struct window *window,
-	       struct input *input, uint32_t time,
-	       int32_t x, int32_t y,
-	       int32_t sx, int32_t sy, void *data)
+motion_handler(struct widget *widget, struct input *input,
+	       uint32_t time, int32_t x, int32_t y, void *data)
 {
 	return POINTER_HAND1;
 }
@@ -156,7 +154,8 @@ int main(int argc, char *argv[])
 	cairo_surface_destroy(s);
 	window_flush(flower.window);
 
-	window_set_motion_handler(flower.window, motion_handler);
+	widget_set_motion_handler(window_get_widget(flower.window),
+				  motion_handler);
 	window_set_button_handler(flower.window, button_handler);
 	window_set_user_data(flower.window, &flower);
 	display_run(d);
