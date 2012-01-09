@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -57,7 +57,8 @@ class AutocompleteHistoryManager : public content::WebContentsObserver,
   friend class AutocompleteHistoryManagerTest;
   friend class AutofillManagerTest;
   FRIEND_TEST_ALL_PREFIXES(AutocompleteHistoryManagerTest, ExternalDelegate);
-  FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest, TestTabContents);
+  FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest,
+                           TestTabContentsWithExternalDelegate);
 
   // For tests.
   AutocompleteHistoryManager(content::WebContents* web_contents,

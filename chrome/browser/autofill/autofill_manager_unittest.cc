@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -2864,8 +2864,9 @@ namespace {
 
 class MockAutofillExternalDelegate : public AutofillExternalDelegate {
  public:
-  explicit MockAutofillExternalDelegate(TabContentsWrapper* wrapper)
-      : AutofillExternalDelegate(wrapper) {}
+  explicit MockAutofillExternalDelegate(TabContentsWrapper* wrapper,
+                                        AutofillManager* autofill_manager)
+      : AutofillExternalDelegate(wrapper, autofill_manager) {}
   virtual ~MockAutofillExternalDelegate() {}
 
   MOCK_METHOD5(OnQuery, void(int query_id,
@@ -2883,10 +2884,10 @@ class MockAutofillExternalDelegate : public AutofillExternalDelegate {
       const std::vector<int>& autofill_unique_ids,
       int separator_index) OVERRIDE {}
 
-  virtual void OnQueryPlatformSpecific(
-      int query_id,
-      const webkit::forms::FormData& form,
-      const webkit::forms::FormField& field) OVERRIDE {}
+  virtual void OnQueryPlatformSpecific(int query_id,
+                                       const webkit::forms::FormData& form,
+                                       const webkit::forms::FormField& field,
+                                       const gfx::Rect& bounds) OVERRIDE {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockAutofillExternalDelegate);
@@ -2896,7 +2897,8 @@ class MockAutofillExternalDelegate : public AutofillExternalDelegate {
 
 // Test our external delegate is called at the right time.
 TEST_F(AutofillManagerTest, TestExternalDelegate) {
-  MockAutofillExternalDelegate external_delegate(contents_wrapper());
+  MockAutofillExternalDelegate external_delegate(contents_wrapper(),
+                                                 autofill_manager_);
   EXPECT_CALL(external_delegate, OnQuery(_, _, _, _, _));
   autofill_manager_->SetExternalDelegate(&external_delegate);
 
@@ -2910,8 +2912,8 @@ TEST_F(AutofillManagerTest, TestExternalDelegate) {
   autofill_manager_->SetExternalDelegate(NULL);
 }
 
-#if defined(OS_ANDROID)
-// Only OS_ANDROID defines an external delegate, but prerequisites for
+#if defined(OS_ANDROID) || defined(TOOLKIT_GTK)
+// OS_ANDROID defines an external delegate, but prerequisites for
 // landing autofill_external_delegate_android.cc in the Chromium tree
 // have not themselves landed.
 
