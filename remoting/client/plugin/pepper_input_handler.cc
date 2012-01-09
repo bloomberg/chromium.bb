@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -86,8 +86,8 @@ bool PepperInputHandler::HandleInputEvent(const pp::InputEvent& event) {
         wheel_ticks_x_ -= ticks_x;
         wheel_ticks_y_ -= ticks_y;
         protocol::MouseEvent mouse_event;
-        mouse_event.set_wheel_offset_x(wheel_ticks_x_);
-        mouse_event.set_wheel_offset_y(wheel_ticks_y_);
+        mouse_event.set_wheel_offset_x(ticks_x);
+        mouse_event.set_wheel_offset_y(ticks_y);
         input_stub_->InjectMouseEvent(mouse_event);
       }
       return true;
