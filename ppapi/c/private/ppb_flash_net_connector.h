@@ -13,7 +13,8 @@
 #include "ppapi/c/private/ppb_flash_file.h"  // For |PP_FileHandle|.
 #include "ppapi/c/private/ppb_net_address_private.h"
 
-#define PPB_FLASH_NETCONNECTOR_INTERFACE "PPB_Flash_NetConnector;0.2"
+#define PPB_FLASH_NETCONNECTOR_INTERFACE_0_2 "PPB_Flash_NetConnector;0.2"
+#define PPB_FLASH_NETCONNECTOR_INTERFACE PPB_FLASH_NETCONNECTOR_INTERFACE_0_2
 
 struct PPB_Flash_NetConnector_0_2 {
   PP_Resource (*Create)(PP_Instance instance_id);
