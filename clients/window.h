@@ -194,6 +194,9 @@ typedef void (*widget_enter_handler_t)(struct widget *widget,
 				       int32_t x, int32_t y, void *data);
 typedef void (*widget_leave_handler_t)(struct widget *widget,
 				       struct input *input, void *data);
+typedef int (*widget_motion_handler_t)(struct widget *widget,
+				       struct input *input, uint32_t time,
+				       int32_t x, int32_t y, void *data);
 
 struct window *
 window_create(struct display *display, int32_t width, int32_t height);
@@ -357,7 +360,9 @@ widget_set_enter_handler(struct widget *widget,
 void
 widget_set_leave_handler(struct widget *widget,
 			 widget_leave_handler_t handler);
-
+void
+widget_set_motion_handler(struct widget *widget,
+			  widget_motion_handler_t handler);
 void
 widget_schedule_redraw(struct widget *widget);
 

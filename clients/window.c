@@ -152,6 +152,7 @@ struct widget {
 	struct rectangle allocation;
 	widget_enter_handler_t enter_handler;
 	widget_leave_handler_t leave_handler;
+	widget_motion_handler_t motion_handler;
 	void *user_data;
 };
 
@@ -1114,6 +1115,13 @@ widget_set_leave_handler(struct widget *widget, widget_leave_handler_t handler)
 }
 
 void
+widget_set_motion_handler(struct widget *widget,
+			  widget_motion_handler_t handler)
+{
+	widget->motion_handler = handler;
+}
+
+void
 widget_schedule_redraw(struct widget *widget)
 {
 	window_schedule_redraw(widget->window);
@@ -1286,6 +1294,10 @@ input_handle_motion(void *data, struct wl_input_device *input_device,
 		window_set_focus_widget(window, widget, input, time, sx, sy);
 	}
 
+	widget = window->focus_widget;
+	if (widget && widget->motion_handler)
+		pointer = widget->motion_handler(widget, input, time, sx, sy,
+						 widget->user_data);
 	if (window->motion_handler)
 		pointer = (*window->motion_handler)(window, input, time,
 						    x, y, sx, sy,
