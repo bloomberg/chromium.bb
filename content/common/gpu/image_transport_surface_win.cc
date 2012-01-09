@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -191,7 +191,6 @@ scoped_refptr<gfx::GLSurface> ImageTransportSurface::CreateSurface(
     int32 command_buffer_id,
     gfx::PluginWindowHandle handle) {
   scoped_refptr<gfx::GLSurface> surface;
-  base::win::OSInfo* os_info = base::win::OSInfo::GetInstance();
 
   if (gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2 &&
       !CommandLine::ForCurrentProcess()->HasSwitch(
