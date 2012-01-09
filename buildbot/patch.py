@@ -574,7 +574,7 @@ def _QueryGerritMultipleCurrentPatchset(queries, internal=False):
                            % (query, server))
 
     if query is None:
-        raise PatchException('While querying for change %s, we received '
+      raise PatchException('While querying for change %s, we received '
           'back multiple results.  Please be more specific.  Server=%s'
           % (last_patch_id, server))
 
@@ -606,7 +606,7 @@ def GetGerritPatchInfo(patches):
     # of a conflict between gerrit instances; since change-id is
     # effectively user controlled, better safe than sorry.
     raw_ids = [x[1:] for x in internal_patches]
-    parsed_patches.update(('*' + k, v) for k,v in
+    parsed_patches.update(('*' + k, v) for k, v in
         _QueryGerritMultipleCurrentPatchset(raw_ids, True))
 
   if external_patches:

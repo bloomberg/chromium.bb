@@ -329,32 +329,6 @@ class TestValidationPool(mox.MoxTestBase):
     self.assertTrue(pool.ApplyPoolIntoRepo(build_root))
     self.mox.VerifyAll()
 
-  def testSimpleSubmitPool(self):
-    """Tests the ability to submit a list of changes."""
-    self.mox.StubOutWithMock(validation_pool.ValidationPool, '_IsTreeOpen')
-    patch1 = self.mox.CreateMock(cros_patch.GerritPatch)
-    patch2 = self.mox.CreateMock(cros_patch.GerritPatch)
-    helper = self.mox.CreateMock(gerrit_helper.GerritHelper)
-
-    patch1.id = 'ChangeId1'
-    patch2.id = 'ChangeId2'
-    build_root = 'fakebuildroot'
-
-    validation_pool.ValidationPool._IsTreeOpen().AndReturn(True)
-    pool = validation_pool.ValidationPool(False, 1, 'build_name', True, False)
-    pool.changes = [patch1, patch2]
-    pool.gerrit_helper = helper
-    pool.dryrun = False
-
-    patch1.Submit(helper, dryrun=False)
-    helper.IsChangeCommitted(patch1.id).AndReturn(True)
-    patch2.Submit(helper, dryrun=False)
-    helper.IsChangeCommitted(patch2.id).AndReturn(True)
-
-    self.mox.ReplayAll()
-    pool.SubmitPool()
-    self.mox.VerifyAll()
-
   def testSubmitPoolWithSomeFailures(self):
     """Tests submitting a pool when some changes fail to be submitted.
 
@@ -391,6 +365,58 @@ class TestValidationPool(mox.MoxTestBase):
     self.mox.ReplayAll()
     self.assertRaises(validation_pool.FailedToSubmitAllChangesException,
                       validation_pool.ValidationPool.SubmitPool, (pool))
+    self.mox.VerifyAll()
+
+  def testSimpleSubmitPool(self):
+    """Tests the ability to submit a list of changes."""
+    self.mox.StubOutWithMock(validation_pool.ValidationPool, '_IsTreeOpen')
+    patch1 = self.mox.CreateMock(cros_patch.GerritPatch)
+    patch2 = self.mox.CreateMock(cros_patch.GerritPatch)
+    helper = self.mox.CreateMock(gerrit_helper.GerritHelper)
+
+    patch1.id = 'ChangeId1'
+    patch2.id = 'ChangeId2'
+    build_root = 'fakebuildroot'
+
+    validation_pool.ValidationPool._IsTreeOpen().AndReturn(True)
+    pool = validation_pool.ValidationPool(False, 1, 'build_name', True, False)
+    pool.changes = [patch1, patch2]
+    pool.gerrit_helper = helper
+    pool.dryrun = False
+
+    patch1.Submit(helper, dryrun=False)
+    helper.IsChangeCommitted(patch1.id).AndReturn(True)
+    patch2.Submit(helper, dryrun=False)
+    helper.IsChangeCommitted(patch2.id).AndReturn(True)
+
+    self.mox.ReplayAll()
+    pool.SubmitPool()
+    self.mox.VerifyAll()
+
+  def testSubmitNonManifestChanges(self):
+    """Simple test to make sure we can submit non-manifest changes."""
+    self.mox.StubOutWithMock(validation_pool.ValidationPool, '_IsTreeOpen')
+    patch1 = self.mox.CreateMock(cros_patch.GerritPatch)
+    patch2 = self.mox.CreateMock(cros_patch.GerritPatch)
+    helper = self.mox.CreateMock(gerrit_helper.GerritHelper)
+
+    patch1.id = 'ChangeId1'
+    patch2.id = 'ChangeId2'
+    build_root = 'fakebuildroot'
+
+    validation_pool.ValidationPool._IsTreeOpen().AndReturn(True)
+    pool = validation_pool.ValidationPool(False, 1, 'build_name', True, False)
+    pool.non_manifest_changes = [patch1, patch2]
+    pool.gerrit_helper = helper
+    pool.dryrun = False
+
+    patch1.Submit(helper, dryrun=False)
+    helper.IsChangeCommitted(patch1.id).AndReturn(True)
+    patch2.Submit(helper, dryrun=False)
+    helper.IsChangeCommitted(patch2.id).AndReturn(True)
+
+    self.mox.ReplayAll()
+    pool.SubmitNonManifestChanges()
     self.mox.VerifyAll()
 
 

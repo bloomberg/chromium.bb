@@ -10,6 +10,7 @@ ready for the commit queue to try.
 
 import json
 import logging
+import os
 import time
 import urllib
 from xml.dom import minidom
@@ -66,7 +67,14 @@ class ValidationPool(object):
     build_dashboard = _BUILD_DASHBOARD if not internal else _BUILD_INT_DASHBOARD
     self.build_log = (build_dashboard + '/builders/%s/builds/' % builder_name +
                       str(build_number))
+    # Changes that are ready for the Commit Queue and part of the existing
+    # checkout.
     self.changes = []
+    # Changes that are ready for the Commit Queue and not part of the existing
+    # checkout i.e. cannot be applied onto checkout.
+    self.non_manifest_changes = []
+    # Changes we are keeping around because they conflicted with an older
+    # change in the same validation pool.
     self.changes_that_failed_to_apply_earlier = []
     self.gerrit_helper = None
     self.is_master = is_master
@@ -108,14 +116,12 @@ class ValidationPool(object):
     return tree_open
 
   @classmethod
-  def AcquirePool(cls, branch, internal, buildroot, build_number, builder_name,
-                  dryrun):
+  def AcquirePool(cls, internal, buildroot, build_number, builder_name, dryrun):
     """Acquires the current pool from Gerrit.
 
     Polls Gerrit and checks for which change's are ready to be committed.
 
     Args:
-      branch: The branch for the validation pool.
       internal: If True, use gerrit-int.
       buildroot: The location of the buildroot used to filter projects.
       build_number: Corresponding build number for the build.
@@ -130,9 +136,10 @@ class ValidationPool(object):
       # Only master configurations should call this method.
       pool = ValidationPool(internal, build_number, builder_name, True, dryrun)
       pool.gerrit_helper = gerrit_helper.GerritHelper(internal)
-      raw_changes = pool.gerrit_helper.GrabChangesReadyForCommit(branch)
-      pool.changes = pool.gerrit_helper.FilterProjectsNotInSourceTree(
+      raw_changes = pool.gerrit_helper.GrabChangesReadyForCommit()
+      changes, non_manifest_changes = ValidationPool._FilterNonCrosProjects(
           raw_changes, buildroot)
+      pool.changes, pool.non_manifest_changes = changes, non_manifest_changes
       return pool
     else:
       raise TreeIsClosedException()
@@ -167,6 +174,54 @@ class ValidationPool(object):
           project, change, commit))
 
     return pool
+
+  @staticmethod
+  def _FilterNonCrosProjects(changes, buildroot):
+    """Filters changes to a tuple of relevant changes.
+
+    There are many code reviews that are not part of Chromium OS and/or
+    only relevant on a different branch. This method returns a tuple of (
+    relevant reviews in a manifest, relevant reviews not in the manifest). Note
+    that this function must be run while chromite is checked out in a
+    repo-managed checkout.
+
+    Args:
+      changes:  List of GerritPatch objects.
+      buildroot:  Buildroot containing manifest to filter against.
+
+    Returns tuple of
+      relevant reviews in a manifest, relevant reviews not in the manifest.
+    """
+
+    def IsCrosReview(change):
+      return (change.project.startswith('chromiumos') or
+              change.project.startswith('chromeos'))
+
+    # First we filter to only Chromium OS repositories.
+    changes = [c for c in changes if IsCrosReview(c)]
+
+    manifest_path = os.path.join(buildroot, '.repo', 'manifests/full.xml')
+    handler = cros_build_lib.ManifestHandler.ParseManifest(manifest_path)
+    projects = handler.projects
+
+    changes_in_manifest = []
+    changes_not_in_manifest = []
+    for change in changes:
+      branch = handler.default.get('revision')
+      patch_branch = 'refs/heads/%s' % change.tracking_branch
+      project = projects.get(change.project)
+      if project:
+        branch = project.get('revision') or branch
+
+      if branch == patch_branch:
+        if project:
+          changes_in_manifest.append(change)
+        else:
+          changes_not_in_manifest.append(change)
+      else:
+        logging.info('Filtered change %s', change)
+
+    return changes_in_manifest, changes_not_in_manifest
 
   def ApplyPoolIntoRepo(self, buildroot):
     """Applies changes from pool into the directory specified by the buildroot.
@@ -278,16 +333,17 @@ class ValidationPool(object):
         changes_that_failed_to_apply_against_other_changes)
     return len(self.changes) > 0
 
-  def SubmitPool(self):
-    """Commits changes to Gerrit from Pool.  This is only called by a master.
+  def _SubmitChanges(self, changes):
+    """Submits given changes to Gerrit.
 
     Raises:
       TreeIsClosedException: if the tree is closed.
+      FailedToSubmitAllChangesException: if we can't submit a change.
     """
     assert self.is_master, 'Non-master builder calling SubmitPool'
     changes_that_failed_to_submit = []
     if ValidationPool._IsTreeOpen() or self.dryrun:
-      for change in self.changes:
+      for change in changes:
         was_change_submitted = False
         logging.info('Change %s will be submitted', change)
         try:
@@ -303,14 +359,31 @@ class ValidationPool(object):
                                         dryrun=self.dryrun)
             changes_that_failed_to_submit.append(change)
 
-      if self.changes_that_failed_to_apply_earlier:
-        self.HandleApplicationFailure(self.changes_that_failed_to_apply_earlier)
-
       if changes_that_failed_to_submit:
         raise FailedToSubmitAllChangesException(changes_that_failed_to_submit)
 
     else:
       raise TreeIsClosedException()
+
+  def SubmitNonManifestChanges(self):
+    """Commits changes to Gerrit from Pool that aren't part of the checkout.
+
+    Raises:
+      TreeIsClosedException: if the tree is closed.
+      FailedToSubmitAllChangesException: if we can't submit a change.
+    """
+    self._SubmitChanges(self.non_manifest_changes)
+
+  def SubmitPool(self):
+    """Commits changes to Gerrit from Pool.  This is only called by a master.
+
+    Raises:
+      TreeIsClosedException: if the tree is closed.
+      FailedToSubmitAllChangesException: if we can't submit a change.
+    """
+    self._SubmitChanges(self.changes)
+    if self.changes_that_failed_to_apply_earlier:
+      self.HandleApplicationFailure(self.changes_that_failed_to_apply_earlier)
 
   def HandleApplicationFailure(self, changes):
     """Handles changes that were not able to be applied cleanly."""

@@ -289,10 +289,18 @@ class CommitQueueSyncStage(LKGMCandidateSyncStage):
 
         internal = cbuildbot_config.IsInternalBuild(self._build_config)
         pool = validation_pool.ValidationPool.AcquirePool(
-            self._tracking_branch, internal, self._build_root,
-            self._options.buildnumber, self.builder_name, self._options.debug)
+            internal, self._build_root, self._options.buildnumber,
+            self.builder_name, self._options.debug)
 
         # We only have work to do if there are changes to try.
+        try:
+          # Try our best to submit these but may have been overridden and won't
+          # let that stop us from continuing the build.
+          pool.SubmitNonManifestChanges()
+        except validation_pool.FailedToSubmitAllChangesException as e:
+          cros_lib.Warning(str(e))
+          pass
+
         if pool.changes:
           CommitQueueSyncStage.pool = pool
         else:

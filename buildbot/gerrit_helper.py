@@ -7,7 +7,6 @@
 import constants
 import json
 import logging
-import os
 
 from chromite.buildbot import patch as cros_patch
 from chromite.lib import cros_build_lib
@@ -56,7 +55,7 @@ class GerritHelper():
     return self.ssh_prefix + ['gerrit', 'review'] + command_list
 
 
-  def GrabChangesReadyForCommit(self, branch):
+  def GrabChangesReadyForCommit(self):
     """Returns the list of changes to try.
 
     This methods returns a a list of GerritPatch's to try.
@@ -76,7 +75,7 @@ class GerritHelper():
     for raw_result in raw_results.output.splitlines():
       result_dict = json.loads(raw_result)
       if not 'id' in result_dict:
-        logging.debug('No change number found in %s' % result_dict)
+        logging.debug('No change number found in %s', result_dict)
         continue
 
       changes_to_commit.append(cros_patch.GerritPatch(result_dict,
@@ -110,37 +109,6 @@ class GerritHelper():
     result_dict = json.loads(raw_result)
     assert result_dict.get('id'), 'Code Review json missing change-id!'
     return cros_patch.GerritPatch(result_dict, self.internal)
-
-  def FilterProjectsNotInSourceTree(self, changes, buildroot):
-    """Returns new filtered set of relevant changes to this source checkout.
-
-    There may be many miscellaneous reviews in other Gerrit repos that are not
-    part of the checked out manifest.  This method returns a filtered list of
-    changes with such reviews removed.
-
-    Args:
-      changes:  List of GerritPatch objects.
-      buildroot:  Buildroot containing manifest to filter against.
-
-    Returns filtered list of GerritPatch objects.
-    """
-    manifest_path = os.path.join(buildroot, '.repo', 'manifests/full.xml')
-    handler = cros_build_lib.ManifestHandler.ParseManifest(manifest_path)
-    projects = handler.projects
-
-    changes_to_return = []
-    for change in changes:
-      project = projects.get(change.project)
-      if project:
-        branch = project.get('revision') or handler.default.get('revision')
-        patch_branch = 'refs/heads/%s' % change.tracking_branch
-        if branch == patch_branch:
-          changes_to_return.append(change)
-          continue
-
-      logging.info('Filtered change %s', change)
-
-    return changes_to_return
 
   def IsChangeCommitted(self, changeid):
     """Checks to see whether a change is already committed."""
