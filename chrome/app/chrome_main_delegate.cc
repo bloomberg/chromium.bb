@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -180,6 +180,17 @@ void CheckUserDataDirPolicy(FilePath* user_data_dir) {
     if (is_chrome_frame)
       *user_data_dir = user_data_dir->Append(cf_host_dir);
   }
+}
+
+// If we try to access a path that is not currently available, we want the call
+// to fail rather than show an error dialog.
+void SuppressWindowsErrorDialogs() {
+  UINT new_flags = SEM_FAILCRITICALERRORS |
+                   SEM_NOOPENFILEERRORBOX;
+
+  // Preserve existing error mode.
+  UINT existing_flags = SetErrorMode(new_flags);
+  SetErrorMode(existing_flags | new_flags);
 }
 
 #endif  // defined(OS_WIN)
@@ -663,6 +674,9 @@ void ChromeMainDelegate::SandboxInitialized(const std::string& process_type) {
   // AdjustLinuxOOMScore function too.
 #if defined(OS_LINUX)
   AdjustLinuxOOMScore(process_type);
+#endif
+#if defined(OS_WIN)
+  SuppressWindowsErrorDialogs();
 #endif
 }
 
