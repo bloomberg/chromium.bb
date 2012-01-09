@@ -194,9 +194,13 @@ typedef void (*window_drop_handler_t)(struct window *window,
 				      struct input *input,
 				      int32_t x, int32_t y, void *data);
 
-typedef void (*widget_focus_handler_t)(struct widget *widget, void *data);
-
 typedef void (*window_close_handler_t)(struct window *window, void *data);
+
+typedef void (*widget_enter_handler_t)(struct widget *widget,
+				       struct input *input, uint32_t time,
+				       int32_t x, int32_t y, void *data);
+typedef void (*widget_leave_handler_t)(struct widget *widget,
+				       struct input *input, void *data);
 
 struct window *
 window_create(struct display *display, int32_t width, int32_t height);
@@ -362,8 +366,11 @@ void *
 widget_get_user_data(struct widget *widget);
 
 void
-widget_set_focus_handler(struct widget *widget,
-			 widget_focus_handler_t handler);
+widget_set_enter_handler(struct widget *widget,
+			 widget_enter_handler_t handler);
+void
+widget_set_leave_handler(struct widget *widget,
+			 widget_leave_handler_t handler);
 
 void
 widget_schedule_redraw(struct widget *widget);

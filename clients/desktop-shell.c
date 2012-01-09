@@ -230,7 +230,15 @@ panel_redraw_handler(struct window *window, void *data)
 }
 
 static void
-panel_widget_focus_handler(struct widget *widget, void *data)
+panel_widget_enter_handler(struct widget *widget, struct input *input,
+			   uint32_t time, int32_t x, int32_t y, void *data)
+{
+	widget_schedule_redraw(widget);
+}
+
+static void
+panel_widget_leave_handler(struct widget *widget,
+			   struct input *input, void *data)
 {
 	widget_schedule_redraw(widget);
 }
@@ -300,7 +308,8 @@ panel_add_widget(struct panel *panel, const char *icon, const char *path)
 	widget->panel = panel;
 
 	widget->widget = window_add_widget(panel->window, widget);
-	widget_set_focus_handler(widget->widget, panel_widget_focus_handler);
+	widget_set_enter_handler(widget->widget, panel_widget_enter_handler);
+	widget_set_leave_handler(widget->widget, panel_widget_leave_handler);
 }
 
 static void
@@ -438,7 +447,16 @@ unlock_dialog_keyboard_focus_handler(struct window *window,
 }
 
 static void
-unlock_dialog_widget_focus_handler(struct widget *widget, void *data)
+unlock_dialog_widget_enter_handler(struct widget *widget,
+				   struct input *input, uint32_t time,
+				   int32_t x, int32_t y, void *data)
+{
+	widget_schedule_redraw(widget);
+}
+
+static void
+unlock_dialog_widget_leave_handler(struct widget *widget,
+				   struct input *input, void *data)
 {
 	widget_schedule_redraw(widget);
 }
@@ -464,8 +482,10 @@ unlock_dialog_create(struct desktop *desktop)
 					  unlock_dialog_keyboard_focus_handler);
 	window_set_button_handler(dialog->window, unlock_dialog_button_handler);
 	dialog->button = window_add_widget(dialog->window, NULL);
-	widget_set_focus_handler(dialog->button,
-				 unlock_dialog_widget_focus_handler);
+	widget_set_enter_handler(dialog->button,
+				 unlock_dialog_widget_enter_handler);
+	widget_set_leave_handler(dialog->button,
+				 unlock_dialog_widget_leave_handler);
 
 	desktop_shell_set_lock_surface(desktop->shell,
 	       window_get_wl_shell_surface(dialog->window));
