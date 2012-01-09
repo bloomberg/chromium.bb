@@ -1766,3 +1766,8 @@
    fun:::WebSocketServerSocketImpl::ProcessHandshake
    fun:::WebSocketServerSocketImpl::OnRead
 }
+{
+   bug_109613
+   Heapcheck:Leak
+   fun:AutofillProfileSyncableServiceTest::SetUp
+}

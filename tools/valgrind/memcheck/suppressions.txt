@@ -5556,6 +5556,12 @@
    ...
    fun:_ZN7WebCore13RenderSVGRoot5paintERNS_9PaintInfoERKNS_8IntPointE
 }
+{
+   bug_109613
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN34AutofillProfileSyncableServiceTest5SetUpEv
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
