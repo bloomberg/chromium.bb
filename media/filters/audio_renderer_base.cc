@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -278,12 +278,10 @@ void AudioRendererBase::ScheduleRead_Locked() {
 }
 
 void AudioRendererBase::SetPlaybackRate(float playback_rate) {
-  base::AutoLock auto_lock(lock_);
   algorithm_->SetPlaybackRate(playback_rate);
 }
 
 float AudioRendererBase::GetPlaybackRate() {
-  base::AutoLock auto_lock(lock_);
   return algorithm_->playback_rate();
 }
 

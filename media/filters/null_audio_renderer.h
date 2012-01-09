@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,20 +16,25 @@
 #include <deque>
 
 #include "base/memory/scoped_ptr.h"
-#include "base/threading/thread.h"
+#include "base/threading/platform_thread.h"
 #include "media/base/buffers.h"
 #include "media/base/filters.h"
 #include "media/filters/audio_renderer_base.h"
 
 namespace media {
 
-class MEDIA_EXPORT NullAudioRenderer : public AudioRendererBase {
+class MEDIA_EXPORT NullAudioRenderer
+    : public AudioRendererBase,
+      public base::PlatformThread::Delegate {
  public:
   NullAudioRenderer();
   virtual ~NullAudioRenderer();
 
   // AudioRenderer implementation.
   virtual void SetVolume(float volume) OVERRIDE;
+
+  // PlatformThread::Delegate implementation.
+  virtual void ThreadMain() OVERRIDE;
 
  protected:
   // AudioRendererBase implementation.
@@ -39,10 +44,6 @@ class MEDIA_EXPORT NullAudioRenderer : public AudioRendererBase {
   virtual void OnStop() OVERRIDE;
 
  private:
-  // Audio thread task that periodically calls FillBuffer() to consume
-  // audio data.
-  void FillBufferTask();
-
   // A number to convert bytes written in FillBuffer to milliseconds based on
   // the audio format.
   size_t bytes_per_millisecond_;
@@ -52,7 +53,10 @@ class MEDIA_EXPORT NullAudioRenderer : public AudioRendererBase {
   size_t buffer_size_;
 
   // Separate thread used to throw away data.
-  base::Thread thread_;
+  base::PlatformThreadHandle thread_;
+
+  // Shutdown flag.
+  bool shutdown_;
 
   DISALLOW_COPY_AND_ASSIGN(NullAudioRenderer);
 };

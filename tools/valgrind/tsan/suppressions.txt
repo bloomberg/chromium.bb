@@ -556,23 +556,6 @@
   fun:media::FFmpegVideoDecoder::Decode*
 }
 {
-  bug_93932_f
-  ThreadSanitizer:Race
-  fun:update_context_from_thread
-  fun:ff_thread_flush
-  ...
-  fun:media::FFmpegVideoDecoder::Flush
-}
-{
-  bug_93932_g
-  ThreadSanitizer:Race
-  fun:frame_thread_free
-  ...
-  fun:avcodec_close
-  ...
-  fun:media::FFmpegVideoDecoder::ReleaseFFmpegResources
-}
-{
   bug_95509
   ThreadSanitizer:Race
   fun:base::SyncSocket::Close
