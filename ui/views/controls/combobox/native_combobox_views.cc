@@ -314,8 +314,14 @@ void NativeComboboxViews::ShowDropDownMenu() {
     UpdateFromModel();
 
   // Extend the menu to the width of the combobox.
-  SubmenuView* submenu = dropdown_list_menu_runner_->GetMenu()->CreateSubmenu();
+  MenuItemView* menu = dropdown_list_menu_runner_->GetMenu();
+  SubmenuView* submenu = menu->CreateSubmenu();
   submenu->set_minimum_preferred_width(size().width());
+
+#if defined(USE_AURA)
+  // Aura style is to have the menu over the bounds. Below bounds is default.
+  menu->set_menu_position(views::MenuItemView::POSITION_OVER_BOUNDS);
+#endif
 
   gfx::Rect lb = GetLocalBounds();
   gfx::Point menu_position(lb.origin());

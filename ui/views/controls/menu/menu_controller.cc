@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -1484,7 +1484,7 @@ gfx::Rect MenuController::CalculateMenuBounds(MenuItemView* item,
 
   gfx::Size pref = submenu->GetScrollViewContainer()->GetPreferredSize();
 
-  // Don't let the menu go to wide.
+  // Don't let the menu go too wide.
   pref.set_width(std::min(pref.width(),
                           item->GetDelegate()->GetMaxWidthForMenu(item)));
   if (!state_.monitor_bounds.IsEmpty())
@@ -1498,11 +1498,22 @@ gfx::Rect MenuController::CalculateMenuBounds(MenuItemView* item,
   if (!item->GetParentMenuItem()) {
     // First item, position relative to initial location.
     x = state_.initial_bounds.x();
-    y = state_.initial_bounds.bottom();
+    if (item->actual_menu_position() == MenuItemView::POSITION_OVER_BOUNDS)
+      y = state_.initial_bounds.y();
+    else
+      y = state_.initial_bounds.bottom();
     if (state_.anchor == MenuItemView::TOPRIGHT)
       x = x + state_.initial_bounds.width() - pref.width();
+
     if (!state_.monitor_bounds.IsEmpty() &&
-        y + pref.height() > state_.monitor_bounds.bottom()) {
+        pref.height() > state_.monitor_bounds.height() &&
+        item->actual_menu_position() == MenuItemView::POSITION_OVER_BOUNDS) {
+      // Handle very tall menus.
+      pref.set_height(state_.monitor_bounds.height());
+      y = state_.monitor_bounds.y();
+    } else if (!state_.monitor_bounds.IsEmpty() &&
+        y + pref.height() > state_.monitor_bounds.bottom() &&
+        item->actual_menu_position() != MenuItemView::POSITION_OVER_BOUNDS) {
       // The menu doesn't fit on screen. The menu position with
       // respect to the bounds will be preserved if it has already
       // been drawn. On the first drawing if the first location is
@@ -1525,12 +1536,18 @@ gfx::Rect MenuController::CalculateMenuBounds(MenuItemView* item,
       }
     } else if (item->actual_menu_position() ==
                MenuItemView::POSITION_ABOVE_BOUNDS) {
-      // The menu would fit below the bounds, but it has already been
-      // drawn above so keep it there.
       pref.set_height(std::min(pref.height(),
           state_.initial_bounds.y() - state_.monitor_bounds.y()));
       y = state_.initial_bounds.y() - pref.height();
-      item->set_actual_menu_position(MenuItemView::POSITION_ABOVE_BOUNDS);
+    } else if (item->actual_menu_position() ==
+               MenuItemView::POSITION_OVER_BOUNDS) {
+      // Center vertically assuming all items have the same height.
+      int middle = state_.initial_bounds.y() - pref.height() / 2;
+      if (submenu->GetMenuItemCount() > 0)
+        middle += submenu->GetMenuItemAt(0)->GetPreferredSize().height() / 2;
+      y = std::max(state_.monitor_bounds.y(), middle);
+      if (y + pref.height() > state_.monitor_bounds.bottom())
+        y = state_.monitor_bounds.bottom() - pref.height();
     } else {
       item->set_actual_menu_position(MenuItemView::POSITION_BELOW_BOUNDS);
     }
