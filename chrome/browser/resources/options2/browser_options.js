@@ -103,23 +103,6 @@ cr.define('options', function() {
       Preferences.getInstance().addEventListener('instant.enabled',
           this.onInstantEnabledChanged_.bind(this));
 
-      Preferences.getInstance().addEventListener(
-          $('homepageUseNTPButton').pref,
-          this.onHomepageUseNTPChanged_);
-      var homepageField = $('homepageURL');
-      homepageField.addEventListener('focus', function(event) {
-        self.autocompleteList_.attachToInput(homepageField);
-      });
-      homepageField.addEventListener('blur', function(event) {
-        self.autocompleteList_.detach();
-      });
-      homepageField.addEventListener('keydown', function(event) {
-        // Remove focus when the user hits enter since people expect feedback
-        // indicating that they are done editing.
-        if (event.keyIdentifier == 'Enter')
-          homepageField.blur();
-      });
-
       // Text fields may change widths when the window changes size, so make
       // sure the suggestion list stays in sync.
       window.addEventListener('resize', function() {
@@ -272,21 +255,6 @@ cr.define('options', function() {
       $('instantFieldTrialCheckbox').hidden = !enabled;
       $('instantLabel').htmlFor = enabled ? 'instantFieldTrialCheckbox'
                                           : 'instantEnabledCheckbox';
-    },
-
-    /**
-     * Called when the value of the homepage-use-NTP pref changes.
-     * Updates the disabled state of the homepage text field.
-     * Notice that the text field can be disabled for other reasons too
-     * (it can be managed by policy, for instance).
-     * @param {Event} event Change event.
-     * @private
-     */
-    onHomepageUseNTPChanged_: function(event) {
-      var homepageField = $('homepageURL');
-      var homepageUseURLButton = $('homepageUseURLButton');
-      homepageField.setDisabled('radioNotSelected',
-                                !homepageUseURLButton.checked);
     },
 
     /**
