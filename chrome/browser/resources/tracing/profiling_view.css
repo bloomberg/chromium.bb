@@ -4,7 +4,7 @@ Use of this source code is governed by a BSD-style license that can be
 found in the LICENSE file.
 */
 #profiling-view {
-  padding: 0px;
+  padding: 0;
   -webkit-box-orient: vertical;
   -webkit-box-flex: 1;
 }

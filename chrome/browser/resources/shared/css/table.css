@@ -101,7 +101,7 @@ list > [selected]:hover {
 
 .table-header-splitter {
   position: absolute;
-  top: 0px;
+  top: 0;
   cursor: col-resize;
   width: 5px;
   -webkit-margin-start: -1px;

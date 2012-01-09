@@ -96,7 +96,7 @@ html[dir='rtl'] .bubble-close {
 .bubble-shadow,
 .bubble-arrow {
   border: 1px solid rgba(0, 0, 0, 0.3);
-  -webkit-box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.15);
+  -webkit-box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
 }
 
 .bubble-shadow,

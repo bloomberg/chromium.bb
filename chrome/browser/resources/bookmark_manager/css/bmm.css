@@ -303,5 +303,5 @@ html[dir=rtl] .header form {
 }
 
 html[dir=rtl] .summary button {
-  background-position: 0% 50%;
+  background-position: 0 50%;
 }

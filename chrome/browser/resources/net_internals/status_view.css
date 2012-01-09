@@ -14,7 +14,7 @@ found in the LICENSE file.
 #status-view-for-capture,
 #status-view-for-view,
 #status-view-for-file {
-  padding: 0px 6px;
+  padding: 0 6px;
   white-space: nowrap;
   color: #eee;
   display: table-cell;

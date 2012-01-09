@@ -121,7 +121,7 @@ body {
 
 .gallery > .toolbar {
   position: absolute;
-  bottom: 0px;
+  bottom: 0;
   width: 100%;
   height: 55px;
   display: -webkit-box;
@@ -133,7 +133,7 @@ body {
 
   pointer-events: none;
   opacity: 0;
-  -webkit-transform: translate(0, 0px);
+  -webkit-transform: translate(0, 0);
 
   -webkit-transition-property: webkit-transform, opacity;
   -webkit-transition-duration: 220ms;
@@ -376,9 +376,9 @@ body {
 
 .gallery > .toolbar .button {
   -webkit-box-flex: 0;
-  padding: 0px 10px 0px 35px;
+  padding: 0 10px 0 35px;
   cursor: pointer;
-  margin: 8px 0px 7px 3px;
+  margin: 8px 0 7px 3px;
   height: 40px;
 
   display: -webkit-box;

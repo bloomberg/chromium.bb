@@ -37,7 +37,7 @@
 }
 
 .recent-menu-item {
-  background: no-repeat 0% 50%;
+  background: no-repeat 0 50%;
   background-color: transparent !important;
   background-size: 16px 16px;
   box-sizing: border-box;

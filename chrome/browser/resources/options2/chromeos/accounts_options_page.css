@@ -61,7 +61,7 @@
 
 #userList[disabled] > [selected],
 #userList[disabled] > :hover {
-  background-color: hsl(0,0%,90%);
+  background-color: hsl(0, 0%, 90%);
 }
 
 #userList[disabled] .remove-user-button {

@@ -55,7 +55,7 @@
 }
 
 .expandable-bubble-close {
-  background-image: no-repeat 50% 50%;  
+  background-image: no-repeat 50% 50%;
   height: 16px;
   position: absolute;
   right: 0;
@@ -69,7 +69,7 @@
   z-index: 3;  /* One higher then the close button on an unexpanded bubble. */
 }
 
-.expandable-bubble[expanded] > .expandable-bubble-close { 
+.expandable-bubble[expanded] > .expandable-bubble-close {
   z-index: 4;
 }
 

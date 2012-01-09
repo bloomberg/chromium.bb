@@ -11,14 +11,14 @@ grid {
 list > *,
 grid > * {
   -webkit-user-select: none;
-  background-color: rgba(255,255,255,0);
-  border: 1px solid rgba(255,255,255,0); /* transparent white */
+  background-color: rgba(255, 255, 255, 0);
+  border: 1px solid rgba(255, 255, 255, 0); /* transparent white */
   border-radius: 2px;
   cursor: default;
   line-height: 20px;
   margin: -1px 0;
   overflow: hidden;
-  padding: 0px 3px;
+  padding: 0 3px;
   position: relative; /* to allow overlap */
   text-overflow: ellipsis;
   white-space: pre;
@@ -58,7 +58,7 @@ grid:not([disabled]) > :hover {
 list > [selected],
 grid > [selected] {
   border-color: hsl(0, 0%, 85%);
-  background-color: hsl(0,0%,90%);
+  background-color: hsl(0, 0%, 90%);
   z-index: 2;
   background-image: -webkit-linear-gradient(rgba(255, 255, 255, 0.8),
                                             rgba(255, 255, 255, 0));
@@ -66,7 +66,7 @@ grid > [selected] {
 
 list:focus > [selected],
 grid:focus > [selected] {
-  background-color: hsl(214,91%,89%);
+  background-color: hsl(214, 91%, 89%);
   border-color: hsl(214, 91%, 65%);
 }
 

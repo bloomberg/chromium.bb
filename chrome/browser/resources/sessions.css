@@ -59,7 +59,7 @@ html[dir=rtl] h1 {
 }
 
 a.tab-link {
-  background: no-repeat 0% 50%;
+  background: no-repeat 0 50%;
   background-size: 16px 16px;
   display: block;
   line-height: 20px;

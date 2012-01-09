@@ -155,13 +155,13 @@ html[dir='rtl'] .action-area {
 .bottom-strip {
   padding: 12px;
   position: absolute;
-  right: 0px;
-  bottom: 0px;
+  right: 0;
+  bottom: 0;
   border-top: none;
 }
 
 .overlay .page {
-  -webkit-box-shadow: 0px 5px 80px #505050;
+  -webkit-box-shadow: 0 5px 80px #505050;
   background: white;
   border: 1px solid rgb(188, 193, 208);
   border-radius: 2px;
@@ -204,7 +204,7 @@ html[dir='rtl'] .action-area {
 }
 
 .subpage-sheet {
-  -webkit-box-shadow: #666 0px 2px 5px;
+  -webkit-box-shadow: #666 0 2px 5px;
   background-color: white;
   border-left: 1px solid #b8b8b8;
   box-sizing: border-box;
@@ -215,7 +215,7 @@ html[dir='rtl'] .action-area {
 
 .subpage-sheet-contents {
   box-sizing: border-box;
-  padding: 0px 20px 20px 20px;
+  padding: 0 20px 20px 20px;
   width: 650px;
 }
 

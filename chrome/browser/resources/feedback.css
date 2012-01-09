@@ -10,7 +10,7 @@
 
 .feedback-table {
   width: 40em;
-  border-spacing: 0px;
+  border-spacing: 0;
 }
 
 .feedback-field {
@@ -71,7 +71,7 @@ hr {
   position: relative;
   z-index: 1;
   display: inline-block;
-  padding: 0px;
+  padding: 0;
   border: 2px solid white;
 }
 
@@ -108,7 +108,7 @@ hr {
   position: relative;
   z-index: 1;
   display: inline-block;
-  padding: 0px;
+  padding: 0;
   border: 2px solid white;
 }
 
@@ -162,7 +162,7 @@ th {
 }
 
 #buttons-pane {
-  padding: 0px 0px;
+  padding: 0;
 }
 
 #privacy-note {

@@ -47,7 +47,7 @@ select.exception-setting {
 }
 
 #disable-plugins-container {
-  margin: 7px 0px;
+  margin: 7px 0;
 }
 
 div[role="listitem"][managedby] {

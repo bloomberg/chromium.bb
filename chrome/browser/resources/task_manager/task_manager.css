@@ -34,7 +34,7 @@ body {
   cursor: default;
   font-size: 15px;
   font-weight: bold;
-  padding: 0px 12px 4px 12px;
+  padding: 0 12px 4px 12px;
 }
 
 /* Container for the detail list views. */

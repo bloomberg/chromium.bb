@@ -27,7 +27,7 @@ div#header {
 }
 
 #header h1 {
-  background: url('../../app/theme/extensions_section.png') 0px 20px no-repeat;
+  background: url('../../app/theme/extensions_section.png') 0 20px no-repeat;
   display: inline;
   margin: 0;
   padding-bottom: 20px;
