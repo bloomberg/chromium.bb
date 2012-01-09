@@ -427,6 +427,19 @@
             "optional": true
           }
         }
+      },
+      {
+        "id": "DownloadFileIconOptions",
+        "type": "object",
+        "description": "Options for fetching the file icon for a download. See chrome.experimental.downloads.getFileIcon.",
+        "properties": {
+          "size": {
+            "type": "integer",
+            "description": "The size of the icon.  The returned icon will be square with dimensions size * size pixels.  The default size for the icon is 32x32 pixels.",
+            "enum": [16, 32],
+            "optional": true
+          }
+        }
       }
     ],
     "functions": [
@@ -553,6 +566,34 @@
             "optional": true,
             "parameters": [],
             "description": "Called when the request is completed. The download is cancelled, completed, interrupted or doesn't exist anymore."
+          }
+        ]
+      },
+      {
+        "name": "getFileIcon",
+        "type": "function",
+        "description": "Retrieve an icon for the specified download. For new downloads, file icons are available after the onCreated event has been received. The image returned by this function while a download is in progress may be different from the image returned after the download is complete. Icon retrieval is done by querying the underlying operating system or toolkit depending on the platform. The icon that is returned will therefore depend on a number of factors including state of the download, platform, registered file types and visual theme.",
+        "parameters": [
+          {
+            "name": "id",
+            "type": "integer",
+            "description": "The identifier for the download."
+          },
+          {
+            "name": "options",
+            "$ref": "DownloadFileIconOptions",
+            "description": "Options for the returned image."
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "parameters": [
+              {
+                "name": "iconURL",
+                "type": "string",
+                "description": "A URL to an image that represents the download. If a file icon cannot be determined, chrome.extension.lastError will contain an error message."
+              }
+            ]
           }
         ]
       }

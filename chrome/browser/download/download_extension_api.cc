@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,6 +22,7 @@
 #include "base/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/download/download_file_icon_extractor.h"
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/download/download_util.h"
@@ -31,6 +32,7 @@
 #include "chrome/browser/icon_manager.h"
 #include "chrome/browser/renderer_host/chrome_render_message_filter.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/webui/web_ui_util.h"
 #include "content/browser/download/download_file_manager.h"
 #include "content/browser/download/download_id.h"
 #include "content/browser/download/download_state_info.h"
@@ -50,14 +52,18 @@ using content::DownloadManager;
 namespace download_extension_errors {
 
 // Error messages
-const char kNotImplementedError[] = "NotImplemented.";
 const char kGenericError[] = "I'm afraid I can't do that.";
-const char kInvalidURLError[] = "Invalid URL.";
+const char kIconNotFoundError[] = "Icon not found.";
 const char kInvalidOperationError[] = "Invalid operation.";
+const char kInvalidURLError[] = "Invalid URL.";
+const char kNotImplementedError[] = "NotImplemented.";
 
 }  // namespace download_extension_errors
 
 namespace {
+
+// Default icon size for getFileIcon() in pixels.
+const int  kDefaultIconSize = 32;
 
 // Parameter keys
 const char kBodyKey[] = "body";
@@ -80,6 +86,7 @@ const char kMethodKey[] = "method";
 const char kMimeKey[] = "mime";
 const char kPausedKey[] = "paused";
 const char kSaveAsKey[] = "saveAs";
+const char kSizeKey[] = "size";
 const char kStartTimeKey[] = "startTime";
 const char kStateComplete[] = "complete";
 const char kStateInProgress[] = "in_progress";
@@ -494,6 +501,126 @@ bool DownloadsDragFunction::ParseArgs() {
 bool DownloadsDragFunction::RunInternal() {
   NOTIMPLEMENTED();
   return false;
+}
+
+namespace {
+
+class DownloadFileIconExtractorImpl : public DownloadFileIconExtractor {
+ public:
+  DownloadFileIconExtractorImpl() {}
+
+  ~DownloadFileIconExtractorImpl() {}
+
+  virtual bool ExtractIconURLForPath(const FilePath& path,
+                                     IconLoader::IconSize icon_size,
+                                     IconURLCallback callback) OVERRIDE;
+ private:
+  void OnIconLoadComplete(IconManager::Handle handle, gfx::Image* icon);
+
+  CancelableRequestConsumer cancelable_consumer_;
+  IconURLCallback callback_;
+};
+
+bool DownloadFileIconExtractorImpl::ExtractIconURLForPath(
+    const FilePath& path,
+    IconLoader::IconSize icon_size,
+    IconURLCallback callback) {
+  callback_ = callback;
+  IconManager* im = g_browser_process->icon_manager();
+  // The contents of the file at |path| may have changed since a previous
+  // request, in which case the associated icon may also have changed.
+  // Therefore, for the moment we always call LoadIcon instead of attempting
+  // a LookupIcon.
+  im->LoadIcon(
+      path, icon_size, &cancelable_consumer_,
+      base::Bind(&DownloadFileIconExtractorImpl::OnIconLoadComplete,
+                 base::Unretained(this)));
+  return true;
+}
+
+void DownloadFileIconExtractorImpl::OnIconLoadComplete(
+    IconManager::Handle handle,
+    gfx::Image* icon) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  std::string url;
+  if (icon)
+    url = web_ui_util::GetImageDataUrl(*icon);
+  callback_.Run(url);
+}
+
+IconLoader::IconSize IconLoaderSizeFromPixelSize(int pixel_size) {
+  switch (pixel_size) {
+    case 16: return IconLoader::SMALL;
+    case 32: return IconLoader::NORMAL;
+    default:
+      NOTREACHED();
+      return IconLoader::NORMAL;
+  }
+}
+
+} // namespace
+
+DownloadsGetFileIconFunction::DownloadsGetFileIconFunction()
+  : AsyncDownloadsFunction(DOWNLOADS_FUNCTION_GET_FILE_ICON),
+    icon_size_(kDefaultIconSize),
+    icon_extractor_(new DownloadFileIconExtractorImpl()) {
+}
+
+DownloadsGetFileIconFunction::~DownloadsGetFileIconFunction() {}
+
+void DownloadsGetFileIconFunction::SetIconExtractorForTesting(
+    DownloadFileIconExtractor* extractor) {
+  DCHECK(extractor);
+  icon_extractor_.reset(extractor);
+}
+
+bool DownloadsGetFileIconFunction::ParseArgs() {
+  int dl_id = 0;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &dl_id));
+
+  base::DictionaryValue* options = NULL;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(1, &options));
+  if (options->HasKey(kSizeKey)) {
+    EXTENSION_FUNCTION_VALIDATE(options->GetInteger(kSizeKey, &icon_size_));
+    // We only support 16px and 32px icons. This is enforced in
+    // experimental.downloads.json.
+    DCHECK(icon_size_ == 16 || icon_size_ == 32);
+  }
+
+  DownloadManager* download_manager =
+      DownloadServiceFactory::GetForProfile(profile())->GetDownloadManager();
+  DownloadItem* download_item = download_manager->GetDownloadItem(dl_id);
+  if (download_item == NULL) {
+    // The DownloadItem is is added to history when the path is determined. If
+    // the download is not in history, then we don't have a path / final
+    // filename and no icon.
+    error_ = download_extension_errors::kInvalidOperationError;
+    return false;
+  }
+  // In-progress downloads return the intermediate filename for GetFullPath()
+  // which doesn't have the final extension. Therefore we won't be able to
+  // derive a good file icon for it. So we use GetTargetFilePath() instead.
+  path_ = download_item->GetTargetFilePath();
+  DCHECK(!path_.empty());
+  return true;
+}
+
+bool DownloadsGetFileIconFunction::RunInternal() {
+  DCHECK(!path_.empty());
+  DCHECK(icon_extractor_.get());
+  EXTENSION_FUNCTION_VALIDATE(icon_extractor_->ExtractIconURLForPath(
+      path_, IconLoaderSizeFromPixelSize(icon_size_),
+      base::Bind(&DownloadsGetFileIconFunction::OnIconURLExtracted, this)));
+  return true;
+}
+
+void DownloadsGetFileIconFunction::OnIconURLExtracted(const std::string& url) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (url.empty())
+    error_ = download_extension_errors::kIconNotFoundError;
+  else
+    result_.reset(base::Value::CreateStringValue(url));
+  SendResponse(error_.empty());
 }
 
 namespace {

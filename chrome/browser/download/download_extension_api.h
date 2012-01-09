@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,6 +18,7 @@
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
 
+class DownloadFileIconExtractor;
 class ResourceDispatcherHost;
 
 namespace content {
@@ -31,10 +32,11 @@ class ResourceContext;
 namespace download_extension_errors {
 
 // Errors that can be returned through chrome.extension.lastError.message.
-extern const char kNotImplementedError[];
 extern const char kGenericError[];
-extern const char kInvalidUrlError[];
+extern const char kIconNotFoundError[];
 extern const char kInvalidOperationError[];
+extern const char kInvalidUrlError[];
+extern const char kNotImplementedError[];
 
 }  // namespace download_extension_errors
 
@@ -51,6 +53,7 @@ class DownloadsFunctionInterface {
     DOWNLOADS_FUNCTION_ACCEPT_DANGER = 7,
     DOWNLOADS_FUNCTION_SHOW = 8,
     DOWNLOADS_FUNCTION_DRAG = 9,
+    DOWNLOADS_FUNCTION_GET_FILE_ICON = 10,
     // Insert new values here, not at the beginning.
     DOWNLOADS_FUNCTION_LAST
   };
@@ -265,6 +268,25 @@ class DownloadsDragFunction : public AsyncDownloadsFunction {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DownloadsDragFunction);
+};
+
+class DownloadsGetFileIconFunction : public AsyncDownloadsFunction {
+ public:
+  DownloadsGetFileIconFunction();
+  virtual ~DownloadsGetFileIconFunction();
+  void SetIconExtractorForTesting(DownloadFileIconExtractor* extractor);
+  DECLARE_EXTENSION_FUNCTION_NAME("experimental.downloads.getFileIcon");
+
+ protected:
+  virtual bool ParseArgs() OVERRIDE;
+  virtual bool RunInternal() OVERRIDE;
+
+ private:
+  void OnIconURLExtracted(const std::string& url);
+  FilePath path_;
+  int icon_size_;
+  scoped_ptr<DownloadFileIconExtractor> icon_extractor_;
+  DISALLOW_COPY_AND_ASSIGN(DownloadsGetFileIconFunction);
 };
 
 class ExtensionDownloadsEventRouter

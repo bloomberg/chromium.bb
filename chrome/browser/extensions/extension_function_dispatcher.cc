@@ -484,6 +484,7 @@ void FactoryRegistry::ResetFunctions() {
   RegisterFunction<DownloadsAcceptDangerFunction>();
   RegisterFunction<DownloadsShowFunction>();
   RegisterFunction<DownloadsDragFunction>();
+  RegisterFunction<DownloadsGetFileIconFunction>();
 
   // PageCapture
   RegisterFunction<PageCaptureSaveAsMHTMLFunction>();
