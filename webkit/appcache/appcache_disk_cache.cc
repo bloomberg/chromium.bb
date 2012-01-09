@@ -14,10 +14,35 @@
 
 namespace appcache {
 
-// TODO(ajwong): Change disk_cache's API to return results via Callback.
-struct AppCacheDiskCache::CreateBackendDataShim {
-  CreateBackendDataShim() : backend(NULL) {}
-  disk_cache::Backend* backend;
+// A callback shim that provides storage for the 'backend_ptr' value
+// and will delete a resulting ptr if completion occurs after its
+// been canceled.
+class AppCacheDiskCache::CreateBackendCallbackShim
+    : public base::RefCounted<CreateBackendCallbackShim> {
+ public:
+  explicit CreateBackendCallbackShim(AppCacheDiskCache* object)
+      : backend_ptr_(NULL), appcache_diskcache_(object) {
+  }
+
+  void Cancel() {
+    appcache_diskcache_ = NULL;
+  }
+
+  void Callback(int rv) {
+    if (appcache_diskcache_)
+      appcache_diskcache_->OnCreateBackendComplete(rv);
+  }
+
+  disk_cache::Backend* backend_ptr_;  // Accessed directly.
+
+ private:
+  friend class base::RefCounted<CreateBackendCallbackShim>;
+
+  ~CreateBackendCallbackShim() {
+    delete backend_ptr_;
+  }
+
+  AppCacheDiskCache* appcache_diskcache_;  // Unowned pointer.
 };
 
 // An implementation of AppCacheDiskCacheInterface::Entry that's a thin
@@ -129,9 +154,10 @@ AppCacheDiskCache::AppCacheDiskCache()
 }
 
 AppCacheDiskCache::~AppCacheDiskCache() {
-  if (!create_backend_callback_.IsCancelled()) {
-    create_backend_callback_.Cancel();
-    OnCreateBackendComplete(NULL, net::ERR_ABORTED);
+  if (create_backend_callback_) {
+    create_backend_callback_->Cancel();
+    create_backend_callback_ = NULL;
+    OnCreateBackendComplete(net::ERR_ABORTED);
   }
   disk_cache_.reset();
   STLDeleteElements(&active_calls_);
@@ -157,9 +183,10 @@ void AppCacheDiskCache::Disable() {
 
   is_disabled_ = true;
 
-  if (!create_backend_callback_.IsCancelled()) {
-    create_backend_callback_.Cancel();
-    OnCreateBackendComplete(NULL, net::ERR_ABORTED);
+  if (create_backend_callback_) {
+    create_backend_callback_->Cancel();
+    create_backend_callback_ = NULL;
+    OnCreateBackendComplete(net::ERR_ABORTED);
   }
 }
 
@@ -225,31 +252,26 @@ int AppCacheDiskCache::Init(net::CacheType cache_type,
                             const net::CompletionCallback& callback) {
   DCHECK(!is_initializing() && !disk_cache_.get());
   is_disabled_ = false;
+  create_backend_callback_ = new CreateBackendCallbackShim(this);
 
-  // TODO(ajwong): Change disk_cache's API to return results via Callback.
-  disk_cache::Backend** backend_ptr = new(disk_cache::Backend*);
-  create_backend_callback_.Reset(
-      base::Bind(&AppCacheDiskCache::OnCreateBackendComplete,
-                 base::Unretained(this), base::Owned(backend_ptr)));
   int rv = disk_cache::CreateCacheBackend(
       cache_type, cache_directory, cache_size, force, cache_thread, NULL,
-      backend_ptr, create_backend_callback_.callback());
+      &(create_backend_callback_->backend_ptr_),
+      base::Bind(&CreateBackendCallbackShim::Callback,
+                 create_backend_callback_));
   if (rv == net::ERR_IO_PENDING)
     init_callback_ = callback;
   else
-    OnCreateBackendComplete(backend_ptr, rv);
-
+    OnCreateBackendComplete(rv);
   return rv;
 }
 
-void AppCacheDiskCache::OnCreateBackendComplete(
-    disk_cache::Backend** backend, int rv) {
+void AppCacheDiskCache::OnCreateBackendComplete(int rv) {
   if (rv == net::OK) {
-    DCHECK(backend);
-    disk_cache_.reset(*backend);
+    disk_cache_.reset(create_backend_callback_->backend_ptr_);
+    create_backend_callback_->backend_ptr_ = NULL;
   }
-
-  create_backend_callback_.Cancel();
+  create_backend_callback_ = NULL;
 
   // Invoke our clients callback function.
   if (!init_callback_.is_null()) {

@@ -45,7 +45,7 @@ class APPCACHE_EXPORT AppCacheDiskCache
                         const net::CompletionCallback& callback) OVERRIDE;
 
  private:
-  struct CreateBackendDataShim;
+  class CreateBackendCallbackShim;
   class EntryImpl;
 
   // PendingCalls allow CreateEntry, OpenEntry, and DoomEntry to be called
@@ -86,19 +86,19 @@ class APPCACHE_EXPORT AppCacheDiskCache
   typedef std::set<ActiveCall*> ActiveCalls;
 
   bool is_initializing() const {
-    return !create_backend_callback_.IsCancelled();
+    return create_backend_callback_.get() != NULL;
   }
   disk_cache::Backend* disk_cache() { return disk_cache_.get(); }
   int Init(net::CacheType cache_type, const FilePath& directory,
            int cache_size, bool force, base::MessageLoopProxy* cache_thread,
            const net::CompletionCallback& callback);
-  void OnCreateBackendComplete(disk_cache::Backend** backend, int rv);
+  void OnCreateBackendComplete(int rv);
   void AddActiveCall(ActiveCall* call) { active_calls_.insert(call); }
   void RemoveActiveCall(ActiveCall* call) { active_calls_.erase(call); }
 
   bool is_disabled_;
   net::CompletionCallback init_callback_;
-  net::CancelableCompletionCallback create_backend_callback_;
+  scoped_refptr<CreateBackendCallbackShim> create_backend_callback_;
   PendingCalls pending_calls_;
   ActiveCalls active_calls_;
   scoped_ptr<disk_cache::Backend> disk_cache_;
