@@ -13,6 +13,8 @@ cr.define('tracing', function() {
   var pallette = tracing.getPallette();
   var highlightIdBoost = tracing.getPalletteHighlightIdBoost();
 
+  // TODO(jrg): possibly obsoleted with the elided string cache.
+  // Consider removing.
   var textWidthMap = { };
   function quickMeasureText(ctx, text) {
     var w = textWidthMap[text];
@@ -22,6 +24,16 @@ cr.define('tracing', function() {
     }
     return w;
   }
+
+  /**
+   * Cache for elided strings.
+   * Moved from the ElidedTitleCache protoype to a "global" for speed
+   * (variable reference is 100x faster).
+   *   key: String we wish to elide.
+   *   value: Another dict whose key is width
+   *     and value is an ElidedStringWidthPair.
+   */
+  var elidedTitleCacheDict = {};
 
   /**
    * A generic track that contains other tracks as its children.
@@ -354,6 +366,59 @@ cr.define('tracing', function() {
 
   };
 
+   /**
+     * A pair representing an elided string and world-coordinate width
+     * to draw it.
+     * @constructor
+     */
+   function ElidedStringWidthPair(string, width) {
+     this.string = string;
+     this.width = width;
+   }
+
+    /**
+    * A cache for elided strings.
+    * @constructor
+    */
+   function ElidedTitleCache() {
+   }
+
+   ElidedTitleCache.prototype = {
+     /**
+      * Return elided text.
+      * @param {track} A timeline slice track or other object that defines
+      *                functions labelWidth() and labelWidthWorld().
+      * @param {pixWidth} Pixel width.
+      * @param {title} Original title text.
+      * @param {width} Drawn width in world coords.
+      * @param {sliceDuration} Where the title must fit (in world coords).
+      * @return {ElidedStringWidthPair} Elided string and width.
+      */
+     get: function(track, pixWidth, title, width, sliceDuration) {
+       var elidedDict = elidedTitleCacheDict[title];
+       if (!elidedDict) {
+         elidedDict = {};
+         elidedTitleCacheDict[title] = elidedDict;
+       }
+       var stringWidthPair = elidedDict[sliceDuration];
+       if (stringWidthPair === undefined) {
+          var newtitle = title;
+          var elided = false;
+          while (track.labelWidthWorld(newtitle, pixWidth) > sliceDuration) {
+            newtitle = newtitle.substring(0, newtitle.length * 0.75);
+            elided = true;
+          }
+          if (elided && newtitle.length > 3)
+            newtitle = newtitle.substring(0, newtitle.length - 3) + '...';
+         stringWidthPair = new ElidedStringWidthPair(
+                             newtitle,
+                             track.labelWidth(newtitle));
+         elidedDict[sliceDuration] = stringWidthPair;
+       }
+       return stringWidthPair;
+     },
+   };
+
   /**
    * A track that displays an array of TimelineSlice objects.
    * @constructor
@@ -366,8 +431,18 @@ cr.define('tracing', function() {
 
     __proto__: CanvasBasedTrack.prototype,
 
+   /**
+    * Should we elide text on trace labels?
+    * Without eliding, text that is too wide isn't drawn at all.
+    * Disable if you feel this causes a performance problem.
+    * This is a default value that can be overridden in tracks for testing.
+    * @const
+    */
+    SHOULD_ELIDE_TEXT: true,
+
     decorate: function() {
       this.classList.add('timeline-slice-track');
+      this.elidedTitleCache = new ElidedTitleCache();
     },
 
     get slices() {
@@ -381,6 +456,14 @@ cr.define('tracing', function() {
 
     set height(height) {
       this.style.height = height;
+    },
+
+    labelWidth: function(title) {
+      return quickMeasureText(this.ctx_, title) + 2;
+    },
+
+    labelWidthWorld: function(title, pixWidth) {
+      return this.labelWidth(title) * pixWidth;
     },
 
     redraw: function() {
@@ -465,6 +548,7 @@ cr.define('tracing', function() {
         ctx.fillStyle = 'rgb(0,0,0)';
         // Don't render text until until it is 20px wide
         var quickDiscardThresshold = pixWidth * 20;
+        var shouldElide = this.SHOULD_ELIDE_TEXT;
         for (var i = 0; i < slices.length; ++i) {
           var slice = slices[i];
           if (slice.duration > quickDiscardThresshold) {
@@ -472,12 +556,20 @@ cr.define('tracing', function() {
             if (slice.didNotFinish) {
               title += ' (Did Not Finish)';
             }
-            var labelWidth = quickMeasureText(ctx, title) + 2;
-            var labelWidthWorld = pixWidth * labelWidth;
-
-            if (labelWidthWorld < slice.duration) {
+            var drawnTitle = title;
+            var drawnWidth = this.labelWidth(drawnTitle);
+            if (shouldElide &&
+                this.labelWidthWorld(drawnTitle, pixWidth) > slice.duration) {
+                var elidedValues = this.elidedTitleCache.get(
+                    this, pixWidth,
+                    drawnTitle, drawnWidth,
+                    slice.duration);
+                drawnTitle = elidedValues.string;
+                drawnWidth = elidedValues.width;
+            }
+            if (drawnWidth * pixWidth < slice.duration) {
               var cX = vp.xWorldToView(slice.start + 0.5 * slice.duration);
-              ctx.fillText(title, cX, 2.5, labelWidth);
+              ctx.fillText(drawnTitle, cX, 2.5, drawnWidth);
             }
           }
         }
