@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -74,13 +74,13 @@ class ServerCACertComboboxModel : public ui::ComboboxModel {
   }
   virtual ~ServerCACertComboboxModel() {}
   virtual int GetItemCount() {
-    if (!cert_library_->CertificatesLoaded())
+    if (cert_library_->CertificatesLoading())
       return 1;  // "Loading"
     // "Default" + certs.
     return cert_library_->GetCACertificates().Size() + 1;
   }
   virtual string16 GetItemAt(int combo_index) {
-    if (!cert_library_->CertificatesLoaded())
+    if (cert_library_->CertificatesLoading())
       return l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT_LOADING);
     if (combo_index == 0)
@@ -102,7 +102,7 @@ class UserCertComboboxModel : public ui::ComboboxModel {
   }
   virtual ~UserCertComboboxModel() {}
   virtual int GetItemCount() {
-    if (!cert_library_->CertificatesLoaded())
+    if (cert_library_->CertificatesLoading())
       return 1;  // "Loading"
     int num_certs = cert_library_->GetUserCertificates().Size();
     if (num_certs == 0)
@@ -110,12 +110,14 @@ class UserCertComboboxModel : public ui::ComboboxModel {
     return num_certs;
   }
   virtual string16 GetItemAt(int combo_index) {
-    if (!cert_library_->CertificatesLoaded())
+    if (cert_library_->CertificatesLoading()) {
       return l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT_LOADING);
-    if (cert_library_->GetUserCertificates().Size() == 0)
+    }
+    if (cert_library_->GetUserCertificates().Size() == 0) {
       return l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_USER_CERT_NONE_INSTALLED);
+    }
     return cert_library_->GetUserCertificates().GetDisplayStringAt(combo_index);
   }
 
@@ -751,8 +753,7 @@ void VPNConfigView::UpdateCanLogin() {
 }
 
 bool VPNConfigView::UserCertRequired() const {
-  return provider_type_ == PROVIDER_TYPE_L2TP_IPSEC_USER_CERT
-      || provider_type_ == PROVIDER_TYPE_OPEN_VPN;
+  return provider_type_ == PROVIDER_TYPE_L2TP_IPSEC_USER_CERT;
 }
 
 bool VPNConfigView::HaveUserCerts() const {
