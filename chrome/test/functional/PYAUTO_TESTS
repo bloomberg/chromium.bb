@@ -430,6 +430,9 @@
       '-autofill.AutofillTest.testPostalCodeAndStateLabelsBasedOnCountry',
       '-autofill.AutofillTest.testDisplayLineItemForEntriesWithNoCCNum',
       '-autofill.AutofillTest.testNoDuplicatePhoneNumsInPrefs',
+      # No Webdriver tests for ChromeOS.
+      '-plugins.PluginsTest.testAboutPluginDetailInfo',
+      '-plugins.PluginsTest.testAboutPluginEnableAndDisablePDFPlugin',
       # Media files test uses internal media files
       '-chromeos_file_browser.ChromeosFileBrowserTest.testOpenMediaFiles',
     ],
