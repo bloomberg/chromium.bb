@@ -123,7 +123,7 @@ class OutputCapturer(object):
     self.StopCapturing()
 
     if exc_type:
-      print('Exception during output capturing: %r' % exc_val)
+      print('Exception during output capturing: %r' % (exc_val,))
       stdout = self.GetStdout()
       if stdout:
         print('Captured stdout was:\n%s' % stdout)

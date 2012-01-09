@@ -294,6 +294,45 @@ class RunCommandResult(object):
     self.output = output
 
 
+class PInfoTest(test_lib.TestCase):
+
+  def testInit(self):
+    pinfo = cpu.PInfo(category='SomeCat', user_arg='SomeArg')
+
+    self.assertEquals('SomeCat', pinfo.category)
+    self.assertEquals('SomeArg', pinfo.user_arg)
+
+    self.assertEquals(None, pinfo.cpv)
+    self.assertEquals(None, pinfo.overlay)
+
+    self.assertRaises(AttributeError, getattr, pinfo, 'foobar')
+
+  def testEqAndNe(self):
+    pinfo1 = cpu.PInfo(category='SomeCat', user_arg='SomeArg')
+
+    self.assertEquals(pinfo1, pinfo1)
+    self.assertTrue(pinfo1 == pinfo1)
+    self.assertFalse(pinfo1 != pinfo1)
+
+    pinfo2 = cpu.PInfo(category='SomeCat', user_arg='SomeArg')
+
+    self.assertEquals(pinfo1, pinfo2)
+    self.assertTrue(pinfo1 == pinfo2)
+    self.assertFalse(pinfo1 != pinfo2)
+
+    pinfo3 = cpu.PInfo(category='SomeCat', user_arg='SomeOtherArg')
+
+    self.assertNotEquals(pinfo1, pinfo3)
+    self.assertFalse(pinfo1 == pinfo3)
+    self.assertTrue(pinfo1 != pinfo3)
+
+    pinfo4 = cpu.PInfo(category='SomeCat', slot='SomeSlot')
+
+    self.assertNotEquals(pinfo1, pinfo4)
+    self.assertFalse(pinfo1 == pinfo4)
+    self.assertTrue(pinfo1 != pinfo4)
+
+
 class CpuTestBase(test_lib.MoxTestCase):
   """Base class for all test classes in this file."""
 
@@ -658,10 +697,22 @@ class CopyUpstreamTest(CpuTestBase):
 
     # Replay script
     if success:
+      def git_rm(*args, **kwargs):
+        # Identify file that psuedo-git is to remove, then remove it.
+        # As with real "git rm", if the dir is then empty remove that.
+        pkgdir, pkgfile = args[0], args[1].split()[-1]
+        os.remove(os.path.join(pkgdir, pkgfile))
+        try:
+          os.rmdir(pkgdir)
+        except OSError:
+          pass
+
       pkgdir = os.path.join(mocked_upgrader._stable_repo, catpkg)
       for existing_file in existing_files:
         mocked_upgrader._RunGit(pkgdir, 'rm -rf ' + existing_file,
-                                redirect_stdout=True).InAnyOrder()
+                                redirect_stdout=True
+                                ).WithSideEffects(git_rm).InAnyOrder()
+
       mocked_upgrader._RunGit(mocked_upgrader._stable_repo,
                               'add ' + catpkg)
       mocked_upgrader._IdentifyNeededEclass(upstream_cpv).AndReturn(None)
@@ -750,7 +801,7 @@ class GetPackageUpgradeStateTest(CpuTestBase):
     # Add test-specific mocks/stubs
 
     # Replay script
-    mocked_upgrader._FindUpstreamCPV(pinfo['cpv'], unstable_ok=True,
+    mocked_upgrader._FindUpstreamCPV(pinfo.cpv, unstable_ok=True,
                                      ).AndReturn(exists_upstream)
     self.mox.ReplayAll()
 
@@ -761,76 +812,76 @@ class GetPackageUpgradeStateTest(CpuTestBase):
     return result
 
   def testGetPackageUpgradeStateLocalOnly(self):
-    pinfo = {'cpv': 'foo/bar-2',
-             'overlay': 'chromiumos-overlay',
-             'cpv_cmp_upstream': None,
-             'latest_upstream_cpv': None,
-             }
+    pinfo = cpu.PInfo(cpv='foo/bar-2',
+                      overlay='chromiumos-overlay',
+                      cpv_cmp_upstream=None,
+                      latest_upstream_cpv=None,
+                      )
     result = self._TestGetPackageUpgradeState(pinfo, exists_upstream=False)
     self.assertEquals(result, utable.UpgradeTable.STATE_LOCAL_ONLY)
 
   def testGetPackageUpgradeStateUnknown(self):
-    pinfo = {'cpv': 'foo/bar-2',
-             'overlay': 'portage',
-             'cpv_cmp_upstream': None,
-             'latest_upstream_cpv': None,
-             }
+    pinfo = cpu.PInfo(cpv='foo/bar-2',
+                      overlay='portage',
+                      cpv_cmp_upstream=None,
+                      latest_upstream_cpv=None,
+                      )
     result = self._TestGetPackageUpgradeState(pinfo, exists_upstream=False)
     self.assertEquals(result, utable.UpgradeTable.STATE_UNKNOWN)
 
   def testGetPackageUpgradeStateUpgradeAndDuplicated(self):
-    pinfo = {'cpv': 'foo/bar-2',
-             'overlay': 'chromiumos-overlay',
-             'cpv_cmp_upstream': 1, # outdated
-             'latest_upstream_cpv': 'not important',
-             }
+    pinfo = cpu.PInfo(cpv='foo/bar-2',
+                      overlay='chromiumos-overlay',
+                      cpv_cmp_upstream=1, # outdated
+                      latest_upstream_cpv='not important',
+                      )
     result = self._TestGetPackageUpgradeState(pinfo, exists_upstream=True)
     self.assertEquals(result,
                       utable.UpgradeTable.STATE_NEEDS_UPGRADE_AND_DUPLICATED)
 
   def testGetPackageUpgradeStateUpgradeAndPatched(self):
-    pinfo = {'cpv': 'foo/bar-2',
-             'overlay': 'chromiumos-overlay',
-             'cpv_cmp_upstream': 1, # outdated
-             'latest_upstream_cpv': 'not important',
-             }
+    pinfo = cpu.PInfo(cpv='foo/bar-2',
+                      overlay='chromiumos-overlay',
+                      cpv_cmp_upstream=1, # outdated
+                      latest_upstream_cpv='not important',
+                      )
     result = self._TestGetPackageUpgradeState(pinfo, exists_upstream=False)
     self.assertEquals(result,
                       utable.UpgradeTable.STATE_NEEDS_UPGRADE_AND_PATCHED)
 
   def testGetPackageUpgradeStateUpgrade(self):
-    pinfo = {'cpv': 'foo/bar-2',
-             'overlay': 'portage-stable',
-             'cpv_cmp_upstream': 1, # outdated
-             'latest_upstream_cpv': 'not important',
-             }
+    pinfo = cpu.PInfo(cpv='foo/bar-2',
+                      overlay='portage-stable',
+                      cpv_cmp_upstream=1, # outdated
+                      latest_upstream_cpv='not important',
+                      )
     result = self._TestGetPackageUpgradeState(pinfo, exists_upstream=False)
     self.assertEquals(result, utable.UpgradeTable.STATE_NEEDS_UPGRADE)
 
   def testGetPackageUpgradeStateDuplicated(self):
-    pinfo = {'cpv': 'foo/bar-2',
-             'overlay': 'chromiumos-overlay',
-             'cpv_cmp_upstream': 0, # current
-             'latest_upstream_cpv': 'not important',
-             }
+    pinfo = cpu.PInfo(cpv='foo/bar-2',
+                      overlay='chromiumos-overlay',
+                      cpv_cmp_upstream=0, # current
+                      latest_upstream_cpv='not important',
+                      )
     result = self._TestGetPackageUpgradeState(pinfo, exists_upstream=True)
     self.assertEquals(result, utable.UpgradeTable.STATE_DUPLICATED)
 
   def testGetPackageUpgradeStatePatched(self):
-    pinfo = {'cpv': 'foo/bar-2',
-             'overlay': 'chromiumos-overlay',
-             'cpv_cmp_upstream': 0, # current
-             'latest_upstream_cpv': 'not important',
-             }
+    pinfo = cpu.PInfo(cpv='foo/bar-2',
+                      overlay='chromiumos-overlay',
+                      cpv_cmp_upstream=0, # current
+                      latest_upstream_cpv='not important',
+                      )
     result = self._TestGetPackageUpgradeState(pinfo, exists_upstream=False)
     self.assertEquals(result, utable.UpgradeTable.STATE_PATCHED)
 
   def testGetPackageUpgradeStateCurrent(self):
-    pinfo = {'cpv': 'foo/bar-2',
-             'overlay': 'portage-stable',
-             'cpv_cmp_upstream': 0, # current
-             'latest_upstream_cpv': 'not important',
-             }
+    pinfo = cpu.PInfo(cpv='foo/bar-2',
+                      overlay='portage-stable',
+                      cpv_cmp_upstream=0, # current
+                      latest_upstream_cpv='not important',
+                      )
     result = self._TestGetPackageUpgradeState(pinfo, exists_upstream=False)
     self.assertEquals(result, utable.UpgradeTable.STATE_CURRENT)
 
@@ -1767,11 +1818,11 @@ class RunBoardTest(CpuTestBase):
     os.remove(readme_path)
     os.rmdir(tmpdir)
 
-  def _TestRunBoard(self, infolist, upgrade=False, staged_changes=False):
+  def _TestRunBoard(self, pinfolist, upgrade=False, staged_changes=False):
     """Test Upgrader.RunBoard."""
 
-    targetlist = [info['user_arg'] for info in infolist]
-    upstream_only_infolist = [info for info in infolist if 'cpv' not in info]
+    targetlist = [pinfo.user_arg for pinfo in pinfolist]
+    upstream_only_pinfolist = [pinfo for pinfo in pinfolist if not pinfo.cpv]
 
     cmdargs = targetlist
     if upgrade:
@@ -1793,16 +1844,16 @@ class RunBoardTest(CpuTestBase):
       mocked_upgrader._StashChanges()
 
     mocked_upgrader._ResolveAndVerifyArgs(targetlist,
-                                          upgrade_mode).AndReturn(infolist)
+                                          upgrade_mode).AndReturn(pinfolist)
     if upgrade:
-      mocked_upgrader._FinalizeUpstreamInfolist(infolist).AndReturn([])
+      mocked_upgrader._FinalizeUpstreamPInfolist(pinfolist).AndReturn([])
     else:
-      mocked_upgrader._GetCurrentVersions(infolist).AndReturn(infolist)
-      mocked_upgrader._FinalizeLocalInfolist(infolist).AndReturn([])
+      mocked_upgrader._GetCurrentVersions(pinfolist).AndReturn(pinfolist)
+      mocked_upgrader._FinalizeLocalPInfolist(pinfolist).AndReturn([])
 
       if upgrade_mode:
-        mocked_upgrader._FinalizeUpstreamInfolist(
-          upstream_only_infolist).AndReturn([])
+        mocked_upgrader._FinalizeUpstreamPInfolist(
+          upstream_only_pinfolist).AndReturn([])
 
     mocked_upgrader._UnstashAnyChanges()
     mocked_upgrader._UpgradePackages([])
@@ -1817,40 +1868,40 @@ class RunBoardTest(CpuTestBase):
     self.mox.VerifyAll()
 
   def testRunBoard1(self):
-    target_infolist = [{'user_arg':     'dev-libs/A',
-                        'cpv':          'dev-libs/A-1',
-                        'upstream_cpv': 'dev-libs/A-2',
-                        },
-                       ]
-    return self._TestRunBoard(target_infolist)
+    target_pinfolist = [cpu.PInfo(user_arg='dev-libs/A',
+                                  cpv='dev-libs/A-1',
+                                  upstream_cpv='dev-libs/A-2',
+                                  ),
+                        ]
+    return self._TestRunBoard(target_pinfolist)
 
   def testRunBoard2(self):
-    target_infolist = [{'user_arg':     'dev-libs/A',
-                        'cpv':          'dev-libs/A-1',
-                        'upstream_cpv': 'dev-libs/A-2',
-                        },
-                       ]
-    return self._TestRunBoard(target_infolist, upgrade=True)
+    target_pinfolist = [cpu.PInfo(user_arg='dev-libs/A',
+                                  cpv='dev-libs/A-1',
+                                  upstream_cpv='dev-libs/A-2',
+                                  ),
+                        ]
+    return self._TestRunBoard(target_pinfolist, upgrade=True)
 
   def testRunBoard3(self):
-    target_infolist = [{'user_arg':     'dev-libs/A',
-                        'cpv':          'dev-libs/A-1',
-                        'upstream_cpv': 'dev-libs/A-2',
-                        },
-                       ]
-    return self._TestRunBoard(target_infolist, upgrade=True,
+    target_pinfolist = [cpu.PInfo(user_arg='dev-libs/A',
+                                  cpv='dev-libs/A-1',
+                                  upstream_cpv='dev-libs/A-2',
+                                  ),
+                        ]
+    return self._TestRunBoard(target_pinfolist, upgrade=True,
                               staged_changes=True)
 
   def testRunBoardUpstreamOnlyStatusMode(self):
     """Status mode with package that is only upstream should error."""
 
-    infolist = [{'user_arg':     'dev-libs/M',
-                 'cpv':          None,
-                 'upstream_cpv': 'dev-libs/M-2',
-                 },
-                ]
+    pinfolist = [cpu.PInfo(user_arg='dev-libs/M',
+                           cpv=None,
+                           upstream_cpv='dev-libs/M-2',
+                           ),
+                 ]
 
-    targetlist = [info['user_arg'] for info in infolist]
+    targetlist = [pinfo.user_arg for pinfo in pinfolist]
 
     mocked_upgrader = self._MockUpgrader(cmdargs=['dev-libs/M'],
                                          _curr_board=None)
@@ -1867,7 +1918,7 @@ class RunBoardTest(CpuTestBase):
     mocked_upgrader._AnyChangesStaged().AndReturn(False)
 
     mocked_upgrader._ResolveAndVerifyArgs(targetlist,
-                                          upgrade_mode).AndReturn(infolist)
+                                          upgrade_mode).AndReturn(pinfolist)
     mocked_upgrader._DropAnyStashedChanges()
     self.mox.ReplayAll()
 
@@ -1886,7 +1937,7 @@ class RunBoardTest(CpuTestBase):
 class GiveEmergeResultsTest(CpuTestBase):
   """Test Upgrader._GiveEmergeResults"""
 
-  def _TestGiveEmergeResultsOK(self, infolist, ok, error=None):
+  def _TestGiveEmergeResultsOK(self, pinfolist, ok, error=None):
     cmdargs = []
     mocked_upgrader = self._MockUpgrader(cmdargs=cmdargs)
 
@@ -1903,26 +1954,27 @@ class GiveEmergeResultsTest(CpuTestBase):
     with self.OutputCapturer():
       if error:
         self.assertRaises(error, cpu.Upgrader._GiveEmergeResults,
-                          mocked_upgrader, infolist)
+                          mocked_upgrader, pinfolist)
       else:
-        result = cpu.Upgrader._GiveEmergeResults(mocked_upgrader, infolist)
+        result = cpu.Upgrader._GiveEmergeResults(mocked_upgrader, pinfolist)
     self.mox.VerifyAll()
 
     return result
 
   def testGiveEmergeResultsUnmaskedOK(self):
-    infolist = [{'upgraded_cpv': 'abc/def-4', 'upgraded_unmasked': True},
-                {'upgraded_cpv': 'bcd/efg-8', 'upgraded_unmasked': True},
-                ]
-    self._TestGiveEmergeResultsOK(infolist, True)
+    pinfolist = [cpu.PInfo(upgraded_cpv='abc/def-4', upgraded_unmasked=True),
+                 cpu.PInfo(upgraded_cpv='bcd/efg-8', upgraded_unmasked=True),
+                 ]
+    self._TestGiveEmergeResultsOK(pinfolist, True)
 
   def testGiveEmergeResultsUnmaskedNotOK(self):
-    infolist = [{'upgraded_cpv': 'abc/def-4', 'upgraded_unmasked': True},
-                {'upgraded_cpv': 'bcd/efg-8', 'upgraded_unmasked': True},
-                ]
-    self._TestGiveEmergeResultsOK(infolist, False, error=RuntimeError)
+    pinfolist = [cpu.PInfo(upgraded_cpv='abc/def-4', upgraded_unmasked=True),
+                 cpu.PInfo(upgraded_cpv='bcd/efg-8', upgraded_unmasked=True),
+                 ]
+    self._TestGiveEmergeResultsOK(pinfolist, False, error=RuntimeError)
 
-  def _TestGiveEmergeResultsMasked(self, infolist, ok, masked_cpvs, error=None):
+  def _TestGiveEmergeResultsMasked(self, pinfolist, ok, masked_cpvs,
+                                   error=None):
     cmdargs = []
     mocked_upgrader = self._MockUpgrader(cmdargs=cmdargs)
 
@@ -1943,27 +1995,27 @@ class GiveEmergeResultsTest(CpuTestBase):
     with self.OutputCapturer():
       if error:
         self.assertRaises(error, cpu.Upgrader._GiveEmergeResults,
-                          mocked_upgrader, infolist)
+                          mocked_upgrader, pinfolist)
       else:
-        result = cpu.Upgrader._GiveEmergeResults(mocked_upgrader, infolist)
+        result = cpu.Upgrader._GiveEmergeResults(mocked_upgrader, pinfolist)
     self.mox.VerifyAll()
 
     return result
 
   def testGiveEmergeResultsMaskedOK(self):
-    infolist = [{'upgraded_cpv': 'abc/def-4', 'upgraded_unmasked': False},
-                {'upgraded_cpv': 'bcd/efg-8', 'upgraded_unmasked': False},
-                ]
+    pinfolist = [cpu.PInfo(upgraded_cpv='abc/def-4', upgraded_unmasked=False),
+                 cpu.PInfo(upgraded_cpv='bcd/efg-8', upgraded_unmasked=False),
+                 ]
     masked_cpvs = ['abc/def-4', 'bcd/efg-8']
-    self._TestGiveEmergeResultsMasked(infolist, True, masked_cpvs,
+    self._TestGiveEmergeResultsMasked(pinfolist, True, masked_cpvs,
                                       error=RuntimeError)
 
   def testGiveEmergeResultsMaskedNotOK(self):
-    infolist = [{'upgraded_cpv': 'abc/def-4', 'upgraded_unmasked': False},
-                {'upgraded_cpv': 'bcd/efg-8', 'upgraded_unmasked': False},
+    pinfolist = [cpu.PInfo(upgraded_cpv='abc/def-4', upgraded_unmasked=False),
+                 cpu.PInfo(upgraded_cpv='bcd/efg-8', upgraded_unmasked=False),
                 ]
     masked_cpvs = ['abc/def-4', 'bcd/efg-8']
-    self._TestGiveEmergeResultsMasked(infolist, False, masked_cpvs,
+    self._TestGiveEmergeResultsMasked(pinfolist, False, masked_cpvs,
                                       error=RuntimeError)
 
 
@@ -1984,8 +2036,8 @@ class CheckStagedUpgradesTest(CpuTestBase):
                    ebuild2: 'A',
                    }
 
-    infolist = [{'upgraded_cpv': 'foo/bar-1'},
-                {'upgraded_cpv': 'bar/foo-3'},
+    pinfolist = [cpu.PInfo(upgraded_cpv='foo/bar-1'),
+                 cpu.PInfo(upgraded_cpv='bar/foo-3'),
                 ]
 
     mocked_upgrader = self._MockUpgrader(cmdargs=cmdargs,
@@ -2001,14 +2053,14 @@ class CheckStagedUpgradesTest(CpuTestBase):
     self.mox.ReplayAll()
 
     # Verify
-    cpu.Upgrader._CheckStagedUpgrades(mocked_upgrader, infolist)
+    cpu.Upgrader._CheckStagedUpgrades(mocked_upgrader, pinfolist)
     self.mox.VerifyAll()
 
   def testCheckStagedUpgradesNoneStaged(self):
     cmdargs = []
 
-    infolist = [{'upgraded_cpv': 'foo/bar-1'},
-                {'upgraded_cpv': 'bar/foo-3'},
+    pinfolist = [cpu.PInfo(upgraded_cpv='foo/bar-1'),
+                 cpu.PInfo(upgraded_cpv='bar/foo-3'),
                 ]
 
     mocked_upgrader = self._MockUpgrader(cmdargs=cmdargs,
@@ -2020,7 +2072,7 @@ class CheckStagedUpgradesTest(CpuTestBase):
     self.mox.ReplayAll()
 
     # Verify
-    cpu.Upgrader._CheckStagedUpgrades(mocked_upgrader, infolist)
+    cpu.Upgrader._CheckStagedUpgrades(mocked_upgrader, pinfolist)
     self.mox.VerifyAll()
 
 ###########################
@@ -2030,7 +2082,7 @@ class CheckStagedUpgradesTest(CpuTestBase):
 class UpgradePackagesTest(CpuTestBase):
   """Test Upgrader._UpgradePackages"""
 
-  def _TestUpgradePackages(self, infolist, upgrade):
+  def _TestUpgradePackages(self, pinfolist, upgrade):
     cmdargs = []
     if upgrade:
       cmdargs.append('--upgrade')
@@ -2042,50 +2094,50 @@ class UpgradePackagesTest(CpuTestBase):
 
     # Replay script
     upgrades_this_run = False
-    for pinfo in infolist:
-      pkg_result = bool(pinfo['upgraded_cpv'])
+    for pinfo in pinfolist:
+      pkg_result = bool(pinfo.upgraded_cpv)
       mocked_upgrader._UpgradePackage(pinfo).InAnyOrder('up'
                                                         ).AndReturn(pkg_result)
       if pkg_result:
         upgrades_this_run = True
 
-    for pinfo in infolist:
-      if pinfo['upgraded_cpv']:
+    for pinfo in pinfolist:
+      if pinfo.upgraded_cpv:
         mocked_upgrader._VerifyPackageUpgrade(pinfo).InAnyOrder('ver')
       mocked_upgrader._PackageReport(pinfo).InAnyOrder('ver')
 
     if upgrades_this_run:
-      mocked_upgrader._GiveEmergeResults(infolist)
+      mocked_upgrader._GiveEmergeResults(pinfolist)
 
     upgrade_mode = cpu.Upgrader._IsInUpgradeMode(mocked_upgrader)
     mocked_upgrader._IsInUpgradeMode().AndReturn(upgrade_mode)
     if upgrade_mode:
-      mocked_upgrader._CheckStagedUpgrades(infolist)
+      mocked_upgrader._CheckStagedUpgrades(pinfolist)
     self.mox.ReplayAll()
 
     # Verify
-    cpu.Upgrader._UpgradePackages(mocked_upgrader, infolist)
+    cpu.Upgrader._UpgradePackages(mocked_upgrader, pinfolist)
     self.mox.VerifyAll()
 
   def testUpgradePackagesUpgradeModeWithUpgrades(self):
-    infolist = [{'upgraded_cpv': 'abc/def-4'},
-                {'upgraded_cpv': 'bcd/efg-8'},
-                {'upgraded_cpv': None},
-                {'upgraded_cpv': None}
-                ]
-    self._TestUpgradePackages(infolist, True)
+    pinfolist = [cpu.PInfo(upgraded_cpv='abc/def-4'),
+                 cpu.PInfo(upgraded_cpv='bcd/efg-8'),
+                 cpu.PInfo(upgraded_cpv=None),
+                 cpu.PInfo(upgraded_cpv=None)
+                 ]
+    self._TestUpgradePackages(pinfolist, True)
 
   def testUpgradePackagesUpgradeModeNoUpgrades(self):
-    infolist = [{'upgraded_cpv': None},
-                {'upgraded_cpv': None},
-                ]
-    self._TestUpgradePackages(infolist, True)
+    pinfolist = [cpu.PInfo(upgraded_cpv=None),
+                 cpu.PInfo(upgraded_cpv=None),
+                 ]
+    self._TestUpgradePackages(pinfolist, True)
 
   def testUpgradePackagesStatusModeNoUpgrades(self):
-    infolist = [{'upgraded_cpv': None},
-                {'upgraded_cpv': None},
-                ]
-    self._TestUpgradePackages(infolist, False)
+    pinfolist = [cpu.PInfo(upgraded_cpv=None),
+                 cpu.PInfo(upgraded_cpv=None),
+                 ]
+    self._TestUpgradePackages(pinfolist, False)
 
 ##########################
 ### UpgradePackageTest ###
@@ -2108,8 +2160,8 @@ class UpgradePackageTest(CpuTestBase):
     # Add test-specific mocks/stubs
 
     # Replay script
-    mocked_upgrader._FindUpstreamCPV(pinfo['package']).AndReturn(stable_up)
-    mocked_upgrader._FindUpstreamCPV(pinfo['package'],
+    mocked_upgrader._FindUpstreamCPV(pinfo.package).AndReturn(stable_up)
+    mocked_upgrader._FindUpstreamCPV(pinfo.package,
                                      unstable_ok=True).AndReturn(latest_up)
     if upstream_cpv:
       mocked_upgrader._PkgUpgradeRequested(pinfo).AndReturn(upgrade_requested)
@@ -2128,17 +2180,17 @@ class UpgradePackageTest(CpuTestBase):
     self.mox.VerifyAll()
 
     if upstream_cpv:
-      self.assertEquals(upstream_cpv, pinfo['upstream_cpv'])
+      self.assertEquals(upstream_cpv, pinfo.upstream_cpv)
 
-      if upgrade_requested and (upstream_cpv != pinfo['cpv'] or force):
-        self.assertEquals(upstream_cpv, pinfo['upgraded_cpv'])
+      if upgrade_requested and (upstream_cpv != pinfo.cpv or force):
+        self.assertEquals(upstream_cpv, pinfo.upgraded_cpv)
       else:
-        self.assertTrue(pinfo['upgraded_cpv'] is None)
+        self.assertTrue(pinfo.upgraded_cpv is None)
     else:
-      self.assertTrue(pinfo['upstream_cpv'] is None)
-      self.assertTrue(pinfo['upgraded_cpv'] is None)
-    self.assertEquals(stable_up, pinfo['stable_upstream_cpv'])
-    self.assertEquals(latest_up, pinfo['latest_upstream_cpv'])
+      self.assertTrue(pinfo.upstream_cpv is None)
+      self.assertTrue(pinfo.upgraded_cpv is None)
+    self.assertEquals(stable_up, pinfo.stable_upstream_cpv)
+    self.assertEquals(latest_up, pinfo.latest_upstream_cpv)
 
     return result
 
@@ -2150,10 +2202,10 @@ class UpgradePackageTest(CpuTestBase):
   # 5) Upgrade needed or not (current)
 
   def testUpgradePackageOutdatedRequestedStable(self):
-    pinfo = {'cpv': 'foo/bar-2',
-             'package': 'foo/bar',
-             'upstream_cpv': None,
-             }
+    pinfo = cpu.PInfo(cpv='foo/bar-2',
+                      package='foo/bar',
+                      upstream_cpv=None,
+                      )
     result = self._TestUpgradePackage(pinfo,
                                       upstream_cpv='foo/bar-3',
                                       upstream_cmp=1, # outdated
@@ -2167,10 +2219,10 @@ class UpgradePackageTest(CpuTestBase):
     self.assertTrue(result)
 
   def testUpgradePackageOutdatedRequestedUnstable(self):
-    pinfo = {'cpv': 'foo/bar-2',
-             'package': 'foo/bar',
-             'upstream_cpv': None,
-             }
+    pinfo = cpu.PInfo(cpv='foo/bar-2',
+                      package='foo/bar',
+                      upstream_cpv=None,
+                      )
     result = self._TestUpgradePackage(pinfo,
                                       upstream_cpv='foo/bar-5',
                                       upstream_cmp=1, # outdated
@@ -2184,10 +2236,10 @@ class UpgradePackageTest(CpuTestBase):
     self.assertTrue(result)
 
   def testUpgradePackageOutdatedRequestedStableSpecified(self):
-    pinfo = {'cpv': 'foo/bar-2',
-             'package': 'foo/bar',
-             'upstream_cpv': 'foo/bar-4',
-             }
+    pinfo = cpu.PInfo(cpv='foo/bar-2',
+                      package='foo/bar',
+                      upstream_cpv='foo/bar-4',
+                      )
     result = self._TestUpgradePackage(pinfo,
                                       upstream_cpv='foo/bar-4',
                                       upstream_cmp=1, # outdated
@@ -2201,10 +2253,10 @@ class UpgradePackageTest(CpuTestBase):
     self.assertTrue(result)
 
   def testUpgradePackageCurrentRequestedStable(self):
-    pinfo = {'cpv': 'foo/bar-3',
-             'package': 'foo/bar',
-             'upstream_cpv': None,
-             }
+    pinfo = cpu.PInfo(cpv='foo/bar-3',
+                      package='foo/bar',
+                      upstream_cpv=None,
+                      )
     result = self._TestUpgradePackage(pinfo,
                                       upstream_cpv='foo/bar-3',
                                       upstream_cmp=0, # current
@@ -2218,10 +2270,10 @@ class UpgradePackageTest(CpuTestBase):
     self.assertFalse(result)
 
   def testUpgradePackageCurrentRequestedStableForce(self):
-    pinfo = {'cpv': 'foo/bar-3',
-             'package': 'foo/bar',
-             'upstream_cpv': 'foo/bar-3',
-             }
+    pinfo = cpu.PInfo(cpv='foo/bar-3',
+                      package='foo/bar',
+                      upstream_cpv='foo/bar-3',
+                      )
     result = self._TestUpgradePackage(pinfo,
                                       upstream_cpv='foo/bar-3',
                                       upstream_cmp=0, # current
@@ -2235,10 +2287,10 @@ class UpgradePackageTest(CpuTestBase):
     self.assertTrue(result)
 
   def testUpgradePackageOutdatedStable(self):
-    pinfo = {'cpv': 'foo/bar-2',
-             'package': 'foo/bar',
-             'upstream_cpv': None,
-             }
+    pinfo = cpu.PInfo(cpv='foo/bar-2',
+                      package='foo/bar',
+                      upstream_cpv=None,
+                      )
     result = self._TestUpgradePackage(pinfo,
                                       upstream_cpv='foo/bar-3',
                                       upstream_cmp=1, # outdated
@@ -2252,10 +2304,10 @@ class UpgradePackageTest(CpuTestBase):
     self.assertFalse(result)
 
   def testUpgradePackageOutdatedRequestedStableStaged(self):
-    pinfo = {'cpv': 'foo/bar-2',
-             'package': 'foo/bar',
-             'upstream_cpv': None,
-             }
+    pinfo = cpu.PInfo(cpv='foo/bar-2',
+                      package='foo/bar',
+                      upstream_cpv=None,
+                      )
     result = self._TestUpgradePackage(pinfo,
                                       upstream_cpv='foo/bar-3',
                                       upstream_cmp=1, # outdated
@@ -2269,10 +2321,10 @@ class UpgradePackageTest(CpuTestBase):
     self.assertTrue(result)
 
   def testUpgradePackageOutdatedRequestedUnstableStaged(self):
-    pinfo = {'cpv': 'foo/bar-2',
-             'package': 'foo/bar',
-             'upstream_cpv': None,
-             }
+    pinfo = cpu.PInfo(cpv='foo/bar-2',
+                      package='foo/bar',
+                      upstream_cpv=None,
+                      )
     result = self._TestUpgradePackage(pinfo,
                                       upstream_cpv='foo/bar-5',
                                       upstream_cmp=1, # outdated
@@ -2294,14 +2346,14 @@ class VerifyPackageTest(CpuTestBase):
   def _TestVerifyPackageUpgrade(self, pinfo, unmasked, stable):
     cmdargs = []
     mocked_upgrader = self._MockUpgrader(cmdargs=cmdargs)
-    was_overwrite = pinfo['cpv_cmp_upstream'] == 0
+    was_overwrite = pinfo.cpv_cmp_upstream == 0
 
     # Add test-specific mocks/stubs
 
     # Replay script
-    mocked_upgrader._GetMaskBits(pinfo['upgraded_cpv']
+    mocked_upgrader._GetMaskBits(pinfo.upgraded_cpv
                                  ).AndReturn((unmasked, stable))
-    mocked_upgrader._VerifyEbuildOverlay(pinfo['upgraded_cpv'],
+    mocked_upgrader._VerifyEbuildOverlay(pinfo.upgraded_cpv,
                                          'portage-stable',
                                          stable, was_overwrite)
     self.mox.ReplayAll()
@@ -2310,15 +2362,14 @@ class VerifyPackageTest(CpuTestBase):
     cpu.Upgrader._VerifyPackageUpgrade(mocked_upgrader, pinfo)
     self.mox.VerifyAll()
 
-    self.assertEquals(unmasked, pinfo['upgraded_unmasked'])
-    self.assertEquals(stable, pinfo['upgraded_stable'])
+    self.assertEquals(unmasked, pinfo.upgraded_unmasked)
+    self.assertEquals(stable, pinfo.upgraded_stable)
 
   def testVerifyPackageUpgrade(self):
-    pinfo = {'upgraded_cpv': 'foo/bar-3',
-             }
+    pinfo = cpu.PInfo(upgraded_cpv='foo/bar-3')
 
     for cpv_cmp_upstream in (0, 1):
-      pinfo['cpv_cmp_upstream'] = cpv_cmp_upstream
+      pinfo.cpv_cmp_upstream = cpv_cmp_upstream
       self._TestVerifyPackageUpgrade(pinfo, True, True)
       self._TestVerifyPackageUpgrade(pinfo, True, False)
       self._TestVerifyPackageUpgrade(pinfo, False, True)
@@ -2683,7 +2734,7 @@ class CommitTest(CpuTestBase):
 class GetCurrentVersionsTest(CpuTestBase):
   """Test Upgrader._GetCurrentVersions"""
 
-  def _TestGetCurrentVersionsLocalCpv(self, target_infolist):
+  def _TestGetCurrentVersionsLocalCpv(self, target_pinfolist):
     cmdargs = []
     mocked_upgrader = self._MockUpgrader(cmdargs=cmdargs,
                                          _curr_board=None)
@@ -2693,8 +2744,8 @@ class GetCurrentVersionsTest(CpuTestBase):
     self.mox.StubOutWithMock(cpu.Upgrader, '_GetPreOrderDepGraph')
 
     # Replay script
-    packages = [pinfo['package'] for pinfo in target_infolist]
-    targets = ['=' + pinfo['cpv'] for pinfo in target_infolist]
+    packages = [pinfo.package for pinfo in target_pinfolist]
+    targets = ['=' + pinfo.cpv for pinfo in target_pinfolist]
     pm_argv = cpu.Upgrader._GenParallelEmergeArgv(mocked_upgrader, targets)
     pm_argv.append('--root-deps')
     verifier = _GenDepsGraphVerifier(packages)
@@ -2704,7 +2755,7 @@ class GetCurrentVersionsTest(CpuTestBase):
     self.mox.ReplayAll()
 
     # Verify
-    result = cpu.Upgrader._GetCurrentVersions(mocked_upgrader, target_infolist)
+    result = cpu.Upgrader._GetCurrentVersions(mocked_upgrader, target_pinfolist)
     self.mox.VerifyAll()
 
     self._TearDownPlayground()
@@ -2712,24 +2763,24 @@ class GetCurrentVersionsTest(CpuTestBase):
     return result
 
   def testGetCurrentVersionsTwoPkgs(self):
-    target_infolist = [{'package': 'dev-libs/A', 'cpv': 'dev-libs/A-2'},
-                       {'package': 'dev-libs/D', 'cpv': 'dev-libs/D-3'},
-                       ]
-    self._TestGetCurrentVersionsLocalCpv(target_infolist)
+    target_pinfolist = [cpu.PInfo(package='dev-libs/A', cpv='dev-libs/A-2'),
+                        cpu.PInfo(package='dev-libs/D', cpv='dev-libs/D-3'),
+                        ]
+    self._TestGetCurrentVersionsLocalCpv(target_pinfolist)
 
   def testGetCurrentVersionsOnePkgB(self):
-    target_infolist = [{'package': 'dev-libs/B', 'cpv': 'dev-libs/B-2'},
-                       ]
-    self._TestGetCurrentVersionsLocalCpv(target_infolist)
+    target_pinfolist = [cpu.PInfo(package='dev-libs/B', cpv='dev-libs/B-2'),
+                        ]
+    self._TestGetCurrentVersionsLocalCpv(target_pinfolist)
 
   def testGetCurrentVersionsOnePkgLibcros(self):
-    target_infolist = [{'package': 'chromeos-base/libcros',
-                        'cpv': 'chromeos-base/libcros-1',
-                        },
-                       ]
-    self._TestGetCurrentVersionsLocalCpv(target_infolist)
+    target_pinfolist = [cpu.PInfo(package='chromeos-base/libcros',
+                                  cpv='chromeos-base/libcros-1',
+                                  ),
+                        ]
+    self._TestGetCurrentVersionsLocalCpv(target_pinfolist)
 
-  def _TestGetCurrentVersionsPackageOnly(self, target_infolist):
+  def _TestGetCurrentVersionsPackageOnly(self, target_pinfolist):
     cmdargs = []
     mocked_upgrader = self._MockUpgrader(cmdargs=cmdargs,
                                          _curr_board=None)
@@ -2739,7 +2790,7 @@ class GetCurrentVersionsTest(CpuTestBase):
     self.mox.StubOutWithMock(cpu.Upgrader, '_GetPreOrderDepGraph')
 
     # Replay script
-    packages = [pinfo['package'] for pinfo in target_infolist]
+    packages = [pinfo.package for pinfo in target_pinfolist]
     pm_argv = cpu.Upgrader._GenParallelEmergeArgv(mocked_upgrader, packages)
     pm_argv.append('--root-deps')
     mocked_upgrader._GenParallelEmergeArgv(packages).AndReturn(pm_argv)
@@ -2748,7 +2799,7 @@ class GetCurrentVersionsTest(CpuTestBase):
     self.mox.ReplayAll()
 
     # Verify
-    result = cpu.Upgrader._GetCurrentVersions(mocked_upgrader, target_infolist)
+    result = cpu.Upgrader._GetCurrentVersions(mocked_upgrader, target_pinfolist)
     self.mox.VerifyAll()
 
     self._TearDownPlayground()
@@ -2756,18 +2807,14 @@ class GetCurrentVersionsTest(CpuTestBase):
     return result
 
   def testGetCurrentVersionsWorld(self):
-    target_infolist = [{'package': 'world',
-                        'cpv': 'world',
-                        },
-                       ]
-    self._TestGetCurrentVersionsPackageOnly(target_infolist)
+    target_pinfolist = [cpu.PInfo(package='world', cpv='world'),
+                        ]
+    self._TestGetCurrentVersionsPackageOnly(target_pinfolist)
 
   def testGetCurrentVersionsLocalOnlyB(self):
-    target_infolist = [{'package': 'dev-libs/B',
-                        'cpv': None,
-                        },
-                       ]
-    self._TestGetCurrentVersionsPackageOnly(target_infolist)
+    target_pinfolist = [cpu.PInfo(package='dev-libs/B', cpv=None),
+                        ]
+    self._TestGetCurrentVersionsPackageOnly(target_pinfolist)
 
 ################################
 ### ResolveAndVerifyArgsTest ###
@@ -2793,12 +2840,12 @@ class ResolveAndVerifyArgsTest(CpuTestBase):
                                                   upgrade_mode=upgrade_mode)
     self.mox.VerifyAll()
 
-    self.assertEquals(result, [{'user_arg': 'world',
-                                'package': 'world',
-                                'package_name': 'world',
-                                'category': None,
-                                'cpv': 'world',
-                                }])
+    self.assertEquals(result, [cpu.PInfo(user_arg='world',
+                                         package='world',
+                                         package_name='world',
+                                         category=None,
+                                         cpv='world',
+                                         )])
 
   def testResolveAndVerifyArgsWorldUpgradeMode(self):
     self._TestResolveAndVerifyArgsWorld(True)
@@ -2806,7 +2853,7 @@ class ResolveAndVerifyArgsTest(CpuTestBase):
   def testResolveAndVerifyArgsWorldStatusMode(self):
     self._TestResolveAndVerifyArgsWorld(False)
 
-  def _TestResolveAndVerifyArgsNonWorld(self, argdicts, cmdargs=[],
+  def _TestResolveAndVerifyArgsNonWorld(self, pinfolist, cmdargs=[],
                                         error=None, error_checker=None):
     mocked_upgrader = self._MockUpgrader(cmdargs=cmdargs,
                                          _curr_board=None)
@@ -2816,10 +2863,10 @@ class ResolveAndVerifyArgsTest(CpuTestBase):
 
     # Replay script
     args = []
-    for argdict in argdicts:
-      arg = argdict['user_arg']
-      local_cpv = argdict.get('cpv', None)
-      upstream_cpv = argdict.get('upstream_cpv', None)
+    for pinfo in pinfolist:
+      arg = pinfo.user_arg
+      local_cpv = pinfo.cpv
+      upstream_cpv = pinfo.upstream_cpv
       args.append(arg)
 
       catpkg = cpu.Upgrader._GetCatPkgFromCpv(arg)
@@ -2838,7 +2885,7 @@ class ResolveAndVerifyArgsTest(CpuTestBase):
 
       any_cpv = local_cpv if local_cpv else upstream_cpv
       if any_cpv:
-        mocked_upgrader._FillInfoFromCPV(mox.IsA(dict), any_cpv)
+        mocked_upgrader._FillPInfoFromCPV(mox.IsA(cpu.PInfo), any_cpv)
 
     self.mox.ReplayAll()
 
@@ -2860,30 +2907,30 @@ class ResolveAndVerifyArgsTest(CpuTestBase):
     return result
 
   def testResolveAndVerifyArgsNonWorldUpgrade(self):
-    args = [{'user_arg': 'dev-libs/B',
-             'cpv': 'dev-libs/B-1',
-             'upstream_cpv': 'dev-libs/B-2',
-             },
-            ]
+    pinfolist = [cpu.PInfo(user_arg='dev-libs/B',
+                           cpv='dev-libs/B-1',
+                           upstream_cpv='dev-libs/B-2',
+                           ),
+                 ]
     cmdargs = ['--upgrade', '--unstable-ok']
-    result = self._TestResolveAndVerifyArgsNonWorld(args, cmdargs)
-    self.assertEquals(result, args)
+    result = self._TestResolveAndVerifyArgsNonWorld(pinfolist, cmdargs)
+    self.assertEquals(result, pinfolist)
 
   def testResolveAndVerifyArgsNonWorldUpgradeSpecificVer(self):
-    args = [{'user_arg': 'dev-libs/B-2',
-             'cpv': 'dev-libs/B-1',
-             'upstream_cpv': 'dev-libs/B-2',
-             },
-            ]
+    pinfolist = [cpu.PInfo(user_arg='dev-libs/B-2',
+                           cpv='dev-libs/B-1',
+                           upstream_cpv='dev-libs/B-2',
+                           ),
+                 ]
     cmdargs = ['--upgrade', '--unstable-ok']
-    result = self._TestResolveAndVerifyArgsNonWorld(args, cmdargs)
-    self.assertEquals(result, args)
+    result = self._TestResolveAndVerifyArgsNonWorld(pinfolist, cmdargs)
+    self.assertEquals(result, pinfolist)
 
   def testResolveAndVerifyArgsNonWorldUpgradeSpecificVerNotFoundStable(self):
-    args = [{'user_arg': 'dev-libs/B-2',
-             'cpv': 'dev-libs/B-1',
-             },
-            ]
+    pinfolist = [cpu.PInfo(user_arg='dev-libs/B-2',
+                           cpv='dev-libs/B-1',
+                           ),
+                 ]
     cmdargs = ['--upgrade']
 
     def _error_checker(exception):
@@ -2893,14 +2940,15 @@ class ResolveAndVerifyArgsTest(CpuTestBase):
       msg = 'No mention of "%s" in error message: %s' % (phrase, text)
       return (0 <= text.find(phrase), msg)
 
-    self._TestResolveAndVerifyArgsNonWorld(args, cmdargs, error=RuntimeError,
+    self._TestResolveAndVerifyArgsNonWorld(pinfolist, cmdargs,
+                                           error=RuntimeError,
                                            error_checker=_error_checker)
 
   def testResolveAndVerifyArgsNonWorldUpgradeSpecificVerNotFoundUnstable(self):
-    args = [{'user_arg': 'dev-libs/B-2',
-             'cpv': 'dev-libs/B-1',
-             },
-            ]
+    pinfolist = [cpu.PInfo(user_arg='dev-libs/B-2',
+                           cpv='dev-libs/B-1',
+                           ),
+                 ]
     cmdargs = ['--upgrade', '--unstable-ok']
 
     def _error_checker(exception):
@@ -2910,33 +2958,34 @@ class ResolveAndVerifyArgsTest(CpuTestBase):
       msg = 'Error message expected to start with "%s": %s' % (phrase, text)
       return (text.startswith(phrase), msg)
 
-    self._TestResolveAndVerifyArgsNonWorld(args, cmdargs, error=RuntimeError,
+    self._TestResolveAndVerifyArgsNonWorld(pinfolist, cmdargs,
+                                           error=RuntimeError,
                                            error_checker=_error_checker)
 
   def testResolveAndVerifyArgsNonWorldLocalOnly(self):
-    args = [{'user_arg': 'dev-libs/B',
-             'cpv': 'dev-libs/B-1',
-             },
-            ]
+    pinfolist = [cpu.PInfo(user_arg='dev-libs/B',
+                           cpv='dev-libs/B-1',
+                           ),
+                 ]
     cmdargs = ['--upgrade', '--unstable-ok']
-    result = self._TestResolveAndVerifyArgsNonWorld(args, cmdargs)
-    self.assertEquals(result, args)
+    result = self._TestResolveAndVerifyArgsNonWorld(pinfolist, cmdargs)
+    self.assertEquals(result, pinfolist)
 
   def testResolveAndVerifyArgsNonWorldUpstreamOnly(self):
-    args = [{'user_arg': 'dev-libs/B',
-             'upstream_cpv': 'dev-libs/B-2',
-             },
-            ]
+    pinfolist = [cpu.PInfo(user_arg='dev-libs/B',
+                           upstream_cpv='dev-libs/B-2',
+                           ),
+                 ]
     cmdargs = ['--upgrade', '--unstable-ok']
-    result = self._TestResolveAndVerifyArgsNonWorld(args, cmdargs)
-    self.assertEquals(result, args)
+    result = self._TestResolveAndVerifyArgsNonWorld(pinfolist, cmdargs)
+    self.assertEquals(result, pinfolist)
 
   def testResolveAndVerifyArgsNonWorldNeither(self):
-    args = [{'user_arg': 'dev-libs/B',
-             },
-            ]
+    pinfolist = [cpu.PInfo(user_arg='dev-libs/B'),
+                 ]
     cmdargs = ['--upgrade', '--unstable-ok']
-    self._TestResolveAndVerifyArgsNonWorld(args, cmdargs, error=RuntimeError)
+    self._TestResolveAndVerifyArgsNonWorld(pinfolist, cmdargs,
+                                           error=RuntimeError)
 
   def testResolveAndVerifyArgsNonWorldStatusSpecificVer(self):
     """Exception because specific cpv arg not allowed without --ugprade."""

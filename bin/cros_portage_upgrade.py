@@ -33,15 +33,12 @@ UPGRADED = 'Upgraded'
 # Files we do not include in our upgrades by convention.
 BLACKLISTED_FILES = set(['Manifest', 'ChangeLog', 'metadata.xml'])
 
-# TODO(mtennant): Use this class to replace the 'info' dictionary used
-# throughout. In the meantime, it simply serves as documentation for
-# the values in that dictionary.
 class PInfo(object):
   """Class to accumulate package info during upgrade process.
 
   This class is basically a formalized dictionary."""
 
-  __slots__ = [
+  __slots__ = (
       'category',            # Package category only
       # TODO(mtennant): Rename 'cpv' to 'curr_cpv' or similar.
       'cpv',                 # Current full cpv (revision included)
@@ -60,7 +57,32 @@ class PInfo(object):
       'upstream_cpv',        # latest/stable upstream cpv according to request
       'user_arg',            # Original user arg for this pkg, if applicable
       'version_rev',         # Just revision (e.g. 'r1').  '' if no revision
-      ]
+      )
+
+  # Any deriving classes must maintain this cumulative attribute list.
+  __attrlist__ = __slots__
+
+  def __init__(self, **kwargs):
+    """Initialize all attributes to None unless specified in |kwargs|."""
+    for attr in self.__attrlist__:
+      setattr(self, attr, kwargs.get(attr))
+
+  def __eq__(self, other):
+    """Equality support.  Used in unittests."""
+
+    if type(self) != type(other):
+      return False
+
+    no_attr = object()
+    for attr in self.__attrlist__:
+      if getattr(self, attr, no_attr) != getattr(other, attr, no_attr):
+        return False
+
+    return True
+
+  def __ne__(self, other):
+    """Inequality support for completeness."""
+    return not self == other
 
 class Upgrader(object):
   """A class to perform various tasks related to updating Portage packages."""
@@ -198,13 +220,13 @@ class Upgrader(object):
     raise RuntimeError('Unable to determine whether %s is on a branch.' %
                        self._stable_repo)
 
-  def _PkgUpgradeRequested(self, info):
-    """Return True if upgrade of pkg in |info| hash was requested by user."""
+  def _PkgUpgradeRequested(self, pinfo):
+    """Return True if upgrade of pkg in |pinfo| was requested by user."""
     if self._upgrade_deep:
       return True
 
     if self._upgrade:
-      return bool('user_arg' in info)
+      return bool(pinfo.user_arg)
 
     return False
 
@@ -651,14 +673,16 @@ class Upgrader(object):
       raise RuntimeError('Cannot find upstream ebuild at "%s"' %
                          upstream_ebuild_path)
 
-    # If pkgdir already exists, remove everything in it.
+    # If pkgdir already exists, remove it and everything in it.
+    # Note that git will remove a parent directory when it removes
+    # the last item in the directory.
     if os.path.exists(pkgdir):
       items = os.listdir(pkgdir)
       for item in items:
         src = os.path.join(upstream_pkgdir, item)
         self._RunGit(pkgdir, 'rm -rf ' + item, redirect_stdout=True)
-    else:
-      os.makedirs(pkgdir)
+
+    os.makedirs(pkgdir)
 
     # Grab all non-blacklisted, non-ebuilds from upstream plus the specific
     # ebuild requested.
@@ -710,33 +734,33 @@ class Upgrader(object):
     raise RuntimeError('Cannot find upstream "%s".  Looked at "%s"' %
                        (eclass, upstream_path))
 
-  def _GetPackageUpgradeState(self, info):
-    """Return state value for package in |info|."""
+  def _GetPackageUpgradeState(self, pinfo):
+    """Return state value for package in |pinfo|."""
     # See whether this specific cpv exists upstream.
-    cpv = info['cpv']
+    cpv = pinfo.cpv
     cpv_exists_upstream = bool(self._FindUpstreamCPV(cpv, unstable_ok=True))
 
-    # The value in info['cpv_cmp_upstream'] represents a comparison of cpv
+    # The value in pinfo.cpv_cmp_upstream represents a comparison of cpv
     # version and the upstream version, where:
     # 0 = current, >0 = outdated, <0 = futuristic!
 
     # Convention is that anything not in portage overlay has been altered.
-    overlay = info['overlay']
+    overlay = pinfo.overlay
     locally_patched = (overlay != NOT_APPLICABLE and
                        overlay != self.UPSTREAM_OVERLAY_NAME and
                        overlay != self.STABLE_OVERLAY_NAME)
     locally_duplicated = locally_patched and cpv_exists_upstream
 
     # Gather status details for this package
-    if info['cpv_cmp_upstream'] is None:
+    if pinfo.cpv_cmp_upstream is None:
       # No upstream cpv to compare to (although this might include a
       # a restriction to only stable upstream versions).  This is concerning
       # if the package is coming from 'portage' or 'portage-stable' overlays.
-      if locally_patched and info['latest_upstream_cpv'] is None:
+      if locally_patched and pinfo.latest_upstream_cpv is None:
         state = utable.UpgradeTable.STATE_LOCAL_ONLY
       else:
         state = utable.UpgradeTable.STATE_UNKNOWN
-    elif info['cpv_cmp_upstream'] > 0:
+    elif pinfo.cpv_cmp_upstream > 0:
       if locally_duplicated:
         state = utable.UpgradeTable.STATE_NEEDS_UPGRADE_AND_DUPLICATED
       elif locally_patched:
@@ -753,10 +777,10 @@ class Upgrader(object):
     return state
 
   # TODO(mtennant): Generate output from finished table instead.
-  def _PrintPackageLine(self, info):
+  def _PrintPackageLine(self, pinfo):
     """Print a brief one-line report of package status."""
-    upstream_cpv = info['upstream_cpv']
-    if info['upgraded_cpv']:
+    upstream_cpv = pinfo.upstream_cpv
+    if pinfo.upgraded_cpv:
       action_stat = ' (UPGRADED)'
     else:
       action_stat = ''
@@ -771,22 +795,22 @@ class Upgrader(object):
                utable.UpgradeTable.STATE_PATCHED: ' <- %s' % upstream_cpv,
                utable.UpgradeTable.STATE_DUPLICATED: ' (locally duplicated)',
                utable.UpgradeTable.STATE_CURRENT: ' (current)',
-               }[info['state']]
+               }[pinfo.state]
 
-    oper.Info('[%s] %s%s%s' % (info['overlay'], info['cpv'],
+    oper.Info('[%s] %s%s%s' % (pinfo.overlay, pinfo.cpv,
                                up_stat, action_stat))
 
-  def _AppendPackageRow(self, info):
-    """Add a row to status table for the package in |info|."""
-    cpv = info['cpv']
-    upgraded_cpv = info['upgraded_cpv']
+  def _AppendPackageRow(self, pinfo):
+    """Add a row to status table for the package in |pinfo|."""
+    cpv = pinfo.cpv
+    upgraded_cpv = pinfo.upgraded_cpv
 
     upgraded_ver = ''
     if upgraded_cpv:
       upgraded_ver = Upgrader._GetVerRevFromCpv(upgraded_cpv)
 
       # "~" Prefix means the upgraded version is not stable on this arch.
-      if not info['upgraded_stable']:
+      if not pinfo.upgraded_stable:
         upgraded_ver = '~' + upgraded_ver
 
     # Assemble 'depends on' and 'required by' strings.
@@ -800,20 +824,20 @@ class Upgrader(object):
       usedlist = sorted([p for p in usedset])
       usedstr = ' '.join(usedlist)
 
-    stable_up_ver = Upgrader._GetVerRevFromCpv(info['stable_upstream_cpv'])
+    stable_up_ver = Upgrader._GetVerRevFromCpv(pinfo.stable_upstream_cpv)
     if not stable_up_ver:
       stable_up_ver = NOT_APPLICABLE
-    latest_up_ver = Upgrader._GetVerRevFromCpv(info['latest_upstream_cpv'])
+    latest_up_ver = Upgrader._GetVerRevFromCpv(pinfo.latest_upstream_cpv)
     if not latest_up_ver:
       latest_up_ver = NOT_APPLICABLE
 
-    row = {self._curr_table.COL_PACKAGE: info['package'],
-           self._curr_table.COL_SLOT: info['slot'],
-           self._curr_table.COL_OVERLAY: info['overlay'],
-           self._curr_table.COL_CURRENT_VER: info['version_rev'],
+    row = {self._curr_table.COL_PACKAGE: pinfo.package,
+           self._curr_table.COL_SLOT: pinfo.slot,
+           self._curr_table.COL_OVERLAY: pinfo.overlay,
+           self._curr_table.COL_CURRENT_VER: pinfo.version_rev,
            self._curr_table.COL_STABLE_UPSTREAM_VER: stable_up_ver,
            self._curr_table.COL_LATEST_UPSTREAM_VER: latest_up_ver,
-           self._curr_table.COL_STATE: info['state'],
+           self._curr_table.COL_STATE: pinfo.state,
            self._curr_table.COL_DEPENDS_ON: depsstr,
            self._curr_table.COL_USED_BY: usedstr,
            self._curr_table.COL_TARGET: ' '.join(self._targets),
@@ -826,87 +850,87 @@ class Upgrader(object):
 
     self._curr_table.AppendRow(row)
 
-  def _UpgradePackage(self, info):
+  def _UpgradePackage(self, pinfo):
     """Gathers upgrade status for pkg, performs upgrade if requested.
 
     The upgrade is performed only if the package is outdated and --upgrade
     is specified.
 
-    The |info| hash must have the following entries:
+    The |pinfo| must have the following entries:
     package, category, package_name
     cpv must exist but can be None
 
-    Regardless, the following entries in |info| dict are filled in:
+    Regardless, the following attributes in |pinfo| are filled in:
     stable_upstream_cpv
     latest_upstream_cpv
     upstream_cpv (one of the above, depending on --stable-only option)
     upgrade_cpv (if upgrade performed)
     """
-    cpv = info['cpv']
-    catpkg = info['package']
-    info['stable_upstream_cpv'] = self._FindUpstreamCPV(catpkg)
-    info['latest_upstream_cpv'] = self._FindUpstreamCPV(catpkg,
-                                                        unstable_ok=True)
+    cpv = pinfo.cpv
+    catpkg = pinfo.package
+    pinfo.stable_upstream_cpv = self._FindUpstreamCPV(catpkg)
+    pinfo.latest_upstream_cpv = self._FindUpstreamCPV(catpkg,
+                                                      unstable_ok=True)
 
     # The upstream version can be either latest stable or latest overall,
     # or specified explicitly by the user at the command line.  In the latter
     # case, 'upstream_cpv' will already be set.
-    if not info['upstream_cpv']:
+    if not pinfo.upstream_cpv:
       if not self._unstable_ok:
-        info['upstream_cpv'] = info['stable_upstream_cpv']
+        pinfo.upstream_cpv = pinfo.stable_upstream_cpv
       else:
-        info['upstream_cpv'] = info['latest_upstream_cpv']
+        pinfo.upstream_cpv = pinfo.latest_upstream_cpv
 
     # Perform the actual upgrade, if requested.
-    info['cpv_cmp_upstream'] = None
-    info['upgraded_cpv'] = None
-    if info['upstream_cpv']:
+    pinfo.cpv_cmp_upstream = None
+    pinfo.upgraded_cpv = None
+    if pinfo.upstream_cpv:
       # cpv_cmp_upstream values: 0 = current, >0 = outdated, <0 = futuristic!
-      info['cpv_cmp_upstream'] = Upgrader._CmpCpv(info['upstream_cpv'], cpv)
+      pinfo.cpv_cmp_upstream = Upgrader._CmpCpv(pinfo.upstream_cpv, cpv)
 
       # Determine whether upgrade of this package is requested.
-      if self._PkgUpgradeRequested(info):
-        if self._PkgUpgradeStaged(info['upstream_cpv']):
+      if self._PkgUpgradeRequested(pinfo):
+        if self._PkgUpgradeStaged(pinfo.upstream_cpv):
           oper.Notice('Determined that %s is already staged.' %
-                      info['upstream_cpv'])
-          info['upgraded_cpv'] = info['upstream_cpv']
-        elif info['cpv_cmp_upstream'] > 0:
-          info['upgraded_cpv'] = self._CopyUpstreamPackage(info['upstream_cpv'])
-        elif info['cpv_cmp_upstream'] == 0:
+                      pinfo.upstream_cpv)
+          pinfo.upgraded_cpv = pinfo.upstream_cpv
+        elif pinfo.cpv_cmp_upstream > 0:
+          pinfo.upgraded_cpv = self._CopyUpstreamPackage(pinfo.upstream_cpv)
+        elif pinfo.cpv_cmp_upstream == 0:
           if self._force:
             oper.Notice('Forcing upgrade of existing %s.' %
-                        info['upstream_cpv'])
-            upgraded_cpv = self._CopyUpstreamPackage(info['upstream_cpv'])
-            info['upgraded_cpv'] = upgraded_cpv
+                        pinfo.upstream_cpv)
+            upgraded_cpv = self._CopyUpstreamPackage(pinfo.upstream_cpv)
+            pinfo.upgraded_cpv = upgraded_cpv
           else:
             oper.Warning('Not upgrading %s; it already exists in source.\n'
                          'To force upgrade of this version specify --force.' %
-                         info['upstream_cpv'])
+                         pinfo.upstream_cpv)
 
-    return bool(info['upgraded_cpv'])
+    return bool(pinfo.upgraded_cpv)
 
-  def _VerifyPackageUpgrade(self, info):
-    """Verify that the upgraded package in |info| passes checks."""
+  def _VerifyPackageUpgrade(self, pinfo):
+    """Verify that the upgraded package in |pinfo| passes checks."""
     # Verify that upgraded package can be emerged and save results.
-    (unmasked, stable) = self._GetMaskBits(info['upgraded_cpv'])
-    info['upgraded_unmasked'] = unmasked
-    info['upgraded_stable'] = stable
+    (unmasked, stable) = self._GetMaskBits(pinfo.upgraded_cpv)
+    pinfo.upgraded_unmasked = unmasked
+    pinfo.upgraded_stable = stable
 
-    self._VerifyEbuildOverlay(info['upgraded_cpv'], self.STABLE_OVERLAY_NAME,
-                              info['upgraded_stable'],
-                              info['cpv_cmp_upstream'] == 0)
+    self._VerifyEbuildOverlay(pinfo.upgraded_cpv, self.STABLE_OVERLAY_NAME,
+                              pinfo.upgraded_stable,
+                              pinfo.cpv_cmp_upstream == 0)
 
-  def _PackageReport(self, info):
-    """Report on whatever was done with package in |info|."""
+  def _PackageReport(self, pinfo):
+    """Report on whatever was done with package in |pinfo|."""
 
-    info['state'] = self._GetPackageUpgradeState(info)
+    pinfo.state = self._GetPackageUpgradeState(pinfo)
 
     if self._verbose:
       # Print a quick summary of package status.
-      self._PrintPackageLine(info)
+      self._PrintPackageLine(pinfo)
 
     # Add a row to status table for this package
-    self._AppendPackageRow(info)
+    self._AppendPackageRow(pinfo)
 
   def _ExtractUpgradedPkgs(self, upgrade_lines):
     """Extracts list of packages from standard commit |upgrade_lines|."""
@@ -992,13 +1016,13 @@ class Upgrader(object):
 
     return self._CreateCommitMessage(upgrade_lines, remaining_lines)
 
-  def _GiveEmergeResults(self, infolist):
+  def _GiveEmergeResults(self, pinfolist):
     """Summarize emerge checks, raise RuntimeError if there is a problem."""
 
-    upgraded_infos = [info for info in infolist if info['upgraded_cpv']]
-    upgraded_cpvs = [info['upgraded_cpv'] for info in upgraded_infos]
-    masked_cpvs = set([info['upgraded_cpv'] for info in upgraded_infos
-                       if not info['upgraded_unmasked']])
+    upgraded_pinfos = [pinfo for pinfo in pinfolist if pinfo.upgraded_cpv]
+    upgraded_cpvs = [pinfo.upgraded_cpv for pinfo in upgraded_pinfos]
+    masked_cpvs = set([pinfo.upgraded_cpv for pinfo in upgraded_pinfos
+                       if not pinfo.upgraded_unmasked])
 
     (ok, cmd, output) = self._AreEmergeable(upgraded_cpvs, self._unstable_ok)
 
@@ -1030,34 +1054,34 @@ class Upgrader(object):
                          'Address the emerge errors before continuing.' %
                          self._curr_board)
 
-  def _UpgradePackages(self, infolist):
-    """Given a list of cpv info maps, adds the upstream cpv to the infos."""
+  def _UpgradePackages(self, pinfolist):
+    """Given a list of cpv pinfos, adds the upstream cpv to the pinfos."""
     self._curr_table.Clear()
 
     try:
       upgrades_this_run = False
-      for info in infolist:
-        if self._UpgradePackage(info):
+      for pinfo in pinfolist:
+        if self._UpgradePackage(pinfo):
           self._upgrade_cnt += 1
           upgrades_this_run = True
 
       # The verification of upgrades needs to happen after upgrades are done.
-      # The reason is that it cannot be guaranteed that infolist is ordered such
-      # that dependencies are satisified after each individual upgrade, because
-      # one or more of the packages may only exist upstream.
-      for info in infolist:
-        if info['upgraded_cpv']:
-          self._VerifyPackageUpgrade(info)
+      # The reason is that it cannot be guaranteed that pinfolist is ordered
+      # such that dependencies are satisified after each individual upgrade,
+      # because one or more of the packages may only exist upstream.
+      for pinfo in pinfolist:
+        if pinfo.upgraded_cpv:
+          self._VerifyPackageUpgrade(pinfo)
 
-        self._PackageReport(info)
+        self._PackageReport(pinfo)
 
       if upgrades_this_run:
-        self._GiveEmergeResults(infolist)
+        self._GiveEmergeResults(pinfolist)
 
       if self._IsInUpgradeMode():
         # If there were any ebuilds staged before running this script, then
-        # make sure they were targeted in infolist.  If not, abort.
-        self._CheckStagedUpgrades(infolist)
+        # make sure they were targeted in pinfolist.  If not, abort.
+        self._CheckStagedUpgrades(pinfolist)
     except RuntimeError as ex:
       oper.Error(str(ex))
 
@@ -1068,8 +1092,8 @@ class Upgrader(object):
       # the issue (perhaps an edit to package.mask is required, or another
       # package must also be upgraded).
 
-  def _CheckStagedUpgrades(self, infolist):
-    """Raise RuntimeError if staged upgrades are not also in |infolist|."""
+  def _CheckStagedUpgrades(self, pinfolist):
+    """Raise RuntimeError if staged upgrades are not also in |pinfolist|."""
     # This deals with the situation where a previous upgrade run staged one or
     # more package upgrades, but did not commit them because it found an error
     # of some kind.  This is ok, as long as subsequent runs continue to request
@@ -1087,9 +1111,9 @@ class Upgrader(object):
         (_overlay, cat, _pn, pv) = self._SplitEBuildPath(ebuild)
         cpv = '%s/%s' % (cat, pv)
 
-        # Look for info with ['upgraded_cpv'] that matches
-        matching_infos = [i for i in infolist if i['upgraded_cpv'] == cpv]
-        if not matching_infos:
+        # Look for pinfo with upgraded_cpv that matches
+        matching_pinfos = [pi for pi in pinfolist if pi.upgraded_cpv == cpv]
+        if not matching_pinfos:
           err_msgs.append('Staged %s is not one of upgrade targets.' % ebuild)
 
       if err_msgs:
@@ -1122,42 +1146,42 @@ class Upgrader(object):
     except AttributeError:
       return None
 
-  def _CreateInfoFromCPV(self, cpv, cpv_key=None):
-    """Return a basic info object created from |cpv|."""
-    info = {}
-    self._FillInfoFromCPV(info, cpv, cpv_key)
-    return info
+  def _CreatePInfoFromCPV(self, cpv, cpv_key=None):
+    """Return a basic pinfo object created from |cpv|."""
+    pinfo = PInfo()
+    self._FillPInfoFromCPV(pinfo, cpv, cpv_key)
+    return pinfo
 
-  def _FillInfoFromCPV(self, info, cpv, cpv_key=None):
-    """Flesh out |info| from |cpv|."""
+  def _FillPInfoFromCPV(self, pinfo, cpv, cpv_key=None):
+    """Flesh out |pinfo| from |cpv|."""
     pkg = Upgrader._GetCatPkgFromCpv(cpv)
     (cat, pn) = pkg.split('/')
 
-    info['cpv'] = None
-    info['upstream_cpv'] = None
+    pinfo.cpv = None
+    pinfo.upstream_cpv = None
 
-    info['package'] = pkg
-    info['package_name'] = pn
-    info['category'] = cat
+    pinfo.package = pkg
+    pinfo.package_name = pn
+    pinfo.category = cat
 
     if cpv_key:
-      info[cpv_key] = cpv
+      setattr(pinfo, cpv_key, cpv)
 
-  def _GetCurrentVersions(self, target_infolist):
-    """Returns a list of pkg infos of the current package dependencies.
+  def _GetCurrentVersions(self, target_pinfolist):
+    """Returns a list of pkg pinfos of the current package dependencies.
 
     The dependencies are taken from giving the 'package' values in each
-    info of |target_infolist| to (parallel_)emerge.
+    pinfo of |target_pinfolist| to (parallel_)emerge.
 
     The returned list is ordered such that the dependencies of any mentioned
     package occur earlier in the list."""
     emerge_args = []
-    for info in target_infolist:
-      local_cpv = info['cpv']
+    for pinfo in target_pinfolist:
+      local_cpv = pinfo.cpv
       if local_cpv and local_cpv != WORLD_TARGET:
         emerge_args.append('=' + local_cpv)
       else:
-        emerge_args.append(info['package'])
+        emerge_args.append(pinfo.package)
     argv = self._GenParallelEmergeArgv(emerge_args)
 
     deps = parallel_emerge.DepGraphGenerator()
@@ -1178,56 +1202,60 @@ class Upgrader(object):
     cpvlist = Upgrader._GetPreOrderDepGraph(self._deps_graph)
     cpvlist.reverse()
 
-    infolist = []
+    pinfolist = []
     for cpv in cpvlist:
-      # See if this cpv was in target_infolist
+      # See if this cpv was in target_pinfolist
       is_target = False
-      for info in target_infolist:
-        if cpv == info['cpv']:
-          infolist.append(info)
+      for pinfo in target_pinfolist:
+        if cpv == pinfo.cpv:
+          pinfolist.append(pinfo)
           is_target = True
           break
       if not is_target:
-        infolist.append(self._CreateInfoFromCPV(cpv, cpv_key='cpv'))
+        pinfolist.append(self._CreatePInfoFromCPV(cpv, cpv_key='cpv'))
 
-    return infolist
+    return pinfolist
 
-  def _FinalizeLocalInfolist(self, orig_infolist):
-    """Filters and fleshes out |orig_infolist|, returns new list.
+  def _FinalizeLocalPInfolist(self, orig_pinfolist):
+    """Filters and fleshes out |orig_pinfolist|, returns new list.
 
-    Each info object is assumed to have entries for:
-    'cpv', 'package', 'package_name', 'category'
+    Each pinfo object is assumed to have entries for:
+    cpv, package, package_name, category
     """
-    infolist = []
-    for info in orig_infolist:
+    pinfolist = []
+    for pinfo in orig_pinfolist:
       # No need to report or try to upgrade chromeos-base packages.
-      if info['category'] == 'chromeos-base': continue
+      if pinfo.category == 'chromeos-base': continue
 
       dbapi = self._GetPortageDBAPI()
-      ebuild_path = dbapi.findname2(info['cpv'])[0]
+      ebuild_path = dbapi.findname2(pinfo.cpv)[0]
       (overlay, _cat, pn, pv) = self._SplitEBuildPath(ebuild_path)
       ver_rev = pv.replace(pn + '-', '')
-      slot, = dbapi.aux_get(info['cpv'], ['SLOT'])
+      slot, = dbapi.aux_get(pinfo.cpv, ['SLOT'])
 
-      info['slot'] = slot
-      info['overlay'] = overlay
-      info['version_rev'] = ver_rev
-      info['package_ver'] = pv
+      pinfo.slot = slot
+      pinfo.overlay = overlay
+      pinfo.version_rev = ver_rev
+      pinfo.package_ver = pv
 
-      infolist.append(info)
+      pinfolist.append(pinfo)
 
-    return infolist
+    return pinfolist
 
-  def _FinalizeUpstreamInfolist(self, infolist):
-    """Adds missing values in each upstream info in |infolist|, returns list."""
+  # TODO(mtennant): It is likely this method can be yanked now that all
+  # attributes in PInfo are initialized to something (None).
+  # TODO(mtennant): This should probably not return anything, since it
+  # also modifies the list that is passed in.
+  def _FinalizeUpstreamPInfolist(self, pinfolist):
+    """Adds missing values in upstream |pinfolist|, returns list."""
 
-    for info in infolist:
-      info['slot'] = NOT_APPLICABLE
-      info['overlay'] = NOT_APPLICABLE
-      info['version_rev'] = NOT_APPLICABLE
-      info['package_ver'] = NOT_APPLICABLE
+    for pinfo in pinfolist:
+      pinfo.slot = NOT_APPLICABLE
+      pinfo.overlay = NOT_APPLICABLE
+      pinfo.version_rev = NOT_APPLICABLE
+      pinfo.package_ver = NOT_APPLICABLE
 
-    return infolist
+    return pinfolist
 
   def _ResolveAndVerifyArgs(self, args, upgrade_mode):
     """Resolve |args| to full pkgs, and check validity of each.
@@ -1243,7 +1271,7 @@ class Upgrader(object):
 
     Any errors will raise a RuntimeError.
 
-    Return list of package infos, one for each argument.  Each will have:
+    Return list of package pinfos, one for each argument.  Each will have:
     'user_arg' = Original command line argument package was resolved from
     'package'  = Resolved category/package_name
     'package_name' = package_name
@@ -1253,18 +1281,18 @@ class Upgrader(object):
     Packages found upstream will also have:
     'upstream_cpv' = Upstream cpv
     """
-    infolist = []
+    pinfolist = []
 
     for arg in args:
-      info = {'user_arg': arg}
+      pinfo = PInfo(user_arg=arg)
 
       if arg == WORLD_TARGET:
         # The 'world' target is a special case.  Consider it a valid target
         # locally, but not an upstream package.
-        info['package'] = arg
-        info['package_name'] = arg
-        info['category'] = None
-        info['cpv'] = arg
+        pinfo.package = arg
+        pinfo.package_name = arg
+        pinfo.category = None
+        pinfo.cpv = arg
       else:
         catpkg = Upgrader._GetCatPkgFromCpv(arg)
         verrev = Upgrader._GetVerRevFromCpv(arg)
@@ -1304,21 +1332,21 @@ class Upgrader(object):
 
         any_cpv = local_cpv if local_cpv else upstream_cpv
         if any_cpv:
-          self._FillInfoFromCPV(info, any_cpv)
+          self._FillPInfoFromCPV(pinfo, any_cpv)
 
         if local_cpv and upstream_cpv:
           oper.Notice('Resolved "%s" to "%s" (local) and "%s" (upstream).' %
                       (arg, local_cpv, upstream_cpv))
-          info['cpv'] = local_cpv
-          info['upstream_cpv'] = upstream_cpv
+          pinfo.cpv = local_cpv
+          pinfo.upstream_cpv = upstream_cpv
         elif local_cpv:
           oper.Notice('Resolved "%s" to "%s" (local).' %
                       (arg, local_cpv))
-          info['cpv'] = local_cpv
+          pinfo.cpv = local_cpv
         elif upstream_cpv:
           oper.Notice('Resolved "%s" to "%s" (upstream).' %
                       (arg, upstream_cpv))
-          info['upstream_cpv'] = upstream_cpv
+          pinfo.upstream_cpv = upstream_cpv
         else:
           msg = ('Unable to resolve "%s" as a package either local or upstream.'
                  % arg)
@@ -1327,9 +1355,9 @@ class Upgrader(object):
 
           raise RuntimeError(msg)
 
-      infolist.append(info)
+      pinfolist.append(pinfo)
 
-    return infolist
+    return pinfolist
 
   def PrepareToRun(self):
     """Checkout upstream gentoo if necessary, and any other prep steps."""
@@ -1541,42 +1569,42 @@ class Upgrader(object):
       self._StashChanges()
 
     try:
-      target_infolist = self._ResolveAndVerifyArgs(self._args, upgrade_mode)
-      upstream_only_infolist = [i for i in target_infolist if not i['cpv']]
-      if not upgrade_mode and upstream_only_infolist:
+      target_pinfolist = self._ResolveAndVerifyArgs(self._args, upgrade_mode)
+      upstream_only_pinfolist = [pi for pi in target_pinfolist if not pi.cpv]
+      if not upgrade_mode and upstream_only_pinfolist:
         # This means that not all arguments were found in local source, which is
         # only allowed in upgrade mode.
         msg = ('The following packages were not found in current overlays'
                ' (but they do exist upstream):\n%s' %
-               '\n'.join([info['user_arg'] for info in upstream_only_infolist]))
+               '\n'.join([pinfo.user_arg for pinfo in upstream_only_pinfolist]))
         raise RuntimeError(msg)
 
-      full_infolist = None
+      full_pinfolist = None
 
       if self._upgrade:
         # Shallow upgrade mode only cares about targets as they were
         # found upstream.
-        full_infolist = self._FinalizeUpstreamInfolist(target_infolist)
+        full_pinfolist = self._FinalizeUpstreamPInfolist(target_pinfolist)
       else:
         # Assembling dependencies only matters in status report mode or
         # if --upgrade-deep was requested.
-        local_target_infolist = [i for i in target_infolist if i['cpv']]
-        if local_target_infolist:
+        local_target_pinfolist = [pi for pi in target_pinfolist if pi.cpv]
+        if local_target_pinfolist:
           oper.Notice('Assembling package dependencies.')
-          full_infolist = self._GetCurrentVersions(local_target_infolist)
-          full_infolist = self._FinalizeLocalInfolist(full_infolist)
+          full_pinfolist = self._GetCurrentVersions(local_target_pinfolist)
+          full_pinfolist = self._FinalizeLocalPInfolist(full_pinfolist)
         else:
-          full_infolist = []
+          full_pinfolist = []
 
         # Append any command line targets that were not found in current
         # overlays. The idea is that they will still be found upstream
         # for upgrading.
         if upgrade_mode:
-          tmp_list = self._FinalizeUpstreamInfolist(upstream_only_infolist)
-          full_infolist = full_infolist + tmp_list
+          tmp_list = self._FinalizeUpstreamPInfolist(upstream_only_pinfolist)
+          full_pinfolist = full_pinfolist + tmp_list
 
       self._UnstashAnyChanges()
-      self._UpgradePackages(full_infolist)
+      self._UpgradePackages(full_pinfolist)
 
     finally:
       self._DropAnyStashedChanges()
