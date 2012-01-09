@@ -419,6 +419,7 @@ add_config('arm-tegra2-commit-queue', arm, commit_queue,
 
 add_config('amd64-corei7-commit-queue', amd64, commit_queue,
   board='amd64-corei7',
+  paladin_builder_name='amd64 corei7 commit queue',
 )
 
 add_config('x86-mario-commit-queue', commit_queue, internal,
