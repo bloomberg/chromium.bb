@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -43,6 +43,7 @@ class FullscreenController : public base::RefCounted<FullscreenController> {
   // Querying.
   bool IsFullscreenForTab() const;
   bool IsFullscreenForTab(const content::WebContents* tab) const;
+  bool IsFullscreenForTabOrPending(const content::WebContents* tab) const;
 
   // Requests.
   void RequestToLockMouse(content::WebContents* tab);

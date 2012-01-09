@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -41,18 +41,26 @@ bool FullscreenController::IsFullscreenForTab() const {
 }
 
 bool FullscreenController::IsFullscreenForTab(const WebContents* tab) const {
+  if (IsFullscreenForTabOrPending(tab)) {
+    DCHECK(window_->IsFullscreen());
+    return true;
+  }
+  return false;
+}
+
+bool FullscreenController::IsFullscreenForTabOrPending(
+    const WebContents* tab) const {
   const TabContentsWrapper* wrapper =
       TabContentsWrapper::GetCurrentWrapperForContents(tab);
   if (!wrapper || (wrapper != fullscreened_tab_))
     return false;
   DCHECK(tab == browser_->GetSelectedWebContents());
-  DCHECK(window_->IsFullscreen());
   return true;
 }
 
 void FullscreenController::RequestToLockMouse(WebContents* tab) {
   // Mouse Lock is only permitted when browser is in tab fullscreen.
-  if (!IsFullscreenForTab(tab)) {
+  if (!IsFullscreenForTabOrPending(tab)) {
     tab->GotResponseToLockMouseRequest(false);
     return;
   }
