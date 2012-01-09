@@ -1,5 +1,5 @@
-#!/usr/bin/python
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+#!/usr/bin/env python
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -49,6 +49,7 @@ def ReadVersionFile(fname):
   assert(major >= 0 and minor >= 0)
   return (major, minor)
 
+
 def GetWebKitRevision(webkit_dir, version_file):
   """Get the WebKit revision, in the form 'trunk@1234'."""
 
@@ -95,10 +96,12 @@ def EmitVersionHeader(webkit_dir, version_file, output_dir):
 """ % (version_file, major, minor, webkit_revision)
   f.write(template)
   f.close()
+  return 0
+
 
 def main():
-  EmitVersionHeader(*sys.argv[1:])
+  return EmitVersionHeader(*sys.argv[1:])
 
 
 if __name__ == "__main__":
-  main()
+  sys.exit(main())
