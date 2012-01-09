@@ -412,12 +412,14 @@ def main(argv):
   # Get the name of the header file to be generated.
   h_file_name = pargs[2]
   MakePath(h_file_name)
-  h_file = open(h_file_name, 'w')
+  # Note we open output files in binary mode so that on Windows the files
+  # will always get LF line-endings rather than CRLF.
+  h_file = open(h_file_name, 'wb')
   # Get the name of the source file to be generated.  Depending upon whether
   # -c or -s is generated, this file contains either client or server methods.
   cc_file_name = pargs[3]
   MakePath(cc_file_name)
-  cc_file = open(cc_file_name, 'w')
+  cc_file = open(cc_file_name, 'wb')
   # The remaining arguments are the spec files to be compiled.
   spec_files = pargs[4:]
 
