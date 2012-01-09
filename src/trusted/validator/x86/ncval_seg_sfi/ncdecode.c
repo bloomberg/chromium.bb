@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -166,6 +166,7 @@ static INLINE void InitDecoder(struct NCDecoderInst* dinst) {
   dinst->inst.immbytes = 0;
   dinst->inst.dispbytes = 0;
   dinst->inst.rexprefix = 0;
+  dinst->inst.lock_prefix_index = kNoLockPrefixIndex;
   dinst->opinfo = NULL;
 }
 
@@ -201,6 +202,13 @@ static void ConsumePrefixBytes(struct NCDecoderInst* dinst) {
       dinst->inst.rexprefix = nb;
       /* REX prefix must be last prefix. */
       return;
+    }
+    if (prefix_form == kPrefixLOCK) {
+      /* Note: we don't have to worry about duplicates, since
+       * ValidatePrefixes in ncvalidate.c will not allow such
+       * a possibility.
+       */
+      dinst->inst.lock_prefix_index = (uint8_t) ii;
     }
   }
 }

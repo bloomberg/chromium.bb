@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -688,7 +688,9 @@ static Bool ValidatePrefixes(const NCDecoderInst *dinst) {
    */
   if ((dinst->inst.prefixbytes > 1) &&
       !((dinst->inst.prefixbytes == 2) &&
-        (dinst->inst.prefixmask == (kPrefixLOCK | kPrefixDATA16)))) {
+        (dinst->inst.prefixmask == (kPrefixLOCK | kPrefixDATA16)) &&
+        /* Be sure data 16 (66) appears before lock (f0) prefix. */
+        (dinst->inst.lock_prefix_index == 1))) {
     return FALSE;
   }
 

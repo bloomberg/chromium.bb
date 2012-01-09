@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -131,6 +131,11 @@ typedef struct NCNopTrieNode {
   struct NCNopTrieNode* fail;
 } NCNopTrieNode;
 
+/* Predefined value to communicate that the lock prefix was not
+ * found in an instruction.
+ */
+static const uint8_t kNoLockPrefixIndex = 0xFF;
+
 /* Models a parsed x86-32 bit instruction. */
 struct InstInfo {
   /* The bytes used to parse the x86-32 instruction (may have added
@@ -162,6 +167,10 @@ struct InstInfo {
   uint32_t opcode_prefixmask;
   /* True if it has a rex prefix. */
   uint8_t rexprefix;
+  /* Index of lock prefix (F0), or kNoLockPrefixIndex if the lock prefix
+   * isn't specified.
+   */
+  uint8_t lock_prefix_index;
 };
 
 /* Models data collected about the parsed instruction. */
