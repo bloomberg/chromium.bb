@@ -146,10 +146,12 @@ bool IsSensitiveURL(const GURL& url) {
   bool is_google_com_chrome_url =
       EndsWith(url.host(), "google.com", true) &&
       StartsWithASCII(url.path(), "/chrome", true);
-  std::string url_without_query =
-      url.spec().substr(0, url.spec().find_first_of('?'));
+  GURL::Replacements replacements;
+  replacements.ClearQuery();
+  replacements.ClearRef();
+  GURL url_without_query = url.ReplaceComponents(replacements);
   return is_webstore_gallery_url || is_google_com_chrome_url ||
-      extension_urls::IsWebstoreUpdateUrl(GURL(url_without_query)) ||
+      extension_urls::IsWebstoreUpdateUrl(url_without_query) ||
       extension_urls::IsBlacklistUpdateUrl(url);
 }
 
