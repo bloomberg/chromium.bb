@@ -218,6 +218,10 @@ void CompositorCC::DrawTree() {
   host_.composite();
 }
 
+bool CompositorCC::CompositesAsynchronously() {
+  return static_cast<bool>(g_compositor_thread);
+}
+
 bool CompositorCC::ReadPixels(SkBitmap* bitmap, const gfx::Rect& bounds) {
   if (bounds.right() > size().width() || bounds.bottom() > size().height())
     return false;
@@ -277,6 +281,10 @@ WebKit::WebGraphicsContext3D* CompositorCC::createContext3D() {
   }
 
   return context;
+}
+
+void CompositorCC::didCompleteSwapBuffers() {
+  NotifyEnd();
 }
 
 void CompositorCC::didRebindGraphicsContext(bool success) {
