@@ -134,7 +134,7 @@ struct window {
 	window_drop_handler_t drop_handler;
 	window_close_handler_t close_handler;
 
-	struct wl_list widget_list;
+	struct widget *widget;
 	struct widget *focus_widget;
 	uint32_t widget_grab_button;
 
@@ -146,6 +146,7 @@ struct window {
 
 struct widget {
 	struct window *window;
+	struct wl_list child_list;
 	struct wl_list link;
 	struct rectangle allocation;
 	widget_resize_handler_t resize_handler;
@@ -1036,24 +1037,28 @@ window_destroy(struct window *window)
 }
 
 static struct widget *
-window_find_widget(struct window *window, int32_t x, int32_t y)
+widget_find_widget(struct widget *widget, int32_t x, int32_t y)
 {
-	struct widget *widget;
+	struct widget *child, *target;
 
-	wl_list_for_each(widget, &window->widget_list, link) {
-		if (widget->allocation.x <= x &&
-		    x < widget->allocation.x + widget->allocation.width &&
-		    widget->allocation.y <= y &&
-		    y < widget->allocation.y + widget->allocation.height) {
-			return widget;
-		}
+	wl_list_for_each(child, &widget->child_list, link) {
+		target = widget_find_widget(child, x, y);
+		if (target)
+			return target;
+	}
+
+	if (widget->allocation.x <= x &&
+	    x < widget->allocation.x + widget->allocation.width &&
+	    widget->allocation.y <= y &&
+	    y < widget->allocation.y + widget->allocation.height) {
+		return widget;
 	}
 
 	return NULL;
 }
 
-struct widget *
-window_add_widget(struct window *window, void *data)
+static struct widget *
+widget_create(struct window *window, void *data)
 {
 	struct widget *widget;
 
@@ -1062,18 +1067,36 @@ window_add_widget(struct window *window, void *data)
 	widget->window = window;
 	widget->user_data = data;
 	widget->allocation = window->allocation;
-	wl_list_insert(&window->widget_list, &widget->link);
+	wl_list_init(&widget->child_list);
+
+	return widget;
+}
+
+struct widget *
+window_add_widget(struct window *window, void *data)
+{
+	window->widget = widget_create(window, data);
+	wl_list_init(&window->widget->link);
+
+	return window->widget;
+}
+
+struct widget *
+widget_add_widget(struct widget *parent, void *data)
+{
+	struct widget *widget;
+
+	widget = widget_create(parent->window, data);
+	wl_list_insert(parent->child_list.prev, &widget->link);
 
 	return widget;
 }
 
 void
-window_for_each_widget(struct window *window, widget_func_t func, void *data)
+widget_destroy(struct widget *widget)
 {
-	struct widget *widget;
-
-	wl_list_for_each(widget, &window->widget_list, link)
-		func(widget, data);
+	wl_list_remove(&widget->link);
+	free(widget);
 }
 
 struct widget *
@@ -1308,7 +1331,7 @@ input_handle_motion(void *data, struct wl_input_device *input_device,
 	input->sy = sy;
 
 	if (!window->focus_widget || !window->widget_grab_button) {
-		widget = window_find_widget(window, sx, sy);
+		widget = widget_find_widget(window->widget, sx, sy);
 		window_set_focus_widget(window, widget, input, time, sx, sy);
 	}
 
@@ -1425,7 +1448,8 @@ input_handle_button(void *data,
 	if (window->focus_widget &&
 	    window->widget_grab_button == button && !state) {
 		window->widget_grab_button = 0;
-		widget = window_find_widget(window, input->sx, input->sy);
+		widget = widget_find_widget(window->widget,
+					    input->sx, input->sy);
 		window_set_focus_widget(window, widget, input, time,
 					input->sx, input->sy);
 	}
@@ -1500,7 +1524,7 @@ input_handle_pointer_focus(void *data,
 		input->sy = sy;
 
 		pointer = POINTER_LEFT_PTR;
-		widget = window_find_widget(window, sx, sy);
+		widget = widget_find_widget(window->widget, sx, sy);
 		window_set_focus_widget(window, widget, input, time, sx, sy);
 
 		pointer = input_get_pointer_image_for_location(input, pointer);
@@ -1878,7 +1902,6 @@ window_move(struct window *window, struct input *input, uint32_t time)
 static void
 window_resize(struct window *window, int32_t width, int32_t height)
 {
-	struct widget *widget;
 	struct rectangle allocation;
 
 	if (window->decoration) {
@@ -1896,15 +1919,14 @@ window_resize(struct window *window, int32_t width, int32_t height)
 	window->allocation.width = width;
 	window->allocation.height = height;
 
-	wl_list_for_each(widget, &window->widget_list, link) {
-		if (widget->resize_handler)
-			widget->resize_handler(widget,
+	widget_set_allocation(window->widget, allocation.x, allocation.y,
+			      allocation.width, allocation.height);
+
+	if (window->widget->resize_handler)
+		window->widget->resize_handler(window->widget,
 					       allocation.width,
 					       allocation.height,
-					       widget->user_data);
-		else
-			widget->allocation = allocation;
-	}
+					       window->widget->user_data);
 
 	window_schedule_redraw(window);
 }
@@ -2004,23 +2026,31 @@ window_set_child_size(struct window *window, int32_t width, int32_t height)
 }
 
 static void
+widget_redraw(struct widget *widget)
+{
+	struct widget *child;
+
+	if (widget->redraw_handler)
+		widget->redraw_handler(widget, widget->user_data);
+	wl_list_for_each(child, &widget->child_list, link)
+		widget_redraw(child);
+}
+
+static void
 idle_redraw(struct task *task, uint32_t events)
 {
 	struct window *window =
 		container_of(task, struct window, redraw_task);
-	struct widget *widget;
 
 	window_create_surface(window);
 	if (window->decoration)
 		window_draw_decorations(window);
 
-	wl_list_for_each_reverse(widget, &window->widget_list, link)
-		widget->redraw_handler(widget, widget->user_data);
+	widget_redraw(window->widget);
 
 	window_flush(window);
 
 	window->redraw_scheduled = 0;
-
 }
 
 void
@@ -2180,8 +2210,6 @@ window_create_internal(struct display *display, struct window *parent,
 	window->margin = 16;
 	window->decoration = 1;
 	window->transparent = 1;
-
-	wl_list_init(&window->widget_list);
 
 	if (display->dpy)
 #ifdef HAVE_CAIRO_EGL

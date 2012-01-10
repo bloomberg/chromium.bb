@@ -215,13 +215,8 @@ window_destroy(struct window *window);
 struct widget *
 window_add_widget(struct window *window, void *data);
 
-typedef void (*widget_func_t)(struct widget *widget, void *data);
-
 typedef void (*data_func_t)(void *data, size_t len,
 			    int32_t x, int32_t y, void *user_data);
-
-void
-window_for_each_widget(struct window *window, widget_func_t func, void *data);
 
 struct widget *
 window_get_focus_widget(struct window *window);
@@ -329,6 +324,10 @@ window_set_title(struct window *window, const char *title);
 const char *
 window_get_title(struct window *window);
 
+struct widget *
+widget_add_widget(struct widget *parent, void *data);
+void
+widget_destroy(struct widget *widget);
 void
 widget_get_allocation(struct widget *widget, struct rectangle *allocation);
 

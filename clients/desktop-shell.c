@@ -334,7 +334,7 @@ panel_add_launcher(struct panel *panel, const char *icon, const char *path)
 	launcher->panel = panel;
 	wl_list_insert(panel->launcher_list.prev, &launcher->link);
 
-	launcher->widget = window_add_widget(panel->window, launcher);
+	launcher->widget = widget_add_widget(panel->widget, launcher);
 	widget_set_enter_handler(launcher->widget,
 				 panel_launcher_enter_handler);
 	widget_set_leave_handler(launcher->widget,
@@ -508,7 +508,7 @@ unlock_dialog_create(struct desktop *desktop)
 	window_set_user_data(dialog->window, dialog);
 	window_set_keyboard_focus_handler(dialog->window,
 					  unlock_dialog_keyboard_focus_handler);
-	dialog->button = window_add_widget(dialog->window, NULL);
+	dialog->button = widget_add_widget(dialog->widget, dialog);
 	widget_set_redraw_handler(dialog->widget,
 				  unlock_dialog_redraw_handler);
 	widget_set_enter_handler(dialog->button,
