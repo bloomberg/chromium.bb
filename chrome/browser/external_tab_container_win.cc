@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -488,7 +488,10 @@ void ExternalTabContainer::AddNewContents(WebContents* source,
   }
 }
 
-void ExternalTabContainer::WebContentsCreated(WebContents* new_contents) {
+void ExternalTabContainer::WebContentsCreated(WebContents* source_contents,
+                                              int64 source_frame_id,
+                                              const GURL& target_url,
+                                              WebContents* new_contents) {
   RenderViewHost* rvh = new_contents->GetRenderViewHost();
   DCHECK(rvh != NULL);
 
