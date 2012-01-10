@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -59,6 +59,7 @@ class PlatformCanvas;
 
 namespace WebKit {
 class WebFileChooserCompletion;
+class WebGamepads;
 struct WebCursorInfo;
 struct WebFileChooserParams;
 }
@@ -514,6 +515,9 @@ class PluginDelegate {
 
   // Determines if the browser entered fullscreen mode.
   virtual bool IsInFullscreenMode() = 0;
+
+  // Retrieve current gamepad data.
+  virtual void SampleGamepads(WebKit::WebGamepads* data) = 0;
 
   // Returns true if the containing page is visible.
   virtual bool IsPageVisible() const = 0;

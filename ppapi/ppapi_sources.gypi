@@ -61,6 +61,7 @@
       'c/dev/ppb_find_dev.h',
       'c/dev/ppb_font_dev.h',
       'c/dev/ppb_fullscreen_dev.h',
+      'c/dev/ppb_gamepad_dev.h',
       'c/dev/ppb_ime_input_event_dev.h',
       'c/dev/ppb_memory_dev.h',
       'c/dev/ppb_resource_array_dev.h',

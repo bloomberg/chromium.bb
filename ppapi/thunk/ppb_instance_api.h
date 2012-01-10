@@ -1,10 +1,11 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef PPAPI_THUNK_INSTANCE_API_H_
 #define PPAPI_THUNK_INSTANCE_API_H_
 
+#include "ppapi/c/dev/ppb_gamepad_dev.h"
 #include "ppapi/c/dev/ppb_url_util_dev.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/ppb_instance.h"
@@ -70,6 +71,10 @@ class PPB_Instance_FunctionAPI {
   virtual PP_Bool FlashSetFullscreen(PP_Instance instance,
                                      PP_Bool fullscreen) = 0;
   virtual PP_Bool FlashGetScreenSize(PP_Instance instance, PP_Size* size) = 0;
+
+  // Gamepad.
+  virtual void SampleGamepads(PP_Instance instance,
+                              PP_GamepadsData_Dev* data) = 0;
 
   // InputEvent.
   virtual int32_t RequestInputEvents(PP_Instance instance,

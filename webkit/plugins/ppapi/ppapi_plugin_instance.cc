@@ -14,6 +14,7 @@
 #include "base/utf_string_conversions.h"
 #include "ppapi/c/dev/ppb_console_dev.h"
 #include "ppapi/c/dev/ppb_find_dev.h"
+#include "ppapi/c/dev/ppb_gamepad_dev.h"
 #include "ppapi/c/dev/ppb_zoom_dev.h"
 #include "ppapi/c/dev/ppp_find_dev.h"
 #include "ppapi/c/dev/ppp_selection_dev.h"
@@ -45,6 +46,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebGamepads.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginContainer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
@@ -225,6 +227,13 @@ COMPILE_ASSERT_MATCHING_ENUM(TypeGrab, PP_CURSORTYPE_GRAB);
 COMPILE_ASSERT_MATCHING_ENUM(TypeGrabbing, PP_CURSORTYPE_GRABBING);
 // Do not assert WebCursorInfo::TypeCustom == PP_CURSORTYPE_CUSTOM;
 // PP_CURSORTYPE_CUSTOM is pinned to allow new cursor types.
+
+// Ensure conversion from WebKit::WebGamepads to PP_GamepadsData_Dev is safe.
+// See also DCHECKs in SampleGamepads below.
+COMPILE_ASSERT(sizeof(WebKit::WebGamepads) == sizeof(PP_GamepadsData_Dev),
+               size_difference);
+COMPILE_ASSERT(sizeof(WebKit::WebGamepad) == sizeof(PP_GamepadData_Dev),
+               size_difference);
 
 // Sets |*security_origin| to be the WebKit security origin associated with the
 // document containing the given plugin instance. On success, returns true. If
@@ -1308,6 +1317,42 @@ int32_t PluginInstance::Navigate(PPB_URLRequestInfo_Impl* request,
   WebString target_str = WebString::fromUTF8(target);
   container_->loadFrameRequest(web_request, target_str, false, NULL);
   return PP_OK;
+}
+
+void PluginInstance::SampleGamepads(PP_Instance instance,
+                                    PP_GamepadsData_Dev* data) {
+
+  // Because the WebKit objects have trivial ctors, using offsetof doesn't
+  // work. Instead use this version based on src/v8/src/globals.h. This
+  // workaround doesn't work in constant expressions as required for
+  // COMPILE_ASSERT, so DCHECK instead.
+
+#define OFFSET_OF(type, field) \
+  (reinterpret_cast<intptr_t>(&(reinterpret_cast<type*>(4)->field)) - 4)
+
+#define DCHECK_GAMEPADS_OFFSET(webkit_name, pp_name) \
+  DCHECK(OFFSET_OF(WebKit::WebGamepads, webkit_name) \
+             == OFFSET_OF(PP_GamepadsData_Dev, pp_name))
+
+#define DCHECK_GAMEPAD_OFFSET(webkit_name, pp_name) \
+  DCHECK(OFFSET_OF(WebKit::WebGamepad, webkit_name) \
+             == OFFSET_OF(PP_GamepadData_Dev, pp_name))
+
+  DCHECK_GAMEPADS_OFFSET(length, length);
+  DCHECK_GAMEPADS_OFFSET(items, items);
+  DCHECK_GAMEPAD_OFFSET(connected, connected);
+  DCHECK_GAMEPAD_OFFSET(id, id);
+  DCHECK_GAMEPAD_OFFSET(timestamp, timestamp);
+  DCHECK_GAMEPAD_OFFSET(axesLength, axes_length);
+  DCHECK_GAMEPAD_OFFSET(axes, axes);
+  DCHECK_GAMEPAD_OFFSET(buttonsLength, buttons_length);
+  DCHECK_GAMEPAD_OFFSET(buttons, buttons);
+
+#undef OFFSET_OF
+#undef DCHECK_GAMEPADS_OFFSET
+#undef DCHECK_GAMEPAD_OFFSET
+
+  delegate()->SampleGamepads(reinterpret_cast<WebKit::WebGamepads*>(data));
 }
 
 bool PluginInstance::IsViewAccelerated() {

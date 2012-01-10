@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -74,6 +74,8 @@ class PPB_Instance_Proxy : public InterfaceProxy,
   virtual PP_Bool FlashSetFullscreen(PP_Instance instance,
                                     PP_Bool fullscreen) OVERRIDE;
   virtual PP_Bool FlashGetScreenSize(PP_Instance instance, PP_Size* size)
+      OVERRIDE;
+  virtual void SampleGamepads(PP_Instance instance, PP_GamepadsData_Dev* data)
       OVERRIDE;
   virtual int32_t RequestInputEvents(PP_Instance instance,
                                      uint32_t event_classes) OVERRIDE;

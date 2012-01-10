@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,6 +31,7 @@
 #include "content/common/view_messages.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/renderer/content_renderer_client.h"
+#include "content/renderer/gamepad_shared_memory_reader.h"
 #include "content/renderer/gpu/command_buffer_proxy.h"
 #include "content/renderer/gpu/gpu_channel_host.h"
 #include "content/renderer/gpu/renderer_gl_context.h"
@@ -2033,6 +2034,12 @@ void PepperPluginDelegateImpl::DidReceiveMouseEvent(
 
 bool PepperPluginDelegateImpl::IsInFullscreenMode() {
   return render_view_->is_fullscreen();
+}
+
+void PepperPluginDelegateImpl::SampleGamepads(WebKit::WebGamepads* data) {
+  if (!gamepad_shared_memory_reader_.get())
+    gamepad_shared_memory_reader_.reset(new content::GamepadSharedMemoryReader);
+  gamepad_shared_memory_reader_->SampleGamepads(*data);
 }
 
 bool PepperPluginDelegateImpl::IsPageVisible() const {

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,6 +30,10 @@ class FilePath;
 class PepperPluginDelegateImpl;
 class RenderViewImpl;
 
+namespace content {
+class GamepadSharedMemoryReader;
+}
+
 namespace gfx {
 class Point;
 class Rect;
@@ -50,6 +54,7 @@ class PluginModule;
 
 namespace WebKit {
 class WebFileChooserCompletion;
+class WebGamepads;
 class WebMouseEvent;
 struct WebCompositionUnderline;
 struct WebFileChooserParams;
@@ -385,6 +390,7 @@ class PepperPluginDelegateImpl
   virtual void DidReceiveMouseEvent(
       webkit::ppapi::PluginInstance* instance) OVERRIDE;
   virtual bool IsInFullscreenMode() OVERRIDE;
+  virtual void SampleGamepads(WebKit::WebGamepads* data) OVERRIDE;
   virtual bool IsPageVisible() const OVERRIDE;
 
   // RenderViewObserver implementation.
@@ -495,6 +501,8 @@ class PepperPluginDelegateImpl
   // |last_mouse_event_target_| is not owned by this class. We can know about
   // when it is destroyed via InstanceDeleted().
   webkit::ppapi::PluginInstance* last_mouse_event_target_;
+
+  scoped_ptr<content::GamepadSharedMemoryReader> gamepad_shared_memory_reader_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperPluginDelegateImpl);
 };

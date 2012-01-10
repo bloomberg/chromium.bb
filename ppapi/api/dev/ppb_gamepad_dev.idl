@@ -1,0 +1,87 @@
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+/**
+ * This file defines the <code>PPB_Gamepad_Dev</code> interface, which
+ * provides access to gamepad devices.
+ */
+
+label Chrome {
+  M18 = 0.1
+};
+
+/**
+ * The data for one gamepad device.
+ */
+struct PP_GamepadData_Dev {
+    /**
+     * Is there a gamepad connected at this index? If this is false, no other
+     * data in this structure is valid.
+     */
+    char connected;
+
+    /**
+     * String identifier for the type of device/manufacturer.
+     */
+    uint16_t[128] id;
+
+    /**
+     * Monotonically increasing value that is incremented when the data have
+     * been updated.
+     */
+    uint64_t timestamp;
+
+    /**
+     * Number of valid elements in the |axes| array.
+     */
+    uint32_t axes_length;
+
+    /**
+     * Normalized values for the axes, indices valid up to |axesLength|-1. Axis
+     * values range from -1..1, and are in order of "importance".
+     */
+    float_t[16] axes;
+
+    /**
+     * Number of valid elements in the |buttons| array.
+     */
+    uint32_t buttons_length;
+
+    /**
+     * Normalized values for the buttons, indices valid up to |buttonsLength|
+     * - 1. Button values range from 0..1, and are in order of importance.
+     */
+    float_t[32] buttons;
+};
+
+/**
+ * The data for all gamepads connected to the system.
+ */
+struct PP_GamepadsData_Dev {
+    /**
+     * Number of valid elements in the |items| array.
+     */
+    uint32_t length;
+
+    /**
+     * Data for an individual gamepad device connected to the system.
+     */
+    PP_GamepadData_Dev[4] items;
+};
+
+/**
+ * The <code>PPB_Gamepad_Dev</code> interface allows retrieving data from
+ * gamepad/joystick devices that are connected to the system.
+ */
+[version=0.1, macro="PPB_GAMEPAD_DEV_INTERFACE"]
+interface PPB_Gamepad_Dev {
+  /**
+   * Samples the current state of the connected gamepads.
+   */
+  void SampleGamepads(
+      [in] PP_Instance instance,
+      [out] PP_GamepadsData_Dev data);
+
+};

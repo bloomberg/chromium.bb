@@ -267,6 +267,11 @@ PP_Bool PPB_Instance_Proxy::FlashGetScreenSize(PP_Instance instance,
   return result;
 }
 
+void PPB_Instance_Proxy::SampleGamepads(PP_Instance instance,
+                                        PP_GamepadsData_Dev* data) {
+  NOTIMPLEMENTED();
+}
+
 int32_t PPB_Instance_Proxy::RequestInputEvents(PP_Instance instance,
                                                uint32_t event_classes) {
   dispatcher()->Send(new PpapiHostMsg_PPBInstance_RequestInputEvents(

@@ -16,6 +16,7 @@
 #include "base/string16.h"
 #include "googleurl/src/gurl.h"
 #include "ppapi/c/dev/pp_cursor_type_dev.h"
+#include "ppapi/c/dev/ppb_gamepad_dev.h"
 #include "ppapi/c/dev/ppp_printing_dev.h"
 #include "ppapi/c/dev/ppp_find_dev.h"
 #include "ppapi/c/dev/ppp_selection_dev.h"
@@ -286,6 +287,10 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
   int32_t Navigate(PPB_URLRequestInfo_Impl* request,
                    const char* target,
                    bool from_user_action);
+
+  // Implementation of PPB_Gamepad.
+  void SampleGamepads(PP_Instance instance, PP_GamepadsData_Dev* data)
+      OVERRIDE;
 
   // Implementation of PPP_Messaging.
   void HandleMessage(PP_Var message);
