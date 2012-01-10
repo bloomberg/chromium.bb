@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -6,9 +6,9 @@ import os
 import sys
 import subprocess
 
-def RunCmdAndCheck(cmd, ppapi_dir, err_string, output_api):
+def RunCmdAndCheck(cmd, err_string, output_api, cwd=None):
   results = []
-  p = subprocess.Popen(cmd, cwd=os.path.join(ppapi_dir, 'generators'),
+  p = subprocess.Popen(cmd, cwd=cwd,
                        stdout=subprocess.PIPE,
                        stderr=subprocess.PIPE)
   (p_stdout, p_stderr) = p.communicate()
@@ -32,14 +32,30 @@ def RunUnittests(input_api, output_api):
     cmd = [ sys.executable, 'idl_gen_pnacl.py', '--wnone', '--test']
     ppapi_dir = input_api.PresubmitLocalPath()
     results.extend(RunCmdAndCheck(cmd,
-                                  ppapi_dir,
                                   'PPAPI IDL Pnacl unittest failed.',
-                                  output_api))
+                                  output_api,
+                                  os.path.join(ppapi_dir, 'generators')))
   return results
 
 
+# If any .srpc files were changed, run run_srpcgen.py --diff_mode.
+def CheckSrpcChange(input_api, output_api):
+  if [True for filename in input_api.LocalPaths() if
+      os.path.splitext(filename)[1] == '.srpc']:
+    return RunCmdAndCheck([sys.executable,
+                           os.path.join(input_api.PresubmitLocalPath(),
+                                        'native_client', 'src',
+                                        'shared', 'ppapi_proxy',
+                                        'run_srpcgen.py'),
+                           '--diff_mode'],
+                          'PPAPI SRPC Diff detected: Run run_srpcgen.py.',
+                          output_api)
+  return []
+
 def CheckChange(input_api, output_api):
   results = []
+
+  results.extend(CheckSrpcChange(input_api, output_api))
 
   results.extend(RunUnittests(input_api, output_api))
 
@@ -86,9 +102,9 @@ def CheckChange(input_api, output_api):
   # Only generate output for IDL files references (as *.h or *.idl) in this CL
   cmd.append('--out=' + ','.join([name + '.idl' for name in both]))
   results.extend(RunCmdAndCheck(cmd,
-                                ppapi_dir,
                                 'PPAPI IDL Diff detected: Run the generator.',
-                                output_api))
+                                output_api,
+                                os.path.join(ppapi_dir, 'generators')))
   return results
 
 def CheckChangeOnUpload(input_api, output_api):
