@@ -1365,6 +1365,12 @@ window_menu_func(struct window *window, int index, void *data)
 	}
 }
 
+static void
+break_grab(struct window *window)
+{
+	window->focus_widget = NULL;
+	window->widget_grab_button = 0;
+}
 
 static void
 input_handle_button(void *data,
@@ -1392,6 +1398,7 @@ input_handle_button(void *data,
 			if (!window->shell_surface)
 				break;
 			input_set_pointer_image(input, time, POINTER_DRAGGING);
+			break_grab(window);
 			wl_shell_surface_move(window->shell_surface,
 					      input_device, time);
 			break;
@@ -1405,6 +1412,7 @@ input_handle_button(void *data,
 		case WINDOW_RESIZING_BOTTOM_RIGHT:
 			if (!window->shell_surface)
 				break;
+			break_grab(window);
 			wl_shell_surface_resize(window->shell_surface,
 						input_device, time,
 						location);
