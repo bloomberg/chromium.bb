@@ -415,7 +415,9 @@ remoting.connectMe2Me = function(hostId, retryIfOffline) {
   remoting.hostId = hostId;
   remoting.retryIfOffline = retryIfOffline;
 
-  remoting.setMode(remoting.AppMode.CLIENT_PIN_PROMPT);
+  // TODO(jamiewalch): Reinstate the PIN screen once it's supported.
+  // remoting.setMode(remoting.AppMode.CLIENT_PIN_PROMPT);
+  remoting.connectMe2MeWithPin();
 }
 
 /**
