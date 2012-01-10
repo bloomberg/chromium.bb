@@ -51,16 +51,6 @@ class Downloader {
   void DownloadFile(const GURL& url, const FilePath& target_file,
       content::WebContents* web_contents);
 
-  // Creates file stream for a download.
-  // Must be called from FILE thread.
-  void CreateFileStreamOnFileThread(const GURL& url, const FilePath& file_path,
-      content::WebContents* web_contents);
-
-  // Gets called after file stream is created and starts download.
-  void OnFileStreamCreatedOnUIThread(const GURL& url,
-      const FilePath& file_path, content::WebContents* web_contents,
-      net::FileStream* created_file_stream);
-
   // Adds an item to list of listeners that wait for confirmation that download
   // has started.
   void AddListener(Listener* listener, const GURL& url);
@@ -68,6 +58,20 @@ class Downloader {
  private:
   // Let listeners know if download started successfully.
   void DownloadStarted(bool success, const GURL& url);
+
+  // Creates file stream for a download.
+  // Must be called from FILE thread.
+  void CreateFileStreamOnFileThread(const GURL& url,
+                                    const FilePath& file_path,
+                                    int render_process_id,
+                                    int render_view_id);
+
+  // Gets called after file stream is created and starts download.
+  void OnFileStreamCreatedOnUIThread(const GURL& url,
+      const FilePath& file_path,
+      int render_process_id,
+      int render_view_id,
+      net::FileStream* created_file_stream);
 
  private:
   typedef std::multimap<GURL, base::WeakPtr<Listener> > ListenerMap;

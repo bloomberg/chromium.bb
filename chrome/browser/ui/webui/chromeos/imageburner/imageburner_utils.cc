@@ -8,9 +8,12 @@
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/common/chrome_paths.h"
 #include "content/browser/download/download_types.h"
+#include "content/browser/renderer_host/render_view_host.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 
 using content::BrowserThread;
@@ -353,41 +356,6 @@ void BurnManager::ConfigFileFetchedOnUIThread(bool fetched,
 
 ////////////////////////////////////////////////////////////////////////////////
 //
-// DownloaderTaskProxy
-//
-////////////////////////////////////////////////////////////////////////////////
-
-class DownloaderTaskProxy
-    : public base::RefCountedThreadSafe<DownloaderTaskProxy> {
- public:
-  explicit DownloaderTaskProxy() {}
-
-  void CreateFileStream(const GURL& url,
-                        const FilePath& target_path,
-                        WebContents* web_contents) {
-    BurnManager::GetInstance()->downloader()->
-        CreateFileStreamOnFileThread(url, target_path, web_contents);
-  }
-
-  void OnFileStreamCreated(const GURL& url,
-                           const FilePath& file_path,
-                           WebContents* web_contents,
-                           net::FileStream* created_file_stream) {
-    BurnManager::GetInstance()->downloader()->
-        OnFileStreamCreatedOnUIThread(url, file_path, web_contents,
-        created_file_stream);
-  }
-
- private:
-  ~DownloaderTaskProxy() {}
-
-  friend class base::RefCountedThreadSafe<DownloaderTaskProxy>;
-
-  DISALLOW_COPY_AND_ASSIGN(DownloaderTaskProxy);
-};
-
-////////////////////////////////////////////////////////////////////////////////
-//
 // Downloader
 //
 ////////////////////////////////////////////////////////////////////////////////
@@ -400,17 +368,17 @@ void Downloader::DownloadFile(const GURL& url,
     const FilePath& file_path, WebContents* web_contents) {
   // First we have to create file stream we will download file to.
   // That has to be done on File thread.
-  scoped_refptr<DownloaderTaskProxy> task = new DownloaderTaskProxy();
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      base::Bind(&DownloaderTaskProxy::CreateFileStream, task.get(), url,
-                 file_path, web_contents));
+      base::Bind(&Downloader::CreateFileStreamOnFileThread,
+                 base::Unretained(this), url, file_path,
+                 web_contents->GetRenderProcessHost()->GetID(),
+                 web_contents->GetRenderViewHost()->routing_id()));
 }
 
 void Downloader::CreateFileStreamOnFileThread(
-    const GURL& url, const FilePath& file_path,
-    WebContents* web_contents) {
-
+    const GURL& url, const FilePath& file_path, int render_process_id,
+    int render_view_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   DCHECK(!file_path.empty());
 
@@ -421,18 +389,22 @@ void Downloader::CreateFileStreamOnFileThread(
                         base::PLATFORM_FILE_WRITE))
     file_stream.reset(NULL);
 
-  scoped_refptr<DownloaderTaskProxy> task = new DownloaderTaskProxy();
   // Call callback method on UI thread.
   BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(&DownloaderTaskProxy::OnFileStreamCreated, task.get(),
-                   url, file_path, web_contents, file_stream.release()));
+        base::Bind(&Downloader::OnFileStreamCreatedOnUIThread,
+                   base::Unretained(this), url, file_path, render_process_id,
+                   render_view_id, file_stream.release()));
 }
 
 void Downloader::OnFileStreamCreatedOnUIThread(const GURL& url,
-    const FilePath& file_path, WebContents* web_contents,
+    const FilePath& file_path, int render_process_id, int render_view_id,
     net::FileStream* created_file_stream) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  WebContents* web_contents =
+      tab_util::GetWebContentsByID(render_process_id, render_view_id);
+  if (!web_contents)
+    return;
 
   if (created_file_stream) {
     DownloadManager* download_manager =
