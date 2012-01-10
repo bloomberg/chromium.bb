@@ -1532,13 +1532,15 @@ std::vector<GURL> BrowserInit::GetURLsFromCommandLine(
   return urls;
 }
 
-bool BrowserInit::ProcessCmdLineImpl(const CommandLine& command_line,
-                                     const FilePath& cur_dir,
-                                     bool process_startup,
-                                     Profile* profile,
-                                     int* return_code,
-                                     BrowserInit* browser_init) {
-  DCHECK(profile);
+bool BrowserInit::ProcessCmdLineImpl(
+    const CommandLine& command_line,
+    const FilePath& cur_dir,
+    bool process_startup,
+    Profile* last_active_profile,
+    const Profiles& other_profiles,
+    int* return_code,
+    BrowserInit* browser_init) {
+  DCHECK(last_active_profile);
   if (process_startup) {
     if (command_line.HasSwitch(switches::kDisablePromptOnRepost))
       content::NavigationController::DisablePromptOnRepost();
@@ -1568,13 +1570,13 @@ bool BrowserInit::ProcessCmdLineImpl(const CommandLine& command_line,
         base::StringToInt(restore_session_value, &expected_tab_count);
       } else {
         std::vector<GURL> urls_to_open = GetURLsFromCommandLine(
-            command_line, cur_dir, profile);
+            command_line, cur_dir, last_active_profile);
         expected_tab_count =
             std::max(1, static_cast<int>(urls_to_open.size()));
       }
       if (!CreateAutomationProvider<TestingAutomationProvider>(
           testing_channel_id,
-          profile,
+          last_active_profile,
           static_cast<size_t>(expected_tab_count)))
         return false;
     }
@@ -1588,7 +1590,7 @@ bool BrowserInit::ProcessCmdLineImpl(const CommandLine& command_line,
     // If there are any extra parameters, we expect each one to generate a
     // new tab; if there are none then we have no tabs
     std::vector<GURL> urls_to_open = GetURLsFromCommandLine(
-        command_line, cur_dir, profile);
+        command_line, cur_dir, last_active_profile);
     size_t expected_tabs =
         std::max(static_cast<int>(urls_to_open.size()), 0);
     if (expected_tabs == 0)
@@ -1597,12 +1599,12 @@ bool BrowserInit::ProcessCmdLineImpl(const CommandLine& command_line,
     if (command_line.HasSwitch(switches::kChromeFrame)) {
 #if !defined(USE_AURA)
       if (!CreateAutomationProvider<ChromeFrameAutomationProvider>(
-          automation_channel_id, profile, expected_tabs))
+          automation_channel_id, last_active_profile, expected_tabs))
         return false;
 #endif
     } else {
       if (!CreateAutomationProvider<AutomationProvider>(
-          automation_channel_id, profile, expected_tabs))
+          automation_channel_id, last_active_profile, expected_tabs))
         return false;
     }
   }
@@ -1611,7 +1613,7 @@ bool BrowserInit::ProcessCmdLineImpl(const CommandLine& command_line,
   // the service process, we do not want to open any browser windows.
   if (command_line.HasSwitch(switches::kNotifyCloudPrintTokenExpired)) {
     silent_launch = true;
-    CloudPrintProxyServiceFactory::GetForProfile(profile)->
+    CloudPrintProxyServiceFactory::GetForProfile(last_active_profile)->
         ShowTokenExpiredNotification();
   }
 
@@ -1666,8 +1668,27 @@ bool BrowserInit::ProcessCmdLineImpl(const CommandLine& command_line,
         IS_PROCESS_STARTUP : IS_NOT_PROCESS_STARTUP;
     IsFirstRun is_first_run = first_run::IsChromeFirstRun() ?
         IS_FIRST_RUN : IS_NOT_FIRST_RUN;
-    return browser_init->LaunchBrowser(command_line, profile, cur_dir,
-        is_process_startup, is_first_run, return_code);
+    // Launch the last used profile with the full command line, and the other
+    // active profiles without the URLs to launch.
+    CommandLine command_line_without_urls(command_line.GetProgram());
+    const CommandLine::SwitchMap& switches = command_line.GetSwitches();
+    for (CommandLine::SwitchMap::const_iterator switch_it = switches.begin();
+         switch_it != switches.end(); ++switch_it) {
+      command_line_without_urls.AppendSwitchNative(switch_it->first,
+                                                   switch_it->second);
+    }
+    for (Profiles::const_iterator it = other_profiles.begin();
+         it != other_profiles.end(); ++it) {
+      if (*it == last_active_profile)
+        continue;
+      if (!browser_init->LaunchBrowser(command_line_without_urls, *it, cur_dir,
+                                       is_process_startup, is_first_run,
+                                       return_code))
+        return false;
+    }
+    return browser_init->LaunchBrowser(
+        command_line, last_active_profile, cur_dir, is_process_startup,
+        is_first_run, return_code);
   }
   return true;
 }
@@ -1697,7 +1718,8 @@ void BrowserInit::ProcessCommandLineOnProfileCreated(
     Profile* profile,
     Profile::CreateStatus status) {
   if (status == Profile::CREATE_STATUS_INITIALIZED)
-    ProcessCmdLineImpl(cmd_line, cur_dir, false, profile, NULL, NULL);
+    ProcessCmdLineImpl(cmd_line, cur_dir, false, profile, Profiles(), NULL,
+                       NULL);
 }
 
 // static
@@ -1720,5 +1742,5 @@ void BrowserInit::ProcessCommandLineAlreadyRunning(const CommandLine& cmd_line,
     NOTREACHED();
     return;
   }
-  ProcessCmdLineImpl(cmd_line, cur_dir, false, profile, NULL, NULL);
+  ProcessCmdLineImpl(cmd_line, cur_dir, false, profile, Profiles(), NULL, NULL);
 }

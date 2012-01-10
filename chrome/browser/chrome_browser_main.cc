@@ -1769,8 +1769,10 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
     // We are in regular browser boot sequence. Open initial tabs and enter the
     // main message loop.
     int result_code;
-    if (browser_init_->Start(parsed_command_line(), FilePath(), profile_,
-                             &result_code)) {
+    std::vector<Profile*> last_active_profiles =
+        g_browser_process->profile_manager()->GetLastActiveProfiles();
+    if (browser_init_->Start(parsed_command_line(), FilePath(),
+                             profile_, last_active_profiles, &result_code)) {
 #if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
       // Initialize autoupdate timer. Timer callback costs basically nothing
       // when browser is not in persistent mode, so it's OK to let it ride on
