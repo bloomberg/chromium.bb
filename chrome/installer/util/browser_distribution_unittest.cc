@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -7,19 +7,6 @@
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/shell_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-namespace {
-class BrowserDistributionTest : public testing::Test {
- protected:
-  virtual void SetUp() {
-    // Currently no setup required.
-  }
-
-  virtual void TearDown() {
-    // Currently no tear down required.
-  }
-};
-}  // namespace
 
 // The distribution strings should not be empty. The unit tests are not linking
 // with the chrome resources so we cannot test official build.

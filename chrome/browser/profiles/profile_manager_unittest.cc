@@ -40,6 +40,7 @@
 using content::BrowserThread;
 
 namespace {
+
 // This global variable is used to check that value returned to different
 // observers is the same.
 Profile* g_created_profile;
@@ -77,6 +78,12 @@ class ProfileManager : public ::ProfileManagerWithoutInit {
 
 class ProfileManagerTest : public testing::Test {
  protected:
+  class MockObserver {
+   public:
+    MOCK_METHOD2(OnProfileCreated,
+        void(Profile* profile, Profile::CreateStatus status));
+  };
+
   ProfileManagerTest()
       : local_state_(static_cast<TestingBrowserProcess*>(g_browser_process)),
         extension_event_router_forwarder_(new ExtensionEventRouterForwarder),
@@ -117,12 +124,6 @@ class ProfileManagerTest : public testing::Test {
     message_loop_.RunAllPending();
   }
 
-  class MockObserver {
-   public:
-    MOCK_METHOD2(OnProfileCreated,
-        void(Profile* profile, Profile::CreateStatus status));
-  };
-
 #if defined(OS_CHROMEOS)
   // Do not change order of stub_cros_enabler_, which needs to be constructed
   // before io_thread_ which requires CrosLibrary to be initialized to construct
@@ -152,10 +153,8 @@ TEST_F(ProfileManagerTest, GetProfile) {
 
   ProfileManager* profile_manager = g_browser_process->profile_manager();
 
-  Profile* profile;
-
   // Successfully create a profile.
-  profile = profile_manager->GetProfile(dest_path);
+  Profile* profile = profile_manager->GetProfile(dest_path);
   EXPECT_TRUE(profile);
 
   // The profile already exists when we call GetProfile. Just load it.

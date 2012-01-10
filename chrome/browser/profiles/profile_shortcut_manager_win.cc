@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -43,10 +43,9 @@ const int kShortcutIconSize = 48;
 // with the profile in |profile_base_dir|.
 // For example: --profile-directory="Profile 2"
 string16 CreateProfileShortcutSwitch(const string16& profile_base_dir) {
-  string16 profile_directory = base::StringPrintf(L"--%ls=\"%ls\"",
+  return base::StringPrintf(L"--%ls=\"%ls\"",
       ASCIIToUTF16(switches::kProfileDirectory).c_str(),
       profile_base_dir.c_str());
-  return profile_directory;
 }
 
 // Wrap a ShellUtil function that returns a bool so it can be posted in a
@@ -282,7 +281,8 @@ void ProfileShortcutManagerWin::OnProfileAdded(
   } else {  // Only one profile, so create original shortcut, with no avatar.
     BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
         base::Bind(&CreateChromeDesktopShortcutForProfile,
-                   L"", L"", FilePath(), static_cast<gfx::Image*>(NULL), true));
+                   string16(), string16(), FilePath(),
+                   static_cast<gfx::Image*>(NULL), true));
   }
 }
 
