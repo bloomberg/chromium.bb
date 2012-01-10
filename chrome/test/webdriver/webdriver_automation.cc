@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -189,11 +189,16 @@ Automation::BrowserOptions::BrowserOptions()
 
 Automation::BrowserOptions::~BrowserOptions() {}
 
-Automation::Automation(const Logger& logger) : logger_(logger) {}
+Automation::Automation(const Logger& logger)
+    : logger_(logger),
+      build_no_(0) {}
 
 Automation::~Automation() {}
 
-void Automation::Init(const BrowserOptions& options, Error** error) {
+void Automation::Init(
+    const BrowserOptions& options,
+    int* build_no,
+    Error** error) {
   // Prepare Chrome's command line.
   CommandLine command(CommandLine::NO_PROGRAM);
   command.AppendSwitch(switches::kDisableHangMonitor);
@@ -288,6 +293,11 @@ void Automation::Init(const BrowserOptions& options, Error** error) {
   logger_.Log(kInfoLogLevel, "Connected to Chrome successfully. Version: " +
                   automation()->server_version());
 
+  *error = DetermineBuildNumber();
+  if (*error)
+    return;
+  *build_no = build_no_;
+
   // Check the version of Chrome is compatible with this ChromeDriver.
   chrome_details += ", version (" + automation()->server_version() + ")";
   int version = 0;
@@ -352,59 +362,63 @@ void Automation::ExecuteScript(const WebViewId& view_id,
     *error = new Error(kUnknownError, "Execute script did not return string");
 }
 
-void Automation::MouseMove(const WebViewId& view_id,
-                           const Point& p,
-                           Error** error) {
+void Automation::MouseMoveDeprecated(
+    const WebViewId& view_id,
+    const Point& p,
+    Error** error) {
   WebViewLocator view_locator;
   *error = ConvertViewIdToLocator(view_id, &view_locator);
   if (*error)
     return;
 
   automation::Error auto_error;
-  if (!SendMouseMoveJSONRequest(
+  if (!SendMouseMoveJSONRequestDeprecated(
           automation(), view_locator, p.rounded_x(), p.rounded_y(),
           &auto_error)) {
     *error = Error::FromAutomationError(auto_error);
   }
 }
 
-void Automation::MouseClick(const WebViewId& view_id,
-                            const Point& p,
-                            automation::MouseButton button,
-                            Error** error) {
+void Automation::MouseClickDeprecated(
+    const WebViewId& view_id,
+    const Point& p,
+    automation::MouseButton button,
+    Error** error) {
   WebViewLocator view_locator;
   *error = ConvertViewIdToLocator(view_id, &view_locator);
   if (*error)
     return;
 
   automation::Error auto_error;
-  if (!SendMouseClickJSONRequest(
+  if (!SendMouseClickJSONRequestDeprecated(
           automation(), view_locator, button, p.rounded_x(),
           p.rounded_y(), &auto_error)) {
     *error = Error::FromAutomationError(auto_error);
   }
 }
 
-void Automation::MouseDrag(const WebViewId& view_id,
-                           const Point& start,
-                           const Point& end,
-                           Error** error) {
+void Automation::MouseDragDeprecated(
+    const WebViewId& view_id,
+    const Point& start,
+    const Point& end,
+    Error** error) {
   WebViewLocator view_locator;
   *error = ConvertViewIdToLocator(view_id, &view_locator);
   if (*error)
     return;
 
   automation::Error auto_error;
-  if (!SendMouseDragJSONRequest(
+  if (!SendMouseDragJSONRequestDeprecated(
           automation(), view_locator, start.rounded_x(), start.rounded_y(),
           end.rounded_x(), end.rounded_y(), &auto_error)) {
     *error = Error::FromAutomationError(auto_error);
   }
 }
 
-void Automation::MouseButtonUp(const WebViewId& view_id,
-                               const Point& p,
-                               Error** error) {
+void Automation::MouseButtonUpDeprecated(
+    const WebViewId& view_id,
+    const Point& p,
+    Error** error) {
   *error = CheckAdvancedInteractionsSupported();
   if (*error)
     return;
@@ -415,16 +429,17 @@ void Automation::MouseButtonUp(const WebViewId& view_id,
     return;
 
   automation::Error auto_error;
-  if (!SendMouseButtonUpJSONRequest(
+  if (!SendMouseButtonUpJSONRequestDeprecated(
           automation(), view_locator, p.rounded_x(), p.rounded_y(),
           &auto_error)) {
     *error = Error::FromAutomationError(auto_error);
   }
 }
 
-void Automation::MouseButtonDown(const WebViewId& view_id,
-                                 const Point& p,
-                                 Error** error) {
+void Automation::MouseButtonDownDeprecated(
+    const WebViewId& view_id,
+    const Point& p,
+    Error** error) {
   *error = CheckAdvancedInteractionsSupported();
   if (*error)
     return;
@@ -435,16 +450,17 @@ void Automation::MouseButtonDown(const WebViewId& view_id,
     return;
 
   automation::Error auto_error;
-  if (!SendMouseButtonDownJSONRequest(
+  if (!SendMouseButtonDownJSONRequestDeprecated(
           automation(), view_locator, p.rounded_x(), p.rounded_y(),
           &auto_error)) {
     *error = Error::FromAutomationError(auto_error);
   }
 }
 
-void Automation::MouseDoubleClick(const WebViewId& view_id,
-                                  const Point& p,
-                                  Error** error) {
+void Automation::MouseDoubleClickDeprecated(
+    const WebViewId& view_id,
+    const Point& p,
+    Error** error) {
   *error = CheckAdvancedInteractionsSupported();
   if (*error)
     return;
@@ -455,7 +471,7 @@ void Automation::MouseDoubleClick(const WebViewId& view_id,
     return;
 
   automation::Error auto_error;
-  if (!SendMouseDoubleClickJSONRequest(
+  if (!SendMouseDoubleClickJSONRequestDeprecated(
           automation(), view_locator, p.rounded_x(), p.rounded_y(),
           &auto_error)) {
     *error = Error::FromAutomationError(auto_error);
@@ -506,6 +522,21 @@ void Automation::SendNativeKeyEvent(const WebViewId& view_id,
   automation::Error auto_error;
   if (!SendNativeKeyEventJSONRequest(
          automation(), view_locator, key_code, modifiers, &auto_error)) {
+    *error = Error::FromAutomationError(auto_error);
+  }
+}
+
+void Automation::SendWebMouseEvent(const WebViewId& view_id,
+                                   const WebMouseEvent& event,
+                                   Error** error) {
+  WebViewLocator view_locator;
+  *error = ConvertViewIdToLocator(view_id, &view_locator);
+  if (*error)
+    return;
+
+  automation::Error auto_error;
+  if (!SendWebMouseEventJSONRequest(
+          automation(), view_locator, event, &auto_error)) {
     *error = Error::FromAutomationError(auto_error);
   }
 }
@@ -644,13 +675,8 @@ void Automation::SetCookie(const std::string& url,
 
 void Automation::GetViews(std::vector<WebViewInfo>* views,
                           Error** error) {
-  bool has_views = false;
-  *error = CompareVersion(963, 0, &has_views);
-  if (*error)
-    return;
-
   automation::Error auto_error;
-  if (has_views) {
+  if (build_no_ >= 963) {
     if (!SendGetWebViewsJSONRequest(automation(), views, &auto_error))
       *error = Error::FromAutomationError(auto_error);
   } else {
@@ -824,14 +850,9 @@ void Automation::SetLocalStatePreference(const std::string& pref,
                                          base::Value* value,
                                          Error** error) {
   scoped_ptr<Value> scoped_value(value);
-  bool has_new_local_state_api = false;
   // In version 927, SetLocalStatePrefs was changed from taking a browser
   // handle to a browser index.
-  *error = CompareVersion(927, 0, &has_new_local_state_api);
-  if (*error)
-    return;
-
-  if (has_new_local_state_api) {
+  if (build_no_ >= 927) {
     automation::Error auto_error;
     if (!SendSetLocalStatePreferenceJSONRequest(
             automation(), pref, scoped_value.release(), &auto_error))
@@ -855,14 +876,9 @@ void Automation::SetPreference(const std::string& pref,
                                base::Value* value,
                                Error** error) {
   scoped_ptr<Value> scoped_value(value);
-  bool has_new_pref_api = false;
   // Chrome 17 is on the 963 branch. The first released 18 build should have
   // the new SetPrefs method which uses a browser index instead of handle.
-  *error = CompareVersion(964, 0, &has_new_pref_api);
-  if (*error)
-    return;
-
-  if (has_new_pref_api) {
+  if (build_no_ >= 964) {
     automation::Error auto_error;
     if (!SendSetPreferenceJSONRequest(
             automation(), pref, scoped_value.release(), &auto_error))
@@ -903,9 +919,7 @@ Error* Automation::ConvertViewIdToLocator(
   return NULL;
 }
 
-Error* Automation::CompareVersion(int client_build_no,
-                                  int client_patch_no,
-                                  bool* is_newer_or_equal) {
+Error* Automation::DetermineBuildNumber() {
   std::string version = automation()->server_version();
   std::vector<std::string> split_version;
   base::SplitString(version, '.', &split_version);
@@ -913,49 +927,35 @@ Error* Automation::CompareVersion(int client_build_no,
     return new Error(
         kUnknownError, "Browser version has unrecognized format: " + version);
   }
-  int build_no, patch_no;
-  if (!base::StringToInt(split_version[2], &build_no) ||
-      !base::StringToInt(split_version[3], &patch_no)) {
+  if (!base::StringToInt(split_version[2], &build_no_)) {
     return new Error(
         kUnknownError, "Browser version has unrecognized format: " + version);
   }
-  if (build_no < client_build_no)
-    *is_newer_or_equal = false;
-  else if (build_no > client_build_no)
-    *is_newer_or_equal = true;
-  else
-    *is_newer_or_equal = patch_no >= client_patch_no;
   return NULL;
 }
 
-Error* Automation::CheckVersion(int client_build_no,
-                                int client_patch_no,
+Error* Automation::CheckVersion(int min_required_build_no,
                                 const std::string& error_msg) {
-  bool version_is_ok = false;
-  Error* error = CompareVersion(
-      client_build_no, client_patch_no, &version_is_ok);
-  if (error)
-    return error;
-  if (!version_is_ok)
+  if (build_no_ < min_required_build_no)
     return new Error(kUnknownError, error_msg);
   return NULL;
 }
 
 Error* Automation::CheckAlertsSupported() {
   return CheckVersion(
-      768, 0, "Alerts are not supported for this version of Chrome");
+      768, "Alerts are not supported for this version of Chrome");
 }
 
 Error* Automation::CheckAdvancedInteractionsSupported() {
   const char* message =
       "Advanced user interactions are not supported for this version of Chrome";
-  return CheckVersion(750, 0, message);
+  return CheckVersion(750, message);
 }
 
 Error* Automation::CheckNewExtensionInterfaceSupported() {
   const char* message =
       "Extension interface is not supported for this version of Chrome";
-  return CheckVersion(947, 0, message);
+  return CheckVersion(947, message);
 }
 
 }  // namespace webdriver

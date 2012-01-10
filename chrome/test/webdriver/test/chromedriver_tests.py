@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -37,8 +37,9 @@ except ImportError:
   import json
 
 from selenium.common.exceptions import WebDriverException
-from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
+from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.remote.command import Command
 from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.support.ui import WebDriverWait
@@ -515,6 +516,133 @@ class MouseTest(ChromeDriverTest):
     self._driver.get(self.GetTestDataUrl() + '/not_clickable.html')
     elem = self._driver.find_element_by_name('click')
     self.assertRaises(WebDriverException, elem.click)
+
+
+class MouseEventTest(ChromeDriverTest):
+  """Tests for checking the correctness of mouse events."""
+
+  def setUp(self):
+    super(MouseEventTest, self).setUp()
+    self._driver = self.GetNewDriver()
+    self._driver.command_executor._commands['_keys_'] = (
+        'POST', '/session/$sessionId/keys')
+    self._driver.execute('_keys_', {'value': [Keys.CONTROL, Keys.SHIFT]})
+    self._driver.get(self.GetTestDataUrl() + '/events.html')
+    self._divs = self._driver.find_elements_by_tag_name('div')
+
+  def _CheckEvent(self, event, event_type, mouse_button, x, y):
+    """Checks the given event properties.
+
+    This function expects the ctrl and shift keys to be pressed.
+    """
+    self.assertEquals(event_type, event['type'])
+    self.assertEquals(mouse_button, event['button'])
+    self.assertEquals(False, event['altKey'])
+    self.assertEquals(True, event['ctrlKey'])
+    self.assertEquals(True, event['shiftKey'])
+    self.assertEquals(x, event['x'])
+    self.assertEquals(y, event['y'])
+
+  def _GetElementMiddle(self, elem):
+    x = elem.location['x']
+    y = elem.location['y']
+    return (x + (elem.size['width'] + 1) / 2, y + (elem.size['height'] + 1) / 2)
+
+  def testMoveCommand(self):
+    x = self._divs[0].location['x']
+    y = self._divs[0].location['y']
+    center_x, center_y = self._GetElementMiddle(self._divs[0])
+
+    # Move to element.
+    ActionChains(self._driver).move_to_element(self._divs[0]).perform()
+    events = self._driver.execute_script('return takeEvents()')
+    self.assertEquals(1, len(events))
+    self._CheckEvent(events[0], 'mousemove', 0, center_x, center_y)
+
+    # Move by offset.
+    ActionChains(self._driver).move_by_offset(1, 2).perform()
+    events = self._driver.execute_script('return takeEvents()')
+    self.assertEquals(1, len(events))
+    self._CheckEvent(events[0], 'mousemove', 0, center_x + 1, center_y + 2)
+
+    # Move to element and offset.
+    ActionChains(self._driver).move_to_element_with_offset(
+        self._divs[0], 2, 1).perform()
+    events = self._driver.execute_script('return takeEvents()')
+    self.assertEquals(1, len(events))
+    self._CheckEvent(events[0], 'mousemove', 0, x + 2, y + 1)
+
+  def testClickCommand(self):
+    center_x, center_y = self._GetElementMiddle(self._divs[0])
+
+    # Left click element.
+    ActionChains(self._driver).click(self._divs[0]).perform()
+    events = self._driver.execute_script('return takeEvents()')
+    self.assertEquals(3, len(events))
+    self._CheckEvent(events[0], 'mousemove', 0, center_x, center_y)
+    self._CheckEvent(events[1], 'mousedown', 0, center_x, center_y)
+    self._CheckEvent(events[2], 'mouseup', 0, center_x, center_y)
+
+    # Left click.
+    ActionChains(self._driver).click(None).perform()
+    events = self._driver.execute_script('return takeEvents()')
+    self.assertEquals(2, len(events))
+    self._CheckEvent(events[0], 'mousedown', 0, center_x, center_y)
+    self._CheckEvent(events[1], 'mouseup', 0, center_x, center_y)
+
+    # Right click.
+    ActionChains(self._driver).context_click(None).perform()
+    events = self._driver.execute_script('return takeEvents()')
+    self.assertEquals(2, len(events))
+    self._CheckEvent(events[0], 'mousedown', 2, center_x, center_y)
+    self._CheckEvent(events[1], 'mouseup', 2, center_x, center_y)
+
+  def testButtonDownUpCommand(self):
+    center_x, center_y = self._GetElementMiddle(self._divs[0])
+    center_x2, center_y2 = self._GetElementMiddle(self._divs[1])
+
+    # Press and release element.
+    ActionChains(self._driver).click_and_hold(self._divs[0]).release(
+        self._divs[1]).perform()
+    events = self._driver.execute_script('return takeEvents()')
+    self.assertEquals(4, len(events))
+    self._CheckEvent(events[0], 'mousemove', 0, center_x, center_y)
+    self._CheckEvent(events[1], 'mousedown', 0, center_x, center_y)
+    self._CheckEvent(events[2], 'mousemove', 0, center_x2, center_y2)
+    self._CheckEvent(events[3], 'mouseup', 0, center_x2, center_y2)
+
+    # Press and release.
+    ActionChains(self._driver).click_and_hold(None).release(None).perform()
+    events = self._driver.execute_script('return takeEvents()')
+    self.assertEquals(2, len(events))
+    self._CheckEvent(events[0], 'mousedown', 0, center_x2, center_y2)
+    self._CheckEvent(events[1], 'mouseup', 0, center_x2, center_y2)
+
+  def testDoubleClickCommand(self):
+    center_x, center_y = self._GetElementMiddle(self._divs[0])
+
+    # Double click element.
+    ActionChains(self._driver).double_click(self._divs[0]).perform()
+    events = self._driver.execute_script('return takeEvents()')
+    self.assertEquals(6, len(events))
+    self._CheckEvent(events[5], 'dblclick', 0, center_x, center_y)
+
+    # Double click.
+    ActionChains(self._driver).double_click(None).perform()
+    events = self._driver.execute_script('return takeEvents()')
+    self.assertEquals(5, len(events))
+    self._CheckEvent(events[4], 'dblclick', 0, center_x, center_y)
+
+  def testElementAPIClick(self):
+    center_x, center_y = self._GetElementMiddle(self._divs[0])
+
+    # Left click element.
+    self._divs[0].click()
+    events = self._driver.execute_script('return takeEvents()')
+    self.assertEquals(3, len(events))
+    self._CheckEvent(events[0], 'mousemove', 0, center_x, center_y)
+    self._CheckEvent(events[1], 'mousedown', 0, center_x, center_y)
+    self._CheckEvent(events[2], 'mouseup', 0, center_x, center_y)
 
 
 class TypingTest(ChromeDriverTest):

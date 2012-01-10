@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -47,10 +47,21 @@ enum KeyModifierMasks {
   kMetaKeyMask    = 1 << 3,
 };
 
+// Recognized by the AutomationProvider's ProcessWebMouseEvent command.
+enum MouseEventType {
+  kMouseDown = 0,
+  kMouseUp,
+  kMouseMove,
+  kMouseEnter,
+  kMouseLeave,
+  kContextMenu,
+};
+
 enum MouseButton {
   kLeftButton = 0,
   kMiddleButton,
   kRightButton,
+  kNoButton,
 };
 
 // The current version of ChromeDriver automation supported by Chrome.

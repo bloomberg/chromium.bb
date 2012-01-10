@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -36,6 +36,22 @@ struct WebKeyEvent {
   ui::KeyboardCode key_code;
   std::string unmodified_text;
   std::string modified_text;
+  int modifiers;
+};
+
+struct WebMouseEvent {
+  WebMouseEvent(automation::MouseEventType type,
+                automation::MouseButton button,
+                int x,
+                int y,
+                int click_count,
+                int modifiers);
+
+  automation::MouseEventType type;
+  automation::MouseButton button;
+  int x;
+  int y;
+  int click_count;
   int modifiers;
 };
 
@@ -292,7 +308,8 @@ bool SendCloseViewJSONRequest(
 
 // Requests to send the WebKit event for a mouse move to the given
 // coordinate in the specified view. Returns true on success.
-bool SendMouseMoveJSONRequest(
+// Deprecated. TODO(kkania): Remove when chrome 17 is unsupported.
+bool SendMouseMoveJSONRequestDeprecated(
     AutomationMessageSender* sender,
     const WebViewLocator& locator,
     int x,
@@ -301,7 +318,8 @@ bool SendMouseMoveJSONRequest(
 
 // Requests to send the WebKit events for a mouse click at the given
 // coordinate in the specified view. Returns true on success.
-bool SendMouseClickJSONRequest(
+// Deprecated. TODO(kkania): Remove when chrome 17 is unsupported.
+bool SendMouseClickJSONRequestDeprecated(
     AutomationMessageSender* sender,
     const WebViewLocator& locator,
     automation::MouseButton button,
@@ -311,7 +329,8 @@ bool SendMouseClickJSONRequest(
 
 // Requests to send the WebKit events for a mouse drag from the start to end
 // coordinates given in the specified view. Returns true on success.
-bool SendMouseDragJSONRequest(
+// Deprecated. TODO(kkania): Remove when chrome 17 is unsupported.
+bool SendMouseDragJSONRequestDeprecated(
     AutomationMessageSender* sender,
     const WebViewLocator& locator,
     int start_x,
@@ -322,7 +341,8 @@ bool SendMouseDragJSONRequest(
 
 // Requests to send the WebKit event for a mouse button down at the given
 // coordinate in the specified view. Returns true on success.
-bool SendMouseButtonDownJSONRequest(
+// Deprecated. TODO(kkania): Remove when chrome 17 is unsupported.
+bool SendMouseButtonDownJSONRequestDeprecated(
     AutomationMessageSender* sender,
     const WebViewLocator& locator,
     int x,
@@ -331,7 +351,8 @@ bool SendMouseButtonDownJSONRequest(
 
 // Requests to send the WebKit event for a mouse button up at the given
 // coordinate in the specified view. Returns true on success.
-bool SendMouseButtonUpJSONRequest(
+// Deprecated. TODO(kkania): Remove when chrome 17 is unsupported.
+bool SendMouseButtonUpJSONRequestDeprecated(
     AutomationMessageSender* sender,
     const WebViewLocator& locator,
     int x,
@@ -340,7 +361,8 @@ bool SendMouseButtonUpJSONRequest(
 
 // Requests to send the WebKit event for a mouse double click at the given
 // coordinate in the specified view. Returns true on success.
-bool SendMouseDoubleClickJSONRequest(
+// Deprecated. TODO(kkania): Remove when chrome 17 is unsupported.
+bool SendMouseDoubleClickJSONRequestDeprecated(
     AutomationMessageSender* sender,
     const WebViewLocator& locator,
     int x,
@@ -362,6 +384,14 @@ bool SendNativeKeyEventJSONRequest(
     const WebViewLocator& locator,
     ui::KeyboardCode key_code,
     int modifiers,
+    automation::Error* error) WARN_UNUSED_RESULT;
+
+// Requests to send the WebKit event for the given |WebMouseEvent| in a
+// specified view. Returns true on success.
+bool SendWebMouseEventJSONRequest(
+    AutomationMessageSender* sender,
+    const WebViewLocator& locator,
+    const WebMouseEvent& mouse_event,
     automation::Error* error) WARN_UNUSED_RESULT;
 
 // Requests to drag and drop the file paths at the given coordinate in the

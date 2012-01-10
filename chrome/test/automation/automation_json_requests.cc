@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -79,6 +79,19 @@ WebKeyEvent::WebKeyEvent(automation::KeyEventTypes type,
       key_code(key_code),
       unmodified_text(unmodified_text),
       modified_text(modified_text),
+      modifiers(modifiers) {}
+
+WebMouseEvent::WebMouseEvent(automation::MouseEventType type,
+                             automation::MouseButton button,
+                             int x,
+                             int y,
+                             int click_count,
+                             int modifiers)
+    : type(type),
+      button(button),
+      x(x),
+      y(y),
+      click_count(click_count),
       modifiers(modifiers) {}
 
 // static
@@ -490,7 +503,7 @@ bool SendCloseViewJSONRequest(
   return SendAutomationJSONRequest(sender, dict, &reply_dict, error);
 }
 
-bool SendMouseMoveJSONRequest(
+bool SendMouseMoveJSONRequestDeprecated(
     AutomationMessageSender* sender,
     const WebViewLocator& locator,
     int x,
@@ -505,7 +518,7 @@ bool SendMouseMoveJSONRequest(
   return SendAutomationJSONRequest(sender, dict, &reply_dict, error);
 }
 
-bool SendMouseClickJSONRequest(
+bool SendMouseClickJSONRequestDeprecated(
     AutomationMessageSender* sender,
     const WebViewLocator& locator,
     automation::MouseButton button,
@@ -522,7 +535,7 @@ bool SendMouseClickJSONRequest(
   return SendAutomationJSONRequest(sender, dict, &reply_dict, error);
 }
 
-bool SendMouseDragJSONRequest(
+bool SendMouseDragJSONRequestDeprecated(
     AutomationMessageSender* sender,
     const WebViewLocator& locator,
     int start_x,
@@ -541,7 +554,7 @@ bool SendMouseDragJSONRequest(
   return SendAutomationJSONRequest(sender, dict, &reply_dict, error);
 }
 
-bool SendMouseButtonDownJSONRequest(
+bool SendMouseButtonDownJSONRequestDeprecated(
     AutomationMessageSender* sender,
     const WebViewLocator& locator,
     int x,
@@ -556,7 +569,7 @@ bool SendMouseButtonDownJSONRequest(
   return SendAutomationJSONRequest(sender, dict, &reply_dict, error);
 }
 
-bool SendMouseButtonUpJSONRequest(
+bool SendMouseButtonUpJSONRequestDeprecated(
     AutomationMessageSender* sender,
     const WebViewLocator& locator,
     int x,
@@ -571,7 +584,7 @@ bool SendMouseButtonUpJSONRequest(
   return SendAutomationJSONRequest(sender, dict, &reply_dict, error);
 }
 
-bool SendMouseDoubleClickJSONRequest(
+bool SendMouseDoubleClickJSONRequestDeprecated(
     AutomationMessageSender* sender,
     const WebViewLocator& locator,
     int x,
@@ -616,6 +629,24 @@ bool SendNativeKeyEventJSONRequest(
   locator.UpdateDictionary(&dict, "auto_id");
   dict.SetInteger("keyCode", key_code);
   dict.SetInteger("modifiers", modifiers);
+  DictionaryValue reply_dict;
+  return SendAutomationJSONRequest(sender, dict, &reply_dict, error);
+}
+
+bool SendWebMouseEventJSONRequest(
+    AutomationMessageSender* sender,
+    const WebViewLocator& locator,
+    const WebMouseEvent& mouse_event,
+    automation::Error* error) {
+  DictionaryValue dict;
+  dict.SetString("command", "ProcessWebMouseEvent");
+  locator.UpdateDictionary(&dict, "auto_id");
+  dict.SetInteger("type", mouse_event.type);
+  dict.SetInteger("button", mouse_event.button);
+  dict.SetInteger("x", mouse_event.x);
+  dict.SetInteger("y", mouse_event.y);
+  dict.SetInteger("click_count", mouse_event.click_count);
+  dict.SetInteger("modifiers", mouse_event.modifiers);
   DictionaryValue reply_dict;
   return SendAutomationJSONRequest(sender, dict, &reply_dict, error);
 }

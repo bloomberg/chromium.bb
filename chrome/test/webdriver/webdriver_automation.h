@@ -21,6 +21,7 @@ class AutomationId;
 class AutomationProxy;
 class ProxyLauncher;
 struct WebKeyEvent;
+struct WebMouseEvent;
 class WebViewId;
 struct WebViewInfo;
 class WebViewLocator;
@@ -69,7 +70,7 @@ class Automation {
   virtual ~Automation();
 
   // Start the system's default Chrome binary.
-  void Init(const BrowserOptions& options, Error** error);
+  void Init(const BrowserOptions& options, int* build_no, Error** error);
 
   // Terminates this session and disconnects its automation proxy. After
   // invoking this method, the Automation can safely be deleted.
@@ -95,6 +96,12 @@ class Automation {
                           ui::KeyboardCode key_code,
                           int modifiers,
                           Error** error);
+
+  // Sends a web mouse event to the given view. Waits until the event has
+  // been processed by the view.
+  void SendWebMouseEvent(const WebViewId& view_id,
+                         const WebMouseEvent& event,
+                         Error** error);
 
   // Drag and drop the file paths to the given location.
   void DragAndDropFilePaths(const WebViewId& view_id,
@@ -126,24 +133,29 @@ class Automation {
                  base::DictionaryValue* cookie_dict,
                  Error** error);
 
-  void MouseMove(const WebViewId& view_id, const Point& p, Error** error);
-  void MouseClick(const WebViewId& view_id,
-                  const Point& p,
-                  automation::MouseButton button,
-                  Error** error);
-  void MouseDrag(const WebViewId& view_id,
-                 const Point& start,
-                 const Point& end,
-                 Error** error);
-  void MouseButtonDown(const WebViewId& view_id,
-                       const Point& p,
-                       Error** error);
-  void MouseButtonUp(const WebViewId& view_id,
-                     const Point& p,
-                     Error** error);
-  void MouseDoubleClick(const WebViewId& view_id,
-                        const Point& p,
-                        Error** error);
+  // TODO(kkania): All of these mouse commands are deprecated and should be
+  // removed when chrome build 1002 is no longer supported.
+  // Use SendWebMouseEvent instead.
+  void MouseMoveDeprecated(const WebViewId& view_id,
+                           const Point& p,
+                           Error** error);
+  void MouseClickDeprecated(const WebViewId& view_id,
+                            const Point& p,
+                            automation::MouseButton button,
+                            Error** error);
+  void MouseDragDeprecated(const WebViewId& view_id,
+                           const Point& start,
+                           const Point& end,
+                           Error** error);
+  void MouseButtonDownDeprecated(const WebViewId& view_id,
+                                 const Point& p,
+                                 Error** error);
+  void MouseButtonUpDeprecated(const WebViewId& view_id,
+                               const Point& p,
+                               Error** error);
+  void MouseDoubleClickDeprecated(const WebViewId& view_id,
+                                  const Point& p,
+                                  Error** error);
 
   // Get info for all views currently open.
   void GetViews(std::vector<WebViewInfo>* views, Error** error);
@@ -222,18 +234,17 @@ class Automation {
   AutomationProxy* automation() const;
   Error* ConvertViewIdToLocator(const WebViewId& view_id,
                                 WebViewLocator* view_locator);
-  Error* CompareVersion(int client_build_no,
-                        int client_patch_no,
-                        bool* is_newer_or_equal);
-  Error* CheckVersion(int client_build_no,
-                      int client_patch_no,
+  Error* DetermineBuildNumber();
+  Error* CheckVersion(int min_required_build_no,
                       const std::string& error_msg);
   Error* CheckAlertsSupported();
   Error* CheckAdvancedInteractionsSupported();
   Error* CheckNewExtensionInterfaceSupported();
+  Error* IsNewMouseApiSupported(bool* supports_new_api);
 
   const Logger& logger_;
   scoped_ptr<ProxyLauncher> launcher_;
+  int build_no_;
 
   DISALLOW_COPY_AND_ASSIGN(Automation);
 };

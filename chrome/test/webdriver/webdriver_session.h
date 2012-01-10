@@ -355,6 +355,7 @@ class Session {
       const base::Closure& task,
       base::WaitableEvent* done_event);
   void InitOnSessionThread(const Automation::BrowserOptions& options,
+                           int* build_no,
                            Error** error);
   void TerminateOnSessionThread();
 
@@ -364,10 +365,14 @@ class Session {
   Error* ExecuteScriptAndParseValue(const FrameId& frame_id,
                                     const std::string& script,
                                     base::Value** value);
-
   void SendKeysOnSessionThread(const string16& keys,
                                bool release_modifiers,
                                Error** error);
+  Error* ProcessWebMouseEvents(const std::vector<WebMouseEvent>& events);
+  WebMouseEvent CreateWebMouseEvent(automation::MouseEventType type,
+                                    automation::MouseButton button,
+                                    const Point& point,
+                                    int click_count);
   Error* SwitchToFrameWithJavaScriptLocatedFrame(
       const std::string& script,
       base::ListValue* args);
@@ -433,6 +438,11 @@ class Session {
 
   // Current state of all modifier keys.
   int sticky_modifiers_;
+
+  // Chrome's build number. This is the 3rd number in Chrome's version string
+  // (e.g., 18.0.995.0 -> 995). Only valid after Chrome has started.
+  // See http://dev.chromium.org/releases/version-numbers.
+  int build_no_;
 
   DISALLOW_COPY_AND_ASSIGN(Session);
 };

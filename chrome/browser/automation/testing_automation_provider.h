@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -1221,6 +1221,24 @@ class TestingAutomationProvider : public AutomationProvider,
   //   output: none
   void SendOSLevelKeyEventToTab(base::DictionaryValue* args,
                                 IPC::Message* message);
+
+  // Processes the WebKit mouse event with the specified properties.
+  // The pair |windex| and |tab_index| or the single |auto_id| must be given
+  // to specify the render view.
+  // Example:
+  //   input: { "windex": 1,
+  //            "tab_index": 1,
+  //            "auto_id": { "type": 0, "id": "awoein" },
+  //            "type": automation::kMouseDown,
+  //            "button": automation::kLeftButton,
+  //            "x": 100,
+  //            "y": 200,
+  //            "click_count": 1,
+  //            "modifiers": automation::kShiftKeyMask,
+  //          }
+  //   output: none
+  void ProcessWebMouseEvent(base::DictionaryValue* args,
+                            IPC::Message* message);
 
   // Method used as a Task that sends a success AutomationJSONReply.
   void SendSuccessReply(IPC::Message* reply_message);

@@ -42,7 +42,18 @@
 #include "chrome/test/webdriver/webdriver_util.h"
 #include "third_party/webdriver/atoms.h"
 
+using automation::kLeftButton;
+using automation::kMouseDown;
+using automation::kMouseMove;
+using automation::kMouseUp;
+using automation::kNoButton;
+
 namespace webdriver {
+
+namespace {
+// This is the minimum version of chrome that supports the new mouse API.
+const int kNewMouseAPIMinVersion = 1002;
+}
 
 FrameId::FrameId() {}
 
@@ -60,7 +71,8 @@ Session::Session()
       async_script_timeout_(0),
       implicit_wait_(0),
       has_alert_prompt_text_(false),
-      sticky_modifiers_(0) {
+      sticky_modifiers_(0),
+      build_no_(0) {
   SessionManager::GetInstance()->Add(this);
   logger_.AddHandler(session_log_.get());
   if (FileLog::Get())
@@ -103,6 +115,7 @@ Error* Session::Init(const DictionaryValue* capabilities_dict) {
       &Session::InitOnSessionThread,
       base::Unretained(this),
       browser_options,
+      &build_no_,
       &error));
   if (!error)
     error = PostBrowserStartInit();
@@ -404,13 +417,21 @@ Error* Session::GetTitle(std::string* tab_title) {
 Error* Session::MouseMoveAndClick(const Point& location,
                                   automation::MouseButton button) {
   Error* error = NULL;
-  RunSessionTask(base::Bind(
-      &Automation::MouseClick,
-      base::Unretained(automation_.get()),
-      current_target_.view_id,
-      location,
-      button,
-      &error));
+  if (build_no_ >= kNewMouseAPIMinVersion) {
+    std::vector<WebMouseEvent> events;
+    events.push_back(CreateWebMouseEvent(kMouseMove, kNoButton, location, 0));
+    events.push_back(CreateWebMouseEvent(kMouseDown, button, location, 1));
+    events.push_back(CreateWebMouseEvent(kMouseUp, button, location, 1));
+    error = ProcessWebMouseEvents(events);
+  } else {
+    RunSessionTask(base::Bind(
+        &Automation::MouseClickDeprecated,
+        base::Unretained(automation_.get()),
+        current_target_.view_id,
+        location,
+        button,
+        &error));
+  }
   if (!error)
     mouse_position_ = location;
   return error;
@@ -418,12 +439,18 @@ Error* Session::MouseMoveAndClick(const Point& location,
 
 Error* Session::MouseMove(const Point& location) {
   Error* error = NULL;
-  RunSessionTask(base::Bind(
-      &Automation::MouseMove,
-      base::Unretained(automation_.get()),
-      current_target_.view_id,
-      location,
-      &error));
+  if (build_no_ >= kNewMouseAPIMinVersion) {
+    std::vector<WebMouseEvent> events;
+    events.push_back(CreateWebMouseEvent(kMouseMove, kNoButton, location, 0));
+    error = ProcessWebMouseEvents(events);
+  } else {
+    RunSessionTask(base::Bind(
+        &Automation::MouseMoveDeprecated,
+        base::Unretained(automation_.get()),
+        current_target_.view_id,
+        location,
+        &error));
+  }
   if (!error)
     mouse_position_ = location;
   return error;
@@ -432,52 +459,97 @@ Error* Session::MouseMove(const Point& location) {
 Error* Session::MouseDrag(const Point& start,
                           const Point& end) {
   Error* error = NULL;
-  RunSessionTask(base::Bind(
-      &Automation::MouseDrag,
-      base::Unretained(automation_.get()),
-      current_target_.view_id,
-      start,
-      end,
-      &error));
+  if (build_no_ >= kNewMouseAPIMinVersion) {
+    std::vector<WebMouseEvent> events;
+    events.push_back(CreateWebMouseEvent(kMouseMove, kNoButton, start, 0));
+    events.push_back(CreateWebMouseEvent(kMouseDown, kLeftButton, start, 1));
+    events.push_back(CreateWebMouseEvent(kMouseMove, kLeftButton, end, 0));
+    events.push_back(CreateWebMouseEvent(kMouseUp, kLeftButton, end, 1));
+    error = ProcessWebMouseEvents(events);
+  } else {
+    RunSessionTask(base::Bind(
+        &Automation::MouseDragDeprecated,
+        base::Unretained(automation_.get()),
+        current_target_.view_id,
+        start,
+        end,
+        &error));
+  }
   if (!error)
     mouse_position_ = end;
   return error;
 }
 
 Error* Session::MouseClick(automation::MouseButton button) {
-  return MouseMoveAndClick(mouse_position_, button);
+  if (build_no_ >= kNewMouseAPIMinVersion) {
+    std::vector<WebMouseEvent> events;
+    events.push_back(CreateWebMouseEvent(
+        kMouseDown, button, mouse_position_, 1));
+    events.push_back(CreateWebMouseEvent(
+        kMouseUp, button, mouse_position_, 1));
+    return ProcessWebMouseEvents(events);
+  } else {
+    return MouseMoveAndClick(mouse_position_, button);
+  }
 }
 
 Error* Session::MouseButtonDown() {
   Error* error = NULL;
-  RunSessionTask(base::Bind(
-      &Automation::MouseButtonDown,
-      base::Unretained(automation_.get()),
-      current_target_.view_id,
-      mouse_position_,
-      &error));
+  if (build_no_ >= kNewMouseAPIMinVersion) {
+    std::vector<WebMouseEvent> events;
+    events.push_back(CreateWebMouseEvent(
+        kMouseDown, kLeftButton, mouse_position_, 1));
+    error = ProcessWebMouseEvents(events);
+  } else {
+    RunSessionTask(base::Bind(
+        &Automation::MouseButtonDownDeprecated,
+        base::Unretained(automation_.get()),
+        current_target_.view_id,
+        mouse_position_,
+        &error));
+  }
   return error;
 }
 
 Error* Session::MouseButtonUp() {
   Error* error = NULL;
-  RunSessionTask(base::Bind(
-      &Automation::MouseButtonUp,
-      base::Unretained(automation_.get()),
-      current_target_.view_id,
-      mouse_position_,
-      &error));
+  if (build_no_ >= kNewMouseAPIMinVersion) {
+    std::vector<WebMouseEvent> events;
+    events.push_back(CreateWebMouseEvent(
+        kMouseUp, kLeftButton, mouse_position_, 1));
+    error = ProcessWebMouseEvents(events);
+  } else {
+    RunSessionTask(base::Bind(
+        &Automation::MouseButtonUpDeprecated,
+        base::Unretained(automation_.get()),
+        current_target_.view_id,
+        mouse_position_,
+        &error));
+  }
   return error;
 }
 
 Error* Session::MouseDoubleClick() {
   Error* error = NULL;
-  RunSessionTask(base::Bind(
-      &Automation::MouseDoubleClick,
-      base::Unretained(automation_.get()),
-      current_target_.view_id,
-      mouse_position_,
-      &error));
+  if (build_no_ >= kNewMouseAPIMinVersion) {
+    std::vector<WebMouseEvent> events;
+    events.push_back(CreateWebMouseEvent(
+        kMouseDown, kLeftButton, mouse_position_, 1));
+    events.push_back(CreateWebMouseEvent(
+        kMouseUp, kLeftButton, mouse_position_, 1));
+    events.push_back(CreateWebMouseEvent(
+        kMouseDown, kLeftButton, mouse_position_, 2));
+    events.push_back(CreateWebMouseEvent(
+        kMouseUp, kLeftButton, mouse_position_, 2));
+    error = ProcessWebMouseEvents(events);
+  } else {
+    RunSessionTask(base::Bind(
+        &Automation::MouseDoubleClickDeprecated,
+        base::Unretained(automation_.get()),
+        current_target_.view_id,
+        mouse_position_,
+        &error));
+  }
   return error;
 }
 
@@ -1224,9 +1296,10 @@ void Session::RunClosureOnSessionThread(const base::Closure& task,
 }
 
 void Session::InitOnSessionThread(const Automation::BrowserOptions& options,
+                                  int* build_no,
                                   Error** error) {
   automation_.reset(new Automation(logger_));
-  automation_->Init(options, error);
+  automation_->Init(options, build_no, error);
   if (*error)
     return;
 
@@ -1337,6 +1410,32 @@ void Session::SendKeysOnSessionThread(const string16& keys,
       return;
     }
   }
+}
+
+Error* Session::ProcessWebMouseEvents(
+    const std::vector<WebMouseEvent>& events) {
+  for (size_t i = 0; i < events.size(); ++i) {
+    Error* error = NULL;
+    RunSessionTask(base::Bind(
+        &Automation::SendWebMouseEvent,
+        base::Unretained(automation_.get()),
+        current_target_.view_id,
+        events[i],
+        &error));
+    if (error)
+      return error;
+    mouse_position_ = Point(events[i].x, events[i].y);
+  }
+  return NULL;
+}
+
+WebMouseEvent Session::CreateWebMouseEvent(
+    automation::MouseEventType type,
+    automation::MouseButton button,
+    const Point& point,
+    int click_count) {
+  return WebMouseEvent(type, button, point.rounded_x(), point.rounded_y(),
+                       click_count, sticky_modifiers_);
 }
 
 Error* Session::SwitchToFrameWithJavaScriptLocatedFrame(

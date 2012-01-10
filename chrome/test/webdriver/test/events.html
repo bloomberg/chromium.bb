@@ -1,0 +1,23 @@
+<html>
+  <script>
+    var g_events = [];
+    function addEvent(e) {
+      g_events.push(e);
+    }
+    function takeEvents() {
+      var temp = g_events;
+      g_events = [];
+      return temp;
+    }
+    window.onload = function() {
+      document.body.addEventListener('mousedown', addEvent);
+      document.body.addEventListener('mouseup', addEvent);
+      document.body.addEventListener('mousemove', addEvent);
+      document.body.addEventListener('dblclick', addEvent);
+    }
+  </script>
+  <body>
+    <div>Test</div>
+    <div>Test2</div>
+  </body>
+</html>
