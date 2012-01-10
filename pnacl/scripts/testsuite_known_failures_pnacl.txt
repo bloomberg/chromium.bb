@@ -45,9 +45,9 @@ burg
 # Would pick up the "#ifdef LITTLE_ENDIAN" for pnacl if we modified the
 # test to #include <endian.h>.
 security-sha
-# don't know (incorrect output but no crash)
+# !flushed on exit: http://code.google.com/p/nativeclient/issues/detail?id=2514
 imp
-automotive-bitcount
-telecomm-fft
 # rand() inconsistency http://llvm.org/bugs/show_bug.cgi?id=11629
 puzzle
+automotive-bitcount
+telecomm-fft

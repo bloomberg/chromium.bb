@@ -4,8 +4,6 @@
 # ======================================================================
 # failures in phase sel_ldr
 # ======================================================================
-# select function via ternary operator - looks like a complete miscompile
-pr34971.c
 # alignment issues using __alignof__
 alloca-1.c arm
 # setjmp/longjmp TODO
@@ -20,8 +18,9 @@ bitfld-3.c
 va-arg-4.c arm
 # postincrement of argument in definition prototype (is that even legal?)
 970217-1.c
-# bad shift of a 40-bit bitfield
+# bad shift of a 40-bit bitfield (assumes intermediate values are 40-bit)
 pr32244-1.c
+pr34971.c
 # incorrect handling of wide char literal
 # (it throws a warning, may just need the right flag)
 wchar_t-1.c
