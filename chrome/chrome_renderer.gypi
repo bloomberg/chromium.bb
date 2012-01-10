@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -72,6 +72,10 @@
         'renderer/extensions/chrome_v8_extension_handler.h',
         'renderer/extensions/chrome_webstore_bindings.cc',
         'renderer/extensions/chrome_webstore_bindings.h',
+        'renderer/extensions/contextMenus_custom_bindings.cc',
+        'renderer/extensions/contextMenus_custom_bindings.h',
+        'renderer/extensions/custom_bindings_util.cc',
+        'renderer/extensions/custom_bindings_util.h',
         'renderer/extensions/event_bindings.cc',
         'renderer/extensions/event_bindings.h',
         'renderer/extensions/extension_dispatcher.cc',
@@ -106,6 +110,7 @@
         'renderer/resources/extensions/greasemonkey_api.js',
         'renderer/resources/extensions/json_schema.js',
         'renderer/resources/extensions/miscellaneous_bindings.js',
+        'renderer/resources/extensions/contextMenus_custom_bindings.js',
         'renderer/resources/extensions/schema_generated_bindings.js',
         'renderer/about_handler.cc',
         'renderer/about_handler.h',

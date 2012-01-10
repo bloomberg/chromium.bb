@@ -17,7 +17,6 @@ var chrome = chrome || {};
   native function GetCurrentPageActions(extensionId);
   native function GetExtensionViews();
   native function GetLocalFileSystem(name, path);
-  native function GetNextContextMenuId();
   native function GetNextSocketEventId();
   native function GetNextTtsEventId();
   native function GetUniqueSubEventName(eventName);
@@ -194,6 +193,48 @@ var chrome = chrome || {};
     return nativeFunction(functionName, sargs, requestId, hasCallback,
                           opt_args.forIOThread);
   }
+
+  // Stores the name and definition of each API function, with methods to
+  // modify their behaviour (such as a custom way to handle requests to the
+  // API, a custom callback, etc).
+  function APIFunctions() {
+    this._apiFunctions = {};
+  }
+  APIFunctions.prototype.register = function(apiName, apiFunction) {
+    this._apiFunctions[apiName] = apiFunction;
+  };
+  APIFunctions.prototype._setHook =
+      function(apiName, propertyName, customizedFunction) {
+    if (this._apiFunctions.hasOwnProperty(apiName))
+      this._apiFunctions[apiName][propertyName] = customizedFunction;
+  };
+  APIFunctions.prototype.setHandleRequest =
+      function(apiName, customizedFunction) {
+    return this._setHook(apiName, 'handleRequest', customizedFunction);
+  };
+  APIFunctions.prototype.setUpdateArgumentsPostValidate =
+      function(apiName, customizedFunction) {
+    return this._setHook(
+      apiName, 'updateArgumentsPostValidate', customizedFunction);
+  };
+  APIFunctions.prototype.setUpdateArgumentsPreValidate =
+      function(apiName, customizedFunction) {
+    return this._setHook(
+      apiName, 'updateArgumentsPreValidate', customizedFunction);
+  };
+  APIFunctions.prototype.setCustomCallback =
+      function(apiName, customizedFunction) {
+    return this._setHook(apiName, 'customCallback', customizedFunction);
+  };
+
+  var apiFunctions = new APIFunctions();
+
+  // The public API of schema_generated_bindings, to be used by custom bindings
+  // JS files.
+  chromeHidden.schemaGeneratedBindings = {
+    sendRequest: sendRequest,
+    apiFunctions: apiFunctions
+  };
 
   // --- Setup additional api's not currently handled in common/extensions/api
 
@@ -454,28 +495,6 @@ var chrome = chrome || {};
     }
   }
 
-  function setupHiddenContextMenuEvent(extensionId) {
-    chromeHidden.contextMenus = {};
-    chromeHidden.contextMenus.handlers = {};
-    var eventName = "contextMenus";
-    chromeHidden.contextMenus.event = new chrome.Event(eventName);
-    chromeHidden.contextMenus.ensureListenerSetup = function() {
-      if (chromeHidden.contextMenus.listening) {
-        return;
-      }
-      chromeHidden.contextMenus.listening = true;
-      chromeHidden.contextMenus.event.addListener(function() {
-        // An extension context menu item has been clicked on - fire the onclick
-        // if there is one.
-        var id = arguments[0].menuItemId;
-        var onclick = chromeHidden.contextMenus.handlers[id];
-        if (onclick) {
-          onclick.apply(null, arguments);
-        }
-      });
-    };
-  }
-
   // Remove invalid characters from |text| so that it is suitable to use
   // for |AutocompleteMatch::contents|.
   function sanitizeString(text, shouldTrim) {
@@ -640,44 +659,6 @@ var chrome = chrome || {};
           break;
       }
     });
-
-    // Stores the name and definition of each API function, with methods to
-    // modify their behaviour (such as a custom way to handle requests to the
-    // API, a custom callback, etc).
-    function APIFunctions() {
-      this.apiFunctions_ = {};
-    }
-    APIFunctions.prototype.register = function(apiName, apiFunction) {
-      this.apiFunctions_[apiName] = apiFunction;
-    };
-    APIFunctions.prototype.setProperty =
-        function(apiName, propertyName, customizedFunction) {
-      // TODO(kalman): later, when this is asynchronous and we're only
-      // customizing exactly what we need, these should be held onto until
-      // this api function is registered.
-      if (this.apiFunctions_.hasOwnProperty(apiName))
-        this.apiFunctions_[apiName][propertyName] = customizedFunction;
-    };
-    APIFunctions.prototype.setHandleRequest =
-        function(apiName, customizedFunction) {
-      return this.setProperty(apiName, 'handleRequest', customizedFunction);
-    };
-    APIFunctions.prototype.setUpdateArgumentsPostValidate =
-        function(apiName, customizedFunction) {
-      return this.setProperty(
-        apiName, 'updateArgumentsPostValidate', customizedFunction);
-    };
-    APIFunctions.prototype.setUpdateArgumentsPreValidate =
-        function(apiName, customizedFunction) {
-      return this.setProperty(
-        apiName, 'updateArgumentsPreValidate', customizedFunction);
-    };
-    APIFunctions.prototype.setCustomCallback =
-        function(apiName, customizedFunction) {
-      return this.setProperty(apiName, 'customCallback', customizedFunction);
-    };
-
-    var apiFunctions = new APIFunctions();
 
     // Read api definitions and setup api functions in the chrome namespace.
     // TODO(rafaelw): Consider defining a json schema for an api definition
@@ -1021,16 +1002,6 @@ var chrome = chrome || {};
           details, this.name, this.definition.parameters, "page action");
     });
 
-    apiFunctions.setHandleRequest("contextMenus.create",
-        function() {
-      var args = arguments;
-      var id = GetNextContextMenuId();
-      args[0].generatedId = id;
-      sendRequest(this.name, args, this.definition.parameters,
-                  {customCallback: this.customCallback});
-      return id;
-    });
-
     apiFunctions.setHandleRequest("omnibox.setDefaultSuggestion",
         function(details) {
       var parseResult = parseOmniboxDescription(details.description);
@@ -1056,50 +1027,6 @@ var chrome = chrome || {};
       var args = Array.prototype.slice.call(arguments);
       sendRequest(this.name, args, this.definition.parameters,
                   {forIOThread: true});
-    });
-
-    apiFunctions.setCustomCallback("contextMenus.create",
-        function(name, request, response) {
-      if (chrome.extension.lastError) {
-        return;
-      }
-
-      var id = request.args[0].generatedId;
-
-      // Set up the onclick handler if we were passed one in the request.
-      var onclick = request.args.length ? request.args[0].onclick : null;
-      if (onclick) {
-        chromeHidden.contextMenus.ensureListenerSetup();
-        chromeHidden.contextMenus.handlers[id] = onclick;
-      }
-    });
-
-    apiFunctions.setCustomCallback("contextMenus.remove",
-        function(name, request, response) {
-      if (chrome.extension.lastError) {
-        return;
-      }
-      var id = request.args[0];
-      delete chromeHidden.contextMenus.handlers[id];
-    });
-
-    apiFunctions.setCustomCallback("contextMenus.update",
-        function(name, request, response) {
-      if (chrome.extension.lastError) {
-        return;
-      }
-      var id = request.args[0];
-      if (request.args[1].onclick) {
-        chromeHidden.contextMenus.handlers[id] = request.args[1].onclick;
-      }
-    });
-
-    apiFunctions.setCustomCallback("contextMenus.removeAll",
-        function(name, request, response) {
-      if (chrome.extension.lastError) {
-        return;
-      }
-      chromeHidden.contextMenus.handlers = {};
     });
 
     // TODO(skerner,mtytel): The next step to omitting optional arguments is the
@@ -1219,8 +1146,6 @@ var chrome = chrome || {};
       chrome.test.getApiDefinitions = GetExtensionAPIDefinition;
     }
 
-    if (apiExists("contextMenus"))
-      setupHiddenContextMenuEvent(extensionId);
     if (apiExists("experimental.input.ime"))
       setupInputEvents();
     if (apiExists("omnibox"))
