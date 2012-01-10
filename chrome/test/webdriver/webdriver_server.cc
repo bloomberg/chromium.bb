@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,10 +13,13 @@
 #include <fstream>
 
 #include "base/at_exit.h"
+#include "base/base_paths.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/path_service.h"
+#include "base/stringprintf.h"
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
@@ -208,19 +211,17 @@ int RunChromeDriver() {
   chrome::RegisterPathProvider();
   TestTimeouts::Initialize();
 
-  InitWebDriverLogging(kAllLogLevel);
-  FileLog::Get()->Log(kInfoLogLevel,
-                      base::Time::Now(),
-                      std::string("ChromeDriver ") + chrome::kChromeVersion);
-
   // Parse command line flags.
   std::string port = "9515";
+  FilePath log_path;
   std::string root;
   std::string url_base;
   int http_threads = 4;
   bool enable_keep_alive = true;
   if (cmd_line->HasSwitch("port"))
     port = cmd_line->GetSwitchValueASCII("port");
+  if (cmd_line->HasSwitch("log-path"))
+    log_path = cmd_line->GetSwitchValuePath("log-path");
   // The 'root' flag allows the user to specify a location to serve files from.
   // If it is not given, a callback will be registered to forbid all file
   // requests.
@@ -237,6 +238,17 @@ int RunChromeDriver() {
   }
   if (cmd_line->HasSwitch("disable-keep-alive"))
     enable_keep_alive = false;
+
+  bool logging_success = InitWebDriverLogging(log_path, kAllLogLevel);
+  std::string chromedriver_info = base::StringPrintf(
+      "ChromeDriver %s", chrome::kChromeVersion);
+  FilePath chromedriver_exe;
+  if (PathService::Get(base::FILE_EXE, &chromedriver_exe)) {
+    chromedriver_info += base::StringPrintf(
+        " %" PRFilePath, chromedriver_exe.value().c_str());
+  }
+  FileLog::Get()->Log(kInfoLogLevel, base::Time::Now(), chromedriver_info);
+
 
   SessionManager* manager = SessionManager::GetInstance();
   manager->set_port(port);
@@ -272,6 +284,10 @@ int RunChromeDriver() {
   std::cout << "Started ChromeDriver" << std::endl
             << "port=" << port << std::endl
             << "version=" << chrome::kChromeVersion << std::endl;
+  if (logging_success)
+    std::cout << "log=" << FileLog::Get()->path().value() << std::endl;
+  else
+    std::cout << "Log file could not be created" << std::endl;
 
   // Run until we receive command to shutdown.
   // Don't call mg_stop because mongoose will hang if clients are still

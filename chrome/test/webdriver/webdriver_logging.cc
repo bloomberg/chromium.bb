@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -57,9 +57,8 @@ LogHandler::LogHandler() { }
 LogHandler::~LogHandler() { }
 
 // static
-void FileLog::InitGlobalLog(LogLevel level) {
-  singleton_ = new FileLog(FilePath(FILE_PATH_LITERAL("chromedriver.log")),
-                           level);
+void FileLog::SetGlobalLog(FileLog* log) {
+  singleton_ = log;
 }
 
 // static
@@ -67,17 +66,34 @@ FileLog* FileLog::Get() {
   return singleton_;
 }
 
+// static
+FileLog* FileLog::CreateFileLog(const FilePath::StringType& log_name,
+                                LogLevel level) {
+  FilePath log_path(log_name);
+  file_util::ScopedFILE file(file_util::OpenFile(log_path, "w"));
+  FilePath temp_dir;
+  if (!file.get() && file_util::GetTempDir(&temp_dir))
+    log_path = temp_dir.Append(log_name);
+  file.reset();
+  return new FileLog(log_path, level);
+}
+
 FileLog::FileLog(const FilePath& path, LogLevel level)
     : path_(path),
       min_log_level_(level) {
-  file_.reset(file_util::OpenFile(path, "w"));
+  if (!path_.IsAbsolute()) {
+    FilePath cwd;
+    if (file_util::GetCurrentDirectory(&cwd))
+      path_ = cwd.Append(path_);
+  }
+  file_.reset(file_util::OpenFile(path_, "w"));
 }
 
 FileLog::~FileLog() { }
 
 void FileLog::Log(LogLevel level, const base::Time& time,
                   const std::string& message) {
-  if (level < min_log_level_)
+  if (!file_.get() || level < min_log_level_)
     return;
 
   const char* level_name = "UNKNOWN";
@@ -100,12 +116,11 @@ void FileLog::Log(LogLevel level, const base::Time& time,
     default:
       break;
   }
-  base::TimeDelta delta(time - base::Time::UnixEpoch());
-  std::string time_utc = base::Int64ToString(delta.InMilliseconds());
+  base::TimeDelta delta(time - base::Time::FromDoubleT(start_time));
   std::string entry = base::StringPrintf(
-      "[%s][%s]:", time_utc.c_str(), level_name);
+      "[%.3lf][%s]:", delta.InSecondsF(), level_name);
 
-  int pad_length = 26 - entry.length();
+  int pad_length = 20 - entry.length();
   if (pad_length < 1)
     pad_length = 1;
   std::string padding(pad_length, ' ');
@@ -127,12 +142,22 @@ void FileLog::Log(LogLevel level, const base::Time& time,
 #endif
 }
 
-bool FileLog::GetLogContents(std::string* contents) {
+bool FileLog::GetLogContents(std::string* contents) const {
+  if (!file_.get())
+    return false;
   return file_util::ReadFileToString(path_, contents);
+}
+
+bool FileLog::IsOpen() const {
+  return !!file_.get();
 }
 
 void FileLog::set_min_log_level(LogLevel level) {
   min_log_level_ = level;
+}
+
+const FilePath& FileLog::path() const {
+  return path_;
 }
 
 InMemoryLog::InMemoryLog() { }
@@ -185,7 +210,7 @@ void Logger::set_min_log_level(LogLevel level) {
   min_log_level_ = level;
 }
 
-void InitWebDriverLogging(LogLevel min_log_level) {
+bool InitWebDriverLogging(const FilePath& log_path, LogLevel min_log_level) {
   start_time = base::Time::Now().ToDoubleT();
   // Turn off base/logging.
   bool success = InitLogging(
@@ -203,7 +228,15 @@ void InitWebDriverLogging(LogLevel min_log_level) {
                        false); // enable_tickcount
 
   // Init global file log.
-  FileLog::InitGlobalLog(min_log_level);
+  FileLog* log;
+  if (log_path.empty()) {
+    log = FileLog::CreateFileLog(FILE_PATH_LITERAL("chromedriver.log"),
+                                 min_log_level);
+  } else {
+    log = new FileLog(log_path, min_log_level);
+  }
+  FileLog::SetGlobalLog(log);
+  return log->IsOpen();
 }
 
 }  // namespace webdriver

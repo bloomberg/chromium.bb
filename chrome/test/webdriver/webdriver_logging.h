@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -67,18 +67,32 @@ class LogHandler {
 
 class FileLog : public LogHandler {
  public:
-  static void InitGlobalLog(LogLevel level);
+  static void SetGlobalLog(FileLog* log);
   static FileLog* Get();
 
+  // Creates a log file with the given name in the current directory.
+  // If the current directory is not writable, the system's temp directory
+  // is used.
+  static FileLog* CreateFileLog(const FilePath::StringType& log_name,
+                                LogLevel level);
+
+  // Creates a log file at the given path.
   FileLog(const FilePath& path, LogLevel level);
+
   virtual ~FileLog();
 
   virtual void Log(LogLevel level, const base::Time& time,
                    const std::string& message) OVERRIDE;
 
-  bool GetLogContents(std::string* contents);
+  bool GetLogContents(std::string* contents) const;
+
+  // Returns whether the log refers to an open file.
+  bool IsOpen() const;
 
   void set_min_log_level(LogLevel level);
+
+  // Returns the path of the log file. The file is not guaranteed to exist.
+  const FilePath& path() const;
 
  private:
   static FileLog* singleton_;
@@ -127,8 +141,11 @@ class Logger {
 };
 
 // Initializes logging for WebDriver. All logging below the given level
-// will be discarded in the global file log.
-void InitWebDriverLogging(LogLevel min_log_level);
+// will be discarded in the global file log. The file log will use the given
+// log path. If the specified log path is empty, the log will write to
+// 'chromedriver.log' in the current working directory, if writeable, or the
+// system temp directory. Returns true on success.
+bool InitWebDriverLogging(const FilePath& log_path, LogLevel min_log_level);
 
 }  // namespace webdriver
 
