@@ -452,6 +452,7 @@ def ForceFileType(filename, newtype = None):
 ExtensionMap = {
   'c'   : 'src',
   'cc'  : 'src',
+  'cxx' : 'src',
   'cpp' : 'src',
   'C'   : 'src',
   'm'   : 'src',  # .m = "Objective-C source file"
