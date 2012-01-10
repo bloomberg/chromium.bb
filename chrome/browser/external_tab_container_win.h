@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -138,7 +138,10 @@ class ExternalTabContainer : public content::WebContentsDelegate,
                                const GURL& url) OVERRIDE;
   virtual void ContentsZoomChange(bool zoom_in) OVERRIDE;
   virtual gfx::NativeWindow GetFrameNativeWindow() OVERRIDE;
-  virtual void WebContentsCreated(content::WebContents* new_contents);
+  virtual void WebContentsCreated(content::WebContents* source_contents,
+                                  int64 source_frame_id,
+                                  const GURL& target_url,
+                                  content::WebContents* new_contents) OVERRIDE;
   virtual bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
                                       bool* is_keyboard_shortcut) OVERRIDE;
   virtual void HandleKeyboardEvent(

@@ -7,36 +7,29 @@
 #pragma once
 
 #include <map>
-#include <string>
 
 #include "base/basictypes.h"
-#include "content/browser/webui/web_ui.h"
+#include "base/compiler_specific.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "content/public/common/window_container_type.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPopupType.h"
-#include "webkit/glue/webpreferences.h"
 #include "webkit/glue/window_open_disposition.h"
 
-class BackgroundContents;
-class Profile;
-class RenderViewHost;
-class RenderViewHostDelegate;
-class RenderWidgetHost;
 class RenderWidgetHostView;
-class SiteInstance;
 class TabContents;
 struct ViewHostMsg_CreateWindow_Params;
 
 namespace content {
-class BrowserContext;
-class RenderProcessHost;
 class WebContents;
 }
 
 namespace gfx {
 class Rect;
 }
+
+// TODO(avi): Once all the TabContentsViews implementations are in content (I'm
+// looking at you, TabContentsViewViews...) then change the parameters to take
+// WebContentsImpl rather than WebContents.
 
 // Provides helper methods that provide common implementations of some
 // TabContentsView methods.
@@ -78,40 +71,18 @@ class RenderViewHostDelegateViewHelper : public content::NotificationObserver {
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // Creates a new renderer for window.open. This will either be a
-  // BackgroundContents (if the window_container_type ==
-  // WINDOW_CONTAINER_TYPE_BACKGROUND and permissions allow) or a TabContents.
-  // If a TabContents is created, it is returned. Otherwise NULL is returned.
-  TabContents* CreateNewWindowImpl(
-      int route_id,
-      Profile* profile,
-      SiteInstance* site,
-      WebUI::TypeID webui_type,
-      RenderViewHostDelegate* opener,
-      WindowContainerType window_container_type,
-      const string16& frame_name);
-
-  BackgroundContents* MaybeCreateBackgroundContents(
-      int route_id,
-      Profile* profile,
-      SiteInstance* site,
-      const GURL& opener_url,
-      const string16& frame_name);
-
   // Finds the new RenderWidgetHost and returns it. Note that this can only be
   // called once as this call also removes it from the internal map.
   RenderWidgetHostView* GetCreatedWidget(int route_id);
 
-  // Finds the new RenderViewHost/Delegate by route_id, initializes it for
-  // for renderer-initiated creation, and returns the TabContents that needs
-  // to be shown, if there is one (i.e. not a BackgroundContents). Note that
-  // this can only be called once as this call also removes it from the internal
-  // map.
+  // Finds the new TabContents by route_id, initializes it for
+  // renderer-initiated creation, and returns it. Note that this can only be
+  // called once as this call also removes it from the internal map.
   TabContents* GetCreatedWindow(int route_id);
 
   // Tracks created RenderViewHost objects that have not been shown yet.
   // They are identified by the route ID passed to CreateNewWindow.
-  typedef std::map<int, RenderViewHost*> PendingContents;
+  typedef std::map<int, TabContents*> PendingContents;
   PendingContents pending_contents_;
 
   // These maps hold on to the widgets that we created on behalf of the

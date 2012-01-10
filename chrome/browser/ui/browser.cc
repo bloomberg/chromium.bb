@@ -29,6 +29,7 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/background/background_contents_service.h"
+#include "chrome/browser/background/background_contents_service_factory.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/browser_process.h"
@@ -69,6 +70,8 @@
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/prerender/prerender_manager.h"
+#include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/prerender/prerender_tab_helper.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_setup_flow.h"
 #include "chrome/browser/printing/print_preview_tab_controller.h"
@@ -87,6 +90,7 @@
 #include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/browser/tab_closeable_state_watcher.h"
 #include "chrome/browser/tab_contents/background_contents.h"
+#include "chrome/browser/tab_contents/retargeting_details.h"
 #include "chrome/browser/tab_contents/simple_alert_infobar_delegate.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/tabs/tab_finder.h"
@@ -2135,6 +2139,55 @@ void Browser::OpenBookmarkManagerEditNode(int64 node_id) {
   OpenBookmarkManagerWithHash("e=", node_id);
 }
 
+bool Browser::MaybeCreateBackgroundContents(int route_id,
+                                            SiteInstance* site,
+                                            const GURL& opener_url,
+                                            const string16& frame_name) {
+  ExtensionService* extensions_service = profile_->GetExtensionService();
+
+  if (!opener_url.is_valid() ||
+      frame_name.empty() ||
+      !extensions_service ||
+      !extensions_service->is_ready())
+    return false;
+
+  // Only hosted apps have web extents, so this ensures that only hosted apps
+  // can create BackgroundContents. We don't have to check for background
+  // permission as that is checked in RenderMessageFilter when the CreateWindow
+  // message is processed.
+  const Extension* extension =
+      extensions_service->extensions()->GetHostedAppByURL(
+          ExtensionURLInfo(opener_url));
+  if (!extension)
+    return false;
+
+  // No BackgroundContents allowed if BackgroundContentsService doesn't exist.
+  BackgroundContentsService* service =
+      BackgroundContentsServiceFactory::GetForProfile(profile_);
+  if (!service)
+    return false;
+
+  // Ensure that we're trying to open this from the extension's process.
+  extensions::ProcessMap* process_map = extensions_service->process_map();
+  if (!site->GetProcess() ||
+      !process_map->Contains(extension->id(), site->GetProcess()->GetID())) {
+    return false;
+  }
+
+  // Only allow a single background contents per app. If one already exists,
+  // close it (even if it was specified in the manifest).
+  BackgroundContents* existing =
+      service->GetAppBackgroundContents(ASCIIToUTF16(extension->id()));
+  if (existing) {
+    DLOG(INFO) << "Closing existing BackgroundContents for " << opener_url;
+    delete existing;
+  }
+
+  // Passed all the checks, so this should be created as a BackgroundContents.
+  return service->CreateBackgroundContents(site, route_id, profile_, frame_name,
+                                           ASCIIToUTF16(extension->id()));
+}
+
 void Browser::ShowAppMenu() {
   // We record the user metric for this event in WrenchMenu::RunMenu.
   window_->ShowAppMenu();
@@ -3818,7 +3871,7 @@ void Browser::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
   window()->HandleKeyboardEvent(event);
 }
 
-void Browser::  ShowRepostFormWarningDialog(WebContents* source) {
+void Browser::ShowRepostFormWarningDialog(WebContents* source) {
   browser::ShowTabModalConfirmDialog(
       new RepostFormWarningController(source),
       TabContentsWrapper::GetCurrentWrapperForContents(source));
@@ -3841,13 +3894,45 @@ bool Browser::ShouldAddNavigationToHistory(
   return !IsApplication();
 }
 
-void Browser::WebContentsCreated(WebContents* new_contents) {
+bool Browser::ShouldCreateWebContents(
+    WebContents* web_contents,
+    int route_id,
+    WindowContainerType window_container_type,
+    const string16& frame_name) {
+  if (window_container_type == WINDOW_CONTAINER_TYPE_BACKGROUND) {
+    // If a BackgroundContents is created, suppress the normal WebContents.
+    return !MaybeCreateBackgroundContents(
+        route_id,
+        web_contents->GetSiteInstance(),
+        web_contents->GetURL(),
+        frame_name);
+  }
+
+  return true;
+}
+
+void Browser::WebContentsCreated(WebContents* source_contents,
+                                 int64 source_frame_id,
+                                 const GURL& target_url,
+                                 WebContents* new_contents) {
   // Create a TabContentsWrapper now, so all observers are in place, as the
   // network requests for its initial navigation will start immediately. The
   // TabContents will later be inserted into this browser using
   // Browser::Navigate via AddNewContents. The latter will retrieve the newly
   // created TabContentsWrapper from TabContents object.
   new TabContentsWrapper(new_contents);
+
+  // Notify.
+  RetargetingDetails details;
+  details.source_web_contents = source_contents;
+  details.source_frame_id = source_frame_id;
+  details.target_url = target_url;
+  details.target_web_contents = new_contents;
+  details.not_yet_in_tabstrip = true;
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_RETARGETING,
+      content::Source<Profile>(profile_),
+      content::Details<RetargetingDetails>(&details));
 }
 
 void Browser::ContentRestrictionsChanged(WebContents* source) {

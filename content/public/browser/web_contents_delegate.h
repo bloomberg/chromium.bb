@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,6 +14,7 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/navigation_type.h"
 #include "content/public/common/page_transition_types.h"
+#include "content/public/common/window_container_type.h"
 #include "ui/gfx/native_widget_types.h"
 #include "webkit/glue/window_open_disposition.h"
 
@@ -271,9 +272,20 @@ class CONTENT_EXPORT WebContentsDelegate {
   // Returns the native window framing the view containing the tab contents.
   virtual gfx::NativeWindow GetFrameNativeWindow();
 
+  // Allows delegate to control whether a WebContents will be created. Returns
+  // true to allow the creation. Default is to allow it.
+  virtual bool ShouldCreateWebContents(
+      WebContents* web_contents,
+      int route_id,
+      WindowContainerType window_container_type,
+      const string16& frame_name);
+
   // Notifies the delegate about the creation of a new WebContents. This
   // typically happens when popups are created.
-  virtual void WebContentsCreated(WebContents* new_contents) {}
+  virtual void WebContentsCreated(WebContents* source_contents,
+                                  int64 source_frame_id,
+                                  const GURL& target_url,
+                                  WebContents* new_contents) {}
 
   // Notifies the delegate that the content restrictions for this tab has
   // changed.

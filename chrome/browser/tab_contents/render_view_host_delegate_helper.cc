@@ -4,32 +4,24 @@
 
 #include "chrome/browser/tab_contents/render_view_host_delegate_helper.h"
 
-#include "base/utf_string_conversions.h"
-#include "chrome/browser/background/background_contents_service.h"
-#include "chrome/browser/background/background_contents_service_factory.h"
-#include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/process_map.h"
-#include "chrome/browser/prerender/prerender_manager.h"
-#include "chrome/browser/prerender/prerender_manager_factory.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/tab_contents/background_contents.h"
-#include "chrome/browser/tab_contents/retargeting_details.h"
-#include "chrome/common/chrome_notification_types.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
-#include "content/browser/site_instance.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_delegate.h"
 
 using content::WebContents;
 
 RenderViewHostDelegateViewHelper::RenderViewHostDelegateViewHelper() {
-  registrar_.Add(this, content::NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED,
-                 content::NotificationService::AllSources());
+  registrar_.Add(this,
+                 content::NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED,
+                 content::NotificationService::AllBrowserContextsAndSources());
 }
 
 RenderViewHostDelegateViewHelper::~RenderViewHostDelegateViewHelper() {}
@@ -49,107 +41,47 @@ void RenderViewHostDelegateViewHelper::Observe(
   }
 }
 
-BackgroundContents*
-RenderViewHostDelegateViewHelper::MaybeCreateBackgroundContents(
+TabContents* RenderViewHostDelegateViewHelper::CreateNewWindow(
+    WebContents* web_contents,
     int route_id,
-    Profile* profile,
-    SiteInstance* site,
-    const GURL& opener_url,
-    const string16& frame_name) {
-  ExtensionService* extensions_service = profile->GetExtensionService();
-
-  if (!opener_url.is_valid() ||
-      frame_name.empty() ||
-      !extensions_service ||
-      !extensions_service->is_ready())
-    return NULL;
-
-  // Only hosted apps have web extents, so this ensures that only hosted apps
-  // can create BackgroundContents. We don't have to check for background
-  // permission as that is checked in RenderMessageFilter when the CreateWindow
-  // message is processed.
-  const Extension* extension =
-      extensions_service->extensions()->GetHostedAppByURL(
-          ExtensionURLInfo(opener_url));
-  if (!extension)
-    return NULL;
-
-  // No BackgroundContents allowed if BackgroundContentsService doesn't exist.
-  BackgroundContentsService* service =
-      BackgroundContentsServiceFactory::GetForProfile(profile);
-  if (!service)
-    return NULL;
-
-  // Ensure that we're trying to open this from the extension's process.
-  extensions::ProcessMap* process_map = extensions_service->process_map();
-  if (!site->GetProcess() ||
-      !process_map->Contains(extension->id(), site->GetProcess()->GetID())) {
-    return NULL;
-  }
-
-  // Only allow a single background contents per app. If one already exists,
-  // close it (even if it was specified in the manifest).
-  BackgroundContents* existing =
-      service->GetAppBackgroundContents(ASCIIToUTF16(extension->id()));
-  if (existing) {
-    DLOG(INFO) << "Closing existing BackgroundContents for " << opener_url;
-    delete existing;
-  }
-
-  // Passed all the checks, so this should be created as a BackgroundContents.
-  return service->CreateBackgroundContents(site, route_id, profile, frame_name,
-                                           ASCIIToUTF16(extension->id()));
-}
-
-TabContents* RenderViewHostDelegateViewHelper::CreateNewWindowImpl(
-    int route_id,
-    Profile* profile,
-    SiteInstance* site,
-    WebUI::TypeID webui_type,
-    RenderViewHostDelegate* opener,
-    WindowContainerType window_container_type,
-    const string16& frame_name) {
-  if (window_container_type == WINDOW_CONTAINER_TYPE_BACKGROUND) {
-    BackgroundContents* contents = MaybeCreateBackgroundContents(
+    const ViewHostMsg_CreateWindow_Params& params) {
+  bool should_create = true;
+  if (web_contents->GetDelegate()) {
+    should_create = web_contents->GetDelegate()->ShouldCreateWebContents(
+        web_contents,
         route_id,
-        profile,
-        site,
-        opener->GetURL(),
-        frame_name);
-    if (contents) {
-      pending_contents_[route_id] =
-          contents->web_contents()->GetRenderViewHost();
-      return NULL;
-    }
+        params.window_container_type,
+        params.frame_name);
   }
 
-  TabContents* base_tab_contents = opener->GetAsTabContents();
-
-  // Do not create the new TabContents if the opener is a prerender TabContents.
-  prerender::PrerenderManager* prerender_manager =
-      prerender::PrerenderManagerFactory::GetForProfile(profile);
-  if (prerender_manager &&
-      prerender_manager->IsWebContentsPrerendering(base_tab_contents)) {
+  if (!should_create)
     return NULL;
-  }
 
   // Create the new web contents. This will automatically create the new
   // TabContentsView. In the future, we may want to create the view separately.
   TabContents* new_contents =
-      new TabContents(profile,
-                      site,
+      new TabContents(web_contents->GetBrowserContext(),
+                      web_contents->GetSiteInstance(),
                       route_id,
-                      base_tab_contents,
+                      static_cast<TabContents*>(web_contents),
                       NULL);
-  new_contents->set_opener_web_ui_type(webui_type);
+  new_contents->set_opener_web_ui_type(
+      web_contents->GetWebUITypeForCurrentState());
   TabContentsView* new_view = new_contents->GetView();
 
-  // TODO(brettw) it seems bogus that we have to call this function on the
+  // TODO(brettw): It seems bogus that we have to call this function on the
   // newly created object and give it one of its own member variables.
   new_view->CreateViewForWidget(new_contents->GetRenderViewHost());
 
   // Save the created window associated with the route so we can show it later.
-  pending_contents_[route_id] = new_contents->GetRenderViewHost();
+  pending_contents_[route_id] = new_contents;
+
+  if (web_contents->GetDelegate())
+    web_contents->GetDelegate()->WebContentsCreated(web_contents,
+                                                    params.opener_frame_id,
+                                                    params.target_url,
+                                                    new_contents);
+
   return new_contents;
 }
 
@@ -159,8 +91,7 @@ RenderWidgetHostView* RenderViewHostDelegateViewHelper::CreateNewWidget(
     bool is_fullscreen,
     WebKit::WebPopupType popup_type) {
   content::RenderProcessHost* process = web_contents->GetRenderProcessHost();
-  RenderWidgetHost* widget_host =
-      new RenderWidgetHost(process, route_id);
+  RenderWidgetHost* widget_host = new RenderWidgetHost(process, route_id);
   RenderWidgetHostView* widget_view =
       RenderWidgetHostView::CreateViewForWidget(widget_host);
   if (!is_fullscreen) {
@@ -181,17 +112,16 @@ TabContents* RenderViewHostDelegateViewHelper::GetCreatedWindow(int route_id) {
     return NULL;
   }
 
-  RenderViewHost* new_rvh = iter->second;
+  TabContents* new_contents = iter->second;
   pending_contents_.erase(route_id);
 
-  // The renderer crashed or it is a TabContents and has no view.
-  if (!new_rvh->process()->HasConnection() ||
-      (new_rvh->delegate()->GetAsTabContents() && !new_rvh->view()))
+  if (!new_contents->GetRenderProcessHost()->HasConnection() ||
+      !new_contents->GetRenderViewHost()->view())
     return NULL;
 
-  // TODO(brettw) this seems bogus to reach into here and initialize the host.
-  new_rvh->Init();
-  return new_rvh->delegate()->GetAsTabContents();
+  // TODO(brettw): It seems bogus to reach into here and initialize the host.
+  new_contents->GetRenderViewHost()->Init();
+  return new_contents;
 }
 
 RenderWidgetHostView* RenderViewHostDelegateViewHelper::GetCreatedWidget(
@@ -214,56 +144,20 @@ RenderWidgetHostView* RenderViewHostDelegateViewHelper::GetCreatedWidget(
   return widget_host_view;
 }
 
-TabContents* RenderViewHostDelegateViewHelper::CreateNewWindow(
-    WebContents* web_contents,
-    int route_id,
-    const ViewHostMsg_CreateWindow_Params& params) {
-  TabContents* new_contents = CreateNewWindowImpl(
-      route_id,
-      Profile::FromBrowserContext(web_contents->GetBrowserContext()),
-      web_contents->GetSiteInstance(),
-      web_contents->GetWebUITypeForCurrentState(),
-      static_cast<TabContents*>(web_contents),
-      params.window_container_type,
-      params.frame_name);
-
-  if (new_contents) {
-    if (web_contents->GetDelegate())
-      web_contents->GetDelegate()->WebContentsCreated(new_contents);
-
-    RetargetingDetails details;
-    details.source_web_contents = web_contents;
-    details.source_frame_id = params.opener_frame_id;
-    details.target_url = params.target_url;
-    details.target_web_contents = new_contents;
-    details.not_yet_in_tabstrip = true;
-    content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_RETARGETING,
-        content::Source<Profile>(
-            Profile::FromBrowserContext(web_contents->GetBrowserContext())),
-        content::Details<RetargetingDetails>(&details));
-  } else {
-    content::NotificationService::current()->Notify(
-        content::NOTIFICATION_CREATING_NEW_WINDOW_CANCELLED,
-        content::Source<WebContents>(web_contents),
-        content::Details<const ViewHostMsg_CreateWindow_Params>(&params));
-  }
-
-  return new_contents;
-}
-
 TabContents* RenderViewHostDelegateViewHelper::ShowCreatedWindow(
     WebContents* web_contents,
     int route_id,
     WindowOpenDisposition disposition,
     const gfx::Rect& initial_pos,
     bool user_gesture) {
-  WebContents* contents = GetCreatedWindow(route_id);
+  TabContents* contents = GetCreatedWindow(route_id);
   if (contents) {
-    web_contents->AddNewContents(
-        contents, disposition, initial_pos, user_gesture);
+    web_contents->AddNewContents(contents,
+                                 disposition,
+                                 initial_pos,
+                                 user_gesture);
   }
-  return static_cast<TabContents*>(contents);
+  return contents;
 }
 
 RenderWidgetHostView* RenderViewHostDelegateViewHelper::ShowCreatedWidget(
