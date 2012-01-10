@@ -1,4 +1,4 @@
-# -*- python -*-
+#!/usr/bin/env python
 # Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -18,9 +18,6 @@ server or client stub file, as determined by the command line flag -s or -c.
 """
 
 import getopt
-#import re
-#import string
-#import StringIO
 import sys
 import os
 

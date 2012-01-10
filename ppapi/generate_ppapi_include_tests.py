@@ -1,17 +1,18 @@
-#!/usr/bin/python
-
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+#!/usr/bin/env python
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# This script should be run manually on occasion to make sure the gyp file and
-# the includes tests are up to date.
-# It does the following:
-# - Verifies that all source code is in ppapi.gyp
-# - Verifies that all sources in ppapi.gyp really do exist
-# - Generates tests/test_c_includes.c
-# - Generates tests/test_cpp_includes.cc
-# These tests are checked in to SVN.
+"""This script should be run manually on occasion to make sure the gyp file and
+the includes tests are up to date.
+
+It does the following:
+ - Verifies that all source code is in ppapi.gyp
+ - Verifies that all sources in ppapi.gyp really do exist
+ - Generates tests/test_c_includes.c
+ - Generates tests/test_cpp_includes.cc
+These tests are checked in to SVN.
+"""
 # TODO(dmichael):  Make this script execute as a gyp action, move the include
 #                  tests to some 'generated' area, and remove them from version
 #                  control.
@@ -168,4 +169,3 @@ def main():
 
 if __name__ == '__main__':
     sys.exit(main())
-

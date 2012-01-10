@@ -1,5 +1,4 @@
-#!/usr/bin/python
-#
+#!/usr/bin/env python
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -120,6 +119,7 @@ class IDLOutFile(object):
 
     return False
 
+
 def TestFile(name, stringlist, force, update):
   errors = 0
 
@@ -155,8 +155,8 @@ def TestFile(name, stringlist, force, update):
       return 1
   return 0
 
-if __name__ == '__main__':
 
+def main():
   errors = 0
   stringlist = ['Test', 'Testing\n', 'Test']
   filename = 'outtest.txt'
@@ -173,4 +173,8 @@ if __name__ == '__main__':
   # Clean up file
   os.remove(filename)
   if not errors: InfoOut.Log('All tests pass.')
-  sys.exit(errors)
+  return errors
+
+
+if __name__ == '__main__':
+  sys.exit(main())

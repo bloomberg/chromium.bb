@@ -1,12 +1,10 @@
-#!/usr/bin/python
-
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+#!/usr/bin/env python
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 """This script should be run manually on occasion to make sure all PPAPI types
 have appropriate size checking.
-
 """
 
 import optparse
@@ -20,9 +18,19 @@ import sys
 ARCH_DEPENDENT_STRING = "ArchDependentSize"
 
 
+COPYRIGHT_STRING_C = (
+"""/* Copyright (c) %s The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ *
+ * This file has compile assertions for the sizes of types that are dependent
+ * on the architecture for which they are compiled (i.e., 32-bit vs 64-bit).
+ */
 
-class SourceLocation:
+""") % datetime.date.today().year
 
+
+class SourceLocation(object):
   """A class representing the source location of a definiton."""
 
   def __init__(self, filename="", start_line=-1, end_line=-1):
@@ -31,9 +39,7 @@ class SourceLocation:
     self.end_line = end_line
 
 
-
-class TypeInfo:
-
+class TypeInfo(object):
   """A class representing information about a C++ type.  It contains the
   following fields:
    - kind:  The Clang TypeClassName (Record, Enum, Typedef, Union, etc)
@@ -80,8 +86,7 @@ class TypeInfo:
     self.arch_dependent = (arch_dependent_string == ARCH_DEPENDENT_STRING)
 
 
-class FilePatch:
-
+class FilePatch(object):
   """A class representing a set of line-by-line changes to a particular file.
   None of the changes are applied until Apply is called.  All line numbers are
   counted from 0.
@@ -217,18 +222,6 @@ def ToAssertionCode(typeinfo):
 def IsMacroDefinedName(typename):
   """Return true iff the given typename came from a PPAPI compile assertion."""
   return typename.find("PP_Dummy_Struct_For_") == 0
-
-
-COPYRIGHT_STRING_C = \
-"""/* Copyright (c) 2010 The Chromium Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file.
- *
- * This file has compile assertions for the sizes of types that are dependent
- * on the architecture for which they are compiled (i.e., 32-bit vs 64-bit).
- */
-
-"""
 
 
 def WriteArchSpecificCode(types, root, filename):
@@ -429,4 +422,3 @@ def main(argv):
 
 if __name__ == '__main__':
     sys.exit(main(sys.argv[1:]))
-

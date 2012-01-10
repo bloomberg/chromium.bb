@@ -1,6 +1,5 @@
-#!/usr/bin/python
-#
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+#!/usr/bin/env python
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -243,6 +242,7 @@ def TestReleaseNode():
   assert not Foo23.InRange('M16', 'M17')
   print "TestReleaseNode - Passed"
 
+
 def TestReleaseListWarning():
   FooXX = IDLRelease(None, None)
   Foo1X = IDLRelease('M14', None)
@@ -256,6 +256,7 @@ def TestReleaseListWarning():
   assert releases.AddNode(Foo45)
   assert warning
   print "TestReleaseListWarning - Passed"
+
 
 def TestReleaseListError():
   FooXX = IDLRelease(None, None)
@@ -271,6 +272,7 @@ def TestReleaseListError():
   assert not releases.AddNode(Foo1X)
   assert error
   print "TestReleaseListError - Passed"
+
 
 def TestReleaseListOK():
   FooXX = IDLRelease(None, None)
@@ -307,6 +309,7 @@ def TestReleaseListOK():
 def TestReleaseMap():
   print "TestReleaseMap- Passed"
 
+
 def Main(args):
   TestReleaseNode()
   TestReleaseListWarning()
@@ -315,6 +318,6 @@ def Main(args):
   print "Passed"
   return 0
 
+
 if __name__ == '__main__':
   sys.exit(Main(sys.argv[1:]))
-

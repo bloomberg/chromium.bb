@@ -1,6 +1,5 @@
-#!/usr/bin/python
-#
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+#!/usr/bin/env python
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -180,6 +179,7 @@ def MultiParentTest():
   if not errors: InfoOut.Log('Passed MultiParentTest')
   return errors
 
+
 def Main():
   errors = 0
   errors += PropertyTest()
@@ -191,6 +191,6 @@ def Main():
     return  -1
   return 0
 
+
 if __name__ == '__main__':
   sys.exit(Main())
-
