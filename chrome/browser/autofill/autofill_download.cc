@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,9 +25,9 @@
 
 namespace {
 const char kAutofillQueryServerRequestUrl[] =
-    "https://toolbarqueries.google.com/tbproxy/af/query";
+    "https://clients1.google.com/tbproxy/af/query";
 const char kAutofillUploadServerRequestUrl[] =
-    "https://toolbarqueries.google.com/tbproxy/af/upload";
+    "https://clients1.google.com/tbproxy/af/upload";
 const char kAutofillQueryServerNameStartInHeader[] = "GFE/";
 
 const size_t kMaxFormCacheSize = 16;
