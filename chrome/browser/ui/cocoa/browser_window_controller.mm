@@ -64,7 +64,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -586,7 +586,7 @@ enum {
 // Called when we are activated (when we gain focus).
 - (void)windowDidBecomeKey:(NSNotification*)notification {
   // We need to activate the controls (in the "WebView"). To do this, get the
-  // selected TabContents's RenderWidgetHostViewMac and tell it to activate.
+  // selected WebContents's RenderWidgetHostViewMac and tell it to activate.
   if (WebContents* contents = browser_->GetSelectedWebContents()) {
     if (RenderWidgetHostView* rwhv = contents->GetRenderWidgetHostView())
       rwhv->SetActive(true);
@@ -603,7 +603,7 @@ enum {
     return;
 
   // We need to deactivate the controls (in the "WebView"). To do this, get the
-  // selected TabContents's RenderWidgetHostView and tell it to deactivate.
+  // selected WebContents's RenderWidgetHostView and tell it to deactivate.
   if (WebContents* contents = browser_->GetSelectedWebContents()) {
     if (RenderWidgetHostView* rwhv = contents->GetRenderWidgetHostView())
       rwhv->SetActive(false);
@@ -1172,7 +1172,7 @@ enum {
 - (void)moveTabView:(NSView*)view
      fromController:(TabWindowController*)dragController {
   if (dragController) {
-    // Moving between windows. Figure out the TabContents to drop into our tab
+    // Moving between windows. Figure out the WebContents to drop into our tab
     // model from the source window's model.
     BOOL isBrowser =
         [dragController isKindOfClass:[BrowserWindowController class]];
@@ -1206,7 +1206,7 @@ enum {
 
     // Now that we have enough information about the tab, we can remove it from
     // the dragging window. We need to do this *before* we add it to the new
-    // window as this will remove the TabContents' delegate.
+    // window as this will remove the WebContents' delegate.
     [dragController detachTabView:view];
 
     // Deposit it into our model at the appropriate location (it already knows
@@ -1288,7 +1288,7 @@ enum {
 
   // Detach it from the source window, which just updates the model without
   // deleting the tab contents. This needs to come before creating the new
-  // Browser because it clears the TabContents' delegate, which gets hooked
+  // Browser because it clears the WebContents' delegate, which gets hooked
   // up during creation of the new window.
   browser_->tabstrip_model()->DetachTabContentsAt(index);
 
@@ -1506,7 +1506,7 @@ enum {
 // TabStripControllerDelegate protocol.
 - (void)onActivateTabWithContents:(WebContents*)contents {
   // Update various elements that are interested in knowing the current
-  // TabContents.
+  // WebContents.
 
   // Update all the UI bits.
   windowShim_->UpdateTitleBar();

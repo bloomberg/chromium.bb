@@ -39,10 +39,10 @@
 #include "chrome/browser/ui/webui/task_manager_dialog.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/notification_details.h"
+#include "content/public/browser/web_contents.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -199,7 +199,7 @@ StatusBubble* BrowserWindowCocoa::GetStatusBubble() {
 
 void BrowserWindowCocoa::ToolbarSizeChanged(bool is_animating) {
   // According to beng, this is an ugly method that comes from the days when the
-  // download shelf was a ChromeView attached to the TabContents, and as its
+  // download shelf was a ChromeView attached to the WebContents, and as its
   // size changed via animation it notified through TCD/etc to the browser view
   // to relayout for each tick of the animation. We don't need anything of the
   // sort on Mac.
