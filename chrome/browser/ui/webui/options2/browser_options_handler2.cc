@@ -44,6 +44,7 @@
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
@@ -288,6 +289,9 @@ void BrowserOptionsHandler::Initialize() {
 
   pref_change_registrar_.Init(profile->GetPrefs());
   pref_change_registrar_.Add(prefs::kHomePage, this);
+
+  registrar_.Add(this, chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED,
+                 content::NotificationService::AllSources());
 
   UpdateSearchEngines();
   UpdateHomePageLabel();
