@@ -721,12 +721,12 @@ bool RenderWidgetHostViewAura::OnMouseEvent(aura::MouseEvent* event) {
   if (event->type() == ui::ET_MOUSEWHEEL) {
     WebKit::WebMouseWheelEvent mouse_wheel_event =
         content::MakeWebMouseWheelEvent(event);
-    if (mouse_wheel_event.deltaX != 0)
+    if (mouse_wheel_event.deltaX != 0 || mouse_wheel_event.deltaY != 0)
       host_->ForwardWheelEvent(mouse_wheel_event);
   } else if (event->type() == ui::ET_SCROLL) {
     WebKit::WebMouseWheelEvent mouse_wheel_event =
         content::MakeWebMouseWheelEvent(static_cast<aura::ScrollEvent*>(event));
-    if (mouse_wheel_event.deltaX != 0)
+    if (mouse_wheel_event.deltaX != 0 || mouse_wheel_event.deltaY != 0)
       host_->ForwardWheelEvent(mouse_wheel_event);
   } else if (CanRendererHandleEvent(event->native_event())) {
     host_->ForwardMouseEvent(content::MakeWebMouseEvent(event));
