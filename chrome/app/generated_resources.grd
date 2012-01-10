@@ -14539,9 +14539,16 @@ Battery full
     <message name="IDS_FULLSCREEN_ALLOW" desc="Text in the bubble button that grants permission for a site to enter fullscreen and/or lock the mouse.">
       Allow
     </message>
-    <message name="IDS_FULLSCREEN_EXIT_FULLSCREEN" desc="Text in the bubble button that forces a webpage out of fullscreen mode.">
-      Exit full screen
-    </message>
+    <if expr="pp_ifdef('use_titlecase')">
+      <message name="IDS_FULLSCREEN_EXIT_FULLSCREEN" desc="In Title Case: Text in the bubble button that forces a webpage out of fullscreen mode.">
+        Exit Full Screen
+      </message>
+    </if>
+    <if expr="not pp_ifdef('use_titlecase')">
+      <message name="IDS_FULLSCREEN_EXIT_FULLSCREEN" desc="Text in the bubble button that forces a webpage out of fullscreen mode.">
+        Exit full screen
+      </message>
+    </if>
     <message name="IDS_FULLSCREEN_EXIT" desc="Text in the bubble button that denies to lock the mouse and forces a webpage out of fullscreen mode.">
       Exit
     </message>
