@@ -87,7 +87,13 @@ TEST_F(ExtensionUnpackerTest, MAYBE_InvalidDefaultLocale) {
             unpacker_->error_message());
 }
 
-TEST_F(ExtensionUnpackerTest, InvalidMessagesFile) {
+// Crashes intermittently on Windows, see http://crbug.com/109738
+#if defined(OS_WIN)
+#define MAYBE_InvalidMessagesFile DISABLE_InvalidMessagesFile
+#else
+#define MAYBE_InvalidMessagesFile InvalidMessagesFile
+#endif
+TEST_F(ExtensionUnpackerTest, MAYBE_InvalidMessagesFile) {
   SetupUnpacker("invalid_messages_file.crx");
   EXPECT_FALSE(unpacker_->Run());
   EXPECT_TRUE(MatchPattern(unpacker_->error_message(),
