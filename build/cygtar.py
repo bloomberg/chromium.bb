@@ -11,7 +11,6 @@ import shutil
 import subprocess
 import sys
 import tarfile
-import zlib
 
 """A Cygwin aware version compress/extract object.
 
@@ -126,14 +125,10 @@ def CreateWin32Hardlink(filepath, targpath, try_mklink):
 
 
 def ComputeFileHash(filepath):
-  """Generate a hash for the file at the given path."""
-  md5orig = hashlib.md5()
-  md5zlib = hashlib.md5()
-  data = open(filepath, 'rb').read()
-  comp = zlib.compress(data, 5)
-  md5orig.update(data)
-  md5zlib.update(comp)
-  return "%s::%s::%s" % (md5orig.hexdigest(), len(comp), md5zlib.hexdigest())
+  """Generate a sha1 hash for the file at the given path."""
+  sha1 = hashlib.sha1()
+  sha1.update(open(filepath, 'rb').read())
+  return sha1.hexdigest()
 
 
 def ReadableSizeOf(num):
@@ -241,8 +236,8 @@ class CygTar(object):
       return True
 
     # If the size collides with anything, we'll need to check hashes.  We assume
-    # no hash collisions for MD5 on a given bucket, since the number of files
-    # in a bucket over possible MD5 values is near zero.
+    # no hash collisions for SHA1 on a given bucket, since the number of files
+    # in a bucket over possible SHA1 values is near zero.
     newhash = ComputeFileHash(tarinfo.name)
     for (oldname, oldhash) in nodelist:
       # if this is the first collision, we may need to compute the hash
