@@ -12,12 +12,14 @@ TOOLCHAIN_CONFIGS = {}
 
 
 class ToolchainConfig(object):
-  def __init__(self, desc, commands, tools_needed, is_flaky=False, **extra):
+  def __init__(self, desc, commands, tools_needed, is_flaky=False,
+               attributes=[], **extra):
     self._desc = desc,
     self._commands = commands
     self._tools_needed = tools_needed
     self._extra = extra
     self._flaky = is_flaky
+    self._attributes = attributes
 
   def Append(self, tag, value):
     assert tag in self._extra
@@ -44,6 +46,9 @@ class ToolchainConfig(object):
 
   def IsFlaky(self):
     return self._flaky
+
+  def GetAttributes(self):
+    return set(self._attributes)
 
 
 ######################################################################
@@ -99,6 +104,7 @@ COMMANDS_local_gcc = [
 
 TOOLCHAIN_CONFIGS['local_gcc_x8632_O0'] = ToolchainConfig(
     desc='local gcc [x86-32]',
+    attributes=['x86-32', 'O0'],
     commands=COMMANDS_local_gcc,
     tools_needed=[LOCAL_GCC],
     CC = LOCAL_GCC,
@@ -106,6 +112,7 @@ TOOLCHAIN_CONFIGS['local_gcc_x8632_O0'] = ToolchainConfig(
 
 TOOLCHAIN_CONFIGS['local_gcc_x8632_O3'] = ToolchainConfig(
     desc='local gcc [x86-32]',
+    attributes=['x86-32', 'O3'],
     commands=COMMANDS_local_gcc,
     tools_needed=[LOCAL_GCC],
     CC = LOCAL_GCC,
@@ -113,12 +120,14 @@ TOOLCHAIN_CONFIGS['local_gcc_x8632_O3'] = ToolchainConfig(
 
 TOOLCHAIN_CONFIGS['local_gcc_x8664_O0'] = ToolchainConfig(
     desc='local gcc [x86-64]',
+    attributes=['x86-64', 'O0'],
     commands=COMMANDS_local_gcc,
     tools_needed=[LOCAL_GCC],
     CC = LOCAL_GCC,
     CFLAGS = '-O0 -m64 -static ' + GLOBAL_CFLAGS)
 
 TOOLCHAIN_CONFIGS['local_gcc_x8664_O3'] = ToolchainConfig(
+    attributes=['x86-64', 'O3'],
     desc='local gcc [x86-64]',
     commands=COMMANDS_local_gcc,
     tools_needed=[LOCAL_GCC],
@@ -144,6 +153,7 @@ COMMANDS_gcc_cs_arm = [
 
 TOOLCHAIN_CONFIGS['gcc_cs_arm_O0'] = ToolchainConfig(
     desc='codesourcery cross gcc [arm]',
+    attributes=['arm', 'O0'],
     commands=COMMANDS_gcc_cs_arm,
     tools_needed=[GCC_CS_ARM, EMU_SCRIPT ],
     CC = GCC_CS_ARM,
@@ -152,6 +162,7 @@ TOOLCHAIN_CONFIGS['gcc_cs_arm_O0'] = ToolchainConfig(
 
 TOOLCHAIN_CONFIGS['gcc_cs_arm_O3'] = ToolchainConfig(
     desc='codesourcery cross gcc [arm]',
+    attributes=['arm', 'O3'],
     commands=COMMANDS_gcc_cs_arm,
     tools_needed=[GCC_CS_ARM, EMU_SCRIPT ],
     CC = GCC_CS_ARM,
@@ -173,6 +184,7 @@ COMMANDS_nacl_gcc = [
 
 TOOLCHAIN_CONFIGS['nacl_gcc_x8632_O0'] = ToolchainConfig(
     desc='nacl gcc [x86-32]',
+    attributes=['x86-32', 'O0'],
     commands=COMMANDS_nacl_gcc,
     tools_needed=[NACL_GCC_X32, BOOTSTRAP_X32, SEL_LDR_X32],
     CC = NACL_GCC_X32,
@@ -182,6 +194,7 @@ TOOLCHAIN_CONFIGS['nacl_gcc_x8632_O0'] = ToolchainConfig(
 
 TOOLCHAIN_CONFIGS['nacl_gcc_x8632_O3'] = ToolchainConfig(
     desc='nacl gcc with optimizations [x86-32]',
+    attributes=['x86-32', 'O3'],
     commands=COMMANDS_nacl_gcc,
     tools_needed=[NACL_GCC_X32, BOOTSTRAP_X32, SEL_LDR_X32],
     CC = NACL_GCC_X32,
@@ -191,6 +204,7 @@ TOOLCHAIN_CONFIGS['nacl_gcc_x8632_O3'] = ToolchainConfig(
 
 TOOLCHAIN_CONFIGS['nacl_gcc_x8664_O0'] = ToolchainConfig(
     desc='nacl gcc [x86-64]',
+    attributes=['x86-64', 'O0'],
     commands=COMMANDS_nacl_gcc,
     tools_needed=[NACL_GCC_X64, BOOTSTRAP_X64, SEL_LDR_X64],
     CC = NACL_GCC_X64,
@@ -200,6 +214,7 @@ TOOLCHAIN_CONFIGS['nacl_gcc_x8664_O0'] = ToolchainConfig(
 
 TOOLCHAIN_CONFIGS['nacl_gcc_x8664_O3'] = ToolchainConfig(
     desc='nacl gcc with optimizations [x86-64]',
+    attributes=['x86-32', 'O3'],
     commands=COMMANDS_nacl_gcc,
     tools_needed=[NACL_GCC_X64, BOOTSTRAP_X64, SEL_LDR_X64],
     CC = NACL_GCC_X64,
@@ -234,6 +249,7 @@ COMMANDS_llvm_pnacl_arm = [
 
 TOOLCHAIN_CONFIGS['llvm_pnacl_arm_O0'] = ToolchainConfig(
     desc='pnacl llvm [arm]',
+    attributes=['arm', 'O0'],
     commands=COMMANDS_llvm_pnacl_arm,
     tools_needed=[PNACL_FRONTEND, PNACL_LD, EMU_SCRIPT, BOOTSTRAP_ARM,
                   SEL_LDR_ARM],
@@ -248,6 +264,7 @@ TOOLCHAIN_CONFIGS['llvm_pnacl_arm_O0'] = ToolchainConfig(
 
 TOOLCHAIN_CONFIGS['llvm_pnacl_arm_O3'] = ToolchainConfig(
     desc='pnacl llvm with optimizations [arm]',
+    attributes=['arm', 'O3'],
     commands=COMMANDS_llvm_pnacl_arm,
     tools_needed=[PNACL_FRONTEND, PNACL_LD, EMU_SCRIPT, BOOTSTRAP_ARM,
                   SEL_LDR_ARM],
@@ -280,6 +297,7 @@ COMMANDS_llvm_pnacl_x86_O0 = [
 
 TOOLCHAIN_CONFIGS['llvm_pnacl_x8632_O0'] = ToolchainConfig(
     desc='pnacl llvm [x8632]',
+    attributes=['x86-32', 'O0'],
     commands=COMMANDS_llvm_pnacl_x86_O0,
     tools_needed=[PNACL_FRONTEND, PNACL_LD, BOOTSTRAP_X32, SEL_LDR_X32],
     CC = PNACL_FRONTEND,
@@ -290,6 +308,7 @@ TOOLCHAIN_CONFIGS['llvm_pnacl_x8632_O0'] = ToolchainConfig(
 
 TOOLCHAIN_CONFIGS['llvm_pnacl_x8632_O3'] = ToolchainConfig(
     desc='pnacl llvm [x8632]',
+    attributes=['x86-32', 'O3'],
     commands=COMMANDS_llvm_pnacl_x86_O0,
     tools_needed=[PNACL_FRONTEND, PNACL_LD, BOOTSTRAP_X32, SEL_LDR_X32],
     CC = PNACL_FRONTEND,
@@ -305,6 +324,7 @@ TOOLCHAIN_CONFIGS['llvm_pnacl_x8632_O3'] = ToolchainConfig(
 
 TOOLCHAIN_CONFIGS['llvm_pnacl_x8664_O0'] = ToolchainConfig(
     desc='pnacl llvm [x8664]',
+    attributes=['x86-64', 'O0'],
     commands=COMMANDS_llvm_pnacl_x86_O0,
     tools_needed=[PNACL_FRONTEND, PNACL_LD, BOOTSTRAP_X64, SEL_LDR_X64],
     CC = PNACL_FRONTEND,
@@ -315,6 +335,7 @@ TOOLCHAIN_CONFIGS['llvm_pnacl_x8664_O0'] = ToolchainConfig(
 
 TOOLCHAIN_CONFIGS['llvm_pnacl_x8664_O3'] = ToolchainConfig(
     desc='pnacl llvm [x8664]',
+    attributes=['x86-64', 'O3'],
     commands=COMMANDS_llvm_pnacl_x86_O0,
     tools_needed=[PNACL_FRONTEND, PNACL_LD, BOOTSTRAP_X64, SEL_LDR_X64],
     CC = PNACL_FRONTEND,

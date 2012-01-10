@@ -159,6 +159,9 @@ def main(argv):
 
   filename = args[0]
   failures = {}
+  if options.verbose:
+    print 'Full test results:'
+
   # get the set of tests and failures
   if filename.endswith('csv'):
     alltests, failures = ParseCSV(filename)

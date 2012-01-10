@@ -43,16 +43,17 @@ pr39228.c
 # undef __builtin_va_arg_pack
 va-arg-pack-1.c
 # prefetch broken on ARM
-builtin-prefetch-2.c
+builtin-prefetch-2.c arm
 # vector broken on ARM
-simd-6.c
+simd-6.c arm
 # This uses __builtin_return_address(1) (Works for x8632 O0/O3, and x8664 O0)
 # Addresses slightly off on x86-64 O3, and stock clang x86-64 O3 also.
 # Segfaults on ARM loading an uninit frame pointer (must force fp on?).
-20010122-1.c
+20010122-1.c x86-64,O3
+20010122-1.c arm
 # DCE not performed at -O0 (wontfix?)
-medce-1.c
-fp-cmp-7.c
+medce-1.c O0
+fp-cmp-7.c O0
 # ======================================================================
 # failures in phase compile-bc
 # ======================================================================
@@ -67,19 +68,19 @@ pr43008.c
 # additional failures at -O3
 # ======================================================================
 # uses  __builtin_constant_p
-bcp-1.c
+bcp-1.c O3
 # uses __builtin_constant_p
-builtin-constant.c
+builtin-constant.c O3
 # llvm does not know how to evaluate "(x<y) && (x>y)" and "(x==y) && (x!=y)"
-compare-fp-3.c
+compare-fp-3.c O3
 # math functions not simplified the way the test expects
-20030125-1.c
+20030125-1.c O3
 # some kind of misoptimization, or optimization not done that the test
 # expects. not sure why it wasn't caught before
-fprintf-chk-1.c
-printf-chk-1.c
-vprintf-chk-1.c
-vfprintf-chk-1.c
+fprintf-chk-1.c O3
+printf-chk-1.c O3
+vprintf-chk-1.c O3
+vfprintf-chk-1.c O3
 # ======================================================================
 # wont fixes - misc reasons
 # ======================================================================

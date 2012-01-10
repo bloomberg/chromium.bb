@@ -6,7 +6,7 @@ init-temp1.C
 spec9.C
 dtor1.C
 # additional failures at -O3 (x8664 only)
-registers1.C
+registers1.C x86-64,O3
 # ======================================================================
 # NOTE: the tests below fail on a regular gcc as well
 # ======================================================================

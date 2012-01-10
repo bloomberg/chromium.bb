@@ -56,6 +56,8 @@ APPEND = []
 EXCLUDE = {}
 # check whether excludes are still necessary
 CHECK_EXCLUDES = 0
+# Files listing excluded tests
+EXCLUDE_FILES = []
 # module with settings for compiler, etc.
 CFG = None
 # Number of simultaneous test processes
@@ -132,6 +134,35 @@ def MakeExecutableCustom(config, test, extra):
   # success
   return ''
 
+def ParseExcludeFiles(config_attributes):
+  ''' Parse the files containing tests to exclude (i.e. expected fails).
+  Each line may contain a comma-separated list of attributes restricting
+  the test configurations which are expected to fail. (e.g. architecture
+  or optimization level). A test is only excluded if the configuration
+  has all the attributes specified in the exclude line. Lines which
+  have no attributes will match everything, and lines which specify only
+  one attribute (e.g. architecture) will match all configurations with that
+  attributed (e.g. both opt levels with that architecture)
+  '''
+  for excludefile in EXCLUDE_FILES:
+    f = open(excludefile)
+    for line in f:
+      line = line.strip()
+      if not line: continue
+      if line.startswith('#'): continue
+      tokens = line.split()
+      if len(tokens) > 1:
+        attributes = set(tokens[1].split(','))
+        if not attributes.issubset(config_attributes):
+          continue
+        test = tokens[0]
+      else:
+        test = line
+      if test in EXCLUDE:
+        Print('ERROR: duplicate exclude: [%s]' % line)
+      EXCLUDE[test] = excludefile
+    f.close()
+    Print('Size of excludes now: %d' % len(EXCLUDE))
 
 def ParseCommandLineArgs(argv):
   """Process command line options and return the unprocessed left overs."""
@@ -163,16 +194,8 @@ def ParseCommandLineArgs(argv):
     elif o == 'tmp':
       TMP_PREFIX = a
     elif o == 'exclude':
-      f = open(a)
-      for line in f:
-        line = line.strip()
-        if not line: continue
-        if line.startswith('#'): continue
-        if line in EXCLUDE:
-          Print('ERROR: duplicate exclude: [%s]' % line)
-        EXCLUDE[line] = a
-      f.close()
-      Print('Size of excludes now: %d' % len(EXCLUDE))
+      # Parsing of exclude files must happen after we know the current config
+      EXCLUDE_FILES.append(a)
     elif o == 'append':
       tag, value = a.split(":", 1)
       APPEND.append((tag, value))
@@ -191,7 +214,12 @@ def RunTest(args):
   num, total, config, test, extra_flags = args
   Print('Running %d/%d: %s' %
         (num + 1, total, os.path.basename(test)))
-  result = MakeExecutableCustom(config, test, extra_flags)
+  try:
+    result = MakeExecutableCustom(config, test, extra_flags)
+  except KeyboardInterrupt:
+    # Swallow the keyboard interrupt in the child. Otherwise the parent
+    # hangs trying to join it.
+    pass
 
   if result and config.IsFlaky():
     # TODO(dschuff): deflake qemu or switch to hardware
@@ -238,6 +266,7 @@ def main(argv):
 
   Banner('Config: %s' % CFG)
   config = toolchain_config.TOOLCHAIN_CONFIGS[CFG]
+  ParseExcludeFiles(config.GetAttributes())
   for tag, value in APPEND:
     config.Append(tag, value)
   config.SanityCheck()
