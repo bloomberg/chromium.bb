@@ -50,6 +50,7 @@
             'setup_headers',
             '<(DEPTH)/../../Platform/chromium/public',
             '<(platform_api_dest)',
+            '<(DEPTH)',
           ],
           'message': 'Generating forwarding headers for third_party/WebKit/Source/Platform/chromium/public',
         },

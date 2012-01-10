@@ -58,18 +58,22 @@ def SetupHeaders(args):
   from output dir to files in input dir.
   args: A list with 2 values, the input dir and the output dir.
   Returns: 0 on success, other value on error."""
-  if len(args) != 2:
-    print "'setup_headers' expects an input directory and an output directory."
+  if len(args) != 2 and len(args) != 3:
+    print ("'setup_headers' expects an input directory, an output directory, ."
+        "and an optional directory to make includes relative to.")
     return -1
 
   base_input_dir = args[0]
   output_dir = args[1]
+  relative_to_dir = None
+  if len(args) == 3:
+    relative_to_dir = args[2]
   input_files = GetHeaderFilesInDir(base_input_dir)
   for input_filename in input_files:
     rel_path = input_filename[len(base_input_dir) + 1:]
     out_filename = os.path.join(output_dir, rel_path)
     TryToMakeDir(os.path.split(out_filename)[0])
-    WriteSetupFilename(input_filename, out_filename)
+    WriteSetupFilename(input_filename, out_filename, relative_to_dir)
 
 
 def TryToMakeDir(dir_name):
@@ -90,7 +94,7 @@ def NormalizePath(path):
   return os.path.join(drive.lower(), rest)
 
 
-def WriteSetupFilename(input_filename, out_filename):
+def WriteSetupFilename(input_filename, out_filename, relative_to_dir):
   """Create a forwarding header from out_filename to input_filename."""
   # Figure out the relative path from out_filename to input_filename.
   # We can't use os.path.relpath since that's a python2.6 feature and we
@@ -112,6 +116,8 @@ def WriteSetupFilename(input_filename, out_filename):
     # relative path, just write the path relative to the WebKit/chromium dir,
     # which is in the include path.
     rel_path = input_filename[len(ancestor):]
+    if relative_to_dir:
+      rel_path = os.path.join(relative_to_dir, rel_path)
   else:
     rel_path = os.path.join('/'.join(['..'] * num_parent_dirs),
                             input_filename[len(ancestor):])
