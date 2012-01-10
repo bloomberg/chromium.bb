@@ -30,7 +30,9 @@ class ChromeEndureBaseTest(perf.BasePerfTest):
     self._full_snapshot_results = []
     self._snapshot_iteration = 0
     self._heap_size_results = []
-    self._node_count_results = []
+    self._v8_node_count_results = []
+    self._dom_node_count_results = []
+    self._event_listener_count_results = []
 
   def ExtraChromeFlags(self):
     """Ensures Chrome is launched with custom flags.
@@ -43,18 +45,38 @@ class ChromeEndureBaseTest(perf.BasePerfTest):
     return (perf.BasePerfTest.ExtraChromeFlags(self) +
             ['--remote-debugging-port=9222'])
 
-  def _TakeHeapSnapshot(self):
+  def _TakeHeapSnapshot(self, webapp_name):
     """Takes a v8 heap snapshot and outputs/stores the results.
 
-    This function will fail the current test if no snapshot can be taken.
+    This function will fail the current test if no snapshot can be taken.  A
+    snapshot stored by this function is represented by a dictionary with the
+    following format:
+    {
+      'url': string,  # URL of the webpage that was snapshotted.
+      'timestamp': float,  # Time when snapshot taken (seconds since epoch).
+      'total_v8_node_count': integer,  # Total number of nodes in the v8 heap.
+      'total_heap_size': integer,  # Total heap size (number of bytes).
+      'total_dom_node_count': integer, # Total number of DOM nodes.
+      'event_listener_count': integer, # Total number of event listeners.
+    }
+
+    Args:
+      webapp_name: A string name for the webapp being testing.  Should not
+                   include spaces.  For example, 'Gmail', 'Docs', or 'Plus'.
     """
     # Take the snapshot and store the associated information.
-    logging.info('Taking heap snapshot...')
+    logging.info('Taking v8 heap snapshot...')
     start_time = time.time()
     snapshot = self._snapshotter.HeapSnapshot()
     elapsed_time = time.time() - start_time
     self.assertTrue(snapshot, msg='Failed to take a v8 heap snapshot.')
     snapshot_info = snapshot[0]
+
+    # Collect other count information to add to the snapshot data.
+    memory_counts = self._snapshotter.GetMemoryObjectCounts()
+    snapshot_info['total_dom_node_count'] = memory_counts['DOMNodeCount']
+    snapshot_info['event_listener_count'] = memory_counts['EventListenerCount']
+
     self._full_snapshot_results.append(snapshot_info)
     logging.info('Snapshot taken (%.2f sec).' % elapsed_time)
 
@@ -66,38 +88,76 @@ class ChromeEndureBaseTest(perf.BasePerfTest):
     logging.info('  Total heap size: %.2f MB' % heap_size)
     self._heap_size_results.append((self._snapshot_iteration, heap_size))
 
-    node_count = snapshot_info['total_node_count']
-    logging.info('  Total node count: %d nodes' % node_count)
-    self._node_count_results.append((self._snapshot_iteration, node_count))
+    v8_node_count = snapshot_info['total_v8_node_count']
+    logging.info('  Total v8 node count: %d nodes' % v8_node_count)
+    self._v8_node_count_results.append((self._snapshot_iteration,
+                                        v8_node_count))
+
+    dom_node_count = snapshot_info['total_dom_node_count']
+    logging.info('  Total DOM node count: %d nodes' % dom_node_count)
+    self._dom_node_count_results.append((self._snapshot_iteration,
+                                         dom_node_count))
+
+    event_listener_count = snapshot_info['event_listener_count']
+    logging.info('  Event listener count: %d listeners' % event_listener_count)
+    self._event_listener_count_results.append((self._snapshot_iteration,
+                                               event_listener_count))
+
     self._snapshot_iteration += 1
 
     # Output the results seen so far, to be graphed.
     self._OutputPerfGraphValue(
-        'HeapSize', self._heap_size_results, 'MB', graph_name='Gmail-Heap',
-        units_x='iteration')
+        'HeapSize', self._heap_size_results, 'MB',
+        graph_name='%s-Heap' % webapp_name, units_x='iteration')
     self._OutputPerfGraphValue(
-        'TotalNodeCount', self._node_count_results, 'nodes',
-        graph_name='Gmail-Nodes', units_x='iteration')
+        'TotalV8NodeCount', self._v8_node_count_results, 'nodes',
+        graph_name='%s-Nodes-V8' % webapp_name, units_x='iteration')
+    self._OutputPerfGraphValue(
+        'TotalDOMNodeCount', self._dom_node_count_results, 'nodes',
+        graph_name='%s-Nodes-DOM' % webapp_name, units_x='iteration')
+    self._OutputPerfGraphValue(
+        'EventListenerCount', self._event_listener_count_results, 'listeners',
+        graph_name='%s-EventListeners' % webapp_name, units_x='iteration')
 
-  def _OutputFinalHeapSnapshotResults(self):
+  def _OutputFinalHeapSnapshotResults(self, webapp_name):
     """Outputs final snapshot results to be graphed at the end of a test.
 
     Assumes that at least one snapshot was previously taken by the current test.
+
+    Args:
+      webapp_name: A string name for the webapp being testing.  Should not
+                   include spaces.  For example, 'Gmail', 'Docs', or 'Plus'.
     """
     assert len(self._full_snapshot_results) >= 1
     max_heap_size = 0
-    max_node_count = 0
+    max_v8_node_count = 0
+    max_dom_node_count = 0
+    max_event_listener_count = 0
     for index, snapshot_info in enumerate(self._full_snapshot_results):
       heap_size = snapshot_info['total_heap_size'] / (1024.0 * 1024.0)
       if heap_size > max_heap_size:
         max_heap_size = heap_size
-      node_count = snapshot_info['total_node_count']
-      if node_count > max_node_count:
-        max_node_count = node_count
+      v8_node_count = snapshot_info['total_v8_node_count']
+      if v8_node_count > max_v8_node_count:
+        max_v8_node_count = v8_node_count
+      dom_node_count = snapshot_info['total_dom_node_count']
+      if dom_node_count > max_dom_node_count:
+        max_dom_node_count = dom_node_count
+      event_listener_count = snapshot_info['event_listener_count']
+      if event_listener_count > max_event_listener_count:
+        max_event_listener_count = event_listener_count
     self._OutputPerfGraphValue(
-        'HeapSize', max_heap_size, 'MB', graph_name='Gmail-Heap-Max')
+        'MaxHeapSize', max_heap_size, 'MB',
+        graph_name='%s-Heap-Max' % webapp_name)
     self._OutputPerfGraphValue(
-        'TotalNodeCount', max_node_count, 'nodes', graph_name='Gmail-Nodes-Max')
+        'MaxV8NodeCount', max_v8_node_count, 'nodes',
+        graph_name='%s-Nodes-V8-Max' % webapp_name)
+    self._OutputPerfGraphValue(
+        'MaxDOMNodeCount', max_dom_node_count, 'nodes',
+        graph_name='%s-Nodes-DOM-Max' % webapp_name)
+    self._OutputPerfGraphValue(
+        'MaxEventListenerCount', max_event_listener_count, 'listeners',
+        graph_name='%s-EventListeners-Max' % webapp_name)
 
   def _GetElement(self, find_by, value):
     """Gets a WebDriver element object from the webpage DOM.
@@ -201,9 +261,9 @@ class ChromeEndureGmailTest(ChromeEndureBaseTest):
 
       # Snapshot after the first iteration, then every 50 iterations after that.
       if i % 50 == 0:
-        self._TakeHeapSnapshot()
+        self._TakeHeapSnapshot('Gmail')
 
-    self._OutputFinalHeapSnapshotResults()
+    self._OutputFinalHeapSnapshotResults('Gmail')
 
 
 class ChromeEndureDocsTest(ChromeEndureBaseTest):
@@ -268,9 +328,9 @@ class ChromeEndureDocsTest(ChromeEndureBaseTest):
       # Snapshot after the first iteration, then every 100 iterations after
       # that.
       if i % 100 == 0:
-        self._TakeHeapSnapshot()
+        self._TakeHeapSnapshot('Docs')
 
-    self._OutputFinalHeapSnapshotResults()
+    self._OutputFinalHeapSnapshotResults('Docs')
 
 
 class ChromeEndurePlusTest(ChromeEndureBaseTest):
@@ -331,9 +391,9 @@ class ChromeEndurePlusTest(ChromeEndureBaseTest):
       # Snapshot after the first iteration, then every 100 iterations after
       # that.
       if i % 100 == 0:
-        self._TakeHeapSnapshot()
+        self._TakeHeapSnapshot('Plus')
 
-    self._OutputFinalHeapSnapshotResults()
+    self._OutputFinalHeapSnapshotResults('Plus')
 
 
 if __name__ == '__main__':

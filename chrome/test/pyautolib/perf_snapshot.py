@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -82,7 +82,7 @@ class _V8HeapSnapshotParser(object):
     Returns:
       A dictionary containing the summarized v8 heap snapshot data:
       {
-        'total_node_count': integer,  # Total number of nodes in the v8 heap.
+        'total_v8_node_count': integer,  # Total number of nodes in the v8 heap.
         'total_shallow_size': integer, # Total heap size, in bytes.
       }
     """
@@ -162,7 +162,7 @@ class _V8HeapSnapshotParser(object):
     # TODO(dennisjeffrey): Have this function also return more detailed v8
     # heap snapshot data when a need for it arises (e.g., using |constructors|).
     result = {}
-    result['total_node_count'] = total_node_count
+    result['total_v8_node_count'] = total_node_count
     result['total_shallow_size'] = total_shallow_size
     return result
 
@@ -411,7 +411,7 @@ class _RemoteInspectorBaseThread(threading.Thread):
                  result handling needs to be performed.
     run: Starts the thread of execution for this object.  Invoked implicitly
          by calling the start() method on this object.  Should be overridden
-         by a subclass.
+         by a subclass, and should call self._client.close() when done.
   """
   def __init__(self, tab_index, verbose, show_socket_messages):
     """Initialize.
@@ -692,7 +692,7 @@ class _PerformanceSnapshotterThread(_RemoteInspectorBaseThread):
         result = parser.ParseSnapshotData(raw_snapshot_data)
         self._logger.debug('Time to parse data: %.2f sec',
                            time.time() - time_start)
-        num_nodes = result['total_node_count']
+        num_nodes = result['total_v8_node_count']
         total_size = result['total_shallow_size']
         total_size_str = self._ConvertBytesToHumanReadableString(total_size)
         timestamp = time.time()
@@ -700,7 +700,7 @@ class _PerformanceSnapshotterThread(_RemoteInspectorBaseThread):
         self.collected_heap_snapshot_data.append(
             {'url': self._url,
              'timestamp': timestamp,
-             'total_node_count': num_nodes,
+             'total_v8_node_count': num_nodes,
              'total_heap_size': total_size,})
 
         if self._output_file:
@@ -836,7 +836,56 @@ class _GarbageCollectThread(_RemoteInspectorBaseThread):
           return
         time.sleep(0.1)
     self._client.close()
-    return
+
+
+class _MemoryCountThread(_RemoteInspectorBaseThread):
+  """Manages communication with a remote Chrome to get memory count info."""
+
+  _MEMORY_COUNT_MESSAGES = [
+    'Memory.getDOMNodeCount',
+  ]
+
+  def HandleReply(self, reply_dict):
+    """Processes a reply message received from the remote Chrome instance.
+
+    Args:
+      reply_dict: A dictionary object representing the reply message received
+                  from the remote Chrome instance.
+    """
+    if 'result' in reply_dict and 'count' in reply_dict['result']:
+      dom_group_list = reply_dict['result']['count']
+      for dom_group in dom_group_list:
+        listener_array = dom_group['listenerCount']
+        for listener in listener_array:
+          self.event_listener_count += listener['count']
+        dom_node_array = dom_group['nodeCount']
+        for dom_element in dom_node_array:
+          self.dom_node_count += dom_element['count']
+
+  def run(self):
+    """Start _MemoryCountThread; overridden from threading.Thread."""
+    if self._killed:
+      return
+
+    self.dom_node_count = 0
+    self.event_listener_count = 0
+
+    # Prepare the request list.
+    for message in self._MEMORY_COUNT_MESSAGES:
+      self._requests.append(
+          _DevToolsSocketRequest(message, self._next_request_id))
+      self._next_request_id += 1
+
+    # Send out each request.  Wait until each request is complete before sending
+    # the next request.
+    for request in self._requests:
+      self._FillInParams(request)
+      self._client.SendMessage(str(request))
+      while not request.is_complete:
+        if self._killed:
+          return
+        time.sleep(0.1)
+    self._client.close()
 
 
 # TODO(dennisjeffrey): The "verbose" option used in this file should re-use
@@ -898,7 +947,7 @@ class PerformanceSnapshotter(object):
       {
         'url': string,  # URL of the webpage that was snapshotted.
         'timestamp': float,  # Time when snapshot taken (seconds since epoch).
-        'total_node_count': integer,  # Total number of nodes in the v8 heap.
+        'total_v8_node_count': integer,  # Total number of nodes in the v8 heap.
         'total_heap_size': integer,  # Total heap size (number of bytes).
       }
     """
@@ -931,6 +980,33 @@ class PerformanceSnapshotter(object):
     except KeyboardInterrupt:
       pass
     gc_thread.join()
+
+  def GetMemoryObjectCounts(self):
+    """Retrieves memory object count information.
+
+    Returns:
+      A dictionary containing the memory object count information:
+      {
+        'DOMNodeCount': integer,  # Total number of DOM nodes.
+        'EventListenerCount': integer,  # Total number of event listeners.
+      }
+    """
+    mem_count_thread = _MemoryCountThread(self._tab_index, self._verbose,
+                                          self._show_socket_messages)
+    mem_count_thread.start()
+    try:
+      while asyncore.socket_map:
+        if not mem_count_thread.is_alive():
+          break
+        asyncore.loop(timeout=1, count=1)
+    except KeyboardInterrupt:
+      pass
+    mem_count_thread.join()
+    result = {
+      'DOMNodeCount': mem_count_thread.dom_node_count,
+      'EventListenerCount': mem_count_thread.event_listener_count,
+    }
+    return result
 
   def SetInteractiveMode(self):
     """Sets the current object to take snapshots in interactive mode."""
