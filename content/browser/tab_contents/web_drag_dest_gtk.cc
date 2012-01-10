@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -143,16 +143,14 @@ void WebDragDestGtk::OnDragDataReceived(
   data_requests_--;
 
   // Decode the data.
-  gint data_length = gtk_selection_data_get_length(data);
-  const guchar* raw_data = gtk_selection_data_get_data(data);
-  if (raw_data && data_length > 0) {
+  if (data->data && data->length > 0) {
     // If the source can't provide us with valid data for a requested target,
-    // raw_data will be NULL.
+    // data->data will be NULL.
     if (data->target == ui::GetAtomForTarget(ui::TEXT_PLAIN)) {
       guchar* text = gtk_selection_data_get_text(data);
       if (text) {
         drop_data_->plain_text =
-            UTF8ToUTF16(std::string(reinterpret_cast<const char*>(text)));
+            UTF8ToUTF16(std::string(reinterpret_cast<char*>(text)));
         g_free(text);
       }
     } else if (data->target == ui::GetAtomForTarget(ui::TEXT_URI_LIST)) {
@@ -183,12 +181,12 @@ void WebDragDestGtk::OnDragDataReceived(
     } else if (data->target == ui::GetAtomForTarget(ui::TEXT_HTML)) {
       // TODO(estade): Can the html have a non-UTF8 encoding?
       drop_data_->text_html =
-          UTF8ToUTF16(std::string(reinterpret_cast<const char*>(raw_data),
-                                  data_length));
+          UTF8ToUTF16(std::string(reinterpret_cast<char*>(data->data),
+                                  data->length));
       // We leave the base URL empty.
     } else if (data->target == ui::GetAtomForTarget(ui::NETSCAPE_URL)) {
-      std::string netscape_url(reinterpret_cast<const char*>(raw_data),
-                               data_length);
+      std::string netscape_url(reinterpret_cast<char*>(data->data),
+                               data->length);
       size_t split = netscape_url.find_first_of('\n');
       if (split != std::string::npos) {
         drop_data_->url = GURL(netscape_url.substr(0, split));
@@ -199,7 +197,7 @@ void WebDragDestGtk::OnDragDataReceived(
       ui::ExtractNamedURL(data, &drop_data_->url, &drop_data_->url_title);
     } else if (data->target == ui::GetAtomForTarget(ui::CUSTOM_DATA)) {
       ui::ReadCustomDataIntoMap(
-          raw_data, data_length, &drop_data_->custom_data);
+          data->data, data->length, &drop_data_->custom_data);
     }
   }
 
@@ -209,7 +207,7 @@ void WebDragDestGtk::OnDragDataReceived(
   // Note that bookmark drag data is encoded in the same format for both
   // GTK and Views, hence we can share the same logic here.
   if (delegate() && data->target == delegate()->GetBookmarkTargetAtom()) {
-    if (raw_data && data_length > 0) {
+    if (data->data && data->length > 0) {
       delegate()->OnReceiveDataFromGtk(data);
     } else {
       delegate()->OnReceiveProcessedData(drop_data_->url,

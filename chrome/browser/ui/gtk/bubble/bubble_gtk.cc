@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -307,10 +307,8 @@ void BubbleGtk::UpdateWindowShape() {
   mask_region_ = gdk_region_polygon(&points[0],
                                     points.size(),
                                     GDK_EVEN_ODD_RULE);
-
-  GdkWindow* gdk_window = gtk_widget_get_window(window_);
-  gdk_window_shape_combine_region(gdk_window, NULL, 0, 0);
-  gdk_window_shape_combine_region(gdk_window, mask_region_, 0, 0);
+  gdk_window_shape_combine_region(window_->window, NULL, 0, 0);
+  gdk_window_shape_combine_region(window_->window, mask_region_, 0, 0);
 }
 
 void BubbleGtk::MoveWindow() {
@@ -375,12 +373,10 @@ void BubbleGtk::Close() {
 }
 
 void BubbleGtk::GrabPointerAndKeyboard() {
-  GdkWindow* gdk_window = gtk_widget_get_window(window_);
-
   // Install X pointer and keyboard grabs to make sure that we have the focus
   // and get all mouse and keyboard events until we're closed.
   GdkGrabStatus pointer_grab_status =
-      gdk_pointer_grab(gdk_window,
+      gdk_pointer_grab(window_->window,
                        TRUE,                   // owner_events
                        GDK_BUTTON_PRESS_MASK,  // event_mask
                        NULL,                   // confine_to
@@ -393,7 +389,7 @@ void BubbleGtk::GrabPointerAndKeyboard() {
                 << pointer_grab_status << ")";
   }
   GdkGrabStatus keyboard_grab_status =
-      gdk_keyboard_grab(gdk_window,
+      gdk_keyboard_grab(window_->window,
                         FALSE,  // owner_events
                         GDK_CURRENT_TIME);
   if (keyboard_grab_status != GDK_GRAB_SUCCESS) {
@@ -460,7 +456,6 @@ gboolean BubbleGtk::OnGtkAccelerator(GtkAccelGroup* group,
 }
 
 gboolean BubbleGtk::OnExpose(GtkWidget* widget, GdkEventExpose* expose) {
-  // TODO(erg): This whole method will need to be rewritten in cairo.
   GdkDrawable* drawable = GDK_DRAWABLE(window_->window);
   GdkGC* gc = gdk_gc_new(drawable);
   gdk_gc_set_rgb_fg_color(gc, &kFrameColor);

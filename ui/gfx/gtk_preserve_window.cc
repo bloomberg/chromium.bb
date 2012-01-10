@@ -93,16 +93,18 @@ static void gtk_preserve_window_realize(GtkWidget* widget) {
                         allocation.width,
                         allocation.height);
     }
+    widget->style = gtk_style_attach(widget->style, widget->window);
+    gtk_style_set_background(gtk_widget_get_style(widget),
+                             gdk_window, GTK_STATE_NORMAL);
+
     gint event_mask = gtk_widget_get_events(widget);
     event_mask |= GDK_EXPOSURE_MASK | GDK_BUTTON_PRESS_MASK;
     gdk_window_set_events(gdk_window, (GdkEventMask) event_mask);
     gdk_window_set_user_data(gdk_window, widget);
 
-    gtk_widget_set_realized(widget, TRUE);
-
-    gtk_widget_style_attach(widget);
-    gtk_style_set_background(gtk_widget_get_style(widget),
-                             gdk_window, GTK_STATE_NORMAL);
+    // Deprecated as of GTK 2.22. Used for compatibility.
+    // It should be: gtk_widget_set_realized(widget, TRUE)
+    GTK_WIDGET_SET_FLAGS(widget, GTK_REALIZED);
   } else {
     GTK_WIDGET_CLASS(gtk_preserve_window_parent_class)->realize(widget);
   }

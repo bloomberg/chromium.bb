@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -80,9 +80,7 @@ gfx::Rect Screen::GetMonitorAreaNearestWindow(gfx::NativeView view) {
     DCHECK(GTK_IS_WINDOW(top_level));
     GtkWindow* window = GTK_WINDOW(top_level);
     screen = gtk_window_get_screen(window);
-    monitor_num = gdk_screen_get_monitor_at_window(
-        screen,
-        gtk_widget_get_window(top_level));
+    monitor_num = gdk_screen_get_monitor_at_window(screen, top_level->window);
   }
   GdkRectangle bounds;
   gdk_screen_get_monitor_geometry(screen, monitor_num, &bounds);

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -129,8 +129,7 @@ void GetData(GtkClipboard* clipboard,
   Clipboard::TargetMap* data_map =
       reinterpret_cast<Clipboard::TargetMap*>(user_data);
 
-  std::string target_string = GdkAtomToString(
-      gtk_selection_data_get_target(selection_data));
+  std::string target_string = GdkAtomToString(selection_data->target);
   Clipboard::TargetMap::iterator iter = data_map->find(target_string);
 
   if (iter == data_map->end())
@@ -140,8 +139,7 @@ void GetData(GtkClipboard* clipboard,
     gtk_selection_data_set_pixbuf(selection_data,
         reinterpret_cast<GdkPixbuf*>(iter->second.first));
   } else {
-    gtk_selection_data_set(selection_data,
-                           gtk_selection_data_get_target(selection_data), 8,
+    gtk_selection_data_set(selection_data, selection_data->target, 8,
                            reinterpret_cast<guchar*>(iter->second.first),
                            iter->second.second);
   }
@@ -423,9 +421,7 @@ void Clipboard::ReadAvailableTypes(Clipboard::Buffer buffer,
       clipboard, GetWebCustomDataFormatType().ToGdkAtom());
   if (!data)
     return;
-  ReadCustomDataTypes(gtk_selection_data_get_data(data),
-                      gtk_selection_data_get_length(data),
-                      types);
+  ReadCustomDataTypes(data->data, data->length, types);
   gtk_selection_data_free(data);
 }
 
@@ -488,15 +484,12 @@ void Clipboard::ReadHTML(Clipboard::Buffer buffer, string16* markup,
 
   // If the data starts with 0xFEFF, i.e., Byte Order Mark, assume it is
   // UTF-16, otherwise assume UTF-8.
-  gint data_length = gtk_selection_data_get_length(data);
-  const guchar* raw_data = gtk_selection_data_get_data(data);
-
-  if (data_length >= 2 &&
-      reinterpret_cast<const uint16_t*>(raw_data)[0] == 0xFEFF) {
-    markup->assign(reinterpret_cast<const uint16_t*>(raw_data) + 1,
-                   (data_length / 2) - 1);
+  if (data->length >= 2 &&
+      reinterpret_cast<uint16_t*>(data->data)[0] == 0xFEFF) {
+    markup->assign(reinterpret_cast<uint16_t*>(data->data) + 1,
+                   (data->length / 2) - 1);
   } else {
-    UTF8ToUTF16(reinterpret_cast<const char*>(raw_data), data_length, markup);
+    UTF8ToUTF16(reinterpret_cast<char*>(data->data), data->length, markup);
   }
 
   // If there is a terminating NULL, drop it.
@@ -539,9 +532,7 @@ void Clipboard::ReadCustomData(Buffer buffer,
       clipboard, GetWebCustomDataFormatType().ToGdkAtom());
   if (!data)
     return;
-  ReadCustomDataForType(gtk_selection_data_get_data(data),
-                        gtk_selection_data_get_length(data),
-                        type, result);
+  ReadCustomDataForType(data->data, data->length, type, result);
   gtk_selection_data_free(data);
 }
 
@@ -555,9 +546,7 @@ void Clipboard::ReadData(const FormatType& format, std::string* result) const {
       gtk_clipboard_wait_for_contents(clipboard_, format.ToGdkAtom());
   if (!data)
     return;
-  result->assign(reinterpret_cast<const char*>(
-                     gtk_selection_data_get_data(data)),
-                 gtk_selection_data_get_length(data));
+  result->assign(reinterpret_cast<char*>(data->data), data->length);
   gtk_selection_data_free(data);
 }
 
