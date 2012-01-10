@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -256,11 +256,6 @@ enum NotificationType {
   // notification to properly reset the reference. The source is a
   // Source<WebContents>.
   NOTIFICATION_WEB_CONTENTS_DESTROYED,
-
-  // This notification is sent when a WebContentsDelegate is being
-  // destroyed. The source is a Source<WebContentsDelegate>.
-  // TODO(sky): Remove when we figure out http://crbug.com/107172.
-  NOTIFICATION_WEB_CONTENTS_DELEGATE_DESTROYED,
 
   // A RenderViewHost was created for a WebContents. The source is the
   // associated WebContents, and the details is the RenderViewHost

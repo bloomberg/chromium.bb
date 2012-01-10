@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,8 +8,6 @@
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "content/browser/javascript_dialogs.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_intents_dispatcher.h"
 #include "content/public/common/url_constants.h"
@@ -168,10 +166,6 @@ WebContentsDelegate::~WebContentsDelegate() {
     web_contents->SetDelegate(NULL);
   }
   DCHECK(attached_contents_.empty());
-  NotificationService::current()->Notify(
-      NOTIFICATION_WEB_CONTENTS_DELEGATE_DESTROYED,
-      Source<WebContentsDelegate>(this),
-      NotificationService::NoDetails());
 }
 
 void WebContentsDelegate::Attach(WebContents* web_contents) {

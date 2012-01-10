@@ -24,7 +24,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/user_metrics.h"
@@ -378,11 +377,6 @@ void DefaultTabDragController::Init(
   }
   InitWindowCreatePoint();
   initial_selection_model_.Copy(initial_selection_model);
-
-  registrar_.Add(
-      this,
-      content::NOTIFICATION_WEB_CONTENTS_DELEGATE_DESTROYED,
-      content::NotificationService::AllSources());
 }
 
 void DefaultTabDragController::InitTabDragData(BaseTab* tab,
@@ -500,13 +494,6 @@ void DefaultTabDragController::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  if (type == content::NOTIFICATION_WEB_CONTENTS_DELEGATE_DESTROYED) {
-    content::WebContentsDelegate* delegate =
-        content::Source<content::WebContentsDelegate>(source).ptr();
-    for (size_t i = 0; i < drag_data_.size(); ++i)
-      CHECK_NE(delegate, drag_data_[i].original_delegate);
-    return;
-  }
   DCHECK_EQ(type, content::NOTIFICATION_WEB_CONTENTS_DESTROYED);
   WebContents* destroyed_contents = content::Source<WebContents>(source).ptr();
   for (size_t i = 0; i < drag_data_.size(); ++i) {
