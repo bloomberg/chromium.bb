@@ -15,6 +15,29 @@
 #include "printing/units.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace {
+
+void UpdateMargins(int margins_type, int dpi, PrintMsg_Print_Params* params) {
+  if (margins_type == printing::NO_MARGINS) {
+    params->content_size.SetSize(static_cast<int>((8.5 * dpi)),
+                                 static_cast<int>((11.0 * dpi)));
+    params->margin_left = 0;
+    params->margin_top = 0;
+  } else if (margins_type == printing::PRINTABLE_AREA_MARGINS) {
+    params->content_size.SetSize(static_cast<int>((8.0 * dpi)),
+                                 static_cast<int>((10.5 * dpi)));
+    params->margin_left = static_cast<int>(0.25 * dpi);
+    params->margin_top = static_cast<int>(0.25 * dpi);
+  } else if (margins_type == printing::CUSTOM_MARGINS) {
+    params->content_size.SetSize(static_cast<int>((7.9 * dpi)),
+                                 static_cast<int>((10.4 * dpi)));
+    params->margin_left = static_cast<int>(0.30 * dpi);
+    params->margin_top = static_cast<int>(0.30 * dpi);
+  }
+}
+
+} // end
+
 MockPrinterPage::MockPrinterPage(const void* source_data,
                                  uint32 source_size,
                                  const printing::Image& image)
@@ -40,6 +63,7 @@ MockPrinter::MockPrinter()
     number_pages_(0),
     page_number_(0),
     is_first_request_(true),
+    print_to_pdf_(false),
     preview_request_id_(0),
     display_header_footer_(false),
     date_(ASCIIToUTF16("date")),
@@ -51,6 +75,10 @@ MockPrinter::MockPrinter()
   content_size_.SetSize(static_cast<int>((7.5 * dpi_)),
                           static_cast<int>((10.0 * dpi_)));
   margin_left_ = margin_top_ = static_cast<int>(0.5 * dpi_);
+  printable_area_.SetRect(static_cast<int>(0.25 * dpi_),
+                          static_cast<int>(0.25 *dpi_),
+                          static_cast<int>(8 * dpi_),
+                          static_cast<int>(10.5 * dpi_));
 }
 
 MockPrinter::~MockPrinter() {
@@ -80,6 +108,7 @@ void MockPrinter::SetDefaultPrintSettings(const PrintMsg_Print_Params& params) {
   selection_only_ = params.selection_only;
   page_size_ = params.page_size;
   content_size_ = params.content_size;
+  printable_area_ = params.printable_area;
   margin_left_ = params.margin_left;
   margin_top_ = params.margin_top;
   display_header_footer_ = params.display_header_footer;
@@ -111,7 +140,9 @@ void MockPrinter::ScriptedPrint(int cookie,
   settings->params.document_cookie = document_cookie_;
   settings->params.page_size = page_size_;
   settings->params.content_size = content_size_;
+  settings->params.printable_area = printable_area_;
   settings->params.is_first_request = is_first_request_;
+  settings->params.print_to_pdf = print_to_pdf_;
   settings->params.preview_request_id = preview_request_id_;
   settings->params.display_header_footer = display_header_footer_;
   settings->params.date = date_;
@@ -122,13 +153,15 @@ void MockPrinter::ScriptedPrint(int cookie,
 
 void MockPrinter::UpdateSettings(int cookie,
                                  PrintMsg_PrintPages_Params* params,
-                                 const std::vector<int>& pages) {
+                                 const std::vector<int>& pages,
+                                 int margins_type) {
   if (document_cookie_ == -1) {
     document_cookie_ = CreateDocumentCookie();
   }
   params->Reset();
   params->pages = pages;
   SetPrintParams(&(params->params));
+  UpdateMargins(margins_type, dpi_, &(params->params));
   printer_status_ = PRINTER_PRINTING;
 }
 
@@ -258,9 +291,11 @@ void MockPrinter::SetPrintParams(PrintMsg_Print_Params* params) {
   params->document_cookie = document_cookie_;
   params->page_size = page_size_;
   params->content_size = content_size_;
+  params->printable_area = printable_area_;
   params->margin_left = margin_left_;
   params->margin_top = margin_top_;
   params->is_first_request = is_first_request_;
+  params->print_to_pdf = print_to_pdf_;
   params->preview_request_id = preview_request_id_;
   params->display_header_footer = display_header_footer_;
   params->date = date_;

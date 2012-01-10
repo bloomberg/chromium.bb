@@ -202,7 +202,7 @@ void PrintPreviewUI::OnDidGetPreviewPageCount(
 }
 
 void PrintPreviewUI::OnDidGetDefaultPageLayout(
-    const PageSizeMargins& page_layout) {
+    const PageSizeMargins& page_layout, bool has_custom_page_size_style) {
   if (page_layout.margin_top < 0 || page_layout.margin_left < 0 ||
       page_layout.margin_bottom < 0 || page_layout.margin_right < 0 ||
       page_layout.content_width < 0 || page_layout.content_height < 0) {
@@ -218,7 +218,9 @@ void PrintPreviewUI::OnDidGetDefaultPageLayout(
   layout.SetDouble(printing::kSettingContentWidth, page_layout.content_width);
   layout.SetDouble(printing::kSettingContentHeight, page_layout.content_height);
 
-  CallJavascriptFunction("onDidGetDefaultPageLayout", layout);
+  base::FundamentalValue has_page_size_style(has_custom_page_size_style);
+  CallJavascriptFunction("onDidGetDefaultPageLayout", layout,
+                         has_page_size_style);
 }
 
 void PrintPreviewUI::OnDidPreviewPage(int page_number,

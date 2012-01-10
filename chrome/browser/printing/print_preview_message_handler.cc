@@ -199,14 +199,16 @@ void PrintPreviewMessageHandler::OnPrintPreviewFailed(int document_cookie) {
 }
 
 void PrintPreviewMessageHandler::OnDidGetDefaultPageLayout(
-    const PageSizeMargins& page_layout_in_points) {
+    const PageSizeMargins& page_layout_in_points,
+    bool has_custom_page_size_style) {
   TabContentsWrapper* print_preview_tab = GetPrintPreviewTab();
   if (!print_preview_tab || !print_preview_tab->web_contents()->GetWebUI())
     return;
 
   PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(
       print_preview_tab->web_contents()->GetWebUI());
-  print_preview_ui->OnDidGetDefaultPageLayout(page_layout_in_points);
+  print_preview_ui->OnDidGetDefaultPageLayout(page_layout_in_points,
+                                              has_custom_page_size_style);
 }
 
 void PrintPreviewMessageHandler::OnPrintPreviewCancelled(int document_cookie) {

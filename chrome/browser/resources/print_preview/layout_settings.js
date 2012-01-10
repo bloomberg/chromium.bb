@@ -100,7 +100,7 @@ cr.define('print_preview', function() {
      * @private
      */
     onPDFLoaded_: function() {
-      this.fadeInOut_(!previewModifiable);
+      this.fadeInOut_(!previewModifiable || hasPageSizeStyle);
     },
 
     /**

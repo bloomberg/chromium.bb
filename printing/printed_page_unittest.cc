@@ -15,45 +15,53 @@ TEST(PrintedPageTest, GetCenteredPageContentRect) {
   page = new PrintedPage(1,
                          NULL,
                          gfx::Size(1200, 1200),
-                         gfx::Rect(0, 0, 400, 1100));
+                         gfx::Rect(0, 0, 400, 1100),
+                         0.2f);
   page->GetCenteredPageContentRect(gfx::Size(1000, 1000), &page_content);
   EXPECT_EQ(0, page_content.x());
   EXPECT_EQ(0, page_content.y());
   EXPECT_EQ(400, page_content.width());
   EXPECT_EQ(1100, page_content.height());
+  EXPECT_EQ(0.2f, page->shrink_factor());
 
   // X centered.
   page = new PrintedPage(1,
                          NULL,
                          gfx::Size(500, 1200),
-                         gfx::Rect(0, 0, 400, 1100));
+                         gfx::Rect(0, 0, 400, 1100),
+                         0.8f);
   page->GetCenteredPageContentRect(gfx::Size(1000, 1000), &page_content);
   EXPECT_EQ(250, page_content.x());
   EXPECT_EQ(0, page_content.y());
   EXPECT_EQ(400, page_content.width());
   EXPECT_EQ(1100, page_content.height());
+  EXPECT_EQ(0.8f, page->shrink_factor());
 
   // Y centered.
   page = new PrintedPage(1,
                          NULL,
                          gfx::Size(1200, 500),
-                         gfx::Rect(0, 0, 400, 1100));
+                         gfx::Rect(0, 0, 400, 1100),
+                         1.0f);
   page->GetCenteredPageContentRect(gfx::Size(1000, 1000), &page_content);
   EXPECT_EQ(0, page_content.x());
   EXPECT_EQ(250, page_content.y());
   EXPECT_EQ(400, page_content.width());
   EXPECT_EQ(1100, page_content.height());
+  EXPECT_EQ(1.0f, page->shrink_factor());
 
   // Both X and Y centered.
   page = new PrintedPage(1,
                          NULL,
                          gfx::Size(500, 500),
-                         gfx::Rect(0, 0, 400, 1100));
+                         gfx::Rect(0, 0, 400, 1100),
+                         0.3f);
   page->GetCenteredPageContentRect(gfx::Size(1000, 1000), &page_content);
   EXPECT_EQ(250, page_content.x());
   EXPECT_EQ(250, page_content.y());
   EXPECT_EQ(400, page_content.width());
   EXPECT_EQ(1100, page_content.height());
+  EXPECT_EQ(0.3f, page->shrink_factor());
 }
 
 }  // namespace printing

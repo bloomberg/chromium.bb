@@ -67,7 +67,7 @@ void PrintedDocument::RenderPrintedPage(
         context,
         content_area.x() - page_setup.printable_area().x(),
         content_area.y() - page_setup.printable_area().y(),
-        mutable_.shrink_factor);
+        page.shrink_factor());
 
     if (!page.metafile()->SafePlayback(context)) {
       NOTREACHED();

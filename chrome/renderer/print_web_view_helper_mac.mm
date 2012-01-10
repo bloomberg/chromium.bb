@@ -32,25 +32,19 @@ void PrintWebViewHelper::PrintPageInternal(
   if (!metafile.Init())
     return;
 
-  float scale_factor = frame->getPrintPageShrink(params.page_number);
   int page_number = params.page_number;
-
-  // Render page for printing.
-  gfx::Rect content_area(params.params.content_size);
-  RenderPage(params.params.content_size, content_area, scale_factor,
-             page_number, frame, false, &metafile);
+  gfx::Size page_size_in_dpi;
+  gfx::Rect content_area_in_dpi;
+  RenderPage(print_pages_params_->params, page_number, frame, false, &metafile,
+             &page_size_in_dpi, &content_area_in_dpi);
   metafile.FinishDocument();
 
   PrintHostMsg_DidPrintPage_Params page_params;
   page_params.data_size = metafile.GetDataSize();
   page_params.page_number = page_number;
   page_params.document_cookie = params.params.document_cookie;
-  page_params.actual_shrink = scale_factor;
-  page_params.page_size = params.params.page_size;
-  page_params.content_area = gfx::Rect(params.params.margin_left,
-                                       params.params.margin_top,
-                                       params.params.content_size.width(),
-                                       params.params.content_size.height());
+  page_params.page_size = page_size_in_dpi;
+  page_params.content_area = content_area_in_dpi;
 
   // Ask the browser to create the shared memory for us.
   if (!CopyMetafileDataToSharedMem(&metafile,
@@ -62,12 +56,7 @@ void PrintWebViewHelper::PrintPageInternal(
 }
 
 bool PrintWebViewHelper::RenderPreviewPage(int page_number) {
-  float scale_factor = print_preview_context_.frame()->getPrintPageShrink(0);
   PrintMsg_Print_Params printParams = print_preview_context_.print_params();
-  gfx::Rect content_area(printParams.margin_left, printParams.margin_top,
-                         printParams.content_size.width(),
-                         printParams.content_size.height());
-
   scoped_ptr<printing::Metafile> draft_metafile;
   printing::Metafile* initial_render_metafile =
       print_preview_context_.metafile();
@@ -96,8 +85,9 @@ bool PrintWebViewHelper::RenderPreviewPage(int page_number) {
   }
 
   base::TimeTicks begin_time = base::TimeTicks::Now();
-  RenderPage(printParams.page_size, content_area, scale_factor, page_number,
-             print_preview_context_.frame(), true, initial_render_metafile);
+  gfx::Size page_size;
+  RenderPage(printParams, page_number, print_preview_context_.frame(), true,
+             initial_render_metafile, &page_size, NULL);
   print_preview_context_.RenderedPreviewPage(
       base::TimeTicks::Now() - begin_time);
 
@@ -111,13 +101,13 @@ bool PrintWebViewHelper::RenderPreviewPage(int page_number) {
       // drawing.
       printing::Metafile* print_ready_metafile =
           print_preview_context_.metafile();
-      bool success = print_ready_metafile->StartPage(
-          printParams.page_size, gfx::Rect(printParams.page_size), 1.0);
+      bool success = print_ready_metafile->StartPage(page_size,
+                                                     gfx::Rect(page_size), 1.0);
       DCHECK(success);
       // StartPage unconditionally flips the content over, flip it back since it
       // was already flipped in |draft_metafile|.
       CGContextTranslateCTM(print_ready_metafile->context(), 0,
-                            printParams.page_size.height());
+                            page_size.height());
       CGContextScaleCTM(print_ready_metafile->context(), 1.0, -1.0);
       draft_metafile->RenderPage(1,
                                  print_ready_metafile->context(),
@@ -143,14 +133,27 @@ bool PrintWebViewHelper::RenderPreviewPage(int page_number) {
 }
 
 void PrintWebViewHelper::RenderPage(
-    const gfx::Size& page_size, const gfx::Rect& content_area,
-    const float& scale_factor, int page_number, WebFrame* frame,
-    bool is_preview, printing::Metafile* metafile) {
+    const PrintMsg_Print_Params& params, int page_number, WebFrame* frame,
+    bool is_preview, printing::Metafile* metafile, gfx::Size* page_size,
+    gfx::Rect* content_rect) {
+  double scale_factor = 1.0f;
+  double webkit_shrink_factor = frame->getPrintPageShrink(page_number);
+  printing::PageSizeMargins page_layout_in_points;
+  gfx::Rect content_area;
 
+  ComputePageLayoutInPointsForCss(frame, page_number, params,
+                                  ignore_css_margins_, fit_to_page_,
+                                  &scale_factor, &page_layout_in_points);
+  GetPageSizeAndContentAreaFromPageLayout(page_layout_in_points, page_size,
+                                          &content_area);
+  if (content_rect)
+    *content_rect = content_area;
+
+  scale_factor *= webkit_shrink_factor;
   {
 #if defined(USE_SKIA)
     SkDevice* device = metafile->StartPageForVectorCanvas(
-        page_size, content_area, scale_factor);
+        *page_size, content_area, scale_factor);
     if (!device)
       return;
 
@@ -161,7 +164,7 @@ void PrintWebViewHelper::RenderPage(
     skia::SetIsDraftMode(*canvas, is_print_ready_metafile_sent_);
     skia::SetIsPreviewMetafile(*canvas, is_preview);
 #else
-    bool success = metafile->StartPage(page_size, content_area, scale_factor);
+    bool success = metafile->StartPage(*page_size, content_area, scale_factor);
     DCHECK(success);
     // printPage can create autoreleased references to |context|. PDF contexts
     // don't write all their data until they are destroyed, so we need to make
@@ -169,14 +172,7 @@ void PrintWebViewHelper::RenderPage(
     base::mac::ScopedNSAutoreleasePool pool;
     CGContextRef cgContext = metafile->context();
     CGContextRef canvas_ptr = cgContext;
-#endif
 
-    printing::PageSizeMargins page_layout_in_points;
-    GetPageSizeAndMarginsInPoints(frame, page_number,
-                                  print_pages_params_->params,
-                                  &page_layout_in_points);
-
-#if !defined(USE_SKIA)
     // For CoreGraphics, print in the margins before printing in the content
     // area so that we don't spill over. Webkit draws a white background in the
     // content area and this acts as a clip.

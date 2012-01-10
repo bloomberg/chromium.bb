@@ -47,6 +47,11 @@ void RenderParamsFromPrintSettings(const printing::PrintSettings& settings,
   params->content_size.SetSize(
       settings.page_setup_device_units().content_area().width(),
       settings.page_setup_device_units().content_area().height());
+  params->printable_area.SetRect(
+      settings.page_setup_device_units().printable_area().x(),
+      settings.page_setup_device_units().printable_area().y(),
+      settings.page_setup_device_units().printable_area().width(),
+      settings.page_setup_device_units().printable_area().height());
   params->margin_top = settings.page_setup_device_units().content_area().y();
   params->margin_left = settings.page_setup_device_units().content_area().x();
   params->dpi = settings.dpi();

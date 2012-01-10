@@ -143,7 +143,8 @@ bool PrintWebViewHelper::RenderPages(const PrintMsg_PrintPages_Params& params,
                                      PrepareFrameAndViewForPrint* prepare,
                                      printing::Metafile* metafile) {
   PrintMsg_Print_Params print_params = params.params;
-  UpdatePrintableSizeInPrintParameters(frame, node, prepare, &print_params);
+  UpdateFrameAndViewFromCssPageLayout(frame, node, prepare, print_params,
+                                      ignore_css_margins_, fit_to_page_);
 
   *page_count = prepare->GetExpectedPageCount();
   if (!*page_count)
@@ -181,23 +182,16 @@ void PrintWebViewHelper::PrintPageInternal(
     WebFrame* frame,
     printing::Metafile* metafile) {
   printing::PageSizeMargins page_layout_in_points;
-  GetPageSizeAndMarginsInPoints(frame, params.page_number, params.params,
-                                &page_layout_in_points);
-
-  gfx::Size page_size(
-      page_layout_in_points.content_width +
-          page_layout_in_points.margin_right +
-          page_layout_in_points.margin_left,
-      page_layout_in_points.content_height +
-          page_layout_in_points.margin_top +
-          page_layout_in_points.margin_bottom);
-  gfx::Rect content_area(page_layout_in_points.margin_left,
-                         page_layout_in_points.margin_top,
-                         page_layout_in_points.content_width,
-                         page_layout_in_points.content_height);
-
+  double scale_factor = 1.0f;
+  ComputePageLayoutInPointsForCss(frame, params.page_number, params.params,
+                                  ignore_css_margins_, fit_to_page_,
+                                  &scale_factor, &page_layout_in_points);
+  gfx::Size page_size;
+  gfx::Rect content_area;
+  GetPageSizeAndContentAreaFromPageLayout(page_layout_in_points, &page_size,
+                                          &content_area);
   SkDevice* device = metafile->StartPageForVectorCanvas(
-      page_size, content_area, 1.0f);
+      page_size, content_area, scale_factor);
   if (!device)
     return;
 
@@ -213,8 +207,9 @@ void PrintWebViewHelper::PrintPageInternal(
     // |page_number| is 0-based, so 1 is added.
     // The scale factor on Linux is 1.
     PrintHeaderAndFooter(canvas.get(), params.page_number + 1,
-                         print_preview_context_.total_page_count(), 1,
-                         page_layout_in_points, *header_footer_info_);
+                         print_preview_context_.total_page_count(),
+                         scale_factor, page_layout_in_points,
+                         *header_footer_info_);
   }
 
   // Done printing. Close the device context to retrieve the compiled metafile.

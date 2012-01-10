@@ -127,9 +127,6 @@ class PRINTING_EXPORT PrintedDocument
     // The total number of pages in the document.
     int page_count_;
 
-    // Shrink done in comparison to desired_dpi.
-    double shrink_factor;
-
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
     // Page number of the first page.
     int first_page;

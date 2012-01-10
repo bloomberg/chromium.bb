@@ -9,11 +9,13 @@ namespace printing {
 PrintedPage::PrintedPage(int page_number,
                          Metafile* metafile,
                          const gfx::Size& page_size,
-                         const gfx::Rect& page_content_rect)
+                         const gfx::Rect& page_content_rect,
+                         double shrink_factor)
     : page_number_(page_number),
       metafile_(metafile),
       page_size_(page_size),
-      page_content_rect_(page_content_rect) {
+      page_content_rect_(page_content_rect),
+      shrink_factor_(shrink_factor) {
 }
 
 PrintedPage::~PrintedPage() {

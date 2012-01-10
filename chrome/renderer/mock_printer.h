@@ -14,6 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
 #include "printing/image.h"
+#include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 
 struct PrintMsg_Print_Params;
@@ -78,7 +79,8 @@ class MockPrinter {
                      bool has_selection,
                      PrintMsg_PrintPages_Params* settings);
   void UpdateSettings(int cookie, PrintMsg_PrintPages_Params* params,
-                      const std::vector<int>& page_range_array);
+                      const std::vector<int>& page_range_array,
+                      int margins_type);
   void SetPrintedPagesCount(int cookie, int number_pages);
   void PrintPage(const PrintHostMsg_DidPrintPage_Params& params);
 
@@ -110,6 +112,7 @@ class MockPrinter {
   gfx::Size content_size_;
   int margin_left_;
   int margin_top_;
+  gfx::Rect printable_area_;
 
   // Specifies dots per inch.
   double dpi_;
@@ -135,6 +138,7 @@ class MockPrinter {
 
   // Used only in the preview sequence.
   bool is_first_request_;
+  bool print_to_pdf_;
   int preview_request_id_;
 
   // Used for displaying headers and footers.

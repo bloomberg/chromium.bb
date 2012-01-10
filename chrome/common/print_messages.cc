@@ -11,6 +11,7 @@
 PrintMsg_Print_Params::PrintMsg_Print_Params()
   : page_size(),
     content_size(),
+    printable_area(),
     margin_top(0),
     margin_left(0),
     dpi(0),
@@ -23,6 +24,7 @@ PrintMsg_Print_Params::PrintMsg_Print_Params()
     preview_ui_addr(),
     preview_request_id(0),
     is_first_request(false),
+    print_to_pdf(false),
     display_header_footer(false),
     date(),
     title(),
@@ -34,6 +36,7 @@ PrintMsg_Print_Params::~PrintMsg_Print_Params() {}
 void PrintMsg_Print_Params::Reset() {
   page_size = gfx::Size();
   content_size = gfx::Size();
+  printable_area = gfx::Rect();
   margin_top = 0;
   margin_left = 0;
   dpi = 0;
@@ -46,6 +49,7 @@ void PrintMsg_Print_Params::Reset() {
   preview_ui_addr = std::string();
   preview_request_id = 0;
   is_first_request = false;
+  print_to_pdf = false;
   display_header_footer = false;
   date = string16();
   title = string16();

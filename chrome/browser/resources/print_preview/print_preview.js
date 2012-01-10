@@ -16,6 +16,9 @@ var lastSelectedPrinterIndex = 0;
 // Used to disable some printing options when the preview is not modifiable.
 var previewModifiable = false;
 
+// Used to identify whether the printing frame has specific page size style.
+var hasPageSizeStyle = false;
+
 // Destination list special value constants.
 const MANAGE_CLOUD_PRINTERS = 'manageCloudPrinters';
 const MANAGE_LOCAL_PRINTERS = 'manageLocalPrinters';
@@ -835,7 +838,7 @@ function setPluginPreviewPageCount() {
  * Called from PrintPreviewUI::OnDidGetPreviewPageCount().
  * @param {number} pageCount The number of pages.
  * @param {number} previewResponseId The preview request id that resulted in
- *     this response.
+ *      this response.
  */
 function onDidGetPreviewPageCount(pageCount, previewResponseId) {
   if (!isExpectedPreviewResponse(previewResponseId))
@@ -850,8 +853,11 @@ function onDidGetPreviewPageCount(pageCount, previewResponseId) {
 /**
  * @param {printing::PageSizeMargins} pageLayout The default layout of the page
  *     in points.
+ * @param {boolean} hasCustomPageSizeStyle Indicates whether the previewed
+ *      document has a custom page size style.
  */
-function onDidGetDefaultPageLayout(pageLayout) {
+function onDidGetDefaultPageLayout(pageLayout, hasCustomPageSizeStyle) {
+  hasPageSizeStyle = hasCustomPageSizeStyle;
   marginSettings.currentDefaultPageLayout = new print_preview.PageLayout(
       pageLayout.contentWidth,
       pageLayout.contentHeight,

@@ -109,12 +109,15 @@ void PrintWebViewHelper::PrintPageInternal(
   int page_number = params.page_number;
 
   // Calculate the dpi adjustment.
-  float scale_factor = static_cast<float>(params.params.desired_dpi /
-                                          params.params.dpi);
+  double actual_shrink = static_cast<float>(params.params.desired_dpi /
+                                            params.params.dpi);
 
+  gfx::Size page_size_in_dpi;
+  gfx::Rect content_area_in_dpi;
   // Render page for printing.
-  metafile.reset(RenderPage(params.params, &scale_factor, page_number, false,
-                            frame, metafile.get()));
+  metafile.reset(RenderPage(params.params, page_number, frame, false,
+                            metafile.get(), &actual_shrink, &page_size_in_dpi,
+                            &content_area_in_dpi));
 
   // Close the device context to retrieve the compiled metafile.
   if (!metafile->FinishDocument())
@@ -129,11 +132,9 @@ void PrintWebViewHelper::PrintPageInternal(
   page_params.metafile_data_handle = NULL;
   page_params.page_number = page_number;
   page_params.document_cookie = params.params.document_cookie;
-  page_params.actual_shrink = scale_factor;
-  page_params.page_size = params.params.page_size;
-  page_params.content_area = gfx::Rect(params.params.margin_left,
-      params.params.margin_top, params.params.content_size.width(),
-      params.params.content_size.height());
+  page_params.actual_shrink = actual_shrink;
+  page_params.page_size = page_size_in_dpi;
+  page_params.content_area = content_area_in_dpi;
 
   if (!CopyMetafileDataToSharedMem(metafile.get(),
                                    &(page_params.metafile_data_handle))) {
@@ -146,8 +147,8 @@ void PrintWebViewHelper::PrintPageInternal(
 bool PrintWebViewHelper::RenderPreviewPage(int page_number) {
   PrintMsg_Print_Params print_params = print_preview_context_.print_params();
   // Calculate the dpi adjustment.
-  float scale_factor = static_cast<float>(print_params.desired_dpi /
-                                          print_params.dpi);
+  double actual_shrink = static_cast<float>(print_params.desired_dpi /
+                                            print_params.dpi);
   scoped_ptr<Metafile> draft_metafile;
   printing::Metafile* initial_render_metafile =
       print_preview_context_.metafile();
@@ -159,8 +160,8 @@ bool PrintWebViewHelper::RenderPreviewPage(int page_number) {
 
   base::TimeTicks begin_time = base::TimeTicks::Now();
   printing::Metafile* render_page_result =
-      RenderPage(print_params, &scale_factor, page_number, true,
-                 print_preview_context_.frame(), initial_render_metafile);
+      RenderPage(print_params, page_number, print_preview_context_.frame(),
+                 true, initial_render_metafile, &actual_shrink, NULL, NULL);
   // In the preview flow, RenderPage will never return a new metafile.
   DCHECK_EQ(render_page_result, initial_render_metafile);
   print_preview_context_.RenderedPreviewPage(
@@ -178,37 +179,54 @@ bool PrintWebViewHelper::RenderPreviewPage(int page_number) {
 }
 
 Metafile* PrintWebViewHelper::RenderPage(
-    const PrintMsg_Print_Params& params, float* scale_factor, int page_number,
-    bool is_preview, WebFrame* frame, Metafile* metafile) {
+    const PrintMsg_Print_Params& params, int page_number, WebFrame* frame,
+    bool is_preview, Metafile* metafile, double* actual_shrink,
+    gfx::Size* page_size_in_dpi, gfx::Rect* content_area_in_dpi) {
   printing::PageSizeMargins page_layout_in_points;
-  GetPageSizeAndMarginsInPoints(frame, page_number, params,
-                                &page_layout_in_points);
+  double css_scale_factor = 1.0f;
+  ComputePageLayoutInPointsForCss(frame, page_number, params,
+                                  ignore_css_margins_, fit_to_page_,
+                                  &css_scale_factor, &page_layout_in_points);
+  gfx::Size page_size;
+  gfx::Rect content_area;
+  GetPageSizeAndContentAreaFromPageLayout(page_layout_in_points, &page_size,
+                                          &content_area);
+  int dpi = static_cast<int>(params.dpi);
+  // Calculate the actual page size and content area in dpi.
+  if (page_size_in_dpi) {
+    *page_size_in_dpi = gfx::Size(
+        static_cast<int>(ConvertUnitDouble(
+            page_size.width(), printing::kPointsPerInch, dpi)),
+        static_cast<int>(ConvertUnitDouble(
+            page_size.height(), printing::kPointsPerInch, dpi)));
+  }
 
-  int width;
-  int height;
-  if (is_preview) {
-    int dpi = static_cast<int>(params.dpi);
-    int desired_dpi = printing::kPointsPerInch;
-    width = ConvertUnit(params.page_size.width(), dpi, desired_dpi);
-    height = ConvertUnit(params.page_size.height(), dpi, desired_dpi);
-  } else {
+  if (content_area_in_dpi) {
+    *content_area_in_dpi = gfx::Rect(
+        static_cast<int>(ConvertUnitDouble(content_area.x(),
+            printing::kPointsPerInch, dpi)),
+        static_cast<int>(ConvertUnitDouble(content_area.y(),
+            printing::kPointsPerInch, dpi)),
+        static_cast<int>(ConvertUnitDouble(content_area.width(),
+            printing::kPointsPerInch, dpi)),
+        static_cast<int>(ConvertUnitDouble(content_area.height(),
+            printing::kPointsPerInch, dpi)));
+  }
+
+  if (!is_preview) {
     // Since WebKit extends the page width depending on the magical scale factor
     // we make sure the canvas covers the worst case scenario (x2.0 currently).
     // PrintContext will then set the correct clipping region.
-    width = static_cast<int>(page_layout_in_points.content_width *
-                             params.max_shrink);
-    height = static_cast<int>(page_layout_in_points.content_height *
-                              params.max_shrink);
+    page_size = gfx::Size(
+        static_cast<int>(page_layout_in_points.content_width *
+                         params.max_shrink),
+        static_cast<int>(page_layout_in_points.content_height *
+                         params.max_shrink));
   }
 
-  gfx::Size page_size(width, height);
-  gfx::Rect content_area(
-      static_cast<int>(page_layout_in_points.margin_left),
-      static_cast<int>(page_layout_in_points.margin_top),
-      static_cast<int>(page_layout_in_points.content_width),
-      static_cast<int>(page_layout_in_points.content_height));
+  float webkit_page_shrink_factor = frame->getPrintPageShrink(page_number);
   SkDevice* device = metafile->StartPageForVectorCanvas(
-      page_size, content_area, frame->getPrintPageShrink(page_number));
+      page_size, content_area, css_scale_factor * webkit_page_shrink_factor);
   DCHECK(device);
   // The printPage method may take a reference to the canvas we pass down, so it
   // can't be a stack object.
@@ -226,16 +244,17 @@ Metafile* PrintWebViewHelper::RenderPage(
     // |page_number| is 0-based, so 1 is added.
     PrintHeaderAndFooter(canvas.get(), page_number + 1,
                          print_preview_context_.total_page_count(),
-                         webkit_scale_factor, page_layout_in_points,
+                         css_scale_factor * webkit_page_shrink_factor,
+                         page_layout_in_points,
                          *header_footer_info_);
   }
 
-  if (*scale_factor <= 0 || webkit_scale_factor <= 0) {
+  if (*actual_shrink <= 0 || webkit_scale_factor <= 0) {
     NOTREACHED() << "Printing page " << page_number << " failed.";
   } else {
-    // Update the dpi adjustment with the "page |scale_factor|" calculated in
+    // Update the dpi adjustment with the "page |actual_shrink|" calculated in
     // webkit.
-    *scale_factor /= webkit_scale_factor;
+    *actual_shrink /= (webkit_scale_factor * css_scale_factor);
   }
 
   bool result = metafile->FinishPage();
@@ -264,14 +283,15 @@ Metafile* PrintWebViewHelper::RenderPage(
       SetGraphicsMode(bitmap_dc, GM_ADVANCED);
       void* bits = NULL;
       BITMAPINFO hdr;
-      gfx::CreateBitmapHeader(width, height, &hdr.bmiHeader);
+      gfx::CreateBitmapHeader(page_size.width(), page_size.height(),
+                              &hdr.bmiHeader);
       base::win::ScopedBitmap hbitmap(CreateDIBSection(
           bitmap_dc, &hdr, DIB_RGB_COLORS, &bits, NULL, 0));
       if (!hbitmap)
         NOTREACHED() << "Raster bitmap creation for printing failed";
 
       base::win::ScopedSelectObject selectBitmap(bitmap_dc, hbitmap);
-      RECT rect = {0, 0, width, height };
+      RECT rect = { 0, 0, page_size.width(), page_size.height() };
       HBRUSH whiteBrush = static_cast<HBRUSH>(GetStockObject(WHITE_BRUSH));
       FillRect(bitmap_dc, &rect, whiteBrush);
 

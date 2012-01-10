@@ -26,6 +26,18 @@ namespace {
 // A simple web page.
 const char kHelloWorldHTML[] = "<body><p>Hello World!</p></body>";
 
+// A simple web page with print page size css.
+const char kHTMLWithPageSizeCss[] =
+    "<html><head><style>"
+    "@media print {"
+    "  @page {"
+    "     size: 4in 4in;"
+    "  }"
+    "}"
+    "</style></head>"
+    "<body>Lorem Ipsum:"
+    "</body></html>";
+
 // A simple webpage that prints itself.
 const char kPrintWithJSHTML[] =
     "<body>Hello<script>window.print()</script>World</body>";
@@ -242,7 +254,7 @@ const TestPageData kTestPages[] = {
 #if defined(OS_MACOSX)
   // Mac printing code compensates for the WebKit scale factor while generating
   // the metafile, so we expect smaller pages.
-  1, 540, 720,
+  1, 600, 780,
 #else
   1, 675, 900,
 #endif
@@ -389,6 +401,28 @@ class PrintWebViewHelperPreviewTest : public PrintWebViewHelperTestBase {
     ASSERT_EQ(generate_draft_pages, msg_found);
   }
 
+  void VerifyDefaultPageLayout(int content_width, int content_height,
+                               int margin_top, int margin_bottom,
+                               int margin_left, int margin_right,
+                               bool page_has_print_css) {
+    const IPC::Message* default_page_layout_msg =
+        render_thread_->sink().GetUniqueMessageMatching(
+            PrintHostMsg_DidGetDefaultPageLayout::ID);
+    bool did_get_default_page_layout_msg = (NULL != default_page_layout_msg);
+    if (did_get_default_page_layout_msg) {
+      PrintHostMsg_DidGetDefaultPageLayout::Param param;
+      PrintHostMsg_DidGetDefaultPageLayout::Read(default_page_layout_msg,
+                                                 &param);
+      EXPECT_EQ(content_width, param.a.content_width);
+      EXPECT_EQ(content_height, param.a.content_height);
+      EXPECT_EQ(margin_top, param.a.margin_top);
+      EXPECT_EQ(margin_right, param.a.margin_right);
+      EXPECT_EQ(margin_left, param.a.margin_left);
+      EXPECT_EQ(margin_bottom, param.a.margin_bottom);
+      EXPECT_EQ(page_has_print_css, param.b);
+    }
+  }
+
   DISALLOW_COPY_AND_ASSIGN(PrintWebViewHelperPreviewTest);
 };
 
@@ -403,10 +437,161 @@ TEST_F(PrintWebViewHelperPreviewTest, OnPrintPreview) {
   OnPrintPreview(dict);
 
   EXPECT_EQ(0, chrome_render_thread_->print_preview_pages_remaining());
+  VerifyDefaultPageLayout(540, 720, 36, 36, 36, 36, false);
   VerifyPrintPreviewCancelled(false);
   VerifyPrintPreviewFailed(false);
   VerifyPrintPreviewGenerated(true);
   VerifyPagesPrinted(false);
+}
+
+TEST_F(PrintWebViewHelperPreviewTest, PrintPreviewHTMLWithPageMarginsCss) {
+  // A simple web page with print margins css.
+  const char kHTMLWithPageMarginsCss[] =
+      "<html><head><style>"
+      "@media print {"
+      "  @page {"
+      "     margin: 3in 1in 2in 0.3in;"
+      "  }"
+      "}"
+      "</style></head>"
+      "<body>Lorem Ipsum:"
+      "</body></html>";
+  LoadHTML(kHTMLWithPageMarginsCss);
+
+  // Fill in some dummy values.
+  DictionaryValue dict;
+  CreatePrintSettingsDictionary(&dict);
+  dict.SetBoolean(printing::kSettingPrintToPDF, false);
+  dict.SetInteger(printing::kSettingMarginsType, printing::DEFAULT_MARGINS);
+  OnPrintPreview(dict);
+
+  EXPECT_EQ(0, chrome_render_thread_->print_preview_pages_remaining());
+  VerifyDefaultPageLayout(519, 432, 216, 144, 21, 72, false);
+  VerifyPrintPreviewCancelled(false);
+  VerifyPrintPreviewFailed(false);
+  VerifyPrintPreviewGenerated(true);
+  VerifyPagesPrinted(false);
+}
+
+// Test to verify that print preview ignores print media css when non-default
+// margin is selected.
+TEST_F(PrintWebViewHelperPreviewTest, NonDefaultMarginsSelectedIgnorePrintCss) {
+  LoadHTML(kHTMLWithPageSizeCss);
+
+  // Fill in some dummy values.
+  DictionaryValue dict;
+  CreatePrintSettingsDictionary(&dict);
+  dict.SetBoolean(printing::kSettingPrintToPDF, false);
+  dict.SetInteger(printing::kSettingMarginsType, printing::NO_MARGINS);
+  OnPrintPreview(dict);
+
+  EXPECT_EQ(0, chrome_render_thread_->print_preview_pages_remaining());
+  VerifyDefaultPageLayout(612, 792, 0, 0, 0, 0, true);
+  VerifyPrintPreviewCancelled(false);
+  VerifyPrintPreviewFailed(false);
+  VerifyPrintPreviewGenerated(true);
+  VerifyPagesPrinted(false);
+}
+
+// Test to verify that print preview honor print media size css when
+// PRINT_TO_PDF is selected and doesn't fit to printer default paper size.
+TEST_F(PrintWebViewHelperPreviewTest, PrintToPDFSelectedHonorPrintCss) {
+  LoadHTML(kHTMLWithPageSizeCss);
+
+  // Fill in some dummy values.
+  DictionaryValue dict;
+  CreatePrintSettingsDictionary(&dict);
+  dict.SetBoolean(printing::kSettingPrintToPDF, true);
+  dict.SetInteger(printing::kSettingMarginsType,
+                  printing::PRINTABLE_AREA_MARGINS);
+  OnPrintPreview(dict);
+
+  EXPECT_EQ(0, chrome_render_thread_->print_preview_pages_remaining());
+  // Since PRINT_TO_PDF is selected, pdf page size is equal to print media page
+  // size.
+  VerifyDefaultPageLayout(252, 252, 18, 18, 18, 18, true);
+  VerifyPrintPreviewCancelled(false);
+  VerifyPrintPreviewFailed(false);
+}
+
+// Test to verify that print preview honor print margin css when PRINT_TO_PDF
+// is selected and doesn't fit to printer default paper size.
+TEST_F(PrintWebViewHelperPreviewTest, PrintToPDFSelectedHonorPageMarginsCss) {
+  // A simple web page with print margins css.
+  const char kHTMLWithPageCss[] =
+      "<html><head><style>"
+      "@media print {"
+      "  @page {"
+      "     margin: 3in 1in 2in 0.3in;"
+      "     size: 14in 14in;"
+      "  }"
+      "}"
+      "</style></head>"
+      "<body>Lorem Ipsum:"
+      "</body></html>";
+  LoadHTML(kHTMLWithPageCss);
+
+  // Fill in some dummy values.
+  DictionaryValue dict;
+  CreatePrintSettingsDictionary(&dict);
+  dict.SetBoolean(printing::kSettingPrintToPDF, true);
+  dict.SetInteger(printing::kSettingMarginsType, printing::DEFAULT_MARGINS);
+  OnPrintPreview(dict);
+
+  EXPECT_EQ(0, chrome_render_thread_->print_preview_pages_remaining());
+  // Since PRINT_TO_PDF is selected, pdf page size is equal to print media page
+  // size.
+  VerifyDefaultPageLayout(915, 648, 216, 144, 21, 72, true);
+  VerifyPrintPreviewCancelled(false);
+  VerifyPrintPreviewFailed(false);
+}
+
+// Test to verify that print preview workflow center the html page contents to
+// fit the page size.
+TEST_F(PrintWebViewHelperPreviewTest, PrintPreviewCenterToFitPage) {
+  LoadHTML(kHTMLWithPageSizeCss);
+
+  // Fill in some dummy values.
+  DictionaryValue dict;
+  CreatePrintSettingsDictionary(&dict);
+  dict.SetBoolean(printing::kSettingPrintToPDF, false);
+  dict.SetInteger(printing::kSettingMarginsType, printing::DEFAULT_MARGINS);
+  OnPrintPreview(dict);
+
+  EXPECT_EQ(0, chrome_render_thread_->print_preview_pages_remaining());
+  VerifyDefaultPageLayout(288, 288, 252, 252, 162, 162, true);
+  VerifyPrintPreviewCancelled(false);
+  VerifyPrintPreviewFailed(false);
+  VerifyPrintPreviewGenerated(true);
+}
+
+// Test to verify that print preview workflow scale the html page contents to
+// fit the page size.
+TEST_F(PrintWebViewHelperPreviewTest, PrintPreviewShrinkToFitPage) {
+  // A simple web page with print margins css.
+  const char kHTMLWithPageCss[] =
+      "<html><head><style>"
+      "@media print {"
+      "  @page {"
+      "     size: 15in 17in;"
+      "  }"
+      "}"
+      "</style></head>"
+      "<body>Lorem Ipsum:"
+      "</body></html>";
+  LoadHTML(kHTMLWithPageCss);
+
+  // Fill in some dummy values.
+  DictionaryValue dict;
+  CreatePrintSettingsDictionary(&dict);
+  dict.SetBoolean(printing::kSettingPrintToPDF, false);
+  dict.SetInteger(printing::kSettingMarginsType, printing::DEFAULT_MARGINS);
+  OnPrintPreview(dict);
+
+  EXPECT_EQ(0, chrome_render_thread_->print_preview_pages_remaining());
+  VerifyDefaultPageLayout(576, 652, 69, 71, 18, 18, true);
+  VerifyPrintPreviewCancelled(false);
+  VerifyPrintPreviewFailed(false);
 }
 
 // Test to verify that complete metafile is generated for a subset of pages

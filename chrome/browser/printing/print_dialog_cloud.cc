@@ -411,6 +411,7 @@ void CloudPrintFlowHandler::HandleSetPageParameters(const ListValue* args) {
 
   PrintMsg_Print_Params default_settings;
   default_settings.content_size = gfx::Size(kWidth, kHeight);
+  default_settings.printable_area = gfx::Rect(0, 0, kWidth, kHeight);
   default_settings.dpi = kDPI;
   default_settings.min_shrink = kMinPageShrink;
   default_settings.max_shrink = kMaxPageShrink;
@@ -419,6 +420,7 @@ void CloudPrintFlowHandler::HandleSetPageParameters(const ListValue* args) {
   default_settings.selection_only = false;
   default_settings.preview_request_id = 0;
   default_settings.is_first_request = true;
+  default_settings.print_to_pdf = false;
 
   if (!GetPageSetupParameters(json, default_settings)) {
     NOTREACHED();

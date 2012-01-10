@@ -145,6 +145,7 @@ void ChromeMockRenderThread::OnUpdatePrintSettings(
   // Check and make sure the required settings are all there.
   // We don't actually care about the values.
   std::string dummy_string;
+  int margins_type = 0;
   if (!job_settings.GetBoolean(printing::kSettingLandscape, NULL) ||
       !job_settings.GetBoolean(printing::kSettingCollate, NULL) ||
       !job_settings.GetInteger(printing::kSettingColor, NULL) ||
@@ -154,7 +155,8 @@ void ChromeMockRenderThread::OnUpdatePrintSettings(
       !job_settings.GetInteger(printing::kSettingDuplexMode, NULL) ||
       !job_settings.GetInteger(printing::kSettingCopies, NULL) ||
       !job_settings.GetString(printing::kPreviewUIAddr, &dummy_string) ||
-      !job_settings.GetInteger(printing::kPreviewRequestID, NULL)) {
+      !job_settings.GetInteger(printing::kPreviewRequestID, NULL) ||
+      !job_settings.GetInteger(printing::kSettingMarginsType, &margins_type)) {
     return;
   }
 
@@ -180,7 +182,7 @@ void ChromeMockRenderThread::OnUpdatePrintSettings(
       }
     }
     std::vector<int> pages(printing::PageRange::GetPages(new_ranges));
-    printer_->UpdateSettings(document_cookie, params, pages);
+    printer_->UpdateSettings(document_cookie, params, pages, margins_type);
   }
 }
 

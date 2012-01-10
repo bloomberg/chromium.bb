@@ -46,7 +46,8 @@ class PrintPreviewMessageHandler : public content::WebContentsObserver {
   // Message handlers.
   void OnRequestPrintPreview(bool source_is_modifiable);
   void OnDidGetDefaultPageLayout(
-      const printing::PageSizeMargins& page_layout_in_points);
+      const printing::PageSizeMargins& page_layout_in_points,
+      bool has_custom_page_size_style);
   void OnDidGetPreviewPageCount(
       const PrintHostMsg_DidGetPreviewPageCount_Params& params);
   void OnDidPreviewPage(const PrintHostMsg_DidPreviewPage_Params& params);

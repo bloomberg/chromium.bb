@@ -74,7 +74,8 @@ void PrintedDocument::SetPage(int page_number,
       new PrintedPage(page_number + 1,
                       metafile,
                       paper_size,
-                      page_rect));
+                      page_rect,
+                      shrink));
   {
     base::AutoLock lock(lock_);
     mutable_.pages_[page_number] = page;
@@ -83,12 +84,6 @@ void PrintedDocument::SetPage(int page_number,
     if (page_number < mutable_.first_page)
       mutable_.first_page = page_number;
 #endif
-
-    if (mutable_.shrink_factor == 0) {
-      mutable_.shrink_factor = shrink;
-    } else {
-      DCHECK_EQ(mutable_.shrink_factor, shrink);
-    }
   }
   DebugDump(*page);
 }
@@ -208,8 +203,7 @@ const FilePath& PrintedDocument::debug_dump_path() {
 PrintedDocument::Mutable::Mutable(PrintedPagesSource* source)
     : source_(source),
       expected_page_count_(0),
-      page_count_(0),
-      shrink_factor(0) {
+      page_count_(0) {
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   first_page = INT_MAX;
 #endif

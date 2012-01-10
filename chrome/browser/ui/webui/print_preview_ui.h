@@ -79,7 +79,8 @@ class PrintPreviewUI : public ConstrainedHtmlUI {
   // Notifies the Web UI of the default page layout according to the currently
   // selected printer and page size.
   void OnDidGetDefaultPageLayout(
-      const printing::PageSizeMargins& page_layout);
+      const printing::PageSizeMargins& page_layout,
+      bool has_custom_page_size_style);
 
   // Notifies the Web UI that the 0-based page |page_number| has been rendered.
   // |preview_request_id| indicates wich request resulted in this response.
