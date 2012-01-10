@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -213,14 +213,16 @@ cr.define('options', function() {
           handled = true;
           break;
         case 'Enter':
-          var hadSelection = this.selectedItem != null;
+          // If the user has already selected an item using the arrow keys, then
+          // presses Enter, clear the suggestions, but also keep
+          // |handled| = false, so the input field can handle the event as well.
           this.suggestions = [];
-          // Only count the event as handled if a selection is being commited.
-          handled = hadSelection;
           break;
         case 'Up':
         case 'Down':
-          this.dispatchEvent(event);
+          var newEvent = new cr.Event(event.type);
+          newEvent.keyIdentifier = event.keyIdentifier;
+          this.dispatchEvent(newEvent);
           handled = true;
           break;
       }
