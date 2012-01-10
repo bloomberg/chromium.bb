@@ -2539,6 +2539,7 @@
         'browser/extensions/app_process_apitest.cc',
         'browser/extensions/autoupdate_interceptor.cc',
         'browser/extensions/autoupdate_interceptor.h',
+        'browser/extensions/background_scripts_apitest.cc',
         'browser/extensions/browser_action_apitest.cc',
         'browser/extensions/browser_action_test_util.h',
         'browser/extensions/browser_action_test_util_gtk.cc',

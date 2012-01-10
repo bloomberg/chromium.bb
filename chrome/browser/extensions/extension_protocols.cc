@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,7 @@
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/extension_info_map.h"
@@ -98,6 +99,42 @@ class URLRequestResourceBundleJob : public net::URLRequestSimpleJob {
   // The resource bundle id to load.
   int resource_id_;
 
+  net::HttpResponseInfo response_info_;
+};
+
+class GeneratedBackgroundPageJob : public net::URLRequestSimpleJob {
+ public:
+  GeneratedBackgroundPageJob(net::URLRequest* request,
+                             const scoped_refptr<const Extension> extension,
+                             const std::string& content_security_policy)
+      : net::URLRequestSimpleJob(request),
+        extension_(extension) {
+    response_info_.headers = BuildHttpHeaders(content_security_policy);
+  }
+
+  // Overridden from URLRequestSimpleJob:
+  virtual bool GetData(std::string* mime_type,
+                       std::string* charset,
+                       std::string* data) const OVERRIDE {
+    *mime_type = "text/html";
+    *charset = "utf-8";
+
+    *data = "<!DOCTYPE html>\n<body>\n";
+    for (size_t i = 0; i < extension_->background_scripts().size(); ++i) {
+      *data += "<script src=\"";
+      *data += extension_->background_scripts()[i];
+      *data += "\"></script>\n";
+    }
+
+    return true;
+  }
+
+  virtual void GetResponseInfo(net::HttpResponseInfo* info) {
+    *info = response_info_;
+  }
+
+ private:
+  scoped_refptr<const Extension> extension_;
   net::HttpResponseInfo response_info_;
 };
 
@@ -220,6 +257,13 @@ ExtensionProtocolHandler::MaybeCreateJob(net::URLRequest* request) const {
   std::string content_security_policy;
   if (extension)
     content_security_policy = extension->content_security_policy();
+
+  std::string path = request->url().path();
+  if (path.size() > 1 &&
+      path.substr(1) == extension_filenames::kGeneratedBackgroundPageFilename) {
+    return new GeneratedBackgroundPageJob(
+        request, extension, content_security_policy);
+  }
 
   FilePath resources_path;
   if (PathService::Get(chrome::DIR_RESOURCES, &resources_path) &&

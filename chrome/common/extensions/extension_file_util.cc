@@ -288,12 +288,26 @@ bool ValidateExtension(const Extension* extension, std::string* error) {
     }
   }
 
+  // Validate that background scripts exist.
+  for (size_t i = 0; i < extension->background_scripts().size(); ++i) {
+    if (!file_util::PathExists(
+            extension->GetResource(
+                extension->background_scripts()[i]).GetFilePath())) {
+      *error = l10n_util::GetStringFUTF8(
+          IDS_EXTENSION_LOAD_BACKGROUND_SCRIPT_FAILED,
+          UTF8ToUTF16(extension->background_scripts()[i]));
+      return false;
+    }
+  }
+
   // Validate background page location, except for hosted apps, which should use
   // an external URL. Background page for hosted apps are verified when the
   // extension is created (in Extension::InitFromValue)
-  if (!extension->background_url().is_empty() && !extension->is_hosted_app()) {
+  if (extension->has_background_page() &&
+      !extension->is_hosted_app() &&
+      extension->background_scripts().empty()) {
     FilePath page_path = ExtensionURLToRelativeFilePath(
-        extension->background_url());
+        extension->GetBackgroundURL());
     const FilePath path = extension->GetResource(page_path).GetFilePath();
     if (path.empty() || !file_util::PathExists(path)) {
       *error =

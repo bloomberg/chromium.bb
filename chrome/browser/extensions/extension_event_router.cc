@@ -224,10 +224,10 @@ bool ExtensionEventRouter::CanDispatchEventNow(
 
   const Extension* extension = profile_->GetExtensionService()->
       GetExtensionById(extension_id, false);  // exclude disabled extensions
-  if (extension && extension->background_url().is_valid()) {
+  if (extension && extension->has_background_page()) {
     ExtensionProcessManager* pm = profile_->GetExtensionProcessManager();
     if (!pm->GetBackgroundHostForExtension(extension_id)) {
-      pm->CreateBackgroundHost(extension, extension->background_url());
+      pm->CreateBackgroundHost(extension, extension->GetBackgroundURL());
       return false;
     }
   }

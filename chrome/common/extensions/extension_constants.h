@@ -19,6 +19,7 @@ namespace extension_manifest_keys {
   extern const char kBackground[];
   extern const char kBackgroundPage[];
   extern const char kBackgroundPageLegacy[];
+  extern const char kBackgroundScripts[];
   extern const char kBrowserAction[];
   extern const char kBrowseURLs[];
   extern const char kChromeURLOverrides[];
@@ -151,6 +152,9 @@ namespace extension_manifest_errors {
   extern const char kFeatureNotAllowed[];
   extern const char kInvalidAllFrames[];
   extern const char kInvalidBackground[];
+  extern const char kInvalidBackgroundCombination[];
+  extern const char kInvalidBackgroundScript[];
+  extern const char kInvalidBackgroundScripts[];
   extern const char kInvalidBackgroundInHostedApp[];
   extern const char kInvalidBrowserAction[];
   extern const char kInvalidBrowseURL[];
@@ -325,6 +329,10 @@ namespace extension_filenames {
   // The file to write our decoded message catalogs to, relative to the
   // extension_path.
   extern const char kDecodedMessageCatalogsFilename[];
+
+  // The filename to use for a background page generated from
+  // background.scripts.
+  extern const char kGeneratedBackgroundPageFilename[];
 }
 
 namespace extension_misc {

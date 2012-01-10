@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -1097,7 +1097,7 @@ TEST_F(ExtensionServiceTest, LoadAllExtensionsFromDirectorySuccess) {
   EXPECT_EQ(std::string("My extension 2"), loaded_[1]->name());
   EXPECT_EQ(std::string(""), loaded_[1]->description());
   EXPECT_EQ(loaded_[1]->GetResourceURL("background.html"),
-            loaded_[1]->background_url());
+            loaded_[1]->GetBackgroundURL());
   EXPECT_EQ(0u, loaded_[1]->content_scripts().size());
   // We don't parse the plugins section on Chrome OS.
 #if defined(OS_CHROMEOS)

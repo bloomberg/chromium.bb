@@ -2474,12 +2474,12 @@ ExtensionIdSet ExtensionService::GetAppIds() const {
 }
 
 bool ExtensionService::IsBackgroundPageReady(const Extension* extension) {
-  return (extension->background_url().is_empty() ||
+  return (!extension->has_background_page() ||
           extension_runtime_data_[extension->id()].background_page_ready);
 }
 
 void ExtensionService::SetBackgroundPageReady(const Extension* extension) {
-  DCHECK(!extension->background_url().is_empty());
+  DCHECK(extension->has_background_page());
   extension_runtime_data_[extension->id()].background_page_ready = true;
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_BACKGROUND_PAGE_READY,

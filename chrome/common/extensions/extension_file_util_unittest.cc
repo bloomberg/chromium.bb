@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,7 +13,9 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "grit/generated_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace keys = extension_manifest_keys;
 
@@ -260,20 +262,32 @@ TEST(ExtensionFileUtil, ExtensionURLToRelativeFilePath) {
 }
 
 static scoped_refptr<Extension> LoadExtensionManifest(
+    DictionaryValue* manifest,
+    const FilePath& manifest_dir,
+    Extension::Location location,
+    int extra_flags,
+    std::string* error) {
+  scoped_refptr<Extension> extension = Extension::Create(
+      manifest_dir, location, *manifest, extra_flags, error);
+  return extension;
+}
+
+static scoped_refptr<Extension> LoadExtensionManifest(
     const std::string& manifest_value,
     const FilePath& manifest_dir,
     Extension::Location location,
     int extra_flags,
     std::string* error) {
   JSONStringValueSerializer serializer(manifest_value);
-  scoped_ptr<Value> result(serializer.Deserialize(NULL, error));
-  if (!result.get())
+  Value* result = serializer.Deserialize(NULL, error);
+  if (!result)
     return NULL;
-
-  scoped_refptr<Extension> extension = Extension::Create(
-      manifest_dir, location, *static_cast<DictionaryValue*>(result.get()),
-      extra_flags, error);
-  return extension;
+  CHECK_EQ(Value::TYPE_DICTIONARY, result->GetType());
+  return LoadExtensionManifest(static_cast<DictionaryValue*>(result),
+                               manifest_dir,
+                               location,
+                               extra_flags,
+                               error);
 }
 
 #if defined(OS_WIN)
@@ -302,6 +316,43 @@ TEST(ExtensionFileUtil, ValidateThemeUTF8) {
 
   EXPECT_TRUE(extension_file_util::ValidateExtension(extension, &error)) <<
       error;
+}
+
+TEST(ExtensionFileUtil, BackgroundScriptsMustExist) {
+  ScopedTempDir temp;
+  ASSERT_TRUE(temp.CreateUniqueTempDir());
+
+  scoped_ptr<DictionaryValue> value(new DictionaryValue());
+  value->SetString("name", "test");
+  value->SetString("version", "1");
+  value->SetInteger("manifest_version", 1);
+
+  ListValue* scripts = new ListValue();
+  scripts->Append(Value::CreateStringValue("foo.js"));
+  value->Set("background.scripts", scripts);
+
+  std::string error;
+  scoped_refptr<Extension> extension = LoadExtensionManifest(
+      value.get(), temp.path(), Extension::LOAD, 0, &error);
+  ASSERT_TRUE(extension.get()) << error;
+
+  EXPECT_FALSE(extension_file_util::ValidateExtension(extension, &error));
+  EXPECT_EQ(l10n_util::GetStringFUTF8(
+      IDS_EXTENSION_LOAD_BACKGROUND_SCRIPT_FAILED, ASCIIToUTF16("foo.js")),
+           error);
+
+  scripts->Clear();
+  scripts->Append(Value::CreateStringValue("http://google.com/foo.js"));
+
+  extension = LoadExtensionManifest(value.get(), temp.path(), Extension::LOAD,
+                                    0, &error);
+  ASSERT_TRUE(extension.get()) << error;
+
+  EXPECT_FALSE(extension_file_util::ValidateExtension(extension, &error));
+  EXPECT_EQ(l10n_util::GetStringFUTF8(
+      IDS_EXTENSION_LOAD_BACKGROUND_SCRIPT_FAILED,
+      ASCIIToUTF16("http://google.com/foo.js")),
+           error);
 }
 
 // TODO(aa): More tests as motivation allows. Maybe steal some from

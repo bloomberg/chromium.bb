@@ -69,8 +69,9 @@ static void CreateBackgroundHostForExtensionLoad(
   // Start the process for the master page, if it exists and we're not lazy.
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableLazyBackgroundPages) &&
-      extension->background_url().is_valid())
-    manager->CreateBackgroundHost(extension, extension->background_url());
+      extension->has_background_page()) {
+    manager->CreateBackgroundHost(extension, extension->GetBackgroundURL());
+  }
 }
 
 static void CreateBackgroundHostsForProfileStartup(

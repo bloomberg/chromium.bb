@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -239,7 +239,7 @@ void BackgroundContentsService::Observe(
       if (extension_service) {
         const Extension* extension =
             extension_service->GetExtensionById(UTF16ToUTF8(appid), false);
-        if (extension && extension->background_url().is_valid())
+        if (extension && extension->has_background_page())
           break;
       }
       RegisterBackgroundContents(bgcontents);
@@ -250,7 +250,7 @@ void BackgroundContentsService::Observe(
           content::Details<const Extension>(details).ptr();
       Profile* profile = content::Source<Profile>(source).ptr();
       if (extension->is_hosted_app() &&
-          extension->background_url().is_valid()) {
+          extension->has_background_page()) {
         // If there is a background page specified in the manifest for a hosted
         // app, then blow away registered urls in the pref.
         ShutdownAssociatedBackgroundContents(ASCIIToUTF16(extension->id()));
@@ -260,7 +260,7 @@ void BackgroundContentsService::Observe(
           // Now load the manifest-specified background page. If service isn't
           // ready, then the background page will be loaded from the
           // EXTENSIONS_READY callback.
-          LoadBackgroundContents(profile, extension->background_url(),
+          LoadBackgroundContents(profile, extension->GetBackgroundURL(),
               ASCIIToUTF16("background"), UTF8ToUTF16(extension->id()));
         }
       }
@@ -314,7 +314,7 @@ void BackgroundContentsService::Observe(
           // BackgroundContents in place.
           const Extension* extension =
               content::Details<UnloadedExtensionInfo>(details)->extension;
-          if (extension->background_url().is_valid())
+          if (extension->has_background_page())
             ShutdownAssociatedBackgroundContents(ASCIIToUTF16(extension->id()));
           break;
         }
@@ -378,9 +378,9 @@ void BackgroundContentsService::LoadBackgroundContentsForExtension(
   const Extension* extension =
       profile->GetExtensionService()->GetExtensionById(extension_id, false);
   DCHECK(!extension || extension->is_hosted_app());
-  if (extension && extension->background_url().is_valid()) {
+  if (extension && extension->has_background_page()) {
     LoadBackgroundContents(profile,
-                           extension->background_url(),
+                           extension->GetBackgroundURL(),
                            ASCIIToUTF16("background"),
                            UTF8ToUTF16(extension->id()));
     return;
@@ -425,10 +425,9 @@ void BackgroundContentsService::LoadBackgroundContentsFromManifests(
   ExtensionSet::const_iterator iter = extensions->begin();
   for (; iter != extensions->end(); ++iter) {
     const Extension* extension = *iter;
-    if (extension->is_hosted_app() &&
-        extension->background_url().is_valid()) {
+    if (extension->is_hosted_app() && extension->has_background_page()) {
       LoadBackgroundContents(profile,
-                             extension->background_url(),
+                             extension->GetBackgroundURL(),
                              ASCIIToUTF16("background"),
                              UTF8ToUTF16(extension->id()));
     }

@@ -984,7 +984,7 @@ TEST_F(ExtensionManifestTest, BackgroundPage) {
   scoped_refptr<Extension> extension(
       LoadAndExpectSuccess("background_page.json"));
   ASSERT_TRUE(extension);
-  EXPECT_EQ("/foo.html", extension->background_url().path());
+  EXPECT_EQ("/foo.html", extension->GetBackgroundURL().path());
 
   std::string error;
   scoped_ptr<DictionaryValue> manifest(
@@ -992,12 +992,35 @@ TEST_F(ExtensionManifestTest, BackgroundPage) {
   ASSERT_TRUE(manifest.get());
   extension = LoadAndExpectSuccess(Manifest(manifest.get(), ""));
   ASSERT_TRUE(extension);
-  EXPECT_EQ("/foo.html", extension->background_url().path());
+  EXPECT_EQ("/foo.html", extension->GetBackgroundURL().path());
 
   manifest->SetInteger(keys::kManifestVersion, 2);
   extension = LoadAndExpectSuccess(Manifest(manifest.get(), ""));
   ASSERT_TRUE(extension);
-  EXPECT_FALSE(extension->background_url().is_valid());
+  EXPECT_FALSE(extension->GetBackgroundURL().is_valid());
+}
+
+TEST_F(ExtensionManifestTest, BackgroundScripts) {
+  std::string error;
+  scoped_ptr<DictionaryValue> manifest(
+      LoadManifestFile("background_scripts.json", &error));
+  ASSERT_TRUE(manifest.get());
+
+  scoped_refptr<Extension> extension(
+      LoadAndExpectSuccess(Manifest(manifest.get(), "")));
+  ASSERT_TRUE(extension);
+  EXPECT_EQ(2u, extension->background_scripts().size());
+  EXPECT_EQ("foo.js", extension->background_scripts()[0u]);
+  EXPECT_EQ("bar/baz.js", extension->background_scripts()[1u]);
+
+  EXPECT_TRUE(extension->has_background_page());
+  EXPECT_EQ(std::string("/") +
+            extension_filenames::kGeneratedBackgroundPageFilename,
+            extension->GetBackgroundURL().path());
+
+  manifest->SetString("background_page", "monkey.html");
+  LoadAndExpectError(Manifest(manifest.get(), ""),
+                     errors::kInvalidBackgroundCombination);
 }
 
 TEST_F(ExtensionManifestTest, PageActionManifestVersion2) {

@@ -4172,6 +4172,9 @@ Update checks have repeatedly failed for the extension "<ph name="EXTENSION_NAME
       <message name="IDS_EXTENSION_LOAD_ICON_FOR_BROWSER_ACTION_FAILED" desc="">
         Could not load icon '<ph name="ICON">$1<ex>icon.png</ex></ph>' for browser action.
       </message>
+      <message name="IDS_EXTENSION_LOAD_BACKGROUND_SCRIPT_FAILED" desc="">
+        Could not load background script '<ph name="BACKGROUND_SCRIPT">$1<ex>script.js</ex></ph>'.
+      </message>
       <message name="IDS_EXTENSION_LOAD_BACKGROUND_PAGE_FAILED" desc="">
         Could not load background page '<ph name="BACKGROUND_PAGE">$1<ex>page.html</ex></ph>'.
       </message>

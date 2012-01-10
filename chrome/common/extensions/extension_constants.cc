@@ -18,6 +18,7 @@ const char kApp[] = "app";
 const char kBackground[] = "background";
 const char kBackgroundPage[] = "background.page";
 const char kBackgroundPageLegacy[] = "background_page";
+const char kBackgroundScripts[] = "background.scripts";
 const char kBrowserAction[] = "browser_action";
 const char kChromeURLOverrides[] = "chrome_url_overrides";
 const char kContentScripts[] = "content_scripts";
@@ -167,6 +168,13 @@ const char kInvalidAllFrames[] =
     "Invalid value for 'content_scripts[*].all_frames'.";
 const char kInvalidBackground[] =
     "Invalid value for 'background_page'.";
+const char kInvalidBackgroundCombination[] =
+    "The background.page and background.scripts properties cannot be used  at "
+    "the same time.";
+const char kInvalidBackgroundScript[] =
+    "Invalid value for 'background.scripts[*]'.";
+const char kInvalidBackgroundScripts[] =
+    "Invalid value for 'background.scripts'.";
 const char kInvalidBackgroundInHostedApp[] =
     "Invalid value for 'background_page'. Hosted apps must specify an "
     "absolute HTTPS URL for the background page.";
@@ -486,6 +494,9 @@ const char kDecodedImagesFilename[] = "DECODED_IMAGES";
 // The file to write our decoded message catalogs to, relative to the
 // extension_path.
 const char kDecodedMessageCatalogsFilename[] = "DECODED_MESSAGE_CATALOGS";
+
+const char kGeneratedBackgroundPageFilename[] =
+    "_generated_background_page.html";
 }
 
 namespace extension_misc {

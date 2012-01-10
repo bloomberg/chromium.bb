@@ -4473,7 +4473,7 @@ void TestingAutomationProvider::GetExtensionsInfo(
     extension_value->SetString("public_key", extension->public_key());
     extension_value->SetString("description", extension->description());
     extension_value->SetString("background_url",
-                               extension->background_url().spec());
+                               extension->GetBackgroundURL().spec());
     extension_value->SetString("options_url",
                                extension->options_url().spec());
     extension_value->Set("host_permissions",

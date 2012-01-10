@@ -373,6 +373,15 @@ GURL Extension::GetResourceURL(const GURL& extension_url,
   return ret_val;
 }
 
+GURL Extension::GetBackgroundURL() const {
+  if (!background_scripts_.empty()) {
+    return GetResourceURL(
+        extension_filenames::kGeneratedBackgroundPageFilename);
+  } else {
+    return background_url_;
+  }
+}
+
 bool Extension::IsResourceWebAccessible(const std::string& relative_path)
     const {
   // For old manifest versions which do not specify web_accessible_resources
@@ -1189,6 +1198,33 @@ bool Extension::LoadWebIntentServices(const extensions::Manifest* manifest,
   return true;
 }
 
+bool Extension::LoadBackgroundScripts(const extensions::Manifest* manifest,
+                                      string16* error) {
+  Value* background_scripts_value = NULL;
+  if (!manifest->Get(keys::kBackgroundScripts, &background_scripts_value))
+    return true;
+
+  CHECK(background_scripts_value);
+  if (background_scripts_value->GetType() != Value::TYPE_LIST) {
+    *error = ASCIIToUTF16(errors::kInvalidBackgroundScripts);
+    return false;
+  }
+
+  ListValue* background_scripts =
+      static_cast<ListValue*>(background_scripts_value);
+  for (size_t i = 0; i < background_scripts->GetSize(); ++i) {
+    std::string script;
+    if (!background_scripts->GetString(i, &script)) {
+      *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
+          errors::kInvalidBackgroundScript, base::IntToString(i));
+      return false;
+    }
+    background_scripts_.push_back(script);
+  }
+
+  return true;
+}
+
 bool Extension::LoadBackgroundPage(
     const extensions::Manifest* manifest,
     const ExtensionAPIPermissionSet& api_permissions,
@@ -1205,6 +1241,11 @@ bool Extension::LoadBackgroundPage(
   std::string background_str;
   if (!background_page_value->GetAsString(&background_str)) {
     *error = ASCIIToUTF16(errors::kInvalidBackground);
+    return false;
+  }
+
+  if (!background_scripts_.empty()) {
+    *error = ASCIIToUTF16(errors::kInvalidBackgroundCombination);
     return false;
   }
 
@@ -1969,6 +2010,9 @@ bool Extension::InitFromValue(extensions::Manifest* manifest, int flags,
       }
     }
   }
+
+  if (!LoadBackgroundScripts(manifest, error))
+    return false;
 
   if (!LoadBackgroundPage(manifest, api_permissions, error))
     return false;
