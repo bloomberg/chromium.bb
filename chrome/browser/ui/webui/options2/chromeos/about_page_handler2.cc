@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,12 +16,15 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/cros_settings.h"
 #include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
 #include "chrome/browser/chromeos/dbus/power_manager_client.h"
 #include "chrome/browser/chromeos/dbus/update_engine_client.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/google/google_util.h"
+#include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/common/content_client.h"
@@ -50,11 +53,37 @@ const char kEndLinkOss[] = "END_LINK_OSS";
 const char kBeginLinkCrosOss[] = "BEGIN_LINK_CROS_OSS";
 const char kEndLinkCrosOss[] = "END_LINK_CROS_OSS";
 
+const char kDomainChangable[] = "domain";
+
 // Returns a substring [start, end) from |text|.
 std::string StringSubRange(const std::string& text, size_t start,
                            size_t end) {
   DCHECK(end > start);
   return text.substr(start, end - start);
+}
+
+bool CanChangeReleaseChannel() {
+  // On non managed machines we have local owner who is the only one to change
+  // anything.
+  if (chromeos::UserManager::Get()->current_user_is_owner())
+    return true;
+  // On a managed machine we delegate this setting to the users of the same
+  // domain only if the policy value is "domain".
+  if (g_browser_process->browser_policy_connector()->IsEnterpriseManaged()) {
+    std::string value;
+    chromeos::CrosSettings::Get()->GetString(chromeos::kReleaseChannel, &value);
+    if (value != kDomainChangable)
+      return false;
+    // Get the currently logged in user and strip the domain part only.
+    std::string domain = "";
+    std::string user = chromeos::UserManager::Get()->logged_in_user().email();
+    size_t at_pos = user.find('@');
+    if (at_pos != std::string::npos && at_pos + 1 < user.length())
+      domain = user.substr(user.find('@') + 1);
+    return domain == g_browser_process->browser_policy_connector()->
+        GetEnterpriseDomain();
+  }
+  return false;
 }
 
 }  // namespace
@@ -256,6 +285,12 @@ void AboutPageHandler::PageReady(const ListValue* args) {
                       base::Bind(&AboutPageHandler::OnOSFirmware,
                                  base::Unretained(this)));
 
+  scoped_ptr<base::Value> can_change_channel_value(
+      base::Value::CreateBooleanValue(CanChangeReleaseChannel()));
+  web_ui()->CallJavascriptFunction(
+      "AboutPage.updateEnableReleaseChannelCallback",
+      *can_change_channel_value);
+
   UpdateEngineClient* update_engine_client =
       DBusThreadManager::Get()->GetUpdateEngineClient();
 
@@ -278,12 +313,15 @@ void AboutPageHandler::PageReady(const ListValue* args) {
 }
 
 void AboutPageHandler::SetReleaseTrack(const ListValue* args) {
-  if (!UserManager::Get()->current_user_is_owner()) {
+  if (!CanChangeReleaseChannel()) {
     LOG(WARNING) << "Non-owner tried to change release track.";
     return;
   }
   const std::string channel = UTF16ToUTF8(ExtractStringValue(args));
   DBusThreadManager::Get()->GetUpdateEngineClient()->SetReleaseTrack(channel);
+  // For local owner set the field in the policy blob too.
+  if (UserManager::Get()->current_user_is_owner())
+    CrosSettings::Get()->SetString(kReleaseChannel, channel);
 }
 
 void AboutPageHandler::CheckNow(const ListValue* args) {
