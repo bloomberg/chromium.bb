@@ -27,6 +27,14 @@
 
 #include "compositor.h"
 
+/*
+ * Matrices are stored in column-major order, that is the array indices are:
+ *  0  4  8 12
+ *  1  5  9 13
+ *  2  6 10 14
+ *  3  7 11 15
+ */
+
 WL_EXPORT void
 weston_matrix_init(struct weston_matrix *matrix)
 {
@@ -37,6 +45,7 @@ weston_matrix_init(struct weston_matrix *matrix)
 	memcpy(matrix, &identity, sizeof identity);
 }
 
+/* m <- n * m, that is, m is multiplied on the LEFT. */
 WL_EXPORT void
 weston_matrix_multiply(struct weston_matrix *m, const struct weston_matrix *n)
 {
@@ -76,6 +85,7 @@ weston_matrix_scale(struct weston_matrix *matrix, GLfloat x, GLfloat y, GLfloat 
 	weston_matrix_multiply(matrix, &scale);
 }
 
+/* v <- m * v */
 WL_EXPORT void
 weston_matrix_transform(struct weston_matrix *matrix, struct weston_vector *v)
 {
