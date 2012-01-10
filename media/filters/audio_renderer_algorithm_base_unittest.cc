@@ -33,12 +33,12 @@ TEST(AudioRendererAlgorithmBaseTest, FillBuffer_NormalRate) {
   const size_t kDataSize = 1024;
   algorithm.EnqueueBuffer(new DataBuffer(
       scoped_array<uint8>(new uint8[kDataSize]), kDataSize));
-  EXPECT_EQ(kDataSize, algorithm.QueueSize());
+  EXPECT_EQ(kDataSize, algorithm.bytes_buffered());
 
   // Read the same sized amount.
   scoped_array<uint8> data(new uint8[kDataSize]);
   EXPECT_EQ(kDataSize, algorithm.FillBuffer(data.get(), kDataSize));
-  EXPECT_EQ(0u, algorithm.QueueSize());
+  EXPECT_EQ(0u, algorithm.bytes_buffered());
 }
 
 TEST(AudioRendererAlgorithmBaseTest, FillBuffer_DoubleRate) {
@@ -55,8 +55,8 @@ TEST(AudioRendererAlgorithmBaseTest, FillBuffer_DoubleRate) {
   const size_t kBufferSize = 16 * 1024;
   scoped_array<uint8> data(new uint8[kBufferSize]);
   const size_t kTestData[][2] = {
-    { algorithm.window_size_, algorithm.window_size_ / 2},
-    { algorithm.window_size_ / 2, algorithm.window_size_ / 4},
+    { algorithm.window_size(), algorithm.window_size() / 2},
+    { algorithm.window_size() / 2, algorithm.window_size() / 4},
     { 4u, 2u },
     { 0u, 0u },
   };
@@ -65,12 +65,12 @@ TEST(AudioRendererAlgorithmBaseTest, FillBuffer_DoubleRate) {
     const size_t kDataSize = kTestData[i][0];
     algorithm.EnqueueBuffer(new DataBuffer(
         scoped_array<uint8>(new uint8[kDataSize]), kDataSize));
-    EXPECT_EQ(kDataSize, algorithm.QueueSize());
+    EXPECT_EQ(kDataSize, algorithm.bytes_buffered());
 
     const size_t kExpectedSize = kTestData[i][1];
     ASSERT_LE(kExpectedSize, kBufferSize);
     EXPECT_EQ(kExpectedSize, algorithm.FillBuffer(data.get(), kBufferSize));
-    EXPECT_EQ(0u, algorithm.QueueSize());
+    EXPECT_EQ(0u, algorithm.bytes_buffered());
   }
 }
 
@@ -88,8 +88,8 @@ TEST(AudioRendererAlgorithmBaseTest, FillBuffer_HalfRate) {
   const size_t kBufferSize = 16 * 1024;
   scoped_array<uint8> data(new uint8[kBufferSize]);
   const size_t kTestData[][2] = {
-    { algorithm.window_size_, algorithm.window_size_ * 2 },
-    { algorithm.window_size_ / 2, algorithm.window_size_ },
+    { algorithm.window_size(), algorithm.window_size() * 2 },
+    { algorithm.window_size() / 2, algorithm.window_size() },
     { 2u, 4u },
     { 0u, 0u },
   };
@@ -98,12 +98,12 @@ TEST(AudioRendererAlgorithmBaseTest, FillBuffer_HalfRate) {
     const size_t kDataSize = kTestData[i][0];
     algorithm.EnqueueBuffer(new DataBuffer(
         scoped_array<uint8>(new uint8[kDataSize]), kDataSize));
-    EXPECT_EQ(kDataSize, algorithm.QueueSize());
+    EXPECT_EQ(kDataSize, algorithm.bytes_buffered());
 
     const size_t kExpectedSize = kTestData[i][1];
     ASSERT_LE(kExpectedSize, kBufferSize);
     EXPECT_EQ(kExpectedSize, algorithm.FillBuffer(data.get(), kBufferSize));
-    EXPECT_EQ(0u, algorithm.QueueSize());
+    EXPECT_EQ(0u, algorithm.bytes_buffered());
   }
 }
 
@@ -121,8 +121,8 @@ TEST(AudioRendererAlgorithmBaseTest, FillBuffer_QuarterRate) {
   const size_t kBufferSize = 16 * 1024;
   scoped_array<uint8> data(new uint8[kBufferSize]);
   const size_t kTestData[][2] = {
-    { algorithm.window_size_, algorithm.window_size_ * 4},
-    { algorithm.window_size_ / 2, algorithm.window_size_ * 2},
+    { algorithm.window_size(), algorithm.window_size() * 4},
+    { algorithm.window_size() / 2, algorithm.window_size() * 2},
     { 1u, 4u },
     { 0u, 0u },
   };
@@ -131,12 +131,12 @@ TEST(AudioRendererAlgorithmBaseTest, FillBuffer_QuarterRate) {
     const size_t kDataSize = kTestData[i][0];
     algorithm.EnqueueBuffer(new DataBuffer(scoped_array<uint8>(
         new uint8[kDataSize]), kDataSize));
-    EXPECT_EQ(kDataSize, algorithm.QueueSize());
+    EXPECT_EQ(kDataSize, algorithm.bytes_buffered());
 
     const size_t kExpectedSize = kTestData[i][1];
     ASSERT_LE(kExpectedSize, kBufferSize);
     EXPECT_EQ(kExpectedSize, algorithm.FillBuffer(data.get(), kBufferSize));
-    EXPECT_EQ(0u, algorithm.QueueSize());
+    EXPECT_EQ(0u, algorithm.bytes_buffered());
   }
 }
 

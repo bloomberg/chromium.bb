@@ -22,12 +22,8 @@
 #ifndef MEDIA_FILTERS_AUDIO_RENDERER_ALGORITHM_BASE_H_
 #define MEDIA_FILTERS_AUDIO_RENDERER_ALGORITHM_BASE_H_
 
-#include <deque>
-
 #include "base/callback.h"
 #include "base/gtest_prod_util.h"
-#include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "media/base/seekable_buffer.h"
 
 namespace media {
@@ -39,16 +35,34 @@ class MEDIA_EXPORT AudioRendererAlgorithmBase {
   AudioRendererAlgorithmBase();
   ~AudioRendererAlgorithmBase();
 
-  // Checks validity of audio parameters.
-  void Initialize(
-      int channels, int sample_rate, int sample_bits,
-      float initial_playback_rate, const base::Closure& callback);
+  // Initializes this object with information about the audio stream.
+  // |samples_per_second| is in Hz. |read_request_callback| is called to
+  // request more data from the client, requests that are fulfilled through
+  // calls to EnqueueBuffer().
+  void Initialize(int channels,
+                  int samples_per_second,
+                  int bits_per_channel,
+                  float initial_playback_rate,
+                  const base::Closure& request_read_cb);
 
-  // Tries to fill |length| bytes of |dest| with possibly scaled data from
-  // our |queue_|. Returns the number of bytes copied into |dest|.
+  // Tries to fill |length| bytes of |dest| with possibly scaled data from our
+  // |audio_buffer_|. Data is scaled based on the playback rate, using a
+  // variation of the Overlap-Add method to combine sample windows.
+  //
+  // Data from |audio_buffer_| is consumed in proportion to the playback rate.
+  // FillBuffer() will fit |playback_rate_| * |length| bytes of raw data from
+  // |audio_buffer| into |length| bytes of output data in |dest| by chopping up
+  // the buffered data into windows and crossfading from one window to the next.
+  // For speeds greater than 1.0f, FillBuffer() "squish" the windows, dropping
+  // some data in between windows to meet the sped-up playback. For speeds less
+  // than 1.0f, FillBuffer() will "stretch" the window by copying and
+  // overlapping data at the window boundaries, crossfading in between.
+  //
+  // Returns the number of bytes copied into |dest|.
+  // May request more reads via |request_read_cb_| before returning.
   uint32 FillBuffer(uint8* dest, uint32 length);
 
-  // Clears |queue_|.
+  // Clears |audio_buffer_|.
   void FlushBuffers();
 
   // Returns the time of the next byte in our data or kNoTimestamp if current
@@ -59,80 +73,59 @@ class MEDIA_EXPORT AudioRendererAlgorithmBase {
   // read completes.
   void EnqueueBuffer(Buffer* buffer_in);
 
-  // Getter/setter for |playback_rate_|.
-  float playback_rate();
+  float playback_rate() const { return playback_rate_; }
   void SetPlaybackRate(float new_rate);
 
-  // Returns whether |queue_| is empty.
+  // Returns whether |audio_buffer_| is empty.
   bool IsQueueEmpty();
 
-  // Returns true if we have enough data
+  // Returns true if |audio_buffer_| is at or exceeds capacity.
   bool IsQueueFull();
 
-  // Returns the number of bytes left in |queue_|, which may be larger than
-  // QueueCapacity() in the event that a read callback delivered more data than
-  // |queue_| was intending to hold.
-  uint32 QueueSize();
-
-  // Returns the capacity of |queue_|.
+  // Returns the capacity of |audio_buffer_|.
   uint32 QueueCapacity();
 
-  // Increase the capacity of |queue_| if possible.
+  // Increase the capacity of |audio_buffer_| if possible.
   void IncreaseQueueCapacity();
 
+  // Returns the number of bytes left in |audio_buffer_|, which may be larger
+  // than QueueCapacity() in the event that a read callback delivered more data
+  // than |audio_buffer_| was intending to hold.
+  uint32 bytes_buffered() { return audio_buffer_.forward_bytes(); }
+
+  uint32 window_size() { return window_size_; }
+
  private:
-  // Advances |queue_|'s internal pointer by |bytes|.
-  void AdvanceInputPosition(uint32 bytes);
+  // Advances |audio_buffer_|'s internal pointer by |bytes|.
+  void AdvanceBufferPosition(uint32 bytes);
 
-  // Tries to copy |bytes| bytes from |queue_| to |dest|. Returns the number of
-  // bytes successfully copied.
-  uint32 CopyFromInput(uint8* dest, uint32 bytes);
-
-  // Converts a duration in milliseconds to a byte count based on
-  // the current sample rate, channel count, and bytes per sample.
-  int DurationToBytes(int duration_in_milliseconds) const;
-
-  FRIEND_TEST_ALL_PREFIXES(AudioRendererAlgorithmBaseTest,
-                           FillBuffer_NormalRate);
-  FRIEND_TEST_ALL_PREFIXES(AudioRendererAlgorithmBaseTest,
-                           FillBuffer_DoubleRate);
-  FRIEND_TEST_ALL_PREFIXES(AudioRendererAlgorithmBaseTest,
-                           FillBuffer_HalfRate);
-  FRIEND_TEST_ALL_PREFIXES(AudioRendererAlgorithmBaseTest,
-                           FillBuffer_QuarterRate);
+  // Tries to copy |bytes| bytes from |audio_buffer_| to |dest|.
+  // Returns the number of bytes successfully copied.
+  uint32 CopyFromAudioBuffer(uint8* dest, uint32 bytes);
 
   // Aligns |value| to a channel and sample boundary.
   void AlignToSampleBoundary(uint32* value);
 
-  // Crossfades |samples| samples of |dest| with the data in |src|. Assumes
-  // there is room in |dest| and enough data in |src|. Type is the datatype
-  // of a data point in the waveform (i.e. uint8, int16, int32, etc). Also,
-  // sizeof(one sample) == sizeof(Type) * channels.
-  template <class Type>
-  void Crossfade(int samples, const Type* src, Type* dest);
+  // Attempts to write |length| bytes of muted audio into |dest|.
+  uint32 MuteBuffer(uint8* dest, uint32 length);
 
-  // Audio properties.
+  // Number of channels in audio stream.
   int channels_;
-  int sample_rate_;
-  int sample_bytes_;
+
+  // Sample rate of audio stream.
+  int samples_per_second_;
+
+  // Byte depth of audio.
+  int bytes_per_channel_;
 
   // Used by algorithm to scale output.
   float playback_rate_;
 
   // Used to request more data.
-  base::Closure request_read_callback_;
+  base::Closure request_read_cb_;
 
-  // Queued audio data.
-  SeekableBuffer queue_;
-
-  // Largest capacity queue_ can grow to.
-  size_t max_queue_capacity_;
-
-  // Members for ease of calculation in FillBuffer(). These members are based
-  // on |playback_rate_|, but are stored separately so they don't have to be
-  // recalculated on every call to FillBuffer().
-  uint32 input_step_;
-  uint32 output_step_;
+  // Buffered audio data.
+  SeekableBuffer audio_buffer_;
 
   // Length for crossfade in bytes.
   uint32 crossfade_size_;

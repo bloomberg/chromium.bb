@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -156,7 +156,7 @@ class AudioRendererBaseTest : public ::testing::Test {
   }
 
   uint32 bytes_buffered() {
-    return renderer_->algorithm_->QueueSize();
+    return renderer_->algorithm_->bytes_buffered();
   }
 
   uint32 buffer_capacity() {
