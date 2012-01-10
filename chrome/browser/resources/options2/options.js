@@ -72,12 +72,6 @@ function load() {
                               BrowserOptions.getInstance(),
                               [$('advancedOptionsButton')]);
   OptionsPage.register(PersonalOptions.getInstance());
-  OptionsPage.registerSubPage(AutofillOptions.getInstance(),
-                              PersonalOptions.getInstance(),
-                              [$('autofill-settings')]);
-  OptionsPage.registerSubPage(PasswordManager.getInstance(),
-                              PersonalOptions.getInstance(),
-                              [$('manage-passwords')]);
   if (cr.isChromeOS) {
     OptionsPage.register(SystemOptions.getInstance());
     OptionsPage.registerSubPage(AboutPage.getInstance(),
@@ -114,6 +108,12 @@ function load() {
     }
     OptionsPage.register(InternetOptions.getInstance());
   }
+  OptionsPage.registerSubPage(AutofillOptions.getInstance(),
+                              AdvancedOptions.getInstance(),
+                              [$('autofill-settings')]);
+  OptionsPage.registerSubPage(PasswordManager.getInstance(),
+                              AdvancedOptions.getInstance(),
+                              [$('manage-passwords')]);
   OptionsPage.registerSubPage(ContentSettings.getInstance(),
                               AdvancedOptions.getInstance(),
                               [$('privacyContentSettingsButton')]);

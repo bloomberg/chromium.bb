@@ -54,25 +54,6 @@ cr.define('options', function() {
           ManageProfileOverlay.showDeleteDialog(selectedProfile);
       };
 
-      // Passwords.
-      $('manage-passwords').onclick = function(event) {
-        OptionsPage.navigateToPage('passwords');
-        OptionsPage.showTab($('passwords-nav-tab'));
-        chrome.send('coreOptionsUserMetricsAction',
-            ['Options_ShowPasswordManager']);
-      };
-
-      // Autofill.
-      $('autofill-settings').onclick = function(event) {
-        OptionsPage.navigateToPage('autofill');
-        chrome.send('coreOptionsUserMetricsAction',
-            ['Options_ShowAutofillSettings']);
-      };
-      if (cr.isChromeOS && cr.commandLine && cr.commandLine.options['--bwsi']) {
-        // Hide Autofill options for the guest user.
-        $('autofill-section').hidden = true;
-      }
-
       // Appearance.
       $('themes-reset').onclick = function(event) {
         chrome.send('themesReset');
@@ -105,28 +86,6 @@ cr.define('options', function() {
           $('enable-screen-lock').disabled = true;
           $('change-picture-button').disabled = true;
         }
-      }
-
-      if (PersonalOptions.disablePasswordManagement()) {
-        // Disable the Password Manager in guest mode.
-        $('passwords-offersave').disabled = true;
-        $('passwords-neversave').disabled = true;
-        $('passwords-offersave').value = false;
-        $('passwords-neversave').value = true;
-        $('manage-passwords').disabled = true;
-      }
-
-      $('mac-passwords-warning').hidden =
-          !(localStrings.getString('macPasswordsWarning'));
-
-      if (PersonalOptions.disableAutofillManagement()) {
-        $('autofill-settings').disabled = true;
-
-        // Disable and turn off autofill.
-        var autofillEnabled = $('autofill-enabled');
-        autofillEnabled.disabled = true;
-        autofillEnabled.checked = false;
-        cr.dispatchSimpleEvent(autofillEnabled, 'change');
       }
     },
 
@@ -214,23 +173,6 @@ cr.define('options', function() {
           'chrome://userimage/' + this.username_ +
           '?id=' + (new Date()).getTime();
     },
-  };
-
-  /**
-   * Returns whether the user should be able to manage (view and edit) their
-   * stored passwords. Password management is disabled in guest mode.
-   * @return {boolean} True if password management should be disabled.
-   */
-  PersonalOptions.disablePasswordManagement = function() {
-    return cr.commandLine && cr.commandLine.options['--bwsi'];
-  };
-
-  /**
-   * Returns whether the user should be able to manage autofill settings.
-   * @return {boolean} True if password management should be disabled.
-   */
-  PersonalOptions.disableAutofillManagement = function() {
-    return cr.commandLine && cr.commandLine.options['--bwsi'];
   };
 
   if (cr.isChromeOS) {

@@ -8229,11 +8229,27 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
         Offer to translate pages that aren't in a language I read
       </message>
 
+      <if expr="not pp_ifdef('use_titlecase')">
+        <message name="IDS_OPTIONS_PASSWORDS_AND_FORMS_GROUP_NAME" desc="The title of the 'Passwords and forms' group">
+          Passwords and forms
+        </message>
+      </if>
+      <if expr="pp_ifdef('use_titlecase')">
+        <message name="IDS_OPTIONS_PASSWORDS_AND_FORMS_GROUP_NAME" desc="In Title Case: The title of the 'Passwords and Forms' group">
+          Passwords and Forms
+        </message>
+      </if>
+      <message name="IDS_OPTIONS_PASSWORD_MANAGER_ENABLE" desc="The label of the password manager checkbox">
+        Offer to save passwords I enter on the web.
+      </message>
       <message name="IDS_OPTIONS_PASSWORDS_ASKTOSAVE" desc="The label of the 'Ask me to save passwords' radio button">
         Offer to save passwords
       </message>
       <message name="IDS_OPTIONS_PASSWORDS_NEVERSAVE" desc="The label of the 'Never save passwords' radio button">
         Never save passwords
+      </message>
+      <message name="IDS_OPTIONS_PASSWORDS_MANAGE_PASSWORDS_LINK" desc="The label of the 'Manage saved passwords' link">
+        Manage saved passwords
       </message>
       <if expr="pp_ifdef('use_titlecase')">
         <message name="IDS_OPTIONS_PASSWORDS_MANAGE_PASSWORDS" desc="In Title Case: The label of the 'Manage saved passwords' button">
@@ -8271,7 +8287,7 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
         Do you want Chrome to save this credit card information for completing web forms?
       </message>
       <message name="IDS_OPTIONS_AUTOFILL_ENABLE" desc="The label of the 'Ask me to enable Autofill' radio button">
-        Enable Autofill to fill out web forms in a single click
+        Enable Autofill to fill out web forms in a single click.
       </message>
       <message name="IDS_AUTOFILL_CC_INFOBAR_ACCEPT" desc="Text to show for the Autofill credit card request infobar accept button.">
         Save info
@@ -8290,6 +8306,9 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
       </message>
       <message name="IDS_AUTOFILL_EDIT_PROFILE_BUTTON" desc="The label of the button that edits the currently selected Autofill profile.">
         Edit...
+      </message>
+      <message name="IDS_OPTIONS_MANAGE_AUTOFILL_SETTINGS_LINK" desc="The label of the 'Manage Autofill settings' link">
+        Manage Autofill settings
       </message>
       <if expr="not pp_ifdef('use_titlecase')">
         <message name="IDS_OPTIONS_MANAGE_AUTOFILL_SETTINGS" desc="The label of the 'Manage Autofill settings' button">

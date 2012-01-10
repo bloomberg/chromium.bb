@@ -20,49 +20,6 @@
       </div>
     </section>
 </if>
-    <section>
-      <h3 i18n-content="passwords"></h3>
-      <div>
-        <div class="radio">
-          <label>
-            <input id="passwords-offersave" type="radio" name="passwords_radio"
-                value="true" pref="profile.password_manager_enabled"
-                metric="Options_PasswordManager">
-            <span i18n-content="passwordsAskToSave"></span>
-          </label>
-        </div>
-        <div class="radio">
-          <label>
-            <input id="passwords-neversave" type="radio" name="passwords_radio"
-                value="false" pref="profile.password_manager_enabled"
-                metric="Options_PasswordManager">
-            <span i18n-content="passwordsNeverSave"></span>
-          </label>
-        </div>
-        <div><button id="manage-passwords" i18n-content="manage_passwords"
-            pref="profile.password_manager_enabled"></button></div>
-        <div id="mac-passwords-warning" i18n-content="macPasswordsWarning"
-            hidden></div> 
-        <!-- This makes the managed-banner appear when the "pref" is
-        configured by the IT administrator. -->
-        <input name="password_allow_show_hidden" type="text"
-            pref="profile.password_manager_allow_show_passwords" hidden>
-      </div>
-    </section>
-    <section id="autofill-section">
-      <h3 i18n-content="autofill"></h3>
-      <div>
-        <div class="checkbox">
-          <label>
-            <input id="autofill-enabled" pref="autofill.enabled"
-                metric="Options_FormAutofill" type="checkbox">
-            <span i18n-content="autofillEnabled"></span>
-          </label>
-        </div>
-        <button id="autofill-settings" pref="autofill.enabled"
-            i18n-content="manageAutofillSettings"></button>
-      </div>
-    </section>
 <if expr="not pp_ifdef('chromeos')">
     <section>
       <h3 i18n-content="browsingData"></h3>

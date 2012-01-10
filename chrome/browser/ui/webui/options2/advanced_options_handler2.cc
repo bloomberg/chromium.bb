@@ -22,6 +22,7 @@
 #include "chrome/browser/printing/cloud_print/cloud_print_setup_flow.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_url.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/service/service_process_control.h"
 #include "chrome/browser/ui/options/options_util.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -177,6 +178,16 @@ void AdvancedOptionsHandler::GetLocalizedValues(
     { "backgroundModeCheckbox",
       IDS_OPTIONS_BACKGROUND_ENABLE_BACKGROUND_MODE },
 #endif
+    { "passwordsAndAutofillGroupName",
+      IDS_OPTIONS_PASSWORDS_AND_FORMS_GROUP_NAME },
+    { "passwordManagerEnabled",
+      IDS_OPTIONS_PASSWORD_MANAGER_ENABLE },
+    { "managePasswords",
+      IDS_OPTIONS_PASSWORDS_MANAGE_PASSWORDS_LINK },
+    { "autofillEnabled",
+      IDS_OPTIONS_AUTOFILL_ENABLE },
+    { "manageAutofillSettings",
+      IDS_OPTIONS_MANAGE_AUTOFILL_SETTINGS_LINK },
   };
 
   RegisterStrings(localized_strings, resources, arraysize(resources));
@@ -192,6 +203,13 @@ void AdvancedOptionsHandler::GetLocalizedValues(
   localized_strings->SetString("cloudPrintLearnMoreURL",
       google_util::AppendGoogleLocaleParam(
           GURL(chrome::kCloudPrintLearnMoreURL)).spec());
+#endif
+#if defined(OS_MACOSX)
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  if (profile_manager->GetNumberOfProfiles() > 1) {
+    localized_strings->SetString("macPasswordsWarning",
+        l10n_util::GetStringUTF16(IDS_OPTIONS_PASSWORDS_MAC_WARNING));
+  }
 #endif
 }
 

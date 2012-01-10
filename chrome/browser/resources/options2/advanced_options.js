@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -48,6 +48,40 @@ var OptionsPage = options.OptionsPage;
               [String(event.target.checked)]);
         };
       }
+
+      // Passwords and Forms.
+      $('autofill-settings').onclick = function(event) {
+        OptionsPage.navigateToPage('autofill');
+        chrome.send('coreOptionsUserMetricsAction',
+            ['Options_ShowAutofillSettings']);
+      };
+      $('manage-passwords').onclick = function(event) {
+        OptionsPage.navigateToPage('passwords');
+        OptionsPage.showTab($('passwords-nav-tab'));
+        chrome.send('coreOptionsUserMetricsAction',
+            ['Options_ShowPasswordManager']);
+      };
+      if (AdvancedOptions.GuestModeActive()) {
+        // Disable and turn off Autofill in guest mode.
+        var autofillEnabled = $('autofill-enabled');
+        autofillEnabled.disabled = true;
+        autofillEnabled.checked = false;
+        cr.dispatchSimpleEvent(autofillEnabled, 'change');
+        $('autofill-settings').disabled = true;
+
+        // Disable and turn off Password Manager in guest mode.
+        var passwordManagerEnabled = $('password-manager-enabled');
+        passwordManagerEnabled.disabled = true;
+        passwordManagerEnabled.checked = false;
+        cr.dispatchSimpleEvent(passwordManagerEnabled, 'change');
+        $('manage-passwords').disabled = true;
+
+        // Hide the entire section on ChromeOS
+        if (cr.isChromeOS)
+          $('passwords-and-autofill-section').hidden = true;
+      }
+      $('mac-passwords-warning').hidden =
+          !(localStrings.getString('macPasswordsWarning'));
 
       if (!cr.isChromeOS) {
         $('autoOpenFileTypesResetToDefault').onclick = function(event) {
@@ -153,6 +187,15 @@ var OptionsPage = options.OptionsPage;
       $('metricsReportingSetting').style.display = 'none';
     }
   }
+
+  /**
+   * Returns whether the browser in guest mode. Some features are disabled or
+   * hidden in guest mode.
+   * @return {boolean} True if guest mode is currently active.
+   */
+  AdvancedOptions.GuestModeActive = function() {
+    return cr.commandLine && cr.commandLine.options['--bwsi'];
+  };
 
   // Set the font size selected item.
   AdvancedOptions.SetFontSize = function(font_size_value) {

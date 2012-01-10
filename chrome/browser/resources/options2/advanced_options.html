@@ -69,6 +69,34 @@
 </if>
     </div>
   </section>
+  <section id="passwords-and-autofill-section">
+    <h3 i18n-content="passwordsAndAutofillGroupName"></h3>
+    <div class="checkbox">
+      <input id="autofill-enabled" pref="autofill.enabled"
+          metric="Options_FormAutofill" type="checkbox">
+      <label id="autofill-label" for="autofill-enabled"
+          i18n-content="autofillEnabled"></label>
+      <button id="autofill-settings" class="link-button"
+          pref="autofill.enabled"
+          i18n-content="manageAutofillSettings"></button>
+    </div>
+    <div class="checkbox">
+      <input id="password-manager-enabled"
+          pref="profile.password_manager_enabled"
+          metric="Options_PasswordManager" type="checkbox">
+      <label id="password-manager-label" for="password-manager-enabled"
+          i18n-content="passwordManagerEnabled"></label>
+      <button id="manage-passwords" class="link-button"
+          i18n-content="managePasswords"
+          pref="profile.password_manager_enabled"></button>
+    </div>
+    <div id="mac-passwords-warning" i18n-content="macPasswordsWarning" hidden>
+    </div> 
+    <!-- This makes the managed-banner appear when the "pref" is configured by
+         the IT administrator. -->
+    <input name="password_allow_show_hidden" type="text"
+        pref="profile.password_manager_allow_show_passwords" hidden>
+  </section>
   <section>
     <h3 i18n-content="advancedSectionTitleContent"></h3>
     <div>
