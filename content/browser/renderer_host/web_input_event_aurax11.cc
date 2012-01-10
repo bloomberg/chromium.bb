@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -53,6 +53,9 @@ namespace content {
 // to do the work here ourselves.
 
 namespace {
+
+// This matches Firefox behavior.
+const int kPixelsPerTick = 53;
 
 double XEventTimeToWebEventTime(Time time) {
   // Convert from time in ms to time in s.
@@ -268,7 +271,7 @@ WebKit::WebMouseWheelEvent MakeWebMouseWheelEventFromAuraEvent(
   webkit_event.modifiers = EventFlagsToWebEventModifiers(event->flags());
   webkit_event.timeStampSeconds = event->time_stamp().ToDoubleT();
   webkit_event.deltaY = ui::GetMouseWheelOffset(event->native_event());
-  webkit_event.wheelTicksY = webkit_event.deltaY > 0 ? 1 : -1;
+  webkit_event.wheelTicksY = webkit_event.deltaY / kPixelsPerTick;
 
   return webkit_event;
 }
@@ -281,11 +284,11 @@ WebKit::WebMouseWheelEvent MakeWebMouseWheelEventFromAuraEvent(
   webkit_event.button = WebKit::WebMouseEvent::ButtonNone;
   webkit_event.modifiers = EventFlagsToWebEventModifiers(event->flags());
   webkit_event.timeStampSeconds = event->time_stamp().ToDoubleT();
-  // TODO(davemoore) Support X offset, once cmt generates better data.
-  if (abs(event->y_offset()) >= 1) {
-    webkit_event.deltaY = event->y_offset();
-    webkit_event.wheelTicksY = webkit_event.deltaY > 0 ? 1 : -1;
-  }
+  webkit_event.hasPreciseScrollingDeltas = true;
+  webkit_event.deltaX = event->x_offset();
+  webkit_event.wheelTicksX = webkit_event.deltaX / kPixelsPerTick;
+  webkit_event.deltaY = event->y_offset();
+  webkit_event.wheelTicksY = webkit_event.deltaY / kPixelsPerTick;
 
   return webkit_event;
 }

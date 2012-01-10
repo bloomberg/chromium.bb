@@ -55,11 +55,6 @@ static const int kPaintMsgTimeoutMS = 40;
 // How long to wait before we consider a renderer hung.
 static const int kHungRendererDelayMs = 20000;
 
-// The maximum time between wheel messages while coalescing. This trades off
-// smoothness of scrolling with a risk of falling behind the events, resulting
-// in trailing scrolls after the user ends their input.
-static const int kMaxTimeBetweenWheelMessagesMs = 250;
-
 namespace {
 
 // Returns |true| if the two wheel events should be coalesced.
@@ -598,6 +593,8 @@ void RenderWidgetHost::ForwardWheelEvent(
           &coalesced_mouse_wheel_events_.back();
       last_wheel_event->deltaX += wheel_event.deltaX;
       last_wheel_event->deltaY += wheel_event.deltaY;
+      last_wheel_event->wheelTicksX += wheel_event.wheelTicksX;
+      last_wheel_event->wheelTicksY += wheel_event.wheelTicksY;
       DCHECK_GE(wheel_event.timeStampSeconds,
                 last_wheel_event->timeStampSeconds);
       last_wheel_event->timeStampSeconds = wheel_event.timeStampSeconds;

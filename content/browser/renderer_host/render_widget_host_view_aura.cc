@@ -718,14 +718,19 @@ int RenderWidgetHostViewAura::GetNonClientComponent(
 }
 
 bool RenderWidgetHostViewAura::OnMouseEvent(aura::MouseEvent* event) {
-  if (event->type() == ui::ET_MOUSEWHEEL)
-    host_->ForwardWheelEvent(content::MakeWebMouseWheelEvent(event));
-  else if (event->type() == ui::ET_SCROLL)
-    host_->ForwardWheelEvent(
-        content::MakeWebMouseWheelEvent(
-            static_cast<aura::ScrollEvent*>(event)));
-  else if (CanRendererHandleEvent(event->native_event()))
+  if (event->type() == ui::ET_MOUSEWHEEL) {
+    WebKit::WebMouseWheelEvent mouse_wheel_event =
+        content::MakeWebMouseWheelEvent(event);
+    if (mouse_wheel_event.deltaX != 0)
+      host_->ForwardWheelEvent(mouse_wheel_event);
+  } else if (event->type() == ui::ET_SCROLL) {
+    WebKit::WebMouseWheelEvent mouse_wheel_event =
+        content::MakeWebMouseWheelEvent(static_cast<aura::ScrollEvent*>(event));
+    if (mouse_wheel_event.deltaX != 0)
+      host_->ForwardWheelEvent(mouse_wheel_event);
+  } else if (CanRendererHandleEvent(event->native_event())) {
     host_->ForwardMouseEvent(content::MakeWebMouseEvent(event));
+  }
 
   switch (event->type()) {
     case ui::ET_MOUSE_PRESSED:
