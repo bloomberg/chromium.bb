@@ -256,8 +256,8 @@
               "windowId": {
                 "type": "integer",
                 "optional": true,
-                "minimum": 0,
-                "description": "The ID of the parent window."
+                "minimum": -2,
+                "description": "The ID of the parent window, or <a href='windows.html#property-WINDOW_ID_CURRENT'>chrome.windows.WINDOW_ID_CURRENT</a> for the <a href='windows.html#current-window'>current window</a>."
               },
               "windowType": {
                 "type": "string",

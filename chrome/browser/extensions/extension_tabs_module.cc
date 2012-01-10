@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -782,7 +782,7 @@ bool QueryTabsFunction::RunImpl() {
     EXTENSION_FUNCTION_VALIDATE(
         query->GetString(keys::kTitleKey, &title));
 
-  int window_id = -1;
+  int window_id = extension_misc::kUnknownWindowId;
   if (query->HasKey(keys::kWindowIdKey))
     EXTENSION_FUNCTION_VALIDATE(
         query->GetInteger(keys::kWindowIdKey, &window_id));
@@ -802,6 +802,10 @@ bool QueryTabsFunction::RunImpl() {
       continue;
 
     if (window_id >= 0 && window_id != ExtensionTabUtil::GetWindowId(*browser))
+      continue;
+
+    if (window_id == extension_misc::kCurrentWindowId &&
+        *browser != GetCurrentBrowser())
       continue;
 
     if (!window_type.empty() &&

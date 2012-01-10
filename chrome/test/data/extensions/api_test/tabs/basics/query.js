@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -77,6 +77,19 @@ chrome.test.runTests([
       for (var x = 0; x < tabs.length; x++)
         assertEq(testWindowId, tabs[x].windowId);
     }));
+  },
+
+  function queryCurrentWindow() {
+    chrome.windows.getCurrent(function(win) {
+      chrome.tabs.query({windowId: chrome.windows.WINDOW_ID_CURRENT},
+                        pass(function(tabs) {
+        // The current window should only contain this test page.
+        assertEq(1, tabs.length);
+        assertEq(win.id, tabs[0].windowId);
+        assertEq(location.href, tabs[0].url);
+        assertEq(location.href, tabs[0].title);
+      }));
+    });
   },
 
   function queryPinned() {

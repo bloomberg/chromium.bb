@@ -32,6 +32,11 @@
         "type": "integer",
         "value": "-1",
         "description": "The windowId value that represents the absence of a chrome browser window."
+      },
+      "WINDOW_ID_CURRENT": {
+        "type": "integer",
+        "value": "-2",
+        "description": "The windowId value that represents the <a href='windows.html#current-window'>current window</a>."
       }
     },
     "functions": [

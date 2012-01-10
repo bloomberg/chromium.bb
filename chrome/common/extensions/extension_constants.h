@@ -328,7 +328,11 @@ namespace extension_filenames {
 }
 
 namespace extension_misc {
+  // Matches chrome.windows.WINDOW_ID_NONE.
   const int kUnknownWindowId = -1;
+
+  // Matches chrome.windows.WINDOW_ID_CURRENT.
+  const int kCurrentWindowId = -2;
 
   // The extension id of the bookmark manager.
   extern const char kBookmarkManagerId[];

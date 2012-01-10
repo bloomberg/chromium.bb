@@ -914,7 +914,7 @@ var chrome = chrome || {};
       });
 
     apiFunctions.setHandleRequest("extension.getViews", function(properties) {
-      var windowId = -1;
+      var windowId = chrome.windows.WINDOW_ID_NONE;
       var type = "ALL";
       if (typeof(properties) != "undefined") {
         if (typeof(properties.type) != "undefined") {
@@ -934,7 +934,7 @@ var chrome = chrome || {};
     apiFunctions.setHandleRequest("extension.getExtensionTabs",
         function(windowId) {
       if (typeof(windowId) == "undefined")
-        windowId = -1;
+        windowId = chrome.windows.WINDOW_ID_NONE;
       return GetExtensionViews(windowId, "TAB");
     });
 
