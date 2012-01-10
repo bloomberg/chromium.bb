@@ -605,16 +605,7 @@ void CFUrlRequestUnittestRunner::PreCreateThreads() {
   StartChromeFrameInHostBrowser();
 }
 
-void CFUrlRequestUnittestRunner::PreStartThread(BrowserThread::ID identifier) {
-  fake_chrome_->browser_process()->PreStartThread(identifier);
-}
-
-void CFUrlRequestUnittestRunner::PostStartThread(BrowserThread::ID identifier) {
-  fake_chrome_->browser_process()->PostStartThread(identifier);
-}
-
 void CFUrlRequestUnittestRunner::PreMainMessageLoopRun() {
-  fake_chrome_->InitializePostThreadsCreated();
 }
 
 bool CFUrlRequestUnittestRunner::MainMessageLoopRun(int* result_code) {
@@ -639,16 +630,6 @@ void CFUrlRequestUnittestRunner::PostMainMessageLoopRun() {
 
   base::KillProcesses(chrome_frame_test::kIEImageName, 0, NULL);
   base::KillProcesses(chrome_frame_test::kIEBrokerImageName, 0, NULL);
-}
-
-void CFUrlRequestUnittestRunner::PreStopThread(
-    content::BrowserThread::ID identifier) {
-  fake_chrome_->browser_process()->PreStopThread(identifier);
-}
-
-void CFUrlRequestUnittestRunner::PostStopThread(
-    content::BrowserThread::ID identifier) {
-  fake_chrome_->browser_process()->PostStopThread(identifier);
 }
 
 void CFUrlRequestUnittestRunner::PostDestroyThreads() {

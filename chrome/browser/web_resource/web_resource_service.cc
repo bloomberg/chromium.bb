@@ -30,21 +30,18 @@ using content::BrowserThread;
 // the WebResourceService.
 class WebResourceService::UnpackerClient : public UtilityProcessHost::Client {
  public:
-  explicit UnpackerClient(WebResourceService* web_resource_service)
+  UnpackerClient(WebResourceService* web_resource_service,
+                 bool use_utility_process)
     : web_resource_service_(web_resource_service),
-      resource_dispatcher_host_(g_browser_process->resource_dispatcher_host()),
+      use_utility_process_(use_utility_process),
       got_response_(false) {
   }
 
   void Start(const std::string& json_data) {
     AddRef();  // balanced in Cleanup.
 
-    // TODO(willchan): Look for a better signal of whether we're in a unit test
-    // or not. Using |resource_dispatcher_host_| for this is pretty lame.
-    // If we don't have a resource_dispatcher_host_, assume we're in
-    // a test and run the unpacker directly in-process.
     bool use_utility_process =
-        resource_dispatcher_host_ != NULL &&
+        use_utility_process_ &&
         !CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess);
     if (use_utility_process) {
       BrowserThread::ID thread_id;
@@ -118,8 +115,7 @@ class WebResourceService::UnpackerClient : public UtilityProcessHost::Client {
 
   scoped_refptr<WebResourceService> web_resource_service_;
 
-  // Owned by the global browser process.
-  ResourceDispatcherHost* resource_dispatcher_host_;
+  bool use_utility_process_;
 
   // True if we got a response from the utility process and have cleaned up
   // already.
@@ -140,7 +136,8 @@ WebResourceService::WebResourceService(
       apply_locale_to_url_(apply_locale_to_url),
       last_update_time_pref_name_(last_update_time_pref_name),
       start_fetch_delay_ms_(start_fetch_delay_ms),
-      cache_update_delay_ms_(cache_update_delay_ms) {
+      cache_update_delay_ms_(cache_update_delay_ms),
+      use_utility_process_(true) {
   DCHECK(prefs);
 }
 
@@ -231,7 +228,7 @@ void WebResourceService::OnURLFetchComplete(const content::URLFetcher* source) {
   source->GetResponseAsString(&data);
 
   // UnpackerClient releases itself.
-  UnpackerClient* client = new UnpackerClient(this);
+  UnpackerClient* client = new UnpackerClient(this, use_utility_process_);
   client->Start(data);
 
   Release();

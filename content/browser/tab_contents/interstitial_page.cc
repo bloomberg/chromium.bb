@@ -569,21 +569,17 @@ void InterstitialPage::TakeActionOnResourceDispatcher(
   // The tab might not have a render_view_host if it was closed (in which case,
   // we have taken care of the blocked requests when processing
   // NOTIFY_RENDER_WIDGET_HOST_DESTROYED.
-  // Also we need to test there is a ResourceDispatcherHost, as when unit-tests
-  // we don't have one.
   RenderViewHost* rvh = RenderViewHost::FromID(original_child_id_,
                                                original_rvh_id_);
-  if (!rvh ||
-      !content::GetContentClient()->browser()->GetResourceDispatcherHost()) {
+  if (!rvh)
     return;
-  }
 
   BrowserThread::PostTask(
       BrowserThread::IO,
       FROM_HERE,
       base::Bind(
           &ResourceRequestHelper,
-          content::GetContentClient()->browser()->GetResourceDispatcherHost(),
+          ResourceDispatcherHost::Get(),
           original_child_id_,
           original_rvh_id_,
           action));

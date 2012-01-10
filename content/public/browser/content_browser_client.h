@@ -291,8 +291,11 @@ class ContentBrowserClient {
   virtual std::string GetWorkerProcessTitle(
       const GURL& url, const content::ResourceContext& context) = 0;
 
+  // Notifies the embedder that the ResourceDispatcherHost has been created.
+  // This is when it can optionally add a delegate or ResourceQueueDelegates.
+  virtual void ResourceDispatcherHostCreated() = 0;
+
   // Getters for common objects.
-  virtual ResourceDispatcherHost* GetResourceDispatcherHost() = 0;
   virtual ui::Clipboard* GetClipboard() = 0;
   virtual MHTMLGenerationManager* GetMHTMLGenerationManager() = 0;
   virtual net::NetLog* GetNetLog() = 0;

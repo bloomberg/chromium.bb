@@ -547,7 +547,7 @@ void ProfileIOData::ShutdownOnUIThread() {
       BrowserThread::IO, FROM_HERE,
       base::Bind(
           &ResourceDispatcherHost::CancelRequestsForContext,
-          base::Unretained(g_browser_process->resource_dispatcher_host()),
+          base::Unretained(ResourceDispatcherHost::Get()),
           &resource_context_));
   bool posted = BrowserThread::DeleteSoon(BrowserThread::IO, FROM_HERE, this);
   if (!posted)

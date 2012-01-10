@@ -431,6 +431,7 @@ void ExtensionServiceTestBase::InitializeExtensionService(
       autoupdate_enabled);
   service_->set_extensions_enabled(true);
   service_->set_show_extensions_prompts(false);
+  service_->set_use_utility_process_for_testing(false);
   profile->set_extensions_service(service_);
 
   // When we start up, we want to make sure there is no external provider,
@@ -597,6 +598,7 @@ class ExtensionServiceTest
     ASSERT_TRUE(file_util::PathExists(crx_path))
         << "Path does not exist: "<< crx_path.value().c_str();
     scoped_refptr<CrxInstaller> installer(CrxInstaller::Create(service_, NULL));
+    installer->set_use_utility_process(false);
     installer->set_allow_silent_install(true);
     installer->set_is_gallery_install(from_webstore);
     installer->InstallCrx(crx_path);
@@ -645,6 +647,7 @@ class ExtensionServiceTest
     // no client (silent install)
     scoped_refptr<CrxInstaller> installer(CrxInstaller::Create(service_, NULL));
 
+    installer->set_use_utility_process(false);
     installer->set_install_source(install_location);
     installer->InstallCrx(crx_path);
 
@@ -1427,6 +1430,7 @@ TEST_F(ExtensionServiceTest, InstallUserScript) {
 
   ASSERT_TRUE(file_util::PathExists(path));
   scoped_refptr<CrxInstaller> installer(CrxInstaller::Create(service_, NULL));
+  installer->set_use_utility_process(false);
   installer->set_allow_silent_install(true);
   installer->InstallUserScript(
       path,

@@ -184,6 +184,8 @@ class CrxInstaller
 
   Profile* profile() { return profile_; }
 
+  void set_use_utility_process(bool value) { use_utility_process_ = value; }
+
  private:
   friend class ExtensionUpdaterTest;
 
@@ -328,6 +330,9 @@ class CrxInstaller
   // Creation flags to use for the extension.  These flags will be used
   // when calling Extenion::Create() by the crx installer.
   int creation_flags_;
+
+  // True if the utility process is used, false otherwise (i.e. for tests).
+  bool use_utility_process_;
 
   DISALLOW_COPY_AND_ASSIGN(CrxInstaller);
 };

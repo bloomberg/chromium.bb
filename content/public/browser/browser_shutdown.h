@@ -17,8 +17,7 @@ namespace content {
 // This causes the shutdown sequence embodied by
 // BrowserMainParts::PostMainMessageLoopRun through
 // BrowserMainParts::PostDestroyThreads to occur, i.e. we pretend the
-// message loop finished, all threads are stopped in sequence and
-// PreStopThread/PostStopThread gets called, and at least,
+// message loop finished, all threads are stopped in sequence and then
 // PostDestroyThreads is called.
 //
 // As this violates the normal order of shutdown, likely leaving the

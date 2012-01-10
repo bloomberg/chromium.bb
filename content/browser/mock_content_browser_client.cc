@@ -236,8 +236,7 @@ std::string MockContentBrowserClient::GetWorkerProcessTitle(
   return std::string();
 }
 
-ResourceDispatcherHost* MockContentBrowserClient::GetResourceDispatcherHost() {
-  return NULL;
+void MockContentBrowserClient::ResourceDispatcherHostCreated() {
 }
 
 ui::Clipboard* MockContentBrowserClient::GetClipboard() {

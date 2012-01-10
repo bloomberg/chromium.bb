@@ -339,6 +339,7 @@ class ExtensionUpdaterTest : public testing::Test {
     ExtensionUpdater updater(
         &service, service.extension_prefs(), service.pref_service(),
         service.profile(), 60*60*24);
+    updater.set_use_utility_process_for_testing(false);
     updater.Start();
     // Disable blacklist checks (tested elsewhere) so that we only see the
     // update HTTP request.
@@ -391,6 +392,7 @@ class ExtensionUpdaterTest : public testing::Test {
     ExtensionUpdater updater(
         &service, service.extension_prefs(), service.pref_service(),
         service.profile(), 60*60*24);
+    updater.set_use_utility_process_for_testing(false);
     updater.Start();
 
     // Tell the updater that it's time to do update checks.
@@ -503,6 +505,7 @@ class ExtensionUpdaterTest : public testing::Test {
     ExtensionUpdater updater(
         &service, service.extension_prefs(), service.pref_service(),
         service.profile(), kUpdateFrequencySecs);
+    updater.set_use_utility_process_for_testing(false);
     updater.Start();
 
     // Check passing an empty list of parse results to DetermineUpdates
@@ -544,6 +547,7 @@ class ExtensionUpdaterTest : public testing::Test {
     ExtensionUpdater updater(
         &service, service.extension_prefs(), service.pref_service(),
         service.profile(), kUpdateFrequencySecs);
+    updater.set_use_utility_process_for_testing(false);
     updater.Start();
 
     ManifestFetchData fetch_data(GURL("http://localhost/foo"));
@@ -582,6 +586,7 @@ class ExtensionUpdaterTest : public testing::Test {
                              service->pref_service(),
                              service->profile(),
                              kUpdateFrequencySecs);
+    updater.set_use_utility_process_for_testing(false);
     updater.Start();
 
     GURL url1("http://localhost/manifest1");
@@ -660,6 +665,7 @@ class ExtensionUpdaterTest : public testing::Test {
                              service->pref_service(),
                              service->profile(),
                              kUpdateFrequencySecs);
+    updater.set_use_utility_process_for_testing(false);
     updater.Start();
 
     GURL test_url("http://localhost/extension.crx");
@@ -724,6 +730,7 @@ class ExtensionUpdaterTest : public testing::Test {
     ExtensionUpdater updater(
         &service, service.extension_prefs(), service.pref_service(),
         service.profile(), kUpdateFrequencySecs);
+    updater.set_use_utility_process_for_testing(false);
     updater.Start();
     GURL test_url("http://localhost/extension.crx");
 
@@ -775,6 +782,7 @@ class ExtensionUpdaterTest : public testing::Test {
     ExtensionUpdater updater(
         &service, service.extension_prefs(), service.pref_service(),
         service.profile(), kUpdateFrequencySecs);
+    updater.set_use_utility_process_for_testing(false);
     updater.Start();
 
     EXPECT_FALSE(updater.crx_install_is_running_);
@@ -976,6 +984,7 @@ class ExtensionUpdaterTest : public testing::Test {
     ExtensionUpdater updater(
         &service, service.extension_prefs(), service.pref_service(),
         service.profile(), kUpdateFrequencySecs);
+    updater.set_use_utility_process_for_testing(false);
     updater.Start();
     updater.set_blacklist_checks_enabled(false);
 
@@ -1063,6 +1072,7 @@ class ExtensionUpdaterTest : public testing::Test {
     ExtensionUpdater updater(
         &service, service.extension_prefs(), service.pref_service(),
         service.profile(), kUpdateFrequencySecs);
+    updater.set_use_utility_process_for_testing(false);
     updater.Start();
 
     GURL update_url("http://www.google.com/manifest");
@@ -1219,6 +1229,7 @@ TEST_F(ExtensionUpdaterTest, TestStartUpdateCheckMemory) {
     ExtensionUpdater updater(
         &service, service.extension_prefs(), service.pref_service(),
         service.profile(), kUpdateFrequencySecs);
+    updater.set_use_utility_process_for_testing(false);
     updater.Start();
     updater.StartUpdateCheck(new ManifestFetchData(GURL()));
     // This should delete the newly-created ManifestFetchData.
@@ -1240,6 +1251,7 @@ TEST_F(ExtensionUpdaterTest, TestCheckSoon) {
     ExtensionUpdater updater(
         &service, service.extension_prefs(), service.pref_service(),
         service.profile(), kUpdateFrequencySecs);
+    updater.set_use_utility_process_for_testing(false);
     EXPECT_FALSE(updater.WillCheckSoon());
     updater.Start();
     EXPECT_FALSE(updater.WillCheckSoon());

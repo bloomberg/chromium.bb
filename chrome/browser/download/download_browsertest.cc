@@ -97,9 +97,7 @@ class CancelTestDataCollector
     : public base::RefCountedThreadSafe<CancelTestDataCollector> {
  public:
   CancelTestDataCollector()
-      : resource_dispatcher_host_(
-          g_browser_process->resource_dispatcher_host()),
-        slow_download_job_pending_requests_(0),
+      : slow_download_job_pending_requests_(0),
         dfm_pending_downloads_(0) { }
 
   void WaitForDataCollected() {
@@ -124,7 +122,8 @@ class CancelTestDataCollector
  private:
 
   void IOInfoCollector() {
-    download_file_manager_ = resource_dispatcher_host_->download_file_manager();
+    download_file_manager_ =
+        ResourceDispatcherHost::Get()->download_file_manager();
     slow_download_job_pending_requests_ =
         URLRequestSlowDownloadJob::NumberOutstandingRequests();
     BrowserThread::PostTask(
@@ -138,7 +137,6 @@ class CancelTestDataCollector
         BrowserThread::UI, FROM_HERE, MessageLoop::QuitClosure());
   }
 
-  ResourceDispatcherHost* resource_dispatcher_host_;
   DownloadFileManager* download_file_manager_;
   int slow_download_job_pending_requests_;
   int dfm_pending_downloads_;

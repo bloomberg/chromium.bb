@@ -510,13 +510,12 @@ class ExtensionService
                                             const FilePath& path,
                                             Extension::Location location,
                                             int creation_flags,
-                                            bool mark_acknowledged)
-      OVERRIDE;
+                                            bool mark_acknowledged) OVERRIDE;
 
-  virtual void OnExternalExtensionUpdateUrlFound(const std::string& id,
-                                                 const GURL& update_url,
-                                                 Extension::Location location)
-      OVERRIDE;
+  virtual void OnExternalExtensionUpdateUrlFound(
+      const std::string& id,
+      const GURL& update_url,
+      Extension::Location location) OVERRIDE;
 
   virtual void OnExternalProviderReady(
       const ExternalExtensionProviderInterface* provider) OVERRIDE;
@@ -582,6 +581,11 @@ class ExtensionService
   virtual void OnImageLoaded(SkBitmap* image,
                              const ExtensionResource& resource,
                              int index) OVERRIDE;
+
+  void set_use_utility_process_for_testing(bool value) {
+    use_utility_process_ = value;
+  }
+
  private:
   // Bundle of type (app or extension)-specific sync stuff.
   struct SyncBundle {
@@ -842,6 +846,9 @@ class ExtensionService
   // Fields used when installing application shortcuts.
   ShellIntegration::ShortcutInfo shortcut_info_;
   ImageLoadingTracker tracker_;
+
+  // True if the utility process is used, false otherwise (i.e. for tests).
+  bool use_utility_process_;
 
   FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest,
                            InstallAppsWithUnlimtedStorage);

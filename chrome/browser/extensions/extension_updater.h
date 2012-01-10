@@ -208,6 +208,10 @@ class ExtensionUpdater : public content::URLFetcherDelegate,
   // code should just call CheckSoon().
   bool WillCheckSoon() const;
 
+  void set_use_utility_process_for_testing(bool value) {
+    use_utility_process_ = value;
+  }
+
  private:
   friend class ExtensionUpdaterTest;
   friend class ExtensionUpdaterFileHandler;
@@ -382,6 +386,9 @@ class ExtensionUpdater : public content::URLFetcherDelegate,
   // True when a CrxInstaller is doing an install.  Used in MaybeUpdateCrxFile()
   // to keep more than one install from running at once.
   bool crx_install_is_running_;
+
+  // True if the utility process is used, false otherwise (i.e. for tests).
+  bool use_utility_process_;
 
   // Fetched CRX files waiting to be installed.
   std::stack<FetchedCRXFile> fetched_crx_files_;

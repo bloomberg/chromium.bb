@@ -163,14 +163,16 @@ bool FindWritableTempLocation(FilePath* temp_dir) {
 
 SandboxedExtensionUnpacker::SandboxedExtensionUnpacker(
     const FilePath& crx_path,
-    ResourceDispatcherHost* rdh,
     Extension::Location location,
     int creation_flags,
     SandboxedExtensionUnpackerClient* client)
     : crx_path_(crx_path),
       thread_identifier_(BrowserThread::ID_COUNT),
-      rdh_(rdh), client_(client), got_response_(false),
-      location_(location), creation_flags_(creation_flags) {
+      client_(client),
+      got_response_(false),
+      location_(location),
+      creation_flags_(creation_flags),
+      use_utility_process_(true) {
 }
 
 bool SandboxedExtensionUnpacker::CreateTempDirectory() {
@@ -239,7 +241,7 @@ void SandboxedExtensionUnpacker::Start() {
   //
   // TODO(asargent) we shouldn't need to do this branch here - instead
   // UtilityProcessHost should handle it for us. (http://crbug.com/19192)
-  bool use_utility_process = rdh_ &&
+  bool use_utility_process = use_utility_process_ &&
       !CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess);
   if (use_utility_process) {
     // The utility process will have access to the directory passed to

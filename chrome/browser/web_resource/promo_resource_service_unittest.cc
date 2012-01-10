@@ -29,6 +29,7 @@ class PromoResourceServiceTest : public testing::Test {
   PromoResourceServiceTest()
       : local_state_(static_cast<TestingBrowserProcess*>(g_browser_process)),
         web_resource_service_(new PromoResourceService(&profile_)) {
+    web_resource_service_->set_use_utility_process_for_testing(false);
   }
 
  protected:

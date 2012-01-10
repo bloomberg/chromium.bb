@@ -33,6 +33,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_file_util.h"
+#include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/user_metrics.h"
@@ -141,7 +142,8 @@ CrxInstaller::CrxInstaller(base::WeakPtr<ExtensionService> frontend_weak,
       apps_require_extension_mime_type_(false),
       allow_silent_install_(false),
       install_cause_(extension_misc::INSTALL_CAUSE_UNSET),
-      creation_flags_(Extension::NO_FLAGS) {
+      creation_flags_(Extension::NO_FLAGS),
+      use_utility_process_(true) {
 }
 
 CrxInstaller::~CrxInstaller() {
@@ -169,10 +171,10 @@ void CrxInstaller::InstallCrx(const FilePath& source_file) {
   scoped_refptr<SandboxedExtensionUnpacker> unpacker(
       new SandboxedExtensionUnpacker(
           source_file,
-          g_browser_process->resource_dispatcher_host(),
           install_source_,
           creation_flags_,
           this));
+  unpacker->set_use_utility_process(use_utility_process_);
 
   if (!BrowserThread::PostTask(
           BrowserThread::FILE, FROM_HERE,

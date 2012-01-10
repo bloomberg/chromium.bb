@@ -13,7 +13,6 @@
 #include "content/browser/download/download_file_manager.h"
 #include "content/browser/download/save_file_manager.h"
 #include "content/browser/plugin_service_impl.h"
-#include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/shell/shell.h"
 #include "content/shell/shell_browser_context.h"
 #include "content/shell/shell_content_browser_client.h"
@@ -48,7 +47,6 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
 
   Shell::PlatformInitialize();
   net::NetModule::SetResourceProvider(Shell::PlatformResourceProvider);
-  PluginService::GetInstance()->Init();
 
   Shell::CreateNewWindow(browser_context_.get(),
                          GetStartupURL(),
@@ -59,30 +57,10 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
 
 void ShellBrowserMainParts::PostMainMessageLoopRun() {
   browser_context_.reset();
-
-  resource_dispatcher_host_->download_file_manager()->Shutdown();
-  resource_dispatcher_host_->save_file_manager()->Shutdown();
-  resource_dispatcher_host_->Shutdown();
-}
-
-void ShellBrowserMainParts::PreStopThread(BrowserThread::ID id) {
-  if (id == BrowserThread::WEBKIT_DEPRECATED) {
-    resource_dispatcher_host_.reset();
-  }
 }
 
 bool ShellBrowserMainParts::MainMessageLoopRun(int* result_code) {
   return false;
-}
-
-ResourceDispatcherHost* ShellBrowserMainParts::GetResourceDispatcherHost() {
-  if (!resource_dispatcher_host_.get()) {
-    ResourceQueue::DelegateSet resource_queue_delegates;
-    resource_dispatcher_host_.reset(
-        new ResourceDispatcherHost(resource_queue_delegates));
-    resource_dispatcher_host_->Initialize();
-  }
-  return resource_dispatcher_host_.get();
 }
 
 ui::Clipboard* ShellBrowserMainParts::GetClipboard() {

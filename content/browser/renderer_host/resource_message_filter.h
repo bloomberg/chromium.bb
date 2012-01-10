@@ -11,8 +11,6 @@
 #include "content/public/common/process_type.h"
 #include "webkit/glue/resource_type.h"
 
-class ResourceDispatcherHost;
-
 namespace content {
 class ResourceContext;
 }  // namespace content
@@ -42,11 +40,11 @@ class CONTENT_EXPORT ResourceMessageFilter
     DISALLOW_COPY_AND_ASSIGN(URLRequestContextSelector);
   };
 
-  ResourceMessageFilter(int child_id,
-                        content::ProcessType process_type,
-                        const content::ResourceContext* resource_context,
-                        URLRequestContextSelector* url_request_context_selector,
-                        ResourceDispatcherHost* resource_dispatcher_host);
+  ResourceMessageFilter(
+      int child_id,
+      content::ProcessType process_type,
+      const content::ResourceContext* resource_context,
+      URLRequestContextSelector* url_request_context_selector);
 
   // content::BrowserMessageFilter implementation.
   virtual void OnChannelClosing() OVERRIDE;
@@ -78,9 +76,6 @@ class CONTENT_EXPORT ResourceMessageFilter
   const content::ResourceContext* const resource_context_;
 
   const scoped_ptr<URLRequestContextSelector> url_request_context_selector_;
-
-  // Owned by BrowserProcess, which is guaranteed to outlive us.
-  ResourceDispatcherHost* resource_dispatcher_host_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(ResourceMessageFilter);
 };
