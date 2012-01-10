@@ -1,42 +1,29 @@
+# Allocator internals.
 {
-   newlib_free4
+   free4
    Memcheck:Addr4
-   fun:free
-   fun:free
-}
-
-{
-   newlib_malloc4
-   Memcheck:Addr4
-   fun:malloc
-   fun:malloc
-}
-
-{
-   glibc_free4
-   Memcheck:Addr4
-   fun:_int_free
+   fun:*
    fun:free
 }
 
 {
-   glibc_malloc4
+   malloc4
    Memcheck:Addr4
-   fun:_int_malloc
+   fun:*
    fun:malloc
 }
 
 {
-   glibc_free1
+   free1
    Memcheck:Addr1
-   fun:_int_free
+   fun:*
    fun:free
 }
 
 {
-   glibc_malloc1
+   malloc1
    Memcheck:Addr1
-   fun:_int_malloc
+   fun:*
    fun:malloc
 }
 
