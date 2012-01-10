@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -206,6 +206,7 @@
         '../plugins/npapi/webplugin_delegate.h',
         '../plugins/npapi/webplugin_delegate_impl.cc',
         '../plugins/npapi/webplugin_delegate_impl.h',
+        '../plugins/npapi/webplugin_delegate_impl_android.cc',
         '../plugins/npapi/webplugin_delegate_impl_aura.cc',
         '../plugins/npapi/webplugin_delegate_impl_gtk.cc',
         '../plugins/npapi/webplugin_delegate_impl_mac.mm',
@@ -392,6 +393,7 @@
         'webcookie.h',
         'webcursor.cc',
         'webcursor.h',
+        'webcursor_android.cc',
         'webcursor_aura.cc',
         'webcursor_gtk.cc',
         'webcursor_gtk_data.h',
