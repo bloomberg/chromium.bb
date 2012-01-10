@@ -439,9 +439,6 @@
       'nacl_sdk',
       'translate',
 
-      # Needs new official build on QA bots.  Re-enable on 12/22/2011
-      '-extensions.ExtensionsTest.testGetExtensionPermissions',
-
       # ==================================================
       # Disabled tests that need to be investigated/fixed.
       # ==================================================
