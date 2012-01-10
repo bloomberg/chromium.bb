@@ -64,11 +64,28 @@ struct wscreensaver {
 };
 
 static void
-draw_instance(struct ModeInfo *mi)
+frame_callback(void *data, struct wl_callback *callback, uint32_t time)
 {
+	struct ModeInfo *mi = data;
+
+	window_schedule_redraw(mi->window);
+
+	if (callback)
+		wl_callback_destroy(callback);
+}
+
+static const struct wl_callback_listener listener = {
+	frame_callback
+};
+
+static void
+redraw_handler(struct widget *widget, void *data)
+{
+	struct ModeInfo *mi = data;
 	struct wscreensaver *wscr = mi->priv;
 	struct rectangle drawarea;
 	struct rectangle winarea;
+	struct wl_callback *callback;
 	int bottom;
 
 	mi->swap_buffers = 0;
@@ -101,20 +118,6 @@ draw_instance(struct ModeInfo *mi)
 		fprintf(stderr, "%s: swapBuffers not called\n", progname);
 
 	display_release_window_surface(wscr->display, mi->window);
-}
-
-static void
-frame_callback(void *data, struct wl_callback *callback, uint32_t time)
-{
-	struct ModeInfo *mi = data;
-	static const struct wl_callback_listener listener = {
-		frame_callback
-	};
-
-	draw_instance(mi);
-
-	if (callback)
-		wl_callback_destroy(callback);
 
 	callback = wl_surface_frame(window_get_wl_surface(mi->window));
 	wl_callback_add_listener(callback, &listener, mi);
@@ -185,6 +188,8 @@ create_modeinfo(struct wscreensaver *wscr, struct window *window)
 	mi->eglctx = EGL_NO_CONTEXT;
 
 	mi->window = window;
+	mi->widget = window_add_widget(window, mi);
+	widget_set_redraw_handler(mi->widget, redraw_handler);
 
 	mi->instance_number = instance++; /* XXX */
 	mi->width = drawarea.width;

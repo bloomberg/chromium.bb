@@ -36,6 +36,7 @@ struct ModeInfo {
 	int swap_buffers;
 
 	struct window *window;
+	struct widget *widget;
 
 	int instance_number;
 	unsigned width;
