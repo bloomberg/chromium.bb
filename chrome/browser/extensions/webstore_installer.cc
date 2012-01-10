@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,7 +11,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/download/download_util.h"
+#include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
@@ -73,12 +73,11 @@ GURL GetWebstoreInstallURL(
 }
 
 // Must be executed on the FILE thread.
-void GetDownloadFilePath(const std::string& id,
+void GetDownloadFilePath(FilePath directory,
+                         const std::string& id,
                          const base::Callback<void(FilePath)>& callback) {
-  FilePath directory = download_util::GetDefaultDownloadDirectory();
-  if (g_download_directory_for_tests) {
+  if (g_download_directory_for_tests)
     directory = *g_download_directory_for_tests;
-  }
 
   // Ensure the download directory exists. TODO(asargent) - make this use
   // common code from the downloads system.
@@ -133,9 +132,11 @@ void WebstoreInstaller::Start() {
     return;
   }
 
+  FilePath download_path = DownloadPrefs::FromDownloadManager(
+      profile_->GetDownloadManager())->download_path();
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      base::Bind(&GetDownloadFilePath, id_,
+      base::Bind(&GetDownloadFilePath, download_path, id_,
                  base::Bind(&WebstoreInstaller::StartDownload,
                             base::Unretained(this))));
 
