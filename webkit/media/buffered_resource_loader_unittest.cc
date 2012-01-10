@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -86,7 +86,7 @@ class BufferedResourceLoaderTest : public testing::Test {
         gurl_, first_position_, last_position_,
         BufferedResourceLoader::kThresholdDefer, 0, 0,
         new media::MediaLog()));
-    loader_->SetURLLoaderForTest(url_loader_);
+    loader_->SetURLLoaderForTest(scoped_ptr<WebKit::WebURLLoader>(url_loader_));
   }
 
   void SetLoaderBuffer(size_t forward_capacity, size_t backward_capacity) {

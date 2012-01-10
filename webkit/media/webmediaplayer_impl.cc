@@ -197,26 +197,28 @@ bool WebMediaPlayerImpl::Initialize(
       new media::CompositeDataSourceFactory());
 
   if (use_simple_data_source) {
-    data_source_factory->AddFactory(simple_data_source_factory.release());
-    data_source_factory->AddFactory(buffered_data_source_factory.release());
+    data_source_factory->AddFactory(simple_data_source_factory.Pass());
+    data_source_factory->AddFactory(buffered_data_source_factory.Pass());
   } else {
-    data_source_factory->AddFactory(buffered_data_source_factory.release());
-    data_source_factory->AddFactory(simple_data_source_factory.release());
+    data_source_factory->AddFactory(buffered_data_source_factory.Pass());
+    data_source_factory->AddFactory(simple_data_source_factory.Pass());
   }
 
   scoped_ptr<media::DemuxerFactory> demuxer_factory(
-      new media::FFmpegDemuxerFactory(data_source_factory.release(),
-                                      pipeline_message_loop));
+      // TODO(fischman): replace the extra scoped_ptr+release() with Pass() when
+      // http://crbug.com/109026 is fixed.
+      new media::FFmpegDemuxerFactory(scoped_ptr<media::DataSourceFactory>(
+          data_source_factory.release()), pipeline_message_loop));
 
   std::string source_url = GetClient()->sourceURL().spec();
 
   if (!source_url.empty()) {
     demuxer_factory.reset(
         new media::ChunkDemuxerFactory(source_url,
-                                       demuxer_factory.release(),
+                                       demuxer_factory.Pass(),
                                        proxy_));
   }
-  filter_collection_->SetDemuxerFactory(demuxer_factory.release());
+  filter_collection_->SetDemuxerFactory(demuxer_factory.Pass());
 
   // Add in the default filter factories.
   filter_collection_->AddAudioDecoder(new media::FFmpegAudioDecoder(
@@ -301,8 +303,8 @@ void WebMediaPlayerImpl::load(const WebKit::WebURL& url) {
       // that the MediaStream represents a local webcam. This will need to
       // change in the future when GetVideoDecoder is no longer hardcoded to
       // only return CaptureVideoDecoders.
-      filter_collection_->SetDemuxerFactory(
-          new media::DummyDemuxerFactory(has_video, has_audio, true));
+      filter_collection_->SetDemuxerFactory(scoped_ptr<media::DemuxerFactory>(
+          new media::DummyDemuxerFactory(has_video, has_audio, true)));
     }
   }
 
@@ -315,7 +317,7 @@ void WebMediaPlayerImpl::load(const WebKit::WebURL& url) {
   SetNetworkState(WebKit::WebMediaPlayer::Loading);
   SetReadyState(WebKit::WebMediaPlayer::HaveNothing);
   pipeline_->Start(
-      filter_collection_.release(),
+      filter_collection_.Pass(),
       url.spec(),
       base::Bind(&WebMediaPlayerProxy::PipelineInitializationCallback,
                  proxy_.get()));

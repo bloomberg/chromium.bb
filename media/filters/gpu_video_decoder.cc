@@ -41,9 +41,9 @@ GpuVideoDecoder::BufferTimeData::~BufferTimeData() {}
 
 GpuVideoDecoder::GpuVideoDecoder(
     MessageLoop* message_loop,
-    Factories* factories)
+    scoped_ptr<Factories> factories)
     : message_loop_(message_loop),
-      factories_(factories),
+      factories_(factories.Pass()),
       flush_in_progress_(false),
       demuxer_read_in_progress_(false),
       next_picture_buffer_id_(0),

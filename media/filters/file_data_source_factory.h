@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,7 +17,7 @@ class MEDIA_EXPORT FileDataSourceFactory : public DataSourceFactory {
   // DataSourceFactory methods.
   virtual void Build(const std::string& url,
                      const BuildCallback& callback) OVERRIDE;
-  virtual DataSourceFactory* Clone() const OVERRIDE;
+  virtual scoped_ptr<DataSourceFactory> Clone() const OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FileDataSourceFactory);

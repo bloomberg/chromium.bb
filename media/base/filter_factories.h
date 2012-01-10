@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -28,7 +28,7 @@ class MEDIA_EXPORT DataSourceFactory {
 
   // Makes a copy of this factory.
   // NOTE: Pending requests are not cloned.
-  virtual DataSourceFactory* Clone() const = 0;
+  virtual scoped_ptr<DataSourceFactory> Clone() const = 0;
 };
 
 class Demuxer;
@@ -46,7 +46,7 @@ class MEDIA_EXPORT DemuxerFactory {
 
   // Makes a copy of this factory.
   // NOTE: Pending requests are not cloned.
-  virtual DemuxerFactory* Clone() const = 0;
+  virtual scoped_ptr<DemuxerFactory> Clone() const = 0;
 };
 
 }  // namespace media

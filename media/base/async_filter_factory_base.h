@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -62,7 +62,7 @@ class MEDIA_EXPORT AsyncDataSourceFactoryBase : public DataSourceFactory {
   // NOTE: Nothing in this base class needs to be cloned because this class
   // only keeps track of pending requests, which are not part of the cloning
   // process.
-  virtual DataSourceFactory* Clone() const = 0;
+  virtual scoped_ptr<DataSourceFactory> Clone() const = 0;
 
  protected:
   class MEDIA_EXPORT BuildRequest {

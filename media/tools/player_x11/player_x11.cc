@@ -113,8 +113,9 @@ bool InitPipeline(MessageLoop* message_loop,
   scoped_ptr<media::FilterCollection> collection(
       new media::FilterCollection());
   collection->SetDemuxerFactory(
-      new media::FFmpegDemuxerFactory(
-          new media::FileDataSourceFactory(), message_loop));
+      scoped_ptr<media::DemuxerFactory>(
+          new media::FFmpegDemuxerFactory(scoped_ptr<media::DataSourceFactory>(
+              new media::FileDataSourceFactory()), message_loop)));
   collection->AddAudioDecoder(new media::FFmpegAudioDecoder(
       message_loop_factory->GetMessageLoop("AudioDecoderThread")));
   collection->AddVideoDecoder(new media::FFmpegVideoDecoder(
@@ -136,7 +137,7 @@ bool InitPipeline(MessageLoop* message_loop,
   // Create the pipeline and start it.
   *pipeline = new media::PipelineImpl(message_loop, new media::MediaLog());
   media::PipelineStatusNotification note;
-  (*pipeline)->Start(collection.release(), filename, note.Callback());
+  (*pipeline)->Start(collection.Pass(), filename, note.Callback());
 
   // Wait until the pipeline is fully initialized.
   note.Wait();

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,9 +21,7 @@ class ActiveLoader {
  public:
   // Creates an ActiveLoader with the given loader. It is assumed that the
   // initial state of |loader| is loading and not deferred.
-  //
-  // ActiveLoader takes ownership of |loader|.
-  explicit ActiveLoader(WebKit::WebURLLoader* loader);
+  explicit ActiveLoader(scoped_ptr<WebKit::WebURLLoader> loader);
   ~ActiveLoader();
 
   // Starts or stops deferring the resource load.

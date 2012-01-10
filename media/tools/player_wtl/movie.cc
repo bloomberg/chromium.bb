@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -72,8 +72,10 @@ bool Movie::Open(const wchar_t* url, VideoRendererBase* video_renderer) {
 
   // Create filter collection.
   scoped_ptr<FilterCollection> collection(new FilterCollection());
-  collection->SetDemuxerFactory(new FFmpegDemuxerFactory(
-      new FileDataSourceFactory(), pipeline_loop));
+  collection->SetDemuxerFactory(
+      scoped_ptr<DemuxerFactory>(new FFmpegDemuxerFactory(
+          scoped_ptr<DataSourceFactory>(new FileDataSourceFactory()),
+          pipeline_loop)));
   collection->AddAudioDecoder(new FFmpegAudioDecoder(
       message_loop_factory_->GetMessageLoop("AudioDecoderThread")));
   collection->AddVideoDecoder(new FFmpegVideoDecoder(
@@ -89,7 +91,7 @@ bool Movie::Open(const wchar_t* url, VideoRendererBase* video_renderer) {
 
   // Create and start our pipeline.
   media::PipelineStatusNotification note;
-  pipeline_->Start(collection.release(), WideToUTF8(std::wstring(url)),
+  pipeline_->Start(collection.Pass(), WideToUTF8(string16(url)),
                    note.Callback());
   // Wait until the pipeline is fully initialized.
   note.Wait();

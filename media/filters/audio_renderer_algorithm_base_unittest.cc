@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -31,7 +31,8 @@ TEST(AudioRendererAlgorithmBaseTest, FillBuffer_NormalRate) {
 
   // Enqueue a buffer of any size since it doesn't matter.
   const size_t kDataSize = 1024;
-  algorithm.EnqueueBuffer(new DataBuffer(new uint8[kDataSize], kDataSize));
+  algorithm.EnqueueBuffer(new DataBuffer(
+      scoped_array<uint8>(new uint8[kDataSize]), kDataSize));
   EXPECT_EQ(kDataSize, algorithm.QueueSize());
 
   // Read the same sized amount.
@@ -62,7 +63,8 @@ TEST(AudioRendererAlgorithmBaseTest, FillBuffer_DoubleRate) {
 
   for (size_t i = 0u; i < arraysize(kTestData); ++i) {
     const size_t kDataSize = kTestData[i][0];
-    algorithm.EnqueueBuffer(new DataBuffer(new uint8[kDataSize], kDataSize));
+    algorithm.EnqueueBuffer(new DataBuffer(
+        scoped_array<uint8>(new uint8[kDataSize]), kDataSize));
     EXPECT_EQ(kDataSize, algorithm.QueueSize());
 
     const size_t kExpectedSize = kTestData[i][1];
@@ -94,7 +96,8 @@ TEST(AudioRendererAlgorithmBaseTest, FillBuffer_HalfRate) {
 
   for (size_t i = 0u; i < arraysize(kTestData); ++i) {
     const size_t kDataSize = kTestData[i][0];
-    algorithm.EnqueueBuffer(new DataBuffer(new uint8[kDataSize], kDataSize));
+    algorithm.EnqueueBuffer(new DataBuffer(
+        scoped_array<uint8>(new uint8[kDataSize]), kDataSize));
     EXPECT_EQ(kDataSize, algorithm.QueueSize());
 
     const size_t kExpectedSize = kTestData[i][1];
@@ -126,7 +129,8 @@ TEST(AudioRendererAlgorithmBaseTest, FillBuffer_QuarterRate) {
 
   for (size_t i = 0u; i < arraysize(kTestData); ++i) {
     const size_t kDataSize = kTestData[i][0];
-    algorithm.EnqueueBuffer(new DataBuffer(new uint8[kDataSize], kDataSize));
+    algorithm.EnqueueBuffer(new DataBuffer(scoped_array<uint8>(
+        new uint8[kDataSize]), kDataSize));
     EXPECT_EQ(kDataSize, algorithm.QueueSize());
 
     const size_t kExpectedSize = kTestData[i][1];

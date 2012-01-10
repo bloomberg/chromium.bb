@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -54,8 +54,11 @@ class MockBufferedDataSource : public BufferedDataSource {
         .WillByDefault(Assign(&loading_, true));
     ON_CALL(*url_loader, cancel())
         .WillByDefault(Assign(&loading_, false));
-
-    loader->SetURLLoaderForTest(url_loader);
+    scoped_ptr<NiceMock<MockWebURLLoader> > mwul(url_loader);
+    // TODO(fischman): replace the extra scoped_ptr+release() with Pass() when
+    // http://crbug.com/109026 is fixed.
+    scoped_ptr<WebURLLoader> wul(mwul.release());
+    loader->SetURLLoaderForTest(wul.Pass());
     return loader;
   }
 

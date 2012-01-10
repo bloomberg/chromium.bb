@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,14 +22,14 @@ class ChunkDemuxerClient;
 // ChunkDemuxer should be used for playback.
 class MEDIA_EXPORT ChunkDemuxerFactory : public DemuxerFactory {
  public:
-  // Takes ownership of |delegate_factory|.
-  ChunkDemuxerFactory(const std::string& url, DemuxerFactory* delegate_factory,
+  ChunkDemuxerFactory(const std::string& url,
+                      scoped_ptr<DemuxerFactory> delegate_factory,
                       ChunkDemuxerClient* client);
   virtual ~ChunkDemuxerFactory();
 
   // DemuxerFactory methods.
   virtual void Build(const std::string& url, const BuildCallback& cb) OVERRIDE;
-  virtual DemuxerFactory* Clone() const OVERRIDE;
+  virtual scoped_ptr<DemuxerFactory> Clone() const OVERRIDE;
 
  private:
   std::string url_;

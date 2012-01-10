@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,8 +26,9 @@ void DummyDemuxerFactory::Build(const std::string& url,
   cb.Run(PIPELINE_OK, demuxer.get());
 }
 
-DemuxerFactory* DummyDemuxerFactory::Clone() const {
-  return new DummyDemuxerFactory(has_video_, has_audio_, local_source_);
+scoped_ptr<DemuxerFactory> DummyDemuxerFactory::Clone() const {
+  return scoped_ptr<DemuxerFactory>(
+      new DummyDemuxerFactory(has_video_, has_audio_, local_source_));
 }
 
 }  // namespace media

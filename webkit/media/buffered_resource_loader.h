@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -125,11 +125,9 @@ class BufferedResourceLoader : public WebKit::WebURLLoaderClient {
   // Returns resulting URL.
   virtual const GURL& url();
 
-  // Transfer ownership of an existing WebURLLoader instance for
-  // testing purposes.
-  //
   // |test_loader| will get used the next time Start() is called.
-  virtual void SetURLLoaderForTest(WebKit::WebURLLoader* test_loader);
+  virtual void SetURLLoaderForTest(
+      scoped_ptr<WebKit::WebURLLoader> test_loader);
 
   // WebKit::WebURLLoaderClient implementation.
   virtual void willSendRequest(

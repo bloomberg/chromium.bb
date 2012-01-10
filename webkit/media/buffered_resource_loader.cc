@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -169,20 +169,20 @@ void BufferedResourceLoader::Start(
       WebString::fromUTF8("identity;q=1, *;q=0"));
 
   // Check for our test WebURLLoader.
-  WebURLLoader* loader = NULL;
+  scoped_ptr<WebURLLoader> loader;
   if (test_loader_.get()) {
-    loader = test_loader_.release();
+    loader = test_loader_.Pass();
   } else {
     WebURLLoaderOptions options;
     options.allowCredentials = true;
     options.crossOriginRequestPolicy =
         WebURLLoaderOptions::CrossOriginRequestPolicyAllow;
-    loader = frame->createAssociatedURLLoader(options);
+    loader.reset(frame->createAssociatedURLLoader(options));
   }
 
   // Start the resource loading.
   loader->loadAsynchronously(request, this);
-  active_loader_.reset(new ActiveLoader(loader));
+  active_loader_.reset(new ActiveLoader(loader.Pass()));
 }
 
 void BufferedResourceLoader::Stop() {
@@ -317,8 +317,9 @@ const GURL& BufferedResourceLoader::url() {
   return url_;
 }
 
-void BufferedResourceLoader::SetURLLoaderForTest(WebURLLoader* test_loader) {
-  test_loader_.reset(test_loader);
+void BufferedResourceLoader::SetURLLoaderForTest(
+    scoped_ptr<WebURLLoader> test_loader) {
+  test_loader_ = test_loader.Pass();
 }
 
 /////////////////////////////////////////////////////////////////////////////

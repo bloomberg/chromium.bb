@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,7 +26,7 @@ class CompositeDataSourceFactory::BuildRequest
   void CallNextFactory();
   void OnBuildDone(PipelineStatus status, DataSource* data_source);
 
-  FactoryList factories_;
+  FactoryList factories_;  // Not owned by this class.
 };
 
 CompositeDataSourceFactory::CompositeDataSourceFactory() {}
@@ -35,21 +35,25 @@ CompositeDataSourceFactory::~CompositeDataSourceFactory() {
   STLDeleteElements(&factories_);
 }
 
-void CompositeDataSourceFactory::AddFactory(DataSourceFactory* factory) {
-  DCHECK(factory);
-  factories_.push_back(factory);
+void CompositeDataSourceFactory::AddFactory(
+    scoped_ptr<DataSourceFactory> factory) {
+  DCHECK(factory.get());
+  factories_.push_back(factory.release());
 }
 
-DataSourceFactory* CompositeDataSourceFactory::Clone() const {
-  CompositeDataSourceFactory* new_factory = new CompositeDataSourceFactory();
+scoped_ptr<DataSourceFactory> CompositeDataSourceFactory::Clone() const {
+  scoped_ptr<CompositeDataSourceFactory> new_factory(
+      new CompositeDataSourceFactory());
 
   for (FactoryList::const_iterator itr = factories_.begin();
        itr != factories_.end();
        ++itr) {
-    new_factory->AddFactory((*itr)->Clone());
+    new_factory->AddFactory((*itr)->Clone().Pass());
   }
 
-  return new_factory;
+  // TODO(fischman): replace the extra scoped_ptr+release() with Pass() when
+  // http://crbug.com/109026 is fixed.
+  return scoped_ptr<DataSourceFactory>(new_factory.release());
 }
 
 bool CompositeDataSourceFactory::AllowRequests() const {

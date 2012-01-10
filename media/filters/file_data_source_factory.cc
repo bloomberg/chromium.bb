@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,8 +31,8 @@ void FileDataSourceFactory::Build(const std::string& url,
   callback.Run(status, data_source);
 }
 
-DataSourceFactory* FileDataSourceFactory::Clone() const {
-  return new FileDataSourceFactory();
+scoped_ptr<DataSourceFactory> FileDataSourceFactory::Clone() const {
+  return scoped_ptr<DataSourceFactory>(new FileDataSourceFactory());
 }
 
 }  // namespace media

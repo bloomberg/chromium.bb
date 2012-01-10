@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -39,12 +39,10 @@ class MEDIA_EXPORT AudioRendererAlgorithmBase {
   AudioRendererAlgorithmBase();
   ~AudioRendererAlgorithmBase();
 
-  // Checks validity of audio parameters and takes ownership of |callback|.
-  void Initialize(int channels,
-                          int sample_rate,
-                          int sample_bits,
-                          float initial_playback_rate,
-                          const base::Closure& callback);
+  // Checks validity of audio parameters.
+  void Initialize(
+      int channels, int sample_rate, int sample_bits,
+      float initial_playback_rate, const base::Closure& callback);
 
   // Tries to fill |length| bytes of |dest| with possibly scaled data from
   // our |queue_|. Returns the number of bytes copied into |dest|.

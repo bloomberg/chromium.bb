@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,11 +19,11 @@ class MEDIA_EXPORT CompositeDataSourceFactory
   CompositeDataSourceFactory();
   virtual ~CompositeDataSourceFactory();
 
-  // Add factory to this composite. Ownership is transferred here.
-  void AddFactory(DataSourceFactory* factory);
+  // Add factory to this composite.
+  void AddFactory(scoped_ptr<DataSourceFactory> factory);
 
   // DataSourceFactory method.
-  virtual DataSourceFactory* Clone() const OVERRIDE;
+  virtual scoped_ptr<DataSourceFactory> Clone() const OVERRIDE;
 
  protected:
   // AsyncDataSourceFactoryBase methods.

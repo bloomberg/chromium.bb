@@ -50,8 +50,7 @@ class MEDIA_EXPORT GpuVideoDecoder
     virtual base::SharedMemory* CreateSharedMemory(size_t size) = 0;
   };
 
-  // Takes ownership of |factories| but not |message_loop|.
-  GpuVideoDecoder(MessageLoop* message_loop, Factories* factories);
+  GpuVideoDecoder(MessageLoop* message_loop, scoped_ptr<Factories> factories);
   virtual ~GpuVideoDecoder();
 
   // Filter implementation.

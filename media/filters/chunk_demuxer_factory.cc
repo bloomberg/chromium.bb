@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,11 +19,12 @@ static void InitDone(MessageLoop* message_loop,
   message_loop->PostTask(FROM_HERE, base::Bind(cb, status, demuxer));
 }
 
-ChunkDemuxerFactory::ChunkDemuxerFactory(const std::string& url,
-                                         DemuxerFactory* delegate_factory,
-                                         ChunkDemuxerClient* client)
+ChunkDemuxerFactory::ChunkDemuxerFactory(
+    const std::string& url,
+    scoped_ptr<DemuxerFactory> delegate_factory,
+    ChunkDemuxerClient* client)
     : url_(url),
-      delegate_factory_(delegate_factory),
+      delegate_factory_(delegate_factory.Pass()),
       client_(client) {
   DCHECK(delegate_factory_.get());
 }
@@ -45,8 +46,9 @@ void ChunkDemuxerFactory::Build(const std::string& url,
   demuxer->Init(base::Bind(&InitDone, MessageLoop::current(), cb, demuxer));
 }
 
-DemuxerFactory* ChunkDemuxerFactory::Clone() const {
-  return new ChunkDemuxerFactory(url_, delegate_factory_->Clone(), client_);
+scoped_ptr<DemuxerFactory> ChunkDemuxerFactory::Clone() const {
+  return scoped_ptr<DemuxerFactory>(new ChunkDemuxerFactory(
+      url_, delegate_factory_->Clone().Pass(), client_));
 }
 
 }  // namespace media
