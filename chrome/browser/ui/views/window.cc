@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,13 @@
 
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/widget/widget.h"
+
+#if defined(USE_AURA)
+#include "ash/shell.h"
+#include "ash/shell_window_ids.h"
+#include "ui/aura/root_window.h"
+#include "ui/aura/window.h"
+#endif
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/frame/bubble_window.h"
@@ -49,6 +56,11 @@ views::Widget* CreateViewsBubbleAboveLockScreen(
     views::BubbleDelegateView* delegate) {
   views::Widget* bubble_widget =
       views::BubbleDelegateView::CreateBubble(delegate);
+#if defined(USE_AURA)
+  ash::Shell::GetInstance()->GetContainer(
+      ash::internal::kShellWindowId_SettingBubbleContainer)->
+          AddChild(bubble_widget->GetNativeView());
+#endif
 #if defined(OS_CHROMEOS) && defined(TOOLKIT_USES_GTK)
   std::vector<int> params;
   params.push_back(1);  // Show while screen is locked.
