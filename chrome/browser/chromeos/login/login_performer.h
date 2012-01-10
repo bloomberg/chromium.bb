@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -49,6 +49,7 @@ namespace chromeos {
 // 2 things make LoginPerfrormer instance exist longer:
 // 1. ScreenLock active (pending correct new password input)
 // 2. Pending online auth request.
+// TODO(nkostylev): Cleanup ClientLogin related code, update class description.
 class LoginPerformer : public LoginStatusConsumer,
                        public content::NotificationObserver {
  public:
@@ -107,7 +108,6 @@ class LoginPerformer : public LoginStatusConsumer,
     return last_login_failure_.reason() == LoginFailure::LOGIN_TIMED_OUT;
   }
 
-  void set_captcha(const std::string& captcha) { captcha_ = captcha; }
   void set_delegate(Delegate* delegate) { delegate_ = delegate; }
 
   typedef enum AuthorizationMode {
@@ -164,12 +164,6 @@ class LoginPerformer : public LoginStatusConsumer,
   // Represents last login failure that was encountered when communicating to
   // sign-in server. LoginFailure.None() by default.
   LoginFailure last_login_failure_;
-
-  // String entered by the user as an answer to a CAPTCHA challenge.
-  std::string captcha_;
-
-  // Token representing the specific CAPTCHA challenge.
-  std::string captcha_token_;
 
   // Cached credentials data when password change is detected.
   GaiaAuthConsumer::ClientLoginResult cached_credentials_;

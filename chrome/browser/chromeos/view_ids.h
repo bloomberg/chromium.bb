@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,8 +13,6 @@ enum ChromeOSViewIds {
   // Start with the offset that is big enough to avoid possible
   // collision.
   VIEW_ID_STATUS_AREA = VIEW_ID_PREDEFINED_COUNT + 10000,
-  VIEW_ID_SCREEN_LOCKER_SIGNOUT_LINK,
-  VIEW_ID_SCREEN_LOCKER_SHUTDOWN,
   VIEW_ID_LAYOUT_MODE_BUTTON,
 
   VIEW_ID_STATUS_BUTTON_ACCESSIBILITY,

@@ -32,7 +32,6 @@
 #include "chrome/browser/chromeos/dbus/session_manager_client.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
-#include "chrome/browser/chromeos/login/background_view.h"
 #include "chrome/browser/chromeos/login/cookie_fetcher.h"
 #include "chrome/browser/chromeos/login/language_switch_menu.h"
 #include "chrome/browser/chromeos/login/login_display_host.h"
@@ -529,8 +528,7 @@ class LoginUtilsImpl : public LoginUtils,
                        public base::SupportsWeakPtr<LoginUtilsImpl> {
  public:
   LoginUtilsImpl()
-      : background_view_(NULL),
-        pending_requests_(false),
+      : pending_requests_(false),
         using_oauth_(false),
         has_cookies_(false),
         delegate_(NULL),
@@ -563,9 +561,6 @@ class LoginUtilsImpl : public LoginUtils,
   virtual void StartSync(
       Profile* profile,
       const GaiaAuthConsumer::ClientLoginResult& credentials) OVERRIDE;
-  virtual void SetBackgroundView(
-      chromeos::BackgroundView* background_view) OVERRIDE;
-  virtual chromeos::BackgroundView* GetBackgroundView() OVERRIDE;
   virtual void TransferDefaultCookies(Profile* default_profile,
                                       Profile* new_profile) OVERRIDE;
   virtual void TransferDefaultAuthCache(Profile* default_profile,
@@ -641,9 +636,6 @@ class LoginUtilsImpl : public LoginUtils,
   // Callback for asynchronous profile creation.
   void OnProfileCreated(Profile* profile,
                         Profile::CreateStatus status);
-
-  // The current background view.
-  chromeos::BackgroundView* background_view_;
 
   std::string password_;
   GaiaAuthConsumer::ClientLoginResult credentials_;
@@ -1134,14 +1126,6 @@ void LoginUtilsImpl::KickStartAuthentication(Profile* user_profile) {
   std::string oauth1_secret;
   if (ReadOAuth1AccessToken(user_profile, &oauth1_token, &oauth1_secret))
     VerifyOAuth1AccessToken(user_profile, oauth1_token, oauth1_secret);
-}
-
-void LoginUtilsImpl::SetBackgroundView(BackgroundView* background_view) {
-  background_view_ = background_view;
-}
-
-BackgroundView* LoginUtilsImpl::GetBackgroundView() {
-  return background_view_;
 }
 
 void LoginUtilsImpl::TransferDefaultCookies(Profile* default_profile,

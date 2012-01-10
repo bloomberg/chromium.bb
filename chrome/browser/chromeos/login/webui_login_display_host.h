@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,12 +32,10 @@ class WebUILoginDisplayHost : public BaseLoginDisplayHost {
       LoginDisplay::Delegate* delegate) OVERRIDE;
   virtual gfx::NativeWindow GetNativeWindow() const OVERRIDE;
   virtual views::Widget* GetWidget() const OVERRIDE;
-  virtual void SetOobeProgress(BackgroundView::LoginStep step) OVERRIDE;
   virtual void SetOobeProgressBarVisible(bool visible) OVERRIDE;
   virtual void SetShutdownButtonEnabled(bool enable) OVERRIDE;
   virtual void SetStatusAreaEnabled(bool enable) OVERRIDE;
   virtual void SetStatusAreaVisible(bool visible) OVERRIDE;
-  virtual void ShowBackground() OVERRIDE;
   virtual void StartWizard(const std::string& first_screen_name,
                            DictionaryValue* screen_parameters) OVERRIDE;
   virtual void StartSignInScreen() OVERRIDE;

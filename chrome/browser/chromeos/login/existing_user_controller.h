@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,7 +15,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/string16.h"
 #include "base/timer.h"
-#include "chrome/browser/chromeos/login/captcha_view.h"
 #include "chrome/browser/chromeos/login/login_display.h"
 #include "chrome/browser/chromeos/login/login_performer.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
@@ -47,7 +46,6 @@ class ExistingUserController : public LoginDisplay::Delegate,
                                public content::NotificationObserver,
                                public LoginPerformer::Delegate,
                                public LoginUtils::Delegate,
-                               public CaptchaView::Delegate,
                                public PasswordChangedView::Delegate {
  public:
   // All UI initialization is deferred till Init() call.
@@ -123,9 +121,6 @@ class ExistingUserController : public LoginDisplay::Delegate,
 
   // LoginUtils::Delegate implementation:
   virtual void OnProfilePrepared(Profile* profile) OVERRIDE;
-
-  // CaptchaView::Delegate:
-  virtual void OnCaptchaEntered(const std::string& captcha) OVERRIDE;
 
   // PasswordChangedView::Delegate:
   virtual void RecoverEncryptedData(const std::string& old_password) OVERRIDE;

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -61,9 +61,6 @@ views::Widget* WebUILoginDisplayHost::GetWidget() const {
   return login_window_;
 }
 
-void WebUILoginDisplayHost::SetOobeProgress(BackgroundView::LoginStep step) {
-}
-
 void WebUILoginDisplayHost::SetOobeProgressBarVisible(bool visible) {
   GetOobeUI()->ShowOobeUI(visible);
 }
@@ -79,9 +76,6 @@ void WebUILoginDisplayHost::SetStatusAreaEnabled(bool enable) {
 void WebUILoginDisplayHost::SetStatusAreaVisible(bool visible) {
   if (login_view_)
     login_view_->SetStatusAreaVisible(visible);
-}
-
-void WebUILoginDisplayHost::ShowBackground() {
 }
 
 void WebUILoginDisplayHost::StartWizard(const std::string& first_screen_name,

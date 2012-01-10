@@ -244,13 +244,11 @@ void WizardController::ShowNetworkScreen() {
   VLOG(1) << "Showing network screen.";
   SetStatusAreaVisible(false);
   SetCurrentScreen(GetNetworkScreen());
-  host_->SetOobeProgress(chromeos::BackgroundView::SELECT_NETWORK);
 }
 
 void WizardController::ShowLoginScreen() {
   VLOG(1) << "Showing login screen.";
   SetStatusAreaVisible(true);
-  host_->SetOobeProgress(chromeos::BackgroundView::SIGNIN);
   host_->StartSignInScreen();
   smooth_show_timer_.Stop();
   oobe_display_ = NULL;
@@ -259,7 +257,6 @@ void WizardController::ShowLoginScreen() {
 void WizardController::ResumeLoginScreen() {
   VLOG(1) << "Resuming login screen.";
   SetStatusAreaVisible(true);
-  host_->SetOobeProgress(chromeos::BackgroundView::SIGNIN);
   host_->ResumeSignInScreen();
   smooth_show_timer_.Stop();
   oobe_display_ = NULL;
@@ -269,18 +266,12 @@ void WizardController::ShowUpdateScreen() {
   VLOG(1) << "Showing update screen.";
   SetStatusAreaVisible(true);
   SetCurrentScreen(GetUpdateScreen());
-  // There is no special step for update.
-  if (is_official_build_)
-    host_->SetOobeProgress(chromeos::BackgroundView::EULA);
-  else
-    host_->SetOobeProgress(chromeos::BackgroundView::SELECT_NETWORK);
 }
 
 void WizardController::ShowUserImageScreen() {
   VLOG(1) << "Showing user image screen.";
   SetStatusAreaVisible(false);
   SetCurrentScreen(GetUserImageScreen());
-  host_->SetOobeProgress(chromeos::BackgroundView::PICTURE);
   host_->SetShutdownButtonEnabled(false);
 }
 
@@ -288,8 +279,6 @@ void WizardController::ShowEulaScreen() {
   VLOG(1) << "Showing EULA screen.";
   SetStatusAreaVisible(false);
   SetCurrentScreen(GetEulaScreen());
-  if (is_official_build_)
-    host_->SetOobeProgress(chromeos::BackgroundView::EULA);
 }
 
 void WizardController::ShowRegistrationScreen() {
@@ -302,8 +291,6 @@ void WizardController::ShowRegistrationScreen() {
   VLOG(1) << "Showing registration screen.";
   SetStatusAreaVisible(true);
   SetCurrentScreen(GetRegistrationScreen());
-  if (is_official_build_)
-    host_->SetOobeProgress(chromeos::BackgroundView::REGISTRATION);
 }
 
 void WizardController::ShowHTMLPageScreen() {
@@ -315,7 +302,6 @@ void WizardController::ShowHTMLPageScreen() {
 
 void WizardController::ShowEnterpriseEnrollmentScreen() {
   SetStatusAreaVisible(true);
-  host_->SetOobeProgress(chromeos::BackgroundView::SIGNIN);
 
   bool is_auto_enrollment = false;
   std::string user;

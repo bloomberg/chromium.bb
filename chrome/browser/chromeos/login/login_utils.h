@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,7 +23,6 @@ class BrowserGuestSessionNavigatorTest;
 namespace chromeos {
 
 class Authenticator;
-class BackgroundView;
 class LoginDisplayHost;
 class LoginStatusConsumer;
 
@@ -107,12 +106,6 @@ class LoginUtils {
   virtual void StartSync(
       Profile* profile,
       const GaiaAuthConsumer::ClientLoginResult& credentials) = 0;
-
-  // Sets the current background view.
-  virtual void SetBackgroundView(BackgroundView* background_view) = 0;
-
-  // Gets the current background view.
-  virtual BackgroundView* GetBackgroundView() = 0;
 
   // Transfers cookies from the |default_profile| into the |new_profile|.
   // If authentication was performed by an extension, then

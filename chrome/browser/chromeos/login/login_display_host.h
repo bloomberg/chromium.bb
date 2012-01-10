@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,7 +9,6 @@
 #include <string>
 
 #include "base/values.h"
-#include "chrome/browser/chromeos/login/background_view.h"
 #include "chrome/browser/chromeos/customization_document.h"
 #include "chrome/browser/chromeos/login/login_display.h"
 #include "ui/gfx/native_widget_types.h"
@@ -42,10 +41,6 @@ class LoginDisplayHost {
   // LoginDisplayHost instance may delete itself.
   virtual void OnSessionStart() = 0;
 
-  // TODO(nkostylev): Refactor enum.
-  // Sets current step on OOBE progress bar.
-  virtual void SetOobeProgress(BackgroundView::LoginStep step) = 0;
-
   // Toggles OOBE progress bar visibility, the bar is hidden by default.
   virtual void SetOobeProgressBarVisible(bool visible) = 0;
 
@@ -57,9 +52,6 @@ class LoginDisplayHost {
 
   // Toggles status area visibility.
   virtual void SetStatusAreaVisible(bool visible) = 0;
-
-  // Creates and shows a background window.
-  virtual void ShowBackground() = 0;
 
   // Signals the LoginDisplayHost that it can proceed with the Enterprise
   // Auto-Enrollment checks now.

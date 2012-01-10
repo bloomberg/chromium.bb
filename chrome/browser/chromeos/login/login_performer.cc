@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -82,12 +82,6 @@ void LoginPerformer::OnLoginFailure(const LoginFailure& failure) {
 
   last_login_failure_ = failure;
   if (delegate_) {
-    captcha_.clear();
-    captcha_token_.clear();
-    if (failure.reason() == LoginFailure::NETWORK_AUTH_FAILED &&
-        failure.error().state() == GoogleServiceAuthError::CAPTCHA_REQUIRED) {
-      captcha_token_ = failure.error().captcha().token;
-    }
     delegate_->OnLoginFailure(failure);
     return;
   }
@@ -403,10 +397,6 @@ void LoginPerformer::ResolveInitialNetworkAuthFailure() {
       // Access not granted. User has to sign out.
       // Request screen lock & show error message there.
     case GoogleServiceAuthError::CAPTCHA_REQUIRED:
-      // User is requested to enter CAPTCHA challenge.
-      captcha_token_ = last_login_failure_.error().captcha().token;
-      RequestScreenLock();
-      return;
     default:
       // Unless there's new GoogleServiceAuthErrors state has been added.
       NOTREACHED();
@@ -471,12 +461,6 @@ void LoginPerformer::ResolveLockNetworkAuthFailure() {
       sign_out_only = true;
       break;
     case GoogleServiceAuthError::CAPTCHA_REQUIRED:
-      // User is requested to enter CAPTCHA challenge.
-      captcha_token_ = last_login_failure_.error().captcha().token;
-      msg = l10n_util::GetStringUTF16(IDS_LOGIN_ERROR_PASSWORD_CHANGED);
-      ScreenLocker::default_screen_locker()->ShowCaptchaAndErrorMessage(
-          last_login_failure_.error().captcha().image_url, msg);
-      return;
     default:
       // Unless there's new GoogleServiceAuthError state has been added.
       NOTREACHED();
@@ -533,8 +517,8 @@ void LoginPerformer::StartAuthentication() {
                    profile,
                    username_,
                    password_,
-                   captcha_token_,
-                   captcha_));
+                   std::string(),
+                   std::string()));
   } else {
     DCHECK(authenticator_.get())
         << "Authenticator instance doesn't exist for login attempt retry.";
@@ -546,8 +530,8 @@ void LoginPerformer::StartAuthentication() {
                    profile,
                    username_,
                    password_,
-                   captcha_token_,
-                   captcha_));
+                   std::string(),
+                   std::string()));
   }
   password_.clear();
 }

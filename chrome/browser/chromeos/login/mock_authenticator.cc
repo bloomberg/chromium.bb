@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -95,14 +95,6 @@ scoped_refptr<Authenticator> MockLoginUtils::CreateAuthenticator(
     LoginStatusConsumer* consumer) {
   return new MockAuthenticator(
       consumer, expected_username_, expected_password_);
-}
-
-void MockLoginUtils::SetBackgroundView(BackgroundView* background_view) {
-  background_view_ = background_view;
-}
-
-BackgroundView* MockLoginUtils::GetBackgroundView() {
-  return background_view_;
 }
 
 std::string MockLoginUtils::GetOffTheRecordCommandLine(

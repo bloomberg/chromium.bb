@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -277,7 +277,7 @@ void ExistingUserController::Login(const std::string& username,
   num_login_attempts_++;
 
   // Use the same LoginPerformer for subsequent login as it has state
-  // such as CAPTCHA challenge token & corresponding user input.
+  // such as Authenticator instance.
   if (!login_performer_.get() || num_login_attempts_ <= 1) {
     LoginPerformer::Delegate* delegate = this;
     if (login_performer_delegate_.get())
@@ -383,24 +383,9 @@ void ExistingUserController::OnLoginFailure(const LoginFailure& failure) {
   } else {
     // Network is connected.
     const Network* active_network = network->active_network();
+    // TODO(nkostylev): Cleanup rest of ClientLogin related code.
     if (failure.reason() == LoginFailure::NETWORK_AUTH_FAILED &&
-        failure.error().state() == GoogleServiceAuthError::CAPTCHA_REQUIRED) {
-      if (!failure.error().captcha().image_url.is_empty()) {
-        CaptchaView* view =
-            new CaptchaView(failure.error().captcha().image_url, false);
-        view->Init();
-        view->set_delegate(this);
-        views::Widget* window = browser::CreateViewsWindow(
-            GetNativeWindow(), view, STYLE_GENERIC);
-        window->SetAlwaysOnTop(true);
-        window->Show();
-      } else {
-        LOG(WARNING) << "No captcha image url was found?";
-        ShowError(IDS_LOGIN_ERROR_AUTHENTICATING, error);
-      }
-    } else if (failure.reason() == LoginFailure::NETWORK_AUTH_FAILED &&
-               failure.error().state() ==
-                   GoogleServiceAuthError::HOSTED_NOT_ALLOWED) {
+        failure.error().state() == GoogleServiceAuthError::HOSTED_NOT_ALLOWED) {
       ShowError(IDS_LOGIN_ERROR_AUTHENTICATING_HOSTED, error);
     } else if ((active_network && active_network->restricted_pool()) ||
                (failure.reason() == LoginFailure::NETWORK_AUTH_FAILED &&
@@ -605,14 +590,6 @@ void ExistingUserController::WhiteListCheckFailed(const std::string& email) {
   SetStatusAreaEnabled(true);
 
   display_email_.clear();
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// ExistingUserController, CaptchaView::Delegate implementation:
-//
-
-void ExistingUserController::OnCaptchaEntered(const std::string& captcha) {
-  login_performer_->set_captcha(captcha);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

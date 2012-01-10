@@ -208,7 +208,6 @@ void BaseLoginDisplayHost::StartWizard(
   wizard_controller_.reset();
   wizard_controller_.reset(CreateWizardController());
 
-  ShowBackground();
   if (!WizardController::IsDeviceRegistered())
     SetOobeProgressBarVisible(true);
   wizard_controller_->Init(first_screen_name, screen_parameters);
@@ -229,10 +228,8 @@ void BaseLoginDisplayHost::StartSignInScreen() {
 
   sign_in_controller_.reset();  // Only one controller in a time.
   sign_in_controller_.reset(new chromeos::ExistingUserController(this));
-  ShowBackground();
   if (!WizardController::IsDeviceRegistered()) {
     SetOobeProgressBarVisible(true);
-    SetOobeProgress(chromeos::BackgroundView::SIGNIN);
   }
   SetShutdownButtonEnabled(true);
   sign_in_controller_->Init(users);
@@ -259,9 +256,7 @@ void BaseLoginDisplayHost::ResumeSignInScreen() {
   // auto-enrollment is complete we resume the normal login flow from here.
   DVLOG(1) << "Resuming sign in screen";
   CHECK(sign_in_controller_.get());
-  ShowBackground();
   SetOobeProgressBarVisible(true);
-  SetOobeProgress(chromeos::BackgroundView::SIGNIN);
   SetShutdownButtonEnabled(true);
   sign_in_controller_->ResumeLogin();
 }

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -64,7 +64,6 @@ class MockLoginDisplayHost : public LoginDisplayHost {
   MOCK_CONST_METHOD0(GetNativeWindow, gfx::NativeWindow(void));
   MOCK_CONST_METHOD0(GetWidget, views::Widget*(void));
   MOCK_METHOD0(OnSessionStart, void(void));
-  MOCK_METHOD1(SetOobeProgress, void(BackgroundView::LoginStep));
   MOCK_METHOD1(SetOobeProgressBarVisible, void(bool));
   MOCK_METHOD1(SetShutdownButtonEnabled, void(bool));
   MOCK_METHOD1(SetStatusAreaEnabled, void(bool));
