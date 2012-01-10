@@ -77,7 +77,7 @@ deps = {
     'src/third_party/mozc/session':
         Var('git_url') + '/external/mozc/src/session.git@2fcc92e77f89b40f51af703954c14bc524b9fcb0',
     'src/third_party/ots':
-        Var('git_url') + '/external/ots.git@4b6b2a87a6ccef46c6e84f22f100e8d9345a4aed',
+        Var('git_url') + '/external/ots.git@d892faf3d64fe948e26b273a7a9097c82fe1784b',
     'src/third_party/pyftpdlib/src':
         Var('git_url') + '/external/pyftpdlib.git@3647f3cafa367c9576f29bde2f7b6d1b7d2983b3',
     'src/third_party/pylib':
