@@ -7,19 +7,29 @@
 namespace fileapi {
 
 FileSystemOptions CreateIncognitoFileSystemOptions() {
+  std::vector<std::string> additional_allowed_schemes;
+#if defined(OS_CHROMEOS)
+  additional_allowed_schemes.push_back("chrome-extension");
+#endif
   return FileSystemOptions(FileSystemOptions::PROFILE_MODE_INCOGNITO,
-                           std::vector<std::string>());
+                           additional_allowed_schemes);
 };
 
 FileSystemOptions CreateAllowFileAccessOptions() {
   std::vector<std::string> additional_allowed_schemes;
   additional_allowed_schemes.push_back("file");
+#if defined(OS_CHROMEOS)
+  additional_allowed_schemes.push_back("chrome-extension");
+#endif
   return FileSystemOptions(FileSystemOptions::PROFILE_MODE_NORMAL,
                            additional_allowed_schemes);
 };
 
 FileSystemOptions CreateDisallowFileAccessOptions() {
   std::vector<std::string> additional_allowed_schemes;
+#if defined(OS_CHROMEOS)
+  additional_allowed_schemes.push_back("chrome-extension");
+#endif
   return FileSystemOptions(FileSystemOptions::PROFILE_MODE_NORMAL,
                            additional_allowed_schemes);
 };

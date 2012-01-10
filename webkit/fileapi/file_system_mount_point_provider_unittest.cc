@@ -68,7 +68,7 @@ const struct RootPathTest {
     "003" PS "p" },
 #if defined(OS_CHROMEOS)
   { fileapi::kFileSystemTypeExternal, "chrome-extension://foo/",
-    "chrome-extension__0" PS "External" },
+    "chrome-extension__0" /* unused, only for logging */ },
 #endif
 };
 
@@ -82,10 +82,6 @@ const struct RootPathFileURITest {
     "000" PS "t", NULL },
   { fileapi::kFileSystemTypePersistent, "file:///",
     "000" PS "p", NULL },
-#if defined(OS_CHROMEOS)
-  { fileapi::kFileSystemTypeExternal, "chrome-extension://foo/",
-    "chrome-extension__0" PS "External", "testing" },
-#endif
 };
 
 const struct CheckValidPathTest {
@@ -100,13 +96,6 @@ const struct CheckValidPathTest {
   { FILE_PATH_LITERAL(".."), false, },
   { FILE_PATH_LITERAL("tmp/.."), false, },
   { FILE_PATH_LITERAL("a/b/../c/.."), false, },
-};
-
-const char* const kPathToVirtualPathTestCases[] = {
-  "",
-  "a",
-  "a" PS "b",
-  "a" PS "b" PS "c",
 };
 
 const struct IsRestrictedNameTest {
@@ -201,15 +190,10 @@ const struct IsRestrictedNameTest {
   { FILE_PATH_LITERAL(".b"), false, },
 };
 
-FileSystemOptions CreateRootPathTestOptions() {
-  std::vector<std::string> additional_allowed_schemes;
-  additional_allowed_schemes.push_back("file");
-#if defined(OS_CHROMEOS)
-  additional_allowed_schemes.push_back("chrome-extension");
-#endif
-  return FileSystemOptions(FileSystemOptions::PROFILE_MODE_NORMAL,
-                           additional_allowed_schemes);
-}
+// For External filesystem.
+const FilePath::CharType kMountPoint[] = FILE_PATH_LITERAL("/tmp/testing");
+const FilePath::CharType kRootPath[] = FILE_PATH_LITERAL("/tmp");
+const FilePath::CharType kVirtualPath[] = FILE_PATH_LITERAL("testing");
 
 }  // namespace
 
@@ -221,9 +205,6 @@ class FileSystemMountPointProviderTest : public testing::Test {
 
   void SetUp() {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
-    root_path_callback_status_ = false;
-    root_path_.clear();
-    file_system_name_.clear();
     special_storage_policy_ = new quota::MockSpecialStoragePolicy;
   }
 
@@ -237,9 +218,9 @@ class FileSystemMountPointProviderTest : public testing::Test {
         data_dir_.path(),
         options);
 #if defined(OS_CHROMEOS)
-    fileapi::ExternalFileSystemMountPointProvider* ext_provider =
+    ExternalFileSystemMountPointProvider* external_provider =
         file_system_context_->external_provider();
-    ext_provider->AddMountPoint(FilePath("/tmp/testing"));
+    external_provider->AddMountPoint(FilePath(kMountPoint));
 #endif
   }
 
@@ -248,47 +229,33 @@ class FileSystemMountPointProviderTest : public testing::Test {
     return file_system_context_->GetMountPointProvider(type);
   }
 
-  void OnGetRootPath(bool success,
-                     const FilePath& root_path,
-                     const std::string& name) {
-    root_path_callback_status_ = success;
-    root_path_ = root_path;
-    file_system_name_ = name;
-  }
-
   bool GetRootPath(const GURL& origin_url,
                    fileapi::FileSystemType type,
                    bool create,
                    FilePath* root_path) {
-    provider(type)->ValidateFileSystemRootAndGetURL(
-        origin_url, type, create,
-        base::Bind(&FileSystemMountPointProviderTest::OnGetRootPath,
-                   weak_factory_.GetWeakPtr()));
-    MessageLoop::current()->RunAllPending();
+    FilePath virtual_path = FilePath();
+    if (type == kFileSystemTypeExternal)
+      virtual_path = FilePath(kVirtualPath);
+    FilePath returned_root_path =
+        provider(type)->ValidateFileSystemRootAndGetPathOnFileThread(
+            origin_url, type, virtual_path, create);
     if (root_path)
-      *root_path = root_path_;
-    return root_path_callback_status_;
+      *root_path = returned_root_path;
+    return !returned_root_path.empty();
   }
 
-  FilePath data_path() { return data_dir_.path(); }
-  FilePath file_system_path() {
+  FilePath data_path() const { return data_dir_.path(); }
+  FilePath file_system_path() const {
     return data_dir_.path().Append(
         SandboxMountPointProvider::kNewFileSystemDirectory);
   }
-  FilePath external_file_system_path() {
-    return FilePath::FromUTF8Unsafe(fileapi::kExternalDir);
-  }
-  FilePath external_file_path_root() {
-    return FilePath::FromUTF8Unsafe("/tmp");
+  FileSystemContext* file_system_context() const {
+    return file_system_context_.get();
   }
 
  private:
   ScopedTempDir data_dir_;
   base::WeakPtrFactory<FileSystemMountPointProviderTest> weak_factory_;
-
-  bool root_path_callback_status_;
-  FilePath root_path_;
-  std::string file_system_name_;
 
   scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy_;
   scoped_refptr<FileSystemContext> file_system_context_;
@@ -299,7 +266,7 @@ class FileSystemMountPointProviderTest : public testing::Test {
 TEST_F(FileSystemMountPointProviderTest, GetRootPathCreateAndExamine) {
   std::vector<FilePath> returned_root_path(
       ARRAYSIZE_UNSAFE(kRootPathTestCases));
-  SetupNewContext(CreateRootPathTestOptions());
+  SetupNewContext(CreateAllowFileAccessOptions());
 
   // Create a new root directory.
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kRootPathTestCases); ++i) {
@@ -311,7 +278,7 @@ TEST_F(FileSystemMountPointProviderTest, GetRootPathCreateAndExamine) {
                             kRootPathTestCases[i].type,
                             true /* create */, &root_path));
 
-    if (kRootPathTestCases[i].type != fileapi::kFileSystemTypeExternal) {
+    if (kRootPathTestCases[i].type != kFileSystemTypeExternal) {
       FilePath expected = file_system_path().AppendASCII(
           kRootPathTestCases[i].expected_path);
       EXPECT_EQ(expected.value(), root_path.value());
@@ -319,8 +286,7 @@ TEST_F(FileSystemMountPointProviderTest, GetRootPathCreateAndExamine) {
     } else {
       // External file system root path is virtual one and does not match
       // anything from the actual file system.
-      EXPECT_EQ(external_file_system_path().value(),
-                root_path.value());
+      EXPECT_EQ(kRootPath, root_path.value());
     }
     ASSERT_TRUE(returned_root_path.size() > i);
     returned_root_path[i] = root_path;
@@ -361,51 +327,39 @@ TEST_F(FileSystemMountPointProviderTest,
   EXPECT_EQ(root_path1.value(), root_path2.value());
 }
 
-// http://crbug.com/109342
-#if defined(OS_CHROMEOS)
-#define MAYBE_GetRootPathGetWithoutCreate FAILS_GetRootPathGetWithoutCreate
-#else
-#define MAYBE_GetRootPathGetWithoutCreate GetRootPathGetWithoutCreate
-#endif
-TEST_F(FileSystemMountPointProviderTest, MAYBE_GetRootPathGetWithoutCreate) {
+TEST_F(FileSystemMountPointProviderTest, GetRootPathGetWithoutCreate) {
   SetupNewContext(CreateDisallowFileAccessOptions());
 
   // Try to get a root directory without creating.
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kRootPathTestCases); ++i) {
     SCOPED_TRACE(testing::Message() << "RootPath (create=false) #" << i << " "
                  << kRootPathTestCases[i].expected_path);
-    EXPECT_FALSE(GetRootPath(GURL(kRootPathTestCases[i].origin_url),
-                             kRootPathTestCases[i].type,
-                             false /* create */, NULL));
+    // External type does not check the directory existence.
+    if (kRootPathTestCases[i].type != kFileSystemTypeExternal) {
+      EXPECT_FALSE(GetRootPath(GURL(kRootPathTestCases[i].origin_url),
+                              kRootPathTestCases[i].type,
+                              false /* create */, NULL));
+    }
   }
 }
 
-// http://crbug.com/109342
-#if defined(OS_CHROMEOS)
-#define MAYBE_GetRootPathInIncognito FAILS_GetRootPathInIncognito
-#else
-#define MAYBE_GetRootPathInIncognito GetRootPathInIncognito
-#endif
-TEST_F(FileSystemMountPointProviderTest, MAYBE_GetRootPathInIncognito) {
+TEST_F(FileSystemMountPointProviderTest, GetRootPathInIncognito) {
   SetupNewContext(CreateIncognitoFileSystemOptions());
 
   // Try to get a root directory.
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kRootPathTestCases); ++i) {
     SCOPED_TRACE(testing::Message() << "RootPath (incognito) #" << i << " "
                  << kRootPathTestCases[i].expected_path);
-    EXPECT_FALSE(GetRootPath(GURL(kRootPathTestCases[i].origin_url),
-                             kRootPathTestCases[i].type,
-                             true /* create */, NULL));
+    // External type does not change the behavior in incognito mode.
+    if (kRootPathTestCases[i].type != kFileSystemTypeExternal) {
+      EXPECT_FALSE(GetRootPath(GURL(kRootPathTestCases[i].origin_url),
+                              kRootPathTestCases[i].type,
+                              true /* create */, NULL));
+    }
   }
 }
 
-// http://crbug.com/109342
-#if defined(OS_CHROMEOS)
-#define MAYBE_GetRootPathFileURI FAILS_GetRootPathFileURI
-#else
-#define MAYBE_GetRootPathFileURI GetRootPathFileURI
-#endif
-TEST_F(FileSystemMountPointProviderTest, MAYBE_GetRootPathFileURI) {
+TEST_F(FileSystemMountPointProviderTest, GetRootPathFileURI) {
   SetupNewContext(CreateDisallowFileAccessOptions());
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kRootPathFileURITestCases); ++i) {
     SCOPED_TRACE(testing::Message() << "RootPathFileURI (disallow) #"
@@ -416,16 +370,8 @@ TEST_F(FileSystemMountPointProviderTest, MAYBE_GetRootPathFileURI) {
   }
 }
 
-// http://crbug.com/109342
-#if defined(OS_CHROMEOS)
-#define MAYBE_GetRootPathFileURIWithAllowFlag \
-    FAILS_GetRootPathFileURIWithAllowFlag
-#else
-#define MAYBE_GetRootPathFileURIWithAllowFlag GetRootPathFileURIWithAllowFlag
-#endif
-TEST_F(FileSystemMountPointProviderTest,
-       MAYBE_GetRootPathFileURIWithAllowFlag) {
-  SetupNewContext(CreateRootPathTestOptions());
+TEST_F(FileSystemMountPointProviderTest, GetRootPathFileURIWithAllowFlag) {
+  SetupNewContext(CreateAllowFileAccessOptions());
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kRootPathFileURITestCases); ++i) {
     SCOPED_TRACE(testing::Message() << "RootPathFileURI (allow) #"
                  << i << " " << kRootPathFileURITestCases[i].expected_path);
@@ -433,14 +379,10 @@ TEST_F(FileSystemMountPointProviderTest,
     EXPECT_TRUE(GetRootPath(GURL(kRootPathFileURITestCases[i].origin_url),
                             kRootPathFileURITestCases[i].type,
                             true /* create */, &root_path));
-    if (kRootPathFileURITestCases[i].type != fileapi::kFileSystemTypeExternal) {
-      FilePath expected = file_system_path().AppendASCII(
-          kRootPathFileURITestCases[i].expected_path);
-      EXPECT_EQ(expected.value(), root_path.value());
-      EXPECT_TRUE(file_util::DirectoryExists(root_path));
-    } else {
-      EXPECT_EQ(external_file_path_root().value(), root_path.value());
-    }
+    FilePath expected = file_system_path().AppendASCII(
+        kRootPathFileURITestCases[i].expected_path);
+    EXPECT_EQ(expected.value(), root_path.value());
+    EXPECT_TRUE(file_util::DirectoryExists(root_path));
   }
 }
 
@@ -454,5 +396,19 @@ TEST_F(FileSystemMountPointProviderTest, IsRestrictedName) {
               provider(kFileSystemTypeTemporary)->IsRestrictedFileName(name));
   }
 }
+
+#if defined(OS_CHROMEOS)
+TEST_F(FileSystemMountPointProviderTest, ExternalMountPoints) {
+  SetupNewContext(CreateDisallowFileAccessOptions());
+  ExternalFileSystemMountPointProvider* external_provider =
+      file_system_context()->external_provider();
+  FilePath virtual_unused;
+  EXPECT_TRUE(external_provider->GetVirtualPath(FilePath(kMountPoint),
+                                                &virtual_unused));
+  external_provider->RemoveMountPoint(FilePath(kMountPoint));
+  EXPECT_FALSE(external_provider->GetVirtualPath(FilePath(kMountPoint),
+                                                 &virtual_unused));
+}
+#endif
 
 }  // namespace fileapi
