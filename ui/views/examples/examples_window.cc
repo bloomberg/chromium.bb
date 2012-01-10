@@ -39,7 +39,6 @@
 
 #if !defined(USE_AURA)
 #include "ui/views/examples/menu_example.h"
-#include "ui/views/examples/table2_example.h"
 #if defined(OS_WIN)
 #include "ui/views/examples/table_example.h"
 #endif
@@ -128,11 +127,8 @@ class ExamplesWindowContents : public views::WidgetDelegateView {
     AddExample(new ScrollViewExample);
     AddExample(new SingleSplitViewExample);
     AddExample(new TabbedPaneExample);
-#if !defined(USE_AURA)
-#if defined(OS_WIN)
+#if !defined(USE_AURA) && defined(OS_WIN)
     AddExample(new TableExample);
-#endif
-    AddExample(new Table2Example);
 #endif
     AddExample(new TextExample);
     AddExample(new TextfieldExample);

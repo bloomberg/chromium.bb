@@ -16,7 +16,6 @@
 #include "base/memory/singleton.h"
 #include "ipc/ipc_logging.h"
 #include "ui/views/controls/button/button.h"
-#include "ui/views/controls/table/table_view.h"
 #include "ui/views/window/dialog_delegate.h"
 
 namespace views {

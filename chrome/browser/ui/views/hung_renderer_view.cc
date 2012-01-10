@@ -26,6 +26,7 @@
 #include "ui/views/controls/button/text_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/controls/table/group_table_model.h"
 #include "ui/views/controls/table/group_table_view.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"

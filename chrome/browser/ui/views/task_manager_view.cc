@@ -30,6 +30,7 @@
 #include "ui/views/controls/link.h"
 #include "ui/views/controls/link_listener.h"
 #include "ui/views/controls/menu/menu.h"
+#include "ui/views/controls/table/group_table_model.h"
 #include "ui/views/controls/table/group_table_view.h"
 #include "ui/views/controls/table/table_view_observer.h"
 #include "ui/views/layout/layout_constants.h"
