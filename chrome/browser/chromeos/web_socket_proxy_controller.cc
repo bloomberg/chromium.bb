@@ -23,15 +23,12 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/url_constants.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/url_constants.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/network_change_notifier.h"
-
-using content::BrowserThread;
 
 namespace {
 
@@ -104,10 +101,16 @@ class ProxyLifetime
     : public net::NetworkChangeNotifier::OnlineStateObserver,
       public content::NotificationObserver {
  public:
-  ProxyLifetime() : delay_ms_(1000), port_(-1), shutdown_requested_(false) {
+  ProxyLifetime()
+      : delay_ms_(1000),
+        port_(-1),
+        shutdown_requested_(false),
+        web_socket_proxy_thread_("Chrome_WebSocketproxyThread") {
     DLOG(INFO) << "WebSocketProxyController initiation";
-    BrowserThread::PostTask(
-        BrowserThread::WEB_SOCKET_PROXY, FROM_HERE,
+    base::Thread::Options options(MessageLoop::TYPE_IO, 0);
+    web_socket_proxy_thread_.StartWithOptions(options);
+    web_socket_proxy_thread_.message_loop()->PostTask(
+        FROM_HERE,
         base::Bind(&ProxyLifetime::ProxyCallback, base::Unretained(this)));
     net::NetworkChangeNotifier::AddOnlineStateObserver(this);
     registrar_.Add(
@@ -161,8 +164,8 @@ class ProxyLifetime
         if (delay_ms_ < 100 * 1000)
           (delay_ms_ *= 3) /= 2;
 
-        BrowserThread::PostDelayedTask(
-            BrowserThread::WEB_SOCKET_PROXY, FROM_HERE,
+        MessageLoop::current()->PostDelayedTask(
+            FROM_HERE,
             base::Bind(&ProxyLifetime::ProxyCallback, base::Unretained(this)),
             delay_ms_);
       }
@@ -180,6 +183,7 @@ class ProxyLifetime
   base::Lock lock_;
   content::NotificationRegistrar registrar_;
   friend class chromeos::WebSocketProxyController;
+  base::Thread web_socket_proxy_thread_;
 };
 
 base::LazyInstance<ProxyLifetime> g_proxy_lifetime = LAZY_INSTANCE_INITIALIZER;
@@ -213,13 +217,17 @@ int WebSocketProxyController::GetPort() {
 
 // static
 void WebSocketProxyController::Shutdown() {
-  if (IsInitiated()) {
-    DLOG(INFO) << "WebSocketProxyController shutdown";
+  if (!IsInitiated())
+    return;
+
+  DLOG(INFO) << "WebSocketProxyController shutdown";
+  {
     base::AutoLock alk(g_proxy_lifetime.Get().lock_);
     g_proxy_lifetime.Get().shutdown_requested_ = true;
     if (g_proxy_lifetime.Get().server_)
       g_proxy_lifetime.Get().server_->Shutdown();
   }
+  g_proxy_lifetime.Get().web_socket_proxy_thread_.Stop();
 }
 
 // static

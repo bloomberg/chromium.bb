@@ -25,9 +25,6 @@ static const char* g_browser_thread_names[BrowserThread::ID_COUNT] = {
   "Chrome_ProcessLauncherThread",  // PROCESS_LAUNCHER
   "Chrome_CacheThread",  // CACHE
   "Chrome_IOThread",  // IO
-#if defined(OS_CHROMEOS)
-  "Chrome_WebSocketproxyThread",  // WEB_SOCKET_PROXY
-#endif
 };
 
 // This lock protects |g_browser_threads|.  Do not read or modify that

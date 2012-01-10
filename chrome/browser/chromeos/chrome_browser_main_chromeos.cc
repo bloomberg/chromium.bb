@@ -39,6 +39,7 @@
 #include "chrome/browser/chromeos/system/statistics_provider.h"
 #include "chrome/browser/chromeos/system_key_event_listener.h"
 #include "chrome/browser/chromeos/upgrade_detector_chromeos.h"
+#include "chrome/browser/chromeos/web_socket_proxy_controller.h"
 #include "chrome/browser/chromeos/xinput_hierarchy_changed_event_listener.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/metrics/metrics_service.h"
@@ -507,6 +508,8 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   // even if Initialize() wasn't called.
   chromeos::SystemKeyEventListener::Shutdown();
   chromeos::AudioHandler::Shutdown();
+
+  chromeos::WebSocketProxyController::Shutdown();
 
   ChromeBrowserMainPartsLinux::PostMainMessageLoopRun();
 }

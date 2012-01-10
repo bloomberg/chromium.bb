@@ -93,7 +93,6 @@
 #endif
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/web_socket_proxy_controller.h"
 #include "chrome/browser/oom_priority_manager.h"
 #endif  // defined(OS_CHROMEOS)
 
@@ -257,11 +256,6 @@ void BrowserProcessImpl::PostStartThread(BrowserThread::ID thread_id) {
 
 void BrowserProcessImpl::PreStopThread(BrowserThread::ID thread_id) {
   switch (thread_id) {
-#if defined(OS_CHROMEOS)
-    case BrowserThread::WEB_SOCKET_PROXY:
-      chromeos::WebSocketProxyController::Shutdown();
-      break;
-#endif
     case BrowserThread::FILE:
       // Clean up state that lives on or uses the file_thread_ before
       // it goes away.

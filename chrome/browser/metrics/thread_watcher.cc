@@ -71,10 +71,6 @@ void ThreadUnresponsive_IO() {
   CHECK(false);
 }
 
-void ThreadUnresponsive_WEB_SOCKET_PROXY() {
-  CHECK(false);
-}
-
 #if defined(COMPILER_MSVC)
 MSVC_POP_WARNING()
 #pragma optimize("", on)
@@ -100,10 +96,6 @@ void CrashBecauseThreadWasUnresponsive(BrowserThread::ID thread_id) {
       return ThreadUnresponsive_CACHE();
     case BrowserThread::IO:
       return ThreadUnresponsive_IO();
-#if defined(OS_CHROMEOS)
-    case BrowserThread::WEB_SOCKET_PROXY:
-      return ThreadUnresponsive_WEB_SOCKET_PROXY();
-#endif
     case BrowserThread::ID_COUNT:
       CHECK(false);  // This shouldn't actually be reached!
       break;

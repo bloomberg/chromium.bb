@@ -83,12 +83,10 @@ class CONTENT_EXPORT BrowserThread {
     // This is the thread that processes IPC and network messages.
     IO,
 
-#if defined(OS_CHROMEOS)
-    // This thread runs websocket to TCP proxy.
-    // TODO(dilmah): remove this thread, instead implement this functionality
-    // as hooks into websocket layer.
-    WEB_SOCKET_PROXY,
-#endif
+    // NOTE: do not add new threads here that are only used by a small number of
+    // files. Instead you should just use a Thread class and pass its
+    // MessageLoopProxy around. Named threads there are only for threads that
+    // are used in many places.
 
     // This identifier does not represent a thread.  Instead it counts the
     // number of well-known threads.  Insert new well-known threads before this

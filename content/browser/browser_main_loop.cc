@@ -349,12 +349,6 @@ void BrowserMainLoop::RunMainMessageLoopParts(
         thread_to_start = &io_thread_;
         options = &io_message_loop_options;
         break;
-#if defined(OS_CHROMEOS)
-      case BrowserThread::WEB_SOCKET_PROXY:
-        thread_to_start = &web_socket_proxy_thread_;
-        options = &io_message_loop_options;
-        break;
-#endif
       case BrowserThread::UI:
       case BrowserThread::ID_COUNT:
       default:
@@ -429,7 +423,6 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
     // BrowserThread::ID list. The rationale for the order is as
     // follows (need to be filled in a bit):
     //
-    // - (Not sure why the WEB_SOCKET_PROXY thread is stopped first.)
     //
     // - The IO thread is the only user of the CACHE thread.
     //
@@ -468,11 +461,6 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
       case BrowserThread::IO:
         thread_to_stop = &io_thread_;
         break;
-#if defined(OS_CHROMEOS)
-      case BrowserThread::WEB_SOCKET_PROXY:
-        thread_to_stop = &web_socket_proxy_thread_;
-        break;
-#endif
       case BrowserThread::UI:
       case BrowserThread::ID_COUNT:
       default:

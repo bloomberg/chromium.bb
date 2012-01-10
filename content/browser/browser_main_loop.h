@@ -88,9 +88,6 @@ class BrowserMainLoop {
   scoped_ptr<BrowserProcessSubThread> process_launcher_thread_;
   scoped_ptr<BrowserProcessSubThread> cache_thread_;
   scoped_ptr<BrowserProcessSubThread> io_thread_;
-#if defined(OS_CHROMEOS)
-  scoped_ptr<BrowserProcessSubThread> web_socket_proxy_thread_;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(BrowserMainLoop);
 };
