@@ -5,23 +5,14 @@
     <title>Show Geolocation on page load</title>
     <script>
 
-function triggerGeo(onSuccess, onError) {
+function triggerGeo() {
   if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(onSuccess, onError); 
+    navigator.geolocation.getCurrentPosition(showPosition, onError);
   } else {
     document.getElementById('lat').innerHTML =
         'Error: navigator.geolocation is false';
     document.getElementById('lng').innerHTML = '';
   }
-}
-
-
-function triggerGeoWithCallback(callback){
-  triggerGeo(function (position){
-    callback("allow");
-  }, function(positionError){
-    callback("block");
-  });
 }
 
 function showPosition(position) {
@@ -31,7 +22,7 @@ function showPosition(position) {
   document.getElementById('lng').innerHTML = lng;
 }
 
-function showError(positionError) {
+function onError(positionError) {
   document.getElementById('lat').innerHTML =
       positionError.message;
   document.getElementById('lng').innerHTML = '';
@@ -40,7 +31,7 @@ function showError(positionError) {
     </script>
   </head>
 
-<body onload="triggerGeo(showPosition, showError)">
+<body onload="triggerGeo()">
 <b id=lat>-1</b>, <b id=lng>-1</b>
 </body>
 

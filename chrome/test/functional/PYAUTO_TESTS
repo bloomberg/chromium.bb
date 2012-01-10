@@ -117,7 +117,6 @@
       '-nacl_sdk.NaClSDKTest.testVerifyNaClPlugin',
       # crbug.com/105560
       '-notifications',
-      '-prefs.PrefsTest.testAllowSelectedGeoTracking',
     ],
 
     'win': [
@@ -355,14 +354,6 @@
       '-notifications.NotificationsTest.testOriginPrefsNotSavedInIncognito',
       # crbug.com/103379
       '-policy.PolicyTest.testDisable3DAPIs',
-      # Chrome driver does not work in Chrome OS.
-      '-prefs.PrefsTest.testDenySelectedGeoTracking',
-      '-prefs.PrefsTest.testCancelSelectedGeoTracking',
-      '-prefs.PrefsTest.testBlockAllGeoTracking',
-      '-prefs.PrefsTest.testAllowAllGeoTracking',
-      '-prefs.PrefsTest.testAddNewException',
-      '-prefs.PrefsTest.testChangeExceptionBehavior',
-      '-prefs.PrefsTest.testDeleteException',
     ],
   },
 
