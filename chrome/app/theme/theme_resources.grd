@@ -568,6 +568,13 @@
         <include name="IDR_STATUSBAR_NETWORK_ROAMING" file="statusbar_network_roaming.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_NETWORK_SECURE" file="statusbar_network_secure.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_NETWORK_WARNING" file="statusbar_network_warning.png" type="BINDATA" />
+        <include name="IDR_STATUSBAR_VOLUME_ICON1" file="statusbar_volume_icon1.png" type="BINDATA" />
+        <include name="IDR_STATUSBAR_VOLUME_ICON2" file="statusbar_volume_icon2.png" type="BINDATA" />
+        <include name="IDR_STATUSBAR_VOLUME_ICON3" file="statusbar_volume_icon3.png" type="BINDATA" />
+        <include name="IDR_STATUSBAR_VOLUME_ICON_MUTE" file="statusbar_volume_icon_mute.png" type="BINDATA" />
+        <include name="IDR_STATUSBAR_VOLUME_SLIDER_EMPTY" file="statusbar_volume_slider_empty.png" type="BINDATA" />
+        <include name="IDR_STATUSBAR_VOLUME_SLIDER_FULL" file="statusbar_volume_slider_full.png" type="BINDATA" />
+        <include name="IDR_STATUSBAR_VOLUME_SLIDER_THUMB" file="statusbar_volume_slider_thumb.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_WINDOW_MAXIMIZE" file="statusbar_window_maximize.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_WINDOW_RESTORE" file="statusbar_window_restore.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_WIRED" file="statusbar_wired.png" type="BINDATA" />
