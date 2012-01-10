@@ -87,11 +87,11 @@ hooks = [
     'python',
     'native_client/build/download_toolchains.py',
     '--x86-version',
-    '7535',
+    '7537',
     '--arm-trusted-version',
     '7000',
     '--pnacl-version',
-    '7525',
+    '7537',
     '--keep'
 ],
     'pattern':
