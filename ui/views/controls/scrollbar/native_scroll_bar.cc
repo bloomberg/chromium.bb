@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -49,8 +49,10 @@ gfx::Size NativeScrollBar::GetPreferredSize() {
 }
 
 void NativeScrollBar::Layout() {
-  if (native_wrapper_)
+  if (native_wrapper_) {
+    native_wrapper_->GetView()->SetBounds(0, 0, width(), height());
     native_wrapper_->GetView()->Layout();
+  }
 }
 
 void NativeScrollBar::ViewHierarchyChanged(bool is_add, View *parent,

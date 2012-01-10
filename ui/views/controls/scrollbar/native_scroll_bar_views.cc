@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -276,8 +276,6 @@ NativeScrollBarViews::~NativeScrollBarViews() {
 // NativeScrollBarViews, View overrides:
 
 void NativeScrollBarViews::Layout() {
-  SetBoundsRect(native_scroll_bar_->GetLocalBounds());
-
   gfx::Size size = prev_button_->GetPreferredSize();
   prev_button_->SetBounds(0, 0, size.width(), size.height());
 
@@ -399,12 +397,44 @@ NativeScrollBarWrapper* NativeScrollBarWrapper::CreateWrapper(
 
 // static
 int NativeScrollBarWrapper::GetHorizontalScrollBarHeight() {
-  return 20;
+  const gfx::NativeTheme* native_theme = gfx::NativeTheme::instance();
+
+  gfx::NativeTheme::ExtraParams button_params;
+  button_params.scrollbar_arrow.is_hovering = false;
+  gfx::Size button_size = native_theme->GetPartSize(
+      gfx::NativeTheme::kScrollbarLeftArrow,
+      gfx::NativeTheme::kNormal,
+      button_params);
+
+  gfx::NativeTheme::ExtraParams thumb_params;
+  thumb_params.scrollbar_thumb.is_hovering = false;
+  gfx::Size track_size = native_theme->GetPartSize(
+      gfx::NativeTheme::kScrollbarHorizontalThumb,
+      gfx::NativeTheme::kNormal,
+      thumb_params);
+
+  return std::max(track_size.height(), button_size.height());
 }
 
 // static
 int NativeScrollBarWrapper::GetVerticalScrollBarWidth() {
-  return 20;
+  const gfx::NativeTheme* native_theme = gfx::NativeTheme::instance();
+
+  gfx::NativeTheme::ExtraParams button_params;
+  button_params.scrollbar_arrow.is_hovering = false;
+  gfx::Size button_size = native_theme->GetPartSize(
+      gfx::NativeTheme::kScrollbarUpArrow,
+      gfx::NativeTheme::kNormal,
+      button_params);
+
+  gfx::NativeTheme::ExtraParams thumb_params;
+  thumb_params.scrollbar_thumb.is_hovering = false;
+  gfx::Size track_size = native_theme->GetPartSize(
+      gfx::NativeTheme::kScrollbarVerticalThumb,
+      gfx::NativeTheme::kNormal,
+      thumb_params);
+
+  return std::max(track_size.width(), button_size.width());
 }
 #endif
 

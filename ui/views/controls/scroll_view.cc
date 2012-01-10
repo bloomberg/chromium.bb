@@ -153,9 +153,7 @@ void ScrollView::Layout() {
   // this default behavior, the inner view has to calculate the available space,
   // used ComputeScrollBarsVisibility() to use the same calculation that is done
   // here and sets its bound to fit within.
-  gfx::Rect viewport_bounds = GetLocalBounds();
-  // Realign it to 0 so it can be used as-is for SetBounds().
-  viewport_bounds.set_origin(gfx::Point(0, 0));
+  gfx::Rect viewport_bounds = GetContentsBounds();
   // viewport_size is the total client space available.
   gfx::Size viewport_size = viewport_bounds.size();
   if (viewport_bounds.IsEmpty()) {
@@ -163,8 +161,8 @@ void ScrollView::Layout() {
     return;
   }
 
-  // Assumes a vertical scrollbar since most the current views are designed for
-  // this.
+  // Assumes a vertical scrollbar since most of the current views are designed
+  // for this.
   int horiz_sb_height = GetScrollBarHeight();
   int vert_sb_width = GetScrollBarWidth();
   viewport_bounds.set_width(viewport_bounds.width() - vert_sb_width);

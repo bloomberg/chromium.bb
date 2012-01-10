@@ -14,8 +14,10 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/canvas_skia.h"
+#include "ui/gfx/native_theme.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/views/background.h"
+#include "ui/views/border.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/controls/tree/tree_view_controller.h"
@@ -76,6 +78,9 @@ TreeView::~TreeView() {
 View* TreeView::CreateParentIfNecessary() {
   ScrollView* scroll_view = new ScrollView;
   scroll_view->SetContents(this);
+  scroll_view->set_border(Border::CreateSolidBorder(
+      1, gfx::NativeTheme::instance()->GetSystemColor(
+          gfx::NativeTheme::kColorId_UnfocusedBorderColor)));
   return scroll_view;
 }
 
