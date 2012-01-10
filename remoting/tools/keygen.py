@@ -1,38 +1,43 @@
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 import os
 import sys
 
-SCRIPT_PATH = os.path.dirname(sys.argv[0])
-if SCRIPT_PATH == "":
-  SCRIPT_PATH = os.getcwd()
+_SCRIPT_PATH = os.path.dirname(sys.argv[0])
+if _SCRIPT_PATH == "":
+  _SCRIPT_PATH = os.getcwd()
 
-PATHS_TO_TRY = [
-  '\\..\\..\\build\\Debug\\remoting_host_keygen.exe',
-  '\\..\\..\\build\\Release\\remoting_host_keygen.exe',
-  '\\..\\Debug\\remoting_host_keygen.exe',
-  '\\..\\Release\\remoting_host_keygen.exe',
-  '/../../xcodebuild/Debug/remoting_host_keygen',
-  '/../../xcodebuild/Release/remoting_host_keygen',
-  '/../../out/Debug/remoting_host_keygen',
-  '/../../out/Release/remoting_host_keygen']
+_EXE_PATHS_TO_TRY = [
+  '.',
+  '..\\..\\build\\Debug',
+  '..\\..\\build\\Release',
+  '..\\Debug',
+  '..\\Release',
+  '../../xcodebuild/Debug',
+  '../../xcodebuild/Release',
+  '../../out/Debug',
+  '../../out/Release']
 
-KEYGEN_PATH = None
-for path in PATHS_TO_TRY:
-  if os.path.exists(SCRIPT_PATH + path):
-    KEYGEN_PATH = SCRIPT_PATH + path
-    break
 
-if not KEYGEN_PATH:
-  raise Exception("Unable to find remoting_host_keygen. Please build it " +
-                  "and try again")
+def locate_executable(exe_name):
+  for path in _EXE_PATHS_TO_TRY:
+    exe_path = os.path.join(_SCRIPT_PATH, path, exe_name)
+    if os.path.exists(exe_path):
+      return exe_path
+    exe_path = exe_path + ".exe"
+    if os.path.exists(exe_path):
+      return exe_path
+
+  raise Exception("Could not locate executable '%s'" % exe_name)
+
 
 def generateRSAKeyPair():
   """Returns (priv, pub) keypair where priv is a new private key and
   pub is the corresponding public key.  Both keys are BASE64 encoded."""
-  pipe = os.popen(KEYGEN_PATH)
+  keygen_path = locate_executable("remoting_host_keygen")
+  pipe = os.popen(keygen_path)
   out = pipe.readlines()
   if len(out) != 2:
     raise Exception("remoting_host_keygen failed.")
