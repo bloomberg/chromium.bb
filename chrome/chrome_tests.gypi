@@ -3971,9 +3971,9 @@
         'BROWSER_TESTS_HEADER_OVERRIDE="chrome/test/base/in_process_browser_test.h"',
       ],
       'sources': [
-        'browser/gpu_pixel_browsertest.cc',
-        'browser/gpu_crash_browsertest.cc',
         'test/base/chrome_test_launcher.cc',
+        'test/gpu/gpu_crash_browsertest.cc',
+        'test/gpu/gpu_pixel_browsertest.cc',
         'test/gpu/webgl_conformance_tests.cc',
         'test/gpu/webgl_conformance_test_list_autogen.h',
         '../content/app/startup_helper_win.cc',
