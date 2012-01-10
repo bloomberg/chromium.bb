@@ -9,7 +9,7 @@
 #include "ash/screenshot_delegate.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
-#include "ash/wm/window_util.h"
+#include "ash/wm/window_cycle_controller.h"
 #include "ui/aura/event.h"
 #include "ui/aura/root_window.h"
 #include "ui/base/accelerators/accelerator.h"
@@ -40,46 +40,27 @@ struct AcceleratorData {
   bool alt;
   AcceleratorAction action;
 } kAcceleratorData[] = {
-  { ui::VKEY_TAB, true, false, true, CYCLE_BACKWARD },
   { ui::VKEY_TAB, false, false, true, CYCLE_FORWARD },
+  { ui::VKEY_TAB, true, false, true, CYCLE_BACKWARD },
   { ui::VKEY_F5, false, false, false, CYCLE_FORWARD },
+  { ui::VKEY_F5, true, false, false, CYCLE_BACKWARD },
   { ui::VKEY_F5, false, true, false, TAKE_SCREENSHOT },
   { ui::VKEY_PRINT, false, false, false, TAKE_SCREENSHOT },
 #if !defined(NDEBUG)
   { ui::VKEY_HOME, false, true, false, ROTATE_SCREEN },
   { ui::VKEY_F11, false, true, false, TOGGLE_ROOT_WINDOW_FULL_SCREEN },
   { ui::VKEY_L, false, false, true, PRINT_LAYER_HIERARCHY },
+  // For testing on systems where Alt-Tab is already mapped.
+  { ui::VKEY_W, false, false, true, CYCLE_FORWARD },
+  { ui::VKEY_W, true, false, true, CYCLE_BACKWARD },
 #endif
 };
 
-bool HandleCycleWindow(bool forward) {
-  if (ash::Shell::GetInstance()->IsScreenLocked())
-    return false;
-
-  // We don't have a launcher in Aura compact window mode.
-  // TODO(jamescook): Eliminate this check and rework this function to cycle
-  // through most-recently-used browser windows. We may need to always
-  // instantiate the launcher and hide its widget, or more likely we should
-  // provide an interface to access BrowserList. crbug.com/109193
-  if (!ash::Shell::GetInstance()->launcher())
-    return false;
-
-  // Use the same order of the windows in LauncherModel to cycle windows.
-  ash::LauncherModel* model =
-      ash::Shell::GetInstance()->launcher()->model();
-  aura::Window* active_window = ash::GetActiveWindow();
-  if (!active_window) {
-    LOG(ERROR) << "No active window";
-    return false;
-  }
-  int active_index = model->ItemIndexByWindow(active_window);
-  if (active_index < 0) {
-    VLOG(2) << "Active window not found in the launcher model";
-    return false;
-  }
-  int next_index = (active_index + (forward ? 1 : -1) + model->item_count()) %
-      model->item_count();
-  ash::ActivateWindow(model->items()[next_index].window);
+bool HandleCycleWindow(ash::WindowCycleController::Direction direction,
+                       bool is_alt_down) {
+  ash::Shell::GetInstance()->
+      window_cycle_controller()->HandleCycleWindow(direction, is_alt_down);
+  // Always report we handled the key, even if the window didn't change.
   return true;
 }
 
@@ -191,9 +172,11 @@ bool AcceleratorController::AcceleratorPressed(
   DCHECK(it != accelerators_.end());
   switch (static_cast<AcceleratorAction>(it->second)) {
     case CYCLE_BACKWARD:
-      return HandleCycleWindow(false);
+      return HandleCycleWindow(WindowCycleController::BACKWARD,
+                               accelerator.IsAltDown());
     case CYCLE_FORWARD:
-      return HandleCycleWindow(true);
+      return HandleCycleWindow(WindowCycleController::FORWARD,
+                               accelerator.IsAltDown());
     case TAKE_SCREENSHOT:
       if (screenshot_delegate_.get())
         screenshot_delegate_->HandleTakeScreenshot();

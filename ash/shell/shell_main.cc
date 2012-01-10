@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/shell_factory.h"
+#include "ash/shell_window_ids.h"
 #include "ash/shell/example_factory.h"
 #include "ash/shell/toplevel_window.h"
 #include "ash/wm/window_util.h"
@@ -51,12 +52,21 @@ class ShellDelegateImpl : public ash::ShellDelegate {
     ash::shell::CreateAppList(bounds, callback);
   }
 
-  virtual void BuildAppListModel(ash::AppListModel* model) {
+  virtual void BuildAppListModel(ash::AppListModel* model) OVERRIDE {
     ash::shell::BuildAppListModel(model);
   }
 
-  virtual ash::AppListViewDelegate* CreateAppListViewDelegate() {
+  virtual ash::AppListViewDelegate* CreateAppListViewDelegate() OVERRIDE {
     return ash::shell::CreateAppListViewDelegate();
+  }
+
+  std::vector<aura::Window*> GetCycleWindowList() const OVERRIDE {
+    aura::Window* default_container = ash::Shell::GetInstance()->GetContainer(
+        ash::internal::kShellWindowId_DefaultContainer);
+    std::vector<aura::Window*> windows = default_container->children();
+    // Window cycling expects the topmost window at the front of the list.
+    std::reverse(windows.begin(), windows.end());
+    return windows;
   }
 
   virtual void LauncherItemClicked(

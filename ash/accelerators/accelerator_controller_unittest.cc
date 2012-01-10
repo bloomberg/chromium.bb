@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -213,8 +213,10 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
 
   // CycleBackward
   EXPECT_TRUE(GetController()->Process(
+      ui::Accelerator(ui::VKEY_F5, true, false, false)));
+  EXPECT_TRUE(GetController()->Process(
       ui::Accelerator(ui::VKEY_TAB, true, false, true)));
-  // CycleForwrard
+  // CycleForward
   EXPECT_TRUE(GetController()->Process(
       ui::Accelerator(ui::VKEY_F5, false, false, false)));
   EXPECT_TRUE(GetController()->Process(
@@ -234,115 +236,6 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
       ui::Accelerator(ui::VKEY_F11, false, true, false)));
 #endif
 #endif
-}
-
-TEST_F(AcceleratorControllerTest, HandleCycleWindow) {
-  aura::Window* default_container =
-      ash::Shell::GetInstance()->GetContainer(
-          internal::kShellWindowId_DefaultContainer);
-  aura::Window* window0 = aura::test::CreateTestWindowWithDelegate(
-      new aura::test::TestWindowDelegate,
-      -1,
-      gfx::Rect(),
-      default_container);
-  aura::Window* window1 = aura::test::CreateTestWindowWithDelegate(
-      new aura::test::TestWindowDelegate,
-      -1,
-      gfx::Rect(),
-      default_container);
-  aura::Window* window2 = aura::test::CreateTestWindowWithDelegate(
-      new aura::test::TestWindowDelegate,
-      -1,
-      gfx::Rect(),
-      default_container);
-  ActivateWindow(window0);
-  EXPECT_TRUE(IsActiveWindow(window0));
-
-  ui::Accelerator cycle_forward(ui::VKEY_TAB, false, false, true);
-  EXPECT_TRUE(GetController()->Process(cycle_forward));
-  EXPECT_TRUE(IsActiveWindow(window1));
-  EXPECT_TRUE(GetController()->Process(cycle_forward));
-  EXPECT_TRUE(IsActiveWindow(window2));
-  EXPECT_TRUE(GetController()->Process(cycle_forward));
-  EXPECT_TRUE(IsActiveWindow(window0));
-
-  ui::Accelerator cycle_backward(ui::VKEY_TAB, true, false, true);
-  EXPECT_TRUE(GetController()->Process(cycle_backward));
-  EXPECT_TRUE(IsActiveWindow(window2));
-  EXPECT_TRUE(GetController()->Process(cycle_backward));
-  EXPECT_TRUE(IsActiveWindow(window1));
-  EXPECT_TRUE(GetController()->Process(cycle_backward));
-  EXPECT_TRUE(IsActiveWindow(window0));
-
-  aura::Window* modal_container =
-      ash::Shell::GetInstance()->GetContainer(
-          internal::kShellWindowId_AlwaysOnTopContainer);
-  aura::Window* modal_window = aura::test::CreateTestWindowWithDelegate(
-      new aura::test::TestWindowDelegate,
-      -1,
-      gfx::Rect(),
-      modal_container);
-
-  // When the modal window is active, cycling window does not take effect.
-  ActivateWindow(modal_window);
-  EXPECT_TRUE(IsActiveWindow(modal_window));
-  EXPECT_FALSE(GetController()->Process(cycle_forward));
-  EXPECT_TRUE(IsActiveWindow(modal_window));
-  EXPECT_FALSE(IsActiveWindow(window0));
-  EXPECT_FALSE(IsActiveWindow(window1));
-  EXPECT_FALSE(IsActiveWindow(window2));
-  EXPECT_FALSE(GetController()->Process(cycle_backward));
-  EXPECT_TRUE(IsActiveWindow(modal_window));
-  EXPECT_FALSE(IsActiveWindow(window0));
-  EXPECT_FALSE(IsActiveWindow(window1));
-  EXPECT_FALSE(IsActiveWindow(window2));
-
-  // The modal window is not activated by cycling window.
-  ActivateWindow(window0);
-  EXPECT_TRUE(GetController()->Process(cycle_forward));
-  EXPECT_FALSE(IsActiveWindow(modal_window));
-  EXPECT_TRUE(GetController()->Process(cycle_forward));
-  EXPECT_FALSE(IsActiveWindow(modal_window));
-  EXPECT_TRUE(GetController()->Process(cycle_forward));
-  EXPECT_FALSE(IsActiveWindow(modal_window));
-  EXPECT_TRUE(GetController()->Process(cycle_backward));
-  EXPECT_FALSE(IsActiveWindow(modal_window));
-  EXPECT_TRUE(GetController()->Process(cycle_backward));
-  EXPECT_FALSE(IsActiveWindow(modal_window));
-  EXPECT_TRUE(GetController()->Process(cycle_backward));
-  EXPECT_FALSE(IsActiveWindow(modal_window));
-
-  // When a screen lock window is visible, cycling window does not take effect.
-  aura::Window* lock_screen_container =
-      ash::Shell::GetInstance()->GetContainer(
-          internal::kShellWindowId_LockScreenContainer);
-  aura::Window* lock_screen_window = aura::test::CreateTestWindowWithDelegate(
-      new aura::test::TestWindowDelegate,
-      -1,
-      gfx::Rect(),
-      lock_screen_container);
-
-  lock_screen_window->Show();
-  EXPECT_FALSE(GetController()->Process(cycle_forward));
-  EXPECT_FALSE(GetController()->Process(cycle_backward));
-
-  // When a screen lock window is visible, cycling window does not take effect.
-  // But otherwise, cycling window does take effect.
-  aura::Window* lock_modal_container =
-      ash::Shell::GetInstance()->GetContainer(
-          internal::kShellWindowId_LockModalContainer);
-  aura::Window* lock_modal_window = aura::test::CreateTestWindowWithDelegate(
-      new aura::test::TestWindowDelegate,
-      -1,
-      gfx::Rect(),
-      lock_modal_container);
-
-  lock_modal_window->Show();
-  EXPECT_FALSE(GetController()->Process(cycle_forward));
-  EXPECT_FALSE(GetController()->Process(cycle_backward));
-  lock_screen_window->Hide();
-  EXPECT_TRUE(GetController()->Process(cycle_forward));
-  EXPECT_TRUE(GetController()->Process(cycle_backward));
 }
 
 }  // namespace test

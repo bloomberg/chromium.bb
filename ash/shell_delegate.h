@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,8 +6,14 @@
 #define ASH_SHELL_DELEGATE_H_
 #pragma once
 
-#include "base/callback.h"
+#include <vector>
+
 #include "ash/ash_export.h"
+#include "base/callback.h"
+
+namespace aura {
+class Window;
+}
 
 namespace gfx {
 class Rect;
@@ -53,6 +59,12 @@ class ASH_EXPORT ShellDelegate {
   // Invoked to create an AppListViewDelegate. Shell takes the ownership of
   // the created delegate.
   virtual AppListViewDelegate* CreateAppListViewDelegate() = 0;
+
+  // Returns a list of windows to cycle with keyboard shortcuts (e.g. alt-tab
+  // or the window switching key).  Windows should be in most-recently-used
+  // order with the currently active window at the front of the list.  The list
+  // does not contain NULL pointers.
+  virtual std::vector<aura::Window*> GetCycleWindowList() const = 0;
 
   // Invoked when the user clicks on a window entry in the launcher.
   virtual void LauncherItemClicked(const LauncherItem& item) = 0;

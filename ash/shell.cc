@@ -32,7 +32,9 @@
 #include "ash/wm/status_area_layout_manager.h"
 #include "ash/wm/toplevel_layout_manager.h"
 #include "ash/wm/toplevel_window_event_filter.h"
+#include "ash/wm/window_cycle_controller.h"
 #include "ash/wm/window_modality_controller.h"
+#include "ash/wm/window_util.h"
 #include "ash/wm/workspace_controller.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -172,8 +174,10 @@ Shell::~Shell() {
 
   tooltip_controller_.reset();
 
-  // Drag drop controller needs a valid shell instance. We destroy it first.
+  // These need a valid Shell instance to clean up properly, so explicitly
+  // delete them before invalidating the instance.
   drag_drop_controller_.reset();
+  window_cycle_controller_.reset();
 
   DCHECK(instance_ == this);
   instance_ = NULL;
@@ -249,6 +253,7 @@ void Shell::Init() {
 
   drag_drop_controller_.reset(new internal::DragDropController);
   power_button_controller_.reset(new PowerButtonController);
+  window_cycle_controller_.reset(new WindowCycleController);
 }
 
 Shell::WindowMode Shell::ComputeWindowMode(const gfx::Size& monitor_size,
@@ -368,7 +373,6 @@ void Shell::ToggleAppList() {
   app_list_->SetVisible(!app_list_->IsVisible());
 }
 
-// Returns true if the screen is locked.
 bool Shell::IsScreenLocked() const {
   const aura::Window* lock_screen_container = GetContainer(
       internal::kShellWindowId_LockScreenContainer);
@@ -381,6 +385,13 @@ bool Shell::IsScreenLocked() const {
     return true;
 
   return false;
+}
+
+bool Shell::IsModalWindowOpen() const {
+  aura::Window* modal_container =
+      ash::Shell::GetInstance()->GetContainer(
+          internal::kShellWindowId_AlwaysOnTopContainer);
+  return !modal_container->children().empty();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

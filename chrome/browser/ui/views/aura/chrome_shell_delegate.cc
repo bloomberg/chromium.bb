@@ -11,6 +11,7 @@
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/views/aura/app_list_window.h"
 #include "chrome/browser/ui/views/aura/app_list/app_list_model_builder.h"
 #include "chrome/browser/ui/views/aura/app_list/app_list_view_delegate.h"
@@ -84,6 +85,23 @@ ash::AppListViewDelegate*
 ChromeShellDelegate::CreateAppListViewDelegate() {
   // Shell will own the created delegate.
   return new AppListViewDelegate;
+}
+
+std::vector<aura::Window*> ChromeShellDelegate::GetCycleWindowList() const {
+  std::vector<aura::Window*> windows;
+  // BrowserList maintains a list of browsers sorted by activity.
+  for (BrowserList::const_reverse_iterator it =
+           BrowserList::begin_last_active();
+       it != BrowserList::end_last_active();
+       ++it) {
+    Browser* browser = *it;
+    // Only cycle through tabbed browsers.
+    if (browser &&
+        browser->is_type_tabbed() &&
+        browser->window()->GetNativeHandle())
+      windows.push_back(browser->window()->GetNativeHandle());
+  }
+  return windows;
 }
 
 void ChromeShellDelegate::LauncherItemClicked(

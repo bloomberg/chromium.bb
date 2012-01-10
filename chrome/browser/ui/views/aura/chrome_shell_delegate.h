@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -43,6 +43,7 @@ class ChromeShellDelegate : public ash::ShellDelegate {
       const SetWidgetCallback& callback) OVERRIDE;
   virtual void BuildAppListModel(ash::AppListModel* model) OVERRIDE;
   virtual ash::AppListViewDelegate* CreateAppListViewDelegate() OVERRIDE;
+  virtual std::vector<aura::Window*> GetCycleWindowList() const OVERRIDE;
   virtual void LauncherItemClicked(
       const ash::LauncherItem& item) OVERRIDE;
   virtual bool ConfigureLauncherItem(ash::LauncherItem* item) OVERRIDE;
