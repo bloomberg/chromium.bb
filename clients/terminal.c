@@ -356,6 +356,7 @@ enum escape_state {
 
 struct terminal {
 	struct window *window;
+	struct widget *widget;
 	struct display *display;
 	union utf8_char *data;
 	struct task io_task;
@@ -2228,8 +2229,7 @@ button_handler(struct widget *widget,
 	       struct input *input, uint32_t time,
 	       int button, int state, void *data)
 {
-	struct window *window = data;
-	struct terminal *terminal = window_get_user_data(window);
+	struct terminal *terminal = data;
 
 	switch (button) {
 	case 272:
@@ -2240,7 +2240,7 @@ button_handler(struct widget *widget,
 					   &terminal->selection_start_y);
 			terminal->selection_end_x = terminal->selection_start_x;
 			terminal->selection_end_y = terminal->selection_start_y;
-			window_schedule_redraw(window);
+			widget_schedule_redraw(widget);
 		} else {
 			terminal->dragging = 0;
 		}
@@ -2253,8 +2253,7 @@ motion_handler(struct widget *widget,
 	       struct input *input, uint32_t time,
 	       int32_t x, int32_t y, void *data)
 {
-	struct window *window = data;
-	struct terminal *terminal = window_get_user_data(window);
+	struct terminal *terminal = data;
 
 	if (terminal->dragging) {
 		input_get_position(input,
@@ -2284,6 +2283,7 @@ terminal_create(struct display *display, int fullscreen)
 	terminal->margin_top = 0;
 	terminal->margin_bottom = -1;
 	terminal->window = window_create(display, 500, 400);
+	terminal->widget = window_add_widget(terminal->window, terminal);
 	window_set_title(terminal->window, "Wayland Terminal");
 
 	init_state_machine(&terminal->state_machine);
@@ -2299,11 +2299,8 @@ terminal_create(struct display *display, int fullscreen)
 	window_set_key_handler(terminal->window, key_handler);
 	window_set_keyboard_focus_handler(terminal->window,
 					  keyboard_focus_handler);
-	widget_set_button_handler(window_get_widget(terminal->window),
-				  button_handler);
-
-	widget_set_motion_handler(window_get_widget(terminal->window),
-				  motion_handler);
+	widget_set_button_handler(terminal->widget, button_handler);
+	widget_set_motion_handler(terminal->widget, motion_handler);
 
 	surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 0, 0);
 	cr = cairo_create(surface);

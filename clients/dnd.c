@@ -38,6 +38,7 @@
 
 struct dnd {
 	struct window *window;
+	struct widget *widget;
 	struct display *display;
 	uint32_t key;
 	struct item *items[16];
@@ -365,8 +366,7 @@ dnd_button_handler(struct widget *widget,
 		   struct input *input, uint32_t time,
 		   int button, int state, void *data)
 {
-	struct window *window = data;
-	struct dnd *dnd = window_get_user_data(window);
+	struct dnd *dnd = data;
 	int32_t x, y;
 	struct item *item;
 	struct rectangle allocation;
@@ -406,7 +406,7 @@ dnd_button_handler(struct widget *widget,
 				     "text/plain; charset=utf-8");
 		wl_data_device_start_drag(input_get_data_device(input),
 					  dnd_drag->data_source,
-					  window_get_wl_surface(window),
+					  window_get_wl_surface(dnd->window),
 					  time);
 
 		input_set_pointer_image(input, time, POINTER_DRAGGING);
@@ -437,10 +437,7 @@ dnd_enter_handler(struct widget *widget,
 		  struct input *input, uint32_t time,
 		  int32_t x, int32_t y, void *data)
 {
-	struct window *window = data;
-	struct dnd *dnd = window_get_user_data(window);
-
-	return lookup_cursor(dnd, x, y);
+	return lookup_cursor(data, x, y);
 }
 
 static int
@@ -448,10 +445,7 @@ dnd_motion_handler(struct widget *widget,
 		   struct input *input, uint32_t time,
 		   int32_t x, int32_t y, void *data)
 {
-	struct window *window = data;
-	struct dnd *dnd = window_get_user_data(window);
-
-	return lookup_cursor(dnd, x, y);
+	return lookup_cursor(data, x, y);
 }
 
 static void
@@ -516,7 +510,6 @@ dnd_create(struct display *display)
 	struct dnd *dnd;
 	int i, x, y;
 	int32_t width, height;
-	struct widget *widget;
 
 	dnd = malloc(sizeof *dnd);
 	if (dnd == NULL)
@@ -524,6 +517,7 @@ dnd_create(struct display *display)
 	memset(dnd, 0, sizeof *dnd);
 
 	dnd->window = window_create(display, 400, 400);
+	dnd->widget = window_add_widget(dnd->window, dnd);
 	window_set_title(dnd->window, "Wayland Drag and Drop Demo");
 
 	dnd->display = display;
@@ -545,10 +539,9 @@ dnd_create(struct display *display)
 	window_set_data_handler(dnd->window, dnd_data_handler);
 	window_set_drop_handler(dnd->window, dnd_drop_handler);
 
-	widget = window_get_widget(dnd->window);
-	widget_set_enter_handler(widget, dnd_enter_handler);
-	widget_set_motion_handler(widget, dnd_motion_handler);
-	widget_set_button_handler(widget, dnd_button_handler);
+	widget_set_enter_handler(dnd->widget, dnd_enter_handler);
+	widget_set_motion_handler(dnd->widget, dnd_motion_handler);
+	widget_set_button_handler(dnd->widget, dnd_button_handler);
 
 	width = 4 * (item_width + item_padding) + item_padding;
 	height = 4 * (item_height + item_padding) + item_padding;

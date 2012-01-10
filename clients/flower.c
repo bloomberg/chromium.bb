@@ -36,6 +36,13 @@
 #include <wayland-client.h>
 #include "window.h"
 
+struct flower {
+	struct display *display;
+	struct window *window;
+	struct widget *widget;
+	int width, height;
+};
+
 static void
 set_random_color(cairo_t *cr)
 {
@@ -109,17 +116,11 @@ button_handler(struct widget *widget,
 	       struct input *input, uint32_t time,
 	       int button, int state, void *data)
 {
-	struct window *window = data;
+	struct flower *flower = data;
 
 	if (state)
-		window_move(window, input, time);
+		window_move(flower->window, input, time);
 }
-
-struct flower {
-	struct display *display;
-	struct window *window;
-	int width, height;
-};
 
 int main(int argc, char *argv[])
 {
@@ -141,6 +142,7 @@ int main(int argc, char *argv[])
 	flower.height = 200;
 	flower.display = d;
 	flower.window = window_create(d, flower.width, flower.height);
+	flower.widget = window_add_widget(flower.window, &flower);
 
 	window_set_title(flower.window, "flower");
 	window_set_decoration(flower.window, 0);
@@ -156,10 +158,8 @@ int main(int argc, char *argv[])
 	cairo_surface_destroy(s);
 	window_flush(flower.window);
 
-	widget_set_motion_handler(window_get_widget(flower.window),
-				  motion_handler);
-	widget_set_button_handler(window_get_widget(flower.window),
-				  button_handler);
+	widget_set_motion_handler(flower.widget, motion_handler);
+	widget_set_button_handler(flower.widget, button_handler);
 	window_set_user_data(flower.window, &flower);
 	display_run(d);
 

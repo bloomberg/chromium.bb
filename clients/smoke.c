@@ -38,6 +38,7 @@
 struct smoke {
 	struct display *display;
 	struct window *window;
+	struct widget *widget;
 	cairo_surface_t *surface;
 	int x, y, width, height;
 	int offset, current;
@@ -267,6 +268,7 @@ int main(int argc, char *argv[])
 	smoke.height = 200;
 	smoke.display = d;
 	smoke.window = window_create(d, smoke.width, smoke.height);
+	smoke.widget = window_add_widget(smoke.window, &smoke);
 	window_set_title(smoke.window, "smoke");
 
 	window_set_buffer_type(smoke.window, WINDOW_BUFFER_TYPE_SHM);
@@ -289,8 +291,7 @@ int main(int argc, char *argv[])
 
 	window_flush(smoke.window);
 
-	widget_set_motion_handler(window_get_widget(smoke.window),
-				  smoke_motion_handler);
+	widget_set_motion_handler(smoke.widget, smoke_motion_handler);
 
 	window_set_user_data(smoke.window, &smoke);
 	frame_callback(&smoke, NULL, 0);

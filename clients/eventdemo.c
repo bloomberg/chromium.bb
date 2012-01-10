@@ -83,6 +83,7 @@ static int log_motion = 0;
  */
 struct eventdemo {
 	struct window *window;
+	struct widget *widget;
 	struct display *display;
 
 	unsigned int x, y, w, h;
@@ -285,6 +286,7 @@ eventdemo_create(struct display *d)
 	 *			      int32_t width, int32_t height);
 	 */
 	e->window = window_create(d, width, height);
+	e->widget = window_add_widget(e->window, e);
 	window_set_title(e->window, title);
 	e->display = d;
 
@@ -314,12 +316,10 @@ eventdemo_create(struct display *d)
 	window_set_key_handler(e->window, key_handler);
 
 	/* Set the callback button handler for the window */
-	widget_set_button_handler(window_get_widget(e->window),
-				  button_handler);
+	widget_set_button_handler(e->widget, button_handler);
 
 	/* Set the callback motion handler for the window */
-	widget_set_motion_handler(window_get_widget(e->window),
-				  motion_handler);
+	widget_set_motion_handler(e->widget, motion_handler);
 
 	/* Demonstrate how to create a borderless window.
 	   Move windows with META + left mouse button.

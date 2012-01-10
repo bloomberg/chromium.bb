@@ -220,8 +220,6 @@ show_lockscreen(void *data, struct tablet_shell *tablet_shell)
 	window_set_user_data(shell->lockscreen, shell);
 	window_set_decoration(shell->lockscreen, 0);
 	window_set_custom(shell->lockscreen);
-	widget_set_button_handler(window_get_widget(shell->lockscreen),
-				  lockscreen_button_handler);
 
 	tablet_shell_set_lockscreen(shell->tablet_shell,
 				    window_get_wl_surface(shell->lockscreen));

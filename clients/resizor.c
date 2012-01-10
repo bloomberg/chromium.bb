@@ -38,6 +38,7 @@
 struct resizor {
 	struct display *display;
 	struct window *window;
+	struct widget *widget;
 	struct window *menu;
 	int32_t width;
 
@@ -194,8 +195,7 @@ button_handler(struct widget *widget,
 	       struct input *input, uint32_t time,
 	       int button, int state, void *data)
 {
-	struct window *window = data;
-	struct resizor *resizor = window_get_user_data(window);
+	struct resizor *resizor = data;
 
 	switch (button) {
 	case BTN_RIGHT:
@@ -217,6 +217,7 @@ resizor_create(struct display *display)
 	memset(resizor, 0, sizeof *resizor);
 
 	resizor->window = window_create(display, 500, 400);
+	resizor->widget = window_add_widget(resizor->window, resizor);
 	window_set_title(resizor->window, "Wayland Resizor");
 	resizor->display = display;
 
@@ -233,8 +234,7 @@ resizor_create(struct display *display)
 	height = resizor->height.current + 0.5;
 
 	window_set_child_size(resizor->window, resizor->width, height);
-	widget_set_button_handler(window_get_widget(resizor->window),
-				  button_handler);
+	widget_set_button_handler(resizor->widget, button_handler);
 
 	resizor_draw(resizor);
 

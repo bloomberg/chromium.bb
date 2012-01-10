@@ -107,7 +107,6 @@ enum {
 struct window {
 	struct display *display;
 	struct window *parent;
-	struct widget *widget;
 	struct wl_surface *surface;
 	struct wl_shell_surface *shell_surface;
 	char *title;
@@ -183,6 +182,7 @@ struct output {
 
 struct menu {
 	struct window *window;
+	struct widget *widget;
 	const char **entries;
 	uint32_t time;
 	int current;
@@ -918,12 +918,6 @@ window_get_display(struct window *window)
 	return window->display;
 }
 
-struct widget *
-window_get_widget(struct window *window)
-{
-	return window->widget;
-}
-
 void
 window_create_surface(struct window *window)
 {
@@ -1065,6 +1059,7 @@ window_add_widget(struct window *window, void *data)
 	memset(widget, 0, sizeof *widget);
 	widget->window = window;
 	widget->user_data = data;
+	widget->allocation = window->allocation;
 	wl_list_insert(&window->widget_list, &widget->link);
 
 	return widget;
@@ -1879,6 +1874,7 @@ handle_configure(void *data, struct wl_shell_surface *shell_surface,
 		 int32_t width, int32_t height)
 {
 	struct window *window = data;
+	struct widget *widget;
 	int32_t child_width, child_height;
 
 	/* FIXME: this is probably the wrong place to check for width
@@ -1903,6 +1899,9 @@ handle_configure(void *data, struct wl_shell_surface *shell_surface,
 		if (window->redraw_handler)
 			window_schedule_redraw(window);
 	}
+
+	wl_list_for_each(widget, &window->widget_list, link)
+		widget->allocation = window->allocation;
 }
 
 static void
@@ -1959,8 +1958,6 @@ window_set_child_size(struct window *window, int32_t width, int32_t height)
 		window->allocation.width = width;
 		window->allocation.height = height;
 	}
-
-	window->widget->allocation = window->allocation;
 }
 
 static void
@@ -2146,7 +2143,6 @@ window_create_internal(struct display *display, struct window *parent,
 	window->transparent = 1;
 
 	wl_list_init(&window->widget_list);
-	window->widget = window_add_widget(window, window);
 
 	if (display->dpy)
 #ifdef HAVE_CAIRO_EGL
@@ -2208,7 +2204,7 @@ menu_set_item(struct menu *menu, int sy)
 	next = (sy - 8) / 20;
 	if (menu->current != next) {
 		menu->current = next;
-		widget_schedule_redraw(menu->window->widget);
+		widget_schedule_redraw(menu->widget);
 	}
 
 	return POINTER_LEFT_PTR;
@@ -2219,10 +2215,7 @@ menu_motion_handler(struct widget *widget,
 		    struct input *input, uint32_t time,
 		    int32_t x, int32_t y, void *data)
 {
-	struct window *window = data;
-	struct menu *menu = window_get_user_data(window);
-
-	return menu_set_item(menu, y);
+	return menu_set_item(data, y);
 }
 
 static int
@@ -2230,21 +2223,13 @@ menu_enter_handler(struct widget *widget,
 		   struct input *input, uint32_t time,
 		   int32_t x, int32_t y, void *data)
 {
-	struct window *window = data;
-	struct menu *menu = window_get_user_data(window);
-
-	menu_set_item(menu, y);
-
-	return POINTER_LEFT_PTR;
+	return menu_set_item(data, y);
 }
 
 static void
 menu_leave_handler(struct widget *widget, struct input *input, void *data)
 {
-	struct window *window = data;
-	struct menu *menu = window_get_user_data(window);
-
-	menu_set_item(menu, -200);
+	menu_set_item(data, -200);
 }
 
 static void
@@ -2253,14 +2238,13 @@ menu_button_handler(struct widget *widget,
 		    int button, int state, void *data)
 
 {
-	struct window *window = data;
-	struct menu *menu = window_get_user_data(window);
+	struct menu *menu = data;
 
 	/* Either relase after press-drag-release or click-motion-click. */
 	if (state == 0 && time - menu->time > 500) {
-		menu->func(window->parent, 
-			   menu->current, window->parent->user_data);
-		window_destroy(window);
+		menu->func(menu->window->parent, 
+			   menu->current, menu->window->parent->user_data);
+		window_destroy(widget->window);
 	}
 }
 
@@ -2272,9 +2256,6 @@ menu_redraw_handler(struct window *window, void *data)
 	struct menu *menu = data;
 	int32_t width, height, i;
 
-	width = 200;
-	height = menu->count * 20 + margin * 2;
-	window_set_child_size(window, width, height);
 	window_create_surface(window);
 
 	cr = cairo_create(window->cairo_surface);
@@ -2317,16 +2298,19 @@ window_create_menu(struct display *display,
 {
 	struct window *window;
 	struct menu *menu;
+	const int32_t margin = 3;
 
 	menu = malloc(sizeof *menu);
 	if (!menu)
 		return NULL;
 
-	window = window_create_internal(parent->display, parent, 0, 0);
+	window = window_create_internal(parent->display, parent,
+					200, count * 20 + margin * 2);
 	if (!window)
 		return NULL;
 
 	menu->window = window;
+	menu->widget = window_add_widget(menu->window, menu);
 	menu->entries = entries;
 	menu->count = count;
 	menu->time = time;
@@ -2344,10 +2328,10 @@ window_create_menu(struct display *display,
 	window_set_redraw_handler(window, menu_redraw_handler);
 	window_set_user_data(window, menu);
 
-	widget_set_enter_handler(window->widget, menu_enter_handler);
-	widget_set_leave_handler(window->widget, menu_leave_handler);
-	widget_set_motion_handler(window->widget, menu_motion_handler);
-	widget_set_button_handler(window->widget, menu_button_handler);
+	widget_set_enter_handler(menu->widget, menu_enter_handler);
+	widget_set_leave_handler(menu->widget, menu_leave_handler);
+	widget_set_motion_handler(menu->widget, menu_motion_handler);
+	widget_set_button_handler(menu->widget, menu_button_handler);
 
 	return window;
 }
