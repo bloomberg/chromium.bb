@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -23,20 +23,23 @@ class Breakpad(SuperMoxTestBase):
     self.mox.StubOutWithMock(breakpad.getpass, 'getuser')
     self.mox.StubOutWithMock(breakpad.urllib2, 'urlopen')
     breakpad._HOST_NAME = 'bozo'
+    self.assertEquals(False, breakpad.IS_ENABLED)
+    breakpad.IS_ENABLED = True
     self._old_sys_argv = breakpad.sys.argv
     breakpad.sys.argv = ['my_test']
     self._old_sys_version = breakpad.sys.version
     breakpad.sys.version = 'random python'
 
   def tearDown(self):
+    breakpad.IS_ENABLED = False
     breakpad.sys.version = self._old_sys_version
     breakpad.sys.argv = self._old_sys_argv
     super(Breakpad, self).tearDown()
 
   def testMembersChanged(self):
     members = [
-        'CheckForException', 'DEFAULT_URL', 'FormatException', 'Register',
-        'SendProfiling', 'SendStack',
+        'CheckForException', 'DEFAULT_URL', 'FormatException', 'IS_ENABLED',
+        'Register', 'SendProfiling', 'SendStack',
         'atexit', 'getpass', 'os', 'post', 'socket', 'sys', 'time', 'traceback',
         'urllib', 'urllib2',
     ]

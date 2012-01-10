@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -32,6 +32,12 @@ _REGISTERED = False
 _TIME_STARTED = time.time()
 
 _HOST_NAME = socket.getfqdn()
+
+# Skip unit tests and we don't want anything from non-googler.
+IS_ENABLED = (
+    not 'test' in getattr(sys.modules['__main__'], '__file__', '') and
+    not 'NO_BREAKPAD' in os.environ and
+    _HOST_NAME.endswith(('.google.com', '.chromium.org')))
 
 
 def post(url, params):
@@ -75,6 +81,9 @@ def FormatException(e):
 
 def SendStack(last_tb, stack, url=None, maxlen=50):
   """Sends the stack trace to the breakpad server."""
+  if not IS_ENABLED:
+    # Make sure to not send anything for non googler.
+    return
   if not url:
     url = DEFAULT_URL + '/breakpad'
   print 'Sending crash report ...'
@@ -133,11 +142,7 @@ def Register():
   atexit.register(CheckForException)
 
 
-# Skip unit tests and we don't want anything from non-googler.
-if (not 'test' in getattr(sys.modules['__main__'], '__file__', '') and
-    not 'NO_BREAKPAD' in os.environ and
-    (_HOST_NAME.endswith('.google.com') or
-     _HOST_NAME.endswith('.chromium.org'))):
+if IS_ENABLED:
   Register()
 
 # Uncomment this line if you want to test it out.
