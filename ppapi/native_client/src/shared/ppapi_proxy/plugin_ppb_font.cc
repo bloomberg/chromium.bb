@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -39,8 +39,8 @@ PP_Var GetFontFamilies(PP_Instance instance) {
   NaClSrpcChannel* channel = GetMainSrpcChannel();
 
   PP_Var font_families = PP_MakeUndefined();
-  nacl_abi_size_t var_size = kMaxReturnVarSize;
-  nacl::scoped_array<char> var_bytes(new char[var_size]);
+  nacl_abi_size_t var_size = kMaxVarSize;
+  nacl::scoped_array<char> var_bytes(new char[kMaxVarSize]);
 
   NaClSrpcError srpc_result =
       PpbFontRpcClient::PPB_Font_GetFontFamilies(
@@ -61,7 +61,7 @@ PP_Resource Create(PP_Instance instance,
                    const struct PP_FontDescription_Dev* description) {
   DebugPrintf("PPB_Font::Create: instance=%"NACL_PRIu32"\n", instance);
 
-  nacl_abi_size_t face_size = 0;
+  nacl_abi_size_t face_size = kMaxVarSize;
   nacl::scoped_array<char> face_bytes(
       Serialize(&description->face, 1, &face_size));
 
@@ -110,8 +110,8 @@ PP_Bool Describe(PP_Resource font,
 
   int32_t success = 0;
   nacl_abi_size_t description_size = kPPFontDescriptionBytes;
-  nacl_abi_size_t face_size = kMaxReturnVarSize;
-  nacl::scoped_array<char> face_bytes(new char[face_size]);
+  nacl_abi_size_t face_size = kMaxVarSize;
+  nacl::scoped_array<char> face_bytes(new char[kMaxVarSize]);
   nacl_abi_size_t metrics_size = kPPFontMetricsBytes;
   NaClSrpcError srpc_result =
       PpbFontRpcClient::PPB_Font_Describe(
@@ -144,7 +144,7 @@ PP_Bool DrawTextAt(PP_Resource font,
                    PP_Bool image_data_is_opaque) {
   DebugPrintf("PPB_Font::DrawTextAt: font=%"NACL_PRIu32"\n", font);
 
-  nacl_abi_size_t text_size = 0;
+  nacl_abi_size_t text_size = kMaxVarSize;
   nacl::scoped_array<char> text_bytes(
       Serialize(&text_run->text, 1, &text_size));
 
@@ -177,7 +177,7 @@ int32_t MeasureText(PP_Resource font,
                     const struct PP_TextRun_Dev* text_run) {
   DebugPrintf("PPB_Font::MeasureText: font=%"NACL_PRIu32"\n", font);
 
-  nacl_abi_size_t text_size = 0;
+  nacl_abi_size_t text_size = kMaxVarSize;
   nacl::scoped_array<char> text_bytes(
       Serialize(&text_run->text, 1, &text_size));
   int32_t width = 0;
@@ -201,7 +201,7 @@ uint32_t CharacterOffsetForPixel(PP_Resource font,
                                  int32_t pixel_position) {
   DebugPrintf("PPB_Font::CharacterOffsetForPixel: font=%"NACL_PRIu32"\n", font);
 
-  nacl_abi_size_t text_size = 0;
+  nacl_abi_size_t text_size = kMaxVarSize;
   nacl::scoped_array<char> text_bytes(
       Serialize(&text_run->text, 1, &text_size));
   int32_t offset = kInvalidOffset;
@@ -227,7 +227,7 @@ int32_t PixelOffsetForCharacter(PP_Resource font,
                                 uint32_t char_offset) {
   DebugPrintf("PPB_Font::PixelOffsetForCharacter: font=%"NACL_PRIu32"\n", font);
 
-  nacl_abi_size_t text_size = 0;
+  nacl_abi_size_t text_size = kMaxVarSize;
   nacl::scoped_array<char> text_bytes(
       Serialize(&text_run->text, 1, &text_size));
   int32_t offset = kInvalidOffset;
@@ -265,3 +265,4 @@ const PPB_Font_Dev* PluginFont::GetInterface() {
 }
 
 }  // namespace ppapi_proxy
+

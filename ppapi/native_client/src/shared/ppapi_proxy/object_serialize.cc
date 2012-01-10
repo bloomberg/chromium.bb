@@ -464,7 +464,7 @@ bool SerializeTo(const PP_Var* var, char* bytes, uint32_t* length) {
 }
 
 char* Serialize(const PP_Var* vars, uint32_t argc, uint32_t* length) {
-  // Length needs to be returnable.
+  // Length needs to be set.
   if (NULL == length) {
     return NULL;
   }
@@ -479,10 +479,10 @@ char* Serialize(const PP_Var* vars, uint32_t argc, uint32_t* length) {
   }
   // Compute the size of the buffer.  Zero indicates error.
   uint32_t tmp_length = PpVarVectorSize(vars, argc);
-  if (0 == tmp_length) {
+  if (0 == tmp_length || tmp_length > *length) {
     return NULL;
   }
-  // Allocate the buffer.
+  // Allocate the buffer, if the client didn't pass one.
   char* bytes = new char[tmp_length];
   if (NULL == bytes) {
     return NULL;

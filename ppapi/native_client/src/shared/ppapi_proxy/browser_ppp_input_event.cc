@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -86,7 +86,7 @@ PP_Bool HandleInputEvent(PP_Instance instance, PP_Resource input_event) {
   DCHECK((character_text.type == PP_VARTYPE_UNDEFINED) ||
          (character_text.type == PP_VARTYPE_STRING));
   // Serialize the character_text Var.
-  uint32_t text_size = 0;
+  uint32_t text_size = kMaxVarSize;
   nacl::scoped_array<char> text_bytes(Serialize(&character_text, 1,
                                                 &text_size));
   int32_t handled;
