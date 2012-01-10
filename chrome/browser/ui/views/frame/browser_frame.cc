@@ -107,13 +107,14 @@ gfx::Rect BrowserFrame::GetBoundsForTabStrip(views::View* tabstrip) const {
     StatusAreaView* status_area =
         ChromeShellDelegate::instance()->GetStatusArea();
     if (status_area) {
-      // Non-client frameview origin of a maximized BrowserFrame is also the
-      // origin of the screen. So we can use StatusArea's screen bounds with
-      // the |tab_strip_bounds| directly.
-      DCHECK(gfx::Point(0, 0) == GetWindowScreenBounds().origin());
-      DCHECK(gfx::Point(0, 0) == browser_frame_view_->bounds().origin());
-
       gfx::Rect status_rect = status_area->GetWidget()->GetWindowScreenBounds();
+
+      // Translate status_rect to frame view coordinates.
+      gfx::Point frame_origin = GetWindowScreenBounds().origin();
+      gfx::Point frame_view_origin = browser_frame_view_->bounds().origin();
+      status_rect.Offset(-(frame_origin.x() + frame_view_origin.x()),
+                         -(frame_origin.y() + frame_view_origin.y()));
+
       if (status_rect.Intersects(tab_strip_bounds)) {
         status_rect.set_y(tab_strip_bounds.y());
         status_rect.set_height(tab_strip_bounds.height());
