@@ -1500,7 +1500,7 @@ input_handle_pointer_focus(void *data,
 		input->sy = sy;
 
 		pointer = POINTER_LEFT_PTR;
-		widget = window_find_widget(window, x, y);
+		widget = window_find_widget(window, sx, sy);
 		window_set_focus_widget(window, widget, input, time, sx, sy);
 
 		pointer = input_get_pointer_image_for_location(input, pointer);
