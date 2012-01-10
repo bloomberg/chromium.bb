@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -102,16 +102,6 @@ Decoder::DecodeResult DecoderVp8::DecodePacket(const VideoPacket* packet) {
                                       remoting_rect.height()));
   }
 
-  // TODO(wez): Fix the rest of the decode pipeline not to assume the frame
-  // size is the host dimensions, since it's not when scaling.  If the host
-  // gets smaller, then the output size will be too big and we'll overrun the
-  // frame, so currently we render 1:1 in that case; the app will see the
-  // host size change and resize us if need be.
-  if ((output_size_.width() > static_cast<int>(frame_->width())) ||
-      (output_size_.height() > static_cast<int>(frame_->height()))) {
-    output_size_.set(frame_->width(), frame_->height());
-  }
-
   RefreshRects(rects);
   return DECODE_DONE;
 }
@@ -142,6 +132,16 @@ void DecoderVp8::SetClipRect(const SkIRect& clip_rect) {
 }
 
 void DecoderVp8::RefreshRects(const RectVector& rects) {
+  // TODO(wez): Fix the rest of the decode pipeline not to assume the frame
+  // size is the host dimensions, since it's not when scaling.  If the host
+  // gets smaller, then the output size will be too big and we'll overrun the
+  // frame, so currently we render 1:1 in that case; the app will see the
+  // host size change and resize us if need be.
+  if (output_size_.width() > static_cast<int>(frame_->width()))
+    output_size_.set(frame_->width(), output_size_.height());
+  if (output_size_.height() > static_cast<int>(frame_->height()))
+    output_size_.set(output_size_.width(), frame_->height());
+
   if (!DoScaling())
     ConvertRects(rects, &updated_rects_);
   else
