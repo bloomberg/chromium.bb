@@ -488,10 +488,18 @@ void BrowserOptionsHandler::UpdateSearchEngines() {
 void BrowserOptionsHandler::UpdateHomePageLabel() const {
   Profile* profile = Profile::FromWebUI(web_ui());
   PrefService* prefs = profile->GetPrefs();
-  string16 str = l10n_util::GetStringFUTF16(
-      IDS_OPTIONS_SHOW_HOME_BUTTON_WITH_URL,
-      UTF8ToUTF16(prefs->GetString(prefs::kHomePage)));
-  scoped_ptr<Value> label(Value::CreateStringValue(str));
+  scoped_ptr<Value> label;
+  string16 str;
+
+  if (prefs->GetBoolean(prefs::kHomePageIsNewTabPage)) {
+    str = l10n_util::GetStringUTF16(IDS_OPTIONS_SHOW_HOME_BUTTON_FOR_NTP);
+  } else {
+    str = l10n_util::GetStringFUTF16(
+        IDS_OPTIONS_SHOW_HOME_BUTTON_FOR_URL,
+        UTF8ToUTF16(prefs->GetString(prefs::kHomePage)));
+  }
+
+  label.reset(Value::CreateStringValue(str));
   web_ui()->CallJavascriptFunction("BrowserOptions.updateHomePageLabel",
                                    *label);
 }
