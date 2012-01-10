@@ -11,6 +11,7 @@
 #include "base/bind_helpers.h"
 #include "base/debug/leak_tracker.h"
 #include "base/logging.h"
+#include "base/metrics/field_trial.h"
 #include "base/stl_util.h"
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
@@ -120,6 +121,43 @@ net::HostResolver* CreateGlobalHostResolver(net::NetLog* net_log) {
     } else {
       LOG(ERROR) << "Invalid switch for host resolver parallelism: " << s;
     }
+  } else {
+    // Set up a field trial to see what impact the total number of concurrent
+    // resolutions have on DNS resolutions.
+    base::FieldTrial::Probability kDivisor = 1000;
+    // For each option (i.e., non-default), we have a fixed probability.
+    base::FieldTrial::Probability kProbabilityPerGroup = 100;  // 10%.
+
+    // After June 30, 2011 builds, it will always be in default group
+    // (parallel_default).
+    scoped_refptr<base::FieldTrial> trial(
+        new base::FieldTrial(
+            "DnsParallelism", kDivisor, "parallel_default", 2011, 6, 30));
+
+    // List options with different counts.
+    // Firefox limits total to 8 in parallel, and default is currently 50.
+    int parallel_6 = trial->AppendGroup("parallel_6", kProbabilityPerGroup);
+    int parallel_7 = trial->AppendGroup("parallel_7", kProbabilityPerGroup);
+    int parallel_8 = trial->AppendGroup("parallel_8", kProbabilityPerGroup);
+    int parallel_9 = trial->AppendGroup("parallel_9", kProbabilityPerGroup);
+    int parallel_10 = trial->AppendGroup("parallel_10", kProbabilityPerGroup);
+    int parallel_14 = trial->AppendGroup("parallel_14", kProbabilityPerGroup);
+    int parallel_20 = trial->AppendGroup("parallel_20", kProbabilityPerGroup);
+
+    if (trial->group() == parallel_6)
+      parallelism = 6;
+    else if (trial->group() == parallel_7)
+      parallelism = 7;
+    else if (trial->group() == parallel_8)
+      parallelism = 8;
+    else if (trial->group() == parallel_9)
+      parallelism = 9;
+    else if (trial->group() == parallel_10)
+      parallelism = 10;
+    else if (trial->group() == parallel_14)
+      parallelism = 14;
+    else if (trial->group() == parallel_20)
+      parallelism = 20;
   }
 
   size_t retry_attempts = net::HostResolver::kDefaultRetryAttempts;

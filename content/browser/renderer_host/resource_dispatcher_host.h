@@ -59,28 +59,15 @@ class DeletableFileReference;
 
 class CONTENT_EXPORT ResourceDispatcherHost : public net::URLRequest::Delegate {
  public:
-  ResourceDispatcherHost();
+  explicit ResourceDispatcherHost(
+      const ResourceQueue::DelegateSet& resource_queue_delegates);
   virtual ~ResourceDispatcherHost();
 
-  // Returns the current ResourceDispatcherHost, creating it if necessary. The
-  // first time this is called must be on the UI thread, but after that it can
-  // be called from the IO thread as well.
-  static ResourceDispatcherHost* Get();
-
-  // Returns true if the ResourceDispatcherHost has been created (i.e. Get() has
-  // been called).
-  static bool IsCreated();
+  void Initialize();
 
   // Puts the resource dispatcher host in an inactive state (unable to begin
   // new requests).  Cancels all pending requests.
   void Shutdown();
-
-  // Destructs the current ResourceDispatcherHost.
-  void Destruct();
-
-  // Adds a delegate that can delay requests. This should be called early, i.e.
-  // in the ContentBrowserClient::ResourceDispatcherHostCreated callback.
-  void AddResourceQueueDelegate(ResourceQueueDelegate* delegate);
 
   // Returns true if the message was a resource message that was processed.
   // If it was, message_was_ok will be false iff the message was corrupt.
@@ -474,9 +461,6 @@ class CONTENT_EXPORT ResourceDispatcherHost : public net::URLRequest::Delegate {
 
   // Handles the resource requests from the moment we want to start them.
   ResourceQueue resource_queue_;
-
-  // Used temporarily during construction.
-  ResourceQueue::DelegateSet* temporarily_delegate_set_;
 
   // We own the download file writing thread and manager
   scoped_refptr<DownloadFileManager> download_file_manager_;

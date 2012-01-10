@@ -16,6 +16,8 @@
 #include "content/browser/worker_host/worker_document_set.h"
 #include "googleurl/src/gurl.h"
 
+class ResourceDispatcherHost;
+
 namespace content {
 class ResourceContext;
 class WorkerServiceImpl;
@@ -107,7 +109,9 @@ class WorkerProcessHost : public BrowserChildProcessHost {
     const content::ResourceContext* const resource_context_;
   };
 
-  explicit WorkerProcessHost(const content::ResourceContext* resource_context);
+  WorkerProcessHost(
+      const content::ResourceContext* resource_context,
+      ResourceDispatcherHost* resource_dispatcher_host);
   virtual ~WorkerProcessHost();
 
   // Starts the process.  Returns true iff it succeeded.
@@ -185,6 +189,8 @@ class WorkerProcessHost : public BrowserChildProcessHost {
   // keep this around since we'll use it when forward messages to the worker
   // process.
   scoped_refptr<WorkerMessageFilter> worker_message_filter_;
+
+  ResourceDispatcherHost* const resource_dispatcher_host_;
 
   DISALLOW_COPY_AND_ASSIGN(WorkerProcessHost);
 };

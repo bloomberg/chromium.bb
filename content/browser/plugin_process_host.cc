@@ -164,7 +164,8 @@ PluginProcessHost::~PluginProcessHost() {
   CancelRequests();
 }
 
-bool PluginProcessHost::Init(const webkit::WebPluginInfo& info) {
+bool PluginProcessHost::Init(const webkit::WebPluginInfo& info,
+                             const std::string& locale) {
   info_ = info;
   set_name(info_.name);
 
@@ -230,8 +231,6 @@ bool PluginProcessHost::Init(const webkit::WebPluginInfo& info) {
   if (!plugin_launcher.empty())
     cmd_line->PrependWrapper(plugin_launcher);
 
-  std::string locale =
-      content::GetContentClient()->browser()->GetApplicationLocale();
   if (!locale.empty()) {
     // Pass on the locale so the null plugin will use the right language in the
     // prompt to install the desired plugin.

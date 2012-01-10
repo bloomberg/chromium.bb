@@ -92,7 +92,6 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/plugin_process_host.h"
-#include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_agent_host_registry.h"
 #include "content/public/browser/devtools_manager.h"
@@ -390,8 +389,7 @@ ExtensionService::ExtensionService(Profile* profile,
       event_routers_initialized_(false),
       extension_warnings_(profile),
       socket_controller_(NULL),
-      tracker_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
-      use_utility_process_(true) {
+      tracker_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Figure out if extension installation should be enabled.
@@ -568,7 +566,7 @@ void ExtensionService::Init() {
 
   // Hack: we need to ensure the ResourceDispatcherHost is ready before we load
   // the first extension, because its members listen for loaded notifications.
-  ResourceDispatcherHost::Get();
+  g_browser_process->resource_dispatcher_host();
 
   component_loader_->LoadAll();
   extensions::InstalledLoader(this).LoadAllExtensions();
@@ -628,7 +626,6 @@ bool ExtensionService::UpdateExtension(
       NULL : new ExtensionInstallUI(profile_);
 
   scoped_refptr<CrxInstaller> installer(CrxInstaller::Create(this, client));
-  installer->set_use_utility_process(use_utility_process_);
   installer->set_expected_id(id);
   if (is_pending_extension)
     installer->set_install_source(pending_extension_info.install_source());
@@ -2325,7 +2322,6 @@ void ExtensionService::OnExternalExtensionFileFound(
 
   // no client (silent install)
   scoped_refptr<CrxInstaller> installer(CrxInstaller::Create(this, NULL));
-  installer->set_use_utility_process(use_utility_process_);
   installer->set_install_source(location);
   installer->set_expected_id(id);
   installer->set_expected_version(*version);

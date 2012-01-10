@@ -43,10 +43,8 @@
 #include "net/base/net_errors.h"
 
 class DownloadFileManager;
-class DownloadIdFactory;
 class DownloadManagerTest;
 class DownloadRequestHandle;
-class DownloadStatusUpdater;
 class GURL;
 class TabContents;
 struct DownloadCreateInfo;
@@ -62,11 +60,6 @@ class CONTENT_EXPORT DownloadManager
     : public base::RefCountedThreadSafe<DownloadManager> {
  public:
   virtual ~DownloadManager() {}
-
-  static DownloadManager* Create(
-      DownloadManagerDelegate* delegate,
-      DownloadIdFactory* id_factory,
-      DownloadStatusUpdater* status_updater);
 
   // Shutdown the download manager. Must be called before destruction.
   virtual void Shutdown() = 0;

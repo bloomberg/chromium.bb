@@ -42,6 +42,7 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/browser_child_process_host.h"
+#include "content/browser/renderer_host/render_message_filter.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"

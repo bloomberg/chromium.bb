@@ -45,8 +45,10 @@ class BrowserProcessImpl : public BrowserProcess,
   explicit BrowserProcessImpl(const CommandLine& command_line);
   virtual ~BrowserProcessImpl();
 
-  // Called before the browser threads are created.
-  void PreCreateThreads();
+  // Some of our startup is interleaved with thread creation, driven
+  // by these functions.
+  void PreStartThread(content::BrowserThread::ID identifier);
+  void PostStartThread(content::BrowserThread::ID identifier);
 
   // Called after the threads have been created but before the message loops
   // starts running. Allows the browser process to do any initialization that
@@ -58,11 +60,12 @@ class BrowserProcessImpl : public BrowserProcess,
   // framework, rather than in the destructor, so that we can
   // interleave cleanup with threads being stopped.
   void StartTearDown();
-  void PostDestroyThreads();
+  void PreStopThread(content::BrowserThread::ID identifier);
+  void PostStopThread(content::BrowserThread::ID identifier);
 
   // BrowserProcess methods
-  virtual void ResourceDispatcherHostCreated() OVERRIDE;
   virtual void EndSession() OVERRIDE;
+  virtual ResourceDispatcherHost* resource_dispatcher_host() OVERRIDE;
   virtual MetricsService* metrics_service() OVERRIDE;
   virtual IOThread* io_thread() OVERRIDE;
   virtual WatchDogThread* watchdog_thread() OVERRIDE;
@@ -124,7 +127,12 @@ class BrowserProcessImpl : public BrowserProcess,
   virtual AudioManager* audio_manager() OVERRIDE;
 
  private:
+  // Must be called right before the IO thread is started.
+  void CreateIOThreadState();
+
+  void CreateResourceDispatcherHost();
   void CreateMetricsService();
+
   void CreateWatchdogThread();
 #if defined(OS_CHROMEOS)
   void InitializeWebSocketProxyThread();
@@ -150,6 +158,9 @@ class BrowserProcessImpl : public BrowserProcess,
   void ApplyDisabledSchemesPolicy();
   void ApplyAllowCrossOriginAuthPromptPolicy();
   void ApplyDefaultBrowserPolicy();
+
+  bool created_resource_dispatcher_host_;
+  scoped_ptr<ResourceDispatcherHost> resource_dispatcher_host_;
 
   bool created_metrics_service_;
   scoped_ptr<MetricsService> metrics_service_;

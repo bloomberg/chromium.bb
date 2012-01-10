@@ -17,9 +17,11 @@ using content::WorkerServiceImpl;
 WorkerMessageFilter::WorkerMessageFilter(
     int render_process_id,
     const content::ResourceContext* resource_context,
+    ResourceDispatcherHost* resource_dispatcher_host,
     const NextRoutingIDCallback& callback)
     : render_process_id_(render_process_id),
       resource_context_(resource_context),
+      resource_dispatcher_host_(resource_dispatcher_host),
       next_routing_id_(callback) {
   DCHECK(resource_context);
 }

@@ -284,7 +284,9 @@ bool WorkerServiceImpl::CreateWorkerFromInstance(
 
   if (!worker) {
     WorkerMessageFilter* first_filter = instance.filters().begin()->first;
-    worker = new WorkerProcessHost(instance.resource_context());
+    worker = new WorkerProcessHost(
+        instance.resource_context(),
+        first_filter->resource_dispatcher_host());
     // TODO(atwilson): This won't work if the message is from a worker process.
     // We don't support that yet though (this message is only sent from
     // renderers) but when we do, we'll need to add code to pass in the current

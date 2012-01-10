@@ -1156,8 +1156,6 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
     tracked_objects::ThreadData::InitializeAndSetTrackingStatus(enabled);
   }
 
-  browser_process_->PreCreateThreads();
-
   // This forces the TabCloseableStateWatcher to be created and, on chromeos,
   // register for the notifications it needs to track the closeable state of
   // tabs.
@@ -1314,6 +1312,38 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
   return content::RESULT_CODE_NORMAL_EXIT;
 }
 
+void ChromeBrowserMainParts::PreStartThread(
+    content::BrowserThread::ID thread_id) {
+  browser_process_->PreStartThread(thread_id);
+}
+
+void ChromeBrowserMainParts::PostStartThread(
+    content::BrowserThread::ID thread_id) {
+  browser_process_->PostStartThread(thread_id);
+  switch (thread_id) {
+    case BrowserThread::FILE:
+      // Now the command line has been mutated based on about:flags,
+      // and the file thread has been started, we can set up metrics
+      // and initialize field trials.
+      metrics_ = SetupMetricsAndFieldTrials(local_state_);
+
+#if defined(USE_LINUX_BREAKPAD)
+      // Needs to be called after we have chrome::DIR_USER_DATA and
+      // g_browser_process.  This happens in PreCreateThreads.
+      BrowserThread::PostTask(BrowserThread::FILE,
+                              FROM_HERE,
+                              base::Bind(&GetLinuxDistroCallback));
+
+      if (IsCrashReportingEnabled(local_state_))
+        InitCrashReporter();
+#endif
+      break;
+
+    default:
+      break;
+  }
+}
+
 void ChromeBrowserMainParts::PreMainMessageLoopRun() {
   result_code_ = PreMainMessageLoopRunImpl();
 
@@ -1353,22 +1383,6 @@ void ChromeBrowserMainParts::PostBrowserStart() {
 }
 
 int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
-  // Now the command line has been mutated based on about:flags,
-  // and the file thread has been started, we can set up metrics
-  // and initialize field trials.
-  metrics_ = SetupMetricsAndFieldTrials(local_state_);
-
-#if defined(USE_LINUX_BREAKPAD)
-  // Needs to be called after we have chrome::DIR_USER_DATA and
-  // g_browser_process.  This happens in PreCreateThreads.
-  BrowserThread::PostTask(BrowserThread::FILE,
-                          FROM_HERE,
-                          base::Bind(&GetLinuxDistroCallback));
-
-  if (IsCrashReportingEnabled(local_state_))
-    InitCrashReporter();
-#endif
-
   // Create watchdog thread after creating all other threads because it will
   // watch the other threads and they must be running.
   browser_process_->watchdog_thread();
@@ -1380,7 +1394,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
 #if defined(USE_WEBKIT_COMPOSITOR)
   // We need to ensure WebKit has been initialized before we start the WebKit
   // compositor. This is done by the ResourceDispatcherHost on creation.
-  ResourceDispatcherHost::Get();
+  browser_process_->resource_dispatcher_host();
 #endif
 
   // Record last shutdown time into a histogram.
@@ -1916,8 +1930,15 @@ void ChromeBrowserMainParts::PostMainMessageLoopRun() {
   browser_process_->StartTearDown();
 }
 
+void ChromeBrowserMainParts::PreStopThread(BrowserThread::ID identifier) {
+  browser_process_->PreStopThread(identifier);
+}
+
+void ChromeBrowserMainParts::PostStopThread(BrowserThread::ID identifier) {
+  browser_process_->PostStopThread(identifier);
+}
+
 void ChromeBrowserMainParts::PostDestroyThreads() {
-  browser_process_->PostDestroyThreads();
   // browser_shutdown takes care of deleting browser_process, so we need to
   // release it.
   ignore_result(browser_process_.release());

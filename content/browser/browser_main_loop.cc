@@ -13,11 +13,7 @@
 #include "base/metrics/histogram.h"
 #include "base/threading/thread_restrictions.h"
 #include "content/browser/browser_thread_impl.h"
-#include "content/browser/download/download_file_manager.h"
-#include "content/browser/download/save_file_manager.h"
 #include "content/browser/in_process_webkit/webkit_thread.h"
-#include "content/browser/plugin_service_impl.h"
-#include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/trace_controller.h"
 #include "content/common/hi_res_timer_manager.h"
 #include "content/common/sandbox_policy.h"
@@ -294,12 +290,6 @@ void BrowserMainLoop::MainMessageLoopStart() {
   system_message_window_.reset(new SystemMessageWindowWin);
 #endif
 
-  // Prior to any processing happening on the io thread, we create the
-  // plugin service as it is predominantly used from the io thread,
-  // but must be created on the main thread. The service ctor is
-  // inexpensive and does not invoke the io_thread() accessor.
-  PluginService::GetInstance()->Init();
-
   if (parts_.get())
     parts_->PostMainMessageLoopStart();
 }
@@ -368,6 +358,9 @@ void BrowserMainLoop::RunMainMessageLoopParts(
 
     BrowserThread::ID id = static_cast<BrowserThread::ID>(thread_id);
 
+    if (parts_.get())
+      parts_->PreStartThread(id);
+
     if (thread_id == BrowserThread::WEBKIT_DEPRECATED) {
       webkit_thread_.reset(new WebKitThread);
       webkit_thread_->Initialize();
@@ -377,6 +370,9 @@ void BrowserMainLoop::RunMainMessageLoopParts(
     } else {
       NOTREACHED();
     }
+
+    if (parts_.get())
+      parts_->PostStartThread(id);
   }
 
   if (parts_.get())
@@ -414,12 +410,6 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
   if (parts_.get())
     parts_->PostMainMessageLoopRun();
 
-  // Cancel pending requests and prevent new requests.
-  ResourceDispatcherHost* rdh = ResourceDispatcherHost::IsCreated() ? 
-      ResourceDispatcherHost::Get() : NULL;
-  if (rdh)
-    rdh->Shutdown();
-
   // Must be size_t so we can subtract from it.
   for (size_t thread_id = BrowserThread::ID_COUNT - 1;
        thread_id >= (BrowserThread::UI + 1);
@@ -455,24 +445,12 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
       case BrowserThread::WEBKIT_DEPRECATED:
         // Special case as WebKitThread is a separate
         // type.  |thread_to_stop| is not used in this case.
-
-        // Need to destroy ResourceDispatcherHost before PluginService
-        // and since it caches a pointer to it.
-        if (rdh)
-          delete rdh;
         break;
       case BrowserThread::FILE_USER_BLOCKING:
         thread_to_stop = &file_user_blocking_thread_;
         break;
       case BrowserThread::FILE:
         thread_to_stop = &file_thread_;
-
-        // Clean up state that lives on or uses the file_thread_ before
-        // it goes away.
-        if (rdh) {
-          rdh->download_file_manager()->Shutdown();
-          rdh->save_file_manager()->Shutdown();
-        }
         break;
       case BrowserThread::PROCESS_LAUNCHER:
         thread_to_stop = &process_launcher_thread_;
@@ -492,6 +470,9 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
 
     BrowserThread::ID id = static_cast<BrowserThread::ID>(thread_id);
 
+    if (parts_.get())
+      parts_->PreStopThread(id);
+
     if (id == BrowserThread::WEBKIT_DEPRECATED) {
       webkit_thread_.reset();
     } else if (thread_to_stop) {
@@ -499,6 +480,9 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
     } else {
       NOTREACHED();
     }
+
+    if (parts_.get())
+      parts_->PostStopThread(id);
   }
 
   if (parts_.get())

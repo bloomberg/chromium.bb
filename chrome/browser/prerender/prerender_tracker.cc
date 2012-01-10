@@ -20,14 +20,18 @@ namespace prerender {
 
 namespace {
 
-void CancelDeferredRequestOnIOThread(int child_id, int request_id) {
+void CancelDeferredRequestOnIOThread(
+    ResourceDispatcherHost* resource_dispatcher_host,
+    int child_id, int request_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  ResourceDispatcherHost::Get()->CancelRequest(child_id, request_id, false);
+  resource_dispatcher_host->CancelRequest(child_id, request_id, false);
 }
 
-void StartDeferredRequestOnIOThread(int child_id, int request_id) {
+void StartDeferredRequestOnIOThread(
+    ResourceDispatcherHost* resource_dispatcher_host,
+    int child_id, int request_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  ResourceDispatcherHost::Get()->StartDeferredRequest(child_id, request_id);
+  resource_dispatcher_host->StartDeferredRequest(child_id, request_id);
 }
 
 bool ShouldCancelRequest(
@@ -55,14 +59,19 @@ void HandleDelayedRequestOnUIThread(
     int route_id,
     int request_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  ResourceDispatcherHost* resource_dispatcher_host =
+      g_browser_process->resource_dispatcher_host();
+  CHECK(resource_dispatcher_host);
   if (ShouldCancelRequest(child_id, route_id)) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&CancelDeferredRequestOnIOThread, child_id, request_id));
+        base::Bind(&CancelDeferredRequestOnIOThread, resource_dispatcher_host,
+                   child_id, request_id));
   } else {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&StartDeferredRequestOnIOThread, child_id, request_id));
+        base::Bind(&StartDeferredRequestOnIOThread, resource_dispatcher_host,
+                   child_id, request_id));
   }
 }
 

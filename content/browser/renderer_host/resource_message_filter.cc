@@ -14,11 +14,13 @@ ResourceMessageFilter::ResourceMessageFilter(
     int child_id,
     content::ProcessType process_type,
     const content::ResourceContext* resource_context,
-    URLRequestContextSelector* url_request_context_selector)
+    URLRequestContextSelector* url_request_context_selector,
+    ResourceDispatcherHost* resource_dispatcher_host)
     : child_id_(child_id),
       process_type_(process_type),
       resource_context_(resource_context),
-      url_request_context_selector_(url_request_context_selector) {
+      url_request_context_selector_(url_request_context_selector),
+      resource_dispatcher_host_(resource_dispatcher_host) {
   DCHECK(resource_context);
   DCHECK(url_request_context_selector);
 }
@@ -31,12 +33,12 @@ void ResourceMessageFilter::OnChannelClosing() {
 
   // Unhook us from all pending network requests so they don't get sent to a
   // deleted object.
-  ResourceDispatcherHost::Get()->CancelRequestsForProcess(child_id_);
+  resource_dispatcher_host_->CancelRequestsForProcess(child_id_);
 }
 
 bool ResourceMessageFilter::OnMessageReceived(const IPC::Message& message,
                                               bool* message_was_ok) {
-  return ResourceDispatcherHost::Get()->OnMessageReceived(
+  return resource_dispatcher_host_->OnMessageReceived(
       message, this, message_was_ok);
 }
 

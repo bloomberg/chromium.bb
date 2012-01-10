@@ -7,6 +7,8 @@
 #define CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_MANAGER_IMPL_H_
 #pragma once
 
+#include "content/public/browser/download_manager.h"
+
 #include <map>
 #include <set>
 
@@ -20,7 +22,6 @@
 #include "content/browser/download/download_item_impl.h"
 #include "content/browser/download/download_status_updater_delegate.h"
 #include "content/common/content_export.h"
-#include "content/public/browser/download_manager.h"
 
 class DownloadIdFactory;
 class DownloadStatusUpdater;

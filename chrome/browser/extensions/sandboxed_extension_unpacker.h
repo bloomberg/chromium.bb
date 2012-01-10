@@ -15,6 +15,7 @@
 #include "content/browser/utility_process_host.h"
 
 class Extension;
+class ResourceDispatcherHost;
 
 namespace base {
 class DictionaryValue;
@@ -97,16 +98,16 @@ class SandboxedExtensionUnpacker : public UtilityProcessHost::Client {
   static const uint32 kCurrentVersion = 2;
 
   // Unpacks the extension in |crx_path| into a temporary directory and calls
-  // |client| with the result.
+  // |client| with the result. If |rdh| is provided, unpacking is done in a
+  // sandboxed subprocess. Otherwise, it is done in-process.
   SandboxedExtensionUnpacker(const FilePath& crx_path,
+                             ResourceDispatcherHost* rdh,
                              Extension::Location location,
                              int creation_flags,
                              SandboxedExtensionUnpackerClient* client);
 
   // Start unpacking the extension. The client is called with the results.
   void Start();
-
-  void set_use_utility_process(bool value) { use_utility_process_ = value; }
 
  private:
   class ProcessHostClient;
@@ -219,6 +220,9 @@ class SandboxedExtensionUnpacker : public UtilityProcessHost::Client {
   // Our client's thread. This is the thread we respond on.
   content::BrowserThread::ID thread_identifier_;
 
+  // ResourceDispatcherHost to pass to the utility process.
+  ResourceDispatcherHost* rdh_;
+
   // Our client.
   scoped_refptr<SandboxedExtensionUnpackerClient> client_;
 
@@ -246,9 +250,6 @@ class SandboxedExtensionUnpacker : public UtilityProcessHost::Client {
   // Creation flags to use for the extension.  These flags will be used
   // when calling Extenion::Create() by the crx installer.
   int creation_flags_;
-
-  // True if the utility process is used, false otherwise (i.e. for tests).
-  bool use_utility_process_;
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_SANDBOXED_EXTENSION_UNPACKER_H_

@@ -245,7 +245,8 @@ std::string ShellContentBrowserClient::GetWorkerProcessTitle(
   return std::string();
 }
 
-void ShellContentBrowserClient::ResourceDispatcherHostCreated() {
+ResourceDispatcherHost* ShellContentBrowserClient::GetResourceDispatcherHost() {
+  return shell_browser_main_parts_->GetResourceDispatcherHost();
 }
 
 ui::Clipboard* ShellContentBrowserClient::GetClipboard() {

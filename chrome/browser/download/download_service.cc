@@ -11,7 +11,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "content/browser/download/download_id_factory.h"
-#include "content/public/browser/download_manager.h"
+#include "content/browser/download/download_manager_impl.h"
 
 using content::DownloadManager;
 
@@ -47,7 +47,7 @@ DownloadManager* DownloadService::GetDownloadManager() {
     // SetDownloadManagerDelegateForTesting.
     if (!manager_delegate_.get())
       manager_delegate_ = new ChromeDownloadManagerDelegate(profile_);
-    manager_ = DownloadManager::Create(
+    manager_ = new DownloadManagerImpl(
         manager_delegate_.get(),
         id_factory_.get(),
         g_browser_process->download_status_updater());

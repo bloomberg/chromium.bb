@@ -271,7 +271,8 @@ RenderMessageFilter::RenderMessageFilter(
     content::BrowserContext* browser_context,
     net::URLRequestContextGetter* request_context,
     RenderWidgetHelper* render_widget_helper)
-    : resource_dispatcher_host_(ResourceDispatcherHost::Get()),
+    : resource_dispatcher_host_(
+          content::GetContentClient()->browser()->GetResourceDispatcherHost()),
       plugin_service_(plugin_service),
       browser_context_(browser_context),
       request_context_(request_context),

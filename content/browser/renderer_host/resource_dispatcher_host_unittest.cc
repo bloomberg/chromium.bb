@@ -174,7 +174,8 @@ class ForwardingFilter : public ResourceMessageFilter {
         content::PROCESS_TYPE_RENDERER,
         content::MockResourceContext::GetInstance(),
         new MockURLRequestContextSelector(
-            content::MockResourceContext::GetInstance()->request_context())),
+            content::MockResourceContext::GetInstance()->request_context()),
+        NULL),
       dest_(dest) {
     OnChannelConnected(base::GetCurrentProcId());
   }
@@ -276,6 +277,7 @@ class ResourceDispatcherHostTest : public testing::Test,
       : ui_thread_(BrowserThread::UI, &message_loop_),
         io_thread_(BrowserThread::IO, &message_loop_),
         ALLOW_THIS_IN_INITIALIZER_LIST(filter_(new ForwardingFilter(this))),
+        host_(ResourceQueue::DelegateSet()),
         old_factory_(NULL),
         resource_type_(ResourceType::SUB_RESOURCE) {
   }

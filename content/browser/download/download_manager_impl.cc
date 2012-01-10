@@ -86,18 +86,6 @@ void BeginDownload(const URLParams& url_params,
 
 }  // namespace
 
-namespace content {
-
-// static
-DownloadManager* DownloadManager::Create(
-      content::DownloadManagerDelegate* delegate,
-      DownloadIdFactory* id_factory,
-      DownloadStatusUpdater* status_updater) {
-  return new DownloadManagerImpl(delegate, id_factory, status_updater);
-}
-
-}  // namespace content
-
 DownloadManagerImpl::DownloadManagerImpl(
     content::DownloadManagerDelegate* delegate,
     DownloadIdFactory* id_factory,
@@ -259,8 +247,15 @@ bool DownloadManagerImpl::Init(content::BrowserContext* browser_context) {
 
   browser_context_ = browser_context;
 
-  file_manager_ = ResourceDispatcherHost::Get()->download_file_manager();
-  DCHECK(file_manager_);
+  // In test mode, there may be no ResourceDispatcherHost.  In this case it's
+  // safe to avoid setting |file_manager_| because we only call a small set of
+  // functions, none of which need it.
+  ResourceDispatcherHost* rdh =
+      content::GetContentClient()->browser()->GetResourceDispatcherHost();
+  if (rdh) {
+    file_manager_ = rdh->download_file_manager();
+    DCHECK(file_manager_);
+  }
 
   return true;
 }
@@ -786,7 +781,7 @@ void DownloadManagerImpl::DownloadUrlToFile(const GURL& url,
                                             const DownloadSaveInfo& save_info,
                                             WebContents* web_contents) {
   ResourceDispatcherHost* resource_dispatcher_host =
-      ResourceDispatcherHost::Get();
+      content::GetContentClient()->browser()->GetResourceDispatcherHost();
 
   // We send a pointer to content::ResourceContext, instead of the usual
   // reference, so that a copy of the object isn't made.

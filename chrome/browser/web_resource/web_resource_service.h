@@ -38,10 +38,6 @@ class WebResourceService
   // Then begin updating resources.
   void StartAfterDelay();
 
-  void set_use_utility_process_for_testing(bool value) {
-    use_utility_process_ = value;
-  }
-
  protected:
   virtual ~WebResourceService();
 
@@ -92,9 +88,6 @@ class WebResourceService
   // Delay between calls to update the web resource cache. This delay may be
   // different for different builds of Chrome.
   int cache_update_delay_ms_;
-
-  // Used by unittests to skip the utility process.
-  bool use_utility_process_;
 
   DISALLOW_COPY_AND_ASSIGN(WebResourceService);
 };

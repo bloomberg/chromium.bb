@@ -135,7 +135,10 @@ PluginServiceImpl* PluginServiceImpl::GetInstance() {
 }
 
 PluginServiceImpl::PluginServiceImpl()
-    : plugin_list_(NULL), filter_(NULL) {
+    : plugin_list_(NULL),
+      ui_locale_(
+          content::GetContentClient()->browser()->GetApplicationLocale()),
+      filter_(NULL) {
 }
 
 PluginServiceImpl::~PluginServiceImpl() {
@@ -229,6 +232,10 @@ void PluginServiceImpl::StartWatchingPlugins() {
 #endif
 }
 
+const std::string& PluginServiceImpl::GetUILocale() {
+  return ui_locale_;
+}
+
 PluginProcessHost* PluginServiceImpl::FindNpapiPluginProcess(
     const FilePath& plugin_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -290,7 +297,7 @@ PluginProcessHost* PluginServiceImpl::FindOrStartNpapiPluginProcess(
 
   // This plugin isn't loaded by any plugin process, so create a new process.
   scoped_ptr<PluginProcessHost> new_host(new PluginProcessHost());
-  if (!new_host->Init(info)) {
+  if (!new_host->Init(info, ui_locale_)) {
     NOTREACHED();  // Init is not expected to fail.
     return NULL;
   }

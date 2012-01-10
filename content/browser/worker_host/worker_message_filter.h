@@ -25,6 +25,7 @@ class WorkerMessageFilter : public content::BrowserMessageFilter {
   WorkerMessageFilter(
       int render_process_id,
       const content::ResourceContext* resource_context,
+      ResourceDispatcherHost* resource_dispatcher_host,
       const NextRoutingIDCallback& callback);
 
   // content::BrowserMessageFilter implementation.
@@ -34,6 +35,9 @@ class WorkerMessageFilter : public content::BrowserMessageFilter {
 
   int GetNextRoutingID();
   int render_process_id() const { return render_process_id_; }
+  ResourceDispatcherHost* resource_dispatcher_host() const {
+    return resource_dispatcher_host_;
+  }
 
  private:
   virtual ~WorkerMessageFilter();
@@ -51,6 +55,7 @@ class WorkerMessageFilter : public content::BrowserMessageFilter {
 
   int render_process_id_;
   const content::ResourceContext* const resource_context_;
+  ResourceDispatcherHost* resource_dispatcher_host_;
 
   // This is guaranteed to be valid until OnChannelClosing is closed, and it's
   // not used after.

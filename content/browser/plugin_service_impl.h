@@ -106,6 +106,9 @@ class CONTENT_EXPORT PluginServiceImpl
   virtual void SetPluginListForTesting(
       webkit::npapi::PluginList* plugin_list) OVERRIDE;
 
+  // Gets the browser's UI locale.
+  const std::string& GetUILocale();
+
   // Like FindNpapiPluginProcess but for Pepper.
   PpapiPluginProcessHost* FindPpapiPluginProcess(const FilePath& plugin_path);
   PpapiPluginProcessHost* FindPpapiBrokerProcess(const FilePath& broker_path);
@@ -196,6 +199,9 @@ class CONTENT_EXPORT PluginServiceImpl
 
   // The plugin list instance.
   webkit::npapi::PluginList* plugin_list_;
+
+  // The browser's UI locale.
+  const std::string ui_locale_;
 
   content::NotificationRegistrar registrar_;
 

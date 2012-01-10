@@ -85,6 +85,9 @@ class RenderMessageFilter : public content::BrowserMessageFilter {
   bool OffTheRecord() const;
 
   int render_process_id() const { return render_process_id_; }
+  ResourceDispatcherHost* resource_dispatcher_host() {
+    return resource_dispatcher_host_;
+  }
 
   // Returns the correct net::URLRequestContext depending on what type of url is
   // given.

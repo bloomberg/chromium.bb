@@ -2059,7 +2059,10 @@ void TabContents::OnUserGesture() {
   // Notify observers.
   FOR_EACH_OBSERVER(WebContentsObserver, observers_, DidGetUserGesture());
 
-  ResourceDispatcherHost::Get()->OnUserGesture(this);
+  ResourceDispatcherHost* rdh =
+      content::GetContentClient()->browser()->GetResourceDispatcherHost();
+  if (rdh)  // NULL in unittests.
+    rdh->OnUserGesture(this);
 }
 
 void TabContents::OnIgnoredUIEvent() {

@@ -47,8 +47,8 @@ class TestingBrowserProcess : public BrowserProcess {
   TestingBrowserProcess();
   virtual ~TestingBrowserProcess();
 
-  virtual void ResourceDispatcherHostCreated() OVERRIDE;
   virtual void EndSession() OVERRIDE;
+  virtual ResourceDispatcherHost* resource_dispatcher_host() OVERRIDE;
   virtual MetricsService* metrics_service() OVERRIDE;
   virtual IOThread* io_thread() OVERRIDE;
   virtual WatchDogThread* watchdog_thread() OVERRIDE;

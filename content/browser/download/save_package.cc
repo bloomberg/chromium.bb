@@ -241,7 +241,14 @@ void SavePackage::Cancel(bool user_action) {
 // Init() can be called directly, or indirectly via GetSaveInfo(). In both
 // cases, we need file_manager_ to be initialized, so we do this first.
 void SavePackage::InternalInit() {
-  file_manager_ = ResourceDispatcherHost::Get()->save_file_manager();
+  ResourceDispatcherHost* rdh =
+      content::GetContentClient()->browser()->GetResourceDispatcherHost();
+  if (!rdh) {
+    NOTREACHED();
+    return;
+  }
+
+  file_manager_ = rdh->save_file_manager();
   DCHECK(file_manager_);
 
   download_manager_ = web_contents()->GetBrowserContext()->GetDownloadManager();

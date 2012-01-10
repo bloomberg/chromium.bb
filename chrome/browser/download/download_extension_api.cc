@@ -33,6 +33,7 @@
 #include "chrome/browser/renderer_host/chrome_render_message_filter.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/webui/web_ui_util.h"
+#include "content/browser/download/download_file_manager.h"
 #include "content/browser/download/download_id.h"
 #include "content/browser/download/download_state_info.h"
 #include "content/browser/download/download_types.h"
@@ -232,7 +233,7 @@ bool DownloadsDownloadFunction::ParseArgs() {
       }
     }
   }
-  iodata_->rdh = ResourceDispatcherHost::Get();
+  iodata_->rdh = g_browser_process->resource_dispatcher_host();
   iodata_->resource_context = &profile()->GetResourceContext();
   iodata_->render_process_host_id = render_view_host()->process()->GetID();
   iodata_->render_view_host_routing_id = render_view_host()->routing_id();

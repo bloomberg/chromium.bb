@@ -482,8 +482,7 @@ ExtensionUpdater::ExtensionUpdater(ExtensionServiceInterface* service,
       service_(service), frequency_seconds_(frequency_seconds),
       will_check_soon_(false), extension_prefs_(extension_prefs),
       prefs_(prefs), profile_(profile), blacklist_checks_enabled_(true),
-      crx_install_is_running_(false),
-      use_utility_process_(true) {
+      crx_install_is_running_(false) {
   Init();
 }
 
@@ -623,11 +622,8 @@ class SafeManifestParser : public UtilityProcessHost::Client {
  public:
   // Takes ownership of |fetch_data|.
   SafeManifestParser(const std::string& xml, ManifestFetchData* fetch_data,
-                     base::WeakPtr<ExtensionUpdater> updater,
-                     bool use_utility_process)
-      : xml_(xml),
-        updater_(updater),
-        use_utility_process_(use_utility_process) {
+                     base::WeakPtr<ExtensionUpdater> updater)
+      : xml_(xml), updater_(updater) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     fetch_data_.reset(fetch_data);
   }
@@ -639,18 +635,19 @@ class SafeManifestParser : public UtilityProcessHost::Client {
     if (!BrowserThread::PostTask(
             BrowserThread::IO, FROM_HERE,
             base::Bind(
-                &SafeManifestParser::ParseInSandbox, this))) {
+                &SafeManifestParser::ParseInSandbox, this,
+                g_browser_process->resource_dispatcher_host()))) {
       NOTREACHED();
     }
   }
 
   // Creates the sandboxed utility process and tells it to start parsing.
-  void ParseInSandbox() {
+  void ParseInSandbox(ResourceDispatcherHost* rdh) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
     // TODO(asargent) we shouldn't need to do this branch here - instead
     // UtilityProcessHost should handle it for us. (http://crbug.com/19192)
-    bool use_utility_process = use_utility_process_ &&
+    bool use_utility_process = rdh &&
         !CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess);
     if (use_utility_process) {
       UtilityProcessHost* host = new UtilityProcessHost(
@@ -724,7 +721,6 @@ class SafeManifestParser : public UtilityProcessHost::Client {
   // Should be accessed only on UI thread.
   scoped_ptr<ManifestFetchData> fetch_data_;
   base::WeakPtr<ExtensionUpdater> updater_;
-  bool use_utility_process_;
 };
 
 
@@ -740,8 +736,7 @@ void ExtensionUpdater::OnManifestFetchComplete(
     VLOG(2) << "beginning manifest parse for " << url;
     scoped_refptr<SafeManifestParser> safe_parser(
         new SafeManifestParser(data, current_manifest_fetch_.release(),
-                               weak_ptr_factory_.GetWeakPtr(),
-                               use_utility_process_));
+                               weak_ptr_factory_.GetWeakPtr()));
     safe_parser->Start();
   } else {
     // TODO(asargent) Do exponential backoff here. (http://crbug.com/12546).
