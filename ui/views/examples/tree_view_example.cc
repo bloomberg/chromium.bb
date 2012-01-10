@@ -5,6 +5,8 @@
 #include "ui/views/examples/tree_view_example.h"
 
 #include "base/utf_string_conversions.h"
+#include "ui/views/controls/menu/menu_model_adapter.h"
+#include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/controls/tree/tree_view.h"
 #include "ui/views/controls/tree/tree_view.h"
 #include "ui/views/layout/grid_layout.h"
@@ -34,6 +36,7 @@ void TreeViewExample::CreateExampleView(View* container) {
   sheep_node->Add(new NodeType(ASCIIToUTF16("Sheep 2"), 1), 1);
 
   tree_view_ = new TreeView();
+  tree_view_->set_context_menu_controller(this);
   tree_view_->SetRootShown(false);
   tree_view_->set_lines_at_root(true);
   tree_view_->SetModel(&model_);
@@ -69,15 +72,26 @@ void TreeViewExample::CreateExampleView(View* container) {
   layout->AddView(change_title_);
 }
 
+void TreeViewExample::AddNewNode() {
+  NodeType* selected_node =
+      static_cast<NodeType*>(tree_view_->GetSelectedNode());
+  if (!selected_node)
+    selected_node = model_.GetRoot();
+  NodeType* new_node = new NodeType(selected_node->GetTitle(), 1);
+  model_.Add(selected_node, new_node, selected_node->child_count());
+  tree_view_->SetSelectedNode(new_node);
+}
+
+bool TreeViewExample::IsCommandIdEnabled(int command_id) {
+  return command_id != ID_REMOVE ||
+      tree_view_->GetSelectedNode() != model_.GetRoot();
+}
+
 void TreeViewExample::ButtonPressed(Button* sender, const Event& event) {
   NodeType* selected_node =
       static_cast<NodeType*>(tree_view_->GetSelectedNode());
   if (sender == add_) {
-    if (!selected_node)
-      selected_node = model_.GetRoot();
-    NodeType* new_node = new NodeType(selected_node->GetTitle(), 1);
-    model_.Add(selected_node, new_node, selected_node->child_count());
-    tree_view_->SetSelectedNode(new_node);
+    AddNewNode();
   } else if (sender == remove_) {
     DCHECK(selected_node);
     DCHECK_NE(model_.GetRoot(), selected_node);
@@ -103,6 +117,53 @@ void TreeViewExample::OnTreeViewSelectionChanged(TreeView* tree_view) {
 bool TreeViewExample::CanEdit(TreeView* tree_view,
                               ui::TreeModelNode* node) {
   return true;
+}
+
+void TreeViewExample::ShowContextMenuForView(View* source,
+                                             const gfx::Point& p,
+                                             bool is_mouse_gesture) {
+  ui::SimpleMenuModel context_menu_model(this);
+  context_menu_model.AddItem(ID_EDIT, ASCIIToUTF16("Edit"));
+  context_menu_model.AddItem(ID_REMOVE, ASCIIToUTF16("Remove"));
+  context_menu_model.AddItem(ID_ADD, ASCIIToUTF16("Add"));
+  views::MenuModelAdapter menu_adapter(&context_menu_model);
+  context_menu_runner_.reset(new views::MenuRunner(menu_adapter.CreateMenu()));
+  if (context_menu_runner_->RunMenuAt(source->GetWidget(), NULL,
+      gfx::Rect(p, gfx::Size()), views::MenuItemView::TOPLEFT, 0) ==
+      views::MenuRunner::MENU_DELETED)
+    return;
+}
+
+bool TreeViewExample::IsCommandIdChecked(int command_id) const {
+  return false;
+}
+
+bool TreeViewExample::IsCommandIdEnabled(int command_id) const {
+  return const_cast<TreeViewExample*>(this)->IsCommandIdEnabled(command_id);
+}
+
+bool TreeViewExample::GetAcceleratorForCommandId(
+    int command_id,
+    ui::Accelerator* accelerator) {
+  return false;
+}
+
+void TreeViewExample::ExecuteCommand(int command_id) {
+  NodeType* selected_node =
+      static_cast<NodeType*>(tree_view_->GetSelectedNode());
+  switch (command_id) {
+    case ID_EDIT:
+      tree_view_->StartEditing(selected_node);
+      break;
+    case ID_REMOVE:
+      model_.Remove(selected_node->parent(), selected_node);
+      break;
+    case ID_ADD:
+      AddNewNode();
+      break;
+    default:
+      NOTREACHED();
+  }
 }
 
 }  // namespace examples

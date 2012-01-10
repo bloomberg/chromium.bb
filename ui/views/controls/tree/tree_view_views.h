@@ -109,6 +109,7 @@ class VIEWS_EXPORT TreeView : public View,
   virtual void Layout() OVERRIDE;
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual bool OnMousePressed(const MouseEvent& event) OVERRIDE;
+  virtual void ShowContextMenu(const gfx::Point& p, bool is_mouse_gesture);
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
 
   // TreeModelObserver overrides:
