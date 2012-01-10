@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -73,9 +73,7 @@
 // Make room in the tab strip for |tab| at the given x coordinate. Will hide the
 // new tab button while there's a placeholder. Subclasses need to call the
 // superclass implementation.
-- (void)insertPlaceholderForTab:(TabView*)tab
-                          frame:(NSRect)frame
-                  yStretchiness:(CGFloat)yStretchiness;
+- (void)insertPlaceholderForTab:(TabView*)tab frame:(NSRect)frame;
 
 // Removes the placeholder installed by |-insertPlaceholderForTab:atLocation:|
 // and restores the new tab button. Subclasses need to call the superclass

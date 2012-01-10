@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -68,7 +68,6 @@ const CGFloat kRapidCloseDist = 2.5;
   self = [super initWithFrame:frame];
   if (self) {
     [self setShowsDivider:NO];
-    // TODO(alcor): register for theming
   }
   return self;
 }

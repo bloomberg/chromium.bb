@@ -764,12 +764,9 @@ private:
   return dragController_.get();
 }
 
-- (void)insertPlaceholderForTab:(TabView*)tab
-                          frame:(NSRect)frame
-                  yStretchiness:(CGFloat)yStretchiness {
+- (void)insertPlaceholderForTab:(TabView*)tab frame:(NSRect)frame {
   placeholderTab_ = tab;
   placeholderFrame_ = frame;
-  placeholderStretchiness_ = yStretchiness;
   [self layoutTabsWithAnimation:initialLayoutComplete_ regenerateSubviews:NO];
 }
 
@@ -909,8 +906,6 @@ private:
       ScopedNSAnimationContextGroup localAnimationGroup(animate);
       localAnimationGroup.SetCurrentContextShortestDuration();
       tabFrame.origin.x = placeholderFrame_.origin.x;
-      // TODO(alcor): reenable this
-      //tabFrame.size.height += 10.0 * placeholderStretchiness_;
       id target = animate ? [[tab view] animator] : [tab view];
       [target setFrame:tabFrame];
 

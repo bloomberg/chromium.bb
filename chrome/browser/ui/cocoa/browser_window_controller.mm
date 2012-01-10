@@ -1317,19 +1317,14 @@ enum {
 }
 
 - (void)insertPlaceholderForTab:(TabView*)tab
-                          frame:(NSRect)frame
-                      yStretchiness:(CGFloat)yStretchiness {
-  [super insertPlaceholderForTab:tab frame:frame yStretchiness:yStretchiness];
-  [tabStripController_ insertPlaceholderForTab:tab
-                                         frame:frame
-                                 yStretchiness:yStretchiness];
+                          frame:(NSRect)frame {
+  [super insertPlaceholderForTab:tab frame:frame];
+  [tabStripController_ insertPlaceholderForTab:tab frame:frame];
 }
 
 - (void)removePlaceholder {
   [super removePlaceholder];
-  [tabStripController_ insertPlaceholderForTab:nil
-                                         frame:NSZeroRect
-                                 yStretchiness:0];
+  [tabStripController_ insertPlaceholderForTab:nil frame:NSZeroRect];
 }
 
 - (BOOL)isDragSessionActive {

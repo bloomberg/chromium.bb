@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -694,8 +694,7 @@ static const NSTimeInterval kAnimationContinuousCycleDuration = 0.4;
                                           NSRectToCGRect(gradientPart), 0);
   [title drawAtPoint:textOffset];
 
-  // TODO(alcor): switch this to GTMLinearRGBShading if we ever need on 10.4
-  NSColor *color = [NSColor textColor]; //[self textColor];
+  NSColor *color = [NSColor textColor];
   NSColor *alphaColor = [color colorWithAlphaComponent:0.0];
   NSGradient *mask = [[NSGradient alloc] initWithStartingColor:color
                                                    endingColor:alphaColor];

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -103,7 +103,6 @@ class TabStripModel;
   // These values are only used during a drag, and override tab positioning.
   TabView* placeholderTab_;  // weak. Tab being dragged
   NSRect placeholderFrame_;  // Frame to use
-  CGFloat placeholderStretchiness_; // Vertical force shown by streching tab.
   NSRect droppedTabFrame_;  // Initial frame of a dropped tab, for animation.
   // Frame targets for all the current views.
   // target frames are used because repeated requests to [NSView animator].
@@ -201,11 +200,9 @@ class TabStripModel;
 // count, but no longer in the model.
 - (NSUInteger)viewsCount;
 
-// Set the placeholder for a dragged tab, allowing the |frame| and |strechiness|
-// to be specified. This causes this tab to be rendered in an arbitrary position
-- (void)insertPlaceholderForTab:(TabView*)tab
-                          frame:(NSRect)frame
-                  yStretchiness:(CGFloat)yStretchiness;
+// Set the placeholder for a dragged tab, allowing the |frame| to be specified.
+// This causes this tab to be rendered in an arbitrary position.
+- (void)insertPlaceholderForTab:(TabView*)tab frame:(NSRect)frame;
 
 // Returns whether a tab is being dragged within the tab strip.
 - (BOOL)isDragSessionActive;

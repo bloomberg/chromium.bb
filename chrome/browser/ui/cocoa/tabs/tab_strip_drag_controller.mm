@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -137,8 +137,7 @@ const NSTimeInterval kTearDuration = 0.333;
             // Change the target to the source controller.
             targetController_ = sourceController_;
             [targetController_ insertPlaceholderForTab:[tab tabView]
-                                                 frame:sourceTabFrame_
-                                         yStretchiness:0];
+                                                 frame:sourceTabFrame_];
           }
         }
         // Simply end the drag at this point.
@@ -186,15 +185,10 @@ const NSTimeInterval kTearDuration = 0.333;
 
   if (draggingWithinTabStrip_) {
     NSPoint thisPoint = [NSEvent mouseLocation];
-    CGFloat stretchiness = thisPoint.y - dragOrigin_.y;
-    stretchiness = copysign(sqrtf(fabs(stretchiness))/sqrtf(kTearDistance),
-                            stretchiness) / 2.0;
     CGFloat offset = thisPoint.x - dragOrigin_.x;
-    if (fabsf(offset) > 100) stretchiness = 0;
     [sourceController_ insertPlaceholderForTab:[draggedTab_ tabView]
                                          frame:NSOffsetRect(sourceTabFrame_,
-                                                            offset, 0)
-                                 yStretchiness:stretchiness];
+                                                            offset, 0)];
     // Check that we haven't pulled the tab too far to start a drag. This
     // can include either pulling it too far down, or off the side of the tab
     // strip that would cause it to no longer be fully visible.
@@ -364,8 +358,7 @@ const NSTimeInterval kTearDuration = 0.333;
     tabFrame = [[targetController_ tabStripView]
                 convertRect:tabFrame fromView:nil];
     [targetController_ insertPlaceholderForTab:[draggedTab_ tabView]
-                                         frame:tabFrame
-                                 yStretchiness:0];
+                                         frame:tabFrame];
     [targetController_ layoutTabs];
   } else {
     [dragWindow_ makeKeyAndOrderFront:nil];
