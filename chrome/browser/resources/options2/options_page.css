@@ -593,7 +593,7 @@ html[os=mac] list[hasElementFocus] {
   color: grey;
 }
 
-#main-content list.autocomplete-suggestions {
+list.autocomplete-suggestions {
   background-color: white;
   border: 1px solid #aaa;
   border-radius: 2px;

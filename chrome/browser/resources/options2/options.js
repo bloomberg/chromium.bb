@@ -28,6 +28,7 @@ var ManageProfileOverlay = options.ManageProfileOverlay;
 var ProxyOptions = options.ProxyOptions;
 var SearchEngineManager = options.SearchEngineManager;
 var SearchPage = options.SearchPage;
+var StartupOverlay = options.StartupOverlay;
 var SyncSetupOverlay = options.SyncSetupOverlay;
 var VirtualKeyboardManager = options.VirtualKeyboardManager;
 
@@ -172,6 +173,8 @@ function load() {
                               BrowserOptions.getInstance());
   OptionsPage.registerOverlay(ManageProfileOverlay.getInstance(),
                               PersonalOptions.getInstance());
+  OptionsPage.registerOverlay(StartupOverlay.getInstance(),
+                              BrowserOptions.getInstance());
 
   if (cr.isChromeOS) {
     OptionsPage.register(AccountsOptions.getInstance());

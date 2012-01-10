@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -172,10 +172,14 @@ void CustomHomePagesTableModel::SetToCurrentlyOpenPages() {
 
     for (int tab_index = 0; tab_index < browser->tab_count(); ++tab_index) {
       const GURL url = browser->GetWebContentsAt(tab_index)->GetURL();
+      // TODO(tbreisacher) remove kChromeUISettingsHost  once options is deleted
+      // and replaced by options2
       if (!url.is_empty() &&
           !(url.SchemeIs(chrome::kChromeUIScheme) &&
-            url.host() == chrome::kChromeUISettingsHost))
+            (url.host() == chrome::kChromeUISettingsHost ||
+             url.host() == chrome::kChromeUIUberHost))) {
         Add(add_index++, url);
+      }
     }
   }
 }

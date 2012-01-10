@@ -29,8 +29,7 @@ class BrowserOptionsHandler : public OptionsPageUIHandler,
                               public ProfileSyncServiceObserver,
                               public AutocompleteControllerDelegate,
                               public ShellIntegration::DefaultWebClientObserver,
-                              public TemplateURLServiceObserver,
-                              public ui::TableModelObserver {
+                              public TemplateURLServiceObserver {
  public:
   BrowserOptionsHandler();
   virtual ~BrowserOptionsHandler();
@@ -54,12 +53,6 @@ class BrowserOptionsHandler : public OptionsPageUIHandler,
   // TemplateURLServiceObserver implementation.
   virtual void OnTemplateURLServiceChanged() OVERRIDE;
 
-  // ui::TableModelObserver implementation.
-  virtual void OnModelChanged() OVERRIDE;
-  virtual void OnItemsChanged(int start, int length) OVERRIDE;
-  virtual void OnItemsAdded(int start, int length) OVERRIDE;
-  virtual void OnItemsRemoved(int start, int length) OVERRIDE;
-
  private:
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
@@ -72,24 +65,7 @@ class BrowserOptionsHandler : public OptionsPageUIHandler,
   // Sets the search engine at the given index to be default. Called from WebUI.
   void SetDefaultSearchEngine(const ListValue* args);
 
-  // Removes the startup page at the given indexes. Called from WebUI.
-  void RemoveStartupPages(const ListValue* args);
-
-  // Adds a startup page with the given URL after the given index.
-  // Called from WebUI.
-  void AddStartupPage(const ListValue* args);
-
-  // Changes the startup page at the given index to the given URL.
-  // Called from WebUI.
-  void EditStartupPage(const ListValue* args);
-
-  // Sets the startup page set to the current pages. Called from WebUI.
-  void SetStartupPagesToCurrentPages(const ListValue* args);
-
-  // Writes the current set of startup pages to prefs. Called from WebUI.
-  void DragDropStartupPage(const ListValue* args);
-
-  // Gets autocomplete suggestions asychronously for the given string.
+  // Gets autocomplete suggestions asynchronously for the given string.
   // Called from WebUI.
   void RequestAutocompleteSuggestions(const ListValue* args);
 
@@ -126,17 +102,11 @@ class BrowserOptionsHandler : public OptionsPageUIHandler,
   // Updates the UI with the given state for the default browser.
   void SetDefaultBrowserUIString(int status_string_id);
 
-  // Loads the current set of custom startup pages and reports it to the WebUI.
-  void UpdateStartupPages();
-
   // Updates the label of the 'Show Home page'.
   void UpdateHomePageLabel() const;
 
   // Loads the possible default search engine list and reports it to the WebUI.
   void UpdateSearchEngines();
-
-  // Writes the current set of startup pages to prefs.
-  void SaveStartupPagesPref();
 
   // Sends an array of Profile objects to javascript.
   // Each object is of the form:
@@ -163,11 +133,6 @@ class BrowserOptionsHandler : public OptionsPageUIHandler,
   PrefChangeRegistrar pref_change_registrar_;
 
   TemplateURLService* template_url_service_;  // Weak.
-
-  // TODO(stuartmorgan): Once there are no other clients of
-  // CustomHomePagesTableModel, consider changing it to something more like
-  // TemplateURLService.
-  scoped_ptr<CustomHomePagesTableModel> startup_custom_pages_table_model_;
 
   scoped_ptr<AutocompleteController> autocomplete_controller_;
 

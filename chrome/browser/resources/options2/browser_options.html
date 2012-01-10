@@ -47,19 +47,13 @@
           <input id="startupShowPagesButton" type="radio" name="startup"
               pref="session.restore_on_startup"
               value="4" metric="Options_Startup_Custom">
-          <span id="startupShowPagesLabel"
-              i18n-content="startupShowPages"></span>
+          <span>
+            <span id="startupShowPagesLabel"
+                i18n-content="startupShowPages"></span>
+            <button id="startupSetPages" class="link-button"
+                i18n-content="startupSetPages"></button>
+          </span>
         </label>
-      </div>
-      <div class="suboption">
-        <div id="startupPageManagement" class="settings-list">
-          <list id="startupPagesList"></list>
-          <div>
-            <button id="startupUseCurrentButton"
-                i18n-content="startupUseCurrent"></button>
-          </div>
-        </div>
-        <div id="startupPagesListDropmarker"></div>
       </div>
     </div>
   </section>

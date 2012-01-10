@@ -26,13 +26,9 @@ cr.define('options', function() {
     syncEnabled: false,
     syncSetupCompleted: false,
 
-    startup_pages_pref_: {
-      'name': 'session.urls_to_restore_on_startup',
-      'disabled': false
-    },
-
     /**
-     * At autocomplete list that can be attached to a text field during editing.
+     * An autocomplete list that can be attached to the homepage URL text field
+     * during editing.
      * @type {HTMLElement}
      * @private
      */
@@ -63,8 +59,8 @@ cr.define('options', function() {
       };
 
       // Wire up controls.
-      $('startupUseCurrentButton').onclick = function(event) {
-        chrome.send('setStartupPagesToCurrentPages');
+      $('startupSetPages').onclick = function() {
+        OptionsPage.navigateToPage('startup');
       };
       $('defaultSearchManageEnginesButton').onclick = function(event) {
         OptionsPage.navigateToPage('searchEngines');
@@ -121,23 +117,10 @@ cr.define('options', function() {
         };
       }
 
-      var startupPagesList = $('startupPagesList');
-      options.browser_options.StartupPageList.decorate(startupPagesList);
-      startupPagesList.autoExpands = true;
-
       // Check if we are in the guest mode.
       if (cr.commandLine && cr.commandLine.options['--bwsi']) {
         // Hide the startup section.
         $('startupSection').hidden = true;
-      } else {
-        // Initialize control enabled states.
-        Preferences.getInstance().addEventListener('session.restore_on_startup',
-            this.updateCustomStartupPageControlStates_.bind(this));
-        Preferences.getInstance().addEventListener(
-            this.startup_pages_pref_.name,
-            this.handleStartupPageListChange_.bind(this));
-
-        this.updateCustomStartupPageControlStates_();
       }
 
       var suggestionList = new options.AutocompleteList();
@@ -146,7 +129,6 @@ cr.define('options', function() {
           this.requestAutocompleteSuggestions_.bind(this);
       $('main-content').appendChild(suggestionList);
       this.autocompleteList_ = suggestionList;
-      startupPagesList.autocompleteList = suggestionList;
     },
 
     setSyncEnabled_: function(enabled) {
@@ -327,20 +309,6 @@ cr.define('options', function() {
     },
 
     /**
-     * Updates the startup pages list with the given entries.
-     * @param {Array} pages List of startup pages.
-     * @private
-     */
-    updateStartupPages_: function(pages) {
-      var model = new ArrayDataModel(pages);
-      // Add a "new page" row.
-      model.push({
-        'modelIndex': '-1'
-      });
-      $('startupPagesList').dataModel = model;
-    },
-
-    /**
      * Sets the enabled state of the custom startup page list controls
      * based on the current startup radio button selection.
      * @private
@@ -355,17 +323,6 @@ cr.define('options', function() {
       for (var i = 0; i < inputs.length; i++)
         inputs[i].disabled = disable;
       $('startupUseCurrentButton').disabled = disable;
-    },
-
-    /**
-     * Handle change events of the preference
-     * 'session.urls_to_restore_on_startup'.
-     * @param {event} preference changed event.
-     * @private
-     */
-    handleStartupPageListChange_: function(event) {
-      this.startup_pages_pref_.disabled = event.value['disabled'];
-      this.updateCustomStartupPageControlStates_();
     },
 
     /**
@@ -396,6 +353,10 @@ cr.define('options', function() {
      * @param {Array} pages List of autocomplete suggestions.
      * @private
      */
+    // This function is duplicated between here and startup_overlay.js. There is
+    // also some autocomplete-related duplication in the C++ handler code,
+    // browser_options_handler2.cc and startup_pages_handler2.cc.
+    // TODO(tbreisacher): remove the duplication by refactoring
     updateAutocompleteSuggestions_: function(suggestions) {
       var list = this.autocompleteList_;
       // If the trigger for this update was a value being selected from the

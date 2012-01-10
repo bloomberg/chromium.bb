@@ -8042,8 +8042,17 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
       <message name="IDS_OPTIONS_STARTUP_SHOW_LAST_SESSION" desc="The label of the 'Restore previously open pages' startup option radio button">
         Reopen the pages that were open last
       </message>
-      <message name="IDS_OPTIONS_STARTUP_SHOW_PAGES" desc="The label of the 'Show these pages:' startup option radio button">
+      <message name="IDS_OPTIONS_STARTUP_SHOW_PAGES" desc="The label of the 'Show these pages:' startup option radio button on the old settings page">
         Open the following pages:
+      </message>
+      <message name="IDS_OPTIONS2_STARTUP_SHOW_PAGES" desc="The label of the 'Show these pages:' startup option radio button">
+        Open a specific page or set of pages.
+      </message>
+      <message name="IDS_OPTIONS2_STARTUP_SET_PAGES" desc="The link that is clicked to choose the set of pages that will be shown at startup">
+        Set pages
+      </message>
+      <message name="IDS_OPTIONS2_STARTUP_PAGES_DIALOG_TITLE" desc="The title of the dialog where the user chooses the set of pages that will be shown at startup">
+        Set startup pages
       </message>
       <message name="IDS_OPTIONS_STARTUP_PAGE_TOOLTIP" desc="A tooltip to display for a page in the list of pages to open on startup">
         <ph name="PAGE_TITLE">$1<ex>Google</ex></ph> - <ph name="PAGE_URL">$2<ex>http://www.google.com/</ex></ph>

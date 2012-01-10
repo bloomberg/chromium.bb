@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,6 +35,7 @@
 #include "chrome/browser/ui/webui/options2/password_manager_handler2.h"
 #include "chrome/browser/ui/webui/options2/personal_options_handler2.h"
 #include "chrome/browser/ui/webui/options2/search_engine_manager_handler2.h"
+#include "chrome/browser/ui/webui/options2/startup_pages_handler2.h"
 #include "chrome/browser/ui/webui/options2/stop_syncing_handler2.h"
 #include "chrome/browser/ui/webui/options2/web_intents_settings_handler2.h"
 #include "chrome/browser/ui/webui/theme_source.h"
@@ -229,6 +230,7 @@ OptionsUI::OptionsUI(WebContents* contents)
   AddOptionsPageUIHandler(localized_strings, new PersonalOptionsHandler());
   AddOptionsPageUIHandler(localized_strings, new SearchEngineManagerHandler());
   AddOptionsPageUIHandler(localized_strings, new ImportDataHandler());
+  AddOptionsPageUIHandler(localized_strings, new StartupPagesHandler());
   AddOptionsPageUIHandler(localized_strings, new StopSyncingHandler());
   AddOptionsPageUIHandler(localized_strings, new OptionsSyncSetupHandler(
       g_browser_process->profile_manager()));
