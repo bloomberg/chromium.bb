@@ -1153,7 +1153,7 @@ static void TestValidator(struct NCValTestCase *vtest, int didstubout) {
    */
   assert(byte0[data_size - 1] == 0xf4 /* HLT */);
 
-  vstate = NCValidateInit(vtest->vaddr, vtest->vaddr + data_size, 16);
+  vstate = NCValidateInit(vtest->vaddr, vtest->vaddr + data_size - 1, 16);
   assert (vstate != NULL);
   NCValidateSetErrorReporter(vstate, &kNCVerboseErrorReporter);
   NCValidateSegment(byte0, (uint32_t)vtest->vaddr, data_size - 1, vstate);

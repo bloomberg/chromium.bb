@@ -535,6 +535,7 @@ NaClValidatorState *NaClValidatorStateCreate(const NaClPcAddress vbase,
     vstate->trace_instructions = NACL_FLAGS_validator_trace_instructions;
     vstate->trace_inst_internals = NACL_FLAGS_validator_trace_inst_internals;
     vstate->log_verbosity = LOG_INFO;
+    vstate->cur_iter = NULL;
     NaClValidatorStateIterFinishInline(vstate);
     vstate->quit = NaClValidatorQuit(return_value);
     vstate->do_stub_out = FALSE;
@@ -649,11 +650,32 @@ static const size_t kLookbackSize = 4;
 void NaClValidateSegment(uint8_t *mbase, NaClPcAddress vbase,
                          NaClMemorySize size, NaClValidatorState *vstate) {
   NaClSegment segment;
-  NCHaltTrimSegment(mbase, vbase, vstate->alignment, &size, &vstate->vlimit);
-  NaClSegmentInitialize(mbase, vbase, size, &segment);
   do {
+    /* Sanity checks */
+    /* TODO(ncbray): remove redundant vbase/size args. */
+    if ((vbase & (vstate->alignment - 1)) != 0) {
+      NaClValidatorMessage(LOG_ERROR, vstate,
+                           "Code segment starts at 0x%"NACL_PRIxNaClPcAddress
+                           ", which isn't aligned properly.\n",
+                           vbase);
+      break;
+    }
+    if (vbase != vstate->vbase) {
+      NaClValidatorMessage(LOG_ERROR, vstate, "Mismatched vbase address\n");
+      break;
+    }
+    if (vbase + size != vstate->vlimit) {
+      NaClValidatorMessage(LOG_ERROR, vstate, "Mismatched vlimit address\n");
+      break;
+    }
+
+    size = NCHaltTrimSize(mbase, size, vstate->alignment);
+    vstate->vlimit = vbase + size;
+
+    NaClSegmentInitialize(mbase, vbase, size, &segment);
+
     vstate->cur_iter = NaClInstIterCreateWithLookback(vstate->decoder_tables,
-                                                     &segment, kLookbackSize);
+                                                      &segment, kLookbackSize);
     if (NULL == vstate->cur_iter) {
       NaClValidatorMessage(LOG_ERROR, vstate, "Not enough memory\n");
       break;

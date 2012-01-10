@@ -957,17 +957,35 @@ static void NCValidateDStateInit(NCValidatorState *vstate,
 
 void NCValidateSegment(uint8_t *mbase, NaClPcAddress vbase, NaClMemorySize sz,
                        struct NCValidatorState *vstate) {
-  NCHaltTrimSegment(mbase, vbase, vstate->alignment, &sz, &vstate->iadrlimit);
+  /* Sanity checks */
+  /* TODO(ncbray): remove redundant vbase/size args. */
+  if ((vbase & (vstate->alignment - 1)) != 0) {
+    ValidatePrintError(0, "Bad vbase alignment", vstate);
+    NCStatsSegFault(vstate);
+    return;
+  }
+  if (vbase != vstate->iadrbase) {
+    ValidatePrintError(0, "Mismatched vbase addresses", vstate);
+    NCStatsSegFault(vstate);
+    return;
+  }
+  if (vbase + sz != vstate->iadrlimit) {
+    ValidatePrintError(0, "Mismatched vlimit addresses", vstate);
+    NCStatsSegFault(vstate);
+    return;
+  }
+
+  sz = NCHaltTrimSize(mbase, sz, vstate->alignment);
+  vstate->iadrlimit = vbase + sz;
+
   if (sz == 0) {
     ValidatePrintError(0, "Bad text segment (zero size)", vstate);
     NCStatsSegFault(vstate);
     return;
-  } else {
-    NCDecoderState* dstate = &vstate->dstate;
-    NCValidateDStateInit(vstate, mbase, vbase, sz);
-    NCDecoderStateDecode(dstate);
-    NCDecoderStateDestruct(dstate);
   }
+  NCValidateDStateInit(vstate, mbase, vbase, sz);
+  NCDecoderStateDecode(&vstate->dstate);
+  NCDecoderStateDestruct(&vstate->dstate);
 }
 
 int NCValidateSegmentPair(uint8_t *mbase_old, uint8_t *mbase_new,
