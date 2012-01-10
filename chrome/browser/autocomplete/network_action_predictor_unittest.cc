@@ -352,13 +352,7 @@ TEST_F(NetworkActionPredictorTest, RecommendActionSearch) {
 
   for (size_t i = 0; i < arraysize(test_url_db); ++i) {
     match.destination_url = GURL(test_url_db[i].url);
-    const NetworkActionPredictor::Action expected =
-        (test_url_db[i].expected_action ==
-         NetworkActionPredictor::ACTION_PRERENDER) ?
-            NetworkActionPredictor::ACTION_PRECONNECT :
-            test_url_db[i].expected_action;
-
-    EXPECT_EQ(expected,
+    EXPECT_EQ(test_url_db[i].expected_action,
               predictor()->RecommendAction(test_url_db[i].user_text, match))
         << "Unexpected action for " << match.destination_url;
   }

@@ -149,13 +149,8 @@ NetworkActionPredictor::Action NetworkActionPredictor::RecommendAction(
 
   // Downgrade prerender to preconnect if this is a search match or if omnibox
   // prerendering is disabled.
-  if (action == ACTION_PRERENDER &&
-      ((match.type == AutocompleteMatch::SEARCH_WHAT_YOU_TYPED ||
-       match.type == AutocompleteMatch::SEARCH_SUGGEST ||
-       match.type == AutocompleteMatch::SEARCH_OTHER_ENGINE) ||
-       !prerender::IsOmniboxEnabled(profile_))) {
+  if (action == ACTION_PRERENDER && !prerender::IsOmniboxEnabled(profile_))
     action = ACTION_PRECONNECT;
-  }
 
   return action;
 }
