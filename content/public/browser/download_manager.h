@@ -87,12 +87,15 @@ class CONTENT_EXPORT DownloadManager
 
   typedef std::vector<DownloadItem*> DownloadVector;
 
-  // Return all temporary downloads that reside in the specified directory.
+  // If |dir_path| is empty, appends all temporary downloads to |*result|.
+  // Otherwise, appends all temporary downloads that reside in |dir_path| to
+  // |*result|.
   virtual void GetTemporaryDownloads(const FilePath& dir_path,
                                      DownloadVector* result) = 0;
 
-  // Return all non-temporary downloads in the specified directory that are
-  // are in progress or have completed.
+  // If |dir_path| is empty, appends all non-temporary downloads to |*result|.
+  // Otherwise, appends all non-temporary downloads that reside in |dir_path|
+  // to |*result|.
   virtual void GetAllDownloads(const FilePath& dir_path,
                                DownloadVector* result) = 0;
 
