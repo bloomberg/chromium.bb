@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,9 +19,9 @@ BrowserThreadModelWorker::BrowserThreadModelWorker(
 
 BrowserThreadModelWorker::~BrowserThreadModelWorker() {}
 
-UnrecoverableErrorInfo BrowserThreadModelWorker::DoWorkAndWaitUntilDone(
+SyncerError BrowserThreadModelWorker::DoWorkAndWaitUntilDone(
     const WorkCallback& work) {
-  UnrecoverableErrorInfo error_info;
+  SyncerError error = UNSET;
   if (BrowserThread::CurrentlyOn(thread_)) {
     DLOG(WARNING) << "Already on thread " << thread_;
     return work.Run();
@@ -31,20 +31,20 @@ UnrecoverableErrorInfo BrowserThreadModelWorker::DoWorkAndWaitUntilDone(
       thread_,
       FROM_HERE,
       base::Bind(&BrowserThreadModelWorker::CallDoWorkAndSignalTask, this,
-                 work, &done, &error_info))) {
+                 work, &done, &error))) {
     NOTREACHED() << "Failed to post task to thread " << thread_;
-    return error_info;
+    return error;
   }
   done.Wait();
-  return error_info;
+  return error;
 }
 
 void BrowserThreadModelWorker::CallDoWorkAndSignalTask(
     const WorkCallback& work,
     WaitableEvent* done,
-    UnrecoverableErrorInfo* error_info) {
+    SyncerError* error) {
   DCHECK(BrowserThread::CurrentlyOn(thread_));
-  *error_info = work.Run();
+  *error = work.Run();
   done->Signal();
 }
 
@@ -60,8 +60,8 @@ DatabaseModelWorker::~DatabaseModelWorker() {}
 void DatabaseModelWorker::CallDoWorkAndSignalTask(
     const WorkCallback& work,
     WaitableEvent* done,
-    UnrecoverableErrorInfo* error_info) {
-  BrowserThreadModelWorker::CallDoWorkAndSignalTask(work, done, error_info);
+    SyncerError* error) {
+  BrowserThreadModelWorker::CallDoWorkAndSignalTask(work, done, error);
 }
 
 FileModelWorker::FileModelWorker()
@@ -72,8 +72,8 @@ FileModelWorker::~FileModelWorker() {}
 void FileModelWorker::CallDoWorkAndSignalTask(
     const WorkCallback& work,
     WaitableEvent* done,
-    UnrecoverableErrorInfo* error_info) {
-  BrowserThreadModelWorker::CallDoWorkAndSignalTask(work, done, error_info);
+    SyncerError* error) {
+  BrowserThreadModelWorker::CallDoWorkAndSignalTask(work, done, error);
 }
 
 }  // namespace browser_sync

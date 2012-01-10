@@ -26,7 +26,7 @@ using syncable::MODEL_TYPE_COUNT;
 ClearDataCommand::ClearDataCommand() {}
 ClearDataCommand::~ClearDataCommand() {}
 
-void ClearDataCommand::ExecuteImpl(SyncSession* session) {
+SyncerError ClearDataCommand::ExecuteImpl(SyncSession* session) {
   ClientToServerMessage client_to_server_message;
   ClientToServerResponse client_to_server_response;
 
@@ -40,7 +40,7 @@ void ClearDataCommand::ExecuteImpl(SyncSession* session) {
                       session->context()->account_name());
   if (!dir.good()) {
     LOG(ERROR) << "Scoped dir lookup failed!";
-    return;
+    return DIRECTORY_LOOKUP_FAILED;
   }
 
   SyncerProtoUtil::AddRequestBirthday(dir, &client_to_server_message);
@@ -55,6 +55,11 @@ void ClearDataCommand::ExecuteImpl(SyncSession* session) {
   DVLOG(1) << SyncerProtoUtil::ClientToServerResponseDebugString(
       client_to_server_response);
 
+  // TODO(lipalani): This code is wrong.  The response error codes it checks
+  // have been obsoleted.  The only reason it hasn't caused problems is that
+  // this code is unreachable.  We should do something to clean up this mess.
+  // See also: crbug.com/71616.
+  //
   // Clear pending indicates that the server has received our clear message
   if (!ok || !client_to_server_response.has_error_code() ||
       client_to_server_response.error_code() != sync_pb::SyncEnums::SUCCESS) {
@@ -66,7 +71,7 @@ void ClearDataCommand::ExecuteImpl(SyncSession* session) {
 
     LOG(ERROR) << "Error posting ClearData.";
 
-    return;
+    return SYNCER_OK;
   }
 
   SyncEngineEvent event(SyncEngineEvent::CLEAR_SERVER_DATA_SUCCEEDED);
@@ -75,6 +80,7 @@ void ClearDataCommand::ExecuteImpl(SyncSession* session) {
   session->delegate()->OnShouldStopSyncingPermanently();
 
   DVLOG(1) << "ClearData succeeded.";
+  return SYNCER_OK;
 }
 
 }  // namespace browser_sync

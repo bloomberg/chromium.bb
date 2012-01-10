@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,7 +16,7 @@ FakeModelWorker::~FakeModelWorker() {
   DCHECK(non_thread_safe_.CalledOnValidThread());
 }
 
-UnrecoverableErrorInfo FakeModelWorker::DoWorkAndWaitUntilDone(
+SyncerError FakeModelWorker::DoWorkAndWaitUntilDone(
     const WorkCallback& work) {
   DCHECK(non_thread_safe_.CalledOnValidThread());
   // Simply do the work on the current thread.

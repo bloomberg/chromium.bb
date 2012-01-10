@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -85,7 +85,7 @@ void SetEntrySpecifics(MutableEntry* meta_entry, SyncEntity* sync_entry) {
 }
 }  // namespace
 
-void BuildCommitCommand::ExecuteImpl(SyncSession* session) {
+SyncerError BuildCommitCommand::ExecuteImpl(SyncSession* session) {
   ClientToServerMessage message;
   message.set_share(session->context()->account_name());
   message.set_message_contents(ClientToServerMessage::COMMIT);
@@ -210,6 +210,8 @@ void BuildCommitCommand::ExecuteImpl(SyncSession* session) {
   }
   session->mutable_status_controller()->
       mutable_commit_message()->CopyFrom(message);
+
+  return SYNCER_OK;
 }
 
 int64 BuildCommitCommand::FindAnchorPosition(syncable::IdField direction,

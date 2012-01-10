@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "chrome/browser/sync/engine/model_safe_worker.h"
+#include "chrome/browser/sync/internal_api/includes/syncer_error.h"
 
 class MessageLoop;
 
@@ -22,7 +23,7 @@ class PassiveModelWorker : public ModelSafeWorker {
   explicit PassiveModelWorker(const MessageLoop* sync_loop);
 
   // ModelSafeWorker implementation. Called on the sync thread.
-  virtual UnrecoverableErrorInfo DoWorkAndWaitUntilDone(
+  virtual SyncerError DoWorkAndWaitUntilDone(
       const WorkCallback& work) OVERRIDE;
   virtual ModelSafeGroup GetModelSafeGroup() OVERRIDE;
 

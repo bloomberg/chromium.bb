@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,18 +33,19 @@ std::set<ModelSafeGroup> ProcessUpdatesCommand::GetGroupsToChange(
   return session.GetEnabledGroupsWithVerifiedUpdates();
 }
 
-void ProcessUpdatesCommand::ModelChangingExecuteImpl(SyncSession* session) {
+SyncerError ProcessUpdatesCommand::ModelChangingExecuteImpl(
+    SyncSession* session) {
   syncable::ScopedDirLookup dir(session->context()->directory_manager(),
                                 session->context()->account_name());
   if (!dir.good()) {
     LOG(ERROR) << "Scoped dir lookup failed!";
-    return;
+    return DIRECTORY_LOOKUP_FAILED;
   }
 
   const sessions::UpdateProgress* progress =
       session->status_controller().update_progress();
   if (!progress)
-    return;  // Nothing to do.
+    return SYNCER_OK;  // Nothing to do.
 
   syncable::WriteTransaction trans(FROM_HERE, syncable::SYNCER, dir);
   vector<sessions::VerifiedUpdate>::const_iterator it;
@@ -70,6 +71,7 @@ void ProcessUpdatesCommand::ModelChangingExecuteImpl(SyncSession* session) {
   StatusController* status = session->mutable_status_controller();
   status->set_num_consecutive_errors(0);
   status->mutable_update_progress()->ClearVerifiedUpdates();
+  return SYNCER_OK;
 }
 
 namespace {

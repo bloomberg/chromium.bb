@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 {
@@ -262,6 +262,8 @@
       'sources': [
         'browser/sync/engine/syncapi_internal.cc',
         'browser/sync/engine/syncapi_internal.h',
+        'browser/sync/internal_api/includes/syncer_error.cc',
+        'browser/sync/internal_api/includes/syncer_error.h',
         'browser/sync/internal_api/includes/unrecoverable_error_handler.h',
         'browser/sync/internal_api/base_node.cc',
         'browser/sync/internal_api/base_node.h',

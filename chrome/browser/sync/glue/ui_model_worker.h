@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -37,7 +37,7 @@ class UIModelWorker : public browser_sync::ModelSafeWorker {
   void Stop();
 
   // ModelSafeWorker implementation. Called on syncapi SyncerThread.
-  virtual UnrecoverableErrorInfo DoWorkAndWaitUntilDone(
+  virtual SyncerError DoWorkAndWaitUntilDone(
       const WorkCallback& work) OVERRIDE;
   virtual ModelSafeGroup GetModelSafeGroup() OVERRIDE;
 

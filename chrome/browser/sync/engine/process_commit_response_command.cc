@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -81,13 +81,13 @@ std::set<ModelSafeGroup> ProcessCommitResponseCommand::GetGroupsToChange(
   return groups_with_commits;
 }
 
-bool ProcessCommitResponseCommand::ModelNeutralExecuteImpl(
+SyncerError ProcessCommitResponseCommand::ModelNeutralExecuteImpl(
     sessions::SyncSession* session) {
   ScopedDirLookup dir(session->context()->directory_manager(),
                       session->context()->account_name());
   if (!dir.good()) {
     LOG(ERROR) << "Scoped dir lookup failed!";
-    return false;
+    return DIRECTORY_LOOKUP_FAILED;
   }
 
   const StatusController& status = session->status_controller();
@@ -98,7 +98,7 @@ bool ProcessCommitResponseCommand::ModelNeutralExecuteImpl(
     // TODO(sync): What if we didn't try to commit anything?
     LOG(WARNING) << "Commit response has no commit body!";
     IncrementErrorCounters(session->mutable_status_controller());
-    return false;
+    return SERVER_RESPONSE_VALIDATION_FAILED;
   }
 
   const CommitResponse& cr = response.commit();
@@ -113,14 +113,14 @@ bool ProcessCommitResponseCommand::ModelNeutralExecuteImpl(
         LOG(ERROR) << "  " << cr.entryresponse(i).error_message();
     }
     IncrementErrorCounters(session->mutable_status_controller());
-    return false;
+    return SERVER_RESPONSE_VALIDATION_FAILED;
   }
-  return true;
+  return SYNCER_OK;
 }
 
-void ProcessCommitResponseCommand::ModelChangingExecuteImpl(
+SyncerError ProcessCommitResponseCommand::ModelChangingExecuteImpl(
     SyncSession* session) {
-  ProcessCommitResponse(session);
+  SyncerError result = ProcessCommitResponse(session);
   ExtensionsActivityMonitor* monitor = session->context()->extensions_monitor();
   if (session->status_controller().HasBookmarkCommitActivity() &&
       session->status_controller().syncer_status()
@@ -128,17 +128,16 @@ void ProcessCommitResponseCommand::ModelChangingExecuteImpl(
     monitor->PutRecords(session->extensions_activity());
     session->mutable_extensions_activity()->clear();
   }
+  return result;
 }
 
-void ProcessCommitResponseCommand::ProcessCommitResponse(
+SyncerError ProcessCommitResponseCommand::ProcessCommitResponse(
     SyncSession* session) {
-  // TODO(sync): This function returns if it sees problems. We probably want
-  // to flag the need for an update or similar.
   ScopedDirLookup dir(session->context()->directory_manager(),
                       session->context()->account_name());
   if (!dir.good()) {
     LOG(ERROR) << "Scoped dir lookup failed!";
-    return;
+    return DIRECTORY_LOOKUP_FAILED;
   }
 
   StatusController* status = session->mutable_status_controller();
@@ -189,10 +188,6 @@ void ProcessCommitResponseCommand::ProcessCommitResponse(
           // We handle over quota like a retry, which is same as transient.
         case CommitResponse::RETRY:
         case CommitResponse::TRANSIENT_ERROR:
-          // TODO(tim): Now that we have SyncSession::Delegate, we
-          // should plumb this directly for exponential backoff purposes rather
-          // than trying to infer from HasMoreToSync(). See
-          // SyncerThread::CalculatePollingWaitTime.
           ++transient_error_commits;
           break;
         default:
@@ -218,7 +213,20 @@ void ProcessCommitResponseCommand::ProcessCommitResponse(
   }
   SyncerUtil::MarkDeletedChildrenSynced(dir, &deleted_folders);
 
-  return;
+  if (commit_count == (successes + conflicting_commits)) {
+    // We consider conflicting commits as a success because things will work out
+    // on their own when we receive them.  Flags will be set so that
+    // HasMoreToSync() will cause SyncScheduler to enter another sync cycle to
+    // handle this condition.
+    return SYNCER_OK;
+  } else if (error_commits > 0) {
+    return SERVER_RETURN_UNKNOWN_ERROR;
+  } else if (transient_error_commits > 0) {
+    return SERVER_RETURN_TRANSIENT_ERROR;
+  } else {
+    LOG(FATAL) << "Inconsistent counts when processing commit response";
+    return SYNCER_OK;
+  }
 }
 
 void LogServerError(const CommitResponse_EntryResponse& res) {

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,7 +9,6 @@
 #include "base/compiler_specific.h"
 #include "chrome/browser/sync/engine/model_safe_worker.h"
 #include "chrome/browser/sync/engine/syncer_command.h"
-#include "chrome/browser/sync/util/unrecoverable_error_info.h"
 
 namespace browser_sync {
 namespace sessions {
@@ -32,14 +31,12 @@ class ModelChangingSyncerCommand : public SyncerCommand {
   virtual ~ModelChangingSyncerCommand() { }
 
   // SyncerCommand implementation. Sets work_session to session.
-  virtual void ExecuteImpl(sessions::SyncSession* session) OVERRIDE;
+  virtual browser_sync::SyncerError ExecuteImpl(
+      sessions::SyncSession* session) OVERRIDE;
 
-  // wrapper so implementations don't worry about storing work_session
-  UnrecoverableErrorInfo StartChangingModel() {
-    // TODO(lipalani): |ModelChangingExecuteImpl| should return an
-    // UnrecoverableErrorInfo struct.
-    ModelChangingExecuteImpl(work_session_);
-    return UnrecoverableErrorInfo();
+  // Wrapper so implementations don't worry about storing work_session.
+  SyncerError StartChangingModel() {
+    return ModelChangingExecuteImpl(work_session_);
   }
 
   std::set<ModelSafeGroup> GetGroupsToChangeForTest(
@@ -64,13 +61,14 @@ class ModelChangingSyncerCommand : public SyncerCommand {
   // *without* a ModelSafeGroup restriction in place on the SyncSession.
   // Returns true on success, false on failure.
   // TODO(tim): Remove this (bug 36594).
-  virtual bool ModelNeutralExecuteImpl(sessions::SyncSession* session);
+  virtual SyncerError ModelNeutralExecuteImpl(sessions::SyncSession* session);
 
   // Abstract method to be implemented by subclasses to handle logic that
   // operates on the model.  This is invoked with a SyncSession ModelSafeGroup
   // restriction in place so that bits of state belonging to data types
   // running on an unsafe thread are siloed away.
-  virtual void ModelChangingExecuteImpl(sessions::SyncSession* session) = 0;
+  virtual SyncerError ModelChangingExecuteImpl(
+      sessions::SyncSession* session) = 0;
 
  private:
   // ExecuteImpl is expected to be run by SyncerCommand to set work_session.

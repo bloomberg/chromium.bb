@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,7 +29,7 @@ GetCommitIdsCommand::GetCommitIdsCommand(int commit_batch_size)
 
 GetCommitIdsCommand::~GetCommitIdsCommand() {}
 
-void GetCommitIdsCommand::ExecuteImpl(SyncSession* session) {
+SyncerError GetCommitIdsCommand::ExecuteImpl(SyncSession* session) {
   // Gather the full set of unsynced items and store it in the session. They
   // are not in the correct order for commit.
   syncable::Directory::UnsyncedMetaHandles all_unsynced_handles;
@@ -65,6 +65,7 @@ void GetCommitIdsCommand::ExecuteImpl(SyncSession* session) {
     DVLOG(1) << "Debug commit batch result:" << verified_commit_ids[i];
 
   status->set_commit_set(*ordered_commit_set_.get());
+  return SYNCER_OK;
 }
 
 namespace {

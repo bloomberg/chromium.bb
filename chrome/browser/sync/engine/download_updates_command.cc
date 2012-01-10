@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,7 +30,7 @@ using syncable::ModelTypeSetToString;
 DownloadUpdatesCommand::DownloadUpdatesCommand() {}
 DownloadUpdatesCommand::~DownloadUpdatesCommand() {}
 
-void DownloadUpdatesCommand::ExecuteImpl(SyncSession* session) {
+SyncerError DownloadUpdatesCommand::ExecuteImpl(SyncSession* session) {
   ClientToServerMessage client_to_server_message;
   ClientToServerResponse update_response;
 
@@ -48,7 +48,7 @@ void DownloadUpdatesCommand::ExecuteImpl(SyncSession* session) {
                       session->context()->account_name());
   if (!dir.good()) {
     LOG(ERROR) << "Scoped dir lookup failed!";
-    return;
+    return DIRECTORY_LOOKUP_FAILED;
   }
 
   // Request updates for all enabled types.
@@ -105,7 +105,7 @@ void DownloadUpdatesCommand::ExecuteImpl(SyncSession* session) {
     status->increment_num_consecutive_errors();
     status->mutable_updates_response()->Clear();
     LOG(ERROR) << "PostClientToServerMessage() failed during GetUpdates";
-    return;
+    return SYNCER_OK; // TODO(rlarocque): Return an error here.
   }
 
   status->mutable_updates_response()->CopyFrom(update_response);
@@ -115,6 +115,7 @@ void DownloadUpdatesCommand::ExecuteImpl(SyncSession* session) {
            << " updates and indicated "
            << update_response.get_updates().changes_remaining()
            << " updates left on server.";
+  return SYNCER_OK;
 }
 
 void DownloadUpdatesCommand::AppendClientDebugInfoIfNeeded(

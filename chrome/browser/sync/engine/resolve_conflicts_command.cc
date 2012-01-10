@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,26 +19,26 @@ std::set<ModelSafeGroup> ResolveConflictsCommand::GetGroupsToChange(
   return session.GetEnabledGroupsWithConflicts();
 }
 
-void ResolveConflictsCommand::ModelChangingExecuteImpl(
+SyncerError ResolveConflictsCommand::ModelChangingExecuteImpl(
     sessions::SyncSession* session) {
   ConflictResolver* resolver = session->context()->resolver();
   DCHECK(resolver);
-  if (!resolver)
-    return;
 
   syncable::ScopedDirLookup dir(session->context()->directory_manager(),
                                 session->context()->account_name());
   if (!dir.good())
-    return;
+    return DIRECTORY_LOOKUP_FAILED;
   sessions::StatusController* status = session->mutable_status_controller();
   const sessions::ConflictProgress* progress = status->conflict_progress();
   if (!progress)
-    return;  // Nothing to do.
+    return SYNCER_OK;  // Nothing to do.
   syncable::WriteTransaction trans(FROM_HERE, syncable::SYNCER, dir);
   const Cryptographer* cryptographer =
       session->context()->directory_manager()->GetCryptographer(&trans);
   status->update_conflicts_resolved(
       resolver->ResolveConflicts(&trans, cryptographer, *progress, status));
+
+  return SYNCER_OK;
 }
 
 }  // namespace browser_sync

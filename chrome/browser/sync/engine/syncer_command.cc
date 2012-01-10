@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,9 +14,10 @@ using sessions::SyncSession;
 SyncerCommand::SyncerCommand() {}
 SyncerCommand::~SyncerCommand() {}
 
-void SyncerCommand::Execute(SyncSession* session) {
-  ExecuteImpl(session);
+SyncerError SyncerCommand::Execute(SyncSession* session) {
+  SyncerError result = ExecuteImpl(session);
   SendNotifications(session);
+  return result;
 }
 
 void SyncerCommand::SendNotifications(SyncSession* session) {

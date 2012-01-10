@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,22 +20,22 @@ PasswordModelWorker::PasswordModelWorker(PasswordStore* password_store)
 
 PasswordModelWorker::~PasswordModelWorker() {}
 
-UnrecoverableErrorInfo PasswordModelWorker::DoWorkAndWaitUntilDone(
+SyncerError PasswordModelWorker::DoWorkAndWaitUntilDone(
     const WorkCallback& work) {
   WaitableEvent done(false, false);
-  UnrecoverableErrorInfo error_info;
+  SyncerError error = UNSET;
   password_store_->ScheduleTask(
       base::Bind(&PasswordModelWorker::CallDoWorkAndSignalTask,
-                 this, work, &done, &error_info));
+                 this, work, &done, &error));
   done.Wait();
-  return error_info;
+  return error;
 }
 
 void PasswordModelWorker::CallDoWorkAndSignalTask(
     const WorkCallback& work,
     WaitableEvent* done,
-    UnrecoverableErrorInfo* error_info) {
-  *error_info = work.Run();
+    SyncerError *error) {
+  *error = work.Run();
   done->Signal();
 }
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,10 +17,10 @@ namespace browser_sync {
 CleanupDisabledTypesCommand::CleanupDisabledTypesCommand() {}
 CleanupDisabledTypesCommand::~CleanupDisabledTypesCommand() {}
 
-void CleanupDisabledTypesCommand::ExecuteImpl(sessions::SyncSession* session) {
+SyncerError CleanupDisabledTypesCommand::ExecuteImpl(
+    sessions::SyncSession* session) {
   using syncable::ModelTypeSet;
   using syncable::ModelTypeSetToString;
-
   // Because a full directory purge is slow, we avoid purging
   // undesired types unless we have reason to believe they were
   // previously enabled.  Because purging could theoretically fail on
@@ -61,16 +61,17 @@ void CleanupDisabledTypesCommand::ExecuteImpl(sessions::SyncSession* session) {
            << ", to_cleanup = " << ModelTypeSetToString(to_cleanup);
 
   if (to_cleanup.Empty())
-    return;
+    return SYNCER_OK;
 
   syncable::ScopedDirLookup dir(session->context()->directory_manager(),
                                 session->context()->account_name());
   if (!dir.good()) {
     LOG(ERROR) << "Scoped dir lookup failed!";
-    return;
+    return DIRECTORY_LOOKUP_FAILED;
   }
 
   dir->PurgeEntriesWithTypeIn(to_cleanup);
+  return SYNCER_OK;
 }
 
 }  // namespace browser_sync

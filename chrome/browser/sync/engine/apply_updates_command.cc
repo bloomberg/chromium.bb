@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -44,12 +44,13 @@ std::set<ModelSafeGroup> ApplyUpdatesCommand::GetGroupsToChange(
   return groups_with_unapplied_updates;
 }
 
-void ApplyUpdatesCommand::ModelChangingExecuteImpl(SyncSession* session) {
+SyncerError ApplyUpdatesCommand::ModelChangingExecuteImpl(
+    SyncSession* session) {
   syncable::ScopedDirLookup dir(session->context()->directory_manager(),
                                 session->context()->account_name());
   if (!dir.good()) {
     LOG(ERROR) << "Scoped dir lookup failed!";
-    return;
+    return DIRECTORY_LOOKUP_FAILED;
   }
 
   syncable::WriteTransaction trans(FROM_HERE, syncable::SYNCER, dir);
@@ -91,6 +92,8 @@ void ApplyUpdatesCommand::ModelChangingExecuteImpl(SyncSession* session) {
       dir->set_initial_sync_ended_for_type(it.Get(), true);
     }
   }
+
+  return SYNCER_OK;
 }
 
 }  // namespace browser_sync

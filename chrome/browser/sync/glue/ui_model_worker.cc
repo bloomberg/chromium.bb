@@ -21,7 +21,7 @@ namespace {
 void CallDoWorkAndSignalCallback(const WorkCallback& work,
                                  base::WaitableEvent* work_done,
                                  UIModelWorker* const scheduler,
-                                 UnrecoverableErrorInfo* error_info) {
+                                 SyncerError* error_info) {
   if (work.is_null()) {
     // This can happen during tests or cases where there are more than just the
     // default UIModelWorker in existence and it gets destroyed before
@@ -44,7 +44,7 @@ void CallDoWorkAndSignalCallback(const WorkCallback& work,
 
 }  // namespace
 
-UnrecoverableErrorInfo UIModelWorker::DoWorkAndWaitUntilDone(
+SyncerError UIModelWorker::DoWorkAndWaitUntilDone(
     const WorkCallback& work) {
   // In most cases, this method is called in WORKING state. It is possible this
   // gets called when we are in the RUNNING_MANUAL_SHUTDOWN_PUMP state, because
@@ -53,7 +53,7 @@ UnrecoverableErrorInfo UIModelWorker::DoWorkAndWaitUntilDone(
   // code handling this case in Stop(). Note there _no_ way we can be in here
   // with state_ = STOPPED, so it is safe to read / compare in this case.
   CHECK_NE(ANNOTATE_UNPROTECTED_READ(state_), STOPPED);
-  UnrecoverableErrorInfo error_info;
+  SyncerError error_info;
   if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     DLOG(WARNING) << "DoWorkAndWaitUntilDone called from "
       << "ui_loop_. Probably a nested invocation?";

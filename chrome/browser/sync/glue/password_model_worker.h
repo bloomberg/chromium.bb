@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,7 +7,6 @@
 #pragma once
 
 #include "chrome/browser/sync/engine/model_safe_worker.h"
-#include "chrome/browser/sync/util/unrecoverable_error_info.h"
 
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
@@ -31,7 +30,7 @@ class PasswordModelWorker : public browser_sync::ModelSafeWorker {
   virtual ~PasswordModelWorker();
 
   // ModelSafeWorker implementation. Called on syncapi SyncerThread.
-  virtual UnrecoverableErrorInfo DoWorkAndWaitUntilDone(
+  virtual SyncerError DoWorkAndWaitUntilDone(
       const WorkCallback& work) OVERRIDE;
   virtual ModelSafeGroup GetModelSafeGroup() OVERRIDE;
 
@@ -39,7 +38,7 @@ class PasswordModelWorker : public browser_sync::ModelSafeWorker {
   void CallDoWorkAndSignalTask(
     const WorkCallback& work,
     base::WaitableEvent* done,
-    UnrecoverableErrorInfo* error_info);
+    SyncerError* error);
 
   scoped_refptr<PasswordStore> password_store_;
   DISALLOW_COPY_AND_ASSIGN(PasswordModelWorker);

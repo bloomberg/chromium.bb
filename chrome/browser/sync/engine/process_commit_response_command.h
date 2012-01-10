@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,9 +32,9 @@ class ProcessCommitResponseCommand : public ModelChangingSyncerCommand {
   // ModelChangingSyncerCommand implementation.
   virtual std::set<ModelSafeGroup> GetGroupsToChange(
       const sessions::SyncSession& session) const OVERRIDE;
-  virtual bool ModelNeutralExecuteImpl(
+  virtual SyncerError ModelNeutralExecuteImpl(
       sessions::SyncSession* session) OVERRIDE;
-  virtual void ModelChangingExecuteImpl(
+  virtual SyncerError ModelChangingExecuteImpl(
       sessions::SyncSession* session) OVERRIDE;
 
  private:
@@ -47,7 +47,7 @@ class ProcessCommitResponseCommand : public ModelChangingSyncerCommand {
       std::set<syncable::Id>* deleted_folders);
 
   // Actually does the work of execute.
-  void ProcessCommitResponse(sessions::SyncSession* session);
+  SyncerError ProcessCommitResponse(sessions::SyncSession* session);
 
   void ProcessSuccessfulCommitResponse(
       const sync_pb::SyncEntity& committed_entry,

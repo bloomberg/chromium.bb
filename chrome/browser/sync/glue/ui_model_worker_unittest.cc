@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,12 +11,11 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "chrome/browser/sync/glue/ui_model_worker.h"
-#include "chrome/browser/sync/util/unrecoverable_error_info.h"
 #include "content/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using browser_sync::UIModelWorker;
-using browser_sync::UnrecoverableErrorInfo;
+using browser_sync::SyncerError;
 using content::BrowserThread;
 
 // Various boilerplate, primarily for the StopWithPendingWork test.
@@ -29,12 +28,12 @@ class UIModelWorkerVisitor {
        was_run_(was_run) { }
   virtual ~UIModelWorkerVisitor() { }
 
-  virtual UnrecoverableErrorInfo DoWork() {
+  virtual SyncerError DoWork() {
     EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::UI));
     was_run_->Signal();
     if (quit_loop_when_run_)
       MessageLoop::current()->Quit();
-    return UnrecoverableErrorInfo();
+    return browser_sync::SYNCER_OK;
   }
 
  private:

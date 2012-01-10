@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,7 +11,6 @@
 #include "base/threading/thread.h"
 #include "base/timer.h"
 #include "chrome/browser/sync/glue/browser_thread_model_worker.h"
-#include "chrome/browser/sync/util/unrecoverable_error_info.h"
 #include "content/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -54,13 +53,13 @@ class BrowserThreadModelWorkerTest : public testing::Test {
   }
 
   // This is the work that will be scheduled to be done on the DB thread.
-  UnrecoverableErrorInfo DoWork() {
+  SyncerError DoWork() {
     EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::DB));
     timer_.Stop();  // Stop the failure timer so the test succeeds.
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE, MessageLoop::QuitClosure());
     did_do_work_ = true;
-    return UnrecoverableErrorInfo();
+    return SYNCER_OK;
   }
 
   // This will be called by the OneShotTimer and make the test fail unless

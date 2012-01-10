@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,8 +12,8 @@
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
+#include "chrome/browser/sync/internal_api/includes/syncer_error.h"
 #include "chrome/browser/sync/syncable/model_type.h"
-#include "chrome/browser/sync/util/unrecoverable_error_info.h"
 
 namespace base {
 class DictionaryValue;
@@ -21,7 +21,7 @@ class DictionaryValue;
 
 namespace browser_sync {
 
-typedef base::Callback<UnrecoverableErrorInfo(void)> WorkCallback;
+typedef base::Callback<enum SyncerError(void)> WorkCallback;
 
 enum ModelSafeGroup {
   GROUP_PASSIVE = 0,   // Models that are just "passively" being synced; e.g.
@@ -52,8 +52,7 @@ class ModelSafeWorker : public base::RefCountedThreadSafe<ModelSafeWorker> {
   // Any time the Syncer performs model modifications (e.g employing a
   // WriteTransaction), it should be done by this method to ensure it is done
   // from a model-safe thread.
-  virtual UnrecoverableErrorInfo DoWorkAndWaitUntilDone(
-      const WorkCallback& work) = 0;
+  virtual SyncerError DoWorkAndWaitUntilDone(const WorkCallback& work) = 0;
 
   virtual ModelSafeGroup GetModelSafeGroup() = 0;
 

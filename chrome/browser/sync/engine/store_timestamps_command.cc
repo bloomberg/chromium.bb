@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,13 +15,14 @@ namespace browser_sync {
 StoreTimestampsCommand::StoreTimestampsCommand() {}
 StoreTimestampsCommand::~StoreTimestampsCommand() {}
 
-void StoreTimestampsCommand::ExecuteImpl(sessions::SyncSession* session) {
+SyncerError StoreTimestampsCommand::ExecuteImpl(
+    sessions::SyncSession* session) {
   syncable::ScopedDirLookup dir(session->context()->directory_manager(),
                                 session->context()->account_name());
 
   if (!dir.good()) {
     LOG(ERROR) << "Scoped dir lookup failed!";
-    return;
+    return DIRECTORY_LOOKUP_FAILED;
   }
 
   const GetUpdatesResponse& updates =
@@ -58,6 +59,8 @@ void StoreTimestampsCommand::ExecuteImpl(sessions::SyncSession* session) {
     DVLOG(1) << "Changes remaining: " << changes_left;
     status->set_num_server_changes_remaining(changes_left);
   }
+
+  return SYNCER_OK;
 }
 
 }  // namespace browser_sync

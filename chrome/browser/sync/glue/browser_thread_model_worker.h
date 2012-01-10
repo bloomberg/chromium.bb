@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,7 +10,7 @@
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "chrome/browser/sync/engine/model_safe_worker.h"
-#include "chrome/browser/sync/util/unrecoverable_error_info.h"
+#include "chrome/browser/sync/internal_api/includes/syncer_error.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace base {
@@ -29,7 +29,7 @@ class BrowserThreadModelWorker : public ModelSafeWorker {
   virtual ~BrowserThreadModelWorker();
 
   // ModelSafeWorker implementation. Called on the sync thread.
-  virtual UnrecoverableErrorInfo DoWorkAndWaitUntilDone(
+  virtual SyncerError DoWorkAndWaitUntilDone(
       const WorkCallback& work) OVERRIDE;
   virtual ModelSafeGroup GetModelSafeGroup() OVERRIDE;
 
@@ -40,7 +40,7 @@ class BrowserThreadModelWorker : public ModelSafeWorker {
   virtual void CallDoWorkAndSignalTask(
       const WorkCallback& work,
       base::WaitableEvent* done,
-      UnrecoverableErrorInfo* error_info) = 0;
+      SyncerError* error) = 0;
 
  private:
   content::BrowserThread::ID thread_;
@@ -61,7 +61,7 @@ class DatabaseModelWorker : public BrowserThreadModelWorker {
   virtual void CallDoWorkAndSignalTask(
       const WorkCallback& work,
       base::WaitableEvent* done,
-      UnrecoverableErrorInfo* error_info) OVERRIDE;
+      SyncerError* error) OVERRIDE;
 };
 
 class FileModelWorker : public BrowserThreadModelWorker {
@@ -73,7 +73,7 @@ class FileModelWorker : public BrowserThreadModelWorker {
   virtual void CallDoWorkAndSignalTask(
       const WorkCallback& work,
       base::WaitableEvent* done,
-      UnrecoverableErrorInfo* error_info) OVERRIDE;
+      SyncerError* error) OVERRIDE;
 };
 
 }  // namespace browser_sync

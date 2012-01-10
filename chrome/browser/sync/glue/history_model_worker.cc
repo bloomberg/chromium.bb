@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,12 +18,12 @@ class WorkerTask : public HistoryDBTask {
   WorkerTask(
       const WorkCallback& work,
       WaitableEvent* done,
-      UnrecoverableErrorInfo* error_info)
-    : work_(work), done_(done), error_info_(error_info) {}
+      SyncerError* error)
+    : work_(work), done_(done), error_(error) {}
 
   virtual bool RunOnDBThread(history::HistoryBackend* backend,
                              history::HistoryDatabase* db) {
-    *error_info_ = work_.Run();
+    *error_ = work_.Run();
     done_->Signal();
     return true;
   }
@@ -35,7 +35,7 @@ class WorkerTask : public HistoryDBTask {
  protected:
   WorkCallback work_;
   WaitableEvent* done_;
-  UnrecoverableErrorInfo* error_info_;
+  SyncerError* error_;
 };
 
 
@@ -47,14 +47,14 @@ HistoryModelWorker::HistoryModelWorker(HistoryService* history_service)
 HistoryModelWorker::~HistoryModelWorker() {
 }
 
-UnrecoverableErrorInfo HistoryModelWorker::DoWorkAndWaitUntilDone(
+SyncerError HistoryModelWorker::DoWorkAndWaitUntilDone(
     const WorkCallback& work) {
   WaitableEvent done(false, false);
-  UnrecoverableErrorInfo error_info;
-  scoped_refptr<WorkerTask> task(new WorkerTask(work, &done, &error_info));
+  SyncerError error = UNSET;
+  scoped_refptr<WorkerTask> task(new WorkerTask(work, &done, &error));
   history_service_->ScheduleDBTask(task.get(), &cancelable_consumer_);
   done.Wait();
-  return error_info;
+  return error;
 }
 
 ModelSafeGroup HistoryModelWorker::GetModelSafeGroup() {

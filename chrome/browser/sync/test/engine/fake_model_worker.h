@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,7 @@
 #include "base/compiler_specific.h"
 #include "base/threading/non_thread_safe.h"
 #include "chrome/browser/sync/engine/model_safe_worker.h"
+#include "chrome/browser/sync/internal_api/includes/syncer_error.h"
 
 namespace browser_sync {
 
@@ -22,7 +23,7 @@ class FakeModelWorker : public ModelSafeWorker {
   explicit FakeModelWorker(ModelSafeGroup group);
 
   // ModelSafeWorker implementation.
-  virtual UnrecoverableErrorInfo DoWorkAndWaitUntilDone(
+  virtual SyncerError DoWorkAndWaitUntilDone(
       const WorkCallback& work) OVERRIDE;
   virtual ModelSafeGroup GetModelSafeGroup() OVERRIDE;
 
