@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -558,6 +558,7 @@ class SvnAffectedFile(AffectedFile):
     AffectedFile.__init__(self, *args, **kwargs)
     self._server_path = None
     self._is_text_file = None
+    self._diff = None
 
   def ServerPath(self):
     if self._server_path is None:
@@ -598,8 +599,10 @@ class SvnAffectedFile(AffectedFile):
     return self._is_text_file
 
   def GenerateScmDiff(self):
-    return scm.SVN.GenerateDiff(
-        [self.LocalPath()], self._local_root, False, None)
+    if self._diff is None:
+      self._diff = scm.SVN.GenerateDiff(
+          [self.LocalPath()], self._local_root, False, None)
+    return self._diff
 
 
 class GitAffectedFile(AffectedFile):
@@ -611,6 +614,7 @@ class GitAffectedFile(AffectedFile):
     AffectedFile.__init__(self, *args, **kwargs)
     self._server_path = None
     self._is_text_file = None
+    self._diff = None
 
   def ServerPath(self):
     if self._server_path is None:
@@ -645,7 +649,10 @@ class GitAffectedFile(AffectedFile):
     return self._is_text_file
 
   def GenerateScmDiff(self):
-    return scm.GIT.GenerateDiff(self._local_root, files=[self.LocalPath(),])
+    if self._diff is None:
+      self._diff = scm.GIT.GenerateDiff(
+          self._local_root, files=[self.LocalPath(),])
+    return self._diff
 
 
 class Change(object):
