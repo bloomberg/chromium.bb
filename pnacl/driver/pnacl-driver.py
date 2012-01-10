@@ -224,6 +224,13 @@ GCCPatterns = [
   ( ('-I', '(.+)'),    "env.append('CC_FLAGS', '-I'+pathtools.normalize($0))"),
   ( '-I(.+)',          "env.append('CC_FLAGS', '-I'+pathtools.normalize($0))"),
 
+  # NOTE: the -iquote =DIR syntax (substitute = with sysroot) doesn't work.
+  # Clang just says: ignoring nonexistent directory "=DIR"
+  ( ('-iquote', '(.+)'),
+    "env.append('CC_FLAGS', '-iquote', pathtools.normalize($0))"),
+  ( ('-iquote(.+)'),
+    "env.append('CC_FLAGS', '-iquote', pathtools.normalize($0))"),
+
   ( '(-g)',                   AddCCFlag),
   ( '(-W.*)',                 AddCCFlag),
   ( '(-std=.*)',              AddCCFlag),
