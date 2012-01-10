@@ -9,8 +9,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/webui/chrome_web_ui.h"
-#include "chrome/browser/ui/webui/bookmark_all_tabs_dialog.h"
 
 BookmarkEditor::EditDetails::EditDetails(Type node_type)
     : type(node_type), existing_node(NULL), parent_node(NULL) {
@@ -50,18 +48,7 @@ void BookmarkEditor::Show(gfx::NativeWindow parent_window,
                           Profile* profile,
                           const EditDetails& details,
                           Configuration configuration) {
-#if defined(USE_AURA)
-  // TODO(saintlou): Aura uses always "more WebUI". Remove test when flackr is
-  // done as per his note below.
-  if (details.type != EditDetails::NEW_FOLDER || details.urls.empty()) {
-    BookmarkInputWindowDialogController::Show(profile, parent_window, details);
-  }
-#else
-  // TODO(flackr): Implement NEW_FOLDER type with non-empty |details.urls| in
-  // WebUI and remove the type check.
-  if ((chrome_web_ui::IsMoreWebUI() &&
-       (details.type != EditDetails::NEW_FOLDER || details.urls.empty())) ||
-      (details.type == EditDetails::EXISTING_NODE &&
+  if ((details.type == EditDetails::EXISTING_NODE &&
        details.existing_node->is_folder()) ||
       (details.type == EditDetails::NEW_FOLDER &&
        details.urls.empty())) {
@@ -72,26 +59,9 @@ void BookmarkEditor::Show(gfx::NativeWindow parent_window,
   // Delegate to the platform native bookmark editor code.
   ShowNative(parent_window, profile, details.parent_node, details,
       configuration);
-#endif
 }
 
 void BookmarkEditor::ShowBookmarkAllTabsDialog(Browser* browser) {
-#if defined(USE_AURA)
-  Profile* profile = browser->profile();
-  browser::ShowBookmarkAllTabsDialog(profile);
-#elif defined(TOOLKIT_VIEWS) || defined(OS_WIN)
-  Profile* profile = browser->profile();
-  if (chrome_web_ui::IsMoreWebUI())
-    browser::ShowBookmarkAllTabsDialog(profile);
-  else
-    BookmarkEditor::ShowNativeBookmarkAllTabsDialog(browser);
-#else
-  BookmarkEditor::ShowNativeBookmarkAllTabsDialog(browser);
-#endif
-}
-
-#if !defined(USE_AURA)
-void BookmarkEditor::ShowNativeBookmarkAllTabsDialog(Browser* browser) {
   Profile* profile = browser->profile();
   BookmarkModel* model = profile->GetBookmarkModel();
   DCHECK(model && model->IsLoaded());
@@ -104,4 +74,4 @@ void BookmarkEditor::ShowNativeBookmarkAllTabsDialog(Browser* browser) {
   BookmarkEditor::Show(browser->window()->GetNativeHandle(),
                        profile, details, BookmarkEditor::SHOW_TREE);
 }
-#endif
+

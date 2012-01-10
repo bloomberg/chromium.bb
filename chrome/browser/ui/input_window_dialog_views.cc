@@ -9,8 +9,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/ui/webui/chrome_web_ui.h"
-#include "chrome/browser/ui/webui/input_window_dialog_webui.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/controls/label.h"
@@ -21,6 +19,11 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_delegate.h"
 
+#if !defined(USE_AURA)
+#include "chrome/browser/ui/webui/chrome_web_ui.h"
+#include "chrome/browser/ui/webui/input_window_dialog_webui.h"
+#endif
+
 namespace {
 
 // Width of the text field, in pixels.
@@ -28,16 +31,16 @@ const int kTextfieldWidth = 200;
 
 }  // namespace
 
-// The Windows implementation of the cross platform input dialog interface.
-class InputWindowDialogWin : public InputWindowDialog {
+// The Views implementation of the cross platform input dialog interface.
+class InputWindowDialogViews : public InputWindowDialog {
  public:
-  InputWindowDialogWin(gfx::NativeWindow parent,
-                       const string16& window_title,
-                       const string16& label,
-                       const string16& contents,
-                       Delegate* delegate,
-                       ButtonType type);
-  virtual ~InputWindowDialogWin();
+  InputWindowDialogViews(gfx::NativeWindow parent,
+                         const string16& window_title,
+                         const string16& label,
+                         const string16& contents,
+                         Delegate* delegate,
+                         ButtonType type);
+  virtual ~InputWindowDialogViews();
 
   // Overridden from InputWindowDialog:
   virtual void Show() OVERRIDE;
@@ -63,7 +66,7 @@ class InputWindowDialogWin : public InputWindowDialog {
   scoped_ptr<InputWindowDialog::Delegate> delegate_;
   const ButtonType type_;
 
-  DISALLOW_COPY_AND_ASSIGN(InputWindowDialogWin);
+  DISALLOW_COPY_AND_ASSIGN(InputWindowDialogViews);
 };
 
 // ContentView, as the name implies, is the content view for the InputWindow.
@@ -71,7 +74,7 @@ class InputWindowDialogWin : public InputWindowDialog {
 class ContentView : public views::DialogDelegateView,
                     public views::TextfieldController {
  public:
-  explicit ContentView(InputWindowDialogWin* delegate);
+  explicit ContentView(InputWindowDialogViews* delegate);
 
   // views::DialogDelegateView:
   virtual string16 GetDialogButtonLabel(ui::DialogButton button) const OVERRIDE;
@@ -107,7 +110,7 @@ class ContentView : public views::DialogDelegateView,
 
   // The delegate that the ContentView uses to communicate changes to the
   // caller.
-  InputWindowDialogWin* delegate_;
+  InputWindowDialogViews* delegate_;
 
   // Helps us set focus to the first Textfield in the window.
   base::WeakPtrFactory<ContentView> weak_factory_;
@@ -117,7 +120,7 @@ class ContentView : public views::DialogDelegateView,
 
 ///////////////////////////////////////////////////////////////////////////////
 // ContentView
-ContentView::ContentView(InputWindowDialogWin* delegate)
+ContentView::ContentView(InputWindowDialogViews* delegate)
     : delegate_(delegate),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
     DCHECK(delegate_);
@@ -231,12 +234,12 @@ void ContentView::FocusFirstFocusableControl() {
   text_field_->RequestFocus();
 }
 
-InputWindowDialogWin::InputWindowDialogWin(gfx::NativeWindow parent,
-                                           const string16& window_title,
-                                           const string16& label,
-                                           const string16& contents,
-                                           Delegate* delegate,
-                                           ButtonType type)
+InputWindowDialogViews::InputWindowDialogViews(gfx::NativeWindow parent,
+                                               const string16& window_title,
+                                               const string16& label,
+                                               const string16& contents,
+                                               Delegate* delegate,
+                                               ButtonType type)
     : window_title_(window_title),
       label_(label),
       contents_(contents),
@@ -247,14 +250,14 @@ InputWindowDialogWin::InputWindowDialogWin(gfx::NativeWindow parent,
   window_->client_view()->AsDialogClientView()->UpdateDialogButtons();
 }
 
-InputWindowDialogWin::~InputWindowDialogWin() {
+InputWindowDialogViews::~InputWindowDialogViews() {
 }
 
-void InputWindowDialogWin::Show() {
+void InputWindowDialogViews::Show() {
   window_->Show();
 }
 
-void InputWindowDialogWin::Close() {
+void InputWindowDialogViews::Close() {
   window_->Close();
 }
 
@@ -265,18 +268,19 @@ InputWindowDialog* InputWindowDialog::Create(
     const LabelContentsPairs& label_contents_pairs,
     Delegate* delegate,
     ButtonType type) {
+#if !defined(USE_AURA)
   if (chrome_web_ui::IsMoreWebUI()) {
     return new InputWindowDialogWebUI(window_title,
                                       label_contents_pairs,
                                       delegate,
                                       type);
-  } else {
-    DCHECK_EQ(1U, label_contents_pairs.size());
-    return new InputWindowDialogWin(parent,
+  }
+#endif
+  DCHECK_EQ(1U, label_contents_pairs.size());
+  return new InputWindowDialogViews(parent,
                                     window_title,
                                     label_contents_pairs[0].first,
                                     label_contents_pairs[0].second,
                                     delegate,
                                     type);
-  }
 }

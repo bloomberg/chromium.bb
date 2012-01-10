@@ -28,7 +28,6 @@
 #include "chrome/browser/ui/webui/history_ui.h"
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
 #include "chrome/browser/ui/webui/hung_renderer_dialog_ui.h"
-#include "chrome/browser/ui/webui/input_window_dialog_ui.h"
 #include "chrome/browser/ui/webui/media/media_internals_ui.h"
 #include "chrome/browser/ui/webui/net_internals_ui.h"
 #include "chrome/browser/ui/webui/network_action_predictor/network_action_predictor_ui.h"
@@ -82,6 +81,8 @@
 
 #if defined(USE_AURA)
 #include "chrome/browser/ui/webui/aura/app_list_ui.h"
+#else
+#include "chrome/browser/ui/webui/input_window_dialog_ui.h"
 #endif
 
 using content::WebContents;
@@ -199,8 +200,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebContents* web_contents,
     return &NewWebUI<HistoryUI>;
   if (url.host() == chrome::kChromeUIHungRendererDialogHost)
     return &NewWebUI<HungRendererDialogUI>;
-  if (url.host() == chrome::kChromeUIInputWindowDialogHost)
-    return &NewWebUI<InputWindowDialogUI>;
 #if defined(USE_VIRTUAL_KEYBOARD)
   if (url.host() == chrome::kChromeUIKeyboardHost)
     return &NewWebUI<KeyboardUI>;
@@ -274,6 +273,9 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebContents* web_contents,
 #if defined(USE_AURA)
   if (url.host() == chrome::kChromeUIAppListHost)
     return &NewWebUI<AppListUI>;
+#else
+  if (url.host() == chrome::kChromeUIInputWindowDialogHost)
+    return &NewWebUI<InputWindowDialogUI>;
 #endif
 
   if (url.host() == chrome::kChromeUIPrintHost &&

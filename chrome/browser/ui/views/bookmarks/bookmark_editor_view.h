@@ -67,7 +67,7 @@ class BookmarkEditorView : public BookmarkEditor,
     virtual void SetTitle(ui::TreeModelNode* node,
                           const string16& title) {
       if (!title.empty())
-        TreeNodeModel::SetTitle(node, title);
+        ui::TreeNodeModel<EditorNode>::SetTitle(node, title);
     }
 
    private:
@@ -262,7 +262,9 @@ class BookmarkEditorView : public BookmarkEditor,
 
   // The context menu.
   scoped_ptr<ui::SimpleMenuModel> context_menu_contents_;
+#if !defined(USE_AURA)
   scoped_ptr<views::Menu2> context_menu_;
+#endif
 
   // Mode used to create nodes from.
   BookmarkModel* bb_model_;

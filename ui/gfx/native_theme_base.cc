@@ -16,8 +16,12 @@
 
 namespace {
 
-// Hardcoded colors for use when there is no system theme (Aura, ChromeOS).
+// Hard-coded colors for use when there is no system theme (Aura, ChromeOS).
+#if defined(USE_AURA)
+const SkColor kDefaultDialogBackgroundColor = SK_ColorWHITE;
+#else
 const SkColor kDefaultDialogBackgroundColor = SkColorSetRGB(200, 200, 200);
+#endif
 const SkColor kDefaultFocusedBorderColor= SkColorSetRGB(0x4D, 0x90, 0xFE);
 const SkColor kDefaultUnfocusedBorderColor = SkColorSetRGB(0xD9, 0xD9, 0xD9);
 const SkColor kInvalidColorIdColor = SkColorSetRGB(255, 0, 128);
