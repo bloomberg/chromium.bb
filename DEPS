@@ -150,7 +150,7 @@ deps = {
     Var("webkit_trunk") + "/Tools/TestWebKitAPI@" + Var("webkit_revision"),
 
   "src/third_party/ots":
-    (Var("googlecode_url") % "ots") + "/trunk@77",
+    (Var("googlecode_url") % "ots") + "/trunk@78",
 
   "src/tools/page_cycler/acid3":
     "/trunk/deps/page_cycler/acid3@102714",
