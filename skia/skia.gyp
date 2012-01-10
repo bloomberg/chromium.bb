@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -796,13 +796,21 @@
             'ext/SkFontHost_fontconfig.cpp',
             'ext/SkFontHost_fontconfig_direct.cpp',
           ],
-        }, {  # use_glib == 0
+        }],
+        [ 'use_glib == 0 and OS != "android"', {
           'sources/': [ ['exclude', '_linux\\.(cc|cpp)$'] ],
           'sources!': [
             '../third_party/skia/src/ports/SkFontHost_FreeType.cpp',
             '../third_party/skia/src/ports/SkFontHost_TryeType_Tables.cpp',
             '../third_party/skia/src/ports/SkFontHost_gamma_none.cpp',
             '../third_party/skia/src/ports/SkFontHost_tables.cpp',
+          ],
+        }],
+        [ 'OS == "android"', {
+          'sources/': [
+            ['exclude', '_linux\\.(cc|cpp)$'],
+            ['include', 'ext/platform_device_linux\\.cc$'],
+            ['include', 'ext/platform_canvas_linux\\.cc$'],
           ],
         }],
         [ 'toolkit_uses_gtk == 1', {
@@ -1045,7 +1053,12 @@
            }],
           ],
           # The assembly uses the frame pointer register (r7 in Thumb/r11 in
-          # ARM), the compiler doesn't like that.
+          # ARM), the compiler doesn't like that. Explicitly remove the
+          # -fno-omit-frame-pointer flag for Android, as that gets added to all
+          # targets via common.gypi.
+          'cflags!': [
+            '-fno-omit-frame-pointer',
+          ],
           'cflags': [
             '-fomit-frame-pointer',
           ],
