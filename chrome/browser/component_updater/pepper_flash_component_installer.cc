@@ -85,16 +85,8 @@ const char kNullVersion[] = "0.0.0.0";
 bool IsPepperFlashEnabledByDefault() {
 #if defined(USE_AURA)
   return true;
-#elif !defined(OS_WIN)
-  return false;
 #else
-  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  if (!dist)
-    return false;
-  string16 channel;
-  if (!dist->GetChromeChannel(&channel))
-    return false;
-  return (channel == L"canary");
+  return false;
 #endif
 }
 
