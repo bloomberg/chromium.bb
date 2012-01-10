@@ -278,7 +278,15 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest, DownloadsApi_PauseResumeCancel) {
 
 // Test downloads.getFileIcon() on in-progress, finished, cancelled and deleted
 // download items.
-IN_PROC_BROWSER_TEST_F(DownloadExtensionTest, DownloadsApi_FileIcon_Active) {
+// TODO(asanka): Fails on ChromeOS (http://crbug.com/109677)
+#if defined(OS_CHROMEOS)
+#define MAYBE_DownloadsApi_FileIcon_Active \
+        FAILS_DownloadsApi_FileIcon_Active
+#else
+#define MAYBE_DownloadsApi_FileIcon_Active DownloadsApi_FileIcon_Active
+#endif
+IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
+                       MAYBE_DownloadsApi_FileIcon_Active) {
   DownloadItem* download_item = CreateSlowTestDownload();
   ASSERT_TRUE(download_item);
 
@@ -377,7 +385,15 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest, DownloadsApi_FileIcon_Active) {
 // whether they exist or not.  If the file doesn't exist we should receive a
 // generic icon from the OS/toolkit that may or may not be specific to the file
 // type.
-IN_PROC_BROWSER_TEST_F(DownloadExtensionTest, DownloadsApi_FileIcon_History) {
+// TODO(asanka): Fails on ChromeOS (http://crbug.com/109677)
+#if defined(OS_CHROMEOS)
+#define MAYBE_DownloadsApi_FileIcon_History \
+        FAILS_DownloadsApi_FileIcon_History
+#else
+#define MAYBE_DownloadsApi_FileIcon_History DownloadsApi_FileIcon_History
+#endif
+IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
+                       MAYBE_DownloadsApi_FileIcon_History) {
   base::Time current(base::Time::Now());
   FilePath real_path(
       downloads_directory().Append(FILE_PATH_LITERAL("real.txt")));
