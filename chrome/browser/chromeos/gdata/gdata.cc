@@ -62,6 +62,8 @@ const char kGetDocumentListURL[] =
 
 const int kMaxDocumentsPerFeed = 1000;
 
+const char kFeedField[] = "feed";
+
 // OAuth scope for the documents API.
 const char kDocsListScope[] = "https://docs.google.com/feeds/";
 const char kSpreadsheetsScope[] = "https://spreadsheets.google.com/feeds/";
@@ -656,20 +658,28 @@ void DocumentsService::OnOAuth2RefreshTokenChanged() {
 
 void DocumentsService::UpdateFilelist(GDataErrorCode status,
                                       base::Value* data) {
-  if (status != HTTP_SUCCESS)
+  if (!(status == HTTP_SUCCESS && data &&
+        data->GetType() == Value::TYPE_DICTIONARY))
     return;
 
-  DocumentFeed* feed = DocumentFeed::CreateFrom(data);
+  base::DictionaryValue* feed_dict = NULL;
+  DocumentFeed* feed = NULL;
+  if (static_cast<DictionaryValue*>(data)->GetDictionary(kFeedField,
+                                                         &feed_dict)) {
+    feed = DocumentFeed::CreateFrom(feed_dict);
+  }
   feed_value_.reset(data);
   // TODO(zelidrag): This part should be removed once we start handling the
   // results properly.
   std::string json;
   base::JSONWriter::Write(feed_value_.get(), true, &json);
   DVLOG(1) << "Received document feed:\n" << json;
-  DVLOG(1) << "Parsed feed info:"
-           << "\n  title = " << feed->title()
-           << "\n  start_index = " << feed->start_index()
-           << "\n  items_per_page = " << feed->items_per_page();
+  if (feed) {
+    DVLOG(1) << "Parsed feed info:"
+             << "\n  title = " << feed->title()
+             << "\n  start_index = " << feed->start_index()
+             << "\n  items_per_page = " << feed->items_per_page();
+  }
 }
 
 
