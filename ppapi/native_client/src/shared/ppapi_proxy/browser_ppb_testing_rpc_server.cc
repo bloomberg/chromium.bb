@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -122,7 +122,7 @@ void PpbTestingRpcServer::PPB_Testing_GetDocumentURL(
     pp_url_components =
         reinterpret_cast<struct PP_URLComponents_Dev*>(components);
   }
-  if (*url_bytes != ppapi_proxy::kMaxVarSize)
+  if (*url_bytes != ppapi_proxy::kMaxReturnVarSize)
     return;
 
   struct PP_Var pp_url = PPBTestingInterface()->GetDocumentURL(

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Chromium Authors. All rights reserved.
+ * Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -13,7 +13,8 @@ struct NaClSrpcChannel;
 
 namespace ppapi_proxy {
 
-const uint32_t kMaxVarSize = 64 * 1024;
+// The maximum size of a pre-allocated return parameter passed to SRPC.
+const uint32_t kMaxReturnVarSize = 64 * 1024;
 
 // Serialize one PP_Var to the location given in "bytes", using no more
 // than "*length" bytes .  If successful, "*length" reflects the number of

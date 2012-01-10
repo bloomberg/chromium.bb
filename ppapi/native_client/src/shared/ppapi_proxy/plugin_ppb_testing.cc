@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -125,8 +125,8 @@ struct PP_Var GetDocumentURL(PP_Instance instance,
   NaClSrpcChannel* channel = GetMainSrpcChannel();
   nacl_abi_size_t components_size =
       (components != NULL) ? kPPURLComponentsDevBytes : 0;
-  nacl_abi_size_t url_size = kMaxVarSize;
-  nacl::scoped_array<char> url_bytes(new (std::nothrow) char[url_size]);
+  nacl_abi_size_t url_size = kMaxReturnVarSize;
+  nacl::scoped_array<char> url_bytes(new char[url_size]);
   if (url_bytes.get() == NULL)
     return PP_MakeUndefined();
 

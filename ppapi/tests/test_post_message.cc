@@ -253,7 +253,7 @@ std::string TestPostMessage::TestSendingArrayBuffer() {
 
   // TODO(dmichael): Add testing of longer array buffers when crbug.com/106266
   // is fixed.
-  uint32_t sizes[] = { 0, 100, 1000 };
+  uint32_t sizes[] = { 0, 100, 1000, 10000, 100000, 1000000 };
   for (size_t i = 0; i < sizeof(sizes)/sizeof(sizes[i]); ++i) {
     std::ostringstream size_stream;
     size_stream << sizes[i];
@@ -484,4 +484,3 @@ std::string TestPostMessage::TestNonMainThread() {
 
   PASS();
 }
-
