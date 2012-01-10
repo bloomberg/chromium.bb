@@ -16,6 +16,7 @@ var ContentSettingsExceptionsArea =
 var CookiesView = options.CookiesView;
 var FontSettings = options.FontSettings;
 var HandlerOptions = options.HandlerOptions;
+var HomePageOverlay = options.HomePageOverlay;
 var ImportDataOverlay = options.ImportDataOverlay;
 var IntentsView = options.IntentsView;
 var InstantConfirmOverlay = options.InstantConfirmOverlay;
@@ -165,6 +166,9 @@ function load() {
   OptionsPage.registerOverlay(ClearBrowserDataOverlay.getInstance(),
                               AdvancedOptions.getInstance(),
                               [$('privacyClearDataButton')]);
+  OptionsPage.registerOverlay(HomePageOverlay.getInstance(),
+                              BrowserOptions.getInstance(),
+                              [$('toolbarShowHomeButton')]);
   OptionsPage.registerOverlay(ImportDataOverlay.getInstance(),
                               PersonalOptions.getInstance());
   OptionsPage.registerOverlay(InstantConfirmOverlay.getInstance(),

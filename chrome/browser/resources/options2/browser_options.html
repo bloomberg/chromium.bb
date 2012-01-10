@@ -61,12 +61,13 @@
     <h3 i18n-content="toolbarGroupName"></h3>
     <div>
       <div class="checkbox">
-        <label>
-          <input id="toolbarShowHomeButton" pref="browser.show_home_button"
-              metric="Options_Homepage_HomeButton" type="checkbox">
-          <span id="home-page-label" i18n-content="toolbarShowHomeButton">
-          </span>
+        <input id="toolbarShowHomeButton" pref="browser.show_home_button"
+            metric="Options_Homepage_HomeButton" type="checkbox">
+        <label id="home-page-label" for="toolbarShowHomeButton"
+            i18n-content="toolbarShowHomeButton">
         </label>
+        <button id="change-home-page" i18n-content="changeHomePage"
+            class="link-button custom-appearance"></button>
       </div>
       <div class="checkbox">
         <label>

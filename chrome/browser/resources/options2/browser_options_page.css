@@ -1,3 +1,11 @@
+/* This is necessary because the fix for correctly wrapping labels
+ * (crbug.com/109334) requires labels to be display: block; however, this label
+ * has a buttom inline after it.
+ */
+#home-page-label {
+  display: inline;
+}
+
 #defaultSearchEngineGroup {
   display: -webkit-box;
   -webkit-box-orient: vertical;

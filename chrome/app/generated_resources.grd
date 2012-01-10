@@ -8112,6 +8112,9 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
       <message name="IDS_OPTIONS_TOOLBAR_SHOW_HOME_BUTTON" desc="The label of the 'Show Home button' checkbox">
         Show Home button
       </message>
+      <message name="IDS_OPTIONS_CHANGE_HOME_PAGE" desc="The text of the button that allows the user to change her home page">
+        Change page
+      </message>
       <message name="IDS_OPTIONS_SHOW_HOME_BUTTON_FOR_URL" desc="The label of the 'Show Home button' checkbox">
         Show Home button for &lt;b&gt;<ph name="HOME_PAGE_URL">$1<ex>google.com/search</ex></ph>&lt;/b&gt;.
       </message>

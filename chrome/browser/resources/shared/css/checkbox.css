@@ -151,16 +151,19 @@ input[type='radio']:not(.custom-appearance):focus {
 }
 
 label > input[type=radio] ~ span,
-label > input[type=checkbox] ~ span {
+label > input[type=checkbox] ~ span,
+input[type=checkbox] ~ label {
   color: #444;
 }
 
 label:hover > input[type=checkbox]:disabled ~ span,
-label:hover > input[type=radio]:disabled ~ span {
+label:hover > input[type=radio]:disabled ~ span,
+input[type=checkbox]:disabled ~ label:hover {
   color: #888;
 }
 
 label:hover > input[type=checkbox]:not(:disabled) ~ span,
-label:hover > input[type=radio]:not(:disabled) ~ span {
+label:hover > input[type=radio]:not(:disabled) ~ span,
+input[type=checkbox]:not(:disabled) ~ label:hover {
   color: #222;
 }

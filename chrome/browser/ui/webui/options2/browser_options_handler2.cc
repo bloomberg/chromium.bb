@@ -104,6 +104,7 @@ void BrowserOptionsHandler::GetLocalizedValues(
     { "startupSetPages", IDS_OPTIONS2_STARTUP_SET_PAGES },
     { "toolbarGroupName", IDS_OPTIONS2_TOOLBAR_GROUP_NAME },
     { "toolbarShowHomeButton", IDS_OPTIONS_TOOLBAR_SHOW_HOME_BUTTON },
+    { "changeHomePage", IDS_OPTIONS_CHANGE_HOME_PAGE },
     { "toolbarShowBookmarksBar", IDS_OPTIONS_TOOLBAR_SHOW_BOOKMARKS_BAR },
     { "defaultSearchGroupName", IDS_OPTIONS_DEFAULTSEARCH_GROUP_NAME },
     { "defaultSearchManageEngines", IDS_OPTIONS_DEFAULTSEARCH_MANAGE_ENGINES },

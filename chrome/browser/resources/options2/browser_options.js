@@ -73,6 +73,9 @@ cr.define('options', function() {
             ['Options_OpenUnderTheHood']);
       };
       $('defaultSearchEngine').onchange = this.setDefaultSearchEngine_;
+      $('change-home-page').onclick = function(event) {
+        OptionsPage.navigateToPage('homePageOverlay');
+      };
 
       var self = this;
       $('instantEnabledCheckbox').customChangeHandler = function(event) {

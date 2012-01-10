@@ -38,6 +38,21 @@ div.disabled {
   color: #888;
 }
 
+/* TODO(jhawkins): Refactor back into button.css once more pages are converted.
+ */
+.link-button {
+  color: #303942;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+/* TODO(jhawkins): Get color values for these states. */
+.link-button:focus,
+.link-button:hover,
+.link-button:active {
+  color: #303942;
+}
+
 /* TEXT */
 input[type='password'],
 input[type='text'],

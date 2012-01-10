@@ -73,6 +73,7 @@
   <include src="handler_options.js"></script>
   <include src="handler_options_list.js"></script>
 </if>
+<include src="home_page_overlay.js"></include>
 <include src="import_data_overlay.js"></include>
 <include src="instant_confirm_overlay.js"></include>
 <if expr="pp_ifdef('enable_web_intents')">
