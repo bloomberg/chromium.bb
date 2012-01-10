@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -253,8 +253,8 @@ class RegressionTest(BaseTestCase):
         subp.check_output(
             e + ['--fail', '--stdout'], universal_newlines=un)
         self.fail()
-      except subp.CalledProcessError, e:
-        self._check_exception(subp, e, c('A\nBB\nCCC\n'), None, 64)
+      except subp.CalledProcessError, exception:
+        self._check_exception(subp, exception, c('A\nBB\nCCC\n'), None, 64)
     self._run_test(fn)
 
   def test_check_output_throw_no_stderr(self):
@@ -265,8 +265,8 @@ class RegressionTest(BaseTestCase):
         subp.check_output(
             e + ['--fail', '--stderr'], universal_newlines=un)
         self.fail()
-      except subp.CalledProcessError, e:
-        self._check_exception(subp, e, c(''), None, 64)
+      except subp.CalledProcessError, exception:
+        self._check_exception(subp, exception, c(''), None, 64)
     self._run_test(fn)
 
   def test_check_output_throw_stderr(self):
@@ -279,8 +279,8 @@ class RegressionTest(BaseTestCase):
             stderr=subp.PIPE,
             universal_newlines=un)
         self.fail()
-      except subp.CalledProcessError, e:
-        self._check_exception(subp, e, '', c('a\nbb\nccc\n'), 64)
+      except subp.CalledProcessError, exception:
+        self._check_exception(subp, exception, '', c('a\nbb\nccc\n'), 64)
     self._run_test(fn)
 
   def test_check_output_throw_stderr_stdout(self):
@@ -293,8 +293,8 @@ class RegressionTest(BaseTestCase):
             stderr=subp.STDOUT,
             universal_newlines=un)
         self.fail()
-      except subp.CalledProcessError, e:
-        self._check_exception(subp, e, c('a\nbb\nccc\n'), None, 64)
+      except subp.CalledProcessError, exception:
+        self._check_exception(subp, exception, c('a\nbb\nccc\n'), None, 64)
     self._run_test(fn)
 
   def test_check_call_throw(self):
@@ -302,8 +302,8 @@ class RegressionTest(BaseTestCase):
       try:
         subp.check_call(self.exe + ['--fail', '--stderr'])
         self.fail()
-      except subp.CalledProcessError, e:
-        self._check_exception(subp, e, None, None, 64)
+      except subp.CalledProcessError, exception:
+        self._check_exception(subp, exception, None, None, 64)
 
   def test_redirect_stderr_to_stdout_pipe(self):
     def fn(c, e, un, subp):
@@ -503,8 +503,8 @@ class S2Test(BaseTestCase):
             stderr=stderr.append,
             universal_newlines=un)
         self.fail()
-      except subprocess2.CalledProcessError, e:
-        self._check_exception(e, '', None, 64)
+      except subprocess2.CalledProcessError, exception:
+        self._check_exception(exception, '', None, 64)
         self.assertEquals(c('a\nbb\nccc\n'), ''.join(stderr))
     self._run_test(fn)
 
