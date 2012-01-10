@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -192,7 +192,7 @@ void WriteURLWithName(GtkSelectionData* selection_data,
       // _NETSCAPE_URL format is URL + \n + title.
       std::string utf8_text = url.spec() + "\n" + UTF16ToUTF8(title);
       gtk_selection_data_set(selection_data,
-                             selection_data->target,
+                             gtk_selection_data_get_target(selection_data),
                              kBitsPerByte,
                              reinterpret_cast<const guchar*>(utf8_text.c_str()),
                              utf8_text.length());
@@ -209,11 +209,13 @@ void WriteURLWithName(GtkSelectionData* selection_data,
 bool ExtractNamedURL(GtkSelectionData* selection_data,
                      GURL* url,
                      string16* title) {
-  if (!selection_data || selection_data->length <= 0)
+  if (!selection_data || gtk_selection_data_get_length(selection_data) <= 0)
     return false;
 
-  Pickle data(reinterpret_cast<char*>(selection_data->data),
-              selection_data->length);
+  Pickle data(
+      reinterpret_cast<const char*>(
+          gtk_selection_data_get_data(selection_data)),
+      gtk_selection_data_get_length(selection_data));
   void* iter = NULL;
   std::string title_utf8, url_utf8;
   if (!data.ReadString(&iter, &title_utf8) ||
@@ -248,13 +250,15 @@ bool ExtractURIList(GtkSelectionData* selection_data, std::vector<GURL>* urls) {
 bool ExtractNetscapeURL(GtkSelectionData* selection_data,
                         GURL* url,
                         string16* title) {
-  if (!selection_data || selection_data->length <= 0)
+  if (!selection_data || gtk_selection_data_get_length(selection_data) <= 0)
     return false;
 
   // Find the first '\n' in the data. It is the separator between the url and
   // the title.
-  std::string data(reinterpret_cast<char*>(selection_data->data),
-                   selection_data->length);
+  std::string data(
+      reinterpret_cast<const char*>(
+          gtk_selection_data_get_data(selection_data)),
+      gtk_selection_data_get_length(selection_data));
   std::string::size_type newline = data.find('\n');
   if (newline == std::string::npos)
     return false;

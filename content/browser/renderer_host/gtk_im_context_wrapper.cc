@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -589,9 +589,10 @@ void GtkIMContextWrapper::HandleHostViewRealize(GtkWidget* widget) {
   // We should only set im context's client window once, because when setting
   // client window.im context may destroy and recreate its internal states and
   // objects.
-  if (widget->window) {
-    gtk_im_context_set_client_window(context_, widget->window);
-    gtk_im_context_set_client_window(context_simple_, widget->window);
+  GdkWindow* gdk_window = gtk_widget_get_window(widget);
+  if (gdk_window) {
+    gtk_im_context_set_client_window(context_, gdk_window);
+    gtk_im_context_set_client_window(context_simple_, gdk_window);
   }
 }
 

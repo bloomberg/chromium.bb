@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -264,7 +264,7 @@ void WebDragSourceGtk::OnDragDataGet(GtkWidget* sender,
 
         // Return the status code to the file manager.
         gtk_selection_data_set(selection_data,
-                               selection_data->target,
+                               gtk_selection_data_get_target(selection_data),
                                kBitsPerByte,
                                reinterpret_cast<guchar*>(&status_code),
                                1);

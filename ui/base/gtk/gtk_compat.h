@@ -49,6 +49,10 @@ inline void gtk_widget_set_realized(GtkWidget* widget,
   else
     GTK_WIDGET_UNSET_FLAGS(widget, GTK_REALIZED);
 }
+
+inline void gtk_widget_style_attach(GtkWidget* widget) {
+  widget->style = gtk_style_attach(widget->style, widget->window);
+}
 #endif  // !GTK_CHECK_VERSION(2, 20, 0) || defined(GOOGLE_CHROME_BUILD)
 
 #if !GTK_CHECK_VERSION(2, 22, 0)
