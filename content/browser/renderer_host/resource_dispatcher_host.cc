@@ -394,9 +394,12 @@ bool ResourceDispatcherHost::HandleExternalProtocol(
   if (delegate_)
     delegate_->HandleExternalProtocol(url, child_id, route_id);
 
+  // This error code is special-cased in RenderViewImpl::didFailProvisionalLoad
+  // to not result in an error page.
   handler->OnResponseCompleted(
       request_id,
-      net::URLRequestStatus(net::URLRequestStatus::FAILED, net::ERR_ABORTED),
+      net::URLRequestStatus(net::URLRequestStatus::FAILED,
+                            net::ERR_UNKNOWN_URL_SCHEME),
       std::string());  // No security info necessary.
   return true;
 }

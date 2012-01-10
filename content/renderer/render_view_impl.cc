@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -2502,6 +2502,10 @@ void RenderViewImpl::didFailProvisionalLoad(WebFrame* frame,
   // Don't display an error page if this is simply a cancelled load.  Aside
   // from being dumb, WebCore doesn't expect it and it will cause a crash.
   if (error.reason == net::ERR_ABORTED)
+    return;
+  // Don't display an error message if the request was handled by an
+  // external protocol handler.
+  if (error.reason == net::ERR_UNKNOWN_URL_SCHEME)
     return;
 
   // Make sure we never show errors in view source mode.
