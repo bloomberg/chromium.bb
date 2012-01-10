@@ -6,15 +6,19 @@
 import logging
 import os
 import shutil
-import sys
+import time
 
 import pyauto_functional  # Must be imported before pyauto
 import pyauto
-import test_utils
-
+from webdriver_pages import settings
+from webdriver_pages.settings import Behaviors, ContentTypes
 
 class PrefsTest(pyauto.PyUITest):
   """TestCase for Preferences."""
+
+  def setUp(self):
+    pyauto.PyUITest.setUp(self)
+    self.driver = self.NewWebDriver()
 
   def Debug(self):
     """Test method for experimentation.
@@ -27,35 +31,21 @@ class PrefsTest(pyauto.PyUITest):
 
   def testSessionRestore(self):
     """Test session restore preference."""
-
-    pref_url = 'chrome://settings/browser'
     url1 = 'http://www.google.com/'
     url2 = 'http://news.google.com/'
-
-    self.NavigateToURL(pref_url)
-    # Set pref to restore session on startup.
-    driver = self.NewWebDriver()
-    restore_elem = driver.find_element_by_xpath(
-        '//input[@metric="Options_Startup_LastSession"]')
-    restore_elem.click()
-    self.assertTrue(restore_elem.is_selected())
-    self.RestartBrowser(clear_profile=False)
     self.NavigateToURL(url1)
     self.AppendTab(pyauto.GURL(url2))
     num_tabs = self.GetTabCount()
+    # Set pref to restore session on startup.
+    self.SetPrefs(pyauto.kRestoreOnStartup, 1)
+    logging.debug('Setting %s to 1' % pyauto.kRestoreOnStartup)
     self.RestartBrowser(clear_profile=False)
-    # Verify tabs are properly restored.
     self.assertEqual(self.GetPrefsInfo().Prefs(pyauto.kRestoreOnStartup), 1)
     self.assertEqual(num_tabs, self.GetTabCount())
     self.ActivateTab(0)
     self.assertEqual(url1, self.GetActiveTabURL().spec())
     self.ActivateTab(1)
     self.assertEqual(url2, self.GetActiveTabURL().spec())
-    # Verify session restore option is still selected.
-    self.NavigateToURL(pref_url, 0, 0)
-    driver = self.NewWebDriver()
-    self.assertTrue(driver.find_element_by_xpath(
-        '//input[@metric="Options_Startup_LastSession"]').is_selected())
 
   def testNavigationStateOnSessionRestore(self):
     """Verify navigation state is preserved on session restore."""
@@ -158,10 +148,6 @@ class PrefsTest(pyauto.PyUITest):
 
     Checks for the geolocation infobar.
     """
-    # Fails on Win7 Chromium bot only.  crbug.com/89000
-    if (self.IsWin7() and
-        self.GetBrowserInfo()['properties']['branding'] == 'Chromium'):
-      return
     url = self.GetFileURLForPath(os.path.join(  # triggers geolocation
         self.DataDir(), 'geolocation', 'geolocation_on_load.html'))
     self.assertEqual(3,  # default state
@@ -176,6 +162,160 @@ class PrefsTest(pyauto.PyUITest):
     self.GetBrowserWindow(0).GetTab(0).Reload()
     self.assertTrue(self.WaitForInfobarCount(0))
     self.assertFalse(self.GetBrowserInfo()['windows'][0]['tabs'][0]['infobars'])
+
+  def _SetContentSettingsDefaultBehavior(self, content_type, option):
+    """Set the Content Settings default behavior.
+
+    Args:
+      content_type: The string content type to manage.
+      option: The string option allow, deny or ask.
+    """
+    page = settings.ContentSettingsPage.FromNavigation(self.driver)
+    page.SetContentTypeOption(content_type, option)
+
+  def _VerifyContentException(self, content_type, hostname_pattern, behavior):
+    """Find hostname pattern and behavior on content Exceptions page.
+
+    Args:
+      content_type: The string content type to manage.
+      hostname_pattern: The URL or pattern associated with the behavior.
+      behavior: The exception to allow or block the hostname.
+    """
+    page = settings.ManageExceptionsPage.FromNavigation(
+        self.driver, content_type)
+    self.assertTrue(page.GetExceptions().has_key(hostname_pattern),
+                     msg=('No displayed host name matches pattern "%s"'
+                          % hostname_pattern))
+    self.assertEqual(behavior, page.GetExceptions()[hostname_pattern],
+                     msg=('Displayed behavior "%s" does not match behavior "%s"'
+                          % (page.GetExceptions()[hostname_pattern], behavior)))
+
+  def _VerifyDismissInfobar(self, content_type):
+    """Verify only Ask line entry is shown when Infobar is dismissed.
+
+    Args:
+      content_type: The string content type to manage.
+    """
+    page = settings.ManageExceptionsPage.FromNavigation(
+        self.driver, content_type)
+    self.assertEqual(0, len(page.GetExceptions()))
+
+  def _GetGeolocationTestPageURL(self):
+    """Get the HTML test page for geolocation."""
+    return self.GetFileURLForDataPath('geolocation', 'geolocation_on_load.html')
+
+  def _GetGeolocationTestPageHttpURL(self):
+    """Get HTML test page for geolocation served by the local http server."""
+    return self.GetHttpURLForDataPath('geolocation', 'geolocation_on_load.html')
+
+  def testBlockAllGeoTracking(self):
+    """Verify web page is blocked when blocking tracking of all sites."""
+    self._SetContentSettingsDefaultBehavior(
+        ContentTypes.GEOLOCATION, Behaviors.BLOCK)
+    self.NavigateToURL(self._GetGeolocationTestPageHttpURL())
+    self.assertFalse(self.GetBrowserInfo()['windows'][0]['tabs'][0]['infobars'])
+    self.driver.set_script_timeout(10)
+    # Call the js function, which returns whether geolocation is blocked.
+    behavior = self.driver.execute_async_script(
+          'triggerGeoWithCallback(arguments[arguments.length - 1]);')
+    self.assertEqual(
+          behavior, Behaviors.BLOCK,
+          msg='Blocking tracking of all sites was not set')
+
+  def testAllowAllGeoTracking(self):
+    """Verify that infobar does not appear when allowing all sites to track."""
+    self._SetContentSettingsDefaultBehavior(
+        ContentTypes.GEOLOCATION, Behaviors.ALLOW)  # Allow all sites to track.
+    self.NavigateToURL(self._GetGeolocationTestPageHttpURL())
+    self.assertFalse(self.GetBrowserInfo()['windows'][0]['tabs'][0]['infobars'])
+    self.driver.set_script_timeout(10)
+    # Call the js function, which returns whether geolocation is blocked.
+    behavior = self.driver.execute_async_script(
+          'triggerGeoWithCallback(arguments[arguments.length - 1]);')
+    self.assertEqual(
+          behavior, Behaviors.ALLOW,
+          msg='Allowing tracking of all sites was not set')
+
+  def testAllowSelectedGeoTracking(self):
+    """Verify location prefs to allow selected sites to track location."""
+    self._SetContentSettingsDefaultBehavior(
+        ContentTypes.GEOLOCATION, Behaviors.ASK)
+    self.NavigateToURL(self._GetGeolocationTestPageHttpURL())
+    self.assertTrue(self.WaitForInfobarCount(1))
+    self.assertTrue(self.GetBrowserInfo()['windows'][0]['tabs'][0]['infobars'])
+    self.PerformActionOnInfobar('accept', infobar_index=0)
+    # Allow selected hosts.
+    self._VerifyContentException(
+        ContentTypes.GEOLOCATION,
+        # Get the hostname pattern (e.g. http://127.0.0.1:57622).
+        '/'.join(self.GetHttpURLForDataPath('').split('/')[0:3]),
+        Behaviors.ALLOW)
+
+  def testDenySelectedGeoTracking(self):
+    """Verify location prefs to deny selected sites to track location."""
+    self._SetContentSettingsDefaultBehavior(
+        ContentTypes.GEOLOCATION, Behaviors.ASK)
+    self.NavigateToURL(self._GetGeolocationTestPageHttpURL())
+    self.assertTrue(self.WaitForInfobarCount(1))
+    self.assertTrue(self.GetBrowserInfo()['windows'][0]['tabs'][0]['infobars'])
+    self.PerformActionOnInfobar('cancel', infobar_index=0)
+    # Block selected hosts.
+    self._VerifyContentException(
+        ContentTypes.GEOLOCATION,
+        # Get the hostname pattern (e.g. http://127.0.0.1:57622).
+        '/'.join(self.GetHttpURLForDataPath('').split('/')[0:3]),
+        Behaviors.BLOCK)
+
+  def testCancelSelectedGeoTracking(self):
+    """Verify infobar canceled for sites to track location."""
+    self._SetContentSettingsDefaultBehavior(
+        ContentTypes.GEOLOCATION, Behaviors.ASK)
+    self.NavigateToURL(self._GetGeolocationTestPageURL())
+    self.assertTrue(self.WaitForInfobarCount(1))
+    self.assertTrue(self.GetBrowserInfo()['windows'][0]['tabs'][0]['infobars'])
+    self.PerformActionOnInfobar('dismiss', infobar_index=0)
+    self._VerifyDismissInfobar(ContentTypes.GEOLOCATION)
+
+  def testAddNewException(self):
+    """Verify new exception added for hostname pattern and behavior."""
+    content_type = ContentTypes.PLUGINS
+    page = settings.ManageExceptionsPage.FromNavigation(
+        self.driver, content_type)
+
+    pattern, behavior = ('bing.com', Behaviors.BLOCK)
+    page.AddNewException(pattern, behavior)
+    self.assertEqual(page.GetExceptions()[pattern], Behaviors.BLOCK,
+                     msg='The behavior "%s" was not added for pattern "%s"'
+                     % (behavior, pattern))
+
+  def testChangeExceptionBehavior(self):
+    """Verify behavior for hostname pattern is changed."""
+    content_type = ContentTypes.PLUGINS
+    page = settings.ManageExceptionsPage.FromNavigation(
+        self.driver, content_type)
+
+    pattern, behavior = ('bing.com', Behaviors.BLOCK)
+    page.AddNewException(pattern, behavior)
+    new_behavior = Behaviors.ALLOW
+    page.SetBehaviorForPattern(pattern, new_behavior)
+    self.assertEqual(page.GetExceptions()[pattern], Behaviors.ALLOW,
+                     msg='The behavior for "%s" did not change: "%s"'
+                     % (pattern, behavior))
+
+  def testDeleteException(self):
+    """Verify exception deleted for hostname pattern and behavior."""
+    content_type = ContentTypes.PLUGINS
+    page = settings.ManageExceptionsPage.FromNavigation(
+        self.driver, content_type)
+
+    pattern, behavior = ('bing.com', Behaviors.BLOCK)
+    page.AddNewException(pattern, behavior)
+    self.assertEqual(page.GetExceptions()[pattern], Behaviors.BLOCK,
+                     msg='The behavior "%s" was not added for pattern "%s"'
+                     % (behavior, pattern))
+    page.DeleteException(pattern)
+    self.assertEqual(page.GetExceptions().get(pattern, KeyError), KeyError,
+                     msg='Pattern "%s" was not deleted' % pattern)
 
   def testUnderTheHoodPref(self):
     """Verify the security preferences for Under the Hood.
@@ -193,7 +333,6 @@ class PrefsTest(pyauto.PyUITest):
 
   def testJavaScriptEnableDisable(self):
     """Verify enabling disabling javascript prefs work """
-
     self.assertTrue(
         self.GetPrefsInfo().Prefs(pyauto.kWebKitGlobalJavascriptEnabled))
     url = self.GetFileURLForDataPath(
