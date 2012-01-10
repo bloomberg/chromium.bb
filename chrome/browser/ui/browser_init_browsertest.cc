@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,7 +12,6 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_init.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -68,16 +67,6 @@ class BrowserInitTest : public ExtensionBrowserTest {
     ASSERT_TRUE(other_browser);
     ASSERT_TRUE(other_browser != browser());
     *out_other_browser = other_browser;
-  }
-
-  Browser* FindOneOtherBrowserForProfile(Profile* profile,
-                                         Browser* not_this_browser) {
-    for (BrowserList::const_iterator i = BrowserList::begin();
-         i != BrowserList::end(); ++i) {
-      if (*i != not_this_browser && (*i)->profile() == profile)
-        return *i;
-    }
-    return NULL;
   }
 };
 
@@ -316,8 +305,6 @@ IN_PROC_BROWSER_TEST_F(BrowserInitTest, OpenAppShortcutPanel) {
       std::string::npos) << new_browser->app_name_;
 }
 
-#endif  // !defined(OS_MACOSX)
-
 IN_PROC_BROWSER_TEST_F(BrowserInitTest, ReadingWasRestartedAfterRestart) {
   // Tests that BrowserInit::WasRestarted reads and resets the preference
   // kWasRestarted correctly.
@@ -338,62 +325,4 @@ IN_PROC_BROWSER_TEST_F(BrowserInitTest, ReadingWasRestartedAfterNormalStart) {
   EXPECT_FALSE(BrowserInit::WasRestarted());
 }
 
-IN_PROC_BROWSER_TEST_F(BrowserInitTest, StartupURLsForTwoProfiles) {
-  Profile* default_profile = browser()->profile();
-
-  ProfileManager* profile_manager = g_browser_process->profile_manager();
-  // Create another profile.
-  FilePath dest_path = profile_manager->user_data_dir();
-  dest_path = dest_path.Append(FILE_PATH_LITERAL("New Profile 1"));
-
-  Profile* other_profile = profile_manager->GetProfile(dest_path);
-  ASSERT_TRUE(other_profile);
-
-  // Use a couple arbitrary URLs.
-  std::vector<GURL> urls1;
-  urls1.push_back(ui_test_utils::GetTestUrl(
-      FilePath(FilePath::kCurrentDirectory),
-      FilePath(FILE_PATH_LITERAL("title1.html"))));
-  std::vector<GURL> urls2;
-  urls2.push_back(ui_test_utils::GetTestUrl(
-      FilePath(FilePath::kCurrentDirectory),
-      FilePath(FILE_PATH_LITERAL("title2.html"))));
-
-  // Set different startup preferences for the 2 profiles.
-  SessionStartupPref pref1(SessionStartupPref::URLS);
-  pref1.urls = urls1;
-  SessionStartupPref::SetStartupPref(default_profile, pref1);
-  SessionStartupPref pref2(SessionStartupPref::URLS);
-  pref2.urls = urls2;
-  SessionStartupPref::SetStartupPref(other_profile, pref2);
-
-  // Close the browser.
-  browser()->window()->Close();
-
-  // Do a simple non-process-startup browser launch.
-  CommandLine dummy(CommandLine::NO_PROGRAM);
-
-  int return_code;
-  BrowserInit browser_init;
-  std::vector<Profile*> other_profiles(1, other_profile);
-  browser_init.Start(dummy, profile_manager->user_data_dir(), default_profile,
-                     other_profiles, &return_code);
-
-  // urls1 were opened in a browser for default_profile, and urls2 were opened
-  // in a browser for other_profile.
-  Browser* new_browser = NULL;
-  // |browser()| is still around at this point, even though we've closed it's
-  // window. Thus the browser count for default_profile is 2.
-  ASSERT_EQ(2u, BrowserList::GetBrowserCount(default_profile));
-  new_browser = FindOneOtherBrowserForProfile(default_profile,
-                                              browser());
-  ASSERT_TRUE(new_browser);
-  ASSERT_EQ(1, new_browser->tab_count());
-  EXPECT_EQ(urls1[0], new_browser->GetWebContentsAt(0)->GetURL());
-
-  ASSERT_EQ(1u, BrowserList::GetBrowserCount(other_profile));
-  new_browser = FindOneOtherBrowserForProfile(other_profile, NULL);
-  ASSERT_TRUE(new_browser);
-  ASSERT_EQ(1, new_browser->tab_count());
-  EXPECT_EQ(urls2[0], new_browser->GetWebContentsAt(0)->GetURL());
-}
+#endif  // !defined(OS_MACOSX)

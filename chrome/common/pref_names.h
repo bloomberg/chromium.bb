@@ -350,7 +350,6 @@ extern const char kMetricsInitialLogs[];
 extern const char kMetricsOngoingLogs[];
 
 extern const char kProfileLastUsed[];
-extern const char kProfilesLastActive[];
 extern const char kProfilesNumCreated[];
 extern const char kProfileInfoCache[];
 

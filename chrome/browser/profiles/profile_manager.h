@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -86,23 +86,12 @@ class ProfileManager : public base::NonThreadSafe,
   // relative to the user data directory currently in use..
   FilePath GetInitialProfileDir();
 
-  // Get the Profile last used (the Profile to which owns the most recently
-  // focused window) with this Chrome build. If no signed profile has been
-  // stored in Local State, hand back the Default profile.
+  // Get the Profile last used with this Chrome build. If no signed profile has
+  // been stored in Local State, hand back the Default profile.
   Profile* GetLastUsedProfile(const FilePath& user_data_dir);
 
   // Same as instance method but provides the default user_data_dir as well.
   static Profile* GetLastUsedProfile();
-
-  // Get the Profiles which are currently active, i.e., have open browsers, or
-  // were active the last time Chrome was running. The Profiles appear in the
-  // order they became active. The last used profile will be on the list, but
-  // its index on the list will depend on when it became active (so, it is not
-  // necessarily the last one).
-  std::vector<Profile*> GetLastActiveProfiles(const FilePath& user_data_dir);
-
-  // Same as instance method but provides the default user_data_dir as well.
-  static std::vector<Profile*> GetLastActiveProfiles();
 
   // Returns created profiles. Note, profiles order is NOT guaranteed to be
   // related with the creation order.
@@ -299,11 +288,6 @@ class ProfileManager : public base::NonThreadSafe,
   // observing the ProfileInfoCache.
   scoped_ptr<ProfileShortcutManagerWin> profile_shortcut_manager_;
 #endif
-
-  // For keeping track of the last active profiles.
-  std::map<Profile*, int> browser_counts_;
-  std::vector<Profile*> active_profiles_;
-  bool shutdown_started_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileManager);
 };

@@ -930,9 +930,6 @@ const char kProfileName[] = "profile.name";
 // Directory of the last profile used.
 const char kProfileLastUsed[] = "profile.last_used";
 
-// List of directories of the profiles last active.
-const char kProfilesLastActive[] = "profile.last_active_profiles";
-
 // Total number of profiles created for this Chrome build. Used to tag profile
 // directories.
 const char kProfilesNumCreated[] = "profile.profiles_created";
