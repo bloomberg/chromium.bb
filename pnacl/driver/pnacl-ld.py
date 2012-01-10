@@ -335,6 +335,11 @@ def main(argv):
     chain.add(DoTranslate, native_type)
 
   chain.run()
+
+  if bitcode_type == 'pexe' and not arch_flag_given:
+    # Mark .pexe files as executable.
+    # Some versions of 'configure' expect this.
+    SetExecutableMode(output)
   return 0
 
 def RemoveNativeStdLibs(objs):

@@ -255,6 +255,8 @@ GCCPatterns = [
 
   ( '(-Wp,.*)',       AddCCFlag),
   ( '(-MMD)',         AddCCFlag),
+  ( '(-MM)',          "env.append('CC_FLAGS', $0)\n"
+                      "env.set('GCC_MODE', '-E')"),
   ( '(-MP)',          AddCCFlag),
   ( '(-MD)',          AddCCFlag),
   ( ('(-MT)','(.*)'), AddCCFlag),
@@ -270,6 +272,7 @@ GCCPatterns = [
   # Ignore these gcc flags
   ( '(-msse)',                ""),
   ( '(-march=armv7-a)',       ""),
+  ( '(-pipe)',                ""),
 
   ( '(-s)',                   AddLDFlag),
   ( '(--strip-all)',          AddLDFlag),

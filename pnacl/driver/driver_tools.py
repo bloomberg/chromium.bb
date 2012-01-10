@@ -45,6 +45,15 @@ def RunWithEnv(cmd, **kwargs):
   RunWithLog(cmd, **RunWithLogArgs)
   env.pop()
 
+def SetExecutableMode(path):
+  if os.name == "posix":
+    realpath = pathtools.tosys(path)
+    # os.umask gets and sets at the same time.
+    # There's no way to get it without setting it.
+    umask = os.umask(0)
+    os.umask(umask)
+    os.chmod(realpath, 0755 & ~umask)
+
 def RunDriver(invocation, args, suppress_arch = False):
   if isinstance(args, str):
     args = shell.split(env.eval(args))
