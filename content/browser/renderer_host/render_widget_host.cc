@@ -1228,6 +1228,9 @@ void RenderWidgetHost::OnMsgImeCancelComposition() {
 }
 
 void RenderWidgetHost::OnMsgDidActivateAcceleratedCompositing(bool activated) {
+  TRACE_EVENT1("renderer_host",
+               "RenderWidgetHost::OnMsgDidActivateAcceleratedCompositing",
+               "activated", activated);
   is_accelerated_compositing_active_ = activated;
   if (view_)
     view_->OnAcceleratedCompositingStateChange();

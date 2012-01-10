@@ -926,6 +926,9 @@ void RenderWidgetHostViewMac::AcceleratedSurfacePostSubBuffer(
 
 void RenderWidgetHostViewMac::UpdateRootGpuViewVisibility(
     bool show_gpu_widget) {
+  TRACE_EVENT1("renderer_host",
+      "RenderWidgetHostViewMac::UpdateRootGpuViewVisibility",
+      "show", show_gpu_widget);
   // Plugins are destroyed on page navigate. The compositor layer on the other
   // hand is created on demand and then stays alive until its renderer process
   // dies (usually on cross-domain navigation). Instead, only a flag
@@ -947,6 +950,8 @@ void RenderWidgetHostViewMac::UpdateRootGpuViewVisibility(
 }
 
 void RenderWidgetHostViewMac::HandleDelayedGpuViewHiding() {
+  TRACE_EVENT0("renderer_host",
+      "RenderWidgetHostViewMac::HandleDelayedGpuViewHiding");
   if (needs_gpu_visibility_update_after_repaint_) {
     UpdateRootGpuViewVisibility(false);
     needs_gpu_visibility_update_after_repaint_ = false;
@@ -961,6 +966,9 @@ void RenderWidgetHostViewMac::OnAcceleratedCompositingStateChange() {
   if (!changed)
     return;
 
+  TRACE_EVENT1("renderer_host",
+      "RenderWidgetHostViewMac::OnAcceleratedCompositingStateChange",
+      "active", accelerated_compositing_active_);
   if (accelerated_compositing_active_) {
     UpdateRootGpuViewVisibility(accelerated_compositing_active_);
   } else {
