@@ -5563,12 +5563,6 @@
    fun:_ZN34AutofillProfileSyncableServiceTest5SetUpEv
 }
 {
-   bug_109631
-   Memcheck:Uninitialized
-   fun:_ZN7WebCore16HTMLMediaElement25updateActiveTextTrackCuesEf
-   fun:_ZN7WebCore16HTMLMediaElement*
-}
-{
    bug_109638
    Memcheck:Leak
    fun:_Znw*
