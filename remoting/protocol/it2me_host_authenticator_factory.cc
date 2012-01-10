@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -27,10 +27,13 @@ It2MeHostAuthenticatorFactory::~It2MeHostAuthenticatorFactory() {
 Authenticator* It2MeHostAuthenticatorFactory::CreateAuthenticator(
     const std::string& remote_jid,
     const buzz::XmlElement* first_message) {
-  if (V2Authenticator::IsEkeMessage(first_message)) {
-    return V2Authenticator::CreateForHost(
-        local_cert_, local_private_key_.get(), shared_secret_);
-  }
+  // TODO(sergeyu): V2 authenticator is not finished yet. Enable it
+  // here when it is finished. crbug.com/105214
+  //
+  // if (V2Authenticator::IsEkeMessage(first_message)) {
+  //   return V2Authenticator::CreateForHost(
+  //       local_cert_, local_private_key_.get(), shared_secret_);
+  // }
 
   return new V1HostAuthenticator(local_cert_, local_private_key_.get(),
                                  shared_secret_, remote_jid);
