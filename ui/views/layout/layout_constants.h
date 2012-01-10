@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -57,11 +57,11 @@ const int kUnrelatedControlLargeVerticalSpacing = 30;
 
 // Vertical spacing between the edge of the window and the
 // top or bottom of a button.
-const int kButtonVEdgeMargin = 6;
+const int kButtonVEdgeMargin = 9;
 
 // Vertical spacing between the edge of the window and the
 // left or right of a button.
-const int kButtonHEdgeMargin = 7;
+const int kButtonHEdgeMargin = 13;
 
 // Horizontal spacing between buttons that are logically related.
 const int kRelatedButtonHSpacing = 6;
