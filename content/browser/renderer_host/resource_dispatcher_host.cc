@@ -322,7 +322,6 @@ ResourceDispatcherHost::ResourceDispatcherHost()
       delegate_(NULL),
       allow_cross_origin_auth_prompt_(false) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!g_resource_dispatcher_host);
   g_resource_dispatcher_host = this;
 
   ResourceQueue::DelegateSet resource_queue_delegates;
