@@ -1,4 +1,5 @@
-#!/usr/bin/env python
+#!/usr/bin/python
+#
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -95,7 +96,7 @@ class Generator(object):
         vmin = ast.releases.index(vmin)
         vmax = ast.releases.index(vmax) + 1
         releases = ast.releases[vmin:vmax]
-        InfoOut.Log('Generate range %s of %s.' % (range, self.name))
+        InfoOut.Log('Generate range %s of %s.' % (rangestr, self.name))
         ret = self.GenerateRange(ast, releases, options)
         if ret < 0:
           self.Error('Failed to generate range %s : %s.' %(vmin, vmax))
@@ -103,6 +104,10 @@ class Generator(object):
           InfoOut.Log('%s wrote %d files.' % (self.name, ret))
     # Otherwise this should be a single release generation
     else:
+      if releasestr == 'start':
+        releasestr = ast.releases[0]
+      if releasestr == 'end':
+        releasestr = ast.releases[-1]
       if releasestr:
         InfoOut.Log('Generate release %s of %s.' % (releasestr, self.name))
         ret = self.GenerateRelease(ast, releasestr, options)
@@ -261,3 +266,4 @@ def Main(args):
 if __name__ == '__main__':
   GeneratorReleaseTest('Test Gen', 'testgen', 'Generator Class Test.')
   sys.exit(Main(sys.argv[1:]))
+

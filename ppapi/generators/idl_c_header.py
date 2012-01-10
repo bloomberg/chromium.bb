@@ -1,4 +1,5 @@
-#!/usr/bin/env python
+#!/usr/bin/python
+#
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -109,6 +110,13 @@ class HGen(GeneratorByFile):
 
   def GenerateFile(self, filenode, releases, options):
     savename = GetOutFileName(filenode, GetOption('dstroot'))
+    unique_releases = filenode.GetUniqueReleases(releases)
+    if not unique_releases:
+      if os.path.isfile(savename):
+        print "Removing stale %s for this range." % filenode.GetName()
+        os.remove(os.path.realpath(savename))
+      return False
+
     out = IDLOutFile(savename)
     self.GenerateHead(out, filenode, releases, options)
     self.GenerateBody(out, filenode, releases, options)
@@ -119,7 +127,6 @@ class HGen(GeneratorByFile):
     __pychecker__ = 'unusednames=options'
     cgen = CGen()
     gpath = GetOption('guard')
-    release = releases[0]
     def_guard = GetOutFileName(filenode, relpath=gpath)
     def_guard = def_guard.replace(os.sep,'_').replace('.','_').upper() + '_'
 
@@ -171,7 +178,12 @@ class HGen(GeneratorByFile):
     for node in filenode.GetListOf('Interface'):
       idefs = ''
       macro = cgen.GetInterfaceMacro(node)
-      for rel in node.GetUniqueReleases(releases):
+      unique = node.GetUniqueReleases(releases)
+
+      # Skip this interface if there are no matching versions
+      if not unique: continue
+
+      for rel in unique:
         version = node.GetVersion(rel)
         name = cgen.GetInterfaceString(node, version)
         strver = str(version).replace('.', '_')
@@ -229,4 +241,6 @@ def Main(args):
   return failed
 
 if __name__ == '__main__':
-  sys.exit(Main(sys.argv[1:]))
+  retval = Main(sys.argv[1:])
+  sys.exit(retval)
+

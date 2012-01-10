@@ -1,4 +1,5 @@
-#!/usr/bin/env python
+#!/usr/bin/python
+#
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -253,18 +254,48 @@ class IDLNode(IDLRelease):
     # Given a list of global release, return a subset of releases
     # for this object that change.
     last_hash = None
-    build_list = []
+    builds = []
     filenode = self.GetProperty('FILE')
-    my_releases = filenode.release_map.GetReleases()
-    for rel in releases:
+    file_releases = filenode.release_map.GetReleases()
+
+    # Generate a set of unique releases for this object based on versions
+    # available in this file's release labels.
+    for rel in file_releases:
+      # Check if this object is valid for the release in question.
       if not self.IsRelease(rel): continue
-      # Only check releases used by this source file
-      if rel not in my_releases: continue
+      # Only add it if the hash is different.
       cur_hash = self.GetHash(rel)
       if last_hash != cur_hash:
-        build_list.append(rel)
+        builds.append(rel)
       last_hash = cur_hash
-    return build_list
+
+    # Remap the requested releases to releases in the unique build set to
+    # use first available release names and remove duplicates.
+    # UNIQUE VERSION: 'M13', 'M14', 'M17'
+    # REQUESTED RANGE: 'M15', 'M16', 'M17', 'M18'
+    # REMAP RESULT:  'M14', 'M17'
+    out_list = []
+    build_len = len(builds)
+    build_index = 0
+    rel_len = len(releases)
+    rel_index = 0
+
+    while build_index < build_len and rel_index < rel_len:
+      while rel_index < rel_len and releases[rel_index] < builds[build_index]:
+        rel_index = rel_index + 1
+
+      # If we've reached the end of the request list, we must be done
+      if rel_index == rel_len:
+        break
+
+      # Check this current request
+      cur = releases[rel_index]
+      while build_index < build_len and cur >= builds[build_index]:
+        build_index = build_index + 1
+
+      out_list.append(builds[build_index - 1])
+      rel_index = rel_index + 1
+    return out_list
 
   def SetProperty(self, name, val):
     self.property_node.SetProperty(name, val)
@@ -357,6 +388,6 @@ def Main():
     return  -1
   return 0
 
-
 if __name__ == '__main__':
   sys.exit(Main())
+

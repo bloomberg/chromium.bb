@@ -534,7 +534,10 @@ class CGen(object):
 
   # Define a top level object.
   def Define(self, node, releases, tabs=0, prefix='', comment=False):
-    if not node.InReleases(releases):
+    # If this request does not match unique release, or if the release is not
+    # available (possibly deprecated) then skip.
+    unique = node.GetUniqueReleases(releases)
+    if not unique or not node.InReleases(releases):
       return ''
 
     self.LogEnter('Define %s tab=%d prefix="%s"' % (node,tabs,prefix))
@@ -654,3 +657,4 @@ def Main(args):
 
 if __name__ == '__main__':
   sys.exit(Main(sys.argv[1:]))
+
