@@ -213,8 +213,8 @@ cr.define('options', function() {
           handled = true;
           break;
         case 'Enter':
-          // If the user has already selected an item using the arrow keys, then
-          // presses Enter, clear the suggestions, but also keep
+          // If the user has already selected an item using the arrow keys then
+          // presses Enter, clear the suggestions but also keep
           // |handled| = false, so the input field can handle the event as well.
           this.suggestions = [];
           break;
