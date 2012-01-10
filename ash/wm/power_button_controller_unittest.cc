@@ -61,6 +61,80 @@ class PowerButtonControllerTest : public AuraShellTestBase {
   DISALLOW_COPY_AND_ASSIGN(PowerButtonControllerTest);
 };
 
+#if defined(CHROMEOS_LEGACY_POWER_BUTTON)
+// Test the lock-to-shutdown flow for non-Chrome-OS hardware that doesn't
+// correctly report power button releases.  We should lock immediately the first
+// time the button is pressed and shut down when it's pressed from the locked
+// state.
+TEST_F(PowerButtonControllerTest, LegacyLockAndShutDown) {
+  controller_->OnLoginStateChange(true /*logged_in*/, false /*is_guest*/);
+  controller_->OnLockStateChange(false);
+
+  // We should request that the screen be locked immediately after seeing the
+  // power button get pressed.
+  controller_->OnPowerButtonEvent(true, base::TimeTicks::Now());
+  EXPECT_TRUE(
+      test_api_->ContainerGroupIsAnimated(
+          PowerButtonController::ALL_BUT_SCREEN_LOCKER_AND_RELATED_CONTAINERS,
+          PowerButtonController::ANIMATION_SLOW_CLOSE));
+  EXPECT_TRUE(test_api_->BackgroundLayerIsVisible());
+  EXPECT_FALSE(test_api_->hide_background_layer_timer_is_running());
+  EXPECT_FALSE(test_api_->lock_timer_is_running());
+  EXPECT_EQ(1, delegate_->num_lock_requests());
+
+  // Notify that we locked successfully.
+  controller_->OnStartingLock();
+  EXPECT_TRUE(
+      test_api_->ContainerGroupIsAnimated(
+          PowerButtonController::ALL_BUT_SCREEN_LOCKER_AND_RELATED_CONTAINERS,
+          PowerButtonController::ANIMATION_FAST_CLOSE));
+  EXPECT_TRUE(
+      test_api_->ContainerGroupIsAnimated(
+          PowerButtonController::SCREEN_LOCKER_CONTAINERS,
+          PowerButtonController::ANIMATION_HIDE));
+
+  // Notify that the lock window is visible.  We should make it fade in.
+  controller_->OnLockStateChange(true);
+  EXPECT_TRUE(
+      test_api_->ContainerGroupIsAnimated(
+          PowerButtonController::SCREEN_LOCKER_AND_RELATED_CONTAINERS,
+          PowerButtonController::ANIMATION_FADE_IN));
+
+  // We shouldn't progress towards the shutdown state, however.
+  EXPECT_FALSE(test_api_->lock_to_shutdown_timer_is_running());
+  EXPECT_FALSE(test_api_->shutdown_timer_is_running());
+  controller_->OnPowerButtonEvent(false, base::TimeTicks::Now());
+
+  // Hold the button again and check that we start shutting down.
+  controller_->OnPowerButtonEvent(true, base::TimeTicks::Now());
+  EXPECT_EQ(0, delegate_->num_shutdown_requests());
+  EXPECT_TRUE(
+      test_api_->ContainerGroupIsAnimated(
+          PowerButtonController::ALL_CONTAINERS,
+          PowerButtonController::ANIMATION_FAST_CLOSE));
+  EXPECT_TRUE(test_api_->real_shutdown_timer_is_running());
+  test_api_->trigger_real_shutdown_timeout();
+  EXPECT_EQ(1, delegate_->num_shutdown_requests());
+}
+
+// Test that we start shutting down immediately if the power button is pressed
+// while we're not logged in on an unofficial system.
+TEST_F(PowerButtonControllerTest, LegacyNotLoggedIn) {
+  controller_->OnLoginStateChange(false /*logged_in*/, false /*is_guest*/);
+  controller_->OnLockStateChange(false);
+  controller_->OnPowerButtonEvent(true, base::TimeTicks::Now());
+  EXPECT_TRUE(test_api_->real_shutdown_timer_is_running());
+}
+
+// Test that we start shutting down immediately if the power button is pressed
+// while we're logged in as a guest on an unofficial system.
+TEST_F(PowerButtonControllerTest, LegacyGuest) {
+  controller_->OnLoginStateChange(true /*logged_in*/, true /*is_guest*/);
+  controller_->OnLockStateChange(false);
+  controller_->OnPowerButtonEvent(true, base::TimeTicks::Now());
+  EXPECT_TRUE(test_api_->real_shutdown_timer_is_running());
+}
+#else
 // When we hold the power button while the user isn't logged in, we should shut
 // down the machine directly.
 TEST_F(PowerButtonControllerTest, ShutdownWhenNotLoggedIn) {
@@ -364,6 +438,7 @@ TEST_F(PowerButtonControllerTest, PowerButtonPreemptsLockButton) {
   controller_->OnLockButtonEvent(false, base::TimeTicks::Now());
   EXPECT_FALSE(test_api_->lock_timer_is_running());
 }
+#endif
 
 }  // namespace test
 }  // namespace ash
