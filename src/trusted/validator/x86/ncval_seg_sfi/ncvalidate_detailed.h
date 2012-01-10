@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -33,10 +33,10 @@
  *
  * Basic usage:
  *   if (!NaClArchSuppported()) fail
- *   vstate = NCValidateInitDetailed(base, limit, 16)
+ *   vstate = NCValidateInitDetailed(base, size, 16)
  *   if vstate == 0 fail
  *   for each section:
- *     NCValidateSegment(maddr, vaddr, size, vstate);
+ *     NCValidateSegment(maddr, base, size, vstate);
  *   rc = NCValidateFinish();
  *   if rc != 0 fail
  *   NCValidateFreeState(&vstate);
@@ -56,14 +56,14 @@
  *
  * Parameters:
  *    vbase: base virtual address for code segment
- *    vlimit: size in bytes of code segment
+ *    codesize: size in bytes of code segment
  *    alignment: 16 or 32, specifying alignment
  * Returns:
  *    an initialized struct NCValidatorState * if everything is okay,
  *    else NULL
  */
 struct NCValidatorState *NCValidateInitDetailed(const NaClPcAddress vbase,
-                                                const NaClPcAddress vlimit,
+                                                const NaClMemorySize codesize,
                                                 const uint8_t alignment);
 
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCVAL_SEG_SFI_NCVALIDATE_DETAILED_H__ */

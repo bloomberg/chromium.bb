@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -154,13 +154,13 @@ static void NCJumpSummarizeDetailed(struct NCValidatorState* vstate) {
 }
 
 struct NCValidatorState *NCValidateInitDetailed(const NaClPcAddress vbase,
-                                                const NaClPcAddress vlimit,
+                                                const NaClMemorySize codesize,
                                                 const uint8_t alignment) {
-  struct NCValidatorState *vstate = NCValidateInit(vbase, vlimit, alignment);
+  struct NCValidatorState *vstate = NCValidateInit(vbase, codesize, alignment);
   if (NULL != vstate) {
     vstate->summarize_fn = NCJumpSummarizeDetailed;
     vstate->pattern_nonfirst_insts_table =
-        (uint8_t *)calloc(NCIATOffset(vlimit - vbase) + 1, 1);
+        (uint8_t *)calloc(NCIATOffset(codesize) + 1, 1);
     if (NULL == vstate->pattern_nonfirst_insts_table) {
       if (NULL != vstate->kttable) free(vstate->kttable);
       if (NULL != vstate->vttable) free(vstate->vttable);

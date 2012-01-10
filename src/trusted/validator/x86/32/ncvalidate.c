@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -29,7 +29,7 @@ static NaClValidationStatus NCApplyValidatorSilently_x86_32(
   CPUFeatures features;
   int validator_result = 0;
   struct NCValidatorState *vstate =
-      NCValidateInit(guest_addr, guest_addr + size, bundle_size);
+      NCValidateInit(guest_addr, size, bundle_size);
   if (vstate == NULL) return NaClValidationFailedOutOfMemory;
   if (!local_cpu) {
     NaClSetAllCPUFeatures(&features);
@@ -50,7 +50,7 @@ NaClValidationStatus NCApplyValidatorStubout_x86_32(
     Bool local_cpu) {
   CPUFeatures features;
   struct NCValidatorState *vstate =
-      NCValidateInitDetailed(guest_addr, guest_addr + size, bundle_size);
+      NCValidateInitDetailed(guest_addr, size, bundle_size);
   if (vstate == NULL) return NaClValidationFailedOutOfMemory;
   NCValidateSetStubOutMode(vstate, 1);
   if (!local_cpu) {

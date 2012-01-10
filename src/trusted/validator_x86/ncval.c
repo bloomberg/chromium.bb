@@ -347,11 +347,11 @@ int AnalyzeSegmentSections(ncfile *ncf, struct NCValidatorState *vstate) {
  * messages if selected.
  */
 struct NCValidatorState* NCValInit(const NaClPcAddress vbase,
-                                   const NaClPcAddress vlimit,
+                                   const NaClMemorySize codesize,
                                    const uint8_t alignment) {
   return NACL_FLAGS_detailed_errors
-      ? NCValidateInitDetailed(vbase, vlimit, alignment)
-      : NCValidateInit(vbase, vlimit, alignment);
+      ? NCValidateInitDetailed(vbase, codesize, alignment)
+      : NCValidateInit(vbase, codesize, alignment);
 }
 
 
@@ -361,7 +361,7 @@ static Bool AnalyzeSegmentCodeSegments(ncfile *ncf, const char *fname) {
   Bool result;
 
   GetVBaseAndLimit(ncf, &vbase, &vlimit);
-  vstate = NCValInit(vbase, vlimit, ncf->ncalign);
+  vstate = NCValInit(vbase, vlimit - vbase, ncf->ncalign);
   if (vstate == NULL) return FALSE;
   if (override_reporter) {
     NCValidateSetErrorReporter(vstate, &kNCVerboseErrorReporter);
@@ -564,7 +564,7 @@ static Bool NaClValidateAnalyzeBytes(NaClValidateBytes* data) {
   NaClReportSafety(return_value, "");
 #else
   struct NCValidatorState *vstate;
-  vstate = NCValInit(data->base, data->base + data->num_bytes,
+  vstate = NCValInit(data->base, data->num_bytes,
                      (uint8_t) NACL_FLAGS_block_alignment);
   if (vstate == NULL) {
     printf("Unable to create validator state, quitting!\n");

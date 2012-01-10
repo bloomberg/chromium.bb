@@ -308,25 +308,25 @@ static void NCJumpSummarize(struct NCValidatorState* vstate);
  * NCValidateInit: Initialize NaCl validator internal state
  * Parameters:
  *    vbase: base virtual address for code segment
- *    vlimit: size in bytes of code segment
+ *    codesize: size in bytes of code segment
  *    alignment: 16 or 32, specifying alignment
  * Returns:
  *    an initialized struct NCValidatorState * if everything is okay,
  *    else NULL
  */
 struct NCValidatorState *NCValidateInit(const NaClPcAddress vbase,
-                                        const NaClPcAddress vlimit,
+                                        const NaClPcAddress codesize,
                                         const uint8_t alignment) {
   struct NCValidatorState *vstate = NULL;
 
   dprint(("NCValidateInit(%"NACL_PRIxNaClPcAddressAll
-          ", %"NACL_PRIxNaClPcAddressAll", %08x)\n", vbase, vlimit, alignment));
+          ", %"NACL_PRIxNaClMemorySizeAll", %08x)\n", vbase, codesize,
+          alignment));
   do {
-    if (vlimit <= vbase) break;
     if (alignment != 16 && alignment != 32) break;
     if ((vbase & (alignment - 1)) != 0) break;
-    dprint(("ncv_init(%"NACL_PRIxNaClPcAddress", %"NACL_PRIxNaClPcAddress
-            ")\n", vbase, vlimit));
+    dprint(("ncv_init(%"NACL_PRIxNaClPcAddress", %"NACL_PRIxNaClMemorySize
+            ")\n", vbase, codesize));
     vstate = (struct NCValidatorState *)calloc(1, sizeof(*vstate));
     if (vstate == NULL) break;
     /* Record default error reporter here, since we don't construct
@@ -336,11 +336,11 @@ struct NCValidatorState *NCValidateInit(const NaClPcAddress vbase,
     vstate->dstate.error_reporter = &kNCNullErrorReporter;
     vstate->num_diagnostics = kMaxDiagnostics;
     vstate->iadrbase = vbase;
-    vstate->iadrlimit = vlimit;
+    vstate->codesize = codesize;
     vstate->alignment = alignment;
     vstate->alignmask = alignment-1;
-    vstate->vttable = (uint8_t *)calloc(NCIATOffset(vlimit - vbase) + 1, 1);
-    vstate->kttable = (uint8_t *)calloc(NCIATOffset(vlimit - vbase) + 1, 1);
+    vstate->vttable = (uint8_t *)calloc(NCIATOffset(codesize) + 1, 1);
+    vstate->kttable = (uint8_t *)calloc(NCIATOffset(codesize) + 1, 1);
     vstate->pattern_nonfirst_insts_table = NULL;
     vstate->summarize_fn = NCJumpSummarize;
     vstate->do_stub_out = 0;
@@ -397,7 +397,8 @@ void NCValidateSetErrorReporter(struct NCValidatorState* state,
  */
 Bool NCAddressInMemoryRange(const NaClPcAddress address,
                             struct NCValidatorState* vstate) {
-  return vstate->iadrbase <= address && address < vstate->iadrlimit;
+  return vstate->iadrbase <= address
+      && address < vstate->iadrbase + vstate->codesize;
 }
 
 static INLINE void RememberIP(const NaClPcAddress ip,
@@ -969,14 +970,14 @@ void NCValidateSegment(uint8_t *mbase, NaClPcAddress vbase, NaClMemorySize sz,
     NCStatsSegFault(vstate);
     return;
   }
-  if (vbase + sz != vstate->iadrlimit) {
-    ValidatePrintError(0, "Mismatched vlimit addresses", vstate);
+  if (sz != vstate->codesize) {
+    ValidatePrintError(0, "Mismatched code size", vstate);
     NCStatsSegFault(vstate);
     return;
   }
 
   sz = NCHaltTrimSize(mbase, sz, vstate->alignment);
-  vstate->iadrlimit = vbase + sz;
+  vstate->codesize = sz;
 
   if (sz == 0) {
     ValidatePrintError(0, "Bad text segment (zero size)", vstate);
@@ -1005,10 +1006,10 @@ int NCValidateSegmentPair(uint8_t *mbase_old, uint8_t *mbase_new,
     return 0;
   }
 
-  old_vstate = NCValidateInit(vbase, vbase + sz, alignment);
+  old_vstate = NCValidateInit(vbase, sz, alignment);
   if (old_vstate != NULL) {
     NCValidateDStateInit(old_vstate, mbase_old, vbase, sz);
-    new_vstate = NCValidateInit(vbase, vbase + sz, alignment);
+    new_vstate = NCValidateInit(vbase, sz, alignment);
     if (new_vstate != NULL) {
       NCValidateDStateInit(new_vstate, mbase_new, vbase, sz);
 
@@ -1045,10 +1046,8 @@ static void NCJumpSummarize(struct NCValidatorState* vstate) {
    * jumped to instruction is not in the middle of a native client pattern.
    */
   dprint(("CheckTargets: %"NACL_PRIxNaClPcAddress"-%"NACL_PRIxNaClPcAddress"\n",
-          vstate->iadrbase, vstate->iadrlimit));
-  for (offset = 0;
-       offset < vstate->iadrlimit - vstate->iadrbase;
-       offset += 1) {
+          vstate->iadrbase, vstate->iadrbase+vstate->codesize));
+  for (offset = 0; offset < vstate->codesize; offset += 1) {
     if (NCGetAdrTable(offset, vstate->kttable)) {
       NCStatsCheckTarget(vstate);
       if (!NCGetAdrTable(offset, vstate->vttable)) {
@@ -1060,8 +1059,7 @@ static void NCJumpSummarize(struct NCValidatorState* vstate) {
   }
 
   /* check basic block boundaries */
-  for (offset = 0; offset < vstate->iadrlimit - vstate->iadrbase;
-       offset += vstate->alignment) {
+  for (offset = 0; offset < vstate->codesize; offset += vstate->alignment) {
     if (!NCGetAdrTable(offset, vstate->vttable)) {
       ValidatePrintError(vstate->iadrbase + offset,
                          "Bad basic block alignment", vstate);
