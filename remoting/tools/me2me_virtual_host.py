@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -197,6 +197,8 @@ class Desktop:
 
   def __init__(self, width, height):
     self.x_proc = None
+    self.session_proc = None
+    self.host_proc = None
     self.width = width
     self.height = height
     g_desktops.append(self)
@@ -260,11 +262,11 @@ class Desktop:
     # terminal, any reading from stdin causes the job to be suspended.
     # Daemonization would solve this problem by separating the process from the
     # controlling terminal.
-    session_proc = subprocess.Popen("/etc/X11/Xsession",
-                                    stdin=open(os.devnull, "r"),
-                                    cwd=HOME_DIR,
-                                    env=self.child_env)
-    if not session_proc.pid:
+    self.session_proc = subprocess.Popen("/etc/X11/Xsession",
+                                         stdin=open(os.devnull, "r"),
+                                         cwd=HOME_DIR,
+                                         env=self.child_env)
+    if not self.session_proc.pid:
       raise Exception("Could not start X session")
 
   def launch_host(self, host):
@@ -509,21 +511,49 @@ def main():
   logging.info("Using host_id: " + host.host_id)
 
   desktop = Desktop(width, height)
-  desktop.launch_x_server(args)
-  desktop.launch_x_session()
-  desktop.launch_host(host)
 
   while True:
+    # If the session process stops running (e.g. because the user logged out),
+    # the X server should be reset and the session restarted, to provide a
+    # completely clean new session.
+    if desktop.session_proc is None and desktop.x_proc is not None:
+      logging.info("Terminating X server")
+      desktop.x_proc.terminate()
+
+    if desktop.x_proc is None:
+      if desktop.session_proc is not None:
+        # The X session would probably die soon if the X server is not
+        # running (because of the loss of the X connection).  Terminate it
+        # anyway, to be sure.
+        logging.info("Terminating X session")
+        desktop.session_proc.terminate()
+      else:
+        # Neither X server nor X session are running, so launch them both.
+        logging.info("Launching X server and X session")
+        desktop.launch_x_server(args)
+        desktop.launch_x_session()
+
+    if desktop.host_proc is None:
+      logging.info("Launching host process")
+      desktop.launch_host(host)
+
     pid, status = os.wait()
     logging.info("wait() returned (%s,%s)" % (pid, status))
 
-    if pid == desktop.x_proc.pid:
-      logging.info("X server process terminated with code %d", status)
-      break
+    # When os.wait() notifies that a process has terminated, any Popen instance
+    # for that process is no longer valid.  Reset any affected instance to
+    # None.
+    if desktop.x_proc is not None and pid == desktop.x_proc.pid:
+      logging.info("X server process terminated")
+      desktop.x_proc = None
 
-    if pid == desktop.host_proc.pid:
-      logging.info("Host process terminated, relaunching")
-      desktop.launch_host(host)
+    if desktop.session_proc is not None and pid == desktop.session_proc.pid:
+      logging.info("Session process terminated")
+      desktop.session_proc = None
+
+    if desktop.host_proc is not None and pid == desktop.host_proc.pid:
+      logging.info("Host process terminated")
+      desktop.host_proc = None
 
 
 if __name__ == "__main__":
