@@ -618,12 +618,8 @@ def Sourceify(path):
   return srcdir_prefix + path
 
 
-def QuoteSpaces(s):
-  return s.replace(' ', r'\ ')
-
-
-def ReplaceQuotedSpaces(s):
-  return s.replace(r'\ ', SPACE_REPLACEMENT)
+def QuoteSpaces(s, quote=r'\ '):
+  return s.replace(' ', quote)
 
 
 # Map from qualified target to path to output.
@@ -728,9 +724,6 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
       self.output_binary = self.ComputeMacBundleBinaryOutput(spec)
     else:
       self.output = self.output_binary = self.ComputeOutput(spec)
-
-    self.output = QuoteSpaces(self.output)
-    self.output_binary = QuoteSpaces(self.output_binary)
 
     self._INSTALLABLE_TARGETS = ('executable', 'loadable_module',
                                  'shared_library')
@@ -905,10 +898,10 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
       # it's superfluous for the "extra outputs", and this avoids accidentally
       # writing duplicate dummy rules for those outputs.
       # Same for environment.
-      self.WriteMakeRule(outputs[:1], ['obj := $(abs_obj)'])
+      self.WriteLn("%s: obj := $(abs_obj)" % QuoteSpaces(outputs[0]))
       # Needs to be before builddir is redefined in the next line!
       self.WriteXcodeEnv(outputs[0], spec, target_relative_path=True)
-      self.WriteMakeRule(outputs[:1], ['builddir := $(abs_builddir)'])
+      self.WriteLn("%s: builddir := $(abs_builddir)" % QuoteSpaces(outputs[0]))
 
       for input in inputs:
         assert ' ' not in input, (
@@ -987,8 +980,8 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
         # Only write the 'obj' and 'builddir' rules for the "primary" output
         # (:1); it's superfluous for the "extra outputs", and this avoids
         # accidentally writing duplicate dummy rules for those outputs.
-        self.WriteMakeRule(outputs[:1], ['obj := $(abs_obj)'])
-        self.WriteMakeRule(outputs[:1], ['builddir := $(abs_builddir)'])
+        self.WriteLn('%s: obj := $(abs_obj)' % outputs[0])
+        self.WriteLn('%s: builddir := $(abs_builddir)' % outputs[0])
         self.WriteMakeRule(outputs, inputs + ['FORCE_DO_CMD'], actions)
         for output in outputs:
           assert ' ' not in output, (
@@ -1065,8 +1058,6 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
         filename = os.path.split(path)[1]
         output = Sourceify(self.Absolutify(os.path.join(copy['destination'],
                                                         filename)))
-        path = QuoteSpaces(path)
-        output = QuoteSpaces(output)
 
         # If the output path has variables in it, which happens in practice for
         # 'copies', writing the environment as target-local doesn't work,
@@ -1083,7 +1074,7 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
         path = xcode_generator.ExpandXcodeVariables(path, env)
         self.WriteDoCmd([output], [path], 'copy', part_of_all)
         outputs.append(output)
-    self.WriteLn('%s = %s' % (variable, ' '.join(outputs)))
+    self.WriteLn('%s = %s' % (variable, ' '.join(map(QuoteSpaces, outputs))))
     extra_outputs.append('$(%s)' % variable)
     self.WriteLn()
 
@@ -1095,10 +1086,6 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
     for output, res in gyp.xcode_emulation.GetMacBundleResources(
         generator_default_variables['PRODUCT_DIR'], self.xcode_settings,
         map(Sourceify, map(self.Absolutify, resources))):
-      # Spaces in resource paths is not supported, but spaces in the
-      # bundle name itself are. Escape them.
-      output = QuoteSpaces(output)
-
       self.WriteDoCmd([output], [res], 'mac_tool,,,copy-bundle-resource',
                       part_of_all=True)
       bundle_deps.append(output)
@@ -1123,7 +1110,6 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
            # preprocessor do not affect the XML parser in mac_tool.
            '@plutil -convert xml1 $@ $@'])
       info_plist = intermediate_plist
-    out = QuoteSpaces(out)
     # plists can contain envvars and substitute them into the file.
     self.WriteXcodeEnv(out, spec, additional_settings=extra_env)
     self.WriteDoCmd([out], [info_plist], 'mac_tool,,,copy-info-plist',
@@ -1441,11 +1427,13 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
 
           # TARGET_POSTBUILDS_$(BUILDTYPE) is added to postbuilds later on.
           target_postbuilds = self.xcode_settings.GetTargetPostbuilds(
-              configname, self.output, self.output_binary)
+              configname,
+              QuoteSpaces(self.output),
+              QuoteSpaces(self.output_binary))
           if target_postbuilds:
             has_target_postbuilds = True
             self.WriteLn('%s: TARGET_POSTBUILDS_%s := %s' %
-                (self.output,
+                (QuoteSpaces(self.output),
                  configname,
                  gyp.common.EncodePOSIXShellList(target_postbuilds)))
         else:
@@ -1465,9 +1453,9 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
         if self.flavor == 'mac':
           libraries = self.xcode_settings.AdjustFrameworkLibraries(libraries)
       self.WriteList(libraries, 'LIBS')
-      self.WriteLn(
-          '%s: GYP_LDFLAGS := $(LDFLAGS_$(BUILDTYPE))' % self.output_binary)
-      self.WriteLn('%s: LIBS := $(LIBS)' % self.output_binary)
+      self.WriteLn('%s: GYP_LDFLAGS := $(LDFLAGS_$(BUILDTYPE))' %
+          QuoteSpaces(self.output_binary))
+      self.WriteLn('%s: LIBS := $(LIBS)' % QuoteSpaces(self.output_binary))
 
     postbuilds = []
     if self.flavor == 'mac':
@@ -1494,8 +1482,9 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
       for i in xrange(len(postbuilds)):
         if not postbuilds[i].startswith('$'):
           postbuilds[i] = EscapeShellArgument(postbuilds[i])
-      self.WriteLn('%s: builddir := $(abs_builddir)' % self.output)
-      self.WriteLn('%s: POSTBUILDS := %s' % (self.output, ' '.join(postbuilds)))
+      self.WriteLn('%s: builddir := $(abs_builddir)' % QuoteSpaces(self.output))
+      self.WriteLn('%s: POSTBUILDS := %s' % (
+          QuoteSpaces(self.output), ' '.join(postbuilds)))
 
     # A bundle directory depends on its dependencies such as bundle resources
     # and bundle binary. When all dependencies have been built, the bundle
@@ -1507,8 +1496,8 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
 
       # Bundle dependencies. Note that the code below adds actions to this
       # target, so if you move these two lines, move the lines below as well.
-      self.WriteList(bundle_deps, 'BUNDLE_DEPS')
-      self.WriteLn('%s: $(BUNDLE_DEPS)' % self.output)
+      self.WriteList(map(QuoteSpaces, bundle_deps), 'BUNDLE_DEPS')
+      self.WriteLn('%s: $(BUNDLE_DEPS)' % QuoteSpaces(self.output))
 
       # After the framework is built, package it. Needs to happen before
       # postbuilds, since postbuilds depend on this.
@@ -1530,7 +1519,7 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
       # its dependencies usually. To prevent this rule from executing
       # on every build (expensive, especially with postbuilds), expliclity
       # update the time on the framework directory.
-      self.WriteLn('\t@touch -c %s' % self.output)
+      self.WriteLn('\t@touch -c %s' % QuoteSpaces(self.output))
 
     if postbuilds:
       assert not self.is_mac_bundle, ('Postbuilds for bundles should be done '
@@ -1539,8 +1528,9 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
           'custom product_dir')
 
     if self.type == 'executable':
-      self.WriteLn(
-          '%s: LD_INPUTS := %s' % (self.output_binary, ' '.join(link_deps)))
+      self.WriteLn('%s: LD_INPUTS := %s' % (
+          QuoteSpaces(self.output_binary),
+          ' '.join(map(QuoteSpaces, link_deps))))
       if self.toolset == 'host' and self.flavor == 'android':
         self.WriteDoCmd([self.output_binary], link_deps, 'link_host',
                         part_of_all, postbuilds=postbuilds)
@@ -1555,8 +1545,9 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
       self.WriteDoCmd([self.output_binary], link_deps, 'alink', part_of_all,
                       postbuilds=postbuilds)
     elif self.type == 'shared_library':
-      self.WriteLn(
-          '%s: LD_INPUTS := %s' % (self.output_binary, ' '.join(link_deps)))
+      self.WriteLn('%s: LD_INPUTS := %s' % (
+            QuoteSpaces(self.output_binary),
+            ' '.join(map(QuoteSpaces, link_deps))))
       self.WriteDoCmd([self.output_binary], link_deps, 'solink', part_of_all,
                       postbuilds=postbuilds)
     elif self.type == 'loadable_module':
@@ -1656,7 +1647,7 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
     # all_deps is only used for deps file reading, and for deps files we replace
     # spaces with ? because escaping doesn't work with make's $(sort) and
     # other functions.
-    outputs = [ReplaceQuotedSpaces(o) for o in outputs]
+    outputs = [QuoteSpaces(o, SPACE_REPLACEMENT) for o in outputs]
     self.WriteLn('all_deps += %s' % ' '.join(outputs))
     self._num_outputs += len(outputs)
 
@@ -1679,6 +1670,9 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
     multiple_output_trick: if true (the default), perform tricks such as dummy
            rules to avoid problems with multiple outputs.
     """
+    outputs = map(QuoteSpaces, outputs)
+    inputs = map(QuoteSpaces, inputs)
+
     if comment:
       self.WriteLn('# ' + comment)
     if phony:
@@ -1860,13 +1854,6 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
           self.xcode_settings.GetBundleResourceFolder()
       env['INFOPLIST_PATH'] = self.xcode_settings.GetBundlePlistPath()
       env['WRAPPER_NAME'] = self.xcode_settings.GetWrapperName()
-
-      # TODO(thakis): Remove this.
-      env['EXECUTABLE_PATH'] = QuoteSpaces(env['EXECUTABLE_PATH'])
-      env['CONTENTS_FOLDER_PATH'] = QuoteSpaces(env['CONTENTS_FOLDER_PATH'])
-      env['INFOPLIST_PATH'] = QuoteSpaces(env['INFOPLIST_PATH'])
-      env['WRAPPER_NAME'] = QuoteSpaces(env['WRAPPER_NAME'])
-
     return env
 
 
@@ -1948,15 +1935,15 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
       # the escaped space does the right thing. For
       #  export foo := a\ b
       # it does not -- the backslash is written to the env as literal character.
-      # Hence, unescape all spaces here.
-      v = env[k].replace(r'\ ', ' ')
+      # So don't escape spaces in |v|.
+      v = env[k]
 
       # Xcode works purely with absolute paths. When writing env variables to
       # mimic its usage, replace $(builddir) with $(abs_builddir).
       if k not in keys_to_not_absolutify:
         v = v.replace('$(builddir)', '$(abs_builddir)')
 
-      self.WriteLn('%s: export %s := %s' % (target, k, v))
+      self.WriteLn('%s: export %s := %s' % (QuoteSpaces(target), k, v))
 
 
   def Objectify(self, path):
