@@ -737,6 +737,9 @@ tests_to_disable = set([
     'run_ppapi_simple_audio_test',
     'run_ppapi_simple_graphics2d_test',
     'run_ppapi_emu_file_test',
+
+    # TODO(mcgrathr): remove when this is fixed/removed on the chrome side
+    'run_srpcgen_test',
 ])
 
 if ARGUMENTS.get('disable_tests', '') != '':
