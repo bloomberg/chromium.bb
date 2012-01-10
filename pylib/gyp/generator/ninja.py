@@ -243,8 +243,10 @@ class NinjaWriter:
     if 'dependencies' in spec:
       for dep in spec['dependencies']:
         if dep in self.target_outputs:
-          input, precompile_input, linkable = self.target_outputs[dep]
+          input, precompile_input, extra_actions_depends, linkable = \
+              self.target_outputs[dep]
           actions_depends.append(input)
+          actions_depends.extend(extra_actions_depends)
           compile_depends.extend(precompile_input)
       actions_depends = self.WriteCollapsedDependencies('actions_depends',
                                                         actions_depends)
@@ -289,7 +291,14 @@ class NinjaWriter:
       # "build chrome" case as well as the gyp tests, which expect to be
       # able to run actions and build libraries by their short name.
       self.ninja.build(self.name, 'phony', output)
-    return output, output_binary, compile_depends
+
+    # Targets that depend on this target need to depend on actions_depends
+    # as well.
+    actions_depends = []
+    if self.is_mac_bundle:
+      actions_depends.append(output)
+
+    return output, output_binary, compile_depends, actions_depends
 
   def WriteActionsRulesCopies(self, spec, extra_sources, prebuild,
                               mac_bundle_depends):
@@ -594,7 +603,8 @@ class NinjaWriter:
       if output_uses_linker:
         extra_deps = set()
         for dep in spec['dependencies']:
-          input, _, linkable = self.target_outputs.get(dep, (None, [], False))
+          input, _, _, linkable = self.target_outputs.get(
+              dep, (None, [], [], False))
           if not input:
             continue
           if linkable:
@@ -998,7 +1008,8 @@ def GenerateOutput(target_list, target_dicts, data, params):
     if flavor == 'mac':
       gyp.xcode_emulation.MergeGlobalXcodeSettingsToSpec(data[build_file], spec)
 
-    output, output_binary, compile_depends = writer.WriteSpec(spec, config_name)
+    output, output_binary, compile_depends, actions_depends = writer.WriteSpec(
+        spec, config_name)
     if output:
       linkable = spec['type'] in ('static_library', 'shared_library')
       # target_outputs is used for two things:
@@ -1007,7 +1018,7 @@ def GenerateOutput(target_list, target_dicts, data, params):
       # 2. For compile dependencies.
       # For bundles, the binary in the bundle is the right answer.
       target_outputs[qualified_target] = (
-          output_binary, compile_depends, linkable)
+          output_binary, compile_depends, actions_depends, linkable)
 
       # But for all_outputs, the bundle is the interesting bit.
       if qualified_target in all_targets:
