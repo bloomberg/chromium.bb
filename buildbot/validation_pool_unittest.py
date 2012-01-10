@@ -33,7 +33,7 @@ class TestValidationPool(mox.MoxTestBase):
     return my_response
 
   def _TreeStatusTestHelper(self, tree_status, general_state, expected_return,
-                            retries_500=0):
+                            retries_500=0, max_timeout=0):
     """Tests whether we return the correct value based on tree_status."""
     return_status = self._TreeStatusFile(tree_status, general_state)
     self.mox.StubOutWithMock(urllib, 'urlopen')
@@ -42,11 +42,11 @@ class TestValidationPool(mox.MoxTestBase):
       urllib.urlopen(status_url).AndReturn(return_status)
       return_status.getcode().AndReturn(500)
 
-    urllib.urlopen(status_url).AndReturn(return_status)
-    return_status.getcode().AndReturn(200)
-    return_status.read().AndReturn(return_status.json)
+    urllib.urlopen(status_url).MultipleTimes().AndReturn(return_status)
+    return_status.getcode().MultipleTimes().AndReturn(200)
+    return_status.read().MultipleTimes().AndReturn(return_status.json)
     self.mox.ReplayAll()
-    self.assertEqual(validation_pool.ValidationPool._IsTreeOpen(),
+    self.assertEqual(validation_pool.ValidationPool._IsTreeOpen(max_timeout),
                      expected_return)
     self.mox.VerifyAll()
 
@@ -58,7 +58,12 @@ class TestValidationPool(mox.MoxTestBase):
   def testTreeIsClosed(self):
     """Tests that we return false is the tree is closed."""
     self._TreeStatusTestHelper('Tree is closed (working on a patch)', 'closed',
-                               False)
+                               False, max_timeout=5)
+
+  def testTreeIsOpenWithTimeout(self):
+    """Tests that we return True even if we get some failures."""
+    self._TreeStatusTestHelper('Tree is open (flaky test)', 'open',
+                               True, retries_500=2, max_timeout=10)
 
   def testTreeIsThrottled(self):
     """Tests that we return false is the tree is throttled."""

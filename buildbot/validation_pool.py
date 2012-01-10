@@ -81,39 +81,65 @@ class ValidationPool(object):
     self.dryrun = dryrun | self.GLOBAL_DRYRUN
 
   @classmethod
-  def _IsTreeOpen(cls):
-    """Returns True if the tree is open or throttled."""
+  def _IsTreeOpen(cls, max_timeout=600):
+    """Returns True if the tree is open or throttled.
+
+    At the highest level this function checks to see if the Tree is Open.
+    However, it also does a robustified wait as the server hosting the tree
+    status page is known to be somewhat flaky and these errors can be handled
+    with multiple retries.  In addition, it waits around for the Tree to Open
+    based on |max_timeout| to give a greater chance of returning True as it
+    expects callees to want to do some operation based on a True value.
+    If a caller is not interested in this feature they should set |max_timeout|
+    to 0.
+    """
+    state_field = 'general_state'
+    sleep_timeout = 30
 
     def _SleepWithExponentialBackOff(current_sleep):
       """Helper function to sleep with exponential backoff."""
       time.sleep(current_sleep)
       return current_sleep * 2
 
-    max_attempts = 5
-    response_dict = None
+    def _GetTreeStatus(status_url):
+      """Returns the JSON dictionary response from the status url."""
+      max_attempts = 5
+      current_sleep = 1
+      for _ in range(max_attempts):
+        try:
+          # Check for successful response code.
+          response = urllib.urlopen(status_url)
+          if response.getcode() == 200:
+            return json.load(response)
+
+        # We remain robust against IOError's and retry.
+        except IOError:
+          pass
+
+        current_sleep = _SleepWithExponentialBackOff(current_sleep)
+      else:
+        # We go ahead and say the tree is open if we can't get the status.
+        logging.warn('Could not get a status from %s', status_url)
+        return {state_field: 'open'}
+
+    def _CanSubmit(json_dict):
+      """Checks the json dict to determine whether the tree is open."""
+      return json_dict[state_field] in ['open', 'throttled']
+
+    # Check before looping with timeout.
     status_url = 'https://chromiumos-status.appspot.com/current?format=json'
-    current_sleep = 1
-
-    for _ in range(max_attempts):
-      try:
-        response = urllib.urlopen(status_url)
-        # Check for valid response code.
-        if response.getcode() == 200:
-          response_dict = json.load(response)
-          break
-
-        current_sleep = _SleepWithExponentialBackOff(current_sleep)
-      except IOError:
-        # We continue if we can't reach appspot.com
-        current_sleep = _SleepWithExponentialBackOff(current_sleep)
-
-    else:
-      # We go ahead and say the tree is open if we can't tree the status page.
-      logging.warn('Could not get a status from %s', status_url)
+    start_time = time.time()
+    if _CanSubmit(_GetTreeStatus(status_url)):
       return True
 
-    tree_open = response_dict['general_state'] in ['open', 'throttled']
-    return tree_open
+    # Loop until either we run out of time or the tree is open.
+    while (time.time() - start_time) < max_timeout:
+      if _CanSubmit(_GetTreeStatus(status_url)):
+        return True
+      else:
+        time.sleep(sleep_timeout)
+
+    return False
 
   @classmethod
   def AcquirePool(cls, internal, buildroot, build_number, builder_name, dryrun):
@@ -132,7 +158,9 @@ class ValidationPool(object):
     Raises:
       TreeIsClosedException: if the tree is closed.
     """
-    if cls._IsTreeOpen() or dryrun:
+    # We choose a longer wait here as we haven't committed to anything yet. By
+    # doing this here we can reduce the number of builder cycles.
+    if cls._IsTreeOpen(max_timeout=3600) or dryrun:
       # Only master configurations should call this method.
       pool = ValidationPool(internal, build_number, builder_name, True, dryrun)
       pool.gerrit_helper = gerrit_helper.GerritHelper(internal)
@@ -342,6 +370,9 @@ class ValidationPool(object):
     """
     assert self.is_master, 'Non-master builder calling SubmitPool'
     changes_that_failed_to_submit = []
+    # We use the default timeout here as while we want some robustness against
+    # the tree status being red i.e. flakiness, we don't want to wait too long
+    # as validation can become stale.
     if ValidationPool._IsTreeOpen() or self.dryrun:
       for change in changes:
         was_change_submitted = False
