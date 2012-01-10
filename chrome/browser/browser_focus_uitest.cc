@@ -60,6 +60,7 @@ using content::WebContents;
 #define MAYBE_FocusTraversalOnInterstitial DISABLED_FocusTraversalOnInterstitial
 #elif defined(OS_WIN)
 // http://crbug.com/109770
+#define MAYBE_FocusTraversal FocusTraversal
 #define MAYBE_FocusTraversalOnInterstitial DISABLED_FocusTraversalOnInterstitial
 #else
 #define MAYBE_FocusTraversal FocusTraversal
