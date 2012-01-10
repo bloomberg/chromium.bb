@@ -186,10 +186,11 @@ class Host:
         "host_name": self.host_name,
         "private_key": self.private_key,
     }
-    os.umask(0066) # Set permission mask for created file.
+    old_umask = os.umask(0066)
     settings_file = open(self.config_file, 'w')
     settings_file.write(json.dumps(data, indent=2))
     settings_file.close()
+    os.umask(old_umask)
 
 
 class Desktop:
@@ -374,8 +375,11 @@ def daemonize(log_filename):
 
   # Create new (temporary) file-descriptors before forking, so any errors get
   # reported to the main process and set the correct exit-code.
+  # The mode is provided, since Python otherwise sets a default mode of 0777,
+  # which would result in the new file having permissions of 0777 & ~umask,
+  # possibly leaving the executable bits set.
   devnull_fd = os.open(os.devnull, os.O_RDONLY)
-  log_fd = os.open(log_filename, os.O_WRONLY | os.O_CREAT | os.O_TRUNC)
+  log_fd = os.open(log_filename, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0600)
 
   pid = os.fork()
 
