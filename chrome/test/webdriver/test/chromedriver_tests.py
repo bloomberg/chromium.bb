@@ -518,6 +518,8 @@ class MouseTest(ChromeDriverTest):
     self.assertRaises(WebDriverException, elem.click)
 
 
+# crbug.com/109698: when running in xvfb, 2 extra mouse moves are received.
+@SkipIf(util.IsLinux())
 class MouseEventTest(ChromeDriverTest):
   """Tests for checking the correctness of mouse events."""
 
