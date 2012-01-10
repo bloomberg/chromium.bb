@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -72,6 +72,11 @@ class CONTENT_EXPORT TabContents
   // to be at least |page_id|.
   void UpdateMaxPageIDForSiteInstance(SiteInstance* site_instance,
                                       int32 page_id);
+
+  // Copy the current map of SiteInstance ID to max page ID from another tab.
+  // This is necessary when this tab adopts the NavigationEntries from
+  // |tab_contents|.
+  void CopyMaxPageIDsFrom(TabContents* tab_contents);
 
   // Called by the NavigationController to cause the TabContents to navigate to
   // the current pending entry. The NavigationController should be called back

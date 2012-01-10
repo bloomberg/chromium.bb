@@ -1049,15 +1049,6 @@ void InstantLoader::SetupPreviewContents(TabContentsWrapper* tab_contents) {
   preview_contents_->core_tab_helper()->set_delegate(
       preview_tab_contents_delegate_.get());
 
-  // Propagate the max page id. That way if we end up merging the two
-  // NavigationControllers (which happens if we commit) none of the page ids
-  // will overlap.
-  int32 max_page_id = tab_contents->web_contents()->GetMaxPageID();
-  if (max_page_id != -1) {
-    preview_contents_->web_contents()->GetController().SetMaxRestoredPageID(
-        max_page_id + 1);
-  }
-
 #if defined(OS_MACOSX)
   // If |preview_contents_| does not currently have a RWHV, we will call
   // SetTakesFocusOnlyOnMouseDown() as a result of the

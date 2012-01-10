@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -61,6 +61,10 @@ void RegisterForAllNavNotifications(TestNotificationTracker* tracker,
   tracker->ListenFor(content::NOTIFICATION_NAV_ENTRY_CHANGED,
                      content::Source<NavigationController>(
                          controller));
+}
+
+SiteInstance* GetSiteInstanceFromEntry(NavigationEntry* entry) {
+  return NavigationEntryImpl::FromNavigationEntry(entry)->site_instance();
 }
 
 class TestWebContentsDelegate : public content::WebContentsDelegate {
@@ -2051,20 +2055,29 @@ TEST_F(NavigationControllerTest, SubframeWhilePending) {
 // Tests CopyStateFromAndPrune with 2 urls in source, 1 in dest.
 TEST_F(NavigationControllerTest, CopyStateFromAndPrune) {
   NavigationControllerImpl& controller = controller_impl();
-  const GURL url1("http://foo1");
-  const GURL url2("http://foo2");
-  const GURL url3("http://foo3");
+  const GURL url1("http://foo/1");
+  const GURL url2("http://foo/2");
+  const GURL url3("http://foo/3");
 
   NavigateAndCommit(url1);
   NavigateAndCommit(url2);
+
+  // First two entries should have the same SiteInstance.
+  SiteInstance* instance1 =
+      GetSiteInstanceFromEntry(controller.GetEntryAtIndex(0));
+  SiteInstance* instance2 =
+      GetSiteInstanceFromEntry(controller.GetEntryAtIndex(1));
+  EXPECT_EQ(instance1, instance2);
+  EXPECT_EQ(0, controller.GetEntryAtIndex(0)->GetPageID());
+  EXPECT_EQ(1, controller.GetEntryAtIndex(1)->GetPageID());
+  EXPECT_EQ(1, contents()->GetMaxPageIDForSiteInstance(instance1));
 
   scoped_ptr<TestTabContents> other_contents(CreateTestTabContents());
   NavigationControllerImpl& other_controller =
       other_contents->GetControllerImpl();
   other_contents->NavigateAndCommit(url3);
   other_contents->ExpectSetHistoryLengthAndPrune(
-      NavigationEntryImpl::FromNavigationEntry(
-          other_controller.GetEntryAtIndex(0))->site_instance(), 2,
+      GetSiteInstanceFromEntry(other_controller.GetEntryAtIndex(0)), 2,
       other_controller.GetEntryAtIndex(0)->GetPageID());
   other_controller.CopyStateFromAndPrune(&controller);
 
@@ -2077,6 +2090,19 @@ TEST_F(NavigationControllerTest, CopyStateFromAndPrune) {
   EXPECT_EQ(url1, other_controller.GetEntryAtIndex(0)->GetURL());
   EXPECT_EQ(url2, other_controller.GetEntryAtIndex(1)->GetURL());
   EXPECT_EQ(url3, other_controller.GetEntryAtIndex(2)->GetURL());
+  EXPECT_EQ(0, other_controller.GetEntryAtIndex(0)->GetPageID());
+  EXPECT_EQ(1, other_controller.GetEntryAtIndex(1)->GetPageID());
+  EXPECT_EQ(0, other_controller.GetEntryAtIndex(2)->GetPageID());
+
+  // A new SiteInstance should be used for the new tab.
+  SiteInstance* instance3 =
+      GetSiteInstanceFromEntry(other_controller.GetEntryAtIndex(2));
+  EXPECT_NE(instance3, instance1);
+
+  // The max page ID map should be copied over and updated with the max page ID
+  // from the current tab.
+  EXPECT_EQ(1, other_contents->GetMaxPageIDForSiteInstance(instance1));
+  EXPECT_EQ(0, other_contents->GetMaxPageIDForSiteInstance(instance3));
 }
 
 // Test CopyStateFromAndPrune with 2 urls, the first selected and nothing in
@@ -2104,6 +2130,13 @@ TEST_F(NavigationControllerTest, CopyStateFromAndPrune2) {
   ASSERT_EQ(0, other_controller.GetCurrentEntryIndex());
 
   EXPECT_EQ(url1, other_controller.GetEntryAtIndex(0)->GetURL());
+  EXPECT_EQ(0, other_controller.GetEntryAtIndex(0)->GetPageID());
+
+  // The max page ID map should be copied over and updated with the max page ID
+  // from the current tab.
+  SiteInstance* instance1 =
+      GetSiteInstanceFromEntry(other_controller.GetEntryAtIndex(0));
+  EXPECT_EQ(0, other_contents->GetMaxPageIDForSiteInstance(instance1));
 }
 
 // Test CopyStateFromAndPrune with 2 urls, the first selected and nothing in
@@ -2139,6 +2172,12 @@ TEST_F(NavigationControllerTest, CopyStateFromAndPrune3) {
   ASSERT_TRUE(other_controller.GetPendingEntry());
 
   EXPECT_EQ(url3, other_controller.GetPendingEntry()->GetURL());
+
+  // The max page ID map should be copied over and updated with the max page ID
+  // from the current tab.
+  SiteInstance* instance1 =
+      GetSiteInstanceFromEntry(other_controller.GetEntryAtIndex(0));
+  EXPECT_EQ(0, other_contents->GetMaxPageIDForSiteInstance(instance1));
 }
 
 // Tests that navigations initiated from the page (with the history object)

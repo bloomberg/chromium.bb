@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -170,8 +170,6 @@ class PrerenderContents : public content::NotificationObserver,
   // new tab.
   void CommitHistory(TabContentsWrapper* tab);
 
-  int32 starting_page_id() { return starting_page_id_; }
-
   base::Value* GetAsValue() const;
 
   // Returns whether a pending cross-site navigation is happening.
@@ -292,9 +290,6 @@ class PrerenderContents : public content::NotificationObserver,
   int child_id_;
   int route_id_;
 
-  // Page ID at which prerendering started.
-  int32 starting_page_id_;
-
   // Origin for this prerender.
   Origin origin_;
 
@@ -303,9 +298,6 @@ class PrerenderContents : public content::NotificationObserver,
 
   // List of all pages the prerendered page has tried to prerender.
   PendingPrerenderList pending_prerender_list_;
-
-  // Offset by which to offset prerendered pages
-  static const int32 kPrerenderPageIdOffset = 10;
 
   DISALLOW_COPY_AND_ASSIGN(PrerenderContents);
 };

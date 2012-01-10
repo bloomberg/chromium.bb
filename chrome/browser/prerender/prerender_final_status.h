@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -39,7 +39,7 @@ enum FinalStatus {
   FINAL_STATUS_WINDOW_PRINT = 24,
   FINAL_STATUS_RECENTLY_VISITED = 25,
   FINAL_STATUS_WINDOW_OPENER = 26,
-  FINAL_STATUS_PAGE_ID_CONFLICT = 27,
+  // Obsolete: FINAL_STATUS_PAGE_ID_CONFLICT = 27,
   FINAL_STATUS_SAFE_BROWSING = 28,
   FINAL_STATUS_FRAGMENT_MISMATCH = 29,
   FINAL_STATUS_SSL_CLIENT_CERTIFICATE_REQUESTED = 30,

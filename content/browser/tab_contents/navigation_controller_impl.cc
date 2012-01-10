@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -990,6 +990,11 @@ void NavigationControllerImpl::CopyStateFrom(
   session_storage_namespace_ = source.session_storage_namespace_->Clone();
 
   FinishRestore(source.last_committed_entry_index_, false);
+
+  // Copy the max page id map from the old tab to the new tab.  This ensures
+  // that new and existing navigations in the tab's current SiteInstances
+  // are identified properly.
+  tab_contents_->CopyMaxPageIDsFrom(source.tab_contents());
 }
 
 void NavigationControllerImpl::CopyStateFromAndPrune(
@@ -998,17 +1003,20 @@ void NavigationControllerImpl::CopyStateFromAndPrune(
       static_cast<NavigationControllerImpl*>(temp);
   // The SiteInstance and page_id of the last committed entry needs to be
   // remembered at this point, in case there is only one committed entry
-  // and it is pruned.
+  // and it is pruned.  We use a scoped_refptr to ensure the SiteInstance
+  // can't be freed during this time period.
   NavigationEntryImpl* last_committed =
       NavigationEntryImpl::FromNavigationEntry(GetLastCommittedEntry());
-  SiteInstance* site_instance =
-      last_committed ? last_committed->site_instance() : NULL;
+  scoped_refptr<SiteInstance> site_instance(
+      last_committed ? last_committed->site_instance() : NULL);
   int32 minimum_page_id = last_committed ? last_committed->GetPageID() : -1;
+  int32 max_page_id = last_committed ?
+      tab_contents_->GetMaxPageIDForSiteInstance(site_instance.get()) : -1;
 
   // This code is intended for use when the last entry is the active entry.
   DCHECK(
       (transient_entry_index_ != -1 &&
-      transient_entry_index_ == GetEntryCount() - 1) ||
+       transient_entry_index_ == GetEntryCount() - 1) ||
       (pending_entry_ && (pending_entry_index_ == -1 ||
                           pending_entry_index_ == GetEntryCount() - 1)) ||
       (!pending_entry_ && last_committed_entry_index_ == GetEntryCount() - 1));
@@ -1038,9 +1046,21 @@ void NavigationControllerImpl::CopyStateFromAndPrune(
       last_committed_entry_index_--;
   }
 
-  tab_contents_->SetHistoryLengthAndPrune(site_instance,
+  tab_contents_->SetHistoryLengthAndPrune(site_instance.get(),
                                           max_source_index,
                                           minimum_page_id);
+
+  // Copy the max page id map from the old tab to the new tab.  This ensures
+  // that new and existing navigations in the tab's current SiteInstances
+  // are identified properly.
+  tab_contents_->CopyMaxPageIDsFrom(source->tab_contents());
+
+  // If there is a last committed entry, be sure to include it in the new
+  // max page ID map.
+  if (max_page_id > -1) {
+    tab_contents_->UpdateMaxPageIDForSiteInstance(site_instance.get(),
+                                                  max_page_id);
+  }
 }
 
 void NavigationControllerImpl::PruneAllButActive() {
