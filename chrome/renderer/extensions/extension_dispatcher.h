@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -136,10 +136,6 @@ class ExtensionDispatcher : public content::RenderProcessObserver {
   void UpdateOriginPermissions(UpdatedExtensionPermissionsInfo::Reason reason,
                                const Extension* extension,
                                const URLPatternSet& origins);
-
-  // Finds the extension ID for the current context. This is determined from
-  // |world_id| if it's non-zero, or the URL in |frame| if it is.
-  std::string GetExtensionID(WebKit::WebFrame* frame, int world_id);
 
   // True if this renderer is running extensions.
   bool is_extension_process_;
