@@ -1,7 +1,5 @@
 # shmem and network header files
 20010724-1.c
-# asm
-pr40657.c
 # vector ops
 vector-shift1.c
 # vector type

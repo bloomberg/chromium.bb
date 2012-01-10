@@ -7,7 +7,7 @@
 # select function via ternary operator - looks like a complete miscompile
 pr34971.c
 # alignment issues using __alignof__
-alloca-1.c
+alloca-1.c arm
 # setjmp/longjmp TODO
 built-in-setjmp.c
 # ??? (funny shenanigans with bitfields)
@@ -16,8 +16,8 @@ bitfld-3.c
 # local version of llabs overrides libc version
 20021127-1.c
 # va_arg structure passing codegen on arm
-20030914-2.c
-va-arg-4.c
+20030914-2.c arm
+va-arg-4.c arm
 # postincrement of argument in definition prototype (is that even legal?)
 970217-1.c
 # bad shift of a 40-bit bitfield
