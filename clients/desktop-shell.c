@@ -341,7 +341,7 @@ background_draw(struct window *window, int width, int height, const char *path)
 	double sx, sy;
 
 	window_set_child_size(window, width, height);
-	window_draw(window);
+	window_create_surface(window);
 	surface = window_get_surface(window);
 
 	cr = cairo_create(surface);
@@ -388,8 +388,6 @@ unlock_dialog_draw(struct unlock_dialog *dialog)
 	cairo_pattern_t *pat;
 	double cx, cy, r, f;
 
-	window_draw(dialog->window);
-
 	surface = window_get_surface(dialog->window);
 	cr = cairo_create(surface);
 	window_get_child_allocation(dialog->window, &allocation);
@@ -428,7 +426,6 @@ unlock_dialog_draw(struct unlock_dialog *dialog)
 	cairo_paint(cr);
 	cairo_destroy(cr);
 
-	window_flush(dialog->window);
 	cairo_surface_destroy(surface);
 }
 

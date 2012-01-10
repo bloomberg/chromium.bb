@@ -167,8 +167,6 @@ dnd_draw(struct dnd *dnd)
 	cairo_surface_t *surface;
 	int i;
 
-	window_draw(dnd->window);
-
 	surface = window_get_surface(dnd->window);
 	cr = cairo_create(surface);
 	window_get_child_allocation(dnd->window, &allocation);
@@ -191,7 +189,6 @@ dnd_draw(struct dnd *dnd)
 
 	cairo_destroy(cr);
 	cairo_surface_destroy(surface);
-	window_flush(dnd->window);
 }
 
 static void

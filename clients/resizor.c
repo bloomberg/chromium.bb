@@ -104,8 +104,6 @@ resizor_draw(struct resizor *resizor)
 	cairo_t *cr;
 	struct rectangle allocation;
 
-	window_draw(resizor->window);
-
 	window_get_child_allocation(resizor->window, &allocation);
 
 	surface = window_get_surface(resizor->window);
@@ -122,8 +120,6 @@ resizor_draw(struct resizor *resizor)
 	cairo_destroy(cr);
 
 	cairo_surface_destroy(surface);
-
-	window_flush(resizor->window);
 }
 
 static void
@@ -236,7 +232,7 @@ resizor_create(struct display *display)
 	window_set_child_size(resizor->window, resizor->width, height);
 	widget_set_button_handler(resizor->widget, button_handler);
 
-	resizor_draw(resizor);
+	window_schedule_redraw(resizor->window);
 
 	return resizor;
 }

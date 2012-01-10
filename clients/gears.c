@@ -195,13 +195,30 @@ make_gear(const struct gear_template *t)
 }
 
 static void
-draw_gears(struct gears *gears)
+frame_callback(void *data, struct wl_callback *callback, uint32_t time)
+{
+	struct gears *gears = data;
+
+	gears->angle = (GLfloat) (time % 8192) * 360 / 8192.0;
+
+	window_schedule_redraw(gears->window);
+
+	if (callback)
+		wl_callback_destroy(callback);
+}
+
+static const struct wl_callback_listener listener = {
+	frame_callback
+};
+
+static void
+redraw_handler(struct window *window, void *data)
 {
 	GLfloat view_rotx = 20.0, view_roty = 30.0, view_rotz = 0.0;
 	struct rectangle window_allocation;
 	struct rectangle allocation;
-
-	window_draw(gears->window);
+	struct wl_callback *callback;
+	struct gears *gears = data;
 
 	window_get_child_allocation(gears->window, &allocation);
 	window_get_allocation(gears->window, &window_allocation);
@@ -254,7 +271,9 @@ draw_gears(struct gears *gears)
 	glFlush();
 
 	display_release_window_surface(gears->d, gears->window);
-	window_flush(gears->window);
+
+	callback = wl_surface_frame(window_get_wl_surface(gears->window));
+	wl_callback_add_listener(callback, &listener, gears);
 }
 
 static void
@@ -285,25 +304,6 @@ keyboard_focus_handler(struct window *window,
 
 	window_get_child_allocation(gears->window, &allocation);
 	resize_handler(window, allocation.width, allocation.height, gears);
-}
-
-static void
-frame_callback(void *data, struct wl_callback *callback, uint32_t time)
-{
-	static const struct wl_callback_listener listener = {
-		frame_callback
-	};
-	struct gears *gears = data;
-
-	gears->angle = (GLfloat) (time % 8192) * 360 / 8192.0;
-
-	draw_gears(gears);
-
-	if (callback)
-		wl_callback_destroy(callback);
-
-	callback = wl_surface_frame(window_get_wl_surface(gears->window));
-	wl_callback_add_listener(callback, &listener, gears);
 }
 
 static struct gears *
@@ -359,6 +359,7 @@ gears_create(struct display *display)
 
 	window_set_user_data(gears->window, gears);
 	window_set_resize_handler(gears->window, resize_handler);
+	window_set_redraw_handler(gears->window, redraw_handler);
 	window_set_keyboard_focus_handler(gears->window, keyboard_focus_handler);
 
 	frame_callback(gears, NULL, 0);

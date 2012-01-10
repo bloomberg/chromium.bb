@@ -73,8 +73,6 @@ draw_instance(struct ModeInfo *mi)
 
 	mi->swap_buffers = 0;
 
-	window_draw(mi->window);
-
 	window_get_child_allocation(mi->window, &drawarea);
 	window_get_allocation(mi->window, &winarea);
 
@@ -103,7 +101,6 @@ draw_instance(struct ModeInfo *mi)
 		fprintf(stderr, "%s: swapBuffers not called\n", progname);
 
 	display_release_window_surface(wscr->display, mi->window);
-	window_flush(mi->window);
 }
 
 static void

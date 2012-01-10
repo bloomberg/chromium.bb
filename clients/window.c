@@ -965,8 +965,6 @@ window_draw_decorations(struct window *window)
 	cairo_surface_t *frame;
 	int width, height, shadow_dx = 3, shadow_dy = 3;
 
-	window_create_surface(window);
-
 	width = window->allocation.width;
 	height = window->allocation.height;
 
@@ -1132,15 +1130,6 @@ void
 widget_schedule_redraw(struct widget *widget)
 {
 	window_schedule_redraw(widget->window);
-}
-
-void
-window_draw(struct window *window)
-{
-	if (!window->decoration)
-		window_create_surface(window);
-	else
-		window_draw_decorations(window);
 }
 
 cairo_surface_t *
@@ -1966,8 +1955,16 @@ idle_redraw(struct task *task, uint32_t events)
 	struct window *window =
 		container_of(task, struct window, redraw_task);
 
+	window_create_surface(window);
+	if (window->decoration)
+		window_draw_decorations(window);
+
 	window->redraw_handler(window, window->user_data);
+
+	window_flush(window);
+
 	window->redraw_scheduled = 0;
+
 }
 
 void
@@ -2256,8 +2253,6 @@ menu_redraw_handler(struct window *window, void *data)
 	struct menu *menu = data;
 	int32_t width, height, i;
 
-	window_create_surface(window);
-
 	cr = cairo_create(window->cairo_surface);
 	cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
 	cairo_set_source_rgba(cr, 0.0, 0.0, 0.0, 0.0);
@@ -2287,7 +2282,6 @@ menu_redraw_handler(struct window *window, void *data)
 	}
 
 	cairo_destroy(cr);
-	window_flush(window);
 }
 
 struct window *

@@ -140,8 +140,6 @@ image_draw(struct image *image)
 	cairo_t *cr;
 	cairo_surface_t *surface;
 
-	window_draw(image->window);
-
 	window_get_child_allocation(image->window, &allocation);
 
 	pb = gdk_pixbuf_new_from_file_at_size(image->filename,
@@ -175,7 +173,6 @@ image_draw(struct image *image)
 	cairo_paint(cr);
 	cairo_destroy(cr);
 
-	window_flush(image->window);
 	cairo_surface_destroy(surface);
 }
 
@@ -223,7 +220,7 @@ image_create(struct display *display, const char *filename)
 	window_set_keyboard_focus_handler(image->window,
 					  keyboard_focus_handler);
 
-	image_draw(image);
+	window_schedule_redraw(image->window);
 
 	return image;
 }

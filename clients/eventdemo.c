@@ -103,7 +103,6 @@ eventdemo_draw(struct eventdemo *e) {
 	cairo_t *cr;
 	struct rectangle rect;
 
-	window_draw(e->window);
 	window_get_child_allocation(e->window, &rect);
 	surface = window_get_surface(e->window);
 
@@ -120,7 +119,6 @@ eventdemo_draw(struct eventdemo *e) {
 
 	cairo_destroy(cr);
 	cairo_surface_destroy(surface);
-	window_flush(e->window);
 }
 
 /**
@@ -329,7 +327,7 @@ eventdemo_create(struct display *d)
 	}
 
 	/* Initial drawing of the window */
-	eventdemo_draw(e);
+	window_schedule_redraw(e->window);
 
 	return e;
 }

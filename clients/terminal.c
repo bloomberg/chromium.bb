@@ -1030,19 +1030,11 @@ resize_handler(struct window *window,
 }
 
 static void
-terminal_draw(struct terminal *terminal)
-{
-	window_draw(terminal->window);
-	terminal_draw_contents(terminal);
-	window_flush(terminal->window);
-}
-
-static void
 redraw_handler(struct window *window, void *data)
 {
 	struct terminal *terminal = data;
 
-	terminal_draw(terminal);
+	terminal_draw_contents(terminal);
 }
 
 static void
@@ -2371,7 +2363,7 @@ terminal_run(struct terminal *terminal, const char *path)
 	if (!terminal->fullscreen)
 		terminal_resize(terminal, 80, 24);
 
-	terminal_draw(terminal);
+	window_schedule_redraw(terminal->window);
 
 	return 0;
 }

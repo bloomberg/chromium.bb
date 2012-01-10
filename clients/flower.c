@@ -146,7 +146,7 @@ int main(int argc, char *argv[])
 
 	window_set_title(flower.window, "flower");
 	window_set_decoration(flower.window, 0);
-	window_draw(flower.window);
+	window_create_surface(flower.window);
 	s = window_get_surface(flower.window);
 	if (s == NULL || cairo_surface_status (s) != CAIRO_STATUS_SUCCESS) {
 		fprintf(stderr, "failed to create cairo egl surface\n");
