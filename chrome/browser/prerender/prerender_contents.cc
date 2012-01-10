@@ -127,18 +127,6 @@ class PrerenderContents::TabContentsDelegateImpl
     NOTREACHED();
   }
 
-  virtual bool ShouldCreateWebContents(
-      WebContents* web_contents,
-      int route_id,
-      WindowContainerType window_container_type,
-      const string16& frame_name) OVERRIDE {
-    // Since we don't want to permit child windows that would have a
-    // window.opener property, terminate prerendering.
-    prerender_contents_->Destroy(FINAL_STATUS_CREATE_NEW_WINDOW);
-    // Cancel the popup.
-    return false;
-  }
-
   virtual bool OnGoToEntryOffset(int offset) OVERRIDE {
     // This isn't allowed because the history merge operation
     // does not work if there are renderer issued challenges.
@@ -346,6 +334,11 @@ void PrerenderContents::StartPrerendering(
       this, content::NOTIFICATION_RESOURCE_RECEIVED_REDIRECT,
       content::Source<WebContents>(GetWebContents()));
 
+  // Register for new windows from any source.
+  notification_registrar_.Add(
+      this, content::NOTIFICATION_CREATING_NEW_WINDOW_CANCELLED,
+      content::Source<WebContents>(new_contents));
+
   DCHECK(load_start_time_.is_null());
   load_start_time_ = base::TimeTicks::Now();
 
@@ -470,6 +463,17 @@ void PrerenderContents::Observe(int type,
         // visibility API.
         new_render_view_host->WasResized();
         prerender_contents_->web_contents()->HideContents();
+      }
+      break;
+    }
+
+    case content::NOTIFICATION_CREATING_NEW_WINDOW_CANCELLED: {
+      if (prerender_contents_.get()) {
+        CHECK(content::Source<WebContents>(source).ptr() ==
+              prerender_contents_->web_contents());
+        // Since we don't want to permit child windows that would have a
+        // window.opener property, terminate prerendering.
+        Destroy(FINAL_STATUS_CREATE_NEW_WINDOW);
       }
       break;
     }

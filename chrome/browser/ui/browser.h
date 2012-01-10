@@ -972,15 +972,7 @@ class Browser : public TabHandlerDelegate,
   virtual bool ShouldAddNavigationToHistory(
       const history::HistoryAddPageArgs& add_page_args,
       content::NavigationType navigation_type) OVERRIDE;
-  virtual bool ShouldCreateWebContents(
-      content::WebContents* web_contents,
-      int route_id,
-      WindowContainerType window_container_type,
-      const string16& frame_name) OVERRIDE;
-  virtual void WebContentsCreated(content::WebContents* source_contents,
-                                  int64 source_frame_id,
-                                  const GURL& target_url,
-                                  content::WebContents* new_contents) OVERRIDE;
+  virtual void WebContentsCreated(content::WebContents* new_contents) OVERRIDE;
   virtual void ContentRestrictionsChanged(
       content::WebContents* source) OVERRIDE;
   virtual void RendererUnresponsive(content::WebContents* source) OVERRIDE;
@@ -1288,13 +1280,6 @@ class Browser : public TabHandlerDelegate,
 
   // Open the bookmark manager with a defined hash action.
   void OpenBookmarkManagerWithHash(const std::string& action, int64 node_id);
-
-  // Creates a BackgroundContents if appropriate; return true if one was
-  // created.
-  bool MaybeCreateBackgroundContents(int route_id,
-                                     SiteInstance* site,
-                                     const GURL& opener_url,
-                                     const string16& frame_name);
 
   // Data members /////////////////////////////////////////////////////////////
 

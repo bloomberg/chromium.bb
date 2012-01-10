@@ -111,14 +111,6 @@ gfx::NativeWindow WebContentsDelegate::GetFrameNativeWindow() {
   return NULL;
 }
 
-bool WebContentsDelegate::ShouldCreateWebContents(
-    WebContents* web_contents,
-    int route_id,
-    WindowContainerType window_container_type,
-    const string16& frame_name) {
-  return true;
-}
-
 // A stubbed-out version of JavaScriptDialogCreator that doesn't do anything.
 class JavaScriptDialogCreatorStub : public JavaScriptDialogCreator {
  public:
