@@ -64,10 +64,14 @@ void SignatureUtil::CheckSignature(
     for (DWORD i = 0; i < prov_data->csSigners; ++i) {
       const CERT_CHAIN_CONTEXT* cert_chain_context =
           prov_data->pasSigners[i].pChainContext;
+      if (!cert_chain_context)
+        break;
       for (DWORD j = 0; j < cert_chain_context->cChain; ++j) {
         CERT_SIMPLE_CHAIN* simple_chain = cert_chain_context->rgpChain[j];
         ClientDownloadRequest_CertificateChain* chain =
             signature_info->add_certificate_chain();
+        if (!simple_chain)
+          break;
         for (DWORD k = 0; k < simple_chain->cElement; ++k) {
           CERT_CHAIN_ELEMENT* element = simple_chain->rgpElement[k];
           chain->add_element()->set_certificate(
