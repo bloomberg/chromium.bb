@@ -30,7 +30,7 @@
 #include "remoting/host/json_host_config.h"
 #include "remoting/host/signaling_connector.h"
 #include "remoting/jingle_glue/xmpp_signal_strategy.h"
-#include "remoting/protocol/v1_authenticator.h"
+#include "remoting/protocol/me2me_host_authenticator_factory.h"
 
 #if defined(TOOLKIT_USES_GTK)
 #include "ui/gfx/gtk_util.h"
@@ -161,13 +161,14 @@ class HostProcess {
 
     host_->Start();
 
-    // Set an empty shared-secret for Me2Me.
-
-    // TODO(sergeyu): This is a temporary hack pending us adding a way
-    // to set a PIN. crbug.com/105214 .
+    // Create authenticator factory.
+    //
+    // TODO(sergeyu): Currently empty PIN is used. This is a temporary
+    // hack pending us adding a way to set a PIN. crbug.com/105214 .
     scoped_ptr<protocol::AuthenticatorFactory> factory(
-        new protocol::V1HostAuthenticatorFactory(
-            key_pair_.GenerateCertificate(), key_pair_.private_key(), ""));
+        new protocol::Me2MeHostAuthenticatorFactory(
+            xmpp_login_, key_pair_.GenerateCertificate(),
+            key_pair_.private_key(), ""));
     host_->SetAuthenticatorFactory(factory.Pass());
   }
 

@@ -785,6 +785,8 @@
         'protocol/jingle_stream_connector.h',
         'protocol/key_event_tracker.cc',
         'protocol/key_event_tracker.h',
+        'protocol/me2me_host_authenticator_factory.cc',
+        'protocol/me2me_host_authenticator_factory.h',
         'protocol/message_decoder.cc',
         'protocol/message_decoder.h',
         'protocol/message_reader.cc',

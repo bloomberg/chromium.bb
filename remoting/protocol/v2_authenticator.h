@@ -1,9 +1,9 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_PROTOCOL_EKE_AUTHENTICATOR_H_
-#define REMOTING_PROTOCOL_EKE_AUTHENTICATOR_H_
+#ifndef REMOTING_PROTOCOL_V2_AUTHENTICATOR_H_
+#define REMOTING_PROTOCOL_V2_AUTHENTICATOR_H_
 
 #include <string>
 #include <queue>
@@ -70,8 +70,8 @@ class V2HostAuthenticatorFactory : public AuthenticatorFactory {
  public:
   // Doesn't take ownership of |local_private_key|.
   V2HostAuthenticatorFactory(const std::string& local_cert,
-                              const crypto::RSAPrivateKey* local_private_key,
-                              const std::string& shared_secret);
+                             const crypto::RSAPrivateKey* local_private_key,
+                             const std::string& shared_secret);
   virtual ~V2HostAuthenticatorFactory();
 
   // AuthenticatorFactory interface.
@@ -90,4 +90,4 @@ class V2HostAuthenticatorFactory : public AuthenticatorFactory {
 }  // namespace protocol
 }  // namespace remoting
 
-#endif  // REMOTING_PROTOCOL_EKE_AUTHENTICATOR_H_
+#endif  // REMOTING_PROTOCOL_V2_AUTHENTICATOR_H_
