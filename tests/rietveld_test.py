@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -104,8 +104,8 @@ class RietveldTest(unittest.TestCase):
     ]
     patches = self.rietveld.get_patch(123, 456)
     self.assertEquals(2, len(patches.patches))
-    # TODO(maruel): svn sucks.
-    self._check_patch(patches.patches[0], 'file_a', RAW.NEW_NOT_NULL)
+    self._check_patch(
+        patches.patches[0], 'file_a', RAW.NEW_NOT_NULL, is_new=True)
     self._check_patch(patches.patches[1], 'foo', RAW.NEW, is_new=True)
 
   def test_get_patch_add(self):

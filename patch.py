@@ -1,5 +1,5 @@
 # coding=utf8
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 """Utility functions to handle patches."""
@@ -86,7 +86,10 @@ class FilePatchBase(object):
       out += 'R'
     else:
       out += ' '
-    return out + '  %s->%s' % (self.source_filename, self.filename)
+    out += '  '
+    if self.source_filename:
+      out += '%s->' % self.source_filename
+    return out + str(self.filename)
 
 
 class FilePatchDelete(FilePatchBase):
@@ -112,6 +115,18 @@ class FilePatchBinary(FilePatchBase):
     return self.data
 
 
+class Hunk(object):
+  """Parsed hunk data container."""
+
+  def __init__(self, start_src, lines_src, start_dst, lines_dst):
+    self.start_src = start_src
+    self.lines_src = lines_src
+    self.start_dst = start_dst
+    self.lines_dst = lines_dst
+    self.variation = self.lines_dst - self.lines_src
+    self.text = []
+
+
 class FilePatchDiff(FilePatchBase):
   """Patch for a single file."""
 
@@ -127,6 +142,7 @@ class FilePatchDiff(FilePatchBase):
       self._verify_git_header()
     else:
       self._verify_svn_header()
+    self.hunks = self._split_hunks()
     if self.source_filename and not self.is_new:
       self._fail('If source_filename is set, is_new must be also be set')
 
@@ -197,6 +213,65 @@ class FilePatchDiff(FilePatchBase):
     # Rename no change:
     # http://codereview.chromium.org/download/issue6287022_3001_4010.diff
     return any(l.startswith('diff --git') for l in diff_header.splitlines())
+
+  def _split_hunks(self):
+    """Splits the hunks and does verification."""
+    hunks = []
+    for line in self.diff_hunks.splitlines(True):
+      if line.startswith('@@'):
+        match = re.match(r'^@@ -(\d+),(\d+) \+([\d,]+) @@.*$', line)
+        # File add will result in "-0,0 +1" but file deletion will result in
+        # "-1,N +0,0" where N is the number of lines deleted. That's from diff
+        # and svn diff. git diff doesn't exhibit this behavior.
+        if not match:
+          self._fail('Hunk header is unparsable')
+        if ',' in match.group(3):
+          start_dst, lines_dst = map(int, match.group(3).split(',', 1))
+        else:
+          start_dst = int(match.group(3))
+          lines_dst = 0
+        new_hunk = Hunk(int(match.group(1)), int(match.group(2)),
+                        start_dst, lines_dst)
+        if hunks:
+          if new_hunk.start_src <= hunks[-1].start_src:
+            self._fail('Hunks source lines are not ordered')
+          if new_hunk.start_dst <= hunks[-1].start_dst:
+            self._fail('Hunks destination lines are not ordered')
+        hunks.append(new_hunk)
+        continue
+      hunks[-1].text.append(line)
+
+    if len(hunks) == 1:
+      if hunks[0].start_src == 0 and hunks[0].lines_src == 0:
+        self.is_new = True
+      if hunks[0].start_dst == 0 and hunks[0].lines_dst == 0:
+        self.is_delete = True
+
+    if self.is_new and self.is_delete:
+      self._fail('Hunk header is all 0')
+
+    if not self.is_new and not self.is_delete:
+      for hunk in hunks:
+        variation = (
+            len([1 for i in hunk.text if i.startswith('+')]) -
+            len([1 for i in hunk.text if i.startswith('-')]))
+        if variation != hunk.variation:
+          self._fail(
+              'Hunk header is incorrect: %d vs %d' % (
+                variation, hunk.variation))
+        if not hunk.start_src:
+          self._fail(
+              'Hunk header start line is incorrect: %d' % hunk.start_src)
+        if not hunk.start_dst:
+          self._fail(
+              'Hunk header start line is incorrect: %d' % hunk.start_dst)
+        hunk.start_src -= 1
+        hunk.start_dst -= 1
+    if self.is_new and hunks:
+      hunks[0].start_dst -= 1
+    if self.is_delete and hunks:
+      hunks[0].start_src -= 1
+    return hunks
 
   def mangle(self, string):
     """Mangle a file path."""

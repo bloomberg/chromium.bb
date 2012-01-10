@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -29,7 +29,8 @@ class PatchTest(unittest.TestCase):
       is_git_diff=False,
       is_new=False,
       patchlevel=0,
-      svn_properties=None):
+      svn_properties=None,
+      nb_hunks=None):
     svn_properties = svn_properties or []
     self.assertEquals(p.filename, filename)
     self.assertEquals(p.source_filename, source_filename)
@@ -45,8 +46,10 @@ class PatchTest(unittest.TestCase):
         self.assertEquals(p.get(), diff)
       else:
         self.assertEquals(p.get(True), diff)
-    if hasattr(p, 'svn_properties'):
-      self.assertEquals(p.svn_properties, svn_properties)
+    if hasattr(p, 'hunks'):
+      self.assertEquals(len(p.hunks), nb_hunks)
+    else:
+      self.assertEquals(None, nb_hunks)
 
   def testFilePatchDelete(self):
     p = patch.FilePatchDelete('foo', False)
@@ -66,32 +69,33 @@ class PatchTest(unittest.TestCase):
 
   def testFilePatchDiff(self):
     p = patch.FilePatchDiff('chrome/file.cc', RAW.PATCH, [])
-    self._check_patch(p, 'chrome/file.cc', RAW.PATCH)
+    self._check_patch(p, 'chrome/file.cc', RAW.PATCH, nb_hunks=1)
 
   def testFilePatchDiffHeaderMode(self):
     p = patch.FilePatchDiff('git_cl/git-cl', GIT.MODE_EXE, [])
     self._check_patch(
         p, 'git_cl/git-cl', GIT.MODE_EXE, is_git_diff=True, patchlevel=1,
-        svn_properties=[('svn:executable', '*')])
+        svn_properties=[('svn:executable', '*')], nb_hunks=0)
 
   def testFilePatchDiffHeaderModeIndex(self):
     p = patch.FilePatchDiff('git_cl/git-cl', GIT.MODE_EXE_JUNK, [])
     self._check_patch(
         p, 'git_cl/git-cl', GIT.MODE_EXE_JUNK, is_git_diff=True, patchlevel=1,
-        svn_properties=[('svn:executable', '*')])
+        svn_properties=[('svn:executable', '*')], nb_hunks=0)
 
   def testFilePatchDiffSvnNew(self):
     # The code path is different for git and svn.
     p = patch.FilePatchDiff('foo', RAW.NEW, [])
-    self._check_patch(p, 'foo', RAW.NEW, is_new=True)
+    self._check_patch(p, 'foo', RAW.NEW, is_new=True, nb_hunks=1)
 
   def testFilePatchDiffGitNew(self):
     # The code path is different for git and svn.
     p = patch.FilePatchDiff('foo', GIT.NEW, [])
     self._check_patch(
-        p, 'foo', GIT.NEW, is_new=True, is_git_diff=True, patchlevel=1)
+        p, 'foo', GIT.NEW, is_new=True, is_git_diff=True, patchlevel=1,
+        nb_hunks=1)
 
-  def testValidSvn(self):
+  def testSvn(self):
     # Should not throw.
     p = patch.FilePatchDiff('chrome/file.cc', RAW.PATCH, [])
     lines = RAW.PATCH.splitlines(True)
@@ -102,21 +106,21 @@ class PatchTest(unittest.TestCase):
     self.assertEquals(RAW.PATCH, p.get(True))
     self.assertEquals(RAW.PATCH, p.get(False))
 
-  def testValidSvnNew(self):
+  def testSvnNew(self):
     p = patch.FilePatchDiff('chrome/file.cc', RAW.MINIMAL_NEW, [])
     self.assertEquals(RAW.MINIMAL_NEW, p.diff_header)
     self.assertEquals('', p.diff_hunks)
     self.assertEquals(RAW.MINIMAL_NEW, p.get(True))
     self.assertEquals(RAW.MINIMAL_NEW, p.get(False))
 
-  def testValidSvnDelete(self):
+  def testSvnDelete(self):
     p = patch.FilePatchDiff('chrome/file.cc', RAW.MINIMAL_DELETE, [])
     self.assertEquals(RAW.MINIMAL_DELETE, p.diff_header)
     self.assertEquals('', p.diff_hunks)
     self.assertEquals(RAW.MINIMAL_DELETE, p.get(True))
     self.assertEquals(RAW.MINIMAL_DELETE, p.get(False))
 
-  def testValidSvnRename(self):
+  def testSvnRename(self):
     p = patch.FilePatchDiff('file_b', RAW.MINIMAL_RENAME, [])
     self.assertEquals(RAW.MINIMAL_RENAME, p.diff_header)
     self.assertEquals('', p.diff_hunks)
@@ -192,54 +196,85 @@ class PatchTest(unittest.TestCase):
     self.assertEquals(RAW.PATCH, patches.patches[0].get(True))
     self.assertEquals(RAW.PATCH, patches.patches[0].get(False))
 
+  def testTwoHunks(self):
+    name = 'chrome/app/generated_resources.grd'
+    p = patch.FilePatchDiff(name, RAW.TWO_HUNKS, [])
+    self._check_patch(p, name, RAW.TWO_HUNKS, nb_hunks=2)
+
+  def testGitThreeHunks(self):
+    p = patch.FilePatchDiff('presubmit_support.py', GIT.FOUR_HUNKS, [])
+    self._check_patch(
+        p, 'presubmit_support.py', GIT.FOUR_HUNKS, is_git_diff=True,
+        patchlevel=1,
+        nb_hunks=4)
+
   def testDelete(self):
     p = patch.FilePatchDiff('tools/clang_check/README.chromium', RAW.DELETE, [])
     self._check_patch(
-        p, 'tools/clang_check/README.chromium', RAW.DELETE, is_delete=True)
+        p, 'tools/clang_check/README.chromium', RAW.DELETE, is_delete=True,
+        nb_hunks=1)
+
+  def testDelete2(self):
+    name = 'browser/extensions/extension_sidebar_api.cc'
+    p = patch.FilePatchDiff(name, RAW.DELETE2, [])
+    self._check_patch(p, name, RAW.DELETE2, is_delete=True, nb_hunks=1)
 
   def testGitDelete(self):
     p = patch.FilePatchDiff('tools/clang_check/README.chromium', GIT.DELETE, [])
     self._check_patch(
         p, 'tools/clang_check/README.chromium', GIT.DELETE, is_delete=True,
-        is_git_diff=True, patchlevel=1)
+        is_git_diff=True, patchlevel=1, nb_hunks=1)
 
   def testGitRename(self):
     p = patch.FilePatchDiff('tools/run_local_server.sh', GIT.RENAME, [])
-    self._check_patch(p, 'tools/run_local_server.sh', GIT.RENAME,
-        is_git_diff=True, patchlevel=1,
-        source_filename='tools/run_local_server.PY', is_new=True)
+    self._check_patch(
+        p,
+        'tools/run_local_server.sh',
+        GIT.RENAME,
+        is_git_diff=True,
+        patchlevel=1,
+        source_filename='tools/run_local_server.PY',
+        is_new=True,
+        nb_hunks=0)
 
   def testGitRenamePartial(self):
     p = patch.FilePatchDiff(
         'chromeos/views/webui_menu_widget.h', GIT.RENAME_PARTIAL, [])
     self._check_patch(
-        p, 'chromeos/views/webui_menu_widget.h', GIT.RENAME_PARTIAL,
-        source_filename='chromeos/views/DOMui_menu_widget.h', is_git_diff=True,
-        patchlevel=1, is_new=True)
+        p,
+        'chromeos/views/webui_menu_widget.h',
+        GIT.RENAME_PARTIAL,
+        source_filename='chromeos/views/DOMui_menu_widget.h',
+        is_git_diff=True,
+        patchlevel=1,
+        is_new=True,
+        nb_hunks=1)
 
   def testGitCopy(self):
     p = patch.FilePatchDiff('pp', GIT.COPY, [])
-    self._check_patch(p, 'pp', GIT.COPY, is_git_diff=True, patchlevel=1,
-        source_filename='PRESUBMIT.py', is_new=True)
+    self._check_patch(
+        p, 'pp', GIT.COPY, is_git_diff=True, patchlevel=1,
+        source_filename='PRESUBMIT.py', is_new=True, nb_hunks=0)
 
   def testOnlyHeader(self):
     p = patch.FilePatchDiff('file_a', RAW.MINIMAL, [])
-    self._check_patch(p, 'file_a', RAW.MINIMAL)
+    self._check_patch(p, 'file_a', RAW.MINIMAL, nb_hunks=0)
 
   def testSmallest(self):
     p = patch.FilePatchDiff('file_a', RAW.NEW_NOT_NULL, [])
-    self._check_patch(p, 'file_a', RAW.NEW_NOT_NULL)
+    self._check_patch(p, 'file_a', RAW.NEW_NOT_NULL, is_new=True, nb_hunks=1)
 
   def testRenameOnlyHeader(self):
     p = patch.FilePatchDiff('file_b', RAW.MINIMAL_RENAME, [])
     self._check_patch(
-        p, 'file_b', RAW.MINIMAL_RENAME, source_filename='file_a', is_new=True)
+        p, 'file_b', RAW.MINIMAL_RENAME, source_filename='file_a', is_new=True,
+        nb_hunks=0)
 
   def testGitCopyPartial(self):
     p = patch.FilePatchDiff('wtf2', GIT.COPY_PARTIAL, [])
     self._check_patch(
         p, 'wtf2', GIT.COPY_PARTIAL, source_filename='wtf', is_git_diff=True,
-        patchlevel=1, is_new=True)
+        patchlevel=1, is_new=True, nb_hunks=1)
 
   def testGitCopyPartialAsSvn(self):
     p = patch.FilePatchDiff('wtf2', GIT.COPY_PARTIAL, [])
@@ -263,14 +298,20 @@ class PatchTest(unittest.TestCase):
   def testGitNewExe(self):
     p = patch.FilePatchDiff('natsort_test.py', GIT.NEW_EXE, [])
     self._check_patch(
-        p, 'natsort_test.py', GIT.NEW_EXE, is_new=True, is_git_diff=True,
-        patchlevel=1, svn_properties=[('svn:executable', '*')])
+        p,
+        'natsort_test.py',
+        GIT.NEW_EXE,
+        is_new=True,
+        is_git_diff=True,
+        patchlevel=1,
+        svn_properties=[('svn:executable', '*')],
+        nb_hunks=1)
 
   def testGitNewMode(self):
     p = patch.FilePatchDiff('natsort_test.py', GIT.NEW_MODE, [])
     self._check_patch(
         p, 'natsort_test.py', GIT.NEW_MODE, is_new=True, is_git_diff=True,
-        patchlevel=1)
+        patchlevel=1, nb_hunks=1)
 
   def testPatchsetOrder(self):
     # Deletes must be last.
