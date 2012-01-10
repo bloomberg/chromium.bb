@@ -202,8 +202,7 @@ lockscreen_button_handler(struct widget *widget,
 			  struct input *input, uint32_t time,
 			  int button, int state, void *data)
 {
-	struct window *window = data;
-	struct tablet_shell *shell = window_get_user_data(window);
+	struct tablet_shell *shell = data;
 
 	window_destroy(shell->lockscreen);
 	shell->lockscreen = NULL;

@@ -722,8 +722,6 @@ terminal_resize(struct terminal *terminal, int width, int height)
 				      pixel_width, pixel_height);
 	}
 
-	window_schedule_redraw (terminal->window);
-
 	data_pitch = width * sizeof(union utf8_char);
 	size = data_pitch * height;
 	data = malloc(size);
@@ -899,9 +897,11 @@ glyph_run_add(struct glyph_run *run, int x, int y, union utf8_char *c)
 	run->count += num_glyphs;
 }
 
+
 static void
-terminal_draw_contents(struct terminal *terminal)
+redraw_handler(struct widget *widget, void *data)
 {
+	struct terminal *terminal = data;
 	struct rectangle allocation;
 	cairo_t *cr;
 	int top_margin, side_margin;
@@ -1011,7 +1011,7 @@ terminal_write(struct terminal *terminal, const char *data, size_t length)
 }
 
 static void
-resize_handler(struct window *window,
+resize_handler(struct widget *widget,
 	       int32_t pixel_width, int32_t pixel_height, void *data)
 {
 	struct terminal *terminal = data;
@@ -1027,14 +1027,6 @@ resize_handler(struct window *window,
 				      pixel_width, pixel_height);
 
 	terminal_resize(terminal, width, height);
-}
-
-static void
-redraw_handler(struct window *window, void *data)
-{
-	struct terminal *terminal = data;
-
-	terminal_draw_contents(terminal);
 }
 
 static void
@@ -1498,7 +1490,7 @@ handle_escape(struct terminal *terminal)
 			if (set[1] && set[2]) {
 				window_set_child_size(terminal->window,
 						      args[2], args[1]);
-				resize_handler(terminal->window,
+				resize_handler(terminal->widget,
 					       args[2], args[1], terminal);
 			}
 			break;
@@ -2285,12 +2277,11 @@ terminal_create(struct display *display, int fullscreen)
 	terminal->margin = 5;
 
 	window_set_user_data(terminal->window, terminal);
-	window_set_redraw_handler(terminal->window, redraw_handler);
-	window_set_resize_handler(terminal->window, resize_handler);
-
 	window_set_key_handler(terminal->window, key_handler);
 	window_set_keyboard_focus_handler(terminal->window,
 					  keyboard_focus_handler);
+	widget_set_redraw_handler(terminal->widget, redraw_handler);
+	widget_set_resize_handler(terminal->widget, resize_handler);
 	widget_set_button_handler(terminal->widget, button_handler);
 	widget_set_motion_handler(terminal->widget, motion_handler);
 

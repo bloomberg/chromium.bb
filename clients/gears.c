@@ -42,6 +42,7 @@
 
 struct gears {
 	struct window *window;
+	struct widget *widget;
 
 	struct display *d;
 
@@ -212,7 +213,7 @@ static const struct wl_callback_listener listener = {
 };
 
 static void
-redraw_handler(struct window *window, void *data)
+redraw_handler(struct widget *widget, void *data)
 {
 	GLfloat view_rotx = 20.0, view_roty = 30.0, view_rotz = 0.0;
 	struct rectangle window_allocation;
@@ -277,7 +278,7 @@ redraw_handler(struct window *window, void *data)
 }
 
 static void
-resize_handler(struct window *window,
+resize_handler(struct widget *widget,
 	       int32_t width, int32_t height, void *data)
 {
 	struct gears *gears = data;
@@ -299,11 +300,7 @@ static void
 keyboard_focus_handler(struct window *window,
 		       struct input *device, void *data)
 {
-	struct gears *gears = data;
-	struct rectangle allocation;
-
-	window_get_child_allocation(gears->window, &allocation);
-	resize_handler(window, allocation.width, allocation.height, gears);
+	window_schedule_redraw(window);
 }
 
 static struct gears *
@@ -317,6 +314,7 @@ gears_create(struct display *display)
 	memset(gears, 0, sizeof *gears);
 	gears->d = display;
 	gears->window = window_create(display, width, height);
+	gears->widget = window_add_widget(gears->window, gears);
 	window_set_transparent(gears->window, 0);
 	window_set_title(gears->window, "Wayland Gears");
 
@@ -358,9 +356,10 @@ gears_create(struct display *display)
 	glClearColor(0, 0, 0, 0.92);
 
 	window_set_user_data(gears->window, gears);
-	window_set_resize_handler(gears->window, resize_handler);
-	window_set_redraw_handler(gears->window, redraw_handler);
-	window_set_keyboard_focus_handler(gears->window, keyboard_focus_handler);
+	widget_set_resize_handler(gears->widget, resize_handler);
+	widget_set_redraw_handler(gears->widget, redraw_handler);
+	window_set_keyboard_focus_handler(gears->window,
+					  keyboard_focus_handler);
 
 	frame_callback(gears, NULL, 0);
 

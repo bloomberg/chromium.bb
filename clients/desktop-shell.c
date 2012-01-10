@@ -42,7 +42,6 @@
 struct desktop {
 	struct display *display;
 	struct desktop_shell *shell;
-	const char *background_path;
 	struct unlock_dialog *unlock_dialog;
 	struct task unlock_task;
 	struct wl_list outputs;
@@ -67,6 +66,7 @@ struct panel {
 struct background {
 	struct surface base;
 	struct window *window;
+	struct widget *widget;
 };
 
 struct output {
@@ -168,36 +168,34 @@ panel_launcher_activate(struct panel_launcher *widget)
 }
 
 static void
-panel_draw_launcher(struct panel_launcher *launcher, void *data)
+panel_launcher_redraw_handler(struct widget *widget, void *data)
 {
-	cairo_t *cr = data;
-	int x, y, width, height;
-	double dx, dy;
+	struct panel_launcher *launcher = data;
+	cairo_surface_t *surface;
+	struct rectangle allocation;
+	cairo_t *cr;
 
-	width = cairo_image_surface_get_width(launcher->icon);
-	height = cairo_image_surface_get_height(launcher->icon);
-	x = 0;
-	y = -height / 2;
+	surface = window_get_surface(launcher->panel->window);
+	cr = cairo_create(surface);
+
+	widget_get_allocation(widget, &allocation);
 	if (launcher->pressed) {
-		x++;
-		y++;
+		allocation.x++;
+		allocation.y++;
 	}
 
-	dx = x;
-	dy = y;
-	cairo_user_to_device(cr, &dx, &dy);
-	widget_set_allocation(launcher->widget, dx, dy, width, height);
-
-	cairo_set_source_surface(cr, launcher->icon, x, y);
+	cairo_set_source_surface(cr, launcher->icon,
+				 allocation.x, allocation.y);
 	cairo_paint(cr);
 
 	if (window_get_focus_widget(launcher->panel->window) ==
 	    launcher->widget) {
 		cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 0.4);
-		cairo_mask_surface(cr, launcher->icon, x, y);
+		cairo_mask_surface(cr, launcher->icon,
+				   allocation.x, allocation.y);
 	}
 
-	cairo_translate(cr, width + 10, 0);
+	cairo_destroy(cr);
 }
 
 static void
@@ -211,23 +209,17 @@ set_hex_color(cairo_t *cr, uint32_t color)
 }
 
 static void
-panel_redraw_handler(struct window *window, void *data)
+panel_redraw_handler(struct widget *widget, void *data)
 {
 	cairo_surface_t *surface;
 	cairo_t *cr;
-	struct panel_launcher *launcher;
-	struct panel *panel = window_get_user_data(window);
+	struct panel *panel = data;
 
-	surface = window_get_surface(window);
+	surface = window_get_surface(panel->window);
 	cr = cairo_create(surface);
 	cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
 	set_hex_color(cr, key_panel_color);
 	cairo_paint(cr);
-
-	cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
-	cairo_translate(cr, 10, 32 / 2);
-	wl_list_for_each(launcher, &panel->launcher_list, link)
-		panel_draw_launcher(launcher, cr);
 
 	cairo_destroy(cr);
 	cairo_surface_destroy(surface);
@@ -267,11 +259,29 @@ panel_button_handler(struct widget *widget,
 		     struct input *input, uint32_t time,
 		     int button, int state, void *data)
 {
-	struct window *window = data;
-	struct panel *panel = window_get_user_data(window);
+	struct panel *panel = data;
 
 	if (button == BTN_RIGHT && state)
 		show_menu(panel, input, time);
+}
+
+static void
+panel_resize_handler(struct widget *widget,
+		     int32_t width, int32_t height, void *data)
+{
+	struct panel_launcher *launcher;
+	struct panel *panel = data;
+	int x, y, w, h;
+	
+	x = 10;
+	y = 16;
+	wl_list_for_each(launcher, &panel->launcher_list, link) {
+		w = cairo_image_surface_get_width(launcher->icon);
+		h = cairo_image_surface_get_height(launcher->icon);
+		widget_set_allocation(launcher->widget,
+				      x, y - h / 2, w + 1, h + 1);
+		x += w + 10;
+	}
 }
 
 static void
@@ -281,8 +291,10 @@ panel_configure(void *data,
 		struct window *window,
 		int32_t width, int32_t height)
 {
-	window_set_child_size(window, width, 32);
-	window_schedule_redraw(window);
+	struct surface *surface = window_get_user_data(window);
+	struct panel *panel = container_of(surface, struct panel, base);
+
+	window_schedule_resize(panel->window, width, 32);
 }
 
 static struct panel *
@@ -296,15 +308,16 @@ panel_create(struct display *display)
 	panel->base.configure = panel_configure;
 	panel->window = window_create(display, 0, 0);
 	panel->widget = window_add_widget(panel->window, panel);
+	wl_list_init(&panel->launcher_list);
 
 	window_set_title(panel->window, "panel");
 	window_set_decoration(panel->window, 0);
-	window_set_redraw_handler(panel->window, panel_redraw_handler);
 	window_set_custom(panel->window);
 	window_set_user_data(panel->window, panel);
 
+	widget_set_redraw_handler(panel->widget, panel_redraw_handler);
+	widget_set_resize_handler(panel->widget, panel_resize_handler);
 	widget_set_button_handler(panel->widget, panel_button_handler);
-	wl_list_init(&panel->launcher_list);
 
 	return panel;
 }
@@ -319,7 +332,6 @@ panel_add_launcher(struct panel *panel, const char *icon, const char *path)
 	launcher->icon = cairo_image_surface_create_from_png(icon);
 	launcher->path = strdup(path);
 	launcher->panel = panel;
-
 	wl_list_insert(panel->launcher_list.prev, &launcher->link);
 
 	launcher->widget = window_add_widget(panel->window, launcher);
@@ -329,31 +341,36 @@ panel_add_launcher(struct panel *panel, const char *icon, const char *path)
 				   panel_launcher_leave_handler);
 	widget_set_button_handler(launcher->widget,
 				    panel_launcher_button_handler);
+	widget_set_redraw_handler(launcher->widget,
+				  panel_launcher_redraw_handler);
 }
 
 static void
-background_draw(struct window *window, int width, int height, const char *path)
+background_draw(struct widget *widget, void *data)
 {
+	struct background *background = data;
 	cairo_surface_t *surface, *image;
 	cairo_pattern_t *pattern;
 	cairo_matrix_t matrix;
 	cairo_t *cr;
 	double sx, sy;
+	struct rectangle allocation;
 
-	window_set_child_size(window, width, height);
-	window_create_surface(window);
-	surface = window_get_surface(window);
+	surface = window_get_surface(background->window);
 
 	cr = cairo_create(surface);
 	cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
 	cairo_set_source_rgba(cr, 0.0, 0.0, 0.2, 1.0);
 	cairo_paint(cr);
 
-	if (path) {
-		image = load_jpeg(path);
+	widget_get_allocation(widget, &allocation);
+	if (key_background_image) {
+		image = load_jpeg(key_background_image);
 		pattern = cairo_pattern_create_for_surface(image);
-		sx = (double) cairo_image_surface_get_width(image) / width;
-		sy = (double) cairo_image_surface_get_height(image) / height;
+		sx = (double) cairo_image_surface_get_width(image) /
+			allocation.width;
+		sy = (double) cairo_image_surface_get_height(image) /
+			allocation.height;
 		cairo_matrix_init_scale(&matrix, sx, sy);
 		cairo_pattern_set_matrix(pattern, &matrix);
 		cairo_set_source(cr, pattern);
@@ -364,7 +381,6 @@ background_draw(struct window *window, int width, int height, const char *path)
 
 	cairo_destroy(cr);
 	cairo_surface_destroy(surface);
-	window_flush(window);
 }
 
 static void
@@ -374,14 +390,18 @@ background_configure(void *data,
 		     struct window *window,
 		     int32_t width, int32_t height)
 {
-	struct desktop *desktop = data;
+	struct background *background =
+		(struct background *) window_get_user_data(window);
 
-	background_draw(window, width, height, desktop->background_path);
+	window_set_child_size(background->window, width, height);
+	widget_set_allocation(background->widget, 0, 0, width, height);
+	window_schedule_redraw(background->window);
 }
 
 static void
-unlock_dialog_draw(struct unlock_dialog *dialog)
+unlock_dialog_redraw_handler(struct widget *widget, void *data)
 {
+	struct unlock_dialog *dialog = data;
 	struct rectangle allocation;
 	cairo_t *cr;
 	cairo_surface_t *surface;
@@ -446,14 +466,6 @@ unlock_dialog_button_handler(struct widget *widget,
 }
 
 static void
-unlock_dialog_redraw_handler(struct window *window, void *data)
-{
-	struct unlock_dialog *dialog = data;
-
-	unlock_dialog_draw(dialog);
-}
-
-static void
 unlock_dialog_keyboard_focus_handler(struct window *window,
 				     struct input *device, void *data)
 {
@@ -494,10 +506,11 @@ unlock_dialog_create(struct desktop *desktop)
 	window_set_custom(dialog->window);
 
 	window_set_user_data(dialog->window, dialog);
-	window_set_redraw_handler(dialog->window, unlock_dialog_redraw_handler);
 	window_set_keyboard_focus_handler(dialog->window,
 					  unlock_dialog_keyboard_focus_handler);
 	dialog->button = window_add_widget(dialog->window, NULL);
+	widget_set_redraw_handler(dialog->widget,
+				  unlock_dialog_redraw_handler);
 	widget_set_enter_handler(dialog->button,
 				 unlock_dialog_widget_enter_handler);
 	widget_set_leave_handler(dialog->button,
@@ -508,7 +521,7 @@ unlock_dialog_create(struct desktop *desktop)
 	desktop_shell_set_lock_surface(desktop->shell,
 	       window_get_wl_shell_surface(dialog->window));
 
-	unlock_dialog_draw(dialog);
+	window_schedule_redraw(dialog->window);
 
 	return dialog;
 }
@@ -576,9 +589,11 @@ background_create(struct desktop *desktop)
 
 	background->base.configure = background_configure;
 	background->window = window_create(desktop->display, 0, 0);
+	background->widget = window_add_widget(background->window, background);
 	window_set_decoration(background->window, 0);
 	window_set_custom(background->window);
 	window_set_user_data(background->window, background);
+	widget_set_redraw_handler(background->widget, background_draw);
 
 	return background;
 }
@@ -669,8 +684,6 @@ int main(int argc, char *argv[])
 			  config_sections, ARRAY_LENGTH(config_sections),
 			  &desktop);
 	free(config_file);
-
-	desktop.background_path = key_background_image;
 
 	signal(SIGCHLD, sigchild_handler);
 

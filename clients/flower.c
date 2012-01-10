@@ -104,6 +104,23 @@ draw_stuff(cairo_surface_t *surface, int width, int height)
 	cairo_destroy(cr);
 }
 
+static void
+redraw_handler(struct widget *widget, void *data)
+{
+	struct flower *flower = data;
+	cairo_surface_t *surface;
+
+	surface = window_get_surface(flower->window);
+	if (surface == NULL ||
+	    cairo_surface_status(surface) != CAIRO_STATUS_SUCCESS) {
+		fprintf(stderr, "failed to create cairo egl surface\n");
+		return;
+	}
+
+	draw_stuff(surface, flower->width, flower->height);
+	cairo_surface_destroy(surface);
+}
+
 static int
 motion_handler(struct widget *widget, struct input *input,
 	       uint32_t time, int32_t x, int32_t y, void *data)
@@ -124,7 +141,6 @@ button_handler(struct widget *widget,
 
 int main(int argc, char *argv[])
 {
-	cairo_surface_t *s;
 	struct flower flower;
 	struct display *d;
 	struct timeval tv;
@@ -144,23 +160,14 @@ int main(int argc, char *argv[])
 	flower.window = window_create(d, flower.width, flower.height);
 	flower.widget = window_add_widget(flower.window, &flower);
 
-	window_set_title(flower.window, "flower");
 	window_set_decoration(flower.window, 0);
-	window_create_surface(flower.window);
-	s = window_get_surface(flower.window);
-	if (s == NULL || cairo_surface_status (s) != CAIRO_STATUS_SUCCESS) {
-		fprintf(stderr, "failed to create cairo egl surface\n");
-		return -1;
-	}
 
-	draw_stuff(s, flower.width, flower.height);
-	cairo_surface_flush(s);
-	cairo_surface_destroy(s);
-	window_flush(flower.window);
-
+	widget_set_redraw_handler(flower.widget, redraw_handler);
 	widget_set_motion_handler(flower.widget, motion_handler);
 	widget_set_button_handler(flower.widget, button_handler);
-	window_set_user_data(flower.window, &flower);
+
+	window_schedule_redraw(flower.window);
+
 	display_run(d);
 
 	return 0;

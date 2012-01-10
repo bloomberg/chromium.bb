@@ -156,11 +156,6 @@ enum pointer_type {
 	POINTER_HAND1,
 };
 
-typedef void (*window_resize_handler_t)(struct window *window,
-					int32_t width, int32_t height,
-					void *data);
-typedef void (*window_redraw_handler_t)(struct window *window, void *data);
-
 typedef void (*window_key_handler_t)(struct window *window, struct input *input,
 				     uint32_t time, uint32_t key, uint32_t unicode,
 				     uint32_t state, void *data);
@@ -179,6 +174,11 @@ typedef void (*window_drop_handler_t)(struct window *window,
 				      int32_t x, int32_t y, void *data);
 
 typedef void (*window_close_handler_t)(struct window *window, void *data);
+
+typedef void (*widget_resize_handler_t)(struct widget *widget,
+					int32_t width, int32_t height,
+					void *data);
+typedef void (*widget_redraw_handler_t)(struct widget *widget, void *data);
 
 typedef int (*widget_enter_handler_t)(struct widget *widget,
 				      struct input *input, uint32_t time,
@@ -250,6 +250,8 @@ void
 window_set_child_size(struct window *window, int32_t width, int32_t height);
 void
 window_schedule_redraw(struct window *window);
+void
+window_schedule_resize(struct window *window, int width, int height);
 
 void
 window_damage(struct window *window, int32_t x, int32_t y,
@@ -299,15 +301,7 @@ void *
 window_get_user_data(struct window *window);
 
 void
-window_set_redraw_handler(struct window *window,
-			  window_redraw_handler_t handler);
-
-void
 window_set_decoration(struct window *window, int decoration);
-
-void
-window_set_resize_handler(struct window *window,
-			  window_resize_handler_t handler);
 
 void
 window_set_key_handler(struct window *window,
@@ -345,6 +339,12 @@ widget_set_allocation(struct widget *widget,
 void *
 widget_get_user_data(struct widget *widget);
 
+void
+widget_set_redraw_handler(struct widget *widget,
+			  widget_redraw_handler_t handler);
+void
+widget_set_resize_handler(struct widget *widget,
+			  widget_resize_handler_t handler);
 void
 widget_set_enter_handler(struct widget *widget,
 			 widget_enter_handler_t handler);

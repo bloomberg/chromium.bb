@@ -90,18 +90,22 @@ struct eventdemo {
 };
 
 /**
- * \brief Redraws the window
+ * \brief CALLBACK function, Wayland requests the window to redraw.
+ * \param window window to be redrawn
+ * \param data user data associated to the window
  *
  * Draws a red rectangle as demonstration of per-window data.
  */
 static void
-eventdemo_draw(struct eventdemo *e) {
-	if (log_redraw)
-		printf("redraw\n");
-
+redraw_handler(struct widget *widget, void *data)
+{
+	struct eventdemo *e = data;
 	cairo_surface_t *surface;
 	cairo_t *cr;
 	struct rectangle rect;
+
+	if (log_redraw)
+		printf("redraw\n");
 
 	window_get_child_allocation(e->window, &rect);
 	surface = window_get_surface(e->window);
@@ -122,18 +126,6 @@ eventdemo_draw(struct eventdemo *e) {
 }
 
 /**
- * \brief CALLBACK function, Wayland requests the window to redraw.
- * \param window window to be redrawn
- * \param data user data associated to the window
- */
-static void
-redraw_handler(struct window *window, void *data)
-{
-	struct eventdemo *e = data;
-	eventdemo_draw(e);
-}
-
-/**
  * \brief CALLBACK function, Wayland requests the window to resize.
  * \param window window to be resized
  * \param width desired width
@@ -142,7 +134,7 @@ redraw_handler(struct window *window, void *data)
  */
 
 static void
-resize_handler(struct window *window,
+resize_handler(struct widget *widget,
 	       int32_t width, int32_t height, void *data)
 {
 	struct eventdemo *e = data;
@@ -159,9 +151,6 @@ resize_handler(struct window *window,
 
 	/* set the new window dimensions */
 	window_set_child_size(e->window, width, height);
-
-	/* inform Wayland that the window needs to be redrawn */
-	window_schedule_redraw(e->window);
 }
 
 /**
@@ -301,10 +290,10 @@ eventdemo_create(struct display *d)
 	window_set_user_data(e->window, e);
 
 	/* Set the callback redraw handler for the window */
-	window_set_redraw_handler(e->window, redraw_handler);
+	widget_set_redraw_handler(e->widget, redraw_handler);
 
 	/* Set the callback resize handler for the window */
-	window_set_resize_handler(e->window, resize_handler);
+	widget_set_resize_handler(e->widget, resize_handler);
 
 	/* Set the callback focus handler for the window */
 	window_set_keyboard_focus_handler(e->window,

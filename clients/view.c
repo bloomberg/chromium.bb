@@ -111,7 +111,7 @@ view_draw(struct view *view)
 }
 
 static void
-redraw_handler(struct window *window, void *data)
+redraw_handler(struct widget *widget, void *data)
 {
 	struct view *view = data;
 
@@ -119,7 +119,7 @@ redraw_handler(struct window *window, void *data)
 }
 
 static void
-resize_handler(struct window *window,
+resize_handler(struct widget *widget,
 	       int32_t width, int32_t height, void *data)
 {
 	struct view *view = data;
@@ -248,13 +248,13 @@ view_create(struct display *display,
 	view->display = display;
 
 	window_set_user_data(view->window, view);
-	window_set_redraw_handler(view->window, redraw_handler);
-	window_set_resize_handler(view->window, resize_handler);
 	window_set_key_handler(view->window, key_handler);
 	window_set_keyboard_focus_handler(view->window,
 					  keyboard_focus_handler);
-	widget_set_button_handler(window_get_widget(view->window),
-				  button_handler);
+	widget_set_button_handler(view->widget, button_handler);
+	widget_set_resize_handler(view->widget, resize_handler);
+	widget_set_redraw_handler(view->widget, redraw_handler);
+
 	view->page = 0;
 
 	view->fullscreen = fullscreen;

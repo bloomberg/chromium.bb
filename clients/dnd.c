@@ -160,8 +160,9 @@ item_create(struct display *display, int x, int y, int seed)
 }
 
 static void
-dnd_draw(struct dnd *dnd)
+dnd_redraw_handler(struct widget *widget, void *data)
 {
+	struct dnd *dnd = data;
 	struct rectangle allocation;
 	cairo_t *cr;
 	cairo_surface_t *surface;
@@ -189,14 +190,6 @@ dnd_draw(struct dnd *dnd)
 
 	cairo_destroy(cr);
 	cairo_surface_destroy(surface);
-}
-
-static void
-redraw_handler(struct window *window, void *data)
-{
-	struct dnd *dnd = data;
-
-	dnd_draw(dnd);
 }
 
 static void
@@ -530,12 +523,12 @@ dnd_create(struct display *display)
 	}
 
 	window_set_user_data(dnd->window, dnd);
-	window_set_redraw_handler(dnd->window, redraw_handler);
 	window_set_keyboard_focus_handler(dnd->window,
 					  keyboard_focus_handler);
 	window_set_data_handler(dnd->window, dnd_data_handler);
 	window_set_drop_handler(dnd->window, dnd_drop_handler);
 
+	widget_set_redraw_handler(dnd->widget, dnd_redraw_handler);
 	widget_set_enter_handler(dnd->widget, dnd_enter_handler);
 	widget_set_motion_handler(dnd->widget, dnd_motion_handler);
 	widget_set_button_handler(dnd->widget, dnd_button_handler);
@@ -544,7 +537,7 @@ dnd_create(struct display *display)
 	height = 4 * (item_height + item_padding) + item_padding;
 	window_set_child_size(dnd->window, width, height);
 
-	dnd_draw(dnd);
+	window_schedule_redraw(dnd->window);
 
 	return dnd;
 }

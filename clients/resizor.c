@@ -98,8 +98,9 @@ frame_callback(void *data, struct wl_callback *callback, uint32_t time)
 }
 
 static void
-resizor_draw(struct resizor *resizor)
+redraw_handler(struct widget *widget, void *data)
 {
+	struct resizor *resizor = data;
 	cairo_surface_t *surface;
 	cairo_t *cr;
 	struct rectangle allocation;
@@ -120,14 +121,6 @@ resizor_draw(struct resizor *resizor)
 	cairo_destroy(cr);
 
 	cairo_surface_destroy(surface);
-}
-
-static void
-redraw_handler(struct window *window, void *data)
-{
-	struct resizor *resizor = data;
-
-	resizor_draw(resizor);
 }
 
 static void
@@ -219,7 +212,7 @@ resizor_create(struct display *display)
 
 	window_set_key_handler(resizor->window, key_handler);
 	window_set_user_data(resizor->window, resizor);
-	window_set_redraw_handler(resizor->window, redraw_handler);
+	widget_set_redraw_handler(resizor->widget, redraw_handler);
 	window_set_keyboard_focus_handler(resizor->window,
 					  keyboard_focus_handler);
 

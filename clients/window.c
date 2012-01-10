@@ -115,6 +115,8 @@ struct window {
 	int resize_edges;
 	int redraw_scheduled;
 	struct task redraw_task;
+	int resize_scheduled;
+	struct task resize_task;
 	int minimum_width, minimum_height;
 	int margin;
 	int type;
@@ -126,8 +128,6 @@ struct window {
 
 	cairo_surface_t *cairo_surface, *pending_surface;
 
-	window_resize_handler_t resize_handler;
-	window_redraw_handler_t redraw_handler;
 	window_key_handler_t key_handler;
 	window_keyboard_focus_handler_t keyboard_focus_handler;
 	window_data_handler_t data_handler;
@@ -148,6 +148,8 @@ struct widget {
 	struct window *window;
 	struct wl_list link;
 	struct rectangle allocation;
+	widget_resize_handler_t resize_handler;
+	widget_redraw_handler_t redraw_handler;
 	widget_enter_handler_t enter_handler;
 	widget_leave_handler_t leave_handler;
 	widget_motion_handler_t motion_handler;
@@ -1009,6 +1011,8 @@ window_destroy(struct window *window)
 
 	if (window->redraw_scheduled)
 		wl_list_remove(&window->redraw_task.link);
+	if (window->resize_scheduled)
+		wl_list_remove(&window->resize_task.link);
 
 	wl_list_for_each(input, &display->input_list, link) {
 		if (input->pointer_focus == window)
@@ -1098,6 +1102,20 @@ void *
 widget_get_user_data(struct widget *widget)
 {
 	return widget->user_data;
+}
+
+void
+widget_set_resize_handler(struct widget *widget,
+			  widget_resize_handler_t handler)
+{
+	widget->resize_handler = handler;
+}
+
+void
+widget_set_redraw_handler(struct widget *widget,
+			  widget_redraw_handler_t handler)
+{
+	widget->redraw_handler = handler;
 }
 
 void
@@ -1858,39 +1876,75 @@ window_move(struct window *window, struct input *input, uint32_t time)
 }
 
 static void
+window_resize(struct window *window, int32_t width, int32_t height)
+{
+	struct widget *widget;
+	struct rectangle allocation;
+
+	if (window->decoration) {
+		allocation.x = 20;
+		allocation.y = 60;
+		allocation.width = width - 20 - window->margin * 2;
+		allocation.height = height - 60 - window->margin * 2;
+	} else {
+		allocation.x = 0;
+		allocation.y = 0;
+		allocation.width = width;
+		allocation.height = height;
+	}
+
+	window->allocation.width = width;
+	window->allocation.height = height;
+
+	wl_list_for_each(widget, &window->widget_list, link) {
+		if (widget->resize_handler)
+			widget->resize_handler(widget,
+					       allocation.width,
+					       allocation.height,
+					       widget->user_data);
+		else
+			widget->allocation = allocation;
+	}
+
+	window_schedule_redraw(window);
+}
+
+static void
+idle_resize(struct task *task, uint32_t events)
+{
+	struct window *window =
+		container_of(task, struct window, resize_task);
+
+	window_resize(window,
+		      window->allocation.width, window->allocation.height);
+	window->resize_scheduled = 0;
+}
+
+void
+window_schedule_resize(struct window *window, int width, int height)
+{
+	if (!window->resize_scheduled) {
+		window->allocation.width = width;
+		window->allocation.height = height;
+		window->resize_task.run = idle_resize;
+		display_defer(window->display, &window->resize_task);
+		window->resize_scheduled = 1;
+	}
+}
+
+static void
 handle_configure(void *data, struct wl_shell_surface *shell_surface,
 		 uint32_t time, uint32_t edges,
 		 int32_t width, int32_t height)
 {
 	struct window *window = data;
-	struct widget *widget;
-	int32_t child_width, child_height;
 
-	/* FIXME: this is probably the wrong place to check for width
-	 * or height <= 0, but it prevents the compositor from crashing
-	 */
 	if (width <= 0 || height <= 0)
 		return;
 
 	window->resize_edges = edges;
 
-	if (window->resize_handler) {
-		child_width = width - 20 - window->margin * 2;
-		child_height = height - 60 - window->margin * 2;
-
-		(*window->resize_handler)(window,
-					  child_width, child_height,
-					  window->user_data);
-	} else {
-		window->allocation.width = width;
-		window->allocation.height = height;
-
-		if (window->redraw_handler)
-			window_schedule_redraw(window);
-	}
-
-	wl_list_for_each(widget, &window->widget_list, link)
-		widget->allocation = window->allocation;
+	window_resize(window, width, height);
 }
 
 static void
@@ -1954,12 +2008,14 @@ idle_redraw(struct task *task, uint32_t events)
 {
 	struct window *window =
 		container_of(task, struct window, redraw_task);
+	struct widget *widget;
 
 	window_create_surface(window);
 	if (window->decoration)
 		window_draw_decorations(window);
 
-	window->redraw_handler(window, window->user_data);
+	wl_list_for_each_reverse(widget, &window->widget_list, link)
+		widget->redraw_handler(widget, widget->user_data);
 
 	window_flush(window);
 
@@ -2006,7 +2062,7 @@ window_set_fullscreen(struct window *window, int fullscreen)
 		window->decoration = 1;
 	}
 
-	(*window->resize_handler)(window, width, height, window->user_data);
+	window_resize(window, width, height);
 }
 
 void
@@ -2025,20 +2081,6 @@ void *
 window_get_user_data(struct window *window)
 {
 	return window->user_data;
-}
-
-void
-window_set_resize_handler(struct window *window,
-			  window_resize_handler_t handler)
-{
-	window->resize_handler = handler;
-}
-
-void
-window_set_redraw_handler(struct window *window,
-			  window_redraw_handler_t handler)
-{
-	window->redraw_handler = handler;
 }
 
 void
@@ -2246,12 +2288,13 @@ menu_button_handler(struct widget *widget,
 }
 
 static void
-menu_redraw_handler(struct window *window, void *data)
+menu_redraw_handler(struct widget *widget, void *data)
 {
 	cairo_t *cr;
 	const int32_t r = 3, margin = 3;
 	struct menu *menu = data;
 	int32_t width, height, i;
+	struct window *window = widget->window;
 
 	cr = cairo_create(window->cairo_surface);
 	cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
@@ -2319,9 +2362,7 @@ window_create_menu(struct display *display,
 				   window->parent->shell_surface,
 				   window->x, window->y, 0);
 
-	window_set_redraw_handler(window, menu_redraw_handler);
-	window_set_user_data(window, menu);
-
+	widget_set_redraw_handler(menu->widget, menu_redraw_handler);
 	widget_set_enter_handler(menu->widget, menu_enter_handler);
 	widget_set_leave_handler(menu->widget, menu_leave_handler);
 	widget_set_motion_handler(menu->widget, menu_motion_handler);

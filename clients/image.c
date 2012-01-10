@@ -39,6 +39,7 @@
 
 struct image {
 	struct window *window;
+	struct widget *widget;
 	struct display *display;
 	gchar *filename;
 };
@@ -133,8 +134,9 @@ set_source_pixbuf(cairo_t         *cr,
 }
 
 static void
-image_draw(struct image *image)
+redraw_handler(struct widget *widget, void *data)
 {
+	struct image *image = data;
 	struct rectangle allocation;
 	GdkPixbuf *pb;
 	cairo_t *cr;
@@ -177,14 +179,6 @@ image_draw(struct image *image)
 }
 
 static void
-redraw_handler(struct window *window, void *data)
-{
-	struct image *image = data;
-
-	image_draw(image);
-}
-
-static void
 keyboard_focus_handler(struct window *window,
 		       struct input *device, void *data)
 {
@@ -212,11 +206,12 @@ image_create(struct display *display, const char *filename)
 	image->filename = g_strdup(filename);
 
 	image->window = window_create(display, 500, 400);
+	image->widget = window_add_widget(image->window, image);
 	window_set_title(image->window, title);
 	image->display = display;
 
 	window_set_user_data(image->window, image);
-	window_set_redraw_handler(image->window, redraw_handler);
+	widget_set_redraw_handler(image->widget, redraw_handler);
 	window_set_keyboard_focus_handler(image->window,
 					  keyboard_focus_handler);
 
