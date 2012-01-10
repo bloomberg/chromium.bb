@@ -1,10 +1,11 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/test/ui/ui_layout_test.h"
 
 #include "base/file_util.h"
+#include "base/logging.h"
 #include "base/path_service.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
@@ -50,6 +51,9 @@ void UILayoutTest::InitializeForLayoutTest(const FilePath& test_parent_dir,
                                            int port) {
   FilePath src_dir;
   ASSERT_TRUE(PathService::Get(chrome::DIR_LAYOUT_TESTS, &src_dir));
+  // TODO(toyoshim): Remove following logging after a bug investigation.
+  // http://crbug.com/107836 .
+  LOG(INFO) << "Assume LayoutTests in " << src_dir.MaybeAsASCII();
   layout_test_dir_ = src_dir.Append(test_parent_dir);
   layout_test_dir_ = layout_test_dir_.Append(test_case_dir);
   ASSERT_TRUE(file_util::DirectoryExists(layout_test_dir_));
@@ -133,6 +137,9 @@ void UILayoutTest::AddResourceForLayoutTest(const FilePath& parent_dir,
                                             const FilePath& resource_name) {
   FilePath source;
   ASSERT_TRUE(PathService::Get(chrome::DIR_LAYOUT_TESTS, &source));
+  // TODO(toyoshim): Remove following logging after a bug investigation.
+  // http://crbug.com/107836 .
+  LOG(INFO) << "Assume LayoutTests in " << parent_dir.MaybeAsASCII();
   source = source.Append(parent_dir);
   source = source.Append(resource_name);
 
