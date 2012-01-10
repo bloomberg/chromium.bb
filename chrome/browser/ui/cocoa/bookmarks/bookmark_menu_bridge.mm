@@ -226,7 +226,7 @@ void BookmarkMenuBridge::AddNodeToMenu(const BookmarkNode* node, NSMenu* menu,
     NSString* empty_string = l10n_util::GetNSString(IDS_MENU_EMPTY_SUBMENU);
     NSMenuItem* item =
         [[[NSMenuItem alloc] initWithTitle:empty_string
-                                    action:@selector(openBookmarkMenuItem:)
+                                    action:nil
                              keyEquivalent:@""] autorelease];
     [menu addItem:item];
   } else for (int i = 0; i < child_count; i++) {
@@ -234,7 +234,7 @@ void BookmarkMenuBridge::AddNodeToMenu(const BookmarkNode* node, NSMenu* menu,
     NSString* title = [BookmarkMenuCocoaController menuTitleForNode:child];
     NSMenuItem* item =
         [[[NSMenuItem alloc] initWithTitle:title
-                                    action:@selector(openBookmarkMenuItem:)
+                                    action:nil
                              keyEquivalent:@""] autorelease];
     [menu addItem:item];
     bookmark_nodes_[child] = item;
@@ -297,6 +297,7 @@ void BookmarkMenuBridge::ConfigureMenuItem(const BookmarkNode* node,
   if (set_title)
     [item setTitle:[BookmarkMenuCocoaController menuTitleForNode:node]];
   [item setTarget:controller_];
+  [item setAction:@selector(openBookmarkMenuItem:)];
   [item setTag:node->id()];
   if (node->is_url())
     [item setToolTip:[BookmarkMenuCocoaController tooltipForNode:node]];
