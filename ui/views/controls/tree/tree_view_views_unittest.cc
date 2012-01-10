@@ -246,19 +246,19 @@ TEST_F(TreeViewViewsTest, TreeNodesRemoved) {
   // effect the tree.
   tree_.Expand(GetNodeByTitle("b"));
   tree_.Collapse(GetNodeByTitle("b"));
-  model_.Remove(GetNodeByTitle("b1")->parent(), GetNodeByTitle("b1"));
+  delete model_.Remove(GetNodeByTitle("b1")->parent(), GetNodeByTitle("b1"));
   EXPECT_EQ("root [a b c]", TreeViewContentsAsString());
   EXPECT_EQ("root", GetSelectedNodeTitle());
   EXPECT_EQ(4, GetRowCount());
 
   // Remove 'b'.
-  model_.Remove(GetNodeByTitle("b")->parent(), GetNodeByTitle("b"));
+  delete model_.Remove(GetNodeByTitle("b")->parent(), GetNodeByTitle("b"));
   EXPECT_EQ("root [a c]", TreeViewContentsAsString());
   EXPECT_EQ("root", GetSelectedNodeTitle());
   EXPECT_EQ(3, GetRowCount());
 
   // Remove 'c11', shouldn't visually change anything.
-  model_.Remove(GetNodeByTitle("c11")->parent(), GetNodeByTitle("c11"));
+  delete model_.Remove(GetNodeByTitle("c11")->parent(), GetNodeByTitle("c11"));
   EXPECT_EQ("root [a c]", TreeViewContentsAsString());
   EXPECT_EQ("root", GetSelectedNodeTitle());
   EXPECT_EQ(3, GetRowCount());
@@ -266,7 +266,7 @@ TEST_F(TreeViewViewsTest, TreeNodesRemoved) {
   // Select 'c1', remove 'c' and make sure selection changes.
   tree_.SetSelectedNode(GetNodeByTitle("c1"));
   EXPECT_EQ("c1", GetSelectedNodeTitle());
-  model_.Remove(GetNodeByTitle("c")->parent(), GetNodeByTitle("c"));
+  delete model_.Remove(GetNodeByTitle("c")->parent(), GetNodeByTitle("c"));
   EXPECT_EQ("root [a]", TreeViewContentsAsString());
   EXPECT_EQ("root", GetSelectedNodeTitle());
   EXPECT_EQ(2, GetRowCount());
@@ -276,7 +276,7 @@ TEST_F(TreeViewViewsTest, TreeNodesRemoved) {
   // selection should change to 'a'.
   Add(GetNodeByTitle("root"), 1, "b");
   tree_.SetSelectedNode(GetNodeByTitle("b"));
-  model_.Remove(GetNodeByTitle("b")->parent(), GetNodeByTitle("b"));
+  delete model_.Remove(GetNodeByTitle("b")->parent(), GetNodeByTitle("b"));
   EXPECT_EQ("root [a]", TreeViewContentsAsString());
   EXPECT_EQ("a", GetSelectedNodeTitle());
   EXPECT_EQ(1, GetRowCount());
