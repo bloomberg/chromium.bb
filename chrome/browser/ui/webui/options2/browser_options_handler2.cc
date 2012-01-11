@@ -118,6 +118,9 @@ void BrowserOptionsHandler::GetLocalizedValues(
     { "defaultBrowserGroupName", IDS_OPTIONS_DEFAULTBROWSER_GROUP_NAME },
     { "defaultSearchGroupName", IDS_OPTIONS_DEFAULTSEARCH_GROUP_NAME },
     { "defaultSearchManageEngines", IDS_OPTIONS_DEFAULTSEARCH_MANAGE_ENGINES },
+    { "homePageTitle", IDS_OPTIONS2_HOMEPAGE_TITLE },
+    { "homepageUseNewTab", IDS_OPTIONS_HOMEPAGE_USE_NEWTAB },
+    { "homepageUseURL", IDS_OPTIONS_HOMEPAGE_USE_URL },
     { "instantConfirmMessage", IDS_INSTANT_OPT_IN_MESSAGE },
     { "instantConfirmTitle", IDS_INSTANT_OPT_IN_TITLE },
     { "importData", IDS_OPTIONS_IMPORT_DATA_BUTTON },
@@ -141,8 +144,8 @@ void BrowserOptionsHandler::GetLocalizedValues(
     { "toolbarShowBookmarksBar", IDS_OPTIONS_TOOLBAR_SHOW_BOOKMARKS_BAR },
     { "toolbarShowHomeButton", IDS_OPTIONS_TOOLBAR_SHOW_HOME_BUTTON },
 #if defined(TOOLKIT_GTK)
-    { "showWindowDecorations", IDS_SHOW_WINDOW_DECORATIONS_RADIO },
     { "hideWindowDecorations", IDS_HIDE_WINDOW_DECORATIONS_RADIO },
+    { "showWindowDecorations", IDS_SHOW_WINDOW_DECORATIONS_RADIO },
     { "themesGTKButton", IDS_THEMES_GTK_BUTTON },
     { "themesSetClassic", IDS_THEMES_SET_CLASSIC },
 #else
@@ -362,6 +365,7 @@ void BrowserOptionsHandler::Initialize() {
   UpdateDefaultBrowserState();
 
   pref_change_registrar_.Init(profile->GetPrefs());
+  pref_change_registrar_.Add(prefs::kHomePageIsNewTabPage, this);
   pref_change_registrar_.Add(prefs::kHomePage, this);
 
   registrar_.Add(this, chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED,
@@ -600,7 +604,8 @@ void BrowserOptionsHandler::Observe(
     std::string* pref = content::Details<std::string>(details).ptr();
     if (*pref == prefs::kDefaultBrowserSettingEnabled) {
       UpdateDefaultBrowserState();
-    } else if (*pref == prefs::kHomePage) {
+    } else if (*pref == prefs::kHomePageIsNewTabPage ||
+               *pref == prefs::kHomePage) {
       UpdateHomePageLabel();
     } else {
       NOTREACHED();

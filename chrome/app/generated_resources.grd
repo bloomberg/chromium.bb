@@ -8103,7 +8103,10 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
       </if>
 
       <if expr="not pp_ifdef('use_titlecase')">
-        <message name="IDS_OPTIONS_HOMEPAGE_GROUP_NAME" desc="The title of the home pages group">
+        <message name="IDS_OPTIONS_HOMEPAGE_GROUP_NAME" desc="The title of the home page group">
+          Home page
+        </message>
+        <message name="IDS_OPTIONS2_HOMEPAGE_TITLE" desc="The title of the home page overlay">
           Home page
         </message>
         <message name="IDS_OPTIONS_TOOLBAR_GROUP_NAME" desc="The title of the toolbar group">
@@ -8114,7 +8117,10 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
         </message>
       </if>
       <if expr="pp_ifdef('use_titlecase')">
-        <message name="IDS_OPTIONS_HOMEPAGE_GROUP_NAME" desc="In Title Case: The title of the home pages group">
+        <message name="IDS_OPTIONS_HOMEPAGE_GROUP_NAME" desc="In Title Case: The title of the home page group">
+          Home Page
+        </message>
+        <message name="IDS_OPTIONS2_HOMEPAGE_TITLE" desc="In Title Case: The title of the home page overlay">
           Home Page
         </message>
         <message name="IDS_OPTIONS_TOOLBAR_GROUP_NAME" desc="In Title Case: The title of the toolbar group">

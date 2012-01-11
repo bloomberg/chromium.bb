@@ -1,6 +1,29 @@
 <div id="home-page-overlay" class="page" hidden>
   <h1 i18n-content="homePageTitle"></h1>
   <div class="content-area">
+    <div class="radio">
+      <label>
+        <input id="homepage-use-ntp" type="radio" name="homepage" value="true"
+            metric="Options_Homepage_IsNewTabPage" pref="homepage_is_newtabpage"
+            controlled-by="recommended">
+        <span i18n-content="homepageUseNewTab">Use the New Tab page</span>
+      </label>
+    </div>
+    <div id="customHomePageGroup">
+      <div class="radio">
+        <label>
+          <input id="homepage-use-url" type="radio" name="homepage"
+              value="false" metric="Options_Homepage_IsNewTabPage"
+              pref="homepage_is_newtabpage" controlled-by="recommended">
+          <span i18n-content="homepageUseURL">Open this page:</span>
+        </label>
+      </div>
+      <div>
+        <input id="homepageURL" type="url" class="weakrtl favicon-cell"
+            data-type="url" pref="homepage" controlled-by="recommended"
+            disabled>
+      </div>
+    </div>
   </div>
   <div class="action-area">
     <div class="button-strip">

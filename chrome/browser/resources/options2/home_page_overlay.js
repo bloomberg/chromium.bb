@@ -28,13 +28,36 @@ cr.define('options', function() {
       OptionsPage.prototype.initializePage.call(this);
 
       var self = this;
-      $('home-page-confirm').onclick = function(event) {
-        self.handleCancel_();
-      };
+      $('homepage-use-ntp').onchange = this.updateHomePageInput_.bind(this);
+      $('homepage-use-url').onchange = this.updateHomePageInput_.bind(this);
+      $('home-page-confirm').onclick = this.handleCancel_.bind(this);
+      $('home-page-cancel').onclick = this.handleCancel_.bind(this);
 
-      $('home-page-cancel').onclick = function(event) {
-        self.handleCancel_();
-      };
+      $('homepageURL').addEventListener('keydown', function(event) {
+        // Focus the 'OK' button when the user hits enter since people expect
+        // feedback indicating that they are done editing.
+        if (event.keyIdentifier == 'Enter')
+          $('home-page-confirm').focus();
+      });
+
+      // TODO(jhawkins): Refactor BrowserOptions.autocompleteList and use it
+      // here.
+    },
+
+    didShowPage: function() {
+      // Set initial state.
+      this.updateHomePageInput_();
+    },
+
+    /**
+     * Updates the state of the homepage text input. The input is enabled only
+     * if the |homepageUseURLBUtton| radio is checked.
+     * @private
+     */
+    updateHomePageInput_: function() {
+      var homepageInput = $('homepageURL');
+      var homepageUseURL = $('homepage-use-url');
+      homepageInput.disabled = !homepageUseURL.checked;
     },
 
     /**
@@ -44,7 +67,6 @@ cr.define('options', function() {
     handleCancel_: function() {
       OptionsPage.closeOverlay();
     },
-
   };
 
   // Export

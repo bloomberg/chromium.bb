@@ -109,7 +109,6 @@ cr.define('options', function() {
       // current list, do nothing.
       if (list.targetInput && list.selectedItem &&
           list.selectedItem['url'] == list.targetInput.value) {
-        console.log('value selected from current list')
         return;
       }
       list.suggestions = suggestions;
