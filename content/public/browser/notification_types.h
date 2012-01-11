@@ -291,8 +291,8 @@ enum NotificationType {
 
   // This is sent to notify that the RenderViewHost displayed in a
   // TabContents has changed.  Source is the NavigationController for which the
-  // change happened, details is the previous RenderViewHost (can be NULL when
-  // the first RenderViewHost is set).
+  // change happened, details is a
+  // std::pair::<old RenderViewHost, new RenderViewHost>).
   NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
 
   // Indicates that the render view host has received an accessibility tree

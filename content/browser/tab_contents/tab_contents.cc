@@ -297,6 +297,10 @@ NavigationControllerImpl& TabContents::GetControllerImpl() {
   return controller_;
 }
 
+RenderViewHostManager* TabContents::GetRenderManagerForTesting() {
+  return &render_manager_;
+}
+
 bool TabContents::OnMessageReceived(const IPC::Message& message) {
   if (GetWebUI() && GetWebUI()->OnMessageReceived(message))
     return true;
@@ -633,10 +637,6 @@ bool TabContents::NeedToFireBeforeUnload() {
   return WillNotifyDisconnection() &&
       !ShowingInterstitialPage() &&
       !GetRenderViewHost()->SuddenTerminationAllowed();
-}
-
-RenderViewHostManager* TabContents::GetRenderManagerForTesting() {
-  return &render_manager_;
 }
 
 void TabContents::Stop() {

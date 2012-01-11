@@ -36,6 +36,7 @@ include_rules = [
   "-content/browser/notification_service_impl.h",
   "-content/browser/tab_contents/navigation_controller_impl.h",
   "-content/browser/tab_contents/navigation_entry_impl.h",
+  "-content/browser/tab_contents/render_view_host_manager.h",
   "-content/browser/plugin_service_impl.h",
   "-content/browser/worker_service_impl.h",
 

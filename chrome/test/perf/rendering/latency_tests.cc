@@ -22,7 +22,6 @@
 #include "chrome/test/perf/browser_perf_test.h"
 #include "chrome/test/perf/perf_test.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/tab_contents/render_view_host_manager.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
@@ -541,7 +540,7 @@ void LatencyTest::GetMeanFrameTimeMicros(int* frame_time) const {
 
 void LatencyTest::SendInput() {
   RenderViewHost* rvh = browser()->GetSelectedTabContentsWrapper()->
-      web_contents()->GetRenderManagerForTesting()->current_host();
+      web_contents()->GetRenderViewHost();
   WebKit::WebMouseEvent mouse_event;
   mouse_event.movementX = 1;
   mouse_x_ += mouse_event.movementX;

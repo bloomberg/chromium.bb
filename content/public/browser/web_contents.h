@@ -19,7 +19,6 @@
 
 class InterstitialPage;
 class RenderViewHost;
-class RenderViewHostManager;
 class RenderWidgetHostView;
 class SessionStorageNamespace;
 class SiteInstance;
@@ -200,9 +199,6 @@ class WebContents : public PageNavigator {
   // before unload listener is executed and allows the user to exit, then this
   // returns false.
   virtual bool NeedToFireBeforeUnload() = 0;
-
-  // Expose the render manager for testing.
-  virtual RenderViewHostManager* GetRenderManagerForTesting() = 0;
 
   // Commands ------------------------------------------------------------------
 

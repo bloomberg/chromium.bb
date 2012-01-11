@@ -115,6 +115,9 @@ class CONTENT_EXPORT TabContents
   // Like GetController from WebContents, but returns the concrete object.
   NavigationControllerImpl& GetControllerImpl();
 
+  // Expose the render manager for testing.
+  RenderViewHostManager* GetRenderManagerForTesting();
+
   // content::WebContents ------------------------------------------------------
   virtual const base::PropertyBag* GetPropertyBag() const OVERRIDE;
   virtual base::PropertyBag* GetPropertyBag() OVERRIDE;
@@ -158,7 +161,6 @@ class CONTENT_EXPORT TabContents
   virtual void ShowContents() OVERRIDE;
   virtual void HideContents() OVERRIDE;
   virtual bool NeedToFireBeforeUnload() OVERRIDE;
-  virtual RenderViewHostManager* GetRenderManagerForTesting() OVERRIDE;
   virtual void Stop() OVERRIDE;
   virtual content::WebContents* Clone() OVERRIDE;
   virtual void ShowPageInfo(const GURL& url,

@@ -13,7 +13,6 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/browser/tab_contents/render_view_host_manager.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
@@ -80,9 +79,8 @@ void BrowserWithTestWindowTest::CommitPendingLoad(
   TestRenderViewHost* old_rvh =
       TestRenderViewHostForTab(controller->GetWebContents());
 
-  TestRenderViewHost* pending_rvh = static_cast<TestRenderViewHost*>(
-      controller->GetWebContents()->GetRenderManagerForTesting()->
-      pending_render_view_host());
+  TestRenderViewHost* pending_rvh = TestRenderViewHost::GetPendingForController(
+      controller);
   if (pending_rvh) {
     // Simulate the ShouldClose_ACK that is received from the current renderer
     // for a cross-site navigation.

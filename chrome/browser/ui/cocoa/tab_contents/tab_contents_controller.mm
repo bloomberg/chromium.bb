@@ -4,10 +4,11 @@
 
 #import "chrome/browser/ui/cocoa/tab_contents/tab_contents_controller.h"
 
+#include <utility>
+
 #include "base/memory/scoped_nsobject.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
-#include "content/browser/tab_contents/render_view_host_manager.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -55,10 +56,11 @@ void TabContentsNotificationBridge::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   if (type == content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED) {
-    RenderViewHostSwitchedDetails* switched_details =
-        content::Details<RenderViewHostSwitchedDetails>(details).ptr();
-    [controller_ tabContentsRenderViewHostChanged:switched_details->old_host
-                                          newHost:switched_details->new_host];
+    std::pair<RenderViewHost*, RenderViewHost*>* switched_details =
+        content::Details<std::pair<RenderViewHost*, RenderViewHost*> >(
+            details).ptr();
+    [controller_ tabContentsRenderViewHostChanged:switched_details->first
+                                          newHost:switched_details->second];
   } else {
     NOTREACHED();
   }

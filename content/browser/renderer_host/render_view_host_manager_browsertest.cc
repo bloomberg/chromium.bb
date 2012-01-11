@@ -83,8 +83,10 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
 
   // Wait for the cross-site transition in the new tab to finish.
   ui_test_utils::WaitForLoadStop(browser()->GetSelectedWebContents());
-  EXPECT_FALSE(browser()->GetSelectedWebContents()->
-                   GetRenderManagerForTesting()->pending_render_view_host());
+  TabContents* tab_contents = static_cast<TabContents*>(
+      browser()->GetSelectedWebContents());
+  EXPECT_FALSE(tab_contents->GetRenderManagerForTesting()->
+      pending_render_view_host());
 
   // Should have a new SiteInstance.
   scoped_refptr<SiteInstance> noref_blank_site_instance(

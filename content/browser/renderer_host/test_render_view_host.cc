@@ -58,6 +58,14 @@ void SimulateUpdateRect(RenderWidgetHost* widget,
   widget->OnMessageReceived(msg);
 }
 
+TestRenderViewHost* TestRenderViewHost::GetPendingForController(
+    content::NavigationController* controller) {
+  TabContents* tab_contents = static_cast<TabContents*>(
+      controller->GetWebContents());
+  return static_cast<TestRenderViewHost*>(
+      tab_contents->GetRenderManagerForTesting()->pending_render_view_host());
+}
+
 TestRenderViewHost::TestRenderViewHost(SiteInstance* instance,
                                        RenderViewHostDelegate* delegate,
                                        int routing_id)

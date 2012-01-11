@@ -292,11 +292,4 @@ class CONTENT_EXPORT RenderViewHostManager
   DISALLOW_COPY_AND_ASSIGN(RenderViewHostManager);
 };
 
-// The "details" for a NOTIFY_RENDER_VIEW_HOST_CHANGED notification. The old
-// host can be NULL when the first RenderViewHost is set.
-struct RenderViewHostSwitchedDetails {
-  RenderViewHost* old_host;
-  RenderViewHost* new_host;
-};
-
 #endif  // CONTENT_BROWSER_TAB_CONTENTS_RENDER_VIEW_HOST_MANAGER_H_

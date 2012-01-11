@@ -4,10 +4,11 @@
 
 #include "chrome/browser/ui/views/tab_contents/tab_contents_container.h"
 
+#include <utility>
+
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/tab_contents/native_tab_contents_container.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/tab_contents/render_view_host_manager.h"
 #include "content/browser/tab_contents/interstitial_page.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/public/browser/notification_details.h"
@@ -78,10 +79,11 @@ void TabContentsContainer::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   if (type == content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED) {
-    RenderViewHostSwitchedDetails* switched_details =
-        content::Details<RenderViewHostSwitchedDetails>(details).ptr();
-    RenderViewHostChanged(switched_details->old_host,
-                          switched_details->new_host);
+    std::pair<RenderViewHost*, RenderViewHost*>* switched_details =
+        content::Details<std::pair<RenderViewHost*, RenderViewHost*> >(
+            details).ptr();
+    RenderViewHostChanged(switched_details->first,
+                          switched_details->second);
   } else if (type == content::NOTIFICATION_WEB_CONTENTS_DESTROYED) {
     TabContentsDestroyed(content::Source<WebContents>(source).ptr());
   } else {

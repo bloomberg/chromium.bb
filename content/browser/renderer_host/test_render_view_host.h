@@ -169,6 +169,10 @@ class TestRenderWidgetHostView : public RenderWidgetHostView {
 // CreateRenderViewForRenderManager when more complicate tests start using this.
 class TestRenderViewHost : public RenderViewHost {
  public:
+  // If the given TabContnets has a pending RVH, returns it, otherwise NULL.
+  static TestRenderViewHost* GetPendingForController(
+      content::NavigationController* controller);
+
   TestRenderViewHost(SiteInstance* instance,
                      RenderViewHostDelegate* delegate,
                      int routing_id);

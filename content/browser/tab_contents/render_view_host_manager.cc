@@ -4,6 +4,8 @@
 
 #include "content/browser/tab_contents/render_view_host_manager.h"
 
+#include <utility>
+
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "content/browser/debugger/devtools_manager_impl.h"
@@ -111,14 +113,15 @@ RenderViewHost* RenderViewHostManager::Navigate(
     } else {
       // This is our primary renderer, notify here as we won't be calling
       // CommitPending (which does the notify).
-      RenderViewHostSwitchedDetails details;
-      details.new_host = render_view_host_;
-      details.old_host = NULL;
+      RenderViewHost* null_rvh = NULL;
+      std::pair<RenderViewHost*, RenderViewHost*> details =
+          std::make_pair(null_rvh, render_view_host_);
       content::NotificationService::current()->Notify(
           content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
           content::Source<NavigationController>(
               &delegate_->GetControllerForRenderManager()),
-          content::Details<RenderViewHostSwitchedDetails>(&details));
+          content::Details<std::pair<RenderViewHost*, RenderViewHost*> >(
+              &details));
     }
   }
 
@@ -600,14 +603,13 @@ void RenderViewHostManager::CommitPending() {
   else if (focus_render_view && render_view_host_->view())
     render_view_host_->view()->Focus();
 
-  RenderViewHostSwitchedDetails details;
-  details.new_host = render_view_host_;
-  details.old_host = old_render_view_host;
+  std::pair<RenderViewHost*, RenderViewHost*> details =
+      std::make_pair(old_render_view_host, render_view_host_);
   content::NotificationService::current()->Notify(
       content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
       content::Source<NavigationController>(
           &delegate_->GetControllerForRenderManager()),
-      content::Details<RenderViewHostSwitchedDetails>(&details));
+      content::Details<std::pair<RenderViewHost*, RenderViewHost*> >(&details));
 
   // If the pending view was on the swapped out list, we can remove it.
   swapped_out_hosts_.erase(render_view_host_->site_instance()->id());
