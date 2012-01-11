@@ -7,14 +7,26 @@
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/extensions/extension.h"
 #include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/browser/notification_types.h"
 
 ShellWindow::ShellWindow(ExtensionHost* host)
     : host_(host) {
   // Close the window in response to window.close() and the like.
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE,
                  content::Source<Profile>(host->profile()));
+  // Also close if the window if the extension has been unloaded (parallels
+  // NOTIFICATION_EXTENSION_UNLOADED closing the app's tabs in TabStripModel).
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
+                 content::Source<Profile>(host->profile()));
+  // Close when the browser is exiting.
+  // TODO(mihaip): we probably don't want this in the long run (when platform
+  // apps are no longer tied to the browser process).
+  registrar_.Add(this, content::NOTIFICATION_APP_TERMINATING,
+                 content::NotificationService::AllSources());
 }
 
 ShellWindow::~ShellWindow() {
@@ -51,6 +63,18 @@ void ShellWindow::Observe(int type,
     case chrome::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE:
       if (content::Details<ExtensionHost>(host_.get()) == details)
         Close();
+      break;
+    case chrome::NOTIFICATION_EXTENSION_UNLOADED: {
+      const Extension* unloaded_extension =
+          content::Details<UnloadedExtensionInfo>(details)->extension;
+      // We compare extension IDs and not Extension pointers since ExtensionHost
+      // nulls out its Extension pointer when it gets this notification.
+      if (host_->extension_id() == unloaded_extension->id())
+        Close();
+      break;
+    }
+    case content::NOTIFICATION_APP_TERMINATING:
+      Close();
       break;
     default:
       NOTREACHED() << "Received unexpected notification";

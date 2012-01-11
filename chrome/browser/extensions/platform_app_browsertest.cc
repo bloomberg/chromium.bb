@@ -116,11 +116,14 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MAYBE_OpenAppInShellContainer) {
   ASSERT_EQ(0u, GetPlatformAppCount());
   LoadAndLaunchPlatformApp("empty");
   ASSERT_EQ(1u, GetPlatformAppCount());
+
+  UnloadExtension(last_loaded_extension_id_);
+  ASSERT_EQ(0u, GetPlatformAppCount());
 }
 
 // Disabled until shell windows are implemented for non-GTK toolkits.
 #if defined(TOOLKIT_GTK)
-#define MAYBE_EmptyContextMenu FLAKY_EmptyContextMenu
+#define MAYBE_EmptyContextMenu EmptyContextMenu
 #else
 #define MAYBE_EmptyContextMenu DISABLED_EmptyContextMenu
 #endif

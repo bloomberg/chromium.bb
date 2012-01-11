@@ -33,8 +33,6 @@ class ExtensionProcessManager : public content::NotificationObserver {
   static ExtensionProcessManager* Create(Profile* profile);
   virtual ~ExtensionProcessManager();
 
-  ExtensionHost* CreateShellHost(const Extension* extension, const GURL& url);
-
   // Creates a new ExtensionHost with its associated view, grouping it in the
   // appropriate SiteInstance (and therefore process) based on the URL and
   // profile.
@@ -55,8 +53,7 @@ class ExtensionProcessManager : public content::NotificationObserver {
                                    Browser* browser);
   ExtensionHost* CreateInfobarHost(const GURL& url,
                                    Browser* browser);
-
-  ExtensionHost* CreateShellHost(const GURL& url, Browser* browser);
+  ExtensionHost* CreateShellHost(const Extension* extension, const GURL& url);
 
   // Open the extension's options page.
   void OpenOptionsPage(const Extension* extension, Browser* browser);
