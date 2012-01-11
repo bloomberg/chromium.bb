@@ -97,9 +97,12 @@ struct Restrictions {
   }
 
   RestrictionMap map;
+
+  DISALLOW_COPY_AND_ASSIGN(Restrictions);
 };
 
-base::LazyInstance<Restrictions> g_restrictions;
+static base::LazyInstance<Restrictions> g_restrictions =
+    LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 
@@ -116,7 +119,7 @@ Manifest::Manifest(DictionaryValue* value) : value_(value) {}
 Manifest::~Manifest() {}
 
 bool Manifest::ValidateManifest(string16* error) const {
-  Restrictions restrictions = g_restrictions.Get();
+  const Restrictions& restrictions = g_restrictions.Get();
   Type type = GetType();
 
   for (DictionaryValue::key_iterator key = value_->begin_keys();
@@ -140,7 +143,7 @@ bool Manifest::ValidateManifest(string16* error) const {
 }
 
 bool Manifest::HasKey(const std::string& key) const {
-  Restrictions restrictions = g_restrictions.Get();
+  const Restrictions& restrictions = g_restrictions.Get();
   return restrictions.CanAccessKey(key, GetType()) && value_->HasKey(key);
 }
 
@@ -225,7 +228,7 @@ bool Manifest::CanAccessPath(const std::string& path) const {
   std::vector<std::string> components;
   base::SplitString(path, '.', &components);
 
-  Restrictions restrictions = g_restrictions.Get();
+  const Restrictions& restrictions = g_restrictions.Get();
   return restrictions.CanAccessKey(components[0], GetType());
 }
 
