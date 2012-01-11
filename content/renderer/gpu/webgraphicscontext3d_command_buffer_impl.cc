@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -42,6 +42,16 @@ static base::LazyInstance<base::Lock,
 static base::LazyInstance<std::set<WebGraphicsContext3DCommandBufferImpl*> >
     g_all_shared_contexts = LAZY_INSTANCE_INITIALIZER;
 
+namespace {
+
+void ClearSharedContexts() {
+  base::AutoLock lock(g_all_shared_contexts_lock.Get());
+  g_all_shared_contexts.Pointer()->clear();
+}
+
+} // namespace anonymous
+
+
 WebGraphicsContext3DCommandBufferImpl::WebGraphicsContext3DCommandBufferImpl()
     : initialize_failed_(false),
       context_(NULL),
@@ -65,6 +75,7 @@ WebGraphicsContext3DCommandBufferImpl::
   if (host_) {
     if (host_->WillGpuSwitchOccur(false, gpu_preference_)) {
       host_->ForciblyCloseChannel();
+      ClearSharedContexts();
     }
   }
 
@@ -108,6 +119,7 @@ bool WebGraphicsContext3DCommandBufferImpl::initialize(
       // channel and recreate it.
       if (host_->WillGpuSwitchOccur(true, gpu_preference_)) {
         host_->ForciblyCloseChannel();
+        ClearSharedContexts();
         retry = true;
       }
     } else {
@@ -1185,6 +1197,8 @@ void WebGraphicsContext3DCommandBufferImpl::OnContextLost(
   if (context_lost_callback_) {
     context_lost_callback_->onContextLost();
   }
+  if (attributes_.shareResources)
+    ClearSharedContexts();
   RenderViewImpl* renderview =
       web_view_ ? RenderViewImpl::FromWebView(web_view_) : NULL;
   if (renderview)
