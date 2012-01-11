@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -256,10 +256,6 @@ TEST_F(AutomatedUITestBase, IncognitoWindow) {
 #if defined(OS_WIN)
 #define MAYBE_OpenCloseBrowserWindowWithAccelerator \
         FLAKY_OpenCloseBrowserWindowWithAccelerator
-#elif defined(USE_AURA)
-// See crbug.com/108496.
-#define MAYBE_OpenCloseBrowserWindowWithAccelerator \
-        DISABLED_OpenCloseBrowserWindowWithAccelerator
 #else
 #define MAYBE_OpenCloseBrowserWindowWithAccelerator \
         OpenCloseBrowserWindowWithAccelerator
