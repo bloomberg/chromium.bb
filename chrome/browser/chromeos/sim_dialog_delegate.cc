@@ -5,12 +5,12 @@
 #include "chrome/browser/chromeos/sim_dialog_delegate.h"
 
 #include "base/stringprintf.h"
-#include "chrome/browser/chromeos/frame/bubble_window.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/views/html_dialog_view.h"
+#include "chrome/browser/ui/views/window.h"
 #include "chrome/common/url_constants.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
@@ -59,9 +59,7 @@ void SimDialogDelegate::ShowDialog(gfx::NativeWindow owning_window,
   HtmlDialogView* html_view =
       new HtmlDialogView(profile, new SimDialogDelegate(mode));
   html_view->InitDialog();
-  BubbleWindow::Create(owning_window,
-                       STYLE_FLUSH,
-                       html_view);
+  browser::CreateViewsWindow(owning_window, html_view, STYLE_FLUSH);
   html_view->GetWidget()->Show();
 }
 

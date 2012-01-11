@@ -24,12 +24,21 @@
 
 #endif  // OS_CHROMEOS
 
+// Note: This file should be removed after the old ChromeOS frontend is removed.
+//       It is not needed for Aura.
+//       The visual style implemented by BubbleFrameView/BubbleWindow for
+//       ChromeOS should move to Ash.
+//       Calling code should just call the standard views Widget creation
+//       methods and "the right thing" should just happen.
+//       The remainder of the code here is dealing with the legacy CrOS WM and
+//       can also be removed.
+
 namespace browser {
 
 views::Widget* CreateViewsWindow(gfx::NativeWindow parent,
                                  views::WidgetDelegate* delegate,
                                  DialogStyle style) {
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) && !defined(USE_AURA)
   return chromeos::BubbleWindow::Create(parent, style, delegate);
 #else
   return views::Widget::CreateWindowWithParent(delegate, parent);

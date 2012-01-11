@@ -4,12 +4,12 @@
 
 #include "chrome/browser/chromeos/choose_mobile_network_dialog.h"
 
-#include "chrome/browser/chromeos/frame/bubble_window.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/views/html_dialog_view.h"
+#include "chrome/browser/ui/views/window.h"
 #include "chrome/common/url_constants.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
@@ -40,7 +40,7 @@ void ChooseMobileNetworkDialog::ShowDialog(gfx::NativeWindow owning_window) {
   HtmlDialogView* html_view =
       new HtmlDialogView(profile, new ChooseMobileNetworkDialog);
   html_view->InitDialog();
-  BubbleWindow::Create(owning_window, STYLE_FLUSH, html_view);
+  browser::CreateViewsWindow(owning_window, html_view, STYLE_FLUSH);
   html_view->GetWidget()->Show();
 }
 
