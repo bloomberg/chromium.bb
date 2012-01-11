@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/tab_contents/tab_contents_view_helper.h"
+#include "chrome/browser/tab_contents/render_view_host_delegate_helper.h"
 
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host.h"
@@ -18,15 +18,15 @@
 
 using content::WebContents;
 
-TabContentsViewHelper::TabContentsViewHelper() {
+RenderViewHostDelegateViewHelper::RenderViewHostDelegateViewHelper() {
   registrar_.Add(this,
                  content::NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED,
                  content::NotificationService::AllBrowserContextsAndSources());
 }
 
-TabContentsViewHelper::~TabContentsViewHelper() {}
+RenderViewHostDelegateViewHelper::~RenderViewHostDelegateViewHelper() {}
 
-void TabContentsViewHelper::Observe(
+void RenderViewHostDelegateViewHelper::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
@@ -41,7 +41,7 @@ void TabContentsViewHelper::Observe(
   }
 }
 
-TabContents* TabContentsViewHelper::CreateNewWindow(
+TabContents* RenderViewHostDelegateViewHelper::CreateNewWindow(
     WebContents* web_contents,
     int route_id,
     const ViewHostMsg_CreateWindow_Params& params) {
@@ -85,7 +85,7 @@ TabContents* TabContentsViewHelper::CreateNewWindow(
   return new_contents;
 }
 
-RenderWidgetHostView* TabContentsViewHelper::CreateNewWidget(
+RenderWidgetHostView* RenderViewHostDelegateViewHelper::CreateNewWidget(
     WebContents* web_contents,
     int route_id,
     bool is_fullscreen,
@@ -103,7 +103,7 @@ RenderWidgetHostView* TabContentsViewHelper::CreateNewWidget(
   return widget_view;
 }
 
-TabContents* TabContentsViewHelper::GetCreatedWindow(int route_id) {
+TabContents* RenderViewHostDelegateViewHelper::GetCreatedWindow(int route_id) {
   PendingContents::iterator iter = pending_contents_.find(route_id);
 
   // Certain systems can block the creation of new windows. If we didn't succeed
@@ -124,7 +124,8 @@ TabContents* TabContentsViewHelper::GetCreatedWindow(int route_id) {
   return new_contents;
 }
 
-RenderWidgetHostView* TabContentsViewHelper::GetCreatedWidget(int route_id) {
+RenderWidgetHostView* RenderViewHostDelegateViewHelper::GetCreatedWidget(
+    int route_id) {
   PendingWidgetViews::iterator iter = pending_widget_views_.find(route_id);
   if (iter == pending_widget_views_.end()) {
     DCHECK(false);
@@ -143,7 +144,7 @@ RenderWidgetHostView* TabContentsViewHelper::GetCreatedWidget(int route_id) {
   return widget_host_view;
 }
 
-TabContents* TabContentsViewHelper::ShowCreatedWindow(
+TabContents* RenderViewHostDelegateViewHelper::ShowCreatedWindow(
     WebContents* web_contents,
     int route_id,
     WindowOpenDisposition disposition,
@@ -159,7 +160,7 @@ TabContents* TabContentsViewHelper::ShowCreatedWindow(
   return contents;
 }
 
-RenderWidgetHostView* TabContentsViewHelper::ShowCreatedWidget(
+RenderWidgetHostView* RenderViewHostDelegateViewHelper::ShowCreatedWidget(
     WebContents* web_contents,
     int route_id,
     bool is_fullscreen,

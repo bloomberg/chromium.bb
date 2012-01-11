@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_TAB_CONTENTS_TAB_CONTENTS_VIEW_HELPER_H_
-#define CONTENT_BROWSER_TAB_CONTENTS_TAB_CONTENTS_VIEW_HELPER_H_
+#ifndef CHROME_BROWSER_TAB_CONTENTS_RENDER_VIEW_HOST_DELEGATE_HELPER_H_
+#define CHROME_BROWSER_TAB_CONTENTS_RENDER_VIEW_HOST_DELEGATE_HELPER_H_
 #pragma once
 
 #include <map>
@@ -33,10 +33,10 @@ class Rect;
 
 // Provides helper methods that provide common implementations of some
 // TabContentsView methods.
-class TabContentsViewHelper : public content::NotificationObserver {
+class RenderViewHostDelegateViewHelper : public content::NotificationObserver {
  public:
-  TabContentsViewHelper();
-  virtual ~TabContentsViewHelper();
+  RenderViewHostDelegateViewHelper();
+  virtual ~RenderViewHostDelegateViewHelper();
 
   // Creates a new window; call |ShowCreatedWindow| below to show it.
   TabContents* CreateNewWindow(content::WebContents* web_contents,
@@ -80,20 +80,20 @@ class TabContentsViewHelper : public content::NotificationObserver {
   // called once as this call also removes it from the internal map.
   TabContents* GetCreatedWindow(int route_id);
 
-  // Tracks created TabContents objects that have not been shown yet. They are
-  // identified by the route ID passed to CreateNewWindow.
+  // Tracks created RenderViewHost objects that have not been shown yet.
+  // They are identified by the route ID passed to CreateNewWindow.
   typedef std::map<int, TabContents*> PendingContents;
   PendingContents pending_contents_;
 
-  // These maps hold on to the widgets that we created on behalf of the renderer
-  // that haven't shown yet.
+  // These maps hold on to the widgets that we created on behalf of the
+  // renderer that haven't shown yet.
   typedef std::map<int, RenderWidgetHostView*> PendingWidgetViews;
   PendingWidgetViews pending_widget_views_;
 
   // Registers and unregisters us for notifications.
   content::NotificationRegistrar registrar_;
 
-  DISALLOW_COPY_AND_ASSIGN(TabContentsViewHelper);
+  DISALLOW_COPY_AND_ASSIGN(RenderViewHostDelegateViewHelper);
 };
 
-#endif  // CONTENT_BROWSER_TAB_CONTENTS_TAB_CONTENTS_VIEW_HELPER_H_
+#endif  // CHROME_BROWSER_TAB_CONTENTS_RENDER_VIEW_HOST_DELEGATE_HELPER_H_

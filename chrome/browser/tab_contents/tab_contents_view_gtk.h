@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,8 +11,8 @@
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/tab_contents/render_view_host_delegate_helper.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
-#include "content/browser/tab_contents/tab_contents_view_helper.h"
 #include "ui/base/gtk/focus_store_gtk.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/base/gtk/owned_widget_gtk.h"
@@ -128,8 +128,8 @@ class TabContentsViewGtk : public TabContentsView {
   // The TabContents whose contents we display.
   TabContents* tab_contents_;
 
-  // Common implementations of some TabContentsView methods.
-  TabContentsViewHelper tab_contents_view_helper_;
+  // Common implementations of some RenderViewHostDelegate::View methods.
+  RenderViewHostDelegateViewHelper delegate_view_helper_;
 
   // This container holds the tab's web page views. It is a GtkExpandedContainer
   // so that we can control the size of the web pages.
