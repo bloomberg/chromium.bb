@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -329,6 +329,10 @@ class MockP2PEventHandler : public P2PTransport::EventHandler {
 
 class P2PTransportImplTest : public testing::Test {
  public:
+  void DestroyTransport() {
+    transport1_.reset();
+    transport2_.reset();
+  }
 
  protected:
   virtual void SetUp() OVERRIDE {
@@ -344,6 +348,10 @@ class P2PTransportImplTest : public testing::Test {
     transport2_.reset(new P2PTransportImpl(
         new jingle_glue::FakeNetworkManager(ip),
         new jingle_glue::FakeSocketFactory(socket_manager_, ip)));
+  }
+
+  virtual void TearDown() OVERRIDE {
+    message_loop_.RunAllPending();
   }
 
   void Init(P2PTransport::Protocol protocol) {
@@ -480,6 +488,40 @@ TEST_F(P2PTransportImplTest, SendDataTcp) {
   channel_tester->Init();
   message_loop_.Run();
   channel_tester->CheckResults();
+}
+
+TEST_F(P2PTransportImplTest, DeleteFromCallback) {
+  Init(P2PTransport::PROTOCOL_TCP);
+
+  EXPECT_CALL(event_handler1_, OnCandidateReady(_)).WillRepeatedly(
+      AddRemoteCandidate(transport2_.get()));
+  EXPECT_CALL(event_handler2_, OnCandidateReady(_)).WillRepeatedly(
+      AddRemoteCandidate(transport1_.get()));
+
+  // Transport may first become ether readable or writable, but
+  // eventually it must be readable and writable.
+  EXPECT_CALL(event_handler1_, OnStateChange(P2PTransport::STATE_READABLE))
+      .Times(AtMost(1));
+  EXPECT_CALL(event_handler1_, OnStateChange(P2PTransport::STATE_WRITABLE))
+      .Times(AtMost(1));
+  EXPECT_CALL(event_handler1_, OnStateChange(
+      static_cast<P2PTransport::State>(P2PTransport::STATE_READABLE |
+                                       P2PTransport::STATE_WRITABLE)))
+      .Times(AtMost(1));
+
+  EXPECT_CALL(event_handler2_, OnStateChange(P2PTransport::STATE_READABLE))
+      .Times(AtMost(1));
+  EXPECT_CALL(event_handler2_, OnStateChange(P2PTransport::STATE_WRITABLE))
+      .Times(AtMost(1));
+  EXPECT_CALL(event_handler2_, OnStateChange(
+      static_cast<P2PTransport::State>(P2PTransport::STATE_READABLE |
+                                       P2PTransport::STATE_WRITABLE)))
+      .Times(Exactly(1))
+      .WillOnce(DoAll(
+          InvokeWithoutArgs(this, &P2PTransportImplTest::DestroyTransport),
+          InvokeWithoutArgs(&message_loop_, &MessageLoop::Quit)));
+
+  message_loop_.Run();
 }
 
 }  // namespace content
