@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -255,8 +255,13 @@ void NaClSignalHandlerInit() {
   if (getenv("NACL_CRASH_TEST") != NULL) {
     NaClSignalErrorMessage("[CRASH_TEST] Causing crash in NaCl "
                            "trusted code...\n");
-    /* Clang removes non-volatile NULL pointer references. */
-    *(volatile int *) 0 = 0;
+    /*
+     * Clang transmutes a NULL pointer reference into a generic "undefined"
+     * case.  That code crashes with a different signal than an actual bad
+     * pointer reference, violating the tests' expectations.  A pointer that
+     * is known bad but is not literally NULL does not get this treatment.
+     */
+    *(volatile int *) 1 = 0;
   }
 }
 
