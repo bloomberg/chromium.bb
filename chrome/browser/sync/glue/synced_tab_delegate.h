@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,8 +22,6 @@ namespace browser_sync {
 // directly on TabContents, TabContentsWrapper and NavigationController.
 class SyncedTabDelegate {
  public:
-  virtual ~SyncedTabDelegate() {}
-
   // Method from TabContentsWrapper.
 
   virtual SessionID::id_type GetWindowId() const = 0;
@@ -44,6 +42,9 @@ class SyncedTabDelegate {
   virtual content::NavigationEntry* GetPendingEntry() const = 0;
   virtual content::NavigationEntry* GetEntryAtIndex(int i) const = 0;
   virtual content::NavigationEntry* GetActiveEntry() const = 0;
+
+ protected:
+  virtual ~SyncedTabDelegate() {}
 };
 
 }  // namespace browser_sync

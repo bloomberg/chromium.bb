@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -46,14 +46,11 @@ class SadTabObserver;
 class SearchEngineTabHelper;
 class SnapshotTabHelper;
 class TabContentsSSLHelper;
+class TabContentsWrapperSyncedTabDelegate;
 class TabSpecificContentSettings;
 class ThumbnailGenerator;
 class TranslateTabHelper;
 class WebIntentPickerController;
-
-namespace browser_sync {
-class SyncedTabDelegate;
-}
 
 namespace prerender {
 class PrerenderTabHelper;
@@ -171,7 +168,7 @@ class TabContentsWrapper : public content::WebContentsObserver {
 
   TabContentsSSLHelper* ssl_helper() { return ssl_helper_.get(); }
 
-  browser_sync::SyncedTabDelegate* synced_tab_delegate() {
+  TabContentsWrapperSyncedTabDelegate* synced_tab_delegate() {
     return synced_tab_delegate_.get();
   }
 
@@ -233,7 +230,7 @@ class TabContentsWrapper : public content::WebContentsObserver {
   scoped_ptr<SearchEngineTabHelper> search_engine_tab_helper_;
   scoped_ptr<SnapshotTabHelper> snapshot_tab_helper_;
   scoped_ptr<TabContentsSSLHelper> ssl_helper_;
-  scoped_ptr<browser_sync::SyncedTabDelegate> synced_tab_delegate_;
+  scoped_ptr<TabContentsWrapperSyncedTabDelegate> synced_tab_delegate_;
 
   // The TabSpecificContentSettings object is used to query the blocked content
   // state by various UI elements.
