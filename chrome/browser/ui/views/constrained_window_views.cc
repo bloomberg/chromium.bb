@@ -47,6 +47,8 @@
 #endif
 
 #if defined(USE_AURA)
+#include "base/command_line.h"
+#include "ash/ash_switches.h"
 #include "ash/shell.h"
 #endif
 
@@ -607,10 +609,12 @@ gfx::NativeWindow ConstrainedWindowViews::GetNativeWindow() {
 
 views::NonClientFrameView* ConstrainedWindowViews::CreateNonClientFrameView() {
 #if defined(USE_AURA)
-  return ash::Shell::GetInstance()->CreateDefaultNonClientFrameView(this);
-#else
-  return new ConstrainedWindowFrameView(this);
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          ash::switches::kAuraGoogleDialogFrames)) {
+    return ash::Shell::GetInstance()->CreateDefaultNonClientFrameView(this);
+  }
 #endif
+  return new ConstrainedWindowFrameView(this);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
