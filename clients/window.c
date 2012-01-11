@@ -978,7 +978,8 @@ window_destroy(struct window *window)
 	wl_list_for_each(input, &display->input_list, link) {
 		if (input->pointer_focus == window)
 			input->pointer_focus = NULL;
-		if (input->focus_widget->window == window)
+		if (input->focus_widget &&
+		    input->focus_widget->window == window)
 			input->focus_widget = NULL;
 		if (input->keyboard_focus == window)
 			input->keyboard_focus = NULL;
