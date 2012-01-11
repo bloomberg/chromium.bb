@@ -69,7 +69,7 @@ deps = {
     'src/third_party/libphonenumber/src/test':
         Var('git_url') + '/external/libphonenumber/cpp/test.git@1a74d2ff51f3715eefad4be175456b4443a264ad',
     'src/third_party/libvpx':
-        Var('git_url') + '/chromium/deps/libvpx.git@ff76a77415f22751105d33e49f615cae4f58b52b',
+        Var('git_url') + '/chromium/deps/libvpx.git@f03997481c72e948cfe3b06b3c9caf894b145d09',
     'src/third_party/libyuv':
         Var('git_url') + '/external/libyuv.git@6011ff73535b9b9f3cda016a6b325f8a03144dc1',
     'src/third_party/mozc/chrome/chromeos/renderer':
