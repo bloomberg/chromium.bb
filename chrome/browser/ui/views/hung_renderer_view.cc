@@ -1,13 +1,19 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/browser_dialogs.h"
 
+#if defined(OS_WIN) && !defined(USE_AURA)
+#include <windows.h>
+#endif
+
 #include "base/i18n/rtl.h"
 #include "base/memory/scoped_vector.h"
+#include "base/process_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
+#include "chrome/browser/platform_util.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
@@ -33,6 +39,10 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/client_view.h"
 #include "ui/views/window/dialog_delegate.h"
+
+#if defined(USE_AURA)
+#include "ui/aura/window.h"
+#endif
 
 class HungRendererDialogView;
 
@@ -330,17 +340,17 @@ void HungRendererDialogView::ShowForWebContents(WebContents* contents) {
   // Don't show the warning unless the foreground window is the frame, or this
   // window (but still invisible). If the user has another window or
   // application selected, activating ourselves is rude.
-  HWND frame_hwnd = GetAncestor(contents->GetNativeView(), GA_ROOT);
-  HWND foreground_window = GetForegroundWindow();
-  if (foreground_window != frame_hwnd &&
-      foreground_window != GetWidget()->GetNativeWindow()) {
+  gfx::NativeView frame_view =
+      platform_util::GetTopLevel(contents->GetNativeView());
+  if (!platform_util::IsWindowActive(frame_view) &&
+      !platform_util::IsWindowActive(GetWidget()->GetNativeWindow())) {
     return;
   }
 
   if (!GetWidget()->IsActive()) {
     gfx::Rect bounds = GetDisplayBounds(contents);
     views::Widget* insert_after =
-        views::Widget::GetWidgetForNativeView(frame_hwnd);
+        views::Widget::GetWidgetForNativeView(frame_view);
     GetWidget()->SetBoundsConstrained(bounds);
     if (insert_after)
       GetWidget()->StackAboveWidget(insert_after);
@@ -422,13 +432,12 @@ views::View* HungRendererDialogView::GetContentsView() {
 
 void HungRendererDialogView::ButtonPressed(
     views::Button* sender, const views::Event& event) {
-  if (sender == kill_button_) {
-    if (hung_pages_table_model_->GetRenderProcessHost()) {
-      // Kill the process.
-      TerminateProcess(
-          hung_pages_table_model_->GetRenderProcessHost()->GetHandle(),
-          content::RESULT_CODE_HUNG);
-    }
+  if (sender == kill_button_ &&
+      hung_pages_table_model_->GetRenderProcessHost()) {
+    // Kill the process.
+    base::KillProcess(
+        hung_pages_table_model_->GetRenderProcessHost()->GetHandle(),
+        content::RESULT_CODE_HUNG, false);
   }
 }
 
@@ -467,8 +476,6 @@ void HungRendererDialogView::Init() {
   hung_pages_table_ = new views::GroupTableView(
       hung_pages_table_model_.get(), columns, views::ICON_AND_TEXT, true,
       false, true, false);
-  hung_pages_table_->SetPreferredSize(
-    gfx::Size(kTableViewWidth, kTableViewHeight));
 
   CreateKillButtonView();
 
@@ -495,14 +502,16 @@ void HungRendererDialogView::Init() {
 
   layout->StartRow(0, double_column_set_id);
   layout->SkipColumns(1);
-  layout->AddView(hung_pages_table_);
+  layout->AddView(hung_pages_table_->CreateParentIfNecessary(), 1, 1,
+                  views::GridLayout::FILL,
+                  views::GridLayout::FILL, kTableViewWidth, kTableViewHeight);
 
   initialized_ = true;
 }
 
 void HungRendererDialogView::CreateKillButtonView() {
-  kill_button_ = new views::NativeTextButton(this, UTF16ToWide(
-      l10n_util::GetStringUTF16(IDS_BROWSER_HANGMONITOR_RENDERER_END)));
+  kill_button_ = new views::NativeTextButton(this,
+      l10n_util::GetStringUTF16(IDS_BROWSER_HANGMONITOR_RENDERER_END));
 
   kill_button_container_ = new View;
 
@@ -525,10 +534,14 @@ void HungRendererDialogView::CreateKillButtonView() {
 
 gfx::Rect HungRendererDialogView::GetDisplayBounds(
     WebContents* contents) {
+#if defined(USE_AURA)
+  gfx::Rect contents_bounds(contents->GetNativeView()->GetScreenBounds());
+#elif defined(OS_WIN)
   HWND contents_hwnd = contents->GetNativeView();
   RECT contents_bounds_rect;
   GetWindowRect(contents_hwnd, &contents_bounds_rect);
   gfx::Rect contents_bounds(contents_bounds_rect);
+#endif
   gfx::Rect window_bounds = GetWidget()->GetWindowScreenBounds();
 
   int window_x = contents_bounds.x() +

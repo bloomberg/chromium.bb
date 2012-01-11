@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,11 +6,8 @@
 
 #include "build/build_config.h"
 
-#if defined(OS_WIN)
 #include <atlbase.h>  // NOLINT
 #include <atlwin.h>  // NOLINT
-#endif
-
 #include <vector>  // NOLINT
 
 #include "base/compiler_specific.h"
@@ -132,8 +129,6 @@ void TestTableModel::SetObserver(ui::TableModelObserver* observer) {
 int TestTableModel::CompareValues(int row1, int row2, int column_id) {
   return rows_[row1][column_id] - rows_[row2][column_id];
 }
-
-#if defined(OS_WIN)
 
 // TableViewTest ---------------------------------------------------------------
 
@@ -464,7 +459,5 @@ TEST_F(NullModelTableViewTest, DISABLED_NullModel) {
   // There's nothing explicit to test. If there is a bug in TableView relating
   // to a NULL model we'll crash.
 }
-
-#endif  // OS_WIN
 
 }  // namespace views

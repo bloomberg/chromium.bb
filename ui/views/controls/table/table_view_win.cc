@@ -102,6 +102,10 @@ void TableView::SetModel(ui::TableModel* model) {
     OnModelChanged();
 }
 
+View* TableView::CreateParentIfNecessary() {
+  return this;
+}
+
 void TableView::SetSortDescriptors(const SortDescriptors& sort_descriptors) {
   if (!sort_descriptors_.empty()) {
     ResetColumnSortImage(sort_descriptors_[0].column_id,
