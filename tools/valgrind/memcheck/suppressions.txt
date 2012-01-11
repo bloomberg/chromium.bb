@@ -5585,6 +5585,26 @@
    ...
    fun:_ZN7WebCore6IDBKey12createNumberEd
 }
+{
+   bug_109872
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN18BrowserProcessImpl29ResourceDispatcherHostCreatedEv
+   fun:_ZN6chrome26ChromeContentBrowserClient29ResourceDispatcherHostCreatedEv
+   fun:_ZN22ResourceDispatcherHost*
+   fun:_ZN7content15BrowserMainLoop21BrowserThreadsStartedEv
+   fun:_ZN7content15BrowserMainLoop23RunMainMessageLoopPartsEPb
+   fun:_Z11BrowserMainRKN7content18MainFunctionParamsE
+}
+{
+   bug_109873
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN6WebKit21IDBCursorBackendProxy16continueFunctionEN3WTF10PassRefPtrIN7WebCore6IDBKeyEEENS2_INS3_12IDBCallbacksEEERi
+   fun:_ZN7WebCore9IDBCursor16continueFunctionEN3WTF10PassRefPtrINS_6IDBKeyEEERi
+   fun:_ZN7WebCore9IDBCursor16continueFunctionERi
+   fun:_ZN7WebCore17IDBCursorInternalL16continueCallbackERKN2v89ArgumentsE
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
