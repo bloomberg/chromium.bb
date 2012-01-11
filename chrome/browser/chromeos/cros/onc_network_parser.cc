@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -617,6 +617,15 @@ OncNetworkParser::ParseServerOrCaCertificate(
     return NULL;
   }
 
+  // Before we add this cert, let's see if there's one with the same GUID.
+  // If there is, then we remove the one we found, now that we know that
+  // we at least were able to create the certificate we're going to import.
+  if (!DeleteCertAndKeyByNickname(guid)) {
+    parse_error_ = l10n_util::GetStringUTF8(
+        IDS_NETWORK_CONFIG_ERROR_CERT_DELETE);
+    return NULL;
+  }
+
   net::CertificateList cert_list;
   cert_list.push_back(x509_cert);
   net::CertDatabase::ImportCertFailureList failures;
@@ -672,6 +681,15 @@ scoped_refptr<net::X509Certificate> OncNetworkParser::ParseClientCertificate(
                  << pkcs12_data << "\".";
     parse_error_ = l10n_util::GetStringUTF8(
         IDS_NETWORK_CONFIG_ERROR_CERT_DATA_MALFORMED);
+    return NULL;
+  }
+
+  // Before we add this cert, let's see if there's one with the same GUID.
+  // If there is, then we remove the one we found, now that we know that
+  // we at least were able to decode the certificate we're going to import.
+  if (!DeleteCertAndKeyByNickname(guid)) {
+    parse_error_ = l10n_util::GetStringUTF8(
+        IDS_NETWORK_CONFIG_ERROR_CERT_DELETE);
     return NULL;
   }
 

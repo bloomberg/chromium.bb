@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -131,8 +131,12 @@ class OncNetworkParser : public NetworkParser {
 
  private:
   FRIEND_TEST_ALL_PREFIXES(OncNetworkParserTest, TestAddClientCertificate);
+  FRIEND_TEST_ALL_PREFIXES(OncNetworkParserTest, TestReplaceClientCertificate);
   FRIEND_TEST_ALL_PREFIXES(OncNetworkParserTest, TestAddServerCertificate);
+  FRIEND_TEST_ALL_PREFIXES(OncNetworkParserTest, TestReplaceServerCertificate);
   FRIEND_TEST_ALL_PREFIXES(OncNetworkParserTest, TestAddAuthorityCertificate);
+  FRIEND_TEST_ALL_PREFIXES(OncNetworkParserTest,
+                           TestReplaceAuthorityCertificate);
   scoped_refptr<net::X509Certificate> ParseServerOrCaCertificate(
     int cert_index,
     const std::string& cert_type,
