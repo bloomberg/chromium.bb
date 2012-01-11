@@ -9,19 +9,19 @@ vars = {
 
 deps = {
     'base':
-        Var('git_url') + '/chromium/src/base.git@2755ca1a9e0c3076cfbb35044256075adb8bd6f6',
+        Var('git_url') + '/chromium/src/base.git@4445847ae5bbcbb523f702291c2f6d825ec709e8',
     'build':
-        Var('git_url') + '/chromium/src/build.git@8c3b34719807306452276d48f0f28883b0fc992d',
+        Var('git_url') + '/chromium/src/build.git@43f44632202f8023495cbb3250c1ec29c93419c8',
     'chrome/test/pyautolib':
         Var('git_url') + '/chromium/src/chrome/test/pyautolib.git@9f5c0e984be48b726a7ad555be9d79fbd6b5a348',
     'gpu':
-        Var('git_url') + '/chromium/src/gpu.git@45ba40d97327a1f01ea2b8bcc7e68ee52ec85df7',
+        Var('git_url') + '/chromium/src/gpu.git@90828e5b9c88174744e1701d15fb8c7244069730',
     'native_client/tools/perf_expectations':
         Var('git_url') + '/chromium/src/tools/perf_expectations.git@c6c14915e6b1b32884f1463144c8c08e62ea7777',
     'net/tools/testserver':
         Var('git_url') + '/chromium/src/net/tools/testserver.git@074318720144c17f7d989188c56cab52e7f0428f',
     'ppapi':
-        Var('git_url') + '/chromium/src/ppapi.git@c4989f888a632042f9636cc59045c4033c6274f4',
+        Var('git_url') + '/chromium/src/ppapi.git@4767abad3caa06183316877810cb503037272d42',
     'testing/gtest':
         Var('git_url') + '/external/googletest.git@a2965825b1953c7b8ad292f726eb5c3f2659d5d3',
     'third_party':
@@ -57,7 +57,7 @@ deps = {
     'tools/gyp':
         Var('git_url') + '/external/gyp.git@42d9b6828d9442eedd144ae9b1937be280b19e01',
     'tools/valgrind':
-        Var('git_url') + '/chromium/src/tools/valgrind.git@f30d01a5940c9b50f4c259f894c1913cbbfdaffc',
+        Var('git_url') + '/chromium/src/tools/valgrind.git@d36bba394e52f69dc196ff69f46299aec15e0bfd',
 }
 
 deps_os = {
