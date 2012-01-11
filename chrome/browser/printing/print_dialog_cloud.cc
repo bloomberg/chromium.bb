@@ -602,8 +602,8 @@ void CreateDialogImpl(const FilePath& path_to_file,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   Browser* browser = BrowserList::GetLastActive();
 
-  const int kDefaultWidth = 497;
-  const int kDefaultHeight = 332;
+  const int kDefaultWidth = 912;
+  const int kDefaultHeight = 633;
   string16 job_title = print_job_title;
   Profile* profile = NULL;
   if (modal) {
