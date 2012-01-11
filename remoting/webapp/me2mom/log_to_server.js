@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -28,10 +28,6 @@ remoting.LogToServer = function() {
   this.sessionStartTime = 0;
 };
 
-// Local storage key.
-/** @private */
-remoting.LogToServer.KEY_ENABLED_ = 'remoting.LogToServer.enabled';
-
 // Constants used for generating a session ID.
 /** @private */
 remoting.LogToServer.SESSION_ID_ALPHABET_ =
@@ -45,16 +41,6 @@ remoting.LogToServer.MAX_SESSION_ID_AGE = 24 * 60 * 60 * 1000;
 // The time over which to accumulate connection statistics before logging them
 // to the server, in milliseconds.
 remoting.LogToServer.CONNECTION_STATS_ACCUMULATE_TIME = 60 * 1000;
-
-/**
- * Enables or disables logging.
- *
- * @param {boolean} enabled whether logging is enabled
- */
-remoting.LogToServer.prototype.setEnabled = function(enabled) {
-  window.localStorage.setItem(remoting.LogToServer.KEY_ENABLED_,
-     enabled ? 'true' : 'false');
-}
 
 /**
  * Logs a client session state change.
@@ -168,9 +154,6 @@ remoting.LogToServer.prototype.logAccumulatedStatistics = function() {
  * @param {remoting.ServerLogEntry} entry
  */
 remoting.LogToServer.prototype.log = function(entry) {
-  if (!this.isEnabled()) {
-    return;
-  }
   // Send the stanza to the debug log.
   remoting.debug.log('Enqueueing log entry:');
   entry.toDebugLog(1);
@@ -191,17 +174,6 @@ remoting.LogToServer.prototype.log = function(entry) {
   }
   stanza += '</gr:log></cli:iq>';
   remoting.wcs.sendIq(stanza);
-};
-
-/**
- * Whether logging is enabled.
- *
- * @private
- * @return {boolean} whether logging is enabled
- */
-remoting.LogToServer.prototype.isEnabled = function() {
-  var value = window.localStorage.getItem(remoting.LogToServer.KEY_ENABLED_);
-  return (value == 'true');
 };
 
 /**
