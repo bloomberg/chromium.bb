@@ -57,7 +57,7 @@ class AsyncResourceHandler : public ResourceHandler {
   virtual ~AsyncResourceHandler();
 
   scoped_refptr<SharedIOBuffer> read_buffer_;
-  ResourceMessageFilter* filter_;
+  scoped_refptr<ResourceMessageFilter> filter_;
   int routing_id_;
   HostZoomMap* host_zoom_map_;
   ResourceDispatcherHost* rdh_;
