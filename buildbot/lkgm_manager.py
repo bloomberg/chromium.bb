@@ -219,12 +219,17 @@ class LKGMManager(manifest_version.BuildSpecsManager):
       try:
         version_info = self._GetCurrentVersionInfo()
         self._LoadSpecs(version_info)
-        # Grab the latest revision number from manifest-versions, if available.
-        # Otherwise, we default to 'rc1'.
+
+        # Check whether the latest spec available in manifest-versions is
+        # newer than our current version number. If so, use it as the base
+        # version number. Otherwise, we default to 'rc1'.
         if self.latest:
-          version_info = _LKGMCandidateInfo(self.latest,
+          latest = max(self.latest, version_info.VersionString(),
+                       key=self.compare_versions_fn)
+          version_info = _LKGMCandidateInfo(latest,
               chrome_branch=version_info.chrome_branch,
               incr_type=self.incr_type)
+
         self._PrepSpecChanges()
         self.current_version = self._CreateNewBuildSpec(version_info,
                                                         sync=False)
