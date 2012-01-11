@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -31,6 +31,9 @@ def ParseCommandLine(argv):
                     help='Print compilation/run logs of failing tests')
   parser.add_option('-p', '--build-path', dest='buildpath',
                     help='Path to test-suite build directory')
+  parser.add_option('-a', '--attribute', dest='attributes', action='append',
+                    default=[],
+                    help='Add attribute of test configuration (e.g. arch)')
 
   options, args = parser.parse_args(argv)
   return options, args
@@ -74,7 +77,7 @@ def ParseCSV(filename):
   print testcount, 'tests,', len(failures), ' failures'
   return alltests, failures
 
-def ParseExcludeFile(filename, alltests):
+def ParseExcludeFile(filename, alltests, config_attributes):
   ''' Parse a list of excludes (known test failures). Excludes can be specified
       by shortname (e.g. fbench) or by full path
       (e.g. SingleSource/Benchmarks/Misc/fbench) but if there is more than
@@ -87,16 +90,24 @@ def ParseExcludeFile(filename, alltests):
     line = line.strip()
     if not line: continue
     if line.startswith('#'): continue
-    if line in EXCLUDES:
+    tokens = line.split()
+    if len(tokens) > 1:
+      testname = tokens[0]
+      attributes = set(tokens[1].split(','))
+      if not attributes.issubset(config_attributes):
+        continue
+    else:
+      testname = line
+    if testname in EXCLUDES:
       Fatal('ERROR: duplicate exclude: ' + line)
-    if IsFullname(line):
-      shortname = GetShortname(line)
-      if shortname not in alltests or line not in alltests[shortname]:
+    if IsFullname(testname):
+      shortname = GetShortname(testname)
+      if shortname not in alltests or testname not in alltests[shortname]:
         Fatal('ERROR: exclude ' + line + ' not found in list of tests')
-      fullname = line
+      fullname = testname
     else:
       # short name is specified
-      shortname = line
+      shortname = testname
       if shortname not in alltests:
         Fatal('ERROR: exclude ' + shortname + ' not found in list of tests')
       if len(alltests[shortname]) > 1:
@@ -170,7 +181,7 @@ def main(argv):
 
   # get the set of excludes
   for f in options.excludes:
-    ParseExcludeFile(f, alltests)
+    ParseExcludeFile(f, alltests, set(options.attributes))
 
   # intersect them and check for unexpected fails/passes
   unexpected_failures = 0
@@ -188,7 +199,8 @@ def main(argv):
         print test + ': ' + ' unexpected success'
 
   print unexpected_failures, 'unexpected failures',
-  print unexpected_passes, 'unexpected pases'
+  if options.check_excludes:
+    print unexpected_passes, 'unexpected passes'
   return unexpected_failures + unexpected_passes
 
 if __name__ == '__main__':

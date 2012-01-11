@@ -79,7 +79,7 @@ mason
 # dependeng on output buffering
 fsm
 gnugo
-inlined_cleanup
+inlined_cleanup x86-64
 2003-05-23-TransparentUnion
 fourinarow
 pcompress2

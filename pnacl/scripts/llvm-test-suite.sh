@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -85,7 +85,9 @@ testsuite-report() {
   shift
   ${PARSE_REPORT} --exclude ${PNACL_SCRIPTS}/testsuite_known_failures_base.txt \
     --exclude ${PNACL_SCRIPTS}/testsuite_known_failures_pnacl.txt \
-    --build-path ${LLVM_TESTSUITE_BUILD} "$@" \
+    --build-path ${LLVM_TESTSUITE_BUILD} \
+    --attribute ${arch} \
+    "$@" \
     ${LLVM_TESTSUITE_BUILD}/report.pnacl.${arch}.csv
 }
 
