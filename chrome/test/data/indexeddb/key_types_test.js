@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,17 +12,22 @@ function test() {
 }
 
 function prepareDatabase() {
-  var openreq = indexedDB.open('key-test-db');
-  openreq.onerror = unexpectedErrorCallback;
-  openreq.onsuccess = function() {
-    db = openreq.result;
-    shouldBe('db.version', '""');
-    var verreq = db.setVersion('1');
-    verreq.onerror = unexpectedErrorCallback;
-    verreq.onsuccess = function() {
-      var trans = verreq.result;
-      db.createObjectStore('store');
-      trans.oncomplete = testValidKeys();
+  var databaseName = 'key-test-db';
+  var deleteRequest = indexedDB.deleteDatabase(databaseName);
+  deleteRequest.onerror = unexpectedErrorCallback;
+  deleteRequest.onsuccess = function() {
+    var openreq = indexedDB.open(databaseName);
+    openreq.onerror = unexpectedErrorCallback;
+    openreq.onsuccess = function() {
+      db = openreq.result;
+      shouldBe('db.version', '""');
+      var verreq = db.setVersion('1');
+      verreq.onerror = unexpectedErrorCallback;
+      verreq.onsuccess = function() {
+        var trans = verreq.result;
+        db.createObjectStore('store');
+        trans.oncomplete = testValidKeys();
+      };
     };
   };
 }
