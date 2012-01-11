@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -13,7 +13,7 @@ import re
 import subprocess
 
 # The maximum bandwidth limit.
-_DEFAULT_MAX_BANDWIDTH_KBPS = 1000000
+_DEFAULT_MAX_BANDWIDTH_KBIT = 1000000
 
 
 class TrafficControlError(BaseException):
@@ -50,7 +50,7 @@ def CreateConstrainedPort(config):
       server_port: Port to redirect traffic on [port] to (integer 1-65535).
       interface: Network interface name (string).
       latency: Delay added on each packet sent (integer in ms).
-      bandwidth: Maximum allowed upload bandwidth (integer in kbps).
+      bandwidth: Maximum allowed upload bandwidth (integer in kbit/s).
       loss: Percentage of packets to drop (integer 0-100).
 
   Raises:
@@ -86,7 +86,7 @@ def DeleteConstrainedPort(config):
       port: Port to constrain (integer 1-65535).
       server_port: Port to redirect traffic on [port] to (integer 1-65535).
       interface: Network interface name (string).
-      bandwidth: Maximum allowed upload bandwidth (integer in kbps).
+      bandwidth: Maximum allowed upload bandwidth (integer in kbit/s).
 
   Raises:
     TrafficControlError: If any operation fails. The message in the exception
@@ -118,7 +118,7 @@ def TearDown(config):
   """
   _CheckArgsExist(config, 'interface')
 
-  command = ['tc', 'qdisc', 'del', 'dev', config['interface'], 'root']
+  command = ['sudo', 'tc', 'qdisc', 'del', 'dev', config['interface'], 'root']
   try:
     _Exec(command, msg='Could not delete root qdisc.')
   finally:
@@ -150,8 +150,8 @@ def _AddRootQdisc(interface):
     TrafficControlError: If adding the root qdisc fails for a reason other than
     it already exists.
   """
-  command = ['tc', 'qdisc', 'add', 'dev', interface, 'root', 'handle', '1:',
-             'htb']
+  command = ['sudo', 'tc', 'qdisc', 'add', 'dev', interface, 'root', 'handle',
+             '1:', 'htb']
   try:
     _Exec(command, msg=('Error creating root qdisc. '
                         'Make sure you have root access'))
@@ -172,19 +172,20 @@ def _ConfigureClass(option, config):
     config: Constraint configuration dictionary, format:
       port: Port to constrain (integer 1-65535).
       interface: Network interface name (string).
-      bandwidth: Maximum allowed upload bandwidth (integer in kbps).
+      bandwidth: Maximum allowed upload bandwidth (integer in kbit/s).
   """
   # Use constrained port as class ID so we can attach the qdisc and filter to
   # it, as well as delete the class, using only the port number.
   class_id = '1:%x' % config['port']
   if 'bandwidth' not in config.keys() or not config['bandwidth']:
-    bandwidth = _DEFAULT_MAX_BANDWIDTH_KBPS
+    bandwidth = _DEFAULT_MAX_BANDWIDTH_KBIT
   else:
     bandwidth = config['bandwidth']
 
-  bandwidth = '%dkbps' % bandwidth
-  command = ['tc', 'class', option, 'dev', config['interface'], 'parent', '1:',
-             'classid', class_id, 'htb', 'rate', bandwidth, 'ceil', bandwidth]
+  bandwidth = '%dkbit' % bandwidth
+  command = ['sudo', 'tc', 'class', option, 'dev', config['interface'],
+             'parent', '1:', 'classid', class_id, 'htb', 'rate', bandwidth,
+             'ceil', bandwidth]
   _Exec(command, msg=('Error configuring class ID %s using "%s" command.' %
                       (class_id, option)))
 
@@ -201,7 +202,7 @@ def _AddSubQdisc(config):
   """
   port_hex = '%x' % config['port']
   class_id = '1:%x' % config['port']
-  command = ['tc', 'qdisc', 'add', 'dev', config['interface'], 'parent',
+  command = ['sudo', 'tc', 'qdisc', 'add', 'dev', config['interface'], 'parent',
              class_id, 'handle', port_hex + ':0', 'netem']
 
   # Check if packet-loss is set in the configuration.
@@ -225,7 +226,7 @@ def _AddFilter(interface, port):
   """
   class_id = '1:%x' % port
 
-  command = ['tc', 'filter', 'add', 'dev', interface, 'protocol', 'ip',
+  command = ['sudo', 'tc', 'filter', 'add', 'dev', interface, 'protocol', 'ip',
              'parent', '1:', 'prio', '1', 'u32', 'match', 'ip', 'sport', port,
              '0xffff', 'flowid', class_id]
   _Exec(command, msg='Error adding filter on port %d.' % port)
@@ -239,7 +240,7 @@ def _DeleteFilter(interface, port):
     port: Port number being filtered (integer 1-65535).
   """
   handle_id = _GetFilterHandleId(interface, port)
-  command = ['tc', 'filter', 'del', 'dev', interface, 'protocol', 'ip',
+  command = ['sudo', 'tc', 'filter', 'del', 'dev', interface, 'protocol', 'ip',
              'parent', '1:0', 'handle', handle_id, 'prio', '1', 'u32']
   _Exec(command, msg='Error deleting filter on port %d.' % port)
 
@@ -257,7 +258,7 @@ def _GetFilterHandleId(interface, port):
   Raises:
     TrafficControlError: If handle ID was not found.
   """
-  command = ['tc', 'filter', 'list', 'dev', interface, 'parent', '1:']
+  command = ['sudo', 'tc', 'filter', 'list', 'dev', interface, 'parent', '1:']
   output = _Exec(command, msg='Error listing filters.')
   # Search for the filter handle ID associated with class ID '1:port'.
   handle_id_re = re.search(
@@ -277,13 +278,14 @@ def _AddIptableRule(interface, port, server_port):
     server_port: Server port to forward the packets to (integer 1-65535).
   """
   # Preroute rules for accessing the port through external connections.
-  command = ['iptables', '-t', 'nat', '-A', 'PREROUTING', '-i', interface, '-p',
-             'tcp', '--dport', port, '-j', 'REDIRECT', '--to-port', server_port]
+  command = ['sudo', 'iptables', '-t', 'nat', '-A', 'PREROUTING', '-i',
+             interface, '-p', 'tcp', '--dport', port, '-j', 'REDIRECT',
+             '--to-port', server_port]
   _Exec(command, msg='Error adding iptables rule for port %d.' % port)
 
   # Output rules for accessing the rule through localhost or 127.0.0.1
-  command = ['iptables', '-t', 'nat', '-A', 'OUTPUT', '-p', 'tcp', '--dport',
-             port, '-j', 'REDIRECT', '--to-port', server_port]
+  command = ['sudo', 'iptables', '-t', 'nat', '-A', 'OUTPUT', '-p', 'tcp',
+             '--dport', port, '-j', 'REDIRECT', '--to-port', server_port]
   _Exec(command, msg='Error adding iptables rule for port %d.' % port)
 
 
@@ -295,18 +297,19 @@ def _DeleteIptableRule(interface, port, server_port):
     port: Port of incoming packets (integer 1-65535).
     server_port: Server port packets are forwarded to (integer 1-65535).
   """
-  command = ['iptables', '-t', 'nat', '-D', 'PREROUTING', '-i', interface, '-p',
-             'tcp', '--dport', port, '-j', 'REDIRECT', '--to-port', server_port]
+  command = ['sudo', 'iptables', '-t', 'nat', '-D', 'PREROUTING', '-i',
+             interface, '-p', 'tcp', '--dport', port, '-j', 'REDIRECT',
+             '--to-port', server_port]
   _Exec(command, msg='Error deleting iptables rule for port %d.' % port)
 
-  command = ['iptables', '-t', 'nat', '-D', 'OUTPUT', '-p', 'tcp', '--dport',
-             port, '-j', 'REDIRECT', '--to-port', server_port]
+  command = ['sudo', 'iptables', '-t', 'nat', '-D', 'OUTPUT', '-p', 'tcp',
+             '--dport', port, '-j', 'REDIRECT', '--to-port', server_port]
   _Exec(command, msg='Error adding iptables rule for port %d.' % port)
 
 
 def _DeleteAllIpTableRules():
   """Deletes all iptables rules."""
-  command = ['iptables', '-t', 'nat', '-F']
+  command = ['sudo', 'iptables', '-t', 'nat', '-F']
   _Exec(command, msg='Error deleting all iptables rules.')
 
 

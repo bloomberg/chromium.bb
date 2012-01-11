@@ -21,19 +21,19 @@
     // Metrics to record.  See media_constrained_network_perf for more details.
     // Use -1 to indicate that we haven't recorded these values yet.  The PyAuto
     // controller will poll for these values until they are each >= 0.
-    var extra_play_percentage = -1, time_to_playback = -1;
+    var epp = -1, ttp = -1;
 
     video.addEventListener('playing', function(event) {
       startTime = new Date().getTime();
 
-      time_to_playback = Math.max(0, startTime - loadTime);
+      ttp = Math.max(0, startTime - loadTime);
     }, false);
 
     video.addEventListener('ended', function(event) {
       playTime = new Date().getTime() - startTime;
       durMs = video.duration * 1000;
 
-      extra_play_percentage = Math.max(0, (playTime - durMs) * 100 / durMs)
+      epp = Math.max(0, (playTime - durMs) * 100 / durMs)
     }, false);
 
     // Called by the PyAuto controller to initiate testing.

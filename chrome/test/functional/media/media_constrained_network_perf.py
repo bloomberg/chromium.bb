@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -18,17 +18,18 @@ The CNS code is located under: <root>/src/media/tools/constrained_network_server
 """
 
 import itertools
+import logging
 import os
 import Queue
 import subprocess
 import sys
 import threading
+import urllib2
 
 import pyauto_media
 import pyauto
 import pyauto_paths
 import pyauto_utils
-
 
 # Settings for each network constraint.
 _BANDWIDTH_SETTINGS_KBPS = {'None': 0, 'Low': 256, 'Medium': 2000, 'High': 5000}
@@ -92,6 +93,7 @@ class TestWorker(threading.Thread):
     self._automation_lock = automation_lock
     self._pyauto = pyauto_test
     self._url = url
+    self._metrics = {}
     self.start()
 
   def _FindTabLocked(self, url):
@@ -103,18 +105,18 @@ class TestWorker(threading.Thread):
       if tab['url'] == url:
         return tab['index']
 
-  def _HaveMetrics(self, unique_url):
-    """Returns true if metrics are ready.  Set self.{_epp,_ttp} < 0 pre-run."""
+  def _HaveMetric(self, var_name, unique_url):
+    """Checks if unique_url page has variable value ready. Set to < 0 pre-run.
+
+    Args:
+      var_name: The variable name to check the metric for.
+      unique_url: The url of the page to check for the variable's metric.
+    """
     with self._automation_lock:
       tab = self._FindTabLocked(unique_url)
-
-      if self._epp < 0:
-        self._epp = int(self._pyauto.GetDOMValue('extra_play_percentage',
-                                                 tab_index=tab))
-      if self._ttp < 0:
-        self._ttp = int(self._pyauto.GetDOMValue('time_to_playback',
-                                                 tab_index=tab))
-    return self._epp >= 0 and self._ttp >= 0
+      self._metrics[var_name] = int(self._pyauto.GetDOMValue(var_name,
+                                                             tab_index=tab))
+    return self._metrics[var_name] >= 0
 
   def run(self):
     """Opens tab, starts HTML test, and records metrics for each queue entry.
@@ -153,16 +155,26 @@ class TestWorker(threading.Thread):
 
       # Wait until the necessary metrics have been collected.  Okay to not lock
       # here since pyauto.WaitUntil doesn't call into Chrome.
-      self._epp = self._ttp = -1
+      self._metrics['epp'] = self._metrics['ttp'] = -1
       self._pyauto.WaitUntil(
-        self._HaveMetrics, args=[unique_url], retry_sleep=2,
-        timeout=_TEST_VIDEO_DURATION_SEC * 10)
+          self._HaveMetric, args=['ttp', unique_url], retry_sleep=1, timeout=10,
+          debug=False)
 
-      # Record results.
-      # TODO(dalecurtis): Support reference builds.
+      # Do not wait for epp if ttp is not available.
       series_name = ''.join(name)
-      pyauto_utils.PrintPerfResult('epp', series_name, self._epp, '%')
-      pyauto_utils.PrintPerfResult('ttp', series_name, self._ttp, 'ms')
+      if self._metrics['ttp'] >= 0:
+        self._pyauto.WaitUntil(
+            self._HaveMetric, args=['epp', unique_url], retry_sleep=2,
+            timeout=_TEST_VIDEO_DURATION_SEC * 10, debug=False)
+
+        # Record results.
+        # TODO(dalecurtis): Support reference builds.
+        pyauto_utils.PrintPerfResult('epp', series_name, self._metrics['epp'],
+                                     '%')
+        pyauto_utils.PrintPerfResult('ttp', series_name, self._metrics['ttp'],
+                                     'ms')
+      else:
+        logging.error('Test %s timed-out.', series_name)
 
       # Close the tab.
       with self._automation_lock:
@@ -171,6 +183,27 @@ class TestWorker(threading.Thread):
 
       # TODO(dalecurtis): Check results for regressions.
       self._tasks.task_done()
+
+
+class ProcessLogger(threading.Thread):
+  """A thread to log a process's stderr output."""
+
+  def __init__(self, process):
+    """Starts the process logger thread.
+
+    Args:
+      process: The process to log.
+    """
+    threading.Thread.__init__(self)
+    self._process = process
+    self.start()
+
+  def run(self):
+    """Adds debug statements for the process's stderr output."""
+    line = True
+    while line:
+      line = self._process.stderr.readline()
+      logging.debug(line)
 
 
 class MediaConstrainedNetworkPerfTest(pyauto.PyUITest):
@@ -182,7 +215,8 @@ class MediaConstrainedNetworkPerfTest(pyauto.PyUITest):
            '--port', str(_CNS_PORT),
            '--interface', 'lo',
            '--www-root', os.path.join(
-               self.DataDir(), 'pyauto_private', 'media')]
+               self.DataDir(), 'pyauto_private', 'media'),
+           '-v']
 
     process = subprocess.Popen(cmd, stderr=subprocess.PIPE)
 
@@ -190,11 +224,25 @@ class MediaConstrainedNetworkPerfTest(pyauto.PyUITest):
     line = True
     while line:
       line = process.stderr.readline()
+      logging.debug(line)
       if 'STARTED' in line:
         self._server_pid = process.pid
         pyauto.PyUITest.setUp(self)
-        return
+        ProcessLogger(process)
+        if self._CanAccessServer():
+          return
+        # Need to call teardown since the server has already started.
+        self.tearDown()
     self.fail('Failed to start CNS.')
+
+  def _CanAccessServer(self):
+    """Checks if the CNS server can serve a file with no network constraints."""
+    test_url = ''.join([_CNS_BASE_URL, 'f=', _TEST_VIDEO])
+    try:
+      return urllib2.urlopen(test_url) is not None
+    except Exception, e:
+      logging.exception(e)
+      return False
 
   def tearDown(self):
     """Stops the Constrained Network Server (CNS)."""

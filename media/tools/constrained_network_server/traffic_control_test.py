@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -75,10 +75,8 @@ class TrafficControlTests(unittest.TestCase):
         'server_port': 33333,
         'bandwidth': 2000
     }
-    # Convert Kbps to Kbit.
-    rate = config['bandwidth'] * 8
     class_detail = ('class htb 1:%x root prio 0 rate %dKbit ceil %dKbit' %
-                    (config['port'], rate, rate))
+                    (config['port'], config['bandwidth'], config['bandwidth']))
 
     # Add root qdisc.
     traffic_control._AddRootQdisc(config['interface'])

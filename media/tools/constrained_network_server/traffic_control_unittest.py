@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -43,17 +43,17 @@ class TrafficControlUnitTests(unittest.TestCase):
     }
     traffic_control.CreateConstrainedPort(config)
     expected = [
-        'tc qdisc add dev fakeeth root handle 1: htb',
-        'tc class add dev fakeeth parent 1: classid 1:3039 htb rate 256kbps '
-        'ceil 256kbps',
-        'tc qdisc add dev fakeeth parent 1:3039 handle 3039:0 netem loss 2% '
-        'delay 100ms',
-        'tc filter add dev fakeeth protocol ip parent 1: prio 1 u32 match ip '
-        'sport 12345 0xffff flowid 1:3039',
-        'iptables -t nat -A PREROUTING -i fakeeth -p tcp --dport 12345 -j '
+        'sudo tc qdisc add dev fakeeth root handle 1: htb',
+        'sudo tc class add dev fakeeth parent 1: classid 1:3039 htb rate '
+        '256kbit ceil 256kbit',
+        'sudo tc qdisc add dev fakeeth parent 1:3039 handle 3039:0 netem loss '
+        '2% delay 100ms',
+        'sudo tc filter add dev fakeeth protocol ip parent 1: prio 1 u32 match '
+        'ip sport 12345 0xffff flowid 1:3039',
+        'sudo iptables -t nat -A PREROUTING -i fakeeth -p tcp --dport 12345 -j '
         'REDIRECT --to-port 8888',
-        'iptables -t nat -A OUTPUT -p tcp --dport 12345 -j REDIRECT --to-port '
-        '8888'
+        'sudo iptables -t nat -A OUTPUT -p tcp --dport 12345 -j REDIRECT '
+        '--to-port 8888'
     ]
     self.assertEqual(expected, self.commands)
 
@@ -66,17 +66,17 @@ class TrafficControlUnitTests(unittest.TestCase):
     }
     traffic_control.CreateConstrainedPort(config)
     expected = [
-        'tc qdisc add dev fakeeth root handle 1: htb',
-        'tc class add dev fakeeth parent 1: classid 1:3039 htb rate %dkbps '
-        'ceil %dkbps' % (traffic_control._DEFAULT_MAX_BANDWIDTH_KBPS,
-                         traffic_control._DEFAULT_MAX_BANDWIDTH_KBPS),
-        'tc qdisc add dev fakeeth parent 1:3039 handle 3039:0 netem',
-        'tc filter add dev fakeeth protocol ip parent 1: prio 1 u32 match ip '
-        'sport 12345 0xffff flowid 1:3039',
-        'iptables -t nat -A PREROUTING -i fakeeth -p tcp --dport 12345 -j '
+        'sudo tc qdisc add dev fakeeth root handle 1: htb',
+        'sudo tc class add dev fakeeth parent 1: classid 1:3039 htb rate '
+        '%dkbit ceil %dkbit' % (traffic_control._DEFAULT_MAX_BANDWIDTH_KBIT,
+                                traffic_control._DEFAULT_MAX_BANDWIDTH_KBIT),
+        'sudo tc qdisc add dev fakeeth parent 1:3039 handle 3039:0 netem',
+        'sudo tc filter add dev fakeeth protocol ip parent 1: prio 1 u32 '
+        'match ip sport 12345 0xffff flowid 1:3039',
+        'sudo iptables -t nat -A PREROUTING -i fakeeth -p tcp --dport 12345 -j '
         'REDIRECT --to-port 8888',
-        'iptables -t nat -A OUTPUT -p tcp --dport 12345 -j REDIRECT --to-port '
-        '8888'
+        'sudo iptables -t nat -A OUTPUT -p tcp --dport 12345 -j REDIRECT '
+        '--to-port 8888'
     ]
     self.assertEqual(expected, self.commands)
 
@@ -93,13 +93,13 @@ class TrafficControlUnitTests(unittest.TestCase):
     try:
       traffic_control.DeleteConstrainedPort(config)
       expected = [
-          'tc filter del dev fakeeth protocol ip parent 1:0 handle 800::800 '
-          'prio 1 u32',
-          'tc class del dev fakeeth parent 1: classid 1:3039 htb rate 256kbps '
-          'ceil 256kbps',
-          'iptables -t nat -D PREROUTING -i fakeeth -p tcp --dport 12345 -j '
-          'REDIRECT --to-port 8888',
-          'iptables -t nat -D OUTPUT -p tcp --dport 12345 -j REDIRECT '
+          'sudo tc filter del dev fakeeth protocol ip parent 1:0 handle '
+          '800::800 prio 1 u32',
+          'sudo tc class del dev fakeeth parent 1: classid 1:3039 htb rate '
+          '256kbit ceil 256kbit',
+          'sudo iptables -t nat -D PREROUTING -i fakeeth -p tcp --dport 12345 '
+          '-j REDIRECT --to-port 8888',
+          'sudo iptables -t nat -D OUTPUT -p tcp --dport 12345 -j REDIRECT '
           '--to-port 8888']
       self.assertEqual(expected, self.commands)
     finally:
@@ -110,8 +110,8 @@ class TrafficControlUnitTests(unittest.TestCase):
 
     traffic_control.TearDown(config)
     expected = [
-        'tc qdisc del dev fakeeth root',
-        'iptables -t nat -F'
+        'sudo tc qdisc del dev fakeeth root',
+        'sudo iptables -t nat -F'
     ]
     self.assertEqual(expected, self.commands)
 
@@ -119,16 +119,23 @@ class TrafficControlUnitTests(unittest.TestCase):
     # Check seach for handle ID command.
     self.assertRaises(traffic_control.TrafficControlError,
                       traffic_control._GetFilterHandleId, 'fakeeth', 1)
-    self.assertEquals(self.commands, ['tc filter list dev fakeeth parent 1:'])
+    self.assertEquals(self.commands, ['sudo tc filter list dev fakeeth parent '
+                                      '1:'])
 
     # Check with handle ID available.
     traffic_control._Exec = (lambda command, msg:
-      'filter parent 1: protocol ip'' pref 1 u32 fh 800::800 order 2048 key ht '
-      '800 bkt 0 flowid 1:1')
+      'filter parent 1: protocol ip pref 1 u32 fh 800::800 order 2048 key ht '
+      '800 bkt 0 flowid 1:1\nmatch 08ae0000/ffff0000 at 20')
     output = traffic_control._GetFilterHandleId('fakeeth', 1)
     self.assertEqual(output, '800::800')
 
     # Check with handle ID not available.
+    traffic_control._Exec = (lambda command, msg:
+      'filter parent 1: protocol ip pref 1 u32 fh 800::800 order 2048 key ht '
+      '800 bkt 0 flowid 1:11\nmatch 08ae0000/ffff0000 at 20')
+    self.assertRaises(traffic_control.TrafficControlError,
+                      traffic_control._GetFilterHandleId, 'fakeeth', 1)
+
     traffic_control._Exec = lambda command, msg: 'NO ID IN HERE'
     self.assertRaises(traffic_control.TrafficControlError,
                       traffic_control._GetFilterHandleId, 'fakeeth', 1)

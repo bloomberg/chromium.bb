@@ -12,6 +12,7 @@ TODO(dalecurtis): Add some more docs here.
 
 """
 
+import logging
 import mimetypes
 import optparse
 import os
@@ -30,6 +31,9 @@ except ImportError:
 
 # Add webm file types to mimetypes map since cherrypy's default type is text.
 mimetypes.types_map['.webm'] = 'video/webm'
+
+# Default logging is ERROR. Use --verbose to enable DEBUG logging.
+_DEFAULT_LOG_LEVEL = logging.ERROR
 
 # Default port to serve the CNS on.
 _DEFAULT_SERVING_PORT = 9000
@@ -287,6 +291,8 @@ def ParseArgs():
   parser.add_option('--www-root', default=os.getcwd(),
                     help=('Directory root to serve files from. Defaults to the '
                           'current directory: %default'))
+  parser.add_option('-v', '--verbose', action='store_true', dest='verbose',
+                    default=False, help='Turn on verbose output.')
 
   options = parser.parse_args()[0]
 
@@ -300,7 +306,21 @@ def ParseArgs():
   # Convert the path to an absolute to remove any . or ..
   options.www_root = os.path.abspath(options.www_root)
 
+  # Required so that cherrypy logs do not get propagated to root logger causing
+  # the logs to be printed twice.
+  cherrypy.log.error_log.propagate = False
+
+  _SetLogger(options.verbose)
+
   return options
+
+
+def _SetLogger(verbose):
+  # Logging is used for traffic_control debug statements.
+  log_level = _DEFAULT_LOG_LEVEL
+  if verbose:
+    log_level = logging.DEBUG
+  logging.basicConfig(level=log_level, format='[%(threadName)s] %(message)s')
 
 
 def Main():
