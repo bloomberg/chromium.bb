@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/debug/alias.h"
 #include "base/file_path.h"
 #include "base/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -283,6 +284,8 @@ void DownloadDatabase::RemoveDownloadsBetween(base::Time delete_begin,
       int64 id_to_delete = dbg_statement.ColumnInt64(0);
       returned_ids_.erase(id_to_delete);
     }
+    int last_error_code = GetDB().GetErrorCode();
+    base::debug::Alias(&last_error_code);
     CHECK_96627(dbg_statement.Succeeded());
   }
 
