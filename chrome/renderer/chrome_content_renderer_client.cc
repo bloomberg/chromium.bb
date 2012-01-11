@@ -87,6 +87,7 @@
 #include "webkit/plugins/ppapi/ppapi_interface_factory.h"
 
 using WebKit::WebCache;
+using WebKit::WebConsoleMessage;
 using WebKit::WebDataSource;
 using WebKit::WebDocument;
 using WebKit::WebFrame;
@@ -427,6 +428,12 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
                          is_nacl_mime_type,
                          is_nacl_enabled,
                          params)) {
+        frame->addMessageToConsole(
+            WebConsoleMessage(
+                WebConsoleMessage::LevelError,
+                "Only unpacked extensions and apps installed from the Chrome"
+                " Web Store can load NaCl modules without enabling Native"
+                " Client in about:flags."));
         return BlockedPlugin::Create(
             render_view, frame, params, plugin, group.get(),
             IDR_BLOCKED_PLUGIN_HTML, IDS_PLUGIN_BLOCKED, false, false);
