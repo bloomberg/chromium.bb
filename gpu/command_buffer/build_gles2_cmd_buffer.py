@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -2519,25 +2519,37 @@ TEST_F(GLES2ImplementationTest, %(name)s) {
 
   def WriteCmdHelper(self, func, file):
     """Writes the cmd helper definition for a cmd."""
-    args = func.MakeCmdArgString("")
-    file.Write("  void %s(%s) {\n" %
-               (func.name, func.MakeTypedCmdArgString("")))
-    file.Write("    gles2::%s& c = GetCmdSpace<gles2::%s>();\n" %
-               (func.name, func.name))
-    file.Write("    c.Init(%s);\n" % args)
-    file.Write("  }\n\n")
+    code = """  void %(name)s(%(typed_args)s) {
+    gles2::%(name)s* c = GetCmdSpace<gles2::%(name)s>();
+    if (c) {
+      c->Init(%(args)s);
+    }
+  }
+
+"""
+    file.Write(code % {
+          "name": func.name,
+          "typed_args": func.MakeTypedCmdArgString(""),
+          "args": func.MakeCmdArgString(""),
+        })
 
   def WriteImmediateCmdHelper(self, func, file):
     """Writes the cmd helper definition for the immediate version of a cmd."""
-    args = func.MakeCmdArgString("")
-    file.Write("  void %s(%s) {\n" %
-               (func.name, func.MakeTypedCmdArgString("")))
-    file.Write("    const uint32 s = 0;  // TODO(gman): compute correct size\n")
-    file.Write("    gles2::%s& c = "
-               "GetImmediateCmdSpaceTotalSize<gles2::%s>(s);\n" %
-               (func.name, func.name))
-    file.Write("    c.Init(%s);\n" % args)
-    file.Write("  }\n\n")
+    code = """  void %(name)s(%(typed_args)s) {
+    const uint32 s = 0;  // TODO(gman): compute correct size
+    gles2::%(name)s* c =
+        GetImmediateCmdSpaceTotalSize<gles2::%(name)s>(s);
+    if (c) {
+      c->Init(%(args)s);
+    }
+  }
+
+"""
+    file.Write(code % {
+           "name": func.name,
+           "typed_args": func.MakeTypedCmdArgString(""),
+           "args": func.MakeCmdArgString(""),
+        })
 
 
 class CustomHandler(TypeHandler):
@@ -3051,12 +3063,12 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs) {
 TEST_F(%(test_name)s, %(name)sValidArgs) {
   EXPECT_CALL(*gl_, %(gl_func_name)s(1, _))
       .WillOnce(SetArgumentPointee<1>(kNewServiceId));
-  %(name)s& cmd = *GetImmediateAs<%(name)s>();
+  %(name)s* cmd = GetImmediateAs<%(name)s>();
   GLuint temp = kNewClientId;
   SpecializedSetup<%(name)s, 0>(true);
-  cmd.Init(1, &temp);
+  cmd->Init(1, &temp);
   EXPECT_EQ(error::kNoError,
-            ExecuteImmediateCmd(cmd, sizeof(temp)));
+            ExecuteImmediateCmd(*cmd, sizeof(temp)));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
   EXPECT_TRUE(Get%(resource_name)sInfo(kNewClientId) != NULL);
 }
@@ -3067,11 +3079,11 @@ TEST_F(%(test_name)s, %(name)sValidArgs) {
     invalid_test = """
 TEST_F(%(test_name)s, %(name)sInvalidArgs) {
   EXPECT_CALL(*gl_, %(gl_func_name)s(_, _)).Times(0);
-  %(name)s& cmd = *GetImmediateAs<%(name)s>();
+  %(name)s* cmd = GetImmediateAs<%(name)s>();
   SpecializedSetup<%(name)s, 0>(false);
-  cmd.Init(1, &client_%(resource_name)s_id_);
+  cmd->Init(1, &client_%(resource_name)s_id_);
   EXPECT_EQ(error::kInvalidArguments,
-            ExecuteImmediateCmd(cmd, sizeof(&client_%(resource_name)s_id_)));
+            ExecuteImmediateCmd(*cmd, sizeof(&client_%(resource_name)s_id_)));
 }
 """
     self.WriteValidUnitTest(func, file, invalid_test, {
@@ -3130,16 +3142,21 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs) {
 
   def WriteImmediateCmdHelper(self, func, file):
     """Overrriden from TypeHandler."""
-    args = func.MakeOriginalArgString("")
-    file.Write("  void %s(%s) {\n" %
-               (func.name, func.MakeTypedOriginalArgString("")))
-    file.Write("    const uint32 size = gles2::%s::ComputeSize(n);\n" %
-               func.name)
-    file.Write("    gles2::%s& c = "
-               "GetImmediateCmdSpaceTotalSize<gles2::%s>(size);\n" %
-               (func.name, func.name))
-    file.Write("    c.Init(%s);\n" % args)
-    file.Write("  }\n\n")
+    code = """  void %(name)s(%(typed_args)s) {
+    const uint32 size = gles2::%(name)s::ComputeSize(n);
+    gles2::%(name)s* c =
+        GetImmediateCmdSpaceTotalSize<gles2::%(name)s>(size);
+    if (c) {
+      c->Init(%(args)s);
+    }
+  }
+
+"""
+    file.Write(code % {
+          "name": func.name,
+          "typed_args": func.MakeTypedOriginalArgString(""),
+          "args": func.MakeOriginalArgString(""),
+        })
 
   def WriteImmediateFormatTest(self, func, file):
     """Overrriden from TypeHandler."""
@@ -3467,16 +3484,21 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs) {
 
   def WriteImmediateCmdHelper(self, func, file):
     """Overrriden from TypeHandler."""
-    args = func.MakeOriginalArgString("")
-    file.Write("  void %s(%s) {\n" %
-               (func.name, func.MakeTypedOriginalArgString("")))
-    file.Write("    const uint32 size = gles2::%s::ComputeSize(n);\n" %
-               func.name)
-    file.Write("    gles2::%s& c = "
-               "GetImmediateCmdSpaceTotalSize<gles2::%s>(size);\n" %
-               (func.name, func.name))
-    file.Write("    c.Init(%s);\n" % args)
-    file.Write("  }\n\n")
+    code = """  void %(name)s(%(typed_args)s) {
+    const uint32 size = gles2::%(name)s::ComputeSize(n);
+    gles2::%(name)s* c =
+        GetImmediateCmdSpaceTotalSize<gles2::%(name)s>(size);
+    if (c) {
+      c->Init(%(args)s);
+    }
+  }
+
+"""
+    file.Write(code % {
+          "name": func.name,
+          "typed_args": func.MakeTypedOriginalArgString(""),
+          "args": func.MakeOriginalArgString(""),
+        })
 
   def WriteImmediateFormatTest(self, func, file):
     """Overrriden from TypeHandler."""
@@ -3893,16 +3915,21 @@ TEST_F(GLES2ImplementationTest, %(name)s) {
 
   def WriteImmediateCmdHelper(self, func, file):
     """Overrriden from TypeHandler."""
-    args = func.MakeOriginalArgString("")
-    file.Write("  void %s(%s) {\n" %
-               (func.name, func.MakeTypedOriginalArgString("")))
-    file.Write("    const uint32 size = gles2::%s::ComputeSize();\n" %
-               func.name)
-    file.Write("    gles2::%s& c = "
-               "GetImmediateCmdSpaceTotalSize<gles2::%s>(size);\n" %
-               (func.name, func.name))
-    file.Write("    c.Init(%s);\n" % args)
-    file.Write("  }\n\n")
+    code = """  void %(name)s(%(typed_args)s) {
+    const uint32 size = gles2::%(name)s::ComputeSize();
+    gles2::%(name)s* c =
+        GetImmediateCmdSpaceTotalSize<gles2::%(name)s>(size);
+    if (c) {
+      c->Init(%(args)s);
+    }
+  }
+
+"""
+    file.Write(code % {
+          "name": func.name,
+          "typed_args": func.MakeTypedOriginalArgString(""),
+          "args": func.MakeOriginalArgString(""),
+        })
 
   def WriteImmediateFormatTest(self, func, file):
     """Overrriden from TypeHandler."""
@@ -4161,16 +4188,21 @@ TEST_F(GLES2ImplementationTest, %(name)s) {
 
   def WriteImmediateCmdHelper(self, func, file):
     """Overrriden from TypeHandler."""
-    args = func.MakeOriginalArgString("")
-    file.Write("  void %s(%s) {\n" %
-               (func.name, func.MakeTypedOriginalArgString("")))
-    file.Write("    const uint32 size = gles2::%s::ComputeSize(count);\n" %
-               func.name)
-    file.Write("    gles2::%s& c = "
-               "GetImmediateCmdSpaceTotalSize<gles2::%s>(size);\n" %
-               (func.name, func.name))
-    file.Write("    c.Init(%s);\n" % args)
-    file.Write("  }\n\n")
+    code = """  void %(name)s(%(typed_args)s) {
+    const uint32 size = gles2::%(name)s::ComputeSize(count);
+    gles2::%(name)s* c =
+        GetImmediateCmdSpaceTotalSize<gles2::%(name)s>(size);
+    if (c) {
+      c->Init(%(args)s);
+    }
+  }
+
+"""
+    file.Write(code % {
+          "name": func.name,
+          "typed_args": func.MakeTypedOriginalArgString(""),
+          "args": func.MakeOriginalArgString(""),
+        })
 
   def WriteImmediateFormatTest(self, func, file):
     """Overrriden from TypeHandler."""
@@ -4325,16 +4357,21 @@ class GLcharHandler(CustomHandler):
 
   def WriteImmediateCmdHelper(self, func, file):
     """Overrriden from TypeHandler."""
-    args = func.MakeOriginalArgString("")
-    last_arg = func.GetLastOriginalArg()
-    file.Write("  void %s(%s) {\n" %
-               (func.name, func.MakeTypedOriginalArgString("")))
-    file.Write("    const uint32 data_size = strlen(name);\n")
-    file.Write("    gles2::%s& c = GetImmediateCmdSpace<gles2::%s>("
-               "data_size);\n" %
-               (func.name, func.name))
-    file.Write("    c.Init(%s, data_size);\n" % args)
-    file.Write("  }\n\n")
+    code = """  void %(name)s(%(typed_args)s) {
+    const uint32 data_size = strlen(name);
+    gles2::%(name)s* c = GetImmediateCmdSpace<gles2::%(name)s>(data_size);
+    if (c) {
+      c->Init(%(args)s, data_size);
+    }
+  }
+
+"""
+    file.Write(code % {
+          "name": func.name,
+          "typed_args": func.MakeTypedOriginalArgString(""),
+          "args": func.MakeOriginalArgString(""),
+        })
+
 
   def WriteImmediateFormatTest(self, func, file):
     """Overrriden from TypeHandler."""

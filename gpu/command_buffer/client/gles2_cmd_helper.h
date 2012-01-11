@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,53 +31,65 @@ class GLES2CmdHelper : public CommandBufferHelper {
   void GetAttribLocation(
       GLuint program, uint32 name_shm_id, uint32 name_shm_offset,
       uint32 location_shm_id, uint32 location_shm_offset, uint32 data_size) {
-    gles2::GetAttribLocation& c = GetCmdSpace<gles2::GetAttribLocation>();
-    c.Init(
-        program, name_shm_id, name_shm_offset, location_shm_id,
-        location_shm_offset, data_size);
+    gles2::GetAttribLocation* c = GetCmdSpace<gles2::GetAttribLocation>();
+    if (c) {
+      c->Init(
+          program, name_shm_id, name_shm_offset, location_shm_id,
+          location_shm_offset, data_size);
+    }
   }
 
   void GetAttribLocationImmediate(
       GLuint program, const char* name,
       uint32 location_shm_id, uint32 location_shm_offset) {
     const uint32 size = gles2::GetAttribLocationImmediate::ComputeSize(name);
-    gles2::GetAttribLocationImmediate& c =
+    gles2::GetAttribLocationImmediate* c =
         GetImmediateCmdSpaceTotalSize<gles2::GetAttribLocationImmediate>(size);
-    c.Init(program, name, location_shm_id, location_shm_offset);
+    if (c) {
+      c->Init(program, name, location_shm_id, location_shm_offset);
+    }
   }
 
   void GetAttribLocationBucket(
       GLuint program, uint32 name_bucket_id,
       uint32 location_shm_id, uint32 location_shm_offset) {
-    gles2::GetAttribLocationBucket& c =
+    gles2::GetAttribLocationBucket* c =
         GetCmdSpace<gles2::GetAttribLocationBucket>();
-    c.Init(program, name_bucket_id, location_shm_id, location_shm_offset);
+    if (c) {
+      c->Init(program, name_bucket_id, location_shm_id, location_shm_offset);
+    }
   }
 
   void GetUniformLocation(
       GLuint program, uint32 name_shm_id, uint32 name_shm_offset,
       uint32 location_shm_id, uint32 location_shm_offset, uint32 data_size) {
-    gles2::GetUniformLocation& c = GetCmdSpace<gles2::GetUniformLocation>();
-    c.Init(
-        program, name_shm_id, name_shm_offset, location_shm_id,
-        location_shm_offset, data_size);
+    gles2::GetUniformLocation* c = GetCmdSpace<gles2::GetUniformLocation>();
+    if (c) {
+      c->Init(
+          program, name_shm_id, name_shm_offset, location_shm_id,
+          location_shm_offset, data_size);
+    }
   }
 
   void GetUniformLocationImmediate(
       GLuint program, const char* name,
       uint32 location_shm_id, uint32 location_shm_offset) {
     const uint32 size = gles2::GetUniformLocationImmediate::ComputeSize(name);
-    gles2::GetUniformLocationImmediate& c =
+    gles2::GetUniformLocationImmediate* c =
         GetImmediateCmdSpaceTotalSize<gles2::GetUniformLocationImmediate>(size);
-    c.Init(program, name, location_shm_id, location_shm_offset);
+    if (c) {
+      c->Init(program, name, location_shm_id, location_shm_offset);
+    }
   }
 
   void GetUniformLocationBucket(
       GLuint program, uint32 name_bucket_id,
       uint32 location_shm_id, uint32 location_shm_offset) {
-    gles2::GetUniformLocationBucket& c =
+    gles2::GetUniformLocationBucket* c =
         GetCmdSpace<gles2::GetUniformLocationBucket>();
-    c.Init(program, name_bucket_id, location_shm_id, location_shm_offset);
+    if (c) {
+      c->Init(program, name_bucket_id, location_shm_id, location_shm_offset);
+    }
   }
 
  private:
