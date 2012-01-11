@@ -81,7 +81,7 @@ struct panel_launcher {
 	struct widget *widget;
 	struct panel *panel;
 	cairo_surface_t *icon;
-	int pressed;
+	int focused, pressed;
 	const char *path;
 	struct wl_list link;
 };
@@ -90,6 +90,7 @@ struct unlock_dialog {
 	struct window *window;
 	struct widget *widget;
 	struct widget *button;
+	int button_focused;
 	int closing;
 
 	struct desktop *desktop;
@@ -188,8 +189,7 @@ panel_launcher_redraw_handler(struct widget *widget, void *data)
 				 allocation.x, allocation.y);
 	cairo_paint(cr);
 
-	if (window_get_focus_widget(launcher->panel->window) ==
-	    launcher->widget) {
+	if (launcher->focused) {
 		cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 0.4);
 		cairo_mask_surface(cr, launcher->icon,
 				   allocation.x, allocation.y);
@@ -229,6 +229,9 @@ static int
 panel_launcher_enter_handler(struct widget *widget, struct input *input,
 			     uint32_t time, int32_t x, int32_t y, void *data)
 {
+	struct panel_launcher *launcher = data;
+
+	launcher->focused = 1;
 	widget_schedule_redraw(widget);
 
 	return POINTER_LEFT_PTR;
@@ -238,6 +241,9 @@ static void
 panel_launcher_leave_handler(struct widget *widget,
 			     struct input *input, void *data)
 {
+	struct panel_launcher *launcher = data;
+
+	launcher->focused = 0;
 	widget_schedule_redraw(widget);
 }
 
@@ -418,7 +424,7 @@ unlock_dialog_redraw_handler(struct widget *widget, void *data)
 	cairo_set_source_rgba(cr, 0, 0, 0, 0.6);
 	cairo_paint(cr);
 
-	if (window_get_focus_widget(dialog->window) == dialog->button)
+	if (dialog->button_focused)
 		f = 1.0;
 	else
 		f = 0.7;
@@ -474,6 +480,9 @@ unlock_dialog_widget_enter_handler(struct widget *widget,
 				   struct input *input, uint32_t time,
 				   int32_t x, int32_t y, void *data)
 {
+	struct unlock_dialog *dialog = data;
+
+	dialog->button_focused = 1;
 	widget_schedule_redraw(widget);
 
 	return POINTER_LEFT_PTR;
@@ -483,6 +492,9 @@ static void
 unlock_dialog_widget_leave_handler(struct widget *widget,
 				   struct input *input, void *data)
 {
+	struct unlock_dialog *dialog = data;
+
+	dialog->button_focused = 0;
 	widget_schedule_redraw(widget);
 }
 

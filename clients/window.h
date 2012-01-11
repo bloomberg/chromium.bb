@@ -218,8 +218,6 @@ window_add_widget(struct window *window, void *data);
 typedef void (*data_func_t)(void *data, size_t len,
 			    int32_t x, int32_t y, void *user_data);
 
-struct widget *
-window_get_focus_widget(struct window *window);
 struct display *
 window_get_display(struct window *window);
 void
@@ -363,6 +361,9 @@ input_grab(struct input *input, struct widget *widget, uint32_t button);
 
 void
 input_ungrab(struct input *input, uint32_t time);
+
+struct widget *
+input_get_focus_widget(struct input *input);
 
 struct wl_input_device *
 input_get_input_device(struct input *input);

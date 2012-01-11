@@ -133,7 +133,6 @@ struct window {
 	window_close_handler_t close_handler;
 
 	struct widget *widget;
-	struct widget *focus_widget;
 	struct window *menu;
 
 	void *user_data;
@@ -164,6 +163,7 @@ struct input {
 	int32_t x, y, sx, sy;
 	struct wl_list link;
 
+	struct widget *focus_widget;
 	struct widget *grab;
 	uint32_t grab_button;
 
@@ -980,6 +980,8 @@ window_destroy(struct window *window)
 	wl_list_for_each(input, &display->input_list, link) {
 		if (input->pointer_focus == window)
 			input->pointer_focus = NULL;
+		if (input->focus_widget->window == window)
+			input->focus_widget = NULL;
 		if (input->keyboard_focus == window)
 			input->keyboard_focus = NULL;
 	}
@@ -1059,12 +1061,6 @@ widget_destroy(struct widget *widget)
 {
 	wl_list_remove(&widget->link);
 	free(widget);
-}
-
-struct widget *
-window_get_focus_widget(struct window *window)
-{
-	return window->focus_widget;
 }
 
 void
@@ -1428,23 +1424,23 @@ frame_create(struct window *window, void *data)
 }
 
 static void
-window_set_focus_widget(struct window *window, struct widget *focus,
-			struct input *input, uint32_t time, int32_t x, int32_t y)
+input_set_focus_widget(struct input *input, struct widget *focus,
+		       uint32_t time, int32_t x, int32_t y)
 {
 	struct widget *old, *widget;
 	int pointer = POINTER_LEFT_PTR;
 
-	if (focus == window->focus_widget)
+	if (focus == input->focus_widget)
 		return;
 
-	old = window->focus_widget;
+	old = input->focus_widget;
 	if (old) {
 		widget = old;
 		if (input->grab)
 			widget = input->grab;
 		if (widget->leave_handler)
 			widget->leave_handler(old, input, widget->user_data);
-		window->focus_widget = NULL;
+		input->focus_widget = NULL;
 	}
 
 	if (focus) {
@@ -1455,7 +1451,7 @@ window_set_focus_widget(struct window *window, struct widget *focus,
 			pointer = widget->enter_handler(focus, input, time,
 							x, y,
 							widget->user_data);
-		window->focus_widget = focus;
+		input->focus_widget = focus;
 
 		input_set_pointer_image(input, time, pointer);
 	}
@@ -1478,15 +1474,15 @@ input_handle_motion(void *data, struct wl_input_device *input_device,
 
 	if (!(input->grab && input->grab_button)) {
 		widget = widget_find_widget(window->widget, sx, sy);
-		window_set_focus_widget(window, widget, input, time, sx, sy);
+		input_set_focus_widget(input, widget, time, sx, sy);
 	}
 
 	if (input->grab)
 		widget = input->grab;
 	else
-		widget = window->focus_widget;
+		widget = input->focus_widget;
 	if (widget && widget->motion_handler)
-		pointer = widget->motion_handler(window->focus_widget,
+		pointer = widget->motion_handler(input->focus_widget,
 						 input, time, sx, sy,
 						 widget->user_data);
 
@@ -1509,8 +1505,8 @@ input_ungrab(struct input *input, uint32_t time)
 	if (input->pointer_focus) {
 		widget = widget_find_widget(input->pointer_focus->widget,
 					    input->sx, input->sy);
-		window_set_focus_widget(input->pointer_focus, widget,
-					input, time, input->sx, input->sy);
+		input_set_focus_widget(input, widget,
+				       time, input->sx, input->sy);
 	}
 }
 
@@ -1520,13 +1516,12 @@ input_handle_button(void *data,
 		    uint32_t time, uint32_t button, uint32_t state)
 {
 	struct input *input = data;
-	struct window *window = input->pointer_focus;
 	struct widget *widget;
 
-	if (window->focus_widget && input->grab == NULL && state)
-		input_grab(input, window->focus_widget, button);
+	if (input->focus_widget && input->grab == NULL && state)
+		input_grab(input, input->focus_widget, button);
 
-	widget = window->focus_widget;
+	widget = input->focus_widget;
 	if (widget && widget->button_handler)
 		(*input->grab->button_handler)(widget,
 					       input, time,
@@ -1575,7 +1570,7 @@ input_remove_pointer_focus(struct input *input, uint32_t time)
 	if (!window)
 		return;
 
-	window_set_focus_widget(window, NULL, input, 0, 0, 0);
+	input_set_focus_widget(input, NULL, 0, 0, 0);
 
 	input->pointer_focus = NULL;
 	input->current_pointer_image = POINTER_UNSET;
@@ -1605,7 +1600,7 @@ input_handle_pointer_focus(void *data,
 		input->sy = sy;
 
 		widget = widget_find_widget(window->widget, sx, sy);
-		window_set_focus_widget(window, widget, input, time, sx, sy);
+		input_set_focus_widget(input, widget, time, sx, sy);
 	}
 }
 
@@ -1721,6 +1716,12 @@ uint32_t
 input_get_modifiers(struct input *input)
 {
 	return input->modifiers;
+}
+
+struct widget *
+input_get_focus_widget(struct input *input)
+{
+	return input->focus_widget;
 }
 
 struct data_offer {
