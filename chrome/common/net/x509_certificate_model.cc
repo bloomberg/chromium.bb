@@ -59,6 +59,10 @@ std::string ProcessRawBytesWithSeparators(const unsigned char* data,
   // except for the last byte.
   std::string ret;
   size_t kMin = 0U;
+
+  if (!data_length)
+    return "";
+
   ret.reserve(std::max(kMin, data_length * 3 - 1));
 
   for (size_t i = 0; i < data_length; ++i) {
