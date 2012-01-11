@@ -34,6 +34,7 @@
 
 #include <pthread.h>
 #include <signal.h>
+#include <stdio.h>
 #include <sys/mman.h>
 #include <sys/resource.h>
 #include <sys/syscall.h>
@@ -108,8 +109,10 @@ bool CrashGenerator::MapSharedMemory(size_t memory_size) {
 
   void* mapped_memory = mmap(0, memory_size, PROT_READ | PROT_WRITE,
                              MAP_SHARED | MAP_ANONYMOUS, -1, 0);
-  if (mapped_memory == MAP_FAILED)
+  if (mapped_memory == MAP_FAILED) {
+    perror("CrashGenerator: Failed to map shared memory");
     return false;
+  }
 
   memset(mapped_memory, 0, memory_size);
   shared_memory_ = mapped_memory;
@@ -126,12 +129,18 @@ bool CrashGenerator::UnmapSharedMemory() {
     shared_memory_size_ = 0;
     return true;
   }
+
+  perror("CrashGenerator: Failed to unmap shared memory");
   return false;
 }
 
 bool CrashGenerator::SetCoreFileSizeLimit(rlim_t limit) const {
   struct rlimit limits = { limit, limit };
-  return setrlimit(RLIMIT_CORE, &limits) == 0;
+  if (setrlimit(RLIMIT_CORE, &limits) == -1) {
+    perror("CrashGenerator: Failed to set core file size limit");
+    return false;
+  }
+  return true;
 }
 
 bool CrashGenerator::CreateChildCrash(
@@ -144,19 +153,31 @@ bool CrashGenerator::CreateChildCrash(
 
   pid_t pid = fork();
   if (pid == 0) {
-    if (chdir(temp_dir_.path().c_str()) == 0 &&
-        SetCoreFileSizeLimit(kCoreSizeLimit)) {
+    if (chdir(temp_dir_.path().c_str()) == -1) {
+      perror("CrashGenerator: Failed to change directory");
+      exit(1);
+    }
+    if (SetCoreFileSizeLimit(kCoreSizeLimit)) {
       CreateThreadsInChildProcess(num_threads);
-      kill(*GetThreadIdPointer(crash_thread), crash_signal);
+      if (kill(*GetThreadIdPointer(crash_thread), crash_signal) == -1) {
+        perror("CrashGenerator: Failed to kill thread by signal");
+      }
     }
     exit(1);
+  } else if (pid == -1) {
+    perror("CrashGenerator: Failed to create child process");
+    return false;
   }
 
   int status;
-  if (HANDLE_EINTR(waitpid(pid, &status, 0)) == -1 ||
-      !WIFSIGNALED(status) || WTERMSIG(status) != crash_signal)
+  if (HANDLE_EINTR(waitpid(pid, &status, 0)) == -1) {
+    perror("CrashGenerator: Failed to wait for child process");
     return false;
-
+  }
+  if (!WIFSIGNALED(status) || WTERMSIG(status) != crash_signal) {
+    perror("CrashGenerator: Child process not killed by the expected signal");
+    return false;
+  }
   return true;
 }
 
@@ -176,11 +197,13 @@ void CrashGenerator::CreateThreadsInChildProcess(unsigned num_threads) {
   if (pthread_attr_init(&thread_attributes) != 0 ||
       pthread_attr_setdetachstate(&thread_attributes,
                                   PTHREAD_CREATE_DETACHED) != 0) {
+    fprintf(stderr, "CrashGenerator: Failed to initialize thread attribute\n");
     exit(1);
   }
 
   pthread_barrier_t thread_barrier;
   if (pthread_barrier_init(&thread_barrier, NULL, num_threads) != 0) {
+    fprintf(stderr, "CrashGenerator: Failed to initialize thread barrier\n");
     exit(1);
   }
 
@@ -189,12 +212,14 @@ void CrashGenerator::CreateThreadsInChildProcess(unsigned num_threads) {
     thread_data[i].thread_id_ptr = GetThreadIdPointer(i);
     if (pthread_create(&thread_data[i].thread, &thread_attributes,
                        thread_function, &thread_data[i]) != 0) {
+      fprintf(stderr, "CrashGenerator: Failed to create thread %d\n", i);
       exit(1);
     }
   }
 
   int result = pthread_barrier_wait(&thread_barrier);
   if (result != 0 && result != PTHREAD_BARRIER_SERIAL_THREAD) {
+    fprintf(stderr, "CrashGenerator: Failed to wait for thread barrier\n");
     exit(1);
   }
 
