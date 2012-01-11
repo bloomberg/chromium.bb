@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -172,6 +172,7 @@ class TransferBuffer {
   int32 buffer_id_;
   void* result_buffer_;
   uint32 result_shm_offset_;
+  bool usable_;
 };
 
 // This class emulates GLES2 over command buffers. It can be used by a client
@@ -434,7 +435,7 @@ class GLES2Implementation {
   // a transfer buffer to function which is currently managed by this class.
 
   // Gets the contents of a bucket.
-  void GetBucketContents(uint32 bucket_id, std::vector<int8>* data);
+  bool GetBucketContents(uint32 bucket_id, std::vector<int8>* data);
 
   // Sets the contents of a bucket.
   void SetBucketContents(uint32 bucket_id, const void* data, size_t size);

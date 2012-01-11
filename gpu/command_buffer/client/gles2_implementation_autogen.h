@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -109,6 +109,9 @@ GLenum CheckFramebufferStatus(GLenum target) {
   GPU_CLIENT_LOG("[" << this << "] glCheckFramebufferStatus(" << GLES2Util::GetStringFrameBufferTarget(target) << ")");  // NOLINT
   typedef CheckFramebufferStatus::Result Result;
   Result* result = GetResultAs<Result*>();
+  if (!result) {
+    return GL_FRAMEBUFFER_UNSUPPORTED;
+  }
   *result = 0;
   helper_->CheckFramebufferStatus(
       target, GetResultShmId(), GetResultShmOffset());
@@ -488,6 +491,9 @@ void GetBooleanv(GLenum pname, GLboolean* params) {
   }
   typedef GetBooleanv::Result Result;
   Result* result = GetResultAs<Result*>();
+  if (!result) {
+    return;
+  }
   result->SetNumResults(0);
   helper_->GetBooleanv(pname,
       GetResultShmId(), GetResultShmOffset());
@@ -508,6 +514,9 @@ void GetBufferParameteriv(GLenum target, GLenum pname, GLint* params) {
   }
   typedef GetBufferParameteriv::Result Result;
   Result* result = GetResultAs<Result*>();
+  if (!result) {
+    return;
+  }
   result->SetNumResults(0);
   helper_->GetBufferParameteriv(target, pname,
       GetResultShmId(), GetResultShmOffset());
@@ -530,6 +539,9 @@ void GetFloatv(GLenum pname, GLfloat* params) {
   }
   typedef GetFloatv::Result Result;
   Result* result = GetResultAs<Result*>();
+  if (!result) {
+    return;
+  }
   result->SetNumResults(0);
   helper_->GetFloatv(pname,
       GetResultShmId(), GetResultShmOffset());
@@ -552,6 +564,9 @@ void GetFramebufferAttachmentParameteriv(
   }
   typedef GetFramebufferAttachmentParameteriv::Result Result;
   Result* result = GetResultAs<Result*>();
+  if (!result) {
+    return;
+  }
   result->SetNumResults(0);
   helper_->GetFramebufferAttachmentParameteriv(target, attachment, pname,
       GetResultShmId(), GetResultShmOffset());
@@ -572,6 +587,9 @@ void GetIntegerv(GLenum pname, GLint* params) {
   }
   typedef GetIntegerv::Result Result;
   Result* result = GetResultAs<Result*>();
+  if (!result) {
+    return;
+  }
   result->SetNumResults(0);
   helper_->GetIntegerv(pname,
       GetResultShmId(), GetResultShmOffset());
@@ -592,6 +610,9 @@ void GetProgramiv(GLuint program, GLenum pname, GLint* params) {
   }
   typedef GetProgramiv::Result Result;
   Result* result = GetResultAs<Result*>();
+  if (!result) {
+    return;
+  }
   result->SetNumResults(0);
   helper_->GetProgramiv(program, pname,
       GetResultShmId(), GetResultShmOffset());
@@ -638,6 +659,9 @@ void GetRenderbufferParameteriv(GLenum target, GLenum pname, GLint* params) {
   }
   typedef GetRenderbufferParameteriv::Result Result;
   Result* result = GetResultAs<Result*>();
+  if (!result) {
+    return;
+  }
   result->SetNumResults(0);
   helper_->GetRenderbufferParameteriv(target, pname,
       GetResultShmId(), GetResultShmOffset());
@@ -658,6 +682,9 @@ void GetShaderiv(GLuint shader, GLenum pname, GLint* params) {
   }
   typedef GetShaderiv::Result Result;
   Result* result = GetResultAs<Result*>();
+  if (!result) {
+    return;
+  }
   result->SetNumResults(0);
   helper_->GetShaderiv(shader, pname,
       GetResultShmId(), GetResultShmOffset());
@@ -734,6 +761,9 @@ void GetTexParameterfv(GLenum target, GLenum pname, GLfloat* params) {
   }
   typedef GetTexParameterfv::Result Result;
   Result* result = GetResultAs<Result*>();
+  if (!result) {
+    return;
+  }
   result->SetNumResults(0);
   helper_->GetTexParameterfv(target, pname,
       GetResultShmId(), GetResultShmOffset());
@@ -754,6 +784,9 @@ void GetTexParameteriv(GLenum target, GLenum pname, GLint* params) {
   }
   typedef GetTexParameteriv::Result Result;
   Result* result = GetResultAs<Result*>();
+  if (!result) {
+    return;
+  }
   result->SetNumResults(0);
   helper_->GetTexParameteriv(target, pname,
       GetResultShmId(), GetResultShmOffset());
@@ -785,6 +818,9 @@ GLboolean IsBuffer(GLuint buffer) {
   GPU_CLIENT_LOG("[" << this << "] glIsBuffer(" << buffer << ")");
   typedef IsBuffer::Result Result;
   Result* result = GetResultAs<Result*>();
+  if (!result) {
+    return GL_FALSE;
+  }
   *result = 0;
   helper_->IsBuffer(buffer, GetResultShmId(), GetResultShmOffset());
   WaitForCmd();
@@ -797,6 +833,9 @@ GLboolean IsEnabled(GLenum cap) {
   GPU_CLIENT_LOG("[" << this << "] glIsEnabled(" << GLES2Util::GetStringCapability(cap) << ")");  // NOLINT
   typedef IsEnabled::Result Result;
   Result* result = GetResultAs<Result*>();
+  if (!result) {
+    return GL_FALSE;
+  }
   *result = 0;
   helper_->IsEnabled(cap, GetResultShmId(), GetResultShmOffset());
   WaitForCmd();
@@ -809,6 +848,9 @@ GLboolean IsFramebuffer(GLuint framebuffer) {
   GPU_CLIENT_LOG("[" << this << "] glIsFramebuffer(" << framebuffer << ")");
   typedef IsFramebuffer::Result Result;
   Result* result = GetResultAs<Result*>();
+  if (!result) {
+    return GL_FALSE;
+  }
   *result = 0;
   helper_->IsFramebuffer(framebuffer, GetResultShmId(), GetResultShmOffset());
   WaitForCmd();
@@ -821,6 +863,9 @@ GLboolean IsProgram(GLuint program) {
   GPU_CLIENT_LOG("[" << this << "] glIsProgram(" << program << ")");
   typedef IsProgram::Result Result;
   Result* result = GetResultAs<Result*>();
+  if (!result) {
+    return GL_FALSE;
+  }
   *result = 0;
   helper_->IsProgram(program, GetResultShmId(), GetResultShmOffset());
   WaitForCmd();
@@ -833,6 +878,9 @@ GLboolean IsRenderbuffer(GLuint renderbuffer) {
   GPU_CLIENT_LOG("[" << this << "] glIsRenderbuffer(" << renderbuffer << ")");
   typedef IsRenderbuffer::Result Result;
   Result* result = GetResultAs<Result*>();
+  if (!result) {
+    return GL_FALSE;
+  }
   *result = 0;
   helper_->IsRenderbuffer(
       renderbuffer, GetResultShmId(), GetResultShmOffset());
@@ -846,6 +894,9 @@ GLboolean IsShader(GLuint shader) {
   GPU_CLIENT_LOG("[" << this << "] glIsShader(" << shader << ")");
   typedef IsShader::Result Result;
   Result* result = GetResultAs<Result*>();
+  if (!result) {
+    return GL_FALSE;
+  }
   *result = 0;
   helper_->IsShader(shader, GetResultShmId(), GetResultShmOffset());
   WaitForCmd();
@@ -858,6 +909,9 @@ GLboolean IsTexture(GLuint texture) {
   GPU_CLIENT_LOG("[" << this << "] glIsTexture(" << texture << ")");
   typedef IsTexture::Result Result;
   Result* result = GetResultAs<Result*>();
+  if (!result) {
+    return GL_FALSE;
+  }
   *result = 0;
   helper_->IsTexture(texture, GetResultShmId(), GetResultShmOffset());
   WaitForCmd();

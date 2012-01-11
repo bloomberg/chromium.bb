@@ -1197,6 +1197,7 @@ _FUNCTION_INFO = {
     'type': 'Is',
     'decoder_func': 'DoCheckFramebufferStatus',
     'gl_test_func': 'glCheckFramebufferStatusEXT',
+    'error_value': 'GL_FRAMEBUFFER_UNSUPPORTED',
     'result': ['GLenum'],
   },
   'Clear': {'decoder_func': 'DoClear'},
@@ -3597,6 +3598,9 @@ class GETnHandler(TypeHandler):
   }
   typedef %(func_name)s::Result Result;
   Result* result = GetResultAs<Result*>();
+  if (!result) {
+    return;
+  }
   result->SetNumResults(0);
   helper_->%(func_name)s(%(arg_string)s,
       GetResultShmId(), GetResultShmOffset());
@@ -4510,6 +4514,7 @@ TEST_F(%(test_name)s, %(name)sInvalidArgsBadSharedMemoryId) {
     """Overrriden from TypeHandler."""
     impl_func = func.GetInfo('impl_func')
     if impl_func == None or impl_func == True:
+      error_value = func.GetInfo("error_value") or "GL_FALSE"
       file.Write("%s %s(%s) {\n" %
                  (func.return_type, func.original_name,
                   func.MakeTypedOriginalArgString("")))
@@ -4518,6 +4523,9 @@ TEST_F(%(test_name)s, %(name)sInvalidArgsBadSharedMemoryId) {
       self.WriteClientGLCallLog(func, file)
       file.Write("  typedef %s::Result Result;\n" % func.name)
       file.Write("  Result* result = GetResultAs<Result*>();\n")
+      file.Write("  if (!result) {\n")
+      file.Write("    return %s;\n" % error_value)
+      file.Write("  }\n")
       file.Write("  *result = 0;\n")
       arg_string = func.MakeOriginalArgString("")
       comma = ""
