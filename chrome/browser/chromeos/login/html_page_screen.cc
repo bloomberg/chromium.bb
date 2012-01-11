@@ -21,18 +21,9 @@ using content::WebContents;
 namespace chromeos {
 
 ///////////////////////////////////////////////////////////////////////////////
-// HTMLPageDomView
-WebContents* HTMLPageDomView::CreateWebContents(Profile* profile,
-                                                SiteInstance* instance) {
-  return new WizardWebPageViewTabContents(profile,
-                                          instance,
-                                          page_delegate_);
-}
-
-///////////////////////////////////////////////////////////////////////////////
 // HTMLPageView
 HTMLPageView::HTMLPageView()
-    : dom_view_(new HTMLPageDomView()) {
+    : dom_view_(new WebPageDomView()) {
 }
 
 WebPageDomView* HTMLPageView::dom_view() {
@@ -52,7 +43,6 @@ HTMLPageScreen::~HTMLPageScreen() {}
 // HTMLPageScreen, ViewScreen implementation:
 void HTMLPageScreen::CreateView() {
   ViewScreen<HTMLPageView>::CreateView();
-  view()->SetWebPageDelegate(this);
 }
 
 void HTMLPageScreen::Refresh() {
@@ -76,8 +66,10 @@ void HTMLPageScreen::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// HTMLPageScreen, WebPageDelegate implementation:
-void HTMLPageScreen::OnPageLoaded() {
+// HTMLPageScreen, WebPageScreen implementation:
+void HTMLPageScreen::OnNetworkTimeout() {
+  VLOG(1) << "HTMLPageScreen::OnNetworkTimeout";
+  // Just show what we have now. We shouldn't exit from the screen on timeout.
   StopTimeoutTimer();
   // Enable input methods (e.g. Chinese, Japanese) so that users could input
   // their first and last names.
@@ -88,19 +80,6 @@ void HTMLPageScreen::OnPageLoaded() {
     manager->EnableInputMethods(locale, input_method::kAllInputMethods, "");
   }
   view()->ShowPageContent();
-}
-
-void HTMLPageScreen::OnPageLoadFailed(const std::string& url) {
-  VLOG(1) << "HTMLPageScreen::OnPageLoadFailed: " << url;
-  CloseScreen(ScreenObserver::CONNECTION_FAILED);
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// HTMLPageScreen, WebPageScreen implementation:
-void HTMLPageScreen::OnNetworkTimeout() {
-  VLOG(1) << "HTMLPageScreen::OnNetworkTimeout";
-  // Just show what we have now. We shouldn't exit from the screen on timeout.
-  OnPageLoaded();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

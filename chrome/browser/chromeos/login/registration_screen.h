@@ -28,30 +28,17 @@ namespace chromeos {
 
 class ViewScreenDelegate;
 
-// Class that renders host registration page.
-class RegistrationDomView : public WebPageDomView {
- public:
-  RegistrationDomView() {}
-
- protected:
-  // Overriden from DOMView:
-  virtual content::WebContents* CreateWebContents(
-      Profile* profile, SiteInstance* instance) OVERRIDE;
-
-  DISALLOW_COPY_AND_ASSIGN(RegistrationDomView);
-};
-
 // Class that displays screen contents: page and throbber while waiting.
 class RegistrationView : public WebPageView {
  public:
-  RegistrationView() : dom_view_(new RegistrationDomView()) {}
+  RegistrationView() : dom_view_(new WebPageDomView()) {}
 
  protected:
   virtual WebPageDomView* dom_view() OVERRIDE;
 
  private:
   // View that renders page.
-  RegistrationDomView* dom_view_;
+  WebPageDomView* dom_view_;
 
   DISALLOW_COPY_AND_ASSIGN(RegistrationView);
 };
@@ -62,15 +49,10 @@ class RegistrationView : public WebPageView {
 // Partner registration page notifies host page on registration result.
 // Host page notifies that back to RegistrationScreen.
 class RegistrationScreen : public ViewScreen<RegistrationView>,
-                           public WebPageScreen,
-                           public WebPageDelegate {
+                           public WebPageScreen {
  public:
   explicit RegistrationScreen(ViewScreenDelegate* delegate);
   virtual ~RegistrationScreen();
-
-  // WebPageDelegate implementation:
-  virtual void OnPageLoaded() OVERRIDE;
-  virtual void OnPageLoadFailed(const std::string& url) OVERRIDE;
 
   // Handler factory for net::URLRequestFilter::AddHostnameHandler.
   static net::URLRequestJob* Factory(net::URLRequest* request,

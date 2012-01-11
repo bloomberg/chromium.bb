@@ -48,43 +48,6 @@ const int kStopDelayMs = 500;
 }  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
-// WizardWebPageViewTabContents, public:
-
-WizardWebPageViewTabContents::WizardWebPageViewTabContents(
-    Profile* profile,
-    SiteInstance* site_instance,
-    WebPageDelegate* page_delegate)
-      : TabContents(profile, site_instance, MSG_ROUTING_NONE, NULL, NULL),
-        page_delegate_(page_delegate) {
-  }
-
-void WizardWebPageViewTabContents::DidFailProvisionalLoadWithError(
-      RenderViewHost* render_view_host,
-      bool is_main_frame,
-      int error_code,
-      const GURL& url,
-      bool showing_repost_interstitial) {
-  LOG(ERROR) << "Page load failed. URL = " << url << ", error: " << error_code;
-  page_delegate_->OnPageLoadFailed(url.spec());
-}
-
-void WizardWebPageViewTabContents::DidDisplayInsecureContent() {
-  LOG(ERROR) << "Page load failed: did display insecure content";
-  page_delegate_->OnPageLoadFailed("Displayed insecure content");
-}
-
-void WizardWebPageViewTabContents::DidRunInsecureContent(
-    const std::string& security_origin) {
-  LOG(ERROR) << "Page load failed: did run insecure content";
-  page_delegate_->OnPageLoadFailed(security_origin);
-}
-
-void WizardWebPageViewTabContents::DocumentLoadedInFrame(
-    long long /*frame_id*/) {
-  page_delegate_->OnPageLoaded();
-}
-
-///////////////////////////////////////////////////////////////////////////////
 // WebPageDomView, public:
 
 void WebPageDomView::SetWebContentsDelegate(
@@ -137,10 +100,6 @@ void WebPageView::LoadURL(const GURL& url) {
 void WebPageView::SetWebContentsDelegate(
     content::WebContentsDelegate* delegate) {
   dom_view()->SetWebContentsDelegate(delegate);
-}
-
-void WebPageView::SetWebPageDelegate(WebPageDelegate* delegate) {
-  dom_view()->set_web_page_delegate(delegate);
 }
 
 void WebPageView::ShowPageContent() {

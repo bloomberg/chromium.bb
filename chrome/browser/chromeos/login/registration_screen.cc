@@ -14,6 +14,7 @@
 #include "content/browser/child_process_security_policy.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/site_instance.h"
+#include "content/public/browser/web_contents.h"
 #include "googleurl/src/gurl.h"
 #include "net/url_request/url_request_about_job.h"
 #include "net/url_request/url_request_filter.h"
@@ -35,16 +36,6 @@ const char kRegistrationSuccessUrl[] = "cros://register/success";
 const char kRegistrationSkippedUrl[] = "cros://register/skipped";
 
 }  // namespace
-
-///////////////////////////////////////////////////////////////////////////////
-// RegistrationDomView, protected:
-
-WebContents* RegistrationDomView::CreateWebContents(
-    Profile* profile, SiteInstance* instance) {
-  return new WizardWebPageViewTabContents(profile,
-                                          instance,
-                                          page_delegate_);
-}
 
 ///////////////////////////////////////////////////////////////////////////////
 // RegistrationView, protected:
@@ -72,7 +63,6 @@ RegistrationScreen::~RegistrationScreen() {
 // RegistrationScreen, ViewScreen implementation:
 void RegistrationScreen::CreateView() {
   ViewScreen<RegistrationView>::CreateView();
-  view()->SetWebPageDelegate(this);
 }
 
 void RegistrationScreen::Refresh() {
@@ -87,26 +77,6 @@ void RegistrationScreen::Refresh() {
 
 RegistrationView* RegistrationScreen::AllocateView() {
   return new RegistrationView();
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// RegistrationScreen, WebPageDelegate implementation:
-void RegistrationScreen::OnPageLoaded() {
-  StopTimeoutTimer();
-  // Enable input methods (e.g. Chinese, Japanese) so that users could input
-  // their first and last names.
-  if (g_browser_process) {
-    const std::string locale = g_browser_process->GetApplicationLocale();
-    input_method::InputMethodManager* manager =
-        input_method::InputMethodManager::GetInstance();
-    manager->EnableInputMethods(locale, input_method::kAllInputMethods, "");
-  }
-  view()->ShowPageContent();
-}
-
-void RegistrationScreen::OnPageLoadFailed(const std::string& url) {
-  LOG(ERROR) << "Error loading registration page: " << url;
-  CloseScreen(ScreenObserver::REGISTRATION_SKIPPED);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

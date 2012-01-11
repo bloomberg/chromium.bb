@@ -20,19 +20,6 @@ namespace chromeos {
 
 class ViewScreenDelegate;
 
-class HTMLPageDomView : public WebPageDomView {
- public:
-  HTMLPageDomView() {}
-
- protected:
-  // Overriden from DOMView:
-  virtual content::WebContents* CreateWebContents(
-      Profile* profile, SiteInstance* instance) OVERRIDE;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(HTMLPageDomView);
-};
-
 class HTMLPageView : public WebPageView {
  public:
   HTMLPageView();
@@ -42,7 +29,7 @@ class HTMLPageView : public WebPageView {
 
  private:
   // View that renders page.
-  HTMLPageDomView* dom_view_;
+  WebPageDomView* dom_view_;
 
   DISALLOW_COPY_AND_ASSIGN(HTMLPageView);
 };
@@ -50,15 +37,10 @@ class HTMLPageView : public WebPageView {
 // HTMLPageScreen is used to show arbitrary HTML page. It is used to show
 // simple screens like recover.
 class HTMLPageScreen : public ViewScreen<HTMLPageView>,
-                       public WebPageScreen,
-                       public WebPageDelegate {
+                       public WebPageScreen {
  public:
   HTMLPageScreen(ViewScreenDelegate* delegate, const std::string& url);
   virtual ~HTMLPageScreen();
-
-  // WebPageDelegate implementation:
-  virtual void OnPageLoaded() OVERRIDE;
-  virtual void OnPageLoadFailed(const std::string& url) OVERRIDE;
 
  protected:
   // Overrides WebPageScreen:

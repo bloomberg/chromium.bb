@@ -11,7 +11,6 @@
 #include "base/compiler_specific.h"
 #include "base/timer.h"
 #include "chrome/browser/ui/views/dom_view.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "ui/views/view.h"
 
 class Profile;
@@ -27,60 +26,13 @@ class Throbber;
 
 namespace chromeos {
 
-// Delegate interface for listening to common events during page load.
-class WebPageDelegate {
- public:
-  virtual ~WebPageDelegate() {}
-
-  // Notify about document load event.
-  virtual void OnPageLoaded() = 0;
-
-  // Notify about navigation errors.
-  virtual void OnPageLoadFailed(const std::string& url) = 0;
-};
-
-// Base class for tab contents for pages rendered on wizard screens.
-class WizardWebPageViewTabContents : public TabContents {
- public:
-  WizardWebPageViewTabContents(Profile* profile,
-                               SiteInstance* site_instance,
-                               WebPageDelegate* page_delegate);
-
-  virtual void DidFailProvisionalLoadWithError(
-      RenderViewHost* render_view_host,
-      bool is_main_frame,
-      int error_code,
-      const GURL& url,
-      bool showing_repost_interstitial);
-
-  virtual void DidDisplayInsecureContent();
-  virtual void DidRunInsecureContent(const std::string& security_origin);
-  virtual void DocumentLoadedInFrame(long long frame_id);
-
- private:
-  WebPageDelegate* page_delegate_;
-
-  DISALLOW_COPY_AND_ASSIGN(WizardWebPageViewTabContents);
-};
-
 // WebPageDomView is the view that is rendering the page.
 class WebPageDomView : public DOMView {
  public:
-  WebPageDomView() : page_delegate_(NULL) {}
+  WebPageDomView() {}
 
   // Set delegate that will be notified about tab contents changes.
   void SetWebContentsDelegate(content::WebContentsDelegate* delegate);
-
-  // Set delegate that will be notified about page events.
-  void set_web_page_delegate(WebPageDelegate* delegate) {
-    page_delegate_ = delegate;
-  }
-
- protected:
-  // Overriden from DOMView:
-  virtual content::WebContents* CreateWebContents(
-      Profile* profile, SiteInstance* instance) = 0;
-  WebPageDelegate* page_delegate_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebPageDomView);
@@ -106,9 +58,6 @@ class WebPageView : public views::View {
 
   // Sets delegate for tab contents changes.
   void SetWebContentsDelegate(content::WebContentsDelegate* delegate);
-
-  // Set delegate that will be notified about page events.
-  void SetWebPageDelegate(WebPageDelegate* delegate);
 
   // Stops throbber and shows page content (starts renderer_timer_ for that).
   void ShowPageContent();
