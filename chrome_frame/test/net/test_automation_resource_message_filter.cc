@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,11 +29,26 @@ bool TestAutomationResourceMessageFilter::OnMessageReceived(
   bool handled = false;
   int request_id;
   if (URLRequestAutomationJob::MayFilterMessage(message, &request_id)) {
+    base::AutoLock lock(requests_lock_);
     RequestMap::iterator it = requests_.find(request_id);
     if (it != requests_.end()) {
       handled = true;
       IPC::Message* msg = new IPC::Message(message);
       RequestJob& job = it->second;
+
+      // SUBTLE: Why is this safe? We pass the URLRequestAutomationJob to a
+      // posted task which then takes a reference. We then release the lock,
+      // meaning we are no longer protecting access to the request_map_ which
+      // holds our last owned reference to the URLRequestAutomationJob. Thus
+      // the posted task could be the one holding the last reference.
+      //
+      // If the posted task were to be run on a thread other than the one the
+      // URLRequestAutomationJob was created on, we could destroy the job on
+      // the wrong thread (resulting in badness as URLRequestJobs must be
+      // created and destroyed on the same thread). The destruction will happen
+      // on the correct thread here since we post to job.loop_ which is set as
+      // the message loop of the current thread when RegisterRequest is invoked
+      // by URLRequestJob's constructor.
       job.loop_->PostTask(FROM_HERE,
                           base::Bind(OnRequestMessage, job.job_, msg));
     }
@@ -49,6 +64,7 @@ bool TestAutomationResourceMessageFilter::RegisterRequest(
   // Store the request in an internal map like the parent class
   // does, but also store the current loop pointer so we can send
   // request messages to that loop.
+  base::AutoLock lock(requests_lock_);
   DCHECK(requests_.end() == requests_.find(job->id()));
   RequestJob request_job = { MessageLoop::current(), job };
   requests_[job->id()] = request_job;
@@ -58,5 +74,6 @@ bool TestAutomationResourceMessageFilter::RegisterRequest(
 // Remove request from the list of outstanding requests.
 void TestAutomationResourceMessageFilter::UnRegisterRequest(
     URLRequestAutomationJob* job) {
+  base::AutoLock lock(requests_lock_);
   requests_.erase(job->id());
 }

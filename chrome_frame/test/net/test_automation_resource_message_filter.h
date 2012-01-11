@@ -1,9 +1,12 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 #ifndef CHROME_FRAME_TEST_NET_TEST_AUTOMATION_RESOURCE_MESSAGE_FILTER_H_
 #define CHROME_FRAME_TEST_NET_TEST_AUTOMATION_RESOURCE_MESSAGE_FILTER_H_
 
+#include <map>
+
+#include "base/synchronization/lock.h"
 #include "chrome/browser/automation/automation_provider.h"
 #include "chrome/browser/automation/automation_resource_message_filter.h"
 #include "chrome/browser/automation/url_request_automation_job.h"
@@ -46,6 +49,9 @@ class TestAutomationResourceMessageFilter
   };
   typedef std::map<int, RequestJob> RequestMap;
   RequestMap requests_;
+
+  // Protects access to requests_.
+  base::Lock requests_lock_;
 };
 
 #endif  // CHROME_FRAME_TEST_NET_TEST_AUTOMATION_RESOURCE_MESSAGE_FILTER_H_
