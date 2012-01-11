@@ -134,8 +134,6 @@ struct window {
 
 	struct widget *widget;
 	struct widget *focus_widget;
-	uint32_t widget_grab_button;
-
 	struct window *menu;
 
 	void *user_data;
@@ -166,6 +164,9 @@ struct input {
 	int32_t x, y, sx, sy;
 	struct wl_list link;
 
+	struct widget *grab;
+	uint32_t grab_button;
+
 	struct wl_data_device *data_device;
 	struct data_offer *drag_offer;
 	struct data_offer *selection_offer;
@@ -190,6 +191,7 @@ struct frame {
 struct menu {
 	struct window *window;
 	struct widget *widget;
+	struct input *input;
 	const char **entries;
 	uint32_t time;
 	int current;
@@ -1350,13 +1352,6 @@ frame_motion_handler(struct widget *widget,
 }
 
 static void
-break_grab(struct window *window)
-{
-	window->focus_widget = NULL;
-	window->widget_grab_button = 0;
-}
-
-static void
 frame_button_handler(struct widget *widget,
 		     struct input *input, uint32_t time,
 		     int button, int state, void *data)
@@ -1378,7 +1373,7 @@ frame_button_handler(struct widget *widget,
 			if (!window->shell_surface)
 				break;
 			input_set_pointer_image(input, time, POINTER_DRAGGING);
-			break_grab(window);
+			input_ungrab(input, time);
 			wl_shell_surface_move(window->shell_surface,
 					      input_get_input_device(input),
 					      time);
@@ -1393,7 +1388,7 @@ frame_button_handler(struct widget *widget,
 		case WINDOW_RESIZING_BOTTOM_RIGHT:
 			if (!window->shell_surface)
 				break;
-			break_grab(window);
+			input_ungrab(input, time);
 			wl_shell_surface_resize(window->shell_surface,
 						input_get_input_device(input),
 						time, location);
@@ -1436,7 +1431,7 @@ static void
 window_set_focus_widget(struct window *window, struct widget *focus,
 			struct input *input, uint32_t time, int32_t x, int32_t y)
 {
-	struct widget *old;
+	struct widget *old, *widget;
 	int pointer = POINTER_LEFT_PTR;
 
 	if (focus == window->focus_widget)
@@ -1444,15 +1439,22 @@ window_set_focus_widget(struct window *window, struct widget *focus,
 
 	old = window->focus_widget;
 	if (old) {
-		if (old->leave_handler)
-			old->leave_handler(old, input, old->user_data);
+		widget = old;
+		if (input->grab)
+			widget = input->grab;
+		if (widget->leave_handler)
+			widget->leave_handler(old, input, widget->user_data);
 		window->focus_widget = NULL;
 	}
 
 	if (focus) {
-		if (focus->enter_handler)
-			pointer = focus->enter_handler(focus, input, time,
-						       x, y, focus->user_data);
+		widget = focus;
+		if (input->grab)
+			widget = input->grab;
+		if (widget->enter_handler)
+			pointer = widget->enter_handler(focus, input, time,
+							x, y,
+							widget->user_data);
 		window->focus_widget = focus;
 
 		input_set_pointer_image(input, time, pointer);
@@ -1474,17 +1476,42 @@ input_handle_motion(void *data, struct wl_input_device *input_device,
 	input->sx = sx;
 	input->sy = sy;
 
-	if (!window->focus_widget || !window->widget_grab_button) {
+	if (!(input->grab && input->grab_button)) {
 		widget = widget_find_widget(window->widget, sx, sy);
 		window_set_focus_widget(window, widget, input, time, sx, sy);
 	}
 
-	widget = window->focus_widget;
+	if (input->grab)
+		widget = input->grab;
+	else
+		widget = window->focus_widget;
 	if (widget && widget->motion_handler)
-		pointer = widget->motion_handler(widget, input, time, sx, sy,
+		pointer = widget->motion_handler(window->focus_widget,
+						 input, time, sx, sy,
 						 widget->user_data);
 
 	input_set_pointer_image(input, time, pointer);
+}
+
+void
+input_grab(struct input *input, struct widget *widget, uint32_t button)
+{
+	input->grab = widget;
+	input->grab_button = button;
+}
+
+void
+input_ungrab(struct input *input, uint32_t time)
+{
+	struct widget *widget;
+
+	input->grab = NULL;
+	if (input->pointer_focus) {
+		widget = widget_find_widget(input->pointer_focus->widget,
+					    input->sx, input->sy);
+		window_set_focus_widget(input->pointer_focus, widget,
+					input, time, input->sx, input->sy);
+	}
 }
 
 static void
@@ -1496,24 +1523,18 @@ input_handle_button(void *data,
 	struct window *window = input->pointer_focus;
 	struct widget *widget;
 
-	if (window->focus_widget && window->widget_grab_button == 0 && state)
-		window->widget_grab_button = button;
+	if (window->focus_widget && input->grab == NULL && state)
+		input_grab(input, window->focus_widget, button);
 
 	widget = window->focus_widget;
 	if (widget && widget->button_handler)
-		(*widget->button_handler)(widget,
-					  input, time,
-					  button, state,
-					  widget->user_data);
+		(*input->grab->button_handler)(widget,
+					       input, time,
+					       button, state,
+					       input->grab->user_data);
 
-	if (window->focus_widget &&
-	    window->widget_grab_button == button && !state) {
-		window->widget_grab_button = 0;
-		widget = widget_find_widget(window->widget,
-					    input->sx, input->sy);
-		window_set_focus_widget(window, widget, input, time,
-					input->sx, input->sy);
-	}
+	if (input->grab && input->grab_button == button && !state)
+		input_ungrab(input, time);
 }
 
 static void
@@ -1554,7 +1575,7 @@ input_remove_pointer_focus(struct input *input, uint32_t time)
 	if (!window)
 		return;
 
-	window_set_focus_widget(window, NULL, NULL, 0, 0, 0);
+	window_set_focus_widget(window, NULL, input, 0, 0, 0);
 
 	input->pointer_focus = NULL;
 	input->current_pointer_image = POINTER_UNSET;
@@ -2051,11 +2072,15 @@ static void
 handle_popup_done(void *data, struct wl_shell_surface *shell_surface)
 {
 	struct window *window = data;
-	struct menu *menu = window_get_user_data(window);
+	struct menu *menu = window->widget->user_data;
+
 	/* FIXME: Need more context in this event, at least the input
-	 * device.  Or just use wl_callback. */
+	 * device.  Or just use wl_callback.  And this really needs to
+	 * be a window vfunc that the menu can set.  And we need the
+	 * time. */
 
 	menu->func(window->parent, menu->current, window->parent->user_data);
+	input_ungrab(menu->input, 0);
 	window_destroy(window);
 }
 
@@ -2294,7 +2319,7 @@ window_create_transient(struct display *display, struct window *parent,
 	return window;
 }
 
-static int
+static void
 menu_set_item(struct menu *menu, int sy)
 {
 	int next;
@@ -2304,8 +2329,6 @@ menu_set_item(struct menu *menu, int sy)
 		menu->current = next;
 		widget_schedule_redraw(menu->widget);
 	}
-
-	return POINTER_LEFT_PTR;
 }
 
 static int
@@ -2313,7 +2336,12 @@ menu_motion_handler(struct widget *widget,
 		    struct input *input, uint32_t time,
 		    int32_t x, int32_t y, void *data)
 {
-	return menu_set_item(data, y);
+	struct menu *menu = data;
+
+	if (widget == menu->widget)
+		menu_set_item(data, y);
+
+	return POINTER_LEFT_PTR;
 }
 
 static int
@@ -2321,13 +2349,21 @@ menu_enter_handler(struct widget *widget,
 		   struct input *input, uint32_t time,
 		   int32_t x, int32_t y, void *data)
 {
-	return menu_set_item(data, y);
+	struct menu *menu = data;
+
+	if (widget == menu->widget)
+		menu_set_item(data, y);
+
+	return POINTER_LEFT_PTR;
 }
 
 static void
 menu_leave_handler(struct widget *widget, struct input *input, void *data)
 {
-	menu_set_item(data, -200);
+	struct menu *menu = data;
+
+	if (widget == menu->widget)
+		menu_set_item(data, -200);
 }
 
 static void
@@ -2338,11 +2374,13 @@ menu_button_handler(struct widget *widget,
 {
 	struct menu *menu = data;
 
-	/* Either relase after press-drag-release or click-motion-click. */
 	if (state == 0 && time - menu->time > 500) {
+		/* Either relase after press-drag-release or
+		 * click-motion-click. */
 		menu->func(menu->window->parent, 
 			   menu->current, menu->window->parent->user_data);
-		window_destroy(widget->window);
+		input_ungrab(input, time);
+		window_destroy(menu->widget->window);
 	}
 }
 
@@ -2409,8 +2447,10 @@ window_create_menu(struct display *display,
 	menu->widget = window_add_widget(menu->window, menu);
 	menu->entries = entries;
 	menu->count = count;
+	menu->current = -1;
 	menu->time = time;
 	menu->func = func;
+	menu->input = input;
 	window->type = TYPE_MENU;
 	window->x = x;
 	window->y = y;
@@ -2425,6 +2465,8 @@ window_create_menu(struct display *display,
 	widget_set_leave_handler(menu->widget, menu_leave_handler);
 	widget_set_motion_handler(menu->widget, menu_motion_handler);
 	widget_set_button_handler(menu->widget, menu_button_handler);
+
+	input_grab(input, menu->widget, 0);
 
 	return window;
 }

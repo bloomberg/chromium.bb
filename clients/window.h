@@ -358,6 +358,12 @@ input_get_position(struct input *input, int32_t *x, int32_t *y);
 uint32_t
 input_get_modifiers(struct input *input);
 
+void
+input_grab(struct input *input, struct widget *widget, uint32_t button);
+
+void
+input_ungrab(struct input *input, uint32_t time);
+
 struct wl_input_device *
 input_get_input_device(struct input *input);
 
