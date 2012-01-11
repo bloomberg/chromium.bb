@@ -133,17 +133,8 @@ bool NeedsExtensionWebUI(WebContents* web_contents,
 WebUIFactoryFunction GetWebUIFactoryFunction(WebContents* web_contents,
                                              Profile* profile,
                                              const GURL& url) {
-  if (url.host() == chrome::kChromeUIDialogHost)
-    return &NewWebUI<ConstrainedHtmlUI>;
-
   if (NeedsExtensionWebUI(web_contents, profile, url))
     return &NewWebUI<ExtensionWebUI>;
-
-  // All platform builds of Chrome will need to have a cloud printing
-  // dialog as backup.  It's just that on Chrome OS, it's the only
-  // print dialog.
-  if (url.host() == chrome::kChromeUICloudPrintResourcesHost)
-    return &NewWebUI<ExternalHtmlDialogUI>;
 
   // This will get called a lot to check all URLs, so do a quick check of other
   // schemes to filter out most URLs.
@@ -151,11 +142,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebContents* web_contents,
       !url.SchemeIs(chrome::kChromeInternalScheme) &&
       !url.SchemeIs(chrome::kChromeUIScheme)) {
     return NULL;
-  }
-
-  if (url.host() == chrome::kChromeUISyncResourcesHost ||
-      url.host() == chrome::kChromeUICloudPrintSetupHost) {
-    return &NewWebUI<HtmlDialogUI>;
   }
 
   // Special case the new tab page. In older versions of Chrome, the new tab
@@ -167,22 +153,29 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebContents* web_contents,
     return &NewWebUI<NewTabUI>;
   }
 
+  /****************************************************************************
+   * Please keep this in alphabetical order. If #ifs or special logics are
+   * required, add it below in the appropriate section.
+   ***************************************************************************/
   // We must compare hosts only since some of the Web UIs append extra stuff
   // after the host name.
   if (url.host() == chrome::kChromeUIBookmarksHost)
     return &NewWebUI<BookmarksUI>;
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
-  if (url.host() == chrome::kChromeUICertificateViewerHost)
-    return &NewWebUI<CertificateViewerUI>;
-#endif
-#if defined(OS_WIN)
-  if (url.host() == chrome::kChromeUIConflictsHost)
-    return &NewWebUI<ConflictsUI>;
-#endif
+  // All platform builds of Chrome will need to have a cloud printing
+  // dialog as backup.  It's just that on Chrome OS, it's the only
+  // print dialog.
+  if (url.host() == chrome::kChromeUICloudPrintResourcesHost)
+    return &NewWebUI<ExternalHtmlDialogUI>;
+  if (url.host() == chrome::kChromeUICloudPrintSetupHost)
+    return &NewWebUI<HtmlDialogUI>;
+  if (url.spec() == chrome::kChromeUIConstrainedHTMLTestURL)
+    return &NewWebUI<ConstrainedHtmlUI>;
   if (url.host() == chrome::kChromeUICrashesHost)
     return &NewWebUI<CrashesUI>;
   if (url.host() == chrome::kChromeUIDevToolsHost)
     return &NewWebUI<DevToolsUI>;
+  if (url.host() == chrome::kChromeUIDialogHost)
+    return &NewWebUI<ConstrainedHtmlUI>;
   if (url.host() == chrome::kChromeUIDownloadsHost)
     return &NewWebUI<DownloadsUI>;
   if (url.host() == chrome::kChromeUIEditSearchEngineDialogHost)
@@ -201,20 +194,12 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebContents* web_contents,
     return &NewWebUI<HistoryUI>;
   if (url.host() == chrome::kChromeUIHungRendererDialogHost)
     return &NewWebUI<HungRendererDialogUI>;
-#if defined(USE_VIRTUAL_KEYBOARD)
-  if (url.host() == chrome::kChromeUIKeyboardHost)
-    return &NewWebUI<KeyboardUI>;
-#endif
   if (url.host() == chrome::kChromeUIMediaInternalsHost)
     return &NewWebUI<MediaInternalsUI>;
   if (url.host() == chrome::kChromeUINetInternalsHost)
     return &NewWebUI<NetInternalsUI>;
   if (url.host() == chrome::kChromeUINetworkActionPredictorHost)
     return &NewWebUI<NetworkActionPredictorUI>;
-#if defined(ENABLE_CONFIGURATION_POLICY)
-  if (url.host() == chrome::kChromeUIPolicyHost)
-    return &NewWebUI<PolicyUI>;
-#endif
   if (url.host() == chrome::kChromeUIPluginsHost)
     return &NewWebUI<PluginsUI>;
   if (url.host() == chrome::kChromeUIProfilerHost)
@@ -223,14 +208,16 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebContents* web_contents,
     return &NewWebUI<QuotaInternalsUI>;
   if (url.host() == chrome::kChromeUISSLClientCertificateSelectorHost)
     return &NewWebUI<ConstrainedHtmlUI>;
+  if (url.host() == chrome::kChromeUISettingsFrameHost)
+    return &NewWebUI<options2::OptionsUI>;
   if (url.host() == chrome::kChromeUISessionsHost)
     return &NewWebUI<SessionsUI>;
   if (url.host() == chrome::kChromeUISettingsHost)
     return &NewWebUI<OptionsUI>;
-  if (url.host() == chrome::kChromeUISettingsFrameHost)
-    return &NewWebUI<options2::OptionsUI>;
   if (url.host() == chrome::kChromeUISyncInternalsHost)
     return &NewWebUI<SyncInternalsUI>;
+  if (url.host() == chrome::kChromeUISyncResourcesHost)
+    return &NewWebUI<HtmlDialogUI>;
   if (url.host() == chrome::kChromeUITaskManagerHost)
     return &NewWebUI<TaskManagerUI>;
   if (url.host() == chrome::kChromeUITracingHost)
@@ -240,6 +227,17 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebContents* web_contents,
   if (url.host() == chrome::kChromeUIWorkersHost)
     return &NewWebUI<WorkersUI>;
 
+  /****************************************************************************
+   * OS Specific #defines
+   ***************************************************************************/
+#if defined(OS_WIN)
+  if (url.host() == chrome::kChromeUIConflictsHost)
+    return &NewWebUI<ConflictsUI>;
+#endif
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
+  if (url.host() == chrome::kChromeUICertificateViewerHost)
+    return &NewWebUI<CertificateViewerUI>;
+#endif
 #if defined(OS_CHROMEOS)
   if (url.host() == chrome::kChromeUIActiveDownloadsHost)
     return &NewWebUI<ActiveDownloadsUI>;
@@ -265,6 +263,18 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebContents* web_contents,
     return &NewWebUI<AboutPageUI>;
 #endif  // defined(OS_CHROMEOS)
 
+  /****************************************************************************
+   * Other #defines and special logics.
+   ***************************************************************************/
+#if defined(ENABLE_CONFIGURATION_POLICY)
+  if (url.host() == chrome::kChromeUIPolicyHost)
+    return &NewWebUI<PolicyUI>;
+#endif
+#if defined(USE_VIRTUAL_KEYBOARD)
+  if (url.host() == chrome::kChromeUIKeyboardHost)
+    return &NewWebUI<KeyboardUI>;
+#endif
+
 #if (defined(OS_LINUX) && defined(TOOLKIT_VIEWS)) || defined(USE_AURA)
   if (url.host() == chrome::kChromeUICollectedCookiesHost ||
       url.host() == chrome::kChromeUIHttpAuthHost ||
@@ -285,9 +295,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebContents* web_contents,
       switches::IsPrintPreviewEnabled()) {
     return &NewWebUI<PrintPreviewUI>;
   }
-
-  if (url.spec() == chrome::kChromeUIConstrainedHTMLTestURL)
-    return &NewWebUI<ConstrainedHtmlUI>;
 
 #if !defined(OS_CHROMEOS)
   if (url.host() == chrome::kChromeUISyncPromoHost) {
