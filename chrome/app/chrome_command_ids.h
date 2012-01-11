@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -254,6 +254,8 @@
 #define IDC_CONTENT_CONTEXT_MUTE 50131
 #define IDC_CONTENT_CONTEXT_LOOP 50132
 #define IDC_CONTENT_CONTEXT_CONTROLS 50133
+#define IDC_CONTENT_CONTEXT_ROTATECW 50134
+#define IDC_CONTENT_CONTEXT_ROTATECCW 50135
 // Edit items.
 #define IDC_CONTENT_CONTEXT_COPY 50140
 #define IDC_CONTENT_CONTEXT_CUT 50141

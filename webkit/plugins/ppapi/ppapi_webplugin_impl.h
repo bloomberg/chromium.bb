@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -80,6 +80,9 @@ class WebPluginImpl : public WebKit::WebPlugin {
                          int printer_dpi) OVERRIDE;
   virtual bool printPage(int page_number, WebKit::WebCanvas* canvas) OVERRIDE;
   virtual void printEnd() OVERRIDE;
+
+  virtual bool canRotateView() OVERRIDE;
+  virtual void rotateView(RotationType type) OVERRIDE;
 
   struct InitData;
 

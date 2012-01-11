@@ -116,6 +116,7 @@ using WebKit::WebDocument;
 using WebKit::WebElement;
 using WebKit::WebFrame;
 using WebKit::WebInputEvent;
+using WebKit::WebPlugin;
 using WebKit::WebPluginContainer;
 using WebKit::WebString;
 using WebKit::WebURLRequest;
@@ -1190,6 +1191,24 @@ void PluginInstance::PrintEnd() {
 #if defined(OS_MACOSX)
   last_printed_page_ = NULL;
 #endif  // defined(OS_MACOSX)
+}
+
+bool PluginInstance::CanRotateView() {
+  if (!LoadPdfInterface())
+    return false;
+
+  return true;
+}
+
+void PluginInstance::RotateView(WebPlugin::RotationType type) {
+  if (!LoadPdfInterface())
+    return;
+  PP_PrivatePageTransformType transform_type =
+      type == WebPlugin::RotationType90Clockwise ?
+      PP_PRIVATEPAGETRANSFORMTYPE_ROTATE_90_CW :
+      PP_PRIVATEPAGETRANSFORMTYPE_ROTATE_90_CCW;
+  plugin_pdf_interface_->Transform(pp_instance(), transform_type);
+  // NOTE: plugin instance may have been deleted.
 }
 
 bool PluginInstance::FlashIsFullscreenOrPending() {

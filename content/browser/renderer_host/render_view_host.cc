@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -63,6 +63,7 @@ using WebKit::WebDragOperationNone;
 using WebKit::WebDragOperationsMask;
 using WebKit::WebInputEvent;
 using WebKit::WebMediaPlayerAction;
+using WebKit::WebPluginAction;
 
 namespace {
 
@@ -1382,6 +1383,11 @@ void RenderViewHost::CopyImageAt(int x, int y) {
 void RenderViewHost::ExecuteMediaPlayerActionAtLocation(
   const gfx::Point& location, const WebKit::WebMediaPlayerAction& action) {
   Send(new ViewMsg_MediaPlayerActionAt(routing_id(), location, action));
+}
+
+void RenderViewHost::ExecutePluginActionAtLocation(
+  const gfx::Point& location, const WebKit::WebPluginAction& action) {
+  Send(new ViewMsg_PluginActionAt(routing_id(), location, action));
 }
 
 void RenderViewHost::DisassociateFromPopupCount() {

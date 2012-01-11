@@ -38,6 +38,7 @@
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebCanvas.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebPlugin.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/gfx/rect.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
@@ -226,6 +227,9 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
   int PrintBegin(const gfx::Rect& printable_area, int printer_dpi);
   bool PrintPage(int page_number, WebKit::WebCanvas* canvas);
   void PrintEnd();
+
+  bool CanRotateView();
+  void RotateView(WebKit::WebPlugin::RotationType type);
 
   void Graphics3DContextLost();
 

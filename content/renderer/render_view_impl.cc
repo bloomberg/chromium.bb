@@ -106,6 +106,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNodeList.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPageSerializer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPlugin.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginAction.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginContainer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginParams.h"
@@ -208,6 +209,7 @@ using WebKit::WebNode;
 using WebKit::WebPageSerializer;
 using WebKit::WebPageSerializerClient;
 using WebKit::WebPlugin;
+using WebKit::WebPluginAction;
 using WebKit::WebPluginContainer;
 using WebKit::WebPluginDocument;
 using WebKit::WebPluginParams;
@@ -662,6 +664,7 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
                         OnDisableScrollbarsForSmallWindows)
     IPC_MESSAGE_HANDLER(ViewMsg_SetRendererPrefs, OnSetRendererPrefs)
     IPC_MESSAGE_HANDLER(ViewMsg_MediaPlayerActionAt, OnMediaPlayerActionAt)
+    IPC_MESSAGE_HANDLER(ViewMsg_PluginActionAt, OnPluginActionAt)
     IPC_MESSAGE_HANDLER(ViewMsg_SetActive, OnSetActive)
 #if defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(ViewMsg_SetWindowVisibility, OnSetWindowVisibility)
@@ -3977,6 +3980,12 @@ void RenderViewImpl::OnMediaPlayerActionAt(const gfx::Point& location,
                                            const WebMediaPlayerAction& action) {
   if (webview())
     webview()->performMediaPlayerAction(action, location);
+}
+
+void RenderViewImpl::OnPluginActionAt(const gfx::Point& location,
+                                      const WebPluginAction& action) {
+  if (webview())
+    webview()->performPluginAction(action, location);
 }
 
 void RenderViewImpl::OnGetAllSavableResourceLinksForCurrentPage(

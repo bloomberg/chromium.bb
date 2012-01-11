@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -127,6 +127,7 @@ class WebURLRequest;
 struct WebFileChooserParams;
 struct WebFindOptions;
 struct WebMediaPlayerAction;
+struct WebPluginAction;
 struct WebPoint;
 struct WebWindowFeatures;
 }
@@ -791,6 +792,8 @@ class RenderViewImpl : public RenderWidget,
   void OnLockMouseACK(bool succeeded);
   void OnMediaPlayerActionAt(const gfx::Point& location,
                              const WebKit::WebMediaPlayerAction& action);
+  void OnPluginActionAt(const gfx::Point& location,
+                        const WebKit::WebPluginAction& action);
   void OnMouseLockLost();
   void OnMoveOrResizeStarted();
   CONTENT_EXPORT void OnNavigate(const ViewMsg_Navigate_Params& params);

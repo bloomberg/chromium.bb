@@ -260,5 +260,13 @@ void WebPluginImpl::printEnd() {
   return instance_->PrintEnd();
 }
 
+bool WebPluginImpl::canRotateView() {
+  return instance_->CanRotateView();
+}
+
+void WebPluginImpl::rotateView(RotationType type) {
+  instance_->RotateView(type);
+}
+
 }  // namespace ppapi
 }  // namespace webkit

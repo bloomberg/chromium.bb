@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,6 +30,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFindOptions.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaPlayerAction.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginAction.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPopupType.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScreenInfo.h"
 #include "ui/base/ime/text_input_type.h"
@@ -58,6 +59,7 @@ IPC_ENUM_TRAITS(ViewHostMsg_AccEvent::Value)
 IPC_ENUM_TRAITS(ViewMsg_Navigate_Type::Value)
 IPC_ENUM_TRAITS(WebKit::WebContextMenuData::MediaType)
 IPC_ENUM_TRAITS(WebKit::WebMediaPlayerAction::Type)
+IPC_ENUM_TRAITS(WebKit::WebPluginAction::Type)
 IPC_ENUM_TRAITS(WebKit::WebPopupType)
 IPC_ENUM_TRAITS(WebKit::WebReferrerPolicy)
 IPC_ENUM_TRAITS(WebKit::WebTextDirection)
@@ -135,6 +137,11 @@ IPC_STRUCT_TRAITS_BEGIN(WebKit::WebFindOptions)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(WebKit::WebMediaPlayerAction)
+  IPC_STRUCT_TRAITS_MEMBER(type)
+  IPC_STRUCT_TRAITS_MEMBER(enable)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(WebKit::WebPluginAction)
   IPC_STRUCT_TRAITS_MEMBER(type)
   IPC_STRUCT_TRAITS_MEMBER(enable)
 IPC_STRUCT_TRAITS_END()
@@ -868,6 +875,12 @@ IPC_MESSAGE_ROUTED2(ViewMsg_CopyImageAt,
 IPC_MESSAGE_ROUTED2(ViewMsg_MediaPlayerActionAt,
                     gfx::Point, /* location */
                     WebKit::WebMediaPlayerAction)
+
+// Tells the renderer to perform the given action on the plugin located at
+// the given point.
+IPC_MESSAGE_ROUTED2(ViewMsg_PluginActionAt,
+                    gfx::Point, /* location */
+                    WebKit::WebPluginAction)
 
 // Request for the renderer to evaluate an xpath to a frame and execute a
 // javascript: url in that frame's context. The message is completely

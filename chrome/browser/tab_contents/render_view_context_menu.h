@@ -39,6 +39,7 @@ class Point;
 
 namespace WebKit {
 struct WebMediaPlayerAction;
+struct WebPluginAction;
 }
 
 // An interface that controls a RenderViewContextMenu instance from observers.
@@ -250,6 +251,8 @@ class RenderViewContextMenu : public ui::SimpleMenuModel::Delegate,
 
   void MediaPlayerActionAt(const gfx::Point& location,
                            const WebKit::WebMediaPlayerAction& action);
+  void PluginActionAt(const gfx::Point& location,
+                      const WebKit::WebPluginAction& action);
 
   bool IsDevCommandEnabled(int id) const;
 

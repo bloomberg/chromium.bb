@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -73,8 +73,9 @@ struct CustomContextMenuContext;
 }  // namespace webkit_glue
 
 namespace WebKit {
-struct WebMediaPlayerAction;
 struct WebFindOptions;
+struct WebMediaPlayerAction;
+struct WebPluginAction;
 }  // namespace WebKit
 
 // NotificationObserver used to listen for EXECUTE_JAVASCRIPT_RESULT
@@ -465,6 +466,11 @@ class CONTENT_EXPORT RenderViewHost : public RenderWidgetHost {
   // located at the given point.
   void ExecuteMediaPlayerActionAtLocation(
       const gfx::Point& location, const WebKit::WebMediaPlayerAction& action);
+
+  // Tells the renderer to perform the given action on the plugin located at
+  // the given point.
+  void ExecutePluginActionAtLocation(
+      const gfx::Point& location, const WebKit::WebPluginAction& action);
 
   // Sent to the renderer when a popup window should no longer count against
   // the current popup count (either because it's not a popup or because it was

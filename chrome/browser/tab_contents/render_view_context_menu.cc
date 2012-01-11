@@ -79,6 +79,7 @@
 #include "net/base/net_util.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebContextMenuData.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaPlayerAction.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginAction.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/text/text_elider.h"
 #include "ui/gfx/favicon_size.h"
@@ -96,6 +97,7 @@ using content::UserMetricsAction;
 using content::WebContents;
 using WebKit::WebContextMenuData;
 using WebKit::WebMediaPlayerAction;
+using WebKit::WebPluginAction;
 using WebKit::WebURL;
 using WebKit::WebString;
 
@@ -813,6 +815,14 @@ void RenderViewContextMenu::AppendPluginItems() {
                                     IDS_CONTENT_CONTEXT_SAVEPAGEAS);
     menu_model_.AddItemWithStringId(IDC_PRINT, IDS_CONTENT_CONTEXT_PRINT);
   }
+
+  if (params_.media_flags & WebContextMenuData::MediaCanRotate) {
+    menu_model_.AddSeparator();
+    menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_ROTATECW,
+                                    IDS_CONTENT_CONTEXT_ROTATECW);
+    menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_ROTATECCW,
+                                    IDS_CONTENT_CONTEXT_ROTATECCW);
+  }
 }
 
 void RenderViewContextMenu::AppendPageItems() {
@@ -1187,6 +1197,11 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
       return (params_.media_flags &
               WebContextMenuData::MediaHasVideo) != 0;
 
+    case IDC_CONTENT_CONTEXT_ROTATECW:
+    case IDC_CONTENT_CONTEXT_ROTATECCW:
+      return
+          (params_.media_flags & WebContextMenuData::MediaCanRotate) != 0;
+
     case IDC_CONTENT_CONTEXT_COPYAVLOCATION:
     case IDC_CONTENT_CONTEXT_COPYIMAGELOCATION:
       return params_.src_url.is_valid();
@@ -1547,6 +1562,26 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
               !IsCommandIdChecked(IDC_CONTENT_CONTEXT_CONTROLS)));
       break;
 
+    case IDC_CONTENT_CONTEXT_ROTATECW:
+      content::RecordAction(
+      UserMetricsAction("PluginContextMenu_RotateClockwise"));
+      PluginActionAt(
+          gfx::Point(params_.x, params_.y),
+          WebPluginAction(
+              WebPluginAction::Rotate90Clockwise,
+              true));
+      break;
+
+    case IDC_CONTENT_CONTEXT_ROTATECCW:
+      content::RecordAction(
+      UserMetricsAction("PluginContextMenu_RotateCounterclockwise"));
+      PluginActionAt(
+          gfx::Point(params_.x, params_.y),
+          WebPluginAction(
+              WebPluginAction::Rotate90Counterclockwise,
+              true));
+      break;
+
     case IDC_BACK:
       source_web_contents_->GetController().GoBack();
       break;
@@ -1897,3 +1932,11 @@ void RenderViewContextMenu::MediaPlayerActionAt(
   source_web_contents_->GetRenderViewHost()->
       ExecuteMediaPlayerActionAtLocation(location, action);
 }
+
+void RenderViewContextMenu::PluginActionAt(
+    const gfx::Point& location,
+    const WebPluginAction& action) {
+  source_web_contents_->GetRenderViewHost()->
+      ExecutePluginActionAtLocation(location, action);
+}
+
