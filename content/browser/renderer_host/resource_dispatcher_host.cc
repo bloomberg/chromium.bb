@@ -1593,30 +1593,9 @@ int ResourceDispatcherHost::CalculateApproximateMemoryCost(
                      request->referrer().size() +
                      request->method().size();
 
-  int upload_cost = 0;
-
-  // TODO(eroman): don't enable the upload throttling until we have data
-  // showing what a reasonable limit is (limiting to 25MB of uploads may
-  // be too restrictive).
-#if 0
-  // Sum all the (non-file) upload data attached to the request, if any.
-  if (request->has_upload()) {
-    const std::vector<net::UploadData::Element>& uploads =
-        request->get_upload()->elements();
-    std::vector<net::UploadData::Element>::const_iterator iter;
-    for (iter = uploads.begin(); iter != uploads.end(); ++iter) {
-      if (iter->type() == net::UploadData::TYPE_BYTES) {
-        int64 element_size = iter->GetContentLength();
-        // This cast should not result in truncation.
-        upload_cost += static_cast<int>(element_size);
-      }
-    }
-  }
-#endif
-
   // Note that this expression will typically be dominated by:
   // |kAvgBytesPerOutstandingRequest|.
-  return kAvgBytesPerOutstandingRequest + strings_cost + upload_cost;
+  return kAvgBytesPerOutstandingRequest + strings_cost;
 }
 
 void ResourceDispatcherHost::BeginRequestInternal(net::URLRequest* request) {
