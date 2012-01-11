@@ -12,7 +12,6 @@
 <include src="controlled_setting.js"></include>
 <include src="options_page.js"></include>
 <if expr="pp_ifdef('chromeos')">
-  <include src="about_page.js"></include>
   <include src="../chromeos/user_images_grid.js"></include>
   <include src="chromeos/cellular_plan_element.js"></include>
   <include src="chromeos/change_picture_options.js"></include>
@@ -31,7 +30,6 @@
   <include src="chromeos/accounts_user_name_edit.js"></include>
   <include src="chromeos/virtual_keyboard.js"></include>
   <include src="chromeos/virtual_keyboard_list.js"></include>
-  var AboutPage = options.AboutPage;
   var AccountsOptions = options.AccountsOptions;
   var ChangePictureOptions = options.ChangePictureOptions;
   var InternetOptions = options.InternetOptions;

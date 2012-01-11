@@ -75,8 +75,6 @@ function load() {
   OptionsPage.register(PersonalOptions.getInstance());
   if (cr.isChromeOS) {
     OptionsPage.register(SystemOptions.getInstance());
-    OptionsPage.registerSubPage(AboutPage.getInstance(),
-                                SystemOptions.getInstance());
     OptionsPage.registerSubPage(LanguageOptions.getInstance(),
                                 SystemOptions.getInstance(),
                                 [$('language-button')]);

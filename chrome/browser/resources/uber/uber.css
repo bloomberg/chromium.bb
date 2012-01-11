@@ -32,6 +32,10 @@
   color: rgb(70, 78, 90);
 }
 
+#navigation #aboutPageNavItem {
+  margin-top: 27px;
+}
+
 .iframe-container {
   background-color: white;
   bottom: 0;

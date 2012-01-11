@@ -41,7 +41,6 @@
 <link rel="stylesheet" href="startup_overlay.css">
 <link rel="stylesheet" href="../sync_setup_overlay.css">
 <if expr="pp_ifdef('chromeos')">
-  <link rel="stylesheet" href="about_page.css">
   <link rel="stylesheet" href="chromeos/accounts_options_page.css">
   <link rel="stylesheet" href="chromeos/change_picture_options.css">
   <link rel="stylesheet" href="chromeos/internet_options_page.css">
@@ -141,7 +140,6 @@
            <button class="raw-button close-subpage custom-appearance"></button>
            <div class="subpage-sheet-contents">
              <if expr="pp_ifdef('chromeos')">
-               <include src="about_page.html">
                <include src="chromeos/change_picture_options.html">
                <include src="chromeos/proxy.html">
              </if>
