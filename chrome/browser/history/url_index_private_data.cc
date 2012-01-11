@@ -983,11 +983,10 @@ bool URLIndexPrivateData::RestoreFromFile(const FilePath& file_path) {
   base::ThreadRestrictions::ScopedAllowIO allow_io;
   base::TimeTicks beginning_time = base::TimeTicks::Now();
   std::string data;
-  if (!file_util::ReadFileToString(file_path, &data)) {
-    LOG(WARNING) << "Failed to read InMemoryURLIndex cache from "
-                 << file_path.value();
+  // If there is no cache file then simply give up. This will cause us to
+  // attempt to rebuild from the history database.
+  if (!file_util::ReadFileToString(file_path, &data))
     return false;
-  }
 
   InMemoryURLIndexCacheItem index_cache;
   if (!index_cache.ParseFromArray(data.c_str(), data.size())) {
