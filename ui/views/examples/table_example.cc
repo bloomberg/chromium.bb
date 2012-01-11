@@ -144,7 +144,7 @@ void TableExample::ButtonPressed(Button* sender, const Event& event) {
     index = 3;
     show = column4_visible_checkbox_->checked();
   }
-#if !defined(USE_AURA)
+#if defined(OS_WIN) && !defined(USE_AURA)
   table_->SetColumnVisibility(index, show);
 #endif
 }
