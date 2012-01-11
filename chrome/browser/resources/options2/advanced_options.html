@@ -125,10 +125,6 @@
 <if expr="not pp_ifdef('chromeos') or os == 'win32'">
       <div class="section-group">
 </if>
-<if expr="not pp_ifdef('chromeos')">
-        <button id="language-button"
-            i18n-content="languageAndSpellCheckSettingsButton"></button>
-</if>
 <if expr="not pp_ifdef('chromeos') or os == 'win32'">
       </div>
 </if>
@@ -156,7 +152,10 @@
   </section>
 </if>
   <section>
-    <h3 i18n-content="advancedSectionTitleTranslate"></h3>
+    <h3 i18n-content="advancedSectionTitleLanguages"></h3>
+    <div i18n-content="languageSectionLabel"></div>
+    <button id="language-button"
+        i18n-content="languageAndSpellCheckSettingsButton"></button>
     <div class="checkbox">
       <label>
         <input id="enableTranslate" pref="translate.enabled"

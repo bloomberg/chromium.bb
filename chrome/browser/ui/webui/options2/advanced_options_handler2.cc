@@ -145,7 +145,11 @@ void AdvancedOptionsHandler::GetLocalizedValues(
     { "fontSettingsCustomizeFontsButton",
       IDS_OPTIONS_FONTSETTINGS_CUSTOMIZE_FONTS_BUTTON },
     { "languageAndSpellCheckSettingsButton",
+#if defined(OS_CHROMEOS)
+      IDS_OPTIONS_SETTINGS_LANGUAGES_CUSTOMIZE },
+#else
       IDS_OPTIONS_LANGUAGE_AND_SPELLCHECK_BUTTON },
+#endif
     { "advancedSectionTitlePrivacy",
       IDS_OPTIONS_ADVANCED_SECTION_TITLE_PRIVACY },
     { "advancedSectionTitleContent",
@@ -154,8 +158,8 @@ void AdvancedOptionsHandler::GetLocalizedValues(
       IDS_OPTIONS_ADVANCED_SECTION_TITLE_SECURITY },
     { "advancedSectionTitleNetwork",
       IDS_OPTIONS_ADVANCED_SECTION_TITLE_NETWORK },
-    { "advancedSectionTitleTranslate",
-      IDS_OPTIONS_ADVANCED_SECTION_TITLE_TRANSLATE },
+    { "advancedSectionTitleLanguages",
+      IDS_OPTIONS_ADVANCED_SECTION_TITLE_LANGUAGES },
     { "translateEnableTranslate",
       IDS_OPTIONS_TRANSLATE_ENABLE_TRANSLATE },
     { "enableLogging",
@@ -198,6 +202,12 @@ void AdvancedOptionsHandler::GetLocalizedValues(
   localized_strings->SetString("privacyLearnMoreURL",
       google_util::AppendGoogleLocaleParam(
           GURL(chrome::kPrivacyLearnMoreURL)).spec());
+
+  localized_strings->SetString(
+      "languageSectionLabel",
+      l10n_util::GetStringFUTF16(
+          IDS_OPTIONS_ADVANCED_LANGUAGE_LABEL,
+          l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME)));
 
 #if defined(OS_CHROMEOS)
   localized_strings->SetString("cloudPrintLearnMoreURL",

@@ -8234,6 +8234,9 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
         </message>
       </if>
 
+      <message name="IDS_OPTIONS_ADVANCED_LANGUAGE_LABEL" desc="The label for the Language section">
+        Change how <ph name="APP_NAME">$1<ex>Chrome</ex></ph> handles and displays languages
+      </message>
       <message name="IDS_OPTIONS_TRANSLATE_ENABLE_TRANSLATE" desc="The label of the check-box that enables page translate">
         Offer to translate pages that aren't in a language I read
       </message>
@@ -9732,6 +9735,9 @@ Some features may be unavailable.  Please check that the profile exists and you 
       </message>
       <message name="IDS_OPTIONS_ADVANCED_SECTION_TITLE_TRANSLATE">
         Translate
+      </message>
+      <message name="IDS_OPTIONS_ADVANCED_SECTION_TITLE_LANGUAGES">
+        Languages
       </message>
       <message name="IDS_OPTIONS_ADVANCED_SECTION_TITLE_BACKGROUND">
         Background Apps
