@@ -11777,6 +11777,21 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_NETWORK_CONFIG_ERROR_CERT_IMPORT" desc="Error for network configuration: Certificate import error.">
         Certificate import error
       </message>
+      <message name="IDS_NETWORK_CONFIG_ERROR_ENCRYPTED_ONC_MALFORMED" desc="Displayed when importing an encrypted ONC file and the ONC file is malformed.">
+        Encrypted ONC file is malformed.
+      </message>
+      <message name="IDS_NETWORK_CONFIG_ERROR_ENCRYPTED_ONC_UNSUPPORTED_ENCRYPTION" desc="Displayed when importing an encrypted ONC file and the ONC file uses an encryption protocol that is not supported.">
+        Encrypted ONC file uses an unsupported encryption scheme.
+      </message>
+      <message name="IDS_NETWORK_CONFIG_ERROR_ENCRYPTED_ONC_UNABLE_TO_DECODE" desc="Displayed when importing an encrypted ONC file and the encryption parameters are not able to be parsed.">
+        Unable to parse some parameters in the encrypted ONC file.
+      </message>
+      <message name="IDS_NETWORK_CONFIG_ERROR_ENCRYPTED_ONC_UNABLE_TO_DECRYPT" desc="Displayed when importing an encrypted ONC file and it is not able to be decrypted.">
+        Unable to decrypt the encrypted ONC file.
+      </message>
+      <message name="IDS_NETWORK_CONFIG_ERROR_ENCRYPTED_ONC_TOO_MANY_ITERATIONS" desc="Displayed when importing an encrypted ONC file and the iteration count is too large.">
+        Passphrase iteration count is too large.
+      </message>
       <message name="IDS_NETWORK_PURCHASE_MORE_MESSAGE" desc="Message for purchase more link on notification when there is no cellular plan">
         Buy plan...
       </message>

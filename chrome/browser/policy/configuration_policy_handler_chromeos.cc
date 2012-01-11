@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,7 +35,8 @@ bool NetworkConfigurationPolicyHandler::CheckPolicySettings(
   if (value) {
     std::string onc_blob;
     value->GetAsString(&onc_blob);
-    chromeos::OncNetworkParser parser(onc_blob, onc_source_);
+    // Policy-based ONC blobs cannot have a passphrase.
+    chromeos::OncNetworkParser parser(onc_blob, "", onc_source_);
     if (!parser.parse_error().empty()) {
       errors->AddError(policy_type(),
                        IDS_POLICY_NETWORK_CONFIG_PARSE_ERROR,

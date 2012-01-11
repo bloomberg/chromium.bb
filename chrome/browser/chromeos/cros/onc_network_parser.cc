@@ -17,6 +17,10 @@
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/cros/onc_constants.h"
 #include "chrome/common/net/x509_certificate_model.h"
+#include "crypto/encryptor.h"
+#include "crypto/hmac.h"
+#include "crypto/scoped_nss_types.h"
+#include "crypto/symmetric_key.h"
 #include "grit/generated_resources.h"
 #include "net/base/cert_database.h"
 #include "net/base/crypto_module.h"
@@ -199,6 +203,7 @@ std::string ConvertValueToString(const base::Value& value) {
 // -------------------- OncNetworkParser --------------------
 
 OncNetworkParser::OncNetworkParser(const std::string& onc_blob,
+                                   const std::string& passphrase,
                                    NetworkUIData::ONCSource onc_source)
     : NetworkParser(get_onc_mapper()),
       onc_source_(onc_source),
@@ -213,15 +218,25 @@ OncNetworkParser::OncNetworkParser(const std::string& onc_blob,
     LOG(WARNING) << "OncNetworkParser received bad ONC file: " << parse_error_;
   } else {
     root_dict_.reset(static_cast<DictionaryValue*>(root.release()));
+
+    // Check and see if this is an encrypted ONC file.  If so, decrypt it.
+    std::string ciphertext_test;
+    if (root_dict_->GetString("Ciphertext", &ciphertext_test))
+      root_dict_.reset(Decrypt(passphrase, root_dict_.get()));
+
+    // Decryption failed, errors will be in parse_error_;
+    if (!root_dict_.get())
+      return;
+
     // At least one of NetworkConfigurations or Certificates is required.
     bool has_network_configurations =
-      root_dict_->GetList("NetworkConfigurations", &network_configs_);
+        root_dict_->GetList("NetworkConfigurations", &network_configs_);
     bool has_certificates =
-      root_dict_->GetList("Certificates", &certificates_);
+        root_dict_->GetList("Certificates", &certificates_);
     VLOG(2) << "ONC file has " << GetNetworkConfigsSize() << " networks and "
             << GetCertificatesSize() << " certificates";
     LOG_IF(WARNING, (!has_network_configurations && !has_certificates))
-      << "ONC file has no NetworkConfigurations or Certificates.";
+        << "ONC file has no NetworkConfigurations or Certificates.";
   }
 }
 
@@ -237,6 +252,117 @@ OncNetworkParser::~OncNetworkParser() {
 // static
 const EnumMapper<PropertyIndex>* OncNetworkParser::property_mapper() {
   return get_onc_mapper();
+}
+
+base::DictionaryValue* OncNetworkParser::Decrypt(
+    const std::string& passphrase,
+    base::DictionaryValue* root) {
+  const int kKeySizeInBits = 256;
+  const int kMaxIterationCount = 500000;
+  std::string onc_type;
+  std::string initial_vector;
+  std::string salt;
+  std::string cipher;
+  std::string stretch_method;
+  std::string hmac_method;
+  std::string hmac;
+  int iterations;
+  std::string ciphertext;
+
+  if (!root->GetString("Ciphertext", &ciphertext) ||
+      !root->GetString("Cipher", &cipher) ||
+      !root->GetString("HMAC", &hmac) ||
+      !root->GetString("HMACMethod", &hmac_method) ||
+      !root->GetString("IV", &initial_vector) ||
+      !root->GetInteger("Iterations", &iterations) ||
+      !root->GetString("Salt", &salt) ||
+      !root->GetString("Stretch", &stretch_method) ||
+      !root->GetString("Type", &onc_type) ||
+      onc_type != "EncryptedConfiguration") {
+    parse_error_ = l10n_util::GetStringUTF8(
+        IDS_NETWORK_CONFIG_ERROR_ENCRYPTED_ONC_MALFORMED);
+    return NULL;
+  }
+
+  if (hmac_method != "SHA1" ||
+      cipher != "AES256" ||
+      stretch_method != "PBKDF2") {
+    parse_error_ = l10n_util::GetStringUTF8(
+        IDS_NETWORK_CONFIG_ERROR_ENCRYPTED_ONC_UNSUPPORTED_ENCRYPTION);
+    return NULL;
+  }
+
+  // Simply a sanity check to make sure we can't lock up the machine
+  // for too long with a huge number.
+  if (iterations > kMaxIterationCount) {
+    parse_error_ = l10n_util::GetStringUTF8(
+        IDS_NETWORK_CONFIG_ERROR_ENCRYPTED_ONC_TOO_MANY_ITERATIONS);
+    return NULL;
+  }
+
+  if (!base::Base64Decode(salt, &salt)) {
+    parse_error_ = l10n_util::GetStringUTF8(
+        IDS_NETWORK_CONFIG_ERROR_ENCRYPTED_ONC_UNABLE_TO_DECODE);
+    return NULL;
+  }
+
+  scoped_ptr<crypto::SymmetricKey> key(
+      crypto::SymmetricKey::DeriveKeyFromPassword(crypto::SymmetricKey::AES,
+                                                  passphrase,
+                                                  salt,
+                                                  iterations,
+                                                  kKeySizeInBits));
+
+  if (!base::Base64Decode(initial_vector, &initial_vector)) {
+    parse_error_ = l10n_util::GetStringUTF8(
+        IDS_NETWORK_CONFIG_ERROR_ENCRYPTED_ONC_UNABLE_TO_DECODE);
+    return NULL;
+  }
+  if (!base::Base64Decode(ciphertext, &ciphertext)) {
+    parse_error_ = l10n_util::GetStringUTF8(
+        IDS_NETWORK_CONFIG_ERROR_ENCRYPTED_ONC_UNABLE_TO_DECODE);
+    return NULL;
+  }
+  if (!base::Base64Decode(hmac, &hmac)) {
+    parse_error_ = l10n_util::GetStringUTF8(
+        IDS_NETWORK_CONFIG_ERROR_ENCRYPTED_ONC_UNABLE_TO_DECODE);
+    return NULL;
+  }
+
+  crypto::HMAC hmac_verifier(crypto::HMAC::SHA1);
+  if (!hmac_verifier.Init(key.get()) ||
+      !hmac_verifier.Verify(ciphertext, hmac)) {
+    parse_error_ = l10n_util::GetStringUTF8(
+        IDS_NETWORK_CONFIG_ERROR_ENCRYPTED_ONC_UNABLE_TO_DECRYPT);
+    return NULL;
+  }
+
+  crypto::Encryptor decryptor;
+  if (!decryptor.Init(key.get(), crypto::Encryptor::CBC, initial_vector))  {
+    parse_error_ = l10n_util::GetStringUTF8(
+        IDS_NETWORK_CONFIG_ERROR_ENCRYPTED_ONC_UNABLE_TO_DECRYPT);
+    return NULL;
+  }
+
+  std::string plaintext;
+  if (!decryptor.Decrypt(ciphertext, &plaintext)) {
+    parse_error_ = l10n_util::GetStringUTF8(
+        IDS_NETWORK_CONFIG_ERROR_ENCRYPTED_ONC_UNABLE_TO_DECRYPT);
+    return NULL;
+  }
+
+  // Now we've decrypted it, let's deserialize the decrypted data.
+  JSONStringValueSerializer deserializer(plaintext);
+  deserializer.set_allow_trailing_comma(true);
+  scoped_ptr<base::Value> new_root(deserializer.Deserialize(NULL,
+                                                            &parse_error_));
+  if (!new_root.get() || !new_root->IsType(base::Value::TYPE_DICTIONARY)) {
+    if (parse_error_.empty())
+      parse_error_ = l10n_util::GetStringUTF8(
+          IDS_NETWORK_CONFIG_ERROR_NETWORK_PROP_DICT_MALFORMED);
+    return NULL;
+  }
+  return static_cast<base::DictionaryValue*>(new_root.release());
 }
 
 int OncNetworkParser::GetNetworkConfigsSize() const {

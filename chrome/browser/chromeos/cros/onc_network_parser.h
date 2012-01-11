@@ -53,6 +53,7 @@ class OncNetworkParser : public NetworkParser {
                                 Network*);
 
   OncNetworkParser(const std::string& onc_blob,
+                   const std::string& passphrase,
                    NetworkUIData::ONCSource onc_source);
   virtual ~OncNetworkParser();
   static const EnumMapper<PropertyIndex>* property_mapper();
@@ -146,6 +147,9 @@ class OncNetworkParser : public NetworkParser {
     int cert_index,
     const std::string& guid,
     base::DictionaryValue* certificate);
+
+  base::DictionaryValue* Decrypt(const std::string& passphrase,
+                                 base::DictionaryValue* root);
 
   // Error message from the JSON parser, if applicable.
   std::string parse_error_;

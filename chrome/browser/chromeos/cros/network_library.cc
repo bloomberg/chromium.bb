@@ -1773,7 +1773,7 @@ class NetworkLibraryImplBase : public NetworkLibrary  {
   // virtual SetIPConfig implemented in derived classes.
   virtual void SwitchToPreferredNetwork() OVERRIDE;
   virtual bool LoadOncNetworks(const std::string& onc_blob,
-                               const std::string& passcode,
+                               const std::string& passphrase,
                                NetworkUIData::ONCSource source,
                                std::string* error) OVERRIDE;
   virtual bool SetActiveNetwork(ConnectionType type,
@@ -2891,11 +2891,10 @@ void NetworkLibraryImplBase::SwitchToPreferredNetwork() {
 }
 
 bool NetworkLibraryImplBase::LoadOncNetworks(const std::string& onc_blob,
-                                             const std::string& passcode,
+                                             const std::string& passphrase,
                                              NetworkUIData::ONCSource source,
                                              std::string* error) {
-  // TODO(gspencer): Add support for decrypting onc files. crbug.com/19397
-  OncNetworkParser parser(onc_blob, source);
+  OncNetworkParser parser(onc_blob, passphrase, source);
 
   if (!parser.parse_error().empty()) {
     if (error)

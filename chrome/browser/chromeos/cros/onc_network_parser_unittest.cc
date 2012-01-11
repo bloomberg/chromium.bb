@@ -469,7 +469,7 @@ TEST_F(OncNetworkParserTest, TestCreateNetworkWifi1) {
       "    }"
       "  }]"
       "}");
-  OncNetworkParser parser(test_blob, NetworkUIData::ONC_SOURCE_USER_IMPORT);
+  OncNetworkParser parser(test_blob, "", NetworkUIData::ONC_SOURCE_USER_IMPORT);
 
   EXPECT_EQ(1, parser.GetNetworkConfigsSize());
   EXPECT_EQ(0, parser.GetCertificatesSize());
@@ -486,6 +486,46 @@ TEST_F(OncNetworkParserTest, TestCreateNetworkWifi1) {
   EXPECT_EQ(wifi->passphrase(), "pass");
   CheckStringProperty(wifi, PROPERTY_INDEX_PASSPHRASE, "pass");
 }
+
+TEST_F(OncNetworkParserTest, TestLoadEncryptedOnc) {
+  std::string test_blob(
+      "{"
+      "  \"Cipher\": \"AES256\","
+      "  \"Ciphertext\": \"eQ9/r6v29/83M745aa0JllEj4lklt3Nfy4kPPvXgjBt1eTBy"
+      "xXB+FnsdvL6Uca5JBU5aROxfiol2+ZZOkxPmUNNIFZj70pkdqOGVe09ncf0aVBDsAa27"
+      "veGIG8rG/VQTTbAo7d8QaxdNNbZvwQVkdsAXawzPCu7zSh4NF/hDnDbYjbN/JEm1NzvW"
+      "gEjeOfqnnw3PnGUYCArIaRsKq9uD0a1NccU+16ZSzyDhX724JNrJjsuxohotk5YXsCK0"
+      "lP7ZXuXj+nSR0aRIETSQ+eqGhrew2octLXq8cXK05s6ZuVAc0mFKPkntSI/fzBACuPi4"
+      "ZaGd3YEYiKzNOgKJ+qEwgoE39xp0EXMZOZyjMOAtA6e1ZZDQGWG7vKdTLmLKNztHGrXv"
+      "lZkyEf1RDs10YgkwwLgUhm0yBJ+eqbxO/RiBXz7O2/UVOkkkVcmeI6yh3BdL6HIYsMMy"
+      "gnZa5WRkd/2/EudoqEnjcqUyGsL+YUqV6KRTC0PH+z7zSwvFs2KygrSM7SIAZM2yiQHT"
+      "QACkA/YCJDwACkkQOBFnRWTWiX0xmN55WMbgrs/wqJ4zGC9LgdAInOBlc3P+76+i7QLa"
+      "NjMovQ==\","
+      "  \"HMAC\": \"3ylRy5InlhVzFGakJ/9lvGSyVH0=\","
+      "  \"HMACMethod\": \"SHA1\","
+      "  \"IV\": \"hcm6OENfqG6C/TVO6p5a8g==\","
+      "  \"Iterations\": 20000,"
+      "  \"Salt\": \"/3O73QadCzA=\","
+      "  \"Stretch\": \"PBKDF2\","
+      "  \"Type\": \"EncryptedConfiguration\""
+      "}");
+  OncNetworkParser parser(test_blob,
+                          "test0000",
+                          NetworkUIData::ONC_SOURCE_USER_IMPORT);
+  ASSERT_TRUE(parser.parse_error().empty());
+  EXPECT_EQ(1, parser.GetNetworkConfigsSize());
+  EXPECT_EQ(0, parser.GetCertificatesSize());
+  scoped_ptr<Network> network(parser.ParseNetwork(0));
+  ASSERT_TRUE(network.get());
+
+  EXPECT_EQ(network->type(), chromeos::TYPE_WIFI);
+  WifiNetwork* wifi = static_cast<WifiNetwork*>(network.get());
+  EXPECT_EQ(wifi->encryption(), chromeos::SECURITY_NONE);
+  EXPECT_EQ(wifi->name(), "WirelessNetwork");
+  EXPECT_EQ(wifi->auto_connect(), false);
+  EXPECT_EQ(wifi->passphrase(), "");
+}
+
 
 TEST_F(OncNetworkParserTest, TestCreateNetworkWifiEAP1) {
   std::string test_blob(
@@ -504,7 +544,7 @@ TEST_F(OncNetworkParserTest, TestCreateNetworkWifiEAP1) {
       "    }"
       "  }]"
       "}");
-  OncNetworkParser parser(test_blob, NetworkUIData::ONC_SOURCE_USER_IMPORT);
+  OncNetworkParser parser(test_blob, "", NetworkUIData::ONC_SOURCE_USER_IMPORT);
 
   EXPECT_EQ(1, parser.GetNetworkConfigsSize());
   EXPECT_EQ(0, parser.GetCertificatesSize());
@@ -543,7 +583,7 @@ TEST_F(OncNetworkParserTest, TestCreateNetworkWifiEAP2) {
       "    }"
       "  }]"
       "}");
-  OncNetworkParser parser(test_blob, NetworkUIData::ONC_SOURCE_USER_IMPORT);
+  OncNetworkParser parser(test_blob, "", NetworkUIData::ONC_SOURCE_USER_IMPORT);
 
   EXPECT_EQ(1, parser.GetNetworkConfigsSize());
   EXPECT_EQ(0, parser.GetCertificatesSize());
@@ -582,7 +622,7 @@ TEST_F(OncNetworkParserTest, TestCreateNetworkUnknownFields) {
       "    },"
       "  }]"
       "}");
-  OncNetworkParser parser(test_blob, NetworkUIData::ONC_SOURCE_USER_IMPORT);
+  OncNetworkParser parser(test_blob, "", NetworkUIData::ONC_SOURCE_USER_IMPORT);
   scoped_ptr<Network> network(parser.ParseNetwork(0));
   ASSERT_TRUE(network.get());
 
@@ -599,7 +639,7 @@ TEST_F(OncNetworkParserTest, TestCreateNetworkOpenVPN) {
       "  \"NetworkConfigurations\": [") +
       std::string(kNetworkConfigurationOpenVPN) + std::string(
       "  ]}"));
-  OncNetworkParser parser(test_blob, NetworkUIData::ONC_SOURCE_USER_IMPORT);
+  OncNetworkParser parser(test_blob, "", NetworkUIData::ONC_SOURCE_USER_IMPORT);
 
   EXPECT_EQ(1, parser.GetNetworkConfigsSize());
   EXPECT_EQ(0, parser.GetCertificatesSize());
@@ -678,7 +718,7 @@ TEST_F(OncNetworkParserTest, TestCreateNetworkL2TPIPsec) {
       "  ],"
       "  \"Certificates\": []"
       "}");
-  OncNetworkParser parser(test_blob, NetworkUIData::ONC_SOURCE_USER_IMPORT);
+  OncNetworkParser parser(test_blob, "", NetworkUIData::ONC_SOURCE_USER_IMPORT);
 
   EXPECT_EQ(1, parser.GetNetworkConfigsSize());
   EXPECT_EQ(0, parser.GetCertificatesSize());
@@ -709,7 +749,7 @@ TEST_F(OncNetworkParserTest, TestAddClientCertificate) {
       "    ],"
       "}");
   std::string test_guid("{f998f760-272b-6939-4c2beffe428697ac}");
-  OncNetworkParser parser(certificate_json,
+  OncNetworkParser parser(certificate_json, "",
                           NetworkUIData::ONC_SOURCE_USER_IMPORT);
   ASSERT_EQ(1, parser.GetCertificatesSize());
 
@@ -774,7 +814,7 @@ TEST_F(OncNetworkParserTest, TestReplaceClientCertificate) {
   std::string test_guid("{f998f760-272b-6939-4c2beffe428697ac}");
   {
     // First we import a certificate.
-    OncNetworkParser parser(certificate_json,
+    OncNetworkParser parser(certificate_json, "",
                             NetworkUIData::ONC_SOURCE_USER_IMPORT);
     ASSERT_EQ(1, parser.GetCertificatesSize());
 
@@ -793,7 +833,7 @@ TEST_F(OncNetworkParserTest, TestReplaceClientCertificate) {
   {
     // Now we import a new certificate with the same GUID as the
     // first.  It should replace the old one.
-    OncNetworkParser parser(certificate_alternate_json,
+    OncNetworkParser parser(certificate_alternate_json, "",
                             NetworkUIData::ONC_SOURCE_USER_IMPORT);
     ASSERT_EQ(1, parser.GetCertificatesSize());
     scoped_refptr<net::X509Certificate> cert = parser.ParseCertificate(0).get();
@@ -815,7 +855,7 @@ TEST_F(OncNetworkParserTest, TestAddServerCertificate) {
       "    ],"
       "}");
   std::string test_guid("{f998f760-272b-6939-4c2beffe428697aa}");
-  OncNetworkParser parser(test_blob, NetworkUIData::ONC_SOURCE_USER_IMPORT);
+  OncNetworkParser parser(test_blob, "", NetworkUIData::ONC_SOURCE_USER_IMPORT);
   ASSERT_EQ(1, parser.GetCertificatesSize());
 
   scoped_refptr<net::X509Certificate> cert = parser.ParseCertificate(0).get();
@@ -856,7 +896,7 @@ TEST_F(OncNetworkParserTest, TestReplaceServerCertificate) {
   std::string test_guid("{f998f760-272b-6939-4c2beffe428697aa}");
   {
     // First we import a certificate.
-    OncNetworkParser parser(certificate_json,
+    OncNetworkParser parser(certificate_json, "",
                             NetworkUIData::ONC_SOURCE_USER_IMPORT);
     ASSERT_EQ(1, parser.GetCertificatesSize());
 
@@ -875,7 +915,7 @@ TEST_F(OncNetworkParserTest, TestReplaceServerCertificate) {
   {
     // Now we import a new certificate with the same GUID as the
     // first.  It should replace the old one.
-    OncNetworkParser parser(certificate_alternate_json,
+    OncNetworkParser parser(certificate_alternate_json, "",
                             NetworkUIData::ONC_SOURCE_USER_IMPORT);
     ASSERT_EQ(1, parser.GetCertificatesSize());
     scoped_refptr<net::X509Certificate> cert = parser.ParseCertificate(0).get();
@@ -898,7 +938,7 @@ TEST_F(OncNetworkParserTest, TestAddAuthorityCertificate) {
       "    ],"
       "}");
   std::string test_guid("{f998f760-272b-6939-4c2beffe428697ab}");
-  OncNetworkParser parser(test_blob, NetworkUIData::ONC_SOURCE_USER_IMPORT);
+  OncNetworkParser parser(test_blob, "", NetworkUIData::ONC_SOURCE_USER_IMPORT);
   ASSERT_EQ(1, parser.GetCertificatesSize());
 
   scoped_refptr<net::X509Certificate> cert = parser.ParseCertificate(0).get();
@@ -938,7 +978,7 @@ TEST_F(OncNetworkParserTest, TestReplaceAuthorityCertificate) {
 
   {
     // First we import an authority certificate.
-    OncNetworkParser parser(authority_json,
+    OncNetworkParser parser(authority_json, "",
                             NetworkUIData::ONC_SOURCE_USER_IMPORT);
     ASSERT_EQ(1, parser.GetCertificatesSize());
 
@@ -957,7 +997,7 @@ TEST_F(OncNetworkParserTest, TestReplaceAuthorityCertificate) {
   {
     // Now we import a new authority certificate with the same GUID as the
     // first.  It should replace the old one.
-    OncNetworkParser parser(authority_alternate_json,
+    OncNetworkParser parser(authority_alternate_json, "",
                             NetworkUIData::ONC_SOURCE_USER_IMPORT);
     ASSERT_EQ(1, parser.GetCertificatesSize());
     scoped_refptr<net::X509Certificate> cert = parser.ParseCertificate(0).get();
@@ -982,7 +1022,8 @@ TEST_F(OncNetworkParserTest, TestNetworkAndCertificate) {
       std::string(kCertificateWebAuthority) +
       "  ],"
       "}");
-  OncNetworkParser parser(test_blob, NetworkUIData::ONC_SOURCE_USER_IMPORT);
+  OncNetworkParser parser(test_blob, "",
+                          NetworkUIData::ONC_SOURCE_USER_IMPORT);
 
   EXPECT_EQ(1, parser.GetCertificatesSize());
   EXPECT_TRUE(parser.ParseCertificate(0));
