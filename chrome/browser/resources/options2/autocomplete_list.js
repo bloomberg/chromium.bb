@@ -173,7 +173,7 @@ cr.define('options', function() {
       if (!input)
         return;
 
-      input.removeEventListener('keydown', this.textFieldKeyHandler_);
+      input.removeEventListener('keydown', this.textFieldKeyHandler_, true);
       input.removeEventListener('input', this.textFieldInputHandler_);
       this.targetInput_ = null;
       this.suggestions = [];
