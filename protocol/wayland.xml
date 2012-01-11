@@ -108,9 +108,8 @@
     </enum>
 
     <enum name="format">
-      <entry name="argb32" value="0"/>
-      <entry name="premultiplied_argb32" value="1"/>
-      <entry name="xrgb32" value="2"/>
+      <entry name="argb8888" value="0"/>
+      <entry name="xrgb8888" value="1"/>
     </enum>
 
     <!-- Transfer a shm buffer to the server.  The allocated buffer
