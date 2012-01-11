@@ -5019,6 +5019,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_AURA_TRANSLUCENT_FRAMES_DESCRIPTION" desc="Description for the flag to enable fancy translucent windows.">
         Enable translucent window frames.
       </message>
+      <message name="IDS_FLAGS_AURA_GOOGLE_DIALOG_FRAMES_NAME" desc="Title for the flag to enable Google-style dialog frames.">
+        Google-style dialogs
+      </message>
+      <message name="IDS_FLAGS_AURA_GOOGLE_DIALOG_FRAMES_DESCRIPTION" desc="Description for the flag to enable Google-style dialog frames.">
+        Enable Google-style dialog frames.
+      </message>
       <message name="IDS_FLAGS_ENABLE_POINTER_LOCK_NAME" desc="Title for the flag to enable the pointer lock feature.">
         Enable Pointer Lock
       </message>

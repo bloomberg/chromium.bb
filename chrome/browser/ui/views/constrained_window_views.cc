@@ -46,6 +46,10 @@
 #include "ui/views/widget/native_widget_win.h"
 #endif
 
+#if defined(USE_AURA)
+#include "ash/shell.h"
+#endif
+
 using base::TimeDelta;
 
 namespace views {
@@ -602,7 +606,11 @@ gfx::NativeWindow ConstrainedWindowViews::GetNativeWindow() {
 // ConstrainedWindowViews, views::Widget overrides:
 
 views::NonClientFrameView* ConstrainedWindowViews::CreateNonClientFrameView() {
+#if defined(USE_AURA)
+  return ash::Shell::GetInstance()->CreateDefaultNonClientFrameView(this);
+#else
   return new ConstrainedWindowFrameView(this);
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////

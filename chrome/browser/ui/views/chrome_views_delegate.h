@@ -38,6 +38,8 @@ class ChromeViewsDelegate : public views::ViewsDelegate {
 #if defined(OS_WIN)
   virtual HICON GetDefaultWindowIcon() const OVERRIDE;
 #endif
+  virtual views::NonClientFrameView* CreateDefaultNonClientFrameView(
+      views::Widget* widget) OVERRIDE;
   virtual void AddRef() OVERRIDE;
   virtual void ReleaseRef() OVERRIDE;
 

@@ -11,6 +11,9 @@
 namespace ash {
 namespace switches {
 
+// Use Google-style dialog box frames.
+const char kAuraGoogleDialogFrames[] = "aura-google-dialog-frames";
+
 // Avoid drawing drop shadows under windows.
 const char kAuraNoShadows[] = "aura-no-shadows";
 

@@ -27,6 +27,7 @@ class Clipboard;
 
 namespace views {
 
+class NonClientFrameView;
 class View;
 class Widget;
 
@@ -76,6 +77,12 @@ class VIEWS_EXPORT ViewsDelegate {
   // Retrieves the default window icon to use for windows if none is specified.
   virtual HICON GetDefaultWindowIcon() const = 0;
 #endif
+
+  // Creates a default NonClientFrameView to be used for windows that don't
+  // specify their own. If this function returns NULL, the
+  // views::CustomFrameView type will be used.
+  virtual NonClientFrameView* CreateDefaultNonClientFrameView(
+      Widget* widget) = 0;
 
   // AddRef/ReleaseRef are invoked while a menu is visible. They are used to
   // ensure we don't attempt to exit while a menu is showing.

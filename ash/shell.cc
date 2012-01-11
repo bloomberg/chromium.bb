@@ -22,6 +22,7 @@
 #include "ash/wm/compact_status_area_layout_manager.h"
 #include "ash/wm/default_container_event_filter.h"
 #include "ash/wm/default_container_layout_manager.h"
+#include "ash/wm/dialog_frame_view.h"
 #include "ash/wm/modal_container_layout_manager.h"
 #include "ash/wm/power_button_controller.h"
 #include "ash/wm/root_window_event_filter.h"
@@ -392,6 +393,15 @@ bool Shell::IsModalWindowOpen() const {
       ash::Shell::GetInstance()->GetContainer(
           internal::kShellWindowId_AlwaysOnTopContainer);
   return !modal_container->children().empty();
+}
+
+views::NonClientFrameView* Shell::CreateDefaultNonClientFrameView(
+    views::Widget* widget) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kAuraGoogleDialogFrames)) {
+    return new internal::DialogFrameView;
+  }
+  return NULL;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

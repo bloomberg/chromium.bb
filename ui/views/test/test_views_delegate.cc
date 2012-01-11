@@ -39,6 +39,11 @@ bool TestViewsDelegate::GetSavedWindowPlacement(
   return false;
 }
 
+NonClientFrameView* TestViewsDelegate::CreateDefaultNonClientFrameView(
+    Widget* widget) {
+  return NULL;
+}
+
 int TestViewsDelegate::GetDispositionForEvent(int event_flags) {
   return 0;
 }
