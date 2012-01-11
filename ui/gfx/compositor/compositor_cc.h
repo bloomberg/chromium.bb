@@ -98,6 +98,7 @@ class COMPOSITOR_EXPORT CompositorCC
   virtual void OnWidgetSizeChanged() OVERRIDE;
   virtual void OnRootLayerChanged() OVERRIDE;
   virtual void DrawTree() OVERRIDE;
+  virtual bool CompositesAsynchronously() OVERRIDE;
   virtual bool ReadPixels(SkBitmap* bitmap, const gfx::Rect& bounds) OVERRIDE;
 
   // WebLayerTreeViewClient implementation.
@@ -111,6 +112,7 @@ class COMPOSITOR_EXPORT CompositorCC
                                    float scaleFactor);
   virtual void applyScrollDelta(const WebKit::WebSize&);
   virtual WebKit::WebGraphicsContext3D* createContext3D();
+  virtual void didCompleteSwapBuffers();
   virtual void didRebindGraphicsContext(bool success);
   virtual void scheduleComposite();
 
