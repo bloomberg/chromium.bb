@@ -44,7 +44,9 @@ cr.define('options', function() {
       // Call base class implementation to start preference initialization.
       OptionsPage.prototype.initializePage.call(this);
 
-      // Sync.
+      var self = this;
+
+      // Sync (Sign in) section.
       $('sync-action-link').onclick = function(event) {
         SyncSetupOverlay.showErrorUI();
       };
@@ -58,26 +60,34 @@ cr.define('options', function() {
         SyncSetupOverlay.showSetupUI();
       };
 
-      // Wire up controls.
+      // On Startup section.
       $('startupSetPages').onclick = function() {
         OptionsPage.navigateToPage('startup');
       };
+
+      // Appearance section.
+      $('change-home-page').onclick = function(event) {
+        OptionsPage.navigateToPage('homePageOverlay');
+      };
+      $('themes-gallery').onclick = function(event) {
+        window.open(localStrings.getString('themesGalleryURL'));
+      };
+      $('themes-reset').onclick = function(event) {
+        chrome.send('themesReset');
+      };
+      // Ensure that changes are committed when closing the page.
+      window.addEventListener('unload', function() {
+        if (document.activeElement == homepageField)
+          homepageField.blur();
+      });
+
+      // Search section.
       $('defaultSearchManageEnginesButton').onclick = function(event) {
         OptionsPage.navigateToPage('searchEngines');
         chrome.send('coreOptionsUserMetricsAction',
             ['Options_ManageSearchEngines']);
       };
-      $('advancedOptionsButton').onclick = function(event) {
-        OptionsPage.navigateToPage('advanced');
-        chrome.send('coreOptionsUserMetricsAction',
-            ['Options_OpenUnderTheHood']);
-      };
       $('defaultSearchEngine').onchange = this.setDefaultSearchEngine_;
-      $('change-home-page').onclick = function(event) {
-        OptionsPage.navigateToPage('homePageOverlay');
-      };
-
-      var self = this;
       $('instantEnabledCheckbox').customChangeHandler = function(event) {
         if (this.checked) {
           if (self.instantConfirmDialogShown_)
@@ -89,16 +99,13 @@ cr.define('options', function() {
         }
         return true;
       };
-
       $('instantFieldTrialCheckbox').addEventListener('change',
           function(event) {
             this.checked = true;
             chrome.send('disableInstant');
           });
-
       Preferences.getInstance().addEventListener('instant.confirm_dialog_shown',
           this.onInstantConfirmDialogShownChanged_.bind(this));
-
       Preferences.getInstance().addEventListener('instant.enabled',
           this.onInstantEnabledChanged_.bind(this));
 
@@ -108,21 +115,8 @@ cr.define('options', function() {
         self.autocompleteList_.syncWidthToInput();
       });
 
-      // Ensure that changes are committed when closing the page.
-      window.addEventListener('unload', function() {
-        if (document.activeElement == homepageField)
-          homepageField.blur();
-      });
-
-      if (!cr.isChromeOS) {
-        $('defaultBrowserUseAsDefaultButton').onclick = function(event) {
-          chrome.send('becomeDefaultBrowser');
-        };
-      }
-
-      // Check if we are in the guest mode.
       if (cr.commandLine && cr.commandLine.options['--bwsi']) {
-        // Hide the startup section.
+        // Hide the startup section in Guest mode.
         $('startupSection').hidden = true;
       }
 
@@ -132,6 +126,73 @@ cr.define('options', function() {
           this.requestAutocompleteSuggestions_.bind(this);
       $('main-content').appendChild(suggestionList);
       this.autocompleteList_ = suggestionList;
+
+      // Users section.
+      var profilesList = $('profiles-list');
+      options.browser_options.ProfileList.decorate(profilesList);
+      profilesList.autoExpands = true;
+
+      profilesList.onchange = self.setProfileViewButtonsStatus_;
+      $('profiles-create').onclick = function(event) {
+        chrome.send('createProfile');
+      };
+      $('profiles-manage').onclick = function(event) {
+        var selectedProfile = self.getSelectedProfileItem_();
+        if (selectedProfile)
+          ManageProfileOverlay.showManageDialog(selectedProfile);
+      };
+      $('profiles-delete').onclick = function(event) {
+        var selectedProfile = self.getSelectedProfileItem_();
+        if (selectedProfile)
+          ManageProfileOverlay.showDeleteDialog(selectedProfile);
+      };
+
+      if (cr.isChromeOS) {
+        // Username (canonical email) of the currently logged in user or
+        // |kGuestUser| if a guest session is active.
+        this.username_ = localStrings.getString('username');
+
+        $('change-picture-button').onclick = function(event) {
+          OptionsPage.navigateToPage('changePicture');
+        };
+        this.updateAccountPicture_();
+
+        if (cr.commandLine && cr.commandLine.options['--bwsi']) {
+          // Disable the screen lock checkbox and change-picture-button in
+          // guest mode.
+          $('enable-screen-lock').disabled = true;
+          $('change-picture-button').disabled = true;
+        }
+      } else {
+        $('import-data').onclick = function(event) {
+          // Make sure that any previous import success message is hidden, and
+          // we're showing the UI to import further data.
+          $('import-data-configure').hidden = false;
+          $('import-data-success').hidden = true;
+          OptionsPage.navigateToPage('importData');
+          chrome.send('coreOptionsUserMetricsAction', ['Import_ShowDlg']);
+        };
+
+        if ($('themes-GTK-button')) {
+          $('themes-GTK-button').onclick = function(event) {
+            chrome.send('themesSetGTK');
+          };
+        }
+      }
+
+      // Default browser section.
+      if (!cr.isChromeOS) {
+        $('defaultBrowserUseAsDefaultButton').onclick = function(event) {
+          chrome.send('becomeDefaultBrowser');
+        };
+      }
+
+      // Under the hood section.
+      $('advancedOptionsButton').onclick = function(event) {
+        OptionsPage.navigateToPage('advanced');
+        chrome.send('coreOptionsUserMetricsAction',
+            ['Options_OpenUnderTheHood']);
+      };
     },
 
     setSyncEnabled_: function(enabled) {
@@ -369,6 +430,91 @@ cr.define('options', function() {
         return;
       list.suggestions = suggestions;
     },
+
+    /**
+     * Get the selected profile item from the profile list. This also works
+     * correctly if the list is not displayed.
+     * @return {Object} the profile item object, or null if nothing is selected.
+     * @private
+     */
+    getSelectedProfileItem_: function() {
+      var profilesList = $('profiles-list');
+      if (profilesList.hidden) {
+        if (profilesList.dataModel.length > 0)
+          return profilesList.dataModel.item(0);
+      } else {
+        return profilesList.selectedItem;
+      }
+      return null;
+    },
+
+    /**
+     * Helper function to set the status of profile view buttons to disabled or
+     * enabled, depending on the number of profiles and selection status of the
+     * profiles list.
+     */
+    setProfileViewButtonsStatus_: function() {
+      var profilesList = $('profiles-list');
+      var selectedProfile = profilesList.selectedItem;
+      var hasSelection = selectedProfile != null;
+      var hasSingleProfile = profilesList.dataModel.length == 1;
+      $('profiles-manage').disabled = !hasSelection ||
+          !selectedProfile.isCurrentProfile;
+      $('profiles-delete').disabled = !hasSelection && !hasSingleProfile;
+    },
+
+    /**
+     * Display the correct dialog layout, depending on how many profiles are
+     * available.
+     * @param {number} numProfiles The number of profiles to display.
+     */
+    setProfileViewSingle_: function(numProfiles) {
+      var hasSingleProfile = numProfiles == 1;
+      $('profiles-list').hidden = hasSingleProfile;
+      $('profiles-single-message').hidden = !hasSingleProfile;
+      $('profiles-manage').hidden = hasSingleProfile;
+      $('profiles-delete').textContent = hasSingleProfile ?
+          templateData.profilesDeleteSingle :
+          templateData.profilesDelete;
+    },
+
+    /**
+     * Adds all |profiles| to the list.
+     * @param {Array.<Object>} An array of profile info objects.
+     *     each object is of the form:
+     *       profileInfo = {
+     *         name: "Profile Name",
+     *         iconURL: "chrome://path/to/icon/image",
+     *         filePath: "/path/to/profile/data/on/disk",
+     *         isCurrentProfile: false
+     *       };
+     */
+    setProfilesInfo_: function(profiles) {
+      this.setProfileViewSingle_(profiles.length);
+      // add it to the list, even if the list is hidden so we can access it
+      // later.
+      $('profiles-list').dataModel = new ArrayDataModel(profiles);
+      this.setProfileViewButtonsStatus_();
+    },
+
+    setGtkThemeButtonEnabled_: function(enabled) {
+      if (!cr.isChromeOS && navigator.platform.match(/linux|BSD/i)) {
+        $('themes-GTK-button').disabled = !enabled;
+      }
+    },
+
+    setThemesResetButtonEnabled_: function(enabled) {
+      $('themes-reset').disabled = !enabled;
+    },
+
+    /**
+     * (Re)loads IMG element with current user account picture.
+     */
+    updateAccountPicture_: function() {
+      $('account-picture').src =
+          'chrome://userimage/' + this.username_ +
+          '?id=' + (new Date()).getTime();
+    },
   };
 
   //Forward public APIs to private implementations.
@@ -377,6 +523,10 @@ cr.define('options', function() {
     'hideSyncSection',
     'setAutoLoginVisible',
     'setCustomizeSyncButtonEnabled',
+    'setGtkThemeButtonEnabled',
+    'setInstantFieldTrialStatus',
+    'setProfilesInfo',
+    'setProfilesSectionVisible',
     'setStartStopButtonEnabled',
     'setStartStopButtonLabel',
     'setStartStopButtonVisible',
@@ -386,12 +536,12 @@ cr.define('options', function() {
     'setSyncSetupCompleted',
     'setSyncStatus',
     'setSyncStatusErrorVisible',
-    'setProfilesSectionVisible',
+    'setThemesResetButtonEnabled',
+    'updateAccountPicture',
+    'updateAutocompleteSuggestions',
     'updateHomePageLabel',
     'updateSearchEngines',
     'updateStartupPages',
-    'updateAutocompleteSuggestions',
-    'setInstantFieldTrialStatus',
   ].forEach(function(name) {
     BrowserOptions[name] = function(value) {
       return BrowserOptions.getInstance()[name + '_'](value);
@@ -406,6 +556,17 @@ cr.define('options', function() {
                                                               canBeDefault);
     }
   };
+
+  if (cr.isChromeOS) {
+    /**
+     * Returns username (canonical email) of the user logged in (ChromeOS only).
+     * @return {string} user email.
+     */
+    // TODO(jhawkins): Investigate the use case for this method.
+    BrowserOptions.getLoggedInUsername = function() {
+      return BrowserOptions.getInstance().username_;
+    };
+  }
 
   // Export
   return {

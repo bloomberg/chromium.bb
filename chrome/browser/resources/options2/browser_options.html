@@ -58,7 +58,7 @@
     </div>
   </section>
   <section>
-    <h3 i18n-content="toolbarGroupName"></h3>
+    <h3 i18n-content="appearance"></h3>
     <div>
       <div class="checkbox">
         <input id="toolbarShowHomeButton" pref="browser.show_home_button"
@@ -78,6 +78,40 @@
         </label>
       </div>
     </div>
+<if expr="not pp_ifdef('toolkit_views') and is_posix and not is_macosx">
+    <div>
+      <div>
+        <button id="themes-GTK-button"
+            i18n-content="themesGTKButton"></button>
+        <button id="themes-reset"
+            i18n-content="themesSetClassic"></button>
+      </div>
+      <div id="themes-gallery-div">
+        <a id="themes-gallery" i18n-content="themesGallery"
+            i18n-values="href:themesGalleryURL" target="_blank"></a>
+      </div>
+      <div class="radio">
+        <label>
+          <input name="decorations_radio" pref="browser.custom_chrome_frame"
+              type="radio" value="false" metric="Options_CustomFrame">
+          <span i18n-content="showWindowDecorations"></span>
+        </label>
+      </div>
+      <div class="radio">
+        <label>
+          <input name="decorations_radio" pref="browser.custom_chrome_frame"
+              type="radio" value="true" metric="Options_CustomFrame">
+          <span i18n-content="hideWindowDecorations"></span>
+        </label>
+      </div>
+    </div>
+</if>
+<if expr="pp_ifdef('toolkit_views') or os == 'win32' or os == 'darwin'">
+    <div>
+      <button id="themes-gallery" i18n-content="themesGallery"></button>
+      <button id="themes-reset" i18n-content="themesReset"></button>
+    </div>
+</if>
   </section>
   <section>
     <h3 i18n-content="defaultSearchGroupName"></h3>
@@ -103,6 +137,21 @@
   </section>
   <section id="profiles-section" hidden>
     <h3 i18n-content="profiles"></h3>
+<if expr="pp_ifdef('chromeos')">
+    <div>
+      <span id="account-picture-wrapper">
+        <img id="account-picture"
+            src="chrome://theme/IDR_PROFILE_PICTURE_LOADING">
+      </span>
+      <label>
+        <input id="enable-screen-lock" type="checkbox"
+            pref="settings.enable_screen_lock">
+        <span i18n-content="enableScreenlock"></span>
+      </label>
+      <br>
+      <button id="change-picture-button" i18n-content="changePicture"></button>
+    </div>
+</if>
     <div>
       <list id="profiles-list" class="settings-list" hidden></list>
       <div id="profiles-single-message" i18n-content="profilesSingleUser">
@@ -115,6 +164,14 @@
         </button>
       </div>
     </div>
+<if expr="not pp_ifdef('chromeos')">
+    <div id="manage-data-group">
+      <div i18n-content="manageDataDescription"></div>
+      <div>
+        <button id="import-data" i18n-content="importData"></button>
+      </div>
+    </div>
+</if>
   </section>
 <if expr="not pp_ifdef('chromeos')">
   <section>

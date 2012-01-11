@@ -122,8 +122,17 @@ class BrowserOptionsHandler : public OptionsPageUIHandler,
   // |args| is not used.
   void CreateProfile(const ListValue* args);
 
-  scoped_refptr<ShellIntegration::DefaultBrowserWorker>
-      default_browser_worker_;
+  void ObserveThemeChanged();
+  void ThemesReset(const ListValue* args);
+#if defined(TOOLKIT_GTK)
+  void ThemesSetGTK(const ListValue* args);
+#endif
+
+#if defined(OS_CHROMEOS)
+  void UpdateAccountPicture();
+#endif
+
+  scoped_refptr<ShellIntegration::DefaultBrowserWorker> default_browser_worker_;
 
   StringPrefMember homepage_;
   BooleanPrefMember default_browser_policy_;

@@ -8593,6 +8593,9 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
       </message>
 
       <if expr="not pp_ifdef('use_titlecase')">
+        <message name="IDS_APPEARANCE_GROUP_NAME" desc="The title of the appearance group">
+          Appearance
+        </message>
         <message name="IDS_THEMES_GROUP_NAME" desc="In sentence case: The title of the themes group">
           Themes
         </message>
@@ -8601,6 +8604,9 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
         </message>
       </if>
       <if expr="pp_ifdef('use_titlecase')">
+        <message name="IDS_APPEARANCE_GROUP_NAME" desc="In Title Case: The title of the appearance group">
+          Appearance
+        </message>
         <message name="IDS_THEMES_GROUP_NAME" desc="In Title Case: The title of the themes group">
           Themes
         </message>
@@ -8610,9 +8616,6 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
       </if>
 
       <if expr="is_posix and not is_macosx">
-        <message name="IDS_APPEARANCE_GROUP_NAME" desc="In Title Case: The title of the themes group">
-          Appearance
-        </message>
         <message name="IDS_THEMES_GTK_BUTTON" desc="The button to choose GTK colors and icons as the current theme.">
           Use GTK+ Theme
         </message>
@@ -8671,6 +8674,9 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
         Check for server certificate revocation
       </message>
 
+      <message name="IDS_OPTIONS_MANAGE_DATA_DESCRIPTION" desc="The title of the 'Manage your data' label.">
+        Manage your data
+      </message>
       <if expr="not pp_ifdef('use_titlecase')">
         <message name="IDS_OPTIONS_BROWSING_DATA_GROUP_NAME" desc="The title of the 'Browsing data' group.">
           Browsing data

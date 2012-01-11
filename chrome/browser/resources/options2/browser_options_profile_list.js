@@ -1,8 +1,8 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('options.personal_options', function() {
+cr.define('options.browser_options', function() {
   const DeletableItem = options.DeletableItem;
   const DeletableItemList = options.DeletableItemList;
   const ListSingleSelectionModel = cr.ui.ListSingleSelectionModel;

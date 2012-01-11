@@ -58,6 +58,7 @@
 <include src="autofill_options_list.js"></include>
 <include src="autofill_options.js"></include>
 <include src="browser_options.js"></include>
+<include src="browser_options_profile_list.js"></include>
 <include src="browser_options_startup_page_list.js"></include>
 <include src="clear_browser_data_overlay.js"></include>
 <include src="content_settings.js"></include>
@@ -83,8 +84,6 @@
 <include src="manage_profile_overlay.js"></include>
 <include src="password_manager.js"></include>
 <include src="password_manager_list.js"></include>
-<include src="personal_options.js"></include>
-<include src="personal_options_profile_list.js"></include>
 <include src="profiles_icon_grid.js"></include>
 <include src="search_engine_manager.js"></include>
 <include src="search_engine_manager_engine_list.js"></include>

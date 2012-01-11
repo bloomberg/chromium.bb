@@ -23,7 +23,6 @@ var InstantConfirmOverlay = options.InstantConfirmOverlay;
 var LanguageOptions = options.LanguageOptions;
 var OptionsPage = options.OptionsPage;
 var PasswordManager = options.PasswordManager;
-var PersonalOptions = options.PersonalOptions;
 var Preferences = options.Preferences;
 var ManageProfileOverlay = options.ManageProfileOverlay;
 var ProxyOptions = options.ProxyOptions;
@@ -72,7 +71,6 @@ function load() {
   OptionsPage.registerSubPage(AdvancedOptions.getInstance(),
                               BrowserOptions.getInstance(),
                               [$('advancedOptionsButton')]);
-  OptionsPage.register(PersonalOptions.getInstance());
   if (cr.isChromeOS) {
     OptionsPage.register(SystemOptions.getInstance());
     OptionsPage.registerSubPage(LanguageOptions.getInstance(),
@@ -168,7 +166,7 @@ function load() {
                               BrowserOptions.getInstance(),
                               [$('toolbarShowHomeButton')]);
   OptionsPage.registerOverlay(ImportDataOverlay.getInstance(),
-                              PersonalOptions.getInstance());
+                              BrowserOptions.getInstance());
   OptionsPage.registerOverlay(InstantConfirmOverlay.getInstance(),
                               BrowserOptions.getInstance());
   OptionsPage.registerOverlay(SyncSetupOverlay.getInstance(),
@@ -183,7 +181,7 @@ function load() {
     OptionsPage.registerSubPage(ProxyOptions.getInstance(),
                                 InternetOptions.getInstance());
     OptionsPage.registerSubPage(ChangePictureOptions.getInstance(),
-                                PersonalOptions.getInstance(),
+                                BrowserOptions.getInstance(),
                                 [$('change-picture-button')]);
     OptionsPage.registerOverlay(DetailsInternetPage.getInstance(),
                                 InternetOptions.getInstance());

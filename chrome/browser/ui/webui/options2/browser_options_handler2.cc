@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/memory/singleton.h"
 #include "base/path_service.h"
+#include "base/stl_util.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
@@ -36,13 +37,18 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/sync_setup_flow.h"
 #include "chrome/browser/sync/sync_ui_util.h"
+#include "chrome/browser/themes/theme_service.h"
+#include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
 #include "chrome/browser/ui/webui/web_ui_util.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
@@ -50,11 +56,25 @@
 #include "content/public/browser/web_contents.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
+#include "grit/locale_settings.h"
+#include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_WIN)
 #include "chrome/installer/util/auto_launch_util.h"
-#endif
+#endif  // defined(OS_WIN)
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/options/take_photo_dialog.h"
+#include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/views/window.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+#endif  // defined(OS_CHROMEOS)
+
+#if defined(TOOLKIT_GTK)
+#include "chrome/browser/ui/gtk/gtk_theme_service.h"
+#endif  // defined(TOOLKIT_GTK)
 
 using content::BrowserThread;
 using content::UserMetricsAction;
@@ -88,31 +108,51 @@ void BrowserOptionsHandler::GetLocalizedValues(
   DCHECK(localized_strings);
 
   static OptionsStringResource resources[] = {
-    { "syncSection", IDS_SYNC_OPTIONS_GROUP_NAME },
+    { "appearance", IDS_APPEARANCE_GROUP_NAME },
+    { "advancedGroupName", IDS_OPTIONS_ADVANCED_TAB_LABEL },
+    { "advancedOptionsButtonTitle", IDS_OPTIONS_ADVANCED_BUTTON_TITLE },
+    { "autologinEnabled", IDS_OPTIONS_PASSWORDS_AUTOLOGIN },
+    { "browsingData", IDS_OPTIONS_BROWSING_DATA_GROUP_NAME },  // needed?
+    { "changeHomePage", IDS_OPTIONS_CHANGE_HOME_PAGE },
     { "customizeSync", IDS_SYNC_CUSTOMIZE_BUTTON_LABEL },
+    { "defaultBrowserGroupName", IDS_OPTIONS_DEFAULTBROWSER_GROUP_NAME },
+    { "defaultSearchGroupName", IDS_OPTIONS_DEFAULTSEARCH_GROUP_NAME },
+    { "defaultSearchManageEngines", IDS_OPTIONS_DEFAULTSEARCH_MANAGE_ENGINES },
+    { "instantConfirmMessage", IDS_INSTANT_OPT_IN_MESSAGE },
+    { "instantConfirmTitle", IDS_INSTANT_OPT_IN_TITLE },
+    { "importData", IDS_OPTIONS_IMPORT_DATA_BUTTON },
+    { "manageDataDescription", IDS_OPTIONS_MANAGE_DATA_DESCRIPTION },
     { "profiles", IDS_PROFILES_OPTIONS_GROUP_NAME },
     { "profilesCreate", IDS_PROFILES_CREATE_BUTTON_LABEL },
-    { "profilesManage", IDS_PROFILES_MANAGE_BUTTON_LABEL },
     { "profilesDelete", IDS_PROFILES_DELETE_BUTTON_LABEL },
     { "profilesDeleteSingle", IDS_PROFILES_DELETE_SINGLE_BUTTON_LABEL },
     { "profilesListItemCurrent", IDS_PROFILES_LIST_ITEM_CURRENT },
+    { "profilesManage", IDS_PROFILES_MANAGE_BUTTON_LABEL },
     { "startupGroupName", IDS_OPTIONS_STARTUP_GROUP_NAME },
+    { "startupSetPages", IDS_OPTIONS2_STARTUP_SET_PAGES },
     { "startupShowDefaultAndNewTab",
       IDS_OPTIONS_STARTUP_SHOW_DEFAULT_AND_NEWTAB},
     { "startupShowLastSession", IDS_OPTIONS_STARTUP_SHOW_LAST_SESSION },
     { "startupShowPages", IDS_OPTIONS2_STARTUP_SHOW_PAGES },
-    { "startupSetPages", IDS_OPTIONS2_STARTUP_SET_PAGES },
+    { "syncSection", IDS_SYNC_OPTIONS_GROUP_NAME },
+    { "themesGallery", IDS_THEMES_GALLERY_BUTTON },
+    { "themesGalleryURL", IDS_THEMES_GALLERY_URL },
     { "toolbarGroupName", IDS_OPTIONS2_TOOLBAR_GROUP_NAME },
-    { "toolbarShowHomeButton", IDS_OPTIONS_TOOLBAR_SHOW_HOME_BUTTON },
-    { "changeHomePage", IDS_OPTIONS_CHANGE_HOME_PAGE },
     { "toolbarShowBookmarksBar", IDS_OPTIONS_TOOLBAR_SHOW_BOOKMARKS_BAR },
-    { "defaultSearchGroupName", IDS_OPTIONS_DEFAULTSEARCH_GROUP_NAME },
-    { "defaultSearchManageEngines", IDS_OPTIONS_DEFAULTSEARCH_MANAGE_ENGINES },
-    { "instantConfirmTitle", IDS_INSTANT_OPT_IN_TITLE },
-    { "instantConfirmMessage", IDS_INSTANT_OPT_IN_MESSAGE },
-    { "defaultBrowserGroupName", IDS_OPTIONS_DEFAULTBROWSER_GROUP_NAME },
-    { "advancedGroupName", IDS_OPTIONS_ADVANCED_TAB_LABEL },
-    { "advancedOptionsButtonTitle", IDS_OPTIONS_ADVANCED_BUTTON_TITLE },
+    { "toolbarShowHomeButton", IDS_OPTIONS_TOOLBAR_SHOW_HOME_BUTTON },
+#if defined(TOOLKIT_GTK)
+    { "showWindowDecorations", IDS_SHOW_WINDOW_DECORATIONS_RADIO },
+    { "hideWindowDecorations", IDS_HIDE_WINDOW_DECORATIONS_RADIO },
+    { "themesGTKButton", IDS_THEMES_GTK_BUTTON },
+    { "themesSetClassic", IDS_THEMES_SET_CLASSIC },
+#else
+    { "themes", IDS_THEMES_GROUP_NAME },
+    { "themesReset", IDS_THEMES_RESET_BUTTON },
+#endif
+#if defined(OS_CHROMEOS)
+    { "changePicture", IDS_OPTIONS_CHANGE_PICTURE },
+    { "enableScreenlock", IDS_OPTIONS_ENABLE_SCREENLOCKER_CHECKBOX },
+#endif
   };
 
   RegisterStrings(localized_strings, resources, arraysize(resources));
@@ -122,58 +162,91 @@ void BrowserOptionsHandler::GetLocalizedValues(
       "syncOverview",
       l10n_util::GetStringFUTF16(IDS_SYNC_OVERVIEW,
                                  l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
-  localized_strings->SetString("syncLearnMoreURL",
-      google_util::StringAppendGoogleLocaleParam(chrome::kSyncLearnMoreURL));
 
-  localized_strings->SetString("profilesSingleUser",
+  localized_strings->SetString(
+      "syncLearnMoreURL",
+      google_util::StringAppendGoogleLocaleParam(chrome::kSyncLearnMoreURL));
+  localized_strings->SetString(
+      "profilesSingleUser",
       l10n_util::GetStringFUTF16(IDS_PROFILES_SINGLE_USER_MESSAGE,
                                  l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
 
-  localized_strings->SetString("defaultSearchGroupLabel",
+  localized_strings->SetString(
+      "defaultSearchGroupLabel",
       l10n_util::GetStringFUTF16(IDS_SEARCH_PREF_EXPLANATION,
           l10n_util::GetStringUTF16(IDS_OMNIBOX_LEARN_MORE_URL)));
-  localized_strings->SetString("instantPrefAndWarning",
+  localized_strings->SetString(
+      "instantPrefAndWarning",
       l10n_util::GetStringFUTF16(IDS_INSTANT_PREF_WITH_WARNING,
           l10n_util::GetStringUTF16(IDS_INSTANT_LEARN_MORE_URL)));
-  localized_strings->SetString("instantLearnMoreLink",
+  localized_strings->SetString(
+      "instantLearnMoreLink",
       ASCIIToUTF16(browser::InstantLearnMoreURL().spec()));
-  localized_strings->SetString("defaultBrowserUnknown",
+
+  localized_strings->SetString(
+      "defaultBrowserUnknown",
       l10n_util::GetStringFUTF16(IDS_OPTIONS_DEFAULTBROWSER_UNKNOWN,
           l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
-  localized_strings->SetString("defaultBrowserUseAsDefault",
+  localized_strings->SetString(
+      "defaultBrowserUseAsDefault",
       l10n_util::GetStringFUTF16(IDS_OPTIONS_DEFAULTBROWSER_USEASDEFAULT,
           l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
-  localized_strings->SetString("autoLaunchText",
+  localized_strings->SetString(
+      "autoLaunchText",
       l10n_util::GetStringFUTF16(IDS_AUTOLAUNCH_TEXT,
           l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
-  localized_strings->SetString("advancedGroupDescription",
+  localized_strings->SetString(
+      "advancedGroupDescription",
       l10n_util::GetStringFUTF16(IDS_OPTIONS_ADVANCED_GROUP_DESCRIPTION,
           l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
+
+#if defined(OS_CHROMEOS)
+  if (chromeos::UserManager::Get()->user_is_logged_in()) {
+    localized_strings->SetString("username",
+        chromeos::UserManager::Get()->logged_in_user().email());
+  }
+#endif
 }
 
 void BrowserOptionsHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback("becomeDefaultBrowser",
+  web_ui()->RegisterMessageCallback(
+      "becomeDefaultBrowser",
       base::Bind(&BrowserOptionsHandler::BecomeDefaultBrowser,
                  base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("setDefaultSearchEngine",
+  web_ui()->RegisterMessageCallback(
+      "setDefaultSearchEngine",
       base::Bind(&BrowserOptionsHandler::SetDefaultSearchEngine,
                  base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("requestAutocompleteSuggestions",
+  web_ui()->RegisterMessageCallback(
+      "requestAutocompleteSuggestions",
       base::Bind(&BrowserOptionsHandler::RequestAutocompleteSuggestions,
                  base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("enableInstant",
+  web_ui()->RegisterMessageCallback(
+      "enableInstant",
       base::Bind(&BrowserOptionsHandler::EnableInstant,
                  base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("disableInstant",
+  web_ui()->RegisterMessageCallback(
+      "disableInstant",
       base::Bind(&BrowserOptionsHandler::DisableInstant,
                  base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("getInstantFieldTrialStatus",
+  web_ui()->RegisterMessageCallback(
+      "getInstantFieldTrialStatus",
       base::Bind(&BrowserOptionsHandler::GetInstantFieldTrialStatus,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "createProfile",
       base::Bind(&BrowserOptionsHandler::CreateProfile,
                  base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "themesReset",
+      base::Bind(&BrowserOptionsHandler::ThemesReset,
+                 base::Unretained(this)));
+#if defined(TOOLKIT_GTK)
+  web_ui()->RegisterMessageCallback(
+      "themesSetGTK",
+      base::Bind(&BrowserOptionsHandler::ThemesSetGTK,
+                 base::Unretained(this)));
+#endif
 }
 
 void BrowserOptionsHandler::OnStateChanged() {
@@ -293,9 +366,17 @@ void BrowserOptionsHandler::Initialize() {
 
   registrar_.Add(this, chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED,
                  content::NotificationService::AllSources());
+#if defined(OS_CHROMEOS)
+  registrar_.Add(this, chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED,
+                 content::NotificationService::AllSources());
+#endif
+  registrar_.Add(this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
+                 content::Source<ThemeService>(
+                     ThemeServiceFactory::GetForProfile(profile)));
 
   UpdateSearchEngines();
   UpdateHomePageLabel();
+  ObserveThemeChanged();
 
   autocomplete_controller_.reset(new AutocompleteController(profile, this));
 
@@ -509,7 +590,13 @@ void BrowserOptionsHandler::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  if (type == chrome::NOTIFICATION_PREF_CHANGED) {
+  if (type == chrome::NOTIFICATION_BROWSER_THEME_CHANGED) {
+    ObserveThemeChanged();
+#if defined(OS_CHROMEOS)
+  } else if (type == chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED) {
+    UpdateAccountPicture();
+#endif
+  } else if (type == chrome::NOTIFICATION_PREF_CHANGED) {
     std::string* pref = content::Details<std::string>(details).ptr();
     if (*pref == prefs::kDefaultBrowserSettingEnabled) {
       UpdateDefaultBrowserState();
@@ -623,12 +710,57 @@ void BrowserOptionsHandler::SendProfilesInfo() {
     profile_info_list.Append(profile_value);
   }
 
-  web_ui()->CallJavascriptFunction("PersonalOptions.setProfilesInfo",
+  web_ui()->CallJavascriptFunction("BrowserOptions.setProfilesInfo",
                                    profile_info_list);
 }
 
 void BrowserOptionsHandler::CreateProfile(const ListValue* args) {
   ProfileManager::CreateMultiProfileAsync();
 }
+
+void BrowserOptionsHandler::ObserveThemeChanged() {
+  Profile* profile = Profile::FromWebUI(web_ui());
+#if defined(TOOLKIT_GTK)
+  GtkThemeService* theme_service = GtkThemeService::GetFrom(profile);
+  bool is_gtk_theme = theme_service->UsingNativeTheme();
+  base::FundamentalValue gtk_enabled(!is_gtk_theme);
+  web_ui()->CallJavascriptFunction("BrowserOptions.setGtkThemeButtonEnabled",
+                                   gtk_enabled);
+#else
+  ThemeService* theme_service = ThemeServiceFactory::GetForProfile(profile);
+  bool is_gtk_theme = false;
+#endif
+
+  bool is_classic_theme = !is_gtk_theme && theme_service->UsingDefaultTheme();
+  base::FundamentalValue enabled(!is_classic_theme);
+  web_ui()->CallJavascriptFunction("BrowserOptions.setThemesResetButtonEnabled",
+                                   enabled);
+}
+
+void BrowserOptionsHandler::ThemesReset(const ListValue* args) {
+  content::RecordAction(UserMetricsAction("Options_ThemesReset"));
+  Profile* profile = Profile::FromWebUI(web_ui());
+  ThemeServiceFactory::GetForProfile(profile)->UseDefaultTheme();
+}
+
+#if defined(TOOLKIT_GTK)
+void BrowserOptionsHandler::ThemesSetGTK(const ListValue* args) {
+  content::RecordAction(UserMetricsAction("Options_GtkThemeSet"));
+  Profile* profile = Profile::FromWebUI(web_ui());
+  ThemeServiceFactory::GetForProfile(profile)->SetNativeTheme();
+}
+#endif
+
+#if defined(OS_CHROMEOS)
+void BrowserOptionsHandler::UpdateAccountPicture() {
+  std::string email = chromeos::UserManager::Get()->logged_in_user().email();
+  if (!email.empty()) {
+    web_ui()->CallJavascriptFunction("BrowserOptions.updateAccountPicture");
+    base::StringValue email_value(email);
+    web_ui()->CallJavascriptFunction("BrowserOptions.updateAccountPicture",
+                                     email_value);
+  }
+}
+#endif
 
 }  // namespace options2
