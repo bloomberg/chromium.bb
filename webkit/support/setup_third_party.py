@@ -14,8 +14,8 @@ def GetHeaderFilesInDir(dir_path):
   """Return a list of all header files in dir_path."""
   all_files = []
   for root, dirs, files in os.walk(dir_path):
-    # Normalize windows paths to unix-style if necessary as gyp can get
-    # confused if a mix of forward- and backwards-separators are both present.
+    # Backslashes get shell escaped by gyp, so force forward slash for
+    # path separators.
     all_files.extend([os.path.join(root, f).replace(os.sep, '/')
                       for f in files if f.endswith('.h')])
   return all_files
@@ -50,7 +50,9 @@ def Outputs(args):
   input_files = GetHeaderFilesInDir(base_input_dir)
   for filename in input_files:
     rel_path = filename[len(base_input_dir) + 1:]
-    print os.path.join(output_dir, rel_path)
+    # Backslashes get shell escaped by gyp, so force forward slash for
+    # path separators.
+    print os.path.join(output_dir, rel_path).replace(os.sep, '/')
 
 
 def SetupHeaders(args):
