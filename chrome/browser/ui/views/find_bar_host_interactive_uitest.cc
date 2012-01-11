@@ -71,7 +71,8 @@ class FindInPageTest : public InProcessBrowserTest {
 
 }  // namespace
 
-#if defined(TOOLKIT_USES_GTK)
+// Flaky, see crbug.com/109906.
+#if defined(TOOLKIT_USES_GTK) || defined(USE_AURA)
 #define MAYBE_CrashEscHandlers FLAKY_CrashEscHandlers
 #else
 #define MAYBE_CrashEscHandlers CrashEscHandlers
