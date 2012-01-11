@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -125,6 +125,8 @@ def GetPreferredTrySlaves():
       'nacl-mac10.5_glibc_opt',
       'nacl-mac10.6_newlib_opt',
       'nacl-mac10.6_glibc_opt',
+      'nacl-mac10.7_newlib_opt',
+      'nacl-mac10.7_glibc_opt',
       'nacl-win32_newlib_opt',
       'nacl-win32_glibc_opt',
       'nacl-win64_newlib_dbg',
