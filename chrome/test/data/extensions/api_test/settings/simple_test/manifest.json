@@ -5,6 +5,6 @@
   "description": "Tests that the settings API works.",
   "permissions": ["experimental"],
   "background": {
-    "page": "background.html"
+    "scripts": ["background.js"]
   }
 }

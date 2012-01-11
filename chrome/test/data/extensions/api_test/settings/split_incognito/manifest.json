@@ -5,7 +5,7 @@
   "description": "Tests the API in split incognito mode",
   "permissions": ["experimental"],
   "background": {
-    "page": "background.html"
+    "scripts": ["background.js"]
   },
   "incognito": "split"
 }

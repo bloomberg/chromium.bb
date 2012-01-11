@@ -5,7 +5,7 @@
   "description": "Popup windows should never be blocked from within an extension.",
   "permissions": ["tabs"],
   "background": {
-    "page": "background.html"
+    "scripts": ["pop.js", "background.js"]
   },
   "content_scripts": [
     {

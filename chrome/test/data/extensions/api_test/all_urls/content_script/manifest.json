@@ -1,6 +1,6 @@
 {
    "background": {
-     "page": "background.html"
+     "scripts": ["background.js"]
    },
    "content_scripts": [ {
       "js": [ "content_script.js" ],

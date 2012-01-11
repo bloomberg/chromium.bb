@@ -5,7 +5,7 @@
   "manifest_version": 2,
   "description": "Tests of chrome.fileSystem.* methods",
   "background": {
-    "page": "background.html"
+    "scripts": ["background.js"]
   },
   "file_browser_handlers": [
     {

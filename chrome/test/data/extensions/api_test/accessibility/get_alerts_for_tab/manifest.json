@@ -3,7 +3,7 @@
   "version": "0.1",
   "description": "browser test for chrome.experimental.accessibility.getAlertsForTab API",
   "background": {
-    "page": "background.html"
+    "scripts": ["background.js"]
   },
   "permissions": [
     "tabs",

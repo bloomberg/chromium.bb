@@ -5,7 +5,7 @@
   "manifest_version": 2,
   "description": "Local filesystem access sanity test",
   "background": {
-    "page": "background.html"
+    "scripts": ["background.js"]
   },
   "permissions": [
     "tabs",

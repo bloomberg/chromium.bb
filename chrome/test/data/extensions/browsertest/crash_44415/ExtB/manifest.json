@@ -7,7 +7,7 @@
     "default_popup": "popup.html"
   },
   "background": {
-    "page": "background.html"
+    "scripts": ["background.js"]
   },
   "permissions": [ "tabs", "http://*/*" ]
 }

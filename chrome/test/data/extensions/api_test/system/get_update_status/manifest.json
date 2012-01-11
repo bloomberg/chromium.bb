@@ -4,7 +4,7 @@
   "version": "0.1",
   "description": "browser test for chrome.systemPriavte.getUpdateStatus API",
   "background": {
-    "page": "background.html"
+    "scripts": ["background.js"]
   },
   "permissions": [
     "systemPrivate"

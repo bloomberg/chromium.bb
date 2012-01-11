@@ -5,7 +5,7 @@
   "manifest_version": 2,
   "description": "Test for decodeJPEG.decode",
   "background": {
-    "page": "background.html"
+    "scripts": ["testdata.js", "background.js"]
   },
   "permissions": ["chromePrivate"]
 }
