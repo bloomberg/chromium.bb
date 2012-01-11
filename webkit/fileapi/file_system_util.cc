@@ -96,8 +96,7 @@ bool CrackFileSystemURL(const GURL& url, GURL* origin_url, FileSystemType* type,
   return true;
 }
 
-GURL GetFileSystemRootURI(
-    const GURL& origin_url, fileapi::FileSystemType type) {
+GURL GetFileSystemRootURI(const GURL& origin_url, FileSystemType type) {
   std::string path("filesystem:");
   path += origin_url.spec();
   switch (type) {
@@ -115,6 +114,13 @@ GURL GetFileSystemRootURI(
     return GURL();
   }
   return GURL(path);
+}
+
+std::string GetFileSystemName(const GURL& origin_url, FileSystemType type) {
+  std::string origin_identifier = GetOriginIdentifierFromURL(origin_url);
+  std::string type_string = GetFileSystemTypeString(type);
+  DCHECK(!type_string.empty());
+  return origin_identifier + ":" + type_string;
 }
 
 FileSystemType QuotaStorageTypeToFileSystemType(

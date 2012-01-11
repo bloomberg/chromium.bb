@@ -37,7 +37,8 @@ class SandboxMountPointProvider
     : public FileSystemMountPointProvider,
       public FileSystemQuotaUtil {
  public:
-  typedef FileSystemMountPointProvider::GetRootPathCallback GetRootPathCallback;
+  typedef FileSystemMountPointProvider::ValidateFileSystemCallback
+      ValidateFileSystemCallback;
 
   // Origin enumerator interface.
   // An instance of this interface is assumed to be called on the file thread.
@@ -67,20 +68,20 @@ class SandboxMountPointProvider
   virtual ~SandboxMountPointProvider();
 
   // FileSystemMountPointProvider overrides.
+  virtual void ValidateFileSystemRoot(
+      const GURL& origin_url,
+      FileSystemType type,
+      bool create,
+      const ValidateFileSystemCallback& callback) OVERRIDE;
+  virtual FilePath GetFileSystemRootPathOnFileThread(
+      const GURL& origin_url,
+      FileSystemType type,
+      const FilePath& virtual_path,
+      bool create) OVERRIDE;
   virtual bool IsAccessAllowed(
       const GURL& origin_url,
       FileSystemType type,
       const FilePath& virtual_path) OVERRIDE;
-  virtual void ValidateFileSystemRootAndGetURL(
-      const GURL& origin_url,
-      FileSystemType type,
-      bool create,
-      const GetRootPathCallback& callback) OVERRIDE;
-  virtual FilePath ValidateFileSystemRootAndGetPathOnFileThread(
-      const GURL& origin_url,
-      FileSystemType type,
-      const FilePath& unused,
-      bool create) OVERRIDE;
   virtual bool IsRestrictedFileName(const FilePath& filename) const OVERRIDE;
   virtual std::vector<FilePath> GetRootDirectories() const OVERRIDE;
   virtual FileSystemFileUtil* GetFileUtil() OVERRIDE;
@@ -154,8 +155,6 @@ class SandboxMountPointProvider
   // Returns true if the given |url|'s scheme is allowed to access
   // filesystem.
   bool IsAllowedScheme(const GURL& url) const;
-
-  class GetFileSystemRootPathTask;
 
   friend class FileSystemTestOriginHelper;
   friend class SandboxMountPointProviderMigrationTest;

@@ -41,9 +41,12 @@ static FilePath GetRelativePath(const GURL& url) {
 class FileSystemDirURLRequestJob::CallbackDispatcher
     : public FileSystemCallbackDispatcher {
  public:
-  explicit CallbackDispatcher(FileSystemDirURLRequestJob* job)
-      : job_(job) {
-    DCHECK(job_);
+  // An instance of this class must be created by Create()
+  // (so that we do not leak ownership).
+  static scoped_ptr<FileSystemCallbackDispatcher> Create(
+      FileSystemDirURLRequestJob* job) {
+    return scoped_ptr<FileSystemCallbackDispatcher>(
+        new CallbackDispatcher(job));
   }
 
   // fileapi::FileSystemCallbackDispatcher overrides.
@@ -79,6 +82,10 @@ class FileSystemDirURLRequestJob::CallbackDispatcher
   }
 
  private:
+  explicit CallbackDispatcher(FileSystemDirURLRequestJob* job) : job_(job) {
+    DCHECK(job_);
+  }
+
   // TODO(adamk): Get rid of the need for refcounting here by
   // allowing FileSystemOperations to be cancelled.
   scoped_refptr<FileSystemDirURLRequestJob> job_;
@@ -175,7 +182,7 @@ void FileSystemDirURLRequestJob::DidReadDirectory(
 }
 
 FileSystemOperation* FileSystemDirURLRequestJob::GetNewOperation() {
-  return new FileSystemOperation(new CallbackDispatcher(this),
+  return new FileSystemOperation(CallbackDispatcher::Create(this),
                                  file_thread_proxy_,
                                  file_system_context_);
 }

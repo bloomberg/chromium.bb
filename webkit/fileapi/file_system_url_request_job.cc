@@ -55,9 +55,12 @@ static net::HttpResponseHeaders* CreateHttpResponseHeaders() {
 class FileSystemURLRequestJob::CallbackDispatcher
     : public FileSystemCallbackDispatcher {
  public:
-  explicit CallbackDispatcher(FileSystemURLRequestJob* job)
-      : job_(job) {
-    DCHECK(job_);
+  // An instance of this class must be created by Create()
+  // (so that we do not leak ownerships).
+  static scoped_ptr<FileSystemCallbackDispatcher> Create(
+      FileSystemURLRequestJob* job) {
+    return scoped_ptr<FileSystemCallbackDispatcher>(
+        new CallbackDispatcher(job));
   }
 
   // fileapi::FileSystemCallbackDispatcher overrides.
@@ -93,6 +96,10 @@ class FileSystemURLRequestJob::CallbackDispatcher
   }
 
  private:
+  explicit CallbackDispatcher(FileSystemURLRequestJob* job) : job_(job) {
+    DCHECK(job_);
+  }
+
   // TODO(adamk): Get rid of the need for refcounting here by
   // allowing FileSystemOperations to be cancelled.
   scoped_refptr<FileSystemURLRequestJob> job_;
@@ -213,7 +220,7 @@ int FileSystemURLRequestJob::GetResponseCode() const {
 
 void FileSystemURLRequestJob::StartAsync() {
   if (request_) {
-    (new FileSystemOperation(new CallbackDispatcher(this),
+    (new FileSystemOperation(CallbackDispatcher::Create(this),
                              file_thread_proxy_,
                              file_system_context_)
                             )->GetMetadata(request_->url());

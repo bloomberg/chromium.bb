@@ -35,7 +35,18 @@ bool CrackFileSystemURL(const GURL& url,
 // |origin_url| and |type|.  The returned URI can be used as a root path
 // of the filesystem (e.g. <returned_URI> + "/relative/path" will compose
 // a path pointing to the entry "/relative/path" in the filesystem).
-GURL GetFileSystemRootURI(const GURL& origin_url, fileapi::FileSystemType type);
+GURL GetFileSystemRootURI(const GURL& origin_url, FileSystemType type);
+
+// Returns the name for the filesystem that is specified by a pair of
+// |origin_url| and |type|.
+// (The name itself is neither really significant nor a formal identifier
+// but can be read as the .name field of the returned FileSystem object
+// as a user-friendly name in the javascript layer).
+//
+// Example:
+//   The name for a TEMPORARY filesystem of "http://www.example.com:80/"
+//   should look like: "http_www.example.host_80:temporary"
+std::string GetFileSystemName(const GURL& origin_url, FileSystemType type);
 
 // Converts FileSystemType |type| to/from the StorageType |storage_type| that
 // is used for the unified quota system.

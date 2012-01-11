@@ -157,13 +157,13 @@ class SandboxMountPointProviderMigrationTest : public testing::Test {
     return sandbox_provider()->GetFileUtil();
   }
 
-  void OnGetRootPath(bool success, const FilePath& unused,
-                     const std::string& unused_also) {
-    EXPECT_FALSE(success);  // We told it not to create.
+  void OnValidate(base::PlatformFileError result) {
+    EXPECT_NE(base::PLATFORM_FILE_OK, result);  // We told it not to create.
   }
 
-  FileSystemMountPointProvider::GetRootPathCallback GetRootPathCallback() {
-    return base::Bind(&SandboxMountPointProviderMigrationTest::OnGetRootPath,
+  FileSystemMountPointProvider::ValidateFileSystemCallback
+  GetValidateCallback() {
+    return base::Bind(&SandboxMountPointProviderMigrationTest::OnValidate,
                       weak_factory_.GetWeakPtr());
   }
 
@@ -283,12 +283,12 @@ class SandboxMountPointProviderMigrationTest : public testing::Test {
     // migration if one is needed.
     switch (method) {
     case 0:
-      sandbox_provider()->ValidateFileSystemRootAndGetURL(
-          origin_url, type, create, GetRootPathCallback());
+      sandbox_provider()->ValidateFileSystemRoot(
+          origin_url, type, create, GetValidateCallback());
       MessageLoop::current()->RunAllPending();
       break;
     case 1:
-      sandbox_provider()->ValidateFileSystemRootAndGetPathOnFileThread(
+      sandbox_provider()->GetFileSystemRootPathOnFileThread(
           origin_url, type, FilePath(), create);
       break;
     case 2:

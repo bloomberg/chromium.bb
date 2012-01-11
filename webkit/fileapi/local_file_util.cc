@@ -293,8 +293,7 @@ FilePath LocalFileUtil::GetLocalPath(
     FileSystemType type,
     const FilePath& virtual_path) {
   FilePath root = context->file_system_context()->GetMountPointProvider(type)->
-      ValidateFileSystemRootAndGetPathOnFileThread(origin_url, type,
-          virtual_path, false);
+      GetFileSystemRootPathOnFileThread(origin_url, type, virtual_path, false);
   if (root.empty())
     return FilePath();
   return root.Append(virtual_path);

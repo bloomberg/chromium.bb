@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/file_path.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/platform_file.h"
 #include "base/threading/thread.h"
 #include "base/time.h"
@@ -30,16 +31,16 @@ using content::UserMetricsAction;
 using fileapi::FileSystemCallbackDispatcher;
 using fileapi::FileSystemFileUtil;
 using fileapi::FileSystemOperation;
-using fileapi::FileSystemOperationContext;
 
 class BrowserFileSystemCallbackDispatcher
     : public FileSystemCallbackDispatcher {
  public:
-  BrowserFileSystemCallbackDispatcher(
-      FileSystemDispatcherHost* dispatcher_host, int request_id)
-      : dispatcher_host_(dispatcher_host),
-        request_id_(request_id) {
-    DCHECK(dispatcher_host_);
+  // An instance of this class must be created by Create()
+  // (so that we do not leak ownerships).
+  static scoped_ptr<FileSystemCallbackDispatcher> Create(
+      FileSystemDispatcherHost* dispatcher_host, int request_id) {
+    return scoped_ptr<FileSystemCallbackDispatcher>(
+        new BrowserFileSystemCallbackDispatcher(dispatcher_host, request_id));
   }
 
   virtual ~BrowserFileSystemCallbackDispatcher() {
@@ -92,6 +93,13 @@ class BrowserFileSystemCallbackDispatcher
   }
 
  private:
+  BrowserFileSystemCallbackDispatcher(
+      FileSystemDispatcherHost* dispatcher_host, int request_id)
+      : dispatcher_host_(dispatcher_host),
+        request_id_(request_id) {
+    DCHECK(dispatcher_host_);
+  }
+
   scoped_refptr<FileSystemDispatcherHost> dispatcher_host_;
   int request_id_;
 };
@@ -171,7 +179,9 @@ void FileSystemDispatcherHost::OnOpen(
   } else if (type == fileapi::kFileSystemTypePersistent) {
     content::RecordAction(UserMetricsAction("OpenFileSystemPersistent"));
   }
-  GetNewOperation(request_id)->OpenFileSystem(origin_url, type, create);
+  context_->OpenFileSystem(origin_url, type, create,
+                           BrowserFileSystemCallbackDispatcher::Create(
+                               this, request_id));
 }
 
 void FileSystemDispatcherHost::OnMove(
@@ -254,7 +264,8 @@ void FileSystemDispatcherHost::OnCancel(
   if (write) {
     // The cancel will eventually send both the write failure and the cancel
     // success.
-    write->Cancel(GetNewOperation(request_id));
+    write->Cancel(
+        BrowserFileSystemCallbackDispatcher::Create(this, request_id));
   } else {
     // The write already finished; report that we failed to stop it.
     Send(new FileSystemMsg_DidFail(
@@ -298,7 +309,7 @@ void FileSystemDispatcherHost::OnSyncGetPlatformPath(
   *platform_path = FilePath();
 
   FileSystemOperation* operation = new FileSystemOperation(
-      NULL,
+      scoped_ptr<FileSystemCallbackDispatcher>(NULL),
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
       context_);
 
@@ -307,10 +318,8 @@ void FileSystemDispatcherHost::OnSyncGetPlatformPath(
 
 FileSystemOperation* FileSystemDispatcherHost::GetNewOperation(
     int request_id) {
-  BrowserFileSystemCallbackDispatcher* dispatcher =
-      new BrowserFileSystemCallbackDispatcher(this, request_id);
   FileSystemOperation* operation = new FileSystemOperation(
-      dispatcher,
+      BrowserFileSystemCallbackDispatcher::Create(this, request_id),
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
       context_);
   operations_.AddWithID(operation, request_id);
@@ -318,6 +327,7 @@ FileSystemOperation* FileSystemDispatcherHost::GetNewOperation(
 }
 
 void FileSystemDispatcherHost::UnregisterOperation(int request_id) {
-  DCHECK(operations_.Lookup(request_id));
-  operations_.Remove(request_id);
+  // For Cancel and OpenFileSystem we do not create an operation.
+  if (operations_.Lookup(request_id))
+    operations_.Remove(request_id);
 }

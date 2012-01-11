@@ -78,21 +78,17 @@ bool CrosMountPointProvider::GetRootForVirtualPath(
   return true;
 }
 
-void CrosMountPointProvider::ValidateFileSystemRootAndGetURL(
+void CrosMountPointProvider::ValidateFileSystemRoot(
     const GURL& origin_url,
     fileapi::FileSystemType type,
     bool create,
-    const GetRootPathCallback& callback) {
+    const ValidateFileSystemCallback& callback) {
+  // Nothing to validate for external filesystem.
   DCHECK(type == fileapi::kFileSystemTypeExternal);
-  std::string name(GetOriginIdentifierFromURL(origin_url));
-  name += ':';
-  name += fileapi::kExternalName;
-  FilePath root_path;
-  root_path = FilePath(fileapi::kExternalDir);
-  callback.Run(true, root_path, name);
+  callback.Run(base::PLATFORM_FILE_OK);
 }
 
-FilePath CrosMountPointProvider::ValidateFileSystemRootAndGetPathOnFileThread(
+FilePath CrosMountPointProvider::GetFileSystemRootPathOnFileThread(
     const GURL& origin_url,
     fileapi::FileSystemType type,
     const FilePath& virtual_path,
@@ -103,11 +99,6 @@ FilePath CrosMountPointProvider::ValidateFileSystemRootAndGetPathOnFileThread(
     return FilePath();
 
   return root_path;
-}
-
-// TODO(zelidrag): Share this code with SandboxMountPointProvider impl.
-bool CrosMountPointProvider::IsRestrictedFileName(const FilePath& path) const {
-  return false;
 }
 
 bool CrosMountPointProvider::IsAccessAllowed(const GURL& origin_url,
@@ -127,6 +118,11 @@ bool CrosMountPointProvider::IsAccessAllowed(const GURL& origin_url,
 
   return file_access_permissions_->HasAccessPermission(extension_id,
                                                        virtual_path);
+}
+
+// TODO(zelidrag): Share this code with SandboxMountPointProvider impl.
+bool CrosMountPointProvider::IsRestrictedFileName(const FilePath& path) const {
+  return false;
 }
 
 void CrosMountPointProvider::AddMountPoint(FilePath mount_point) {

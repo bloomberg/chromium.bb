@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/file_util.h"
+#include "base/platform_file.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browsing_data_file_system_helper.h"
@@ -77,11 +78,9 @@ class BrowsingDataFileSystemHelperTest : public testing::Test {
   }
 
   // Callback that should be executed in response to
-  // fileapi::SandboxMountPointProvider::ValidateFileSystemRootAndGetURL
-  void CallbackFindFileSystemPath(bool success,
-                                  const FilePath& path,
-                                  const std::string& name) {
-    found_file_system_ = success;
+  // fileapi::SandboxMountPointProvider::ValidateFileSystemRoot
+  void ValidateFileSystemCallback(base::PlatformFileError error) {
+    validate_file_system_result_ = error;
     Notify();
   }
 
@@ -91,13 +90,13 @@ class BrowsingDataFileSystemHelperTest : public testing::Test {
   // synchronously to it's caller.
   bool FileSystemContainsOriginAndType(const GURL& origin,
                                        fileapi::FileSystemType type) {
-    sandbox_->ValidateFileSystemRootAndGetURL(
+    sandbox_->ValidateFileSystemRoot(
         origin, type, false,
         base::Bind(
-            &BrowsingDataFileSystemHelperTest::CallbackFindFileSystemPath,
+            &BrowsingDataFileSystemHelperTest::ValidateFileSystemCallback,
             base::Unretained(this)));
     BlockUntilNotified();
-    return found_file_system_;
+    return validate_file_system_result_ == base::PLATFORM_FILE_OK;
   }
 
   // Callback that should be executed in response to StartFetching(), and stores
@@ -151,7 +150,7 @@ class BrowsingDataFileSystemHelperTest : public testing::Test {
   // specified origin.
   void CreateDirectoryForOriginAndType(const GURL& origin,
                                        fileapi::FileSystemType type) {
-    FilePath target = sandbox_->ValidateFileSystemRootAndGetPathOnFileThread(
+    FilePath target = sandbox_->GetFileSystemRootPathOnFileThread(
         origin, type, FilePath(), true);
     EXPECT_TRUE(file_util::DirectoryExists(target));
   }
@@ -164,7 +163,7 @@ class BrowsingDataFileSystemHelperTest : public testing::Test {
 
 
   // Temporary storage to pass information back from callbacks.
-  bool found_file_system_;
+  base::PlatformFileError validate_file_system_result_;
   ScopedFileSystemInfoList file_system_info_list_;
 
   scoped_refptr<BrowsingDataFileSystemHelper> helper_;

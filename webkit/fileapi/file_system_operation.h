@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -43,16 +43,12 @@ class FileSystemOperationTest;
 // FileSystemOperation implementation for local file systems.
 class FileSystemOperation : public FileSystemOperationInterface {
  public:
-  // |dispatcher| will be owned by this class.
-  FileSystemOperation(FileSystemCallbackDispatcher* dispatcher,
+  FileSystemOperation(scoped_ptr<FileSystemCallbackDispatcher> dispatcher,
                       scoped_refptr<base::MessageLoopProxy> proxy,
                       FileSystemContext* file_system_context);
   virtual ~FileSystemOperation();
 
   // FileSystemOperation overrides.
-  virtual void OpenFileSystem(const GURL& origin_url,
-                              fileapi::FileSystemType type,
-                              bool create) OVERRIDE;
   virtual void CreateFile(const GURL& path,
                           bool exclusive) OVERRIDE;
   virtual void CreateDirectory(const GURL& path,
@@ -79,14 +75,11 @@ class FileSystemOperation : public FileSystemOperationInterface {
       const GURL& path,
       int file_flags,
       base::ProcessHandle peer_handle) OVERRIDE;
+  virtual void Cancel(
+      scoped_ptr<FileSystemCallbackDispatcher> cancel_dispatcher) OVERRIDE;
 
   // Synchronously gets the platform path for the given |path|.
   void SyncGetPlatformPath(const GURL& path, FilePath* platform_path);
-
-  // Try to cancel the current operation [we support cancelling write or
-  // truncate only].  Report failure for the current operation, then tell the
-  // passed-in operation to report success.
-  void Cancel(FileSystemOperation* cancel_operation);
 
  private:
   class ScopedQuotaUtilHelper;
@@ -135,11 +128,6 @@ class FileSystemOperation : public FileSystemOperationInterface {
   void DelayedOpenFileForQuota(int file_flags,
                                quota::QuotaStatusCode status,
                                int64 usage, int64 quota);
-
-  // A callback used for OpenFileSystem.
-  void DidGetRootPath(bool success,
-                      const FilePath& path,
-                      const std::string& name);
 
   // Callback for CreateFile for |exclusive|=true cases.
   void DidEnsureFileExistsExclusive(base::PlatformFileError rv,
@@ -234,7 +222,6 @@ class FileSystemOperation : public FileSystemOperationInterface {
 #ifndef NDEBUG
   enum OperationType {
     kOperationNone,
-    kOperationOpenFileSystem,
     kOperationCreateFile,
     kOperationCreateDirectory,
     kOperationCopy,
@@ -270,7 +257,7 @@ class FileSystemOperation : public FileSystemOperationInterface {
   friend class FileWriterDelegate;
   scoped_ptr<FileWriterDelegate> file_writer_delegate_;
   scoped_ptr<net::URLRequest> blob_request_;
-  scoped_ptr<FileSystemOperation> cancel_operation_;
+  scoped_ptr<FileSystemCallbackDispatcher> cancel_dispatcher_;
 
   // Used only by OpenFile, in order to clone the file handle back to the
   // requesting process.

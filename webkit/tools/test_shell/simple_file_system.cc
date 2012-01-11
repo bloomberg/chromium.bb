@@ -49,11 +49,13 @@ namespace {
 class SimpleFileSystemCallbackDispatcher
     : public FileSystemCallbackDispatcher {
  public:
-  SimpleFileSystemCallbackDispatcher(
+  // An instance of this class must be created by Create()
+  // (so that we do not leak ownerships).
+  static scoped_ptr<FileSystemCallbackDispatcher> Create(
       const WeakPtr<SimpleFileSystem>& file_system,
-      WebFileSystemCallbacks* callbacks)
-      : file_system_(file_system),
-        callbacks_(callbacks) {
+      WebFileSystemCallbacks* callbacks) {
+    return scoped_ptr<FileSystemCallbackDispatcher>(
+        new SimpleFileSystemCallbackDispatcher(file_system, callbacks));
   }
 
   ~SimpleFileSystemCallbackDispatcher() {
@@ -114,6 +116,13 @@ class SimpleFileSystemCallbackDispatcher
   }
 
  private:
+  SimpleFileSystemCallbackDispatcher(
+      const WeakPtr<SimpleFileSystem>& file_system,
+      WebFileSystemCallbacks* callbacks)
+      : file_system_(file_system),
+        callbacks_(callbacks) {
+  }
+
   WeakPtr<SimpleFileSystem> file_system_;
   WebFileSystemCallbacks* callbacks_;
 };
@@ -162,7 +171,9 @@ void SimpleFileSystem::OpenFileSystem(
   }
 
   GURL origin_url(frame->document().securityOrigin().toString());
-  GetNewOperation(callbacks)->OpenFileSystem(origin_url, type, create);
+  file_system_context_->OpenFileSystem(
+      origin_url, type, create,
+      SimpleFileSystemCallbackDispatcher::Create(AsWeakPtr(), callbacks));
 }
 
 void SimpleFileSystem::move(
@@ -224,10 +235,9 @@ WebFileWriter* SimpleFileSystem::createFileWriter(
 
 FileSystemOperation* SimpleFileSystem::GetNewOperation(
     WebFileSystemCallbacks* callbacks) {
-  SimpleFileSystemCallbackDispatcher* dispatcher =
-      new SimpleFileSystemCallbackDispatcher(AsWeakPtr(), callbacks);
   FileSystemOperation* operation = new FileSystemOperation(
-      dispatcher, base::MessageLoopProxy::current(),
+      SimpleFileSystemCallbackDispatcher::Create(AsWeakPtr(), callbacks),
+      base::MessageLoopProxy::current(),
       file_system_context_.get());
   return operation;
 }

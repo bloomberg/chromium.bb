@@ -10,6 +10,7 @@
 
 #include "base/callback_forward.h"
 #include "base/file_path.h"
+#include "base/platform_file.h"
 #include "webkit/fileapi/file_system_types.h"
 
 class GURL;
@@ -22,39 +23,36 @@ class FileSystemFileUtil;
 // and specialized FileSystemFileUtil instance.
 class FileSystemMountPointProvider {
  public:
-  // Callback for GetFileSystemRootPath.
-  // If the request is accepted and the root filesystem for the origin exists
-  // the callback is called with success=true and valid root_path and name.
-  // If the request is accepted, |create| is specified for
-  // GetFileSystemRootPath, and the root directory does not exist, it creates
-  // a new one and calls back with success=true if the creation has succeeded.
-  typedef base::Callback<void(bool /* success */,
-                              const FilePath& /* root_path */,
-                              const std::string& /* name */)>
-      GetRootPathCallback;
+  // Callback for ValidateFileSystemRoot.
+  typedef base::Callback<void(base::PlatformFileError error)>
+      ValidateFileSystemCallback;
   virtual ~FileSystemMountPointProvider() {}
+
+  // Validates the filesystem for the given |origin_url| and |type|.
+  // This verifies if it is allowed to request (or create) the filesystem
+  // and if it can access (or create) the root directory of the mount point.
+  // If |create| is true this may also create the root directory for
+  // the filesystem if it doesn't exist.
+  virtual void ValidateFileSystemRoot(
+      const GURL& origin_url,
+      FileSystemType type,
+      bool create,
+      const ValidateFileSystemCallback& callback) = 0;
+
+  // Retrieves the root path of the filesystem specified by the given
+  // |origin_url| and |type| on the file thread.
+  // If |create| is true this may also create the root directory for
+  // the filesystem if it doesn't exist.
+  virtual FilePath GetFileSystemRootPathOnFileThread(
+      const GURL& origin_url,
+      FileSystemType type,
+      const FilePath& virtual_path,
+      bool create) = 0;
 
   // Checks if access to |virtual_path| is allowed from |origin_url|.
   virtual bool IsAccessAllowed(const GURL& origin_url,
                                FileSystemType type,
                                const FilePath& virtual_path) = 0;
-
-  // Retrieves the root path for the given |origin_url| and |type|, and
-  // calls the given |callback| with the root path and name.
-  // If |create| is true this also creates the directory if it doesn't exist.
-  virtual void ValidateFileSystemRootAndGetURL(
-      const GURL& origin_url,
-      FileSystemType type,
-      bool create,
-      const GetRootPathCallback& callback) = 0;
-
-  // Like GetFileSystemRootPath, but synchronous, and can be called only while
-  // running on the file thread.
-  virtual FilePath ValidateFileSystemRootAndGetPathOnFileThread(
-      const GURL& origin_url,
-      FileSystemType type,
-      const FilePath& virtual_path,
-      bool create) = 0;
 
   // Checks if a given |name| contains any restricted names/chars in it.
   // Callable on any thread.

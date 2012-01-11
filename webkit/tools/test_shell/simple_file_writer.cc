@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -80,14 +80,19 @@ class SimpleFileWriter::IOThreadProxy
       DidFail(base::PLATFORM_FILE_ERROR_INVALID_OPERATION);
       return;
     }
-    operation_->Cancel(GetNewOperation());
+    operation_->Cancel(CallbackDispatcher::Create(this));
   }
 
  private:
   // Inner class to receive callbacks from FileSystemOperation.
   class CallbackDispatcher : public FileSystemCallbackDispatcher {
    public:
-    explicit CallbackDispatcher(IOThreadProxy* proxy) : proxy_(proxy) {
+    // An instance of this class must be created by Create()
+    // (so that we do not leak ownerships).
+    static scoped_ptr<FileSystemCallbackDispatcher> Create(
+        IOThreadProxy* proxy) {
+      return scoped_ptr<FileSystemCallbackDispatcher>(
+          new CallbackDispatcher(proxy));
     }
 
     ~CallbackDispatcher() {
@@ -124,12 +129,14 @@ class SimpleFileWriter::IOThreadProxy
       NOTREACHED();
     }
 
+   private:
+    explicit CallbackDispatcher(IOThreadProxy* proxy) : proxy_(proxy) {}
     scoped_refptr<IOThreadProxy> proxy_;
   };
 
   FileSystemOperation* GetNewOperation() {
     // The FileSystemOperation takes ownership of the CallbackDispatcher.
-    return new FileSystemOperation(new CallbackDispatcher(this),
+    return new FileSystemOperation(CallbackDispatcher::Create(this),
                                    io_thread_, file_system_context_.get());
   }
 

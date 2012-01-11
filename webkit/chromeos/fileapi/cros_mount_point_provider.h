@@ -28,28 +28,28 @@ class FileAccessPermissions;
 class CrosMountPointProvider
     : public fileapi::ExternalFileSystemMountPointProvider {
  public:
-  typedef fileapi::FileSystemMountPointProvider::GetRootPathCallback
-      GetRootPathCallback;
+  typedef fileapi::FileSystemMountPointProvider::ValidateFileSystemCallback
+      ValidateFileSystemCallback;
 
   CrosMountPointProvider(
       scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy);
   virtual ~CrosMountPointProvider();
 
   // fileapi::FileSystemMountPointProvider overrides.
-  virtual bool IsAccessAllowed(const GURL& origin_url,
-                               fileapi::FileSystemType type,
-                               const FilePath& virtual_path) OVERRIDE;
-  virtual void ValidateFileSystemRootAndGetURL(
+  virtual void ValidateFileSystemRoot(
       const GURL& origin_url,
       fileapi::FileSystemType type,
       bool create,
-      const GetRootPathCallback& callback)
-          OVERRIDE;
-  virtual FilePath ValidateFileSystemRootAndGetPathOnFileThread(
+      const ValidateFileSystemCallback& callback) OVERRIDE;
+  virtual FilePath GetFileSystemRootPathOnFileThread(
       const GURL& origin_url,
       fileapi::FileSystemType type,
       const FilePath& virtual_path,
       bool create) OVERRIDE;
+  virtual bool IsAccessAllowed(
+      const GURL& origin_url,
+      fileapi::FileSystemType type,
+      const FilePath& virtual_path) OVERRIDE;
   virtual bool IsRestrictedFileName(const FilePath& filename) const OVERRIDE;
   virtual std::vector<FilePath> GetRootDirectories() const OVERRIDE;
   virtual fileapi::FileSystemFileUtil* GetFileUtil() OVERRIDE;

@@ -8,6 +8,7 @@
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
 #include "googleurl/src/gurl.h"
+#include "webkit/fileapi/file_system_callback_dispatcher.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_operation.h"
 #include "webkit/fileapi/file_system_operation_context.h"
@@ -50,7 +51,7 @@ void FileSystemTestOriginHelper::SetUp(
 
   // Prepare the origin's root directory.
   file_system_context_->GetMountPointProvider(type_)->
-      ValidateFileSystemRootAndGetPathOnFileThread(
+      GetFileSystemRootPathOnFileThread(
           origin_, type_, FilePath(), true /* create */);
 
   // Initialize the usage cache file.
@@ -81,7 +82,7 @@ void FileSystemTestOriginHelper::SetUp(
 
   // Prepare the origin's root directory.
   file_system_context_->GetMountPointProvider(type_)->
-      ValidateFileSystemRootAndGetPathOnFileThread(
+      GetFileSystemRootPathOnFileThread(
           origin_, type_, FilePath(), true /* create */);
 
   // Initialize the usage cache file.  This code assumes that we're either using
@@ -98,7 +99,7 @@ void FileSystemTestOriginHelper::TearDown() {
 
 FilePath FileSystemTestOriginHelper::GetOriginRootPath() const {
   return file_system_context_->GetMountPointProvider(type_)->
-      ValidateFileSystemRootAndGetPathOnFileThread(
+      GetFileSystemRootPathOnFileThread(
           origin_, type_, FilePath(), false);
 }
 
@@ -145,7 +146,8 @@ FileSystemOperation* FileSystemTestOriginHelper::NewOperation(
   DCHECK(file_system_context_.get());
   DCHECK(file_util_);
   FileSystemOperation* operation =
-    new FileSystemOperation(callback_dispatcher,
+    new FileSystemOperation(scoped_ptr<FileSystemCallbackDispatcher>(
+                                callback_dispatcher),
                             base::MessageLoopProxy::current(),
                             file_system_context_.get());
   operation->set_override_file_util(file_util_);

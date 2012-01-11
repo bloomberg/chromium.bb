@@ -66,9 +66,9 @@ class FileSystemDirURLRequestJobTest : public testing::Test {
             temp_dir_.path(),
             CreateAllowFileAccessOptions());
 
-    file_system_context_->sandbox_provider()->ValidateFileSystemRootAndGetURL(
+    file_system_context_->sandbox_provider()->ValidateFileSystemRoot(
         GURL("http://remote/"), kFileSystemTypeTemporary, true,  // create
-        base::Bind(&FileSystemDirURLRequestJobTest::OnGetRootPath,
+        base::Bind(&FileSystemDirURLRequestJobTest::OnValidateFileSystem,
                    weak_factory_.GetWeakPtr()));
     MessageLoop::current()->RunAllPending();
 
@@ -84,10 +84,8 @@ class FileSystemDirURLRequestJobTest : public testing::Test {
     net::URLRequest::Deprecated::RegisterProtocolFactory("filesystem", NULL);
   }
 
-  void OnGetRootPath(bool success, const FilePath& root_path,
-                     const std::string& name) {
-    ASSERT_TRUE(success);
-    root_path_ = root_path;
+  void OnValidateFileSystem(base::PlatformFileError result) {
+    ASSERT_EQ(base::PLATFORM_FILE_OK, result);
   }
 
   void TestRequestHelper(const GURL& url, bool run_to_completion) {
@@ -209,7 +207,6 @@ class FileSystemDirURLRequestJobTest : public testing::Test {
   scoped_refptr<base::MessageLoopProxy> file_thread_proxy_;
 
   ScopedTempDir temp_dir_;
-  FilePath root_path_;
   scoped_ptr<net::URLRequest> request_;
   scoped_ptr<TestDelegate> delegate_;
   scoped_refptr<quota::MockSpecialStoragePolicy> special_storage_policy_;

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,6 +19,8 @@ class URLRequestContext;
 class GURL;
 
 namespace fileapi {
+
+class FileSystemCallbackDispatcher;
 
 // The interface class for FileSystemOperation implementations.
 //
@@ -45,12 +47,6 @@ namespace fileapi {
 class FileSystemOperationInterface {
  public:
   virtual ~FileSystemOperationInterface() {}
-
-  // Opens a file system at |origin_url| of the |type|. Creates a new file
-  // system if |create| is true.
-  virtual void OpenFileSystem(const GURL& origin_url,
-                              fileapi::FileSystemType type,
-                              bool create) = 0;
 
   // Creates a file at |path|. If |exclusive| is true, an error is raised
   // in case a file is already present at the URL.
@@ -104,6 +100,30 @@ class FileSystemOperationInterface {
   // the original file size, the file will be extended, and the extended
   // part is filled with null bytes.
   virtual void Truncate(const GURL& path, int64 length) = 0;
+
+  // Tries to cancel the current operation [we support cancelling write or
+  // truncate only]. Reports failure for the current operation, then reports
+  // success for the cancel operation itself via the |cancel_dispatcher|.
+  //
+  // E.g. a typical cancel implementation would look like:
+  //
+  //   virtual void SomeOperationImpl::Cancel(
+  //       scoped_ptr<FileSystemCallbackDispatcher> cancel_dispatcher) {
+  //     // Abort the current inflight operation first.
+  //     ...
+  //
+  //     // Dispatch ABORT error for the current operation by calling
+  //     // DidFail() callback of the dispatcher attached to this operation.
+  //     // (dispatcher_ in this example)
+  //     dispatcher_->DidFail(base::PLATFORM_FILE_ERROR_ABORT);
+  //
+  //     // Dispatch 'success' for the cancel (or dispatch appropriate
+  //     // error code with DidFail() if the cancel has somehow failed).
+  //     cancel_dispatcher->DidSucceed();
+  //   }
+  //
+  virtual void Cancel(
+      scoped_ptr<FileSystemCallbackDispatcher> cancel_dispatcher) = 0;
 
   // Modifies timestamps of a file or directory at |path| with
   // |last_access_time| and |last_modified_time|. The function DOES NOT

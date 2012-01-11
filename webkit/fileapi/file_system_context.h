@@ -24,6 +24,7 @@ class QuotaManagerProxy;
 namespace fileapi {
 
 class ExternalFileSystemMountPointProvider;
+class FileSystemCallbackDispatcher;
 class FileSystemContext;
 class FileSystemFileUtil;
 class FileSystemMountPointProvider;
@@ -83,6 +84,18 @@ class FileSystemContext
   // type, which is used only by chromeos for now.  This is equivalent to
   // calling GetMountPointProvider(kFileSystemTypeExternal).
   ExternalFileSystemMountPointProvider* external_provider() const;
+
+  // Opens the filesystem for the given |origin_url| and |type|, and dispatches
+  // the DidOpenFileSystem callback of the given |dispatcher|.
+  // If |create| is true this may actually set up a filesystem instance
+  // (e.g. by creating the root directory or initializing the database
+  // entry etc).
+  // TODO(kinuko): replace the dispatcher with a regular callback.
+  void OpenFileSystem(
+      const GURL& origin_url,
+      FileSystemType type,
+      bool create,
+      scoped_ptr<FileSystemCallbackDispatcher> dispatcher);
 
  private:
   friend struct DefaultContextDeleter;

@@ -58,11 +58,11 @@ FileSystemOperation::ScopedQuotaUtilHelper::~ScopedQuotaUtilHelper() {
 }
 
 FileSystemOperation::FileSystemOperation(
-    FileSystemCallbackDispatcher* dispatcher,
+    scoped_ptr<FileSystemCallbackDispatcher> dispatcher,
     scoped_refptr<base::MessageLoopProxy> proxy,
     FileSystemContext* file_system_context)
     : proxy_(proxy),
-      dispatcher_(dispatcher),
+      dispatcher_(dispatcher.Pass()),
       operation_context_(file_system_context, NULL),
       peer_handle_(base::kNullProcessHandle) {
 #ifndef NDEBUG
@@ -82,36 +82,6 @@ FileSystemOperation::~FileSystemOperation() {
         file_writer_delegate_->file(),
         base::FileUtilProxy::StatusCallback());
   }
-}
-
-void FileSystemOperation::OpenFileSystem(
-    const GURL& origin_url, fileapi::FileSystemType type, bool create) {
-#ifndef NDEBUG
-  DCHECK(kOperationNone == pending_operation_);
-  pending_operation_ = static_cast<FileSystemOperation::OperationType>(
-      kOperationOpenFileSystem);
-#endif
-
-  DCHECK(file_system_context());
-  operation_context_.set_src_origin_url(origin_url);
-  operation_context_.set_src_type(type);
-  // TODO(ericu): We don't really need to make this call if !create.
-  // Also, in the future we won't need it either way, as long as we do all
-  // permission+quota checks beforehand.  We only need it now because we have to
-  // create an unpredictable directory name.  Without that, we could lazily
-  // create the root later on the first filesystem write operation, and just
-  // return GetFileSystemRootURI() here.
-  FileSystemMountPointProvider* mount_point_provider =
-      file_system_context()->GetMountPointProvider(type);
-  if (!mount_point_provider) {
-    DidGetRootPath(false, FilePath(), std::string());
-    delete this;
-    return;
-  }
-  mount_point_provider->ValidateFileSystemRootAndGetURL(
-      origin_url, type, create,
-      base::Bind(&FileSystemOperation::DidGetRootPath,
-                 base::Owned(this)));
 }
 
 void FileSystemOperation::CreateFile(const GURL& path,
@@ -517,27 +487,10 @@ void FileSystemOperation::DelayedOpenFileForQuota(int file_flags,
       base::Bind(&FileSystemOperation::DidOpenFile, base::Owned(this)));
 }
 
-void FileSystemOperation::SyncGetPlatformPath(const GURL& path,
-                                              FilePath* platform_path) {
-#ifndef NDEBUG
-  DCHECK(kOperationNone == pending_operation_);
-  pending_operation_ = kOperationGetLocalPath;
-#endif
-  if (!SetupSrcContextForRead(path)) {
-    delete this;
-    return;
-  }
-
-  operation_context_.src_file_util()->GetLocalFilePath(
-      &operation_context_, src_virtual_path_, platform_path);
-
-  delete this;
-}
-
 // We can only get here on a write or truncate that's not yet completed.
 // We don't support cancelling any other operation at this time.
-void FileSystemOperation::Cancel(FileSystemOperation* cancel_operation_ptr) {
-  scoped_ptr<FileSystemOperation> cancel_operation(cancel_operation_ptr);
+void FileSystemOperation::Cancel(
+    scoped_ptr<FileSystemCallbackDispatcher> cancel_dispatcher) {
   if (file_writer_delegate_.get()) {
 #ifndef NDEBUG
     DCHECK(kOperationWrite == pending_operation_);
@@ -553,7 +506,7 @@ void FileSystemOperation::Cancel(FileSystemOperation* cancel_operation_ptr) {
 
     if (dispatcher_.get())
       dispatcher_->DidFail(base::PLATFORM_FILE_ERROR_ABORT);
-    cancel_operation->dispatcher_->DidSucceed();
+    cancel_dispatcher->DidSucceed();
     dispatcher_.reset();
   } else {
 #ifndef NDEBUG
@@ -561,11 +514,28 @@ void FileSystemOperation::Cancel(FileSystemOperation* cancel_operation_ptr) {
 #endif
     // We're cancelling a truncate operation, but we can't actually stop it
     // since it's been proxied to another thread.  We need to save the
-    // cancel_operation so that when the truncate returns, it can see that it's
+    // cancel_dispatcher so that when the truncate returns, it can see that it's
     // been cancelled, report it, and report that the cancel has succeeded.
-    DCHECK(!cancel_operation_.get());
-    cancel_operation_.swap(cancel_operation);
+    DCHECK(!cancel_dispatcher_.get());
+    cancel_dispatcher_ = cancel_dispatcher.Pass();
   }
+}
+
+void FileSystemOperation::SyncGetPlatformPath(const GURL& path,
+                                              FilePath* platform_path) {
+#ifndef NDEBUG
+  DCHECK(kOperationNone == pending_operation_);
+  pending_operation_ = kOperationGetLocalPath;
+#endif
+  if (!SetupSrcContextForRead(path)) {
+    delete this;
+    return;
+  }
+
+  operation_context_.src_file_util()->GetLocalFilePath(
+      &operation_context_, src_virtual_path_, platform_path);
+
+  delete this;
 }
 
 void FileSystemOperation::GetUsageAndQuotaThenCallback(
@@ -590,28 +560,6 @@ void FileSystemOperation::GetUsageAndQuotaThenCallback(
       callback);
 }
 
-void FileSystemOperation::DidGetRootPath(
-    bool success,
-    const FilePath& path, const std::string& name) {
-  if (!dispatcher_.get())
-    return;
-  DCHECK(success || path.empty());
-  GURL result;
-  if (!dispatcher_.get())
-    return;
-  // We ignore the path, and return a URL instead.  The point was just to verify
-  // that we could create/find the path.
-  if (success) {
-    result = GetFileSystemRootURI(
-        operation_context_.src_origin_url(),
-        operation_context_.src_type());
-    DCHECK(result.is_valid());
-    dispatcher_->DidOpenFileSystem(name, result);
-  } else {
-    dispatcher_->DidFail(base::PLATFORM_FILE_ERROR_SECURITY);
-  }
-}
-
 void FileSystemOperation::DidEnsureFileExistsExclusive(
     base::PlatformFileError rv, bool created) {
   if (rv == base::PLATFORM_FILE_OK && !created) {
@@ -629,14 +577,14 @@ void FileSystemOperation::DidEnsureFileExistsNonExclusive(
 
 void FileSystemOperation::DidFinishFileOperation(
     base::PlatformFileError rv) {
-  if (cancel_operation_.get()) {
+  if (cancel_dispatcher_.get()) {
 #ifndef NDEBUG
     DCHECK(kOperationTruncate == pending_operation_);
 #endif
 
     if (dispatcher_.get())
       dispatcher_->DidFail(base::PLATFORM_FILE_ERROR_ABORT);
-    cancel_operation_->dispatcher_->DidSucceed();
+    cancel_dispatcher_->DidSucceed();
   } else if (dispatcher_.get()) {
     if (rv == base::PLATFORM_FILE_OK)
       dispatcher_->DidSucceed();

@@ -4,10 +4,12 @@
 
 #include "webkit/fileapi/file_system_context.h"
 
+#include "base/bind.h"
 #include "base/file_util.h"
 #include "base/message_loop_proxy.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebFileSystem.h"
+#include "webkit/fileapi/file_system_callback_dispatcher.h"
 #include "webkit/fileapi/file_system_file_util.h"
 #include "webkit/fileapi/file_system_options.h"
 #include "webkit/fileapi/file_system_quota_client.h"
@@ -31,6 +33,17 @@ QuotaClient* CreateQuotaClient(
     FileSystemContext* context,
     bool is_incognito) {
   return new FileSystemQuotaClient(file_message_loop, context, is_incognito);
+}
+
+void DidOpenFileSystem(scoped_ptr<FileSystemCallbackDispatcher> dispatcher,
+                       const GURL& filesystem_root,
+                       const std::string& filesystem_name,
+                       base::PlatformFileError error) {
+  if (error == base::PLATFORM_FILE_OK) {
+    dispatcher->DidOpenFileSystem(filesystem_name, filesystem_root);
+  } else {
+    dispatcher->DidFail(error);
+  }
 }
 
 }  // anonymous namespace
@@ -138,6 +151,28 @@ void FileSystemContext::DeleteOnCorrectThread() const {
     return;
   }
   delete this;
+}
+
+void FileSystemContext::OpenFileSystem(
+    const GURL& origin_url,
+    FileSystemType type,
+    bool create,
+    scoped_ptr<FileSystemCallbackDispatcher> dispatcher) {
+  DCHECK(dispatcher.get());
+  FileSystemMountPointProvider* mount_point_provider =
+      GetMountPointProvider(type);
+  if (!mount_point_provider) {
+    dispatcher->DidFail(base::PLATFORM_FILE_ERROR_SECURITY);
+    return;
+  }
+
+  GURL root_url = GetFileSystemRootURI(origin_url, type);
+  std::string name = GetFileSystemName(origin_url, type);
+
+  mount_point_provider->ValidateFileSystemRoot(
+      origin_url, type, create,
+      base::Bind(&DidOpenFileSystem,
+                 base::Passed(&dispatcher), root_url, name));
 }
 
 }  // namespace fileapi
