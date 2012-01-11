@@ -42,6 +42,12 @@
 
 #include "grit/generated_resources.h"
 
+#if defined(USE_AURA)
+#include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/views/html_dialog_view.h"
+#include "ui/views/widget/widget.h"
+#endif
+
 // This module implements the UI support in Chrome for cloud printing.
 // This means hosting a dialog containing HTML/JavaScript and using
 // the published cloud print user interface integration APIs to get
@@ -642,7 +648,16 @@ void CreateDialogImpl(const FilePath& path_to_file,
           file_type, modal, delete_on_close);
   if (modal) {
     DCHECK(browser);
+#if defined(USE_AURA)
+    HtmlDialogView* html_view =
+        new HtmlDialogView(profile, dialog_delegate);
+    views::Widget::CreateWindowWithParent(html_view,
+        browser->window()->GetNativeHandle());
+    html_view->InitDialog();
+    html_view->GetWidget()->Show();
+#else
     browser->BrowserShowHtmlDialog(dialog_delegate, NULL, STYLE_GENERIC);
+#endif
   } else {
     browser::ShowHtmlDialog(NULL, profile, dialog_delegate, STYLE_GENERIC);
   }
