@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -59,7 +59,14 @@ int main() {
    * trusted code" message, which the test runner checks for.
    */
   fprintf(stderr, "** intended_exit_status=trusted_segfault\n");
-  *(volatile int *) 0 = 0;
+
+  /*
+   * Clang transmutes a NULL pointer reference into a generic "undefined"
+   * case.  That code crashes with a different signal than an actual bad
+   * pointer reference, violating the tests' expectations.  A pointer that
+   * is known bad but is not literally NULL does not get this treatment.
+   */
+  *(volatile int *) 1 = 0;
 
   fprintf(stderr, "Should never reach here.\n");
   return 1;
