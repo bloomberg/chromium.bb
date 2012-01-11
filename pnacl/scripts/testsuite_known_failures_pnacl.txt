@@ -24,7 +24,6 @@ aha x86-64
 dt
 # crash
 lua arm
-lua x86-64
 # crash on ARM/qemu
 almabench arm
 exception_spec_test arm
