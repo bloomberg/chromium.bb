@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -99,6 +99,10 @@ void WebPluginImpl::destroy() {
 }
 
 NPObject* WebPluginImpl::scriptableObject() {
+  // Call through the plugin to get its instance object. Note that we "leak" a
+  // reference here. But we want to keep the instance object alive so long as
+  // the instance is alive, so it's okay. It will get cleaned up when all
+  // NPObjectVars are "force freed" at instance shutdown.
   scoped_refptr<NPObjectVar> object(
       NPObjectVar::FromPPVar(instance_->GetInstanceObject()));
   // GetInstanceObject talked to the plugin which may have removed the instance
