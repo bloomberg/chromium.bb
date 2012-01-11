@@ -11,9 +11,9 @@
 #include "base/basictypes.h"
 #include "base/synchronization/lock.h"
 #include "chrome/browser/password_manager/password_manager.h"
-#include "content/browser/renderer_host/resource_dispatcher_host_login_delegate.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/resource_dispatcher_host_login_delegate.h"
 
 namespace net {
 class AuthChallengeInfo;
@@ -28,7 +28,7 @@ class RenderViewHostDelegate;
 // This is the base implementation for the OS-specific classes that route
 // authentication info to the net::URLRequest that needs it. These functions
 // must be implemented in a thread safe manner.
-class LoginHandler : public ResourceDispatcherHostLoginDelegate,
+class LoginHandler : public content::ResourceDispatcherHostLoginDelegate,
                      public LoginModelObserver,
                      public content::NotificationObserver {
  public:

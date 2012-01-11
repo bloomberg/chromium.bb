@@ -12,7 +12,6 @@
 #include "webkit/glue/resource_type.h"
 
 class GURL;
-class ResourceDispatcherHostLoginDelegate;
 class ResourceHandler;
 class ResourceMessageFilter;
 
@@ -29,6 +28,8 @@ class URLRequest;
 }
 
 namespace content {
+
+class ResourceDispatcherHostLoginDelegate;
 
 // Interface that the embedder provides to ResourceDispatcherHost to allow
 // observing and modifying requests.

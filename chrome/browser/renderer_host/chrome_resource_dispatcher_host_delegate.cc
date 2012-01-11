@@ -42,24 +42,9 @@
 #endif
 
 using content::BrowserThread;
+using content::ResourceDispatcherHostLoginDelegate;
 
 namespace {
-
-// Empty ResourceDispatcherHostLoginDelegate implementation used for instant.
-// Auth navigations don't commit the load (the load remains pending) until the
-// user cancels or succeeds in authorizing. Since we don't allow merging of
-// TabContents with pending loads we disallow auth dialogs from showing during
-// instant. This empty ResourceDispatcherHostLoginDelegate implementation does
-// that.
-// TODO: see if we can handle this case more robustly.
-class InstantResourceDispatcherHostLoginDelegate
-    : public ResourceDispatcherHostLoginDelegate {
- public:
-  InstantResourceDispatcherHostLoginDelegate() {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(InstantResourceDispatcherHostLoginDelegate);
-};
 
 void AddPrerenderOnUI(
     int render_process_id, int render_view_id,
@@ -281,10 +266,16 @@ ResourceDispatcherHostLoginDelegate*
     ChromeResourceDispatcherHostDelegate::CreateLoginDelegate(
         net::AuthChallengeInfo* auth_info, net::URLRequest* request) {
   std::string instant_header_value;
+  // For instant, return a NULl delegate. Auth navigations don't commit the load
+  // (the load remains pending) until the user cancels or succeeds in
+  // authorizing. Since we don't allow merging of WebContents with pending loads
+  // we disallow auth dialogs from showing during instant. Returning NULL does
+  // that.
+  // TODO: see if we can handle this case more robustly.
   if (request->extra_request_headers().GetHeader(
           InstantLoader::kInstantHeader, &instant_header_value) &&
       instant_header_value == InstantLoader::kInstantHeaderValue)
-    return new InstantResourceDispatcherHostLoginDelegate;
+    return NULL;
   return CreateLoginPrompt(auth_info, request);
 }
 

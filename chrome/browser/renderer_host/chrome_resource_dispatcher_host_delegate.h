@@ -65,7 +65,7 @@ class ChromeResourceDispatcherHostDelegate
         net::SSLCertRequestInfo* cert_request_info) OVERRIDE;
   virtual bool AcceptAuthRequest(net::URLRequest* request,
                                  net::AuthChallengeInfo* auth_info) OVERRIDE;
-  virtual ResourceDispatcherHostLoginDelegate* CreateLoginDelegate(
+  virtual content::ResourceDispatcherHostLoginDelegate* CreateLoginDelegate(
       net::AuthChallengeInfo* auth_info, net::URLRequest* request) OVERRIDE;
   virtual void HandleExternalProtocol(const GURL& url,
                                       int child_id,

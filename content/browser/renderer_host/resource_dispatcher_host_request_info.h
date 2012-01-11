@@ -19,13 +19,13 @@
 #include "webkit/glue/resource_type.h"
 
 class ResourceDispatcherHost;
-class ResourceDispatcherHostLoginDelegate;
 class ResourceHandler;
 class SSLClientAuthHandler;
 
 namespace content {
 class CrossSiteResourceHandler;
 class ResourceContext;
+class ResourceDispatcherHostLoginDelegate;
 }
 
 namespace webkit_blob {
@@ -72,11 +72,11 @@ class ResourceDispatcherHostRequestInfo : public net::URLRequest::UserData {
   }
 
   // Pointer to the login delegate, or NULL if there is none for this request.
-  ResourceDispatcherHostLoginDelegate* login_delegate() const {
+  content::ResourceDispatcherHostLoginDelegate* login_delegate() const {
     return login_delegate_.get();
   }
   CONTENT_EXPORT void set_login_delegate(
-      ResourceDispatcherHostLoginDelegate* ld);
+      content::ResourceDispatcherHostLoginDelegate* ld);
 
   // Pointer to the SSL auth, or NULL if there is none for this request.
   SSLClientAuthHandler* ssl_client_auth_handler() const {
@@ -226,7 +226,7 @@ class ResourceDispatcherHostRequestInfo : public net::URLRequest::UserData {
   // Non-owning, may be NULL.
   content::CrossSiteResourceHandler* cross_site_handler_;
 
-  scoped_refptr<ResourceDispatcherHostLoginDelegate> login_delegate_;
+  scoped_refptr<content::ResourceDispatcherHostLoginDelegate> login_delegate_;
   scoped_refptr<SSLClientAuthHandler> ssl_client_auth_handler_;
   content::ProcessType process_type_;
   int child_id_;
