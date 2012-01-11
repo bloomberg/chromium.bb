@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -54,9 +54,9 @@ class PrintJobManager : public content::NotificationObserver {
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  bool printing_enabled() {
-    return *printing_enabled_;
-  }
+  // Only accessed on the IO thread. UI thread can query
+  // prefs::kPrintingEnabled via g_browser_process->local_state() directly.
+  bool printing_enabled() const;
 
  private:
   typedef std::vector<scoped_refptr<PrintJob> > PrintJobs;
@@ -68,9 +68,6 @@ class PrintJobManager : public content::NotificationObserver {
 
   content::NotificationRegistrar registrar_;
 
-  // Used to serialize access to queued_workers_.
-  base::Lock lock_;
-
   // Printing is enabled/disabled. For printing with the native print dialog,
   // this variable is checked at only one place, by
   // PrintingMessageFilter::OnGetDefaultPrintSettings. If its value is true
@@ -80,6 +77,9 @@ class PrintJobManager : public content::NotificationObserver {
   // PrintingMessageFilter::OnUpdatePrintSettings, which gets called multiple
   // times in the print preview workflow.
   BooleanPrefMember printing_enabled_;
+
+  // Used to serialize access to queued_workers_.
+  base::Lock lock_;
 
   PrinterQueries queued_queries_;
 
