@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,19 +10,12 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/favicon_size.h"
-#include "ui/views/controls/button/text_button.h"
+#include "ui/gfx/native_theme.h"
 #include "ui/views/controls/menu/menu_config.h"
 #include "ui/views/controls/menu/menu_image_util.h"
 #include "ui/views/controls/menu/submenu_view.h"
 
 namespace views {
-
-// Background color when the menu item is selected.
-#if defined(OS_CHROMEOS)
-static const SkColor kSelectedBackgroundColor = SkColorSetRGB(0xDC, 0xE4, 0xFA);
-#else
-static const SkColor kSelectedBackgroundColor = SkColorSetRGB(246, 249, 253);
-#endif
 
 void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
   const MenuConfig& config = MenuConfig::instance();
@@ -42,9 +35,11 @@ void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
   // Render the background. As MenuScrollViewContainer draws the background, we
   // only need the background when we want it to look different, as when we're
   // selected.
-  if (render_selection)
-    canvas->GetSkCanvas()->drawColor(kSelectedBackgroundColor,
-                                     SkXfermode::kSrc_Mode);
+  if (render_selection) {
+    SkColor bg_color = gfx::NativeTheme::instance()->GetSystemColor(
+        gfx::NativeTheme::kColorId_FocusedMenuItemBackgroundColor);
+    canvas->GetSkCanvas()->drawColor(bg_color, SkXfermode::kSrc_Mode);
+  }
 
   // Render the check.
   if (type_ == CHECKBOX && GetDelegate()->IsItemChecked(GetCommand())) {
@@ -68,13 +63,10 @@ void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
   }
 
   // Render the foreground.
-#if defined(OS_CHROMEOS)
-  SkColor fg_color = enabled() ? SK_ColorBLACK
-                               : SkColorSetRGB(0x80, 0x80, 0x80);
-#else
-  SkColor fg_color = enabled() ? TextButton::kEnabledColor
-                               : TextButton::kDisabledColor;
-#endif
+  SkColor fg_color = gfx::NativeTheme::instance()->GetSystemColor(
+      enabled() ? gfx::NativeTheme::kColorId_EnabledMenuItemForegroundColor
+          : gfx::NativeTheme::kColorId_DisabledMenuItemForegroundColor);
+
   const gfx::Font& font = GetFont();
   int accel_width = parent_menu_item_->GetSubmenu()->max_accelerator_width();
   int width = this->width() - item_right_margin_ - label_start_ - accel_width;

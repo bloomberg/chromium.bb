@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -70,6 +70,25 @@ const SkColor kProgressBarIndicatorInnerStroke =
     SkColorSetARGB(0x3F, 0xFF, 0xFF, 0xFF);  // 0.25 white
 const SkColor kProgressBarIndicatorInnerShadow =
     SkColorSetARGB(0x54, 0xFF, 0xFF, 0xFF);  // 0.33 white
+
+// Theme colors returned by GetSystemColor().
+const SkColor kInvalidColorIdColor = SkColorSetRGB(255, 0, 128);
+// Dialogs:
+const SkColor kDialogBackgroundColor = SkColorSetRGB(200, 200, 200);
+// FocusableBorder:
+const SkColor kFocusedBorderColor= SkColorSetRGB(0x4D, 0x90, 0xFE);
+const SkColor kUnfocusedBorderColor = SkColorSetRGB(0xD9, 0xD9, 0xD9);
+// TextButton:
+const SkColor kTextButtonBackgroundColor = SkColorSetRGB(0xDE, 0xDE, 0xDE);
+const SkColor kTextButtonEnabledColor = SkColorSetRGB(6, 45, 117);
+const SkColor kTextButtonDisabledColor = SkColorSetRGB(161, 161, 146);
+const SkColor kTextButtonHighlightColor = SkColorSetARGB(200, 255, 255, 255);
+const SkColor kTextButtonHoverColor = kTextButtonEnabledColor;
+// MenuItem:
+const SkColor kEnabledMenuItemForegroundColor = SK_ColorBLACK;
+const SkColor kDisabledMenuItemForegroundColor =
+    SkColorSetRGB(0x80, 0x80, 0x80);
+const SkColor kFocusedMenuItemBackgroundColor = SkColorSetRGB(0xDC, 0xE4, 0xFA);
 
 // Geometry constants
 
@@ -302,6 +321,50 @@ gfx::Size NativeThemeChromeos::GetPartSize(Part part,
       return NativeThemeBase::GetPartSize(part, state, extra);
   }
   return gfx::Size(width, height);
+}
+
+SkColor NativeThemeChromeos::GetSystemColor(ColorId color_id) const {
+  // Return hard coded values for ChromeOS.
+  // TODO(saintlou) : Remove this module after switch to Aura.
+  switch (color_id) {
+
+    // Dialogs
+    case kColorId_DialogBackground:
+      return kDialogBackgroundColor;
+
+    // FocusableBorder
+    case kColorId_FocusedBorderColor:
+      return kFocusedBorderColor;
+    case kColorId_UnfocusedBorderColor:
+      return kUnfocusedBorderColor;
+
+    // TextButton
+    case kColorId_TextButtonBackgroundColor:
+      return kTextButtonBackgroundColor;
+    case kColorId_TextButtonEnabledColor:
+      return kTextButtonEnabledColor;
+    case kColorId_TextButtonDisabledColor:
+      return kTextButtonDisabledColor;
+    case kColorId_TextButtonHighlightColor:
+      return kTextButtonHighlightColor;
+    case kColorId_TextButtonHoverColor:
+      return kTextButtonHoverColor;
+
+    // MenuItem
+    case kColorId_EnabledMenuItemForegroundColor:
+      return kEnabledMenuItemForegroundColor;
+    case kColorId_DisabledMenuItemForegroundColor:
+      return kDisabledMenuItemForegroundColor;
+    case kColorId_FocusedMenuItemBackgroundColor:
+      return kFocusedMenuItemBackgroundColor;
+
+    default:
+      NOTREACHED() << "Invalid color_id: " << color_id;
+      break;
+  }
+
+  // Return InvalidColor
+  return kInvalidColorIdColor;
 }
 
 void NativeThemeChromeos::PaintScrollbarTrack(

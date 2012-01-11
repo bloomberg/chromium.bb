@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -27,7 +27,23 @@
 
 namespace {
 
+// Theme colors returned by GetSystemColor().
 const SkColor kInvalidColorIdColor = SkColorSetRGB(255, 0, 128);
+// Dialogs:
+const SkColor kDialogBackgroundColor = SkColorSetRGB(200, 200, 200);
+// FocusableBorder (should be unused on Win):
+const SkColor kFocusedBorderColor= SkColorSetRGB(0x4D, 0x90, 0xFE);
+const SkColor kUnfocusedBorderColor = SkColorSetRGB(0xD9, 0xD9, 0xD9);
+// TextButton:
+const SkColor kTextButtonBackgroundColor = SkColorSetRGB(0xde, 0xde, 0xde);
+const SkColor kTextButtonEnabledColor = SkColorSetRGB(6, 45, 117);
+const SkColor kTextButtonDisabledColor = SkColorSetRGB(161, 161, 146);
+const SkColor kTextButtonHighlightColor = SkColorSetARGB(200, 255, 255, 255);
+const SkColor kTextButtonHoverColor = kTextButtonEnabledColor;
+// MenuItem:
+const SkColor kEnabledMenuItemForegroundColor = kTextButtonEnabledColor;
+const SkColor kDisabledMenuItemForegroundColor = kTextButtonDisabledColor;
+const SkColor kFocusedMenuItemBackgroundColor = SkColorSetRGB(246, 249, 253);
 
 SkColor WinColorToSkColor(COLORREF color) {
   return SkColorSetRGB(GetRValue(color), GetGValue(color), GetBValue(color));
@@ -348,10 +364,33 @@ void NativeThemeWin::Paint(SkCanvas* canvas,
 
 SkColor NativeThemeWin::GetSystemColor(ColorId color_id) const {
   switch (color_id) {
+
+    // Dialogs
     case kColorId_DialogBackground:
       // TODO(benrg): Should this use the new Windows theme functions? The old
       // code in DialogClientView::OnPaint used GetSysColor(COLOR_3DFACE).
       return WinColorToSkColor(GetSysColor(COLOR_3DFACE));
+
+    // TextButton
+    case kColorId_TextButtonBackgroundColor:
+      return kTextButtonBackgroundColor;
+    case kColorId_TextButtonEnabledColor:
+      return kTextButtonEnabledColor;
+    case kColorId_TextButtonDisabledColor:
+      return kTextButtonDisabledColor;
+    case kColorId_TextButtonHighlightColor:
+      return kTextButtonHighlightColor;
+    case kColorId_TextButtonHoverColor:
+      return kTextButtonHoverColor;
+
+    // MenuItem
+    case kColorId_EnabledMenuItemForegroundColor:
+      return kEnabledMenuItemForegroundColor;
+    case kColorId_DisabledMenuItemForegroundColor:
+      return kDisabledMenuItemForegroundColor;
+    case kColorId_FocusedMenuItemBackgroundColor:
+      return kFocusedMenuItemBackgroundColor;
+
     default:
       NOTREACHED() << "Invalid color_id: " << color_id;
       break;
