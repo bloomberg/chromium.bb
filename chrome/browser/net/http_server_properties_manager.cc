@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 #include "chrome/browser/net/http_server_properties_manager.h"
@@ -237,6 +237,7 @@ void HttpServerPropertiesManager::UpdateCacheFromPrefsOnUI() {
   net::PipelineCapabilityMap* pipeline_capability_map =
       new net::PipelineCapabilityMap;
 
+  bool detected_corrupted_prefs = false;
   const base::DictionaryValue& http_server_properties_dict =
       *pref_service_->GetDictionary(prefs::kHttpServerProperties);
   for (base::DictionaryValue::key_iterator it =
@@ -247,7 +248,7 @@ void HttpServerPropertiesManager::UpdateCacheFromPrefsOnUI() {
     net::HostPortPair server = net::HostPortPair::FromString(server_str);
     if (server.host().empty()) {
       DVLOG(1) << "Malformed http_server_properties for server: " << server_str;
-      NOTREACHED();
+      detected_corrupted_prefs = true;
       continue;
     }
 
@@ -255,7 +256,7 @@ void HttpServerPropertiesManager::UpdateCacheFromPrefsOnUI() {
     if (!http_server_properties_dict.GetDictionaryWithoutPathExpansion(
         server_str, &server_pref_dict)) {
       DVLOG(1) << "Malformed http_server_properties server: " << server_str;
-      NOTREACHED();
+      detected_corrupted_prefs = true;
       continue;
     }
 
@@ -278,7 +279,7 @@ void HttpServerPropertiesManager::UpdateCacheFromPrefsOnUI() {
            list_it != spdy_settings_list->end(); ++list_it) {
         if ((*list_it)->GetType() != Value::TYPE_DICTIONARY) {
           DVLOG(1) << "Malformed SpdySettingsList for server: " << server_str;
-          NOTREACHED();
+          detected_corrupted_prefs = true;
           continue;
         }
 
@@ -288,7 +289,7 @@ void HttpServerPropertiesManager::UpdateCacheFromPrefsOnUI() {
         int id = 0;
         if (!spdy_setting_dict->GetIntegerWithoutPathExpansion("id", &id)) {
           DVLOG(1) << "Malformed id in SpdySettings for server: " << server_str;
-          NOTREACHED();
+          detected_corrupted_prefs = true;
           continue;
         }
 
@@ -297,7 +298,7 @@ void HttpServerPropertiesManager::UpdateCacheFromPrefsOnUI() {
                                                                &value)) {
           DVLOG(1) << "Malformed value in SpdySettings for server: " <<
               server_str;
-          NOTREACHED();
+          detected_corrupted_prefs = true;
           continue;
         }
 
@@ -332,7 +333,7 @@ void HttpServerPropertiesManager::UpdateCacheFromPrefsOnUI() {
       if (!port_alternate_protocol_dict->GetIntegerWithoutPathExpansion(
           "port", &port) || (port > (1 << 16))) {
         DVLOG(1) << "Malformed Alternate-Protocol server: " << server_str;
-        NOTREACHED();
+        detected_corrupted_prefs = true;
         continue;
       }
       int protocol = 0;
@@ -340,7 +341,7 @@ void HttpServerPropertiesManager::UpdateCacheFromPrefsOnUI() {
           "protocol", &protocol) || (protocol < 0) ||
           (protocol > net::NUM_ALTERNATE_PROTOCOLS)) {
         DVLOG(1) << "Malformed Alternate-Protocol server: " << server_str;
-        NOTREACHED();
+        detected_corrupted_prefs = true;
         continue;
       }
 
@@ -362,14 +363,16 @@ void HttpServerPropertiesManager::UpdateCacheFromPrefsOnUI() {
                  base::Owned(spdy_servers),
                  base::Owned(spdy_settings_map),
                  base::Owned(alternate_protocol_map),
-                 base::Owned(pipeline_capability_map)));
+                 base::Owned(pipeline_capability_map),
+                 detected_corrupted_prefs));
 }
 
 void HttpServerPropertiesManager::UpdateCacheFromPrefsOnIO(
     StringVector* spdy_servers,
     net::SpdySettingsMap* spdy_settings_map,
     net::AlternateProtocolMap* alternate_protocol_map,
-    net::PipelineCapabilityMap* pipeline_capability_map) {
+    net::PipelineCapabilityMap* pipeline_capability_map,
+    bool detected_corrupted_prefs) {
   // Preferences have the master data because admins might have pushed new
   // preferences. Update the cached data with new data from preferences.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -387,6 +390,10 @@ void HttpServerPropertiesManager::UpdateCacheFromPrefsOnIO(
 
   http_server_properties_impl_->InitializePipelineCapabilities(
       pipeline_capability_map);
+
+  // Update the prefs with what we have read (delete all corrupted prefs).
+  if (detected_corrupted_prefs)
+    ScheduleUpdatePrefsOnIO();
 }
 
 

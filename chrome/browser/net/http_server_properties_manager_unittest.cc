@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -60,11 +60,12 @@ class TestingHttpServerPropertiesManager : public HttpServerPropertiesManager {
 
   MOCK_METHOD0(UpdateCacheFromPrefsOnUI, void());
   MOCK_METHOD0(UpdatePrefsFromCacheOnIO, void());
-  MOCK_METHOD4(UpdateCacheFromPrefsOnIO,
+  MOCK_METHOD5(UpdateCacheFromPrefsOnIO,
                void(std::vector<std::string>* spdy_servers,
                     net::SpdySettingsMap* spdy_settings_map,
                     net::AlternateProtocolMap* alternate_protocol_map,
-                    net::PipelineCapabilityMap* pipeline_capability_map));
+                    net::PipelineCapabilityMap* pipeline_capability_map,
+                    bool detected_corrupted_prefs));
   MOCK_METHOD4(UpdatePrefsOnUI,
                void(base::ListValue* spdy_server_list,
                     net::SpdySettingsMap* spdy_settings_map,

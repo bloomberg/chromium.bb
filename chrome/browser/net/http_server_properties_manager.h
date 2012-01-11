@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -158,7 +158,8 @@ class HttpServerPropertiesManager
       std::vector<std::string>* spdy_servers,
       net::SpdySettingsMap* spdy_settings_map,
       net::AlternateProtocolMap* alternate_protocol_map,
-      net::PipelineCapabilityMap* pipeline_capability_map);
+      net::PipelineCapabilityMap* pipeline_capability_map,
+      bool detected_corrupted_prefs);
 
   // These are used to delay updating the preferences when cached data in
   // |http_server_properties_impl_| is changing, and execute only one update per
