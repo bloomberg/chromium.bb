@@ -203,8 +203,8 @@ LDPatterns = [
   # opt also does not support -O4 but -O4 is how you ask clang for LTO, so we
   # can support it as well
   ( '-Os',                 "env.set('OPT_LEVEL', '2')"),
-  ( '-O4',                 "env.set('OPT_LEVEL', '3')"),
   ( '-O([0-3])',           "env.set('OPT_LEVEL', $0)"),
+  ( '-O([0-9]+)',          "env.set('OPT_LEVEL', '3')"),
 
   ( '-s',                  "env.append('STRIP_MODE', 'all')"),
   ( '--strip-all',         "env.append('STRIP_MODE', 'all')"),
