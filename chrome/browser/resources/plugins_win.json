@@ -63,8 +63,7 @@
       "name": "Adobe Flash Player",
       "identifier": "adobe-flash-player",
       "help_url": "https://support.google.com/chrome/?p=plugin_flash",
-      "url": "http://get.adobe.com/flashplayer/",
-      "displayurl": true
+      "url": "http://fpdownload.adobe.com/get/flashplayer/current/install_flash_player.exe"
     },
     {
       "mime_types": [

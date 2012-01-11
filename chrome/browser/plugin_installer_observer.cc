@@ -23,5 +23,3 @@ void PluginInstallerObserver::DidStartDownload() {
 void PluginInstallerObserver::DidFinishDownload() {
 }
 
-void PluginInstallerObserver::DownloadError(const std::string& message) {
-}

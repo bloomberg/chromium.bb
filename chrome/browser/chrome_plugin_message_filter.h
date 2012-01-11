@@ -41,11 +41,9 @@ class ChromePluginMessageFilter : public IPC::ChannelProxy::MessageFilter,
   static void OnDownloadUrlOnUIThread(const std::string& url,
                                       gfx::NativeWindow caller_window,
                                       int render_process_id);
-  static void PluginDownloadFinished(gfx::NativeWindow caller_window,
-                                     const FilePath& response_file);
-  static void PluginDownloadError(const std::string& error);
+  static void OnPluginDownloadFinished(gfx::NativeWindow caller_window,
+                                       const FilePath& response_file);
 #endif
-
   void OnGetPluginFinderUrl(std::string* plugin_finder_url);
   void OnMissingPluginStatus(int status,
                              int render_process_id,

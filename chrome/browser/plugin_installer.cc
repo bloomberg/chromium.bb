@@ -46,8 +46,7 @@ void PluginInstaller::StartInstalling(
   downloader->InitiateDownload(
       plugin_url_,
       request_context,
-      base::Bind(&PluginInstaller::DidFinishDownload, base::Unretained(this)),
-      base::Bind(&PluginInstaller::DownloadError, base::Unretained(this)));
+      base::Bind(&PluginInstaller::DidFinishDownload, base::Unretained(this)));
 }
 
 void PluginInstaller::DidFinishDownload(const FilePath& downloaded_file) {
@@ -56,8 +55,4 @@ void PluginInstaller::DidFinishDownload(const FilePath& downloaded_file) {
   DVLOG(1) << "Plug-in installer is at \"" << downloaded_file.value() << "\"";
   FOR_EACH_OBSERVER(PluginInstallerObserver, observers_, DidFinishDownload());
   platform_util::OpenItem(downloaded_file);
-}
-
-void PluginInstaller::DownloadError(const std::string& msg) {
-  FOR_EACH_OBSERVER(PluginInstallerObserver, observers_, DownloadError(msg));
 }
