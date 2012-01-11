@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -239,6 +239,12 @@ class ExtensionMenuManager : public content::NotificationObserver {
   // Returns the item with the given |id| or NULL.
   ExtensionMenuItem* GetItemById(const ExtensionMenuItem::Id& id) const;
 
+  // Notify the ExtensionMenuManager that an item has been updated not through
+  // an explicit call into ExtensionMenuManager. For example, if an item is
+  // acquired by a call to GetItemById and changed, then this should be called.
+  // Returns true if the item was found or false otherwise.
+  bool ItemUpdated(const ExtensionMenuItem::Id& id);
+
   // Called when a menu item is clicked on by the user.
   void ExecuteCommand(Profile* profile, content::WebContents* web_contents,
                       const ContextMenuParams& params,
@@ -260,6 +266,12 @@ class ExtensionMenuManager : public content::NotificationObserver {
   // This is a helper function which takes care of de-selecting any other radio
   // items in the same group (i.e. that are adjacent in the list).
   void RadioItemSelected(ExtensionMenuItem* item);
+
+  // Make sure that there is only one radio item selected at once in any run.
+  // If there are no radio items selected, then the first item in the run
+  // will get selected. If there are multiple radio items selected, then only
+  // the last one will get selcted.
+  void SanitizeRadioList(const ExtensionMenuItem::List& item_list);
 
   // Returns true if item is a descendant of an item with id |ancestor_id|.
   bool DescendantOf(ExtensionMenuItem* item,

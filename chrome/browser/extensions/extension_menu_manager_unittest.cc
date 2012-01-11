@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -493,3 +493,95 @@ TEST_F(ExtensionMenuManagerTest, ExecuteCommand) {
   ASSERT_TRUE(info->GetBoolean("editable", &bool_tmp));
   ASSERT_EQ(params.is_editable, bool_tmp);
 }
+
+// Test that there is always only one radio item selected.
+TEST_F(ExtensionMenuManagerTest, SanitizeRadioButtons) {
+  Extension* extension = AddExtension("test");
+
+  // A single unchecked item should get checked
+  ExtensionMenuItem* item1 = CreateTestItem(extension);
+
+  item1->set_type(ExtensionMenuItem::RADIO);
+  item1->SetChecked(false);
+  ASSERT_FALSE(item1->checked());
+  manager_.AddContextItem(extension, item1);
+  ASSERT_TRUE(item1->checked());
+
+  // In a run of two unchecked items, the first should get selected.
+  item1->SetChecked(false);
+  ExtensionMenuItem* item2 = CreateTestItem(extension);
+  item2->set_type(ExtensionMenuItem::RADIO);
+  item2->SetChecked(false);
+  ASSERT_FALSE(item1->checked());
+  ASSERT_FALSE(item2->checked());
+  manager_.AddContextItem(extension, item2);
+  ASSERT_TRUE(item1->checked());
+  ASSERT_FALSE(item2->checked());
+
+  // If multiple items are checked, only the last item should get checked.
+  item1->SetChecked(true);
+  item2->SetChecked(true);
+  ASSERT_TRUE(item1->checked());
+  ASSERT_TRUE(item2->checked());
+  manager_.ItemUpdated(item1->id());
+  ASSERT_FALSE(item1->checked());
+  ASSERT_TRUE(item2->checked());
+
+  // If the checked item is removed, the new first item should get checked.
+  item1->SetChecked(false);
+  item2->SetChecked(true);
+  ASSERT_FALSE(item1->checked());
+  ASSERT_TRUE(item2->checked());
+  manager_.RemoveContextMenuItem(item2->id());
+  item2 = NULL;
+  ASSERT_TRUE(item1->checked());
+
+  // If a checked item is added to a run that already has a checked item,
+  // then the new item should get checked.
+  item1->SetChecked(true);
+  ExtensionMenuItem* new_item = CreateTestItem(extension);
+  new_item->set_type(ExtensionMenuItem::RADIO);
+  new_item->SetChecked(true);
+  ASSERT_TRUE(item1->checked());
+  ASSERT_TRUE(new_item->checked());
+  manager_.AddContextItem(extension, new_item);
+  ASSERT_FALSE(item1->checked());
+  ASSERT_TRUE(new_item->checked());
+  // Make sure that children are checked as well.
+  ExtensionMenuItem* parent = CreateTestItem(extension);
+  manager_.AddContextItem(extension, parent);
+  ExtensionMenuItem* child1 = CreateTestItem(extension);
+  child1->set_type(ExtensionMenuItem::RADIO);
+  child1->SetChecked(false);
+  ExtensionMenuItem* child2 = CreateTestItem(extension);
+  child2->set_type(ExtensionMenuItem::RADIO);
+  child2->SetChecked(true);
+  ASSERT_FALSE(child1->checked());
+  ASSERT_TRUE(child2->checked());
+
+  manager_.AddChildItem(parent->id(), child1);
+  ASSERT_TRUE(child1->checked());
+
+  manager_.AddChildItem(parent->id(), child2);
+  ASSERT_FALSE(child1->checked());
+  ASSERT_TRUE(child2->checked());
+
+  // Removing the checked item from the children should cause the
+  // remaining child to be checked.
+  manager_.RemoveContextMenuItem(child2->id());
+  child2 = NULL;
+  ASSERT_TRUE(child1->checked());
+
+  // This should NOT cause |new_item| to be deseleted because
+  // |parent| will be seperating the two runs of radio items.
+  manager_.ChangeParent(child1->id(), NULL);
+  ASSERT_TRUE(new_item->checked());
+  ASSERT_TRUE(child1->checked());
+
+  // Removing |parent| should cause only |child1| to be selected.
+  manager_.RemoveContextMenuItem(parent->id());
+  parent = NULL;
+  ASSERT_FALSE(new_item->checked());
+  ASSERT_TRUE(child1->checked());
+}
+
