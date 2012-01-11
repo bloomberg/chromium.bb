@@ -93,17 +93,3 @@ env.DualLibrary('ppapi_browser',
 # The generated files must be committed when changes are made to .srpc files.
 #
 # run_srpcgen.py --diff_mode verifies that these files are not out of date.
-
-node = env.CommandTest(
-  'srpc_diff.out',
-  command=['${PYTHON}',
-           os.path.join('${SOURCE_ROOT}', 'ppapi', 'native_client',
-                        'src', 'shared', 'ppapi_proxy', 'run_srpcgen.py'),
-           '--diff_mode'])
-
-env.Alias('srpcdif', node)
-
-# Create an alias for the command and add it to the standard small test.
-# This test verifies that the checked in SRPC generated files are
-# actually up to date.
-env.AddNodeToTestSuite(node, ['small_tests'], 'run_srpcgen_test')
