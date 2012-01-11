@@ -71,6 +71,11 @@ class PatchTest(unittest.TestCase):
     p = patch.FilePatchDiff('chrome/file.cc', RAW.PATCH, [])
     self._check_patch(p, 'chrome/file.cc', RAW.PATCH, nb_hunks=1)
 
+  def testDifferent(self):
+    name = 'master/unittests/data/processes-summary.dat'
+    p = patch.FilePatchDiff(name, RAW.DIFFERENT, [])
+    self._check_patch(p, name, RAW.DIFFERENT, nb_hunks=1)
+
   def testFilePatchDiffHeaderMode(self):
     p = patch.FilePatchDiff('git_cl/git-cl', GIT.MODE_EXE, [])
     self._check_patch(

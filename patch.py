@@ -219,19 +219,24 @@ class FilePatchDiff(FilePatchBase):
     hunks = []
     for line in self.diff_hunks.splitlines(True):
       if line.startswith('@@'):
-        match = re.match(r'^@@ -(\d+),(\d+) \+([\d,]+) @@.*$', line)
+        match = re.match(r'^@@ -([\d,]+) \+([\d,]+) @@.*$', line)
         # File add will result in "-0,0 +1" but file deletion will result in
         # "-1,N +0,0" where N is the number of lines deleted. That's from diff
         # and svn diff. git diff doesn't exhibit this behavior.
+        # svn diff for a single line file rewrite "@@ -1 +1 @@". Fun.
         if not match:
           self._fail('Hunk header is unparsable')
-        if ',' in match.group(3):
-          start_dst, lines_dst = map(int, match.group(3).split(',', 1))
+        if ',' in match.group(1):
+          start_src, lines_src = map(int, match.group(1).split(',', 1))
         else:
-          start_dst = int(match.group(3))
+          start_src = int(match.group(1))
+          lines_src = 0
+        if ',' in match.group(2):
+          start_dst, lines_dst = map(int, match.group(2).split(',', 1))
+        else:
+          start_dst = int(match.group(2))
           lines_dst = 0
-        new_hunk = Hunk(int(match.group(1)), int(match.group(2)),
-                        start_dst, lines_dst)
+        new_hunk = Hunk(start_src, lines_src, start_dst, lines_dst)
         if hunks:
           if new_hunk.start_src <= hunks[-1].start_src:
             self._fail('Hunks source lines are not ordered')
