@@ -29,6 +29,7 @@ include_rules = [
 
   # TODO(jam): this needs to be removed, and only use content/public. BUG=98716
   "+content/browser",
+  "-content/browser/browser_process_sub_thread.h",
   "-content/browser/download/download_manager_impl.h",
   "-content/browser/download/download_resource_handler.h",
   "-content/browser/download/save_file_manager.h",

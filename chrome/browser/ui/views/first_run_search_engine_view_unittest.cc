@@ -4,13 +4,13 @@
 
 #include "chrome/browser/ui/views/first_run_search_engine_view.h"
 
+#include "base/threading/thread.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/browser/browser_process_sub_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -58,10 +58,12 @@ TEST_F(FirstRunSearchEngineViewTest, ClosingSelectsFirstEngine) {
 TEST_F(FirstRunSearchEngineViewTest, ClosingBeforeServiceLoadedAbortsClose) {
   // This ensures the current thread is named the UI thread, so code that checks
   // that this is the UI thread doesn't assert.
+  base::Thread db_thread("tempdbthread");
+  db_thread.Start();
   content::TestBrowserThread ui_thread(content::BrowserThread::UI,
                                        message_loop());
-  content::BrowserProcessSubThread db_thread(content::BrowserThread::DB);
-  db_thread.StartWithOptions(base::Thread::Options());
+  content::TestBrowserThread db_test_thread(content::BrowserThread::DB,
+                                            db_thread.message_loop());
 
   TestingProfile profile;
   // We need to initialize the web database before accessing the template url
