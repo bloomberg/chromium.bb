@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -59,7 +59,7 @@ tc-test-bot() {
     ${LLVM_TESTSUITE} testsuite-clean
     { ${LLVM_TESTSUITE} testsuite-configure ${arch} &&
       ${LLVM_TESTSUITE} testsuite-run ${arch} &&
-      ${LLVM_TESTSUITE} testsuite-report ${arch} -v
+      ${LLVM_TESTSUITE} testsuite-report ${arch} -v -c
     } || handle-error
   done
 }
