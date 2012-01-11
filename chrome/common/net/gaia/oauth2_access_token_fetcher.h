@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -76,7 +76,7 @@ class OAuth2AccessTokenFetcher : public content::URLFetcherDelegate {
 
   // Helper mehtods for reporting back results.
   void OnGetTokenSuccess(const std::string& access_token);
-  void OnGetTokenFailure(GoogleServiceAuthError error);
+  void OnGetTokenFailure(const GoogleServiceAuthError& error);
 
   // Other helpers.
   static GURL MakeGetAccessTokenUrl();
