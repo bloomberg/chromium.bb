@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 #include <shlwapi.h>  // For SHDeleteKey.
 
 #include "base/memory/scoped_ptr.h"
+#include "base/test/test_reg_util_win.h"
 #include "base/win/registry.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/installer/util/browser_distribution.h"
@@ -587,3 +588,266 @@ TEST_F(GoogleUpdateSettingsTest, GetAppUpdatePolicyAppOverride) {
 }
 
 #endif  // defined(GOOGLE_CHROME_BUILD)
+
+// Test values for use by the CollectStatsConsent test fixture.
+class StatsState {
+ public:
+  enum InstallType {
+    SINGLE_INSTALL,
+    MULTI_INSTALL,
+  };
+  enum StateSetting {
+    NO_SETTING,
+    FALSE_SETTING,
+    TRUE_SETTING,
+  };
+  struct UserLevelState {};
+  struct SystemLevelState {};
+  static const UserLevelState kUserLevel;
+  static const SystemLevelState kSystemLevel;
+
+  StatsState(const UserLevelState&,
+             InstallType install_type,
+             StateSetting state_value)
+      : system_level_(false),
+        multi_install_(install_type == MULTI_INSTALL),
+        state_value_(state_value),
+        state_medium_value_(NO_SETTING) {
+  }
+  StatsState(const SystemLevelState&,
+             InstallType install_type,
+             StateSetting state_value,
+             StateSetting state_medium_value)
+      : system_level_(true),
+        multi_install_(install_type == MULTI_INSTALL),
+        state_value_(state_value),
+        state_medium_value_(state_medium_value) {
+  }
+  bool system_level() const { return system_level_; }
+  bool multi_install() const { return multi_install_; }
+  HKEY root_key() const {
+    return system_level_ ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
+  }
+  StateSetting state_value() const { return state_value_; }
+  StateSetting state_medium_value() const {
+    return state_medium_value_;
+  }
+  bool is_consent_granted() const {
+    return (system_level_ && state_medium_value_ != NO_SETTING) ?
+        (state_medium_value_ == TRUE_SETTING) :
+        (state_value_ == TRUE_SETTING);
+  }
+ private:
+  bool system_level_;
+  bool multi_install_;
+  StateSetting state_value_;
+  StateSetting state_medium_value_;
+};
+
+const StatsState::UserLevelState StatsState::kUserLevel;
+const StatsState::SystemLevelState StatsState::kSystemLevel;
+
+// A value parameterized test for testing the stats collection consent setting.
+class CollectStatsConsent : public ::testing::TestWithParam<StatsState> {
+ public:
+  static void SetUpTestCase();
+  static void TearDownTestCase();
+ protected:
+  virtual void SetUp() OVERRIDE;
+  static void MakeChromeMultiInstall(HKEY root_key);
+  static void ApplySetting(StatsState::StateSetting setting,
+                           HKEY root_key,
+                           const std::wstring& reg_key);
+
+  static std::wstring* chrome_version_key_;
+  static std::wstring* chrome_state_key_;
+  static std::wstring* chrome_state_medium_key_;
+  static std::wstring* binaries_state_key_;
+  static std::wstring* binaries_state_medium_key_;
+  registry_util::RegistryOverrideManager override_manager_;
+};
+
+std::wstring* CollectStatsConsent::chrome_version_key_;
+std::wstring* CollectStatsConsent::chrome_state_key_;
+std::wstring* CollectStatsConsent::chrome_state_medium_key_;
+std::wstring* CollectStatsConsent::binaries_state_key_;
+std::wstring* CollectStatsConsent::binaries_state_medium_key_;
+
+void CollectStatsConsent::SetUpTestCase() {
+  BrowserDistribution* dist =
+      BrowserDistribution::GetSpecificDistribution(
+          BrowserDistribution::CHROME_BROWSER);
+  chrome_version_key_ = new std::wstring(dist->GetVersionKey());
+  chrome_state_key_ = new std::wstring(dist->GetStateKey());
+  chrome_state_medium_key_ = new std::wstring(dist->GetStateMediumKey());
+
+  dist = BrowserDistribution::GetSpecificDistribution(
+      BrowserDistribution::CHROME_BINARIES);
+  binaries_state_key_ = new std::wstring(dist->GetStateKey());
+  binaries_state_medium_key_ = new std::wstring(dist->GetStateMediumKey());
+}
+
+void CollectStatsConsent::TearDownTestCase() {
+  delete chrome_version_key_;
+  delete chrome_state_key_;
+  delete chrome_state_medium_key_;
+  delete binaries_state_key_;
+  delete binaries_state_medium_key_;
+}
+
+// Install the registry override and apply the settings to the registry.
+void CollectStatsConsent::SetUp() {
+  const StatsState& stats_state = GetParam();
+  const HKEY root_key = stats_state.root_key();
+  std::wstring reg_temp_name(stats_state.system_level() ? L"HKLM_" : L"HKCU_");
+  reg_temp_name += L"CollectStatsConsent";
+  override_manager_.OverrideRegistry(root_key, reg_temp_name);
+
+  if (stats_state.multi_install()) {
+    MakeChromeMultiInstall(root_key);
+    ApplySetting(stats_state.state_value(), root_key, *binaries_state_key_);
+    ApplySetting(stats_state.state_medium_value(), root_key,
+                 *binaries_state_medium_key_);
+  } else {
+    ApplySetting(stats_state.state_value(), root_key, *chrome_state_key_);
+    ApplySetting(stats_state.state_medium_value(), root_key,
+                 *chrome_state_medium_key_);
+  }
+}
+
+// Write values into the registry so that Chrome is considered to be installed
+// as multi-install.
+void CollectStatsConsent::MakeChromeMultiInstall(HKEY root_key) {
+  ASSERT_EQ(
+      ERROR_SUCCESS,
+      RegKey(root_key, chrome_version_key_->c_str(),
+             KEY_SET_VALUE).WriteValue(google_update::kRegVersionField,
+                                       L"1.2.3.4"));
+  ASSERT_EQ(
+      ERROR_SUCCESS,
+      RegKey(root_key, chrome_state_key_->c_str(),
+             KEY_SET_VALUE).WriteValue(installer::kUninstallArgumentsField,
+                                       L"--multi-install"));
+}
+
+// Write the correct value to represent |setting| in the registry.
+void CollectStatsConsent::ApplySetting(StatsState::StateSetting setting,
+                                       HKEY root_key,
+                                       const std::wstring& reg_key) {
+  if (setting != StatsState::NO_SETTING) {
+    DWORD value = setting != StatsState::FALSE_SETTING ? 1 : 0;
+    ASSERT_EQ(
+        ERROR_SUCCESS,
+        RegKey(root_key, reg_key.c_str(),
+               KEY_SET_VALUE).WriteValue(google_update::kRegUsageStatsField,
+                                         value));
+  }
+}
+
+// Test that stats consent can be read.
+TEST_P(CollectStatsConsent, GetCollectStatsConsentAtLevel) {
+  if (GetParam().is_consent_granted()) {
+    EXPECT_TRUE(GoogleUpdateSettings::GetCollectStatsConsentAtLevel(
+                    GetParam().system_level()));
+  } else {
+    EXPECT_FALSE(GoogleUpdateSettings::GetCollectStatsConsentAtLevel(
+                     GetParam().system_level()));
+  }
+}
+
+// Test that stats consent can be flipped to the opposite setting, that the new
+// setting takes affect, and that the correct registry location is modified.
+TEST_P(CollectStatsConsent, SetCollectStatsConsentAtLevel) {
+  EXPECT_TRUE(GoogleUpdateSettings::SetCollectStatsConsentAtLevel(
+                  GetParam().system_level(),
+                  !GetParam().is_consent_granted()));
+  const std::wstring* const reg_keys[] = {
+    chrome_state_key_,
+    chrome_state_medium_key_,
+    binaries_state_key_,
+    binaries_state_medium_key_,
+  };
+  int key_index = ((GetParam().system_level() ? 1 : 0) +
+                   (GetParam().multi_install() ? 2 : 0));
+  const std::wstring& reg_key = *reg_keys[key_index];
+  DWORD value = 0;
+  EXPECT_EQ(
+      ERROR_SUCCESS,
+      RegKey(GetParam().root_key(), reg_key.c_str(),
+             KEY_QUERY_VALUE).ReadValueDW(google_update::kRegUsageStatsField,
+                                          &value));
+  if (GetParam().is_consent_granted()) {
+    EXPECT_FALSE(GoogleUpdateSettings::GetCollectStatsConsentAtLevel(
+                     GetParam().system_level()));
+    EXPECT_EQ(0UL, value);
+  } else {
+    EXPECT_TRUE(GoogleUpdateSettings::GetCollectStatsConsentAtLevel(
+                    GetParam().system_level()));
+    EXPECT_EQ(1UL, value);
+  }
+}
+
+INSTANTIATE_TEST_CASE_P(
+    UserLevelSingleInstall,
+    CollectStatsConsent,
+    ::testing::Values(
+        StatsState(StatsState::kUserLevel, StatsState::SINGLE_INSTALL,
+                   StatsState::NO_SETTING),
+        StatsState(StatsState::kUserLevel, StatsState::SINGLE_INSTALL,
+                   StatsState::FALSE_SETTING),
+        StatsState(StatsState::kUserLevel, StatsState::SINGLE_INSTALL,
+                   StatsState::TRUE_SETTING)));
+INSTANTIATE_TEST_CASE_P(
+    UserLevelMultiInstall,
+    CollectStatsConsent,
+    ::testing::Values(
+        StatsState(StatsState::kUserLevel, StatsState::MULTI_INSTALL,
+                   StatsState::NO_SETTING),
+        StatsState(StatsState::kUserLevel, StatsState::MULTI_INSTALL,
+                   StatsState::FALSE_SETTING),
+        StatsState(StatsState::kUserLevel, StatsState::MULTI_INSTALL,
+                   StatsState::TRUE_SETTING)));
+INSTANTIATE_TEST_CASE_P(
+    SystemLevelSingleInstall,
+    CollectStatsConsent,
+    ::testing::Values(
+        StatsState(StatsState::kSystemLevel, StatsState::SINGLE_INSTALL,
+                   StatsState::NO_SETTING, StatsState::NO_SETTING),
+        StatsState(StatsState::kSystemLevel, StatsState::SINGLE_INSTALL,
+                   StatsState::NO_SETTING, StatsState::FALSE_SETTING),
+        StatsState(StatsState::kSystemLevel, StatsState::SINGLE_INSTALL,
+                   StatsState::NO_SETTING, StatsState::TRUE_SETTING),
+        StatsState(StatsState::kSystemLevel, StatsState::SINGLE_INSTALL,
+                   StatsState::FALSE_SETTING, StatsState::NO_SETTING),
+        StatsState(StatsState::kSystemLevel, StatsState::SINGLE_INSTALL,
+                   StatsState::FALSE_SETTING, StatsState::FALSE_SETTING),
+        StatsState(StatsState::kSystemLevel, StatsState::SINGLE_INSTALL,
+                   StatsState::FALSE_SETTING, StatsState::TRUE_SETTING),
+        StatsState(StatsState::kSystemLevel, StatsState::SINGLE_INSTALL,
+                   StatsState::TRUE_SETTING, StatsState::NO_SETTING),
+        StatsState(StatsState::kSystemLevel, StatsState::SINGLE_INSTALL,
+                   StatsState::TRUE_SETTING, StatsState::FALSE_SETTING),
+        StatsState(StatsState::kSystemLevel, StatsState::SINGLE_INSTALL,
+                   StatsState::TRUE_SETTING, StatsState::TRUE_SETTING)));
+INSTANTIATE_TEST_CASE_P(
+    SystemLevelMultiInstall,
+    CollectStatsConsent,
+    ::testing::Values(
+        StatsState(StatsState::kSystemLevel, StatsState::MULTI_INSTALL,
+                   StatsState::NO_SETTING, StatsState::NO_SETTING),
+        StatsState(StatsState::kSystemLevel, StatsState::MULTI_INSTALL,
+                   StatsState::NO_SETTING, StatsState::FALSE_SETTING),
+        StatsState(StatsState::kSystemLevel, StatsState::MULTI_INSTALL,
+                   StatsState::NO_SETTING, StatsState::TRUE_SETTING),
+        StatsState(StatsState::kSystemLevel, StatsState::MULTI_INSTALL,
+                   StatsState::FALSE_SETTING, StatsState::NO_SETTING),
+        StatsState(StatsState::kSystemLevel, StatsState::MULTI_INSTALL,
+                   StatsState::FALSE_SETTING, StatsState::FALSE_SETTING),
+        StatsState(StatsState::kSystemLevel, StatsState::MULTI_INSTALL,
+                   StatsState::FALSE_SETTING, StatsState::TRUE_SETTING),
+        StatsState(StatsState::kSystemLevel, StatsState::MULTI_INSTALL,
+                   StatsState::TRUE_SETTING, StatsState::NO_SETTING),
+        StatsState(StatsState::kSystemLevel, StatsState::MULTI_INSTALL,
+                   StatsState::TRUE_SETTING, StatsState::FALSE_SETTING),
+        StatsState(StatsState::kSystemLevel, StatsState::MULTI_INSTALL,
+                   StatsState::TRUE_SETTING, StatsState::TRUE_SETTING)));

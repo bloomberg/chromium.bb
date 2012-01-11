@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -39,6 +39,18 @@ class GoogleUpdateSettings {
   // Sets the user consent to send UMA and crash dumps to Google. Returns
   // false if the setting could not be recorded.
   static bool SetCollectStatsConsent(bool consented);
+
+#if defined(OS_WIN)
+  // Returns whether the user has given consent to collect UMA data and send
+  // crash dumps to Google. This information is collected by the web server
+  // used to download the chrome installer.
+  static bool GetCollectStatsConsentAtLevel(bool system_install);
+
+  // Sets the user consent to send UMA and crash dumps to Google. Returns
+  // false if the setting could not be recorded.
+  static bool SetCollectStatsConsentAtLevel(bool system_install,
+                                            bool consented);
+#endif
 
   // Returns the metrics id set in the registry (that can be used in crash
   // reports). If none found, returns empty string.

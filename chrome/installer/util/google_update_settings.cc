@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -172,15 +172,8 @@ bool GetUpdatePolicyFromDword(
   return false;
 }
 
-}  // namespace
-
-// Older versions of Chrome unconditionally read from HKCU\...\ClientState\...
-// and then HKLM\...\ClientState\....  This means that system-level Chrome
-// never checked ClientStateMedium (which has priority according to Google
-// Update) and gave preference to a value in HKCU (which was never checked by
-// Google Update).  From now on, Chrome follows Google Update's policy.
-bool GoogleUpdateSettings::GetCollectStatsConsent() {
-  // Determine whether this is a system-level or a user-level install.
+// Determine whether this is a system-level or a user-level install.
+bool IsSystemInstall() {
   bool system_install = false;
   FilePath module_dir;
   if (!PathService::Get(base::DIR_MODULE, &module_dir)) {
@@ -189,6 +182,21 @@ bool GoogleUpdateSettings::GetCollectStatsConsent() {
   } else {
     system_install = !InstallUtil::IsPerUserInstall(module_dir.value().c_str());
   }
+  return system_install;
+}
+
+}  // namespace
+
+bool GoogleUpdateSettings::GetCollectStatsConsent() {
+  return GetCollectStatsConsentAtLevel(IsSystemInstall());
+}
+
+// Older versions of Chrome unconditionally read from HKCU\...\ClientState\...
+// and then HKLM\...\ClientState\....  This means that system-level Chrome
+// never checked ClientStateMedium (which has priority according to Google
+// Update) and gave preference to a value in HKCU (which was never checked by
+// Google Update).  From now on, Chrome follows Google Update's policy.
+bool GoogleUpdateSettings::GetCollectStatsConsentAtLevel(bool system_install) {
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
 
   // Consent applies to all products in a multi-install package.
@@ -210,30 +218,28 @@ bool GoogleUpdateSettings::GetCollectStatsConsent() {
                       &value) == ERROR_SUCCESS;
 
   // Otherwise, try ClientState.
-  have_value =
-      !have_value &&
-      key.Open(system_install ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER,
-               dist->GetStateKey().c_str(), KEY_QUERY_VALUE) == ERROR_SUCCESS &&
-      key.ReadValueDW(google_update::kRegUsageStatsField,
-                      &value) == ERROR_SUCCESS;
+  if (!have_value) {
+    have_value =
+        key.Open(system_install ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER,
+                 dist->GetStateKey().c_str(),
+                 KEY_QUERY_VALUE) == ERROR_SUCCESS &&
+        key.ReadValueDW(google_update::kRegUsageStatsField,
+                        &value) == ERROR_SUCCESS;
+  }
 
   // Google Update specifically checks that the value is 1, so we do the same.
   return have_value && value == 1;
 }
 
 bool GoogleUpdateSettings::SetCollectStatsConsent(bool consented) {
+  return SetCollectStatsConsentAtLevel(IsSystemInstall(), consented);
+}
+
+bool GoogleUpdateSettings::SetCollectStatsConsentAtLevel(bool system_install,
+                                                         bool consented) {
   // Google Update writes and expects 1 for true, 0 for false.
   DWORD value = consented ? 1 : 0;
 
-  // Determine whether this is a system-level or a user-level install.
-  bool system_install = false;
-  FilePath module_dir;
-  if (!PathService::Get(base::DIR_MODULE, &module_dir)) {
-    LOG(WARNING)
-        << "Failed to get directory of module; assuming per-user install.";
-  } else {
-    system_install = !InstallUtil::IsPerUserInstall(module_dir.value().c_str());
-  }
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
 
   // Consent applies to all products in a multi-install package.
