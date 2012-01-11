@@ -1496,10 +1496,10 @@ void TabContents::DidNavigateAnyFramePostCommit(
     RenderViewHost* render_view_host,
     const content::LoadCommittedDetails& details,
     const ViewHostMsg_FrameNavigate_Params& params) {
-  // If we navigate, reset JavaScript state. This does nothing to prevent
-  // a malicious script from spamming messages, since the script could just
-  // reload the page to stop blocking.
-  if (dialog_creator_) {
+  // If we navigate off the page, reset JavaScript state. This does nothing
+  // to prevent a malicious script from spamming messages, since the script
+  // could just reload the page to stop blocking.
+  if (dialog_creator_ && !details.is_in_page) {
     dialog_creator_->ResetJavaScriptState(this);
     dialog_creator_ = NULL;
   }
