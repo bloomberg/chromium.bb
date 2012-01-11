@@ -5567,6 +5567,17 @@
    fun:_Znw*
    fun:_ZN5views17TreeViewViewsTest3AddEPNS_8TestNodeEiRKSs
 }
+{
+   bug_109862
+   Memcheck:Leak
+   fun:_Znw*
+   ...
+   fun:_ZN4base10JSONReader10BuildValueEb
+   fun:_ZN4base10JSONReader11JsonToValueERKSsbb
+   fun:_ZN4base10JSONReader18ReadAndReturnErrorERKSsbPiPSs
+   fun:_ZN25JSONStringValueSerializer11DeserializeEPiPSs
+   fun:_ZL21LoadExtensionManifestRKSsRK8FilePathN9Extension8LocationEiPSs
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
