@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -37,6 +37,14 @@ P2PTransportImpl::P2PTransportImpl(P2PSocketDispatcher* socket_dispatcher)
 }
 
 P2PTransportImpl::~P2PTransportImpl() {
+  MessageLoop* message_loop = MessageLoop::current();
+
+  // Because libjingle's sigslot doesn't handle deletion from a signal
+  // handler we have to postpone deletion of libjingle objects.
+  message_loop->DeleteSoon(FROM_HERE, channel_.release());
+  message_loop->DeleteSoon(FROM_HERE, allocator_.release());
+  message_loop->DeleteSoon(FROM_HERE, socket_factory_.release());
+  message_loop->DeleteSoon(FROM_HERE, network_manager_.release());
 }
 
 bool P2PTransportImpl::Init(WebKit::WebFrame* web_frame,
@@ -74,7 +82,7 @@ bool P2PTransportImpl::Init(WebKit::WebFrame* web_frame,
       this, &P2PTransportImpl::OnCandidateReady);
 
   if (protocol == PROTOCOL_UDP) {
-    channel_->SignalWritableState.connect(
+    channel_->SignalReadableState.connect(
         this, &P2PTransportImpl::OnReadableState);
     channel_->SignalWritableState.connect(
         this, &P2PTransportImpl::OnWriteableState);
