@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Chromium Authors. All rights reserved.
+ * Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -330,10 +330,32 @@ div.open-sidebar:hover {
   font-size: 12px;
 }
 
-button.detail-view > img,
-button.thumbnail-view > img {
-  position: relative;
-  top: 1px;
+.dialog-header > div > button {
+  -webkit-border-radius: 0;
+  border: none;
+  height: 28px;
+  min-width: 0;
+  padding: 0;
+  width: 28px;
+}
+
+/* button:hover and button[disabled]:hover rules must be override by placing
+ * the following four rules after them.
+ */
+button.detail-view {
+  background-image: url('../images/icon_list_view_off.png');
+}
+
+button.thumbnail-view {
+  background-image: url('../images/icon_thumb_view_off.png');
+}
+
+button.detail-view[disabled] {
+  background-image: url('../images/icon_list_view_on.png');
+}
+
+button.thumbnail-view[disabled] {
+  background-image: url('../images/icon_thumb_view_on.png');
 }
 
 .filelist-panel {

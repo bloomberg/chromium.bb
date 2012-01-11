@@ -110,8 +110,10 @@
         <include name="IDR_FILE_MANAGER_IMG_GALLERY_CURSOR_SWNE" file="file_manager/images/gallery/cursor_swne.png" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_IMG_GALLERY_SLIDER_THUMB" file="file_manager/images/gallery/slider_thumb.png" type="BINDATA" />
 
-        <include name="IDR_FILE_MANAGER_ICON_DETAIL_VIEW" file="file_manager/images/icon-detail-view.png" type="BINDATA" />
-        <include name="IDR_FILE_MANAGER_ICON_THUMB_VIEW" file="file_manager/images/icon-thumb-view.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_ICON_LIST_VIEW_ON" file="file_manager/images/icon_list_view_on.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_ICON_LIST_VIEW_OFF" file="file_manager/images/icon_list_view_off.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_ICON_THUMB_VIEW_ON" file="file_manager/images/icon_thumb_view_on.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_ICON_THUMB_VIEW_OFF" file="file_manager/images/icon_thumb_view_off.png" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_WARNING_ICON" file="file_manager/images/warning_icon_square_26x26.png" type="BINDATA"/>
 
         <include name="IDR_FILE_MANAGER_BUTTON_ICON_DELETE" file="file_manager/images/button-icon-delete.png" type="BINDATA" />

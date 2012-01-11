@@ -1,6 +1,6 @@
 <!DOCTYPE HTML>
 <!--
-  -- Copyright (c) 2011 The Chromium Authors. All rights reserved.
+  -- Copyright (c) 2012 The Chromium Authors. All rights reserved.
   -- Use of this source code is governed by a BSD-style license that can be
   -- found in the LICENSE file.
   -->
@@ -143,10 +143,9 @@
         <div class=dialog-header>
           <div class=open-sidebar><img src='images/open_sidebar.png'></div>
           <div class=breadcrumbs></div>
-          <button class=detail-view tabindex=4
-                  ><img src='images/icon-detail-view.png'></button
-          ><button class=thumbnail-view tabindex=5
-                  ><img src='images/icon-thumb-view.png'></button>
+          <!-- The outter div is a hack to remove margin between buttons. -->
+          <div><button class="detail-view" tabindex="4" disabled></button></div>
+          <div><button class="thumbnail-view" tabindex="5"></button></div>
         </div>
         <div class=dialog-body>
           <div class=filelist-panel>
