@@ -57,7 +57,7 @@ INITIAL_ENV = {
                           # TODO(pdox): Disable for SDK version
   'SANDBOXED'   : '0',    # Use sandboxed toolchain for this arch. (main switch)
   'SRPC'        : '1',    # Use SRPC sandboxed toolchain
-  'MC_DIRECT'           : '1',
+  'FORCE_INTERMEDIATE_S': '0',
   'USE_EMULATOR'        : '0',
   'USE_BOOTSTRAP'       : '${BUILD_OS==linux ? 1 : 0}',
   'DRIVER_FLAGS'        : '', # Flags passed to the driver

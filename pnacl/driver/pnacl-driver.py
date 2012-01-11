@@ -20,16 +20,22 @@ EXTRA_ENV = {
   'ALLOW_NATIVE'   : '0',  # Allow native objects (.S,.s,.o) to be in the
                            # linker line for .pexe or .pso generation.
                            # It doesn't normally make sense to do this.
-  'EMIT_LL'     : '1',    # Produce an intermediate .ll file
-                          # Currently enabled for debugging.
+  'FORCE_INTERMEDIATE_LL': '0',
+                          # Produce an intermediate .ll file
+                          # Useful for debugging.
+                          # NOTE: potentially different code paths and bugs
+                          #       might be triggered by this
+  'FORCE_INTERMEDIATE_S': '0',
+                          # producing an intermediate .s file
+                          # Useful for debugging.
+                          # NOTE: potentially different code paths and bugs
+                          #       might be triggered by this
   'BIAS'        : 'NONE', # This can be 'NONE', 'ARM', 'X8632', or 'X8664'.
                           # When not set to none, this causes the front-end to
                           # act like a target-specific compiler. This bias is
                           # currently needed while compiling newlib,
                           # and some scons tests.
                           # TODO(pdox): Can this be removed?
-  'MC_DIRECT'   : '1',    # Use MC direct object emission instead of
-                          # producing an intermediate .s file
   'LANGUAGE'    : 'C',    # C or CXX
   'FRONTEND'    : '',     # CLANG, or DRAGONEGG
 
@@ -168,7 +174,6 @@ def AddBPrefix(prefix):
 
 CustomPatterns = [
   ( '--driver=(.+)',             "env.set('CC', pathtools.normalize($0))\n"),
-  ( '--pnacl-skip-ll',           "env.set('EMIT_LL', '0')"),
 
   ( '--pnacl-clang',             "env.set('LANGUAGE', 'C')\n"
                                  "env.set('FRONTEND', 'CLANG')"),
@@ -504,7 +509,8 @@ def SetupChain(chain, input_type, output_type):
     return
 
   # src -> ll
-  if cur_type == 'src' and (env.getbool('EMIT_LL') or output_type == 'll'):
+  if cur_type == 'src' and (env.getbool('FORCE_INTERMEDIATE_LL') or
+                            output_type == 'll'):
     chain.add(RunCC, 'll', mode='-S')
     cur_type = 'll'
   if cur_type == output_type:
@@ -517,15 +523,16 @@ def SetupChain(chain, input_type, output_type):
   if cur_type == output_type:
     return
 
-  # src -> po
-  if cur_type == 'src' and output_type == 'po':
+  # src -> po (we also force native output to go through this phase
+  if cur_type == 'src' and (output_type == 'po' or output_type == 'o'):
     chain.add(RunCC, 'po', mode='-c')
     cur_type = 'po'
   if cur_type == output_type:
     return
 
   # po -> o
-  if env.getbool('MC_DIRECT') and cur_type == 'po' and output_type == 'o':
+  if (cur_type == 'po' and output_type == 'o' and
+      not env.getbool('FORCE_INTERMEDIATE_S')):
     chain.add(RunTranslate, 'o', mode='-c')
     cur_type = 'o'
   if cur_type == output_type:

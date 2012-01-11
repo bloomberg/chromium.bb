@@ -280,11 +280,13 @@ def ApplyBitcodeConfig(bcfile, bctype):
     if soname:
       env.append('LD_FLAGS', '-soname=' + soname)
 
+# NOTE: this code resembles code from pnacl-driver.py
+# TODO(robertm): see whether this can be unified somehow
 def SetupChain(chain, has_bitcode, output_type):
   assert output_type in ('o','s','so','nexe')
 
   if has_bitcode:
-    if output_type == 's' or not env.getbool('MC_DIRECT'):
+    if output_type == 's' or env.getbool('FORCE_INTERMEDIATE_S'):
       chain.add(RunLLC, 's', filetype='asm')
       if output_type == 's':
         return

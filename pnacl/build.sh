@@ -2220,9 +2220,6 @@ llvm-sb-setup() {
     nonsrpc) ;;
   esac
 
-  # Speed things up by avoiding an intermediate step
-  flags+=" --pnacl-skip-ll"
-
   LLVM_SB_EXTRA_CONFIG_FLAGS="--disable-jit --enable-optimized \
   --target=${CROSS_TARGET_ARM}"
 
@@ -2527,9 +2524,6 @@ binutils-sb-setup() {
     echo "ERROR: Missing lib. Run this script with binutils-liberty option"
     exit -1
   fi
-
-  # Speed things up by avoiding an intermediate step
-  flags+=" --pnacl-skip-ll"
 
   BINUTILS_SB_CONFIGURE_ENV=(
     AR="${PNACL_AR}" \
