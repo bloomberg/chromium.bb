@@ -6,10 +6,8 @@
 #define UI_VIEWS_CONTROLS_TABLE_TABLE_VIEW_H_
 #pragma once
 
-#if defined(OS_WIN) && !defined(USE_AURA)
+#if defined(OS_WIN)
 #include "ui/views/controls/table/table_view_win.h"
-#else
-#include "ui/views/controls/table/table_view_views.h"
 #endif
 
 #endif  // UI_VIEWS_CONTROLS_TABLE_TABLE_VIEW_H_

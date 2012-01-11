@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -41,10 +41,7 @@ const int kHungRendererDialogHeight = 200;
 namespace browser {
 
 void ShowHungRendererDialog(WebContents* contents) {
-  // TODO(jhawkins): move this into a non-webui location.
-#if defined(USE_AURA)
-  ShowNativeHungRendererDialog(contents);
-#elif defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) || defined(USE_AURA)
   HungRendererDialog::ShowHungRendererDialog(contents);
 #else
   // TODO(rbyers): Remove IsMoreWebUI check once we decide for sure which
@@ -57,9 +54,7 @@ void ShowHungRendererDialog(WebContents* contents) {
 }
 
 void HideHungRendererDialog(WebContents* contents) {
-#if defined(USE_AURA)
-  HideNativeHungRendererDialog(contents);
-#elif defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) || defined(USE_AURA)
   HungRendererDialog::HideHungRendererDialog(contents);
 #else
   if (chrome_web_ui::IsMoreWebUI())

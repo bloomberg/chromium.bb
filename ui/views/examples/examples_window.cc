@@ -28,7 +28,6 @@
 #include "ui/views/examples/scroll_view_example.h"
 #include "ui/views/examples/single_split_view_example.h"
 #include "ui/views/examples/tabbed_pane_example.h"
-#include "ui/views/examples/table_example.h"
 #include "ui/views/examples/text_example.h"
 #include "ui/views/examples/textfield_example.h"
 #include "ui/views/examples/throbber_example.h"
@@ -40,7 +39,11 @@
 
 #if !defined(USE_AURA)
 #include "ui/views/examples/menu_example.h"
+#if defined(OS_WIN)
+#include "ui/views/examples/table_example.h"
 #endif
+#endif
+
 
 namespace views {
 namespace examples {
@@ -108,7 +111,6 @@ class ExamplesWindowContents : public views::WidgetDelegateView {
   // Adds all the individual examples to the tab strip.
   void AddExamples() {
     AddExample(new TreeViewExample);
-    AddExample(new TableExample);
     AddExample(new BubbleExample);
     AddExample(new ButtonExample);
     AddExample(new ComboboxExample);
@@ -125,6 +127,9 @@ class ExamplesWindowContents : public views::WidgetDelegateView {
     AddExample(new ScrollViewExample);
     AddExample(new SingleSplitViewExample);
     AddExample(new TabbedPaneExample);
+#if !defined(USE_AURA) && defined(OS_WIN)
+    AddExample(new TableExample);
+#endif
     AddExample(new TextExample);
     AddExample(new TextfieldExample);
     AddExample(new ThrobberExample);

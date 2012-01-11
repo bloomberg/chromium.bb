@@ -1,4 +1,4 @@
-# Copyright (c) 2012 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 {
@@ -207,14 +207,10 @@
         'controls/tabbed_pane/tabbed_pane_listener.h',
         'controls/table/group_table_model.h',
         'controls/table/group_table_view.h',
-        'controls/table/group_table_view_views.cc',
-        'controls/table/group_table_view_views.h',
         'controls/table/group_table_view_win.cc',
         'controls/table/group_table_view_win.h',
         'controls/table/table_view.h',
         'controls/table/table_view_observer.h',
-        'controls/table/table_view_views.cc',
-        'controls/table/table_view_views.h',
         'controls/table/table_view_win.cc',
         'controls/table/table_view_win.h',
         'controls/textfield/gtk_views_entry.cc',
@@ -441,10 +437,6 @@
             'controls/menu/menu_config_views.cc',
             'controls/menu/menu_item_view_views.cc',
             'controls/menu/menu_separator_views.cc',
-            'controls/table/group_table_view_views.cc',
-            'controls/table/group_table_view_views.h',
-            'controls/table/table_view_views.cc',
-            'controls/table/table_view_views.h',
             'controls/tree/tree_view_views.cc',
             'controls/tree/tree_view_views.h',
           ],
@@ -547,9 +539,6 @@
                  '../../base/allocator/allocator.gyp:allocator',
                ],
             }],
-          ],
-          'sources/': [
-            ['exclude', 'controls/table/table_view_unittest.cc'],
           ],
         }],
         ['OS=="win"', {
@@ -669,6 +658,17 @@
         ['OS=="win"', {
           'include_dirs': [
             '../third_party/wtl/include',
+          ],
+        }, { # OS!="win"
+          'sources/': [
+            ['exclude', 'examples/table_example.cc'],
+            ['exclude', 'examples/table_example.h'],
+          ],
+        }],
+        ['use_aura==1', {
+          'sources/': [
+            ['exclude', 'examples/table_example.cc'],
+            ['exclude', 'examples/table_example.h'],
           ],
         }],
       ],

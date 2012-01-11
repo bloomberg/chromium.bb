@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -114,9 +114,9 @@ void SSLClientCertificateSelector::Init() {
       1, views::GridLayout::USE_PREF, 0, 0);
 
   layout->StartRow(0, column_set_id);
-  string16 text = l10n_util::GetStringFUTF16(
+  std::wstring text = UTF16ToWide(l10n_util::GetStringFUTF16(
       IDS_CLIENT_CERT_DIALOG_TEXT,
-      ASCIIToUTF16(cert_request_info_->host_and_port));
+      ASCIIToUTF16(cert_request_info_->host_and_port)));
   views::Label* label = new views::Label(text);
   label->SetMultiLine(true);
   label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
@@ -127,9 +127,7 @@ void SSLClientCertificateSelector::Init() {
 
   CreateCertTable();
   layout->StartRow(1, column_set_id);
-  layout->AddView(table_->CreateParentIfNecessary(), 1, 1,
-                  views::GridLayout::FILL,
-                  views::GridLayout::FILL, kTableViewWidth, kTableViewHeight);
+  layout->AddView(table_);
 
   layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
@@ -260,12 +258,13 @@ void SSLClientCertificateSelector::CreateCertTable() {
                                 true,  // single_selection
                                 true,  // resizable_columns
                                 true);  // autosize_columns
+  table_->SetPreferredSize(gfx::Size(kTableViewWidth, kTableViewHeight));
   table_->SetObserver(this);
 }
 
 void SSLClientCertificateSelector::CreateViewCertButton() {
-  view_cert_button_ = new views::NativeTextButton(this,
-      l10n_util::GetStringUTF16(IDS_PAGEINFO_CERT_INFO_BUTTON));
+  view_cert_button_ = new views::NativeTextButton(this, UTF16ToWide(
+      l10n_util::GetStringUTF16(IDS_PAGEINFO_CERT_INFO_BUTTON)));
 
   // Wrap the view cert button in a grid layout in order to left-align it.
   view_cert_button_container_ = new views::View();

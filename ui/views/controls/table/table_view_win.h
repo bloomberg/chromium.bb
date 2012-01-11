@@ -151,10 +151,6 @@ class VIEWS_EXPORT TableView : public NativeControl,
   void SetModel(ui::TableModel* model);
   ui::TableModel* model() const { return model_; }
 
-  // Returns this. Provided for implementations that need to wrap this in a
-  // ScrollView.
-  View* CreateParentIfNecessary();
-
   // Resorts the contents.
   void SetSortDescriptors(const SortDescriptors& sort_descriptors);
 
