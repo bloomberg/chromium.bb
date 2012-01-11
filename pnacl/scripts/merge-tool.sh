@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 #
@@ -38,7 +38,11 @@ readonly TC_SRC_LLVM_MASTER="${TC_SRC}/llvm-master"
 readonly PREDIFF="${TC_SRC}/prediff"
 readonly POSTDIFF="${TC_SRC}/postdiff"
 
-readonly UPSTREAM_BRANCH=pnacl-sfi
+# Temporarily run merges and tests against pnacl-sfi-test-merge...
+# This is currently broken for the ARM sandboxed tools. Perhaps an upstream
+# change may trigger a fix, so let the bot do the searching.
+# Revert this to "pnacl-sfi" if you are doing a manual merge.
+readonly UPSTREAM_BRANCH=pnacl-sfi-test-merge
 
 readonly HG_CONFIG_AUTO=(--config ui.merge=internal:merge
                          --config ui.username=chromebot1@gmail.com)
