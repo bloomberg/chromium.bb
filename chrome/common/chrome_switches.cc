@@ -1356,11 +1356,6 @@ bool IsPrintPreviewEnabled() {
   return CommandLine::ForCurrentProcess()->HasSwitch(kEnablePrintPreview);
 }
 
-bool IsInBrowserThumbnailingEnabled() {
-  return CommandLine::ForCurrentProcess()->HasSwitch(
-      kEnableInBrowserThumbnailing);
-}
-
 // -----------------------------------------------------------------------------
 // DO NOT ADD YOUR CRAP TO THE BOTTOM OF THIS FILE.
 //

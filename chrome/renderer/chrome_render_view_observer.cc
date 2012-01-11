@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -838,7 +838,8 @@ void ChromeRenderViewObserver::CapturePageInfo(int load_id,
   // Generate the thumbnail here if the in-browser thumbnailing isn't
   // enabled. TODO(satorux): Remove this and related code once
   // crbug.com/65936 is complete.
-  if (!switches::IsInBrowserThumbnailingEnabled()) {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableInBrowserThumbnailing)) {
     CaptureThumbnail();
   }
 

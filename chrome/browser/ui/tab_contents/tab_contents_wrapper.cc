@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -125,7 +125,8 @@ TabContentsWrapper::TabContentsWrapper(WebContents* contents)
       new safe_browsing::SafeBrowsingTabObserver(this));
 
   // Start the in-browser thumbnailing if the feature is enabled.
-  if (switches::IsInBrowserThumbnailingEnabled()) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableInBrowserThumbnailing)) {
     thumbnail_generation_observer_.reset(new ThumbnailGenerator);
     thumbnail_generation_observer_->StartThumbnailing(web_contents_.get());
   }
