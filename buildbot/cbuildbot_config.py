@@ -288,8 +288,8 @@ class _config(dict):
     # aren't affected by recent refactorings.
 
     config_dict = _default.derive(self, *inherits, **overrides)
-    config_dict.update((key, urllib.quote(new_config[key]))
-      for key in self._URLQUOTED_PARAMS if key in config_dict)
+    config_dict.update((key, urllib.quote(config_dict[key]))
+      for key in self._URLQUOTED_PARAMS if config_dict.get(key))
 
     config[name] = config_dict
 
