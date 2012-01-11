@@ -67,6 +67,13 @@ GetChromeURLDataManagerBackendGetter() const {
 const content::ResourceContext&
 OffTheRecordProfileIOData::Handle::GetResourceContext() const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  LazyInitialize();
+  return GetResourceContextNoInit();
+}
+
+const content::ResourceContext&
+OffTheRecordProfileIOData::Handle::GetResourceContextNoInit() const {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // Don't call LazyInitialize here, since the resource context is created at
   // the beginning of initalization and is used by some members while they're
   // being initialized (i.e. AppCacheService).

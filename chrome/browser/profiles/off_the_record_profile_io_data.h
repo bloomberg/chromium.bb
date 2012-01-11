@@ -43,6 +43,9 @@ class OffTheRecordProfileIOData : public ProfileIOData {
     base::Callback<ChromeURLDataManagerBackend*(void)>
         GetChromeURLDataManagerBackendGetter() const;
     const content::ResourceContext& GetResourceContext() const;
+    // GetResourceContextNoInit() does not call LazyInitialize() so it can be
+    // safely be used during initialization.
+    const content::ResourceContext& GetResourceContextNoInit() const;
     scoped_refptr<ChromeURLRequestContextGetter>
         GetMainRequestContextGetter() const;
     scoped_refptr<ChromeURLRequestContextGetter>

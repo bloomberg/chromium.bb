@@ -414,7 +414,8 @@ void ProfileImpl::DoFinalInit() {
                 restore_old_session_cookies);
 
   ChromePluginServiceFilter::GetInstance()->RegisterResourceContext(
-      PluginPrefs::GetForProfile(this), &GetResourceContext());
+      PluginPrefs::GetForProfile(this),
+      &io_data_.GetResourceContextNoInit());
 
   // Creation has been finished.
   if (delegate_)
@@ -571,7 +572,7 @@ ProfileImpl::~ProfileImpl() {
   sync_service_.reset();
 
   ChromePluginServiceFilter::GetInstance()->UnregisterResourceContext(
-      &GetResourceContext());
+      &io_data_.GetResourceContextNoInit());
 
   ProfileDependencyManager::GetInstance()->DestroyProfileServices(this);
 
@@ -1285,7 +1286,7 @@ void ProfileImpl::CreateQuotaManagerAndClients() {
                  appcache_service_.get(),
                  IsOffTheRecord()
                      ? FilePath() : GetPath().Append(chrome::kAppCacheDirname),
-                 &GetResourceContext(),
+                 &io_data_.GetResourceContextNoInit(),
                  make_scoped_refptr(GetExtensionSpecialStoragePolicy())));
 }
 

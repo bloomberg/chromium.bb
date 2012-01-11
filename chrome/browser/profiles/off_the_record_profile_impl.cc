@@ -114,7 +114,7 @@ void OffTheRecordProfileImpl::Init() {
   GetChromeURLDataManager()->AddDataSource(icon_source);
 
   ChromePluginServiceFilter::GetInstance()->RegisterResourceContext(
-      PluginPrefs::GetForProfile(this), &GetResourceContext());
+      PluginPrefs::GetForProfile(this), &io_data_.GetResourceContextNoInit());
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
@@ -127,7 +127,7 @@ OffTheRecordProfileImpl::~OffTheRecordProfileImpl() {
     content::NotificationService::NoDetails());
 
   ChromePluginServiceFilter::GetInstance()->UnregisterResourceContext(
-    &GetResourceContext());
+    &io_data_.GetResourceContextNoInit());
 
   ProfileDependencyManager::GetInstance()->DestroyProfileServices(this);
 
@@ -634,7 +634,7 @@ void OffTheRecordProfileImpl::CreateQuotaManagerAndClients() {
                appcache_service_.get(),
                IsOffTheRecord()
                    ? FilePath() : GetPath().Append(chrome::kAppCacheDirname),
-               &GetResourceContext(),
+               &io_data_.GetResourceContextNoInit(),
                make_scoped_refptr(GetExtensionSpecialStoragePolicy())));
 }
 
