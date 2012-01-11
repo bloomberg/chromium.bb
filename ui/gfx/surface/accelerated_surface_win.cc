@@ -187,11 +187,8 @@ void AcceleratedPresenter::AsyncPresentAndAcknowledge(
                    quantized_size));
   }
 
-  // This might unnecessarily post to the thread with which the swap chain has
-  // affinity. This will only result in potentially delaying the present.
   g_present_thread_pool.Pointer()->PostTask(
-      num_pending_resizes_ ?
-          thread_affinity_ : g_present_thread_pool.Pointer()->NextThread(),
+      thread_affinity_,
       FROM_HERE,
       base::Bind(&AcceleratedPresenter::DoPresentAndAcknowledge,
                  base::Unretained(this),
