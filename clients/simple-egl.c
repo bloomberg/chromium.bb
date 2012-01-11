@@ -95,7 +95,7 @@ init_egl(struct display *display)
 	};
 
 	static const EGLint config_attribs[] = {
-		EGL_SURFACE_TYPE, EGL_WINDOW_BIT | EGL_VG_ALPHA_FORMAT_PRE_BIT,
+		EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
 		EGL_RED_SIZE, 1,
 		EGL_GREEN_SIZE, 1,
 		EGL_BLUE_SIZE, 1,
@@ -207,10 +207,6 @@ create_surface(struct window *window)
 {
 	struct display *display = window->display;
 	EGLBoolean ret;
-	static const EGLint surface_attribs[] = {
-		EGL_ALPHA_FORMAT, EGL_ALPHA_FORMAT_PRE,
-		EGL_NONE
-	};
 	
 	window->surface = wl_compositor_create_surface(display->compositor);
 	window->shell_surface = wl_shell_get_shell_surface(display->shell,
@@ -222,8 +218,7 @@ create_surface(struct window *window)
 	window->egl_surface =
 		eglCreateWindowSurface(display->egl.dpy,
 				       display->egl.conf,
-				       window->native,
-				       surface_attribs);
+				       window->native, NULL);
 
 	wl_shell_surface_set_toplevel(window->shell_surface);
 

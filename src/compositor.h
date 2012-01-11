@@ -114,7 +114,6 @@ struct weston_input_device {
 enum weston_visual {
 	WESTON_NONE_VISUAL,
 	WESTON_ARGB_VISUAL,
-	WESTON_PREMUL_ARGB_VISUAL,
 	WESTON_RGB_VISUAL
 };
 

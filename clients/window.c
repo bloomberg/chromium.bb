@@ -65,7 +65,7 @@ struct display {
 	struct wl_data_device_manager *data_device_manager;
 	EGLDisplay dpy;
 	EGLConfig rgb_config;
-	EGLConfig premultiplied_argb_config;
+	EGLConfig argb_config;
 	EGLContext rgb_ctx;
 	EGLContext argb_ctx;
 	cairo_device_t *rgb_device;
@@ -271,14 +271,8 @@ display_create_egl_window_surface(struct display *display,
 	cairo_surface_t *cairo_surface;
 	struct egl_window_surface_data *data;
 	EGLConfig config;
-	const EGLint *attribs;
 	cairo_device_t *device;
 
-	static const EGLint premul_attribs[] = {
-		EGL_ALPHA_FORMAT, EGL_ALPHA_FORMAT_PRE,
-		EGL_NONE
-	};
-	
 	data = malloc(sizeof *data);
 	if (data == NULL)
 		return NULL;
@@ -289,11 +283,9 @@ display_create_egl_window_surface(struct display *display,
 	if (flags & SURFACE_OPAQUE) {
 		config = display->rgb_config;
 		device = display->rgb_device;
-		attribs = NULL;
 	} else {
-		config = display->premultiplied_argb_config;
+		config = display->argb_config;
 		device = display->argb_device;
-		attribs = premul_attribs;
 	}
 
 	data->window = wl_egl_window_create(surface,
@@ -301,7 +293,7 @@ display_create_egl_window_surface(struct display *display,
 					    rectangle->height);
 
 	data->surf = eglCreateWindowSurface(display->dpy, config,
-					    data->window, attribs);
+					    data->window, NULL);
 
 	cairo_surface = cairo_gl_surface_create_for_egl(device,
 							data->surf,
@@ -549,9 +541,9 @@ display_create_shm_surface(struct display *display,
 				     data, shm_surface_data_destroy);
 
 	if (flags & SURFACE_OPAQUE)
-		format = WL_SHM_FORMAT_XRGB32;
+		format = WL_SHM_FORMAT_XRGB8888;
 	else
-		format = WL_SHM_FORMAT_PREMULTIPLIED_ARGB32;
+		format = WL_SHM_FORMAT_ARGB8888;
 
 	data->data.buffer = wl_shm_create_buffer(display->shm,
 						 fd,
@@ -2729,10 +2721,8 @@ init_egl(struct display *d)
 	EGLint major, minor;
 	EGLint n;
 
-	static const EGLint premul_argb_cfg_attribs[] = {
-		EGL_SURFACE_TYPE,
-			EGL_WINDOW_BIT | EGL_PIXMAP_BIT |
-			EGL_VG_ALPHA_FORMAT_PRE_BIT,
+	static const EGLint argb_cfg_attribs[] = {
+		EGL_SURFACE_TYPE, EGL_WINDOW_BIT | EGL_PIXMAP_BIT,
 		EGL_RED_SIZE, 1,
 		EGL_GREEN_SIZE, 1,
 		EGL_BLUE_SIZE, 1,
@@ -2764,9 +2754,9 @@ init_egl(struct display *d)
 		return -1;
 	}
 
-	if (!eglChooseConfig(d->dpy, premul_argb_cfg_attribs,
-			     &d->premultiplied_argb_config, 1, &n) || n != 1) {
-		fprintf(stderr, "failed to choose premul argb config\n");
+	if (!eglChooseConfig(d->dpy, argb_cfg_attribs,
+			     &d->argb_config, 1, &n) || n != 1) {
+		fprintf(stderr, "failed to choose argb config\n");
 		return -1;
 	}
 
@@ -2781,7 +2771,7 @@ init_egl(struct display *d)
 		fprintf(stderr, "failed to create context\n");
 		return -1;
 	}
-	d->argb_ctx = eglCreateContext(d->dpy, d->premultiplied_argb_config,
+	d->argb_ctx = eglCreateContext(d->dpy, d->argb_config,
 				       EGL_NO_CONTEXT, NULL);
 	if (d->argb_ctx == NULL) {
 		fprintf(stderr, "failed to create context\n");
@@ -3027,7 +3017,7 @@ display_get_rgb_egl_config(struct display *d)
 EGLConfig
 display_get_argb_egl_config(struct display *d)
 {
-	return d->premultiplied_argb_config;
+	return d->argb_config;
 }
 
 struct wl_shell *

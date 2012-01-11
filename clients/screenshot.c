@@ -117,7 +117,7 @@ create_shm_buffer(int width, int height, void **data_out)
 	}
 
 	buffer = wl_shm_create_buffer(shm, fd, width, height, stride,
-				      WL_SHM_FORMAT_XRGB32);
+				      WL_SHM_FORMAT_XRGB8888);
 
 	close(fd);
 

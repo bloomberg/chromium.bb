@@ -79,7 +79,7 @@ create_shm_buffer(struct touch *touch)
 	touch->buffer =
 		wl_shm_create_buffer(touch->shm, fd,
 				     touch->width, touch->height, stride,
-				     WL_SHM_FORMAT_PREMULTIPLIED_ARGB32);
+				     WL_SHM_FORMAT_ARGB8888);
 
 	close(fd);
 }
@@ -89,7 +89,7 @@ shm_format(void *data, struct wl_shm *wl_shm, uint32_t format)
 {
 	struct touch *touch = data;
 
-	if (format == WL_SHM_FORMAT_PREMULTIPLIED_ARGB32)
+	if (format == WL_SHM_FORMAT_ARGB8888)
 		touch->has_argb = 1;
 }
 

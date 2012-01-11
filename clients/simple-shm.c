@@ -108,7 +108,7 @@ create_window(struct display *display, int width, int height)
 							   window->surface);
 	window->buffer = create_shm_buffer(display,
 					   width, height,
-					   WL_SHM_FORMAT_XRGB32,
+					   WL_SHM_FORMAT_XRGB8888,
 					   &window->shm_data);
 
 	wl_shell_surface_set_toplevel(window->shell_surface);
@@ -213,7 +213,7 @@ create_display(void)
 	wl_display_iterate(display->display, WL_DISPLAY_READABLE);
 	wl_display_roundtrip(display->display);
 
-	if (!(display->formats & (1 << WL_SHM_FORMAT_XRGB32))) {
+	if (!(display->formats & (1 << WL_SHM_FORMAT_XRGB8888))) {
 		fprintf(stderr, "WL_SHM_FORMAT_XRGB32 not available\n");
 		exit(1);
 	}

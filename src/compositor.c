@@ -417,13 +417,10 @@ weston_buffer_attach(struct wl_buffer *buffer, struct wl_surface *surface)
 			     wl_shm_buffer_get_data(buffer));
 
 		switch (wl_shm_buffer_get_format(buffer)) {
-		case WL_SHM_FORMAT_ARGB32:
+		case WL_SHM_FORMAT_ARGB8888:
 			es->visual = WESTON_ARGB_VISUAL;
 			break;
-		case WL_SHM_FORMAT_PREMULTIPLIED_ARGB32:
-			es->visual = WESTON_PREMUL_ARGB_VISUAL;
-			break;
-		case WL_SHM_FORMAT_XRGB32:
+		case WL_SHM_FORMAT_XRGB8888:
 			es->visual = WESTON_RGB_VISUAL;
 			break;
 		}
@@ -441,8 +438,7 @@ weston_buffer_attach(struct wl_buffer *buffer, struct wl_surface *surface)
 		
 		ec->image_target_texture_2d(GL_TEXTURE_2D, es->image);
 
-		/* FIXME: we need to get the visual from the wl_buffer */
-		es->visual = WESTON_PREMUL_ARGB_VISUAL;
+		es->visual = WESTON_ARGB_VISUAL;
 		es->pitch = es->width;
 	}
 }
@@ -557,10 +553,6 @@ weston_surface_draw(struct weston_surface *es,
 
 	switch (es->visual) {
 	case WESTON_ARGB_VISUAL:
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		glEnable(GL_BLEND);
-		break;
-	case WESTON_PREMUL_ARGB_VISUAL:
 		glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 		glEnable(GL_BLEND);
 		break;
@@ -690,7 +682,7 @@ fade_output(struct weston_output *output,
 	surface.alpha = compositor->current_alpha;
 
 	if (tint <= 1.0)
-		surface.visual = WESTON_PREMUL_ARGB_VISUAL;
+		surface.visual = WESTON_ARGB_VISUAL;
 	else
 		surface.visual = WESTON_RGB_VISUAL;
 
