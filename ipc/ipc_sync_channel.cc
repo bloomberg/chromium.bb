@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -64,6 +64,7 @@ class SyncChannel::ReceivedSyncMsgQueue :
       // We set the event in case the listener thread is blocked (or is about
       // to). In case it's not, the PostTask dispatches the messages.
       message_queue_.push_back(QueuedMessage(new Message(msg), context));
+      message_queue_version_++;
     }
 
     dispatch_event_.Signal();
@@ -89,27 +90,35 @@ class SyncChannel::ReceivedSyncMsgQueue :
   }
 
   void DispatchMessages(SyncContext* dispatching_context) {
-    SyncMessageQueue delayed_queue;
+    bool first_time = true;
+    uint32 expected_version = 0;
+    SyncMessageQueue::iterator it;
     while (true) {
-      Message* message;
+      Message* message = NULL;
       scoped_refptr<SyncChannel::SyncContext> context;
       {
         base::AutoLock auto_lock(message_lock_);
-        if (message_queue_.empty()) {
-          message_queue_ = delayed_queue;
-          break;
+        if (first_time || message_queue_version_ != expected_version) {
+          it = message_queue_.begin();
+          first_time = false;
         }
+        for (; it != message_queue_.end(); it++) {
+          if (!it->context->restrict_dispatch() ||
+              it->context == dispatching_context) {
+            message = it->message;
+            context = it->context;
+            it = message_queue_.erase(it);
+            message_queue_version_++;
+            expected_version = message_queue_version_;
+            break;
+          }
+        }
+      }
 
-        message = message_queue_.front().message;
-        context = message_queue_.front().context;
-        message_queue_.pop_front();
-      }
-      if (context->restrict_dispatch() && context != dispatching_context) {
-        delayed_queue.push_back(QueuedMessage(message, context));
-      } else {
-        context->OnDispatchMessage(*message);
-        delete message;
-      }
+      if (message == NULL)
+        break;
+      context->OnDispatchMessage(*message);
+      delete message;
     }
   }
 
@@ -122,6 +131,7 @@ class SyncChannel::ReceivedSyncMsgQueue :
       if (iter->context == context) {
         delete iter->message;
         iter = message_queue_.erase(iter);
+        message_queue_version_++;
       } else {
         iter++;
       }
@@ -169,6 +179,7 @@ class SyncChannel::ReceivedSyncMsgQueue :
   // See the comment in SyncChannel::SyncChannel for why this event is created
   // as manual reset.
   ReceivedSyncMsgQueue() :
+      message_queue_version_(0),
       dispatch_event_(true, false),
       listener_message_loop_(base::MessageLoopProxy::current()),
       task_pending_(false),
@@ -185,8 +196,9 @@ class SyncChannel::ReceivedSyncMsgQueue :
     scoped_refptr<SyncChannel::SyncContext> context;
   };
 
-  typedef std::deque<QueuedMessage> SyncMessageQueue;
+  typedef std::list<QueuedMessage> SyncMessageQueue;
   SyncMessageQueue message_queue_;
+  uint32 message_queue_version_;  // Used to signal DispatchMessages to rescan
 
   std::vector<QueuedMessage> received_replies_;
 
