@@ -1870,18 +1870,18 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
     # GetXcodeEnv() for the full rationale.
     keys_to_not_absolutify = ('PRODUCT_NAME', 'FULL_PRODUCT_NAME')
 
-    # First sort the list of keys, removing any non-string values.
-    # Values that are not strings but are, for example, lists or tuples such
-    # as LDFLAGS or CFLAGS, should not be written out because they are
-    # not needed and it's undefined how multi-valued keys should be written.
-    key_list = env.keys()
-    key_list.sort()
-    key_list = [k for k in key_list if isinstance(env[k], str)]
+    # Convert list values to string values.
+    for k in env:
+      if not isinstance(env[k], str):
+        env[k] = ' '.join(env[k])
 
     # Since environment variables can refer to other variables, the evaluation
     # order is important. Below is the logic to compute the dependency graph
     # and sort it.
     regex = re.compile(r'\$\(([a-zA-Z0-9\-_]+)\)')
+
+    # First sort the list of keys.
+    key_list = sorted(env.keys())
 
     # Phase 1: Create a set of edges of (DEPENDEE, DEPENDER) where in the graph,
     # DEPENDEE -> DEPENDER. Also create sets of dependers and dependees.
