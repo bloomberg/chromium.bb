@@ -70,7 +70,7 @@ def GypTestFormat(title, format=None, msvs_version=None):
   if format == 'ninja':
     try:
       InstallNinja()
-    except Exception, e:
+    except (shutil.Error, IOError, OSError, CalledProcessError), e:
       print '@@@STEP_FAILURE@@@'
       print str(e)
       return 1
