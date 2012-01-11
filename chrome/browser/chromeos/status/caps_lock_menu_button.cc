@@ -68,10 +68,14 @@ CapsLockMenuButton::CapsLockMenuButton(StatusAreaButton::Delegate* delegate)
       IDR_STATUSBAR_CAPS_LOCK));
   UpdateAccessibleName();
   UpdateUIFromCurrentCapsLock(input_method::XKeyboard::CapsLockIsEnabled());
+
+  // Status bar should be initialized after SystemKeyEventListener on the
+  // device. SystemKeyEventListener is never initialized on chrome for cros
+  // running on linux.
+  DCHECK(SystemKeyEventListener::GetInstance() ||
+         !system::runtime_environment::IsRunningOnChromeOS());
   if (SystemKeyEventListener::GetInstance())
     SystemKeyEventListener::GetInstance()->AddCapsLockObserver(this);
-  else
-    LOG(ERROR) << "SystemKeyEventListener not initialized!";
 }
 
 CapsLockMenuButton::~CapsLockMenuButton() {
