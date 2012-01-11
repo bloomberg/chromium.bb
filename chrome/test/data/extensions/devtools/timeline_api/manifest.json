@@ -4,7 +4,7 @@
   "manifest_version": 2,
   "description": "",
   "background": {
-    "scripts": ["background.js"]
+    "page": "background.html"
   },
   "permissions": [ "tabs" ]
 }
