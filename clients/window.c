@@ -117,11 +117,9 @@ struct window {
 	struct task redraw_task;
 	int resize_scheduled;
 	struct task resize_task;
-	int minimum_width, minimum_height;
 	int type;
 	int transparent;
 	struct input *keyboard_device;
-	uint32_t name;
 	enum window_buffer_type buffer_type;
 
 	cairo_surface_t *cairo_surface, *pending_surface;
