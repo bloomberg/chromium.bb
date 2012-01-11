@@ -211,8 +211,7 @@ class NinjaWriter:
   def WriteSpec(self, spec, config_name):
     """The main entry point for NinjaWriter: write the build rules for a spec.
 
-    Returns the path to the build output, or None, and a list of targets for
-    dependencies of its compile steps."""
+    TODO(evan): make this return an object and then document its output type."""
 
     self.name = spec['target_name']
     self.toolset = spec['toolset']
@@ -243,10 +242,8 @@ class NinjaWriter:
     if 'dependencies' in spec:
       for dep in spec['dependencies']:
         if dep in self.target_outputs:
-          input, precompile_input, extra_actions_depends, linkable = \
-              self.target_outputs[dep]
-          actions_depends.append(input)
-          actions_depends.extend(extra_actions_depends)
+          output, binary, precompile_input, linkable = self.target_outputs[dep]
+          actions_depends.append(output)
           compile_depends.extend(precompile_input)
       actions_depends = self.WriteCollapsedDependencies('actions_depends',
                                                         actions_depends)
@@ -292,13 +289,7 @@ class NinjaWriter:
       # able to run actions and build libraries by their short name.
       self.ninja.build(self.name, 'phony', output)
 
-    # Targets that depend on this target need to depend on actions_depends
-    # as well.
-    actions_depends = []
-    if self.is_mac_bundle:
-      actions_depends.append(output)
-
-    return output, output_binary, compile_depends, actions_depends
+    return output, output_binary, compile_depends
 
   def WriteActionsRulesCopies(self, spec, extra_sources, prebuild,
                               mac_bundle_depends):
@@ -601,20 +592,23 @@ class NinjaWriter:
       # - Non-linkable dependencies (like a rule that generates a file
       #   and writes a stamp file): add them to implicit_deps
       if output_uses_linker:
-        extra_deps = set()
+        extra_link_deps = set()
         for dep in spec['dependencies']:
-          input, _, _, linkable = self.target_outputs.get(
-              dep, (None, [], [], False))
-          if not input:
+          _, binary, _, linkable = self.target_outputs.get(
+              dep, (None, None, [], False))
+          if not binary:
             continue
           if linkable:
-            extra_deps.add(input)
+            extra_link_deps.add(binary)
           else:
             # TODO: Chrome-specific HACK.  Chrome runs this lastchange rule on
             # every build, but we don't want to rebuild when it runs.
-            if 'lastchange' not in input:
-              implicit_deps.add(input)
-        link_deps.extend(list(extra_deps))
+            if 'lastchange' in binary:
+              continue
+            # TODO(evan): it's confusing that the variable here is called
+            # "binary", despite being a stamp file.  Fix this.
+            implicit_deps.add(binary)
+        link_deps.extend(list(extra_link_deps))
 
     if self.is_mac_bundle:
       output = self.ComputeMacBundleOutput(spec)
@@ -981,6 +975,16 @@ def GenerateOutput(target_list, target_dicts, data, params):
       all_targets.add(target)
   all_outputs = set()
 
+  # target_outputs is a tuple of
+  #   (final_output, binary, compile_depends, linkable)
+  # where
+  #   final_output: the bottom-most output of this target, either the binary or
+  #                 the mac bundle that makes use of the binary
+  #   binary: the output of the link step
+  #   compile_depends: what dependent compile steps should depend on
+  #   linkable: True if this target is one that can be linked against
+  # TODO(evan): the above is just documenting the current state of the world;
+  # replace all of the above with an object.
   target_outputs = {}
   for qualified_target in target_list:
     # qualified_target is like: third_party/icu/icu.gyp:icui18n#target
@@ -1008,19 +1012,12 @@ def GenerateOutput(target_list, target_dicts, data, params):
     if flavor == 'mac':
       gyp.xcode_emulation.MergeGlobalXcodeSettingsToSpec(data[build_file], spec)
 
-    output, output_binary, compile_depends, actions_depends = writer.WriteSpec(
-        spec, config_name)
+    output, output_binary, compile_depends = writer.WriteSpec(spec, config_name)
     if output:
       linkable = spec['type'] in ('static_library', 'shared_library')
-      # target_outputs is used for two things:
-      # 1. If a target depends on another target, it looks at that target's
-      #    |linkable|, and if true, links the first element in this tuple.
-      # 2. For compile dependencies.
-      # For bundles, the binary in the bundle is the right answer.
       target_outputs[qualified_target] = (
-          output_binary, compile_depends, actions_depends, linkable)
+          output, output_binary, compile_depends, linkable)
 
-      # But for all_outputs, the bundle is the interesting bit.
       if qualified_target in all_targets:
         all_outputs.add(output)
 
