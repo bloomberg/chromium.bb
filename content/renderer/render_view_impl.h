@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -64,7 +64,6 @@ class GeolocationDispatcher;
 class GURL;
 class JavaBridgeDispatcher;
 class LoadProgressTracker;
-class MediaStreamDispatcher;
 class MediaStreamImpl;
 class NotificationProvider;
 class PepperDeviceTest;
@@ -119,15 +118,12 @@ class WebImage;
 class WebMediaPlayer;
 class WebMediaPlayerClient;
 class WebMouseEvent;
-class WebPeerConnectionHandler;
-class WebPeerConnectionHandlerClient;
 class WebSpeechInputController;
 class WebSpeechInputListener;
 class WebStorageNamespace;
 class WebTouchEvent;
 class WebURLLoader;
 class WebURLRequest;
-class WebUserMediaClient;
 struct WebFileChooserParams;
 struct WebFindOptions;
 struct WebMediaPlayerAction;
@@ -201,17 +197,10 @@ class RenderViewImpl : public RenderWidget,
     send_content_state_immediately_ = value;
   }
 
-  MediaStreamDispatcher* media_stream_dispatcher() {
-    return media_stream_dispatcher_;
-  }
-
   // Current P2PSocketDispatcher. Set to NULL if P2P API is disabled.
   content::P2PSocketDispatcher* p2p_socket_dispatcher() {
     return p2p_socket_dispatcher_;
   }
-
-  WebKit::WebPeerConnectionHandler* CreatePeerConnectionHandler(
-      WebKit::WebPeerConnectionHandlerClient* client);
 
   // Functions to add and remove observers for this object.
   void AddObserver(content::RenderViewObserver* observer);
@@ -393,7 +382,6 @@ class RenderViewImpl : public RenderWidget,
                                        const WebKit::WebString& url,
                                        const WebKit::WebString& title);
   virtual WebKit::WebPageVisibilityState visibilityState() const;
-  virtual WebKit::WebUserMediaClient* userMediaClient();
 
   // WebKit::WebFrameClient implementation -------------------------------------
 
@@ -877,8 +865,6 @@ class RenderViewImpl : public RenderWidget,
   // Check whether the preferred size has changed.
   void CheckPreferredSize();
 
-  void EnsureMediaStreamImpl();
-
   // This callback is triggered when DownloadFavicon completes, either
   // succesfully or with a failure. See DownloadFavicon for more
   // details.
@@ -1139,9 +1125,6 @@ class RenderViewImpl : public RenderWidget,
 
   // Device orientation dispatcher attached to this view; lazily initialized.
   DeviceOrientationDispatcher* device_orientation_dispatcher_;
-
-  // MediaStream dispatcher attached to this view; lazily initialized.
-  MediaStreamDispatcher* media_stream_dispatcher_;
 
   // MediaStreamImpl attached to this view; lazily initialized.
   scoped_refptr<MediaStreamImpl> media_stream_impl_;
