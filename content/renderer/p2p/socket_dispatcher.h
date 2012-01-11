@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,7 +26,6 @@
 #include "base/id_map.h"
 #include "base/observer_list_threadsafe.h"
 #include "base/synchronization/lock.h"
-#include "content/common/content_export.h"
 #include "content/common/p2p_sockets.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "net/base/net_util.h"
@@ -49,7 +48,7 @@ class P2PSocketClient;
 // P2PSocketDispatcher works on the renderer thread. It dispatches all
 // messages on that thread, and all its methods must be called on the
 // same thread.
-class CONTENT_EXPORT P2PSocketDispatcher : public content::RenderViewObserver {
+class P2PSocketDispatcher : public content::RenderViewObserver {
  public:
   class NetworkListObserver {
    public:
