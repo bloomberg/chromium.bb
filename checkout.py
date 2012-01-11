@@ -1,5 +1,5 @@
 # coding=utf8
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 """Manages a project checkout.
@@ -489,7 +489,8 @@ class GitCheckoutBase(CheckoutBase):
             # TODO(maruel): Read ~/.subversion/config and detect the rules that
             # applies here to figure out if the property will be correctly
             # handled.
-            if not prop[0] in ('svn:eol-style', 'svn:executable'):
+            if not prop[0] in (
+                'svn:eol-style', 'svn:executable', 'svn:mime-type'):
               raise patch.UnsupportedPatchFormat(
                   p.filename,
                   'Cannot apply svn property %s to file %s.' % (

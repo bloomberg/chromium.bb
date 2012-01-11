@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 """Defines class Rietveld to easily access a rietveld instance.
@@ -198,7 +198,8 @@ class Rietveld(object):
       match = re.match(r'^(\w+): (.+)$', action)
       if not match or not rietveld_svn_props:
         raise patch.UnsupportedPatchFormat(
-            filename, 'Failed to parse svn properties.')
+            filename,
+            'Failed to parse svn properties: %s, %s' % (action, svn_props))
 
       if match.group(2) == 'svn:mergeinfo':
         # Silently ignore the content.
@@ -210,7 +211,7 @@ class Rietveld(object):
         raise patch.UnsupportedPatchFormat(
             filename, 'Unsupported svn property operation.')
 
-      if match.group(2) in ('svn:eol-style', 'svn:executable'):
+      if match.group(2) in ('svn:eol-style', 'svn:executable', 'svn:mime-type'):
         # '   + foo' where foo is the new value. That's fragile.
         content = rietveld_svn_props.pop(0)
         match2 = re.match(r'^   \+ (.*)$', content)

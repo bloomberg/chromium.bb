@@ -289,6 +289,15 @@ class RietveldTest(unittest.TestCase):
           '   + LF\n',
           'foo'))
 
+    # http://codereview.chromium.org/api/9139006/7001
+    self.assertEquals(
+        [('svn:mime-type', 'image/png')],
+        rietveld.Rietveld.parse_svn_properties(
+          '\n'
+          'Added: svn:mime-type\n'
+          '   + image/png\n',
+          'foo'))
+
   def test_bad_svn_properties(self):
     try:
       rietveld.Rietveld.parse_svn_properties(u'\n', 'foo')
