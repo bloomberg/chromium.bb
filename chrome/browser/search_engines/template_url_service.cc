@@ -1605,7 +1605,7 @@ void TemplateURLService::SetDefaultSearchProviderNoNotify(
 
     // If we are syncing, we want to set the synced pref that will notify other
     // instances to change their default to this new search provider.
-    if (sync_processor_ && !url->sync_guid().empty() && GetPrefs()) {
+    if (sync_processor_ && url && !url->sync_guid().empty() && GetPrefs()) {
       GetPrefs()->SetString(prefs::kSyncedDefaultSearchProviderGUID,
                             url->sync_guid());
     }
