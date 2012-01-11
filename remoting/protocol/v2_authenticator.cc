@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -44,12 +44,12 @@ V2Authenticator* V2Authenticator::CreateForClient(
 // static
 V2Authenticator* V2Authenticator::CreateForHost(
     const std::string& local_cert,
-    crypto::RSAPrivateKey* local_private_key,
+    const crypto::RSAPrivateKey& local_private_key,
     const std::string& shared_secret) {
   V2Authenticator* result = new V2Authenticator(
       P224EncryptedKeyExchange::kPeerTypeServer, shared_secret);
   result->local_cert_ = local_cert;
-  result->local_private_key_.reset(local_private_key->Copy());
+  result->local_private_key_.reset(local_private_key.Copy());
   result->state_ = WAITING_MESSAGE;
   return result;
 }
@@ -181,28 +181,6 @@ ChannelAuthenticator* V2Authenticator::CreateChannelAuthenticator() const {
 
 bool V2Authenticator::is_host_side() const {
   return local_private_key_.get() != NULL;
-}
-
-V2HostAuthenticatorFactory::V2HostAuthenticatorFactory(
-    const std::string& local_cert,
-    const crypto::RSAPrivateKey* local_private_key,
-    const std::string& shared_secret)
-    : local_cert_(local_cert),
-      local_private_key_(local_private_key->Copy()),
-      shared_secret_(shared_secret) {
-  CHECK(local_private_key_.get());
-}
-
-V2HostAuthenticatorFactory::~V2HostAuthenticatorFactory() {
-}
-
-Authenticator* V2HostAuthenticatorFactory::CreateAuthenticator(
-    const std::string& remote_jid,
-    const buzz::XmlElement* first_message) {
-  if (!V2Authenticator::IsEkeMessage(first_message))
-    return NULL;
-  return V2Authenticator::CreateForHost(
-      local_cert_, local_private_key_.get(), shared_secret_);
 }
 
 }  // namespace protocol

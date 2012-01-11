@@ -24,7 +24,7 @@ class Me2MeHostAuthenticatorFactory : public AuthenticatorFactory {
   // Doesn't take ownership of |local_private_key|.
   Me2MeHostAuthenticatorFactory(const std::string& local_jid,
                                 const std::string& local_cert,
-                                const crypto::RSAPrivateKey* local_private_key,
+                                const crypto::RSAPrivateKey& local_private_key,
                                 const std::string& shared_secret);
   virtual ~Me2MeHostAuthenticatorFactory();
 

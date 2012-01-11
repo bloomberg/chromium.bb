@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -77,7 +77,7 @@ class V1AuthenticatorTest : public testing::Test {
   void InitAuthenticators(const std::string& client_secret,
                           const std::string& host_secret) {
     host_.reset(new V1HostAuthenticator(
-        host_cert_, private_key_.get(), host_secret, kClientJid));
+        host_cert_, *private_key_, host_secret, kClientJid));
     client_.reset(new V1ClientAuthenticator(kClientJid, client_secret));
   }
 

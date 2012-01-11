@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,7 +25,7 @@ class It2MeHostAuthenticatorFactory : public AuthenticatorFactory {
  public:
   It2MeHostAuthenticatorFactory(
       const std::string& local_cert,
-      const crypto::RSAPrivateKey* local_private_key,
+      const crypto::RSAPrivateKey& local_private_key,
       const std::string& shared_secret);
   virtual ~It2MeHostAuthenticatorFactory();
 

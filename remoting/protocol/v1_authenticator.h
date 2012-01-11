@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -42,7 +42,7 @@ class V1HostAuthenticator : public Authenticator {
  public:
   // Doesn't take ownership of |local_private_key|.
   V1HostAuthenticator(const std::string& local_cert,
-                      const crypto::RSAPrivateKey* local_private_key,
+                      const crypto::RSAPrivateKey& local_private_key,
                       const std::string& shared_secret,
                       const std::string& remote_jid);
   virtual ~V1HostAuthenticator();
@@ -61,27 +61,6 @@ class V1HostAuthenticator : public Authenticator {
   State state_;
 
   DISALLOW_COPY_AND_ASSIGN(V1HostAuthenticator);
-};
-
-class V1HostAuthenticatorFactory : public AuthenticatorFactory {
- public:
-  // Doesn't take ownership of |local_private_key|.
-  V1HostAuthenticatorFactory(const std::string& local_cert,
-                             const crypto::RSAPrivateKey* local_private_key,
-                             const std::string& shared_secret);
-  virtual ~V1HostAuthenticatorFactory();
-
-  // AuthenticatorFactory interface.
-  virtual Authenticator* CreateAuthenticator(
-      const std::string& remote_jid,
-      const buzz::XmlElement* first_message) OVERRIDE;
-
- private:
-  std::string local_cert_;
-  scoped_ptr<crypto::RSAPrivateKey> local_private_key_;
-  std::string shared_secret_;
-
-  DISALLOW_COPY_AND_ASSIGN(V1HostAuthenticatorFactory);
 };
 
 }  // namespace protocol

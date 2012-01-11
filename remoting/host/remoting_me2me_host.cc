@@ -168,7 +168,7 @@ class HostProcess {
     scoped_ptr<protocol::AuthenticatorFactory> factory(
         new protocol::Me2MeHostAuthenticatorFactory(
             xmpp_login_, key_pair_.GenerateCertificate(),
-            key_pair_.private_key(), ""));
+            *key_pair_.private_key(), ""));
     host_->SetAuthenticatorFactory(factory.Pass());
   }
 

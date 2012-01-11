@@ -160,7 +160,7 @@ class SimpleHost {
 
       scoped_ptr<protocol::AuthenticatorFactory> factory(
           new protocol::It2MeHostAuthenticatorFactory(
-              key_pair->GenerateCertificate(), key_pair->private_key(),
+              key_pair->GenerateCertificate(), *key_pair->private_key(),
               access_code));
       host->SetAuthenticatorFactory(factory.Pass());
     } else {
@@ -243,7 +243,7 @@ class SimpleHost {
       scoped_ptr<protocol::AuthenticatorFactory> factory(
           new protocol::Me2MeHostAuthenticatorFactory(
               xmpp_login_, key_pair_.GenerateCertificate(),
-              key_pair_.private_key(), ""));
+              *key_pair_.private_key(), ""));
       host_->SetAuthenticatorFactory(factory.Pass());
     }
   }

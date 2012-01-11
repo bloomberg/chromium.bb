@@ -30,7 +30,7 @@ class V2Authenticator : public Authenticator {
 
   static V2Authenticator* CreateForHost(
       const std::string& local_cert,
-      crypto::RSAPrivateKey* local_private_key,
+      const crypto::RSAPrivateKey& local_private_key,
       const std::string& shared_secret);
 
   virtual ~V2Authenticator();
@@ -64,27 +64,6 @@ class V2Authenticator : public Authenticator {
   std::string auth_key_;
 
   DISALLOW_COPY_AND_ASSIGN(V2Authenticator);
-};
-
-class V2HostAuthenticatorFactory : public AuthenticatorFactory {
- public:
-  // Doesn't take ownership of |local_private_key|.
-  V2HostAuthenticatorFactory(const std::string& local_cert,
-                             const crypto::RSAPrivateKey* local_private_key,
-                             const std::string& shared_secret);
-  virtual ~V2HostAuthenticatorFactory();
-
-  // AuthenticatorFactory interface.
-  virtual Authenticator* CreateAuthenticator(
-      const std::string& remote_jid,
-      const buzz::XmlElement* first_message) OVERRIDE;
-
- private:
-  std::string local_cert_;
-  scoped_ptr<crypto::RSAPrivateKey> local_private_key_;
-  std::string shared_secret_;
-
-  DISALLOW_COPY_AND_ASSIGN(V2HostAuthenticatorFactory);
 };
 
 }  // namespace protocol

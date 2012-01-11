@@ -670,7 +670,7 @@ void HostNPScriptObject::OnReceivedSupportID(
   std::string access_code = support_id + host_secret;
   scoped_ptr<protocol::AuthenticatorFactory> factory(
       new protocol::It2MeHostAuthenticatorFactory(
-          host_key_pair_.GenerateCertificate(), host_key_pair_.private_key(),
+          host_key_pair_.GenerateCertificate(), *host_key_pair_.private_key(),
           access_code));
   host_->SetAuthenticatorFactory(factory.Pass());
 

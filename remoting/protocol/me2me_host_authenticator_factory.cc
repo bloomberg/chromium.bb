@@ -15,10 +15,10 @@ namespace protocol {
 Me2MeHostAuthenticatorFactory::Me2MeHostAuthenticatorFactory(
     const std::string& local_jid,
     const std::string& local_cert,
-    const crypto::RSAPrivateKey* local_private_key,
+    const crypto::RSAPrivateKey& local_private_key,
     const std::string& shared_secret)
     : local_cert_(local_cert),
-      local_private_key_(local_private_key->Copy()),
+      local_private_key_(local_private_key.Copy()),
       shared_secret_(shared_secret) {
   // Verify that |local_jid| is bare.
   DCHECK_EQ(local_jid.find('/'), std::string::npos);
@@ -55,7 +55,7 @@ Authenticator* Me2MeHostAuthenticatorFactory::CreateAuthenticator(
 
   // TODO(sergeyu): Old clients still use V1 auth protocol. Remove
   // this once we are done migrating to V2.
-  return new V1HostAuthenticator(local_cert_, local_private_key_.get(),
+  return new V1HostAuthenticator(local_cert_, *local_private_key_,
                                  shared_secret_, remote_jid);
 }
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -86,11 +86,11 @@ V1ClientAuthenticator::CreateChannelAuthenticator() const {
 
 V1HostAuthenticator::V1HostAuthenticator(
     const std::string& local_cert,
-    const crypto::RSAPrivateKey* local_private_key,
+    const crypto::RSAPrivateKey& local_private_key,
     const std::string& shared_secret,
     const std::string& remote_jid)
     : local_cert_(local_cert),
-      local_private_key_(local_private_key->Copy()),
+      local_private_key_(local_private_key.Copy()),
       shared_secret_(shared_secret),
       remote_jid_(remote_jid),
       state_(WAITING_MESSAGE) {
@@ -143,26 +143,6 @@ V1HostAuthenticator::CreateChannelAuthenticator() const {
   result->SetLegacyOneWayMode(SslHmacChannelAuthenticator::RECEIVE_ONLY);
   return result;
 };
-
-V1HostAuthenticatorFactory::V1HostAuthenticatorFactory(
-    const std::string& local_cert,
-    const crypto::RSAPrivateKey* local_private_key,
-    const std::string& shared_secret)
-    : local_cert_(local_cert),
-      local_private_key_(local_private_key->Copy()),
-      shared_secret_(shared_secret) {
-  CHECK(local_private_key_.get());
-}
-
-V1HostAuthenticatorFactory::~V1HostAuthenticatorFactory() {
-}
-
-Authenticator* V1HostAuthenticatorFactory::CreateAuthenticator(
-    const std::string& remote_jid,
-    const buzz::XmlElement* first_message) {
-  return new V1HostAuthenticator(local_cert_, local_private_key_.get(),
-                                 shared_secret_, remote_jid);
-}
 
 }  // namespace remoting
 }  // namespace protocol
