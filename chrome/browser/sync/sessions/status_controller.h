@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -228,6 +228,9 @@ class StatusController {
   void increment_num_local_overwrites();
   void increment_num_server_overwrites();
   void set_sync_protocol_error(const SyncProtocolError& error);
+  void set_last_download_updates_result(const SyncerError result);
+  void set_last_post_commit_result(const SyncerError result);
+  void set_last_process_commit_response_result(const SyncerError result);
 
   void set_commit_set(const OrderedCommitSet& commit_set);
   void update_conflict_sets_built(bool built);

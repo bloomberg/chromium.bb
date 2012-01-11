@@ -91,7 +91,7 @@ SyncerError DownloadUpdatesCommand::ExecuteImpl(SyncSession* session) {
 
   AppendClientDebugInfoIfNeeded(session, debug_info);
 
-  bool ok = SyncerProtoUtil::PostClientToServerMessage(
+  SyncerError result = SyncerProtoUtil::PostClientToServerMessage(
       client_to_server_message,
       &update_response,
       session);
@@ -101,11 +101,11 @@ SyncerError DownloadUpdatesCommand::ExecuteImpl(SyncSession* session) {
 
   StatusController* status = session->mutable_status_controller();
   status->set_updates_request_types(enabled_types);
-  if (!ok) {
+  if (result != SYNCER_OK) {
     status->increment_num_consecutive_errors();
     status->mutable_updates_response()->Clear();
     LOG(ERROR) << "PostClientToServerMessage() failed during GetUpdates";
-    return SYNCER_OK; // TODO(rlarocque): Return an error here.
+    return result;
   }
 
   status->mutable_updates_response()->CopyFrom(update_response);
@@ -115,7 +115,7 @@ SyncerError DownloadUpdatesCommand::ExecuteImpl(SyncSession* session) {
            << " updates and indicated "
            << update_response.get_updates().changes_remaining()
            << " updates left on server.";
-  return SYNCER_OK;
+  return result;
 }
 
 void DownloadUpdatesCommand::AppendClientDebugInfoIfNeeded(

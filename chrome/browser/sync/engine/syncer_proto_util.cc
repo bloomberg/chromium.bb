@@ -80,6 +80,28 @@ void LogResponseProfilingData(const ClientToServerResponse& response) {
   }
 }
 
+SyncerError ServerConnectionErrorAsSyncerError(
+    const HttpResponse::ServerConnectionCode server_status) {
+  switch (server_status) {
+    case HttpResponse::CONNECTION_UNAVAILABLE:
+      return NETWORK_CONNECTION_UNAVAILABLE;
+    case HttpResponse::IO_ERROR:
+      return NETWORK_IO_ERROR;
+    case HttpResponse::SYNC_SERVER_ERROR:
+      // FIXME what does this mean?
+      return SYNC_SERVER_ERROR;
+    case HttpResponse::SYNC_AUTH_ERROR:
+      return SYNC_AUTH_ERROR;
+    case HttpResponse::RETRY:
+      return SERVER_RETURN_TRANSIENT_ERROR;
+    case HttpResponse::SERVER_CONNECTION_OK:
+    case HttpResponse::NONE:
+    default:
+      NOTREACHED();
+      return UNSET;
+  }
+}
+
 }  // namespace
 
 // static
@@ -303,7 +325,7 @@ browser_sync::SyncProtocolError ConvertLegacyErrorCodeToNewError(
 }  // namespace
 
 // static
-bool SyncerProtoUtil::PostClientToServerMessage(
+SyncerError SyncerProtoUtil::PostClientToServerMessage(
     const ClientToServerMessage& msg,
     ClientToServerResponse* response,
     SyncSession* session) {
@@ -317,11 +339,20 @@ bool SyncerProtoUtil::PostClientToServerMessage(
   ScopedDirLookup dir(session->context()->directory_manager(),
       session->context()->account_name());
   if (!dir.good())
-    return false;
+    return DIRECTORY_LOOKUP_FAILED;
 
   if (!PostAndProcessHeaders(session->context()->connection_manager(), session,
-                             msg, response))
-    return false;
+                             msg, response)) {
+    // There was an error establishing communication with the server.
+    // We can not proceed beyond this point.
+    const browser_sync::HttpResponse::ServerConnectionCode server_status =
+        session->context()->connection_manager()->server_status();
+
+    DCHECK_NE(server_status, browser_sync::HttpResponse::NONE);
+    DCHECK_NE(server_status, browser_sync::HttpResponse::SERVER_CONNECTION_OK);
+
+    return ServerConnectionErrorAsSyncerError(server_status);
+  }
 
   browser_sync::SyncProtocolError sync_protocol_error;
 
@@ -352,28 +383,29 @@ bool SyncerProtoUtil::PostClientToServerMessage(
     case browser_sync::UNKNOWN_ERROR:
       LOG(WARNING) << "Sync protocol out-of-date. The server is using a more "
                    << "recent version.";
-      return false;
+      return SERVER_RETURN_UNKNOWN_ERROR;
     case browser_sync::SYNC_SUCCESS:
       LogResponseProfilingData(*response);
-      return true;
+      return SYNCER_OK;
     case browser_sync::THROTTLED:
       LOG(WARNING) << "Client silenced by server.";
       HandleThrottleError(sync_protocol_error,
                           base::TimeTicks::Now() + GetThrottleDelay(*response),
                           session->context(),
                           session->delegate());
-      return false;
+      return SERVER_RETURN_THROTTLED;
     case browser_sync::TRANSIENT_ERROR:
-      return false;
+      return SERVER_RETURN_TRANSIENT_ERROR;
     case browser_sync::MIGRATION_DONE:
       HandleMigrationDoneResponse(response, session);
-      return false;
+      return SERVER_RETURN_MIGRATION_DONE;
     case browser_sync::CLEAR_PENDING:
+      return SERVER_RETURN_CLEAR_PENDING;
     case browser_sync::NOT_MY_BIRTHDAY:
-      return false;
+      return SERVER_RETURN_NOT_MY_BIRTHDAY;
     default:
       NOTREACHED();
-      return false;
+      return UNSET;
   }
 }
 

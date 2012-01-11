@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -144,7 +144,8 @@ void Syncer::SyncShare(sessions::SyncSession* session,
       }
       case DOWNLOAD_UPDATES: {
         DownloadUpdatesCommand download_updates;
-        download_updates.Execute(session);
+        session->mutable_status_controller()->set_last_download_updates_result(
+            download_updates.Execute(session));
         next_step = PROCESS_CLIENT_COMMAND;
         break;
       }
@@ -222,14 +223,17 @@ void Syncer::SyncShare(sessions::SyncSession* session,
       }
       case POST_COMMIT_MESSAGE: {
         PostCommitMessageCommand post_commit_command;
-        post_commit_command.Execute(session);
+        session->mutable_status_controller()->set_last_post_commit_result(
+            post_commit_command.Execute(session));
         next_step = PROCESS_COMMIT_RESPONSE;
         break;
       }
       case PROCESS_COMMIT_RESPONSE: {
         session->mutable_status_controller()->reset_num_conflicting_commits();
         ProcessCommitResponseCommand process_response_command;
-        process_response_command.Execute(session);
+        session->mutable_status_controller()->
+            set_last_process_commit_response_result(
+                process_response_command.Execute(session));
         next_step = BUILD_AND_PROCESS_CONFLICT_SETS;
         break;
       }

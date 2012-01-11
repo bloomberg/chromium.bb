@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -233,6 +233,26 @@ std::set<ModelSafeGroup>
   return enabled_groups_with_verified_updates;
 }
 
+namespace {
+// Return true if the command in question was attempted and did not complete
+// successfully.
+//
+bool IsError(SyncerError error) {
+  return error != UNSET && error != SYNCER_OK;
+}
+}  // namespace
+
+bool SyncSession::Succeeded() const {
+  const bool download_updates_error =
+      IsError(status_controller_->error().last_download_updates_result);
+  const bool post_commit_error =
+      IsError(status_controller_->error().last_post_commit_result);
+  const bool process_commit_response_error =
+      IsError(status_controller_->error().last_process_commit_response_result);
+  return !download_updates_error
+      && !post_commit_error
+      && !process_commit_response_error;
+}
 
 }  // namespace sessions
 }  // namespace browser_sync

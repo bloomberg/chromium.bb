@@ -47,7 +47,7 @@ SyncerError ClearDataCommand::ExecuteImpl(SyncSession* session) {
 
   DVLOG(1) << "Clearing server data";
 
-  bool ok = SyncerProtoUtil::PostClientToServerMessage(
+  SyncerError result = SyncerProtoUtil::PostClientToServerMessage(
       client_to_server_message,
       &client_to_server_response,
       session);
@@ -61,7 +61,7 @@ SyncerError ClearDataCommand::ExecuteImpl(SyncSession* session) {
   // See also: crbug.com/71616.
   //
   // Clear pending indicates that the server has received our clear message
-  if (!ok || !client_to_server_response.has_error_code() ||
+  if (result != SYNCER_OK || !client_to_server_response.has_error_code() ||
       client_to_server_response.error_code() != sync_pb::SyncEnums::SUCCESS) {
     // On failure, subsequent requests to the server will cause it to attempt
     // to resume the clear.  The client will handle disabling of sync in
@@ -71,7 +71,7 @@ SyncerError ClearDataCommand::ExecuteImpl(SyncSession* session) {
 
     LOG(ERROR) << "Error posting ClearData.";
 
-    return SYNCER_OK;
+    return result;
   }
 
   SyncEngineEvent event(SyncEngineEvent::CLEAR_SERVER_DATA_SUCCEEDED);

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -111,6 +111,22 @@ class SyncSession {
   // Returns true if this session contains data that should go through the sync
   // engine again.
   bool HasMoreToSync() const;
+
+  // Returns true if there we did not detect any errors in this session.
+  //
+  // There are many errors that could prevent a sync cycle from succeeding.
+  // These include invalid local state, inability to contact the server,
+  // inability to authenticate with the server, and server errors.  What they
+  // have in common is that the we either need to take some action and then
+  // retry the sync cycle or, in the case of transient errors, retry after some
+  // backoff timer has expired.  Most importantly, the SyncScheduler should not
+  // assume that the original action that triggered the sync cycle (ie. a nudge
+  // or a notification) has been properly serviced.
+  //
+  // This function also returns false if SyncShare has not been called on this
+  // session yet, or if ResetTransientState() has been called on this session
+  // since the last call to SyncShare.
+  bool Succeeded() const;
 
   // Collects all state pertaining to how and why |s| originated and unions it
   // with corresponding state in |this|, leaving |s| unchanged.  Allows |this|

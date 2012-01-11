@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -95,7 +95,10 @@ DictionaryValue* DownloadProgressMarkersToValue(
 ErrorCounters::ErrorCounters()
     : num_conflicting_commits(0),
       consecutive_transient_error_commits(0),
-      consecutive_errors(0) {
+      consecutive_errors(0),
+      last_download_updates_result(UNSET),
+      last_post_commit_result(UNSET),
+      last_process_commit_response_result(UNSET) {
 }
 
 DictionaryValue* ErrorCounters::ToValue() const {

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -105,6 +105,11 @@ struct ErrorCounters {
 
   // Any protocol errors that we received during this sync session.
   SyncProtocolError sync_protocol_error;
+
+  // Records the most recent results of PostCommit and GetUpdates commands.
+  SyncerError last_download_updates_result;
+  SyncerError last_post_commit_result;
+  SyncerError last_process_commit_response_result;
 };
 
 // Caller takes ownership of the returned dictionary.
