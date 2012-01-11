@@ -19,7 +19,6 @@ extern const char kAboutVersionURL[];
 
 // chrome: URLs (including schemes). Should be kept in sync with the
 // components below.
-extern const char kChromeUIAboutPageFrameURL[];
 extern const char kChromeUIAboutURL[];
 extern const char kChromeUIBookmarksURL[];
 extern const char kChromeUICertificateViewerURL[];
@@ -108,7 +107,6 @@ extern const char kChromeUIAppListURL[];
 
 // chrome components of URLs. Should be kept in sync with the full URLs above.
 extern const char kChromeUIAboutHost[];
-extern const char kChromeUIAboutPageFrameHost[];
 extern const char kChromeUIAppCacheInternalsHost[];
 extern const char kChromeUIBlankHost[];
 extern const char kChromeUIBlobInternalsHost[];

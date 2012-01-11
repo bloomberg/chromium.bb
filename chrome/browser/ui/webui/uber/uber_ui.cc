@@ -40,11 +40,6 @@ ChromeWebUIDataSource* CreateUberHTMLSource() {
   source->AddLocalizedString("extensionsDisplayName",
                              IDS_MANAGE_EXTENSIONS_SETTING_WINDOWS_TITLE);
 
-#if defined(OS_CHROMEOS)
-  source->AddString("aboutPageHost",
-                    ASCIIToUTF16(chrome::kAboutOptionsSubPage));
-  source->AddLocalizedString("aboutPageDisplayName", IDS_ABOUT_TAB_TITLE);
-#endif
   return source;
 }
 
@@ -56,9 +51,6 @@ UberUI::UberUI(WebContents* contents) : WebUI(contents) {
 
   RegisterSubpage(chrome::kChromeUISettingsFrameURL);
   RegisterSubpage(chrome::kChromeUIExtensionsFrameURL);
-#if defined(OS_CHROMEOS)
-  RegisterSubpage(chrome::kChromeUIAboutPageFrameURL);
-#endif
 }
 
 UberUI::~UberUI() {

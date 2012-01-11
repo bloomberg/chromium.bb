@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/about_page/about_page_handler.h"
+#include "chrome/browser/ui/webui/options2/chromeos/about_page_handler2.h"
 
 #include <vector>
 
@@ -27,7 +27,6 @@
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/webui/web_ui.h"
 #include "content/public/common/content_client.h"
 #include "googleurl/src/gurl.h"
 #include "grit/chromium_strings.h"
@@ -89,11 +88,8 @@ bool CanChangeReleaseChannel() {
 
 }  // namespace
 
-using chromeos::DBusThreadManager;
-using chromeos::UpdateEngineClient;
-using chromeos::UserManager;
-using chromeos::VersionLoader;
-using chromeos::WizardController;
+namespace chromeos {
+namespace options2 {
 
 class AboutPageHandler::UpdateObserver
     : public UpdateEngineClient::Observer {
@@ -117,8 +113,8 @@ class AboutPageHandler::UpdateObserver
 AboutPageHandler::AboutPageHandler()
     : progress_(-1),
       sticky_(false),
-      started_(false) {
-}
+      started_(false)
+{}
 
 AboutPageHandler::~AboutPageHandler() {
   if (update_observer_.get()) {
@@ -129,15 +125,8 @@ AboutPageHandler::~AboutPageHandler() {
 
 void AboutPageHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
-  DCHECK(localized_strings->empty());
 
-  struct L10nResources {
-    const char* name;
-    int ids;
-  };
-
-  static L10nResources resources[] = {
-    { "pageTitle", IDS_ABOUT_TAB_TITLE },
+  static OptionsStringResource resources[] = {
     { "firmware", IDS_ABOUT_PAGE_FIRMWARE },
     { "product", IDS_PRODUCT_OS_NAME },
     { "os", IDS_PRODUCT_OS_NAME },
@@ -160,10 +149,8 @@ void AboutPageHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
     { "command_line", IDS_ABOUT_VERSION_COMMAND_LINE },
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(resources); ++i) {
-    localized_strings->SetString(resources[i].name,
-                                 l10n_util::GetStringUTF16(resources[i].ids));
-  }
+  RegisterStrings(localized_strings, resources, arraysize(resources));
+  RegisterTitle(localized_strings, "aboutPage", IDS_ABOUT_TAB_TITLE);
 
   // browser version
 
@@ -467,3 +454,6 @@ void AboutPageHandler::UpdateSelectedChannel(UpdateObserver* observer,
         "AboutPage.updateSelectedOptionCallback", *channel_string);
   }
 }
+
+}  // namespace options2
+}  // namespace chromeos

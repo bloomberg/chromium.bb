@@ -24,9 +24,6 @@ const char kAboutVersionURL[] = "about:version";
 
 // Add Chrome UI URLs as necessary, in alphabetical order.
 // Be sure to add the corresponding kChromeUI*Host constant below.
-// This is the About Chrome page.
-const char kChromeUIAboutPageFrameURL[] = "chrome://about-page-frame/";
-// This is a WebUI page that lists other WebUI pages.
 const char kChromeUIAboutURL[] = "chrome://about/";
 const char kChromeUIBookmarksURL[] = "chrome://bookmarks/";
 const char kChromeUICertificateViewerURL[] = "chrome://view-cert/";
@@ -121,7 +118,6 @@ const char kChromeUIAppListURL[] = "chrome://app-list/";
 // Add hosts to kChromePaths in browser_about_handler.cc to be listed by
 // chrome://chrome-urls (about:about) and the built-in AutocompleteProvider.
 const char kChromeUIAboutHost[] = "about";
-const char kChromeUIAboutPageFrameHost[] = "about-page-frame";
 const char kChromeUIAppCacheInternalsHost[] = "appcache-internals";
 const char kChromeUIBlankHost[] = "blank";
 const char kChromeUIBlobInternalsHost[] = "blob-internals";

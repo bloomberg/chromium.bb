@@ -1,23 +1,4 @@
-<!DOCTYPE html>
-<html i18n-values="dir:textdirection;">
-<head>
-<meta charset="utf-8">
-<title i18n-content="pageTitle"></title>
-
-<link rel="stylesheet" href="chrome://resources/css/chrome_shared.css">
-<link rel="stylesheet" href="chrome://resources/css/chrome_shared2.css">
-<link rel="stylesheet" href="chrome://resources/css/open_sans.css">
-<link rel="stylesheet" href="about_page.css">
-
-<script src="chrome://resources/js/cr.js"></script>
-<script src="chrome://resources/js/util.js"></script>
-
-<script src="chrome://about-page-frame/about_page.js"></script>
-</head>
-
-<body>
-
-<div id="aboutPage" class="page">
+<div id="aboutPage" class="page" hidden>
   <h1 i18n-content="product"></h1>
   <div id="aboutPageLessInfo">
     <section>
@@ -98,7 +79,7 @@
   </div>
   <section>
     <div>
-      <span i18n-content="copyright"></span>
+      <div i18n-content="copyright"></div>
       <div>
         <!-- Odd formatting to avoid unwanted spaces between elements. -->
         <span i18n-content="license_content_0">
@@ -136,10 +117,3 @@
     </div>
   </section>
 </div>
-
-</body>
-
-<script src="chrome://about-page-frame/strings.js"></script>
-<script src="chrome://resources/js/i18n_template.js"></script>
-<script src="chrome://resources/js/i18n_process.js"></script>
-</html>

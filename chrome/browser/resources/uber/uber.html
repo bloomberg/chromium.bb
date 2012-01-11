@@ -21,9 +21,6 @@
   <ol>
     <li class="selected" i18n-content="settingsDisplayName"></li>
     <li i18n-content="extensionsDisplayName"></li>
-<if expr="pp_ifdef('chromeos')">
-    <li i18n-content="aboutPageDisplayName" id="aboutPageNavItem"></li>
-</if>
   </ol>
 </div>
 
@@ -35,14 +32,9 @@
 <div class="iframe-container" i18n-values="id:extensionsHost">
   <iframe src="chrome://extensions-frame/"></iframe></div>
 
-<if expr="pp_ifdef('chromeos')">
-<div class="iframe-container" i18n-values="id:aboutPageHost">
-  <iframe src="chrome://about-page-frame/"></iframe></div>
-</if>
+</body>
 
 <script src="chrome://chrome/strings.js"></script>
 <script src="chrome://resources/js/i18n_template.js"></script>
 <script src="chrome://resources/js/i18n_process.js"></script>
-
-</body>
 </html>

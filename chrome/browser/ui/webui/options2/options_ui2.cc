@@ -57,6 +57,7 @@
 #include "ui/base/resource/resource_bundle.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/ui/webui/options2/chromeos/about_page_handler2.h"
 #include "chrome/browser/ui/webui/options2/chromeos/accounts_options_handler2.h"
 #include "chrome/browser/ui/webui/options2/chromeos/bluetooth_options_handler2.h"
 #include "chrome/browser/ui/webui/options2/chromeos/change_picture_options_handler2.h"
@@ -234,6 +235,8 @@ OptionsUI::OptionsUI(WebContents* contents)
   AddOptionsPageUIHandler(localized_strings, new OptionsSyncSetupHandler(
       g_browser_process->profile_manager()));
 #if defined(OS_CHROMEOS)
+  AddOptionsPageUIHandler(localized_strings,
+                          new chromeos::options2::AboutPageHandler());
   AddOptionsPageUIHandler(localized_strings,
                           new chromeos::options2::AccountsOptionsHandler());
   AddOptionsPageUIHandler(localized_strings,

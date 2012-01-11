@@ -1,25 +1,31 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_WEBUI_ABOUT_PAGE_ABOUT_PAGE_HANDLER_H_
-#define CHROME_BROWSER_UI_WEBUI_ABOUT_PAGE_ABOUT_PAGE_HANDLER_H_
+#ifndef CHROME_BROWSER_UI_WEBUI_OPTIONS2_CHROMEOS_ABOUT_PAGE_HANDLER2_H_
+#define CHROME_BROWSER_UI_WEBUI_OPTIONS2_CHROMEOS_ABOUT_PAGE_HANDLER2_H_
 
 #include <string>
 
 #include "base/compiler_specific.h"
+#include "chrome/browser/ui/webui/options2/options_ui2.h"
 #include "chrome/browser/chromeos/dbus/update_engine_client.h"
 #include "chrome/browser/chromeos/version_loader.h"
-#include "content/public/browser/web_ui_message_handler.h"
+
+namespace chromeos {
+namespace options2 {
 
 // ChromeOS about page UI handler.
-class AboutPageHandler : public content::WebUIMessageHandler {
+class AboutPageHandler : public ::options2::OptionsPageUIHandler {
+
  public:
   AboutPageHandler();
   virtual ~AboutPageHandler();
 
-  void GetLocalizedValues(base::DictionaryValue* localized_strings) OVERRIDE;
-  void RegisterMessages() OVERRIDE;
+  // OptionsPageUIHandler implementation.
+  virtual void GetLocalizedValues(
+      base::DictionaryValue* localized_strings) OVERRIDE;
+  virtual void RegisterMessages() OVERRIDE;
 
  private:
   class UpdateObserver;
@@ -38,18 +44,18 @@ class AboutPageHandler : public content::WebUIMessageHandler {
   void RestartNow(const base::ListValue* args);
 
   // Callback from VersionLoader giving the version.
-  void OnOSVersion(chromeos::VersionLoader::Handle handle,
+  void OnOSVersion(VersionLoader::Handle handle,
                    std::string version);
-  void OnOSFirmware(chromeos::VersionLoader::Handle handle,
+  void OnOSFirmware(VersionLoader::Handle handle,
                     std::string firmware);
-  void UpdateStatus(const chromeos::UpdateEngineClient::Status& status);
+  void UpdateStatus(const UpdateEngineClient::Status& status);
 
   // UpdateEngine Callback handler.
   static void UpdateSelectedChannel(UpdateObserver* observer,
                                     const std::string& channel);
 
   // Handles asynchronously loading the version.
-  chromeos::VersionLoader loader_;
+  VersionLoader loader_;
 
   // Used to request the version.
   CancelableRequestConsumer consumer_;
@@ -64,4 +70,7 @@ class AboutPageHandler : public content::WebUIMessageHandler {
   DISALLOW_COPY_AND_ASSIGN(AboutPageHandler);
 };
 
-#endif  // CHROME_BROWSER_UI_WEBUI_ABOUT_PAGE_ABOUT_PAGE_HANDLER_H_
+}  // namespace options2
+}  // namespace chromeos
+
+#endif  // CHROME_BROWSER_UI_WEBUI_OPTIONS2_CHROMEOS_ABOUT_PAGE_HANDLER2_H_
