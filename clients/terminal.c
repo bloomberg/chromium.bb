@@ -2270,7 +2270,7 @@ terminal_create(struct display *display, int fullscreen)
 	terminal->margin_top = 0;
 	terminal->margin_bottom = -1;
 	terminal->window = window_create(display, 500, 400);
-	terminal->widget = window_add_widget(terminal->window, terminal);
+	terminal->widget = frame_create(terminal->window, terminal);
 	window_set_title(terminal->window, "Wayland Terminal");
 
 	init_state_machine(&terminal->state_machine);

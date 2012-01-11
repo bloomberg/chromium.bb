@@ -118,9 +118,7 @@ struct window {
 	int resize_scheduled;
 	struct task resize_task;
 	int minimum_width, minimum_height;
-	int margin;
 	int type;
-	int decoration;
 	int transparent;
 	struct input *keyboard_device;
 	uint32_t name;
@@ -181,6 +179,12 @@ struct output {
 
 	display_output_handler_t destroy_handler;
 	void *user_data;
+};
+
+struct frame {
+	struct widget *widget;
+	struct widget *child;
+	int margin;
 };
 
 struct menu {
@@ -960,50 +964,6 @@ window_create_surface(struct window *window)
 	cairo_surface_destroy(surface);
 }
 
-static void
-window_draw_decorations(struct window *window)
-{
-	cairo_t *cr;
-	cairo_text_extents_t extents;
-	cairo_surface_t *frame;
-	int width, height, shadow_dx = 3, shadow_dy = 3;
-
-	width = window->allocation.width;
-	height = window->allocation.height;
-
-	cr = cairo_create(window->cairo_surface);
-
-	cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
-	cairo_set_source_rgba(cr, 0, 0, 0, 0);
-	cairo_paint(cr);
-
-	cairo_set_source_rgba(cr, 0, 0, 0, 0.6);
-	tile_mask(cr, window->display->shadow,
-		  shadow_dx, shadow_dy, width, height,
-		  window->margin + 10 - shadow_dx,
-		  window->margin + 10 - shadow_dy);
-
-	if (window->keyboard_device)
-		frame = window->display->active_frame;
-	else
-		frame = window->display->inactive_frame;
-
-	tile_source(cr, frame, 0, 0, width, height,
-		    window->margin + 10, window->margin + 50);
-
-	cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
-	cairo_set_font_size(cr, 14);
-	cairo_text_extents(cr, window->title, &extents);
-	cairo_move_to(cr, (width - extents.width) / 2, 32 - extents.y_bearing);
-	if (window->keyboard_device)
-		cairo_set_source_rgb(cr, 0, 0, 0);
-	else
-		cairo_set_source_rgb(cr, 0.8, 0.8, 0.8);
-	cairo_show_text(cr, window->title);
-
-	cairo_destroy(cr);
-}
-
 void
 window_destroy(struct window *window)
 {
@@ -1121,14 +1081,8 @@ widget_set_size(struct widget *widget, int32_t width, int32_t height)
 
 	window->allocation.x = 0;
 	window->allocation.y = 0;
-	if (widget->window->decoration) {
-		window->allocation.width = width + 20 + widget->window->margin;
-		window->allocation.height =
-			height + 60 + widget->window->margin;
-	} else {
-		window->allocation.width = width;
-		window->allocation.height = height;
-	}
+	window->allocation.width = width;
+	window->allocation.height = height;
 }
 
 void
@@ -1211,33 +1165,108 @@ window_get_wl_shell_surface(struct window *window)
 	return window->shell_surface;
 }
 
-static int
-get_pointer_location(struct window *window, int32_t x, int32_t y)
+static void
+frame_resize_handler(struct widget *widget,
+		     int32_t width, int32_t height, void *data)
 {
+	struct frame *frame = data;
+	struct widget *child = frame->child;
+	struct rectangle allocation;
+	int decoration_width, decoration_height;
+
+	decoration_width = 20 + frame->margin * 2;
+	decoration_height = 60 + frame->margin * 2;
+
+	allocation.x = 10 + frame->margin;
+	allocation.y = 50 + frame->margin;
+	allocation.width = width - decoration_width;
+	allocation.height = height - decoration_height;
+
+	widget_set_allocation(child, allocation.x, allocation.y,
+			      allocation.width, allocation.height);
+
+	if (child->resize_handler)
+		child->resize_handler(child,
+				      allocation.width,
+				      allocation.height,
+				      child->user_data);
+
+	widget_set_allocation(widget, 0, 0,
+			      child->allocation.width + decoration_width,
+			      child->allocation.height + decoration_height);
+}
+
+static void
+frame_redraw_handler(struct widget *widget, void *data)
+{
+	struct frame *frame = data;
+	cairo_t *cr;
+	cairo_text_extents_t extents;
+	cairo_surface_t *source;
+	int width, height, shadow_dx = 3, shadow_dy = 3;
+	struct window *window = widget->window;
+
+	width = widget->allocation.width;
+	height = widget->allocation.height;
+
+	cr = cairo_create(window->cairo_surface);
+
+	cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
+	cairo_set_source_rgba(cr, 0, 0, 0, 0);
+	cairo_paint(cr);
+
+	cairo_set_source_rgba(cr, 0, 0, 0, 0.6);
+	tile_mask(cr, window->display->shadow,
+		  shadow_dx, shadow_dy, width, height,
+		  frame->margin + 10 - shadow_dx,
+		  frame->margin + 10 - shadow_dy);
+
+	if (window->keyboard_device)
+		source = window->display->active_frame;
+	else
+		source = window->display->inactive_frame;
+
+	tile_source(cr, source, 0, 0, width, height,
+		    frame->margin + 10, frame->margin + 50);
+
+	cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
+	cairo_set_font_size(cr, 14);
+	cairo_text_extents(cr, window->title, &extents);
+	cairo_move_to(cr, (width - extents.width) / 2, 32 - extents.y_bearing);
+	if (window->keyboard_device)
+		cairo_set_source_rgb(cr, 0, 0, 0);
+	else
+		cairo_set_source_rgb(cr, 0.8, 0.8, 0.8);
+	cairo_show_text(cr, window->title);
+
+	cairo_destroy(cr);
+}
+
+static int
+frame_get_pointer_location(struct frame *frame, int32_t x, int32_t y)
+{
+	struct widget *widget = frame->widget;
 	int vlocation, hlocation, location;
 	const int grip_size = 8;
 
-	if (!window->decoration)
-		return WINDOW_CLIENT_AREA;
-
-	if (x < window->margin)
+	if (x < frame->margin)
 		hlocation = WINDOW_EXTERIOR;
-	else if (window->margin <= x && x < window->margin + grip_size)
+	else if (frame->margin <= x && x < frame->margin + grip_size)
 		hlocation = WINDOW_RESIZING_LEFT;
-	else if (x < window->allocation.width - window->margin - grip_size)
+	else if (x < widget->allocation.width - frame->margin - grip_size)
 		hlocation = WINDOW_INTERIOR;
-	else if (x < window->allocation.width - window->margin)
+	else if (x < widget->allocation.width - frame->margin)
 		hlocation = WINDOW_RESIZING_RIGHT;
 	else
 		hlocation = WINDOW_EXTERIOR;
 
-	if (y < window->margin)
+	if (y < frame->margin)
 		vlocation = WINDOW_EXTERIOR;
-	else if (window->margin <= y && y < window->margin + grip_size)
+	else if (frame->margin <= y && y < frame->margin + grip_size)
 		vlocation = WINDOW_RESIZING_TOP;
-	else if (y < window->allocation.height - window->margin - grip_size)
+	else if (y < widget->allocation.height - frame->margin - grip_size)
 		vlocation = WINDOW_INTERIOR;
-	else if (y < window->allocation.height - window->margin)
+	else if (y < widget->allocation.height - frame->margin)
 		vlocation = WINDOW_RESIZING_BOTTOM;
 	else
 		vlocation = WINDOW_EXTERIOR;
@@ -1245,7 +1274,7 @@ get_pointer_location(struct window *window, int32_t x, int32_t y)
 	location = vlocation | hlocation;
 	if (location & WINDOW_EXTERIOR)
 		location = WINDOW_EXTERIOR;
-	if (location == WINDOW_INTERIOR && y < window->margin + 50)
+	if (location == WINDOW_INTERIOR && y < frame->margin + 50)
 		location = WINDOW_TITLEBAR;
 	else if (location == WINDOW_INTERIOR)
 		location = WINDOW_CLIENT_AREA;
@@ -1254,12 +1283,11 @@ get_pointer_location(struct window *window, int32_t x, int32_t y)
 }
 
 static int
-input_get_pointer_image_for_location(struct input *input, int pointer)
+frame_get_pointer_image_for_location(struct frame *frame, struct input *input)
 {
 	int location;
 
-	location = get_pointer_location(input->pointer_focus,
-					input->sx, input->sy);
+	location = frame_get_pointer_location(frame, input->sx, input->sy);
 	switch (location) {
 	case WINDOW_RESIZING_TOP:
 		return POINTER_TOP;
@@ -1279,32 +1307,129 @@ input_get_pointer_image_for_location(struct input *input, int pointer)
 		return POINTER_BOTTOM_RIGHT;
 	case WINDOW_EXTERIOR:
 	case WINDOW_TITLEBAR:
-		return POINTER_LEFT_PTR;
 	default:
-		return pointer;
+		return POINTER_LEFT_PTR;
 	}
 }
 
-void
-input_set_pointer_image(struct input *input, uint32_t time, int pointer)
+static void
+frame_menu_func(struct window *window, int index, void *data)
 {
-	struct display *display = input->display;
-	struct wl_buffer *buffer;
-	cairo_surface_t *surface;
+	switch (index) {
+	case 0: /* close */
+		if (window->close_handler)
+			window->close_handler(window->parent,
+					      window->user_data);
+		else
+			display_exit(window->display);
+		break;
+	case 1: /* fullscreen */
+		/* we don't have a way to get out of fullscreen for now */
+		window_set_fullscreen(window, 1);
+		break;
+	case 2: /* rotate */
+	case 3: /* scale */
+		break;
+	}
+}
 
-	if (pointer == input->current_pointer_image)
-		return;
+static int
+frame_enter_handler(struct widget *widget,
+		    struct input *input, uint32_t time,
+		    int32_t x, int32_t y, void *data)
+{
+	return frame_get_pointer_image_for_location(data, input);
+}
 
-	input->current_pointer_image = pointer;
-	surface = display->pointer_surfaces[pointer];
+static int
+frame_motion_handler(struct widget *widget,
+		     struct input *input, uint32_t time,
+		     int32_t x, int32_t y, void *data)
+{
+	return frame_get_pointer_image_for_location(data, input);
+}
 
-	if (!surface)
-		return;
+static void
+break_grab(struct window *window)
+{
+	window->focus_widget = NULL;
+	window->widget_grab_button = 0;
+}
 
-	buffer = display_get_buffer_for_surface(display, surface);
-	wl_input_device_attach(input->input_device, time, buffer,
-			       pointer_images[pointer].hotspot_x,
-			       pointer_images[pointer].hotspot_y);
+static void
+frame_button_handler(struct widget *widget,
+		     struct input *input, uint32_t time,
+		     int button, int state, void *data)
+
+{
+	struct frame *frame = data;
+	struct window *window = widget->window;
+	int location;
+	int32_t x, y;
+	static const char *entries[] = {
+		"Close", "Fullscreen", "Rotate", "Scale"
+	};
+
+	location = frame_get_pointer_location(frame, input->sx, input->sy);
+
+	if (window->display->shell && button == BTN_LEFT && state == 1) {
+		switch (location) {
+		case WINDOW_TITLEBAR:
+			if (!window->shell_surface)
+				break;
+			input_set_pointer_image(input, time, POINTER_DRAGGING);
+			break_grab(window);
+			wl_shell_surface_move(window->shell_surface,
+					      input_get_input_device(input),
+					      time);
+			break;
+		case WINDOW_RESIZING_TOP:
+		case WINDOW_RESIZING_BOTTOM:
+		case WINDOW_RESIZING_LEFT:
+		case WINDOW_RESIZING_RIGHT:
+		case WINDOW_RESIZING_TOP_LEFT:
+		case WINDOW_RESIZING_TOP_RIGHT:
+		case WINDOW_RESIZING_BOTTOM_LEFT:
+		case WINDOW_RESIZING_BOTTOM_RIGHT:
+			if (!window->shell_surface)
+				break;
+			break_grab(window);
+			wl_shell_surface_resize(window->shell_surface,
+						input_get_input_device(input),
+						time, location);
+			break;
+		}
+	} else if (button == BTN_RIGHT && state == 1) {
+		input_get_position(input, &x, &y);
+		window->menu = window_create_menu(window->display,
+						  input, time,
+						  window,
+						  x - 10, y - 10,
+						  frame_menu_func,
+						  entries, 4);
+		window_schedule_redraw(window->menu);
+	}
+}
+
+struct widget *
+frame_create(struct window *window, void *data)
+{
+	struct frame *frame;
+
+	frame = malloc(sizeof *frame);
+	memset(frame, 0, sizeof *frame);
+
+	frame->widget = window_add_widget(window, frame);
+	frame->child = widget_add_widget(frame->widget, data);
+	frame->margin = 16;
+
+	widget_set_redraw_handler(frame->widget, frame_redraw_handler);
+	widget_set_resize_handler(frame->widget, frame_resize_handler);
+	widget_set_enter_handler(frame->widget, frame_enter_handler);
+	widget_set_motion_handler(frame->widget, frame_motion_handler);
+	widget_set_button_handler(frame->widget, frame_button_handler);
+
+	return frame->child;
 }
 
 static void
@@ -1330,7 +1455,6 @@ window_set_focus_widget(struct window *window, struct widget *focus,
 						       x, y, focus->user_data);
 		window->focus_widget = focus;
 
-		pointer = input_get_pointer_image_for_location(input, pointer);
 		input_set_pointer_image(input, time, pointer);
 	}
 }
@@ -1360,36 +1484,7 @@ input_handle_motion(void *data, struct wl_input_device *input_device,
 		pointer = widget->motion_handler(widget, input, time, sx, sy,
 						 widget->user_data);
 
-	pointer = input_get_pointer_image_for_location(input, pointer);
 	input_set_pointer_image(input, time, pointer);
-}
-
-static void
-window_menu_func(struct window *window, int index, void *data)
-{
-	switch (index) {
-	case 0: /* close */
-		if (window->close_handler)
-			window->close_handler(window->parent,
-					      window->user_data);
-		else
-			display_exit(window->display);
-		break;
-	case 1: /* fullscreen */
-		/* we don't have a way to get out of fullscreen for now */
-		window_set_fullscreen(window, 1);
-		break;
-	case 2: /* rotate */
-	case 3: /* scale */
-		break;
-	}
-}
-
-static void
-break_grab(struct window *window)
-{
-	window->focus_widget = NULL;
-	window->widget_grab_button = 0;
 }
 
 static void
@@ -1400,78 +1495,16 @@ input_handle_button(void *data,
 	struct input *input = data;
 	struct window *window = input->pointer_focus;
 	struct widget *widget;
-	int location;
-	int32_t x, y;
-	static const char *entries[] = {
-		"Close", "Fullscreen", "Rotate", "Scale"
-	};
 
 	if (window->focus_widget && window->widget_grab_button == 0 && state)
 		window->widget_grab_button = button;
 
-	location = get_pointer_location(window, input->sx, input->sy);
-
 	widget = window->focus_widget;
-	if (window->display->shell && button == BTN_LEFT && state == 1) {
-		switch (location) {
-		case WINDOW_TITLEBAR:
-			if (!window->shell_surface)
-				break;
-			input_set_pointer_image(input, time, POINTER_DRAGGING);
-			break_grab(window);
-			wl_shell_surface_move(window->shell_surface,
-					      input_device, time);
-			break;
-		case WINDOW_RESIZING_TOP:
-		case WINDOW_RESIZING_BOTTOM:
-		case WINDOW_RESIZING_LEFT:
-		case WINDOW_RESIZING_RIGHT:
-		case WINDOW_RESIZING_TOP_LEFT:
-		case WINDOW_RESIZING_TOP_RIGHT:
-		case WINDOW_RESIZING_BOTTOM_LEFT:
-		case WINDOW_RESIZING_BOTTOM_RIGHT:
-			if (!window->shell_surface)
-				break;
-			break_grab(window);
-			wl_shell_surface_resize(window->shell_surface,
-						input_device, time,
-						location);
-			break;
-		case WINDOW_CLIENT_AREA:
-			if (widget && widget->button_handler)
-				(*widget->button_handler)(widget,
-							  input, time,
-							  button, state,
-							  widget->user_data);
-			break;
-		}
-	} else if (button == BTN_RIGHT && state == 1) {
-		switch (location) {
-		default:
-			input_get_position(input, &x, &y);
-			window->menu = window_create_menu(window->display,
-							  input, time,
-							  window,
-							  x - 10, y - 10,
-							  window_menu_func,
-							  entries, 4);
-			window_schedule_redraw(window->menu);
-			break;
-		case WINDOW_CLIENT_AREA:
-			if (widget && widget->button_handler)
-				(*widget->button_handler)(widget,
-							  input, time,
-							  button, state,
-							  widget->user_data);
-			break;
-		}
-	} else {
-		if (widget && widget->button_handler)
-			(*widget->button_handler)(widget,
-						  input, time,
-						  button, state,
-						  widget->user_data);
-	}
+	if (widget && widget->button_handler)
+		(*widget->button_handler)(widget,
+					  input, time,
+					  button, state,
+					  widget->user_data);
 
 	if (window->focus_widget &&
 	    window->widget_grab_button == button && !state) {
@@ -1536,7 +1569,6 @@ input_handle_pointer_focus(void *data,
 	struct input *input = data;
 	struct window *window;
 	struct widget *widget;
-	int pointer;
 
 	window = input->pointer_focus;
 	if (window && window->surface != surface)
@@ -1551,12 +1583,8 @@ input_handle_pointer_focus(void *data,
 		input->sx = sx;
 		input->sy = sy;
 
-		pointer = POINTER_LEFT_PTR;
 		widget = widget_find_widget(window->widget, sx, sy);
 		window_set_focus_widget(window, widget, input, time, sx, sy);
-
-		pointer = input_get_pointer_image_for_location(input, pointer);
-		input_set_pointer_image(input, time, pointer);
 	}
 }
 
@@ -1821,6 +1849,28 @@ static const struct wl_data_device_listener data_device_listener = {
 	data_device_selection
 };
 
+void
+input_set_pointer_image(struct input *input, uint32_t time, int pointer)
+{
+	struct display *display = input->display;
+	struct wl_buffer *buffer;
+	cairo_surface_t *surface;
+
+	if (pointer == input->current_pointer_image)
+		return;
+
+	input->current_pointer_image = pointer;
+	surface = display->pointer_surfaces[pointer];
+
+	if (!surface)
+		return;
+
+	buffer = display_get_buffer_for_surface(display, surface);
+	wl_input_device_attach(input->input_device, time, buffer,
+			       pointer_images[pointer].hotspot_x,
+			       pointer_images[pointer].hotspot_y);
+}
+
 struct wl_data_device *
 input_get_data_device(struct input *input)
 {
@@ -1932,22 +1982,11 @@ window_resize(struct window *window, int32_t width, int32_t height)
 {
 	struct rectangle allocation;
 	struct widget *widget;
-	int decoration_width, decoration_height;
 
-	decoration_width = 20 + window->margin * 2;
-	decoration_height = 60 + window->margin * 2;
-
-	if (window->decoration) {
-		allocation.x = 10 + window->margin;
-		allocation.y = 50 + window->margin;
-		allocation.width = width - decoration_width;
-		allocation.height = height - decoration_height;
-	} else {
-		allocation.x = 0;
-		allocation.y = 0;
-		allocation.width = width;
-		allocation.height = height;
-	}
+	allocation.x = 0;
+	allocation.y = 0;
+	allocation.width = width;
+	allocation.height = height;
 
 	widget = window->widget;
 	widget_set_allocation(widget, allocation.x, allocation.y,
@@ -1959,16 +1998,7 @@ window_resize(struct window *window, int32_t width, int32_t height)
 				       allocation.height,
 				       widget->user_data);
 
-	if (window->decoration) {
-		window->allocation.x = 0;
-		window->allocation.y = 0;
-		window->allocation.width =
-			widget->allocation.width + decoration_width;
-		window->allocation.height =
-			widget->allocation.height + decoration_height;
-	} else {
-		window->allocation = widget->allocation;
-	}
+	window->allocation = widget->allocation;
 
 	window_schedule_redraw(window);
 }
@@ -1999,16 +2029,7 @@ window_schedule_resize(struct window *window, int width, int height)
 void
 widget_schedule_resize(struct widget *widget, int32_t width, int32_t height)
 {
-	struct window *window = widget->window;
-
-	if (widget->window->decoration) {
-		window_schedule_resize(window,
-				       width + 20 + 2 * window->margin,
-				       height + 60 + 2 * window->margin);
-
-	} else {
-		window_schedule_resize(window, width, height);
-	}
+	window_schedule_resize(widget->window, width, height);
 }
 
 static void
@@ -2068,13 +2089,8 @@ idle_redraw(struct task *task, uint32_t events)
 		container_of(task, struct window, redraw_task);
 
 	window_create_surface(window);
-	if (window->decoration)
-		window_draw_decorations(window);
-
 	widget_redraw(window->widget);
-
 	window_flush(window);
-
 	window->redraw_scheduled = 0;
 }
 
@@ -2109,21 +2125,13 @@ window_set_fullscreen(struct window *window, int fullscreen)
 		window->saved_allocation = window->allocation;
 		width = output->allocation.width;
 		height = output->allocation.height;
-		window->decoration = 0;
 	} else {
 		window->type = TYPE_TOPLEVEL;
-		width = window->saved_allocation.width - 20 - window->margin * 2;
-		height = window->saved_allocation.height - 60 - window->margin * 2;
-		window->decoration = 1;
+		width = window->saved_allocation.width;
+		height = window->saved_allocation.height;
 	}
 
-	window_resize(window, width, height);
-}
-
-void
-window_set_decoration(struct window *window, int decoration)
-{
-	window->decoration = decoration;
+	window_schedule_resize(window, width, height);
 }
 
 void
@@ -2232,8 +2240,6 @@ window_create_internal(struct display *display, struct window *parent,
 	window->allocation.width = width;
 	window->allocation.height = height;
 	window->saved_allocation = window->allocation;
-	window->margin = 16;
-	window->decoration = 1;
 	window->transparent = 1;
 
 	if (display->dpy)
@@ -2405,7 +2411,6 @@ window_create_menu(struct display *display,
 	menu->count = count;
 	menu->time = time;
 	menu->func = func;
-	window->decoration = 0;
 	window->type = TYPE_MENU;
 	window->x = x;
 	window->y = y;

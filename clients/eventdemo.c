@@ -267,7 +267,7 @@ eventdemo_create(struct display *d)
 		return NULL;
 
 	e->window = window_create(d, width, height);
-	e->widget = window_add_widget(e->window, e);
+	e->widget = frame_create(e->window, e);
 	window_set_title(e->window, title);
 	e->display = d;
 
@@ -305,8 +305,7 @@ eventdemo_create(struct display *d)
 	/* Demonstrate how to create a borderless window.
 	   Move windows with META + left mouse button.
 	 */
-	if(noborder) {
-		window_set_decoration(e->window, 0);
+	if (noborder) {
 	}
 
 	/* Initial drawing of the window */

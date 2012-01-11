@@ -216,7 +216,6 @@ create_wscreensaver_instance(struct wscreensaver *screensaver,
 
 	if (screensaver->interface) {
 		window_set_custom(window);
-		window_set_decoration(window, 0);
 		screensaver_set_surface(screensaver->interface,
 					window_get_wl_shell_surface(window),
 					output);

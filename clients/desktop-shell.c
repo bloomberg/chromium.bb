@@ -311,7 +311,6 @@ panel_create(struct display *display)
 	wl_list_init(&panel->launcher_list);
 
 	window_set_title(panel->window, "panel");
-	window_set_decoration(panel->window, 0);
 	window_set_custom(panel->window);
 	window_set_user_data(panel->window, panel);
 
@@ -499,7 +498,7 @@ unlock_dialog_create(struct desktop *desktop)
 	memset(dialog, 0, sizeof *dialog);
 
 	dialog->window = window_create(display, 260, 230);
-	dialog->widget = window_add_widget(dialog->window, dialog);
+	dialog->widget = frame_create(dialog->window, dialog);
 	window_set_title(dialog->window, "Unlock your desktop");
 	window_set_custom(dialog->window);
 
@@ -588,7 +587,6 @@ background_create(struct desktop *desktop)
 	background->base.configure = background_configure;
 	background->window = window_create(desktop->display, 0, 0);
 	background->widget = window_add_widget(background->window, background);
-	window_set_decoration(background->window, 0);
 	window_set_custom(background->window);
 	window_set_user_data(background->window, background);
 	widget_set_redraw_handler(background->widget, background_draw);

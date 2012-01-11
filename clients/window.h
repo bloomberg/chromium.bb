@@ -281,9 +281,6 @@ void *
 window_get_user_data(struct window *window);
 
 void
-window_set_decoration(struct window *window, int decoration);
-
-void
 window_set_key_handler(struct window *window,
 		       window_key_handler_t handler);
 
@@ -348,6 +345,9 @@ widget_set_button_handler(struct widget *widget,
 
 void
 widget_schedule_redraw(struct widget *widget);
+
+struct widget *
+frame_create(struct window *window, void *data);
 
 void
 input_set_pointer_image(struct input *input, uint32_t time, int pointer);

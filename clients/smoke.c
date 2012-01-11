@@ -285,7 +285,6 @@ int main(int argc, char *argv[])
 	smoke.b[1].u = calloc(size, sizeof(float));
 	smoke.b[1].v = calloc(size, sizeof(float));
 
-	window_set_decoration(smoke.window, 0);
 	window_create_surface(smoke.window);
 	smoke.surface = window_get_surface(smoke.window);
 

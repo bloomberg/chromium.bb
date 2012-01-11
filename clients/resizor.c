@@ -206,7 +206,7 @@ resizor_create(struct display *display)
 	memset(resizor, 0, sizeof *resizor);
 
 	resizor->window = window_create(display, 500, 400);
-	resizor->widget = window_add_widget(resizor->window, resizor);
+	resizor->widget = frame_create(resizor->window, resizor);
 	window_set_title(resizor->window, "Wayland Resizor");
 	resizor->display = display;
 

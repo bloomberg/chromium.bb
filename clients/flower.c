@@ -160,8 +160,6 @@ int main(int argc, char *argv[])
 	flower.window = window_create(d, flower.width, flower.height);
 	flower.widget = window_add_widget(flower.window, &flower);
 
-	window_set_decoration(flower.window, 0);
-
 	widget_set_redraw_handler(flower.widget, redraw_handler);
 	widget_set_motion_handler(flower.widget, motion_handler);
 	widget_set_button_handler(flower.widget, button_handler);
