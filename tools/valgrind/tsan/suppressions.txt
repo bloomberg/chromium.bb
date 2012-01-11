@@ -785,3 +785,12 @@
    fun:content::BrowserMainLoop::RunMainMessageLoopParts
    fun:BrowserMain
 }
+{
+   bug_109864
+   ThreadSanitizer:Race
+   ...
+   fun:net::ClientSocketPoolManagerImpl::ClientSocketPoolManagerImpl
+   fun:net::HttpNetworkSession::HttpNetworkSession
+   fun:IOThread::InitSystemRequestContextOnIOThread
+   fun:base::internal::RunnableAdapter::Run
+}
