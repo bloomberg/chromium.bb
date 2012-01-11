@@ -24,6 +24,8 @@ cr.define('uber', function() {
       var pageId = selectedNavItem.associatedIframe.id;
       window.history.replaceState({pageId: pageId}, '', '/' + pageId);
     }
+
+    window.addEventListener('message', handleWindowMessage);
   }
 
   /**
@@ -69,6 +71,15 @@ cr.define('uber', function() {
   function onPopHistoryState(e) {
     if (e.state && e.state.pageId)
       selectPageForNavItem($(e.state.pageId).associatedNavItem);
+  }
+
+  function handleWindowMessage(e) {
+    if (e.data === 'showOverlay')
+      document.querySelector('.overlay').classList.add('showing');
+    else if (e.data === 'hideOverlay')
+      document.querySelector('.overlay').classList.remove('showing');
+    else
+      console.error('Received unexpected message: ' + e.data);
   }
 
   return {

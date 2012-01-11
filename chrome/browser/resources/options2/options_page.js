@@ -229,6 +229,9 @@ cr.define('options', function() {
       if (overlay.didShowPage) overlay.didShowPage();
     }
 
+    if (window.parent)
+      window.parent.postMessage('showOverlay', 'chrome://chrome');
+
     return true;
   };
 
@@ -264,6 +267,9 @@ cr.define('options', function() {
       return;
 
     overlay.visible = false;
+    if (window.parent)
+      window.parent.postMessage('hideOverlay', 'chrome://chrome');
+
     if (overlay.didClosePage) overlay.didClosePage();
     this.updateHistoryState_();
   };

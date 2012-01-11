@@ -6,7 +6,7 @@
   color: rgb(92, 97, 102);
   font-size: 18px;
   font-weight: normal;
-  padding-left: 23px;
+  margin-left: 20px;
 }
 
 #navigation ol {
@@ -18,8 +18,9 @@
   border-left: 6px solid white;
   color: #999;
   cursor: pointer;
+  line-height: 17px;
   margin: 5px 0;
-  padding-left: 18px;
+  padding-left: 14px;
   text-transform: uppercase;
 }
 
@@ -51,4 +52,15 @@ iframe {
   display: block;
   height: 100%;
   width: 100%;
+}
+
+#uber .overlay {
+  opacity: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+#uber .overlay.showing {
+  opacity: 1;
+  pointer-events: visible;
 }

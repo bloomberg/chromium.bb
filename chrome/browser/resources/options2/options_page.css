@@ -141,23 +141,13 @@ html[touch-optimized] body {
   font-size: 16px;
 }
 
-.overlay {
-  -webkit-box-align: center;
-  -webkit-box-orient: vertical;
-  -webkit-box-pack: center;
-  -webkit-transition: 250ms opacity;
-  background: -webkit-radial-gradient(rgba(127, 127, 127, 0.5),
-                                      rgba(127, 127, 127, 0.5) 35%,
-                                      rgba(0, 0, 0, 0.7));
-  bottom: 0;
-  display: -webkit-box;
-  left: 0;
-  overflow: auto;
-  padding: 20px;
-  padding-bottom: 130px;
-  position: fixed;
-  right: 0;
-  top: 0;
+#overlay {
+  /* -155px hack compensates for uber navigation area.  */
+  left: -155px;
+  /* This padding keeps the dialog from moving too far to the left.
+   * 155px (navigation area) + 40px (dialog shadow) = 195px */
+  padding-left: 195px;
+  padding-right: 195px;
   z-index: 10;
 }
 
@@ -243,7 +233,7 @@ html[dir='rtl'] .action-area {
 }
 
 .overlay .page {
-  -webkit-box-shadow: 0 5px 80px #505050;
+  -webkit-box-shadow: 0 5px 40px #505050;
   background: white;
   border: 1px solid rgb(188, 193, 208);
   border-radius: 2px;
