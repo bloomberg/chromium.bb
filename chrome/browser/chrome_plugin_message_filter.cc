@@ -85,12 +85,13 @@ void ChromePluginMessageFilter::OnDownloadUrlOnUIThread(
   download_url_helper->InitiateDownload(
       GURL(url),
       host->GetBrowserContext()->GetRequestContext(),
-      base::Bind(&ChromePluginMessageFilter::OnPluginDownloadFinished,
-                 caller_window));
+      base::Bind(&ChromePluginMessageFilter::PluginDownloadFinished,
+                 caller_window),
+      base::Bind(&ChromePluginMessageFilter::PluginDownloadError));
 }
 
 // static
-void ChromePluginMessageFilter::OnPluginDownloadFinished(
+void ChromePluginMessageFilter::PluginDownloadFinished(
     gfx::NativeWindow caller_window,
     const FilePath& response_file) {
   FilePath::StringType path = response_file.value();
@@ -105,6 +106,12 @@ void ChromePluginMessageFilter::OnPluginDownloadFinished(
     ::SendMessage(caller_window, WM_COPYDATA, NULL,
                   reinterpret_cast<LPARAM>(&download_file_data));
   }
+}
+
+// static
+void ChromePluginMessageFilter::PluginDownloadError(
+    const std::string& error) {
+  NOTREACHED() << error;
 }
 #endif  // OS_WIN
 

@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_PLUGIN_INSTALLER_OBSERVER_H_
 #pragma once
 
+#include <string>
+
 class PluginInstaller;
 
 class PluginInstallerObserver {
@@ -21,6 +23,7 @@ class PluginInstallerObserver {
 
   virtual void DidStartDownload();
   virtual void DidFinishDownload();
+  virtual void DownloadError(const std::string& message);
 
   // Weak pointer; Owned by PluginFinder, which is a singleton.
   PluginInstaller* installer_;

@@ -140,6 +140,8 @@ bool MissingPlugin::OnMessageReceived(const IPC::Message& message) {
                         OnStartedDownloadingPlugin)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_FinishedDownloadingPlugin,
                         OnFinishedDownloadingPlugin)
+    IPC_MESSAGE_HANDLER(ChromeViewMsg_ErrorDownloadingPlugin,
+                        OnErrorDownloadingPlugin)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -160,6 +162,11 @@ void MissingPlugin::OnStartedDownloadingPlugin() {
 
 void MissingPlugin::OnFinishedDownloadingPlugin() {
   SetMessage(l10n_util::GetStringUTF16(IDS_PLUGIN_INSTALLING));
+}
+
+void MissingPlugin::OnErrorDownloadingPlugin(const std::string& error) {
+  SetMessage(l10n_util::GetStringFUTF16(IDS_PLUGIN_DOWNLOAD_ERROR,
+                                        UTF8ToUTF16(error)));
 }
 
 void MissingPlugin::PluginListChanged() {

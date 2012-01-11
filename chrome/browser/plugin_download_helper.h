@@ -26,13 +26,15 @@ class URLRequestContextGetter;
 class PluginDownloadUrlHelper : public content::URLFetcherDelegate {
  public:
   typedef base::Callback<void(const FilePath&)> DownloadFinishedCallback;
+  typedef base::Callback<void(const std::string&)> ErrorCallback;
 
   PluginDownloadUrlHelper();
   virtual ~PluginDownloadUrlHelper();
 
   void InitiateDownload(const GURL& download_url,
                         net::URLRequestContextGetter* request_context,
-                        const DownloadFinishedCallback& callback);
+                        const DownloadFinishedCallback& callback,
+                        const ErrorCallback& error_callback);
 
   // content::URLFetcherDelegate
   virtual void OnURLFetchComplete(const content::URLFetcher* source) OVERRIDE;
@@ -42,8 +44,11 @@ class PluginDownloadUrlHelper : public content::URLFetcherDelegate {
   // of the download URL.
   void RenameDownloadedFile();
 
-  // Runs the callback and deletes itself.
-  void RunCallback();
+  // Runs the success callback and deletes itself.
+  void RunFinishedCallback();
+
+  // Runs the error callback and deletes itself.
+  void RunErrorCallback(const std::string& error);
 
   // The download file request initiated by the plugin.
   scoped_ptr<content::URLFetcher> download_file_fetcher_;
@@ -51,7 +56,8 @@ class PluginDownloadUrlHelper : public content::URLFetcherDelegate {
   GURL download_url_;
   FilePath downloaded_file_;
 
-  DownloadFinishedCallback callback_;
+  DownloadFinishedCallback download_finished_callback_;
+  ErrorCallback error_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginDownloadUrlHelper);
 };
