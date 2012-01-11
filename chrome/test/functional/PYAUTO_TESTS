@@ -639,13 +639,4 @@
        'media.media_constrained_network_perf',
      ],
   },
-
-  # HTML5 media functional tests.
-  'AV_FUNC': {
-     'linux': [
-       'media.media_event_simple_action',
-       'media.media_event_simple_test',
-       'media.media_event_track',
-     ],
-  },
 }
