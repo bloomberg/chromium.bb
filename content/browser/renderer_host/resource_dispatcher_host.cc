@@ -95,6 +95,8 @@ using webkit_blob::DeletableFileReference;
 
 namespace {
 
+static ResourceDispatcherHost* g_resource_dispatcher_host;
+
 // The interval for calls to ResourceDispatcherHost::UpdateLoadStates
 const int kUpdateLoadStatesIntervalMsec = 100;
 
@@ -294,9 +296,13 @@ void OnSwapOutACKHelper(int render_process_id, int render_view_id) {
 
 }  // namespace
 
-ResourceDispatcherHost::ResourceDispatcherHost(
-    const ResourceQueue::DelegateSet& resource_queue_delegates)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(
+ResourceDispatcherHost* ResourceDispatcherHost::Get() {
+  return g_resource_dispatcher_host;
+}
+
+ResourceDispatcherHost::ResourceDispatcherHost()
+    : temporarily_delegate_set_(NULL),
+      ALLOW_THIS_IN_INITIALIZER_LIST(
           download_file_manager_(new DownloadFileManager(this, NULL))),
       ALLOW_THIS_IN_INITIALIZER_LIST(
           save_file_manager_(new SaveFileManager(this))),
@@ -308,14 +314,28 @@ ResourceDispatcherHost::ResourceDispatcherHost(
       filter_(NULL),
       delegate_(NULL),
       allow_cross_origin_auth_prompt_(false) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!g_resource_dispatcher_host);
+  g_resource_dispatcher_host = this;
+
+  ResourceQueue::DelegateSet resource_queue_delegates;
+  temporarily_delegate_set_ = &resource_queue_delegates;
+  content::GetContentClient()->browser()->ResourceDispatcherHostCreated();
   resource_queue_.Initialize(resource_queue_delegates);
+  temporarily_delegate_set_ = NULL;
 
   ANNOTATE_BENIGN_RACE(
       &last_user_gesture_time_,
       "We don't care about the precise value, see http://crbug.com/92889");
+
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&appcache::AppCacheInterceptor::EnsureRegistered));
 }
 
 ResourceDispatcherHost::~ResourceDispatcherHost() {
+  DCHECK(g_resource_dispatcher_host);
+  g_resource_dispatcher_host = NULL;
   AsyncResourceHandler::GlobalCleanup();
   for (PendingRequestList::const_iterator i = pending_requests_.begin();
        i != pending_requests_.end(); ++i) {
@@ -325,19 +345,17 @@ ResourceDispatcherHost::~ResourceDispatcherHost() {
   DCHECK(transferred_navigations_.empty());
 }
 
-void ResourceDispatcherHost::Initialize() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(&appcache::AppCacheInterceptor::EnsureRegistered));
-}
-
 void ResourceDispatcherHost::Shutdown() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   BrowserThread::PostTask(BrowserThread::IO,
                           FROM_HERE,
                           base::Bind(&ResourceDispatcherHost::OnShutdown,
                                      base::Unretained(this)));
+}
+
+void ResourceDispatcherHost::AddResourceQueueDelegate(
+    ResourceQueueDelegate* delegate) {
+  temporarily_delegate_set_->insert(delegate);
 }
 
 void ResourceDispatcherHost::SetRequestInfo(

@@ -72,15 +72,6 @@ class CONTENT_EXPORT BrowserMainParts {
   // been run), and the toolkit has been initialized.
   virtual void PreCreateThreads() = 0;
 
-  // Called once for each thread owned by the content framework just
-  // before and just after the thread object is created and started.
-  // This happens in the order of the threads' appearence in the
-  // BrowserThread::ID enumeration.  Note that there will be no such
-  // call for BrowserThread::UI, since it is the main thread of the
-  // application.
-  virtual void PreStartThread(BrowserThread::ID identifier) = 0;
-  virtual void PostStartThread(BrowserThread::ID identifier) = 0;
-
   // This is called just before the main message loop is run.  The
   // various browser threads have all been created at this point
   virtual void PreMainMessageLoopRun() = 0;
@@ -93,14 +84,6 @@ class CONTENT_EXPORT BrowserMainParts {
   // This happens after the main message loop has stopped, but before
   // threads are stopped.
   virtual void PostMainMessageLoopRun() = 0;
-
-  // Called once for each thread owned by the content framework just
-  // before and just after it is torn down. This is in reverse order
-  // of the threads' appearance in the BrowserThread::ID enumeration.
-  // Note that you will not receive such a call for BrowserThread::UI,
-  // since it is the main thread of the application.
-  virtual void PreStopThread(BrowserThread::ID identifier) = 0;
-  virtual void PostStopThread(BrowserThread::ID identifier) = 0;
 
   // Called as the very last part of shutdown, after threads have been
   // stopped and destroyed.

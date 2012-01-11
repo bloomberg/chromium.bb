@@ -30,11 +30,10 @@ TestingBrowserProcess::~TestingBrowserProcess() {
   EXPECT_FALSE(local_state_);
 }
 
-void TestingBrowserProcess::EndSession() {
+void TestingBrowserProcess::ResourceDispatcherHostCreated() {
 }
 
-ResourceDispatcherHost* TestingBrowserProcess::resource_dispatcher_host() {
-  return NULL;
+void TestingBrowserProcess::EndSession() {
 }
 
 MetricsService* TestingBrowserProcess::metrics_service() {

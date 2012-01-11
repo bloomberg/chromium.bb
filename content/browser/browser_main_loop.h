@@ -13,6 +13,7 @@
 class CommandLine;
 class HighResolutionTimerManager;
 class MessageLoop;
+class ResourceDispatcherHost;
 class SystemMessageWindowWin;
 
 namespace base {
@@ -58,6 +59,9 @@ class BrowserMainLoop {
 
   void InitializeMainThread();
 
+  // Called right after the browser threads have been started.
+  void BrowserThreadsStarted();
+
   // Members initialized on construction ---------------------------------------
   const content::MainFunctionParams& parameters_;
   const CommandLine& parsed_command_line_;
@@ -79,6 +83,9 @@ class BrowserMainLoop {
   // Members initialized in |InitializeMainThread()| ---------------------------
   // This must get destroyed before other threads that are created in parts_.
   scoped_ptr<BrowserThreadImpl> main_thread_;
+
+  // Members initialized in |BrowserThreadsStarted()| --------------------------
+  scoped_ptr<ResourceDispatcherHost> resource_dispatcher_host_;
 
   // Members initialized in |RunMainMessageLoopParts()| ------------------------
   scoped_ptr<BrowserProcessSubThread> db_thread_;

@@ -67,7 +67,7 @@ class CONTENT_EXPORT PluginProcessHost : public BrowserChildProcessHost {
 
   // Initialize the new plugin process, returning true on success. This must
   // be called before the object can be used.
-  bool Init(const webkit::WebPluginInfo& info, const std::string& locale);
+  bool Init(const webkit::WebPluginInfo& info);
 
   // Force the plugin process to shutdown (cleanly).
   void ForceShutdown();

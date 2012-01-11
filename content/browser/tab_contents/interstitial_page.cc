@@ -573,17 +573,15 @@ void InterstitialPage::TakeActionOnResourceDispatcher(
   // we don't have one.
   RenderViewHost* rvh = RenderViewHost::FromID(original_child_id_,
                                                original_rvh_id_);
-  if (!rvh ||
-      !content::GetContentClient()->browser()->GetResourceDispatcherHost()) {
+  if (!rvh || !ResourceDispatcherHost::Get())
     return;
-  }
 
   BrowserThread::PostTask(
       BrowserThread::IO,
       FROM_HERE,
       base::Bind(
           &ResourceRequestHelper,
-          content::GetContentClient()->browser()->GetResourceDispatcherHost(),
+          ResourceDispatcherHost::Get(),
           original_child_id_,
           original_rvh_id_,
           action));

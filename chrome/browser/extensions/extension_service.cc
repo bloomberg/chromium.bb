@@ -564,10 +564,6 @@ void ExtensionService::Init() {
   DCHECK(!ready_);  // Can't redo init.
   DCHECK_EQ(extensions_.size(), 0u);
 
-  // Hack: we need to ensure the ResourceDispatcherHost is ready before we load
-  // the first extension, because its members listen for loaded notifications.
-  g_browser_process->resource_dispatcher_host();
-
   component_loader_->LoadAll();
   extensions::InstalledLoader(this).LoadAllExtensions();
 

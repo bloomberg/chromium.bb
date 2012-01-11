@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "content/browser/download/download_id.h"
-#include "content/browser/download/download_resource_handler.h"
 #include "content/browser/download/download_stats.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"

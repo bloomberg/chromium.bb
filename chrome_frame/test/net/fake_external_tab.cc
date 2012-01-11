@@ -599,18 +599,11 @@ void CFUrlRequestUnittestRunner::PreEarlyInitialization() {
 void CFUrlRequestUnittestRunner::PreCreateThreads() {
   fake_chrome_.reset(new FakeExternalTab());
   fake_chrome_->Initialize();
+  fake_chrome_->browser_process()->PreCreateThreads();
 
   pss_subclass_.reset(new ProcessSingletonSubclass(this));
   EXPECT_TRUE(pss_subclass_->Subclass(fake_chrome_->user_data()));
   StartChromeFrameInHostBrowser();
-}
-
-void CFUrlRequestUnittestRunner::PreStartThread(BrowserThread::ID identifier) {
-  fake_chrome_->browser_process()->PreStartThread(identifier);
-}
-
-void CFUrlRequestUnittestRunner::PostStartThread(BrowserThread::ID identifier) {
-  fake_chrome_->browser_process()->PostStartThread(identifier);
 }
 
 void CFUrlRequestUnittestRunner::PreMainMessageLoopRun() {
@@ -641,17 +634,8 @@ void CFUrlRequestUnittestRunner::PostMainMessageLoopRun() {
   base::KillProcesses(chrome_frame_test::kIEBrokerImageName, 0, NULL);
 }
 
-void CFUrlRequestUnittestRunner::PreStopThread(
-    content::BrowserThread::ID identifier) {
-  fake_chrome_->browser_process()->PreStopThread(identifier);
-}
-
-void CFUrlRequestUnittestRunner::PostStopThread(
-    content::BrowserThread::ID identifier) {
-  fake_chrome_->browser_process()->PostStopThread(identifier);
-}
-
 void CFUrlRequestUnittestRunner::PostDestroyThreads() {
+  fake_chrome_->browser_process()->PostDestroyThreads();
   fake_chrome_->Shutdown();
   fake_chrome_.reset();
 

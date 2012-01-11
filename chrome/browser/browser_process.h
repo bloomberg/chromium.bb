@@ -83,6 +83,9 @@ class BrowserProcess {
   BrowserProcess();
   virtual ~BrowserProcess();
 
+  // Called when the ResourceDispatcherHost object is created by content.
+  virtual void ResourceDispatcherHostCreated() = 0;
+
   // Invoked when the user is logging out/shutting down. When logging off we may
   // not have enough time to do a normal shutdown. This method is invoked prior
   // to normal shutdown and saves any state that must be saved before we are
@@ -90,8 +93,6 @@ class BrowserProcess {
   virtual void EndSession() = 0;
 
   // Services: any of these getters may return NULL
-  virtual ResourceDispatcherHost* resource_dispatcher_host() = 0;
-
   virtual MetricsService* metrics_service() = 0;
   virtual ProfileManager* profile_manager() = 0;
   virtual PrefService* local_state() = 0;

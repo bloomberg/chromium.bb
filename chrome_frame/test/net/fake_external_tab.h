@@ -105,14 +105,9 @@ class CFUrlRequestUnittestRunner
   virtual void PostMainMessageLoopStart() OVERRIDE {}
   virtual void ToolkitInitialized() OVERRIDE {}
   virtual void PreCreateThreads() OVERRIDE;
-  virtual void PreStartThread(content::BrowserThread::ID identifier) OVERRIDE;
-  virtual void PostStartThread(
-      content::BrowserThread::ID identifier) OVERRIDE;
   virtual void PreMainMessageLoopRun() OVERRIDE;
   virtual bool MainMessageLoopRun(int* result_code) OVERRIDE;
   virtual void PostMainMessageLoopRun() OVERRIDE;
-  virtual void PreStopThread(content::BrowserThread::ID identifier) OVERRIDE;
-  virtual void PostStopThread(content::BrowserThread::ID identifier) OVERRIDE;
   virtual void PostDestroyThreads() OVERRIDE;
 
  protected:

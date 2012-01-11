@@ -36,6 +36,7 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/pref_names.h"
+#include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/utility_process_host.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
@@ -636,7 +637,7 @@ class SafeManifestParser : public UtilityProcessHost::Client {
             BrowserThread::IO, FROM_HERE,
             base::Bind(
                 &SafeManifestParser::ParseInSandbox, this,
-                g_browser_process->resource_dispatcher_host()))) {
+                ResourceDispatcherHost::Get()))) {
       NOTREACHED();
     }
   }

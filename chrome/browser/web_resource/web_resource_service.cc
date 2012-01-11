@@ -16,6 +16,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_utility_messages.h"
 #include "chrome/common/web_resource/web_resource_unpacker.h"
+#include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/utility_process_host.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/url_fetcher.h"
@@ -32,7 +33,7 @@ class WebResourceService::UnpackerClient : public UtilityProcessHost::Client {
  public:
   explicit UnpackerClient(WebResourceService* web_resource_service)
     : web_resource_service_(web_resource_service),
-      resource_dispatcher_host_(g_browser_process->resource_dispatcher_host()),
+      resource_dispatcher_host_(ResourceDispatcherHost::Get()),
       got_response_(false) {
   }
 

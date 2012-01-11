@@ -454,10 +454,8 @@ void RenderProcessHostImpl::CreateMessageFilters() {
       &browser_context->GetResourceContext();
 
   ResourceMessageFilter* resource_message_filter = new ResourceMessageFilter(
-      GetID(), content::PROCESS_TYPE_RENDERER,
-      resource_context,
-      new RendererURLRequestContextSelector(browser_context, GetID()),
-      content::GetContentClient()->browser()->GetResourceDispatcherHost());
+      GetID(), content::PROCESS_TYPE_RENDERER, resource_context,
+      new RendererURLRequestContextSelector(browser_context, GetID()));
 
   channel_->AddFilter(resource_message_filter);
   channel_->AddFilter(new AudioInputRendererHost(resource_context));
@@ -503,7 +501,6 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   channel_->AddFilter(socket_stream_dispatcher_host);
 
   channel_->AddFilter(new WorkerMessageFilter(GetID(), resource_context,
-      content::GetContentClient()->browser()->GetResourceDispatcherHost(),
       base::Bind(&RenderWidgetHelper::GetNextRoutingID,
                  base::Unretained(widget_helper_.get()))));
 

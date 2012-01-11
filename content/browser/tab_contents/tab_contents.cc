@@ -2059,8 +2059,7 @@ void TabContents::OnUserGesture() {
   // Notify observers.
   FOR_EACH_OBSERVER(WebContentsObserver, observers_, DidGetUserGesture());
 
-  ResourceDispatcherHost* rdh =
-      content::GetContentClient()->browser()->GetResourceDispatcherHost();
+  ResourceDispatcherHost* rdh = ResourceDispatcherHost::Get();
   if (rdh)  // NULL in unittests.
     rdh->OnUserGesture(this);
 }

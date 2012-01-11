@@ -125,7 +125,7 @@ class MockContentBrowserClient : public ContentBrowserClient {
       int render_process_id) OVERRIDE;
   virtual std::string GetWorkerProcessTitle(
       const GURL& url, const content::ResourceContext& context) OVERRIDE;
-  virtual ResourceDispatcherHost* GetResourceDispatcherHost() OVERRIDE;
+  virtual void ResourceDispatcherHostCreated() OVERRIDE;
   virtual ui::Clipboard* GetClipboard() OVERRIDE;
   virtual MHTMLGenerationManager* GetMHTMLGenerationManager() OVERRIDE;
   virtual net::NetLog* GetNetLog() OVERRIDE;
