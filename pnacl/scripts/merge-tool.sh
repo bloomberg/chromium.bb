@@ -91,6 +91,7 @@ set-master-revision() {
 get-upstream() {
   echo "@@@BUILD_STEP Get mercurial source@@@"
   export UPSTREAM_REV=${UPSTREAM_BRANCH}
+  export PNACL_TESTING_BRANCH=true
   pnacl-build hg-checkout-upstream
   pnacl-build hg-pull-upstream
   pnacl-build hg-update-upstream

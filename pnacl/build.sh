@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 #
@@ -42,7 +42,12 @@ SetLogDirectory "${PNACL_ROOT}/build/log"
 
 # For different levels of make parallelism change this in your env
 readonly PNACL_CONCURRENCY=${PNACL_CONCURRENCY:-8}
+# If true, we are in the middle of a merge.  Do not update the llvm branch
+# (except for clang, which has no local mods).
 readonly PNACL_MERGE_TESTING=${PNACL_MERGE_TESTING:-false}
+# If true, we are using the experimental merge branch, so do not
+# complain if we are not on "pnacl-sfi".
+readonly PNACL_TESTING_BRANCH=${PNACL_TESTING_BRANCH:-false}
 PNACL_PRUNE=${PNACL_PRUNE:-false}
 PNACL_BUILD_ARM=true
 
@@ -583,7 +588,9 @@ hg-update-common() {
   hg-bot-sanity "${name}" "${dir}"
 
   # Make sure it is safe to update
-  hg-assert-branch "${dir}" pnacl-sfi
+  if ! ${PNACL_TESTING_BRANCH} ; then
+    hg-assert-branch "${dir}" pnacl-sfi
+  fi
   hg-assert-safe-to-update "${name}" "${dir}" "${rev}"
 
   if hg-at-revision "${dir}" "${rev}" ; then
