@@ -175,8 +175,8 @@ void Panel::ShowInactive() {
 }
 
 void Panel::SetBounds(const gfx::Rect& bounds) {
-  // Ignore any SetBounds requests since the bounds are completely controlled
-  // by panel manager.
+  // Ignore bounds position as the panel manager controls all positioning.
+  manager()->ResizePanel(this, bounds.size());
 }
 
 // Close() may be called multiple times if the browser window is not ready to

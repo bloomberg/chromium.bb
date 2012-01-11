@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,11 +26,12 @@
   DISABLED_FocusWindowDoesNotExitFullscreen
 #define MAYBE_UpdateWindowSizeExitsFullscreen \
   DISABLED_UpdateWindowSizeExitsFullscreen
-#define MAYBE_UpdateWindowShowState \
-  DISABLED_UpdateWindowShowState
+#define MAYBE_UpdateWindowResize DISABLED_UpdateWindowResize
+#define MAYBE_UpdateWindowShowState DISABLED_UpdateWindowShowState
 #else
 #define MAYBE_FocusWindowDoesNotExitFullscreen FocusWindowDoesNotExitFullscreen
 #define MAYBE_UpdateWindowSizeExitsFullscreen UpdateWindowSizeExitsFullscreen
+#define MAYBE_UpdateWindowResize UpdateWindowResize
 #define MAYBE_UpdateWindowShowState UpdateWindowShowState
 #endif
 
@@ -176,6 +177,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest,
       GURL(), FEB_TYPE_BROWSER_FULLSCREEN_EXIT_INSTRUCTION);
   ASSERT_TRUE(RunExtensionTest("window_update/sizing")) << message_;
   ASSERT_FALSE(browser()->window()->IsFullscreen());
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest,
+                       MAYBE_UpdateWindowResize) {
+  ASSERT_TRUE(RunExtensionTest("window_update/resize")) << message_;
 }
 
 #if defined(OS_WIN) && !defined(USE_AURA)

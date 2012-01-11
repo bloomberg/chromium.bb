@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,20 +6,14 @@ var pass = chrome.test.callbackPass;
 
 var width = 0;
 var height = 0;
-var changedWidth = 500;
-var changedHeight = 500;
+
+var deltaWidth = 20;
+var deltaHeight = 30;
 
 function checkRestoreWithBounds(theWindow) {
   chrome.test.assertEq('normal', theWindow.state);
-  if (theWindow.type == 'panel') {
-    // Panels decide their own bounds.
-    chrome.test.assertEq(width, theWindow.width);
-    chrome.test.assertEq(height, theWindow.height);
-  } else {
-    chrome.test.assertEq(changedWidth, theWindow.width);
-    chrome.test.assertEq(changedHeight, theWindow.height);
-  }
-
+  chrome.test.assertEq(width, theWindow.width);
+  chrome.test.assertEq(height, theWindow.height);
   chrome.windows.remove(theWindow.id, pass());
 }
 
@@ -35,8 +29,10 @@ function checkMaximized(theWindow) {
                            height < theWindow.height);
   }
 
+  width += deltaWidth;
+  height += deltaHeight;
   chrome.windows.update(theWindow.id,
-      {'state': 'normal', width: changedWidth, height: changedHeight},
+      {'state': 'normal', 'width': width, 'height': height},
       pass(checkRestoreWithBounds));
 }
 

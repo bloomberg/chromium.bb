@@ -199,10 +199,11 @@ void PanelManager::OnPreferredWindowSizeChanged(
 void PanelManager::ResizePanel(Panel* panel, const gfx::Size& new_size) {
   // Explicit resizing is not allowed for auto-resizable panels for now.
   // http://crbug.com/109343
-  if (panel->auto_resizable())
+  if (panel->auto_resizable()) {
+    LOG(INFO) << "Resizing auto-resizable Panels is not supported yet.";
     return;
+  }
   panel_strip_->OnWindowSizeChanged(panel, new_size);
-
 }
 
 bool PanelManager::ShouldBringUpTitlebars(int mouse_x, int mouse_y) const {
