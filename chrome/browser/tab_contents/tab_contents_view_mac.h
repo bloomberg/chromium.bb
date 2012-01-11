@@ -15,8 +15,8 @@
 
 #include "base/memory/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/tab_contents/render_view_host_delegate_helper.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
+#include "content/browser/tab_contents/tab_contents_view_helper.h"
 #include "ui/base/cocoa/base_view.h"
 #include "ui/gfx/size.h"
 
@@ -128,8 +128,8 @@ class TabContentsViewMac : public TabContentsView {
   // The TabContents whose contents we display.
   TabContents* tab_contents_;
 
-  // Common implementations of some RenderViewHostDelegate::View methods.
-  RenderViewHostDelegateViewHelper delegate_view_helper_;
+  // Common implementations of some TabContentsView methods.
+  TabContentsViewHelper tab_contents_view_helper_;
 
   // The Cocoa NSView that lives in the view hierarchy.
   scoped_nsobject<TabContentsViewCocoa> cocoa_view_;

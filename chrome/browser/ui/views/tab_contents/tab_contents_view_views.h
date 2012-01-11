@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,9 +9,9 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/timer.h"
-#include "chrome/browser/tab_contents/render_view_host_delegate_helper.h"
 #include "chrome/browser/ui/views/tab_contents/native_tab_contents_view_delegate.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
+#include "content/browser/tab_contents/tab_contents_view_helper.h"
 #include "ui/views/widget/widget.h"
 
 class ConstrainedWindowGtk;
@@ -147,8 +147,8 @@ class TabContentsViewViews : public views::Widget,
   // The WebContents whose contents we display.
   content::WebContents* web_contents_;
 
-  // Common implementations of some RenderViewHostDelegate::View methods.
-  RenderViewHostDelegateViewHelper delegate_view_helper_;
+  // Common implementations of some TabContentsView methods.
+  TabContentsViewHelper tab_contents_view_helper_;
 
   NativeTabContentsView* native_tab_contents_view_;
 
