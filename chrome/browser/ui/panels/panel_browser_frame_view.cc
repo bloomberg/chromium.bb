@@ -342,9 +342,9 @@ PanelBrowserFrameView::PanelBrowserFrameView(BrowserFrame* frame,
   settings_button_->set_alignment(views::TextButton::ALIGN_CENTER);
   settings_button_->set_border(NULL);
   settings_button_->SetTooltipText(
-      l10n_util::GetStringUTF16(IDS_NEW_TAB_APP_SETTINGS));
+      l10n_util::GetStringUTF16(IDS_PANEL_WINDOW_SETTINGS_BUTTON_TOOLTIP));
   settings_button_->SetAccessibleName(
-      l10n_util::GetStringUTF16(IDS_NEW_TAB_APP_SETTINGS));
+      l10n_util::GetStringUTF16(IDS_PANEL_WINDOW_SETTINGS_BUTTON_TOOLTIP));
   settings_button_->SetVisible(is_settings_button_visible_);
   AddChildView(settings_button_);
 

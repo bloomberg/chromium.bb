@@ -9105,10 +9105,6 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
          desc="Tooltip text for the button that removes/blacklists the thumbnail. Once removed the thumbnail will not show up on the new tab page again.">
         Don't show on this page
       </message>
-      <message name="IDS_NEW_TAB_APP_SETTINGS"
-               desc="Text for the tooltip that is used for the button that shows the settings for an app icon.">
-        Settings
-      </message>
       <message name="IDS_NEW_TAB_APP_OPTIONS"
                desc="Text for the button that takes the user to the options of an app.">
         Options
@@ -14829,6 +14825,12 @@ Battery full
         Settings
       </message>
     </if>
+
+    <!-- Panel windows -->
+    <message name="IDS_PANEL_WINDOW_SETTINGS_BUTTON_TOOLTIP"
+             desc="Text for the tooltip on panel window settings buttons.">
+      Settings
+    </message>
 
     </messages>
     <structures fallback_to_english="true">

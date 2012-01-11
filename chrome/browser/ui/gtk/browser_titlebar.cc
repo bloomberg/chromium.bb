@@ -393,7 +393,7 @@ void BrowserTitlebar::Init() {
       panel_wrench_button_.reset(
           BuildTitlebarButton(IDR_BALLOON_WRENCH, IDR_BALLOON_WRENCH_P,
                               IDR_BALLOON_WRENCH_H, app_mode_hbox, FALSE,
-                              IDS_NEW_TAB_APP_SETTINGS));
+                              IDS_PANEL_WINDOW_SETTINGS_BUTTON_TOOLTIP));
       g_signal_connect(panel_wrench_button_->widget(), "button-press-event",
                        G_CALLBACK(OnPanelSettingsMenuButtonPressedThunk), this);
       gtk_widget_set_no_show_all(panel_wrench_button_->widget(), TRUE);
