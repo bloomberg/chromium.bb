@@ -14,7 +14,7 @@
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/values.h"
-#include "chrome/browser/ui/webui/print_preview_handler.h"
+#include "chrome/browser/ui/webui/print_preview/print_preview_handler.h"
 #include "printing/backend/print_backend.h"
 #include "printing/print_job_constants.h"
 #include "printing/print_settings.h"

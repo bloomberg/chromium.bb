@@ -11,7 +11,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/constrained_window_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
-#include "chrome/browser/ui/webui/print_preview_ui.h"
+#include "chrome/browser/ui/webui/print_preview/print_preview_ui.h"
 #include "content/public/browser/web_contents.h"
 #include "printing/print_job_constants.h"
 

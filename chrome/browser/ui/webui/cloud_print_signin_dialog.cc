@@ -16,7 +16,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/dialog_style.h"
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
-#include "chrome/browser/ui/webui/print_preview_ui.h"
+#include "chrome/browser/ui/webui/print_preview/print_preview_ui.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/renderer_host/render_view_host.h"

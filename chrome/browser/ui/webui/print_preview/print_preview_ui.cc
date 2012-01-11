@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/print_preview_ui.h"
+#include "chrome/browser/ui/webui/print_preview/print_preview_ui.h"
 
 #include <map>
 
@@ -18,8 +18,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
-#include "chrome/browser/ui/webui/print_preview_data_source.h"
-#include "chrome/browser/ui/webui/print_preview_handler.h"
+#include "chrome/browser/ui/webui/print_preview/print_preview_data_source.h"
+#include "chrome/browser/ui/webui/print_preview/print_preview_handler.h"
 #include "chrome/common/print_messages.h"
 #include "content/public/browser/web_contents.h"
 #include "printing/page_size_margins.h"

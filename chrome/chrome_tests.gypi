@@ -820,7 +820,7 @@
         'browser/ui/webui/options/chromeos/guest_mode_options_ui_uitest.cc',
         'browser/ui/webui/options/options_ui_uitest.cc',
         'browser/ui/webui/options/options_ui_uitest.h',
-        'browser/ui/webui/print_preview_ui_uitest.cc',
+        'browser/ui/webui/print_preview/print_preview_ui_uitest.cc',
         'common/chrome_switches_uitest.cc',
         'common/logging_chrome_uitest.cc',
         'renderer/external_extension_uitest.cc',
@@ -1966,8 +1966,8 @@
         'browser/ui/webui/html_dialog_tab_contents_delegate_unittest.cc',
         'browser/ui/webui/options/chromeos/virtual_keyboard_manager_handler_unittest.cc',
         'browser/ui/webui/options/language_options_handler_unittest.cc',
-        'browser/ui/webui/print_preview_handler_unittest.cc',
-        'browser/ui/webui/print_preview_ui_unittest.cc',
+        'browser/ui/webui/print_preview/print_preview_handler_unittest.cc',
+        'browser/ui/webui/print_preview/print_preview_ui_unittest.cc',
         'browser/ui/webui/sync_internals_ui_unittest.cc',
         'browser/ui/webui/theme_source_unittest.cc',
         'browser/ui/webui/web_ui_unittest.cc',
@@ -2850,7 +2850,6 @@
             # chromeos does not use cross-platform panels
             'browser/ui/panels/panel_app_browsertest.cc',
             'browser/ui/panels/panel_browser_view_browsertest.cc',
-            'browser/ui/webui/print_preview.js',
           ],
           'conditions': [
             ['use_aura==1', {
