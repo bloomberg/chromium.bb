@@ -206,6 +206,11 @@ class BrowserWindow {
   // Returns whether the tool bar is visible or not.
   virtual bool IsToolbarVisible() const = 0;
 
+  // Returns whether the window is a panel. This is not always synonomous
+  // with the associated browser having type panel since some environments
+  // may draw popups in panel windows.
+  virtual bool IsPanel() const = 0;
+
   // Tells the frame not to render as inactive until the next activation change.
   // This is required on Windows when dropdown selects are shown to prevent the
   // select from deactivating the browser frame. A stub implementation is

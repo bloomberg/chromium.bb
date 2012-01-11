@@ -90,7 +90,7 @@ class DefaultStateProvider : public WindowSizer::StateProvider {
     // specially positioned.
     BrowserWindow* window = NULL;
     // Window may be null if browser is just starting up.
-    if (browser_ && !browser_->is_type_panel() && browser_->window()) {
+    if (browser_ && browser_->window() && !browser_->window()->IsPanel()) {
       window = browser_->window();
     } else {
       BrowserList::const_reverse_iterator it = BrowserList::begin_last_active();

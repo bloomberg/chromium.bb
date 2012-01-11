@@ -60,7 +60,7 @@ void BrowserFrame::InitBrowserFrame() {
     params.bounds = browser_view_->browser()->GetSavedWindowBounds();
     params.show_state = browser_view_->browser()->GetSavedWindowShowState();
   }
-  if (browser_view_->browser()->is_type_panel()) {
+  if (browser_view_->IsPanel()) {
     // We need to set the top-most bit when the panel window is created.
     // There is a Windows bug/feature that would very likely prevent the window
     // from being changed to top-most after the window is created without
@@ -88,7 +88,7 @@ void BrowserFrame::InitBrowserFrame() {
 #elif defined(OS_CHROMEOS)
   disable_inactive_rendering = true;
 #endif
-  if (disable_inactive_rendering && !browser_view_->IsBrowserTypePopup())
+  if (disable_inactive_rendering && browser_view_->IsBrowserTypeNormal())
     DisableInactiveRendering();
 }
 
@@ -166,7 +166,7 @@ bool BrowserFrame::IsMaximized() const {
 #if defined(OS_CHROMEOS) && !defined(USE_AURA)
   if (chromeos::system::runtime_environment::IsRunningOnChromeOS()) {
     return !IsFullscreen() &&
-        (!browser_view_->IsBrowserTypePopup() || Widget::IsMaximized());
+        (browser_view_->IsBrowserTypeNormal() || Widget::IsMaximized());
   }
 #endif
   return Widget::IsMaximized();

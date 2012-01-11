@@ -35,9 +35,9 @@ void BrowserNonClientFrameView::UpdateAvatarInfo() {
     frame_->GetRootView()->Layout();
   }
 
-  // For popup windows which don't have the avatar button, we still
+  // For popups and panels which don't have the avatar button, we still
   // need to draw the taskbar decoration.
-  if (!browser_view_->IsBrowserTypePopup()) {
+  if (browser_view_->IsBrowserTypeNormal()) {
     if (!avatar_button_.get())
       return;
   }

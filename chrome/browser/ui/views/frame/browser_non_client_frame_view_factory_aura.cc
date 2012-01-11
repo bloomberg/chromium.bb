@@ -18,18 +18,7 @@ namespace browser {
 
 BrowserNonClientFrameView* CreateBrowserNonClientFrameView(
     BrowserFrame* frame, BrowserView* browser_view) {
-  bool create_panel_view = false;
-#if defined(OS_CHROMEOS)
-  // For R18, panels and popups in Aura ChromeOS use the PanelManager.
-  // This logic must match the logic in Browser::CreateBrowserWindow().
-  // TODO(stevenjb): Clean this up after R18.
-  if (browser_view->IsBrowserTypePanel() || browser_view->IsBrowserTypePopup())
-    create_panel_view = true;
-#else
-  if (browser_view->IsBrowserTypePanel())
-    create_panel_view = true;
-#endif
-  if (create_panel_view) {
+  if (browser_view->IsPanel()) {
     return new PanelBrowserFrameView(
         frame, static_cast<PanelBrowserView*>(browser_view));
   }

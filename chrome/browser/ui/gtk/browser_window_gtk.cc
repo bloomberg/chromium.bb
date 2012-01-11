@@ -1006,6 +1006,10 @@ bool BrowserWindowGtk::IsToolbarVisible() const {
   return IsToolbarSupported();
 }
 
+bool BrowserWindowGtk::IsPanel() const {
+  return false;
+}
+
 void BrowserWindowGtk::ConfirmAddSearchProvider(const TemplateURL* template_url,
                                                 Profile* profile) {
   new EditSearchEngineDialog(window_, template_url, NULL, profile);

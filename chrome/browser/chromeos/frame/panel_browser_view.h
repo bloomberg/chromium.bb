@@ -33,6 +33,7 @@ class PanelBrowserView : public ::BrowserView,
   virtual void Close() OVERRIDE;
   virtual void FlashFrame() OVERRIDE;
   virtual void UpdateTitleBar() OVERRIDE;
+  virtual bool IsPanel() const OVERRIDE;
   virtual WindowOpenDisposition GetDispositionForPopupBounds(
       const gfx::Rect& bounds) OVERRIDE;
   virtual bool GetSavedWindowPlacement(

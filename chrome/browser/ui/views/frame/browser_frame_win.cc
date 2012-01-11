@@ -125,7 +125,7 @@ void BrowserFrameWin::OnScreenReaderDetected() {
 
 bool BrowserFrameWin::ShouldUseNativeFrame() const {
   // App panel windows draw their own frame.
-  if (browser_view_->IsBrowserTypePanel())
+  if (browser_view_->IsPanel())
     return false;
 
   // We don't theme popup or app windows, so regardless of whether or not a

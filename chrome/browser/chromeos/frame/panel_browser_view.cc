@@ -99,6 +99,10 @@ void PanelBrowserView::UpdateTitleBar() {
     panel_controller_->UpdateTitleBar();
 }
 
+bool PanelBrowserView::IsPanel() const {
+  return true;
+}
+
 void PanelBrowserView::SetCreatorView(PanelBrowserView* creator) {
   DCHECK(creator);
   GtkWindow* window = creator->GetNativeHandle();

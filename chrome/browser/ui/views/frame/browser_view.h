@@ -202,24 +202,6 @@ class BrowserView : public BrowserWindow,
     return browser_->is_type_tabbed();
   }
 
-  // Returns true if the Browser object associated with this BrowserView is a
-  // panel window.
-  bool IsBrowserTypePanel() const {
-    return browser_->is_type_panel();
-  }
-
-  // Returns true if the Browser object associated with this BrowserView is a
-  // popup window.
-  bool IsBrowserTypePopup() const {
-    return browser_->is_type_popup();
-  }
-
-  // Returns true if the Browser object associated with this BrowserView
-  // represents an app.
-  bool IsBrowserTypeApp() const {
-    return browser_->is_app();
-  }
-
   // Register preferences specific to this view.
   static void RegisterBrowserViewPrefs(PrefService* prefs);
 
@@ -291,6 +273,7 @@ class BrowserView : public BrowserWindow,
   virtual bool IsBookmarkBarAnimating() const OVERRIDE;
   virtual bool IsTabStripEditable() const OVERRIDE;
   virtual bool IsToolbarVisible() const OVERRIDE;
+  virtual bool IsPanel() const OVERRIDE;
   virtual void DisableInactiveFrame() OVERRIDE;
   virtual void ConfirmSetDefaultSearchProvider(
       content::WebContents* web_contents,

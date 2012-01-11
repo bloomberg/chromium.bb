@@ -60,6 +60,7 @@ class PanelBrowserView : public BrowserView,
   virtual bool CanMaximize() const OVERRIDE;
   virtual void SetBounds(const gfx::Rect& bounds) OVERRIDE;
   virtual void UpdateTitleBar() OVERRIDE;
+  virtual bool IsPanel() const OVERRIDE;
   virtual bool GetSavedWindowPlacement(
       gfx::Rect* bounds,
       ui::WindowShowState* show_state) const OVERRIDE;

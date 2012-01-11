@@ -388,6 +388,10 @@ bool Panel::IsToolbarVisible() const {
   return false;
 }
 
+bool Panel::IsPanel() const {
+  return true;
+}
+
 void Panel::DisableInactiveFrame() {
   NOTIMPLEMENTED();
 }

@@ -1026,6 +1026,10 @@ bool BrowserView::IsToolbarVisible() const {
          browser_->SupportsWindowFeature(Browser::FEATURE_LOCATIONBAR);
 }
 
+bool BrowserView::IsPanel() const {
+  return false;
+}
+
 void BrowserView::DisableInactiveFrame() {
 #if defined(OS_WIN) && !defined(USE_AURA)
   frame_->DisableInactiveRendering();

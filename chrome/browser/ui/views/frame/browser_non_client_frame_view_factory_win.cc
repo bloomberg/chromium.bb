@@ -13,7 +13,7 @@ namespace browser {
 
 BrowserNonClientFrameView* CreateBrowserNonClientFrameView(
     BrowserFrame* frame, BrowserView* browser_view) {
-  if (browser_view->IsBrowserTypePanel()) {
+  if (browser_view->IsPanel()) {
     return new PanelBrowserFrameView(
         frame, static_cast<PanelBrowserView*>(browser_view));
   } else {

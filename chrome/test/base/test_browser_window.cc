@@ -76,6 +76,10 @@ bool TestBrowserWindow::IsToolbarVisible() const {
   return false;
 }
 
+bool TestBrowserWindow::IsPanel() const {
+  return false;
+}
+
 void TestBrowserWindow::ShowAboutChromeDialog() {
   return;
 }
