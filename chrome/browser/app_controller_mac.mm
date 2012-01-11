@@ -951,10 +951,18 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
   if (browser_shutdown::IsTryingToQuit())
     return NO;
 
-  // Don't do anything if there are visible windows.  This will cause
-  // AppKit to unminimize the most recently minimized window.
-  if (flag)
-    return YES;
+  // Don't do anything if there are visible tabbed or popup windows.  This will
+  // cause AppKit to unminimize the most recently minimized window. If the
+  // visible windows are panels or notifications, we still need to open a new
+  // window.
+  if (flag) {
+    for (BrowserList::const_iterator iter = BrowserList::begin();
+         iter != BrowserList::end(); ++iter) {
+      Browser* browser = *iter;
+      if (browser->is_type_tabbed() || browser->is_type_popup())
+        return YES;
+    }
+  }
 
   // If launched as a hidden login item (due to installation of a persistent app
   // or by the user, for example in System Preferenecs->Accounts->Login Items),
