@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -92,6 +92,8 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
   virtual WebKit::WebString userAgent(const WebKit::WebURL& url) OVERRIDE;
   virtual void GetPlugins(bool refresh,
                           std::vector<webkit::WebPluginInfo>* plugins) OVERRIDE;
+  virtual WebKit::WebPeerConnectionHandler* createPeerConnectionHandler(
+      WebKit::WebPeerConnectionHandlerClient* client) OVERRIDE;
 
  private:
   bool CheckPreparsedJsCachingEnabled() const;
