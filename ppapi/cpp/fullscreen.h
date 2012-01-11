@@ -30,7 +30,7 @@ class Fullscreen {
   /// fullscreen mode.
   ///
   /// @return <code>true</code> if the module instance is in fullscreen mode,
-  ///<code>false</code> if the module instance is not in fullscreen mode.
+  /// <code>false</code> if the module instance is not in fullscreen mode.
   bool IsFullscreen();
 
   /// SetFullscreen() switches the module instance to and from fullscreen
@@ -48,7 +48,7 @@ class Fullscreen {
   /// @param[in] fullscreen <code>true</code> to enter fullscreen mode, or
   /// <code>false</code> to exit fullscreen mode.
   ///
-  ///@return <code>true</code> on success or <code>false</code> on
+  /// @return <code>true</code> on success or <code>false</code> on
   /// failure.
   bool SetFullscreen(bool fullscreen);
 
