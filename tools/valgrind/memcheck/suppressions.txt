@@ -4696,6 +4696,7 @@
    bug_102255b
    Memcheck:Leak
    fun:_Znw*
+   ...
    fun:_ZN15DownloadService18GetDownloadManagerEv
    fun:_ZN11DownloadsUIC1EPN7content11WebContentsE
    fun:_ZN12_GLOBAL__N_18NewWebUII11DownloadsUIEEP5WebUIPN7content11WebContentsERK4GURL
