@@ -131,10 +131,13 @@ void DeviceSettingsProvider::DoSet(const std::string& path,
     return;
   }
 
-  if (IsControlledSetting(path))
-    SetInPolicy(path, in_value);
-  else
+  if (IsControlledSetting(path)) {
+    pending_changes_.push_back(PendingQueueElement(path, in_value.DeepCopy()));
+    if (pending_changes_.size() == 1)
+      SetInPolicy();
+  } else {
     NOTREACHED() << "Try to set unhandled cros setting " << path;
+  }
 }
 
 void DeviceSettingsProvider::Observe(
@@ -169,17 +172,27 @@ void DeviceSettingsProvider::RetrieveCachedData() {
   UpdateValuesCache();
 }
 
-void DeviceSettingsProvider::SetInPolicy(const std::string& prop,
-                                         const base::Value& value) {
+void DeviceSettingsProvider::SetInPolicy() {
+  if (pending_changes_.empty()) {
+    NOTREACHED();
+    return;
+  }
+
+  const std::string& prop = pending_changes_[0].first;
+  base::Value* value = pending_changes_[0].second;
   if (prop == kDeviceOwner) {
     // Just store it in the memory cache without trusted checks or persisting.
     std::string owner;
-    if (value.GetAsString(&owner)) {
+    if (value->GetAsString(&owner)) {
       policy_.set_username(owner);
-      values_cache_.SetValue(prop, value.DeepCopy());
+      // In this case the |value_cache_| takes the ownership of |value|.
+      values_cache_.SetValue(prop, value);
       NotifyObservers(prop);
       // We can't trust this value anymore until we reload the real username.
       trusted_ = false;
+      pending_changes_.erase(pending_changes_.begin());
+      if (!pending_changes_.empty())
+        SetInPolicy();
     } else {
       NOTREACHED();
     }
@@ -190,8 +203,7 @@ void DeviceSettingsProvider::SetInPolicy(const std::string& prop,
     // Otherwise we should first reload and apply on top of that.
     SignedSettingsHelper::Get()->StartRetrievePolicyOp(
             base::Bind(&DeviceSettingsProvider::FinishSetInPolicy,
-                       base::Unretained(this),
-                       prop, base::Owned(value.DeepCopy())));
+                       base::Unretained(this)));
     return;
   }
 
@@ -202,28 +214,28 @@ void DeviceSettingsProvider::SetInPolicy(const std::string& prop,
   if (prop == kAccountsPrefAllowNewUser) {
     em::AllowNewUsersProto* allow = pol.mutable_allow_new_users();
     bool allow_value;
-    if (value.GetAsBoolean(&allow_value))
+    if (value->GetAsBoolean(&allow_value))
       allow->set_allow_new_users(allow_value);
     else
       NOTREACHED();
   } else if (prop == kAccountsPrefAllowGuest) {
     em::GuestModeEnabledProto* guest = pol.mutable_guest_mode_enabled();
     bool guest_value;
-    if (value.GetAsBoolean(&guest_value))
+    if (value->GetAsBoolean(&guest_value))
       guest->set_guest_mode_enabled(guest_value);
     else
       NOTREACHED();
   } else if (prop == kAccountsPrefShowUserNamesOnSignIn) {
     em::ShowUserNamesOnSigninProto* show = pol.mutable_show_user_names();
     bool show_value;
-    if (value.GetAsBoolean(&show_value))
+    if (value->GetAsBoolean(&show_value))
       show->set_show_user_names(show_value);
     else
       NOTREACHED();
   } else if (prop == kSignedDataRoamingEnabled) {
     em::DataRoamingEnabledProto* roam = pol.mutable_data_roaming_enabled();
     bool roaming_value = false;
-    if (value.GetAsBoolean(&roaming_value))
+    if (value->GetAsBoolean(&roaming_value))
       roam->set_data_roaming_enabled(roaming_value);
     else
       NOTREACHED();
@@ -231,7 +243,7 @@ void DeviceSettingsProvider::SetInPolicy(const std::string& prop,
   } else if (prop == kSettingProxyEverywhere) {
     // TODO(cmasone): NOTIMPLEMENTED() once http://crosbug.com/13052 is fixed.
     std::string proxy_value;
-    if (value.GetAsString(&proxy_value)) {
+    if (value->GetAsString(&proxy_value)) {
       bool success =
           pol.mutable_device_proxy_settings()->ParseFromString(proxy_value);
       DCHECK(success);
@@ -241,14 +253,14 @@ void DeviceSettingsProvider::SetInPolicy(const std::string& prop,
   } else if (prop == kReleaseChannel) {
     em::ReleaseChannelProto* release_channel = pol.mutable_release_channel();
     std::string channel_value;
-    if (value.GetAsString(&channel_value))
+    if (value->GetAsString(&channel_value))
       release_channel->set_release_channel(channel_value);
     else
       NOTREACHED();
   } else if (prop == kStatsReportingPref) {
     em::MetricsEnabledProto* metrics = pol.mutable_metrics_enabled();
     bool metrics_value = false;
-    if (value.GetAsBoolean(&metrics_value))
+    if (value->GetAsBoolean(&metrics_value))
       metrics->set_metrics_enabled(metrics_value);
     else
       NOTREACHED();
@@ -256,7 +268,7 @@ void DeviceSettingsProvider::SetInPolicy(const std::string& prop,
   } else if (prop == kAccountsPrefUsers) {
     em::UserWhitelistProto* whitelist_proto = pol.mutable_user_whitelist();
     whitelist_proto->clear_user_whitelist();
-    const base::ListValue& users = static_cast<const base::ListValue&>(value);
+    base::ListValue& users = static_cast<base::ListValue&>(*value);
     for (base::ListValue::const_iterator i = users.begin();
          i != users.end(); ++i) {
       std::string email;
@@ -281,12 +293,17 @@ void DeviceSettingsProvider::SetInPolicy(const std::string& prop,
         policy_envelope,
         base::Bind(&DeviceSettingsProvider::OnStorePolicyCompleted,
                    base::Unretained(this)));
+  } else {
+    // OnStorePolicyCompleted won't get called in this case so proceed with any
+    // pending operations immediately.
+    delete pending_changes_[0].second;
+    pending_changes_.erase(pending_changes_.begin());
+    if (!pending_changes_.empty())
+      SetInPolicy();
   }
 }
 
 void DeviceSettingsProvider::FinishSetInPolicy(
-    const std::string& prop,
-    const base::Value* value,
     SignedSettings::ReturnCode code,
     const em::PolicyFetchResponse& policy) {
   if (code != SignedSettings::SUCCESS) {
@@ -298,7 +315,7 @@ void DeviceSettingsProvider::FinishSetInPolicy(
   // can pass the trustedness check in the second call to SetInPolicy.
   OnRetrievePolicyCompleted(code, policy);
 
-  SetInPolicy(prop, *value);
+  SetInPolicy();
 }
 
 void DeviceSettingsProvider::UpdateValuesCache() {
@@ -500,6 +517,13 @@ void DeviceSettingsProvider::OnStorePolicyCompleted(
     Reload();
   else
     trusted_ = true;
+
+  // Clear the finished task and proceed with any other stores that could be
+  // pending by now.
+  delete pending_changes_[0].second;
+  pending_changes_.erase(pending_changes_.begin());
+  if (!pending_changes_.empty())
+    SetInPolicy();
 }
 
 void DeviceSettingsProvider::OnRetrievePolicyCompleted(

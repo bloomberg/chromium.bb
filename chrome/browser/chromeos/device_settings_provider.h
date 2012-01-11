@@ -56,15 +56,13 @@ class DeviceSettingsProvider : public CrosSettingsProvider,
   // availability before the policy blob is fetched on boot.
   void RetrieveCachedData();
 
-  // Stores a value in the signed settings. If the device is not owned yet the
-  // data ends up only in the local_state cache and is serialized once ownership
-  // is acquired.
-  void SetInPolicy(const std::string& prop, const base::Value& value);
+  // Stores a value from the |pending_changes_| queue in the signed settings.
+  // If the device is not owned yet the data ends up only in the local_state
+  // cache and is serialized once ownership is acquired.
+  void SetInPolicy();
 
   // Finalizes stores to the policy file if the cache is dirty.
   void FinishSetInPolicy(
-      const std::string& prop,
-      const base::Value* value,
       SignedSettings::ReturnCode code,
       const enterprise_management::PolicyFetchResponse& policy);
 
@@ -117,6 +115,10 @@ class DeviceSettingsProvider : public CrosSettingsProvider,
   bool trusted_;
 
   PrefValueMap values_cache_;
+
+  // This is a queue for set requests, because those need to be sequential.
+  typedef std::pair<std::string, base::Value*> PendingQueueElement;
+  std::vector<PendingQueueElement> pending_changes_;
 
   friend class SignedSettingsHelper;
 
