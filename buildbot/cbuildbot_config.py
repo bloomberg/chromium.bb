@@ -622,6 +622,13 @@ internal_pfq.add_config('lumpy-private-bin',
   description='Lumpy PFQ',
 )
 
+internal_pfq.add_config('lumpy64-private-bin',
+  board='lumpy64',
+  overlays='private',
+  description='Lumpy64 PFQ',
+  important=False,
+)
+
 internal_pfq.add_config('link-private-bin',
   board='link',
   overlays='private',
@@ -703,6 +710,10 @@ _release.add_config('stumpy-release',
 
 _release.add_config('lumpy-release',
   board='lumpy',
+)
+
+_release.add_config('lumpy64-release',
+  board='lumpy64',
 )
 
 _release.add_config('link-release',
