@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -120,6 +120,9 @@ class TabContentsViewMac : public TabContentsView {
 
   TabContents* tab_contents() { return tab_contents_; }
   int preferred_width() const { return preferred_width_; }
+  void set_preferred_width(int preferred_width) {
+    preferred_width_ = preferred_width;
+  }
 
  private:
   // The TabContents whose contents we display.
