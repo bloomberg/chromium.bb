@@ -107,8 +107,6 @@
         'wm/default_container_event_filter.h',
         'wm/default_container_layout_manager.cc',
         'wm/default_container_layout_manager.h',
-        'wm/dialog_frame_view.cc',
-        'wm/dialog_frame_view.h',
         'wm/image_grid.cc',
         'wm/image_grid.h',
         'wm/modal_container_layout_manager.cc',

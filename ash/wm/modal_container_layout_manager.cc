@@ -4,12 +4,10 @@
 
 #include "ash/wm/modal_container_layout_manager.h"
 
-#include "ash/ash_switches.h"
 #include "ash/shell.h"
 #include "ash/wm/modality_event_filter.h"
 #include "ash/wm/window_util.h"
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/event.h"
 #include "ui/aura/root_window.h"
@@ -32,18 +30,10 @@ class ScreenView : public views::View {
 
   // Overridden from views::View:
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
-    canvas->FillRect(GetOverlayColor(), GetLocalBounds());
+    canvas->FillRect(SK_ColorBLACK, GetLocalBounds());
   }
 
  private:
-  SkColor GetOverlayColor() {
-    if (CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kAuraGoogleDialogFrames)) {
-      return SK_ColorWHITE;
-    }
-    return SK_ColorBLACK;
-  }
-
   DISALLOW_COPY_AND_ASSIGN(ScreenView);
 };
 

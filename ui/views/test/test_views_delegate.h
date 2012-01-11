@@ -49,8 +49,7 @@ class TestViewsDelegate : public ViewsDelegate {
     return NULL;
   }
 #endif
-  virtual NonClientFrameView* CreateDefaultNonClientFrameView(
-      Widget* widget) OVERRIDE;
+
   virtual void AddRef() OVERRIDE {}
   virtual void ReleaseRef() OVERRIDE {}
 

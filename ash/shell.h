@@ -27,10 +27,6 @@ namespace gfx {
 class Rect;
 class Size;
 }
-namespace views {
-class NonClientFrameView;
-class Widget;
-}
 
 namespace ash {
 
@@ -91,11 +87,6 @@ class ASH_EXPORT Shell {
 
   // See enum WindowMode for details.
   bool IsWindowModeCompact() const { return window_mode_ == COMPACT_MODE; }
-
-  // Creates a default views::NonClientFrameView for use by windows in the
-  // Ash environment.
-  views::NonClientFrameView* CreateDefaultNonClientFrameView(
-      views::Widget* widget);
 
   AcceleratorController* accelerator_controller() {
     return accelerator_controller_.get();

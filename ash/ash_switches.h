@@ -12,7 +12,6 @@ namespace ash {
 namespace switches {
 
 // Please keep alphabetized.
-ASH_EXPORT extern const char kAuraGoogleDialogFrames[];
 ASH_EXPORT extern const char kAuraNoShadows[];
 ASH_EXPORT extern const char kAuraTranslucentFrames[];
 ASH_EXPORT extern const char kAuraViewsAppList[];

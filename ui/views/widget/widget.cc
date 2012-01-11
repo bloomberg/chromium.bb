@@ -750,10 +750,6 @@ NonClientFrameView* Widget::CreateNonClientFrameView() {
   NonClientFrameView* frame_view = widget_delegate_->CreateNonClientFrameView();
   if (!frame_view)
     frame_view = native_widget_->CreateNonClientFrameView();
-  if (!frame_view && ViewsDelegate::views_delegate) {
-    frame_view =
-        ViewsDelegate::views_delegate->CreateDefaultNonClientFrameView(this);
-  }
   return frame_view ? frame_view : new CustomFrameView(this);
 }
 

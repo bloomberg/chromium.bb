@@ -26,21 +26,6 @@
 
 namespace {
 
-class ShellViewsDelegate : public views::TestViewsDelegate {
- public:
-  ShellViewsDelegate() {}
-  virtual ~ShellViewsDelegate() {}
-
-  // Overridden from views::TestViewsDelegate:
-  virtual views::NonClientFrameView* CreateDefaultNonClientFrameView(
-      views::Widget* widget) OVERRIDE {
-    return ash::Shell::GetInstance()->CreateDefaultNonClientFrameView(widget);
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ShellViewsDelegate);
-};
-
 class ShellDelegateImpl : public ash::ShellDelegate {
  public:
   ShellDelegateImpl() {
@@ -131,7 +116,7 @@ int main(int argc, char** argv) {
 
   // A ViewsDelegate is required.
   if (!views::ViewsDelegate::views_delegate)
-    views::ViewsDelegate::views_delegate = new ShellViewsDelegate;
+    views::ViewsDelegate::views_delegate = new views::TestViewsDelegate;
 
   ash::Shell::CreateInstance(new ShellDelegateImpl);
 
