@@ -47,44 +47,62 @@ public:
 };
 
 // Crashes intermittently on Windows, see http://crbug.com/109238
-#if defined(OS_WIN)
+// TODO(mpcomplete): Temporary enabled to debug.
+#if 0  // defined(OS_WIN)
 #define MAYBE_EmptyDefaultLocale DISABLED_EmptyDefaultLocale
 #else
 #define MAYBE_EmptyDefaultLocale EmptyDefaultLocale
 #endif
 TEST_F(ExtensionUnpackerTest, MAYBE_EmptyDefaultLocale) {
+  g_bug108724_debug = true;
+  LOG(WARNING) << "Setting up.";
   SetupUnpacker("empty_default_locale.crx");
+  LOG(WARNING) << "Running unpacker.";
   EXPECT_FALSE(unpacker_->Run());
+  LOG(WARNING) << "Done.";
   EXPECT_EQ(ASCIIToUTF16(errors::kInvalidDefaultLocale),
             unpacker_->error_message());
+  g_bug108724_debug = false;
 }
 
 // Crashes intermittently on Vista, see http://crbug.com/109385
-#if defined(OS_WIN)
+// TODO(mpcomplete): Temporary enabled to debug.
+#if 0  // defined(OS_WIN)
 #define MAYBE_HasDefaultLocaleMissingLocalesFolder \
-  DISABLED_HasDefaultLocaleMissingLocalesFolder
+    DISABLED_HasDefaultLocaleMissingLocalesFolder
 #else
 #define MAYBE_HasDefaultLocaleMissingLocalesFolder \
-  HasDefaultLocaleMissingLocalesFolder
+    HasDefaultLocaleMissingLocalesFolder
 #endif
 TEST_F(ExtensionUnpackerTest, MAYBE_HasDefaultLocaleMissingLocalesFolder) {
+  g_bug108724_debug = true;
+  LOG(WARNING) << "Setting up.";
   SetupUnpacker("has_default_missing_locales.crx");
+  LOG(WARNING) << "Running unpacker.";
   EXPECT_FALSE(unpacker_->Run());
+  LOG(WARNING) << "Done.";
   EXPECT_EQ(ASCIIToUTF16(errors::kLocalesTreeMissing),
             unpacker_->error_message());
+  g_bug108724_debug = false;
 }
 
 // Crashes intermittently on Windows, see http://crbug.com/109238
-#if defined(OS_WIN)
+// TODO(mpcomplete): Temporary enabled to debug.
+#if 0  // defined(OS_WIN)
 #define MAYBE_InvalidDefaultLocale DISABLED_InvalidDefaultLocale
 #else
 #define MAYBE_InvalidDefaultLocale InvalidDefaultLocale
 #endif
 TEST_F(ExtensionUnpackerTest, MAYBE_InvalidDefaultLocale) {
+  g_bug108724_debug = true;
+  LOG(WARNING) << "Setting up.";
   SetupUnpacker("invalid_default_locale.crx");
+  LOG(WARNING) << "Running unpacker.";
   EXPECT_FALSE(unpacker_->Run());
+  LOG(WARNING) << "Done.";
   EXPECT_EQ(ASCIIToUTF16(errors::kInvalidDefaultLocale),
             unpacker_->error_message());
+  g_bug108724_debug = false;
 }
 
 // Crashes intermittently on Windows, see http://crbug.com/109738

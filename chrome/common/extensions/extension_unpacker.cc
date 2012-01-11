@@ -26,6 +26,10 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "webkit/glue/image_decoder.h"
 
+// Temporary code to help debug a crashing unit test.
+bool g_bug108724_debug = false;
+#define BUG108724_LOG() if (g_bug108724_debug) LOG(WARNING)
+
 namespace errors = extension_manifest_errors;
 namespace keys = extension_manifest_keys;
 namespace filenames = extension_filenames;
@@ -151,7 +155,9 @@ bool ExtensionUnpacker::Run() {
 
   // <profile>/Extensions/INSTALL_TEMP/<version>
   temp_install_dir_ =
-    extension_path_.DirName().AppendASCII(filenames::kTempExtensionName);
+      extension_path_.DirName().AppendASCII(filenames::kTempExtensionName);
+
+  BUG108724_LOG() << "ExtensionUnpacker dir: " << temp_install_dir_.value();
 
   if (!file_util::CreateDirectory(temp_install_dir_)) {
 #if defined(OS_WIN)
@@ -160,19 +166,30 @@ bool ExtensionUnpacker::Run() {
     std::string dir_string = temp_install_dir_.value();
 #endif
 
+    BUG108724_LOG() << "ExtensionUnpacker CreateDirectory fail.";
     SetError(kCouldNotCreateDirectoryError + dir_string);
     return false;
   }
 
+  BUG108724_LOG() << "ExtensionUnpacker Unzip...";
+
   if (!zip::Unzip(extension_path_, temp_install_dir_)) {
+    BUG108724_LOG() << "ExtensionUnpacker Unzip fail";
     SetError(kCouldNotUnzipExtension);
     return false;
   }
 
+  BUG108724_LOG() << "ExtensionUnpacker ReadManifest...";
+
   // Parse the manifest.
   parsed_manifest_.reset(ReadManifest());
-  if (!parsed_manifest_.get())
+  if (!parsed_manifest_.get()) {
+    BUG108724_LOG() << "ExtensionUnpacker ReadManifest fail: " <<
+        error_message_;
     return false;  // Error was already reported.
+  }
+
+  BUG108724_LOG() << "ExtensionUnpacker CreateExtension...";
 
   // NOTE: Since the unpacker doesn't have the extension's public_id, the
   // InitFromValue is allowed to generate a temporary id for the extension.
@@ -186,11 +203,15 @@ bool ExtensionUnpacker::Run() {
       creation_flags_,
       &error));
   if (!extension.get()) {
+    BUG108724_LOG() << "ExtensionUnpacker CreateExtension fail: " << error;
     SetError(error);
     return false;
   }
 
+  BUG108724_LOG() << "ExtensionUnpacker ValidateExtension...";
+
   if (!extension_file_util::ValidateExtension(extension.get(), &error)) {
+    BUG108724_LOG() << "ExtensionUnpacker ValidateExtension fail: " << error;
     SetError(error);
     return false;
   }

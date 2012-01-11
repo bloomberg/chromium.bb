@@ -114,4 +114,7 @@ class ExtensionUnpacker {
   DISALLOW_COPY_AND_ASSIGN(ExtensionUnpacker);
 };
 
+// TODO(mpcomplete): remove after debugging http://crbug.com/108724
+extern bool g_bug108724_debug;
+
 #endif  // CHROME_COMMON_EXTENSIONS_EXTENSION_UNPACKER_H_
