@@ -103,7 +103,7 @@ class LoginUtils {
   virtual void StartTokenServices(Profile* user_profile) = 0;
 
   // Supply credentials for sync and others to use.
-  virtual void StartSync(
+  virtual void StartSignedInServices(
       Profile* profile,
       const GaiaAuthConsumer::ClientLoginResult& credentials) = 0;
 

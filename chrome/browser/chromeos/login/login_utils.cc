@@ -45,12 +45,13 @@
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/net/gaia/gaia_oauth_consumer.h"
 #include "chrome/browser/net/gaia/gaia_oauth_fetcher.h"
-#include "chrome/browser/net/gaia/token_service.h"
 #include "chrome/browser/net/preconnect.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/signin/signin_manager.h"
+#include "chrome/browser/signin/token_service.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/ui/browser_init.h"
 #include "chrome/common/chrome_paths.h"
@@ -558,7 +559,7 @@ class LoginUtilsImpl : public LoginUtils,
   virtual void PrewarmAuthentication() OVERRIDE;
   virtual void RestoreAuthenticationSession(Profile* profile) OVERRIDE;
   virtual void StartTokenServices(Profile* user_profile) OVERRIDE;
-  virtual void StartSync(
+  virtual void StartSignedInServices(
       Profile* profile,
       const GaiaAuthConsumer::ClientLoginResult& credentials) OVERRIDE;
   virtual void TransferDefaultCookies(Profile* default_profile,
@@ -769,11 +770,20 @@ void LoginUtilsImpl::OnProfileCreated(
   switch (status) {
     case Profile::CREATE_STATUS_INITIALIZED:
       break;
-    case Profile::CREATE_STATUS_CREATED:
+    case Profile::CREATE_STATUS_CREATED: {
       if (UserManager::Get()->current_user_is_new())
         SetFirstLoginPrefs(user_profile->GetPrefs());
+      // Make sure that the google service username is properly set (we do this
+      // on every sign in, not just the first login, to deal with existing
+      // profiles that might not have it set yet).
+      StringPrefMember google_services_username;
+      google_services_username.Init(prefs::kGoogleServicesUsername,
+                                    user_profile->GetPrefs(), NULL);
+      google_services_username.SetValue(
+          UserManager::Get()->logged_in_user().display_email());
       RespectLocalePreference(user_profile);
       return;
+    }
     case Profile::CREATE_STATUS_FAIL:
     default:
       NOTREACHED();
@@ -877,30 +887,29 @@ void LoginUtilsImpl::StartTokenServices(Profile* user_profile) {
                        oauth1_secret);
 }
 
-void LoginUtilsImpl::StartSync(
+void LoginUtilsImpl::StartSignedInServices(
     Profile* user_profile,
     const GaiaAuthConsumer::ClientLoginResult& credentials) {
-  TokenService* token_service = user_profile->GetTokenService();
+  // Fetch/Create the SigninManager - this will cause the TokenService to load
+  // tokens for the currently signed-in user if the SigninManager hasn't already
+  // been initialized.
+  SigninManager* signin = user_profile->GetSigninManager();
+  // Make sure SigninManager is connected to our current user (this should
+  // happen automatically because we set kGoogleServicesUsername in
+  // OnProfileCreated()).
+  DCHECK_EQ(UserManager::Get()->logged_in_user().display_email(),
+            signin->GetAuthenticatedUsername());
   static bool initialized = false;
   if (!initialized) {
     initialized = true;
-
-    std::string email = UserManager::Get()->logged_in_user().display_email();
-    user_profile->GetPrefs()->SetString(prefs::kGoogleServicesUsername, email);
-
-    ProfileSyncService* service = user_profile->GetProfileSyncService();
-    if (service) {
-      service->SetPassphrase(password_, false);
-    } else {
-      DCHECK(!token_service->Initialized());
-      // TODO(cros): This TokenService init if sync is not enabled (someone
-      // passed the --disable-sync flag) should likely be handled at a higher
-      // level.
-      token_service->Initialize(GaiaConstants::kChromeOSSource, user_profile);
-      token_service->LoadTokensFromDB();
-    }
-    password_ = "";
+    // Pass the updated passphrase to the sync service for use in decrypting
+    // data encrypted with the user's GAIA password.
+    ProfileSyncService* sync_service = user_profile->GetProfileSyncService();
+    if (sync_service)
+      sync_service->SetPassphrase(password_, false);
   }
+  password_.clear();
+  TokenService* token_service = user_profile->GetTokenService();
   token_service->UpdateCredentials(credentials);
   if (token_service->AreCredentialsValid())
     token_service->StartFetchingTokens();
@@ -1280,7 +1289,7 @@ void LoginUtilsImpl::OnOAuthVerificationSucceeded(
   // Kick off sync engine.
   GaiaAuthConsumer::ClientLoginResult credentials(sid, lsid, auth,
                                                   std::string());
-  StartSync(ProfileManager::GetDefaultProfile(), credentials);
+  StartSignedInServices(ProfileManager::GetDefaultProfile(), credentials);
 }
 
 

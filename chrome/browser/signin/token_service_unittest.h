@@ -1,17 +1,17 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
 // This file defines a unit test harness for the profile's token service.
 
-#ifndef CHROME_BROWSER_NET_GAIA_TOKEN_SERVICE_UNITTEST_H_
-#define CHROME_BROWSER_NET_GAIA_TOKEN_SERVICE_UNITTEST_H_
+#ifndef CHROME_BROWSER_SIGNIN_TOKEN_SERVICE_UNITTEST_H_
+#define CHROME_BROWSER_SIGNIN_TOKEN_SERVICE_UNITTEST_H_
 #pragma once
 
 #include "base/message_loop.h"
 #include "base/synchronization/waitable_event.h"
-#include "chrome/browser/net/gaia/token_service.h"
 #include "chrome/browser/webdata/web_data_service.h"
+#include "chrome/browser/signin/token_service.h"
 #include "chrome/common/net/gaia/gaia_auth_consumer.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/notification_details.h"
@@ -81,4 +81,4 @@ class TokenServiceTestHarness : public testing::Test {
   scoped_ptr<TestingProfile> profile_;
 };
 
-#endif  // CHROME_BROWSER_NET_GAIA_TOKEN_SERVICE_UNITTEST_H_
+#endif  // CHROME_BROWSER_SIGNIN_TOKEN_SERVICE_UNITTEST_H_

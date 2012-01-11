@@ -1,14 +1,14 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync/signin_manager.h"
+#include "chrome/browser/signin/signin_manager.h"
 
 #include "base/command_line.h"
 #include "base/string_util.h"
-#include "chrome/browser/net/gaia/token_service.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/token_service.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/util/oauth.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -20,7 +20,10 @@
 const char kGetInfoEmailKey[] = "email";
 
 SigninManager::SigninManager()
-    : profile_(NULL), had_two_factor_error_(false) {}
+    : profile_(NULL),
+      had_two_factor_error_(false),
+      last_login_auth_error_(GoogleServiceAuthError::None()) {
+}
 
 SigninManager::~SigninManager() {}
 
@@ -189,6 +192,10 @@ void SigninManager::SignOut() {
   profile_->GetTokenService()->EraseTokensFromDB();
 }
 
+const GoogleServiceAuthError& SigninManager::GetLoginAuthError() const {
+  return last_login_auth_error_;
+}
+
 void SigninManager::OnClientLoginSuccess(const ClientLoginResult& result) {
   DCHECK(!browser_sync::IsUsingOAuth());
   last_result_ = result;
@@ -203,6 +210,7 @@ void SigninManager::OnGetUserInfoSuccess(const std::string& key,
   DCHECK(key == kGetInfoEmailKey);
   DCHECK(authenticated_username_.empty() || authenticated_username_ == value);
 
+  last_login_auth_error_ = GoogleServiceAuthError::None();
   authenticated_username_ = value;
   possibly_invalid_username_.clear();
   profile_->GetPrefs()->SetString(prefs::kGoogleServicesUsername,
@@ -248,6 +256,7 @@ void SigninManager::OnTokenAuthFailure(const GoogleServiceAuthError& error) {
 
 void SigninManager::OnClientLoginFailure(const GoogleServiceAuthError& error) {
   DCHECK(!browser_sync::IsUsingOAuth());
+  last_login_auth_error_ = error;
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_GOOGLE_SIGNIN_FAILED,
       content::Source<Profile>(profile_),
@@ -307,6 +316,8 @@ void SigninManager::OnUserInfoSuccess(const std::string& email) {
     return;
 
   DVLOG(1) << "Sync signin for " << email << " is complete.";
+  last_login_auth_error_ = GoogleServiceAuthError::None();
+
   authenticated_username_ = email;
   profile_->GetPrefs()->SetString(
       prefs::kGoogleServicesUsername, authenticated_username_);

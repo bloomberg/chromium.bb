@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -438,6 +438,10 @@ ProtocolHandlerRegistry* OffTheRecordProfileImpl::GetProtocolHandlerRegistry() {
 }
 
 TokenService* OffTheRecordProfileImpl::GetTokenService() {
+  return NULL;
+}
+
+SigninManager* OffTheRecordProfileImpl::GetSigninManager() {
   return NULL;
 }
 

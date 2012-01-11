@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,8 +9,8 @@
 #include "base/message_loop.h"
 #include "chrome/browser/extensions/app_notify_channel_setup.h"
 #include "chrome/browser/extensions/app_notify_channel_ui.h"
-#include "chrome/browser/net/gaia/token_service.h"
-#include "chrome/browser/net/gaia/token_service_unittest.h"
+#include "chrome/browser/signin/token_service.h"
+#include "chrome/browser/signin/token_service_unittest.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/net/gaia/gaia_urls.h"
 #include "chrome/common/pref_names.h"

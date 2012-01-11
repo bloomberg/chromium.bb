@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -65,6 +65,7 @@ class PrefService;
 class ProfileSyncService;
 class PromoCounter;
 class ProtocolHandlerRegistry;
+class SigninManager;
 class SpeechInputPreferences;
 class SpellCheckHost;
 class TemplateURLFetcher;
@@ -393,6 +394,9 @@ class Profile : public content::BrowserContext {
 
   // Returns the ProtocolHandlerRegistry, creating if not yet created.
   virtual ProtocolHandlerRegistry* GetProtocolHandlerRegistry() = 0;
+
+  // Returns the SigninManager, creating if not yet created.
+  virtual SigninManager* GetSigninManager() = 0;
 
   // Returns the Gaia Token Service, creating if not yet created.
   virtual TokenService* GetTokenService() = 0;

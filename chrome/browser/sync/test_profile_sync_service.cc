@@ -1,9 +1,10 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/sync/test_profile_sync_service.h"
 
+#include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/sync/abstract_profile_sync_service_test.h"
 #include "chrome/browser/sync/glue/data_type_controller.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
@@ -11,7 +12,6 @@
 #include "chrome/browser/sync/js/js_reply_handler.h"
 #include "chrome/browser/sync/profile_sync_components_factory.h"
 #include "chrome/browser/sync/sessions/session_state.h"
-#include "chrome/browser/sync/signin_manager.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/browser/sync/test/test_http_bridge_factory.h"
@@ -141,7 +141,8 @@ TestProfileSyncService::TestProfileSyncService(
   SetSyncSetupCompleted();
 }
 
-TestProfileSyncService::~TestProfileSyncService() {}
+TestProfileSyncService::~TestProfileSyncService() {
+}
 
 void TestProfileSyncService::SetInitialSyncEndedForAllTypes() {
   UserShare* user_share = GetUserShare();

@@ -1,16 +1,16 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync/signin_manager.h"
+#include "chrome/browser/signin/signin_manager.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
-#include "chrome/browser/net/gaia/token_service.h"
-#include "chrome/browser/net/gaia/token_service_unittest.h"
 #include "chrome/browser/password_manager/encryptor.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/signin/token_service.h"
+#include "chrome/browser/signin/token_service_unittest.h"
 #include "chrome/browser/sync/util/oauth.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/common/chrome_notification_types.h"

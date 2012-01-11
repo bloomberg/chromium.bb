@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -89,6 +89,7 @@ class OffTheRecordProfileImpl : public Profile,
   virtual bool DidLastSessionExitCleanly() OVERRIDE;
   virtual BookmarkModel* GetBookmarkModel() OVERRIDE;
   virtual ProtocolHandlerRegistry* GetProtocolHandlerRegistry() OVERRIDE;
+  virtual SigninManager* GetSigninManager() OVERRIDE;
   virtual TokenService* GetTokenService() OVERRIDE;
   virtual ProfileSyncService* GetProfileSyncService() OVERRIDE;
   virtual bool IsSameProfile(Profile* profile) OVERRIDE;

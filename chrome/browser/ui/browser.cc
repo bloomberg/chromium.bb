@@ -4346,7 +4346,9 @@ void Browser::Observe(int type,
 
 void Browser::OnStateChanged() {
   DCHECK(profile_->GetProfileSyncService());
-
+  // For unit tests, we don't have a window.
+  if (!window_)
+    return;
   const bool show_main_ui = IsShowingMainUI(window_->IsFullscreen());
   command_updater_.UpdateCommandEnabled(IDC_SYNC_BOOKMARKS,
       show_main_ui && profile_->GetOriginalProfile()->IsSyncAccessible());
