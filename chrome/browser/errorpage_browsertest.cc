@@ -168,9 +168,9 @@ IN_PROC_BROWSER_TEST_F(ErrorPageTest, MAYBE_DNSError_GoBack2AndForward) {
 
 // See crbug.com/109669
 #if defined(USE_AURA)
-#define MAYBE_DNSError_GoBack2AndForward2 FLAKY_DNSError_GoBack2AndForward2
+#define MAYBE_DNSError_GoBack2Forward2 FLAKY_DNSError_GoBack2Forward2
 #else
-#define MAYBE_DNSError_GoBack2AndForward2 DNSError_GoBack2AndForward2
+#define MAYBE_DNSError_GoBack2Forward2 DNSError_GoBack2Forward2
 #endif
 // Test that a DNS error occuring in the main frame does not result in an
 // additional session history entry.
