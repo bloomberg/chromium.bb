@@ -9010,9 +9010,6 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
       </message>
 
       <!-- New Tab -->
-      <message name="IDS_NEW_TAB_APPS" desc="The 'Apps' heading on the new tab page">
-        Apps
-      </message>
       <if expr="pp_ifdef('android')">
         <message name="IDS_NEW_TAB_TITLE"
             desc="For mobile devices. Do not use title case. Title of the new tab page, this is only shown while loading, then the title comes from the page.">
@@ -9026,15 +9023,19 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
         </message>
       </if>
       <message name="IDS_NEW_TAB_MOST_VISITED"
-               desc="The 'Most Visited' heading on the new tab page">
+               desc="The name for the 'Most Visited' navigation control on the New Tab Page.">
         Most visited
+      </message>
+      <message name="IDS_APP_DEFAULT_PAGE_NAME"
+               desc="Default name for the first 'Apps' page on the New Tab Page.">
+        Apps
       </message>
       <message name="IDS_NEW_TAB_RESTORE_THUMBNAILS_SHORT_LINK"
          desc="The link that restores previously removed thumbnails. Context is 'Thumbnail removed. Undo | Restore all'">
         Restore all
       </message>
       <message name="IDS_NEW_TAB_RECENTLY_CLOSED"
-               desc="The 'Recently Closed' heading on the new tab page">
+               desc="The name for the 'Recently Closed' menu on the New Tab Page.">
         Recently closed
       </message>
       <message name="IDS_NEW_TAB_OTR_MESSAGE"
@@ -9095,24 +9096,20 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
         Options
       </message>
       <message name="IDS_NEW_TAB_APP_DISABLE_NOTIFICATIONS"
-               desc="Text for the option to disable app notifications">
+               desc="Text for the context menu item to disable app notifications">
         Disable notifications
       </message>
       <message name="IDS_NEW_TAB_APP_ENABLE_NOTIFICATIONS"
-               desc="Text for the option to enable app notifications">
+               desc="Text for the context menu item to enable app notifications">
         Enable notifications
       </message>
       <message name="IDS_NEW_TAB_APP_ALLOW_NOTIFICATIONS"
-               desc="Text for the option to allow app notifications">
+               desc="Text for the context menu item to allow app notifications">
         Allow notifications
       </message>
       <message name="IDS_NEW_TAB_APP_CREATE_SHORTCUT"
-               desc="Text for the button that creates an app shortcut.">
+               desc="Text for the context menu item that creates an app shortcut.">
         Create shortcut
-      </message>
-      <message name="IDS_APP_DEFAULT_PAGE_NAME"
-               desc="Default name for the first 'Apps' page on the New Tab Page.">
-        Apps
       </message>
       <message name="IDS_APP_CONTEXT_MENU_OPEN_PINNED"
                desc="Text for the button that opens the app in a pinned tab.">

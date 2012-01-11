@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -279,8 +279,6 @@ void NTPResourceCache::CreateNewTabHTML() {
   // (in GetLocalizedValues) and should have more legible names.
   // Show the profile name in the title and most visited labels if the current
   // profile is not the default.
-  string16 apps = l10n_util::GetStringUTF16(IDS_NEW_TAB_APPS);
-  string16 title = l10n_util::GetStringUTF16(IDS_NEW_TAB_TITLE);
   DictionaryValue localized_strings;
   localized_strings.SetString("bookmarkbarattached",
       profile_->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar) ?
@@ -289,8 +287,8 @@ void NTPResourceCache::CreateNewTabHTML() {
       ThemeServiceFactory::GetForProfile(profile_)->HasCustomImage(
           IDR_THEME_NTP_ATTRIBUTION) ?
       "true" : "false");
-  localized_strings.SetString("apps", apps);
-  localized_strings.SetString("title", title);
+  localized_strings.SetString("title",
+      l10n_util::GetStringUTF16(IDS_NEW_TAB_TITLE));
   localized_strings.SetString("mostvisited",
       l10n_util::GetStringUTF16(IDS_NEW_TAB_MOST_VISITED));
   localized_strings.SetString("restoreThumbnailsShort",
