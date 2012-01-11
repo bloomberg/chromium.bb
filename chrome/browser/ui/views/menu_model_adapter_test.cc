@@ -67,6 +67,10 @@ class TestViewsDelegate : public views::ViewsDelegate {
     return NULL;
   }
 #endif
+  virtual views::NonClientFrameView* CreateDefaultNonClientFrameView(
+      views::Widget* widget) OVERRIDE {
+    return NULL;
+  }
 
   virtual void AddRef() OVERRIDE {
   }

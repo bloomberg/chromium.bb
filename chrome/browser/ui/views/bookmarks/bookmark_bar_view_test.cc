@@ -100,6 +100,10 @@ class ViewsDelegateImpl : public views::ViewsDelegate {
 #if defined(OS_WIN)
   virtual HICON GetDefaultWindowIcon() const OVERRIDE { return 0; }
 #endif
+  virtual views::NonClientFrameView* CreateDefaultNonClientFrameView(
+      views::Widget* widget) OVERRIDE {
+    return NULL;
+  }
 
   virtual void AddRef() OVERRIDE {
   }

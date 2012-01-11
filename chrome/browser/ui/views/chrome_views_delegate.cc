@@ -24,6 +24,10 @@
 #include "chrome/browser/app_icon_win.h"
 #endif
 
+#if defined(USE_AURA)
+#include "ash/shell.h"
+#endif
+
 namespace {
 
 // If the given window has a profile associated with it, use that profile's
@@ -123,6 +127,15 @@ HICON ChromeViewsDelegate::GetDefaultWindowIcon() const {
   return GetAppIcon();
 }
 #endif
+
+views::NonClientFrameView* ChromeViewsDelegate::CreateDefaultNonClientFrameView(
+    views::Widget* widget) {
+#if defined(USE_AURA)
+  return ash::Shell::GetInstance()->CreateDefaultNonClientFrameView(widget);
+#else
+  return NULL;
+#endif
+}
 
 void ChromeViewsDelegate::AddRef() {
   g_browser_process->AddRefModule();
