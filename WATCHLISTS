@@ -102,7 +102,7 @@
         'chrome/browser/net/.*net_log.*|' \
         'chrome/browser/net/passive_log_collector.*|' \
         'chrome/browser/resources/net_internals/.*|' \
-        'chrome/browser/ui/webui/net_internals_ui.*'
+        'chrome/browser/ui/webui/net_internals/.*'
     },
     'ftp': {
       'filepath': 'ftp',

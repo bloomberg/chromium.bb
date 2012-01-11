@@ -30,7 +30,7 @@
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
 #include "chrome/browser/ui/webui/hung_renderer_dialog_ui.h"
 #include "chrome/browser/ui/webui/media/media_internals_ui.h"
-#include "chrome/browser/ui/webui/net_internals_ui.h"
+#include "chrome/browser/ui/webui/net_internals/net_internals_ui.h"
 #include "chrome/browser/ui/webui/network_action_predictor/network_action_predictor_ui.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"

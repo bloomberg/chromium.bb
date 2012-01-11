@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,7 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
-#include "chrome/browser/ui/webui/net_internals_ui.h"
+#include "chrome/browser/ui/webui/net_internals/net_internals_ui.h"
 
 NetLogLogger::NetLogLogger(const FilePath &log_path)
     : ThreadSafeObserverImpl(net::NetLog::LOG_ALL_BUT_BYTES) {
