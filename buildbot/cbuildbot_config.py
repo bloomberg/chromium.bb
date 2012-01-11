@@ -630,7 +630,6 @@ internal_pfq.add_config('link-private-bin',
   board='link',
   overlays='private',
   description='link PFQ',
-  prebuilts=False,
 )
 
 
