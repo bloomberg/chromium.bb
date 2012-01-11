@@ -108,8 +108,9 @@ int GetCharacterWidthForPixels(GtkWidget* widget, int pixel_width) {
       << " widget must be realized to compute font metrics correctly";
 
   PangoContext* context = gtk_widget_create_pango_context(widget);
+  GtkStyle* style = gtk_widget_get_style(widget);
   PangoFontMetrics* metrics = pango_context_get_metrics(context,
-      widget->style->font_desc, pango_context_get_language(context));
+      style->font_desc, pango_context_get_language(context));
 
   // This technique (max of char and digit widths) matches the code in
   // gtklabel.c.
@@ -280,8 +281,9 @@ void GetWidgetSizeFromCharacters(
   DCHECK(gtk_widget_get_realized(widget))
       << " widget must be realized to compute font metrics correctly";
   PangoContext* context = gtk_widget_create_pango_context(widget);
+  GtkStyle* style = gtk_widget_get_style(widget);
   PangoFontMetrics* metrics = pango_context_get_metrics(context,
-      widget->style->font_desc, pango_context_get_language(context));
+      style->font_desc, pango_context_get_language(context));
   if (width) {
     *width = static_cast<int>(
         pango_font_metrics_get_approximate_char_width(metrics) *

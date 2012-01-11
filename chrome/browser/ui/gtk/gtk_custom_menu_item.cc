@@ -92,8 +92,9 @@ static void set_selected(GtkCustomMenuItem* item, GtkWidget* selected) {
 // label has been (re)created. (Label values can change dynamically.)
 static void on_button_label_set(GObject* object) {
   GtkButton* button = GTK_BUTTON(object);
-  gtk_widget_set_sensitive(GTK_BIN(button)->child, FALSE);
-  gtk_misc_set_padding(GTK_MISC(GTK_BIN(button)->child), 2, 0);
+  GtkWidget* child = gtk_bin_get_child(GTK_BIN(button));
+  gtk_widget_set_sensitive(child, FALSE);
+  gtk_misc_set_padding(GTK_MISC(child), 2, 0);
 }
 
 static void gtk_custom_menu_item_finalize(GObject *object);
@@ -261,8 +262,9 @@ static gboolean gtk_custom_menu_item_hbox_expose(GtkWidget* widget,
         GtkAllocation child_alloc;
         gtk_widget_get_allocation(gtk_bin_get_child(GTK_BIN(current_button)),
                                   &child_alloc);
-        int half_offset = widget->style->xthickness / 2;
-        gtk_paint_vline(gtk_widget_get_style(widget),
+        GtkStyle* style = gtk_widget_get_style(widget);
+        int half_offset = style->xthickness / 2;
+        gtk_paint_vline(style,
                         gtk_widget_get_window(widget),
                         gtk_widget_get_state(current_button),
                         &event->area, widget, "button",

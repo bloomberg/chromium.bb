@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -324,7 +324,8 @@ void WriteBookmarksToSelection(const std::vector<const BookmarkNode*>& nodes,
       Pickle pickle;
       data.WriteToPickle(profile, &pickle);
 
-      gtk_selection_data_set(selection_data, selection_data->target,
+      gtk_selection_data_set(selection_data,
+                             gtk_selection_data_get_target(selection_data),
                              kBitsInAByte,
                              static_cast<const guchar*>(pickle.data()),
                              pickle.size());
@@ -335,7 +336,7 @@ void WriteBookmarksToSelection(const std::vector<const BookmarkNode*>& nodes,
       std::string utf8_text = nodes[0]->url().spec() + "\n" +
           UTF16ToUTF8(nodes[0]->GetTitle());
       gtk_selection_data_set(selection_data,
-                             selection_data->target,
+                             gtk_selection_data_get_target(selection_data),
                              kBitsInAByte,
                              reinterpret_cast<const guchar*>(utf8_text.c_str()),
                              utf8_text.length());
@@ -394,22 +395,26 @@ std::vector<const BookmarkNode*> GetNodesFromSelection(
   if (dnd_success)
     *dnd_success = FALSE;
 
-  if (selection_data && selection_data->length > 0) {
-    if (context && delete_selection_data && context->action == GDK_ACTION_MOVE)
-      *delete_selection_data = TRUE;
+  if (selection_data) {
+    gint length = gtk_selection_data_get_length(selection_data);
+    if (length > 0) {
+      if (context && delete_selection_data &&
+          context->action == GDK_ACTION_MOVE)
+        *delete_selection_data = TRUE;
 
-    switch (target_type) {
-      case ui::CHROME_BOOKMARK_ITEM: {
-        if (dnd_success)
-          *dnd_success = TRUE;
-        Pickle pickle(reinterpret_cast<char*>(selection_data->data),
-                      selection_data->length);
-        BookmarkNodeData drag_data;
-        drag_data.ReadFromPickle(&pickle);
-        return drag_data.GetNodes(profile);
-      }
-      default: {
-        DLOG(ERROR) << "Unsupported drag received type: " << target_type;
+      switch (target_type) {
+        case ui::CHROME_BOOKMARK_ITEM: {
+          if (dnd_success)
+            *dnd_success = TRUE;
+          Pickle pickle(reinterpret_cast<const char*>(
+              gtk_selection_data_get_data(selection_data)), length);
+          BookmarkNodeData drag_data;
+          drag_data.ReadFromPickle(&pickle);
+          return drag_data.GetNodes(profile);
+        }
+        default: {
+          DLOG(ERROR) << "Unsupported drag received type: " << target_type;
+        }
       }
     }
   }

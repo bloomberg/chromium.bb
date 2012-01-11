@@ -70,6 +70,10 @@ inline void gdk_pixmap_get_size(GdkPixmap* pixmap, gint* width, gint* height) {
   gdk_drawable_get_size(GDK_DRAWABLE(pixmap), width, height);
 }
 
+inline GdkDisplay* gdk_window_get_display(GdkWindow* window) {
+  return gdk_drawable_get_display(GDK_DRAWABLE(window));
+}
+
 inline int gdk_window_get_height(GdkWindow* window) {
   int height;
   gdk_drawable_get_size(GDK_DRAWABLE(window), NULL, &height);

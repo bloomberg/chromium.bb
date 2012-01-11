@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -51,7 +51,8 @@ void ChildSizeAllocate(GtkWidget* child, gpointer userdata) {
     return;
 
   SizeAllocateData* data = reinterpret_cast<SizeAllocateData*>(userdata);
-  GtkAllocation child_allocation = child->allocation;
+  GtkAllocation child_allocation;
+  gtk_widget_get_allocation(child, &child_allocation);
 
   if (data->homogeneous) {
     // Make sure the child is not overlapped with others' boundary.

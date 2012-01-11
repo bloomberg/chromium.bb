@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -190,7 +190,7 @@ bool FullscreenExitBubbleGtk::WindowContainsPoint(gfx::Point pos) {
 }
 
 bool FullscreenExitBubbleGtk::IsWindowActive() {
-  if (!widget()->parent)
+  if (!gtk_widget_get_parent(widget()))
     return false;
   GtkWindow* window = GTK_WINDOW(
       gtk_widget_get_ancestor(widget(), GTK_TYPE_WINDOW));

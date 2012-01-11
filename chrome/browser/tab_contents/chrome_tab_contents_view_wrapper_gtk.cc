@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -140,7 +140,7 @@ void ChromeTabContentsViewWrapperGtk::OnSetFloatingPosition(
 
   // Place each ConstrainedWindow in the center of the view.
   GtkWidget* widget = constrained_window_->widget();
-  DCHECK(widget->parent == floating_.get());
+  DCHECK(gtk_widget_get_parent(widget) == floating_.get());
 
   GtkRequisition requisition;
   gtk_widget_size_request(widget, &requisition);

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -91,8 +91,8 @@ const char* kLRE = "\xe2\x80\xaa";
 
 // Return a Rect covering the whole area of |window|.
 gfx::Rect GetWindowRect(GdkWindow* window) {
-  gint width, height;
-  gdk_drawable_get_size(GDK_DRAWABLE(window), &width, &height);
+  gint width = gdk_window_get_width(window);
+  gint height = gdk_window_get_height(window);
   return gfx::Rect(width, height);
 }
 

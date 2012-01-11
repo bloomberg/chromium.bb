@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -195,7 +195,7 @@ void DownloadShelfGtk::Show() {
 void DownloadShelfGtk::Close() {
   // When we are closing, we can vertically overlap the render view. Make sure
   // we are on top.
-  gdk_window_raise(shelf_.get()->window);
+  gdk_window_raise(gtk_widget_get_window(shelf_.get()));
   slide_widget_->Close();
   browser_->UpdateDownloadShelfVisibility(false);
   int num_in_progress = 0;

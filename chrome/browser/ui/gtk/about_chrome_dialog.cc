@@ -83,7 +83,8 @@ const char* GetChromiumUrl() {
 gboolean OnEventBoxExpose(GtkWidget* event_box,
                           GdkEventExpose* expose,
                           gboolean user_data) {
-  cairo_t* cr = gdk_cairo_create(GDK_DRAWABLE(event_box->window));
+  cairo_t* cr = gdk_cairo_create(GDK_DRAWABLE(
+      gtk_widget_get_window(event_box)));
   gdk_cairo_rectangle(cr, &expose->area);
   cairo_clip(cr);
 

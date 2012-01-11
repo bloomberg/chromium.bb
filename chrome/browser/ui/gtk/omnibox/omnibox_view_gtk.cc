@@ -1207,7 +1207,7 @@ gboolean OmniboxViewGtk::HandleKeyRelease(GtkWidget* widget,
   if (event->keyval == GDK_Control_L || event->keyval == GDK_Control_R) {
     // Round trip to query the control state after the release.  This allows
     // you to release one control key while still holding another control key.
-    GdkDisplay* display = gdk_drawable_get_display(event->window);
+    GdkDisplay* display = gdk_window_get_display(event->window);
     GdkModifierType mod;
     gdk_display_get_pointer(display, NULL, NULL, NULL, &mod);
     if (!(mod & GDK_CONTROL_MASK))

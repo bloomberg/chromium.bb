@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -138,7 +138,7 @@ void NineBox::RenderToWidgetWithOpacity(GtkWidget* dst, double opacity) const {
   if (x2 < x1 || y2 < y1)
     return;
 
-  cairo_t* cr = gdk_cairo_create(GDK_DRAWABLE(dst->window));
+  cairo_t* cr = gdk_cairo_create(GDK_DRAWABLE(gtk_widget_get_window(dst)));
   // For widgets that have their own window, the allocation (x,y) coordinates
   // are GdkWindow relative. For other widgets, the coordinates are relative
   // to their container.

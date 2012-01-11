@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -145,11 +145,9 @@ static void chrome_gtk_frame_init(ChromeGtkFrame* frame) {
 }
 
 GtkWidget* chrome_gtk_frame_new(void) {
-  GtkWindow* window =
-      GTK_WINDOW(g_object_new(chrome_gtk_frame_get_type(), NULL));
-  window->type = GTK_WINDOW_TOPLEVEL;
-  return GTK_WIDGET(window);
+  return GTK_WIDGET(g_object_new(chrome_gtk_frame_get_type(),
+                                 "type", GTK_WINDOW_TOPLEVEL,
+                                 NULL));
 }
-
 
 G_END_DECLS

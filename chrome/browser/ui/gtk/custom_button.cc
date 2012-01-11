@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -91,7 +91,8 @@ gboolean CustomDrawButtonBase::OnExpose(GtkWidget* widget,
   if (animating_hover && (!hover_pixbuf || !hover_pixbuf->valid()))
     return FALSE;
 
-  cairo_t* cairo_context = gdk_cairo_create(GDK_DRAWABLE(widget->window));
+  cairo_t* cairo_context = gdk_cairo_create(GDK_DRAWABLE(
+      gtk_widget_get_window(widget)));
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
   cairo_translate(cairo_context, allocation.x, allocation.y);

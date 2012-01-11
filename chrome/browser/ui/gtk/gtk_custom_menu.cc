@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,7 +17,7 @@ static gint gtk_menu_shell_is_item(GtkMenuShell* menu_shell,
   g_return_val_if_fail(GTK_IS_MENU_SHELL(menu_shell), FALSE);
   g_return_val_if_fail(child != NULL, FALSE);
 
-  parent = child->parent;
+  parent = gtk_widget_get_parent(child);
   while (GTK_IS_MENU_SHELL(parent)) {
     if (parent == reinterpret_cast<GtkWidget*>(menu_shell))
       return TRUE;
@@ -34,7 +34,7 @@ static GtkWidget* gtk_menu_shell_get_item(GtkMenuShell* menu_shell,
   GtkWidget* menu_item = gtk_get_event_widget(event);
 
   while (menu_item && !GTK_IS_MENU_ITEM(menu_item))
-    menu_item = menu_item->parent;
+    menu_item = gtk_widget_get_parent(menu_item);
 
   if (menu_item && gtk_menu_shell_is_item(menu_shell, menu_item))
     return menu_item;

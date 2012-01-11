@@ -461,7 +461,7 @@ gboolean BubbleGtk::OnGtkAccelerator(GtkAccelGroup* group,
 
 gboolean BubbleGtk::OnExpose(GtkWidget* widget, GdkEventExpose* expose) {
   // TODO(erg): This whole method will need to be rewritten in cairo.
-  GdkDrawable* drawable = GDK_DRAWABLE(window_->window);
+  GdkDrawable* drawable = GDK_DRAWABLE(gtk_widget_get_window(window_));
   GdkGC* gc = gdk_gc_new(drawable);
   gdk_gc_set_rgb_fg_color(gc, &kFrameColor);
 
@@ -494,14 +494,15 @@ gboolean BubbleGtk::OnButtonPress(GtkWidget* widget,
   // check that it falls within our bounds, since we've grabbed the pointer and
   // some events that actually occurred in other windows will be reported with
   // respect to our window).
-  if (event->window == window_->window &&
+  GdkWindow* gdk_window = gtk_widget_get_window(window_);
+  if (event->window == gdk_window &&
       (mask_region_ && gdk_region_point_in(mask_region_, event->x, event->y))) {
     return FALSE;  // Propagate.
   }
 
   // Our content widget got a click.
-  if (event->window != window_->window &&
-      gdk_window_get_toplevel(event->window) == window_->window) {
+  if (event->window != gdk_window &&
+      gdk_window_get_toplevel(event->window) == gdk_window) {
     return FALSE;
   }
 
