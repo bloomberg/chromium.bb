@@ -3118,6 +3118,7 @@
         'test/perf/browser_perf_test.cc',
         'test/perf/browser_perf_test.h',
         'test/perf/rendering/latency_tests.cc',
+        'test/perf/rendering/throughput_tests.cc',
         '../content/app/startup_helper_win.cc',
         '../content/test/test_launcher.cc',
         '../content/test/test_launcher.h',

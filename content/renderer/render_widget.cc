@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -868,6 +868,11 @@ void RenderWidget::DoDeferredUpdate() {
 
     for (size_t i = 0; i < copy_rects.size(); ++i)
       PaintRect(copy_rects[i], bounds.origin(), canvas.get());
+
+    // Software FPS tick for performance tests. The accelerated path traces the
+    // frame events in didCommitAndDrawCompositorFrame. See throughput_tests.cc.
+    // NOTE: Tests may break if this event is renamed or moved.
+    UNSHIPPED_TRACE_EVENT_INSTANT0("test_fps", "TestFrameTickSW");
   } else {  // Accelerated compositing path
     // Begin painting.
     // If painting is done via the gpu process then we don't set any damage
@@ -1026,6 +1031,9 @@ void RenderWidget::didDeactivateCompositor() {
 
 void RenderWidget::didCommitAndDrawCompositorFrame() {
   TRACE_EVENT0("gpu", "RenderWidget::didCommitAndDrawCompositorFrame");
+  // Accelerated FPS tick for performance tests. See throughput_tests.cc.
+  // NOTE: Tests may break if this event is renamed or moved.
+  UNSHIPPED_TRACE_EVENT_INSTANT0("test_fps", "TestFrameTickGPU");
   // Notify subclasses.
   DidFlushPaint();
 }
