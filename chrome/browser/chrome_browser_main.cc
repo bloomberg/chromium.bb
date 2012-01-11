@@ -582,7 +582,6 @@ ChromeBrowserMainParts::ChromeBrowserMainParts(
       notify_result_(ProcessSingleton::PROCESS_NONE),
       is_first_run_(false),
       first_run_ui_bypass_(false),
-      metrics_(NULL),
       local_state_(NULL),
       restart_last_session_(false) {
   // If we're running tests (ui_task is non-null).
@@ -597,21 +596,25 @@ ChromeBrowserMainParts::~ChromeBrowserMainParts() {
 }
 
 // This will be called after the command-line has been mutated by about:flags
-MetricsService* ChromeBrowserMainParts::SetupMetricsAndFieldTrials(
-    PrefService* local_state) {
+void ChromeBrowserMainParts::SetupMetricsAndFieldTrials() {
   // Must initialize metrics after labs have been converted into switches,
   // but before field trials are set up (so that client ID is available for
   // one-time randomized field trials).
-  MetricsService* metrics = InitializeMetrics(
-      parsed_command_line_, local_state);
+#if defined(OS_WIN)
+  if (parsed_command_line_.HasSwitch(switches::kChromeFrame))
+    MetricsLog::set_version_extension("-F");
+#elif defined(ARCH_CPU_64_BITS)
+  MetricsLog::set_version_extension("-64");
+#endif  // defined(OS_WIN)
 
   // Initialize FieldTrialList to support FieldTrials that use one-time
   // randomization. The client ID will be empty if the user has not opted
   // to send metrics.
+  MetricsService* metrics = browser_process_->metrics_service();
   field_trial_list_.reset(new base::FieldTrialList(metrics->GetClientId()));
 
   SetupFieldTrials(metrics->recording_active(),
-                   local_state->IsManagedPreference(
+                   local_state_->IsManagedPreference(
                        prefs::kMaxConnectionsPerProxy));
 
   // Initialize FieldTrialSynchronizer system. This is a singleton and is used
@@ -619,8 +622,6 @@ MetricsService* ChromeBrowserMainParts::SetupMetricsAndFieldTrials(
   // Even though base::Bind does AddRef and Release, the object will not be
   // deleted after the Task is executed.
   field_trial_synchronizer_ = new FieldTrialSynchronizer();
-
-  return metrics;
 }
 
 // This is an A/B test for the maximum number of persistent connections per
@@ -1005,47 +1006,6 @@ void ChromeBrowserMainParts::AutoLaunchChromeFieldTrial() {
 
 // ChromeBrowserMainParts: |SetupMetricsAndFieldTrials()| related --------------
 
-// Initializes the metrics service with the configuration for this process,
-// returning the created service (guaranteed non-NULL).
-MetricsService* ChromeBrowserMainParts::InitializeMetrics(
-    const CommandLine& parsed_command_line,
-    const PrefService* local_state) {
-#if defined(OS_WIN)
-  if (parsed_command_line.HasSwitch(switches::kChromeFrame))
-    MetricsLog::set_version_extension("-F");
-#elif defined(ARCH_CPU_64_BITS)
-  MetricsLog::set_version_extension("-64");
-#endif  // defined(OS_WIN)
-
-  MetricsService* metrics = g_browser_process->metrics_service();
-
-  if (parsed_command_line.HasSwitch(switches::kMetricsRecordingOnly) ||
-      parsed_command_line.HasSwitch(switches::kEnableBenchmarking)) {
-    // If we're testing then we don't care what the user preference is, we turn
-    // on recording, but not reporting, otherwise tests fail.
-    metrics->StartRecordingOnly();
-    return metrics;
-  }
-
-  // If the user permits metrics reporting with the checkbox in the
-  // prefs, we turn on recording.  We disable metrics completely for
-  // non-official builds.
-#if defined(GOOGLE_CHROME_BUILD)
-#if defined(OS_CHROMEOS)
-  bool enabled;
-  chromeos::CrosSettings::Get()->GetBoolean(chromeos::kStatsReportingPref,
-                                            &enabled);
-#else
-  bool enabled = local_state->GetBoolean(prefs::kMetricsReportingEnabled);
-#endif  // #if defined(OS_CHROMEOS)
-  if (enabled) {
-    metrics->Start();
-  }
-#endif  // defined(GOOGLE_CHROME_BUILD)
-
-  return metrics;
-}
-
 void ChromeBrowserMainParts::SetupFieldTrials(bool metrics_recording_enabled,
                                               bool proxy_policy_is_set) {
   // Note: make sure to call ConnectionFieldTrial() before
@@ -1065,6 +1025,33 @@ void ChromeBrowserMainParts::SetupFieldTrials(bool metrics_recording_enabled,
   DefaultAppsFieldTrial();
   AutoLaunchChromeFieldTrial();
   sync_promo_trial::Activate();
+}
+
+void ChromeBrowserMainParts::StartMetricsRecording() {
+  MetricsService* metrics = g_browser_process->metrics_service();
+  if (parsed_command_line_.HasSwitch(switches::kMetricsRecordingOnly) ||
+      parsed_command_line_.HasSwitch(switches::kEnableBenchmarking)) {
+    // If we're testing then we don't care what the user preference is, we turn
+    // on recording, but not reporting, otherwise tests fail.
+    metrics->StartRecordingOnly();
+    return;
+  }
+
+  // If the user permits metrics reporting with the checkbox in the
+  // prefs, we turn on recording.  We disable metrics completely for
+  // non-official builds.
+#if defined(GOOGLE_CHROME_BUILD)
+#if defined(OS_CHROMEOS)
+  bool enabled;
+  chromeos::CrosSettings::Get()->GetBoolean(chromeos::kStatsReportingPref,
+                                            &enabled);
+#else
+  bool enabled = local_state_->GetBoolean(prefs::kMetricsReportingEnabled);
+#endif  // #if defined(OS_CHROMEOS)
+  if (enabled) {
+    metrics->Start();
+  }
+#endif  // defined(GOOGLE_CHROME_BUILD)
 }
 
 // -----------------------------------------------------------------------------
@@ -1309,6 +1296,11 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
   SecKeychainAddCallback(&KeychainCallback, 0, NULL);
 #endif
 
+  // Now the command line has been mutated based on about:flags, we can setup
+  // metrics and initialize field trials. The field trials are needed by
+  // IOThread's initialization which happens in BrowserProcess:PreCreateThreads.
+  SetupMetricsAndFieldTrials();
+
   // ChromeOS needs ResourceBundle::InitSharedInstance to be called before this.
   browser_process_->PreCreateThreads();
 
@@ -1354,10 +1346,8 @@ void ChromeBrowserMainParts::PostBrowserStart() {
 }
 
 int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
-  // Now the command line has been mutated based on about:flags,
-  // and the file thread has been started, we can set up metrics
-  // and initialize field trials.
-  metrics_ = SetupMetricsAndFieldTrials(local_state_);
+  // Now that the file thread has been started, start recording.
+  StartMetricsRecording();
 
 #if defined(USE_LINUX_BREAKPAD)
   // Needs to be called after we have chrome::DIR_USER_DATA and
@@ -1673,7 +1663,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
 #endif
 
   HandleTestParameters(parsed_command_line());
-  RecordBreakpadStatusUMA(metrics_);
+  RecordBreakpadStatusUMA(browser_process_->metrics_service());
   about_flags::RecordUMAStatistics(local_state_);
   LanguageUsageMetrics::RecordAcceptLanguages(
       profile_->GetPrefs()->GetString(prefs::kAcceptLanguages));

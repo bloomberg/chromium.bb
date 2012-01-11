@@ -774,23 +774,3 @@
   ...
   fun:pa_rtpoll_run
 }
-{
-   bug_109863
-   ThreadSanitizer:Race
-   ...
-   fun:ChromeBrowserMainParts::SetupFieldTrials
-   fun:ChromeBrowserMainParts::SetupMetricsAndFieldTrials
-   fun:ChromeBrowserMainParts::PreMainMessageLoopRunImpl
-   fun:ChromeBrowserMainParts::PreMainMessageLoopRun
-   fun:content::BrowserMainLoop::RunMainMessageLoopParts
-   fun:BrowserMain
-}
-{
-   bug_109864
-   ThreadSanitizer:Race
-   ...
-   fun:net::ClientSocketPoolManagerImpl::ClientSocketPoolManagerImpl
-   fun:net::HttpNetworkSession::HttpNetworkSession
-   fun:IOThread::InitSystemRequestContextOnIOThread
-   fun:base::internal::RunnableAdapter::Run
-}

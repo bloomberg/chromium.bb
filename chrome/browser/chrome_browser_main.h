@@ -88,7 +88,6 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
   }
 
   Profile* profile() { return profile_; }
-  MetricsService* metrics() { return metrics_; }
 
  private:
   // Methods for |EarlyInitialization()| ---------------------------------------
@@ -129,15 +128,15 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
   // Constructs metrics service and does related initialization, including
   // creation of field trials. Call only after labs have been converted to
   // switches.
-  MetricsService* SetupMetricsAndFieldTrials(PrefService* local_state);
-
-  static MetricsService* InitializeMetrics(
-      const CommandLine& parsed_command_line,
-      const PrefService* local_state);
+  void SetupMetricsAndFieldTrials();
 
   // Add an invocation of your field trial init function to this method.
   void SetupFieldTrials(bool metrics_recording_enabled,
                         bool proxy_policy_is_set);
+
+  // Starts recording of metrics. This can only be called after we have a file
+  // thread.
+  void StartMetricsRecording();
 
   // Methods for Main Message Loop -------------------------------------------
 
@@ -193,7 +192,6 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
   // PreMainMessageLoopRunThreadsCreated.
   bool is_first_run_;
   bool first_run_ui_bypass_;
-  MetricsService* metrics_;
   PrefService* local_state_;
   FilePath user_data_dir_;
 
