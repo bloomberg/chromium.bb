@@ -23,6 +23,7 @@ class CompactBrowserFrameView : public OpaqueBrowserFrameView {
   // OpaqueBrowserFrameView overrides.
   virtual int GetHorizontalTabStripVerticalOffset(bool restored) const OVERRIDE;
   virtual void ModifyMaximizedFramePainting(int* top_offset,
+                                            SkBitmap** theme_frame,
                                             SkBitmap** left_corner,
                                             SkBitmap** right_corner) OVERRIDE;
 

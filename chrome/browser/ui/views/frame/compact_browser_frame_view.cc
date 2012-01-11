@@ -66,16 +66,25 @@ int CompactBrowserFrameView::GetHorizontalTabStripVerticalOffset(
 }
 
 void CompactBrowserFrameView::ModifyMaximizedFramePainting(
-    int* top_offset, SkBitmap** left_corner, SkBitmap** right_corner) {
+    int* top_offset,
+    SkBitmap** theme_frame,
+    SkBitmap** left_corner,
+    SkBitmap** right_corner) {
   *top_offset = kThemeOffset;
   ui::ThemeProvider* tp = GetThemeProvider();
   if (!ThemeServiceFactory::GetForProfile(
       browser_view()->browser()->profile())->UsingDefaultTheme())
     return;
   if (browser_view()->IsOffTheRecord()) {
+#if defined(USE_AURA)
+    *theme_frame = tp->GetBitmapNamed(IDR_THEME_FRAME_INCOGNITO_COMPACT);
+#endif
     *left_corner = tp->GetBitmapNamed(IDR_THEME_FRAME_INCOGNITO_LEFT);
     *right_corner = tp->GetBitmapNamed(IDR_THEME_FRAME_INCOGNITO_RIGHT);
   } else {
+#if defined(USE_AURA)
+    *theme_frame = tp->GetBitmapNamed(IDR_THEME_FRAME_COMPACT);
+#endif
     *left_corner = tp->GetBitmapNamed(IDR_THEME_FRAME_LEFT);
     *right_corner = tp->GetBitmapNamed(IDR_THEME_FRAME_RIGHT);
   }

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -522,7 +522,10 @@ int OpaqueBrowserFrameView::NonClientBorderThickness() const {
 }
 
 void OpaqueBrowserFrameView::ModifyMaximizedFramePainting(
-    int* theme_offset, SkBitmap** left_corner, SkBitmap** right_corner) {
+    int* theme_offset,
+    SkBitmap** theme_frame,
+    SkBitmap** left_corner,
+    SkBitmap** right_corner) {
 }
 
 int OpaqueBrowserFrameView::CaptionButtonY(bool restored) const {
@@ -623,11 +626,16 @@ void OpaqueBrowserFrameView::PaintMaximizedFrameBorder(gfx::Canvas* canvas) {
   frame_background_->set_top_area_height(GetTopAreaHeight());
 
   // Allow customization of these attributes.
+  SkBitmap* theme_frame = NULL;
   SkBitmap* left = NULL;
   SkBitmap* right = NULL;
   int top_offset = 0;
-  ModifyMaximizedFramePainting(&top_offset, &left, &right);
+  ModifyMaximizedFramePainting(&top_offset, &theme_frame, &left, &right);
   frame_background_->SetMaximizedCorners(left, right, top_offset);
+  // If user has a theme installed, theme_frame would be NULL and
+  // frame_background_ is unchanged.
+  if (theme_frame)
+    frame_background_->set_theme_bitmap(theme_frame);
 
   // Theme frame must be aligned with the tabstrip as if we were
   // in restored mode.  Note that the top of the tabstrip is
@@ -878,7 +886,7 @@ SkColor OpaqueBrowserFrameView::GetFrameColor() const {
   }
   // Never theme app and popup windows.
   if (ShouldPaintAsActive()) {
-    ThemeService::GetDefaultColor(is_incognito ?
+    return ThemeService::GetDefaultColor(is_incognito ?
         ThemeService::COLOR_FRAME_INCOGNITO : ThemeService::COLOR_FRAME);
   }
   return ThemeService::GetDefaultColor(is_incognito ?
