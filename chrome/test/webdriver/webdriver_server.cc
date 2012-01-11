@@ -75,7 +75,7 @@ void InitCallbacks(Dispatcher* dispatcher,
                    base::WaitableEvent* shutdown_event,
                    bool forbid_other_requests) {
   dispatcher->AddShutdown("/shutdown", shutdown_event);
-  dispatcher->AddHealthz("/status");
+  dispatcher->AddStatus("/status");
   dispatcher->AddLog("/log");
 
   dispatcher->Add<CreateSession>("/session");

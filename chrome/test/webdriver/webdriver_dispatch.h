@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -125,10 +125,10 @@ class Dispatcher {
   void AddShutdown(const std::string& pattern,
                    base::WaitableEvent* shutdown_event);
 
-  // Registers a callback for the given pattern that will return a simple
-  // "HTTP/1.1 200 OK" message with "ok" in the body. Used for checking the
-  // status of the server.
-  void AddHealthz(const std::string& pattern);
+  // Registers a callback that responds to with this server's status
+  // information, as defined by the WebDriver wire protocol:
+  // http://code.google.com/p/selenium/wiki/JsonWireProtocol#GET_/status.
+  void AddStatus(const std::string& pattern);
 
   // Registers a callback for the given pattern that will return the current
   // WebDriver log contents.

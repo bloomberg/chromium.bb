@@ -17,8 +17,10 @@
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/sys_info.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread.h"
+#include "chrome/common/chrome_version_info.h"
 #include "chrome/test/webdriver/commands/command.h"
 #include "chrome/test/webdriver/http_response.h"
 #include "chrome/test/webdriver/webdriver_logging.h"
@@ -104,10 +106,32 @@ void Shutdown(struct mg_connection* connection,
   shutdown_event->Signal();
 }
 
-void SendHealthz(struct mg_connection* connection,
-                 const struct mg_request_info* request_info,
-                 void* user_data) {
-  SendOkWithBody(connection, "ok");
+void SendStatus(struct mg_connection* connection,
+                const struct mg_request_info* request_info,
+                void* user_data) {
+  chrome::VersionInfo version_info;
+  DictionaryValue* build_info = new DictionaryValue;
+  build_info->SetString("time",
+                        base::StringPrintf("%s %s PST", __DATE__, __TIME__));
+  build_info->SetString("version", version_info.Version());
+  build_info->SetString("revision", version_info.LastChange());
+
+  DictionaryValue* os_info = new DictionaryValue;
+  os_info->SetString("name", base::SysInfo::OperatingSystemName());
+  os_info->SetString("version", base::SysInfo::OperatingSystemVersion());
+  os_info->SetString("arch", base::SysInfo::CPUArchitecture());
+
+  DictionaryValue* status = new DictionaryValue;
+  status->Set("build", build_info);
+  status->Set("os", os_info);
+
+  Response response;
+  response.SetStatus(kSuccess);
+  response.SetValue(status);  // Assumes ownership of |status|.
+
+  internal::SendResponse(connection,
+                         request_info->request_method,
+                         response);
 }
 
 void SendLog(struct mg_connection* connection,
@@ -359,8 +383,8 @@ void Dispatcher::AddShutdown(const std::string& pattern,
   AddCallback(url_base_ + pattern, &Shutdown, shutdown_event);
 }
 
-void Dispatcher::AddHealthz(const std::string& pattern) {
-  AddCallback(url_base_ + pattern, &SendHealthz, NULL);
+void Dispatcher::AddStatus(const std::string& pattern) {
+  AddCallback(url_base_ + pattern, &SendStatus, NULL);
 }
 
 void Dispatcher::AddLog(const std::string& pattern) {
