@@ -118,16 +118,21 @@ inline static bool IsMappedFileOpenUnsafe(
 
 namespace google_breakpad {
 
-LinuxDumper::LinuxDumper(int pid)
+LinuxDumper::LinuxDumper(pid_t pid)
     : pid_(pid),
+      crash_address_(0),
+      crash_signal_(0),
+      crash_thread_(0),
       threads_suspended_(false),
       threads_(&allocator_, 8),
       mappings_(&allocator_) {
 }
 
+LinuxDumper::~LinuxDumper() {
+}
+
 bool LinuxDumper::Init() {
-  return EnumerateThreads(&threads_) &&
-         EnumerateMappings(&mappings_);
+  return EnumerateThreads() && EnumerateMappings();
 }
 
 bool LinuxDumper::ThreadsSuspend() {
@@ -283,8 +288,7 @@ LinuxDumper::FindBeginningOfLinuxGateSharedLibrary(const pid_t pid) const {
   return NULL;
 }
 
-bool
-LinuxDumper::EnumerateMappings(wasteful_vector<MappingInfo*>* result) const {
+bool LinuxDumper::EnumerateMappings() {
   char maps_path[NAME_MAX];
   BuildProcPath(maps_path, pid_, "maps");
 
@@ -323,8 +327,8 @@ LinuxDumper::EnumerateMappings(wasteful_vector<MappingInfo*>* result) const {
           }
           // Merge adjacent mappings with the same name into one module,
           // assuming they're a single library mapped by the dynamic linker
-          if (name && result->size()) {
-            MappingInfo* module = (*result)[result->size() - 1];
+          if (name && !mappings_.empty()) {
+            MappingInfo* module = mappings_.back();
             if ((start_addr == module->start_addr + module->size) &&
                 (my_strlen(name) == my_strlen(module->name)) &&
                 (my_strncmp(name, module->name, my_strlen(name)) == 0)) {
@@ -343,7 +347,7 @@ LinuxDumper::EnumerateMappings(wasteful_vector<MappingInfo*>* result) const {
             if (l < sizeof(module->name))
               memcpy(module->name, name, l);
           }
-          result->push_back(module);
+          mappings_.push_back(module);
         }
       }
     }
@@ -352,12 +356,12 @@ LinuxDumper::EnumerateMappings(wasteful_vector<MappingInfo*>* result) const {
 
   sys_close(fd);
 
-  return result->size() > 0;
+  return !mappings_.empty();
 }
 
 // Parse /proc/$pid/task to list all the threads of the process identified by
 // pid.
-bool LinuxDumper::EnumerateThreads(wasteful_vector<pid_t>* result) const {
+bool LinuxDumper::EnumerateThreads() {
   char task_path[NAME_MAX];
   BuildProcPath(task_path, pid_, "task");
 
@@ -377,7 +381,7 @@ bool LinuxDumper::EnumerateThreads(wasteful_vector<pid_t>* result) const {
       if (my_strtoui(&tid, dent_name) &&
           last_tid != tid) {
         last_tid = tid;
-        result->push_back(tid);
+        threads_.push_back(tid);
       }
     }
     dir_reader->PopEntry();
@@ -391,12 +395,17 @@ bool LinuxDumper::EnumerateThreads(wasteful_vector<pid_t>* result) const {
 // Fill out the |tgid|, |ppid| and |pid| members of |info|. If unavailable,
 // these members are set to -1. Returns true iff all three members are
 // available.
-bool LinuxDumper::ThreadInfoGet(pid_t tid, ThreadInfo* info) {
+bool LinuxDumper::GetThreadInfoByIndex(size_t index, ThreadInfo* info) {
+  if (index >= threads_.size())
+    return false;
+
+  pid_t tid = threads_[index];
+
   assert(info != NULL);
   char status_path[NAME_MAX];
   BuildProcPath(status_path, tid, "status");
 
-  const int fd = open(status_path, O_RDONLY);
+  const int fd = sys_open(status_path, O_RDONLY, 0);
   if (fd < 0)
     return false;
 
@@ -488,7 +497,6 @@ bool LinuxDumper::GetStackInfo(const void** stack, size_t* stack_len,
   return true;
 }
 
-// static
 void LinuxDumper::CopyFromProcess(void* dest, pid_t child, const void* src,
                                   size_t length) {
   unsigned long tmp = 55;

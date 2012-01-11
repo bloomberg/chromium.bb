@@ -66,7 +66,7 @@ typedef struct
 #define AT_SYSINFO_EHDR 33
 #endif
 #endif  // __ANDROID__
-#elif defined(__x86_64__)
+#elif defined(__x86_64)
 typedef Elf64_auxv_t elf_aux_entry;
 #endif
 // When we find the VDSO mapping in the process's address space, this
@@ -118,6 +118,8 @@ class LinuxDumper {
  public:
   explicit LinuxDumper(pid_t pid);
 
+  virtual ~LinuxDumper();
+
   // Parse the data for |threads| and |mappings|.
   bool Init();
 
@@ -125,9 +127,9 @@ class LinuxDumper {
   bool ThreadsSuspend();
   bool ThreadsResume();
 
-  // Read information about the given thread. Returns true on success. One must
-  // have called |ThreadsSuspend| first.
-  bool ThreadInfoGet(pid_t tid, ThreadInfo* info);
+  // Read information about the |index|-th thread of |threads_|.
+  // Returns true on success. One must have called |ThreadsSuspend| first.
+  virtual bool GetThreadInfoByIndex(size_t index, ThreadInfo* info);
 
   // These are only valid after a call to |Init|.
   const wasteful_vector<pid_t> &threads() { return threads_; }
@@ -142,9 +144,10 @@ class LinuxDumper {
 
   PageAllocator* allocator() { return &allocator_; }
 
-  // memcpy from a remote process.
-  static void CopyFromProcess(void* dest, pid_t child, const void* src,
-                              size_t length);
+  // Copy content of |length| bytes from a given process |child|,
+  // starting from |src|, into |dest|.
+  void CopyFromProcess(void* dest, pid_t child, const void* src,
+                       size_t length);
 
   // Builds a proc path for a certain pid for a node.  path is a
   // character array that is overwritten, and node is the final node
@@ -164,9 +167,21 @@ class LinuxDumper {
   // shared object.  Parsing the auxilary vector for AT_SYSINFO_EHDR
   // is the safest way to go.)
   void* FindBeginningOfLinuxGateSharedLibrary(const pid_t pid) const;
+
+  uintptr_t crash_address() const { return crash_address_; }
+  void set_crash_address(uintptr_t crash_address) {
+    crash_address_ = crash_address;
+  }
+
+  int crash_signal() const { return crash_signal_; }
+  void set_crash_signal(int crash_signal) { crash_signal_ = crash_signal; }
+
+  pid_t crash_thread() const { return crash_thread_; }
+  void set_crash_thread(pid_t crash_thread) { crash_thread_ = crash_thread; }
+
  private:
-  bool EnumerateMappings(wasteful_vector<MappingInfo*>* result) const;
-  bool EnumerateThreads(wasteful_vector<pid_t>* result) const;
+  bool EnumerateMappings();
+  bool EnumerateThreads();
 
   // For the case where a running program has been deleted, it'll show up in
   // /proc/pid/maps as "/path/to/program (deleted)". If this is the case, then
@@ -179,7 +194,17 @@ class LinuxDumper {
   // Returns true if |path| is modified.
   bool HandleDeletedFileInMapping(char* path) const;
 
+   // ID of the crashed process.
   const pid_t pid_;
+
+  // Virtual address at which the process crashed.
+  uintptr_t crash_address_;
+
+  // Signal that terminated the crashed process.
+  int crash_signal_;
+
+  // ID of the crashed thread.
+  pid_t crash_thread_;
 
   mutable PageAllocator allocator_;
 

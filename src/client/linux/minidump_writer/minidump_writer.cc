@@ -368,11 +368,10 @@ namespace google_breakpad {
 class MinidumpWriter {
  public:
   MinidumpWriter(const char* filename,
-                 pid_t crashing_pid,
                  const ExceptionHandler::CrashContext* context,
-                 const MappingList& mappings)
+                 const MappingList& mappings,
+                 LinuxDumper* dumper)
       : filename_(filename),
-        siginfo_(&context->siginfo),
         ucontext_(&context->context),
 #if !defined(__ARM_EABI__)
         float_state_(&context->float_state),
@@ -380,20 +379,19 @@ class MinidumpWriter {
         // TODO: fix this after fixing ExceptionHandler
         float_state_(NULL),
 #endif
-        crashing_tid_(context->tid),
-        dumper_(crashing_pid),
-        memory_blocks_(dumper_.allocator()),
+        dumper_(dumper),
+        memory_blocks_(dumper_->allocator()),
         mapping_list_(mappings) {
   }
 
   bool Init() {
-    return dumper_.Init() && minidump_writer_.Open(filename_) &&
-           dumper_.ThreadsSuspend();
+    return dumper_->Init() && minidump_writer_.Open(filename_) &&
+           dumper_->ThreadsSuspend();
   }
 
   ~MinidumpWriter() {
     minidump_writer_.Close();
-    dumper_.ThreadsResume();
+    dumper_->ThreadsResume();
   }
 
   bool Dump() {
@@ -408,7 +406,8 @@ class MinidumpWriter {
     for (int i = 0;;) {
       ElfW(Dyn) dyn;
       dynamic_length += sizeof(dyn);
-      dumper_.CopyFromProcess(&dyn, crashing_tid_, _DYNAMIC+i++, sizeof(dyn));
+      dumper_->CopyFromProcess(&dyn, GetCrashThread(), _DYNAMIC+i++,
+                               sizeof(dyn));
       if (dyn.d_tag == DT_DEBUG) {
         r_debug = (struct r_debug*)dyn.d_un.d_ptr;
         continue;
@@ -467,7 +466,7 @@ class MinidumpWriter {
     dir.CopyIndex(dir_index++, &dirent);
 
     dirent.stream_type = MD_LINUX_PROC_STATUS;
-    if (!WriteProcFile(&dirent.location, crashing_tid_, "status"))
+    if (!WriteProcFile(&dirent.location, GetCrashThread(), "status"))
       NullifyDirectoryEntry(&dirent);
     dir.CopyIndex(dir_index++, &dirent);
 
@@ -477,22 +476,22 @@ class MinidumpWriter {
     dir.CopyIndex(dir_index++, &dirent);
 
     dirent.stream_type = MD_LINUX_CMD_LINE;
-    if (!WriteProcFile(&dirent.location, crashing_tid_, "cmdline"))
+    if (!WriteProcFile(&dirent.location, GetCrashThread(), "cmdline"))
       NullifyDirectoryEntry(&dirent);
     dir.CopyIndex(dir_index++, &dirent);
 
     dirent.stream_type = MD_LINUX_ENVIRON;
-    if (!WriteProcFile(&dirent.location, crashing_tid_, "environ"))
+    if (!WriteProcFile(&dirent.location, GetCrashThread(), "environ"))
       NullifyDirectoryEntry(&dirent);
     dir.CopyIndex(dir_index++, &dirent);
 
     dirent.stream_type = MD_LINUX_AUXV;
-    if (!WriteProcFile(&dirent.location, crashing_tid_, "auxv"))
+    if (!WriteProcFile(&dirent.location, GetCrashThread(), "auxv"))
       NullifyDirectoryEntry(&dirent);
     dir.CopyIndex(dir_index++, &dirent);
 
     dirent.stream_type = MD_LINUX_MAPS;
-    if (!WriteProcFile(&dirent.location, crashing_tid_, "maps"))
+    if (!WriteProcFile(&dirent.location, GetCrashThread(), "maps"))
       NullifyDirectoryEntry(&dirent);
     dir.CopyIndex(dir_index++, &dirent);
 
@@ -506,7 +505,7 @@ class MinidumpWriter {
     // If you add more directory entries, don't forget to update kNumWriters,
     // above.
 
-    dumper_.ThreadsResume();
+    dumper_->ThreadsResume();
     return true;
   }
 
@@ -629,7 +628,7 @@ class MinidumpWriter {
 
   // Write information about the threads.
   bool WriteThreadListStream(MDRawDirectory* dirent) {
-    const unsigned num_threads = dumper_.threads().size();
+    const unsigned num_threads = dumper_->threads().size();
 
     TypedMDRVA<uint32_t> list(&minidump_writer_);
     if (!list.AllocateObjectAndArray(num_threads, sizeof(MDRawThread)))
@@ -643,21 +642,22 @@ class MinidumpWriter {
     for (unsigned i = 0; i < num_threads; ++i) {
       MDRawThread thread;
       my_memset(&thread, 0, sizeof(thread));
-      thread.thread_id = dumper_.threads()[i];
+      thread.thread_id = dumper_->threads()[i];
       // We have a different source of information for the crashing thread. If
       // we used the actual state of the thread we would find it running in the
       // signal handler with the alternative stack, which would be deeply
       // unhelpful.
-      if ((pid_t)thread.thread_id == crashing_tid_) {
+      if ((pid_t)thread.thread_id == GetCrashThread()) {
         const void* stack;
         size_t stack_len;
-        if (!dumper_.GetStackInfo(&stack, &stack_len, GetStackPointer()))
+        if (!dumper_->GetStackInfo(&stack, &stack_len, GetStackPointer()))
           return false;
         UntypedMDRVA memory(&minidump_writer_);
         if (!memory.Allocate(stack_len))
           return false;
-        uint8_t* stack_copy = (uint8_t*) dumper_.allocator()->Alloc(stack_len);
-        dumper_.CopyFromProcess(stack_copy, thread.thread_id, stack, stack_len);
+        uint8_t* stack_copy = reinterpret_cast<uint8_t*>(Alloc(stack_len));
+        dumper_->CopyFromProcess(stack_copy, thread.thread_id, stack,
+                                 stack_len);
         memory.Copy(stack_copy, stack_len);
         thread.stack.start_of_memory_range = (uintptr_t) (stack);
         thread.stack.memory = memory.location();
@@ -671,8 +671,8 @@ class MinidumpWriter {
         // don't bother trying to write it.
         bool ip_is_mapped = false;
         MDMemoryDescriptor ip_memory_d;
-        for (unsigned j = 0; j < dumper_.mappings().size(); ++j) {
-          const MappingInfo& mapping = *dumper_.mappings()[j];
+        for (unsigned j = 0; j < dumper_->mappings().size(); ++j) {
+          const MappingInfo& mapping = *dumper_->mappings()[j];
           if (ip >= mapping.start_addr &&
               ip < mapping.start_addr + mapping.size) {
             ip_is_mapped = true;
@@ -695,12 +695,12 @@ class MinidumpWriter {
           if (!ip_memory.Allocate(ip_memory_d.memory.data_size))
             return false;
           uint8_t* memory_copy =
-            (uint8_t*) dumper_.allocator()->Alloc(ip_memory_d.memory.data_size);
-          dumper_.CopyFromProcess(
-            memory_copy,
-            thread.thread_id,
-            reinterpret_cast<void*>(ip_memory_d.start_of_memory_range),
-            ip_memory_d.memory.data_size);
+              reinterpret_cast<uint8_t*>(Alloc(ip_memory_d.memory.data_size));
+          dumper_->CopyFromProcess(
+              memory_copy,
+              thread.thread_id,
+              reinterpret_cast<void*>(ip_memory_d.start_of_memory_range),
+              ip_memory_d.memory.data_size);
           ip_memory.Copy(memory_copy, ip_memory_d.memory.data_size);
           ip_memory_d.memory = ip_memory.location();
           memory_blocks_.push_back(ip_memory_d);
@@ -716,15 +716,14 @@ class MinidumpWriter {
         crashing_thread_context_ = cpu.location();
       } else {
         ThreadInfo info;
-        if (!dumper_.ThreadInfoGet(dumper_.threads()[i], &info))
+        if (!dumper_->GetThreadInfoByIndex(i, &info))
           return false;
         UntypedMDRVA memory(&minidump_writer_);
         if (!memory.Allocate(info.stack_len))
           return false;
-        uint8_t* stack_copy =
-            (uint8_t*) dumper_.allocator()->Alloc(info.stack_len);
-        dumper_.CopyFromProcess(stack_copy, thread.thread_id, info.stack,
-                                info.stack_len);
+        uint8_t* stack_copy = reinterpret_cast<uint8_t*>(Alloc(info.stack_len));
+        dumper_->CopyFromProcess(stack_copy, thread.thread_id, info.stack,
+                                 info.stack_len);
         memory.Copy(stack_copy, info.stack_len);
         thread.stack.start_of_memory_range = (uintptr_t)(info.stack);
         thread.stack.memory = memory.location();
@@ -777,11 +776,11 @@ class MinidumpWriter {
   // Because of this, we also include the full, unparsed, /proc/$x/maps file in
   // another stream in the file.
   bool WriteMappings(MDRawDirectory* dirent) {
-    const unsigned num_mappings = dumper_.mappings().size();
+    const unsigned num_mappings = dumper_->mappings().size();
     unsigned num_output_mappings = mapping_list_.size();
 
-    for (unsigned i = 0; i < dumper_.mappings().size(); ++i) {
-      const MappingInfo& mapping = *dumper_.mappings()[i];
+    for (unsigned i = 0; i < dumper_->mappings().size(); ++i) {
+      const MappingInfo& mapping = *dumper_->mappings()[i];
       if (ShouldIncludeMapping(mapping) && !HaveMappingInfo(mapping))
         num_output_mappings++;
     }
@@ -797,7 +796,7 @@ class MinidumpWriter {
     // First write all the mappings from the dumper
     unsigned int j = 0;
     for (unsigned i = 0; i < num_mappings; ++i) {
-      const MappingInfo& mapping = *dumper_.mappings()[i];
+      const MappingInfo& mapping = *dumper_->mappings()[i];
       if (!ShouldIncludeMapping(mapping) || HaveMappingInfo(mapping))
         continue;
 
@@ -859,8 +858,8 @@ class MinidumpWriter {
       // GUID was provided by caller.
       memcpy(signature, identifier, sizeof(MDGUID));
     } else {
-      dumper_.ElfFileIdentifierForMapping(mapping, member,
-                                          mapping_id, signature);
+      dumper_->ElfFileIdentifierForMapping(mapping, member,
+                                           mapping_id, signature);
     }
     my_memset(cv_ptr, 0, sizeof(uint32_t));  // Set age to 0 on Linux.
     cv_ptr += sizeof(uint32_t);
@@ -905,10 +904,9 @@ class MinidumpWriter {
     dirent->stream_type = MD_EXCEPTION_STREAM;
     dirent->location = exc.location();
 
-    exc.get()->thread_id = crashing_tid_;
-    exc.get()->exception_record.exception_code = siginfo_->si_signo;
-    exc.get()->exception_record.exception_address =
-        (uintptr_t) siginfo_->si_addr;
+    exc.get()->thread_id = GetCrashThread();
+    exc.get()->exception_record.exception_code = dumper_->crash_signal();
+    exc.get()->exception_record.exception_address = dumper_->crash_address();
     exc.get()->thread_context = crashing_thread_context_;
 
     return true;
@@ -945,11 +943,11 @@ class MinidumpWriter {
     // Count the number of loaded DSOs
     int dso_count = 0;
     struct r_debug debug_entry;
-    dumper_.CopyFromProcess(&debug_entry, crashing_tid_, r_debug,
-                            sizeof(debug_entry));
+    dumper_->CopyFromProcess(&debug_entry, GetCrashThread(), r_debug,
+                             sizeof(debug_entry));
     for (struct link_map* ptr = debug_entry.r_map; ptr; ) {
       struct link_map map;
-      dumper_.CopyFromProcess(&map, crashing_tid_, ptr, sizeof(map));
+      dumper_->CopyFromProcess(&map, GetCrashThread(), ptr, sizeof(map));
       ptr = map.l_next;
       dso_count++;
     }
@@ -967,12 +965,12 @@ class MinidumpWriter {
       // Iterate over DSOs and write their information to mini dump
       for (struct link_map* ptr = debug_entry.r_map; ptr; ) {
         struct link_map map;
-        dumper_.CopyFromProcess(&map, crashing_tid_, ptr, sizeof(map));
+        dumper_->CopyFromProcess(&map, GetCrashThread(), ptr, sizeof(map));
         ptr = map.l_next;
         char filename[257] = { 0 };
         if (map.l_name) {
-          dumper_.CopyFromProcess(filename, crashing_tid_, map.l_name,
-                                  sizeof(filename) - 1);
+          dumper_->CopyFromProcess(filename, GetCrashThread(), map.l_name,
+                                   sizeof(filename) - 1);
         }
         MDLocationDescriptor location;
         if (!minidump_writer_.WriteString(filename, 0, &location))
@@ -1001,8 +999,8 @@ class MinidumpWriter {
     debug.get()->dynamic = (void*)&_DYNAMIC;
 
     char *dso_debug_data = new char[dynamic_length];
-    dumper_.CopyFromProcess(dso_debug_data, crashing_tid_, &_DYNAMIC,
-                            dynamic_length);
+    dumper_->CopyFromProcess(dso_debug_data, GetCrashThread(), &_DYNAMIC,
+                             dynamic_length);
     debug.CopyIndexAfterObject(0, dso_debug_data, dynamic_length);
     delete[] dso_debug_data;
 
@@ -1011,6 +1009,14 @@ class MinidumpWriter {
   }
 
  private:
+  void* Alloc(unsigned bytes) {
+    return dumper_->allocator()->Alloc(bytes);
+  }
+
+  pid_t GetCrashThread() const {
+    return dumper_->crash_thread();
+  }
+
 #if defined(__i386)
   uintptr_t GetStackPointer() {
     return ucontext_->uc_mcontext.gregs[REG_ESP];
@@ -1175,16 +1181,15 @@ class MinidumpWriter {
     // to read as much as we can into a buffer.
     static const unsigned kBufSize = 1024 - 2*sizeof(void*);
     struct Buffers {
-      struct Buffers* next;
+      Buffers* next;
       size_t len;
       uint8_t data[kBufSize];
-    } *buffers =
-        (struct Buffers*) dumper_.allocator()->Alloc(sizeof(struct Buffers));
+    } *buffers = reinterpret_cast<Buffers*>(Alloc(sizeof(Buffers)));
     buffers->next = NULL;
     buffers->len = 0;
 
     size_t total = 0;
-    for (struct Buffers* bufptr = buffers;;) {
+    for (Buffers* bufptr = buffers;;) {
       ssize_t r;
       do {
         r = sys_read(fd, &bufptr->data[bufptr->len], kBufSize - bufptr->len);
@@ -1196,8 +1201,7 @@ class MinidumpWriter {
       total += r;
       bufptr->len += r;
       if (bufptr->len == kBufSize) {
-        bufptr->next =
-          (struct Buffers*) dumper_.allocator()->Alloc(sizeof(struct Buffers));
+        bufptr->next = reinterpret_cast<Buffers*>(Alloc(sizeof(Buffers)));
         bufptr = bufptr->next;
         bufptr->next = NULL;
         bufptr->len = 0;
@@ -1277,16 +1281,14 @@ class MinidumpWriter {
   bool WriteProcFile(MDLocationDescriptor* result, pid_t pid,
                      const char* filename) {
     char buf[NAME_MAX];
-    dumper_.BuildProcPath(buf, pid, filename);
+    dumper_->BuildProcPath(buf, pid, filename);
     return WriteFile(result, buf);
   }
 
   const char* const filename_;  // output filename
-  const siginfo_t* const siginfo_;  // from the signal handler (see sigaction)
   const struct ucontext* const ucontext_;  // also from the signal handler
   const struct _libc_fpstate* const float_state_;  // ditto
-  const pid_t crashing_tid_;  // the process which actually crashed
-  LinuxDumper dumper_;
+  LinuxDumper* dumper_;
   MinidumpFileWriter minidump_writer_;
   MDLocationDescriptor crashing_thread_context_;
   // Blocks of memory written to the dump. These are all currently
@@ -1310,7 +1312,12 @@ bool WriteMinidump(const char* filename, pid_t crashing_process,
     return false;
   const ExceptionHandler::CrashContext* context =
       reinterpret_cast<const ExceptionHandler::CrashContext*>(blob);
-  MinidumpWriter writer(filename, crashing_process, context, mappings);
+  LinuxDumper dumper(crashing_process);
+  dumper.set_crash_address(
+      reinterpret_cast<uintptr_t>(context->siginfo.si_addr));
+  dumper.set_crash_signal(context->siginfo.si_signo);
+  dumper.set_crash_thread(context->tid);
+  MinidumpWriter writer(filename, context, mappings, &dumper);
   if (!writer.Init())
     return false;
   return writer.Dump();

@@ -225,7 +225,7 @@ TEST(LinuxDumperTest, VerifyStackReadWithMultipleThreads) {
 
   ThreadInfo one_thread;
   for(size_t i = 0; i < dumper.threads().size(); ++i) {
-    EXPECT_TRUE(dumper.ThreadInfoGet(dumper.threads()[i], &one_thread));
+    EXPECT_TRUE(dumper.GetThreadInfoByIndex(i, &one_thread));
     // In the helper program, we stored a pointer to the thread id in a
     // specific register. Check that we can recover its value.
 #if defined(__ARM_EABI__)
