@@ -90,7 +90,7 @@ redraw_handler(struct widget *widget, void *data)
 
 	mi->swap_buffers = 0;
 
-	window_get_child_allocation(mi->window, &drawarea);
+	widget_get_allocation(mi->widget, &drawarea);
 	window_get_allocation(mi->window, &winarea);
 
 	if (display_acquire_window_surface(wscr->display,
@@ -182,7 +182,7 @@ create_modeinfo(struct wscreensaver *wscr, struct window *window)
 	if (!mi)
 		return NULL;
 
-	window_get_child_allocation(window, &drawarea);
+	window_get_allocation(window, &drawarea);
 
 	mi->priv = wscr;
 	mi->eglctx = EGL_NO_CONTEXT;

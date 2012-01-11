@@ -53,9 +53,6 @@ struct resizor {
 static void
 frame_callback(void *data, struct wl_callback *callback, uint32_t time)
 {
-	static const struct wl_callback_listener listener = {
-		frame_callback
-	};
 	struct resizor *resizor = data;
 	double force, height;
 
@@ -79,23 +76,17 @@ frame_callback(void *data, struct wl_callback *callback, uint32_t time)
 		resizor->height.previous = 200;
 	}
 
-	window_set_child_size(resizor->window, resizor->width, height + 0.5);
-
-	window_schedule_redraw(resizor->window);
+	widget_schedule_resize(resizor->widget, resizor->width, height + 0.5);
 
 	if (resizor->frame_callback) {
 		wl_callback_destroy(resizor->frame_callback);
 		resizor->frame_callback = NULL;
 	}
-
-	if (fabs(resizor->height.previous - resizor->height.target) > 0.1) {
-		resizor->frame_callback =
-			wl_surface_frame(
-				window_get_wl_surface(resizor->window));
-		wl_callback_add_listener(resizor->frame_callback, &listener,
-					 resizor);
-	}
 }
+
+static const struct wl_callback_listener listener = {
+	frame_callback
+};
 
 static void
 redraw_handler(struct widget *widget, void *data)
@@ -105,7 +96,7 @@ redraw_handler(struct widget *widget, void *data)
 	cairo_t *cr;
 	struct rectangle allocation;
 
-	window_get_child_allocation(resizor->window, &allocation);
+	widget_get_allocation(resizor->widget, &allocation);
 
 	surface = window_get_surface(resizor->window);
 
@@ -121,6 +112,15 @@ redraw_handler(struct widget *widget, void *data)
 	cairo_destroy(cr);
 
 	cairo_surface_destroy(surface);
+
+	if (fabs(resizor->height.previous - resizor->height.target) > 0.1) {
+		resizor->frame_callback =
+			wl_surface_frame(
+				window_get_wl_surface(resizor->window));
+		wl_callback_add_listener(resizor->frame_callback, &listener,
+					 resizor);
+	}
+
 }
 
 static void
@@ -222,10 +222,9 @@ resizor_create(struct display *display)
 	resizor->height.target = resizor->height.current;
 	height = resizor->height.current + 0.5;
 
-	window_set_child_size(resizor->window, resizor->width, height);
 	widget_set_button_handler(resizor->widget, button_handler);
 
-	window_schedule_redraw(resizor->window);
+	widget_schedule_resize(resizor->widget, resizor->width, height);
 
 	return resizor;
 }

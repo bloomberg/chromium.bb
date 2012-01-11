@@ -170,7 +170,7 @@ dnd_redraw_handler(struct widget *widget, void *data)
 
 	surface = window_get_surface(dnd->window);
 	cr = cairo_create(surface);
-	window_get_child_allocation(dnd->window, &allocation);
+	widget_get_allocation(dnd->widget, &allocation);
 	cairo_rectangle(cr, allocation.x, allocation.y,
 			allocation.width, allocation.height);
 
@@ -222,7 +222,7 @@ dnd_get_item(struct dnd *dnd, int32_t x, int32_t y)
 	struct rectangle allocation;
 	int i;
 
-	window_get_child_allocation(dnd->window, &allocation);
+	widget_get_allocation(dnd->widget, &allocation);
 
 	x -= allocation.x;
 	y -= allocation.y;
@@ -363,7 +363,7 @@ dnd_button_handler(struct widget *widget,
 	struct dnd_drag *dnd_drag;
 	int i;
 
-	window_get_child_allocation(dnd->window, &allocation);
+	widget_get_allocation(dnd->widget, &allocation);
 	input_get_position(input, &x, &y);
 	item = dnd_get_item(dnd, x, y);
 	x -= allocation.x;
@@ -468,7 +468,7 @@ dnd_receive_func(void *data, size_t len, int32_t x, int32_t y, void *user_data)
 		return;
 	}
 		
-	window_get_child_allocation(dnd->window, &allocation);
+	widget_get_allocation(dnd->widget, &allocation);
 	item = item_create(dnd->display,
 			   x - message->x_offset - allocation.x,
 			   y - message->y_offset - allocation.y,
@@ -535,9 +535,8 @@ dnd_create(struct display *display)
 
 	width = 4 * (item_width + item_padding) + item_padding;
 	height = 4 * (item_height + item_padding) + item_padding;
-	window_set_child_size(dnd->window, width, height);
 
-	window_schedule_redraw(dnd->window);
+	widget_schedule_resize(dnd->widget, width, height);
 
 	return dnd;
 }

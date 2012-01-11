@@ -66,7 +66,7 @@ view_draw(struct view *view)
 
 	window_draw(view->window);
 
-	window_get_child_allocation(view->window, &allocation);
+	widget_get_allocation(view->widget, &allocation);
 
 	surface = window_get_surface(view->window);
 
@@ -124,8 +124,7 @@ resize_handler(struct widget *widget,
 {
 	struct view *view = data;
 
-	window_set_child_size(view->window, width, height);
-	window_schedule_redraw(window);
+	widget_set_size(view->widget, width, height);
 }
 
 static void

@@ -393,9 +393,7 @@ background_configure(void *data,
 	struct background *background =
 		(struct background *) window_get_user_data(window);
 
-	window_set_child_size(background->window, width, height);
-	widget_set_allocation(background->widget, 0, 0, width, height);
-	window_schedule_redraw(background->window);
+	widget_schedule_resize(background->widget, width, height);
 }
 
 static void
@@ -410,7 +408,7 @@ unlock_dialog_redraw_handler(struct widget *widget, void *data)
 
 	surface = window_get_surface(dialog->window);
 	cr = cairo_create(surface);
-	window_get_child_allocation(dialog->window, &allocation);
+	widget_get_allocation(dialog->widget, &allocation);
 	cairo_rectangle(cr, allocation.x, allocation.y,
 			allocation.width, allocation.height);
 	cairo_clip(cr);

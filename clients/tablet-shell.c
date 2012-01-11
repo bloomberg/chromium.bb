@@ -122,7 +122,7 @@ homescreen_draw(struct tablet_shell *shell)
 	int x, y, i, width, height, vmargin, hmargin, vpadding, hpadding;
 
 	window_create_surface(shell->homescreen);
-	window_get_child_allocation(shell->homescreen, &allocation);
+	window_get_allocation(shell->homescreen, &allocation);
 	surface = window_get_surface(shell->homescreen);
 	cr = cairo_create(surface);
 
@@ -176,7 +176,7 @@ lockscreen_draw(struct tablet_shell *shell)
 	int width, height;
 
 	window_create_surface(shell->lockscreen);
-	window_get_child_allocation(shell->lockscreen, &allocation);
+	window_get_allocation(shell->lockscreen, &allocation);
 	surface = window_get_surface(shell->lockscreen);
 	cr = cairo_create(surface);
 

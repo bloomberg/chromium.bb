@@ -221,7 +221,7 @@ redraw_handler(struct widget *widget, void *data)
 	struct wl_callback *callback;
 	struct gears *gears = data;
 
-	window_get_child_allocation(gears->window, &allocation);
+	widget_get_allocation(gears->widget, &allocation);
 	window_get_allocation(gears->window, &window_allocation);
 
 	if (display_acquire_window_surface(gears->d,
@@ -232,7 +232,7 @@ redraw_handler(struct widget *widget, void *data)
 	}
 	
 	glViewport(allocation.x,
-		   window_allocation.height - allocation.height - allocation.x,
+		   window_allocation.height - allocation.height - allocation.y,
 		   allocation.width, allocation.height);
 	glScissor(allocation.x,
 		  window_allocation.height - allocation.height - allocation.y,
@@ -293,7 +293,7 @@ resize_handler(struct widget *widget,
 		height = 300;
 	}
 
-	window_set_child_size(gears->window, width, height);
+	widget_set_size(gears->widget, width, height);
 }
 
 static void
@@ -361,7 +361,7 @@ gears_create(struct display *display)
 	window_set_keyboard_focus_handler(gears->window,
 					  keyboard_focus_handler);
 
-	frame_callback(gears, NULL, 0);
+	window_schedule_resize(gears->window, width, height);
 
 	return gears;
 }

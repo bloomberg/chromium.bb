@@ -222,27 +222,12 @@ struct widget *
 window_get_focus_widget(struct window *window);
 struct display *
 window_get_display(struct window *window);
-struct widget *
-window_get_widget(struct window *window);
-
 void
 window_move(struct window *window, struct input *input, uint32_t time);
-
 void
-window_draw(struct window *window);
-
-void
-window_get_allocation(struct window *window,
-		      struct rectangle *allocation);
-
-void
-window_get_child_allocation(struct window *window,
-			    struct rectangle *allocation);
-
+window_get_allocation(struct window *window, struct rectangle *allocation);
 void
 window_set_transparent(struct window *window, int transparent);
-void
-window_set_child_size(struct window *window, int32_t width, int32_t height);
 void
 window_schedule_redraw(struct window *window);
 void
@@ -334,6 +319,10 @@ widget_get_allocation(struct widget *widget, struct rectangle *allocation);
 void
 widget_set_allocation(struct widget *widget,
 		      int32_t x, int32_t y, int32_t width, int32_t height);
+void
+widget_set_size(struct widget *widget, int32_t width, int32_t height);
+void
+widget_schedule_resize(struct widget *widget, int32_t width, int32_t height);
 
 void *
 widget_get_user_data(struct widget *widget);

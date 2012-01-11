@@ -142,7 +142,7 @@ redraw_handler(struct widget *widget, void *data)
 	cairo_t *cr;
 	cairo_surface_t *surface;
 
-	window_get_child_allocation(image->window, &allocation);
+	widget_get_allocation(image->widget, &allocation);
 
 	pb = gdk_pixbuf_new_from_file_at_size(image->filename,
 					      allocation.width,
@@ -153,7 +153,7 @@ redraw_handler(struct widget *widget, void *data)
 
 	surface = window_get_surface(image->window);
 	cr = cairo_create(surface);
-	window_get_child_allocation(image->window, &allocation);
+	widget_get_allocation(image->widget, &allocation);
 	cairo_rectangle(cr, allocation.x, allocation.y,
 			allocation.width, allocation.height);
 	cairo_clip(cr);
@@ -215,7 +215,7 @@ image_create(struct display *display, const char *filename)
 	window_set_keyboard_focus_handler(image->window,
 					  keyboard_focus_handler);
 
-	window_schedule_redraw(image->window);
+	widget_schedule_resize(image->widget, 500, 400);
 
 	return image;
 }

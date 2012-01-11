@@ -499,7 +499,7 @@ terminal_compare_position(struct terminal *terminal,
 	struct rectangle allocation;
 	int top_margin, side_margin, col, row, ref_x;
 
-	window_get_child_allocation(terminal->window, &allocation);
+	widget_get_allocation(terminal->widget, &allocation);
 	side_margin = allocation.x + (allocation.width - terminal->width * terminal->extents.max_x_advance) / 2;
 	top_margin = allocation.y + (allocation.height - terminal->height * terminal->extents.height) / 2;
 
@@ -694,7 +694,7 @@ terminal_shift_line(struct terminal *terminal, int d)
 }
 
 static void
-terminal_resize(struct terminal *terminal, int width, int height)
+terminal_resize_cells(struct terminal *terminal, int width, int height)
 {
 	size_t size;
 	union utf8_char *data;
@@ -704,7 +704,6 @@ terminal_resize(struct terminal *terminal, int width, int height)
 	int i, l, total_rows;
 	struct rectangle allocation;
 	struct winsize ws;
-	int32_t pixel_width, pixel_height;
 
 	if (width < 1)
 		width = 1;
@@ -712,15 +711,6 @@ terminal_resize(struct terminal *terminal, int width, int height)
 		height = 1;
 	if (terminal->width == width && terminal->height == height)
 		return;
-
-	if (!terminal->fullscreen) {
-		pixel_width = width *
-			terminal->extents.max_x_advance + 2 * terminal->margin;
-		pixel_height = height *
-			terminal->extents.height + 2 * terminal->margin;
-		window_set_child_size(terminal->window,
-				      pixel_width, pixel_height);
-	}
 
 	data_pitch = width * sizeof(union utf8_char);
 	size = data_pitch * height;
@@ -771,10 +761,44 @@ terminal_resize(struct terminal *terminal, int width, int height)
 	/* Update the window size */
 	ws.ws_row = terminal->height;
 	ws.ws_col = terminal->width;
-	window_get_child_allocation(terminal->window, &allocation);
+	widget_get_allocation(terminal->widget, &allocation);
 	ws.ws_xpixel = allocation.width;
 	ws.ws_ypixel = allocation.height;
 	ioctl(terminal->master, TIOCSWINSZ, &ws);
+}
+
+static void
+resize_handler(struct widget *widget,
+	       int32_t width, int32_t height, void *data)
+{
+	struct terminal *terminal = data;
+	int32_t columns, rows, m;
+
+	m = 2 * terminal->margin;
+	columns = (width - m) / (int32_t) terminal->extents.max_x_advance;
+	rows = (height - m) / (int32_t) terminal->extents.height;
+
+	if (!terminal->fullscreen) {
+		width = columns * terminal->extents.max_x_advance + m;
+		height = rows * terminal->extents.height + m;
+		widget_set_size(terminal->widget, width, height);
+	}
+
+	terminal_resize_cells(terminal, columns, rows);
+}
+
+static void
+terminal_resize(struct terminal *terminal, int columns, int rows)
+{
+	int32_t width, height, m;
+
+	if (terminal->fullscreen)
+		return;
+
+	m = 2 * terminal->margin;
+	width = columns * terminal->extents.max_x_advance + m;
+	height = rows * terminal->extents.height + m;
+	widget_schedule_resize(terminal->widget, width, height);
 }
 
 struct color_scheme DEFAULT_COLORS = {
@@ -915,7 +939,7 @@ redraw_handler(struct widget *widget, void *data)
 	cairo_font_extents_t extents;
 
 	surface = window_get_surface(terminal->window);
-	window_get_child_allocation(terminal->window, &allocation);
+	widget_get_allocation(terminal->widget, &allocation);
 	cr = cairo_create(surface);
 	cairo_rectangle(cr, allocation.x, allocation.y,
 			allocation.width, allocation.height);
@@ -1008,25 +1032,6 @@ terminal_write(struct terminal *terminal, const char *data, size_t length)
 {
 	if (write(terminal->master, data, length) < 0)
 		abort();
-}
-
-static void
-resize_handler(struct widget *widget,
-	       int32_t pixel_width, int32_t pixel_height, void *data)
-{
-	struct terminal *terminal = data;
-	int32_t width, height;
-
-	width = (pixel_width - 2 * terminal->margin) /
-		(int32_t) terminal->extents.max_x_advance;
-	height = (pixel_height - 2 * terminal->margin) /
-		(int32_t) terminal->extents.height;
-
-	if (terminal->fullscreen)
-		window_set_child_size(terminal->window,
-				      pixel_width, pixel_height);
-
-	terminal_resize(terminal, width, height);
 }
 
 static void
@@ -1488,10 +1493,8 @@ handle_escape(struct terminal *terminal)
 		switch (args[0]) {
 		case 4:  /* resize px */
 			if (set[1] && set[2]) {
-				window_set_child_size(terminal->window,
-						      args[2], args[1]);
-				resize_handler(terminal->widget,
-					       args[2], args[1], terminal);
+				widget_schedule_resize(terminal->widget,
+						       args[2], args[1]);
 			}
 			break;
 		case 8:  /* resize ch */
@@ -1500,13 +1503,13 @@ handle_escape(struct terminal *terminal)
 			}
 			break;
 		case 13: /* report position */
-			window_get_child_allocation(terminal->window, &allocation);
+			widget_get_allocation(terminal->widget, &allocation);
 			snprintf(response, MAX_RESPONSE, "\e[3;%d;%dt",
 				 allocation.x, allocation.y);
 			terminal_write(terminal, response, strlen(response));
 			break;
 		case 14: /* report px */
-			window_get_child_allocation(terminal->window, &allocation);
+			widget_get_allocation(terminal->widget, &allocation);
 			snprintf(response, MAX_RESPONSE, "\e[4;%d;%dt",
 				 allocation.height, allocation.width);
 			terminal_write(terminal, response, strlen(response));
@@ -2353,8 +2356,6 @@ terminal_run(struct terminal *terminal, const char *path)
 	window_set_fullscreen(terminal->window, terminal->fullscreen);
 	if (!terminal->fullscreen)
 		terminal_resize(terminal, 80, 24);
-
-	window_schedule_redraw(terminal->window);
 
 	return 0;
 }

@@ -1112,6 +1112,26 @@ widget_get_allocation(struct widget *widget, struct rectangle *allocation)
 }
 
 void
+widget_set_size(struct widget *widget, int32_t width, int32_t height)
+{
+	struct window *window = widget->window;
+
+	widget->allocation.width = width;
+	widget->allocation.height = height;
+
+	window->allocation.x = 0;
+	window->allocation.y = 0;
+	if (widget->window->decoration) {
+		window->allocation.width = width + 20 + widget->window->margin;
+		window->allocation.height =
+			height + 60 + widget->window->margin;
+	} else {
+		window->allocation.width = width;
+		window->allocation.height = height;
+	}
+}
+
+void
 widget_set_allocation(struct widget *widget,
 		      int32_t x, int32_t y, int32_t width, int32_t height)
 {
@@ -1911,12 +1931,17 @@ static void
 window_resize(struct window *window, int32_t width, int32_t height)
 {
 	struct rectangle allocation;
+	struct widget *widget;
+	int decoration_width, decoration_height;
+
+	decoration_width = 20 + window->margin * 2;
+	decoration_height = 60 + window->margin * 2;
 
 	if (window->decoration) {
-		allocation.x = 20;
-		allocation.y = 60;
-		allocation.width = width - 20 - window->margin * 2;
-		allocation.height = height - 60 - window->margin * 2;
+		allocation.x = 10 + window->margin;
+		allocation.y = 50 + window->margin;
+		allocation.width = width - decoration_width;
+		allocation.height = height - decoration_height;
 	} else {
 		allocation.x = 0;
 		allocation.y = 0;
@@ -1924,17 +1949,26 @@ window_resize(struct window *window, int32_t width, int32_t height)
 		allocation.height = height;
 	}
 
-	window->allocation.width = width;
-	window->allocation.height = height;
-
-	widget_set_allocation(window->widget, allocation.x, allocation.y,
+	widget = window->widget;
+	widget_set_allocation(widget, allocation.x, allocation.y,
 			      allocation.width, allocation.height);
 
-	if (window->widget->resize_handler)
-		window->widget->resize_handler(window->widget,
-					       allocation.width,
-					       allocation.height,
-					       window->widget->user_data);
+	if (widget->resize_handler)
+		widget->resize_handler(widget,
+				       allocation.width,
+				       allocation.height,
+				       widget->user_data);
+
+	if (window->decoration) {
+		window->allocation.x = 0;
+		window->allocation.y = 0;
+		window->allocation.width =
+			widget->allocation.width + decoration_width;
+		window->allocation.height =
+			widget->allocation.height + decoration_height;
+	} else {
+		window->allocation = widget->allocation;
+	}
 
 	window_schedule_redraw(window);
 }
@@ -1959,6 +1993,21 @@ window_schedule_resize(struct window *window, int width, int height)
 		window->resize_task.run = idle_resize;
 		display_defer(window->display, &window->resize_task);
 		window->resize_scheduled = 1;
+	}
+}
+
+void
+widget_schedule_resize(struct widget *widget, int32_t width, int32_t height)
+{
+	struct window *window = widget->window;
+
+	if (widget->window->decoration) {
+		window_schedule_resize(window,
+				       width + 20 + 2 * window->margin,
+				       height + 60 + 2 * window->margin);
+
+	} else {
+		window_schedule_resize(window, width, height);
 	}
 }
 
@@ -1999,38 +2048,6 @@ window_get_allocation(struct window *window,
 		      struct rectangle *allocation)
 {
 	*allocation = window->allocation;
-}
-
-void
-window_get_child_allocation(struct window *window,
-			    struct rectangle *allocation)
-{
-	if (!window->decoration) {
-		*allocation = window->allocation;
-	} else {
-		allocation->x = window->margin + 10;
-		allocation->y = window->margin + 50;
-		allocation->width =
-			window->allocation.width - 20 - window->margin * 2;
-		allocation->height =
-			window->allocation.height - 60 - window->margin * 2;
-	}
-}
-
-void
-window_set_child_size(struct window *window, int32_t width, int32_t height)
-{
-	if (window->decoration) {
-		window->allocation.x = 20 + window->margin;
-		window->allocation.y = 60 + window->margin;
-		window->allocation.width = width + 20 + window->margin * 2;
-		window->allocation.height = height + 60 + window->margin * 2;
-	} else {
-		window->allocation.x = 0;
-		window->allocation.y = 0;
-		window->allocation.width = width;
-		window->allocation.height = height;
-	}
 }
 
 static void

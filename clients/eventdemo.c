@@ -107,7 +107,7 @@ redraw_handler(struct widget *widget, void *data)
 	if (log_redraw)
 		printf("redraw\n");
 
-	window_get_child_allocation(e->window, &rect);
+	widget_get_allocation(e->widget, &rect);
 	surface = window_get_surface(e->window);
 
 	cr = cairo_create(surface);
@@ -150,7 +150,7 @@ resize_handler(struct widget *widget,
 		height = height_max;
 
 	/* set the new window dimensions */
-	window_set_child_size(e->window, width, height);
+	widget_set_size(e->widget, width, height);
 }
 
 /**
@@ -266,12 +266,6 @@ eventdemo_create(struct display *d)
 	if(e == NULL)
 		return NULL;
 
-	/* Creates a new window with the given title, width and height.
-	 * To set the size of the window for a given usable areas width
-	 * and height in a window decoration agnostic way use:
-	 * 	window_set_child_size(struct window *window,
-	 *			      int32_t width, int32_t height);
-	 */
 	e->window = window_create(d, width, height);
 	e->widget = window_add_widget(e->window, e);
 	window_set_title(e->window, title);
