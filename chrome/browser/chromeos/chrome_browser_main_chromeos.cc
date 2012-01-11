@@ -424,7 +424,7 @@ void ChromeBrowserMainPartsChromeos::PreBrowserStart() {
   // -- This used to be in ChromeBrowserMainParts::PreMainMessageLoopRun()
   // -- just before MetricsService::LogNeedForCleanShutdown().
 
-  metrics()->StartExternalMetrics();
+  g_browser_process->metrics_service()->StartExternalMetrics();
 
   // -- This used to be in ChromeBrowserMainParts::PreMainMessageLoopRun()
   // -- immediately after ChildProcess::WaitForDebugger().
