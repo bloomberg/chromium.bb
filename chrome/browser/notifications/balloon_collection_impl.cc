@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,7 +32,8 @@ const int kMinAllowedBalloonCount = 2;
 
 // Delay from the mouse leaving the balloon collection before
 // there is a relayout, in milliseconds.
-const int kRepositionDelay = 300;
+const base::TimeDelta kRepositionDelay =
+    base::TimeDelta::FromMilliseconds(300);
 
 // The spacing between the balloon and the panel.
 const int kVerticalSpacingBetweenBalloonAndPanel = 5;
