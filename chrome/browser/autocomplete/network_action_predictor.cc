@@ -130,6 +130,8 @@ NetworkActionPredictor::Action NetworkActionPredictor::RecommendAction(
   const double confidence = CalculateConfidence(user_text, match, &is_in_db);
   DCHECK(confidence >= 0.0 && confidence <= 1.0);
 
+  UMA_HISTOGRAM_BOOLEAN("NetworkActionPredictor.MatchIsInDb", is_in_db);
+
   if (is_in_db) {
     // Multiple enties with the same URL are fine as the confidence may be
     // different.
@@ -164,7 +166,7 @@ bool NetworkActionPredictor::IsPreconnectable(const AutocompleteMatch& match) {
     case AutocompleteMatch::SEARCH_WHAT_YOU_TYPED:
     case AutocompleteMatch::SEARCH_HISTORY:
     case AutocompleteMatch::SEARCH_SUGGEST:
-      // A match that uses a non-default search engine (e.g. for tab-to-search).
+    // A match that uses a non-default search engine (e.g. for tab-to-search).
     case AutocompleteMatch::SEARCH_OTHER_ENGINE:
       return true;
 
@@ -226,10 +228,12 @@ void NetworkActionPredictor::OnOmniboxOpenedUrl(const AutocompleteLog& log) {
   if (log.text.length() < kMinimumUserTextLength)
     return;
 
-  UMA_HISTOGRAM_COUNTS("NetworkActionPredictor.NavigationCount", 1);
+  const AutocompleteMatch& match = log.result.match_at(log.selected_index);
 
-  const GURL& opened_url =
-      log.result.match_at(log.selected_index).destination_url;
+  UMA_HISTOGRAM_BOOLEAN("Prerender.OmniboxNavigationsCouldPrerender",
+                        prerender::IsOmniboxEnabled(profile_));
+
+  const GURL& opened_url = match.destination_url;
 
   const string16 lower_user_text(base::i18n::ToLower(log.text));
 
