@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -72,7 +72,7 @@ http://msdn.microsoft.com/en-us/library/windows/desktop/ms686997(v=vs.85).aspx
 #endif
 
 #if !NACL_HAS_STRNDUP
-static char *strndup(char const *s, size_t n) {
+static char *my_strndup(char const *s, size_t n) {
   char *d = (char *) malloc(n + 1);
   if (NULL != d) {
     strncpy(d, s, n);
@@ -80,6 +80,7 @@ static char *strndup(char const *s, size_t n) {
   }
   return d;
 }
+#define strndup(s,n) my_strndup((s), (n))
 #endif
 
 struct NaClFaultExpr {
