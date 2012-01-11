@@ -53,7 +53,6 @@
 </if>
 <include src="advanced_options.js"></include>
 <include src="alert_overlay.js"></include>
-<include src="autocomplete_list.js"></include>
 <include src="autofill_edit_address_overlay.js"></include>
 <include src="autofill_edit_creditcard_overlay.js"></include>
 <include src="autofill_options_list.js"></include>

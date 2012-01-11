@@ -64,7 +64,7 @@ cr.define('options', function() {
           this.startup_pages_pref_.name,
           this.handleStartupPageListChange_.bind(this));
 
-      var suggestionList = new options.AutocompleteList();
+      var suggestionList = new cr.ui.AutocompleteList();
       suggestionList.autoExpands = true;
       suggestionList.suggestionUpdateRequestCallback =
           this.requestAutocompleteSuggestions_.bind(this);

@@ -126,7 +126,7 @@ cr.define('options', function() {
         $('startupSection').hidden = true;
       }
 
-      var suggestionList = new options.AutocompleteList();
+      var suggestionList = new cr.ui.AutocompleteList();
       suggestionList.autoExpands = true;
       suggestionList.suggestionUpdateRequestCallback =
           this.requestAutocompleteSuggestions_.bind(this);

@@ -76,6 +76,8 @@ without changes to the corresponding grd file. -->
                file="shared/js/cr/ui.js" type="BINDATA" />
       <include name="IDR_SHARED_JS_CR_UI_ARRAY_DATA_MODEL"
                file="shared/js/cr/ui/array_data_model.js" type="BINDATA" />
+      <include name="IDR_SHARED_JS_CR_UI_AUTOCOMPLETE_LIST"
+               file="shared/js/cr/ui/autocomplete_list.js" type="BINDATA" />
       <include name="IDR_SHARED_JS_CR_UI_CARD_SLIDER"
                file="shared/js/cr/ui/card_slider.js" type="BINDATA" />
       <include name="IDR_SHARED_JS_CR_UI_COMMAND"

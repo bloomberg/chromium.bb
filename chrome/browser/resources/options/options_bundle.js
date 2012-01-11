@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -55,7 +55,6 @@
 </if>
 <include src="advanced_options.js"></include>
 <include src="alert_overlay.js"></include>
-<include src="autocomplete_list.js"></include>
 <include src="autofill_edit_address_overlay.js"></include>
 <include src="autofill_edit_creditcard_overlay.js"></include>
 <include src="autofill_options_list.js"></include>

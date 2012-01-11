@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('options', function() {
+cr.define('cr.ui', function() {
   const ArrayDataModel = cr.ui.ArrayDataModel;
   const List = cr.ui.List;
   const ListItem = cr.ui.ListItem;
