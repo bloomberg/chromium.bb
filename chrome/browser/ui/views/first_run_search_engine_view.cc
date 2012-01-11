@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -58,7 +58,7 @@ void ShowFirstRunDialog(Profile* profile,
   // If the default search is managed via policy, we don't ask the user to
   // choose.
   TemplateURLService* model = TemplateURLServiceFactory::GetForProfile(profile);
-  if (!FirstRun::ShouldShowSearchEngineSelector(model))
+  if (!first_run::ShouldShowSearchEngineSelector(model))
     return;
 
   views::Widget* window = views::Widget::CreateWindow(

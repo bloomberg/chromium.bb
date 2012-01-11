@@ -61,9 +61,8 @@ void AutoImport(
   first_run::CreateSentinel();
 }
 
-}  //namespace first_run
-
-// static
-FilePath FirstRun::MasterPrefsPath() {
+FilePath MasterPrefsPath() {
   return master_prefs::MasterPrefsPath();
 }
+
+}  //namespace first_run

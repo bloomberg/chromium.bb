@@ -70,6 +70,14 @@ bool SetShowWelcomePagePref();
 // Returns false if the pref could not be set.
 bool SetPersonalDataManagerFirstRunPref();
 
+// Sets the kShouldUseOEMFirstRunBubble local state pref so that the
+// browser shows the OEM first run bubble once the main message loop
+// gets going. Returns false if the pref could not be set.
+bool SetOEMFirstRunBubblePref();
+
+// Whether the search engine selection dialog should be shown on first run.
+bool ShouldShowSearchEngineSelector(const TemplateURLService* model);
+
 // -- Platform-specific functions --
 
 // Automatically import history and home page (and search engine, if
@@ -88,6 +96,9 @@ void AutoImport(Profile* profile,
 // This function might or might not show a visible UI depending on the
 // cmdline parameters.
 int ImportNow(Profile* profile, const CommandLine& cmdline);
+
+// Returns the path for the master preferences file.
+FilePath MasterPrefsPath();
 
 }  // namespace first_run
 
@@ -140,19 +151,6 @@ class FirstRun {
   // 'master_preferences' file.
   static bool ProcessMasterPreferences(const FilePath& user_data_dir,
                                        MasterPrefs* out_prefs);
-
-  // Sets the kShouldUseOEMFirstRunBubble local state pref so that the
-  // browser shows the OEM first run bubble once the main message loop
-  // gets going. Returns false if the pref could not be set.
-  static bool SetOEMFirstRunBubblePref();
-
-  // Whether the search engine selection dialog should be shown on first run.
-  static bool ShouldShowSearchEngineSelector(const TemplateURLService* model);
-
-  // -- Platform-specific functions --
-
-  // Returns the path for the master preferences file.
-  static FilePath MasterPrefsPath();
 
  private:
   friend class FirstRunTest;

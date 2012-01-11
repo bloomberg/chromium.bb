@@ -97,13 +97,12 @@ void AutoImport(
 #endif  // !defined(USE_AURA)
 }
 
-}  // namespace first_run
-
-// static
-FilePath FirstRun::MasterPrefsPath() {
+FilePath MasterPrefsPath() {
   // The standard location of the master prefs is next to the chrome binary.
   FilePath master_prefs;
   if (!PathService::Get(base::DIR_EXE, &master_prefs))
     return FilePath();
   return master_prefs.AppendASCII(installer::kDefaultMasterPrefs);
 }
+
+}  // namespace first_run

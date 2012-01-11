@@ -341,6 +341,21 @@ bool SetPersonalDataManagerFirstRunPref() {
   return true;
 }
 
+bool SetOEMFirstRunBubblePref() {
+  PrefService* local_state = g_browser_process->local_state();
+  if (!local_state)
+    return false;
+  if (!local_state->FindPreference(prefs::kShouldUseOEMFirstRunBubble)) {
+    local_state->RegisterBooleanPref(prefs::kShouldUseOEMFirstRunBubble, false);
+    local_state->SetBoolean(prefs::kShouldUseOEMFirstRunBubble, true);
+  }
+  return true;
+}
+
+bool ShouldShowSearchEngineSelector(const TemplateURLService* model) {
+  return model && !model->is_default_search_managed();
+}
+
 }  // namespace first_run
 
 // FirstRun -------------------------------------------------------------------
@@ -362,7 +377,7 @@ bool FirstRun::ProcessMasterPreferences(const FilePath& user_data_dir,
                                         MasterPrefs* out_prefs) {
   DCHECK(!user_data_dir.empty());
 
-  FilePath master_prefs = MasterPrefsPath();
+  FilePath master_prefs = first_run::MasterPrefsPath();
   if (master_prefs.empty())
     return true;
   installer::MasterPreferences prefs(master_prefs);
@@ -414,7 +429,7 @@ bool FirstRun::ProcessMasterPreferences(const FilePath& user_data_dir,
 
   if (prefs.GetBool(installer::master_preferences::kAltFirstRunBubble,
                     &value) && value) {
-    FirstRun::SetOEMFirstRunBubblePref();
+    first_run::SetOEMFirstRunBubblePref();
   }
 
   FilePath user_prefs = GetDefaultPrefFilePath(true, user_data_dir);
@@ -590,21 +605,4 @@ bool FirstRun::ProcessMasterPreferences(const FilePath& user_data_dir,
   }
 
   return false;
-}
-
-// static
-bool FirstRun::ShouldShowSearchEngineSelector(const TemplateURLService* model) {
-  return model && !model->is_default_search_managed();
-}
-
-// static
-bool FirstRun::SetOEMFirstRunBubblePref() {
-  PrefService* local_state = g_browser_process->local_state();
-  if (!local_state)
-    return false;
-  if (!local_state->FindPreference(prefs::kShouldUseOEMFirstRunBubble)) {
-    local_state->RegisterBooleanPref(prefs::kShouldUseOEMFirstRunBubble, false);
-    local_state->SetBoolean(prefs::kShouldUseOEMFirstRunBubble, true);
-  }
-  return true;
 }

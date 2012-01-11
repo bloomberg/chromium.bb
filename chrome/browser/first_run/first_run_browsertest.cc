@@ -34,7 +34,7 @@ IN_PROC_BROWSER_TEST_F(FirstRunBrowserTest, SetShowWelcomePagePref) {
 IN_PROC_BROWSER_TEST_F(FirstRunBrowserTest, SetOEMFirstRunBubblePref) {
   EXPECT_FALSE(g_browser_process->local_state()->FindPreference(
       prefs::kShouldUseOEMFirstRunBubble));
-  EXPECT_TRUE(FirstRun::SetOEMFirstRunBubblePref());
+  EXPECT_TRUE(first_run::SetOEMFirstRunBubblePref());
   ASSERT_TRUE(g_browser_process->local_state()->FindPreference(
       prefs::kShouldUseOEMFirstRunBubble));
   EXPECT_TRUE(g_browser_process->local_state()->GetBoolean(

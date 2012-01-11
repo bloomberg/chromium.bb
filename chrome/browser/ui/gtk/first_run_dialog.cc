@@ -111,7 +111,7 @@ bool FirstRunDialog::Show(Profile* profile,
   const TemplateURLService* search_engines_model =
       TemplateURLServiceFactory::GetForProfile(profile);
   bool show_search_engines_dialog =
-      FirstRun::ShouldShowSearchEngineSelector(search_engines_model);
+      first_run::ShouldShowSearchEngineSelector(search_engines_model);
 
 #if defined(GOOGLE_CHROME_BUILD)
   // If the metrics reporting is managed, we won't ask.
