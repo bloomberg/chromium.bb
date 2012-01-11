@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/views/controls/button/checkbox.h"
@@ -42,10 +43,16 @@ void TableExample::CreateExampleView(View* container) {
   container->SetLayoutManager(layout);
 
   std::vector<ui::TableColumn> columns;
-  columns.push_back(ui::TableColumn(0, L"Fruit", ui::TableColumn::LEFT, 100));
-  columns.push_back(ui::TableColumn(1, L"Color", ui::TableColumn::LEFT, 100));
-  columns.push_back(ui::TableColumn(2, L"Origin", ui::TableColumn::LEFT, 100));
-  columns.push_back(ui::TableColumn(3, L"Price", ui::TableColumn::LEFT, 100));
+  columns.push_back(ui::TableColumn(0, ASCIIToUTF16("Fruit"),
+                                    ui::TableColumn::LEFT, 100));
+#if !defined(USE_AURA)
+  columns.push_back(ui::TableColumn(1, ASCIIToUTF16("Color"),
+                                    ui::TableColumn::LEFT, 100));
+  columns.push_back(ui::TableColumn(2, ASCIIToUTF16("Origin"),
+                                    ui::TableColumn::LEFT, 100));
+  columns.push_back(ui::TableColumn(3, ASCIIToUTF16("Price"),
+                                    ui::TableColumn::LEFT, 100));
+#endif
   table_ = new TableView(this, columns, ICON_AND_TEXT, true, true, true);
   table_->SetObserver(this);
   icon1_.setConfig(SkBitmap::kARGB_8888_Config, 16, 16);
@@ -62,7 +69,7 @@ void TableExample::CreateExampleView(View* container) {
   column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
                         GridLayout::USE_PREF, 0, 0);
   layout->StartRow(1 /* expand */, 0);
-  layout->AddView(table_);
+  layout->AddView(table_->CreateParentIfNecessary());
 
   column_set = layout->AddColumnSet(1);
   column_set->AddColumn(GridLayout::FILL, GridLayout::FILL,
@@ -104,10 +111,14 @@ SkBitmap TableExample::GetIcon(int row) {
 void TableExample::SetObserver(ui::TableModelObserver* observer) {}
 
 void TableExample::OnSelectionChanged() {
-  PrintStatus("Selection changed");
+  PrintStatus("Selected: %s",
+              UTF16ToASCII(GetText(table_->FirstSelectedRow(), 0)).c_str());
 }
 
-void TableExample::OnDoubleClick() {}
+void TableExample::OnDoubleClick() {
+  PrintStatus("Double Click: %s",
+              UTF16ToASCII(GetText(table_->FirstSelectedRow(), 0)).c_str());
+}
 
 void TableExample::OnMiddleClick() {}
 
@@ -133,7 +144,9 @@ void TableExample::ButtonPressed(Button* sender, const Event& event) {
     index = 3;
     show = column4_visible_checkbox_->checked();
   }
+#if !defined(USE_AURA)
   table_->SetColumnVisibility(index, show);
+#endif
 }
 
 }  // namespace examples

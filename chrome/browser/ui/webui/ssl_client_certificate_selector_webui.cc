@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -295,7 +295,12 @@ void ShowSSLClientCertificateSelector(
     TabContentsWrapper* wrapper,
     net::SSLCertRequestInfo* cert_request_info,
     SSLClientAuthHandler* delegate) {
-#if defined(USE_AURA) || defined(OS_CHROMEOS)
+  // TODO(jhawkins): move this into a non-webui location.
+#if defined(USE_AURA)
+  ShowNativeSSLClientCertificateSelector(wrapper,
+                                         cert_request_info,
+                                         delegate);
+#elif defined(OS_CHROMEOS)
   SSLClientCertificateSelectorWebUI::ShowDialog(wrapper,
                                                 cert_request_info,
                                                 delegate);

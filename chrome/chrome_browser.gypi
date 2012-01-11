@@ -4373,14 +4373,12 @@
             ['exclude', '^browser/ui/views/frame/browser_non_client_frame_view_factory_win.cc'],
             ['exclude', '^browser/ui/views/frame/glass_browser_frame_view.cc'],
             ['exclude', '^browser/ui/views/frame/glass_browser_frame_view.h'],
-            ['exclude', '^browser/ui/views/hung_renderer_view.cc'],
             ['exclude', '^browser/ui/views/importer/import_progress_dialog_view.cc'],
             ['exclude', '^browser/ui/views/native_constrained_window_win.cc'],
             ['exclude', '^browser/ui/views/omnibox/omnibox_view_win.cc'],
             ['exclude', '^browser/ui/views/omnibox/omnibox_view_win.h'],
             ['exclude', '^browser/ui/views/select_file_dialog_win.cc'],
             ['exclude', '^browser/ui/views/simple_message_box_win.cc'],
-            ['exclude', '^browser/ui/views/ssl_client_certificate_selector.cc'],
             ['exclude', '^browser/ui/views/tab_contents/native_tab_contents_container_win.cc'],
             ['exclude', '^browser/ui/views/tab_contents/native_tab_contents_container_win.h'],
             ['exclude', '^browser/ui/views/tab_contents/native_tab_contents_view_win.cc'],
@@ -4765,6 +4763,12 @@
             ['exclude', '^browser/first_run/try_chrome_dialog_view.h'],
           ],
           'conditions': [
+            ['use_aura==1',{
+              'sources/': [
+                ['include', '^browser/ui/views/hung_renderer_view.cc'],
+                ['include', '^browser/ui/views/ssl_client_certificate_selector.cc'],
+              ]
+            }],
             ['OS=="linux" or use_aura==1',{
               'sources/': [
                 ['include', '^browser/ui/views/accelerator_table.cc'],
