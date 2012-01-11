@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,8 @@
 #include "chrome/browser/chromeos/status/clock_menu_button.h"
 #include "chrome/browser/chromeos/status/memory_menu_button.h"
 #include "chrome/browser/chromeos/status/status_area_view.h"
+#include "chrome/browser/defaults.h"
+#include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/view_ids.h"
@@ -104,6 +106,12 @@ void StatusAreaHostAura::ExecuteStatusAreaCommand(
 #if defined(OS_CHROMEOS)
   if (chromeos::StatusAreaViewChromeos::IsBrowserMode()) {
     Profile* profile = ProfileManager::GetDefaultProfile();
+    if (browser_defaults::kAlwaysOpenIncognitoWindow &&
+        IncognitoModePrefs::ShouldLaunchIncognito(
+            *CommandLine::ForCurrentProcess(),
+            profile->GetPrefs())) {
+      profile = profile->GetOffTheRecordProfile();
+    }
     Browser* browser = BrowserList::FindBrowserWithProfile(profile);
     if (!browser)
       browser = Browser::Create(profile);
