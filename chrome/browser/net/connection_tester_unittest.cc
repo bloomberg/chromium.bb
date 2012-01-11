@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -176,7 +176,9 @@ TEST_F(ConnectionTesterTest, DeleteWhileInProgress) {
   // TODO(eroman): Is this URL right?
   tester->RunAllTests(test_server_.GetURL("echoall"));
 
-  MessageLoop::current()->RunAllPending();
+  // Don't run the message loop at all.  Otherwise the experiment's request may
+  // complete and post a task to run the next experiment before we quit the
+  // message loop.
 
   EXPECT_EQ(1, test_delegate_.start_connection_test_suite_count());
   EXPECT_EQ(1, test_delegate_.start_connection_test_experiment_count());
