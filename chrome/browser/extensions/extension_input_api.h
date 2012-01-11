@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -42,8 +42,8 @@ class SetKeyboardHeightFunction : public AsyncExtensionFunction {
 // versions of Chrome OS built with USE_VIRTUAL_KEYBOARD. Please also note that
 // the version of Chrome OS is always built with TOOLKIT_VIEWS.
 //
-// We may eventually support other platforms, especially non TOUCH_UI version
-// of Chrome OS.
+// We may eventually support other platforms, especially versions of ChromeOS
+// without USE_VIRTUAL_KEYBOARD.
 class SendHandwritingStrokeFunction : public SyncExtensionFunction {
  public:
   virtual bool RunImpl() OVERRIDE;

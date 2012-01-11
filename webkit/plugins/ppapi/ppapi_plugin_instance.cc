@@ -146,19 +146,12 @@ void DrawEmptyRectangle(HDC dc) {
 
 namespace {
 
-#if !defined(TOUCH_UI)
 // The default text input type is to regard the plugin always accept text input.
 // This is for allowing users to use input methods even on completely-IME-
 // unaware plugins (e.g., PPAPI Flash or PDF plugin for M16).
 // Plugins need to explicitly opt out the text input mode if they know
 // that they don't accept texts.
 const ui::TextInputType kPluginDefaultTextInputType = ui::TEXT_INPUT_TYPE_TEXT;
-#else
-// On the other hand, for touch ui, accepting text input implies to pop up
-// virtual keyboard always. It makes IME-unaware plugins almost unusable,
-// and hence is disabled by default (codereview.chromium.org/7800044).
-const ui::TextInputType kPluginDefaultTextInputType = ui::TEXT_INPUT_TYPE_NONE;
-#endif
 
 #define COMPILE_ASSERT_MATCHING_ENUM(webkit_name, np_name) \
     COMPILE_ASSERT(static_cast<int>(WebCursorInfo::webkit_name) \
