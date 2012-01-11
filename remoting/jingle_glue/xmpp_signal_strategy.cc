@@ -122,7 +122,7 @@ bool XmppSignalStrategy::HandleStanza(const buzz::XmlElement* stanza) {
   Listener* listener;
   while ((listener = it.GetNext()) != NULL) {
     if (listener->OnSignalStrategyIncomingStanza(stanza))
-      break;
+      return true;
   }
   return false;
 }
