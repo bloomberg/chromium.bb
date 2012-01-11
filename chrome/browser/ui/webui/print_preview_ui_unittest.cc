@@ -4,17 +4,14 @@
 
 #include <vector>
 
-#include "base/command_line.h"
 #include "base/memory/ref_counted_memory.h"
 #include "chrome/browser/printing/print_preview_tab_controller.h"
+#include "chrome/browser/printing/print_preview_unit_test_base.h"
 #include "chrome/browser/printing/print_view_manager.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/constrained_window_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/webui/print_preview_ui.h"
-#include "chrome/common/chrome_switches.h"
-#include "chrome/test/base/browser_with_test_window_test.h"
-#include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/web_contents.h"
 #include "printing/print_job_constants.h"
 
@@ -29,16 +26,21 @@ size_t GetConstrainedWindowCount(TabContentsWrapper* tab) {
 
 }  // namespace
 
-typedef BrowserWithTestWindowTest PrintPreviewUIUnitTest;
+class PrintPreviewUIUnitTest : public PrintPreviewUnitTestBase {
+ public:
+  PrintPreviewUIUnitTest() {}
+  virtual ~PrintPreviewUIUnitTest() {}
+
+ protected:
+  virtual void SetUp() OVERRIDE {
+    PrintPreviewUnitTestBase::SetUp();
+
+    browser()->NewTab();
+  }
+};
 
 // Create/Get a preview tab for initiator tab.
 TEST_F(PrintPreviewUIUnitTest, PrintPreviewData) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(switches::kEnablePrintPreview);
-  ASSERT_TRUE(browser());
-  BrowserList::SetLastActive(browser());
-  ASSERT_TRUE(BrowserList::GetLastActive());
-
-  browser()->NewTab();
   TabContentsWrapper* initiator_tab =
       browser()->GetSelectedTabContentsWrapper();
   ASSERT_TRUE(initiator_tab);
@@ -94,12 +96,6 @@ TEST_F(PrintPreviewUIUnitTest, PrintPreviewData) {
 
 // Set and get the individual draft pages.
 TEST_F(PrintPreviewUIUnitTest, PrintPreviewDraftPages) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(switches::kEnablePrintPreview);
-  ASSERT_TRUE(browser());
-  BrowserList::SetLastActive(browser());
-  ASSERT_TRUE(BrowserList::GetLastActive());
-
-  browser()->NewTab();
   TabContentsWrapper* initiator_tab =
       browser()->GetSelectedTabContentsWrapper();
   ASSERT_TRUE(initiator_tab);
@@ -161,12 +157,6 @@ TEST_F(PrintPreviewUIUnitTest, PrintPreviewDraftPages) {
 
 // Test the browser-side print preview cancellation functionality.
 TEST_F(PrintPreviewUIUnitTest, GetCurrentPrintPreviewStatus) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(switches::kEnablePrintPreview);
-  ASSERT_TRUE(browser());
-  BrowserList::SetLastActive(browser());
-  ASSERT_TRUE(BrowserList::GetLastActive());
-
-  browser()->NewTab();
   TabContentsWrapper* initiator_tab =
       browser()->GetSelectedTabContentsWrapper();
   ASSERT_TRUE(initiator_tab);

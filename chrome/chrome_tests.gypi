@@ -1616,6 +1616,8 @@
         'browser/printing/print_dialog_cloud_unittest.cc',
         'browser/printing/print_job_unittest.cc',
         'browser/printing/print_preview_tab_controller_unittest.cc',
+        'browser/printing/print_preview_unit_test_base.cc',
+        'browser/printing/print_preview_unit_test_base.h',
         'browser/process_info_snapshot_mac_unittest.cc',
         'browser/process_singleton_mac_unittest.cc',
         'browser/profiles/avatar_menu_model_unittest.cc',

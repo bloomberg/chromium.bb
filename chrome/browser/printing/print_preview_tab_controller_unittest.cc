@@ -1,15 +1,14 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/printing/print_preview_tab_controller.h"
+#include "chrome/browser/printing/print_preview_unit_test_base.h"
 #include "chrome/browser/printing/print_view_manager.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/webui/print_preview_ui.h"
-#include "chrome/test/base/browser_with_test_window_test.h"
-#include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
@@ -27,14 +26,19 @@
 #define MAYBE_ClearInitiatorTabDetails ClearInitiatorTabDetails
 #endif
 
-typedef BrowserWithTestWindowTest PrintPreviewTabControllerUnitTest;
+class PrintPreviewTabControllerUnitTest : public PrintPreviewUnitTestBase {
+ public:
+  PrintPreviewTabControllerUnitTest() {}
+  virtual ~PrintPreviewTabControllerUnitTest() {}
+
+ protected:
+  virtual void SetUp() OVERRIDE {
+    PrintPreviewUnitTestBase::SetUp();
+  }
+};
 
 // Create/Get a preview tab for initiator tab.
 TEST_F(PrintPreviewTabControllerUnitTest, MAYBE_GetOrCreatePreviewTab) {
-  ASSERT_TRUE(browser());
-  BrowserList::SetLastActive(browser());
-  ASSERT_TRUE(BrowserList::GetLastActive());
-
   // Lets start with one window with one tab.
   EXPECT_EQ(1u, BrowserList::size());
   EXPECT_EQ(0, browser()->tab_count());
@@ -73,10 +77,6 @@ TEST_F(PrintPreviewTabControllerUnitTest, MAYBE_GetOrCreatePreviewTab) {
 // different initiator tabs. If preview tab already exists for an initiator, it
 // gets focused.
 TEST_F(PrintPreviewTabControllerUnitTest, MAYBE_MultiplePreviewTabs) {
-  ASSERT_TRUE(browser());
-  BrowserList::SetLastActive(browser());
-  ASSERT_TRUE(BrowserList::GetLastActive());
-
   // Lets start with one window and two tabs.
   EXPECT_EQ(1u, BrowserList::size());
   EXPECT_EQ(0, browser()->tab_count());
@@ -134,10 +134,6 @@ TEST_F(PrintPreviewTabControllerUnitTest, MAYBE_MultiplePreviewTabs) {
 
 // Clear the initiator tab details associated with preview tab.
 TEST_F(PrintPreviewTabControllerUnitTest, MAYBE_ClearInitiatorTabDetails) {
-  ASSERT_TRUE(browser());
-  BrowserList::SetLastActive(browser());
-  ASSERT_TRUE(BrowserList::GetLastActive());
-
   // Lets start with one window with one tab.
   EXPECT_EQ(1u, BrowserList::size());
   EXPECT_EQ(0, browser()->tab_count());

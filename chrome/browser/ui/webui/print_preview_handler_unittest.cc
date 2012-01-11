@@ -2,19 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/command_line.h"
 #include "base/json/json_writer.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/printing/background_printing_manager.h"
 #include "chrome/browser/printing/print_preview_tab_controller.h"
+#include "chrome/browser/printing/print_preview_unit_test_base.h"
 #include "chrome/browser/printing/print_view_manager.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/webui/print_preview_handler.h"
 #include "chrome/browser/ui/webui/print_preview_ui.h"
-#include "chrome/common/chrome_switches.h"
-#include "chrome/test/base/browser_with_test_window_test.h"
 #include "content/public/browser/web_contents.h"
 #include "printing/page_size_margins.h"
 #include "printing/print_job_constants.h"
@@ -34,22 +32,24 @@ DictionaryValue* GetCustomMarginsDictionary(
 
 }  // namespace
 
-class PrintPreviewHandlerTest : public BrowserWithTestWindowTest {
+class PrintPreviewHandlerTest : public PrintPreviewUnitTestBase {
+ public:
+  PrintPreviewHandlerTest() :
+      preview_ui_(NULL),
+      preview_tab_(NULL) {
+  }
+  virtual ~PrintPreviewHandlerTest() {}
+
  protected:
-  void SetUp() {
-    BrowserWithTestWindowTest::SetUp();
-    CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kEnablePrintPreview);
-    ASSERT_TRUE(browser());
-    BrowserList::SetLastActive(browser());
-    ASSERT_TRUE(BrowserList::GetLastActive());
+  virtual void SetUp() OVERRIDE {
+    PrintPreviewUnitTestBase::SetUp();
 
     browser()->NewTab();
     EXPECT_EQ(1, browser()->tab_count());
     OpenPrintPreviewTab();
   }
 
-  virtual void TearDown() {
+  virtual void TearDown() OVERRIDE {
     DeletePrintPreviewTab();
     ClearStickySettings();
   }
@@ -138,7 +138,6 @@ class PrintPreviewHandlerTest : public BrowserWithTestWindowTest {
     preview_ui_->handler_->HandlePrint(&args);
   }
 
-  TabContentsWrapper* preview_tab_;
   PrintPreviewUI* preview_ui_;
 
  private:
@@ -147,6 +146,8 @@ class PrintPreviewHandlerTest : public BrowserWithTestWindowTest {
     delete PrintPreviewHandler::last_used_page_size_margins_;
     PrintPreviewHandler::last_used_page_size_margins_ = NULL;
   }
+
+  TabContentsWrapper* preview_tab_;
 };
 
 // Tests that margin settings are saved correctly when printing with custom
