@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -101,7 +101,8 @@ class SyncableGeneralTest : public testing::Test {
 TEST_F(SyncableGeneralTest, General) {
   browser_sync::MockUnrecoverableErrorHandler mock_handler;
   Directory dir(&mock_handler);
-  dir.Open(db_path_, "SimpleTest", &delegate_, NullTransactionObserver());
+  ASSERT_EQ(OPENED, dir.Open(db_path_, "SimpleTest", &delegate_,
+                             NullTransactionObserver()));
 
   int64 root_metahandle;
   {
@@ -201,7 +202,8 @@ TEST_F(SyncableGeneralTest, General) {
 TEST_F(SyncableGeneralTest, ChildrenOps) {
   browser_sync::MockUnrecoverableErrorHandler mock_handler;
   Directory dir(&mock_handler);
-  dir.Open(db_path_, "SimpleTest", &delegate_, NullTransactionObserver());
+  ASSERT_EQ(OPENED, dir.Open(db_path_, "SimpleTest", &delegate_,
+                             NullTransactionObserver()));
 
   int64 root_metahandle;
   {
@@ -282,7 +284,8 @@ TEST_F(SyncableGeneralTest, ClientIndexRebuildsProperly) {
   {
     browser_sync::MockUnrecoverableErrorHandler mock_handler;
     Directory dir(&mock_handler);
-    dir.Open(db_path_, "IndexTest", &delegate_, NullTransactionObserver());
+    ASSERT_EQ(OPENED, dir.Open(db_path_, "IndexTest", &delegate_,
+                               NullTransactionObserver()));
     {
       WriteTransaction wtrans(FROM_HERE, UNITTEST, &dir);
       MutableEntry me(&wtrans, CREATE, wtrans.root_id(), name);
@@ -299,7 +302,8 @@ TEST_F(SyncableGeneralTest, ClientIndexRebuildsProperly) {
   {
     browser_sync::MockUnrecoverableErrorHandler mock_handler;
     Directory dir(&mock_handler);
-    dir.Open(db_path_, "IndexTest", &delegate_, NullTransactionObserver());
+    ASSERT_EQ(OPENED, dir.Open(db_path_, "IndexTest",
+                               &delegate_, NullTransactionObserver()));
 
     ReadTransaction trans(FROM_HERE, &dir);
     Entry me(&trans, GET_BY_CLIENT_TAG, tag);
@@ -320,7 +324,8 @@ TEST_F(SyncableGeneralTest, ClientIndexRebuildsDeletedProperly) {
   {
     browser_sync::MockUnrecoverableErrorHandler mock_handler;
     Directory dir(&mock_handler);
-    dir.Open(db_path_, "IndexTest", &delegate_, NullTransactionObserver());
+    ASSERT_EQ(OPENED, dir.Open(db_path_, "IndexTest", &delegate_,
+                                NullTransactionObserver()));
     {
       WriteTransaction wtrans(FROM_HERE, UNITTEST, &dir);
       MutableEntry me(&wtrans, CREATE, wtrans.root_id(), "deleted");
@@ -339,7 +344,8 @@ TEST_F(SyncableGeneralTest, ClientIndexRebuildsDeletedProperly) {
   {
     browser_sync::MockUnrecoverableErrorHandler mock_handler;
     Directory dir(&mock_handler);
-    dir.Open(db_path_, "IndexTest", &delegate_, NullTransactionObserver());
+    ASSERT_EQ(OPENED, dir.Open(db_path_, "IndexTest", &delegate_,
+                               NullTransactionObserver()));
 
     ReadTransaction trans(FROM_HERE, &dir);
     Entry me(&trans, GET_BY_CLIENT_TAG, tag);
@@ -354,7 +360,8 @@ TEST_F(SyncableGeneralTest, ClientIndexRebuildsDeletedProperly) {
 TEST_F(SyncableGeneralTest, ToValue) {
   browser_sync::MockUnrecoverableErrorHandler mock_handler;
   Directory dir(&mock_handler);
-  dir.Open(db_path_, "SimpleTest", &delegate_, NullTransactionObserver());
+  ASSERT_EQ(OPENED, dir.Open(db_path_, "SimpleTest", &delegate_,
+                             NullTransactionObserver()));
 
   const Id id = TestIdFactory::FromNumber(99);
   {
@@ -1528,39 +1535,6 @@ TEST_F(SyncableDirectoryManager, TestFileRelease) {
   ASSERT_TRUE(file_util::Delete(dm.GetSyncDataDatabasePath(), true));
 }
 
-class ThreadOpenTestDelegate : public base::PlatformThread::Delegate {
- public:
-  explicit ThreadOpenTestDelegate(DirectoryManager* dm)
-      : directory_manager_(dm) {}
-  DirectoryManager* const directory_manager_;
-  NullDirectoryChangeDelegate delegate_;
-
- private:
-  // PlatformThread::Delegate methods:
-  virtual void ThreadMain() {
-    browser_sync::MockUnrecoverableErrorHandler mock_handler;
-    CHECK(directory_manager_->Open(
-        "Open", &delegate_, &mock_handler, NullTransactionObserver()));
-  }
-
-  DISALLOW_COPY_AND_ASSIGN(ThreadOpenTestDelegate);
-};
-
-TEST_F(SyncableDirectoryManager, ThreadOpenTest) {
-  DirectoryManager dm(FilePath(temp_dir_.path()));
-  base::PlatformThreadHandle thread_handle;
-  ThreadOpenTestDelegate test_delegate(&dm);
-  ASSERT_TRUE(base::PlatformThread::Create(0, &test_delegate, &thread_handle));
-  base::PlatformThread::Join(thread_handle);
-  {
-    ScopedDirLookup dir(&dm, "Open");
-    ASSERT_TRUE(dir.good());
-  }
-  dm.Close("Open");
-  ScopedDirLookup dir(&dm, "Open");
-  ASSERT_FALSE(dir.good());
-}
-
 struct Step {
   Step() : condvar(&mutex), number(0) {}
 
@@ -1628,26 +1602,6 @@ class ThreadBugDelegate : public base::PlatformThread::Delegate {
 
   DISALLOW_COPY_AND_ASSIGN(ThreadBugDelegate);
 };
-
-TEST_F(SyncableDirectoryManager, ThreadBug1) {
-  Step step;
-  step.number = 0;
-  DirectoryManager dirman(FilePath(temp_dir_.path()));
-  ThreadBugDelegate thread_delegate_1(0, &step, &dirman);
-  ThreadBugDelegate thread_delegate_2(1, &step, &dirman);
-
-  base::PlatformThreadHandle thread_handle_1;
-  base::PlatformThreadHandle thread_handle_2;
-
-  ASSERT_TRUE(
-      base::PlatformThread::Create(0, &thread_delegate_1, &thread_handle_1));
-  ASSERT_TRUE(
-      base::PlatformThread::Create(0, &thread_delegate_2, &thread_handle_2));
-
-  base::PlatformThread::Join(thread_handle_1);
-  base::PlatformThread::Join(thread_handle_2);
-}
-
 
 // The in-memory information would get out of sync because a
 // directory would be closed and re-opened, and then an old

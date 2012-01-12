@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,17 +10,12 @@
 
 #include "base/file_path.h"
 #include "base/gtest_prod_util.h"
+#include "base/threading/non_thread_safe.h"
 #include "chrome/browser/sync/syncable/dir_open_result.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/syncable/syncable.h"
-
-extern "C" {
-struct sqlite3;
-}
-
-namespace sqlite_utils {
-class SQLStatement;
-}
+#include "sql/connection.h"
+#include "sql/statement.h"
 
 namespace sync_pb {
 class EntitySpecifics;
@@ -37,23 +32,12 @@ typedef Directory::MetahandlesIndex MetahandlesIndex;
 // can do here is save any changes that have occurred since calling Load, which
 // can be done periodically as often as desired*
 //
-// * If you only ever use a DirectoryBackingStore (DBS) from a single thread
-// then you can stop reading now. This is implemented using sqlite3, which
-// requires that each thread accesses a DB via a handle (sqlite3*) opened by
-// sqlite_open for that thread and only that thread.  To avoid complicated TLS
-// logic to swap handles in-and-out as different threads try to get a hold of a
-// DBS, the DBS does two things:
-// 1.  Uses a separate handle for Load()ing which is closed as soon as loading
-//     finishes, and
-// 2.  Requires that SaveChanges *only* be called from a single thread, and that
-//     thread *must* be the thread that owns / is responsible for destroying
-//     the DBS.
-// This way, any thread may open a Directory (which today can be either the
-// AuthWatcherThread or SyncCoreThread) and Load its DBS.  The first time
-// SaveChanges is called a new sqlite3 handle is created, and it will get closed
-// when the DBS is destroyed, which is the reason for the requirement that the
-// thread that "uses" the DBS is the thread that destroys it.
-class DirectoryBackingStore {
+// The DirectoryBackingStore will own an sqlite lock on its database for most of
+// its lifetime.  You must not have two DirectoryBackingStore objects accessing
+// the database simultaneously.  Because the lock exists at the database level,
+// not even two separate browser instances would be able to acquire it
+// simultaneously.
+class DirectoryBackingStore : public base::NonThreadSafe {
  public:
   DirectoryBackingStore(const std::string& dir_name,
                         const FilePath& backing_filepath);
@@ -92,29 +76,29 @@ class DirectoryBackingStore {
   FRIEND_TEST_ALL_PREFIXES(MigrationTest, ToCurrentVersion);
   friend class MigrationTest;
 
+  // Opens a connection to the database without performing automatic pruning
+  // of deleted data or migration to latest DB version.
+  bool OpenConnectionForTest();
+
   // General Directory initialization and load helpers.
-  DirOpenResult InitializeTables();
-  // Returns an sqlite return code, usually SQLITE_DONE.
-  int CreateTables();
+  bool InitializeTables();
+  bool CreateTables();
 
   // Create 'share_info' or 'temp_share_info' depending on value of
   // is_temporary. Returns an sqlite
-  // return code, SQLITE_DONE on success.
-  int CreateShareInfoTable(bool is_temporary);
+  bool CreateShareInfoTable(bool is_temporary);
 
-  int CreateShareInfoTableVersion71(bool is_temporary);
+  bool CreateShareInfoTableVersion71(bool is_temporary);
   // Create 'metas' or 'temp_metas' depending on value of is_temporary.
-  // Returns an sqlite return code, SQLITE_DONE on success.
-  int CreateMetasTable(bool is_temporary);
-  // Returns an sqlite return code, SQLITE_DONE on success.
-  int CreateModelsTable();
-  int CreateV71ModelsTable();
+  bool CreateMetasTable(bool is_temporary);
+  bool CreateModelsTable();
+  bool CreateV71ModelsTable();
 
   // We don't need to load any synced and applied deleted entries, we can
   // in fact just purge them forever on startup.
   bool DropDeletedEntries();
   // Drops a table if it exists, harmless if the table did not already exist.
-  int SafeDropTable(const char* table_name);
+  bool SafeDropTable(const char* table_name);
 
   // Load helpers for entries and attributes.
   bool LoadEntries(MetahandlesIndex* entry_bucket);
@@ -125,14 +109,6 @@ class DirectoryBackingStore {
   bool SaveNewEntryToDB(const EntryKernel& entry);
   bool UpdateEntryToDB(const EntryKernel& entry);
 
-  // Creates a new sqlite3 handle to the backing database. Sets sqlite operation
-  // timeout preferences and registers our overridden sqlite3 operators for
-  // said handle.  Returns true on success, false if the sqlite open operation
-  // did not succeed.
-  bool OpenAndConfigureHandleHelper(sqlite3** handle) const;
-  // Initialize and destroy load_dbhandle_.  Broken out for testing.
-  bool BeginLoad();
-  void EndLoad();
   DirOpenResult DoLoad(MetahandlesIndex* entry_bucket,
       Directory::KernelLoadInfo* kernel_load_info);
 
@@ -142,9 +118,6 @@ class DirectoryBackingStore {
   // Removes each entry whose metahandle is in |handles| from the database.
   // Does synchronous I/O.  Returns false on error.
   bool DeleteEntries(const MetahandleSet& handles);
-
-  // Lazy creation of save_dbhandle_ for use by SaveChanges code path.
-  sqlite3* LazyGetSaveHandle();
 
   // Drop all tables in preparation for reinitialization.
   void DropAllTables();
@@ -162,14 +135,14 @@ class DirectoryBackingStore {
   bool CheckIntegrity(sqlite3* handle, std::string* error) const;
 
   // Migration utilities.
-  bool AddColumn(const ColumnSpec* column);
   bool RefreshColumns();
   bool SetVersion(int version);
   int GetVersion();
+
   bool MigrateToSpecifics(const char* old_columns,
                           const char* specifics_column,
                           void(*handler_function) (
-                              sqlite_utils::SQLStatement* old_value_query,
+                              sql::Statement* old_value_query,
                               int old_value_column,
                               sync_pb::EntitySpecifics* mutable_new_value));
 
@@ -186,15 +159,8 @@ class DirectoryBackingStore {
   bool MigrateVersion76To77();
   bool MigrateVersion77To78();
 
-  // The handle to our sqlite on-disk store for initialization and loading, and
-  // for saving changes periodically via SaveChanges, respectively.
-  // TODO(timsteele): We should only have one handle here.  The reason we need
-  // two at the moment is because the DB can be opened by either the AuthWatcher
-  // or SyncCore threads, but SaveChanges is always called by the latter.  We
-  // need to change initialization so the DB is only accessed from one thread.
-  sqlite3* load_dbhandle_;
-  sqlite3* save_dbhandle_;
-
+  sql::Connection db_;
+  sql::Statement save_entry_statement_;
   std::string dir_name_;
   FilePath backing_filepath_;
 
