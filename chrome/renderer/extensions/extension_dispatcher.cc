@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,6 +16,7 @@
 #include "chrome/renderer/extensions/chrome_v8_context.h"
 #include "chrome/renderer/extensions/chrome_v8_extension.h"
 #include "chrome/renderer/extensions/chrome_webstore_bindings.h"
+#include "chrome/renderer/extensions/custom_bindings_util.h"
 #include "chrome/renderer/extensions/event_bindings.h"
 #include "chrome/renderer/extensions/extension_groups.h"
 #include "chrome/renderer/extensions/file_browser_private_bindings.h"
@@ -39,8 +40,8 @@ static const int64 kInitialExtensionIdleHandlerDelayMs = 5*1000;
 static const int64 kMaxExtensionIdleHandlerDelayMs = 5*60*1000;
 }
 
-using extensions::MiscellaneousBindings;
-using extensions::SchemaGeneratedBindings;
+using namespace extensions;
+
 using WebKit::WebDataSource;
 using WebKit::WebDocument;
 using WebKit::WebFrame;
@@ -114,6 +115,12 @@ void ExtensionDispatcher::WebKitInitialized() {
   RegisterExtension(SchemaGeneratedBindings::Get(this), true);
   RegisterExtension(new ChromeV8Extension(
       "extensions/apitest.js", IDR_EXTENSION_APITEST_JS, NULL), true);
+
+  std::vector<v8::Extension*> custom_bindings = custom_bindings_util::GetAll();
+  for (std::vector<v8::Extension*>::iterator it = custom_bindings.begin();
+      it != custom_bindings.end(); ++it) {
+    RegisterExtension(*it, true);
+  }
 
   // Initialize host permissions for any extensions that were activated before
   // WebKit was initialized.
@@ -286,6 +293,21 @@ bool ExtensionDispatcher::AllowScriptExtension(
       extensions_.ExtensionBindingsAllowed(ExtensionURLInfo(
           frame->document().securityOrigin(),
           UserScriptSlave::GetDataSourceURLForFrame(frame)))) {
+    // If the extension is a custom API binding, only allow if the extension
+    // has permission to use the API.
+    std::string custom_binding_api_name =
+        custom_bindings_util::GetAPIName(v8_extension_name);
+    if (!custom_binding_api_name.empty()) {
+      const Extension* extension =
+          extensions_.GetByID(GetExtensionID(frame, world_id));
+      // TODO(kalman): there appears to be a race condition, particularly hit
+      // on windows tests, causing this check to fail. It should be a check.
+      if (!extension)
+        return true;
+      return custom_bindings_util::AllowAPIInjection(
+          custom_binding_api_name, *extension);
+    }
+
     return true;
   }
 
@@ -294,19 +316,8 @@ bool ExtensionDispatcher::AllowScriptExtension(
 
 void ExtensionDispatcher::DidCreateScriptContext(
     WebFrame* frame, v8::Handle<v8::Context> v8_context, int world_id) {
-  std::string extension_id;
-  if (!test_extension_id_.empty()) {
-    extension_id = test_extension_id_;
-  } else if (world_id != 0) {
-    extension_id = user_script_slave_->GetExtensionIdForIsolatedWorld(world_id);
-  } else {
-    GURL frame_url = UserScriptSlave::GetDataSourceURLForFrame(frame);
-    extension_id = extensions_.GetExtensionOrAppIDByURL(
-        ExtensionURLInfo(frame->document().securityOrigin(), frame_url));
-  }
-
   ChromeV8Context* context =
-      new ChromeV8Context(v8_context, frame, extension_id);
+      new ChromeV8Context(v8_context, frame, GetExtensionID(frame, world_id));
   v8_context_set_.Add(context);
 
   context->DispatchOnLoadEvent(
@@ -314,6 +325,20 @@ void ExtensionDispatcher::DidCreateScriptContext(
       ChromeRenderProcessObserver::is_incognito_process());
 
   VLOG(1) << "Num tracked contexts: " << v8_context_set_.size();
+}
+
+std::string ExtensionDispatcher::GetExtensionID(WebFrame* frame, int world_id) {
+  if (!test_extension_id_.empty()) {
+    return test_extension_id_;
+  } else if (world_id != 0) {
+    // Isolated worlds (content script).
+    return user_script_slave_->GetExtensionIdForIsolatedWorld(world_id);
+  } else {
+    // Extension pages (chrome-extension:// URLs).
+    GURL frame_url = UserScriptSlave::GetDataSourceURLForFrame(frame);
+    return extensions_.GetExtensionOrAppIDByURL(
+        ExtensionURLInfo(frame->document().securityOrigin(), frame_url));
+  }
 }
 
 void ExtensionDispatcher::WillReleaseScriptContext(
