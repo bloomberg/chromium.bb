@@ -143,7 +143,9 @@ class StrictSharedIdHandler : public IdHandlerInterface {
         id_namespace_(id_namespace) {
   }
 
-  virtual ~StrictSharedIdHandler() { }
+  virtual ~StrictSharedIdHandler() {
+    Destroy();
+  }
 
   virtual void MakeIds(GLuint id_offset, GLsizei n, GLuint* ids) {
     for (GLsizei ii = 0; ii < n; ++ii) {
@@ -184,6 +186,19 @@ class StrictSharedIdHandler : public IdHandlerInterface {
   static const GLsizei kNumIdsToGet = 2048;
   typedef std::queue<GLuint> ResourceIdQueue;
   typedef std::set<GLuint> ResourceIdSet;
+
+  void Destroy() {
+    // Free all the ids not being used.
+    while (!free_ids_.empty()) {
+      GLuint ids[kNumIdsToGet];
+      int count = 0;
+      while (count < kNumIdsToGet && !free_ids_.empty()) {
+        ids[count++] = free_ids_.front();
+        free_ids_.pop();
+      }
+      gles2_->DeleteSharedIdsCHROMIUM(id_namespace_, count, ids);
+    }
+  }
 
   GLuint GetId(GLuint id_offset) {
     if (free_ids_.empty()) {
@@ -725,6 +740,11 @@ GLES2Implementation::~GLES2Implementation() {
 #if defined(GLES2_SUPPORT_CLIENT_SIDE_ARRAYS)
   DeleteBuffers(arraysize(reserved_ids_), &reserved_ids_[0]);
 #endif
+  for (int i = 0; i < id_namespaces::kNumIdNamespaces; ++i) {
+      id_handlers_[i].reset();
+  }
+  // Make sure the commands make it the service.
+  Finish();
 }
 
 void GLES2Implementation::SetSharedMemoryChunkSizeMultiple(
