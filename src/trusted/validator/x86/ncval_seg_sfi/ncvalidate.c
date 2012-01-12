@@ -78,7 +78,9 @@ void NCValidatorSetMaxDiagnostics(int new_value) {
   kMaxDiagnostics = new_value;
 }
 
-/* Do not call this function directly. */
+/* This function is intended to only be called by ValidatePrintInstructionError
+ * and ValidatePrintOffsetError.
+ */
 static void ValidatePrintError(const NaClPcAddress addr,
                                const char *msg,
                                struct NCValidatorState *vstate) {
