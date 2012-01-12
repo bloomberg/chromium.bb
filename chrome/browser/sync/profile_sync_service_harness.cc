@@ -744,7 +744,7 @@ bool ProfileSyncServiceHarness::AwaitStatusChangeWithTimeout(
       FROM_HERE,
       base::Bind(&StateChangeTimeoutEvent::Callback,
                  timeout_signal.get()),
-      timeout_milliseconds);
+      base::TimeDelta::FromMilliseconds(timeout_milliseconds));
   loop->Run();
   loop->SetNestableTasksAllowed(did_allow_nestable_tasks);
   if (timeout_signal->Abort()) {

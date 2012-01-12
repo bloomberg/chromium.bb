@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -39,7 +39,7 @@ using WebKit::WebWorker;
 using WebKit::WebSharedWorkerClient;
 
 // How long to wait for worker to finish after it's been told to terminate.
-#define kMaxTimeForRunawayWorkerMs 3000
+#define kMaxTimeForRunawayWorkerSeconds 3
 
 WebSharedWorkerClientProxy::WebSharedWorkerClientProxy(
     int route_id, WebSharedWorkerStub* stub)
@@ -215,5 +215,5 @@ void WebSharedWorkerClientProxy::EnsureWorkerContextTerminates() {
       base::Bind(
           &WebSharedWorkerClientProxy::workerContextDestroyed,
           weak_factory_.GetWeakPtr()),
-      kMaxTimeForRunawayWorkerMs);
+      base::TimeDelta::FromSeconds(kMaxTimeForRunawayWorkerSeconds));
 }

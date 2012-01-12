@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,7 +26,7 @@ void CloseBalloon(const std::string& id) {
 const char kNotificationPrefix[] = "desktop_notification_balloon.";
 
 // Timeout for automatically dismissing the notification balloon.
-const size_t kTimeoutMilliseconds = 6000;
+const size_t kTimeoutSeconds = 6;
 
 class DummyNotificationDelegate : public NotificationDelegate {
  public:
@@ -35,8 +35,10 @@ class DummyNotificationDelegate : public NotificationDelegate {
   virtual ~DummyNotificationDelegate() {}
 
   virtual void Display() OVERRIDE {
-    MessageLoop::current()->PostDelayedTask(FROM_HERE,
-        base::Bind(&CloseBalloon, id()), kTimeoutMilliseconds);
+    MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&CloseBalloon, id()),
+        base::TimeDelta::FromSeconds(kTimeoutSeconds));
   }
   virtual void Error() OVERRIDE {}
   virtual void Close(bool by_user) OVERRIDE {}

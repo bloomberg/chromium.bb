@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -105,7 +105,7 @@ class WorkerTest : public UILayoutTest {
 
       // Sometimes the worker processes can take a while to shut down on the
       // bots, so use a longer timeout period to avoid spurious failures.
-      base::PlatformThread::Sleep(TestTimeouts::action_max_timeout_ms() / 100);
+      base::PlatformThread::Sleep(TestTimeouts::action_max_timeout() / 100);
     }
 
     EXPECT_EQ(number_of_processes, cur_process_count);

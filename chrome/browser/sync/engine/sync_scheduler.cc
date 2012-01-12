@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -677,15 +677,15 @@ void SyncScheduler::PostTask(
 
 void SyncScheduler::PostDelayedTask(
     const tracked_objects::Location& from_here,
-    const char* name, const base::Closure& task, int64 delay_ms) {
+    const char* name, const base::Closure& task, base::TimeDelta delay) {
   SDVLOG_LOC(from_here, 3) << "Posting " << name << " task with "
-                           << delay_ms << " ms delay";
+                           << delay.InMilliseconds() << " ms delay";
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
   if (!started_) {
     SDVLOG(1) << "Not posting task as scheduler is stopped.";
     return;
   }
-  sync_loop_->PostDelayedTask(from_here, task, delay_ms);
+  sync_loop_->PostDelayedTask(from_here, task, delay);
 }
 
 void SyncScheduler::ScheduleSyncSessionJob(const SyncSessionJob& job) {
@@ -708,7 +708,7 @@ void SyncScheduler::ScheduleSyncSessionJob(const SyncSessionJob& job) {
                   base::Bind(&SyncScheduler::DoSyncSessionJob,
                              weak_ptr_factory_.GetWeakPtr(),
                              job),
-                  delay.InMilliseconds());
+                  delay);
 }
 
 void SyncScheduler::SetSyncerStepsForPurpose(

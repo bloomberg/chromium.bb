@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -252,7 +252,7 @@ class SyncScheduler : public sessions::SyncSession::Delegate,
   void PostDelayedTask(const tracked_objects::Location& from_here,
                        const char* name,
                        const base::Closure& task,
-                       int64 delay_ms);
+                       base::TimeDelta delay);
 
   // Helper to assemble a job and post a delayed task to sync.
   void ScheduleSyncSessionJob(const SyncSessionJob& job);
