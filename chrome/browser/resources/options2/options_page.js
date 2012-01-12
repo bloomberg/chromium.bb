@@ -192,13 +192,7 @@ cr.define('options', function() {
     if (!window.parent)
       return;
 
-    var data = new Object;
-    data.method = method;
-
-    // Copy the attributes in |params| over to |data|.
-    for (var attr in params)
-      data[attr] = params[attr];
-
+    var data = {method: method, params: params};
     window.parent.postMessage(data, 'chrome://chrome');
   };
 
