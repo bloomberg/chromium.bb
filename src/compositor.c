@@ -505,7 +505,7 @@ transform_vertex(struct weston_surface *surface,
 	t.f[2] = 0.0;
 	t.f[3] = 1.0;
 
-	weston_matrix_transform(&surface->transform.cached.matrix, &t);
+	weston_matrix_transform(&surface->transform.matrix, &t);
 
 	/* XXX: assumes last row of matrix is [0 0 * 1] */
 
@@ -544,8 +544,8 @@ texture_transformed_surface(struct weston_surface *es)
 static void
 weston_surface_update_transform(struct weston_surface *surface)
 {
-	struct weston_matrix *matrix = &surface->transform.cached.matrix;
-	struct weston_matrix *inverse = &surface->transform.cached.inverse;
+	struct weston_matrix *matrix = &surface->transform.matrix;
+	struct weston_matrix *inverse = &surface->transform.inverse;
 	struct weston_transform *tform;
 
 	if (!surface->transform.dirty)
@@ -564,9 +564,7 @@ weston_surface_update_transform(struct weston_surface *surface)
 	wl_list_for_each(tform, &surface->transform.list, link)
 		weston_matrix_multiply(matrix, &tform->matrix);
 
-	weston_matrix_init(inverse);
-	wl_list_for_each_reverse(tform, &surface->transform.list, link)
-		weston_matrix_multiply(inverse, &tform->inverse);
+	weston_matrix_invert(inverse, matrix);
 }
 
 WL_EXPORT void

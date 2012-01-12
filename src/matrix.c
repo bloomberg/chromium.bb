@@ -100,3 +100,10 @@ weston_matrix_transform(struct weston_matrix *matrix, struct weston_vector *v)
 
 	*v = t;
 }
+
+WL_EXPORT int
+weston_matrix_invert(struct weston_matrix *inverse,
+		     const struct weston_matrix *matrix)
+{
+	return -1; /* fail */
+}

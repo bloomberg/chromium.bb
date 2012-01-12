@@ -36,7 +36,6 @@
 
 struct weston_transform {
 	struct weston_matrix matrix;
-	struct weston_matrix inverse;
 	struct wl_list link;
 };
 
@@ -229,7 +228,9 @@ struct weston_surface {
 		struct wl_list list;
 		int dirty;
 
-		struct weston_transform cached;
+		/* derived state, set up by weston_surface_update_transform */
+		struct weston_matrix matrix;
+		struct weston_matrix inverse;
 		int enabled;
 	} transform;
 

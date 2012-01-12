@@ -43,4 +43,8 @@ weston_matrix_translate(struct weston_matrix *matrix,
 void
 weston_matrix_transform(struct weston_matrix *matrix, struct weston_vector *v);
 
+int
+weston_matrix_invert(struct weston_matrix *inverse,
+		     const struct weston_matrix *matrix);
+
 #endif /* WESTON_MATRIX_H */

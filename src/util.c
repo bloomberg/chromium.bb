@@ -145,9 +145,6 @@ weston_zoom_frame(struct weston_animation *animation,
 	es->alpha = zoom->spring.current * 255;
 	if (es->alpha > 255)
 		es->alpha = 255;
-	scale = 1.0 / zoom->spring.current;
-	weston_matrix_init(&zoom->transform.inverse);
-	weston_matrix_scale(&zoom->transform.inverse, scale, scale, scale);
 
 	zoom->surface->transform.dirty = 1;
 
