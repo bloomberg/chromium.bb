@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -529,18 +529,22 @@ class EglRenderingVDAClient : public VideoDecodeAccelerator::Client {
  public:
   // Doesn't take ownership of |rendering_helper| or |note|, which must outlive
   // |*this|.
+  // |num_play_throughs| indicates how many times to play through the video.
   // |reset_after_frame_num| can be a frame number >=0 indicating a mid-stream
   // Reset() should be done after that frame number is delivered, or
   // END_OF_STREAM_RESET to indicate no mid-stream Reset().
   // |delete_decoder_state| indicates when the underlying decoder should be
   // Destroy()'d and deleted and can take values: N<0: delete after -N Decode()
   // calls have been made, N>=0 means interpret as ClientState.
+  // Both |reset_after_frame_num| & |delete_decoder_state| apply only to the
+  // last play-through (governed by |num_play_throughs|).
   EglRenderingVDAClient(RenderingHelper* rendering_helper,
                         int rendering_window_id,
                         ClientStateNotification* note,
                         const std::string& encoded_data,
                         int num_NALUs_per_decode,
                         int num_in_flight_decodes,
+                        int num_play_throughs,
                         int reset_after_frame_num,
                         int delete_decoder_state,
                         int profile);
@@ -597,6 +601,7 @@ class EglRenderingVDAClient : public VideoDecodeAccelerator::Client {
   ClientStateNotification* note_;
   scoped_refptr<VideoDecodeAccelerator> decoder_;
   std::set<int> outstanding_texture_ids_;
+  int remaining_play_throughs_;
   int reset_after_frame_num_;
   int delete_decoder_state_;
   ClientState state_;
@@ -615,6 +620,7 @@ EglRenderingVDAClient::EglRenderingVDAClient(
     const std::string& encoded_data,
     int num_NALUs_per_decode,
     int num_in_flight_decodes,
+    int num_play_throughs,
     int reset_after_frame_num,
     int delete_decoder_state,
     int profile)
@@ -623,13 +629,16 @@ EglRenderingVDAClient::EglRenderingVDAClient(
       encoded_data_(encoded_data), num_NALUs_per_decode_(num_NALUs_per_decode),
       num_in_flight_decodes_(num_in_flight_decodes), outstanding_decodes_(0),
       encoded_data_next_pos_to_decode_(0), next_bitstream_buffer_id_(0),
-      note_(note), reset_after_frame_num_(reset_after_frame_num),
+      note_(note),
+      remaining_play_throughs_(num_play_throughs),
+      reset_after_frame_num_(reset_after_frame_num),
       delete_decoder_state_(delete_decoder_state),
       state_(CS_CREATED),
       num_decoded_frames_(0), num_done_bitstream_buffers_(0),
       profile_(profile) {
   CHECK_GT(num_NALUs_per_decode, 0);
   CHECK_GT(num_in_flight_decodes, 0);
+  CHECK_GT(num_play_throughs, 0);
 }
 
 EglRenderingVDAClient::~EglRenderingVDAClient() {
@@ -711,7 +720,10 @@ void EglRenderingVDAClient::PictureReady(const media::Picture& picture) {
   CHECK_LE(picture.bitstream_buffer_id(), next_bitstream_buffer_id_);
   ++num_decoded_frames_;
 
-  if (reset_after_frame_num_ == num_decoded_frames_) {
+  // Mid-stream reset applies only to the last play-through per constructor
+  // comment.
+  if (remaining_play_throughs_ == 1 &&
+      reset_after_frame_num_ == num_decoded_frames_) {
     reset_after_frame_num_ = MID_STREAM_RESET;
     decoder_->Reset();
     // Re-start decoding from the beginning of the stream to avoid needing to
@@ -749,6 +761,8 @@ void EglRenderingVDAClient::NotifyFlushDone() {
   if (decoder_deleted())
     return;
   SetState(CS_FLUSHED);
+  --remaining_play_throughs_;
+  DCHECK_GE(remaining_play_throughs_, 0);
   if (decoder_deleted())
     return;
   decoder_->Reset();
@@ -758,10 +772,18 @@ void EglRenderingVDAClient::NotifyFlushDone() {
 void EglRenderingVDAClient::NotifyResetDone() {
   if (decoder_deleted())
     return;
+
   if (reset_after_frame_num_ == MID_STREAM_RESET) {
     reset_after_frame_num_ = END_OF_STREAM_RESET;
     return;
   }
+
+  if (remaining_play_throughs_) {
+    encoded_data_next_pos_to_decode_ = 0;
+    NotifyInitializeDone();
+    return;
+  }
+
   SetState(CS_RESET);
   if (!decoder_deleted())
     DeleteDecoder();
@@ -780,7 +802,7 @@ static bool LookingAtNAL(const std::string& encoded, size_t pos) {
 void EglRenderingVDAClient::SetState(ClientState new_state) {
   note_->Notify(new_state);
   state_ = new_state;
-  if (new_state == delete_decoder_state_) {
+  if (!remaining_play_throughs_ && new_state == delete_decoder_state_) {
     CHECK(!decoder_deleted());
     DeleteDecoder();
   }
@@ -847,8 +869,10 @@ void EglRenderingVDAClient::DecodeNextNALUs() {
   ++outstanding_decodes_;
   encoded_data_next_pos_to_decode_ = end_pos;
 
-  if (-delete_decoder_state_ == next_bitstream_buffer_id_)
+  if (!remaining_play_throughs_ &&
+      -delete_decoder_state_ == next_bitstream_buffer_id_) {
     DeleteDecoder();
+  }
 }
 
 double EglRenderingVDAClient::frames_per_second() {
@@ -862,11 +886,12 @@ double EglRenderingVDAClient::frames_per_second() {
 // - Number of NALUs per Decode() call.
 // - Number of concurrent decoders.
 // - Number of concurrent in-flight Decode() calls per decoder.
+// - Number of play-throughs.
 // - reset_after_frame_num: see EglRenderingVDAClient ctor.
 // - delete_decoder_phase: see EglRenderingVDAClient ctor.
 class VideoDecodeAcceleratorTest
     : public ::testing::TestWithParam<
-  Tuple5<int, int, int, ResetPoint, ClientState> > {
+  Tuple6<int, int, int, int, ResetPoint, ClientState> > {
 };
 
 // Wait for |note| to report a state and if it's not |expected_state| then
@@ -898,8 +923,9 @@ TEST_P(VideoDecodeAcceleratorTest, TestSimpleDecode) {
   const int num_NALUs_per_decode = GetParam().a;
   const size_t num_concurrent_decoders = GetParam().b;
   const size_t num_in_flight_decodes = GetParam().c;
-  const int reset_after_frame_num = GetParam().d;
-  const int delete_decoder_state = GetParam().e;
+  const int num_play_throughs = GetParam().d;
+  const int reset_after_frame_num = GetParam().e;
+  const int delete_decoder_state = GetParam().f;
 
   FilePath::StringType test_video_file;
   int frame_width, frame_height;
@@ -955,7 +981,7 @@ TEST_P(VideoDecodeAcceleratorTest, TestSimpleDecode) {
     EglRenderingVDAClient* client = new EglRenderingVDAClient(
         &rendering_helper, index,
         note, data_str, num_NALUs_per_decode,
-        num_in_flight_decodes,
+        num_in_flight_decodes, num_play_throughs,
         reset_after_frame_num, delete_decoder_state, profile);
     clients[index] = client;
 
@@ -967,12 +993,13 @@ TEST_P(VideoDecodeAcceleratorTest, TestSimpleDecode) {
     ASSERT_EQ(note->Wait(), CS_DECODER_SET);
   }
   // Then wait for all the decodes to finish.
-  bool saw_init_failure = false;
+  // Only check performance & correctness later if we play through only once.
+  bool skip_performance_and_correctness_checks = num_play_throughs > 1;
   for (size_t i = 0; i < num_concurrent_decoders; ++i) {
     ClientStateNotification* note = notes[i];
     ClientState state = note->Wait();
     if (state != CS_INITIALIZED) {
-      saw_init_failure = true;
+      skip_performance_and_correctness_checks = true;
       // We expect initialization to fail only when more than the supported
       // number of decoders is instantiated.  Assert here that something else
       // didn't trigger failure.
@@ -981,15 +1008,23 @@ TEST_P(VideoDecodeAcceleratorTest, TestSimpleDecode) {
       continue;
     }
     ASSERT_EQ(state, CS_INITIALIZED);
-    // InitializeDone kicks off decoding inside the client, so we just need to
-    // wait for Flush.
-    ASSERT_NO_FATAL_FAILURE(
-        AssertWaitForStateOrDeleted(note, clients[i], CS_FLUSHING));
-    ASSERT_NO_FATAL_FAILURE(
-        AssertWaitForStateOrDeleted(note, clients[i], CS_FLUSHED));
-    // FlushDone requests Reset().
-    ASSERT_NO_FATAL_FAILURE(
-        AssertWaitForStateOrDeleted(note, clients[i], CS_RESETTING));
+    for (int n = 0; n < num_play_throughs; ++n) {
+      // For play-throughs other than the first, we expect initialization to
+      // succeed unconditionally.
+      if (n > 0) {
+        ASSERT_NO_FATAL_FAILURE(
+            AssertWaitForStateOrDeleted(note, clients[i], CS_INITIALIZED));
+      }
+      // InitializeDone kicks off decoding inside the client, so we just need to
+      // wait for Flush.
+      ASSERT_NO_FATAL_FAILURE(
+          AssertWaitForStateOrDeleted(note, clients[i], CS_FLUSHING));
+      ASSERT_NO_FATAL_FAILURE(
+          AssertWaitForStateOrDeleted(note, clients[i], CS_FLUSHED));
+      // FlushDone requests Reset().
+      ASSERT_NO_FATAL_FAILURE(
+          AssertWaitForStateOrDeleted(note, clients[i], CS_RESETTING));
+    }
     ASSERT_NO_FATAL_FAILURE(
         AssertWaitForStateOrDeleted(note, clients[i], CS_RESET));
     // ResetDone requests Destroy().
@@ -997,7 +1032,8 @@ TEST_P(VideoDecodeAcceleratorTest, TestSimpleDecode) {
         AssertWaitForStateOrDeleted(note, clients[i], CS_DESTROYED));
   }
   // Finally assert that decoding went as expected.
-  for (size_t i = 0; i < num_concurrent_decoders && !saw_init_failure; ++i) {
+  for (size_t i = 0; i < num_concurrent_decoders &&
+           !skip_performance_and_correctness_checks; ++i) {
     // We can only make performance/correctness assertions if the decoder was
     // allowed to finish.
     if (delete_decoder_state < CS_FLUSHED)
@@ -1032,27 +1068,35 @@ TEST_P(VideoDecodeAcceleratorTest, TestSimpleDecode) {
   rendering_thread.Stop();
 };
 
+// Test that replay after EOS works fine.
+INSTANTIATE_TEST_CASE_P(
+    ReplayAfterEOS, VideoDecodeAcceleratorTest,
+    ::testing::Values(
+        MakeTuple(1, 1, 1, 4, END_OF_STREAM_RESET, CS_RESET)));
+
 // Test that Reset() mid-stream works fine and doesn't affect decoding even when
 // Decode() calls are made during the reset.
 INSTANTIATE_TEST_CASE_P(
     MidStreamReset, VideoDecodeAcceleratorTest,
     ::testing::Values(
-        MakeTuple(1, 1, 1, static_cast<ResetPoint>(100), CS_RESET)));
+        MakeTuple(1, 1, 1, 1, static_cast<ResetPoint>(100), CS_RESET)));
 
 // Test that Destroy() mid-stream works fine (primarily this is testing that no
 // crashes occur).
 INSTANTIATE_TEST_CASE_P(
     TearDownTiming, VideoDecodeAcceleratorTest,
     ::testing::Values(
-        MakeTuple(1, 1, 1, END_OF_STREAM_RESET, CS_DECODER_SET),
-        MakeTuple(1, 1, 1, END_OF_STREAM_RESET, CS_INITIALIZED),
-        MakeTuple(1, 1, 1, END_OF_STREAM_RESET, CS_FLUSHING),
-        MakeTuple(1, 1, 1, END_OF_STREAM_RESET, CS_FLUSHED),
-        MakeTuple(1, 1, 1, END_OF_STREAM_RESET, CS_RESETTING),
-        MakeTuple(1, 1, 1, END_OF_STREAM_RESET, CS_RESET),
-        MakeTuple(1, 1, 1, END_OF_STREAM_RESET, static_cast<ClientState>(-1)),
-        MakeTuple(1, 1, 1, END_OF_STREAM_RESET, static_cast<ClientState>(-10)),
-        MakeTuple(1, 1, 1, END_OF_STREAM_RESET,
+        MakeTuple(1, 1, 1, 1, END_OF_STREAM_RESET, CS_DECODER_SET),
+        MakeTuple(1, 1, 1, 1, END_OF_STREAM_RESET, CS_INITIALIZED),
+        MakeTuple(1, 1, 1, 1, END_OF_STREAM_RESET, CS_FLUSHING),
+        MakeTuple(1, 1, 1, 1, END_OF_STREAM_RESET, CS_FLUSHED),
+        MakeTuple(1, 1, 1, 1, END_OF_STREAM_RESET, CS_RESETTING),
+        MakeTuple(1, 1, 1, 1, END_OF_STREAM_RESET, CS_RESET),
+        MakeTuple(1, 1, 1, 1, END_OF_STREAM_RESET,
+                  static_cast<ClientState>(-1)),
+        MakeTuple(1, 1, 1, 1, END_OF_STREAM_RESET,
+                  static_cast<ClientState>(-10)),
+        MakeTuple(1, 1, 1, 1, END_OF_STREAM_RESET,
                   static_cast<ClientState>(-100))));
 
 // Test that decoding various variation works: multiple concurrent decoders and
@@ -1060,21 +1104,22 @@ INSTANTIATE_TEST_CASE_P(
 INSTANTIATE_TEST_CASE_P(
     DecodeVariations, VideoDecodeAcceleratorTest,
     ::testing::Values(
-        MakeTuple(1, 1, 1, END_OF_STREAM_RESET, CS_RESET),
-        MakeTuple(1, 1, 10, END_OF_STREAM_RESET, CS_RESET),
-        MakeTuple(1, 1, 15, END_OF_STREAM_RESET, CS_RESET),  // Tests queuing.
-        MakeTuple(1, 3, 1, END_OF_STREAM_RESET, CS_RESET),
-        MakeTuple(2, 1, 1, END_OF_STREAM_RESET, CS_RESET),
-        MakeTuple(3, 1, 1, END_OF_STREAM_RESET, CS_RESET),
-        MakeTuple(5, 1, 1, END_OF_STREAM_RESET, CS_RESET),
-        MakeTuple(8, 1, 1, END_OF_STREAM_RESET, CS_RESET),
+        MakeTuple(1, 1, 1, 1, END_OF_STREAM_RESET, CS_RESET),
+        MakeTuple(1, 1, 10, 1, END_OF_STREAM_RESET, CS_RESET),
+        // Tests queuing.
+        MakeTuple(1, 1, 15, 1, END_OF_STREAM_RESET, CS_RESET),
+        MakeTuple(1, 3, 1, 1, END_OF_STREAM_RESET, CS_RESET),
+        MakeTuple(2, 1, 1, 1, END_OF_STREAM_RESET, CS_RESET),
+        MakeTuple(3, 1, 1, 1, END_OF_STREAM_RESET, CS_RESET),
+        MakeTuple(5, 1, 1, 1, END_OF_STREAM_RESET, CS_RESET),
+        MakeTuple(8, 1, 1, 1, END_OF_STREAM_RESET, CS_RESET),
         // TODO(fischman): decoding more than 15 NALUs at once breaks decode -
         // visual artifacts are introduced as well as spurious frames are
         // delivered (more pictures are returned than NALUs are fed to the
         // decoder).  Increase the "15" below when
         // http://code.google.com/p/chrome-os-partner/issues/detail?id=4378 is
         // fixed.
-        MakeTuple(15, 1, 1, END_OF_STREAM_RESET, CS_RESET)));
+        MakeTuple(15, 1, 1, 1, END_OF_STREAM_RESET, CS_RESET)));
 
 // Find out how many concurrent decoders can go before we exhaust system
 // resources.
@@ -1082,13 +1127,13 @@ INSTANTIATE_TEST_CASE_P(
     ResourceExhaustion, VideoDecodeAcceleratorTest,
     ::testing::Values(
         // +0 hack below to promote enum to int.
-        MakeTuple(1, kMinSupportedNumConcurrentDecoders + 0, 1,
+        MakeTuple(1, kMinSupportedNumConcurrentDecoders + 0, 1, 1,
                   END_OF_STREAM_RESET, CS_RESET),
-        MakeTuple(1, kMinSupportedNumConcurrentDecoders + 1, 1,
+        MakeTuple(1, kMinSupportedNumConcurrentDecoders + 1, 1, 1,
                   END_OF_STREAM_RESET, CS_RESET)));
 
 // TODO(fischman, vrk): add more tests!  In particular:
-// - Test life-cycle: Seek/Stop/Pause/Play/RePlay for a single decoder.
+// - Test life-cycle: Seek/Stop/Pause/Play for a single decoder.
 // - Test alternate configurations
 // - Test failure conditions.
 // - Test frame size changes mid-stream

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -778,8 +778,13 @@ void OmxVideoDecodeAccelerator::FillBufferDoneTask(
   }
   DCHECK(!fake_output_buffers_.size());
 
+  // When the EOS picture is delivered back to us, notify the client and reuse
+  // the underlying picturebuffer.
   if (buffer->nFlags & OMX_BUFFERFLAG_EOS) {
-    // Avoid sending the (fake) EOS buffer to the client.
+    buffer->nFlags &= ~OMX_BUFFERFLAG_EOS;
+    OnReachedEOSInFlushing();
+    if (current_state_change_ != DESTROYING)
+      ReusePictureBuffer(picture_buffer_id);
     return;
   }
 
@@ -947,7 +952,7 @@ void OmxVideoDecodeAccelerator::EventHandlerCompleteTask(OMX_EVENTTYPE event,
         if (current_state_change_ == DESTROYING)
           return;
         DCHECK_EQ(current_state_change_, FLUSHING);
-        OnReachedEOSInFlushing();
+        // Do nothing; rely on the EOS picture delivery to notify the client.
       } else {
         RETURN_ON_FAILURE(false,
                           "Unexpected OMX_EventBufferFlag: "
@@ -1016,13 +1021,10 @@ OMX_ERRORTYPE OmxVideoDecodeAccelerator::FillBufferCallback(
 
 bool OmxVideoDecodeAccelerator::CanFillBuffer() {
   DCHECK_EQ(message_loop_, MessageLoop::current());
-  if (current_state_change_ == DESTROYING ||
-      current_state_change_ == ERRORING) {
-    return false;
-  }
-  return client_state_ == OMX_StateIdle ||
-      client_state_ == OMX_StateExecuting ||
-      client_state_ == OMX_StatePause;
+  const CurrentStateChange csc = current_state_change_;
+  const OMX_STATETYPE cs = client_state_;
+  return (csc != DESTROYING && csc != ERRORING) &&
+      (cs == OMX_StateIdle || cs == OMX_StateExecuting || cs == OMX_StatePause);
 }
 
 bool OmxVideoDecodeAccelerator::SendCommandToPort(
