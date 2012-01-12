@@ -446,8 +446,6 @@ chrome_pfq.add_config('aura-chrome-pre-flight-queue',
   board='x86-generic',
   profile='aura',
   chrome_rev=constants.CHROME_REV_LATEST,
-  vm_tests=None,
-  chrome_tests=False
 )
 
 chrome_pfq.add_config('arm-tegra2-chrome-pre-flight-queue',
@@ -500,8 +498,6 @@ chrome_pfq_info.add_config('patch-tot-chrome-pfq-informational',
 chrome_pfq_info.add_config('aura-tot-chrome-pfq-informational',
   board='x86-generic',
   profile='aura',
-  vm_tests=None,
-  chrome_tests=False
 )
 
 
@@ -687,8 +683,6 @@ _release.add_config('x86-alex-release',
 
 _alex_release.add_config('aura-release',
   profile='aura',
-  vm_tests=None,
-  chrome_tests=False
 )
 
 _release.add_config('x86-alex_he-release',

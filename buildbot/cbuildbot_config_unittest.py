@@ -26,7 +26,7 @@ class CBuildBotTest(mox.MoxTestBase):
        This checks for mispelled keys, or keys that are somehow removed.
     """
 
-    expected_keys = set(cbuildbot_config.default.keys())
+    expected_keys = set(cbuildbot_config._default.keys())
     for build_name, config in cbuildbot_config.config.iteritems():
       config_keys = set(config.keys())
 
