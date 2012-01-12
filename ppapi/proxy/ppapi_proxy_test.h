@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,6 +17,7 @@
 #include "ppapi/proxy/plugin_proxy_delegate.h"
 #include "ppapi/proxy/plugin_resource_tracker.h"
 #include "ppapi/proxy/plugin_var_tracker.h"
+#include "ppapi/shared_impl/test_globals.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace ppapi {
@@ -33,6 +34,7 @@ class ProxyTestHarnessBase {
   PP_Instance pp_instance() const { return pp_instance_; }
   IPC::TestSink& sink() { return sink_; }
 
+  virtual PpapiGlobals* GetGlobals() = 0;
   // Returns either the plugin or host dispatcher, depending on the test.
   virtual Dispatcher* GetDispatcher() = 0;
 
@@ -88,6 +90,7 @@ class PluginProxyTestHarness : public ProxyTestHarnessBase {
   }
 
   // ProxyTestHarnessBase implementation.
+  virtual PpapiGlobals* GetGlobals() { return &plugin_globals_; }
   virtual Dispatcher* GetDispatcher();
   virtual void SetUpHarness();
   virtual void SetUpHarnessWithChannel(const IPC::ChannelHandle& channel_handle,
@@ -157,8 +160,15 @@ class HostProxyTestHarness : public ProxyTestHarnessBase {
   virtual ~HostProxyTestHarness();
 
   HostDispatcher* host_dispatcher() { return host_dispatcher_.get(); }
+  ResourceTracker& resource_tracker() {
+    return *host_globals_.GetResourceTracker();
+  }
+  VarTracker& var_tracker() {
+    return *host_globals_.GetVarTracker();
+  }
 
   // ProxyTestBase implementation.
+  virtual PpapiGlobals* GetGlobals() { return &host_globals_; }
   virtual Dispatcher* GetDispatcher();
   virtual void SetUpHarness();
   virtual void SetUpHarnessWithChannel(const IPC::ChannelHandle& channel_handle,
@@ -191,6 +201,7 @@ class HostProxyTestHarness : public ProxyTestHarnessBase {
   };
 
  private:
+  ppapi::TestGlobals host_globals_;
   scoped_ptr<HostDispatcher> host_dispatcher_;
   DelegateMock delegate_mock_;
 };
