@@ -69,7 +69,9 @@ class ChromeEndureBaseTest(perf.BasePerfTest):
     start_time = time.time()
     snapshot = self._snapshotter.HeapSnapshot()
     elapsed_time = time.time() - start_time
-    self.assertTrue(snapshot, msg='Failed to take a v8 heap snapshot.')
+    if not snapshot:
+      logging.error('Failed to take a v8 heap snapshot.')
+      return
     snapshot_info = snapshot[0]
 
     # Collect other count information to add to the snapshot data.
@@ -122,13 +124,13 @@ class ChromeEndureBaseTest(perf.BasePerfTest):
   def _OutputFinalHeapSnapshotResults(self, webapp_name):
     """Outputs final snapshot results to be graphed at the end of a test.
 
-    Assumes that at least one snapshot was previously taken by the current test.
-
     Args:
       webapp_name: A string name for the webapp being testing.  Should not
                    include spaces.  For example, 'Gmail', 'Docs', or 'Plus'.
     """
-    assert len(self._full_snapshot_results) >= 1
+    if not self._full_snapshot_results:
+      logging.warning('No v8 heap snapshots taken. No final results to output.')
+      return
     max_heap_size = 0
     max_v8_node_count = 0
     max_dom_node_count = 0
@@ -176,6 +178,52 @@ class ChromeEndureBaseTest(perf.BasePerfTest):
       return find_by(value)
     except selenium.common.exceptions.NoSuchElementException:
       return None
+
+  def _ClickElementByXpath(self, driver, wait, xpath):
+    """Given the xpath for a DOM element, clicks on it using WebDriver.
+
+    Args:
+      driver: A WebDriver object, as returned by self.NewWebDriver().
+      wait: A WebDriverWait object, as returned by WebDriverWait().
+      xpath: The string xpath associated with the DOM element to click.
+
+    Returns:
+      True, if the DOM element was found and clicked successfully, or
+      False, otherwise.
+    """
+    # The following cannot yet be imported on ChromeOS.
+    import selenium.common.exceptions
+    try:
+      element = wait.until(
+          lambda _: self._GetElement(driver.find_element_by_xpath, xpath))
+      element.click()
+    except (selenium.common.exceptions.StaleElementReferenceException,
+            selenium.common.exceptions.TimeoutException), e:
+      logging.exception('WebDriver exception: %s' % e)
+      return False
+    return True
+
+  def _WaitForElementByXpath(self, driver, wait, xpath):
+    """Given the xpath for a DOM element, waits for it to exist in the DOM.
+
+    Args:
+      driver: A WebDriver object, as returned by self.NewWebDriver().
+      wait: A WebDriverWait object, as returned by WebDriverWait().
+      xpath: The string xpath associated with the DOM element for which to wait.
+
+    Returns:
+      True, if the DOM element was found in the DOM, or
+      False, otherwise.
+    """
+    # The following cannot yet be imported on ChromeOS.
+    import selenium.common.exceptions
+    try:
+      wait.until(lambda _: self._GetElement(driver.find_element_by_xpath,
+                                            xpath))
+    except selenium.common.exceptions.TimeoutException, e:
+      logging.exception('WebDriver exception: %s' % str(e))
+      return False
+    return True
 
 
 class ChromeEndureGmailTest(ChromeEndureBaseTest):
@@ -280,6 +328,10 @@ class ChromeEndureDocsTest(ChromeEndureBaseTest):
     import selenium.common.exceptions
     from selenium.webdriver.support.ui import WebDriverWait
 
+    driver = self.NewWebDriver()
+    # Any call to wait.until() will raise an exception if the timeout is hit.
+    wait = WebDriverWait(driver, timeout=60)
+
     # Log into a test Google account and open up Google Docs.
     self._LoginToGoogleAccount()
     self.NavigateToURL('http://docs.google.com')
@@ -288,41 +340,40 @@ class ChromeEndureDocsTest(ChromeEndureBaseTest):
                     msg='Loaded tab title does not contain "Docs": "%s"' %
                         loaded_tab_title)
 
-    driver = self.NewWebDriver()
-    # Any call to wait.until() will raise an exception if the timeout is hit.
-    wait = WebDriverWait(driver, timeout=60)
-
     # Interact with Google Docs for a while.  Here, we repeat the following
     # sequence of interactions: click the "Owned by me" button, then click the
     # "Home" button.
+    error_count_threshold = 20
+    num_errors = 0
     num_iterations = 2001
     for i in xrange(num_iterations):
+      if num_errors >= error_count_threshold:
+        logging.error('Error count threshold (%d) reached. Terminating test '
+                      'early.' % error_count_threshold)
+        break
+
       if i % 5 == 0:
         logging.info('Chrome interaction iteration %d of %d.' % (
                      i + 1, num_iterations))
 
       # Click the "Owned by me" button and wait for a resulting div to appear.
-      owned_by_me_button = wait.until(lambda _: self._GetElement(
-                                          driver.find_element_by_xpath,
-                                          '//div[text()="Owned by me"]'))
-      owned_by_me_button.click()
-      wait.until(
-          lambda _: self._GetElement(
-              driver.find_element_by_xpath,
-              '//div[@title="Owned by me filter.  Use backspace or delete to '
-              'remove"]'))
+      if not self._ClickElementByXpath(
+          driver, wait, '//div[text()="Owned by me"]'):
+        num_errors += 1
+      if not self._WaitForElementByXpath(
+          driver, wait,
+          '//div[@title="Owned by me filter.  Use backspace or delete to '
+          'remove"]'):
+        num_errors += 1
       time.sleep(0.1)
 
       # Click the "Home" button and wait for a resulting div to appear.
-      home_button = wait.until(lambda _: self._GetElement(
-                                   driver.find_element_by_xpath,
-                                   '//div[text()="Home"]'))
-      home_button.click()
-      wait.until(
-          lambda _: self._GetElement(
-              driver.find_element_by_xpath,
-              '//div[@title="Home filter.  Use backspace or delete to '
-              'remove"]'))
+      if not self._ClickElementByXpath(driver, wait, '//div[text()="Home"]'):
+        num_errors += 1
+      if not self._WaitForElementByXpath(
+          driver, wait,
+          '//div[@title="Home filter.  Use backspace or delete to remove"]'):
+        num_errors += 1
       time.sleep(0.1)
 
       # Snapshot after the first iteration, then every 100 iterations after
@@ -347,6 +398,10 @@ class ChromeEndurePlusTest(ChromeEndureBaseTest):
     import selenium.common.exceptions
     from selenium.webdriver.support.ui import WebDriverWait
 
+    driver = self.NewWebDriver()
+    # Any call to wait.until() will raise an exception if the timeout is hit.
+    wait = WebDriverWait(driver, timeout=60)
+
     # Log into a test Google account and open up Google Plus.
     self._LoginToGoogleAccount()
     self.NavigateToURL('http://plus.google.com')
@@ -355,37 +410,41 @@ class ChromeEndurePlusTest(ChromeEndureBaseTest):
                     msg='Loaded tab title does not contain "Google+": "%s"' %
                         loaded_tab_title)
 
-    driver = self.NewWebDriver()
-    # Any call to wait.until() will raise an exception if the timeout is hit.
-    wait = WebDriverWait(driver, timeout=60)
-
     # Interact with Google Plus for a while.  Here, we repeat the following
     # sequence of interactions: click the "Friends" button, then click the
     # "Acquaintances" button.
+    error_count_threshold = 20
+    num_errors = 0
     num_iterations = 1001
     for i in xrange(num_iterations):
+      if num_errors >= error_count_threshold:
+        logging.error('Error count threshold (%d) reached. Terminating test '
+                      'early.' % error_count_threshold)
+        break
+
       if i % 5 == 0:
         logging.info('Chrome interaction iteration %d of %d.' % (
                      i + 1, num_iterations))
 
       # Click the "Friends" button and wait for a resulting div to appear.
-      friends_button = wait.until(lambda _: self._GetElement(
-                                      driver.find_element_by_xpath,
-                                      '//a[text()="Friends"]'))
-      friends_button.click()
-      wait.until(lambda _: self._GetElement(
-                     driver.find_element_by_xpath,
-                     '//div[text()="Friends"]'))
+      if not self._ClickElementByXpath(
+          driver, wait,
+          '//a[text()="Friends" and starts-with(@href, "stream/circles")]'):
+        num_errors += 1
+      if not self._WaitForElementByXpath(
+          driver, wait, '//div[text()="Friends"]'):
+        num_errors += 1
       time.sleep(0.1)
 
       # Click the "Acquaintances" button and wait for a resulting div to appear.
-      acquaintances_button = wait.until(lambda _: self._GetElement(
-                                            driver.find_element_by_xpath,
-                                            '//a[text()="Acquaintances"]'))
-      acquaintances_button.click()
-      wait.until(lambda _: self._GetElement(
-                     driver.find_element_by_xpath,
-                     '//div[text()="Acquaintances"]'))
+      if not self._ClickElementByXpath(
+          driver, wait,
+          '//a[text()="Acquaintances" and '
+          'starts-with(@href, "stream/circles")]'):
+        num_errors += 1
+      if not self._WaitForElementByXpath(
+          driver, wait, '//div[text()="Acquaintances"]'):
+        num_errors += 1
       time.sleep(0.1)
 
       # Snapshot after the first iteration, then every 100 iterations after
