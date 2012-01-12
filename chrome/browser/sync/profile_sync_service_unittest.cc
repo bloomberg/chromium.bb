@@ -337,7 +337,8 @@ TEST_F(ProfileSyncServiceTest, TestStartupWithOldSyncData) {
   ASSERT_NE(file2text.compare(nonsense2), 0);
 }
 
-TEST_F(ProfileSyncServiceTest, CorruptDatabase) {
+// Disabled because of crbug.com/109668.
+TEST_F(ProfileSyncServiceTest, DISABLED_CorruptDatabase) {
   const char* nonesense = "not a database";
 
   FilePath temp_directory = profile_->GetPath().AppendASCII("Sync Data");
