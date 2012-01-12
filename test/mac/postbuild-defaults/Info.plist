@@ -8,6 +8,6 @@
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleName</key>
-	<string>A bundle name</string>
+        <string>${PRODUCT_NAME}</string>
 </dict>
 </plist>

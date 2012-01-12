@@ -21,6 +21,9 @@ if sys.platform == 'darwin':
 
   result_file = test.built_file_path('result', chdir=CHDIR)
   test.must_exist(result_file)
-  test.must_contain(result_file, 'A bundle name')
+  test.must_contain(result_file, '''\
+Test
+${PRODUCT_NAME}
+''')
 
   test.pass_test()

@@ -213,6 +213,7 @@ MAKEFLAGS=-r
 
 # The source directory tree.
 srcdir := %(srcdir)s
+abs_srcdir := $(abspath $(srcdir))
 
 # The name of the builddir.
 builddir_name ?= %(builddir)s
@@ -900,7 +901,7 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
       # Same for environment.
       self.WriteLn("%s: obj := $(abs_obj)" % QuoteSpaces(outputs[0]))
       self.WriteLn("%s: builddir := $(abs_builddir)" % QuoteSpaces(outputs[0]))
-      self.WriteXcodeEnv(outputs[0], spec, target_relative_path=True)
+      self.WriteXcodeEnv(outputs[0], spec)
 
       for input in inputs:
         assert ' ' not in input, (
@@ -1802,7 +1803,7 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
     self.fp.write(text + '\n')
 
 
-  def GetXcodeEnv(self, spec, target_relative_path=False):
+  def GetXcodeEnv(self, spec):
     """Return the environment variables that Xcode would set. See
     http://developer.apple.com/library/mac/#documentation/DeveloperTools/Reference/XcodeBuildSettingRef/1-Build_Setting_Reference/build_setting_ref.html#//apple_ref/doc/uid/TP40003931-CH3-SW153
     for a full list."""
@@ -1814,9 +1815,7 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
     built_products_dir = "$(abs_builddir)"
 
     # This is the directory containing this gyp / xcodeproj file.
-    srcroot = self.path
-    if target_relative_path:
-      srcroot = '.'
+    srcroot = '$(abs_srcdir)/' + self.path
 
     # These are filled in on a as-needed basis.
     env = {
@@ -1851,13 +1850,9 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
     return env
 
 
-  def WriteXcodeEnv(self,
-                    target,
-                    spec,
-                    target_relative_path=False,
-                    additional_settings={}):
+  def WriteXcodeEnv(self, target, spec, additional_settings={}):
     env = additional_settings
-    env.update(self.GetXcodeEnv(spec, target_relative_path))
+    env.update(self.GetXcodeEnv(spec))
 
     # Convert list values to string values.
     for k in env:
@@ -1882,11 +1877,14 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
       if not len(matches):
         continue
 
-      dependers.add(k)
+      depends_on_other_var = False
       for dependee in matches:
         if dependee in env:
           edges.add((dependee, k))
           dependees.add(dependee)
+          depends_on_other_var = True
+      if depends_on_other_var:
+        dependers.add(k)
 
     # Phase 2: Create a list of graph nodes with no incoming edges.
     sorted_nodes = []
