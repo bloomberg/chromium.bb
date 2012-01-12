@@ -190,7 +190,8 @@ int CoalescePendingXIMotionEvents(const XEvent* xev, XEvent* last_event) {
     // with one from the master and one from the slave so there will
     // always be at least one pending.
     if (!ui::TouchFactory::GetInstance()->ShouldProcessXI2Event(&next_event)) {
-      CheckXEventForConsistency(&next_event);
+      // See crbug.com/109884.
+      // CheckXEventForConsistency(&next_event);
       XFreeEventData(display, &next_event.xcookie);
       XNextEvent(display, &next_event);
       continue;
@@ -220,7 +221,8 @@ int CoalescePendingXIMotionEvents(const XEvent* xev, XEvent* last_event) {
         // Get the event and its cookie data.
         XNextEvent(display, last_event);
         XGetEventData(display, &last_event->xcookie);
-        CheckXEventForConsistency(last_event);
+        // See crbug.com/109884.
+        // CheckXEventForConsistency(last_event);
         ++num_coalesed;
         continue;
       } else {
@@ -392,7 +394,8 @@ base::MessagePumpDispatcher::DispatchStatus RootWindowHostLinux::Dispatch(
     XEvent* xev) {
   bool handled = false;
 
-  CheckXEventForConsistency(xev);
+  // See crbug.com/109884.
+  // CheckXEventForConsistency(xev);
 
   switch (xev->type) {
     case Expose:
