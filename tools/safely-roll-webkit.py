@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -65,12 +65,12 @@ def main():
     parser.error(
         'Please delete the branch webkit_roll and move to a different branch')
   subprocess2.check_output(
-      ['git', 'checkout', '-b', 'webkit_roll', 'origin/trunk'])
+      ['git', 'checkout', '-b', 'webkit_roll', 'origin/master'])
   try:
     process_deps(os.path.join(root_dir, 'DEPS'), new_rev)
     commit_msg = msg + '\n\nTBR=\n'
     subprocess2.check_output(['git', 'commit', '-m', commit_msg, 'DEPS'])
-    subprocess2.check_call(['git', 'diff', 'origin/trunk'])
+    subprocess2.check_call(['git', 'diff', 'origin/master'])
     subprocess2.check_call(['git', 'cl', 'upload', '--use-commit-queue'])
   finally:
     subprocess2.check_output(['git', 'checkout', old_branch])
