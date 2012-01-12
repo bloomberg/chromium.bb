@@ -2385,6 +2385,11 @@
             'test/data/resource.rc',
           ],
         }],
+        ['enable_plugin_installation', {
+          'sources!': [
+            'browser/plugin_finder_unittest.cc',
+          ],
+        }],
         ['toolkit_views==1', {
           'dependencies': [
             '../ui/views/views.gyp:views',

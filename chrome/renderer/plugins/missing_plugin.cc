@@ -73,16 +73,22 @@ MissingPlugin::MissingPlugin(RenderView* render_view,
                              WebFrame* frame,
                              const WebPluginParams& params,
                              const std::string& html_data)
-    : PluginPlaceholder(render_view, frame, params, html_data),
-      placeholder_routing_id_(RenderThread::Get()->GenerateRoutingID()) {
+    : PluginPlaceholder(render_view, frame, params, html_data) {
   RenderThread::Get()->AddObserver(this);
+#if defined(ENABLE_PLUGIN_INSTALLATION)
+  placeholder_routing_id_ = RenderThread::Get()->GenerateRoutingID();
   RenderThread::Get()->AddRoute(placeholder_routing_id_, this);
   RenderThread::Get()->Send(new ChromeViewHostMsg_FindMissingPlugin(
       routing_id(), placeholder_routing_id_, params.mimeType.utf8()));
+#else
+  OnDidNotFindMissingPlugin();
+#endif
 }
 
 MissingPlugin::~MissingPlugin() {
+#if defined(ENABLE_PLUGIN_INSTALLATION)
   RenderThread::Get()->RemoveRoute(placeholder_routing_id_);
+#endif
   RenderThread::Get()->RemoveObserver(this);
 }
 
@@ -129,6 +135,7 @@ void MissingPlugin::ShowContextMenu(const WebKit::WebMouseEvent& event) {
   g_last_active_menu = this;
 }
 
+#if defined(ENABLE_PLUGIN_INSTALLATION)
 bool MissingPlugin::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(MissingPlugin, message)
@@ -145,13 +152,15 @@ bool MissingPlugin::OnMessageReceived(const IPC::Message& message) {
 
   return handled;
 }
-
-void MissingPlugin::OnFoundMissingPlugin(const string16& plugin_name) {
-  SetMessage(l10n_util::GetStringFUTF16(IDS_PLUGIN_FOUND, plugin_name));
-}
+#endif  // defined(ENABLE_PLUGIN_INSTALLATION)
 
 void MissingPlugin::OnDidNotFindMissingPlugin() {
   SetMessage(l10n_util::GetStringUTF16(IDS_PLUGIN_NOT_FOUND));
+}
+
+#if defined(ENABLE_PLUGIN_INSTALLATION)
+void MissingPlugin::OnFoundMissingPlugin(const string16& plugin_name) {
+  SetMessage(l10n_util::GetStringFUTF16(IDS_PLUGIN_FOUND, plugin_name));
 }
 
 void MissingPlugin::OnStartedDownloadingPlugin() {
@@ -161,6 +170,7 @@ void MissingPlugin::OnStartedDownloadingPlugin() {
 void MissingPlugin::OnFinishedDownloadingPlugin() {
   SetMessage(l10n_util::GetStringUTF16(IDS_PLUGIN_INSTALLING));
 }
+#endif  // defined(ENABLE_PLUGIN_INSTALLATION)
 
 void MissingPlugin::PluginListChanged() {
   ChromeViewHostMsg_GetPluginInfo_Status status;

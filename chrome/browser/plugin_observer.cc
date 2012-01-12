@@ -12,14 +12,10 @@
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/plugin_finder.h"
-#include "chrome/browser/plugin_installer.h"
-#include "chrome/browser/plugin_installer_infobar_delegate.h"
-#include "chrome/browser/plugin_installer_observer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
-#include "chrome/browser/ui/tab_modal_confirm_dialog_delegate.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/renderer_host/render_view_host.h"
@@ -33,6 +29,13 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "webkit/plugins/npapi/plugin_group.h"
 #include "webkit/plugins/webplugininfo.h"
+
+#if defined(ENABLE_PLUGIN_INSTALLATION)
+#include "chrome/browser/plugin_installer.h"
+#include "chrome/browser/plugin_installer_infobar_delegate.h"
+#include "chrome/browser/plugin_installer_observer.h"
+#include "chrome/browser/ui/tab_modal_confirm_dialog_delegate.h"
+#endif  // defined(ENABLE_PLUGIN_INSTALLATION)
 
 using content::OpenURLParams;
 using content::Referrer;
@@ -295,6 +298,7 @@ bool OutdatedPluginInfoBarDelegate::LinkClicked(
   return PluginInfoBarDelegate::LinkClicked(disposition);
 }
 
+#if defined(ENABLE_PLUGIN_INSTALLATION)
 class ConfirmInstallDialogDelegate : public TabModalConfirmDialogDelegate,
                                      public PluginInstallerObserver {
  public:
@@ -348,11 +352,13 @@ void ConfirmInstallDialogDelegate::OnCanceled() {
 void ConfirmInstallDialogDelegate::DidStartDownload() {
   Cancel();
 }
+#endif  // defined(ENABLE_PLUGIN_INSTALLATION)
 
 }  // namespace
 
 // PluginObserver -------------------------------------------------------------
 
+#if defined(ENABLE_PLUGIN_INSTALLATION)
 class PluginObserver::MissingPluginHost : public PluginInstallerObserver {
  public:
   MissingPluginHost(PluginObserver* observer,
@@ -389,6 +395,7 @@ class PluginObserver::MissingPluginHost : public PluginInstallerObserver {
 
   int routing_id_;
 };
+#endif  // defined(ENABLE_PLUGIN_INSTALLATION)
 
 PluginObserver::PluginObserver(TabContentsWrapper* tab_contents)
     : content::WebContentsObserver(tab_contents->web_contents()),
@@ -403,8 +410,10 @@ bool PluginObserver::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(PluginObserver, message)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_BlockedOutdatedPlugin,
                         OnBlockedOutdatedPlugin)
+#if defined(ENABLE_PLUGIN_INSTALLATION)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_FindMissingPlugin,
                         OnFindMissingPlugin)
+#endif
     IPC_MESSAGE_UNHANDLED(return false)
   IPC_END_MESSAGE_MAP()
 
@@ -422,6 +431,7 @@ void PluginObserver::OnBlockedOutdatedPlugin(const string16& name,
       new OutdatedPluginInfoBarDelegate(infobar_helper, name, update_url));
 }
 
+#if defined(ENABLE_PLUGIN_INSTALLATION)
 void PluginObserver::OnFindMissingPlugin(int placeholder_id,
                                          const std::string& mime_type) {
   PluginFinder* plugin_finder = PluginFinder::GetInstance();
@@ -431,7 +441,7 @@ void PluginObserver::OnFindMissingPlugin(int placeholder_id,
       base::Bind(&PluginObserver::FoundMissingPlugin,
                  weak_ptr_factory_.GetWeakPtr(), placeholder_id, mime_type),
       base::Bind(&PluginObserver::DidNotFindMissingPlugin,
-                 weak_ptr_factory_.GetWeakPtr(), placeholder_id, mime_type));
+                 weak_ptr_factory_.GetWeakPtr(), placeholder_id));
 }
 
 void PluginObserver::FoundMissingPlugin(int placeholder_id,
@@ -450,8 +460,7 @@ void PluginObserver::FoundMissingPlugin(int placeholder_id,
   infobar_helper->AddInfoBar(delegate);
 }
 
-void PluginObserver::DidNotFindMissingPlugin(int placeholder_id,
-                                             const std::string& mime_type) {
+void PluginObserver::DidNotFindMissingPlugin(int placeholder_id) {
   Send(new ChromeViewMsg_DidNotFindMissingPlugin(placeholder_id));
 }
 
@@ -468,3 +477,4 @@ void PluginObserver::InstallMissingPlugin(PluginInstaller* installer) {
         tab_contents_);
   }
 }
+#endif  // defined(ENABLE_PLUGIN_INSTALLATION)

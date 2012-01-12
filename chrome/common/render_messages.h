@@ -423,6 +423,7 @@ IPC_SYNC_MESSAGE_CONTROL4_3(ChromeViewHostMsg_GetPluginInfo,
                             webkit::WebPluginInfo /* plugin */,
                             std::string /* actual_mime_type */)
 
+#if defined(ENABLE_PLUGIN_INSTALLATION)
 // Tells the browser to search for a plug-in that can handle the given MIME
 // type. The result will be sent asynchronously to the routing ID
 // |placeholder_id|.
@@ -445,6 +446,7 @@ IPC_MESSAGE_ROUTED0(ChromeViewMsg_StartedDownloadingPlugin)
 // Notifies a missing plug-in placeholder that we have finished downloading
 // the plug-in.
 IPC_MESSAGE_ROUTED0(ChromeViewMsg_FinishedDownloadingPlugin)
+#endif  // defined(ENABLE_PLUGIN_INSTALLATION)
 
 // Specifies the URL as the first parameter (a wstring) and thumbnail as
 // binary data as the second parameter.

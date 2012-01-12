@@ -29,8 +29,10 @@ class MissingPlugin : public PluginPlaceholder,
   virtual void ShowContextMenu(const WebKit::WebMouseEvent&) OVERRIDE;
   virtual void DidFinishLoading() OVERRIDE;
 
+#if defined(ENABLE_PLUGIN_INSTALLATION)
   // IPC::Channel::Listener methods:
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+#endif
 
   // content::RenderViewObserver methods:
   virtual void ContextMenuAction(unsigned id) OVERRIDE;
@@ -47,17 +49,21 @@ class MissingPlugin : public PluginPlaceholder,
 
   void HideCallback(const CppArgumentList& args, CppVariant* result);
 
-  void OnFoundMissingPlugin(const string16& plugin_name);
   void OnDidNotFindMissingPlugin();
+#if defined(ENABLE_PLUGIN_INSTALLATION)
+  void OnFoundMissingPlugin(const string16& plugin_name);
   void OnStartedDownloadingPlugin();
   void OnFinishedDownloadingPlugin();
+#endif
 
   void SetMessage(const string16& message);
   void UpdateMessage();
 
+#if defined(ENABLE_PLUGIN_INSTALLATION)
   // |routing_id()| is the routing ID of our associated RenderView, but we have
   // a separate routing ID for messages specific to this placeholder.
   int32 placeholder_routing_id_;
+#endif
 
   string16 message_;
 

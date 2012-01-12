@@ -42,6 +42,7 @@
     'repack_locales_cmd': ['python', 'tools/build/repack_locales.py'],
     # TODO: remove this helper when we have loops in GYP
     'apply_locales_cmd': ['python', '<(DEPTH)/build/apply_locales.py'],
+    'enable_plugin_installation': 1,
     'conditions': [
       ['OS=="win"', {
         'nacl_defines': [
@@ -96,6 +97,11 @@
           }],  # branding
         ],  # conditions
       }],  # OS=="mac"
+      ['use_aura==1 or chromeos==1', {
+        'variables': {
+          'enable_plugin_installation': 0,
+        }
+      }],
       # TODO(mcgrathr): This duplicates native_client/build/common.gypi;
       # we should figure out a way to unify the settings.
       ['target_arch=="ia32"', {

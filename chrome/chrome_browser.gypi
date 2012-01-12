@@ -4216,6 +4216,11 @@
             ['include', '^browser/safe_browsing/safe_browsing_tab_observer.h'],
           ],
         }],
+        ['enable_plugin_installation', {
+          'defines': [
+            'ENABLE_PLUGIN_INSTALLATION',
+          ],
+        }],
         ['chromeos==0', {
           'sources/': [
             ['exclude', '^browser/chromeos'],
@@ -5330,6 +5335,18 @@
             ['exclude', '^browser/chromeos/login/views_login_display_host.cc'],
             ['exclude', '^browser/chromeos/login/wizard_in_process_browser_test.cc'],
             ['exclude', '^browser/chromeos/notifications/'],
+          ],
+        }],
+        ['enable_plugin_installation==0', {
+          'sources!': [
+            'browser/plugin_finder.cc',
+            'browser/plugin_finder.h',
+            'browser/plugin_installer.cc',
+            'browser/plugin_installer.h',
+            'browser/plugin_installer_infobar_delegate.cc',
+            'browser/plugin_installer_infobar_delegate.h',
+            'browser/plugin_installer_observer.cc',
+            'browser/plugin_installer_observer.h',
           ],
         }],
         [ 'use_openssl==1', {
