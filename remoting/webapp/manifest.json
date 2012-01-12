@@ -16,8 +16,7 @@
   "content_scripts": [
     {
       "matches": [
-        "https://talkgadget.google.com/talkgadget/blank",
-        "https://talkgadget.google.com/talkgadget/blank?*"
+        "OAUTH2_REDIRECT_URL"
       ],
       "js": [ "cs_oauth2_trampoline.js" ]
     }

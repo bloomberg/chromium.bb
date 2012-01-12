@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,7 +10,12 @@
 var remoting = remoting || {};
 
 /**
- * The MIME type of the Host plugin.
- * @type {string}
+ * @type {string} The MIME type of the Host plugin.
  */
 remoting.PLUGIN_MIMETYPE = 'HOST_PLUGIN_MIMETYPE';
+
+/**
+ * @type {string} The OAuth2 redirect URL.
+ * @private
+ */
+remoting.OAuth2.prototype.REDIRECT_URI_ = 'OAUTH2_REDIRECT_URL';

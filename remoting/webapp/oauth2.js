@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -44,9 +44,6 @@ remoting.OAuth2.prototype.SCOPE_ =
       'https://www.googleapis.com/auth/chromoting ' +
       'https://www.googleapis.com/auth/googletalk ' +
       'https://www.googleapis.com/auth/userinfo#email';
-/** @private */
-remoting.OAuth2.prototype.REDIRECT_URI_ =
-      'https://talkgadget.google.com/talkgadget/blank';
 /** @private */
 remoting.OAuth2.prototype.OAUTH2_TOKEN_ENDPOINT_ =
     'https://accounts.google.com/o/oauth2/token';
