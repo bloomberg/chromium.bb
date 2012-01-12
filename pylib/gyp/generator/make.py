@@ -1830,10 +1830,9 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
       'TARGET_BUILD_DIR' : built_products_dir,
       'TEMP_DIR' : '$(TMPDIR)',
     }
-    if self.type in ('executable', 'shared_library', 'loadable_module'):
-      env['EXECUTABLE_NAME'] = os.path.basename(self.output_binary)
     if self.type in (
         'executable', 'static_library', 'shared_library', 'loadable_module'):
+      env['EXECUTABLE_NAME'] = self.xcode_settings.GetExecutableName()
       env['EXECUTABLE_PATH'] = self.xcode_settings.GetExecutablePath()
       env['FULL_PRODUCT_NAME'] = self.xcode_settings.GetFullProductName()
       mach_o_type = self.xcode_settings.GetMachOType()

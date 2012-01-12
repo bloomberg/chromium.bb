@@ -9,3 +9,7 @@ test $MACH_O_TYPE = mh_dylib
 test $PRODUCT_TYPE = com.apple.product-type.library.dynamic
 test $PRODUCT_NAME = nonbundle_shared_library
 test $FULL_PRODUCT_NAME = libnonbundle_shared_library.dylib
+
+test $EXECUTABLE_NAME = libnonbundle_shared_library.dylib
+test $EXECUTABLE_PATH = libnonbundle_shared_library.dylib
+[[ ! $WRAPPER_NAME && ${WRAPPER_NAME-_} ]]

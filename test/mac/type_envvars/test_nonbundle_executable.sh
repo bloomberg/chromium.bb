@@ -10,3 +10,7 @@ set -e
 test $PRODUCT_TYPE = com.apple.product-type.tool
 test $PRODUCT_NAME = nonbundle_executable
 test $FULL_PRODUCT_NAME = nonbundle_executable
+
+test $EXECUTABLE_NAME = nonbundle_executable
+test $EXECUTABLE_PATH = nonbundle_executable
+[[ ! $WRAPPER_NAME && ${WRAPPER_NAME-_} ]]

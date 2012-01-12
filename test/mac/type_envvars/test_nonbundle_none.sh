@@ -10,3 +10,7 @@ set -e
 [[ ! $PRODUCT_TYPE && ${PRODUCT_TYPE-_} ]]
 test $PRODUCT_NAME = nonbundle_none
 [[ ! $FULL_PRODUCT_NAME && ${FULL_PRODUCT_NAME-_} ]]
+
+[[ ! $EXECUTABLE_NAME && ${EXECUTABLE_NAME-_} ]]
+[[ ! $EXECUTABLE_PATH && ${EXECUTABLE_PATH-_} ]]
+[[ ! $WRAPPER_NAME && ${WRAPPER_NAME-_} ]]

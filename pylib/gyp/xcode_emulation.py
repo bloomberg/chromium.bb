@@ -152,8 +152,7 @@ class XcodeSettings(object):
       path = self.GetBundleContentsFolderPath()
     elif self.spec['type'] in ('executable', 'loadable_module'):
       path = os.path.join(self.GetBundleContentsFolderPath(), 'MacOS')
-    return os.path.join(path, self.spec.get('product_name',
-                                            self.spec['target_name']))
+    return os.path.join(path, self.GetExecutableName())
 
   def _GetStandaloneExecutableSuffix(self):
     if 'product_extension' in self.spec:
@@ -194,6 +193,14 @@ class XcodeSettings(object):
     target = self.spec.get('product_name', target)
     target_ext = self._GetStandaloneExecutableSuffix()
     return target_prefix + target + target_ext
+
+  def GetExecutableName(self):
+    """Returns the executable name of the bundle represented by this target.
+    E.g. Chromium."""
+    if self._IsBundle():
+      return self.spec.get('product_name', self.spec['target_name'])
+    else:
+      return self._GetStandaloneBinaryPath()
 
   def GetExecutablePath(self):
     """Returns the directory name of the bundle represented by this target. E.g.
