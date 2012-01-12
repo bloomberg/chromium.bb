@@ -120,6 +120,17 @@ const char* StateString(DownloadItem::DownloadState state) {
   }
 }
 
+bool ValidateFilename(const string16& filename) {
+  // TODO(benjhayden): More robust validation of filename.
+  if (filename.size() >= 2u && filename[0] == L'.' && filename[1] == L'.')
+    return false;
+
+  if (filename.size() >= 1u && filename[0] == L'/')
+    return false;
+
+  return true;
+}
+
 }  // namespace
 
 bool DownloadsFunctionInterface::RunImplImpl(
@@ -192,30 +203,39 @@ bool DownloadsDownloadFunction::ParseArgs() {
     error_ = download_extension_errors::kInvalidURLError;
     return false;
   }
-  if (options->HasKey(kFilenameKey))
+
+  if (options->HasKey(kFilenameKey)) {
     EXTENSION_FUNCTION_VALIDATE(options->GetString(
         kFilenameKey, &iodata_->filename));
-  // TODO(benjhayden): More robust validation of filename.
-  if (((iodata_->filename[0] == L'.') && (iodata_->filename[1] == L'.')) ||
-      (iodata_->filename[0] == L'/')) {
-    error_ = download_extension_errors::kGenericError;
-    return false;
+    if (!ValidateFilename(iodata_->filename)) {
+      error_ = download_extension_errors::kGenericError;
+      return false;
+    }
   }
-  if (options->HasKey(kSaveAsKey))
+
+  if (options->HasKey(kSaveAsKey)) {
     EXTENSION_FUNCTION_VALIDATE(options->GetBoolean(
         kSaveAsKey, &iodata_->save_as));
-  if (options->HasKey(kMethodKey))
+  }
+
+  if (options->HasKey(kMethodKey)) {
     EXTENSION_FUNCTION_VALIDATE(options->GetString(
         kMethodKey, &iodata_->method));
+  }
+
   // It's ok to use a pointer to extra_headers without DeepCopy()ing because
   // |args_| (which owns *extra_headers) is guaranteed to live as long as
   // |this|.
-  if (options->HasKey(kHeadersKey))
+  if (options->HasKey(kHeadersKey)) {
     EXTENSION_FUNCTION_VALIDATE(options->GetList(
         kHeadersKey, &iodata_->extra_headers));
-  if (options->HasKey(kBodyKey))
+  }
+
+  if (options->HasKey(kBodyKey)) {
     EXTENSION_FUNCTION_VALIDATE(options->GetString(
         kBodyKey, &iodata_->post_body));
+  }
+
   if (iodata_->extra_headers != NULL) {
     for (size_t index = 0; index < iodata_->extra_headers->GetSize(); ++index) {
       base::DictionaryValue* header = NULL;
