@@ -861,6 +861,8 @@ void ExtensionWebRequestEventRouter::OnCompleted(
 
   DCHECK(!GetAndSetSignaled(request->identifier(), kOnCompleted));
 
+  ClearPendingCallbacks(request);
+
   int extra_info_spec = 0;
   std::vector<const EventListener*> listeners =
       GetMatchingListeners(profile, extension_info_map,
@@ -908,6 +910,8 @@ void ExtensionWebRequestEventRouter::OnErrorOccurred(
 
   DCHECK(!GetAndSetSignaled(request->identifier(), kOnErrorOccurred));
 
+  ClearPendingCallbacks(request);
+
   int extra_info_spec = 0;
   std::vector<const EventListener*> listeners =
       GetMatchingListeners(profile, extension_info_map,
@@ -932,11 +936,17 @@ void ExtensionWebRequestEventRouter::OnErrorOccurred(
 
 void ExtensionWebRequestEventRouter::OnURLRequestDestroyed(
     void* profile, net::URLRequest* request) {
-  blocked_requests_.erase(request->identifier());
+  ClearPendingCallbacks(request);
+
   signaled_requests_.erase(request->identifier());
 
   request_time_tracker_->LogRequestEndTime(request->identifier(),
                                            base::Time::Now());
+}
+
+void ExtensionWebRequestEventRouter::ClearPendingCallbacks(
+    net::URLRequest* request) {
+  blocked_requests_.erase(request->identifier());
 }
 
 bool ExtensionWebRequestEventRouter::DispatchEvent(

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -260,6 +260,10 @@ class ExtensionWebRequestEventRouter {
 
   ExtensionWebRequestEventRouter();
   ~ExtensionWebRequestEventRouter();
+
+  // Ensures that future callbacks for |request| are ignored so that it can be
+  // destroyed safely.
+  void ClearPendingCallbacks(net::URLRequest* request);
 
   bool DispatchEvent(
       void* profile,
