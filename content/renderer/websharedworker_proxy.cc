@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -45,16 +45,13 @@ void WebSharedWorkerProxy::Disconnect() {
   route_id_ = MSG_ROUTING_NONE;
 }
 
-void WebSharedWorkerProxy::CreateWorkerContext(
-    const GURL& script_url,
-    bool is_shared,
-    const string16& name,
-    const string16& user_agent,
-    const string16& source_code,
-    const string16& content_security_policy,
-    bool report_only,
-    int pending_route_id,
-    int64 script_resource_appcache_id) {
+void WebSharedWorkerProxy::CreateWorkerContext(const GURL& script_url,
+                                        bool is_shared,
+                                        const string16& name,
+                                        const string16& user_agent,
+                                        const string16& source_code,
+                                        int pending_route_id,
+                                        int64 script_resource_appcache_id) {
   DCHECK(route_id_ == MSG_ROUTING_NONE);
   ViewHostMsg_CreateWorker_Params params;
   params.url = script_url;
@@ -75,8 +72,7 @@ void WebSharedWorkerProxy::CreateWorkerContext(
   // connect might have already been called.
   queued_messages_.insert(queued_messages_.begin(),
       new WorkerMsg_StartWorkerContext(
-          route_id_, script_url, user_agent, source_code,
-          content_security_policy, report_only));
+          route_id_, script_url, user_agent, source_code));
 }
 
 bool WebSharedWorkerProxy::IsStarted() {
@@ -125,21 +121,6 @@ void WebSharedWorkerProxy::startWorkerContext(
     long long script_resource_appcache_id) {
   DCHECK(!isStarted());
   CreateWorkerContext(script_url, true, name, user_agent, source_code,
-                      string16(), false, pending_route_id_,
-                      script_resource_appcache_id);
-}
-
-void WebSharedWorkerProxy::startWorkerContext(
-    const WebKit::WebURL& script_url,
-    const WebKit::WebString& name,
-    const WebKit::WebString& user_agent,
-    const WebKit::WebString& source_code,
-    const WebKit::WebString& content_security_policy,
-    bool report_only,
-    long long script_resource_appcache_id) {
-  DCHECK(!isStarted());
-  CreateWorkerContext(script_url, true, name, user_agent, source_code,
-                      content_security_policy, report_only,
                       pending_route_id_, script_resource_appcache_id);
 }
 

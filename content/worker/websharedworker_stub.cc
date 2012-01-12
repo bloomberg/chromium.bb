@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -81,14 +81,12 @@ const GURL& WebSharedWorkerStub::url() {
 }
 
 void WebSharedWorkerStub::OnStartWorkerContext(
-    const GURL& url, const string16& user_agent, const string16& source_code,
-    const string16& /* content_security_policy */, bool /* report_only */) {
+    const GURL& url, const string16& user_agent, const string16& source_code) {
   // Ignore multiple attempts to start this worker (can happen if two pages
   // try to start it simultaneously).
   if (started_)
     return;
 
-  // TODO(tsepez):  pass CSP info into worker once webkit interface updated.
   impl_->startWorkerContext(url, name_, user_agent, source_code, 0);
   started_ = true;
   url_ = url;

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -51,9 +51,7 @@ class WebSharedWorkerStub : public IPC::Channel::Listener {
 
   void OnConnect(int sent_message_port_id, int routing_id);
   void OnStartWorkerContext(
-      const GURL& url, const string16& user_agent, const string16& source_code,
-      const string16& content_security_policy, bool report_only);
-
+      const GURL& url, const string16& user_agent, const string16& source_code);
   void OnTerminateWorkerContext();
 
   int route_id_;

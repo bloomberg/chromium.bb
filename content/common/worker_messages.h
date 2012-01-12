@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -135,12 +135,10 @@ IPC_SYNC_MESSAGE_CONTROL2_1(WorkerProcessHostMsg_AllowFileSystem,
 //-----------------------------------------------------------------------------
 // Worker messages
 // These are messages sent from the renderer process to the worker process.
-IPC_MESSAGE_ROUTED5(WorkerMsg_StartWorkerContext,
+IPC_MESSAGE_ROUTED3(WorkerMsg_StartWorkerContext,
                     GURL /* url */,
                     string16  /* user_agent */,
-                    string16  /* source_code */,
-                    string16  /* content_security_policy */,
-                    bool /* report_only */)
+                    string16  /* source_code */)
 
 IPC_MESSAGE_ROUTED0(WorkerMsg_TerminateWorkerContext)
 
