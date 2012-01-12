@@ -67,9 +67,9 @@
 {
   bug_81793b
   ThreadSanitizer:Race
+  ...
   fun:MessageLoop::CalculateDelayedRuntime
-  fun:MessageLoop::PostDelayedTask
-  fun:net::internal::ClientSocketPoolBaseHelper::Group::StartBackupSocketTimer
+  fun:MessageLoop::Post*Task
 }
 {
   bug_93932a
