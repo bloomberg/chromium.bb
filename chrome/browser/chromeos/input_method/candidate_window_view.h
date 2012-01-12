@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -204,6 +204,10 @@ class CandidateWindowView : public views::View {
   // True if the candidate window was open.  This is used to determine when to
   // send OnCandidateWindowOpened and OnCandidateWindowClosed events.
   bool was_candidate_window_open_;
+
+  // This function judge whether the candidate window should be shown or not,
+  // if should be, shows parent_frame and if not, hides parent_frame.
+  void UpdateParentArea();
 
   DISALLOW_COPY_AND_ASSIGN(CandidateWindowView);
 };

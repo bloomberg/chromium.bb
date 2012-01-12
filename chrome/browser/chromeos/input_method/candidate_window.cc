@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -891,47 +891,63 @@ void CandidateWindowView::HideAll() {
   NotifyIfCandidateWindowOpenedOrClosed();
 }
 
-void CandidateWindowView::HideLookupTable() {
-  candidate_area_->Hide();
-  if (preedit_area_->IsShown())
+void CandidateWindowView::UpdateParentArea() {
+  if (candidate_area_->IsShown() ||
+      header_area_->IsShown() ||
+      footer_area_->IsShown() ||
+      preedit_area_->IsShown()) {
     ResizeAndMoveParentFrame();
-  else
+    parent_frame_->Show();
+  } else {
     parent_frame_->Hide();
-
+  }
   NotifyIfCandidateWindowOpenedOrClosed();
 }
 
-InformationTextArea* CandidateWindowView::GetAuxiliaryTextArea() {
-  return (lookup_table_.orientation == InputMethodLookupTable::kHorizontal ?
-          header_area_ : footer_area_);
+void CandidateWindowView::HideLookupTable() {
+  candidate_area_->Hide();
+  UpdateParentArea();
 }
 
 void CandidateWindowView::HideAuxiliaryText() {
-  GetAuxiliaryTextArea()->Hide();
-  ResizeAndMoveParentFrame();
+  header_area_->Hide();
+  footer_area_->Hide();
+  UpdateParentArea();
 }
 
 void CandidateWindowView::ShowAuxiliaryText() {
-  GetAuxiliaryTextArea()->Show();
-  ResizeAndMoveParentFrame();
+  // If candidate_area is not shown, shows auxiliary text at header_area.
+  // We expect both header_area_ and footer_area_ contain same value.
+  if (!candidate_area_->IsShown()) {
+    header_area_->Show();
+    footer_area_->Hide();
+  } else {
+    // If candidate_area is shown, shows auxiliary text with orientation.
+    if (lookup_table_.orientation == InputMethodLookupTable::kHorizontal) {
+      header_area_->Show();
+      footer_area_->Hide();
+    } else {
+      footer_area_->Show();
+      header_area_->Hide();
+    }
+  }
+  UpdateParentArea();
 }
 
 void CandidateWindowView::UpdateAuxiliaryText(const std::string& utf8_text) {
-  GetAuxiliaryTextArea()->SetText(utf8_text);
+  header_area_->SetText(utf8_text);
+  footer_area_->SetText(utf8_text);
+  ShowAuxiliaryText();
 }
 
 void CandidateWindowView::HidePreeditText() {
   preedit_area_->Hide();
-  if (candidate_area_->IsShown())
-    ResizeAndMoveParentFrame();
-  else
-    parent_frame_->Hide();
+  UpdateParentArea();
 }
 
 void CandidateWindowView::ShowPreeditText() {
   preedit_area_->Show();
-  ResizeAndMoveParentFrame();
-  parent_frame_->Show();
+  UpdateParentArea();
 }
 
 void CandidateWindowView::UpdatePreeditText(const std::string& utf8_text) {
@@ -940,10 +956,7 @@ void CandidateWindowView::UpdatePreeditText(const std::string& utf8_text) {
 
 void CandidateWindowView::ShowLookupTable() {
   candidate_area_->Show();
-  ResizeAndMoveParentFrame();
-  parent_frame_->Show();
-
-  NotifyIfCandidateWindowOpenedOrClosed();
+  UpdateParentArea();
 }
 
 void CandidateWindowView::NotifyIfCandidateWindowOpenedOrClosed() {
