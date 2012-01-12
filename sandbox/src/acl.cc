@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,7 +12,7 @@
 namespace sandbox {
 
 bool GetDefaultDacl(HANDLE token,
-                    scoped_ptr<TOKEN_DEFAULT_DACL>* default_dacl) {
+                    scoped_ptr_malloc<TOKEN_DEFAULT_DACL>* default_dacl) {
   if (token == NULL)
     return false;
 
@@ -26,7 +26,7 @@ bool GetDefaultDacl(HANDLE token,
   }
 
   TOKEN_DEFAULT_DACL* acl =
-      reinterpret_cast<TOKEN_DEFAULT_DACL*>(new char[length]);
+      reinterpret_cast<TOKEN_DEFAULT_DACL*>(malloc(length));
   default_dacl->reset(acl);
 
   if (!::GetTokenInformation(token, TokenDefaultDacl, default_dacl->get(),
@@ -59,7 +59,7 @@ bool AddSidToDefaultDacl(HANDLE token, const Sid& sid, ACCESS_MASK access) {
   if (token == NULL)
     return false;
 
-  scoped_ptr<TOKEN_DEFAULT_DACL> default_dacl;
+  scoped_ptr_malloc<TOKEN_DEFAULT_DACL> default_dacl;
   if (!GetDefaultDacl(token, &default_dacl))
     return false;
 
@@ -78,9 +78,9 @@ bool AddSidToDefaultDacl(HANDLE token, const Sid& sid, ACCESS_MASK access) {
 
 bool AddUserSidToDefaultDacl(HANDLE token, ACCESS_MASK access) {
   DWORD size = sizeof(TOKEN_USER) + SECURITY_MAX_SID_SIZE;
-  TOKEN_USER* token_user = reinterpret_cast<TOKEN_USER*>(new BYTE[size]);
+  TOKEN_USER* token_user = reinterpret_cast<TOKEN_USER*>(malloc(size));
 
-  scoped_ptr<TOKEN_USER> token_user_ptr(token_user);
+  scoped_ptr_malloc<TOKEN_USER> token_user_ptr(token_user);
 
   if (!::GetTokenInformation(token, TokenUser, token_user, size, &size))
     return false;

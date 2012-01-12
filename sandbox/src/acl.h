@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,7 +13,8 @@
 namespace sandbox {
 
 // Returns the default dacl from the token passed in.
-bool GetDefaultDacl(HANDLE token, scoped_ptr<TOKEN_DEFAULT_DACL>* default_dacl);
+bool GetDefaultDacl(HANDLE token,
+                    scoped_ptr_malloc<TOKEN_DEFAULT_DACL>* default_dacl);
 
 // Appends an ACE represented by |sid| and |access| to |old_dacl|. If the
 // function succeeds, new_dacl contains the new dacl and must be freed using
