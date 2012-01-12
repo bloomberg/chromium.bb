@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -429,7 +429,7 @@ bool ElementToggleCommand::DoesPost() {
 void ElementToggleCommand::ExecutePost(Response* const response) {
   std::string script = base::StringPrintf(
       "return (%s).apply(null, arguments);",
-      atoms::asString(atoms::TOGGLE).c_str());
+      atoms::asString(atoms::SET_SELECTED).c_str());
 
   ListValue args;
   args.Append(element.ToValue());

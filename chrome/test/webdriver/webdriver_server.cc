@@ -40,6 +40,7 @@
 #include "chrome/test/webdriver/commands/execute_async_script_command.h"
 #include "chrome/test/webdriver/commands/execute_command.h"
 #include "chrome/test/webdriver/commands/find_element_commands.h"
+#include "chrome/test/webdriver/commands/html5_storage_commands.h"
 #include "chrome/test/webdriver/commands/keys_command.h"
 #include "chrome/test/webdriver/commands/log_command.h"
 #include "chrome/test/webdriver/commands/navigate_commands.h"
@@ -155,6 +156,14 @@ void InitCallbacks(Dispatcher* dispatcher,
   dispatcher->Add<ExtensionsCommand>("/session/*/chrome/extensions");
   dispatcher->Add<ExtensionCommand>("/session/*/chrome/extension/*");
   dispatcher->Add<ViewsCommand>("/session/*/chrome/views");
+
+  // HTML5 functions.
+  dispatcher->Add<LocalStorageCommand>("/session/*/local_storage");
+  dispatcher->Add<LocalStorageSizeCommand>("/session/*/local_storage/size");
+  dispatcher->Add<LocalStorageKeyCommand>("/session/*/local_storage/key*");
+  dispatcher->Add<SessionStorageCommand>("/session/*/session_storage");
+  dispatcher->Add<SessionStorageSizeCommand>("/session/*/session_storage/size");
+  dispatcher->Add<SessionStorageKeyCommand>("/session/*/session_storage/key*");
 
   // Since the /session/* is a wild card that would match the above URIs, this
   // line MUST be after all other webdriver command callbacks.

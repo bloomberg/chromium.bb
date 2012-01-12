@@ -1031,7 +1031,7 @@ Error* Session::SetOptionElementSelected(const FrameId& frame_id,
   Error* error = ExecuteAsyncScript(
       frame_id,
       base::StringPrintf(kSetSelectedWrapper,
-                         atoms::asString(atoms::SET_SELECTED).c_str()),
+                         atoms::asString(atoms::TOGGLE).c_str()),
       CreateListValueFrom(element, selected),
       &value);
   scoped_ptr<Value> scoped_value(value);
@@ -1241,6 +1241,102 @@ Error* Session::SetPreference(
 
 base::ListValue* Session::GetLog() const {
   return session_log_->entries_list()->DeepCopy();
+}
+
+Error* Session::GetBrowserConnectionState(bool* online) {
+  return ExecuteScriptAndParse(
+      current_target_,
+      atoms::asString(atoms::IS_ONLINE),
+      "isOnline",
+      new ListValue(),
+      CreateDirectValueParser(online));
+}
+
+Error* Session::GetAppCacheStatus(int* status) {
+  return ExecuteScriptAndParse(
+      current_target_,
+      atoms::asString(atoms::GET_APPCACHE_STATUS),
+      "getAppcacheStatus",
+      new ListValue(),
+      CreateDirectValueParser(status));
+}
+
+Error* Session::GetStorageSize(StorageType type, int* size) {
+  std::string js = atoms::asString(
+      type == kLocalStorageType ? atoms::GET_LOCAL_STORAGE_SIZE
+                                : atoms::GET_SESSION_STORAGE_SIZE);
+  return ExecuteScriptAndParse(
+      current_target_,
+      js,
+      "getStorageSize",
+      new ListValue(),
+      CreateDirectValueParser(size));
+}
+
+Error* Session::SetStorageItem(StorageType type,
+                               const std::string& key,
+                               const std::string& value) {
+  std::string js = atoms::asString(
+      type == kLocalStorageType ? atoms::SET_LOCAL_STORAGE_ITEM
+                                : atoms::SET_SESSION_STORAGE_ITEM);
+  return ExecuteScriptAndParse(
+      current_target_,
+      js,
+      "setStorageItem",
+      CreateListValueFrom(key, value),
+      CreateDirectValueParser(kSkipParsing));
+}
+
+Error* Session::ClearStorage(StorageType type) {
+  std::string js = atoms::asString(
+      type == kLocalStorageType ? atoms::CLEAR_LOCAL_STORAGE
+                                : atoms::CLEAR_SESSION_STORAGE);
+  return ExecuteScriptAndParse(
+      current_target_,
+      js,
+      "clearStorage",
+      new ListValue(),
+      CreateDirectValueParser(kSkipParsing));
+}
+
+Error* Session::GetStorageKeys(StorageType type, ListValue** keys) {
+  std::string js = atoms::asString(
+      type == kLocalStorageType ? atoms::GET_LOCAL_STORAGE_KEYS
+                                : atoms::GET_SESSION_STORAGE_KEYS);
+  return ExecuteScriptAndParse(
+      current_target_,
+      js,
+      "getStorageKeys",
+      new ListValue(),
+      CreateDirectValueParser(keys));
+}
+
+Error* Session::GetStorageItem(StorageType type,
+                               const std::string& key,
+                               std::string* value) {
+  std::string js = atoms::asString(
+      type == kLocalStorageType ? atoms::GET_LOCAL_STORAGE_ITEM
+                                : atoms::GET_SESSION_STORAGE_ITEM);
+  return ExecuteScriptAndParse(
+      current_target_,
+      js,
+      "getStorageItem",
+      CreateListValueFrom(key),
+      CreateDirectValueParser(value));
+}
+
+Error* Session::RemoveStorageItem(StorageType type,
+                                  const std::string& key,
+                                  std::string* value) {
+  std::string js = atoms::asString(
+      type == kLocalStorageType ? atoms::REMOVE_LOCAL_STORAGE_ITEM
+                                : atoms::REMOVE_SESSION_STORAGE_ITEM);
+  return ExecuteScriptAndParse(
+      current_target_,
+      js,
+      "removeStorageItem",
+      CreateListValueFrom(key),
+      CreateDirectValueParser(value));
 }
 
 const std::string& Session::id() const {
@@ -1688,24 +1784,6 @@ Error* Session::GetScreenShot(std::string* png) {
   if (!file_util::ReadFileToString(path, png))
     return new Error(kUnknownError, "Could not read screenshot file");
   return NULL;
-}
-
-Error* Session::GetBrowserConnectionState(bool* online) {
-  return ExecuteScriptAndParse(
-      current_target_,
-      atoms::asString(atoms::IS_ONLINE),
-      "isOnline",
-      new ListValue(),
-      CreateDirectValueParser(online));
-}
-
-Error* Session::GetAppCacheStatus(int* status) {
-  return ExecuteScriptAndParse(
-      current_target_,
-      atoms::asString(atoms::GET_APPCACHE_STATUS),
-      "getAppcacheStatus",
-      new ListValue(),
-      CreateDirectValueParser(status));
 }
 
 Error* Session::PostBrowserStartInit() {

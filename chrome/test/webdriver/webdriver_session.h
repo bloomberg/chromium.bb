@@ -47,6 +47,11 @@ struct FrameId {
   FramePath frame_path;
 };
 
+enum StorageType {
+  kLocalStorageType = 0,
+  kSessionStorageType
+};
+
 // Every connection made by WebDriver maps to a session object.
 // This object creates the chrome instance and keeps track of the
 // state necessary to control the chrome browser created.
@@ -327,6 +332,37 @@ class Session {
   // returned value.
   base::ListValue* GetLog() const;
 
+  // Gets the browser connection state.
+  Error* GetBrowserConnectionState(bool* online);
+
+  // Gets the status of the application cache.
+  Error* GetAppCacheStatus(int* status);
+
+  // Sets an item in the HTML5 localStorage object.
+  Error* SetStorageItem(StorageType type,
+                        const std::string& key,
+                        const std::string& value);
+
+  // Gets the value of an item in the HTML5 localStorage object.
+  Error* GetStorageItem(StorageType type,
+                        const std::string& key,
+                        std::string* value);
+
+  // Removes an item from the HTML5 localStorage object.
+  Error* RemoveStorageItem(StorageType type,
+                           const std::string& key,
+                           std::string* value);
+
+  // Gets the total number of items in the HTML5 localStorage object.
+  Error* GetStorageSize(StorageType type, int* size);
+
+  // Removes all items in the HTML5 localStorage object.
+  Error* ClearStorage(StorageType type);
+
+  // Gets the keys of all items of the HTML5 localStorage object. If there are
+  // no errors, the function sets |value| and the caller takes ownership.
+  Error* GetStorageKeys(StorageType type, base::ListValue** keys);
+
   const std::string& id() const;
 
   const FrameId& current_target() const;
@@ -342,12 +378,6 @@ class Session {
   const Logger& logger() const;
 
   const Capabilities& capabilities() const;
-
-  // Gets the browser connection state.
-  Error* GetBrowserConnectionState(bool* online);
-
-  // Gets the status of the application cache.
-  Error* GetAppCacheStatus(int* status);
 
  private:
   void RunSessionTask(const base::Closure& task);
