@@ -21,6 +21,10 @@
 #include "base/memory/ref_counted.h"
 #endif
 
+namespace gfx {
+class Canvas;
+}
+
 namespace ui {
 class InputMethod;
 }
@@ -171,6 +175,10 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   // to cancel its ongoing composition session.
   void FinishImeCompositionSession();
 
+  // If |clip| is non-empty and and doesn't contain |rect| or |clip| is empty
+  // SchedulePaint() is invoked for |rect|.
+  void SchedulePaintIfNotInClip(const gfx::Rect& rect, const gfx::Rect& clip);
+
   // The model object.
   RenderWidgetHost* host_;
 
@@ -218,7 +226,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   gfx::PluginWindowHandle current_surface_;
 #endif
 
-  bool skip_schedule_paint_;
+  // If non-NULL we're in OnPaint() and this is the supplied canvas.
+  gfx::Canvas* paint_canvas_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewAura);
 };

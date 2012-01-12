@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,6 +17,7 @@
 #include "ui/gfx/compositor/layer_animation_sequence.h"
 #include "ui/gfx/compositor/test/test_compositor_host.h"
 #include "ui/gfx/gfx_paths.h"
+#include "ui/gfx/skia_util.h"
 
 #if defined(USE_WEBKIT_COMPOSITOR)
 #include "ui/gfx/compositor/compositor_setup.h"
@@ -302,7 +303,7 @@ class TestCompositorObserver : public CompositorObserver {
   DISALLOW_COPY_AND_ASSIGN(TestCompositorObserver);
 };
 
-}
+}  // namespace
 
 #if defined(OS_WIN)
 // These are disabled on windows as they don't run correctly on the buildbot.
@@ -1378,6 +1379,89 @@ TEST_F(LayerWithRealCompositorTest, MAYBE_Opacity) {
   ASSERT_FALSE(bitmap.empty());
   // WritePNGFile(bitmap, ref_img);
   EXPECT_TRUE(IsSameAsPNGFile(bitmap, ref_img));
+}
+
+namespace {
+
+class SchedulePaintLayerDelegate : public LayerDelegate {
+ public:
+  SchedulePaintLayerDelegate() : paint_count_(0), layer_(NULL) {}
+
+  virtual ~SchedulePaintLayerDelegate() {}
+
+  void set_layer(Layer* layer) {
+    layer_ = layer;
+    layer_->set_delegate(this);
+  }
+
+  void SetSchedulePaintRect(const gfx::Rect& rect) {
+    schedule_paint_rect_ = rect;
+  }
+
+  int GetPaintCountAndClear() {
+    int value = paint_count_;
+    paint_count_ = 0;
+    return value;
+  }
+
+  const gfx::Rect& last_clip_rect() const { return last_clip_rect_; }
+
+ private:
+  // Overridden from LayerDelegate:
+  virtual void OnPaintLayer(gfx::Canvas* canvas) OVERRIDE {
+    paint_count_++;
+    if (!schedule_paint_rect_.IsEmpty()) {
+      layer_->SchedulePaint(schedule_paint_rect_);
+      schedule_paint_rect_ = gfx::Rect();
+    }
+    SkRect sk_clip_rect;
+    if (canvas->GetSkCanvas()->getClipBounds(&sk_clip_rect))
+      last_clip_rect_ = gfx::SkRectToRect(sk_clip_rect);
+  }
+
+  int paint_count_;
+  Layer* layer_;
+  gfx::Rect schedule_paint_rect_;
+  gfx::Rect last_clip_rect_;
+
+  DISALLOW_COPY_AND_ASSIGN(SchedulePaintLayerDelegate);
+};
+
+}  // namespace
+
+// Verifies that if SchedulePaint is invoked during painting the layer is still
+// marked dirty.
+TEST_F(LayerWithDelegateTest, SchedulePaintFromOnPaintLayer) {
+  scoped_ptr<Layer> root(CreateColorLayer(SK_ColorRED,
+                                          gfx::Rect(0, 0, 500, 500)));
+  SchedulePaintLayerDelegate child_delegate;
+  scoped_ptr<Layer> child(CreateColorLayer(SK_ColorBLUE,
+                                           gfx::Rect(0, 0, 200, 200)));
+  child_delegate.set_layer(child.get());
+
+  root->Add(child.get());
+
+  SchedulePaintForLayer(root.get());
+  DrawTree(root.get());
+  schedule_draw_invoked_ = false;
+  child->SchedulePaint(gfx::Rect(0, 0, 20, 20));
+  child_delegate.GetPaintCountAndClear();
+  EXPECT_TRUE(schedule_draw_invoked_);
+  schedule_draw_invoked_ = false;
+  // Set a rect so that when OnPaintLayer() is invoked SchedulePaint is invoked
+  // again.
+  child_delegate.SetSchedulePaintRect(gfx::Rect(10, 10, 30, 30));
+  DrawTree(root.get());
+  // |child| should have been painted once.
+  EXPECT_EQ(1, child_delegate.GetPaintCountAndClear());
+  // ScheduleDraw() should have been invoked.
+  EXPECT_TRUE(schedule_draw_invoked_);
+  // Because SchedulePaint() was invoked from OnPaintLayer() |child| should
+  // still need to be painted.
+  DrawTree(root.get());
+  EXPECT_EQ(1, child_delegate.GetPaintCountAndClear());
+  EXPECT_TRUE(child_delegate.last_clip_rect().Contains(
+                  gfx::Rect(10, 10, 30, 30)));
 }
 
 } // namespace ui

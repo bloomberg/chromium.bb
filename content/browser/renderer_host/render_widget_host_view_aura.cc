@@ -23,8 +23,10 @@
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/compositor/layer.h"
 #include "ui/gfx/screen.h"
+#include "ui/gfx/skia_util.h"
 
 #if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
 #include "base/bind.h"
@@ -102,7 +104,7 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host)
 #if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
       current_surface_(gfx::kNullPluginWindow),
 #endif
-      skip_schedule_paint_(false) {
+      paint_canvas_(NULL) {
   host_->SetView(this);
   aura::client::SetTooltipText(window_, &tooltip_);
   aura::client::SetActivationDelegate(window_, this);
@@ -270,18 +272,25 @@ void RenderWidgetHostViewAura::ImeCancelComposition() {
 void RenderWidgetHostViewAura::DidUpdateBackingStore(
     const gfx::Rect& scroll_rect, int scroll_dx, int scroll_dy,
     const std::vector<gfx::Rect>& copy_rects) {
-  if (!window_->IsVisible() || skip_schedule_paint_)
+  if (!window_->IsVisible())
     return;
 
+  gfx::Rect clip_rect;
+  if (paint_canvas_) {
+    SkRect sk_clip_rect;
+    if (paint_canvas_->GetSkCanvas()->getClipBounds(&sk_clip_rect))
+      clip_rect = gfx::SkRectToRect(sk_clip_rect);
+  }
+
   if (!scroll_rect.IsEmpty())
-    window_->SchedulePaintInRect(scroll_rect);
+    SchedulePaintIfNotInClip(scroll_rect, clip_rect);
 
   for (size_t i = 0; i < copy_rects.size(); ++i) {
     gfx::Rect rect = copy_rects[i].Subtract(scroll_rect);
     if (rect.IsEmpty())
       continue;
 
-    window_->SchedulePaintInRect(rect);
+    SchedulePaintIfNotInClip(rect, clip_rect);
   }
 }
 
@@ -795,9 +804,9 @@ void RenderWidgetHostViewAura::OnCaptureLost() {
 void RenderWidgetHostViewAura::OnPaint(gfx::Canvas* canvas) {
   if (!window_->IsVisible())
     return;
-  skip_schedule_paint_ = true;
+  paint_canvas_ = canvas;
   BackingStore* backing_store = host_->GetBackingStore(true);
-  skip_schedule_paint_ = false;
+  paint_canvas_ = NULL;
   if (backing_store) {
     static_cast<BackingStoreSkia*>(backing_store)->SkiaShowRect(gfx::Point(),
                                                                 canvas);
@@ -874,6 +883,18 @@ void RenderWidgetHostViewAura::FinishImeCompositionSession() {
   if (host_)
     host_->ImeConfirmComposition();
   ImeCancelComposition();
+}
+
+void RenderWidgetHostViewAura::SchedulePaintIfNotInClip(
+    const gfx::Rect& rect,
+    const gfx::Rect& clip) {
+  if (!clip.IsEmpty()) {
+    gfx::Rect to_paint = rect.Subtract(clip);
+    if (!to_paint.IsEmpty())
+      window_->SchedulePaintInRect(to_paint);
+  } else {
+    window_->SchedulePaintInRect(rect);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
