@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -3134,6 +3134,12 @@ FileManager.prototype = {
   FileManager.prototype.commitRename_ = function() {
     var entry = this.renameInput_.currentEntry;
     var newName = this.renameInput_.value;
+
+    if (newName == entry.name) {
+      this.cancelRename_();
+      return;
+    }
+
     if (!this.validateFileName_(newName))
       return;
 
