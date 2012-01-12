@@ -649,20 +649,21 @@ class NinjaWriter:
       output_binary = self.WriteLink(spec, config_name, config, link_deps)
 
     if self.is_mac_bundle:
-      output = self.ComputeMacBundleOutput(spec)
       mac_bundle_depends.append(output_binary)
+      return self.WriteMacBundle(spec, mac_bundle_depends), output_binary
     else:
-      output = output_binary
+      return output_binary, output_binary
 
-    if self.is_mac_bundle:
-      if spec['type'] in ('shared_library', 'loadable_module'):
-        variables = [('version', self.xcode_settings.GetFrameworkVersion())]
-        self.ninja.build(output, 'package_framework', mac_bundle_depends,
-                         variables=variables)
-      else:
-        self.ninja.build(output, 'stamp', mac_bundle_depends)
-
-    return output, output_binary
+  def WriteMacBundle(self, spec, mac_bundle_depends):
+    assert self.is_mac_bundle
+    output = self.ComputeMacBundleOutput(spec)
+    if spec['type'] in ('shared_library', 'loadable_module'):
+      variables = [('version', self.xcode_settings.GetFrameworkVersion())]
+      self.ninja.build(output, 'package_framework', mac_bundle_depends,
+                       variables=variables)
+    else:
+      self.ninja.build(output, 'stamp', mac_bundle_depends)
+    return output
 
   def ComputeMacBundleOutput(self, spec):
     """Return the 'output' (full output path) to a bundle output directory."""
