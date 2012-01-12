@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -129,7 +129,6 @@ cr.define('ntp4', function() {
 
       var bubbleContent = $('login-status-bubble-contents');
       loginBubble.content = bubbleContent;
-      bubbleContent.hidden = false;
 
       // The anchor node won't be updated until updateLogin is called so don't
       // show the bubble yet.
@@ -145,7 +144,6 @@ cr.define('ntp4', function() {
 
       var bubbleContent = $('ntp4-intro-bubble-contents');
       infoBubble.content = bubbleContent;
-      bubbleContent.hidden = false;
 
       var learnMoreLink = infoBubble.querySelector('a');
       learnMoreLink.href = localStrings.getString('ntp4_intro_url');

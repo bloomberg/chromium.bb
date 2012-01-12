@@ -117,14 +117,17 @@
   </div>
 </body>
 
+<!-- A div to hold all the templates, and in the darkness bind them. -->
+<div hidden>
+
 <!-- NTP4 intro bubble -->
-<div id="ntp4-intro-bubble-contents" hidden>
+<div id="ntp4-intro-bubble-contents">
   <div i18n-content="ntp4_intro_message"></div>
   <a i18n-content="learn_more" target="_blank"></a>
 </div>
 
 <!-- Login status bubble -->
-<div id="login-status-bubble-contents" hidden>
+<div id="login-status-bubble-contents">
   <div id="login-status-message-container">
     <span i18n-content="login_status_message"></span>
     <a id="login-status-learn-more" i18n-content="login_status_learn_more"
@@ -141,13 +144,13 @@
 </div>
   
 <!-- Apps promo. -->
-<div id="apps-promo-extras-template" class="apps-promo-extras" hidden>
+<div id="apps-promo-extras-template" class="apps-promo-extras">
   <h3 class="apps-promo-heading"></h3>
   <a class="apps-promo-link g-button-basic"></a>
 </div>
 
 <!-- App Contents w/ Large Icon -->
-<div id="app-large-icon-template" class="app-contents" hidden>
+<div id="app-large-icon-template" class="app-contents">
   <div class="app-img-container">
     <img class="invisible">
   </div>
@@ -155,7 +158,7 @@
 </div>
 
 <!-- App Contents w/ Small Icon -->
-<div id="app-small-icon-template" class="app-contents" hidden>
+<div id="app-small-icon-template" class="app-contents">
   <div class="app-icon-div">
     <div class="app-img-container">
       <img class="invisible">
@@ -163,6 +166,8 @@
     <div class="color-stripe"></div>
   </div>
   <span class="title"></span>
+</div>
+
 </div>
 
 </html>

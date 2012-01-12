@@ -217,7 +217,6 @@ cr.define('ntp4', function() {
           $('app-small-icon-template').cloneNode(true) :
           $('app-large-icon-template').cloneNode(true);
       this.appContents_.id = '';
-      this.appContents_.hidden = false;
       this.appendChild(this.appContents_);
 
       this.appImgContainer_ = this.querySelector('.app-img-container');
@@ -407,7 +406,6 @@ cr.define('ntp4', function() {
       this.appImgContainer_.appendChild(this.appsPromoLogo_);
 
       this.appendChild(this.appsPromoExtras_);
-      this.appsPromoExtras_.hidden = false;
     },
 
     /**
