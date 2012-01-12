@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,7 +14,6 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
-#include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/string_piece.h"
@@ -132,14 +131,12 @@ chromeos::CellularNetwork* GetCellularNetwork(
 // appears.
 class PortalFrameLoadObserver : public content::RenderViewHostObserver {
  public:
-  PortalFrameLoadObserver(RenderViewHost* host, WebUI* webui)
-      : content::RenderViewHostObserver(host), webui_(webui) {
-    DCHECK(webui_);
+  PortalFrameLoadObserver(const base::WeakPtr<MobileSetupUI>& parent,
+                          RenderViewHost* host)
+      : content::RenderViewHostObserver(host), parent_(parent) {
     Send(new ChromeViewMsg_StartFrameSniffer(routing_id(),
                                              UTF8ToUTF16("paymentForm")));
   }
-
-  virtual ~PortalFrameLoadObserver() {}
 
   // IPC::Channel::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) {
@@ -155,16 +152,22 @@ class PortalFrameLoadObserver : public content::RenderViewHostObserver {
 
  private:
   void OnFrameLoadError(int error) {
+    if (!parent_.get())
+      return;
+
     base::FundamentalValue result_value(error);
-    webui_->CallJavascriptFunction(
-        kJsPortalFrameLoadFailedCallback, result_value);
+    parent_->CallJavascriptFunction(kJsPortalFrameLoadFailedCallback,
+                                    result_value);
   }
 
   void OnFrameLoadCompleted() {
-    webui_->CallJavascriptFunction(kJsPortalFrameLoadCompletedCallback);
+    if (!parent_.get())
+      return;
+
+    parent_->CallJavascriptFunction(kJsPortalFrameLoadCompletedCallback);
   }
 
-  WebUI* webui_;
+  base::WeakPtr<MobileSetupUI> parent_;
   DISALLOW_COPY_AND_ASSIGN(PortalFrameLoadObserver);
 };
 
@@ -1386,7 +1389,9 @@ void MobileSetupHandler::StartActivationOnUIThread() {
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-MobileSetupUI::MobileSetupUI(WebContents* contents) : WebUI(contents) {
+MobileSetupUI::MobileSetupUI(WebContents* contents)
+    : WebUI(contents),
+      frame_load_observer_(NULL) {
   chromeos::CellularNetwork* network = GetCellularNetwork();
   std::string service_path = network ? network->service_path() : std::string();
   MobileSetupHandler* handler = new MobileSetupHandler(service_path);
@@ -1402,5 +1407,6 @@ MobileSetupUI::MobileSetupUI(WebContents* contents) : WebUI(contents) {
 void MobileSetupUI::RenderViewCreated(RenderViewHost* host) {
   WebUI::RenderViewCreated(host);
   // Destroyed by the corresponding RenderViewHost.
-  new PortalFrameLoadObserver(host, web_contents()->GetWebUI());
+  frame_load_observer_ =
+      new PortalFrameLoadObserver(AsWeakPtr(), host);
 }
