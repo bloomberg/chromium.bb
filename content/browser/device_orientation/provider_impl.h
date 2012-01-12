@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -61,7 +61,7 @@ class ProviderImpl : public Provider {
                                      const Orientation& orientation2);
 
   enum { kDesiredSamplingIntervalMs = 100 };
-  base::TimeDelta SamplingInterval() const;
+  int SamplingIntervalMs() const;
 
   // The Message Loop on which this object was created.
   // Typically the I/O loop, but may be something else during testing.

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,7 +14,7 @@ using content::AccessTokenStore;
 namespace {
 // The maximum period of time we'll wait for a complete set of device data
 // before sending the request.
-const int kDataCompleteWaitSeconds = 2;
+const int kDataCompleteWaitPeriod = 1000 * 2;  // 2 seconds
 }  // namespace
 
 // static
@@ -213,7 +213,7 @@ bool NetworkLocationProvider::StartProvider(bool high_accuracy) {
       FROM_HERE,
       base::Bind(&NetworkLocationProvider::RequestPosition,
                  weak_factory_.GetWeakPtr()),
-      base::TimeDelta::FromSeconds(kDataCompleteWaitSeconds));
+      kDataCompleteWaitPeriod);
   // Get the device data.
   is_radio_data_complete_ = radio_data_provider_->GetData(&radio_data_);
   is_wifi_data_complete_ = wifi_data_provider_->GetData(&wifi_data_);
