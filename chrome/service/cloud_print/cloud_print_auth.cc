@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -137,8 +137,8 @@ void CloudPrintAuth::OnRefreshTokenResponse(const std::string& access_token,
   // Schedule a task to refresh the access token again when it is about to
   // expire.
   DCHECK(expires_in_seconds > kTokenRefreshGracePeriodSecs);
-  base::TimeDelta refresh_delay = base::TimeDelta::FromSeconds(
-      expires_in_seconds - kTokenRefreshGracePeriodSecs);
+  int64 refresh_delay =
+      (expires_in_seconds - kTokenRefreshGracePeriodSecs)*1000;
   MessageLoop::current()->PostDelayedTask(
       FROM_HERE, base::Bind(&CloudPrintAuth::RefreshAccessToken, this),
       refresh_delay);

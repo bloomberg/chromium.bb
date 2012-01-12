@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -48,11 +48,10 @@ static const char kCUPSNotifyDelete[] = "notify_delete";
 static const int kDefaultIPPServerPort = 631;
 
 // Time interval to check for printer's updates.
-const base::TimeDelta kCheckForPrinterUpdates =
-    base::TimeDelta::FromMinutes(5);
+const int kCheckForPrinterUpdatesMs = 5*60*1000;
 
 // Job update timeout
-const base::TimeDelta kJobUpdateTimeout = base::TimeDelta::FromSeconds(5);
+const int kJobUpdateTimeoutMs = 5000;
 
 // Job id for dry run (it should not affect CUPS job ids, since 0 job-id is
 // invalid in CUPS.
@@ -115,7 +114,7 @@ class PrintSystemCUPS : public PrintSystem {
       const std::string& printer_name,
       printing::PrinterCapsAndDefaults* printer_info);
 
-  base::TimeDelta GetUpdateTimeout() const {
+  int GetUpdateTimeoutMs() const {
     return update_timeout_;
   }
 
@@ -159,7 +158,7 @@ class PrintSystemCUPS : public PrintSystem {
   typedef std::list<PrintServerInfoCUPS> PrintServerList;
   PrintServerList print_servers_;
 
-  base::TimeDelta update_timeout_;
+  int update_timeout_;
   bool initialized_;
   bool printer_enum_succeeded_;
   bool notify_delete_;
@@ -184,7 +183,7 @@ class PrintServerWatcherCUPS
     MessageLoop::current()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&PrintServerWatcherCUPS::CheckForUpdates, this),
-        print_system_->GetUpdateTimeout());
+        print_system_->GetUpdateTimeoutMs());
     return true;
   }
 
@@ -205,7 +204,7 @@ class PrintServerWatcherCUPS
     MessageLoop::current()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&PrintServerWatcherCUPS::CheckForUpdates, this),
-        print_system_->GetUpdateTimeout());
+        print_system_->GetUpdateTimeoutMs());
   }
 
  private:
@@ -259,13 +258,13 @@ class PrinterWatcherCUPS
     MessageLoop::current()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&PrinterWatcherCUPS::JobStatusUpdate, this),
-        kJobUpdateTimeout);
+        kJobUpdateTimeoutMs);
     // Schedule next printer check.
     // TODO(gene): Randomize time for the next printer update.
     MessageLoop::current()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&PrinterWatcherCUPS::PrinterUpdate, this),
-        print_system_->GetUpdateTimeout());
+        print_system_->GetUpdateTimeoutMs());
     return true;
   }
 
@@ -290,7 +289,7 @@ class PrinterWatcherCUPS
     MessageLoop::current()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&PrinterWatcherCUPS::JobStatusUpdate, this),
-        kJobUpdateTimeout);
+        kJobUpdateTimeoutMs);
   }
 
   void PrinterUpdate() {
@@ -312,7 +311,7 @@ class PrinterWatcherCUPS
     MessageLoop::current()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&PrinterWatcherCUPS::PrinterUpdate, this),
-        print_system_->GetUpdateTimeout());
+        print_system_->GetUpdateTimeoutMs());
   }
 
  private:
@@ -390,14 +389,14 @@ class JobSpoolerCUPS : public PrintSystem::JobSpooler {
 };
 
 PrintSystemCUPS::PrintSystemCUPS(const DictionaryValue* print_system_settings)
-    : update_timeout_(kCheckForPrinterUpdates),
+    : update_timeout_(kCheckForPrinterUpdatesMs),
       initialized_(false),
       printer_enum_succeeded_(false),
       notify_delete_(true) {
   if (print_system_settings) {
     int timeout;
     if (print_system_settings->GetInteger(kCUPSUpdateTimeoutMs, &timeout))
-      update_timeout_ = base::TimeDelta::FromMilliseconds(timeout);
+      update_timeout_ = timeout;
 
     bool notify_delete = true;
     if (print_system_settings->GetBoolean(kCUPSNotifyDelete, &notify_delete))
@@ -469,7 +468,7 @@ void PrintSystemCUPS::UpdatePrinters() {
   // Schedule next update.
   MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&PrintSystemCUPS::UpdatePrinters, this), GetUpdateTimeout());
+      base::Bind(&PrintSystemCUPS::UpdatePrinters, this), GetUpdateTimeoutMs());
 }
 
 PrintSystem::PrintSystemResult PrintSystemCUPS::EnumeratePrinters(
