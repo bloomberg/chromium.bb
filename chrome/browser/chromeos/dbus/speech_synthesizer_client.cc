@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -36,25 +36,16 @@ class SpeechSynthesizerClientImpl : public SpeechSynthesizerClient {
   }
   virtual ~SpeechSynthesizerClientImpl() {}
 
-  virtual void Speak(const std::string& text) OVERRIDE {
+  virtual void Speak(const std::string& text,
+                     const std::string& properties) OVERRIDE {
     dbus::MethodCall method_call(speech_synthesis::kSpeechSynthesizerInterface,
                                  speech_synthesis::kSpeak);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(text);
+    writer.AppendString(properties);
     proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
                        base::Bind(&SpeechSynthesizerClientImpl::OnSpeak,
                                   weak_ptr_factory_.GetWeakPtr()));
-  }
-
-  virtual void SetSpeakProperties(const std::string& props) OVERRIDE {
-    dbus::MethodCall method_call(speech_synthesis::kSpeechSynthesizerInterface,
-                                 speech_synthesis::kSetProperties);
-    dbus::MessageWriter writer(&method_call);
-    writer.AppendString(props);
-    proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-                       base::Bind(
-                           &SpeechSynthesizerClientImpl::OnSetSpeakProperties,
-                           weak_ptr_factory_.GetWeakPtr()));
   }
 
   virtual void StopSpeaking() OVERRIDE {
@@ -82,15 +73,6 @@ class SpeechSynthesizerClientImpl : public SpeechSynthesizerClient {
       return;
     }
     VLOG(1) << "Spoke: " << response->ToString();
-  }
-
-  // Called when a response for SetSpeakProperties() is received
-  void OnSetSpeakProperties(dbus::Response* response) {
-    if (!response) {
-      LOG(ERROR) << "Failed to set speak properties.";
-      return;
-    }
-    VLOG(1) << "Set speak properties: " << response->ToString();
   }
 
   // Called when a response for StopSpeaking() is received
@@ -124,8 +106,8 @@ class SpeechSynthesizerClientStubImpl : public SpeechSynthesizerClient {
  public:
   SpeechSynthesizerClientStubImpl() {}
   virtual ~SpeechSynthesizerClientStubImpl() {}
-  virtual void Speak(const std::string& text) OVERRIDE {}
-  virtual void SetSpeakProperties(const std::string& props) OVERRIDE {}
+  virtual void Speak(const std::string& text,
+                     const std::string& properties) OVERRIDE {}
   virtual void StopSpeaking() OVERRIDE {}
   virtual void IsSpeaking(IsSpeakingCallback callback) OVERRIDE {
     callback.Run(false);

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -141,10 +141,7 @@ bool ExtensionTtsPlatformImplChromeOs::Speak(
   chromeos::SpeechSynthesizerClient* speech_synthesizer_client =
       chromeos::DBusThreadManager::Get()->GetSpeechSynthesizerClient();
 
-  if (!options.empty())
-    speech_synthesizer_client->SetSpeakProperties(options);
-
-  speech_synthesizer_client->Speak(utterance);
+  speech_synthesizer_client->Speak(utterance, options);
   if (utterance_id_ >= 0) {
     ExtensionTtsController* controller = ExtensionTtsController::GetInstance();
     controller->OnTtsEvent(utterance_id_, TTS_EVENT_START, 0, std::string());

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -27,12 +27,11 @@ class SpeechSynthesizerClient {
 
   virtual ~SpeechSynthesizerClient();
 
-  // Speaks the specified text.
-  virtual void Speak(const std::string& text) = 0;
-
-  // Sets options for the subsequent speech synthesis requests.
-  // Use the constants below.
-  virtual void SetSpeakProperties(const std::string& props) = 0;
+  // Speaks the specified text with properties.
+  // Use the constants below for properties.
+  // An example of |properties|: "rate=1.0 pitch=1.0"
+  virtual void Speak(const std::string& text,
+                     const std::string& properties) = 0;
 
   // Stops speaking the current utterance.
   virtual void StopSpeaking() = 0;
@@ -45,7 +44,7 @@ class SpeechSynthesizerClient {
   // For normal usage, access the singleton via DBusThreadManager::Get().
   static SpeechSynthesizerClient* Create(dbus::Bus* bus);
 
-  // Constants to be used with SetSpeakProperties.
+  // Constants to be used with the properties argument to Speak.
   static const char kSpeechPropertyLocale[];
   static const char kSpeechPropertyGender[];
   static const char kSpeechPropertyRate[];

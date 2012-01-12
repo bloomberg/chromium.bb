@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,8 +17,7 @@ class MockSpeechSynthesizerClient : public SpeechSynthesizerClient {
   MockSpeechSynthesizerClient();
   virtual ~MockSpeechSynthesizerClient();
 
-  MOCK_METHOD1(Speak, void(const std::string&));
-  MOCK_METHOD1(SetSpeakProperties, void(const std::string&));
+  MOCK_METHOD2(Speak, void(const std::string&, const std::string&));
   MOCK_METHOD0(StopSpeaking, void());
   MOCK_METHOD1(IsSpeaking, void(IsSpeakingCallback));
 };
