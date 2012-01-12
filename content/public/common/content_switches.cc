@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -463,10 +463,6 @@ const char kServiceProcess[]                = "service";
 // Visibly render a border around paint rects in the web page to help debug
 // and study painting behavior.
 const char kShowPaintRects[]                = "show-paint-rects";
-//
-// TODO(scherkus): remove --simple-data-source when our media resource loading
-// is cleaned up and playback testing completed.
-const char kSimpleDataSource[]              = "simple-data-source";
 
 // Runs the renderer and plugins in the same process as the browser
 const char kSingleProcess[]                 = "single-process";

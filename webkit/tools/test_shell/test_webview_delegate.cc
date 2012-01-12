@@ -647,7 +647,7 @@ WebMediaPlayer* TestWebViewDelegate::createMediaPlayer(
   scoped_ptr<media::FilterCollection> collection(
       new media::FilterCollection());
 
-  scoped_ptr<webkit_media::WebMediaPlayerImpl> result(
+  webkit_media::WebMediaPlayerImpl* media_player =
       new webkit_media::WebMediaPlayerImpl(
           client,
           base::WeakPtr<webkit_media::WebMediaPlayerDelegate>(),
@@ -655,11 +655,9 @@ WebMediaPlayer* TestWebViewDelegate::createMediaPlayer(
           NULL,
           message_loop_factory.release(),
           NULL,
-          new media::MediaLog()));
-  if (!result->Initialize(frame, false)) {
-    return NULL;
-  }
-  return result.release();
+          new media::MediaLog());
+  media_player->Initialize(frame);
+  return media_player;
 }
 
 WebApplicationCacheHost* TestWebViewDelegate::createApplicationCacheHost(

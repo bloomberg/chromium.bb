@@ -132,16 +132,11 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       media_log_->CreateEvent(media::MediaLogEvent::WEBMEDIAPLAYER_CREATED));
 }
 
-bool WebMediaPlayerImpl::Initialize(
-    WebKit::WebFrame* frame,
-    bool use_simple_data_source) {
+void WebMediaPlayerImpl::Initialize(WebKit::WebFrame* frame) {
   DCHECK_EQ(main_loop_, MessageLoop::current());
   MessageLoop* pipeline_message_loop =
       message_loop_factory_->GetMessageLoop("PipelineThread");
-  if (!pipeline_message_loop) {
-    NOTREACHED() << "Could not start PipelineThread";
-    return false;
-  }
+  CHECK(pipeline_message_loop) << "Failed to create a new thread";
 
   // Let V8 know we started new thread if we did not did it yet.
   // Made separate task to avoid deletion of player currently being created.
@@ -195,14 +190,8 @@ bool WebMediaPlayerImpl::Initialize(
 
   scoped_ptr<media::CompositeDataSourceFactory> data_source_factory(
       new media::CompositeDataSourceFactory());
-
-  if (use_simple_data_source) {
-    data_source_factory->AddFactory(simple_data_source_factory.Pass());
-    data_source_factory->AddFactory(buffered_data_source_factory.Pass());
-  } else {
-    data_source_factory->AddFactory(buffered_data_source_factory.Pass());
-    data_source_factory->AddFactory(simple_data_source_factory.Pass());
-  }
+  data_source_factory->AddFactory(buffered_data_source_factory.Pass());
+  data_source_factory->AddFactory(simple_data_source_factory.Pass());
 
   scoped_ptr<media::DemuxerFactory> demuxer_factory(
       // TODO(fischman): replace the extra scoped_ptr+release() with Pass() when
@@ -226,8 +215,6 @@ bool WebMediaPlayerImpl::Initialize(
   filter_collection_->AddVideoDecoder(new media::FFmpegVideoDecoder(
       message_loop_factory_->GetMessageLoop("VideoDecoderThread")));
   filter_collection_->AddAudioRenderer(new media::NullAudioRenderer());
-
-  return true;
 }
 
 WebMediaPlayerImpl::~WebMediaPlayerImpl() {

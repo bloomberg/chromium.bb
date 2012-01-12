@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -86,23 +86,18 @@ class WebMediaPlayerImpl
   // Construct a WebMediaPlayerImpl with reference to the client, and media
   // filter collection. By providing the filter collection the implementor can
   // provide more specific media filters that does resource loading and
-  // rendering. |collection| should contain filter factories for:
-  // 1. Data source
-  // 2. Audio renderer
-  // 3. Video renderer (optional)
+  // rendering.
   //
-  // There are some default filters provided by this method:
-  // 1. FFmpeg demuxer
-  // 2. FFmpeg audio decoder
-  // 3. FFmpeg video decoder
-  // 4. Video renderer
-  // 5. Null audio renderer
-  // The video renderer provided by this class is using the graphics context
-  // provided by WebKit to perform renderering. The simple data source does
-  // resource loading by loading the whole resource object into memory. Null
-  // audio renderer is a fake audio device that plays silence. Provider of the
-  // |collection| can override the default filters by adding extra filters to
-  // |collection| before calling this method.
+  // WebMediaPlayerImpl comes packaged with the following media filters:
+  //   - URL fetching
+  //   - Demuxing
+  //   - Software audio/video decoding
+  //   - Video rendering
+  //
+  // Clients are expected to add their platform-specific audio rendering media
+  // filter if they wish to hear any sound coming out the speakers, otherwise
+  // audio data is discarded and media plays back based on wall clock time.
+  //
   // This object takes ownership of the |audio_source_provider|.
   //
   // Callers must call |Initialize()| before they can use the object.
@@ -115,8 +110,10 @@ class WebMediaPlayerImpl
                      media::MediaLog* media_log);
   virtual ~WebMediaPlayerImpl();
 
-  // Finalizes initialization of the object.
-  bool Initialize(WebKit::WebFrame* frame, bool use_simple_data_source);
+  // Finalizes initialization of the object using the given WebFrame.
+  //
+  // TODO(scherkus): fold this into the constructor http://crbug.com/109958
+  void Initialize(WebKit::WebFrame* frame);
 
   virtual void load(const WebKit::WebURL& url);
   virtual void cancelLoad();

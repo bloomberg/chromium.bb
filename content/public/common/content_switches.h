@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -148,7 +148,6 @@ extern const char kRendererStartupDialog[];
 // TODO(jam): this doesn't belong in content.
 CONTENT_EXPORT extern const char kServiceProcess[];
 extern const char kShowPaintRects[];
-extern const char kSimpleDataSource[];
 CONTENT_EXPORT extern const char kSingleProcess[];
 CONTENT_EXPORT extern const char kSkipGpuDataLoading[];
 CONTENT_EXPORT extern const char kTestSandbox[];
