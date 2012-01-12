@@ -80,6 +80,17 @@ class MEDIA_EXPORT GpuVideoDecoder
   virtual void NotifyError(media::VideoDecodeAccelerator::Error error) OVERRIDE;
 
  private:
+  enum State {
+    kNormal,
+    // Avoid the use of "flush" in these enums because the term is overloaded:
+    // Filter::Flush() means drop pending data on the floor, but
+    // VideoDecodeAccelerator::Flush() means drain pending data (Filter::Flush()
+    // actually corresponds to VideoDecodeAccelerator::Reset(), confusingly
+    // enough).
+    kDrainingDecoder,
+    kDecoderDrained,
+  };
+
   // If no demuxer read is in flight and no bitstream buffers are in the
   // decoder, kick some off demuxing/decoding.
   void EnsureDemuxOrDecode();
@@ -87,10 +98,13 @@ class MEDIA_EXPORT GpuVideoDecoder
   // Callback to pass to demuxer_stream_->Read() for receiving encoded bits.
   void RequestBufferDecode(const scoped_refptr<Buffer>& buffer);
 
-  // Deliver a frame to the client.  Because VideoDecoder::Read() promises not
-  // to run its callback before returning, we need an out-of-line helper here.
-  void DeliverFrame(const scoped_refptr<VideoFrame>& frame);
-  void DeliverFrameOutOfLine(const scoped_refptr<VideoFrame>& frame);
+  // Enqueue a frame for later delivery (or drop it on the floor if a
+  // vda->Reset() is in progress) and trigger out-of-line delivery of the oldest
+  // ready frame to the client if there is a pending read.  A NULL |frame|
+  // merely triggers delivery, and requires the ready_video_frames_ queue not be
+  // empty.
+  void EnqueueFrameAndTriggerFrameDelivery(
+      const scoped_refptr<VideoFrame>& frame);
 
   // Indicate the picturebuffer can be reused by the decoder.
   void ReusePictureBuffer(int64 picture_buffer_id);
@@ -140,10 +154,9 @@ class MEDIA_EXPORT GpuVideoDecoder
   // Callbacks that are !is_null() only during their respective operation being
   // asynchronously executed.
   ReadCB pending_read_cb_;
-  base::Closure pending_flush_cb_;
+  base::Closure pending_reset_cb_;
 
-  // Status of the decoder.
-  bool flush_in_progress_;
+  State state_;
 
   // Is a demuxer read in flight?
   bool demuxer_read_in_progress_;

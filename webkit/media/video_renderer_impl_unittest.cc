@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,7 +26,7 @@ using testing::ReturnRef;
 
 namespace webkit_media {
 
-static const int64 kFrameDuration = 10;
+static const int64 kFrameDurationMs = 10;
 static const int kWidth = 320;
 static const int kHeight = 240;
 static const gfx::Size kNaturalSize(kWidth, kHeight);
@@ -96,9 +96,9 @@ class VideoRendererImplTest : public testing::Test {
     for (int i = 0; i < media::limits::kMaxVideoFrames; ++i) {
       WaitForRead();
       if (i == 0)
-        deliver_first_frame.Run(i * kFrameDuration);
+        deliver_first_frame.Run(i * kFrameDurationMs);
       else
-        deliver_remaining_frames.Run(i * kFrameDuration);
+        deliver_remaining_frames.Run(i * kFrameDurationMs);
     }
 
     // Wait for prerolling to complete and paint first frame.
@@ -107,7 +107,10 @@ class VideoRendererImplTest : public testing::Test {
 
     // Advance to remaining frames and paint again.
     Play();
-    SetTime(kFrameDuration);
+    for (int i = 1; i < media::limits::kMaxVideoFrames; ++i) {
+      SetTime(i * kFrameDurationMs);
+      paint.Run();
+    }
     WaitForRead();
     paint.Run();
   }
@@ -127,7 +130,7 @@ class VideoRendererImplTest : public testing::Test {
     EXPECT_CALL(*decoder_, Read(_))
         .WillRepeatedly(Invoke(this, &VideoRendererImplTest::FrameRequested));
 
-    renderer_->Seek(base::TimeDelta::FromMicroseconds(0),
+    renderer_->Seek(base::TimeDelta::FromMilliseconds(0),
                     base::Bind(&VideoRendererImplTest::PrerollDone,
                                base::Unretained(this),
                                media::PIPELINE_OK));
@@ -142,7 +145,7 @@ class VideoRendererImplTest : public testing::Test {
 
   void SetTime(int64 timestamp) {
     base::AutoLock l(lock_);
-    time_ = base::TimeDelta::FromMicroseconds(timestamp);
+    time_ = base::TimeDelta::FromMilliseconds(timestamp);
   }
 
   base::TimeDelta GetTime() {
@@ -186,8 +189,9 @@ class VideoRendererImplTest : public testing::Test {
   void DeliverFrame(int width, int height, int64 timestamp) {
     scoped_refptr<VideoFrame> video_frame =
         VideoFrame::CreateBlackFrame(width, height);
-    video_frame->SetTimestamp(base::TimeDelta::FromMicroseconds(timestamp));
-    video_frame->SetDuration(base::TimeDelta::FromMicroseconds(kFrameDuration));
+    video_frame->SetTimestamp(base::TimeDelta::FromMilliseconds(timestamp));
+    video_frame->SetDuration(
+        base::TimeDelta::FromMilliseconds(kFrameDurationMs));
 
     VideoDecoder::ReadCB read_cb;
     {
