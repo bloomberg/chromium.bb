@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -91,7 +91,7 @@ bool EnvQueryStr(const wchar_t* key_name, std::wstring* value) {
 // These constants are used by the PreRead experiment.
 const wchar_t kPreReadRegistryValue[] = L"PreReadExperimentGroup";
 const int kPreReadExpiryYear = 2012;
-const int kPreReadExpiryMonth = 1;
+const int kPreReadExpiryMonth = 7;
 const int kPreReadExpiryDay = 1;
 
 bool PreReadShouldRun() {
