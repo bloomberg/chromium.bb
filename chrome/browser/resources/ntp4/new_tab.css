@@ -1,4 +1,4 @@
-/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -294,6 +294,15 @@ html[dir='rtl'] #trash {
 
 html[dir='rtl'] #footer.showing-trash-mode #trash.drag-target .lid {
   -webkit-transform: rotate(45deg);
+}
+
+#fontMeasuringDiv {
+  /* The font attributes match the nav inputs. */
+  font-size: 8pt;
+  font-weight: bold;
+  pointer-events: none;
+  position: absolute;
+  visibility: hidden;
 }
 
 /* Page switcher buttons. *****************************************************/

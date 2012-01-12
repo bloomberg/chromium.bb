@@ -94,6 +94,8 @@ cr.define('ntp4', function() {
   function onLoad() {
     cr.enablePlatformSpecificCSSRules();
 
+    measureNavDots();
+
     // Load the current theme colors.
     themeChanged();
 
@@ -168,6 +170,23 @@ cr.define('ntp4', function() {
                   [rect.left, rect.top, rect.width, rect.height]);
     });
     chrome.send('initializeSyncLogin');
+  }
+
+  /**
+   * Fills in an invisible div with the 'Most Visited' string so that
+   * its length may be measured and the nav dots sized accordingly.
+   */
+  function measureNavDots() {
+    var measuringDiv = $('fontMeasuringDiv');
+    measuringDiv.textContent = localStrings.getString('mostvisited');
+    var pxWidth = Math.max(measuringDiv.clientWidth * 1.15, 80);
+
+    var styleElement = document.createElement('style');
+    styleElement.type = 'text/css';
+    // max-width is used because if we run out of space, the nav dots will be
+    // shrunk.
+    styleElement.textContent = '.dot { max-width: ' + pxWidth + 'px; }';
+    document.querySelector('head').appendChild(styleElement);
   }
 
   // TODO(estade): rename newtab.css to new_tab_theme.css
