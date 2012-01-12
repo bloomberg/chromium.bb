@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -42,7 +42,7 @@ public:
   void WindowControllerClosed();
 
   // HtmlDialogUIDelegate declarations.
-  virtual bool IsDialogModal() const OVERRIDE;
+  virtual ui::ModalType GetDialogModalType() const OVERRIDE;
   virtual string16 GetDialogTitle() const OVERRIDE;
   virtual GURL GetDialogContentURL() const OVERRIDE;
   virtual void GetWebUIMessageHandlers(
@@ -135,12 +135,12 @@ bool HtmlDialogWindowDelegateBridge::DelegateOnDialogClosed(
 // All of these functions check for NULL first since delegate_ is set
 // to NULL when the window is closed.
 
-bool HtmlDialogWindowDelegateBridge::IsDialogModal() const {
+ui::ModalType HtmlDialogWindowDelegateBridge::GetDialogModalType() const {
   // TODO(akalin): Support modal dialog boxes.
-  if (delegate_ && delegate_->IsDialogModal()) {
+  if (delegate_ && delegate_->GetDialogModalType() != ui::MODAL_TYPE_NONE) {
     LOG(WARNING) << "Modal HTML dialogs are not supported yet";
   }
-  return false;
+  return ui::MODAL_TYPE_NONE;
 }
 
 string16 HtmlDialogWindowDelegateBridge::GetDialogTitle() const {

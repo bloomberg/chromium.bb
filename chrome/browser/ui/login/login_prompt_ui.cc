@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,6 +26,10 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/size.h"
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/login/user_manager.h"
+#endif
 
 using content::BrowserThread;
 using content::WebContents;
@@ -89,8 +93,14 @@ class LoginHandlerHtmlDelegate : public HtmlDialogUIDelegate,
   }
 
   // HtmlDialogUIDelegate methods:
-  virtual bool IsDialogModal() const OVERRIDE {
-    return true;
+  virtual ui::ModalType GetDialogModalType() const OVERRIDE {
+#if defined(OS_CHROMEOS)
+    return chromeos::UserManager::Get()->user_is_logged_in() ?
+           ui::MODAL_TYPE_WINDOW :
+           ui::MODAL_TYPE_SYSTEM;
+#else
+    return ui::MODAL_TYPE_WINDOW;
+#endif
   }
 
   virtual string16 GetDialogTitle() const OVERRIDE {

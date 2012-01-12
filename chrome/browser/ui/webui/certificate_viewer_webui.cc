@@ -101,8 +101,8 @@ void CertificateViewerDialog::Show(gfx::NativeWindow parent) {
 #endif
 }
 
-bool CertificateViewerDialog::IsDialogModal() const {
-  return false;
+ui::ModalType CertificateViewerDialog::GetDialogModalType() const {
+  return ui::MODAL_TYPE_NONE;
 }
 
 string16 CertificateViewerDialog::GetDialogTitle() const {

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -115,7 +115,7 @@ void CloudPrintSigninFlowHandler::StoreDialogSize() {
 class CloudPrintSigninDelegate : public HtmlDialogUIDelegate {
  public:
   explicit CloudPrintSigninDelegate(WebContents* parent_tab);
-  virtual bool IsDialogModal() const OVERRIDE;
+  virtual ui::ModalType GetDialogModalType() const OVERRIDE;
   virtual string16 GetDialogTitle() const OVERRIDE;
   virtual GURL GetDialogContentURL() const OVERRIDE;
   virtual void GetWebUIMessageHandlers(
@@ -134,8 +134,8 @@ CloudPrintSigninDelegate::CloudPrintSigninDelegate(WebContents* parent_tab)
     : parent_tab_(parent_tab) {
 }
 
-bool CloudPrintSigninDelegate::IsDialogModal() const {
-  return true;
+ui::ModalType CloudPrintSigninDelegate::GetDialogModalType() const {
+  return ui::MODAL_TYPE_WINDOW;
 }
 
 string16 CloudPrintSigninDelegate::GetDialogTitle() const {

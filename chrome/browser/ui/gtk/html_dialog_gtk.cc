@@ -33,7 +33,8 @@ gfx::NativeWindow ShowHtmlDialog(gfx::NativeWindow parent, Profile* profile,
   // Ignore style for now. The style parameter only used in the implementation
   // in html_dialog_view.cc file.
   // TODO (bshe): Add style parameter to HtmlDialogGtk.
-  DCHECK(!profile->IsOffTheRecord() || delegate->IsDialogModal());
+  DCHECK(!profile->IsOffTheRecord() ||
+         delegate->GetDialogModalType() != ui::MODAL_TYPE_NONE);
   HtmlDialogGtk* html_dialog =
       new HtmlDialogGtk(profile, delegate, parent);
   return html_dialog->InitDialog();
@@ -79,8 +80,8 @@ HtmlDialogGtk::~HtmlDialogGtk() {
 ////////////////////////////////////////////////////////////////////////////////
 // HtmlDialogUIDelegate implementation:
 
-bool HtmlDialogGtk::IsDialogModal() const {
-  return delegate_ ? delegate_->IsDialogModal() : false;
+ui::ModalType HtmlDialogGtk::GetDialogModalType() const {
+  return delegate_ ? delegate_->GetDialogModalType() : ui::MODAL_TYPE_NONE;
 }
 
 string16 HtmlDialogGtk::GetDialogTitle() const {
@@ -189,7 +190,7 @@ gfx::NativeWindow HtmlDialogGtk::InitDialog() {
       content::PAGE_TRANSITION_START_PAGE,
       std::string());
   GtkDialogFlags flags = GTK_DIALOG_NO_SEPARATOR;
-  if (delegate_->IsDialogModal())
+  if (delegate_->GetDialogModalType() != ui::MODAL_TYPE_NONE)
     flags = static_cast<GtkDialogFlags>(flags | GTK_DIALOG_MODAL);
 
   dialog_ = gtk_dialog_new_with_buttons(

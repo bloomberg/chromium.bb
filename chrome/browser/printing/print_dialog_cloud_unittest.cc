@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -108,8 +108,8 @@ class MockCloudPrintFlowHandler
 
 class MockCloudPrintHtmlDialogDelegate : public CloudPrintHtmlDialogDelegate {
  public:
-  MOCK_CONST_METHOD0(IsDialogModal,
-      bool());
+  MOCK_CONST_METHOD0(GetDialogModalType,
+      ui::ModalType());
   MOCK_CONST_METHOD0(GetDialogTitle,
       string16());
   MOCK_CONST_METHOD0(GetDialogContentURL,
@@ -328,7 +328,7 @@ class CloudPrintHtmlDialogDelegateTest : public testing::Test {
 };
 
 TEST_F(CloudPrintHtmlDialogDelegateTest, BasicChecks) {
-  EXPECT_TRUE(delegate_->IsDialogModal());
+  EXPECT_EQ(ui::MODAL_TYPE_WINDOW, delegate_->GetDialogModalType());
   EXPECT_THAT(delegate_->GetDialogContentURL().spec(),
               StrEq(chrome::kChromeUICloudPrintResourcesURL));
   EXPECT_TRUE(delegate_->GetDialogTitle().empty());

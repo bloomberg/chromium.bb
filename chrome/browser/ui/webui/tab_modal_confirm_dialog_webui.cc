@@ -60,8 +60,8 @@ TabModalConfirmDialogWebUI::TabModalConfirmDialogWebUI(
 
 TabModalConfirmDialogWebUI::~TabModalConfirmDialogWebUI() {}
 
-bool TabModalConfirmDialogWebUI::IsDialogModal() const {
-  return true;
+ui::ModalType TabModalConfirmDialogWebUI::GetDialogModalType() const {
+  return ui::MODAL_TYPE_WINDOW;
 }
 
 string16 TabModalConfirmDialogWebUI::GetDialogTitle() const {

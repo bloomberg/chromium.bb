@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -192,9 +192,9 @@ string16 CloudPrintSetupFlow::GetDialogTitle() const {
       l10n_util::GetStringUTF16(IDS_GOOGLE_CLOUD_PRINT));
 }
 
-bool CloudPrintSetupFlow::IsDialogModal() const {
+ui::ModalType CloudPrintSetupFlow::GetDialogModalType() const {
   // We are always modeless.
-  return false;
+  return ui::MODAL_TYPE_NONE;
 }
 
 bool CloudPrintSetupFlow::ShouldShowDialogTitle() const {

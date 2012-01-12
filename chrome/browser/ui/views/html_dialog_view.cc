@@ -39,7 +39,8 @@ gfx::NativeWindow ShowHtmlDialog(gfx::NativeWindow parent,
   // It's not always safe to display an html dialog with an off the record
   // profile.  If the last browser with that profile is closed it will go
   // away.
-  DCHECK(!profile->IsOffTheRecord() || delegate->IsDialogModal());
+  DCHECK(!profile->IsOffTheRecord() ||
+         delegate->GetDialogModalType() != ui::MODAL_TYPE_NONE);
   HtmlDialogView* html_view = new HtmlDialogView(profile, delegate);
   browser::CreateViewsWindow(parent, html_view, style);
   html_view->InitDialog();
@@ -102,9 +103,7 @@ bool HtmlDialogView::CanResize() const {
 }
 
 ui::ModalType HtmlDialogView::GetModalType() const {
-  if (delegate_ && delegate_->IsDialogModal())
-    return ui::MODAL_TYPE_WINDOW;
-  return ui::MODAL_TYPE_NONE;
+  return GetDialogModalType();
 }
 
 string16 HtmlDialogView::GetWindowTitle() const {
@@ -144,8 +143,10 @@ const views::Widget* HtmlDialogView::GetWidget() const {
 ////////////////////////////////////////////////////////////////////////////////
 // HtmlDialogUIDelegate implementation:
 
-bool HtmlDialogView::IsDialogModal() const {
-  return GetModalType() != ui::MODAL_TYPE_NONE;
+ui::ModalType HtmlDialogView::GetDialogModalType() const {
+  if (delegate_)
+    return delegate_->GetDialogModalType();
+  return ui::MODAL_TYPE_NONE;
 }
 
 string16 HtmlDialogView::GetDialogTitle() const {

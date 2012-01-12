@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -43,8 +43,8 @@ class TaskManagerDialogImpl : public HtmlDialogUIDelegate {
   void OnCloseDialog();
 
   // Overridden from HtmlDialogUIDelegate:
-  virtual bool IsDialogModal() const OVERRIDE {
-    return false;
+  virtual ui::ModalType GetDialogModalType() const OVERRIDE {
+    return ui::MODAL_TYPE_NONE;
   }
   virtual string16 GetDialogTitle() const OVERRIDE {
     return l10n_util::GetStringUTF16(IDS_TASK_MANAGER_TITLE);

@@ -65,7 +65,7 @@ class HtmlDialogView
   virtual const views::Widget* GetWidget() const OVERRIDE;
 
   // Overridden from HtmlDialogUIDelegate:
-  virtual bool IsDialogModal() const OVERRIDE;
+  virtual ui::ModalType GetDialogModalType() const OVERRIDE;
   virtual string16 GetDialogTitle() const OVERRIDE;
   virtual GURL GetDialogContentURL() const OVERRIDE;
   virtual void GetWebUIMessageHandlers(

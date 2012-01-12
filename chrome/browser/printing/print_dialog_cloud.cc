@@ -512,8 +512,8 @@ CloudPrintHtmlDialogDelegate::~CloudPrintHtmlDialogDelegate() {
   }
 }
 
-bool CloudPrintHtmlDialogDelegate::IsDialogModal() const {
-    return modal_;
+ui::ModalType CloudPrintHtmlDialogDelegate::GetDialogModalType() const {
+    return modal_ ? ui::MODAL_TYPE_WINDOW : ui::MODAL_TYPE_NONE;
 }
 
 string16 CloudPrintHtmlDialogDelegate::GetDialogTitle() const {

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,7 +31,7 @@ namespace {
 
 class MockDelegate : public HtmlDialogUIDelegate {
 public:
-  MOCK_CONST_METHOD0(IsDialogModal, bool());
+  MOCK_CONST_METHOD0(GetDialogModalType, ui::ModalType());
   MOCK_CONST_METHOD0(GetDialogTitle, string16());
   MOCK_CONST_METHOD0(GetDialogContentURL, GURL());
   MOCK_CONST_METHOD1(GetWebUIMessageHandlers,

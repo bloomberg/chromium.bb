@@ -101,7 +101,7 @@ views::View* NetworkConfigView::GetExtraView() {
 }
 
 ui::ModalType NetworkConfigView::GetModalType() const {
-  return ui::MODAL_TYPE_WINDOW;
+  return ui::MODAL_TYPE_SYSTEM;
 }
 
 views::View* NetworkConfigView::GetContentsView() {

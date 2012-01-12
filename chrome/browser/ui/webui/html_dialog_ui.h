@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,7 @@
 #include "base/string16.h"
 #include "content/browser/webui/web_ui.h"
 #include "googleurl/src/gurl.h"
+#include "ui/base/ui_base_types.h"
 #include "ui/gfx/rect.h"
 
 struct ContextMenuParams;
@@ -33,7 +34,7 @@ class Size;
 class HtmlDialogUIDelegate {
  public:
   // Returns true if the contents needs to be run in a modal dialog.
-  virtual bool IsDialogModal() const = 0;
+  virtual ui::ModalType GetDialogModalType() const = 0;
 
   // Returns the title of the dialog.
   virtual string16 GetDialogTitle() const = 0;

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -60,7 +60,7 @@ class PrintPreviewTabDelegate : public HtmlDialogUIDelegate {
   explicit PrintPreviewTabDelegate(TabContentsWrapper* initiator_tab);
   virtual ~PrintPreviewTabDelegate();
 
-  virtual bool IsDialogModal() const OVERRIDE;
+  virtual ui::ModalType GetDialogModalType() const OVERRIDE;
   virtual string16 GetDialogTitle() const OVERRIDE;
   virtual GURL GetDialogContentURL() const OVERRIDE;
   virtual void GetWebUIMessageHandlers(
@@ -99,10 +99,10 @@ PrintPreviewTabDelegate::PrintPreviewTabDelegate(
 PrintPreviewTabDelegate::~PrintPreviewTabDelegate() {
 }
 
-bool PrintPreviewTabDelegate::IsDialogModal() const {
+ui::ModalType PrintPreviewTabDelegate::GetDialogModalType() const {
   // Not used, returning dummy value.
   NOTREACHED();
-  return true;
+  return ui::MODAL_TYPE_WINDOW;
 }
 
 string16 PrintPreviewTabDelegate::GetDialogTitle() const {

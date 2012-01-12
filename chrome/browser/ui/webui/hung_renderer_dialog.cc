@@ -151,8 +151,8 @@ void HungRendererDialog::HideDialog(WebContents* contents) {
   handler_->CloseDialog();
 }
 
-bool HungRendererDialog::IsDialogModal() const {
-  return false;
+ui::ModalType HungRendererDialog::GetDialogModalType() const {
+  return ui::MODAL_TYPE_NONE;
 }
 
 string16 HungRendererDialog::GetDialogTitle() const {

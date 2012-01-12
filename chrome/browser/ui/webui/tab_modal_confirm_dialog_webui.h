@@ -30,7 +30,7 @@ class TabModalConfirmDialogWebUI : public HtmlDialogUIDelegate {
       TabContentsWrapper* wrapper);
 
   // HtmlDialogUIDelegate implementation.
-  virtual bool IsDialogModal() const OVERRIDE;
+  virtual ui::ModalType GetDialogModalType() const OVERRIDE;
   virtual string16 GetDialogTitle() const OVERRIDE;
   virtual GURL GetDialogContentURL() const OVERRIDE;
   virtual void GetWebUIMessageHandlers(

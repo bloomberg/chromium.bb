@@ -163,8 +163,8 @@ SSLClientCertificateSelectorWebUI::~SSLClientCertificateSelectorWebUI() {
 }
 
 // HtmlDialogUIDelegate methods
-bool SSLClientCertificateSelectorWebUI::IsDialogModal() const {
-  return true;
+ui::ModalType SSLClientCertificateSelectorWebUI::GetDialogModalType() const {
+  return ui::MODAL_TYPE_WINDOW;
 }
 
 string16 SSLClientCertificateSelectorWebUI::GetDialogTitle() const {
