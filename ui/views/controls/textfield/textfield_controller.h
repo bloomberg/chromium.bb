@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/string16.h"
+#include "ui/views/views_export.h"
 
 namespace ui {
 class OSExchangeData;
@@ -19,7 +20,7 @@ class Textfield;
 
 // This defines the callback interface for other code to be notified of changes
 // in the state of a text field.
-class TextfieldController {
+class VIEWS_EXPORT TextfieldController {
  public:
   // This method is called whenever the text in the field is changed by the
   // user. It won't be called if the text is changed by calling
