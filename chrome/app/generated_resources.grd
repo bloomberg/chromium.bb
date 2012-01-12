@@ -9111,42 +9111,85 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
          desc="Tooltip text for the button that removes/blacklists the thumbnail. Once removed the thumbnail will not show up on the new tab page again.">
         Don't show on this page
       </message>
-      <message name="IDS_NEW_TAB_APP_OPTIONS"
-               desc="Text for the button that takes the user to the options of an app.">
-        Options
-      </message>
-      <message name="IDS_NEW_TAB_APP_DISABLE_NOTIFICATIONS"
-               desc="Text for the context menu item to disable app notifications">
-        Disable notifications
-      </message>
-      <message name="IDS_NEW_TAB_APP_ENABLE_NOTIFICATIONS"
-               desc="Text for the context menu item to enable app notifications">
-        Enable notifications
-      </message>
-      <message name="IDS_NEW_TAB_APP_ALLOW_NOTIFICATIONS"
-               desc="Text for the context menu item to allow app notifications">
-        Allow notifications
-      </message>
-      <message name="IDS_NEW_TAB_APP_CREATE_SHORTCUT"
-               desc="Text for the context menu item that creates an app shortcut.">
-        Create shortcut
-      </message>
-      <message name="IDS_APP_CONTEXT_MENU_OPEN_PINNED"
-               desc="Text for the button that opens the app in a pinned tab.">
-        Open as pinned tab
-      </message>
-      <message name="IDS_APP_CONTEXT_MENU_OPEN_REGULAR"
-               desc="Text for the button that opens the app in a regular tab.">
-        Open as regular tab
-      </message>
-      <message name="IDS_APP_CONTEXT_MENU_OPEN_WINDOW"
-               desc="Text for the button that opens the app in an app window.">
-        Open as window
-      </message>
-      <message name="IDS_APP_CONTEXT_MENU_OPEN_FULLSCREEN"
-               desc="Text for the button that opens the app full screen.">
-        Open full screen
-      </message>
+
+      <if expr="not pp_ifdef('use_titlecase')">
+        <message name="IDS_NEW_TAB_APP_OPTIONS"
+                 desc="Text for the context menu item that takes the user to the options of an app. (In sentence case.)">
+          Options
+        </message>
+        <message name="IDS_NEW_TAB_APP_DISABLE_NOTIFICATIONS"
+                 desc="Text for the context menu item to disable app notifications (In sentence case.)">
+          Disable notifications
+        </message>
+        <message name="IDS_NEW_TAB_APP_ENABLE_NOTIFICATIONS"
+                 desc="Text for the context menu item to enable app notifications (In sentence case.)">
+          Enable notifications
+        </message>
+        <message name="IDS_NEW_TAB_APP_ALLOW_NOTIFICATIONS"
+                 desc="Text for the context menu item to allow app notifications (In sentence case.)">
+          Allow notifications
+        </message>
+        <message name="IDS_NEW_TAB_APP_CREATE_SHORTCUT"
+                 desc="Text for the context menu item that creates an app shortcut. (In sentence case.)">
+          Create shortcut
+        </message>
+        <message name="IDS_APP_CONTEXT_MENU_OPEN_PINNED"
+                 desc="Text for the button that opens the app in a pinned tab. (In sentence case.)">
+          Open as pinned tab
+        </message>
+        <message name="IDS_APP_CONTEXT_MENU_OPEN_REGULAR"
+                 desc="Text for the button that opens the app in a regular tab. (In sentence case.)">
+          Open as regular tab
+        </message>
+        <message name="IDS_APP_CONTEXT_MENU_OPEN_WINDOW"
+                 desc="Text for the button that opens the app in an app window. (In sentence case.)">
+          Open as window
+        </message>
+        <message name="IDS_APP_CONTEXT_MENU_OPEN_FULLSCREEN"
+                 desc="Text for the button that opens the app full screen. (In sentence case.)">
+          Open full screen
+        </message>
+      </if>
+
+      <if expr="pp_ifdef('use_titlecase')">
+        <message name="IDS_NEW_TAB_APP_OPTIONS"
+                 desc="Text for the context menu item that takes the user to the options of an app. (In title case.)">
+          Options
+        </message>
+        <message name="IDS_NEW_TAB_APP_DISABLE_NOTIFICATIONS"
+                 desc="Text for the context menu item to disable app notifications (In title case.)">
+          Disable Notifications
+        </message>
+        <message name="IDS_NEW_TAB_APP_ENABLE_NOTIFICATIONS"
+                 desc="Text for the context menu item to enable app notifications (In title case.)">
+          Enable Notifications
+        </message>
+        <message name="IDS_NEW_TAB_APP_ALLOW_NOTIFICATIONS"
+                 desc="Text for the context menu item to allow app notifications (In title case.)">
+          Allow Notifications
+        </message>
+        <message name="IDS_NEW_TAB_APP_CREATE_SHORTCUT"
+                 desc="Text for the context menu item that creates an app shortcut. (In title case.)">
+          Create Shortcut
+        </message>
+        <message name="IDS_APP_CONTEXT_MENU_OPEN_PINNED"
+                 desc="Text for the button that opens the app in a pinned tab. (In title case.)">
+          Open as Pinned Tab
+        </message>
+        <message name="IDS_APP_CONTEXT_MENU_OPEN_REGULAR"
+                 desc="Text for the button that opens the app in a regular tab. (In title case.)">
+          Open as Regular Tab
+        </message>
+        <message name="IDS_APP_CONTEXT_MENU_OPEN_WINDOW"
+                 desc="Text for the button that opens the app in an app window. (In title case.)">
+          Open as Window
+        </message>
+        <message name="IDS_APP_CONTEXT_MENU_OPEN_FULLSCREEN"
+                 desc="Text for the button that opens the app full screen. (In title case.)">
+          Open Full Screen
+        </message>
+      </if>
+
       <if expr="pp_ifdef('chromeos')">
         <message name="IDS_NEW_TAB_CLOSE_MENU_EXPAND" desc="Text for the closed section menu footer that will restore the section.">
           Expand
@@ -9157,12 +9200,22 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
       <message name="IDS_APP_NOTIFICATION_NEED_SIGNIN" desc="Displayed when an app wants to send server push notifictions to Chrome, but the user isn't signed in to the browser (which is required for the feature to work).">
         <ph name="APP_NAME">$1<ex>Google News</ex></ph> would like to send notifications, but you need to be signed in to Chrome.
       </message>
-      <message name="IDS_APP_NOTIFICATION_NEED_SIGNIN_ACCEPT" desc="Text shown for the button that will take you to sign in to the browser.">
-        Sign in now
-      </message>
-      <message name="IDS_APP_NOTIFICATION_NEED_SIGNIN_CANCEL" desc="Text shown for the button to indicate the user is not interested in the feature.">
-        No thanks
-      </message>
+      <if expr="not pp_ifdef('use_titlecase')">
+        <message name="IDS_APP_NOTIFICATION_NEED_SIGNIN_ACCEPT" desc="Text shown for the button that will take you to sign in to the browser. (In sentence case.)">
+          Sign in now
+        </message>
+        <message name="IDS_APP_NOTIFICATION_NEED_SIGNIN_CANCEL" desc="Text shown for the button to indicate the user is not interested in the feature. (In sentence case.)">
+          No thanks
+        </message>
+      </if>
+      <if expr="pp_ifdef('use_titlecase')">
+        <message name="IDS_APP_NOTIFICATION_NEED_SIGNIN_ACCEPT" desc="Text shown for the button that will take you to sign in to the browser. (In title case.)">
+          Sign in Now
+        </message>
+        <message name="IDS_APP_NOTIFICATION_NEED_SIGNIN_CANCEL" desc="Text shown for the button to indicate the user is not interested in the feature. (In title case.)">
+          No Thanks
+        </message>
+      </if>
 
       <!-- Offline page  -->
       <if expr="pp_ifdef('chromeos')">
