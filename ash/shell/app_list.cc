@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -146,20 +146,6 @@ void BuildAppListModel(ash::AppListModel* model) {
 
 ash::AppListViewDelegate* CreateAppListViewDelegate() {
   return new ExampleAppListViewDelegate;
-}
-
-// TODO(xiyuan): Remove this.
-void CreateAppList(
-    const gfx::Rect& bounds,
-    const ash::ShellDelegate::SetWidgetCallback& callback) {
-  ash::AppListModel* model = new ash::AppListModel;
-  BuildAppListModel(model);
-
-  new ash::AppListView(
-      model,
-      CreateAppListViewDelegate(),
-      bounds,
-      callback);
 }
 
 }  // namespace shell

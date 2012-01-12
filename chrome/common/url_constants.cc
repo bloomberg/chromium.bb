@@ -113,10 +113,6 @@ const char kChromeUITabModalConfirmDialogURL[] =
     "chrome://tab-modal-confirm-dialog/";
 #endif
 
-#if defined(USE_AURA)
-const char kChromeUIAppListURL[] = "chrome://app-list/";
-#endif
-
 // Add Chrome UI hosts here, in alphabetical order.
 // Add hosts to kChromePaths in browser_about_handler.cc to be listed by
 // chrome://chrome-urls (about:about) and the built-in AutocompleteProvider.
@@ -244,10 +240,6 @@ const char kChromeUIFileManagerHost[] = "files";
 const char kChromeUICollectedCookiesHost[] = "collected-cookies";
 const char kChromeUIHttpAuthHost[] = "http-auth";
 const char kChromeUITabModalConfirmDialogHost[] = "tab-modal-confirm-dialog";
-#endif
-
-#if defined(USE_AURA)
-const char kChromeUIAppListHost[] = "app-list";
 #endif
 
 // Option sub pages.

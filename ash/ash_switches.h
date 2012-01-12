@@ -15,7 +15,6 @@ namespace switches {
 ASH_EXPORT extern const char kAuraGoogleDialogFrames[];
 ASH_EXPORT extern const char kAuraNoShadows[];
 ASH_EXPORT extern const char kAuraTranslucentFrames[];
-ASH_EXPORT extern const char kAuraViewsAppList[];
 ASH_EXPORT extern const char kAuraWindowMode[];
 ASH_EXPORT extern const char kAuraWindowModeCompact[];
 ASH_EXPORT extern const char kAuraWindowModeNormal[];

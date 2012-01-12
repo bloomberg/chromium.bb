@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,6 @@
 
 #include "ash/app_list/app_list_item_view_listener.h"
 #include "ash/ash_export.h"
-#include "ash/shell_delegate.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/views/widget/widget_delegate.h"
 
@@ -29,8 +28,7 @@ class ASH_EXPORT AppListView : public views::WidgetDelegateView,
   // Takes ownership of |model| and |delegate|.
   AppListView(AppListModel* model,
               AppListViewDelegate* delegate,
-              const gfx::Rect& bounds,
-              const ShellDelegate::SetWidgetCallback& callback);
+              const gfx::Rect& bounds);
   virtual ~AppListView();
 
   // Closes app list.
@@ -38,8 +36,7 @@ class ASH_EXPORT AppListView : public views::WidgetDelegateView,
 
  private:
   // Initializes the window.
-  void Init(const gfx::Rect& bounds,
-            const ShellDelegate::SetWidgetCallback& callback);
+  void Init(const gfx::Rect& bounds);
 
   // Overridden from views::View:
   virtual bool OnKeyPressed(const views::KeyEvent& event) OVERRIDE;

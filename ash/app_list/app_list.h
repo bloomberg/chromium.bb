@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,6 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/memory/weak_ptr.h"
 #include "ui/aura/event_filter.h"
 #include "ui/gfx/compositor/layer_animation_observer.h"
 #include "ui/views/widget/widget.h"
@@ -70,9 +69,6 @@ class AppList : public aura::EventFilter,
 
   // App list widget we get from ShellDelegate.
   views::Widget* widget_;
-
-  // A weak ptr factory for callbacks that ShellDelegate used to set widget.
-  base::WeakPtrFactory<AppList> set_widget_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AppList);
 };

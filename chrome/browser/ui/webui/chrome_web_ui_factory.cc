@@ -80,9 +80,7 @@
 #include "chrome/browser/ui/webui/certificate_viewer_ui.h"
 #endif
 
-#if defined(USE_AURA)
-#include "chrome/browser/ui/webui/aura/app_list_ui.h"
-#else
+#if !defined(USE_AURA)
 #include "chrome/browser/ui/webui/input_window_dialog_ui.h"
 #endif
 
@@ -283,10 +281,7 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebContents* web_contents,
   }
 #endif
 
-#if defined(USE_AURA)
-  if (url.host() == chrome::kChromeUIAppListHost)
-    return &NewWebUI<AppListUI>;
-#else
+#if !defined(USE_AURA)
   if (url.host() == chrome::kChromeUIInputWindowDialogHost)
     return &NewWebUI<InputWindowDialogUI>;
 #endif

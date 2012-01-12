@@ -174,9 +174,6 @@
         <include name="IDR_HTTP_AUTH_HTML" file="resources\http_auth.html" flattenhtml="true" type="BINDATA" />
         <include name="IDR_TAB_MODAL_CONFIRM_DIALOG_HTML" file="resources\tab_modal_confirm_dialog.html" flattenhtml="true" type="BINDATA" />
       </if>
-      <if expr="pp_ifdef('use_aura')">
-        <include name="IDR_APP_LIST_HTML" file="resources\aura\app_list\app_list.html" flattenhtml="true" type="BINDATA" />
-      </if>
       <if expr="pp_ifdef('chromeos') and pp_ifdef('_google_chrome')">
         <include name="IDR_HELP_MANIFEST" file="resources\help_app\manifest.json" type="BINDATA" />
       </if>

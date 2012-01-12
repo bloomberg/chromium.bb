@@ -12,7 +12,6 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/views/aura/app_list_window.h"
 #include "chrome/browser/ui/views/aura/app_list/app_list_model_builder.h"
 #include "chrome/browser/ui/views/aura/app_list/app_list_view_delegate.h"
 #include "chrome/browser/ui/views/aura/status_area_host_aura.h"
@@ -66,13 +65,6 @@ views::Widget* ChromeShellDelegate::CreateStatusArea() {
   views::Widget* status_area_widget =
       status_area_host_.get()->CreateStatusArea();
   return status_area_widget;
-}
-
-void ChromeShellDelegate::RequestAppListWidget(
-    const gfx::Rect& bounds,
-    const SetWidgetCallback& callback) {
-  // AppListWindow deletes itself when closed.
-  new AppListWindow(bounds, callback);
 }
 
 void ChromeShellDelegate::BuildAppListModel(ash::AppListModel* model) {

@@ -57,16 +57,6 @@ class ShellDelegateImpl : public ash::ShellDelegate {
     return ash::internal::CreateStatusArea();
   }
 
-  virtual void RequestAppListWidget(
-      const gfx::Rect& bounds,
-      const SetWidgetCallback& callback) OVERRIDE {
-    // TODO(xiyuan): Clean this up.
-    // The code below here is because we don't want to use
-    // --aura-views-applist. This function is deprecated and all code
-    // here will be removed when we clean it up.
-    ash::shell::CreateAppList(bounds, callback);
-  }
-
   virtual void BuildAppListModel(ash::AppListModel* model) OVERRIDE {
     ash::shell::BuildAppListModel(model);
   }

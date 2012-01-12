@@ -26,11 +26,6 @@ views::Widget* TestShellDelegate::CreateStatusArea() {
   return NULL;
 }
 
-void TestShellDelegate::RequestAppListWidget(
-    const gfx::Rect& bounds,
-    const SetWidgetCallback& callback) {
-}
-
 void TestShellDelegate::BuildAppListModel(AppListModel* model) {
 }
 

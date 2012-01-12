@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -48,8 +48,7 @@ ui::Layer* GetLayer(views::Widget* widget) {
 AppList::AppList()
     : aura::EventFilter(NULL),
       is_visible_(false),
-      widget_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(set_widget_factory_(this)) {
+      widget_(NULL) {
 }
 
 AppList::~AppList() {
@@ -64,24 +63,17 @@ void AppList::SetVisible(bool visible) {
 
   if (widget_) {
     ScheduleAnimation();
-  } else if (is_visible_ && !set_widget_factory_.HasWeakPtrs()) {
-    if (CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kAuraViewsAppList)) {
-      scoped_ptr<AppListModel> model(new AppListModel);
-      Shell::GetInstance()->delegate()->BuildAppListModel(model.get());
+  } else if (is_visible_) {
+    scoped_ptr<AppListModel> model(new AppListModel);
+    Shell::GetInstance()->delegate()->BuildAppListModel(model.get());
 
-      // AppListModel and AppListViewDelegate are owned by AppListView. They
-      // will be released with AppListView on close.
-      new AppListView(
-          model.release(),
-          Shell::GetInstance()->delegate()->CreateAppListViewDelegate(),
-          GetPreferredBounds(false),
-          base::Bind(&AppList::SetWidget, set_widget_factory_.GetWeakPtr()));
-    } else {
-      Shell::GetInstance()->delegate()->RequestAppListWidget(
-          GetPreferredBounds(false),
-          base::Bind(&AppList::SetWidget, set_widget_factory_.GetWeakPtr()));
-    }
+    // AppListModel and AppListViewDelegate are owned by AppListView. They
+    // will be released with AppListView on close.
+    AppListView* app_list_view = new AppListView(
+        model.release(),
+        Shell::GetInstance()->delegate()->CreateAppListViewDelegate(),
+        GetPreferredBounds(false));
+    SetWidget(app_list_view->GetWidget());
   }
 }
 
@@ -94,7 +86,6 @@ bool AppList::IsVisible() {
 
 void AppList::SetWidget(views::Widget* widget) {
   DCHECK(widget_ == NULL);
-  set_widget_factory_.InvalidateWeakPtrs();
 
   if (is_visible_) {
     widget_ = widget;

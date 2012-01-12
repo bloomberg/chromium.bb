@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,11 +17,10 @@ namespace ash {
 AppListView::AppListView(
     AppListModel* model,
     AppListViewDelegate* delegate,
-    const gfx::Rect& bounds,
-    const ash::ShellDelegate::SetWidgetCallback& callback)
+    const gfx::Rect& bounds)
     : model_(model),
       delegate_(delegate) {
-  Init(bounds, callback);
+  Init(bounds);
 }
 
 AppListView::~AppListView() {
@@ -32,8 +31,7 @@ void AppListView::Close() {
     Shell::GetInstance()->ToggleAppList();
 }
 
-void AppListView::Init(const gfx::Rect& bounds,
-                       const ShellDelegate::SetWidgetCallback& callback) {
+void AppListView::Init(const gfx::Rect& bounds) {
   SetLayoutManager(new views::FillLayout);
   AppListGroupsView* groups_view = new AppListGroupsView(model_.get(), this);
   AddChildView(groups_view);
@@ -49,7 +47,6 @@ void AppListView::Init(const gfx::Rect& bounds,
   widget->Init(widget_params);
   widget->SetContentsView(this);
 
-  callback.Run(widget);
   if (groups_view->GetFocusedTile())
     groups_view->GetFocusedTile()->RequestFocus();
 }

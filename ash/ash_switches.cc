@@ -20,9 +20,6 @@ const char kAuraNoShadows[] = "aura-no-shadows";
 // Use Aura-style translucent window frame.
 const char kAuraTranslucentFrames[] = "aura-translucent-frames";
 
-// Use views-based app list.
-const char kAuraViewsAppList[] = "aura-views-applist";
-
 // Use a custom window style, e.g. --aura-window-mode=compact.
 // When this flag is not passed we default to "normal" mode.
 const char kAuraWindowMode[] = "aura-window-mode";

@@ -20,9 +20,6 @@ class TestShellDelegate : public ShellDelegate {
   // Overridden from ShellDelegate:
   virtual void CreateNewWindow() OVERRIDE;
   virtual views::Widget* CreateStatusArea() OVERRIDE;
-  virtual void RequestAppListWidget(
-      const gfx::Rect& bounds,
-      const SetWidgetCallback& callback) OVERRIDE;
   virtual void BuildAppListModel(AppListModel* model) OVERRIDE;
   virtual AppListViewDelegate* CreateAppListViewDelegate() OVERRIDE;
   virtual std::vector<aura::Window*> GetCycleWindowList() const OVERRIDE;

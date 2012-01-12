@@ -102,10 +102,6 @@ extern const char kChromeUIHttpAuthURL[];
 extern const char kChromeUITabModalConfirmDialogURL[];
 #endif
 
-#if defined(USE_AURA)
-extern const char kChromeUIAppListURL[];
-#endif
-
 // chrome components of URLs. Should be kept in sync with the full URLs above.
 extern const char kChromeUIAboutHost[];
 extern const char kChromeUIAboutPageFrameHost[];
@@ -231,10 +227,6 @@ extern const char kChromeUIFileManagerHost[];
 extern const char kChromeUICollectedCookiesHost[];
 extern const char kChromeUIHttpAuthHost[];
 extern const char kChromeUITabModalConfirmDialogHost[];
-#endif
-
-#if defined(USE_AURA)
-extern const char kChromeUIAppListHost[];
 #endif
 
 // Options sub-pages.
