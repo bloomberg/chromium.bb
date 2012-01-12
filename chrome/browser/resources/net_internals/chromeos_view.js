@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,15 @@ var CrosView = (function() {
   var passcode = '';
 
   /**
+   *  Clear file input div
+   *
+   *  @private
+   */
+  function clearFileInput_() {
+    $(CrosView.IMPORT_DIV_ID).innerHTML = $(CrosView.IMPORT_DIV_ID).innerHTML;
+  }
+
+  /**
    *  Send file contents and passcode to C++ cros network library.
    *
    *  @private
@@ -21,6 +30,7 @@ var CrosView = (function() {
       g_browser.importONCFile(fileContent, passcode);
     else
       setParseStatus_('ONC file parse failed: cannot read file');
+    clearFileInput_();
   }
 
   /**
@@ -127,6 +137,7 @@ var CrosView = (function() {
   CrosView.TAB_HANDLE_ID = 'tab-handle-chromeos';
 
   CrosView.MAIN_BOX_ID = 'chromeos-view-tab-content';
+  CrosView.IMPORT_DIV_ID = 'chromeos-view-import-div';
   CrosView.IMPORT_ONC_ID = 'chromeos-view-import-onc';
   CrosView.PASSCODE_ID = 'chromeos-view-password-div';
   CrosView.PASSCODE_INPUT_ID = 'chromeos-view-onc-password';
