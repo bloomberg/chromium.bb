@@ -43,9 +43,6 @@ class NativeTabbedPaneViews : public View,
 
   // View overrides:
   virtual void Layout() OVERRIDE;
-  virtual FocusTraversable* GetFocusTraversable() OVERRIDE;
-  virtual void ViewHierarchyChanged(bool is_add, View *parent,
-                                    View *child) OVERRIDE;
 
  private:
   void InitControl();
@@ -66,8 +63,8 @@ class NativeTabbedPaneViews : public View,
   // TabStrip.
   TabStrip* tab_strip_;
 
-  // The window displayed in the tab.
-  Widget* content_window_;
+  // The content displayed in the tab.
+  View* content_view_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeTabbedPaneViews);
 };

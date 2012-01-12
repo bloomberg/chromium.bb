@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_COLLECTED_COOKIES_WIN_H_
-#define CHROME_BROWSER_UI_VIEWS_COLLECTED_COOKIES_WIN_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_COLLECTED_COOKIES_VIEWS_H_
+#define CHROME_BROWSER_UI_VIEWS_COLLECTED_COOKIES_VIEWS_H_
 #pragma once
 
 #include "base/compiler_specific.h"
@@ -29,20 +29,18 @@ class TreeView;
 
 // This is the Views implementation of the collected cookies dialog.
 //
-// CollectedCookiesWin is a dialog that displays the allowed and blocked
+// CollectedCookiesViews is a dialog that displays the allowed and blocked
 // cookies of the current tab contents. To display the dialog, invoke
 // ShowCollectedCookiesDialog() on the delegate of the tab contents wrapper's
 // content settings tab helper.
-class CollectedCookiesWin : public views::DialogDelegate,
-                            public content::NotificationObserver,
-                            public views::ButtonListener,
-                            public views::TabbedPaneListener,
-                            public views::TreeViewController,
-                            public views::View {
+class CollectedCookiesViews : public views::DialogDelegateView,
+                              public content::NotificationObserver,
+                              public views::ButtonListener,
+                              public views::TabbedPaneListener,
+                              public views::TreeViewController {
  public:
   // Use BrowserWindow::ShowCollectedCookiesDialog to show.
-  CollectedCookiesWin(gfx::NativeWindow parent_window,
-                      TabContentsWrapper* wrapper);
+  explicit CollectedCookiesViews(TabContentsWrapper* wrapper);
 
   // views::DialogDelegate:
   virtual string16 GetWindowTitle() const OVERRIDE;
@@ -51,8 +49,6 @@ class CollectedCookiesWin : public views::DialogDelegate,
   virtual void DeleteDelegate() OVERRIDE;
   virtual bool Cancel() OVERRIDE;
   virtual views::View* GetContentsView() OVERRIDE;
-  virtual views::Widget* GetWidget() OVERRIDE;
-  virtual const views::Widget* GetWidget() const OVERRIDE;
 
   // views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
@@ -64,8 +60,13 @@ class CollectedCookiesWin : public views::DialogDelegate,
   // views::TreeViewController:
   virtual void OnTreeViewSelectionChanged(views::TreeView* tree_view);
 
+  // views::View:
+  virtual void ViewHierarchyChanged(bool is_add,
+                                    views::View* parent,
+                                    views::View* child) OVERRIDE;
+
  private:
-  virtual ~CollectedCookiesWin();
+  virtual ~CollectedCookiesViews();
 
   void Init();
 
@@ -111,7 +112,7 @@ class CollectedCookiesWin : public views::DialogDelegate,
 
   bool status_changed_;
 
-  DISALLOW_COPY_AND_ASSIGN(CollectedCookiesWin);
+  DISALLOW_COPY_AND_ASSIGN(CollectedCookiesViews);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_COLLECTED_COOKIES_WIN_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_COLLECTED_COOKIES_VIEWS_H_

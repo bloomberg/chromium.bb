@@ -224,11 +224,12 @@ class TabLayout : public LayoutManager {
     }
 
     FocusManager* focus_manager = page->GetFocusManager();
-    DCHECK(focus_manager);
-    const View* focused_view = focus_manager->GetFocusedView();
-    if (focused_view && host->Contains(focused_view) &&
-        !page->Contains(focused_view))
-      focus_manager->SetFocusedView(page);
+    if (focus_manager) {
+      const View* focused_view = focus_manager->GetFocusedView();
+      if (focused_view && host->Contains(focused_view) &&
+          !page->Contains(focused_view))
+        focus_manager->SetFocusedView(page);
+    }
   }
 
  private:
@@ -273,18 +274,17 @@ NativeTabbedPaneViews::NativeTabbedPaneViews(TabbedPane* tabbed_pane)
     : tabbed_pane_(tabbed_pane),
       tab_layout_manager_(new TabLayout),
       ALLOW_THIS_IN_INITIALIZER_LIST(tab_strip_(new TabStrip(this))),
-      content_window_(NULL) {
+      content_view_(new views::View) {
   AddChildView(tab_strip_);
+  AddChildView(content_view_);
+  InitControl();
 }
 
 NativeTabbedPaneViews::~NativeTabbedPaneViews() {
 }
 
 void NativeTabbedPaneViews::TabSelectionChanged(View* selected) {
-  if (content_window_) {
-    View* content_root = content_window_->GetRootView();
-    tab_layout_manager_->SwitchToPage(content_root, Tab::GetContents(selected));
-  }
+  tab_layout_manager_->SwitchToPage(content_view_, Tab::GetContents(selected));
   if (tabbed_pane_->listener())
     tabbed_pane_->listener()->TabSelectedAt(tab_strip_->GetIndexOf(selected));
 }
@@ -307,16 +307,13 @@ void NativeTabbedPaneViews::AddTabAtIndex(int index,
   tab_strip_->AddChildViewAt(new Tab(tab_strip_, title, contents), index);
 
   // Add native tab only if the native control is already created.
-  if (content_window_) {
-    View* content_root = content_window_->GetRootView();
-    content_root->AddChildView(contents);
+  content_view_->AddChildViewAt(contents, index);
 
-    // Switch to the newly added tab if requested;
-    if (tab_strip_->child_count() == 1 && select_if_first_tab)
-      tab_layout_manager_->SwitchToPage(content_root, contents);
-    if (!tab_strip_->selected_tab())
-      tab_strip_->SelectTab(tab_strip_->child_at(0));
-  }
+  // Switch to the newly added tab if requested;
+  if (tab_strip_->child_count() == 1 && select_if_first_tab)
+    tab_layout_manager_->SwitchToPage(content_view_, contents);
+  if (!tab_strip_->selected_tab())
+    tab_strip_->SelectTab(tab_strip_->child_at(0));
 }
 
 View* NativeTabbedPaneViews::RemoveTabAtIndex(int index) {
@@ -329,9 +326,9 @@ View* NativeTabbedPaneViews::RemoveTabAtIndex(int index) {
     // We are the last tab, select the previous one.
     if (index > 0) {
       SelectTabAt(index - 1);
-    } else if (content_window_) {
+    } else {
       // That was the last tab. Remove the contents.
-      content_window_->GetRootView()->RemoveAllChildViews(false);
+      content_view_->RemoveAllChildViews(false);
     }
   }
   return tab_strip_->RemoveTabAt(index);
@@ -364,7 +361,10 @@ void NativeTabbedPaneViews::SetFocus() {
 }
 
 gfx::Size NativeTabbedPaneViews::GetPreferredSize() {
-  return gfx::Size(0, tab_strip_->GetPreferredSize().height());
+  gfx::Size content_size = content_view_->GetPreferredSize();
+  return gfx::Size(
+      content_size.width(),
+      tab_strip_->GetPreferredSize().height() + content_size.height());
 }
 
 gfx::NativeView NativeTabbedPaneViews::GetTestingHandle() const {
@@ -377,43 +377,15 @@ gfx::NativeView NativeTabbedPaneViews::GetTestingHandle() const {
 void NativeTabbedPaneViews::Layout() {
   gfx::Size ps = tab_strip_->GetPreferredSize();
   tab_strip_->SetBounds(0, 0, width(), ps.height());
-
-  gfx::Point child_origin(0, tab_strip_->bounds().bottom());
-  View::ConvertPointToWidget(this, &child_origin);
-
-  if (content_window_) {
-    content_window_->SetBounds(gfx::Rect(child_origin.x(),
-                                         child_origin.y(),
-                                         width(),
-                                         std::max(0, height() - ps.height())));
-  }
-}
-
-FocusTraversable* NativeTabbedPaneViews::GetFocusTraversable() {
-  return content_window_;
-}
-
-void NativeTabbedPaneViews::ViewHierarchyChanged(bool is_add,
-                                                 View *parent,
-                                                 View *child) {
-  if (is_add && child == this)
-    InitControl();
+  content_view_->SetBounds(0, tab_strip_->bounds().bottom(), width(),
+                           std::max(0, height() - ps.height()));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // NativeTabbedPaneViews, private:
 
 void NativeTabbedPaneViews::InitControl() {
-  content_window_ = new Widget;
-  Widget::InitParams params(Widget::InitParams::TYPE_CONTROL);
-  params.parent = GetWidget()->GetNativeView();
-  content_window_->Init(params);
-  content_window_->GetRootView()->SetLayoutManager(tab_layout_manager_);
-  content_window_->GetRootView()->set_background(
-      Background::CreateSolidBackground(SK_ColorWHITE));
-  content_window_->SetFocusTraversableParentView(this);
-  content_window_->SetFocusTraversableParent(
-      GetWidget()->GetFocusTraversable());
+  content_view_->SetLayoutManager(tab_layout_manager_);
 
   // Add tabs that are already added if any.
   if (tab_strip_->has_children())
@@ -421,10 +393,9 @@ void NativeTabbedPaneViews::InitControl() {
 }
 
 void NativeTabbedPaneViews::InitializeTabs() {
-  View* content_root = content_window_->GetRootView();
   for (std::vector<View*>::const_iterator tab = tab_strip_->children_begin();
        tab != tab_strip_->children_end(); ++tab)
-    content_root->AddChildView(Tab::GetContents(*tab));
+    content_view_->AddChildView(Tab::GetContents(*tab));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

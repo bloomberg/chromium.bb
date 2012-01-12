@@ -106,7 +106,7 @@ class CookieInfoView : public views::View,
   views::View* expire_view_;
 
   // Option values for expires_value_combobox_.
-  std::vector<std::wstring> expire_combo_values_;
+  std::vector<string16> expire_combo_values_;
 
   // True if expiration date can be edited. In this case we will show
   // expires_value_combobox_ instead of expires_value_field_. The cookie's
