@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -154,7 +154,7 @@ void ProviderImpl::ScheduleDoPoll() {
   polling_loop->PostDelayedTask(
       FROM_HERE,
       base::Bind(&ProviderImpl::DoPoll, weak_factory_.GetWeakPtr()),
-      SamplingIntervalMs());
+      SamplingInterval());
 }
 
 namespace {
@@ -192,14 +192,14 @@ bool ProviderImpl::SignificantlyDifferent(const Orientation& o1,
                                          o2.gamma_);
 }
 
-int ProviderImpl::SamplingIntervalMs() const {
+base::TimeDelta ProviderImpl::SamplingInterval() const {
   DCHECK(MessageLoop::current() == polling_thread_->message_loop());
   DCHECK(data_fetcher_.get());
 
   // TODO(erg): There used to be unused code here, that called a default
   // implementation on the DataFetcherInterface that was never defined. I'm
   // removing unused methods from headers.
-  return kDesiredSamplingIntervalMs;
+  return base::TimeDelta::FromMilliseconds(kDesiredSamplingIntervalMs);
 }
 
 }  // namespace device_orientation
