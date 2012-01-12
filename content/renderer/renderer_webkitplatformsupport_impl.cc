@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,6 +26,7 @@
 #include "content/renderer/media/audio_device.h"
 #include "content/renderer/media/audio_hardware.h"
 #include "content/renderer/render_thread_impl.h"
+#include "content/renderer/render_view_impl.h"
 #include "content/renderer/renderer_clipboard_client.h"
 #include "content/renderer/renderer_webaudiodevice_impl.h"
 #include "content/renderer/renderer_webstoragenamespace_impl.h"
@@ -39,6 +40,9 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBFactory.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBKey.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBKeyPath.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebPeerConnectionHandler.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebPeerConnectionHandlerClient.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebRuntimeFeatures.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebSerializedScriptValue.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebStorageEventDispatcher.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURL.h"
@@ -642,4 +646,18 @@ void RendererWebKitPlatformSupportImpl::GetPlugins(
     refresh = false;
   RenderThreadImpl::current()->Send(
       new ViewHostMsg_GetPlugins(refresh, plugins));
+}
+
+//------------------------------------------------------------------------------
+
+WebKit::WebPeerConnectionHandler*
+RendererWebKitPlatformSupportImpl::createPeerConnectionHandler(
+    WebKit::WebPeerConnectionHandlerClient* client) {
+  WebFrame* web_frame = WebFrame::frameForCurrentContext();
+  if (!web_frame)
+    return NULL;
+  RenderViewImpl* render_view = RenderViewImpl::FromWebView(web_frame->view());
+  if (!render_view)
+    return NULL;
+  return render_view->CreatePeerConnectionHandler(client);
 }
