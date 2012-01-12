@@ -81,7 +81,7 @@ void PanelStrip::SetDisplayArea(const gfx::Rect& new_area) {
 }
 
 void PanelStrip::AddPanel(Panel* panel) {
-  DCHECK_EQ(Panel::EXPANDED, panel->expansion_state());
+  DCHECK_NE(Panel::IN_OVERFLOW, panel->expansion_state());
 
   // Always update limits, even for exiting panels, in case the maximums changed
   // while panel was out of the strip.
@@ -351,29 +351,29 @@ void PanelStrip::EndDragging(bool cancelled) {
   DelayedRemove();
 }
 
-void PanelStrip::OnPanelExpansionStateChanged(
-    Panel* panel, Panel::ExpansionState old_state) {
+void PanelStrip::OnPanelExpansionStateChanged(Panel* panel) {
   gfx::Size size = panel->restored_size();
   Panel::ExpansionState expansion_state = panel->expansion_state();
+  Panel::ExpansionState old_state = panel->old_expansion_state();
+  if (old_state == Panel::IN_OVERFLOW) {
+    panel_manager_->panel_overflow_strip()->Remove(panel);
+    AddPanel(panel);
+    panel->SetAppIconVisibility(true);
+    panel->set_draggable(true);
+  }
   switch (expansion_state) {
     case Panel::EXPANDED:
-      if (old_state == Panel::TITLE_ONLY || old_state == Panel::MINIMIZED) {
+      if (old_state == Panel::TITLE_ONLY || old_state == Panel::MINIMIZED)
         DecrementMinimizedPanels();
-      } else if (old_state == Panel::IN_OVERFLOW) {
-        panel_manager_->panel_overflow_strip()->Remove(panel);
-        AddPanel(panel);
-        panel->SetAppIconVisibility(true);
-        panel->set_draggable(true);
-      }
       break;
     case Panel::TITLE_ONLY:
       size.set_height(panel->TitleOnlyHeight());
-      if (old_state == Panel::EXPANDED)
+      if (old_state == Panel::EXPANDED || old_state == Panel::IN_OVERFLOW)
         IncrementMinimizedPanels();
       break;
     case Panel::MINIMIZED:
       size.set_height(Panel::kMinimizedPanelHeight);
-      if (old_state == Panel::EXPANDED)
+      if (old_state == Panel::EXPANDED || old_state == Panel::IN_OVERFLOW)
         IncrementMinimizedPanels();
       break;
     case Panel::IN_OVERFLOW:
@@ -665,7 +665,15 @@ void PanelStrip::Rearrange() {
     while ((overflow_panel = overflow_strip->first_panel()) &&
            GetRightMostAvailablePosition() >=
                display_area_.x() + overflow_panel->restored_size().width()) {
-      overflow_panel->SetExpansionState(Panel::EXPANDED);
+      // We need to get back to the previous expansion state.
+      Panel::ExpansionState expansion_state_to_restore =
+          overflow_panel->old_expansion_state();
+      if (expansion_state_to_restore == Panel::MINIMIZED ||
+          expansion_state_to_restore == Panel::TITLE_ONLY) {
+        expansion_state_to_restore = are_titlebars_up_ ? Panel::TITLE_ONLY
+                                                       : Panel::MINIMIZED;
+      }
+      overflow_panel->SetExpansionState(expansion_state_to_restore);
     }
   }
 #endif

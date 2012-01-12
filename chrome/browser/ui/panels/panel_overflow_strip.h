@@ -39,8 +39,7 @@ class PanelOverflowStrip : public PanelMouseWatcherObserver,
   void RemoveAll();
 
   // Called when a panel's expansion state changes.
-  void OnPanelExpansionStateChanged(
-      Panel* panel, Panel::ExpansionState old_state);
+  void OnPanelExpansionStateChanged(Panel* panel);
 
   // Called when a panel is starting/stopping drawing an attention.
   void OnPanelAttentionStateChanged(Panel* panel);

@@ -178,10 +178,9 @@ void PanelManager::EndDragging(bool cancelled) {
   panel_strip_->EndDragging(cancelled);
 }
 
-void PanelManager::OnPanelExpansionStateChanged(
-    Panel* panel, Panel::ExpansionState old_state) {
-  panel_strip_->OnPanelExpansionStateChanged(panel, old_state);
-  panel_overflow_strip_->OnPanelExpansionStateChanged(panel, old_state);
+void PanelManager::OnPanelExpansionStateChanged(Panel* panel) {
+  panel_strip_->OnPanelExpansionStateChanged(panel);
+  panel_overflow_strip_->OnPanelExpansionStateChanged(panel);
 }
 
 void PanelManager::OnPanelAttentionStateChanged(Panel* panel) {

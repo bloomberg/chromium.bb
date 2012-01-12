@@ -49,6 +49,7 @@ Panel::Panel(Browser* browser, const gfx::Size& requested_size)
       auto_resizable_(false),
       draggable_(true),
       expansion_state_(EXPANDED),
+      old_expansion_state_(EXPANDED),
       app_icon_visible_(true) {
 }
 
@@ -139,10 +140,10 @@ void Panel::SetAppIconVisibility(bool visible) {
 void Panel::SetExpansionState(ExpansionState new_state) {
   if (expansion_state_ == new_state)
     return;
-  ExpansionState old_state = expansion_state_;
+  old_expansion_state_ = expansion_state_;
   expansion_state_ = new_state;
 
-  manager()->OnPanelExpansionStateChanged(this, old_state);
+  manager()->OnPanelExpansionStateChanged(this);
 
   // The minimized panel should not get the focus.
   if (expansion_state_ == MINIMIZED)

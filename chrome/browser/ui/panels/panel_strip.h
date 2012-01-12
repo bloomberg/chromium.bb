@@ -47,8 +47,7 @@ class PanelStrip : public PanelMouseWatcherObserver {
   void EndDragging(bool cancelled);
 
   // Invoked when a panel's expansion state changes.
-  void OnPanelExpansionStateChanged(Panel* panel,
-                                    Panel::ExpansionState old_state);
+  void OnPanelExpansionStateChanged(Panel* panel);
 
   // Invoked when the window size of the given panel is changed.
   void OnWindowSizeChanged(

@@ -198,7 +198,10 @@ class PanelOverflowBrowserTest : public BasePanelBrowserTest {
 #define MAYBE_CloseNormalPanels CloseNormalPanels
 #define MAYBE_CloseWithDelayedOverflow CloseWithDelayedOverflow
 #define MAYBE_ActivateOverflowPanels ActivateOverflowPanels
-#define MAYBE_MoveMinimizedPanelToOverflow MoveMinimizedPanelToOverflow
+#define MAYBE_MoveMinimizedPanelToOverflowAndBringBackByActivate \
+    MoveMinimizedPanelToOverflowAndBringBackByActivate
+#define MAYBE_MoveMinimizedPanelToOverflowAndBringBackByCloseOrResize \
+    MoveMinimizedPanelToOverflowAndBringBackByCloseOrResize
 #define MAYBE_HoverOverOverflowAreaWithoutOverflowOfOverflow \
     HoverOverOverflowAreaWithoutOverflowOfOverflow
 #define MAYBE_HoverOverOverflowAreaWithOverflowOfOverflow \
@@ -216,7 +219,10 @@ class PanelOverflowBrowserTest : public BasePanelBrowserTest {
 #define MAYBE_CloseNormalPanels DISABLED_CloseNormalPanels
 #define MAYBE_CloseWithDelayedOverflow DISABLED_CloseWithDelayedOverflow
 #define MAYBE_ActivateOverflowPanels DISABLED_ActivateOverflowPanels
-#define MAYBE_MoveMinimizedPanelToOverflow DISABLED_MoveMinimizedPanelToOverflo
+#define MAYBE_MoveMinimizedPanelToOverflowAndBringBackByActivate \
+    DISABLED_MoveMinimizedPanelToOverflowAndBringBackByActivate
+#define MAYBE_MoveMinimizedPanelToOverflowAndBringBackByCloseOrResize \
+    DISABLED_MoveMinimizedPanelToOverflowAndBringBackByCloseOrResize
 #define MAYBE_HoverOverOverflowAreaWithoutOverflowOfOverflow \
     DISABLED_HoverOverOverflowAreaWithoutOverflowOfOverflow
 #define MAYBE_HoverOverOverflowAreaWithOverflowOfOverflow \
@@ -782,8 +788,9 @@ IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest, MAYBE_ActivateOverflowPanels) {
   PanelManager::GetInstance()->RemoveAll();
 }
 
-IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest,
-                       MAYBE_MoveMinimizedPanelToOverflow) {
+IN_PROC_BROWSER_TEST_F(
+    PanelOverflowBrowserTest,
+    MAYBE_MoveMinimizedPanelToOverflowAndBringBackByActivate) {
   // Create normal and overflow panels.
   //   normal:               P0, P1, P2
   //   overflow:             P3, P4
@@ -879,6 +886,202 @@ IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest,
   expected_overflow_list.Add(panels[3], Panel::IN_OVERFLOW, true, false);
   expected_overflow_list.Add(panels[4], Panel::IN_OVERFLOW, true, false);
   EXPECT_EQ(expected_overflow_list, GetAllOverflowPanelData());
+
+  PanelManager::GetInstance()->RemoveAll();
+}
+
+IN_PROC_BROWSER_TEST_F(
+    PanelOverflowBrowserTest,
+    MAYBE_MoveMinimizedPanelToOverflowAndBringBackByCloseOrResizeOrResize) {
+  PanelManager* panel_manager = PanelManager::GetInstance();
+
+  // Create normal and overflow panels.
+  //   normal:   P0, P1, P2
+  //   overflow: P3, P4, P5
+  const int panel_widths[] = {
+      240, 240, 120, // normal
+      240, 240, 240  // overflow
+  };
+  std::vector<Panel*> panels = CreateOverflowPanels(3, 3, panel_widths);
+
+  PanelDataList expected_normal_list;
+  expected_normal_list.Add(panels[0], Panel::EXPANDED, true, false);
+  expected_normal_list.Add(panels[1], Panel::EXPANDED, true, false);
+  expected_normal_list.Add(panels[2], Panel::EXPANDED, true, false);
+  EXPECT_EQ(expected_normal_list, GetAllNormalPanelData());
+
+  PanelDataList expected_overflow_list;
+  expected_overflow_list.Add(panels[3], Panel::IN_OVERFLOW, true, false);
+  expected_overflow_list.Add(panels[4], Panel::IN_OVERFLOW, true, false);
+  expected_overflow_list.Add(panels[5], Panel::IN_OVERFLOW, true, false);
+
+  // Test case 1: restoring minimized to minimized.
+  {
+    // Minimize a normal panel and then bump it to overflow by activating an
+    // overflow panel.
+    //   normal:   P0, P1, P3
+    //   overflow: P2, P4, P5
+    panels[2]->SetExpansionState(Panel::MINIMIZED);
+    panels[3]->Activate();
+    WaitForPanelActiveState(panels[3], SHOW_AS_ACTIVE);
+    WaitForExpansionStateChanged(panels[3], Panel::EXPANDED);
+
+    expected_normal_list.clear();
+    expected_normal_list.Add(panels[0], Panel::EXPANDED, true, false);
+    expected_normal_list.Add(panels[1], Panel::EXPANDED, true, false);
+    expected_normal_list.Add(panels[3], Panel::EXPANDED, true, true);
+    EXPECT_EQ(expected_normal_list, GetAllNormalPanelData());
+
+    expected_overflow_list.clear();
+    expected_overflow_list.Add(panels[2], Panel::IN_OVERFLOW, true, false);
+    expected_overflow_list.Add(panels[4], Panel::IN_OVERFLOW, true, false);
+    expected_overflow_list.Add(panels[5], Panel::IN_OVERFLOW, true, false);
+    EXPECT_EQ(expected_overflow_list, GetAllOverflowPanelData());
+
+    // Bring back the formerly minimized panel by closing a panel. It will
+    // return to the panel strip in the minimized state.
+    //   normal:   P0, P1, P2
+    //   overflow: P4, P5
+    CloseWindowAndWait(panels[3]->browser());
+    WaitForExpansionStateChanged(panels[2], Panel::MINIMIZED);
+
+    expected_normal_list.clear();
+    expected_normal_list.Add(panels[0], Panel::EXPANDED, true, false);
+    expected_normal_list.Add(panels[1], Panel::EXPANDED, true, false);
+    expected_normal_list.Add(panels[2], Panel::MINIMIZED, true, false);
+    EXPECT_EQ(expected_normal_list, GetAllNormalPanelData());
+
+    expected_overflow_list.clear();
+    expected_overflow_list.Add(panels[4], Panel::IN_OVERFLOW, true, false);
+    expected_overflow_list.Add(panels[5], Panel::IN_OVERFLOW, true, false);
+    EXPECT_EQ(expected_overflow_list, GetAllOverflowPanelData());
+  }
+
+  // Test case 2: restoring minimized to title-only.
+  {
+    // Bump the minimized panel to overflow by activating an overflow panel.
+    //   normal:   P0, P1, P4
+    //   overflow: P2, P5
+    panels[4]->Activate();
+    WaitForPanelActiveState(panels[4], SHOW_AS_ACTIVE);
+    WaitForExpansionStateChanged(panels[4], Panel::EXPANDED);
+
+    expected_normal_list.clear();
+    expected_normal_list.Add(panels[0], Panel::EXPANDED, true, false);
+    expected_normal_list.Add(panels[1], Panel::EXPANDED, true, false);
+    expected_normal_list.Add(panels[4], Panel::EXPANDED, true, true);
+    EXPECT_EQ(expected_normal_list, GetAllNormalPanelData());
+
+    expected_overflow_list.clear();
+    expected_overflow_list.Add(panels[2], Panel::IN_OVERFLOW, true, false);
+    expected_overflow_list.Add(panels[5], Panel::IN_OVERFLOW, true, false);
+    EXPECT_EQ(expected_overflow_list, GetAllOverflowPanelData());
+
+    // Minimize another panel and hover the mouse over it. This should bring up
+    // all currently minimized panels. When a formerly minimized or title-only
+    // panel is restored from the overflow area, it should also be title-only.
+    panels[0]->SetExpansionState(Panel::MINIMIZED);
+    MoveMouse(gfx::Point(panels[0]->GetBounds().x(),
+                         panels[0]->GetBounds().y()));
+    WaitForExpansionStateChanged(panels[0], Panel::TITLE_ONLY);
+
+    // Bring back the formerly minimized panel by closing a panel. It will
+    // return to the panel strip in the title-only state.
+    //   normal:   P0, P1, P2
+    //   overflow: P5
+    CloseWindowAndWait(panels[4]->browser());
+    WaitForExpansionStateChanged(panels[2], Panel::TITLE_ONLY);
+
+    expected_normal_list.clear();
+    expected_normal_list.Add(panels[0], Panel::TITLE_ONLY, true, false);
+    expected_normal_list.Add(panels[1], Panel::EXPANDED, true, false);
+    expected_normal_list.Add(panels[2], Panel::TITLE_ONLY, true, false);
+    EXPECT_EQ(expected_normal_list, GetAllNormalPanelData());
+
+    expected_overflow_list.clear();
+    expected_overflow_list.Add(panels[5], Panel::IN_OVERFLOW, true, false);
+    EXPECT_EQ(expected_overflow_list, GetAllOverflowPanelData());
+  }
+
+  // Test case 3: restoring title-only to title-only.
+  {
+    // Bump the title-only panel to overflow by activating an overflow panel.
+    //   normal:   P0, P1, P5
+    //   overflow: P2
+    panels[5]->Activate();
+    WaitForPanelActiveState(panels[5], SHOW_AS_ACTIVE);
+    WaitForExpansionStateChanged(panels[5], Panel::EXPANDED);
+
+    expected_normal_list.clear();
+    expected_normal_list.Add(panels[0], Panel::TITLE_ONLY, true, false);
+    expected_normal_list.Add(panels[1], Panel::EXPANDED, true, false);
+    expected_normal_list.Add(panels[5], Panel::EXPANDED, true, true);
+    EXPECT_EQ(expected_normal_list, GetAllNormalPanelData());
+
+    expected_overflow_list.clear();
+    expected_overflow_list.Add(panels[2], Panel::IN_OVERFLOW, true, false);
+    EXPECT_EQ(expected_overflow_list, GetAllOverflowPanelData());
+
+    // Bring back the formerly title-only panel by shrinking a panel. It will
+    // return to the panel strip in the title-only state.
+    //   normal:   P0, P1, P5, P2
+    panel_manager->ResizePanel(panels[5], gfx::Size(
+        panels[5]->GetBounds().width() / 2,
+        panels[5]->GetBounds().height() / 2));
+
+    expected_normal_list.clear();
+    expected_normal_list.Add(panels[0], Panel::TITLE_ONLY, true, false);
+    expected_normal_list.Add(panels[1], Panel::EXPANDED, true, false);
+    expected_normal_list.Add(panels[5], Panel::EXPANDED, true, true);
+    expected_normal_list.Add(panels[2], Panel::TITLE_ONLY, true, false);
+    EXPECT_EQ(expected_normal_list, GetAllNormalPanelData());
+
+    expected_overflow_list.clear();
+    EXPECT_EQ(expected_overflow_list, GetAllOverflowPanelData());
+  }
+
+  // Test case 4: restoring title-only to minimized.
+  {
+    // Bump the minimized panel to overflow by enlarging a panel.
+    //   normal:   P0, P1, P5
+    //   overflow: P2
+    panel_manager->ResizePanel(panels[5], gfx::Size(
+        panels[5]->GetBounds().width() * 2,
+        panels[5]->GetBounds().height() * 2));
+
+    expected_normal_list.clear();
+    expected_normal_list.Add(panels[0], Panel::TITLE_ONLY, true, false);
+    expected_normal_list.Add(panels[1], Panel::EXPANDED, true, false);
+    expected_normal_list.Add(panels[5], Panel::EXPANDED, true, true);
+    EXPECT_EQ(expected_normal_list, GetAllNormalPanelData());
+
+    expected_overflow_list.clear();
+    expected_overflow_list.Add(panels[2], Panel::IN_OVERFLOW, true, false);
+    EXPECT_EQ(expected_overflow_list, GetAllOverflowPanelData());
+
+    // Move the mouse away. This should bring down all currently title-only
+    // panels. When a formerly minimized or title-only panel is restored from
+    // the overflow area, it should be minimized.
+    MoveMouse(gfx::Point(0, 0));
+    WaitForExpansionStateChanged(panels[0], Panel::MINIMIZED);
+
+    // Bring back the formerly title-only panel by shrinking a panel. It will
+    // return to the panel strip in the minimized state.
+    //   normal:   P0, P1, P5, P2
+    panel_manager->ResizePanel(panels[5], gfx::Size(
+        panels[5]->GetBounds().width() / 2,
+        panels[5]->GetBounds().height() / 2));
+
+    expected_normal_list.clear();
+    expected_normal_list.Add(panels[0], Panel::MINIMIZED, true, false);
+    expected_normal_list.Add(panels[1], Panel::EXPANDED, true, false);
+    expected_normal_list.Add(panels[5], Panel::EXPANDED, true, true);
+    expected_normal_list.Add(panels[2], Panel::MINIMIZED, true, false);
+    EXPECT_EQ(expected_normal_list, GetAllNormalPanelData());
+
+    expected_overflow_list.clear();
+    EXPECT_EQ(expected_overflow_list, GetAllOverflowPanelData());
+  }
 
   PanelManager::GetInstance()->RemoveAll();
 }

@@ -48,8 +48,7 @@ class PanelManager : public AutoHidingDesktopBar::Observer {
   void EndDragging(bool cancelled);
 
   // Invoked when a panel's expansion state changes.
-  void OnPanelExpansionStateChanged(Panel* panel,
-                                    Panel::ExpansionState old_state);
+  void OnPanelExpansionStateChanged(Panel* panel);
 
   // Invoked when a panel is starting/stopping drawing an attention.
   void OnPanelAttentionStateChanged(Panel* panel);

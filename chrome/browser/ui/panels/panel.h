@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -219,6 +219,7 @@ class Panel : public BrowserWindow,
   NativePanel* native_panel() { return native_panel_; }
   Browser* browser() const { return browser_; }
   ExpansionState expansion_state() const { return expansion_state_; }
+  ExpansionState old_expansion_state() const { return old_expansion_state_; }
   const gfx::Size& min_size() const { return min_size_; }
   const gfx::Size& max_size() const { return max_size_; }
   bool auto_resizable() const { return auto_resizable_; }
@@ -310,6 +311,7 @@ class Panel : public BrowserWindow,
   NativePanel* native_panel_;  // Weak, owns us.
 
   ExpansionState expansion_state_;
+  ExpansionState old_expansion_state_;
 
   // Indicates whether the panel app icon is visible in the taskbar.
   bool app_icon_visible_;

@@ -146,8 +146,7 @@ void PanelOverflowStrip::RemoveAll() {
     (*iter)->Close();
 }
 
-void PanelOverflowStrip::OnPanelExpansionStateChanged(
-    Panel* panel, Panel::ExpansionState old_state) {
+void PanelOverflowStrip::OnPanelExpansionStateChanged(Panel* panel) {
   // Only care about new state being overflow.
   if (panel->expansion_state() != Panel::IN_OVERFLOW)
     return;
