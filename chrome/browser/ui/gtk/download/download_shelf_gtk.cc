@@ -385,7 +385,7 @@ void DownloadShelfGtk::MouseLeftShelf() {
   MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&DownloadShelfGtk::Close, weak_factory_.GetWeakPtr()),
-      kAutoCloseDelayMs);
+      base::TimeDelta::FromMilliseconds(kAutoCloseDelayMs));
 }
 
 void DownloadShelfGtk::MouseEnteredShelf() {

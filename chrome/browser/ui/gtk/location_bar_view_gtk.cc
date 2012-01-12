@@ -1364,7 +1364,7 @@ void LocationBarViewGtk::ContentSettingImageViewGtk::AnimationEnded(
         FROM_HERE,
         base::Bind(&ContentSettingImageViewGtk::CloseAnimation,
                    weak_factory_.GetWeakPtr()),
-        kContentSettingImageDisplayTime);
+        base::TimeDelta::FromMilliseconds(kContentSettingImageDisplayTime));
   } else {
     gtk_widget_hide(label_.get());
     gtk_util::StopActingAsRoundedWindow(event_box_.get());

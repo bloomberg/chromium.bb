@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -1409,7 +1409,7 @@ void TabStripGtk::HandleGlobalMouseMoveEvent() {
           FROM_HERE,
           base::Bind(&TabStripGtk::ResizeLayoutTabs,
                      weak_factory_.GetWeakPtr()),
-          kResizeTabsTimeMs);
+          base::TimeDelta::FromMilliseconds(kResizeTabsTimeMs));
     }
   } else {
     // Mouse moved quickly out of the tab strip and then into it again, so
@@ -2112,7 +2112,7 @@ void TabStripGtk::OnSizeAllocate(GtkWidget* widget, GtkAllocation* allocation) {
     MessageLoop::current()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&TabStripGtk::Layout, layout_factory_.GetWeakPtr()),
-        kLayoutAfterSizeAllocateMs);
+        base::TimeDelta::FromMilliseconds(kLayoutAfterSizeAllocateMs));
   }
 }
 
