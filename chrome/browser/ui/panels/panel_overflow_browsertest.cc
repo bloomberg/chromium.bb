@@ -892,7 +892,7 @@ IN_PROC_BROWSER_TEST_F(
 
 IN_PROC_BROWSER_TEST_F(
     PanelOverflowBrowserTest,
-    MAYBE_MoveMinimizedPanelToOverflowAndBringBackByCloseOrResizeOrResize) {
+    MAYBE_MoveMinimizedPanelToOverflowAndBringBackByCloseOrResize) {
   PanelManager* panel_manager = PanelManager::GetInstance();
 
   // Create normal and overflow panels.
