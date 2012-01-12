@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -163,14 +163,15 @@ SkBitmap IconUtil::CreateSkBitmapFromHICONHelper(HICON icon,
   // obtain the icon's image.
   BITMAPV5HEADER h;
   InitializeBitmapHeader(&h, s.width(), s.height());
-  HDC dc = ::GetDC(NULL);
+  HDC hdc = ::GetDC(NULL);
   uint32* bits;
-  HBITMAP dib = ::CreateDIBSection(dc, reinterpret_cast<BITMAPINFO*>(&h),
+  HBITMAP dib = ::CreateDIBSection(hdc, reinterpret_cast<BITMAPINFO*>(&h),
       DIB_RGB_COLORS, reinterpret_cast<void**>(&bits), NULL, 0);
   DCHECK(dib);
-  HDC dib_dc = CreateCompatibleDC(dc);
+  HDC dib_dc = CreateCompatibleDC(hdc);
+  ::ReleaseDC(NULL, hdc);
   DCHECK(dib_dc);
-  ::SelectObject(dib_dc, dib);
+  HGDIOBJ old_obj = ::SelectObject(dib_dc, dib);
 
   // Windows icons are defined using two different masks. The XOR mask, which
   // represents the icon image and an AND mask which is a monochrome bitmap
@@ -222,9 +223,9 @@ SkBitmap IconUtil::CreateSkBitmapFromHICONHelper(HICON icon,
   }
 
   delete [] opaque;
-  ::DeleteDC(dib_dc);
+  ::SelectObject(dib_dc, old_obj);
   ::DeleteObject(dib);
-  ::ReleaseDC(NULL, dc);
+  ::DeleteDC(dib_dc);
 
   return bitmap;
 }
