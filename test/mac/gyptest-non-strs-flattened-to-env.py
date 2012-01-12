@@ -5,7 +5,8 @@
 # found in the LICENSE file.
 
 """
-Verifies that list xcode_settings aren't exported to the environment.
+Verifies that list xcode_settings are flattened before being exported to the
+environment.
 """
 
 import TestGyp
@@ -15,7 +16,7 @@ import sys
 if sys.platform == 'darwin':
   test = TestGyp.TestGyp(formats=['make', 'xcode'])
 
-  CHDIR = 'non-strs-not-written-to-env'
+  CHDIR = 'non-strs-flattened-to-env'
   INFO_PLIST_PATH = 'Test.app/Contents/Info.plist'
 
   test.run_gyp('test.gyp', chdir=CHDIR)
