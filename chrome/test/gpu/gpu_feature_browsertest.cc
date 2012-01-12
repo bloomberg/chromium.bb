@@ -90,7 +90,8 @@ class GpuFeatureTest : public InProcessBrowserTest {
   }
 
   void RunTest(const FilePath& url, GpuResultFlags expectations) {
-    using namespace trace_analyzer;
+    using trace_analyzer::Query;
+    using trace_analyzer::TraceAnalyzer;
 
     ASSERT_TRUE(tracing::BeginTracing("test_gpu"));
 
@@ -102,7 +103,7 @@ class GpuFeatureTest : public InProcessBrowserTest {
 
     scoped_ptr<TraceAnalyzer> analyzer(TraceAnalyzer::Create(json_events));
     analyzer->AssociateBeginEndEvents();
-    TraceEventVector events;
+    trace_analyzer::TraceEventVector events;
 
     // This measurement is flaky, because the GPU process is sometimes
     // started before the test (always with force-compositing-mode on CrOS).
@@ -113,7 +114,7 @@ class GpuFeatureTest : public InProcessBrowserTest {
 
     // Check for swap buffers if expected:
     if (expectations & EXPECT_GPU_SWAP_BUFFERS) {
-      EXPECT_GT(analyzer->FindEvents(Query(EVENT_NAME) ==
+      EXPECT_GT(analyzer->FindEvents(Query::EventName() ==
                                      Query::String("SwapBuffers"), &events),
                 size_t(0));
     }

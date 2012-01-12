@@ -71,7 +71,9 @@ class ThroughputTest : public BrowserPerfTest {
   }
 
   void RunTest(const std::string& test_name, ThroughputTestFlags flags) {
-    using namespace trace_analyzer;
+    using trace_analyzer::Query;
+    using trace_analyzer::TraceAnalyzer;
+    using trace_analyzer::TraceEventVector;
 
     if (use_gpu_ && !IsGpuAvailable()) {
       LOG(WARNING) << "Test skipped: requires gpu. Pass --enable-gpu on the "
@@ -108,7 +110,7 @@ class ThroughputTest : public BrowserPerfTest {
 
     // Check if GPU is rendering:
     analyzer.reset(TraceAnalyzer::Create(json_events));
-    bool ran_on_gpu = (analyzer->FindEvents(Query(EVENT_NAME) ==
+    bool ran_on_gpu = (analyzer->FindEvents(Query::EventName() ==
         Query::String("SwapBuffers"), &events_gpu) > 0u);
     LOG(INFO) << "Mode: " << (ran_on_gpu ? "GPU" : "Software");
     EXPECT_EQ(use_gpu_, ran_on_gpu);
@@ -122,8 +124,8 @@ class ThroughputTest : public BrowserPerfTest {
     // Search for frame ticks. We look for both SW and GPU frame ticks so that
     // the test can verify that only one or the other are found.
     analyzer.reset(TraceAnalyzer::Create(json_events));
-    Query query_sw = Query(EVENT_NAME) == Query::String("TestFrameTickSW");
-    Query query_gpu = Query(EVENT_NAME) == Query::String("TestFrameTickGPU");
+    Query query_sw = Query::EventName() == Query::String("TestFrameTickSW");
+    Query query_gpu = Query::EventName() == Query::String("TestFrameTickGPU");
     analyzer->FindEvents(query_sw, &events_sw);
     analyzer->FindEvents(query_gpu, &events_gpu);
     TraceEventVector* frames = NULL;
@@ -139,7 +141,7 @@ class ThroughputTest : public BrowserPerfTest {
     // Cull a few leading and trailing events as they might be unreliable.
     TraceEventVector rate_events(frames->begin() + kIgnoreSomeFrames,
                                  frames->end() - kIgnoreSomeFrames);
-    RateStats stats;
+    trace_analyzer::RateStats stats;
     ASSERT_TRUE(GetRateStats(rate_events, &stats));
     printf("FPS = %f\n", 1000000.0 / stats.mean_us);
 

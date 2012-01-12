@@ -62,7 +62,14 @@
 
 namespace {
 
-using namespace trace_analyzer;
+using trace_analyzer::CountMatches;
+using trace_analyzer::FindClosest;
+using trace_analyzer::FindLastOf;
+using trace_analyzer::RateStats;
+using trace_analyzer::Query;
+using trace_analyzer::TraceAnalyzer;
+using trace_analyzer::TraceEvent;
+using trace_analyzer::TraceEventVector;
 
 enum LatencyTestMode {
   kWebGL,
@@ -96,7 +103,7 @@ class LatencyTest
       public ::testing::WithParamInterface<int> {
  public:
   LatencyTest() :
-      query_instant_(Query(EVENT_PHASE) ==
+      query_instant_(Query::EventPhase() ==
                      Query::Phase(TRACE_EVENT_PHASE_INSTANT)),
       // These queries are initialized in RunTest.
       query_swaps_(Query::Bool(false)),
@@ -232,27 +239,27 @@ void LatencyTest::RunTest(LatencyTestMode mode,
   // Construct queries for searching trace events via TraceAnalyzer.
   if (mode_ == kWebGL) {
     query_swaps_ = query_instant_ &&
-        Query(EVENT_NAME) == Query::String("SwapBuffers") &&
-        Query(EVENT_ARG, "width") != Query::Int(kWebGLCanvasWidth);
+        Query::EventName() == Query::String("SwapBuffers") &&
+        Query::EventArg("width") != Query::Int(kWebGLCanvasWidth);
   } else if (mode_ == kSoftware) {
     // Software updates need to have x=0 and y=0 to contain the input color.
     query_swaps_ = query_instant_ &&
-        Query(EVENT_NAME) == Query::String("UpdateRect") &&
-        Query(EVENT_ARG, "x+y") == Query::Int(0);
+        Query::EventName() == Query::String("UpdateRect") &&
+        Query::EventArg("x+y") == Query::Int(0);
   }
   query_inputs_ = query_instant_ &&
-      Query(EVENT_NAME) == Query::String("MouseEventBegin");
+      Query::EventName() == Query::String("MouseEventBegin");
   query_blits_ = query_instant_ &&
-      Query(EVENT_NAME) == Query::String("DoBlit") &&
-      Query(EVENT_ARG, "width") == Query::Int(kWebGLCanvasWidth);
+      Query::EventName() == Query::String("DoBlit") &&
+      Query::EventArg("width") == Query::Int(kWebGLCanvasWidth);
   query_clears_ = query_instant_ &&
-      Query(EVENT_NAME) == Query::String("DoClear") &&
-      Query(EVENT_ARG, "green") == Query::Int(kClearColorGreen);
+      Query::EventName() == Query::String("DoClear") &&
+      Query::EventArg("green") == Query::Int(kClearColorGreen);
   Query query_width_swaps = query_swaps_;
   if (mode_ == kSoftware) {
     query_width_swaps = query_instant_ &&
-        Query(EVENT_NAME) == Query::String("UpdateRectWidth") &&
-        Query(EVENT_ARG, "width") > Query::Int(kWebGLCanvasWidth);
+        Query::EventName() == Query::String("UpdateRectWidth") &&
+        Query::EventArg("width") > Query::Int(kWebGLCanvasWidth);
   }
 
   // Set path to test html.
@@ -439,7 +446,7 @@ double LatencyTest::CalculateLatency() {
         // Find the corresponding mouse input.
         size_t input_pos = 0;
         Query query_mouse_event = query_inputs_ &&
-            Query(EVENT_ARG, "x") == Query::Int(mouse_x);
+            Query::EventArg("x") == Query::Int(mouse_x);
         EXPECT_TRUE(FindLastOf(events, query_mouse_event, i, &input_pos));
 
         // Step 4: Find the nearest onscreen SwapBuffers to this input event.
