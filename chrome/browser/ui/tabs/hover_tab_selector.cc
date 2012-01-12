@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,12 +32,13 @@ void HoverTabSelector::StartTabTransition(int index) {
   if (index != tab_strip_model_->active_index()) {
     // The delay between beginning to hover over a tab and the transition
     // to that tab taking place.
-    const int64 kHoverTransitionDelayInMillis = 500;
+    const base::TimeDelta kHoverTransitionDelay =
+        base::TimeDelta::FromMilliseconds(500);
     tab_transition_tab_index_ = index;
     MessageLoop::current()->PostDelayedTask(
         FROM_HERE, base::Bind(&HoverTabSelector::PerformTabTransition,
                               weak_factory_.GetWeakPtr()),
-        kHoverTransitionDelayInMillis);
+        kHoverTransitionDelay);
   }
 }
 

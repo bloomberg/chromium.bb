@@ -111,7 +111,7 @@ void BaseSessionService::StartSaveTimer() {
     MessageLoop::current()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&BaseSessionService::Save, weak_factory_.GetWeakPtr()),
-        kSaveDelayMS);
+        base::TimeDelta::FromMilliseconds(kSaveDelayMS));
   }
 }
 

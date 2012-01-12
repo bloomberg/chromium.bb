@@ -734,7 +734,10 @@ void TimedMessageLoopRunner::Quit() {
 
 void TimedMessageLoopRunner::QuitAfter(int ms) {
   quit_loop_invoked_ = true;
-  loop_->PostDelayedTask(FROM_HERE, MessageLoop::QuitClosure(), ms);
+  loop_->PostDelayedTask(
+      FROM_HERE,
+      MessageLoop::QuitClosure(),
+      base::TimeDelta::FromMilliseconds(ms));
 }
 
 namespace {

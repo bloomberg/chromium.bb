@@ -186,7 +186,7 @@ AutolaunchInfoBarDelegate::AutolaunchInfoBarDelegate(
       FROM_HERE,
       base::Bind(&AutolaunchInfoBarDelegate::AllowExpiry,
                  weak_factory_.GetWeakPtr()),
-      8000);  // 8 seconds.
+      base::TimeDelta::FromSeconds(8));
 }
 
 AutolaunchInfoBarDelegate::~AutolaunchInfoBarDelegate() {
@@ -294,7 +294,7 @@ DefaultBrowserInfoBarDelegate::DefaultBrowserInfoBarDelegate(
   MessageLoop::current()->PostDelayedTask(
       FROM_HERE, base::Bind(&DefaultBrowserInfoBarDelegate::AllowExpiry,
                             weak_factory_.GetWeakPtr()),
-      8000);  // 8 seconds.
+      base::TimeDelta::FromSeconds(8));
 }
 
 DefaultBrowserInfoBarDelegate::~DefaultBrowserInfoBarDelegate() {

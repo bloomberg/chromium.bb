@@ -4898,7 +4898,7 @@ void Browser::ScheduleUIUpdate(const WebContents* source,
         FROM_HERE,
         base::Bind(&Browser::ProcessPendingUIUpdates,
                    chrome_updater_factory_.GetWeakPtr()),
-        kUIUpdateCoalescingTimeMS);
+        base::TimeDelta::FromMilliseconds(kUIUpdateCoalescingTimeMS));
   }
 }
 
