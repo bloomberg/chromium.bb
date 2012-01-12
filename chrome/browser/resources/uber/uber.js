@@ -73,19 +73,61 @@ cr.define('uber', function() {
       selectPageForNavItem($(e.state.pageId).associatedNavItem);
   }
 
+  /**
+   * Handles postMessage calls from the iframes of the contained pages.
+   *
+   * The pages request functionality from this object by passing an object of
+   * the following form:
+   *
+   *  { method : "methodToInvoke",
+   *    otherData : ...
+   *  }
+   *
+   * |method| is required, but any other properties are optional. Extra
+   * properties required by a method must be specified by that method's
+   * documentation.
+   *
+   * @param {Event} e The posted object.
+   */
   function handleWindowMessage(e) {
-    if (e.data === 'showOverlay')
-      document.querySelector('.overlay').classList.add('showing');
-    else if (e.data === 'hideOverlay')
-      document.querySelector('.overlay').classList.remove('showing');
+    if (e.data.method === 'showOverlay')
+      showOverlay_();
+    else if (e.data.method === 'hideOverlay')
+      hideOverlay_();
+    else if (e.data.method === 'setTitle')
+      setTitle_(e.data.params);
     else
       console.error('Received unexpected message: ' + e.data);
+  }
+
+  /**
+   * @private
+   */
+  function showOverlay_() {
+    document.querySelector('.overlay').classList.add('showing');
+  }
+
+  /**
+   * @private
+   */
+  function hideOverlay_() {
+    document.querySelector('.overlay').classList.remove('showing');
+  }
+
+  /**
+   * Sets the title of the page.
+   * @param {Object} params Must contain a |title| property.
+   * @private
+   */
+  function setTitle_(params) {
+    document.title = params.title;
   }
 
   return {
     onLoad: onLoad,
     onPopHistoryState: onPopHistoryState
   };
+
 });
 
 window.addEventListener('popstate', uber.onPopHistoryState);

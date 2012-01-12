@@ -159,7 +159,7 @@ void BrowserOptionsHandler::GetLocalizedValues(
   };
 
   RegisterStrings(localized_strings, resources, arraysize(resources));
-  RegisterTitle(localized_strings, "settingsTitle", IDS_SETTINGS_TITLE);
+  RegisterTitle(localized_strings, "browserPage", IDS_SETTINGS_TITLE);
 
   localized_strings->SetString(
       "syncOverview",

@@ -133,7 +133,7 @@ cr.define('options', function() {
       this.updateHistoryState_();
 
     // Always update the page title.
-    document.title = targetPage.title;
+    this.setTitle_(targetPage.title);
 
     // Notify pages if they were shown.
     for (var name in this.registeredPages) {
@@ -178,6 +178,38 @@ cr.define('options', function() {
         $('subpage-sheet-container-' + topmostPage.nestingLevel) :
         $('page-container');
     topmostPageContainer.removeAttribute('aria-hidden');
+  };
+
+  /**
+   * Invokes a method on the parent window. This is a convenience method for
+   * API calls into the parent.
+   * @param {String} method The name of the method to invoke.
+   * @param {Object} params Optional property bag of parameters to pass to the
+   *     invoked method.
+   * @private
+   */
+  OptionsPage.invokeMethodOnParent_ = function(method, params) {
+    if (!window.parent)
+      return;
+
+    var data = new Object;
+    data.method = method;
+
+    // Copy the attributes in |params| over to |data|.
+    for (var attr in params)
+      data[attr] = params[attr];
+
+    window.parent.postMessage(data, 'chrome://chrome');
+  };
+
+  /**
+   * Sets the title of the page. This is accomplished by calling into the
+   * parent page API.
+   * @param {String} title The title string.
+   * @private
+   */
+  OptionsPage.setTitle_ = function(title) {
+    this.invokeMethodOnParent_('setTitle', {title: title});
   };
 
   /**
@@ -241,7 +273,7 @@ cr.define('options', function() {
                          page.title,
                          '/' + page.name);
     // Update tab title.
-    document.title = page.title;
+    this.setTitle_(page.title);
   };
 
   /**
@@ -263,8 +295,7 @@ cr.define('options', function() {
       if (overlay.didShowPage) overlay.didShowPage();
     }
 
-    if (window.parent)
-      window.parent.postMessage('showOverlay', 'chrome://chrome');
+    this.invokeMethodOnParent_('showOverlay');
 
     return true;
   };
@@ -301,8 +332,7 @@ cr.define('options', function() {
       return;
 
     overlay.visible = false;
-    if (window.parent)
-      window.parent.postMessage('hideOverlay', 'chrome://chrome');
+    this.invokeMethodOnParent_('hideOverlay');
 
     if (overlay.didClosePage) overlay.didClosePage();
     this.updateHistoryState_();
