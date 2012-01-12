@@ -92,10 +92,10 @@ testsuite-report() {
 }
 
 all() {
-  testsuite-prereq "$@"
+  testsuite-prereq "$1"
   testsuite-clean
   testsuite-configure
-  testsuite-run "$@"
+  testsuite-run "$1"
   testsuite-report "$@"
 }
 

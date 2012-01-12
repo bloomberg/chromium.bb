@@ -20,7 +20,7 @@
 set -o nounset
 
 readonly TEST_ROOT=${TEST_ROOT:-/tmp/nacl_compiler_test}
-readonly TEST_TARBALL_URL=${TEST_TARBALL_URL:-http://gcc.petsads.us/releases/gcc-4.6.1/gcc-testsuite-4.6.1.tar.bz2}
+readonly TEST_TARBALL_URL=${TEST_TARBALL_URL:-http://commondatastorage.googleapis.com/nativeclient-mirror/nacl/gcc-testsuite-4.6.1.tar.bz2}
 
 readonly TEST_PATH_C=${TEST_ROOT}/gcc-4.6.1/gcc/testsuite/gcc.c-torture/execute
 readonly TEST_PATH_CPP=${TEST_ROOT}/gcc-4.6.1/gcc/testsuite/g++.dg
