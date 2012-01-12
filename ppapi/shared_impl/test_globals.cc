@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,11 +8,6 @@ namespace ppapi {
 
 TestGlobals::TestGlobals()
     : ppapi::PpapiGlobals(),
-      callback_tracker_(new CallbackTracker) {
-}
-
-TestGlobals::TestGlobals(PpapiGlobals::ForTest for_test)
-    : ppapi::PpapiGlobals(for_test),
       callback_tracker_(new CallbackTracker) {
 }
 
@@ -38,10 +33,6 @@ FunctionGroupBase* TestGlobals::GetFunctionAPI(PP_Instance inst, ApiID id) {
 
 PP_Module TestGlobals::GetModuleForInstance(PP_Instance instance) {
   return 0;
-}
-
-base::Lock* TestGlobals::GetProxyLock() {
-  return NULL;
 }
 
 }  // namespace ppapi

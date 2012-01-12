@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -85,7 +85,7 @@ PP_Var PluginVarSerializationRules::ReceivePassRef(const PP_Var& var,
   // plugin code started to return a value, which means it gets another ref
   // on behalf of the caller. This needs to be transferred to the plugin and
   // folded in to its set of refs it maintains (with one ref representing all
-  // of them in the browser).
+  // fo them in the browser).
   if (var.type == PP_VARTYPE_OBJECT) {
     DCHECK(dispatcher->IsPlugin());
     return var_tracker_->ReceiveObjectPassRef(

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -139,8 +139,7 @@ bool ProxyTestHarnessBase::SupportsInterface(const char* name) {
 
 // PluginProxyTestHarness ------------------------------------------------------
 
-PluginProxyTestHarness::PluginProxyTestHarness()
-    : plugin_globals_(PpapiGlobals::ForTest()) {
+PluginProxyTestHarness::PluginProxyTestHarness() {
 }
 
 PluginProxyTestHarness::~PluginProxyTestHarness() {
@@ -152,7 +151,6 @@ Dispatcher* PluginProxyTestHarness::GetDispatcher() {
 
 void PluginProxyTestHarness::SetUpHarness() {
   // These must be first since the dispatcher set-up uses them.
-  PpapiGlobals::SetPpapiGlobalsOnThreadForTest(GetGlobals());
   resource_tracker().DidCreateInstance(pp_instance());
 
   plugin_dispatcher_.reset(new PluginDispatcher(
@@ -168,7 +166,6 @@ void PluginProxyTestHarness::SetUpHarnessWithChannel(
     base::WaitableEvent* shutdown_event,
     bool is_client) {
   // These must be first since the dispatcher set-up uses them.
-  PpapiGlobals::SetPpapiGlobalsOnThreadForTest(GetGlobals());
   resource_tracker().DidCreateInstance(pp_instance());
   plugin_delegate_mock_.Init(ipc_message_loop, shutdown_event);
 
@@ -251,8 +248,7 @@ void PluginProxyTest::TearDown() {
 
 // HostProxyTestHarness --------------------------------------------------------
 
-HostProxyTestHarness::HostProxyTestHarness()
-    : host_globals_(PpapiGlobals::ForTest()) {
+HostProxyTestHarness::HostProxyTestHarness() {
 }
 
 HostProxyTestHarness::~HostProxyTestHarness() {
@@ -263,8 +259,6 @@ Dispatcher* HostProxyTestHarness::GetDispatcher() {
 }
 
 void HostProxyTestHarness::SetUpHarness() {
-  // These must be first since the dispatcher set-up uses them.
-  PpapiGlobals::SetPpapiGlobalsOnThreadForTest(GetGlobals());
   host_dispatcher_.reset(new HostDispatcher(
       base::Process::Current().handle(),
       pp_module(),
@@ -278,10 +272,7 @@ void HostProxyTestHarness::SetUpHarnessWithChannel(
     base::MessageLoopProxy* ipc_message_loop,
     base::WaitableEvent* shutdown_event,
     bool is_client) {
-  // These must be first since the dispatcher set-up uses them.
-  PpapiGlobals::SetPpapiGlobalsOnThreadForTest(GetGlobals());
   delegate_mock_.Init(ipc_message_loop, shutdown_event);
-
   host_dispatcher_.reset(new HostDispatcher(
       base::Process::Current().handle(),
       pp_module(),
@@ -354,6 +345,7 @@ void TwoWayTest::SetUp() {
 
   IPC::ChannelHandle handle;
   handle.name = "TwoWayTestChannel";
+
   base::WaitableEvent remote_harness_set_up(true, false);
   plugin_thread_.message_loop_proxy()->PostTask(
       FROM_HERE,

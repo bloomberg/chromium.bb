@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -27,7 +27,6 @@ class TestVarTracker : public VarTracker {
 class TestGlobals : public PpapiGlobals {
  public:
   TestGlobals();
-  TestGlobals(PpapiGlobals::ForTest);
   virtual ~TestGlobals();
 
   // PpapiGlobals implementation.
@@ -38,7 +37,6 @@ class TestGlobals : public PpapiGlobals {
   virtual FunctionGroupBase* GetFunctionAPI(PP_Instance inst,
                                             ApiID id) OVERRIDE;
   virtual PP_Module GetModuleForInstance(PP_Instance instance) OVERRIDE;
-  virtual base::Lock* GetProxyLock() OVERRIDE;
 
  private:
   ResourceTracker resource_tracker_;

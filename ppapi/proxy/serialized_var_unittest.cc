@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -115,8 +115,7 @@ TEST_F(SerializedVarTest, PluginSerializedStringVarInOutParam) {
   EXPECT_EQ(0u, sink().message_count());
 }
 
-// Tests receiving an argument and passing it back to the browser as an output
-// parameter.
+// Tests receiving an argument and passing it back out as an output parameter.
 TEST_F(SerializedVarTest, PluginSerializedVarOutParam) {
   PP_Var host_object = MakeObjectVar(0x31337);
 

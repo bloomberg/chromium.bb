@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -45,13 +45,8 @@ HostGlobals::HostGlobals() : ::ppapi::PpapiGlobals() {
   host_globals_ = this;
 }
 
-HostGlobals::HostGlobals(::ppapi::PpapiGlobals::ForTest for_test)
-    : ::ppapi::PpapiGlobals(for_test) {
-  DCHECK(!host_globals_);
-}
-
 HostGlobals::~HostGlobals() {
-  DCHECK(host_globals_ == this || !host_globals_);
+  DCHECK(host_globals_ == this);
   host_globals_ = NULL;
 }
 
@@ -119,11 +114,6 @@ PP_Module HostGlobals::GetModuleForInstance(PP_Instance instance) {
   if (!inst)
     return 0;
   return inst->module()->pp_module();
-}
-
-base::Lock* HostGlobals::GetProxyLock() {
-  // We do not lock on the host side.
-  return NULL;
 }
 
 PP_Module HostGlobals::AddModule(PluginModule* module) {
@@ -205,10 +195,6 @@ PluginInstance* HostGlobals::GetInstance(PP_Instance instance) {
   if (found == instance_map_.end())
     return NULL;
   return found->second->instance;
-}
-
-bool HostGlobals::IsHostGlobals() const {
-  return true;
 }
 
 }  // namespace ppapi

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -139,6 +139,21 @@ void PluginVarTracker::ReleaseHostObject(PluginDispatcher* dispatcher,
 
   // Now just release the object given the plugin var ID.
   ReleaseVar(found->second);
+}
+
+int PluginVarTracker::GetRefCountForObject(const PP_Var& plugin_object) {
+  VarMap::iterator found = GetLiveVar(plugin_object);
+  if (found == live_vars_.end())
+    return -1;
+  return found->second.ref_count;
+}
+
+int PluginVarTracker::GetTrackedWithNoReferenceCountForObject(
+    const PP_Var& plugin_object) {
+  VarMap::iterator found = GetLiveVar(plugin_object);
+  if (found == live_vars_.end())
+    return -1;
+  return found->second.track_with_no_reference_count;
 }
 
 ArrayBufferVar* PluginVarTracker::CreateArrayBuffer(uint32 size_in_bytes) {

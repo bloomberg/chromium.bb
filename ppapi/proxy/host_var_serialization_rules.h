@@ -18,7 +18,8 @@ namespace proxy {
 // Implementation of the VarSerializationRules interface for the host side.
 class HostVarSerializationRules : public VarSerializationRules {
  public:
-  HostVarSerializationRules(PP_Module pp_module);
+  HostVarSerializationRules(const PPB_Var* var_interface,
+                            PP_Module pp_module);
   ~HostVarSerializationRules();
 
   // VarSerialization implementation.
@@ -39,6 +40,7 @@ class HostVarSerializationRules : public VarSerializationRules {
   // string object.
   void VarToString(const PP_Var& var, std::string* str);
 
+  const PPB_Var* var_interface_;
   PP_Module pp_module_;
 
   DISALLOW_COPY_AND_ASSIGN(HostVarSerializationRules);

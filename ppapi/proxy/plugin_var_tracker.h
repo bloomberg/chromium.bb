@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -55,6 +55,12 @@ class PPAPI_PROXY_EXPORT PluginVarTracker : public VarTracker {
   // returned by GetHostObject).
   void ReleaseHostObject(PluginDispatcher* dispatcher,
                          const PP_Var& host_object);
+
+  // Retrieves the internal reference counts for testing. Returns 0 if we
+  // know about the object but the corresponding value is 0, or -1 if the
+  // given object ID isn't in our map.
+  int GetRefCountForObject(const PP_Var& plugin_object);
+  int GetTrackedWithNoReferenceCountForObject(const PP_Var& plugin_object);
 
  private:
   // VarTracker protected overrides.

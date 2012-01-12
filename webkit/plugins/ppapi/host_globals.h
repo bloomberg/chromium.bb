@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,16 +22,12 @@ class PluginModule;
 class HostGlobals : public ::ppapi::PpapiGlobals {
  public:
   HostGlobals();
-  HostGlobals(::ppapi::PpapiGlobals::ForTest);
   virtual ~HostGlobals();
 
   // Getter for the global singleton. Generally, you should use
   // PpapiGlobals::Get() when possible. Use this only when you need some
   // host-specific functionality.
-  inline static HostGlobals* Get() {
-    DCHECK(PpapiGlobals::Get()->IsHostGlobals());
-    return static_cast<HostGlobals*>(PpapiGlobals::Get());
-  }
+  inline static HostGlobals* Get() { return host_globals_; }
 
   // PpapiGlobals implementation.
   virtual ::ppapi::ResourceTracker* GetResourceTracker() OVERRIDE;
@@ -42,7 +38,6 @@ class HostGlobals : public ::ppapi::PpapiGlobals {
       PP_Instance inst,
       ::ppapi::ApiID id) OVERRIDE;
   virtual PP_Module GetModuleForInstance(PP_Instance instance) OVERRIDE;
-  virtual base::Lock* GetProxyLock() OVERRIDE;
 
   HostVarTracker* host_var_tracker() {
     return &host_var_tracker_;
@@ -80,9 +75,6 @@ class HostGlobals : public ::ppapi::PpapiGlobals {
   WEBKIT_PLUGINS_EXPORT PluginInstance* GetInstance(PP_Instance instance);
 
  private:
-  // PpapiGlobals overrides.
-  virtual bool IsHostGlobals() const OVERRIDE;
-
   // Per-instance data we track.
   struct InstanceData;
 

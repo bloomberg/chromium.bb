@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,6 @@
 #define PPAPI_PROXY_PLUGIN_GLOBALS_H_
 
 #include "base/compiler_specific.h"
-#include "base/synchronization/lock.h"
 #include "ppapi/proxy/plugin_resource_tracker.h"
 #include "ppapi/proxy/plugin_var_tracker.h"
 #include "ppapi/proxy/ppapi_proxy_export.h"
@@ -21,16 +20,12 @@ class PluginProxyDelegate;
 class PPAPI_PROXY_EXPORT PluginGlobals : public PpapiGlobals {
  public:
   PluginGlobals();
-  PluginGlobals(PpapiGlobals::ForTest);
   virtual ~PluginGlobals();
 
   // Getter for the global singleton. Generally, you should use
   // PpapiGlobals::Get() when possible. Use this only when you need some
   // plugin-specific functionality.
-  inline static PluginGlobals* Get() {
-    DCHECK(PpapiGlobals::Get()->IsPluginGlobals());
-    return static_cast<PluginGlobals*>(PpapiGlobals::Get());
-  }
+  inline static PluginGlobals* Get() { return plugin_globals_; }
 
   // PpapiGlobals implementation.
   virtual ResourceTracker* GetResourceTracker() OVERRIDE;
@@ -40,7 +35,6 @@ class PPAPI_PROXY_EXPORT PluginGlobals : public PpapiGlobals {
   virtual FunctionGroupBase* GetFunctionAPI(PP_Instance inst,
                                             ApiID id) OVERRIDE;
   virtual PP_Module GetModuleForInstance(PP_Instance instance) OVERRIDE;
-  virtual base::Lock* GetProxyLock() OVERRIDE;
 
   // Getters for the plugin-specific versions.
   PluginResourceTracker* plugin_resource_tracker() {
@@ -59,16 +53,12 @@ class PPAPI_PROXY_EXPORT PluginGlobals : public PpapiGlobals {
   }
 
  private:
-  // PpapiGlobals overrides.
-  virtual bool IsPluginGlobals() const OVERRIDE;
-
   static PluginGlobals* plugin_globals_;
 
   PluginProxyDelegate* plugin_proxy_delegate_;
   PluginResourceTracker plugin_resource_tracker_;
   PluginVarTracker plugin_var_tracker_;
   scoped_refptr<CallbackTracker> callback_tracker_;
-  base::Lock proxy_lock_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginGlobals);
 };

@@ -10,7 +10,6 @@
 #include "ppapi/c/pp_var.h"
 #include "ppapi/c/ppb_var.h"
 #include "ppapi/proxy/ppapi_proxy_test.h"
-#include "ppapi/shared_impl/ppapi_globals.h"
 #include "ppapi/shared_impl/ppb_var_shared.h"
 
 namespace {
@@ -97,13 +96,12 @@ class CreateVarThreadDelegate : public base::PlatformThread::Delegate {
   // read the var back out to |strings_out[i]|.
   CreateVarThreadDelegate(PP_Module pp_module, const std::string* strings_in,
                           PP_Var* vars_out, std::string* strings_out,
-                          size_t size, PpapiGlobals* globals)
+                          size_t size)
       : pp_module_(pp_module), strings_in_(strings_in), vars_out_(vars_out),
-        strings_out_(strings_out), size_(size), globals_(globals) {
+        strings_out_(strings_out), size_(size) {
   }
   virtual ~CreateVarThreadDelegate() {}
   virtual void ThreadMain() {
-    PpapiGlobals::SetPpapiGlobalsOnThreadForTest(globals_);
     const PPB_Var* ppb_var = ppapi::PPB_Var_Shared::GetVarInterface1_1();
     for (size_t i = 0; i < size_; ++i) {
       vars_out_[i] = ppb_var->VarFromUtf8(strings_in_[i].c_str(),
@@ -117,20 +115,16 @@ class CreateVarThreadDelegate : public base::PlatformThread::Delegate {
   PP_Var* vars_out_;
   std::string* strings_out_;
   size_t size_;
-  PpapiGlobals* globals_;
 };
 
 // A thread that will increment and decrement the reference count of every var
 // multiple times.
 class ChangeRefVarThreadDelegate : public base::PlatformThread::Delegate {
  public:
-  ChangeRefVarThreadDelegate(const std::vector<PP_Var>& vars,
-                             PpapiGlobals* globals)
-      : vars_(vars), globals_(globals) {
+  ChangeRefVarThreadDelegate(const std::vector<PP_Var>& vars) : vars_(vars) {
   }
   virtual ~ChangeRefVarThreadDelegate() {}
   virtual void ThreadMain() {
-    PpapiGlobals::SetPpapiGlobalsOnThreadForTest(globals_);
     const PPB_Var* ppb_var = ppapi::PPB_Var_Shared::GetVarInterface1_1();
     // Increment and decrement the reference count for each var kRefsToAdd
     // times. Note that we always AddRef once before doing the matching Release,
@@ -150,19 +144,15 @@ class ChangeRefVarThreadDelegate : public base::PlatformThread::Delegate {
   }
  private:
   std::vector<PP_Var> vars_;
-  PpapiGlobals* globals_;
 };
 
 // A thread that will decrement the reference count of every var once.
 class RemoveRefVarThreadDelegate : public base::PlatformThread::Delegate {
  public:
-  RemoveRefVarThreadDelegate(const std::vector<PP_Var>& vars,
-                             PpapiGlobals* globals)
-      : vars_(vars), globals_(globals) {
+  RemoveRefVarThreadDelegate(const std::vector<PP_Var>& vars) : vars_(vars) {
   }
   virtual ~RemoveRefVarThreadDelegate() {}
   virtual void ThreadMain() {
-    PpapiGlobals::SetPpapiGlobalsOnThreadForTest(globals_);
     const PPB_Var* ppb_var = ppapi::PPB_Var_Shared::GetVarInterface1_1();
     for (size_t i = 0; i < kNumStrings; ++i) {
       ppb_var->Release(vars_[i]);
@@ -170,7 +160,6 @@ class RemoveRefVarThreadDelegate : public base::PlatformThread::Delegate {
   }
  private:
   std::vector<PP_Var> vars_;
-  PpapiGlobals* globals_;
 };
 
 }  // namespace
@@ -197,8 +186,7 @@ TEST_F(PPB_VarTest, DISABLED_Threads) {
                                 &vars_[slice_start],
                                 &strings_out[slice_start],
                                 std::min(strings_per_thread,
-                                         kNumStrings - slice_start),
-                                GetGlobals()));
+                                         kNumStrings - slice_start)));
   }
   // Now run then join all the threads.
   for (size_t i = 0; i < kNumThreads; ++i)
@@ -213,8 +201,7 @@ TEST_F(PPB_VarTest, DISABLED_Threads) {
   std::vector<base::PlatformThreadHandle> change_ref_var_threads(kNumThreads);
   std::vector<ChangeRefVarThreadDelegate> change_ref_var_delegates;
   for (size_t i = 0; i < kNumThreads; ++i)
-    change_ref_var_delegates.push_back(
-        ChangeRefVarThreadDelegate(vars_, GetGlobals()));
+    change_ref_var_delegates.push_back(ChangeRefVarThreadDelegate(vars_));
   for (size_t i = 0; i < kNumThreads; ++i) {
     base::PlatformThread::Create(0, &change_ref_var_delegates[i],
                                  &change_ref_var_threads[i]);
@@ -237,8 +224,7 @@ TEST_F(PPB_VarTest, DISABLED_Threads) {
   std::vector<base::PlatformThreadHandle> remove_ref_var_threads(kNumThreads);
   std::vector<RemoveRefVarThreadDelegate> remove_ref_var_delegates;
   for (size_t i = 0; i < kNumThreads; ++i)
-    remove_ref_var_delegates.push_back(
-        RemoveRefVarThreadDelegate(vars_, GetGlobals()));
+    remove_ref_var_delegates.push_back(RemoveRefVarThreadDelegate(vars_));
   for (size_t i = 0; i < kNumThreads; ++i) {
     base::PlatformThread::Create(0, &remove_ref_var_delegates[i],
                                  &remove_ref_var_threads[i]);

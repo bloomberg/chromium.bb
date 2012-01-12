@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -67,12 +67,6 @@ class PPAPI_SHARED_EXPORT VarTracker {
   // used in production code. The PP_Vars are returned in no particular order,
   // and their reference counts are unaffected.
   std::vector<PP_Var> GetLiveVars();
-
-  // Retrieves the internal reference counts for testing. Returns 0 if we
-  // know about the object but the corresponding value is 0, or -1 if the
-  // given object ID isn't in our map.
-  int GetRefCountForObject(const PP_Var& object);
-  int GetTrackedWithNoReferenceCountForObject(const PP_Var& object);
 
  protected:
   struct VarInfo {
