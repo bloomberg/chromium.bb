@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,9 +22,6 @@ void SetPreferences(const Extension* extension,
     // be subject to that.
     webkit_prefs->allow_scripts_to_close_windows = true;
 
-    // Enable privileged WebGL extensions.
-    webkit_prefs->privileged_webgl_extensions_enabled = true;
-
     // Disable anything that requires the GPU process for background pages.
     // See http://crbug.com/64512 and http://crbug.com/64841.
     if (render_view_type == chrome::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE) {
@@ -32,6 +29,11 @@ void SetPreferences(const Extension* extension,
       webkit_prefs->accelerated_compositing_enabled = false;
       webkit_prefs->accelerated_2d_canvas_enabled = false;
     }
+  }
+  if (extension) {
+    // Enable WebGL features that regular pages can't access, since they add
+    // more risk of fingerprinting.
+    webkit_prefs->privileged_webgl_extensions_enabled = true;
   }
 }
 
