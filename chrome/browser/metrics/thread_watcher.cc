@@ -230,7 +230,7 @@ void ThreadWatcher::PostPingMessage() {
           FROM_HERE,
           base::Bind(&ThreadWatcher::OnCheckResponsiveness,
                      weak_ptr_factory_.GetWeakPtr(), ping_sequence_number_),
-          unresponsive_time_.InMilliseconds());
+          unresponsive_time_);
   } else {
     // Watched thread might have gone away, stop watching it.
     DeActivateThreadWatching();
@@ -266,7 +266,7 @@ void ThreadWatcher::OnPongMessage(uint64 ping_sequence_number) {
       FROM_HERE,
       base::Bind(&ThreadWatcher::PostPingMessage,
                  weak_ptr_factory_.GetWeakPtr()),
-      sleep_time_.InMilliseconds());
+      sleep_time_);
 }
 
 void ThreadWatcher::OnCheckResponsiveness(uint64 ping_sequence_number) {
@@ -295,7 +295,7 @@ void ThreadWatcher::OnCheckResponsiveness(uint64 ping_sequence_number) {
       FROM_HERE,
       base::Bind(&ThreadWatcher::OnCheckResponsiveness,
                  weak_ptr_factory_.GetWeakPtr(), ping_sequence_number_),
-      unresponsive_time_.InMilliseconds());
+      unresponsive_time_);
   responsive_ = false;
 }
 
@@ -423,7 +423,7 @@ void ThreadWatcherList::StartWatchingAll(const CommandLine& command_line) {
                  unresponsive_threshold,
                  crash_on_hang_thread_names,
                  live_threads_threshold),
-      base::TimeDelta::FromSeconds(120).InMilliseconds());
+      base::TimeDelta::FromSeconds(120));
 }
 
 // static
@@ -731,28 +731,28 @@ bool WatchDogThread::CurrentlyOnWatchDogThread() {
 // static
 bool WatchDogThread::PostTask(const tracked_objects::Location& from_here,
                               const base::Closure& task) {
-  return PostTaskHelper(from_here, task, 0);
+  return PostTaskHelper(from_here, task, base::TimeDelta());
 }
 
 // static
 bool WatchDogThread::PostDelayedTask(const tracked_objects::Location& from_here,
                                      const base::Closure& task,
-                                     int64 delay_ms) {
-  return PostTaskHelper(from_here, task, delay_ms);
+                                     base::TimeDelta delay) {
+  return PostTaskHelper(from_here, task, delay);
 }
 
 // static
 bool WatchDogThread::PostTaskHelper(
     const tracked_objects::Location& from_here,
     const base::Closure& task,
-    int64 delay_ms) {
+    base::TimeDelta delay) {
   {
     base::AutoLock lock(g_watchdog_lock.Get());
 
     MessageLoop* message_loop = g_watchdog_thread ?
         g_watchdog_thread->message_loop() : NULL;
     if (message_loop) {
-      message_loop->PostDelayedTask(from_here, task, delay_ms);
+      message_loop->PostDelayedTask(from_here, task, delay);
       return true;
     }
   }

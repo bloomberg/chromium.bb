@@ -220,8 +220,8 @@ static const int kEventLimit = 2400;
 // limit is exceeded.
 static const int kUploadLogAvoidRetransmitSize = 50000;
 
-// Interval, in seconds, between state saves.
-static const int kSaveStateInterval = 5 * 60;  // five minutes
+// Interval, in minutes, between state saves.
+static const int kSaveStateIntervalMinutes = 5;
 
 // static
 MetricsService::ShutdownCleanliness MetricsService::clean_shutdown_status_ =
@@ -766,7 +766,7 @@ void MetricsService::ScheduleNextStateSave() {
   MessageLoop::current()->PostDelayedTask(FROM_HERE,
       base::Bind(&MetricsService::SaveLocalState,
                  state_saver_factory_.GetWeakPtr()),
-      kSaveStateInterval * 1000);
+      base::TimeDelta::FromMinutes(kSaveStateIntervalMinutes));
 }
 
 void MetricsService::SaveLocalState() {
@@ -778,7 +778,7 @@ void MetricsService::SaveLocalState() {
 
   RecordCurrentState(pref);
 
-  // TODO(jar): Does this run down the batteries????
+  // TODO(jar):110021 Does this run down the batteries????
   ScheduleNextStateSave();
 }
 
@@ -805,7 +805,7 @@ void MetricsService::StartRecording() {
         base::Bind(&MetricsService::InitTaskGetHardwareClass,
             base::Unretained(this),
             MessageLoop::current()->message_loop_proxy()),
-        kInitializationDelaySeconds * 1000);
+        kInitializationDelaySeconds);
   }
 }
 

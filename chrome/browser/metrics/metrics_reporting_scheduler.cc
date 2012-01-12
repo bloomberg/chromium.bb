@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -94,7 +94,7 @@ void MetricsReportingScheduler::ScheduleNextCallback() {
       FROM_HERE,
       base::Bind(&MetricsReportingScheduler::TriggerUpload,
                  weak_ptr_factory_.GetWeakPtr()),
-      upload_interval_.InMilliseconds());
+      upload_interval_);
 }
 
 void MetricsReportingScheduler::BackOffUploadInterval() {

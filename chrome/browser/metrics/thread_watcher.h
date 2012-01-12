@@ -475,7 +475,7 @@ class WatchDogThread : public base::Thread {
                        const base::Closure& task);
   static bool PostDelayedTask(const tracked_objects::Location& from_here,
                               const base::Closure& task,
-                              int64 delay_ms);
+                              base::TimeDelta delay);
 
  protected:
   virtual void Init() OVERRIDE;
@@ -485,7 +485,7 @@ class WatchDogThread : public base::Thread {
   static bool PostTaskHelper(
       const tracked_objects::Location& from_here,
       const base::Closure& task,
-      int64 delay_ms);
+      base::TimeDelta delay);
 
   DISALLOW_COPY_AND_ASSIGN(WatchDogThread);
 };
