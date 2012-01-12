@@ -153,7 +153,7 @@ RedirectToFileResourceHandler::~RedirectToFileResourceHandler() {
 void RedirectToFileResourceHandler::DidCreateTemporaryFile(
     base::PlatformFileError /*error_code*/,
     base::PassPlatformFile file_handle,
-    FilePath file_path) {
+    const FilePath& file_path) {
   if (request_was_closed_) {
     // If the request was already closed, then don't bother allocating the
     // file_stream_ (otherwise we will leak it).

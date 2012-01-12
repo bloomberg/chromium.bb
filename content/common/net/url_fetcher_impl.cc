@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -114,7 +114,7 @@ class URLFetcherImpl::Core
     void CreateTempFile();
     void DidCreateTempFile(base::PlatformFileError error_code,
                            base::PassPlatformFile file_handle,
-                           FilePath file_path);
+                           const FilePath& file_path);
 
     // Record |num_bytes_| response bytes in |core_->buffer_| to the file.
     void WriteBuffer(int num_bytes);
@@ -345,7 +345,7 @@ void URLFetcherImpl::Core::TempFileWriter::CreateTempFile() {
 void URLFetcherImpl::Core::TempFileWriter::DidCreateTempFile(
     base::PlatformFileError error_code,
     base::PassPlatformFile file_handle,
-    FilePath file_path) {
+    const FilePath& file_path) {
   DCHECK(core_->io_message_loop_proxy_->BelongsToCurrentThread());
 
   if (base::PLATFORM_FILE_OK != error_code) {
