@@ -607,7 +607,8 @@ void MenuGtk::OnMenuItemActivated(GtkWidget* menuitem) {
 
     ui::MenuModel* submenu_model = static_cast<ui::MenuModel*>(
         g_object_get_data(G_OBJECT(menuitem), "submenu-model"));
-    DCHECK(submenu_model);
+    // Some non-dynamic menus might have submenus without submenu models.
+    // (For example, the input methods context menu for input fields.)
     if (!submenu_model)
       return;
 
