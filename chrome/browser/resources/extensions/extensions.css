@@ -79,7 +79,6 @@ body {
 .extension-list-item {
   background-repeat: no-repeat;
   display: -webkit-box;
-  line-height: 22px;
   min-height: 48px;
 }
 
@@ -99,7 +98,7 @@ body {
 .extension-description {
   -webkit-padding-end: 5px;
   font-size: 13px;
-  min-height: 22px;
+  margin: 5px 0;
   white-space: normal;
 }
 
