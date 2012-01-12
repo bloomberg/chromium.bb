@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -231,9 +231,7 @@ void AppCacheGroup::ScheduleUpdateRestart(int delay_ms) {
   restart_update_task_.Reset(
       base::Bind(&AppCacheGroup::RunQueuedUpdates, this));
   MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      restart_update_task_.callback(),
-      base::TimeDelta::FromMilliseconds(delay_ms));
+      FROM_HERE, restart_update_task_.callback(), delay_ms);
 }
 
 void AppCacheGroup::HostDestructionImminent(AppCacheHost* host) {
