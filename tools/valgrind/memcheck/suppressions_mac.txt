@@ -2327,3 +2327,37 @@
    fun:-[NSNib instantiateNibWithOwner:topLevelObjects:]
    fun:_ZN38MainMenuTest_CloseTabPerformClose_Test8TestBodyEv
 }
+{
+   bug_109994a
+   Memcheck:Leak
+   ...
+   fun:-[NSDistributedNotificationCenter addObserver:selector:name:object:suspensionBehavior:]
+   fun:+[NSDynamicSystemColor initialize]
+   fun:_class_initialize
+   fun:_class_lookupMethodAndLoadCache
+   fun:objc_msgSend
+   fun:_class_initialize
+   fun:_class_initialize
+   fun:_class_lookupMethodAndLoadCache
+   fun:objc_msgSend
+   fun:_ZN15ChromeTestSuite10InitializeEv
+   fun:_ZN4base9TestSuite3RunEv
+   fun:_ZN17UnitTestTestSuite3RunEv
+}
+{
+   bug_109994b
+   Memcheck:Leak
+   ...
+   fun:+[NSDistributedNotificationCenter defaultCenter]
+   fun:+[NSDynamicSystemColor initialize]
+   fun:_class_initialize
+   fun:_class_lookupMethodAndLoadCache
+   fun:objc_msgSend
+   fun:_class_initialize
+   fun:_class_initialize
+   fun:_class_lookupMethodAndLoadCache
+   fun:objc_msgSend
+   fun:_ZN15ChromeTestSuite10InitializeEv
+   fun:_ZN4base9TestSuite3RunEv
+   fun:_ZN17UnitTestTestSuite3RunEv
+}
