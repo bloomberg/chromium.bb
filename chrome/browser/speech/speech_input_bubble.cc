@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -158,8 +158,9 @@ void SpeechInputBubbleBase::DoWarmingUpAnimationStep() {
       FROM_HERE,
       base::Bind(&SpeechInputBubbleBase::DoWarmingUpAnimationStep,
           weak_factory_.GetWeakPtr()),
-      animation_step_ == 0 ? kWarmingUpAnimationStartMs
-                           : kWarmingUpAnimationStepMs);
+      base::TimeDelta::FromMilliseconds(
+          animation_step_ == 0 ? kWarmingUpAnimationStartMs
+                               : kWarmingUpAnimationStepMs));
   if (++animation_step_ >= static_cast<int>(g_images.Get().warm_up().size()))
     animation_step_ = 1;  // Frame 0 is skipped during the animation.
 }
@@ -186,7 +187,7 @@ void SpeechInputBubbleBase::DoRecognizingAnimationStep() {
       FROM_HERE,
       base::Bind(&SpeechInputBubbleBase::DoRecognizingAnimationStep,
           weak_factory_.GetWeakPtr()),
-      kRecognizingAnimationStepMs);
+      base::TimeDelta::FromMilliseconds(kRecognizingAnimationStepMs));
 }
 
 void SpeechInputBubbleBase::SetMessage(const string16& text) {
