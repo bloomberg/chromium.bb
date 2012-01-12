@@ -281,8 +281,7 @@ class NinjaWriter:
     if link_deps or sources_depends or actions_depends:
       output, output_binary = self.WriteTarget(
           spec, config_name, config, link_deps,
-          sources_depends or actions_depends, mac_bundle_depends,
-          order_only=actions_depends)
+          sources_depends or actions_depends, mac_bundle_depends)
     if self.name != output and self.toolset == 'target':
       # Write a short name to build this target.  This benefits both the
       # "build chrome" case as well as the gyp tests, which expect to be
@@ -572,94 +571,88 @@ class NinjaWriter:
       cmd = { 'c': 'cc', 'cc': 'cxx', 'm': 'objc', 'mm': 'objcxx', }.get(lang)
       self.ninja.build(gch, cmd, input, variables=[(var_name, lang_flag)])
 
-  def WriteTarget(self, spec, config_name, config, link_deps, final_deps,
-                  mac_bundle_depends, order_only):
-    if spec['type'] == 'none':
-      # This target doesn't have any explicit final output, but is instead
-      # used for its effects before the final output (e.g. copies steps).
-      # Reuse the existing output if it's easy.
-      if len(final_deps) == 1:
-        return final_deps[0], final_deps[0]
-      # Otherwise, fall through to writing out a stamp file.
 
-    output_uses_linker = spec['type'] in ('executable', 'loadable_module',
-                                          'shared_library')
+  def WriteLink(self, spec, config_name, config, link_deps):
+    """Write out a link step.  Returns the path to the output."""
+
+    command = {
+      'executable':      'link',
+      'loadable_module': 'solink_module',
+      'shared_library':  'solink',
+    }[spec['type']]
 
     implicit_deps = set()
+
     if 'dependencies' in spec:
       # Two kinds of dependencies:
       # - Linkable dependencies (like a .a or a .so): add them to the link line.
       # - Non-linkable dependencies (like a rule that generates a file
       #   and writes a stamp file): add them to implicit_deps
-      if output_uses_linker:
-        extra_link_deps = set()
-        for dep in spec['dependencies']:
-          _, binary, _, linkable = self.target_outputs.get(
-              dep, (None, None, [], False))
-          if not binary:
-            continue
-          if linkable:
-            extra_link_deps.add(binary)
-          else:
-            # TODO: Chrome-specific HACK.  Chrome runs this lastchange rule on
-            # every build, but we don't want to rebuild when it runs.
-            if 'lastchange' in binary:
-              continue
-            # TODO(evan): it's confusing that the variable here is called
-            # "binary", despite being a stamp file.  Fix this.
-            implicit_deps.add(binary)
-        link_deps.extend(list(extra_link_deps))
+      extra_link_deps = set()
+      for dep in spec['dependencies']:
+        output, binary, _, linkable = self.target_outputs.get(
+          dep, (None, None, [], False))
+        if not binary:
+          continue
+        if linkable:
+          extra_link_deps.add(binary)
+
+        # TODO: Chrome-specific HACK.  Chrome runs this lastchange rule on
+        # every build, but we don't want to rebuild when it runs.
+        if 'lastchange' in output:
+          continue
+        if not linkable or output != binary:
+          implicit_deps.add(output)
+      link_deps.extend(list(extra_link_deps))
 
     if self.is_mac_bundle:
-      output = self.ComputeMacBundleOutput(spec)
-      output_binary = self.ComputeMacBundleBinaryOutput(spec)
-      if not link_deps:
-        output_binary = self.ComputeOutput(spec, type='none')
-      mac_bundle_depends.append(output_binary)
+      output = self.ComputeMacBundleBinaryOutput(spec)
     else:
-      output = output_binary = self.ComputeOutput(spec)
+      output = self.ComputeOutput(spec)
 
-    command_map = {
-      'executable':      'link',
-      'static_library':  'alink',
-      'loadable_module': 'solink_module',
-      'shared_library':  'solink',
-      'none':            'stamp',
-    }
-    command = command_map[spec['type']]
-
-    if link_deps:
-      final_deps = link_deps
+    if self.flavor == 'mac':
+      ldflags = self.xcode_settings.GetLdflags(config_name,
+          self.ExpandSpecial(generator_default_variables['PRODUCT_DIR']),
+          self.GypPathToNinja)
     else:
-      command = 'stamp'
-      order_only += final_deps
-      final_deps = []
+      ldflags = config.get('ldflags', [])
+    self.WriteVariableList('ldflags',
+                           gyp.common.uniquer(map(self.ExpandSpecial,
+                                                  ldflags)))
 
-    if output_uses_linker:
-      if self.flavor == 'mac':
-        ldflags = self.xcode_settings.GetLdflags(config_name,
-            self.ExpandSpecial(generator_default_variables['PRODUCT_DIR']),
-            self.GypPathToNinja)
-      else:
-        ldflags = config.get('ldflags', [])
-      self.WriteVariableList('ldflags',
-                             gyp.common.uniquer(map(self.ExpandSpecial,
-                                                    ldflags)))
-
-      libraries = gyp.common.uniquer(map(self.ExpandSpecial,
-                                         spec.get('libraries', [])))
-      if self.flavor == 'mac':
-        libraries = self.xcode_settings.AdjustFrameworkLibraries(libraries)
-      self.WriteVariableList('libs', libraries)
+    libraries = gyp.common.uniquer(map(self.ExpandSpecial,
+                                       spec.get('libraries', [])))
+    if self.flavor == 'mac':
+      libraries = self.xcode_settings.AdjustFrameworkLibraries(libraries)
+    self.WriteVariableList('libs', libraries)
 
     extra_bindings = []
     if command in ('solink', 'solink_module'):
-      extra_bindings.append(('soname', os.path.split(output_binary)[1]))
+      extra_bindings.append(('soname', os.path.split(output)[1]))
 
-    self.ninja.build(output_binary, command, final_deps,
+    self.ninja.build(output, command, link_deps,
                      implicit=list(implicit_deps),
-                     order_only=order_only,
                      variables=extra_bindings)
+    return output
+
+  def WriteTarget(self, spec, config_name, config, link_deps, final_deps,
+                  mac_bundle_depends):
+    if spec['type'] == 'none':
+      assert len(final_deps) == 1, final_deps
+      output = final_deps[0]
+      return output, output
+    elif spec['type'] == 'static_library':
+      output_binary = self.ComputeOutput(spec)
+      self.ninja.build(output_binary, 'alink', link_deps,
+                       order_only=final_deps)
+    else:
+      output_binary = self.WriteLink(spec, config_name, config, link_deps)
+
+    if self.is_mac_bundle:
+      output = self.ComputeMacBundleOutput(spec)
+      mac_bundle_depends.append(output_binary)
+    else:
+      output = output_binary
 
     if self.is_mac_bundle:
       if spec['type'] in ('shared_library', 'loadable_module'):
