@@ -82,9 +82,15 @@ using testing::Return;
 using testing::SetArgumentPointee;
 using testing::WithArgs;
 
+// Visits with this timestamp are treated as expired.
+static const int EXPIRED_VISIT = -1;
+
 class HistoryBackendMock : public HistoryBackend {
  public:
   HistoryBackendMock() : HistoryBackend(FilePath(), 0, NULL, NULL) {}
+  virtual bool IsExpiredVisitTime(const base::Time& time) OVERRIDE {
+    return time.ToInternalValue() == EXPIRED_VISIT;
+  }
   MOCK_METHOD1(GetAllTypedURLs, bool(std::vector<history::URLRow>* entries));
   MOCK_METHOD3(GetMostRecentVisitsForURL, bool(history::URLID id,
                                                int max_visits,
@@ -338,6 +344,7 @@ TEST_F(ProfileSyncServiceTypedUrlTest, HasNativeEmptySync) {
   EXPECT_TRUE(URLsEqual(entries[0], sync_entries[0]));
 }
 
+
 TEST_F(ProfileSyncServiceTypedUrlTest, HasNativeHasSyncNoMerge) {
   history::VisitVector native_visits;
   history::VisitVector sync_visits;
@@ -374,6 +381,23 @@ TEST_F(ProfileSyncServiceTypedUrlTest, HasNativeHasSyncNoMerge) {
        entry != new_sync_entries.end(); ++entry) {
     EXPECT_TRUE(URLsEqual(expected[entry->url().spec()], *entry));
   }
+}
+
+TEST_F(ProfileSyncServiceTypedUrlTest, EmptyNativeExpiredSync) {
+  history::VisitVector sync_visits;
+  history::URLRow sync_entry(MakeTypedUrlEntry("http://sync.com", "entry",
+                                               3, EXPIRED_VISIT, false,
+                                               &sync_visits));
+  std::vector<history::URLRow> sync_entries;
+  sync_entries.push_back(sync_entry);
+
+  // Since all our URLs are expired, no backend calls to add new URLs will be
+  // made.
+  EXPECT_CALL((*history_backend_.get()), GetAllTypedURLs(_)).
+      WillOnce(Return(true));
+  SetIdleChangeProcessorExpectations();
+
+  StartSyncService(base::Bind(&AddTypedUrlEntries, this, sync_entries));
 }
 
 TEST_F(ProfileSyncServiceTypedUrlTest, HasNativeHasSyncMerge) {

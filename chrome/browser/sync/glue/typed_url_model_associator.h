@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -111,6 +111,13 @@ class TypedUrlModelAssociator
                         history::VisitVector* visits_to_remove,
                         TypedUrlUpdateVector* updated_urls,
                         TypedUrlVector* new_urls);
+
+  // Given a TypedUrlSpecifics object, removes all visits that are older than
+  // the current expiration time. Note that this can result in having no visits
+  // at all.
+  sync_pb::TypedUrlSpecifics FilterExpiredVisits(
+      const sync_pb::TypedUrlSpecifics& specifics);
+
 
   // Bitfield returned from MergeUrls to specify the result of the merge.
   typedef uint32 MergeResult;

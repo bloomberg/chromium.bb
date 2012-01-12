@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -192,8 +192,8 @@ bool TypedUrlModelAssociator::AssociateModels(SyncError* error) {
       if (node.InitByClientTagLookup(syncable::TYPED_URLS, tag)) {
         // Same URL exists in sync data and in history data - compare the
         // entries to see if there's any difference.
-        const sync_pb::TypedUrlSpecifics& typed_url(
-            node.GetTypedUrlSpecifics());
+        sync_pb::TypedUrlSpecifics typed_url(
+            FilterExpiredVisits(node.GetTypedUrlSpecifics()));
         DCHECK_EQ(tag, typed_url.url());
 
         // Initialize fields in |new_url| to the same values as the fields in
@@ -276,7 +276,7 @@ bool TypedUrlModelAssociator::AssociateModels(SyncError* error) {
         return false;
       }
       const sync_pb::TypedUrlSpecifics& typed_url(
-        sync_child_node.GetTypedUrlSpecifics());
+          sync_child_node.GetTypedUrlSpecifics());
 
       sync_child_id = sync_child_node.GetSuccessorId();
 
@@ -295,11 +295,19 @@ bool TypedUrlModelAssociator::AssociateModels(SyncError* error) {
         continue;
       }
 
-      if (current_urls.find(typed_url.url()) == current_urls.end()) {
+      // Now, get rid of the expired visits, and if there are no un-expired
+      // visits left, just ignore this node.
+      sync_pb::TypedUrlSpecifics filtered_url = FilterExpiredVisits(typed_url);
+      if (filtered_url.visits_size() == 0) {
+        DVLOG(1) << "Ignoring expired URL in sync DB: " << filtered_url.url();
+        continue;
+      }
+
+      if (current_urls.find(filtered_url.url()) == current_urls.end()) {
         // Update the local DB from the sync DB. Since we are doing our
         // initial model association, we don't want to remove any of the
         // existing visits (pass NULL as |visits_to_remove|).
-        if (!UpdateFromSyncDB(typed_url, &new_visits, NULL, &updated_urls,
+        if (!UpdateFromSyncDB(filtered_url, &new_visits, NULL, &updated_urls,
                               &new_urls)) {
             error->Reset(FROM_HERE, "Could not get existing url's visits.",
                          model_type());
@@ -307,7 +315,7 @@ bool TypedUrlModelAssociator::AssociateModels(SyncError* error) {
         }
 
         // Add this to our association map.
-        Associate(&typed_url.url(), sync_child_node.GetId());
+        Associate(&filtered_url.url(), sync_child_node.GetId());
       }
     }
 
@@ -384,6 +392,22 @@ bool TypedUrlModelAssociator::UpdateFromSyncDB(
   return true;
 }
 
+sync_pb::TypedUrlSpecifics TypedUrlModelAssociator::FilterExpiredVisits(
+    const sync_pb::TypedUrlSpecifics& source) {
+  // Make a copy of the source, then regenerate the visits.
+  sync_pb::TypedUrlSpecifics specifics(source);
+  specifics.clear_visits();
+  specifics.clear_visit_transitions();
+  for (int i = 0; i < source.visits_size(); ++i) {
+    base::Time time = base::Time::FromInternalValue(source.visits(i));
+    if (!history_backend_->IsExpiredVisitTime(time)) {
+      specifics.add_visits(source.visits(i));
+      specifics.add_visit_transitions(source.visit_transitions(i));
+    }
+  }
+  DCHECK(specifics.visits_size() == specifics.visit_transitions_size());
+  return specifics;
+}
 
 bool TypedUrlModelAssociator::DeleteAllNodes(
     sync_api::WriteTransaction* trans) {
@@ -553,8 +577,8 @@ TypedUrlModelAssociator::MergeResult TypedUrlModelAssociator::MergeUrls(
   CHECK_EQ(node.visits_size(), node.visit_transitions_size());
 
   // If we have an old-format node (before we added the visits and
-  // visit_transitions arrays to the protobuf), just overwrite
-  // it with our local history data.
+  // visit_transitions arrays to the protobuf) or else the node only contained
+  // expired visits, so just overwrite it with our local history data.
   if (node.visits_size() == 0)
     return DIFF_UPDATE_NODE;
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -240,12 +240,14 @@ void TypedUrlChangeProcessor::ApplyChangesFromSyncModel(
     const sync_pb::TypedUrlSpecifics& typed_url(
         sync_node.GetTypedUrlSpecifics());
     DCHECK(typed_url.visits_size());
-    if (!typed_url.visits_size()) {
+    sync_pb::TypedUrlSpecifics filtered_url =
+        model_associator_->FilterExpiredVisits(typed_url);
+    if (!filtered_url.visits_size()) {
       continue;
     }
 
     if (!model_associator_->UpdateFromSyncDB(
-            typed_url, &pending_new_visits_, &pending_deleted_visits_,
+            filtered_url, &pending_new_visits_, &pending_deleted_visits_,
             &pending_updated_urls_, &pending_new_urls_)) {
       error_handler()->OnUnrecoverableError(
           FROM_HERE, "Could not get existing url's visits.");

@@ -777,7 +777,7 @@ void HistoryBackend::AddPagesWithDetails(const std::vector<URLRow>& urls,
     // the date of the added visit.
     URLDatabase* url_database;
     VisitDatabase* visit_database;
-    if (i->last_visit() < expirer_.GetCurrentArchiveTime()) {
+    if (IsExpiredVisitTime(i->last_visit())) {
       if (!archived_db_.get())
         return;  // No archived database to save it to, just forget this.
       url_database = archived_db_.get();
@@ -849,6 +849,10 @@ void HistoryBackend::AddPagesWithDetails(const std::vector<URLRow>& urls,
                          modified.release());
 
   ScheduleCommit();
+}
+
+bool HistoryBackend::IsExpiredVisitTime(const base::Time& time) {
+  return time < expirer_.GetCurrentArchiveTime();
 }
 
 void HistoryBackend::SetPageTitle(const GURL& url,
