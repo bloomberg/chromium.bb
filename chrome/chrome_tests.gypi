@@ -2028,7 +2028,7 @@
         'common/mac/cfbundle_blocker_unittest.mm',
         'common/mac/objc_method_swizzle_unittest.mm',
         'common/mac/objc_zombie_unittest.mm',
-        'common/metrics_log_manager_unittest.cc',
+        'common/metrics/metrics_log_manager_unittest.cc',
         'common/multi_process_lock_unittest.cc',
         'common/net/gaia/gaia_auth_fetcher_unittest.cc',
         'common/net/gaia/gaia_auth_fetcher_unittest.h',
