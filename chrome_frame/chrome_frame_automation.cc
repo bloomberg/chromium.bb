@@ -803,10 +803,10 @@ void ChromeFrameAutomationClient::CreateExternalTab() {
       chrome_launch_params_->route_all_top_level_navigations();
 
   UMA_HISTOGRAM_CUSTOM_COUNTS(
-      "ChromeFrame.HostNetworking", !use_chrome_network_, 0, 1, 2);
+      "ChromeFrame.HostNetworking", !use_chrome_network_, 1, 2, 3);
 
   UMA_HISTOGRAM_CUSTOM_COUNTS("ChromeFrame.HandleTopLevelRequests",
-                              handle_top_level_requests_, 0, 1, 2);
+                              handle_top_level_requests_, 1, 2, 3);
 
   IPC::SyncMessage* message =
       new AutomationMsg_CreateExternalTab(settings, NULL, NULL, 0, 0);
