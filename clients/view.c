@@ -43,6 +43,7 @@
 
 struct view {
 	struct window *window;
+	struct widget *widget;
 	struct display *display;
 
 	PopplerDocument *document;
@@ -51,8 +52,10 @@ struct view {
 };
 
 static void
-view_draw(struct view *view)
+redraw_handler(struct widget *widget, void *data)
 {
+	struct view *view = data;
+
 	struct rectangle allocation;
 	cairo_surface_t *surface;
 	cairo_t *cr;
@@ -63,8 +66,6 @@ view_draw(struct view *view)
 		window_set_transparent(view->window, 0);
 	else
 		window_set_transparent(view->window, 1);
-
-	window_draw(view->window);
 
 	widget_get_allocation(view->widget, &allocation);
 
@@ -107,15 +108,6 @@ view_draw(struct view *view)
 	cairo_destroy(cr);
 	cairo_surface_destroy(surface);
 	g_object_unref(G_OBJECT(page));
-	window_flush(view->window);
-}
-
-static void
-redraw_handler(struct widget *widget, void *data)
-{
-	struct view *view = data;
-
-	view_draw(view);
 }
 
 static void
@@ -150,11 +142,10 @@ view_page_down(struct view *view)
 }
 
 static void
-button_handler(struct window *window, struct input *input, uint32_t time,
+button_handler(struct widget *widget, struct input *input, uint32_t time,
                int button, int state, void *data)
 {
-	struct window *window = data;
-a        struct view *view = window_get_user_data(window);
+        struct view *view = data;
 
         if(!state)
                 return;
@@ -260,7 +251,7 @@ view_create(struct display *display,
 	view->fullscreen = fullscreen;
 	window_set_fullscreen(view->window, view->fullscreen);
 
-	view_draw(view);
+	window_schedule_resize(view->window, 500, 400);
 
 	return view;
 }

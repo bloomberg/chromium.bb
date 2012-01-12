@@ -106,7 +106,7 @@ if test x$enable_clients == xyes; then
 
   PKG_CHECK_MODULES(CLIENT, [wayland-client wayland-egl egl >= 7.10 gl cairo >= 1.10.0 gdk-pixbuf-2.0 glib-2.0 gobject-2.0 xkbcommon])
 
-  PKG_CHECK_MODULES(POPPLER, [poppler-glib gdk-2.0 gio-2.0],
+  PKG_CHECK_MODULES(POPPLER, [poppler-glib],
 			     [have_poppler=yes], [have_poppler=no])
   PKG_CHECK_MODULES(CAIRO_EGL, [cairo-egl >= 1.11.3],
 		    [have_cairo_egl=yes], [have_cairo_egl=no])
