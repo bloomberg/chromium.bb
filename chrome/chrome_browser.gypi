@@ -3356,6 +3356,8 @@
         'browser/ui/views/aura/screen_orientation_listener.h',
         'browser/ui/views/aura/screenshot_taker.cc',
         'browser/ui/views/aura/screenshot_taker.h',
+        'browser/ui/views/aura/multiple_window_indicator_button.cc',
+        'browser/ui/views/aura/multiple_window_indicator_button.h',
         'browser/ui/views/aura/status_area_host_aura.cc',
         'browser/ui/views/aura/status_area_host_aura.h',
         'browser/ui/views/autocomplete/autocomplete_popup_contents_view.cc',

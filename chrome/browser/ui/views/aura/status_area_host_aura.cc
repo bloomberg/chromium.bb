@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/aura/chrome_shell_delegate.h"
+#include "chrome/browser/ui/views/aura/multiple_window_indicator_button.h"
 #include "chrome/common/chrome_switches.h"
 #include "ui/aura/window.h"
 #include "ui/views/widget/widget.h"
@@ -65,6 +66,13 @@ views::Widget* StatusAreaHostAura::CreateStatusArea() {
 #endif
   status_area_view_->AddButton(new ClockMenuButton(this), border);
 #endif
+
+  // Add multiple window indicator button for compact mode. Note this should be
+  // the last button added to status area so that it could be right most there.
+  if (ash::Shell::GetInstance()->IsWindowModeCompact()) {
+    status_area_view_->AddButton(new MultipleWindowIndicatorButton(this),
+                                 false);
+  }
 
   // Create widget to hold status area view.
   status_area_widget_ = new views::Widget;
