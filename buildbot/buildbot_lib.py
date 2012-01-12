@@ -42,6 +42,8 @@ def ParseStandardCommandLine(context):
   parser.add_option('--inside-toolchain', dest='inside_toolchain',
                     default=bool(os.environ.get('INSIDE_TOOLCHAIN')),
                     action='store_true', help='Inside toolchain build.')
+  parser.add_option('--nogyp', dest='nogyp', default=False,
+                    action='store_true', help='Disable gyp build.')
   parser.add_option('--clang', dest='clang', default=False,
                     action='store_true', help='Build trusted code with Clang.')
   parser.add_option('--asan', dest='asan', default=False,
@@ -77,6 +79,7 @@ def ParseStandardCommandLine(context):
   context['gyp_mode'] = {'opt': 'Release', 'dbg': 'Debug'}[mode]
   context['gyp_arch'] = {'32': 'ia32', '64': 'x64'}[bits]
   context['gyp_vars'] = []
+  context['nogyp'] = options.nogyp
   if context['clang']:
     context['gyp_vars'].append('clang=1')
   if context['asan']:
