@@ -44,30 +44,35 @@ Shell::~Shell() {
   }
 }
 
+Shell* Shell::CreateShell(TabContents* tab_contents) {
+  Shell* shell = new Shell();
+  shell->PlatformCreateWindow(kTestWindowWidth, kTestWindowHeight);
+
+  shell->tab_contents_.reset(tab_contents);
+  tab_contents->SetDelegate(shell);
+
+#if defined(OS_WIN)
+  TabContentsViewWin* view =
+      static_cast<TabContentsViewWin*>(tab_contents->GetView());
+  view->SetParent(shell->window_);
+#endif
+
+  shell->PlatformResizeSubViews();
+  return shell;
+}
+
 Shell* Shell::CreateNewWindow(content::BrowserContext* browser_context,
                               const GURL& url,
                               SiteInstance* site_instance,
                               int routing_id,
                               TabContents* base_tab_contents) {
-  Shell* shell = new Shell();
-  shell->PlatformCreateWindow(kTestWindowWidth, kTestWindowHeight);
-
-  shell->tab_contents_.reset(new TabContents(
+  TabContents* tab_contents = new TabContents(
       browser_context,
       site_instance,
       routing_id,
       base_tab_contents,
-      NULL));
-  shell->tab_contents_->SetDelegate(shell);
-
-#if defined(OS_WIN)
-  TabContentsViewWin* view =
-      static_cast<TabContentsViewWin*>(shell->tab_contents_->GetView());
-  view->SetParent(shell->window_);
-#endif
-
-  shell->PlatformResizeSubViews();
-
+      NULL);
+  Shell* shell = CreateShell(tab_contents);
   if (!url.is_empty())
     shell->LoadURL(url);
   return shell;
@@ -114,6 +119,13 @@ gfx::NativeView Shell::GetContentView() {
 
 void Shell::LoadingStateChanged(WebContents* source) {
   UpdateNavigationControls();
+}
+
+void Shell::WebContentsCreated(WebContents* source_contents,
+                               int64 source_frame_id,
+                               const GURL& target_url,
+                               WebContents* new_contents) {
+  CreateShell(static_cast<TabContents*>(new_contents));
 }
 
 void Shell::DidNavigateMainFramePostCommit(WebContents* tab) {

@@ -43,7 +43,6 @@
       'sources': [
         'browser/tab_contents/tab_contents_view_win.cc',
         'browser/tab_contents/tab_contents_view_win.h',
-        'browser/tab_contents/tab_contents_view_win_delegate.h',
         'shell/shell.cc',
         'shell/shell.h',
         'shell/shell_gtk.cc',

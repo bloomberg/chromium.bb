@@ -5,17 +5,50 @@
 #include "content/browser/tab_contents/tab_contents_view_win.h"
 
 #include "content/browser/renderer_host/render_view_host.h"
+#include "content/browser/renderer_host/render_view_host_factory.h"
 #include "content/browser/renderer_host/render_widget_host_view_win.h"
 #include "content/browser/tab_contents/interstitial_page.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/browser/tab_contents/tab_contents_view_win_delegate.h"
 #include "content/public/browser/web_contents_delegate.h"
 
-TabContentsViewWin::TabContentsViewWin(TabContents* tab_contents,
-                                       TabContentsViewWinDelegate* delegate)
+namespace {
+
+// We need to have a parent window for the compositing code to work correctly.
+//
+// A tab will not have a parent HWND whenever it is not active in its
+// host window - for example at creation time and when it's in the
+// background, so we provide a default widget to host them.
+//
+// It may be tempting to use GetDesktopWindow() instead, but this is
+// problematic as the shell sends messages to children of the desktop
+// window that interact poorly with us.
+//
+// See: http://crbug.com/16476
+class TempParent : public ui::WindowImpl {
+ public:
+  static TempParent* Get() {
+    static TempParent* g_temp_parent;
+    if (!g_temp_parent) {
+      g_temp_parent = new TempParent();
+
+      g_temp_parent->set_window_style(WS_POPUP);
+      g_temp_parent->set_window_ex_style(WS_EX_TOOLWINDOW);
+      g_temp_parent->Init(GetDesktopWindow(), gfx::Rect());
+      EnableWindow(g_temp_parent->hwnd(), FALSE);
+    }
+    return g_temp_parent;
+  }
+
+ private:
+  BEGIN_MSG_MAP_EX(TabContentsViewWin)
+  END_MSG_MAP()
+};
+
+}  // namespace namespace
+
+TabContentsViewWin::TabContentsViewWin(TabContents* tab_contents)
     : parent_(NULL),
       tab_contents_(tab_contents),
-      delegate_(delegate),
       view_(NULL) {
 }
 
@@ -26,19 +59,28 @@ void TabContentsViewWin::SetParent(HWND parent) {
   DCHECK(!parent_);
   parent_ = parent;
 
-  set_window_style(WS_VISIBLE | WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS);
-
-  Init(parent_, gfx::Rect(initial_size_));
+  ::SetParent(hwnd(), parent_);
 }
 
 void TabContentsViewWin::CreateView(const gfx::Size& initial_size) {
   initial_size_ = initial_size;
+
+  set_window_style(WS_VISIBLE | WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS);
+
+  Init(TempParent::Get()->hwnd(), gfx::Rect(initial_size_));
 }
 
 RenderWidgetHostView* TabContentsViewWin::CreateViewForWidget(
     RenderWidgetHost* render_widget_host)  {
-  if (view_)
-    delete view_;  // TODO(jam): need to do anything else?
+  if (render_widget_host->view()) {
+    // During testing, the view will already be set up in most cases to the
+    // test view, so we don't want to clobber it with a real one. To verify that
+    // this actually is happening (and somebody isn't accidentally creating the
+    // view twice), we check for the RVH Factory, which will be set when we're
+    // making special ones (which go along with the special views).
+    DCHECK(RenderViewHostFactory::has_factory());
+    return render_widget_host->view();
+  }
 
   view_ = new RenderWidgetHostViewWin(render_widget_host);
   view_->CreateWnd(GetNativeView());
@@ -160,45 +202,45 @@ void TabContentsViewWin::RemoveOverlayView() {
 void TabContentsViewWin::CreateNewWindow(
     int route_id,
     const ViewHostMsg_CreateWindow_Params& params) {
-  TabContents* tab = delegate_->CreateNewWindow(this, route_id, params);
-
-  // Copy logic from RenderViewHostDelegateViewHelper.
-  TabContentsView* new_view = tab->GetView();
-  new_view->CreateViewForWidget(tab->GetRenderViewHost());
-  pending_contents_[route_id] = tab->GetRenderViewHost();
+  tab_contents_view_helper_.CreateNewWindow(tab_contents_, route_id, params);
 }
 
 void TabContentsViewWin::CreateNewWidget(int route_id,
                                          WebKit::WebPopupType popup_type) {
-  NOTIMPLEMENTED();
+  tab_contents_view_helper_.CreateNewWidget(tab_contents_,
+                                            route_id,
+                                            false,
+                                            popup_type);
 }
 
 void TabContentsViewWin::CreateNewFullscreenWidget(int route_id) {
-  NOTIMPLEMENTED();
+  tab_contents_view_helper_.CreateNewWidget(tab_contents_,
+                                            route_id,
+                                            true,
+                                            WebKit::WebPopupTypeNone);
 }
 
 void TabContentsViewWin::ShowCreatedWindow(int route_id,
                                            WindowOpenDisposition disposition,
                                            const gfx::Rect& initial_pos,
                                            bool user_gesture) {
-  PendingContents::iterator iter = pending_contents_.find(route_id);
-  if (iter == pending_contents_.end())
-    return;
-
-  RenderViewHost* new_rvh = iter->second;
-  pending_contents_.erase(route_id);
-  if (!new_rvh->process()->HasConnection() || !new_rvh->view())
-    return;
-  new_rvh->Init();
+  tab_contents_view_helper_.ShowCreatedWindow(
+      tab_contents_, route_id, disposition, initial_pos, user_gesture);
 }
 
 void TabContentsViewWin::ShowCreatedWidget(int route_id,
                                            const gfx::Rect& initial_pos) {
-  NOTIMPLEMENTED();
+  tab_contents_view_helper_.ShowCreatedWidget(tab_contents_,
+                                              route_id,
+                                              false,
+                                              initial_pos);
 }
 
 void TabContentsViewWin::ShowCreatedFullscreenWidget(int route_id) {
-  NOTIMPLEMENTED();
+  tab_contents_view_helper_.ShowCreatedWidget(tab_contents_,
+                                              route_id,
+                                              true,
+                                              gfx::Rect());
 }
 
 void TabContentsViewWin::ShowContextMenu(const ContextMenuParams& params) {

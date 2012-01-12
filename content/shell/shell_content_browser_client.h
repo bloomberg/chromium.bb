@@ -12,19 +12,11 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/public/browser/content_browser_client.h"
 
-#if defined(OS_WIN)
-#include "content/browser/tab_contents/tab_contents_view_win_delegate.h"
-#endif
-
 namespace content {
 
 class ShellBrowserMainParts;
 
-class ShellContentBrowserClient : public ContentBrowserClient
-#if defined(OS_WIN)
-                                  , public TabContentsViewWinDelegate
-#endif
-{
+class ShellContentBrowserClient : public ContentBrowserClient {
  public:
   ShellContentBrowserClient();
   virtual ~ShellContentBrowserClient();
@@ -168,14 +160,6 @@ class ShellContentBrowserClient : public ContentBrowserClient
   virtual
       crypto::CryptoModuleBlockingPasswordDelegate* GetCryptoPasswordDelegate(
           const GURL& url) OVERRIDE;
-#endif
-
-#if defined(OS_WIN)
-  // TabContentsViewWinDelegate implementation.
-  virtual TabContents* CreateNewWindow(
-      TabContentsViewWin* tab_contents_view,
-      int route_id,
-      const ViewHostMsg_CreateWindow_Params& params) OVERRIDE;
 #endif
 
  private:

@@ -35,7 +35,7 @@ BrowserMainParts* ShellContentBrowserClient::CreateBrowserMainParts(
 TabContentsView* ShellContentBrowserClient::CreateTabContentsView(
     TabContents* tab_contents) {
 #if defined(OS_WIN)
-  return new TabContentsViewWin(tab_contents, this);
+  return new TabContentsViewWin(tab_contents);
 #else
   return NULL;
 #endif
@@ -319,21 +319,6 @@ const wchar_t* ShellContentBrowserClient::GetResourceDllName() {
 crypto::CryptoModuleBlockingPasswordDelegate*
     ShellContentBrowserClient::GetCryptoPasswordDelegate(const GURL& url) {
   return NULL;
-}
-#endif
-
-#if defined(OS_WIN)
-TabContents* ShellContentBrowserClient::CreateNewWindow(
-    TabContentsViewWin* tab_contents_view,
-    int route_id,
-    const ViewHostMsg_CreateWindow_Params& params) {
-  Shell* shell = Shell::CreateNewWindow(
-      tab_contents_view->tab_contents()->GetBrowserContext(),
-      GURL(),
-      tab_contents_view->tab_contents()->GetSiteInstance(),
-      route_id,
-      tab_contents_view->tab_contents());
-  return shell->tab_contents();
 }
 #endif
 

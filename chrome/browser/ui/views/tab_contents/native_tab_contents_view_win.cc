@@ -17,19 +17,10 @@ using content::WebContents;
 
 namespace {
 
-// Tabs must be created as child widgets, otherwise they will be given
+// See comment above TempParent in tab_contents_view_win.cc.
+// Also, Tabs must be created as child widgets, otherwise they will be given
 // a FocusManager which will conflict with the FocusManager of the
 // window they eventually end up attached to.
-//
-// A tab will not have a parent HWND whenever it is not active in its
-// host window - for example at creation time and when it's in the
-// background, so we provide a default widget to host them.
-//
-// It may be tempting to use GetDesktopWindow() instead, but this is
-// problematic as the shell sends messages to children of the desktop
-// window that interact poorly with us.
-//
-// See: http://crbug.com/16476
 class HiddenTabHostWindow : public views::Widget {
  public:
   static HWND Instance();

@@ -67,6 +67,9 @@ class Shell : public WebContentsDelegate {
 
   Shell();
 
+  // Helper to create a new Shell given a newly created TabContents.
+  static Shell* CreateShell(TabContents* tab_contents);
+
   // All the methods that begin with Platform need to be implemented by the
   // platform specific Shell implementation.
   // Called from the destructor to let each platform do any necessary cleanup.
@@ -86,6 +89,10 @@ class Shell : public WebContentsDelegate {
 
   // content::WebContentsDelegate
   virtual void LoadingStateChanged(WebContents* source) OVERRIDE;
+  virtual void WebContentsCreated(WebContents* source_contents,
+                                  int64 source_frame_id,
+                                  const GURL& target_url,
+                                  WebContents* new_contents) OVERRIDE;
   virtual void DidNavigateMainFramePostCommit(WebContents* tab) OVERRIDE;
   virtual void UpdatePreferredSize(WebContents* source,
                                    const gfx::Size& pref_size) OVERRIDE;
