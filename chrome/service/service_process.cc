@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -45,7 +45,7 @@ namespace {
 
 // Delay in millseconds after the last service is disabled before we attempt
 // a shutdown.
-const int64 kShutdownDelay = 60000;
+const base::TimeDelta kShutdownDelay = base::TimeDelta::FromMinutes(1);
 
 const char kDefaultServiceProcessLocale[] = "en-US";
 
