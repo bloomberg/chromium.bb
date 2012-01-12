@@ -62,7 +62,7 @@ class EGLImageTransportSurface
  public:
   EGLImageTransportSurface(GpuChannelManager* manager,
                            int32 render_view_id,
-                           int32 renderer_id,
+                           int32 client_id,
                            int32 command_buffer_id);
 
   // gfx::GLSurface implementation
@@ -113,7 +113,7 @@ class GLXImageTransportSurface
  public:
   GLXImageTransportSurface(GpuChannelManager* manager,
                            int32 render_view_id,
-                           int32 renderer_id,
+                           int32 client_id,
                            int32 command_buffer_id);
 
   // gfx::GLSurface implementation:
@@ -169,7 +169,7 @@ class OSMesaImageTransportSurface : public ImageTransportSurface,
  public:
   OSMesaImageTransportSurface(GpuChannelManager* manager,
                               int32 render_view_id,
-                              int32 renderer_id,
+                              int32 client_id,
                               int32 command_buffer_id);
 
   // gfx::GLSurface implementation:
@@ -245,7 +245,7 @@ EGLAcceleratedSurface::~EGLAcceleratedSurface() {
 EGLImageTransportSurface::EGLImageTransportSurface(
     GpuChannelManager* manager,
     int32 render_view_id,
-    int32 renderer_id,
+    int32 client_id,
     int32 command_buffer_id)
       : gfx::PbufferGLSurfaceEGL(false, gfx::Size(1, 1)),
         fbo_id_(0),
@@ -253,7 +253,7 @@ EGLImageTransportSurface::EGLImageTransportSurface(
   helper_.reset(new ImageTransportHelper(this,
                                          manager,
                                          render_view_id,
-                                         renderer_id,
+                                         client_id,
                                          command_buffer_id,
                                          gfx::kNullPluginWindow));
 }
@@ -424,7 +424,7 @@ void EGLImageTransportSurface::OnResizeViewACK() {
 GLXImageTransportSurface::GLXImageTransportSurface(
     GpuChannelManager* manager,
     int32 render_view_id,
-    int32 renderer_id,
+    int32 client_id,
     int32 command_buffer_id)
       : gfx::NativeViewGLSurfaceGLX(),
         dummy_parent_(0),
@@ -435,7 +435,7 @@ GLXImageTransportSurface::GLXImageTransportSurface(
   helper_.reset(new ImageTransportHelper(this,
                                          manager,
                                          render_view_id,
-                                         renderer_id,
+                                         client_id,
                                          command_buffer_id,
                                          gfx::kNullPluginWindow));
 }
@@ -645,14 +645,14 @@ void GLXImageTransportSurface::OnResizeViewACK() {
 OSMesaImageTransportSurface::OSMesaImageTransportSurface(
     GpuChannelManager* manager,
     int32 render_view_id,
-    int32 renderer_id,
+    int32 client_id,
     int32 command_buffer_id)
   : gfx::GLSurfaceOSMesa(OSMESA_RGBA, gfx::Size(1, 1)),
     size_(gfx::Size(1, 1)) {
   helper_.reset(new ImageTransportHelper(this,
                                          manager,
                                          render_view_id,
-                                         renderer_id,
+                                         client_id,
                                          command_buffer_id,
                                          gfx::kNullPluginWindow));
 }
@@ -794,7 +794,7 @@ gfx::Size OSMesaImageTransportSurface::GetSize() {
 scoped_refptr<gfx::GLSurface> ImageTransportSurface::CreateSurface(
     GpuChannelManager* manager,
     int32 render_view_id,
-    int32 renderer_id,
+    int32 client_id,
     int32 command_buffer_id,
     gfx::PluginWindowHandle handle) {
   scoped_refptr<gfx::GLSurface> surface;
@@ -803,19 +803,19 @@ scoped_refptr<gfx::GLSurface> ImageTransportSurface::CreateSurface(
     case gfx::kGLImplementationDesktopGL:
       surface = new GLXImageTransportSurface(manager,
                                              render_view_id,
-                                             renderer_id,
+                                             client_id,
                                              command_buffer_id);
       break;
     case gfx::kGLImplementationEGLGLES2:
       surface = new EGLImageTransportSurface(manager,
                                              render_view_id,
-                                             renderer_id,
+                                             client_id,
                                              command_buffer_id);
       break;
     case gfx::kGLImplementationOSMesaGL:
       surface = new OSMesaImageTransportSurface(manager,
                                                 render_view_id,
-                                                renderer_id,
+                                                client_id,
                                                 command_buffer_id);
       break;
     default:
@@ -829,7 +829,7 @@ scoped_refptr<gfx::GLSurface> ImageTransportSurface::CreateSurface(
 
   surface = new PassThroughImageTransportSurface(manager,
                                                  render_view_id,
-                                                 renderer_id,
+                                                 client_id,
                                                  command_buffer_id,
                                                  surface.get());
 #endif

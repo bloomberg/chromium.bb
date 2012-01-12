@@ -32,7 +32,7 @@ class PbufferImageTransportSurface
  public:
   PbufferImageTransportSurface(GpuChannelManager* manager,
                                int32 render_view_id,
-                               int32 renderer_id,
+                               int32 client_id,
                                int32 command_buffer_id);
 
   // gfx::GLSurface implementation
@@ -71,7 +71,7 @@ class PbufferImageTransportSurface
 PbufferImageTransportSurface::PbufferImageTransportSurface(
     GpuChannelManager* manager,
     int32 render_view_id,
-    int32 renderer_id,
+    int32 client_id,
     int32 command_buffer_id)
         : GLSurfaceAdapter(new gfx::PbufferGLSurfaceEGL(false,
                                                         gfx::Size(1, 1))),
@@ -79,7 +79,7 @@ PbufferImageTransportSurface::PbufferImageTransportSurface(
   helper_.reset(new ImageTransportHelper(this,
                                          manager,
                                          render_view_id,
-                                         renderer_id,
+                                         client_id,
                                          command_buffer_id,
                                          gfx::kNullPluginWindow));
 }
@@ -187,7 +187,7 @@ void PbufferImageTransportSurface::OnResize(gfx::Size size) {
 scoped_refptr<gfx::GLSurface> ImageTransportSurface::CreateSurface(
     GpuChannelManager* manager,
     int32 render_view_id,
-    int32 renderer_id,
+    int32 client_id,
     int32 command_buffer_id,
     gfx::PluginWindowHandle handle) {
   scoped_refptr<gfx::GLSurface> surface;
@@ -201,7 +201,7 @@ scoped_refptr<gfx::GLSurface> ImageTransportSurface::CreateSurface(
         strstr(extensions, "EGL_ANGLE_surface_d3d_texture_2d_share_handle")) {
       surface = new PbufferImageTransportSurface(manager,
                                                  render_view_id,
-                                                 renderer_id,
+                                                 client_id,
                                                  command_buffer_id);
     }
   }
@@ -213,7 +213,7 @@ scoped_refptr<gfx::GLSurface> ImageTransportSurface::CreateSurface(
 
     surface = new PassThroughImageTransportSurface(manager,
                                                    render_view_id,
-                                                   renderer_id,
+                                                   client_id,
                                                    command_buffer_id,
                                                    surface.get());
   }

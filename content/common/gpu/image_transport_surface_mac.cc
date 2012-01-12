@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,7 +25,7 @@ class IOSurfaceImageTransportSurface : public gfx::NoOpGLSurfaceCGL,
  public:
   IOSurfaceImageTransportSurface(GpuChannelManager* manager,
                                  int32 render_view_id,
-                                 int32 renderer_id,
+                                 int32 client_id,
                                  int32 command_buffer_id,
                                  gfx::PluginWindowHandle handle);
 
@@ -80,7 +80,7 @@ class TransportDIBImageTransportSurface : public gfx::NoOpGLSurfaceCGL,
  public:
   TransportDIBImageTransportSurface(GpuChannelManager* manager,
                                     int32 render_view_id,
-                                    int32 renderer_id,
+                                    int32 client_id,
                                     int32 command_buffer_id,
                                     gfx::PluginWindowHandle handle);
 
@@ -144,7 +144,7 @@ void AddIntegerValue(CFMutableDictionaryRef dictionary,
 IOSurfaceImageTransportSurface::IOSurfaceImageTransportSurface(
     GpuChannelManager* manager,
     int32 render_view_id,
-    int32 renderer_id,
+    int32 client_id,
     int32 command_buffer_id,
     gfx::PluginWindowHandle handle)
         : gfx::NoOpGLSurfaceCGL(gfx::Size(1, 1)),
@@ -156,7 +156,7 @@ IOSurfaceImageTransportSurface::IOSurfaceImageTransportSurface(
   helper_.reset(new ImageTransportHelper(this,
                                          manager,
                                          render_view_id,
-                                         renderer_id,
+                                         client_id,
                                          command_buffer_id,
                                          handle));
 
@@ -372,7 +372,7 @@ void IOSurfaceImageTransportSurface::OnResize(gfx::Size size) {
 TransportDIBImageTransportSurface::TransportDIBImageTransportSurface(
     GpuChannelManager* manager,
     int32 render_view_id,
-    int32 renderer_id,
+    int32 client_id,
     int32 command_buffer_id,
     gfx::PluginWindowHandle handle)
         : gfx::NoOpGLSurfaceCGL(gfx::Size(1, 1)),
@@ -382,7 +382,7 @@ TransportDIBImageTransportSurface::TransportDIBImageTransportSurface(
   helper_.reset(new ImageTransportHelper(this,
                                          manager,
                                          render_view_id,
-                                         renderer_id,
+                                         client_id,
                                          command_buffer_id,
                                          handle));
 
@@ -583,7 +583,7 @@ void TransportDIBImageTransportSurface::OnResize(gfx::Size size) {
 scoped_refptr<gfx::GLSurface> ImageTransportSurface::CreateSurface(
     GpuChannelManager* manager,
     int32 render_view_id,
-    int32 renderer_id,
+    int32 client_id,
     int32 command_buffer_id,
     gfx::PluginWindowHandle handle) {
   scoped_refptr<gfx::GLSurface> surface;
@@ -595,13 +595,13 @@ scoped_refptr<gfx::GLSurface> ImageTransportSurface::CreateSurface(
       if (!io_surface_support) {
         surface = new TransportDIBImageTransportSurface(manager,
                                                         render_view_id,
-                                                        renderer_id,
+                                                        client_id,
                                                         command_buffer_id,
                                                         handle);
       } else {
         surface = new IOSurfaceImageTransportSurface(manager,
                                                      render_view_id,
-                                                     renderer_id,
+                                                     client_id,
                                                      command_buffer_id,
                                                      handle);
       }

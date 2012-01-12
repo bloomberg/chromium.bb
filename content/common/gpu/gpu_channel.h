@@ -41,7 +41,8 @@ class GpuChannel : public IPC::Channel::Listener,
   // Takes ownership of the renderer process handle.
   GpuChannel(GpuChannelManager* gpu_channel_manager,
              GpuWatchdog* watchdog,
-             int renderer_id,
+             gfx::GLShareGroup* share_group,
+             int client_id,
              bool software);
   virtual ~GpuChannel();
 
@@ -141,8 +142,8 @@ class GpuChannel : public IPC::Channel::Listener,
 
   std::deque<IPC::Message*> deferred_messages_;
 
-  // The id of the renderer who is on the other side of the channel.
-  int renderer_id_;
+  // The id of the client who is on the other side of the channel.
+  int client_id_;
 
   // Uniquely identifies the channel within this GPU process.
   int channel_id_;

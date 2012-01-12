@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,13 +23,13 @@ ImageTransportSurface::~ImageTransportSurface() {
 ImageTransportHelper::ImageTransportHelper(ImageTransportSurface* surface,
                                            GpuChannelManager* manager,
                                            int32 render_view_id,
-                                           int32 renderer_id,
+                                           int32 client_id,
                                            int32 command_buffer_id,
                                            gfx::PluginWindowHandle handle)
     : surface_(surface),
       manager_(manager),
       render_view_id_(render_view_id),
-      renderer_id_(renderer_id),
+      client_id_(client_id),
       command_buffer_id_(command_buffer_id),
       handle_(handle) {
   route_id_ = manager_->GenerateRouteID();
@@ -72,7 +72,7 @@ bool ImageTransportHelper::OnMessageReceived(const IPC::Message& message) {
 
 void ImageTransportHelper::SendAcceleratedSurfaceRelease(
     GpuHostMsg_AcceleratedSurfaceRelease_Params params) {
-  params.renderer_id = renderer_id_;
+  params.client_id = client_id_;
   params.render_view_id = render_view_id_;
   params.route_id = route_id_;
   manager_->Send(new GpuHostMsg_AcceleratedSurfaceRelease(params));
@@ -80,7 +80,7 @@ void ImageTransportHelper::SendAcceleratedSurfaceRelease(
 
 void ImageTransportHelper::SendAcceleratedSurfaceNew(
     GpuHostMsg_AcceleratedSurfaceNew_Params params) {
-  params.renderer_id = renderer_id_;
+  params.client_id = client_id_;
   params.render_view_id = render_view_id_;
   params.route_id = route_id_;
 #if defined(OS_MACOSX)
@@ -91,7 +91,7 @@ void ImageTransportHelper::SendAcceleratedSurfaceNew(
 
 void ImageTransportHelper::SendAcceleratedSurfaceBuffersSwapped(
     GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params params) {
-  params.renderer_id = renderer_id_;
+  params.client_id = client_id_;
   params.render_view_id = render_view_id_;
   params.route_id = route_id_;
 #if defined(OS_MACOSX)
@@ -102,7 +102,7 @@ void ImageTransportHelper::SendAcceleratedSurfaceBuffersSwapped(
 
 void ImageTransportHelper::SendAcceleratedSurfacePostSubBuffer(
     GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params params) {
-  params.renderer_id = renderer_id_;
+  params.client_id = client_id_;
   params.render_view_id = render_view_id_;
   params.route_id = route_id_;
 #if defined(OS_MACOSX)
@@ -112,7 +112,7 @@ void ImageTransportHelper::SendAcceleratedSurfacePostSubBuffer(
 }
 
 void ImageTransportHelper::SendResizeView(const gfx::Size& size) {
-  manager_->Send(new GpuHostMsg_ResizeView(renderer_id_,
+  manager_->Send(new GpuHostMsg_ResizeView(client_id_,
                                            render_view_id_,
                                            route_id_,
                                            size));
@@ -169,7 +169,7 @@ void ImageTransportHelper::Resize(gfx::Size size) {
 }
 
 void ImageTransportHelper::SetSwapInterval() {
-  GpuChannel* channel = manager_->LookupChannel(renderer_id_);
+  GpuChannel* channel = manager_->LookupChannel(client_id_);
   if (!channel)
     return;
 
@@ -189,7 +189,7 @@ bool ImageTransportHelper::MakeCurrent() {
 }
 
 gpu::GpuScheduler* ImageTransportHelper::Scheduler() {
-  GpuChannel* channel = manager_->LookupChannel(renderer_id_);
+  GpuChannel* channel = manager_->LookupChannel(client_id_);
   if (!channel)
     return NULL;
 
@@ -202,7 +202,7 @@ gpu::GpuScheduler* ImageTransportHelper::Scheduler() {
 }
 
 gpu::gles2::GLES2Decoder* ImageTransportHelper::Decoder() {
-  GpuChannel* channel = manager_->LookupChannel(renderer_id_);
+  GpuChannel* channel = manager_->LookupChannel(client_id_);
   if (!channel)
     return NULL;
 
@@ -217,13 +217,13 @@ gpu::gles2::GLES2Decoder* ImageTransportHelper::Decoder() {
 PassThroughImageTransportSurface::PassThroughImageTransportSurface(
     GpuChannelManager* manager,
     int32 render_view_id,
-    int32 renderer_id,
+    int32 client_id,
     int32 command_buffer_id,
     gfx::GLSurface* surface) : GLSurfaceAdapter(surface) {
   helper_.reset(new ImageTransportHelper(this,
                                          manager,
                                          render_view_id,
-                                         renderer_id,
+                                         client_id,
                                          command_buffer_id,
                                          gfx::kNullPluginWindow));
 }

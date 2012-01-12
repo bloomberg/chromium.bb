@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -37,13 +37,13 @@ class GpuProcessHost : public BrowserChildProcessHost,
   // has returned to the message loop as it can be destroyed. Instead store the
   // associated GPU host ID. A renderer ID of zero means the browser process.
   // This could return NULL if GPU access is not allowed (blacklisted).
-  static GpuProcessHost* GetForRenderer(int renderer_id,
+  static GpuProcessHost* GetForRenderer(int client_id,
                                         content::CauseForGpuLaunch cause);
 
   // Helper function to send the given message to the GPU process on the IO
   // thread.  Calls GetForRenderer and if a host is returned, sends it.
   // Can be called from any thread.
-  CONTENT_EXPORT static void SendOnIO(int renderer_id,
+  CONTENT_EXPORT static void SendOnIO(int client_id,
                                       content::CauseForGpuLaunch cause,
                                       IPC::Message* message);
 
@@ -67,7 +67,7 @@ class GpuProcessHost : public BrowserChildProcessHost,
   // renderer. Once the GPU process responds asynchronously with the IPC handle
   // and GPUInfo, we call the callback.
   void EstablishGpuChannel(
-      int renderer_id, const EstablishChannelCallback& callback);
+      int client_id, const EstablishChannelCallback& callback);
 
   typedef base::Callback<void(int32)> CreateCommandBufferCallback;
 
@@ -76,7 +76,7 @@ class GpuProcessHost : public BrowserChildProcessHost,
   void CreateViewCommandBuffer(
       gfx::PluginWindowHandle compositing_surface,
       int32 render_view_id,
-      int32 renderer_id,
+      int32 client_id,
       const GPUCreateCommandBufferConfig& init_params,
       const CreateCommandBufferCallback& callback);
 
@@ -101,7 +101,7 @@ class GpuProcessHost : public BrowserChildProcessHost,
   void OnChannelEstablished(const IPC::ChannelHandle& channel_handle);
   void OnCommandBufferCreated(const int32 route_id);
   void OnDestroyCommandBuffer(
-      gfx::PluginWindowHandle window, int32 renderer_id, int32 render_view_id);
+      gfx::PluginWindowHandle window, int32 client_id, int32 render_view_id);
 
   bool LaunchGpuProcess(const std::string& channel_id);
 
@@ -125,7 +125,7 @@ class GpuProcessHost : public BrowserChildProcessHost,
   std::queue<CreateCommandBufferCallback> create_command_buffer_requests_;
 
 #if defined(TOOLKIT_USES_GTK)
-  typedef std::pair<int32 /* renderer_id */,
+  typedef std::pair<int32 /* client_id */,
                     int32 /* render_view_id */> ViewID;
 
   // Encapsulates surfaces that we lock when creating view command buffers.

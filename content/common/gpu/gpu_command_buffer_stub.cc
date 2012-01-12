@@ -30,7 +30,7 @@ GpuCommandBufferStub::GpuCommandBufferStub(
     const std::vector<int32>& attribs,
     gfx::GpuPreference gpu_preference,
     int32 route_id,
-    int32 renderer_id,
+    int32 client_id,
     int32 render_view_id,
     GpuWatchdog* watchdog,
     bool software)
@@ -44,7 +44,7 @@ GpuCommandBufferStub::GpuCommandBufferStub(
       route_id_(route_id),
       software_(software),
       last_flush_count_(0),
-      renderer_id_(renderer_id),
+      client_id_(client_id),
       render_view_id_(render_view_id),
       parent_stub_for_initialization_(),
       parent_texture_for_initialization_(0),
@@ -63,7 +63,7 @@ GpuCommandBufferStub::~GpuCommandBufferStub() {
 
   GpuChannelManager* gpu_channel_manager = channel_->gpu_channel_manager();
   gpu_channel_manager->Send(new GpuHostMsg_DestroyCommandBuffer(
-      handle_, renderer_id_, render_view_id_));
+      handle_, client_id_, render_view_id_));
 }
 
 bool GpuCommandBufferStub::OnMessageReceived(const IPC::Message& message) {
@@ -196,7 +196,7 @@ void GpuCommandBufferStub::OnInitialize(
     surface_ = ImageTransportSurface::CreateSurface(
         channel_->gpu_channel_manager(),
         render_view_id_,
-        renderer_id_,
+        client_id_,
         route_id_,
         handle_);
   } else {

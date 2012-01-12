@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -83,7 +83,7 @@ class GpuProcessHostUIShim
   void OnLogMessage(int level, const std::string& header,
       const std::string& message);
 #if defined(TOOLKIT_USES_GTK) || defined(OS_WIN)
-  void OnResizeView(int32 renderer_id,
+  void OnResizeView(int32 client_id,
                     int32 render_view_id,
                     int32 route_id,
                     gfx::Size size);

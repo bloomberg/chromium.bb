@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -67,7 +67,7 @@ class ImageTransportSurface {
   static scoped_refptr<gfx::GLSurface>
       CreateSurface(GpuChannelManager* manager,
                     int32 render_view_id,
-                    int32 renderer_id,
+                    int32 client_id,
                     int32 command_buffer_id,
                     gfx::PluginWindowHandle handle);
  private:
@@ -80,7 +80,7 @@ class ImageTransportHelper : public IPC::Channel::Listener {
   ImageTransportHelper(ImageTransportSurface* surface,
                        GpuChannelManager* manager,
                        int32 render_view_id,
-                       int32 renderer_id,
+                       int32 client_id,
                        int32 command_buffer_id,
                        gfx::PluginWindowHandle handle);
   virtual ~ImageTransportHelper();
@@ -132,7 +132,7 @@ class ImageTransportHelper : public IPC::Channel::Listener {
   GpuChannelManager* manager_;
 
   int32 render_view_id_;
-  int32 renderer_id_;
+  int32 client_id_;
   int32 command_buffer_id_;
   int32 route_id_;
   gfx::PluginWindowHandle handle_;
@@ -148,7 +148,7 @@ class PassThroughImageTransportSurface
  public:
   PassThroughImageTransportSurface(GpuChannelManager* manager,
                                    int32 render_view_id,
-                                   int32 renderer_id,
+                                   int32 client_id,
                                    int32 command_buffer_id,
                                    gfx::GLSurface* surface);
   virtual ~PassThroughImageTransportSurface();

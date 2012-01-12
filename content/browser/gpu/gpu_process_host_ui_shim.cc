@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -226,7 +226,7 @@ void GpuProcessHostUIShim::OnGraphicsInfoCollected(
 
 #if defined(TOOLKIT_USES_GTK) || defined(OS_WIN)
 
-void GpuProcessHostUIShim::OnResizeView(int32 renderer_id,
+void GpuProcessHostUIShim::OnResizeView(int32 client_id,
                                         int32 render_view_id,
                                         int32 route_id,
                                         gfx::Size size) {
@@ -237,7 +237,7 @@ void GpuProcessHostUIShim::OnResizeView(int32 renderer_id,
       host_id_,
       new AcceleratedSurfaceMsg_ResizeViewACK(route_id));
 
-  RenderWidgetHostView* view = GetRenderWidgetHostViewFromID(renderer_id,
+  RenderWidgetHostView* view = GetRenderWidgetHostViewFromID(client_id,
                                                              render_view_id);
   if (!view)
     return;
@@ -282,7 +282,7 @@ void GpuProcessHostUIShim::OnAcceleratedSurfaceNew(
           TransportDIB::DefaultHandleValue()));
 
   RenderWidgetHostView* view = GetRenderWidgetHostViewFromID(
-      params.renderer_id, params.render_view_id);
+      params.client_id, params.render_view_id);
   if (!view)
     return;
 
@@ -337,7 +337,7 @@ void GpuProcessHostUIShim::OnAcceleratedSurfaceBuffersSwapped(
       new AcceleratedSurfaceMsg_BuffersSwappedACK(params.route_id));
 
   RenderWidgetHostView* view = GetRenderWidgetHostViewFromID(
-      params.renderer_id, params.render_view_id);
+      params.client_id, params.render_view_id);
   if (!view)
     return;
 
@@ -357,7 +357,7 @@ void GpuProcessHostUIShim::OnAcceleratedSurfacePostSubBuffer(
       new AcceleratedSurfaceMsg_PostSubBufferACK(params.route_id));
 
   RenderWidgetHostView* view = GetRenderWidgetHostViewFromID(
-      params.renderer_id, params.render_view_id);
+      params.client_id, params.render_view_id);
   if (!view)
     return;
 
@@ -372,7 +372,7 @@ void GpuProcessHostUIShim::OnAcceleratedSurfacePostSubBuffer(
 void GpuProcessHostUIShim::OnAcceleratedSurfaceRelease(
     const GpuHostMsg_AcceleratedSurfaceRelease_Params& params) {
   RenderWidgetHostView* view = GetRenderWidgetHostViewFromID(
-      params.renderer_id, params.render_view_id);
+      params.client_id, params.render_view_id);
   if (!view)
     return;
   view->AcceleratedSurfaceRelease(params.identifier);

@@ -27,8 +27,8 @@ GpuChannelManager::~GpuChannelManager() {
   gpu_channels_.clear();
 }
 
-void GpuChannelManager::RemoveChannel(int renderer_id) {
-  gpu_channels_.erase(renderer_id);
+void GpuChannelManager::RemoveChannel(int client_id) {
+  gpu_channels_.erase(client_id);
 }
 
 int GpuChannelManager::GenerateRouteID() {
@@ -45,8 +45,8 @@ void GpuChannelManager::RemoveRoute(int32 routing_id) {
   gpu_child_thread_->RemoveRoute(routing_id);
 }
 
-GpuChannel* GpuChannelManager::LookupChannel(int32 renderer_id) {
-  GpuChannelMap::const_iterator iter = gpu_channels_.find(renderer_id);
+GpuChannel* GpuChannelManager::LookupChannel(int32 client_id) {
+  GpuChannelMap::const_iterator iter = gpu_channels_.find(client_id);
   if (iter == gpu_channels_.end())
     return NULL;
   else
@@ -70,15 +70,23 @@ bool GpuChannelManager::Send(IPC::Message* msg) {
   return gpu_child_thread_->Send(msg);
 }
 
-void GpuChannelManager::OnEstablishChannel(int renderer_id) {
+void GpuChannelManager::OnEstablishChannel(int client_id, int share_client_id) {
   IPC::ChannelHandle channel_handle;
+
+  gfx::GLShareGroup* share_group = NULL;
+  if (share_client_id) {
+    GpuChannel* share_channel = gpu_channels_[share_client_id];
+    DCHECK(share_channel);
+    share_group = share_channel->share_group();
+  }
 
   scoped_refptr<GpuChannel> channel = new GpuChannel(this,
                                                      watchdog_,
-                                                     renderer_id,
+                                                     share_group,
+                                                     client_id,
                                                      false);
   if (channel->Init(io_message_loop_, shutdown_event_)) {
-    gpu_channels_[renderer_id] = channel;
+    gpu_channels_[client_id] = channel;
     channel_handle.name = channel->GetChannelName();
 
 #if defined(OS_POSIX)
@@ -109,12 +117,12 @@ void GpuChannelManager::OnCloseChannel(
 void GpuChannelManager::OnCreateViewCommandBuffer(
     gfx::PluginWindowHandle window,
     int32 render_view_id,
-    int32 renderer_id,
+    int32 client_id,
     const GPUCreateCommandBufferConfig& init_params) {
   DCHECK(render_view_id);
   int32 route_id = MSG_ROUTING_NONE;
 
-  GpuChannelMap::const_iterator iter = gpu_channels_.find(renderer_id);
+  GpuChannelMap::const_iterator iter = gpu_channels_.find(client_id);
   if (iter != gpu_channels_.end()) {
     iter->second->CreateViewCommandBuffer(
         window, render_view_id, init_params, &route_id);

@@ -74,11 +74,11 @@ void ReleasePermanentXIDDispatcher(gfx::PluginWindowHandle surface) {
 
 #endif
 
-void SendGpuProcessMessage(int renderer_id,
+void SendGpuProcessMessage(int client_id,
                            content::CauseForGpuLaunch cause,
                            IPC::Message* message) {
   GpuProcessHost* host = GpuProcessHost::GetForRenderer(
-      renderer_id, cause);
+      client_id, cause);
   if (host) {
     host->Send(message);
   } else {
@@ -183,7 +183,7 @@ static bool HostIsValid(GpuProcessHost* host) {
 
 // static
 GpuProcessHost* GpuProcessHost::GetForRenderer(
-    int renderer_id, content::CauseForGpuLaunch cause) {
+    int client_id, content::CauseForGpuLaunch cause) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   // Don't grant further access to GPU if it is not allowed.
@@ -221,13 +221,13 @@ GpuProcessHost* GpuProcessHost::GetForRenderer(
 }
 
 // static
-void GpuProcessHost::SendOnIO(int renderer_id,
+void GpuProcessHost::SendOnIO(int client_id,
                               content::CauseForGpuLaunch cause,
                               IPC::Message* message) {
   BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::Bind(
-            &SendGpuProcessMessage, renderer_id, cause, message));
+            &SendGpuProcessMessage, client_id, cause, message));
 }
 
 // static
@@ -379,7 +379,7 @@ void GpuProcessHost::OnChannelConnected(int32 peer_pid) {
 }
 
 void GpuProcessHost::EstablishGpuChannel(
-    int renderer_id,
+    int client_id,
     const EstablishChannelCallback& callback) {
   DCHECK(CalledOnValidThread());
   TRACE_EVENT0("gpu", "GpuProcessHostUIShim::EstablishGpuChannel");
@@ -392,7 +392,7 @@ void GpuProcessHost::EstablishGpuChannel(
     return;
   }
 
-  if (Send(new GpuMsg_EstablishChannel(renderer_id))) {
+  if (Send(new GpuMsg_EstablishChannel(client_id, 0))) {
     channel_requests_.push(callback);
   } else {
     EstablishChannelError(
@@ -404,13 +404,13 @@ void GpuProcessHost::EstablishGpuChannel(
 void GpuProcessHost::CreateViewCommandBuffer(
     gfx::PluginWindowHandle compositing_surface,
     int32 render_view_id,
-    int32 renderer_id,
+    int32 client_id,
     const GPUCreateCommandBufferConfig& init_params,
     const CreateCommandBufferCallback& callback) {
   DCHECK(CalledOnValidThread());
 
 #if defined(TOOLKIT_USES_GTK)
-  ViewID view_id(renderer_id, render_view_id);
+  ViewID view_id(client_id, render_view_id);
 
   // There should only be one such command buffer (for the compositor).  In
   // practice, if the GPU process lost a context, GraphicsContext3D with
@@ -426,7 +426,7 @@ void GpuProcessHost::CreateViewCommandBuffer(
 
   if (compositing_surface != gfx::kNullPluginWindow &&
       Send(new GpuMsg_CreateViewCommandBuffer(
-          compositing_surface, render_view_id, renderer_id, init_params))) {
+          compositing_surface, render_view_id, client_id, init_params))) {
     create_command_buffer_requests_.push(callback);
 #if defined(TOOLKIT_USES_GTK)
     surface_refs_.insert(std::pair<ViewID, linked_ptr<SurfaceRef> >(
@@ -479,10 +479,10 @@ void GpuProcessHost::OnCommandBufferCreated(const int32 route_id) {
 }
 
 void GpuProcessHost::OnDestroyCommandBuffer(
-    gfx::PluginWindowHandle window, int32 renderer_id,
+    gfx::PluginWindowHandle window, int32 client_id,
     int32 render_view_id) {
 #if defined(TOOLKIT_USES_GTK)
-  ViewID view_id(renderer_id, render_view_id);
+  ViewID view_id(client_id, render_view_id);
   SurfaceRefMap::iterator it = surface_refs_.find(view_id);
   if (it != surface_refs_.end())
     surface_refs_.erase(it);

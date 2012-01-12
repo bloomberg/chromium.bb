@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -48,7 +48,7 @@ class GpuChannelManager : public IPC::Channel::Listener,
   virtual ~GpuChannelManager();
 
   // Remove the channel for a particular renderer.
-  void RemoveChannel(int renderer_id);
+  void RemoveChannel(int client_id);
 
   // Listener overrides.
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
@@ -64,18 +64,18 @@ class GpuChannelManager : public IPC::Channel::Listener,
   void AddRoute(int32 routing_id, IPC::Channel::Listener* listener);
   void RemoveRoute(int32 routing_id);
 
-  GpuChannel* LookupChannel(int32 renderer_id);
+  GpuChannel* LookupChannel(int32 client_id);
 
  private:
   // Message handlers.
-  void OnEstablishChannel(int renderer_id);
+  void OnEstablishChannel(int client_id, int share_client_id);
   void OnCloseChannel(const IPC::ChannelHandle& channel_handle);
   void OnVisibilityChanged(
-      int32 render_view_id, int32 renderer_id, bool visible);
+      int32 render_view_id, int32 client_id, bool visible);
   void OnCreateViewCommandBuffer(
       gfx::PluginWindowHandle window,
       int32 render_view_id,
-      int32 renderer_id,
+      int32 client_id,
       const GPUCreateCommandBufferConfig& init_params);
 
   void OnLoseAllContexts();

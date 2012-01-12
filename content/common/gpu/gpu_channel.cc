@@ -31,13 +31,14 @@ const int64 kHandleMoreWorkPeriod = 1;
 
 GpuChannel::GpuChannel(GpuChannelManager* gpu_channel_manager,
                        GpuWatchdog* watchdog,
-                       int renderer_id,
+                       gfx::GLShareGroup* share_group,
+                       int client_id,
                        bool software)
     : gpu_channel_manager_(gpu_channel_manager),
-      renderer_id_(renderer_id),
+      client_id_(client_id),
       renderer_process_(base::kNullProcessHandle),
       renderer_pid_(base::kNullProcessId),
-      share_group_(new gfx::GLShareGroup),
+      share_group_(share_group ? share_group : new gfx::GLShareGroup),
       watchdog_(watchdog),
       software_(software),
       handle_messages_scheduled_(false),
@@ -45,7 +46,7 @@ GpuChannel::GpuChannel(GpuChannelManager* gpu_channel_manager,
       num_contexts_preferring_discrete_gpu_(0),
       weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   DCHECK(gpu_channel_manager);
-  DCHECK(renderer_id);
+  DCHECK(client_id);
 
   static int last_channel_id = 0;
   channel_id_ = ++last_channel_id;
@@ -110,7 +111,7 @@ bool GpuChannel::OnMessageReceived(const IPC::Message& message) {
 }
 
 void GpuChannel::OnChannelError() {
-  gpu_channel_manager_->RemoveChannel(renderer_id_);
+  gpu_channel_manager_->RemoveChannel(client_id_);
 }
 
 void GpuChannel::OnChannelConnected(int32 peer_pid) {
@@ -171,7 +172,7 @@ void GpuChannel::DestroySoon() {
 
 void GpuChannel::OnDestroy() {
   TRACE_EVENT0("gpu", "GpuChannel::OnDestroy");
-  gpu_channel_manager_->RemoveChannel(renderer_id_);
+  gpu_channel_manager_->RemoveChannel(client_id_);
 }
 
 void GpuChannel::CreateViewCommandBuffer(
@@ -198,7 +199,7 @@ void GpuChannel::CreateViewCommandBuffer(
       init_params.attribs,
       init_params.gpu_preference,
       *route_id,
-      renderer_id_,
+      client_id_,
       render_view_id,
       watchdog_,
       software_));
@@ -394,7 +395,7 @@ void GpuChannel::OnWillGpuSwitchOccur(bool is_creating_context,
 }
 
 void GpuChannel::OnCloseChannel() {
-  gpu_channel_manager_->RemoveChannel(renderer_id_);
+  gpu_channel_manager_->RemoveChannel(client_id_);
   // At this point "this" is deleted!
 }
 

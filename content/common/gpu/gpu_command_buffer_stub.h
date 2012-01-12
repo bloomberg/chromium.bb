@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -49,7 +49,7 @@ class GpuCommandBufferStub
       const std::vector<int32>& attribs,
       gfx::GpuPreference gpu_preference,
       int32 route_id,
-      int32 renderer_id,
+      int32 client_id,
       int32 render_view_id,
       GpuWatchdog* watchdog,
       bool software);
@@ -75,7 +75,7 @@ class GpuCommandBufferStub
   gpu::GpuScheduler* scheduler() const { return scheduler_.get(); }
 
   // Identifies the renderer process.
-  int32 renderer_id() const { return renderer_id_; }
+  int32 client_id() const { return client_id_; }
 
   // Identifies a particular renderer belonging to the same renderer process.
   int32 render_view_id() const { return render_view_id_; }
@@ -148,7 +148,7 @@ class GpuCommandBufferStub
 
   // The following two fields are used on Mac OS X to identify the window
   // for the rendering results on the browser side.
-  int32 renderer_id_;
+  int32 client_id_;
   int32 render_view_id_;
 
   scoped_ptr<gpu::CommandBufferService> command_buffer_;
