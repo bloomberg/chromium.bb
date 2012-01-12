@@ -271,6 +271,7 @@
         'client/plugin/pepper_xmpp_proxy.h',
       ],
     },  # end of target 'remoting_client_plugin'
+
     {
       'target_name': 'remoting_host_plugin',
       'type': 'loadable_module',
@@ -346,10 +347,10 @@
     },  # end of target 'remoting_host_plugin'
 
     {
-      # This is a deprecated target that has been replaced with remoting_it2me.
+      # This is a deprecated target that has been replaced with remoting_webapp.
       # It is kept here because there are some pieces that still depend on
       # this target.
-      # TODO(sergeyu): Remove this target.
+      # TODO(sergeyu): Remove this target. http://crbug.com/109948
       'target_name': 'webapp_it2me',
       'type': 'none',
       'dependencies': [
@@ -389,7 +390,8 @@
           ],
         },
       ],
-    }, # end of target 'remoting_webapp'
+    }, # end of target 'webapp_it2me'
+
     {
       'target_name': 'remoting_webapp',
       'type': 'none',
@@ -464,6 +466,7 @@
         },
       ],
     }, # end of target 'remoting_webapp'
+
     {
       'target_name': 'remoting_base',
       'type': 'static_library',
