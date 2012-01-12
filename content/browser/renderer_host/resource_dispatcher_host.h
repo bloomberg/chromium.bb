@@ -303,8 +303,6 @@ class CONTENT_EXPORT ResourceDispatcherHost : public net::URLRequest::Delegate {
   // Resumes the given request by calling OnResponseStarted or OnReadCompleted.
   void ResumeRequest(const content::GlobalRequestID& request_id);
 
-  void DeleteRequestSoon(net::URLRequest* request);
-
   // Internal function to start reading for the first time.
   void StartReading(net::URLRequest* request);
 
