@@ -48,6 +48,7 @@
 #include "chrome/browser/extensions/extension_preference_api.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_processes_api.h"
+#include "chrome/browser/extensions/extension_sorting.h"
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
 #include "chrome/browser/extensions/extension_sync_data.h"
 #include "chrome/browser/extensions/extension_updater.h"
@@ -1609,7 +1610,8 @@ bool ExtensionService::CanLoadInIncognito(const Extension* extension) const {
 
 StringOrdinal ExtensionService::GetAppLaunchOrdinal(
     const std::string& extension_id) const {
-  return extension_prefs_->GetAppLaunchOrdinal(extension_id);
+  return
+      extension_prefs_->extension_sorting()->GetAppLaunchOrdinal(extension_id);
 }
 
 void ExtensionService::SetAppLaunchOrdinal(
@@ -1618,7 +1620,8 @@ void ExtensionService::SetAppLaunchOrdinal(
   const Extension* ext = GetExtensionById(extension_id, true);
   DCHECK(ext->is_app());
 
-  extension_prefs_->SetAppLaunchOrdinal(extension_id, app_launch_index);
+  extension_prefs_->extension_sorting()->SetAppLaunchOrdinal(
+      extension_id, app_launch_index);
 
   const Extension* extension = GetInstalledExtension(extension_id);
   if (extension)
@@ -1627,7 +1630,7 @@ void ExtensionService::SetAppLaunchOrdinal(
 
 StringOrdinal ExtensionService::GetPageOrdinal(
     const std::string& extension_id) const {
-  return extension_prefs_->GetPageOrdinal(extension_id);
+  return extension_prefs_->extension_sorting()->GetPageOrdinal(extension_id);
 }
 
 void ExtensionService::SetPageOrdinal(const std::string& extension_id,
@@ -1635,7 +1638,8 @@ void ExtensionService::SetPageOrdinal(const std::string& extension_id,
   const Extension* ext = GetExtensionById(extension_id, true);
   DCHECK(ext->is_app());
 
-  extension_prefs_->SetPageOrdinal(extension_id, page_ordinal);
+  extension_prefs_->extension_sorting()->SetPageOrdinal(
+      extension_id, page_ordinal);
 
   const Extension* extension = GetInstalledExtension(extension_id);
   if (extension)
@@ -1646,9 +1650,10 @@ void ExtensionService::OnExtensionMoved(
     const std::string& moved_extension_id,
     const std::string& predecessor_extension_id,
     const std::string& successor_extension_id) {
-  extension_prefs_->OnExtensionMoved(moved_extension_id,
-                                     predecessor_extension_id,
-                                     successor_extension_id);
+  extension_prefs_->extension_sorting()->OnExtensionMoved(
+      moved_extension_id,
+      predecessor_extension_id,
+      successor_extension_id);
 
   const Extension* extension = GetInstalledExtension(moved_extension_id);
   if (extension)

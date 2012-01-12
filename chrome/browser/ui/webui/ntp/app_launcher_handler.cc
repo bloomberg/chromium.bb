@@ -22,6 +22,7 @@
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_sorting.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
@@ -156,7 +157,6 @@ void AppLauncherHandler::CreateAppInfo(const Extension* extension,
       extension->id() == extension_misc::kWebStoreAppId);
 
   if (extension->HasAPIPermission(ExtensionAPIPermission::kAppNotifications)) {
-    ExtensionPrefs* prefs = service->extension_prefs();
     value->SetBoolean("notifications_disabled",
                       prefs->IsAppNotificationDisabled(extension->id()));
   }
@@ -164,30 +164,33 @@ void AppLauncherHandler::CreateAppInfo(const Extension* extension,
   if (notification)
     value->Set("notification", SerializeNotification(*notification));
 
-  StringOrdinal page_ordinal = prefs->GetPageOrdinal(extension->id());
+  ExtensionSorting* sorting = prefs->extension_sorting();
+  StringOrdinal page_ordinal = sorting->GetPageOrdinal(extension->id());
   if (!page_ordinal.IsValid()) {
     // Make sure every app has a page ordinal (some predate the page ordinal).
     // The webstore app should be on the first page.
     page_ordinal = extension->id() == extension_misc::kWebStoreAppId ?
-        prefs->CreateFirstAppPageOrdinal() : prefs->GetNaturalAppPageOrdinal();
-    prefs->SetPageOrdinal(extension->id(), page_ordinal);
+        sorting->CreateFirstAppPageOrdinal() :
+        sorting->GetNaturalAppPageOrdinal();
+    sorting->SetPageOrdinal(extension->id(), page_ordinal);
   }
   // We convert the page_ordinal to an integer because the pages are referenced
   // from within an array in the javascript code, which can't be easily
   // changed to handle the StringOrdinal values, so we do the conversion here.
-  int page_index = prefs->PageStringOrdinalAsInteger(page_ordinal);
+  int page_index =
+      sorting->PageStringOrdinalAsInteger(page_ordinal);
   value->SetInteger("page_index", page_index >= 0 ? page_index : 0);
 
   StringOrdinal app_launch_ordinal =
-      prefs->GetAppLaunchOrdinal(extension->id());
+      sorting->GetAppLaunchOrdinal(extension->id());
   if (!app_launch_ordinal.IsValid()) {
     // Make sure every app has a launch ordinal (some predate the launch
     // ordinal). The webstore's app launch ordinal is always set to the first
     // position.
     app_launch_ordinal = extension->id() == extension_misc::kWebStoreAppId ?
-        prefs->CreateFirstAppLaunchOrdinal(page_ordinal) :
-        prefs->CreateNextAppLaunchOrdinal(page_ordinal);
-    prefs->SetAppLaunchOrdinal(extension->id(), app_launch_ordinal);
+        sorting->CreateFirstAppLaunchOrdinal(page_ordinal) :
+        sorting->CreateNextAppLaunchOrdinal(page_ordinal);
+    sorting->SetAppLaunchOrdinal(extension->id(), app_launch_ordinal);
   }
   value->SetString("app_launch_ordinal", app_launch_ordinal.ToString());
 }
@@ -354,9 +357,10 @@ void AppLauncherHandler::FillAppDictionary(DictionaryValue* dictionary) {
       // page index for non-app extensions. Old profiles can persist this error,
       // and this fixes it. This caused GetNaturalAppPageIndex() to break
       // (see http://crbug.com/98325) before it was an ordinal value.
-      ExtensionPrefs* prefs = extension_service_->extension_prefs();
-      if (prefs->GetPageOrdinal(extension->id()).IsValid())
-        prefs->ClearPageOrdinal(extension->id());
+      ExtensionSorting* sortings =
+          extension_service_->extension_prefs()->extension_sorting();
+      if (sortings->GetPageOrdinal(extension->id()).IsValid())
+        sortings->ClearPageOrdinal(extension->id());
     }
   }
 
@@ -491,7 +495,8 @@ void AppLauncherHandler::HandleGetApps(const ListValue* args) {
     registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
         content::Source<Profile>(profile));
     registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LAUNCHER_REORDERED,
-        content::Source<ExtensionPrefs>(extension_service_->extension_prefs()));
+        content::Source<ExtensionSorting>(
+            extension_service_->extension_prefs()->extension_sorting()));
     registrar_.Add(this, chrome::NOTIFICATION_WEB_STORE_PROMO_LOADED,
         content::Source<Profile>(profile));
     registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_INSTALL_ERROR,
@@ -676,18 +681,20 @@ void AppLauncherHandler::HandleReorderApps(const ListValue* args) {
 }
 
 void AppLauncherHandler::HandleSetPageIndex(const ListValue* args) {
+  ExtensionSorting* extension_sorting =
+      extension_service_->extension_prefs()->extension_sorting();
+
   std::string extension_id;
   double page_index;
   CHECK(args->GetString(0, &extension_id));
   CHECK(args->GetDouble(1, &page_index));
   const StringOrdinal& page_ordinal =
-      extension_service_->extension_prefs()->PageIntegerAsStringOrdinal(
+      extension_sorting->PageIntegerAsStringOrdinal(
           static_cast<size_t>(page_index));
 
   // Don't update the page; it already knows the apps have been reordered.
   AutoReset<bool> auto_reset(&ignore_changes_, true);
-  extension_service_->extension_prefs()->SetPageOrdinal(extension_id,
-      page_ordinal);
+  extension_sorting->SetPageOrdinal(extension_id, page_ordinal);
 }
 
 void AppLauncherHandler::HandlePromoSeen(const ListValue* args) {
@@ -720,8 +727,10 @@ void AppLauncherHandler::HandleGenerateAppForLink(const ListValue* args) {
 
   double page_index;
   CHECK(args->GetDouble(2, &page_index));
+  ExtensionSorting* extension_sorting =
+      extension_service_->extension_prefs()->extension_sorting();
   const StringOrdinal& page_ordinal =
-      extension_service_->extension_prefs()->PageIntegerAsStringOrdinal(
+      extension_sorting->PageIntegerAsStringOrdinal(
           static_cast<size_t>(page_index));
 
   Profile* profile = Profile::FromWebUI(web_ui());

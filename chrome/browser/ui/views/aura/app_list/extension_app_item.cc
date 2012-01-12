@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 #include "chrome/browser/event_disposition.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_sorting.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/extensions/extension.h"
@@ -22,18 +23,19 @@
 
 namespace {
 
-const ExtensionPrefs* GetExtensionPrefs(Profile* profile) {
-  return profile->GetExtensionService()->extension_prefs();
+const ExtensionSorting* GetExtensionSorting(Profile* profile) {
+  return profile->GetExtensionService()->extension_prefs()->extension_sorting();
 }
 
 // Gets page ordinal of given |extension| in its app launch page.
 StringOrdinal GetExtensionPageOrdinal(Profile* profile,
                                       const Extension* extension) {
-  const ExtensionPrefs* prefs = GetExtensionPrefs(profile);
-  StringOrdinal page_ordinal = prefs->GetPageOrdinal(extension->id());
+  const ExtensionSorting* sorting = GetExtensionSorting(profile);
+  StringOrdinal page_ordinal = sorting->GetPageOrdinal(extension->id());
   if (!page_ordinal.IsValid()) {
     page_ordinal = extension->id() == extension_misc::kWebStoreAppId ?
-        prefs->CreateFirstAppPageOrdinal() : prefs->GetNaturalAppPageOrdinal();
+        sorting->CreateFirstAppPageOrdinal() :
+        sorting->GetNaturalAppPageOrdinal();
   }
 
   return page_ordinal;
@@ -42,21 +44,21 @@ StringOrdinal GetExtensionPageOrdinal(Profile* profile,
 // Gets page index from page ordinal.
 int GetExtensionPageIndex(Profile* profile,
                           const Extension* extension) {
-  return std::max(0, GetExtensionPrefs(profile)->PageStringOrdinalAsInteger(
+  return std::max(0, GetExtensionSorting(profile)->PageStringOrdinalAsInteger(
       GetExtensionPageOrdinal(profile, extension)));
 }
 
 // Gets app launch ordinal of given extension.
 StringOrdinal GetExtensionLaunchOrdinal(Profile* profile,
                                         const Extension* extension) {
-  const ExtensionPrefs* prefs = GetExtensionPrefs(profile);
+  const ExtensionSorting* sorting = GetExtensionSorting(profile);
   StringOrdinal app_launch_ordinal =
-      prefs->GetAppLaunchOrdinal(extension->id());
+      sorting->GetAppLaunchOrdinal(extension->id());
   if (!app_launch_ordinal.IsValid()) {
     StringOrdinal page_ordinal = GetExtensionPageOrdinal(profile, extension);
     app_launch_ordinal = extension->id() == extension_misc::kWebStoreAppId ?
-        prefs->CreateFirstAppLaunchOrdinal(page_ordinal) :
-        prefs->CreateNextAppLaunchOrdinal(page_ordinal);
+        sorting->CreateFirstAppLaunchOrdinal(page_ordinal) :
+        sorting->CreateNextAppLaunchOrdinal(page_ordinal);
   }
   return app_launch_ordinal;
 }
