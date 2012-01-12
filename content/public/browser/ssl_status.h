@@ -1,14 +1,6 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-
-// Defines the Geolocation access token store, and associated factory function.
-// An access token store is responsible for providing the API to persist
-// access tokens, one at a time, and to load them back on mass.
-// The API is a little more complex than one might wish, due to the need for
-// prefs access to happen asynchronously on the UI thread.
-// This API is provided as abstract base classes to allow mocking and testing
-// of clients, without dependency on browser process singleton objects etc.
 
 #ifndef CONTENT_PUBLIC_BROWSER_SSL_STATUS_H_
 #define CONTENT_PUBLIC_BROWSER_SSL_STATUS_H_
