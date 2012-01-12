@@ -943,13 +943,6 @@ void ExtensionService::NotifyExtensionLoaded(const Extension* extension) {
   // extension.
   profile_->RegisterExtensionWithRequestContexts(extension);
 
-  // Tell subsystems that use the EXTENSION_LOADED notification about the new
-  // extension.
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_EXTENSION_LOADED,
-      content::Source<Profile>(profile_),
-      content::Details<const Extension>(extension));
-
   // Tell renderers about the new extension, unless it's a theme (renderers
   // don't need to know about themes).
   if (!extension->is_theme()) {
@@ -968,6 +961,17 @@ void ExtensionService::NotifyExtensionLoaded(const Extension* extension) {
       }
     }
   }
+
+  // Tell subsystems that use the EXTENSION_LOADED notification about the new
+  // extension.
+  //
+  // NOTE: It is important that this happen after notifying the renderers about
+  // the new extensions so that if we navigate to an extension URL in
+  // NOTIFICATION_EXTENSION_LOADED, the renderer is guaranteed to know about it.
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_EXTENSION_LOADED,
+      content::Source<Profile>(profile_),
+      content::Details<const Extension>(extension));
 
   // Tell a random-ass collection of other subsystems about the new extension.
   // TODO(aa): What should we do with all this goop? Can it move into the
