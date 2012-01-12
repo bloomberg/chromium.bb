@@ -22,7 +22,8 @@ ScalingFilterInterpreter::ScalingFilterInterpreter(PropRegistry* prop_reg,
       screen_x_scale_(1.0),
       screen_y_scale_(1.0),
       pressure_scale_(prop_reg, "Pressure Calibration Slope", 1.0),
-      pressure_translate_(prop_reg, "Pressure Calibration Offset", 0.0) {
+      pressure_translate_(prop_reg, "Pressure Calibration Offset", 0.0),
+      pressure_threshold_(prop_reg, "Pressure Minimum Threshold", 0.0) {
   next_.reset(next);
 }
 
@@ -42,7 +43,32 @@ Gesture* ScalingFilterInterpreter::HandleTimer(stime_t now, stime_t* timeout) {
   return gs;
 }
 
+// Ignore the finger events with low pressure values especially for the SEMI_MT
+// devices such as Synaptics touchpad on Cr-48.
+void ScalingFilterInterpreter::FilterLowPressure(HardwareState* hwstate) {
+  unsigned short finger_cnt = hwstate->finger_cnt;
+  unsigned short touch_cnt = hwstate->touch_cnt;
+  float threshold = 0.0;
+  if (pressure_scale_.val_ > 0.0) {
+    threshold = (pressure_threshold_.val_ - pressure_translate_.val_)
+        / pressure_scale_.val_ ;
+  }
+  for (short i = finger_cnt - 1 ; i >= 0; i--) {
+    if (hwstate->fingers[i].pressure < threshold) {
+      if (i != finger_cnt - 1)
+        hwstate->fingers[i] = hwstate->fingers[finger_cnt - 1];
+      finger_cnt--;
+      touch_cnt--;
+    }
+  }
+  hwstate->finger_cnt = finger_cnt;
+  hwstate->touch_cnt = touch_cnt;
+}
+
 void ScalingFilterInterpreter::ScaleHardwareState(HardwareState* hwstate) {
+  // Drop the small fingers, i.e. low pressures.
+  FilterLowPressure(hwstate);
+
   for (short i = 0; i < hwstate->finger_cnt; i++) {
     hwstate->fingers[i].position_x *= tp_x_scale_;
     hwstate->fingers[i].position_x += tp_x_translate_;

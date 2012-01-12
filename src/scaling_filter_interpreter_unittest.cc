@@ -42,6 +42,12 @@ class ScalingFilterInterpreterTestInterpreter : public Interpreter {
       EXPECT_FLOAT_EQ(expected_pressures_.front(),
                       hwstate->fingers[0].pressure);
       expected_pressures_.pop_front();
+    } else {
+      // Test if the low pressure event is dropped
+      EXPECT_EQ(expected_finger_cnt_.front(), hwstate->finger_cnt);
+      expected_finger_cnt_.pop_front();
+      EXPECT_EQ(expected_touch_cnt_.front(), hwstate->touch_cnt);
+      expected_touch_cnt_.pop_front();
     }
     if (return_values_.empty())
       return NULL;
@@ -78,6 +84,8 @@ class ScalingFilterInterpreterTestInterpreter : public Interpreter {
   deque<Gesture> return_values_;
   deque<vector<pair<float, float> > > expected_coordinates_;
   deque<float> expected_pressures_;
+  deque<int> expected_finger_cnt_;
+  deque<int> expected_touch_cnt_;
   HardwareProperties expected_hwprops_;
   bool set_hwprops_called_;
 };
@@ -105,6 +113,7 @@ TEST(ScalingFilterInterpreterTest, SimpleTest) {
   EXPECT_TRUE(base_interpreter->set_hwprops_called_);
   const float kPressureScale = 2.0;
   const float kPressureTranslate = 3.0;
+  const float kPressureThreshold = 10.0;
   interpreter.pressure_scale_.val_ = kPressureScale;
   interpreter.pressure_translate_.val_ = kPressureTranslate;
 
@@ -132,6 +141,7 @@ TEST(ScalingFilterInterpreterTest, SimpleTest) {
       vector<pair<float, float> >(1, make_pair(
           static_cast<float>(100.0 * (250.0 - 133.0) / (10279.0 - 133.0)),
           static_cast<float>(60.0 * (3000.0 - 728.0) / (5822.0 - 728.0)))));
+
   base_interpreter->expected_pressures_.push_back(
       fs[0].pressure * kPressureScale + kPressureTranslate);
   base_interpreter->expected_pressures_.push_back(
@@ -152,6 +162,7 @@ TEST(ScalingFilterInterpreterTest, SimpleTest) {
                                                      0,  // end time
                                                      4.1,  // dx
                                                      -10.3));  // dy
+  base_interpreter->return_values_.push_back(Gesture());  // Null type
 
   Gesture* out = interpreter.SyncInterpret(&hs[0], NULL);
   ASSERT_EQ(reinterpret_cast<Gesture*>(NULL), out);
@@ -165,6 +176,24 @@ TEST(ScalingFilterInterpreterTest, SimpleTest) {
   EXPECT_EQ(kGestureTypeScroll, out->type);
   EXPECT_FLOAT_EQ(4.1 * 133.0 / 25.4, out->details.scroll.dx);
   EXPECT_FLOAT_EQ(-10.3 * 133.0 / 25.4, out->details.scroll.dy);
+
+  // Test if we will drop the low pressure event.
+  FingerState fs2[] = {
+    { 0, 0, 0, 0, 1, 0, 150, 4000, 2 },
+    { 0, 0, 0, 0, 4, 0, 550, 2000, 2 }
+  };
+  HardwareState hs2[] = {
+    { 110000, 0, 1, 2, &fs2[0] },
+    { 154000, 0, 1, 1, &fs2[1] }
+  };
+  interpreter.pressure_threshold_.val_ = kPressureThreshold;
+  base_interpreter->expected_finger_cnt_.push_back(0);
+  base_interpreter->expected_touch_cnt_.push_back(1);
+  out = interpreter.SyncInterpret(&hs2[0], NULL);
+
+  base_interpreter->expected_pressures_.push_back(
+      fs2[1].pressure * kPressureScale + kPressureTranslate);
+  out = interpreter.SyncInterpret(&hs2[1], NULL);
 }
 
 }  // namespace gestures
