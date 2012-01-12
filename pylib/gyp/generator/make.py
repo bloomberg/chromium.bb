@@ -1810,27 +1810,17 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
     if self.flavor != 'mac': return {}
 
     built_products_dir = generator_default_variables['PRODUCT_DIR']
-    def StripProductDir(s):
-      assert s.startswith(built_products_dir), s
-      return s[len(built_products_dir) + 1:]
-
-    product_name = spec.get('product_name', self.output)
-
-    if self._InstallImmediately():
-      if product_name.startswith(built_products_dir):
-        product_name = StripProductDir(product_name)
-
     srcroot = self.path
     if target_relative_path:
       built_products_dir = os.path.relpath(built_products_dir, srcroot)
       srcroot = '.'
+
     # These are filled in on a as-needed basis.
     env = {
       'BUILT_PRODUCTS_DIR' : built_products_dir,
       'CONFIGURATION' : '$(BUILDTYPE)',
-      'PRODUCT_NAME' : product_name,
+      'PRODUCT_NAME' : self.xcode_settings.GetProductName(),
       # See /Developer/Platforms/MacOSX.platform/Developer/Library/Xcode/Specifications/MacOSX\ Product\ Types.xcspec for FULL_PRODUCT_NAME
-      'FULL_PRODUCT_NAME' : product_name,
       'SRCROOT' : srcroot,
       'SOURCE_ROOT': '$(SRCROOT)',
       # This is not true for static libraries, but currently the env is only
@@ -1843,6 +1833,7 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
     if self.type in (
         'executable', 'static_library', 'shared_library', 'loadable_module'):
       env['EXECUTABLE_PATH'] = self.xcode_settings.GetExecutablePath()
+      env['FULL_PRODUCT_NAME'] = self.xcode_settings.GetFullProductName()
       mach_o_type = self.xcode_settings.GetMachOType()
       if mach_o_type:
         env['MACH_O_TYPE'] = mach_o_type
@@ -1864,11 +1855,6 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
                     additional_settings={}):
     env = additional_settings
     env.update(self.GetXcodeEnv(spec, target_relative_path))
-
-    # Keys whose values will not have $(builddir) replaced with $(abs_builddir).
-    # These have special substitution rules in some cases; see above in
-    # GetXcodeEnv() for the full rationale.
-    keys_to_not_absolutify = ('PRODUCT_NAME', 'FULL_PRODUCT_NAME')
 
     # Convert list values to string values.
     for k in env:
@@ -1940,8 +1926,7 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
 
       # Xcode works purely with absolute paths. When writing env variables to
       # mimic its usage, replace $(builddir) with $(abs_builddir).
-      if k not in keys_to_not_absolutify:
-        v = v.replace('$(builddir)', '$(abs_builddir)')
+      v = v.replace('$(builddir)', '$(abs_builddir)')
 
       self.WriteLn('%s: export %s := %s' % (QuoteSpaces(target), k, v))
 

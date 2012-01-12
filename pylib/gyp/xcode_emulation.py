@@ -76,6 +76,13 @@ class XcodeSettings(object):
     """Returns PRODUCT_NAME."""
     return self.spec.get('product_name', self.spec['target_name'])
 
+  def GetFullProductName(self):
+    """Returns FULL_PRODUCT_NAME."""
+    if self._IsBundle():
+      return self.GetWrapperName()
+    else:
+      return self._GetStandaloneBinaryPath()
+
   def GetWrapperName(self):
     """Returns the directory name of the bundle represented by this target.
     Only valid for bundles."""
@@ -173,7 +180,8 @@ class XcodeSettings(object):
     E.g. hello_world. Only valid for non-bundles."""
     assert not self._IsBundle()
     assert self.spec['type'] in (
-        'executable', 'shared_library', 'static_library', 'loadable_module')
+        'executable', 'shared_library', 'static_library', 'loadable_module'), (
+        'Unexpected type %s' % self.spec['type'])
     target = self.spec['target_name']
     if self.spec['type'] == 'static_library':
       if target[:3] == 'lib':

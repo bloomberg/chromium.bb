@@ -4,9 +4,9 @@
 # found in the LICENSE file.
 
 set -e
-# For some reason, Xcode doesn't set MACH_O_TYPE for non-bundle executables.
+
 # Check for "not set", not just "empty":
 [[ ! $MACH_O_TYPE && ${MACH_O_TYPE-_} ]]
-test $PRODUCT_TYPE = com.apple.product-type.tool
-test $PRODUCT_NAME = nonbundle_executable
-test $FULL_PRODUCT_NAME = nonbundle_executable
+[[ ! $PRODUCT_TYPE && ${PRODUCT_TYPE-_} ]]
+test $PRODUCT_NAME = nonbundle_none
+[[ ! $FULL_PRODUCT_NAME && ${FULL_PRODUCT_NAME-_} ]]
