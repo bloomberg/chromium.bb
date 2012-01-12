@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -283,12 +283,12 @@ void AppCacheStorageImpl::InitTask::RunCompleted() {
 
   if (!storage_->is_disabled()) {
     storage_->usage_map_.swap(usage_map_);
-    const int kDelayMillis = 5 * 60 * 1000;  // Five minutes.
+    const base::TimeDelta kDelay = base::TimeDelta::FromMinutes(5);
     MessageLoop::current()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&AppCacheStorageImpl::DelayedStartDeletingUnusedResponses,
                    storage_->weak_factory_.GetWeakPtr()),
-        kDelayMillis);
+        kDelay);
   }
 
   if (storage_->service()->quota_client())
@@ -1572,12 +1572,12 @@ void AppCacheStorageImpl::StartDeletingResponses(
 
 void AppCacheStorageImpl::ScheduleDeleteOneResponse() {
   DCHECK(!is_response_deletion_scheduled_);
-  const int kDelayMillis = 10;
+  const base::TimeDelta kDelay = base::TimeDelta::FromMilliseconds(10);
   MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&AppCacheStorageImpl::DeleteOneResponse,
                  weak_factory_.GetWeakPtr()),
-      kDelayMillis);
+      kDelay);
   is_response_deletion_scheduled_ = true;
 }
 
