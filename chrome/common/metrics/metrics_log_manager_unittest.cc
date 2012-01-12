@@ -1,9 +1,9 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/metrics_helpers.h"
-#include "chrome/common/metrics_log_manager.h"
+#include "chrome/common/metrics/metrics_helpers.h"
+#include "chrome/common/metrics/metrics_log_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #include <string>

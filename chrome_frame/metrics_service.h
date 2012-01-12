@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,7 +18,7 @@
 #include "base/synchronization/lock.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_local.h"
-#include "chrome/common/metrics_helpers.h"
+#include "chrome/common/metrics/metrics_helpers.h"
 
 // TODO(ananta)
 // Refactor more common code from chrome/browser/metrics/metrics_service.h into

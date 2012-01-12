@@ -1,8 +1,8 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/metrics_log_manager.h"
+#include "chrome/common/metrics/metrics_log_manager.h"
 
 #if defined(USE_SYSTEM_LIBBZ2)
 #include <bzlib.h>
@@ -12,7 +12,7 @@
 
 #include "base/metrics/histogram.h"
 #include "base/string_util.h"
-#include "chrome/common/metrics_helpers.h"
+#include "chrome/common/metrics/metrics_helpers.h"
 
 MetricsLogManager::MetricsLogManager() : max_ongoing_log_store_size_(0) {}
 

@@ -1,8 +1,8 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/metrics_helpers.h"
+#include "chrome/common/metrics/metrics_helpers.h"
 
 #include "base/base64.h"
 #include "base/basictypes.h"
@@ -15,7 +15,7 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/logging_chrome.h"
-#include "chrome/common/metrics_log_manager.h"
+#include "chrome/common/metrics/metrics_log_manager.h"
 #include "googleurl/src/gurl.h"
 #include "libxml/xmlwriter.h"
 

@@ -1,12 +1,12 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 // This file defines a set of user experience metrics data recorded by
 // the MetricsService.  This is the unit of data that is sent to the server.
 
-#ifndef CHROME_COMMON_METRICS_HELPERS_H_
-#define CHROME_COMMON_METRICS_HELPERS_H_
+#ifndef CHROME_COMMON_METRICS_METRICS_HELPERS_H_
+#define CHROME_COMMON_METRICS_METRICS_HELPERS_H_
 #pragma once
 
 #include <map>
@@ -16,7 +16,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/time.h"
-#include "chrome/common/metrics_log_manager.h"
+#include "chrome/common/metrics/metrics_log_manager.h"
 #include "content/public/common/page_transition_types.h"
 
 class GURL;
@@ -244,4 +244,4 @@ class MetricsServiceBase : public HistogramSender {
   DISALLOW_COPY_AND_ASSIGN(MetricsServiceBase);
 };
 
-#endif  // CHROME_COMMON_METRICS_HELPERS_H_
+#endif  // CHROME_COMMON_METRICS_METRICS_HELPERS_H_

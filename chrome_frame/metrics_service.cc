@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -57,7 +57,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/win/scoped_comptr.h"
 #include "chrome/common/chrome_version_info.h"
-#include "chrome/common/metrics_log_manager.h"
+#include "chrome/common/metrics/metrics_log_manager.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "chrome_frame/bind_status_callback_impl.h"
