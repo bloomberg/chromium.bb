@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,6 @@
 
 namespace installer {
 namespace master_preferences {
-  const char kAltFirstRunBubble[] = "oem_bubble";
   const char kAltShortcutText[] = "alternate_shortcut_text";
   const char kAutoLaunchChrome[] = "auto_launch_chrome";
   const char kChrome[] = "chrome";

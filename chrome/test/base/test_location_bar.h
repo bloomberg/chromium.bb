@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,8 +6,8 @@
 #define CHROME_TEST_BASE_TEST_LOCATION_BAR_H_
 #pragma once
 
+#include "base/compiler_specific.h"
 #include "base/string16.h"
-#include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
 #include "content/public/common/page_transition_types.h"
 #include "webkit/glue/window_open_disposition.h"
@@ -28,7 +28,7 @@ class TestLocationBar : public LocationBar {
   }
 
   // Overridden from LocationBar:
-  virtual void ShowFirstRunBubble(FirstRun::BubbleType bubble_type) OVERRIDE {}
+  virtual void ShowFirstRunBubble() OVERRIDE {}
   virtual void SetSuggestedText(const string16& text,
                                 InstantCompleteBehavior behavior) OVERRIDE {}
   virtual string16 GetInputString() const OVERRIDE;

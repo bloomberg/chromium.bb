@@ -19,6 +19,13 @@ IN_PROC_BROWSER_TEST_F(FirstRunBrowserTest, SetShowFirstRunBubblePref) {
       prefs::kShouldShowFirstRunBubble));
   EXPECT_TRUE(g_browser_process->local_state()->GetBoolean(
       prefs::kShouldShowFirstRunBubble));
+  // Test that toggling the value works in either direction after it's been set.
+  EXPECT_TRUE(first_run::SetShowFirstRunBubblePref(false));
+  EXPECT_FALSE(g_browser_process->local_state()->GetBoolean(
+      prefs::kShouldShowFirstRunBubble));
+  EXPECT_TRUE(first_run::SetShowFirstRunBubblePref(true));
+  EXPECT_TRUE(g_browser_process->local_state()->GetBoolean(
+      prefs::kShouldShowFirstRunBubble));
 }
 
 IN_PROC_BROWSER_TEST_F(FirstRunBrowserTest, SetShowWelcomePagePref) {
@@ -29,24 +36,4 @@ IN_PROC_BROWSER_TEST_F(FirstRunBrowserTest, SetShowWelcomePagePref) {
       prefs::kShouldShowWelcomePage));
   EXPECT_TRUE(g_browser_process->local_state()->GetBoolean(
       prefs::kShouldShowWelcomePage));
-}
-
-IN_PROC_BROWSER_TEST_F(FirstRunBrowserTest, SetOEMFirstRunBubblePref) {
-  EXPECT_FALSE(g_browser_process->local_state()->FindPreference(
-      prefs::kShouldUseOEMFirstRunBubble));
-  EXPECT_TRUE(first_run::SetOEMFirstRunBubblePref());
-  ASSERT_TRUE(g_browser_process->local_state()->FindPreference(
-      prefs::kShouldUseOEMFirstRunBubble));
-  EXPECT_TRUE(g_browser_process->local_state()->GetBoolean(
-      prefs::kShouldUseOEMFirstRunBubble));
-}
-
-IN_PROC_BROWSER_TEST_F(FirstRunBrowserTest, SetMinimalFirstRunBubblePref) {
-  EXPECT_FALSE(g_browser_process->local_state()->FindPreference(
-      prefs::kShouldUseMinimalFirstRunBubble));
-  EXPECT_TRUE(first_run::SetMinimalFirstRunBubblePref());
-  ASSERT_TRUE(g_browser_process->local_state()->FindPreference(
-      prefs::kShouldUseMinimalFirstRunBubble));
-  EXPECT_TRUE(g_browser_process->local_state()->GetBoolean(
-      prefs::kShouldUseMinimalFirstRunBubble));
 }

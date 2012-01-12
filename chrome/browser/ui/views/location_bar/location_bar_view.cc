@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -137,7 +137,6 @@ LocationBarView::LocationBarView(Browser* browser,
       star_view_(NULL),
       mode_(mode),
       show_focus_rect_(false),
-      bubble_type_(FirstRun::MINIMAL_BUBBLE),
       template_url_service_(NULL),
       animation_offset_(0) {
   set_id(VIEW_ID_LOCATION_BAR);
@@ -1004,14 +1003,10 @@ void LocationBarView::OnMouseEvent(const views::MouseEvent& event, UINT msg) {
 }
 #endif
 
-void LocationBarView::ShowFirstRunBubbleInternal(
-    FirstRun::BubbleType bubble_type) {
+void LocationBarView::ShowFirstRunBubbleInternal() {
 #if !defined(OS_CHROMEOS)
   // First run bubble doesn't make sense for Chrome OS.
-  FirstRunBubble::ShowBubble(browser_->profile(),
-                             location_icon_view_,
-                             views::BubbleBorder::TOP_LEFT,
-                             bubble_type);
+  FirstRunBubble::ShowBubble(browser_->profile(), location_icon_view_);
 #endif
 }
 
@@ -1105,18 +1100,17 @@ bool LocationBarView::CanStartDragForView(View* sender,
 ////////////////////////////////////////////////////////////////////////////////
 // LocationBarView, LocationBar implementation:
 
-void LocationBarView::ShowFirstRunBubble(FirstRun::BubbleType bubble_type) {
+void LocationBarView::ShowFirstRunBubble() {
   // Wait until search engines have loaded to show the first run bubble.
   TemplateURLService* url_service =
       TemplateURLServiceFactory::GetForProfile(browser_->profile());
   if (!url_service->loaded()) {
-    bubble_type_ = bubble_type;
     template_url_service_ = url_service;
     template_url_service_->AddObserver(this);
     template_url_service_->Load();
     return;
   }
-  ShowFirstRunBubbleInternal(bubble_type);
+  ShowFirstRunBubbleInternal();
 }
 
 void LocationBarView::SetSuggestedText(const string16& text,
@@ -1230,7 +1224,7 @@ void LocationBarView::OnTemplateURLServiceChanged() {
   // If the browser is no longer active, let's not show the info bubble, as this
   // would make the browser the active window again.
   if (location_entry_view_ && location_entry_view_->GetWidget()->IsActive())
-    ShowFirstRunBubble(bubble_type_);
+    ShowFirstRunBubble();
 }
 
 void LocationBarView::Observe(int type,

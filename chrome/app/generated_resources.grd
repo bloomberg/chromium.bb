@@ -7888,32 +7888,13 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
 
       <!-- First run bubble popup -->
       <message name="IDS_FR_BUBBLE_TITLE" desc="Bubble-like popup dialog title">
-        Search from right here
+        You can search from here with <ph name="SEARCH_ENGINE">$1<ex>Google</ex></ph>!
       </message>
       <message name="IDS_FR_BUBBLE_SUBTEXT" desc="Text under the title for the bubble">
         Type to search or enter a URL to navigate - everything just works.
       </message>
-      <message name="IDS_FR_BUBBLE_OK" desc="Text for the OK button on the bubble">
-        Keep <ph name="PAGE_TITLE">$1<ex>Google</ex></ph> as the default search engine
-      </message>
       <message name="IDS_FR_BUBBLE_CHANGE" desc="Text for the change button on the bubble">
-        Change search engine
-      </message>
-
-      <!-- First run alternative minibubble popup -->
-      <message name="IDS_FR_OEM_BUBBLE_TITLE_1" desc="Bubble-like popup dialog title, part 1">
-        New!
-      </message>
-      <message name="IDS_FR_OEM_BUBBLE_TITLE_2" desc="Bubble-like popup dialog title, part 2">
-        Search from the address bar.
-      </message>
-      <message name="IDS_FR_OEM_BUBBLE_SUBTEXT" desc="Text under the title for the bubble. 'Orchids' may be translated into any locale-appropriate search term.">
-        Try it out - type "orchids" and press Enter.
-      </message>
-
-      <!-- First run bubble popup with new search engine dialog -->
-      <message name="IDS_FR_SE_BUBBLE_TITLE" desc="Bubble-like popup dialog title">
-        Search using <ph name="SEARCH_ENGINE">$1<ex>Google</ex></ph> from right here
+        Change
       </message>
 
       <!-- Sad Tab Strings -->

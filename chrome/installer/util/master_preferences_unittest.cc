@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -60,7 +60,6 @@ TEST_F(MasterPreferencesTest, ParseDistroParams) {
     "     \"verbose_logging\": true,\n"
     "     \"require_eula\": true,\n"
     "     \"alternate_shortcut_text\": true,\n"
-    "     \"oem_bubble\": true,\n"
     "     \"chrome_shortcut_icon_index\": 1,\n"
     "     \"ping_delay\": 40,\n"
     "     \"search_engine_experiment\": true\n"
@@ -88,7 +87,6 @@ TEST_F(MasterPreferencesTest, ParseDistroParams) {
     installer::master_preferences::kVerboseLogging,
     installer::master_preferences::kRequireEula,
     installer::master_preferences::kAltShortcutText,
-    installer::master_preferences::kAltFirstRunBubble,
     installer::master_preferences::kSearchEngineExperimentPref,
   };
 

@@ -333,24 +333,6 @@
         8
       </message>
 
-      <!-- The width and height of the First Run Search Information bubble in -->
-      <!-- characters and lines (See above). -->
-      <message name="IDS_FIRSTRUNBUBBLE_DIALOG_WIDTH_CHARS" use_name_for_id="true">
-        93
-      </message>
-
-      <!-- The width and height of the First Run Search Information OEM -->
-      <!-- bubble in characters and lines (See above). -->
-      <message name="IDS_FIRSTRUNOEMBUBBLE_DIALOG_WIDTH_CHARS" use_name_for_id="true">
-        37
-      </message>
-
-      <!-- The width and height of the First Run Omnibox Information minimal -->
-      <!-- bubble in characters and lines (See above). -->
-      <message name="IDS_FIRSTRUN_MINIMAL_BUBBLE_DIALOG_WIDTH_CHARS" use_name_for_id="true">
-        82
-      </message>
-
       <!-- The minimum width of javascript alert popups. -->
       <message name="IDS_ALERT_DIALOG_WIDTH_CHARS" use_name_for_id="true">
         30

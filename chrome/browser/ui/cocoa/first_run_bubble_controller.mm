@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/search_engines/util.h"
+#include "chrome/browser/ui/browser_list.h"
 #import "chrome/browser/ui/cocoa/l10n_util.h"
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
 #include "grit/generated_resources.h"
@@ -54,7 +55,7 @@
   [header_ setStringValue:cocoa_l10n_util::ReplaceNSStringPlaceholders(
       [header_ stringValue], GetDefaultSearchEngineName(profile_), NULL)];
 
-  // Adapt window size to bottom buttons. Do this before all other layouting.
+  // Adapt window size to contents. Do this before all other layouting.
   CGFloat dy = cocoa_l10n_util::VerticallyReflowGroup([[self bubble] subviews]);
   NSSize ds = NSMakeSize(0, dy);
   ds = [[self bubble] convertSize:ds toView:nil];
@@ -77,6 +78,13 @@
 - (void)closeIfNotKey {
   if (![[self window] isKeyWindow])
     [self close];
+}
+
+- (IBAction)onChange:(id)sender {
+  Browser* browser = BrowserList::GetLastActiveWithProfile(profile_);
+  [self close];
+  if (browser)
+    browser->OpenSearchEngineOptionsDialog();
 }
 
 @end  // FirstRunBubbleController

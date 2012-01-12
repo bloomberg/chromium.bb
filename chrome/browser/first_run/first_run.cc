@@ -238,15 +238,11 @@ void AutoImportPlatformCommon(
   if (make_chrome_default)
     ShellIntegration::SetAsDefaultBrowser();
 
-  // Don't display the minimal bubble if there is no default search provider.
-  TemplateURLService* search_engines_model =
+  // Display the first run bubble if there is a default search provider.
+  TemplateURLService* template_url =
       TemplateURLServiceFactory::GetForProfile(profile);
-  if (search_engines_model &&
-      search_engines_model->GetDefaultSearchProvider()) {
+  if (template_url && template_url->GetDefaultSearchProvider())
     SetShowFirstRunBubblePref(true);
-    // Set the first run bubble to minimal.
-    SetMinimalFirstRunBubblePref();
-  }
   SetShowWelcomePagePref();
   SetPersonalDataManagerFirstRunPref();
 }
@@ -300,20 +296,7 @@ bool SetShowFirstRunBubblePref(bool show_bubble) {
   PrefService* local_state = g_browser_process->local_state();
   if (!local_state)
     return false;
-  if (!local_state->HasPrefPath(prefs::kShouldShowFirstRunBubble))
-    local_state->SetBoolean(prefs::kShouldShowFirstRunBubble, show_bubble);
-  return true;
-}
-
-bool SetMinimalFirstRunBubblePref() {
-  PrefService* local_state = g_browser_process->local_state();
-  if (!local_state)
-    return false;
-  if (!local_state->FindPreference(prefs::kShouldUseMinimalFirstRunBubble)) {
-    local_state->RegisterBooleanPref(prefs::kShouldUseMinimalFirstRunBubble,
-                                     false);
-    local_state->SetBoolean(prefs::kShouldUseMinimalFirstRunBubble, true);
-  }
+  local_state->SetBoolean(prefs::kShouldShowFirstRunBubble, show_bubble);
   return true;
 }
 
@@ -337,17 +320,6 @@ bool SetPersonalDataManagerFirstRunPref() {
     local_state->RegisterBooleanPref(
         prefs::kAutofillPersonalDataManagerFirstRun, false);
     local_state->SetBoolean(prefs::kAutofillPersonalDataManagerFirstRun, true);
-  }
-  return true;
-}
-
-bool SetOEMFirstRunBubblePref() {
-  PrefService* local_state = g_browser_process->local_state();
-  if (!local_state)
-    return false;
-  if (!local_state->FindPreference(prefs::kShouldUseOEMFirstRunBubble)) {
-    local_state->RegisterBooleanPref(prefs::kShouldUseOEMFirstRunBubble, false);
-    local_state->SetBoolean(prefs::kShouldUseOEMFirstRunBubble, true);
   }
   return true;
 }
@@ -426,11 +398,6 @@ bool FirstRun::ProcessMasterPreferences(const FilePath& user_data_dir,
     }
   }
 #endif
-
-  if (prefs.GetBool(installer::master_preferences::kAltFirstRunBubble,
-                    &value) && value) {
-    first_run::SetOEMFirstRunBubblePref();
-  }
 
   FilePath user_prefs = GetDefaultPrefFilePath(true, user_data_dir);
   if (user_prefs.empty())

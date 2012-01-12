@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,14 +11,16 @@ class Profile;
 // Manages the first run bubble.
 @interface FirstRunBubbleController : BaseBubbleController {
  @private
-  // Header label.
   IBOutlet NSTextField* header_;
-
   Profile* profile_;
 }
 
-// Creates and shows a firstRun bubble.
+// Creates and shows a first run bubble.
 + (FirstRunBubbleController*) showForView:(NSView*)view
                                    offset:(NSPoint)offset
                                   profile:(Profile*)profile;
+
+// Handle the bubble's 'Change' button; direct users to search engine options.
+- (IBAction)onChange:(id)sender;
+
 @end

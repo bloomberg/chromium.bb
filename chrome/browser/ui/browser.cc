@@ -5469,31 +5469,17 @@ void Browser::OnWindowDidShow() {
   bool is_showing_promo = contents &&
       contents->GetURL().SchemeIs(chrome::kChromeUIScheme) &&
       contents->GetURL().host() == chrome::kChromeUISyncPromoHost;
-
-  // Show the First Run information bubble if we've been told to.
   PrefService* local_state = g_browser_process->local_state();
   if (!is_showing_promo && local_state &&
       local_state->GetBoolean(prefs::kShouldShowFirstRunBubble)) {
-    FirstRun::BubbleType bubble_type = FirstRun::MINIMAL_BUBBLE;
-    if (local_state->
-        FindPreference(prefs::kShouldUseOEMFirstRunBubble) &&
-        local_state->GetBoolean(prefs::kShouldUseOEMFirstRunBubble)) {
-      bubble_type = FirstRun::OEM_BUBBLE;
-    } else if (local_state->
-        FindPreference(prefs::kShouldUseMinimalFirstRunBubble) &&
-        local_state->GetBoolean(prefs::kShouldUseMinimalFirstRunBubble)) {
-      bubble_type = FirstRun::MINIMAL_BUBBLE;
-    }
-    // Reset the preference so we don't show the bubble for subsequent
-    // windows.
+    // Reset the preference to avoid showing the bubble for subsequent windows.
     local_state->SetBoolean(prefs::kShouldShowFirstRunBubble, false);
-    window_->GetLocationBar()->ShowFirstRunBubble(bubble_type);
+    window_->GetLocationBar()->ShowFirstRunBubble();
   } else {
     GlobalErrorService* service =
         GlobalErrorServiceFactory::GetForProfile(profile());
     GlobalError* error = service->GetFirstGlobalErrorWithBubbleView();
-    if (error) {
+    if (error)
       error->ShowBubbleView(this);
-    }
   }
 }

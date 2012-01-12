@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,7 +12,6 @@
 #include "base/compiler_specific.h"
 #include "chrome/browser/autocomplete/autocomplete_edit.h"
 #include "chrome/browser/extensions/extension_context_menu_model.h"
-#include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/search_engines/template_url_service_observer.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
@@ -241,7 +240,7 @@ class LocationBarView : public LocationBar,
                                    const gfx::Point& p) OVERRIDE;
 
   // Overridden from LocationBar:
-  virtual void ShowFirstRunBubble(FirstRun::BubbleType bubble_type) OVERRIDE;
+  virtual void ShowFirstRunBubble() OVERRIDE;
   virtual void SetSuggestedText(const string16& text,
                                 InstantCompleteBehavior behavior) OVERRIDE;
   virtual string16 GetInputString() const OVERRIDE;
@@ -344,7 +343,7 @@ class LocationBarView : public LocationBar,
 #endif
 
   // Helper to show the first run info bubble.
-  void ShowFirstRunBubbleInternal(FirstRun::BubbleType bubble_type);
+  void ShowFirstRunBubbleInternal();
 
   // The Autocomplete Edit field.
   scoped_ptr<OmniboxView> location_entry_;
@@ -416,9 +415,6 @@ class LocationBarView : public LocationBar,
   // True if we should show a focus rect while the location entry field is
   // focused. Used when the toolbar is in full keyboard accessibility mode.
   bool show_focus_rect_;
-
-  // Whether bubble text is short or long.
-  FirstRun::BubbleType bubble_type_;
 
   // This is in case we're destroyed before the model loads. We need to make
   // Add/RemoveObserver calls.

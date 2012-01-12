@@ -1187,22 +1187,9 @@ const char kContentSettingsWindowLastTabIndex[] =
 const char kCertificateManagerWindowLastTabIndex[] =
     "certificate_manager_window.last_tab_index";
 
-// The mere fact that this pref is registered signals that we should show the
-// First Run Search Information bubble when the first browser window appears.
+// Boolean that specifies if the first run bubble should be shown.
 // This preference is only registered by the first-run procedure.
 const char kShouldShowFirstRunBubble[] = "show-first-run-bubble";
-
-// The mere fact that this pref is registered signals that we should show the
-// smaller OEM First Run Search Information bubble when the first
-// browser window appears.
-// This preference is only registered by the first-run procedure.
-const char kShouldUseOEMFirstRunBubble[] = "show-OEM-first-run-bubble";
-
-// The mere fact that this pref is registered signals that we should show the
-// minimal First Run omnibox information bubble when the first
-// browser window appears.
-// This preference is only registered by the first-run procedure.
-const char kShouldUseMinimalFirstRunBubble[] = "show-minimal-first-run-bubble";
 
 // Signal that we should show the welcome page when we launch Chrome.
 const char kShouldShowWelcomePage[] = "show-welcome-page";

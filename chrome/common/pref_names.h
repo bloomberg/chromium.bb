@@ -427,8 +427,6 @@ extern const char kOptionsWindowLastTabIndex[];
 extern const char kContentSettingsWindowLastTabIndex[];
 extern const char kCertificateManagerWindowLastTabIndex[];
 extern const char kShouldShowFirstRunBubble[];
-extern const char kShouldUseOEMFirstRunBubble[];
-extern const char kShouldUseMinimalFirstRunBubble[];
 extern const char kShouldShowWelcomePage[];
 
 extern const char kLastKnownGoogleURL[];

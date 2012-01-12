@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -40,7 +40,6 @@ const char kDefaultMasterPrefs[] = "master_preferences";
 //   "distribution": {
 //      "alternate_shortcut_text": false,
 //      "auto_launch_chrome": false,
-//      "oem_bubble": false,
 //      "chrome_shortcut_icon_index": 0,
 //      "create_all_shortcuts": true,
 //      "import_bookmarks": false,

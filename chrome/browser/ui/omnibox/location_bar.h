@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,7 +15,6 @@
 #include <string>
 
 #include "base/string16.h"
-#include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/instant/instant_delegate.h"
 #include "content/public/common/page_transition_types.h"
 #include "webkit/glue/window_open_disposition.h"
@@ -30,8 +29,8 @@ class WebContents;
 
 class LocationBar {
  public:
-  // Shows the first run information bubble anchored to the location bar.
-  virtual void ShowFirstRunBubble(FirstRun::BubbleType bubble_type) = 0;
+  // Shows the first run bubble anchored to the location bar.
+  virtual void ShowFirstRunBubble() = 0;
 
   // Sets the suggested text to show in the omnibox. This is shown in addition
   // to the current text of the omnibox.

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -117,16 +117,15 @@ LocationBarViewMac::~LocationBarViewMac() {
   [[field_ cell] clearDecorations];
 }
 
-void LocationBarViewMac::ShowFirstRunBubble(FirstRun::BubbleType bubble_type) {
+void LocationBarViewMac::ShowFirstRunBubble() {
   // We need the browser window to be shown before we can show the bubble, but
   // we get called before that's happened.
   MessageLoop::current()->PostTask(FROM_HERE,
       base::Bind(&LocationBarViewMac::ShowFirstRunBubbleInternal,
-          weak_ptr_factory_.GetWeakPtr(), bubble_type));
+          weak_ptr_factory_.GetWeakPtr()));
 }
 
-void LocationBarViewMac::ShowFirstRunBubbleInternal(
-    FirstRun::BubbleType bubble_type) {
+void LocationBarViewMac::ShowFirstRunBubbleInternal() {
   if (!field_ || ![field_ window])
     return;
 

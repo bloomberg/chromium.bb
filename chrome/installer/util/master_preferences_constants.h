@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -18,8 +18,6 @@ namespace master_preferences {
 
 // Boolean. Use alternate text for the shortcut. Cmd line override present.
 extern const char kAltShortcutText[];
-// Boolean. Use alternate smaller first run info bubble.
-extern const char kAltFirstRunBubble[];
 // Boolean. Whether to instruct the installer to auto-launch chrome on computer
 // startup. The default (if not provided) is |false|.
 extern const char kAutoLaunchChrome[];

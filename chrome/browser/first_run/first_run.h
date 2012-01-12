@@ -55,11 +55,6 @@ bool RemoveSentinel();
 // initial call will actually set the preference.
 bool SetShowFirstRunBubblePref(bool show_bubble);
 
-// Sets the kShouldUseMinimalFirstRunBubble local state pref so that the
-// browser shows the minimal first run bubble once the main message loop
-// gets going. Returns false if the pref could not be set.
-bool SetMinimalFirstRunBubblePref();
-
 // Sets the kShouldShowWelcomePage local state pref so that the browser
 // loads the welcome tab once the message loop gets going. Returns false
 // if the pref could not be set.
@@ -69,11 +64,6 @@ bool SetShowWelcomePagePref();
 // browser loads PersonalDataManager once the main message loop gets going.
 // Returns false if the pref could not be set.
 bool SetPersonalDataManagerFirstRunPref();
-
-// Sets the kShouldUseOEMFirstRunBubble local state pref so that the
-// browser shows the OEM first run bubble once the main message loop
-// gets going. Returns false if the pref could not be set.
-bool SetOEMFirstRunBubblePref();
 
 // Whether the search engine selection dialog should be shown on first run.
 bool ShouldShowSearchEngineSelector(const TemplateURLService* model);
@@ -113,13 +103,6 @@ FilePath MasterPrefsPath();
 // install work for this user. After that the sentinel file is created.
 class FirstRun {
  public:
-  // There are three types of possible first run bubbles:
-  enum BubbleType {
-    LARGE_BUBBLE,      // The normal bubble, with search engine choice
-    OEM_BUBBLE,        // Smaller bubble for OEM builds
-    MINIMAL_BUBBLE     // Minimal bubble shown after search engine dialog
-  };
-
   // See ProcessMasterPreferences for more info about this structure.
   struct MasterPrefs {
     MasterPrefs();

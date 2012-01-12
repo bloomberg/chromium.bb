@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -42,12 +42,7 @@ void FirstRunBubbleTest::SetUp() {
 }
 
 TEST_F(FirstRunBubbleTest, CreateAndClose) {
-  FirstRunBubble* delegate =
-      FirstRunBubble::ShowBubble(
-          profile(),
-          NULL,
-          views::BubbleBorder::TOP_LEFT,
-          FirstRun::MINIMAL_BUBBLE);
+  FirstRunBubble* delegate = FirstRunBubble::ShowBubble(profile(), NULL);
   EXPECT_TRUE(delegate != NULL);
   delegate->GetWidget()->CloseNow();
 }

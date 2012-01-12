@@ -84,10 +84,6 @@ const int kRightMargin = 1;
 // We draw a border on the top and bottom (but not on left or right).
 const int kBorderThickness = 1;
 
-// Left margin of first run bubble.
-const int kFirstRunBubbleLeftMargin = 8;
-// Extra vertical spacing for first run bubble.
-const int kFirstRunBubbleTopMargin = 5;
 // Spacing needed to align the bubble with the left side of the omnibox.
 const int kFirstRunBubbleLeftSpacing = 4;
 
@@ -174,7 +170,7 @@ LocationBarViewGtk::LocationBarViewGtk(Browser* browser)
       transition_(content::PageTransitionFromInt(
           content::PAGE_TRANSITION_TYPED |
           content::PAGE_TRANSITION_FROM_ADDRESS_BAR)),
-      first_run_bubble_(this),
+      weak_ptr_factory_(this),
       popup_window_mode_(false),
       theme_service_(NULL),
       hbox_width_(0),
@@ -586,14 +582,13 @@ TabContentsWrapper* LocationBarViewGtk::GetTabContentsWrapper() const {
   return browser_->GetSelectedTabContentsWrapper();
 }
 
-void LocationBarViewGtk::ShowFirstRunBubble(FirstRun::BubbleType bubble_type) {
+void LocationBarViewGtk::ShowFirstRunBubble() {
   // We need the browser window to be shown before we can show the bubble, but
   // we get called before that's happened.
   MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&LocationBarViewGtk::ShowFirstRunBubbleInternal,
-                 first_run_bubble_.GetWeakPtr(),
-                 bubble_type));
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void LocationBarViewGtk::SetSuggestedText(const string16& text,
@@ -1022,16 +1017,13 @@ void LocationBarViewGtk::SetKeywordHintLabel(const string16& keyword) {
                      trailing.c_str());
 }
 
-void LocationBarViewGtk::ShowFirstRunBubbleInternal(
-    FirstRun::BubbleType bubble_type) {
+void LocationBarViewGtk::ShowFirstRunBubbleInternal() {
   if (!location_entry_.get() || !widget()->window)
     return;
 
   gfx::Rect bounds = gtk_util::WidgetBounds(location_icon_image_);
   bounds.set_x(bounds.x() + kFirstRunBubbleLeftSpacing);
-
-  FirstRunBubble::Show(browser_->profile(), location_icon_image_, bounds,
-                       bubble_type);
+  FirstRunBubble::Show(browser_->profile(), location_icon_image_, bounds);
 }
 
 gboolean LocationBarViewGtk::OnIconReleased(GtkWidget* sender,

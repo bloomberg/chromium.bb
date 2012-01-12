@@ -1,53 +1,33 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/views/first_run_bubble.h"
 
-#include "base/bind.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/search_engines/util.h"
-#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/views/window.h"
-#include "content/public/browser/user_metrics.h"
-#include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
-#include "grit/locale_settings.h"
-#include "grit/theme_resources_standard.h"
-#include "ui/base/l10n/l10n_font_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/label.h"
-#include "ui/views/events/event.h"
+#include "ui/views/controls/link.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
-#include "ui/views/widget/widget.h"
-
-using content::UserMetricsAction;
 
 namespace {
 const int kAnchorVerticalInset = 5;
-const int kLayoutTopInset = 1;
-const int kLayoutLeftInset = 2;
-const int kLayoutBottomInset = 7;
-const int kLayoutRightInset = 2;
+const int kTopInset = 1;
+const int kLeftInset = 2;
+const int kBottomInset = 7;
+const int kRightInset = 2;
 }
 
 // static
-FirstRunBubble* FirstRunBubble::ShowBubble(
-    Profile* profile,
-    views::View* anchor_view,
-    views::BubbleBorder::ArrowLocation arrow_location,
-    FirstRun::BubbleType bubble_type) {
-  FirstRunBubble* delegate =
-      new FirstRunBubble(profile,
-                         anchor_view,
-                         arrow_location,
-                         bubble_type);
+FirstRunBubble* FirstRunBubble::ShowBubble(Profile* profile,
+                                           views::View* anchor_view) {
+  FirstRunBubble* delegate = new FirstRunBubble(profile, anchor_view);
   browser::CreateViewsBubble(delegate);
   delegate->StartFade(true);
   return delegate;
@@ -56,47 +36,38 @@ FirstRunBubble* FirstRunBubble::ShowBubble(
 void FirstRunBubble::Init() {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   const gfx::Font& original_font = rb.GetFont(ResourceBundle::MediumFont);
-  const gfx::Font& derived_font = original_font.DeriveFont(2, gfx::Font::BOLD);
 
-  views::Label* label1 = new views::Label(l10n_util::GetStringFUTF16(
-      IDS_FR_SE_BUBBLE_TITLE,
-      GetDefaultSearchEngineName(profile_)));
-  label1->SetFont(derived_font);
+  views::Label* title = new views::Label(l10n_util::GetStringFUTF16(
+      IDS_FR_BUBBLE_TITLE, GetDefaultSearchEngineName(profile_)));
+  title->SetFont(original_font.DeriveFont(2, gfx::Font::BOLD));
 
-  views::Label* label2 =
+  views::Link* change =
+      new views::Link(l10n_util::GetStringUTF16(IDS_FR_BUBBLE_CHANGE));
+  change->SetFont(original_font);
+  change->set_listener(this);
+
+  views::Label* subtext =
       new views::Label(l10n_util::GetStringUTF16(IDS_FR_BUBBLE_SUBTEXT));
-  label2->SetFont(original_font);
-
-  views::ImageButton* close_button = new views::ImageButton(this);
-  close_button->SetImage(views::CustomButton::BS_NORMAL,
-                         rb.GetBitmapNamed(IDR_CLOSE_BAR));
-  close_button->SetImage(views::CustomButton::BS_HOT,
-                         rb.GetBitmapNamed(IDR_CLOSE_BAR_H));
-  close_button->SetImage(views::CustomButton::BS_PUSHED,
-                         rb.GetBitmapNamed(IDR_CLOSE_BAR_P));
+  subtext->SetFont(original_font);
 
   views::GridLayout* layout = views::GridLayout::CreatePanel(this);
   SetLayoutManager(layout);
-  layout->SetInsets(kLayoutTopInset,
-                    kLayoutLeftInset,
-                    kLayoutBottomInset,
-                    kLayoutRightInset);
+  layout->SetInsets(kTopInset, kLeftInset, kBottomInset, kRightInset);
 
-  views::ColumnSet* column_set = layout->AddColumnSet(0);
-  column_set->AddColumn(views::GridLayout::LEADING,
-                        views::GridLayout::LEADING, 1,
-                        views::GridLayout::USE_PREF, 0, 0);
-  column_set->AddColumn(views::GridLayout::TRAILING, views::GridLayout::FILL, 0,
-                        views::GridLayout::USE_PREF, 0, 0);
+  views::ColumnSet* columns = layout->AddColumnSet(0);
+  columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::LEADING, 0,
+                     views::GridLayout::USE_PREF, 0, 0);
+  columns->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
+  columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::LEADING, 0,
+                     views::GridLayout::USE_PREF, 0, 0);
+  columns->AddPaddingColumn(1, 0);
 
   layout->StartRow(0, 0);
-  layout->AddView(label1);
-  layout->AddView(close_button, 1, 1, views::GridLayout::TRAILING,
-                  views::GridLayout::LEADING);
-  layout->AddPaddingRow(0, views::kRelatedControlSmallVerticalSpacing);
-
-  layout->StartRow(0, 0);
-  layout->AddView(label2);
+  layout->AddView(title);
+  layout->AddView(change);
+  layout->StartRowWithPadding(0, 0, 0,
+      views::kRelatedControlSmallVerticalSpacing);
+  layout->AddView(subtext, columns->num_columns(), 1);
 }
 
 gfx::Rect FirstRunBubble::GetAnchorRect() {
@@ -106,24 +77,18 @@ gfx::Rect FirstRunBubble::GetAnchorRect() {
   return rect;
 }
 
-FirstRunBubble::FirstRunBubble(
-    Profile* profile,
-    views::View* anchor_view,
-    views::BubbleBorder::ArrowLocation arrow_location,
-    FirstRun::BubbleType bubble_type)
-    : views::BubbleDelegateView(anchor_view, arrow_location),
-      profile_(profile),
-      bubble_type_(bubble_type) {
+FirstRunBubble::FirstRunBubble(Profile* profile, views::View* anchor_view)
+    : views::BubbleDelegateView(anchor_view, views::BubbleBorder::TOP_LEFT),
+      profile_(profile) {
 }
 
 FirstRunBubble::~FirstRunBubble() {
 }
 
-void FirstRunBubble::ButtonPressed(views::Button* sender,
-                                   const views::Event& event) {
-  if (bubble_type_ == FirstRun::OEM_BUBBLE) {
-    content::RecordAction(
-        UserMetricsAction("FirstRunOEMBubbleView_Clicked"));
-  }
+void FirstRunBubble::LinkClicked(views::Link* source, int event_flags) {
+  // Get |profile_|'s browser before closing the bubble, which deletes |this|.
+  Browser* browser = BrowserList::GetLastActiveWithProfile(profile_);
   GetWidget()->Close();
+  if (browser)
+    browser->OpenSearchEngineOptionsDialog();
 }
