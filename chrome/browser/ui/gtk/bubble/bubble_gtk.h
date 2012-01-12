@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/gtest_prod_util.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/base/gtk/gtk_signal.h"
@@ -50,9 +51,12 @@ class BubbleGtk : public content::NotificationObserver {
  public:
   // Where should the arrow be placed relative to the bubble?
   enum ArrowLocationGtk {
-    // TODO(derat): Support placing arrows on the bottoms of the bubbles.
     ARROW_LOCATION_TOP_LEFT,
     ARROW_LOCATION_TOP_RIGHT,
+    ARROW_LOCATION_BOTTOM_LEFT,
+    ARROW_LOCATION_BOTTOM_RIGHT,
+    ARROW_LOCATION_NONE,  // No arrow. Positioned under the supplied rect.
+    ARROW_LOCATION_FLOAT,  // No arrow. Centered over the supplied rect.
   };
 
   // Show a bubble, pointing at the area |rect| (in coordinates relative to
@@ -92,6 +96,9 @@ class BubbleGtk : public content::NotificationObserver {
   void HandlePointerAndKeyboardUngrabbedByContent();
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(BubbleGtkTest, ArrowLocation);
+  FRIEND_TEST_ALL_PREFIXES(BubbleGtkTest, NoArrow);
+
   enum FrameType {
     FRAME_MASK,
     FRAME_STROKE,
@@ -117,11 +124,15 @@ class BubbleGtk : public content::NotificationObserver {
 
   // Get the location where the arrow should be placed (which is a function of
   // the preferred location and of the direction that the bubble should be
-  // facing to fit onscreen).  |arrow_x| is the X component in screen
-  // coordinates of the point at which the bubble's arrow should be aimed, and
-  // |width| is the bubble's width.
-  static ArrowLocationGtk GetArrowLocation(
-      ArrowLocationGtk preferred_location, int arrow_x, int width);
+  // facing to fit onscreen).  |arrow_x| (or |arrow_y|) is the X component (or
+  // Y component) in screen coordinates of the point at which the bubble's arrow
+  // should be aimed, respectively. |width| (or |height|) is the bubble's width
+  // (or height).
+  static ArrowLocationGtk GetArrowLocation(ArrowLocationGtk preferred_location,
+                                           int arrow_x,
+                                           int arrow_y,
+                                           int width,
+                                           int height);
 
   // Updates |arrow_location_| based on the toplevel window's current position
   // and the bubble's size.  If the |force_move_and_reshape| is true or the
