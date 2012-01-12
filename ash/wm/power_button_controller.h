@@ -125,7 +125,7 @@ class ASH_EXPORT PowerButtonController : public aura::RootWindowObserver {
   };
 
   PowerButtonController();
-  virtual ~PowerButtonController();
+  ~PowerButtonController();
 
   void set_delegate(PowerButtonControllerDelegate* delegate) {
     delegate_.reset(delegate);

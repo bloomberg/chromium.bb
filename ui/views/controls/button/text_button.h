@@ -111,8 +111,8 @@ class VIEWS_EXPORT TextButtonNativeThemeBorder : public Border {
 //
 // TextButtonBase
 //
-//  A base class for different types of buttons, like push buttons, radio
-//  buttons, and checkboxes, that do not depend on native components for
+//  A base ckass for different types of buttons, like push buttons, radio
+//  buttons, and checkboxes, that do not depende on native components for
 //  look and feel. TextButton reserves space for the largest string
 //  passed to SetText. To reset the cached max size invoke ClearMaxTextSize.
 //

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -34,12 +34,11 @@ void BaseScrollBarButton::OnMouseCaptureLost() {
 }
 
 void BaseScrollBarButton::RepeaterNotifyClick() {
-  // TODO(sky): See if we can convert to using |Screen| everywhere.
-#if defined(OS_WIN) && !defined(USE_AURA)
+#if defined(OS_WIN)
   DWORD pos = GetMessagePos();
   POINTS points = MAKEPOINTS(pos);
   gfx::Point cursor_point(points.x, points.y);
-#else
+#elif defined(OS_LINUX)
   gfx::Point cursor_point = gfx::Screen::GetCursorScreenPoint();
 #endif
   views::MouseEvent event(ui::ET_MOUSE_RELEASED,

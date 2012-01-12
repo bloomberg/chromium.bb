@@ -28,7 +28,7 @@ class LauncherModel;
 class ASH_EXPORT Launcher : public aura::WindowObserver {
  public:
   explicit Launcher(aura::Window* window_container);
-  virtual ~Launcher();
+  ~Launcher();
 
   // Sets the width of the status area.
   void SetStatusWidth(int width);
