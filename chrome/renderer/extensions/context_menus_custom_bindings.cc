@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/extensions/contextMenus_custom_bindings.h"
+#include "chrome/renderer/extensions/context_menus_custom_bindings.h"
 
 #include "grit/renderer_resources.h"
 #include "v8/include/v8.h"
@@ -13,7 +13,7 @@ ContextMenusCustomBindings::ContextMenusCustomBindings(
     int dependency_count,
     const char** dependencies)
     : ChromeV8Extension(
-          "extensions/contextMenus_custom_bindings.js",
+          "extensions/context_menus_custom_bindings.js",
           IDR_CONTEXTMENUS_CUSTOM_BINDINGS_JS,
           dependency_count,
           dependencies,

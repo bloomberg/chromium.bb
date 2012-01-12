@@ -17,9 +17,6 @@ var chrome = chrome || {};
   native function GetCurrentPageActions(extensionId);
   native function GetExtensionViews();
   native function GetLocalFileSystem(name, path);
-  native function GetNextSocketEventId();
-  native function GetNextTtsEventId();
-  native function GetUniqueSubEventName(eventName);
   native function OpenChannelToTab();
   native function SendResponseAck(requestId);
   native function SetIconCommon();
@@ -229,119 +226,41 @@ var chrome = chrome || {};
 
   var apiFunctions = new APIFunctions();
 
-  // The public API of schema_generated_bindings, to be used by custom bindings
-  // JS files.
-  chromeHidden.schemaGeneratedBindings = {
-    sendRequest: sendRequest,
-    apiFunctions: apiFunctions
+  //
+  // The API through which the ${api_name}_custom_bindings.js files customize
+  // their API bindings beyond what can be generated.
+  //
+  // There are 2 types of customizations available: those which are required in
+  // order to do the schema generation (registerCustomEvent and
+  // registerCustomType), and those which can only run after the bindings have
+  // been generated (registerCustomHook).
+  //
+
+  // Registers a custom event type for the API identified by |namespace|.
+  // |event| is the event's constructor.
+  var customEvents = {};
+  chromeHidden.registerCustomEvent = function(namespace, event) {
+    if (typeof(namespace) !== 'string') {
+      throw new Error("registerCustomEvent requires the namespace of the " +
+                      "API as its first argument");
+    }
+    customEvents[namespace] = event;
+  };
+
+  // Registers a function |hook| to run after the schema for all APIs has been
+  // generated.  The hook is passed as its first argument an "API" object to
+  // interact with, and second the current extension ID. See where
+  // |customHooks| is used.
+  var customHooks = {};
+  chromeHidden.registerCustomHook = function(namespace, fn) {
+    if (typeof(namespace) !== 'string') {
+      throw new Error("registerCustomHook requires the namespace of the " +
+                      "API as its first argument");
+    }
+    customHooks[namespace] = fn;
   };
 
   // --- Setup additional api's not currently handled in common/extensions/api
-
-  // WebRequestEvent object. This is used for special webRequest events with
-  // extra parameters. Each invocation of addListener creates a new named
-  // sub-event. That sub-event is associated with the extra parameters in the
-  // browser process, so that only it is dispatched when the main event occurs
-  // matching the extra parameters.
-  //
-  // Example:
-  //   chrome.webRequest.onBeforeRequest.addListener(
-  //       callback, {urls: "http://*.google.com/*"});
-  //   ^ callback will only be called for onBeforeRequests matching the filter.
-  chrome.WebRequestEvent =
-     function(eventName, opt_argSchemas, opt_extraArgSchemas) {
-    if (typeof eventName != "string")
-      throw new Error("chrome.WebRequestEvent requires an event name.");
-
-    this.eventName_ = eventName;
-    this.argSchemas_ = opt_argSchemas;
-    this.extraArgSchemas_ = opt_extraArgSchemas;
-    this.subEvents_ = [];
-  };
-
-  // Test if the given callback is registered for this event.
-  chrome.WebRequestEvent.prototype.hasListener = function(cb) {
-    return this.findListener_(cb) > -1;
-  };
-
-  // Test if any callbacks are registered fur thus event.
-  chrome.WebRequestEvent.prototype.hasListeners = function(cb) {
-    return this.subEvents_.length > 0;
-  };
-
-  // Registers a callback to be called when this event is dispatched. If
-  // opt_filter is specified, then the callback is only called for events that
-  // match the given filters. If opt_extraInfo is specified, the given optional
-  // info is sent to the callback.
-  chrome.WebRequestEvent.prototype.addListener =
-      function(cb, opt_filter, opt_extraInfo) {
-    var subEventName = GetUniqueSubEventName(this.eventName_);
-    // Note: this could fail to validate, in which case we would not add the
-    // subEvent listener.
-    chromeHidden.validate(Array.prototype.slice.call(arguments, 1),
-                          this.extraArgSchemas_);
-    chrome.webRequest.addEventListener(
-        cb, opt_filter, opt_extraInfo, this.eventName_, subEventName);
-
-    var subEvent = new chrome.Event(subEventName, this.argSchemas_);
-    var subEventCallback = cb;
-    if (opt_extraInfo && opt_extraInfo.indexOf("blocking") >= 0) {
-      var eventName = this.eventName_;
-      subEventCallback = function() {
-        var requestId = arguments[0].requestId;
-        try {
-          var result = cb.apply(null, arguments);
-          chrome.webRequest.eventHandled(
-              eventName, subEventName, requestId, result);
-        } catch (e) {
-          chrome.webRequest.eventHandled(
-              eventName, subEventName, requestId);
-          throw e;
-        }
-      };
-    } else if (opt_extraInfo && opt_extraInfo.indexOf("asyncBlocking") >= 0) {
-      var eventName = this.eventName_;
-      subEventCallback = function() {
-        var details = arguments[0];
-        var requestId = details.requestId;
-        var handledCallback = function(response) {
-          chrome.webRequest.eventHandled(
-              eventName, subEventName, requestId, response);
-        };
-        cb.apply(null, [details, handledCallback]);
-      };
-    }
-    this.subEvents_.push(
-        {subEvent: subEvent, callback: cb, subEventCallback: subEventCallback});
-    subEvent.addListener(subEventCallback);
-  };
-
-  // Unregisters a callback.
-  chrome.WebRequestEvent.prototype.removeListener = function(cb) {
-    var idx;
-    while ((idx = this.findListener_(cb)) >= 0) {
-      var e = this.subEvents_[idx];
-      e.subEvent.removeListener(e.subEventCallback);
-      if (e.subEvent.hasListeners()) {
-        console.error(
-            "Internal error: webRequest subEvent has orphaned listeners.");
-      }
-      this.subEvents_.splice(idx, 1);
-    }
-  };
-
-  chrome.WebRequestEvent.prototype.findListener_ = function(cb) {
-    for (var i in this.subEvents_) {
-      var e = this.subEvents_[i];
-      if (e.callback === cb) {
-        if (e.subEvent.findListener_(e.subEventCallback) > -1)
-          return i;
-        console.error("Internal error: webRequest subEvent has no callback.");
-      }
-    }
-
-    return -1;
-  };
 
   function CustomBindingsObject() {
   }
@@ -361,7 +280,7 @@ var chrome = chrome || {};
     return extendedSchema;
   }
 
-  var customBindings = {};
+  var customTypes = {};
 
   function setupChromeSetting() {
     function ChromeSetting(prefKey, valueSchema) {
@@ -391,7 +310,7 @@ var chrome = chrome || {};
                                        '.onChange');
     };
     ChromeSetting.prototype = new CustomBindingsObject();
-    customBindings['ChromeSetting'] = ChromeSetting;
+    customTypes['ChromeSetting'] = ChromeSetting;
   }
 
   function setupContentSetting() {
@@ -428,7 +347,7 @@ var chrome = chrome || {};
       };
     }
     ContentSetting.prototype = new CustomBindingsObject();
-    customBindings['ContentSetting'] = ContentSetting;
+    customTypes['ContentSetting'] = ContentSetting;
   }
 
   function setupStorageNamespace() {
@@ -452,172 +371,7 @@ var chrome = chrome || {};
       ['get', 'set', 'remove', 'clear'].forEach(bindApiFunction.bind(this));
     }
     StorageNamespace.prototype = new CustomBindingsObject();
-    customBindings['StorageNamespace'] = StorageNamespace;
-  }
-
-  function setupInputEvents() {
-    chrome.experimental.input.ime.onKeyEvent.dispatch =
-        function(engineID, keyData) {
-      var args = Array.prototype.slice.call(arguments);
-      if (this.validate_) {
-        var validationErrors = this.validate_(args);
-        if (validationErrors) {
-          chrome.experimental.input.ime.eventHandled(requestId, false);
-          return validationErrors;
-        }
-      }
-      if (this.listeners_.length > 1) {
-        console.error("Too many listeners for 'onKeyEvent': " + e.stack);
-        chrome.experimental.input.ime.eventHandled(requestId, false);
-        return;
-      }
-      for (var i = 0; i < this.listeners_.length; i++) {
-        try {
-          var requestId = keyData.requestId;
-          var result = this.listeners_[i].apply(null, args);
-          chrome.experimental.input.ime.eventHandled(requestId, result);
-        } catch (e) {
-          console.error("Error in event handler for 'onKeyEvent': " + e.stack);
-          chrome.experimental.input.ime.eventHandled(requestId, false);
-        }
-      }
-    };
-  }
-
-  // Page action events send (pageActionId, {tabId, tabUrl}).
-  function setupPageActionEvents(extensionId) {
-    var pageActions = GetCurrentPageActions(extensionId);
-    var oldStyleEventName = "pageActions";
-    // TODO(EXTENSIONS_DEPRECATED): only one page action
-    for (var i = 0; i < pageActions.length; ++i) {
-      // Setup events for each extension_id/page_action_id string we find.
-      chrome.pageActions[pageActions[i]] = new chrome.Event(oldStyleEventName);
-    }
-  }
-
-  // Remove invalid characters from |text| so that it is suitable to use
-  // for |AutocompleteMatch::contents|.
-  function sanitizeString(text, shouldTrim) {
-    // NOTE: This logic mirrors |AutocompleteMatch::SanitizeString()|.
-    // 0x2028 = line separator; 0x2029 = paragraph separator.
-    var kRemoveChars = /(\r|\n|\t|\u2028|\u2029)/gm;
-    if (shouldTrim)
-      text = text.trimLeft();
-    return text.replace(kRemoveChars, '');
-  }
-
-  // Parses the xml syntax supported by omnibox suggestion results. Returns an
-  // object with two properties: 'description', which is just the text content,
-  // and 'descriptionStyles', which is an array of style objects in a format
-  // understood by the C++ backend.
-  function parseOmniboxDescription(input) {
-    var domParser = new DOMParser();
-
-    // The XML parser requires a single top-level element, but we want to
-    // support things like 'hello, <match>world</match>!'. So we wrap the
-    // provided text in generated root level element.
-    var root = domParser.parseFromString(
-        '<fragment>' + input + '</fragment>', 'text/xml');
-
-    // DOMParser has a terrible error reporting facility. Errors come out nested
-    // inside the returned document.
-    var error = root.querySelector('parsererror div');
-    if (error) {
-      throw new Error(error.textContent);
-    }
-
-    // Otherwise, it's valid, so build up the result.
-    var result = {
-      description: '',
-      descriptionStyles: []
-    };
-
-    // Recursively walk the tree.
-    (function(node) {
-      for (var i = 0, child; child = node.childNodes[i]; i++) {
-        // Append text nodes to our description.
-        if (child.nodeType == Node.TEXT_NODE) {
-          var shouldTrim = result.description.length == 0;
-          result.description += sanitizeString(child.nodeValue, shouldTrim);
-          continue;
-        }
-
-        // Process and descend into a subset of recognized tags.
-        if (child.nodeType == Node.ELEMENT_NODE &&
-            (child.nodeName == 'dim' || child.nodeName == 'match' ||
-             child.nodeName == 'url')) {
-          var style = {
-            'type': child.nodeName,
-            'offset': result.description.length
-          };
-          result.descriptionStyles.push(style);
-          arguments.callee(child);
-          style.length = result.description.length - style.offset;
-          continue;
-        }
-
-        // Descend into all other nodes, even if they are unrecognized, for
-        // forward compat.
-        arguments.callee(child);
-      }
-    })(root);
-
-    return result;
-  }
-
-  function setupOmniboxEvents() {
-    chrome.omnibox.onInputChanged.dispatch =
-        function(text, requestId) {
-      var suggestCallback = function(suggestions) {
-        chrome.omnibox.sendSuggestions(requestId, suggestions);
-      };
-      chrome.Event.prototype.dispatch.apply(this, [text, suggestCallback]);
-    };
-  }
-
-  function setupTtsEngineEvents() {
-    chrome.ttsEngine.onSpeak.dispatch = function(text, options, requestId) {
-      var sendTtsEvent = function(event) {
-        chrome.ttsEngine.sendTtsEvent(requestId, event);
-      };
-      chrome.Event.prototype.dispatch.apply(
-          this, [text, options, sendTtsEvent]);
-    };
-  }
-
-  function setupTtsEvents() {
-    chromeHidden.tts = {};
-    chromeHidden.tts.handlers = {};
-    chrome.tts.onEvent.addListener(function(event) {
-      var eventHandler = chromeHidden.tts.handlers[event.srcId];
-      if (eventHandler) {
-        eventHandler({
-                       type: event.type,
-                       charIndex: event.charIndex,
-                       errorMessage: event.errorMessage
-                     });
-        if (event.isFinalEvent) {
-          delete chromeHidden.tts.handlers[event.srcId];
-        }
-      }
-    });
-  }
-
-  function setupSocketEvents() {
-    chromeHidden.socket = {};
-    chromeHidden.socket.handlers = {};
-    chrome.experimental.socket.onEvent.addListener(function(event) {
-      var eventHandler = chromeHidden.socket.handlers[event.srcId];
-      if (eventHandler) {
-        eventHandler({
-           type: event.type,
-           resultCode: event.resultCode,
-        });
-        if (event.isFinalEvent) {
-          delete chromeHidden.socket.handlers[event.srcId];
-        }
-      }
-    });
+    customTypes['StorageNamespace'] = StorageNamespace;
   }
 
   // Get the platform from navigator.appVersion.
@@ -669,7 +423,7 @@ var chrome = chrome || {};
     var platform = getPlatform();
 
     apiDefinitions.forEach(function(apiDef) {
-      // Check platform, if apiDef has platforms key.
+      // Only generate bindings if supported by this platform.
       if (apiDef.platforms && apiDef.platforms.indexOf(platform) == -1) {
         return;
       }
@@ -685,8 +439,8 @@ var chrome = chrome || {};
       if (apiDef.types) {
         apiDef.types.forEach(function(t) {
           chromeHidden.validationTypes.push(t);
-          if (t.type == 'object' && customBindings[t.id]) {
-            customBindings[t.id].prototype.setSchema(t);
+          if (t.type == 'object' && customTypes[t.id]) {
+            customTypes[t.id].prototype.setSchema(t);
           }
         });
       }
@@ -760,12 +514,13 @@ var chrome = chrome || {};
           }
 
           var eventName = apiDef.namespace + "." + eventDef.name;
-          if (apiDef.namespace == "webRequest") {
-            module[eventDef.name] = new chrome.WebRequestEvent(eventName,
-                eventDef.parameters, eventDef.extraParameters);
+          var customEvent = customEvents[apiDef.namespace];
+          if (customEvent) {
+            module[eventDef.name] = new customEvent(
+                eventName, eventDef.parameters, eventDef.extraParameters);
           } else {
-            module[eventDef.name] = new chrome.Event(eventName,
-                eventDef.parameters);
+            module[eventDef.name] = new chrome.Event(
+                eventName, eventDef.parameters);
           }
         });
       }
@@ -786,7 +541,7 @@ var chrome = chrome || {};
               } else if (property.type === 'boolean') {
                 value = value === "true";
               } else if (property["$ref"]) {
-                var constructor = customBindings[property["$ref"]];
+                var constructor = customTypes[property["$ref"]];
                 if (!constructor)
                   throw new Error("No custom binding for " + property["$ref"]);
                 var args = value;
@@ -821,6 +576,27 @@ var chrome = chrome || {};
     // checks.
     if (!isExtensionProcess)
       return;
+
+    // TODO(kalman/aa): "The rest of this crap..." comment above. Only run the
+    // custom hooks in extension processes, to maintain current behaviour. We
+    // should fix this this with a smaller hammer.
+    apiDefinitions.forEach(function(apiDef) {
+      // Only generate bindings if supported by this platform.
+      if (apiDef.platforms && apiDef.platforms.indexOf(platform) == -1)
+        return;
+
+      var hook = customHooks[apiDef.namespace];
+      if (!hook)
+        return;
+
+      // Pass through the public API of schema_generated_bindings, to be used
+      // by custom bindings JS files. Create a new one so that bindings can't
+      // interfere with each other.
+      hook({
+        sendRequest: sendRequest,
+        apiFunctions: apiFunctions,
+      }, extensionId);
+    });
 
     // getTabContentses is retained for backwards compatibility
     // See http://crbug.com/21433
@@ -1002,33 +778,6 @@ var chrome = chrome || {};
           details, this.name, this.definition.parameters, "page action");
     });
 
-    apiFunctions.setHandleRequest("omnibox.setDefaultSuggestion",
-        function(details) {
-      var parseResult = parseOmniboxDescription(details.description);
-      sendRequest(this.name, [parseResult], this.definition.parameters);
-    });
-
-    apiFunctions.setHandleRequest("webRequest.addEventListener",
-        function() {
-      var args = Array.prototype.slice.call(arguments);
-      sendRequest(this.name, args, this.definition.parameters,
-                  {forIOThread: true});
-    });
-
-    apiFunctions.setHandleRequest("webRequest.eventHandled",
-        function() {
-      var args = Array.prototype.slice.call(arguments);
-      sendRequest(this.name, args, this.definition.parameters,
-                  {forIOThread: true});
-    });
-
-    apiFunctions.setHandleRequest("webRequest.handlerBehaviorChanged",
-        function() {
-      var args = Array.prototype.slice.call(arguments);
-      sendRequest(this.name, args, this.definition.parameters,
-                  {forIOThread: true});
-    });
-
     // TODO(skerner,mtytel): The next step to omitting optional arguments is the
     // replacement of this code with code that matches arguments by type.
     // Once this is working for captureVisibleTab() it can be enabled for
@@ -1048,115 +797,7 @@ var chrome = chrome || {};
       return newArgs;
     });
 
-    apiFunctions.setUpdateArgumentsPreValidate("windows.get",
-        function() {
-      // Old signature:
-      //    get(int windowId, function callback);
-      // New signature:
-      //    get(int windowId, object populate, function callback);
-      if (arguments.length == 2 && typeof(arguments[1]) == "function") {
-        // If the old signature is used, add a null populate object.
-        newArgs = [arguments[0], null, arguments[1]];
-      } else {
-        newArgs = arguments;
-      }
-      return newArgs;
-    });
-
-    apiFunctions.setUpdateArgumentsPreValidate("windows.getCurrent",
-        function() {
-      // Old signature:
-      //    getCurrent(function callback);
-      // New signature:
-      //    getCurrent(object populate, function callback);
-      if (arguments.length == 1 && typeof(arguments[0]) == "function") {
-        // If the old signature is used, add a null populate object.
-        newArgs = [null, arguments[0]];
-      } else {
-        newArgs = arguments;
-      }
-      return newArgs;
-    });
-
-    apiFunctions.setUpdateArgumentsPreValidate("windows.getLastFocused",
-        function() {
-      // Old signature:
-      //    getLastFocused(function callback);
-      // New signature:
-      //    getLastFocused(object populate, function callback);
-      if (arguments.length == 1 && typeof(arguments[0]) == "function") {
-        // If the old signature is used, add a null populate object.
-        newArgs = [null, arguments[0]];
-      } else {
-        newArgs = arguments;
-      }
-      return newArgs;
-    });
-
-    apiFunctions.setUpdateArgumentsPreValidate("windows.getAll",
-        function() {
-      // Old signature:
-      //    getAll(function callback);
-      // New signature:
-      //    getAll(object populate, function callback);
-      if (arguments.length == 1 && typeof(arguments[0]) == "function") {
-        // If the old signature is used, add a null populate object.
-        newArgs = [null, arguments[0]];
-      } else {
-        newArgs = arguments;
-      }
-      return newArgs;
-    });
-
-    apiFunctions.setUpdateArgumentsPostValidate("omnibox.sendSuggestions",
-        function(requestId, userSuggestions) {
-      var suggestions = [];
-      for (var i = 0; i < userSuggestions.length; i++) {
-        var parseResult = parseOmniboxDescription(
-            userSuggestions[i].description);
-        parseResult.content = userSuggestions[i].content;
-        suggestions.push(parseResult);
-      }
-      return [requestId, suggestions];
-    });
-
-    apiFunctions.setHandleRequest("tts.speak", function() {
-      var args = arguments;
-      if (args.length > 1 && args[1] && args[1].onEvent) {
-        var id = GetNextTtsEventId();
-        args[1].srcId = id;
-        chromeHidden.tts.handlers[id] = args[1].onEvent;
-      }
-      sendRequest(this.name, args, this.definition.parameters);
-      return id;
-    });
-
-    apiFunctions.setHandleRequest("experimental.socket.create", function() {
-      var args = arguments;
-      if (args.length > 1 && args[1] && args[1].onEvent) {
-        var id = GetNextSocketEventId();
-        args[1].srcId = id;
-        chromeHidden.socket.handlers[id] = args[1].onEvent;
-      }
-      sendRequest(this.name, args, this.definition.parameters);
-      return id;
-    });
-
-    if (apiExists("test")) {
+    if (apiExists("test"))
       chrome.test.getApiDefinitions = GetExtensionAPIDefinition;
-    }
-
-    if (apiExists("experimental.input.ime"))
-      setupInputEvents();
-    if (apiExists("omnibox"))
-      setupOmniboxEvents();
-    if (apiExists("pageActions"))
-      setupPageActionEvents(extensionId);
-    if (apiExists("experimental.socket"))
-      setupSocketEvents();
-    if (apiExists("ttsEngine"))
-      setupTtsEngineEvents();
-    if (apiExists("tts"))
-      setupTtsEvents();
   });
 })();

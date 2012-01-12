@@ -116,7 +116,8 @@ void ExtensionDispatcher::WebKitInitialized() {
   RegisterExtension(new ChromeV8Extension(
       "extensions/apitest.js", IDR_EXTENSION_APITEST_JS, NULL), true);
 
-  std::vector<v8::Extension*> custom_bindings = custom_bindings_util::GetAll();
+  std::vector<v8::Extension*> custom_bindings =
+      custom_bindings_util::GetAll(this);
   for (std::vector<v8::Extension*>::iterator it = custom_bindings.begin();
       it != custom_bindings.end(); ++it) {
     RegisterExtension(*it, true);
@@ -300,10 +301,7 @@ bool ExtensionDispatcher::AllowScriptExtension(
     if (!custom_binding_api_name.empty()) {
       const Extension* extension =
           extensions_.GetByID(GetExtensionID(frame, world_id));
-      // TODO(kalman): there appears to be a race condition, particularly hit
-      // on windows tests, causing this check to fail. It should be a check.
-      if (!extension)
-        return true;
+      CHECK(extension);
       return custom_bindings_util::AllowAPIInjection(
           custom_binding_api_name, *extension);
     }

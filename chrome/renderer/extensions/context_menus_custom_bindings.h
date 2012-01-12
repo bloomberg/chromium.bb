@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_RENDERER_EXTENSIONS_CONTEXTMENUS_CUSTOM_BINDINGS_H_
-#define CHROME_RENDERER_EXTENSIONS_CONTEXTMENUS_CUSTOM_BINDINGS_H_
+#ifndef CHROME_RENDERER_EXTENSIONS_CONTEXT_MENUS_CUSTOM_BINDINGS_H_
+#define CHROME_RENDERER_EXTENSIONS_CONTEXT_MENUS_CUSTOM_BINDINGS_H_
 #pragma once
 
 #include "chrome/renderer/extensions/chrome_v8_extension.h"
@@ -21,4 +21,4 @@ class ContextMenusCustomBindings : public ChromeV8Extension {
 
 }  // extensions
 
-#endif  // CHROME_RENDERER_EXTENSIONS_CONTEXTMENUS_CUSTOM_BINDINGS_H_
+#endif  // CHROME_RENDERER_EXTENSIONS_CONTEXT_MENUS_CUSTOM_BINDINGS_H_

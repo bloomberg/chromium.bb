@@ -10,11 +10,11 @@ native function GetChromeHidden();
 native function GetNextContextMenuId();
 
 var chromeHidden = GetChromeHidden();
-var apiFunctions = chromeHidden.schemaGeneratedBindings.apiFunctions;
-var sendRequest = chromeHidden.schemaGeneratedBindings.sendRequest;
 
-chromeHidden.onLoad.addListener(
-    function(extensionId, isExtensionProcess, isIncognitoProcess) {
+chromeHidden.registerCustomHook('contextMenus', function(bindingsAPI) {
+  var apiFunctions = bindingsAPI.apiFunctions;
+  var sendRequest = bindingsAPI.sendRequest;
+
   chromeHidden.contextMenus = {};
   chromeHidden.contextMenus.handlers = {};
   var eventName = "contextMenus";

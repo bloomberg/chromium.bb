@@ -21,13 +21,23 @@ without changes to the corresponding grd file. fb9 -->
       <include name="IDR_FILE_BROWSER_PRIVATE_BINDINGS_JS" file="resources\extensions\file_browser_private.js" type="BINDATA" />
       <include name="IDR_GREASEMONKEY_API_JS" file="resources\extensions\greasemonkey_api.js" type="BINDATA" />
       <include name="IDR_JSON_SCHEMA_JS" file="resources\extensions\json_schema.js" type="BINDATA" />
-      <include name="IDR_CONTEXTMENUS_CUSTOM_BINDINGS_JS" file="resources\extensions\contextMenus_custom_bindings.js" type="BINDATA" />
       <include name="IDR_MISCELLANEOUS_BINDINGS_JS" file="resources\extensions\miscellaneous_bindings.js" type="BINDATA" />
       <include name="IDR_SCHEMA_GENERATED_BINDINGS_JS" file="resources\extensions\schema_generated_bindings.js" type="BINDATA" />
       <include name="IDR_NET_ERROR_HTML" file="resources\neterror.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_SAD_PLUGIN" file="resources\sadplugin.png" type="BINDATA" />
       <include name="IDR_ERROR_APP_HTML" file="resources\error_app.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_PLATFORM_APP_CSS" file="resources\extensions\platform_app.css" type="BINDATA" />
+
+      <!-- Custom bindings for extension APIs. -->
+      <include name="IDR_CONTEXTMENUS_CUSTOM_BINDINGS_JS" file="resources\extensions\context_menus_custom_bindings.js" type="BINDATA" />
+      <include name="IDR_EXPERIMENTAL_INPUT_IME_CUSTOM_BINDINGS_JS" file="resources\extensions\experimental.input.ime_custom_bindings.js" type="BINDATA" />
+      <include name="IDR_EXPERIMENTAL_SOCKET_CUSTOM_BINDINGS_JS" file="resources\extensions\experimental.socket_custom_bindings.js" type="BINDATA" />
+      <include name="IDR_OMNIBOX_CUSTOM_BINDINGS_JS" file="resources\extensions\omnibox_custom_bindings.js" type="BINDATA" />
+      <include name="IDR_PAGEACTIONS_CUSTOM_BINDINGS_JS" file="resources\extensions\page_actions_custom_bindings.js" type="BINDATA" />
+      <include name="IDR_TTS_CUSTOM_BINDINGS_JS" file="resources\extensions\tts_custom_bindings.js" type="BINDATA" />
+      <include name="IDR_TTSENGINE_CUSTOM_BINDINGS_JS" file="resources\extensions\tts_engine_custom_bindings.js" type="BINDATA" />
+      <include name="IDR_WEBREQUEST_CUSTOM_BINDINGS_JS" file="resources\extensions\web_request_custom_bindings.js" type="BINDATA" />
+      <include name="IDR_WINDOWS_CUSTOM_BINDINGS_JS" file="resources\extensions\windows_custom_bindings.js" type="BINDATA" />
     </includes>
   </release>
 </grit>

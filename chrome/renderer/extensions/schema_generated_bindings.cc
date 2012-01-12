@@ -195,21 +195,12 @@ class ExtensionImpl : public ChromeV8Extension {
       return v8::FunctionTemplate::New(GetNextRequestId);
     } else if (name->Equals(v8::String::New("OpenChannelToTab"))) {
       return v8::FunctionTemplate::New(OpenChannelToTab);
-    } else if (name->Equals(v8::String::New("GetNextSocketEventId"))) {
-      return v8::FunctionTemplate::New(GetNextSocketEventId);
-    } else if (name->Equals(v8::String::New("GetNextTtsEventId"))) {
-      return v8::FunctionTemplate::New(GetNextTtsEventId);
-    } else if (name->Equals(v8::String::New("GetCurrentPageActions"))) {
-      return v8::FunctionTemplate::New(GetCurrentPageActions,
-                                       v8::External::New(this));
     } else if (name->Equals(v8::String::New("StartRequest"))) {
       return v8::FunctionTemplate::New(StartRequest,
                                        v8::External::New(this));
     } else if (name->Equals(v8::String::New("SetIconCommon"))) {
       return v8::FunctionTemplate::New(SetIconCommon,
                                        v8::External::New(this));
-    } else if (name->Equals(v8::String::New("GetUniqueSubEventName"))) {
-      return v8::FunctionTemplate::New(GetUniqueSubEventName);
     } else if (name->Equals(v8::String::New("GetLocalFileSystem"))) {
       return v8::FunctionTemplate::New(GetLocalFileSystem);
     } else if (name->Equals(v8::String::New("DecodeJPEG"))) {
@@ -331,18 +322,6 @@ class ExtensionImpl : public ChromeV8Extension {
   static v8::Handle<v8::Value> GetNextRequestId(const v8::Arguments& args) {
     static int next_request_id = 0;
     return v8::Integer::New(next_request_id++);
-  }
-
-  // Attach an event name to an object.
-  static v8::Handle<v8::Value> GetUniqueSubEventName(
-      const v8::Arguments& args) {
-    static int next_event_id = 0;
-    DCHECK(args.Length() == 1);
-    DCHECK(args[0]->IsString());
-    std::string event_name(*v8::String::AsciiValue(args[0]));
-    std::string unique_event_name =
-        event_name + "/" + base::IntToString(++next_event_id);
-    return v8::String::New(unique_event_name.c_str());
   }
 
   static v8::Handle<v8::Value> GetLocalFileSystem(
@@ -473,40 +452,6 @@ class ExtensionImpl : public ChromeV8Extension {
       return v8::Integer::New(port_id);
     }
     return v8::Undefined();
-  }
-
-  static v8::Handle<v8::Value> GetNextTtsEventId(const v8::Arguments& args) {
-    // Note: this works because the TTS API only works in the
-    // extension process, not content scripts.
-    static int next_tts_event_id = 1;
-    return v8::Integer::New(next_tts_event_id++);
-  }
-
-  static v8::Handle<v8::Value> GetNextSocketEventId(
-      const v8::Arguments& args) {
-    // Same comment as GetNextTtsEventId.
-    static int next_event_id = 1;
-    return v8::Integer::New(next_event_id++);
-  }
-
-  static v8::Handle<v8::Value> GetCurrentPageActions(
-      const v8::Arguments& args) {
-    ExtensionImpl* v8_extension = GetFromArguments<ExtensionImpl>(args);
-    std::string extension_id = *v8::String::Utf8Value(args[0]->ToString());
-    CHECK(!extension_id.empty());
-    const ::Extension* extension =
-        v8_extension->extension_dispatcher_->extensions()->GetByID(
-            extension_id);
-    CHECK(extension);
-
-    v8::Local<v8::Array> page_action_vector = v8::Array::New();
-    if (extension->page_action()) {
-      std::string id = extension->page_action()->id();
-      page_action_vector->Set(v8::Integer::New(0),
-                              v8::String::New(id.c_str(), id.size()));
-    }
-
-    return page_action_vector;
   }
 
   // Common code for starting an API request to the browser. |value_args|

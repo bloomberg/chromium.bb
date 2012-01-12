@@ -12,6 +12,7 @@
 #include "chrome/renderer/extensions/chrome_v8_extension.h"
 
 class Extension;
+class ExtensionDispatcher;
 
 namespace v8 {
 class Extension;
@@ -24,7 +25,7 @@ namespace extensions {
 namespace custom_bindings_util {
 
 // Creates V8 extensions for all custom bindings.
-std::vector<v8::Extension*> GetAll();
+std::vector<v8::Extension*> GetAll(ExtensionDispatcher* extension_dispatcher);
 
 // Extracts the name of an API from the name of the V8 extension which contains
 // custom bindings for it.
