@@ -312,6 +312,8 @@ IN_PROC_BROWSER_TEST_F(GpuPixelBrowserTest, MAYBE_WebGLTeapot) {
   gfx::Size container_size(500, 500);
   ResizeTabContainer(browser(), container_size);
 
+  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
+
   ui_test_utils::DOMMessageQueue message_queue;
   ui_test_utils::NavigateToURL(
       browser(),
