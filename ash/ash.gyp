@@ -77,6 +77,7 @@
         'launcher/launcher_model.cc',
         'launcher/launcher_model.h',
         'launcher/launcher_model_observer.h',
+        'launcher/launcher_types.cc',
         'launcher/launcher_types.h',
         'launcher/launcher_view.cc',
         'launcher/launcher_view.h',
