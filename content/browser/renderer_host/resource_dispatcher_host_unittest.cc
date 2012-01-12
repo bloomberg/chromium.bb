@@ -864,10 +864,6 @@ TEST_F(ResourceDispatcherHostTest, CalculateApproximateMemoryCost) {
 
   // Since the upload throttling is disabled, this has no effect on the cost.
   EXPECT_EQ(4436, ResourceDispatcherHost::CalculateApproximateMemoryCost(&req));
-
-  // Add a file upload -- should have no effect.
-  req.AppendFileToUpload(FilePath(FILE_PATH_LITERAL("does-not-exist.png")));
-  EXPECT_EQ(4436, ResourceDispatcherHost::CalculateApproximateMemoryCost(&req));
 }
 
 // Test the private helper method "IncrementOutstandingRequestsMemoryCost()".
