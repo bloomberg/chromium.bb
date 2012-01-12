@@ -7,7 +7,8 @@
  * This file defines the <code>PPB_WebSocket_Dev</code> interface.
  */
 label Chrome {
-  M17 = 0.1
+  M17 = 0.1,
+  M18 = 0.9
 };
 
 
@@ -45,25 +46,28 @@ enum PP_WebSocketReadyState_Dev {
 };
 
 /**
- * This enumeration contains the types representing the WebSocket message type
- * and these types are based on the JavaScript WebSocket API specification.
- * ReceiveMessage() and SendMessage() use them as a parameter to represent
- * handling message types.
+ * This enumeration contains the types representing the WebSocket binary type
+ * to receive frames. These types are based on the JavaScript WebSocket API
+ * specification.
  */
 [assert_size(4)]
-enum PP_WebSocketMessageType_Dev {
+enum PP_WebSocketBinaryType_Dev {
   /**
-   * Message type that represents a text message type.
+   * Binary type is queried on an invalid resource.
    */
-  PP_WEBSOCKET_MESSAGE_TYPE_TEXT_DEV = 0,
+  PP_WEBSOCKETBINARYTYPE_INVALID = -1,
 
   /**
-   * Message type that represents a binary message type.
+   * Binary type that represents Blob objects.
    */
-  PP_WEBSOCKET_MESSAGE_TYPE_BINARY_DEV = 1
+  PP_WEBSOCKETBINARYTYPE_BLOB_DEV = 0,
+
+  /**
+   * Binary type that represents ArrayBuffer objects.
+   */
+  PP_WEBSOCKETBINARYTYPE_ARRAYBUFFER_DEV = 1
 };
 
-[version=0.1, macro="PPB_WEBSOCKET_DEV_INTERFACE"]
 interface PPB_WebSocket_Dev {
   /**
    * Create() creates a WebSocket instance.
@@ -315,4 +319,43 @@ interface PPB_WebSocket_Dev {
    * <code>PP_VARTYPE_UNDEFINED</code> if called on an invalid resource.
    */
   PP_Var GetURL([in] PP_Resource web_socket);
+
+  /**
+   * SetBinaryType() specifies the binary object type for receiving binary
+   * frames representation. Receiving text frames are always mapped to
+   * <PP_VARTYPE_STRING</code> var regardless of this attribute.
+   * This function should be called before Connect() to ensure receiving all
+   * incoming binary frames as the specified binary object type.
+   * Default type is <code>PP_WEBSOCKETBINARYTYPE_BLOB_DEV</code>.
+   *
+   * Currently, Blob bindings is not supported in Pepper, so receiving binary
+   * type is always ArrayBuffer. To ensure backward compatibility, you must
+   * call this function with
+   * <code>PP_WEBSOCKETBINARYTYPE_ARRAYBUFFER_DEV</code> to use binary frames.
+   *
+   * @param[in] web_socket A <code>PP_Resource</code> corresponding to a
+   * WebSocket.
+   *
+   * @param[in] binary_type Binary object type for receibing binary frames
+   * representation.
+   *
+   * @return Returns <code>PP_FALSE</code> if the specified type is not
+   * supported. Otherwise, returns <code>PP_TRUE</code>.
+   */
+  [version=0.9]
+  PP_Bool SetBinaryType([in] PP_Resource web_socket,
+                        [in] PP_WebSocketBinaryType_Dev binary_type);
+
+  /**
+   * GetBinaryType() returns currently specified binary object type for
+   * receiving binary frames representation.
+   *
+   * @param[in] web_socket A <code>PP_Resource</code> corresponding to a
+   * WebSocket.
+   *
+   * @return Returns <code>PP_WebSocketBinaryType_Dev</code> represents
+   * current binary object type.
+   */
+  [version=0.9]
+  PP_WebSocketBinaryType_Dev GetBinaryType([in] PP_Resource web_socket);
 };

@@ -57,6 +57,9 @@ class PPB_WebSocket_Impl : public ::ppapi::Resource,
   virtual PP_Var GetProtocol() OVERRIDE;
   virtual PP_WebSocketReadyState_Dev GetReadyState() OVERRIDE;
   virtual PP_Var GetURL() OVERRIDE;
+  virtual PP_Bool SetBinaryType(
+      PP_WebSocketBinaryType_Dev binary_type) OVERRIDE;
+  virtual PP_WebSocketBinaryType_Dev GetBinaryType() OVERRIDE;
 
   // WebSocketClient implementation.
   virtual void didConnect();
@@ -74,6 +77,7 @@ class PPB_WebSocket_Impl : public ::ppapi::Resource,
 
   scoped_ptr<WebKit::WebSocket> websocket_;
   PP_WebSocketReadyState_Dev state_;
+  PP_WebSocketBinaryType_Dev binary_type_;
   bool error_was_received_;
 
   scoped_refptr< ::ppapi::TrackedCallback> connect_callback_;

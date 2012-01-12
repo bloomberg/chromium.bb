@@ -63,8 +63,8 @@ PROXIED_IFACE(PPB_VideoDecoder, PPB_VIDEODECODER_DEV_INTERFACE_0_16,
               PPB_VideoDecoder_Dev_0_16)
 UNPROXIED_IFACE(PPB_VideoLayer, PPB_VIDEOLAYER_DEV_INTERFACE_0_1,
                 PPB_VideoLayer_Dev_0_1)
-UNPROXIED_IFACE(PPB_WebSocket, PPB_WEBSOCKET_DEV_INTERFACE_0_1,
-                PPB_WebSocket_Dev_0_1)
+UNPROXIED_IFACE(PPB_WebSocket, PPB_WEBSOCKET_DEV_INTERFACE_0_9,
+                PPB_WebSocket_Dev_0_9)
 UNPROXIED_IFACE(PPB_Widget, PPB_WIDGET_DEV_INTERFACE_0_3, PPB_Widget_Dev_0_3)
 
 #include "ppapi/thunk/interfaces_postamble.h"

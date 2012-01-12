@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -75,9 +75,12 @@ bool InValidStateToReceive(PP_WebSocketReadyState_Dev state) {
 namespace webkit {
 namespace ppapi {
 
+// TODO(toyoshim): Default value of binary_type_ must be
+// PP_WEBSOCKETBINARYTYPE_BLOB_DEV after supporting Blob.
 PPB_WebSocket_Impl::PPB_WebSocket_Impl(PP_Instance instance)
     : Resource(instance),
       state_(PP_WEBSOCKETREADYSTATE_INVALID_DEV),
+      binary_type_(PP_WEBSOCKETBINARYTYPE_ARRAYBUFFER_DEV),
       error_was_received_(false),
       receive_callback_var_(NULL),
       wait_for_receive_(false),
@@ -417,6 +420,16 @@ PP_Var PPB_WebSocket_Impl::GetURL() {
   if (!url_)
     return empty_string_->GetPPVar();
   return url_->GetPPVar();
+}
+
+PP_Bool PPB_WebSocket_Impl::SetBinaryType(
+    PP_WebSocketBinaryType_Dev binary_type) {
+  // TODO(toyoshim): Use WebKit new API to set the receiving binary type.
+  return PP_FALSE;
+}
+
+PP_WebSocketBinaryType_Dev PPB_WebSocket_Impl::GetBinaryType() {
+  return binary_type_;
 }
 
 void PPB_WebSocket_Impl::didConnect() {

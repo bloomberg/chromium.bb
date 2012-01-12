@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,6 +33,8 @@ class PPB_WebSocket_API {
   virtual PP_Var GetProtocol() = 0;
   virtual PP_WebSocketReadyState_Dev GetReadyState() = 0;
   virtual PP_Var GetURL() = 0;
+  virtual PP_Bool SetBinaryType(PP_WebSocketBinaryType_Dev) = 0;
+  virtual PP_WebSocketBinaryType_Dev GetBinaryType() = 0;
 };
 
 }  // namespace thunk

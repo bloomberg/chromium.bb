@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -128,6 +128,8 @@ PP_Resource TestWebSocket::Connect(
     protocols[0] = CreateVarString(protocol);
     protocol_count = 1U;
   }
+  websocket_interface_->SetBinaryType(
+      ws, PP_WEBSOCKETBINARYTYPE_ARRAYBUFFER_DEV);
   *result = websocket_interface_->Connect(
       ws, url_var, protocols, protocol_count,
       static_cast<pp::CompletionCallback>(callback).pp_completion_callback());
