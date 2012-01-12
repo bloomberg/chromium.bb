@@ -82,14 +82,16 @@ class ASH_EXPORT ToplevelWindowEventFilter :
   // Calculates new width of a window during a drag where the mouse
   // position changed by |delta_x|.  |delta_x| may be clamped if the window
   // size is constrained by |min_width|.
-  int GetWidthForDrag(int size_change_direction,
+  int GetWidthForDrag(aura::Window* target,
+                      int size_change_direction,
                       int min_width,
                       int* delta_x) const;
 
   // Calculates new height of a window during a drag where the mouse
   // position changed by |delta_y|.  |delta_y| may be clamped if the window
   // size is constrained by |min_height|.
-  int GetHeightForDrag(int size_change_direction,
+  int GetHeightForDrag(aura::Window* target,
+                       int size_change_direction,
                        int min_height,
                        int* delta_y) const;
 

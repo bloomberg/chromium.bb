@@ -300,6 +300,12 @@ bool ToplevelWindowEventFilter::HandleDrag(aura::Window* target,
       new_bounds.Inset(0, 0, 0,
                        new_bounds.bottom() - work_area.bottom());
   }
+  if (bounds_change & kBoundsChange_Resizes &&
+      bounds_change & kBoundsChange_Repositions && new_bounds.y() < 0) {
+    int delta = new_bounds.y();
+    new_bounds.set_y(0);
+    new_bounds.set_height(new_bounds.height() + delta);
+  }
   target->SetBounds(new_bounds);
   return true;
 }
@@ -347,13 +353,16 @@ gfx::Size ToplevelWindowEventFilter::GetSizeForDrag(
     int size_change_direction =
         GetSizeChangeDirectionForWindowComponent(window_component_);
     size.SetSize(
-      GetWidthForDrag(size_change_direction, min_size.width(), delta_x),
-      GetHeightForDrag(size_change_direction, min_size.height(), delta_y));
+        GetWidthForDrag(target, size_change_direction, min_size.width(),
+                        delta_x),
+        GetHeightForDrag(target, size_change_direction, min_size.height(),
+                         delta_y));
   }
   return size;
 }
 
-int ToplevelWindowEventFilter::GetWidthForDrag(int size_change_direction,
+int ToplevelWindowEventFilter::GetWidthForDrag(aura::Window* target,
+                                               int size_change_direction,
                                                int min_width,
                                                int* delta_x) const {
   int width = mouse_down_bounds_.width();
@@ -368,11 +377,20 @@ int ToplevelWindowEventFilter::GetWidthForDrag(int size_change_direction,
       width = min_width;
       *delta_x = -x_multiplier * (mouse_down_bounds_.width() - min_width);
     }
+
+    // And don't let the window go bigger than the monitor.
+    int max_width =
+        gfx::Screen::GetMonitorAreaNearestWindow(target).width();
+    if (width > max_width) {
+      width = max_width;
+      *delta_x = -x_multiplier * (mouse_down_bounds_.width() - max_width);
+    }
   }
   return width;
 }
 
-int ToplevelWindowEventFilter::GetHeightForDrag(int size_change_direction,
+int ToplevelWindowEventFilter::GetHeightForDrag(aura::Window* target,
+                                                int size_change_direction,
                                                 int min_height,
                                                 int* delta_y) const {
   int height = mouse_down_bounds_.height();
@@ -386,6 +404,14 @@ int ToplevelWindowEventFilter::GetHeightForDrag(int size_change_direction,
     if (height < min_height) {
       height = min_height;
       *delta_y = -y_multiplier * (mouse_down_bounds_.height() - min_height);
+    }
+
+    // And don't let the window go bigger than the monitor.
+    int max_height =
+        gfx::Screen::GetMonitorAreaNearestWindow(target).height();
+    if (height > max_height) {
+      height = max_height;
+      *delta_y = -y_multiplier * (mouse_down_bounds_.height() - max_height);
     }
   }
   return height;

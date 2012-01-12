@@ -363,5 +363,27 @@ TEST_F(ToplevelWindowEventFilterTest, BottomWorkArea) {
             target->bounds().size());
 }
 
+// Verifies we don't let windows drag to a -y location.
+TEST_F(ToplevelWindowEventFilterTest, DontDragToNegativeY) {
+  scoped_ptr<aura::Window> target(CreateWindow(HTTOP));
+  gfx::Rect work_area =
+      gfx::Screen::GetMonitorWorkAreaNearestWindow(target.get());
+  aura::test::EventGenerator generator(target.get());
+  generator.MoveMouseTo(0, 5);
+  generator.DragMouseBy(0, -5);
+  // The y location and height should not have changed.
+  EXPECT_EQ(0, target->bounds().y());
+  EXPECT_EQ(100, target->bounds().height());
+}
+
+// Verifies we don't let windows go bigger than the monitor width.
+TEST_F(ToplevelWindowEventFilterTest, DontGotWiderThanScreen) {
+  scoped_ptr<aura::Window> target(CreateWindow(HTRIGHT));
+  gfx::Rect work_area = gfx::Screen::GetMonitorAreaNearestWindow(target.get());
+  DragFromCenterBy(target.get(), work_area.width() * 2, 0);
+  // The y location and height should not have changed.
+  EXPECT_EQ(work_area.width(), target->bounds().width());
+}
+
 }  // namespace test
 }  // namespace aura
