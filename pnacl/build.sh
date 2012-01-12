@@ -3206,6 +3206,7 @@ ppapi-headers() {
   mkdir -p ${dst}
   cp -r ${ppapi_base}/c            ${dst}
   cp -r ${ppapi_base}/cpp          ${dst}
+  cp -r ${ppapi_base}/utility      ${dst}
   cp -r ${ppapi_base}/lib/gl/gles2 ${dst}
 
   # pruning (needs a lot more work)
@@ -3213,9 +3214,14 @@ ppapi-headers() {
   rm -rf ${dst}/*/trusted
   rm -rf ${dst}/*/documentation
   rm -rf ${dst}/*/.svn
+
   rm -f ${dst}/*/*.c
   rm -f ${dst}/*/*.cc
   rm -f ${dst}/*/*/*.cc
+
+  cp -r ${ppapi_base}/lib/gl/include/KHR   ${INSTALL_SDK_INCLUDE}
+  cp -r ${ppapi_base}/lib/gl/include/EGL   ${INSTALL_SDK_INCLUDE}
+  cp -r ${ppapi_base}/lib/gl/include/GLES2 ${INSTALL_SDK_INCLUDE}
 }
 #+-------------------------------------------------------------------------
 #@ driver                - Install driver scripts.
