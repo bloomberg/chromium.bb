@@ -9402,7 +9402,7 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
       </if>
       <if expr="pp_ifdef('use_titlecase')">
         <message name="IDS_PROFILES_NOT_SIGNED_IN_MENU" desc="The text to display on the browser frame when the user is not using a personalized profile.">
-          Not Signed In
+          Not Signed in
         </message>
       </if>
       <if expr="not pp_ifdef('use_titlecase')">
@@ -10371,7 +10371,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
       </if>
       <if expr="pp_ifdef('use_titlecase')">
         <message name="IDS_SYNC_OPTIONS_GROUP_NAME" desc="In Title Case: The name of the sync group in the options dialog.">
-          Sign In
+          Sign in
         </message>
       </if>
       <if expr="not pp_ifdef('use_titlecase')">
@@ -10820,7 +10820,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
       </if>
       <if expr="pp_ifdef('use_titlecase')">
         <message name="IDS_SYNC_SETUP_TITLE" desc="In title case: The title of the Sync Setup overlay.">
-          Sign In With Your Google Account
+          Sign in With Your Google Account
         </message>
       </if>
       <message name="IDS_SYNC_LOGIN_SIGNIN_PREFIX" desc="The first part of the sentence that is displayed after the login info">
@@ -10906,10 +10906,10 @@ Some features may be unavailable.  Please check that the profile exists and you 
       </if>
       <if expr="pp_ifdef('use_titlecase')">
         <message name="IDS_SYNC_MENU_PRE_SYNCED_LABEL" desc="The text for the sync app menu item before an account is synced.">
-          Sign In to <ph name="SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph>...
+          Sign in to <ph name="SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph>...
         </message>
         <message name="IDS_SYNC_MENU_SYNCED_LABEL" desc="The text for the sync app menu item when bookmark sync has been enabled">
-          Signed In as <ph name="USER_NAME">$1<ex>pat@example.com</ex></ph>...
+          Signed in as <ph name="USER_NAME">$1<ex>pat@example.com</ex></ph>...
         </message>
         <message name="IDS_SYNC_MENU_SYNC_ERROR_LABEL" desc="In Title Case: The text for the sync app menu item when a bookmark sync error has occured">
           Sync Error...
