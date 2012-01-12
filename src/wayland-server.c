@@ -445,17 +445,17 @@ default_grab_button(struct wl_grab *grab,
 	struct wl_input_device *device = grab->input_device;
 	struct wl_resource *resource;
 
+	resource = device->pointer_focus_resource;
+	if (resource)
+		wl_resource_post_event(resource, WL_INPUT_DEVICE_BUTTON,
+				       time, button, state);
+
 	if (device->button_count == 0 && state == 0)
 		wl_input_device_set_pointer_focus(device,
 						  device->current, time,
 						  device->x, device->y,
 						  device->current_x,
 						  device->current_y);
-
-	resource = device->pointer_focus_resource;
-	if (resource)
-		wl_resource_post_event(resource, WL_INPUT_DEVICE_BUTTON,
-				       time, button, state);
 }
 
 static const struct wl_grab_interface default_grab_interface = {
