@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,6 +25,8 @@ class TabContentsWrapper;
 // initialize the profile.
 class BrowserInit {
  public:
+  typedef std::vector<Profile*> Profiles;
+
   enum IsProcessStartup {
     IS_NOT_PROCESS_STARTUP,
     IS_PROCESS_STARTUP
@@ -43,10 +45,13 @@ class BrowserInit {
 
   // This function is equivalent to ProcessCommandLine but should only be
   // called during actual process startup.
-  bool Start(const CommandLine& cmd_line, const FilePath& cur_dir,
-             Profile* profile, int* return_code) {
-    return ProcessCmdLineImpl(cmd_line, cur_dir, true, profile, return_code,
-                              this);
+  bool Start(const CommandLine& cmd_line,
+             const FilePath& cur_dir,
+             Profile* last_used_profile,
+             const Profiles& last_opened_profiles,
+             int* return_code) {
+    return ProcessCmdLineImpl(cmd_line, cur_dir, true, last_used_profile,
+                              last_opened_profiles, return_code, this);
   }
 
   // This function performs command-line handling and is invoked only after
@@ -248,8 +253,11 @@ class BrowserInit {
       Profile* profile);
 
   static bool ProcessCmdLineImpl(const CommandLine& command_line,
-                                 const FilePath& cur_dir, bool process_startup,
-                                 Profile* profile, int* return_code,
+                                 const FilePath& cur_dir,
+                                 bool process_startup,
+                                 Profile* last_used_profile,
+                                 const Profiles& last_opened_profiles,
+                                 int* return_code,
                                  BrowserInit* browser_init);
 
   // Callback after a profile has been created.

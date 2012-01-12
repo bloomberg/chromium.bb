@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -382,4 +382,112 @@ TEST_F(ProfileManagerTest, InitProfileInfoCacheForAProfile) {
             UTF16ToUTF8(cache.GetNameOfProfileAtIndex(profile_index)));
   EXPECT_EQ(avatar_index,
             cache.GetAvatarIconIndexOfProfileAtIndex(profile_index));
+}
+
+TEST_F(ProfileManagerTest, LastOpenedProfiles) {
+  FilePath dest_path1 = temp_dir_.path();
+  dest_path1 = dest_path1.Append(FILE_PATH_LITERAL("New Profile 1"));
+
+  FilePath dest_path2 = temp_dir_.path();
+  dest_path2 = dest_path2.Append(FILE_PATH_LITERAL("New Profile 2"));
+
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+
+  // Successfully create the profiles.
+  TestingProfile* profile1 =
+      static_cast<TestingProfile*>(profile_manager->GetProfile(dest_path1));
+  ASSERT_TRUE(profile1);
+
+  TestingProfile* profile2 =
+      static_cast<TestingProfile*>(profile_manager->GetProfile(dest_path2));
+  ASSERT_TRUE(profile2);
+
+  std::vector<Profile*> last_opened_profiles =
+      profile_manager->GetLastOpenedProfiles();
+  ASSERT_EQ(0U, last_opened_profiles.size());
+
+  // Create a browser for profile1.
+  scoped_ptr<Browser> browser1a(new Browser(Browser::TYPE_TABBED, profile1));
+
+  last_opened_profiles = profile_manager->GetLastOpenedProfiles();
+  ASSERT_EQ(1U, last_opened_profiles.size());
+  EXPECT_EQ(profile1, last_opened_profiles[0]);
+
+  // And for profile2.
+  scoped_ptr<Browser> browser2(new Browser(Browser::TYPE_TABBED, profile2));
+
+  last_opened_profiles = profile_manager->GetLastOpenedProfiles();
+  ASSERT_EQ(2U, last_opened_profiles.size());
+  EXPECT_EQ(profile1, last_opened_profiles[0]);
+  EXPECT_EQ(profile2, last_opened_profiles[1]);
+
+  // Adding more browsers doesn't change anything.
+  scoped_ptr<Browser> browser1b(new Browser(Browser::TYPE_TABBED, profile1));
+  last_opened_profiles = profile_manager->GetLastOpenedProfiles();
+  ASSERT_EQ(2U, last_opened_profiles.size());
+  EXPECT_EQ(profile1, last_opened_profiles[0]);
+  EXPECT_EQ(profile2, last_opened_profiles[1]);
+
+  // Close the browsers.
+  browser1a.reset();
+  last_opened_profiles = profile_manager->GetLastOpenedProfiles();
+  ASSERT_EQ(2U, last_opened_profiles.size());
+  EXPECT_EQ(profile1, last_opened_profiles[0]);
+  EXPECT_EQ(profile2, last_opened_profiles[1]);
+
+  browser1b.reset();
+  last_opened_profiles = profile_manager->GetLastOpenedProfiles();
+  ASSERT_EQ(1U, last_opened_profiles.size());
+  EXPECT_EQ(profile2, last_opened_profiles[0]);
+
+  browser2.reset();
+  last_opened_profiles = profile_manager->GetLastOpenedProfiles();
+  ASSERT_EQ(0U, last_opened_profiles.size());
+}
+
+TEST_F(ProfileManagerTest, LastOpenedProfilesAtShutdown) {
+  FilePath dest_path1 = temp_dir_.path();
+  dest_path1 = dest_path1.Append(FILE_PATH_LITERAL("New Profile 1"));
+
+  FilePath dest_path2 = temp_dir_.path();
+  dest_path2 = dest_path2.Append(FILE_PATH_LITERAL("New Profile 2"));
+
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+
+  // Successfully create the profiles.
+  TestingProfile* profile1 =
+      static_cast<TestingProfile*>(profile_manager->GetProfile(dest_path1));
+  ASSERT_TRUE(profile1);
+
+  TestingProfile* profile2 =
+      static_cast<TestingProfile*>(profile_manager->GetProfile(dest_path2));
+  ASSERT_TRUE(profile2);
+
+  // Create a browser for profile1.
+  scoped_ptr<Browser> browser1(new Browser(Browser::TYPE_TABBED, profile1));
+
+  // And for profile2.
+  scoped_ptr<Browser> browser2(new Browser(Browser::TYPE_TABBED, profile2));
+
+  std::vector<Profile*> last_opened_profiles =
+      profile_manager->GetLastOpenedProfiles();
+  ASSERT_EQ(2U, last_opened_profiles.size());
+  EXPECT_EQ(profile1, last_opened_profiles[0]);
+  EXPECT_EQ(profile2, last_opened_profiles[1]);
+
+  // Simulate a shutdown.
+  content::NotificationService::current()->Notify(
+      content::NOTIFICATION_APP_EXITING,
+      content::NotificationService::AllSources(),
+      content::NotificationService::NoDetails());
+
+  // Even if the browsers are destructed during shutdown, the profiles stay
+  // open.
+  browser1.reset();
+  browser2.reset();
+
+  last_opened_profiles = profile_manager->GetLastOpenedProfiles();
+  ASSERT_EQ(2U, last_opened_profiles.size());
+  EXPECT_EQ(profile1, last_opened_profiles[0]);
+  EXPECT_EQ(profile2, last_opened_profiles[1]);
 }

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -181,10 +181,18 @@ Profile* ProfileManager::GetLastUsedProfile() {
   return profile_manager->GetLastUsedProfile(profile_manager->user_data_dir_);
 }
 
+// static
+std::vector<Profile*> ProfileManager::GetLastOpenedProfiles() {
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  return profile_manager->GetLastOpenedProfiles(
+      profile_manager->user_data_dir_);
+}
+
 ProfileManager::ProfileManager(const FilePath& user_data_dir)
     : user_data_dir_(user_data_dir),
       logged_in_(false),
-      will_import_(false) {
+      will_import_(false),
+      shutdown_started_(false) {
   BrowserList::AddObserver(this);
 #if defined(OS_CHROMEOS)
   registrar_.Add(
@@ -192,6 +200,18 @@ ProfileManager::ProfileManager(const FilePath& user_data_dir)
       chrome::NOTIFICATION_LOGIN_USER_CHANGED,
       content::NotificationService::AllSources());
 #endif
+  registrar_.Add(
+      this,
+      chrome::NOTIFICATION_BROWSER_OPENED,
+      content::NotificationService::AllSources());
+  registrar_.Add(
+      this,
+      chrome::NOTIFICATION_BROWSER_CLOSED,
+      content::NotificationService::AllSources());
+  registrar_.Add(
+      this,
+      content::NOTIFICATION_APP_EXITING,
+      content::NotificationService::AllSources());
 }
 
 ProfileManager::~ProfileManager() {
@@ -253,6 +273,30 @@ Profile* ProfileManager::GetLastUsedProfile(const FilePath& user_data_dir) {
       last_used_profile_dir.AppendASCII(chrome::kInitialProfile) :
       last_used_profile_dir.AppendASCII(last_profile_used);
   return GetProfile(last_used_profile_dir);
+}
+
+std::vector<Profile*> ProfileManager::GetLastOpenedProfiles(
+    const FilePath& user_data_dir) {
+  PrefService* local_state = g_browser_process->local_state();
+  DCHECK(local_state);
+
+  std::vector<Profile*> to_return;
+  if (local_state->HasPrefPath(prefs::kProfilesLastActive)) {
+    const ListValue* profile_list =
+        local_state->GetList(prefs::kProfilesLastActive);
+    if (profile_list) {
+      ListValue::const_iterator it;
+      std::string profile;
+      for (it = profile_list->begin(); it != profile_list->end(); ++it) {
+        if (!(*it)->GetAsString(&profile) || profile.empty()) {
+          LOG(WARNING) << "Invalid entry in " << prefs::kProfilesLastActive;
+          continue;
+        }
+        to_return.push_back(GetProfile(user_data_dir.AppendASCII(profile)));
+      }
+    }
+  }
+  return to_return;
 }
 
 Profile* ProfileManager::GetDefaultProfile(const FilePath& user_data_dir) {
@@ -413,8 +457,62 @@ void ProfileManager::Observe(
       CHECK(chromeos::CrosLibrary::Get()->GetCryptohomeLibrary()->IsMounted());
     }
     logged_in_ = true;
+    return;
   }
 #endif
+  if (shutdown_started_)
+    return;
+
+  bool update_active_profiles = false;
+  switch (type) {
+    case content::NOTIFICATION_APP_EXITING: {
+      // Ignore any browsers closing from now on.
+      shutdown_started_ = true;
+      break;
+    }
+    case chrome::NOTIFICATION_BROWSER_OPENED: {
+      Browser* browser = content::Source<Browser>(source).ptr();
+      DCHECK(browser);
+      Profile* profile = browser->profile();
+      DCHECK(profile);
+      if (++browser_counts_[profile] == 1) {
+        active_profiles_.push_back(profile);
+        update_active_profiles = true;
+      }
+      break;
+    }
+    case chrome::NOTIFICATION_BROWSER_CLOSED: {
+      Browser* browser = content::Source<Browser>(source).ptr();
+      DCHECK(browser);
+      Profile* profile = browser->profile();
+      DCHECK(profile);
+      if (--browser_counts_[profile] == 0) {
+        active_profiles_.erase(
+            std::remove(active_profiles_.begin(), active_profiles_.end(),
+                        profile),
+            active_profiles_.end());
+        update_active_profiles = true;
+      }
+      break;
+    }
+    default: {
+      NOTREACHED();
+      break;
+    }
+  }
+  if (update_active_profiles) {
+    PrefService* local_state = g_browser_process->local_state();
+    DCHECK(local_state);
+    ListPrefUpdate update(local_state, prefs::kProfilesLastActive);
+    ListValue* profile_list = update.Get();
+
+    profile_list->Clear();
+    std::vector<Profile*>::const_iterator it;
+    for (it = active_profiles_.begin(); it != active_profiles_.end(); ++it) {
+      profile_list->Append(
+          new StringValue((*it)->GetPath().BaseName().MaybeAsASCII()));
+    }
+  }
 }
 
 void ProfileManager::SetWillImport() {
@@ -553,6 +651,7 @@ void ProfileManager::CreateMultiProfileAsync() {
 void ProfileManager::RegisterPrefs(PrefService* prefs) {
   prefs->RegisterStringPref(prefs::kProfileLastUsed, "");
   prefs->RegisterIntegerPref(prefs::kProfilesNumCreated, 1);
+  prefs->RegisterListPref(prefs::kProfilesLastActive);
 }
 
 size_t ProfileManager::GetNumberOfProfiles() {
