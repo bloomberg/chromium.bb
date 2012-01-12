@@ -113,7 +113,8 @@ class PrerenderManager::OnCloseTabContentsDeleter
     tab_->web_contents()->SetDelegate(this);
     MessageLoop::current()->PostDelayedTask(FROM_HERE,
         base::Bind(&OnCloseTabContentsDeleter::ScheduleTabContentsForDeletion,
-                   this->AsWeakPtr(), true), kDeleteWithExtremePrejudiceTimeMs);
+                   this->AsWeakPtr(), true),
+        base::TimeDelta::FromSeconds(kDeleteWithExtremePrejudiceSeconds));
   }
 
   virtual void CloseContents(WebContents* source) OVERRIDE {
@@ -131,7 +132,7 @@ class PrerenderManager::OnCloseTabContentsDeleter
   }
 
  private:
-  static const int kDeleteWithExtremePrejudiceTimeMs = 3000;
+  static const int kDeleteWithExtremePrejudiceSeconds = 3;
 
   void ScheduleTabContentsForDeletion(bool timeout) {
     tab_->web_contents()->SetDelegate(NULL);
