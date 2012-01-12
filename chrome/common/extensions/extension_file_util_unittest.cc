@@ -279,11 +279,11 @@ static scoped_refptr<Extension> LoadExtensionManifest(
     int extra_flags,
     std::string* error) {
   JSONStringValueSerializer serializer(manifest_value);
-  Value* result = serializer.Deserialize(NULL, error);
-  if (!result)
+  scoped_ptr<Value> result(serializer.Deserialize(NULL, error));
+  if (!result.get())
     return NULL;
   CHECK_EQ(Value::TYPE_DICTIONARY, result->GetType());
-  return LoadExtensionManifest(static_cast<DictionaryValue*>(result),
+  return LoadExtensionManifest(static_cast<DictionaryValue*>(result.get()),
                                manifest_dir,
                                location,
                                extra_flags,

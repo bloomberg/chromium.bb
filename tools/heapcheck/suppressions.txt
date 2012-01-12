@@ -1771,13 +1771,3 @@
    Heapcheck:Leak
    fun:AutofillProfileSyncableServiceTest::SetUp
 }
-{
-   bug_109862
-   Heapcheck:Leak
-   ...
-   fun:base::JSONReader::BuildValue
-   fun:base::JSONReader::JsonToValue
-   fun:base::JSONReader::ReadAndReturnError
-   fun:JSONStringValueSerializer::Deserialize
-   fun:LoadExtensionManifest
-}
