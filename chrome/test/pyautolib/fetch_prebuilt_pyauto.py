@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -81,7 +81,7 @@ class FetchPrebuilt(object):
 
     # Setup urls to download.
     self._chrome_zip_url = '%s/%s.zip' % (self._url, self._chrome_zip_name)
-    self._it2me_zip_url = self._url + '/' + 'remoting-it2me.zip'
+    self._remoting_zip_url = self._url + '/' + 'remoting-webapp.zip'
     chrome_test_url = '%s/%s.test' % (self._url, self._chrome_zip_name)
     self._pyautolib_py_url = '%s/pyautolib.py' % chrome_test_url
     if self._options.platform == 'win':
@@ -111,17 +111,17 @@ class FetchPrebuilt(object):
     self._ParseArgs()
     if not os.path.isdir(self._outdir):
       os.makedirs(self._outdir)
-    get_it2me = self._DoesURLExist(self._it2me_zip_url)
+    get_remoting = self._DoesURLExist(self._remoting_zip_url)
 
     # Fetch chrome & pyauto binaries
     print 'Fetching', self._chrome_zip_url
     chrome_zip = urllib.urlretrieve(self._chrome_zip_url)[0]
 
-    if get_it2me:
-      print 'Fetching', self._it2me_zip_url
-      it2me_zip = urllib.urlretrieve(self._it2me_zip_url)[0]
+    if get_remoting:
+      print 'Fetching', self._remoting_zip_url
+      remoting_zip = urllib.urlretrieve(self._remoting_zip_url)[0]
     else:
-      print 'Warning: %s does not exist.' % self._it2me_zip_url
+      print 'Warning: %s does not exist.' % self._remoting_zip_url
 
     print 'Fetching', self._pyautolib_py_url
     pyautolib_py = urllib.urlretrieve(self._pyautolib_py_url)[0]
@@ -138,10 +138,10 @@ class FetchPrebuilt(object):
       pyauto_utils.RemovePath(chrome_unzip_dir)
     print 'Unzipping'
     pyauto_utils.UnzipFilenameToDir(chrome_zip, self._outdir)
-    if get_it2me:
-      pyauto_utils.UnzipFilenameToDir(it2me_zip, self._outdir)
-      shutil.move(self._outdir + '/remoting-it2me',
-                  self._outdir + '/remoting/it2me.webapp')
+    if get_remoting:
+      pyauto_utils.UnzipFilenameToDir(remoting_zip, self._outdir)
+      shutil.move(self._outdir + '/remoting-webapp',
+                  self._outdir + '/remoting/remoting.webapp')
 
     # Copy over the binaries to outdir
     items_to_copy = {
