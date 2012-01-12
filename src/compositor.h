@@ -32,25 +32,7 @@
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
 
-struct weston_matrix {
-	GLfloat d[16];
-};
-
-struct weston_vector {
-	GLfloat f[4];
-};
-
-void
-weston_matrix_init(struct weston_matrix *matrix);
-void
-weston_matrix_multiply(struct weston_matrix *m, const struct weston_matrix *n);
-void
-weston_matrix_scale(struct weston_matrix *matrix, GLfloat x, GLfloat y, GLfloat z);
-void
-weston_matrix_translate(struct weston_matrix *matrix,
-			GLfloat x, GLfloat y, GLfloat z);
-void
-weston_matrix_transform(struct weston_matrix *matrix, struct weston_vector *v);
+#include "matrix.h"
 
 struct weston_transform {
 	struct weston_matrix matrix;
