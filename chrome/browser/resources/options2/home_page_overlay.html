@@ -5,7 +5,7 @@
       <label>
         <input id="homepage-use-ntp" type="radio" name="homepage" value="true"
             metric="Options_Homepage_IsNewTabPage" pref="homepage_is_newtabpage"
-            controlled-by="recommended">
+            controlled-by="recommended" dialog-pref>
         <span i18n-content="homepageUseNewTab">Use the New Tab page</span>
       </label>
     </div>
@@ -14,14 +14,15 @@
         <label>
           <input id="homepage-use-url" type="radio" name="homepage"
               value="false" metric="Options_Homepage_IsNewTabPage"
-              pref="homepage_is_newtabpage" controlled-by="recommended">
+              pref="homepage_is_newtabpage" controlled-by="recommended"
+              dialog-pref>
           <span i18n-content="homepageUseURL">Open this page:</span>
         </label>
       </div>
       <div>
         <input id="homepageURL" type="url" class="weakrtl favicon-cell"
             data-type="url" pref="homepage" controlled-by="recommended"
-            disabled>
+            dialog-pref disabled>
       </div>
     </div>
   </div>

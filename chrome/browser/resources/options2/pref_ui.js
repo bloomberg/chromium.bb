@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// TODO(jhawkins): Add dialog-pref support to all preference controls.
+
 cr.define('options', function() {
 
   var Preferences = options.Preferences;
@@ -176,6 +178,10 @@ cr.define('options', function() {
     // Set up the prototype chain
     __proto__: HTMLInputElement.prototype,
 
+    // Stores the initialized value of the preference used to reset the input
+    // in resetPrefState().
+    storedValue_: null,
+
     /**
      * Initialization function for the cr.ui framework.
      */
@@ -183,27 +189,44 @@ cr.define('options', function() {
       this.type = 'radio';
       var self = this;
 
-      // Listen to pref changes.
+      // Listen to preference changes.
       Preferences.getInstance().addEventListener(this.pref,
           function(event) {
             var value = event.value && event.value['value'] != undefined ?
                 event.value['value'] : event.value;
             self.checked = String(value) == self.value;
+            self.storedValue_ = self.checked;
 
             updateElementState_(self, event);
           });
 
-      // Listen to user events.
-      this.addEventListener('change',
-          function(e) {
-            if(self.value == 'true' || self.value == 'false') {
-              Preferences.setBooleanPref(self.pref,
-                  self.value == 'true', self.metric);
-            } else {
-              Preferences.setIntegerPref(self.pref,
-                  parseInt(self.value, 10), self.metric);
-            }
-          });
+      // Dialog preferences are not saved until savePrefState() is explicitly
+      // called.
+      if (!this.dialogPref)
+        this.onchange = this.savePrefState.bind(this);
+    },
+
+    /**
+     * Resets the input to the stored value.
+     */
+    resetPrefState: function() {
+      this.checked = this.storedValue_;
+    },
+
+    /**
+     * Saves the value of the input back into the preference. May be called
+     * directly to save dialog preferences.
+     */
+    savePrefState: function() {
+      this.storedValue_ = this.checked;
+      if (this.value == 'true' || this.value == 'false') {
+        var value = String(this.value);
+        Preferences.setBooleanPref(this.pref, value == String(this.checked),
+                                   this.metric);
+      } else {
+        Preferences.setIntegerPref(this.pref, parseInt(this.value, 10),
+                                   this.metric);
+      }
     },
 
     /**
@@ -219,6 +242,14 @@ cr.define('options', function() {
    * @type {string}
    */
   cr.defineProperty(PrefRadio, 'pref', cr.PropertyKind.ATTR);
+
+  /**
+   * A special preference type specific to dialogs. These preferences are reset
+   * when the dialog is shown and are not saved until the user confirms the
+   * dialog.
+   * @type {boolean}
+   */
+  cr.defineProperty(PrefRadio, 'dialogPref', cr.PropertyKind.BOOL_ATTR);
 
   /**
    * Whether the preference is controlled by something else than the user's

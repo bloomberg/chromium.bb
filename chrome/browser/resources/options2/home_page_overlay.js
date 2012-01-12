@@ -30,7 +30,7 @@ cr.define('options', function() {
       var self = this;
       $('homepage-use-ntp').onchange = this.updateHomePageInput_.bind(this);
       $('homepage-use-url').onchange = this.updateHomePageInput_.bind(this);
-      $('home-page-confirm').onclick = this.handleCancel_.bind(this);
+      $('home-page-confirm').onclick = this.handleConfirm_.bind(this);
       $('home-page-cancel').onclick = this.handleCancel_.bind(this);
 
       $('homepageURL').addEventListener('keydown', function(event) {
@@ -61,11 +61,31 @@ cr.define('options', function() {
     },
 
     /**
+     * Handles the confirm button by saving the dialog preferences.
+     * @private
+     */
+    handleConfirm_: function() {
+      OptionsPage.closeOverlay();
+
+      var els = this.pageDiv.querySelectorAll('[dialog-pref]');
+      for (var i = 0; i < els.length; i++) {
+        if (els[i].savePrefState)
+          els[i].savePrefState();
+      }
+    },
+
+    /**
      * Handles the cancel button by closing the overlay.
      * @private
      */
     handleCancel_: function() {
       OptionsPage.closeOverlay();
+
+      var els = this.pageDiv.querySelectorAll('[dialog-pref]');
+      for (var i = 0; i < els.length; i++) {
+        if (els[i].resetPrefState)
+          els[i].resetPrefState();
+      }
     },
   };
 

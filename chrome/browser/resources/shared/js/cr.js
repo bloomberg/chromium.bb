@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -189,6 +189,7 @@ const cr = (function() {
         };
       case PropertyKind.BOOL_ATTR:
         var attributeName = getAttributeName(name);
+        console.log('attributeName: ' + attributeName);
         return function() {
           return this.hasAttribute(attributeName);
         };
@@ -267,13 +268,11 @@ const cr = (function() {
 
     var kind = opt_kind || PropertyKind.JS;
 
-    if (!obj.__lookupGetter__(name)) {
+    if (!obj.__lookupGetter__(name))
       obj.__defineGetter__(name, getGetter(name, kind));
-    }
 
-    if (!obj.__lookupSetter__(name)) {
+    if (!obj.__lookupSetter__(name))
       obj.__defineSetter__(name, getSetter(name, kind, opt_setHook));
-    }
   }
 
   /**
