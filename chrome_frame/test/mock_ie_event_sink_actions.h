@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -356,7 +356,7 @@ ACTION_P3(CloseWhenFileSaved, mock, file, timeout_ms) {
       ADD_FAILURE() << "File was not saved within timeout";
       break;
     }
-    base::PlatformThread::Sleep(200);
+    base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(200));
   }
   mock->event_sink()->CloseWebBrowser();
 }
@@ -364,7 +364,7 @@ ACTION_P3(CloseWhenFileSaved, mock, file, timeout_ms) {
 ACTION_P2(WaitForFileSave, file, timeout_ms) {
   base::Time start = base::Time::Now();
   while (!file_util::PathExists(file)) {
-    base::PlatformThread::Sleep(200);
+    base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(200));
     if ((base::Time::Now() - start).InMilliseconds() > timeout_ms) {
       ADD_FAILURE() << "File was not saved within timeout";
       break;
