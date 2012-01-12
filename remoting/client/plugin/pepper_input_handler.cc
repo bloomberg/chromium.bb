@@ -93,6 +93,10 @@ bool PepperInputHandler::HandleInputEvent(const pp::InputEvent& event) {
       return true;
     }
 
+    case PP_INPUTEVENT_TYPE_CHAR:
+      // Consume but ignore character input events.
+      return true;
+
     default: {
       LOG(INFO) << "Unhandled input event: " << event.GetType();
       break;
