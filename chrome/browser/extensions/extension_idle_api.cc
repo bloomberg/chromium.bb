@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -109,7 +109,7 @@ void ExtensionIdlePollingTask::CreateNewPollTask(int threshold, IdleState state,
       FROM_HERE,
       base::Bind(&ExtensionIdlePollingTask::CheckIdleState, base::Unretained(
           new ExtensionIdlePollingTask(threshold, state, profile))),
-          kIdlePollInterval * 1000);
+      base::TimeDelta::FromSeconds(kIdlePollInterval));
 }
 
 
