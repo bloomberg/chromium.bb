@@ -283,8 +283,6 @@ class HungRendererDialogView : public views::DialogDelegateView,
   static void InitClass();
 
   // Controls within the dialog box.
-  views::ImageView* frozen_icon_view_;
-  views::Label* info_label_;
   views::GroupTableView* hung_pages_table_;
 
   // The button we insert into the ClientView to kill the errant process. This
@@ -321,9 +319,7 @@ static const int kTableViewHeight = 100;
 // HungRendererDialogView, public:
 
 HungRendererDialogView::HungRendererDialogView()
-    : frozen_icon_view_(NULL),
-      info_label_(NULL),
-      hung_pages_table_(NULL),
+    : hung_pages_table_(NULL),
       kill_button_(NULL),
       kill_button_container_(NULL),
       initialized_(false) {
@@ -462,13 +458,13 @@ void HungRendererDialogView::ViewHierarchyChanged(bool is_add,
 // HungRendererDialogView, private:
 
 void HungRendererDialogView::Init() {
-  frozen_icon_view_ = new views::ImageView;
-  frozen_icon_view_->SetImage(frozen_icon_);
+  views::ImageView* frozen_icon_view = new views::ImageView;
+  frozen_icon_view->SetImage(frozen_icon_);
 
-  info_label_ = new views::Label(
+  views::Label* info_label = new views::Label(
       l10n_util::GetStringUTF16(IDS_BROWSER_HANGMONITOR_RENDERER));
-  info_label_->SetMultiLine(true);
-  info_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  info_label->SetMultiLine(true);
+  info_label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
 
   hung_pages_table_model_.reset(new HungPagesTableModel(this));
   std::vector<ui::TableColumn> columns;
@@ -495,10 +491,13 @@ void HungRendererDialogView::Init() {
                         GridLayout::USE_PREF, 0, 0);
 
   layout->StartRow(0, double_column_set_id);
-  layout->AddView(frozen_icon_view_, 1, 3);
-  layout->AddView(info_label_);
+  layout->AddView(frozen_icon_view, 1, 3);
+  // Add the label with a preferred width of 1, this way it doesn't effect the
+  // overall preferred size of the dialog.
+  layout->AddView(
+      info_label, 1, 1, GridLayout::FILL, GridLayout::LEADING, 1, 0);
 
-  layout->AddPaddingRow(0, views::kUnrelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
   layout->StartRow(0, double_column_set_id);
   layout->SkipColumns(1);
