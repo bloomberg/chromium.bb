@@ -12,7 +12,9 @@
 #include "base/utf_string_conversions.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
+#include "ui/base/models/combobox_model.h"
 #include "ui/views/controls/button/text_button.h"
+#include "ui/views/controls/combobox/combobox.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/tabbed_pane/tabbed_pane.h"
 #include "ui/views/examples/bubble_example.h"
@@ -35,6 +37,7 @@
 #include "ui/views/examples/tree_view_example.h"
 #include "ui/views/examples/widget_example.h"
 #include "ui/views/focus/accelerator_handler.h"
+#include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/widget/widget.h"
 
@@ -47,15 +50,46 @@ namespace examples {
 
 class ExampleBase;
 
-class ExamplesWindowContents : public views::WidgetDelegateView {
+// Model for the examples that are being added via AddExample()
+class ComboboxModelExampleList : public ui::ComboboxModel {
+ public:
+  ComboboxModelExampleList() {}
+  virtual ~ComboboxModelExampleList() {}
+
+  // Overridden from ui::ComboboxModel:
+  virtual int GetItemCount() OVERRIDE { return example_list.size(); }
+  virtual string16 GetItemAt(int index) OVERRIDE {
+    return UTF8ToUTF16(example_list[index]->example_title());
+  }
+
+  views::View* GetItemViewAt(int index) {
+    return example_list[index]->example_view();
+  }
+
+  void AddExample(ExampleBase* example) {
+    example_list.push_back(example);
+  }
+
+ private:
+  std::vector<ExampleBase*> example_list;
+
+  DISALLOW_COPY_AND_ASSIGN(ComboboxModelExampleList);
+};
+
+class ExamplesWindowContents : public views::WidgetDelegateView,
+                               public views::ComboboxListener {
  public:
   explicit ExamplesWindowContents(bool quit_on_close)
-      : tabbed_pane_(new views::TabbedPane),
+      : combobox_model_(new ComboboxModelExampleList),
+        combobox_(new views::Combobox(combobox_model_)),
+        example_shown_(new views::View),
         status_label_(new views::Label),
         quit_on_close_(quit_on_close) {
     instance_ = this;
+    combobox_->set_listener(this);
   }
   virtual ~ExamplesWindowContents() {
+    delete combobox_model_;
   }
 
   // Prints a message in the status area, at the bottom of the window.
@@ -85,8 +119,22 @@ class ExamplesWindowContents : public views::WidgetDelegateView {
       InitExamplesWindow();
   }
 
+  // Overridden from ComboboxListener:
+  virtual void ItemChanged(Combobox* combo_box,
+                           int prev_index,
+                           int new_index) OVERRIDE {
+    DCHECK(combo_box && combo_box == combobox_);
+    DCHECK(new_index < combobox_model_->GetItemCount());
+    example_shown_->RemoveAllChildViews(false);
+    example_shown_->AddChildView(combobox_model_->GetItemViewAt(new_index));
+    example_shown_->RequestFocus();
+    Layout();
+  }
+
   // Creates the layout within the examples window.
   void InitExamplesWindow() {
+    AddExamples();
+
     set_background(views::Background::CreateStandardPanelBackground());
     views::GridLayout* layout = new views::GridLayout(this);
     SetLayoutManager(layout);
@@ -96,49 +144,51 @@ class ExamplesWindowContents : public views::WidgetDelegateView {
                           views::GridLayout::USE_PREF, 0, 0);
     column_set->AddPaddingColumn(0, 5);
     layout->AddPaddingRow(0, 5);
-    layout->StartRow(1, 0);
-    layout->AddView(tabbed_pane_);
+    layout->StartRow(0 /* no expand */, 0);
+    layout->AddView(combobox_);
+
+    if (combobox_model_->GetItemCount() > 0) {
+      layout->StartRow(1, 0);
+      example_shown_->SetLayoutManager(new views::FillLayout());
+      example_shown_->AddChildView(combobox_model_->GetItemViewAt(0));
+      layout->AddView(example_shown_);
+    }
+
     layout->StartRow(0 /* no expand */, 0);
     layout->AddView(status_label_);
     layout->AddPaddingRow(0, 5);
-
-    AddExamples();
   }
 
-  // Adds all the individual examples to the tab strip.
+  // Adds all the individual examples to the combobox model.
   void AddExamples() {
-    AddExample(new TreeViewExample);
-    AddExample(new TableExample);
-    AddExample(new BubbleExample);
-    AddExample(new ButtonExample);
-    AddExample(new ComboboxExample);
-    AddExample(new DoubleSplitViewExample);
-    AddExample(new LinkExample);
+    combobox_model_->AddExample(new TreeViewExample);
+    combobox_model_->AddExample(new TableExample);
+    combobox_model_->AddExample(new BubbleExample);
+    combobox_model_->AddExample(new ButtonExample);
+    combobox_model_->AddExample(new ComboboxExample);
+    combobox_model_->AddExample(new DoubleSplitViewExample);
+    combobox_model_->AddExample(new LinkExample);
 #if !defined(USE_AURA)
-    AddExample(new MenuExample);
+    combobox_model_->AddExample(new MenuExample);
 #endif
-    AddExample(new MessageBoxExample);
-    AddExample(new NativeThemeButtonExample);
-    AddExample(new NativeThemeCheckboxExample);
-    AddExample(new ProgressBarExample);
-    AddExample(new RadioButtonExample);
-    AddExample(new ScrollViewExample);
-    AddExample(new SingleSplitViewExample);
-    AddExample(new TabbedPaneExample);
-    AddExample(new TextExample);
-    AddExample(new TextfieldExample);
-    AddExample(new ThrobberExample);
-    AddExample(new WidgetExample);
-  }
-
-  // Adds a new example to the tabbed window.
-  void AddExample(ExampleBase* example) {
-    tabbed_pane_->AddTab(UTF8ToUTF16(example->example_title()),
-                         example->example_view());
+    combobox_model_->AddExample(new MessageBoxExample);
+    combobox_model_->AddExample(new NativeThemeButtonExample);
+    combobox_model_->AddExample(new NativeThemeCheckboxExample);
+    combobox_model_->AddExample(new ProgressBarExample);
+    combobox_model_->AddExample(new RadioButtonExample);
+    combobox_model_->AddExample(new ScrollViewExample);
+    combobox_model_->AddExample(new SingleSplitViewExample);
+    combobox_model_->AddExample(new TabbedPaneExample);
+    combobox_model_->AddExample(new TextExample);
+    combobox_model_->AddExample(new TextfieldExample);
+    combobox_model_->AddExample(new ThrobberExample);
+    combobox_model_->AddExample(new WidgetExample);
   }
 
   static ExamplesWindowContents* instance_;
-  views::TabbedPane* tabbed_pane_;
+  ComboboxModelExampleList* combobox_model_;
+  views::Combobox* combobox_;
+  views::View* example_shown_;
   views::Label* status_label_;
   bool quit_on_close_;
 
