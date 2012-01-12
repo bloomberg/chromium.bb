@@ -471,7 +471,7 @@ void DeviceManagementService::ScheduleInitialization(int64 delay_milliseconds) {
       FROM_HERE,
       base::Bind(&DeviceManagementService::Initialize,
                  weak_ptr_factory_.GetWeakPtr()),
-      delay_milliseconds);
+      base::TimeDelta::FromMilliseconds(delay_milliseconds));
 }
 
 void DeviceManagementService::Initialize() {
