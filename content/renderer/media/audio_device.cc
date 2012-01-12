@@ -106,11 +106,6 @@ void AudioDevice::Start() {
 
 void AudioDevice::Stop() {
   DCHECK(MessageLoop::current() != ChildProcess::current()->io_message_loop());
-  // Max waiting time for Stop() to complete. If this time limit is passed,
-  // we will stop waiting and return false. It ensures that Stop() can't block
-  // the calling thread forever.
-  const base::TimeDelta kMaxTimeOut = base::TimeDelta::FromMilliseconds(1000);
-
   base::WaitableEvent completion(false, false);
 
   ChildProcess::current()->io_message_loop()->PostTask(
@@ -120,9 +115,7 @@ void AudioDevice::Stop() {
   // We wait here for the IO task to be completed to remove race conflicts
   // with OnLowLatencyCreated() and to ensure that Stop() acts as a synchronous
   // function call.
-  if (!completion.TimedWait(kMaxTimeOut)) {
-    LOG(ERROR) << "Failed to shut down audio output on IO thread";
-  }
+  completion.Wait();
   ShutDownAudioThread();
 }
 

@@ -89,7 +89,6 @@ class CONTENT_EXPORT AudioDevice
               int channels,
               double sample_rate,
               RenderCallback* callback);
-  virtual ~AudioDevice();
 
   // AudioRendererSink implementation.
 
@@ -165,6 +164,11 @@ class CONTENT_EXPORT AudioDevice
     base::Lock lock_;
     base::SyncSocket socket_;
   };
+
+  // Magic required by ref_counted.h to avoid any code deleting the object
+  // accidently while there are references to it.
+  friend class base::RefCountedThreadSafe<AudioDevice>;
+  virtual ~AudioDevice();
 
   // Methods called on IO thread ----------------------------------------------
   // The following methods are tasks posted on the IO thread that needs to
