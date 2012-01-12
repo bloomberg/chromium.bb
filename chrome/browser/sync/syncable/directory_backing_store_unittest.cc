@@ -46,6 +46,7 @@ class MigrationTest : public testing::TestWithParam<int> {
 
   static bool LoadAndIgnoreReturnedData(DirectoryBackingStore *dbs) {
     MetahandlesIndex metas;
+    STLElementDeleter<MetahandlesIndex> index_deleter(&metas);
     Directory::KernelLoadInfo kernel_load_info;
     return dbs->Load(&metas, &kernel_load_info) == OPENED;
   }
