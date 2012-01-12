@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -271,6 +271,23 @@ void CalculatePageLayoutFromPrintParams(
       params.margin_left, dpi, printing::kPointsPerInch);
 }
 
+void EnsureOrientationMatches(const PrintMsg_Print_Params& css_params,
+                              PrintMsg_Print_Params* page_params) {
+  if ((page_params->page_size.width() > page_params->page_size.height()) ==
+      (css_params.page_size.width() > css_params.page_size.height())) {
+    return;
+  }
+
+  // Swap the |width| and |height| values.
+  page_params->page_size.SetSize(page_params->page_size.height(),
+                                 page_params->page_size.width());
+  page_params->content_size.SetSize(page_params->content_size.height(),
+                                    page_params->content_size.width());
+  page_params->printable_area.set_size(
+      gfx::Size(page_params->printable_area.height(),
+                page_params->printable_area.width()));
+}
+
 void CalculatePrintCanvasSize(const PrintMsg_Print_Params& print_params,
                               gfx::Size* result) {
   int dpi = GetDPI(&print_params);
@@ -409,34 +426,40 @@ PrintMsg_Print_Params CalculatePrintParamsForCss(
     bool ignore_css_margins,
     bool fit_to_page,
     double* scale_factor) {
+  PrintMsg_Print_Params css_params = GetCssPrintParams(frame, page_index,
+                                                       page_params);
+
+  PrintMsg_Print_Params params = page_params;
+  EnsureOrientationMatches(css_params, &params);
+
   if (ignore_css_margins && fit_to_page)
-    return page_params;
+    return params;
 
-  PrintMsg_Print_Params params = GetCssPrintParams(frame, page_index,
-                                                   page_params);
-
+  PrintMsg_Print_Params result_params = css_params;
   if (ignore_css_margins) {
-    params.margin_top = page_params.margin_top;
-    params.margin_left = page_params.margin_left;
+    result_params.margin_top = params.margin_top;
+    result_params.margin_left = params.margin_left;
 
     DCHECK(!fit_to_page);
     // Since we are ignoring the margins, the css page size is no longer
     // valid.
-    int default_margin_right = page_params.page_size.width() -
-        page_params.content_size.width() - page_params.margin_left;
-    int default_margin_bottom = page_params.page_size.height() -
-        page_params.content_size.height() - page_params.margin_top;
-    params.content_size = gfx::Size(
-        params.page_size.width() - params.margin_left - default_margin_right,
-        params.page_size.height() - params.margin_top - default_margin_bottom);
+    int default_margin_right = params.page_size.width() -
+        params.content_size.width() - params.margin_left;
+    int default_margin_bottom = params.page_size.height() -
+        params.content_size.height() - params.margin_top;
+    result_params.content_size = gfx::Size(
+        result_params.page_size.width() - result_params.margin_left -
+            default_margin_right,
+        result_params.page_size.height() - result_params.margin_top -
+            default_margin_bottom);
   }
 
   if (fit_to_page) {
-    double factor = FitPrintParamsToPage(page_params, &params);
+    double factor = FitPrintParamsToPage(params, &result_params);
     if (scale_factor)
       *scale_factor = factor;
   }
-  return params;
+  return result_params;
 }
 
 }  // namespace

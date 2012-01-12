@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,6 +32,18 @@ const char kHTMLWithPageSizeCss[] =
     "@media print {"
     "  @page {"
     "     size: 4in 4in;"
+    "  }"
+    "}"
+    "</style></head>"
+    "<body>Lorem Ipsum:"
+    "</body></html>";
+
+// A simple web page with print page layout css.
+const char kHTMLWithLandscapePageCss[] =
+    "<html><head><style>"
+    "@media print {"
+    "  @page {"
+    "     size: landscape;"
     "  }"
     "}"
     "</style></head>"
@@ -590,6 +602,42 @@ TEST_F(PrintWebViewHelperPreviewTest, PrintPreviewShrinkToFitPage) {
 
   EXPECT_EQ(0, chrome_render_thread_->print_preview_pages_remaining());
   VerifyDefaultPageLayout(576, 652, 69, 71, 18, 18, true);
+  VerifyPrintPreviewCancelled(false);
+  VerifyPrintPreviewFailed(false);
+}
+
+// Test to verify that print preview workflow honor the orientation settings
+// specified in css.
+TEST_F(PrintWebViewHelperPreviewTest, PrintPreviewHonorsOrientationCss) {
+  LoadHTML(kHTMLWithLandscapePageCss);
+
+  // Fill in some dummy values.
+  DictionaryValue dict;
+  CreatePrintSettingsDictionary(&dict);
+  dict.SetBoolean(printing::kSettingPrintToPDF, false);
+  dict.SetInteger(printing::kSettingMarginsType, printing::NO_MARGINS);
+  OnPrintPreview(dict);
+
+  EXPECT_EQ(0, chrome_render_thread_->print_preview_pages_remaining());
+  VerifyDefaultPageLayout(792, 612, 0, 0, 0, 0, true);
+  VerifyPrintPreviewCancelled(false);
+  VerifyPrintPreviewFailed(false);
+}
+
+// Test to verify that print preview workflow honors the orientation settings
+// specified in css when PRINT_TO_PDF is selected.
+TEST_F(PrintWebViewHelperPreviewTest, PrintToPDFSelectedHonorOrientationCss) {
+  LoadHTML(kHTMLWithLandscapePageCss);
+
+  // Fill in some dummy values.
+  DictionaryValue dict;
+  CreatePrintSettingsDictionary(&dict);
+  dict.SetBoolean(printing::kSettingPrintToPDF, true);
+  dict.SetInteger(printing::kSettingMarginsType, printing::CUSTOM_MARGINS);
+  OnPrintPreview(dict);
+
+  EXPECT_EQ(0, chrome_render_thread_->print_preview_pages_remaining());
+  VerifyDefaultPageLayout(748, 568, 21, 23, 21, 23, true);
   VerifyPrintPreviewCancelled(false);
   VerifyPrintPreviewFailed(false);
 }
