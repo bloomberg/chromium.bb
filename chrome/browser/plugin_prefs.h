@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -81,10 +81,10 @@ class PluginPrefs : public base::RefCountedThreadSafe<PluginPrefs>,
 
   // Returns whether there is a policy enabling or disabling plug-ins of the
   // given name.
-  PolicyStatus PolicyStatusForPlugin(const string16& name);
+  PolicyStatus PolicyStatusForPlugin(const string16& name) const;
 
   // Returns whether the plugin is enabled or not.
-  bool IsPluginEnabled(const webkit::WebPluginInfo& plugin);
+  bool IsPluginEnabled(const webkit::WebPluginInfo& plugin) const;
 
   // Registers the preferences used by this class.
   // This method should only be called on the UI thread.
@@ -110,7 +110,7 @@ class PluginPrefs : public base::RefCountedThreadSafe<PluginPrefs>,
       const std::set<string16>& enabled_patterns);
 
   // Returns the plugin list to use, either the singleton or the override.
-  webkit::npapi::PluginList* GetPluginList();
+  webkit::npapi::PluginList* GetPluginList() const;
 
   // Callback for after the plugin groups have been loaded.
   void EnablePluginGroupInternal(

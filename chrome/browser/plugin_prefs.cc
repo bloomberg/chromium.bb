@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -182,7 +182,7 @@ bool PluginPrefs::EnablePluginGlobally(bool enable, const FilePath& file_path) {
 }
 
 PluginPrefs::PolicyStatus PluginPrefs::PolicyStatusForPlugin(
-    const string16& name) {
+    const string16& name) const {
   base::AutoLock auto_lock(lock_);
   if (IsStringMatchedInSet(name, policy_enabled_plugin_patterns_)) {
     return POLICY_ENABLED;
@@ -195,7 +195,7 @@ PluginPrefs::PolicyStatus PluginPrefs::PolicyStatusForPlugin(
   }
 }
 
-bool PluginPrefs::IsPluginEnabled(const webkit::WebPluginInfo& plugin) {
+bool PluginPrefs::IsPluginEnabled(const webkit::WebPluginInfo& plugin) const {
   scoped_ptr<webkit::npapi::PluginGroup> group(
       GetPluginList()->GetPluginGroup(plugin));
   string16 group_name = group->GetGroupName();
@@ -222,13 +222,13 @@ bool PluginPrefs::IsPluginEnabled(const webkit::WebPluginInfo& plugin) {
 
   base::AutoLock auto_lock(lock_);
   // Check user preferences for the plug-in.
-  std::map<FilePath, bool>::iterator plugin_it =
+  std::map<FilePath, bool>::const_iterator plugin_it =
       plugin_state_.find(plugin.path);
   if (plugin_it != plugin_state_.end())
     return plugin_it->second;
 
   // Check user preferences for the plug-in group.
-  std::map<string16, bool>::iterator group_it(
+  std::map<string16, bool>::const_iterator group_it(
       plugin_group_state_.find(plugin.name));
   if (group_it != plugin_group_state_.end())
     return group_it->second;
@@ -470,7 +470,7 @@ void PluginPrefs::SetPolicyEnforcedPluginPatterns(
   policy_enabled_plugin_patterns_ = enabled_patterns;
 }
 
-webkit::npapi::PluginList* PluginPrefs::GetPluginList() {
+webkit::npapi::PluginList* PluginPrefs::GetPluginList() const {
   if (plugin_list_)
     return plugin_list_;
   return PluginService::GetInstance()->GetPluginList();
