@@ -544,8 +544,7 @@ div.img-container > img {
 .table-header-splitter {
   -webkit-border-start: 1px #aaa solid;
   background-color: inherit;
-  height: 20px;
-  margin-top: 4px;
+  height: 28px;
 }
 
 /* Container for a table header. */
@@ -746,6 +745,8 @@ li.table-row {
 .task-button {
   display: -webkit-box;
   -webkit-box-orient: horizontal;
+  -webkit-margin-end: 4px;
+  -webkit-margin-start: 4px;
   height: 29px;
   text-align: left;
   vertical-align: middle;
