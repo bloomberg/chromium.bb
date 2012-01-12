@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -67,7 +67,7 @@ void WebThreadImpl::postDelayedTask(
   thread_->message_loop()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&WebKit::WebThread::Task::run, base::Owned(task)),
-      delay_ms);
+      base::TimeDelta::FromMilliseconds(delay_ms));
 }
 
 bool WebThreadImpl::IsCurrentThread() const {
