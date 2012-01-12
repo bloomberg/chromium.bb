@@ -54,10 +54,7 @@ class MockBufferedDataSource : public BufferedDataSource {
         .WillByDefault(Assign(&loading_, true));
     ON_CALL(*url_loader, cancel())
         .WillByDefault(Assign(&loading_, false));
-    scoped_ptr<NiceMock<MockWebURLLoader> > mwul(url_loader);
-    // TODO(fischman): replace the extra scoped_ptr+release() with Pass() when
-    // http://crbug.com/109026 is fixed.
-    scoped_ptr<WebURLLoader> wul(mwul.release());
+    scoped_ptr<WebURLLoader> wul(url_loader);
     loader->SetURLLoaderForTest(wul.Pass());
     return loader;
   }

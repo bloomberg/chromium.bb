@@ -51,8 +51,6 @@ scoped_ptr<DataSourceFactory> CompositeDataSourceFactory::Clone() const {
     new_factory->AddFactory((*itr)->Clone().Pass());
   }
 
-  // TODO(fischman): replace the extra scoped_ptr+release() with Pass() when
-  // http://crbug.com/109026 is fixed.
   return scoped_ptr<DataSourceFactory>(new_factory.release());
 }
 

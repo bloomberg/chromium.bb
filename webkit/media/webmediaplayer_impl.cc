@@ -194,8 +194,6 @@ void WebMediaPlayerImpl::Initialize(WebKit::WebFrame* frame) {
   data_source_factory->AddFactory(simple_data_source_factory.Pass());
 
   scoped_ptr<media::DemuxerFactory> demuxer_factory(
-      // TODO(fischman): replace the extra scoped_ptr+release() with Pass() when
-      // http://crbug.com/109026 is fixed.
       new media::FFmpegDemuxerFactory(scoped_ptr<media::DataSourceFactory>(
           data_source_factory.release()), pipeline_message_loop));
 
