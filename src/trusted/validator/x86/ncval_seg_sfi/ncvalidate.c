@@ -417,13 +417,12 @@ Bool NCAddressInMemoryRange(const NaClPcAddress address,
       && address < vstate->iadrbase + vstate->codesize;
 }
 
-static INLINE void RememberInstructionBoundry(const NCDecoderInst *dinst,
+static INLINE void RememberInstructionBoundary(const NCDecoderInst *dinst,
                                               struct NCValidatorState *vstate) {
   const NaClMemorySize ioffset = dinst->vpc - vstate->iadrbase;
   if (!NCAddressInMemoryRange(dinst->vpc, vstate)) {
-    ValidatePrintInstructionError(dinst,
-                                  "JUMP TARGET out of range in RememberIP",
-                                  vstate);
+    ValidatePrintInstructionError(dinst, "INSTRUCTION ADDRESS out of range in "
+                                  "RememberInstructionBoundary", vstate);
     NCStatsBadTarget(vstate);
     return;
   }
@@ -438,9 +437,9 @@ static INLINE void RememberInstructionBoundry(const NCDecoderInst *dinst,
   NCSetAdrTable(ioffset, vstate->vttable);
 }
 
-static void RememberJumpTarget(const NCDecoderInst *dinst, int32_t jmpoffset,
+static void RememberJumpTarget(const NCDecoderInst *dinst, int32_t jump_offset,
                                struct NCValidatorState *vstate) {
-  NaClPcAddress target = dinst->vpc + dinst->inst.bytes.length + jmpoffset;
+  NaClPcAddress target = dinst->vpc + dinst->inst.bytes.length + jump_offset;
   const NaClMemorySize ioffset = target - vstate->iadrbase;
 
   if (NCAddressInMemoryRange(target, vstate)) {
@@ -453,12 +452,12 @@ static void RememberJumpTarget(const NCDecoderInst *dinst, int32_t jmpoffset,
   }
 }
 
-static void ForgetInstructionBoundry(const NCDecoderInst *dinst,
+static void ForgetInstructionBoundary(const NCDecoderInst *dinst,
                                      struct NCValidatorState *vstate) {
-  NaClMemorySize ioffset =  dinst->vpc - vstate->iadrbase;
+  NaClMemorySize ioffset = dinst->vpc - vstate->iadrbase;
   if (!NCAddressInMemoryRange(dinst->vpc, vstate)) {
-    ValidatePrintInstructionError(dinst, "JUMP TARGET out of range in "
-                                  "ForgetInstructionBoundry", vstate);
+    ValidatePrintInstructionError(dinst, "INSTRUCTION ADDRESS out of range in "
+                                  "ForgetInstructionBoundary", vstate);
     NCStatsBadTarget(vstate);
     return;
   }
@@ -629,7 +628,7 @@ static void ValidateIndirect5(const NCDecoderInst *dinst) {
     if (NCInstBytesByteInline(&andopcode, 2) !=
         (0x0ff & ~vstate->alignmask)) break;
     /* All checks look good. Make the sequence 'atomic.' */
-    ForgetInstructionBoundry(dinst, vstate);
+    ForgetInstructionBoundary(dinst, vstate);
     /* as a courtesy, check call alignment correctness */
     if (modrm_regInline(mrm) == 2) ValidateCallAlignment(dinst);
     return;
@@ -733,7 +732,7 @@ static Bool ValidateInst(const NCDecoderInst *dinst) {
   OpcodeHisto(NCInstBytesByteInline(&dinst->inst_bytes,
                                     dinst->inst.prefixbytes),
               vstate);
-  RememberInstructionBoundry(dinst, vstate);
+  RememberInstructionBoundary(dinst, vstate);
 
   cpufeatures = &(vstate->cpufeatures);
 
@@ -938,8 +937,8 @@ static Bool ValidateInstReplacement(NCDecoderStatePair* tthis,
     /* Still need to record there is an intruction here for NCValidateFinish()
      * to verify basic block alignment.
      */
-    RememberInstructionBoundry(dinst_new,
-                               NCVALIDATOR_STATE_DOWNCAST(dinst_new->dstate));
+    RememberInstructionBoundary(dinst_new,
+                                NCVALIDATOR_STATE_DOWNCAST(dinst_new->dstate));
   }
 
   if (dinst_old->opinfo->insttype == NACLi_INDIRECT
