@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_TAB_CONTENTS_TAB_CONTENTS_VIEW_GTK_H_
-#define CHROME_BROWSER_TAB_CONTENTS_TAB_CONTENTS_VIEW_GTK_H_
+#ifndef CONTENT_BROWSER_TAB_CONTENTS_TAB_CONTENTS_VIEW_GTK_H_
+#define CONTENT_BROWSER_TAB_CONTENTS_TAB_CONTENTS_VIEW_GTK_H_
 #pragma once
 
 #include <gtk/gtk.h>
@@ -13,19 +13,19 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/browser/tab_contents/tab_contents_view_helper.h"
+#include "content/common/content_export.h"
 #include "ui/base/gtk/focus_store_gtk.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/base/gtk/owned_widget_gtk.h"
 
 namespace content {
+
+class TabContentsViewWrapperGtk;
 class WebDragDestDelegate;
 class WebDragDestGtk;
 class WebDragSourceGtk;
-}
 
-class TabContentsViewWrapperGtk;
-
-class TabContentsViewGtk : public TabContentsView {
+class CONTENT_EXPORT TabContentsViewGtk : public TabContentsView {
  public:
   // The corresponding TabContents is passed in the constructor, and manages
   // our lifetime. This doesn't need to be the case, but is this way currently
@@ -43,10 +43,10 @@ class TabContentsViewGtk : public TabContentsView {
   TabContentsViewWrapperGtk* wrapper() const { return view_wrapper_.get(); }
   TabContents* tab_contents() { return tab_contents_; }
   GtkWidget* expanded_container() { return expanded_.get(); }
-  content::WebContents* web_contents();
+  WebContents* web_contents();
 
   // Allows our embeder to intercept incoming drag messages.
-  void SetDragDestDelegate(content::WebDragDestDelegate* delegate);
+  void SetDragDestDelegate(WebDragDestDelegate* delegate);
 
   // TabContentsView implementation --------------------------------------------
 
@@ -139,10 +139,10 @@ class TabContentsViewGtk : public TabContentsView {
 
   // The helper object that handles drag destination related interactions with
   // GTK.
-  scoped_ptr<content::WebDragDestGtk> drag_dest_;
+  scoped_ptr<WebDragDestGtk> drag_dest_;
 
   // Object responsible for handling drags from the page for us.
-  scoped_ptr<content::WebDragSourceGtk> drag_source_;
+  scoped_ptr<WebDragSourceGtk> drag_source_;
 
   // Our optional views wrapper. If non-NULL, we return this widget as our
   // GetNativeView() and insert |expanded_| as its child in the GtkWidget
@@ -160,4 +160,6 @@ class TabContentsViewGtk : public TabContentsView {
   DISALLOW_COPY_AND_ASSIGN(TabContentsViewGtk);
 };
 
-#endif  // CHROME_BROWSER_TAB_CONTENTS_TAB_CONTENTS_VIEW_GTK_H_
+}  // namespace content
+
+#endif  // CONTENT_BROWSER_TAB_CONTENTS_TAB_CONTENTS_VIEW_GTK_H_

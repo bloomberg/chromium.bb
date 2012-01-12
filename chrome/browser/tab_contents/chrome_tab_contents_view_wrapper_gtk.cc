@@ -6,12 +6,12 @@
 
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/tab_contents/render_view_context_menu_gtk.h"
-#include "chrome/browser/tab_contents/tab_contents_view_gtk.h"
 #include "chrome/browser/tab_contents/web_drag_bookmark_handler_gtk.h"
 #include "chrome/browser/ui/gtk/constrained_window_gtk.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host_view_gtk.h"
 #include "content/browser/tab_contents/interstitial_page.h"
+#include "content/browser/tab_contents/tab_contents_view_gtk.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/gtk/gtk_floating_container.h"
@@ -47,7 +47,8 @@ void ChromeTabContentsViewWrapperGtk::RemoveConstrainedWindow(
                        constrained_window->widget());
 }
 
-void ChromeTabContentsViewWrapperGtk::WrapView(TabContentsViewGtk* view) {
+void ChromeTabContentsViewWrapperGtk::WrapView(
+    content::TabContentsViewGtk* view) {
   view_ = view;
 
   gtk_container_add(GTK_CONTAINER(floating_.get()),

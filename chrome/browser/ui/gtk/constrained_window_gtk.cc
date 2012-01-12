@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,7 +22,7 @@
 #include "chrome/browser/ui/views/tab_contents/tab_contents_view_views.h"
 #else
 #include "chrome/browser/tab_contents/chrome_tab_contents_view_wrapper_gtk.h"
-#include "chrome/browser/tab_contents/tab_contents_view_gtk.h"
+#include "content/browser/tab_contents/tab_contents_view_gtk.h"
 #endif
 
 using content::BrowserThread;
@@ -126,8 +126,8 @@ void ConstrainedWindowGtk::FocusConstrainedWindow() {
   // TODO(estade): this define should not need to be here because this class
   // should not be used on linux/views.
 #if defined(TOOLKIT_GTK)
-    static_cast<TabContentsViewGtk*>(wrapper_->web_contents()->GetView())->
-        SetFocusedWidget(focus_widget);
+    static_cast<content::TabContentsViewGtk*>(
+        wrapper_->web_contents()->GetView())->SetFocusedWidget(focus_widget);
 #endif
   }
 }
@@ -140,8 +140,8 @@ ConstrainedWindowGtk::TabContentsViewType*
           native_tab_contents_view());
 #else
   return static_cast<TabContentsViewType*>(
-      static_cast<TabContentsViewGtk*>(wrapper_->web_contents()->GetView())->
-          wrapper());
+      static_cast<content::TabContentsViewGtk*>(
+          wrapper_->web_contents()->GetView())->wrapper());
 #endif
 }
 

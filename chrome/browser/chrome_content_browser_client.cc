@@ -125,7 +125,7 @@
 #include "chrome/browser/ui/views/tab_contents/tab_contents_view_views.h"
 #elif defined(TOOLKIT_USES_GTK)
 #include "chrome/browser/tab_contents/chrome_tab_contents_view_wrapper_gtk.h"
-#include "chrome/browser/tab_contents/tab_contents_view_gtk.h"
+#include "content/browser/tab_contents/tab_contents_view_gtk.h"
 #elif defined(OS_MACOSX)
 #include "chrome/browser/tab_contents/tab_contents_view_mac.h"
 #endif
@@ -312,8 +312,8 @@ TabContentsView* ChromeContentBrowserClient::CreateTabContentsView(
 #if defined(TOOLKIT_VIEWS)
   return new TabContentsViewViews(tab_contents);
 #elif defined(TOOLKIT_USES_GTK)
-  return new TabContentsViewGtk(tab_contents,
-                                new ChromeTabContentsViewWrapperGtk);
+  return new content::TabContentsViewGtk(tab_contents,
+                                         new ChromeTabContentsViewWrapperGtk);
 #elif defined(OS_MACOSX)
   return tab_contents_view_mac::CreateTabContentsView(tab_contents);
 #else

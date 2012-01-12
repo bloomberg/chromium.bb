@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/tab_contents/tab_contents_view_gtk.h"
+#include "content/browser/tab_contents/tab_contents_view_gtk.h"
 
 #include <gdk/gdk.h>
 #include <gdk/gdkkeysyms.h>
@@ -13,12 +13,12 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "build/build_config.h"
-#include "chrome/browser/tab_contents/tab_contents_view_wrapper_gtk.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_view_host_factory.h"
 #include "content/browser/renderer_host/render_widget_host_view_gtk.h"
 #include "content/browser/tab_contents/interstitial_page.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/browser/tab_contents/tab_contents_view_wrapper_gtk.h"
 #include "content/browser/tab_contents/web_drag_dest_gtk.h"
 #include "content/browser/tab_contents/web_drag_source_gtk.h"
 #include "content/public/browser/web_contents_delegate.h"
@@ -75,8 +75,11 @@ gboolean OnMouseScroll(GtkWidget* widget, GdkEventScroll* event,
 
 }  // namespace
 
-TabContentsViewGtk::TabContentsViewGtk(TabContents* tab_contents,
-                                       TabContentsViewWrapperGtk* view_wrapper)
+namespace content {
+
+TabContentsViewGtk::TabContentsViewGtk(
+    TabContents* tab_contents,
+    content::TabContentsViewWrapperGtk* view_wrapper)
     : tab_contents_(tab_contents),
       expanded_(gtk_expanded_container_new()),
       view_wrapper_(view_wrapper),
@@ -438,3 +441,5 @@ void TabContentsViewGtk::OnSizeAllocate(GtkWidget* widget,
   if (tab_contents_->GetInterstitialPage())
     tab_contents_->GetInterstitialPage()->SetSize(size);
 }
+
+}  // namespace content

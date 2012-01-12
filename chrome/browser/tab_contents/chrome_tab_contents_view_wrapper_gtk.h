@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/tab_contents/tab_contents_view_wrapper_gtk.h"
+#include "content/browser/tab_contents/tab_contents_view_wrapper_gtk.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/base/gtk/owned_widget_gtk.h"
 
@@ -19,7 +19,8 @@ class WebDragBookmarkHandlerGtk;
 
 // A chrome/ specific class that extends TabContentsViewGtk with features like
 // constrained windows, which live in chrome/.
-class ChromeTabContentsViewWrapperGtk : public TabContentsViewWrapperGtk {
+class ChromeTabContentsViewWrapperGtk
+    : public content::TabContentsViewWrapperGtk {
  public:
   ChromeTabContentsViewWrapperGtk();
   virtual ~ChromeTabContentsViewWrapperGtk();
@@ -30,7 +31,7 @@ class ChromeTabContentsViewWrapperGtk : public TabContentsViewWrapperGtk {
   void RemoveConstrainedWindow(ConstrainedWindowGtk* constrained_window);
 
   // Overridden from TabContentsViewGtkWrapper:
-  virtual void WrapView(TabContentsViewGtk* view) OVERRIDE;
+  virtual void WrapView(content::TabContentsViewGtk* view) OVERRIDE;
   virtual gfx::NativeView GetNativeView() const OVERRIDE;
   virtual void OnCreateViewForWidget() OVERRIDE;
   virtual void Focus() OVERRIDE;
@@ -49,7 +50,7 @@ class ChromeTabContentsViewWrapperGtk : public TabContentsViewWrapperGtk {
   ui::OwnedWidgetGtk floating_;
 
   // Our owner. Also owns our child widgets.
-  TabContentsViewGtk* view_;
+  content::TabContentsViewGtk* view_;
 
   // The UI for the constrained dialog currently displayed. This is owned by
   // TabContents, not the view.
