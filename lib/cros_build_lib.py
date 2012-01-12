@@ -4,6 +4,7 @@
 
 """Common python commands used by various build scripts."""
 
+import errno
 import os
 import re
 import signal
@@ -774,6 +775,22 @@ def YesNoPrompt(default, prompt="Do you want to continue", warning="",
       return YES
     elif response in expn:
       return NO
+
+
+def SafeMakedirs(path, mode=0775):
+  """Make parent directories if needed.  Ignore if existing.
+
+  Arguments:
+    path: The path to create.  Intermediate directories will be created as
+          needed.
+    mode: The access permissions in the style of chmod
+  """
+  try:
+    os.makedirs(path, mode)
+  except EnvironmentError, e:
+    if e.errno != errno.EEXIST:
+      raise
+
 
 # Support having this module test itself if run as __main__, by leveraging
 # the corresponding unittest module.

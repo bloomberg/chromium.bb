@@ -536,9 +536,8 @@ def _RunBuildStagesWrapper(bot_id, options, build_config):
   default_dir = os.path.join(options.buildroot, _DEFAULT_LOG_DIR)
   dirname = options.log_dir or default_dir
   log_file = os.path.join(dirname, _BUILDBOT_LOG_FILE)
-  if not os.path.isdir(dirname):
-    os.mkdir(dirname)
 
+  cros_lib.SafeMakedirs(dirname)
   _BackupPreviousLog(log_file)
   tee_proc = tee.Tee(log_file)
   tee_proc.start()
