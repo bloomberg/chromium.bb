@@ -14,6 +14,7 @@
 #include "base/stringprintf.h"
 #include "base/time.h"
 #include "base/timer.h"
+#include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/chromeos/system/runtime_environment.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
@@ -438,9 +439,16 @@ class PowerManagerClientStubImpl : public PowerManagerClient {
     callback.Run(0);
   }
 
-  virtual void NotifyScreenLockRequested() OVERRIDE {}
+  virtual void NotifyScreenLockRequested() OVERRIDE {
+    ScreenLocker::Show();
+  }
+
   virtual void NotifyScreenLockCompleted() OVERRIDE {}
-  virtual void NotifyScreenUnlockRequested() OVERRIDE {}
+
+  virtual void NotifyScreenUnlockRequested() OVERRIDE {
+    ScreenLocker::Hide();
+  }
+
   virtual void NotifyScreenUnlockCompleted() OVERRIDE {}
 
  private:
