@@ -899,9 +899,8 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
       # writing duplicate dummy rules for those outputs.
       # Same for environment.
       self.WriteLn("%s: obj := $(abs_obj)" % QuoteSpaces(outputs[0]))
-      # Needs to be before builddir is redefined in the next line!
-      self.WriteXcodeEnv(outputs[0], spec, target_relative_path=True)
       self.WriteLn("%s: builddir := $(abs_builddir)" % QuoteSpaces(outputs[0]))
+      self.WriteXcodeEnv(outputs[0], spec, target_relative_path=True)
 
       for input in inputs:
         assert ' ' not in input, (
@@ -1809,10 +1808,14 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
     for a full list."""
     if self.flavor != 'mac': return {}
 
-    built_products_dir = generator_default_variables['PRODUCT_DIR']
+    # This is the same for all targets. (This is not generally true, but is
+    # in chromium, which sets SYMROOT to a global single directory for all
+    # targets.) If necessary, emulate xcode output file placement better.
+    built_products_dir = "$(abs_builddir)"
+
+    # This is the directory containing this gyp / xcodeproj file.
     srcroot = self.path
     if target_relative_path:
-      built_products_dir = os.path.relpath(built_products_dir, srcroot)
       srcroot = '.'
 
     # These are filled in on a as-needed basis.
@@ -1923,10 +1926,6 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
       # it does not -- the backslash is written to the env as literal character.
       # So don't escape spaces in |v|.
       v = env[k]
-
-      # Xcode works purely with absolute paths. When writing env variables to
-      # mimic its usage, replace $(builddir) with $(abs_builddir).
-      v = v.replace('$(builddir)', '$(abs_builddir)')
 
       self.WriteLn('%s: export %s := %s' % (QuoteSpaces(target), k, v))
 
