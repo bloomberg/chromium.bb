@@ -30,8 +30,12 @@ a:link {
   text-decoration: none;
 }
 
+a:hover {
+  text-decoration: underline;
+}
+
 a:active {
-  color: rgb(37, 64, 113);
+  color: rgb(5, 37, 119);
 }
 
 div.checkbox,
