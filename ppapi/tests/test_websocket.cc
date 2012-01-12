@@ -42,6 +42,10 @@ const char* const kInvalidURLs[] = {
 // See section 7.4.1. of RFC 6455.
 const uint16_t kCloseCodeNormalClosure = 1000U;
 
+// Internal packet sizes.
+const uint64_t kCloseFrameSize = 6;
+const uint64_t kMessageFrameOverhead = 6;
+
 REGISTER_TEST_CASE(WebSocket);
 
 bool TestWebSocket::Init() {
@@ -73,6 +77,7 @@ void TestWebSocket::RunTests(const std::string& filter) {
   RUN_TEST_WITH_REFERENCE_CHECK(GetProtocol, filter);
   RUN_TEST_WITH_REFERENCE_CHECK(TextSendReceive, filter);
   RUN_TEST_WITH_REFERENCE_CHECK(BinarySendReceive, filter);
+  RUN_TEST_WITH_REFERENCE_CHECK(BufferedAmount, filter);
 
   RUN_TEST_WITH_REFERENCE_CHECK(CcInterfaces, filter);
 }
@@ -478,13 +483,70 @@ std::string TestWebSocket::TestBinarySendReceive() {
   PASS();
 }
 
-// TODO(toyoshim): Add tests for GetBufferedAmount().
-// For now, the function doesn't work fine because update callback in WebKit is
-// not landed yet.
+std::string TestWebSocket::TestBufferedAmount() {
+  // Connect to test echo server.
+  int32_t connect_result;
+  PP_Resource ws = Connect(kEchoServerURL, &connect_result, NULL);
+  ASSERT_TRUE(ws);
+  ASSERT_EQ(PP_OK, connect_result);
 
-// TODO(toyoshim): Add tests for didReceiveMessageError().
+  // Prepare a large message that is not aligned with the internal buffer
+  // sizes.
+  char message[8194];
+  memset(message, 'x', 8193);
+  message[8193] = 0;
+  PP_Var message_var = CreateVarString(message);
 
-// TODO(toyoshim): Add other function tests.
+  uint64_t buffered_amount = 0;
+  int32_t result;
+  for (int i = 0; i < 100; i++) {
+    result = websocket_interface_->SendMessage(ws, message_var);
+    ASSERT_EQ(PP_OK, result);
+    buffered_amount = websocket_interface_->GetBufferedAmount(ws);
+    // Buffered amount size 262144 is too big for the internal buffer size.
+    if (buffered_amount > 262144)
+      break;
+  }
+
+  // Close connection.
+  std::string reason_str = "close while busy";
+  PP_Var reason = CreateVarString(reason_str.c_str());
+  TestCompletionCallback callback(instance_->pp_instance());
+  result = websocket_interface_->Close(ws, kCloseCodeNormalClosure, reason,
+      static_cast<pp::CompletionCallback>(callback).pp_completion_callback());
+  ASSERT_EQ(PP_OK_COMPLETIONPENDING, result);
+  ASSERT_EQ(PP_WEBSOCKETREADYSTATE_CLOSING_DEV,
+      websocket_interface_->GetReadyState(ws));
+
+  result = callback.WaitForResult();
+  ASSERT_EQ(PP_OK, result);
+  ASSERT_EQ(PP_WEBSOCKETREADYSTATE_CLOSED_DEV,
+      websocket_interface_->GetReadyState(ws));
+
+  uint64_t base_buffered_amount = websocket_interface_->GetBufferedAmount(ws);
+
+  // After connection closure, all sending requests fail and just increase
+  // the bufferedAmount property.
+  PP_Var empty_string = CreateVarString("");
+  result = websocket_interface_->SendMessage(ws, empty_string);
+  ASSERT_EQ(PP_ERROR_FAILED, result);
+  buffered_amount = websocket_interface_->GetBufferedAmount(ws);
+  ASSERT_EQ(base_buffered_amount + kMessageFrameOverhead, buffered_amount);
+  base_buffered_amount = buffered_amount;
+
+  result = websocket_interface_->SendMessage(ws, reason);
+  ASSERT_EQ(PP_ERROR_FAILED, result);
+  buffered_amount = websocket_interface_->GetBufferedAmount(ws);
+  uint64_t reason_frame_size = kMessageFrameOverhead + reason_str.length();
+  ASSERT_EQ(base_buffered_amount + reason_frame_size, buffered_amount);
+
+  ReleaseVar(message_var);
+  ReleaseVar(reason);
+  ReleaseVar(empty_string);
+  core_interface_->ReleaseResource(ws);
+
+  PASS();
+}
 
 std::string TestWebSocket::TestCcInterfaces() {
   // C++ bindings is simple straightforward, then just verifies interfaces work

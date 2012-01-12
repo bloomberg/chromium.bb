@@ -43,6 +43,7 @@ class TestWebSocket : public TestCase {
   std::string TestGetProtocol();
   std::string TestTextSendReceive();
   std::string TestBinarySendReceive();
+  std::string TestBufferedAmount();
 
   std::string TestCcInterfaces();
 
