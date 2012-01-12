@@ -25,6 +25,11 @@ function DirectoryModel(root, singleSelection) {
 
   this.fileList_.prepareSort = this.prepareSort_.bind(this);
   this.autoSelectIndex_ = 0;
+
+  this.rootsList_ = new cr.ui.ArrayDataModel([]);
+  this.rootsListSelection_ = new cr.ui.ListSingleSelectionModel();
+  this.rootsListSelection_.addEventListener(
+      'change', this.onRootsSelectionChanged_.bind(this));
 }
 
 /**
@@ -67,6 +72,42 @@ DirectoryModel.prototype = {
    */
   get fileListSelection() {
     return this.fileListSelection_;
+  },
+
+  /**
+   * Top level Directories from user perspective.
+   * @type {cr.ui.ArrayDataModel}
+   */
+  get rootsList() {
+    return this.rootsList_;
+  },
+
+  /**
+   * Selection in the rootsList.
+   * @type {cr.ui.ListSingleSelectionModel}
+   */
+  get rootsListSelection() {
+    return this.rootsListSelection_;
+  },
+
+  /**
+   * Root path for the current directory (parent directory is not navigatable
+   * for the user).
+   * @type {string}
+   */
+  get rootPath() {
+    return DirectoryModel.getRootPath(this.currentEntry.fullPath);
+  },
+
+  get readonly() {
+    return this.isSystemDirectoy;
+  },
+
+  get isSystemDirectoy() {
+    var path = this.currentEntry.fullPath;
+    return path == '/' ||
+           path == '/' + DirectoryModel.REMOVABLE_DIRECTORY ||
+           path == '/' + DirectoryModel.ARCHIVE_DIRECTORY;
   },
 
   /**
@@ -342,7 +383,7 @@ DirectoryModel.prototype = {
         onDirectoryResolved,
         function(error) {
           // TODO(serya): We should show an alert.
-          console.error('Error changing directory to: ' + path + ', ' + err);
+          console.error('Error changing directory to: ' + path + ', ' + error);
         });
   },
 
@@ -369,6 +410,7 @@ DirectoryModel.prototype = {
       // is loaded at this point.
       chrome.test.sendMessage('directory-change-complete');
     }
+    this.updateRootsListSelection_();
     this.rescan(onRescanComplete);
 
     var e = new cr.Event('directory-changed');
@@ -538,5 +580,106 @@ DirectoryModel.prototype = {
       if (waitCount == 0)
         setTimeout(callback, 0);
     }
+  },
+
+  /**
+   * Get root entries asynchronously. Invokes callback
+   * when have finished.
+   */
+  resolveRoots_: function(callback) {
+    var groups = {
+      downloads: null,
+      archives: null,
+      removables: null
+    };
+
+    metrics.startInterval('Load.Roots');
+    function done() {
+      for (var i in groups)
+        if (!groups[i])
+          return;
+
+      callback(groups.downloads.
+               concat(groups.archives).
+               concat(groups.removables));
+      metrics.recordInterval('Load.Roots');
+    }
+
+    function append(index, values, opt_error) {
+      groups[index] = values;
+      done();
+    }
+
+    function onDownloads(entry) {
+      groups.downloads = [entry];
+      done();
+    }
+
+    function onDownloadsError(error) {
+      groups.downloads = [];
+      done();
+    }
+
+    var root = this.root_;
+    root.getDirectory(DirectoryModel.DOWNLOADS_DIRECTORY, { create: false },
+                      onDownloads, onDownloadsError);
+    util.readDirectory(root, DirectoryModel.ARCHIVE_DIRECTORY,
+                       append.bind(this, 'archives'));
+    util.readDirectory(root, DirectoryModel.REMOVABLE_DIRECTORY,
+                       append.bind(this, 'removables'));
+  },
+
+  updateRoots: function(opt_changeDirectoryTo) {
+    var self = this;
+    this.resolveRoots_(function(rootEntries) {
+      var dm = self.rootsList_;
+      var args = [0, dm.length].concat(rootEntries);
+      dm.splice.apply(dm, args);
+
+      self.updateRootsListSelection_();
+
+      if (opt_changeDirectoryTo)
+        self.changeDirectory(opt_changeDirectoryTo);
+    });
+  },
+
+  onRootsSelectionChanged_: function(event) {
+    var root = this.rootsList.item(this.rootsListSelection.selectedIndex);
+    var current = this.currentEntry.fullPath;
+    if (root && this.rootPath != root.fullPath)
+      this.changeDirectory(root.fullPath);
+  },
+
+  updateRootsListSelection_: function() {
+    var roots = this.rootsList_;
+    var rootPath = this.rootPath;
+    for (var index = 0; index < roots.length; index++) {
+      if (roots.item(index).fullPath == rootPath) {
+        this.rootsListSelection.selectedIndex = index;
+        return;
+      }
+    }
+    this.rootsListSelection.selectedIndex = -1;
   }
 };
+
+DirectoryModel.getRootPath = function(path) {
+  function isTop(dir) {
+    return path.substr(1, dir.length) == dir;
+  }
+
+  if (isTop(DirectoryModel.DOWNLOADS_DIRECTORY))
+    return '/' + DirectoryModel.DOWNLOADS_DIRECTORY;
+
+  function subdir(dir) {
+    var end = path.indexOf('/', dir.length + 2);
+    return end == -1 ? path : path.substr(0, end);
+  }
+
+  if (isTop(DirectoryModel.ARCHIVE_DIRECTORY))
+    return subdir(DirectoryModel.ARCHIVE_DIRECTORY);
+  if (isTop(DirectoryModel.REMOVABLE_DIRECTORY))
+    return subdir(DirectoryModel.REMOVABLE_DIRECTORY);
+  return '/';
+};
+
