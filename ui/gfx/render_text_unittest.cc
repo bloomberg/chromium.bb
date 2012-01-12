@@ -883,4 +883,35 @@ TEST_F(RenderTextTest, StringWidthTest) {
 
 #endif
 
+TEST_F(RenderTextTest, OriginForSkiaDrawing) {
+  scoped_ptr<RenderText> render_text(RenderText::CreateRenderText());
+  render_text->SetText(ASCIIToUTF16("abcdefg"));
+  render_text->SetFontList(FontList("Arial, 13px"));
+
+  // Set display area's height equals to font height.
+  int font_height = render_text->GetFont().GetHeight();
+  Rect display_rect(0, 0, 100, font_height);
+  render_text->SetDisplayRect(display_rect);
+
+  Point origin = render_text->GetOriginForSkiaDrawing();
+  EXPECT_EQ(origin.x(), 0);
+  EXPECT_EQ(origin.y(), 13);
+
+  // Set display area's height greater than font height.
+  display_rect = Rect(0, 0, 100, font_height + 2);
+  render_text->SetDisplayRect(display_rect);
+
+  origin = render_text->GetOriginForSkiaDrawing();
+  EXPECT_EQ(origin.x(), 0);
+  EXPECT_EQ(origin.y(), 14);
+
+  // Set display area's height less than font height.
+  display_rect = Rect(0, 0, 100, font_height - 2);
+  render_text->SetDisplayRect(display_rect);
+
+  origin = render_text->GetOriginForSkiaDrawing();
+  EXPECT_EQ(origin.x(), 0);
+  EXPECT_EQ(origin.y(), 12);
+}
+
 }  // namespace gfx

@@ -298,6 +298,7 @@ class UI_EXPORT RenderText {
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, StyleRangesAdjust);
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, GraphemePositions);
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, SelectionModels);
+  FRIEND_TEST_ALL_PREFIXES(RenderTextTest, OriginForSkiaDrawing);
 
   // Return an index belonging to the |next| or previous logical grapheme.
   // If |next| is false and |IsCursorablePosition(index)| is true, the result
