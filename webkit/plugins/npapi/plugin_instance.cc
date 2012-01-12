@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -462,7 +462,7 @@ uint32 PluginInstance::ScheduleTimer(uint32 interval,
   MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&PluginInstance::OnTimerCall, this, func, npp_, timer_id),
-      interval);
+      base::TimeDelta::FromMilliseconds(interval));
   return timer_id;
 }
 
@@ -504,7 +504,7 @@ void PluginInstance::OnTimerCall(void (*func)(NPP id, uint32 timer_id),
     MessageLoop::current()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&PluginInstance::OnTimerCall, this, func, npp_, timer_id),
-        info.interval);
+        base::TimeDelta::FromMilliseconds(info.interval));
   } else {
     timers_.erase(it);
   }
