@@ -440,13 +440,13 @@ are declared in build/common.gypi.
           Un&amp;mute
         </message>
         <message name="IDS_CONTENT_CONTEXT_CONTROLS" desc="The name of the Show Controls command for audio and video playback in the content area context menu">
-          Show &amp;Controls
+          Show &amp;controls
         </message>
         <message name="IDS_CONTENT_CONTEXT_ROTATECW" desc="The name of the Rotate clockwise command for media playback in the content area context menu">
-          Rotate &amp;Clockwise
+          Rotate &amp;clockwise
         </message>
         <message name="IDS_CONTENT_CONTEXT_ROTATECCW" desc="The name of the Rotate counterclockwise command for media playback in the content area context menu">
-          Rotate C&amp;ounterclockwise
+          Rotate c&amp;ounterclockwise
         </message>
 
         <message name="IDS_CONTENT_CONTEXT_SAVEVIDEOAS" desc="The name of the Save Video As command in the content area context menu">
@@ -10294,10 +10294,10 @@ Some features may be unavailable.  Please check that the profile exists and you 
           Tools
         </message>
         <message name="IDS_BOOKMARK_MANAGER_IMPORT_MENU" desc="In Title Case: Title of the import menu item in the bookmark manager.">
-          Import Bookmarks from HTML file...
+          Import Bookmarks from HTML File...
         </message>
         <message name="IDS_BOOKMARK_MANAGER_EXPORT_MENU" desc="In Title Case: Title of the export menu item in the bookmark manager.">
-          Export Bookmarks to HTML file...
+          Export Bookmarks to HTML File...
         </message>
         <message name="IDS_BOOKMARK_MANAGER_NAME_INPUT_PLACE_HOLDER" desc="In Title Case: Text to show in the URL input field when editing or creating bookmarks.">
           Name
