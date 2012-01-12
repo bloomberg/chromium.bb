@@ -16,6 +16,7 @@
 #include "chrome/browser/bookmarks/bookmark_extension_api.h"
 #include "chrome/browser/bookmarks/bookmark_manager_extension_api.h"
 #include "chrome/browser/download/download_extension_api.h"
+#include "chrome/browser/extensions/api/dns/dns_api.h"
 #include "chrome/browser/extensions/api/socket/socket_api.h"
 #include "chrome/browser/extensions/execute_code_in_tab_function.h"
 #include "chrome/browser/extensions/extension_activity_log.h"
@@ -487,6 +488,9 @@ void FactoryRegistry::ResetFunctions() {
   RegisterFunction<extensions::SocketCloseFunction>();
   RegisterFunction<extensions::SocketReadFunction>();
   RegisterFunction<extensions::SocketWriteFunction>();
+
+  // DNS
+  RegisterFunction<extensions::DNSResolveFunction>();
 
   // System
   RegisterFunction<extensions::GetIncognitoModeAvailabilityFunction>();

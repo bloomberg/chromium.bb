@@ -943,6 +943,8 @@
         'browser/enumerate_modules_model_win.h',
         'browser/event_disposition.cc',
         'browser/event_disposition.h',
+        'browser/extensions/api/dns/dns_api.cc',
+        'browser/extensions/api/dns/dns_api.h',
         'browser/extensions/api/socket/socket.cc',
         'browser/extensions/api/socket/socket.h',
         'browser/extensions/api/socket/socket_api.cc',

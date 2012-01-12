@@ -34,6 +34,7 @@ var MODULE_SCHEMAS = [
   '../api/experimental.app.json',
   '../api/experimental.bookmarkManager.json',
   '../api/experimental.clear.json',
+  '../api/experimental.dns.json',
   '../api/experimental.downloads.json',
   '../api/experimental.infobars.json',
   '../api/experimental.input.ime.json',

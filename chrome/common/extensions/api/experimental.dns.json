@@ -1,0 +1,42 @@
+[
+  {
+    "namespace": "experimental.dns",
+    "nodoc": true,
+    "functions": [
+      {
+        "name": "resolve",
+        "type": "function",
+        "description": "Resolves the given hostname or IP address literal.",
+        "parameters": [
+          {
+	    "name": "hostname",
+            "type": "string",
+            "description": "The hostname to resolve."
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "description": "Called when the resolution operation completes.",
+            "parameters": [
+              {
+                "type": "object",
+                "name": "resolveInfo",
+                "properties": {
+                  "resultCode": {
+	            "type": "integer",
+                    "description": "The result code. Zero indicates success."
+                  },
+                  "address": {
+                    "type": "string",
+                    "description": "A string representing the IP address literal. Supplied only if resultCode indicates success. Note that we presently return only IPv4 addresses.",
+                    "optional": true
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]

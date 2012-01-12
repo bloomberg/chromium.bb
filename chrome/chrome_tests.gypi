@@ -2537,6 +2537,7 @@
         'browser/errorpage_browsertest.cc',
         'browser/extensions/alert_apitest.cc',
         'browser/extensions/all_urls_apitest.cc',
+        'browser/extensions/api/dns/dns_apitest.cc',
         'browser/extensions/api/socket/socket_apitest.cc',
         'browser/extensions/api/socket/test_echo_server_udp.cc',
         'browser/extensions/api/socket/test_echo_server_udp.h',
