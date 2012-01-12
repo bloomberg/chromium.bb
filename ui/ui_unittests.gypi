@@ -30,6 +30,9 @@
     {
       'target_name': 'ui_unittests',
       'type': 'executable',
+      'includes': [
+        'base/ime/ime_unittests.gypi',
+      ],
       'dependencies': [
         '../base/base.gyp:base',
         '../base/base.gyp:test_support_base',
@@ -54,8 +57,6 @@
         'base/cocoa/events_mac_unittest.mm',
         'base/gtk/gtk_expanded_container_unittest.cc',
         'base/gtk/gtk_im_context_util_unittest.cc',
-        'base/ime/character_composer_unittest.cc',
-        'base/ime/input_method_ibus_unittest.cc',
         'base/l10n/l10n_util_mac_unittest.mm',
         'base/l10n/l10n_util_unittest.cc',
         'base/models/list_model_unittest.cc',
@@ -156,12 +157,6 @@
             }],
           ],
         }],
-        ['use_x11 == 0', {
-          'sources!': [
-            'base/ime/character_composer_unittest.cc',
-            'base/ime/input_method_ibus_unittest.cc',
-          ],
-        }],
         ['toolkit_uses_gtk == 1', {
           'sources': [
             'base/dragdrop/gtk_dnd_util_unittest.cc',
@@ -179,11 +174,6 @@
           'sources!': [
             'base/view_prop_unittest.cc',
             'gfx/screen_unittest.cc',
-          ],
-        }, { # else: use_aura != 1
-          'sources/': [
-            ['exclude', 'base/ime/character_composer_unittest.cc'],
-            ['exclude', 'base/ime/input_method_ibus_unittest.cc'],
           ],
         }],
       ],
