@@ -1283,8 +1283,7 @@ void ResourceDispatcherHost::RemovePendingRequest(
   // Delete lazily as this will also delete |info|, triggering the
   // ResourceHandler::OnRequestClosed notification.  This way we avoid
   // re-entering a ResourceHandler that is calling CancelRequest.
-  iter->second->set_delegate(NULL);
-  MessageLoop::current()->DeleteSoon(FROM_HERE, iter->second);
+  DeleteRequestSoon(iter->second);
 
   pending_requests_.erase(iter);
 
@@ -1716,6 +1715,14 @@ void ResourceDispatcherHost::ResumeRequest(const GlobalRequestID& request_id) {
   } else {
     OnResponseStarted(i->second);
   }
+}
+
+void ResourceDispatcherHost::DeleteRequestSoon(net::URLRequest* request) {
+  // Drop external references as these may be deleted before the request.
+  request->set_delegate(NULL);
+  request->set_context(NULL);
+
+  MessageLoop::current()->DeleteSoon(FROM_HERE, request);
 }
 
 void ResourceDispatcherHost::StartReading(net::URLRequest* request) {
