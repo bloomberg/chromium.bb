@@ -184,9 +184,8 @@ void BaseLoginDisplayHost::RegisterPrefs(PrefService* local_state) {
 
 void BaseLoginDisplayHost::OnSessionStart() {
   DVLOG(1) << "Session starting";
-  // In Aura case wait for first tab starting loading (NOTIFICATION_LOAD_START),
-  // then start transition animation. Display host is deleted once animation
-  // completes since sign in screen widget has to stay alive.
+  // Display host is deleted once animation is completed
+  // since sign in screen widget has to stay alive.
 #if defined(USE_AURA)
   if (kEnableSigninTransitions)
     StartAnimation();
