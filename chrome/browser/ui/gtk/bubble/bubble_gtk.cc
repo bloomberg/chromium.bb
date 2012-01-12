@@ -44,32 +44,6 @@ const int kRightMargin = kCornerSize - 1;
 const GdkColor kBackgroundColor = GDK_COLOR_RGB(0xff, 0xff, 0xff);
 const GdkColor kFrameColor = GDK_COLOR_RGB(0x63, 0x63, 0x63);
 
-// Helper functions that encapsulate arrow locations.
-bool HasArrow(BubbleGtk::ArrowLocationGtk location) {
-  return location != BubbleGtk::ARROW_LOCATION_NONE &&
-      location != BubbleGtk::ARROW_LOCATION_FLOAT;
-}
-
-bool IsArrowLeft(BubbleGtk::ArrowLocationGtk location) {
-  return location == BubbleGtk::ARROW_LOCATION_TOP_LEFT ||
-      location == BubbleGtk::ARROW_LOCATION_BOTTOM_LEFT;
-}
-
-bool IsArrowRight(BubbleGtk::ArrowLocationGtk location) {
-  return location == BubbleGtk::ARROW_LOCATION_TOP_RIGHT ||
-      location == BubbleGtk::ARROW_LOCATION_BOTTOM_RIGHT;
-}
-
-bool IsArrowTop(BubbleGtk::ArrowLocationGtk location) {
-  return location == BubbleGtk::ARROW_LOCATION_TOP_LEFT ||
-      location == BubbleGtk::ARROW_LOCATION_TOP_RIGHT;
-}
-
-bool IsArrowBottom(BubbleGtk::ArrowLocationGtk location) {
-  return location == BubbleGtk::ARROW_LOCATION_BOTTOM_LEFT ||
-      location == BubbleGtk::ARROW_LOCATION_BOTTOM_RIGHT;
-}
-
 }  // namespace
 
 // static
@@ -223,9 +197,7 @@ std::vector<GdkPoint> BubbleGtk::MakeFramePolygonPoints(
   using gtk_util::MakeBidiGdkPoint;
   std::vector<GdkPoint> points;
 
-  int top_arrow_size = IsArrowTop(arrow_location) ? kArrowSize : 0;
-  int bottom_arrow_size = IsArrowBottom(arrow_location) ? kArrowSize : 0;
-  bool on_left = IsArrowLeft(arrow_location);
+  bool on_left = (arrow_location == ARROW_LOCATION_TOP_LEFT);
 
   // If we're stroking the frame, we need to offset some of our points by 1
   // pixel.  We do this when we draw horizontal lines that are on the bottom or
@@ -239,61 +211,37 @@ std::vector<GdkPoint> BubbleGtk::MakeFramePolygonPoints(
 
   // Top left corner.
   points.push_back(MakeBidiGdkPoint(
-      x_off_r, top_arrow_size + kCornerSize - 1, width, on_left));
+      x_off_r, kArrowSize + kCornerSize - 1, width, on_left));
   points.push_back(MakeBidiGdkPoint(
-      kCornerSize + x_off_r - 1, top_arrow_size, width, on_left));
+      kCornerSize + x_off_r - 1, kArrowSize, width, on_left));
 
-  // The top arrow.
-  if (top_arrow_size) {
-    points.push_back(MakeBidiGdkPoint(
-        kArrowX - top_arrow_size + x_off_r, top_arrow_size, width, on_left));
-    points.push_back(MakeBidiGdkPoint(
-        kArrowX + x_off_r, 0, width, on_left));
-    points.push_back(MakeBidiGdkPoint(
-        kArrowX + 1 + x_off_l, 0, width, on_left));
-    points.push_back(MakeBidiGdkPoint(
-        kArrowX + top_arrow_size + 1 + x_off_l, top_arrow_size,
-        width, on_left));
-  }
+  // The arrow.
+  points.push_back(MakeBidiGdkPoint(
+      kArrowX - kArrowSize + x_off_r, kArrowSize, width, on_left));
+  points.push_back(MakeBidiGdkPoint(
+      kArrowX + x_off_r, 0, width, on_left));
+  points.push_back(MakeBidiGdkPoint(
+      kArrowX + 1 + x_off_l, 0, width, on_left));
+  points.push_back(MakeBidiGdkPoint(
+      kArrowX + kArrowSize + 1 + x_off_l, kArrowSize, width, on_left));
 
   // Top right corner.
   points.push_back(MakeBidiGdkPoint(
-      width - kCornerSize + 1 + x_off_l, top_arrow_size, width, on_left));
+      width - kCornerSize + 1 + x_off_l, kArrowSize, width, on_left));
   points.push_back(MakeBidiGdkPoint(
-      width + x_off_l, top_arrow_size + kCornerSize - 1, width, on_left));
+      width + x_off_l, kArrowSize + kCornerSize - 1, width, on_left));
 
   // Bottom right corner.
   points.push_back(MakeBidiGdkPoint(
-      width + x_off_l, height - bottom_arrow_size - kCornerSize,
-      width, on_left));
+      width + x_off_l, height - kCornerSize, width, on_left));
   points.push_back(MakeBidiGdkPoint(
-      width - kCornerSize + x_off_r, height - bottom_arrow_size + y_off,
-      width, on_left));
-
-  // The bottom arrow.
-  if (bottom_arrow_size) {
-    points.push_back(MakeBidiGdkPoint(
-        kArrowX + bottom_arrow_size + 1 + x_off_l,
-        height - bottom_arrow_size + y_off,
-        width,
-        on_left));
-    points.push_back(MakeBidiGdkPoint(
-        kArrowX + 1 + x_off_l, height + y_off, width, on_left));
-    points.push_back(MakeBidiGdkPoint(
-        kArrowX + x_off_r, height + y_off, width, on_left));
-    points.push_back(MakeBidiGdkPoint(
-        kArrowX - bottom_arrow_size + x_off_r,
-        height - bottom_arrow_size + y_off,
-        width,
-        on_left));
-  }
+      width - kCornerSize + x_off_r, height + y_off, width, on_left));
 
   // Bottom left corner.
   points.push_back(MakeBidiGdkPoint(
-      kCornerSize + x_off_l, height -bottom_arrow_size + y_off,
-      width, on_left));
+      kCornerSize + x_off_l, height + y_off, width, on_left));
   points.push_back(MakeBidiGdkPoint(
-      x_off_r, height - bottom_arrow_size - kCornerSize, width, on_left));
+      x_off_r, height - kCornerSize, width, on_left));
 
   return points;
 }
@@ -301,46 +249,20 @@ std::vector<GdkPoint> BubbleGtk::MakeFramePolygonPoints(
 BubbleGtk::ArrowLocationGtk BubbleGtk::GetArrowLocation(
     ArrowLocationGtk preferred_location,
     int arrow_x,
-    int arrow_y,
-    int width,
-    int height) {
+    int width) {
+  bool wants_left = (preferred_location == ARROW_LOCATION_TOP_LEFT);
   int screen_width = gdk_screen_get_width(gdk_screen_get_default());
-  int screen_height = gdk_screen_get_height(gdk_screen_get_default());
 
-  // Choose whether we should show this bubble above the specified location or
-  // below it.
-  bool wants_top = IsArrowTop(preferred_location) ||
-      preferred_location == ARROW_LOCATION_NONE;
-  bool top_is_onscreen = (arrow_y + height < screen_height);
-  bool bottom_is_onscreen = (arrow_y - height >= 0);
-
-  ArrowLocationGtk arrow_location_none;
-  ArrowLocationGtk arrow_location_left;
-  ArrowLocationGtk arrow_location_right;
-  if (top_is_onscreen && (wants_top || !bottom_is_onscreen)) {
-    arrow_location_none = ARROW_LOCATION_NONE;
-    arrow_location_left = ARROW_LOCATION_TOP_LEFT;
-    arrow_location_right =ARROW_LOCATION_TOP_RIGHT;
-  } else {
-    arrow_location_none = ARROW_LOCATION_FLOAT;
-    arrow_location_left = ARROW_LOCATION_BOTTOM_LEFT;
-    arrow_location_right =ARROW_LOCATION_BOTTOM_RIGHT;
-  }
-
-  if (!HasArrow(preferred_location))
-    return arrow_location_none;
-
-  bool wants_left = IsArrowLeft(preferred_location);
   bool left_is_onscreen = (arrow_x - kArrowX + width < screen_width);
   bool right_is_onscreen = (arrow_x + kArrowX - width >= 0);
 
   // Use the requested location if it fits onscreen, use whatever fits
   // otherwise, and use the requested location if neither fits.
   if (left_is_onscreen && (wants_left || !right_is_onscreen))
-    return arrow_location_left;
+    return ARROW_LOCATION_TOP_LEFT;
   if (right_is_onscreen && (!wants_left || !left_is_onscreen))
-    return arrow_location_right;
-  return (wants_left ? arrow_location_left : arrow_location_right);
+    return ARROW_LOCATION_TOP_RIGHT;
+  return (wants_left ? ARROW_LOCATION_TOP_LEFT : ARROW_LOCATION_TOP_RIGHT);
 }
 
 bool BubbleGtk::UpdateArrowLocation(bool force_move_and_reshape) {
@@ -360,9 +282,7 @@ bool BubbleGtk::UpdateArrowLocation(bool force_move_and_reshape) {
   current_arrow_location_ = GetArrowLocation(
       preferred_arrow_location_,
       toplevel_x + offset_x + (rect_.width() / 2),  // arrow_x
-      toplevel_y + offset_y,
-      allocation.width,
-      allocation.height);
+      allocation.width);
 
   if (force_move_and_reshape || current_arrow_location_ != old_location) {
     UpdateWindowShape();
@@ -405,16 +325,10 @@ void BubbleGtk::MoveWindow() {
   gtk_widget_translate_coordinates(anchor_widget_, toplevel_window_,
                                    rect_.x(), rect_.y(), &offset_x, &offset_y);
 
-  GtkAllocation allocation;
-  gtk_widget_get_allocation(window_, &allocation);
-
   gint screen_x = 0;
-  if (!HasArrow(current_arrow_location_)) {
-    screen_x =
-        toplevel_x + offset_x + (rect_.width() / 2) - allocation.width / 2;
-  } else if (IsArrowLeft(current_arrow_location_)) {
+  if (current_arrow_location_ == ARROW_LOCATION_TOP_LEFT) {
     screen_x = toplevel_x + offset_x + (rect_.width() / 2) - kArrowX;
-  } else if (IsArrowRight(current_arrow_location_)) {
+  } else if (current_arrow_location_ == ARROW_LOCATION_TOP_RIGHT) {
     GtkAllocation allocation;
     gtk_widget_get_allocation(window_, &allocation);
     screen_x = toplevel_x + offset_x + (rect_.width() / 2) -
@@ -423,13 +337,8 @@ void BubbleGtk::MoveWindow() {
     NOTREACHED();
   }
 
-  gint screen_y = toplevel_y + offset_y + rect_.height();
-  if (IsArrowTop(current_arrow_location_) ||
-      current_arrow_location_ == ARROW_LOCATION_NONE) {
-    screen_y += kArrowToContentPadding;
-  } else {
-    screen_y -= allocation.height + kArrowToContentPadding;
-  }
+  gint screen_y = toplevel_y + offset_y + rect_.height() +
+                  kArrowToContentPadding;
 
   gtk_window_move(GTK_WINDOW(window_), screen_x, screen_y);
 }
@@ -574,7 +483,7 @@ void BubbleGtk::OnSizeAllocate(GtkWidget* widget,
                                GtkAllocation* allocation) {
   if (!UpdateArrowLocation(false)) {
     UpdateWindowShape();
-    if (current_arrow_location_ != ARROW_LOCATION_TOP_LEFT)
+    if (current_arrow_location_ == ARROW_LOCATION_TOP_RIGHT)
       MoveWindow();
   }
 }
