@@ -175,12 +175,9 @@
       <include name="IDR_OMNIBOX_STAR" file="omnibox_star.png" type="BINDATA" />
       <include name="IDR_OMNIBOX_STAR_DARK" file="omnibox_star_dark.png" type="BINDATA" />
       <include name="IDR_OMNIBOX_STAR_SELECTED" file="omnibox_star_selected.png" type="BINDATA" />
-      <include name="IDR_OMNIBOX_TTS_KEYWORD" file="omnibox_tts_keyword.png" type="BINDATA" />
-      <include name="IDR_OMNIBOX_TTS_KEYWORD_DARK" file="omnibox_tts_keyword_dark.png" type="BINDATA" />
-      <include name="IDR_OMNIBOX_TTS_KEYWORD_SELECTED" file="omnibox_tts_keyword_selected.png" type="BINDATA" />
-      <include name="IDR_OMNIBOX_TTS_NORMAL" file="omnibox_tts_normal.png" type="BINDATA" />
-      <include name="IDR_OMNIBOX_TTS_NORMAL_DARK" file="omnibox_tts_normal_dark.png" type="BINDATA" />
-      <include name="IDR_OMNIBOX_TTS_NORMAL_SELECTED" file="omnibox_tts_normal_selected.png" type="BINDATA" />
+      <include name="IDR_OMNIBOX_TTS" file="omnibox_tts.png" type="BINDATA" />
+      <include name="IDR_OMNIBOX_TTS_DARK" file="omnibox_tts_dark.png" type="BINDATA" />
+      <include name="IDR_OMNIBOX_TTS_SELECTED" file="omnibox_tts_selected.png" type="BINDATA" />
       <include name="IDR_OPT_IN_BUTTON" file="opt_in_button.png" type="BINDATA" />
       <include name="IDR_OPT_IN_BUTTON_P" file="opt_in_button_p.png" type="BINDATA" />
       <include name="IDR_OTR_ICON" file="otr_icon.png" type="BINDATA" />
