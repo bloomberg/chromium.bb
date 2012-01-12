@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -363,10 +363,10 @@ void PrintPreviewHandler::HandlePrint(const ListValue* args) {
                        regenerate_preview_request_count_);
 
   TabContentsWrapper* initiator_tab = GetInitiatorTab();
-  CHECK(initiator_tab);
-
-  RenderViewHost* init_rvh = initiator_tab->web_contents()->GetRenderViewHost();
-  init_rvh->Send(new PrintMsg_ResetScriptedPrintCount(init_rvh->routing_id()));
+  if (initiator_tab) {
+    RenderViewHost* rvh = initiator_tab->web_contents()->GetRenderViewHost();
+    rvh->Send(new PrintMsg_ResetScriptedPrintCount(rvh->routing_id()));
+  }
 
   scoped_ptr<DictionaryValue> settings(GetSettingsDictionary(args));
   if (!settings.get())
@@ -435,7 +435,8 @@ void PrintPreviewHandler::HandlePrint(const ListValue* args) {
     RenderViewHost* rvh = web_ui()->web_contents()->GetRenderViewHost();
     rvh->Send(new PrintMsg_PrintForPrintPreview(rvh->routing_id(), *settings));
   }
-  initiator_tab->print_view_manager()->PrintPreviewDone();
+  if (initiator_tab)
+    initiator_tab->print_view_manager()->PrintPreviewDone();
 }
 
 void PrintPreviewHandler::HandlePrintToPdf(
