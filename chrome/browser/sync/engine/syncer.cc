@@ -273,12 +273,15 @@ void Syncer::SyncShare(sessions::SyncSession* session,
         apply_updates.Execute(session);
         int after_blocking_conflicting_updates =
             status->TotalNumBlockingConflictingItems();
+        // If the following call sets the conflicts_resolved value to true,
+        // SyncSession::HasMoreToSync() will send us into another sync cycle
+        // after this one completes.
+        //
+        // TODO(rlarocque, 109072): Make conflict resolution not require
+        // extra sync cycles/GetUpdates.
         status->update_conflicts_resolved(before_blocking_conflicting_updates >
                                           after_blocking_conflicting_updates);
-        if (status->conflicts_resolved())
-          next_step = RESOLVE_CONFLICTS;
-        else
-          next_step = SYNCER_END;
+        next_step = SYNCER_END;
         break;
       }
       case CLEAR_PRIVATE_DATA: {

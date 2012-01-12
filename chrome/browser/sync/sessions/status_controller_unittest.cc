@@ -130,6 +130,14 @@ TEST_F(StatusControllerTest, ReadYourWrites) {
   status.set_syncer_stuck(true);
   EXPECT_TRUE(status.syncer_status().syncer_stuck);
 
+  EXPECT_FALSE(status.conflicts_resolved());
+  status.update_conflicts_resolved(true);
+  EXPECT_TRUE(status.conflicts_resolved());
+
+  EXPECT_FALSE(status.conflict_sets_built());
+  status.update_conflict_sets_built(true);
+  EXPECT_TRUE(status.conflict_sets_built());
+
   status.set_last_download_updates_result(SYNCER_OK);
   EXPECT_EQ(SYNCER_OK, status.error().last_download_updates_result);
 

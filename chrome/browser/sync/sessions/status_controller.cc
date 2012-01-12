@@ -234,7 +234,7 @@ void StatusController::update_conflict_sets_built(bool built) {
   shared_.control_params.conflict_sets_built |= built;
 }
 void StatusController::update_conflicts_resolved(bool resolved) {
-  shared_.control_params.conflict_sets_built |= resolved;
+  shared_.control_params.conflicts_resolved |= resolved;
 }
 void StatusController::reset_conflicts_resolved() {
   shared_.control_params.conflicts_resolved = false;
