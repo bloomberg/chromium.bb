@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -409,7 +409,7 @@ TaskManager.prototype = {
     // Splice takes the to-be-spliced-in array as individual parameters,
     // rather than as an array, so we need to perform some acrobatics...
     var args = [].slice.call(tasks);
-    args.unshift(start, dm.length);
+    args.unshift(start, length);
 
     sm.beginChange();
     var oldSelectedIndexes = sm.selectedIndexes;
