@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,14 +33,6 @@ class PPAPI_SHARED_EXPORT ProxyLock {
   static void Acquire();
   // Relinquish the proxy lock. If the lock has not been set, this does nothing.
   static void Release();
-
-  // Set the lock that ProxyLock will use. The caller is responsible for
-  // ensuring that the lock stays valid so long as the ProxyLock may be in use.
-  static void Set(base::Lock* lock);
-  // Set the lock to NULL.
-  static void Reset();
- private:
-  static base::Lock* lock_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(ProxyLock);
 };

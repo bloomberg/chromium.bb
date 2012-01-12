@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -71,9 +71,7 @@ HostDispatcher::HostDispatcher(base::ProcessHandle remote_process_handle,
     g_module_to_dispatcher = new ModuleToDispatcherMap;
   (*g_module_to_dispatcher)[pp_module_] = this;
 
-  const PPB_Var* var_interface =
-      static_cast<const PPB_Var*>(local_get_interface(PPB_VAR_INTERFACE));
-  SetSerializationRules(new HostVarSerializationRules(var_interface, module));
+  SetSerializationRules(new HostVarSerializationRules(module));
 
   ppb_proxy_ = reinterpret_cast<const PPB_Proxy_Private*>(
       local_get_interface(PPB_PROXY_PRIVATE_INTERFACE));

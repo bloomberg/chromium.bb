@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,17 +18,9 @@ namespace ppapi {
 namespace proxy {
 
 PluginResourceTracker::PluginResourceTracker() {
-#ifdef ENABLE_PEPPER_THREADING
-  // Set the global proxy lock, since the plugin-side of the proxy needs to be
-  // synchronized.
-  ppapi::ProxyLock::Set(&proxy_lock_);
-#endif
 }
 
 PluginResourceTracker::~PluginResourceTracker() {
-#ifdef ENABLE_PEPPER_THREADING
-  ppapi::ProxyLock::Reset();
-#endif
 }
 
 PP_Resource PluginResourceTracker::PluginResourceForHostResource(

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,8 @@
 #include "ppapi/c/private/ppb_flash_fullscreen.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/ppapi_proxy_test.h"
+#include "ppapi/shared_impl/ppb_view_shared.h"
+#include "ppapi/shared_impl/scoped_pp_resource.h"
 
 namespace ppapi {
 namespace proxy {
@@ -114,10 +116,11 @@ TEST_F(PPP_Instance_ProxyTest, PPPInstance1_0) {
   host().RegisterTestInterface(PPB_FULLSCREEN_INTERFACE,
                                &ppb_fullscreen);
 
-  // Grab the host-side proxy for the 1.0 interface.
-  const PPP_Instance_1_0* ppp_instance = static_cast<const PPP_Instance_1_0*>(
+  // Grab the host-side proxy for the interface. The browser only speaks 1.1,
+  // while the proxy ensures support for the 1.0 version on the plugin side.
+  const PPP_Instance_1_1* ppp_instance = static_cast<const PPP_Instance_1_1*>(
       host().host_dispatcher()->GetProxiedInterface(
-          PPP_INSTANCE_INTERFACE_1_0));
+          PPP_INSTANCE_INTERFACE_1_1));
 
   // Call each function in turn, make sure we get the expected values and
   // returns.
@@ -140,6 +143,8 @@ TEST_F(PPP_Instance_ProxyTest, PPPInstance1_0) {
   uint32_t expected_argc = expected_argn.size();
   bool_to_return = PP_TRUE;
   ResetReceived();
+  // Tell the host resource tracker about the instance.
+  host().resource_tracker().DidCreateInstance(expected_instance);
   EXPECT_EQ(bool_to_return, ppp_instance->DidCreate(expected_instance,
                                                     expected_argc,
                                                     &argn_to_pass[0],
@@ -151,9 +156,17 @@ TEST_F(PPP_Instance_ProxyTest, PPPInstance1_0) {
 
   PP_Rect expected_position = { {1, 2}, {3, 4} };
   PP_Rect expected_clip = { {5, 6}, {7, 8} };
+  ViewData data;
+  data.rect = expected_position;
+  data.is_fullscreen = false;
+  data.is_page_visible = true;
+  data.clip_rect = expected_clip;
   ResetReceived();
-  ppp_instance->DidChangeView(expected_instance, &expected_position,
-                              &expected_clip);
+  ScopedPPResource view_resource(
+      ScopedPPResource::PassRef(),
+      (new PPB_View_Shared(PPB_View_Shared::InitAsImpl(),
+                           expected_instance, data))->GetReference());
+  ppp_instance->DidChangeView(expected_instance, view_resource);
   did_change_view_called.Wait();
   EXPECT_EQ(received_instance, expected_instance);
   EXPECT_EQ(received_position.point.x, expected_position.point.x);
@@ -176,6 +189,8 @@ TEST_F(PPP_Instance_ProxyTest, PPPInstance1_0) {
   //                  HandleResourceLoad. It also requires
   //                  PPB_Core.AddRefResource and for PPB_URLLoader to be
   //                  registered.
+
+  host().resource_tracker().DidDeleteInstance(expected_instance);
 }
 
 }  // namespace proxy

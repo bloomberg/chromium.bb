@@ -1,7 +1,11 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
+#include "base/message_loop.h"
+#include "base/test/test_timeouts.h"
+#include "base/time.h"
 #include "ppapi/c/dev/ppb_var_deprecated.h"
 #include "ppapi/c/dev/ppp_class_deprecated.h"
 #include "ppapi/c/pp_var.h"
@@ -10,18 +14,31 @@
 #include "ppapi/c/private/ppp_instance_private.h"
 #include "ppapi/proxy/host_dispatcher.h"
 #include "ppapi/proxy/ppapi_proxy_test.h"
+#include "ppapi/shared_impl/ppb_var_shared.h"
+#include "ppapi/shared_impl/var.h"
 
 namespace ppapi {
+
+// A fake version of NPObjectVar for testing.
+class NPObjectVar : public ppapi::Var {
+ public:
+  NPObjectVar() {}
+  virtual ~NPObjectVar() {}
+
+  // Var overrides.
+  virtual NPObjectVar* AsNPObjectVar() OVERRIDE { return this; }
+  virtual PP_VarType GetType() const OVERRIDE { return PP_VARTYPE_OBJECT; }
+};
+
 namespace proxy {
 
 namespace {
 const PP_Instance kInstance = 0xdeadbeef;
 
-PP_Var MakeObjectVar(int64_t object_id) {
-  PP_Var ret;
-  ret.type = PP_VARTYPE_OBJECT;
-  ret.value.as_id = object_id;
-  return ret;
+PP_Var GetPPVarNoAddRef(Var* var) {
+  PP_Var var_to_return = var->GetPPVar();
+  PpapiGlobals::Get()->GetVarTracker()->ReleaseVar(var_to_return);
+  return var_to_return;
 }
 
 PluginDispatcher* plugin_dispatcher = NULL;
@@ -40,7 +57,8 @@ PP_Var instance_obj;
 PP_Var GetInstanceObject(PP_Instance /*instance*/) {
   // The 1 ref we got from CreateObject will be passed to the host. We want to
   // have a ref of our own.
-  plugin_var_deprecated_if()->AddRef(instance_obj);
+  printf("GetInstanceObject called\n");
+  PpapiGlobals::Get()->GetVarTracker()->AddRefVar(instance_obj);
   return instance_obj;
 }
 
@@ -67,41 +85,19 @@ void DidDestroy(PP_Instance /*instance*/) {
 
 PPP_Instance_1_0 ppp_instance_mock = { &DidCreate, &DidDestroy };
 
-}  // namespace
-
 // Mock PPB_Var_Deprecated, so that we can emulate creating an Object Var.
-std::map<int64_t, int> id_refcount_map;
-void AddRefVar(PP_Var var) {
-  CHECK(var.type >= PP_VARTYPE_STRING);  // Must be a ref-counted type.
-  CHECK(id_refcount_map.find(var.value.as_id) != id_refcount_map.end());
-  ++id_refcount_map[var.value.as_id];
-}
-
-void ReleaseVar(PP_Var var) {
-  CHECK(var.type >= PP_VARTYPE_STRING);  // Must be a ref-counted type.
-  std::map<int64_t, int>::iterator iter = id_refcount_map.find(var.value.as_id);
-  CHECK(iter != id_refcount_map.end());
-  CHECK(iter->second > 0);
-  if (--(iter->second) == 0)
-    id_refcount_map.erase(iter);
-}
-
-PP_Var CreateObject(PP_Instance instance,
+PP_Var CreateObject(PP_Instance /*instance*/,
                     const PPP_Class_Deprecated* /*ppp_class*/,
                     void* /*ppp_class_data*/) {
-  static int64_t last_id = 0;
-  ++last_id;
-  // Set the refcount to 0. It should really be 1, but that ref gets passed to
-  // the plugin immediately (and we don't emulate all of that behavior here).
-  id_refcount_map[last_id] = 0;
-  return MakeObjectVar(last_id);
+  NPObjectVar* obj_var = new NPObjectVar;
+  return obj_var->GetPPVar();
 }
 
 const PPB_Var_Deprecated ppb_var_deprecated_mock = {
-  &AddRefVar,
-  &ReleaseVar,
-  NULL, // VarFromUtf8
-  NULL, // VarToUtf8
+  PPB_Var_Shared::GetVarInterface1_0()->AddRef,
+  PPB_Var_Shared::GetVarInterface1_0()->Release,
+  PPB_Var_Shared::GetVarInterface1_0()->VarFromUtf8,
+  PPB_Var_Shared::GetVarInterface1_0()->VarToUtf8,
   NULL, // HasProperty
   NULL, // HasMethod
   NULL, // GetProperty
@@ -114,7 +110,7 @@ const PPB_Var_Deprecated ppb_var_deprecated_mock = {
   &CreateObject
 };
 
-const PPB_Var ppb_var_mock = { &AddRefVar, &ReleaseVar };
+}  // namespace
 
 class PPP_Instance_Private_ProxyTest : public TwoWayTest {
  public:
@@ -126,8 +122,6 @@ class PPP_Instance_Private_ProxyTest : public TwoWayTest {
                                      &ppp_instance_mock);
       host().RegisterTestInterface(PPB_VAR_DEPRECATED_INTERFACE,
                                    &ppb_var_deprecated_mock);
-      host().RegisterTestInterface(PPB_VAR_INTERFACE,
-                                   &ppb_var_mock);
   }
 };
 
@@ -146,44 +140,43 @@ TEST_F(PPP_Instance_Private_ProxyTest, PPPInstancePrivate) {
       static_cast<const PPP_Instance_Private*>(
           host().host_dispatcher()->GetProxiedInterface(
               PPP_INSTANCE_PRIVATE_INTERFACE));
-  const PPP_Instance_1_0* ppp_instance = static_cast<const PPP_Instance_1_0*>(
+  const PPP_Instance_1_1* ppp_instance = static_cast<const PPP_Instance_1_1*>(
       host().host_dispatcher()->GetProxiedInterface(
-          PPP_INSTANCE_INTERFACE_1_0));
+          PPP_INSTANCE_INTERFACE_1_1));
 
   // Initialize an Instance, so that the plugin-side machinery will work
   // properly.
   EXPECT_EQ(PP_TRUE, ppp_instance->DidCreate(kInstance, 0, NULL, NULL));
 
-  // Now instance_obj is valid and should have a ref-count of 1.
-  PluginVarTracker& plugin_var_tracker =
-      *PluginGlobals::Get()->plugin_var_tracker();
   // Check the plugin-side reference count.
-  EXPECT_EQ(1, plugin_var_tracker.GetRefCountForObject(instance_obj));
-  // Check the host-side var and reference count.
-  ASSERT_EQ(1u, id_refcount_map.size());
-  EXPECT_EQ(plugin_var_tracker.GetHostObject(instance_obj).value.as_id,
-            id_refcount_map.begin()->first);
-  EXPECT_EQ(0, id_refcount_map.begin()->second);
+  EXPECT_EQ(1, plugin().var_tracker().GetRefCountForObject(instance_obj));
+  // Check the host-side var exists with the expected id and has 1 refcount (the
+  // refcount on behalf of the plugin).
+  int32 expected_host_id =
+      plugin().var_tracker().GetHostObject(instance_obj).value.as_id;
+  Var* host_var = host().var_tracker().GetVar(expected_host_id);
+  ASSERT_TRUE(host_var);
+  EXPECT_EQ(
+      1,
+      host().var_tracker().GetRefCountForObject(GetPPVarNoAddRef(host_var)));
 
   // Call from the browser side to get the instance object.
-  PP_Var host_obj = ppp_instance_private->GetInstanceObject(kInstance);
-  EXPECT_EQ(instance_obj.type, host_obj.type);
-  EXPECT_EQ(host_obj.value.as_id,
-            plugin_var_tracker.GetHostObject(instance_obj).value.as_id);
-  EXPECT_EQ(1, plugin_var_tracker.GetRefCountForObject(instance_obj));
-  ASSERT_EQ(1u, id_refcount_map.size());
-  // The browser should be passed a reference.
-  EXPECT_EQ(1, id_refcount_map.begin()->second);
+  PP_Var host_pp_var = ppp_instance_private->GetInstanceObject(kInstance);
+  EXPECT_EQ(instance_obj.type, host_pp_var.type);
+  EXPECT_EQ(host_pp_var.value.as_id, expected_host_id);
+  EXPECT_EQ(1, plugin().var_tracker().GetRefCountForObject(instance_obj));
+  // A reference is passed to the browser, which we consume here.
+  host().var_tracker().ReleaseVar(host_pp_var);
+  EXPECT_EQ(1, host().var_tracker().GetRefCountForObject(host_pp_var));
 
   // The plugin is going away; generally, so will all references to its instance
   // object.
-  ReleaseVar(host_obj);
+  host().var_tracker().ReleaseVar(host_pp_var);
   // Destroy the instance. DidDestroy above decrements the reference count for
   // instance_obj, so it should also be destroyed.
   ppp_instance->DidDestroy(kInstance);
-  EXPECT_EQ(-1, plugin_var_tracker.GetRefCountForObject(instance_obj));
-  // Check the host-side reference count.
-  EXPECT_EQ(0u, id_refcount_map.size());
+  EXPECT_EQ(-1, plugin().var_tracker().GetRefCountForObject(instance_obj));
+  EXPECT_EQ(-1, host().var_tracker().GetRefCountForObject(host_pp_var));
 }
 
 }  // namespace proxy

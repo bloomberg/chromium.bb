@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -41,38 +41,15 @@ PPP_Messaging ppp_messaging_mock = {
   &HandleMessage
 };
 
-// Define a fake PPB_Var for the host side so that we can send a string var.
-void AddRef(PP_Var /*var*/) {
-}
-void Release(PP_Var /*var*/) {
-}
-PP_Var VarFromUtf8(const char* /*data*/, uint32_t len) {
-  return PP_MakeUndefined();
-}
-// No matter what id we're given, always provide kTestString and its length.
-const std::string kTestString = "Hello world!";
-const char* VarToUtf8(PP_Var /*var*/, uint32_t* len) {
-  *len = kTestString.size();
-  return kTestString.c_str();
-}
-
-PPB_Var ppb_var_mock = {
-  &AddRef,
-  &Release,
-  &VarFromUtf8,
-  &VarToUtf8
-};
-
 }  // namespace
 
 class PPP_Messaging_ProxyTest : public TwoWayTest {
  public:
-   PPP_Messaging_ProxyTest()
-       : TwoWayTest(TwoWayTest::TEST_PPP_INTERFACE) {
-     plugin().RegisterTestInterface(PPP_MESSAGING_INTERFACE,
-                                    &ppp_messaging_mock);
-     host().RegisterTestInterface(PPB_VAR_INTERFACE, &ppb_var_mock);
-   }
+  PPP_Messaging_ProxyTest()
+      : TwoWayTest(TwoWayTest::TEST_PPP_INTERFACE) {
+    plugin().RegisterTestInterface(PPP_MESSAGING_INTERFACE,
+                                   &ppp_messaging_mock);
+  }
 };
 
 TEST_F(PPP_Messaging_ProxyTest, SendMessages) {
@@ -120,17 +97,22 @@ TEST_F(PPP_Messaging_ProxyTest, SendMessages) {
   EXPECT_EQ(expected_var.type, received_var.type);
   EXPECT_EQ(expected_var.value.as_double, received_var.value.as_double);
 
-  expected_var.type = PP_VARTYPE_STRING;
-  expected_var.value.as_id = 1979;
+  const std::string kTestString("Hello world!");
+  expected_var = StringVar::StringToPPVar(kTestString);
   ResetReceived();
   ppp_messaging->HandleMessage(expected_instance, expected_var);
+  // Now release the var, and the string should go away (because the ref
+  // count should be one).
+  host().var_tracker().ReleaseVar(expected_var);
+  EXPECT_FALSE(StringVar::FromPPVar(expected_var));
+
   handle_message_called.Wait();
   EXPECT_EQ(expected_instance, received_instance);
   EXPECT_EQ(expected_var.type, received_var.type);
-
-  StringVar* received_string = StringVar::FromPPVar(received_var);
+  Var* received_string = plugin().var_tracker().GetVar(received_var);
   ASSERT_TRUE(received_string);
-  EXPECT_EQ(kTestString, received_string->value());
+  ASSERT_TRUE(received_string->AsStringVar());
+  EXPECT_EQ(kTestString, received_string->AsStringVar()->value());
   // Now release the var, and the string should go away (because the ref
   // count should be one).
   plugin().var_tracker().ReleaseVar(received_var);
