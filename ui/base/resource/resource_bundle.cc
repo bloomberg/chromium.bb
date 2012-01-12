@@ -108,7 +108,7 @@ bool ResourceBundle::LocaleDataPakExists(const std::string& locale) {
   return !GetLocaleFilePath(locale).empty();
 }
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_MACOSX) && !defined(OS_ANDROID)
 // static
 FilePath ResourceBundle::GetLocaleFilePath(const std::string& app_locale) {
   FilePath locale_file_path;
