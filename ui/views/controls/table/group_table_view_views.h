@@ -27,6 +27,7 @@ class VIEWS_EXPORT GroupTableView : public TableView {
                  bool draw_group_separators);
   virtual ~GroupTableView();
 
+  // View overrides:
   virtual std::string GetClassName() const OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(GroupTableView);

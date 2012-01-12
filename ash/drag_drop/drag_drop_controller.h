@@ -67,11 +67,11 @@ class ASH_EXPORT DragDropController
   friend class ash::test::DragDropControllerTest;
 
   // Overridden from ui::LayerAnimationObserver:
-  void OnLayerAnimationEnded(
+  virtual void OnLayerAnimationEnded(
       const ui::LayerAnimationSequence* sequence) OVERRIDE;
-  void OnLayerAnimationAborted(
+  virtual void OnLayerAnimationAborted(
       const ui::LayerAnimationSequence* sequence) OVERRIDE;
-  void OnLayerAnimationScheduled(
+  virtual void OnLayerAnimationScheduled(
       const ui::LayerAnimationSequence* sequence) OVERRIDE {}
 
   // Helper method to start drag widget flying back animation.

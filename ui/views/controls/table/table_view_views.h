@@ -113,7 +113,7 @@ class VIEWS_EXPORT TableView : public views::View,
   virtual bool OnKeyPressed(const KeyEvent& event) OVERRIDE;
   virtual bool OnMousePressed(const MouseEvent& event) OVERRIDE;
 
-  // ui::TableModelObserver methods.
+  // ui::TableModelObserver overrides:
   virtual void OnModelChanged() OVERRIDE;
   virtual void OnItemsChanged(int start, int length) OVERRIDE;
   virtual void OnItemsAdded(int start, int length) OVERRIDE;
