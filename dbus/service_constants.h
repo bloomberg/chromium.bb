@@ -584,6 +584,9 @@ const char kUnknownString[] = "UNKNOWN";
 }  // namespace flimflam
 
 namespace shill {
+// Manager property names.
+const char kHostNameProperty[] = "HostName";
+
 // Service property names.
 const char kHTTPProxyPortProperty[] = "HTTPProxyPort";
 }  // namespace shill
