@@ -95,6 +95,7 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host)
       ALLOW_THIS_IN_INITIALIZER_LIST(window_(new aura::Window(this))),
       is_fullscreen_(false),
       popup_parent_host_view_(NULL),
+      popup_child_host_view_(NULL),
       is_loading_(false),
       text_input_type_(ui::TEXT_INPUT_TYPE_NONE),
       has_composition_text_(false),
@@ -108,6 +109,10 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host)
 }
 
 RenderWidgetHostViewAura::~RenderWidgetHostViewAura() {
+  if (popup_type_ != WebKit::WebPopupTypeNone) {
+    DCHECK(popup_parent_host_view_);
+    popup_parent_host_view_->popup_child_host_view_ = NULL;
+  }
   aura::client::SetTooltipText(window_, NULL);
 #if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
   ui::Compositor* compositor = window_->layer()->GetCompositor();
@@ -129,6 +134,7 @@ void RenderWidgetHostViewAura::InitAsPopup(
     const gfx::Rect& pos) {
   popup_parent_host_view_ =
       static_cast<RenderWidgetHostViewAura*>(parent_host_view);
+  popup_parent_host_view_->popup_child_host_view_ = this;
   window_->SetType(aura::client::WINDOW_TYPE_MENU);
   window_->Init(ui::Layer::LAYER_HAS_TEXTURE);
   window_->SetName("RenderWidgetHostViewAura");
@@ -536,6 +542,11 @@ void RenderWidgetHostViewAura::InsertText(const string16& text) {
 }
 
 void RenderWidgetHostViewAura::InsertChar(char16 ch, int flags) {
+  if (popup_child_host_view_) {
+    popup_child_host_view_->InsertChar(ch, flags);
+    return;
+  }
+
   if (host_) {
     // Send a WebKit::WebInputEvent::Char event to |host_|.
     NativeWebKeyboardEvent webkit_event(ui::ET_KEY_PRESSED,
@@ -687,6 +698,9 @@ void RenderWidgetHostViewAura::OnBlur() {
 }
 
 bool RenderWidgetHostViewAura::OnKeyEvent(aura::KeyEvent* event) {
+  if (popup_child_host_view_ && popup_child_host_view_->OnKeyEvent(event))
+    return true;
+
   // We need to handle the Escape key for Pepper Flash.
   if (is_fullscreen_ && event->key_code() == ui::VKEY_ESCAPE) {
     host_->Shutdown();

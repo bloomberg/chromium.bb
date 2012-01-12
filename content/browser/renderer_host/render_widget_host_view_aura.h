@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -181,6 +181,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
 
   // Our parent host view, if this is a popup.  NULL otherwise.
   RenderWidgetHostViewAura* popup_parent_host_view_;
+
+  // Our child popup host. NULL if we do not have a child popup.
+  RenderWidgetHostViewAura* popup_child_host_view_;
 
   // True when content is being loaded. Used to show an hourglass cursor.
   bool is_loading_;
