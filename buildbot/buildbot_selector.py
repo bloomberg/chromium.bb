@@ -45,13 +45,13 @@ BOT_ASSIGNMENT = {
     'mac10.6-newlib-opt':
         python + ' buildbot/buildbot_standard.py opt 32 newlib',
     'mac10.7-newlib-opt':
-        python + ' buildbot/buildbot_standard.py opt 32 newlib --nogyp',
+        python + ' buildbot/buildbot_standard.py opt 32 newlib',
     'mac10.5-glibc-opt':
         macpython27 + ' buildbot/buildbot_standard.py opt 32 glibc',
     'mac10.6-glibc-opt':
         python + ' buildbot/buildbot_standard.py opt 32 glibc',
     'mac10.7-glibc-opt':
-        python + ' buildbot/buildbot_standard.py opt 32 glibc --nogyp',
+        python + ' buildbot/buildbot_standard.py opt 32 glibc',
     'lucid-32-newlib-dbg':
         python + ' buildbot/buildbot_standard.py dbg 32 newlib',
     'lucid-32-newlib-opt':
