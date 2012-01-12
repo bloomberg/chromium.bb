@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -55,16 +55,16 @@ class GpuWatchdogThread : public base::Thread,
   void DeliberatelyTerminateToRecoverFromHang();
   void Disable();
 
-  base::TimeDelta GetWatchedThreadTime();
+  int64 GetWatchedThreadTime();
 
   MessageLoop* watched_message_loop_;
-  base::TimeDelta timeout_;
+  int timeout_;
   volatile bool armed_;
   GpuWatchdogTaskObserver task_observer_;
 
 #if defined(OS_WIN)
   void* watched_thread_handle_;
-  base::TimeDelta arm_cpu_time_;
+  int64 arm_cpu_time_;
 #endif
 
   base::Time arm_absolute_time_;

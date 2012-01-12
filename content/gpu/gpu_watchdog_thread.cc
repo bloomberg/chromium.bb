@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,17 +17,17 @@
 #include "content/public/common/result_codes.h"
 
 namespace {
-const base::TimeDelta kCheckPeriod = base::TimeDelta::FromSeconds(2);
+const int64 kCheckPeriod = 2000;
 }  // namespace
 
 GpuWatchdogThread::GpuWatchdogThread(int timeout)
     : base::Thread("Watchdog"),
       watched_message_loop_(MessageLoop::current()),
-      timeout_(base::TimeDelta::FromMilliseconds(timeout)),
+      timeout_(timeout),
       armed_(false),
 #if defined(OS_WIN)
       watched_thread_handle_(0),
-      arm_cpu_time_(base::TimeDelta()),
+      arm_cpu_time_(0),
 #endif
       ALLOW_THIS_IN_INITIALIZER_LIST(task_observer_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
@@ -125,7 +125,7 @@ void GpuWatchdogThread::OnAcknowledge() {
 }
 
 #if defined(OS_WIN)
-base::TimeDelta GpuWatchdogThread::GetWatchedThreadTime() {
+int64 GpuWatchdogThread::GetWatchedThreadTime() {
   FILETIME creation_time;
   FILETIME exit_time;
   FILETIME user_time;
@@ -152,8 +152,8 @@ base::TimeDelta GpuWatchdogThread::GetWatchedThreadTime() {
   // returns to user level or where user level code
   // calls into kernel level repeatedly, giving up its quanta before it is
   // tracked, for example a loop that repeatedly Sleeps.
-  return base::TimeDelta::FromMilliseconds(static_cast<int64>(
-      (user_time64.QuadPart + kernel_time64.QuadPart) / 10000));
+  return static_cast<int64>(
+      (user_time64.QuadPart + kernel_time64.QuadPart) / 10000);
 }
 #endif
 
@@ -194,7 +194,7 @@ void GpuWatchdogThread::DeliberatelyTerminateToRecoverFromHang() {
 #if defined(OS_WIN)
   // Defer termination until a certain amount of CPU time has elapsed on the
   // watched thread.
-  base::TimeDelta time_since_arm = GetWatchedThreadTime() - arm_cpu_time_;
+  int64 time_since_arm = GetWatchedThreadTime() - arm_cpu_time_;
   if (time_since_arm < timeout_) {
     message_loop()->PostDelayedTask(
         FROM_HERE,
@@ -210,7 +210,8 @@ void GpuWatchdogThread::DeliberatelyTerminateToRecoverFromHang() {
   // the watchdog check. This is to prevent the watchdog thread from terminating
   // when a machine wakes up from sleep or hibernation, which would otherwise
   // appear to be a hang.
-  if (base::Time::Now() - arm_absolute_time_ > timeout_ * 2) {
+  if ((base::Time::Now() - arm_absolute_time_).InMilliseconds() >
+      timeout_ * 2) {
     armed_ = false;
     OnCheck();
     return;
@@ -229,7 +230,7 @@ void GpuWatchdogThread::DeliberatelyTerminateToRecoverFromHang() {
 #endif
 
   LOG(ERROR) << "The GPU process hung. Terminating after "
-             << timeout_.InMilliseconds() << " ms.";
+             << timeout_ << " ms.";
 
   base::Process current_process(base::GetCurrentProcessHandle());
   current_process.Terminate(content::RESULT_CODE_HUNG);

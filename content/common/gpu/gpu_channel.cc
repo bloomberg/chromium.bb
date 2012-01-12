@@ -26,8 +26,7 @@
 #endif
 
 namespace {
-const base::TimeDelta kHandleMoreWorkPeriod =
-    base::TimeDelta::FromMilliseconds(1);
+const int64 kHandleMoreWorkPeriod = 1;
 }
 
 GpuChannel::GpuChannel(GpuChannelManager* gpu_channel_manager,
