@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -511,9 +511,8 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, FLAKY_CommandKeyEvents) {
 }
 #endif
 
-#if defined(OS_MACOSX) || defined(USE_AURA)
+#if defined(OS_MACOSX)
 // http://crbug.com/81451 for mac
-// http://crbug.com/107026 for aura
 IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, DISABLED_AccessKeys) {
 #else
 IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, AccessKeys) {
