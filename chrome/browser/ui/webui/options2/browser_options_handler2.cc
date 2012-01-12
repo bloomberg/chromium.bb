@@ -144,8 +144,6 @@ void BrowserOptionsHandler::GetLocalizedValues(
     { "toolbarShowBookmarksBar", IDS_OPTIONS_TOOLBAR_SHOW_BOOKMARKS_BAR },
     { "toolbarShowHomeButton", IDS_OPTIONS_TOOLBAR_SHOW_HOME_BUTTON },
 #if defined(TOOLKIT_GTK)
-    { "hideWindowDecorations", IDS_HIDE_WINDOW_DECORATIONS_RADIO },
-    { "showWindowDecorations", IDS_SHOW_WINDOW_DECORATIONS_RADIO },
     { "themesGTKButton", IDS_THEMES_GTK_BUTTON },
     { "themesSetClassic", IDS_THEMES_SET_CLASSIC },
 #else

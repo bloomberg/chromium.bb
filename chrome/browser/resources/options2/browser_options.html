@@ -90,20 +90,6 @@
         <a id="themes-gallery" i18n-content="themesGallery"
             i18n-values="href:themesGalleryURL" target="_blank"></a>
       </div>
-      <div class="radio">
-        <label>
-          <input name="decorations_radio" pref="browser.custom_chrome_frame"
-              type="radio" value="false" metric="Options_CustomFrame">
-          <span i18n-content="showWindowDecorations"></span>
-        </label>
-      </div>
-      <div class="radio">
-        <label>
-          <input name="decorations_radio" pref="browser.custom_chrome_frame"
-              type="radio" value="true" metric="Options_CustomFrame">
-          <span i18n-content="hideWindowDecorations"></span>
-        </label>
-      </div>
     </div>
 </if>
 <if expr="pp_ifdef('toolkit_views') or os == 'win32' or os == 'darwin'">
