@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -232,58 +232,6 @@ DownloadRow.prototype = {
     list.append(this);
   },
 
-  setErrorText_: function(text) {
-    this.filename.textContent = text;
-  },
-
-  supportsPdf_: function() {
-    return 'application/pdf' in navigator.mimeTypes;
-  },
-
-  openFilePath_: function() {
-    chromeSend('openNewFullWindow', this.fileUrl);
-  },
-
-  /**
-   * Determine onclick behavior based on filename.
-   * @private
-   */
-  getFunctionForItem_: function() {
-    var path = this.path;
-    var self = this;
-
-    if (pathIsAudioFile(path)) {
-      return function() {
-        chromeSend('playMediaFile', path);
-      };
-    }
-    if (pathIsVideoFile(path)) {
-      return function() {
-        chromeSend('playMediaFile', path);
-      };
-    }
-    if (pathIsImageFile(path)) {
-      return function() {
-        self.openFilePath_();
-      }
-    }
-    if (pathIsHtmlFile(path)) {
-      return function() {
-        self.openFilePath_();
-      }
-    }
-    if (pathIsPdfFile(path) && this.supportsPdf_()) {
-      return function() {
-        self.openFilePath_();
-      }
-    }
-
-    return function() {
-      self.setErrorText_(localStrings.getStringF('error_unknown_file_type',
-                          self.name));
-    };
-  },
-
   setDangerousIcon_: function(warning) {
     this.icon.className = warning ? 'iconwarning' : 'icon';
     this.icon.style.background = warning ? '' :
@@ -494,7 +442,11 @@ DownloadRow.prototype = {
    */
   finishedDownloading_: function() {
     // Make rowbutton clickable.
-    this.rowbutton.onclick = this.getFunctionForItem_();
+    var self = this;
+    this.rowbutton.onclick = function() {
+      chromeSend('viewFile', self.path);
+    };
+
     this.rowbutton.style.cursor = 'pointer';
 
     // Make rowbutton draggable.

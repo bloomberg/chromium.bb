@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -144,8 +144,7 @@ class ActiveDownloadsHandler
   void HandleAllowDownload(const ListValue* args);
   void HandleCancelDownload(const ListValue* args);
   void HandleShowAllFiles(const ListValue* args);
-  void OpenNewFullWindow(const ListValue* args);
-  void PlayMediaFile(const ListValue* args);
+  void ViewFile(const ListValue* args);
 
   // For testing.
   typedef std::vector<DownloadItem*> DownloadList;
@@ -157,7 +156,6 @@ class ActiveDownloadsHandler
   void UpdateDownloadList();
   void SendDownloads();
   void AddDownload(DownloadItem* item);
-  bool SelectTab(const GURL& url);
 
   Profile* profile_;
   DownloadManager* download_manager_;
@@ -199,26 +197,13 @@ void ActiveDownloadsHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("showAllFiles",
       base::Bind(&ActiveDownloadsHandler::HandleShowAllFiles,
                  base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("openNewFullWindow",
-      base::Bind(&ActiveDownloadsHandler::OpenNewFullWindow,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("playMediaFile",
-      base::Bind(&ActiveDownloadsHandler::PlayMediaFile,
+  web_ui()->RegisterMessageCallback("viewFile",
+      base::Bind(&ActiveDownloadsHandler::ViewFile,
                  base::Unretained(this)));
 
   download_manager_ =
       DownloadServiceFactory::GetForProfile(profile_)->GetDownloadManager();
   download_manager_->AddObserver(this);
-}
-
-void ActiveDownloadsHandler::PlayMediaFile(const ListValue* args) {
-  FilePath file_path(UTF16ToUTF8(ExtractStringValue(args)));
-
-  Browser* browser = Browser::GetBrowserForController(
-      &web_ui()->web_contents()->GetController(), NULL);
-  MediaPlayer* mediaplayer = MediaPlayer::GetInstance();
-  mediaplayer->PopupMediaPlayer(browser);
-  mediaplayer->ForcePlayMediaFile(profile_, file_path);
 }
 
 DownloadItem* ActiveDownloadsHandler::GetDownloadById(
@@ -256,30 +241,9 @@ void ActiveDownloadsHandler::HandleShowAllFiles(const ListValue* args) {
       DownloadPrefs::FromDownloadManager(download_manager_)->download_path());
 }
 
-bool ActiveDownloadsHandler::SelectTab(const GURL& url) {
-  for (TabContentsIterator it; !it.done(); ++it) {
-    WebContents* web_contents = it->web_contents();
-    if (web_contents->GetURL() == url) {
-      web_contents->GetRenderViewHost()->delegate()->Activate();
-      return true;
-    }
-  }
-  return false;
-}
-
-void ActiveDownloadsHandler::OpenNewFullWindow(const ListValue* args) {
-  std::string url = UTF16ToUTF8(ExtractStringValue(args));
-
-  if (SelectTab(GURL(url)))
-    return;
-
-  DCHECK(profile_);
-  Browser* browser = BrowserList::GetLastActiveWithProfile(profile_);
-  browser::NavigateParams params(
-      browser, GURL(url), content::PAGE_TRANSITION_LINK);
-  params.disposition = NEW_FOREGROUND_TAB;
-  browser::Navigate(&params);
-  browser->window()->Show();
+void ActiveDownloadsHandler::ViewFile(const ListValue* args) {
+  file_manager_util::ViewFile(FilePath(UTF16ToUTF8(ExtractStringValue(args))),
+                              false);
 }
 
 void ActiveDownloadsHandler::ModelChanged() {

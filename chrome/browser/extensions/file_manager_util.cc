@@ -24,6 +24,7 @@
 #include "content/public/browser/user_metrics.h"
 #include "grit/generated_resources.h"
 #include "net/base/escape.h"
+#include "net/base/net_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_mount_point_provider.h"
@@ -312,10 +313,8 @@ bool TryViewingFile(const FilePath& full_path, bool enqueue) {
   // in a tab.
   if (IsSupportedBrowserExtension(ext.data()) ||
       ShouldBeOpenedWithPdfPlugin(ext.data())) {
-    std::string path;
-    path = "file://";
-    path.append(net::EscapeUrlEncodedData(full_path.value(), false));
-    browser->AddSelectedTabWithURL(GURL(path), content::PAGE_TRANSITION_LINK);
+    browser->AddSelectedTabWithURL(net::FilePathToFileURL(full_path),
+                                   content::PAGE_TRANSITION_LINK);
     return true;
   }
 #if defined(OS_CHROMEOS)
