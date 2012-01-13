@@ -1815,6 +1815,7 @@
         'browser/ui/cocoa/cocoa_test_helper.h',
         'browser/ui/cocoa/cocoa_test_helper.mm',
         'browser/ui/cocoa/command_observer_bridge_unittest.mm',
+        'browser/ui/cocoa/confirm_bubble_controller_unittest.mm',
         'browser/ui/cocoa/confirm_quit_panel_controller_unittest.mm',
         'browser/ui/cocoa/content_settings/collected_cookies_mac_unittest.mm',
         'browser/ui/cocoa/content_settings/cookie_details_unittest.mm',

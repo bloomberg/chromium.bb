@@ -1,10 +1,11 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/views/confirm_bubble_view.h"
 
 #include "chrome/browser/ui/confirm_bubble_model.h"
+#include "chrome/browser/ui/views/window.h"
 #include "grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
@@ -23,6 +24,14 @@ namespace {
 const int kMaxMessageWidth = 400;
 
 }  // namespace
+
+void ConfirmBubbleModel::Show(gfx::NativeView view,
+                              const gfx::Point& origin,
+                              ConfirmBubbleModel* model) {
+  ConfirmBubbleView* bubble_view = new ConfirmBubbleView(origin, model);
+  browser::CreateViewsBubble(bubble_view);
+  bubble_view->Show();
+}
 
 ConfirmBubbleView::ConfirmBubbleView(const gfx::Point& anchor_point,
                                      ConfirmBubbleModel* model)
