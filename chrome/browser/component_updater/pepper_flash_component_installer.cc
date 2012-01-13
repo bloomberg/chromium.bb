@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -174,10 +174,8 @@ void RegisterPepperFlashWithChrome(const FilePath& path,
   content::PepperPluginInfo plugin_info;
   if (!MakePepperFlashPluginInfo(path, version, true, &plugin_info))
     return;
-  if (fresh_install) {
-    PluginPrefs::EnablePluginGlobally(IsPepperFlashEnabledByDefault(),
-                                      plugin_info.path);
-  }
+  PluginPrefs::EnablePluginGlobally(IsPepperFlashEnabledByDefault(),
+                                    plugin_info.path);
   PluginService::GetInstance()->RegisterInternalPlugin(
       plugin_info.ToWebPluginInfo());
   PluginService::GetInstance()->RefreshPlugins();
