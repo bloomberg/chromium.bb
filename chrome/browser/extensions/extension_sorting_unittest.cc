@@ -95,27 +95,23 @@ class ExtensionSortingPageOrdinal : public ExtensionSortingTest {
   virtual void Initialize() OVERRIDE{
     extension_ = prefs_.AddApp("page_ordinal");
     // Install with a page preference.
-    StringOrdinal page = StringOrdinal::CreateInitialOrdinal();
+    first_page_ = StringOrdinal::CreateInitialOrdinal();
     prefs()->OnExtensionInstalled(extension_.get(), Extension::ENABLED,
-                                  false, page);
-    EXPECT_TRUE(
-        page.Equal(extension_sorting()->GetPageOrdinal(extension_->id())));
-    EXPECT_EQ(0, extension_sorting()->PageStringOrdinalAsInteger(page));
+                                  false, first_page_);
+    EXPECT_TRUE(first_page_.Equal(
+        extension_sorting()->GetPageOrdinal(extension_->id())));
+    EXPECT_EQ(0, extension_sorting()->PageStringOrdinalAsInteger(first_page_));
 
     scoped_refptr<Extension> extension2 = prefs_.AddApp("page_ordinal_2");
     // Install without any page preference.
-    prefs()->OnExtensionInstalled(extension_.get(), Extension::ENABLED,
+    prefs()->OnExtensionInstalled(extension2.get(), Extension::ENABLED,
                                   false, StringOrdinal());
-    EXPECT_TRUE(
-        extension_sorting()->GetPageOrdinal(extension_->id()).IsValid());
+    EXPECT_TRUE(first_page_.Equal(
+        extension_sorting()->GetPageOrdinal(extension2->id())));
   }
-
   virtual void Verify() OVERRIDE {
-    StringOrdinal old_page =
-        extension_sorting()->GetPageOrdinal(extension_->id());
-    StringOrdinal new_page = old_page.CreateAfter();
-
     // Set the page ordinal.
+    StringOrdinal new_page = first_page_.CreateAfter();
     extension_sorting()->SetPageOrdinal(extension_->id(), new_page);
     // Verify the page ordinal.
     EXPECT_TRUE(
@@ -128,6 +124,7 @@ class ExtensionSortingPageOrdinal : public ExtensionSortingTest {
   }
 
  private:
+  StringOrdinal first_page_;
   scoped_refptr<Extension> extension_;
 };
 TEST_F(ExtensionSortingPageOrdinal, ExtensionSortingPageOrdinal) {}
@@ -139,6 +136,7 @@ class ExtensionSortingMigrateAppIndex
  public:
   ExtensionSortingMigrateAppIndex() {}
   virtual ~ExtensionSortingMigrateAppIndex() {}
+
   virtual void Initialize() OVERRIDE {
     // A preference determining the order of which the apps appear on the NTP.
     const char kPrefAppLaunchIndexDeprecated[] = "app_launcher_index";
@@ -208,6 +206,7 @@ class ExtensionSortingMigrateAppIndexInvalid
  public:
   ExtensionSortingMigrateAppIndexInvalid() {}
   virtual ~ExtensionSortingMigrateAppIndexInvalid() {}
+
   virtual void Initialize() OVERRIDE {
     // A preference determining the order of which the apps appear on the NTP.
     const char kPrefAppLaunchIndexDeprecated[] = "app_launcher_index";
@@ -238,13 +237,10 @@ class ExtensionSortingMigrateAppIndexInvalid
 TEST_F(ExtensionSortingMigrateAppIndexInvalid,
        ExtensionSortingMigrateAppIndexInvalid) {}
 
-class ExtensionSortingGetMinOrMaxAppLaunchOrdinalsOnPage :
+class ExtensionSortingPreinstalledAppsBase :
     public ExtensionPrefsPrepopulatedTest {
  public:
-  ExtensionSortingGetMinOrMaxAppLaunchOrdinalsOnPage() {}
-  virtual ~ExtensionSortingGetMinOrMaxAppLaunchOrdinalsOnPage() {}
-
-  virtual void Initialize() OVERRIDE {
+  ExtensionSortingPreinstalledAppsBase() {
     DictionaryValue simple_dict;
     simple_dict.SetString(keys::kVersion, "1.0.0.0");
     simple_dict.SetString(keys::kName, "unused");
@@ -267,7 +263,29 @@ class ExtensionSortingGetMinOrMaxAppLaunchOrdinalsOnPage :
                                   Extension::ENABLED,
                                   false,
                                   StringOrdinal());
+
+    app1_ = app1_scoped_.get();
+    app2_ = app2_scoped_.get();
   }
+  virtual ~ExtensionSortingPreinstalledAppsBase() {}
+
+ protected:
+  // Weak references, for convenience.
+  Extension* app1_;
+  Extension* app2_;
+
+ private:
+    scoped_refptr<Extension> app1_scoped_;
+    scoped_refptr<Extension> app2_scoped_;
+};
+
+class ExtensionSortingGetMinOrMaxAppLaunchOrdinalsOnPage :
+    public ExtensionSortingPreinstalledAppsBase {
+ public:
+  ExtensionSortingGetMinOrMaxAppLaunchOrdinalsOnPage() {}
+  virtual ~ExtensionSortingGetMinOrMaxAppLaunchOrdinalsOnPage() {}
+
+  virtual void Initialize() OVERRIDE {}
   virtual void Verify() OVERRIDE {
     StringOrdinal page = StringOrdinal::CreateInitialOrdinal();
     ExtensionSorting* extension_sorting = prefs()->extension_sorting();
@@ -297,10 +315,47 @@ class ExtensionSortingGetMinOrMaxAppLaunchOrdinalsOnPage :
     EXPECT_FALSE(min.IsValid());
     EXPECT_FALSE(max.IsValid());
   }
-
- private:
-  scoped_refptr<Extension> app1_scoped_;
-  scoped_refptr<Extension> app2_scoped_;
 };
 TEST_F(ExtensionSortingGetMinOrMaxAppLaunchOrdinalsOnPage,
        ExtensionSortingGetMinOrMaxAppLaunchOrdinalsOnPage) {}
+
+// Make sure that empty pages aren't removes from the integer to ordinal
+// mapping. See http://www.crbug.com/109802 for details.
+class ExtensionSortingKeepEmptyStringOrdinalPages :
+    public ExtensionSortingPreinstalledAppsBase {
+ public:
+  ExtensionSortingKeepEmptyStringOrdinalPages() {}
+  virtual ~ExtensionSortingKeepEmptyStringOrdinalPages() {}
+
+  virtual void Initialize() {
+    ExtensionSorting* extension_sorting = prefs()->extension_sorting();
+
+    StringOrdinal first_page = StringOrdinal::CreateInitialOrdinal();
+    extension_sorting->SetPageOrdinal(app1_->id(), first_page);
+    EXPECT_EQ(0, extension_sorting->PageStringOrdinalAsInteger(first_page));
+
+    last_page_ = first_page.CreateAfter();
+    extension_sorting->SetPageOrdinal(app2_->id(), last_page_);
+    EXPECT_EQ(1, extension_sorting->PageStringOrdinalAsInteger(last_page_));
+
+    // Move the second app to create an empty page.
+    extension_sorting->SetPageOrdinal(app2_->id(), first_page);
+    EXPECT_EQ(0, extension_sorting->PageStringOrdinalAsInteger(first_page));
+  }
+  virtual void Verify() {
+    ExtensionSorting* extension_sorting = prefs()->extension_sorting();
+
+    // Move the second app to a new empty page at the end, skipping over
+    // the current empty page.
+    last_page_ = last_page_.CreateAfter();
+    extension_sorting->SetPageOrdinal(app2_->id(), last_page_);
+    EXPECT_EQ(2, extension_sorting->PageStringOrdinalAsInteger(last_page_));
+    EXPECT_TRUE(
+        last_page_.Equal(extension_sorting->PageIntegerAsStringOrdinal(2)));
+  }
+
+ private:
+  StringOrdinal last_page_;
+};
+TEST_F(ExtensionSortingKeepEmptyStringOrdinalPages,
+       ExtensionSortingKeepEmptyStringOrdinalPages) {}

@@ -280,7 +280,7 @@ int ExtensionSorting::PageStringOrdinalAsInteger(
 StringOrdinal ExtensionSorting::PageIntegerAsStringOrdinal(size_t page_index)
     const {
   // We shouldn't have a page_index that is more than 1 position away from the
-  // current end as that would imply we have empty pages which is not allowed.
+  // current end.
   CHECK_LE(page_index, page_ordinal_map_.size());
 
   const DictionaryValue* extensions = pref_service_->GetDictionary(
@@ -351,14 +351,10 @@ void ExtensionSorting::InitializePageOrdinalMap(
 }
 
 void ExtensionSorting::UpdatePageOrdinalMap(const StringOrdinal& old_value,
-                                          const StringOrdinal& new_value) {
+                                            const StringOrdinal& new_value) {
   if (new_value.IsValid())
     ++page_ordinal_map_[new_value];
 
-  if (old_value.IsValid()) {
+  if (old_value.IsValid())
     --page_ordinal_map_[old_value];
-
-    if (page_ordinal_map_[old_value] == 0)
-      page_ordinal_map_.erase(old_value);
-  }
 }
