@@ -1,9 +1,11 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/common/string_ordinal.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+#include <algorithm>
 
 namespace {
 
@@ -128,4 +130,35 @@ TEST(StringOrdinalTest, ToString) {
   index = StringOrdinal("zzz");
   EXPECT_EQ(index.ToString(), "zzz");
 }
+
+TEST(StringOrdinalTest, StdSort) {
+  std::vector<StringOrdinal> ordinals;
+
+  ordinals.push_back(StringOrdinal("z"));
+  ordinals.push_back(StringOrdinal("n"));
+  ordinals.push_back(StringOrdinal("j"));
+  ordinals.push_back(StringOrdinal("b"));
+
+  std::sort(ordinals.begin(), ordinals.end(), StringOrdinalLessThan());
+
+  EXPECT_EQ(ordinals[0].ToString(), "b");
+  EXPECT_EQ(ordinals[1].ToString(), "j");
+  EXPECT_EQ(ordinals[2].ToString(), "n");
+  EXPECT_EQ(ordinals[3].ToString(), "z");
+}
+
+TEST(StringOrdinalTest, StdFind) {
+  std::vector<StringOrdinal> ordinals;
+
+  StringOrdinal b("b");
+  ordinals.push_back(b);
+  ordinals.push_back(StringOrdinal("z"));
+
+  EXPECT_EQ(std::find(ordinals.begin(), ordinals.end(), b), ordinals.begin());
+  EXPECT_EQ(std::find(ordinals.begin(), ordinals.end(), StringOrdinal("z")),
+            ordinals.begin() + 1);
+  EXPECT_EQ(std::find(ordinals.begin(), ordinals.end(), StringOrdinal("n")),
+            ordinals.end());
+}
+
 }  // namespace

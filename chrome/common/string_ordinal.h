@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -65,6 +65,9 @@ class StringOrdinal {
   // It is guaranteed that a StringOrdinal constructed from the returned
   // string will be valid.
   std::string ToString() const;
+
+  // Do this so we can use std::find on a std::vector of StringOrdinals.
+  bool operator==(const StringOrdinal& rhs) const;
 
   // Use of copy constructor and default assignment for this class is allowed.
 
