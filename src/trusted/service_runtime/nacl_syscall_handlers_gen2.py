@@ -1,7 +1,6 @@
 #!/usr/bin/python
-#
-# Copyright 2008 The Native Client Authors.  All rights reserved.  Use
-# of this source code is governed by a BSD-style license that can be
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 #
 #  This script extracts  "nacl syscall" prototypes from a c file
@@ -81,6 +80,78 @@ ARG_REGISTERS = {
 # to eliminate time-of-check vs time-of-use issues -- we always only
 # refer to syscall arguments from this snapshot, rather than from the
 # untrusted memory locations.
+
+
+SYSCALL_LIST = [
+    ('NaClSysNull', []),
+    ('NaClSysNameService', ['int *desc_in_out']),
+    ('NaClSysDup', ['int oldfd']),
+    ('NaClSysDup2', ['int oldfd', 'int newfd']),
+    ('NaClSysOpen', ['char *pathname', 'int flags', 'int mode']),
+    ('NaClSysClose', ['int d']),
+    ('NaClSysRead', ['int d', 'void *buf', 'size_t count']),
+    ('NaClSysWrite', ['int d', 'void *buf', 'size_t count']),
+    ('NaClSysLseek', ['int d', 'nacl_abi_off_t *offp', 'int whence']),
+    ('NaClSysIoctl', ['int d', 'int request', 'void *arg']),
+    ('NaClSysFstat', ['int d', 'struct nacl_abi_stat *nasp']),
+    ('NaClSysStat', ['const char *path', 'struct nacl_abi_stat *nasp']),
+    ('NaClSysGetdents', ['int d', 'void *buf', 'size_t count']),
+    ('NaClSysSysbrk', ['void *new_break']),
+    ('NaClSysMmap', ['void *start', 'size_t length', 'int prot',
+                     'int flags', 'int d', 'nacl_abi_off_t *offp']),
+    ('NaClSysMunmap', ['void *start', 'size_t length']),
+    ('NaClSysExit', ['int status']),
+    ('NaClSysGetpid', []),
+    ('NaClSysThread_Exit', ['int32_t *stack_flag']),
+    ('NaClSysGetTimeOfDay', ['struct nacl_abi_timeval *tv',
+                             'struct nacl_abi_timezone *tz']),
+    ('NaClSysClock', []),
+    ('NaClSysNanosleep', ['struct nacl_abi_timespec *req',
+                          'struct nacl_abi_timespec *rem']),
+    ('NaClSysImc_MakeBoundSock', ['int32_t *sap']),
+    ('NaClSysImc_Accept', ['int d']),
+    ('NaClSysImc_Connect', ['int d']),
+    ('NaClSysImc_Sendmsg', ['int d', 'struct NaClAbiNaClImcMsgHdr *nanimhp',
+                            'int flags']),
+    ('NaClSysImc_Recvmsg', ['int d', 'struct NaClAbiNaClImcMsgHdr *nanimhp',
+                            'int flags']),
+    ('NaClSysImc_Mem_Obj_Create', ['size_t size']),
+    ('NaClSysTls_Init', ['void *thread_ptr']),
+    ('NaClSysThread_Create', ['void *prog_ctr', 'void *stack_ptr',
+                              'void *thread_ptr', 'void *second_thread_ptr']),
+    ('NaClSysTls_Get', []),
+    ('NaClSysThread_Nice', ['const int nice']),
+    ('NaClSysMutex_Create', []),
+    ('NaClSysMutex_Lock', ['int32_t mutex_handle']),
+    ('NaClSysMutex_Unlock', ['int32_t mutex_handle']),
+    ('NaClSysMutex_Trylock', ['int32_t mutex_handle']),
+    ('NaClSysCond_Create', []),
+    ('NaClSysCond_Wait', ['int32_t cond_handle', 'int32_t mutex_handle']),
+    ('NaClSysCond_Signal', ['int32_t cond_handle']),
+    ('NaClSysCond_Broadcast', ['int32_t cond_handle']),
+    ('NaClSysCond_Timed_Wait_Abs', ['int32_t cond_handle',
+                                    'int32_t mutex_handle',
+                                    'struct nacl_abi_timespec *ts']),
+    ('NaClSysImc_SocketPair', ['int32_t *d_out']),
+    ('NaClSysSem_Create', ['int32_t init_value']),
+    ('NaClSysSem_Wait', ['int32_t sem_handle']),
+    ('NaClSysSem_Post', ['int32_t sem_handle']),
+    ('NaClSysSem_Get_Value', ['int32_t sem_handle']),
+    ('NaClSysSched_Yield', []),
+    ('NaClSysSysconf', ['int32_t name', 'int32_t *result']),
+    ('NaClSysDyncode_Create', ['uint32_t dest', 'uint32_t src',
+                               'uint32_t size']),
+    ('NaClSysDyncode_Modify', ['uint32_t dest', 'uint32_t src',
+                               'uint32_t size']),
+    ('NaClSysDyncode_Delete', ['uint32_t dest', 'uint32_t size']),
+    ('NaClSysSecond_Tls_Set', ['uint32_t new_value']),
+    ('NaClSysSecond_Tls_Get', []),
+    ('NaClSysException_Handler', ['uint32_t handler_addr',
+                                  'uint32_t old_handler']),
+    ('NaClSysException_Stack', ['uint32_t stack_addr', 'uint32_t stack_size']),
+    ('NaClSysException_Clear_Flag', []),
+    ('NaClSysTest_InfoLeak', []),
+    ]
 
 
 def FunctionNameToSyscallDefine(name):
@@ -177,10 +248,14 @@ def PrintImplSkel(architecture, protos, ostr):
   print >>ostr, AUTOGEN_COMMENT;
   for name, alist in protos:
     values = { 'name' : name,
-               'arglist' : ArgList(architecture, alist[1:]),
-               'members' : MemoryArgStruct(architecture, name, alist[1:]),
+               'arglist' : ArgList(architecture, alist),
+               'members' : MemoryArgStruct(architecture, name, alist),
                }
     print >>ostr, IMPLEMENTATION_SKELETON % values
+
+
+def CanonicalizeSpaces(string):
+  return ' '.join(string.split())
 
 
 def GetProtoArgs(s, fin):
@@ -195,7 +270,7 @@ def GetProtoArgs(s, fin):
   assert pos >= 0
   # prune stuff after )
   s = s[0:pos]
-  args = [a.strip() for a in s.split(",")]
+  args = [CanonicalizeSpaces(a) for a in s.split(",")]
   return args
 
 
@@ -207,7 +282,9 @@ def ParseFileToBeWrapped(fin):
       continue
     name = match.group(1)
     args = GetProtoArgs(match.group(2), fin)
-    protos.append( (name, args) )
+    # We discard the first argument because it is always
+    # "struct NaClAppThread *natp".
+    protos.append((name, args[1:]))
   return protos
 
 
@@ -251,6 +328,9 @@ def main(argv):
 
   data = input_src.read()
   protos = ParseFileToBeWrapped(StringIO.StringIO(data))
+  # TODO(mseaborn): Make SYSCALL_LIST the authoritative list of system
+  # calls, and remove the code for scraping the C files.
+  assert protos == SYSCALL_LIST, protos
   if mode == "dump":
     for f, a in  protos:
       print >>output_dst, f

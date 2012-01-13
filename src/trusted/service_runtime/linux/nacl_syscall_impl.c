@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -463,13 +463,13 @@ int32_t NaClSysImc_Sendmsg(struct NaClAppThread         *natp,
 
 int32_t NaClSysImc_Recvmsg(struct NaClAppThread         *natp,
                            int                          d,
-                           struct NaClAbiNaClImcMsgHdr  *nimhp,
+                           struct NaClAbiNaClImcMsgHdr  *nanimhp,
                            int                          flags) {
-  return NaClCommonSysImc_Recvmsg(natp, d, nimhp, flags);
+  return NaClCommonSysImc_Recvmsg(natp, d, nanimhp, flags);
 }
 
 int32_t NaClSysImc_Mem_Obj_Create(struct NaClAppThread  *natp,
-                                  nacl_abi_size_t       size) {
+                                  size_t                size) {
   return NaClCommonSysImc_Mem_Obj_Create(natp, size);
 }
 
