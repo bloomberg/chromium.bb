@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -109,8 +109,9 @@ cr.define('options', function() {
      * @private
      */
     standardFontSizeChanged_: function(el, value) {
-      Preferences.setIntegerPref('webkit.webprefs.default_fixed_font_size',
-                                 value - SIZE_DIFFERENCE_FIXED_STANDARD, '');
+      Preferences.setIntegerPref(
+        'webkit.webprefs.global.default_fixed_font_size',
+        value - SIZE_DIFFERENCE_FIXED_STANDARD, '');
     },
 
     /**
@@ -134,8 +135,8 @@ cr.define('options', function() {
      * @private
      */
     minimumFontSizeChanged_: function(el, value) {
-      Preferences.setIntegerPref('webkit.webprefs.minimum_logical_font_size',
-          value, '');
+      Preferences.setIntegerPref(
+        'webkit.webprefs.global.minimum_logical_font_size', value, '');
     },
 
     /**
