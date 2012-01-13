@@ -30,7 +30,7 @@ ChromeWebUIDataSource* CreateExtensionsHTMLSource() {
 
 }  // namespace
 
-ExtensionsUI::ExtensionsUI(WebContents* contents) : WebUI(contents) {
+ExtensionsUI::ExtensionsUI(WebContents* contents) : WebUI(contents, this) {
   Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
   ChromeWebUIDataSource* source = CreateExtensionsHTMLSource();
   profile->GetChromeURLDataManager()->AddDataSource(source);

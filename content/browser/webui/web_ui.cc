@@ -16,10 +16,12 @@
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/browser/webui/generic_handler.h"
 #include "content/common/view_messages.h"
+#include "content/public/browser/web_ui_controller.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/content_switches.h"
 
 using content::WebContents;
+using content::WebUIController;
 using content::WebUIMessageHandler;
 
 // static
@@ -39,14 +41,16 @@ string16 WebUI::GetJavascriptCall(
       char16('(') + parameters + char16(')') + char16(';');
 }
 
-WebUI::WebUI(WebContents* contents)
+WebUI::WebUI(WebContents* contents,
+             WebUIController* controller)
     : hide_favicon_(false),
       focus_location_bar_by_default_(false),
       should_hide_url_(false),
       link_transition_type_(content::PAGE_TRANSITION_LINK),
       bindings_(content::BINDINGS_POLICY_WEB_UI),
       register_callback_overwrites_(false),
-      web_contents_(contents) {
+      web_contents_(contents),
+      controller_(controller) {
   DCHECK(contents);
   AddMessageHandler(new GenericHandler());
 }
@@ -77,6 +81,9 @@ void WebUI::OnWebUISend(const GURL& source_url,
     return;
   }
 
+  if (controller_->OverrideHandleWebUIMessage(source_url, message,args))
+    return;
+
   // Look up the callback for this message.
   MessageCallbackMap::const_iterator callback =
       message_callbacks_.find(message);
@@ -87,6 +94,8 @@ void WebUI::OnWebUISend(const GURL& source_url,
 }
 
 void WebUI::RenderViewCreated(RenderViewHost* render_view_host) {
+  controller_->RenderViewCreated(render_view_host);
+
   // Do not attempt to set the toolkit property if WebUI is not enabled, e.g.,
   // the bookmarks manager page.
   if (!(bindings_ & content::BINDINGS_POLICY_WEB_UI))

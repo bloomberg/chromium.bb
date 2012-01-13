@@ -233,7 +233,7 @@ string16 PolicyUIHandler::CreateStatusMessageString(
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-PolicyUI::PolicyUI(WebContents* contents) : WebUI(contents) {
+PolicyUI::PolicyUI(WebContents* contents) : WebUI(contents, this) {
   AddMessageHandler(new PolicyUIHandler);
 
   // Set up the chrome://policy/ source.

@@ -50,7 +50,7 @@ ChromeWebUIDataSource* CreateUberHTMLSource() {
 
 }  // namespace
 
-UberUI::UberUI(WebContents* contents) : WebUI(contents) {
+UberUI::UberUI(WebContents* contents) : WebUI(contents, this) {
   Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
   profile->GetChromeURLDataManager()->AddDataSource(CreateUberHTMLSource());
 
@@ -76,41 +76,36 @@ void UberUI::RegisterSubpage(const std::string& page_url) {
 void UberUI::RenderViewCreated(RenderViewHost* render_view_host) {
   for (SubpageMap::iterator iter = sub_uis_.begin(); iter != sub_uis_.end();
        ++iter) {
-    iter->second->RenderViewCreated(render_view_host);
+    iter->second->controller()->RenderViewCreated(render_view_host);
   }
-
-  WebUI::RenderViewCreated(render_view_host);
 }
 
 void UberUI::RenderViewReused(RenderViewHost* render_view_host) {
   for (SubpageMap::iterator iter = sub_uis_.begin(); iter != sub_uis_.end();
        ++iter) {
-    iter->second->RenderViewReused(render_view_host);
+    iter->second->controller()->RenderViewReused(render_view_host);
   }
-
-  WebUI::RenderViewReused(render_view_host);
 }
 
 void UberUI::DidBecomeActiveForReusedRenderView() {
   for (SubpageMap::iterator iter = sub_uis_.begin(); iter != sub_uis_.end();
        ++iter) {
-    iter->second->DidBecomeActiveForReusedRenderView();
+    iter->second->controller()->DidBecomeActiveForReusedRenderView();
   }
-
-  WebUI::DidBecomeActiveForReusedRenderView();
 }
 
-void UberUI::OnWebUISend(const GURL& source_url,
-                         const std::string& message,
-                         const ListValue& args) {
+bool UberUI::OverrideHandleWebUIMessage(const GURL& source_url,
+                                        const std::string& message,
+                                        const ListValue& args) {
   // Find the appropriate subpage and forward the message.
   SubpageMap::iterator subpage = sub_uis_.find(source_url.GetOrigin().spec());
   if (subpage == sub_uis_.end()) {
     // The message was sent from the uber page itself.
     DCHECK_EQ(std::string(chrome::kChromeUIUberHost), source_url.host());
-    WebUI::OnWebUISend(source_url, message, args);
-  } else {
-    // The message was sent from a subpage.
-    subpage->second->OnWebUISend(source_url, message, args);
+    return false;
   }
+
+  // The message was sent from a subpage.
+  return subpage->second->controller()->OverrideHandleWebUIMessage(
+      source_url, message, args);
 }

@@ -27,7 +27,8 @@ ChromeWebUIDataSource* CreateAboutPageHTMLSource() {
 
 }  // namespace
 
-AboutPageUI::AboutPageUI(content::WebContents* contents) : WebUI(contents) {
+AboutPageUI::AboutPageUI(content::WebContents* contents)
+    : WebUI(contents, this) {
   Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
   ChromeWebUIDataSource* source = CreateAboutPageHTMLSource();
   profile->GetChromeURLDataManager()->AddDataSource(source);

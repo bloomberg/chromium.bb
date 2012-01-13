@@ -662,7 +662,7 @@ void SimUnlockHandler::UpdatePage(const chromeos::NetworkDevice* cellular,
 
 // SimUnlockUI -----------------------------------------------------------------
 
-SimUnlockUI::SimUnlockUI(WebContents* contents) : WebUI(contents) {
+SimUnlockUI::SimUnlockUI(WebContents* contents) : WebUI(contents, this) {
   SimUnlockHandler* handler = new SimUnlockHandler();
   AddMessageHandler(handler);
   SimUnlockUIHTMLSource* html_source = new SimUnlockUIHTMLSource();

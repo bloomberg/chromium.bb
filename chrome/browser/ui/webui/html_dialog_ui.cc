@@ -23,7 +23,7 @@ static base::LazyInstance<base::PropertyAccessor<HtmlDialogUIDelegate*> >
     g_html_dialog_ui_property_accessor = LAZY_INSTANCE_INITIALIZER;
 
 HtmlDialogUI::HtmlDialogUI(WebContents* web_contents)
-    : WebUI(web_contents) {
+    : WebUI(web_contents, this) {
 }
 
 HtmlDialogUI::~HtmlDialogUI() {
@@ -77,8 +77,6 @@ void HtmlDialogUI::RenderViewCreated(RenderViewHost* render_view_host) {
       chrome::NOTIFICATION_HTML_DIALOG_SHOWN,
       content::Source<WebUI>(this),
       content::Details<RenderViewHost>(render_view_host));
-
-  WebUI::RenderViewCreated(render_view_host);
 }
 
 void HtmlDialogUI::OnDialogClosed(const ListValue* args) {

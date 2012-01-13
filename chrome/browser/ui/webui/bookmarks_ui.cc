@@ -56,7 +56,7 @@ std::string BookmarksUIHTMLSource::GetMimeType(const std::string& path) const {
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-BookmarksUI::BookmarksUI(WebContents* contents) : WebUI(contents) {
+BookmarksUI::BookmarksUI(WebContents* contents) : WebUI(contents, this) {
   BookmarksUIHTMLSource* html_source = new BookmarksUIHTMLSource();
 
   // Set up the chrome://bookmarks/ source.

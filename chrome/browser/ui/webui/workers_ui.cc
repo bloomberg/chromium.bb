@@ -253,7 +253,7 @@ class WorkersUI::WorkerCreationDestructionListener
 };
 
 WorkersUI::WorkersUI(WebContents* contents)
-    : WebUI(contents),
+    : WebUI(contents, this),
       observer_(new WorkerCreationDestructionListener(this)){
   AddMessageHandler(new WorkersDOMHandler());
 

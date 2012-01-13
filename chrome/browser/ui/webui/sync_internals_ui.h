@@ -14,20 +14,21 @@
 #include "chrome/browser/sync/js/js_event_handler.h"
 #include "chrome/browser/sync/js/js_reply_handler.h"
 #include "content/browser/webui/web_ui.h"
+#include "content/public/browser/web_ui_controller.h"
 
 namespace browser_sync {
 class JsController;
 }  // namespace browser_sync
 
 // The implementation for the chrome://sync-internals page.
-class SyncInternalsUI : public WebUI,
+class SyncInternalsUI : public WebUI, public content::WebUIController,
                         public browser_sync::JsEventHandler,
                         public browser_sync::JsReplyHandler {
  public:
   explicit SyncInternalsUI(content::WebContents* contents);
   virtual ~SyncInternalsUI();
 
-  // WebUI implementation.
+  // WebUIController implementation.
   //
   // The following messages are processed:
   //
@@ -40,9 +41,9 @@ class SyncInternalsUI : public WebUI,
   //
   // TODO(akalin): Add a simple isSyncEnabled() message and make
   // getAboutInfo() be handled by the sync service.
-  virtual void OnWebUISend(const GURL& source_url,
-                           const std::string& name,
-                           const base::ListValue& args) OVERRIDE;
+  virtual bool OverrideHandleWebUIMessage(const GURL& source_url,
+                                          const std::string& name,
+                                          const base::ListValue& args) OVERRIDE;
 
   // browser_sync::JsEventHandler implementation.
   virtual void HandleJsEvent(

@@ -7,8 +7,9 @@
 #pragma once
 
 #include "content/browser/webui/web_ui.h"
+#include "content/public/browser/web_ui_controller.h"
 
-class SystemInfoUI : public WebUI {
+class SystemInfoUI : public WebUI, public content::WebUIController {
  public:
   explicit SystemInfoUI(content::WebContents* contents);
 

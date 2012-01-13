@@ -7,11 +7,12 @@
 #pragma once
 
 #include "content/browser/webui/web_ui.h"
+#include "content/public/browser/web_ui_controller.h"
 
 class PrefService;
 class RefCountedMemory;
 
-class FlagsUI : public WebUI {
+class FlagsUI : public WebUI, public content::WebUIController {
  public:
   explicit FlagsUI(content::WebContents* contents);
 

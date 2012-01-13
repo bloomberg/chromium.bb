@@ -10,9 +10,10 @@
 
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "content/browser/webui/web_ui.h"
+#include "content/public/browser/web_ui_controller.h"
 
 // The TabContents used for the keyboard page.
-class KeyboardUI : public WebUI {
+class KeyboardUI : public WebUI, public content::WebUIController {
  public:
   explicit KeyboardUI(content::WebContents* manager);
   virtual ~KeyboardUI();

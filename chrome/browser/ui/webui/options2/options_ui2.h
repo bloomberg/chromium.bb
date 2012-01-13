@@ -15,6 +15,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/web_ui_controller.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
 namespace options2 {
@@ -81,7 +82,7 @@ class OptionsPageUIHandlerHost {
 };
 
 // The WebUI for chrome:settings-frame.
-class OptionsUI : public WebUI,
+class OptionsUI : public WebUI, public content::WebUIController,
                   public OptionsPageUIHandlerHost {
  public:
   explicit OptionsUI(content::WebContents* contents);
@@ -89,7 +90,7 @@ class OptionsUI : public WebUI,
 
   static RefCountedMemory* GetFaviconResourceBytes();
 
-  // WebUI implementation.
+  // WebUIController implementation.
   virtual void RenderViewCreated(RenderViewHost* render_view_host) OVERRIDE;
   virtual void RenderViewReused(RenderViewHost* render_view_host) OVERRIDE;
   virtual void DidBecomeActiveForReusedRenderView() OVERRIDE;

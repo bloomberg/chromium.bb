@@ -7,10 +7,11 @@
 #pragma once
 
 #include "content/browser/webui/web_ui.h"
+#include "content/public/browser/web_ui_controller.h"
 
 class RefCountedMemory;
 
-class SessionsUI : public WebUI {
+class SessionsUI : public WebUI, public content::WebUIController {
  public:
   explicit SessionsUI(content::WebContents* contents);
 

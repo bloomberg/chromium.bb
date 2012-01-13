@@ -7,10 +7,11 @@
 #pragma once
 
 #include "content/browser/webui/web_ui.h"
+#include "content/public/browser/web_ui_controller.h"
 
 // A custom WebUI that defines datasource for host registration page that
 // is used in Chrome OS to register product on first sign in.
-class RegisterPageUI : public WebUI {
+class RegisterPageUI : public WebUI, public content::WebUIController {
  public:
   explicit RegisterPageUI(content::WebContents* contents);
 

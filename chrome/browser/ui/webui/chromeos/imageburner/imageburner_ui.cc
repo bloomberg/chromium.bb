@@ -645,7 +645,7 @@ bool WebUIHandler::CheckNetwork() {
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-ImageBurnUI::ImageBurnUI(WebContents* contents) : WebUI(contents) {
+ImageBurnUI::ImageBurnUI(WebContents* contents) : WebUI(contents, this) {
   imageburner::WebUIHandler* handler = new imageburner::WebUIHandler(contents);
   AddMessageHandler(handler);
 

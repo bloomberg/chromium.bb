@@ -9,6 +9,7 @@
 #include "build/build_config.h"
 #include "chrome/common/render_messages.h"
 #include "content/public/common/child_process_sandbox_support_linux.h"
+#include "content/public/common/content_client.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
 #include "grit/webkit_resources.h"
@@ -123,7 +124,8 @@ static const ResourceImageInfo kResourceImageMap[] = {
 
 PP_Var GetLocalizedString(PP_Instance instance_id,
                           PP_ResourceString string_id) {
-  PluginInstance* instance = HostGlobals::Get()->GetInstance(instance_id);
+  PluginInstance* instance =
+      content::GetHostGlobals()->GetInstance(instance_id);
   if (!instance)
     return PP_MakeUndefined();
 
@@ -159,7 +161,7 @@ PP_Resource GetResourceImage(PP_Instance instance_id,
       ResourceBundle::GetSharedInstance().GetBitmapNamed(res_id);
 
   // Validate the instance.
-  if (!HostGlobals::Get()->GetInstance(instance_id))
+  if (!content::GetHostGlobals()->GetInstance(instance_id))
     return 0;
   scoped_refptr<webkit::ppapi::PPB_ImageData_Impl> image_data(
       new webkit::ppapi::PPB_ImageData_Impl(instance_id));
@@ -187,7 +189,7 @@ PP_Resource GetFontFileWithFallback(
     PP_PrivateFontCharset charset) {
 #if defined(OS_LINUX) || defined(OS_OPENBSD)
   // Validate the instance before using it below.
-  if (!HostGlobals::Get()->GetInstance(instance_id))
+  if (!content::GetHostGlobals()->GetInstance(instance_id))
     return 0;
 
   scoped_refptr<ppapi::StringVar> face_name(ppapi::StringVar::FromPPVar(
@@ -281,21 +283,23 @@ void SearchString(PP_Instance instance,
 }
 
 void DidStartLoading(PP_Instance instance_id) {
-  PluginInstance* instance = HostGlobals::Get()->GetInstance(instance_id);
+  PluginInstance* instance = content::GetHostGlobals()->GetInstance(instance_id);
   if (!instance)
     return;
   instance->delegate()->DidStartLoading();
 }
 
 void DidStopLoading(PP_Instance instance_id) {
-  PluginInstance* instance = HostGlobals::Get()->GetInstance(instance_id);
+  PluginInstance* instance =
+      content::GetHostGlobals()->GetInstance(instance_id);
   if (!instance)
     return;
   instance->delegate()->DidStopLoading();
 }
 
 void SetContentRestriction(PP_Instance instance_id, int restrictions) {
-  PluginInstance* instance = HostGlobals::Get()->GetInstance(instance_id);
+  PluginInstance* instance =
+      content::GetHostGlobals()->GetInstance(instance_id);
   if (!instance)
     return;
   instance->delegate()->SetContentRestriction(restrictions);
@@ -313,7 +317,8 @@ void UserMetricsRecordAction(PP_Var action) {
 }
 
 void HasUnsupportedFeature(PP_Instance instance_id) {
-  PluginInstance* instance = HostGlobals::Get()->GetInstance(instance_id);
+  PluginInstance* instance =
+      content::GetHostGlobals()->GetInstance(instance_id);
   if (!instance)
     return;
 
@@ -328,7 +333,8 @@ void HasUnsupportedFeature(PP_Instance instance_id) {
 }
 
 void SaveAs(PP_Instance instance_id) {
-  PluginInstance* instance = HostGlobals::Get()->GetInstance(instance_id);
+  PluginInstance* instance =
+      content::GetHostGlobals()->GetInstance(instance_id);
   if (!instance)
     return;
   instance->delegate()->SaveURLAs(instance->plugin_url());

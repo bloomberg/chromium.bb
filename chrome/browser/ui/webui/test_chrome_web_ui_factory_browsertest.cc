@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/chrome_web_ui.h"
 #include "chrome/browser/ui/webui/test_chrome_web_ui_factory.h"
+#include "content/public/browser/web_ui_controller.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "googleurl/src/gurl.h"
@@ -19,7 +20,8 @@ namespace {
 
 // Returns a new WebUI object for the TabContents from |arg0|.
 ACTION(ReturnNewWebUI) {
-  return new WebUI(arg0);
+  static content::WebUIController temp_controller;
+  return new WebUI(arg0, &temp_controller);
 }
 
 // Mock the TestChromeWebUIFactory::WebUIProvider to prove that we are called as

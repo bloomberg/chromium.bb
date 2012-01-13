@@ -7,8 +7,9 @@
 #pragma once
 
 #include "content/browser/webui/web_ui.h"
+#include "content/public/browser/web_ui_controller.h"
 
-class TaskManagerUI : public WebUI {
+class TaskManagerUI : public WebUI, public content::WebUIController {
  public:
   explicit TaskManagerUI(content::WebContents* contents);
 

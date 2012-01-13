@@ -27,6 +27,7 @@ class Value;
 
 namespace content {
 class WebContents;
+class WebUIController;
 class WebUIMessageHandler;
 }
 
@@ -37,35 +38,16 @@ class WebUIMessageHandler;
 // ChromeWebUI.
 class CONTENT_EXPORT WebUI : public IPC::Channel::Listener {
  public:
-  explicit WebUI(content::WebContents* contents);
+  WebUI(content::WebContents* contents, content::WebUIController* controller);
   virtual ~WebUI();
 
-  // IPC message handling.
+  // IPC::Channel::Listener implementation:
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-  virtual void OnWebUISend(const GURL& source_url,
-                           const std::string& message,
-                           const base::ListValue& args);
 
-  // Called by RenderViewHost when the RenderView is first created. This is
-  // *not* called for every page load because in some cases
-  // RenderViewHostManager will reuse RenderView instances. In those cases,
-  // RenderViewReused will be called instead.
-  virtual void RenderViewCreated(RenderViewHost* render_view_host);
-
-  // Called by RenderViewHostManager when a RenderView is reused to display a
-  // page.
-  virtual void RenderViewReused(RenderViewHost* render_view_host) {}
-
-  // Called when this becomes the active WebUI instance for a re-used
-  // RenderView; this is the point at which this WebUI instance will receive
-  // DOM messages instead of the previous WebUI instance.
-  //
-  // If a WebUI instance has code that is usually triggered from a JavaScript
-  // onload handler, this should be overridden to check to see if the web page's
-  // DOM is still intact (e.g., due to a back/forward navigation that remains
-  // within the same page), and if so trigger that code manually since onload
-  // won't be run in that case.
-  virtual void DidBecomeActiveForReusedRenderView() {}
+  // Called by TabContents when the RenderView is first created. This is *not*
+  // called for every page load because in some cases RenderViewHostManager will
+  // reuse RenderView instances.
+  void RenderViewCreated(RenderViewHost* render_view_host);
 
   // Used by WebUIMessageHandlers. If the given message is already registered,
   // the call has no effect unless |register_callback_overwrites_| is set to
@@ -122,6 +104,8 @@ class CONTENT_EXPORT WebUI : public IPC::Channel::Listener {
   void set_frame_xpath(const std::string& xpath) {
     frame_xpath_ = xpath;
   }
+
+  content::WebUIController* controller() const { return controller_; }
 
   // Call a Javascript function by sending its name and arguments down to
   // the renderer.  This is asynchronous; there's no way to get the result
@@ -190,7 +174,16 @@ class CONTENT_EXPORT WebUI : public IPC::Channel::Listener {
   // Non-owning pointer to the WebContents this WebUI is associated with.
   content::WebContents* web_contents_;
 
+  // TODO(jam): once WebUI objects aren't also WebUIController, make one own the
+  // other.
+  content::WebUIController* controller_;
+
  private:
+  // IPC message handling.
+  void OnWebUISend(const GURL& source_url,
+                   const std::string& message,
+                   const base::ListValue& args);
+
   // A map of message name -> message handling callback.
   typedef std::map<std::string, MessageCallback> MessageCallbackMap;
   MessageCallbackMap message_callbacks_;

@@ -159,7 +159,7 @@ void CrashesDOMHandler::UpdateUI() {
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-CrashesUI::CrashesUI(WebContents* contents) : WebUI(contents) {
+CrashesUI::CrashesUI(WebContents* contents) : WebUI(contents, this) {
   AddMessageHandler(new CrashesDOMHandler());
 
   // Set up the chrome://crashes/ source.

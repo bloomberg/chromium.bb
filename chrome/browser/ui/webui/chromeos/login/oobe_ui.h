@@ -8,6 +8,7 @@
 
 #include "chrome/browser/chromeos/login/oobe_display.h"
 #include "content/browser/webui/web_ui.h"
+#include "content/public/browser/web_ui_controller.h"
 
 namespace base {
 class DictionaryValue;
@@ -27,7 +28,7 @@ namespace chromeos {
 // - eula screen (CrOS (+ OEM) EULA content/TPM password/crash reporting).
 // - update screen.
 class OobeUI : public OobeDisplay,
-               public WebUI {
+               public WebUI, public content::WebUIController {
  public:
   explicit OobeUI(content::WebContents* contents);
 

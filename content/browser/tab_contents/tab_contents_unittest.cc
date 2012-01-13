@@ -18,6 +18,7 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/browser/web_ui_controller.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/url_constants.h"
@@ -40,7 +41,8 @@ class TabContentsTestWebUIFactory : public content::EmptyWebUIFactory {
    if (!HasWebUIScheme(url))
      return NULL;
 
-   return new WebUI(source);
+   static content::WebUIController temp_controller;
+   return new WebUI(source, &temp_controller);
   }
 
   virtual bool UseWebUIForURL(content::BrowserContext* browser_context,

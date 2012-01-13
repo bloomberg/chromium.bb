@@ -7,8 +7,9 @@
 #pragma once
 
 #include "content/browser/webui/web_ui.h"
+#include "content/public/browser/web_ui_controller.h"
 
-class ExtensionsUI : public WebUI {
+class ExtensionsUI : public WebUI, public content::WebUIController {
  public:
   explicit ExtensionsUI(content::WebContents* contents);
   virtual ~ExtensionsUI();

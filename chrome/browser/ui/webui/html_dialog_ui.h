@@ -11,6 +11,7 @@
 
 #include "base/string16.h"
 #include "content/browser/webui/web_ui.h"
+#include "content/public/browser/web_ui_controller.h"
 #include "googleurl/src/gurl.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/rect.h"
@@ -95,7 +96,7 @@ class HtmlDialogUIDelegate {
 // there and call it back. This is a bit of a hack to allow the dialog to pass
 // its delegate to the Web UI without having nasty accessors on the WebContents.
 // The correct design using RVH directly would avoid all of this.
-class HtmlDialogUI : public WebUI {
+class HtmlDialogUI : public WebUI, public content::WebUIController {
  public:
   struct HtmlDialogParams {
     // The URL for the content that will be loaded in the dialog.
@@ -120,7 +121,7 @@ class HtmlDialogUI : public WebUI {
   static base::PropertyAccessor<HtmlDialogUIDelegate*>& GetPropertyAccessor();
 
  private:
-  // WebUI
+  // WebUIController
   virtual void RenderViewCreated(RenderViewHost* render_view_host) OVERRIDE;
 
   // JS message handler.

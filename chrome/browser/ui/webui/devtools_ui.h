@@ -7,16 +7,17 @@
 #pragma once
 
 #include "content/browser/webui/web_ui.h"
+#include "content/public/browser/web_ui_controller.h"
 
 class Profile;
 
-class DevToolsUI : public WebUI {
+class DevToolsUI : public WebUI, public content::WebUIController {
  public:
   static void RegisterDevToolsDataSource(Profile* profile);
 
   explicit DevToolsUI(content::WebContents* contents);
 
-  // WebUI
+  // WebUIController
   virtual void RenderViewCreated(RenderViewHost* render_view_host) OVERRIDE;
 
  private:

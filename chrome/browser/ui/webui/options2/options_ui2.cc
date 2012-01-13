@@ -196,7 +196,7 @@ void OptionsPageUIHandler::RegisterTitle(DictionaryValue* localized_strings,
 ////////////////////////////////////////////////////////////////////////////////
 
 OptionsUI::OptionsUI(WebContents* contents)
-    : WebUI(contents),
+    : WebUI(contents, this),
       initialized_handlers_(false) {
   DictionaryValue* localized_strings = new DictionaryValue();
 
@@ -294,15 +294,12 @@ OptionsUI::~OptionsUI() {
   }
 }
 
-// Override.
 void OptionsUI::RenderViewCreated(RenderViewHost* render_view_host) {
   SetCommandLineString(render_view_host);
-  WebUI::RenderViewCreated(render_view_host);
 }
 
 void OptionsUI::RenderViewReused(RenderViewHost* render_view_host) {
   SetCommandLineString(render_view_host);
-  WebUI::RenderViewReused(render_view_host);
 }
 
 void OptionsUI::DidBecomeActiveForReusedRenderView() {
@@ -313,8 +310,6 @@ void OptionsUI::DidBecomeActiveForReusedRenderView() {
   // happens, call reinitializeCore (which is a no-op unless the DOM was already
   // initialized).
   CallJavascriptFunction("OptionsPage.reinitializeCore");
-
-  WebUI::DidBecomeActiveForReusedRenderView();
 }
 
 // static

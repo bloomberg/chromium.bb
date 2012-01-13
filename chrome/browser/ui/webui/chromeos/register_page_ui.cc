@@ -294,7 +294,7 @@ void RegisterPageHandler::SendUserInfo() {
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-RegisterPageUI::RegisterPageUI(WebContents* contents) : WebUI(contents) {
+RegisterPageUI::RegisterPageUI(WebContents* contents) : WebUI(contents, this) {
   RegisterPageHandler* handler = new RegisterPageHandler();
   AddMessageHandler(handler);
   RegisterPageUIHTMLSource* html_source = new RegisterPageUIHTMLSource();

@@ -6,8 +6,9 @@
 #define CHROME_BROWSER_UI_WEBUI_CHROMEOS_IMAGEBURNER_IMAGEBURNER_UI_H_
 
 #include "content/browser/webui/web_ui.h"
+#include "content/public/browser/web_ui_controller.h"
 
-class ImageBurnUI : public WebUI {
+class ImageBurnUI : public WebUI, public content::WebUIController {
  public:
   explicit ImageBurnUI(content::WebContents* contents);
 

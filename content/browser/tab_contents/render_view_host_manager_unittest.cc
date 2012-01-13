@@ -17,6 +17,7 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/web_ui_controller.h"
 #include "content/public/common/page_transition_types.h"
 #include "content/public/common/url_constants.h"
 #include "content/test/test_browser_context.h"
@@ -53,7 +54,8 @@ class RenderViewHostManagerTestWebUIFactory
                                    const GURL& url) const OVERRIDE {
     if (!(should_create_webui_ && HasWebUIScheme(url)))
       return NULL;
-    return new WebUI(source);
+    static content::WebUIController temp_controller;
+    return new WebUI(source, &temp_controller);
   }
 
   virtual bool UseWebUIForURL(content::BrowserContext* browser_context,

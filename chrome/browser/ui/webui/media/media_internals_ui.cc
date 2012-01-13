@@ -39,7 +39,7 @@ ChromeWebUIDataSource* CreateMediaInternalsHTMLSource() {
 ////////////////////////////////////////////////////////////////////////////////
 
 MediaInternalsUI::MediaInternalsUI(WebContents* contents)
-    : WebUI(contents) {
+    : WebUI(contents, this) {
   AddMessageHandler(new MediaInternalsMessageHandler());
 
   Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());

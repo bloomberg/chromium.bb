@@ -7,8 +7,9 @@
 #pragma once
 
 #include "content/browser/webui/web_ui.h"
+#include "content/public/browser/web_ui_controller.h"
 
-class QuotaInternalsUI : public WebUI {
+class QuotaInternalsUI : public WebUI, public content::WebUIController {
  public:
   explicit QuotaInternalsUI(content::WebContents* contents);
   virtual ~QuotaInternalsUI() {}

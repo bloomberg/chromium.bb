@@ -411,7 +411,7 @@ void TracingMessageHandler::OnTraceBufferPercentFullReply(float percent_full) {
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-TracingUI::TracingUI(WebContents* contents) : WebUI(contents) {
+TracingUI::TracingUI(WebContents* contents) : WebUI(contents, this) {
   AddMessageHandler(new TracingMessageHandler());
 
   // Set up the chrome://tracing/ source.

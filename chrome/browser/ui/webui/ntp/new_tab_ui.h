@@ -16,13 +16,14 @@
 #include "content/browser/webui/web_ui.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/web_ui_controller.h"
 
 class GURL;
 class PrefService;
 class Profile;
 
 // The TabContents used for the New Tab page.
-class NewTabUI : public WebUI,
+class NewTabUI : public WebUI, public content::WebUIController,
                  public content::NotificationObserver {
  public:
   explicit NewTabUI(content::WebContents* manager);
@@ -42,8 +43,7 @@ class NewTabUI : public WebUI,
   // The current preference version.
   static int current_pref_version() { return current_pref_version_; }
 
-  // Override WebUI methods so we can hook up the paint timer to the render
-  // view host.
+  // WebUIController implementation:
   virtual void RenderViewCreated(RenderViewHost* render_view_host) OVERRIDE;
   virtual void RenderViewReused(RenderViewHost* render_view_host) OVERRIDE;
 

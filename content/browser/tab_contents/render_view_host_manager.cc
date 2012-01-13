@@ -22,6 +22,7 @@
 #include "content/common/view_messages.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/web_ui_controller.h"
 #include "content/public/browser/web_ui_factory.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
@@ -556,7 +557,7 @@ void RenderViewHostManager::CommitPending() {
   // Next commit the Web UI, if any.
   web_ui_.swap(pending_web_ui_);
   if (web_ui_.get() && pending_web_ui_.get() && !pending_render_view_host_)
-    web_ui_->DidBecomeActiveForReusedRenderView();
+    web_ui_->controller()->DidBecomeActiveForReusedRenderView();
   pending_web_ui_.reset();
 
   // It's possible for the pending_render_view_host_ to be NULL when we aren't
@@ -736,7 +737,7 @@ RenderViewHost* RenderViewHostManager::UpdateRendererStateForNavigate(
     return pending_render_view_host_;
   } else {
     if (pending_web_ui_.get() && render_view_host_->IsRenderViewLive())
-      pending_web_ui_->RenderViewReused(render_view_host_);
+      pending_web_ui_->controller()->RenderViewReused(render_view_host_);
 
     // The renderer can exit view source mode when any error or cancellation
     // happen. We must overwrite to recover the mode.

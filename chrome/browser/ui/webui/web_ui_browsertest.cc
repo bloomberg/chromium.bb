@@ -27,6 +27,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_ui_controller.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest-spi.h"
@@ -288,7 +289,8 @@ class MockWebUIProvider : public TestChromeWebUIFactory::WebUIProvider {
 
   // Returns a new WebUI
   WebUI* NewWebUI(WebContents* web_contents, const GURL& url) OVERRIDE {
-    return new MockWebUI(web_contents);
+    static content::WebUIController temp_controller;
+    return new MockWebUI(web_contents, &temp_controller);
   }
 
  private:

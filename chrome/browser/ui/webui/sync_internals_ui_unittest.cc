@@ -17,6 +17,7 @@
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/profile_mock.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
+#include "content/public/browser/web_ui_controller.h"
 #include "content/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -121,7 +122,8 @@ TEST_F(SyncInternalsUITestWithService, OnWebUISendBasic) {
   EXPECT_CALL(mock_js_controller_,
               ProcessJsMessage(name, HasArgsAsList(args), _));
 
-  test_sync_internals_ui_->OnWebUISend(GURL(), name, args);
+  test_sync_internals_ui_->controller()->OverrideHandleWebUIMessage(
+      GURL(), name, args);
 }
 
 // Tests with NULL ProfileSyncService.
@@ -183,7 +185,8 @@ TEST_F(SyncInternalsUITestWithoutService, OnWebUISendBasic) {
   args.Append(Value::CreateIntegerValue(5));
 
   // Should drop the message.
-  test_sync_internals_ui_->OnWebUISend(GURL(), name, args);
+  test_sync_internals_ui_->controller()->OverrideHandleWebUIMessage(
+      GURL(), name, args);
 }
 
 // TODO(lipalani) - add a test case to test about:sync with a non null
@@ -195,7 +198,8 @@ TEST_F(SyncInternalsUITestWithoutService, OnWebUISendGetAboutInfo) {
               ExecuteJavascript(ASCIIToUTF16(kAboutInfoCall)));
 
   ListValue args;
-  test_sync_internals_ui_->OnWebUISend(GURL(), "getAboutInfo", args);
+  test_sync_internals_ui_->controller()->OverrideHandleWebUIMessage(
+      GURL(), "getAboutInfo", args);
 }
 
 }  // namespace

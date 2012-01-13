@@ -7,9 +7,10 @@
 #pragma once
 
 #include "content/browser/webui/web_ui.h"
+#include "content/public/browser/web_ui_controller.h"
 
 // The C++ back-end for the chrome://tracing webui page.
-class TracingUI : public WebUI {
+class TracingUI : public WebUI, public content::WebUIController {
  public:
   explicit TracingUI(content::WebContents* contents);
 

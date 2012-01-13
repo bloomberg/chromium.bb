@@ -8,8 +8,9 @@
 #pragma once
 
 #include "content/browser/webui/web_ui.h"
+#include "content/public/browser/web_ui_controller.h"
 
-class AboutPageUI : public WebUI {
+class AboutPageUI : public WebUI, public content::WebUIController {
  public:
   explicit AboutPageUI(content::WebContents* contents);
   virtual ~AboutPageUI();

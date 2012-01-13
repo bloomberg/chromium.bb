@@ -63,8 +63,6 @@ class CONTENT_EXPORT WebUIMessageHandler {
   void set_web_ui(WebUI* web_ui) { web_ui_ = web_ui; }
 
   WebUI* web_ui_;
-
-  DISALLOW_COPY_AND_ASSIGN(WebUIMessageHandler);
 };
 
 }  // namespace content

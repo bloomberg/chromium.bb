@@ -75,7 +75,7 @@ static base::LazyInstance<std::set<const WebUI*> > g_live_new_tabs;
 // NewTabUI
 
 NewTabUI::NewTabUI(WebContents* contents)
-    : WebUI(contents) {
+    : WebUI(contents, this) {
   g_live_new_tabs.Pointer()->insert(this);
   // Override some options on the Web UI.
   hide_favicon_ = true;
@@ -172,12 +172,10 @@ bool NewTabUI::CanShowBookmarkBar() const {
 
 void NewTabUI::RenderViewCreated(RenderViewHost* render_view_host) {
   StartTimingPaint(render_view_host);
-  WebUI::RenderViewCreated(render_view_host);
 }
 
 void NewTabUI::RenderViewReused(RenderViewHost* render_view_host) {
   StartTimingPaint(render_view_host);
-  WebUI::RenderViewReused(render_view_host);
 }
 
 void NewTabUI::Observe(int type,

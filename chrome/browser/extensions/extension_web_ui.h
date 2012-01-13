@@ -13,21 +13,16 @@
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/browser/webui/web_ui.h"
+#include "content/public/browser/web_ui_controller.h"
 
-class GURL;
 class PrefService;
 class Profile;
-
-namespace base {
-class ListValue;
-class Value;
-}
 
 // This class implements WebUI for extensions and allows extensions to put UI in
 // the main tab contents area. For example, each extension can specify an
 // "options_page", and that page is displayed in the tab contents area and is
 // hosted by this class.
-class ExtensionWebUI : public WebUI {
+class ExtensionWebUI : public WebUI, public content::WebUIController {
  public:
   static const char kExtensionURLOverrides[];
 

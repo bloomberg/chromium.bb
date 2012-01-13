@@ -367,7 +367,7 @@ void FlashDOMHandler::MaybeRespondToPage() {
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-FlashUI::FlashUI(WebContents* contents) : WebUI(contents) {
+FlashUI::FlashUI(WebContents* contents) : WebUI(contents, this) {
   content::RecordAction(
       UserMetricsAction("ViewAboutFlash"));
 

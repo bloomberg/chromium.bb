@@ -25,15 +25,13 @@ static base::LazyInstance<base::PropertyAccessor<ConstrainedHtmlUIDelegate*> >
     g_constrained_html_ui_property_accessor = LAZY_INSTANCE_INITIALIZER;
 
 ConstrainedHtmlUI::ConstrainedHtmlUI(WebContents* contents)
-    : WebUI(contents) {
+    : WebUI(contents, this) {
 }
 
 ConstrainedHtmlUI::~ConstrainedHtmlUI() {
 }
 
 void ConstrainedHtmlUI::RenderViewCreated(RenderViewHost* render_view_host) {
-  WebUI::RenderViewCreated(render_view_host);
-
   ConstrainedHtmlUIDelegate* delegate = GetConstrainedDelegate();
   if (!delegate)
     return;

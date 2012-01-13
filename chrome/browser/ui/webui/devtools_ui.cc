@@ -100,7 +100,7 @@ void DevToolsUI::RegisterDevToolsDataSource(Profile* profile) {
   }
 }
 
-DevToolsUI::DevToolsUI(WebContents* contents) : WebUI(contents) {
+DevToolsUI::DevToolsUI(WebContents* contents) : WebUI(contents, this) {
   DevToolsDataSource* data_source = new DevToolsDataSource();
   Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
   profile->GetChromeURLDataManager()->AddDataSource(data_source);
@@ -108,5 +108,4 @@ DevToolsUI::DevToolsUI(WebContents* contents) : WebUI(contents) {
 
 void DevToolsUI::RenderViewCreated(RenderViewHost* render_view_host) {
   content::DevToolsClientHost::SetupDevToolsFrontendClient(render_view_host);
-  WebUI::RenderViewCreated(render_view_host);
 }

@@ -7,6 +7,7 @@
 #pragma once
 
 #include "content/browser/webui/web_ui.h"
+#include "content/public/browser/web_ui_controller.h"
 
 class ConstrainedWindow;
 class HtmlDialogUIDelegate;
@@ -47,11 +48,12 @@ class ConstrainedHtmlUIDelegate {
 //
 // Since ConstrainedWindow requires platform-specific delegate
 // implementations, this class is just a factory stub.
-class ConstrainedHtmlUI : public WebUI {
+class ConstrainedHtmlUI : public WebUI, public content::WebUIController {
  public:
   explicit ConstrainedHtmlUI(content::WebContents* contents);
   virtual ~ConstrainedHtmlUI();
 
+  // WebUIController implementation:
   virtual void RenderViewCreated(RenderViewHost* render_view_host) OVERRIDE;
 
   // Create a constrained HTML dialog. The actual object that gets created

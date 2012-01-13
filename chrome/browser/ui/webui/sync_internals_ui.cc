@@ -73,7 +73,7 @@ ProfileSyncService* GetProfileSyncService(Profile* profile) {
 }  // namespace
 
 SyncInternalsUI::SyncInternalsUI(WebContents* contents)
-    : WebUI(contents),
+    : WebUI(contents, this),
       weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   // TODO(akalin): Fix.
   Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
@@ -94,9 +94,9 @@ SyncInternalsUI::~SyncInternalsUI() {
   }
 }
 
-void SyncInternalsUI::OnWebUISend(const GURL& source_url,
-                                  const std::string& name,
-                                  const ListValue& content) {
+bool SyncInternalsUI::OverrideHandleWebUIMessage(const GURL& source_url,
+                                                 const std::string& name,
+                                                 const ListValue& content) {
   scoped_ptr<ListValue> content_copy(content.DeepCopy());
   JsArgList args(content_copy.get());
   VLOG(1) << "Received message: " << name << " with args "
@@ -122,6 +122,7 @@ void SyncInternalsUI::OnWebUISend(const GURL& source_url,
                    << " with args " << args.ToString();
     }
   }
+  return true;
 }
 
 void SyncInternalsUI::HandleJsEvent(

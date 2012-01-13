@@ -7,11 +7,12 @@
 #pragma once
 
 #include "content/browser/webui/web_ui.h"
+#include "content/public/browser/web_ui_controller.h"
 
 namespace chromeos {
 
 // A custom WebUI that defines datasource for choosing cellular network dialog.
-class ChooseMobileNetworkUI : public WebUI {
+class ChooseMobileNetworkUI : public WebUI, public content::WebUIController {
  public:
   explicit ChooseMobileNetworkUI(content::WebContents* contents);
 

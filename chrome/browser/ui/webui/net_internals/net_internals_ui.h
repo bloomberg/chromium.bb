@@ -7,12 +7,13 @@
 #pragma once
 
 #include "content/browser/webui/web_ui.h"
+#include "content/public/browser/web_ui_controller.h"
 
 namespace base {
 class Value;
 }
 
-class NetInternalsUI : public WebUI {
+class NetInternalsUI : public WebUI, public content::WebUIController {
  public:
   explicit NetInternalsUI(content::WebContents* contents);
 

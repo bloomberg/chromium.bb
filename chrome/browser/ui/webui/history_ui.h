@@ -14,9 +14,8 @@
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "content/browser/webui/web_ui.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/web_ui_controller.h"
 #include "content/public/browser/web_ui_message_handler.h"
-
-class GURL;
 
 // The handler for Javascript messages related to the "history" view.
 class BrowsingHistoryHandler : public content::WebUIMessageHandler,
@@ -78,7 +77,7 @@ class BrowsingHistoryHandler : public content::WebUIMessageHandler,
   DISALLOW_COPY_AND_ASSIGN(BrowsingHistoryHandler);
 };
 
-class HistoryUI : public WebUI {
+class HistoryUI : public WebUI, public content::WebUIController {
  public:
   explicit HistoryUI(content::WebContents* contents);
 

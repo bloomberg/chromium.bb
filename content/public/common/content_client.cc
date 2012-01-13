@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/string_piece.h"
 #include "webkit/glue/webkit_glue.h"
+#include "webkit/plugins/ppapi/host_globals.h"
 
 namespace content {
 
@@ -36,6 +37,10 @@ ContentClient* GetContentClient() {
 const std::string& GetUserAgent(const GURL& url) {
   DCHECK(g_client);
   return webkit_glue::GetUserAgent(url);
+}
+
+webkit::ppapi::HostGlobals* GetHostGlobals() {
+  return webkit::ppapi::HostGlobals::Get();
 }
 
 ContentClient::ContentClient()

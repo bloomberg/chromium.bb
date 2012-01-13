@@ -109,7 +109,7 @@ std::string OobeUIHTMLSource::GetDataResource(int resource_id) const {
 // OobeUI ----------------------------------------------------------------------
 
 OobeUI::OobeUI(WebContents* contents)
-    : WebUI(contents),
+    : WebUI(contents, this),
       update_screen_actor_(NULL),
       network_screen_actor_(NULL),
       eula_screen_actor_(NULL),

@@ -128,7 +128,7 @@ const char ExtensionWebUI::kExtensionURLOverrides[] =
     "extensions.chrome_url_overrides";
 
 ExtensionWebUI::ExtensionWebUI(WebContents* web_contents, const GURL& url)
-    : WebUI(web_contents),
+    : WebUI(web_contents, this),
       url_(url) {
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
