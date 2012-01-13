@@ -5961,19 +5961,19 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       <message name="IDS_FLASH_STORAGE_SETTINGS" desc="Link for opening Adobe Flash Player storage settings">
         Adobe Flash Player storage settings...
       </message>
-      <message name="IDS_CLEAR_DATA_HOUR" desc="deletion period combo box: hour">
+      <message name="IDS_CLEAR_DATA_HOUR" desc="deletion period combo box: hour. In English this finishes the sentence that starts with 'Delete the following items from'.">
         the past hour
       </message>
-      <message name="IDS_CLEAR_DATA_DAY" desc="deletion period combo box: day">
+      <message name="IDS_CLEAR_DATA_DAY" desc="deletion period combo box: day. In English this finishes the sentence that starts with 'Delete the following items from'.">
         the past day
       </message>
-      <message name="IDS_CLEAR_DATA_WEEK" desc="deletion period combo box: week">
+      <message name="IDS_CLEAR_DATA_WEEK" desc="deletion period combo box: week. In English this finishes the sentence that starts with 'Delete the following items from'.">
         the past week
       </message>
-      <message name="IDS_CLEAR_DATA_4WEEKS" desc="deletion period combo box: 4 weeks">
+      <message name="IDS_CLEAR_DATA_4WEEKS" desc="deletion period combo box: 4 weeks. In English this finishes the sentence that starts with 'Delete the following items from'.">
         the last 4 weeks
       </message>
-      <message name="IDS_CLEAR_DATA_EVERYTHING" desc="deletion period combo box: everything">
+      <message name="IDS_CLEAR_DATA_EVERYTHING" desc="deletion period combo box: everything. In English this finishes the sentence that starts with 'Delete the following items from'.">
         the beginning of time
       </message>
       <message name="IDS_CLEAR_DATA_DELETING" desc="The progress message">
