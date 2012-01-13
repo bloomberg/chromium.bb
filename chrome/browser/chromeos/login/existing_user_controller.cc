@@ -31,6 +31,7 @@
 #include "chrome/browser/chromeos/login/wizard_accessibility_helper.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/google/google_util.h"
+#include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -40,9 +41,15 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "chrome/common/pref_names.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "grit/generated_resources.h"
+#include "net/http/http_auth_cache.h"
+#include "net/http/http_network_session.h"
+#include "net/http/http_transaction_factory.h"
+#include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/widget/widget.h"
 
@@ -73,6 +80,36 @@ const char kChromeVoxTutorialURL[] =
 // Landing URL when launching Guest mode to fix captive portal.
 const char kCaptivePortalLaunchURL[] = "http://www.google.com/";
 
+// Delay for transferring the auth cache to the system profile.
+const long int kAuthCacheTransferDelayMs = 2000;
+
+// Makes a call to the policy subsystem to reload the policy when we detect
+// authentication change.
+void RefreshPoliciesOnUIThread() {
+  if (g_browser_process->browser_policy_connector())
+    g_browser_process->browser_policy_connector()->RefreshPolicies();
+}
+
+// Copies any authentication details that were entered in the login profile in
+// the mail profile to make sure all subsystems of Chrome can access the network
+// with the provided authentication which are possibly for a proxy server.
+void TransferContextAuthenticationsOnIOThread(
+    net::URLRequestContextGetter* default_profile_context_getter,
+    net::URLRequestContextGetter* browser_process_context_getter) {
+  net::HttpAuthCache* new_cache =
+      browser_process_context_getter->GetURLRequestContext()->
+      http_transaction_factory()->GetSession()->http_auth_cache();
+  net::HttpAuthCache* old_cache =
+      default_profile_context_getter->GetURLRequestContext()->
+      http_transaction_factory()->GetSession()->http_auth_cache();
+  new_cache->UpdateAllFrom(*old_cache);
+  VLOG(1) << "Main request context populated with authentication data.";
+  // Last but not least tell the policy subsystem to refresh now as it might
+  // have been stuck until now too.
+  content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
+                                   base::Bind(&RefreshPoliciesOnUIThread));
+}
+
 }  // namespace
 
 // static
@@ -95,6 +132,9 @@ ExistingUserController::ExistingUserController(LoginDisplayHost* host)
 
   registrar_.Add(this,
                  chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED,
+                 content::NotificationService::AllSources());
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_AUTH_SUPPLIED,
                  content::NotificationService::AllSources());
   cros_settings_->AddSettingsObserver(kAccountsPrefShowUserNamesOnSignIn, this);
   cros_settings_->AddSettingsObserver(kAccountsPrefAllowNewUser, this);
@@ -164,6 +204,31 @@ void ExistingUserController::Observe(
     const chromeos::UserList& users = chromeos::UserManager::Get()->GetUsers();
     UpdateLoginDisplay(users, false);
     return;
+  }
+  if (type == chrome::NOTIFICATION_AUTH_SUPPLIED) {
+    // Possibly the user has authenticated against a proxy server and we might
+    // need the credentials for enrollment and other system requests from the
+    // main |g_browser_process| request context (see bug
+    // http://crosbug.com/24861). So we transfer any credentials to the global
+    // request context here.
+    // The issue we have here is that the NOTIFICATION_AUTH_SUPPLIED is sent
+    // just after the UI is closed but before the new credentials were stored
+    // in the profile. Therefore we have to give it some time to make sure it
+    // has been updated before we copy it.
+    LOG(INFO) << "Authentication was entered manually, possibly for proxyauth.";
+    scoped_refptr<net::URLRequestContextGetter> browser_process_context_getter =
+        g_browser_process->system_request_context();
+    Profile* default_profile = ProfileManager::GetDefaultProfile();
+    scoped_refptr<net::URLRequestContextGetter> default_profile_context_getter =
+        default_profile->GetRequestContext();
+    DCHECK(browser_process_context_getter.get());
+    DCHECK(default_profile_context_getter.get());
+    content::BrowserThread::PostDelayedTask(
+        content::BrowserThread::IO, FROM_HERE,
+        base::Bind(&TransferContextAuthenticationsOnIOThread,
+                   default_profile_context_getter,
+                   browser_process_context_getter),
+        kAuthCacheTransferDelayMs);
   }
   if (type != chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED)
     return;
