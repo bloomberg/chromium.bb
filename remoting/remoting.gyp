@@ -347,52 +347,6 @@
     },  # end of target 'remoting_host_plugin'
 
     {
-      # This is a deprecated target that has been replaced with remoting_webapp.
-      # It is kept here because there are some pieces that still depend on
-      # this target.
-      # TODO(sergeyu): Remove this target. http://crbug.com/109948
-      'target_name': 'webapp_it2me',
-      'type': 'none',
-      'dependencies': [
-        'remoting_host_plugin',
-      ],
-      'sources': [
-        'webapp/build-webapp.py',
-        '<@(remoting_webapp_files)',
-        '<@(remoting_webapp_locale_files)',
-      ],
-      'actions': [
-        {
-          'action_name': 'Build Remoting WebApp',
-          'output_dir': '<(PRODUCT_DIR)/remoting/it2me.webapp',
-          'plugin_path': '<(PRODUCT_DIR)/<(host_plugin_prefix)remoting_host_plugin.<(host_plugin_extension)',
-          'zip_path': '<(PRODUCT_DIR)/remoting-it2me.zip',
-          'inputs': [
-            'webapp/build-webapp.py',
-            '<(_plugin_path)',
-            '<@(remoting_webapp_files)',
-            '<@(remoting_webapp_locale_files)',
-          ],
-          'outputs': [
-            '<(_output_dir)',
-            '<(_zip_path)',
-          ],
-          'action': [
-            'python', 'webapp/build-webapp.py',
-            '<(buildtype)',
-            '<(host_plugin_mime_type)',
-            '<(_output_dir)',
-            '<(_zip_path)',
-            '<(_plugin_path)',
-            '<@(remoting_webapp_files)',
-            '--locales',
-            '<@(remoting_webapp_locale_files)',
-          ],
-        },
-      ],
-    }, # end of target 'webapp_it2me'
-
-    {
       'target_name': 'remoting_webapp',
       'type': 'none',
       'dependencies': [
