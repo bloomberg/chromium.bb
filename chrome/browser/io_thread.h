@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -93,8 +93,8 @@ class IOThread : public content::BrowserThreadDelegate {
     scoped_ptr<net::HttpTransactionFactory> system_http_transaction_factory;
     scoped_ptr<net::FtpTransactionFactory> system_ftp_transaction_factory;
     scoped_refptr<net::URLRequestContext> system_request_context;
-    // |cookie_store| and |origin_bound_cert_service| are shared between
-    // |proxy_script_fetcher_context| and |system_request_context|.
+    // |system_cookie_store| and |system_origin_bound_cert_service| are shared
+    // between |proxy_script_fetcher_context| and |system_request_context|.
     scoped_refptr<net::CookieStore> system_cookie_store;
     scoped_ptr<net::OriginBoundCertService> system_origin_bound_cert_service;
     scoped_refptr<ExtensionEventRouterForwarder>
