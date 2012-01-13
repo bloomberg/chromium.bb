@@ -430,6 +430,13 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableVideoTrack)
   },
   {
+    "extension-alerts",
+    IDS_FLAGS_ENABLE_EXTENSION_ALERTS_NAME,
+    IDS_FLAGS_ENABLE_EXTENSION_ALERTS_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kEnableExtensionAlerts)
+  },
+  {
     "enable-media-source",
     IDS_FLAGS_ENABLE_MEDIA_SOURCE_NAME,
     IDS_FLAGS_ENABLE_MEDIA_SOURCE_DESCRIPTION,

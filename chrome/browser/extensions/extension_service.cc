@@ -1777,6 +1777,11 @@ void ExtensionService::OnAllExternalProvidersReady() {
 void ExtensionService::IdentifyAlertableExtensions() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableExtensionAlerts)) {
+    return;  // TODO(miket): enable unconditionally when done.
+  }
+
   // Build up the lists of extensions that require acknowledgment.
   // If this is the first time, grandfather extensions that would have
   // caused notification.

@@ -494,6 +494,9 @@ const char kEnableExperimentalExtensionApis[] =
 const char kEnableExtensionActivityLogging[] =
     "enable-extension-activity-logging";
 
+// Enables extension alerts, which are currently in development.
+const char kEnableExtensionAlerts[] = "enable-extension-alerts";
+
 // Enables experimental timeline API.
 const char kEnableExtensionTimelineApi[]    = "enable-extension-timeline-api";
 
