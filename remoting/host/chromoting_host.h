@@ -69,7 +69,7 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   ChromotingHost(ChromotingHostContext* context,
                  SignalStrategy* signal_strategy,
                  DesktopEnvironment* environment,
-                 bool allow_nat_traversal);
+                 const protocol::NetworkSettings& network_settings);
 
   // Asynchronously start the host process.
   //
@@ -173,7 +173,7 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   // Parameters specified when the host was created.
   ChromotingHostContext* context_;
   DesktopEnvironment* desktop_environment_;
-  bool allow_nat_traversal_;
+  protocol::NetworkSettings network_settings_;
 
   // TODO(lambroslambrou): The following is a temporary fix for Me2Me
   // (crbug.com/105995), pending the AuthenticatorFactory work.

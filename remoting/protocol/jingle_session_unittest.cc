@@ -132,8 +132,8 @@ class JingleSessionTest : public testing::Test {
         .Times(1);
     host_server_.reset(new JingleSessionManager(
         base::MessageLoopProxy::current()));
-    host_server_->Init(
-        host_signal_strategy_.get(), &host_server_listener_, false);
+    host_server_->Init(host_signal_strategy_.get(), &host_server_listener_,
+                       NetworkSettings());
 
     scoped_ptr<AuthenticatorFactory> factory(
         new FakeHostAuthenticatorFactory(auth_round_trips, auth_action, true));
@@ -143,8 +143,8 @@ class JingleSessionTest : public testing::Test {
         .Times(1);
     client_server_.reset(new JingleSessionManager(
         base::MessageLoopProxy::current()));
-    client_server_->Init(
-        client_signal_strategy_.get(), &client_server_listener_, false);
+    client_server_->Init(client_signal_strategy_.get(),
+                         &client_server_listener_, NetworkSettings());
   }
 
   void CloseSessionManager() {

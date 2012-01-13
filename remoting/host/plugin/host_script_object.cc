@@ -522,8 +522,8 @@ void HostNPScriptObject::FinishConnectNetworkThread(
   // Create the Host.
   LOG(INFO) << "NAT state: " << nat_traversal_enabled_;
   host_ = new ChromotingHost(
-      &host_context_, signal_strategy_.get(),
-      desktop_environment_.get(), nat_traversal_enabled_);
+      &host_context_, signal_strategy_.get(), desktop_environment_.get(),
+      protocol::NetworkSettings(nat_traversal_enabled_));
   host_->AddStatusObserver(this);
   log_to_server_.reset(new LogToServer(signal_strategy_.get()));
   host_->AddStatusObserver(log_to_server_.get());

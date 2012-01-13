@@ -46,7 +46,7 @@ JingleSessionManager::~JingleSessionManager() {
 void JingleSessionManager::Init(
     SignalStrategy* signal_strategy,
     SessionManager::Listener* listener,
-    bool allow_nat_traversal) {
+    const NetworkSettings& network_settings) {
   DCHECK(CalledOnValidThread());
 
   DCHECK(signal_strategy);
@@ -54,7 +54,7 @@ void JingleSessionManager::Init(
 
   signal_strategy_ = signal_strategy;
   listener_ = listener;
-  allow_nat_traversal_ = allow_nat_traversal;
+  allow_nat_traversal_ = network_settings.allow_nat_traversal;
 
   signal_strategy_->AddListener(this);
 
@@ -75,7 +75,7 @@ void JingleSessionManager::Init(
   // so we explicitly disables TCP connections.
   int port_allocator_flags = cricket::PORTALLOCATOR_DISABLE_TCP;
 
-  if (allow_nat_traversal) {
+  if (allow_nat_traversal_) {
     http_port_allocator_ = new cricket::HttpPortAllocator(
         network_manager_.get(), socket_factory_.get(), "transp2");
     port_allocator_.reset(http_port_allocator_);
@@ -87,6 +87,9 @@ void JingleSessionManager::Init(
             network_manager_.get(), socket_factory_.get()));
   }
   port_allocator_->set_flags(port_allocator_flags);
+
+  port_allocator_->SetPortRange(
+      network_settings.min_port, network_settings.max_port);
 
   // Initialize |cricket_session_manager_|.
   cricket_session_manager_.reset(

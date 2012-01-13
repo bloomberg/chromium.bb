@@ -26,6 +26,7 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
+#include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/threading/thread.h"
 #include "crypto/nss_util.h"
@@ -61,6 +62,7 @@ HMODULE g_hModule = NULL;
 
 using remoting::protocol::CandidateSessionConfig;
 using remoting::protocol::ChannelConfig;
+using remoting::protocol::NetworkSettings;
 
 namespace {
 
@@ -74,6 +76,9 @@ const char kFakeSwitchName[] = "fake";
 const char kIT2MeSwitchName[] = "it2me";
 const char kConfigSwitchName[] = "config";
 const char kVideoSwitchName[] = "video";
+const char kDisableNatTraversalSwitchName[] = "disable-nat-traversal";
+const char kMinPortSwitchName[] = "min-port";
+const char kMaxPortSwitchName[] = "max-port";
 
 const char kVideoSwitchValueVerbatim[] = "verbatim";
 const char kVideoSwitchValueZip[] = "zip";
@@ -147,6 +152,8 @@ class SimpleHost {
     protocol_config_.reset(protocol_config);
   }
 
+  NetworkSettings* network_settings() { return &network_settings_; }
+
  private:
   static void SetIT2MeAccessCode(scoped_refptr<ChromotingHost> host,
                                  HostKeyPair* key_pair,
@@ -207,7 +214,7 @@ class SimpleHost {
     }
 
     host_ = new ChromotingHost(&context_, signal_strategy_.get(),
-                               desktop_environment_.get(), false);
+                               desktop_environment_.get(), network_settings_);
     host_->set_it2me(is_it2me_);
 
     log_to_server_.reset(new LogToServer(signal_strategy_.get()));
@@ -256,6 +263,7 @@ class SimpleHost {
   FilePath config_path_;
   bool fake_;
   bool is_it2me_;
+  NetworkSettings network_settings_;
   scoped_ptr<CandidateSessionConfig> protocol_config_;
 
   std::string host_id_;
@@ -326,6 +334,35 @@ int main(int argc, char** argv) {
     config->mutable_video_configs()->push_back(ChannelConfig(
         transport, remoting::protocol::kDefaultStreamVersion, codec));
     simple_host.set_protocol_config(config.release());
+  }
+
+  if (cmd_line->HasSwitch(kDisableNatTraversalSwitchName))
+    simple_host.network_settings()->allow_nat_traversal = false;
+
+  if (cmd_line->HasSwitch(kMinPortSwitchName)) {
+    std::string min_port_str =
+        cmd_line->GetSwitchValueASCII(kMinPortSwitchName);
+    int min_port = 0;
+    if (!base::StringToInt(min_port_str, &min_port) ||
+        min_port < 0 || min_port > 65535) {
+      LOG(ERROR) << "Invalid min-port value: " << min_port
+                 << ". Expected integer in range [0, 65535].";
+      return 1;
+    }
+    simple_host.network_settings()->min_port = min_port;
+  }
+
+  if (cmd_line->HasSwitch(kMaxPortSwitchName)) {
+    std::string max_port_str =
+        cmd_line->GetSwitchValueASCII(kMaxPortSwitchName);
+    int max_port = 0;
+    if (!base::StringToInt(max_port_str, &max_port) ||
+        max_port < 0 || max_port > 65535) {
+      LOG(ERROR) << "Invalid max-port value: " << max_port
+                 << ". Expected integer in range [0, 65535].";
+      return 1;
+    }
+    simple_host.network_settings()->max_port = max_port;
   }
 
   return simple_host.Run();

@@ -30,13 +30,14 @@ using remoting::protocol::InputStub;
 
 namespace remoting {
 
-ChromotingHost::ChromotingHost(ChromotingHostContext* context,
-                               SignalStrategy* signal_strategy,
-                               DesktopEnvironment* environment,
-                               bool allow_nat_traversal)
+ChromotingHost::ChromotingHost(
+    ChromotingHostContext* context,
+    SignalStrategy* signal_strategy,
+    DesktopEnvironment* environment,
+    const protocol::NetworkSettings& network_settings)
     : context_(context),
       desktop_environment_(environment),
-      allow_nat_traversal_(allow_nat_traversal),
+      network_settings_(network_settings),
       have_shared_secret_(false),
       signal_strategy_(signal_strategy),
       stopping_recorders_(0),
@@ -67,7 +68,7 @@ void ChromotingHost::Start() {
   // Create and start session manager.
   session_manager_.reset(
       new protocol::JingleSessionManager(context_->network_message_loop()));
-  session_manager_->Init(signal_strategy_, this, allow_nat_traversal_);
+  session_manager_->Init(signal_strategy_, this, network_settings_);
 }
 
 // This method is called when we need to destroy the host process.

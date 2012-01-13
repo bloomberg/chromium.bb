@@ -69,6 +69,27 @@ namespace protocol {
 class Authenticator;
 class AuthenticatorFactory;
 
+struct NetworkSettings {
+  NetworkSettings()
+      : allow_nat_traversal(false),
+        min_port(0),
+        max_port(0) {
+  }
+
+  explicit NetworkSettings(bool allow_nat_traversal_value)
+      : allow_nat_traversal(allow_nat_traversal_value),
+        min_port(0),
+        max_port(0) {
+  }
+
+  bool allow_nat_traversal;
+
+  // |min_port| and |max_port| specify range (inclusive) of ports used by
+  // P2P sessions. Any port can be used when both values are set to 0.
+  int min_port;
+  int max_port;
+};
+
 // Generic interface for Chromoting session manager.
 //
 // TODO(sergeyu): Split this into two separate interfaces: one for the
@@ -118,7 +139,7 @@ class SessionManager : public base::NonThreadSafe {
   // |certificate|.
   virtual void Init(SignalStrategy* signal_strategy,
                     Listener* listener,
-                    bool allow_nat_traversal) = 0;
+                    const NetworkSettings& network_settings) = 0;
 
   // Tries to create a session to the host |jid|. Must be called only
   // after initialization has finished successfully, i.e. after

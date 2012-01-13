@@ -38,17 +38,23 @@
 #endif
 
 namespace {
+
 // These are used for parsing the config-file locations from the command line,
 // and for defining the default locations if the switches are not present.
 const char kAuthConfigSwitchName[] = "auth-config";
 const char kHostConfigSwitchName[] = "host-config";
+
 const FilePath::CharType kDefaultConfigDir[] =
     FILE_PATH_LITERAL(".config/chrome-remote-desktop");
 const FilePath::CharType kDefaultAuthConfigFile[] =
     FILE_PATH_LITERAL("auth.json");
 const FilePath::CharType kDefaultHostConfigFile[] =
     FILE_PATH_LITERAL("host.json");
-}
+
+const int kMinPortNumber = 12400;
+const int kMaxPortNumber = 12409;
+
+}  // namespace
 
 namespace remoting {
 
@@ -154,8 +160,14 @@ class HostProcess {
 
     desktop_environment_.reset(DesktopEnvironment::Create(&context_));
 
+    protocol::NetworkSettings network_settings;
+    network_settings.allow_nat_traversal = false;
+    network_settings.min_port = kMinPortNumber;
+    network_settings.max_port = kMaxPortNumber;
+
     host_ = new ChromotingHost(
-        &context_, signal_strategy_.get(), desktop_environment_.get(), false);
+        &context_, signal_strategy_.get(), desktop_environment_.get(),
+        network_settings);
 
     heartbeat_sender_.reset(
         new HeartbeatSender(host_id_, signal_strategy_.get(), &key_pair_));

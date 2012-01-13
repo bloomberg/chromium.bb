@@ -50,7 +50,7 @@ class PepperSessionManager : public SessionManager,
   // SessionManager interface.
   virtual void Init(SignalStrategy* signal_strategy,
                     SessionManager::Listener* listener,
-                    bool allow_nat_traversal) OVERRIDE;
+                    const NetworkSettings& network_settings) OVERRIDE;
   virtual Session* Connect(
       const std::string& host_jid,
       Authenticator* authenticator,

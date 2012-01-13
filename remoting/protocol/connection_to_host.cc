@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -75,7 +75,8 @@ void ConnectionToHost::Connect(scoped_refptr<XmppProxy> xmpp_proxy,
   signal_strategy_->Connect();
 
   session_manager_.reset(new PepperSessionManager(pp_instance_));
-  session_manager_->Init(signal_strategy_.get(), this, allow_nat_traversal_);
+  session_manager_->Init(signal_strategy_.get(), this,
+                         NetworkSettings(allow_nat_traversal_));
 }
 
 void ConnectionToHost::Disconnect(const base::Closure& shutdown_task) {
