@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -405,6 +405,7 @@ bool IsMicrosoftSiteThatNeedsSpoofingForSilverlight(const GURL& url) {
 }
 
 bool IsYahooSiteThatNeedsSpoofingForSilverlight(const GURL& url) {
+#if defined(OS_MACOSX) || defined(OS_WIN)
   // The following Yahoo! JAPAN pages erroneously judge that Silverlight does
   // not support Chromium. Until the pages are fixed, spoof the UA.
   // http://crbug.com/104426
@@ -412,6 +413,7 @@ bool IsYahooSiteThatNeedsSpoofingForSilverlight(const GURL& url) {
       StartsWithASCII(url.path(), "/videonews/", true)) {
     return true;
   }
+#endif
 #if defined(OS_MACOSX)
   if ((url.host() == "downloads.yahoo.co.jp" &&
       StartsWithASCII(url.path(), "/docs/silverlight/", true)) ||
@@ -450,6 +452,7 @@ const std::string& UserAgentState::Get(const GURL& url) const {
             webkit_glue::BuildOSCpuInfo().c_str());
 #endif
       }
+      DCHECK(!user_agent_for_spoofing_hack_.empty());
       return user_agent_for_spoofing_hack_;
     }
   }
