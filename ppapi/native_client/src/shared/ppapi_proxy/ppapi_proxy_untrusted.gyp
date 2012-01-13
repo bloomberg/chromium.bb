@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -60,6 +60,7 @@
           'plugin_ppb_find.cc',
           'plugin_ppb_font.cc',
           'plugin_ppb_fullscreen.cc',
+          'plugin_ppb_gamepad.cc',
           'plugin_ppb_graphics_2d.cc',
           'plugin_ppb_graphics_3d.cc',
           'plugin_ppb_image_data.cc',
