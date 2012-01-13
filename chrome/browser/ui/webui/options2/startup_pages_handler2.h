@@ -50,6 +50,12 @@ class StartupPagesHandler : public OptionsPageUIHandler,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
+  // Saves the changes that have been made. Called from WebUI.
+  void CommitChanges(const ListValue* args);
+
+  // Cancels the changes that have been made. Called from WebUI.
+  void CancelChanges(const ListValue* args);
+
   // Removes the startup page at the given indexes. Called from WebUI.
   void RemoveStartupPages(const ListValue* args);
 

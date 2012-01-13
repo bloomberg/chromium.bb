@@ -3,10 +3,9 @@
 // found in the LICENSE file.
 
 cr.define('options', function() {
-  var OptionsPage = options.OptionsPage;
-  var ArrayDataModel = cr.ui.ArrayDataModel;
-
-  const localStrings = new LocalStrings();
+  const ArrayDataModel = cr.ui.ArrayDataModel;
+  const OptionsPage = options.OptionsPage;
+  const SettingsDialog = options.SettingsDialog;
 
   /**
    * StartupOverlay class
@@ -15,35 +14,47 @@ cr.define('options', function() {
    * @class
    */
   function StartupOverlay() {
-    OptionsPage.call(this, 'startup',
-                     templateData.startupOverlayTabTitle,
-                     'startup-overlay');
+    SettingsDialog.call(this, 'startup', templateData.startupPagesDialogTitle,
+      'startup-overlay',
+      $('startup-overlay-confirm'), $('startup-overlay-cancel'));
   };
 
   cr.addSingletonGetter(StartupOverlay);
 
   StartupOverlay.prototype = {
-    // Inherit from OptionsPage.
-    __proto__: OptionsPage.prototype,
-
-    startup_pages_pref_: {
-      'name': 'session.urls_to_restore_on_startup',
-      'disabled': false
-    },
+    __proto__: SettingsDialog.prototype,
 
     /**
      * An autocomplete list that can be attached to a text field during editing.
      * @type {HTMLElement}
      * @private
      */
-    autocompleteList_ : null,
+    autocompleteList_: null,
+
+    // TODO(tbreisacher): Work with jhawkins to refactor this so that we're not
+    // overriding private handle* methods in SettingsDialog.
+
+    /**
+     * @override
+     */
+    handleConfirm_: function() {
+      OptionsPage.closeOverlay();
+      chrome.send('commitStartupPrefChanges');
+    },
+
+    /**
+     * @override
+     */
+    handleCancel_: function() {
+      OptionsPage.closeOverlay();
+      chrome.send('cancelStartupPrefChanges');
+    },
 
     /**
      * Initialize the page.
      */
     initializePage: function() {
-      // Call base class implementation to start preference initialization.
-      OptionsPage.prototype.initializePage.call(this);
+      SettingsDialog.prototype.initializePage.call(this);
 
       var self = this;
 
@@ -54,15 +65,6 @@ cr.define('options', function() {
       $('startupUseCurrentButton').onclick = function(event) {
         chrome.send('setStartupPagesToCurrentPages');
       };
-
-      $('startup-overlay-ok').onclick = function() {
-        OptionsPage.closeOverlay();
-      }
-
-      // Initialize control enabled states.
-      Preferences.getInstance().addEventListener(
-          this.startup_pages_pref_.name,
-          this.handleStartupPageListChange_.bind(this));
 
       var suggestionList = new cr.ui.AutocompleteList();
       suggestionList.autoExpands = true;
@@ -112,16 +114,6 @@ cr.define('options', function() {
         return;
       }
       list.suggestions = suggestions;
-    },
-
-    /**
-     * Handle change events of the preference
-     * 'session.urls_to_restore_on_startup'.
-     * @param {event} preference changed event.
-     * @private
-     */
-    handleStartupPageListChange_: function(event) {
-      this.startup_pages_pref_.disabled = event.value['disabled'];
     },
   };
 

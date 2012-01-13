@@ -64,6 +64,12 @@ void StartupPagesHandler::RegisterMessages() {
       "requestAutocompleteSuggestionsForStartupPages",
       base::Bind(&StartupPagesHandler::RequestAutocompleteSuggestions,
                  base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("commitStartupPrefChanges",
+      base::Bind(&StartupPagesHandler::CommitChanges,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("cancelStartupPrefChanges",
+      base::Bind(&StartupPagesHandler::CancelChanges,
+                 base::Unretained(this)));
 }
 
 void StartupPagesHandler::UpdateStartupPages() {
@@ -136,7 +142,6 @@ void StartupPagesHandler::Observe(
 void StartupPagesHandler::SetStartupPagesToCurrentPages(
     const ListValue* args) {
   startup_custom_pages_table_model_->SetToCurrentlyOpenPages();
-  SaveStartupPagesPref();
 }
 
 void StartupPagesHandler::RemoveStartupPages(const ListValue* args) {
@@ -153,8 +158,6 @@ void StartupPagesHandler::RemoveStartupPages(const ListValue* args) {
     }
     startup_custom_pages_table_model_->Remove(selected_index);
   }
-
-  SaveStartupPagesPref();
 }
 
 void StartupPagesHandler::AddStartupPage(const ListValue* args) {
@@ -167,7 +170,6 @@ void StartupPagesHandler::AddStartupPage(const ListValue* args) {
     return;
   int index = startup_custom_pages_table_model_->RowCount();
   startup_custom_pages_table_model_->Add(index, url);
-  SaveStartupPagesPref();
 }
 
 void StartupPagesHandler::EditStartupPage(const ListValue* args) {
@@ -187,7 +189,6 @@ void StartupPagesHandler::EditStartupPage(const ListValue* args) {
   std::vector<GURL> urls = startup_custom_pages_table_model_->GetURLs();
   urls[index] = URLFixerUpper::FixupURL(url_string, std::string());
   startup_custom_pages_table_model_->SetURLs(urls);
-  SaveStartupPagesPref();
 }
 
 void StartupPagesHandler::DragDropStartupPage(const ListValue* args) {
@@ -211,7 +212,6 @@ void StartupPagesHandler::DragDropStartupPage(const ListValue* args) {
   }
 
   startup_custom_pages_table_model_->MoveURLs(to_index, index_list);
-  SaveStartupPagesPref();
 }
 
 void StartupPagesHandler::SaveStartupPagesPref() {
@@ -221,6 +221,14 @@ void StartupPagesHandler::SaveStartupPagesPref() {
   pref.urls = startup_custom_pages_table_model_->GetURLs();
 
   SessionStartupPref::SetStartupPref(prefs, pref);
+}
+
+void StartupPagesHandler::CommitChanges(const ListValue* args) {
+  SaveStartupPagesPref();
+}
+
+void StartupPagesHandler::CancelChanges(const ListValue* args) {
+  UpdateStartupPages();
 }
 
 void StartupPagesHandler::RequestAutocompleteSuggestions(
