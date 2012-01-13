@@ -5,7 +5,7 @@
   "description": "end-to-end browser test for chrome.experimental.dns API",
   "platform_app": true,
   "background": {
-    "page": "background.html"
+    "scripts": ["background.js"]
   },
   "app": {
     "launch": {
