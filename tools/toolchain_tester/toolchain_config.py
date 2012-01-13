@@ -225,7 +225,7 @@ TOOLCHAIN_CONFIGS['nacl_gcc_x8664_O3'] = ToolchainConfig(
 ######################################################################
 # PNACL + SEL_LDR [ARM]
 ######################################################################
-PNACL_ROOT = 'toolchain/pnacl_linux_x86_64_newlib'
+PNACL_ROOT = 'toolchain/pnacl_linux_x86_64/newlib'
 
 PNACL_FRONTEND = PNACL_ROOT + '/bin/pnacl-clang'
 
