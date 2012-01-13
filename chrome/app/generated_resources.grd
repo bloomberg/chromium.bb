@@ -11665,7 +11665,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
       Access to local files on your machine is disabled by your administrator.
     </message>
 
-    <!-- Status Area Strings (not ChromeOS specifc) -->
+    <!-- Status Area Strings (not ChromeOS specific) -->
     <message name="IDS_STATUSBAR_CLOCK_OPEN_OPTIONS_DIALOG" desc="The menu item in the clock menu button for opening the options dialog">
       Open date and time options...
     </message>
@@ -13494,6 +13494,12 @@ Battery full
       </message>
       <message name="IDS_STATUSBAR_NETWORK_CONNECTED_TOOLTIP" desc="Tooltip for the network menu status bar icon when connected to a network.">
         Connected to <ph name="NAME">$1<ex>GoogleGuest</ex></ph>
+      </message>
+      <message name="IDS_STATUSBAR_VOLUME_PERCENTAGE" desc="Tooltip for the volume button, shows the percentage of volume">
+        Volume: <ph name="PRECENTAGE">$1<ex>100</ex></ph>%
+      </message>
+      <message name="IDS_STATUSBAR_VOLUME_MUTE" desc="Tooltip for the volume button when muted">
+        Volume: Muted
       </message>
       <message name="IDS_STATUSBAR_WINDOW_MAXIMIZE_TOOLTIP" desc="Tooltip for the layout mode button in the status bar when the window is unmaximized.">
         Maximize

@@ -786,6 +786,8 @@
         'browser/chromeos/status/status_area_view_chromeos.h',
         'browser/chromeos/status/timezone_clock_updater.cc',
         'browser/chromeos/status/timezone_clock_updater.h',
+        'browser/chromeos/status/volume_menu_button.cc',
+        'browser/chromeos/status/volume_menu_button.h',
         'browser/chromeos/stub_cros_settings_provider.cc',
         'browser/chromeos/stub_cros_settings_provider.h',
         'browser/chromeos/system/input_device_settings.cc',
