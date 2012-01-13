@@ -165,7 +165,7 @@
             '../build/linux/system.gyp:gtk',
           ],
         }],
-        ['toolkit_views==1', {
+        ['toolkit_views==1 and OS!="mac"', {
           'sources': [
             'gfx/render_text_unittest.cc',
           ],
