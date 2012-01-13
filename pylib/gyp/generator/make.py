@@ -26,6 +26,7 @@ import gyp.common
 import gyp.system_test
 import gyp.xcode_emulation
 import os
+import re
 import sys
 
 generator_default_variables = {
@@ -605,7 +606,7 @@ def QuoteIfNecessary(string):
 def StringToMakefileVariable(string):
   """Convert a string to a value that is acceptable as a make variable name."""
   # TODO: replace other metacharacters that we encounter.
-  return string.replace(' ', '_')
+  return re.sub('[ {}$]', '_', string)
 
 
 srcdir_prefix = ''
@@ -908,6 +909,13 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
         assert ' ' not in output, (
             "Spaces in action output filenames not supported (%s)"  % output)
 
+      # See the comment in WriteActions about expanding env vars.
+      env = self.GetXcodeEnv()
+      outputs = [gyp.xcode_emulation.ExpandEnvVars(output, env)
+                 for output in outputs]
+      inputs = [gyp.xcode_emulation.ExpandEnvVars(input, env)
+                for input in inputs]
+
       self.WriteDoCmd(outputs, map(Sourceify, map(self.Absolutify, inputs)),
                       part_of_all=part_of_all, command=name)
 
@@ -1066,10 +1074,9 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
         # As a workaround, manually expand variables at gyp time. Since 'copies'
         # can't run scripts, there's no need to write the env then.
         # WriteDoCmd() will escape spaces for .d files.
-        import gyp.generator.xcode as xcode_generator
         env = self.GetXcodeEnv()
-        output = xcode_generator.ExpandXcodeVariables(output, env)
-        path = xcode_generator.ExpandXcodeVariables(path, env)
+        output = gyp.xcode_emulation.ExpandEnvVars(output, env)
+        path = gyp.xcode_emulation.ExpandEnvVars(path, env)
         self.WriteDoCmd([output], [path], 'copy', part_of_all)
         outputs.append(output)
     self.WriteLn('%s = %s' % (variable, ' '.join(map(QuoteSpaces, outputs))))
@@ -1804,7 +1811,8 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
   def GetXcodeEnv(self, additional_settings=None):
     return gyp.xcode_emulation.GetXcodeEnv(
         self.xcode_settings, "$(abs_builddir)",
-        os.path.join("$(abs_srcdir)", self.path), additional_settings)
+        os.path.join("$(abs_srcdir)", self.path), "$(BUILDTYPE)",
+        additional_settings)
 
 
   def WriteXcodeEnv(self, target, additional_settings=None):

@@ -754,7 +754,7 @@ def GetMacInfoPlist(product_dir, xcode_settings, gyp_path_to_build_path):
   return info_plist, dest_plist, defines, extra_env
 
 
-def GetXcodeEnv(xcode_settings, built_products_dir, srcroot,
+def GetXcodeEnv(xcode_settings, built_products_dir, srcroot, configuration,
                 additional_settings=None):
   """Return the environment variables that Xcode would set. See
   http://developer.apple.com/library/mac/#documentation/DeveloperTools/Reference/XcodeBuildSettingRef/1-Build_Setting_Reference/build_setting_ref.html#//apple_ref/doc/uid/TP40003931-CH3-SW153
@@ -765,6 +765,7 @@ def GetXcodeEnv(xcode_settings, built_products_dir, srcroot,
           returns an empty dict.
       built_products_dir: Absolute path to the built products dir.
       srcroot: Absolute path to the source root.
+      configuration: The build configuration name.
       additional_settings: An optional dict with more values to add to the
           result.
   """
@@ -777,15 +778,15 @@ def GetXcodeEnv(xcode_settings, built_products_dir, srcroot,
   # These are filled in on a as-needed basis.
   env = {
     'BUILT_PRODUCTS_DIR' : built_products_dir,
-    'CONFIGURATION' : '$(BUILDTYPE)',
+    'CONFIGURATION' : configuration,
     'PRODUCT_NAME' : xcode_settings.GetProductName(),
     # See /Developer/Platforms/MacOSX.platform/Developer/Library/Xcode/Specifications/MacOSX\ Product\ Types.xcspec for FULL_PRODUCT_NAME
     'SRCROOT' : srcroot,
-    'SOURCE_ROOT': '$(SRCROOT)',
+    'SOURCE_ROOT': '${SRCROOT}',
     # This is not true for static libraries, but currently the env is only
     # written for bundles:
     'TARGET_BUILD_DIR' : built_products_dir,
-    'TEMP_DIR' : '$(TMPDIR)',
+    'TEMP_DIR' : '${TMPDIR}',
   }
   if spec['type'] in (
       'executable', 'static_library', 'shared_library', 'loadable_module'):
@@ -812,7 +813,39 @@ def GetXcodeEnv(xcode_settings, built_products_dir, srcroot,
       if not isinstance(additional_settings[k], str):
         additional_settings[k] = ' '.join(additional_settings[k])
   additional_settings.update(env)
+
+  for k in additional_settings:
+    additional_settings[k] = _NormalizeEnvVarReferences(additional_settings[k])
+
   return additional_settings
+
+
+def _NormalizeEnvVarReferences(str):
+  """Takes a string containing variable references in the form ${FOO}, $(FOO),
+  or $FOO, and returns a string with all variable references in the form ${FOO}.
+  """
+  # $FOO -> ${FOO}
+  str = re.sub(r'\$([a-zA-Z_][a-zA-Z0-9_]*)', r'${\1}', str)
+
+  # $(FOO) -> ${FOO}
+  matches = re.findall(r'(\$\(([a-zA-Z0-9\-_]+)\))', str)
+  for match in matches:
+    to_replace, variable = match
+    assert '$(' not in match, '$($(FOO)) variables not supported: ' + match
+    str = str.replace(to_replace, '${' + variable + '}')
+
+  return str
+
+
+def ExpandEnvVars(string, expansions):
+  """Expands ${VARIABLES}, $(VARIABLES), and $VARIABLES in string per the
+  expansions dict. If the variable expands to something that references
+  another variable, this variable is expanded as well if it's in env --
+  until no variables present in env are left."""
+  string = _NormalizeEnvVarReferences(string)
+  for k in reversed(TopologicallySortedEnvVarKeys(expansions)):
+    string = string.replace('${' + k + '}', expansions[k])
+  return string
 
 
 def TopologicallySortedEnvVarKeys(env):
@@ -825,7 +858,7 @@ def TopologicallySortedEnvVarKeys(env):
   # Since environment variables can refer to other variables, the evaluation
   # order is important. Below is the logic to compute the dependency graph
   # and sort it.
-  regex = re.compile(r'\$\(([a-zA-Z0-9\-_]+)\)')
+  regex = re.compile(r'\$\{([a-zA-Z0-9\-_]+)\}')
 
   # First sort the list of keys.
   key_list = sorted(env.keys())
@@ -842,6 +875,7 @@ def TopologicallySortedEnvVarKeys(env):
 
     depends_on_other_var = False
     for dependee in matches:
+      assert '${' not in dependee, 'Nested variables not supported: ' + dependee
       if dependee in env:
         edges.add((dependee, k))
         dependees.add(dependee)
