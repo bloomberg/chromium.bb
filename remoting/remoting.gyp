@@ -222,6 +222,8 @@
             'host/continue_window.h',
             'host/continue_window_linux.cc',
             'host/disconnect_window_linux.cc',
+            'host/host_event_logger.cc',
+            'host/host_event_logger.h',
             'host/remoting_me2me_host.cc',
           ],
         },  # end of target 'remoting_me2me_host'

@@ -27,6 +27,7 @@
 #include "remoting/host/event_executor.h"
 #include "remoting/host/heartbeat_sender.h"
 #include "remoting/host/host_config.h"
+#include "remoting/host/host_event_logger.h"
 #include "remoting/host/json_host_config.h"
 #include "remoting/host/log_to_server.h"
 #include "remoting/host/signaling_connector.h"
@@ -175,6 +176,9 @@ class HostProcess {
     log_to_server_.reset(new LogToServer(signal_strategy_.get()));
     host_->AddStatusObserver(log_to_server_.get());
 
+    host_event_logger_.reset(new HostEventLogger());
+    host_->AddStatusObserver(host_event_logger_.get());
+
     host_->Start();
 
     // Create authenticator factory.
@@ -207,6 +211,7 @@ class HostProcess {
   scoped_ptr<DesktopEnvironment> desktop_environment_;
   scoped_ptr<remoting::HeartbeatSender> heartbeat_sender_;
   scoped_ptr<LogToServer> log_to_server_;
+  scoped_ptr<HostEventLogger> host_event_logger_;
   scoped_refptr<ChromotingHost> host_;
 };
 
