@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -3074,6 +3074,32 @@ TEST_F(ViewLayerTest, FLAKY_ViewLayerTreesInSync) {
   ScrambleTree(content);
   EXPECT_TRUE(ViewAndLayerTreeAreConsistent(content, content->layer()));
 }
+
+#if defined(USE_AURA)
+// Verifies when views are reordered the layer is also reordered. The widget is
+// providing the parent layer.
+TEST_F(ViewLayerTest, ReorderUnderWidget) {
+  View* content = new View;
+  widget()->SetContentsView(content);
+  View* c1 = new View;
+  c1->SetPaintToLayer(true);
+  content->AddChildView(c1);
+  View* c2 = new View;
+  c2->SetPaintToLayer(true);
+  content->AddChildView(c2);
+
+  ui::Layer* parent_layer = c1->layer()->parent();
+  ASSERT_TRUE(parent_layer);
+  ASSERT_EQ(2u, parent_layer->children().size());
+  EXPECT_EQ(c1->layer(), parent_layer->children()[0]);
+  EXPECT_EQ(c2->layer(), parent_layer->children()[1]);
+
+  // Move c1 to the front. The layers should have moved too.
+  content->ReorderChildView(c1, -1);
+  EXPECT_EQ(c1->layer(), parent_layer->children()[1]);
+  EXPECT_EQ(c2->layer(), parent_layer->children()[0]);
+}
+#endif
 
 #endif  // VIEWS_COMPOSITOR
 

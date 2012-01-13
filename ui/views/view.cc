@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -1199,7 +1199,7 @@ void View::ReorderLayers() {
   while (v && !v->layer())
     v = v->parent();
 
-  // Forward to widget in case we're in a NativeWidgetView.
+  // Forward to widget in case we're in a NativeWidgetAura.
   if (!v) {
     if (GetWidget())
       GetWidget()->ReorderLayers();

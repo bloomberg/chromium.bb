@@ -792,7 +792,11 @@ void Widget::CalculateOffsetToAncestorWithLayer(gfx::Point* offset,
 }
 
 void Widget::ReorderLayers() {
-  native_widget_->ReorderLayers();
+  gfx::Point point;
+  ui::Layer* layer = NULL;
+  CalculateOffsetToAncestorWithLayer(&point, &layer);
+  if (layer)
+    root_view_->ReorderChildLayers(layer);
 }
 
 void Widget::NotifyAccessibilityEvent(

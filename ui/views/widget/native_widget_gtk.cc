@@ -829,9 +829,6 @@ void NativeWidgetGtk::CalculateOffsetToAncestorWithLayer(
     ui::Layer** layer_parent) {
 }
 
-void NativeWidgetGtk::ReorderLayers() {
-}
-
 void NativeWidgetGtk::ViewRemoved(View* view) {
   if (drop_target_.get())
     drop_target_->ResetTargetViewIfEquals(view);

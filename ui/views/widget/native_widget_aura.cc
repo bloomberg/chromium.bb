@@ -24,6 +24,7 @@
 #include "ui/views/ime/input_method_bridge.h"
 #include "ui/views/widget/drop_helper.h"
 #include "ui/views/widget/native_widget_delegate.h"
+#include "ui/views/widget/root_view.h"
 #include "ui/views/widget/tooltip_manager_aura.h"
 #include "ui/views/widget/widget_delegate.h"
 
@@ -258,9 +259,6 @@ void NativeWidgetAura::CalculateOffsetToAncestorWithLayer(
     ui::Layer** layer_parent) {
   if (layer_parent)
     *layer_parent = window_->layer();
-}
-
-void NativeWidgetAura::ReorderLayers() {
 }
 
 void NativeWidgetAura::ViewRemoved(View* view) {

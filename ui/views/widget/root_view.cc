@@ -401,6 +401,10 @@ void RootView::GetAccessibleState(ui::AccessibleViewState* state) {
   state->role = ui::AccessibilityTypes::ROLE_APPLICATION;
 }
 
+void RootView::ReorderChildLayers(ui::Layer* parent_layer) {
+  View::ReorderChildLayers(parent_layer);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // RootView, protected:
 
