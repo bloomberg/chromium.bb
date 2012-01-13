@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -416,7 +416,10 @@ void GKRMethod::OnOperationGetList(GnomeKeyringResult result, GList* list,
 
 NativeBackendGnome::NativeBackendGnome(LocalProfileId id, PrefService* prefs)
     : profile_id_(id), prefs_(prefs) {
-  if (PasswordStoreX::PasswordsUseLocalProfileId(prefs)) {
+  // TODO(mdm): after a few more releases, remove the code which is now dead due
+  // to the true || here, and simplify this code. We don't do it yet to make it
+  // easier to revert if necessary.
+  if (true || PasswordStoreX::PasswordsUseLocalProfileId(prefs)) {
     app_string_ = GetProfileSpecificAppString();
     // We already did the migration previously. Don't try again.
     migrate_tried_ = true;

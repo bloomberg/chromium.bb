@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -39,7 +39,10 @@ NativeBackendKWallet::NativeBackendKWallet(LocalProfileId id,
       prefs_(prefs),
       kwallet_proxy_(NULL),
       app_name_(l10n_util::GetStringUTF8(IDS_PRODUCT_NAME)) {
-  if (PasswordStoreX::PasswordsUseLocalProfileId(prefs)) {
+  // TODO(mdm): after a few more releases, remove the code which is now dead due
+  // to the true || here, and simplify this code. We don't do it yet to make it
+  // easier to revert if necessary.
+  if (true || PasswordStoreX::PasswordsUseLocalProfileId(prefs)) {
     folder_name_ = GetProfileSpecificFolderName();
     // We already did the migration previously. Don't try again.
     migrate_tried_ = true;

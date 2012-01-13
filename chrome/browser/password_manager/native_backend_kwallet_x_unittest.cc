@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -696,7 +696,7 @@ TEST_F(NativeBackendKWalletTest, ListLoginsAppends) {
 // TODO(mdm): add more basic (i.e. non-migration) tests here at some point.
 // (For example tests for storing >1 password per realm pickle.)
 
-TEST_F(NativeBackendKWalletTest, MigrateOneLogin) {
+TEST_F(NativeBackendKWalletTest, DISABLED_MigrateOneLogin) {
   // Reject attempts to migrate so we can populate the store.
   wallet_.set_reject_local_folders(true);
 
@@ -764,7 +764,7 @@ TEST_F(NativeBackendKWalletTest, MigrateOneLogin) {
       profile_.GetPrefs()->GetBoolean(prefs::kPasswordsUseLocalProfileId));
 }
 
-TEST_F(NativeBackendKWalletTest, MigrateToMultipleProfiles) {
+TEST_F(NativeBackendKWalletTest, DISABLED_MigrateToMultipleProfiles) {
   // Reject attempts to migrate so we can populate the store.
   wallet_.set_reject_local_folders(true);
 
@@ -847,7 +847,7 @@ TEST_F(NativeBackendKWalletTest, MigrateToMultipleProfiles) {
   CheckPasswordForms("Chrome Form Data (24)", expected);
 }
 
-TEST_F(NativeBackendKWalletTest, NoMigrationWithPrefSet) {
+TEST_F(NativeBackendKWalletTest, DISABLED_NoMigrationWithPrefSet) {
   // Reject attempts to migrate so we can populate the store.
   wallet_.set_reject_local_folders(true);
 
@@ -911,7 +911,7 @@ TEST_F(NativeBackendKWalletTest, NoMigrationWithPrefSet) {
   CheckPasswordForms("Chrome Form Data (42)", expected);
 }
 
-TEST_F(NativeBackendKWalletTest, DeleteMigratedPasswordIsIsolated) {
+TEST_F(NativeBackendKWalletTest, DISABLED_DeleteMigratedPasswordIsIsolated) {
   // Reject attempts to migrate so we can populate the store.
   wallet_.set_reject_local_folders(true);
 

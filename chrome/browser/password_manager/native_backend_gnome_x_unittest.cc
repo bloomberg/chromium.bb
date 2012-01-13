@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -571,7 +571,7 @@ TEST_F(NativeBackendGnomeTest, ListLoginsAppends) {
 
 // TODO(mdm): add more basic (i.e. non-migration) tests here at some point.
 
-TEST_F(NativeBackendGnomeTest, MigrateOneLogin) {
+TEST_F(NativeBackendGnomeTest, DISABLED_MigrateOneLogin) {
   // Reject attempts to migrate so we can populate the store.
   mock_keyring_reject_local_ids = true;
 
@@ -662,7 +662,7 @@ TEST_F(NativeBackendGnomeTest, MigrateOneLogin) {
       profile_.GetPrefs()->GetBoolean(prefs::kPasswordsUseLocalProfileId));
 }
 
-TEST_F(NativeBackendGnomeTest, MigrateToMultipleProfiles) {
+TEST_F(NativeBackendGnomeTest, DISABLED_MigrateToMultipleProfiles) {
   // Reject attempts to migrate so we can populate the store.
   mock_keyring_reject_local_ids = true;
 
@@ -746,7 +746,7 @@ TEST_F(NativeBackendGnomeTest, MigrateToMultipleProfiles) {
     CheckMockKeyringItem(&mock_keyring_items[2], form_google_, "chrome-24");
 }
 
-TEST_F(NativeBackendGnomeTest, NoMigrationWithPrefSet) {
+TEST_F(NativeBackendGnomeTest, DISABLED_NoMigrationWithPrefSet) {
   // Reject attempts to migrate so we can populate the store.
   mock_keyring_reject_local_ids = true;
 
@@ -804,7 +804,7 @@ TEST_F(NativeBackendGnomeTest, NoMigrationWithPrefSet) {
     CheckMockKeyringItem(&mock_keyring_items[1], form_isc_, "chrome-42");
 }
 
-TEST_F(NativeBackendGnomeTest, DeleteMigratedPasswordIsIsolated) {
+TEST_F(NativeBackendGnomeTest, DISABLED_DeleteMigratedPasswordIsIsolated) {
   // Reject attempts to migrate so we can populate the store.
   mock_keyring_reject_local_ids = true;
 
