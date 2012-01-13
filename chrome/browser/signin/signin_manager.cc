@@ -29,14 +29,13 @@ SigninManager::~SigninManager() {}
 
 // static
 void SigninManager::RegisterUserPrefs(PrefService* user_prefs) {
-  user_prefs->RegisterBooleanPref(prefs::kSyncUsingOAuth,
-                                  "",
+  user_prefs->RegisterBooleanPref(prefs::kSyncUsingOAuth, "",
                                   PrefService::UNSYNCABLE_PREF);
-  user_prefs->RegisterStringPref(prefs::kGoogleServicesUsername,
-                                 "",
+  user_prefs->RegisterStringPref(prefs::kGoogleServicesUsername, "",
                                  PrefService::UNSYNCABLE_PREF);
-  user_prefs->RegisterBooleanPref(prefs::kAutologinEnabled,
-                                  true,
+  user_prefs->RegisterBooleanPref(prefs::kAutologinEnabled, true,
+                                  PrefService::UNSYNCABLE_PREF);
+  user_prefs->RegisterBooleanPref(prefs::kReverseAutologinEnabled, true,
                                   PrefService::UNSYNCABLE_PREF);
 }
 

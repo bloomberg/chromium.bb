@@ -8847,6 +8847,17 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
         Never offer to sign me in
       </message>
 
+      <!-- Reverse auto-login infobar -->
+      <message name="IDS_REVERSE_AUTOLOGIN_INFOBAR_MESSAGE" desc="The string shown in the infobar explaining that the user can connect his profile to a Google account instead of logging in only here.">
+        Automatically sign in and access your Chrome stuff on any device
+      </message>
+      <message name="IDS_REVERSE_AUTOLOGIN_INFOBAR_OK_BUTTON" desc="The string used in the infobar button that the user presses to connect his profile to a Google account.">
+        Sign in to Chrome
+      </message>
+      <message name="IDS_REVERSE_AUTOLOGIN_INFOBAR_CANCEL_BUTTON" desc="The string used in the infobar button that the user presses to never see this infobar again.">
+        Don't ask me again
+      </message>
+
       <!-- Cookies Window -->
       <message name="IDS_COOKIES_WEBSITE_PERMISSIONS_WINDOW_TITLE" desc="The title of the redesigned Cookies Window that lets you manage cookies, storage quota for websites and other permissions per-website">
         Cookies and Other Data

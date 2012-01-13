@@ -5,11 +5,13 @@
 #include "chrome/browser/ui/auto_login_info_bar_delegate.h"
 
 #include "base/logging.h"
+#include "base/string_split.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/signin/token_service.h"
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
+#include "chrome/browser/ui/webui/sync_promo/sync_promo_ui.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
@@ -22,10 +24,9 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/common/referrer.h"
-#include "googleurl/src/url_canon.h"
-#include "googleurl/src/url_util.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources_standard.h"
+#include "net/base/escape.h"
 #include "net/url_request/url_request.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -111,10 +112,8 @@ void AutoLoginRedirector::Observe(int type,
 
 void AutoLoginRedirector::RedirectToMergeSession(const std::string& token) {
   // The args are URL encoded, so we need to decode them before use.
-  url_canon::RawCanonOutputT<char16> output;
-  url_util::DecodeURLEscapeSequences(args_.c_str(), args_.length(), &output);
-  std::string unescaped_args;
-  UTF16ToUTF8(output.data(), output.length(), &unescaped_args);
+  std::string unescaped_args =
+      net::UnescapeURLComponent(args_, net::UnescapeRule::URL_SPECIAL_CHARS);
   // TODO(rogerta): what is the correct page transition?
   navigation_controller_->LoadURL(
       GURL(GaiaUrls::GetInstance()->merge_session_url() +
@@ -172,5 +171,82 @@ bool AutoLoginInfoBarDelegate::Accept() {
 
 bool AutoLoginInfoBarDelegate::Cancel() {
   pref_service_->SetBoolean(prefs::kAutologinEnabled, false);
+  return true;
+}
+
+
+// ReverseAutoLoginInfoBarDelegate --------------------------------------------
+
+ReverseAutoLoginInfoBarDelegate::ReverseAutoLoginInfoBarDelegate(
+    InfoBarTabHelper* owner,
+    NavigationController* navigation_controller,
+    PrefService* pref_service,
+    const std::string& args)
+    : ConfirmInfoBarDelegate(owner),
+      navigation_controller_(navigation_controller),
+      pref_service_(pref_service),
+      args_(args) {
+}
+
+ReverseAutoLoginInfoBarDelegate::~ReverseAutoLoginInfoBarDelegate() {
+}
+
+gfx::Image* ReverseAutoLoginInfoBarDelegate::GetIcon() const {
+  return &ResourceBundle::GetSharedInstance().GetNativeImageNamed(
+      IDR_INFOBAR_AUTOLOGIN);
+}
+
+InfoBarDelegate::Type ReverseAutoLoginInfoBarDelegate::GetInfoBarType() const {
+  return PAGE_ACTION_TYPE;
+}
+
+string16 ReverseAutoLoginInfoBarDelegate::GetMessageText() const {
+  return l10n_util::GetStringUTF16(IDS_REVERSE_AUTOLOGIN_INFOBAR_MESSAGE);
+}
+
+string16 ReverseAutoLoginInfoBarDelegate::GetButtonLabel(
+    InfoBarButton button) const {
+  return l10n_util::GetStringUTF16((button == BUTTON_OK) ?
+      IDS_REVERSE_AUTOLOGIN_INFOBAR_OK_BUTTON :
+      IDS_REVERSE_AUTOLOGIN_INFOBAR_CANCEL_BUTTON);
+}
+
+bool ReverseAutoLoginInfoBarDelegate::Accept() {
+  // The args are URL encoded, so we need to decode them before use.
+  std::string unescaped_args =
+      net::UnescapeURLComponent(args_, net::UnescapeRule::URL_SPECIAL_CHARS);
+
+  // Now extract the continue URL from the unescaped args.
+  std::vector<std::pair<std::string, std::string> > pairs;
+  if (!base::SplitStringIntoKeyValuePairs(unescaped_args, '=', '&', &pairs))
+    return true;
+
+  std::string continue_url;
+  for (size_t i = 0; i < pairs.size(); ++i) {
+    const std::pair<std::string, std::string>& kv = pairs[i];
+    if (kv.first == "continue") {
+      continue_url = net::UnescapeURLComponent(
+          kv.second, net::UnescapeRule::URL_SPECIAL_CHARS);
+      break;
+    }
+  }
+
+  if (continue_url.empty())
+    return true;
+
+  // Redirect to the syncpromo so that user can connect their profile to a
+  // Google account.  This will automatically stuff the profile's cookie jar
+  // with credentials for the same account.  The syncpromo will eventually
+  // redirect back to the continue URL, so the user ends up on the page they
+  // would have landed on with the regular google login.
+  GURL sycn_promo_url = SyncPromoUI::GetSyncPromoURL(GURL(continue_url), false);
+  navigation_controller_->LoadURL(sycn_promo_url, content::Referrer(),
+                                  content::PAGE_TRANSITION_AUTO_BOOKMARK,
+                                  std::string());
+  return true;
+}
+
+bool ReverseAutoLoginInfoBarDelegate::Cancel() {
+  pref_service_->SetBoolean(prefs::kReverseAutologinEnabled, false);
   return true;
 }

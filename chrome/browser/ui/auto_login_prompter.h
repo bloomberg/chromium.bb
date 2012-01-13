@@ -24,12 +24,6 @@ class URLRequest;
 // tokens that would allow a one-click login.
 class AutoLoginPrompter : public content::NotificationObserver {
  public:
-  AutoLoginPrompter(content::WebContents* web_contents,
-                    const std::string& username,
-                    const std::string& args);
-
-  virtual ~AutoLoginPrompter();
-
   // Looks for the X-Auto-Login response header in the request, and if found,
   // tries to display an infobar in the tab contents identified by the
   // child/route id.
@@ -38,6 +32,13 @@ class AutoLoginPrompter : public content::NotificationObserver {
                                     int route_id);
 
  private:
+  AutoLoginPrompter(content::WebContents* web_contents,
+                    const std::string& username,
+                    const std::string& args,
+                    bool use_normal_auto_login_infobar);
+
+  virtual ~AutoLoginPrompter();
+
   // The portion of ShowInfoBarIfPossible() that needs to run on the UI thread.
   static void ShowInfoBarUIThread(const std::string& account,
                                   const std::string& args,
@@ -53,6 +54,14 @@ class AutoLoginPrompter : public content::NotificationObserver {
   const std::string username_;
   const std::string args_;
   content::NotificationRegistrar registrar_;
+
+  // There are two code flows for auto-login.  When the profile is connected
+  // to a Google account, we want to show the infobar asking if the user would
+  // like to automatically sign in.  This is the normal auto-login flow.
+  // When the profile is not connected, we want to show an infobat asking if
+  // the user would like to connect his profile instead.  This the reverse
+  // auto-login flow.
+  bool use_normal_auto_login_infobar_;
 
   DISALLOW_COPY_AND_ASSIGN(AutoLoginPrompter);
 };

@@ -36,10 +36,12 @@ using content::WebContents;
 AutoLoginPrompter::AutoLoginPrompter(
     WebContents* web_contents,
     const std::string& username,
-    const std::string& args)
+    const std::string& args,
+    bool use_normal_auto_login_infobar)
     : web_contents_(web_contents),
       username_(username),
-      args_(args) {
+      args_(args),
+      use_normal_auto_login_infobar_(use_normal_auto_login_infobar){
   registrar_.Add(this, content::NOTIFICATION_LOAD_STOP,
                  content::Source<NavigationController>(
                     &web_contents_->GetController()));
@@ -105,36 +107,46 @@ void AutoLoginPrompter::ShowInfoBarUIThread(const std::string& account,
   if (!web_contents)
     return;
 
-  // If auto-login is turned off, then simply return.
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  if (!profile->GetPrefs()->GetBoolean(prefs::kAutologinEnabled))
-    return;
 
   // In an incognito window, there may not be a profile sync service and/or
   // signin manager.
   if (!profile->HasProfileSyncService())
     return;
+
   SigninManager* signin_manager = profile->GetProfileSyncService()->signin();
   if (!signin_manager)
     return;
 
-  // Make sure that |account|, if specified, matches the logged in user.
-  // However, |account| is usually empty.
+  // If there are credentials in the token manager, then we want to show the
+  // user the regular auto-login infobar, asking if they want to turn on
+  // auto-login.  If there are no credentials in the token manager, then we
+  // want to show the reverse auto-login infobar, asking if they want to
+  // connect their profile to a Google account.
+  bool use_normal_auto_login_infobar =
+      profile->GetTokenService()->AreCredentialsValid();
   const std::string& username = signin_manager->GetAuthenticatedUsername();
-  if (!account.empty() && (username != account))
-    return;
 
-  // Make sure there are credentials in the token manager, otherwise there is
-  // no way to craft the TokenAuth URL.
-  if (!profile->GetTokenService()->AreCredentialsValid())
-    return;
+  if (use_normal_auto_login_infobar) {
+    // Make sure that |account|, if specified, matches the logged in user.
+    // However, |account| is usually empty.
+    if (!account.empty() && (username != account))
+      return;
+
+    if (!profile->GetPrefs()->GetBoolean(prefs::kAutologinEnabled))
+      return;
+  } else if (!profile->GetPrefs()->GetBoolean(
+        prefs::kReverseAutologinEnabled)) {
+      return;
+  }
 
   // We can't add the infobar just yet, since we need to wait for the tab to
   // finish loading.  If we don't, the info bar appears and then disappears
   // immediately.  Create an AutoLoginPrompter instance to listen for the
   // relevant notifications; it will delete itself.
-  new AutoLoginPrompter(web_contents, username, args);
+  new AutoLoginPrompter(web_contents, username, args,
+                        use_normal_auto_login_infobar);
 }
 
 void AutoLoginPrompter::Observe(int type,
@@ -147,10 +159,19 @@ void AutoLoginPrompter::Observe(int type,
     if (wrapper) {
       InfoBarTabHelper* infobar_helper = wrapper->infobar_tab_helper();
       Profile* profile = wrapper->profile();
-      infobar_helper->AddInfoBar(new AutoLoginInfoBarDelegate(
-          infobar_helper, &web_contents_->GetController(),
-          profile->GetTokenService(), profile->GetPrefs(),
-          username_, args_));
+      InfoBarDelegate* delegate = NULL;
+      if (use_normal_auto_login_infobar_) {
+        delegate = new AutoLoginInfoBarDelegate(
+            infobar_helper, &web_contents_->GetController(),
+            profile->GetTokenService(), profile->GetPrefs(),
+            username_, args_);
+      } else {
+        delegate = new ReverseAutoLoginInfoBarDelegate(
+            infobar_helper, &web_contents_->GetController(),
+            profile->GetPrefs(), args_);
+      }
+
+      infobar_helper->AddInfoBar(delegate);
     }
   }
   // Either we couldn't add the infobar, we added the infobar, or the tab

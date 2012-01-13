@@ -44,4 +44,33 @@ class AutoLoginInfoBarDelegate : public ConfirmInfoBarDelegate {
   DISALLOW_COPY_AND_ASSIGN(AutoLoginInfoBarDelegate);
 };
 
+// This is the actual infobar displayed to prompt the user to reverse
+// auto-login.
+class ReverseAutoLoginInfoBarDelegate : public ConfirmInfoBarDelegate {
+ public:
+  ReverseAutoLoginInfoBarDelegate(
+      InfoBarTabHelper* owner,
+      content::NavigationController* navigation_controller,
+      PrefService* pref_service,
+      const std::string& args);
+  virtual ~ReverseAutoLoginInfoBarDelegate();
+
+ private:
+  // ConfirmInfoBarDelegate overrides.
+  virtual gfx::Image* GetIcon() const OVERRIDE;
+  virtual Type GetInfoBarType() const OVERRIDE;
+  virtual string16 GetMessageText() const OVERRIDE;
+  virtual string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
+  virtual bool Accept() OVERRIDE;
+  virtual bool Cancel() OVERRIDE;
+
+  content::NavigationController* navigation_controller_;
+  TokenService* token_service_;
+  PrefService* pref_service_;
+  std::string username_;
+  std::string args_;
+
+  DISALLOW_COPY_AND_ASSIGN(ReverseAutoLoginInfoBarDelegate);
+};
+
 #endif  // CHROME_BROWSER_UI_AUTO_LOGIN_INFO_BAR_DELEGATE_H_
