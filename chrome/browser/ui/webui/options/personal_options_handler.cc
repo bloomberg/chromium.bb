@@ -149,9 +149,9 @@ void PersonalOptionsHandler::GetLocalizedValues(
   localized_strings->SetString("themesSetClassic",
       l10n_util::GetStringUTF16(IDS_THEMES_SET_CLASSIC));
   localized_strings->SetString("showWindowDecorations",
-      l10n_util::GetStringUTF16(IDS_SHOW_WINDOW_DECORATIONS_RADIO));
+      l10n_util::GetStringUTF16(IDS_SHOW_WINDOW_DECORATIONS));
   localized_strings->SetString("hideWindowDecorations",
-      l10n_util::GetStringUTF16(IDS_HIDE_WINDOW_DECORATIONS_RADIO));
+      l10n_util::GetStringUTF16(IDS_HIDE_WINDOW_DECORATIONS));
 #else
   localized_strings->SetString("themes",
       l10n_util::GetStringUTF16(IDS_THEMES_GROUP_NAME));

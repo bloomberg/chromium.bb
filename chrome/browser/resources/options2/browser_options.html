@@ -59,6 +59,23 @@
   </section>
   <section>
     <h3 i18n-content="appearance"></h3>
+<if expr="not pp_ifdef('toolkit_views') and is_posix and not is_macosx">
+    <div>
+      <div>
+        <button id="themes-gallery" i18n-content="themesGallery"></button>
+        <button id="themes-GTK-button"
+            i18n-content="themesGTKButton"></button>
+        <button id="themes-reset"
+            i18n-content="themesSetClassic"></button>
+      </div>
+    </div>
+</if>
+<if expr="pp_ifdef('toolkit_views') or os == 'win32' or os == 'darwin'">
+    <div>
+      <button id="themes-gallery" i18n-content="themesGallery"></button>
+      <button id="themes-reset" i18n-content="themesReset"></button>
+    </div>
+</if>
     <div>
       <div class="checkbox">
         <input id="toolbarShowHomeButton" pref="browser.show_home_button"
@@ -77,27 +94,17 @@
           <span i18n-content="toolbarShowBookmarksBar"></span>
         </label>
       </div>
-    </div>
 <if expr="not pp_ifdef('toolkit_views') and is_posix and not is_macosx">
-    <div>
-      <div>
-        <button id="themes-GTK-button"
-            i18n-content="themesGTKButton"></button>
-        <button id="themes-reset"
-            i18n-content="themesSetClassic"></button>
+      <div class="checkbox">
+        <label>
+          <input id="show-window-decorations" type="checkbox"
+              pref="browser.custom_chrome_frame" metric="Options_CustomFrame"
+              inverted_pref>
+          <span i18n-content="showWindowDecorations"></span>
+        </label>
       </div>
-      <div id="themes-gallery-div">
-        <a id="themes-gallery" i18n-content="themesGallery"
-            i18n-values="href:themesGalleryURL" target="_blank"></a>
-      </div>
-    </div>
 </if>
-<if expr="pp_ifdef('toolkit_views') or os == 'win32' or os == 'darwin'">
-    <div>
-      <button id="themes-gallery" i18n-content="themesGallery"></button>
-      <button id="themes-reset" i18n-content="themesReset"></button>
     </div>
-</if>
   </section>
   <section>
     <h3 i18n-content="defaultSearchGroupName"></h3>

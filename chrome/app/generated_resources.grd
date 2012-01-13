@@ -8612,10 +8612,10 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
         <message name="IDS_THEMES_SET_CLASSIC" desc="The button to choose the classic windows theme in GTK">
           Use Classic Theme
         </message>
-        <message name="IDS_SHOW_WINDOW_DECORATIONS_RADIO" desc="A radio button in the options dialog for using the system title bar and borders.">
+        <message name="IDS_SHOW_WINDOW_DECORATIONS" desc="The label of a radio button in the options dialog for using the system title bar and borders.">
           Use system title bar and borders
         </message>
-        <message name="IDS_HIDE_WINDOW_DECORATIONS_RADIO" desc="A radio button in the options dialog for using the chrome custom frame and hiding the system title bar.">
+        <message name="IDS_HIDE_WINDOW_DECORATIONS" desc="The label of a radio button in the options dialog for using the chrome custom frame and hiding the system title bar.">
           Hide system title bar and use compact borders
         </message>
       </if>
