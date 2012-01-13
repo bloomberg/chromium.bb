@@ -623,18 +623,18 @@ void TemplateURLService::OnWebDataServiceRequestDone(
   // check at the beginning (overridden by Sync).
   if (is_default_search_hijacked &&
       default_search_provider_ == hijacked_default_search_provider) {
-    if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kUseProtector)) {
-      // Protector is turned off: set the current default search to itself
-      // to update the backup and sign it. Otherwise, change will be reported
-      // every time when keywords are loaded until a search provider is added.
-      // Note that this saves the default search provider to prefs.
-      SetDefaultSearchProviderNoNotify(default_search_provider_);
-    } else {
+    if (protector::IsEnabled()) {
       // Protector instance will delete itself when it's needed no longer.
       protector::Protector* protector = new protector::Protector(profile());
       protector->ShowChange(protector::CreateDefaultSearchProviderChange(
           hijacked_default_search_provider,
           backup_default_search_provider.release()));
+    } else {
+      // Protector is turned off: set the current default search to itself
+      // to update the backup and sign it. Otherwise, change will be reported
+      // every time when keywords are loaded until a search provider is added.
+      // Note that this saves the default search provider to prefs.
+      SetDefaultSearchProviderNoNotify(default_search_provider_);
     }
   }
 

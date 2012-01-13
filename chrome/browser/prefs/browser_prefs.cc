@@ -43,6 +43,7 @@
 #include "chrome/browser/profiles/profile_impl.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/protector/protector.h"
 #include "chrome/browser/renderer_host/web_cache_manager.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/search_engines/template_url_prepopulate_data.h"
@@ -147,6 +148,7 @@ void RegisterLocalState(PrefService* local_state) {
   chromeos::ProxyConfigServiceImpl::RegisterPrefs(local_state);
   policy::DeviceStatusCollector::RegisterPrefs(local_state);
 #endif
+  protector::RegisterPrefs(local_state);
 }
 
 void RegisterUserPrefs(PrefService* user_prefs) {

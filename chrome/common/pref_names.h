@@ -646,6 +646,8 @@ extern const char kUserPolicyRefreshRate[];
 extern const char kRecoveryComponentVersion[];
 extern const char kComponentUpdaterState[];
 
+extern const char kProtectorEnabled[];
+
 }  // namespace prefs
 
 #endif  // CHROME_COMMON_PREF_NAMES_H_

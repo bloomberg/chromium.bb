@@ -323,6 +323,9 @@ const char kDisablePreconnect[]             = "disable-preconnect";
 // disable that check. This switch is used during automated testing.
 const char kDisablePromptOnRepost[]         = "disable-prompt-on-repost";
 
+// Disables the Protector feature.
+const char kDisableProtector[]              = "disable-protector";
+
 // Disables remote web font support. SVG font should always work whether this
 // option is specified or not.
 const char kDisableRemoteFonts[]            = "disable-remote-fonts";
@@ -1123,9 +1126,6 @@ const char kUninstall[]                     = "uninstall";
 // Uses WebUI versions of dialogs when available (rather than platform-native
 // implementations).
 const char kUseMoreWebUI[]                  = "use-more-webui";
-
-// Enables the protector.
-const char kUseProtector[]                   = "use-protector";
 
 // Uses a pure Views implementation when available (rather than platform-native
 // implementation such as GTK).

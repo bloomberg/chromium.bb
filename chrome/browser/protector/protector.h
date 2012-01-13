@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,6 +14,7 @@
 #include "chrome/browser/protector/settings_change_global_error_delegate.h"
 
 class GURL;
+class PrefService;
 class Profile;
 class TemplateURLService;
 
@@ -71,6 +72,12 @@ std::string SignSetting(const std::string& value);
 
 // Returns true if the signature is valid for the specified key.
 bool IsSettingValid(const std::string& value, const std::string& signature);
+
+// Register related preferences in Local State.
+void RegisterPrefs(PrefService* prefs);
+
+// Whether the Protector feature is enabled.
+bool IsEnabled();
 
 }  // namespace protector
 

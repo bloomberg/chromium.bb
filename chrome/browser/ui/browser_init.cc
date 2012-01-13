@@ -1244,6 +1244,8 @@ void BrowserInit::LaunchWithProfile::AddBadFlagsInfoBarIfNecessary(
     switches::kSingleProcess,
     switches::kNoSandbox,
     switches::kInProcessWebGL,
+    // This should only be used for tests.
+    switches::kDisableProtector,
     NULL
   };
 
