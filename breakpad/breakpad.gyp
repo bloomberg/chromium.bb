@@ -399,6 +399,7 @@
             '../testing/gmock.gyp:gmock',
             'breakpad_client',
             'breakpad_processor_support',
+            'linux_dumper_unittest_helper',
           ],
 
           'sources': [
@@ -408,11 +409,21 @@
             'src/client/linux/minidump_writer/line_reader_unittest.cc',
             'src/client/linux/minidump_writer/linux_dumper_unittest.cc',
             'src/client/linux/minidump_writer/minidump_writer_unittest.cc',
+            'src/common/linux/elf_core_dump.cc',
+            'src/common/linux/elf_core_dump.h',
+            'src/common/linux/elf_core_dump_unittest.cc',
             'src/common/linux/file_id_unittest.cc',
             'src/common/linux/linux_libc_support_unittest.cc',
             'src/common/linux/synth_elf.cc',
+            'src/common/linux/tests/crash_generator.cc',
+            'src/common/linux/tests/crash_generator.h',
+            'src/common/memory_range.h',
             'src/common/memory_unittest.cc',
             'src/common/test_assembler.cc',
+            'src/common/tests/file_utils.cc',
+            'src/common/tests/file_utils.h',
+            'src/tools/linux/md2core/minidump_memory_range.h',
+            'src/tools/linux/md2core/minidump_memory_range_unittest.cc',
           ],
 
           'include_dirs': [
@@ -420,6 +431,19 @@
             'src',
             '..',
             '.',
+          ],
+        },
+        {
+          'target_name': 'linux_dumper_unittest_helper',
+          'type': 'executable',
+          'dependencies': [
+          ],
+          'sources': [
+            'src/client/linux/minidump_writer/linux_dumper_unittest_helper.cc',
+          ],
+
+          'include_dirs': [
+            '..',
           ],
         },
         {
