@@ -143,7 +143,6 @@ extern const char kEnableCrxlessWebApps[];
 extern const char kEnableDevToolsExperiments[];
 extern const char kEnableExperimentalExtensionApis[];
 extern const char kEnableExtensionActivityLogging[];
-extern const char kEnableExtensionAlerts[];
 extern const char kEnableExtensionTimelineApi[];
 extern const char kEnableFastback[];
 extern const char kEnableFileCookies[];
