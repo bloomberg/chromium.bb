@@ -148,16 +148,14 @@ def FindBaseNaCl():
 def FindBasePNaCl():
   """ Find the base directory of the PNaCl toolchain """
 
-  # Normally, the driver is in pnacl_*_*_*/bin/.
-  # But we can also be invoked from tools/llvm/driver.
-  # For now, default to using newlib when invoked from tools/llvm/driver.
+  # The driver is in <base>/newlib/bin or <base>/glibc/bin.
   bindir = pathtools.dirname(DriverPath())
   if pathtools.basename(bindir) == 'bin':
-    dir = pathtools.dirname(bindir)
-    return shell.escape(dir)
+    # ../..
+    basedir = pathtools.dirname(pathtools.dirname(bindir))
+    return shell.escape(basedir)
   else:
-    # If we've invoked from tools/llvm/driver
-    return '${BASE_NACL}/toolchain/pnacl_${BUILD_OS}_${BUILD_ARCH}_${LIBMODE}'
+    Log.Fatal("Cannot find base of toolchain directory")
 
 
 @env.register

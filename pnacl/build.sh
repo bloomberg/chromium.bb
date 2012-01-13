@@ -56,22 +56,6 @@ if ${BUILD_PLATFORM_MAC} || ${BUILD_PLATFORM_WIN}; then
   PNACL_BUILD_ARM=false
 fi
 
-# Set the library mode
-readonly LIBMODE=${LIBMODE:-newlib}
-
-LIBMODE_NEWLIB=false
-LIBMODE_GLIBC=false
-if [ ${LIBMODE} == "newlib" ]; then
-  LIBMODE_NEWLIB=true
-elif [ ${LIBMODE} == "glibc" ]; then
-  LIBMODE_GLIBC=true
-  PNACL_BUILD_ARM=false
-else
-  Fatal "Unknown library mode ${LIBMODE}"
-fi
-readonly LIBMODE_NEWLIB
-readonly LIBMODE_GLIBC
-
 readonly SB_JIT=${SB_JIT:-false}
 
 # TODO(pdox): Decide what the target should really permanently be
@@ -144,14 +128,11 @@ readonly NACL_HEADERS_TS="${TC_SRC}/nacl.sys.timestamp"
 readonly NEWLIB_INCLUDE_DIR="${TC_SRC_NEWLIB}/newlib-trunk/newlib/libc/include"
 
 # The location of each project. These should be absolute paths.
-# If a tool below depends on a certain libc, then the build
-# directory should have ${LIBMODE} in it to distinguish them.
-readonly TC_BUILD="${PNACL_ROOT}/build/${LIBMODE}"
+readonly TC_BUILD="${PNACL_ROOT}/build"
 readonly TC_BUILD_LLVM="${TC_BUILD}/llvm"
 readonly TC_BUILD_BINUTILS="${TC_BUILD}/binutils"
 readonly TC_BUILD_BINUTILS_LIBERTY="${TC_BUILD}/binutils-liberty"
 readonly TC_BUILD_NEWLIB="${TC_BUILD}/newlib"
-readonly TC_BUILD_LIBSTDCPP="${TC_BUILD}/libstdcpp"
 readonly TC_BUILD_COMPILER_RT="${TC_BUILD}/compiler_rt"
 readonly TC_BUILD_GCC="${TC_BUILD}/gcc"
 readonly TC_BUILD_GMP="${TC_BUILD}/gmp"
@@ -162,19 +143,17 @@ readonly TC_BUILD_DRAGONEGG="${TC_BUILD}/dragonegg"
 readonly TIMESTAMP_FILENAME="make-timestamp"
 
 # PNaCl toolchain installation directories (absolute paths)
-readonly TOOLCHAIN_LABEL="pnacl_${BUILD_PLATFORM}_${HOST_ARCH}_${LIBMODE}"
+readonly TOOLCHAIN_LABEL="pnacl_${BUILD_PLATFORM}_${HOST_ARCH}"
 readonly INSTALL_ROOT="${TOOLCHAIN_ROOT}/${TOOLCHAIN_LABEL}"
-readonly INSTALL_BIN="${INSTALL_ROOT}/bin"
-
-# SDK
-readonly INSTALL_SDK_ROOT="${INSTALL_ROOT}/sdk"
-readonly INSTALL_SDK_INCLUDE="${INSTALL_SDK_ROOT}/include"
-readonly INSTALL_SDK_LIB="${INSTALL_SDK_ROOT}/lib"
+readonly INSTALL_NEWLIB="${INSTALL_ROOT}/newlib"
+readonly INSTALL_GLIBC="${INSTALL_ROOT}/glibc"
+readonly INSTALL_NEWLIB_BIN="${INSTALL_NEWLIB}/bin"
+readonly INSTALL_GLIBC_BIN="${INSTALL_GLIBC}/bin"
 
 # Bitcode lib directories. These will soon be split apart.
 # BUG= http://code.google.com/p/nativeclient/issues/detail?id=2452
-readonly INSTALL_LIB_NEWLIB="${INSTALL_ROOT}/lib"
-readonly INSTALL_LIB_GLIBC="${INSTALL_ROOT}/lib"
+readonly INSTALL_LIB_NEWLIB="${INSTALL_NEWLIB}/lib"
+readonly INSTALL_LIB_GLIBC="${INSTALL_GLIBC}/lib"
 
 # Native file library directories
 # The pattern `${INSTALL_LIB_NATIVE}${arch}' is used in many places.
@@ -188,46 +167,72 @@ readonly INSTALL_SB_TOOLS="${INSTALL_ROOT}/tools-sb"
 
 # Component installation directories
 readonly INSTALL_PKG="${INSTALL_ROOT}/pkg"
-readonly NEWLIB_INSTALL_DIR="${INSTALL_PKG}/newlib"
-readonly GLIBC_INSTALL_DIR="${INSTALL_PKG}/glibc"
+readonly NEWLIB_INSTALL_DIR="${INSTALL_NEWLIB}/usr"
+readonly GLIBC_INSTALL_DIR="${INSTALL_GLIBC}/usr"
 readonly LLVM_INSTALL_DIR="${INSTALL_PKG}/llvm"
 readonly GCC_INSTALL_DIR="${INSTALL_PKG}/gcc"
 readonly GMP_INSTALL_DIR="${INSTALL_PKG}/gmp"
 readonly MPFR_INSTALL_DIR="${INSTALL_PKG}/mpfr"
 readonly MPC_INSTALL_DIR="${INSTALL_PKG}/mpc"
-readonly LIBSTDCPP_INSTALL_DIR="${INSTALL_PKG}/libstdcpp"
 readonly BINUTILS_INSTALL_DIR="${INSTALL_PKG}/binutils"
 readonly BFD_PLUGIN_DIR="${BINUTILS_INSTALL_DIR}/lib/bfd-plugins"
-readonly SYSROOT_DIR="${INSTALL_ROOT}/sysroot"
-readonly LDSCRIPTS_DIR="${INSTALL_ROOT}/ldscripts"
+readonly SYSROOT_DIR="${INSTALL_NEWLIB}/sysroot"
 readonly FAKE_INSTALL_DIR="${INSTALL_PKG}/fake"
 
-# Location of PNaCl gcc/g++/as
-readonly PNACL_DGCC="${INSTALL_BIN}/pnacl-dgcc"
-readonly PNACL_DGXX="${INSTALL_BIN}/pnacl-dg++"
-readonly PNACL_CLANG="${INSTALL_BIN}/pnacl-clang"
-readonly PNACL_CLANGXX="${INSTALL_BIN}/pnacl-clang++"
-readonly PNACL_PP="${INSTALL_BIN}/pnacl-clang -E"
-readonly PNACL_AR="${INSTALL_BIN}/pnacl-ar"
-readonly PNACL_RANLIB="${INSTALL_BIN}/pnacl-ranlib"
-readonly PNACL_AS="${INSTALL_BIN}/pnacl-as"
-readonly PNACL_LD="${INSTALL_BIN}/pnacl-ld"
-readonly PNACL_NM="${INSTALL_BIN}/pnacl-nm"
-readonly PNACL_TRANSLATE="${INSTALL_BIN}/pnacl-translate"
-readonly PNACL_READELF="${INSTALL_BIN}/readelf"
-readonly PNACL_SIZE="${INSTALL_BIN}/size"
-readonly PNACL_STRIP="${INSTALL_BIN}/pnacl-strip"
-readonly ILLEGAL_TOOL="${INSTALL_BIN}"/pnacl-illegal
+# TODO(pdox): Consider getting rid of pnacl-ld libmode bias,
+#             and merging these two.
+readonly PNACL_LD_NEWLIB="${INSTALL_NEWLIB_BIN}/pnacl-ld"
+readonly PNACL_LD_GLIBC="${INSTALL_GLIBC_BIN}/pnacl-ld"
+
+# These driver tools are always pulled from newlib/bin,
+# but this should not introduce a bias.
+readonly PNACL_PP="${INSTALL_NEWLIB_BIN}/pnacl-clang -E"
+readonly PNACL_AR="${INSTALL_NEWLIB_BIN}/pnacl-ar"
+readonly PNACL_RANLIB="${INSTALL_NEWLIB_BIN}/pnacl-ranlib"
+readonly PNACL_AS="${INSTALL_NEWLIB_BIN}/pnacl-as"
+readonly PNACL_NM="${INSTALL_NEWLIB_BIN}/pnacl-nm"
+readonly PNACL_TRANSLATE="${INSTALL_NEWLIB_BIN}/pnacl-translate"
+readonly PNACL_READELF="${INSTALL_NEWLIB_BIN}/readelf"
+readonly PNACL_SIZE="${INSTALL_NEWLIB_BIN}/size"
+readonly PNACL_STRIP="${INSTALL_NEWLIB_BIN}/pnacl-strip"
+readonly ILLEGAL_TOOL="${INSTALL_NEWLIB_BIN}"/pnacl-illegal
 
 # PNACL_CC_NEUTRAL is pnacl-cc without LibC bias (newlib vs. glibc)
 # This should only be used in conjunction with -E, -c, or -S.
-readonly PNACL_CC_NEUTRAL="${INSTALL_BIN}/pnacl-clang -nodefaultlibs"
+readonly PNACL_CC_NEUTRAL="${INSTALL_NEWLIB_BIN}/pnacl-clang -nodefaultlibs"
 
-# Set the default frontend.
-# Can be default, clang, or dragonegg
-# "Default" uses whatever is known to work, preferring Clang by default.
-readonly DEFAULT_FRONTEND="clang"
-readonly FRONTEND="${FRONTEND:-default}"
+# Set the frontend.
+readonly FRONTEND="${FRONTEND:-clang}"
+
+# Location of PNaCl gcc/g++
+readonly PNACL_CC_NEWLIB="${INSTALL_NEWLIB_BIN}/pnacl-${FRONTEND}"
+readonly PNACL_CXX_NEWLIB="${INSTALL_NEWLIB_BIN}/pnacl-${FRONTEND}++"
+readonly PNACL_CC_GLIBC="${INSTALL_GLIBC_BIN}/pnacl-${FRONTEND}"
+readonly PNACL_CXX_GLIBC="${INSTALL_GLIBC_BIN}/pnacl-${FRONTEND}++"
+
+GetTool() {
+  local tool=$1
+  local libmode=$2
+  case ${tool}-${libmode} in
+  cc-newlib) echo ${PNACL_CC_NEWLIB} ;;
+  cxx-newlib) echo ${PNACL_CXX_NEWLIB} ;;
+  cc-glibc) echo ${PNACL_CC_GLIBC} ;;
+  cxx-glibc) echo ${PNACL_CXX_GLIBC} ;;
+  ld-newlib) echo ${PNACL_LD_NEWLIB} ;;
+  ld-glibc) echo ${PNACL_LD_GLIBC} ;;
+  *) Fatal "Invalid call to GetTool: $*" ;;
+  esac
+}
+
+# GetInstallDir <libmode>
+GetInstallDir() {
+  local libmode=$1
+  case ${libmode} in
+  newlib) echo "${INSTALL_NEWLIB}" ;;
+  glibc) echo "${INSTALL_GLIBC}" ;;
+  *) Fatal "Unknown library mode in GetInstallDir: ${libmode}" ;;
+  esac
+}
 
 # For a production (release) build, we want the sandboxed
 # translator to only contain the code needed to handle
@@ -246,13 +251,9 @@ readonly FRONTEND="${FRONTEND:-default}"
 SBTC_PRODUCTION=${SBTC_PRODUCTION:-false}
 
 # Which toolchain to use for each arch.
-if ${LIBMODE_NEWLIB}; then
-  SBTC_BUILD_WITH_PNACL="arm x8632 x8664"
-  if ${PNACL_IN_CROS_CHROOT}; then
-    SBTC_BUILD_WITH_PNACL="arm"
-  fi
-else
-  SBTC_BUILD_WITH_PNACL="x8632 x8664"
+SBTC_BUILD_WITH_PNACL="arm x8632 x8664"
+if ${PNACL_IN_CROS_CHROOT}; then
+  SBTC_BUILD_WITH_PNACL="arm"
 fi
 
 # Current milestones in each repo
@@ -294,45 +295,27 @@ if ${HOST_ARCH_X8632} ; then
   CXX="${PNACL_ROOT}/scripts/myg++32"
 fi
 
-select-frontend() {
-  local frontend="$1"
-  if [ "${frontend}" == default ] ; then
-    frontend="${DEFAULT_FRONTEND}"
-  fi
-  case "${frontend}" in
-    clang)
-      PNACL_CC="${PNACL_CLANG}"
-      PNACL_CXX="${PNACL_CLANGXX}"
-      ;;
-    dragonegg)
-      PNACL_CC="${PNACL_DGCC}"
-      PNACL_CXX="${PNACL_DGXX}"
-      ;;
-    *)
-      Fatal "Unknown frontend: ${frontend}"
-      ;;
-  esac
-}
-
 setup-libstdcpp-env() {
   # NOTE: we do not expect the assembler or linker to be used for libs
   #       hence the use of ILLEGAL_TOOL.
   # TODO: the arm bias should be eliminated
   # BUG: http://code.google.com/p/nativeclient/issues/detail?id=865
+  local pnacl_cc=$(GetTool cc ${LIBSTDCPP_LIBMODE})
+  local pnacl_cxx=$(GetTool cxx ${LIBSTDCPP_LIBMODE})
   STD_ENV_FOR_LIBSTDCPP=(
     CC_FOR_BUILD="${CC}"
-    CC="${PNACL_CC}"
-    CXX="${PNACL_CXX}"
-    RAW_CXX_FOR_TARGET="${PNACL_CXX}"
+    CC="${pnacl_cc}"
+    CXX="${pnacl_cxx}"
+    RAW_CXX_FOR_TARGET="${pnacl_cxx}"
     LD="${ILLEGAL_TOOL}"
     CFLAGS="--pnacl-arm-bias"
     CPPFLAGS="--pnacl-arm-bias"
     CXXFLAGS="--pnacl-arm-bias"
     CFLAGS_FOR_TARGET="--pnacl-arm-bias"
     CPPFLAGS_FOR_TARGET="--pnacl-arm-bias"
-    CC_FOR_TARGET="${PNACL_CC}"
-    GCC_FOR_TARGET="${PNACL_CC}"
-    CXX_FOR_TARGET="${PNACL_CXX}"
+    CC_FOR_TARGET="${pnacl_cc}"
+    GCC_FOR_TARGET="${pnacl_cc}"
+    CXX_FOR_TARGET="${pnacl_cxx}"
     AR="${PNACL_AR}"
     AR_FOR_TARGET="${PNACL_AR}"
     NM_FOR_TARGET="${PNACL_NM}"
@@ -347,9 +330,9 @@ setup-newlib-env() {
   STD_ENV_FOR_NEWLIB=(
     CFLAGS_FOR_TARGET="--pnacl-arm-bias"
     CPPFLAGS_FOR_TARGET="--pnacl-arm-bias"
-    CC_FOR_TARGET="${PNACL_CC}"
-    GCC_FOR_TARGET="${PNACL_CC}"
-    CXX_FOR_TARGET="${PNACL_CXX}"
+    CC_FOR_TARGET="${PNACL_CC_NEWLIB}"
+    GCC_FOR_TARGET="${PNACL_CC_NEWLIB}"
+    CXX_FOR_TARGET="${PNACL_CXX_NEWLIB}"
     AR_FOR_TARGET="${PNACL_AR}"
     NM_FOR_TARGET="${PNACL_NM}"
     RANLIB_FOR_TARGET="${PNACL_RANLIB}"
@@ -825,27 +808,16 @@ download-toolchains() {
   gclient runhooks --force
 }
 
-libc() {
-  if ${LIBMODE_NEWLIB} ; then
-    # TODO(pdox): Why is this step needed?
-    sysroot
-    newlib
-  elif ${LIBMODE_GLIBC} ; then
-    # NOTE: glibc steals libc, libstdc++ from the other toolchain
-    glibc
-  fi
-}
-
 #@ libs            - install native libs and build bitcode libs
 libs() {
   libs-clean
   libs-support
-  libc
+  newlib
+  # NOTE: glibc steals libc, libstdc++ from the other toolchain
+  glibc
   compiler-rt-all
   libgcc_eh-all
-  if ${LIBMODE_NEWLIB}; then
-    libstdcpp
-  fi
+  libstdcpp newlib
 }
 
 #@ everything            - Build and install untrusted SDK. no translator
@@ -900,13 +872,12 @@ everything-translator() {
   if ${PNACL_PRUNE}; then
     prune
   fi
-  sdk
-  install-translators srpc
+  # For now, only build the newlib-based translator in the combined build.
+  sdk newlib
+  install-translators srpc newlib
   if ${PNACL_PRUNE}; then
     prune-translator-install srpc
-    if ${LIBMODE_NEWLIB}; then
-      track-translator-size ${SBTC_BUILD_WITH_PNACL}
-    fi
+    track-translator-size ${SBTC_BUILD_WITH_PNACL}
   fi
 }
 
@@ -915,19 +886,22 @@ glibc-crt1() {
   StepBanner "GLIBC" "Building crt1.bc"
   local tmpdir="${TC_BUILD}/glibc-crt1"
   local flags="-no-save-temps -DUSE_IN_LIBIO -I${TC_SRC_GLIBC}/sysdeps/gnu"
+  local cc_cmd="${PNACL_CC_GLIBC} ${flags}"
+  local ld_cmd="${PNACL_LD_GLIBC}"
 
   rm -rf "${tmpdir}"
   mkdir -p "${tmpdir}"
   spushd "${tmpdir}"
-  ${PNACL_CC} ${flags} -c "${TC_SRC_GLIBC}"/sysdeps/nacl/start.c -o start.bc
-  ${PNACL_CC} ${flags} -c "${TC_SRC_GLIBC}"/csu/init.c -o init.bc
-  ${PNACL_LD} -r -nostdlib -no-save-temps start.bc init.bc -o crt1.bc
+  ${cc_cmd} -c "${TC_SRC_GLIBC}"/sysdeps/nacl/start.c -o start.bc
+  ${cc_cmd} -c "${TC_SRC_GLIBC}"/csu/init.c -o init.bc
+  ${ld_cmd} -r -nostdlib -no-save-temps start.bc init.bc -o crt1.bc
   mkdir -p "${INSTALL_LIB_GLIBC}"
   cp crt1.bc "${INSTALL_LIB_GLIBC}"
   spopd
 }
 
 glibc() {
+  StepBanner "GLIBC"
   glibc-copy
   glibc-crt1
 }
@@ -974,8 +948,9 @@ glibc-copy() {
   ln -sf "ld-2.9.so" "${INSTALL_LIB_X8664}"/ld-nacl-x86-64.so.1
 
   # Copy the glibc headers
-  cp -a "${NNACL_GLIBC_ROOT}"/${NACL64_TARGET}/include \
-        "${GLIBC_INSTALL_DIR}"
+  mkdir -p "${GLIBC_INSTALL_DIR}"/include
+  cp -a "${NNACL_GLIBC_ROOT}"/${NACL64_TARGET}/include/* \
+        "${GLIBC_INSTALL_DIR}"/include
   install-unwind-header
 }
 
@@ -1039,7 +1014,7 @@ clean() {
 #@ fast-clean            - Clean everything except LLVM.
 fast-clean() {
   local did_backup=false
-  local backup_dir="${PNACL_ROOT}/build/llvm-${LIBMODE}-backup"
+  local backup_dir="${PNACL_ROOT}/fast-clean-llvm-backup"
 
   if [ -d "${TC_BUILD_LLVM}" ]; then
     rm -rf "${backup_dir}"
@@ -1125,9 +1100,6 @@ prune() {
   local dir_size_before=$(get_dir_size_in_mb ${INSTALL_ROOT})
 
   SubBanner "Size before: ${INSTALL_ROOT} ${dir_size_before}MB"
-  echo "removing some static libs we do not have any use for"
-  rm  -f "${NEWLIB_INSTALL_DIR}"/lib/lib*.a
-
   echo "stripping binaries (binutils)"
   strip "${BINUTILS_INSTALL_DIR}"/bin/*
 
@@ -1140,7 +1112,8 @@ prune() {
   rm -rf "${LLVM_INSTALL_DIR}"/include/llvm*
 
   echo "removing .pyc files"
-  rm -f "${INSTALL_BIN}"/*.pyc
+  rm -f "${INSTALL_NEWLIB_BIN}"/*.pyc
+  rm -f "${INSTALL_GLIBC_BIN}"/*.pyc
 
   echo "remove driver log"
   rm -f "${INSTALL_ROOT}"/driver.log
@@ -1653,26 +1626,43 @@ dragonegg-plugin() {
 
 libgcc_eh-all() {
   StepBanner "LIBGCC_EH (from GCC 4.6)"
-  if ! ${LIBMODE_GLIBC}; then
-    libgcc_eh arm
-  fi
-  libgcc_eh x86-32
-  libgcc_eh x86-64
+
+  # Build libgcc_eh.a using Newlib, and libgcc_s.so using GlibC.
+  # This is a temporary situation. Eventually, libgcc_eh won't depend
+  # on LibC, and it will be built once for each architecture in a neutral way.
+  libgcc_eh arm    newlib
+  libgcc_eh x86-32 newlib
+  libgcc_eh x86-64 newlib
+  # ARM GlibC can't be built because libc.so is missing.
+  libgcc_eh x86-32 glibc
+  libgcc_eh x86-64 glibc
 }
 
 libgcc_eh() {
   local arch=$1
-  local objdir="${TC_BUILD}/libgcc_eh-${arch}"
+  local libmode=$2
+  check-libmode ${libmode}
+
+  local objdir="${TC_BUILD}/libgcc_eh-${arch}-${libmode}"
   local subdir="${objdir}/fake-target/libgcc"
   local installdir="${INSTALL_LIB_NATIVE}${arch}"
+  if [ ${libmode} == "glibc" ]; then
+    local label="(${arch} libgcc_s.so)"
+  else
+    local label="(${arch} libgcc_eh.a)"
+  fi
+
   mkdir -p "${installdir}"
-  rm -rf "${installdir}"/libgcc_s*
-  rm -rf "${installdir}"/libgcc_eh*
+  if [ ${libmode} == "glibc" ]; then
+    rm -rf "${installdir}"/libgcc_s*
+  else
+    rm -rf "${installdir}"/libgcc_eh*
+  fi
   rm -rf "${objdir}"
 
   # Setup fake gcc build directory.
   mkdir -p "${objdir}"/gcc
-  cp -a "${PNACL_ROOT}"/scripts/libgcc-${LIBMODE}.mvars \
+  cp -a "${PNACL_ROOT}"/scripts/libgcc-${libmode}.mvars \
         "${objdir}"/gcc/libgcc.mvars
   cp -a "${PNACL_ROOT}"/scripts/libgcc-tconfig.h "${objdir}"/gcc/tconfig.h
   touch "${objdir}"/gcc/tm.h
@@ -1683,17 +1673,24 @@ libgcc_eh() {
   spushd "${subdir}"
   local flags="-arch ${arch} --pnacl-bias=${arch} --pnacl-allow-translate"
   flags+=" --pnacl-allow-native"
-  if ${LIBMODE_GLIBC}; then
+  if [ "${libmode}" == "glibc" ]; then
     # Enable thread safety using pthreads
+    # Thread safety requires pthread_mutex_*. For the newlib case,
+    # these functions won't be available in the bitcode unless
+    # explicitly preserved, but we don't really want to do that.
+    # Instead, this problem will go away once libgcc_eh is no
+    # longer dependent on libc.
+    # BUG= http://code.google.com/p/nativeclient/issues/detail?id=2492
     flags+=" -D_PTHREADS -D_GNU_SOURCE"
   fi
   flags+=" -DENABLE_RUNTIME_CHECKING"
-  StepBanner "LIBGCC_EH" "Configure ${arch}"
+
+  StepBanner "LIBGCC_EH" "Configure ${label}"
   RunWithLog libgcc.${arch}.configure \
     env -i \
       PATH="/usr/bin:/bin" \
-      CC="${PNACL_CC} ${flags}" \
-      CXX="${PNACL_CXX} ${flags}" \
+      CC="$(GetTool cc ${libmode}) ${flags}" \
+      CXX="$(GetTool cxx ${libmode}) ${flags}" \
       AR="${PNACL_AR}" \
       NM="${PNACL_NM}" \
       RANLIB="${PNACL_RANLIB}" \
@@ -1710,18 +1707,22 @@ libgcc_eh() {
         # appear to affect libgcc, not libgcc_eh.
         # TODO(pdox): Create a fake target to get rid of i686 here.
 
-  StepBanner "LIBGCC_EH" "Make ${arch}"
-  RunWithLog libgcc.${arch}.make \
-    make libgcc_eh.a
-  if ${LIBMODE_GLIBC}; then
+  StepBanner "LIBGCC_EH" "Make ${label}"
+  if [ "${libmode}" == "newlib" ]; then
+    RunWithLog libgcc.${arch}.make \
+      make libgcc_eh.a
+  elif [ "${libmode}" == "glibc" ]; then
+    # disable_libgcc_base=yes is a custom option which
+    # removes the non-unwind functions from libgcc_s.so
     RunWithLog libgcc_s.${arch}.make \
       make disable_libgcc_base=yes libgcc_s.so
   fi
   spopd
 
-  StepBanner "LIBGCC_EH" "Install ${arch}"
-  cp ${subdir}/libgcc_eh.a "${installdir}"
-  if ${LIBMODE_GLIBC}; then
+  StepBanner "LIBGCC_EH" "Install ${label}"
+  if [ "${libmode}" == "newlib" ]; then
+    cp ${subdir}/libgcc_eh.a "${installdir}"
+  elif [ "${libmode}" == "glibc" ]; then
     cp ${subdir}/libgcc_s.so.1 "${installdir}"
     ln -s libgcc_s.so.1 "${installdir}"/libgcc_s.so
   fi
@@ -1795,7 +1796,31 @@ compiler-rt() {
 #########################################################################
 #########################################################################
 
+check-libmode() {
+  local libmode=$1
+  if [ ${libmode} != "newlib" ] && [ ${libmode} != "glibc" ]; then
+    echo "ERROR: Unsupported library mode. Choose one of: newlib, glibc"
+    exit -1
+  fi
+}
+
+LIBSTDCPP_IS_SETUP=false
+libstdcpp-setup() {
+  if ${LIBSTDCPP_IS_SETUP} && [ $# -eq 0 ]; then
+    return 0
+  fi
+  if [ $# -ne 1 ]; then
+    Fatal "Please specify library mode: newlib or glibc"
+  fi
+  check-libmode "$1"
+  LIBSTDCPP_LIBMODE=$1
+  LIBSTDCPP_IS_SETUP=true
+  LIBSTDCPP_BUILD="${TC_BUILD}/libstdcpp-${LIBSTDCPP_LIBMODE}"
+  LIBSTDCPP_INSTALL_DIR="$(GetInstallDir ${LIBSTDCPP_LIBMODE})/usr"
+}
+
 libstdcpp() {
+  libstdcpp-setup "$@"
   StepBanner "LIBSTDCPP 4.6 (BITCODE)"
 
   if libstdcpp-needs-configure; then
@@ -1816,32 +1841,34 @@ libstdcpp() {
 
 #+ libstdcpp-clean - clean libstdcpp in bitcode
 libstdcpp-clean() {
+  libstdcpp-setup "$@"
   StepBanner "LIBSTDCPP" "Clean"
-  rm -rf "${TC_BUILD_LIBSTDCPP}"
+  rm -rf "${LIBSTDCPP_BUILD}"
 }
 
 libstdcpp-needs-configure() {
+  libstdcpp-setup "$@"
   ts-newer-than "${TC_BUILD_LLVM}" \
-                "${TC_BUILD_LIBSTDCPP}" && return 0
-  [ ! -f "${TC_BUILD_LIBSTDCPP}/config.status" ]
+                "${LIBSTDCPP_BUILD}" && return 0
+  [ ! -f "${LIBSTDCPP_BUILD}/config.status" ]
   return #?
 }
 
 libstdcpp-configure() {
+  libstdcpp-setup "$@"
   StepBanner "LIBSTDCPP" "Configure"
   local srcdir="${TC_SRC_LIBSTDCPP}"
-  local objdir="${TC_BUILD_LIBSTDCPP}"
-  local subdir="${TC_BUILD_LIBSTDCPP}/pnacl-target"
+  local objdir="${LIBSTDCPP_BUILD}"
+  local subdir="${LIBSTDCPP_BUILD}/pnacl-target"
 
   mkdir -p "${subdir}"
   spushd "${subdir}"
 
   local flags=""
-  if ${LIBMODE_NEWLIB}; then
+  if [ ${LIBSTDCPP_LIBMODE} == "newlib" ]; then
     flags+="--with-newlib --disable-shared --disable-rpath"
-  elif ${LIBMODE_GLIBC}; then
-    # TODO(pdox): Fix right away.
-    flags+="--disable-shared"
+  elif [ ${LIBSTDCPP_LIBMODE} == "glibc" ]; then
+    Fatal "libstdcpp glibc not yet supported"
   else
     Fatal "Unknown library mode"
   fi
@@ -1864,17 +1891,19 @@ libstdcpp-configure() {
 }
 
 libstdcpp-needs-make() {
+  libstdcpp-setup "$@"
   local srcdir="${TC_SRC_LIBSTDCPP}"
-  local objdir="${TC_BUILD_LIBSTDCPP}"
+  local objdir="${LIBSTDCPP_BUILD}"
 
   ts-modified "${srcdir}" "${objdir}"
   return $?
 }
 
 libstdcpp-make() {
+  libstdcpp-setup "$@"
   StepBanner "LIBSTDCPP" "Make"
   local srcdir="${TC_SRC_LIBSTDCPP}"
-  local objdir="${TC_BUILD_LIBSTDCPP}"
+  local objdir="${LIBSTDCPP_BUILD}"
 
   ts-touch-open "${objdir}"
 
@@ -1891,15 +1920,15 @@ libstdcpp-make() {
 }
 
 libstdcpp-install() {
+  libstdcpp-setup "$@"
   StepBanner "LIBSTDCPP" "Install"
-  local objdir="${TC_BUILD_LIBSTDCPP}"
+  local objdir="${LIBSTDCPP_BUILD}"
 
   spushd "${objdir}/pnacl-target"
 
   # install headers (=install-data)
   # for good measure make sure we do not keep any old headers
-  rm -rf "${INSTALL_ROOT}/include/c++"
-  rm -rf "${LIBSTDCPP_INSTALL_DIR}"
+  rm -rf "${LIBSTDCPP_INSTALL_DIR}/include/c++"
   setup-libstdcpp-env
   RunWithLog libstdcpp.install \
     make \
@@ -1907,13 +1936,9 @@ libstdcpp-install() {
     ${MAKE_OPTS} install-data
 
   # Install bitcode library
-  if ${LIBMODE_NEWLIB}; then
-    local installdir="${INSTALL_LIB_NEWLIB}"
-  else
-    local installdir="${INSTALL_LIB_GLIBC}"
-  fi
-  mkdir -p "${installdir}"
-  cp "${objdir}/pnacl-target/src/.libs/libstdc++.a" "${installdir}"
+  mkdir -p "${LIBSTDCPP_INSTALL_DIR}/lib"
+  cp "${objdir}/pnacl-target/src/.libs/libstdc++.a" \
+     "${LIBSTDCPP_INSTALL_DIR}/lib"
   spopd
 }
 
@@ -2205,7 +2230,7 @@ llvm-sb-setup() {
     return 0
   fi
 
-  if [ $# -ne 2 ] ; then
+  if [ $# -ne 3 ] ; then
     Fatal "Please specify arch and mode"
   fi
 
@@ -2213,12 +2238,16 @@ llvm-sb-setup() {
 
   LLVM_SB_ARCH=$1
   LLVM_SB_MODE=$2
+  LLVM_SB_LIBMODE=$3
   check-sb-arch ${LLVM_SB_ARCH}
   check-sb-mode ${LLVM_SB_MODE}
+  check-libmode ${LLVM_SB_LIBMODE}
 
-  LLVM_SB_LOG_PREFIX="llvm.sb.${LLVM_SB_ARCH}.${LLVM_SB_MODE}"
-  LLVM_SB_OBJDIR="${TC_BUILD}/llvm-sb-${LLVM_SB_ARCH}-${LLVM_SB_MODE}"
-  if ${LIBMODE_NEWLIB}; then
+  LLVM_SB_LOG_PREFIX=\
+"llvm.sb.${LLVM_SB_ARCH}.${LLVM_SB_MODE}.${LLVM_SB_LIBMODE}"
+  LLVM_SB_OBJDIR=\
+"${TC_BUILD}/llvm-sb-${LLVM_SB_ARCH}-${LLVM_SB_MODE}-${LLVM_SB_LIBMODE}"
+  if [ ${LLVM_SB_LIBMODE} == newlib ]; then
     flags+=" -static"
   fi
 
@@ -2233,14 +2262,15 @@ llvm-sb-setup() {
   LLVM_SB_CONFIGURE_ENV=(
     AR="${PNACL_AR}" \
     AS="${PNACL_AS}" \
-    CC="${PNACL_CC} ${flags}" \
-    CXX="${PNACL_CXX} ${flags}" \
-    LD="${PNACL_LD} ${flags}" \
+    CC="$(GetTool cc ${LLVM_SB_LIBMODE}) ${flags}" \
+    CXX="$(GetTool cxx ${LLVM_SB_LIBMODE}) ${flags}" \
+    LD="$(GetTool ld ${LLVM_SB_LIBMODE}) ${flags}" \
     NM="${PNACL_NM}" \
     RANLIB="${PNACL_RANLIB}" \
     LDFLAGS="") # TODO(pdox): Support -s
 }
 
+# TODO(pdox): Unify with llvm-sb-setup above.
 llvm-sb-setup-jit() {
   local flags=""
 
@@ -2248,16 +2278,18 @@ llvm-sb-setup-jit() {
     return 0
   fi
 
-  if [ $# -ne 2 ] ; then
-    Fatal "Please specify arch and mode"
+  if [ $# -ne 3 ] ; then
+    Fatal "Please specify arch, mode, libmode"
   fi
 
   LLVM_SB_SETUP=true
 
   LLVM_SB_ARCH=$1
   LLVM_SB_MODE=$2
+  LLVM_SB_LIBMODE=$3
   check-sb-arch ${LLVM_SB_ARCH}
   check-sb-mode ${LLVM_SB_MODE}
+  check-libmode ${LLVM_SB_LIBMODE}
 
   LLVM_SB_LOG_PREFIX="llvm.sb.${LLVM_SB_ARCH}.${LLVM_SB_MODE}.jit"
   LLVM_SB_OBJDIR="${TC_BUILD}/llvm-sb-${LLVM_SB_ARCH}-${LLVM_SB_MODE}.jit"
@@ -2436,15 +2468,6 @@ translate-and-install-sb-tool() {
   local mode=$2
   local name=$3
 
-  if ${LIBMODE_GLIBC}; then
-    # SCons SDK install is currently broken, in that it produces
-    # X86-32 .so files instead of .pso files.
-    # BUG= http://code.google.com/p/nativeclient/issues/detail?id=2420
-    # And translation requires libsrpc, so we cannot correctly translate these.
-    # BUG= http://code.google.com/p/nativeclient/issues/detail?id=2451
-    return 0
-  fi
-
   # Translate bitcode program into an actual native executable.
   # If arch = universal, we need to translate and install multiple times.
   local bindir="${INSTALL_SB_TOOLS}/${arch}/${mode}/bin"
@@ -2479,7 +2502,8 @@ translate-and-install-sb-tool() {
   for tarch in ${arches}; do
     local nexe="${bindir}/${name}.${tarch}.nexe"
     StepBanner "TRANSLATE" "Translating ${name}.pexe to ${tarch}${extra}"
-    "${PNACL_TRANSLATE}" -arch ${tarch} -Wl,-L"${INSTALL_SDK_LIB}" \
+    # TODO(pdox): Get the SDK location based on libmode.
+    "${PNACL_TRANSLATE}" -arch ${tarch} -Wl,-L"$(GetInstallDir newlib)/sdk" \
                          "${pexe}" -o "${nexe}" &
     QueueLastProcess
   done
@@ -2508,19 +2532,22 @@ binutils-sb-setup() {
     return 0
   fi
 
-  if [ $# -ne 1 ] ; then
-    Fatal "Please specify arch"
+  if [ $# -ne 2 ] ; then
+    Fatal "Please specify arch and libmode"
   fi
 
   BINUTILS_SB_SETUP=true
 
   BINUTILS_SB_ARCH=$1
+  BINUTILS_SB_LIBMODE=$2
   check-sb-arch ${BINUTILS_SB_ARCH}
+  check-libmode ${BINUTILS_SB_LIBMODE}
   BINUTILS_SB_LOG_PREFIX="binutils.sb.${BINUTILS_SB_ARCH}"
-  BINUTILS_SB_OBJDIR="${TC_BUILD}/binutils-sb-${BINUTILS_SB_ARCH}"
+  BINUTILS_SB_OBJDIR=\
+"${TC_BUILD}/binutils-sb-${BINUTILS_SB_ARCH}-${BINUTILS_SB_LIBMODE}"
   BINUTILS_SB_INSTALL_DIR="${INSTALL_SB_TOOLS}/${arch}/srpc"
 
-  if ${LIBMODE_NEWLIB}; then
+  if [ ${BINUTILS_SB_LIBMODE} == newlib ]; then
     flags+=" -static"
   fi
 
@@ -2535,11 +2562,11 @@ binutils-sb-setup() {
   BINUTILS_SB_CONFIGURE_ENV=(
     AR="${PNACL_AR}" \
     AS="${PNACL_AS}" \
-    CC="${PNACL_CC} ${flags}" \
-    CXX="${PNACL_CXX} ${flags}" \
+    CC="$(GetTool cc ${BINUTILS_SB_LIBMODE}) ${flags}" \
+    CXX="$(GetTool cxx ${BINUTILS_SB_LIBMODE}) ${flags}" \
     CC_FOR_BUILD="${CC}" \
     CXX_FOR_BUILD="${CXX}" \
-    LD="${PNACL_LD} ${flags}" \
+    LD="$(GetTool ld ${BINUTILS_SB_LIBMODE}) ${flags}" \
     NM="${PNACL_NM}" \
     RANLIB="${PNACL_RANLIB}" \
     LDFLAGS_FOR_BUILD="-L${TC_BUILD_BINUTILS_LIBERTY}/libiberty/" \
@@ -2680,9 +2707,10 @@ binutils-sb-install() {
 tools-sb() {
   local arch=$1
   local mode=$2
+  local libmode=$3
 
-  llvm-sb ${arch} ${mode}
-  binutils-sb ${arch}
+  llvm-sb ${arch} ${mode} ${libmode}
+  binutils-sb ${arch} ${libmode}
 }
 
 
@@ -2690,34 +2718,36 @@ tools-sb() {
 #@ install-translators {srpc/nonsrpc} - Builds and installs sandboxed
 #@                                      translator components
 install-translators() {
-  if [ $# -ne 1 ]; then
-    echo "ERROR: Usage install-translators <srpc/nonsrpc>"
-    exit -1
-  fi
-
-  if ! [ -d "${INSTALL_SDK_ROOT}" ]; then
-    echo "ERROR: SDK must be installed to build translators."
-    echo "You can install the SDK by running: $0 sdk"
+  if [ $# -ne 2 ]; then
+    echo "ERROR: Usage install-translators <srpc/nonsrpc> <libmode>"
     exit -1
   fi
 
   local srpc_kind=$1
+  local libmode=$2
   check-sb-mode ${srpc_kind}
+  check-libmode ${libmode}
 
-  StepBanner "INSTALL SANDBOXED TRANSLATORS (${srpc_kind})"
+  if ! [ -d "$(GetInstallDir ${libmode})/sdk" ]; then
+    echo "ERROR: SDK must be installed to build translators."
+    echo "You can install the SDK by running: $0 sdk ${libmode}"
+    exit -1
+  fi
+
+  StepBanner "INSTALL SANDBOXED TRANSLATORS (${srpc_kind} ${libmode})"
 
   binutils-liberty
 
   if ${SBTC_PRODUCTION}; then
     # Build each architecture separately.
     for arch in ${SBTC_BUILD_WITH_PNACL} ; do
-      tools-sb ${arch} ${srpc_kind}
+      tools-sb ${arch} ${srpc_kind} ${libmode}
     done
   else
     # Using arch `universal` builds the sandboxed tools to a .pexe
     # which support all targets. This .pexe is then translated to
     # each architecture specified in ${SBTC_BUILD_WITH_PNACL}.
-    tools-sb universal ${srpc_kind}
+    tools-sb universal ${srpc_kind} ${libmode}
   fi
 
   echo "Done"
@@ -2769,6 +2799,9 @@ prune-translator-install() {
 #+ newlib - Build and install newlib in bitcode.
 newlib() {
   StepBanner "NEWLIB (BITCODE)"
+
+  # TODO(pdox): Why is this step needed?
+  sysroot
 
   if newlib-needs-configure; then
     newlib-clean
@@ -2873,41 +2906,31 @@ newlib-install() {
       make \
       "${STD_ENV_FOR_NEWLIB[@]}" \
       install ${MAKE_OPTS}
+  spopd
 
-  ###########################################################
-  #                -- HACK HACK HACK --
-  # newlib installs into ${REAL_CROSS_TARGET}
-  # For now, move it back to the old ${CROSS_TARGET_ARM}
-  # where everything expects it to be.
-  rm -rf "${NEWLIB_INSTALL_DIR}/${CROSS_TARGET_ARM}"
-  mv "${NEWLIB_INSTALL_DIR}/${REAL_CROSS_TARGET}" \
-     "${NEWLIB_INSTALL_DIR}/${CROSS_TARGET_ARM}"
-  ###########################################################
+  # Newlib installs files into usr/pnacl/*
+  # Get rid of the pnacl/ prefix.
+  pushd "${NEWLIB_INSTALL_DIR}"
+  mkdir -p lib include
+  mv -f pnacl/lib/* lib
+  mv -f pnacl/include/* include
+  rmdir pnacl/lib
+  rmdir pnacl/include
+  rmdir pnacl
 
   StepBanner "NEWLIB" "Extra-install"
   local sys_include=${SYSROOT_DIR}/include
-  # NOTE: we provide a new one via extra-sdk
-  rm ${NEWLIB_INSTALL_DIR}/${CROSS_TARGET_ARM}/include/pthread.h
-
-  cp ${NEWLIB_INSTALL_DIR}/${CROSS_TARGET_ARM}/include/machine/endian.h \
-    ${sys_include}
-  cp ${NEWLIB_INSTALL_DIR}/${CROSS_TARGET_ARM}/include/sys/param.h \
-    ${sys_include}
-  cp ${NEWLIB_INSTALL_DIR}/${CROSS_TARGET_ARM}/include/newlib.h \
-    ${sys_include}
+  pushd "${NEWLIB_INSTALL_DIR}"
+  # NOTE: we provide a new pthread.h via extra-sdk
+  rm include/pthread.h
+  cp include/machine/endian.h ${sys_include}
+  cp include/sys/param.h ${sys_include}
+  cp include/newlib.h ${sys_include}
+  popd
 
   # NOTE: we provide our own pthread.h via extra-sdk
   StepBanner "NEWLIB" "Removing old pthreads headers"
-  rm -f "${NEWLIB_INSTALL_DIR}/${CROSS_TARGET_ARM}/usr/include/pthread.h"
   rm -f "${sys_include}/pthread.h"
-
-  StepBanner "NEWLIB" "copying libraries"
-  local destdir="${INSTALL_LIB_NEWLIB}"
-  # We only install libc/libg/libm
-  mkdir -p "${destdir}"
-  cp ${objdir}/${REAL_CROSS_TARGET}/newlib/lib[cgm].a "${destdir}"
-
-  spopd
 
   # Clang claims posix thread model, not single as llvm-gcc does.
   # It means that libstdcpp needs pthread.h to be in place.
@@ -2916,14 +2939,12 @@ newlib-install() {
   # http://code.google.com/p/nativeclient/issues/detail?id=2333
   StepBanner "NEWLIB" "Copying pthreads headers ahead of time "\
   "(HACK. See http://code.google.com/p/nativeclient/issues/detail?id=2333)"
-  sdk-headers
+  sdk-headers newlib
 }
 
 libs-support() {
   StepBanner "LIBS-SUPPORT"
-  if ${LIBMODE_NEWLIB}; then
-    libs-support-newlib
-  fi
+  libs-support-newlib
   libs-support-bitcode
   local arch
   for arch in arm x86-32 x86-64; do
@@ -3023,7 +3044,25 @@ SCONS_ARGS=(MODE=nacl
             naclsdk_validate=0
             --verbose)
 
+SDK_IS_SETUP=false
+sdk-setup() {
+  if ${SDK_IS_SETUP} && [ $# -eq 0 ]; then
+    return 0
+  fi
+  if [ $# -ne 1 ]; then
+    Fatal "Please specify libmode: newlib or glibc"
+  fi
+  check-libmode "$1"
+  SDK_IS_SETUP=true
+  SDK_LIBMODE=$1
+
+  SDK_INSTALL_ROOT="${INSTALL_ROOT}/${SDK_LIBMODE}/sdk"
+  SDK_INSTALL_LIB="${SDK_INSTALL_ROOT}/lib"
+  SDK_INSTALL_INCLUDE="${SDK_INSTALL_ROOT}/include"
+}
+
 sdk() {
+  sdk-setup "$@"
   StepBanner "SDK"
   sdk-clean
   sdk-headers
@@ -3038,19 +3077,21 @@ sdk() {
 
 #+ sdk-clean             - Clean sdk stuff
 sdk-clean() {
+  sdk-setup "$@"
   StepBanner "SDK" "Clean"
-  rm -rf "${INSTALL_SDK_ROOT}"
+  rm -rf "${SDK_INSTALL_ROOT}"
 
   # clean scons obj dirs
   rm -rf "${SCONS_OUT}"/nacl-*-pnacl*
 }
 
 sdk-headers() {
-  mkdir -p "${INSTALL_SDK_INCLUDE}"
+  sdk-setup "$@"
+  mkdir -p "${SDK_INSTALL_INCLUDE}"
 
   local extra_flags=""
   local neutral_platform="x86-32"
-  if ${LIBMODE_GLIBC}; then
+  if [ ${SDK_LIBMODE} == "glibc" ]; then
     extra_flags="--nacl_glibc"
   fi
 
@@ -3062,17 +3103,18 @@ sdk-headers() {
       ${extra_flags} \
       platform=${neutral_platform} \
       install_headers \
-      includedir="$(PosixToSysPath "${INSTALL_SDK_INCLUDE}")"
+      includedir="$(PosixToSysPath "${SDK_INSTALL_INCLUDE}")"
   spopd
 }
 
 sdk-libs() {
+  sdk-setup "$@"
   StepBanner "SDK" "Install libraries"
-  mkdir -p "${INSTALL_SDK_LIB}"
+  mkdir -p "${SDK_INSTALL_LIB}"
 
   local extra_flags=""
   local neutral_platform="x86-32"
-  if ${LIBMODE_GLIBC}; then
+  if [ ${SDK_LIBMODE} == "glibc" ]; then
     extra_flags="--nacl_glibc"
   fi
 
@@ -3083,7 +3125,7 @@ sdk-libs() {
       ${extra_flags} \
       platform=${neutral_platform} \
       install_lib \
-      libdir="$(PosixToSysPath "${INSTALL_SDK_LIB}")"
+      libdir="$(PosixToSysPath "${SDK_INSTALL_LIB}")"
   spopd
 }
 
@@ -3109,10 +3151,11 @@ sdk-irt-shim() {
 }
 
 sdk-verify() {
+  sdk-setup "$@"
   StepBanner "SDK" "Verify"
 
   # Verify bitcode libraries
-  verify-bitcode-dir "${INSTALL_SDK_LIB}"
+  verify-bitcode-dir "${SDK_INSTALL_LIB}"
 }
 
 newlib-nacl-headers-clean() {
@@ -3198,8 +3241,16 @@ newlib-nacl-headers-check() {
 #+ today.
 # TODO(robertm): harmonize this with whatever we do for the nacl-gcc TC
 ppapi-headers() {
-  local dst=${INSTALL_SDK_INCLUDE}/ppapi
-  StepBanner "PPAPI-HEADERS ${dst}"
+  ppapi-headers-one newlib
+  ppapi-headers-one glibc
+}
+
+ppapi-headers-one() {
+  local libmode=$1
+  check-libmode ${libmode}
+  local sdkinclude="$(GetInstallDir ${libmode})"/sdk/include
+  local dst="${sdkinclude}"/ppapi
+  StepBanner "PPAPI-HEADERS" "${dst}"
   # This is quick and dirty 1st cut.
   local ppapi_base=${NACL_ROOT}/../ppapi
   rm -rf ${dst}
@@ -3219,54 +3270,58 @@ ppapi-headers() {
   rm -f ${dst}/*/*.cc
   rm -f ${dst}/*/*/*.cc
 
-  cp -r ${ppapi_base}/lib/gl/include/KHR   ${INSTALL_SDK_INCLUDE}
-  cp -r ${ppapi_base}/lib/gl/include/EGL   ${INSTALL_SDK_INCLUDE}
-  cp -r ${ppapi_base}/lib/gl/include/GLES2 ${INSTALL_SDK_INCLUDE}
+  cp -r ${ppapi_base}/lib/gl/include/KHR   "${sdkinclude}"
+  cp -r ${ppapi_base}/lib/gl/include/EGL   "${sdkinclude}"
+  cp -r ${ppapi_base}/lib/gl/include/GLES2 "${sdkinclude}"
 }
 #+-------------------------------------------------------------------------
 #@ driver                - Install driver scripts.
 driver() {
   StepBanner "DRIVER"
-  driver-install
+  driver-install newlib
+  driver-install glibc
 }
 
 # The driver is a simple python script which changes its behavior
 # depending on the name it is invoked as.
 driver-install() {
-  StepBanner "DRIVER" "Installing driver adaptors to ${INSTALL_BIN}"
-  mkdir -p "${INSTALL_BIN}"
-  rm -f "${INSTALL_BIN}"/pnacl-*
+  local libmode=$1
+  check-libmode ${libmode}
+  local destdir="${INSTALL_ROOT}/${libmode}/bin"
+  StepBanner "DRIVER" "Installing driver adaptors to ${destdir}"
+  mkdir -p "${destdir}"
+  rm -f "${destdir}"/pnacl-*
 
   spushd "${DRIVER_DIR}"
-  cp driver_*.py "${INSTALL_BIN}"
-  cp artools.py "${INSTALL_BIN}"
-  cp ldtools.py "${INSTALL_BIN}"
-  cp shelltools.py "${INSTALL_BIN}"
-  cp pathtools.py "${INSTALL_BIN}"
+  cp driver_*.py "${destdir}"
+  cp artools.py "${destdir}"
+  cp ldtools.py "${destdir}"
+  cp shelltools.py "${destdir}"
+  cp pathtools.py "${destdir}"
   for t in pnacl-*; do
     local name=$(basename "$t")
-    cp "${t}" "${INSTALL_BIN}/${name/.py}"
+    cp "${t}" "${destdir}/${name/.py}"
     if ${BUILD_PLATFORM_WIN}; then
-      cp redirect.bat "${INSTALL_BIN}/${name/.py}.bat"
+      cp redirect.bat "${destdir}/${name/.py}.bat"
     fi
   done
   spopd
 
   # Tell the driver the library mode
-  touch "${INSTALL_BIN}"/${LIBMODE}.cfg
+  touch "${destdir}"/${libmode}.cfg
 
   # Install readelf and size
   cp -a "${BINUTILS_INSTALL_DIR}/bin/${BINUTILS_TARGET}-readelf" \
-        "${INSTALL_BIN}/readelf"
+        "${destdir}/readelf"
   cp -a "${BINUTILS_INSTALL_DIR}/bin/${BINUTILS_TARGET}-size" \
-        "${INSTALL_BIN}/size"
+        "${destdir}/size"
 
   # On windows, copy the cygwin DLLs needed by the driver tools
   if ${BUILD_PLATFORM_WIN}; then
     StepBanner "DRIVER" "Copying cygwin libraries"
     local deps="gcc_s-1 iconv-2 win1 intl-8 stdc++-6 z"
     for name in ${deps}; do
-      cp "/bin/cyg${name}.dll" "${INSTALL_BIN}"
+      cp "/bin/cyg${name}.dll" "${destdir}"
     done
   fi
 }
@@ -3479,7 +3534,7 @@ verify-bitcode-dir() {
     verify-pso "$i"
   done
   for i in "${dir}"/*.bc ; do
-    echo -n "verify $i: "
+    echo -n "verify $(basename "$i"): "
     verify-object-llvm "$i"
     echo "PASS (bitcode)"
   done
@@ -3650,7 +3705,6 @@ show-config() {
   echo "PNACL_DEBUG:       ${PNACL_DEBUG}"
   echo "PNACL_PRUNE:       ${PNACL_PRUNE}"
   echo "PNACL_VERBOSE:     ${PNACL_VERBOSE}"
-  echo "LIBMODE:           ${LIBMODE}"
   Banner "Your Environment:"
   env | grep PNACL
 }
@@ -3863,9 +3917,6 @@ function-completions() {
 
 mkdir -p "${INSTALL_ROOT}"
 PackageCheck
-
-# Setup the initial frontend configuration
-select-frontend "${FRONTEND}"
 
 if [ $# = 0 ]; then set -- help; fi  # Avoid reference to undefined $1.
 

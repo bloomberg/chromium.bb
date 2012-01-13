@@ -73,17 +73,12 @@ EXTRA_ENV = {
 
   'SEARCH_DIRS'        : '${SEARCH_DIRS_USER} ${SEARCH_DIRS_BUILTIN}',
   'SEARCH_DIRS_USER'   : '',
-  'SEARCH_DIRS_BUILTIN': '${STDLIB ? ${LIBS_SDK_ARCH}/ ${LIBS_ARCH}/}',
+  'SEARCH_DIRS_BUILTIN': '${STDLIB ? ${LIBS_ARCH}/}',
 
   'LIBS_ARCH'        : '${LIBS_%ARCH%}',
-  'LIBS_ARM'         : '${BASE}/lib-arm',
-  'LIBS_X8632'       : '${BASE}/lib-x86-32',
-  'LIBS_X8664'       : '${BASE}/lib-x86-64',
-
-  'LIBS_SDK_ARCH'    : '${LIBS_SDK_%ARCH%}',
-  'LIBS_SDK_X8632'   : '${BASE_SDK}/lib-x86-32',
-  'LIBS_SDK_X8664'   : '${BASE_SDK}/lib-x86-64',
-  'LIBS_SDK_ARM'     : '${BASE_SDK}/lib-arm',
+  'LIBS_ARM'         : '${BASE_LIB_NATIVE}arm',
+  'LIBS_X8632'       : '${BASE_LIB_NATIVE}x86-32',
+  'LIBS_X8664'       : '${BASE_LIB_NATIVE}x86-64',
 
   'RUN_LD' : '${LD} ${LD_FLAGS} ${inputs} -o "${output}"',
 }

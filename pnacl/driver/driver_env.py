@@ -28,19 +28,22 @@ INITIAL_ENV = {
 
   # Directories
   'BASE_PKG'        : '${BASE}/pkg',
-  'BASE_SDK'        : '${BASE}/sdk',
-  'BASE_USR'        : '${BASE}/usr',
   'BASE_LLVM'       : '${BASE_PKG}/llvm',
-  'BASE_NEWLIB'     : '${BASE_PKG}/newlib',
-  'BASE_GLIBC'      : '${BASE_PKG}/glibc',
   'BASE_BINUTILS'   : '${BASE_PKG}/binutils',
-  'BASE_LIBSTDCPP'  : '${BASE_PKG}/libstdcpp',
-  'BASE_SYSROOT'    : '${BASE}/sysroot',
   'BASE_GCC'        : '${BASE_PKG}/gcc',
 
-  'BASE_INCLUDE'    : '${BASE_SYSROOT}/include',
+  'BASE_LIB_NATIVE' : '${BASE}/lib-',
+
+  'BASE_NEWLIB'     : '${BASE}/newlib',
+  'BASE_GLIBC'      : '${BASE}/glibc',
+  'BASE_LIBMODE'    : '${BASE}/${LIBMODE}',
+
+  'BASE_USR'        : '${BASE_LIBMODE}/usr',
+  'BASE_SDK'        : '${BASE_LIBMODE}/sdk',
+  'BASE_LIB'        : '${BASE_LIBMODE}/lib',
+
+
   'BASE_LLVM_BIN'   : '${BASE_LLVM}/bin',
-  'BASE_BIN'        : '${BASE}/bin',
   'BASE_SB'         : '${BASE_SB_%ARCH%}',
   'BASE_SB_X8632'   : '${BASE}/tools-sb/x8632',
   'BASE_SB_X8664'   : '${BASE}/tools-sb/x8664',

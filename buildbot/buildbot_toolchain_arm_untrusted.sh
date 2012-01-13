@@ -20,17 +20,15 @@ if [[ $(pwd) != */native_client ]]; then
   exit 1
 fi
 
-if [ $# -ne 3 ]; then
-  echo "USAGE: $0 [os] [arch] [libmode]"
+if [ $# -ne 2 ]; then
+  echo "USAGE: $0 [os] [arch]"
   echo "os     : linux, mac, win"
   echo "arch   : 32, 64"
-  echo "libmode: newlib, glibc"
   exit 2
 fi
 
 readonly BUILD_OS=$1
 readonly BUILD_ARCH=$2
-readonly BUILD_LIBMODE=$3
 
 ## Ignore this variable - used for testing only
 readonly TEST_UPLOAD=${TEST_UPLOAD:-false}
@@ -48,59 +46,41 @@ PNACL_TEST="pnacl/test.sh"
 # because the browser is 32-bit. Only sel_ldr and the nexes are 64-bit.
 BUILD_32BIT_PLUGIN=false
 
-case ${BUILD_OS}-${BUILD_ARCH}-${BUILD_LIBMODE} in
-  linux-32-newlib)
+case ${BUILD_OS}-${BUILD_ARCH} in
+  linux-32)
     # Don't test arm + 64-bit on 32-bit builder.
     # We can't build 64-bit trusted components on a 32-bit system.
     # Arm disabled on 32-bit because it runs out of memory.
-    TOOLCHAIN_LABEL=pnacl_linux_i686_newlib
+    TOOLCHAIN_LABEL=pnacl_linux_i686
     RUN_TESTS="x86-32 x86-32-browser"
     ;;
-  linux-32-glibc)
-    TOOLCHAIN_LABEL=pnacl_linux_i686_glibc
-    PNACL_BUILD="pnacl/build-glibc.sh"
-    # TODO(pdox): Determine which tests should be run.
-    RUN_TESTS=""
-    ;;
-  linux-64-newlib)
-    TOOLCHAIN_LABEL=pnacl_linux_x86_64_newlib
+  linux-64)
+    TOOLCHAIN_LABEL=pnacl_linux_x86_64
     RUN_TESTS="x86-32 x86-32-browser"
     RUN_TESTS+=" arm arm-pic arm-browser"
     RUN_TESTS+=" x86-64 x86-64-browser"
-    ;;
-  linux-64-glibc)
-    TOOLCHAIN_LABEL=pnacl_linux_x86_64_glibc
-    PNACL_BUILD="pnacl/build-glibc.sh"
-    RUN_TESTS=""
-    RUN_TESTS="x86-32-glibc x86-32-browser-glibc"
+    RUN_TESTS+=" x86-32-glibc x86-32-browser-glibc"
     RUN_TESTS+=" x86-64-glibc x86-64-browser-glibc"
     ;;
-  mac-32-newlib)
+  mac-32)
     export PNACL_VERBOSE=true  # To avoid timing out, since this bot is slow.
     # We can't test ARM because we do not have QEMU for Mac.
     # We can't test X86-64 because NaCl X86-64 Mac support is not in good shape.
-    TOOLCHAIN_LABEL=pnacl_darwin_i386_newlib
+    TOOLCHAIN_LABEL=pnacl_darwin_i386
     RUN_TESTS="x86-32 x86-32-browser"
     ;;
-  mac-32-glibc)
-    export PNACL_VERBOSE=true
-    TOOLCHAIN_LABEL=pnacl_darwin_i386_glibc
-    PNACL_BUILD="pnacl/build-glibc.sh"
-    # TODO(pdox): Determine which tests should be run.
-    RUN_TESTS=""
-    ;;
-  win-32-newlib)
-    TOOLCHAIN_LABEL=pnacl_windows_i686_newlib
+  win-32)
+    TOOLCHAIN_LABEL=pnacl_windows_i686
     RUN_TESTS="x86-32 x86-32-browser"
     ;;
-  win-64-newlib)
-    TOOLCHAIN_LABEL=pnacl_windows_i686_newlib
+  win-64)
+    TOOLCHAIN_LABEL=pnacl_windows_i686
     BUILD_32BIT_PLUGIN=true
     RUN_TESTS="x86-64 x86-64-browser"
     ;;
   *)
     echo -n "*** UNRECOGNIZED CONFIGURATION: "
-    echo "${BUILD_OS}-${BUILD_ARCH}-${BUILD_LIBMODE} ***"
+    echo "${BUILD_OS}-${BUILD_ARCH} ***"
     exit 3
 esac
 
@@ -112,7 +92,7 @@ upload-cros-tarballs(){
   ## TODO(jasonwkim): convert this to using  UP_DOWN_LOAD script
   ## Runs only if completely successful on real buildbots only
   ## CrOS only cares about 64bit x86-64 as host platform
-  ## so we only upload if we are botting for x86-64-newlib
+  ## so we only upload if we are botting for x86-64
   ${PNACL_BUILD} cros-tarball-all pnacl-src
   local gsutil=${GSUTIL:-buildbot/gsutil.sh}
   local GS_BASE="gs://pnacl-source/${BUILDBOT_GOT_REVISION}"
@@ -139,7 +119,9 @@ rm -rf scons-out compiler ../xcodebuild ../sconsbuild ../out \
 rm -rf /tmp/.org.chromium.Chromium.*
 
 # Only clobber the directory of the toolchain being built.
-rm -rf toolchain/${TOOLCHAIN_LABEL}
+# TODO(pdox): The * removes the old toolchain directories. It
+# can be removed once all the buildbots have been cleaned.
+rm -rf toolchain/${TOOLCHAIN_LABEL}*
 rm -rf toolchain/hg*
 rm -rf toolchain/test-log
 
@@ -184,7 +166,7 @@ if [[ ${RETCODE} != 0 ]]; then
 fi
 
 if [ "${BUILDBOT_SLAVE_TYPE:-Trybot}" != "Trybot" -a \
-     "${TOOLCHAIN_LABEL}" == "pnacl_linux_x86_64_newlib" ]; then
+     "${TOOLCHAIN_LABEL}" == "pnacl_linux_x86_64" ]; then
   echo @@@BUILD_STEP cros_tarball@@@
   upload-cros-tarballs
 fi

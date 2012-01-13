@@ -79,7 +79,7 @@ EXTRA_ENV = {
   'SEARCH_DIRS_BUILTIN': '${STDLIB ? ' +
                          '  ${BASE_USR}/lib/ ' +
                          '  ${BASE_SDK}/lib/ ' +
-                         '  ${BASE}/lib/ ' +
+                         '  ${BASE_LIB}/ ' +
                          '  ${SEARCH_DIRS_NATIVE} ' +
                          '}',
 
@@ -87,18 +87,13 @@ EXTRA_ENV = {
   # Add lib-<arch>/ to the search path.
   # These are here to let the bitcode link find the native objects
   # used in the GLibC toolchain.
-  # TODO(pdox): Remove these when the bitcode link is pure bitcode.
-  'SEARCH_DIRS_NATIVE': '${LIBS_SDK_ARCH}/ ${LIBS_ARCH}/',
+  # TODO(pdox): Remove these when we have bitcode .pso stubs for GlibC.
+  'SEARCH_DIRS_NATIVE': '${LIBMODE_GLIBC ? ${LIBS_ARCH}/}',
 
   'LIBS_ARCH'        : '${LIBS_%ARCH%}',
-  'LIBS_ARM'         : '${BASE}/lib-arm',
-  'LIBS_X8632'       : '${BASE}/lib-x86-32',
-  'LIBS_X8664'       : '${BASE}/lib-x86-64',
-
-  'LIBS_SDK_ARCH'    : '${LIBS_SDK_%ARCH%}',
-  'LIBS_SDK_X8632'   : '${BASE_SDK}/lib-x86-32',
-  'LIBS_SDK_X8664'   : '${BASE_SDK}/lib-x86-64',
-  'LIBS_SDK_ARM'     : '${BASE_SDK}/lib-arm',
+  'LIBS_ARM'         : '${BASE_LIB_NATIVE}arm',
+  'LIBS_X8632'       : '${BASE_LIB_NATIVE}x86-32',
+  'LIBS_X8664'       : '${BASE_LIB_NATIVE}x86-64',
   # HACK-END
 
   'LD_GOLD_OFORMAT'        : '${LD_GOLD_OFORMAT_%ARCH%}',

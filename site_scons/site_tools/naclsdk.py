@@ -58,10 +58,6 @@ def _PlatformSubdirs(env):
     if machine == 'x86':
       machine = 'i686'
     name = 'pnacl_%s_%s' % (platform.system().lower(), machine)
-    if env.Bit('nacl_glibc'):
-      name += '_glibc'
-    else:
-      name += '_newlib'
   else:
     platform = NACL_CANONICAL_PLATFORM_MAP[env['PLATFORM']]
     arch = env['BUILD_ARCHITECTURE']
@@ -213,7 +209,12 @@ def _SetEnvForPnacl(env, root):
 
   arch_flag = ' -arch %s' % arch
 
-  binprefix = os.path.join(root, 'bin', 'pnacl-')
+  if env.Bit('nacl_glibc'):
+    subroot = root + '/glibc'
+  else:
+    subroot = root + '/newlib'
+
+  binprefix = os.path.join(subroot, 'bin', 'pnacl-')
   binext = ''
   if env.Bit('host_windows'):
     binext = '.bat'
@@ -223,16 +224,16 @@ def _SetEnvForPnacl(env, root):
     # expected to be in the same directory as the SDK.
     # This assumption should be removed.
     pnacl_lib = os.path.join(root, 'lib-%s' % arch)
-    pnacl_extra_lib = os.path.join(root, 'lib')
+    pnacl_extra_lib = os.path.join(subroot, 'lib')
   else:
-    pnacl_lib = os.path.join(root, 'lib')
+    pnacl_lib = os.path.join(subroot, 'lib')
     pnacl_extra_lib = ''
 
   #TODO(robertm): remove NACL_SDK_INCLUDE ASAP
   if env.Bit('nacl_glibc'):
-    pnacl_include = os.path.join(root, 'pkg', 'glibc', 'include')
+    pnacl_include = os.path.join(root, 'glibc', 'usr', 'include')
   else:
-    pnacl_include = os.path.join(root, 'sysroot', 'include')
+    pnacl_include = os.path.join(root, 'newlib', 'usr', 'include')
   pnacl_ar = binprefix + 'ar' + binext
   pnacl_as = binprefix + 'as' + binext
   pnacl_nm = binprefix + 'nm' + binext

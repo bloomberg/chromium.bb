@@ -67,7 +67,9 @@ readonly TC_ROOT="${NACL_ROOT}/toolchain"
 readonly ARM_TRUSTED_TC="${TC_ROOT}/linux_arm-trusted"
 readonly QEMU_TOOL="${ARM_TRUSTED_TC}/qemu_tool.sh"
 
-readonly PNACL_TC="${TC_ROOT}/pnacl_${BUILD_PLATFORM}_${BUILD_ARCH}_${PNACL_LIBMODE}"
+readonly PNACL_TC=\
+"${TC_ROOT}/pnacl_${BUILD_PLATFORM}_${BUILD_ARCH}/${PNACL_LIBMODE}"
+
 readonly NNACL_TC="${TC_ROOT}/${SCONS_BUILD_PLATFORM}_x86"
 readonly RUNNABLE_LD_X8632="${NNACL_TC}/x86_64-nacl/lib32/runnable-ld.so"
 readonly RUNNABLE_LD_X8664="${NNACL_TC}/x86_64-nacl/lib/runnable-ld.so"
@@ -513,7 +515,7 @@ build-libs-nacl() {
 
 build-libs-pnacl() {
   pushd "${NACL_ROOT}"
-  pnacl/build.sh sdk
+  pnacl/build.sh sdk newlib
   popd
 }
 

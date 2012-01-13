@@ -108,7 +108,7 @@ prereq-x8664() {
 #@
 #@ prereq-pnacl
 prereq-pnacl() {
-  pnacl/build.sh sdk
+  pnacl/build.sh sdk newlib
 }
 
 #@

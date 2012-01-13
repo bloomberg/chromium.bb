@@ -202,20 +202,19 @@ class PnaclDirs(object):
   output_dir = J(NACL_ROOT, 'toolchain', 'pnacl-package')
 
   @staticmethod
-  def BaseDir(libmode):
-    pnacl_dir = 'pnacl_%s_%s_%s' % (PNACL_BUILD_PLATFORM,
-                                    PNACL_BUILD_ARCH,
-                                    libmode)
+  def BaseDir():
+    pnacl_dir = 'pnacl_%s_%s' % (PNACL_BUILD_PLATFORM,
+                                 PNACL_BUILD_ARCH)
     return J(NACL_ROOT, 'toolchain', pnacl_dir)
 
   @staticmethod
-  def LibDir(target_arch, libmode):
-    return J(PnaclDirs.BaseDir(libmode), 'lib-%s' % target_arch)
+  def LibDir(target_arch):
+    return J(PnaclDirs.BaseDir(), 'lib-%s' % target_arch)
 
   @staticmethod
   def SandboxedCompilerDir(target_arch):
     # Choose newlib's LLC and LD to simplify startup of those nexes.
-    return J(PnaclDirs.BaseDir('newlib'),
+    return J(PnaclDirs.BaseDir(),
              'tools-sb',
              DashFreeArch(target_arch),
              'srpc',
@@ -334,7 +333,7 @@ def BuildArchCRX(version_quad, arch, lib_overrides, options):
       lib_dir = target_dir
     else:
       lib_dir = J(target_dir, lib_mode)
-    copytree_existing(PnaclDirs.LibDir(arch, lib_mode), lib_dir)
+    copytree_existing(PnaclDirs.LibDir(arch), lib_dir)
     if (arch, lib_mode) in lib_overrides:
       # Also copy files from the list of overrides.
       for override in lib_overrides[(arch, lib_mode)]:

@@ -71,30 +71,31 @@ EXTRA_ENV = {
                           # using the -isystem flag.
 
   'ISYSTEM_BUILTIN':
+    '${BASE_USR}/local/include ' +
+    '${ISYSTEM_%FRONTEND%} ' +
     '${BASE_USR}/include ' +
     '${BASE_SDK}/include ' +
-    '${ISYSTEM_%FRONTEND%} ' +
-    '${ISYSTEM_%LIBMODE%}',
+    '${ISYSTEM_CXX} ' +
+    # This is used only for newlib bootstrapping.
+    '${BASE_LIBMODE}/sysroot/include',
 
   'ISYSTEM_CLANG':
       '${BASE_LLVM}/lib/clang/3.1/include',
 
-  # TODO(pdox): reference dragonegg instead of llvm-gcc here.
-  'ISYSTEM_DRAGONEGG':
-      '${BASE_LLVM_GCC}/lib/gcc/arm-none-linux-gnueabi/4.2.1/include ' +
-      '${BASE_LLVM_GCC}/' +
-        'lib/gcc/arm-none-linux-gnueabi/4.2.1/install-tools/include',
+  # TODO(pdox): fill this in.
+  'ISYSTEM_DRAGONEGG': '',
 
-  'ISYSTEM_newlib' :
-    '${BASE_LIBSTDCPP}/include/c++/4.6.2 ' +
-    '${BASE_LIBSTDCPP}/include/c++/4.6.2/arm-none-linux-gnueabi ' +
-    '${BASE_INCLUDE} ' +
-    '${BASE_NEWLIB}/arm-none-linux-gnueabi/include',
+  'ISYSTEM_CXX' : '${LANGUAGE==CXX ? ${ISYSTEM_CXX_%LIBMODE%}}',
 
-  'ISYSTEM_glibc' :
-    '${BASE_GLIBC}/include ' +
-    '${BASE_GLIBC}/include/c++/4.4.3 ' +
-    '${BASE_GLIBC}/include/c++/4.4.3/x86_64-nacl',
+  # TODO(pdox): This difference will go away as soon as we compile
+  #             libstdc++.so ourselves.
+  'ISYSTEM_CXX_newlib' :
+    '${BASE_USR}/include/c++/4.6.2 ' +
+    '${BASE_USR}/include/c++/4.6.2/arm-none-linux-gnueabi',
+
+  'ISYSTEM_CXX_glibc' :
+    '${BASE_USR}/include/c++/4.4.3 ' +
+    '${BASE_USR}/include/c++/4.4.3/x86_64-nacl',
 
   'LD_FLAGS' : '-O${OPT_LEVEL} ${STATIC ? -static} ${SHARED ? -shared} ' +
                '${PIC ? -fPIC} ${@AddPrefix:-L:SEARCH_DIRS}',

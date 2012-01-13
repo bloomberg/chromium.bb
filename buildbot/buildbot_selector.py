@@ -220,18 +220,16 @@ BOT_ASSIGNMENT = {
     'linux-armtools-x86_32':
         'bash buildbot/buildbot_toolchain_arm_trusted.sh',
     'linux-pnacl-x86_32-newlib':
-        'bash buildbot/buildbot_toolchain_arm_untrusted.sh linux 32 newlib',
+        'bash buildbot/buildbot_toolchain_arm_untrusted.sh linux 32',
     'linux-pnacl-x86_64-newlib':
-        'bash buildbot/buildbot_toolchain_arm_untrusted.sh linux 64 newlib',
-    'linux-pnacl-x86_64-glibc':
-        'bash buildbot/buildbot_toolchain_arm_untrusted.sh linux 64 glibc',
+        'bash buildbot/buildbot_toolchain_arm_untrusted.sh linux 64',
     'mac-pnacl-x86_32-newlib':
-        'bash buildbot/buildbot_toolchain_arm_untrusted.sh mac 32 newlib',
+        'bash buildbot/buildbot_toolchain_arm_untrusted.sh mac 32',
     'linux-pnacl-x86_64-newlib-tests':
         'bash buildbot/buildbot_pnacl_toolchain_tests.sh',
     # TODO(pdox): Rename this bot to x86_64
     'win-pnacl-x86_32-newlib':
-        'buildbot\\buildbot_toolchain_arm_untrusted.bat win 64 newlib',
+        'buildbot\\buildbot_toolchain_arm_untrusted.bat win 64',
 
     # Toolchain trybots.
     'nacl-toolchain-lucid64-newlib':
@@ -245,11 +243,11 @@ BOT_ASSIGNMENT = {
         'buildbot\\buildbot_windows-glibc-makefile.bat',
 
     'nacl-toolchain-linux-pnacl-x86_32-newlib':
-        'bash buildbot/buildbot_toolchain_arm_untrusted.sh linux 32 newlib',
+        'bash buildbot/buildbot_toolchain_arm_untrusted.sh linux 32',
     'nacl-toolchain-linux-pnacl-x86_64-newlib':
-        'bash buildbot/buildbot_toolchain_arm_untrusted.sh linux 64 newlib',
+        'bash buildbot/buildbot_toolchain_arm_untrusted.sh linux 64',
     'nacl-toolchain-mac-pnacl-x86_32-newlib':
-        'bash buildbot/buildbot_toolchain_arm_untrusted.sh mac 32 newlib',
+        'bash buildbot/buildbot_toolchain_arm_untrusted.sh mac 32',
 
     # PNaCl LLVM Merging bots
     'llvm':
