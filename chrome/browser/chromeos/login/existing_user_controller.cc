@@ -30,6 +30,7 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/wizard_accessibility_helper.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
+#include "chrome/browser/chromeos/system/statistics_provider.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -64,9 +65,17 @@ const char kSettingsSyncLoginURL[] = "chrome://settings/personal";
 const char kGetStartedURLPattern[] =
     "http://www.gstatic.com/chromebook/gettingstarted/index-%s.html";
 
-// URL that will be opened when first user logs in first time on the device.
-const char kGetStartedOwnerURLPattern[] =
-    "http://www.gstatic.com/chromebook/gettingstarted/index-%s.html#first";
+// Divider that starts parameters in URL.
+const char kGetStartedParamsStartMark[] = "#";
+
+// Parameter to be added to GetStarted URL that contains board.
+const char kGetStartedBoardParam[] = "board=%s";
+
+// Parameter to be added to GetStarted URL
+// when first user signs in for the first time.
+// TODO(nkostylev): Uncomment once server side supports new param format.
+// const char kGetStartedOwnerParam[] = "/first";
+const char kGetStartedOwnerParam[] = "first";
 
 // URL for account creation.
 const char kCreateAccountURL[] =
@@ -528,50 +537,11 @@ void ExistingUserController::OnLoginSuccess(
 }
 
 void ExistingUserController::OnProfilePrepared(Profile* profile) {
-  // TODO(nkostylev): May add login UI implementation callback call.
   if (!ready_for_browser_launch_) {
-    // Add the appropriate first-login URL.
-    std::vector<std::string> start_urls;
-    PrefService* prefs = g_browser_process->local_state();
-    const std::string current_locale =
-        StringToLowerASCII(prefs->GetString(prefs::kApplicationLocale));
-    std::string start_url;
-    if (prefs->GetBoolean(prefs::kSpokenFeedbackEnabled) &&
-        current_locale.find("en") != std::string::npos) {
-      start_url = kChromeVoxTutorialURL;
-    } else {
-      const char* url = kGetStartedURLPattern;
-      if (is_owner_login_)
-        url = kGetStartedOwnerURLPattern;
-      start_url = base::StringPrintf(url, current_locale.c_str());
-    }
-    start_urls.push_back(start_url);
-
-    ServicesCustomizationDocument* customization =
-      ServicesCustomizationDocument::GetInstance();
-    if (!ServicesCustomizationDocument::WasApplied() &&
-        customization->IsReady()) {
-      std::string locale = g_browser_process->GetApplicationLocale();
-      std::string initial_start_page =
-          customization->GetInitialStartPage(locale);
-      if (!initial_start_page.empty())
-        start_urls.push_back(initial_start_page);
-      customization->ApplyCustomization();
-    }
-
-    if (two_factor_credentials_) {
-      // If we have a two factor error and and this is a new user,
-      // load the personal settings page.
-      // TODO(stevenjb): direct the user to a lightweight sync login page.
-      start_urls.push_back(kSettingsSyncLoginURL);
-    }
-
     // Don't specify start URLs if the administrator has configured the start
     // URLs via policy.
-    if (!SessionStartupPref::TypeIsManaged(profile->GetPrefs())) {
-      for (size_t i = 0; i < start_urls.size(); ++i)
-        CommandLine::ForCurrentProcess()->AppendArg(start_urls[i]);
-    }
+    if (!SessionStartupPref::TypeIsManaged(profile->GetPrefs()))
+      InitializeStartUrls();
 #ifndef NDEBUG
     if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kOobeSkipPostLogin)) {
@@ -688,6 +658,63 @@ void ExistingUserController::ActivateWizard(const std::string& screen_name) {
 
 gfx::NativeWindow ExistingUserController::GetNativeWindow() const {
   return host_->GetNativeWindow();
+}
+
+void ExistingUserController::InitializeStartUrls() const {
+  std::vector<std::string> start_urls;
+  PrefService* prefs = g_browser_process->local_state();
+  const std::string current_locale =
+      StringToLowerASCII(prefs->GetString(prefs::kApplicationLocale));
+  std::string start_url;
+  if (prefs->GetBoolean(prefs::kSpokenFeedbackEnabled) &&
+      current_locale.find("en") != std::string::npos) {
+    start_url = kChromeVoxTutorialURL;
+  } else {
+    const char* url = kGetStartedURLPattern;
+    start_url = base::StringPrintf(url, current_locale.c_str());
+    std::string params_str;
+#if 0
+    const char kMachineInfoBoard[] = "CHROMEOS_RELEASE_BOARD";
+    std::string board;
+    system::StatisticsProvider* provider =
+        system::StatisticsProvider::GetInstance();
+    if (!provider->GetMachineStatistic(kMachineInfoBoard, &board))
+      LOG(ERROR) << "Failed to get board information";
+    if (!board.empty()) {
+      params_str.append(base::StringPrintf(kGetStartedBoardParam,
+                                           board.c_str()));
+    }
+#endif
+    if (is_owner_login_)
+      params_str.append(kGetStartedOwnerParam);
+    if (!params_str.empty()) {
+      params_str.insert(0, kGetStartedParamsStartMark);
+      start_url.append(params_str);
+    }
+  }
+  start_urls.push_back(start_url);
+
+  ServicesCustomizationDocument* customization =
+      ServicesCustomizationDocument::GetInstance();
+  if (!ServicesCustomizationDocument::WasApplied() &&
+      customization->IsReady()) {
+    std::string locale = g_browser_process->GetApplicationLocale();
+    std::string initial_start_page =
+        customization->GetInitialStartPage(locale);
+    if (!initial_start_page.empty())
+      start_urls.push_back(initial_start_page);
+    customization->ApplyCustomization();
+  }
+
+  if (two_factor_credentials_) {
+    // If we have a two factor error and and this is a new user,
+    // load the personal settings page.
+    // TODO(stevenjb): direct the user to a lightweight sync login page.
+    start_urls.push_back(kSettingsSyncLoginURL);
+  }
+
+  for (size_t i = 0; i < start_urls.size(); ++i)
+    CommandLine::ForCurrentProcess()->AppendArg(start_urls[i]);
 }
 
 void ExistingUserController::SetStatusAreaEnabled(bool enable) {

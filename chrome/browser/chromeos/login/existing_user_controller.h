@@ -132,6 +132,9 @@ class ExistingUserController : public LoginDisplay::Delegate,
   // Returns corresponding native window.
   gfx::NativeWindow GetNativeWindow() const;
 
+  // Adds first-time login URLs.
+  void InitializeStartUrls() const;
+
   // Changes state of the status area. During login operation it's disabled.
   void SetStatusAreaEnabled(bool enable);
 
