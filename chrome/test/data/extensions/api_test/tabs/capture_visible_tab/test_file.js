@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -41,6 +41,22 @@ chrome.test.runTests([
         }));
       }));
     }));
-  }
+  },
 
+  function captureVisibleFileInNullWindow() {
+    chrome.tabs.captureVisibleTab(null, pass(function(imgDataUrl) {
+      // The URL should be a data URL with has a JPEG mime type.
+      assertEq('string', typeof(imgDataUrl));
+      assertEq('data:image/jpeg;base64,', imgDataUrl.substr(0,23));
+    }));
+  },
+
+  function captureVisibleFileInCurrentWindow() {
+    chrome.tabs.captureVisibleTab(chrome.windows.WINDOW_ID_CURRENT,
+                                  pass(function(imgDataUrl) {
+      // The URL should be a data URL with has a JPEG mime type.
+      assertEq('string', typeof(imgDataUrl));
+      assertEq('data:image/jpeg;base64,', imgDataUrl.substr(0,23));
+    }));
+  }
 ]);

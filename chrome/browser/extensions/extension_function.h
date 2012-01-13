@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -102,6 +102,9 @@ class ExtensionFunction
 
   // Retrieves any error string from the function.
   virtual const std::string GetError();
+
+  // Sets the function's error string.
+  virtual void SetError(const std::string& error);
 
   // Specifies the name of the function.
   void set_name(const std::string& name) { name_ = name; }
@@ -245,15 +248,6 @@ class UIThreadExtensionFunction : public ExtensionFunction {
     return dispatcher_.get();
   }
 
- protected:
-  friend struct content::BrowserThread::DeleteOnThread<
-      content::BrowserThread::UI>;
-  friend class base::DeleteHelper<UIThreadExtensionFunction>;
-
-  virtual ~UIThreadExtensionFunction();
-
-  virtual void SendResponse(bool success) OVERRIDE;
-
   // Gets the "current" browser, if any.
   //
   // Many extension APIs operate relative to the current browser, which is the
@@ -271,6 +265,15 @@ class UIThreadExtensionFunction : public ExtensionFunction {
   // happen if only incognito windows are open, or early in startup or shutdown
   // shutdown when there are no active windows.
   Browser* GetCurrentBrowser();
+
+ protected:
+  friend struct content::BrowserThread::DeleteOnThread<
+      content::BrowserThread::UI>;
+  friend class base::DeleteHelper<UIThreadExtensionFunction>;
+
+  virtual ~UIThreadExtensionFunction();
+
+  virtual void SendResponse(bool success) OVERRIDE;
 
   // The dispatcher that will service this extension function call.
   base::WeakPtr<ExtensionFunctionDispatcher> dispatcher_;

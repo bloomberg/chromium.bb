@@ -45,7 +45,7 @@
         "type": "function",
         "description": "Gets details about a window.",
         "parameters": [
-          {"type": "integer", "name": "windowId", "minimum": 0},
+          {"type": "integer", "name": "windowId", "minimum": -2},
           {
             "type": "object",
             "name": "getInfo",
@@ -193,7 +193,7 @@
         "type": "function",
         "description": "Updates the properties of a window. Specify only the properties that you want to change; unspecified properties will be left unchanged.",
         "parameters": [
-          {"type": "integer", "name": "windowId", "minimum": 0},
+          {"type": "integer", "name": "windowId", "minimum": -2},
           {
             "type": "object",
             "name": "updateInfo",

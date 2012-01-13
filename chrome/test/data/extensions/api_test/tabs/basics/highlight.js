@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,6 +30,15 @@ chrome.test.runTests([
     }));
     chrome.windows.create({url: tabs2}, pass(function(win) {
       testWindowId2 = win.id;
+    }));
+  },
+
+  function highlightCurrentWindow() {
+    chrome.windows.getCurrent(pass(function(win1) {
+      chrome.tabs.highlight({windowId: chrome.windows.WINDOW_ID_CURRENT,
+                             tabs: [0]}, pass(function(win2) {
+        assertEq(win1.id, win2.id);
+      }));
     }));
   },
 

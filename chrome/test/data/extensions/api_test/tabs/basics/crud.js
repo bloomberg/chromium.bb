@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,6 +21,15 @@ chrome.test.runTests([
       assertEq(false, tab.selected);
       assertEq("chrome://newtab/", tab.url);
       assertEq(false, tab.pinned);
+    }));
+  },
+
+  function createInCurrent() {
+    chrome.tabs.create({'windowId': chrome.windows.WINDOW_ID_CURRENT},
+                       pass(function(tab) {
+      chrome.windows.getCurrent(pass(function(win) {
+        assertEq(win.id, tab.windowId);
+      }));
     }));
   },
 
@@ -88,7 +97,7 @@ chrome.test.runTests([
 
   function getAllInWindowNullArg() {
     chrome.tabs.getAllInWindow(null, pass(function(tabs) {
-      assertEq(5, tabs.length);
+      assertEq(6, tabs.length);
       assertEq(firstWindowId, tabs[0].windowId);
     }));
   },
@@ -112,6 +121,16 @@ chrome.test.runTests([
       assertEq(null, window);
     }));
   },
+
+  function getCurrentWindow() {
+    var errorMsg = "No window with id: -1.";
+    chrome.windows.get(chrome.windows.WINDOW_ID_NONE, fail(errorMsg));
+    chrome.windows.get(chrome.windows.WINDOW_ID_CURRENT, pass(function(win1) {
+      chrome.windows.getCurrent(pass(function(win2) {
+        assertEq(win1.id, win2.id);
+      }));
+    }));
+  }
 
   /* Disabled -- see http://bugs.chromium.org/58229.
   function windowSetFocused() {

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,7 +13,7 @@ chrome.test.runTests([
   //  Window1: (newtab),a,b,c,d,e
   //  Window2: (newtab)
   //
-  // After:
+  // After moveToInvalidTab:
   //  Window1: (newtab),a
   //  Window2: b,(newtab)
   function setupLetterPages() {
@@ -123,6 +123,20 @@ chrome.test.runTests([
     }
     chrome.tabs.move(moveTabIds['b'], {index: 10000}, pass(function(tabB) {
       assertEq(1, tabB.index);
+    }));
+  },
+
+  // Move a tab to the current window.
+  function moveToCurrentWindow() {
+    chrome.windows.getCurrent(pass(function(win) {
+      var targetWin = win.id == firstWindowId ? secondWindowId : firstWindowId;
+      chrome.tabs.query({windowId: targetWin}, pass(function(tabs) {
+        chrome.tabs.move(tabs[0].id,
+                         {windowId: chrome.windows.WINDOW_ID_CURRENT, index:0},
+                         pass(function(tab) {
+          assertEq(win.id, tab.windowId);
+        }));
+      }));
     }));
   }
 ]);

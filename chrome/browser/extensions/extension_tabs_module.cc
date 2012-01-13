@@ -84,7 +84,8 @@ Browser* GetBrowserInProfileWithId(Profile* profile,
        browser != BrowserList::end(); ++browser) {
     if (((*browser)->profile() == profile ||
          (*browser)->profile() == incognito_profile) &&
-        ExtensionTabUtil::GetWindowId(*browser) == window_id)
+        ExtensionTabUtil::GetWindowId(*browser) == window_id &&
+        ((*browser)->window()))
       return *browser;
   }
 
@@ -93,6 +94,26 @@ Browser* GetBrowserInProfileWithId(Profile* profile,
         keys::kWindowNotFoundError, base::IntToString(window_id));
 
   return NULL;
+}
+
+bool GetBrowserFromWindowID(
+    UIThreadExtensionFunction* function, int window_id, Browser** browser) {
+  if (window_id == extension_misc::kCurrentWindowId) {
+    *browser = function->GetCurrentBrowser();
+    if (!(*browser) || !(*browser)->window()) {
+      function->SetError(keys::kNoCurrentWindowError);
+      return false;
+    }
+  } else {
+    std::string error;
+    *browser = GetBrowserInProfileWithId(
+        function->profile(), window_id, function->include_incognito(), &error);
+    if (!*browser) {
+      function->SetError(error);
+      return false;
+    }
+  }
+  return true;
 }
 
 // |error_message| can optionally be passed in and will be set with an
@@ -193,7 +214,7 @@ QueryArg ParseBoolQueryArg(base::DictionaryValue* query, const char* key) {
 // Windows ---------------------------------------------------------------------
 
 bool GetWindowFunction::RunImpl() {
-  int window_id = -1;
+  int window_id = extension_misc::kUnknownWindowId;
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &window_id));
 
   bool populate_tabs = false;
@@ -207,13 +228,9 @@ bool GetWindowFunction::RunImpl() {
     }
   }
 
-  Browser* browser = GetBrowserInProfileWithId(profile(), window_id,
-                                               include_incognito(), &error_);
-  if (!browser || !browser->window()) {
-    error_ = ExtensionErrorUtils::FormatErrorMessage(
-        keys::kWindowNotFoundError, base::IntToString(window_id));
+  Browser* browser = NULL;
+  if (!GetBrowserFromWindowID(this, window_id, &browser))
     return false;
-  }
 
   result_.reset(ExtensionTabUtil::CreateWindowValue(browser, populate_tabs));
   return true;
@@ -557,18 +574,14 @@ bool CreateWindowFunction::RunImpl() {
 }
 
 bool UpdateWindowFunction::RunImpl() {
-  int window_id = -1;
+  int window_id = extension_misc::kUnknownWindowId;
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &window_id));
   DictionaryValue* update_props;
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(1, &update_props));
 
-  Browser* browser = GetBrowserInProfileWithId(profile(), window_id,
-                                               include_incognito(), &error_);
-  if (!browser || !browser->window()) {
-    error_ = ExtensionErrorUtils::FormatErrorMessage(
-        keys::kWindowNotFoundError, base::IntToString(window_id));
+  Browser* browser = NULL;
+  if (!GetBrowserFromWindowID(this, window_id, &browser))
     return false;
-  }
 
   ui::WindowShowState show_state = ui::SHOW_STATE_DEFAULT;  // No change.
   std::string state_str;
@@ -703,20 +716,14 @@ bool RemoveWindowFunction::RunImpl() {
 // Tabs ------------------------------------------------------------------------
 
 bool GetSelectedTabFunction::RunImpl() {
-  Browser* browser;
   // windowId defaults to "current" window.
-  int window_id = -1;
+  int window_id = extension_misc::kCurrentWindowId;
 
-  if (HasOptionalArgument(0)) {
+  if (HasOptionalArgument(0))
     EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &window_id));
-    browser = GetBrowserInProfileWithId(profile(), window_id,
-                                        include_incognito(), &error_);
-  } else {
-    browser = GetCurrentBrowser();
-    if (!browser)
-      error_ = keys::kNoCurrentWindowError;
-  }
-  if (!browser)
+
+  Browser* browser = NULL;
+  if (!GetBrowserFromWindowID(this, window_id, &browser))
     return false;
 
   TabStripModel* tab_strip = browser->tabstrip_model();
@@ -732,19 +739,13 @@ bool GetSelectedTabFunction::RunImpl() {
 }
 
 bool GetAllTabsInWindowFunction::RunImpl() {
-  Browser* browser;
   // windowId defaults to "current" window.
-  int window_id = -1;
-  if (HasOptionalArgument(0)) {
+  int window_id = extension_misc::kCurrentWindowId;
+  if (HasOptionalArgument(0))
     EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &window_id));
-    browser = GetBrowserInProfileWithId(profile(), window_id,
-                                        include_incognito(), &error_);
-  } else {
-    browser = GetCurrentBrowser();
-    if (!browser)
-      error_ = keys::kNoCurrentWindowError;
-  }
-  if (!browser)
+
+  Browser* browser = NULL;
+  if (!GetBrowserFromWindowID(this, window_id, &browser))
     return false;
 
   result_.reset(ExtensionTabUtil::CreateTabList(browser));
@@ -849,20 +850,14 @@ bool CreateTabFunction::RunImpl() {
   DictionaryValue* args = NULL;
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &args));
 
-  Browser *browser;
   // windowId defaults to "current" window.
-  int window_id = -1;
-  if (args->HasKey(keys::kWindowIdKey)) {
+  int window_id = extension_misc::kCurrentWindowId;
+  if (args->HasKey(keys::kWindowIdKey))
     EXTENSION_FUNCTION_VALIDATE(args->GetInteger(
         keys::kWindowIdKey, &window_id));
-    browser = GetBrowserInProfileWithId(profile(), window_id,
-                                        include_incognito(), &error_);
-  } else {
-    browser = GetCurrentBrowser();
-    if (!browser)
-      error_ = keys::kNoCurrentWindowError;
-  }
-  if (!browser)
+
+  Browser* browser = NULL;
+  if (!GetBrowserFromWindowID(this, window_id, &browser))
     return false;
 
   // TODO(rafaelw): handle setting remaining tab properties:
@@ -988,18 +983,13 @@ bool HighlightTabsFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &info));
 
   // Get the window id from the params.
-  int window_id = -1;
+  int window_id = extension_misc::kUnknownWindowId;
   EXTENSION_FUNCTION_VALIDATE(
       info->GetInteger(keys::kWindowIdKey, &window_id));
 
-  Browser* browser = GetBrowserInProfileWithId(
-      profile(), window_id, include_incognito(), &error_);
-
-  if (!browser || !browser->window()) {
-    error_ = ExtensionErrorUtils::FormatErrorMessage(
-        keys::kWindowNotFoundError, base::IntToString(window_id));
+  Browser* browser = NULL;
+  if (!GetBrowserFromWindowID(this, window_id, &browser))
     return false;
-  }
 
   TabStripModel* tabstrip = browser->tabstrip_model();
   TabStripSelectionModel selection;
@@ -1263,12 +1253,10 @@ bool MoveTabsFunction::RunImpl() {
 
     if (update_props->HasKey(keys::kWindowIdKey)) {
       Browser* target_browser = NULL;
-      int window_id = -1;
+      int window_id = extension_misc::kUnknownWindowId;
       EXTENSION_FUNCTION_VALIDATE(update_props->GetInteger(
           keys::kWindowIdKey, &window_id));
-      target_browser = GetBrowserInProfileWithId(profile(), window_id,
-                                                 include_incognito(), &error_);
-      if (!target_browser)
+      if (!GetBrowserFromWindowID(this, window_id, &target_browser))
         return false;
 
       if (!target_browser->IsTabStripEditable()) {
@@ -1431,20 +1419,13 @@ bool RemoveTabsFunction::RunImpl() {
 bool CaptureVisibleTabFunction::RunImpl() {
   Browser* browser = NULL;
   // windowId defaults to "current" window.
-  int window_id = -1;
+  int window_id = extension_misc::kCurrentWindowId;
 
-  if (HasOptionalArgument(0)) {
+  if (HasOptionalArgument(0))
     EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &window_id));
-    browser = GetBrowserInProfileWithId(profile(), window_id,
-                                        include_incognito(), &error_);
-  } else {
-    browser = GetCurrentBrowser();
-  }
 
-  if (!browser) {
-    error_ = keys::kNoCurrentWindowError;
+  if (!GetBrowserFromWindowID(this, window_id, &browser))
     return false;
-  }
 
   image_format_ = FORMAT_JPEG;  // Default format is JPEG.
   image_quality_ = kDefaultQuality;  // Default quality setting.

@@ -120,7 +120,7 @@
           {
             "type": "integer",
             "name": "windowId",
-            "minimum": 0,
+            "minimum": -2,
             "optional": true,
             "description": "Defaults to the <a href='windows.html#current-window'>current window</a>."
           },
@@ -142,7 +142,7 @@
           {
             "type": "integer",
             "name": "windowId",
-            "minimum": 0,
+            "minimum": -2,
             "optional": true,
             "description": "Defaults to the <a href='windows.html#current-window'>current window</a>."
             },
@@ -166,7 +166,7 @@
             "properties": {
               "windowId": {
                 "type": "integer",
-                "minimum": 0,
+                "minimum": -2,
                 "optional": true,
                 "description": "The window to create the new tab in. Defaults to the <a href='windows.html#current-window'>current window</a>."
               },
@@ -293,7 +293,8 @@
             "properties": {
                "windowId": {
                  "type": "integer",
-                 "description": "The window that contains the tabs."
+                 "description": "The window that contains the tabs.",
+                 "minimum": -2
                },
                "tabs": {
                  "description": "One or more tab indices to highlight.",
@@ -394,7 +395,7 @@
             "properties": {
               "windowId": {
                 "type": "integer",
-                "minimum": 0,
+                "minimum": -2,
                 "optional": true,
                 "description": "Defaults to the window the tab is currently in."
               },
@@ -492,7 +493,7 @@
           {
             "type": "integer",
             "name": "windowId",
-            "minimum": 0,
+            "minimum": -2,
             "optional": true,
             "description": "The target window. Defaults to the <a href='windows.html#current-window'>current window</a>."
           },
