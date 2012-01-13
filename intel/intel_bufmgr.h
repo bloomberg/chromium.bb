@@ -41,6 +41,7 @@
 struct drm_clip_rect;
 
 typedef struct _drm_intel_bufmgr drm_intel_bufmgr;
+typedef struct _drm_intel_context drm_intel_context;
 typedef struct _drm_intel_bo drm_intel_bo;
 
 struct _drm_intel_bo {
