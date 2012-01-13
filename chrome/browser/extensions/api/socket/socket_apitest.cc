@@ -61,6 +61,9 @@ IN_PROC_BROWSER_TEST_F(SocketApiTest, SocketCreateBad) {
 }
 
 // http://code.google.com/p/chromium/issues/detail?id=109337
+//
+// Currently believed to be fixed, but we're leaving it marked flaky
+// for a few days to let it percolate through the trybots.
 IN_PROC_BROWSER_TEST_F(SocketApiTest, FLAKY_SocketExtension) {
   scoped_refptr<extensions::TestEchoServerUDP> server =
       new extensions::TestEchoServerUDP();
@@ -79,4 +82,6 @@ IN_PROC_BROWSER_TEST_F(SocketApiTest, FLAKY_SocketExtension) {
   listener.Reply(port);
 
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
+
+  EXPECT_TRUE(server->WaitUntilFinished());
 }

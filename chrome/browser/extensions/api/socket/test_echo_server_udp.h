@@ -35,6 +35,14 @@ class TestEchoServerUDP
   // that thread. Returns the listening port.
   int Start();
 
+  // Waits until pending cleanup is finished. This method doesn't exactly match
+  // the Start() method because quitting is initiated by a command sent by UDP
+  // from the client to the server, rather than being initiated by a method.
+  //
+  // Returns true if successful. Fails if we had to wait an unreasonably long
+  // time, which likely means that we weren't asked to start cleaning up.
+  bool WaitUntilFinished();
+
  private:
   static const int kMaxRead = 1024;
   static const std::string kEOLPattern;
@@ -61,6 +69,7 @@ class TestEchoServerUDP
                    const net::IPEndPoint& address);
 
   base::WaitableEvent listening_event_;
+  base::WaitableEvent cleanup_completed_event_;
   int port_;
   scoped_ptr<net::CapturingNetLog> server_log_;
   net::UDPServerSocket* socket_;  // See CleanUpOnIOThread re raw pointer.

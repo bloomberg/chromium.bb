@@ -28,6 +28,7 @@ const std::string TestEchoServerUDP::kQuitPattern = "*QUIT*";
 
 TestEchoServerUDP::TestEchoServerUDP()
     : listening_event_(true, false),
+      cleanup_completed_event_(true, false),
       port_(0),
       server_log_(new CapturingNetLog(CapturingNetLog::kUnbounded)),
       socket_(NULL),
@@ -42,6 +43,7 @@ TestEchoServerUDP::~TestEchoServerUDP() {
 }
 
 int TestEchoServerUDP::Start() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   base::TimeDelta max_time = base::TimeDelta::FromSeconds(5);
 
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
@@ -53,7 +55,14 @@ int TestEchoServerUDP::Start() {
     return -1;
 }
 
+bool TestEchoServerUDP::WaitUntilFinished() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  base::TimeDelta max_time = base::TimeDelta::FromSeconds(5);
+  return cleanup_completed_event_.TimedWait(max_time);
+}
+
 void TestEchoServerUDP::RunOnIOThread() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   CreateListeningSocket();
   listening_event_.Signal();
   Echo();
@@ -138,6 +147,7 @@ void TestEchoServerUDP::CleanUpOnIOThread() {
   // we'll delete it right now.
   delete socket_;
   socket_ = NULL;
+  cleanup_completed_event_.Signal();
 }
 
 void TestEchoServerUDP::CreateUDPAddress(std::string ip_str, int port,
