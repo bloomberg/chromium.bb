@@ -25,7 +25,7 @@ readonly LLVM_TESTSUITE_BUILD=${NACL_ROOT}/pnacl/build/newlib/llvm-test-suite
 readonly TC_SRC_LLVM=${NACL_ROOT}/pnacl/src/upstream/llvm
 readonly TC_BUILD_LLVM=${NACL_ROOT}/pnacl/build/newlib/llvm
 readonly PNACL_CONCURRENCY=${PNACL_CONCURRENCY:-6}
-readonly PNACL_BIN=${NACL_ROOT}/toolchain/pnacl_linux_x86_64_newlib/bin
+readonly PNACL_BIN=${NACL_ROOT}/toolchain/pnacl_linux_x86_64/newlib/bin
 readonly PNACL_SCRIPTS=${NACL_ROOT}/pnacl/scripts
 readonly PARSE_REPORT=${PNACL_SCRIPTS}/parse_llvm_testsuite_report.py
 
