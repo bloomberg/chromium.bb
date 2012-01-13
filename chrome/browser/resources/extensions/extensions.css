@@ -82,6 +82,10 @@ body {
   min-height: 48px;
 }
 
+html[dir="rtl"] .extension-list-item {
+  background-position: right;
+}
+
 .extension-title {
   -webkit-padding-end: 20px;
   color: rgb(48, 57, 66);
