@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,7 +35,6 @@ class PPP_VideoDecoder_Proxy : public InterfaceProxy {
                                  int32_t picture_id);
   void OnMsgPictureReady(const ppapi::HostResource& decoder,
                          const PP_Picture_Dev& picture_buffer);
-  void OnMsgNotifyEndOfStream(const ppapi::HostResource& decoder);
   void OnMsgNotifyError(const ppapi::HostResource& decoder,
                         PP_VideoDecodeError_Dev error);
 

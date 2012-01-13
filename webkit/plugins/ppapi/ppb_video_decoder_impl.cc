@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -216,12 +216,6 @@ void PPB_VideoDecoder_Impl::DismissPictureBuffer(int32 picture_buffer_id) {
     return;
   ppp_videodecoder_->DismissPictureBuffer(pp_instance(), pp_resource(),
                                           picture_buffer_id);
-}
-
-void PPB_VideoDecoder_Impl::NotifyEndOfStream() {
-  if (!ppp_videodecoder_)
-    return;
-  ppp_videodecoder_->EndOfStream(pp_instance(), pp_resource());
 }
 
 void PPB_VideoDecoder_Impl::NotifyError(

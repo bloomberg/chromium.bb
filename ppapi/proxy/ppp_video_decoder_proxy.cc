@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -53,15 +53,6 @@ void PictureReady(PP_Instance instance, PP_Resource decoder,
           API_ID_PPP_VIDEO_DECODER_DEV, decoder_resource, *picture));
 }
 
-void EndOfStream(PP_Instance instance, PP_Resource decoder) {
-  HostResource decoder_resource;
-  decoder_resource.SetHostResource(instance, decoder);
-
-  HostDispatcher::GetForInstance(instance)->Send(
-      new PpapiMsg_PPPVideoDecoder_NotifyEndOfStream(
-          API_ID_PPP_VIDEO_DECODER_DEV, decoder_resource));
-}
-
 void NotifyError(PP_Instance instance, PP_Resource decoder,
                  PP_VideoDecodeError_Dev error) {
   HostResource decoder_resource;
@@ -76,7 +67,6 @@ static const PPP_VideoDecoder_Dev video_decoder_interface = {
   &ProvidePictureBuffers,
   &DismissPictureBuffer,
   &PictureReady,
-  &EndOfStream,
   &NotifyError
 };
 
@@ -119,8 +109,6 @@ bool PPP_VideoDecoder_Proxy::OnMessageReceived(const IPC::Message& msg) {
                         OnMsgDismissPictureBuffer)
     IPC_MESSAGE_HANDLER(PpapiMsg_PPPVideoDecoder_PictureReady,
                         OnMsgPictureReady)
-    IPC_MESSAGE_HANDLER(PpapiMsg_PPPVideoDecoder_NotifyEndOfStream,
-                        OnMsgNotifyEndOfStream)
     IPC_MESSAGE_HANDLER(PpapiMsg_PPPVideoDecoder_NotifyError,
                         OnMsgNotifyError)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -152,14 +140,6 @@ void PPP_VideoDecoder_Proxy::OnMsgPictureReady(
       PluginResourceForHostResource(decoder);
   ppp_video_decoder_impl_->PictureReady(
       decoder.instance(), plugin_decoder, &picture);
-}
-
-void PPP_VideoDecoder_Proxy::OnMsgNotifyEndOfStream(
-    const HostResource& decoder) {
-  PP_Resource plugin_decoder = PluginGlobals::Get()->plugin_resource_tracker()->
-      PluginResourceForHostResource(decoder);
-  ppp_video_decoder_impl_->EndOfStream(decoder.instance(),
-                                          plugin_decoder);
 }
 
 void PPP_VideoDecoder_Proxy::OnMsgNotifyError(

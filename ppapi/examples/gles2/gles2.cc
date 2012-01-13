@@ -66,7 +66,6 @@ class GLES2DemoInstance : public pp::Instance,
   virtual void DismissPictureBuffer(PP_Resource decoder,
                                     int32_t picture_buffer_id);
   virtual void PictureReady(PP_Resource decoder, const PP_Picture_Dev& picture);
-  virtual void EndOfStream(PP_Resource decoder);
   virtual void NotifyError(PP_Resource decoder, PP_VideoDecodeError_Dev error);
 
  private:
@@ -396,9 +395,6 @@ void GLES2DemoInstance::PictureReady(PP_Resource decoder,
           &GLES2DemoInstance::PaintFinished, decoder, buffer.id);
   last_swap_request_ticks_ = core_if_->GetTimeTicks();
   assert(context_->SwapBuffers(cb) == PP_OK_COMPLETIONPENDING);
-}
-
-void GLES2DemoInstance::EndOfStream(PP_Resource decoder) {
 }
 
 void GLES2DemoInstance::NotifyError(PP_Resource decoder,

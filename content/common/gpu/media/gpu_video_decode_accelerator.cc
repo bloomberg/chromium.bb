@@ -97,11 +97,6 @@ void GpuVideoDecodeAccelerator::PictureReady(
   }
 }
 
-void GpuVideoDecodeAccelerator::NotifyEndOfStream() {
-  if (!Send(new AcceleratedVideoDecoderHostMsg_EndOfStream(host_route_id_)))
-    DLOG(ERROR) << "Send(AcceleratedVideoDecoderHostMsg_EndOfStream) failed";
-}
-
 void GpuVideoDecodeAccelerator::NotifyError(
     media::VideoDecodeAccelerator::Error error) {
   if (init_done_msg_) {

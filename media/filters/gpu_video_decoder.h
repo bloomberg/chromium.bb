@@ -73,7 +73,6 @@ class MEDIA_EXPORT GpuVideoDecoder
                                      const gfx::Size& size) OVERRIDE;
   virtual void DismissPictureBuffer(int32 id) OVERRIDE;
   virtual void PictureReady(const media::Picture& picture) OVERRIDE;
-  virtual void NotifyEndOfStream() OVERRIDE;
   virtual void NotifyEndOfBitstreamBuffer(int32 id) OVERRIDE;
   virtual void NotifyFlushDone() OVERRIDE;
   virtual void NotifyResetDone() OVERRIDE;

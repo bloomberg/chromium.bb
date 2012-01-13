@@ -56,7 +56,6 @@ class PPB_VideoDecoder_Impl : public ::ppapi::PPB_VideoDecoder_Shared,
   virtual void DismissPictureBuffer(int32 picture_buffer_id) OVERRIDE;
   virtual void PictureReady(const media::Picture& picture) OVERRIDE;
   virtual void NotifyInitializeDone() OVERRIDE;
-  virtual void NotifyEndOfStream() OVERRIDE;
   virtual void NotifyError(
       media::VideoDecodeAccelerator::Error error) OVERRIDE;
   virtual void NotifyFlushDone() OVERRIDE;

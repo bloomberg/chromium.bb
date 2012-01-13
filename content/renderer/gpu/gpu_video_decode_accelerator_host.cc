@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -48,8 +48,6 @@ bool GpuVideoDecodeAcceleratorHost::OnMessageReceived(const IPC::Message& msg) {
                         OnFlushDone)
     IPC_MESSAGE_HANDLER(AcceleratedVideoDecoderHostMsg_ResetDone,
                         OnResetDone)
-    IPC_MESSAGE_HANDLER(AcceleratedVideoDecoderHostMsg_EndOfStream,
-                        OnEndOfStream)
     IPC_MESSAGE_HANDLER(AcceleratedVideoDecoderHostMsg_ErrorNotification,
                         OnErrorNotification)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -163,12 +161,6 @@ void GpuVideoDecodeAcceleratorHost::OnResetDone() {
   DCHECK(CalledOnValidThread());
   if (client_)
     client_->NotifyResetDone();
-}
-
-void GpuVideoDecodeAcceleratorHost::OnEndOfStream() {
-  DCHECK(CalledOnValidThread());
-  if (client_)
-    client_->NotifyEndOfStream();
 }
 
 void GpuVideoDecodeAcceleratorHost::OnErrorNotification(uint32 error) {

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -52,7 +52,6 @@ class GpuVideoDecodeAcceleratorHost
   void OnPictureReady(int32 picture_buffer_id, int32 bitstream_buffer_id);
   void OnFlushDone();
   void OnResetDone();
-  void OnEndOfStream();
   void OnErrorNotification(uint32 error);
 
   // Sends IPC messages to the Gpu process.

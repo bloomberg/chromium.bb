@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -50,15 +50,6 @@ void PictureReady(PP_Instance instance,
   static_cast<VideoDecoderClient_Dev*>(object)->PictureReady(decoder, *picture);
 }
 
-void EndOfStream(PP_Instance instance,
-                 PP_Resource decoder) {
-  void* object = pp::Instance::GetPerInstanceObject(
-      instance, kPPPVideoDecoderInterface);
-  if (!object)
-    return;
-  static_cast<VideoDecoderClient_Dev*>(object)->EndOfStream(decoder);
-}
-
 void NotifyError(PP_Instance instance,
                  PP_Resource decoder,
                  PP_VideoDecodeError_Dev error) {
@@ -73,7 +64,6 @@ static PPP_VideoDecoder_Dev videodecoder_interface = {
   &ProvidePictureBuffers,
   &DismissPictureBuffer,
   &PictureReady,
-  &EndOfStream,
   &NotifyError,
 };
 

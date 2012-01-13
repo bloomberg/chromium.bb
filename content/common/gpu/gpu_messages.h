@@ -477,9 +477,6 @@ IPC_MESSAGE_ROUTED0(AcceleratedVideoDecoderHostMsg_FlushDone)
 // Confirm decoder has been reset.
 IPC_MESSAGE_ROUTED0(AcceleratedVideoDecoderHostMsg_ResetDone)
 
-// Decoder has faced end of stream marker in the stream.
-IPC_MESSAGE_ROUTED0(AcceleratedVideoDecoderHostMsg_EndOfStream)
-
 // Video decoder has encountered an error.
 IPC_MESSAGE_ROUTED1(AcceleratedVideoDecoderHostMsg_ErrorNotification,
                     uint32) /* Error ID */

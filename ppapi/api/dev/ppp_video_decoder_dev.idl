@@ -7,7 +7,8 @@
  * This file defines the <code>PPP_VideoDecoder_Dev</code> interface.
  */
 label Chrome {
-  M14 = 0.9
+  M14 = 0.9,
+  M18 = 0.10
 };
 
 /**
@@ -76,6 +77,7 @@ interface PPP_VideoDecoder_Dev {
    *  |instance| the plugin instance to which the callback is responding.
    *  |decoder| the PPB_VideoDecoder_Dev resource.
    */
+  [deprecate=0.10]
   void EndOfStream(
       [in] PP_Instance instance,
       [in] PP_Resource decoder);

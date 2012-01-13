@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From dev/ppp_video_decoder_dev.idl modified Tue Oct 11 10:01:39 2011. */
+/* From dev/ppp_video_decoder_dev.idl modified Wed Jan 11 14:58:58 2012. */
 
 #ifndef PPAPI_C_DEV_PPP_VIDEO_DECODER_DEV_H_
 #define PPAPI_C_DEV_PPP_VIDEO_DECODER_DEV_H_
@@ -16,7 +16,8 @@
 #include "ppapi/c/pp_stdint.h"
 
 #define PPP_VIDEODECODER_DEV_INTERFACE_0_9 "PPP_VideoDecoder(Dev);0.9"
-#define PPP_VIDEODECODER_DEV_INTERFACE PPP_VIDEODECODER_DEV_INTERFACE_0_9
+#define PPP_VIDEODECODER_DEV_INTERFACE_0_10 "PPP_VideoDecoder(Dev);0.10"
+#define PPP_VIDEODECODER_DEV_INTERFACE PPP_VIDEODECODER_DEV_INTERFACE_0_10
 
 /**
  * @file
@@ -35,7 +36,7 @@
  *
  * See PPB_VideoDecoder_Dev for general usage tips.
  */
-struct PPP_VideoDecoder_Dev_0_9 {
+struct PPP_VideoDecoder_Dev_0_10 {
   /**
    * Callback function to provide buffers for the decoded output pictures. If
    * succeeds plugin must provide buffers through AssignPictureBuffers function
@@ -80,16 +81,6 @@ struct PPP_VideoDecoder_Dev_0_9 {
                        PP_Resource decoder,
                        const struct PP_Picture_Dev* picture);
   /**
-   * Callback function to tell the plugin that decoder has decoded end of stream
-   * marker and output all the pictures that should be displayed from the
-   * stream.
-   *
-   * Parameters:
-   *  |instance| the plugin instance to which the callback is responding.
-   *  |decoder| the PPB_VideoDecoder_Dev resource.
-   */
-  void (*EndOfStream)(PP_Instance instance, PP_Resource decoder);
-  /**
    * Error handler callback for decoder to deliver information about detected
    * errors to the plugin.
    *
@@ -103,7 +94,24 @@ struct PPP_VideoDecoder_Dev_0_9 {
                       PP_VideoDecodeError_Dev error);
 };
 
-typedef struct PPP_VideoDecoder_Dev_0_9 PPP_VideoDecoder_Dev;
+typedef struct PPP_VideoDecoder_Dev_0_10 PPP_VideoDecoder_Dev;
+
+struct PPP_VideoDecoder_Dev_0_9 {
+  void (*ProvidePictureBuffers)(PP_Instance instance,
+                                PP_Resource decoder,
+                                uint32_t req_num_of_bufs,
+                                const struct PP_Size* dimensions);
+  void (*DismissPictureBuffer)(PP_Instance instance,
+                               PP_Resource decoder,
+                               int32_t picture_buffer_id);
+  void (*PictureReady)(PP_Instance instance,
+                       PP_Resource decoder,
+                       const struct PP_Picture_Dev* picture);
+  void (*EndOfStream)(PP_Instance instance, PP_Resource decoder);
+  void (*NotifyError)(PP_Instance instance,
+                      PP_Resource decoder,
+                      PP_VideoDecodeError_Dev error);
+};
 /**
  * @}
  */

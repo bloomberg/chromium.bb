@@ -560,7 +560,6 @@ class EglRenderingVDAClient : public VideoDecodeAccelerator::Client {
   virtual void PictureReady(const media::Picture& picture);
   // Simple state changes.
   virtual void NotifyInitializeDone();
-  virtual void NotifyEndOfStream();
   virtual void NotifyEndOfBitstreamBuffer(int32 bitstream_buffer_id);
   virtual void NotifyFlushDone();
   virtual void NotifyResetDone();
@@ -744,10 +743,6 @@ void EglRenderingVDAClient::NotifyInitializeDone() {
   initialize_done_ticks_ = base::TimeTicks::Now();
   for (int i = 0; i < num_in_flight_decodes_; ++i)
     DecodeNextNALUs();
-}
-
-void EglRenderingVDAClient::NotifyEndOfStream() {
-  SetState(CS_DONE);
 }
 
 void EglRenderingVDAClient::NotifyEndOfBitstreamBuffer(

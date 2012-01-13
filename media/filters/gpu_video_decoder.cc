@@ -413,11 +413,6 @@ void GpuVideoDecoder::PutSHM(SHMBuffer* shm_buffer) {
   available_shm_segments_.push_back(shm_buffer);
 }
 
-void GpuVideoDecoder::NotifyEndOfStream() {
-  // TODO(fischman): remove with http://crbug.com/109819
-  NOTREACHED() << "NotifyEndOfStream is never called.";
-}
-
 void GpuVideoDecoder::NotifyEndOfBitstreamBuffer(int32 id) {
   if (MessageLoop::current() != message_loop_) {
     message_loop_->PostTask(FROM_HERE, base::Bind(

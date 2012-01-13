@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -489,8 +489,6 @@ IPC_MESSAGE_ROUTED2(PpapiMsg_PPPVideoDecoder_DismissPictureBuffer,
 IPC_MESSAGE_ROUTED2(PpapiMsg_PPPVideoDecoder_PictureReady,
                     ppapi::HostResource /* video_decoder */,
                     PP_Picture_Dev /* output picture */)
-IPC_MESSAGE_ROUTED1(PpapiMsg_PPPVideoDecoder_NotifyEndOfStream,
-                    ppapi::HostResource /* video_decoder */)
 IPC_MESSAGE_ROUTED2(PpapiMsg_PPPVideoDecoder_NotifyError,
                     ppapi::HostResource /* video_decoder */,
                     PP_VideoDecodeError_Dev /* error */)
