@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -141,7 +141,8 @@ void ChromeNetworkDelegate::OnRawBytesRead(const net::URLRequest& request,
   TaskManager::GetInstance()->model()->NotifyBytesRead(request, bytes_read);
 }
 
-void ChromeNetworkDelegate::OnCompleted(net::URLRequest* request) {
+void ChromeNetworkDelegate::OnCompleted(net::URLRequest* request,
+                                        bool started) {
   if (request->status().status() == net::URLRequestStatus::SUCCESS ||
       request->status().status() == net::URLRequestStatus::HANDLED_EXTERNALLY) {
     bool is_redirect = request->response_headers() &&
@@ -154,7 +155,7 @@ void ChromeNetworkDelegate::OnCompleted(net::URLRequest* request) {
   } else if (request->status().status() == net::URLRequestStatus::FAILED ||
              request->status().status() == net::URLRequestStatus::CANCELED) {
     ExtensionWebRequestEventRouter::GetInstance()->OnErrorOccurred(
-            profile_, extension_info_map_.get(), request);
+            profile_, extension_info_map_.get(), request, started);
   } else {
     NOTREACHED();
   }

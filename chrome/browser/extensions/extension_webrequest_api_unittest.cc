@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -297,6 +297,7 @@ TEST_F(ExtensionWebRequestTest, BlockingEventPrecedenceCancel) {
           request.identifier(), response));
 
   request.Start();
+
   MessageLoop::current()->Run();
 
   EXPECT_TRUE(!request.is_pending());
@@ -310,6 +311,69 @@ TEST_F(ExtensionWebRequestTest, BlockingEventPrecedenceCancel) {
       &profile_, extension1_id, kEventName + "/1");
   ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(
       &profile_, extension2_id, kEventName + "/2");
+}
+
+TEST_F(ExtensionWebRequestTest, SimulateChancelWhileBlocked) {
+  // We subscribe to OnBeforeRequest and OnErrorOccurred.
+  // While the OnBeforeRequest handler is blocked, we cancel the request.
+  // We verify that the response of the blocked OnBeforeRequest handler
+  // is ignored.
+
+  std::string extension_id("1");
+  ExtensionWebRequestEventRouter::RequestFilter filter;
+
+  // Subscribe to OnBeforeRequest and OnErrorOccurred.
+  const std::string kEventName(keys::kOnBeforeRequest);
+  const std::string kEventName2(keys::kOnErrorOccurred);
+  base::WeakPtrFactory<TestIPCSender> ipc_sender_factory(&ipc_sender_);
+  ExtensionWebRequestEventRouter::GetInstance()->AddEventListener(
+    &profile_, extension_id, extension_id, kEventName, kEventName + "/1",
+    filter, ExtensionWebRequestEventRouter::ExtraInfoSpec::BLOCKING,
+    ipc_sender_factory.GetWeakPtr());
+  ExtensionWebRequestEventRouter::GetInstance()->AddEventListener(
+    &profile_, extension_id, extension_id, kEventName2, kEventName2 + "/1",
+    filter, 0, ipc_sender_factory.GetWeakPtr());
+
+  GURL request_url("about:blank");
+  net::URLRequest request(request_url, &delegate_);
+  request.set_context(context_);
+
+  ExtensionWebRequestEventRouter::EventResponse* response = NULL;
+
+  // Extension response for the OnBeforeRequest handler. This should not be
+  // processed because request is canceled before the handler responds.
+  response = new ExtensionWebRequestEventRouter::EventResponse(
+      extension_id, base::Time::FromDoubleT(1));
+  GURL redirect_url("about:redirected");
+  response->new_url = redirect_url;
+  ipc_sender_.PushTask(
+      base::Bind(&EventHandledOnIOThread,
+          &profile_, extension_id, kEventName, kEventName + "/1",
+          request.identifier(), response));
+
+  // Extension response for OnErrorOccurred: Terminate the message loop.
+  ipc_sender_.PushTask(
+      base::Bind(&MessageLoop::PostTask,
+                 base::Unretained(MessageLoop::current()),
+                 FROM_HERE, MessageLoop::QuitClosure()
+                 ));
+
+  request.Start();
+  // request.Start() will have submitted OnBeforeRequest by the time we cancel.
+  request.Cancel();
+  MessageLoop::current()->Run();
+
+  EXPECT_TRUE(!request.is_pending());
+  EXPECT_EQ(net::URLRequestStatus::CANCELED, request.status().status());
+  EXPECT_EQ(net::ERR_ABORTED, request.status().error());
+  EXPECT_EQ(request_url, request.url());
+  EXPECT_EQ(1U, request.url_chain().size());
+  EXPECT_EQ(0U, ipc_sender_.GetNumTasks());
+
+  ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(
+      &profile_, extension_id, kEventName + "/1");
+  ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(
+        &profile_, extension_id, kEventName2 + "/1");
 }
 
 struct HeaderModificationTest_Header {
