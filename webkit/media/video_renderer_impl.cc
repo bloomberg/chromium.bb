@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -229,20 +229,15 @@ static void ConvertVideoFrameToBitmap(
   bitmap->unlockPixels();
 }
 
-VideoRendererImpl::VideoRendererImpl(
-    const base::Closure& paint_cb,
-    const SetOpaqueCB& set_opaque_cb)
-    : media::VideoRendererBase(paint_cb, set_opaque_cb),
-      bitmap_timestamp_(media::kNoTimestamp) {
+VideoRendererImpl::VideoRendererImpl()
+    : last_frame_timestamp_(media::kNoTimestamp) {
 }
 
 VideoRendererImpl::~VideoRendererImpl() {}
 
-// This method is always called on the renderer's thread.
-void VideoRendererImpl::Paint(SkCanvas* canvas, const gfx::Rect& dest_rect) {
-  scoped_refptr<media::VideoFrame> video_frame;
-  GetCurrentFrame(&video_frame);
-
+void VideoRendererImpl::Paint(media::VideoFrame* video_frame,
+                              SkCanvas* canvas,
+                              const gfx::Rect& dest_rect) {
   // Paint black rectangle if there isn't a frame available.
   if (!video_frame) {
     SkPaint paint;
@@ -253,26 +248,24 @@ void VideoRendererImpl::Paint(SkCanvas* canvas, const gfx::Rect& dest_rect) {
         static_cast<float>(dest_rect.right()),
         static_cast<float>(dest_rect.bottom()),
         paint);
-    PutCurrentFrame(video_frame);
     return;
   }
 
   // Scale and convert to RGB in one step if we can.
   if (CanFastPaint(canvas, dest_rect)) {
     FastPaint(video_frame, canvas, dest_rect);
-    PutCurrentFrame(video_frame);
     return;
   }
 
-  // Check if we should convert and update |bitmap_|.
-  if (video_frame->GetTimestamp() != bitmap_timestamp_) {
-    ConvertVideoFrameToBitmap(video_frame, &bitmap_);
-    bitmap_timestamp_ = video_frame->GetTimestamp();
+  // Check if we should convert and update |last_frame_|.
+  if (last_frame_.isNull() ||
+      video_frame->GetTimestamp() != last_frame_timestamp_) {
+    ConvertVideoFrameToBitmap(video_frame, &last_frame_);
+    last_frame_timestamp_ = video_frame->GetTimestamp();
   }
 
-  // Do a slower paint using |bitmap_|.
-  SlowPaint(bitmap_, canvas, dest_rect);
-  PutCurrentFrame(video_frame);
+  // Do a slower paint using |last_frame_|.
+  SlowPaint(last_frame_, canvas, dest_rect);
 }
 
 }  // namespace webkit_media

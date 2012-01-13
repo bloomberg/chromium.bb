@@ -24,6 +24,7 @@
 #include "media/filters/ffmpeg_demuxer_factory.h"
 #include "media/filters/ffmpeg_video_decoder.h"
 #include "media/filters/null_audio_renderer.h"
+#include "media/filters/video_renderer_base.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebVideoFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebRect.h"
@@ -33,7 +34,6 @@
 #include "webkit/media/buffered_data_source.h"
 #include "webkit/media/media_stream_client.h"
 #include "webkit/media/simple_data_source.h"
-#include "webkit/media/video_renderer_impl.h"
 #include "webkit/media/webmediaplayer_delegate.h"
 #include "webkit/media/webmediaplayer_proxy.h"
 #include "webkit/media/webvideoframe_impl.h"
@@ -158,12 +158,12 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
   main_loop_->AddDestructionObserver(this);
 
   // Create default video renderer.
-  scoped_refptr<VideoRendererImpl> video_renderer =
-      new VideoRendererImpl(
-          base::Bind(&WebMediaPlayerProxy::Repaint, proxy_.get()),
+  scoped_refptr<media::VideoRendererBase> video_renderer =
+      new media::VideoRendererBase(
+          base::Bind(&WebMediaPlayerProxy::Repaint, proxy_),
           base::Bind(&WebMediaPlayerProxy::SetOpaque, proxy_.get()));
   filter_collection_->AddVideoRenderer(video_renderer);
-  proxy_->SetVideoRenderer(video_renderer);
+  proxy_->set_frame_provider(video_renderer);
 
   // A simple data source that keeps all data in memory.
   scoped_ptr<media::DataSourceFactory> simple_data_source_factory(

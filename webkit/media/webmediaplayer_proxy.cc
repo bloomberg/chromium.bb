@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,7 +9,7 @@
 #include "base/message_loop.h"
 #include "media/base/pipeline_status.h"
 #include "media/filters/chunk_demuxer.h"
-#include "webkit/media/video_renderer_impl.h"
+#include "media/filters/video_renderer_base.h"
 #include "webkit/media/webmediaplayer_impl.h"
 
 using media::NetworkEvent;
@@ -50,19 +50,17 @@ void WebMediaPlayerProxy::SetOpaque(bool opaque) {
       &WebMediaPlayerProxy::SetOpaqueTask, this, opaque));
 }
 
-void WebMediaPlayerProxy::SetVideoRenderer(
-    const scoped_refptr<VideoRendererImpl>& video_renderer) {
-  video_renderer_ = video_renderer;
-}
-
 WebDataSourceBuildObserverHack WebMediaPlayerProxy::GetBuildObserver() {
   return base::Bind(&WebMediaPlayerProxy::AddDataSource, this);
 }
 
 void WebMediaPlayerProxy::Paint(SkCanvas* canvas, const gfx::Rect& dest_rect) {
   DCHECK(MessageLoop::current() == render_loop_);
-  if (video_renderer_) {
-    video_renderer_->Paint(canvas, dest_rect);
+  if (frame_provider_) {
+    scoped_refptr<media::VideoFrame> video_frame;
+    frame_provider_->GetCurrentFrame(&video_frame);
+    video_renderer_.Paint(video_frame, canvas, dest_rect);
+    frame_provider_->PutCurrentFrame(video_frame);
   }
 }
 
@@ -94,7 +92,7 @@ void WebMediaPlayerProxy::AbortDataSources() {
 void WebMediaPlayerProxy::Detach() {
   DCHECK(MessageLoop::current() == render_loop_);
   webmediaplayer_ = NULL;
-  video_renderer_ = NULL;
+  frame_provider_ = NULL;
 
   {
     base::AutoLock auto_lock(data_sources_lock_);
@@ -184,14 +182,14 @@ void WebMediaPlayerProxy::SetOpaqueTask(bool opaque) {
 
 void WebMediaPlayerProxy::GetCurrentFrame(
     scoped_refptr<media::VideoFrame>* frame_out) {
-  if (video_renderer_)
-    video_renderer_->GetCurrentFrame(frame_out);
+  if (frame_provider_)
+    frame_provider_->GetCurrentFrame(frame_out);
 }
 
 void WebMediaPlayerProxy::PutCurrentFrame(
     scoped_refptr<media::VideoFrame> frame) {
-  if (video_renderer_)
-    video_renderer_->PutCurrentFrame(frame);
+  if (frame_provider_)
+    frame_provider_->PutCurrentFrame(frame);
 }
 
 void WebMediaPlayerProxy::DemuxerOpened(media::ChunkDemuxer* demuxer) {

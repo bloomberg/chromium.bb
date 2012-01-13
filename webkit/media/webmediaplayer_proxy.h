@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,7 @@
 #include "base/synchronization/lock.h"
 #include "media/base/pipeline.h"
 #include "media/filters/chunk_demuxer_client.h"
+#include "webkit/media/video_renderer_impl.h"
 #include "webkit/media/web_data_source.h"
 
 class MessageLoop;
@@ -22,12 +23,12 @@ class Rect;
 
 namespace media {
 class VideoFrame;
+class VideoRendererBase;
 }
 
 namespace webkit_media {
 
 class WebMediaPlayerImpl;
-class VideoRendererImpl;
 
 // Acts as a thread proxy between the various threads used for multimedia and
 // the render thread that WebMediaPlayerImpl is running on.
@@ -38,10 +39,15 @@ class WebMediaPlayerProxy
   WebMediaPlayerProxy(MessageLoop* render_loop,
                       WebMediaPlayerImpl* webmediaplayer);
 
+  // TODO(scherkus): remove this once VideoRendererBase::PaintCB passes
+  // ownership of the VideoFrame http://crbug.com/108435
+  void set_frame_provider(media::VideoRendererBase* frame_provider) {
+    frame_provider_ = frame_provider;
+  }
+
   // Methods for Filter -> WebMediaPlayerImpl communication.
   void Repaint();
   void SetOpaque(bool opaque);
-  void SetVideoRenderer(const scoped_refptr<VideoRendererImpl>& video_renderer);
   WebDataSourceBuildObserverHack GetBuildObserver();
 
   // Methods for WebMediaPlayerImpl -> Filter communication.
@@ -112,7 +118,8 @@ class WebMediaPlayerProxy
   typedef std::list<scoped_refptr<WebDataSource> > DataSourceList;
   DataSourceList data_sources_;
 
-  scoped_refptr<VideoRendererImpl> video_renderer_;
+  scoped_refptr<media::VideoRendererBase> frame_provider_;
+  VideoRendererImpl video_renderer_;
 
   base::Lock lock_;
   int outstanding_repaints_;

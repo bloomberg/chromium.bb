@@ -14,7 +14,7 @@
 // media::PipelineImpl
 //   The media playback pipeline.
 //
-// VideoRendererImpl
+// VideoRendererBase
 //   Video renderer object.
 //
 // WebKit::WebMediaPlayerClient
@@ -29,12 +29,12 @@
 // WebMediaPlayerImpl ---> PipelineImpl
 //    |        ^                  |
 //    |        |                  v r
-//    |        |        VideoRendererImpl
+//    |        |        VideoRendererBase
 //    |        |          |       ^ r
 //    |   r    |          v r     |
 //    '---> WebMediaPlayerProxy --'
 //
-// Notice that WebMediaPlayerProxy and VideoRendererImpl are referencing each
+// Notice that WebMediaPlayerProxy and VideoRendererBase are referencing each
 // other. This interdependency has to be treated carefully.
 //
 // Other issues:
