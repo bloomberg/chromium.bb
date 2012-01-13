@@ -28,6 +28,7 @@
 #include "remoting/host/heartbeat_sender.h"
 #include "remoting/host/host_config.h"
 #include "remoting/host/json_host_config.h"
+#include "remoting/host/log_to_server.h"
 #include "remoting/host/signaling_connector.h"
 #include "remoting/jingle_glue/xmpp_signal_strategy.h"
 #include "remoting/protocol/me2me_host_authenticator_factory.h"
@@ -159,6 +160,9 @@ class HostProcess {
     heartbeat_sender_.reset(
         new HeartbeatSender(host_id_, signal_strategy_.get(), &key_pair_));
 
+    log_to_server_.reset(new LogToServer(signal_strategy_.get()));
+    host_->AddStatusObserver(log_to_server_.get());
+
     host_->Start();
 
     // Create authenticator factory.
@@ -190,6 +194,7 @@ class HostProcess {
   scoped_ptr<SignalingConnector> signaling_connector_;
   scoped_ptr<DesktopEnvironment> desktop_environment_;
   scoped_ptr<remoting::HeartbeatSender> heartbeat_sender_;
+  scoped_ptr<LogToServer> log_to_server_;
   scoped_refptr<ChromotingHost> host_;
 };
 
