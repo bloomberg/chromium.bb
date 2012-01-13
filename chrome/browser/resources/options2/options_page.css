@@ -227,10 +227,8 @@ html[dir='rtl'] .action-area {
 }
 
 .overlay .page {
-  -webkit-box-shadow: 0 5px 40px #505050;
   background: white;
-  border: 1px solid rgb(188, 193, 208);
-  border-radius: 2px;
+  box-shadow: 0 3px 15px rgba(0, 0, 0, 0.3), 0 3px 57px rgba(0, 0, 0, 0.3);
   min-width: 400px;
   padding: 0;
   position: relative;
