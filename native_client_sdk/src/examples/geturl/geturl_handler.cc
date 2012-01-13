@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "examples/geturl/geturl_handler.h"
-
 #include <stdio.h>
 #include <stdlib.h>
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_instance.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/var.h"
+
+#include "geturl_handler.h"
 
 namespace {
 bool IsError(int32_t result) {

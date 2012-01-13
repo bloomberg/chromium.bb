@@ -16,6 +16,7 @@
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/rect.h"
 #include "ppapi/cpp/var.h"
+#include "ppapi/utility/completion_callback_factory.h"
 
 namespace mouselock {
 

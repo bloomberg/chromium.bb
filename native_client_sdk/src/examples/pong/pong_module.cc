@@ -4,7 +4,7 @@
 
 #include <ppapi/cpp/module.h>
 
-#include "examples/pong/pong.h"
+#include "pong.h"
 
 namespace pong {
 // The Module class.  The browser calls the CreateInstance() method to create

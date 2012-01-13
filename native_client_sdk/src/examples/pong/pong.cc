@@ -2,12 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "examples/pong/pong.h"
-
 #include <stdio.h>
 #include <cmath>
 #include <string>
-#include "examples/pong/view.h"
 #include "ppapi/c/pp_file_info.h"
 #include "ppapi/c/ppb_file_io.h"
 #include "ppapi/cpp/completion_callback.h"
@@ -17,6 +14,9 @@
 #include "ppapi/cpp/input_event.h"
 #include "ppapi/cpp/rect.h"
 #include "ppapi/cpp/var.h"
+
+#include "pong.h"
+#include "view.h"
 
 namespace {
 
@@ -91,10 +91,14 @@ void QueryCallback(void* data, int32_t result) {
   pong->bytes_to_read_ = pong->file_info_.size;
   pong->offset_ = 0;
   pong->bytes_buffer_.resize(pong->bytes_to_read_);
-  pong->file_io_->Read(pong->offset_,
-                       &pong->bytes_buffer_[0],
-                       pong->bytes_to_read_,
-                       pp::CompletionCallback(ReadCallback, pong));
+
+  // Check if there is anything to read.
+  if (pong->bytes_to_read_ == 0) {
+    pong->file_io_->Read(pong->offset_,
+                         &pong->bytes_buffer_[0],
+                         pong->bytes_to_read_,
+                         pp::CompletionCallback(ReadCallback, pong));
+  }
 }
 
 // Callback that is called as a result of pp::FileIO::Open

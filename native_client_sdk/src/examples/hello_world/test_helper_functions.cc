@@ -47,5 +47,6 @@ int main() {
   std::string alphabet("abcdefghijklmnopqrstuvwxyz");
   std::string alphabet_backwards("zyxwvutsrqponmlkjihgfedcba");
   EXPECT_EQUAL(ReverseText(alphabet), alphabet_backwards);
+  return 0;
 }
 

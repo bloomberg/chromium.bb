@@ -4,7 +4,7 @@
 
 #include <ppapi/cpp/module.h>
 
-#include "examples/pi_generator/pi_generator.h"
+#include "pi_generator.h"
 
 namespace pi_generator {
 // The Module class.  The browser calls the CreateInstance() method to create

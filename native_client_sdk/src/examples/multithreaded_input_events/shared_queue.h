@@ -9,7 +9,7 @@
 #include <cassert>
 #include <deque>
 
-#include "examples/multithreaded_input_events/thread_safe_ref_count.h"
+#include "thread_safe_ref_count.h"
 
 namespace event_queue {
 

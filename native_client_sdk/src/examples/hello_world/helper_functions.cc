@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "examples/hello_world/helper_functions.h"
-
 #include <algorithm>
+
+#include "helper_functions.h"
 
 namespace hello_world {
 

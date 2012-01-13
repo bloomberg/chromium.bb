@@ -17,10 +17,11 @@
 #include <cstdio>
 #include <cstring>
 #include <string>
-#include "examples/hello_world/helper_functions.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/var.h"
+
+#include "helper_functions.h"
 
 namespace hello_world {
 /// Method name for ReverseText, as seen by JavaScript code.
@@ -58,7 +59,9 @@ pp::Var MarshallReverseText(const std::string& text) {
 /// </pre>
 class HelloWorldInstance : public pp::Instance {
  public:
-  explicit HelloWorldInstance(PP_Instance instance) : pp::Instance(instance) {}
+  explicit HelloWorldInstance(PP_Instance instance) : pp::Instance(instance) {
+    printf("HelloWorldInstance.\n");
+  }
   virtual ~HelloWorldInstance() {}
 
   /// Called by the browser to handle the postMessage() call in Javascript.
@@ -102,7 +105,9 @@ void HelloWorldInstance::HandleMessage(const pp::Var& var_message) {
 /// <code>type="application/x-nacl"</code>.
 class HelloWorldModule : public pp::Module {
  public:
-  HelloWorldModule() : pp::Module() {}
+  HelloWorldModule() : pp::Module() {
+    printf("Got here.\n");
+  }
   virtual ~HelloWorldModule() {}
 
   /// Create and return a HelloWorldInstance object.

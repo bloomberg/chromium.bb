@@ -25,21 +25,21 @@ logging.getLogger().setLevel(logging.INFO)
 SERVER_PORT = 5103
 SERVER_HOST = ''
 
-# We only run from the examples or staging directory so
-# that not too much is exposed via this HTTP server.  Everything in the
-# directory is served, so there should never be anything potentially sensitive
-# in the serving directory, especially if the machine might be a
-# multi-user machine and not all users are trusted.  We only serve via
-# the loopback interface.
-
-SAFE_DIR_COMPONENTS = ['staging', 'examples']
-
+# We only run from the examples directory so that not too much is exposed
+# via this HTTP server.  Everything in the directory is served, so there should
+# never be anything potentially sensitive in the serving directory, especially
+# if the machine might be a multi-user machine and not all users are trusted.
+# We only serve via the loopback interface.
 def SanityCheckDirectory():
-  if os.path.basename(os.getcwd()) in SAFE_DIR_COMPONENTS:
+  httpd_path = os.path.abspath(os.path.dirname(__file__))
+  serve_path = os.path.abspath(os.getcwd())
+
+  # Verify we are serving from the directory this script came from, or bellow
+  if serve_path[:len(httpd_path)] == httpd_path:
     return
-  logging.error('For security, httpd.py should only be run from one of the')
-  logging.error('following directories: %s' % SAFE_DIR_COMPONENTS)
-  logging.error('We are currently in %s', os.getcwd())
+  logging.error('For security, httpd.py should only be run from within the')
+  logging.error('example directory tree.')
+  logging.error('We are currently in %s.' % serve_path)
   sys.exit(1)
 
 

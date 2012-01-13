@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "examples/tumbler/shader_util.h"
-
 #include <stdlib.h>
 #include <stdio.h>
+
+#include "shader_util.h"
 
 namespace shader_util {
 

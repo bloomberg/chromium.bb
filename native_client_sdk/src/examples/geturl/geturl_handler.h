@@ -10,7 +10,7 @@
 #include "ppapi/cpp/url_loader.h"
 #include "ppapi/cpp/url_request_info.h"
 #include "ppapi/cpp/instance.h"
-
+#include "ppapi/utility/completion_callback_factory.h"
 #define READ_BUFFER_SIZE 32768
 
 // GetURLHandler is used to download data from |url|. When download is

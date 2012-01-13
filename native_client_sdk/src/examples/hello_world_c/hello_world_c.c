@@ -149,8 +149,7 @@ static void Instance_DidDestroy(PP_Instance instance) {
  *     plugin is invisible, @a clip will be (0, 0, 0, 0).
  */
 static void Instance_DidChangeView(PP_Instance instance,
-                                   const struct PP_Rect* position,
-                                   const struct PP_Rect* clip) {
+                                   PP_Resource view_resource) {
 }
 
 /**
@@ -201,14 +200,17 @@ static PP_Bool Instance_HandleDocumentLoad(PP_Instance instance,
  *     browser via postMessage.
  */
 void Messaging_HandleMessage(PP_Instance instance, struct PP_Var var_message) {
+  struct PP_Var var_result = PP_MakeUndefined();
+  char* message;
+
   if (var_message.type != PP_VARTYPE_STRING) {
     /* Only handle string messages */
     return;
   }
-  char* message = VarToCStr(var_message);
+  message = VarToCStr(var_message);
   if (message == NULL)
     return;
-  struct PP_Var var_result = PP_MakeUndefined();
+
   if (strncmp(message, kFortyTwoMethodId, strlen(kFortyTwoMethodId)) == 0) {
     var_result = FortyTwo();
   } else if (strncmp(message,

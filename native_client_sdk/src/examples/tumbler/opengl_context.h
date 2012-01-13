@@ -17,12 +17,13 @@
 #include <algorithm>
 #include <string>
 
-#include "examples/tumbler/opengl_context_ptrs.h"
 #include "ppapi/c/ppb_opengles2.h"
 #include "ppapi/cpp/graphics_3d_client.h"
 #include "ppapi/cpp/graphics_3d.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/size.h"
+
+#include "opengl_context_ptrs.h"
 
 namespace tumbler {
 

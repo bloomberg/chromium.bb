@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "examples/pi_generator/pi_generator.h"
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <cassert>
@@ -12,6 +10,8 @@
 #include <string>
 #include "ppapi/cpp/completion_callback.h"
 #include "ppapi/cpp/var.h"
+
+#include "pi_generator.h"
 
 namespace {
 const int kPthreadMutexSuccess = 0;

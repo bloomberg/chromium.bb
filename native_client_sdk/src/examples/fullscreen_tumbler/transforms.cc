@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "examples/fullscreen_tumbler/transforms.h"
-
 #include <GLES2/gl2.h>
 #include <math.h>
 #include <string.h>
+
+#include "transforms.h"
 
 namespace transform_4x4 {
 

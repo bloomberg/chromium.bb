@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "examples/tumbler/opengl_context.h"
 
 #include <pthread.h>
 #include "ppapi/cpp/completion_callback.h"
 #include "ppapi/gles2/gl2ext_ppapi.h"
+
+#include "opengl_context.h"
 
 namespace {
 // This is called by the brower when the 3D context has been flushed to the

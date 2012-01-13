@@ -9,12 +9,13 @@
 #include <map>
 #include <vector>
 
-#include "examples/fullscreen_tumbler/cube.h"
-#include "examples/fullscreen_tumbler/opengl_context.h"
-#include "examples/fullscreen_tumbler/opengl_context_ptrs.h"
-#include "examples/fullscreen_tumbler/scripting_bridge.h"
 #include "ppapi/cpp/fullscreen.h"
 #include "ppapi/cpp/instance.h"
+
+#include "cube.h"
+#include "opengl_context.h"
+#include "opengl_context_ptrs.h"
+#include "scripting_bridge.h"
 
 namespace pp {
 class KeyboardInputEvent;

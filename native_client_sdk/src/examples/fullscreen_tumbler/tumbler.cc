@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "examples/fullscreen_tumbler/tumbler.h"
 
 #include <stdio.h>
 
@@ -11,13 +10,15 @@
 #include <string>
 #include <vector>
 
-#include "examples/fullscreen_tumbler/cube.h"
-#include "examples/fullscreen_tumbler/opengl_context.h"
-#include "examples/fullscreen_tumbler/scripting_bridge.h"
 #include "ppapi/cpp/input_event.h"
 #include "ppapi/cpp/rect.h"
 #include "ppapi/cpp/size.h"
 #include "ppapi/cpp/var.h"
+
+#include "cube.h"
+#include "opengl_context.h"
+#include "scripting_bridge.h"
+#include "tumbler.h"
 
 namespace {
 const uint32_t kKeyEnter = 0x0D;

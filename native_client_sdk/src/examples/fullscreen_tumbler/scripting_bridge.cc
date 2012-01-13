@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "examples/fullscreen_tumbler/scripting_bridge.h"
+#include "scripting_bridge.h"
 
 namespace {
 const char* const kWhiteSpaceCharacters = " \t";

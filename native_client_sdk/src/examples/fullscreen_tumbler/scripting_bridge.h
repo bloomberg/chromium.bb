@@ -10,8 +10,9 @@
 #include <tr1/memory>
 #include <vector>
 
-#include "examples/fullscreen_tumbler/callback.h"
 #include "ppapi/cpp/var.h"
+
+#include "callback.h"
 
 namespace tumbler {
 

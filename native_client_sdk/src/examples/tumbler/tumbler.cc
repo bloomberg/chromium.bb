@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "examples/tumbler/tumbler.h"
-
 #include <cstdlib>
 #include <cstring>
 #include <string>
 #include <vector>
 
-#include "examples/tumbler/cube.h"
-#include "examples/tumbler/opengl_context.h"
-#include "examples/tumbler/scripting_bridge.h"
 #include "ppapi/cpp/rect.h"
 #include "ppapi/cpp/size.h"
 #include "ppapi/cpp/var.h"
+
+#include "cube.h"
+#include "opengl_context.h"
+#include "scripting_bridge.h"
+#include "tumbler.h"
 
 namespace {
 const size_t kQuaternionElementCount = 4;

@@ -7,8 +7,9 @@
 
 #include <GLES2/gl2.h>
 #include <vector>
-#include "examples/fullscreen_tumbler/opengl_context.h"
-#include "examples/fullscreen_tumbler/opengl_context_ptrs.h"
+
+#include "opengl_context.h"
+#include "opengl_context_ptrs.h"
 
 namespace tumbler {
 

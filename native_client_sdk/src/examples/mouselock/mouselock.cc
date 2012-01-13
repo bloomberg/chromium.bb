@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "examples/mouselock/mouselock.h"
-
 #include <cmath>
 #include <cstdlib>
 #include <stdarg.h>
@@ -11,6 +9,8 @@
 #include <string.h>
 
 #include <algorithm>
+
+#include "mouselock.h"
 
 // Indicate the direction of the mouse location relative to the center of the
 // view.  These values are used to determine which 2D quadrant the needle lies

@@ -4,7 +4,7 @@
 
 #include <sstream>
 
-#include "examples/multithreaded_input_events/custom_events.h"
+#include "custom_events.h"
 
 namespace event_queue {
 
