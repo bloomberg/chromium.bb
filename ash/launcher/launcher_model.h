@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -36,12 +36,12 @@ class ASH_EXPORT LauncherModel {
   // of the model *after* the item at |index| is removed.
   void Move(int index, int target_index);
 
-  // Reset everything but the type and window of the item at the specified
-  // index.
-  void Set(int index, const LauncherItem& item);
+  // Changes the images of the specified item.
+  void SetTabbedImages(int index, const LauncherTabbedImages& images);
+  void SetAppImage(int index, const SkBitmap& image);
 
-  // Sends LauncherItemWillChange() to the observers. Used when the images are
-  // going to change for an item, but not for a while.
+  // Sends LauncherItemImagesWillChange() to the observers. Used when the images
+  // are going to change for an item, but not for a while.
   void SetPendingUpdate(int index);
 
   // Returns the index of the item with the specified window.

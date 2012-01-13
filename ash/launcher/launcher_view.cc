@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -344,12 +344,12 @@ views::View* LauncherView::CreateViewForItem(const LauncherItem& item) {
   views::View* view = NULL;
   if (item.type == TYPE_TABBED) {
     TabbedLauncherButton* button = new TabbedLauncherButton(this, this);
-    button->SetTabImage(item.image, item.num_tabs);
+    button->SetImages(item.tab_images);
     view = button;
   } else {
     DCHECK_EQ(TYPE_APP, item.type);
     AppLauncherButton* button = new AppLauncherButton(this, this);
-    button->SetAppImage(item.image);
+    button->SetAppImage(item.app_image);
     view = button;
   }
   ConfigureChildView(view);
@@ -514,13 +514,13 @@ void LauncherView::LauncherItemRemoved(int model_index) {
       view, new FadeOutAnimationDelegate(this, view), true);
 }
 
-void LauncherView::LauncherItemChanged(int model_index) {
+void LauncherView::LauncherItemImagesChanged(int model_index) {
   const LauncherItem& item(model_->items()[model_index]);
   views::View* view = view_model_->view_at(model_index);
   if (item.type == TYPE_TABBED) {
     TabbedLauncherButton* button = static_cast<TabbedLauncherButton*>(view);
     gfx::Size pref = button->GetPreferredSize();
-    button->SetTabImage(item.image, item.num_tabs);
+    button->SetImages(item.tab_images);
     if (pref != button->GetPreferredSize())
       AnimateToIdealBounds();
     else
@@ -528,7 +528,7 @@ void LauncherView::LauncherItemChanged(int model_index) {
   } else {
     DCHECK_EQ(TYPE_APP, item.type);
     AppLauncherButton* button = static_cast<AppLauncherButton*>(view);
-    button->SetAppImage(item.image);
+    button->SetAppImage(item.app_image);
     button->SchedulePaint();
   }
 }
@@ -538,7 +538,7 @@ void LauncherView::LauncherItemMoved(int start_index, int target_index) {
   AnimateToIdealBounds();
 }
 
-void LauncherView::LauncherItemWillChange(int index) {
+void LauncherView::LauncherItemImagesWillChange(int index) {
   const LauncherItem& item(model_->items()[index]);
   views::View* view = view_model_->view_at(index);
   if (item.type == TYPE_TABBED)

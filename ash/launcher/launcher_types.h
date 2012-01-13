@@ -23,20 +23,39 @@ enum ASH_EXPORT LauncherItemType {
   TYPE_APP
 };
 
+// Represents an image in a launcher item of type TYPE_APP.
+struct ASH_EXPORT LauncherTabbedImage {
+  LauncherTabbedImage() : user_data(NULL) {}
+  LauncherTabbedImage(const SkBitmap& image, void* user_data)
+      : image(image),
+        user_data(user_data) {
+  }
+
+  // The image to show.
+  SkBitmap image;
+
+  // Used to identify the image.
+  void* user_data;
+};
+
+typedef std::vector<LauncherTabbedImage> LauncherTabbedImages;
+
 struct ASH_EXPORT LauncherItem {
   LauncherItem();
-  LauncherItem(LauncherItemType type, aura::Window* window);
+  LauncherItem(LauncherItemType type,
+               aura::Window* window,
+               void* user_data);
   ~LauncherItem();
 
   LauncherItemType type;
   aura::Window* window;
+  void* user_data;
 
-  // Number of tabs. Only used if this is TYPE_TABBED.
-  int num_tabs;
+  // Image to display in the launcher if the item is of type TYPE_APP.
+  SkBitmap app_image;
 
-  // Image to display in the launcher. If this item is TYPE_TABBED the image is
-  // a favicon image.
-  SkBitmap image;
+  // Image to display in the launcher if the item is of type TYPE_TABBED.
+  LauncherTabbedImages tab_images;
 };
 
 typedef std::vector<LauncherItem> LauncherItems;

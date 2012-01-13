@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -98,14 +98,14 @@ void TabbedLauncherButton::PrepareForImageChange() {
   animation_->Start();
 }
 
-void TabbedLauncherButton::SetTabImage(const SkBitmap& image, int count) {
+void TabbedLauncherButton::SetImages(const LauncherTabbedImages& images) {
   animation_.reset();
   show_image_ = true;
-  image_ = image;
+  images_ = images;
   ImageSet* set;
-  if (count <= 1)
+  if (images_.size() <= 1)
     set = bg_image_1_;
-  else if (count == 2)
+  else if (images_.size() == 2)
     set = bg_image_2_;
   else
     set = bg_image_3_;
@@ -120,7 +120,7 @@ void TabbedLauncherButton::OnPaint(gfx::Canvas* canvas) {
 
   hover_controller_.Draw(canvas, *bg_image_1_->normal_image);
 
-  if (image_.empty() || !show_image_)
+  if (images_.empty() || images_[0].image.empty() || !show_image_)
     return;
 
   bool save_layer = (animation_.get() && animation_->is_animating() &&
@@ -128,9 +128,12 @@ void TabbedLauncherButton::OnPaint(gfx::Canvas* canvas) {
   if (save_layer)
     canvas->SaveLayerAlpha(animation_->CurrentValueBetween(255, 0));
 
-  int x = (width() - image_.width()) / 2;
-  int y = (height() - image_.height()) / 2 + 1;
-  canvas->DrawBitmapInt(image_, x, y);
+  // Only show the first icon.
+  // TODO(sky): if we settle on just 1 icon, then we should simplify surrounding
+  // code (don't use a vector of images).
+  int x = (width() - images_[0].image.width()) / 2;
+  int y = (height() - images_[0].image.height()) / 2 + 1;
+  canvas->DrawBitmapInt(images_[0].image, x, y);
 
   if (save_layer)
     canvas->Restore();

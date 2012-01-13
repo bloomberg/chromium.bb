@@ -81,13 +81,15 @@ class ShellDelegateImpl : public ash::ShellDelegate {
 
   virtual bool ConfigureLauncherItem(ash::LauncherItem* item) OVERRIDE {
     static int image_count = 0;
-    item->num_tabs = image_count + 1;
-    item->image.setConfig(SkBitmap::kARGB_8888_Config, 16, 16);
-    item->image.allocPixels();
-    item->image.eraseARGB(255,
-                          image_count == 0 ? 255 : 0,
-                          image_count == 1 ? 255 : 0,
-                          image_count == 2 ? 255 : 0);
+    item->tab_images.resize(image_count + 1);
+    for (int i = 0; i < image_count + 1; ++i) {
+      item->tab_images[i].image.setConfig(SkBitmap::kARGB_8888_Config, 16, 16);
+      item->tab_images[i].image.allocPixels();
+      item->tab_images[i].image.eraseARGB(255,
+                                          i == 0 ? 255 : 0,
+                                          i == 1 ? 255 : 0,
+                                          i == 2 ? 255 : 0);
+    }
     image_count = (image_count + 1) % 3;
     return true;  // Makes the entry show up in the launcher.
   }

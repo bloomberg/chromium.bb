@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -94,9 +94,9 @@ class LauncherView : public views::WidgetDelegateView,
   // Overridden from LauncherModelObserver:
   virtual void LauncherItemAdded(int model_index) OVERRIDE;
   virtual void LauncherItemRemoved(int model_index) OVERRIDE;
-  virtual void LauncherItemChanged(int model_index) OVERRIDE;
+  virtual void LauncherItemImagesChanged(int model_index) OVERRIDE;
   virtual void LauncherItemMoved(int start_index, int target_index) OVERRIDE;
-  virtual void LauncherItemWillChange(int index) OVERRIDE;
+  virtual void LauncherItemImagesWillChange(int index) OVERRIDE;
 
   // Overridden from LauncherButtonHost:
   virtual void MousePressedOnButton(views::View* view,

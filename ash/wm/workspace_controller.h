@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -69,8 +69,8 @@ class ASH_EXPORT WorkspaceController :
   virtual void LauncherItemAdded(int index) OVERRIDE;
   virtual void LauncherItemRemoved(int index) OVERRIDE;
   virtual void LauncherItemMoved(int start_index, int target_index) OVERRIDE;
-  virtual void LauncherItemChanged(int index) OVERRIDE;
-  virtual void LauncherItemWillChange(int index) OVERRIDE {}
+  virtual void LauncherItemImagesChanged(int index) OVERRIDE;
+  virtual void LauncherItemImagesWillChange(int index) OVERRIDE {}
 
  private:
   scoped_ptr<WorkspaceManager> workspace_manager_;

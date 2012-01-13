@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -37,7 +37,6 @@ class LauncherIconUpdater : public TabStripModelObserver {
       TabContentsWrapper* tab,
       int index,
       TabStripModelObserver::TabChangeType change_type) OVERRIDE;
-  virtual void TabDetachedAt(TabContentsWrapper* contents, int index) OVERRIDE;
 
  private:
   // Updates the launcher from |tab|.
