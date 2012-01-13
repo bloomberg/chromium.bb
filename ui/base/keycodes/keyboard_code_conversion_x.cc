@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 #include <X11/keysym.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
+#include <X11/XF86keysym.h>
 
 #include "base/basictypes.h"
 #include "base/logging.h"
@@ -321,6 +322,27 @@ KeyboardCode KeyboardCodeFromXKeysym(unsigned int keysym) {
     case XK_F23:
     case XK_F24:
       return static_cast<KeyboardCode>(VKEY_F1 + (keysym - XK_F1));
+
+#if defined(TOOLKIT_USES_GTK)
+    case XF86XK_HomePage:
+    case XF86XK_Search:
+    case XF86XK_Back:
+    case XF86XK_Forward:
+    case XF86XK_Stop:
+    case XF86XK_Refresh:
+    case XF86XK_Favorites:
+    case XF86XK_History:
+    case XF86XK_OpenURL:
+    case XF86XK_AddFavorite:
+    case XF86XK_Go:
+    case XF86XK_Reload:
+    case XF86XK_ZoomIn:
+    case XF86XK_ZoomOut:
+      // ui::AcceleratorGtk tries to convert the XF86XK_ keysyms on Chrome
+      // startup. It's safe to return VKEY_UNKNOWN here since ui::AcceleratorGtk
+      // also checks a Gdk keysym. http://crbug.com/109843
+      return VKEY_UNKNOWN;
+#endif
 
     // TODO(sad): some keycodes are still missing.
   }
