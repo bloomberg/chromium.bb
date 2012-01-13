@@ -11,7 +11,6 @@ include_HEADERS =				\
 
 libwayland_util_la_SOURCES =			\
 	connection.c				\
-	connection.h				\
 	wayland-util.c				\
 	wayland-util.h				\
 	wayland-private.h
