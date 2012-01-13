@@ -466,6 +466,7 @@ hooks = [
              Var("nacl_toolchain_linux_x86_hash"),
          "--save-downloads-dir",
              "src/native_client_sdk/src/build_tools/toolchain_archives",
+         "--keep",
     ],
   },
   {
