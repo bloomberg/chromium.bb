@@ -311,9 +311,8 @@ class NinjaWriter:
     if self.is_mac_bundle:
       mac_bundle_resources = spec.get('mac_bundle_resources', []) + \
                              extra_mac_bundle_resources
-      self.WriteMacBundleResources(
-          mac_bundle_resources, mac_bundle_depends, spec)
-      self.WriteMacInfoPlist(mac_bundle_depends, spec)
+      self.WriteMacBundleResources(mac_bundle_resources, mac_bundle_depends)
+      self.WriteMacInfoPlist(mac_bundle_depends)
 
     return outputs
 
@@ -451,7 +450,7 @@ class NinjaWriter:
 
     return outputs
 
-  def WriteMacBundleResources(self, resources, bundle_depends, spec):
+  def WriteMacBundleResources(self, resources, bundle_depends):
     """Writes ninja edges for 'mac_bundle_resources'."""
     for output, res in gyp.xcode_emulation.GetMacBundleResources(
         self.ExpandSpecial(generator_default_variables['PRODUCT_DIR']),
@@ -460,7 +459,7 @@ class NinjaWriter:
                        variables=[('mactool_cmd', 'copy-bundle-resource')])
       bundle_depends.append(output)
 
-  def WriteMacInfoPlist(self, bundle_depends, spec):
+  def WriteMacInfoPlist(self, bundle_depends):
     """Write build rules for bundle Info.plist files."""
     info_plist, out, defines, extra_env = gyp.xcode_emulation.GetMacInfoPlist(
         self.ExpandSpecial(generator_default_variables['PRODUCT_DIR']),
@@ -606,7 +605,7 @@ class NinjaWriter:
       link_deps.extend(list(extra_link_deps))
 
     if self.is_mac_bundle:
-      output = self.ComputeMacBundleBinaryOutput(spec)
+      output = self.ComputeMacBundleBinaryOutput()
     else:
       output = self.ComputeOutput(spec)
 
@@ -656,7 +655,7 @@ class NinjaWriter:
 
   def WriteMacBundle(self, spec, mac_bundle_depends):
     assert self.is_mac_bundle
-    output = self.ComputeMacBundleOutput(spec)
+    output = self.ComputeMacBundleOutput()
     if spec['type'] in ('shared_library', 'loadable_module'):
       variables = [('version', self.xcode_settings.GetFrameworkVersion())]
       self.ninja.build(output, 'package_framework', mac_bundle_depends,
@@ -665,13 +664,13 @@ class NinjaWriter:
       self.ninja.build(output, 'stamp', mac_bundle_depends)
     return output
 
-  def ComputeMacBundleOutput(self, spec):
+  def ComputeMacBundleOutput(self):
     """Return the 'output' (full output path) to a bundle output directory."""
     assert self.is_mac_bundle
     path = self.ExpandSpecial(generator_default_variables['PRODUCT_DIR'])
     return os.path.join(path, self.xcode_settings.GetWrapperName())
 
-  def ComputeMacBundleBinaryOutput(self, spec):
+  def ComputeMacBundleBinaryOutput(self):
     """Return the 'output' (full output path) to the binary in a bundle."""
     assert self.is_mac_bundle
     path = self.ExpandSpecial(generator_default_variables['PRODUCT_DIR'])
