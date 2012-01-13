@@ -2,7 +2,7 @@
   "name" : "Imageinfo",
   "version" : "1.0.1",
   "description" : "Get image info for images, including EXIF data",
-  "background_page" : "background.html",
+  "background" : { "scripts": ["background.js"] },
   "permissions" : [
     "contextMenus",
     "tabs",

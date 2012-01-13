@@ -7,5 +7,7 @@
   "browser_action": {
     "default_icon": "cookie.png"
   },
-  "background_page": "background.html"
+  "background": {
+    "scripts": ["background.js"]
+  }
 }

@@ -5,7 +5,9 @@
   "permissions": [
     "tabs"
   ],
-  "background_page": "background.html",
+  "background": {
+    "scripts": ["background.js"]
+  },
   "content_scripts": [
     {
       "matches": ["<all_urls>"],

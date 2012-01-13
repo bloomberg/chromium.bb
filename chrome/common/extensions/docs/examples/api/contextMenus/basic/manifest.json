@@ -3,6 +3,8 @@
   "description": "Shows some of the features of the Context Menus API",
   "version": "0.6",
   "permissions": ["contextMenus"],
-  "background_page": "background.html",
+  "background": {
+    "scripts": ["sample.js"]
+  },
   "content_security_policy": "default-src 'self'"
 }

@@ -486,6 +486,9 @@ class Sample(dict):
       if self._manifest.has_key(feature_attr):
         features.add(feature_attr)
 
+    if self._manifest.has_key('background'):
+      features.add('background_page')
+
     if self._uses_popup():
       features.add('popup')
 

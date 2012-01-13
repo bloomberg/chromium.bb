@@ -4,7 +4,7 @@
   "description": "A clock with two configurable alarms that will play a sound and speak a phrase of your choice.",
   "permissions": [ "background", "tts" ],
 
-  "background_page": "background.html",
+  "background": { "scripts": ["common.js", "background.js"] },
 
   "browser_action": {
     "default_icon": "clock-19.png",

@@ -2,7 +2,9 @@
   "name": "Page Benchmarker",
   "version": "1.3.3.0",
   "description": "Chromium Page Benchmarker.",
-  "background_page": "background.html",
+  "background": {
+    "page": "background.html"
+  },
   "browser_action": {
     "default_title": "Benchmark page load time",
     "default_icon": "stopwatch.jpg"

@@ -1,7 +1,7 @@
 {
   "name": "A browser action which changes its icon when clicked.",
   "version": "1.1",
-  "background_page": "background.html",
+  "background": { "scripts": ["background.js"] },
   "permissions": [
     "tabs", "http://*/*"
   ],

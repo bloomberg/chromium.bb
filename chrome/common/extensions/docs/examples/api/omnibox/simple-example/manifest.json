@@ -2,6 +2,8 @@
   "name": "Omnibox Example",
   "description" : "To use, type 'omnix' plus a search term into the Omnibox.",
   "version": "1.0",
-  "background_page": "background.html",
+  "background": {
+    "scripts": ["background.html"]
+  },
   "omnibox": { "keyword" : "omnix" }
 }

@@ -8,7 +8,9 @@
     "https://www.google.com/",
     "http://www-opensocial.googleusercontent.com/"
   ],
-  "background_page": "background.html",
+  "background": {
+    "page": "background.html"
+  },
   "options_page": "options.html",
   "browser_action": {
     "default_icon": "unauthorized.png",

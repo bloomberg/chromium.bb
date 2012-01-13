@@ -1,12 +1,6 @@
-<!--
-Copyright (c) 2011 The Chromium Authors. All rights reserved.
-Use of this source code is governed by a BSD-style license that can be
-found in the LICENSE file.
--->
-
-<html>
-<head>
-<script>
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 var attachedTabs = {};
 var version = "0.1";
@@ -67,7 +61,3 @@ function onDetach(debuggeeId) {
   chrome.browserAction.setIcon({tabId:tabId, path:"debuggerPause.png"});
   chrome.browserAction.setTitle({tabId:tabId, title:"Pause JavaScript"});
 }
-
-</script>
-</head>
-</html>

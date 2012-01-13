@@ -4,7 +4,9 @@
   "icons": { "48": "img/icon-48.png",
             "128": "img/icon-128.png" },
   "description": "Uses OAuth to connect to Google's contacts service and display a list of your contacts.",
-  "background_page": "background.html",
+  "background": {
+    "page": "background.html"
+  },
   "browser_action": {
     "default_title": "",
     "default_icon": "img/icon-19-off.png"

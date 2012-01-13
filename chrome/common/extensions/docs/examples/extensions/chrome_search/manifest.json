@@ -1,5 +1,7 @@
 {
-  "background_page": "background.html",
+  "background": {
+    "scripts": ["background.js"]
+  },
   "description": "Add support to the omnibox to search the Chromium source code.",
   "name": "Chromium Search",
   "omnibox": { "keyword" : "src" },

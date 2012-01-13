@@ -3,7 +3,9 @@
   "version": "0.7.6",
   "description": "Displays the status of the Chromium buildbot in the toolbar.  Click to see more detailed status in a popup.",
   "icons": { "128": "icon.png" },
-  "background_page": "bg.html",
+  "background": {
+    "scripts": ["bg.js"]
+  },
   "permissions": [
     "notifications",
     "http://build.chromium.org/",

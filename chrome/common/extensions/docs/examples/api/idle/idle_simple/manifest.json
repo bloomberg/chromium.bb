@@ -2,7 +2,9 @@
   "name" : "Idle - Simple Example",
   "version" : "1.0.0",
   "description" : "Demonstrates the Idle API",
-  "background_page" : "background.html",
+  "background" : {
+    "scripts": ["background.js"]
+  },
   "permissions" : [ "idle" ],
   "browser_action" : {
     "default_icon" : "sample-19.png"

@@ -6,6 +6,6 @@
   "icons": {"16": "16.png", "48": "48.png", "128": "128.png"},
   "permissions": ["tabs", "notifications"],
   "options_page": "options.html",
-  "background_page": "background.html",
+  "background": { "scripts": ["background.js"] },
   "content_security_policy": "script-src 'self'; img-src 'self'"
 }

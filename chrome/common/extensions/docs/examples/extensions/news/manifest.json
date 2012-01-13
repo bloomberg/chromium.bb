@@ -14,5 +14,7 @@
     "http://news.google.com/*"
   ],
   "options_page": "views/options.html",
-  "background_page": "views/background.html"
+  "background": {
+    "page": "views/background.html"
+  }
 }

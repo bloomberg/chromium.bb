@@ -5,5 +5,7 @@
   "permissions": ["webRequest", "webRequestBlocking",
                   "http://icanhascheezburger.files.wordpress.com/*",
                   "http://chzmemebase.files.wordpress.com/*"],
-  "background_page": "background.html"
+  "background": {
+    "page": "background.html"
+  }
 }

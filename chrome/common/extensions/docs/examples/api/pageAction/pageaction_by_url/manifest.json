@@ -2,7 +2,7 @@
   "name": "Page action by URL",
   "version": "1.0",
   "description": "Shows a page action for urls which have the letter 'g' in them.",
-  "background_page": "background.html",
+  "background": { "scripts": ["background.js"] },
   "page_action" :
   {
     "default_icon" : "icon-19.png",

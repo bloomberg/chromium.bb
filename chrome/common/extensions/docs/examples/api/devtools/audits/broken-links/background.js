@@ -1,6 +1,6 @@
-<html>
-<head>
-<script type="text/javascript">
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 function validateLinks(links, callback) {
   var results = [];
@@ -47,8 +47,3 @@ chrome.extension.onRequest.addListener(function(request, sender, callback) {
     });
   });
 });
-
-</script>
-</head>
-</html>
-

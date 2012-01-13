@@ -3,7 +3,7 @@
   "version": "0.6.1",
   "description": "Finds addresses in the web page you're on and pops up a map window.",
   "icons": { "128": "icon.png" },
-  "background_page": "background.html",
+  "background": { "scripts": ["background.js"] },
   "content_scripts": [
     { "matches": ["http://*/*"], "js": ["mappy_content_script.js"] }
   ],

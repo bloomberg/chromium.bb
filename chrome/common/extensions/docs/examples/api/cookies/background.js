@@ -1,4 +1,6 @@
-<script>
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 chrome.cookies.onChanged.addListener(function(info) {
   console.log("onChanged" + JSON.stringify(info));
@@ -29,5 +31,3 @@ chrome.browserAction.onClicked.addListener(function(tab) {
   var manager_url = chrome.extension.getURL("manager.html");
   focusOrCreateTab(manager_url);
 });
-
-</script>

@@ -2,7 +2,7 @@
   "name": "Test Screenshot Extension",
   "version": "1.0",
   "description": "Demonstrate screenshot functionality in the chrome.tabs api. Note: only works for code.google.com",
-  "background_page": "background.html",
+  "background": { "scripts": ["background.js"] },
   "browser_action": {
      "default_icon": "camera.png",
      "default_title": "Take a screen shot!"

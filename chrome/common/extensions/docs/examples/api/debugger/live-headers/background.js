@@ -1,11 +1,6 @@
-<!--
-Copyright (c) 2011 The Chromium Authors. All rights reserved.
-Use of this source code is governed by a BSD-style license that can be
-found in the LICENSE file.
--->
-<html>
-<head>
-<script>
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 chrome.browserAction.onClicked.addListener(function() {
   chrome.windows.getCurrent(function(win) {
@@ -28,7 +23,3 @@ function onAttach(tabId) {
   chrome.windows.create(
       {url: "headers.html?" + tabId, type: "popup", width: 800, height: 600});
 }
-
-</script>
-</head>
-</html>

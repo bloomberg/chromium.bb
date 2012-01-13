@@ -1,8 +1,11 @@
-<script>
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 var statusURL = "http://chromium-status.appspot.com/current?format=raw";
 
 if (!localStorage.prefs) {
-  // Default to notifications being on. 
+  // Default to notifications being on.
   localStorage.prefs = JSON.stringify({ "use_notifications": true });
 }
 
@@ -75,4 +78,3 @@ function requestURL(url, callback) {
 window.onload = function() {
   window.setTimeout(requestStatus, 10);
 }
-</script>
