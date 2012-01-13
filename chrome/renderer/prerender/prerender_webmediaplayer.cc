@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,6 +16,7 @@ namespace prerender {
 
 PrerenderWebMediaPlayer::PrerenderWebMediaPlayer(
     content::RenderView* render_view,
+    WebKit::WebFrame* frame,
     WebKit::WebMediaPlayerClient* client,
     base::WeakPtr<webkit_media::WebMediaPlayerDelegate> delegate,
     media::FilterCollection* collection,
@@ -24,7 +25,8 @@ PrerenderWebMediaPlayer::PrerenderWebMediaPlayer(
     webkit_media::MediaStreamClient* media_stream_client,
     media::MediaLog* media_log)
     : RenderViewObserver(render_view),
-      WebMediaPlayerImpl(client,
+      WebMediaPlayerImpl(frame,
+                         client,
                          delegate,
                          collection,
                          audio_source_provider,

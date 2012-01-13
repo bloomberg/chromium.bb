@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -104,19 +104,18 @@ class ContentRendererClient {
       std::string* error_html,
       string16* error_description) = 0;
 
-  // Allows embedder to override creating a WebMediaPlayer. If it returns
-  // true, then |player| will contain the created player. Else the content
-  // layer should create the media player.
-  virtual bool OverrideCreateWebMediaPlayer(
+  // Allows embedder to override creating a WebMediaPlayerImpl. If it returns
+  // NULL the content layer will create the media player.
+  virtual webkit_media::WebMediaPlayerImpl* OverrideCreateWebMediaPlayer(
       RenderView* render_view,
+      WebKit::WebFrame* frame,
       WebKit::WebMediaPlayerClient* client,
       base::WeakPtr<webkit_media::WebMediaPlayerDelegate> delegate,
       media::FilterCollection* collection,
       WebKit::WebAudioSourceProvider* audio_source_provider,
       media::MessageLoopFactory* message_loop_factory,
       webkit_media::MediaStreamClient* media_stream_client,
-      media::MediaLog* media_log,
-      webkit_media::WebMediaPlayerImpl** player) = 0;
+      media::MediaLog* media_log) = 0;
 
   // Returns true if the renderer process should schedule the idle handler when
   // all widgets are hidden.

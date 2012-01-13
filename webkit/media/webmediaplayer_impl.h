@@ -99,9 +99,8 @@ class WebMediaPlayerImpl
   // audio data is discarded and media plays back based on wall clock time.
   //
   // This object takes ownership of the |audio_source_provider|.
-  //
-  // Callers must call |Initialize()| before they can use the object.
-  WebMediaPlayerImpl(WebKit::WebMediaPlayerClient* client,
+  WebMediaPlayerImpl(WebKit::WebFrame* frame,
+                     WebKit::WebMediaPlayerClient* client,
                      base::WeakPtr<WebMediaPlayerDelegate> delegate,
                      media::FilterCollection* collection,
                      WebKit::WebAudioSourceProvider* audio_source_provider,
@@ -109,11 +108,6 @@ class WebMediaPlayerImpl
                      MediaStreamClient* media_stream_client,
                      media::MediaLog* media_log);
   virtual ~WebMediaPlayerImpl();
-
-  // Finalizes initialization of the object using the given WebFrame.
-  //
-  // TODO(scherkus): fold this into the constructor http://crbug.com/109958
-  void Initialize(WebKit::WebFrame* frame);
 
   virtual void load(const WebKit::WebURL& url);
   virtual void cancelLoad();

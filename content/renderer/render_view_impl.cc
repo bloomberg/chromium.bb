@@ -1985,17 +1985,15 @@ WebMediaPlayer* RenderViewImpl::createMediaPlayer(
   }
 #endif
 
-  webkit_media::WebMediaPlayerImpl* media_player = NULL;
-  if (!content::GetContentClient()->renderer()->OverrideCreateWebMediaPlayer(
-      this, client, AsWeakPtr(), collection, audio_source_provider,
-      message_loop_factory, media_stream_impl_.get(), render_media_log,
-      &media_player)) {
+  webkit_media::WebMediaPlayerImpl* media_player =
+      content::GetContentClient()->renderer()->OverrideCreateWebMediaPlayer(
+          this, frame, client, AsWeakPtr(), collection, audio_source_provider,
+          message_loop_factory, media_stream_impl_.get(), render_media_log);
+  if (!media_player) {
     media_player = new webkit_media::WebMediaPlayerImpl(
-        client, AsWeakPtr(), collection, audio_source_provider,
+        frame, client, AsWeakPtr(), collection, audio_source_provider,
         message_loop_factory, media_stream_impl_.get(), render_media_log);
   }
-
-  media_player->Initialize(frame);
   return media_player;
 }
 

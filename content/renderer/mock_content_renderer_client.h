@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -34,16 +34,16 @@ class MockContentRendererClient : public ContentRendererClient {
       const WebKit::WebURLError& error,
       std::string* error_html,
       string16* error_description) OVERRIDE;
-  virtual bool OverrideCreateWebMediaPlayer(
+  virtual webkit_media::WebMediaPlayerImpl* OverrideCreateWebMediaPlayer(
       RenderView* render_view,
+      WebKit::WebFrame* frame,
       WebKit::WebMediaPlayerClient* client,
       base::WeakPtr<webkit_media::WebMediaPlayerDelegate> delegate,
       media::FilterCollection* collection,
       WebKit::WebAudioSourceProvider* audio_source_provider,
       media::MessageLoopFactory* message_loop_factory,
       webkit_media::MediaStreamClient* media_stream_client,
-      media::MediaLog* media_log,
-      webkit_media::WebMediaPlayerImpl** player) OVERRIDE;
+      media::MediaLog* media_log) OVERRIDE;
   virtual bool RunIdleHandlerWhenWidgetsHidden() OVERRIDE;
   virtual bool AllowPopup(const GURL& creator) OVERRIDE;
   virtual bool ShouldFork(WebKit::WebFrame* frame,

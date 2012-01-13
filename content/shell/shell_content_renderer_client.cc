@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -48,17 +48,18 @@ void ShellContentRendererClient::GetNavigationErrorStrings(
     string16* error_description) {
 }
 
-bool ShellContentRendererClient::OverrideCreateWebMediaPlayer(
+webkit_media::WebMediaPlayerImpl*
+ShellContentRendererClient::OverrideCreateWebMediaPlayer(
     RenderView* render_view,
+    WebKit::WebFrame* frame,
     WebKit::WebMediaPlayerClient* client,
     base::WeakPtr<webkit_media::WebMediaPlayerDelegate> delegate,
     media::FilterCollection* collection,
     WebKit::WebAudioSourceProvider* audio_source_provider,
     media::MessageLoopFactory* message_loop_factory,
     webkit_media::MediaStreamClient* media_stream_client,
-    media::MediaLog* media_log,
-    webkit_media::WebMediaPlayerImpl** player) {
-  return false;
+    media::MediaLog* media_log) {
+  return NULL;
 }
 
 bool ShellContentRendererClient::RunIdleHandlerWhenWidgetsHidden() {

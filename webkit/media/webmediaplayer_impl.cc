@@ -99,6 +99,7 @@ base::TimeDelta ConvertSecondsToTimestamp(float seconds) {
 namespace webkit_media {
 
 WebMediaPlayerImpl::WebMediaPlayerImpl(
+    WebKit::WebFrame* frame,
     WebKit::WebMediaPlayerClient* client,
     base::WeakPtr<WebMediaPlayerDelegate> delegate,
     media::FilterCollection* collection,
@@ -108,9 +109,8 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
     media::MediaLog* media_log)
     : network_state_(WebKit::WebMediaPlayer::Empty),
       ready_state_(WebKit::WebMediaPlayer::HaveNothing),
-      main_loop_(NULL),
+      main_loop_(MessageLoop::current()),
       filter_collection_(collection),
-      pipeline_(NULL),
       message_loop_factory_(message_loop_factory),
       paused_(true),
       seeking_(false),
@@ -118,56 +118,20 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       pending_seek_(false),
       pending_seek_seconds_(0.0f),
       client_(client),
-      proxy_(NULL),
+      proxy_(new WebMediaPlayerProxy(main_loop_, this)),
       delegate_(delegate),
       media_stream_client_(media_stream_client),
       media_log_(media_log),
       is_accelerated_compositing_active_(false),
       incremented_externally_allocated_memory_(false),
       audio_source_provider_(audio_source_provider) {
-  // Saves the current message loop.
-  DCHECK(!main_loop_);
-  main_loop_ = MessageLoop::current();
   media_log_->AddEvent(
       media_log_->CreateEvent(media::MediaLogEvent::WEBMEDIAPLAYER_CREATED));
-}
 
-void WebMediaPlayerImpl::Initialize(WebKit::WebFrame* frame) {
-  DCHECK_EQ(main_loop_, MessageLoop::current());
   MessageLoop* pipeline_message_loop =
       message_loop_factory_->GetMessageLoop("PipelineThread");
   CHECK(pipeline_message_loop) << "Failed to create a new thread";
-
-  // Let V8 know we started new thread if we did not did it yet.
-  // Made separate task to avoid deletion of player currently being created.
-  // Also, delaying GC until after player starts gets rid of starting lag --
-  // collection happens in parallel with playing.
-  // TODO(enal): remove when we get rid of per-audio-stream thread.
-  if (!incremented_externally_allocated_memory_) {
-    MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&WebMediaPlayerImpl::IncrementExternallyAllocatedMemory,
-                   AsWeakPtr()));
-  }
-
-  is_accelerated_compositing_active_ =
-      frame->view()->isAcceleratedCompositingActive();
-
   pipeline_ = new media::PipelineImpl(pipeline_message_loop, media_log_);
-
-  // Also we want to be notified of |main_loop_| destruction.
-  main_loop_->AddDestructionObserver(this);
-
-  // Create proxy and default video renderer.
-  proxy_ = new WebMediaPlayerProxy(main_loop_, this);
-  scoped_refptr<VideoRendererImpl> video_renderer =
-      new VideoRendererImpl(
-          base::Bind(&WebMediaPlayerProxy::Repaint, proxy_.get()),
-          base::Bind(&WebMediaPlayerProxy::SetOpaque, proxy_.get()));
-  filter_collection_->AddVideoRenderer(video_renderer);
-  proxy_->SetVideoRenderer(video_renderer);
-
-  // Set our pipeline callbacks.
   pipeline_->Init(
       base::Bind(&WebMediaPlayerProxy::PipelineEndedCallback,
                  proxy_.get()),
@@ -175,6 +139,31 @@ void WebMediaPlayerImpl::Initialize(WebKit::WebFrame* frame) {
                  proxy_.get()),
       base::Bind(&WebMediaPlayerProxy::NetworkEventCallback,
                  proxy_.get()));
+
+  // Let V8 know we started new thread if we did not did it yet.
+  // Made separate task to avoid deletion of player currently being created.
+  // Also, delaying GC until after player starts gets rid of starting lag --
+  // collection happens in parallel with playing.
+  //
+  // TODO(enal): remove when we get rid of per-audio-stream thread.
+  MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&WebMediaPlayerImpl::IncrementExternallyAllocatedMemory,
+                 AsWeakPtr()));
+
+  is_accelerated_compositing_active_ =
+      frame->view()->isAcceleratedCompositingActive();
+
+  // Also we want to be notified of |main_loop_| destruction.
+  main_loop_->AddDestructionObserver(this);
+
+  // Create default video renderer.
+  scoped_refptr<VideoRendererImpl> video_renderer =
+      new VideoRendererImpl(
+          base::Bind(&WebMediaPlayerProxy::Repaint, proxy_.get()),
+          base::Bind(&WebMediaPlayerProxy::SetOpaque, proxy_.get()));
+  filter_collection_->AddVideoRenderer(video_renderer);
+  proxy_->SetVideoRenderer(video_renderer);
 
   // A simple data source that keeps all data in memory.
   scoped_ptr<media::DataSourceFactory> simple_data_source_factory(
@@ -198,7 +187,6 @@ void WebMediaPlayerImpl::Initialize(WebKit::WebFrame* frame) {
           data_source_factory.release()), pipeline_message_loop));
 
   std::string source_url = GetClient()->sourceURL().spec();
-
   if (!source_url.empty()) {
     demuxer_factory.reset(
         new media::ChunkDemuxerFactory(source_url,
@@ -265,7 +253,6 @@ URLSchemeForHistogram URLScheme(const GURL& url) {
 
 void WebMediaPlayerImpl::load(const WebKit::WebURL& url) {
   DCHECK_EQ(main_loop_, MessageLoop::current());
-  DCHECK(proxy_);
 
   UMA_HISTOGRAM_ENUMERATION("Media.URLScheme", URLScheme(url), kMaxURLScheme);
 
