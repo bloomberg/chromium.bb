@@ -1350,6 +1350,7 @@ class EmergeQueue(object):
     Keep running so long as we have uninstalled packages in the
     dependency graph to merge.
     """
+    retried = set()
     while self._deps_map:
       # Check here that we are actually waiting for something.
       if (self._emerge_queue.empty() and
@@ -1412,6 +1413,7 @@ class EmergeQueue(object):
           self._Print("Failed %s. Your build has failed." % details)
         else:
           # Queue up this build to try again after a long while.
+          retried.add(target)
           self._retry_queue.append(target)
           self._failed.add(target)
           self._Print("Failed %s, retrying later." % details)
@@ -1435,6 +1437,17 @@ class EmergeQueue(object):
       # Schedule pending jobs and print an update.
       self._ScheduleLoop()
       self._Status()
+
+    # If packages were retried, output a warning.
+    if retried:
+      self._Print("")
+      self._Print("WARNING: The following packages failed the first time,")
+      self._Print("but succeeded upon retry. This might indicate incorrect")
+      self._Print("dependencies.")
+      for pkg in retried:
+        self._Print("  %s" % pkg)
+      self._Print("@@@STEP_WARNINGS@@@")
+      self._Print("")
 
     # Tell child threads to exit.
     self._Print("Merge complete")
