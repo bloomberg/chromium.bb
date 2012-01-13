@@ -50,11 +50,6 @@ WebDataSourceFactory::WebDataSourceFactory(
 
 WebDataSourceFactory::~WebDataSourceFactory() {}
 
-scoped_ptr<media::DataSourceFactory> WebDataSourceFactory::Clone() const {
-  return scoped_ptr<media::DataSourceFactory>(new WebDataSourceFactory(
-      render_loop_, frame_, media_log_, factory_function_, build_observer_));
-}
-
 bool WebDataSourceFactory::AllowRequests() const {
   return true;
 }

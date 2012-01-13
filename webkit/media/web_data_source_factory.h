@@ -33,9 +33,6 @@ class WebDataSourceFactory : public media::AsyncDataSourceFactoryBase {
                        const WebDataSourceBuildObserverHack& build_observer);
   virtual ~WebDataSourceFactory();
 
-  // DataSourceFactory method.
-  virtual scoped_ptr<media::DataSourceFactory> Clone() const OVERRIDE;
-
  protected:
   // AsyncDataSourceFactoryBase methods.
   virtual bool AllowRequests() const OVERRIDE;

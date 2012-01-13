@@ -22,9 +22,6 @@ class MEDIA_EXPORT CompositeDataSourceFactory
   // Add factory to this composite.
   void AddFactory(scoped_ptr<DataSourceFactory> factory);
 
-  // DataSourceFactory method.
-  virtual scoped_ptr<DataSourceFactory> Clone() const OVERRIDE;
-
  protected:
   // AsyncDataSourceFactoryBase methods.
   virtual bool AllowRequests() const OVERRIDE;

@@ -29,7 +29,6 @@ class MEDIA_EXPORT ChunkDemuxerFactory : public DemuxerFactory {
 
   // DemuxerFactory methods.
   virtual void Build(const std::string& url, const BuildCallback& cb) OVERRIDE;
-  virtual scoped_ptr<DemuxerFactory> Clone() const OVERRIDE;
 
  private:
   std::string url_;

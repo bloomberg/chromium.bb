@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -54,7 +54,7 @@ void AsyncDataSourceFactoryBase::ReportError(
   DCHECK_NE(error, PIPELINE_OK);
   DCHECK(!callback.is_null());
 
-  callback.Run(error, static_cast<DataSource*>(NULL));
+  callback.Run(error, NULL);
 }
 
 void AsyncDataSourceFactoryBase::BuildRequestDone(BuildRequest* request) {
@@ -84,8 +84,7 @@ void AsyncDataSourceFactoryBase::BuildRequest::Start(
 }
 
 void AsyncDataSourceFactoryBase::BuildRequest::RequestComplete(
-    PipelineStatus status,
-    DataSource* data_source) {
+    PipelineStatus status, DataSource* data_source) {
   DCHECK(!callback_.is_null());
   DCHECK(!done_callback_.is_null());
 

@@ -5,7 +5,7 @@
 #ifndef MEDIA_BASE_FILTER_FACTORIES_H_
 #define MEDIA_BASE_FILTER_FACTORIES_H_
 
-#include<string>
+#include <string>
 
 #include "base/callback.h"
 #include "media/base/media_export.h"
@@ -25,10 +25,6 @@ class MEDIA_EXPORT DataSourceFactory {
 
   // Builds a DataSource for |url| and returns it via |callback|.
   virtual void Build(const std::string& url, const BuildCallback& callback) = 0;
-
-  // Makes a copy of this factory.
-  // NOTE: Pending requests are not cloned.
-  virtual scoped_ptr<DataSourceFactory> Clone() const = 0;
 };
 
 class Demuxer;
@@ -43,10 +39,6 @@ class MEDIA_EXPORT DemuxerFactory {
 
   // Builds a Demuxer for |url| and returns it via |callback|.
   virtual void Build(const std::string& url, const BuildCallback& callback) = 0;
-
-  // Makes a copy of this factory.
-  // NOTE: Pending requests are not cloned.
-  virtual scoped_ptr<DemuxerFactory> Clone() const = 0;
 };
 
 }  // namespace media

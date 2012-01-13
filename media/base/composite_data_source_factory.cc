@@ -41,19 +41,6 @@ void CompositeDataSourceFactory::AddFactory(
   factories_.push_back(factory.release());
 }
 
-scoped_ptr<DataSourceFactory> CompositeDataSourceFactory::Clone() const {
-  scoped_ptr<CompositeDataSourceFactory> new_factory(
-      new CompositeDataSourceFactory());
-
-  for (FactoryList::const_iterator itr = factories_.begin();
-       itr != factories_.end();
-       ++itr) {
-    new_factory->AddFactory((*itr)->Clone().Pass());
-  }
-
-  return scoped_ptr<DataSourceFactory>(new_factory.release());
-}
-
 bool CompositeDataSourceFactory::AllowRequests() const {
   return !factories_.empty();
 }

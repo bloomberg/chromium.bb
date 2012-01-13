@@ -52,9 +52,4 @@ void FFmpegDemuxerFactory::Build(const std::string& url,
                  cb, loop_, local_source));
 }
 
-scoped_ptr<DemuxerFactory> FFmpegDemuxerFactory::Clone() const {
-  return scoped_ptr<DemuxerFactory>(
-      new FFmpegDemuxerFactory(data_source_factory_->Clone(), loop_));
-}
-
 }  // namespace media

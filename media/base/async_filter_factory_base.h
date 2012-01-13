@@ -57,13 +57,6 @@ class MEDIA_EXPORT AsyncDataSourceFactoryBase : public DataSourceFactory {
   virtual void Build(const std::string& url,
                      const BuildCallback& callback) OVERRIDE;
 
-  // DataSourceFactory method.
-  // Clone() must be implemented by derived classes.
-  // NOTE: Nothing in this base class needs to be cloned because this class
-  // only keeps track of pending requests, which are not part of the cloning
-  // process.
-  virtual scoped_ptr<DataSourceFactory> Clone() const = 0;
-
  protected:
   class MEDIA_EXPORT BuildRequest {
    public:

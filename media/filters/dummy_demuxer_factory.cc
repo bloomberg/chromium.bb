@@ -26,9 +26,4 @@ void DummyDemuxerFactory::Build(const std::string& url,
   cb.Run(PIPELINE_OK, demuxer.get());
 }
 
-scoped_ptr<DemuxerFactory> DummyDemuxerFactory::Clone() const {
-  return scoped_ptr<DemuxerFactory>(
-      new DummyDemuxerFactory(has_video_, has_audio_, local_source_));
-}
-
 }  // namespace media

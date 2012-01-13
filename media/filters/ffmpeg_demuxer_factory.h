@@ -23,7 +23,6 @@ class MEDIA_EXPORT FFmpegDemuxerFactory : public DemuxerFactory {
 
   // DemuxerFactory methods.
   virtual void Build(const std::string& url, const BuildCallback& cb) OVERRIDE;
-  virtual scoped_ptr<DemuxerFactory> Clone() const OVERRIDE;
 
  private:
   scoped_ptr<DataSourceFactory> data_source_factory_;

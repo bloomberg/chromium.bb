@@ -31,8 +31,4 @@ void FileDataSourceFactory::Build(const std::string& url,
   callback.Run(status, data_source);
 }
 
-scoped_ptr<DataSourceFactory> FileDataSourceFactory::Clone() const {
-  return scoped_ptr<DataSourceFactory>(new FileDataSourceFactory());
-}
-
 }  // namespace media
