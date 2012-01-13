@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -429,6 +429,10 @@ class VIEWS_EXPORT MenuController : public MessageLoop::Dispatcher {
 
   // If true, we're showing.
   bool showing_;
+
+  // Is true for some menu types and only until the first mouse press or mouse
+  // release event occurs.
+  bool drop_first_release_event_;
 
   // Indicates what to exit.
   ExitType exit_type_;

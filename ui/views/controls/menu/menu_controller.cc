@@ -268,6 +268,11 @@ MenuItemView* MenuController::Run(Widget* parent,
   possible_drag_ = false;
   drag_in_progress_ = false;
 
+  // We need to drop the first mouse release event when the menu has been
+  // layed out over the bounds.
+  drop_first_release_event_ =
+      root->GetRequestedMenuPosition() == MenuItemView::POSITION_OVER_BOUNDS;
+
   bool nested_menu = showing_;
   if (showing_) {
     // Only support nesting of blocking_run menus, nesting of
@@ -405,6 +410,7 @@ void MenuController::OnMousePressed(SubmenuView* source,
                                     const MouseEvent& event) {
   if (!blocking_run_)
     return;
+  drop_first_release_event_ = false;
 
   DCHECK(!active_mouse_view_);
 
@@ -517,6 +523,18 @@ void MenuController::OnMouseReleased(SubmenuView* source,
                                      const MouseEvent& event) {
   if (!blocking_run_)
     return;
+
+  // We must ignore the first release event when it occured within the original
+  // bounds.
+  if (drop_first_release_event_ && event.flags() == ui::EF_LEFT_MOUSE_BUTTON) {
+    drop_first_release_event_ = false;
+    gfx::Point loc(event.location());
+    View::ConvertPointToScreen(source->GetScrollViewContainer(), &loc);
+    DCHECK(!state_.initial_bounds.IsEmpty());
+    if (state_.initial_bounds.Contains(loc))
+      return;
+  }
+  drop_first_release_event_ = false;
 
   DCHECK(state_.item);
   possible_drag_ = false;
@@ -1485,8 +1503,9 @@ gfx::Rect MenuController::CalculateMenuBounds(MenuItemView* item,
   gfx::Size pref = submenu->GetScrollViewContainer()->GetPreferredSize();
 
   // Don't let the menu go too wide.
-  pref.set_width(std::min(pref.width(),
-                          item->GetDelegate()->GetMaxWidthForMenu(item)));
+  if (item->actual_menu_position() != MenuItemView::POSITION_OVER_BOUNDS)
+    pref.set_width(std::min(pref.width(),
+                            item->GetDelegate()->GetMaxWidthForMenu(item)));
   if (!state_.monitor_bounds.IsEmpty())
     pref.set_width(std::min(pref.width(), state_.monitor_bounds.width()));
 

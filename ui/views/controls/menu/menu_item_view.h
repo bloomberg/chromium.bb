@@ -218,6 +218,11 @@ class VIEWS_EXPORT MenuItemView : public View {
   // Returns the type of this menu.
   const Type& GetType() const { return type_; }
 
+  // Returns the requested menu position.
+  const MenuPosition& GetRequestedMenuPosition() {
+    return requested_menu_position_;
+  }
+
   // Sets whether this item is selected. This is invoked as the user moves
   // the mouse around the menu while open.
   void SetSelected(bool selected);
