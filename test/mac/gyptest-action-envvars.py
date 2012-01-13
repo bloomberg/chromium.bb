@@ -13,7 +13,7 @@ import TestGyp
 import sys
 
 if sys.platform == 'darwin':
-  test = TestGyp.TestGyp(formats=['make', 'xcode'])
+  test = TestGyp.TestGyp(formats=['ninja', 'make', 'xcode'])
 
   CHDIR = 'action-envvars'
   test.run_gyp('action/action.gyp', chdir=CHDIR)

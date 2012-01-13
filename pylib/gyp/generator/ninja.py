@@ -203,10 +203,13 @@ class NinjaWriter:
     path = path.replace(generator_default_variables['RULE_INPUT_NAME'], name)
     return path
 
-  def GypPathToNinja(self, path):
-    """Translate a gyp path to a ninja path.
+  def GypPathToNinja(self, path, env=None):
+    """Translate a gyp path to a ninja path, optionally expanding environment
+    variable references in |path| with |env|.
 
     See the above discourse on path conversions."""
+    if env:
+      path = gyp.xcode_emulation.ExpandEnvVars(path, env)
     if path.startswith('$!'):
       return self.ExpandSpecial(path)
     assert '$' not in path, path
@@ -267,6 +270,7 @@ class NinjaWriter:
     Returns None if there are no outputs (e.g. a settings-only 'none' type
     target)."""
 
+    self.config_name = config_name
     self.name = spec['target_name']
     self.toolset = spec['toolset']
     config = spec['configurations'][config_name]
@@ -399,21 +403,23 @@ class NinjaWriter:
 
   def WriteActions(self, actions, extra_sources, prebuild,
                    extra_mac_bundle_resources):
+    env = self.GetXcodeEnv()
     all_outputs = []
     for action in actions:
       # First write out a rule for the action.
-      name = action['action_name']
+      name = re.sub(r'[ {}$]', '_', action['action_name'])
       description = self.GenerateDescription('ACTION',
                                              action.get('message', None),
                                              name)
-      rule_name = self.WriteNewNinjaRule(name, action['action'], description)
+      rule_name = self.WriteNewNinjaRule(name, action['action'], description,
+                                         env=env)
 
-      inputs = [self.GypPathToNinja(i) for i in action['inputs']]
+      inputs = [self.GypPathToNinja(i, env) for i in action['inputs']]
       if int(action.get('process_outputs_as_sources', False)):
         extra_sources += action['outputs']
       if int(action.get('process_outputs_as_mac_bundle_resources', False)):
         extra_mac_bundle_resources += action['outputs']
-      outputs = [self.GypPathToNinja(o) for o in action['outputs']]
+      outputs = [self.GypPathToNinja(o, env) for o in action['outputs']]
 
       # Then write out an edge using the rule.
       self.ninja.build(outputs, rule_name, inputs,
@@ -498,22 +504,16 @@ class NinjaWriter:
 
   def WriteCopies(self, copies, prebuild):
     outputs = []
+    env = self.GetXcodeEnv()
     for copy in copies:
       for path in copy['files']:
         # Normalize the path so trailing slashes don't confuse us.
         path = os.path.normpath(path)
         basename = os.path.split(path)[1]
-        src = self.GypPathToNinja(path)
-        dst = self.GypPathToNinja(os.path.join(copy['destination'], basename))
-
-        if self.flavor == 'mac' and ('$(' in src or '$(' in dst):
-          # TODO(thakis/jeremya): Support this.
-          print 'Warning: Variable names in copies rules not supported yet.'
-          src = re.sub(r'\$\([^)]*\)', 'TODO_implement_envvars', src)
-          dst = re.sub(r'\$\([^)]*\)', 'TODO_implement_envvars', dst)
-
-        outputs += self.ninja.build(dst, 'copy', src,
-                                    order_only=prebuild)
+        src = self.GypPathToNinja(path, env)
+        dst = self.GypPathToNinja(os.path.join(copy['destination'], basename),
+                                  env)
+        outputs += self.ninja.build(dst, 'copy', src, order_only=prebuild)
 
     return outputs
 
@@ -541,9 +541,13 @@ class NinjaWriter:
           [QuoteShellArgument(ninja_syntax.escape('-D' + d)) for d in defines])
       info_plist = self.ninja.build(intermediate_plist, 'infoplist', info_plist,
                                     variables=[('defines',defines)])
-    # TODO(thakis/jeremya): Environment variable support.
+
+    env = self.GetXcodeEnv(additional_settings=extra_env)
+    env = self.ComputeExportEnvString(env)
+
     self.ninja.build(out, 'mac_tool', info_plist,
-                     variables=[('mactool_cmd', 'copy-info-plist')])
+                     variables=[('mactool_cmd', 'copy-info-plist'),
+                                ('env', env)])
     bundle_depends.append(out)
 
   def WriteSources(self, config_name, config, sources, predepends,
@@ -724,6 +728,26 @@ class NinjaWriter:
     self.target.bundle = output
     return output
 
+  def GetXcodeEnv(self, additional_settings=None):
+    """Returns the variables Xcode would set for build steps."""
+    # TODO(thakis): Investigate if $PWD can be used here to prevent writing
+    # a literal absolute path to disk.
+    abs_builddir = os.path.abspath(self.build_dir)
+    return gyp.xcode_emulation.GetXcodeEnv(
+        self.xcode_settings, abs_builddir,
+        os.path.join(abs_builddir, self.build_to_base), self.config_name,
+        additional_settings)
+
+  def ComputeExportEnvString(self, env):
+    """Given an environment, returns a string looking like
+        'export FOO=foo; export BAR="${FOO} bar;'
+    that exports |env| to the shell."""
+    export_str = []
+    for k in gyp.xcode_emulation.TopologicallySortedEnvVarKeys(env):
+      export_str.append('export %s=%s;' %
+          (k, ninja_syntax.escape(gyp.common.EncodePOSIXShellArgument(env[k]))))
+    return ' '.join(export_str)
+
   def ComputeMacBundleOutput(self):
     """Return the 'output' (full output path) to a bundle output directory."""
     assert self.is_mac_bundle
@@ -818,7 +842,7 @@ class NinjaWriter:
       values = []
     self.ninja.variable(var, ' '.join(values))
 
-  def WriteNewNinjaRule(self, name, args, description):
+  def WriteNewNinjaRule(self, name, args, description, env={}):
     """Write out a new ninja "rule" statement for a given command.
 
     Returns the name of the new rule."""
@@ -839,8 +863,14 @@ class NinjaWriter:
     # the arguments to point to the proper locations.
     cd = 'cd %s; ' % self.build_to_base
     args = [self.ExpandSpecial(arg, self.base_to_build) for arg in args]
+    env = self.ComputeExportEnvString(env)
+    command = gyp.common.EncodePOSIXShellList(args)
+    if env:
+      # If an environment is passed in, variables in the command should be
+      # read from it, instead of from ninja's internal variables.
+      command = ninja_syntax.escape(command)
 
-    command = cd + gyp.common.EncodePOSIXShellList(args)
+    command = cd + env + command
     # GYP rules/actions express being no-ops by not touching their outputs.
     # Avoid executing downstream dependencies in this case by specifying
     # restat=1 to ninja.
@@ -1007,7 +1037,7 @@ def GenerateOutput(target_list, target_dicts, data, params):
     master_ninja.rule(
       'mac_tool',
       description='MACTOOL $mactool_cmd $in',
-      command='$mac_tool $mactool_cmd $in $out')
+      command='$env $mac_tool $mactool_cmd $in $out')
     master_ninja.rule(
       'package_framework',
       description='PACKAGE FRAMEWORK $out',
