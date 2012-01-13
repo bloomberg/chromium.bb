@@ -2030,6 +2030,8 @@
         'common/json_schema_validator_unittest_base.h',
         'common/json_value_serializer_unittest.cc',
         'common/mac/cfbundle_blocker_unittest.mm',
+        'common/mac/mock_launchd.cc',
+        'common/mac/mock_launchd.h',
         'common/mac/objc_method_swizzle_unittest.mm',
         'common/mac/objc_zombie_unittest.mm',
         'common/metrics/metrics_log_manager_unittest.cc',
