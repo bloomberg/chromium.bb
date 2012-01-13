@@ -63,7 +63,7 @@
 #include "chrome/browser/ui/webui/options2/chromeos/cros_language_options_handler2.h"
 #include "chrome/browser/ui/webui/options2/chromeos/internet_options_handler2.h"
 #include "chrome/browser/ui/webui/options2/chromeos/language_chewing_handler2.h"
-#include "chrome/browser/ui/webui/options2/chromeos/language_customize_modifier_keys_handler2.h"
+#include "chrome/browser/ui/webui/options2/chromeos/keyboard_handler2.h"
 #include "chrome/browser/ui/webui/options2/chromeos/language_hangul_handler2.h"
 #include "chrome/browser/ui/webui/options2/chromeos/language_mozc_handler2.h"
 #include "chrome/browser/ui/webui/options2/chromeos/language_pinyin_handler2.h"
@@ -239,9 +239,8 @@ OptionsUI::OptionsUI(WebContents* contents)
   AddOptionsPageUIHandler(localized_strings, new InternetOptionsHandler());
   AddOptionsPageUIHandler(localized_strings,
                           new chromeos::options2::LanguageChewingHandler());
-  AddOptionsPageUIHandler(
-      localized_strings,
-      new chromeos::options2::LanguageCustomizeModifierKeysHandler());
+  AddOptionsPageUIHandler(localized_strings,
+                          new chromeos::options2::KeyboardHandler());
   AddOptionsPageUIHandler(localized_strings,
                           new chromeos::options2::LanguageHangulHandler());
   AddOptionsPageUIHandler(localized_strings,

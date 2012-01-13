@@ -185,16 +185,7 @@ function load() {
                                 [$('change-picture-button')]);
     OptionsPage.registerOverlay(DetailsInternetPage.getInstance(),
                                 InternetOptions.getInstance());
-
-    var languageModifierKeysOverlay = new OptionsPage(
-        'languageCustomizeModifierKeysOverlay',
-        localStrings.getString('languageCustomizeModifierKeysOverlay'),
-        'languageCustomizeModifierKeysOverlay')
-    $('languageCustomizeModifierKeysOverleyDismissButton').onclick =
-        function() {
-      OptionsPage.closeOverlay();
-    };
-    OptionsPage.registerOverlay(languageModifierKeysOverlay,
+    OptionsPage.registerOverlay(KeyboardPage.getInstance(),
                                 SystemOptions.getInstance(),
                                 [$('modifier-keys-button')]);
     OptionsPage.registerOverlay(BluetoothOptions.getInstance(),

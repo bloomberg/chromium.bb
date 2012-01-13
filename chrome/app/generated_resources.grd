@@ -13329,6 +13329,10 @@ changed since last sign in
                desc="The label for the Korean input method">
         Korean input method
       </message>
+      <message name="IDS_OPTIONS_KEYBOARD_OVERLAY_TITLE"
+               desc="The title for 'Keyboard settings' overlay">
+        Keyboard settings
+      </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_XKB_KEY_SEARCH_LABEL"
                desc="The label for 'Customize modifier keys' overlay">
         Search

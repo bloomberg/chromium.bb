@@ -1,8 +1,8 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/options2/chromeos/language_customize_modifier_keys_handler2.h"
+#include "chrome/browser/ui/webui/options2/chromeos/keyboard_handler2.h"
 
 #include "base/values.h"
 #include "chrome/browser/chromeos/input_method/xkeyboard.h"
@@ -36,16 +36,17 @@ const char* kDataValuesNames[] = {
 namespace chromeos {
 namespace options2 {
 
-LanguageCustomizeModifierKeysHandler::LanguageCustomizeModifierKeysHandler() {
+KeyboardHandler::KeyboardHandler() {
 }
 
-LanguageCustomizeModifierKeysHandler::~LanguageCustomizeModifierKeysHandler() {
+KeyboardHandler::~KeyboardHandler() {
 }
 
-void LanguageCustomizeModifierKeysHandler::GetLocalizedValues(
-    DictionaryValue* localized_strings) {
+void KeyboardHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
 
+  localized_strings->SetString("keyboardOverlayTitle",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_KEYBOARD_OVERLAY_TITLE));
   localized_strings->SetString("xkbRemapSearchKeyToContent",
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_LANGUAGES_XKB_KEY_SEARCH_LABEL));
