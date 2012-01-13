@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
@@ -13,9 +14,30 @@
 #import "chrome/browser/ui/cocoa/web_intent_bubble_controller.h"
 #include "chrome/browser/ui/intents/web_intent_picker.h"
 #include "chrome/browser/ui/intents/web_intent_picker_delegate.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "content/browser/tab_contents/tab_contents.h"
 #include "skia/ext/skia_utils_mac.h"
 
 using content::WebContents;
+
+class InlineHtmlContentDelegate: public content::WebContentsDelegate {
+ public:
+  InlineHtmlContentDelegate() {}
+  virtual ~InlineHtmlContentDelegate() {}
+
+  virtual bool IsPopupOrPanel(
+      const content::WebContents* source) const OVERRIDE {
+    return true;
+  }
+  virtual bool ShouldAddNavigationToHistory(
+      const history::HistoryAddPageArgs& add_page_args,
+      content::NavigationType navigation_type) OVERRIDE {
+    return false;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(InlineHtmlContentDelegate);
+};
 
 // static
 WebIntentPicker* WebIntentPicker::Create(Browser* browser,
@@ -24,11 +46,17 @@ WebIntentPicker* WebIntentPicker::Create(Browser* browser,
   return new WebIntentPickerCocoa(browser, wrapper, delegate);
 }
 
+WebIntentPickerCocoa::WebIntentPickerCocoa()
+    : delegate_(NULL), browser_(NULL), controller_(NULL) {
+}
+
+
 WebIntentPickerCocoa::WebIntentPickerCocoa(Browser* browser,
                                            TabContentsWrapper* wrapper,
                                            WebIntentPickerDelegate* delegate)
-   : delegate_(delegate),
-     controller_(NULL) {
+    : delegate_(delegate),
+      browser_(browser),
+      controller_(NULL) {
   DCHECK(browser);
   DCHECK(delegate);
   NSWindow* parentWindow = browser->window()->GetNativeHandle();
@@ -76,7 +104,21 @@ void WebIntentPickerCocoa::Close() {
 }
 
 WebContents* WebIntentPickerCocoa::SetInlineDisposition(const GURL& url) {
-  return NULL;
+  TabContents* tab_contents = new TabContents(
+      browser_->profile(), NULL, MSG_ROUTING_NONE, NULL, NULL);
+  inline_disposition_tab_contents_.reset(new TabContentsWrapper(tab_contents));
+  inline_disposition_delegate_.reset(new InlineHtmlContentDelegate);
+  tab_contents->SetDelegate(inline_disposition_delegate_.get());
+
+  inline_disposition_tab_contents_->web_contents()->GetController().LoadURL(
+      url,
+      content::Referrer(),
+      content::PAGE_TRANSITION_START_PAGE,
+      std::string());
+
+  [controller_ setInlineDispositionTabContents:
+      inline_disposition_tab_contents_.get()];
+  return inline_disposition_tab_contents_->web_contents();
 }
 
 WebIntentPickerCocoa::~WebIntentPickerCocoa() {

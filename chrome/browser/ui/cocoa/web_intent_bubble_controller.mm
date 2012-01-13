@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,9 @@
 #import "chrome/browser/ui/cocoa/hyperlink_button_cell.h"
 #include "chrome/browser/ui/cocoa/web_intent_picker_cocoa.h"
 #include "chrome/browser/ui/intents/web_intent_picker_delegate.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "content/browser/tab_contents/tab_contents.h"
+#include "content/browser/tab_contents/tab_contents_view.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
@@ -90,6 +93,11 @@ const CGFloat kTextWidth = kWindowWidth - (kImageSize + kImageSpacing +
   if ([iconImages_ count] < [serviceURLs_ count])
     [iconImages_ setCount:[serviceURLs_ count]];
 
+  [self performLayout];
+}
+
+- (void)setInlineDispositionTabContents:(TabContentsWrapper*)wrapper {
+  contents_ = wrapper;
   [self performLayout];
 }
 
@@ -254,6 +262,23 @@ const CGFloat kTextWidth = kWindowWidth - (kImageSize + kImageSpacing +
   return NSHeight([matrix frame]);
 }
 
+- (CGFloat)addInlineHtmlToSubviews:(NSMutableArray*)subviews
+                          atOffset:(CGFloat)offset {
+  if (!contents_)
+    return 0;
+
+  // Determine a good size for the inline disposition window.
+  gfx::Size tab_size = contents_->web_contents()->GetView()->GetContainerSize();
+  CGFloat width = std::max(CGFloat(tab_size.width()/2.0), kWindowWidth);
+  CGFloat height = std::max(CGFloat(tab_size.height()/2.0), kWindowWidth);
+  NSRect frame = NSMakeRect(kFramePadding, offset, width, height);
+
+  [contents_->web_contents()->GetNativeView() setFrame:frame];
+  [subviews addObject:contents_->web_contents()->GetNativeView()];
+
+  return NSHeight(frame);
+}
+
 // Layout the contents of the picker bubble.
 - (void)performLayout {
   // |offset| is the Y position that should be drawn at next.
@@ -262,18 +287,27 @@ const CGFloat kTextWidth = kWindowWidth - (kImageSize + kImageSpacing +
   // Keep the new subviews in an array that gets replaced at the end.
   NSMutableArray* subviews = [NSMutableArray array];
 
-  offset += [self addCwsButtonToSubviews:subviews atOffset:offset];
-  offset += [self addIcons:iconImages_ toSubviews:subviews atOffset:offset];
-  offset += [self addHeaderToSubviews:subviews atOffset:offset];
+  if (contents_) {
+    offset += [self addInlineHtmlToSubviews:subviews atOffset:offset];
+  } else {
+    offset += [self addCwsButtonToSubviews:subviews atOffset:offset];
+    offset += [self addIcons:iconImages_ toSubviews:subviews atOffset:offset];
+    offset += [self addHeaderToSubviews:subviews atOffset:offset];
+  }
 
   // Add the bottom padding.
   offset += kVerticalSpacing;
 
   // Adjust frame to fit all elements.
-  NSRect frame = [[self window] frame];
-  frame.size.height = offset;
-  frame.size.width = kWindowWidth;
-  [[self window] setFrame:frame display:YES];
+  NSRect windowFrame = NSMakeRect(0, 0, kWindowWidth, offset);
+  windowFrame.size = [[[self window] contentView] convertSize:windowFrame.size
+                                                       toView:nil];
+  // Adjust the origin by the difference in height.
+  windowFrame.origin = [[self window] frame].origin;
+  windowFrame.origin.y -= NSHeight(windowFrame) -
+      NSHeight([[self window] frame]);
+
+  [[self window] setFrame:windowFrame display:YES animate:YES];
 
   // Replace the window's content.
   [[[self window] contentView] setSubviews:subviews];

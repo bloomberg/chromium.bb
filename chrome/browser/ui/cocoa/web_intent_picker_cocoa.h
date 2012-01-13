@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,8 +8,11 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/intents/web_intent_picker.h"
 
+class InlineHtmlContentDelegate;
+class TabContentsWrapper;
 @class WebIntentBubbleController;
 
 // A bridge class that enables communication between ObjectiveC and C++.
@@ -36,15 +39,21 @@ class WebIntentPickerCocoa : public WebIntentPicker {
   virtual content::WebContents* SetInlineDisposition(const GURL& url) OVERRIDE;
 
  private:
-
   // Weak pointer to the |delegate_| to notify about user choice/cancellation.
   WebIntentPickerDelegate* delegate_;
 
+  Browser* browser_;  // The browser we're in. Weak Reference.
+
   WebIntentBubbleController* controller_;  // Weak reference.
 
+  // Tab contents wrapper to hold intent page if inline disposition is used.
+  scoped_ptr<TabContentsWrapper> inline_disposition_tab_contents_;
+
+  // Delegate for inline disposition tab contents.
+  scoped_ptr<InlineHtmlContentDelegate> inline_disposition_delegate_;
+
   // Default constructor, for testing only.
-  WebIntentPickerCocoa()
-      : delegate_(NULL), controller_(NULL) {}
+  WebIntentPickerCocoa();
 
   // For testing access.
   friend class WebIntentBubbleControllerTest;

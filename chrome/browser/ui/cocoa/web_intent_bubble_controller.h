@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,6 +30,9 @@ class WebIntentPickerCocoa;
 
   // C++ <-> ObjectiveC bridge. Weak reference.
   WebIntentPickerCocoa* picker_;
+
+  // Inline disposition tab contents. Weak reference.
+  TabContentsWrapper* contents_;
 }
 
 // Initialize the window, and connect to bridge.
@@ -42,6 +45,9 @@ class WebIntentPickerCocoa;
 
 // Set the service |urls| for all services.
 - (void)setServiceURLs:(NSArray*)urls;
+
+// Set the contents for inline disposition intents.
+- (void)setInlineDispositionTabContents:(TabContentsWrapper*)wrapper;
 
 @end  // WebIntentBubbleController
 
