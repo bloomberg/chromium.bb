@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,7 +7,7 @@
 #include "ui/views/widget/native_widget_aura.h"
 
 class NativeConstrainedWindowAura : public NativeConstrainedWindow,
-                                   public views::NativeWidgetAura {
+                                    public views::NativeWidgetAura {
  public:
   explicit NativeConstrainedWindowAura(
       NativeConstrainedWindowDelegate* delegate)
@@ -25,6 +25,10 @@ class NativeConstrainedWindowAura : public NativeConstrainedWindow,
   }
 
   // Overridden from views::NativeWidgetAura:
+  virtual void OnWindowDestroyed() OVERRIDE {
+    delegate_->OnNativeConstrainedWindowDestroyed();
+    views::NativeWidgetAura::OnWindowDestroyed();
+  }
 
   NativeConstrainedWindowDelegate* delegate_;
 
