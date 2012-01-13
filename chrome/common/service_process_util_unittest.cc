@@ -36,7 +36,7 @@
 // somewhat flaky on other Linux.
 #define MAYBE_ForceShutdown FAILS_ForceShutdown
 #else
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_WIN)
 #define MAYBE_ForceShutdown FLAKY_ForceShutdown
 #else
 #define MAYBE_ForceShutdown ForceShutdown
