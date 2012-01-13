@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,7 +17,8 @@
 #include "ui/gfx/rect.h"
 
 TextInputClientObserver::TextInputClientObserver(RenderViewImpl* render_view)
-    : content::RenderViewObserver(render_view) {
+    : content::RenderViewObserver(render_view),
+      render_view_impl_(render_view) {
 }
 
 TextInputClientObserver::~TextInputClientObserver() {
@@ -48,10 +49,13 @@ void TextInputClientObserver::OnCharacterIndexForPoint(gfx::Point point) {
 }
 
 void TextInputClientObserver::OnFirstRectForCharacterRange(ui::Range range) {
-  WebKit::WebFrame* frame = webview()->focusedFrame();
-  WebKit::WebRect web_rect;
-  frame->firstRectForCharacterRange(range.start(), range.length(), web_rect);
-  gfx::Rect rect(web_rect);
+  gfx::Rect rect;
+  if (!render_view_impl_->GetPpapiPluginCaretBounds(&rect)) {
+    WebKit::WebFrame* frame = webview()->focusedFrame();
+    WebKit::WebRect web_rect;
+    frame->firstRectForCharacterRange(range.start(), range.length(), web_rect);
+    rect = web_rect;
+  }
   Send(new TextInputClientReplyMsg_GotFirstRectForRange(routing_id(), rect));
 }
 
