@@ -1018,6 +1018,9 @@ def ParseFiles(filenames):
       srcdir = os.path.normpath(srcdir)
       filenames += sorted(glob.glob(srcdir))
 
+  if not filenames:
+    ErrOut.Log('No sources provided.')
+
   for filename in filenames:
     filenode = parser.ParseFile(filename)
     filenodes.append(filenode)

@@ -3,6 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import os
 import sys
 
 # Note: some of these files are imported to register cmdline options.
@@ -16,10 +17,18 @@ from idl_gen_pnacl import PnaclGen
 
 def Main():
   args = sys.argv[1:]
-  # If no arguments are provided, assume we are tring to rebuild the
+  # If no arguments are provided, assume we are trying to rebuild the
   # C headers with warnings off.
   if not args:
     args = ['--wnone', '--cgen', '--range=start,end']
+    current_dir = os.path.abspath(os.getcwd())
+    script_dir = os.path.abspath(os.path.dirname(__file__))
+    if current_dir != script_dir:
+      print '\nIncorrect CWD, default run skipped.'
+      print 'When running with no arguments set CWD to the scripts directory:'
+      print '\t' + script_dir + '\n'
+      print 'This ensures correct default paths and behavior.\n'
+      return 1
 
   filenames = ParseOptions(args)
   ast = ParseFiles(filenames)
