@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -660,6 +660,7 @@ TEST_F(WindowTest, StopsEventPropagation) {
   EXPECT_EQ(w11.get(), w1->GetEventHandlerForPoint(gfx::Point(10, 10)));
 
   EXPECT_TRUE(w111->CanFocus());
+  EXPECT_TRUE(w111->CanReceiveEvents());
   w111->Focus();
   EXPECT_EQ(w111.get(), w1->GetFocusManager()->GetFocusedWindow());
 
@@ -671,14 +672,22 @@ TEST_F(WindowTest, StopsEventPropagation) {
   // It should be possible to focus w121 since it is at or above the
   // consumes_events_ window.
   EXPECT_TRUE(w121->CanFocus());
+  EXPECT_TRUE(w121->CanReceiveEvents());
   w121->Focus();
   EXPECT_EQ(w121.get(), w1->GetFocusManager()->GetFocusedWindow());
 
   // An attempt to focus 111 should be ignored and w121 should retain focus,
   // since a consumes_events_ window with a child is in the z-index above w111.
-  EXPECT_FALSE(w111->CanFocus());
+  EXPECT_FALSE(w111->CanReceiveEvents());
   w111->Focus();
   EXPECT_EQ(w121.get(), w1->GetFocusManager()->GetFocusedWindow());
+
+  // Hiding w121 should make 111 focusable.
+  w121->Hide();
+  EXPECT_TRUE(w111->CanFocus());
+  EXPECT_TRUE(w111->CanReceiveEvents());
+  w111->Focus();
+  EXPECT_EQ(w111.get(), w1->GetFocusManager()->GetFocusedWindow());
 }
 
 TEST_F(WindowTest, IgnoreEventsTest) {

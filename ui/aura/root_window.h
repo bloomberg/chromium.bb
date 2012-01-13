@@ -159,6 +159,7 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
 
   // Overridden from Window:
   virtual bool CanFocus() const OVERRIDE;
+  virtual bool CanReceiveEvents() const OVERRIDE;
   virtual internal::FocusManager* GetFocusManager() OVERRIDE;
   virtual RootWindow* GetRootWindow() OVERRIDE;
   virtual void WindowDetachedFromRootWindow(Window* window) OVERRIDE;

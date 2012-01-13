@@ -377,15 +377,7 @@ void Shell::ToggleAppList() {
 bool Shell::IsScreenLocked() const {
   const aura::Window* lock_screen_container = GetContainer(
       internal::kShellWindowId_LockScreenContainer);
-  const aura::Window::Windows& lock_screen_windows =
-      lock_screen_container->children();
-  aura::Window::Windows::const_iterator lock_screen_it =
-      std::find_if(lock_screen_windows.begin(), lock_screen_windows.end(),
-                   std::mem_fun(&aura::Window::IsVisible));
-  if (lock_screen_it != lock_screen_windows.end())
-    return true;
-
-  return false;
+  return lock_screen_container->StopsEventPropagation();
 }
 
 bool Shell::IsModalWindowOpen() const {

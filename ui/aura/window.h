@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -220,6 +220,9 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   // Returns true if the Window can be focused.
   virtual bool CanFocus() const;
 
+  // Returns true if the Window can receive events.
+  virtual bool CanReceiveEvents() const;
+
   // Returns the FocusManager for the Window, which may be attached to a parent
   // Window. Can return NULL if the Window has no FocusManager.
   virtual internal::FocusManager* GetFocusManager();
@@ -250,6 +253,10 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   void* GetProperty(const char* name) const;
   int GetIntProperty(const char* name) const;
 
+  // Returns true if this window is currently stopping event
+  // propagation for any windows behind it in the z-order.
+  bool StopsEventPropagation() const;
+
  protected:
   // Returns the root window or NULL if we aren't yet attached to the root
   // window.
@@ -272,10 +279,6 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   // Schedules a paint for the Window's entire bounds.
   void SchedulePaint();
 
-  // This window is currently stopping event propagation for any windows behind
-  // it in the z-order.
-  bool StopsEventPropagation() const;
-
   // Gets a Window (either this one or a subwindow) containing |local_point|.
   // If |return_tightest| is true, returns the tightest-containing (i.e.
   // furthest down the hierarchy) Window containing the point; otherwise,
@@ -297,6 +300,10 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
 
   // Updates the layer name with a name based on the window's name and id.
   void UpdateLayerName(const std::string& name);
+
+  // Returns true if this window is behind a window that stops event
+  // propagation.
+  bool IsBehindStopEventsWindow() const;
 
   client::WindowType type_;
 

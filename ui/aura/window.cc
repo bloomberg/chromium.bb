@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -348,22 +348,20 @@ bool Window::HasFocus() const {
   return focus_manager ? focus_manager->IsFocusedWindow(this) : false;
 }
 
-// For a given window, we determine its focusability by inspecting each sibling
-// after it (i.e. drawn in front of it in the z-order) to see if it stops
-// propagation of events that would otherwise be targeted at windows behind it.
-// We then perform this same check on every window up to the root.
+// For a given window, we determine its focusability and ability to
+// receive events by inspecting each sibling after it (i.e. drawn in
+// front of it in the z-order) to see if it stops propagation of
+// events that would otherwise be targeted at windows behind it.  We
+// then perform this same check on every window up to the root.
 bool Window::CanFocus() const {
   if (!IsVisible() || !parent_ || (delegate_ && !delegate_->CanFocus()))
     return false;
+  return !IsBehindStopEventsWindow() && parent_->CanFocus();
+}
 
-  Windows::const_iterator i = std::find(parent_->children().begin(),
-                                        parent_->children().end(),
-                                        this);
-  for (++i; i != parent_->children().end(); ++i) {
-    if ((*i)->StopsEventPropagation())
-      return false;
-  }
-  return parent_->CanFocus();
+bool Window::CanReceiveEvents() const {
+  return parent_ && IsVisible() && !IsBehindStopEventsWindow() &&
+      parent_->CanReceiveEvents();
 }
 
 internal::FocusManager* Window::GetFocusManager() {
@@ -423,6 +421,15 @@ void* Window::GetProperty(const char* name) const {
 int Window::GetIntProperty(const char* name) const {
   return static_cast<int>(reinterpret_cast<intptr_t>(
       GetProperty(name)));
+}
+
+bool Window::StopsEventPropagation() const {
+  if (!stops_event_propagation_ || children_.empty())
+    return false;
+  aura::Window::Windows::const_iterator it =
+      std::find_if(children_.begin(), children_.end(),
+                   std::mem_fun(&aura::Window::IsVisible));
+  return it != children_.end();
 }
 
 RootWindow* Window::GetRootWindow() {
@@ -485,10 +492,6 @@ void Window::SetVisible(bool visible) {
 
 void Window::SchedulePaint() {
   SchedulePaintInRect(gfx::Rect(0, 0, bounds().width(), bounds().height()));
-}
-
-bool Window::StopsEventPropagation() const {
-  return stops_event_propagation_ && !children_.empty();
 }
 
 Window* Window::GetWindowForPoint(const gfx::Point& local_point,
@@ -554,6 +557,17 @@ void Window::UpdateLayerName(const std::string& name) {
   }
   layer()->set_name(layer_name);
 #endif
+}
+
+bool Window::IsBehindStopEventsWindow() const {
+  Windows::const_iterator i = std::find(parent_->children().begin(),
+                                        parent_->children().end(),
+                                        this);
+  for (++i; i != parent_->children().end(); ++i) {
+    if ((*i)->StopsEventPropagation())
+      return true;
+  }
+  return false;
 }
 
 }  // namespace aura

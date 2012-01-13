@@ -119,6 +119,13 @@ void ActivationController::ActivateWindow(aura::Window* window) {
   // activated or deactivated.
   if (!CanActivateWindow(window))
     return;
+  // If the screen is locked, just bring the window to top so that
+  // it will be activated when the lock window is destroyed.
+  if (window && !window->CanReceiveEvents()) {
+    StackTransientParentsBelowModalWindow(window);
+    window->parent()->StackChildAtTop(window);
+    return;
+  }
 
   if (!window->Contains(window->GetFocusManager()->GetFocusedWindow()))
     window->GetFocusManager()->SetFocusedWindow(window);
@@ -130,6 +137,7 @@ void ActivationController::ActivateWindow(aura::Window* window) {
   // active.
   if (old_active && aura::client::GetActivationDelegate(old_active))
     aura::client::GetActivationDelegate(old_active)->OnLostActive();
+
   if (window) {
     StackTransientParentsBelowModalWindow(window);
     window->parent()->StackChildAtTop(window);
