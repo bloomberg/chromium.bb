@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -61,7 +61,7 @@ namespace internal {
 class ASH_EXPORT ImageGrid {
  public:
   // Helper class for use by tests.
-  class TestAPI {
+  class ASH_EXPORT TestAPI {
    public:
     TestAPI(ImageGrid* grid) : grid_(grid) {}
     ui::Layer* top_left_layer() const { return grid_->top_left_layer_.get(); }

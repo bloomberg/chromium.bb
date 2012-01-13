@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -45,11 +45,9 @@ class ASH_EXPORT ActivationController
   virtual void OnWindowInitialized(aura::Window* window) OVERRIDE;
   virtual void OnWindowFocused(aura::Window* window) OVERRIDE;
 
-#if defined(UNIT_TEST)
   void set_default_container_for_test(aura::Window* window) {
     default_container_for_test_ = window;
   }
-#endif
 
  private:
   // Shifts activation to the next window, ignoring |window|.

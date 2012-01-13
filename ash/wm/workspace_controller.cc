@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -120,7 +120,7 @@ void WorkspaceController::LauncherItemMoved(int start_index, int target_index) {
   ignore_move_event_ = false;
 }
 
-void WorkspaceController::LauncherItemImagesChanged(int index) {
+void WorkspaceController::LauncherItemChanged(int index) {
 }
 
 }  // namespace internal

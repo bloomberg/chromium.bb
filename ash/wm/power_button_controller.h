@@ -62,7 +62,7 @@ class ASH_EXPORT PowerButtonController : public aura::RootWindowObserver {
   };
 
   // Helper class used by tests to access internal state.
-  class TestApi {
+  class ASH_EXPORT TestApi {
    public:
     TestApi(PowerButtonController* controller) : controller_(controller) {}
 

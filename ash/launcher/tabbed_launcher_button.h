@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,6 @@
 #define ASH_LAUNCHER_TABBED_LAUNCHER_BUTTON_H_
 #pragma once
 
-#include "ash/launcher/launcher_types.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/timer.h"
 #include "ui/base/animation/animation_delegate.h"
@@ -33,7 +32,7 @@ class TabbedLauncherButton : public views::ImageButton {
   void PrepareForImageChange();
 
   // Sets the images to display for this entry.
-  void SetImages(const LauncherTabbedImages& images);
+  void SetTabImage(const SkBitmap& image, int count);
 
  protected:
   // View overrides:
@@ -75,7 +74,7 @@ class TabbedLauncherButton : public views::ImageButton {
   // value.
   static ImageSet* CreateImageSet(int normal_id, int pushed_id, int hot_id);
 
-  LauncherTabbedImages images_;
+  SkBitmap image_;
 
   LauncherButtonHost* host_;
 
