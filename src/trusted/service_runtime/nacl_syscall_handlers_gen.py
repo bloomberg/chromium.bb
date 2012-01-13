@@ -289,7 +289,7 @@ def ParseFileToBeWrapped(fin):
 
 
 def main(argv):
-  usage='Usage: nacl_syscall_handlers_gen2.py [-f regex] [-c] [-d] [-a arch]'
+  usage='Usage: nacl_syscall_handlers_gen.py [-f regex] [-c] [-d] [-a arch]'
   mode = "dump"
   input_src = sys.stdin
   output_dst = sys.stdout

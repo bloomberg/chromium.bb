@@ -679,7 +679,7 @@ int32_t NaClSysDyncode_Delete(struct NaClAppThread *natp,
  * Note that this is duplicated in linux/nacl_syscall_impl.c but is
  * too trivial to share.
  * TODO(mseaborn): We could reduce the duplication if
- * nacl_syscall_handlers_gen2.py did not scrape the OS-specific files.
+ * nacl_syscall_handlers_gen.py did not scrape the OS-specific files.
  */
 int32_t NaClSysSecond_Tls_Set(struct NaClAppThread *natp,
                               uint32_t             new_value) {

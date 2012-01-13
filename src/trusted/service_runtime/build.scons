@@ -45,7 +45,7 @@ else:
 # TODO GENERATED CODE
 GENERATED='${TARGET_ROOT}/gen/native_client/src/trusted/service_runtime'
 env.Command(target=env.File(GENERATED + '/nacl_syscall_handlers.c'),
-            source=[syscall_impl, 'nacl_syscall_handlers_gen2.py'],
+            source=[syscall_impl, 'nacl_syscall_handlers_gen.py'],
             action=[Action('${PYTHON} ${SOURCES[1]} ${SYSCALL_GEN_FLAGS}'
                            ' -i ${SOURCE} -o ${TARGET}'),
                     ],

@@ -74,14 +74,14 @@
           {
             'action_name': 'nacl_syscall_handler',
             'inputs': [
-              'nacl_syscall_handlers_gen2.py',
+              'nacl_syscall_handlers_gen.py',
               '<(syscall_handler)',
             ],
             'action':
               # TODO(gregoryd): find out how to generate a file
               # in such a location that can be found in both
               # NaCl and Chrome builds.
-              ['<@(python_exe)', 'nacl_syscall_handlers_gen2.py', '-c',
+              ['<@(python_exe)', 'nacl_syscall_handlers_gen.py', '-c',
                '-i', '<@(syscall_handler)',
                '-o', '<@(_outputs)'],
 
