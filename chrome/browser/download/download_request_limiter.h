@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -59,14 +60,8 @@ class DownloadRequestLimiter
   static const size_t kMaxDownloadsAtOnce = 50;
 
   // The callback from CanDownloadOnIOThread. This is invoked on the io thread.
-  class Callback {
-   public:
-    virtual void ContinueDownload() = 0;
-    virtual void CancelDownload() = 0;
-
-   protected:
-    virtual ~Callback() {}
-  };
+  // The boolean parameter indicates whether or not the download is allowed.
+  typedef base::Callback<void(bool /*allow*/)> Callback;
 
   // TabDownloadState maintains the download state for a particular tab.
   // TabDownloadState prompts the user with an infobar as necessary.
@@ -108,8 +103,9 @@ class DownloadRequestLimiter
     // Asks the user if they really want to allow the download.
     // See description above CanDownloadOnIOThread for details on lifetime of
     // callback.
-    void PromptUserForDownload(content::WebContents* tab,
-                               DownloadRequestLimiter::Callback* callback);
+    void PromptUserForDownload(
+        content::WebContents* tab,
+        const DownloadRequestLimiter::Callback& callback);
 
     // Are we showing a prompt to the user?
     bool is_showing_prompt() const { return (infobar_ != NULL); }
@@ -157,7 +153,7 @@ class DownloadRequestLimiter
     // dialog.
     // See description above CanDownloadOnIOThread for details on lifetime of
     // callbacks.
-    std::vector<DownloadRequestLimiter::Callback*> callbacks_;
+    std::vector<DownloadRequestLimiter::Callback> callbacks_;
 
     // Used to remove observers installed on NavigationController.
     content::NotificationRegistrar registrar_;
@@ -176,13 +172,10 @@ class DownloadRequestLimiter
 
   // Updates the state of the page as necessary and notifies the callback.
   // WARNING: both this call and the callback are invoked on the io thread.
-  //
-  // DownloadRequestLimiter does not retain/release the Callback. It is up to
-  // the caller to ensure the callback is valid until the request is complete.
   void CanDownloadOnIOThread(int render_process_host_id,
                              int render_view_id,
                              int request_id,
-                             Callback* callback);
+                             const Callback& callback);
 
   // Invoked when the user presses the mouse, enter key or space bar. This may
   // change the download status for the page. See the class description for
@@ -223,20 +216,17 @@ class DownloadRequestLimiter
   void CanDownload(int render_process_host_id,
                    int render_view_id,
                    int request_id,
-                   Callback* callback);
+                   const Callback& callback);
 
   // Does the work of updating the download status on the UI thread and
   // potentially prompting the user.
   void CanDownloadImpl(TabContentsWrapper* originating_tab,
                        int request_id,
-                       Callback* callback);
+                       const Callback& callback);
 
   // Invoked on the UI thread. Schedules a call to NotifyCallback on the io
   // thread.
-  void ScheduleNotification(Callback* callback, bool allow);
-
-  // Notifies the callback. This *must* be invoked on the IO thread.
-  void NotifyCallback(Callback* callback, bool allow);
+  void ScheduleNotification(const Callback& callback, bool allow);
 
   // Removes the specified TabDownloadState from the internal map and deletes
   // it. This has the effect of resetting the status for the tab to

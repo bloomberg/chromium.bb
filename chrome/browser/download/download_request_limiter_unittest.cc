@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,9 +12,7 @@
 
 using content::BrowserThread;
 
-class DownloadRequestLimiterTest
-    : public TabContentsWrapperTestHarness,
-      public DownloadRequestLimiter::Callback {
+class DownloadRequestLimiterTest : public TabContentsWrapperTestHarness {
  public:
   DownloadRequestLimiterTest()
       : ui_thread_(BrowserThread::UI, &message_loop_),
@@ -38,15 +36,12 @@ class DownloadRequestLimiterTest
     TabContentsWrapperTestHarness::TearDown();
   }
 
-  virtual void ContinueDownload() {
-    continue_count_++;
-  }
-  virtual void CancelDownload() {
-    cancel_count_++;
-  }
-
   void CanDownload() {
-    download_request_limiter_->CanDownloadImpl(contents_wrapper(), -1, this);
+    download_request_limiter_->CanDownloadImpl(
+        contents_wrapper(),
+        -1,
+        base::Bind(&DownloadRequestLimiterTest::ContinueDownload,
+                   base::Unretained(this)));
     message_loop_.RunAllPending();
   }
 
@@ -56,6 +51,14 @@ class DownloadRequestLimiterTest
   }
 
  protected:
+  void ContinueDownload(bool allow) {
+    if (allow) {
+      continue_count_++;
+    } else {
+      cancel_count_++;
+    }
+  }
+
   class DownloadRequestLimiterTestDelegate
       : public DownloadRequestLimiter::TestingDelegate {
    public:

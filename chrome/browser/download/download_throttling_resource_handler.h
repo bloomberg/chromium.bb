@@ -8,10 +8,10 @@
 
 #include <string>
 
-#include "chrome/browser/download/download_request_limiter.h"
 #include "content/browser/renderer_host/resource_handler.h"
 #include "googleurl/src/gurl.h"
 
+class DownloadRequestLimiter;
 class ResourceDispatcherHost;
 
 namespace net {
@@ -26,9 +26,7 @@ class URLRequest;
 // resumed, all EventHandler methods are delegated to it to the original
 // handler. If the download is not allowed the request is canceled.
 
-class DownloadThrottlingResourceHandler
-    : public ResourceHandler,
-      public DownloadRequestLimiter::Callback {
+class DownloadThrottlingResourceHandler : public ResourceHandler {
  public:
   DownloadThrottlingResourceHandler(ResourceHandler* next_handler,
                                     ResourceDispatcherHost* host,
@@ -62,13 +60,10 @@ class DownloadThrottlingResourceHandler
                                    const std::string& security_info) OVERRIDE;
   virtual void OnRequestClosed() OVERRIDE;
 
-  // DownloadRequestLimiter::Callback implementation:
-  virtual void CancelDownload() OVERRIDE;
-  virtual void ContinueDownload() OVERRIDE;
-
  private:
   virtual ~DownloadThrottlingResourceHandler();
 
+  void ContinueDownload(bool allow);
   void CopyTmpBufferToDownloadHandler();
 
   ResourceDispatcherHost* host_;

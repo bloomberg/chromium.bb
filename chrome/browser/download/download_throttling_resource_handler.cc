@@ -5,11 +5,10 @@
 #include "chrome/browser/download/download_throttling_resource_handler.h"
 
 #include "base/logging.h"
+#include "chrome/browser/download/download_request_limiter.h"
 #include "content/browser/download/download_id.h"
 #include "content/browser/download/download_stats.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
-#include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
-#include "content/browser/resource_context.h"
 #include "content/public/common/resource_response.h"
 #include "net/base/io_buffer.h"
 #include "net/base/mime_sniffer.h"
@@ -39,13 +38,11 @@ DownloadThrottlingResourceHandler::DownloadThrottlingResourceHandler(
   // Pause the request.
   host_->PauseRequest(render_process_host_id_, request_id_, true);
 
-  // Add a reference to ourselves to keep this object alive until we
-  // receive a callback from DownloadRequestLimiter. The reference is
-  // released in ContinueDownload() and CancelDownload().
-  AddRef();
-
   limiter->CanDownloadOnIOThread(
-      render_process_host_id_, render_view_id, request_id, this);
+      render_process_host_id_,
+      render_view_id,
+      request_id,
+      base::Bind(&DownloadThrottlingResourceHandler::ContinueDownload, this));
 }
 
 DownloadThrottlingResourceHandler::~DownloadThrottlingResourceHandler() {
@@ -158,15 +155,12 @@ void DownloadThrottlingResourceHandler::OnRequestClosed() {
   request_closed_ = true;
 }
 
-void DownloadThrottlingResourceHandler::CancelDownload() {
-  if (!request_closed_)
-    host_->CancelRequest(render_process_host_id_, request_id_, false);
-  Release();  // Release the additional reference from constructor.
-}
+void DownloadThrottlingResourceHandler::ContinueDownload(bool allow) {
+  if (request_closed_)
+    return;
 
-void DownloadThrottlingResourceHandler::ContinueDownload() {
-  if (!request_closed_) {
-    request_allowed_ = true;
+  request_allowed_ = allow;
+  if (allow) {
     if (response_.get())
       next_handler_->OnResponseStarted(request_id_, response_.get());
 
@@ -175,8 +169,9 @@ void DownloadThrottlingResourceHandler::ContinueDownload() {
 
     // And let the request continue.
     host_->PauseRequest(render_process_host_id_, request_id_, false);
+  } else {
+    host_->CancelRequest(render_process_host_id_, request_id_, false);
   }
-  Release();  // Release the addtional reference from constructor.
 }
 
 void DownloadThrottlingResourceHandler::CopyTmpBufferToDownloadHandler() {
