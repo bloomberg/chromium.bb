@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -292,7 +292,7 @@ void WebKitPlatformSupportImpl::histogramEnumeration(
 }
 
 bool WebKitPlatformSupportImpl::isTraceEventEnabled() const {
-  return base::debug::TraceLog::GetCategory("webkit")->enabled;
+  return !!*base::debug::TraceLog::GetCategoryEnabled("webkit");
 }
 
 void WebKitPlatformSupportImpl::traceEventBegin(const char* name, void* id,
