@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -501,7 +501,7 @@ TEST_F(IPCChannelTest, Performance) {
   HANDLE process = SpawnChild(TEST_REFLECTOR, &chan);
   ASSERT_TRUE(process);
 
-  PlatformThread::Sleep(1000);
+  PlatformThread::Sleep(base::TimeDelta::FromSeconds(1));
 
   PerfTimeLogger logger("IPC_Perf");
 

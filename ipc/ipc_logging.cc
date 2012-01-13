@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -233,7 +233,7 @@ void Logging::Log(const LogData& data) {
         queue_invoke_later_pending_ = true;
         MessageLoop::current()->PostDelayedTask(
             FROM_HERE, base::Bind(&Logging::OnSendLogs, base::Unretained(this)),
-            kLogSendDelayMs);
+            base::TimeDelta::FromMilliseconds(kLogSendDelayMs));
       }
     }
   }

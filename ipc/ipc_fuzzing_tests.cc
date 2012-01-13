@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -267,7 +267,7 @@ TEST_F(IPCFuzzingTest, SanityTest) {
                     &listener);
   base::ProcessHandle server_process = SpawnChild(FUZZER_SERVER, &chan);
   ASSERT_TRUE(server_process);
-  base::PlatformThread::Sleep(1000);
+  base::PlatformThread::Sleep(base::TimeDelta::FromSeconds(1));
   ASSERT_TRUE(chan.Connect());
   listener.Init(&chan);
 
@@ -297,7 +297,7 @@ TEST_F(IPCFuzzingTest, MsgBadPayloadShort) {
                     &listener);
   base::ProcessHandle server_process = SpawnChild(FUZZER_SERVER, &chan);
   ASSERT_TRUE(server_process);
-  base::PlatformThread::Sleep(1000);
+  base::PlatformThread::Sleep(base::TimeDelta::FromSeconds(1));
   ASSERT_TRUE(chan.Connect());
   listener.Init(&chan);
 
@@ -327,7 +327,7 @@ TEST_F(IPCFuzzingTest, MsgBadPayloadArgs) {
                     &listener);
   base::ProcessHandle server_process = SpawnChild(FUZZER_SERVER, &chan);
   ASSERT_TRUE(server_process);
-  base::PlatformThread::Sleep(1000);
+  base::PlatformThread::Sleep(base::TimeDelta::FromSeconds(1));
   ASSERT_TRUE(chan.Connect());
   listener.Init(&chan);
 

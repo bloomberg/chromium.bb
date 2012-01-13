@@ -1034,7 +1034,7 @@ namespace {
 
 void NestedCallback(Worker* server) {
   // Sleep a bit so that we wake up after the reply has been received.
-  base::PlatformThread::Sleep(250);
+  base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(250));
   server->SendAnswerToLife(true, base::kNoTimeout, true);
 }
 
