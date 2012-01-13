@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -480,10 +480,10 @@ OmniboxViewWin::OmniboxViewWin(AutocompleteEditController* controller,
               reinterpret_cast<LPARAM>(&WordBreakProc));
 
   // Get the metrics for the font.
-  HDC dc = ::GetDC(NULL);
-  SelectObject(dc, font_.GetNativeFont());
+  HDC hdc = ::GetDC(NULL);
+  HGDIOBJ old_font = SelectObject(hdc, font_.GetNativeFont());
   TEXTMETRIC tm = {0};
-  GetTextMetrics(dc, &tm);
+  GetTextMetrics(hdc, &tm);
   const float kXHeightRatio = 0.7f;  // The ratio of a font's x-height to its
                                      // cap height.  Sadly, Windows doesn't
                                      // provide a true value for a font's
@@ -498,8 +498,11 @@ OmniboxViewWin::OmniboxViewWin(AutocompleteEditController* controller,
 
   // Get the number of twips per pixel, which we need below to offset our text
   // by the desired number of pixels.
-  const long kTwipsPerPixel = kTwipsPerInch / GetDeviceCaps(dc, LOGPIXELSY);
-  ::ReleaseDC(NULL, dc);
+  const long kTwipsPerPixel = kTwipsPerInch / GetDeviceCaps(hdc, LOGPIXELSY);
+  // It's unsafe to delete a DC with a non-stock object selected, so restore the
+  // original font.
+  SelectObject(hdc, old_font);
+  ::ReleaseDC(NULL, hdc);
 
   // Set the default character style -- adjust to our desired baseline.
   CHARFORMAT cf = {0};
