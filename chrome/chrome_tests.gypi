@@ -2997,6 +2997,12 @@
             '../build/linux/system.gyp:ssl',
           ],
         }],
+        ['toolkit_uses_gtk == 1 and toolkit_views == 0', {
+          'sources': [
+            # BubbleGtk is used only on Linux/GTK.
+            'browser/ui/gtk/bubble/bubble_gtk_browsertest.cc',
+          ],
+        }],
         ['OS=="mac"', {
           'include_dirs': [
             '../third_party/GTM',
