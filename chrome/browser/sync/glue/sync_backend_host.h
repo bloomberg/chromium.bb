@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,18 +6,14 @@
 #define CHROME_BROWSER_SYNC_GLUE_SYNC_BACKEND_HOST_H_
 #pragma once
 
-#include <map>
 #include <string>
-#include <vector>
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
-#include "base/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread.h"
-#include "base/timer.h"
 #include "chrome/browser/sync/engine/model_safe_worker.h"
 #include "chrome/browser/sync/internal_api/includes/unrecoverable_error_handler.h"
 #include "chrome/browser/sync/internal_api/configure_reason.h"
@@ -307,6 +303,9 @@ class SyncBackendHost {
   bool IsDownloadingNigoriForTest() const;
 
  private:
+  // The real guts of SyncBackendHost, to keep the public client API clean.
+  class Core;
+
   // An enum representing the steps to initializing the SyncBackendHost.
   enum InitializationState {
     NOT_ATTEMPTED,
@@ -322,165 +321,6 @@ class SyncBackendHost {
                             // still need to refresh encryption. Also, we need
                             // to update the device information in the nigori.
     INITIALIZED,            // Initialization is complete.
-  };
-
-  // The real guts of SyncBackendHost, to keep the public client API clean.
-  class Core : public base::RefCountedThreadSafe<SyncBackendHost::Core>,
-               public sync_api::SyncManager::Observer {
-   public:
-    Core(const std::string& name,
-         const FilePath& sync_data_folder_path,
-         const base::WeakPtr<SyncBackendHost>& backend);
-
-    // SyncManager::Observer implementation.  The Core just acts like an air
-    // traffic controller here, forwarding incoming messages to appropriate
-    // landing threads.
-    virtual void OnSyncCycleCompleted(
-        const sessions::SyncSessionSnapshot* snapshot) OVERRIDE;
-    virtual void OnInitializationComplete(
-        const WeakHandle<JsBackend>& js_backend,
-        bool success) OVERRIDE;
-    virtual void OnAuthError(
-        const GoogleServiceAuthError& auth_error) OVERRIDE;
-    virtual void OnPassphraseRequired(
-        sync_api::PassphraseRequiredReason reason) OVERRIDE;
-    virtual void OnPassphraseAccepted(
-        const std::string& bootstrap_token) OVERRIDE;
-    virtual void OnStopSyncingPermanently() OVERRIDE;
-    virtual void OnUpdatedToken(const std::string& token) OVERRIDE;
-    virtual void OnClearServerDataFailed() OVERRIDE;
-    virtual void OnClearServerDataSucceeded() OVERRIDE;
-    virtual void OnEncryptedTypesChanged(
-        syncable::ModelTypeSet encrypted_types,
-        bool encrypt_everything) OVERRIDE;
-    virtual void OnEncryptionComplete() OVERRIDE;
-    virtual void OnActionableError(
-        const browser_sync::SyncProtocolError& sync_error) OVERRIDE;
-
-    // Note:
-    //
-    // The Do* methods are the various entry points from our
-    // SyncBackendHost.  They are all called on the sync thread to
-    // actually perform synchronous (and potentially blocking) syncapi
-    // operations.
-    //
-    // Called to perform initialization of the syncapi on behalf of
-    // SyncBackendHost::Initialize.
-    void DoInitialize(const DoInitializeOptions& options);
-
-    // Called to check server reachability after initialization is
-    // fully completed.
-    void DoCheckServerReachable();
-
-    // Called to perform credential update on behalf of
-    // SyncBackendHost::UpdateCredentials
-    void DoUpdateCredentials(const sync_api::SyncCredentials& credentials);
-
-    // Called when the user disables or enables a sync type.
-    void DoUpdateEnabledTypes();
-
-    // Called to tell the syncapi to start syncing (generally after
-    // initialization and authentication).
-    void DoStartSyncing();
-
-    // Called to clear server data.
-    void DoRequestClearServerData();
-
-    // Called to cleanup disabled types.
-    void DoRequestCleanupDisabledTypes();
-
-    // Called to set the passphrase on behalf of
-    // SyncBackendHost::SupplyPassphrase.
-    void DoSetPassphrase(const std::string& passphrase, bool is_explicit);
-
-    // Called to turn on encryption of all sync data as well as
-    // reencrypt everything.
-    void DoEnableEncryptEverything();
-
-    // Called to refresh encryption with the most recent passphrase
-    // and set of encrypted types. Also adds device information to the nigori
-    // node. |done_callback| is called on the sync thread.
-    void DoRefreshNigori(const base::Closure& done_callback);
-
-    // The shutdown order is a bit complicated:
-    // 1) From |sync_thread_|, invoke the syncapi Shutdown call to do
-    //    a final SaveChanges, and close sqlite handles.
-    // 2) Then, from |frontend_loop_|, halt the sync_thread_ (which is
-    //    a blocking call). This causes syncapi thread-exit handlers
-    //    to run and make use of cached pointers to various components
-    //    owned implicitly by us.
-    // 3) Destroy this Core. That will delete syncapi components in a
-    //    safe order because the thread that was using them has exited
-    //    (in step 2).
-    void DoStopSyncManagerForShutdown(const base::Closure& closure);
-    void DoShutdown(bool stopping_sync);
-
-    virtual void DoRequestConfig(
-        syncable::ModelTypeSet types_to_config,
-        sync_api::ConfigureReason reason);
-
-    // Start the configuration mode.  |callback| is called on the sync
-    // thread.
-    virtual void DoStartConfiguration(const base::Closure& callback);
-
-    // Set the base request context to use when making HTTP calls.
-    // This method will add a reference to the context to persist it
-    // on the IO thread. Must be removed from IO thread.
-
-    sync_api::SyncManager* sync_manager() { return sync_manager_.get(); }
-
-    // Delete the sync data folder to cleanup backend data.  Happens the first
-    // time sync is enabled for a user (to prevent accidentally reusing old
-    // sync databases), as well as shutdown when you're no longer syncing.
-    void DeleteSyncDataFolder();
-
-    // A callback from the SyncerThread when it is safe to continue config.
-    void FinishConfigureDataTypes();
-
-   private:
-    friend class base::RefCountedThreadSafe<SyncBackendHost::Core>;
-    friend class SyncBackendHostForProfileSyncTest;
-
-    virtual ~Core();
-
-    // Invoked when initialization of syncapi is complete and we can start
-    // our timer.
-    // This must be called from the thread on which SaveChanges is intended to
-    // be run on; the host's |sync_thread_|.
-    void StartSavingChanges();
-
-    // Invoked periodically to tell the syncapi to persist its state
-    // by writing to disk.
-    // This is called from the thread we were created on (which is the
-    // SyncBackendHost |sync_thread_|), using a repeating timer that is kicked
-    // off as soon as the SyncManager tells us it completed
-    // initialization.
-    void SaveChanges();
-
-    // Name used for debugging.
-    const std::string name_;
-
-    // Path of the folder that stores the sync data files.
-    const FilePath sync_data_folder_path_;
-
-    // Our parent SyncBackendHost.
-    WeakHandle<SyncBackendHost> host_;
-
-    // The loop where all the sync backend operations happen.
-    // Non-NULL only between calls to DoInitialize() and DoShutdown().
-    MessageLoop* sync_loop_;
-
-    // Our parent's registrar (not owned).  Non-NULL only between
-    // calls to DoInitialize() and DoShutdown().
-    SyncBackendRegistrar* registrar_;
-
-    // The timer used to periodically call SaveChanges.
-    base::RepeatingTimer<Core> save_changes_timer_;
-
-    // The top-level syncapi entry point.  Lives on the sync thread.
-    scoped_ptr<sync_api::SyncManager> sync_manager_;
-
-    DISALLOW_COPY_AND_ASSIGN(Core);
   };
 
   struct PendingConfigureDataTypesState {
