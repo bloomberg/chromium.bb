@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2011 The Chromium Authors. All rights reserved.
+Copyright (c) 2012 The Chromium Authors. All rights reserved.
 Use of this source code is governed by a BSD-style license that can be
 found in the LICENSE file.
 */
@@ -164,6 +164,7 @@ found in the LICENSE file.
   background-position: center top;
   position: absolute;
   left: 12px;
+  right: 12px;
   top: 25px;
   width: 6px;
   height: 16px;
@@ -175,10 +176,18 @@ found in the LICENSE file.
   -webkit-transform: rotate(0deg);
 }
 
+html[dir="rtl"] .extension-zippy-collapsed {
+  -webkit-transform: rotate(180deg);
+}
+
 .extension-zippy-collapsed:hover {
   opacity: .5;
   -webkit-transform: rotate(5deg);
   -webkit-transition: -webkit-transform 100ms, opacity 100ms;
+}
+
+html[dir="rtl"] .extension-zippy-collapsed:hover {
+  -webkit-transform: rotate(175deg);
 }
 
 .extension-zippy-expanded {
@@ -189,6 +198,10 @@ found in the LICENSE file.
 .extension-zippy-expanded:hover {
   -webkit-transition: -webkit-transform 100ms;
   -webkit-transform: rotate(85deg);
+}
+
+html[dir="rtl"] .extension-zippy-expanded:hover {
+  -webkit-transform: rotate(95deg);
 }
 
 .extension-enabling {
