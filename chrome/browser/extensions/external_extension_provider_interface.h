@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,7 +25,10 @@ class ExternalExtensionProviderInterface {
   // ensure that |id| is a valid extension id (use Extension::IdIsValid(id)).
   class VisitorInterface {
    public:
-    virtual void OnExternalExtensionFileFound(
+    // Return true if the extension install will proceed.  Install will not
+    // proceed if the extension is already installed from a higher priority
+    // location.
+    virtual bool OnExternalExtensionFileFound(
         const std::string& id,
         const Version* version,
         const FilePath& path,
@@ -33,7 +36,10 @@ class ExternalExtensionProviderInterface {
         int creation_flags,
         bool mark_acknowledged) = 0;
 
-    virtual void OnExternalExtensionUpdateUrlFound(
+    // Return true if the extension install will proceed.  Install might not
+    // proceed if the extension is already installed from a higher priority
+    // location.
+    virtual bool OnExternalExtensionUpdateUrlFound(
         const std::string& id,
         const GURL& update_url,
         Extension::Location location) = 0;

@@ -229,7 +229,7 @@ void ExtensionService::AddProviderForTesting(
       linked_ptr<ExternalExtensionProviderInterface>(test_provider));
 }
 
-void ExtensionService::OnExternalExtensionUpdateUrlFound(
+bool ExtensionService::OnExternalExtensionUpdateUrlFound(
     const std::string& id,
     const GURL& update_url,
     Extension::Location location) {
@@ -242,12 +242,20 @@ void ExtensionService::OnExternalExtensionUpdateUrlFound(
     // higher priority than |location|.
     Extension::Location current = extension->location();
     if (current == Extension::GetHigherPriorityLocation(current, location))
-      return;
+      return false;
     // Otherwise, overwrite the current installation.
   }
-  pending_extension_manager()->AddFromExternalUpdateUrl(
-      id, update_url, location);
+
+  // Add |id| to the set of pending extensions.  If it can not be added,
+  // then there is already a pending record from a higher-priority install
+  // source.  In this case, signal that this extension will not be
+  // installed by returning false.
+  if (!pending_extension_manager()->AddFromExternalUpdateUrl(
+          id, update_url, location))
+    return false;
+
   external_extension_url_added_ = true;
+  return true;
 }
 
 // If a download url matches one of these patterns and has a referrer of the
@@ -1474,7 +1482,7 @@ void ExtensionService::ProcessExtensionSyncData(
   // We need to cache some version information here because setting the
   // incognito flag invalidates the |extension| pointer (it reloads the
   // extension).
-  bool extension_installed = extension != NULL;
+  bool extension_installed = (extension != NULL);
   int result = extension ?
       extension->version()->CompareTo(extension_sync_data.version()) : 0;
   SetIsIncognitoEnabled(id, extension_sync_data.incognito_enabled());
@@ -2289,7 +2297,7 @@ const SkBitmap& ExtensionService::GetOmniboxPopupIcon(
   return omnibox_popup_icon_manager_.GetIcon(extension_id);
 }
 
-void ExtensionService::OnExternalExtensionFileFound(
+bool ExtensionService::OnExternalExtensionFileFound(
          const std::string& id,
          const Version* version,
          const FilePath& path,
@@ -2299,7 +2307,7 @@ void ExtensionService::OnExternalExtensionFileFound(
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   CHECK(Extension::IdIsValid(id));
   if (extension_prefs_->IsExternalExtensionUninstalled(id))
-    return;
+    return false;
 
   DCHECK(version);
 
@@ -2312,18 +2320,20 @@ void ExtensionService::OnExternalExtensionFileFound(
       case -1:  // existing version is older, we should upgrade
         break;
       case 0:  // existing version is same, do nothing
-        return;
+        return false;
       case 1:  // existing version is newer, uh-oh
         LOG(WARNING) << "Found external version of extension " << id
                      << "that is older than current version. Current version "
                      << "is: " << existing->VersionString() << ". New version "
                      << "is: " << version->GetString()
                      << ". Keeping current version.";
-        return;
+        return false;
     }
   }
 
-  pending_extension_manager()->AddFromExternalFile(id, location);
+  // If the extension is already pending, don't start an install.
+  if (!pending_extension_manager()->AddFromExternalFile(id, location))
+    return false;
 
   // no client (silent install)
   scoped_refptr<CrxInstaller> installer(CrxInstaller::Create(this, NULL));
@@ -2339,6 +2349,8 @@ void ExtensionService::OnExternalExtensionFileFound(
   // now to suppress the notification.
   if (mark_acknowledged)
     AcknowledgeExternalExtension(id);
+
+  return true;
 }
 
 void ExtensionService::ReportExtensionLoadError(

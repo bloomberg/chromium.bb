@@ -321,15 +321,16 @@ void ManifestFetchesBuilder::AddExtension(const Extension& extension) {
 
 void ManifestFetchesBuilder::AddPendingExtension(
     const std::string& id,
-    const PendingExtensionInfo& info) {
+    Extension::Location install_source,
+    const GURL& update_url) {
   // Use a zero version to ensure that a pending extension will always
   // be updated, and thus installed (assuming all extensions have
   // non-zero versions).
   Version version("0.0.0.0");
   DCHECK(version.IsValid());
 
-  AddExtensionData(info.install_source(), id, version,
-                   Extension::TYPE_UNKNOWN, info.update_url(), "");
+  AddExtensionData(install_source, id, version,
+                   Extension::TYPE_UNKNOWN, update_url, "");
 }
 
 void ManifestFetchesBuilder::ReportStats() const {
@@ -1026,23 +1027,31 @@ void ExtensionUpdater::CheckNow() {
   NotifyStarted();
   ManifestFetchesBuilder fetches_builder(service_, extension_prefs_);
 
+  // Add fetch records for extensions that should be fetched by an update URL.
+  // These extensions are not yet installed.  They come from group policy
+  // and external install sources.
   const PendingExtensionManager* pending_extension_manager =
       service_->pending_extension_manager();
-  std::set<std::string> pending_ids;
 
-  PendingExtensionManager::const_iterator iter;
-  for (iter = pending_extension_manager->begin();
-       iter != pending_extension_manager->end(); iter++) {
-    // TODO(skerner): Move the determination of what gets fetched into
-    // class PendingExtensionManager.
-    Extension::Location location = iter->second.install_source();
-    if (location != Extension::EXTERNAL_PREF &&
-        location != Extension::EXTERNAL_REGISTRY) {
-      fetches_builder.AddPendingExtension(iter->first, iter->second);
-      pending_ids.insert(iter->first);
-    }
+  std::set<std::string> pending_ids;
+  pending_extension_manager->GetPendingIdsForUpdateCheck(&pending_ids);
+
+  std::set<std::string>::const_iterator iter;
+  for (iter = pending_ids.begin(); iter != pending_ids.end(); ++iter) {
+    PendingExtensionInfo info;
+    bool found_id = pending_extension_manager->GetById(*iter, &info);
+    DCHECK(found_id);
+    if (!found_id)
+      continue;
+
+    fetches_builder.AddPendingExtension(
+        *iter,
+        info.install_source(),
+        info.update_url());
   }
 
+  // Add fetch records for extensions that are installed and have an
+  // update URL.
   const ExtensionSet* extensions = service_->extensions();
   for (ExtensionSet::const_iterator iter = extensions->begin();
        iter != extensions->end(); ++iter) {

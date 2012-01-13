@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -392,9 +392,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, ExternalUrlUpdate) {
   // is race-prone, because instantating the ExtensionService starts a read
   // of external_extensions.json before this test function starts.
 
-  pending_extension_manager->AddFromExternalUpdateUrl(
+  EXPECT_TRUE(pending_extension_manager->AddFromExternalUpdateUrl(
       kExtensionId, GURL("http://localhost/autoupdate/manifest"),
-      Extension::EXTERNAL_PREF_DOWNLOAD);
+      Extension::EXTERNAL_PREF_DOWNLOAD));
 
   // Run autoupdate and make sure version 2 of the extension was installed.
   service->updater()->CheckNow();
@@ -415,9 +415,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, ExternalUrlUpdate) {
 
   // Try to install the extension again from an external source. It should fail
   // because of the killbit.
-  pending_extension_manager->AddFromExternalUpdateUrl(
+  EXPECT_FALSE(pending_extension_manager->AddFromExternalUpdateUrl(
       kExtensionId, GURL("http://localhost/autoupdate/manifest"),
-      Extension::EXTERNAL_PREF_DOWNLOAD);
+      Extension::EXTERNAL_PREF_DOWNLOAD));
   EXPECT_FALSE(pending_extension_manager->IsIdPending(kExtensionId))
       << "External reinstall of a killed extension shouldn't work.";
   EXPECT_TRUE(extension_prefs->IsExternalExtensionUninstalled(kExtensionId))

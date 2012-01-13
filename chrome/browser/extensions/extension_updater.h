@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -117,7 +117,8 @@ class ManifestFetchesBuilder {
   void AddExtension(const Extension& extension);
 
   void AddPendingExtension(const std::string& id,
-                           const PendingExtensionInfo& info);
+                           Extension::Location install_source,
+                           const GURL& update_url);
 
   // Adds all recorded stats taken so far to histogram counts.
   void ReportStats() const;

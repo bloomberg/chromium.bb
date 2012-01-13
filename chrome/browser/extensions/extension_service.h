@@ -505,7 +505,7 @@ class ExtensionService
   void AddProviderForTesting(ExternalExtensionProviderInterface* test_provider);
 
   // ExternalExtensionProvider::Visitor implementation.
-  virtual void OnExternalExtensionFileFound(const std::string& id,
+  virtual bool OnExternalExtensionFileFound(const std::string& id,
                                             const Version* version,
                                             const FilePath& path,
                                             Extension::Location location,
@@ -513,7 +513,7 @@ class ExtensionService
                                             bool mark_acknowledged)
       OVERRIDE;
 
-  virtual void OnExternalExtensionUpdateUrlFound(const std::string& id,
+  virtual bool OnExternalExtensionUpdateUrlFound(const std::string& id,
                                                  const GURL& update_url,
                                                  Extension::Location location)
       OVERRIDE;

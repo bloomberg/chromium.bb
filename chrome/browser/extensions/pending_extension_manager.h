@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,11 +24,6 @@ class GURL;
 // its lifetime. This class should only be used from the UI thread.
 class PendingExtensionManager {
  public:
-  // TODO(skerner): Make PendingExtensionMap a private implementation
-  // detail of this class.
-  typedef std::map<std::string, PendingExtensionInfo> PendingExtensionMap;
-  typedef PendingExtensionMap::const_iterator const_iterator;
-
   // |service| is a reference to the ExtensionService whose pending
   // extensions we are managing. The service creates an instance of
   // this class on construction, and destroys it on destruction.
@@ -51,10 +46,6 @@ class PendingExtensionManager {
   // Is |id| in the set of pending extensions?
   bool IsIdPending(const std::string& id) const;
 
-  // Iterate over the pending extensions.
-  const_iterator begin() const { return  pending_extension_map_.begin(); }
-  const_iterator end() const { return  pending_extension_map_.end(); }
-
   // Adds an extension in a pending state; the extension with the
   // given info will be installed on the next auto-update cycle.
   // Return true if the extension was added.  Will return false
@@ -72,16 +63,26 @@ class PendingExtensionManager {
 
   // Given an extension id and an update URL, schedule the extension
   // to be fetched, installed, and activated.
-  void AddFromExternalUpdateUrl(const std::string& id,
+  bool AddFromExternalUpdateUrl(const std::string& id,
                                 const GURL& update_url,
                                 Extension::Location location);
 
   // Add a pending extension record for an external CRX file.
-  void AddFromExternalFile(
+  // Return true if the CRX should be installed, false if an existing
+  // pending record overrides it.
+  bool AddFromExternalFile(
       const std::string& id,
       Extension::Location location);
 
+  // Get the set of pending IDs that should be installed from an update URL.
+  // Pending extensions that will be installed from local files will not be
+  // included in the set.
+  void GetPendingIdsForUpdateCheck(
+      std::set<std::string>* out_ids_for_update_check) const;
+
  private:
+  typedef std::map<std::string, PendingExtensionInfo> PendingExtensionMap;
+
   // Assumes an extension with id |id| is not already installed.
   // Return true if the extension was added.
   bool AddExtensionImpl(

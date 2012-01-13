@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -369,7 +369,7 @@ class ExtensionUpdaterTest : public testing::Test {
     std::map<std::string, std::string> params;
     ExtractParameters(decoded, &params);
     if (pending) {
-      EXPECT_EQ(pending_extension_manager->begin()->first, params["id"]);
+      EXPECT_TRUE(pending_extension_manager->IsIdPending(params["id"]));
       EXPECT_EQ("0.0.0.0", params["v"]);
     } else {
       EXPECT_EQ(extensions[0]->id(), params["id"]);
@@ -548,14 +548,19 @@ class ExtensionUpdaterTest : public testing::Test {
 
     ManifestFetchData fetch_data(GURL("http://localhost/foo"));
     UpdateManifest::Results updates;
-    PendingExtensionManager::const_iterator it;
-    for (it = pending_extension_manager->begin();
-         it != pending_extension_manager->end(); ++it) {
-      fetch_data.AddExtension(it->first, "1.0.0.0",
+
+    std::set<std::string> ids_for_update_check;
+    pending_extension_manager->GetPendingIdsForUpdateCheck(
+        &ids_for_update_check);
+
+    std::set<std::string>::const_iterator it;
+    for (it = ids_for_update_check.begin();
+         it != ids_for_update_check.end(); ++it) {
+      fetch_data.AddExtension(*it,
+                              "1.0.0.0",
                               kNeverPingedData,
                               kEmptyUpdateUrlData);
-      AddParseResult(it->first,
-                     "1.1", "http://localhost/e1_1.1.crx", &updates);
+      AddParseResult(*it, "1.1", "http://localhost/e1_1.1.crx", &updates);
     }
     std::vector<int> updateable =
         updater.DetermineUpdates(fetch_data, updates);
@@ -1178,17 +1183,16 @@ TEST_F(ExtensionUpdaterTest, TestManifestFetchesBuilderAddExtension) {
 
   // Extensions with invalid update URLs should be rejected.
   builder.AddPendingExtension(
-      GenerateId("foo"), PendingExtensionInfo(GURL("http:google.com:foo"),
-                                              &ShouldInstallExtensionsOnly,
-                                              false, false,
-                                              Extension::INTERNAL));
+      GenerateId("foo"),
+      Extension::INTERNAL,
+      GURL("http:google.com:foo"));
   EXPECT_TRUE(builder.GetFetches().empty());
 
   // Extensions with empty IDs should be rejected.
   builder.AddPendingExtension(
-      "", PendingExtensionInfo(GURL(), &ShouldInstallExtensionsOnly,
-                               false, false,
-                               Extension::INTERNAL));
+      "",
+      Extension::INTERNAL,
+      GURL());
   EXPECT_TRUE(builder.GetFetches().empty());
 
   // TODO(akalin): Test that extensions with empty update URLs
@@ -1197,10 +1201,10 @@ TEST_F(ExtensionUpdaterTest, TestManifestFetchesBuilderAddExtension) {
   // Extensions with empty update URLs should have a default one
   // filled in.
   builder.AddPendingExtension(
-      GenerateId("foo"), PendingExtensionInfo(GURL(),
-                                              &ShouldInstallExtensionsOnly,
-                                              false, false,
-                                              Extension::INTERNAL));
+      GenerateId("foo"),
+      Extension::INTERNAL,
+      GURL());
+
   std::vector<ManifestFetchData*> fetches = builder.GetFetches();
   ASSERT_EQ(1u, fetches.size());
   scoped_ptr<ManifestFetchData> fetch(fetches[0]);

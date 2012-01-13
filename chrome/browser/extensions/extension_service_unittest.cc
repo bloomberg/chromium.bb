@@ -256,7 +256,7 @@ class MockProviderVisitor
     return ids_found_;
   }
 
-  virtual void OnExternalExtensionFileFound(const std::string& id,
+  virtual bool OnExternalExtensionFileFound(const std::string& id,
                                             const Version* version,
                                             const FilePath& path,
                                             Extension::Location unused,
@@ -296,9 +296,10 @@ class MockProviderVisitor
       // Remove it so we won't count it ever again.
       prefs_->Remove(id, NULL);
     }
+    return true;
   }
 
-  virtual void OnExternalExtensionUpdateUrlFound(
+  virtual bool OnExternalExtensionUpdateUrlFound(
       const std::string& id, const GURL& update_url,
       Extension::Location location) {
     ++ids_found_;
@@ -323,6 +324,7 @@ class MockProviderVisitor
       // Remove it so we won't count it again.
       prefs_->Remove(id, NULL);
     }
+    return true;
   }
 
   virtual void OnExternalProviderReady(
@@ -1325,10 +1327,10 @@ TEST_F(ExtensionServiceTest, UninstallingExternalExtensions) {
                       Extension::EXTERNAL_EXTENSION_UNINSTALLED);
 
   // Try adding the same extension from an external update URL.
-  service_->pending_extension_manager()->AddFromExternalUpdateUrl(
+  ASSERT_FALSE(service_->pending_extension_manager()->AddFromExternalUpdateUrl(
       good_crx,
       GURL("http:://fake.update/url"),
-      Extension::EXTERNAL_PREF_DOWNLOAD);
+      Extension::EXTERNAL_PREF_DOWNLOAD));
 
   ASSERT_FALSE(service_->pending_extension_manager()->IsIdPending(good_crx));
 }
@@ -2356,8 +2358,8 @@ TEST_F(ExtensionServiceTest, DISABLED_UpdatePendingTheme) {
 // or not.
 TEST_F(ExtensionServiceTest, MAYBE_UpdatePendingExternalCrx) {
   InitializeEmptyExtensionService();
-  service_->pending_extension_manager()->AddFromExternalUpdateUrl(
-      theme_crx, GURL(), Extension::EXTERNAL_PREF_DOWNLOAD);
+  EXPECT_TRUE(service_->pending_extension_manager()->AddFromExternalUpdateUrl(
+      theme_crx, GURL(), Extension::EXTERNAL_PREF_DOWNLOAD));
 
   EXPECT_TRUE(service_->pending_extension_manager()->IsIdPending(theme_crx));
 
@@ -2393,8 +2395,8 @@ TEST_F(ExtensionServiceTest, UpdatePendingExternalCrxWinsOverSync) {
   EXPECT_TRUE(pending_extension_info.is_from_sync());
 
   // Add a crx to be updated, with the same ID, from a non-sync source.
-  service_->pending_extension_manager()->AddFromExternalUpdateUrl(
-      kGoodId, GURL(kGoodUpdateURL), Extension::EXTERNAL_PREF_DOWNLOAD);
+  EXPECT_TRUE(service_->pending_extension_manager()->AddFromExternalUpdateUrl(
+      kGoodId, GURL(kGoodUpdateURL), Extension::EXTERNAL_PREF_DOWNLOAD));
 
   // Check that there is a pending crx, with is_from_sync set to false.
   ASSERT_TRUE(service_->pending_extension_manager()->GetById(
@@ -4264,7 +4266,7 @@ TEST_F(ExtensionServiceTest, ProcessSyncDataNotInstalled) {
   // TODO(akalin): Figure out a way to test |info.ShouldAllowInstall()|.
 }
 
-TEST_F(ExtensionServiceTest, HigherPriorityInstall) {
+TEST_F(ExtensionServiceTest, InstallPriorityExternalUpdateUrl) {
   InitializeEmptyExtensionService();
 
   FilePath path = data_dir_.AppendASCII("good.crx");
@@ -4277,18 +4279,192 @@ TEST_F(ExtensionServiceTest, HigherPriorityInstall) {
   EXPECT_FALSE(pending->IsIdPending(kGoodId));
 
   // Skip install when the location is the same.
-  service_->OnExternalExtensionUpdateUrlFound(kGoodId, GURL(kGoodUpdateURL),
-      Extension::INTERNAL);
+  EXPECT_FALSE(
+      service_->OnExternalExtensionUpdateUrlFound(
+          kGoodId, GURL(kGoodUpdateURL), Extension::INTERNAL));
   EXPECT_FALSE(pending->IsIdPending(kGoodId));
-  // Force install when the location has higher priority.
-  service_->OnExternalExtensionUpdateUrlFound(kGoodId, GURL(kGoodUpdateURL),
-      Extension::EXTERNAL_POLICY_DOWNLOAD);
+
+  // Install when the location has higher priority.
+  EXPECT_TRUE(
+      service_->OnExternalExtensionUpdateUrlFound(
+          kGoodId, GURL(kGoodUpdateURL), Extension::EXTERNAL_POLICY_DOWNLOAD));
   EXPECT_TRUE(pending->IsIdPending(kGoodId));
+
+  // Try the low priority again.  Should be rejected.
+  EXPECT_FALSE(
+      service_->OnExternalExtensionUpdateUrlFound(
+          kGoodId, GURL(kGoodUpdateURL), Extension::EXTERNAL_PREF_DOWNLOAD));
+  // The existing record should still be present in the pending extension
+  // manager.
+  EXPECT_TRUE(pending->IsIdPending(kGoodId));
+
   pending->Remove(kGoodId);
-  // Skip install when the location has lower priority.
-  service_->OnExternalExtensionUpdateUrlFound(kGoodId, GURL(kGoodUpdateURL),
-      Extension::INTERNAL);
+
+  // Skip install when the location has the same priority as the installed
+  // location.
+  EXPECT_FALSE(service_->OnExternalExtensionUpdateUrlFound(
+      kGoodId, GURL(kGoodUpdateURL), Extension::INTERNAL));
+
   EXPECT_FALSE(pending->IsIdPending(kGoodId));
+}
+
+TEST_F(ExtensionServiceTest, InstallPriorityExternalLocalFile) {
+  scoped_ptr<Version> older_version;
+  older_version.reset(Version::GetVersionFromString("0.1.0.0"));
+
+  scoped_ptr<Version> newer_version;
+  newer_version.reset(Version::GetVersionFromString("2.0.0.0"));
+
+  // We don't want the extension to be installed.  A path that doesn't
+  // point to a valid CRX ensures this.
+  const FilePath kInvalidPathToCrx = FilePath();
+
+  const int kCreationFlags = 0;
+  const bool kDontMarkAcknowledged = false;
+
+  InitializeEmptyExtensionService();
+
+  // The test below uses install source constants to test that
+  // priority is enforced.  It assumes a specific ranking of install
+  // sources: Registry (EXTERNAL_REGISTRY) overrides external pref
+  // (EXTERNAL_PREF), and external pref overrides user install (INTERNAL).
+  // The following assertions verify these assumptions:
+  ASSERT_EQ(Extension::EXTERNAL_REGISTRY,
+            Extension::GetHigherPriorityLocation(Extension::EXTERNAL_REGISTRY,
+                                                 Extension::EXTERNAL_PREF));
+  ASSERT_EQ(Extension::EXTERNAL_REGISTRY,
+            Extension::GetHigherPriorityLocation(Extension::EXTERNAL_REGISTRY,
+                                                 Extension::INTERNAL));
+  ASSERT_EQ(Extension::EXTERNAL_PREF,
+            Extension::GetHigherPriorityLocation(Extension::EXTERNAL_PREF,
+                                                 Extension::INTERNAL));
+
+  PendingExtensionManager* pending = service_->pending_extension_manager();
+  EXPECT_FALSE(pending->IsIdPending(kGoodId));
+
+  // Simulate an external source adding the extension as INTERNAL.
+  EXPECT_TRUE(
+      service_->OnExternalExtensionFileFound(
+          kGoodId, older_version.get(), kInvalidPathToCrx,
+          Extension::INTERNAL, kCreationFlags, kDontMarkAcknowledged));
+  EXPECT_TRUE(pending->IsIdPending(kGoodId));
+  WaitForCrxInstall(kInvalidPathToCrx, INSTALL_FAILED);
+
+  // Simulate an external source adding the extension as EXTERNAL_PREF.
+  EXPECT_TRUE(
+      service_->OnExternalExtensionFileFound(
+          kGoodId, older_version.get(), kInvalidPathToCrx,
+          Extension::EXTERNAL_PREF, kCreationFlags, kDontMarkAcknowledged));
+  EXPECT_TRUE(pending->IsIdPending(kGoodId));
+  WaitForCrxInstall(kInvalidPathToCrx, INSTALL_FAILED);
+
+  // Simulate an external source adding as EXTERNAL_PREF again.
+  EXPECT_TRUE(
+      service_->OnExternalExtensionFileFound(
+          kGoodId, older_version.get(), kInvalidPathToCrx,
+          Extension::EXTERNAL_PREF, kCreationFlags, kDontMarkAcknowledged));
+  EXPECT_TRUE(pending->IsIdPending(kGoodId));
+  WaitForCrxInstall(kInvalidPathToCrx, INSTALL_FAILED);
+
+  // Try INTERNAL again.  Should fail.
+  EXPECT_FALSE(
+      service_->OnExternalExtensionFileFound(
+          kGoodId, older_version.get(), kInvalidPathToCrx,
+          Extension::INTERNAL, kCreationFlags, kDontMarkAcknowledged));
+  EXPECT_TRUE(pending->IsIdPending(kGoodId));
+
+  // Now the registry adds the extension.
+  EXPECT_TRUE(
+      service_->OnExternalExtensionFileFound(
+          kGoodId, older_version.get(), kInvalidPathToCrx,
+          Extension::EXTERNAL_REGISTRY, kCreationFlags, kDontMarkAcknowledged));
+  EXPECT_TRUE(pending->IsIdPending(kGoodId));
+  WaitForCrxInstall(kInvalidPathToCrx, INSTALL_FAILED);
+
+  // Registry outranks both external pref and internal, so both fail.
+  EXPECT_FALSE(
+      service_->OnExternalExtensionFileFound(
+          kGoodId, older_version.get(), kInvalidPathToCrx,
+          Extension::EXTERNAL_PREF, kCreationFlags, kDontMarkAcknowledged));
+  EXPECT_TRUE(pending->IsIdPending(kGoodId));
+
+  EXPECT_FALSE(
+      service_->OnExternalExtensionFileFound(
+          kGoodId, older_version.get(), kInvalidPathToCrx,
+          Extension::INTERNAL, kCreationFlags, kDontMarkAcknowledged));
+  EXPECT_TRUE(pending->IsIdPending(kGoodId));
+
+  pending->Remove(kGoodId);
+
+  // Install the extension.
+  FilePath path = data_dir_.AppendASCII("good.crx");
+  const Extension* ext = InstallCRX(path, INSTALL_NEW);
+  ValidatePrefKeyCount(1u);
+  ValidateIntegerPref(good_crx, "state", Extension::ENABLED);
+  ValidateIntegerPref(good_crx, "location", Extension::INTERNAL);
+
+  // Now test the logic of OnExternalExtensionFileFound() when the extension
+  // being added is already installed.
+
+  // Tests assume |older_version| is less than the installed version, and
+  // |newer_version| is greater.  Verify this:
+  ASSERT_TRUE(older_version->IsOlderThan(ext->VersionString()));
+  ASSERT_TRUE(ext->version()->IsOlderThan(newer_version->GetString()));
+
+  // An external install for the same location should fail if the version is
+  // older, or the same, and succeed if the version is newer.
+
+  // Older than the installed version...
+  EXPECT_FALSE(
+      service_->OnExternalExtensionFileFound(
+          kGoodId, older_version.get(), kInvalidPathToCrx,
+          Extension::INTERNAL, kCreationFlags, kDontMarkAcknowledged));
+  EXPECT_FALSE(pending->IsIdPending(kGoodId));
+
+  // Same version as the installed version...
+  EXPECT_FALSE(
+      service_->OnExternalExtensionFileFound(
+          kGoodId, ext->version(), kInvalidPathToCrx,
+          Extension::INTERNAL, kCreationFlags, kDontMarkAcknowledged));
+  EXPECT_FALSE(pending->IsIdPending(kGoodId));
+
+  // Newer than the installed version...
+  EXPECT_TRUE(
+      service_->OnExternalExtensionFileFound(
+          kGoodId, newer_version.get(), kInvalidPathToCrx,
+          Extension::INTERNAL, kCreationFlags, kDontMarkAcknowledged));
+  EXPECT_TRUE(pending->IsIdPending(kGoodId));
+
+  // An external install for a higher priority install source should succeed
+  // if the version is greater.  |older_version| is not...
+  EXPECT_FALSE(
+      service_->OnExternalExtensionFileFound(
+          kGoodId, older_version.get(), kInvalidPathToCrx,
+          Extension::EXTERNAL_PREF, kCreationFlags, kDontMarkAcknowledged));
+  EXPECT_TRUE(pending->IsIdPending(kGoodId));
+
+  // |newer_version| is newer.
+  EXPECT_TRUE(
+      service_->OnExternalExtensionFileFound(
+          kGoodId, newer_version.get(), kInvalidPathToCrx,
+          Extension::EXTERNAL_PREF, kCreationFlags, kDontMarkAcknowledged));
+  EXPECT_TRUE(pending->IsIdPending(kGoodId));
+
+  // An external install for an even higher priority install source should
+  // succeed if the version is greater.
+  EXPECT_TRUE(
+      service_->OnExternalExtensionFileFound(
+          kGoodId, newer_version.get(), kInvalidPathToCrx,
+          Extension::EXTERNAL_REGISTRY, kCreationFlags, kDontMarkAcknowledged));
+  EXPECT_TRUE(pending->IsIdPending(kGoodId));
+
+  // Because EXTERNAL_PREF is a lower priority source than EXTERNAL_REGISTRY,
+  // adding from external pref will now fail.
+  EXPECT_FALSE(
+      service_->OnExternalExtensionFileFound(
+          kGoodId, newer_version.get(), kInvalidPathToCrx,
+          Extension::EXTERNAL_PREF, kCreationFlags, kDontMarkAcknowledged));
+  EXPECT_TRUE(pending->IsIdPending(kGoodId));
 }
 
 // Test that when multiple sources try to install an extension,
@@ -4307,17 +4483,17 @@ class ExtensionSourcePriorityTest : public ExtensionServiceTest {
   }
 
   // Fake an external source adding a URL to fetch an extension from.
-  void AddPendingExternalPrefUrl() {
-    service_->pending_extension_manager()->AddFromExternalUpdateUrl(
+  bool AddPendingExternalPrefUrl() {
+    return service_->pending_extension_manager()->AddFromExternalUpdateUrl(
         crx_id_, GURL(), Extension::EXTERNAL_PREF_DOWNLOAD);
   }
 
   // Fake an external file from external_extensions.json.
-  void AddPendingExternalPrefFileInstall() {
+  bool AddPendingExternalPrefFileInstall() {
     scoped_ptr<Version> version;
     version.reset(Version::GetVersionFromString("1.0.0.0"));
 
-    service_->OnExternalExtensionFileFound(
+    return service_->OnExternalExtensionFileFound(
         crx_id_, version.get(), crx_path_, Extension::EXTERNAL_PREF,
         Extension::NO_FLAGS, false);
   }
@@ -4329,12 +4505,12 @@ class ExtensionSourcePriorityTest : public ExtensionServiceTest {
   }
 
   // Fake a policy install.
-  void AddPendingPolicyInstall() {
+  bool AddPendingPolicyInstall() {
     scoped_ptr<Version> version;
     version.reset(Version::GetVersionFromString("1.0.0.0"));
 
     // Get path to the CRX with id |kGoodId|.
-    service_->OnExternalExtensionUpdateUrlFound(
+    return service_->OnExternalExtensionUpdateUrlFound(
         crx_id_, GURL(), Extension::EXTERNAL_POLICY_DOWNLOAD);
   }
 
@@ -4408,7 +4584,7 @@ TEST_F(ExtensionSourcePriorityTest, PendingExternalUrlOverSync) {
   EXPECT_TRUE(GetPendingIsFromSync());
   ASSERT_FALSE(IsCrxInstalled());
 
-  AddPendingExternalPrefUrl();
+  ASSERT_TRUE(AddPendingExternalPrefUrl());
   ASSERT_EQ(Extension::EXTERNAL_PREF_DOWNLOAD, GetPendingLocation());
   EXPECT_FALSE(GetPendingIsFromSync());
   ASSERT_FALSE(IsCrxInstalled());

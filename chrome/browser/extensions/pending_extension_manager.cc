@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -68,7 +68,7 @@ bool PendingExtensionManager::AddFromSync(
                           kIsFromSync, install_silently, kSyncLocation);
 }
 
-void PendingExtensionManager::AddFromExternalUpdateUrl(
+bool PendingExtensionManager::AddFromExternalUpdateUrl(
     const std::string& id, const GURL& update_url,
     Extension::Location location) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -83,42 +83,70 @@ void PendingExtensionManager::AddFromExternalUpdateUrl(
     // If the new location has higher priority than the location of an existing
     // extension, let the update process overwrite the existing extension.
   } else {
-    if (service_.IsExternalExtensionUninstalled(id)) {
-      return;
-    }
+    if (service_.IsExternalExtensionUninstalled(id))
+      return false;
+
     if (extension) {
       LOG(DFATAL) << "Trying to add extension " << id
                   << " by external update, but it is already installed.";
-      return;
+      return false;
     }
   }
 
-  AddExtensionImpl(id, update_url, &AlwaysInstall,
-                   kIsFromSync, kInstallSilently,
-                   location);
+  return AddExtensionImpl(id, update_url, &AlwaysInstall,
+                          kIsFromSync, kInstallSilently,
+                          location);
 }
 
 
-void PendingExtensionManager::AddFromExternalFile(
+bool PendingExtensionManager::AddFromExternalFile(
     const std::string& id,
-    Extension::Location location) {
+    Extension::Location install_source) {
 
+  // TODO(skerner): AddFromSync() checks to see if the extension is
+  // installed, but this method assumes that the caller already
+  // made sure it is not installed.  Make all AddFrom*() methods
+  // consistent.
   GURL kUpdateUrl = GURL();
   bool kIsFromSync = false;
   bool kInstallSilently = true;
 
-  pending_extension_map_[id] =
-      PendingExtensionInfo(kUpdateUrl,
-                           &AlwaysInstall,
-                           kIsFromSync,
-                           kInstallSilently,
-                           location);
+  return AddExtensionImpl(
+      id,
+      kUpdateUrl,
+      &AlwaysInstall,
+      kIsFromSync,
+      kInstallSilently,
+      install_source);
+
+  return true;
+}
+
+void PendingExtensionManager::GetPendingIdsForUpdateCheck(
+    std::set<std::string>* out_ids_for_update_check) const {
+  PendingExtensionMap::const_iterator iter;
+  for (iter = pending_extension_map_.begin();
+       iter != pending_extension_map_.end();
+       ++iter) {
+    Extension::Location install_source = iter->second.install_source();
+
+    // Some install sources read a CRX from the filesystem.  They can
+    // not be fetched from an update URL, so don't include them in the
+    // set of ids.
+    if (install_source == Extension::EXTERNAL_PREF ||
+        install_source == Extension::EXTERNAL_REGISTRY)
+      continue;
+
+    out_ids_for_update_check->insert(iter->first);
+  }
 }
 
 bool PendingExtensionManager::AddExtensionImpl(
-    const std::string& id, const GURL& update_url,
+    const std::string& id,
+    const GURL& update_url,
     PendingExtensionInfo::ShouldAllowInstallPredicate should_allow_install,
-    bool is_from_sync, bool install_silently,
+    bool is_from_sync,
+    bool install_silently,
     Extension::Location install_source) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -129,7 +157,7 @@ bool PendingExtensionManager::AddExtensionImpl(
     // Bugs in this code will manifest as sporadic incorrect extension
     // locations in situations where multiple install sources run at the
     // same time. For example, on first login to a chrome os machine, an
-    // extension may be requested by sync sync and the default extension set.
+    // extension may be requested by sync and the default extension set.
     // The following logging will help diagnose such issues.
     VLOG(1) << "Extension id " << id
             << " was entered for update more than once."

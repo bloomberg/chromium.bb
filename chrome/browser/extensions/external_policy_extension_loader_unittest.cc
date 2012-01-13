@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -65,16 +65,17 @@ class MockExternalPolicyExtensionProviderVisitor
     EXPECT_EQ(0u, remaining_extensions->GetSize());
   }
 
-  virtual void OnExternalExtensionFileFound(const std::string& id,
+  virtual bool OnExternalExtensionFileFound(const std::string& id,
                                             const Version* version,
                                             const FilePath& path,
                                             Extension::Location unused,
                                             int unused2,
                                             bool unused3) {
     ADD_FAILURE() << "There should be no external extensions from files.";
+    return false;
   }
 
-  virtual void OnExternalExtensionUpdateUrlFound(
+  virtual bool OnExternalExtensionUpdateUrlFound(
       const std::string& id, const GURL& update_url,
       Extension::Location location) {
     // Extension has the correct location.
@@ -90,6 +91,7 @@ class MockExternalPolicyExtensionProviderVisitor
     // Remove the extension from our list.
     StringValue ext_str(id + ";" + update_url.spec());
     EXPECT_NE(false, remaining_extensions->Remove(ext_str, NULL));
+    return true;
   }
 
   virtual void OnExternalProviderReady(
