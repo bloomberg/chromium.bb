@@ -373,6 +373,12 @@ void Layer::Draw() {
   texture_draw_params.opacity = combined_opacity;
   texture_draw_params.has_valid_alpha_channel = has_valid_alpha_channel();
 
+#if defined(OS_WIN)
+  // TODO(beng): figure out why the other branch of this code renders improperly
+  //             on Windows, and fix it, otherwise just remove all of this when
+  //             WK compositor is default.
+  texture_->Draw(texture_draw_params, gfx::Rect(gfx::Point(), bounds().size()));
+#else
   std::vector<gfx::Rect> regions_to_draw;
   PunchHole(gfx::Rect(gfx::Point(), bounds().size()), hole_rect_,
             &regions_to_draw);
@@ -381,6 +387,7 @@ void Layer::Draw() {
     if (!regions_to_draw[i].IsEmpty())
       texture_->Draw(texture_draw_params, regions_to_draw[i]);
   }
+#endif
 #endif
 }
 
