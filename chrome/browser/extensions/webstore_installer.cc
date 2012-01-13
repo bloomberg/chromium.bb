@@ -73,11 +73,11 @@ GURL GetWebstoreInstallURL(
 }
 
 // Must be executed on the FILE thread.
-void GetDownloadFilePath(FilePath directory,
+void GetDownloadFilePath(const FilePath& download_directory,
                          const std::string& id,
                          const base::Callback<void(FilePath)>& callback) {
-  if (g_download_directory_for_tests)
-    directory = *g_download_directory_for_tests;
+  const FilePath& directory(g_download_directory_for_tests ?
+      *g_download_directory_for_tests : download_directory);
 
   // Ensure the download directory exists. TODO(asargent) - make this use
   // common code from the downloads system.
