@@ -31,9 +31,9 @@ var testing = {};
 
   /**
    * The arguments of the currently running test.
-   * @type {?Array}
+   * @type {Array}
    */
-  var currentTestArguments = null;
+  var currentTestArguments = [];
 
  /**
    * This class will be exported as testing.Test, and is provided to hold the

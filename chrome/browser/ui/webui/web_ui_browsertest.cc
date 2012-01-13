@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 #include "chrome/browser/ui/webui/web_ui_browsertest.h"
@@ -9,12 +9,15 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/lazy_instance.h"
+#include "base/memory/ref_counted_memory.h"
 #include "base/path_service.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/printing/print_preview_tab_controller.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator.h"
+#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/chrome_web_ui.h"
 #include "chrome/browser/ui/webui/test_chrome_web_ui_factory.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
@@ -237,14 +240,59 @@ void WebUIBrowserTest::set_preload_test_name(
 
 namespace {
 
+// DataSource for the dummy URL.  If no data source is provided then an error
+// page is shown. While this doesn't matter for most tests, without it,
+// navigation to different anchors cannot be listened to (via the hashchange
+// event).
+class MockWebUIDataSource : public ChromeURLDataManager::DataSource {
+ public:
+  MockWebUIDataSource()
+      : ChromeURLDataManager::DataSource("dummyurl", MessageLoop::current()) {}
+
+ private:
+  virtual void StartDataRequest(const std::string& path,
+                                bool is_incognito,
+                                int request_id) OVERRIDE {
+    std::string dummy_html = "<html><body>Dummy</body></html>";
+    scoped_refptr<base::RefCountedString> response =
+        base::RefCountedString::TakeString(&dummy_html);
+    SendResponse(request_id, response);
+  }
+
+  std::string GetMimeType(const std::string& path) const OVERRIDE {
+    return "text/html";
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(MockWebUIDataSource);
+};
+
+// WebUI to attach the DataSource for the dummy URL.
+class MockWebUI : public WebUI {
+ public:
+  explicit MockWebUI(WebContents* contents) : WebUI(contents) {
+    Profile* profile =
+        Profile::FromBrowserContext(contents->GetBrowserContext());
+    profile->GetChromeURLDataManager()->AddDataSource(
+        new MockWebUIDataSource());
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockWebUI);
+};
+
+// WebUIProvider to allow injection of our WebUI classes for the dummy URL when
+// testing.
 class MockWebUIProvider : public TestChromeWebUIFactory::WebUIProvider {
  public:
   MockWebUIProvider() {}
 
   // Returns a new WebUI
   WebUI* NewWebUI(WebContents* web_contents, const GURL& url) OVERRIDE {
-    return new WebUI(web_contents);
+    return new MockWebUI(web_contents);
   }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockWebUIProvider);
 };
 
 base::LazyInstance<MockWebUIProvider> mock_provider_ =

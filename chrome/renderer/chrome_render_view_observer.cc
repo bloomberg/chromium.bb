@@ -656,6 +656,7 @@ void ChromeRenderViewObserver::DidStartLoading() {
                                   webui_javascript_->jscript,
                                   webui_javascript_->id,
                                   webui_javascript_->notify_result);
+    webui_javascript_.reset();
   }
 }
 

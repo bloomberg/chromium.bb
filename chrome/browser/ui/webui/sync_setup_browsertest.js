@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -61,8 +61,22 @@ SyncSetupWebUITest.prototype = {
   },
 };
 
+/**
+ * Async version of SyncSetupWebUITest.
+ * @extends {SyncSetupWebUITest}
+ * @constructor
+ */
+function SyncSetupWebUITestAsync() {}
+
+SyncSetupWebUITestAsync.prototype = {
+  __proto__: SyncSetupWebUITest.prototype,
+
+  /** @inheritDoc */
+  isAsync: true,
+};
+
 // Verify that initial state is unsynced, start syncing, then login.
-TEST_F('SyncSetupWebUITest', 'VerifySignIn', function() {
+TEST_F('SyncSetupWebUITestAsync', 'VerifySignIn', function() {
   // Start syncing to pull up the sign in page.
   assertFalse(PersonalOptions.getInstance().syncSetupCompleted);
   this.startSyncing();
@@ -75,16 +89,27 @@ TEST_F('SyncSetupWebUITest', 'VerifySignIn', function() {
   var signInButton = SyncSetupOverlay.getSignInButton();
   assertNotEquals(null, signInButton);
 
+  // For testing, don't wait to execute timeouts.
+  var oldSetTimeout = setTimeout;
+  setTimeout = function(fn, timeout) {
+    oldSetTimeout(fn, 0);
+  };
+
   // Expect set up submission and close messages sent through chrome.send().
   this.mockHandler.expects(once()).SyncSetupSubmitAuth(NOT_NULL).
-      will(callFunction(function() {
-                          SyncSetupOverlay.showSuccessAndClose();
-                        }));
-  this.mockHandler.expects(once()).SyncSetupDidClosePage();
+      will(callFunction(
+          function() {
+            var loginSuccess = localStrings.getString('loginSuccess');
+            expectNotEquals(loginSuccess, signInButton.value);
+            SyncSetupOverlay.showSuccessAndClose();
+            expectEquals(loginSuccess, signInButton.value);
+          }));
+  // The test completes after the asynchronous close.
+  this.mockHandler.expects(once()).SyncSetupDidClosePage().
+      will(callFunction(testDone));
 
   // Set the email & password, then sign in.
   gaiaEmail.value = 'foo@bar.baz';
   gaiaPasswd.value = 'foo@bar.baz';
   signInButton.click();
 });
-

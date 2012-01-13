@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -44,6 +44,13 @@ WebUIBrowserAsyncGenTest.prototype = {
    * @type {boolean}
    */
   running: false,
+
+  /** @inheritDoc */
+  preLoad: function() {
+    if (window.preLoadCount === undefined)
+      window.preLoadCount = 0;
+    assertEquals(0, Number(window.preLoadCount++));
+  },
 };
 
 // Include the c++ test fixture.
@@ -62,6 +69,14 @@ var continueTest;
  * @this {WebUIBrowserAsyncGenTest}
  */
 var continueTest2;
+
+TEST_F('WebUIBrowserAsyncGenTest', 'TestPreloadOnceOnNavigate', function() {
+  window.addEventListener('hashchange', this.continueTest(
+      WhenTestDone.DEFAULT, function() {
+        testDone();
+      }));
+  window.location = DUMMY_URL + '#anchor';
+});
 
 // Test that tearDown isn't called until the callback test runs.
 TEST_F('WebUIBrowserAsyncGenTest', 'TestTearDown', function() {
