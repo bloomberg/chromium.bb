@@ -116,6 +116,15 @@ chrome.test.getConfig(function(testConfig) {
             chrome.test.assertEq(getNextId(), id);
           }));
     },
+    function downloadPost() {
+      downloads.download(
+          {'url': getURL('files/post/downloads/a_zip_file.js'),
+           'method': 'POST',
+           'body': 'WOOHOO'},
+          chrome.test.callbackPass(function(id) {
+              chrome.test.assertEq(getNextId(), id);
+          }));
+    },
     function downloadHeader() {
       downloads.download(
           {'url': SAFE_FAST_URL,

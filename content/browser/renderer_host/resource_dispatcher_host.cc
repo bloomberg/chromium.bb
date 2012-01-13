@@ -896,7 +896,6 @@ void ResourceDispatcherHost::BeginDownload(
   const GURL& url = request->original_url();
   const net::URLRequestContext* request_context = context.request_context();
   request->set_referrer(MaybeStripReferrer(GURL(request->referrer())).spec());
-  request->set_method("GET");
   request->set_context(request_context);
   request->set_load_flags(request->load_flags() |
                           net::LOAD_IS_DOWNLOAD | net::LOAD_DISABLE_CACHE);
