@@ -1099,6 +1099,9 @@ bool RenderProcessHostImpl::IsSuitableHost(
     content::RenderProcessHost* host,
     content::BrowserContext* browser_context,
     const GURL& site_url) {
+  if (run_renderer_in_process())
+    return true;
+
   if (host->GetBrowserContext() != browser_context)
     return false;
 
@@ -1158,8 +1161,7 @@ content::RenderProcessHost*
 
   iterator iter(AllHostsIterator());
   while (!iter.IsAtEnd()) {
-    if (run_renderer_in_process() ||
-        RenderProcessHostImpl::IsSuitableHost(
+    if (RenderProcessHostImpl::IsSuitableHost(
             iter.GetCurrentValue(),
             browser_context, site_url))
       suitable_renderers.push_back(iter.GetCurrentValue());
