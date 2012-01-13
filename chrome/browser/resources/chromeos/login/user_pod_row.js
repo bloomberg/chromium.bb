@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -740,6 +740,9 @@ cr.define('login', function() {
             this.activatedPod = this.focusedPod_;
             e.stopPropagation();
           }
+          break;
+        case 'U+001B':  // Esc
+          this.focusPod();
           break;
       }
     },
