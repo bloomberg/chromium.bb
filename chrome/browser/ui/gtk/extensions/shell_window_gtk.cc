@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/gtk/extensions/shell_window_gtk.h"
 
 #include "chrome/browser/extensions/extension_host.h"
+#include "chrome/common/extensions/extension.h"
 #include "content/browser/renderer_host/render_widget_host_view_gtk.h"
 
 ShellWindowGtk::ShellWindowGtk(ExtensionHost* host)
@@ -17,7 +18,9 @@ ShellWindowGtk::ShellWindowGtk(ExtensionHost* host)
   // TOOD(mihaip): Allow window dimensions to be specified in manifest (and
   // restore prior window dimensions and positions on relaunch).
   gtk_widget_set_size_request(GTK_WIDGET(window_), 512, 384);
-  gtk_window_set_decorated(window_, false);
+
+  // TODO(mihaip): Mirror contents of <title> tag in window title
+  gtk_window_set_title(window_, host->extension()->name().c_str());
 
   g_signal_connect(window_, "delete-event",
                    G_CALLBACK(OnMainWindowDeleteEventThunk), this);
