@@ -37,6 +37,7 @@
 #include "chrome/browser/extensions/external_extension_provider_impl.h"
 #include "chrome/browser/extensions/external_extension_provider_interface.h"
 #include "chrome/browser/extensions/external_pref_extension_loader.h"
+#include "chrome/browser/extensions/extension_sorting.h"
 #include "chrome/browser/extensions/installed_loader.h"
 #include "chrome/browser/extensions/pack_extension_job.cc"
 #include "chrome/browser/extensions/pending_extension_info.h"
@@ -56,6 +57,7 @@
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/extensions/url_pattern.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/string_ordinal.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
@@ -1904,6 +1906,37 @@ TEST_F(ExtensionServiceTest, UpdateApps) {
                   ENABLED);
   ASSERT_EQ(std::string("2"),
             service_->GetExtensionById(id, false)->version()->GetString());
+}
+
+// Verifies that the NTP page and launch ordinals are kept when updating apps.
+TEST_F(ExtensionServiceTest, UpdateAppsRetainOrdinals) {
+  InitializeEmptyExtensionService();
+  ExtensionSorting* sorting = service_->extension_prefs()->extension_sorting();
+  FilePath extensions_path = data_dir_.AppendASCII("app_update");
+
+  // First install v1 of a hosted app.
+  const Extension* extension =
+      InstallCRX(extensions_path.AppendASCII("v1.crx"), INSTALL_NEW);
+  ASSERT_EQ(1u, service_->extensions()->size());
+  std::string id = extension->id();
+  ASSERT_EQ(std::string("1"), extension->version()->GetString());
+
+  // Modify the ordinals so we can distinguish them from the defaults.
+  StringOrdinal new_page_ordinal = sorting->GetPageOrdinal(id).CreateAfter();
+  StringOrdinal new_launch_ordinal =
+      sorting->GetAppLaunchOrdinal(id).CreateBefore();
+
+  sorting->SetPageOrdinal(id, new_page_ordinal);
+  sorting->SetAppLaunchOrdinal(id, new_launch_ordinal);
+
+  // Now try updating to v2.
+  UpdateExtension(id, extensions_path.AppendASCII("v2.crx"), ENABLED);
+  ASSERT_EQ(std::string("2"),
+            service_->GetExtensionById(id, false)->version()->GetString());
+
+  // Verify that the ordinals match.
+  ASSERT_TRUE(new_page_ordinal.Equal(sorting->GetPageOrdinal(id)));
+  ASSERT_TRUE(new_launch_ordinal.Equal(sorting->GetAppLaunchOrdinal(id)));
 }
 
 TEST_F(ExtensionServiceTest, InstallAppsWithUnlimitedStorage) {

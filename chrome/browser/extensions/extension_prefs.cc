@@ -1103,13 +1103,13 @@ void ExtensionPrefs::OnExtensionInstalled(
   }
 
   if (extension->is_app()) {
-    StringOrdinal new_page_ordinal =
-        page_ordinal.IsValid() ? page_ordinal
-        : extension_sorting_->GetNaturalAppPageOrdinal();
-    extension_sorting_->SetPageOrdinal(id, new_page_ordinal);
-    extension_sorting_->SetAppLaunchOrdinal(
-        id,
-        extension_sorting_->CreateNextAppLaunchOrdinal(new_page_ordinal));
+    StringOrdinal new_page_ordinal = page_ordinal.IsValid() ?
+        page_ordinal : extension_sorting_->GetNaturalAppPageOrdinal();
+    if (!extension_sorting_->GetPageOrdinal(id).IsValid())
+      extension_sorting_->SetPageOrdinal(id, new_page_ordinal);
+    if (!extension_sorting_->GetAppLaunchOrdinal(id).IsValid())
+      extension_sorting_->SetAppLaunchOrdinal(
+          id, extension_sorting_->CreateNextAppLaunchOrdinal(new_page_ordinal));
   }
 
   extension_pref_value_map_->RegisterExtension(
