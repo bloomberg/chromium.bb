@@ -30,4 +30,3 @@ class PageActionsCustomBindings : public ChromeV8Extension {
 }  // extensions
 
 #endif  // CHROME_RENDERER_EXTENSIONS_PAGE_ACTIONS_CUSTOM_BINDINGS_H_
-

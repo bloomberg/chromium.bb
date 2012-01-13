@@ -17,7 +17,7 @@ WebRequestCustomBindings::WebRequestCustomBindings(
     const char** dependencies)
     : ChromeV8Extension(
           "extensions/web_request_custom_bindings.js",
-          IDR_WEBREQUEST_CUSTOM_BINDINGS_JS,
+          IDR_WEB_REQUEST_CUSTOM_BINDINGS_JS,
           dependency_count,
           dependencies,
           NULL) {}

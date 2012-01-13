@@ -27,8 +27,6 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/chrome_view_type.h"
-#include "content/public/renderer/render_view.h"
-#include "content/public/renderer/render_view_visitor.h"
 #include "chrome/renderer/chrome_render_process_observer.h"
 #include "chrome/renderer/extensions/chrome_v8_context.h"
 #include "chrome/renderer/extensions/chrome_v8_context_set.h"
@@ -39,6 +37,7 @@
 #include "chrome/renderer/extensions/miscellaneous_bindings.h"
 #include "chrome/renderer/extensions/user_script_slave.h"
 #include "content/public/renderer/render_view.h"
+#include "content/public/renderer/render_view_visitor.h"
 #include "content/public/renderer/v8_value_converter.h"
 #include "grit/common_resources.h"
 #include "grit/renderer_resources.h"
@@ -193,8 +192,6 @@ class ExtensionImpl : public ChromeV8Extension {
                                        v8::External::New(this));
     } else if (name->Equals(v8::String::New("GetNextRequestId"))) {
       return v8::FunctionTemplate::New(GetNextRequestId);
-    } else if (name->Equals(v8::String::New("OpenChannelToTab"))) {
-      return v8::FunctionTemplate::New(OpenChannelToTab);
     } else if (name->Equals(v8::String::New("StartRequest"))) {
       return v8::FunctionTemplate::New(StartRequest,
                                        v8::External::New(this));
@@ -428,28 +425,6 @@ class ExtensionImpl : public ChromeV8Extension {
     if (render_view) {
       render_view->Send(new ExtensionHostMsg_ResponseAck(
           render_view->GetRoutingId(), args[0]->Int32Value()));
-    }
-    return v8::Undefined();
-  }
-
-  // Creates a new messaging channel to the tab with the given ID.
-  static v8::Handle<v8::Value> OpenChannelToTab(const v8::Arguments& args) {
-    // Get the current RenderView so that we can send a routed IPC message from
-    // the correct source.
-    content::RenderView* renderview = GetCurrentRenderView();
-    if (!renderview)
-      return v8::Undefined();
-
-    if (args.Length() >= 3 && args[0]->IsInt32() && args[1]->IsString() &&
-        args[2]->IsString()) {
-      int tab_id = args[0]->Int32Value();
-      std::string extension_id = *v8::String::Utf8Value(args[1]->ToString());
-      std::string channel_name = *v8::String::Utf8Value(args[2]->ToString());
-      int port_id = -1;
-      renderview->Send(new ExtensionHostMsg_OpenChannelToTab(
-        renderview->GetRoutingId(), tab_id, extension_id, channel_name,
-          &port_id));
-      return v8::Integer::New(port_id);
     }
     return v8::Undefined();
   }

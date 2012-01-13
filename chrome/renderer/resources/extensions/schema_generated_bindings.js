@@ -17,7 +17,6 @@ var chrome = chrome || {};
   native function GetCurrentPageActions(extensionId);
   native function GetExtensionViews();
   native function GetLocalFileSystem(name, path);
-  native function OpenChannelToTab();
   native function SendResponseAck(requestId);
   native function SetIconCommon();
 
@@ -609,36 +608,6 @@ var chrome = chrome || {};
           chrome.webstorePrivate.beginInstallWithManifest3;
     }
 
-    apiFunctions.setHandleRequest("tabs.connect", function(tabId, connectInfo) {
-      var name = "";
-      if (connectInfo) {
-        name = connectInfo.name || name;
-      }
-      var portId = OpenChannelToTab(tabId, chromeHidden.extensionId, name);
-      return chromeHidden.Port.createPort(portId, name);
-    });
-
-    apiFunctions.setHandleRequest("tabs.sendRequest",
-        function(tabId, request, responseCallback) {
-      var port = chrome.tabs.connect(tabId,
-                                     {name: chromeHidden.kRequestChannel});
-      port.postMessage(request);
-      port.onDisconnect.addListener(function() {
-        // For onDisconnects, we only notify the callback if there was an error.
-        if (chrome.extension.lastError && responseCallback)
-          responseCallback();
-      });
-      port.onMessage.addListener(function(response) {
-        try {
-          if (responseCallback)
-            responseCallback(response);
-        } finally {
-          port.disconnect();
-          port = null;
-        }
-      });
-    });
-
     apiFunctions.setCustomCallback("pageCapture.saveAsMHTML",
       function(name, request, response) {
         var params = chromeHidden.JSON.parse(response);
@@ -776,25 +745,6 @@ var chrome = chrome || {};
     apiFunctions.setHandleRequest("pageAction.setIcon", function(details) {
       setExtensionActionIconCommon(
           details, this.name, this.definition.parameters, "page action");
-    });
-
-    // TODO(skerner,mtytel): The next step to omitting optional arguments is the
-    // replacement of this code with code that matches arguments by type.
-    // Once this is working for captureVisibleTab() it can be enabled for
-    // the rest of the API. See crbug/29215 .
-    apiFunctions.setUpdateArgumentsPreValidate("tabs.captureVisibleTab",
-        function() {
-      // Old signature:
-      //    captureVisibleTab(int windowId, function callback);
-      // New signature:
-      //    captureVisibleTab(int windowId, object details, function callback);
-      if (arguments.length == 2 && typeof(arguments[1]) == "function") {
-        // If the old signature is used, add a null details object.
-        newArgs = [arguments[0], null, arguments[1]];
-      } else {
-        newArgs = arguments;
-      }
-      return newArgs;
     });
 
     if (apiExists("test"))

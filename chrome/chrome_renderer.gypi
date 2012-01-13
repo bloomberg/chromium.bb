@@ -95,6 +95,8 @@
         'renderer/extensions/page_actions_custom_bindings.h',
         'renderer/extensions/schema_generated_bindings.cc',
         'renderer/extensions/schema_generated_bindings.h',
+        'renderer/extensions/tabs_custom_bindings.cc',
+        'renderer/extensions/tabs_custom_bindings.h',
         'renderer/extensions/tts_custom_bindings.cc',
         'renderer/extensions/tts_custom_bindings.h',
         'renderer/extensions/user_script_idle_scheduler.cc',

@@ -6,6 +6,7 @@
 
 #include <map>
 
+#include "base/logging.h"
 #include "base/string_util.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/renderer/extensions/chrome_v8_extension.h"
@@ -13,9 +14,9 @@
 #include "chrome/renderer/extensions/experimental.socket_custom_bindings.h"
 #include "chrome/renderer/extensions/extension_dispatcher.h"
 #include "chrome/renderer/extensions/page_actions_custom_bindings.h"
+#include "chrome/renderer/extensions/tabs_custom_bindings.h"
 #include "chrome/renderer/extensions/tts_custom_bindings.h"
 #include "chrome/renderer/extensions/web_request_custom_bindings.h"
-#include "base/logging.h"
 #include "grit/renderer_resources.h"
 #include "v8/include/v8.h"
 
@@ -37,7 +38,7 @@ std::vector<v8::Extension*> GetAll(ExtensionDispatcher* extension_dispatcher) {
   static const int kResourceIDs[] = {
     IDR_EXPERIMENTAL_INPUT_IME_CUSTOM_BINDINGS_JS,
     IDR_OMNIBOX_CUSTOM_BINDINGS_JS,
-    IDR_TTSENGINE_CUSTOM_BINDINGS_JS,
+    IDR_TTS_ENGINE_CUSTOM_BINDINGS_JS,
     IDR_WINDOWS_CUSTOM_BINDINGS_JS,
   };
   static const size_t kResourceIDsSize = arraysize(kResourceIDs);
@@ -55,6 +56,8 @@ std::vector<v8::Extension*> GetAll(ExtensionDispatcher* extension_dispatcher) {
   result.push_back(new PageActionsCustomBindings(
       kDependencyCount, kDependencies, extension_dispatcher));
   result.push_back(new ExperimentalSocketCustomBindings(
+      kDependencyCount, kDependencies));
+  result.push_back(new TabsCustomBindings(
       kDependencyCount, kDependencies));
   result.push_back(new TTSCustomBindings(
       kDependencyCount, kDependencies));

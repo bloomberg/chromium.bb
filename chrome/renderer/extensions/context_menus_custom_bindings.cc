@@ -14,7 +14,7 @@ ContextMenusCustomBindings::ContextMenusCustomBindings(
     const char** dependencies)
     : ChromeV8Extension(
           "extensions/context_menus_custom_bindings.js",
-          IDR_CONTEXTMENUS_CUSTOM_BINDINGS_JS,
+          IDR_CONTEXT_MENUS_CUSTOM_BINDINGS_JS,
           dependency_count,
           dependencies,
           NULL) {}

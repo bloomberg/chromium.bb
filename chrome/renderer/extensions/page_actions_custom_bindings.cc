@@ -19,7 +19,7 @@ PageActionsCustomBindings::PageActionsCustomBindings(
     ExtensionDispatcher* extension_dispatcher)
     : ChromeV8Extension(
           "extensions/page_actions_custom_bindings.js",
-          IDR_PAGEACTIONS_CUSTOM_BINDINGS_JS,
+          IDR_PAGE_ACTIONS_CUSTOM_BINDINGS_JS,
           dependency_count,
           dependencies,
           extension_dispatcher) {}
