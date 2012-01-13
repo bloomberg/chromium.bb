@@ -28,8 +28,9 @@
 <div id="extension-settings">
   <h1 i18n-content="extensionSettings"></h1>
   <div id="dev-toggle">
-    <input id="toggle-dev-on" type="checkbox" value="off"></input>
-    <label for="toggle-dev-on" i18n-content="extensionSettingsDeveloperMode" />
+    <input id="toggle-dev-on" type="checkbox" value="off">
+    <label for="toggle-dev-on" i18n-content="extensionSettingsDeveloperMode">
+    </label>
   </div>
   <div class="displaytable">
     <div id="dev" class="dev-closed">
@@ -37,13 +38,13 @@
         <tr>
           <td>
             <button id="load-unpacked"
-                    i18n-content="extensionSettingsLoadUnpackedButton"></button>
+                i18n-content="extensionSettingsLoadUnpackedButton"></button>
             <button id="pack-extension"
-                    i18n-content="extensionSettingsPackButton"></button>
+                i18n-content="extensionSettingsPackButton"></button>
           </td>
           <td align="right">
             <button id="update-extensions-now"
-                    i18n-content="extensionSettingsUpdateButton"></button>
+                i18n-content="extensionSettingsUpdateButton"></button>
           </td>
         </tr>
       </table>
@@ -55,11 +56,12 @@
     </section>
   </div>
   <section>
-    <div><strong id="no-extensions"
-                 i18n-content="extensionSettingsNoExtensions"
-                 hidden="true"></strong></div>
-    <div id="suggest-gallery" hidden="true"></div>
-    <div id="get-more-extensions-container" hidden="true">
+    <div>
+      <strong id="no-extensions" i18n-content="extensionSettingsNoExtensions"
+          hidden></strong>
+    </div>
+    <div id="suggest-gallery" hidden></div>
+    <div id="get-more-extensions-container" hidden>
       <img src="chrome://theme/IDR_WEBSTORE_ICON_32">
       <div id="get-more-extensions"></div>
     </div>
@@ -97,11 +99,11 @@
           <button class="show-button"
               i18n-content="extensionSettingsShowButton" hidden ></button>
           <label class="incognito-control">
-            <input type="checkbox"></input>
+            <input type="checkbox">
             <span i18n-content="extensionSettingsEnableIncognito"></span>
           </label>
           <label class="file-access-control" hidden>
-            <input type="checkbox"></input>
+            <input type="checkbox">
             <span i18n-content="extensionSettingsAllowFileAccess"></span>
           </label>
           <a class="options-link" i18n-content="extensionSettingsOptions"
@@ -119,7 +121,7 @@
         <a class="terminated-reload-link" href="#"
             i18n-content="extensionSettingsReload" hidden></a>
         <label class="enable-checkbox" hidden>
-          <input type="checkbox"></input>
+          <input type="checkbox">
           <div class="enable-checkbox-text">
             <span class="enabled-text" i18n-content="extensionSettingsEnabled">
             </span>

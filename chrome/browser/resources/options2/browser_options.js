@@ -75,11 +75,6 @@ cr.define('options', function() {
       $('themes-reset').onclick = function(event) {
         chrome.send('themesReset');
       };
-      // Ensure that changes are committed when closing the page.
-      window.addEventListener('unload', function() {
-        if (document.activeElement == homepageField)
-          homepageField.blur();
-      });
 
       // Search section.
       $('defaultSearchManageEnginesButton').onclick = function(event) {

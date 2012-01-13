@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+<include src="../uber/uber_utils.js"></include>
+
 // Used for observing function of the backend datasource for this page by
 // tests.
 var webui_responded_ = false;
@@ -26,6 +28,10 @@ cr.define('extensions', function() {
      * Perform initial setup.
      */
     initialize: function() {
+      // Set the title.
+      var title = localStrings.getString('extensionSettings');
+      uber.invokeMethodOnParent('setTitle', {title: title});
+
       // This will request the data to show on the page and will get a response
       // back in returnExtensionsData.
       chrome.send('extensionSettingsRequestExtensionsData');

@@ -228,10 +228,10 @@ function load() {
 
 document.addEventListener('DOMContentLoaded', load);
 
-window.onpopstate = function(e) {
-  options.OptionsPage.setState(e.state);
-};
-
 window.onbeforeunload = function() {
   options.OptionsPage.willClose();
+};
+
+window.onpopstate = function(e) {
+  options.OptionsPage.setState(e.state);
 };

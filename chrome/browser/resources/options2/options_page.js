@@ -46,6 +46,13 @@ cr.define('options', function() {
   OptionsPage.initialized_ = false;
 
   /**
+   * The current title. Used to update the parent container's title when this
+   * page is activated.
+   * @private
+   */
+  OptionsPage.title_ = '';
+
+  /**
    * Gets the default page (to be shown on initial load).
    */
   OptionsPage.getDefaultPage = function() {
@@ -181,29 +188,14 @@ cr.define('options', function() {
   };
 
   /**
-   * Invokes a method on the parent window. This is a convenience method for
-   * API calls into the parent.
-   * @param {String} method The name of the method to invoke.
-   * @param {Object} params Optional property bag of parameters to pass to the
-   *     invoked method.
-   * @private
-   */
-  OptionsPage.invokeMethodOnParent_ = function(method, params) {
-    if (!window.parent)
-      return;
-
-    var data = {method: method, params: params};
-    window.parent.postMessage(data, 'chrome://chrome');
-  };
-
-  /**
    * Sets the title of the page. This is accomplished by calling into the
    * parent page API.
    * @param {String} title The title string.
    * @private
    */
   OptionsPage.setTitle_ = function(title) {
-    this.invokeMethodOnParent_('setTitle', {title: title});
+    this.title_ = title;
+    uber.invokeMethodOnParent('setTitle', {title: title});
   };
 
   /**
@@ -637,6 +629,7 @@ cr.define('options', function() {
 
     document.addEventListener('scroll', this.handleScroll_.bind(this));
     window.addEventListener('resize', this.handleResize_.bind(this));
+    window.addEventListener('message', this.handleWindowMessage_.bind(this));
 
     if (!document.documentElement.classList.contains('hide-menu')) {
       // Close subpages if the user clicks on the html body. Listen in the
@@ -681,6 +674,18 @@ cr.define('options', function() {
     // Trigger the resize handler manually to set the initial state.
     this.handleResize_(null);
   };
+
+  /**
+   * Handles postMessage calls from the container of this page.
+   * @param {Event} e The posted object.
+   * @private
+   */
+  OptionsPage.handleWindowMessage_ = function(e) {
+    if (e.data === 'onPageActivated')
+      uber.invokeMethodOnParent('setTitle', {title: this.title_});
+    else
+      console.error('Received unexpected message: ' + e.data);
+  },
 
   /**
    * Does a bounds check for the element on the given x, y client coordinates.

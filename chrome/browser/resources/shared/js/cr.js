@@ -189,7 +189,6 @@ const cr = (function() {
         };
       case PropertyKind.BOOL_ATTR:
         var attributeName = getAttributeName(name);
-        console.log('attributeName: ' + attributeName);
         return function() {
           return this.hasAttribute(attributeName);
         };

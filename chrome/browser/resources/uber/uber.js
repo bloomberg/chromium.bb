@@ -5,6 +5,13 @@
 cr.define('uber', function() {
 
   /**
+   * Map from |iframe.src| to the title of |iframe|, cached so the contained
+   * pages don't have to update the title on each activation.
+   * @private
+   */
+  var titleMap_ = {};
+
+  /**
    * Handles page initialization.
    */
   function onLoad() {
@@ -48,11 +55,18 @@ cr.define('uber', function() {
    *     been selected.
    */
   function selectPageForNavItem(navItem) {
+    // Note that |iframe| is the containing element of the underlying iframe, as
+    // opposed to the iframe element itself.
     var iframe = navItem.associatedIframe;
-    var currentIframe =
-        document.querySelector('.iframe-container.selected');
+    var currentIframe = getSelectedIframe_();
     if (currentIframe == iframe)
       return false;
+
+    // Restore the cached title.
+    var iframeEl = iframe.querySelector('iframe');
+    var title = titleMap_[iframeEl.src];
+    if (title)
+      document.title = title;
 
     currentIframe.classList.remove('selected');
     iframe.classList.add('selected');
@@ -74,18 +88,25 @@ cr.define('uber', function() {
   }
 
   /**
+   * @return {Object} The currently selected iframe container.
+   * @private
+   */
+  function getSelectedIframe_() {
+    return document.querySelector('.iframe-container.selected');
+  }
+
+  /**
    * Handles postMessage calls from the iframes of the contained pages.
    *
    * The pages request functionality from this object by passing an object of
    * the following form:
    *
    *  { method : "methodToInvoke",
-   *    otherData : ...
+   *    params : {...}
    *  }
    *
-   * |method| is required, but any other properties are optional. Extra
-   * properties required by a method must be specified by that method's
-   * documentation.
+   * |method| is required, while |params| is optional. Extra parameters required
+   * by a method must be specified by that method's documentation.
    *
    * @param {Event} e The posted object.
    */
@@ -95,7 +116,7 @@ cr.define('uber', function() {
     else if (e.data.method === 'hideOverlay')
       hideOverlay_();
     else if (e.data.method === 'setTitle')
-      setTitle_(e.data.params);
+      setTitle_(e.origin, e.data.params);
     else
       console.error('Received unexpected message: ' + e.data);
   }
@@ -116,11 +137,24 @@ cr.define('uber', function() {
 
   /**
    * Sets the title of the page.
+   * @param {Object} origin The origin of the source iframe.
    * @param {Object} params Must contain a |title| property.
    * @private
    */
-  function setTitle_(params) {
-    document.title = params.title;
+  function setTitle_(origin, params) {
+    var container = getSelectedIframe_();
+    var iframe = container.querySelector('iframe');
+
+    // |iframe.src| always contains a trailing backslash while |origin| does not
+    // so add the trailing source for normalization.
+    origin += '/';
+
+    // Only update the currently displayed title if this is the visible frame.
+    if (iframe.src === origin)
+      document.title = params.title;
+
+    // Cache the title for the selected iframe.
+    titleMap_[origin] = params.title;
   }
 
   return {
