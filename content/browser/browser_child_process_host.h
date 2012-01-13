@@ -70,10 +70,6 @@ class CONTENT_EXPORT BrowserChildProcessHost :
   virtual bool Send(IPC::Message* message) OVERRIDE;
 
   const content::ChildProcessData& data() const { return data_; }
-  content::ProcessType type() const { return data_.type; }
-  const string16& name() const { return data_.name; }
-  base::ProcessHandle handle() const { return data_.handle; }
-  int id() const { return data_.id; }
   bool disconnect_was_alive() const { return disconnect_was_alive_; }
 
  protected:
@@ -108,7 +104,7 @@ class CONTENT_EXPORT BrowserChildProcessHost :
   // GetExitCodeProcess()).  |exit_code| may be NULL.
   base::TerminationStatus GetChildTerminationStatus(int* exit_code);
 
-  // Overrides from ChildProcessHost
+  // Overrides from ChildProcessHostDelegate
   virtual bool CanShutdown() OVERRIDE;
   virtual void OnChildDisconnected() OVERRIDE;
   virtual void ShutdownStarted() OVERRIDE;

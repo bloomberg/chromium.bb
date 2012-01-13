@@ -495,7 +495,7 @@ void GpuProcessHost::OnProcessLaunched() {
   // to such requests require that the GPU process handle be known.
 
   base::ProcessHandle child_handle = in_process_ ?
-      base::GetCurrentProcessHandle() : handle();
+      base::GetCurrentProcessHandle() : data().handle;
 
 #if defined(OS_WIN)
   DuplicateHandle(base::GetCurrentProcessHandle(),

@@ -108,7 +108,7 @@ WorkerProcessHost::~WorkerProcessHost() {
         this, i->worker_route_id());
   }
 
-  ChildProcessSecurityPolicy::GetInstance()->Remove(id());
+  ChildProcessSecurityPolicy::GetInstance()->Remove(data().id);
 }
 
 bool WorkerProcessHost::Init(int render_process_id) {
@@ -185,7 +185,7 @@ bool WorkerProcessHost::Init(int render_process_id) {
       cmd_line);
 
   ChildProcessSecurityPolicy::GetInstance()->AddWorker(
-      id(), render_process_id);
+      data().id, render_process_id);
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableFileSystem)) {
     // Grant most file permissions to this worker.
@@ -194,7 +194,7 @@ bool WorkerProcessHost::Init(int render_process_id) {
     // requests them.
     // This is for the filesystem sandbox.
     ChildProcessSecurityPolicy::GetInstance()->GrantPermissionsForFile(
-        id(), resource_context_->file_system_context()->
+        data().id, resource_context_->file_system_context()->
           sandbox_provider()->new_base_path(),
         base::PLATFORM_FILE_OPEN |
         base::PLATFORM_FILE_CREATE |
@@ -211,7 +211,7 @@ bool WorkerProcessHost::Init(int render_process_id) {
     // This is so that we can read and move stuff out of the old filesystem
     // sandbox.
     ChildProcessSecurityPolicy::GetInstance()->GrantPermissionsForFile(
-        id(), resource_context_->file_system_context()->
+        data().id, resource_context_->file_system_context()->
           sandbox_provider()->old_base_path(),
         base::PLATFORM_FILE_READ | base::PLATFORM_FILE_WRITE |
             base::PLATFORM_FILE_WRITE_ATTRIBUTES |
@@ -219,7 +219,7 @@ bool WorkerProcessHost::Init(int render_process_id) {
     // This is so that we can rename the old sandbox out of the way so that
     // we know we've taken care of it.
     ChildProcessSecurityPolicy::GetInstance()->GrantPermissionsForFile(
-        id(), resource_context_->file_system_context()->
+        data().id, resource_context_->file_system_context()->
           sandbox_provider()->renamed_old_base_path(),
         base::PLATFORM_FILE_CREATE | base::PLATFORM_FILE_CREATE_ALWAYS |
             base::PLATFORM_FILE_WRITE);
@@ -236,7 +236,7 @@ void WorkerProcessHost::CreateMessageFilters(int render_process_id) {
       resource_context_->request_context();
 
   ResourceMessageFilter* resource_message_filter = new ResourceMessageFilter(
-      id(), content::PROCESS_TYPE_WORKER, resource_context_,
+      data().id, content::PROCESS_TYPE_WORKER, resource_context_,
       new URLRequestContextSelector(request_context));
   child_process_host()->AddFilter(resource_message_filter);
 
@@ -246,12 +246,12 @@ void WorkerProcessHost::CreateMessageFilters(int render_process_id) {
                  base::Unretained(WorkerServiceImpl::GetInstance())));
   child_process_host()->AddFilter(worker_message_filter_);
   child_process_host()->AddFilter(new AppCacheDispatcherHost(
-      resource_context_->appcache_service(), id()));
+      resource_context_->appcache_service(), data().id));
   child_process_host()->AddFilter(new FileSystemDispatcherHost(
       request_context, resource_context_->file_system_context()));
-  child_process_host()->AddFilter(new FileUtilitiesMessageFilter(id()));
+  child_process_host()->AddFilter(new FileUtilitiesMessageFilter(data().id));
   child_process_host()->AddFilter(new BlobMessageFilter(
-      id(), resource_context_->blob_storage_context()));
+      data().id, resource_context_->blob_storage_context()));
   child_process_host()->AddFilter(new MimeRegistryMessageFilter());
   child_process_host()->AddFilter(new DatabaseMessageFilter(
       resource_context_->database_tracker()));
@@ -261,12 +261,12 @@ void WorkerProcessHost::CreateMessageFilters(int render_process_id) {
           new URLRequestContextSelector(request_context), resource_context_);
   child_process_host()->AddFilter(socket_stream_dispatcher_host);
   child_process_host()->AddFilter(
-      new content::WorkerDevToolsMessageFilter(id()));
+      new content::WorkerDevToolsMessageFilter(data().id));
 }
 
 void WorkerProcessHost::CreateWorker(const WorkerInstance& instance) {
   ChildProcessSecurityPolicy::GetInstance()->GrantRequestURL(
-      id(), instance.url());
+      data().id, instance.url());
 
   instances_.push_back(instance);
 
@@ -319,7 +319,8 @@ bool WorkerProcessHost::OnMessageReceived(const IPC::Message& message) {
   if (!msg_is_ok) {
     NOTREACHED();
     content::RecordAction(UserMetricsAction("BadMessageTerminate_WPH"));
-    base::KillProcess(handle(), content::RESULT_CODE_KILLED_BAD_MESSAGE, false);
+    base::KillProcess(
+        data().handle, content::RESULT_CODE_KILLED_BAD_MESSAGE, false);
   }
 
   if (handled)

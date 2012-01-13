@@ -75,7 +75,7 @@ void PluginProcessHost::OnPluginHideWindow(uint32 window_id,
   if (plugin_fullscreen_windows_set_.find(window_id) !=
       plugin_fullscreen_windows_set_.end()) {
     plugin_fullscreen_windows_set_.erase(window_id);
-    pid_t plugin_pid = browser_needs_activation ? -1 : handle();
+    pid_t plugin_pid = browser_needs_activation ? -1 : data().handle;
     browser_needs_activation = false;
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                             base::Bind(ReleasePluginFullScreen, plugin_pid));
@@ -94,8 +94,9 @@ void PluginProcessHost::OnAppActivation() {
   // If our plugin process has any modal windows up, we need to bring it forward
   // so that they act more like an in-process modal window would.
   if (!plugin_modal_windows_set_.empty()) {
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::Bind(base::mac::ActivateProcess, handle()));
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(base::mac::ActivateProcess, data().handle));
   }
 }
 

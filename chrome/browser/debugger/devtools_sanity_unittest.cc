@@ -292,7 +292,7 @@ class WorkerDevToolsSanityTest : public InProcessBrowserTest {
     virtual void WorkerCreated (
         WorkerProcessHost* process,
         const WorkerProcessHost::WorkerInstance& instance) OVERRIDE {
-      worker_data_->worker_process_id = process->id();
+      worker_data_->worker_process_id = process->data().id;
       worker_data_->worker_route_id = instance.worker_route_id();
       WorkerService::GetInstance()->RemoveObserver(this);
       BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
@@ -323,7 +323,7 @@ class WorkerDevToolsSanityTest : public InProcessBrowserTest {
     virtual void WorkerDestroyed(
         WorkerProcessHost* process,
         int worker_route_id) OVERRIDE {
-      ASSERT_EQ(worker_data_->worker_process_id, process->id());
+      ASSERT_EQ(worker_data_->worker_process_id, process->data().id);
       ASSERT_EQ(worker_data_->worker_route_id, worker_route_id);
       WorkerService::GetInstance()->RemoveObserver(this);
       BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
@@ -351,7 +351,7 @@ class WorkerDevToolsSanityTest : public InProcessBrowserTest {
       scoped_refptr<WorkerData> worker_data) {
     for (BrowserChildProcessHost::Iterator iter(content::PROCESS_TYPE_WORKER);
          !iter.Done(); ++iter) {
-      if (iter->id() == worker_data->worker_process_id) {
+      if (iter->data().id == worker_data->worker_process_id) {
         WorkerProcessHost* host = static_cast<WorkerProcessHost*>(*iter);
         host->TerminateWorker(worker_data->worker_route_id);
         WorkerService::GetInstance()->AddObserver(
@@ -378,7 +378,7 @@ class WorkerDevToolsSanityTest : public InProcessBrowserTest {
       for (WorkerProcessHost::Instances::const_iterator i = instances.begin();
            i != instances.end(); ++i) {
 
-        worker_data->worker_process_id = worker->id();
+        worker_data->worker_process_id = worker->data().id;
         worker_data->worker_route_id = i->worker_route_id();
         BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
             MessageLoop::QuitClosure());

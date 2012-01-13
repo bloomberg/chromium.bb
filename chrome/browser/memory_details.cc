@@ -134,13 +134,13 @@ void MemoryDetails::CollectChildInfoOnIOThread() {
   // Collect the list of child processes.
   for (BrowserChildProcessHost::Iterator iter; !iter.Done(); ++iter) {
     ProcessMemoryInformation info;
-    info.pid = base::GetProcId(iter->handle());
+    info.pid = base::GetProcId(iter->data().handle);
     if (!info.pid)
       continue;
 
-    info.type = iter->type();
+    info.type = iter->data().type;
     info.renderer_type = ProcessMemoryInformation::RENDERER_UNKNOWN;
-    info.titles.push_back(iter->name());
+    info.titles.push_back(iter->data().name);
     child_info.push_back(info);
   }
 

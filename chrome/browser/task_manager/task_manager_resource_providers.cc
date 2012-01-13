@@ -1074,12 +1074,9 @@ void TaskManagerChildProcessResourceProvider::RetrieveChildProcessData() {
   std::vector<content::ChildProcessData> child_processes;
   for (BrowserChildProcessHost::Iterator iter; !iter.Done(); ++iter) {
     // Only add processes which are already started, since we need their handle.
-    if ((*iter)->handle() == base::kNullProcessHandle)
+    if ((*iter)->data().handle == base::kNullProcessHandle)
       continue;
-    content::ChildProcessData data((*iter)->type());
-    data.name = (*iter)->name();
-    data.handle = (*iter)->handle();
-    child_processes.push_back(data);
+    child_processes.push_back((*iter)->data());
   }
   // Now notify the UI thread that we have retrieved information about child
   // processes.

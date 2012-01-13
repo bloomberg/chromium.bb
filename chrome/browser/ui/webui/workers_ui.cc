@@ -54,11 +54,11 @@ DictionaryValue* BuildWorkerData(
     WorkerProcessHost* process,
     const WorkerProcessHost::WorkerInstance& instance) {
   DictionaryValue* worker_data = new DictionaryValue();
-  worker_data->SetInteger(kWorkerProcessHostIdField, process->id());
+  worker_data->SetInteger(kWorkerProcessHostIdField, process->data().id);
   worker_data->SetInteger(kWorkerRouteIdField, instance.worker_route_id());
   worker_data->SetString(kUrlField, instance.url().spec());
   worker_data->SetString(kNameField, instance.name());
-  worker_data->SetInteger(kPidField, base::GetProcId(process->handle()));
+  worker_data->SetInteger(kPidField, base::GetProcId(process->data().handle));
   return worker_data;
 }
 
@@ -159,7 +159,7 @@ void WorkersDOMHandler::HandleOpenDevTools(const ListValue* args) {
 static void TerminateWorker(int worker_process_id, int worker_route_id) {
   for (BrowserChildProcessHost::Iterator iter(content::PROCESS_TYPE_WORKER);
        !iter.Done(); ++iter) {
-    if (iter->id() == worker_process_id) {
+    if (iter->data().id == worker_process_id) {
       WorkerProcessHost* worker = static_cast<WorkerProcessHost*>(*iter);
       worker->TerminateWorker(worker_route_id);
       return;
@@ -222,7 +222,7 @@ class WorkersUI::WorkerCreationDestructionListener
       WorkerProcessHost* process,
       int worker_route_id) OVERRIDE {
     DictionaryValue* worker_data = new DictionaryValue();
-    worker_data->SetInteger(kWorkerProcessHostIdField, process->id());
+    worker_data->SetInteger(kWorkerProcessHostIdField, process->data().id);
     worker_data->SetInteger(kWorkerRouteIdField, worker_route_id);
 
     BrowserThread::PostTask(

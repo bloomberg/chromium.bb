@@ -435,7 +435,7 @@ bool WorkerServiceImpl::GetRendererForWorker(int worker_process_id,
                                              int* render_view_id) const {
   for (BrowserChildProcessHost::Iterator iter(content::PROCESS_TYPE_WORKER);
        !iter.Done(); ++iter) {
-    if (iter->id() != worker_process_id)
+    if (iter->data().id != worker_process_id)
         continue;
 
     // This code assumes one worker per process, see function comment in header!
@@ -458,7 +458,7 @@ const WorkerProcessHost::WorkerInstance* WorkerServiceImpl::FindWorkerInstance(
       int worker_process_id) {
   for (BrowserChildProcessHost::Iterator iter(content::PROCESS_TYPE_WORKER);
        !iter.Done(); ++iter) {
-    if (iter->id() != worker_process_id)
+    if (iter->data().id != worker_process_id)
         continue;
 
     WorkerProcessHost* worker = static_cast<WorkerProcessHost*>(*iter);

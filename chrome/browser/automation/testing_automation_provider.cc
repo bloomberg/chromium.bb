@@ -2780,13 +2780,13 @@ void GetChildProcessHostInfo(ListValue* child_processes) {
   for (BrowserChildProcessHost::Iterator iter; !iter.Done(); ++iter) {
     // Only add processes which are already started,
     // since we need their handle.
-    if ((*iter)->handle() == base::kNullProcessHandle)
+    if ((*iter)->data().handle == base::kNullProcessHandle)
       continue;
     DictionaryValue* item = new DictionaryValue;
-    item->SetString("name", iter->name());
+    item->SetString("name", iter->data().name);
     item->SetString("type",
-                    content::GetProcessTypeNameInEnglish(iter->type()));
-    item->SetInteger("pid", base::GetProcId(iter->handle()));
+                    content::GetProcessTypeNameInEnglish(iter->data().type));
+    item->SetInteger("pid", base::GetProcId(iter->data().handle));
     child_processes->Append(item);
   }
 }

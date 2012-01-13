@@ -233,7 +233,7 @@ void TaskManagerWorkerResourceProvider::WorkerDestroyed(
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE, base::Bind(
           &TaskManagerWorkerResourceProvider::NotifyWorkerDestroyed,
-          this, process->id(), worker_route_id));
+          this, process->data().id, worker_route_id));
 }
 
 void TaskManagerWorkerResourceProvider::Observe(

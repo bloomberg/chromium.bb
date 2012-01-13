@@ -76,7 +76,7 @@ void ProfilerControllerImpl::GetProfilerDataFromChildProcesses(
   for (BrowserChildProcessHost::Iterator child_process_host;
        !child_process_host.Done(); ++child_process_host) {
     const std::string process_type =
-      content::GetProcessTypeNameInEnglish(child_process_host->type());
+      content::GetProcessTypeNameInEnglish(child_process_host->data().type);
     ++pending_processes;
     if (!child_process_host->Send(new ChildProcessMsg_GetChildProfilerData(
         sequence_number, process_type))) {

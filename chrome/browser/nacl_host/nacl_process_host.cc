@@ -472,7 +472,7 @@ void NaClProcessHost::SendStart(base::PlatformFile irt_file) {
 #if defined(OS_WIN)
   // Copy the process handle into the renderer process.
   if (!DuplicateHandle(base::GetCurrentProcessHandle(),
-                       handle(),
+                       data().handle,
                        chrome_render_message_filter_->peer_handle(),
                        &nacl_process_handle,
                        PROCESS_DUP_HANDLE,
@@ -484,11 +484,11 @@ void NaClProcessHost::SendStart(base::PlatformFile irt_file) {
   }
 #else
   // We use pid as process handle on Posix
-  nacl_process_handle = handle();
+  nacl_process_handle = data().handle;
 #endif
 
   // Get the pid of the NaCl process
-  base::ProcessId nacl_process_id = base::GetProcId(handle());
+  base::ProcessId nacl_process_id = base::GetProcId(data().handle);
 
   ChromeViewHostMsg_LaunchNaCl::WriteReplyParams(
       reply_msg_, handles_for_renderer, nacl_process_handle, nacl_process_id);
@@ -499,7 +499,7 @@ void NaClProcessHost::SendStart(base::PlatformFile irt_file) {
 
   std::vector<nacl::FileDescriptor> handles_for_sel_ldr;
   for (size_t i = 0; i < internal_->sockets_for_sel_ldr.size(); i++) {
-    if (!SendHandleToSelLdr(handle(),
+    if (!SendHandleToSelLdr(data().handle,
                             internal_->sockets_for_sel_ldr[i], true,
                             &handles_for_sel_ldr)) {
       delete this;
@@ -508,7 +508,8 @@ void NaClProcessHost::SendStart(base::PlatformFile irt_file) {
   }
 
   // Send over the IRT file handle.  We don't close our own copy!
-  if (!SendHandleToSelLdr(handle(), irt_file, false, &handles_for_sel_ldr)) {
+  if (!SendHandleToSelLdr(
+          data().handle, irt_file, false, &handles_for_sel_ldr)) {
     delete this;
     return;
   }

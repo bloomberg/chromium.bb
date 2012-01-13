@@ -92,7 +92,7 @@ void BrowserChildProcessHost::Launch(
     CommandLine* cmd_line) {
 
   content::GetContentClient()->browser()->AppendExtraCommandLineSwitches(
-      cmd_line, id());
+      cmd_line, data().id);
 
   child_process_.reset(new ChildProcessLauncher(
 #if defined(OS_WIN)
@@ -134,7 +134,7 @@ void BrowserChildProcessHost::Notify(int type) {
 base::TerminationStatus BrowserChildProcessHost::GetChildTerminationStatus(
     int* exit_code) {
   if (!child_process_.get())  // If the delegate doesn't use Launch() helper.
-    return base::GetTerminationStatus(handle(), exit_code);
+    return base::GetTerminationStatus(data().handle, exit_code);
   return child_process_->GetChildTerminationStatus(exit_code);
 }
 
@@ -158,7 +158,7 @@ bool BrowserChildProcessHost::CanShutdown() {
 // may be called twice: once from the actual channel error and once from
 // OnWaitableEventSignaled() or the delayed task.
 void BrowserChildProcessHost::OnChildDisconnected() {
-  DCHECK(handle() != base::kNullProcessHandle);
+  DCHECK(data().handle != base::kNullProcessHandle);
   int exit_code;
   base::TerminationStatus status = GetChildTerminationStatus(&exit_code);
   switch (status) {
@@ -168,11 +168,11 @@ void BrowserChildProcessHost::OnChildDisconnected() {
       // Report that this child process crashed.
       Notify(content::NOTIFICATION_CHILD_PROCESS_CRASHED);
       UMA_HISTOGRAM_ENUMERATION("ChildProcess.Crashed",
-                                this->type(),
+                                data().type,
                                 content::PROCESS_TYPE_MAX);
       if (disconnect_was_alive_) {
         UMA_HISTOGRAM_ENUMERATION("ChildProcess.CrashedWasAlive",
-                                  this->type(),
+                                  data().type,
                                   content::PROCESS_TYPE_MAX);
       }
       break;
@@ -180,11 +180,11 @@ void BrowserChildProcessHost::OnChildDisconnected() {
     case base::TERMINATION_STATUS_PROCESS_WAS_KILLED: {
       // Report that this child process was killed.
       UMA_HISTOGRAM_ENUMERATION("ChildProcess.Killed",
-                                this->type(),
+                                data().type,
                                 content::PROCESS_TYPE_MAX);
       if (disconnect_was_alive_) {
         UMA_HISTOGRAM_ENUMERATION("ChildProcess.KilledWasAlive",
-                                  this->type(),
+                                  data().type,
                                   content::PROCESS_TYPE_MAX);
       }
       break;
@@ -194,13 +194,14 @@ void BrowserChildProcessHost::OnChildDisconnected() {
       // code.
       if (disconnect_was_alive_) {
         UMA_HISTOGRAM_ENUMERATION("ChildProcess.DisconnectedAlive",
-                                  this->type(),
+                                  data().type,
                                   content::PROCESS_TYPE_MAX);
         break;
       }
       disconnect_was_alive_ = true;
 #if defined(OS_WIN)
-      child_watcher_.StartWatching(new base::WaitableEvent(handle()), this);
+      child_watcher_.StartWatching(
+          new base::WaitableEvent(data().handle), this);
 #else
       // On non-Windows platforms, give the child process some time to die after
       // disconnecting the channel so that the exit code and termination status
@@ -220,7 +221,7 @@ void BrowserChildProcessHost::OnChildDisconnected() {
       break;
   }
   UMA_HISTOGRAM_ENUMERATION("ChildProcess.Disconnected",
-                            this->type(),
+                            data().type,
                             content::PROCESS_TYPE_MAX);
   // Notify in the main loop of the disconnection.
   Notify(content::NOTIFICATION_CHILD_PROCESS_HOST_DISCONNECTED);
@@ -280,7 +281,7 @@ BrowserChildProcessHost::Iterator::Iterator(content::ProcessType type)
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO)) <<
           "BrowserChildProcessHost::Iterator must be used on the IO thread.";
   iterator_ = g_child_process_list.Get().begin();
-  if (!Done() && (*iterator_)->type() != type_)
+  if (!Done() && (*iterator_)->data().type != type_)
     ++(*this);
 }
 
@@ -290,7 +291,7 @@ BrowserChildProcessHost* BrowserChildProcessHost::Iterator::operator++() {
     if (Done())
       break;
 
-    if (!all_ && (*iterator_)->type() != type_)
+    if (!all_ && (*iterator_)->data().type != type_)
       continue;
 
     return *iterator_;

@@ -131,11 +131,11 @@ void NotifyPluginProcessHostHelper(HWND window, HWND parent, int tries) {
   for (BrowserChildProcessHost::Iterator iter(content::PROCESS_TYPE_PLUGIN);
        !iter.Done(); ++iter) {
     PluginProcessHost* plugin = static_cast<PluginProcessHost*>(*iter);
-    if (!plugin->handle()) {
+    if (!plugin->data().handle) {
       found_starting_plugin_process = true;
       continue;
     }
-    if (base::GetProcId(plugin->handle()) == plugin_process_id) {
+    if (base::GetProcId(plugin->data().handle) == plugin_process_id) {
       plugin->AddWindow(parent);
       return;
     }
