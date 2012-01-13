@@ -41,7 +41,6 @@ const char kGeneratedDir[] = "generated-dir";
 // Command line flag for overriding the default location for reference images.
 const char kReferenceDir[] = "reference-dir";
 
-
 // Reads and decodes a PNG image to a bitmap. Returns true on success. The PNG
 // should have been encoded using |gfx::PNGCodec::Encode|.
 bool ReadPNGFile(const FilePath& file_path, SkBitmap* bitmap) {
@@ -65,21 +64,6 @@ bool WritePNGFile(const SkBitmap& bitmap, const FilePath& file_path) {
       return true;
   }
   return false;
-}
-
-// Resizes the browser window so that the tab's contents are at a given size.
-void ResizeTabContainer(Browser* browser, const gfx::Size& desired_size) {
-  gfx::Rect container_rect;
-  browser->GetSelectedWebContents()->GetContainerBounds(&container_rect);
-  // Size cannot be negative, so use a point.
-  gfx::Point correction(desired_size.width() - container_rect.size().width(),
-                        desired_size.height() - container_rect.size().height());
-
-  gfx::Rect window_rect = browser->window()->GetRestoredBounds();
-  gfx::Size new_size = window_rect.size();
-  new_size.Enlarge(correction.x(), correction.y());
-  window_rect.set_size(new_size);
-  browser->window()->SetBounds(window_rect);
 }
 
 }  // namespace
@@ -126,6 +110,43 @@ class GpuPixelBrowserTest : public InProcessBrowserTest {
     ui::Compositor::set_compositor_factory_for_testing(NULL);
 #endif
   }
+
+  // If the existing ref image was saved from an revision older than the
+  // ref_img_update_revision, refresh the ref image.
+  void RunPixelTest(const gfx::Size& tab_container_size,
+                    const FilePath& url,
+                    int64 ref_img_update_revision) {
+    ref_img_revision_no_older_than_ = ref_img_update_revision;
+    ObtainLocalRefImageFilePath();
+
+    ResizeTabContainer(tab_container_size);
+    ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
+
+    ui_test_utils::DOMMessageQueue message_queue;
+    ui_test_utils::NavigateToURL(browser(), net::FilePathToFileURL(url));
+
+    // Wait for message from test page indicating the rendering is done.
+    ASSERT_TRUE(message_queue.WaitForMessage(NULL));
+
+    SkBitmap bitmap;
+    ASSERT_TRUE(TabSnapShotToImage(&bitmap));
+    ASSERT_TRUE(CompareImages(bitmap));
+  }
+
+  const FilePath& test_data_dir() const {
+    return test_data_dir_;
+  }
+
+ private:
+  FilePath test_data_dir_;
+  FilePath generated_img_dir_;
+  FilePath ref_img_dir_;
+  FilePath ref_img_path_;
+  // The name of the test, with any special prefixes dropped.
+  std::string test_name_;
+
+  // Any local ref image generated from older revision is ignored.
+  int64 ref_img_revision_no_older_than_;
 
   // Compares the generated bitmap with the appropriate reference image on disk.
   // Returns true iff the images were the same.
@@ -237,25 +258,50 @@ class GpuPixelBrowserTest : public InProcessBrowserTest {
     return rt;
   }
 
-  // This has to be called by every pixel test. If no specific revision is
-  // required, just call it with 0.
-  void SetRefImageRevisionNoOlderThan(int64 revision) {
-    ref_img_revision_no_older_than_ = revision;
-    ObtainLocalRefImageFilePath();
+  // Resizes the browser window so that the tab's contents are at a given size.
+  void ResizeTabContainer(const gfx::Size& desired_size) {
+    gfx::Rect container_rect;
+    browser()->GetSelectedWebContents()->GetContainerBounds(&container_rect);
+    // Size cannot be negative, so use a point.
+    gfx::Point correction(
+        desired_size.width() - container_rect.size().width(),
+        desired_size.height() - container_rect.size().height());
+
+    gfx::Rect window_rect = browser()->window()->GetRestoredBounds();
+    gfx::Size new_size = window_rect.size();
+    new_size.Enlarge(correction.x(), correction.y());
+    window_rect.set_size(new_size);
+    browser()->window()->SetBounds(window_rect);
   }
 
- protected:
-  FilePath test_data_dir_;
+  // Take snapshot of the current tab, encode it as PNG, and save to a SkBitmap.
+  bool TabSnapShotToImage(SkBitmap* bitmap) {
+    CHECK(bitmap);
+    std::vector<unsigned char> png;
 
- private:
-  FilePath generated_img_dir_;
-  FilePath ref_img_dir_;
-  FilePath ref_img_path_;
-  // The name of the test, with any special prefixes dropped.
-  std::string test_name_;
+    gfx::Rect root_bounds = browser()->window()->GetBounds();
+    gfx::Rect tab_contents_bounds;
+    browser()->GetSelectedWebContents()->GetContainerBounds(
+        &tab_contents_bounds);
 
-  // Any local ref image generated from older revision is ignored.
-  int64 ref_img_revision_no_older_than_;
+    gfx::Rect snapshot_bounds(tab_contents_bounds.x() - root_bounds.x(),
+                              tab_contents_bounds.y() - root_bounds.y(),
+                              tab_contents_bounds.width(),
+                              tab_contents_bounds.height());
+
+    gfx::NativeWindow native_window = browser()->window()->GetNativeHandle();
+    if (!browser::GrabWindowSnapshot(native_window, &png, snapshot_bounds)) {
+      LOG(ERROR) << "browser::GrabWindowSnapShot() failed";
+      return false;
+    }
+
+    if (!gfx::PNGCodec::Decode(reinterpret_cast<unsigned char*>(&*png.begin()),
+                               png.size(), bitmap)) {
+      LOG(ERROR) << "Decode PNG to a SkBitmap failed";
+      return false;
+    }
+    return true;
+  }
 
   // If no valid local ref image is located, the ref_img_path_ remains
   // empty.
@@ -306,45 +352,12 @@ class GpuPixelBrowserTest : public InProcessBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(GpuPixelBrowserTest, MAYBE_WebGLTeapot) {
   // If test baseline needs to be updated after a given revision, update the
-  // revision number in SetRefImageNoOlderThan(#revision).
-  SetRefImageRevisionNoOlderThan(116356);
+  // following number. If no revision requirement, then 0.
+  const int64 ref_img_revision_update = 116356;
 
   gfx::Size container_size(500, 500);
-  ResizeTabContainer(browser(), container_size);
-
-  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
-
-  ui_test_utils::DOMMessageQueue message_queue;
-  ui_test_utils::NavigateToURL(
-      browser(),
-      net::FilePathToFileURL(test_data_dir_.AppendASCII("webgl_teapot").
-          AppendASCII("teapot.html")));
-
-  // Wait for message from teapot page indicating the GL calls have been issued.
-  ASSERT_TRUE(message_queue.WaitForMessage(NULL));
-
-  std::vector<unsigned char> screenshot_png;
-
-  gfx::Rect root_bounds = browser()->window()->GetBounds();
-  gfx::Rect tab_contents_bounds;
-  browser()->GetSelectedWebContents()->GetContainerBounds(&tab_contents_bounds);
-
-  gfx::Rect snapshot_bounds(tab_contents_bounds.x() - root_bounds.x(),
-                            tab_contents_bounds.y() - root_bounds.y(),
-                            tab_contents_bounds.width(),
-                            tab_contents_bounds.height());
-
-  gfx::NativeWindow native_window = browser()->window()->GetNativeHandle();
-  bool success = browser::GrabWindowSnapshot(native_window, &screenshot_png,
-                                             snapshot_bounds);
-  ASSERT_TRUE(success);
-
-  SkBitmap bitmap;
-  success = gfx::PNGCodec::Decode(
-      reinterpret_cast<unsigned char*>(&*screenshot_png.begin()),
-      screenshot_png.size(),
-      &bitmap);
-
-  ASSERT_TRUE(success);
-  ASSERT_TRUE(CompareImages(bitmap));
+  FilePath url =
+      test_data_dir().AppendASCII("webgl_teapot").AppendASCII("teapot.html");
+  RunPixelTest(container_size, url, ref_img_revision_update);
 }
+
