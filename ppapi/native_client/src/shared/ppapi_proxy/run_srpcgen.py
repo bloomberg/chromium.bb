@@ -68,7 +68,6 @@ all_units = [
          'ppb_find.srpc',
          'ppb_font.srpc',
          'ppb_fullscreen.srpc',
-         'ppb_gamepad.srpc',
          'ppb_graphics_2d.srpc',
          'ppb_graphics_3d.srpc',
          'ppb_image_data.srpc',

@@ -1,4 +1,4 @@
-# Copyright (c) 2012 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -24,7 +24,6 @@
         'browser_ppb_find_rpc_server.cc',
         'browser_ppb_font_rpc_server.cc',
         'browser_ppb_fullscreen_rpc_server.cc',
-        'browser_ppb_gamepad_rpc_server.cc',
         'browser_ppb_graphics_2d_rpc_server.cc',
         'browser_ppb_graphics_3d_rpc_server.cc',
         'browser_ppb_image_data_rpc_server.cc',

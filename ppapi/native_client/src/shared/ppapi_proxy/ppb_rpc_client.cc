@@ -1158,23 +1158,6 @@ NaClSrpcError PpbFullscreenRpcClient::PPB_Fullscreen_GetScreenSize(
   return retval;
 }
 
-NaClSrpcError PpbGamepadRpcClient::PPB_Gamepad_SampleGamepads(
-    NaClSrpcChannel* channel,
-    PP_Instance instance,
-    nacl_abi_size_t* data_bytes, char* data)  {
-  VCHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread(),
-         ("%s: PPAPI calls are not supported off the main thread\n",
-          __FUNCTION__));
-  NaClSrpcError retval;
-  retval = NaClSrpcInvokeBySignature(
-      channel,
-      "PPB_Gamepad_SampleGamepads:i:C",
-      instance,
-      data_bytes, data
-  );
-  return retval;
-}
-
 NaClSrpcError PpbGraphics2DRpcClient::PPB_Graphics2D_Create(
     NaClSrpcChannel* channel,
     PP_Instance instance,

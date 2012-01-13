@@ -427,19 +427,6 @@ class PpbFullscreenRpcClient {
   void operator=(const PpbFullscreenRpcClient);
 };  // class PpbFullscreenRpcClient
 
-class PpbGamepadRpcClient {
- public:
-  static NaClSrpcError PPB_Gamepad_SampleGamepads(
-      NaClSrpcChannel* channel,
-      PP_Instance instance,
-      nacl_abi_size_t* data_bytes, char* data);
-
- private:
-  PpbGamepadRpcClient();
-  PpbGamepadRpcClient(const PpbGamepadRpcClient&);
-  void operator=(const PpbGamepadRpcClient);
-};  // class PpbGamepadRpcClient
-
 class PpbGraphics2DRpcClient {
  public:
   static NaClSrpcError PPB_Graphics2D_Create(

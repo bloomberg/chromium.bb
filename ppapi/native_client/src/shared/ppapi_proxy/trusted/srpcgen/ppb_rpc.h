@@ -487,20 +487,6 @@ class PpbFullscreenRpcServer {
   void operator=(const PpbFullscreenRpcServer);
 };  // class PpbFullscreenRpcServer
 
-class PpbGamepadRpcServer {
- public:
-  static void PPB_Gamepad_SampleGamepads(
-      NaClSrpcRpc* rpc,
-      NaClSrpcClosure* done,
-      PP_Instance instance,
-      nacl_abi_size_t* data_bytes, char* data);
-
- private:
-  PpbGamepadRpcServer();
-  PpbGamepadRpcServer(const PpbGamepadRpcServer&);
-  void operator=(const PpbGamepadRpcServer);
-};  // class PpbGamepadRpcServer
-
 class PpbGraphics2DRpcServer {
  public:
   static void PPB_Graphics2D_Create(

@@ -18,7 +18,6 @@
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_find.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_font.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_fullscreen.h"
-#include "native_client/src/shared/ppapi_proxy/plugin_ppb_gamepad.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_graphics_2d.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_graphics_3d.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_image_data.h"
@@ -65,7 +64,6 @@ InterfaceMapElement interface_map[] = {
   { PPB_FIND_DEV_INTERFACE, PluginFind::GetInterface(), true },
   { PPB_FONT_DEV_INTERFACE, PluginFont::GetInterface(), true },
   { PPB_FULLSCREEN_INTERFACE, PluginFullscreen::GetInterface(), true },
-  { PPB_GAMEPAD_DEV_INTERFACE, PluginGamepad::GetInterface(), true },
   { PPB_GRAPHICS_2D_INTERFACE, PluginGraphics2D::GetInterface(), true },
   { PPB_GRAPHICS_3D_INTERFACE, PluginGraphics3D::GetInterface(), true },
   { PPB_IMAGEDATA_INTERFACE, PluginImageData::GetInterface(), true },
