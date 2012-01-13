@@ -93,8 +93,7 @@ HostNPScriptObject::HostNPScriptObject(
       disconnected_event_(true, false),
       am_currently_logging_(false),
       nat_traversal_enabled_(false),
-      policy_received_(false),
-      enable_log_to_server_(false) {
+      policy_received_(false) {
 }
 
 HostNPScriptObject::~HostNPScriptObject() {
@@ -526,10 +525,8 @@ void HostNPScriptObject::FinishConnectNetworkThread(
       &host_context_, signal_strategy_.get(),
       desktop_environment_.get(), nat_traversal_enabled_);
   host_->AddStatusObserver(this);
-  if (enable_log_to_server_) {
-    log_to_server_.reset(new LogToServer(signal_strategy_.get()));
-    host_->AddStatusObserver(log_to_server_.get());
-  }
+  log_to_server_.reset(new LogToServer(signal_strategy_.get()));
+  host_->AddStatusObserver(log_to_server_.get());
   host_->set_it2me(true);
   it2me_host_user_interface_.reset(new It2MeHostUserInterface(host_.get(),
                                                               &host_context_));

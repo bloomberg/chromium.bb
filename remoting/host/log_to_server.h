@@ -28,6 +28,8 @@ class ChromotingHost;
 class IqSender;
 
 // LogToServer sends log entries to a server.
+// The contents of the log entries are described in server_log_entry.cc.
+// They do not contain any personally identifiable information.
 class LogToServer : public base::NonThreadSafe,
                     public HostStatusObserver,
                     public SignalStrategy::Listener {

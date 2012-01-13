@@ -209,9 +209,6 @@ class HostNPScriptObject : public HostStatusObserver {
   // queried our policy restrictions.
   bool policy_received_;
 
-  // Whether logging to a server is enabled.
-  bool enable_log_to_server_;
-
   // On startup, it is possible to have Connect() called before the policy read
   // is completed.  Rather than just failing, we thunk the connection call so
   // it can be executed after at least one successful policy read. This
