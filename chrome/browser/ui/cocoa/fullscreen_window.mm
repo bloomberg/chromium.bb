@@ -1,9 +1,10 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "chrome/browser/ui/cocoa/fullscreen_window.h"
 
+#import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
 
 @implementation FullscreenWindow
@@ -72,10 +73,17 @@
 // We need our own version, since the default one wants to flash the close
 // button (and possibly other things), which results in nothing happening.
 - (void)performClose:(id)sender {
-  BOOL shouldClose = YES;
+  id delegate = [self delegate];
+
+  // Route -performClose: to -commandDispatch: on the delegate when coming from
+  // the "close tab" menu item. See comment in chrome_browser_window.mm.
+  if ([self performCloseShouldRouteToCommandDispatch:sender]) {
+    [delegate commandDispatch:sender];
+    return;
+  }
 
   // If applicable, check if this window should close.
-  id delegate = [self delegate];
+  BOOL shouldClose = YES;
   if ([delegate respondsToSelector:@selector(windowShouldClose:)])
     shouldClose = [delegate windowShouldClose:self];
 
