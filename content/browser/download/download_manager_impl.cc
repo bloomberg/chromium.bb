@@ -693,10 +693,6 @@ void DownloadManagerImpl::RemoveFromActiveList(DownloadItem* download) {
   }
 }
 
-bool DownloadManagerImpl::GenerateFileHash() {
-  return delegate_->GenerateFileHash();
-}
-
 content::DownloadManagerDelegate* DownloadManagerImpl::delegate() const {
   return delegate_;
 }
@@ -748,8 +744,8 @@ void DownloadManagerImpl::DownloadRemoved(DownloadItem* download) {
   DCHECK_EQ(1, downloads_count);
 }
 
-int DownloadManagerImpl::RemoveDownloadsBetween(base::Time remove_begin,
-                                                base::Time remove_end) {
+int DownloadManagerImpl::RemoveDownloadsBetween(const base::Time remove_begin,
+                                                const base::Time remove_end) {
   delegate_->RemoveItemsFromPersistentStoreBetween(remove_begin, remove_end);
 
   // All downloads visible to the user will be in the history,
@@ -769,7 +765,7 @@ int DownloadManagerImpl::RemoveDownloadsBetween(base::Time remove_begin,
   return RemoveDownloadItems(pending_deletes);
 }
 
-int DownloadManagerImpl::RemoveDownloads(base::Time remove_begin) {
+int DownloadManagerImpl::RemoveDownloads(const base::Time remove_begin) {
   return RemoveDownloadsBetween(remove_begin, base::Time());
 }
 

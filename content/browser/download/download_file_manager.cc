@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -167,7 +167,7 @@ void DownloadFileManager::StartDownload(
   }
 
   manager->CreateDownloadItem(info, request_handle);
-  bool hash_needed = manager->GenerateFileHash();
+  bool hash_needed = manager->delegate()->GenerateFileHash();
 
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
       base::Bind(&DownloadFileManager::CreateDownloadFile, this,
