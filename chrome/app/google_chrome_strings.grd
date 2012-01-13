@@ -477,6 +477,26 @@ Google Chrome is unable to recover your settings.
         Google Chrome cannot show the print preview when the built-in PDF viewer is disabled. In order to see the preview, please visit <ph name="BEGIN_LINK">&lt;a target="_blank" rel="noreferrer" href="$1"&gt;</ph>$1<ph name="END_LINK">&lt;/a&gt;</ph>, enable the "Chrome PDF Viewer", and try again.
       </message>
 
+      <!-- Download Shelf Items -->
+      <message name="IDS_DOWNLOAD_STATUS_CRX_INSTALL_RUNNING"
+               desc="Message shown when a CRX has been downloaded and is being unpacked.">
+        Adding to Chrome...
+      </message>
+
+      <!-- Remove in-progress downloads confirmation dialog -->
+      <message name="IDS_SINGLE_DOWNLOAD_REMOVE_CONFIRM_WARNING" desc="Title of the dialog asking for user confirmation to close the browser when one download is in-progress.">
+        Do you want to exit Google Chrome with a download in progress?
+      </message>
+      <message name="IDS_MULTIPLE_DOWNLOADS_REMOVE_CONFIRM_WARNING" desc="Title of the dialog asking for user confirmation to close the browser when multiple downloads are in-progress.">
+        Do you want to exit Google Chrome with <ph name="DOWNLOAD_COUNT">$1<ex>3</ex></ph> downloads in progress?
+      </message>
+      <message name="IDS_SINGLE_DOWNLOAD_REMOVE_CONFIRM_EXPLANATION" desc="Explanation of the dialog asking for user confirmation to close the browser when one download is in-progress.">
+        If you close Google Chrome now, this download will be canceled.
+      </message>
+      <message name="IDS_MULTIPLE_DOWNLOADS_REMOVE_CONFIRM_EXPLANATION" desc="Explanation of the dialog asking for user confirmation to close the browser when multiple downloads are in-progress.">
+        If you close Google Chrome now, these downloads will be canceled.
+      </message>
+
       <if expr="is_macosx">
         <message name="IDS_APP_MENU_PRODUCT_NAME" desc="The application's short name, used for the Mac's application menu, activity monitor, etc. This should be less than 16 characters. Example: Chrome, not Google Chrome.">
           Chrome

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -38,15 +38,12 @@ DownloadInProgressDialogGtk::DownloadInProgressDialogGtk(Browser* browser)
   std::string explanation_text;
   std::string ok_button_text;
   std::string cancel_button_text;
-  string16 product_name = l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
   if (download_count == 1) {
     warning_text =
-        l10n_util::GetStringFUTF8(IDS_SINGLE_DOWNLOAD_REMOVE_CONFIRM_WARNING,
-                                  product_name);
+        l10n_util::GetStringUTF8(IDS_SINGLE_DOWNLOAD_REMOVE_CONFIRM_WARNING);
     explanation_text =
-        l10n_util::GetStringFUTF8(
-            IDS_SINGLE_DOWNLOAD_REMOVE_CONFIRM_EXPLANATION,
-            product_name);
+        l10n_util::GetStringUTF8(
+            IDS_SINGLE_DOWNLOAD_REMOVE_CONFIRM_EXPLANATION);
     ok_button_text = l10n_util::GetStringUTF8(
         IDS_SINGLE_DOWNLOAD_REMOVE_CONFIRM_OK_BUTTON_LABEL);
     cancel_button_text = l10n_util::GetStringUTF8(
@@ -54,11 +51,10 @@ DownloadInProgressDialogGtk::DownloadInProgressDialogGtk(Browser* browser)
   } else {
     warning_text =
         l10n_util::GetStringFUTF8(IDS_MULTIPLE_DOWNLOADS_REMOVE_CONFIRM_WARNING,
-                                  product_name,
                                   base::IntToString16(download_count));
     explanation_text =
-        l10n_util::GetStringFUTF8(
-            IDS_MULTIPLE_DOWNLOADS_REMOVE_CONFIRM_EXPLANATION, product_name);
+        l10n_util::GetStringUTF8(
+            IDS_MULTIPLE_DOWNLOADS_REMOVE_CONFIRM_EXPLANATION);
     ok_button_text = l10n_util::GetStringUTF8(
         IDS_MULTIPLE_DOWNLOADS_REMOVE_CONFIRM_OK_BUTTON_LABEL);
     cancel_button_text = l10n_util::GetStringUTF8(

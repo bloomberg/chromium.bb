@@ -502,6 +502,26 @@ Chromium is unable to recover your settings.
         Chromium does not include the PDF viewer which is required for Print Preview to function.
       </message>
 
+      <!-- Download Shelf Items -->
+      <message name="IDS_DOWNLOAD_STATUS_CRX_INSTALL_RUNNING"
+               desc="Message shown when a CRX has been downloaded and is being unpacked.">
+        Adding to Chromium...
+      </message>
+
+      <!-- Remove in-progress downloads confirmation dialog -->
+      <message name="IDS_SINGLE_DOWNLOAD_REMOVE_CONFIRM_WARNING" desc="Title of the dialog asking for user confirmation to close the browser when one download is in-progress.">
+        Do you want to exit Chromium with a download in progress?
+      </message>
+      <message name="IDS_MULTIPLE_DOWNLOADS_REMOVE_CONFIRM_WARNING" desc="Title of the dialog asking for user confirmation to close the browser when multiple downloads are in-progress.">
+        Do you want to exit Chromium with <ph name="DOWNLOAD_COUNT">$1<ex>3</ex></ph> downloads in progress?
+      </message>
+      <message name="IDS_SINGLE_DOWNLOAD_REMOVE_CONFIRM_EXPLANATION" desc="Explanation of the dialog asking for user confirmation to close the browser when one download is in-progress.">
+        If you close Chromium now, this download will be canceled.
+      </message>
+      <message name="IDS_MULTIPLE_DOWNLOADS_REMOVE_CONFIRM_EXPLANATION" desc="Explanation of the dialog asking for user confirmation to close the browser when multiple downloads are in-progress.">
+        If you close Chromium now, these downloads will be canceled.
+      </message>
+
       <if expr="is_macosx">
         <message name="IDS_APP_MENU_PRODUCT_NAME" desc="The application's short name, used for the Mac's application menu, activity monitor, etc. This should be less than 16 characters. Example: Chrome, not Google Chrome.">
           Chromium

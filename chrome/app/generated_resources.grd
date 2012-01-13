@@ -2324,10 +2324,6 @@ are declared in build/common.gypi.
                desc="Time left until the file download completes and the file is opened.">
         Opening in <ph name="TIME_REMAINING">$1<ex>5 sec</ex></ph>...
       </message>
-      <message name="IDS_DOWNLOAD_STATUS_CRX_INSTALL_RUNNING"
-               desc="Message shown when a CRX has been downloaded and is being unpacked.">
-        Adding to <ph name="PRODUCT_NAME_SHORT">$1<ex>Chrome</ex></ph>...
-      </message>
       <message name="IDS_DOWNLOAD_STATUS_OPEN_WHEN_COMPLETE"
          desc="Status that the file download will be opened when the download completes.">
         Opening when complete
@@ -2567,18 +2563,6 @@ are declared in build/common.gypi.
       </if>
 
       <!-- Remove in-progress downloads confirmation dialog -->
-      <message name="IDS_SINGLE_DOWNLOAD_REMOVE_CONFIRM_WARNING" desc="Title of the dialog asking for user confirmation to close the browser when one download is in-progress.">
-        Do you want to exit <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> with a download in progress?
-      </message>
-      <message name="IDS_MULTIPLE_DOWNLOADS_REMOVE_CONFIRM_WARNING" desc="Title of the dialog asking for user confirmation to close the browser when multiple downloads are in-progress.">
-        Do you want to exit <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> with <ph name="DOWNLOAD_COUNT">$2<ex>3</ex></ph> downloads in progress?
-      </message>
-      <message name="IDS_SINGLE_DOWNLOAD_REMOVE_CONFIRM_EXPLANATION" desc="Explanation of the dialog asking for user confirmation to close the browser when one download is in-progress.">
-        If you close <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> now, this download will be canceled.
-      </message>
-      <message name="IDS_MULTIPLE_DOWNLOADS_REMOVE_CONFIRM_EXPLANATION" desc="Explanation of the dialog asking for user confirmation to close the browser when multiple downloads are in-progress.">
-        If you close <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> now, these downloads will be canceled.
-      </message>
       <message name="IDS_SINGLE_DOWNLOAD_REMOVE_CONFIRM_OK_BUTTON_LABEL" desc="Button text for OKing to close the browser when a single download is in-progress.">
         Close and cancel download
       </message>

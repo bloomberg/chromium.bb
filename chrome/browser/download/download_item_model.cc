@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -64,9 +64,8 @@ string16 DownloadItemModel::GetStatusText() {
           download_->GetState() == DownloadItem::IN_PROGRESS) {
         // The download is a CRX (app, extension, theme, ...) and it is
         // being unpacked and validated.
-        status_text = l10n_util::GetStringFUTF16(
-            IDS_DOWNLOAD_STATUS_CRX_INSTALL_RUNNING,
-            l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME));
+        status_text = l10n_util::GetStringUTF16(
+            IDS_DOWNLOAD_STATUS_CRX_INSTALL_RUNNING);
       } else if (download_->GetOpenWhenComplete()) {
         if (simple_time.empty()) {
           status_text =
