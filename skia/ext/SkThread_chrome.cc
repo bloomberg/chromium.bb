@@ -23,7 +23,7 @@ int32_t sk_atomic_dec(int32_t* addr) {
   return base::subtle::Barrier_AtomicIncrement(addr, -1) + 1;
 }
 
-SkMutex::SkMutex(bool isGlobal) : fIsGlobal(isGlobal) {
+SkMutex::SkMutex() {
   COMPILE_ASSERT(sizeof(base::Lock) <= sizeof(fStorage), Lock_is_too_big_for_SkMutex);
   base::Lock* lock = reinterpret_cast<base::Lock*>(fStorage);
   new(lock) base::Lock();
