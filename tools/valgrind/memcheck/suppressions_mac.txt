@@ -2341,3 +2341,13 @@
    fun:_ZN4base9TestSuite3RunEv
    fun:_ZN17UnitTestTestSuite3RunEv
 }
+{
+   bug_102920
+   Memcheck:Unaddressable
+   fun:MDItemCreate
+   fun:CSBackupSetItemExcluded
+   fun:_ZN4base3mac22SetFileBackupExclusionERK8FilePath
+   fun:_ZN7history17ThumbnailDatabase4InitERK8FilePathPKNS_16HistoryPublisherEPNS_11URLDatabaseE
+   fun:_ZN7history14HistoryBackend8InitImplERKSs
+   fun:_ZN7history14HistoryBackend4InitERKSsb
+}
