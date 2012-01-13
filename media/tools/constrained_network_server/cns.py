@@ -327,6 +327,12 @@ def Main():
   """Configure and start the ConstrainedNetworkServer."""
   options = ParseArgs()
 
+  try:
+    traffic_control.CheckRequirements()
+  except traffic_control.TrafficControlError as e:
+    cherrypy.log(e.msg)
+    return
+
   cherrypy.config.update(
       {'server.socket_host': '::', 'server.socket_port': options.port})
 

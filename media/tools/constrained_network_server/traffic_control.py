@@ -9,6 +9,7 @@ Traffic to the constrained port is forwarded to a specified server port.
 """
 
 import logging
+import os
 import re
 import subprocess
 
@@ -35,6 +36,22 @@ class TrafficControlError(BaseException):
     self.returncode = returncode
     self.output = output
     self.error = error
+
+
+def CheckRequirements():
+  """Checks if permissions are available to run traffic control commands.
+
+  Raises:
+    TrafficControlError: If permissions to run traffic control commands are not
+    available.
+  """
+  if os.geteuid() != 0:
+    _Exec(['sudo', '-n', 'tc', '-help'],
+          msg=('Cannot run \'tc\' command. Traffic Control must be run as root '
+               'or have password-less sudo access to this command.'))
+    _Exec(['sudo', '-n', 'iptables', '-help'],
+          msg=('Cannot run \'iptables\' command. Traffic Control must be run '
+               'as root or have password-less sudo access to this command.'))
 
 
 def CreateConstrainedPort(config):
