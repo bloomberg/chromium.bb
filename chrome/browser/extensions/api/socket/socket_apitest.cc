@@ -60,7 +60,8 @@ IN_PROC_BROWSER_TEST_F(SocketApiTest, SocketCreateBad) {
                             NONE);
 }
 
-IN_PROC_BROWSER_TEST_F(SocketApiTest, SocketExtension) {
+// http://code.google.com/p/chromium/issues/detail?id=109337
+IN_PROC_BROWSER_TEST_F(SocketApiTest, FLAKY_SocketExtension) {
   scoped_refptr<extensions::TestEchoServerUDP> server =
       new extensions::TestEchoServerUDP();
 
