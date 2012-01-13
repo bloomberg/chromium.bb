@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -136,7 +136,7 @@ std::string TestTCPSocketPrivateShared::CheckHTTPResponse(
     PP_Resource socket,
     const std::string& request,
     const std::string& response) {
-  int32_t rv;
+  int32_t rv = 0;
   std::string error_message;
 
   error_message = SyncWrite(socket, request.c_str(), request.size(), &rv);
