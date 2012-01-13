@@ -243,7 +243,8 @@ hooks = [
     'linux_x86',
     '9db88d4b92913d494d47ceb936d8a0c4af9b7ddb',
     '--save-downloads-dir',
-    'src/native_client_sdk/src/build_tools/toolchain_archives'
+    'src/native_client_sdk/src/build_tools/toolchain_archives',
+    '--keep'
 ],
     'pattern':
          '.'
