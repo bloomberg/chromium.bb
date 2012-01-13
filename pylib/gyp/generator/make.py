@@ -26,7 +26,6 @@ import gyp.common
 import gyp.system_test
 import gyp.xcode_emulation
 import os
-import re
 import sys
 
 generator_default_variables = {
@@ -1817,64 +1816,8 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
       if not isinstance(env[k], str):
         env[k] = ' '.join(env[k])
 
-    # Since environment variables can refer to other variables, the evaluation
-    # order is important. Below is the logic to compute the dependency graph
-    # and sort it.
-    regex = re.compile(r'\$\(([a-zA-Z0-9\-_]+)\)')
-
-    # First sort the list of keys.
-    key_list = sorted(env.keys())
-
-    # Phase 1: Create a set of edges of (DEPENDEE, DEPENDER) where in the graph,
-    # DEPENDEE -> DEPENDER. Also create sets of dependers and dependees.
-    edges = set()
-    dependees = set()
-    dependers = set()
-    for k in key_list:
-      matches = regex.findall(env[k])
-      if not len(matches):
-        continue
-
-      depends_on_other_var = False
-      for dependee in matches:
-        if dependee in env:
-          edges.add((dependee, k))
-          dependees.add(dependee)
-          depends_on_other_var = True
-      if depends_on_other_var:
-        dependers.add(k)
-
-    # Phase 2: Create a list of graph nodes with no incoming edges.
-    sorted_nodes = []
-    edgeless_nodes = dependees - dependers
-
-    # Phase 3: Perform Kahn topological sort.
-    while len(edgeless_nodes):
-      # Find a node with no incoming edges, add it to the sorted list, and
-      # remove it from the list of nodes that aren't part of the graph.
-      node = edgeless_nodes.pop()
-      sorted_nodes.append(node)
-      key_list.remove(node)
-
-      # Find all the edges between |node| and other nodes.
-      edges_to_node = [e for e in edges if e[0] == node]
-      for edge in edges_to_node:
-        edges.remove(edge)
-        # If the node connected to |node| by |edge| has no other incoming edges,
-        # add it to |edgeless_nodes|.
-        if not len([e for e in edges if e[1] == edge[1]]):
-          edgeless_nodes.add(edge[1])
-
-    # Any remaining edges indicate a cycle.
-    if len(edges):
-      raise Exception('Xcode environment variables are cyclically dependent: ' +
-          str(edges))
-
-    # Append the "nodes" not in the graph to those that were just sorted.
-    sorted_nodes.extend(key_list)
-
     # Perform some transformations that are required to mimic Xcode behavior.
-    for k in sorted_nodes:
+    for k in gyp.xcode_emulation.TopologicallySortedEnvVarKeys(env):
       # For
       #  foo := a\ b
       # the escaped space does the right thing. For
