@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -694,37 +694,17 @@ int32_t NaClSysSecond_Tls_Get(struct NaClAppThread *natp) {
 int32_t NaClSysException_Handler(struct NaClAppThread *natp,
                                  uint32_t             handler_addr,
                                  uint32_t             old_handler) {
-  uintptr_t safe_old_handler;
-  if (!NaClIsValidJumpTarget(natp->nap, handler_addr)) {
-    return -NACL_ABI_EFAULT;
-  }
-  safe_old_handler = NaClUserToSysAddrNullOkay(natp->nap, old_handler);
-  if (kNaClBadAddress == safe_old_handler) {
-    return -NACL_ABI_EINVAL;
-  }
-  NaClXMutexLock(&natp->nap->exception_mu);
-  if (old_handler) {
-    *(uint32_t*)safe_old_handler = natp->nap->exception_handler;
-  }
-  natp->nap->exception_handler = handler_addr;
-  NaClXMutexUnlock(&natp->nap->exception_mu);
-  return 0;
+  return NaClCommonSysException_Handler(natp, handler_addr, old_handler);
 }
 
 int32_t NaClSysException_Stack(struct NaClAppThread *natp,
                                uint32_t             stack_addr,
                                uint32_t             stack_size) {
-  if (kNaClBadAddress == NaClUserToSysAddrNullOkay(natp->nap,
-                                                   stack_addr + stack_size)) {
-    return -NACL_ABI_EINVAL;
-  }
-  natp->user.exception_stack = stack_addr + stack_size;
-  return 0;
+  return NaClCommonSysException_Stack(natp, stack_addr, stack_size);
 }
 
 int32_t NaClSysException_Clear_Flag(struct NaClAppThread *natp) {
-  natp->user.exception_flag = 0;
-  return 0;
+  return NaClCommonSysException_Clear_Flag(natp);
 }
 
 int32_t NaClSysTest_InfoLeak(struct NaClAppThread *natp) {

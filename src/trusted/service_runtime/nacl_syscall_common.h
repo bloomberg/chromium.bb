@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -254,6 +254,16 @@ int32_t NaClCommonSysSem_Post(struct NaClAppThread *natp,
 
 int32_t NaClCommonSysSem_Get_Value(struct NaClAppThread *natp,
                                    int32_t              sem_handle);
+
+int32_t NaClCommonSysException_Handler(struct NaClAppThread *natp,
+                                       uint32_t             handler_addr,
+                                       uint32_t             old_handler);
+
+int32_t NaClCommonSysException_Stack(struct NaClAppThread *natp,
+                                     uint32_t             stack_addr,
+                                     uint32_t             stack_size);
+
+int32_t NaClCommonSysException_Clear_Flag(struct NaClAppThread *natp);
 
 int32_t NaClCommonSysTest_InfoLeak(struct NaClAppThread *natp);
 
