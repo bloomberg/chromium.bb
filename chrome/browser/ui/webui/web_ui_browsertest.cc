@@ -35,6 +35,7 @@
 
 using content::NavigationController;
 using content::WebContents;
+using content::WebUIController;
 using content::WebUIMessageHandler;
 
 namespace {
@@ -270,7 +271,8 @@ class MockWebUIDataSource : public ChromeURLDataManager::DataSource {
 // WebUI to attach the DataSource for the dummy URL.
 class MockWebUI : public WebUI {
  public:
-  explicit MockWebUI(WebContents* contents) : WebUI(contents) {
+  explicit MockWebUI(WebContents* contents, WebUIController* controller)
+    : WebUI(contents, controller) {
     Profile* profile =
         Profile::FromBrowserContext(contents->GetBrowserContext());
     profile->GetChromeURLDataManager()->AddDataSource(
