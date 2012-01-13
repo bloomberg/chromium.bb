@@ -8,6 +8,7 @@
 #include "base/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/renderer/print_web_view_helper.h"
 #include "content/public/common/child_process_sandbox_support_linux.h"
 #include "content/public/common/content_client.h"
 #include "content/public/renderer/render_thread.h"
@@ -23,6 +24,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebNode.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginContainer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -37,6 +39,7 @@
 using ppapi::PpapiGlobals;
 using webkit::ppapi::HostGlobals;
 using webkit::ppapi::PluginInstance;
+using WebKit::WebElement;
 using WebKit::WebView;
 using content::RenderThread;
 
@@ -340,6 +343,21 @@ void SaveAs(PP_Instance instance_id) {
   instance->delegate()->SaveURLAs(instance->plugin_url());
 }
 
+void Print(PP_Instance instance_id) {
+  PluginInstance* instance = HostGlobals::Get()->GetInstance(instance_id);
+  if (!instance)
+    return;
+
+  WebElement element = instance->container()->element();
+  WebView* view = element.document().frame()->view();
+  content::RenderView* render_view = content::RenderView::FromWebView(view);
+
+  PrintWebViewHelper* print_view_helper = PrintWebViewHelper::Get(render_view);
+  if (print_view_helper) {
+    print_view_helper->PrintNode(element);
+  }
+}
+
 const PPB_PDF ppb_pdf = {
   &GetLocalizedString,
   &GetResourceImage,
@@ -352,7 +370,8 @@ const PPB_PDF ppb_pdf = {
   &HistogramPDFPageCount,
   &UserMetricsRecordAction,
   &HasUnsupportedFeature,
-  &SaveAs
+  &SaveAs,
+  &Print
 };
 
 // static

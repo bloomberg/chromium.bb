@@ -966,20 +966,7 @@ void PrintWebViewHelper::OnPrintingDone(bool success) {
 
 void PrintWebViewHelper::OnPrintNodeUnderContextMenu() {
   const WebNode& context_menu_node = render_view()->GetContextMenuNode();
-  if (context_menu_node.isNull()) {
-    NOTREACHED();
-    return;
-  }
-
-  // Make a copy of the node, in case RenderView::OnContextMenuClosed resets
-  // its |context_menu_node_|.
-  if (is_preview_enabled_) {
-    print_preview_context_.InitWithNode(context_menu_node);
-    RequestPrintPreview();
-  } else {
-    WebNode duplicate_node(context_menu_node);
-    Print(duplicate_node.document().frame(), duplicate_node);
-  }
+  PrintNode(context_menu_node);
 }
 
 void PrintWebViewHelper::OnInitiatePrintPreview() {
@@ -988,6 +975,23 @@ void PrintWebViewHelper::OnInitiatePrintPreview() {
   if (GetPrintFrame(&frame)) {
     print_preview_context_.InitWithFrame(frame);
     RequestPrintPreview();
+  }
+}
+
+void PrintWebViewHelper::PrintNode(const WebNode& node) {
+  if (node.isNull()) {
+    NOTREACHED();
+    return;
+  }
+
+  // Make a copy of the node, in case RenderView::OnContextMenuClosed resets
+  // its |context_menu_node_|.
+  if (is_preview_enabled_) {
+    print_preview_context_.InitWithNode(node);
+    RequestPrintPreview();
+  } else {
+    WebNode duplicate_node(node);
+    Print(duplicate_node.document().frame(), duplicate_node);
   }
 }
 

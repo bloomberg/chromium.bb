@@ -124,7 +124,8 @@ bool PrintViewManager::PrintPreviewNow() {
 
 void PrintViewManager::PrintPreviewDone() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK_NE(NOT_PREVIEWING, print_preview_state_);
+  // DCHECK_NE(NOT_PREVIEWING, print_preview_state_);
+  // TODO(thestig) Fix this. http://crbug.com/105640
 
   if (print_preview_state_ == SCRIPTED_PREVIEW) {
     ScriptedPrintPreviewClosureMap& map =

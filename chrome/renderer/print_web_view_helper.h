@@ -90,6 +90,8 @@ class PrintWebViewHelper
   explicit PrintWebViewHelper(content::RenderView* render_view);
   virtual ~PrintWebViewHelper();
 
+  void PrintNode(const WebKit::WebNode& node);
+
  protected:
   // WebKit::WebViewClient override:
   virtual void didStopLoading();

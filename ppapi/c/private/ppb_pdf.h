@@ -158,6 +158,9 @@ struct PPB_PDF {
 
   // Invoke SaveAs... dialog, similar to the right-click or wrench menu.
   void (*SaveAs)(PP_Instance instance);
+
+  // Invoke Print dialog for plugin.
+  void (*Print)(PP_Instance instance);
 };
 
 #endif  // PPAPI_C_PRIVATE_PPB_PDF_H_
