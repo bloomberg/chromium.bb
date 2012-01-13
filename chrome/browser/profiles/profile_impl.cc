@@ -328,6 +328,12 @@ void ProfileImpl::DoFinalInit() {
         base::Bind(&CreateDirectoryNoResult, base_cache_path_));
   }
 
+  // Now that the profile is hooked up to recieve pref change notifications to
+  // kGoogleServicesUsername, initialize components that depend on it to reflect
+  // the current value.
+  UpdateProfileUserNameCache();
+  GetGAIAInfoUpdateService();
+
 #if !defined(OS_CHROMEOS)
   // Listen for bookmark model load, to bootstrap the sync service.
   // On CrOS sync service will be initialized after sign in.
@@ -1427,11 +1433,6 @@ void ProfileImpl::InitSyncService() {
   sync_service_.reset(profile_sync_factory_->CreateProfileSyncService());
   profile_sync_factory_->RegisterDataTypes(sync_service_.get());
   sync_service_->Initialize();
-
-  UpdateProfileUserNameCache();
-  // Force the GAIA info update service to be initialized since it depends on
-  // the sync service.
-  GetGAIAInfoUpdateService();
 }
 
 ChromeBlobStorageContext* ProfileImpl::GetBlobStorageContext() {
