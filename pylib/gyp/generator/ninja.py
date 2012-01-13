@@ -663,8 +663,6 @@ class NinjaWriter:
         if linkable:
           extra_link_deps.add(target.binary)
 
-        # TODO: Chrome-specific HACK.  Chrome runs this lastchange rule on
-        # every build, but we don't want to rebuild when it runs.
         final_output = target.FinalOutput()
         if not linkable or final_output != target.binary:
           implicit_deps.add(final_output)
