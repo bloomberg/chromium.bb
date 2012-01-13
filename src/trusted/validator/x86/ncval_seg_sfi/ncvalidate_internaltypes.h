@@ -114,12 +114,6 @@ extern const uint8_t nc_iadrmasks[8];
 #define NCGetAdrTable(__IOFF, __TABLE) \
   ((__TABLE)[NCIATOffset(__IOFF)] & NCIATMask(__IOFF))
 
-/* Returns true iff the given address is within the code segment being
- * validated.
- */
-Bool NCAddressInMemoryRange(const NaClPcAddress address,
-                            struct NCValidatorState* vstate);
-
 /* Report that the given instruction is illegal in native client, using
  * the given error message.
  */

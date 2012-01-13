@@ -515,12 +515,14 @@ static void InstFormat(const char* format,
           case 'J':
             if ('b' == token[2]) {
               gprintf(fp, "0x%"NACL_PRIxNaClPcAddress,
-                      dinst->vpc + dinst->inst.bytes.length +
-                      ByteImmedAtOffset(dinst, NCImmedOffset(dinst)));
+                      NCPrintableInstructionAddress(dinst)
+                      + dinst->inst.bytes.length
+                      + ByteImmedAtOffset(dinst, NCImmedOffset(dinst)));
             } else {
               gprintf(fp, "0x%"NACL_PRIxNaClPcAddress,
-                      dinst->vpc + dinst->inst.bytes.length +
-                      DwordImmedAtOffset(dinst, NCImmedOffset(dinst)));
+                      NCPrintableInstructionAddress(dinst)
+                      + dinst->inst.bytes.length
+                      + DwordImmedAtOffset(dinst, NCImmedOffset(dinst)));
             }
             break;
           case 'O':
@@ -576,7 +578,8 @@ static void InstFormat(const char* format,
 static void PrintInst(const NCDecoderInst *dinst, struct Gio* fp) {
   int i;
   DEBUG( printf("use format: %s\n", DisFmt(dinst)) );
-  gprintf(fp, " %"NACL_PRIxNaClPcAddress":\t%02x", dinst->vpc,
+  gprintf(fp, " %"NACL_PRIxNaClPcAddress":\t%02x",
+          NCPrintableInstructionAddress(dinst),
           NCInstBytesByte(&dinst->inst_bytes, 0));
   for (i = 1; i < dinst->inst.bytes.length; i++) {
     gprintf(fp, " %02x", NCInstBytesByte(&dinst->inst_bytes, i));

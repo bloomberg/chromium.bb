@@ -481,17 +481,16 @@ static void NCDecoderStateInitFields(NCDecoderState* this) {
   this->memory.error_fn = NCRemainingMemoryInternalError;
   this->memory.error_fn_state = (void*) this;
   for (dbindex = 0; dbindex < this->inst_buffer_size; ++dbindex) {
-    this->inst_buffer[dbindex].dstate       = this;
-    this->inst_buffer[dbindex].inst_index   = dbindex;
-    this->inst_buffer[dbindex].inst_count   = 0;
-    this->inst_buffer[dbindex].vpc          = 0;
+    this->inst_buffer[dbindex].dstate = this;
+    this->inst_buffer[dbindex].inst_index = dbindex;
+    this->inst_buffer[dbindex].inst_count = 0;
+    this->inst_buffer[dbindex].inst_addr = 0;
     NCInstBytesInitMemory(&this->inst_buffer[dbindex].inst.bytes,
                           &this->memory);
     NCInstBytesPtrInit((NCInstBytesPtr*) &this->inst_buffer[dbindex].inst_bytes,
                        &this->inst_buffer[dbindex].inst.bytes);
   }
   this->cur_inst_index = 0;
-  this->inst_buffer[0].vpc = this->vbase;
 }
 
 void NCDecoderStateConstruct(NCDecoderState* this,
@@ -520,6 +519,16 @@ void NCDecoderStateDestruct(NCDecoderState* this) {
   /* Currently, there is nothing to do. */
 }
 
+/* "Printable" means the value returned by this function can be used for
+ * printing user-readable output, but it should not be used to influence if the
+ * validation algorithm passes or fails.  The validation algorithm should not
+ * depend on vbase - in other words, it should not depend on where the code is
+ * being mapped in memory.
+ */
+static INLINE NaClPcAddress NCPrintableVLimit(NCDecoderState *dstate) {
+  return dstate->vbase + dstate->size;
+}
+
 /* Modify the current instruction pointer to point to the next instruction
  * in the ring buffer.  Reset the state of that next instruction.
  */
@@ -528,7 +537,7 @@ static NCDecoderInst* IncrementInst(NCDecoderInst* inst) {
    * better to keep the buffer switching logic in one place
    */
   NCDecoderInst* next_inst = NCGetInstDiff(inst, 1);
-  next_inst->vpc = inst->vpc + inst->inst.bytes.length;
+  next_inst->inst_addr = inst->inst_addr + inst->inst.bytes.length;
   next_inst->dstate->cur_inst_index = next_inst->inst_index;
   next_inst->inst_count = inst->inst_count + 1;
   return next_inst;
@@ -599,7 +608,7 @@ static void MaybeConsumePredefinedNop(NCDecoderInst* dinst) {
  */
 static void ConsumeNextInstruction(struct NCDecoderInst* inst) {
   DEBUG( printf("Decoding instruction at %"NACL_PRIxNaClPcAddress":\n",
-                inst->vpc) );
+                NCPrintableInstructionAddress(inst)) );
   InitDecoder(inst);
   ConsumePrefixBytes(inst);
   ConsumeOpcodeBytes(inst);
@@ -640,21 +649,22 @@ NaClErrorReporter kNCNullErrorReporter = {
 
 Bool NCDecoderStateDecode(NCDecoderState* this) {
   NCDecoderInst* dinst = &this->inst_buffer[this->cur_inst_index];
-  const NaClPcAddress vlimit = this->vbase + this->size;
   DEBUG( printf("DecodeSegment(%p[%"NACL_PRIxNaClPcAddress
                 "-%"NACL_PRIxNaClPcAddress"])\n",
-                (void*) this->memory.mpc, this->vbase, vlimit) );
+                (void*) this->memory.mpc, this->vbase,
+                NCPrintableVLimit(this)) );
   NCDecoderStateNewSegment(this);
   dinst->inst_count = 1;
-  while (dinst->vpc < vlimit) {
+  while (dinst->inst_addr < this->size) {
     ConsumeNextInstruction(dinst);
     if (this->memory.overflow_count) {
-      NaClPcAddress newpc = dinst->vpc + dinst->inst.bytes.length;
+      NaClPcAddress newpc = (NCPrintableInstructionAddress(dinst)
+                             + dinst->inst.bytes.length);
       (*this->error_reporter->printf)(
           this->error_reporter,
           "%"NACL_PRIxNaClPcAddress" > %"NACL_PRIxNaClPcAddress
           " (read overflow of %d bytes)\n",
-          newpc, vlimit, this->memory.overflow_count);
+          newpc, NCPrintableVLimit(this), this->memory.overflow_count);
       ErrorSegmentation(dinst);
       return FALSE;
     }
@@ -688,7 +698,6 @@ Bool NCDecoderStatePairDecode(NCDecoderStatePair* tthis) {
       &tthis->old_dstate->inst_buffer[tthis->old_dstate->cur_inst_index];
   NCDecoderInst* new_dinst =
       &tthis->new_dstate->inst_buffer[tthis->new_dstate->cur_inst_index];
-  NaClPcAddress new_vlimit;
 
   /* Verify that the size of the code segments is the same, and has not
    * been changed.
@@ -705,12 +714,11 @@ Bool NCDecoderStatePairDecode(NCDecoderStatePair* tthis) {
    * needs to be checked. Hence, we will track the limit of the new
    * decoder state.
    */
-  new_vlimit = tthis->new_dstate->vbase + tthis->new_dstate->size;
   DEBUG( printf("NCDecoderStatePairDecode(%"NACL_PRIxNaClPcAddress
                 ", %"NACL_PRIxNaClPcAddress
                 "-%"NACL_PRIxNaClPcAddress")\n",
                 tthis->old_dstate->vbase, tthis->new_dstate->vbase,
-                new_vlimit));
+                NCPrintableVLimit(tthis->new_dstate)));
 
   /* Initialize decoder statements for decoding segment, by calling
    * the corresponding virtual in the decoder.
@@ -721,7 +729,7 @@ Bool NCDecoderStatePairDecode(NCDecoderStatePair* tthis) {
   /* Walk through both instruction segments, checking that
    * they decode similarly.
    */
-  while (new_dinst->vpc < new_vlimit) {
+  while (new_dinst->inst_addr < tthis->new_dstate->size) {
 
     ConsumeNextInstruction(old_dinst);
     ConsumeNextInstruction(new_dinst);
@@ -741,12 +749,13 @@ Bool NCDecoderStatePairDecode(NCDecoderStatePair* tthis) {
      * segment lengths are the same, if overflow occurs on one
      * segment, it must occur on the other.
      */
-    if (new_dinst->vpc > new_vlimit) {
+    if (new_dinst->inst_addr > tthis->new_dstate->size) {
       NaClErrorReporter* reporter = new_dinst->dstate->error_reporter;
       (*reporter->printf)(
           reporter,
           "%"NACL_PRIxNaClPcAddress" > %"NACL_PRIxNaClPcAddress"\n",
-          new_dinst->vpc, new_vlimit);
+          NCPrintableInstructionAddress(new_dinst),
+          NCPrintableVLimit(tthis->new_dstate));
       ErrorSegmentation(new_dinst);
       return FALSE;
     }

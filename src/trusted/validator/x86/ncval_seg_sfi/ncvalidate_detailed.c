@@ -31,11 +31,12 @@ static void NCNullDecoderStateMethod(struct NCValidatorState* vstate) {
  */
 static void NCJumpCheck(struct NCValidatorState* vstate,
                         const NCDecoderInst* dinst,
-                        NaClPcAddress target) {
-  if (NCAddressInMemoryRange(target, vstate) &&
-      !NCGetAdrTable(target - vstate->iadrbase, vstate->vttable)) {
-    if (NCGetAdrTable(target - vstate->iadrbase,
-                      vstate->pattern_nonfirst_insts_table)) {
+                        int32_t jump_offset) {
+  NaClPcAddress target = (dinst->inst_addr + dinst->inst.bytes.length
+                          + jump_offset);
+
+  if (target < vstate->codesize && !NCGetAdrTable(target, vstate->vttable)) {
+    if (NCGetAdrTable(target, vstate->pattern_nonfirst_insts_table)) {
       NCBadInstructionError(dinst, "Jumps into middle of nacl pattern");
     } else {
       NCBadInstructionError(dinst, "Doesn't jump to instruction address");
@@ -52,8 +53,7 @@ static void NCInstCheckJmp8(const NCDecoderInst* dinst) {
   int8_t offset = NCInstBytesByte(&dinst->inst_bytes,
                                   dinst->inst.prefixbytes+1);
   struct NCValidatorState* vstate = NCVALIDATOR_STATE_DOWNCAST(dinst->dstate);
-  NaClPcAddress target = dinst->vpc + dinst->inst.bytes.length + offset;
-  NCJumpCheck(vstate, dinst, target);
+  NCJumpCheck(vstate, dinst, offset);
 }
 
 /* Detailed (summary) error check for a jump condition instruction.
@@ -64,7 +64,6 @@ static  void NCInstCheckJmpz(const NCDecoderInst* dinst) {
   NCInstBytesPtr opcode;
   uint8_t opcode0;
   int32_t offset;
-  NaClPcAddress target;
   NCValidatorState* vstate = NCVALIDATOR_STATE_DOWNCAST(dinst->dstate);
   NCInstBytesPtrInitInc(&opcode, &dinst->inst_bytes,
                         dinst->inst.prefixbytes);
@@ -85,8 +84,7 @@ static  void NCInstCheckJmpz(const NCDecoderInst* dinst) {
     NCInstBytesPtrInitInc(&opcode_1, &opcode, 1);
     offset = NCInstBytesInt32(&opcode_1);
   }
-  target = dinst->vpc + dinst->inst.bytes.length + offset;
-  NCJumpCheck(vstate, dinst, target);
+  NCJumpCheck(vstate, dinst, offset);
 }
 
 /* Decoder action to perform to detect bad jumps during detailed
@@ -103,17 +101,16 @@ static Bool NCInstLayoutCheck(const NCDecoderInst* dinst) {
   /* Check that if first instruction is a basic block, it isn't in the middle
    * of a pattern.
    */
-  start = dinst->vpc;
+  start = dinst->inst_addr;
   if ((0 == (start % vstate->alignment)) &&
-      NCGetAdrTable(start - vstate->iadrbase,
-                    vstate->pattern_nonfirst_insts_table)) {
+      NCGetAdrTable(start, vstate->pattern_nonfirst_insts_table)) {
     NCBadInstructionError(
         dinst,
         "Instruction begins basic block, but in middle of nacl pattern\n");
   }
 
   /* Check that instruction doesn't cross block boundaries. */
-  end = (NaClPcAddress) (start + NCInstBytesLength(&dinst->inst_bytes));
+  end = start + NCInstBytesLength(&dinst->inst_bytes);
   for (i = start + 1; i < end; ++i) {
     if (0 == (i % vstate->alignment)) {
       NCBadInstructionError(dinst, "Instruction crosses basic block alignment");

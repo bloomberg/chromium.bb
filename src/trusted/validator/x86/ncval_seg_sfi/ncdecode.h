@@ -175,8 +175,10 @@ struct InstInfo {
 
 /* Models data collected about the parsed instruction. */
 typedef struct NCDecoderInst {
-  /* The virtual (pc) address of the instruction. */
-  NaClPcAddress vpc;
+  /* The address of the instruction, relative to the begining of the code
+   * segment.
+   */
+  NaClPcAddress inst_addr;
   /* The instruction rule used to decode the instruction. */
   const struct OpInfo* opinfo;
   /* The low level details of the instructionm, extracted during parsing. */
@@ -329,6 +331,17 @@ extern Bool NCDecoderStateDecode(NCDecoderState* tthis);
  * call this destructor last, after the subinstance has been destructed.
  */
 extern void NCDecoderStateDestruct(NCDecoderState* tthis);
+
+/* "Printable" means the value returned by this function can be used for
+ * printing user-readable output, but it should not be used to influence if the
+ * validation algorithm passes or fails.  The validation algorithm should not
+ * depend on vbase - in other words, it should not depend on where the code is
+ * being mapped in memory.
+ */
+static INLINE NaClPcAddress NCPrintableInstructionAddress(
+    const NCDecoderInst *dinst) {
+  return dinst->dstate->vbase + dinst->inst_addr;
+}
 
 struct NCDecoderStatePair;
 
