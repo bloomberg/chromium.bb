@@ -754,7 +754,8 @@ def GetMacInfoPlist(product_dir, xcode_settings, gyp_path_to_build_path):
   return info_plist, dest_plist, defines, extra_env
 
 
-def GetXcodeEnv(xcode_settings, built_products_dir, srcroot):
+def GetXcodeEnv(xcode_settings, built_products_dir, srcroot,
+                additional_settings=None):
   """Return the environment variables that Xcode would set. See
   http://developer.apple.com/library/mac/#documentation/DeveloperTools/Reference/XcodeBuildSettingRef/1-Build_Setting_Reference/build_setting_ref.html#//apple_ref/doc/uid/TP40003931-CH3-SW153
   for a full list.
@@ -764,6 +765,8 @@ def GetXcodeEnv(xcode_settings, built_products_dir, srcroot):
           returns an empty dict.
       built_products_dir: Absolute path to the built products dir.
       srcroot: Absolute path to the source root.
+      additional_settings: An optional dict with more values to add to the
+          result.
   """
   if not xcode_settings: return {}
 
@@ -800,7 +803,16 @@ def GetXcodeEnv(xcode_settings, built_products_dir, srcroot):
         xcode_settings.GetBundleResourceFolder()
     env['INFOPLIST_PATH'] = xcode_settings.GetBundlePlistPath()
     env['WRAPPER_NAME'] = xcode_settings.GetWrapperName()
-  return env
+
+  if not additional_settings:
+    additional_settings = {}
+  else:
+    # Flatten lists to strings.
+    for k in additional_settings:
+      if not isinstance(additional_settings[k], str):
+        additional_settings[k] = ' '.join(additional_settings[k])
+  additional_settings.update(env)
+  return additional_settings
 
 
 def TopologicallySortedEnvVarKeys(env):

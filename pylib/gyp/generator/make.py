@@ -1801,32 +1801,22 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
     self.fp.write(text + '\n')
 
 
-  def GetXcodeEnv(self):
+  def GetXcodeEnv(self, additional_settings=None):
     return gyp.xcode_emulation.GetXcodeEnv(
-        self.xcode_settings,
-        "$(abs_builddir)", os.path.join("$(abs_srcdir)", self.path))
+        self.xcode_settings, "$(abs_builddir)",
+        os.path.join("$(abs_srcdir)", self.path), additional_settings)
 
 
-  def WriteXcodeEnv(self, target, additional_settings={}):
-    env = additional_settings
-    env.update(self.GetXcodeEnv())
-
-    # Convert list values to string values.
-    for k in env:
-      if not isinstance(env[k], str):
-        env[k] = ' '.join(env[k])
-
-    # Perform some transformations that are required to mimic Xcode behavior.
+  def WriteXcodeEnv(self, target, additional_settings=None):
+    env = self.GetXcodeEnv(additional_settings)
     for k in gyp.xcode_emulation.TopologicallySortedEnvVarKeys(env):
       # For
       #  foo := a\ b
       # the escaped space does the right thing. For
       #  export foo := a\ b
       # it does not -- the backslash is written to the env as literal character.
-      # So don't escape spaces in |v|.
-      v = env[k]
-
-      self.WriteLn('%s: export %s := %s' % (QuoteSpaces(target), k, v))
+      # So don't escape spaces in |env[k]|.
+      self.WriteLn('%s: export %s := %s' % (QuoteSpaces(target), k, env[k]))
 
 
   def Objectify(self, path):
