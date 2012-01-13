@@ -15,36 +15,75 @@
 
 #bluetooth-scanning-label {
   -webkit-margin-start: 5px;
+  color: #999;
 }
 
 #bluetooth-scanning-icon {
   -webkit-margin-start: 10px;
+  height: 20px;
+  opacity: 0.66;
   vertical-align: middle;
+  width: 20px;
 }
 
+#bluetooth-paired-devices-list {
+  min-height: 96px !important;
+}
+
+#bluetooth-paired-devices-list,
 #bluetooth-unpaired-devices-list {
   /* Prevent dialog from expanding if many devices are found. */
   max-height: 192px;
   overflow-x: hidden;
-  overflow-y: scroll;
+  overflow-y: auto;
+}
+
+.bluetooth-empty-list-label {
+  box-sizing: border-box;
+  color: #999;
+  padding-top: 32px;
+  text-align: center;
+}
+
+#bluetooth-paired-devices-list-empty-placeholder {
+  height: 96px;
+}
+
+#bluetooth-unpaired-devices-list-empty-placeholder {
+  height: 192px;
 }
 
 #bluetooth-pairing-instructions,
 #bluetooth-passkey {
   margin: 10px;
+  max-width: 400px;
 }
 
 #bluetooth-pairing-passkey-display {
-  padding: 5px;
+  margin: 40px 0;
   text-align: center;
 }
 
 .bluetooth-passkey-char {
-  color: #555;
-  font-size: 150%;
-  padding: 5px;
+  -webkit-margin-start: 45px;
+  /* Reserve space for the border highlight. */
+  border-bottom: 2px solid rgba(0,0,0,0);
+  color: #999;
+  font-size: 20px;
+  font-weight: 600; /* semibold */
+  padding-bottom: 5px;
+}
+
+.bluetooth-passkey-char:first-child {
+  -webkit-margin-start: 0;
 }
 
 .bluetooth-passkey-char.key-typed {
-  text-decoration: underline;
+  color: #222;
 }
+
+.bluetooth-passkey-char.last-key-typed {
+  border-bottom: 2px solid #222;
+}
+
+

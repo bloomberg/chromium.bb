@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -67,8 +67,14 @@ void BluetoothOptionsHandler::GetLocalizedValues(
   localized_strings->SetString("bluetoothAddDeviceTitle",
       l10n_util::GetStringUTF16(
       IDS_OPTIONS_SETTINGS_BLUETOOTH_ADD_DEVICE_TITLE));
+  localized_strings->SetString("bluetoothOptionsPageTabTitle",
+      l10n_util::GetStringUTF16(
+      IDS_OPTIONS_SETTINGS_BLUETOOTH_ADD_DEVICE_TITLE));
   localized_strings->SetString("findBluetoothDevices",
       l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_FIND_BLUETOOTH_DEVICES));
+  localized_strings->SetString("bluetoothNoDevicesFound",
+      l10n_util::GetStringUTF16(
+      IDS_OPTIONS_SETTINGS_BLUETOOTH_NO_DEVICES_FOUND));
   localized_strings->SetString("bluetoothScanning",
       l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_BLUETOOTH_SCANNING));
   localized_strings->SetString("bluetoothDeviceConnected",

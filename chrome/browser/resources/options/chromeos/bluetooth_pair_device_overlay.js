@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -157,8 +157,10 @@ cr.define('options', function() {
         var keyEl = document.createElement('span');
         keyEl.textContent = key.charAt(i);
         keyEl.className = 'bluetooth-passkey-char';
-        if (i == progress - 1)
+        if (i < progress)
           keyEl.classList.add('key-typed');
+        if (i == progress - 1)
+          keyEl.classList.add('last-key-typed');
         passkeyEl.appendChild(keyEl);
       }
       passkeyEl.hidden = false;

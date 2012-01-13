@@ -56,12 +56,31 @@ cr.define('options', function() {
           findBluetoothDevices_(true);
         OptionsPage.navigateToPage('bluetooth');
       };
-      $('enable-bluetooth').onclick = function(event) {
-        chrome.send('bluetoothEnableChange', [Boolean(true)]);
+
+      $('enable-bluetooth').onchange = function(event) {
+        var state = $('enable-bluetooth').checked;
+        chrome.send('bluetoothEnableChange', [Boolean(state)]);
       };
-      $('disable-bluetooth').onclick = function(event) {
-        chrome.send('bluetoothEnableChange', [Boolean(false)]);
+
+      $('bluetooth-reconnect-device').onclick = function(event) {
+        var device = $('bluetooth-paired-devices-list').selectedItem;
+        var address = device.address;
+        chrome.send('updateBluetoothDevice', [address, 'connect']);
+        OptionsPage.closeOverlay();
       };
+
+      $('bluetooth-reconnect-device').onmousedown = function(event) {
+        // Prevent 'blur' event, which would reset the list selection,
+        // thereby disabling the apply button.
+        event.preventDefault();
+      };
+
+      $('bluetooth-paired-devices-list').addEventListener('change', function() {
+        var item = $('bluetooth-paired-devices-list').selectedItem;
+        var disabled = !item || !item.paired || item.connected;
+        $('bluetooth-reconnect-device').disabled = disabled;
+      });
+
       $('language-button').onclick = function(event) {
         OptionsPage.navigateToPage('language');
       };
@@ -164,15 +183,18 @@ cr.define('options', function() {
    * @param {boolean} checked Flag Indicating if Bluetooth is turned on.
    */
   SystemOptions.setBluetoothState = function(checked) {
-    $('disable-bluetooth').hidden = !checked;
-    $('enable-bluetooth').hidden = checked;
+    $('enable-bluetooth').checked = checked;
     $('bluetooth-paired-devices-list').parentNode.hidden = !checked;
     $('bluetooth-add-device').hidden = !checked;
+    $('bluetooth-reconnect-device').hidden = !checked;
     // Flush list of previously discovered devices if bluetooth is turned off.
     if (!checked) {
       $('bluetooth-paired-devices-list').clear();
       $('bluetooth-unpaired-devices-list').clear();
     }
+    // TODO(kevers): Replace following with a call to fetch the list of
+    // previously discovered devices rather than searching for all available
+    // devices.
     if (checked && ! this.isScanning_)
       findBluetoothDevices_(true);
   }
@@ -188,16 +210,17 @@ cr.define('options', function() {
    *     Decription of the bluetooth device.
    */
   SystemOptions.addBluetoothDevice = function(device) {
+    var list = $('bluetooth-unpaired-devices-list');
     if (device.paired) {
       // Test to see if the device is currently in the unpaired list, in which
       // case it should be removed from that list.
       var index = $('bluetooth-unpaired-devices-list').find(device.address);
       if (index != undefined)
         $('bluetooth-unpaired-devices-list').deleteItemAtIndex(index);
-      $('bluetooth-paired-devices-list').appendDevice(device);
-    } else {
-      $('bluetooth-unpaired-devices-list').appendDevice(device);
+      list = $('bluetooth-paired-devices-list');
     }
+    list.appendDevice(device);
+
     // One device can be in the process of pairing.  If found, display
     // the Bluetooth pairing overlay.
     if (device.pairing)

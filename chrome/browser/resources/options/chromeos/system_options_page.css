@@ -25,15 +25,3 @@ html[dir=rtl] .pointer-sensitivity-more {
   -webkit-box-orient: vertical;
   display: -webkit-box;
 }
-
-#bluetooth-devices-label {
-  -webkit-margin-end: 8px;
-  -webkit-margin-start: 8px;
-  font-weight: bold;
-}
-
-.bluetooth-button-group {
-  -webkit-padding-end: 5px;
-  vertical-align: middle;
-}
-

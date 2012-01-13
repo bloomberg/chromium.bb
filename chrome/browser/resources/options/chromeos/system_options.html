@@ -77,15 +77,25 @@
     <section id="bluetooth-devices" hidden>
       <h3 i18n-content="bluetooth"></h3>
       <div id="bluetooth-options-div">
-        <div id="bluetooth-buttons">
-          <button id="enable-bluetooth" i18n-content="enableBluetooth" hidden>
-          <button id="disable-bluetooth" i18n-content="disableBluetooth">
+        <div class="checkbox">
+          <label>
+            <input type="checkbox" id ="enable-bluetooth">
+            <span i18n-content="enableBluetooth">
+          </label>
         </div>
         <div class="settings-list bluetooth-device-list" hidden>
           <list id="bluetooth-paired-devices-list"></list>
+          <div id="bluetooth-paired-devices-list-empty-placeholder"
+              class="bluetooth-empty-list-label" hidden>
+            <span i18n-content="bluetoothNoDevicesFound"></span>
+          </div>
         </div>
-        <button id="bluetooth-add-device" hidden
-            i18n-content="addBluetoothDevice"></button>
+        <div id="bluetooth-button-group">
+          <button id="bluetooth-add-device"
+              i18n-content="addBluetoothDevice" hidden></button>
+          <button id="bluetooth-reconnect-device"
+              i18n-content="bluetoothConnectDevice" disabled hidden></button>
+        </div>
       </div>
     </section>
     <section>

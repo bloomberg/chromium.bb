@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -106,7 +106,6 @@ cr.define('options.system.bluetooth', function() {
     decorate:  function() {
       DeletableItemList.prototype.decorate.call(this);
       this.addEventListener('blur', this.onBlur_);
-      this.addEventListener('change', this.onChange_);
       this.clear();
     },
 
@@ -117,17 +116,6 @@ cr.define('options.system.bluetooth', function() {
     onBlur_: function() {
       // TODO(kevers): Should this be pushed up to the list class?
       this.selectionModel.unselectAll();
-    },
-
-    /**
-     * Updates the state of the button for adding a Bluetooth device in
-     * response to a change in the selected item.
-     * @private
-     */
-    onChange_: function() {
-      var item = this.selectedItem;
-      var disabled = !item || item.paired || item.conencted;
-      $('bluetooth-add-device-apply-button').disabled = disabled;
     },
 
     /**
@@ -156,6 +144,7 @@ cr.define('options.system.bluetooth', function() {
         this.dataModel.splice(index, 1, device);
         this.redrawItem(index);
       }
+      this.updateListVisibility_();
       return true;
     },
 
@@ -165,6 +154,7 @@ cr.define('options.system.bluetooth', function() {
     clear: function() {
       this.dataModel = new ArrayDataModel([]);
       this.redraw();
+      this.updateListVisibility_();
     },
 
     /**
@@ -200,6 +190,7 @@ cr.define('options.system.bluetooth', function() {
       // involving a deletion.
       this.invalidate();
       this.redraw();
+      this.updateListVisibility_();
     },
 
     /**
@@ -215,7 +206,21 @@ cr.define('options.system.bluetooth', function() {
           return true;
       }
       return false;
-    }
+    },
+
+    /**
+     * If the list has an associated empty list placholder then update the
+     * visibility of the list and placeholder.
+     * @private
+     */
+    updateListVisibility_: function() {
+      var empty = this.dataModel.length == 0;
+      var listPlaceHolderID = this.id + '-empty-placeholder';
+      if ($(listPlaceHolderID)) {
+        this.hidden = empty;
+        $(listPlaceHolderID).hidden = !empty;
+      }
+    },
   };
 
   cr.defineProperty(BluetoothListItem, 'connected', cr.PropertyKind.BOOL_ATTR);

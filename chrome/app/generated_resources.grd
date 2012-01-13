@@ -12134,6 +12134,9 @@ changed since last sign in
       <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_SCANNING">
         Searching for devices...
       </message>
+      <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_NO_DEVICES_FOUND">
+        No devices found
+      </message>
       <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_CONNECTED">
         Connected
       </message>
@@ -12164,14 +12167,14 @@ changed since last sign in
       <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_REJECT_PASSKEY">
         Reject
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_CONFIRM_PASSKEY_REQUEST" desc="Bluetooth pairing message typically shown when pairing with a device that has a display.  The label %1 is replaced with the name of the device.">
+      <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_CONFIRM_PASSKEY_REQUEST" desc="Bluetooth pairing message typically shown when pairing with a device that has a display.">
         Please confirm this passkey is shown on "<ph name="DEVICE_NAME">%1<ex>Nexus S</ex></ph>":
       </message>
       <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_ENTER_PASSKEY_REQUEST" desc="Bluetooth pairing message typically displayed when the external device has no display or means of input.">
-        Please enter the passkey:
+        Please enter the PIN for "<ph name="DEVICE_NAME">%1<ex>Nexus S</ex></ph>":
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_REMOTE_PASSKEY_REQUEST" desc="Bluetooth pairing message typically displayed when pairing a wireless keyboard.  The label %1 is replaced with the name of the device.">
-        Please enter this passkey on "<ph name="DEVICE_NAME">%1<ex>Nexus S</ex></ph>":
+      <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_REMOTE_PASSKEY_REQUEST" desc="Bluetooth pairing message typically displayed when pairing a wireless keyboard.">
+        Please enter this passkey and press Enter on "<ph name="DEVICE_NAME">%1<ex>Nexus S</ex></ph>":
       </message>
       <message name="IDS_OPTIONS_SETTINGS_ACCESSIBILITY_DESCRIPTION" desc="In the settings tab, the text next to the checkbox for spoken feedback.">
         Enable spoken feedback
