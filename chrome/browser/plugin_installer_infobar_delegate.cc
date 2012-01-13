@@ -88,5 +88,6 @@ bool PluginInstallerInfoBarDelegate::LinkClicked(
 }
 
 void PluginInstallerInfoBarDelegate::DidStartDownload() {
-  owner()->RemoveInfoBar(this);
+  if (owner())
+    owner()->RemoveInfoBar(this);
 }

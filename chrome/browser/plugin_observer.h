@@ -30,6 +30,9 @@ class PluginObserver : public content::WebContentsObserver {
   // content::WebContentsObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
+  // Shows the infobar that offers to install a missing plug-in.
+  void ShowPluginInstallationInfoBar(PluginInstaller* installer);
+
  private:
 #if defined(ENABLE_PLUGIN_INSTALLATION)
   class MissingPluginHost;

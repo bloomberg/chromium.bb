@@ -371,6 +371,7 @@ class PluginObserver::MissingPluginHost : public PluginInstallerObserver {
       case PluginInstaller::kStateIdle: {
         observer->Send(new ChromeViewMsg_FoundMissingPlugin(routing_id_,
                                                             installer->name()));
+        observer->ShowPluginInstallationInfoBar(installer);
         break;
       }
       case PluginInstaller::kStateDownloading: {
@@ -453,15 +454,17 @@ void PluginObserver::FoundMissingPlugin(int placeholder_id,
                                         PluginInstaller* installer) {
   missing_plugins_.push_back(
       new MissingPluginHost(this, placeholder_id, installer));
+}
+
+void PluginObserver::ShowPluginInstallationInfoBar(PluginInstaller* installer) {
   InfoBarTabHelper* infobar_helper = tab_contents_->infobar_tab_helper();
-  PluginInstallerInfoBarDelegate* delegate = new PluginInstallerInfoBarDelegate(
+  infobar_helper->AddInfoBar(new PluginInstallerInfoBarDelegate(
       installer,
       infobar_helper,
       installer->name(),
       installer->help_url(),
       base::Bind(&PluginObserver::InstallMissingPlugin,
-                 weak_ptr_factory_.GetWeakPtr(), installer));
-  infobar_helper->AddInfoBar(delegate);
+                 weak_ptr_factory_.GetWeakPtr(), installer)));
 }
 
 void PluginObserver::DidNotFindMissingPlugin(int placeholder_id) {
