@@ -206,7 +206,7 @@
     "description": "Web-app description. Displayed in Chromium's extensions page."
   },
   "PRODUCT_NAME": {
-    "message": "Chromoting",
+    "message": "Chromoting BETA",
     "description": "The product name. Displayed in various Chromium pages, including the New Tab page, and displayed prominently on the app's main page."
   },
   "SIGN_OUT_BUTTON": {
