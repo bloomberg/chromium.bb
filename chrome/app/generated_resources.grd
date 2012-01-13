@@ -4265,7 +4265,7 @@ Update checks have repeatedly failed for the extension "<ph name="EXTENSION_NAME
         Boo... You have no extensions :-(
       </message>
       <message name="IDS_EXTENSIONS_NONE_INSTALLED_SUGGEST_GALLERY" desc="Text on next line after IDS_EXTENSIONS_NONE_INSTALLED that suggests the user look in the gallery for extensions to install.">
-        Want to <ph name="BEGIN_LINK">$1</ph>browse the gallery<ph name="END_LINK">$2</ph> instead?
+        Want to <ph name="BEGIN_LINK">&lt;a target="_blank" href="$1"&gt;</ph>browse the gallery<ph name="END_LINK">&lt;/a&gt;</ph> instead?
       </message>
       <message name="IDS_EXTENSIONS_CRASHED_EXTENSION" desc="Text that signifies that the extension process was terminated, usually because it has crashed.">
         (Crashed)
@@ -4331,7 +4331,7 @@ Update checks have repeatedly failed for the extension "<ph name="EXTENSION_NAME
         (this extension is managed and can not be removed or disabled)
       </message>
       <message name="IDS_GET_MORE_EXTENSIONS" desc="The link for getting more extensions. Displayed at bottom of extension management page when there is at least one extension installed.">
-        Get more extensions
+        <ph name="BEGIN_LINK">&lt;a target="blank_" href="$1"&gt;</ph>Get more extensions<ph name="END_LINK">&lt;/a&gt;</ph>
       </message>
       <message name="IDS_EXTENSION_LOAD_FROM_DIRECTORY" desc="Title of directory browse dialog when user wants to load an extension from a directory.">
         Select the extension directory.

@@ -520,18 +520,12 @@ void ExtensionSettingsHandler::GetLocalizedValues(
     l10n_util::GetStringUTF16(IDS_EXTENSIONS_NONE_INSTALLED));
   localized_strings->SetString("extensionSettingsSuggestGallery",
       l10n_util::GetStringFUTF16(IDS_EXTENSIONS_NONE_INSTALLED_SUGGEST_GALLERY,
-      ASCIIToUTF16("<a href='") +
           ASCIIToUTF16(google_util::AppendGoogleLocaleParam(
-              GURL(extension_urls::GetWebstoreLaunchURL())).spec()) +
-      ASCIIToUTF16("'>"),
-      ASCIIToUTF16("</a>")));
+              GURL(extension_urls::GetWebstoreLaunchURL())).spec())));
   localized_strings->SetString("extensionSettingsGetMoreExtensions",
-      ASCIIToUTF16("<a href='") +
-      ASCIIToUTF16(google_util::AppendGoogleLocaleParam(
-          GURL(extension_urls::GetWebstoreLaunchURL())).spec()) +
-          ASCIIToUTF16("'>") +
-          l10n_util::GetStringUTF16(IDS_GET_MORE_EXTENSIONS) +
-      ASCIIToUTF16("</a>"));
+      l10n_util::GetStringFUTF16(IDS_GET_MORE_EXTENSIONS,
+          ASCIIToUTF16(google_util::AppendGoogleLocaleParam(
+              GURL(extension_urls::GetWebstoreLaunchURL())).spec())));
   localized_strings->SetString("extensionSettingsExtensionId",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_ID));
   localized_strings->SetString("extensionSettingsExtensionPath",
