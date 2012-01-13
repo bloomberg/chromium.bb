@@ -401,7 +401,6 @@ TEST_F(BufferedDataSourceTest, SetBitrate) {
   EXPECT_EQ(1234, loader_bitrate());
 
   // During teardown we'll also report our final network status.
-  EXPECT_CALL(host_, SetNetworkActivity(true));
   EXPECT_CALL(host_, SetBufferedBytes(4000000));
 
   EXPECT_TRUE(data_source_->loading());
@@ -427,7 +426,6 @@ TEST_F(BufferedDataSourceTest, SetPlaybackRate) {
   EXPECT_NE(old_loader, loader());
 
   // During teardown we'll also report our final network status.
-  EXPECT_CALL(host_, SetNetworkActivity(true));
   EXPECT_CALL(host_, SetBufferedBytes(4000000));
 
   EXPECT_TRUE(data_source_->loading());
@@ -447,8 +445,8 @@ TEST_F(BufferedDataSourceTest, Read) {
   FinishRead();
 
   // During teardown we'll also report our final network status.
+  EXPECT_CALL(host_, SetNetworkActivity(false));
   EXPECT_CALL(host_, SetBufferedBytes(kDataSize));
-  //EXPECT_CALL(host_, SetNetworkActivity(false));
 
   EXPECT_TRUE(data_source_->loading());
   Stop();

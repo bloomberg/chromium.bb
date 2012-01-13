@@ -511,7 +511,9 @@ void BufferedResourceLoader::didFail(
   DCHECK(active_loader_.get());
 
   // We don't need to continue loading after failure.
-  active_loader_->Cancel();
+  //
+  // Keep it alive until we exit this method so that |error| remains valid.
+  scoped_ptr<ActiveLoader> active_loader(active_loader_.release());
   NotifyNetworkEvent();
 
   // Don't leave start callbacks hanging around.

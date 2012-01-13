@@ -15,16 +15,12 @@ ActiveLoader::ActiveLoader(scoped_ptr<WebKit::WebURLLoader> loader)
 }
 
 ActiveLoader::~ActiveLoader() {
-  Cancel();
+  loader_->cancel();
 }
 
 void ActiveLoader::SetDeferred(bool deferred) {
   deferred_ = deferred;
   loader_->setDefersLoading(deferred);
-}
-
-void ActiveLoader::Cancel() {
-  loader_->cancel();
 }
 
 }  // namespace webkit_media

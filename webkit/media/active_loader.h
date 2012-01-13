@@ -28,9 +28,6 @@ class ActiveLoader {
   void SetDeferred(bool deferred);
   bool deferred() { return deferred_; }
 
-  // Cancels the URL loader associated with this object.
-  void Cancel();
-
  private:
   friend class BufferedDataSourceTest;
 
