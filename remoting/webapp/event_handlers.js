@@ -11,8 +11,11 @@ function onLoad() {
   var goHome = function() {
     remoting.setMode(remoting.AppMode.HOME);
   };
-  var goClient = function() {
+  var goEnterAccessCode = function() {
     remoting.setMode(remoting.AppMode.CLIENT_UNCONNECTED);
+  };
+  var reload = function() {
+    location.reload();
   };
   /** @param {Event} event */
   var sendAccessCode = function(event) {
@@ -34,11 +37,14 @@ function onLoad() {
       { event: 'click', id: 'toggle-scaling', fn: remoting.toggleScaleToFit },
       { event: 'click', id: 'auth-button', fn: doAuthRedirect },
       { event: 'click', id: 'share-button', fn: remoting.tryShare },
-      { event: 'click', id: 'access-mode-button', fn: goClient },
+      { event: 'click', id: 'access-mode-button', fn: goEnterAccessCode },
       { event: 'click', id: 'cancel-share-button', fn: remoting.cancelShare },
       { event: 'click', id: 'host-finished-button', fn: goHome },
       { event: 'click', id: 'client-cancel-button', fn: goHome },
-      { event: 'click', id: 'client-finished-button', fn: goClient },
+      { event: 'click', id: 'client-finished-it2me-button',
+        fn: goEnterAccessCode },
+      { event: 'click', id: 'client-finished-me2me-button', fn: goHome },
+      { event: 'click', id: 'client-reconnect-button', fn: reload },
       { event: 'click', id: 'cancel-button',
         fn: remoting.cancelPendingOperation },
       { event: 'submit', id: 'access-code-form', fn: sendAccessCode },

@@ -209,6 +209,10 @@
     "message": "Chromoting BETA",
     "description": "The product name. Displayed in various Chromium pages, including the New Tab page, and displayed prominently on the app's main page."
   },
+  "RECONNECT": {
+    "message": "Reconnect",
+    "description": "Label for button to reconnect to the previous Me2Me host. This button appears on the 'session-finished' page."
+  },
   "SIGN_OUT_BUTTON": {
     "message": "Sign out",
     "description": "Sign out button, visible if the user has authenticated. Clicking this clears authentication credentials and returns the web-app to the initial 'unauthenticated' state."

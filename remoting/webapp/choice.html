@@ -272,13 +272,28 @@ found in the LICENSE file.
 
         <div data-ui-mode="client.connect-failed.it2me client.session-finished.it2me"
              class="centered-button">
-          <button id="client-finished-button"
+          <button id="client-finished-it2me-button"
                   type="button"
                   class="big-button"
                   i18n-content="OK"
                   autofocus="autofocus">
           </button>
-        </div> <!-- client.connect-failed client.session-finished -->
+        </div> <!-- client.connect-failed.it2me client.session-finished.it2me -->
+
+        <div data-ui-mode="client.connect-failed.me2me client.session-finished.me2me"
+             class="centered-button">
+          <button id="client-finished-me2me-button"
+                  type="button"
+                  class="big-button"
+                  i18n-content="OK"
+                  autofocus="autofocus">
+          </button>
+          <button id="client-reconnect-button"
+                  type="button"
+                  class="big-button"
+                  i18n-content="RECONNECT">
+          </button>
+        </div> <!-- client.connect-failed.me2me client.session-finished.me2me -->
 
       </div> <!-- client-panel -->
 
