@@ -37,6 +37,14 @@ namespace IPC {
 class SyncMessageFilter;
 }
 
+struct GpuListenerInfo {
+  GpuListenerInfo();
+  ~GpuListenerInfo();
+
+  base::WeakPtr<IPC::Channel::Listener> listener;
+  scoped_refptr<base::MessageLoopProxy> loop;
+};
+
 // Encapsulates an IPC channel between the renderer and one plugin process.
 // On the plugin side there's a corresponding GpuChannel.
 class GpuChannelHost : public IPC::Message::Sender,
@@ -121,26 +129,6 @@ class GpuChannelHost : public IPC::Message::Sender,
   void ForciblyCloseChannel();
 
  private:
-  // An shim class for working with listeners between threads.
-  // It is used to post a task to the thread that owns the listener,
-  // and where it's safe to dereference the weak pointer.
-  class Listener :
-    public base::RefCountedThreadSafe<Listener> {
-   public:
-    Listener(base::WeakPtr<IPC::Channel::Listener> listener,
-                       scoped_refptr<base::MessageLoopProxy> loop);
-    virtual ~Listener();
-
-    void DispatchMessage(const IPC::Message& msg);
-    void DispatchError();
-
-    scoped_refptr<base::MessageLoopProxy> loop() { return loop_; }
-
-   private:
-    base::WeakPtr<IPC::Channel::Listener> listener_;
-    scoped_refptr<base::MessageLoopProxy> loop_;
-  };
-
   // A filter used internally to route incoming messages from the IO thread
   // to the correct message loop.
   class MessageFilter : public IPC::ChannelProxy::MessageFilter {
@@ -160,8 +148,7 @@ class GpuChannelHost : public IPC::Message::Sender,
    private:
     GpuChannelHost* parent_;
 
-    typedef base::hash_map<int,
-        scoped_refptr<GpuChannelHost::Listener> > ListenerMap;
+    typedef base::hash_map<int, GpuListenerInfo> ListenerMap;
     ListenerMap listeners_;
   };
 

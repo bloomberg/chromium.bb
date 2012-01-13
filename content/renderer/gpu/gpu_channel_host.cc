@@ -18,26 +18,10 @@
 using base::AutoLock;
 using base::MessageLoopProxy;
 
-GpuChannelHost::Listener::Listener(
-    base::WeakPtr<IPC::Channel::Listener> listener,
-    scoped_refptr<base::MessageLoopProxy> loop)
-    : listener_(listener),
-      loop_(loop) {
-
+GpuListenerInfo::GpuListenerInfo() {
 }
 
-GpuChannelHost::Listener::~Listener() {
-
-}
-
-void GpuChannelHost::Listener::DispatchMessage(const IPC::Message& msg) {
-  if (listener_.get())
-    listener_->OnMessageReceived(msg);
-}
-
-void GpuChannelHost::Listener::DispatchError() {
-  if (listener_.get())
-    listener_->OnChannelError();
+GpuListenerInfo::~GpuListenerInfo() {
 }
 
 GpuChannelHost::MessageFilter::MessageFilter(GpuChannelHost* parent)
@@ -54,7 +38,10 @@ void GpuChannelHost::MessageFilter::AddRoute(
     scoped_refptr<MessageLoopProxy> loop) {
   DCHECK(MessageLoop::current() == ChildProcess::current()->io_message_loop());
   DCHECK(listeners_.find(route_id) == listeners_.end());
-  listeners_[route_id] = new GpuChannelHost::Listener(listener, loop);
+  GpuListenerInfo info;
+  info.listener = listener;
+  info.loop = loop;
+  listeners_[route_id] = info;
 }
 
 void GpuChannelHost::MessageFilter::RemoveRoute(int route_id) {
@@ -76,11 +63,13 @@ bool GpuChannelHost::MessageFilter::OnMessageReceived(
   ListenerMap::iterator it = listeners_.find(message.routing_id());
 
   if (it != listeners_.end()) {
-    const scoped_refptr<GpuChannelHost::Listener>& listener = it->second;
-    listener->loop()->PostTask(
+    const GpuListenerInfo& info = it->second;
+    info.loop->PostTask(
         FROM_HERE,
-        base::Bind(&GpuChannelHost::Listener::DispatchMessage, listener.get(),
-                   message));
+        base::Bind(
+            base::IgnoreResult(&IPC::Channel::Listener::OnMessageReceived),
+            info.listener,
+            message));
   }
 
   return true;
@@ -93,10 +82,10 @@ void GpuChannelHost::MessageFilter::OnChannelError() {
   for (ListenerMap::iterator it = listeners_.begin();
        it != listeners_.end();
        it++) {
-    const scoped_refptr<GpuChannelHost::Listener>& listener = it->second;
-    listener->loop()->PostTask(
+    const GpuListenerInfo& info = it->second;
+    info.loop->PostTask(
         FROM_HERE,
-        base::Bind(&GpuChannelHost::Listener::DispatchError, listener.get()));
+        base::Bind(&IPC::Channel::Listener::OnChannelError, info.listener));
   }
 
   listeners_.clear();
