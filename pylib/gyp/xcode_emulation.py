@@ -751,3 +751,52 @@ def GetMacInfoPlist(product_dir, xcode_settings, gyp_path_to_build_path):
   extra_env = xcode_settings.GetPerTargetSettings()
 
   return info_plist, dest_plist, defines, extra_env
+
+
+def GetXcodeEnv(xcode_settings, built_products_dir, srcroot):
+  """Return the environment variables that Xcode would set. See
+  http://developer.apple.com/library/mac/#documentation/DeveloperTools/Reference/XcodeBuildSettingRef/1-Build_Setting_Reference/build_setting_ref.html#//apple_ref/doc/uid/TP40003931-CH3-SW153
+  for a full list.
+
+  Args:
+      xcode_settings: An XcodeSettings object. If this is None, this function
+          returns an empty dict.
+      built_products_dir: Absolute path to the built products dir.
+      srcroot: Absolute path to the source root.
+  """
+  if not xcode_settings: return {}
+
+  # This function is considered a friend of XcodeSettings, so let it reach into
+  # its implementation details.
+  spec = xcode_settings.spec
+
+  # These are filled in on a as-needed basis.
+  env = {
+    'BUILT_PRODUCTS_DIR' : built_products_dir,
+    'CONFIGURATION' : '$(BUILDTYPE)',
+    'PRODUCT_NAME' : xcode_settings.GetProductName(),
+    # See /Developer/Platforms/MacOSX.platform/Developer/Library/Xcode/Specifications/MacOSX\ Product\ Types.xcspec for FULL_PRODUCT_NAME
+    'SRCROOT' : srcroot,
+    'SOURCE_ROOT': '$(SRCROOT)',
+    # This is not true for static libraries, but currently the env is only
+    # written for bundles:
+    'TARGET_BUILD_DIR' : built_products_dir,
+    'TEMP_DIR' : '$(TMPDIR)',
+  }
+  if spec['type'] in (
+      'executable', 'static_library', 'shared_library', 'loadable_module'):
+    env['EXECUTABLE_NAME'] = xcode_settings.GetExecutableName()
+    env['EXECUTABLE_PATH'] = xcode_settings.GetExecutablePath()
+    env['FULL_PRODUCT_NAME'] = xcode_settings.GetFullProductName()
+    mach_o_type = xcode_settings.GetMachOType()
+    if mach_o_type:
+      env['MACH_O_TYPE'] = mach_o_type
+    env['PRODUCT_TYPE'] = xcode_settings.GetProductType()
+  if xcode_settings._IsBundle():
+    env['CONTENTS_FOLDER_PATH'] = \
+      xcode_settings.GetBundleContentsFolderPath()
+    env['UNLOCALIZED_RESOURCES_FOLDER_PATH'] = \
+        xcode_settings.GetBundleResourceFolder()
+    env['INFOPLIST_PATH'] = xcode_settings.GetBundlePlistPath()
+    env['WRAPPER_NAME'] = xcode_settings.GetWrapperName()
+  return env

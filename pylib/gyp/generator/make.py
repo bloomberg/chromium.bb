@@ -741,7 +741,7 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
     # Actions must come first, since they can generate more OBJs for use below.
     if 'actions' in spec:
       self.WriteActions(spec['actions'], extra_sources, extra_outputs,
-                        extra_mac_bundle_resources, part_of_all, spec)
+                        extra_mac_bundle_resources, part_of_all)
 
     # Rules must be early like actions.
     if 'rules' in spec:
@@ -749,15 +749,14 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
                       extra_mac_bundle_resources, part_of_all)
 
     if 'copies' in spec:
-      self.WriteCopies(spec['copies'], extra_outputs, part_of_all, spec)
+      self.WriteCopies(spec['copies'], extra_outputs, part_of_all)
 
     # Bundle resources.
     if self.is_mac_bundle:
       all_mac_bundle_resources = (
           spec.get('mac_bundle_resources', []) + extra_mac_bundle_resources)
-      self.WriteMacBundleResources(
-          all_mac_bundle_resources, mac_bundle_deps, spec)
-      self.WriteMacInfoPlist(mac_bundle_deps, spec)
+      self.WriteMacBundleResources(all_mac_bundle_resources, mac_bundle_deps)
+      self.WriteMacInfoPlist(mac_bundle_deps)
 
     # Sources.
     all_sources = spec.get('sources', []) + extra_sources
@@ -833,7 +832,7 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
 
 
   def WriteActions(self, actions, extra_sources, extra_outputs,
-                   extra_mac_bundle_resources, part_of_all, spec):
+                   extra_mac_bundle_resources, part_of_all):
     """Write Makefile code for any 'actions' from the gyp input.
 
     extra_sources: a list that will be filled in with newly generated source
@@ -901,7 +900,7 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
       # Same for environment.
       self.WriteLn("%s: obj := $(abs_obj)" % QuoteSpaces(outputs[0]))
       self.WriteLn("%s: builddir := $(abs_builddir)" % QuoteSpaces(outputs[0]))
-      self.WriteXcodeEnv(outputs[0], spec)
+      self.WriteXcodeEnv(outputs[0])
 
       for input in inputs:
         assert ' ' not in input, (
@@ -1040,7 +1039,7 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
     self.WriteLn('')
 
 
-  def WriteCopies(self, copies, extra_outputs, part_of_all, spec):
+  def WriteCopies(self, copies, extra_outputs, part_of_all):
     """Write Makefile code for any 'copies' from the gyp input.
 
     extra_outputs: a list that will be filled in with any outputs of this action
@@ -1069,7 +1068,7 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
         # can't run scripts, there's no need to write the env then.
         # WriteDoCmd() will escape spaces for .d files.
         import gyp.generator.xcode as xcode_generator
-        env = self.GetXcodeEnv(spec)
+        env = self.GetXcodeEnv()
         output = xcode_generator.ExpandXcodeVariables(output, env)
         path = xcode_generator.ExpandXcodeVariables(path, env)
         self.WriteDoCmd([output], [path], 'copy', part_of_all)
@@ -1079,7 +1078,7 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
     self.WriteLn()
 
 
-  def WriteMacBundleResources(self, resources, bundle_deps, spec):
+  def WriteMacBundleResources(self, resources, bundle_deps):
     """Writes Makefile code for 'mac_bundle_resources'."""
     self.WriteLn('### Generated for mac_bundle_resources')
 
@@ -1091,7 +1090,7 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
       bundle_deps.append(output)
 
 
-  def WriteMacInfoPlist(self, bundle_deps, spec):
+  def WriteMacInfoPlist(self, bundle_deps):
     """Write Makefile code for bundle Info.plist files."""
     info_plist, out, defines, extra_env = gyp.xcode_emulation.GetMacInfoPlist(
         generator_default_variables['PRODUCT_DIR'], self.xcode_settings,
@@ -1111,7 +1110,7 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
            '@plutil -convert xml1 $@ $@'])
       info_plist = intermediate_plist
     # plists can contain envvars and substitute them into the file.
-    self.WriteXcodeEnv(out, spec, additional_settings=extra_env)
+    self.WriteXcodeEnv(out, additional_settings=extra_env)
     self.WriteDoCmd([out], [info_plist], 'mac_tool,,,copy-info-plist',
                     part_of_all=True)
     bundle_deps.append(out)
@@ -1414,7 +1413,7 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
         # from an earlier target.
         strip_save_file = ''
       self.WriteXcodeEnv(
-          self.output, spec,
+          self.output,
           additional_settings={'CHROMIUM_STRIP_SAVE_FILE': strip_save_file})
 
     has_target_postbuilds = False
@@ -1803,55 +1802,15 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
     self.fp.write(text + '\n')
 
 
-  def GetXcodeEnv(self, spec):
-    """Return the environment variables that Xcode would set. See
-    http://developer.apple.com/library/mac/#documentation/DeveloperTools/Reference/XcodeBuildSettingRef/1-Build_Setting_Reference/build_setting_ref.html#//apple_ref/doc/uid/TP40003931-CH3-SW153
-    for a full list."""
-    if self.flavor != 'mac': return {}
-
-    # This is the same for all targets. (This is not generally true, but is
-    # in chromium, which sets SYMROOT to a global single directory for all
-    # targets.) If necessary, emulate xcode output file placement better.
-    built_products_dir = "$(abs_builddir)"
-
-    # This is the directory containing this gyp / xcodeproj file.
-    srcroot = '$(abs_srcdir)/' + self.path
-
-    # These are filled in on a as-needed basis.
-    env = {
-      'BUILT_PRODUCTS_DIR' : built_products_dir,
-      'CONFIGURATION' : '$(BUILDTYPE)',
-      'PRODUCT_NAME' : self.xcode_settings.GetProductName(),
-      # See /Developer/Platforms/MacOSX.platform/Developer/Library/Xcode/Specifications/MacOSX\ Product\ Types.xcspec for FULL_PRODUCT_NAME
-      'SRCROOT' : srcroot,
-      'SOURCE_ROOT': '$(SRCROOT)',
-      # This is not true for static libraries, but currently the env is only
-      # written for bundles:
-      'TARGET_BUILD_DIR' : built_products_dir,
-      'TEMP_DIR' : '$(TMPDIR)',
-    }
-    if self.type in (
-        'executable', 'static_library', 'shared_library', 'loadable_module'):
-      env['EXECUTABLE_NAME'] = self.xcode_settings.GetExecutableName()
-      env['EXECUTABLE_PATH'] = self.xcode_settings.GetExecutablePath()
-      env['FULL_PRODUCT_NAME'] = self.xcode_settings.GetFullProductName()
-      mach_o_type = self.xcode_settings.GetMachOType()
-      if mach_o_type:
-        env['MACH_O_TYPE'] = mach_o_type
-      env['PRODUCT_TYPE'] = self.xcode_settings.GetProductType()
-    if self.is_mac_bundle:
-      env['CONTENTS_FOLDER_PATH'] = \
-        self.xcode_settings.GetBundleContentsFolderPath()
-      env['UNLOCALIZED_RESOURCES_FOLDER_PATH'] = \
-          self.xcode_settings.GetBundleResourceFolder()
-      env['INFOPLIST_PATH'] = self.xcode_settings.GetBundlePlistPath()
-      env['WRAPPER_NAME'] = self.xcode_settings.GetWrapperName()
-    return env
+  def GetXcodeEnv(self):
+    return gyp.xcode_emulation.GetXcodeEnv(
+        self.xcode_settings,
+        "$(abs_builddir)", os.path.join("$(abs_srcdir)", self.path))
 
 
-  def WriteXcodeEnv(self, target, spec, additional_settings={}):
+  def WriteXcodeEnv(self, target, additional_settings={}):
     env = additional_settings
-    env.update(self.GetXcodeEnv(spec))
+    env.update(self.GetXcodeEnv())
 
     # Convert list values to string values.
     for k in env:
