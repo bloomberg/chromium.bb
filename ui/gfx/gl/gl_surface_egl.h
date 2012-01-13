@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -68,6 +68,9 @@ class NativeViewGLSurfaceEGL : public GLSurfaceEGL {
   virtual EGLSurface GetHandle() OVERRIDE;
   virtual std::string GetExtensions() OVERRIDE;
   virtual bool PostSubBuffer(int x, int y, int width, int height) OVERRIDE;
+
+ protected:
+  void SetHandle(EGLSurface surface);
 
  private:
   gfx::PluginWindowHandle window_;

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -40,6 +40,10 @@ base::NativeLibrary LoadLibrary(const char* filename) {
 
 }  // namespace anonymous
 
+void GetAllowedGLImplementations(std::vector<GLImplementation>* impls) {
+  impls->push_back(kGLImplementationEGLGLES2);
+}
+
 bool InitializeGLBindings(GLImplementation implementation) {
   // Prevent reinitialization with a different implementation. Once the gpu
   // unit tests have initialized with kGLImplementationMock, we don't want to
@@ -53,23 +57,23 @@ bool InitializeGLBindings(GLImplementation implementation) {
       if (!gles_library)
         return false;
       base::NativeLibrary egl_library = LoadLibrary("libEGL.so");
-      if (!egl_library)
+      if (!egl_library) {
+        base::UnloadNativeLibrary(gles_library);
         return false;
+      }
 
-      // Note: Android is a GLES2 platform so no EXT or ARB entry points are
-      // used by Chromium on such platforms. However, gl_bindings_autogen_gl.cc
-      // code looks up the EXT entry points with eglGetProcAddress(), comparing
-      // the resulting function pointers against NULL to decide whether it
-      // should fall back to the non-EXT versions of these functions.
-      // However, this is wrong as eglGetProcAddress() is not guaranteed to
-      // return NULL if an extension is not supported. On Android, the
-      // end-result is that we end up with the wrong function pointers for
-      // many GL functions and the rendering is broken.
-      // TODO(andreip): Fix this properly by modifying the generate_bindings.py
-      // python script that generates the lookup code so that we give it two
-      // lists: one of function names to look up on desktop GL and one for
-      // those to look up on GLES2.
-      // see, http://code.google.com/p/chromium/issues/detail?id=105011
+      GLGetProcAddressProc get_proc_address =
+          reinterpret_cast<GLGetProcAddressProc>(
+              base::GetFunctionPointerFromNativeLibrary(
+                  egl_library, "eglGetProcAddress"));
+      if (!get_proc_address) {
+        LOG(ERROR) << "eglGetProcAddress not found.";
+        base::UnloadNativeLibrary(egl_library);
+        base::UnloadNativeLibrary(gles_library);
+        return false;
+      }
+
+      SetGLGetProcAddressProc(get_proc_address);
       AddGLNativeLibrary(egl_library);
       AddGLNativeLibrary(gles_library);
       SetGLImplementation(kGLImplementationEGLGLES2);
@@ -97,7 +101,32 @@ bool InitializeGLBindings(GLImplementation implementation) {
   return true;
 }
 
+bool InitializeGLExtensionBindings(GLImplementation implementation,
+                                   GLContext* context) {
+  switch (implementation) {
+    case kGLImplementationEGLGLES2:
+      InitializeGLExtensionBindingsGL(context);
+      InitializeGLExtensionBindingsEGL(context);
+      break;
+    case kGLImplementationMockGL:
+      InitializeGLExtensionBindingsGL(context);
+      break;
+    default:
+      return false;
+  }
+
+  return true;
+}
+
 void InitializeDebugGLBindings() {
+}
+
+void ClearGLBindings() {
+  ClearGLBindingsEGL();
+  ClearGLBindingsGL();
+  SetGLImplementation(kGLImplementationNone);
+
+  UnloadGLNativeLibraries();
 }
 
 }  // namespace gfx

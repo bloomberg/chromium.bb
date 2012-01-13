@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,6 +15,10 @@
 namespace gfx {
 
 class GLContext;
+
+#if defined(OS_ANDROID)
+class NativeWindowInterface;
+#endif
 
 // Encapsulates a surface that can be rendered to with GL, hiding platform
 // specific management.
@@ -42,6 +46,10 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface> {
 
   // Get the size of the surface.
   virtual gfx::Size GetSize() = 0;
+
+#if defined(OS_ANDROID)
+  virtual void SetNativeWindow(NativeWindowInterface* window) { }
+#endif
 
   // Get the underlying platform specific surface "handle".
   virtual void* GetHandle() = 0;

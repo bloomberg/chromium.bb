@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -231,6 +231,10 @@ static inline NativeView NativeViewFromIdInBrowser(NativeViewId id) {
   // TODO(dhollowa): Rationalize these two definitions. http://crbug.com/104551.
   typedef NSView* PluginWindowHandle;
   const PluginWindowHandle kNullPluginWindow = 0;
+#elif defined(OS_ANDROID)
+  typedef uint64 PluginWindowHandle;
+  const PluginWindowHandle kNullPluginWindow = 0;
+  const PluginWindowHandle kDummyPluginWindow = 0xFEEDBEEF;
 #else
   // On OS X we don't have windowed plugins.
   // We use a NULL/0 PluginWindowHandle in shared code to indicate there
