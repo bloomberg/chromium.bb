@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -38,6 +38,14 @@ FileChooser_Trusted::FileChooser_Trusted(const FileChooser_Trusted& other)
     : FileChooser_Dev(other),
       save_as_(other.save_as_),
       suggested_file_name_(other.suggested_file_name_) {
+}
+
+FileChooser_Trusted& FileChooser_Trusted::operator=(
+    const FileChooser_Trusted& other) {
+  FileChooser_Dev::operator=(other);
+  save_as_ = other.save_as_;
+  suggested_file_name_ = other.suggested_file_name_;
+  return *this;
 }
 
 int32_t FileChooser_Trusted::Show(const CompletionCallback& cc) {

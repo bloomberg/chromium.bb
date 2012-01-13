@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,13 +24,15 @@ class FileChooser_Trusted : public FileChooser_Dev {
 
   FileChooser_Trusted(const FileChooser_Trusted& other);
 
+  FileChooser_Trusted& operator=(const FileChooser_Trusted& other);
+
   // Overrides of method in superclass. This shows without requiring a user
   // gesture (and can also show save dialogs).
   virtual int32_t Show(const CompletionCallback& cc);
 
  private:
-  const bool save_as_;
-  const std::string suggested_file_name_;
+  bool save_as_;
+  std::string suggested_file_name_;
 };
 
 }  // namespace pp
