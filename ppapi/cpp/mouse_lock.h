@@ -16,7 +16,7 @@ namespace pp {
 class CompletionCallback;
 class Instance;
 
-/// This class allows you to associate the <codee>PPP_MouseLock</code> and
+/// This class allows you to associate the <code>PPP_MouseLock</code> and
 /// <code>PPB_MouseLock</code> C-based interfaces with an object. It associates
 /// itself with the given instance, and registers as the global handler for
 /// handling the <code>PPP_MouseLock</code> interface that the browser calls.
@@ -77,7 +77,7 @@ class MouseLock {
   /// program using a reserved keystroke (e.g. ALT+TAB), or some other system
   /// event.
   ///
-  /// @param[in] callback A <code>PP_CompletionCallback</code> to be called upon
+  /// @param[in] cc A <code>CompletionCallback</code> to be called upon
   /// completion.
   ///
   /// @return An int32_t containing an error code from <code>pp_errors.h</code>.
