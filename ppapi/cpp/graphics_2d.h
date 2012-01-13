@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -241,10 +241,10 @@ class Graphics2D : public Resource {
   /// image has been painted on the screen.
   ///
   /// @return Returns <code>PP_OK</code> on success or
-  /// <code>PP_Error_BadResource</code> if the graphics context is invalid,
-  /// <code>PP_Error_BadArgument</code> if the callback is null and
+  /// <code>PP_ERROR_BADRESOURCE</code> if the graphics context is invalid,
+  /// <code>PP_ERROR_BADARGUMENT</code> if the callback is null and
   /// flush is being called from the main thread of the module, or
-  /// <code>PP_Error_InProgress</code> if a flush is already pending that has
+  /// <code>PP_ERROR_INPROGRESS</code> if a flush is already pending that has
   /// not issued its callback yet.  In the failure case, nothing will be
   /// updated and no callback will be scheduled.
 

@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_graphics_2d.idl modified Wed Oct  5 14:06:02 2011. */
+/* From ppb_graphics_2d.idl modified Thu Jan 12 16:11:14 2012. */
 
 #ifndef PPAPI_C_PPB_GRAPHICS_2D_H_
 #define PPAPI_C_PPB_GRAPHICS_2D_H_
@@ -238,10 +238,10 @@ struct PPB_Graphics2D_1_0 {
    * the image has been painted on the screen.
    *
    * @return Returns <code>PP_OK</code> on success or
-   * <code>PP_Error_BadResource</code> if the graphics context is invalid,
-   * <code>PP_Error_BadArgument</code> if the callback is null and flush is
+   * <code>PP_ERROR_BADRESOURCE</code> if the graphics context is invalid,
+   * <code>PP_ERROR_BADARGUMENT</code> if the callback is null and flush is
    * being called from the main thread of the module, or
-   * <code>PP_Error_InProgress</code> if a flush is already pending that has
+   * <code>PP_ERROR_INPROGRESS</code> if a flush is already pending that has
    * not issued its callback yet.  In the failure case, nothing will be updated
    * and no callback will be scheduled.
    */

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -145,7 +145,7 @@ class FileIO : public Resource {
 
   /// Close() cancels any IO that may be pending, and closes the FileIO object.
   /// Any pending callbacks will still run, reporting
-  /// <code>PP_Error_Aborted</code> if pending IO was interrupted.  It is not
+  /// <code>PP_ERROR_ABORTED</code> if pending IO was interrupted.  It is not
   /// valid to call Open() again after a call to this method.
   ///
   /// <strong>Note:</strong> If the FileIO object is destroyed, and it is still

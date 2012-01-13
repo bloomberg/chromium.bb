@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_file_io.idl modified Wed Dec 14 18:08:00 2011. */
+/* From ppb_file_io.idl modified Thu Jan 12 16:13:13 2012. */
 
 #ifndef PPAPI_C_PPB_FILE_IO_H_
 #define PPAPI_C_PPB_FILE_IO_H_
@@ -242,7 +242,7 @@ struct PPB_FileIO_1_0 {
   /**
    * Close() cancels any IO that may be pending, and closes the FileIO object.
    * Any pending callbacks will still run, reporting
-   * <code>PP_Error_Aborted</code> if pending IO was interrupted.  It is not
+   * <code>PP_ERROR_ABORTED</code> if pending IO was interrupted.  It is not
    * valid to call Open() again after a call to this method.
    * <strong>Note:</strong> If the FileIO object is destroyed, and it is still
    * open, then it will be implicitly closed, so you are not required to call
