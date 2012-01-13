@@ -2840,6 +2840,51 @@ drm_intel_bufmgr_gem_set_aub_dump(drm_intel_bufmgr *bufmgr, int enable)
 	}
 }
 
+drm_intel_context *
+drm_intel_gem_context_create(drm_intel_bufmgr *bufmgr)
+{
+	drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *)bufmgr;
+	struct drm_i915_gem_context_create create;
+	drm_i915_getparam_t gp;
+	drm_intel_context *context = NULL;
+	int tmp = 0, ret;
+
+	ret = drmIoctl(bufmgr_gem->fd, DRM_IOCTL_I915_GEM_CONTEXT_CREATE, &create);
+	if (ret != 0) {
+		fprintf(stderr, "DRM_IOCTL_I915_GEM_CONTEXT_CREATE failed: %s\n",
+			strerror(errno));
+		return NULL;
+	}
+
+	context = calloc(1, sizeof(*context));
+	context->ctx_id = create.ctx_id;
+	context->bufmgr = bufmgr;
+
+	return context;
+}
+
+void
+drm_intel_gem_context_destroy(drm_intel_context *ctx)
+{
+	drm_intel_bufmgr_gem *bufmgr_gem;
+	struct drm_i915_gem_context_destroy destroy;
+	int ret;
+
+	if (ctx == NULL)
+		return;
+
+	bufmgr_gem = (drm_intel_bufmgr_gem *)ctx->bufmgr;
+	destroy.ctx_id = ctx->ctx_id;
+	ret = drmIoctl(bufmgr_gem->fd, DRM_IOCTL_I915_GEM_CONTEXT_DESTROY,
+		       &destroy);
+	if (ret != 0)
+		fprintf(stderr, "DRM_IOCTL_I915_GEM_CONTEXT_DESTROY failed: %s\n",
+			strerror(errno));
+
+	free(ctx);
+}
+
+
 /**
  * Annotate the given bo for use in aub dumping.
  *
