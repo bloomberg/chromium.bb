@@ -6,7 +6,7 @@
   color: rgb(92, 97, 102);
   font-size: 18px;
   font-weight: normal;
-  margin-left: 23px;
+  -webkit-margin-start: 23px;
 }
 
 #navigation ol {
@@ -15,12 +15,12 @@
 }
 
 #navigation li {
-  border-left: 6px solid white;
+  -webkit-border-start: 6px solid white;
   color: #999;
   cursor: pointer;
   line-height: 17px;
   margin: 5px 0;
-  padding-left: 18px;
+  -webkit-padding-start: 18px;
   text-transform: uppercase;
 }
 
@@ -29,7 +29,7 @@
 }
 
 #navigation li.selected {
-  border-left-color: rgb(78, 87, 100);
+  -webkit-border-start-color: rgb(78, 87, 100);
   color: rgb(70, 78, 90);
 }
 
@@ -45,6 +45,11 @@
   right: 0;
   top: 0;
   z-index: 1;
+}
+
+html[dir="rtl"] .iframe-container {
+  left: 0;
+  right: 155px;
 }
 
 .iframe-container.selected {
