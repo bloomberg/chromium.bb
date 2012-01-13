@@ -2790,16 +2790,6 @@
    fun:_ZN16ExtensionInfoMap12AddExtensionEPK9Extension
 }
 {
-   bug_67676
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:_ZN10URLPattern5ParseERKSsNS_11ParseOptionE
-   fun:_ZN9Extension10LoadExtentEPK15DictionaryValuePKcP15ExtensionExtentS4_S4_N10URLPattern11ParseOptionEPSs
-   fun:_ZN9Extension13InitFromValueERK15DictionaryValueiPSs
-   fun:_ZN9Extension6CreateERK8FilePathNS_8LocationERK15DictionaryValueiPSs
-}
-{
    bug_68069a
    Memcheck:Leak
    ...
