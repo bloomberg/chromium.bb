@@ -19,6 +19,10 @@ body {
   margin: 0;
 }
 
+p {
+  line-height: 22px;
+}
+
 h1 {
   color: rgb(17, 85, 204);
   font-size: 18px;

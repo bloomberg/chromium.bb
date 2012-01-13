@@ -78,6 +78,10 @@
   vertical-align: middle;
 }
 
+#sync-overview p {
+  display: inline;
+}
+
 #start-stop-sync {
   margin-left: 0;
   margin-right: 5px;
