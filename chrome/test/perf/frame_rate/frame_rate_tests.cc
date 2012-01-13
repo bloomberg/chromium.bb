@@ -130,7 +130,7 @@ class FrameRateTest
     gfx::GLImplementation gl_impl = gfx::kGLImplementationNone;
     const trace_analyzer::TraceEvent* gpu_event = analyzer->FindOneEvent(
         Query::EventName() == Query::String("SwapBuffers") &&
-        Query::EventHasNumberArg("glimpl"));
+        Query::EventHasNumberArg("GLImpl"));
     if (gpu_event)
       gl_impl = static_cast<gfx::GLImplementation>(
           gpu_event->GetKnownArgAsInt("GLImpl"));
