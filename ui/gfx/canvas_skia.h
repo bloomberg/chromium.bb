@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -172,9 +172,7 @@ class UI_EXPORT CanvasSkia : public Canvas {
                             int dest_x, int dest_y, int w, int h) OVERRIDE;
   virtual gfx::NativeDrawingContext BeginPlatformPaint() OVERRIDE;
   virtual void EndPlatformPaint() OVERRIDE;
-#if !defined(OS_MACOSX)
   virtual void Transform(const ui::Transform& transform) OVERRIDE;
-#endif
   virtual ui::TextureID GetTextureID() OVERRIDE;
   virtual CanvasSkia* AsCanvasSkia() OVERRIDE;
   virtual const CanvasSkia* AsCanvasSkia() const OVERRIDE;

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -212,10 +212,8 @@ class UI_EXPORT Canvas {
   // returned by BeginPlatformPaint().
   virtual void EndPlatformPaint() = 0;
 
-#if !defined(OS_MACOSX)
   // Apply transformation on the canvas.
   virtual void Transform(const ui::Transform& transform) = 0;
-#endif
 
   // Create a texture ID that can be used for accelerated drawing.
   virtual ui::TextureID GetTextureID() = 0;

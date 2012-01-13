@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -356,11 +356,9 @@ void CanvasSkia::EndPlatformPaint() {
   skia::EndPlatformPaint(canvas_);
 }
 
-#if !defined(OS_MACOSX)
 void CanvasSkia::Transform(const ui::Transform& transform) {
   canvas_->concat(transform.matrix());
 }
-#endif
 
 CanvasSkia* CanvasSkia::AsCanvasSkia() {
   return this;
