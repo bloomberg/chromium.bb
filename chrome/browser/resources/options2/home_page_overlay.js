@@ -3,35 +3,34 @@
 // found in the LICENSE file.
 
 cr.define('options', function() {
-  var OptionsPage = options.OptionsPage;
+  const OptionsPage = options.OptionsPage;
+  const SettingsDialog = options.SettingsDialog;
 
   /**
    * HomePageOverlay class
    * Dialog that allows users to set the home page.
-   * @class
+   * @extends {SettingsDialog}
    */
   function HomePageOverlay() {
-    OptionsPage.call(this, 'homePageOverlay', '', 'home-page-overlay');
+    SettingsDialog.call(this, 'homePageOverlay', '', 'home-page-overlay',
+                        $('home-page-confirm'), $('home-page-cancel'));
   }
 
   cr.addSingletonGetter(HomePageOverlay);
 
   HomePageOverlay.prototype = {
-    // Inherit HomePageOverlay from OptionsPage.
-    __proto__: OptionsPage.prototype,
+    __proto__: SettingsDialog.prototype,
 
     /**
      * Initialize the page.
      */
     initializePage: function() {
       // Call base class implementation to start preference initialization.
-      OptionsPage.prototype.initializePage.call(this);
+      SettingsDialog.prototype.initializePage.call(this);
 
       var self = this;
       $('homepage-use-ntp').onchange = this.updateHomePageInput_.bind(this);
       $('homepage-use-url').onchange = this.updateHomePageInput_.bind(this);
-      $('home-page-confirm').onclick = this.handleConfirm_.bind(this);
-      $('home-page-cancel').onclick = this.handleCancel_.bind(this);
 
       $('homepageURL').addEventListener('keydown', function(event) {
         // Focus the 'OK' button when the user hits enter since people expect
@@ -44,6 +43,9 @@ cr.define('options', function() {
       // here.
     },
 
+    /**
+     * @inheritDoc
+     */
     didShowPage: function() {
       // Set initial state.
       this.updateHomePageInput_();
@@ -58,34 +60,6 @@ cr.define('options', function() {
       var homepageInput = $('homepageURL');
       var homepageUseURL = $('homepage-use-url');
       homepageInput.disabled = !homepageUseURL.checked;
-    },
-
-    /**
-     * Handles the confirm button by saving the dialog preferences.
-     * @private
-     */
-    handleConfirm_: function() {
-      OptionsPage.closeOverlay();
-
-      var els = this.pageDiv.querySelectorAll('[dialog-pref]');
-      for (var i = 0; i < els.length; i++) {
-        if (els[i].savePrefState)
-          els[i].savePrefState();
-      }
-    },
-
-    /**
-     * Handles the cancel button by closing the overlay.
-     * @private
-     */
-    handleCancel_: function() {
-      OptionsPage.closeOverlay();
-
-      var els = this.pageDiv.querySelectorAll('[dialog-pref]');
-      for (var i = 0; i < els.length; i++) {
-        if (els[i].resetPrefState)
-          els[i].resetPrefState();
-      }
     },
   };
 
