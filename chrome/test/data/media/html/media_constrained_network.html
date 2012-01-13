@@ -23,18 +23,39 @@
     // controller will poll for these values until they are each >= 0.
     var epp = -1, ttp = -1;
 
+    // Video play progress to calculate percentage of video played.
+    var vpp = -1;
+
+    // String to indicate if error or abort events happen.
+    var errorMsg = '';
+
     video.addEventListener('playing', function(event) {
       startTime = new Date().getTime();
-
       ttp = Math.max(0, startTime - loadTime);
     }, false);
 
-    video.addEventListener('ended', function(event) {
+    video.addEventListener('ended', setEPP, false);
+    video.addEventListener('error', logEvent, false);
+    video.addEventListener('abort', logEvent, false);
+
+    function logEvent(evt) {
+      errorMsg += evt.target + ' ' + evt.type + ' event fired.\n';
+    }
+
+    function setEPP() {
       playTime = new Date().getTime() - startTime;
       durMs = video.duration * 1000;
 
-      epp = Math.max(0, (playTime - durMs) * 100 / durMs)
-    }, false);
+      epp = Math.max(0, (playTime - durMs) * 100 / durMs);
+    }
+
+    function calculateProgress() {
+      if (!isNaN(video.duration))
+        vpp = (video.currentTime / video.duration) * 100;
+
+      if (window.domAutomationController)
+        window.domAutomationController.send(vpp);
+    }
 
     // Called by the PyAuto controller to initiate testing.
     function startTest(src) {

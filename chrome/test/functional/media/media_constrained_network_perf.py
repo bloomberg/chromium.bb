@@ -105,18 +105,36 @@ class TestWorker(threading.Thread):
       if tab['url'] == url:
         return tab['index']
 
-  def _HaveMetric(self, var_name, unique_url):
-    """Checks if unique_url page has variable value ready. Set to < 0 pre-run.
+  def _HaveMetricOrError(self, var_name, unique_url):
+    """Checks if the page has variable value ready or if an error has occured.
+
+    The varaible value must be set to < 0 pre-run.
 
     Args:
       var_name: The variable name to check the metric for.
       unique_url: The url of the page to check for the variable's metric.
+
+    Returns:
+      True is the var_name value is >=0 or if an error_msg exists.
     """
     with self._automation_lock:
       tab = self._FindTabLocked(unique_url)
       self._metrics[var_name] = int(self._pyauto.GetDOMValue(var_name,
                                                              tab_index=tab))
-    return self._metrics[var_name] >= 0
+      self._metrics['errorMsg'] = self._pyauto.GetDOMValue('errorMsg',
+                                                           tab_index=tab)
+
+    return self._metrics[var_name] >= 0 or self._metrics['errorMsg'] != ''
+
+  def _GetVideoProgress(self, unique_url):
+    """Gets the video's current play progress percentage.
+
+    Args:
+      unique_url: The url of the page to check for video play progress.
+    """
+    with self._automation_lock:
+      return int(self._pyauto.CallJavascriptFunc(
+          'calculateProgress', tab_index=self._FindTabLocked(unique_url)))
 
   def run(self):
     """Opens tab, starts HTML test, and records metrics for each queue entry.
@@ -157,14 +175,14 @@ class TestWorker(threading.Thread):
       # here since pyauto.WaitUntil doesn't call into Chrome.
       self._metrics['epp'] = self._metrics['ttp'] = -1
       self._pyauto.WaitUntil(
-          self._HaveMetric, args=['ttp', unique_url], retry_sleep=1, timeout=10,
-          debug=False)
+          self._HaveMetricOrError, args=['ttp', unique_url], retry_sleep=1,
+          timeout=10, debug=False)
 
       # Do not wait for epp if ttp is not available.
       series_name = ''.join(name)
       if self._metrics['ttp'] >= 0:
         self._pyauto.WaitUntil(
-            self._HaveMetric, args=['epp', unique_url], retry_sleep=2,
+            self._HaveMetricOrError, args=['epp', unique_url], retry_sleep=2,
             timeout=_TEST_VIDEO_DURATION_SEC * 10, debug=False)
 
         # Record results.
@@ -173,8 +191,14 @@ class TestWorker(threading.Thread):
                                      '%')
         pyauto_utils.PrintPerfResult('ttp', series_name, self._metrics['ttp'],
                                      'ms')
-      else:
+        logging.debug('Test %s ended with %d%% of the video played.',
+                      series_name, self._GetVideoProgress(unique_url))
+      elif self._metrics['errorMsg'] == '':
         logging.error('Test %s timed-out.', series_name)
+
+      if self._metrics['errorMsg'] != '':
+        logging.debug('Test %s ended with error: %s', series_name,
+                      self._metrics['errorMsg'])
 
       # Close the tab.
       with self._automation_lock:
@@ -203,7 +227,7 @@ class ProcessLogger(threading.Thread):
     line = True
     while line:
       line = self._process.stderr.readline()
-      logging.debug(line)
+      logging.debug(line.strip())
 
 
 class MediaConstrainedNetworkPerfTest(pyauto.PyUITest):
@@ -224,7 +248,7 @@ class MediaConstrainedNetworkPerfTest(pyauto.PyUITest):
     line = True
     while line:
       line = process.stderr.readline()
-      logging.debug(line)
+      logging.debug(line.strip())
       if 'STARTED' in line:
         self._server_pid = process.pid
         pyauto.PyUITest.setUp(self)
