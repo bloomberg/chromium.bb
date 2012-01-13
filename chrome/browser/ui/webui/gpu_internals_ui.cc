@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -205,6 +205,10 @@ Value* GpuMessageHandler::OnRequestClientInfo(const ListValue* list) {
 #endif
   dict->SetString("blacklist_version",
       GpuDataManager::GetInstance()->GetBlacklistVersion());
+
+  GpuPerformanceStats stats =
+      GpuDataManager::GetInstance()->GetPerformanceStats();
+  dict->Set("performance", stats.ToValue());
 
   return dict;
 }

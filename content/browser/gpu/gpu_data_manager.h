@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,6 +15,7 @@
 #include "base/observer_list_threadsafe.h"
 #include "base/synchronization/lock.h"
 #include "base/values.h"
+#include "content/browser/gpu/gpu_performance_stats.h"
 #include "content/common/content_export.h"
 #include "content/common/gpu/gpu_feature_flags.h"
 #include "content/public/common/gpu_info.h"
@@ -79,6 +80,8 @@ class CONTENT_EXPORT GpuDataManager {
   //
   // Caller is responsible for deleting the returned value.
   Value* GetFeatureStatus();
+
+  GpuPerformanceStats GetPerformanceStats() const;
 
   std::string GetBlacklistVersion() const;
 
