@@ -106,6 +106,9 @@ bool UberUI::OverrideHandleWebUIMessage(const GURL& source_url,
   }
 
   // The message was sent from a subpage.
-  return subpage->second->controller()->OverrideHandleWebUIMessage(
-      source_url, message, args);
+  // TODO(jam) fix this to use interface
+  //return subpage->second->controller()->OverrideHandleWebUIMessage(
+    //  source_url, message, args);
+  subpage->second->OnWebUISend(source_url, message, args);
+  return true;
 }

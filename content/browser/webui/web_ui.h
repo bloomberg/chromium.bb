@@ -43,6 +43,11 @@ class CONTENT_EXPORT WebUI : public IPC::Channel::Listener {
 
   // IPC::Channel::Listener implementation:
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  // TODO(jam): move to private
+  // IPC message handling.
+  void OnWebUISend(const GURL& source_url,
+                   const std::string& message,
+                   const base::ListValue& args);
 
   // Called by TabContents when the RenderView is first created. This is *not*
   // called for every page load because in some cases RenderViewHostManager will
@@ -179,11 +184,6 @@ class CONTENT_EXPORT WebUI : public IPC::Channel::Listener {
   content::WebUIController* controller_;
 
  private:
-  // IPC message handling.
-  void OnWebUISend(const GURL& source_url,
-                   const std::string& message,
-                   const base::ListValue& args);
-
   // A map of message name -> message handling callback.
   typedef std::map<std::string, MessageCallback> MessageCallbackMap;
   MessageCallbackMap message_callbacks_;
