@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -646,6 +646,9 @@ def Main(argv):
   parser.add_option(
       '-m', '--html', dest='html_out', type='string', metavar='PATH',
       help='write HTML output to PATH')
+  parser.add_option(
+      '-b', '--base_url', dest='base_url', type='string', metavar='URL',
+      help='include URL in base tag of HTML output')
 
   parser.set_defaults(
       inputs=[],
@@ -708,7 +711,7 @@ def Main(argv):
 
   # Generate HTML
   if options.html_out:
-    html = croc_html.CrocHtml(cov, options.html_out)
+    html = croc_html.CrocHtml(cov, options.html_out, options.base_url)
     html.Write()
 
   # Normal exit

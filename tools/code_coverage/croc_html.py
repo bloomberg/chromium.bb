@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -113,10 +113,11 @@ COV_TYPE_CLASS = {None: 'missing', 0: 'instr', 1: 'covered', 2: ''}
 class CrocHtml(object):
   """Crocodile HTML output class."""
 
-  def __init__(self, cov, output_root):
+  def __init__(self, cov, output_root, base_url=None):
     """Constructor."""
     self.cov = cov
     self.output_root = output_root
+    self.base_url = base_url
     self.xml_impl = xml.dom.getDOMImplementation()
     self.time_string = 'Coverage information generated %s.' % time.asctime()
 
@@ -133,9 +134,17 @@ class CrocHtml(object):
     f = HtmlFile(self.xml_impl, self.output_root + '/' + filename)
 
     f.head.E('title').Text(title)
-    f.head.E(
-        'link', rel='stylesheet', type='text/css',
-        href='../' * (len(filename.split('/')) - 1) + 'croc.css')
+
+    if self.base_url:
+      css_href = self.base_url + 'croc.css'
+      base_href = self.base_url + os.path.dirname(filename)
+      if not base_href.endswith('/'):
+        base_href += '/'
+      f.head.E('base', href=base_href)
+    else:
+      css_href = '../' * (len(filename.split('/')) - 1) + 'croc.css'
+
+    f.head.E('link', rel='stylesheet', type='text/css', href=css_href)
 
     return f
 
