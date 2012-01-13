@@ -153,6 +153,7 @@ bool ContentView::Accept() {
   InputWindowDialog::InputTexts texts;
   texts.push_back(text_field_->text());
   delegate_->delegate()->InputAccepted(texts);
+  delegate_->Close();
   return true;
 }
 
