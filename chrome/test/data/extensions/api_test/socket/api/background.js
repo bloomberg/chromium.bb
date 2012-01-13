@@ -4,6 +4,12 @@
 
 const socket = chrome.experimental.socket;
 
+var sendQuit = function(socketId) {
+  if (socketId) {
+    socket.write(socketId, "QUIT", function(writeInfo) {});
+  }
+}
+
 chrome.test.runTests([
     function testCreation() {
       function onCreate(socketInfo) {
@@ -20,31 +26,73 @@ chrome.test.runTests([
     },
 
     function testSending() {
-      const message = "hello";
+      const message = "helloECHO";
+      var dataRead = "";
       var socketId = 0;
       var port = 0;
+      var succeeded = false;
+      var waitCount = 0;
 
       function onRead(readInfo) {
-        chrome.test.assertEq(message, readInfo.message);
-        chrome.test.succeed();
+        if (readInfo.message == message) {
+          succeeded = true;
+          sendQuit(socketId);
+          chrome.test.succeed();
+        } else {
+          // The read blocked. Save what we've got so far, and wait for
+          // onEvent.
+          dataRead = readInfo.message;
+        }
       }
 
       function onWrite(writeInfo) {
+        chrome.test.assertTrue(writeInfo.bytesWritten == message.length);
         socket.read(socketId, onRead);
       }
 
       function onConnect(connectResult) {
+        chrome.test.assertTrue(connectResult);
         socket.write(socketId, message, onWrite);
+      }
+
+      function onEvent(socketEvent) {
+        if (socketEvent.type == "dataRead") {
+          dataRead += socketEvent.data;
+          if (dataRead == message) {
+            succeeded = true;
+            sendQuit(socketId);
+            chrome.test.succeed();
+          } else {
+            // We got only some of the message. Keep waiting.
+          }
+        } else {
+          console.log("Received other socketEvent of type " +
+                      socketEvent.type);
+        }
       }
 
       function onCreate(socketInfo) {
         socketId = socketInfo.socketId;
+        chrome.test.assertTrue(socketId > 0);
         socket.connect(socketId, "127.0.0.1", port, onConnect);
+      }
+
+      function waitForBlockingRead() {
+        if (waitCount++ < 10) {
+          setTimeout(waitForBlockingRead, 1000);
+        } else {
+          // We weren't able to succeed in the given time.
+          sendQuit(socketId);
+          chrome.test.fail(
+              "Blocking read didn't complete after " + waitCount +
+              " seconds. Message so far was <" + dataRead + ">.");
+        }
       }
 
       chrome.test.sendMessage("port_please", function(message) {
           port = parseInt(message);
-          socket.create("udp", {}, onCreate);
+          socket.create("udp", { onEvent: onEvent }, onCreate);
         });
+      setTimeout(waitForBlockingRead, 1000);
     }
 ]);

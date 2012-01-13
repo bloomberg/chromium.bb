@@ -17,9 +17,6 @@ using testing::SaveArg;
 
 namespace extensions {
 
-class SocketEventNotifierTest : public testing::Test {
-};
-
 class MockExtensionEventRouter : public ExtensionEventRouter {
  public:
   explicit MockExtensionEventRouter(Profile* profile) :
@@ -45,7 +42,7 @@ class MockTestingProfile : public TestingProfile {
   DISALLOW_COPY_AND_ASSIGN(MockTestingProfile);
 };
 
-TEST_F(SocketEventNotifierTest, TestBasicOperation) {
+TEST(SocketEventNotifierTest, TestBasicOperation) {
   MockTestingProfile profile;
   scoped_ptr<MockExtensionEventRouter> mock_event_router(
       new MockExtensionEventRouter(&profile));
@@ -66,29 +63,61 @@ TEST_F(SocketEventNotifierTest, TestBasicOperation) {
                   _,
                   &profile,
                   url))
-      .Times(1)
-      .WillOnce(SaveArg<2>(&event_args));
+      .Times(2)
+      .WillRepeatedly(SaveArg<2>(&event_args));
 
-  const int result_code = 888;
-  event_notifier->OnWriteComplete(result_code);
+  // OnWriteComplete
+  {
+    const int result_code = 888;
+    event_notifier->OnWriteComplete(result_code);
 
-  scoped_ptr<Value> result(base::JSONReader::Read(event_args, true));
-  Value* value = result.get();
-  ASSERT_TRUE(result.get() != NULL);
-  ASSERT_EQ(Value::TYPE_LIST, value->GetType());
-  ListValue* list = static_cast<ListValue*>(value);
-  ASSERT_EQ(1u, list->GetSize());
+    scoped_ptr<Value> result(base::JSONReader::Read(event_args, true));
+    Value* value = result.get();
+    ASSERT_TRUE(result.get() != NULL);
+    ASSERT_EQ(Value::TYPE_LIST, value->GetType());
+    ListValue* list = static_cast<ListValue*>(value);
+    ASSERT_EQ(1u, list->GetSize());
 
-  DictionaryValue* info;
-  ASSERT_TRUE(list->GetDictionary(0, &info));
+    DictionaryValue* info;
+    ASSERT_TRUE(list->GetDictionary(0, &info));
 
-  int tmp_src_id = 0;
-  ASSERT_TRUE(info->GetInteger("srcId", &tmp_src_id));
-  ASSERT_EQ(src_id, tmp_src_id);
+    int tmp_src_id = 0;
+    ASSERT_TRUE(info->GetInteger("srcId", &tmp_src_id));
+    ASSERT_EQ(src_id, tmp_src_id);
 
-  int tmp_result_code = 0;
-  ASSERT_TRUE(info->GetInteger("resultCode", &tmp_result_code));
-  ASSERT_EQ(result_code, tmp_result_code);
+    int tmp_result_code = 0;
+    ASSERT_TRUE(info->GetInteger("resultCode", &tmp_result_code));
+    ASSERT_EQ(result_code, tmp_result_code);
+  }
+
+  // OnDataRead
+  {
+    const int result_code = 888;
+    const std::string result_data("hi");
+    event_notifier->OnDataRead(result_code, result_data);
+
+    scoped_ptr<Value> result(base::JSONReader::Read(event_args, true));
+    Value* value = result.get();
+    ASSERT_TRUE(result.get() != NULL);
+    ASSERT_EQ(Value::TYPE_LIST, value->GetType());
+    ListValue* list = static_cast<ListValue*>(value);
+    ASSERT_EQ(1u, list->GetSize());
+
+    DictionaryValue* info;
+    ASSERT_TRUE(list->GetDictionary(0, &info));
+
+    int tmp_src_id = 0;
+    ASSERT_TRUE(info->GetInteger("srcId", &tmp_src_id));
+    ASSERT_EQ(src_id, tmp_src_id);
+
+    int tmp_result_code = 0;
+    ASSERT_TRUE(info->GetInteger("resultCode", &tmp_result_code));
+    ASSERT_EQ(result_code, tmp_result_code);
+
+    std::string tmp_result_data;
+    ASSERT_TRUE(info->GetString("data", &tmp_result_data));
+    ASSERT_EQ(result_data, tmp_result_data);
+  }
 }
 
 }  // namespace extensions

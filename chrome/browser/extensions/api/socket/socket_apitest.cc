@@ -20,16 +20,10 @@ namespace {
 
 class SocketApiTest : public ExtensionApiTest {
  public:
-  virtual void SetUpMyCommandLine() {
-    DoCommandLineSetup();
-  }
-
-  // Exposed as static method so that SocketExtension can easily get to it.
-  static void DoCommandLineSetup() {
-    CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kEnableExperimentalExtensionApis);
-    CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kEnablePlatformApps);
+  virtual void SetUpCommandLine(CommandLine* command_line) {
+    ExtensionApiTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitch(switches::kEnableExperimentalExtensionApis);
+    command_line->AppendSwitch(switches::kEnablePlatformApps);
   }
 };
 
@@ -66,15 +60,7 @@ IN_PROC_BROWSER_TEST_F(SocketApiTest, SocketCreateBad) {
                             NONE);
 }
 
-// Failing on Vista.
-// http://code.google.com/p/chromium/issues/detail?id=109337
-#if defined(OS_WIN)
-#define MAYBE_SocketExtension FLAKY_SocketExtension
-#else
-#define MAYBE_SocketExtension SocketExtension
-#endif
-IN_PROC_BROWSER_TEST_F(SocketApiTest, MAYBE_SocketExtension) {
-  SocketApiTest::DoCommandLineSetup();
+IN_PROC_BROWSER_TEST_F(SocketApiTest, SocketExtension) {
   scoped_refptr<extensions::TestEchoServerUDP> server =
       new extensions::TestEchoServerUDP();
 

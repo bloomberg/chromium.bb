@@ -15,14 +15,14 @@ const char kOnSocketEvent[] = "experimental.socket.onEvent";
 namespace extensions {
 
 const char kEventTypeKey[] = "type";
-const char kEventTypeReadComplete[] = "readComplete";
+const char kEventTypeDataRead[] = "dataRead";
 const char kEventTypeWriteComplete[] = "writeComplete";
 
 const char kSrcIdKey[] = "srcId";
 const char kIsFinalEventKey[] = "isFinalEvent";
 
 const char kResultCodeKey[] = "resultCode";
-const char kMessageKey[] = "message";
+const char kDataKey[] = "data";
 
 SocketEventNotifier::SocketEventNotifier(ExtensionEventRouter* router,
                                          Profile* profile,
@@ -37,8 +37,8 @@ SocketEventNotifier::SocketEventNotifier(ExtensionEventRouter* router,
 
 SocketEventNotifier::~SocketEventNotifier() {}
 
-void SocketEventNotifier::OnReadComplete(int result_code,
-                                         const std::string& message) {
+void SocketEventNotifier::OnDataRead(int result_code,
+                                     const std::string& data) {
   // Do we have a destination for this event? There will be one if a source id
   // was injected by the request handler for socket.create in
   // schema_generated_bindings.js, which will in turn be the case if the caller
@@ -46,9 +46,9 @@ void SocketEventNotifier::OnReadComplete(int result_code,
   if (src_id_ < 0)
     return;
 
-  DictionaryValue* event = CreateSocketEvent(SOCKET_EVENT_READ_COMPLETE);
+  DictionaryValue* event = CreateSocketEvent(SOCKET_EVENT_DATA_READ);
   event->SetInteger(kResultCodeKey, result_code);
-  event->SetString(kMessageKey, message);
+  event->SetString(kDataKey, data);
   DispatchEvent(event);
 }
 
@@ -90,8 +90,8 @@ DictionaryValue* SocketEventNotifier::CreateSocketEvent(
 std::string SocketEventNotifier::SocketEventTypeToString(
     SocketEventType event_type) {
   switch (event_type) {
-    case SOCKET_EVENT_READ_COMPLETE:
-      return kEventTypeReadComplete;
+    case SOCKET_EVENT_DATA_READ:
+      return kEventTypeDataRead;
     case SOCKET_EVENT_WRITE_COMPLETE:
       return kEventTypeWriteComplete;
   }

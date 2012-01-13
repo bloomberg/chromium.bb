@@ -35,11 +35,11 @@ void Socket::Close() {
   datagram_client_socket_->Close();
 }
 
-void Socket::OnReadComplete(int result) {
+void Socket::OnDataRead(int result) {
   std::string message;
   if (result >= 0)
     message = std::string(read_buffer_->data(), result);
-  event_notifier_->OnReadComplete(result, message);
+  event_notifier_->OnDataRead(result, message);
 }
 
 void Socket::OnWriteComplete(int result) {
@@ -48,7 +48,7 @@ void Socket::OnWriteComplete(int result) {
 
 std::string Socket::Read() {
   int result = datagram_client_socket_->Read(read_buffer_, kMaxRead,
-        base::Bind(&Socket::OnReadComplete, base::Unretained(this)));
+      base::Bind(&Socket::OnDataRead, base::Unretained(this)));
   if (result == net::ERR_IO_PENDING)
     return "";
   if (result < 0)

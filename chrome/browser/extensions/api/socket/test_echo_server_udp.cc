@@ -6,6 +6,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/rand_util.h"
+#include "base/string_util.h"
 #include "base/threading/platform_thread.h"
 #include "base/time.h"
 #include "content/public/browser/browser_thread.h"
@@ -22,6 +23,9 @@ using namespace net;
 
 namespace extensions {
 
+const std::string TestEchoServerUDP::kEOLPattern = "*ECHO";
+const std::string TestEchoServerUDP::kQuitPattern = "*QUIT*";
+
 TestEchoServerUDP::TestEchoServerUDP()
     : listening_event_(true, false),
       port_(0),
@@ -29,7 +33,7 @@ TestEchoServerUDP::TestEchoServerUDP()
       socket_(NULL),
       buffer_(new IOBufferWithSize(kMaxRead)),
       ALLOW_THIS_IN_INITIALIZER_LIST(callback_(
-          base::Bind(&TestEchoServerUDP::SetResult,
+          base::Bind(&TestEchoServerUDP::HandleReceivedData,
                      base::Unretained(this)))) {
 }
 
@@ -50,6 +54,12 @@ int TestEchoServerUDP::Start() {
 }
 
 void TestEchoServerUDP::RunOnIOThread() {
+  CreateListeningSocket();
+  listening_event_.Signal();
+  Echo();
+}
+
+void TestEchoServerUDP::CreateListeningSocket() {
   int result = -1;
 
   int tries = 151;  // Birthday paradox. Possibly applicable. Sounds good.
@@ -65,31 +75,61 @@ void TestEchoServerUDP::RunOnIOThread() {
 
     CreateUDPAddress("127.0.0.1", port_, &bind_address);
     result = socket_->Listen(bind_address);
-    if (result == OK) {
+    if (result == net::OK) {
       break;
+    } else {
+      delete socket_;
+      socket_ = NULL;
     }
-    delete socket_;
   }
 
   EXPECT_EQ(OK, result);
-
-  listening_event_.Signal();
-
-  result = socket_->RecvFrom(buffer_, kMaxRead, &recv_from_address_, callback_);
-  if (result >= 0)
-    HandleRequest(result);
-  EXPECT_EQ(net::ERR_IO_PENDING, result);
+  EXPECT_TRUE(socket_ != NULL);
 }
 
-void TestEchoServerUDP::SetResult(int result) {
-  HandleRequest(result);
+void TestEchoServerUDP::Echo() {
+  TestCompletionCallback callback;
+  int result = socket_->RecvFrom(buffer_, kMaxRead, &recv_from_address_,
+                                 callback_);
+  if (result == net::OK || result >= 0) {
+    HandleReceivedData(result);
+  } else if (result == net::ERR_IO_PENDING) {
+    // No data available yet. When callback_ is called back with data, we will
+    // pick things back up there.
+  } else {
+    // Something bad happened. Log it, then clean up. We expect that the
+    // callback won't have AddRef'ed us, so that we can exit cleanly right from
+    // here.
+    VLOG(0) << "Error during RecvFrom: " << result;
+    CleanUpOnIOThread();
+  }
 }
 
-void TestEchoServerUDP::HandleRequest(int result) {
-  std::string str(buffer_->data(), result);
-  result = SendToSocket(socket_, str);
-  EXPECT_EQ(str.length(), static_cast<size_t>(result));
-  CleanUpOnIOThread();
+void TestEchoServerUDP::HandleReceivedData(int result) {
+  bool should_quit = false;
+  if (result > 0) {
+    std::string packet(buffer_->data(), result);
+    echo_string_ += packet;
+    if (MatchPattern(echo_string_, kEOLPattern))
+      SendEchoString();
+    if (MatchPattern(echo_string_, kQuitPattern))
+      should_quit = true;
+  }
+
+  if (should_quit) {
+    CleanUpOnIOThread();
+  } else {
+    // We're done with the buffer, so let's make a new one.
+    buffer_ = new IOBufferWithSize(kMaxRead);
+    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                            base::Bind(&TestEchoServerUDP::Echo, this));
+  }
+}
+
+void TestEchoServerUDP::SendEchoString() {
+  int result = SendToSocket(socket_, echo_string_);
+  EXPECT_EQ(echo_string_.length(), static_cast<size_t>(result));
+  echo_string_.clear();
 }
 
 void TestEchoServerUDP::CleanUpOnIOThread() {

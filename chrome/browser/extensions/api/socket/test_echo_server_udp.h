@@ -20,10 +20,9 @@ class UDPServerSocket;
 
 namespace extensions {
 
-// A simple echo server. Yes, simple even for an echo server. It is compatible
-// with Chrome's threading model, and it exits after a single echo roundtrip.
-//
-// Highly recommended for functional tests.
+// A UDP echo server. Collects a line of characters ending with 'ECHO', and
+// then echoes what it received. Quits when it receives 'QUIT' as four
+// consecutive characters. Highly recommended for functional tests.
 //
 // The server looks for a high port for listening. The Start() method returns
 // that port.
@@ -38,32 +37,37 @@ class TestEchoServerUDP
 
  private:
   static const int kMaxRead = 1024;
+  static const std::string kEOLPattern;
+  static const std::string kQuitPattern;
 
   // The port range to try listening. If listening fails, increment and try
   // again until we've tried enough times that something's obviously wrong.
   static const int kFirstPort = 32768;
   static const int kPortRange = 16384;
 
-  base::WaitableEvent listening_event_;
-  int port_;
-  scoped_ptr<net::CapturingNetLog> server_log_;
-  net::UDPServerSocket* socket_;  // See CleanUpOnIOThread re raw pointer.
-  scoped_refptr<net::IOBufferWithSize> buffer_;
-  net::IPEndPoint recv_from_address_;
-  net::CompletionCallback callback_;
-
   ~TestEchoServerUDP();
   friend class base::RefCountedThreadSafe<TestEchoServerUDP>;
 
   void RunOnIOThread();
-  void SetResult(int result);
-  void HandleRequest(int result);
   void CleanUpOnIOThread();
+  void CreateListeningSocket();
+  void Echo();
+  void HandleReceivedData(int result);
+  void SendEchoString();
   void CreateUDPAddress(std::string ip_str, int port,
                         net::IPEndPoint* address);
   int SendToSocket(net::UDPServerSocket* socket, std::string msg);
   int SendToSocket(net::UDPServerSocket* socket, std::string msg,
                    const net::IPEndPoint& address);
+
+  base::WaitableEvent listening_event_;
+  int port_;
+  scoped_ptr<net::CapturingNetLog> server_log_;
+  net::UDPServerSocket* socket_;  // See CleanUpOnIOThread re raw pointer.
+  scoped_refptr<net::IOBufferWithSize> buffer_;
+  std::string echo_string_;
+  net::IPEndPoint recv_from_address_;
+  net::CompletionCallback callback_;
 };
 
 }  // namespace extensions

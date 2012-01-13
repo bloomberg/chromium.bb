@@ -21,7 +21,7 @@ extern const char kOnSocketEvent[];
 namespace extensions {
 
 enum SocketEventType {
-  SOCKET_EVENT_READ_COMPLETE,
+  SOCKET_EVENT_DATA_READ,
   SOCKET_EVENT_WRITE_COMPLETE
 };
 
@@ -37,7 +37,7 @@ class SocketEventNotifier {
                       const GURL& src_url);
   virtual ~SocketEventNotifier();
 
-  virtual void OnReadComplete(int result_code, const std::string& message);
+  virtual void OnDataRead(int result_code, const std::string& data);
   virtual void OnWriteComplete(int result_code);
 
   static std::string SocketEventTypeToString(SocketEventType event_type);

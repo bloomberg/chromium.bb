@@ -47,7 +47,7 @@ class Socket {
   static const int kMaxRead = 1024;
   scoped_refptr<net::IOBufferWithSize> read_buffer_;
 
-  void OnReadComplete(int result);
+  void OnDataRead(int result);
   void OnWriteComplete(int result);
 };
 
