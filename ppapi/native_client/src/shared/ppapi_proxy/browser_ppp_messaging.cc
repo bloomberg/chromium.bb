@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,7 +19,7 @@ namespace {
 void HandleMessage(PP_Instance instance, struct PP_Var message) {
   DebugPrintf("PPP_Messaging::HandleMessage: instance=%"NACL_PRIu32"\n",
               instance);
-  uint32_t message_length = kMaxVarSize;
+  uint32_t message_length = 0;
   nacl::scoped_array<char> message_bytes(Serialize(&message, 1,
                                                    &message_length));
   NaClSrpcError srpc_result =
@@ -43,4 +43,3 @@ const PPP_Messaging* BrowserMessaging::GetInterface() {
 }
 
 }  // namespace ppapi_proxy
-

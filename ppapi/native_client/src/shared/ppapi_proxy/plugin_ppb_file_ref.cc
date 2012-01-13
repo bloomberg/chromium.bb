@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -89,7 +89,7 @@ PP_Var GetName(PP_Resource file_ref) {
   DebugPrintf("PPB_FileRef::GetName: file_ref=%"NACL_PRIu32"\n", file_ref);
 
   PP_Var name = PP_MakeUndefined();
-  nacl_abi_size_t length = kMaxVarSize;
+  nacl_abi_size_t length = kMaxReturnVarSize;
   nacl::scoped_array<char> name_bytes(new char[length]);
   NaClSrpcError srpc_result = PpbFileRefRpcClient::PPB_FileRef_GetName(
       GetMainSrpcChannel(),
@@ -109,7 +109,7 @@ PP_Var GetPath(PP_Resource file_ref) {
   DebugPrintf("PPB_FileRef::GetPath: file_ref=%"NACL_PRIu32"\n", file_ref);
 
   PP_Var path = PP_MakeUndefined();
-  nacl_abi_size_t length = kMaxVarSize;
+  nacl_abi_size_t length = kMaxReturnVarSize;
   nacl::scoped_array<char> path_bytes(new char[length]);
   NaClSrpcError srpc_result = PpbFileRefRpcClient::PPB_FileRef_GetPath(
       GetMainSrpcChannel(),

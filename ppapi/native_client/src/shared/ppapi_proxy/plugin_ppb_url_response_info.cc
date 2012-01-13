@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -42,8 +42,8 @@ PP_Var GetProperty(PP_Resource response, PP_URLResponseProperty property) {
   NaClSrpcChannel* channel = GetMainSrpcChannel();
 
   PP_Var value = PP_MakeUndefined();
-  nacl_abi_size_t value_size = kMaxVarSize;
-  nacl::scoped_array<char> value_bytes(new char[kMaxVarSize]);
+  nacl_abi_size_t value_size = kMaxReturnVarSize;
+  nacl::scoped_array<char> value_bytes(new char[value_size]);
 
   NaClSrpcError srpc_result =
       PpbURLResponseInfoRpcClient::PPB_URLResponseInfo_GetProperty(

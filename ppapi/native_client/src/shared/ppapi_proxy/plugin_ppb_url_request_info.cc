@@ -1,6 +1,6 @@
-// Copyright 2011 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can
-// be found in the LICENSE file.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_url_request_info.h"
 
@@ -58,7 +58,7 @@ PP_Bool SetProperty(PP_Resource request,
   DebugPrintf("PPB_URLRequestInfo::SetProperty: request=%"NACL_PRIu32"\n",
               request);
 
-  nacl_abi_size_t value_size = kMaxVarSize;
+  nacl_abi_size_t value_size = 0;
   nacl::scoped_array<char> value_bytes(Serialize(&value, 1, &value_size));
 
   int32_t success;

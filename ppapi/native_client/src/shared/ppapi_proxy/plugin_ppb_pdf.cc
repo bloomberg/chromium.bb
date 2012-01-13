@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -38,8 +38,8 @@ PP_Var GetLocalizedString(
               "instance=%"NACL_PRIu32"\n", instance);
 
   NaClSrpcChannel* channel = GetMainSrpcChannel();
-  nacl_abi_size_t string_size = kMaxVarSize;
-  nacl::scoped_array<char> string_bytes(new char[kMaxVarSize]);
+  nacl_abi_size_t string_size = kMaxReturnVarSize;
+  nacl::scoped_array<char> string_bytes(new char[string_size]);
   NaClSrpcError srpc_result =
       PpbPdfRpcClient::PPB_PDF_GetLocalizedString(
           channel,
@@ -196,7 +196,7 @@ void HistogramPDFPageCount(int count) {
 void UserMetricsRecordAction(struct PP_Var action) {
   DebugPrintf("PPB_PDF::UserMetricsRecordAction\n");
 
-  nacl_abi_size_t action_size = kMaxVarSize;
+  nacl_abi_size_t action_size = 0;
   nacl::scoped_array<char> action_bytes(
       Serialize(&action, 1, &action_size));
   NaClSrpcError srpc_result =
@@ -251,4 +251,3 @@ const PPB_PDF* PluginPDF::GetInterface() {
 }
 
 }  // namespace ppapi_proxy
-

@@ -1,6 +1,6 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can
-// be found in the LICENSE file.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_input_event.h"
 
@@ -23,7 +23,6 @@ namespace {
 using ppapi_proxy::DebugPrintf;
 using ppapi_proxy::GetMainSrpcChannel;
 using ppapi_proxy::kInvalidResourceId;
-using ppapi_proxy::kMaxVarSize;
 using ppapi_proxy::PluginInputEvent;
 using ppapi_proxy::PluginResource;
 using ppapi_proxy::Serialize;
@@ -272,7 +271,7 @@ PP_Resource CreateKeyboardInputEvent(PP_Instance instance,
               "%"NACL_PRIu32", key_code=%"NACL_PRIu32"\n",
               instance, type, time_stamp, modifiers, key_code);
   // Serialize the character_text Var.
-  uint32_t text_size = kMaxVarSize;
+  uint32_t text_size = 0;
   nacl::scoped_array<char> text_bytes(Serialize(&character_text, 1,
                                                 &text_size));
   PP_Resource resource_id = kInvalidResourceId;
@@ -441,4 +440,3 @@ PP_Var PluginInputEvent::GetCharacterText() const {
 }
 
 }  // namespace ppapi_proxy
-
