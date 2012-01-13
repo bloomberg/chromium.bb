@@ -43,6 +43,7 @@
 #include "content/browser/renderer_host/resource_queue.h"
 #include "content/browser/renderer_host/resource_request_details.h"
 #include "content/browser/renderer_host/sync_resource_handler.h"
+#include "content/browser/renderer_host/doomed_resource_handler.h"
 #include "content/browser/resource_context.h"
 #include "content/browser/ssl/ssl_client_auth_handler.h"
 #include "content/browser/ssl/ssl_manager.h"
@@ -2245,8 +2246,20 @@ void ResourceDispatcherHost::set_allow_cross_origin_auth_prompt(bool value) {
 
 void ResourceDispatcherHost::MarkAsTransferredNavigation(
     const GlobalRequestID& transferred_request_id,
-    net::URLRequest* ransferred_request) {
-  transferred_navigations_[transferred_request_id] = ransferred_request;
+    net::URLRequest* transferred_request) {
+  transferred_navigations_[transferred_request_id] = transferred_request;
+
+  // If a URLRequest is transferred to a new RenderViewHost, its
+  // ResourceHandlers should not receive any notifications because they may
+  // depend on the state of the old RVH. We set a ResourceHandler that only
+  // allows canceling requests, because on shutdown of the RDH all pending
+  // requests are canceled. The RVH of requests that are being transferred may
+  // be gone by that time. If the request is resumed, the ResoureHandlers are
+  // substituted again.
+  ResourceDispatcherHostRequestInfo* info = InfoForRequest(transferred_request);
+  scoped_refptr<ResourceHandler> transferred_resource_handler(
+      new DoomedResourceHandler(info->resource_handler()));
+  info->set_resource_handler(transferred_resource_handler.get());
 }
 
 bool ResourceDispatcherHost::IsTransferredNavigation(

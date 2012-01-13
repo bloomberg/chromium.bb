@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -60,6 +60,11 @@ ResourceDispatcherHostRequestInfo::ResourceDispatcherHostRequestInfo(
 
 ResourceDispatcherHostRequestInfo::~ResourceDispatcherHostRequestInfo() {
   resource_handler_->OnRequestClosed();
+}
+
+void ResourceDispatcherHostRequestInfo::set_resource_handler(
+    ResourceHandler* resource_handler) {
+  resource_handler_ = resource_handler;
 }
 
 void ResourceDispatcherHostRequestInfo::set_login_delegate(

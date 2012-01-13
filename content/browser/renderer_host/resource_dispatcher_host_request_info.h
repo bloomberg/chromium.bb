@@ -60,6 +60,7 @@ class ResourceDispatcherHostRequestInfo : public net::URLRequest::UserData {
 
   // Top-level ResourceHandler servicing this request.
   ResourceHandler* resource_handler() { return resource_handler_.get(); }
+  void set_resource_handler(ResourceHandler* resource_handler);
 
   // CrossSiteResourceHandler for this request, if it is a cross-site request.
   // (NULL otherwise.) This handler is part of the chain of ResourceHandlers
