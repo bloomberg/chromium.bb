@@ -299,15 +299,13 @@ class PidFile:
     self.filename = filename
     self.created = False
 
-  def check_and_create_file(self):
-    """Attempt to create the PID file, checking first for any currently-running
-    process.
+  def check(self):
+    """Checks current status of the process.
 
     Returns:
-      Tuple (created, pid):
-      |created| is True if the new file was created, False if there was an
-      existing process running.
-      |pid| holds the process ID of the running instance if |created| is False.
+      Tuple (running, pid):
+      |running| is True if the daemon is running.
+      |pid| holds the process ID of the running instance if |running| is True.
       If the PID file exists but the PID couldn't be read from the file
       (perhaps if the data hasn't been written yet), 0 is returned.
 
@@ -322,34 +320,38 @@ class PidFile:
       try:
         pid = int(file_contents)
       except ValueError:
-        return False, 0
+        return True, 0
 
       # Test to see if there's a process currently running with that PID.
       # If there is no process running, the existing PID file is definitely
       # stale and it is safe to overwrite it.  Otherwise, report the PID as
       # possibly a running instance of this script.
       if os.path.exists("/proc/%d" % pid):
-        return False, pid
+        return True, pid
 
-    # Create new (or overwrite existing) PID file.
+    return False, 0
+
+  def create(self):
+    """Creates an empty PID file."""
     pid_file = open(self.filename, 'w')
     pid_file.close()
     self.created = True
-    return True, 0
 
   def write_pid(self):
     """Write the current process's PID to the PID file.
 
-    This is done separately from check_and_create_file() as this needs to be
-    called after any daemonization, when the correct PID becomes known.  But
-    check_and_create_file() has to happen before daemonization, so that if
-    another instance is already running, this fact can be reported to the
-    user's terminal session.  This also avoids corrupting the log file of the
-    other process, since daemonize() would create a new log file.
+    This is done separately from create() as this needs to be called
+    after any daemonization, when the correct PID becomes known.  But
+    check() and create() has to happen before daemonization, so that
+    if another instance is already running, this fact can be reported
+    to the user's terminal session.  This also avoids corrupting the
+    log file of the other process, since daemonize() would create a
+    new log file.
     """
     pid_file = open(self.filename, 'w')
     pid_file.write('%d\n' % os.getpid())
     pid_file.close()
+    self.created = True
 
   def delete_file(self):
     """Delete the PID file if it was created by this instance.
@@ -446,11 +448,26 @@ def main():
   parser.add_option("-f", "--foreground", dest="foreground", default=False,
                     action="store_true",
                     help="don't run as a background daemon")
+  parser.add_option("-k", "--stop", dest="stop", default=False,
+                    action="store_true",
+                    help="stop the daemon currently running")
   (options, args) = parser.parse_args()
 
   size_components = options.size.split("x")
   if len(size_components) != 2:
     parser.error("Incorrect size format, should be WIDTHxHEIGHT");
+
+  host_hash = hashlib.md5(socket.gethostname()).hexdigest()
+  pid_filename = os.path.join(CONFIG_DIR, "host#%s.pid" % host_hash)
+
+  if options.stop:
+    running, pid = PidFile(pid_filename).check()
+    if not running:
+      print "The daemon currently is not running"
+    else:
+      print "Killing process %s" % pid
+      os.kill(pid, signal.SIGTERM)
+    return 0
 
   try:
     width = int(size_components[0])
@@ -481,19 +498,17 @@ def main():
       return 1
     auth.save_config()
 
-  host_hash = hashlib.md5(socket.gethostname()).hexdigest()
   host = Host(os.path.join(CONFIG_DIR, "host#%s.json" % host_hash))
 
   if not host.load_config():
     host.create_config(auth)
     host.save_config()
 
-  pid_filename = os.path.join(CONFIG_DIR, "host#%s.pid" % host_hash)
   global g_pidfile
   g_pidfile = PidFile(pid_filename)
-  created, pid = g_pidfile.check_and_create_file()
+  running, pid = g_pidfile.check()
 
-  if not created:
+  if running:
     if pid == 0:
       pid = 'unknown'
 
@@ -502,6 +517,8 @@ def main():
     logging.error("If this isn't the case, delete '%s' and try again." %
                   pid_filename)
     return 1
+
+  g_pidfile.create()
 
   # daemonize() must only be called after prompting for user/password, as the
   # process will become detached from the controlling terminal.
