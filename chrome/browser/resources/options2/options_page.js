@@ -281,7 +281,7 @@ cr.define('options', function() {
       if (overlay.didShowPage) overlay.didShowPage();
     }
 
-    this.invokeMethodOnParent_('showOverlay');
+    uber.invokeMethodOnParent('showOverlay');
 
     return true;
   };
@@ -318,7 +318,7 @@ cr.define('options', function() {
       return;
 
     overlay.visible = false;
-    this.invokeMethodOnParent_('hideOverlay');
+    uber.invokeMethodOnParent('hideOverlay');
 
     if (overlay.didClosePage) overlay.didClosePage();
     this.updateHistoryState_();
