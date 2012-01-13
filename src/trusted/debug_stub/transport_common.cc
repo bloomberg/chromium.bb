@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -212,6 +212,7 @@ ITransport* ITransport::Connect(const char *addr) {
   if (addr) BuildSockAddr(addr, &saddr);
 
   if (::connect(s, reinterpret_cast<sockaddr*>(&saddr), sizeof(saddr)) != 0) {
+    closesocket(s);
     IPlatform::LogError("Failed to connect.\n");
     return NULL;
   }
@@ -271,4 +272,3 @@ void ITransport::Free(ITransport* itrans) {
 }
 
 }  // namespace port
-
