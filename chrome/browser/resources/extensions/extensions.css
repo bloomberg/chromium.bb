@@ -56,6 +56,10 @@ found in the LICENSE file.
   -webkit-padding-start: 10px;
 }
 
+#dev-table tr {
+  white-space: nowrap;
+}
+
 /* Support full keyboard accessibility without making things ugly
    for users who click, by hiding some focus outlines when the user
    clicks anywhere, but showing them when the user presses any key. */
