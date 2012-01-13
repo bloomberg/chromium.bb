@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -39,26 +39,20 @@ void LauncherModel::Move(int index, int target_index) {
                     LauncherItemMoved(index, target_index));
 }
 
-void LauncherModel::SetTabbedImages(int index,
-                                    const LauncherTabbedImages& images) {
+void LauncherModel::Set(int index, const LauncherItem& item) {
   DCHECK(index >= 0 && index < item_count());
-  DCHECK_EQ(TYPE_TABBED, items_[index].type);
-  items_[index].tab_images = images;
+  LauncherItemType type = items_[index].type;
+  aura::Window* window = items_[index].window;
+  items_[index] = item;
+  items_[index].type = type;
+  items_[index].window = window;
   FOR_EACH_OBSERVER(LauncherModelObserver, observers_,
-                    LauncherItemImagesChanged(index));
-}
-
-void LauncherModel::SetAppImage(int index, const SkBitmap& image) {
-  DCHECK(index >= 0 && index < item_count());
-  DCHECK_EQ(TYPE_APP, items_[index].type);
-  items_[index].app_image = image;
-  FOR_EACH_OBSERVER(LauncherModelObserver, observers_,
-                    LauncherItemImagesChanged(index));
+                    LauncherItemChanged(index));
 }
 
 void LauncherModel::SetPendingUpdate(int index) {
   FOR_EACH_OBSERVER(LauncherModelObserver, observers_,
-                    LauncherItemImagesWillChange(index));
+                    LauncherItemWillChange(index));
 }
 
 int LauncherModel::ItemIndexByWindow(aura::Window* window) {

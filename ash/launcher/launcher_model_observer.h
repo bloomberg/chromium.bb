@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,12 +23,12 @@ class ASH_EXPORT LauncherModelObserver {
   // of the arguments.
   virtual void LauncherItemMoved(int start_index, int target_index) = 0;
 
-  // Invoked when the images of an item change.
-  virtual void LauncherItemImagesChanged(int index) = 0;
+  // Invoked when the the state of an item changes. The type is the same, but
+  // the number of images or image may have changed.
+  virtual void LauncherItemChanged(int index) = 0;
 
-  // Signals that LauncherItemImagesChanged() is going to be sent in the
-  // near future.
-  virtual void LauncherItemImagesWillChange(int index) = 0;
+  // Signals that LauncherItemChanged() is going to be sent in the near future.
+  virtual void LauncherItemWillChange(int index) = 0;
 
  protected:
   virtual ~LauncherModelObserver() {}

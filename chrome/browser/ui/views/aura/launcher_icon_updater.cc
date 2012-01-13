@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -59,6 +59,23 @@ void LauncherIconUpdater::TabChangedAt(
   }
 }
 
+void LauncherIconUpdater::TabDetachedAt(TabContentsWrapper* contents,
+                                        int index) {
+  if (tab_model_->count() <= 3) {
+    // We can't rely on the active tab at this point as the model hasn't fully
+    // adjusted itself. We can rely on the count though.
+    int item_index = launcher_model_->ItemIndexByWindow(window_);
+    if (item_index == -1)
+      return;
+
+    if (launcher_model_->items()[item_index].type == ash::TYPE_TABBED) {
+      ash::LauncherItem new_item(launcher_model_->items()[item_index]);
+      new_item.num_tabs = tab_model_->count();
+      launcher_model_->Set(item_index, new_item);
+    }
+  }
+}
+
 void LauncherIconUpdater::UpdateLauncher(TabContentsWrapper* tab) {
   if (!tab)
     return;  // Assume the window is going to be closed if there are no tabs.
@@ -67,26 +84,22 @@ void LauncherIconUpdater::UpdateLauncher(TabContentsWrapper* tab) {
   if (item_index == -1)
     return;
 
+  ash::LauncherItem item;
   if (launcher_model_->items()[item_index].type == ash::TYPE_APP) {
     // Use the app icon if we can.
-    SkBitmap image;
     if (tab->extension_tab_helper()->GetExtensionAppIcon())
-      image = *tab->extension_tab_helper()->GetExtensionAppIcon();
+      item.image = *tab->extension_tab_helper()->GetExtensionAppIcon();
     else
-      image = tab->favicon_tab_helper()->GetFavicon();
-    launcher_model_->SetAppImage(item_index, image);
-    return;
-  }
-
-  ash::LauncherTabbedImages images;
-  if (tab->favicon_tab_helper()->ShouldDisplayFavicon()) {
-    images.resize(1);
-    images[0].image = tab->favicon_tab_helper()->GetFavicon();
-    if (images[0].image.empty()) {
-        images[0].image = *ResourceBundle::GetSharedInstance().GetBitmapNamed(
+      item.image = tab->favicon_tab_helper()->GetFavicon();
+  } else {
+    item.num_tabs = tab_model_->count();
+    if (tab->favicon_tab_helper()->ShouldDisplayFavicon()) {
+      item.image = tab->favicon_tab_helper()->GetFavicon();
+      if (item.image.empty()) {
+        item.image = *ResourceBundle::GetSharedInstance().GetBitmapNamed(
             IDR_DEFAULT_FAVICON);
+      }
     }
-    images[0].user_data = tab;
   }
-  launcher_model_->SetTabbedImages(item_index, images);
+  launcher_model_->Set(item_index, item);
 }

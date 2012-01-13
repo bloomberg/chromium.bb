@@ -9,15 +9,13 @@ namespace ash {
 LauncherItem::LauncherItem()
     : type(TYPE_TABBED),
       window(NULL),
-      user_data(NULL) {
+      num_tabs(1) {
 }
 
-LauncherItem::LauncherItem(LauncherItemType type,
-                           aura::Window* window,
-                           void* user_data)
+LauncherItem::LauncherItem(LauncherItemType type, aura::Window* window)
     : type(type),
       window(window),
-      user_data(user_data) {
+      num_tabs(1) {
 }
 
 LauncherItem::~LauncherItem() {
