@@ -50,6 +50,10 @@ class PlatformAppBrowserTest : public ExtensionBrowserTest {
 
  protected:
   void LoadAndLaunchPlatformApp(const char* name) {
+    ui_test_utils::WindowedNotificationObserver app_loaded_observer(
+        content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
+        content::NotificationService::AllSources());
+
     web_app::SetDisableShortcutCreationForTests(true);
     EXPECT_TRUE(LoadExtension(test_data_dir_.AppendASCII("platform_apps").
         AppendASCII(name)));
@@ -67,6 +71,8 @@ class PlatformAppBrowserTest : public ExtensionBrowserTest {
         extension_misc::LAUNCH_SHELL,
         GURL(),
         NEW_WINDOW);
+
+    app_loaded_observer.Wait();
 
     // Now we have a new platform app running.
     EXPECT_EQ(platform_app_count + 1, GetPlatformAppCount());
@@ -106,8 +112,8 @@ class PlatformAppBrowserTest : public ExtensionBrowserTest {
   }
 };
 
-// Disabled until shell windows are implemented for non-GTK toolkits.
-#if defined(TOOLKIT_GTK)
+// Disabled until shell windows are implemented for non-GTK, non-Views toolkits.
+#if defined(TOOLKIT_GTK) || defined(TOOLKIT_VIEWS)
 #define MAYBE_OpenAppInShellContainer OpenAppInShellContainer
 #else
 #define MAYBE_OpenAppInShellContainer DISABLED_OpenAppInShellContainer
@@ -121,8 +127,8 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MAYBE_OpenAppInShellContainer) {
   ASSERT_EQ(0u, GetPlatformAppCount());
 }
 
-// Disabled until shell windows are implemented for non-GTK toolkits.
-#if defined(TOOLKIT_GTK)
+// Disabled until shell windows are implemented for non-GTK, non-Views toolkits.
+#if defined(TOOLKIT_GTK) || defined(TOOLKIT_VIEWS)
 #define MAYBE_EmptyContextMenu EmptyContextMenu
 #else
 #define MAYBE_EmptyContextMenu DISABLED_EmptyContextMenu
@@ -142,8 +148,8 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MAYBE_EmptyContextMenu) {
   ASSERT_FALSE(menu->menu_model().GetItemCount());
 }
 
-// Disabled until shell windows are implemented for non-GTK toolkits.
-#if defined(TOOLKIT_GTK)
+// Disabled until shell windows are implemented for non-GTK, non-Views toolkits.
+#if defined(TOOLKIT_GTK) || defined(TOOLKIT_VIEWS)
 #define MAYBE_AppWithContextMenu AppWithContextMenu
 #else
 #define MAYBE_AppWithContextMenu DISABLED_AppWithContextMenu

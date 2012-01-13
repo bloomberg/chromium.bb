@@ -46,7 +46,7 @@ ShellWindow* ShellWindow::Create(Profile* profile,
   // TODO(mihaip): remove when ShellWindow has been implemented everywhere.
   CHECK(host);
 
-#if defined(TOOLKIT_GTK)
+#if defined(TOOLKIT_GTK) || defined(TOOLKIT_VIEWS)
   // This object will delete itself when the window is closed.
   // TODO(mihaip): remove the #if block when ShellWindow has been implemented
   // everywhere.
