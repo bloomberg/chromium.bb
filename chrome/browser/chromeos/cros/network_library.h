@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -1651,7 +1651,7 @@ class NetworkLibrary {
 
   // Returns home carrier ID if available, otherwise empty string is returned.
   // Carrier ID format: <carrier name> (country). Ex.: "Verizon (us)".
-  virtual std::string GetCellularHomeCarrierId() const = 0;
+  virtual const std::string& GetCellularHomeCarrierId() const = 0;
 
   // Passes |old_pin|, |new_pin| to change SIM card PIM.
   virtual void ChangePin(const std::string& old_pin,

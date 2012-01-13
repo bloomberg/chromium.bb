@@ -1723,7 +1723,7 @@ class NetworkLibraryImplBase : public NetworkLibrary  {
       const std::string& path) const OVERRIDE;
   virtual void SignalCellularPlanPayment() OVERRIDE;
   virtual bool HasRecentCellularPlanPayment() OVERRIDE;
-  virtual std::string GetCellularHomeCarrierId() const OVERRIDE;
+  virtual const std::string& GetCellularHomeCarrierId() const OVERRIDE;
 
   // virtual ChangePin implemented in derived classes.
   // virtual ChangeRequiredPin implemented in derived classes.
@@ -2499,11 +2499,11 @@ bool NetworkLibraryImplBase::HasRecentCellularPlanPayment() {
           cellular_plan_payment_time_).InHours() < kRecentPlanPaymentHours;
 }
 
-std::string NetworkLibraryImplBase::GetCellularHomeCarrierId() const {
+const std::string& NetworkLibraryImplBase::GetCellularHomeCarrierId() const {
   const NetworkDevice* cellular = FindCellularDevice();
   if (cellular)
     return cellular->home_provider_id();
-  return std::string();
+  return EmptyString();
 }
 
 /////////////////////////////////////////////////////////////////////////////

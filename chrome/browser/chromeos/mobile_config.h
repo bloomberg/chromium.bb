@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -76,6 +76,7 @@ class MobileConfig : public CustomizationDocument  {
 
     const std::vector<std::string>& external_ids() { return external_ids_; }
     const std::string& top_up_url() const { return top_up_url_; }
+    bool show_portal_button() const { return show_portal_button_; }
 
     // Returns "default" carrier deal i.e. first deal defined or NULL
     // if there're no deals defined.
@@ -96,8 +97,19 @@ class MobileConfig : public CustomizationDocument  {
     // Maps deal id to deal instance.
     typedef std::map<std::string, CarrierDeal*> CarrierDeals;
 
-    std::string top_up_url_;
+    // List of external IDs that should map to this carrier.
     std::vector<std::string> external_ids_;
+
+    // Top-up URL. Used in network menu ("View account" link) +
+    // carrier name in network details (in settings) is a link.
+    std::string top_up_url_;
+
+    // If true, show a separate "View account" button on network details page
+    // even if device is activated and doesn't need new data plan.
+    // It's not shown when one of the "Buy plan" / "Activate" is shown.
+    // All "Buy plan" / "Activate" / "View account" buttons launch
+    // carrier portal (chrome://mobilesetup/ extension).
+    bool show_portal_button_;
 
     CarrierDeals deals_;
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -70,19 +70,19 @@ cr.define('options', function() {
       });
       $('enable-wifi').addEventListener('click', function(event) {
         event.target.disabled = true;
-        chrome.send('enableWifi', []);
+        chrome.send('enableWifi');
       });
       $('disable-wifi').addEventListener('click', function(event) {
         event.target.disabled = true;
-        chrome.send('disableWifi', []);
+        chrome.send('disableWifi');
       });
       $('enable-cellular').addEventListener('click', function(event) {
         event.target.disabled = true;
-        chrome.send('enableCellular', []);
+        chrome.send('enableCellular');
       });
       $('disable-cellular').addEventListener('click', function(event) {
         event.target.disabled = true;
-        chrome.send('disableCellular', []);
+        chrome.send('disableCellular');
       });
       $('change-proxy-button').addEventListener('click', function(event) {
         OptionsPage.closeOverlay();
@@ -91,7 +91,11 @@ cr.define('options', function() {
             ['Options_ShowProxySettings']);
       });
       $('buyplanDetails').addEventListener('click', function(event) {
-        chrome.send('buyDataPlan', []);
+        chrome.send('buyDataPlan');
+        OptionsPage.closeOverlay();
+      });
+      $('viewAccountDetails').addEventListener('click', function(event) {
+        chrome.send('buyDataPlan');
         OptionsPage.closeOverlay();
       });
       $('cellularApnUseDefault').addEventListener('click', function(event) {
@@ -412,6 +416,7 @@ cr.define('options', function() {
 
     $('buyplanDetails').hidden = !data.showBuyButton;
     $('activateDetails').hidden = !data.showActivateButton;
+    $('viewAccountDetails').hidden = !data.showViewAccountButton;
   };
 
   InternetOptions.updateSecurityTab = function(requirePin) {
@@ -425,6 +430,7 @@ cr.define('options', function() {
     $('connectionState').data = data;
     $('buyplanDetails').hidden = true;
     $('activateDetails').hidden = true;
+    $('viewAccountDetails').hidden = true;
     $('detailsInternetLogin').hidden = data.connected;
     if (data.type == options.internet.Constants.TYPE_ETHERNET)
       $('detailsInternetDisconnect').hidden = true;
@@ -639,6 +645,7 @@ cr.define('options', function() {
       $('autoConnectNetworkCellular').disabled = false;
 
       $('buyplanDetails').hidden = !data.showBuyButton;
+      $('viewAccountDetails').hidden = !data.showViewAccountButton;
       $('activateDetails').hidden = !data.showActivateButton;
       if (data.showActivateButton) {
         $('detailsInternetLogin').hidden = true;

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -79,7 +79,8 @@ class InternetOptionsHandler
   void RefreshCellularPlanCallback(const base::ListValue* args);
   void SetActivationButtonVisibility(
       const chromeos::CellularNetwork* cellular,
-      base::DictionaryValue* dictionary);
+      base::DictionaryValue* dictionary,
+      const std::string& carrier_id);
 
   void SetPreferNetworkCallback(const base::ListValue* args);
   void SetAutoConnectCallback(const base::ListValue* args);

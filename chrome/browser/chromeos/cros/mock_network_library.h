@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -127,7 +127,7 @@ class MockNetworkLibrary : public NetworkLibrary {
   MOCK_METHOD1(ForgetNetwork, void(const std::string&));
   MOCK_METHOD2(SetNetworkProfile, void(const std::string&,
                                        NetworkProfileType));
-  MOCK_CONST_METHOD0(GetCellularHomeCarrierId, std::string(void));
+  MOCK_CONST_METHOD0(GetCellularHomeCarrierId, const std::string&(void));
 
   MOCK_CONST_METHOD0(ethernet_available, bool(void));
   MOCK_CONST_METHOD0(wifi_available, bool(void));

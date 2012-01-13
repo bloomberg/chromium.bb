@@ -31,6 +31,7 @@ const char kCarriersAttr[] = "carriers";
 const char kCarrierIdsAttr[] = "ids";
 const char kCarrierIdAttr[] = "id";
 const char kTopUpURLAttr[] = "top_up_url";
+const char kShowPortalButtonAttr[] = "show_portal_button";
 const char kDealsAttr[] = "deals";
 
 // Carrier deal attributes.
@@ -107,7 +108,8 @@ std::string MobileConfig::CarrierDeal::GetLocalizedString(
 // MobileConfig::Carrier implementation. ---------------------------------------
 
 MobileConfig::Carrier::Carrier(DictionaryValue* carrier_dict,
-                               const std::string& initial_locale) {
+                               const std::string& initial_locale)
+    : show_portal_button_(false) {
   InitFromDictionary(carrier_dict, initial_locale);
 }
 
@@ -144,6 +146,7 @@ const MobileConfig::CarrierDeal* MobileConfig::Carrier::GetDeal(
 void MobileConfig::Carrier::InitFromDictionary(
     base::DictionaryValue* carrier_dict, const std::string& initial_locale) {
   carrier_dict->GetString(kTopUpURLAttr, &top_up_url_);
+  carrier_dict->GetBoolean(kShowPortalButtonAttr, &show_portal_button_);
 
   bool exclude_deals = false;
   if (carrier_dict->GetBoolean(kExcludeDealsAttr, &exclude_deals) &&
