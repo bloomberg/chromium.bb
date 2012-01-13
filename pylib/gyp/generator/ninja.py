@@ -275,13 +275,19 @@ class NinjaWriter:
       # Some actions/rules output 'sources' that are already object files.
       link_deps += [self.GypPathToNinja(f) for f in sources if f.endswith('.o')]
 
-    # The final output of our target depends on the last output of the
-    # above steps.
+    # Write out a link step, if needed.
     output = output_binary = None
     if link_deps or sources_depends or actions_depends:
-      output, output_binary = self.WriteTarget(
+      output = output_binary = self.WriteTarget(
           spec, config_name, config, link_deps,
-          sources_depends or actions_depends, mac_bundle_depends)
+          sources_depends or actions_depends)
+      if self.is_mac_bundle:
+        mac_bundle_depends.append(output_binary)
+
+    # Bundle all of the above together, if needed.
+    if self.is_mac_bundle:
+      output = self.WriteMacBundle(spec, mac_bundle_depends)
+
     if self.name != output and self.toolset == 'target':
       # Write a short name to build this target.  This benefits both the
       # "build chrome" case as well as the gyp tests, which expect to be
@@ -634,24 +640,17 @@ class NinjaWriter:
                      variables=extra_bindings)
     return output
 
-  def WriteTarget(self, spec, config_name, config, link_deps, final_deps,
-                  mac_bundle_depends):
+  def WriteTarget(self, spec, config_name, config, link_deps, final_deps):
     if spec['type'] == 'none':
       assert len(final_deps) == 1, final_deps
-      output = final_deps[0]
-      return output, output
+      return final_deps[0]
     elif spec['type'] == 'static_library':
       output_binary = self.ComputeOutput(spec)
       self.ninja.build(output_binary, 'alink', link_deps,
                        order_only=final_deps)
+      return output_binary
     else:
-      output_binary = self.WriteLink(spec, config_name, config, link_deps)
-
-    if self.is_mac_bundle:
-      mac_bundle_depends.append(output_binary)
-      return self.WriteMacBundle(spec, mac_bundle_depends), output_binary
-    else:
-      return output_binary, output_binary
+      return self.WriteLink(spec, config_name, config, link_deps)
 
   def WriteMacBundle(self, spec, mac_bundle_depends):
     assert self.is_mac_bundle
