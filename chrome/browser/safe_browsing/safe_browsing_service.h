@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -15,6 +15,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/hash_tables.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -69,6 +70,10 @@ class SafeBrowsingService
     CLIENT_SIDE_PHISHING_URL,
   };
 
+  // Passed a boolean indicating whether or not it is OK to proceed with
+  // loading an URL.
+  typedef base::Callback<void(bool /*proceed*/)> UrlCheckCallback;
+
   // Structure used to pass parameters between the IO and UI thread when
   // interacting with the blocking page.
   struct UnsafeResource {
@@ -80,7 +85,7 @@ class SafeBrowsingService
     std::vector<GURL> redirect_urls;
     bool is_subresource;
     UrlCheckResult threat_type;
-    Client* client;
+    UrlCheckCallback callback;
     int render_process_host_id;
     int render_view_id;
   };
@@ -135,10 +140,6 @@ class SafeBrowsingService
     virtual ~Client() {}
 
     void OnSafeBrowsingResult(const SafeBrowsingCheck& check);
-
-    // Called when the user has made a decision about how to handle the
-    // SafeBrowsing interstitial page.
-    virtual void OnBlockingPageComplete(bool proceed) {}
 
    protected:
     // Called when the result of checking a browse URL is known.
@@ -228,7 +229,7 @@ class SafeBrowsingService
                            const std::vector<GURL>& redirect_urls,
                            bool is_subresource,
                            UrlCheckResult result,
-                           Client* client,
+                           const UrlCheckCallback& callback,
                            int render_process_host_id,
                            int render_view_id);
 

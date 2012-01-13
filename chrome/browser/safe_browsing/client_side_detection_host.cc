@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -42,6 +42,14 @@ using content::NavigationEntry;
 using content::WebContents;
 
 namespace safe_browsing {
+
+namespace {
+
+void EmptyUrlCheckCallback(bool processed) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+}
+
+}  // namespace
 
 // This class is instantiated each time a new toplevel URL loads, and
 // asynchronously checks whether the phishing classifier should run for this
@@ -227,32 +235,6 @@ class ClientSideDetectionHost::ShouldClassifyUrlRequest
   DISALLOW_COPY_AND_ASSIGN(ShouldClassifyUrlRequest);
 };
 
-// This class is used to display the phishing interstitial.
-class CsdClient : public SafeBrowsingService::Client {
- public:
-  CsdClient() {}
-
-  // Method from SafeBrowsingService::Client.  This method is called on the
-  // IO thread once the interstitial is going away.  This method simply deletes
-  // the CsdClient object.
-  virtual void OnBlockingPageComplete(bool proceed) OVERRIDE {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    // Delete this on the UI thread since it was created there.
-    BrowserThread::DeleteSoon(BrowserThread::UI,
-                              FROM_HERE,
-                              this);
-  }
-
- private:
-  friend class base::DeleteHelper<CsdClient>;  // Calls the private destructor.
-
-  // We're taking care of deleting this object.  No-one else should delete
-  // this object.
-  virtual ~CsdClient() {}
-
-  DISALLOW_COPY_AND_ASSIGN(CsdClient);
-};
-
 // static
 ClientSideDetectionHost* ClientSideDetectionHost::Create(
     WebContents* tab) {
@@ -357,7 +339,7 @@ void ClientSideDetectionHost::OnSafeBrowsingHit(
     // We also keep the resource around in order to be able to send the
     // malicious URL to the server.
     unsafe_resource_.reset(new SafeBrowsingService::UnsafeResource(resource));
-    unsafe_resource_->client = NULL;  // Make sure we don't do anything stupid.
+    unsafe_resource_->callback.Reset();  // Don't do anything stupid.
   }
 }
 
@@ -431,7 +413,7 @@ void ClientSideDetectionHost::MaybeShowPhishingWarning(GURL phishing_url,
         // We need to stop any pending navigations, otherwise the interstital
         // might not get created properly.
         web_contents()->GetController().DiscardNonCommittedEntries();
-        resource.client = new CsdClient();  // Will delete itself
+        resource.callback = base::Bind(&EmptyUrlCheckCallback);
         sb_service_->DoDisplayBlockingPage(resource);
       }
     }

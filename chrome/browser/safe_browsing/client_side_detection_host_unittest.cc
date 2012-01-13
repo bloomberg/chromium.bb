@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -74,6 +74,9 @@ ACTION_TEMPLATE(InvokeCallbackArgument,
   ::std::tr1::get<k>(args).Run(p0, p1);
 }
 
+void EmptyUrlCheckCallback(bool processed) {
+}
+
 class MockClientSideDetectionService : public ClientSideDetectionService {
  public:
   MockClientSideDetectionService() : ClientSideDetectionService(NULL) {}
@@ -101,12 +104,13 @@ class MockSafeBrowsingService : public SafeBrowsingService {
 
   // Helper function which calls OnBlockingPageComplete for this client
   // object.
-  void InvokeOnBlockingPageComplete(SafeBrowsingService::Client* client) {
+  void InvokeOnBlockingPageComplete(
+      const SafeBrowsingService::UrlCheckCallback& callback) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    DCHECK(client);
+    DCHECK(!callback.is_null());
     // Note: this will delete the client object in the case of the CsdClient
     // implementation.
-    client->OnBlockingPageComplete(false);
+    callback.Run(false);
   }
 
  private:
@@ -257,20 +261,12 @@ class ClientSideDetectionHostTest : public TabContentsWrapperTestHarness {
     resource.original_url = contents()->GetURL();
     resource.is_subresource = true;
     resource.threat_type = SafeBrowsingService::URL_MALWARE;
-    // Bogus client class.  We just need this class to check that the client
-    // field of the UnsafeResource gets cleared before we stored it in the
-    // host object.
-    class BogusClient : public SafeBrowsingService::Client {
-     public:
-      BogusClient() {}
-      virtual ~BogusClient() {}
-    };
-    resource.client = new BogusClient();
+    resource.callback = base::Bind(&EmptyUrlCheckCallback);
     resource.render_process_host_id = contents()->GetRenderProcessHost()->
         GetID();
     resource.render_view_id = contents()->GetRenderViewHost()->routing_id();
     csd_host_->OnSafeBrowsingHit(resource);
-    delete resource.client;
+    resource.callback.Reset();
     ASSERT_TRUE(csd_host_->DidShowSBInterstitial());
     ASSERT_TRUE(csd_host_->unsafe_resource_.get());
     // Test that the resource above was copied.
@@ -279,7 +275,7 @@ class ClientSideDetectionHostTest : public TabContentsWrapperTestHarness {
     EXPECT_EQ(resource.is_subresource,
               csd_host_->unsafe_resource_->is_subresource);
     EXPECT_EQ(resource.threat_type, csd_host_->unsafe_resource_->threat_type);
-    EXPECT_EQ(NULL, csd_host_->unsafe_resource_->client);
+    EXPECT_TRUE(csd_host_->unsafe_resource_->callback.is_null());
     EXPECT_EQ(resource.render_process_host_id,
               csd_host_->unsafe_resource_->render_process_host_id);
     EXPECT_EQ(resource.render_view_id,
@@ -421,7 +417,7 @@ TEST_F(ClientSideDetectionHostTest, OnPhishingDetectionDoneShowInterstitial) {
       BrowserThread::IO,
       FROM_HERE,
       base::Bind(&MockSafeBrowsingService::InvokeOnBlockingPageComplete,
-                 sb_service_.get(), resource.client));
+                 sb_service_.get(), resource.callback));
   // Since the CsdClient object will be deleted on the UI thread I need
   // to run the UI message loop.  Post a task to stop the UI message loop
   // after the client object destructor is called.
@@ -513,7 +509,7 @@ TEST_F(ClientSideDetectionHostTest, OnPhishingDetectionDoneMultiplePings) {
       BrowserThread::IO,
       FROM_HERE,
       base::Bind(&MockSafeBrowsingService::InvokeOnBlockingPageComplete,
-                 sb_service_.get(), resource.client));
+                 sb_service_.get(), resource.callback));
   // Since the CsdClient object will be deleted on the UI thread I need
   // to run the UI message loop.  Post a task to stop the UI message loop
   // after the client object destructor is called.
@@ -734,7 +730,7 @@ TEST_F(ClientSideDetectionHostTest, ShouldClassifyUrl) {
   EXPECT_TRUE(Mock::VerifyAndClear(sb_service_.get()));
   EXPECT_EQ(url, resource.url);
   EXPECT_EQ(url, resource.original_url);
-  delete resource.client;
+  resource.callback.Reset();
   msg = process()->sink().GetFirstMessageMatching(
       SafeBrowsingMsg_StartPhishingDetection::ID);
   ASSERT_FALSE(msg);

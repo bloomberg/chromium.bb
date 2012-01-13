@@ -1,7 +1,6 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-
 
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -70,8 +69,7 @@ class TestSafeBrowsingBlockingPageFactory
   }
 };
 
-class SafeBrowsingBlockingPageTest : public ChromeRenderViewHostTestHarness,
-                                     public SafeBrowsingService::Client {
+class SafeBrowsingBlockingPageTest : public ChromeRenderViewHostTestHarness {
  public:
   // The decision the user made.
   enum UserResponse {
@@ -99,11 +97,7 @@ class SafeBrowsingBlockingPageTest : public ChromeRenderViewHostTestHarness,
     ChromeRenderViewHostTestHarness::TearDown();
   }
 
-  // SafeBrowsingService::Client implementation.
-  virtual void OnUrlCheckResult(const GURL& url,
-                                SafeBrowsingService::UrlCheckResult result) {
-  }
-  virtual void OnBlockingPageComplete(bool proceed) {
+  void OnBlockingPageComplete(bool proceed) {
     if (proceed)
       user_response_ = OK;
     else
@@ -177,7 +171,9 @@ class SafeBrowsingBlockingPageTest : public ChromeRenderViewHostTestHarness,
   void InitResource(SafeBrowsingService::UnsafeResource* resource,
                     bool is_subresource,
                     const GURL& url) {
-    resource->client = this;
+    resource->callback =
+        base::Bind(&SafeBrowsingBlockingPageTest::OnBlockingPageComplete,
+                   base::Unretained(this));
     resource->url = url;
     resource->is_subresource = is_subresource;
     resource->threat_type = SafeBrowsingService::URL_MALWARE;

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -74,10 +74,6 @@ class SafeBrowsingResourceHandler : public ResourceHandler,
   virtual void OnBrowseUrlCheckResult(
       const GURL& url, SafeBrowsingService::UrlCheckResult result) OVERRIDE;
 
-  // SafeBrowsingService::Client implementation, called on the IO thread when
-  // the user has decided to proceed with the current request, or go back.
-  virtual void OnBlockingPageComplete(bool proceed) OVERRIDE;
-
  private:
   // Describes what phase of the check a handler is in.
   enum State {
@@ -117,6 +113,10 @@ class SafeBrowsingResourceHandler : public ResourceHandler,
   // Starts displaying the safe browsing interstitial page.
   void StartDisplayingBlockingPage(const GURL& url,
                                    SafeBrowsingService::UrlCheckResult result);
+
+  // Called on the IO thread when the user has decided to proceed with the
+  // current request, or go back.
+  void OnBlockingPageComplete(bool proceed);
 
   // Resumes the request, by continuing the deferred action (either starting the
   // request, or following a redirect).

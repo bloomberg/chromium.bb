@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -119,7 +119,6 @@ struct SafeBrowsingService::WhiteListedEntry {
 SafeBrowsingService::UnsafeResource::UnsafeResource()
     : is_subresource(false),
       threat_type(SAFE),
-      client(NULL),
       render_process_host_id(-1),
       render_view_id(-1) {
 }
@@ -396,7 +395,7 @@ void SafeBrowsingService::DisplayBlockingPage(
     const std::vector<GURL>& redirect_urls,
     bool is_subresource,
     UrlCheckResult result,
-    Client* client,
+    const UrlCheckCallback& callback,
     int render_process_host_id,
     int render_view_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -406,7 +405,7 @@ void SafeBrowsingService::DisplayBlockingPage(
   resource.redirect_urls = redirect_urls;
   resource.is_subresource = is_subresource;
   resource.threat_type= result;
-  resource.client = client;
+  resource.callback = callback;
   resource.render_process_host_id = render_process_host_id;
   resource.render_view_id = render_view_id;
 
@@ -490,7 +489,8 @@ void SafeBrowsingService::OnBlockingPageDone(
   for (std::vector<UnsafeResource>::const_iterator iter = resources.begin();
        iter != resources.end(); ++iter) {
     const UnsafeResource& resource = *iter;
-    NotifyClientBlockingComplete(resource.client, proceed);
+    if (!resource.callback.is_null())
+      resource.callback.Run(proceed);
 
     if (proceed) {
       BrowserThread::PostTask(
@@ -877,11 +877,6 @@ SafeBrowsingService::UrlCheckResult SafeBrowsingService::GetResultFromListname(
   return SAFE;
 }
 
-void SafeBrowsingService::NotifyClientBlockingComplete(Client* client,
-                                                       bool proceed) {
-  client->OnBlockingPageComplete(proceed);
-}
-
 void SafeBrowsingService::DatabaseUpdateFinished(bool update_succeeded) {
   DCHECK_EQ(MessageLoop::current(), safe_browsing_thread_->message_loop());
   GetDatabase()->UpdateFinished(update_succeeded);
@@ -1029,10 +1024,10 @@ void SafeBrowsingService::DoDisplayBlockingPage(
   // Check if the user has already ignored our warning for this render_view
   // and domain.
   if (IsWhitelisted(resource)) {
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::Bind(&SafeBrowsingService::NotifyClientBlockingComplete,
-                   this, resource.client, true));
+    if (!resource.callback.is_null()) {
+      BrowserThread::PostTask(
+          BrowserThread::IO, FROM_HERE, base::Bind(resource.callback, true));
+    }
     return;
   }
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -219,7 +219,6 @@ void SafeBrowsingResourceHandler::StartDisplayingBlockingPage(
   CHECK(deferred_request_id_ != -1);
 
   state_ = STATE_DISPLAYING_BLOCKING_PAGE;
-  AddRef();  // Balanced in OnBlockingPageComplete().
 
   // Grab the original url of this request as well.
   GURL original_url;
@@ -231,8 +230,14 @@ void SafeBrowsingResourceHandler::StartDisplayingBlockingPage(
     original_url = url;
 
   safe_browsing_->DisplayBlockingPage(
-      url, original_url, redirect_urls_, is_subresource_,
-      result, this, render_process_host_id_, render_view_id_);
+      url,
+      original_url,
+      redirect_urls_,
+      is_subresource_,
+      result,
+      base::Bind(&SafeBrowsingResourceHandler::OnBlockingPageComplete, this),
+      render_process_host_id_,
+      render_view_id_);
 }
 
 // SafeBrowsingService::Client implementation, called on the IO thread when
@@ -253,8 +258,6 @@ void SafeBrowsingResourceHandler::OnBlockingPageComplete(bool proceed) {
   } else {
     rdh_->CancelRequest(render_process_host_id_, deferred_request_id_, false);
   }
-
-  Release();  // Balances the AddRef() in StartDisplayingBlockingPage().
 }
 
 void SafeBrowsingResourceHandler::Shutdown() {
