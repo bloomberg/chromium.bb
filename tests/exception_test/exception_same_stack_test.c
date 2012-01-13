@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -35,7 +35,7 @@ void handler(int eip, int esp) {
     printf("failed to clear exception flag\n");
     exit(5);
   }
-  *((int*)0) = 0;
+  *((volatile int *) 0) = 0;
   exit(2);
 }
 
@@ -49,6 +49,6 @@ void set_handler() {
 int main() {
   set_handler();
   /* crash */
-  *((int*)0) = 0;
+  *((volatile int *) 0) = 0;
   return 1;
 }
