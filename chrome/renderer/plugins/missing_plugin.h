@@ -54,6 +54,7 @@ class MissingPlugin : public PluginPlaceholder,
   void OnFoundMissingPlugin(const string16& plugin_name);
   void OnStartedDownloadingPlugin();
   void OnFinishedDownloadingPlugin();
+  void OnErrorDownloadingPlugin(const std::string& error);
 #endif
 
   void SetMessage(const string16& message);

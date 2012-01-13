@@ -57,6 +57,7 @@ class PluginInstaller {
 
  private:
   void DidFinishDownload(const FilePath& downloaded_file);
+  void DownloadError(const std::string& msg);
 
   State state_;
   ObserverList<PluginInstallerObserver> observers_;

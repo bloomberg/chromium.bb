@@ -1554,6 +1554,7 @@
         'browser/password_manager/password_store_mac_unittest.cc',
         'browser/password_manager/password_store_win_unittest.cc',
         'browser/password_manager/password_store_x_unittest.cc',
+        'browser/plugin_download_helper_unittest.cc',
         'browser/plugin_finder_unittest.cc',
         'browser/plugin_prefs_unittest.cc',
         'browser/policy/asynchronous_policy_loader_unittest.cc',
@@ -2160,6 +2161,7 @@
           'sources/': [
             ['exclude', '^browser/password_manager/native_backend_gnome_x_unittest.cc'],
             ['exclude', '^browser/password_manager/native_backend_kwallet_x_unittest.cc'],
+            ['exclude', '^browser/plugin_download_helper_unittest.cc'],
             ['exclude', '^browser/safe_browsing/download_protection_service_unittest.cc' ],
           ],
           'conditions': [

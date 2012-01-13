@@ -5257,6 +5257,9 @@ Because search results are requested even while you're typing your query, your d
       <message name="IDS_PLUGIN_DOWNLOADING" desc="The placeholder text when downloading a missing plug-in.">
         Downloading plug-in...
       </message>
+      <message name="IDS_PLUGIN_DOWNLOAD_ERROR" desc="The placeholder text when there was an error download a missing plug-in.">
+        There was an error downloading the plug-in (<ph name="ERROR">$1<ex>net::ERR_TOO_MANY_GOATS</ex></ph>). Sorry :-/
+      </message>
       <message name="IDS_PLUGIN_INSTALLING" desc="The placeholder text when installing a missing plug-in.">
         After installing the plug-in, reload the page.
       </message>

@@ -27,9 +27,7 @@
 
 #include <string>
 
-#include "base/file_path.h"
 #include "base/file_util.h"
-#include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/test/test_timeouts.h"
 #include "chrome/browser/plugin_download_helper.h"
@@ -40,10 +38,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "chrome/test/ui/ui_test.h"
 #include "content/browser/net/url_request_mock_http_job.h"
-#include "content/test/test_browser_thread.h"
 #include "net/base/net_util.h"
-#include "net/url_request/url_request_context_getter.h"
-#include "net/url_request/url_request_test_util.h"
 #include "third_party/npapi/bindings/npapi.h"
 #include "webkit/plugins/npapi/plugin_constants_win.h"
 #include "webkit/plugins/npapi/plugin_list.h"
@@ -251,98 +246,3 @@ TEST_F(PluginTest, Silverlight) {
              TestTimeouts::action_max_timeout_ms(), false);
 }
 #endif  // defined(OS_WIN)
-
-#if !defined(OS_CHROMEOS)
-namespace {
-
-class TestURLRequestContextGetter : public net::URLRequestContextGetter {
- public:
-  explicit TestURLRequestContextGetter() {
-    io_message_loop_proxy_ = base::MessageLoopProxy::current();
-  }
-  virtual net::URLRequestContext* GetURLRequestContext() {
-    if (!context_)
-      context_ = new TestURLRequestContext();
-    return context_;
-  }
-  virtual scoped_refptr<base::MessageLoopProxy> GetIOMessageLoopProxy() const {
-    return io_message_loop_proxy_;
-  }
-
- protected:
-  scoped_refptr<base::MessageLoopProxy> io_message_loop_proxy_;
-
- private:
-  virtual ~TestURLRequestContextGetter() {}
-
-  scoped_refptr<net::URLRequestContext> context_;
-};
-
-}  // namespace
-
-// This class provides functionality to test the plugin installer download
-// file functionality.
-class PluginInstallerDownloadTest : public testing::Test {
- public:
-  PluginInstallerDownloadTest()
-      : message_loop_(MessageLoop::TYPE_IO),
-        file_thread_(content::BrowserThread::FILE, &message_loop_),
-        download_helper_(NULL),
-        success_(false) {}
-  ~PluginInstallerDownloadTest() {}
-
-  void Start() {
-    initial_download_path_ = PluginTest::GetTestUrl("flash.html", "", false);
-    download_helper_ = new PluginDownloadUrlHelper();
-    TestURLRequestContextGetter* context_getter =
-        new TestURLRequestContextGetter;
-    download_helper_->InitiateDownload(
-        initial_download_path_,
-        context_getter,
-        base::Bind(&PluginInstallerDownloadTest::OnDownloadCompleted,
-                   base::Unretained(this)));
-
-    message_loop_.PostDelayedTask(
-        FROM_HERE, MessageLoop::QuitClosure(),
-        TestTimeouts::action_max_timeout_ms());
-  }
-
-  void OnDownloadCompleted(const FilePath& download_path) {
-    success_ = true;
-    final_download_path_ = download_path;
-    message_loop_.Quit();
-    download_helper_ = NULL;
-  }
-
-  FilePath final_download_path() const {
-    return final_download_path_;
-  }
-
-  FilePath initial_download_path() const {
-    return final_download_path_;
-  }
-
-  bool success() const {
-    return success_;
-  }
-
- private:
-  MessageLoop message_loop_;
-  content::TestBrowserThread file_thread_;
-  FilePath final_download_path_;
-  PluginDownloadUrlHelper* download_helper_;
-  bool success_;
-  GURL initial_download_path_;
-};
-
-// This test validates that the plugin downloader downloads the specified file
-// to a temporary path with the same file name.
-TEST_F(PluginInstallerDownloadTest, PluginInstallerDownloadPathTest) {
-  Start();
-  MessageLoop::current()->Run();
-
-  EXPECT_TRUE(success());
-  EXPECT_TRUE(initial_download_path().BaseName().value() ==
-              final_download_path().BaseName().value());
-}
-#endif  // !defined(OS_CHROMEOS)

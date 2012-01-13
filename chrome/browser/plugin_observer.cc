@@ -389,6 +389,10 @@ class PluginObserver::MissingPluginHost : public PluginInstallerObserver {
     observer_->Send(new ChromeViewMsg_FinishedDownloadingPlugin(routing_id_));
   }
 
+  virtual void DownloadError(const std::string& msg) OVERRIDE {
+    observer_->Send(new ChromeViewMsg_ErrorDownloadingPlugin(routing_id_, msg));
+  }
+
  private:
   // Weak pointer; owns us.
   PluginObserver* observer_;
