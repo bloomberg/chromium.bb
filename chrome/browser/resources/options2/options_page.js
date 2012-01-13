@@ -330,8 +330,10 @@ cr.define('options', function() {
    */
   OptionsPage.hideOverlay_ = function() {
     var overlay = this.getVisibleOverlay_();
-    if (overlay)
+    if (overlay) {
       overlay.visible = false;
+      uber.invokeMethodOnParent('hideOverlay');
+    }
   };
 
   /**
