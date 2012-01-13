@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -198,6 +198,7 @@
         'browser/device_orientation/provider_unittest.cc',
         'browser/download/base_file_unittest.cc',
         'browser/download/download_buffer_unittest.cc',
+        'browser/download/download_file_manager_unittest.cc',
         'browser/download/download_file_unittest.cc',
         'browser/download/download_id_unittest.cc',
         'browser/download/download_query_unittest.cc',

@@ -58,9 +58,9 @@ class CONTENT_EXPORT DownloadManagerImpl
   virtual void OnDownloadRenamedToFinalName(int download_id,
                                             const FilePath& full_path,
                                             int uniquifier) OVERRIDE;
-  virtual int RemoveDownloadsBetween(const base::Time remove_begin,
-                                     const base::Time remove_end) OVERRIDE;
-  virtual int RemoveDownloads(const base::Time remove_begin) OVERRIDE;
+  virtual int RemoveDownloadsBetween(base::Time remove_begin,
+                                     base::Time remove_end) OVERRIDE;
+  virtual int RemoveDownloads(base::Time remove_begin) OVERRIDE;
   virtual int RemoveAllDownloads() OVERRIDE;
   virtual void DownloadUrl(const GURL& url,
                            const GURL& referrer,
@@ -97,6 +97,7 @@ class CONTENT_EXPORT DownloadManagerImpl
   virtual void SavePageDownloadFinished(
       content::DownloadItem* download) OVERRIDE;
   virtual content::DownloadItem* GetActiveDownloadItem(int id) OVERRIDE;
+  virtual bool GenerateFileHash() OVERRIDE;
   virtual content::DownloadManagerDelegate* delegate() const OVERRIDE;
   virtual void SetDownloadManagerDelegate(
       content::DownloadManagerDelegate* delegate) OVERRIDE;
