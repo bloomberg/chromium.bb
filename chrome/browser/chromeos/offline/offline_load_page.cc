@@ -14,7 +14,6 @@
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/renderer_host/offline_resource_handler.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -49,9 +48,9 @@ namespace chromeos {
 
 OfflineLoadPage::OfflineLoadPage(WebContents* web_contents,
                                  const GURL& url,
-                                 OfflineResourceHandler* handler)
+                                 const CompletionCallback& callback)
     : ChromeInterstitialPage(web_contents, true, url),
-      handler_(handler),
+      callback_(callback),
       proceeded_(false) {
   net::NetworkChangeNotifier::AddOnlineStateObserver(this);
 }
@@ -166,7 +165,8 @@ void OfflineLoadPage::CommandReceived(const std::string& cmd) {
 }
 
 void OfflineLoadPage::NotifyBlockingPageComplete(bool proceed) {
-  handler_->OnBlockingPageComplete(proceed);
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE, base::Bind(callback_, proceed));
 }
 
 void OfflineLoadPage::Proceed() {

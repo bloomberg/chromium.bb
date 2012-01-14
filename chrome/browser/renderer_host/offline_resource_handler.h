@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -48,10 +48,10 @@ class OfflineResourceHandler : public ResourceHandler {
                                    const std::string& security_info) OVERRIDE;
   virtual void OnRequestClosed() OVERRIDE;
 
+ private:
   // OfflineLoadPage callback.
   void OnBlockingPageComplete(bool proceed);
 
- private:
   // Erase the state associated with a deferred load request.
   void ClearRequestInfo();
   bool IsRemote(const GURL& url) const;
@@ -61,9 +61,6 @@ class OfflineResourceHandler : public ResourceHandler {
 
   // True if chrome should show the offline page.
   bool ShouldShowOfflinePage(const GURL& url) const;
-
-  // Shows the offline interstitial page on the UI thread.
-  void ShowOfflinePage();
 
   // A callback to tell if an appcache exists.
   void OnCanHandleOfflineComplete(int rv);

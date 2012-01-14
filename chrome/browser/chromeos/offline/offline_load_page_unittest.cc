@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,7 +26,7 @@ class TestOfflineLoadPage :  public chromeos::OfflineLoadPage {
   TestOfflineLoadPage(TabContents* tab_contents,
                       const GURL& url,
                       OfflineLoadPageTest* test_page)
-    : chromeos::OfflineLoadPage(tab_contents, url, NULL),
+    : chromeos::OfflineLoadPage(tab_contents, url, CompletionCallback()),
       test_page_(test_page) {
   }
 

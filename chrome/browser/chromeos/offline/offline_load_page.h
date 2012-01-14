@@ -8,12 +8,12 @@
 
 #include <string>
 
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "chrome/browser/tab_contents/chrome_interstitial_page.h"
 #include "net/base/network_change_notifier.h"
 
 class Extension;
-class OfflineResourceHandler;
 
 namespace base {
 class DictionaryValue;
@@ -28,9 +28,14 @@ namespace chromeos {
 class OfflineLoadPage : public ChromeInterstitialPage,
                         public net::NetworkChangeNotifier::OnlineStateObserver {
  public:
-  // Create a offline load page for the |web_contents|.
+  // Passed a boolean indicating whether or not it is OK to proceed with the
+  // page load.
+  typedef base::Callback<void(bool /*proceed*/)> CompletionCallback;
+
+  // Create a offline load page for the |web_contents|.  The callback will be
+  // run on the IO thread.
   OfflineLoadPage(content::WebContents* web_contents, const GURL& url,
-                  OfflineResourceHandler* handler);
+                  const CompletionCallback& callback);
 
  protected:
   virtual ~OfflineLoadPage();
@@ -60,7 +65,7 @@ class OfflineLoadPage : public ChromeInterstitialPage,
   // has not been activated.
   bool ShowActivationMessage();
 
-  scoped_refptr<OfflineResourceHandler> handler_;
+  CompletionCallback callback_;
 
   // True if the proceed is chosen.
   bool proceeded_;
