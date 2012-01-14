@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -338,10 +338,8 @@ void ChromeContentClient::AddNPAPIPlugins(
   mimeType.mime_type = "*";
   info.mime_types.push_back(mimeType);
 
-  webkit::npapi::PluginList::Singleton()->RegisterInternalPlugin(
-      info,
-      entry_points,
-      false);
+  webkit::npapi::PluginList::Singleton()->RegisterInternalPluginWithEntryPoints(
+      info, false, entry_points);
 #endif
 }
 

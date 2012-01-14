@@ -2583,7 +2583,7 @@ void ExtensionService::UpdatePluginListWithNaClModules() {
       }
 
       PluginService::GetInstance()->RefreshPlugins();
-      PluginService::GetInstance()->RegisterInternalPlugin(info);
+      PluginService::GetInstance()->RegisterInternalPlugin(info, true);
       // This plugin has been modified, no need to check the rest of its
       // types, but continue checking other plugins.
       break;

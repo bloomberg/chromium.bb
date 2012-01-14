@@ -177,7 +177,7 @@ void RegisterPepperFlashWithChrome(const FilePath& path,
   PluginPrefs::EnablePluginGlobally(IsPepperFlashEnabledByDefault(),
                                     plugin_info.path);
   PluginService::GetInstance()->RegisterInternalPlugin(
-      plugin_info.ToWebPluginInfo());
+      plugin_info.ToWebPluginInfo(), false);
   PluginService::GetInstance()->RefreshPlugins();
 }
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -246,32 +246,27 @@ void PluginList::AddExtraPluginDir(const FilePath& plugin_dir) {
 #endif
 }
 
-void PluginList::RegisterInternalPlugin(const webkit::WebPluginInfo& info) {
+void PluginList::RegisterInternalPlugin(const webkit::WebPluginInfo& info,
+                                        bool add_at_beginning) {
   PluginEntryPoints entry_points = {0};
-  InternalPlugin plugin = { info, entry_points };
-
-  base::AutoLock lock(lock_);
-  // Newer registrations go earlier in the list so they can override the MIME
-  // types of older registrations.
-  internal_plugins_.insert(internal_plugins_.begin(), plugin);
-
-  if (info.path.value() == kDefaultPluginLibraryName)
-    default_plugin_enabled_ = true;
+  RegisterInternalPluginWithEntryPoints(info, add_at_beginning, entry_points);
 }
 
-void PluginList::RegisterInternalPlugin(const webkit::WebPluginInfo& info,
-                                        const PluginEntryPoints& entry_points,
-                                        bool add_at_beginning) {
+void PluginList::RegisterInternalPluginWithEntryPoints(
+    const webkit::WebPluginInfo& info,
+    bool add_at_beginning,
+    const PluginEntryPoints& entry_points) {
   InternalPlugin plugin = { info, entry_points };
 
   base::AutoLock lock(lock_);
 
+  internal_plugins_.push_back(plugin);
   if (add_at_beginning) {
     // Newer registrations go earlier in the list so they can override the MIME
     // types of older registrations.
-    internal_plugins_.insert(internal_plugins_.begin(), plugin);
+    extra_plugin_paths_.insert(extra_plugin_paths_.begin(), info.path);
   } else {
-    internal_plugins_.push_back(plugin);
+    extra_plugin_paths_.push_back(info.path);
   }
 
   if (info.path.value() == kDefaultPluginLibraryName)
@@ -465,25 +460,14 @@ void PluginList::GetPluginPathsToLoad(std::vector<FilePath>* plugin_paths) {
   // other methods if they're called on other threads.
   std::vector<FilePath> extra_plugin_paths;
   std::vector<FilePath> extra_plugin_dirs;
-  std::vector<InternalPlugin> internal_plugins;
   {
     base::AutoLock lock(lock_);
     extra_plugin_paths = extra_plugin_paths_;
     extra_plugin_dirs = extra_plugin_dirs_;
-    internal_plugins = internal_plugins_;
   }
 
   std::vector<FilePath> directories_to_scan;
   GetPluginDirectories(&directories_to_scan);
-
-  // Load internal plugins first so that, if both an internal plugin and a
-  // "discovered" plugin want to handle the same type, the internal plugin
-  // will have precedence.
-  for (size_t i = 0; i < internal_plugins.size(); ++i) {
-    if (internal_plugins[i].info.path.value() == kDefaultPluginLibraryName)
-      continue;
-    plugin_paths->push_back(internal_plugins[i].info.path);
-  }
 
   for (size_t i = 0; i < extra_plugin_paths.size(); ++i) {
     const FilePath& path = extra_plugin_paths[i];
@@ -491,6 +475,8 @@ void PluginList::GetPluginPathsToLoad(std::vector<FilePath>* plugin_paths) {
         plugin_paths->end()) {
       continue;
     }
+    if (path.value() == kDefaultPluginLibraryName)
+      continue;
     plugin_paths->push_back(path);
   }
 

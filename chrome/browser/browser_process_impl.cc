@@ -746,7 +746,7 @@ void BrowserProcessImpl::PreMainMessageLoopRun() {
   // e.g. ~/.config/chromium/Plugins.
   FilePath user_data_dir;
   if (PathService::Get(chrome::DIR_USER_DATA, &user_data_dir)) {
-    plugin_service->AddExtraPluginPath(user_data_dir.Append("Plugins"));
+    plugin_service->AddExtraPluginDir(user_data_dir.Append("Plugins"));
   }
 #endif
 

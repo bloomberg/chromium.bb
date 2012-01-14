@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -123,9 +123,11 @@ class PluginService {
   // PluginList for further documentation of these functions.
   virtual void RefreshPlugins() = 0;
   virtual void AddExtraPluginPath(const FilePath& path) = 0;
+  virtual void AddExtraPluginDir(const FilePath& path) = 0;
   virtual void RemoveExtraPluginPath(const FilePath& path) = 0;
   virtual void UnregisterInternalPlugin(const FilePath& path) = 0;
-  virtual void RegisterInternalPlugin(const webkit::WebPluginInfo& info) = 0;
+  virtual void RegisterInternalPlugin(const webkit::WebPluginInfo& info,
+                                      bool add_at_beginning) = 0;
   virtual string16 GetPluginGroupName(const std::string& plugin_name) = 0;
 
   // TODO(dpranke): This should be private.

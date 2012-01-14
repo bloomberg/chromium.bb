@@ -97,10 +97,11 @@ class CONTENT_EXPORT PluginServiceImpl
   virtual content::PluginServiceFilter* GetFilter() OVERRIDE;
   virtual void RefreshPlugins() OVERRIDE;
   virtual void AddExtraPluginPath(const FilePath& path) OVERRIDE;
+  virtual void AddExtraPluginDir(const FilePath& path) OVERRIDE;
   virtual void RemoveExtraPluginPath(const FilePath& path) OVERRIDE;
   virtual void UnregisterInternalPlugin(const FilePath& path) OVERRIDE;
   virtual void RegisterInternalPlugin(
-      const webkit::WebPluginInfo& info) OVERRIDE;
+      const webkit::WebPluginInfo& info, bool add_at_beginning) OVERRIDE;
   virtual string16 GetPluginGroupName(const std::string& plugin_name) OVERRIDE;
   virtual webkit::npapi::PluginList* GetPluginList() OVERRIDE;
   virtual void SetPluginListForTesting(

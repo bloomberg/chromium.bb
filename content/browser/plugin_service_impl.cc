@@ -590,7 +590,7 @@ void PluginServiceImpl::RegisterPepperPlugins() {
   // TODO(abarth): It seems like the PepperPluginRegistry should do this work.
   PepperPluginRegistry::ComputeList(&ppapi_plugins_);
   for (size_t i = 0; i < ppapi_plugins_.size(); ++i) {
-    RegisterInternalPlugin(ppapi_plugins_[i].ToWebPluginInfo());
+    RegisterInternalPlugin(ppapi_plugins_[i].ToWebPluginInfo(), true);
   }
 }
 
@@ -648,6 +648,10 @@ void PluginServiceImpl::AddExtraPluginPath(const FilePath& path) {
   plugin_list_->AddExtraPluginPath(path);
 }
 
+void PluginServiceImpl::AddExtraPluginDir(const FilePath& path) {
+  plugin_list_->AddExtraPluginDir(path);
+}
+
 void PluginServiceImpl::RemoveExtraPluginPath(const FilePath& path) {
   plugin_list_->RemoveExtraPluginPath(path);
 }
@@ -662,8 +666,9 @@ void PluginServiceImpl::SetPluginListForTesting(
 }
 
 void PluginServiceImpl::RegisterInternalPlugin(
-    const webkit::WebPluginInfo& info) {
-  plugin_list_->RegisterInternalPlugin(info);
+    const webkit::WebPluginInfo& info,
+    bool add_at_beginning) {
+  plugin_list_->RegisterInternalPlugin(info, add_at_beginning);
 }
 
 string16 PluginServiceImpl::GetPluginGroupName(const std::string& plugin_name) {

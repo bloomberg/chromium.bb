@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -82,15 +82,18 @@ class WEBKIT_PLUGINS_EXPORT PluginList {
   // Register an internal plugin with the specified plugin information.
   // An internal plugin must be registered before it can
   // be loaded using PluginList::LoadPlugin().
-  void RegisterInternalPlugin(const webkit::WebPluginInfo& info);
+  // If |add_at_beginning| is true the plugin will be added earlier in
+  // the list so that it can override the MIME types of older registrations.
+  void RegisterInternalPlugin(const webkit::WebPluginInfo& info,
+                              bool add_at_beginning);
 
   // This second version is for "plugins" that have been compiled directly into
   // the binary -- callers must provide the plugin information and the entry
-  // points. If |add_at_beginning| is true the plugin will be added earlier in
-  // the list so that it can override the MIME types of older registrations.
-  void RegisterInternalPlugin(const webkit::WebPluginInfo& info,
-                              const PluginEntryPoints& entry_points,
-                              bool add_at_beginning);
+  // points.
+  void RegisterInternalPluginWithEntryPoints(
+      const webkit::WebPluginInfo& info,
+      bool add_at_beginning,
+      const PluginEntryPoints& entry_points);
 
   // Removes a specified internal plugin from the list. The search will match
   // on the path from the version info previously registered.
