@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,11 +24,21 @@
 namespace content {
 
 ShellURLRequestContextGetter::ShellURLRequestContextGetter(
-    const FilePath& base_path_,
+    const FilePath& base_path,
     MessageLoop* io_loop,
     MessageLoop* file_loop)
-    : io_loop_(io_loop),
+    : base_path_(base_path),
+      io_loop_(io_loop),
       file_loop_(file_loop) {
+  // Must first be created on the UI thread.
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // We must create the proxy config service on the UI loop on Linux because it
+  // must synchronously run on the glib message loop. This will be passed to
+  // the URLRequestContextStorage on the IO thread in GetURLRequestContext().
+  proxy_config_service_.reset(
+      net::ProxyService::CreateSystemProxyConfigService(
+          io_loop_, file_loop_));
 }
 
 ShellURLRequestContextGetter::~ShellURLRequestContextGetter() {
@@ -47,9 +57,6 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
     url_request_context_->set_accept_language("en-us,en");
     url_request_context_->set_accept_charset("iso-8859-1,*,utf-8");
 
-    scoped_ptr<net::ProxyConfigService> proxy_config_service(
-        net::ProxyService::CreateSystemProxyConfigService(
-            io_loop_, file_loop_));
     storage_->set_host_resolver(
         net::CreateSystemHostResolver(net::HostResolver::kDefaultParallelism,
                                       net::HostResolver::kDefaultRetryAttempts,
@@ -58,7 +65,7 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
     // TODO(jam): use v8 if possible, look at chrome code.
     storage_->set_proxy_service(
         net::ProxyService::CreateUsingSystemProxyResolver(
-        proxy_config_service.release(),
+        proxy_config_service_.release(),
         0,
         NULL));
     storage_->set_ssl_config_service(new net::SSLConfigServiceDefaults);

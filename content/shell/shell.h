@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,6 +14,12 @@
 #include "base/string_piece.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "ui/gfx/native_widget_types.h"
+
+#if defined(OS_LINUX)
+#include "ui/base/gtk/gtk_signal.h"
+
+typedef struct _GtkToolItem GtkToolItem;
+#endif
 
 class GURL;
 class SiteInstance;
@@ -76,6 +82,8 @@ class Shell : public WebContentsDelegate {
   void PlatformCleanUp();
   // Creates the main window GUI.
   void PlatformCreateWindow(int width, int height);
+  // Links the TabContents into the newly created window.
+  void PlatformSetContents();
   // Resizes the main window to the given dimensions.
   void PlatformSizeTo(int width, int height);
   // Resize the content area and GUI.
@@ -101,6 +109,12 @@ class Shell : public WebContentsDelegate {
   static ATOM RegisterWindowClass();
   static LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
   static LRESULT CALLBACK EditWndProc(HWND, UINT, WPARAM, LPARAM);
+#elif defined(OS_LINUX)
+  CHROMEGTK_CALLBACK_0(Shell, void, OnBackButtonClicked);
+  CHROMEGTK_CALLBACK_0(Shell, void, OnForwardButtonClicked);
+  CHROMEGTK_CALLBACK_0(Shell, void, OnReloadButtonClicked);
+  CHROMEGTK_CALLBACK_0(Shell, void, OnStopButtonClicked);
+  CHROMEGTK_CALLBACK_0(Shell, void, OnURLEntryActivate);
 #endif
 
   scoped_ptr<TabContents> tab_contents_;
@@ -111,6 +125,16 @@ class Shell : public WebContentsDelegate {
 #if defined(OS_WIN)
   WNDPROC default_edit_wnd_proc_;
   static HINSTANCE instance_handle_;
+#elif defined(OS_LINUX)
+  GtkWidget* vbox_;
+
+  GtkToolItem* back_button_;
+  GtkToolItem* forward_button_;
+  GtkToolItem* reload_button_;
+  GtkToolItem* stop_button_;
+
+  int content_width_;
+  int content_height_;
 #endif
 
   // A container of all the open windows. We use a vector so we can keep track

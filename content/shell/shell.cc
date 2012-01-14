@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,10 +10,6 @@
 #include "content/browser/tab_contents/navigation_controller_impl.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "ui/gfx/size.h"
-
-#if defined(OS_WIN)
-#include "content/browser/tab_contents/tab_contents_view_win.h"
-#endif
 
 // Content area size for newly created windows.
 static const int kTestWindowWidth = 800;
@@ -51,11 +47,7 @@ Shell* Shell::CreateShell(TabContents* tab_contents) {
   shell->tab_contents_.reset(tab_contents);
   tab_contents->SetDelegate(shell);
 
-#if defined(OS_WIN)
-  TabContentsViewWin* view =
-      static_cast<TabContentsViewWin*>(tab_contents->GetView());
-  view->SetParent(shell->window_);
-#endif
+  shell->PlatformSetContents();
 
   shell->PlatformResizeSubViews();
   return shell;

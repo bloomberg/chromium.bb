@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,6 +16,7 @@ class MessageLoop;
 
 namespace net {
 class HostResolver;
+class ProxyConfigService;
 class URLRequestContextStorage;
 }
 
@@ -24,7 +25,7 @@ namespace content {
 class ShellURLRequestContextGetter : public net::URLRequestContextGetter {
  public:
   ShellURLRequestContextGetter(
-      const FilePath& base_path_,
+      const FilePath& base_path,
       MessageLoop* io_loop,
       MessageLoop* file_loop);
   virtual ~ShellURLRequestContextGetter();
@@ -41,6 +42,8 @@ class ShellURLRequestContextGetter : public net::URLRequestContextGetter {
   FilePath base_path_;
   MessageLoop* io_loop_;
   MessageLoop* file_loop_;
+
+  scoped_ptr<net::ProxyConfigService> proxy_config_service_;
 
   scoped_refptr<net::URLRequestContext> url_request_context_;
   scoped_ptr<net::URLRequestContextStorage> storage_;

@@ -1,10 +1,11 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "content/shell/shell_browser_context.h"
 
 #include "base/bind.h"
+#include "base/environment.h"
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/path_service.h"
@@ -30,11 +31,18 @@
 
 #if defined(OS_WIN)
 #include "base/base_paths_win.h"
+#elif defined(OS_LINUX)
+#include "base/nix/xdg_util.h"
 #endif
 
 using content::BrowserThread;
 
 namespace {
+
+#if defined(OS_LINUX)
+const char kDotConfigDir[] = ".config";
+const char kXdgConfigHomeEnvVar[] = "XDG_CONFIG_HOME";
+#endif
 
 class ShellGeolocationPermissionContext : public GeolocationPermissionContext {
  public:
@@ -104,6 +112,12 @@ FilePath ShellBrowserContext::GetPath() {
 #if defined(OS_WIN)
   CHECK(PathService::Get(base::DIR_LOCAL_APP_DATA, &path_));
   path_ = path_.Append(std::wstring(L"content_shell"));
+#elif defined(OS_LINUX)
+  scoped_ptr<base::Environment> env(base::Environment::Create());
+  FilePath config_dir(base::nix::GetXDGDirectory(env.get(),
+                                                 kXdgConfigHomeEnvVar,
+                                                 kDotConfigDir));
+  path_ = config_dir.Append("content_shell");
 #else
   NOTIMPLEMENTED();
 #endif

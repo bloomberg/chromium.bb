@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/win/resource_util.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/browser/tab_contents/tab_contents_view_win.h"
 #include "content/shell/resource.h"
 #include "googleurl/src/gurl.h"
 #include "grit/webkit_resources.h"
@@ -141,6 +142,12 @@ void Shell::PlatformCreateWindow(int width, int height) {
   ShowWindow(window_, SW_SHOW);
 
   PlatformSizeTo(width, height);
+}
+
+void Shell::PlatformSetContents() {
+  TabContentsViewWin* view =
+      static_cast<TabContentsViewWin*>(tab_contents_->GetView());
+  view->SetParent(window_);
 }
 
 void Shell::PlatformSizeTo(int width, int height) {
