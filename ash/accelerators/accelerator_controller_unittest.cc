@@ -4,6 +4,7 @@
 
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/ime/event.h"
+#include "ash/screenshot_delegate.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/test/aura_shell_test_base.h"
@@ -23,6 +24,7 @@ namespace ash {
 namespace test {
 
 namespace {
+
 class TestTarget : public ui::AcceleratorTarget {
  public:
   TestTarget() : accelerator_pressed_count_(0) {};
@@ -42,6 +44,29 @@ class TestTarget : public ui::AcceleratorTarget {
 
  private:
   int accelerator_pressed_count_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestTarget);
+};
+
+class DummyScreenshotDelegate : public ScreenshotDelegate {
+ public:
+  DummyScreenshotDelegate() : handle_take_screenshot_count_(0) {
+  }
+  virtual ~DummyScreenshotDelegate() {}
+
+  // Overridden from ScreenshotDelegate:
+  virtual void HandleTakeScreenshot() OVERRIDE {
+    ++handle_take_screenshot_count_;
+  }
+
+  int handle_take_screenshot_count() const {
+    return handle_take_screenshot_count_;
+  }
+
+ private:
+  int handle_take_screenshot_count_;
+
+  DISALLOW_COPY_AND_ASSIGN(DummyScreenshotDelegate);
 };
 
 bool TestTarget::AcceleratorPressed(const ui::Accelerator& accelerator) {
@@ -222,10 +247,20 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
   EXPECT_TRUE(GetController()->Process(
       ui::Accelerator(ui::VKEY_TAB, false, false, true)));
   // TakeScreenshot
-  // EXPECT_TRUE(GetController()->Process(
-  //     ui::Accelerator(ui::VKEY_F5, false, true, false)));
-  // EXPECT_TRUE(GetController()->Process(
-  //     ui::Accelerator(ui::VKEY_PRINT, false, false, false)));
+  // True should always be returned regardless of the existence of the delegate.
+  EXPECT_TRUE(GetController()->Process(
+      ui::Accelerator(ui::VKEY_F5, false, true, false)));
+  EXPECT_TRUE(GetController()->Process(
+      ui::Accelerator(ui::VKEY_PRINT, false, false, false)));
+  DummyScreenshotDelegate* delegate = new DummyScreenshotDelegate;
+  GetController()->SetScreenshotDelegate(delegate);
+  EXPECT_EQ(0, delegate->handle_take_screenshot_count());
+  EXPECT_TRUE(GetController()->Process(
+      ui::Accelerator(ui::VKEY_F5, false, true, false)));
+  EXPECT_EQ(1, delegate->handle_take_screenshot_count());
+  EXPECT_TRUE(GetController()->Process(
+      ui::Accelerator(ui::VKEY_PRINT, false, false, false)));
+  EXPECT_EQ(2, delegate->handle_take_screenshot_count());
 #if !defined(NDEBUG)
   // RotateScreen
   EXPECT_TRUE(GetController()->Process(
