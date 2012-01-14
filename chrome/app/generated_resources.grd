@@ -6277,28 +6277,6 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       <message name="IDS_UPGRADE_STARTED" desc="Status label: About to start updating Chrome">
         Installing new version...
       </message>
-      <message name="IDS_UPGRADE_AVAILABLE" desc="Status label: A new version of Chrome is available">
-        A new version of <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> is available
-      </message>
-      <message name="IDS_UPGRADE_SUCCESSFUL" desc="Status label: Successfully upgraded">
-        <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> has been updated to <ph name="VERSION">$2<ex>0.1.131</ex></ph>
-      </message>
-      <message name="IDS_UPGRADE_SUCCESSFUL_NOVERSION" desc="Status label: Successfully upgraded">
-        <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> has been updated
-      </message>
-      <message name="IDS_UPGRADE_SUCCESSFUL_RELAUNCH" desc="Status label: Successfully updated">
-        Relaunch <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> to finish updating
-      </message>
-      <if expr="pp_ifdef('chromeos')">
-      <message name="IDS_UPGRADE_ALREADY_UP_TO_DATE" desc="Status label: Already up to date">
-        <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> is up to date
-      </message>
-      </if>
-      <if expr="not pp_ifdef('chromeos')">
-      <message name="IDS_UPGRADE_ALREADY_UP_TO_DATE" desc="Status label: Already up to date">
-        <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> is up to date (<ph name="VERSION">$2<ex>0.1.131</ex></ph>)
-      </message>
-      </if>
       <message name="IDS_UPGRADE_ERROR" desc="Status label: Error occurred during upgrade">
         Update server not available (error: <ph name="ERROR_NUMBER">$1<ex>1</ex></ph>)
       </message>
