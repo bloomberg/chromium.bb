@@ -273,6 +273,10 @@ const gfx::Font& NativeComboboxViews::GetFont() const {
   return rb.GetFont(ResourceBundle::BaseFont);
 }
 
+void NativeComboboxViews::AdjustBoundsForRTLUI(gfx::Rect* rect) const {
+  rect->set_x(GetMirroredXForRect(*rect));
+}
+
 void NativeComboboxViews::PaintText(gfx::Canvas* canvas) {
   gfx::Insets insets = GetInsets();
 
@@ -297,12 +301,15 @@ void NativeComboboxViews::PaintText(gfx::Canvas* canvas) {
   if ((text_width + insets.width()) > disclosure_arrow_offset)
     text_width = disclosure_arrow_offset - insets.width();
 
-  canvas->DrawStringInt(text, font, text_color, x, y, text_width, text_height);
+  gfx::Rect text_bounds(x, y, text_width, text_height);
+  AdjustBoundsForRTLUI(&text_bounds);
+  canvas->DrawStringInt(text, font, text_color, text_bounds);
 
   gfx::Rect arrow_bounds(disclosure_arrow_offset + kDisclosureArrowLeftPadding,
                          height() / 2 - disclosure_arrow_->height() / 2,
                          disclosure_arrow_->width(),
                          disclosure_arrow_->height());
+  AdjustBoundsForRTLUI(&arrow_bounds);
   canvas->DrawBitmapInt(*disclosure_arrow_, arrow_bounds.x(), arrow_bounds.y());
 
   canvas->Restore();

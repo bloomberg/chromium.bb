@@ -67,6 +67,10 @@ class NativeComboboxViews : public views::View,
   // Returns the Combobox's font.
   const gfx::Font& GetFont() const;
 
+  // Given bounds within our View, this helper routine mirrors the bounds if
+  // necessary.
+  void AdjustBoundsForRTLUI(gfx::Rect* rect) const;
+
   // Draw the selected value of the drop down list
   void PaintText(gfx::Canvas* canvas);
 
