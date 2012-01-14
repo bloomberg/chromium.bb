@@ -158,27 +158,27 @@ void DecoderVp8::ConvertRects(const RectVector& input_rects,
   if (!last_image_)
     return;
 
-  // The conversion routine we use is optimized for even widths & heights.
-  int image_width = RoundToTwosMultiple(last_image_->d_w);
-  int image_height = RoundToTwosMultiple(last_image_->d_h);
-
-  uint8* output_rgb_buf = frame_->data(media::VideoFrame::kRGBPlane);
-  const int output_stride = frame_->stride(media::VideoFrame::kRGBPlane);
-
   output_rects->clear();
 
   // Clip based on both the output dimensions and Pepper clip rect.
-  SkIRect clip_rect = clip_rect_;
-  if (!clip_rect.intersect(SkIRect::MakeWH(image_width, image_height)))
+  // ConvertYUVToRGB32WithRect() requires even X and Y coordinates, so we align
+  // |clip_rect| to prevent clipping from breaking alignment.  We then clamp it
+  // to the image dimensions, which may lead to odd width & height, which we
+  // can cope with.
+  SkIRect clip_rect = AlignRect(clip_rect_);
+  if (!clip_rect.intersect(SkIRect::MakeWH(last_image_->d_w, last_image_->d_h)))
     return;
 
+  uint8* output_rgb_buf = frame_->data(media::VideoFrame::kRGBPlane);
+  const int output_stride = frame_->stride(media::VideoFrame::kRGBPlane);
   output_rects->reserve(input_rects.size());
 
   for (size_t i = 0; i < input_rects.size(); ++i) {
-    // Align the rectangle to avoid artifacts in color space conversion.
-    SkIRect dest_rect = AlignRect(input_rects[i]);
+    // Align the rectangle so the top-left coordinates are even, for
+    // ConvertYUVToRGB32WithRect().
+    SkIRect dest_rect(AlignRect(input_rects[i]));
 
-    // Clip to the image and Pepper clip region.
+    // Clip the rectangle, preserving alignment since |clip_rect| is aligned.
     if (!dest_rect.intersect(clip_rect))
       continue;
 

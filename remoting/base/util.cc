@@ -63,6 +63,7 @@ void ConvertYUVToRGB32WithRect(const uint8* y_plane,
                                int y_stride,
                                int uv_stride,
                                int rgb_stride) {
+  DCHECK((rect.x() & 1) == 0 && (rect.y() & 1) == 0);
   int rgb_offset = CalculateRGBOffset(rect.left(), rect.top(), rgb_stride);
   int y_offset = CalculateYOffset(rect.left(), rect.top(), y_stride);
   int uv_offset = CalculateUVOffset(rect.left(), rect.top(), uv_stride);
