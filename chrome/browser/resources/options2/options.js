@@ -188,6 +188,8 @@ function load() {
     OptionsPage.registerOverlay(KeyboardOverlay.getInstance(),
                                 SystemOptions.getInstance(),
                                 [$('modifier-keys-button')]);
+    OptionsPage.registerOverlay(PointerOverlay.getInstance(),
+                                SystemOptions.getInstance());
     OptionsPage.registerOverlay(BluetoothOptions.getInstance(),
                                 SystemOptions.getInstance(),
                                 [$('bluetooth-add-device')]);

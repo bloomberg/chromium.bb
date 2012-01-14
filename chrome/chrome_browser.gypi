@@ -4000,6 +4000,8 @@
         'browser/ui/webui/options2/chromeos/language_options_util2.h',
         'browser/ui/webui/options2/chromeos/language_pinyin_handler2.cc',
         'browser/ui/webui/options2/chromeos/language_pinyin_handler2.h',
+        'browser/ui/webui/options2/chromeos/pointer_handler2.cc',
+        'browser/ui/webui/options2/chromeos/pointer_handler2.h',
         'browser/ui/webui/options2/chromeos/proxy_handler2.cc',
         'browser/ui/webui/options2/chromeos/proxy_handler2.h',
         'browser/ui/webui/options2/chromeos/stats_options_handler2.cc',

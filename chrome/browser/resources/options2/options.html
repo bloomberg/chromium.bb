@@ -41,11 +41,12 @@
 <link rel="stylesheet" href="../sync_setup_overlay.css">
 <if expr="pp_ifdef('chromeos')">
   <link rel="stylesheet" href="chromeos/accounts_options_page.css">
+  <link rel="stylesheet" herf="chromeos/bluetooth.css">
   <link rel="stylesheet" href="chromeos/change_picture_options.css">
   <link rel="stylesheet" href="chromeos/internet_options_page.css">
+  <link rel="stylesheet" herf="chromeos/pointer_overlay.css">
   <link rel="stylesheet" href="chromeos/proxy.css">
   <link rel="stylesheet" href="chromeos/system_options_page.css">
-  <link rel="stylesheet" herf="chromeos/bluetooth.css">
 </if>
 <if expr="pp_ifdef('chromeos') and pp_ifdef('use_virtual_keyboard')">
   <link rel="stylesheet" href="chromeos/virtual_keyboard.css">
@@ -93,8 +94,9 @@
   <if expr="pp_ifdef('chromeos')">
      <include src="chromeos/bluetooth_add_device_overlay.html">
      <include src="chromeos/bluetooth_pair_device_overlay.html">
-     <include src="chromeos/keyboard_overlay.html">
      <include src="chromeos/internet_detail.html">
+     <include src="chromeos/keyboard_overlay.html">
+     <include src="chromeos/pointer_overlay.html">
   </if>
   <if expr="not pp_ifdef('win32') and not pp_ifdef('darwin')">
     <include src="certificate_restore_overlay.html">

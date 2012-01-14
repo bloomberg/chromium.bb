@@ -13338,6 +13338,15 @@ changed since last sign in
                desc="The dropdown list item for 'Customize modifier keys' overlay">
         Caps Lock
       </message>
+      <message name="IDS_OPTIONS_POINTER_OVERLAY_TITLE" desc="The title for 'Pointer settings' overlay.">
+        Pointer settings
+      </message>
+      <message name="IDS_OPTIONS_POINTER_OVERLAY_SECTION_TITLE_TOUCHPAD" desc="The title for 'Touchpad' section of the Pointer Settings overlay.">
+        Touchpad:
+      </message>
+      <message name="IDS_OPTIONS_POINTER_OVERLAY_SECTION_TITLE_MOUSE" desc="The title for 'Mouse' section of the Pointer Settings overlay.">
+        Mouse:
+      </message>
       <message name="IDS_STATUSBAR_ACCESSIBILITY_ENABLED" desc="The tooltip for the status bar button to indicate that accessibility is enabled.">
         Accessibility features are enabled.
       </message>

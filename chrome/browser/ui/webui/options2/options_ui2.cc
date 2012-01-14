@@ -67,6 +67,7 @@
 #include "chrome/browser/ui/webui/options2/chromeos/language_hangul_handler2.h"
 #include "chrome/browser/ui/webui/options2/chromeos/language_mozc_handler2.h"
 #include "chrome/browser/ui/webui/options2/chromeos/language_pinyin_handler2.h"
+#include "chrome/browser/ui/webui/options2/chromeos/pointer_handler2.h"
 #include "chrome/browser/ui/webui/options2/chromeos/proxy_handler2.h"
 #include "chrome/browser/ui/webui/options2/chromeos/stats_options_handler2.h"
 #include "chrome/browser/ui/webui/options2/chromeos/system_options_handler2.h"
@@ -247,6 +248,8 @@ OptionsUI::OptionsUI(WebContents* contents)
                           new chromeos::options2::LanguageMozcHandler());
   AddOptionsPageUIHandler(localized_strings,
                           new chromeos::options2::LanguagePinyinHandler());
+  AddOptionsPageUIHandler(localized_strings,
+                          new chromeos::options2::PointerHandler());
   AddOptionsPageUIHandler(
       localized_strings,
       new chromeos::options2::VirtualKeyboardManagerHandler());
