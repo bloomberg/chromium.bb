@@ -11,6 +11,7 @@ var chrome = chrome || {};
   native function GetExtensionAPIDefinition();
   native function GetNextRequestId();
   native function StartRequest();
+  native function SetIconCommon();
 
   native function CreateBlob(filePath);
   native function DecodeJPEG(jpegImage);
@@ -18,7 +19,6 @@ var chrome = chrome || {};
   native function GetExtensionViews();
   native function GetLocalFileSystem(name, path);
   native function SendResponseAck(requestId);
-  native function SetIconCommon();
 
   var chromeHidden = GetChromeHidden();
 
@@ -188,6 +188,65 @@ var chrome = chrome || {};
         (request.callback || opt_args.customCallback) ? true : false;
     return nativeFunction(functionName, sargs, requestId, hasCallback,
                           opt_args.forIOThread);
+  }
+
+  // TODO(kalman): It's a shame to need to define this function here, since it's
+  // only used in 2 APIs (browserAction and pageAction). It would be nice to
+  // only load this if one of those APIs has been loaded.
+  // That said, both of those APIs are always injected into pages anyway (see
+  // chrome/common/extensions/extension_permission_set.cc).
+  function setIcon(details, name, parameters, actionType) {
+    var iconSize = 19;
+    if ("iconIndex" in details) {
+      sendRequest(name, [details], parameters);
+    } else if ("imageData" in details) {
+      // Verify that this at least looks like an ImageData element.
+      // Unfortunately, we cannot use instanceof because the ImageData
+      // constructor is not public.
+      //
+      // We do this manually instead of using JSONSchema to avoid having these
+      // properties show up in the doc.
+      if (!("width" in details.imageData) ||
+          !("height" in details.imageData) ||
+          !("data" in details.imageData)) {
+        throw new Error(
+            "The imageData property must contain an ImageData object.");
+      }
+
+      if (details.imageData.width > iconSize ||
+          details.imageData.height > iconSize) {
+        throw new Error(
+            "The imageData property must contain an ImageData object that " +
+            "is no larger than " + iconSize + " pixels square.");
+      }
+
+      sendRequest(name, [details], parameters,
+                  {noStringify: true, nativeFunction: SetIconCommon});
+    } else if ("path" in details) {
+      var img = new Image();
+      img.onerror = function() {
+        console.error("Could not load " + actionType + " icon '" +
+                      details.path + "'.");
+      };
+      img.onload = function() {
+        var canvas = document.createElement("canvas");
+        canvas.width = img.width > iconSize ? iconSize : img.width;
+        canvas.height = img.height > iconSize ? iconSize : img.height;
+
+        var canvas_context = canvas.getContext('2d');
+        canvas_context.clearRect(0, 0, canvas.width, canvas.height);
+        canvas_context.drawImage(img, 0, 0, canvas.width, canvas.height);
+        delete details.path;
+        details.imageData = canvas_context.getImageData(0, 0, canvas.width,
+                                                        canvas.height);
+        sendRequest(name, [details], parameters,
+                    {noStringify: true, nativeFunction: SetIconCommon});
+      };
+      img.src = details.path;
+    } else {
+      throw new Error(
+          "Either the path or imageData property must be specified.");
+    }
   }
 
   // Stores the name and definition of each API function, with methods to
@@ -592,8 +651,9 @@ var chrome = chrome || {};
       // by custom bindings JS files. Create a new one so that bindings can't
       // interfere with each other.
       hook({
-        sendRequest: sendRequest,
         apiFunctions: apiFunctions,
+        sendRequest: sendRequest,
+        setIcon: setIcon,
       }, extensionId);
     });
 
@@ -674,77 +734,6 @@ var chrome = chrome || {};
         tabIdProxy[name] = new chrome.Event("devtools." + tabId + "." + name);
       });
       return tabIdProxy;
-    });
-
-    var canvas;
-    function setIconCommon(details, name, parameters, actionType, iconSize) {
-      if ("iconIndex" in details) {
-        sendRequest(name, [details], parameters);
-      } else if ("imageData" in details) {
-        // Verify that this at least looks like an ImageData element.
-        // Unfortunately, we cannot use instanceof because the ImageData
-        // constructor is not public.
-        //
-        // We do this manually instead of using JSONSchema to avoid having these
-        // properties show up in the doc.
-        if (!("width" in details.imageData) ||
-            !("height" in details.imageData) ||
-            !("data" in details.imageData)) {
-          throw new Error(
-              "The imageData property must contain an ImageData object.");
-        }
-
-        if (details.imageData.width > iconSize ||
-            details.imageData.height > iconSize) {
-          throw new Error(
-              "The imageData property must contain an ImageData object that " +
-              "is no larger than " + iconSize + " pixels square.");
-        }
-
-        sendRequest(name, [details], parameters,
-                    {noStringify: true, nativeFunction: SetIconCommon});
-      } else if ("path" in details) {
-        var img = new Image();
-        img.onerror = function() {
-          console.error("Could not load " + actionType + " icon '" +
-                        details.path + "'.");
-        };
-        img.onload = function() {
-          var canvas = document.createElement("canvas");
-          canvas.width = img.width > iconSize ? iconSize : img.width;
-          canvas.height = img.height > iconSize ? iconSize : img.height;
-
-          var canvas_context = canvas.getContext('2d');
-          canvas_context.clearRect(0, 0, canvas.width, canvas.height);
-          canvas_context.drawImage(img, 0, 0, canvas.width, canvas.height);
-          delete details.path;
-          details.imageData = canvas_context.getImageData(0, 0, canvas.width,
-                                                          canvas.height);
-          sendRequest(name, [details], parameters,
-                      {noStringify: true, nativeFunction: SetIconCommon});
-        };
-        img.src = details.path;
-      } else {
-        throw new Error(
-            "Either the path or imageData property must be specified.");
-      }
-    }
-
-    function setExtensionActionIconCommon(details, name, parameters,
-                                          actionType) {
-      var EXTENSION_ACTION_ICON_SIZE = 19;
-      setIconCommon(details, name, parameters, actionType,
-                    EXTENSION_ACTION_ICON_SIZE);
-    }
-
-    apiFunctions.setHandleRequest("browserAction.setIcon", function(details) {
-      setExtensionActionIconCommon(
-          details, this.name, this.definition.parameters, "browser action");
-    });
-
-    apiFunctions.setHandleRequest("pageAction.setIcon", function(details) {
-      setExtensionActionIconCommon(
-          details, this.name, this.definition.parameters, "page action");
     });
 
     if (apiExists("test"))
