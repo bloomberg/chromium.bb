@@ -46,13 +46,6 @@ cr.define('options', function() {
   OptionsPage.initialized_ = false;
 
   /**
-   * The current title. Used to update the parent container's title when this
-   * page is activated.
-   * @private
-   */
-  OptionsPage.title_ = '';
-
-  /**
    * Gets the default page (to be shown on initial load).
    */
   OptionsPage.getDefaultPage = function() {
@@ -194,7 +187,6 @@ cr.define('options', function() {
    * @private
    */
   OptionsPage.setTitle_ = function(title) {
-    this.title_ = title;
     uber.invokeMethodOnParent('setTitle', {title: title});
   };
 
@@ -631,7 +623,6 @@ cr.define('options', function() {
 
     document.addEventListener('scroll', this.handleScroll_.bind(this));
     window.addEventListener('resize', this.handleResize_.bind(this));
-    window.addEventListener('message', this.handleWindowMessage_.bind(this));
 
     if (!document.documentElement.classList.contains('hide-menu')) {
       // Close subpages if the user clicks on the html body. Listen in the
@@ -676,18 +667,6 @@ cr.define('options', function() {
     // Trigger the resize handler manually to set the initial state.
     this.handleResize_(null);
   };
-
-  /**
-   * Handles postMessage calls from the container of this page.
-   * @param {Event} e The posted object.
-   * @private
-   */
-  OptionsPage.handleWindowMessage_ = function(e) {
-    if (e.data === 'onPageActivated')
-      uber.invokeMethodOnParent('setTitle', {title: this.title_});
-    else
-      console.error('Received unexpected message: ' + e.data);
-  },
 
   /**
    * Does a bounds check for the element on the given x, y client coordinates.

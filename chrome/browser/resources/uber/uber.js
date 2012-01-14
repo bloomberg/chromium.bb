@@ -5,13 +5,6 @@
 cr.define('uber', function() {
 
   /**
-   * Map from |iframe.src| to the title of |iframe|, cached so the contained
-   * pages don't have to update the title on each activation.
-   * @private
-   */
-  var titleMap_ = {};
-
-  /**
    * Handles page initialization.
    */
   function onLoad() {
@@ -63,10 +56,8 @@ cr.define('uber', function() {
       return false;
 
     // Restore the cached title.
-    var iframeEl = iframe.querySelector('iframe');
-    var title = titleMap_[iframeEl.src];
-    if (title)
-      document.title = title;
+    if (iframe.title)
+      document.title = iframe.title;
 
     currentIframe.classList.remove('selected');
     iframe.classList.add('selected');
@@ -142,19 +133,19 @@ cr.define('uber', function() {
    * @private
    */
   function setTitle_(origin, params) {
-    var container = getSelectedIframe_();
-    var iframe = container.querySelector('iframe');
-
     // |iframe.src| always contains a trailing backslash while |origin| does not
     // so add the trailing source for normalization.
-    origin += '/';
+    var query = '.iframe-container > iframe[src="' + origin + '/"]';
+
+    // Cache the title for the client iframe, i.e., the iframe setting the
+    // title. querySelector returns the actual iframe element, so use parentNode
+    // to get back to the container.
+    var container = document.querySelector(query).parentNode;
+    container.title = params.title;
 
     // Only update the currently displayed title if this is the visible frame.
-    if (iframe.src === origin)
+    if (container == getSelectedIframe_())
       document.title = params.title;
-
-    // Cache the title for the selected iframe.
-    titleMap_[origin] = params.title;
   }
 
   return {
