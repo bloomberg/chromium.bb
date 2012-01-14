@@ -580,6 +580,11 @@ ProfileImpl::~ProfileImpl() {
   ChromePluginServiceFilter::GetInstance()->UnregisterResourceContext(
       &io_data_.GetResourceContextNoInit());
 
+  if (io_data_.HasMainRequestContext() &&
+      default_request_context_ == GetRequestContext()) {
+    default_request_context_ = NULL;
+  }
+
   ProfileDependencyManager::GetInstance()->DestroyProfileServices(this);
 
   if (db_tracker_) {
@@ -619,11 +624,6 @@ ProfileImpl::~ProfileImpl() {
 
   if (history_service_.get())
     history_service_->Cleanup();
-
-  if (io_data_.HasMainRequestContext() &&
-      default_request_context_ == GetRequestContext()) {
-    default_request_context_ = NULL;
-  }
 
   // HistoryService may call into the BookmarkModel, as such we need to
   // delete HistoryService before the BookmarkModel. The destructor for

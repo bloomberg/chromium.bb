@@ -115,9 +115,16 @@ void ProfileImplIOData::Handle::Init(
   io_data_->app_path_ = app_path;
 
   io_data_->predictor_.reset(predictor);
+
+  if (!main_request_context_getter_) {
+    main_request_context_getter_ =
+        ChromeURLRequestContextGetter::CreateOriginal(
+            profile_, io_data_);
+  }
   io_data_->predictor_->InitNetworkPredictor(profile_->GetPrefs(),
                                              local_state,
-                                             io_thread);
+                                             io_thread,
+                                             main_request_context_getter_);
 }
 
 base::Callback<ChromeURLDataManagerBackend*(void)>

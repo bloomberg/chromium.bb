@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
-#include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/net_log.h"
 #include "net/base/ssl_config_service.h"
@@ -25,12 +24,14 @@ namespace chrome_browser_net {
 void PreconnectOnUIThread(
     const GURL& url,
     UrlInfo::ResolutionMotivation motivation,
-    int count) {
+    int count,
+    net::URLRequestContextGetter* getter) {
   // Prewarm connection to Search URL.
   BrowserThread::PostTask(
       BrowserThread::IO,
       FROM_HERE,
-      base::Bind(&PreconnectOnIOThread, url, motivation, count));
+      base::Bind(&PreconnectOnIOThread, url, motivation, count,
+                 make_scoped_refptr(getter)));
   return;
 }
 
@@ -38,16 +39,14 @@ void PreconnectOnUIThread(
 void PreconnectOnIOThread(
     const GURL& url,
     UrlInfo::ResolutionMotivation motivation,
-    int count) {
-  net::URLRequestContextGetter* getter =
-      Profile::Deprecated::GetDefaultRequestContext();
-  if (!getter)
-    return;
+    int count,
+    net::URLRequestContextGetter* getter) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
     LOG(DFATAL) << "This must be run only on the IO thread.";
     return;
   }
-
+  if (!getter)
+    return;
   // We are now commited to doing the async preconnection call.
   UMA_HISTOGRAM_ENUMERATION("Net.PreconnectMotivation", motivation,
                             UrlInfo::MAX_MOTIVATED);

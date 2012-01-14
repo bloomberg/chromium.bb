@@ -131,10 +131,6 @@ class Profile : public content::BrowserContext {
   class Deprecated {
    private:
     friend bool IsGoogleGAIACookieInstalled();
-    friend void chrome_browser_net::PreconnectOnIOThread(
-        const GURL&,
-        chrome_browser_net::UrlInfo::ResolutionMotivation,
-        int);
 
     friend class AutofillDownloadManager;
     friend class ChromePluginMessageFilter;

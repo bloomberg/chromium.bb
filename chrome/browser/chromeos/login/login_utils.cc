@@ -1106,7 +1106,9 @@ class WarmingObserver : public NetworkLibrary::NetworkManagerObserver {
       chrome_browser_net::PreconnectOnUIThread(
           GURL(GaiaUrls::GetInstance()->client_login_url()),
           chrome_browser_net::UrlInfo::EARLY_LOAD_MOTIVATED,
-          kConnectionsNeeded);
+          kConnectionsNeeded,
+          make_scoped_refptr(
+              ProfileManager::GetDefaultProfile()->GetRequestContext()));
       netlib->RemoveNetworkManagerObserver(this);
       delete this;
     }
@@ -1120,7 +1122,9 @@ void LoginUtilsImpl::PrewarmAuthentication() {
     chrome_browser_net::PreconnectOnUIThread(
         GURL(GaiaUrls::GetInstance()->client_login_url()),
         chrome_browser_net::UrlInfo::EARLY_LOAD_MOTIVATED,
-        kConnectionsNeeded);
+        kConnectionsNeeded,
+        make_scoped_refptr(
+            ProfileManager::GetDefaultProfile()->GetRequestContext()));
   } else {
     new WarmingObserver();
   }
