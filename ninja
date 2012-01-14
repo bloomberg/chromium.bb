@@ -1,3 +1,13 @@
-#!/bin/sh
+#!/bin/bash
 
-exec ninja-linux64 "$@"
+OS="$(uname -s)"
+
+if [ "${OS}" = "Linux" ]; then
+  exec ninja-linux64 "$@"
+elif [ "${OS}" = "Darwin" ]; then
+  exec ninja-mac "$@"
+else
+  echo "Unsupported OS ${OS}"
+  exit 1
+fi
+
