@@ -351,49 +351,44 @@ bool Clipboard::IsFormatAvailable(const Clipboard::FormatType& format,
   if (clipboard == NULL)
     return false;
 
+  bool retval = false;
+  GtkSelectionData* data = gtk_clipboard_wait_for_contents(
+      clipboard, gdk_atom_intern_static_string("TARGETS"));
+
   bool format_is_plain_text = GetPlainTextFormatType().Equals(format);
   if (format_is_plain_text) {
     // This tries a number of common text targets.
-    if (gtk_clipboard_wait_is_text_available(clipboard))
-      return true;
-  }
-
-  bool retval = false;
-  GdkAtom* targets = NULL;
-  GtkSelectionData* data =
-      gtk_clipboard_wait_for_contents(clipboard,
-                                      gdk_atom_intern("TARGETS", false));
-
-  if (!data)
-    return false;
-
-  int num = 0;
-  gtk_selection_data_get_targets(data, &targets, &num);
-
-  // Some programs post data to the clipboard without any targets. If this is
-  // the case we attempt to make sense of the contents as text. This is pretty
-  // unfortunate since it means we have to actually copy the data to see if it
-  // is available, but at least this path shouldn't be hit for conforming
-  // programs.
-  if (num <= 0) {
-    if (format_is_plain_text) {
+    if (data) {
+      retval = gtk_selection_data_targets_include_text(data);
+    } else {
+      // Some programs post data to the clipboard without any targets. If this
+      // is the case we attempt to make sense of the contents as text. This is
+      // pretty unfortunate since it means we have to actually copy the data to
+      // see if it is available, but at least this path shouldn't be hit for
+      // conforming programs.
       gchar* text = gtk_clipboard_wait_for_text(clipboard);
       if (text) {
         g_free(text);
         retval = true;
       }
     }
-  }
+  } else if (data) {
+    GdkAtom* targets = NULL;
+    int num = 0;
+    gtk_selection_data_get_targets(data, &targets, &num);
 
-  for (int i = 0; i < num; i++) {
-    if (targets[i] == format.ToGdkAtom()) {
-      retval = true;
-      break;
+    for (int i = 0; i < num; i++) {
+      if (targets[i] == format.ToGdkAtom()) {
+        retval = true;
+        break;
+      }
     }
+
+    g_free(targets);
   }
 
-  g_free(targets);
-  gtk_selection_data_free(data);
+  if (data)
+    gtk_selection_data_free(data);
 
   return retval;
 }
