@@ -38,6 +38,14 @@
 
 #include "net/third_party/mozilla_security_manager/nsNSSCertTrust.h"
 
+#if !defined(CERTDB_TERMINAL_RECORD)
+/* NSS 3.13 renames CERTDB_VALID_PEER to CERTDB_TERMINAL_RECORD
+ * and marks CERTDB_VALID_PEER as deprecated.
+ * If we're using an older version, rename it ourselves.
+ */
+#define CERTDB_TERMINAL_RECORD CERTDB_VALID_PEER
+#endif
+
 namespace mozilla_security_manager {
 
 void
@@ -102,7 +110,7 @@ nsNSSCertTrust::SetSSLTrust(PRBool peer, PRBool tPeer,
 {
   mTrust.sslFlags = 0;
   if (peer || tPeer)
-    addTrust(&mTrust.sslFlags, CERTDB_VALID_PEER);
+    addTrust(&mTrust.sslFlags, CERTDB_TERMINAL_RECORD);
   if (tPeer)
     addTrust(&mTrust.sslFlags, CERTDB_TRUSTED);
   if (ca || tCA)
@@ -124,7 +132,7 @@ nsNSSCertTrust::SetEmailTrust(PRBool peer, PRBool tPeer,
 {
   mTrust.emailFlags = 0;
   if (peer || tPeer)
-    addTrust(&mTrust.emailFlags, CERTDB_VALID_PEER);
+    addTrust(&mTrust.emailFlags, CERTDB_TERMINAL_RECORD);
   if (tPeer)
     addTrust(&mTrust.emailFlags, CERTDB_TRUSTED);
   if (ca || tCA)
@@ -146,7 +154,7 @@ nsNSSCertTrust::SetObjSignTrust(PRBool peer, PRBool tPeer,
 {
   mTrust.objectSigningFlags = 0;
   if (peer || tPeer)
-    addTrust(&mTrust.objectSigningFlags, CERTDB_VALID_PEER);
+    addTrust(&mTrust.objectSigningFlags, CERTDB_TERMINAL_RECORD);
   if (tPeer)
     addTrust(&mTrust.objectSigningFlags, CERTDB_TRUSTED);
   if (ca || tCA)
@@ -288,11 +296,12 @@ nsNSSCertTrust::HasPeer(PRBool checkSSL,
                         PRBool checkEmail,  
                         PRBool checkObjSign)
 {
-  if (checkSSL && !hasTrust(mTrust.sslFlags, CERTDB_VALID_PEER))
+  if (checkSSL && !hasTrust(mTrust.sslFlags, CERTDB_TERMINAL_RECORD))
     return PR_FALSE;
-  if (checkEmail && !hasTrust(mTrust.emailFlags, CERTDB_VALID_PEER))
+  if (checkEmail && !hasTrust(mTrust.emailFlags, CERTDB_TERMINAL_RECORD))
     return PR_FALSE;
-  if (checkObjSign && !hasTrust(mTrust.objectSigningFlags, CERTDB_VALID_PEER))
+  if (checkObjSign &&
+       !hasTrust(mTrust.objectSigningFlags, CERTDB_TERMINAL_RECORD))
     return PR_FALSE;
   return PR_TRUE;
 }
