@@ -70,6 +70,7 @@
 #include "chrome/browser/search_engines/template_url_fetcher.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/sessions/session_service_factory.h"
+#include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/token_service.h"
 #include "chrome/browser/speech/chrome_speech_input_manager.h"
 #include "chrome/browser/speech/chrome_speech_input_preferences.h"
@@ -162,7 +163,7 @@ namespace {
 // REVIEWERS: Do not let anyone increment this. We need to drive the number of
 // raw accessed services down to zero. DO NOT LET PEOPLE REGRESS THIS UNLESS
 // THE PATCH ITSELF IS MAKING PROGRESS ON PKSF REFACTORING.
-COMPILE_ASSERT(sizeof(ProfileImpl) <= 656u, profile_impl_size_unexpected);
+COMPILE_ASSERT(sizeof(ProfileImpl) <= 664u, profile_impl_size_unexpected);
 #endif
 
 // Delay, in milliseconds, before we explicitly create the SessionService.
@@ -1398,6 +1399,14 @@ void ProfileImpl::StopCreateSessionServiceTimer() {
 
 void ProfileImpl::EnsureSessionServiceCreated() {
   SessionServiceFactory::GetForProfile(this);
+}
+
+SigninManager* ProfileImpl::GetSigninManager() {
+  if (!signin_manager_.get()) {
+    signin_manager_.reset(new SigninManager());
+    signin_manager_->Initialize(this);
+  }
+  return signin_manager_.get();
 }
 
 TokenService* ProfileImpl::GetTokenService() {

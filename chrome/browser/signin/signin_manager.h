@@ -24,7 +24,6 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/net/gaia/gaia_oauth_fetcher.h"
-#include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/common/net/gaia/gaia_auth_consumer.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "content/public/browser/notification_observer.h"
@@ -48,11 +47,13 @@ struct GoogleServiceSigninSuccessDetails {
 
 class SigninManager : public GaiaAuthConsumer,
                       public GaiaOAuthConsumer,
-                      public content::NotificationObserver,
-                      public ProfileKeyedService {
+                      public content::NotificationObserver {
  public:
   SigninManager();
   virtual ~SigninManager();
+
+  // Call to register our prefs.
+  static void RegisterUserPrefs(PrefService* user_prefs);
 
   // If user was signed in, load tokens from DB if available.
   void Initialize(Profile* profile);

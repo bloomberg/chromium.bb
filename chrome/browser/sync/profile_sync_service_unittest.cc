@@ -7,7 +7,6 @@
 #include "base/message_loop.h"
 #include "base/values.h"
 #include "chrome/browser/signin/signin_manager.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/token_service.h"
 #include "chrome/browser/sync/glue/bookmark_data_type_controller.h"
 #include "chrome/browser/sync/glue/data_type_controller.h"
@@ -92,8 +91,7 @@ class ProfileSyncServiceTest : public testing::Test {
       bool sync_setup_completed,
       bool expect_create_dtm) {
     if (!service_.get()) {
-      SigninManager* signin =
-          SigninManagerFactory::GetForProfile(profile_.get());
+      SigninManager* signin = profile_->GetSigninManager();
       signin->SetAuthenticatedUsername("test");
       service_.reset(new TestProfileSyncService(&factory_,
                                                 profile_.get(),
@@ -144,10 +142,9 @@ class ProfileSyncServiceTest : public testing::Test {
 };
 
 TEST_F(ProfileSyncServiceTest, InitialState) {
-  SigninManager* signin = SigninManagerFactory::GetForProfile(profile_.get());
   service_.reset(new TestProfileSyncService(&factory_,
                                             profile_.get(),
-                                            signin,
+                                            profile_->GetSigninManager(),
                                             ProfileSyncService::MANUAL_START,
                                             true,
                                             base::Closure()));
@@ -162,10 +159,9 @@ TEST_F(ProfileSyncServiceTest, DisabledByPolicy) {
   profile_->GetTestingPrefService()->SetManagedPref(
       prefs::kSyncManaged,
       Value::CreateBooleanValue(true));
-  SigninManager* signin = SigninManagerFactory::GetForProfile(profile_.get());
   service_.reset(new TestProfileSyncService(&factory_,
                                             profile_.get(),
-                                            signin,
+                                            profile_->GetSigninManager(),
                                             ProfileSyncService::MANUAL_START,
                                             true,
                                             base::Closure()));
@@ -174,7 +170,7 @@ TEST_F(ProfileSyncServiceTest, DisabledByPolicy) {
 }
 
 TEST_F(ProfileSyncServiceTest, AbortedByShutdown) {
-  SigninManager* signin = SigninManagerFactory::GetForProfile(profile_.get());
+  SigninManager* signin = profile_->GetSigninManager();
   signin->SetAuthenticatedUsername("test");
   service_.reset(new TestProfileSyncService(&factory_,
                                             profile_.get(),
@@ -194,7 +190,7 @@ TEST_F(ProfileSyncServiceTest, AbortedByShutdown) {
 }
 
 TEST_F(ProfileSyncServiceTest, DisableAndEnableSyncTemporarily) {
-  SigninManager* signin = SigninManagerFactory::GetForProfile(profile_.get());
+  SigninManager* signin = profile_->GetSigninManager();
   signin->SetAuthenticatedUsername("test");
   service_.reset(new TestProfileSyncService(&factory_,
                                             profile_.get(),

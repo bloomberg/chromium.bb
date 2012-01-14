@@ -18,8 +18,3 @@ void FakeSigninManager::StartSignIn(const std::string& username,
 void FakeSigninManager::SignOut() {
   authenticated_username_.clear();
 }
-
-// static
-ProfileKeyedService* FakeSigninManager::Build(Profile* profile) {
-  return new FakeSigninManager();
-}

@@ -8,7 +8,6 @@
 #include "base/message_loop.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/signin/signin_manager.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/signin_manager_fake.h"
 #include "chrome/browser/signin/token_service.h"
 #include "chrome/browser/sync/glue/data_type_manager.h"
@@ -71,10 +70,9 @@ class ProfileSyncServiceStartupTest : public testing::Test {
  protected:
   // Overridden below by ProfileSyncServiceStartupCrosTest.
   virtual void CreateSyncService() {
-    SigninManager* signin = static_cast<SigninManager*>(
-      SigninManagerFactory::GetInstance()->SetTestingFactoryAndUse(
-          profile_.get(), FakeSigninManager::Build));
+    SigninManager* signin = new FakeSigninManager();
     signin->SetAuthenticatedUsername("test_user");
+    profile_->SetSigninManager(signin);
     service_.reset(new TestProfileSyncService(&factory_,
                                               profile_.get(),
                                               signin,
@@ -103,7 +101,7 @@ class ProfileSyncServiceStartupTest : public testing::Test {
 class ProfileSyncServiceStartupCrosTest : public ProfileSyncServiceStartupTest {
  protected:
   virtual void CreateSyncService() {
-    SigninManager* signin = SigninManagerFactory::GetForProfile(profile_.get());
+    SigninManager* signin = profile_->GetSigninManager();
     signin->SetAuthenticatedUsername("test_user");
     service_.reset(new TestProfileSyncService(&factory_,
                                               profile_.get(),
@@ -122,7 +120,7 @@ TEST_F(ProfileSyncServiceStartupTest, StartFirstTime) {
   profile_->GetPrefs()->ClearPref(prefs::kSyncHasSetupCompleted);
   // Make sure SigninManager doesn't think we're signed in (undoes the call to
   // SetAuthenticatedUsername() in CreateSyncService()).
-  SigninManagerFactory::GetForProfile(profile_.get())->SignOut();
+  profile_->GetSigninManager()->SignOut();
 
   // Should not actually start, rather just clean things up and wait
   // to be enabled.

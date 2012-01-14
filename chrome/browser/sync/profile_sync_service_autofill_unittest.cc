@@ -24,7 +24,6 @@
 #include "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/signin/signin_manager.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/abstract_profile_sync_service_test.h"
 #include "chrome/browser/sync/engine/model_changing_syncer_command.h"
 #include "chrome/browser/sync/glue/autofill_data_type_controller.h"
@@ -400,7 +399,7 @@ class ProfileSyncServiceAutofillTest : public AbstractProfileSyncServiceTest {
                         bool will_fail_association,
                         syncable::ModelType type) {
     AbstractAutofillFactory* factory = GetFactory(type);
-    SigninManager* signin = SigninManagerFactory::GetForProfile(&profile_);
+    SigninManager* signin = profile_.GetSigninManager();
     signin->SetAuthenticatedUsername("test_user");
     service_.reset(
         new TestProfileSyncService(&factory_,

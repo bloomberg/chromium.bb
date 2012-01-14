@@ -27,6 +27,18 @@ SigninManager::SigninManager()
 
 SigninManager::~SigninManager() {}
 
+// static
+void SigninManager::RegisterUserPrefs(PrefService* user_prefs) {
+  user_prefs->RegisterBooleanPref(prefs::kSyncUsingOAuth, "",
+                                  PrefService::UNSYNCABLE_PREF);
+  user_prefs->RegisterStringPref(prefs::kGoogleServicesUsername, "",
+                                 PrefService::UNSYNCABLE_PREF);
+  user_prefs->RegisterBooleanPref(prefs::kAutologinEnabled, true,
+                                  PrefService::UNSYNCABLE_PREF);
+  user_prefs->RegisterBooleanPref(prefs::kReverseAutologinEnabled, true,
+                                  PrefService::UNSYNCABLE_PREF);
+}
+
 void SigninManager::Initialize(Profile* profile) {
   profile_ = profile;
 
@@ -34,13 +46,10 @@ void SigninManager::Initialize(Profile* profile) {
       prefs::kGoogleServicesUsername);
   if (!user.empty())
     SetAuthenticatedUsername(user);
-  // TokenService can be null for unit tests.
-  TokenService* token_service = profile_->GetTokenService();
-  if (token_service) {
-    token_service->Initialize(GaiaConstants::kChromeSource, profile_);
-    if (!authenticated_username_.empty()) {
-      token_service->LoadTokensFromDB();
-    }
+  profile_->GetTokenService()->Initialize(
+      GaiaConstants::kChromeSource, profile_);
+  if (!authenticated_username_.empty()) {
+    profile_->GetTokenService()->LoadTokensFromDB();
   }
 }
 

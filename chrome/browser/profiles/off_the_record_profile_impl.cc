@@ -441,6 +441,10 @@ TokenService* OffTheRecordProfileImpl::GetTokenService() {
   return NULL;
 }
 
+SigninManager* OffTheRecordProfileImpl::GetSigninManager() {
+  return NULL;
+}
+
 ProfileSyncService* OffTheRecordProfileImpl::GetProfileSyncService() {
   return NULL;
 }
