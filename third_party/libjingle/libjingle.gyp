@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -533,7 +533,9 @@
         'source/talk/session/phone/webrtcpassthroughrender.cc',
         'source/talk/session/phone/webrtcvideocapturer.cc',
         'source/talk/session/phone/webrtcvideocapturer.h',
-        'source/talk/session/phone/webrtcvideoengine.cc',
+        # TODO(ronghuawu): Fix this in libjingle and remove the override.
+        # See http://crbug.com/110255
+        'overrides/talk/session/phone/webrtcvideoengine.cc',
         'source/talk/session/phone/webrtcvideoengine.h',
         'source/talk/session/phone/webrtcvideoframe.cc',
         'source/talk/session/phone/webrtcvideoframe.h',
