@@ -1,4 +1,4 @@
-/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -42,7 +42,7 @@ list > * > .label {
 
 list > * > .url {
   display: none;
-  -webkit-box-flex: 1;  
+  -webkit-box-flex: 1;
   direction: ltr; /* URLs always read LTR */
 }
 
@@ -56,7 +56,7 @@ list > [selected] > .url {
  * left. And since url is always LTR, that is padding at the end, not the start.
  */
 html[dir=rtl] .url {
-  -webkit-padding-end: 20px;  
+  -webkit-padding-end: 20px;
   -webkit-padding-start: 0;
 }
 
@@ -242,6 +242,7 @@ html[os=mac] .splitter {
   float: left;
   margin: 14px 2px;
   margin-bottom: 0;
+  width: 171px;
 }
 
 .header {
@@ -252,6 +253,12 @@ html[dir=rtl] .logo,
 html[dir=rtl] .header > div,
 html[dir=rtl] .header form {
   float: right;
+}
+
+input[type='search'] {
+  -webkit-margin-end: 2px;
+  -webkit-margin-start: 2px;
+  width: 100%;
 }
 
 #drop-overlay {
