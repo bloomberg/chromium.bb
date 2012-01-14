@@ -85,7 +85,7 @@ class Panel : public BrowserWindow,
   virtual void Activate() OVERRIDE;
   virtual void Deactivate() OVERRIDE;
   virtual bool IsActive() const OVERRIDE;
-  virtual void FlashFrame() OVERRIDE;
+  virtual void FlashFrame(bool flash) OVERRIDE;
   virtual gfx::NativeWindow GetNativeHandle() OVERRIDE;
   virtual BrowserWindowTesting* GetBrowserWindowTesting() OVERRIDE;
   virtual StatusBubble* GetStatusBubble() OVERRIDE;

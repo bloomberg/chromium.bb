@@ -1501,7 +1501,7 @@ IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest, MAYBE_DrawOverflowAttention) {
   //   normal:               P0, P1, P2, P3
   //   overflow:             P4, *P5, P6, (P7, P8, P9, P10, P11)
   EXPECT_FALSE(panels[5]->IsDrawingAttention());
-  panels[5]->FlashFrame();
+  panels[5]->FlashFrame(true);
   EXPECT_TRUE(panels[5]->IsDrawingAttention());
   EXPECT_FALSE(overflow_indicator->IsDrawingAttention());
 
@@ -1519,7 +1519,7 @@ IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest, MAYBE_DrawOverflowAttention) {
   //   normal:               P0, P1, P2, P5
   //   overflow:             P3, P4, P6, (P7, *P8, P9, P10, P11)
   EXPECT_FALSE(panels[8]->IsDrawingAttention());
-  panels[8]->FlashFrame();
+  panels[8]->FlashFrame(true);
   EXPECT_TRUE(panels[8]->IsDrawingAttention());
   EXPECT_TRUE(overflow_indicator->IsDrawingAttention());
 
@@ -1528,7 +1528,7 @@ IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest, MAYBE_DrawOverflowAttention) {
   //   normal:               P0, P1, P2, P5
   //   overflow:             P3, P4, P6, (P7, *P8, P9, *P10, P11)
   EXPECT_FALSE(panels[10]->IsDrawingAttention());
-  panels[10]->FlashFrame();
+  panels[10]->FlashFrame(true);
   EXPECT_TRUE(panels[10]->IsDrawingAttention());
   EXPECT_TRUE(overflow_indicator->IsDrawingAttention());
 
@@ -1556,7 +1556,7 @@ IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest, MAYBE_DrawOverflowAttention) {
   //   overflow:             P8, P5, *P3, (P4, P6, P7, P9, P11)
   EXPECT_TRUE(IsPanelVisible(panels[3]));
   EXPECT_FALSE(panels[3]->IsDrawingAttention());
-  panels[3]->FlashFrame();
+  panels[3]->FlashFrame(true);
   EXPECT_TRUE(panels[3]->IsDrawingAttention());
   EXPECT_FALSE(overflow_indicator->IsDrawingAttention());
 

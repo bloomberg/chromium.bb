@@ -683,8 +683,7 @@ bool UpdateWindowFunction::RunImpl() {
   if (update_props->HasKey(keys::kDrawAttentionKey)) {
     EXTENSION_FUNCTION_VALIDATE(update_props->GetBoolean(
         keys::kDrawAttentionKey, &draw_attention));
-    if (draw_attention)
-        browser->window()->FlashFrame();
+    browser->window()->FlashFrame(draw_attention);
   }
 
   result_.reset(ExtensionTabUtil::CreateWindowValue(browser, false));

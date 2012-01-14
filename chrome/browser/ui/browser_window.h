@@ -86,7 +86,8 @@ class BrowserWindow {
   virtual bool IsActive() const = 0;
 
   // Flashes the taskbar item associated with this frame.
-  virtual void FlashFrame() = 0;
+  // Set |flash| to true to initiate flashing, false to stop flashing.
+  virtual void FlashFrame(bool flash) = 0;
 
   // Return a platform dependent identifier for this frame. On Windows, this
   // returns an HWND.

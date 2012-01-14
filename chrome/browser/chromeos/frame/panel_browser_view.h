@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,7 +31,7 @@ class PanelBrowserView : public ::BrowserView,
   virtual void ShowInactive() OVERRIDE;
   virtual void SetBounds(const gfx::Rect& bounds) OVERRIDE;
   virtual void Close() OVERRIDE;
-  virtual void FlashFrame() OVERRIDE;
+  virtual void FlashFrame(bool flash) OVERRIDE;
   virtual void UpdateTitleBar() OVERRIDE;
   virtual bool IsPanel() const OVERRIDE;
   virtual WindowOpenDisposition GetDispositionForPopupBounds(

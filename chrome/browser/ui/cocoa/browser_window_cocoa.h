@@ -40,7 +40,7 @@ class BrowserWindowCocoa : public BrowserWindow,
   virtual void Activate() OVERRIDE;
   virtual void Deactivate() OVERRIDE;
   virtual bool IsActive() const OVERRIDE;
-  virtual void FlashFrame() OVERRIDE;
+  virtual void FlashFrame(bool flash) OVERRIDE;
   virtual gfx::NativeWindow GetNativeHandle() OVERRIDE;
   virtual BrowserWindowTesting* GetBrowserWindowTesting() OVERRIDE;
   virtual StatusBubble* GetStatusBubble() OVERRIDE;
@@ -157,6 +157,7 @@ class BrowserWindowCocoa : public BrowserWindow,
   base::WeakPtrFactory<Browser> confirm_close_factory_;
   scoped_nsobject<NSString> pending_window_title_;
   ui::WindowShowState initial_show_state_;
+  NSInteger attention_request_id_;  // identifier from requestUserAttention
 };
 
 #endif  // CHROME_BROWSER_UI_COCOA_BROWSER_WINDOW_COCOA_H_

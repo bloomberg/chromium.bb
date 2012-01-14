@@ -76,7 +76,8 @@ BrowserWindowCocoa::BrowserWindowCocoa(Browser* browser,
                                        BrowserWindowController* controller)
   : browser_(browser),
     controller_(controller),
-    confirm_close_factory_(browser) {
+    confirm_close_factory_(browser),
+    attention_request_id_(0) {
 
   pref_change_registrar_.Init(browser_->profile()->GetPrefs());
   pref_change_registrar_.Add(prefs::kShowBookmarkBar, this);
@@ -178,8 +179,13 @@ void BrowserWindowCocoa::Deactivate() {
   NOTIMPLEMENTED();
 }
 
-void BrowserWindowCocoa::FlashFrame() {
-  [NSApp requestUserAttention:NSInformationalRequest];
+void BrowserWindowCocoa::FlashFrame(bool flash) {
+  if (flash) {
+    attention_request_id_ = [NSApp requestUserAttention:NSInformationalRequest];
+  } else {
+    [NSApp cancelUserAttentionRequest:attention_request_id_];
+    attention_request_id_ = 0;
+  }
 }
 
 bool BrowserWindowCocoa::IsActive() const {

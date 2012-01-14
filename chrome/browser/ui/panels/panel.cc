@@ -201,8 +201,11 @@ bool Panel::IsActive() const {
   return native_panel_->IsPanelActive();
 }
 
-void Panel::FlashFrame() {
-  native_panel_->DrawAttention();
+void Panel::FlashFrame(bool flash) {
+  if (flash)
+    native_panel_->DrawAttention();
+  else
+    NOTIMPLEMENTED();  // TODO(jennb) - will be in next patch.
   manager()->OnPanelAttentionStateChanged(this);
 }
 

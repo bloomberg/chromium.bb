@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -77,7 +77,7 @@ class BrowserWindowGtk : public BrowserWindow,
   virtual void Activate() OVERRIDE;
   virtual void Deactivate() OVERRIDE;
   virtual bool IsActive() const OVERRIDE;
-  virtual void FlashFrame() OVERRIDE;
+  virtual void FlashFrame(bool flash) OVERRIDE;
   virtual gfx::NativeWindow GetNativeHandle() OVERRIDE;
   virtual BrowserWindowTesting* GetBrowserWindowTesting() OVERRIDE;
   virtual StatusBubble* GetStatusBubble() OVERRIDE;

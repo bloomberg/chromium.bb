@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -88,9 +88,9 @@ void PanelBrowserView::Close() {
     panel_controller_->Close();
 }
 
-void PanelBrowserView::FlashFrame() {
+void PanelBrowserView::FlashFrame(bool flash) {
   if (panel_controller_.get())
-    panel_controller_->SetUrgent(true);
+    panel_controller_->SetUrgent(flash);
 }
 
 void PanelBrowserView::UpdateTitleBar() {

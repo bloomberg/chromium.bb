@@ -516,7 +516,7 @@ bool BrowserView::ActivateAppModalDialog() const {
   if (AppModalDialogQueue::GetInstance()->HasActiveDialog()) {
     Browser* active_browser = BrowserList::GetLastActive();
     if (active_browser && (browser_ != active_browser)) {
-      active_browser->window()->FlashFrame();
+      active_browser->window()->FlashFrame(true);
       active_browser->window()->Activate();
     }
     AppModalDialogQueue::GetInstance()->ActivateModalDialog();
@@ -646,14 +646,18 @@ bool BrowserView::IsActive() const {
   return frame_->IsActive();
 }
 
-void BrowserView::FlashFrame() {
+void BrowserView::FlashFrame(bool flash) {
 #if defined(OS_WIN) && !defined(USE_AURA)
   FLASHWINFO fwi;
   fwi.cbSize = sizeof(fwi);
   fwi.hwnd = frame_->GetNativeWindow();
-  fwi.dwFlags = FLASHW_ALL;
-  fwi.uCount = 4;
-  fwi.dwTimeout = 0;
+  if (flash) {
+    fwi.dwFlags = FLASHW_ALL;
+    fwi.uCount = 4;
+    fwi.dwTimeout = 0;
+  } else {
+    fwi.dwFlags = FLASHW_STOP;
+  }
   FlashWindowEx(&fwi);
 #else
   // Doesn't matter for chrome os.

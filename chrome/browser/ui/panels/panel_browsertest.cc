@@ -1137,7 +1137,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DrawAttentionBasic) {
   EXPECT_EQ(Panel::EXPANDED, panel->expansion_state());
   EXPECT_FALSE(panel->IsActive());
   EXPECT_FALSE(panel->IsDrawingAttention());
-  panel->FlashFrame();
+  panel->FlashFrame(true);
   EXPECT_TRUE(panel->IsDrawingAttention());
   MessageLoop::current()->RunAllPending();
   EXPECT_TRUE(native_panel_testing->VerifyDrawingAttention());
@@ -1161,7 +1161,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DrawAttentionWhileMinimized) {
   panel->SetExpansionState(Panel::MINIMIZED);
   WaitForPanelActiveState(panel, SHOW_AS_INACTIVE);
   EXPECT_EQ(Panel::MINIMIZED, panel->expansion_state());
-  panel->FlashFrame();
+  panel->FlashFrame(true);
   EXPECT_TRUE(panel->IsDrawingAttention());
   EXPECT_EQ(Panel::TITLE_ONLY, panel->expansion_state());
   MessageLoop::current()->RunAllPending();
@@ -1200,7 +1200,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DrawAttentionWhenActive) {
   EXPECT_EQ(Panel::EXPANDED, panel->expansion_state());
   EXPECT_TRUE(panel->IsActive());
   EXPECT_FALSE(panel->IsDrawingAttention());
-  panel->FlashFrame();
+  panel->FlashFrame(true);
   EXPECT_FALSE(panel->IsDrawingAttention());
   MessageLoop::current()->RunAllPending();
   EXPECT_FALSE(native_panel_testing->VerifyDrawingAttention());
@@ -1218,7 +1218,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DrawAttentionResetOnActivate) {
   panel->Deactivate();
   WaitForPanelActiveState(panel, SHOW_AS_INACTIVE);
 
-  panel->FlashFrame();
+  panel->FlashFrame(true);
   EXPECT_TRUE(panel->IsDrawingAttention());
   MessageLoop::current()->RunAllPending();
   EXPECT_TRUE(native_panel_testing->VerifyDrawingAttention());
@@ -1246,7 +1246,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_DrawAttentionResetOnClick) {
   scoped_ptr<NativePanelTesting> native_panel_testing(
       NativePanelTesting::Create(panel->native_panel()));
 
-  panel->FlashFrame();
+  panel->FlashFrame(true);
   EXPECT_TRUE(panel->IsDrawingAttention());
   MessageLoop::current()->RunAllPending();
   EXPECT_TRUE(native_panel_testing->VerifyDrawingAttention());

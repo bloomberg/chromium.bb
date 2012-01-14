@@ -768,9 +768,9 @@ bool BrowserWindowGtk::IsActive() const {
   return is_active_;
 }
 
-void BrowserWindowGtk::FlashFrame() {
+void BrowserWindowGtk::FlashFrame(bool flash) {
   // May not be respected by all window managers.
-  gtk_window_set_urgency_hint(window_, TRUE);
+  gtk_window_set_urgency_hint(window_, flash);
 }
 
 gfx::NativeWindow BrowserWindowGtk::GetNativeHandle() {
