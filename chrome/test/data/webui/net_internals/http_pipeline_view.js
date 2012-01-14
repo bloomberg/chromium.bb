@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// Include test fixture.
+GEN_INCLUDE(['net_internals_test.js']);
+
 // Anonymous namespace
 (function() {
 
@@ -38,17 +41,17 @@ function findEntry(pipelinedHostInfo, hostname, port) {
  * @param {string} hostname Name of host address we're waiting for.
  * @param {int} port Port of the host we're waiting for.
  * @param {string} capability The capability to set.
- * @extends {netInternalsTest.Task}
+ * @extends {NetInternalsTest.Task}
  */
 function AddPipelineCapabilityTask(hostname, port, capability) {
   this.hostname_ = hostname;
   this.port_ = port;
   this.capability_ = capability;
-  netInternalsTest.Task.call(this);
+  NetInternalsTest.Task.call(this);
 }
 
 AddPipelineCapabilityTask.prototype = {
-  __proto__: netInternalsTest.Task.prototype,
+  __proto__: NetInternalsTest.Task.prototype,
 
   /**
    * Adds an entry to the host map and starts waiting to receive the results
@@ -80,10 +83,10 @@ AddPipelineCapabilityTask.prototype = {
         var entry = httpPipelineStatus.pipelined_host_info[index];
         expectEquals(this.capability_, entry.capability);
 
-        var hostPortText = netInternalsTest.getStyledTableText(
+        var hostPortText = NetInternalsTest.getStyledTableText(
             HttpPipelineView.KNOWN_HOSTS_DIV_ID, index, 0);
         expectEquals(this.hostname_ + ":" + this.port_, hostPortText);
-        var capabilityText = netInternalsTest.getStyledTableText(
+        var capabilityText = NetInternalsTest.getStyledTableText(
             HttpPipelineView.KNOWN_HOSTS_DIV_ID, index, 1);
         expectEquals(this.capability_, capabilityText);
 
@@ -93,24 +96,43 @@ AddPipelineCapabilityTask.prototype = {
   }
 };
 
-netInternalsTest.test('netInternalsHttpPipelineViewCapable', function() {
-  netInternalsTest.switchToView('httpPipeline');
-  var taskQueue = new netInternalsTest.TaskQueue(true);
+/**
+ * Adds a capable pipelining host.
+ */
+TEST_F('NetInternalsTest', 'netInternalsHttpPipelineViewCapable', function() {
+  // Since this is called before we switch to the HTTP Pipelining view, we'll
+  // never see the original pipelining state.
+  chrome.send('enableHttpPipelining', [true]);
+
+  NetInternalsTest.switchToView('httpPipeline');
+  var taskQueue = new NetInternalsTest.TaskQueue(true);
   taskQueue.addTask(new AddPipelineCapabilityTask(
       'somewhere.com', 80, 'capable'));
   taskQueue.run(true);
 });
 
-netInternalsTest.test('netInternalsHttpPipelineViewIncapable', function() {
-  netInternalsTest.switchToView('httpPipeline');
-  var taskQueue = new netInternalsTest.TaskQueue(true);
+/**
+ * Adds an incapable pipelining host.
+ */
+TEST_F('NetInternalsTest', 'netInternalsHttpPipelineViewIncapable', function() {
+  // Since this is called before we switch to the HTTP Pipelining view, we'll
+  // never see the original pipelining state.
+  chrome.send('enableHttpPipelining', [true]);
+
+  NetInternalsTest.switchToView('httpPipeline');
+  var taskQueue = new NetInternalsTest.TaskQueue(true);
   taskQueue.addTask(new AddPipelineCapabilityTask(
       'elsewhere.com', 1234, 'incapable'));
   taskQueue.run(true);
 });
 
-netInternalsTest.test('netInternalsHttpPipelineViewDisabled', function() {
-  netInternalsTest.switchToView('httpPipeline');
+/**
+ * Checks with pipelining disabled.
+ * TODO(mmenke):  Make this test wait to receive pipelining state.  Currently
+ *                just checks the default state, before data is received.
+ */
+TEST_F('NetInternalsTest', 'netInternalsHttpPipelineViewDisabled', function() {
+  NetInternalsTest.switchToView('httpPipeline');
   var expected_status = { pipelining_enabled: false }
   checkDisplay(expected_status);
   testDone();

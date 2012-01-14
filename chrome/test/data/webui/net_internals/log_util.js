@@ -1,12 +1,21 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// Include test fixture.
+GEN_INCLUDE(['net_internals_test.js']);
+
+// Anonymous namespace
+(function() {
+
 /**
  * Exports a log dump to a string and loads it.  Makes sure no errors occur,
- * and checks visibility of tabs aftwards.
+ * and checks visibility of tabs aftwards.  Does not actually save the log to a
+ * file.
+ * TODO(mmenke):  Add some checks for the import view.
+ * TODO(mmenke):  Add a test for a log created with --log-net-log.
  */
-netInternalsTest.test('netInternalsExportImportDump', function() {
+TEST_F('NetInternalsTest', 'netInternalsExportImportDump', function() {
   expectFalse(g_browser.isDisabled());
 
   // Callback passed to |createLogDumpAsync|.  Tries to load the dumped log
@@ -16,7 +25,7 @@ netInternalsTest.test('netInternalsExportImportDump', function() {
     expectEquals('Log loaded.', logutil.loadLogFile(logDumpText));
 
     expectTrue(g_browser.isDisabled());
-    netInternalsTest.expectStatusViewNodeVisible(StatusView.FOR_FILE_ID);
+    NetInternalsTest.expectStatusViewNodeVisible(StatusView.FOR_FILE_ID);
 
     var tabVisibilityState = {
       capture: false,
@@ -39,9 +48,11 @@ netInternalsTest.test('netInternalsExportImportDump', function() {
       chromeos: false
     };
 
-    netInternalsTest.checkTabHandleVisibility(tabVisibilityState, false);
+    NetInternalsTest.checkTabHandleVisibility(tabVisibilityState, false);
     testDone();
   }
 
   logutil.createLogDumpAsync('Log dump test', onLogDumpCreated);
 });
+
+})();  // Anonymous namespace

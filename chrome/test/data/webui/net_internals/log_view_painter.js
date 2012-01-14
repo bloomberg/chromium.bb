@@ -1,11 +1,18 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// Include test fixture.
+GEN_INCLUDE(['net_internals_test.js']);
+
+// Anonymous namespace
+(function() {
+
 /**
- * Tests the behavior of stripCookiesAndLoginInfo.
+ * Check that stripCookiesAndLoginInfo correctly removes cookies and login
+ * information.
  */
-netInternalsTest.test('netInternalsLogViewPainterStripInfo', function() {
+TEST_F('NetInternalsTest', 'netInternalsLogViewPainterStripInfo', function() {
   // Each entry in |expectations| is a list consisting of a header element
   // before and after applying the filter.  If the second entry is null, the
   // element should be unmodified.
@@ -80,3 +87,5 @@ netInternalsTest.test('netInternalsLogViewPainterStripInfo', function() {
   }
   testDone();
 });
+
+})();  // Anonymous namespace

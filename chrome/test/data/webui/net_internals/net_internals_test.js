@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,8 +15,10 @@
  * or an exception is thrown.
  */
 
-// Start of namespace.
-var netInternalsTest = (function() {
+// Include the C++ browser test class when generating *.cc files.
+GEN('#include "chrome/browser/ui/webui/net_internals/net_internals_ui_browsertest.h"');
+
+var NetInternalsTest = (function() {
   /**
    * A shorter poll interval is used for tests, since a few tests wait for
    * polled values to change.
@@ -26,120 +28,102 @@ var netInternalsTest = (function() {
   var TESTING_POLL_INTERVAL_MS = 50;
 
   /**
-   * Map of tab handle names to location hashes.
-   * @type {object.<string, string>}
+   * Private pointer to the currently active test framework.  Needed so static
+   * functions can access some of the inner workings of the test framework.
+   * @type {NetInternalsTest}
    */
-  var hashToTabHandleIdMap = {
-    capture: CaptureView.TAB_HANDLE_ID,
-    export: ExportView.TAB_HANDLE_ID,
-    import: ImportView.TAB_HANDLE_ID,
-    proxy: ProxyView.TAB_HANDLE_ID,
-    events: EventsView.TAB_HANDLE_ID,
-    timeline: TimelineView.TAB_HANDLE_ID,
-    dns: DnsView.TAB_HANDLE_ID,
-    sockets: SocketsView.TAB_HANDLE_ID,
-    spdy: SpdyView.TAB_HANDLE_ID,
-    httpPipeline: HttpPipelineView.TAB_HANDLE_ID,
-    httpCache: HttpCacheView.TAB_HANDLE_ID,
-    httpThrottling: HttpThrottlingView.TAB_HANDLE_ID,
-    serviceProviders: ServiceProvidersView.TAB_HANDLE_ID,
-    tests: TestView.TAB_HANDLE_ID,
-    hsts: HSTSView.TAB_HANDLE_ID,
-    logs: LogsView.TAB_HANDLE_ID,
-    prerender: PrerenderView.TAB_HANDLE_ID,
-    chromeos: CrosView.TAB_HANDLE_ID
+  var activeTest_ = null;
+
+  function NetInternalsTest() {
+    activeTest_ = this;
+  }
+
+  NetInternalsTest.prototype = {
+    __proto__: testing.Test.prototype,
+
+    /**
+     * Define the C++ fixture class and include it.
+     * @type {?string}
+     * @override
+     */
+    typedefCppFixture: 'NetInternalsTest',
+
+    /** @inheritDoc */
+    browsePreload: 'chrome://net-internals/',
+
+    /** @inheritDoc */
+    isAsync: true,
+
+    setUp: function() {
+      // Wrap g_browser.receive around a test function so that assert and expect
+      // functions can be called from observers.
+      g_browser.receive =
+          this.continueTest(WhenTestDone.EXPECT,
+                            BrowserBridge.prototype.receive.bind(g_browser));
+
+      g_browser.setPollInterval(TESTING_POLL_INTERVAL_MS);
+
+      var runTest = this.deferRunTest(WhenTestDone.EXPECT);
+
+      // If we've already received the constants, start the tests.
+      if (Constants) {
+        // Stat test asynchronously, to avoid running a nested test function.
+        window.setTimeout(runTest, 0);
+        return;
+      }
+
+      // Otherwise, wait until we do.
+      console.log('Received constants late.');
+
+      /**
+       * Observer that starts the tests once we've received the constants.
+       */
+      function ConstantsObserver() {
+        this.testStarted_ = false;
+      }
+
+      ConstantsObserver.prototype.onReceivedConstants = function() {
+        if (!this.testStarted_) {
+          this.testStarted_ = true;
+          // Stat test asynchronously, to avoid running a nested test function.
+          window.setTimeout(runTest, 0);
+        }
+      };
+
+      g_browser.addConstantsObserver(new ConstantsObserver());
+    }
   };
 
   /**
-   * Creates a test function that can use the expect and assert functions
-   * in test_api.js.  Will call testDone() in response to any failure.
-   *
-   * The resulting function has no return value.
-   * @param {string} testName The name of the function, reported on error.
-   * @param {Function} testFunction The function to run.
-   * @return {function():void} Function that passes its parameters to
-   *     testFunction, and passes any failures to the browser by calling
-   *     testDone() after they occur.
+   * A callback function for use by asynchronous Tasks that need a return value
+   * from the NetInternalsTest::MessageHandler.  Must be null when no such
+   * Task is running.  Set by NetInternalsTest.setCallback.  Automatically
+   * cleared once called.  Must only be called through
+   * NetInternalsTest::MessageHandler::RunCallback, from the browser process.
    */
-  function createTestFunction(testName, testFunction) {
-    return function() {
-      // Convert arguments to an array, as their map method may be called on
-      // failure by runTestFunction.
-      var testArguments = Array.prototype.slice.call(arguments, 0);
-
-      var result = runTestFunction(testName, testFunction, testArguments);
-
-      // If the first value is false, report the test failure.
-      if (!result[0])
-        testDone();
-    };
-  }
+  NetInternalsTest.callback = null;
 
   /**
-   * Used to declare a test function called by the NetInternals browser test.
-   * Takes in a name and a function, and creates a global test function.
-   * @param {string} testName The name of the test.
-   * @param {Function} testFunction The test function.
+   * Sets NetInternalsTest.callback.  Any arguments will be passed to the
+   * callback function.
+   * @param {function} callbackFunction Callback function to be called from the
+   *     browser.
    */
-  function test(testName, testFunction) {
-    window[testName] = runTest.bind(null, testName, testFunction);
-  }
+  NetInternalsTest.setCallback = function(callbackFunction) {
+    // Make sure no Task has already set the callback function.
+    assertEquals(null, NetInternalsTest.callback);
 
-  /**
-   * Called by the browser to start a test.  If constants haven't been
-   * received from the browser yet, waits until they have been.
-   * Experimentally, this never seems to happen, but may theoretically be
-   * possible.
-   * @param {string} testName The name of the test to run.
-   * @param {Function} testFunction The test function.
-   */
-  function runTest(testName, testFunction) {
-    var testArguments = Array.prototype.slice.call(arguments, 2);
-
-    // If we've already received the constants, start the tests.
-    if (Constants) {
-      startNetInternalsTest(testName, testFunction, testArguments);
-      return;
-    }
-
-    // Otherwise, wait until we do.
-    console.log('Received constants late.');
-
-    /**
-     * Observer that starts the tests once we've received the constants.
-     */
-    function ConstantsObserver() {
-      this.testStarted_ = false;
-    }
-
-    ConstantsObserver.prototype.onReceivedConstants = function() {
-      if (!this.testStarted_) {
-        this.testStarted_ = true;
-        startNetInternalsTest(testFunction, testFunction, testArguments);
-      }
+    // Wrap |callbackFunction| in a function that clears
+    // |NetInternalsTest.callback| before calling |callbackFunction|.
+    var callbackFunctionWrapper = function() {
+      NetInternalsTest.callback = null;
+      callbackFunction.apply(null, Array.prototype.slice.call(arguments));
     };
 
-    g_browser.addConstantsObserver(new ConstantsObserver());
-  }
-
-  /**
-   * Starts running the test.  A test is run until an assert/expect statement
-   * fails or testDone is called.  Those functions can only be called in the
-   * test function body, or in response to a message dispatched by
-   * |g_browser.receive|.
-   * @param {string} testName The of the test to run.
-   * @param {Function} testArguments The test arguments.
-   */
-  function startNetInternalsTest(testName, testFunction, testArguments) {
-    // Wrap g_browser.receive around a test function so that assert and expect
-    // functions can be called from observers.
-    g_browser.receive = createTestFunction('g_browser.receive', function() {
-      BrowserBridge.prototype.receive.apply(g_browser, arguments);
-    });
-
-    g_browser.setPollInterval(TESTING_POLL_INTERVAL_MS);
-    createTestFunction(testName, testFunction).apply(null, testArguments);
-  }
+    // Wrap |callbackFunctionWrapper| with test framework code.
+    NetInternalsTest.callback =
+        activeTest_.continueTest(WhenTestDone.EXPECT, callbackFunctionWrapper);
+  };
 
   /**
    * Returns the first styled table body that's a descendent of |ancestorId|.
@@ -147,12 +131,12 @@ var netInternalsTest = (function() {
    * Returns null if no such node is found.
    * @param {string} ancestorId HTML element id containing a styled table.
    */
-  function getStyledTableDescendent(ancestorId) {
+  NetInternalsTest.getStyledTableDescendent = function(ancestorId) {
     if ($(ancestorId).nodeName == 'TBODY')
       return $(ancestorId);
     // The tbody element of the first styled table in |parentId|.
     return document.querySelector('#' + ancestorId + ' .styledTable tbody');
-  }
+  };
 
   /**
    * Finds the first styled table body that's a descendent of |ancestorId|,
@@ -161,13 +145,13 @@ var netInternalsTest = (function() {
    * @param {string} ancestorId HTML element id containing a styled table.
    * @return {number} Number of rows the style table's body has.
    */
-  function getStyledTableNumRows(ancestorId) {
+  NetInternalsTest.getStyledTableNumRows = function(ancestorId) {
     // The tbody element of the first styled table in |parentId|.
-    var tbody = getStyledTableDescendent(ancestorId);
+    var tbody = NetInternalsTest.getStyledTableDescendent(ancestorId);
     if (!tbody)
       return -1;
     return tbody.children.length;
-  }
+  };
 
   /**
    * Finds the first styled table body that's a descendent of |ancestorId|,
@@ -177,10 +161,11 @@ var netInternalsTest = (function() {
    * @param {string} ancestorId HTML element id containing a styled table.
    * @param {number} expectedRows Expected number of rows in the table.
    */
-  function checkStyledTableRows(ancestorId, expectedRows) {
-    expectEquals(expectedRows, getStyledTableNumRows(ancestorId),
+  NetInternalsTest.checkStyledTableRows = function(ancestorId, expectedRows) {
+    expectEquals(expectedRows,
+                 NetInternalsTest.getStyledTableNumRows(ancestorId),
                  'Incorrect number of rows in ' + ancestorId);
-  }
+  };
 
   /**
    * Finds the first styled table body that's a descendent of |ancestorId|,
@@ -190,26 +175,31 @@ var netInternalsTest = (function() {
    * @param {number} row Row of the value to retrieve.
    * @param {number} column Column of the value to retrieve.
    */
-  function getStyledTableText(ancestorId, row, column) {
-    var tbody = getStyledTableDescendent(ancestorId);
+  NetInternalsTest.getStyledTableText = function(ancestorId, row, column) {
+    var tbody = NetInternalsTest.getStyledTableDescendent(ancestorId);
     return tbody.children[row].children[column].innerText;
-  }
+  };
 
   /**
    * Returns the TabEntry with the given id.  Asserts if the tab can't be found.
    * @param {string}: tabId Id of the TabEntry to get.
    * @return {TabEntry} The specified TabEntry.
    */
-  function getTab(tabId) {
+  NetInternalsTest.getTab = function(tabId) {
     var categoryTabSwitcher = MainView.getInstance().categoryTabSwitcher();
     var tab = categoryTabSwitcher.findTabById(tabId);
     assertNotEquals(tab, undefined, tabId + ' does not exist.');
     return tab;
-  }
+  };
 
-  function nodeIsVisible(node) {
+  /**
+   * Returns true if the node is visible.
+   * @param {Node}: node Node to check the visibility state of.
+   * @return {bool} Whether or not the node is visible.
+   */
+  NetInternalsTest.nodeIsVisible = function(node) {
     return node.style.display != 'none';
-  }
+  };
 
   /**
    * Returns true if the specified tab's handle is visible, false otherwise.
@@ -217,36 +207,65 @@ var netInternalsTest = (function() {
    * @param {string}: tabId Id of the tab to check.
    * @return {bool} Whether or not the tab's handle is visible.
    */
-  function tabHandleIsVisible(tabId) {
-    var tabHandleNode = getTab(tabId).getTabHandleNode();
-    return nodeIsVisible(tabHandleNode);
-  }
+  NetInternalsTest.tabHandleIsVisible = function(tabId) {
+    var tabHandleNode = NetInternalsTest.getTab(tabId).getTabHandleNode();
+    return NetInternalsTest.nodeIsVisible(tabHandleNode);
+  };
 
   /**
    * Returns the tab id of a tab, given its associated URL hash value.  Asserts
-   *    if |hash| has no associated tab.
+   *     if |hash| has no associated tab.
    * @param {string}: hash Hash associated with the tab to return the id of.
    * @return {string} String identifier of the tab with the given hash.
    */
-  function getTabId(hash) {
+  NetInternalsTest.getTabId = function(hash) {
+    /**
+     * Map of tab handle names to location hashes.  Since the text fixture
+     * must be runnable independent of net-internals, for generating the
+     * test's cc files, must be careful to only create this map while a test
+     * is running.
+     * @type {object.<string, string>}
+     */
+    var hashToTabHandleIdMap = {
+      capture: CaptureView.TAB_HANDLE_ID,
+      export: ExportView.TAB_HANDLE_ID,
+      import: ImportView.TAB_HANDLE_ID,
+      proxy: ProxyView.TAB_HANDLE_ID,
+      events: EventsView.TAB_HANDLE_ID,
+      timeline: TimelineView.TAB_HANDLE_ID,
+      dns: DnsView.TAB_HANDLE_ID,
+      sockets: SocketsView.TAB_HANDLE_ID,
+      spdy: SpdyView.TAB_HANDLE_ID,
+      httpPipeline: HttpPipelineView.TAB_HANDLE_ID,
+      httpCache: HttpCacheView.TAB_HANDLE_ID,
+      httpThrottling: HttpThrottlingView.TAB_HANDLE_ID,
+      serviceProviders: ServiceProvidersView.TAB_HANDLE_ID,
+      tests: TestView.TAB_HANDLE_ID,
+      hsts: HSTSView.TAB_HANDLE_ID,
+      logs: LogsView.TAB_HANDLE_ID,
+      prerender: PrerenderView.TAB_HANDLE_ID,
+      chromeos: CrosView.TAB_HANDLE_ID
+    };
+
     assertEquals(typeof hashToTabHandleIdMap[hash], 'string',
                  'Invalid tab anchor: ' + hash);
     var tabId = hashToTabHandleIdMap[hash];
-    assertEquals('object', typeof getTab(tabId), 'Invalid tab: ' + tabId);
+    assertEquals('object', typeof NetInternalsTest.getTab(tabId),
+                 'Invalid tab: ' + tabId);
     return tabId;
-  }
+  };
 
   /**
    * Switches to the specified tab.
    * @param {string}: hash Hash associated with the tab to switch to.
    */
-  function switchToView(hash) {
-    var tabId = getTabId(hash);
+  NetInternalsTest.switchToView = function(hash) {
+    var tabId = NetInternalsTest.getTabId(hash);
 
     // Make sure the tab handle is visible, as we only simulate normal usage.
-    expectTrue(tabHandleIsVisible(tabId),
+    expectTrue(NetInternalsTest.tabHandleIsVisible(tabId),
                tabId + ' does not have a visible tab handle.');
-    var tabHandleNode = getTab(tabId).getTabHandleNode();
+    var tabHandleNode = NetInternalsTest.getTab(tabId).getTabHandleNode();
 
     // Simulate a left click.
     var mouseEvent = document.createEvent('MouseEvents');
@@ -267,10 +286,10 @@ var netInternalsTest = (function() {
     var tabIds = categoryTabSwitcher.getAllTabIds();
     for (var i = 0; i < tabIds.length; ++i) {
       expectEquals(tabIds[i] == tabId,
-                   getTab(tabIds[i]).contentView.isVisible(),
+                   NetInternalsTest.getTab(tabIds[i]).contentView.isVisible(),
                    tabIds[i] + ': Unexpected visibility state.');
     }
-  }
+  };
 
   /**
    * Checks the visibility of all tab handles against expected values.
@@ -280,16 +299,19 @@ var netInternalsTest = (function() {
    * @param {bool+}: tourTabs True if tabs expected to be visible should should
    *     each be navigated to as well.
    */
-  function checkTabHandleVisibility(tabVisibilityState, tourTabs) {
+  NetInternalsTest.checkTabHandleVisibility = function(tabVisibilityState,
+                                                       tourTabs) {
     // Check visibility state of all tabs.
     var tabCount = 0;
     for (var hash in tabVisibilityState) {
-      var tabId = getTabId(hash);
-      assertEquals('object', typeof getTab(tabId), 'Invalid tab: ' + tabId);
-      expectEquals(tabVisibilityState[hash], tabHandleIsVisible(tabId),
+      var tabId = NetInternalsTest.getTabId(hash);
+      assertEquals('object', typeof NetInternalsTest.getTab(tabId),
+                   'Invalid tab: ' + tabId);
+      expectEquals(tabVisibilityState[hash],
+                   NetInternalsTest.tabHandleIsVisible(tabId),
                    tabId + ' visibility state is unexpected.');
       if (tourTabs && tabVisibilityState[hash])
-        switchToView(hash);
+        NetInternalsTest.switchToView(hash);
       tabCount++;
     }
 
@@ -297,7 +319,7 @@ var netInternalsTest = (function() {
     var categoryTabSwitcher = MainView.getInstance().categoryTabSwitcher();
     var tabIds = categoryTabSwitcher.getAllTabIds();
     expectEquals(tabCount, tabIds.length);
-  }
+  };
 
   /**
    * This class allows multiple Tasks to be queued up to be run sequentially.
@@ -305,18 +327,20 @@ var netInternalsTest = (function() {
    * completing, at which point the next queued Task will be run.
    * @param {bool}: endTestWhenDone True if testDone should be called when the
    *     final task completes.
+   * @param {NetInternalsTest}: test Test fixture passed to Tasks.
    * @constructor
    */
-  function TaskQueue(endTestWhenDone) {
+  NetInternalsTest.TaskQueue = function(endTestWhenDone) {
+    // Test fixture for passing to tasks.
     this.tasks_ = [];
     this.isRunning_ = false;
     this.endTestWhenDone_ = endTestWhenDone;
-  }
+  };
 
-  TaskQueue.prototype = {
+  NetInternalsTest.TaskQueue.prototype = {
     /**
      * Adds a Task to the end of the queue.  Each Task may only be added once
-     * to a single queue.
+     * to a single queue.  Also passes the text fixture to the Task.
      * @param {Task}: task The Task to add.
      */
     addTask: function(task) {
@@ -330,28 +354,35 @@ var netInternalsTest = (function() {
      * @param {function}: taskFunction The function the task will call.
      */
     addFunctionTask: function(taskFunction) {
-      this.addTask(new CallFunctionTask(taskFunction));
+      this.addTask(new NetInternalsTest.CallFunctionTask(taskFunction));
     },
 
     /**
-     * Starts running the Tasks in the queue.  Once called, may not be called
-     * again.
+     * Starts running the Tasks in the queue, passing its arguments, if any,
+     * to the first Task's start function.  May only be called once.
      */
     run: function() {
       assertFalse(this.isRunning_);
       this.isRunning_ = true;
-      this.runNextTask_();
+      this.runNextTask_(Array.prototype.slice.call(arguments));
     },
 
     /**
      * If there are any Tasks in |tasks_|, removes the first one and runs it.
      * Otherwise, sets |isRunning_| to false.  If |endTestWhenDone_| is true,
      * calls testDone.
+     * @param {array} argArray arguments to be passed on to next Task's start
+     *     method.  May be a 0-length array.
      */
-    runNextTask_: function() {
+    runNextTask_: function(argArray) {
       assertTrue(this.isRunning_);
+      // The last Task may have used |NetInternalsTest.callback|.  Make sure
+      // it's now null.
+      expectEquals(null, NetInternalsTest.callback);
+
       if (this.tasks_.length > 0) {
-        this.tasks_.shift().start();
+        var nextTask = this.tasks_.shift();
+        nextTask.start.apply(nextTask, argArray);
       } else {
         this.isRunning_ = false;
         if (this.endTestWhenDone_)
@@ -365,17 +396,29 @@ var netInternalsTest = (function() {
    * the start function, and must call its own onTaskDone when complete.
    * @constructor
    */
-  function Task() {
+  NetInternalsTest.Task = function() {
     this.taskQueue_ = null;
     this.isDone_ = false;
+    this.completeAsync_ = false;
   };
 
-  Task.prototype = {
+  NetInternalsTest.Task.prototype = {
     /**
      * Starts running the Task.  Only called once per Task, must be overridden.
+     * Any arguments passed to the last Task's onTaskDone, or to run (If the
+     * first task) will be passed along.
      */
     start: function() {
       assertNotReached('Start function not overridden.');
+    },
+
+    /**
+     * Updates value of |completeAsync_|.  If set to true, the next Task will
+     * start asynchronously.  Useful if the Task completes on an event that
+     * the next Task may care about.
+     */
+    setCompleteAsync: function(value) {
+      this.completeAsync_ = value;
     },
 
     /**
@@ -397,35 +440,88 @@ var netInternalsTest = (function() {
 
     /**
      * Must be called when a task is complete, and can only be called once for a
-     * task.  Runs the next task, if any.
+     * task.  Runs the next task, if any, passing along all arguments.
      */
     onTaskDone: function() {
       assertFalse(this.isDone_);
       this.isDone_ = true;
-      this.taskQueue_.runNextTask_();
-    }
+
+      // Function to run the next task in the queue.
+      var runNextTask = this.taskQueue_.runNextTask_.bind(
+                            this.taskQueue_,
+                            Array.prototype.slice.call(arguments));
+
+      // If we need to start the next task asynchronously, we need to wrap
+      // it with the test framework code.
+      if (this.completeAsync_) {
+        window.setTimeout(activeTest_.continueTest(WhenTestDone.EXPECT,
+                                                   runNextTask),
+                          0);
+        return;
+      }
+
+      // Otherwise, just run the next task directly.
+      runNextTask();
+    },
   };
 
   /**
    * A Task that can be added to a TaskQueue.  A Task is started with a call to
    * the start function, and must call its own onTaskDone when complete.
+   * @extends {NetInternalsTest.Task}
    * @constructor
    */
-  function CallFunctionTask(taskFunction) {
-    Task.call(this);
+  NetInternalsTest.CallFunctionTask = function(taskFunction) {
+    NetInternalsTest.Task.call(this);
     assertEquals('function', typeof taskFunction);
     this.taskFunction_ = taskFunction;
-  }
+  };
 
-  CallFunctionTask.prototype = {
-    __proto__: Task.prototype,
+  NetInternalsTest.CallFunctionTask.prototype = {
+    __proto__: NetInternalsTest.Task.prototype,
 
     /**
-     * Runs the function and then completes.
+     * Runs the function and then completes.  Passes all arguments, if any,
+     * along to the function.
      */
     start: function() {
-      this.taskFunction_();
+      this.taskFunction_.apply(null, Array.prototype.slice.call(arguments));
       this.onTaskDone();
+    }
+  };
+
+  /**
+   * A Task that converts the given path into a URL served by the TestServer.
+   * The resulting URL will be passed to the next task.  Will also start the
+   * TestServer, if needed.
+   * @param {string} path Path to convert to a URL.
+   * @extends {NetInternalsTest.Task}
+   * @constructor
+   */
+  NetInternalsTest.GetTestServerURLTask = function(path) {
+    NetInternalsTest.Task.call(this);
+    assertEquals('string', typeof path);
+    this.path_ = path;
+  };
+
+  NetInternalsTest.GetTestServerURLTask.prototype = {
+    __proto__: NetInternalsTest.Task.prototype,
+
+    /**
+     * Sets |NetInternals.callback|, and sends the path to the browser process.
+     */
+    start: function() {
+      NetInternalsTest.setCallback(this.onURLReceived_.bind(this));
+      chrome.send('getTestServerURL', [this.path_]);
+    },
+
+    /**
+     * Completes the Task, passing the url on to the next Task.
+     * @param {string} url TestServer URL of the input path.
+     */
+    onURLReceived_: function(url) {
+      assertEquals('string', typeof url);
+      this.onTaskDone(url);
     }
   };
 
@@ -435,14 +531,15 @@ var netInternalsTest = (function() {
    * issues, since the function to create the incognito browser also waits
    * for the navigation to complete.  May not be called if there's already an
    * incognito browser in existence.
+   * @extends {NetInternalsTest.Task}
    * @constructor
    */
-  function CreateIncognitoBrowserTask() {
-    Task.call(this);
-  }
+  NetInternalsTest.CreateIncognitoBrowserTask = function() {
+    NetInternalsTest.Task.call(this);
+  };
 
-  CreateIncognitoBrowserTask.prototype = {
-    __proto__: Task.prototype,
+  NetInternalsTest.CreateIncognitoBrowserTask.prototype = {
+    __proto__: NetInternalsTest.Task.prototype,
 
     /**
      * Tells the browser process to create an incognito browser, and sets
@@ -474,8 +571,8 @@ var netInternalsTest = (function() {
    * the above function that has yet to be closed.  Returns immediately.
    * @return {Task} Task that closes incognito browser window.
    */
-  function getCloseIncognitoBrowserTask() {
-    return new CallFunctionTask(
+  NetInternalsTest.getCloseIncognitoBrowserTask = function() {
+    return new NetInternalsTest.CallFunctionTask(
         function() {
           chrome.send('closeIncognitoBrowser');
         });
@@ -485,10 +582,10 @@ var netInternalsTest = (function() {
    * Returns true if a node does not have a 'display' property of 'none'.
    * @param {node}: node The node to check.
    */
-  function isDisplayed(node) {
+  NetInternalsTest.isDisplayed = function(node) {
     var style = getComputedStyle(node);
     return style.getPropertyValue('display') != 'none';
-  }
+  };
 
   /**
    * Creates a new NetLog source.  Note that the id may conflict with events
@@ -497,12 +594,12 @@ var netInternalsTest = (function() {
    * @param {int}: id The source id.
    * @constructor
    */
-  function Source(type, id) {
+  NetInternalsTest.Source = function(type, id) {
     assertNotEquals(getKeyWithValue(LogSourceType, type), '?');
     assertGE(id, 0);
     this.type = type;
     this.id = id;
-  }
+  };
 
   /**
    * Creates a new NetLog event.
@@ -513,7 +610,7 @@ var netInternalsTest = (function() {
    * @param {object}: params The event parameters.  May be null.
    * @constructor
    */
-  function Event(source, type, time, phase, params) {
+  NetInternalsTest.Event = function(source, type, time, phase, params) {
     assertNotEquals(getKeyWithValue(LogEventType, type), '?');
     assertNotEquals(getKeyWithValue(LogEventPhase, phase), '?');
 
@@ -524,25 +621,27 @@ var netInternalsTest = (function() {
     this.phase = phase;
     if (params)
       this.params = params;
-  }
+  };
 
   /**
    * Creates a new NetLog begin event.  Parameters are the same as Event,
    * except there's no |phase| argument.
    * @see Event
    */
-  function CreateBeginEvent(source, type, time, params) {
-    return new Event(source, type, time,  LogEventPhase.PHASE_BEGIN, params);
-  }
+  NetInternalsTest.createBeginEvent = function(source, type, time, params) {
+    return new NetInternalsTest.Event(source, type, time,
+                                      LogEventPhase.PHASE_BEGIN, params);
+  };
 
   /**
    * Creates a new NetLog end event.  Parameters are the same as Event,
    * except there's no |phase| argument.
    * @see Event
    */
-  function CreateEndEvent(source, type, time, params) {
-    return new Event(source, type, time,  LogEventPhase.PHASE_END, params);
-  }
+  NetInternalsTest.createEndEvent = function(source, type, time, params) {
+    return new NetInternalsTest.Event(source, type, time,
+                                      LogEventPhase.PHASE_END, params);
+  };
 
   /**
    * Creates a new NetLog end event matching the given begin event.
@@ -552,112 +651,23 @@ var netInternalsTest = (function() {
    * @param {object}: params The event parameters.  May be null.
    * @see Event
    */
-  function CreateMatchingEndEvent(beginEvent, time, params) {
-    return CreateEndEvent(beginEvent.source, beginEvent.type, time, params);
-  }
+  NetInternalsTest.createMatchingEndEvent = function(beginEvent, time, params) {
+    return NetInternalsTest.createEndEvent(
+               beginEvent.source, beginEvent.type, time, params);
+  };
 
   /**
    * Checks that only the given status view node is visible.
    * @param {string}: nodeId ID of the node that should be visible.
    */
-  function expectStatusViewNodeVisible(nodeId) {
+  NetInternalsTest.expectStatusViewNodeVisible = function(nodeId) {
     expectEquals(nodeId == StatusView.FOR_CAPTURE_ID,
-                 nodeIsVisible($(StatusView.FOR_CAPTURE_ID)));
+                 NetInternalsTest.nodeIsVisible($(StatusView.FOR_CAPTURE_ID)));
     expectEquals(nodeId == StatusView.FOR_VIEW_ID,
-                 nodeIsVisible($(StatusView.FOR_VIEW_ID)));
+                 NetInternalsTest.nodeIsVisible($(StatusView.FOR_VIEW_ID)));
     expectEquals(nodeId == StatusView.FOR_FILE_ID,
-                 nodeIsVisible($(StatusView.FOR_FILE_ID)));
-  }
-
-  // Exported functions.
-  return {
-    test: test,
-    checkStyledTableRows: checkStyledTableRows,
-    nodeIsVisible: nodeIsVisible,
-    checkTabHandleVisibility: checkTabHandleVisibility,
-    getStyledTableText: getStyledTableText,
-    isDisplayed: isDisplayed,
-    runTest: runTest,
-    switchToView: switchToView,
-    TaskQueue: TaskQueue,
-    Task: Task,
-    CallFunctionTask: CallFunctionTask,
-    CreateIncognitoBrowserTask: CreateIncognitoBrowserTask,
-    getCloseIncognitoBrowserTask: getCloseIncognitoBrowserTask,
-    Source: Source,
-    Event: Event,
-    CreateBeginEvent: CreateBeginEvent,
-    CreateEndEvent: CreateEndEvent,
-    CreateMatchingEndEvent: CreateMatchingEndEvent,
-    expectStatusViewNodeVisible: expectStatusViewNodeVisible
+                 NetInternalsTest.nodeIsVisible($(StatusView.FOR_FILE_ID)));
   };
+
+  return NetInternalsTest;
 })();
-
-netInternalsTest.test('netInternalsDone', function() {
-  testDone();
-});
-
-netInternalsTest.test('netInternalsExpectFail', function() {
-  expectNotReached();
-});
-
-netInternalsTest.test('netInternalsAssertFail', function() {
-  assertNotReached();
-});
-
-netInternalsTest.test('netInternalsObserverDone', function() {
-  /**
-   * A HostResolverInfo observer that calls testDone() in response to the
-   * first seen event.
-   */
-  function HostResolverInfoObserver() {
-  }
-
-  HostResolverInfoObserver.prototype.onHostResolverInfoChanged = function() {
-    testDone();
-  };
-
-  // Create the observer and add it to |g_browser|.
-  g_browser.addHostResolverInfoObserver(new HostResolverInfoObserver());
-
-  // Needed to trigger an update.
-  netInternalsTest.switchToView('dns');
-});
-
-netInternalsTest.test('netInternalsObserverExpectFail', function() {
-  /**
-   * A HostResolverInfo observer that triggers an exception in response to the
-   * first seen event.
-   */
-  function HostResolverInfoObserver() {
-  }
-
-  HostResolverInfoObserver.prototype.onHostResolverInfoChanged = function() {
-    expectNotReached();
-  };
-
-  // Create the observer and add it to |g_browser|.
-  g_browser.addHostResolverInfoObserver(new HostResolverInfoObserver());
-
-  // Needed to trigger an update.
-  netInternalsTest.switchToView('dns');
-});
-
-netInternalsTest.test('netInternalsObserverAssertFail', function() {
-  /**
-   * A HostResolverInfo observer that triggers an assertion in response to the
-   * first seen event.
-   */
-  function HostResolverInfoObserver() {
-  }
-
-  HostResolverInfoObserver.prototype.onHostResolverInfoChanged = function() {
-    assertNotReached();
-  };
-
-  // Create the observer and add it to |g_browser|.
-  g_browser.addHostResolverInfoObserver(new HostResolverInfoObserver());
-
-  // Needed to trigger an update.
-  netInternalsTest.switchToView('dns');
-});

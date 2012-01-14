@@ -1,6 +1,9 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
+// Include test fixture.
+GEN_INCLUDE(['net_internals_test.js']);
 
 // Anonymous namespace
 (function() {
@@ -15,7 +18,7 @@ function checkDisplay(hostResolverInfo) {
   expectEquals(getKeyWithValue(AddressFamily, family),
                $(DnsView.DEFAULT_FAMILY_SPAN_ID).innerText);
   expectEquals(family == AddressFamily.ADDRESS_FAMILY_IPV4,
-               netInternalsTest.isDisplayed($(DnsView.IPV6_DISABLED_SPAN_ID)));
+               NetInternalsTest.isDisplayed($(DnsView.IPV6_DISABLED_SPAN_ID)));
 
   expectEquals(hostResolverInfo.cache.capacity,
                parseInt($(DnsView.CAPACITY_SPAN_ID).innerText));
@@ -35,7 +38,7 @@ function checkDisplay(hostResolverInfo) {
   expectEquals(entries.length, active + expired);
 
   var tableId = DnsView.CACHE_TBODY_ID;
-  netInternalsTest.checkStyledTableRows(tableId, entries.length);
+  NetInternalsTest.checkStyledTableRows(tableId, entries.length);
 
   // Rather than check the exact string in every position, just make sure every
   // entry is not empty, and does not have 'undefined' anywhere, which should
@@ -43,7 +46,7 @@ function checkDisplay(hostResolverInfo) {
   // entire corresponding function of DnsView.
   for (var row = 0; row < entries.length; ++row) {
     for (column = 0; column < 4; ++column) {
-      var text = netInternalsTest.getStyledTableText(tableId, row, column);
+      var text = NetInternalsTest.getStyledTableText(tableId, row, column);
       expectNotEquals(text, '');
       expectFalse(/undefined/i.test(text));
     }
@@ -76,18 +79,18 @@ function findEntry(hostResolverInfo, hostname) {
  * @param {bool} expired True if we expect the entry to be expired.  The added
  *     entry will have an expiration time far enough away from the current time
  *     that there will be no chance of any races.
- * @extends {netInternalsTest.Task}
+ * @extends {NetInternalsTest.Task}
  */
 function AddCacheEntryTask(hostname, ipAddress, netError, expired) {
   this.hostname_ = hostname;
   this.ipAddress_ = ipAddress;
   this.netError_ = netError;
   this.expired_ = expired;
-  netInternalsTest.Task.call(this);
+  NetInternalsTest.Task.call(this);
 }
 
 AddCacheEntryTask.prototype = {
-  __proto__: netInternalsTest.Task.prototype,
+  __proto__: NetInternalsTest.Task.prototype,
 
   /**
    * Adds an entry to the cache and starts waiting to received the results from
@@ -136,7 +139,7 @@ AddCacheEntryTask.prototype = {
         // only if |expired_| is true.  Only checked for entries we add
         // ourselves to avoid any expiration time race.
         var expirationText =
-            netInternalsTest.getStyledTableText(DnsView.CACHE_TBODY_ID,
+            NetInternalsTest.getStyledTableText(DnsView.CACHE_TBODY_ID,
                                                 index, 3);
         expectEquals(this.expired_, /expired/i.test(expirationText));
 
@@ -158,14 +161,14 @@ AddCacheEntryTask.prototype = {
 
 /**
  * A Task clears the cache by simulating a button click.
- * @extends {netInternalsTest.Task}
+ * @extends {NetInternalsTest.Task}
  */
 function ClearCacheTask() {
-  netInternalsTest.Task.call(this);
+  NetInternalsTest.Task.call(this);
 }
 
 ClearCacheTask.prototype = {
-  __proto__: netInternalsTest.Task.prototype,
+  __proto__: NetInternalsTest.Task.prototype,
 
   start: function() {
     $(DnsView.CLEAR_CACHE_BUTTON_ID).onclick();
@@ -177,15 +180,15 @@ ClearCacheTask.prototype = {
  * A Task that waits for the specified hostname entry to disappear from the
  * cache.
  * @param {string} hostname Name of host we're waiting to be removed.
- * @extends {netInternalsTest.Task}
+ * @extends {NetInternalsTest.Task}
  */
 function WaitForEntryDestructionTask(hostname) {
   this.hostname_ = hostname;
-  netInternalsTest.Task.call(this);
+  NetInternalsTest.Task.call(this);
 }
 
 WaitForEntryDestructionTask.prototype = {
-  __proto__: netInternalsTest.Task.prototype,
+  __proto__: NetInternalsTest.Task.prototype,
 
   /**
    * Starts waiting to received the results from the browser process.
@@ -210,9 +213,12 @@ WaitForEntryDestructionTask.prototype = {
   }
 };
 
-netInternalsTest.test('netInternalsDnsViewSuccess', function() {
-  netInternalsTest.switchToView('dns');
-  var taskQueue = new netInternalsTest.TaskQueue(true);
+/**
+ * Adds a successful lookup to the DNS cache, then clears the cache.
+ */
+TEST_F('NetInternalsTest', 'netInternalsDnsViewSuccess', function() {
+  NetInternalsTest.switchToView('dns');
+  var taskQueue = new NetInternalsTest.TaskQueue(true);
   taskQueue.addTask(new AddCacheEntryTask(
                         'somewhere.com', '1.2.3.4', 0, false));
   taskQueue.addTask(new ClearCacheTask());
@@ -220,9 +226,12 @@ netInternalsTest.test('netInternalsDnsViewSuccess', function() {
   taskQueue.run(true);
 });
 
-netInternalsTest.test('netInternalsDnsViewFail', function() {
-  netInternalsTest.switchToView('dns');
-  var taskQueue = new netInternalsTest.TaskQueue(true);
+/**
+ * Adds a failed lookup to the DNS cache, then clears the cache.
+ */
+TEST_F('NetInternalsTest', 'netInternalsDnsViewFail', function() {
+  NetInternalsTest.switchToView('dns');
+  var taskQueue = new NetInternalsTest.TaskQueue(true);
   taskQueue.addTask(new AddCacheEntryTask(
                         'nowhere.com', '', NetError.NAME_NOT_RESOLVED, false));
   taskQueue.addTask(new ClearCacheTask());
@@ -230,9 +239,12 @@ netInternalsTest.test('netInternalsDnsViewFail', function() {
   taskQueue.run(true);
 });
 
-netInternalsTest.test('netInternalsDnsViewExpired', function() {
-  netInternalsTest.switchToView('dns');
-  var taskQueue = new netInternalsTest.TaskQueue(true);
+/**
+ * Adds an expired successful lookup to the DNS cache, then clears the cache.
+ */
+TEST_F('NetInternalsTest', 'netInternalsDnsViewExpired', function() {
+  NetInternalsTest.switchToView('dns');
+  var taskQueue = new NetInternalsTest.TaskQueue(true);
   taskQueue.addTask(new AddCacheEntryTask(
                         'somewhere.com', '1.2.3.4', 0, true));
   taskQueue.addTask(new ClearCacheTask());
@@ -240,9 +252,12 @@ netInternalsTest.test('netInternalsDnsViewExpired', function() {
   taskQueue.run(true);
 });
 
-netInternalsTest.test('netInternalsDnsViewAddTwoTwice', function() {
-  netInternalsTest.switchToView('dns');
-  var taskQueue = new netInternalsTest.TaskQueue(true);
+/**
+ * Adds two entries to the DNS cache, clears the cache, and then repeats.
+ */
+TEST_F('NetInternalsTest', 'netInternalsDnsViewAddTwoTwice', function() {
+  NetInternalsTest.switchToView('dns');
+  var taskQueue = new NetInternalsTest.TaskQueue(true);
   for (var i = 0; i < 2; ++i) {
     taskQueue.addTask(new AddCacheEntryTask(
                           'somewhere.com', '1.2.3.4', 0, false));
@@ -255,13 +270,18 @@ netInternalsTest.test('netInternalsDnsViewAddTwoTwice', function() {
   taskQueue.run(true);
 });
 
-netInternalsTest.test('netInternalsDnsViewIncognitoClears', function() {
-  netInternalsTest.switchToView('dns');
-  var taskQueue = new netInternalsTest.TaskQueue(true);
-  taskQueue.addTask(new netInternalsTest.CreateIncognitoBrowserTask());
+/**
+ * Makes sure that openning and then closing an incognito window clears the
+ * DNS cache.  To keep things simple, we add a fake cache entry ourselves,
+ * rather than having the incognito browser create one.
+ */
+TEST_F('NetInternalsTest', 'netInternalsDnsViewIncognitoClears', function() {
+  NetInternalsTest.switchToView('dns');
+  var taskQueue = new NetInternalsTest.TaskQueue(true);
+  taskQueue.addTask(new NetInternalsTest.CreateIncognitoBrowserTask());
   taskQueue.addTask(new AddCacheEntryTask(
                         'somewhere.com', '1.2.3.4', 0, true));
-  taskQueue.addTask(netInternalsTest.getCloseIncognitoBrowserTask());
+  taskQueue.addTask(NetInternalsTest.getCloseIncognitoBrowserTask());
   taskQueue.addTask(new WaitForEntryDestructionTask('somewhere.com'));
   taskQueue.run(true);
 });
