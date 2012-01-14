@@ -2,8 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('options', function() {
-  const OptionsPage = options.OptionsPage;
+cr.define('about_page', function() {
 
   /**
    * The number of milliseconds used for showing a message.
@@ -14,16 +13,12 @@ cr.define('options', function() {
   /**
    * Encapsulated handling of about page.
    */
-  function AboutPage() {
-    OptionsPage.call(this, 'about', templateData.aboutPageTabTitle,
-                     'aboutPage');
-  }
+  function AboutPage() {}
 
   cr.addSingletonGetter(AboutPage);
 
   AboutPage.prototype = {
-    // Inherit AboutPage from OptionsPage.
-    __proto__: OptionsPage.prototype,
+    __proto__: HTMLDivElement.prototype,
 
     /**
      * The queue is used for updating the status message with delay, like:
@@ -44,11 +39,10 @@ cr.define('options', function() {
      */
     selectedChannel_: '',
 
-    // Initialize AboutPage.
-    initializePage: function() {
-      // Call base class implementation to start preference initialization.
-      OptionsPage.prototype.initializePage.call(this);
-
+    /**
+     * Perform initial setup.
+     */
+    initialize: function() {
       $('checkNow').onclick = function(event) {
         chrome.send('CheckNow');
       };
@@ -225,3 +219,9 @@ cr.define('options', function() {
   };
 
 });
+
+var AboutPage = about_page.AboutPage;
+
+window.onload = function() {
+  AboutPage.getInstance().initialize();
+};

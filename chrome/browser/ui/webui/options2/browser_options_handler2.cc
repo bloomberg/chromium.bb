@@ -350,7 +350,7 @@ void BrowserOptionsHandler::Initialize() {
     sync_service->AddObserver(this);
     OnStateChanged();
   } else {
-    web_ui()->CallJavascriptFunction("options.PersonalOptions.hideSyncSection");
+    web_ui()->CallJavascriptFunction("options.BrowserOptions.hideSyncSection");
   }
 
   // Create our favicon data source.

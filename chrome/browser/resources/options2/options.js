@@ -185,7 +185,7 @@ function load() {
                                 [$('change-picture-button')]);
     OptionsPage.registerOverlay(DetailsInternetPage.getInstance(),
                                 InternetOptions.getInstance());
-    OptionsPage.registerOverlay(KeyboardPage.getInstance(),
+    OptionsPage.registerOverlay(KeyboardOverlay.getInstance(),
                                 SystemOptions.getInstance(),
                                 [$('modifier-keys-button')]);
     OptionsPage.registerOverlay(BluetoothOptions.getInstance(),
