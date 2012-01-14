@@ -319,8 +319,8 @@ TEST(ExtensionFileUtil, ValidateThemeUTF8) {
 }
 
 #if defined(OS_WIN)
-// This test is flaky on Windows. http://crbug.com/110279
-#define MAYBE_BackgroundScriptsMustExist FLAKY_BackgroundScriptsMustExist
+// This test hangs on Windows sometimes. http://crbug.com/110279
+#define MAYBE_BackgroundScriptsMustExist DISABLED_BackgroundScriptsMustExist
 #else
 #define MAYBE_BackgroundScriptsMustExist BackgroundScriptsMustExist
 #endif
