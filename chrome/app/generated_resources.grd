@@ -6463,6 +6463,7 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
         page
       </message>
       <message name="IDS_PRINT_PREVIEW_PAGE_LABEL_PLURAL" desc="Label shown in the print preview summary.">
+        pages
       </message>
       <if expr="is_macosx">
         <message name="IDS_PRINT_PREVIEW_OPEN_PDF_IN_PREVIEW_APP" desc="Option allowing the user to open the pdf in native preview app">
