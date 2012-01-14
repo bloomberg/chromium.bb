@@ -911,10 +911,8 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
 
       # See the comment in WriteActions about expanding env vars.
       env = self.GetXcodeEnv()
-      outputs = [gyp.xcode_emulation.ExpandEnvVars(output, env)
-                 for output in outputs]
-      inputs = [gyp.xcode_emulation.ExpandEnvVars(input, env)
-                for input in inputs]
+      outputs = [gyp.xcode_emulation.ExpandEnvVars(o, env) for o in outputs]
+      inputs = [gyp.xcode_emulation.ExpandEnvVars(i, env) for i in inputs]
 
       self.WriteDoCmd(outputs, map(Sourceify, map(self.Absolutify, inputs)),
                       part_of_all=part_of_all, command=name)

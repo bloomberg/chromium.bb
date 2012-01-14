@@ -11,9 +11,21 @@
           'inputs': [ ],
           'outputs': [
             '<(PRODUCT_DIR)/result',
+            '<(SHARED_INTERMEDIATE_DIR)/tempfile',
           ],
           'action_name': 'Test action',
-          'action': ['./action.sh' ],
+          'action': ['./action.sh', '<(SHARED_INTERMEDIATE_DIR)/tempfile' ],
+        },
+        {
+          'inputs': [
+            '<(SHARED_INTERMEDIATE_DIR)/tempfile',
+          ],
+          'outputs': [
+            '<(PRODUCT_DIR)/other_result',
+          ],
+          'action_name': 'Other test action',
+          'action': ['cp', '<(SHARED_INTERMEDIATE_DIR)/tempfile',
+                           '<(PRODUCT_DIR)/other_result' ],
         },
       ],
     },

@@ -23,4 +23,8 @@ if sys.platform == 'darwin':
   test.must_exist(result_file)
   test.must_contain(result_file, 'Test output')
 
+  other_result_file = test.built_file_path('other_result', chdir=CHDIR)
+  test.must_exist(other_result_file)
+  test.must_contain(other_result_file, 'Other output')
+
   test.pass_test()

@@ -842,9 +842,10 @@ def ExpandEnvVars(string, expansions):
   expansions dict. If the variable expands to something that references
   another variable, this variable is expanded as well if it's in env --
   until no variables present in env are left."""
-  string = _NormalizeEnvVarReferences(string)
   for k in reversed(TopologicallySortedEnvVarKeys(expansions)):
     string = string.replace('${' + k + '}', expansions[k])
+    string = string.replace('$(' + k + ')', expansions[k])
+    string = string.replace('$' + k, expansions[k])
   return string
 
 

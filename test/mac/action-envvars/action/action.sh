@@ -5,3 +5,4 @@
 set -e
 
 echo 'Test output' > "${BUILT_PRODUCTS_DIR}/result"
+echo 'Other output' > "$1"
