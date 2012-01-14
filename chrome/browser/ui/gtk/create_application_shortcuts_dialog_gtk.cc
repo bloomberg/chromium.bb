@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -254,9 +254,7 @@ void CreateApplicationShortcutsDialogGtk::ShowErrorDialog() {
 
   // Label on top of the checkboxes.
   GtkWidget* description = gtk_label_new(
-      l10n_util::GetStringFUTF8(
-          IDS_CREATE_SHORTCUTS_ERROR_LABEL,
-          l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)).c_str());
+      l10n_util::GetStringUTF8(IDS_CREATE_SHORTCUTS_ERROR_LABEL).c_str());
   gtk_label_set_line_wrap(GTK_LABEL(description), TRUE);
   gtk_misc_set_alignment(GTK_MISC(description), 0, 0);
   gtk_box_pack_start(GTK_BOX(vbox), description, FALSE, FALSE, 0);

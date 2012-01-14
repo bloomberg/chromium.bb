@@ -522,6 +522,35 @@ Chromium is unable to recover your settings.
         If you close Chromium now, these downloads will be canceled.
       </message>
 
+      <!-- "Create application shortcuts" dialog -->
+      <if expr="is_posix and not is_macosx">
+        <message name="IDS_CREATE_SHORTCUTS_ERROR_LABEL" desc="Contents of the main label in the error dialog box when creating an application shortcut failed.">
+          Chromium cannot create an application shortcut because it cannot determine the current desktop environment.
+        </message>
+      </if>
+
+      <!-- Autolaunch infobar -->
+      <message name="IDS_AUTO_LAUNCH_INFOBAR_TEXT" desc="The text to show in the infobar when Chromium was automatically launched on startup">
+        Chromium is configured to automatically launch when you start your computer.
+      </message>
+
+      <!-- about:flags -->
+      <if expr="not pp_ifdef('chromeos')">
+        <message name="IDS_FLAGS_RELAUNCH_NOTICE" desc="Notifies the user that he needs to relaunch Chromium. Shown next to a button that says 'Relaunch Now'.">
+          Your changes will take effect the next time you relaunch Chromium.
+        </message>
+      </if>
+      <if expr="pp_ifdef('chromeos')">
+        <message name="IDS_FLAGS_RELAUNCH_NOTICE" desc="Notifies the user that he needs to restart Chromium OS. Shown next to a button that says 'Restart Now'.">
+          Your changes will take effect the next time you restart Chromium OS.
+        </message>
+      </if>
+
+      <!-- Obsolete System info bar -->
+      <message name="IDS_SYSTEM_OBSOLETE_MESSAGE" desc="Message shown when your OS is no longer supported. This messages is followed by a 'Learn more' link.">
+         Chromium is no longer updating because your operating system is obsolete.
+      </message>
+
       <if expr="is_macosx">
         <message name="IDS_APP_MENU_PRODUCT_NAME" desc="The application's short name, used for the Mac's application menu, activity monitor, etc. This should be less than 16 characters. Example: Chrome, not Google Chrome.">
           Chromium

@@ -2618,9 +2618,6 @@ are declared in build/common.gypi.
         <message name="IDS_CREATE_SHORTCUTS_ERROR_TITLE" desc="Title of the error dialog box when creating an application shortcut failed.">
           Failed to Create Application Shortcut
         </message>
-        <message name="IDS_CREATE_SHORTCUTS_ERROR_LABEL" desc="Contents of the main label in the error dialog box when creating an application shortcut failed.">
-          <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex> cannot create an application shortcut because it cannot determine the current desktop environment.</ph>
-        </message>
       </if>
       <message name="IDS_PIN_TO_TASKBAR_CHKBOX" desc="Label of the checkbox to pin an application shortcut to taskbar.">
         Pin to Taskbar
@@ -3635,9 +3632,6 @@ Public Exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS">$3<ex>24</ex></ph> bits):
       </message>
 
       <!-- Autolaunch infobar -->
-      <message name="IDS_AUTO_LAUNCH_INFOBAR_TEXT" desc="The text to show in the infobar when Chrome was automatically launched on startup">
-        <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> is configured to automatically launch when you start your computer.
-      </message>
       <message name="IDS_AUTO_LAUNCH_OK" desc="Label for OK button on Autolaunch confirmation infobar.">
         OK
       </message>
@@ -4641,17 +4635,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Sorry, this experiment is not available on your platform.
       </message>
       <if expr="not pp_ifdef('chromeos')">
-        <message name="IDS_FLAGS_RELAUNCH_NOTICE" desc="Notifies the user that he needs to relaunch chrome. Shown next to a button that says 'Relaunch Now'.">
-          Your changes will take effect the next time you relaunch <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
-        </message>
         <message name="IDS_FLAGS_RELAUNCH_BUTTON" desc="Text on a button that relaunches chrome when clicked. ">
           Relaunch Now
         </message>
       </if>
       <if expr="pp_ifdef('chromeos')">
-        <message name="IDS_FLAGS_RELAUNCH_NOTICE" desc="Notifies the user that he needs to restart Chrome OS. Shown next to a button that says 'Restart Now'.">
-          Your changes will take effect the next time you restart <ph name="PRODUCT_NAME">$1<ex>Google Chrome OS</ex></ph>.
-        </message>
         <message name="IDS_FLAGS_RELAUNCH_BUTTON" desc="Text on a button that restarts Chrome OS when clicked. ">
           Restart Now
         </message>
@@ -5276,11 +5264,6 @@ Because search results are requested even while you're typing your query, your d
       <!-- Monoscope warning info bar -->
       <message name="IDS_DNS_CERT_PROVENANCE_CHECKING_WARNING_MESSAGE" desc="Message shown when the user has DNS certificate provenance checking enabled. This message is followed by a 'Learn more' link.">
         You have DNS certificate provenance checking enabled. This may result in private information being sent to Google.
-      </message>
-
-      <!-- Obsolete System info bar -->
-      <message name="IDS_SYSTEM_OBSOLETE_MESSAGE" desc="Message shown when your OS is no longer supported. This messages is followed by a 'Learn more' link.">
-         <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> is no longer updating because your operating system is obsolete.
       </message>
 
       <!-- Blocked Displaying/Running Insecure Content info bar -->

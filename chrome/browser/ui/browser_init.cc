@@ -207,8 +207,7 @@ gfx::Image* AutolaunchInfoBarDelegate::GetIcon() const {
 }
 
 string16 AutolaunchInfoBarDelegate::GetMessageText() const {
-  return l10n_util::GetStringFUTF16(IDS_AUTO_LAUNCH_INFOBAR_TEXT,
-      l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
+  return l10n_util::GetStringUTF16(IDS_AUTO_LAUNCH_INFOBAR_TEXT);
 }
 
 string16 AutolaunchInfoBarDelegate::GetButtonLabel(
@@ -1346,9 +1345,7 @@ void BrowserInit::LaunchWithProfile::AddObsoleteSystemInfoBarIfNecessary(
   //   RHEL 6:       GTK 2.18
   //   Ubuntu Lucid: GTK 2.20
   if (gtk_check_version(2, 18, 0)) {
-    string16 message =
-        l10n_util::GetStringFUTF16(IDS_SYSTEM_OBSOLETE_MESSAGE,
-                                   l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
+    string16 message = l10n_util::GetStringUTF16(IDS_SYSTEM_OBSOLETE_MESSAGE);
     // Link to an article in the help center on minimum system requirements.
     const char* kLearnMoreURL =
         "http://www.google.com/support/chrome/bin/answer.py?answer=95411";

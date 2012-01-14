@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -49,13 +49,7 @@ ChromeWebUIDataSource* CreateFlagsUIHTMLSource() {
   source->AddLocalizedString("flagsWarningHeader", IDS_FLAGS_WARNING_HEADER);
   source->AddLocalizedString("flagsBlurb", IDS_FLAGS_WARNING_TEXT);
   source->AddLocalizedString("flagsNotSupported", IDS_FLAGS_NOT_AVAILABLE);
-#if defined(OS_CHROMEOS)
-  int ids = IDS_PRODUCT_OS_NAME;
-#else
-  int ids = IDS_PRODUCT_NAME;
-#endif
-  source->AddString("flagsRestartNotice", l10n_util::GetStringFUTF16(
-      IDS_FLAGS_RELAUNCH_NOTICE, l10n_util::GetStringUTF16(ids)));
+  source->AddLocalizedString("flagsRestartNotice", IDS_FLAGS_RELAUNCH_NOTICE);
   source->AddLocalizedString("flagsRestartButton", IDS_FLAGS_RELAUNCH_BUTTON);
   source->AddLocalizedString("disable", IDS_FLAGS_DISABLE);
   source->AddLocalizedString("enable", IDS_FLAGS_ENABLE);
