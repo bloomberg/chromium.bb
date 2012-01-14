@@ -15,7 +15,7 @@ function onLoad() {
     remoting.setMode(remoting.AppMode.CLIENT_UNCONNECTED);
   };
   var reload = function() {
-    location.reload();
+    window.location.reload();
   };
   /** @param {Event} event */
   var sendAccessCode = function(event) {
