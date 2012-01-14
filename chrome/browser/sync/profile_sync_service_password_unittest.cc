@@ -15,6 +15,7 @@
 #include "chrome/browser/password_manager/password_store.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/signin/signin_manager.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/abstract_profile_sync_service_test.h"
 #include "chrome/browser/sync/glue/password_change_processor.h"
 #include "chrome/browser/sync/glue/password_data_type_controller.h"
@@ -215,7 +216,7 @@ class ProfileSyncServicePasswordTest : public AbstractProfileSyncServiceTest {
   void StartSyncService(const base::Closure& root_callback,
                         const base::Closure& node_callback) {
     if (!service_.get()) {
-      SigninManager* signin = profile_.GetSigninManager();
+      SigninManager* signin = SigninManagerFactory::GetForProfile(&profile_);
       signin->SetAuthenticatedUsername("test_user");
       service_.reset(new PasswordTestProfileSyncService(
           &factory_, &profile_, signin, false,

@@ -47,7 +47,6 @@
 #include "chrome/browser/renderer_host/web_cache_manager.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/search_engines/template_url_prepopulate_data.h"
-#include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/tabs/pinned_tab_codec.h"
 #include "chrome/browser/task_manager/task_manager.h"
 #include "chrome/browser/translate/translate_prefs.h"
@@ -189,7 +188,6 @@ void RegisterUserPrefs(PrefService* user_prefs) {
   chromeos::Preferences::RegisterUserPrefs(user_prefs);
   chromeos::ProxyConfigServiceImpl::RegisterPrefs(user_prefs);
 #endif
-  SigninManager::RegisterUserPrefs(user_prefs);
   InstantController::RegisterUserPrefs(user_prefs);
   NetPrefObserver::RegisterPrefs(user_prefs);
   ProtocolHandlerRegistry::RegisterPrefs(user_prefs);

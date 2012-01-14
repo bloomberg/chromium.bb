@@ -5,6 +5,7 @@
 #include "chrome/browser/prefs/pref_service_mock_builder.h"
 #include "chrome/browser/prefs/testing_pref_store.h"
 #include "chrome/browser/signin/signin_manager.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/common/pref_names.h"
@@ -37,7 +38,8 @@ Profile* ProfileSyncServiceMock::MakeSignedInTestingProfile() {
       .WithUserPrefs(user_prefs)
       .Create();
   profile->SetPrefService(prefs);
-  SigninManager::RegisterUserPrefs(prefs);
+  // We just blew away our prefs, so reregister them.
+  SigninManagerFactory::GetInstance()->RegisterUserPrefs(prefs);
   user_prefs->SetString(prefs::kGoogleServicesUsername, "foo");
   return profile;
 }

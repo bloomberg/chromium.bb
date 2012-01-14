@@ -19,6 +19,7 @@
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/sessions/session_service_test_helper.h"
 #include "chrome/browser/signin/signin_manager.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/abstract_profile_sync_service_test.h"
 #include "chrome/browser/sync/glue/session_change_processor.h"
 #include "chrome/browser/sync/glue/session_data_type_controller.h"
@@ -224,7 +225,7 @@ class ProfileSyncServiceSessionTest
                         bool will_fail_association) {
     if (sync_service_.get())
       return false;
-    SigninManager* signin = profile()->GetSigninManager();
+    SigninManager* signin = SigninManagerFactory::GetForProfile(profile());
     signin->SetAuthenticatedUsername("test_user");
     sync_service_.reset(new TestProfileSyncService(
         &factory_,

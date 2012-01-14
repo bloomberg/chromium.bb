@@ -2176,6 +2176,8 @@
         'browser/shell_integration_win.cc',
         'browser/signin/signin_manager.cc',
         'browser/signin/signin_manager.h',
+        'browser/signin/signin_manager_factory.cc',
+        'browser/signin/signin_manager_factory.h',
         'browser/signin/token_service.cc',
         'browser/signin/token_service.h',
         'browser/simple_message_box.h',

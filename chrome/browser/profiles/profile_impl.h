@@ -126,7 +126,6 @@ class ProfileImpl : public Profile,
   virtual FilePath last_selected_directory() OVERRIDE;
   virtual void set_last_selected_directory(const FilePath& path) OVERRIDE;
   virtual ProfileSyncService* GetProfileSyncService() OVERRIDE;
-  virtual SigninManager* GetSigninManager() OVERRIDE;
   virtual TokenService* GetTokenService() OVERRIDE;
   void InitSyncService();
   virtual ExtensionInfoMap* GetExtensionInfoMap() OVERRIDE;
@@ -246,7 +245,6 @@ class ProfileImpl : public Profile,
   scoped_refptr<PromoResourceService> promo_resource_service_;
   scoped_refptr<ProtocolHandlerRegistry> protocol_handler_registry_;
 
-  scoped_ptr<SigninManager> signin_manager_;
   scoped_ptr<TokenService> token_service_;
   scoped_ptr<ProfileSyncComponentsFactory> profile_sync_factory_;
   scoped_ptr<ProfileSyncService> sync_service_;

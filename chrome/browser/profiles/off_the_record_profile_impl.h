@@ -89,7 +89,6 @@ class OffTheRecordProfileImpl : public Profile,
   virtual bool DidLastSessionExitCleanly() OVERRIDE;
   virtual BookmarkModel* GetBookmarkModel() OVERRIDE;
   virtual ProtocolHandlerRegistry* GetProtocolHandlerRegistry() OVERRIDE;
-  virtual SigninManager* GetSigninManager() OVERRIDE;
   virtual TokenService* GetTokenService() OVERRIDE;
   virtual ProfileSyncService* GetProfileSyncService() OVERRIDE;
   virtual bool IsSameProfile(Profile* profile) OVERRIDE;

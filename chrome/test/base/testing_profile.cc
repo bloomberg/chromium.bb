@@ -35,7 +35,6 @@
 #include "chrome/browser/search_engines/template_url_fetcher.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
-#include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/token_service.h"
 #include "chrome/browser/speech/chrome_speech_input_preferences.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
@@ -577,7 +576,6 @@ PasswordStore* TestingProfile::GetPasswordStore(ServiceAccessType access) {
 }
 
 void TestingProfile::SetPrefService(PrefService* prefs) {
-  DCHECK(!prefs_.get());
   prefs_.reset(prefs);
 }
 
@@ -797,18 +795,6 @@ void TestingProfile::BlockUntilHistoryProcessesPendingRequests() {
   CancelableRequestConsumer consumer;
   history_service_->ScheduleDBTask(new QuittingHistoryDBTask(), &consumer);
   MessageLoop::current()->Run();
-}
-
-void TestingProfile::SetSigninManager(SigninManager* signin_manager) {
-  DCHECK(!signin_manager_.get());
-  signin_manager_.reset(signin_manager);
-}
-
-SigninManager* TestingProfile::GetSigninManager() {
-  if (!signin_manager_.get()) {
-    signin_manager_.reset(new SigninManager());
-  }
-  return signin_manager_.get();
 }
 
 TokenService* TestingProfile::GetTokenService() {
