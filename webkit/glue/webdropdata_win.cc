@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,7 +14,7 @@
 // static
 void WebDropData::PopulateWebDropData(IDataObject* data_object,
                                       WebDropData* drop_data) {
-  std::wstring url_str;
+  string16 url_str;
   if (ui::ClipboardUtil::GetUrl(data_object, &url_str, &drop_data->url_title,
                                 false)) {
     GURL test_url(url_str);
@@ -30,4 +30,6 @@ void WebDropData::PopulateWebDropData(IDataObject* data_object,
   }
   ui::ClipboardUtil::GetFileContents(data_object,
       &drop_data->file_description_filename, &drop_data->file_contents);
+  ui::ClipboardUtil::GetWebCustomData(data_object,
+      &drop_data->custom_data);
 }

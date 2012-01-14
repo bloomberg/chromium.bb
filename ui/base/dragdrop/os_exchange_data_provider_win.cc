@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -329,9 +329,8 @@ void OSExchangeDataProviderWin::SetFilename(const FilePath& path) {
 
 void OSExchangeDataProviderWin::SetPickledData(CLIPFORMAT format,
                                                const Pickle& data) {
-  STGMEDIUM* storage = GetStorageForString(
-      std::string(static_cast<const char *>(data.data()),
-      static_cast<size_t>(data.size())));
+  STGMEDIUM* storage = GetStorageForBytes(static_cast<const char*>(data.data()),
+                                          data.size());
   data_->contents_.push_back(
       new DataObjectImpl::StoredDataInfo(format, storage));
 }
@@ -407,8 +406,7 @@ bool OSExchangeDataProviderWin::GetPickledData(CLIPFORMAT format,
     if (medium.tymed & TYMED_HGLOBAL) {
       base::win::ScopedHGlobal<char> c_data(medium.hGlobal);
       DCHECK_GT(c_data.Size(), 0u);
-      // Need to subtract 1 as SetPickledData adds an extra byte to the end.
-      *data = Pickle(c_data.get(), static_cast<int>(c_data.Size() - 1));
+      *data = Pickle(c_data.get(), static_cast<int>(c_data.Size()));
       success = true;
     }
     ReleaseStgMedium(&medium);

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,6 +26,8 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/net_util.h"
+#include "ui/base/clipboard/clipboard_util_win.h"
+#include "ui/base/clipboard/custom_data_helper.h"
 #include "ui/views/drag_utils.h"
 #include "webkit/glue/webdropdata.h"
 
@@ -273,6 +275,7 @@ void TabContentsDragWin::DoDragging(const WebDropData& drop_data,
                                     const gfx::Point& image_offset) {
   ui::OSExchangeData data;
 
+  // TODO(dcheng): Figure out why this is mutually exclusive.
   if (!drop_data.download_metadata.empty()) {
     PrepareDragForDownload(drop_data, &data, page_url, page_encoding);
 
@@ -292,6 +295,12 @@ void TabContentsDragWin::DoDragging(const WebDropData& drop_data,
       data.SetString(drop_data.plain_text);
     if (drop_data.url.is_valid())
       PrepareDragForUrl(drop_data, &data);
+    if (!drop_data.custom_data.empty()) {
+      Pickle pickle;
+      ui::WriteCustomDataToPickle(drop_data.custom_data, &pickle);
+      data.SetPickledData(ui::ClipboardUtil::GetWebCustomDataFormat()->cfFormat,
+                          pickle);
+    }
   }
 
   // Set drag image.

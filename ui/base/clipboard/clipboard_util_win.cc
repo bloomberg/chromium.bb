@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,13 +15,14 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/scoped_hglobal.h"
+#include "ui/base/clipboard/custom_data_helper.h"
 
 namespace ui {
 
 namespace {
 
-bool GetUrlFromHDrop(IDataObject* data_object, std::wstring* url,
-                     std::wstring* title) {
+bool GetUrlFromHDrop(IDataObject* data_object, string16* url,
+                     string16* title) {
   DCHECK(data_object && url && title);
 
   STGMEDIUM medium;
@@ -54,22 +55,22 @@ bool GetUrlFromHDrop(IDataObject* data_object, std::wstring* url,
   return success;
 }
 
-void SplitUrlAndTitle(const std::wstring& str,
-                      std::wstring* url,
-                      std::wstring* title) {
+void SplitUrlAndTitle(const string16& str,
+                      string16* url,
+                      string16* title) {
   DCHECK(url && title);
   size_t newline_pos = str.find('\n');
-  if (newline_pos != std::wstring::npos) {
+  if (newline_pos != string16::npos) {
     url->assign(str, 0, newline_pos);
-    title->assign(str, newline_pos + 1, std::wstring::npos);
+    title->assign(str, newline_pos + 1, string16::npos);
   } else {
     url->assign(str);
     title->assign(str);
   }
 }
 
-bool GetFileUrl(IDataObject* data_object, std::wstring* url,
-                std::wstring* title) {
+bool GetFileUrl(IDataObject* data_object, string16* url,
+                string16* title) {
   STGMEDIUM store;
   if (SUCCEEDED(data_object->GetData(ClipboardUtil::GetFilenameWFormat(),
                                      &store))) {
@@ -245,7 +246,7 @@ bool ClipboardUtil::HasPlainText(IDataObject* data_object) {
 
 
 bool ClipboardUtil::GetUrl(IDataObject* data_object,
-    std::wstring* url, std::wstring* title, bool convert_filenames) {
+    string16* url, string16* title, bool convert_filenames) {
   DCHECK(data_object && url && title);
   if (!HasUrl(data_object))
     return false;
@@ -284,7 +285,7 @@ bool ClipboardUtil::GetUrl(IDataObject* data_object,
 }
 
 bool ClipboardUtil::GetFilenames(IDataObject* data_object,
-                                 std::vector<std::wstring>* filenames) {
+                                 std::vector<string16>* filenames) {
   DCHECK(data_object && filenames);
   if (!HasFilenames(data_object))
     return false;
@@ -314,7 +315,7 @@ bool ClipboardUtil::GetFilenames(IDataObject* data_object,
 }
 
 bool ClipboardUtil::GetPlainText(IDataObject* data_object,
-                                 std::wstring* plain_text) {
+                                 string16* plain_text) {
   DCHECK(data_object && plain_text);
   if (!HasPlainText(data_object))
     return false;
@@ -342,12 +343,12 @@ bool ClipboardUtil::GetPlainText(IDataObject* data_object,
 
   // If a file is dropped on the window, it does not provide either of the
   // plain text formats, so here we try to forcibly get a url.
-  std::wstring title;
+  string16 title;
   return GetUrl(data_object, plain_text, &title, false);
 }
 
 bool ClipboardUtil::GetHtml(IDataObject* data_object,
-                            std::wstring* html, std::string* base_url) {
+                            string16* html, std::string* base_url) {
   DCHECK(data_object && html && base_url);
 
   STGMEDIUM store;
@@ -381,10 +382,10 @@ bool ClipboardUtil::GetHtml(IDataObject* data_object,
 }
 
 bool ClipboardUtil::GetFileContents(IDataObject* data_object,
-    std::wstring* filename, std::string* file_contents) {
+    string16* filename, std::string* file_contents) {
   DCHECK(data_object && filename && file_contents);
-  if (!SUCCEEDED(data_object->QueryGetData(GetFileContentFormatZero())) &&
-      !SUCCEEDED(data_object->QueryGetData(GetFileDescriptorFormat())))
+  if (FAILED(data_object->QueryGetData(GetFileContentFormatZero())) &&
+      FAILED(data_object->QueryGetData(GetFileDescriptorFormat())))
     return false;
 
   STGMEDIUM content;
@@ -411,6 +412,26 @@ bool ClipboardUtil::GetFileContents(IDataObject* data_object,
   }
   return true;
 }
+
+bool ClipboardUtil::GetWebCustomData(
+    IDataObject* data_object, std::map<string16, string16>* custom_data) {
+  DCHECK(data_object && custom_data);
+
+  if (FAILED(data_object->QueryGetData(GetWebCustomDataFormat())))
+    return false;
+
+  STGMEDIUM store;
+  if (SUCCEEDED(data_object->GetData(GetWebCustomDataFormat(), &store))) {
+    {
+      base::win::ScopedHGlobal<char> data(store.hGlobal);
+      ReadCustomDataIntoMap(data.get(), data.Size(), custom_data);
+    }
+    ReleaseStgMedium(&store);
+    return true;
+  }
+  return false;
+}
+
 
 // HtmlToCFHtml and CFHtmlToHtml are based on similar methods in
 // WebCore/platform/win/ClipboardUtilitiesWin.cpp.
