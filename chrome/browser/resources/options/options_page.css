@@ -20,6 +20,11 @@
 #search-field {
   font-size: inherit;
   margin: 0;
+  width: 100%;
+}
+
+#searchPageNav {
+  -webkit-padding-start: 20px;
 }
 
 /*
