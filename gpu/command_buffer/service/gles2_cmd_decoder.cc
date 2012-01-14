@@ -15,6 +15,7 @@
 #include "base/atomicops.h"
 #include "base/at_exit.h"
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #if defined(OS_MACOSX)
 #include "base/mac/scoped_cftyperef.h"
@@ -33,6 +34,7 @@
 #include "gpu/command_buffer/service/framebuffer_manager.h"
 #include "gpu/command_buffer/service/gl_utils.h"
 #include "gpu/command_buffer/service/gles2_cmd_validation.h"
+#include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/command_buffer/service/program_manager.h"
 #include "gpu/command_buffer/service/renderbuffer_manager.h"
 #include "gpu/command_buffer/service/shader_manager.h"
@@ -492,7 +494,8 @@ bool GLES2Decoder::GetServiceTextureId(uint32 client_texture_id,
 }
 
 GLES2Decoder::GLES2Decoder()
-    : debug_(false) {
+    : debug_(false),
+      log_commands_(false) {
 }
 
 GLES2Decoder::~GLES2Decoder() {
@@ -1926,6 +1929,11 @@ bool GLES2DecoderImpl::Initialize(
   DCHECK(context);
   DCHECK(!context_.get());
 
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableGPUDebugging)) {
+    set_debug(true);
+  }
+
   // Take ownership of the GLSurface. TODO(apatrick): once the parent / child
   // context is retired, the decoder should not take an initial surface as
   // an argument to this function.
@@ -2995,8 +3003,7 @@ error::Error GLES2DecoderImpl::DoCommand(
     unsigned int arg_count,
     const void* cmd_data) {
   error::Error result = error::kNoError;
-  if (debug()) {
-    // TODO(gman): Change output to something useful for NaCl.
+  if (log_commands()) {
     LOG(INFO) << "[" << this << "]" << "cmd: " << GetCommandName(command);
   }
   unsigned int command_index = command - kStartPoint - 1;
@@ -3021,10 +3028,10 @@ error::Error GLES2DecoderImpl::DoCommand(
       if (debug()) {
         GLenum error;
         while ((error = glGetError()) != GL_NO_ERROR) {
-          // TODO(gman): Change output to something useful for NaCl.
-          SetGLError(error, NULL);
-          DLOG(INFO) << "[" << this << "]"
-              << "GL ERROR: " << error << " : " << GetCommandName(command);
+          SetGLError(error, "GL error from driver");
+          LOG(INFO) << "[" << this << "]"
+                    << "GL ERROR: " << GLES2Util::GetStringEnum(error) << " : "
+                    << GetCommandName(command);
         }
       }
     } else {

@@ -244,7 +244,7 @@ void GpuCommandBufferStub::OnInitialize(
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableGPUServiceLogging)) {
-    decoder_->set_debug(true);
+    decoder_->set_log_commands(true);
   }
 
   decoder_->SetMsgCallback(

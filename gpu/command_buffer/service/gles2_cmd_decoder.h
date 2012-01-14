@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -54,8 +54,18 @@ class GLES2Decoder : public CommonDecoder {
     return debug_;
   }
 
+  // Set to true to call glGetError after every command.
   void set_debug(bool debug) {
     debug_ = debug;
+  }
+
+  bool log_commands() const {
+    return log_commands_;
+  }
+
+  // Set to true to LOG every command.
+  void set_log_commands(bool log_commands) {
+    log_commands_ = log_commands;
   }
 
   // Initializes the graphics context. Can create an offscreen
@@ -143,6 +153,7 @@ class GLES2Decoder : public CommonDecoder {
 
  private:
   bool debug_;
+  bool log_commands_;
 
   DISALLOW_COPY_AND_ASSIGN(GLES2Decoder);
 };

@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -240,6 +240,8 @@
         'command_buffer/service/gpu_scheduler.h',
         'command_buffer/service/gpu_scheduler.cc',
         'command_buffer/service/gpu_scheduler_mock.h',
+        'command_buffer/service/gpu_switches.h',
+        'command_buffer/service/gpu_switches.cc',
         'command_buffer/service/id_manager.h',
         'command_buffer/service/id_manager.cc',
         'command_buffer/service/mocks.h',
