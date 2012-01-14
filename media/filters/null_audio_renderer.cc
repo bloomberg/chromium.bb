@@ -57,7 +57,7 @@ void NullAudioRenderer::OnStop() {
 }
 
 void NullAudioRenderer::FillBufferTask() {
-  int64 sleep_in_milliseconds = 0;
+  base::TimeDelta delay;
 
   // Only consume buffers when actually playing.
   if (GetPlaybackRate() > 0.0f)  {
@@ -67,18 +67,18 @@ void NullAudioRenderer::FillBufferTask() {
                               true);
 
     // Calculate our sleep duration, taking playback rate into consideration.
-    sleep_in_milliseconds =
-        bytes / (bytes_per_millisecond_ * GetPlaybackRate());
+    delay = base::TimeDelta::FromMilliseconds(
+        bytes / (bytes_per_millisecond_ * GetPlaybackRate()));
   } else {
     // If paused, sleep for 10 milliseconds before polling again.
-    sleep_in_milliseconds = 10;
+    delay = base::TimeDelta::FromMilliseconds(10);
   }
 
   // Sleep for at least one millisecond so we don't spin the CPU.
   MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&NullAudioRenderer::FillBufferTask, this),
-      std::max(sleep_in_milliseconds, static_cast<int64>(1)));
+      std::max(delay, base::TimeDelta::FromMilliseconds(1)));
 }
 
 }  // namespace media
