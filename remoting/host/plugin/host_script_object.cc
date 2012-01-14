@@ -342,11 +342,7 @@ void HostNPScriptObject::OnAccessDenied() {
 
   ++failed_login_attempts_;
   if (failed_login_attempts_ == kMaxLoginAttempts) {
-    // DeleteInternal() may destroy the host synchronously, but we are
-    // not allowed to do it from HostStatusObserver handlers, so post
-    // a task to do it later.
-    host_context_.network_message_loop()->PostTask(FROM_HERE, base::Bind(
-        &HostNPScriptObject::DisconnectInternal, base::Unretained(this)));
+    DisconnectInternal();
   }
 }
 
@@ -368,15 +364,8 @@ void HostNPScriptObject::OnClientAuthenticated(const std::string& jid) {
 
 void HostNPScriptObject::OnClientDisconnected(const std::string& jid) {
   DCHECK(host_context_.network_message_loop()->BelongsToCurrentThread());
-
   client_username_.clear();
-
-  // Disconnect the host when a client disconnects. DeleteInternal()
-  // may destroy the host synchronously, but we are not allowed to do
-  // it from HostStatusObserver handlers, so post a task to do it
-  // later.
-  host_context_.network_message_loop()->PostTask(FROM_HERE, base::Bind(
-      &HostNPScriptObject::DisconnectInternal, base::Unretained(this)));
+  DisconnectInternal();
 }
 
 void HostNPScriptObject::OnShutdown() {
@@ -603,9 +592,16 @@ void HostNPScriptObject::DisconnectInternal() {
     default:
       DCHECK(host_);
       SetState(kDisconnecting);
-      host_->Shutdown(
-          base::Bind(&HostNPScriptObject::OnShutdownFinished,
-                     base::Unretained(this)));
+
+      // ChromotingHost::Shutdown() may destroy SignalStrategy
+      // synchronously, bug SignalStrategy::Listener handlers are not
+      // allowed to destroy SignalStrategy, so post task to call
+      // Shutdown() later.
+      host_context_.network_message_loop()->PostTask(
+          FROM_HERE, base::Bind(
+              &ChromotingHost::Shutdown, host_,
+              base::Bind(&HostNPScriptObject::OnShutdownFinished,
+                         base::Unretained(this))));
   }
 }
 
@@ -654,12 +650,7 @@ void HostNPScriptObject::OnReceivedSupportID(
 
   if (!success) {
     SetState(kError);
-    // DisconnectInternal() may destroy SignalStrategy synchronously,
-    // bug SignalStrategy::Listener handlers are not allowed to
-    // destroy SignalStrategy, so post task to call
-    // DisconnectInternal() later.
-    host_context_.network_message_loop()->PostTask(FROM_HERE, base::Bind(
-        &HostNPScriptObject::DisconnectInternal, base::Unretained(this)));
+    DisconnectInternal();
     return;
   }
 

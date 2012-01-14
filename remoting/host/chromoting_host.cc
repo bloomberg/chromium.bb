@@ -111,7 +111,7 @@ void ChromotingHost::Shutdown(const base::Closure& shutdown_task) {
 
   if (recorder_.get()) {
     StopScreenRecorder();
-  } else {
+  } else if (!stopping_recorders_) {
     ShutdownFinish();
   }
 }
@@ -356,6 +356,7 @@ void ChromotingHost::OnScreenRecorderStopped() {
 
 void ChromotingHost::ShutdownFinish() {
   DCHECK(context_->network_message_loop()->BelongsToCurrentThread());
+  DCHECK(!stopping_recorders_);
 
   state_ = kStopped;
 

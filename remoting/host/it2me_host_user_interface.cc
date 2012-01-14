@@ -59,9 +59,8 @@ void It2MeHostUserInterface::OnClientAuthenticated(const std::string& jid) {
 
   std::string username = jid.substr(0, jid.find('/'));
   ui_thread_proxy_.PostTask(FROM_HERE, base::Bind(
-    &It2MeHostUserInterface::ProcessOnClientAuthenticated,
-    base::Unretained(this),
-    username));
+      &It2MeHostUserInterface::ProcessOnClientAuthenticated,
+      base::Unretained(this), username));
 }
 
 void It2MeHostUserInterface::OnClientDisconnected(const std::string& jid) {
