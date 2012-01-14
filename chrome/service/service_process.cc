@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -46,6 +46,10 @@ namespace {
 // Delay in millseconds after the last service is disabled before we attempt
 // a shutdown.
 const int64 kShutdownDelay = 60000;
+
+// Delay in milliseconds between launching a browser process to check the
+// policy for us. 8 hours * 60 * 60 * 1000
+const int64 kPolicyCheckDelay = 28800000;
 
 const char kDefaultServiceProcessLocale[] = "en-US";
 
@@ -218,6 +222,10 @@ bool ServiceProcess::Initialize(MessageLoopForUI* message_loop,
 
   // See if we need to stay running.
   ScheduleShutdownCheck();
+
+  // Occasionally check to see if we need to launch the browser to get the
+  // policy state information.
+  CloudPrintPolicyCheckIfNeeded();
   return true;
 }
 
@@ -363,6 +371,21 @@ void ServiceProcess::ShutdownIfNeeded() {
       Shutdown();
     }
   }
+}
+
+void ServiceProcess::ScheduleCloudPrintPolicyCheck() {
+  MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&ServiceProcess::CloudPrintPolicyCheckIfNeeded,
+                 base::Unretained(this)),
+      kPolicyCheckDelay);
+}
+
+void ServiceProcess::CloudPrintPolicyCheckIfNeeded() {
+  if (enabled_services_ && !ipc_server_->is_client_connected()) {
+    GetCloudPrintProxy()->CheckCloudPrintProxyPolicy();
+  }
+  ScheduleCloudPrintPolicyCheck();
 }
 
 ServiceProcess::~ServiceProcess() {

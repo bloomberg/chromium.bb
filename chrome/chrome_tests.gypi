@@ -2669,6 +2669,7 @@
         'browser/popup_blocker_browsertest.cc',
         'browser/prerender/prefetch_browsertest.cc',
         'browser/prerender/prerender_browsertest.cc',
+        'browser/printing/cloud_print/test/cloud_print_proxy_process_browsertest.cc',
         'browser/printing/print_dialog_cloud_uitest.cc',
         'browser/printing/print_preview_tab_controller_browsertest.cc',
         'browser/profiles/profile_manager_browsertest.cc',
@@ -2861,6 +2862,7 @@
         }, { #else: OS == "chromeos"
           'sources!': [
             'browser/notifications/desktop_notifications_unittest.cc',
+            'browser/printing/cloud_print/test/cloud_print_proxy_process_browsertest.cc',
             'browser/service/service_process_control_browsertest.cc',
             # chromeos does not use cross-platform panels
             'browser/ui/panels/panel_app_browsertest.cc',
@@ -3033,6 +3035,8 @@
             # TODO(hbono): This test depends on hunspell and we cannot run it on
             # Mac, which does not use hunspell by default.
             'browser/spellchecker/spellcheck_host_browsertest.cc',
+            # Blocked on having a full Launchd mock.
+            'browser/printing/cloud_print/test/cloud_print_proxy_process_browsertest.cc',
           ],
         }, { # else: OS != "mac"
           'sources!': [

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,10 +19,9 @@
 #include "chrome/service/service_process_prefs.h"
 #include "googleurl/src/gurl.h"
 
-// This method is invoked on the IO thread to launch the browser process to
-// display a desktop notification that the Cloud Print token is invalid and
-// needs re-authentication.
-static void ShowTokenExpiredNotificationInBrowser() {
+namespace {
+
+void LaunchBrowserProcessWithSwitch(const std::string& switch_string) {
   DCHECK(g_service_process->io_thread()->message_loop_proxy()->
       BelongsToCurrentThread());
   FilePath exe_path;
@@ -37,10 +36,23 @@ static void ShowTokenExpiredNotificationInBrowser() {
       process_command_line.GetSwitchValuePath(switches::kUserDataDir);
   if (!user_data_dir.empty())
     cmd_line.AppendSwitchPath(switches::kUserDataDir, user_data_dir);
-  cmd_line.AppendSwitch(switches::kNotifyCloudPrintTokenExpired);
+  cmd_line.AppendSwitch(switch_string);
 
   base::LaunchProcess(cmd_line, base::LaunchOptions(), NULL);
 }
+
+// This method is invoked on the IO thread to launch the browser process to
+// display a desktop notification that the Cloud Print token is invalid and
+// needs re-authentication.
+void ShowTokenExpiredNotificationInBrowser() {
+  LaunchBrowserProcessWithSwitch(switches::kNotifyCloudPrintTokenExpired);
+}
+
+void CheckCloudPrintProxyPolicyInBrowser() {
+  LaunchBrowserProcessWithSwitch(switches::kCheckCloudPrintConnectorPolicy);
+}
+
+}  // namespace
 
 CloudPrintProxy::CloudPrintProxy()
     : service_prefs_(NULL),
@@ -189,6 +201,11 @@ void CloudPrintProxy::GetProxyInfo(cloud_print::CloudPrintProxyInfo* info) {
     service_prefs_->GetString(prefs::kCloudPrintProxyId, &info->proxy_id);
 }
 
+void CloudPrintProxy::CheckCloudPrintProxyPolicy() {
+  g_service_process->io_thread()->message_loop_proxy()->PostTask(
+      FROM_HERE, base::Bind(&CheckCloudPrintProxyPolicyInBrowser));
+}
+
 void CloudPrintProxy::OnAuthenticated(
     const std::string& robot_oauth_refresh_token,
     const std::string& robot_email,
@@ -240,4 +257,3 @@ void CloudPrintProxy::Shutdown() {
     backend_->Shutdown();
   backend_.reset();
 }
-

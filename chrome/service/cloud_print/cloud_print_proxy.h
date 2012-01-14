@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -46,6 +46,9 @@ class CloudPrintProxy : public CloudPrintProxyFrontend,
   void DisableForUser();
   // Returns the proxy info.
   void GetProxyInfo(cloud_print::CloudPrintProxyInfo* info);
+
+  // Launches a browser to see if the proxy policy has been set.
+  void CheckCloudPrintProxyPolicy();
 
   const std::string& user_email() const {
     return user_email_;

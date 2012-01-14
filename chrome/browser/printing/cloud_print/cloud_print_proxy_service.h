@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -49,6 +49,11 @@ class CloudPrintProxyService
   // update the browser prefs.
   void RefreshStatusFromService();
 
+  // Disable the service if the policy to do so is set, and once the
+  // disablement is verified, quit the browser. Returns true if the policy is
+  // not set or the connector was not enabled.
+  bool EnforceCloudPrintConnectorPolicyAndQuit();
+
   bool ShowTokenExpiredNotification();
   std::string proxy_id() const { return proxy_id_; }
 
@@ -91,7 +96,10 @@ class CloudPrintProxyService
   void OnTokenExpiredNotificationClosed(bool by_user);
   void OnTokenExpiredNotificationClick();
   void TokenExpiredNotificationDone(bool keep_alive);
-  void ApplyCloudPrintConnectorPolicy();
+
+  // Checks the policy. Returns true if nothing needs to be done (the policy is
+  // not set or the connector is not enabled).
+  bool ApplyCloudPrintConnectorPolicy();
 
   // Virtual for testing.
   virtual ServiceProcessControl* GetServiceProcessControl();
@@ -100,6 +108,10 @@ class CloudPrintProxyService
 
   // For watching for connector enablement policy changes.
   PrefChangeRegistrar pref_change_registrar_;
+
+  // If set, continue trying to disable the connector, and quit the process
+  // once successful.
+  bool enforcing_connector_policy_;
 
   DISALLOW_COPY_AND_ASSIGN(CloudPrintProxyService);
 };

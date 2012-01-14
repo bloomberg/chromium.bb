@@ -1626,6 +1626,16 @@ bool BrowserInit::ProcessCmdLineImpl(
     silent_launch = true;
   }
 
+  // If we are checking the proxy enabled policy, don't open any windows.
+  if (command_line.HasSwitch(switches::kCheckCloudPrintConnectorPolicy)) {
+    silent_launch = true;
+    if (CloudPrintProxyServiceFactory::GetForProfile(last_used_profile)->
+        EnforceCloudPrintConnectorPolicyAndQuit())
+      // Success, nothing more needs to be done, so return false to stop
+      // launching and quit.
+      return false;
+  }
+
   if (command_line.HasSwitch(switches::kExplicitlyAllowedPorts)) {
     std::string allowed_ports =
         command_line.GetSwitchValueASCII(switches::kExplicitlyAllowedPorts);

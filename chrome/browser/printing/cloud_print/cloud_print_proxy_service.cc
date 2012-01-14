@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -57,7 +57,8 @@ class CloudPrintProxyService::TokenExpiredNotificationDelegate
 CloudPrintProxyService::CloudPrintProxyService(Profile* profile)
     : profile_(profile),
       token_expired_delegate_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
+      enforcing_connector_policy_(false) {
 }
 
 CloudPrintProxyService::~CloudPrintProxyService() {
@@ -82,6 +83,14 @@ void CloudPrintProxyService::RefreshStatusFromService() {
   InvokeServiceTask(
       base::Bind(&CloudPrintProxyService::RefreshCloudPrintProxyStatus,
                  weak_factory_.GetWeakPtr()));
+}
+
+bool CloudPrintProxyService::EnforceCloudPrintConnectorPolicyAndQuit() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  enforcing_connector_policy_ = true;
+  if (ApplyCloudPrintConnectorPolicy())
+    return true;
+  return false;
 }
 
 void CloudPrintProxyService::EnableForUser(const std::string& lsid,
@@ -161,15 +170,25 @@ void CloudPrintProxyService::TokenExpiredNotificationDone(bool keep_alive) {
   }
 }
 
-void CloudPrintProxyService::ApplyCloudPrintConnectorPolicy() {
+bool CloudPrintProxyService::ApplyCloudPrintConnectorPolicy() {
   if (!profile_->GetPrefs()->GetBoolean(prefs::kCloudPrintProxyEnabled)) {
     std::string email =
         profile_->GetPrefs()->GetString(prefs::kCloudPrintEmail);
     if (!email.empty()) {
       DisableForUser();
       profile_->GetPrefs()->SetString(prefs::kCloudPrintEmail, std::string());
+      if (enforcing_connector_policy_) {
+        MessageLoop::current()->PostTask(
+            FROM_HERE,
+            base::Bind(&CloudPrintProxyService::RefreshCloudPrintProxyStatus,
+                       weak_factory_.GetWeakPtr()));
+      }
+      return false;
+    } else if (enforcing_connector_policy_) {
+      MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
     }
   }
+  return true;
 }
 
 void CloudPrintProxyService::OnCloudPrintSetupClosed() {

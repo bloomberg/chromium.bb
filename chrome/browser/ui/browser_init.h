@@ -245,6 +245,9 @@ class BrowserInit {
   };
 
  private:
+  friend class CloudPrintProxyPolicyTest;
+  friend class CloudPrintProxyPolicyStartupTest;
+
   // Returns the list of URLs to open from the command line. The returned
   // vector is empty if the user didn't specify any URLs on the command line.
   static std::vector<GURL> GetURLsFromCommandLine(

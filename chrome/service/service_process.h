@@ -99,12 +99,20 @@ class ServiceProcess : public CloudPrintProxy::Client {
   ServiceURLRequestContextGetter* GetServiceURLRequestContextGetter();
 
  private:
+  friend class TestServiceProcess;
+
   // Schedule a call to ShutdownIfNeeded.
   void ScheduleShutdownCheck();
 
   // Shuts down the process if no services are enabled and no clients are
   // connected.
   void ShutdownIfNeeded();
+
+  // Schedule a call to CloudPrintPolicyCheckIfNeeded.
+  void ScheduleCloudPrintPolicyCheck();
+
+  // Launch the browser for a policy check if we're not connected.
+  void CloudPrintPolicyCheckIfNeeded();
 
   // Called exactly ONCE per process instance for each service that gets
   // enabled in this process.

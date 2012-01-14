@@ -136,6 +136,11 @@ const char kAutomationReinitializeOnChannelError[] =
 // purposes.
 const char kCheckForUpdateIntervalSec[]     = "check-for-update-interval";
 
+// Checks the cloud print connector policy, informing the service process if
+// the policy is set to disallow the connector, then quits.
+const char kCheckCloudPrintConnectorPolicy[]    =
+    "check-cloud-print-connector-policy";
+
 // Tells chrome to load the specified version of chrome.dll on Windows. If this
 // version cannot be loaded, Chrome will exit.
 const char kChromeVersion[]                 = "chrome-version";
