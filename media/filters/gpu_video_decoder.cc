@@ -41,18 +41,19 @@ GpuVideoDecoder::BufferTimeData::~BufferTimeData() {}
 
 GpuVideoDecoder::GpuVideoDecoder(
     MessageLoop* message_loop,
-    scoped_ptr<Factories> factories)
-    : message_loop_(message_loop),
-      factories_(factories.Pass()),
+    const scoped_refptr<Factories>& factories)
+    : gvd_loop_proxy_(message_loop->message_loop_proxy()),
+      render_loop_proxy_(base::MessageLoopProxy::current()),
+      factories_(factories),
       state_(kNormal),
       demuxer_read_in_progress_(false),
       next_picture_buffer_id_(0),
-      next_bitstream_buffer_id_(0) {
-  DCHECK(message_loop_ && factories_.get());
+      next_bitstream_buffer_id_(0),
+      shutting_down_(false) {
+  DCHECK(gvd_loop_proxy_ && factories_);
 }
 
 GpuVideoDecoder::~GpuVideoDecoder() {
-  DCHECK_EQ(MessageLoop::current(), message_loop_);
   DCHECK(!vda_);  // Stop should have been already called.
   DCHECK(pending_read_cb_.is_null());
   for (size_t i = 0; i < available_shm_segments_.size(); ++i) {
@@ -69,8 +70,8 @@ GpuVideoDecoder::~GpuVideoDecoder() {
 }
 
 void GpuVideoDecoder::Stop(const base::Closure& callback) {
-  if (MessageLoop::current() != message_loop_) {
-    message_loop_->PostTask(FROM_HERE, base::Bind(
+  if (!gvd_loop_proxy_->BelongsToCurrentThread()) {
+    gvd_loop_proxy_->PostTask(FROM_HERE, base::Bind(
         &GpuVideoDecoder::Stop, this, callback));
     return;
   }
@@ -78,14 +79,15 @@ void GpuVideoDecoder::Stop(const base::Closure& callback) {
     callback.Run();
     return;
   }
-  vda_->Destroy();
+  render_loop_proxy_->PostTask(FROM_HERE, base::Bind(
+      &VideoDecodeAccelerator::Destroy, vda_));
   vda_ = NULL;
   callback.Run();
 }
 
 void GpuVideoDecoder::Seek(base::TimeDelta time, const FilterStatusCB& cb) {
-  if (MessageLoop::current() != message_loop_) {
-    message_loop_->PostTask(FROM_HERE, base::Bind(
+  if (!gvd_loop_proxy_->BelongsToCurrentThread()) {
+    gvd_loop_proxy_->PostTask(FROM_HERE, base::Bind(
         &GpuVideoDecoder::Seek, this, time, cb));
     return;
   }
@@ -93,8 +95,8 @@ void GpuVideoDecoder::Seek(base::TimeDelta time, const FilterStatusCB& cb) {
 }
 
 void GpuVideoDecoder::Pause(const base::Closure& callback)  {
-  if (MessageLoop::current() != message_loop_) {
-    message_loop_->PostTask(FROM_HERE, base::Bind(
+  if (!gvd_loop_proxy_->BelongsToCurrentThread()) {
+    gvd_loop_proxy_->PostTask(FROM_HERE, base::Bind(
         &GpuVideoDecoder::Pause, this, callback));
     return;
   }
@@ -102,14 +104,9 @@ void GpuVideoDecoder::Pause(const base::Closure& callback)  {
 }
 
 void GpuVideoDecoder::Flush(const base::Closure& callback)  {
-  // VRB::Flush() waits for pending reads to be satisfied, so it's important we
-  // don't reset the decoder while the renderer is still waiting.
-  // TODO(fischman): replace the pseudo-busy-loop here with a proper accounting
-  // of state transitions.
-  if (MessageLoop::current() != message_loop_ ||
-      state_ == kDrainingDecoder ||
-      !pending_read_cb_.is_null()) {
-    message_loop_->PostTask(FROM_HERE, base::Bind(
+  if (!gvd_loop_proxy_->BelongsToCurrentThread() ||
+      state_ == kDrainingDecoder) {
+    gvd_loop_proxy_->PostTask(FROM_HERE, base::Bind(
         &GpuVideoDecoder::Flush, this, callback));
     return;
   }
@@ -121,17 +118,31 @@ void GpuVideoDecoder::Flush(const base::Closure& callback)  {
     callback.Run();
     return;
   }
+
   DCHECK(pending_reset_cb_.is_null());
   DCHECK(!callback.is_null());
-  pending_reset_cb_ = callback;
-  vda_->Reset();
+
+  if (shutting_down_) {
+    // VideoRendererBase::Flush() can't complete while it has a pending read to
+    // us, so we fulfill such a read here.
+    if (!pending_read_cb_.is_null())
+      EnqueueFrameAndTriggerFrameDelivery(VideoFrame::CreateEmptyFrame());
+    // Immediate fire the callback instead of waiting for the reset to complete
+    // (which will happen after PipelineImpl::Stop() completes).
+    callback.Run();
+  } else {
+    pending_reset_cb_ = callback;
+  }
+
+  render_loop_proxy_->PostTask(FROM_HERE, base::Bind(
+      &VideoDecodeAccelerator::Reset, vda_));
 }
 
 void GpuVideoDecoder::Initialize(DemuxerStream* demuxer_stream,
                                  const PipelineStatusCB& callback,
                                  const StatisticsCallback& stats_callback) {
-  if (MessageLoop::current() != message_loop_) {
-    message_loop_->PostTask(FROM_HERE, base::Bind(
+  if (!gvd_loop_proxy_->BelongsToCurrentThread()) {
+    gvd_loop_proxy_->PostTask(FROM_HERE, base::Bind(
         &GpuVideoDecoder::Initialize, this,
         make_scoped_refptr(demuxer_stream), callback, stats_callback));
     return;
@@ -170,8 +181,8 @@ void GpuVideoDecoder::Initialize(DemuxerStream* demuxer_stream,
 }
 
 void GpuVideoDecoder::Read(const ReadCB& callback) {
-  if (MessageLoop::current() != message_loop_) {
-    message_loop_->PostTask(FROM_HERE, base::Bind(
+  if (!gvd_loop_proxy_->BelongsToCurrentThread()) {
+    gvd_loop_proxy_->PostTask(FROM_HERE, base::Bind(
         &GpuVideoDecoder::Read, this, callback));
     return;
   }
@@ -205,8 +216,8 @@ void GpuVideoDecoder::Read(const ReadCB& callback) {
 }
 
 void GpuVideoDecoder::RequestBufferDecode(const scoped_refptr<Buffer>& buffer) {
-  if (MessageLoop::current() != message_loop_) {
-    message_loop_->PostTask(FROM_HERE, base::Bind(
+  if (!gvd_loop_proxy_->BelongsToCurrentThread()) {
+    gvd_loop_proxy_->PostTask(FROM_HERE, base::Bind(
         &GpuVideoDecoder::RequestBufferDecode, this, buffer));
     return;
   }
@@ -220,7 +231,8 @@ void GpuVideoDecoder::RequestBufferDecode(const scoped_refptr<Buffer>& buffer) {
   if (buffer->IsEndOfStream()) {
     if (state_ == kNormal) {
       state_ = kDrainingDecoder;
-      vda_->Flush();
+      render_loop_proxy_->PostTask(FROM_HERE, base::Bind(
+          &VideoDecodeAccelerator::Flush, vda_));
     }
     return;
   }
@@ -235,7 +247,8 @@ void GpuVideoDecoder::RequestBufferDecode(const scoped_refptr<Buffer>& buffer) {
   DCHECK(inserted);
   RecordBufferTimeData(bitstream_buffer, *buffer);
 
-  vda_->Decode(bitstream_buffer);
+  render_loop_proxy_->PostTask(FROM_HERE, base::Bind(
+      &VideoDecodeAccelerator::Decode, vda_, bitstream_buffer));
 }
 
 void GpuVideoDecoder::RecordBufferTimeData(
@@ -280,14 +293,23 @@ bool GpuVideoDecoder::HasAlpha() const {
   return true;
 }
 
+void GpuVideoDecoder::PrepareForShutdownHack() {
+  if (!gvd_loop_proxy_->BelongsToCurrentThread()) {
+    gvd_loop_proxy_->PostTask(FROM_HERE, base::Bind(
+        &GpuVideoDecoder::PrepareForShutdownHack, this));
+    return;
+  }
+  shutting_down_ = true;
+}
+
 void GpuVideoDecoder::NotifyInitializeDone() {
   NOTREACHED() << "GpuVideoDecodeAcceleratorHost::Initialize is synchronous!";
 }
 
 void GpuVideoDecoder::ProvidePictureBuffers(uint32 count,
                                             const gfx::Size& size) {
-  if (MessageLoop::current() != message_loop_) {
-    message_loop_->PostTask(FROM_HERE, base::Bind(
+  if (!gvd_loop_proxy_->BelongsToCurrentThread()) {
+    gvd_loop_proxy_->PostTask(FROM_HERE, base::Bind(
         &GpuVideoDecoder::ProvidePictureBuffers, this, count, size));
     return;
   }
@@ -309,12 +331,13 @@ void GpuVideoDecoder::ProvidePictureBuffers(uint32 count,
         picture_buffers.back().id(), picture_buffers.back())).second;
     DCHECK(inserted);
   }
-  vda_->AssignPictureBuffers(picture_buffers);
+  render_loop_proxy_->PostTask(FROM_HERE, base::Bind(
+      &VideoDecodeAccelerator::AssignPictureBuffers, vda_, picture_buffers));
 }
 
 void GpuVideoDecoder::DismissPictureBuffer(int32 id) {
-  if (MessageLoop::current() != message_loop_) {
-    message_loop_->PostTask(FROM_HERE, base::Bind(
+  if (!gvd_loop_proxy_->BelongsToCurrentThread()) {
+    gvd_loop_proxy_->PostTask(FROM_HERE, base::Bind(
         &GpuVideoDecoder::DismissPictureBuffer, this, id));
     return;
   }
@@ -324,16 +347,13 @@ void GpuVideoDecoder::DismissPictureBuffer(int32 id) {
     NOTREACHED() << "Missing picture buffer: " << id;
     return;
   }
-  if (!factories_->DeleteTexture(it->second.texture_id())) {
-    NotifyError(VideoDecodeAccelerator::PLATFORM_FAILURE);
-    return;
-  }
+  factories_->DeleteTexture(it->second.texture_id());
   picture_buffers_in_decoder_.erase(it);
 }
 
 void GpuVideoDecoder::PictureReady(const media::Picture& picture) {
-  if (MessageLoop::current() != message_loop_) {
-    message_loop_->PostTask(FROM_HERE, base::Bind(
+  if (!gvd_loop_proxy_->BelongsToCurrentThread()) {
+    gvd_loop_proxy_->PostTask(FROM_HERE, base::Bind(
         &GpuVideoDecoder::PictureReady, this, picture));
     return;
   }
@@ -362,7 +382,7 @@ void GpuVideoDecoder::PictureReady(const media::Picture& picture) {
 
 void GpuVideoDecoder::EnqueueFrameAndTriggerFrameDelivery(
     const scoped_refptr<VideoFrame>& frame) {
-  DCHECK(MessageLoop::current() == message_loop_);
+  DCHECK(gvd_loop_proxy_->BelongsToCurrentThread());
 
   // During a pending vda->Reset(), we don't accumulate frames.  Drop it on the
   // floor and return.
@@ -377,25 +397,26 @@ void GpuVideoDecoder::EnqueueFrameAndTriggerFrameDelivery(
   if (pending_read_cb_.is_null())
     return;
 
-  message_loop_->PostTask(FROM_HERE, base::Bind(
+  gvd_loop_proxy_->PostTask(FROM_HERE, base::Bind(
       pending_read_cb_, ready_video_frames_.front()));
   pending_read_cb_.Reset();
   ready_video_frames_.pop_front();
 }
 
 void GpuVideoDecoder::ReusePictureBuffer(int64 picture_buffer_id) {
-  if (MessageLoop::current() != message_loop_) {
-    message_loop_->PostTask(FROM_HERE, base::Bind(
+  if (!gvd_loop_proxy_->BelongsToCurrentThread()) {
+    gvd_loop_proxy_->PostTask(FROM_HERE, base::Bind(
         &GpuVideoDecoder::ReusePictureBuffer, this, picture_buffer_id));
     return;
   }
   if (!vda_)
     return;
-  vda_->ReusePictureBuffer(picture_buffer_id);
+  render_loop_proxy_->PostTask(FROM_HERE, base::Bind(
+      &VideoDecodeAccelerator::ReusePictureBuffer, vda_, picture_buffer_id));
 }
 
 GpuVideoDecoder::SHMBuffer* GpuVideoDecoder::GetSHM(size_t min_size) {
-  DCHECK(MessageLoop::current() == message_loop_);
+  DCHECK(gvd_loop_proxy_->BelongsToCurrentThread());
   if (available_shm_segments_.empty() ||
       available_shm_segments_.back()->size < min_size) {
     size_t size_to_allocate = std::max(min_size, kSharedMemorySegmentBytes);
@@ -409,13 +430,13 @@ GpuVideoDecoder::SHMBuffer* GpuVideoDecoder::GetSHM(size_t min_size) {
 }
 
 void GpuVideoDecoder::PutSHM(SHMBuffer* shm_buffer) {
-  DCHECK(MessageLoop::current() == message_loop_);
+  DCHECK(gvd_loop_proxy_->BelongsToCurrentThread());
   available_shm_segments_.push_back(shm_buffer);
 }
 
 void GpuVideoDecoder::NotifyEndOfBitstreamBuffer(int32 id) {
-  if (MessageLoop::current() != message_loop_) {
-    message_loop_->PostTask(FROM_HERE, base::Bind(
+  if (!gvd_loop_proxy_->BelongsToCurrentThread()) {
+    gvd_loop_proxy_->PostTask(FROM_HERE, base::Bind(
         &GpuVideoDecoder::NotifyEndOfBitstreamBuffer, this, id));
     return;
   }
@@ -446,7 +467,7 @@ void GpuVideoDecoder::NotifyEndOfBitstreamBuffer(int32 id) {
 }
 
 void GpuVideoDecoder::EnsureDemuxOrDecode() {
-  DCHECK(MessageLoop::current() == message_loop_);
+  DCHECK(gvd_loop_proxy_->BelongsToCurrentThread());
   if (demuxer_read_in_progress_)
     return;
   demuxer_read_in_progress_ = true;
@@ -455,8 +476,8 @@ void GpuVideoDecoder::EnsureDemuxOrDecode() {
 }
 
 void GpuVideoDecoder::NotifyFlushDone() {
-  if (MessageLoop::current() != message_loop_) {
-    message_loop_->PostTask(FROM_HERE, base::Bind(
+  if (!gvd_loop_proxy_->BelongsToCurrentThread()) {
+    gvd_loop_proxy_->PostTask(FROM_HERE, base::Bind(
         &GpuVideoDecoder::NotifyFlushDone, this));
     return;
   }
@@ -466,23 +487,31 @@ void GpuVideoDecoder::NotifyFlushDone() {
 }
 
 void GpuVideoDecoder::NotifyResetDone() {
-  if (MessageLoop::current() != message_loop_) {
-    message_loop_->PostTask(FROM_HERE, base::Bind(
+  if (!gvd_loop_proxy_->BelongsToCurrentThread()) {
+    gvd_loop_proxy_->PostTask(FROM_HERE, base::Bind(
         &GpuVideoDecoder::NotifyResetDone, this));
     return;
   }
+
+  if (!vda_)
+    return;
+
   DCHECK(ready_video_frames_.empty());
 
-  // This needs to happen after vda_->Reset() is done to ensure pictures
+  // This needs to happen after the Reset() on vda_ is done to ensure pictures
   // delivered during the reset can find their time data.
   input_buffer_time_data_.clear();
 
-  ResetAndRunCB(&pending_reset_cb_);
+  if (!pending_reset_cb_.is_null())
+    ResetAndRunCB(&pending_reset_cb_);
+
+  if (!pending_read_cb_.is_null())
+    EnqueueFrameAndTriggerFrameDelivery(VideoFrame::CreateEmptyFrame());
 }
 
 void GpuVideoDecoder::NotifyError(media::VideoDecodeAccelerator::Error error) {
-  if (MessageLoop::current() != message_loop_) {
-    message_loop_->PostTask(FROM_HERE, base::Bind(
+  if (!gvd_loop_proxy_->BelongsToCurrentThread()) {
+    gvd_loop_proxy_->PostTask(FROM_HERE, base::Bind(
         &GpuVideoDecoder::NotifyError, this, error));
     return;
   }

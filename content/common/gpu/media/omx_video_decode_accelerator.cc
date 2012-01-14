@@ -457,7 +457,9 @@ void OmxVideoDecodeAccelerator::Destroy() {
     ShutdownComponent();
     return;
   }
-  DCHECK_EQ(client_state_, OMX_StateExecuting);
+  DCHECK(client_state_ == OMX_StateExecuting ||
+         client_state_ == OMX_StateIdle ||
+         client_state_ == OMX_StatePause);
   current_state_change_ = DESTROYING;
   client_ = NULL;
   BeginTransitionToState(OMX_StateIdle);
@@ -572,7 +574,9 @@ void OmxVideoDecodeAccelerator::BusyLoopInDestroying() {
 }
 
 void OmxVideoDecodeAccelerator::OnReachedIdleInDestroying() {
-  DCHECK_EQ(client_state_, OMX_StateExecuting);
+  DCHECK(client_state_ == OMX_StateExecuting ||
+         client_state_ == OMX_StateIdle ||
+         client_state_ == OMX_StatePause);
   client_state_ = OMX_StateIdle;
 
   // Note that during the Executing -> Idle transition, the OMX spec guarantees

@@ -1977,10 +1977,9 @@ WebMediaPlayer* RenderViewImpl::createMediaPlayer(
         RenderThreadImpl::current()->EstablishGpuChannelSync(
             content::CAUSE_FOR_GPU_LAUNCH_VIDEODECODEACCELERATOR_INITIALIZE);
     collection->AddVideoDecoder(new media::GpuVideoDecoder(
-        MessageLoop::current(),
-        scoped_ptr<media::GpuVideoDecoder::Factories>(
-            new RendererGpuVideoDecoderFactories(
-                gpu_channel_host, context3d->context()->AsWeakPtr()))));
+        message_loop_factory->GetMessageLoop("GpuVideoDecoder"),
+        new RendererGpuVideoDecoderFactories(
+            gpu_channel_host, context3d->context()->AsWeakPtr())));
   }
 #endif
 

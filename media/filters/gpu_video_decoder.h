@@ -9,7 +9,6 @@
 #include <list>
 #include <map>
 
-#include "base/memory/scoped_ptr.h"
 #include "media/base/filters.h"
 #include "media/base/pipeline_status.h"
 #include "media/base/pts_stream.h"
@@ -17,7 +16,9 @@
 #include "ui/gfx/size.h"
 
 class MessageLoop;
+template <class T> class scoped_refptr;
 namespace base {
+class MessageLoopProxy;
 class SharedMemory;
 }
 
@@ -25,17 +26,15 @@ namespace media {
 
 // GPU-accelerated video decoder implementation.  Relies on
 // AcceleratedVideoDecoderMsg_Decode and friends.
-// All methods internally trampoline to the message_loop passed to the ctor.
+// All methods internally trampoline to the |message_loop| passed to the ctor.
 class MEDIA_EXPORT GpuVideoDecoder
     : public VideoDecoder,
       public VideoDecodeAccelerator::Client {
  public:
   // Helper interface for specifying factories needed to instantiate a
   // GpuVideoDecoder.
-  class MEDIA_EXPORT Factories {
+  class MEDIA_EXPORT Factories : public base::RefCountedThreadSafe<Factories> {
    public:
-    virtual ~Factories();
-
     // Caller owns returned pointer.
     virtual VideoDecodeAccelerator* CreateVideoDecodeAccelerator(
         VideoDecodeAccelerator::Profile, VideoDecodeAccelerator::Client*) = 0;
@@ -43,14 +42,19 @@ class MEDIA_EXPORT GpuVideoDecoder
     // Allocate & delete native textures.
     virtual bool CreateTextures(int32 count, const gfx::Size& size,
                                 std::vector<uint32>* texture_ids) = 0;
-    virtual bool DeleteTexture(uint32 texture_id) = 0;
+    virtual void DeleteTexture(uint32 texture_id) = 0;
 
     // Allocate & return a shared memory segment.  Caller is responsible for
     // Close()ing the returned pointer.
     virtual base::SharedMemory* CreateSharedMemory(size_t size) = 0;
+
+   protected:
+    friend class base::RefCountedThreadSafe<Factories>;
+    virtual ~Factories();
   };
 
-  GpuVideoDecoder(MessageLoop* message_loop, scoped_ptr<Factories> factories);
+  GpuVideoDecoder(MessageLoop* message_loop,
+                  const scoped_refptr<Factories>& factories);
   virtual ~GpuVideoDecoder();
 
   // Filter implementation.
@@ -66,6 +70,7 @@ class MEDIA_EXPORT GpuVideoDecoder
   virtual void Read(const ReadCB& callback) OVERRIDE;
   virtual const gfx::Size& natural_size() OVERRIDE;
   virtual bool HasAlpha() const OVERRIDE;
+  virtual void PrepareForShutdownHack() OVERRIDE;
 
   // VideoDecodeAccelerator::Client implementation.
   virtual void NotifyInitializeDone() OVERRIDE;
@@ -141,11 +146,16 @@ class MEDIA_EXPORT GpuVideoDecoder
   // Pointer to the demuxer stream that will feed us compressed buffers.
   scoped_refptr<DemuxerStream> demuxer_stream_;
 
-  // MessageLoop on which to do fire callbacks and to which trampoline calls to
-  // this class if they arrive on other loops.
-  MessageLoop* message_loop_;
+  // MessageLoop on which to fire callbacks and trampoline calls to this class
+  // if they arrive on other loops.
+  scoped_refptr<base::MessageLoopProxy> gvd_loop_proxy_;
 
-  scoped_ptr<Factories> factories_;
+  // Creation message loop (typically the render thread).  All calls to vda_
+  // must be made on this loop (and beware this loop is paused during the
+  // Pause/Flush/Stop dance PipelineImpl::Stop() goes through).
+  scoped_refptr<base::MessageLoopProxy> render_loop_proxy_;
+
+  scoped_refptr<Factories> factories_;
 
   // Populated during Initialize() (on success) and unchanged thereafter.
   scoped_refptr<VideoDecodeAccelerator> vda_;
@@ -189,6 +199,10 @@ class MEDIA_EXPORT GpuVideoDecoder
   std::list<scoped_refptr<VideoFrame> > ready_video_frames_;
   int64 next_picture_buffer_id_;
   int64 next_bitstream_buffer_id_;
+
+  // Indicates PrepareForShutdownHack()'s been called.  Makes further calls to
+  // this class not require the render thread's loop to be processing.
+  bool shutting_down_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuVideoDecoder);
 };
