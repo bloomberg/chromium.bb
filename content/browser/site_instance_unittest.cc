@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -117,48 +117,52 @@ class SiteInstanceTest : public testing::Test {
 class TestBrowsingInstance : public BrowsingInstance {
  public:
   TestBrowsingInstance(content::BrowserContext* browser_context,
-                       int* deleteCounter)
+                       int* delete_counter)
       : BrowsingInstance(browser_context),
-        use_process_per_site(false),
-        deleteCounter_(deleteCounter) {
+        use_process_per_site_(false),
+        delete_counter_(delete_counter) {
   }
 
   // Overrides BrowsingInstance::ShouldUseProcessPerSite so that we can test
   // both alternatives without using command-line switches.
   bool ShouldUseProcessPerSite(const GURL& url) {
-    return use_process_per_site;
+    return use_process_per_site_;
+  }
+
+  void set_use_process_per_site(bool use_process_per_site) {
+    use_process_per_site_ = use_process_per_site;
+  }
+
+ private:
+  virtual ~TestBrowsingInstance() {
+    (*delete_counter_)++;
   }
 
   // Set by individual tests.
-  bool use_process_per_site;
+  bool use_process_per_site_;
 
- private:
-  ~TestBrowsingInstance() {
-    (*deleteCounter_)++;
-  }
-
-  int* deleteCounter_;
+  int* delete_counter_;
 };
 
 class TestSiteInstance : public SiteInstance {
  public:
   static TestSiteInstance* CreateTestSiteInstance(
       content::BrowserContext* browser_context,
-      int* siteDeleteCounter,
-      int* browsingDeleteCounter) {
+      int* site_delete_counter,
+      int* browsing_delete_counter) {
     TestBrowsingInstance* browsing_instance =
-        new TestBrowsingInstance(browser_context, browsingDeleteCounter);
-    return new TestSiteInstance(browsing_instance, siteDeleteCounter);
+        new TestBrowsingInstance(browser_context, browsing_delete_counter);
+    return new TestSiteInstance(browsing_instance, site_delete_counter);
   }
 
  private:
-  TestSiteInstance(BrowsingInstance* browsing_instance, int* deleteCounter)
-    : SiteInstance(browsing_instance), deleteCounter_(deleteCounter) {}
-  ~TestSiteInstance() {
-    (*deleteCounter_)++;
+  TestSiteInstance(BrowsingInstance* browsing_instance, int* delete_counter)
+    : SiteInstance(browsing_instance), delete_counter_(delete_counter) {}
+  virtual ~TestSiteInstance() {
+    (*delete_counter_)++;
   }
 
-  int* deleteCounter_;
+  int* delete_counter_;
 };
 
 }  // namespace
@@ -169,15 +173,15 @@ TEST_F(SiteInstanceTest, SiteInstanceDestructor) {
   // one instead of the real one.
   MockRenderProcessHostFactory rph_factory;
   TestRenderViewHostFactory rvh_factory(&rph_factory);
-  int siteDeleteCounter = 0;
-  int browsingDeleteCounter = 0;
+  int site_delete_counter = 0;
+  int browsing_delete_counter = 0;
   const GURL url("test:foo");
 
   // Ensure that instances are deleted when their NavigationEntries are gone.
   TestSiteInstance* instance =
-      TestSiteInstance::CreateTestSiteInstance(NULL, &siteDeleteCounter,
-                                               &browsingDeleteCounter);
-  EXPECT_EQ(0, siteDeleteCounter);
+      TestSiteInstance::CreateTestSiteInstance(NULL, &site_delete_counter,
+                                               &browsing_delete_counter);
+  EXPECT_EQ(0, site_delete_counter);
 
   NavigationEntryImpl* e1 = new NavigationEntryImpl(
       instance, 0, url, content::Referrer(), string16(),
@@ -185,7 +189,7 @@ TEST_F(SiteInstanceTest, SiteInstanceDestructor) {
 
   // Redundantly setting e1's SiteInstance shouldn't affect the ref count.
   e1->set_site_instance(instance);
-  EXPECT_EQ(0, siteDeleteCounter);
+  EXPECT_EQ(0, site_delete_counter);
 
   // Add a second reference
   NavigationEntryImpl* e2 = new NavigationEntryImpl(
@@ -194,36 +198,36 @@ TEST_F(SiteInstanceTest, SiteInstanceDestructor) {
 
   // Now delete both entries and be sure the SiteInstance goes away.
   delete e1;
-  EXPECT_EQ(0, siteDeleteCounter);
-  EXPECT_EQ(0, browsingDeleteCounter);
+  EXPECT_EQ(0, site_delete_counter);
+  EXPECT_EQ(0, browsing_delete_counter);
   delete e2;
-  EXPECT_EQ(1, siteDeleteCounter);
+  EXPECT_EQ(1, site_delete_counter);
   // instance is now deleted
-  EXPECT_EQ(1, browsingDeleteCounter);
+  EXPECT_EQ(1, browsing_delete_counter);
   // browsing_instance is now deleted
 
   // Ensure that instances are deleted when their RenderViewHosts are gone.
   scoped_ptr<TestBrowserContext> browser_context(new TestBrowserContext());
   instance =
       TestSiteInstance::CreateTestSiteInstance(browser_context.get(),
-                                               &siteDeleteCounter,
-                                               &browsingDeleteCounter);
+                                               &site_delete_counter,
+                                               &browsing_delete_counter);
   {
     TabContents contents(browser_context.get(),
                          instance,
                          MSG_ROUTING_NONE,
                          NULL,
                          NULL);
-    EXPECT_EQ(1, siteDeleteCounter);
-    EXPECT_EQ(1, browsingDeleteCounter);
+    EXPECT_EQ(1, site_delete_counter);
+    EXPECT_EQ(1, browsing_delete_counter);
   }
 
   // Make sure that we flush any messages related to the above TabContents
   // destruction.
   MessageLoop::current()->RunAllPending();
 
-  EXPECT_EQ(2, siteDeleteCounter);
-  EXPECT_EQ(2, browsingDeleteCounter);
+  EXPECT_EQ(2, site_delete_counter);
+  EXPECT_EQ(2, browsing_delete_counter);
   // contents is now deleted, along with instance and browsing_instance
 }
 
@@ -231,17 +235,17 @@ TEST_F(SiteInstanceTest, SiteInstanceDestructor) {
 // SiteInstances can be changed afterwards.  Also tests that the ref counts are
 // updated properly after the change.
 TEST_F(SiteInstanceTest, CloneNavigationEntry) {
-  int siteDeleteCounter1 = 0;
-  int siteDeleteCounter2 = 0;
-  int browsingDeleteCounter = 0;
+  int site_delete_counter1 = 0;
+  int site_delete_counter2 = 0;
+  int browsing_delete_counter = 0;
   const GURL url("test:foo");
 
   SiteInstance* instance1 =
-      TestSiteInstance::CreateTestSiteInstance(NULL, &siteDeleteCounter1,
-                                               &browsingDeleteCounter);
+      TestSiteInstance::CreateTestSiteInstance(NULL, &site_delete_counter1,
+                                               &browsing_delete_counter);
   SiteInstance* instance2 =
-      TestSiteInstance::CreateTestSiteInstance(NULL, &siteDeleteCounter2,
-                                               &browsingDeleteCounter);
+      TestSiteInstance::CreateTestSiteInstance(NULL, &site_delete_counter2,
+                                               &browsing_delete_counter);
 
   NavigationEntryImpl* e1 = new NavigationEntryImpl(
       instance1, 0, url, content::Referrer(), string16(),
@@ -255,16 +259,16 @@ TEST_F(SiteInstanceTest, CloneNavigationEntry) {
   // The first SiteInstance should go away after deleting e1, since e2 should
   // no longer be referencing it.
   delete e1;
-  EXPECT_EQ(1, siteDeleteCounter1);
-  EXPECT_EQ(0, siteDeleteCounter2);
+  EXPECT_EQ(1, site_delete_counter1);
+  EXPECT_EQ(0, site_delete_counter2);
 
   // The second SiteInstance should go away after deleting e2.
   delete e2;
-  EXPECT_EQ(1, siteDeleteCounter1);
-  EXPECT_EQ(1, siteDeleteCounter2);
+  EXPECT_EQ(1, site_delete_counter1);
+  EXPECT_EQ(1, site_delete_counter2);
 
   // Both BrowsingInstances are also now deleted
-  EXPECT_EQ(2, browsingDeleteCounter);
+  EXPECT_EQ(2, browsing_delete_counter);
 }
 
 // Test to ensure GetProcess returns and creates processes correctly.
@@ -363,10 +367,10 @@ TEST_F(SiteInstanceTest, IsSameWebSite) {
 // Test to ensure that there is only one SiteInstance per site in a given
 // BrowsingInstance, when process-per-site is not in use.
 TEST_F(SiteInstanceTest, OneSiteInstancePerSite) {
-  int deleteCounter = 0;
+  int delete_counter = 0;
   TestBrowsingInstance* browsing_instance =
-      new TestBrowsingInstance(NULL, &deleteCounter);
-  browsing_instance->use_process_per_site = false;
+      new TestBrowsingInstance(NULL, &delete_counter);
+  browsing_instance->set_use_process_per_site(false);
 
   const GURL url_a1("http://www.google.com/1.html");
   scoped_refptr<SiteInstance> site_instance_a1(
@@ -394,8 +398,8 @@ TEST_F(SiteInstanceTest, OneSiteInstancePerSite) {
   // A visit to the original site in a new BrowsingInstance (same or different
   // browser context) should return a different SiteInstance.
   TestBrowsingInstance* browsing_instance2 =
-      new TestBrowsingInstance(NULL, &deleteCounter);
-  browsing_instance2->use_process_per_site = false;
+      new TestBrowsingInstance(NULL, &delete_counter);
+  browsing_instance2->set_use_process_per_site(false);
   // Ensure the new SiteInstance is ref counted so that it gets deleted.
   scoped_refptr<SiteInstance> site_instance_a2_2(
       browsing_instance2->GetSiteInstanceForURL(url_a2));
@@ -421,10 +425,10 @@ TEST_F(SiteInstanceTest, OneSiteInstancePerSite) {
 // Test to ensure that there is only one SiteInstance per site for an entire
 // BrowserContext, if process-per-site is in use.
 TEST_F(SiteInstanceTest, OneSiteInstancePerSiteInBrowserContext) {
-  int deleteCounter = 0;
+  int delete_counter = 0;
   TestBrowsingInstance* browsing_instance =
-      new TestBrowsingInstance(NULL, &deleteCounter);
-  browsing_instance->use_process_per_site = true;
+      new TestBrowsingInstance(NULL, &delete_counter);
+  browsing_instance->set_use_process_per_site(true);
 
   const GURL url_a1("http://www.google.com/1.html");
   scoped_refptr<SiteInstance> site_instance_a1(
@@ -455,8 +459,8 @@ TEST_F(SiteInstanceTest, OneSiteInstancePerSiteInBrowserContext) {
   // it won't be deleted by its children.  Thus, we'll keep a ref count to it
   // to make sure it gets deleted.
   scoped_refptr<TestBrowsingInstance> browsing_instance2(
-      new TestBrowsingInstance(NULL, &deleteCounter));
-  browsing_instance2->use_process_per_site = true;
+      new TestBrowsingInstance(NULL, &delete_counter));
+  browsing_instance2->set_use_process_per_site(true);
   EXPECT_EQ(site_instance_a1.get(),
             browsing_instance2->GetSiteInstanceForURL(url_a2));
 
@@ -464,8 +468,8 @@ TEST_F(SiteInstanceTest, OneSiteInstancePerSiteInBrowserContext) {
   // context) should return a different SiteInstance.
   scoped_ptr<TestBrowserContext> browser_context(new TestBrowserContext());
   TestBrowsingInstance* browsing_instance3 =
-      new TestBrowsingInstance(browser_context.get(), &deleteCounter);
-  browsing_instance3->use_process_per_site = true;
+      new TestBrowsingInstance(browser_context.get(), &delete_counter);
+  browsing_instance3->set_use_process_per_site(true);
   // Ensure the new SiteInstance is ref counted so that it gets deleted.
   scoped_refptr<SiteInstance> site_instance_a2_3(
       browsing_instance3->GetSiteInstanceForURL(url_a2));
@@ -529,7 +533,7 @@ TEST_F(SiteInstanceTest, ProcessSharingByType) {
       GURL(chrome::kChromeUIScheme + std::string("://newtab"))));
   policy->GrantWebUIBindings(webui1_instance->GetProcess()->GetID());
 
-  scoped_refptr<SiteInstance> webui2_instance( CreateSiteInstance(&rph_factory,
+  scoped_refptr<SiteInstance> webui2_instance(CreateSiteInstance(&rph_factory,
       GURL(chrome::kChromeUIScheme + std::string("://history"))));
 
   scoped_ptr<content::RenderProcessHost> dom_host(
@@ -545,4 +549,35 @@ TEST_F(SiteInstanceTest, ProcessSharingByType) {
   }
 
   STLDeleteContainerPointers(hosts.begin(), hosts.end());
+}
+
+// Test to ensure that HasWrongProcessForURL behaves properly for different
+// types of URLs.
+TEST_F(SiteInstanceTest, HasWrongProcessForURL) {
+  scoped_ptr<TestBrowserContext> browser_context(new TestBrowserContext());
+  scoped_ptr<content::RenderProcessHost> host;
+  scoped_refptr<SiteInstance> instance(
+      SiteInstance::CreateSiteInstance(browser_context.get()));
+
+  EXPECT_FALSE(instance->has_site());
+  EXPECT_TRUE(instance->site().is_empty());
+
+  instance->SetSite(GURL("http://evernote.com/"));
+  EXPECT_TRUE(instance->has_site());
+
+  // Check prior to "assigning" a process to the instance, which is expected
+  // to return false due to not being attached to any process yet.
+  EXPECT_FALSE(instance->HasWrongProcessForURL(GURL("http://google.com")));
+
+  // The call to GetProcess actually creates a new real process, which works
+  // fine, but might be a cause for problems in different contexts.
+  host.reset(instance->GetProcess());
+  EXPECT_TRUE(host.get() != NULL);
+  EXPECT_TRUE(instance->HasProcess());
+
+  EXPECT_FALSE(instance->HasWrongProcessForURL(GURL("http://evernote.com")));
+  EXPECT_FALSE(instance->HasWrongProcessForURL(
+      GURL("javascript:alert(document.location.href);")));
+
+  EXPECT_TRUE(instance->HasWrongProcessForURL(GURL("chrome://settings")));
 }

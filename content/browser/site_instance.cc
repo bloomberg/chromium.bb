@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -127,6 +127,11 @@ SiteInstance* SiteInstance::GetRelatedSiteInstance(const GURL& url) {
 bool SiteInstance::HasWrongProcessForURL(const GURL& url) const {
   // Having no process isn't a problem, since we'll assign it correctly.
   if (!HasProcess())
+    return false;
+
+  // If the URL to navigate to can be associated with any site instance,
+  // we want to keep it in the same process.
+  if (IsURLSameAsAnySiteInstance(url))
     return false;
 
   // If the site URL is an extension (e.g., for hosted apps or WebUI) but the
