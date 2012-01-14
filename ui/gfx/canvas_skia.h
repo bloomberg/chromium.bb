@@ -84,7 +84,6 @@ class UI_EXPORT CanvasSkia : public Canvas {
   void DrawGdkPixbuf(GdkPixbuf* pixbuf, int x, int y);
 #endif
 
-#if defined(OS_WIN) || (defined(OS_POSIX) && !defined(OS_MACOSX))
   // Draws text with a 1-pixel halo around it of the given color.
   // On Windows, it allows ClearType to be drawn to an otherwise transparenct
   //   bitmap for drag images. Drag images have only 1-bit of transparency, so
@@ -97,7 +96,6 @@ class UI_EXPORT CanvasSkia : public Canvas {
                           const SkColor& halo_color,
                           int x, int y, int w, int h,
                           int flags);
-#endif
 
   // Extracts a bitmap from the contents of this canvas.
   SkBitmap ExtractBitmap() const;
