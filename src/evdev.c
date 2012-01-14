@@ -550,7 +550,7 @@ evdev_add_devices(struct udev *udev, struct weston_input_device *input_base)
 		fprintf(stderr,
 			"warning: no input devices on entering Weston. "
 			"Possible causes:\n"
-			"\t- no permissions to read /dev/input/evdev*\n"
+			"\t- no permissions to read /dev/input/event*\n"
 			"\t- seats misconfigured "
 			"(Weston backend option 'seat', "
 			"udev device property ID_SEAT)\n");
