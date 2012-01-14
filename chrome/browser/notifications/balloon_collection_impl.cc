@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -124,11 +124,11 @@ void BalloonCollectionImpl::DisplayChanged() {
 }
 
 void BalloonCollectionImpl::OnBalloonClosed(Balloon* source) {
+#if USE_OFFSETS
   // We want to free the balloon when finished.
   const Balloons& balloons = base_.balloons();
-  Balloons::const_iterator it = balloons.begin();
 
-#if USE_OFFSETS
+  Balloons::const_iterator it = balloons.begin();
   if (layout_.RequiresOffsets()) {
     gfx::Point offset;
     bool apply_offset = false;
