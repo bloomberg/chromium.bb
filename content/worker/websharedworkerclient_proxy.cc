@@ -12,10 +12,6 @@
 #include "content/common/webmessageportchannel_impl.h"
 #include "content/common/worker_messages.h"
 #include "content/public/common/content_switches.h"
-// TODO(jam): uncomment this and WebSharedWorkerClientProxy::createWorker
-// when the renderer worker code moves to content. This code isn't used
-// now since we don't support nested workers anyways.
-//#include "content/renderer/webworker_proxy.h"
 #include "content/worker/shared_worker_devtools_agent.h"
 #include "content/worker/websharedworker_stub.h"
 #include "content/worker/worker_thread.h"
@@ -27,7 +23,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURL.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebWorker.h"
 
 using WebKit::WebApplicationCacheHost;
 using WebKit::WebFrame;
@@ -117,14 +112,6 @@ void WebSharedWorkerClientProxy::workerContextDestroyed() {
   // Tell the stub that the worker has shutdown - frees this object.
   if (stub_)
     stub_->Shutdown();
-}
-
-WebKit::WebWorker* WebSharedWorkerClientProxy::createWorker(
-    WebKit::WebSharedWorkerClient* client) {
-  // TODO(jam): see comment at top of file
-  //return new WebWorkerProxy(client, WorkerThread::current(),
-  //                          0, appcache_host_id_);
-  return NULL;
 }
 
 WebKit::WebNotificationPresenter*
