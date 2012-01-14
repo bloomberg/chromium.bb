@@ -1,5 +1,4 @@
 /* TODO(csilv): Re-order, rename selectors according to style guide. */
-/* TODO(csilv): Rename this file 'browser_options.css' */
 
 /* This is necessary because the fix for correctly wrapping labels
  * (crbug.com/109334) requires labels to be display: block; however, this label
