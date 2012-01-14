@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -295,8 +295,17 @@ bool ChromotingInstance::LogToUI(int severity, const char* file, int line,
   // the lock and check |g_logging_instance| unnecessarily. This is not
   // problematic because we always set |g_logging_instance| inside a lock.
   if (g_has_logging_instance) {
+    // Do not LOG anything while holding this lock or else the code will
+    // deadlock while trying to re-get the lock we're already in.
     base::AutoLock lock(g_logging_lock.Get());
-    if (g_logging_instance) {
+    if (g_logging_instance &&
+        // If |g_logging_to_plugin| is set and we're on the logging thread, then
+        // this LOG message came from handling a previous LOG message and we
+        // should skip it to avoid an infinite loop of LOG messages.
+        // We don't have a lock around |g_in_processtoui|, but that's OK since
+        // the value is only read/written on the logging thread.
+        (!g_logging_instance->plugin_message_loop_->BelongsToCurrentThread() ||
+         !g_logging_to_plugin)) {
       std::string message = remoting::GetTimestampString();
       message += (str.c_str() + message_start);
       // |thread_proxy_| is safe to use here because we detach it before
@@ -313,14 +322,16 @@ bool ChromotingInstance::LogToUI(int severity, const char* file, int line,
 }
 
 void ChromotingInstance::ProcessLogToUI(const std::string& message) {
-  if (!g_logging_to_plugin) {
-    ChromotingScriptableObject* cso = GetScriptableObject();
-    if (cso) {
-      g_logging_to_plugin = true;
-      cso->LogDebugInfo(message);
-      g_logging_to_plugin = false;
-    }
-  }
+  DCHECK(plugin_message_loop_->BelongsToCurrentThread());
+
+  // This flag (which is set only here) is used to prevent LogToUI from posting
+  // new tasks while we're in the middle of servicing a LOG call. This can
+  // happen if the call to LogDebugInfo tries to LOG anything.
+  g_logging_to_plugin = true;
+  ChromotingScriptableObject* cso = GetScriptableObject();
+  if (cso)
+    cso->LogDebugInfo(message);
+  g_logging_to_plugin = false;
 }
 
 pp::Var ChromotingInstance::GetInstanceObject() {
