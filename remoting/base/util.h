@@ -28,16 +28,6 @@ void ConvertYUVToRGB32WithRect(const uint8* y_plane,
                                int uv_stride,
                                int rgb_stride);
 
-void ScaleYUVToRGB32WithRect(const uint8* y_plane,
-                             const uint8* u_plane,
-                             const uint8* v_plane,
-                             uint8* rgb_plane,
-                             const SkIRect& source_rect,
-                             const SkIRect& dest_rect,
-                             int y_stride,
-                             int uv_stride,
-                             int rgb_stride);
-
 void ConvertRGB32ToYUVWithRect(const uint8* rgb_plane,
                                uint8* y_plane,
                                uint8* u_plane,

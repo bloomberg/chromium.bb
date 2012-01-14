@@ -222,16 +222,22 @@ void DecoderVp8::ScaleAndConvertRects(const RectVector& input_rects,
     if (!output_rect.intersect(clip_rect))
       continue;
 
-    // The scaler will not read outside the input dimensions.
-    ScaleYUVToRGB32WithRect(last_image_->planes[0],
-                            last_image_->planes[1],
-                            last_image_->planes[2],
-                            output_rgb_buf,
-                            input_rects[i],
-                            output_rect,
-                            last_image_->stride[0],
-                            last_image_->stride[1],
-                            output_stride);
+    // The scaler will not to read outside the input dimensions.
+    media::ScaleYUVToRGB32WithRect(last_image_->planes[0],
+                                   last_image_->planes[1],
+                                   last_image_->planes[2],
+                                   output_rgb_buf,
+                                   image_size.width(),
+                                   image_size.height(),
+                                   output_size_.width(),
+                                   output_size_.height(),
+                                   output_rect.x(),
+                                   output_rect.y(),
+                                   output_rect.right(),
+                                   output_rect.bottom(),
+                                   last_image_->stride[0],
+                                   last_image_->stride[1],
+                                   output_stride);
     output_rects->push_back(output_rect);
   }
 }

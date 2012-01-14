@@ -79,41 +79,6 @@ void ConvertYUVToRGB32WithRect(const uint8* y_plane,
                            media::YV12);
 }
 
-void ScaleYUVToRGB32WithRect(const uint8* y_plane,
-                             const uint8* u_plane,
-                             const uint8* v_plane,
-                             uint8* rgb_plane,
-                             const SkIRect& source_rect,
-                             const SkIRect& dest_rect,
-                             int y_stride,
-                             int uv_stride,
-                             int rgb_stride) {
-  int rgb_offset = CalculateRGBOffset(dest_rect.left(),
-                                      dest_rect.top(),
-                                      rgb_stride);
-  int y_offset = CalculateYOffset(source_rect.left(),
-                                  source_rect.top(),
-                                  y_stride);
-  int uv_offset = CalculateUVOffset(source_rect.left(),
-                                    source_rect.top(),
-                                    uv_stride);
-
-  media::ScaleYUVToRGB32(y_plane + y_offset,
-                         u_plane + uv_offset,
-                         v_plane + uv_offset,
-                         rgb_plane + rgb_offset,
-                         source_rect.width(),
-                         source_rect.height(),
-                         dest_rect.width(),
-                         dest_rect.height(),
-                         y_stride,
-                         uv_stride,
-                         rgb_stride,
-                         media::YV12,
-                         media::ROTATE_0,
-                         media::FILTER_NONE);
-}
-
 void ConvertRGB32ToYUVWithRect(const uint8* rgb_plane,
                                uint8* y_plane,
                                uint8* u_plane,
