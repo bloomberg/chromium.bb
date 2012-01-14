@@ -144,18 +144,19 @@ void ChromotingHost::OnSessionAuthenticated(ClientSession* client) {
     }
   }
 
-  // Create a new RecordSession if there was none.
-  if (!recorder_.get()) {
-    // Then we create a ScreenRecorder passing the message loops that
-    // it should run on.
-    Encoder* encoder = CreateEncoder(client->connection()->session()->config());
+  // Disconnects above must have destroyed all other clients and |recorder_|.
+  DCHECK_EQ(clients_.size(), 1U);
+  DCHECK(!recorder_.get());
 
-    recorder_ = new ScreenRecorder(context_->main_message_loop(),
-                                   context_->encode_message_loop(),
-                                   context_->network_message_loop(),
-                                   desktop_environment_->capturer(),
-                                   encoder);
-  }
+  // Then we create a ScreenRecorder passing the message loops that
+  // it should run on.
+  Encoder* encoder = CreateEncoder(client->connection()->session()->config());
+
+  recorder_ = new ScreenRecorder(context_->main_message_loop(),
+                                 context_->encode_message_loop(),
+                                 context_->network_message_loop(),
+                                 desktop_environment_->capturer(),
+                                 encoder);
 
   // Immediately add the connection and start the session.
   recorder_->AddConnection(client->connection());
@@ -197,11 +198,10 @@ void ChromotingHost::OnSessionClosed(ClientSession* client) {
     (*it)->OnClientDisconnected(client->client_jid());
   }
 
-  if (AuthenticatedClientsCount() == 0) {
-    if (recorder_.get()) {
-      // Stop the recorder if there are no more clients.
-      StopScreenRecorder();
-    }
+  if (recorder_.get()) {
+    // Currently we don't allow more than one similtaneous connection,
+    // so we need to shutdown recorder when a client disconnects.
+    StopScreenRecorder();
   }
 }
 

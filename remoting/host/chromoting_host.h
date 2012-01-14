@@ -195,6 +195,7 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   ClientList clients_;
 
   // Session manager for the host process.
+  // TODO(sergeyu): Do we need to have one screen recorder per client?
   scoped_refptr<ScreenRecorder> recorder_;
 
   // Number of screen recorders that are currently being
