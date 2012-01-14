@@ -35,7 +35,7 @@ cr.define('ntp4', function() {
   function AppContextMenu() {
     this.__proto__ = AppContextMenu.prototype;
     this.initialize();
-  };
+  }
   cr.addSingletonGetter(AppContextMenu);
 
   AppContextMenu.prototype = {
@@ -591,7 +591,6 @@ cr.define('ntp4', function() {
     removeFromChrome: function() {
       chrome.send('uninstallApp', [this.appData_.id, true]);
       this.tile.tilePage.removeTile(this.tile, true);
-
       if (this.currentBubbleShowing_)
         currentBubbleShowing_.hide();
     },
@@ -661,7 +660,7 @@ cr.define('ntp4', function() {
      * Creates an app DOM element and places it at the last position on the
      * page.
      * @param {Object} appData The data object that describes the app.
-     * @param {?boolean} animate If true, the app tile plays an animation.
+     * @param {boolean=} animate If true, the app tile plays an animation.
      */
     appendApp: function(appData, animate) {
       if (animate) {
@@ -770,7 +769,7 @@ cr.define('ntp4', function() {
           sourceId = DRAG_SOURCE.MOST_VISITED_PANE;
         }
       } else {
-        this.addOutsideData_(dataTransfer, index);
+        this.addOutsideData_(dataTransfer);
         sourceId = DRAG_SOURCE.OUTSIDE_NTP;
       }
 
@@ -783,10 +782,9 @@ cr.define('ntp4', function() {
      * Adds drag data that has been dropped from a source that is not a tile.
      * @param {Object} dataTransfer The data transfer object that holds drop
      *     data.
-     * @param {number} index The index for the new data.
      * @private
      */
-    addOutsideData_: function(dataTransfer, index) {
+    addOutsideData_: function(dataTransfer) {
       var url = dataTransfer.getData('url');
       assert(url);
 
@@ -817,7 +815,6 @@ cr.define('ntp4', function() {
      * Creates a new crx-less app manifest and installs it.
      * @param {Object} data The data object describing the link. Must have |url|
      *     and |title| members.
-     * TODO(estade): pass along an index.
      */
     generateAppForLink: function(data) {
       assert(data.url != undefined);
@@ -867,14 +864,14 @@ cr.define('ntp4', function() {
    */
   function launchAppAfterEnable(appId) {
     chrome.send('launchApp', [appId, APP_LAUNCH.NTP_APP_RE_ENABLE]);
-  };
+  }
 
   function appNotificationChanged(id, notification) {
     var app = $(id);
     // The app might have been uninstalled, or notifications might be disabled.
     if (app && !app.appData.notifications_disabled)
       app.setupNotification_(notification);
-  };
+  }
 
   return {
     APP_LAUNCH: APP_LAUNCH,

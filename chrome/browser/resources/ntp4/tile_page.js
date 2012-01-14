@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -1156,7 +1156,7 @@ cr.define('ntp4', function() {
 
     /**
      * Reposition all the tiles (possibly ignoring one).
-     * @param {Node} ignoreNode An optional node to ignore.
+     * @param {?Node} ignoreNode An optional node to ignore.
      * @private
      */
     repositionTiles_: function(ignoreNode) {

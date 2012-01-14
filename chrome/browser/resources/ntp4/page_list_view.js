@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,7 +35,7 @@ cr.define('ntp4', function() {
     cardSlider: undefined,
 
     /**
-     * The frame div for cardSlider.
+     * The frame div for this.cardSlider.
      * @type {!Element|undefined}
      */
     sliderFrame: undefined,
@@ -144,8 +144,8 @@ cr.define('ntp4', function() {
       if (this.pageSwitcherEnd)
         ntp4.initializePageSwitcher(this.pageSwitcherEnd);
 
-      this.shownPage = templateData['shown_page_type'];
-      this.shownPageIndex = templateData['shown_page_index'];
+      this.shownPage = templateData.shown_page_type;
+      this.shownPageIndex = templateData.shown_page_index;
 
       // Request data on the apps so we can fill them in.
       // Note that this is kicked off asynchronously.  'getAppsCallback' will be
@@ -189,7 +189,7 @@ cr.define('ntp4', function() {
      * @param {string} title The title of the tile page.
      * @param {bool} titleIsEditable If true, the title can be changed.
      * @param {TilePage} opt_refNode Optional reference node to insert in front
-     * of.
+     *     of.
      * When opt_refNode is falsey, |page| will just be appended to the end of
      * the page list.
      */
@@ -489,9 +489,10 @@ cr.define('ntp4', function() {
     },
 
     /**
-     * Returns the index of the given page.
-     * @param {AppsPage} page The AppsPage for we wish to find.
-     * @return {number} The index of |page|, or -1 if it is not here.
+     * Returns the index of the given apps page.
+     * @param {AppsPage} page The AppsPage we wish to find.
+     * @return {number} The index of |page| or -1 if it is not in the
+     *    collection.
      */
     getAppsPageIndex: function(page) {
       return Array.prototype.indexOf.call(this.appsPages, page);
@@ -509,10 +510,10 @@ cr.define('ntp4', function() {
       // reflect user actions).
       if (!document.documentElement.classList.contains('starting-up')) {
         if (page.classList.contains('apps-page')) {
-          this.shownPage = templateData['apps_page_id'];
+          this.shownPage = templateData.apps_page_id;
           this.shownPageIndex = this.getAppsPageIndex(page);
         } else if (page.classList.contains('most-visited-page')) {
-          this.shownPage = templateData['most_visited_page_id'];
+          this.shownPage = templateData.most_visited_page_id;
           this.shownPageIndex = 0;
         } else {
           console.error('unknown page selected');

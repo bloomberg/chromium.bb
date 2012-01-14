@@ -355,40 +355,44 @@ cr.define('ntp4', function() {
   /**
    * Wrappers to forward the callback to corresponding PageListView member.
    */
-  function appAdded(appData, opt_highlight) {
-    newTabView.appAdded(appData, opt_highlight);
+  function appAdded() {
+    return newTabView.appAdded.apply(newTabView, arguments);
   }
 
-  function appRemoved(appData, isUninstall) {
-    newTabView.appRemoved(appData, isUninstall);
+  function appRemoved() {
+    return newTabView.appRemoved.apply(newTabView, arguments);
   }
 
-  function appsPrefChangeCallback(data) {
-    newTabView.appsPrefChangedCallback(data);
+  function appsPrefChangeCallback() {
+    return newTabView.appsPrefChangedCallback.apply(newTabView, arguments);
+  }
+
+  function appsReordered() {
+    return newTabView.appsReordered.apply(newTabView, arguments);
   }
 
   function enterRearrangeMode() {
-    newTabView.enterRearrangeMode();
+    return newTabView.enterRearrangeMode.apply(newTabView, arguments);
   }
 
-  function getAppsCallback(data) {
-    newTabView.getAppsCallback(data);
+  function getAppsCallback() {
+    return newTabView.getAppsCallback.apply(newTabView, arguments);
   }
 
-  function getAppsPageIndex(page) {
-    return newTabView.getAppsPageIndex(page);
+  function getAppsPageIndex() {
+    return newTabView.getAppsPageIndex.apply(newTabView, arguments);
   }
 
   function getCardSlider() {
     return newTabView.cardSlider;
   }
 
-  function leaveRearrangeMode(e) {
-    newTabView.leaveRearrangeMode(e);
+  function leaveRearrangeMode() {
+    return newTabView.leaveRearrangeMode.apply(newTabView, arguments);
   }
 
-  function saveAppPageName(appPage, name) {
-    newTabView.saveAppPageName(appPage, name);
+  function saveAppPageName() {
+    return newTabView.saveAppPageName.apply(newTabView, arguments);
   }
 
   function setAppToBeHighlighted(appId) {
