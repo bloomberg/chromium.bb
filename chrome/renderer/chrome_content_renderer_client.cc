@@ -108,7 +108,8 @@ using content::RenderThread;
 namespace {
 
 const char* kPredefinedAllowedSocketOrigins[] = {
-  "okddffdblfhhnmhodogpojmfkjmhinfp"  // SSH Client
+  "okddffdblfhhnmhodogpojmfkjmhinfp",  // Test SSH Client
+  "pnhechapfaindjhompbnflcldabbghjo"   // HTerm App (SSH Client)
 };
 
 static void AppendParams(const std::vector<string16>& additional_names,
