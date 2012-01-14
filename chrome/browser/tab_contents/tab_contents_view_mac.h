@@ -119,10 +119,6 @@ class TabContentsViewMac : public TabContentsView {
   void CloseTab();
 
   TabContents* tab_contents() { return tab_contents_; }
-  int preferred_width() const { return preferred_width_; }
-  void set_preferred_width(int preferred_width) {
-    preferred_width_ = preferred_width;
-  }
 
  private:
   // The TabContents whose contents we display.
@@ -140,9 +136,6 @@ class TabContentsViewMac : public TabContentsView {
 
   // The context menu. Callbacks are asynchronous so we need to keep it around.
   scoped_ptr<RenderViewContextMenuMac> context_menu_;
-
-  // The page content's intrinsic width.
-  int preferred_width_;
 
   // The overlaid view. Owned by the caller of |InstallOverlayView|; this is a
   // weak reference.

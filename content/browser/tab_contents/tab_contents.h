@@ -24,6 +24,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/renderer_preferences.h"
 #include "net/base/load_states.h"
+#include "ui/gfx/size.h"
 #include "webkit/glue/resource_type.h"
 
 #if defined(OS_WIN)
@@ -203,6 +204,7 @@ class CONTENT_EXPORT TabContents
                                const std::string& content_state) OVERRIDE;
   virtual int GetMinimumZoomPercent() const OVERRIDE;
   virtual int GetMaximumZoomPercent() const OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
   virtual int GetContentRestrictions() const OVERRIDE;
   virtual WebUI::TypeID GetWebUITypeForCurrentState() OVERRIDE;
   virtual WebUI* GetWebUIForCurrentState() OVERRIDE;
@@ -627,6 +629,9 @@ class CONTENT_EXPORT TabContents
   // case we don't want saved settings to apply to it and we don't want to
   // remember it.
   bool temporary_zoom_settings_;
+
+  // The intrinsic size of the page.
+  gfx::Size preferred_size_;
 
   // Content restrictions, used to disable print/copy etc based on content's
   // (full-page plugins for now only) permissions.

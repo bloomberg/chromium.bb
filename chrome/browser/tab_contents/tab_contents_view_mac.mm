@@ -69,7 +69,6 @@ TabContentsView* CreateTabContentsView(TabContents* tab_contents) {
 
 TabContentsViewMac::TabContentsViewMac(TabContents* tab_contents)
     : tab_contents_(tab_contents),
-      preferred_width_(0),
       overlaid_view_(nil) {
 }
 

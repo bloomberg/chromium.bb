@@ -22,7 +22,6 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/sync_ui_util_mac.h"
-#include "chrome/browser/tab_contents/tab_contents_view_mac.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
@@ -696,10 +695,8 @@ enum {
   if (contents) {
     // If the intrinsic width is bigger, then make it the zoomed width.
     const int kScrollbarWidth = 16;  // TODO(viettrungluu): ugh.
-    TabContentsViewMac* tab_contents_view =
-        static_cast<TabContentsViewMac*>(contents->GetView());
     CGFloat intrinsicWidth = static_cast<CGFloat>(
-        tab_contents_view->preferred_width() + kScrollbarWidth);
+        contents->GetPreferredSize().width() + kScrollbarWidth);
     zoomedWidth = std::max(zoomedWidth,
                            std::min(intrinsicWidth, frame.size.width));
   }

@@ -14,7 +14,6 @@
 #include "chrome/browser/download/download_shelf.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/tab_contents/tab_contents_view_mac.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #import "chrome/browser/ui/cocoa/browser/avatar_button_controller.h"
@@ -608,12 +607,6 @@ void BrowserWindowCocoa::DestroyBrowser() {
 
 NSWindow* BrowserWindowCocoa::window() const {
   return [controller_ window];
-}
-
-void BrowserWindowCocoa::UpdatePreferredSize(content::WebContents* web_contents,
-                                             const gfx::Size& pref_size) {
-  static_cast<TabContentsViewMac*>(web_contents->GetView())->
-      set_preferred_width(pref_size.width());
 }
 
 void BrowserWindowCocoa::ShowAvatarBubble(WebContents* web_contents,

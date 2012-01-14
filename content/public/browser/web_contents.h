@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,6 +33,7 @@ class TimeTicks;
 
 namespace gfx {
 class Rect;
+class Size;
 }
 
 namespace net {
@@ -327,6 +328,9 @@ class WebContents : public PageNavigator {
   // Gets the minimum/maximum zoom percent.
   virtual int GetMinimumZoomPercent() const = 0;
   virtual int GetMaximumZoomPercent() const = 0;
+
+  // Gets the preferred size of the contents.
+  virtual gfx::Size GetPreferredSize() const = 0;
 
   // Get the content restrictions (see content::ContentRestriction).
   virtual int GetContentRestrictions() const = 0;

@@ -764,6 +764,7 @@ void TabContents::LostMouseLock() {
 }
 
 void TabContents::UpdatePreferredSize(const gfx::Size& pref_size) {
+  preferred_size_ = pref_size;
   if (delegate_)
     delegate_->UpdatePreferredSize(this, pref_size);
 }
@@ -1057,6 +1058,10 @@ int TabContents::GetMinimumZoomPercent() const {
 
 int TabContents::GetMaximumZoomPercent() const {
   return maximum_zoom_percent_;
+}
+
+gfx::Size TabContents::GetPreferredSize() const {
+  return preferred_size_;
 }
 
 int TabContents::GetContentRestrictions() const {
