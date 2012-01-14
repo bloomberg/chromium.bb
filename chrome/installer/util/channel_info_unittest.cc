@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,15 +6,16 @@
 
 #include "base/basictypes.h"
 #include "chrome/installer/util/channel_info.h"
+#include "chrome/installer/util/util_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using installer::ChannelInfo;
 
 namespace {
 
-const std::wstring kChannelStable;
-const std::wstring kChannelBeta(L"beta");
-const std::wstring kChannelDev(L"dev");
+const std::wstring kChannelStable(installer::kChromeChannelStable);
+const std::wstring kChannelBeta(installer::kChromeChannelBeta);
+const std::wstring kChannelDev(installer::kChromeChannelDev);
 
 }  // namespace
 

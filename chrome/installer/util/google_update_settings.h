@@ -31,6 +31,9 @@ class GoogleUpdateSettings {
     MANUAL_UPDATES_ONLY = 2,
   };
 
+  // Returns true if this install is system-wide, false if it is per-user.
+  static bool IsSystemInstall();
+
   // Returns whether the user has given consent to collect UMA data and send
   // crash dumps to Google. This information is collected by the web server
   // used to download the chrome installer.
@@ -127,7 +130,7 @@ class GoogleUpdateSettings {
 
   // Returns only the channel name: "" (stable), "dev", "beta", "canary", or
   // "unknown" if unknown. This value will not be modified by "-m" for a
-  // multi-install.
+  // multi-install. See kChromeChannel* in util_constants.h
   static std::wstring GetChromeChannel(bool system_install);
 
   // Return a human readable modifier for the version string, e.g.

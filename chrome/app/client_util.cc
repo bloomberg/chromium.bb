@@ -25,7 +25,6 @@
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/channel_info.h"
 #include "chrome/installer/util/install_util.h"
-#include "chrome/installer/util/google_chrome_sxs_distribution.h"  // PreRead.
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "chrome/installer/util/util_constants.h"
@@ -115,13 +114,10 @@ bool PreReadShouldRun() {
     return false;
 
   // The experiment should only run on canary and dev.
-  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  std::wstring channel;
-  if (!dist->GetChromeChannel(&channel))
-    return false;
-  return channel == GoogleChromeSxSDistribution::ChannelName() ||
-      channel == L"dev";
-  return true;
+  const string16 kChannel(GoogleUpdateSettings::GetChromeChannel(
+      GoogleUpdateSettings::IsSystemInstall()));
+  return kChannel == installer::kChromeChannelCanary ||
+      kChannel == installer::kChromeChannelDev;
 }
 
 // Checks to see if the experiment is running. If so, either tosses a coin

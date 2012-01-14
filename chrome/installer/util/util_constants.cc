@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -199,5 +199,12 @@ const char kGoogleUpdateIsMachineEnvVar[] = "GoogleUpdateIsMachine";
 
 const wchar_t kOptionMultiInstall[] = L"multi-install";
 const wchar_t kOptionReadyMode[] = L"ready-mode";
+
+// Chrome channel display names.
+extern const wchar_t kChromeChannelUnknown[] = L"unknown";
+extern const wchar_t kChromeChannelCanary[] = L"canary";
+extern const wchar_t kChromeChannelDev[] = L"dev";
+extern const wchar_t kChromeChannelBeta[] = L"beta";
+extern const wchar_t kChromeChannelStable[] = L"";
 
 }  // namespace installer

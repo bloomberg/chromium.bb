@@ -135,12 +135,12 @@ bool GetChromeChannelInternal(bool system_install,
 
   installer::ChannelInfo channel_info;
   if (!channel_info.Initialize(key)) {
-    channel->assign(L"unknown");
+    channel->assign(installer::kChromeChannelUnknown);
     return false;
   }
 
   if (!channel_info.GetChannelName(channel)) {
-    channel->assign(L"unknown");
+    channel->assign(installer::kChromeChannelUnknown);
   }
 
   // Tag the channel name if this is a multi-install.
@@ -172,8 +172,9 @@ bool GetUpdatePolicyFromDword(
   return false;
 }
 
-// Determine whether this is a system-level or a user-level install.
-bool IsSystemInstall() {
+}  // namespace
+
+bool GoogleUpdateSettings::IsSystemInstall() {
   bool system_install = false;
   FilePath module_dir;
   if (!PathService::Get(base::DIR_MODULE, &module_dir)) {
@@ -184,8 +185,6 @@ bool IsSystemInstall() {
   }
   return system_install;
 }
-
-}  // namespace
 
 bool GoogleUpdateSettings::GetCollectStatsConsent() {
   return GetCollectStatsConsentAtLevel(IsSystemInstall());

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -204,6 +204,16 @@ extern const char kGoogleUpdateIsMachineEnvVar[];
 // Product options.
 extern const wchar_t kOptionMultiInstall[];
 extern const wchar_t kOptionReadyMode[];
+
+// Chrome channel display names.
+// NOTE: Canary is not strictly a 'channel', but rather a separate product
+//     installed side-by-side. However, GoogleUpdateSettings::GetChromeChannel
+//     will return "canary" for that product.
+extern const wchar_t kChromeChannelUnknown[];
+extern const wchar_t kChromeChannelCanary[];
+extern const wchar_t kChromeChannelDev[];
+extern const wchar_t kChromeChannelBeta[];
+extern const wchar_t kChromeChannelStable[];
 
 }  // namespace installer
 
