@@ -409,6 +409,18 @@ hg-migrate() {
   rm -rf "${TOOLCHAIN_ROOT}"/hg-log
 }
 
+# Convert a path given on the command-line to an absolute path.
+# This takes into account the fact that we changed directories at the
+# beginning of this script. PWD_ON_ENTRY is used to remember the
+# initial working directory.
+ArgumentToAbsolutePath() {
+  local relpath="$1"
+  local savepwd="$(pwd)"
+  cd "${PWD_ON_ENTRY}"
+  GetAbsolutePath "${relpath}"
+  cd "${savepwd}"
+}
+
 crostarball() {
   local hgdir=$1
   local reporev=$2
@@ -421,7 +433,10 @@ crostarball() {
 }
 
 cros-tarball-all() {
-  local tardir="${1:-$(pwd)/toolchain/pnacl-src-tarballs}"
+  if [ $# -ne 1 ]; then
+    Fatal "Usage: cros-tarball-all <dest_dir>"
+  fi
+  local tardir="$(ArgumentToAbsolutePath "$1")"
   local naclrev=0
   if [ -d .git ]; then
     naclrev=$(git log | grep git-svn | \
@@ -440,7 +455,7 @@ cros-tarball-all() {
   mkdir -p "${tardir}"
 
   # TODO(jasonwkim): Keep this list updated
-  tar -C ${NACL_ROOT} -cvjf "${tardir}/pnacl-src-${naclrev}-build.tar.bz2" \
+  tar -C ${NACL_ROOT} -cvjf "${tardir}/pnacl-src-${naclrev}-build.tbz2" \
     pnacl/build.sh \
     pnacl/test.sh \
     pnacl/DEPS \
@@ -457,7 +472,7 @@ cros-tarball-all() {
   StepBanner generating archive for clang at ${CLANG_REV}
 
   svn export -q -r ${CLANG_REV} ${TC_SRC}/clang "${tardir}/clang"
-  tar -C ${tardir} -cjf "${tardir}/pnacl-src-${naclrev}-clang.tar.bz2" clang &
+  tar -C ${tardir} -cjf "${tardir}/pnacl-src-${naclrev}-clang.tbz2" clang &
 
   wait
   rm -rf "${tardir}/clang"
@@ -1077,7 +1092,7 @@ untrusted_sdk() {
     echo "Error: untrusted_sdk needs a tarball name." >&2
     exit 1
   fi
-  local tgzname=$(cd "${PWD_ON_ENTRY}"; GetAbsolutePath "$1")
+  local tgzname="$(ArgumentToAbsolutePath "$1")"
   clean
   everything-translator
 
