@@ -125,6 +125,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   virtual void InsertText(const string16& text) OVERRIDE;
   virtual void InsertChar(char16 ch, int flags) OVERRIDE;
   virtual ui::TextInputType GetTextInputType() const OVERRIDE;
+  virtual bool CanComposeInline() const OVERRIDE;
   virtual gfx::Rect GetCaretBounds() OVERRIDE;
   virtual bool HasCompositionText() OVERRIDE;
   virtual bool GetTextRange(ui::Range* range) OVERRIDE;
@@ -206,6 +207,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
 
   // The current text input type.
   ui::TextInputType text_input_type_;
+  bool can_compose_inline_;
 
   // Rectangles before and after the selection.
   gfx::Rect selection_start_rect_;

@@ -28,7 +28,9 @@ public:
   virtual void CreateContext(IBusBus* bus,
                              PendingCreateICRequest* request) OVERRIDE;
   virtual void DestroyProxy(IBusInputContext* context) OVERRIDE;
-  virtual void SetCapabilities(IBusInputContext* context) OVERRIDE;
+  virtual void SetCapabilities(
+      IBusInputContext* context,
+      InlineCompositionCapability inline_type) OVERRIDE;
   virtual void FocusIn(IBusInputContext* context) OVERRIDE;
   virtual void FocusOut(IBusInputContext* context) OVERRIDE;
   virtual void Reset(IBusInputContext* context) OVERRIDE;

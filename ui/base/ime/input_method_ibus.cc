@@ -405,7 +405,7 @@ void InputMethodIBus::SetContext(IBusInputContext* ic) {
   g_signal_connect(ic, "destroy",
                    G_CALLBACK(OnDestroyThunk), this);
 
-  ibus_client_->SetCapabilities(ic);
+  ibus_client_->SetCapabilities(ic, internal::IBusClient::INLINE_COMPOSITION);
 
   UpdateContextFocusState();
   // Since ibus-daemon is launched in an on-demand basis on Chrome OS, RWHVA (or
@@ -497,6 +497,13 @@ void InputMethodIBus::UpdateContextFocusState() {
     ibus_client_->FocusOut(context_);
   else if (!old_context_focused && context_focused_)
     ibus_client_->FocusIn(context_);
+
+  if (context_focused_) {
+    internal::IBusClient::InlineCompositionCapability capability =
+        CanComposeInline() ? internal::IBusClient::INLINE_COMPOSITION
+                           : internal::IBusClient::OFF_THE_SPOT_COMPOSITION;
+    ibus_client_->SetCapabilities(context_, capability);
+  }
 }
 
 void InputMethodIBus::ProcessKeyEventPostIME(

@@ -48,6 +48,11 @@ class UI_EXPORT IBusClient {
     virtual void StoreOrAbandonInputContext(IBusInputContext* ic) = 0;
   };
 
+  enum InlineCompositionCapability {
+    OFF_THE_SPOT_COMPOSITION = 0,
+    INLINE_COMPOSITION = 1,
+  };
+
   virtual ~IBusClient() {}
 
   // Gets a D-Bus connection to ibus-daemon. An implementation should establish
@@ -69,7 +74,8 @@ class UI_EXPORT IBusClient {
   virtual void DestroyProxy(IBusInputContext* context) = 0;
 
   // Updates the set of capabilities of the |context|.
-  virtual void SetCapabilities(IBusInputContext* context) = 0;
+  virtual void SetCapabilities(IBusInputContext* context,
+                               InlineCompositionCapability inline_type) = 0;
 
   // Focuses the |context| asynchronously.
   virtual void FocusIn(IBusInputContext* context) = 0;

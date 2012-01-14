@@ -88,6 +88,9 @@ class InputMethodIBusTest : public internal::InputMethodDelegate,
   virtual TextInputType GetTextInputType() const OVERRIDE {
     return input_type_;
   }
+  virtual bool CanComposeInline() const OVERRIDE {
+    return can_compose_inline_;
+  }
   virtual gfx::Rect GetCaretBounds() OVERRIDE {
     return caret_bounds_;
   }
@@ -139,6 +142,7 @@ class InputMethodIBusTest : public internal::InputMethodDelegate,
     on_input_method_changed_call_count_ = 0;
 
     input_type_ = TEXT_INPUT_TYPE_NONE;
+    can_compose_inline_ = true;
     caret_bounds_ = gfx::Rect();
   }
 
@@ -162,6 +166,7 @@ class InputMethodIBusTest : public internal::InputMethodDelegate,
 
   // Variables that will be returned from the ui::TextInputClient functions.
   TextInputType input_type_;
+  bool can_compose_inline_;
   gfx::Rect caret_bounds_;
 };
 
@@ -194,6 +199,14 @@ TEST_F(InputMethodIBusTest, GetInputTextType) {
   input_type_ = TEXT_INPUT_TYPE_TEXT;
   ime_->OnTextInputTypeChanged(this);
   EXPECT_EQ(TEXT_INPUT_TYPE_TEXT, ime_->GetTextInputType());
+}
+
+TEST_F(InputMethodIBusTest, CanComposeInline) {
+  ime_->Init(true);
+  EXPECT_EQ(true, ime_->CanComposeInline());
+  can_compose_inline_ = false;
+  ime_->OnTextInputTypeChanged(this);
+  EXPECT_EQ(false, ime_->CanComposeInline());
 }
 
 TEST_F(InputMethodIBusTest, GetTextInputClient) {

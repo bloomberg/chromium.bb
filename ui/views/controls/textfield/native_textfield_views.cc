@@ -699,6 +699,10 @@ ui::TextInputType NativeTextfieldViews::GetTextInputType() const {
   return textfield_->GetTextInputType();
 }
 
+bool NativeTextfieldViews::CanComposeInline() const {
+  return true;
+}
+
 gfx::Rect NativeTextfieldViews::GetCaretBounds() {
   return GetRenderText()->GetUpdatedCursorBounds();
 }

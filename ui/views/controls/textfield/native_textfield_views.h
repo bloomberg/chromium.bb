@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -151,6 +151,7 @@ class VIEWS_EXPORT NativeTextfieldViews : public TouchSelectionClientView,
   virtual void InsertText(const string16& text) OVERRIDE;
   virtual void InsertChar(char16 ch, int flags) OVERRIDE;
   virtual ui::TextInputType GetTextInputType() const OVERRIDE;
+  virtual bool CanComposeInline() const OVERRIDE;
   virtual gfx::Rect GetCaretBounds() OVERRIDE;
   virtual bool HasCompositionText() OVERRIDE;
   virtual bool GetTextRange(ui::Range* range) OVERRIDE;

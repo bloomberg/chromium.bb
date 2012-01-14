@@ -177,7 +177,8 @@ void MockIBusClient::DestroyProxy(IBusInputContext* context) {
   g_signal_emit_by_name(context, "destroy");
 }
 
-void MockIBusClient::SetCapabilities(IBusInputContext* context) {
+void MockIBusClient::SetCapabilities(IBusInputContext* context,
+                                     InlineCompositionCapability inline_type) {
   ++set_capabilities_call_count_;
 }
 

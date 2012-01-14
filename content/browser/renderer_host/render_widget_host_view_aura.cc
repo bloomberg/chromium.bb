@@ -100,6 +100,7 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host)
       popup_child_host_view_(NULL),
       is_loading_(false),
       text_input_type_(ui::TEXT_INPUT_TYPE_NONE),
+      can_compose_inline_(true),
       has_composition_text_(false),
 #if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
       current_surface_(gfx::kNullPluginWindow),
@@ -254,12 +255,9 @@ void RenderWidgetHostViewAura::SetIsLoading(bool is_loading) {
 void RenderWidgetHostViewAura::TextInputStateChanged(
     ui::TextInputType type,
     bool can_compose_inline) {
-  // TODO(kinaba): currently, can_compose_inline is ignored and always treated
-  // as true. We need to support "can_compose_inline=false" for PPAPI plugins
-  // that may want to avoid drawing composition-text by themselves and pass
-  // the responsibility to the browser.
-  if (text_input_type_ != type) {
+  if (text_input_type_ != type || can_compose_inline_ != can_compose_inline) {
     text_input_type_ = type;
+    can_compose_inline_ = can_compose_inline;
     GetInputMethod()->OnTextInputTypeChanged(this);
   }
 }
@@ -569,6 +567,10 @@ void RenderWidgetHostViewAura::InsertChar(char16 ch, int flags) {
 
 ui::TextInputType RenderWidgetHostViewAura::GetTextInputType() const {
   return text_input_type_;
+}
+
+bool RenderWidgetHostViewAura::CanComposeInline() const {
+  return can_compose_inline_;
 }
 
 gfx::Rect RenderWidgetHostViewAura::GetCaretBounds() {

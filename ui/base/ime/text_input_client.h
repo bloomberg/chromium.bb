@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -59,6 +59,9 @@ class UI_EXPORT TextInputClient {
   // Returns current text input type. It could be changed and even becomes
   // TEXT_INPUT_TYPE_NONE at runtime.
   virtual ui::TextInputType GetTextInputType() const = 0;
+
+  // Returns if the client supports inline composition currently.
+  virtual bool CanComposeInline() const = 0;
 
   // Returns current caret (insertion point) bounds relative to the screen
   // coordinates. If there is selection, then the selection bounds will be

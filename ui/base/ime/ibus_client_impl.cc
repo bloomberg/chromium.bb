@@ -98,10 +98,13 @@ void IBusClientImpl::DestroyProxy(IBusInputContext* context) {
   ibus_proxy_destroy(IBUS_PROXY(context));
 }
 
-void IBusClientImpl::SetCapabilities(IBusInputContext* context) {
+void IBusClientImpl::SetCapabilities(IBusInputContext* context,
+                                     InlineCompositionCapability inline_type) {
   // TODO(penghuang): support surrounding text.
-  static const guint32 kCapabilities = IBUS_CAP_PREEDIT_TEXT | IBUS_CAP_FOCUS;
-  ibus_input_context_set_capabilities(context, kCapabilities);
+  guint32 capabilities =
+      inline_type == INLINE_COMPOSITION ? IBUS_CAP_PREEDIT_TEXT | IBUS_CAP_FOCUS
+                                        : IBUS_CAP_FOCUS;
+  ibus_input_context_set_capabilities(context, capabilities);
 }
 
 void IBusClientImpl::FocusIn(IBusInputContext* context) {

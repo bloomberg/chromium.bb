@@ -61,6 +61,11 @@ TextInputType InputMethodBase::GetTextInputType() const {
   return client ? client->GetTextInputType() : TEXT_INPUT_TYPE_NONE;
 }
 
+bool InputMethodBase::CanComposeInline() const {
+  TextInputClient* client = GetTextInputClient();
+  return client ? client->CanComposeInline() : true;
+}
+
 bool InputMethodBase::IsTextInputClientFocused(const TextInputClient* client) {
   return client && (client == GetTextInputClient());
 }

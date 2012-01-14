@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -43,6 +43,7 @@ class UI_EXPORT InputMethodBase : public InputMethod {
   virtual void OnTextInputTypeChanged(const TextInputClient* client) OVERRIDE;
 
   virtual TextInputType GetTextInputType() const OVERRIDE;
+  virtual bool CanComposeInline() const OVERRIDE;
 
  protected:
   virtual void OnWillChangeFocusedClient(TextInputClient* focused_before,
