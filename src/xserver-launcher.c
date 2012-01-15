@@ -1610,7 +1610,7 @@ weston_xserver_init(struct weston_compositor *compositor)
 {
 	struct wl_display *display = compositor->wl_display;
 	struct weston_xserver *mxs;
-	char lockfile[256];
+	char lockfile[256], display_name[8];
 
 	mxs = malloc(sizeof *mxs);
 	memset(mxs, 0, sizeof *mxs);
@@ -1649,7 +1649,9 @@ weston_xserver_init(struct weston_compositor *compositor)
 		return -1;
 	}
 
-	fprintf(stderr, "xserver listening on display :%d\n", mxs->display);
+	snprintf(display_name, sizeof display_name, ":%d", mxs->display);
+	fprintf(stderr, "xserver listening on display %s\n", display_name);
+	setenv("DISPLAY", display_name, 1);
 
 	mxs->loop = wl_display_get_event_loop(display);
 	mxs->abstract_source =

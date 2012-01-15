@@ -2117,11 +2117,11 @@ int main(int argc, char *argv[])
 	ec->option_idle_time = option_idle_time;
 	ec->idle_time = option_idle_time;
 
-	if (shell_init(ec) < 0)
-		exit(EXIT_FAILURE);
-
 	if (xserver)
 		weston_xserver_init(ec);
+
+	if (shell_init(ec) < 0)
+		exit(EXIT_FAILURE);
 
 	if (wl_display_add_socket(display, option_socket_name)) {
 		fprintf(stderr, "failed to add socket: %m\n");
