@@ -1295,7 +1295,7 @@ static int
 weston_xserver_handle_event(int listen_fd, uint32_t mask, void *data)
 {
 	struct weston_xserver *mxs = data;
-	char display[8], s[8], logfile[32];
+	char display[8], s[8];
 	int sv[2], flags;
 
 	if (socketpair(AF_UNIX, SOCK_STREAM | SOCK_CLOEXEC, 0, sv) < 0) {
@@ -1316,8 +1316,6 @@ weston_xserver_handle_event(int listen_fd, uint32_t mask, void *data)
 		setenv("WAYLAND_SOCKET", s, 1);
 
 		snprintf(display, sizeof display, ":%d", mxs->display);
-		snprintf(logfile, sizeof logfile,
-			 "/tmp/x-log-%d", mxs->display);
 
 		if (execl(XSERVER_PATH,
 			  XSERVER_PATH,
@@ -1325,7 +1323,6 @@ weston_xserver_handle_event(int listen_fd, uint32_t mask, void *data)
 			  "-wayland",
 			  "-rootless",
 			  "-retro",
-			  "-logfile", logfile,
 			  "-nolisten", "all",
 			  "-terminate",
 			  NULL) < 0)
