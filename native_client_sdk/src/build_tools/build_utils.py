@@ -16,8 +16,6 @@ import shutil
 import subprocess
 import sys
 
-from nacl_sdk_scons import nacl_utils
-
 
 # Reuse last change utility code.
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -113,32 +111,6 @@ def CheckPatchVersion(shell_env=None):
     print "or version 2.6.1 (or later)."
     return False
   return True
-
-
-# Build a toolchain path based on the platform type.  |base_dir| is the root
-# directory which includes the platform-specific toolchain.  This could be
-# something like "/usr/local/mydir/nacl_sdk/src".  If |base_dir| is None, then
-# the environment variable NACL_SDK_ROOT is used (if it's set).
-# This method assumes that the platform-specific toolchain is found under
-# <base_dir>/toolchain/<platform_variant>.
-def NormalizeToolchain(toolchain=TOOLCHAIN_AUTODETECT,
-                       base_dir=None,
-                       arch=nacl_utils.DEFAULT_TOOLCHAIN_ARCH,
-                       variant=nacl_utils.DEFAULT_TOOLCHAIN_VARIANT):
-  if toolchain == TOOLCHAIN_AUTODETECT:
-    if base_dir is None:
-      script_path = os.path.abspath(__file__)
-      script_dir = os.path.dirname(script_path)
-      sdk_src_dir = os.path.dirname(script_dir)
-      sdk_dir = os.path.dirname(sdk_src_dir)
-      src_dir = os.path.dirname(sdk_dir)
-      base_dir = os.path.join(src_dir, 'native_client')
-    normalized_toolchain = nacl_utils.ToolchainPath(base_dir=base_dir,
-                                                    arch=arch,
-                                                    variant=variant)
-  else:
-    normalized_toolchain = os.path.abspath(toolchain)
-  return normalized_toolchain
 
 
 def SupportedNexeBitWidths():
