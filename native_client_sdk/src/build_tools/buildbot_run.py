@@ -66,9 +66,17 @@ def Archive(filename):
   bucket_path = 'nativeclient-mirror/nacl/nacl_sdk/%s/%s' % (
       chrome_version, filename)
   full_dst = 'gs://%s' % bucket_path
+
+  if os.environ.get('BUILDBOT_BUILDERNAME', ''):
+    # For buildbots assume gsutil is stored in the build directory.
+    gsutil = '/b/build/scripts/slave/gsutil'
+  else:
+    # For non buildpots, you must have it in your path.
+    gsutil = 'gsutil'
+
   subprocess.check_call(
-      'gsutil cp -a public-read %s %s' % (
-          filename, full_dst), shell=True, cwd=OUT_DIR)
+      '%s cp -a public-read %s %s' % (
+          gsutil, filename, full_dst), shell=True, cwd=OUT_DIR)
   url = 'https://commondatastorage.googleapis.com/%s' % bucket_path
   print '@@@STEP_LINK@download@%s@@@' % url
   sys.stdout.flush()
@@ -263,6 +271,7 @@ def main():
   skip_examples = 0
   skip_headers = 0
   skip_make = 0
+  force_archive = 0
 
   pepper_ver = build_utils.ChromeMajorVersion()
   clnumber = lastchange.FetchVersionInfo(None).revision
@@ -354,7 +363,7 @@ def main():
          'pepper_' + pepper_ver], cwd=NACL_DIR)
 
   # Archive on non-trybots.
-  if '-sdk' in os.environ.get('BUILDBOT_BUILDERNAME', ''):
+  if force_archive or '-sdk' in os.environ.get('BUILDBOT_BUILDERNAME', ''):
     BuildStep('Archive build')
     Archive(tarname)
 
