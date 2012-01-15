@@ -328,6 +328,14 @@ void BaseLoginDisplayHost::StartAnimation() {
       base::TimeDelta::FromMilliseconds(kLoginFadeoutTransitionDurationMs));
   layer->SetOpacity(0.0f);
 
+  if (ash::Shell::GetInstance()->GetContainer(
+          ash::internal::kShellWindowId_DesktopBackgroundContainer)->
+          children().empty()) {
+    // If there is no background window, don't perform any animation on the
+    // default and background layer because there is nothing behind it.
+    return;
+  }
+
   // Background animation.
   if (kEnableBackgroundAnimation) {
     ui::Transform background_transform;
