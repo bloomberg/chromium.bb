@@ -48,14 +48,10 @@ struct tty {
 static int on_enter_vt(int signal_number, void *data)
 {
 	struct tty *tty = data;
-	int ret;
 
 	tty->vt_func(tty->compositor, TTY_ENTER_VT);
 
 	ioctl(tty->fd, VT_RELDISP, VT_ACKACQ);
-	ret = ioctl(tty->fd, KDSETMODE, KD_GRAPHICS);
-	if (ret)
-		fprintf(stderr, "failed to set KD_GRAPHICS mode on console: %m\n");
 
 	return 1;
 }
@@ -64,13 +60,8 @@ static int
 on_leave_vt(int signal_number, void *data)
 {
 	struct tty *tty = data;
-	int ret;
 
-	ioctl (tty->fd, VT_RELDISP, 1);
-	ret = ioctl(tty->fd, KDSETMODE, KD_TEXT);
-	if (ret)
-		fprintf(stderr,
-			"failed to set KD_TEXT mode on console: %m\n");
+	ioctl(tty->fd, VT_RELDISP, 1);
 
 	tty->vt_func(tty->compositor, TTY_LEAVE_VT);
 
