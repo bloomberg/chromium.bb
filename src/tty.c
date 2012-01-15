@@ -185,5 +185,7 @@ tty_destroy(struct tty *tty)
 		fprintf(stderr,
 			"could not restore terminal to canonical mode\n");
 
+	close(tty->fd);
+
 	free(tty);
 }
