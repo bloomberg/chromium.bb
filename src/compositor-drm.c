@@ -932,7 +932,7 @@ backend_init(struct wl_display *display, char *options)
 	int connector = 0, i;
 	const char *seat;
 	char *p, *value;
-	int tty = 1;
+	int tty = 0;
 
 	static char * const tokens[] = { "connector", "seat", "tty", NULL };
 

@@ -29,6 +29,7 @@
 #include <signal.h>
 #include <linux/kd.h>
 #include <linux/vt.h>
+#include <linux/major.h>
 #include <sys/ioctl.h>
 
 #include "compositor.h"
@@ -97,21 +98,33 @@ tty_create(struct weston_compositor *compositor, tty_vt_func_t vt_func,
 	int ret;
 	struct tty *tty;
 	struct wl_event_loop *loop;
+	struct stat buf;
 	char filename[16];
 
 	tty = malloc(sizeof *tty);
 	if (tty == NULL)
 		return NULL;
 
-	snprintf(filename, sizeof filename, "/dev/tty%d", tty_nr);
-	fprintf(stderr, "compositor: using %s\n", filename);
-
 	memset(tty, 0, sizeof *tty);
 	tty->compositor = compositor;
 	tty->vt_func = vt_func;
-	tty->fd = open(filename, O_RDWR | O_NOCTTY);
+	if (tty_nr > 0) {
+		snprintf(filename, sizeof filename, "/dev/tty%d", tty_nr);
+		fprintf(stderr, "compositor: using %s\n", filename);
+		tty->fd = open(filename, O_RDWR | O_NOCTTY | O_CLOEXEC);
+	} else {
+		tty->fd = fcntl(0, F_DUPFD_CLOEXEC, 0);
+	}
+
 	if (tty->fd <= 0) {
-		fprintf(stderr, "failed to open active tty: %m\n");
+		fprintf(stderr, "failed to open tty: %m\n");
+		return NULL;
+	}
+
+	if (fstat(tty->fd, &buf) < 0 ||
+	    major(buf.st_rdev) != TTY_MAJOR || minor(buf.st_rdev) == 0) {
+		fprintf(stderr, "stdin not a vt (%d, %d)\n",
+			major(buf.st_dev), minor(buf.st_dev));
 		return NULL;
 	}
 
