@@ -10,13 +10,13 @@
 #include "net/url_request/url_request_context.h"
 #include "webkit/fileapi/file_system_callback_dispatcher.h"
 #include "webkit/fileapi/file_system_context.h"
-#include "webkit/fileapi/file_system_operation.h"
+#include "webkit/fileapi/file_system_operation_interface.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/tools/test_shell/simple_resource_loader_bridge.h"
 
 using fileapi::FileSystemCallbackDispatcher;
 using fileapi::FileSystemContext;
-using fileapi::FileSystemOperation;
+using fileapi::FileSystemOperationInterface;
 using fileapi::WebFileWriterBase;
 using WebKit::WebFileWriterClient;
 using WebKit::WebString;
@@ -52,7 +52,7 @@ class SimpleFileWriter::IOThreadProxy
       return;
     }
     DCHECK(!operation_);
-    operation_ = GetNewOperation();
+    operation_ = GetNewOperation(path);
     operation_->Truncate(path, offset);
   }
 
@@ -65,7 +65,7 @@ class SimpleFileWriter::IOThreadProxy
     }
     DCHECK(request_context_);
     DCHECK(!operation_);
-    operation_ = GetNewOperation();
+    operation_ = GetNewOperation(path);
     operation_->Write(request_context_, path, blob_url, offset);
   }
 
@@ -134,10 +134,10 @@ class SimpleFileWriter::IOThreadProxy
     scoped_refptr<IOThreadProxy> proxy_;
   };
 
-  FileSystemOperation* GetNewOperation() {
+  FileSystemOperationInterface* GetNewOperation(const GURL& path) {
     // The FileSystemOperation takes ownership of the CallbackDispatcher.
-    return new FileSystemOperation(CallbackDispatcher::Create(this),
-                                   io_thread_, file_system_context_.get());
+    return file_system_context_->CreateFileSystemOperation(
+        path, CallbackDispatcher::Create(this), io_thread_);
   }
 
   void DidSucceed() {
@@ -185,7 +185,7 @@ class SimpleFileWriter::IOThreadProxy
   base::WeakPtr<SimpleFileWriter> simple_writer_;
 
   // Only used on the io thread.
-  FileSystemOperation* operation_;
+  FileSystemOperationInterface* operation_;
 
   scoped_refptr<FileSystemContext> file_system_context_;
 };

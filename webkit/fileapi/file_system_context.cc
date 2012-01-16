@@ -11,6 +11,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebFileSystem.h"
 #include "webkit/fileapi/file_system_callback_dispatcher.h"
 #include "webkit/fileapi/file_system_file_util.h"
+#include "webkit/fileapi/file_system_operation_interface.h"
 #include "webkit/fileapi/file_system_options.h"
 #include "webkit/fileapi/file_system_quota_client.h"
 #include "webkit/fileapi/file_system_util.h"
@@ -159,6 +160,7 @@ void FileSystemContext::OpenFileSystem(
     bool create,
     scoped_ptr<FileSystemCallbackDispatcher> dispatcher) {
   DCHECK(dispatcher.get());
+
   FileSystemMountPointProvider* mount_point_provider =
       GetMountPointProvider(type);
   if (!mount_point_provider) {
@@ -173,6 +175,24 @@ void FileSystemContext::OpenFileSystem(
       origin_url, type, create,
       base::Bind(&DidOpenFileSystem,
                  base::Passed(&dispatcher), root_url, name));
+}
+
+FileSystemOperationInterface* FileSystemContext::CreateFileSystemOperation(
+    const GURL& url,
+    scoped_ptr<FileSystemCallbackDispatcher> dispatcher,
+    base::MessageLoopProxy* file_proxy) {
+  GURL origin_url;
+  FileSystemType file_system_type = kFileSystemTypeUnknown;
+  FilePath file_path;
+  if (!CrackFileSystemURL(url, &origin_url, &file_system_type, &file_path))
+    return NULL;
+  FileSystemMountPointProvider* mount_point_provider =
+      GetMountPointProvider(file_system_type);
+  if (!mount_point_provider)
+    return NULL;
+  return mount_point_provider->CreateFileSystemOperation(
+      origin_url, file_system_type, file_path,
+      dispatcher.Pass(), file_proxy, this);
 }
 
 }  // namespace fileapi

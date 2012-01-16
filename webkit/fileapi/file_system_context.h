@@ -7,6 +7,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/platform_file.h"
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/quota/special_storage_policy.h"
 
@@ -28,6 +29,7 @@ class FileSystemCallbackDispatcher;
 class FileSystemContext;
 class FileSystemFileUtil;
 class FileSystemMountPointProvider;
+class FileSystemOperationInterface;
 class FileSystemOptions;
 class FileSystemPathManager;
 class FileSystemQuotaUtil;
@@ -96,6 +98,16 @@ class FileSystemContext
       FileSystemType type,
       bool create,
       scoped_ptr<FileSystemCallbackDispatcher> dispatcher);
+
+  // Creates a new FileSystemOperation instance by cracking
+  // the given filesystem URL |url| to get an appropriate MountPointProvider
+  // and calling the provider's corresponding CreateFileSystemOperation method.
+  // The resolved MountPointProvider could perform further specialization
+  // depending on the filesystem type pointed by the |url|.
+  FileSystemOperationInterface* CreateFileSystemOperation(
+      const GURL& url,
+      scoped_ptr<FileSystemCallbackDispatcher> dispatcher,
+      base::MessageLoopProxy* file_proxy);
 
  private:
   friend struct DefaultContextDeleter;

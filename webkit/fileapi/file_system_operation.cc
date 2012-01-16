@@ -57,19 +57,6 @@ FileSystemOperation::ScopedQuotaUtilHelper::~ScopedQuotaUtilHelper() {
   }
 }
 
-FileSystemOperation::FileSystemOperation(
-    scoped_ptr<FileSystemCallbackDispatcher> dispatcher,
-    scoped_refptr<base::MessageLoopProxy> proxy,
-    FileSystemContext* file_system_context)
-    : proxy_(proxy),
-      dispatcher_(dispatcher.Pass()),
-      operation_context_(file_system_context, NULL),
-      peer_handle_(base::kNullProcessHandle) {
-#ifndef NDEBUG
-  pending_operation_ = kOperationNone;
-#endif
-}
-
 FileSystemOperation::~FileSystemOperation() {
   if (file_writer_delegate_.get()) {
     FileSystemOperationContext* c =
@@ -521,6 +508,10 @@ void FileSystemOperation::Cancel(
   }
 }
 
+FileSystemOperation* FileSystemOperation::AsFileSystemOperation() {
+  return this;
+}
+
 void FileSystemOperation::SyncGetPlatformPath(const GURL& path,
                                               FilePath* platform_path) {
 #ifndef NDEBUG
@@ -536,6 +527,19 @@ void FileSystemOperation::SyncGetPlatformPath(const GURL& path,
       &operation_context_, src_virtual_path_, platform_path);
 
   delete this;
+}
+
+FileSystemOperation::FileSystemOperation(
+    scoped_ptr<FileSystemCallbackDispatcher> dispatcher,
+    scoped_refptr<base::MessageLoopProxy> proxy,
+    FileSystemContext* file_system_context)
+    : proxy_(proxy),
+      dispatcher_(dispatcher.Pass()),
+      operation_context_(file_system_context, NULL),
+      peer_handle_(base::kNullProcessHandle) {
+#ifndef NDEBUG
+  pending_operation_ = kOperationNone;
+#endif
 }
 
 void FileSystemOperation::GetUsageAndQuotaThenCallback(

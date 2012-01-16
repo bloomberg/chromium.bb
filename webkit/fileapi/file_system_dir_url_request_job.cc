@@ -21,6 +21,7 @@
 #include "net/base/net_util.h"
 #include "net/url_request/url_request.h"
 #include "webkit/fileapi/file_system_callback_dispatcher.h"
+#include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_operation.h"
 #include "webkit/fileapi/file_system_util.h"
 
@@ -139,8 +140,15 @@ bool FileSystemDirURLRequestJob::GetCharset(std::string* charset) {
 }
 
 void FileSystemDirURLRequestJob::StartAsync() {
-  if (request_)
-    GetNewOperation()->ReadDirectory(request_->url());
+  if (!request_)
+    return;
+  FileSystemOperationInterface* operation = GetNewOperation(request_->url());
+  if (!operation) {
+    NotifyDone(URLRequestStatus(URLRequestStatus::FAILED,
+                                net::ERR_INVALID_URL));
+    return;
+  }
+  operation->ReadDirectory(request_->url());
 }
 
 void FileSystemDirURLRequestJob::DidReadDirectory(
@@ -174,17 +182,19 @@ void FileSystemDirURLRequestJob::DidReadDirectory(
   }
 
   if (has_more) {
-    GetNewOperation()->ReadDirectory(request_->url());
+    GetNewOperation(request_->url())->ReadDirectory(request_->url());
   } else {
     set_expected_content_size(data_.size());
     NotifyHeadersComplete();
   }
 }
 
-FileSystemOperation* FileSystemDirURLRequestJob::GetNewOperation() {
-  return new FileSystemOperation(CallbackDispatcher::Create(this),
-                                 file_thread_proxy_,
-                                 file_system_context_);
+FileSystemOperationInterface*
+FileSystemDirURLRequestJob::GetNewOperation(const GURL& url) {
+  return file_system_context_->CreateFileSystemOperation(
+      url,
+      CallbackDispatcher::Create(this),
+      file_thread_proxy_);
 }
 
 }  // namespace fileapi

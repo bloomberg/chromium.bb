@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,7 +21,7 @@ class WebURL;
 
 namespace fileapi {
 class FileSystemContext;
-class FileSystemOperation;
+class FileSystemOperationInterface;
 }
 
 class SimpleFileSystem
@@ -81,8 +81,8 @@ class SimpleFileSystem
 
  private:
   // Helpers.
-  fileapi::FileSystemOperation* GetNewOperation(
-      WebKit::WebFileSystemCallbacks* callbacks);
+  fileapi::FileSystemOperationInterface* GetNewOperation(
+      const WebKit::WebURL& path, WebKit::WebFileSystemCallbacks* callbacks);
 
   // A temporary directory for FileSystem API.
   ScopedTempDir file_system_dir_;

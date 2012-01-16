@@ -43,9 +43,6 @@ class FileSystemOperationTest;
 // FileSystemOperation implementation for local file systems.
 class FileSystemOperation : public FileSystemOperationInterface {
  public:
-  FileSystemOperation(scoped_ptr<FileSystemCallbackDispatcher> dispatcher,
-                      scoped_refptr<base::MessageLoopProxy> proxy,
-                      FileSystemContext* file_system_context);
   virtual ~FileSystemOperation();
 
   // FileSystemOperation overrides.
@@ -77,12 +74,23 @@ class FileSystemOperation : public FileSystemOperationInterface {
       base::ProcessHandle peer_handle) OVERRIDE;
   virtual void Cancel(
       scoped_ptr<FileSystemCallbackDispatcher> cancel_dispatcher) OVERRIDE;
+  virtual FileSystemOperation* AsFileSystemOperation() OVERRIDE;
 
   // Synchronously gets the platform path for the given |path|.
   void SyncGetPlatformPath(const GURL& path, FilePath* platform_path);
 
  private:
   class ScopedQuotaUtilHelper;
+
+  // Only MountPointProviders or testing class can create a
+  // new operation directly.
+  friend class SandboxMountPointProvider;
+  friend class CrosMountPointProvider;
+  friend class FileSystemTestHelper;
+
+  FileSystemOperation(scoped_ptr<FileSystemCallbackDispatcher> dispatcher,
+                      scoped_refptr<base::MessageLoopProxy> proxy,
+                      FileSystemContext* file_system_context);
 
   FileSystemContext* file_system_context() const {
     return operation_context_.file_system_context();

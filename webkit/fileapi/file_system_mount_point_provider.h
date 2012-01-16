@@ -9,15 +9,23 @@
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/platform_file.h"
 #include "base/file_path.h"
 #include "base/platform_file.h"
 #include "webkit/fileapi/file_system_types.h"
 
 class GURL;
 
+namespace base {
+class MessageLoopProxy;
+}
+
 namespace fileapi {
 
+class FileSystemCallbackDispatcher;
+class FileSystemContext;
 class FileSystemFileUtil;
+class FileSystemOperationInterface;
 
 // An interface to provide mount-point-specific path-related utilities
 // and specialized FileSystemFileUtil instance.
@@ -65,6 +73,19 @@ class FileSystemMountPointProvider {
 
   // Returns the specialized FileSystemFileUtil for this mount point.
   virtual FileSystemFileUtil* GetFileUtil() = 0;
+
+  // Returns a new instance of the specialized FileSystemOperation for this
+  // mount point based on the given triplet of |origin_url|, |file_system_type|
+  // and |virtual_path|.
+  // This method is usually dispatched by
+  // FileSystemContext::CreateFileSystemOperation.
+  virtual FileSystemOperationInterface* CreateFileSystemOperation(
+      const GURL& origin_url,
+      FileSystemType file_system_type,
+      const FilePath& virtual_path,
+      scoped_ptr<FileSystemCallbackDispatcher> dispatcher,
+      base::MessageLoopProxy* file_proxy,
+      FileSystemContext* context) const = 0;
 };
 
 // An interface to control external file system access permissions.

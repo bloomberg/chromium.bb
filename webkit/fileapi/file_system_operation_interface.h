@@ -21,6 +21,7 @@ class GURL;
 namespace fileapi {
 
 class FileSystemCallbackDispatcher;
+class FileSystemOperation;
 
 // The interface class for FileSystemOperation implementations.
 //
@@ -145,6 +146,11 @@ class FileSystemOperationInterface {
       const GURL& path,
       int file_flags,
       base::ProcessHandle peer_handle) = 0;
+
+  // For downcasting to FileSystemOperation.
+  // TODO(kinuko): this hack should go away once appropriate upload-stream
+  // handling based on element types is supported.
+  virtual FileSystemOperation* AsFileSystemOperation() = 0;
 };
 
 }  // namespace fileapi

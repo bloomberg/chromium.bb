@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,7 +21,7 @@ class Time;
 
 namespace fileapi {
 class FileSystemContext;
-class FileSystemOperation;
+class FileSystemOperationInterface;
 }
 
 namespace net {
@@ -88,13 +88,15 @@ class FileSystemDispatcherHost : public content::BrowserMessageFilter {
   void OnSyncGetPlatformPath(const GURL& path,
                              FilePath* platform_path);
 
-  // Creates a new FileSystemOperation.
-  fileapi::FileSystemOperation* GetNewOperation(int request_id);
+  // Creates a new FileSystemOperationInterface based on |target_path|.
+  fileapi::FileSystemOperationInterface* GetNewOperation(
+      const GURL& target_path,
+      int request_id);
 
   fileapi::FileSystemContext* context_;
 
   // Keeps ongoing file system operations.
-  typedef IDMap<fileapi::FileSystemOperation> OperationsMap;
+  typedef IDMap<fileapi::FileSystemOperationInterface> OperationsMap;
   OperationsMap operations_;
 
   // The getter holds the context until Init() can be called from the

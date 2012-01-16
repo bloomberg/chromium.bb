@@ -16,6 +16,7 @@
 #include "base/metrics/histogram.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
+#include "webkit/fileapi/file_system_callback_dispatcher.h"
 #include "webkit/fileapi/file_system_operation.h"
 #include "webkit/fileapi/file_system_operation_context.h"
 #include "webkit/fileapi/file_system_options.h"
@@ -408,6 +409,17 @@ std::vector<FilePath> SandboxMountPointProvider::GetRootDirectories() const {
 
 FileSystemFileUtil* SandboxMountPointProvider::GetFileUtil() {
   return sandbox_file_util_.get();
+}
+
+FileSystemOperationInterface*
+SandboxMountPointProvider::CreateFileSystemOperation(
+    const GURL& origin_url,
+    FileSystemType file_system_type,
+    const FilePath& virtual_path,
+    scoped_ptr<FileSystemCallbackDispatcher> dispatcher,
+    base::MessageLoopProxy* file_proxy,
+    FileSystemContext* context) const {
+  return new FileSystemOperation(dispatcher.Pass(), file_proxy, context);
 }
 
 FilePath SandboxMountPointProvider::old_base_path() const {

@@ -23,6 +23,7 @@
 #include "net/http/http_util.h"
 #include "net/url_request/url_request.h"
 #include "webkit/fileapi/file_system_callback_dispatcher.h"
+#include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_operation.h"
 #include "webkit/fileapi/file_system_util.h"
 
@@ -219,12 +220,19 @@ int FileSystemURLRequestJob::GetResponseCode() const {
 }
 
 void FileSystemURLRequestJob::StartAsync() {
-  if (request_) {
-    (new FileSystemOperation(CallbackDispatcher::Create(this),
-                             file_thread_proxy_,
-                             file_system_context_)
-                            )->GetMetadata(request_->url());
+  if (!request_)
+    return;
+  FileSystemOperationInterface* operation =
+      file_system_context_->CreateFileSystemOperation(
+          request_->url(),
+          CallbackDispatcher::Create(this),
+          file_thread_proxy_);
+  if (!operation) {
+    NotifyDone(URLRequestStatus(URLRequestStatus::FAILED,
+                                net::ERR_INVALID_URL));
+    return;
   }
+  operation->GetMetadata(request_->url());
 }
 
 void FileSystemURLRequestJob::DidGetMetadata(

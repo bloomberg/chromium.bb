@@ -21,9 +21,9 @@
 #include "webkit/fileapi/file_system_callback_dispatcher.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_operation.h"
-#include "webkit/fileapi/file_system_operation.h"
 #include "webkit/fileapi/file_system_quota_util.h"
 #include "webkit/fileapi/file_system_util.h"
+#include "webkit/fileapi/sandbox_mount_point_provider.h"
 
 using content::BrowserMessageFilter;
 using content::BrowserThread;
@@ -31,6 +31,7 @@ using content::UserMetricsAction;
 using fileapi::FileSystemCallbackDispatcher;
 using fileapi::FileSystemFileUtil;
 using fileapi::FileSystemOperation;
+using fileapi::FileSystemOperationInterface;
 
 class BrowserFileSystemCallbackDispatcher
     : public FileSystemCallbackDispatcher {
@@ -186,44 +187,45 @@ void FileSystemDispatcherHost::OnOpen(
 
 void FileSystemDispatcherHost::OnMove(
     int request_id, const GURL& src_path, const GURL& dest_path) {
-  GetNewOperation(request_id)->Move(src_path, dest_path);
+  GetNewOperation(src_path, request_id)->Move(src_path, dest_path);
 }
 
 void FileSystemDispatcherHost::OnCopy(
     int request_id, const GURL& src_path, const GURL& dest_path) {
-  GetNewOperation(request_id)->Copy(src_path, dest_path);
+  GetNewOperation(src_path, request_id)->Copy(src_path, dest_path);
 }
 
 void FileSystemDispatcherHost::OnRemove(
     int request_id, const GURL& path, bool recursive) {
-  GetNewOperation(request_id)->Remove(path, recursive);
+  GetNewOperation(path, request_id)->Remove(path, recursive);
 }
 
 void FileSystemDispatcherHost::OnReadMetadata(
     int request_id, const GURL& path) {
-  GetNewOperation(request_id)->GetMetadata(path);
+  GetNewOperation(path, request_id)->GetMetadata(path);
 }
 
 void FileSystemDispatcherHost::OnCreate(
     int request_id, const GURL& path, bool exclusive,
     bool is_directory, bool recursive) {
   if (is_directory)
-    GetNewOperation(request_id)->CreateDirectory(path, exclusive, recursive);
+    GetNewOperation(path, request_id)->CreateDirectory(
+        path, exclusive, recursive);
   else
-    GetNewOperation(request_id)->CreateFile(path, exclusive);
+    GetNewOperation(path, request_id)->CreateFile(path, exclusive);
 }
 
 void FileSystemDispatcherHost::OnExists(
     int request_id, const GURL& path, bool is_directory) {
   if (is_directory)
-    GetNewOperation(request_id)->DirectoryExists(path);
+    GetNewOperation(path, request_id)->DirectoryExists(path);
   else
-    GetNewOperation(request_id)->FileExists(path);
+    GetNewOperation(path, request_id)->FileExists(path);
 }
 
 void FileSystemDispatcherHost::OnReadDirectory(
     int request_id, const GURL& path) {
-  GetNewOperation(request_id)->ReadDirectory(path);
+  GetNewOperation(path, request_id)->ReadDirectory(path);
 }
 
 void FileSystemDispatcherHost::OnWrite(
@@ -236,7 +238,7 @@ void FileSystemDispatcherHost::OnWrite(
     NOTREACHED();
     return;
   }
-  GetNewOperation(request_id)->Write(
+  GetNewOperation(path, request_id)->Write(
       request_context_, path, blob_url, offset);
 }
 
@@ -244,7 +246,7 @@ void FileSystemDispatcherHost::OnTruncate(
     int request_id,
     const GURL& path,
     int64 length) {
-  GetNewOperation(request_id)->Truncate(path, length);
+  GetNewOperation(path, request_id)->Truncate(path, length);
 }
 
 void FileSystemDispatcherHost::OnTouchFile(
@@ -252,14 +254,14 @@ void FileSystemDispatcherHost::OnTouchFile(
     const GURL& path,
     const base::Time& last_access_time,
     const base::Time& last_modified_time) {
-  GetNewOperation(request_id)->TouchFile(
+  GetNewOperation(path, request_id)->TouchFile(
       path, last_access_time, last_modified_time);
 }
 
 void FileSystemDispatcherHost::OnCancel(
     int request_id,
     int request_id_to_cancel) {
-  FileSystemOperation* write = operations_.Lookup(
+  FileSystemOperationInterface* write = operations_.Lookup(
       request_id_to_cancel);
   if (write) {
     // The cancel will eventually send both the write failure and the cancel
@@ -275,7 +277,7 @@ void FileSystemDispatcherHost::OnCancel(
 
 void FileSystemDispatcherHost::OnOpenFile(
     int request_id, const GURL& path, int file_flags) {
-  GetNewOperation(request_id)->OpenFile(path, file_flags, peer_handle());
+  GetNewOperation(path, request_id)->OpenFile(path, file_flags, peer_handle());
 }
 
 void FileSystemDispatcherHost::OnWillUpdate(const GURL& path) {
@@ -308,20 +310,37 @@ void FileSystemDispatcherHost::OnSyncGetPlatformPath(
   DCHECK(platform_path);
   *platform_path = FilePath();
 
-  FileSystemOperation* operation = new FileSystemOperation(
-      scoped_ptr<FileSystemCallbackDispatcher>(NULL),
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
-      context_);
+  GURL origin_url;
+  fileapi::FileSystemType file_system_type = fileapi::kFileSystemTypeUnknown;
+  FilePath file_path;
+  if (!fileapi::CrackFileSystemURL(
+          path, &origin_url, &file_system_type, &file_path)) {
+    return;
+  }
 
+  // This is called only by pepper plugin as of writing to get the
+  // underlying platform path to upload a file in the sandboxed filesystem
+  // (e.g. TEMPORARY or PERSISTENT).
+  // TODO(kinuko): this hack should go away once appropriate upload-stream
+  // handling based on element types is supported.
+  FileSystemOperation* operation =
+      context_->CreateFileSystemOperation(
+          path, scoped_ptr<FileSystemCallbackDispatcher>(NULL),
+          BrowserThread::GetMessageLoopProxyForThread(
+              BrowserThread::FILE))->AsFileSystemOperation();
+  DCHECK(operation);
   operation->SyncGetPlatformPath(path, platform_path);
 }
 
-FileSystemOperation* FileSystemDispatcherHost::GetNewOperation(
+FileSystemOperationInterface* FileSystemDispatcherHost::GetNewOperation(
+    const GURL& target_path,
     int request_id) {
-  FileSystemOperation* operation = new FileSystemOperation(
-      BrowserFileSystemCallbackDispatcher::Create(this, request_id),
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
-      context_);
+  FileSystemOperationInterface* operation =
+      context_->CreateFileSystemOperation(
+          target_path,
+          BrowserFileSystemCallbackDispatcher::Create(this, request_id),
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
+  DCHECK(operation);
   operations_.AddWithID(operation, request_id);
   return operation;
 }

@@ -16,6 +16,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebFileSystem.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 #include "webkit/chromeos/fileapi/file_access_permissions.h"
+#include "webkit/fileapi/file_system_operation.h"
 #include "webkit/fileapi/file_system_util.h"
 #include "webkit/fileapi/native_file_util.h"
 #include "webkit/glue/webkit_glue.h"
@@ -175,6 +176,18 @@ std::vector<FilePath> CrosMountPointProvider::GetRootDirectories() const {
 
 fileapi::FileSystemFileUtil* CrosMountPointProvider::GetFileUtil() {
   return local_file_util_.get();
+}
+
+FileSystemOperationInterface* CrosMountPointProvider::CreateFileSystemOperation(
+    const GURL& origin_url,
+    FileSystemType file_system_type,
+    const FilePath& virtual_path,
+    scoped_ptr<FileSystemCallbackDispatcher> dispatcher,
+    base::MessageLoopProxy* file_proxy,
+    FileSystemContext* context) const {
+  // TODO(satorux,zel): instantiate appropriate FileSystemOperation that
+  // implements async/remote operations.
+  return new FileSystemOperation(dispatcher.Pass(), file_proxy, context);
 }
 
 bool CrosMountPointProvider::GetVirtualPath(const FilePath& filesystem_path,

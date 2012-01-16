@@ -53,6 +53,13 @@ class CrosMountPointProvider
   virtual bool IsRestrictedFileName(const FilePath& filename) const OVERRIDE;
   virtual std::vector<FilePath> GetRootDirectories() const OVERRIDE;
   virtual fileapi::FileSystemFileUtil* GetFileUtil() OVERRIDE;
+  virtual FileSystemOperationInterface* CreateFileSystemOperation(
+      const GURL& origin_url,
+      FileSystemType file_system_type,
+      const FilePath& virtual_path,
+      scoped_ptr<FileSystemCallbackDispatcher> dispatcher,
+      base::MessageLoopProxy* file_proxy,
+      FileSystemContext* context) const OVERRIDE;
 
   // fileapi::ExternalFileSystemMountPointProvider overrides.
   virtual void GrantFullAccessToExtension(

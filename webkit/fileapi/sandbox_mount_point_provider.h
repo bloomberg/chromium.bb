@@ -85,6 +85,13 @@ class SandboxMountPointProvider
   virtual bool IsRestrictedFileName(const FilePath& filename) const OVERRIDE;
   virtual std::vector<FilePath> GetRootDirectories() const OVERRIDE;
   virtual FileSystemFileUtil* GetFileUtil() OVERRIDE;
+  virtual FileSystemOperationInterface* CreateFileSystemOperation(
+      const GURL& origin_url,
+      FileSystemType file_system_type,
+      const FilePath& virtual_path,
+      scoped_ptr<FileSystemCallbackDispatcher> dispatcher,
+      base::MessageLoopProxy* file_proxy,
+      FileSystemContext* context) const OVERRIDE;
 
   FilePath old_base_path() const;
   FilePath new_base_path() const;
