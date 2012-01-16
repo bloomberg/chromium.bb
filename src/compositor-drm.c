@@ -795,7 +795,10 @@ vt_func(struct weston_compositor *compositor, int event)
 	switch (event) {
 	case TTY_ENTER_VT:
 		compositor->focus = 1;
-		drmSetMaster(ec->drm.fd);
+		if (drmSetMaster(ec->drm.fd)) {
+			fprintf(stderr, "failed to set master: %m\n");
+			wl_display_terminate(compositor->wl_display);
+		}
 		compositor->state = ec->prev_state;
 		weston_compositor_damage_all(compositor);
 		wl_list_for_each(input, &compositor->input_device_list, link)
@@ -811,7 +814,9 @@ vt_func(struct weston_compositor *compositor, int event)
 		wl_list_for_each(output, &ec->base.output_list, link)
 			drm_output_set_cursor(output, NULL);
 
-		drmDropMaster(ec->drm.fd);
+		if (drmDropMaster(ec->drm.fd) < 0)
+			fprintf(stderr, "failed to drop master: %m\n");
+
 		break;
 	};
 }
