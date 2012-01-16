@@ -261,7 +261,8 @@ void PrerenderHistograms::RecordFinalStatus(Origin origin,
                                             FinalStatus final_status) const {
   DCHECK(final_status != FINAL_STATUS_MAX);
   PREFIXED_HISTOGRAM_ORIGIN_EXPERIMENT(
-      "FinalStatus", origin, experiment_id,
+      base::FieldTrial::MakeName("FinalStatus", "Prerender"),
+      origin, experiment_id,
       UMA_HISTOGRAM_ENUMERATION(name, final_status, FINAL_STATUS_MAX));
 }
 
