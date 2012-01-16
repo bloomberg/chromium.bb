@@ -35,10 +35,11 @@ class GclientUtilsUnittest(GclientUtilBase):
         'MakeDateRevision', 'MakeFileAutoFlush', 'MakeFileAnnotated',
         'PathDifference', 'ParseCodereviewSettingsContent',
         'PrintableObject', 'RemoveDirectory', 'RunEditor',
-        'SplitUrlRevision', 'SyntaxErrorToError', 'Wrapper', 'WorkItem',
+        'SplitUrlRevision', 'SyntaxErrorToError',
+        'UpgradeToHttps', 'Wrapper', 'WorkItem',
         'errno', 'lockedmethod', 'logging', 'os', 'Queue', 're', 'rmtree',
         'safe_makedirs', 'stat', 'subprocess2', 'sys', 'tempfile', 'threading',
-        'time',
+        'time', 'urlparse',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(gclient_utils, members)
@@ -171,20 +172,45 @@ class GClientUtilsTest(trial_dir.TestCase):
     os.chmod(l2, 0)
     os.chmod(l1, 0)
 
+  def testUpgradeToHttps(self):
+    values = [
+        ['', ''],
+        [None, None],
+        ['foo', 'https://foo'],
+        ['http://foo', 'https://foo'],
+        ['foo/', 'https://foo/'],
+        ['ssh-svn://foo', 'ssh-svn://foo'],
+        ['ssh-svn://foo/bar/', 'ssh-svn://foo/bar/'],
+        ['codereview.chromium.org', 'https://chromiumcodereview.appspot.com'],
+        ['codereview.chromium.org/', 'https://chromiumcodereview.appspot.com/'],
+        ['http://foo:8080', 'http://foo:8080'],
+        ['http://foo:8080/bar', 'http://foo:8080/bar'],
+        ['foo:8080', 'http://foo:8080'],
+        ['foo:', 'https://foo:'],
+    ]
+    for content, expected in values:
+      self.assertEquals(
+          expected, gclient_utils.UpgradeToHttps(content))
+
   def testParseCodereviewSettingsContent(self):
-    expected = {
-        'Foo': 'bar:baz',
-        'Second': 'value',
-    }
-    content = (
-        '# bleh\n'
-        '\t# foo : bar\n'
-        'Foo:bar:baz\n'
-        ' Second : value \n\r'
-        '#inconsistency'
-    )
-    self.assertEquals(
-        expected, gclient_utils.ParseCodereviewSettingsContent(content))
+    values = [
+        ['# bleh\n', {}],
+        ['\t# foo : bar\n', {}],
+        ['Foo:bar', {'Foo': 'bar'}],
+        ['Foo:bar:baz\n', {'Foo': 'bar:baz'}],
+        [' Foo : bar ', {'Foo': 'bar'}],
+        [' Foo : bar \n', {'Foo': 'bar'}],
+        ['a:b\n\rc:d\re:f', {'a': 'b', 'c': 'd', 'e': 'f'}],
+        ['an_url:http://value/', {'an_url': 'http://value/'}],
+        [
+          'CODE_REVIEW_SERVER : http://r/s',
+          {'CODE_REVIEW_SERVER': 'https://r/s'}
+        ],
+        ['VIEW_VC:http://r/s', {'VIEW_VC': 'https://r/s'}],
+    ]
+    for content, expected in values:
+      self.assertEquals(
+          expected, gclient_utils.ParseCodereviewSettingsContent(content))
 
 
 if __name__ == '__main__':

@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -52,7 +52,7 @@ class GclTestsBase(SuperMoxTestBase):
     change_info.GetFileNames = lambda : [f[1] for f in change_info.files]
     change_info.GetLocalRoot = lambda : 'proout'
     change_info.patch = None
-    change_info.rietveld = 'my_server'
+    change_info.rietveld = 'https://my_server'
     change_info.reviewers = None
     change_info._closed = False
     change_info._deleted = False
@@ -259,7 +259,7 @@ class ChangeInfoUnittest(GclTestsBase):
     gcl.GetChangelistInfoFile('').AndReturn('foo')
     values = {
         'description': '', 'patchset': 2, 'issue': 1,
-        'files': [], 'needs_upload': False, 'rietveld': 'foo'}
+        'files': [], 'needs_upload': False, 'rietveld': 'https://foo'}
     gcl.gclient_utils.FileWrite(
         'foo', gcl.json.dumps(values, sort_keys=True, indent=2))
     self.mox.ReplayAll()
@@ -272,7 +272,7 @@ class ChangeInfoUnittest(GclTestsBase):
     gcl.GetChangelistInfoFile('n').AndReturn('foo')
     values = {
         'description': 'des', 'patchset': 0, 'issue': 0,
-        'files': [], 'needs_upload': True, 'rietveld': 'foo'}
+        'files': [], 'needs_upload': True, 'rietveld': 'https://foo'}
     gcl.gclient_utils.FileWrite(
         'foo', gcl.json.dumps(values, sort_keys=True, indent=2))
     self.mox.ReplayAll()
@@ -302,7 +302,7 @@ class CMDuploadUnittest(GclTestsBase):
     change_info.description = 'deescription\n\nR=foo@bar.com',
     change_info.files = [('A', 'aa'), ('M', 'bb')]
     change_info.patch = None
-    change_info.rietveld = 'my_server'
+    change_info.rietveld = 'https://my_server'
     files = [item[1] for item in change_info.files]
     output = presubmit_support.PresubmitOutput()
     gcl.DoPresubmitChecks(change_info, False, True).AndReturn(output)
@@ -312,7 +312,7 @@ class CMDuploadUnittest(GclTestsBase):
     gcl.os.chdir('proout')
     change_info.GetFileNames().AndReturn(files)
     gcl.GenerateDiff(files)
-    gcl.upload.RealMain(['upload.py', '-y', '--server=my_server',
+    gcl.upload.RealMain(['upload.py', '-y', '--server=https://my_server',
                          '-r', 'georges@example.com',
                          '--message=\'\'', '--issue=1'],
                          change_info.patch).AndReturn(("1",
@@ -356,9 +356,10 @@ class CMDuploadUnittest(GclTestsBase):
     gcl.os.getcwd().AndReturn('somewhere')
     gcl.os.chdir(change_info.GetLocalRoot())
     gcl.GenerateDiff(change_info.GetFileNames())
-    gcl.upload.RealMain(['upload.py', '-y', '--server=my_server', '--server=a',
-        "--description_file=descfile",
-        "--message=deescription"], change_info.patch).AndReturn(("1", "2"))
+    gcl.upload.RealMain(
+        [ 'upload.py', '-y', '--server=https://my_server', '--server=a',
+          '--description_file=descfile', '--message=deescription'],
+        change_info.patch).AndReturn(("1", "2"))
     gcl.os.remove('descfile')
     change_info.SendToRietveld("/lint/issue%s_%s" % ('1', '2'), timeout=1)
     gcl.os.chdir('somewhere')
@@ -397,7 +398,7 @@ class CMDuploadUnittest(GclTestsBase):
     gcl.os.getcwd().AndReturn('somewhere')
     gcl.os.chdir(change_info.GetLocalRoot())
     gcl.GenerateDiff(change_info.GetFileNames())
-    gcl.upload.RealMain(['upload.py', '-y', '--server=my_server',
+    gcl.upload.RealMain(['upload.py', '-y', '--server=https://my_server',
         "--description_file=descfile",
         "--message=deescription"], change_info.patch).AndReturn(("1", "2"))
     gcl.os.remove('descfile')
@@ -442,7 +443,7 @@ class CMDuploadUnittest(GclTestsBase):
     change_info.description = 'deescription\n\nR=georges@example.com',
     change_info.files = [('A', 'aa'), ('M', 'bb')]
     change_info.patch = None
-    change_info.rietveld = 'my_server'
+    change_info.rietveld = 'https://my_server'
     change_info.reviewers = ['georges@example.com']
     files = [item[1] for item in change_info.files]
     output = presubmit_support.PresubmitOutput()
@@ -454,7 +455,7 @@ class CMDuploadUnittest(GclTestsBase):
     change_info.GetLocalRoot().AndReturn('proout')
     gcl.os.chdir('proout')
     gcl.GenerateDiff(files)
-    gcl.upload.RealMain(['upload.py', '-y', '--server=my_server',
+    gcl.upload.RealMain(['upload.py', '-y', '--server=https://my_server',
                          '--reviewers=georges@example.com',
                          '--message=\'\'', '--issue=1'],
                          change_info.patch).AndReturn(("1", "2"))
@@ -483,7 +484,7 @@ class CMDuploadUnittest(GclTestsBase):
     gcl.os.getcwd().AndReturn('somewhere')
     gcl.os.chdir('proout')
     gcl.GenerateDiff(change_info.GetFileNames())
-    gcl.upload.RealMain(['upload.py', '-y', '--server=my_server',
+    gcl.upload.RealMain(['upload.py', '-y', '--server=https://my_server',
                          '--reviewers=foo@example.com,bar@example.com',
                          '--message=\'\'', '--issue=1'],
                          change_info.patch).AndReturn(("1", "2"))
@@ -558,8 +559,8 @@ class CMDCommitUnittest(GclTestsBase):
   def testPresubmitSucceeds(self):
     change_info = self.mockLoad()
     self.mockPresubmit(change_info, fail=False)
-    self.mockCommit(change_info, 'deescription\nReview URL: http://my_server/1',
-                    '')
+    self.mockCommit(
+        change_info, 'deescription\nReview URL: https://my_server/1', '')
     self.mox.ReplayAll()
 
     retval = gcl.CMDcommit(['naame'])
@@ -573,15 +574,16 @@ class CMDCommitUnittest(GclTestsBase):
   def testPresubmitSucceedsWithCommittedMessage(self):
     change_info = self.mockLoad()
     self.mockPresubmit(change_info, fail=False)
-    self.mockCommit(change_info, 'deescription\nReview URL: http://my_server/1',
-                    '\nCommitted revision 12345')
+    self.mockCommit(
+        change_info, 'deescription\nReview URL: https://my_server/1',
+        '\nCommitted revision 12345')
 
     self.mox.ReplayAll()
 
     retval = gcl.CMDcommit(['naame'])
     self.assertEquals(retval, 0)
     self.assertEquals(change_info.description,
-        'deescription\n\nCommitted: http://view/12345')
+        'deescription\n\nCommitted: https://view/12345')
     # pylint: disable=W0212
     self.assertTrue(change_info._deleted)
     self.assertTrue(change_info._closed)

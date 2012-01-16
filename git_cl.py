@@ -43,7 +43,7 @@ import subprocess2
 import watchlists
 
 
-DEFAULT_SERVER = 'http://codereview.appspot.com'
+DEFAULT_SERVER = 'https://codereview.appspot.com'
 POSTUPSTREAM_HOOK_PATTERN = '.git/hooks/post-cl-%s'
 DESCRIPTION_BACKUP_FILE = '~/.git_cl_description_backup'
 
@@ -92,15 +92,6 @@ def ask_for_data(prompt):
   except KeyboardInterrupt:
     # Hide the exception.
     sys.exit(1)
-
-
-def FixUrl(server):
-  """Fix a server url to defaults protocol to http:// if none is specified."""
-  if not server:
-    return server
-  if not re.match(r'[a-z]+\://.*', server):
-    return 'http://' + server
-  return server
 
 
 def MatchSvnGlob(url, base_url, glob_spec, allow_wildcards):
@@ -168,15 +159,15 @@ class Settings(object):
   def GetDefaultServerUrl(self, error_ok=False):
     if not self.default_server:
       self.LazyUpdateIfNeeded()
-      self.default_server = FixUrl(self._GetConfig('rietveld.server',
-                                                   error_ok=True))
+      self.default_server = gclient_utils.UpgradeToHttps(
+          self._GetConfig('rietveld.server', error_ok=True))
       if error_ok:
         return self.default_server
       if not self.default_server:
         error_message = ('Could not find settings file. You must configure '
                          'your review setup by running "git cl config".')
-        self.default_server = FixUrl(self._GetConfig(
-            'rietveld.server', error_message=error_message))
+        self.default_server = gclient_utils.UpgradeToHttps(
+            self._GetConfig('rietveld.server', error_message=error_message))
     return self.default_server
 
   def GetRoot(self):
@@ -266,7 +257,8 @@ class Settings(object):
 
   def GetViewVCUrl(self):
     if not self.viewvc_url:
-      self.viewvc_url = self._GetConfig('rietveld.viewvc-url', error_ok=True)
+      self.viewvc_url = gclient_utils.UpgradeToHttps(
+          self._GetConfig('rietveld.viewvc-url', error_ok=True))
     return self.viewvc_url
 
   def GetDefaultCCList(self):
@@ -426,7 +418,7 @@ or verify this branch is set up to track another (via the --track argument to
       issue = RunGit(['config', self._IssueSetting()], error_ok=True).strip()
       if issue:
         self.issue = issue
-        self.rietveld_server = FixUrl(RunGit(
+        self.rietveld_server = gclient_utils.UpgradeToHttps(RunGit(
             ['config', self._RietveldServer()], error_ok=True).strip())
       else:
         self.issue = None
@@ -625,23 +617,28 @@ def GetCodereviewSettingsInteractively():
   newserver = ask_for_data(prompt + ':')
   if not server and not newserver:
     newserver = DEFAULT_SERVER
-  if newserver and newserver != server:
-    RunGit(['config', 'rietveld.server', newserver])
+  if newserver:
+    newserver = gclient_utils.UpgradeToHttps(newserver)
+    if newserver != server:
+      RunGit(['config', 'rietveld.server', newserver])
 
-  def SetProperty(initial, caption, name):
+  def SetProperty(initial, caption, name, is_url):
     prompt = caption
     if initial:
       prompt += ' ("x" to clear) [%s]' % initial
     new_val = ask_for_data(prompt + ':')
     if new_val == 'x':
       RunGit(['config', '--unset-all', 'rietveld.' + name], error_ok=True)
-    elif new_val and new_val != initial:
-      RunGit(['config', 'rietveld.' + name, new_val])
+    elif new_val:
+      if is_url:
+        new_val = gclient_utils.UpgradeToHttps(new_val)
+      if new_val != initial:
+        RunGit(['config', 'rietveld.' + name, new_val])
 
-  SetProperty(settings.GetDefaultCCList(), 'CC list', 'cc')
+  SetProperty(settings.GetDefaultCCList(), 'CC list', 'cc', False)
   SetProperty(settings.GetTreeStatusUrl(error_ok=True), 'Tree status URL',
-              'tree-status-url')
-  SetProperty(settings.GetViewVCUrl(), 'ViewVC URL', 'viewvc-url')
+              'tree-status-url', False)
+  SetProperty(settings.GetViewVCUrl(), 'ViewVC URL', 'viewvc-url', True)
 
   # TODO: configure a default branch to diff against, rather than this
   # svn-based hackery.
@@ -1238,8 +1235,8 @@ def CMDpatch(parser, args):
     issue = issue_arg
     patch_data = Changelist().GetPatchSetDiff(issue)
   else:
-    # Assume it's a URL to the patch. Default to http.
-    issue_url = FixUrl(issue_arg)
+    # Assume it's a URL to the patch. Default to https.
+    issue_url = gclient_utils.UpgradeToHttps(issue_arg)
     match = re.match(r'.*?/issue(\d+)_\d+.diff', issue_url)
     if not match:
       DieWithError('Must pass an issue ID or full URL for '

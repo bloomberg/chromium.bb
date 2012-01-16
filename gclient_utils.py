@@ -14,6 +14,7 @@ import sys
 import tempfile
 import threading
 import time
+import urlparse
 
 import subprocess2
 
@@ -734,6 +735,30 @@ def RunEditor(content, git):
     os.remove(filename)
 
 
+def UpgradeToHttps(url):
+  """Upgrades random urls to https://.
+
+  Do not touch unknown urls like ssh:// or git://.
+  Do not touch http:// urls with a port number,
+  Fixes invalid GAE url.
+  """
+  if not url:
+    return url
+  if not re.match(r'[a-z\-]+\://.*', url):
+    # Make sure it is a valid uri. Otherwise, urlparse() will consider it a
+    # relative url and will use http:///foo. Note that it defaults to http://
+    # for compatibility with naked url like "localhost:8080".
+    url = 'http://%s' % url
+  parsed = list(urlparse.urlparse(url))
+  # Do not automatically upgrade http to https if a port number is provided.
+  if parsed[0] == 'http' and not re.match(r'^.+?\:\d+$', parsed[1]):
+    parsed[0] = 'https'
+  # Until GAE supports SNI, manually convert the url.
+  if parsed[1] == 'codereview.chromium.org':
+    parsed[1] = 'chromiumcodereview.appspot.com'
+  return urlparse.urlunparse(parsed)
+
+
 def ParseCodereviewSettingsContent(content):
   """Process a codereview.settings file properly."""
   lines = (l for l in content.splitlines() if not l.strip().startswith("#"))
@@ -742,5 +767,9 @@ def ParseCodereviewSettingsContent(content):
   except ValueError:
     raise Error(
         'Failed to process settings, please fix. Content:\n\n%s' % content)
-  # TODO(maruel): Post-process
+  def fix_url(key):
+    if keyvals.get(key):
+      keyvals[key] = UpgradeToHttps(keyvals[key])
+  fix_url('CODE_REVIEW_SERVER')
+  fix_url('VIEW_VC')
   return keyvals

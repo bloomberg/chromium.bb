@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -105,7 +105,7 @@ class TestGitCl(TestCase):
         (['git', 'svn', 'info'], ''),
         (['git', 'config', 'branch.master.rietveldissue', '1'], ''),
         (['git', 'config', 'branch.master.rietveldserver',
-          'http://codereview.example.com'], ''),
+          'https://codereview.example.com'], ''),
         (['git', 'config', 'branch.master.rietveldpatchset', '2'], ''),
     ]
 
@@ -115,7 +115,7 @@ class TestGitCl(TestCase):
     msg = description.split('\n', 1)[0]
     return [
         'upload', '--assume_yes', '--server',
-        'http://codereview.example.com',
+        'https://codereview.example.com',
         '--message', msg,
         '--description', description
     ] + args + [

@@ -294,10 +294,8 @@ class ChangeInfo(object):
     self.patch = None
     self._local_root = local_root
     self.needs_upload = needs_upload
-    self.rietveld = rietveld_url
-    if not self.rietveld:
-      # Set the default value.
-      self.rietveld = GetCodeReviewSetting('CODE_REVIEW_SERVER')
+    self.rietveld = gclient_utils.UpgradeToHttps(
+        rietveld_url or GetCodeReviewSetting('CODE_REVIEW_SERVER'))
     self._rpc_server = None
 
   def _get_description(self):
@@ -1039,7 +1037,7 @@ def CMDcommit(change_info, args):
     if change_info.issue:
       revision = re.compile(".*?\nCommitted revision (\d+)",
                             re.DOTALL).match(output).group(1)
-      viewvc_url = GetCodeReviewSetting("VIEW_VC")
+      viewvc_url = gclient_utils.UpgradeToHttps(GetCodeReviewSetting('VIEW_VC'))
       change_info.description += '\n'
       if viewvc_url:
         change_info.description += "\nCommitted: " + viewvc_url + revision
