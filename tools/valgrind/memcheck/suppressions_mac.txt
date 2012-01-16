@@ -2333,6 +2333,7 @@
    ...
    fun:_class_lookupMethodAndLoadCache
    fun:objc_msgSend
+   ...
    fun:_class_initialize
    fun:_class_initialize
    fun:_class_lookupMethodAndLoadCache
