@@ -309,13 +309,17 @@ DirectoryModel.prototype = {
    * Delete the list of files and directories from filesystem and
    * update the file list.
    * @param {Array.<Entry>} entries Entries to delete.
+   * @param {Function} opt_callback Called when finished.
    */
-  deleteEntries: function(entries) {
+  deleteEntries: function(entries, opt_callback) {
     var downcount = entries.length + 1;
 
     var onComplete = function() {
-      if (--downcount == 0)
+      if (--downcount == 0) {
         this.rescan();
+        if (opt_callback)
+          opt_callback();
+      }
     }.bind(this);
 
     for (var i = 0; i < entries.length; i++) {
@@ -338,11 +342,15 @@ DirectoryModel.prototype = {
    * @param {Entry} entry Entry to rename.
    * @param {string} newName
    * @param {Function} errorCallback Called on error.
+   * @param {Function} opt_successCallback Called on success.
    */
-  renameEntry: function(entry, newName, errorCallback) {
-    var onSuccess = this.rescan.bind(this,
-        this.selectEntry.bind(this, newName));
-
+  renameEntry: function(entry, newName, errorCallback, opt_successCallback) {
+    function onRescan() {
+      this.selectEntry(newName);
+      if (opt_successCallback)
+        opt_successCallback();
+    }
+    var onSuccess = this.rescan.bind(this, onRescan.bind(this));
     entry.moveTo(this.currentEntry, newName,
                  onSuccess, errorCallback);
   },

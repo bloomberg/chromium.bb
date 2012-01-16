@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,8 +17,18 @@ var pyautoAPI = {
    * @return {boolean} Whether item exists.
    */
   addItemToSelection: function(name) {
-    var itemExists = fileManager.addItemToSelection(name);
-    this.sendValue_(itemExists);
+    var entryExists = false;
+    var dm = fileManager.directoryModel_.fileList;
+    for (var i = 0; i < dm.length; i++) {
+      if (dm.item(i).name == name) {
+        fileManager.currentList_.selectionModel.setIndexSelected(i, true);
+        fileManager.currentList_.scrollIndexIntoView(i);
+        fileManager.focusCurrentList_();
+        entryExists = true;
+        break;
+      }
+    }
+    this.sendValue_(entryExists);
   },
 
   /**
@@ -28,7 +38,11 @@ var pyautoAPI = {
    * @return {object} A a list of item names.
    */
   listDirectory: function() {
-    var list = fileManager.listDirectory();
+    var list = []
+    var dm = fileManager.directoryModel_.fileList;
+    for (var i = 0; i < dm.length; i++) {
+      list.push(dm.item(i).name);
+    }
     this.sendJSONValue_(list);
   },
 
@@ -38,7 +52,12 @@ var pyautoAPI = {
    * @param {string} name Name given to item to be saved.
    */
   saveItemAs: function(name) {
-    fileManager.doSaveAs(name);
+    if (fileManager.dialogType_ == FileManager.DialogType.SELECT_SAVEAS_FILE) {
+      fileManager.filenameInput_.value = name;
+      fileManager.onOk_();
+    } else {
+      throw new Error('Cannot save an item in this dialog type.');
+    }
     this.sendDone_();
   },
 
@@ -46,7 +65,15 @@ var pyautoAPI = {
    * Open selected item.
    */
   openItem: function() {
-    fileManager.doOpen();
+    switch (fileManager.dialogType_) {
+      case FileManager.DialogType.SELECT_FOLDER:
+      case FileManager.DialogType.SELECT_OPEN_FILE:
+      case FileManager.DialogType.SELECT_OPEN_MULTI_FILE:
+        fileManager.onOk_();
+        break;
+      default:
+        throw new Error('Cannot open an item in this dialog type.');
+    }
     this.sendDone_();
   },
 
@@ -79,15 +106,16 @@ var pyautoAPI = {
    * @param {string} name New name of the item.
    */
   renameItem: function(name) {
-    entry = fileManager.selection.entries[0];
-    fileManager.renameEntry(entry, name, this.sendDone_);
+    var entry = fileManager.selection.entries[0];
+    fileManager.directoryModel_.renameEntry(entry, name, this.sendDone_,
+        this.sendDone_);
   },
 
   /**
    * Delete selected entries.
    */
   deleteItems: function() {
-    entries = fileManager.selection.entries;
+    var entries = fileManager.selection.entries;
     fileManager.deleteEntries(entries, true, this.sendDone_);
   },
 
@@ -111,7 +139,15 @@ var pyautoAPI = {
   changeDirectory: function(path) {
     if (path.charAt(0) != '/')
       path = fileManager.getCurrentDirectory() + '/' + path;
-    fileManager.changeDirectory(path, undefined, undefined, this.sendDone_);
+    var dm = fileManager.directoryModel_;
+
+    var onChanged = function() {
+      dm.removeEventListener('directory-changed', onChanged);
+      this.sendDone_();
+    }.bind(this);
+
+    dm.addEventListener('directory-changed', onChanged);
+    dm.changeDirectory(path);
   },
 
   /**
@@ -120,8 +156,7 @@ var pyautoAPI = {
    * @return {string} Path to the current directory.
    */
   currentDirectory: function() {
-    path = fileManager.getCurrentDirectory();
-    window.domAutomationController.send(path);
+    this.sendValue_(fileManager.getCurrentDirectory());
   },
 
   /**
@@ -130,7 +165,10 @@ var pyautoAPI = {
    * @return {object} remaining and total size in KB.
    */
   getSelectedDirectorySizeStats: function() {
-    fileManager.getSelectedDirectorySizeStats(this.sendJSONValue_);
+    var directoryURL = fileManager.selection.entries[0].toURL();
+    chrome.fileBrowserPrivate.getSizeStats(directoryURL, function(stats) {
+      this.sendJSONValue_(stats);
+    }.bind(this));
   },
 
   /**
@@ -139,31 +177,33 @@ var pyautoAPI = {
    * This function is polled by pyauto before calling any
    * of the functions above.
    *
-   * @return {boolean} Whether file manager is initialied.
+   * @return {boolean} Whether file manager is initialized.
    */
   isInitialized: function() {
-    var initialized = (fileManager != null) && fileManager.isInitialized();
-    this.sendValue_(initialized);
+    var initialized = fileManager &&
+        fileManager.workerInitialized_ &&
+        fileManager.getCurrentDirectory();
+    this.sendValue_(!!initialized);
   },
 
   /**
    * Callback function for returning primitiv types (int, string, boolean)
    */
   sendValue_: function(value) {
-      window.domAutomationController.send(value);
+    window.domAutomationController.send(value);
   },
 
   /**
    * Callback function for returning a JSON encoded value.
    */
   sendJSONValue_: function(value) {
-      window.domAutomationController.send(JSON.stringify(value));
+    window.domAutomationController.send(JSON.stringify(value));
   },
 
   /**
    * Callback function signalling completion of operation.
    */
   sendDone_: function() {
-      window.domAutomationController.send('done');
-  },
+    window.domAutomationController.send('done');
+  }
 };

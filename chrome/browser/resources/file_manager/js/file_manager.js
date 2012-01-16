@@ -1222,7 +1222,7 @@ FileManager.prototype = {
         this.clipboard_ = null;
       this.updateCommands_();
       self = this;
-      this.rescanDirectory_(function() {
+      this.directoryModel_.rescan(function() {
         var callback;
         while (callback = self.pasteSuccessCallbacks_.shift()) {
           try {
@@ -1253,13 +1253,13 @@ FileManager.prototype = {
           this.showButterError(strf('PASTE_UNEXPECTED_ERROR', event.error));
           break;
       }
-      this.rescanDirectory_();
+      this.directoryModel_.rescan();
     } else if (event.reason == 'CANCELLED') {
       this.showButter(str('PASTE_CANCELLED'));
-      this.rescanDirectory_();
+      this.directoryModel_.rescan();
     } else {
       console.log('Unknown event reason: ' + event.reason);
-      this.rescanDirectory_();
+      this.directoryModel_.rescan();
     }
 
   };
@@ -2400,27 +2400,6 @@ FileManager.prototype = {
     });
   };
 
-  /**
-   * Add the file/directory with given name to the current selection.
-   *
-   * @param {string} name The name of the entry to select.
-   * @return {boolean} Whether entry exists.
-   */
-  FileManager.prototype.addItemToSelection = function(name) {
-    var entryExists = false;
-    var dm = this.directoryModel_.fileList;
-    for (var i = 0; i < dm.length; i++) {
-      if (dm.item(i).name == name) {
-        this.currentList_.selectionModel.setIndexSelected(i, true);
-        this.currentList_.scrollIndexIntoView(i);
-        this.focusCurrentList_();
-        entryExists = true;
-        break;
-      }
-    }
-    return entryExists;
-  };
-
   FileManager.prototype.focusCurrentList_ = function() {
     if (this.listType_ == FileManager.ListType.DETAIL)
       this.table_.focus();
@@ -2429,79 +2408,14 @@ FileManager.prototype = {
   };
 
   /**
-   * Return the name of the entries in the current directory
-   *
-   * @return {object} Array of entry names.
-   */
-  FileManager.prototype.listDirectory = function() {
-    var list = []
-    var dm = this.directoryModel_.fileList;
-    for (var i = 0; i < dm.length; i++) {
-      list.push(dm.item(i).name);
-    }
-    return list;
-  }
-
-  /**
-   * Open the item selected
-   */
-  FileManager.prototype.doOpen = function() {
-    switch (this.dialogType_) {
-      case FileManager.DialogType.SELECT_FOLDER:
-      case FileManager.DialogType.SELECT_OPEN_FILE:
-      case FileManager.DialogType.SELECT_OPEN_MULTI_FILE:
-        this.onOk_();
-        break;
-      default:
-        throw new Error('Cannot open an item in this dialog type.');
-    }
-  }
-
-  /**
-   * Save the item using the given name
-   *
-   * @param {string} name The name given to item to be saved
-   */
-  FileManager.prototype.doSaveAs = function(name) {
-    if (this.dialogType_ == FileManager.DialogType.SELECT_SAVEAS_FILE) {
-      this.filenameInput_.value = name;
-      this.onOk_();
-    }
-    else {
-      throw new Error('Cannot save an item in this dialog type.');
-    }
-  }
-
-  /**
-   * Return full path of the current directory
+   * Return full path of the current directory or null.
    */
   FileManager.prototype.getCurrentDirectory = function() {
-    return this.directoryModel_.currentEntry.fullPath;
-  }
+    return this.directoryModel_ &&
+        this.directoryModel_.currentEntry.fullPath;
+  };
 
-  /**
-   * Get remaining and total size of selected directory in KB.
-   *
-   * @param {object} callback Function to call with stats string as the
-   * argument.
-   */
-  FileManager.prototype.getSelectedDirectorySizeStats = function(callback) {
-    directoryURL = fileManager.selection.entries[0].toURL();
-    chrome.fileBrowserPrivate.getSizeStats(directoryURL, function(stats) {
-      callback(stats);
-    });
-  }
-
-  /**
-   * Used by tests to wait before interacting with the file maanager
-   */
-  FileManager.prototype.isInitialized = function() {
-    var initialized =  (this.workerInitialized_ != null) &&
-        (this.directoryChanged_ != null);
-    return initialized;
-  }
-
-  FileManager.prototype.deleteEntries = function(entries, force) {
+  FileManager.prototype.deleteEntries = function(entries, force, opt_callback) {
     if (!force) {
       var self = this;
       var msg;
@@ -2511,12 +2425,12 @@ FileManager.prototype = {
         msg = strf('CONFIRM_DELETE_SOME', entries.length);
       }
 
-      this.confirm.show(msg,
-                        this.deleteEntries.bind(this, entries, true));
+      this.confirm.show(msg, this.deleteEntries.bind(
+          this, entries, true, opt_callback));
       return;
     }
 
-    this.directoryModel_.deleteEntries(entries);
+    this.directoryModel_.deleteEntries(entries, opt_callback);
   };
 
   /**
@@ -3168,7 +3082,7 @@ FileManager.prototype = {
       case 190:  // Ctrl-. => Toggle filter files.
         if (event.ctrlKey) {
           this.filterFiles_ = !this.filterFiles_;
-          this.rescanDirectory_();
+          this.directoryModel_.rescan();
         }
         break;
     }
