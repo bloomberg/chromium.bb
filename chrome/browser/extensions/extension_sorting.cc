@@ -13,7 +13,7 @@ namespace {
 
 // The number of apps per page. This isn't a hard limit, but new apps installed
 // from the webstore will overflow onto a new page if this limit is reached.
-const int kNaturalAppPageSize = 18;
+const size_t kNaturalAppPageSize = 18;
 
 // A preference determining the order of which the apps appear on the NTP.
 const char kPrefAppLaunchIndexDeprecated[] = "app_launcher_index";
@@ -68,12 +68,13 @@ void ExtensionSorting::MigrateAppIndex(
       // to properly convert from integers and we are iterating though them in
       // no given order, we create earlier StringOrdinal values as required.
       // This should be filled in by the time we are done with this loop.
-      if (page_ordinal_map_.empty())
-        page_ordinal_map_[StringOrdinal::CreateInitialOrdinal()] = 0;
-      while (page_ordinal_map_.size() <= static_cast<size_t>(old_page_index)) {
+      if (ntp_ordinal_map_.empty())
+        ntp_ordinal_map_[StringOrdinal::CreateInitialOrdinal()];
+      while (ntp_ordinal_map_.size()
+             <= static_cast<size_t>(old_page_index)) {
         StringOrdinal earlier_page =
-            page_ordinal_map_.rbegin()->first.CreateAfter();
-        page_ordinal_map_[earlier_page] = 0;
+            ntp_ordinal_map_.rbegin()->first.CreateAfter();
+        ntp_ordinal_map_[earlier_page];
       }
 
       page = PageIntegerAsStringOrdinal(old_page_index);
@@ -103,12 +104,12 @@ void ExtensionSorting::MigrateAppIndex(
   // Remove any empty pages that may have been added. This shouldn't occur,
   // but double check here to prevent future problems with conversions between
   // integers and StringOrdinals.
-  for (PageOrdinalMap::iterator it = page_ordinal_map_.begin();
-       it != page_ordinal_map_.end();) {
-    if (it->second == 0) {
+  for (PageOrdinalMap::iterator it = ntp_ordinal_map_.begin();
+       it != ntp_ordinal_map_.end();) {
+    if (it->second.empty()) {
       PageOrdinalMap::iterator prev_it = it;
       ++it;
-      page_ordinal_map_.erase(prev_it);
+      ntp_ordinal_map_.erase(prev_it);
     } else {
       ++it;
     }
@@ -177,12 +178,18 @@ StringOrdinal ExtensionSorting::GetAppLaunchOrdinal(
   return StringOrdinal(raw_value);
 }
 
-void ExtensionSorting::SetAppLaunchOrdinal(const std::string& extension_id,
-                                         const StringOrdinal& ordinal) {
+void ExtensionSorting::SetAppLaunchOrdinal(
+    const std::string& extension_id,
+    const StringOrdinal& new_app_launch_ordinal) {
+  StringOrdinal page_ordinal = GetPageOrdinal(extension_id);
+  RemoveOrdinalMapping(
+      extension_id, page_ordinal, GetAppLaunchOrdinal(extension_id));
+  AddOrdinalMapping(extension_id, page_ordinal, new_app_launch_ordinal);
+
   extension_scoped_prefs_->UpdateExtensionPref(
       extension_id,
       kPrefAppLaunchOrdinal,
-      Value::CreateStringValue(ordinal.ToString()));
+      Value::CreateStringValue(new_app_launch_ordinal.ToString()));
 }
 
 StringOrdinal ExtensionSorting::CreateFirstAppLaunchOrdinal(
@@ -201,7 +208,7 @@ StringOrdinal ExtensionSorting::CreateNextAppLaunchOrdinal(
     const StringOrdinal& page_ordinal) const {
   const StringOrdinal& max_ordinal =
       GetMinOrMaxAppLaunchOrdinalsOnPage(page_ordinal,
-                                          ExtensionSorting::MAX_ORDINAL);
+                                         ExtensionSorting::MAX_ORDINAL);
 
   if (max_ordinal.IsValid())
     return max_ordinal.CreateAfter();
@@ -214,10 +221,10 @@ StringOrdinal ExtensionSorting::CreateFirstAppPageOrdinal() const {
           ExtensionPrefs::kExtensionsPref);
   CHECK(extensions);
 
-  if (page_ordinal_map_.empty())
+  if (ntp_ordinal_map_.empty())
     return StringOrdinal::CreateInitialOrdinal();
 
-  return page_ordinal_map_.begin()->first;
+  return ntp_ordinal_map_.begin()->first;
 }
 
 StringOrdinal ExtensionSorting::GetNaturalAppPageOrdinal() const {
@@ -225,17 +232,17 @@ StringOrdinal ExtensionSorting::GetNaturalAppPageOrdinal() const {
           ExtensionPrefs::kExtensionsPref);
   CHECK(extensions);
 
-  if (page_ordinal_map_.empty())
+  if (ntp_ordinal_map_.empty())
     return StringOrdinal::CreateInitialOrdinal();
 
-  for (PageOrdinalMap::const_iterator it = page_ordinal_map_.begin();
-       it != page_ordinal_map_.end(); ++it) {
-    if (it->second < kNaturalAppPageSize)
+  for (PageOrdinalMap::const_iterator it = ntp_ordinal_map_.begin();
+       it != ntp_ordinal_map_.end(); ++it) {
+    if (it->second.size() < kNaturalAppPageSize)
       return it->first;
   }
 
   // Add a new page as all existing pages are full.
-  StringOrdinal last_element = page_ordinal_map_.rbegin()->first;
+  StringOrdinal last_element = ntp_ordinal_map_.rbegin()->first;
   return last_element.CreateAfter();
 }
 
@@ -250,16 +257,23 @@ StringOrdinal ExtensionSorting::GetPageOrdinal(const std::string& extension_id)
 }
 
 void ExtensionSorting::SetPageOrdinal(const std::string& extension_id,
-                                    const StringOrdinal& page_ordinal) {
-  UpdatePageOrdinalMap(GetPageOrdinal(extension_id), page_ordinal);
+                                    const StringOrdinal& new_page_ordinal) {
+  StringOrdinal app_launch_ordinal = GetAppLaunchOrdinal(extension_id);
+  RemoveOrdinalMapping(
+      extension_id, GetPageOrdinal(extension_id), app_launch_ordinal);
+  AddOrdinalMapping(extension_id, new_page_ordinal, app_launch_ordinal);
+
   extension_scoped_prefs_->UpdateExtensionPref(
       extension_id,
       kPrefPageOrdinal,
-      Value::CreateStringValue(page_ordinal.ToString()));
+      Value::CreateStringValue(new_page_ordinal.ToString()));
 }
 
 void ExtensionSorting::ClearPageOrdinal(const std::string& extension_id) {
-  UpdatePageOrdinalMap(GetPageOrdinal(extension_id), StringOrdinal());
+  RemoveOrdinalMapping(extension_id,
+                       GetPageOrdinal(extension_id),
+                       GetAppLaunchOrdinal(extension_id));
+
   extension_scoped_prefs_->UpdateExtensionPref(
       extension_id, kPrefPageOrdinal, NULL);
 }
@@ -269,9 +283,9 @@ int ExtensionSorting::PageStringOrdinalAsInteger(
   if (!page_ordinal.IsValid())
     return -1;
 
-  PageOrdinalMap::const_iterator it = page_ordinal_map_.find(page_ordinal);
-  if (it != page_ordinal_map_.end()) {
-    return std::distance(page_ordinal_map_.begin(), it);
+  PageOrdinalMap::const_iterator it = ntp_ordinal_map_.find(page_ordinal);
+  if (it != ntp_ordinal_map_.end()) {
+    return std::distance(ntp_ordinal_map_.begin(), it);
   } else {
     return -1;
   }
@@ -281,24 +295,24 @@ StringOrdinal ExtensionSorting::PageIntegerAsStringOrdinal(size_t page_index)
     const {
   // We shouldn't have a page_index that is more than 1 position away from the
   // current end.
-  CHECK_LE(page_index, page_ordinal_map_.size());
+  CHECK_LE(page_index, ntp_ordinal_map_.size());
 
   const DictionaryValue* extensions = pref_service_->GetDictionary(
           ExtensionPrefs::kExtensionsPref);
   if (!extensions)
     return StringOrdinal();
 
-  if (page_index < page_ordinal_map_.size()) {
-    PageOrdinalMap::const_iterator it = page_ordinal_map_.begin();
+  if (page_index < ntp_ordinal_map_.size()) {
+    PageOrdinalMap::const_iterator it = ntp_ordinal_map_.begin();
     std::advance(it, page_index);
 
     return it->first;
 
   } else {
-    if (page_ordinal_map_.empty())
+    if (ntp_ordinal_map_.empty())
       return StringOrdinal::CreateInitialOrdinal();
     else
-      return page_ordinal_map_.rbegin()->first.CreateAfter();
+      return ntp_ordinal_map_.rbegin()->first.CreateAfter();
   }
 }
 
@@ -336,7 +350,9 @@ void ExtensionSorting::InitializePageOrdinalMap(
     const ExtensionPrefs::ExtensionIdSet& extension_ids) {
   for (ExtensionPrefs::ExtensionIdSet::const_iterator ext_it =
            extension_ids.begin(); ext_it != extension_ids.end(); ++ext_it) {
-    UpdatePageOrdinalMap(StringOrdinal(), GetPageOrdinal(*ext_it));
+    AddOrdinalMapping(*ext_it,
+                      GetPageOrdinal(*ext_it),
+                      GetAppLaunchOrdinal(*ext_it));
 
     // Ensure that the web store app still isn't found in this list, since
     // it is added after this loop.
@@ -346,15 +362,43 @@ void ExtensionSorting::InitializePageOrdinalMap(
   // Include the Web Store App since it is displayed on the NTP.
   StringOrdinal web_store_app_page =
       GetPageOrdinal(extension_misc::kWebStoreAppId);
-  if (web_store_app_page.IsValid())
-    UpdatePageOrdinalMap(StringOrdinal(), web_store_app_page);
+  if (web_store_app_page.IsValid()) {
+    AddOrdinalMapping(extension_misc::kWebStoreAppId,
+                      web_store_app_page,
+                      GetAppLaunchOrdinal(extension_misc::kWebStoreAppId));
+  }
 }
 
-void ExtensionSorting::UpdatePageOrdinalMap(const StringOrdinal& old_value,
-                                            const StringOrdinal& new_value) {
-  if (new_value.IsValid())
-    ++page_ordinal_map_[new_value];
+void ExtensionSorting::AddOrdinalMapping(
+    const std::string& extension_id,
+    const StringOrdinal& page_ordinal,
+    const StringOrdinal& app_launch_ordinal) {
+  if (!page_ordinal.IsValid() || !app_launch_ordinal.IsValid())
+    return;
 
-  if (old_value.IsValid())
-    --page_ordinal_map_[old_value];
+  ntp_ordinal_map_[page_ordinal].insert(
+      std::make_pair(app_launch_ordinal, extension_id));
+}
+
+void ExtensionSorting::RemoveOrdinalMapping(
+    const std::string& extension_id,
+    const StringOrdinal& page_ordinal,
+    const StringOrdinal& app_launch_ordinal) {
+  if (!page_ordinal.IsValid() || !app_launch_ordinal.IsValid())
+    return;
+
+  // Check that the page exists using find to prevent creating a new page
+  // if |page_ordinal| isn't a used page.
+  PageOrdinalMap::iterator page_map = ntp_ordinal_map_.find(page_ordinal);
+  if (page_map == ntp_ordinal_map_.end())
+    return;
+
+  for (AppLaunchOrdinalMap::iterator it =
+           page_map->second.find(app_launch_ordinal);
+       it != page_map->second.end(); ++it) {
+    if (it->second == extension_id) {
+      page_map->second.erase(it);
+      break;
+    }
+  }
 }

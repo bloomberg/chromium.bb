@@ -41,7 +41,7 @@ class ExtensionSorting {
 
   // Sets a specific launch ordinal for an app with |extension_id|.
   void SetAppLaunchOrdinal(const std::string& extension_id,
-                           const StringOrdinal& ordinal);
+                           const StringOrdinal& new_app_launch_ordinal);
 
   // Returns a StringOrdinal that is lower than any app launch ordinal for the
   // given page.
@@ -68,7 +68,7 @@ class ExtensionSorting {
 
   // Sets a specific page ordinal for an app with |extension_id|.
   void SetPageOrdinal(const std::string& extension_id,
-                      const StringOrdinal& ordinal);
+                      const StringOrdinal& new_page_ordinal);
 
   // Removes the page ordinal for an app.
   void ClearPageOrdinal(const std::string& extension_id);
@@ -82,8 +82,9 @@ class ExtensionSorting {
   StringOrdinal PageIntegerAsStringOrdinal(size_t page_index) const;
 
  private:
+  // Unit tests.
   friend class ExtensionSortingGetMinOrMaxAppLaunchOrdinalsOnPage;
-    // Unit test.
+  friend class ExtensionSortingPageOrdinalMapping;
 
   // An enum used by GetMinOrMaxAppLaunchOrdinalsOnPage to specify which
   // value should be returned.
@@ -103,23 +104,38 @@ class ExtensionSorting {
   void InitializePageOrdinalMap(
       const ExtensionPrefs::ExtensionIdSet& extension_ids);
 
-  // Called when an application changes the value of its page ordinal so that
-  // |page_ordinal_map_| is aware that |old_value| page ordinal has been
-  // replace by the |new_value| page ordinal and adjusts its mapping
-  // accordingly. This works with valid and invalid StringOrdinals.
-  void UpdatePageOrdinalMap(const StringOrdinal& old_value,
-                            const StringOrdinal& new_value);
+  // Called to add a new mapping value for |extension_id| with a page ordinal
+  // of |page_ordinal| and a app launch ordinal of |app_launch_ordinal|. This
+  // works with valid and invalid StringOrdinals.
+  void AddOrdinalMapping(const std::string& extension_id,
+                         const StringOrdinal& page_ordinal,
+                         const StringOrdinal& app_launch_ordinal);
+
+  // Removes the mapping for |extension_id| with a page ordinal of
+  // |page_ordinal| and a app launch ordinal of |app_launch_ordinal|. If there
+  // is not matching map, nothing happens. This works with valid and invalid
+  // StringOrdinals.
+  void RemoveOrdinalMapping(const std::string& extension_id,
+                            const StringOrdinal& page_ordinal,
+                            const StringOrdinal& app_launch_ordinal);
 
   ExtensionScopedPrefs* extension_scoped_prefs_;  // Weak, owns this instance.
   PrefService* pref_service_;  // Weak.
 
-  // A map of all the StringOrdinal page indices mapping to how often they are
-  // used, this is used for mapping the StringOrdinals to their integer
-  // equivalent as well as quick lookup of the sorted StringOrdinals.
-  // TODO(csharp) Convert this to a two-layer map to allow page ordinal lookup
-  // by id and vice versa.
-  typedef std::map<StringOrdinal, int, StringOrdinalLessThan> PageOrdinalMap;
-  PageOrdinalMap page_ordinal_map_;
+  // A map of all the StringOrdinal page ordinals mapping to the collections of
+  // app launch ordinals that exist on that page. This is used for mapping
+  // StringOrdinals to their Integer equivalent as well as quick lookup of the
+  // any collision of on the NTP (icons with the same page and same app launch
+  // ordinal).
+  // The StringOrdinal is the app launch ordinal and the string is the extension
+  // id.
+  typedef std::multimap<
+      StringOrdinal, std::string, StringOrdinalLessThan> AppLaunchOrdinalMap;
+  // The StringOrdinal is the page ordinal and the AppLaunchOrdinalMap is the
+  // contents of that page.
+  typedef std::map<
+      StringOrdinal, AppLaunchOrdinalMap, StringOrdinalLessThan> PageOrdinalMap;
+  PageOrdinalMap ntp_ordinal_map_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionSorting);
 };

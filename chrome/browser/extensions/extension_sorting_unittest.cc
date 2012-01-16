@@ -237,6 +237,65 @@ class ExtensionSortingMigrateAppIndexInvalid
 TEST_F(ExtensionSortingMigrateAppIndexInvalid,
        ExtensionSortingMigrateAppIndexInvalid) {}
 
+class ExtensionSortingPageOrdinalMapping :
+    public ExtensionPrefsPrepopulatedTest {
+ public:
+  ExtensionSortingPageOrdinalMapping() {}
+  virtual ~ExtensionSortingPageOrdinalMapping() {}
+  virtual void Initialize() {}
+
+  virtual void Verify() {
+    std::string ext_1 = "ext_1";
+    std::string ext_2 = "ext_2";
+
+    ExtensionSorting* extension_sorting = prefs()->extension_sorting();
+    StringOrdinal first_ordinal = StringOrdinal::CreateInitialOrdinal();
+
+    // Ensure attempting to removing a mapping with an invalid page doesn't
+    // modify the map.
+    EXPECT_TRUE(extension_sorting->ntp_ordinal_map_.empty());
+    extension_sorting->RemoveOrdinalMapping(
+        ext_1, first_ordinal, first_ordinal);
+    EXPECT_TRUE(extension_sorting->ntp_ordinal_map_.empty());
+
+    // Add new mappings.
+    extension_sorting->AddOrdinalMapping(ext_1, first_ordinal, first_ordinal);
+    extension_sorting->AddOrdinalMapping(ext_2, first_ordinal, first_ordinal);
+
+    EXPECT_EQ(1U, extension_sorting->ntp_ordinal_map_.size());
+    EXPECT_EQ(2U, extension_sorting->ntp_ordinal_map_[first_ordinal].size());
+
+    ExtensionSorting::AppLaunchOrdinalMap::iterator it =
+        extension_sorting->ntp_ordinal_map_[first_ordinal].find(first_ordinal);
+    EXPECT_EQ(ext_1, it->second);
+    ++it;
+    EXPECT_EQ(ext_2, it->second);
+
+    extension_sorting->RemoveOrdinalMapping(ext_1,
+                                            first_ordinal,
+                                            first_ordinal);
+    EXPECT_EQ(1U, extension_sorting->ntp_ordinal_map_.size());
+    EXPECT_EQ(1U, extension_sorting->ntp_ordinal_map_[first_ordinal].size());
+
+    it = extension_sorting->ntp_ordinal_map_[first_ordinal].find(
+        first_ordinal);
+    EXPECT_EQ(ext_2, it->second);
+
+    // Ensure that attempting to remove an extension with a valid page and app
+    // launch ordinals, but a unused id has no effect.
+    extension_sorting->RemoveOrdinalMapping(
+        "invalid_ext", first_ordinal, first_ordinal);
+    EXPECT_EQ(1U, extension_sorting->ntp_ordinal_map_.size());
+    EXPECT_EQ(1U, extension_sorting->ntp_ordinal_map_[first_ordinal].size());
+
+    it = extension_sorting->ntp_ordinal_map_[first_ordinal].find(
+        first_ordinal);
+    EXPECT_EQ(ext_2, it->second);
+  }
+};
+TEST_F(ExtensionSortingPageOrdinalMapping,
+       ExtensionSortingPageOrdinalMapping) {}
+
 class ExtensionSortingPreinstalledAppsBase :
     public ExtensionPrefsPrepopulatedTest {
  public:
