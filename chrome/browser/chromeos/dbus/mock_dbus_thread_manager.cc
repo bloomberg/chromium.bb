@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 #include "chrome/browser/chromeos/dbus/mock_bluetooth_adapter_client.h"
 #include "chrome/browser/chromeos/dbus/mock_bluetooth_manager_client.h"
 #include "chrome/browser/chromeos/dbus/mock_cros_disks_client.h"
+#include "chrome/browser/chromeos/dbus/mock_image_burner_client.h"
 #include "chrome/browser/chromeos/dbus/mock_power_manager_client.h"
 #include "chrome/browser/chromeos/dbus/mock_sensors_client.h"
 #include "chrome/browser/chromeos/dbus/mock_session_manager_client.h"
@@ -23,6 +24,7 @@ MockDBusThreadManager::MockDBusThreadManager()
     : mock_bluetooth_adapter_client_(new MockBluetoothAdapterClient),
       mock_bluetooth_manager_client_(new MockBluetoothManagerClient),
       mock_cros_disks_client_(new MockCrosDisksClient),
+      mock_image_burner_client_(new MockImageBurnerClient),
       mock_power_manager_client_(new MockPowerManagerClient),
       mock_sensors_client_(new MockSensorsClient),
       mock_session_manager_client_(new MockSessionManagerClient),
@@ -34,6 +36,8 @@ MockDBusThreadManager::MockDBusThreadManager()
       .WillRepeatedly(Return(mock_bluetooth_manager_client()));
   EXPECT_CALL(*this, GetCrosDisksClient())
       .WillRepeatedly(Return(mock_cros_disks_client()));
+  EXPECT_CALL(*this, GetImageBurnerClient())
+      .WillRepeatedly(Return(mock_image_burner_client()));
   EXPECT_CALL(*this, GetPowerManagerClient())
       .WillRepeatedly(Return(mock_power_manager_client_.get()));
   EXPECT_CALL(*this, GetSensorsClient())

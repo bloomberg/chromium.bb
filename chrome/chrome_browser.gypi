@@ -458,6 +458,8 @@
         'browser/chromeos/dbus/cros_dbus_service.h',
         'browser/chromeos/dbus/dbus_thread_manager.cc',
         'browser/chromeos/dbus/dbus_thread_manager.h',
+        'browser/chromeos/dbus/image_burner_client.cc',
+        'browser/chromeos/dbus/image_burner_client.h',
         'browser/chromeos/dbus/power_manager_client.cc',
         'browser/chromeos/dbus/power_manager_client.h',
         'browser/chromeos/dbus/proxy_resolution_service_provider.cc',

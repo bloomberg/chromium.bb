@@ -99,6 +99,8 @@
         'browser/chromeos/dbus/mock_cros_disks_client.h',
         'browser/chromeos/dbus/mock_dbus_thread_manager.cc',
         'browser/chromeos/dbus/mock_dbus_thread_manager.h',
+        'browser/chromeos/dbus/mock_image_burner_client.cc',
+        'browser/chromeos/dbus/mock_image_burner_client.h',
         'browser/chromeos/dbus/mock_power_manager_client.cc',
         'browser/chromeos/dbus/mock_power_manager_client.h',
         'browser/chromeos/dbus/mock_sensors_client.cc',

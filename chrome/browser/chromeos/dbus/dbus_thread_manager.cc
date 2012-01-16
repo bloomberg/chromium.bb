@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 #include "chrome/browser/chromeos/dbus/bluetooth_manager_client.h"
 #include "chrome/browser/chromeos/dbus/cros_dbus_service.h"
 #include "chrome/browser/chromeos/dbus/cros_disks_client.h"
+#include "chrome/browser/chromeos/dbus/image_burner_client.h"
 #include "chrome/browser/chromeos/dbus/power_manager_client.h"
 #include "chrome/browser/chromeos/dbus/sensors_client.h"
 #include "chrome/browser/chromeos/dbus/session_manager_client.h"
@@ -54,7 +55,11 @@ class DBusThreadManagerImpl : public DBusThreadManager {
         system_bus_.get()));
     bluetooth_adapter_client_.reset(BluetoothAdapterClient::Create(
         system_bus_.get()));
-
+    // Create the cros-disks client.
+    cros_disks_client_.reset(
+        CrosDisksClient::Create(system_bus_.get()));
+    // Create the image burner client.
+    image_burner_client_.reset(ImageBurnerClient::Create(system_bus_.get()));
     // Create the power manager client.
     power_manager_client_.reset(PowerManagerClient::Create(system_bus_.get()));
     // Create the session manager client.
@@ -63,9 +68,7 @@ class DBusThreadManagerImpl : public DBusThreadManager {
     // Create the speech synthesizer client.
     speech_synthesizer_client_.reset(
         SpeechSynthesizerClient::Create(system_bus_.get()));
-    // Create the cros-disks client.
-    cros_disks_client_.reset(
-        CrosDisksClient::Create(system_bus_.get()));
+    // Create the update engine client.
     update_engine_client_.reset(
         UpdateEngineClient::Create(system_bus_.get()));
   }
@@ -90,6 +93,16 @@ class DBusThreadManagerImpl : public DBusThreadManager {
   }
 
   // DBusThreadManager override.
+  virtual CrosDisksClient* GetCrosDisksClient() {
+    return cros_disks_client_.get();
+  }
+
+  // DBusThreadManager override.
+  virtual ImageBurnerClient* GetImageBurnerClient() OVERRIDE {
+    return image_burner_client_.get();
+  }
+
+  // DBusThreadManager override.
   virtual PowerManagerClient* GetPowerManagerClient() OVERRIDE {
     return power_manager_client_.get();
   }
@@ -110,11 +123,6 @@ class DBusThreadManagerImpl : public DBusThreadManager {
   }
 
   // DBusThreadManager override.
-  virtual CrosDisksClient* GetCrosDisksClient() {
-    return cros_disks_client_.get();
-  }
-
-  // DBusThreadManager override.
   virtual UpdateEngineClient* GetUpdateEngineClient() OVERRIDE {
     return update_engine_client_.get();
   }
@@ -124,11 +132,12 @@ class DBusThreadManagerImpl : public DBusThreadManager {
   scoped_ptr<CrosDBusService> cros_dbus_service_;
   scoped_ptr<BluetoothAdapterClient> bluetooth_adapter_client_;
   scoped_ptr<BluetoothManagerClient> bluetooth_manager_client_;
+  scoped_ptr<CrosDisksClient> cros_disks_client_;
+  scoped_ptr<ImageBurnerClient> image_burner_client_;
   scoped_ptr<PowerManagerClient> power_manager_client_;
   scoped_ptr<SensorsClient> sensors_client_;
   scoped_ptr<SessionManagerClient> session_manager_client_;
   scoped_ptr<SpeechSynthesizerClient> speech_synthesizer_client_;
-  scoped_ptr<CrosDisksClient> cros_disks_client_;
   scoped_ptr<UpdateEngineClient> update_engine_client_;
 };
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,9 +19,11 @@ class Bus;
 
 namespace chromeos {
 
+// Style Note: Clients are sorted by names.
 class BluetoothAdapterClient;
 class BluetoothManagerClient;
 class CrosDisksClient;
+class ImageBurnerClient;
 class PowerManagerClient;
 class SessionManagerClient;
 class SensorsClient;
@@ -75,6 +77,16 @@ class DBusThreadManager {
   // down.
   virtual BluetoothManagerClient* GetBluetoothManagerClient() = 0;
 
+  // Returns the cros-disks client, owned by DBusThreadManager.
+  // Do not cache this pointer and use it after DBusThreadManager is shut
+  // down.
+  virtual CrosDisksClient* GetCrosDisksClient() = 0;
+
+  // Returns the image burner client, owned by DBusThreadManager.
+  // Do not cache this pointer and use it after DBusThreadManger is shut
+  // down.
+  virtual ImageBurnerClient* GetImageBurnerClient() = 0;
+
   // Returns the power manager client, owned by DBusThreadManager.
   // See also comments at session_manager_client().
   virtual PowerManagerClient* GetPowerManagerClient() = 0;
@@ -93,11 +105,6 @@ class DBusThreadManager {
   // Do not cache this pointer and use it after DBusThreadManager is shut
   // down.
   virtual SpeechSynthesizerClient* GetSpeechSynthesizerClient() = 0;
-
-  // Returns the cros-disks client, owned by DBusThreadManager.
-  // Do not cache this pointer and use it after DBusThreadManager is shut
-  // down.
-  virtual CrosDisksClient* GetCrosDisksClient() = 0;
 
   // Returns the update engine client, owned by DBusThreadManager.  Do not
   // cache this pointer and use it after DBusThreadManager is shut down.
