@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -726,7 +726,11 @@ void SigninScreenHandler::HandleAccountPickerReady(
     const base::ListValue* args) {
   // Fetching of the extension is not started before account picker page is
   // loaded because it can affect the loading speed.
-  if (is_first_attempt_ && !cookie_remover_ && !dns_clear_task_running_)
+  // Do not load the extension for the screen locker, see crosbug.com/25018.
+  if (!ScreenLocker::default_screen_locker() &&
+      is_first_attempt_ &&
+      !cookie_remover_ &&
+      !dns_clear_task_running_)
     LoadAuthExtension(true, true);
 
   if (ScreenLocker::default_screen_locker()) {
