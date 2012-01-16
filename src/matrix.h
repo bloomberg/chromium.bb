@@ -1,5 +1,6 @@
 /*
  * Copyright © 2008-2011 Kristian Høgsberg
+ * Copyright © 2012 Collabora, Ltd.
  *
  * Permission to use, copy, modify, distribute, and sell this software and
  * its documentation for any purpose is hereby granted without fee, provided
@@ -27,6 +28,11 @@ struct weston_matrix {
 	GLfloat d[16];
 };
 
+struct weston_inverse_matrix {
+	double LU[16];	/* column-major */
+	unsigned p[4];	/* permutation */
+};
+
 struct weston_vector {
 	GLfloat f[4];
 };
@@ -44,7 +50,10 @@ void
 weston_matrix_transform(struct weston_matrix *matrix, struct weston_vector *v);
 
 int
-weston_matrix_invert(struct weston_matrix *inverse,
+weston_matrix_invert(struct weston_inverse_matrix *inverse,
 		     const struct weston_matrix *matrix);
+void
+weston_matrix_inverse_transform(struct weston_inverse_matrix *inverse,
+				struct weston_vector *v);
 
 #endif /* WESTON_MATRIX_H */

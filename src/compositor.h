@@ -230,7 +230,7 @@ struct weston_surface {
 
 		/* derived state, set up by weston_surface_update_transform */
 		struct weston_matrix matrix;
-		struct weston_matrix inverse;
+		struct weston_inverse_matrix inverse;
 		int enabled;
 	} transform;
 
