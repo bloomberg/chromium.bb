@@ -43,6 +43,8 @@
 #include <dlfcn.h>
 #include <getopt.h>
 #include <signal.h>
+#include <setjmp.h>
+#include <execinfo.h>
 
 #include <wayland-server.h>
 #include "compositor.h"
@@ -50,6 +52,7 @@
 static const char *option_socket_name = NULL;
 
 static struct wl_list child_process_list;
+static jmp_buf segv_jmp_buf;
 
 static int
 sigchld_handler(int signal_number, void *data)
@@ -1986,6 +1989,28 @@ static int on_term_signal(int signal_number, void *data)
 	return 1;
 }
 
+static void
+on_segv_signal(int s, siginfo_t *siginfo, void *context)
+{
+	void *buffer[32];
+	int i, count;
+	Dl_info info;
+
+	fprintf(stderr, "caught segv\n");
+
+	count = backtrace(buffer, ARRAY_LENGTH(buffer));
+	for (i = 0; i < count; i++) {
+		dladdr(buffer[i], &info);
+		fprintf(stderr, "  [%016lx]  %s  (%s)\n",
+			(long) buffer[i],
+			info.dli_sname ? info.dli_sname : "--",
+			info.dli_fname);
+	}
+
+	longjmp(segv_jmp_buf, 1);
+}
+
+
 static void *
 load_module(const char *name, const char *entrypoint, void **handle)
 {
@@ -2020,6 +2045,7 @@ int main(int argc, char *argv[])
 	struct weston_compositor *ec;
 	struct wl_event_source *signals[4];
 	struct wl_event_loop *loop;
+	struct sigaction segv_action;
 	int o, xserver = 0;
 	void *shell_module, *backend_module;
 	int (*shell_init)(struct weston_compositor *ec);
@@ -2086,6 +2112,10 @@ int main(int argc, char *argv[])
 	signals[3] = wl_event_loop_add_signal(loop, SIGCHLD, sigchld_handler,
 					      NULL);
 
+	segv_action.sa_flags = SA_SIGINFO | SA_RESETHAND;
+	segv_action.sa_sigaction = on_segv_signal;
+	sigaction(SIGSEGV, &segv_action, NULL);
+
 	if (!backend) {
 		if (getenv("WAYLAND_DISPLAY"))
 			backend = "wayland-backend.so";
@@ -2129,7 +2159,8 @@ int main(int argc, char *argv[])
 	}
 
 	weston_compositor_wake(ec);
-	wl_display_run(display);
+	if (setjmp(segv_jmp_buf) == 0)
+		wl_display_run(display);
 
 	/* prevent further rendering while shutting down */
 	ec->state = WESTON_COMPOSITOR_SLEEPING;
