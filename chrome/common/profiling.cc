@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -41,7 +41,7 @@ void FlushProfilingData(base::Thread* thread) {
     return;
 
   base::debug::FlushProfiling();
-  static int flush_seconds = 0;
+  static int flush_seconds;
   if (!flush_seconds) {
     const CommandLine& command_line = *CommandLine::ForCurrentProcess();
     std::string profiling_flush =
@@ -54,7 +54,9 @@ void FlushProfilingData(base::Thread* thread) {
     }
   }
   thread->message_loop()->PostDelayedTask(
-      FROM_HERE, base::Bind(&FlushProfilingData, thread), flush_seconds * 1000);
+      FROM_HERE,
+      base::Bind(&FlushProfilingData, thread),
+      base::TimeDelta::FromSeconds(flush_seconds));
 }
 
 class ProfilingThreadControl {

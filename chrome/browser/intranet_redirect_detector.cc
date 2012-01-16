@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,11 +33,11 @@ IntranetRedirectDetector::IntranetRedirectDetector()
   // Ideally, instead of this timer, we'd do something like "check if the
   // browser is starting up, and if so, come back later", but there is currently
   // no function to do this.
-  static const int kStartFetchDelayMS = 7000;
+  static const int kStartFetchDelaySeconds = 7;
   MessageLoop::current()->PostDelayedTask(FROM_HERE,
       base::Bind(&IntranetRedirectDetector::FinishSleep,
                  weak_factory_.GetWeakPtr()),
-      kStartFetchDelayMS);
+      base::TimeDelta::FromSeconds(kStartFetchDelaySeconds));
 
   net::NetworkChangeNotifier::AddIPAddressObserver(this);
 }
@@ -154,7 +154,7 @@ void IntranetRedirectDetector::OnIPAddressChanged() {
   MessageLoop::current()->PostDelayedTask(FROM_HERE,
       base::Bind(&IntranetRedirectDetector::FinishSleep,
                  weak_factory_.GetWeakPtr()),
-      kNetworkSwitchDelayMS);
+      base::TimeDelta::FromMilliseconds(kNetworkSwitchDelayMS));
 }
 
 IntranetRedirectHostResolverProc::IntranetRedirectHostResolverProc(

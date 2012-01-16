@@ -71,9 +71,8 @@ namespace history {
 // dependency between MostVisitedModel and the history backend.
 static const int kSegmentDataRetention = 90;
 
-// The number of milliseconds we'll wait to do a commit, so that things are
-// batched together.
-static const int kCommitIntervalMs = 10000;
+// How long we'll wait to do a commit, so that things are batched together.
+static const int kCommitIntervalSeconds = 10;
 
 // The amount of time before we re-fetch the favicon.
 static const int kFaviconRefetchDays = 7;
@@ -1942,7 +1941,7 @@ void HistoryBackend::ScheduleCommit() {
   MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&CommitLaterTask::RunCommit, scheduled_commit_.get()),
-      kCommitIntervalMs);
+      base::TimeDelta::FromSeconds(kCommitIntervalSeconds));
 }
 
 void HistoryBackend::CancelScheduledCommit() {

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -190,7 +190,7 @@ void TestService::Echo(MethodCall* method_call,
 void TestService::SlowEcho(
     MethodCall* method_call,
     dbus::ExportedObject::ResponseSender response_sender) {
-  base::PlatformThread::Sleep(TestTimeouts::tiny_timeout_ms());
+  base::PlatformThread::Sleep(TestTimeouts::tiny_timeout());
   Echo(method_call, response_sender);
 }
 

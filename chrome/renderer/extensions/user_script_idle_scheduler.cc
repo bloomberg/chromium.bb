@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -56,7 +56,7 @@ void UserScriptIdleScheduler::DidFinishDocumentLoad() {
   MessageLoop::current()->PostDelayedTask(
       FROM_HERE, base::Bind(&UserScriptIdleScheduler::MaybeRun,
                             weak_factory_.GetWeakPtr()),
-      kUserScriptIdleTimeoutMs);
+      base::TimeDelta::FromMilliseconds(kUserScriptIdleTimeoutMs));
 }
 
 void UserScriptIdleScheduler::DidFinishLoad() {

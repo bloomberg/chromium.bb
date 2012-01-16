@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -138,7 +138,7 @@ const char* const kReportLanguageDetectionErrorURL =
 const char* const kLanguageListFetchURL =
     "http://translate.googleapis.com/translate_a/l?client=chrome&cb=sl";
 const int kMaxRetryLanguageListFetch = 5;
-const int kTranslateScriptExpirationDelayMS = 24 * 60 * 60 * 1000;  // 1 day.
+const int kTranslateScriptExpirationDelayDays = 1;
 
 }  // namespace
 
@@ -450,7 +450,8 @@ bool TranslateManager::IsShowingTranslateInfobar(WebContents* tab) {
 
 TranslateManager::TranslateManager()
     : ALLOW_THIS_IN_INITIALIZER_LIST(weak_method_factory_(this)),
-      translate_script_expiration_delay_(kTranslateScriptExpirationDelayMS) {
+      translate_script_expiration_delay_(
+          base::TimeDelta::FromDays(kTranslateScriptExpirationDelayDays)) {
   notification_registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
                               content::NotificationService::AllSources());
   notification_registrar_.Add(this,

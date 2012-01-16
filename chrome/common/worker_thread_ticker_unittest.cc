@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,13 +32,15 @@ class TestCallback : public WorkerThreadTicker::Callback {
 class LongCallback : public WorkerThreadTicker::Callback {
  public:
   virtual void OnTick() {
-    base::PlatformThread::Sleep(1500);
+    base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(1500));
   }
 };
 
 void RunMessageLoopForAWhile() {
-  MessageLoop::current()->PostDelayedTask(FROM_HERE,
-                                          MessageLoop::QuitClosure(), 500);
+  MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      MessageLoop::QuitClosure(),
+      base::TimeDelta::FromMilliseconds(500));
   MessageLoop::current()->Run();
 }
 
