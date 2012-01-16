@@ -36,7 +36,7 @@
   -webkit-box-orient: vertical;
   display: -webkit-box;
   background-color: #ebeff9;
-  width: 300px;
+  width: 200px;
 }
 
 /* On OS X we use the native OS spellchecker, so don't display the dictionary */
