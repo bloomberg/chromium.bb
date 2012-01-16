@@ -1457,6 +1457,16 @@
    fun:_ZN13WorkerService12CreateWorker*
    fun:_ZN19RenderMessageFilter14OnCreateWorker*
 }
+{
+   bug_27665
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN10SkXfermode6CreateENS_4ModeE
+   fun:_ZN7SkPaint15setXfermodeModeEN10SkXfermode4ModeE
+   fun:_ZNK7WebCore19PlatformContextSkia16setupPaintCommonEP7SkPaint
+   fun:_ZN7WebCore15GraphicsContext8fillRectERKNS_9FloatRectERKNS_5ColorENS_10ColorSpaceE
+   fun:_ZN7WebCore15GraphicsContext8fillRectERKNS_9FloatRectERKNS_5ColorENS_10ColorSpaceENS_17CompositeOperatorE
+}
 # The following three suppressions are related to the workers code.
 {
    bug_27837
