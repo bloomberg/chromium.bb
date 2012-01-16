@@ -184,7 +184,7 @@ weston_matrix_inverse_transform(struct weston_inverse_matrix *inverse,
 	unsigned *p = inverse->p;
 	double *LU = inverse->LU;
 	double b[4];
-	unsigned k, j;
+	unsigned j;
 
 	/* Forward substitution, column version, solves L * b = P * v */
 	/* The diagonal of L is all ones, and not explicitly stored. */
@@ -214,6 +214,7 @@ weston_matrix_inverse_transform(struct weston_inverse_matrix *inverse,
 	b[0] /= LU[0 + 0 * 4];
 #else
 	for (j = 3; j > 0; --j) {
+		unsigned k;
 		b[j] /= LU[j + j * 4];
 		for (k = 0; k < j; ++k)
 			b[k] -= b[j] * LU[k + j * 4];

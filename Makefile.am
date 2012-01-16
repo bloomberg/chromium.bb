@@ -1,1 +1,1 @@
-SUBDIRS = shared src clients data protocol
+SUBDIRS = shared src clients data protocol tests
