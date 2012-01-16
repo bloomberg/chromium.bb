@@ -357,6 +357,9 @@ class FullInterfaceTest(unittest.TestCase):
     self.mox.StubOutWithMock(parser, 'error')
     self.mox.StubOutWithMock(cbuildbot.os.path, 'exists')
     self.mox.StubOutWithMock(cros_lib, 'IsInsideChroot')
+    self.mox.StubOutWithMock(cbuildbot.cgroup.CGroup, '__init__')
+    self.mox.StubOutWithMock(cbuildbot.cgroup.CGroup, '__enter__')
+    self.mox.StubOutWithMock(cbuildbot.cgroup.CGroup, '__exit__')
     self.mox.StubOutWithMock(cbuildbot, '_CreateParser')
     self.mox.StubOutWithMock(sys, 'exit')
     self.mox.StubOutWithMock(cros_lib, 'GetInput')
@@ -368,6 +371,12 @@ class FullInterfaceTest(unittest.TestCase):
     cbuildbot.os.path.realpath = fake_real_path
     parser.error(mox.IgnoreArg()).InAnyOrder().AndRaise(TestExitedException())
     cros_lib.IsInsideChroot().InAnyOrder().AndReturn(False)
+    cbuildbot.cgroup.CGroup.__init__().InAnyOrder().AndReturn(None)
+    cbuildbot.cgroup.CGroup.__enter__().InAnyOrder().AndReturn(None)
+    cbuildbot.cgroup.CGroup.__exit__(
+        mox.IgnoreArg(),
+        mox.IgnoreArg(),
+        mox.IgnoreArg()).InAnyOrder().AndReturn(None)
     cbuildbot._CreateParser().InAnyOrder().AndReturn(parser)
     sys.exit(mox.IgnoreArg()).InAnyOrder().AndRaise(TestExitedException())
     cros_lib.FindRepoDir().InAnyOrder().AndReturn('/b/test_build1/.repo')
