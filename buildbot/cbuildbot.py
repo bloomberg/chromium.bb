@@ -10,6 +10,7 @@ Used by Chromium OS buildbot configuration for all Chromium OS builds including
 full and pre-flight-queue builds.
 """
 
+import cgroup
 import constants
 import distutils.version
 import glob
@@ -867,11 +868,12 @@ def main(argv=None):
       if not os.path.exists(repository.GetTrybotMarkerPath(options.buildroot)):
         _ConfirmBuildRoot(options.buildroot)
 
-  if options.buildbot:
-    _RunBuildStagesWrapper(bot_id, options, build_config)
-  else:
-    build_config = cbuildbot_config.OverrideConfigForTrybot(build_config)
-    _RunBuildStagesWithSudoProcess(bot_id, options, build_config)
+  with cgroup.CGroup():
+    if options.buildbot:
+      _RunBuildStagesWrapper(bot_id, options, build_config)
+    else:
+      build_config = cbuildbot_config.OverrideConfigForTrybot(build_config)
+      _RunBuildStagesWithSudoProcess(bot_id, options, build_config)
 
 
 if __name__ == '__main__':
