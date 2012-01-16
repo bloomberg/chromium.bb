@@ -68,6 +68,7 @@ struct weston_wm {
 	xcb_screen_t *screen;
 	struct hash_table *window_hash;
 	struct weston_xserver *server;
+	xcb_window_t wm_window;
 
 	xcb_window_t selection_window;
 	int incr;
@@ -94,6 +95,9 @@ struct weston_wm {
 		xcb_atom_t		 net_wm_user_time;
 		xcb_atom_t		 net_wm_icon_name;
 		xcb_atom_t		 net_wm_window_type;
+		xcb_atom_t		 net_wm_moveresize;
+		xcb_atom_t		 net_supporting_wm_check;
+		xcb_atom_t		 net_supported;
 		xcb_atom_t		 clipboard;
 		xcb_atom_t		 targets;
 		xcb_atom_t		 utf8_string;
@@ -1056,6 +1060,17 @@ weston_wm_handle_xfixes_selection_notify(struct weston_wm *wm,
 	xcb_flush(wm->conn);
 }
 
+static void
+weston_wm_handle_client_message(struct weston_wm *wm,
+				xcb_generic_event_t *event)
+{
+	xcb_client_message_event_t *client_message =
+		(xcb_client_message_event_t *) event;
+
+	fprintf(stderr, "got client message, type: %s\n",
+		get_atom_name(wm->conn, client_message->type));
+}
+
 static int
 weston_wm_handle_event(int fd, uint32_t mask, void *data)
 {
@@ -1098,6 +1113,9 @@ weston_wm_handle_event(int fd, uint32_t mask, void *data)
 		case XCB_SELECTION_REQUEST:
 			weston_wm_handle_selection_request(wm, event);
 			break;
+		case XCB_CLIENT_MESSAGE:
+			weston_wm_handle_client_message(wm, event);
+			break;
 		}
 
 		switch (event->response_type - wm->xfixes->first_event) {
@@ -1133,6 +1151,10 @@ wxs_wm_get_resources(struct weston_wm *wm)
 		{ "_NET_WM_USER_TIME", F(atom.net_wm_user_time) },
 		{ "_NET_WM_ICON_NAME", F(atom.net_wm_icon_name) },
 		{ "_NET_WM_WINDOW_TYPE", F(atom.net_wm_window_type) },
+		{ "_NET_WM_MOVERESIZE", F(atom.net_wm_moveresize) },
+		{ "_NET_SUPPORTING_WM_CHECK",
+					F(atom.net_supporting_wm_check) },
+		{ "_NET_SUPPORTED",     F(atom.net_supported) },
 		{ "CLIPBOARD",		F(atom.clipboard) },
 		{ "TARGETS",		F(atom.targets) },
 		{ "UTF8_STRING",	F(atom.utf8_string) },
@@ -1183,6 +1205,49 @@ wxs_wm_get_resources(struct weston_wm *wm)
 	free(xfixes_reply);
 }
 
+static void
+weston_wm_create_wm_window(struct weston_wm *wm)
+{
+	static const char name[] = "Weston WM";
+
+	wm->wm_window = xcb_generate_id(wm->conn);
+	xcb_create_window(wm->conn,
+			  XCB_COPY_FROM_PARENT,
+			  wm->wm_window,
+			  wm->screen->root,
+			  0, 0,
+			  10, 10,
+			  0,
+			  XCB_WINDOW_CLASS_INPUT_OUTPUT,
+			  wm->screen->root_visual,
+			  0, NULL);
+
+	xcb_change_property(wm->conn,
+			    XCB_PROP_MODE_REPLACE,
+			    wm->wm_window,
+			    wm->atom.net_supporting_wm_check,
+			    XCB_ATOM_WINDOW,
+			    32, /* format */
+			    1, &wm->wm_window);
+
+	xcb_change_property(wm->conn,
+			    XCB_PROP_MODE_REPLACE,
+			    wm->wm_window,
+			    wm->atom.net_wm_name,
+			    wm->atom.utf8_string,
+			    8, /* format */
+			    strlen(name), name);
+
+	xcb_change_property(wm->conn,
+			    XCB_PROP_MODE_REPLACE,
+			    wm->screen->root,
+			    wm->atom.net_supporting_wm_check,
+			    XCB_ATOM_WINDOW,
+			    32, /* format */
+			    1, &wm->wm_window);
+
+}
+
 static struct weston_wm *
 weston_wm_create(struct weston_xserver *wxs)
 {
@@ -1192,6 +1257,7 @@ weston_wm_create(struct weston_xserver *wxs)
 	xcb_screen_iterator_t s;
 	uint32_t values[1], mask;
 	int sv[2];
+	xcb_atom_t supported[1];
 
 	wm = malloc(sizeof *wm);
 	if (wm == NULL)
@@ -1245,6 +1311,17 @@ weston_wm_create(struct weston_xserver *wxs)
 		XCB_EVENT_MASK_PROPERTY_CHANGE;
 	xcb_change_window_attributes(wm->conn, wm->screen->root,
 				     XCB_CW_EVENT_MASK, values);
+
+	weston_wm_create_wm_window(wm);
+
+	supported[0] = wm->atom.net_wm_moveresize;
+	xcb_change_property(wm->conn,
+			    XCB_PROP_MODE_REPLACE,
+			    wm->screen->root,
+			    wm->atom.net_supported,
+			    XCB_ATOM_ATOM,
+			    32, /* format */
+			    ARRAY_LENGTH(supported), supported);
 
 	wm->selection_request.requestor = XCB_NONE;
 
