@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,7 +31,7 @@ void PluginReleaseCallback() {
 }
 
 // How long we wait before releasing the plugin process.
-const int kPluginReleaseTimeMinutes = 5;
+const int kPluginReleaseTimeMs = 5 * 60 * 1000;  // 5 minutes
 
 }  // namespace
 
@@ -177,9 +177,7 @@ PluginChannel::~PluginChannel() {
     base::CloseProcessHandle(renderer_handle_);
 
   MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&PluginReleaseCallback),
-      base::TimeDelta::FromMinutes(kPluginReleaseTimeMinutes));
+      FROM_HERE, base::Bind(&PluginReleaseCallback), kPluginReleaseTimeMs);
 }
 
 bool PluginChannel::Send(IPC::Message* msg) {

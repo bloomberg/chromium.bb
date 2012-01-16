@@ -1239,7 +1239,7 @@ void SafeBrowsingService::StartDownloadCheck(SafeBrowsingCheck* check,
   MessageLoop::current()->PostDelayedTask(FROM_HERE,
       base::Bind(&SafeBrowsingService::TimeoutCallback,
                  check->timeout_factory_->GetWeakPtr(), check),
-      base::TimeDelta::FromMilliseconds(timeout_ms));
+      timeout_ms);
 }
 
 void SafeBrowsingService::UpdateWhitelist(const UnsafeResource& resource) {

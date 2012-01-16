@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -627,9 +627,8 @@ void TaskManagerModel::StartUpdating() {
   // it to TASK_PENDING ensures the tasks keep being posted (by Refresh()).
   if (update_state_ == IDLE) {
       MessageLoop::current()->PostDelayedTask(
-          FROM_HERE,
-          base::Bind(&TaskManagerModel::Refresh, this),
-          base::TimeDelta::FromMilliseconds(kUpdateTimeMs));
+          FROM_HERE, base::Bind(&TaskManagerModel::Refresh, this),
+          kUpdateTimeMs);
   }
   update_state_ = TASK_PENDING;
 
@@ -871,16 +870,14 @@ void TaskManagerModel::Refresh() {
 
   // Compute the new network usage values.
   displayed_network_usage_map_.clear();
-  base::TimeDelta update_time =
-      base::TimeDelta::FromMilliseconds(kUpdateTimeMs);
   for (ResourceValueMap::iterator iter = current_byte_count_map_.begin();
        iter != current_byte_count_map_.end(); ++iter) {
-    if (update_time > base::TimeDelta::FromSeconds(1)) {
-      int divider = update_time.InSeconds();
+    if (kUpdateTimeMs > 1000) {
+      int divider = (kUpdateTimeMs / 1000);
       displayed_network_usage_map_[iter->first] = iter->second / divider;
     } else {
       displayed_network_usage_map_[iter->first] = iter->second *
-          (1 / update_time.InSeconds());
+          (1000 / kUpdateTimeMs);
     }
 
     // Then we reset the current byte count.
@@ -900,9 +897,7 @@ void TaskManagerModel::Refresh() {
 
   // Schedule the next update.
   MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&TaskManagerModel::Refresh, this),
-      base::TimeDelta::FromMilliseconds(kUpdateTimeMs));
+      FROM_HERE, base::Bind(&TaskManagerModel::Refresh, this), kUpdateTimeMs);
 }
 
 int64 TaskManagerModel::GetNetworkUsageForResource(

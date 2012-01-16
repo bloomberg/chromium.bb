@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -217,7 +217,7 @@ void PromoResourceService::PostNotification(int64 delay_ms) {
         FROM_HERE,
         base::Bind(&PromoResourceService::PromoResourceStateChange,
                    weak_ptr_factory_.GetWeakPtr()),
-        base::TimeDelta::FromMilliseconds(delay_ms));
+        delay_ms);
   } else if (delay_ms == 0) {
     PromoResourceStateChange();
   }

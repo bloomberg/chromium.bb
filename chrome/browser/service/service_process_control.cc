@@ -300,7 +300,7 @@ void ServiceProcessControl::Launcher::DoDetectLaunched() {
   retry_count_++;
 
   // If the service process is not launched yet then check again in 2 seconds.
-  const base::TimeDelta kDetectLaunchRetry = base::TimeDelta::FromSeconds(2);
+  const int kDetectLaunchRetry = 2000;
   MessageLoop::current()->PostDelayedTask(
       FROM_HERE, base::Bind(&Launcher::DoDetectLaunched, this),
       kDetectLaunchRetry);

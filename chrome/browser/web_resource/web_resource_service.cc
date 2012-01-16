@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -180,7 +180,7 @@ void WebResourceService::ScheduleFetch(int64 delay_ms) {
       FROM_HERE,
       base::Bind(&WebResourceService::StartFetch,
                  weak_ptr_factory_.GetWeakPtr()),
-      base::TimeDelta::FromMilliseconds(delay_ms));
+      delay_ms);
 }
 
 // Initializes the fetching of data from the resource server.  Data

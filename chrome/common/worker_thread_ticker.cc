@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,7 +15,7 @@
 WorkerThreadTicker::WorkerThreadTicker(int tick_interval)
     : timer_thread_("worker_thread_ticker"),
       is_running_(false),
-      tick_interval_(base::TimeDelta::FromMilliseconds(tick_interval)) {
+      tick_interval_(tick_interval) {
 }
 
 WorkerThreadTicker::~WorkerThreadTicker() {

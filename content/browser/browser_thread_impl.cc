@@ -134,11 +134,10 @@ bool BrowserThreadImpl::PostTaskHelper(
   MessageLoop* message_loop = g_browser_threads[identifier] ?
       g_browser_threads[identifier]->message_loop() : NULL;
   if (message_loop) {
-    base::TimeDelta delay = base::TimeDelta::FromMilliseconds(delay_ms);
     if (nestable) {
-      message_loop->PostDelayedTask(from_here, task, delay);
+      message_loop->PostDelayedTask(from_here, task, delay_ms);
     } else {
-      message_loop->PostNonNestableDelayedTask(from_here, task, delay);
+      message_loop->PostNonNestableDelayedTask(from_here, task, delay_ms);
     }
   }
 

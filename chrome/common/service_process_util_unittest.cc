@@ -185,7 +185,7 @@ TEST_F(ServiceProcessStateTest, MAYBE_ForceShutdown) {
                                           true);
   ASSERT_TRUE(handle);
   for (int i = 0; !CheckServiceProcessReady() && i < 10; ++i) {
-    base::PlatformThread::Sleep(TestTimeouts::tiny_timeout());
+    base::PlatformThread::Sleep(TestTimeouts::tiny_timeout_ms());
   }
   ASSERT_TRUE(CheckServiceProcessReady());
   std::string version;
@@ -228,7 +228,7 @@ MULTIPROCESS_TEST_MAIN(ServiceProcessStateTestShutdown) {
                                            MessageLoop::current())));
   message_loop.PostDelayedTask(FROM_HERE,
                                MessageLoop::QuitClosure(),
-                               TestTimeouts::action_max_timeout());
+                               TestTimeouts::action_max_timeout_ms());
   EXPECT_FALSE(g_good_shutdown);
   message_loop.Run();
   EXPECT_TRUE(g_good_shutdown);
@@ -274,7 +274,7 @@ class ServiceProcessStateFileManipulationTest : public ::testing::Test {
         base::Closure()));
     loop_.PostDelayedTask(FROM_HERE,
                           MessageLoop::QuitClosure(),
-                          TestTimeouts::action_max_timeout());
+                          TestTimeouts::action_max_timeout_ms());
   }
 
   const MockLaunchd* mock_launchd() const { return mock_launchd_.get(); }

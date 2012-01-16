@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,16 +31,15 @@ class MediaTest : public UITest {
     const std::wstring kPlaying = L"PLAYING";
     const std::wstring kFailed = L"FAILED";
     const std::wstring kError = L"ERROR";
-    const base::TimeDelta kSleepInterval =
-        base::TimeDelta::FromMilliseconds(250);
+    const int kSleepIntervalMs = 250;
     const int kNumIntervals =
-        TestTimeouts::action_timeout() / kSleepInterval;
+        TestTimeouts::action_timeout_ms() / kSleepIntervalMs;
     for (int i = 0; i < kNumIntervals; ++i) {
       const std::wstring& title = GetActiveTabTitle();
       if (title == kPlaying || title == kFailed ||
           StartsWith(title, kError, true))
         break;
-      base::PlatformThread::Sleep(kSleepInterval);
+      base::PlatformThread::Sleep(kSleepIntervalMs);
     }
 
     EXPECT_EQ(kPlaying, GetActiveTabTitle());

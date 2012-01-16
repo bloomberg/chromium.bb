@@ -665,9 +665,7 @@ void ChromeRenderViewObserver::DidStopLoading() {
       FROM_HERE,
       base::Bind(&ChromeRenderViewObserver::CapturePageInfo,
                  weak_factory_.GetWeakPtr(), render_view()->GetPageId(), false),
-      base::TimeDelta::FromMilliseconds(
-          render_view()->GetContentStateImmediately() ?
-          0 : kDelayForCaptureMs));
+      render_view()->GetContentStateImmediately() ? 0 : kDelayForCaptureMs);
 
   WebFrame* main_frame = render_view()->GetWebView()->mainFrame();
   GURL osd_url = main_frame->document().openSearchDescriptionURL();
@@ -723,7 +721,7 @@ void ChromeRenderViewObserver::DidCommitProvisionalLoad(
       FROM_HERE,
       base::Bind(&ChromeRenderViewObserver::CapturePageInfo,
                  weak_factory_.GetWeakPtr(), render_view()->GetPageId(), true),
-      base::TimeDelta::FromMilliseconds(kDelayForForcedCaptureMs));
+      kDelayForForcedCaptureMs);
 }
 
 void ChromeRenderViewObserver::DidClearWindowObject(WebFrame* frame) {

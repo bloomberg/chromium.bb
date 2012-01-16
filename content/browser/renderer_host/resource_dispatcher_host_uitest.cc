@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -287,7 +287,7 @@ TEST_F(ResourceDispatcherTest, FAILS_CrossSiteAfterCrash) {
 #endif
   ASSERT_TRUE(tab->NavigateToURLAsync(GURL(chrome::kAboutCrashURL)));
   // Wait for browser to notice the renderer crash.
-  base::PlatformThread::Sleep(TestTimeouts::action_timeout());
+  base::PlatformThread::Sleep(TestTimeouts::action_timeout_ms());
 
   // Navigate to a new cross-site page.  The browser should not wait around for
   // the old renderer's on{before}unload handlers to run.

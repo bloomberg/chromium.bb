@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -51,11 +51,9 @@ void LoadProgressTracker::DidChangeLoadProgress(WebKit::WebFrame* frame,
   // last updates.  Also, since the message loop may be pretty busy when a page
   // is loaded, it might not execute a posted task in a timely manner so we make
   // sure to immediately send progress report if enough time has passed.
-  base::TimeDelta min_delay =
-      base::TimeDelta::FromMilliseconds(kMinimumDelayBetweenUpdatesMS);
   if (progress == 1.0 || last_time_progress_sent_.is_null() ||
-      base::TimeTicks::Now() - last_time_progress_sent_ >
-      min_delay) {
+      (base::TimeTicks::Now() -  last_time_progress_sent_).InMilliseconds() >
+          kMinimumDelayBetweenUpdatesMS) {
     // If there is a pending task to send progress, it is now obsolete.
     weak_factory_.InvalidateWeakPtrs();
     SendChangeLoadProgress();
@@ -71,7 +69,7 @@ void LoadProgressTracker::DidChangeLoadProgress(WebKit::WebFrame* frame,
       FROM_HERE,
       base::Bind(&LoadProgressTracker::SendChangeLoadProgress,
                  weak_factory_.GetWeakPtr()),
-      min_delay);
+      kMinimumDelayBetweenUpdatesMS);
 }
 
 void LoadProgressTracker::SendChangeLoadProgress() {

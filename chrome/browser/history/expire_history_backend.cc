@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -592,7 +592,7 @@ void ExpireHistoryBackend::ScheduleArchive() {
       FROM_HERE,
       base::Bind(&ExpireHistoryBackend::DoArchiveIteration,
                  weak_factory_.GetWeakPtr()),
-      delay);
+      delay.InMilliseconds());
 }
 
 void ExpireHistoryBackend::DoArchiveIteration() {
@@ -687,7 +687,7 @@ void ExpireHistoryBackend::ScheduleExpireHistoryIndexFiles() {
       FROM_HERE,
       base::Bind(&ExpireHistoryBackend::DoExpireHistoryIndexFiles,
                  weak_factory_.GetWeakPtr()),
-      delay);
+      delay.InMilliseconds());
 }
 
 void ExpireHistoryBackend::DoExpireHistoryIndexFiles() {

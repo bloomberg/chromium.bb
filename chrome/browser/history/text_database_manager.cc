@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,7 +33,7 @@ std::string ConvertStringForIndexer(const string16& input) {
 
 // Data older than this will be committed to the full text index even if we
 // haven't gotten a title and/or body.
-const int kExpirationSeconds = 20;
+const int kExpirationSec = 20;
 
 }  // namespace
 
@@ -71,7 +71,7 @@ void TextDatabaseManager::PageInfo::set_body(const string16& bdy) {
 }
 
 bool TextDatabaseManager::PageInfo::Expired(TimeTicks now) const {
-  return now - added_time_ > base::TimeDelta::FromSeconds(kExpirationSeconds);
+  return now - added_time_ > TimeDelta::FromSeconds(kExpirationSec);
 }
 
 // TextDatabaseManager ---------------------------------------------------------
@@ -208,8 +208,8 @@ void TextDatabaseManager::AddPageTitle(const GURL& url,
       // not worth it for this edge case.
       //
       // It will be almost impossible for the title to take longer than
-      // kExpirationSeconds yet we got a body in less than that time, since
-      // the title should always come in first.
+      // kExpirationSec yet we got a body in less than that time, since the
+      // title should always come in first.
       return;
     }
 
@@ -235,9 +235,9 @@ void TextDatabaseManager::AddPageContents(const GURL& url,
   RecentChangeList::iterator found = recent_changes_.Peek(url);
   if (found == recent_changes_.end()) {
     // This page is not in our cache of recent pages. This means that the page
-    // took more than kExpirationSeconds to load. Often, this will be the result
-    // of a very slow iframe or other resource on the page that makes us think
-    // its still loading.
+    // took more than kExpirationSec to load. Often, this will be the result of
+    // a very slow iframe or other resource on the page that makes us think its
+    // still loading.
     //
     // As a fallback, set the most recent visit's contents using the input, and
     // use the last set title in the URL table as the title to index.
@@ -538,7 +538,7 @@ void TextDatabaseManager::ScheduleFlushOldChanges() {
       FROM_HERE,
       base::Bind(&TextDatabaseManager::FlushOldChanges,
                  weak_factory_.GetWeakPtr()),
-      base::TimeDelta::FromSeconds(kExpirationSeconds));
+      kExpirationSec * Time::kMillisecondsPerSecond);
 }
 
 void TextDatabaseManager::FlushOldChanges() {

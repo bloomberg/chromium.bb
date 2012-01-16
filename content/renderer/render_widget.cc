@@ -677,13 +677,13 @@ void RenderWidget::AnimateIfNeeded() {
     return;
 
   // Target 60FPS if vsync is on. Go as fast as we can if vsync is off.
-  base::TimeDelta animationInterval = IsRenderingVSynced() ?
-      base::TimeDelta::FromMilliseconds(16) : base::TimeDelta();
+  int animationInterval = IsRenderingVSynced() ? 16 : 0;
 
   base::Time now = base::Time::Now();
   if (now >= animation_floor_time_ || is_accelerated_compositing_active_) {
     TRACE_EVENT0("renderer", "RenderWidget::AnimateIfNeeded")
-    animation_floor_time_ = now + animationInterval;
+    animation_floor_time_ = now +
+        base::TimeDelta::FromMilliseconds(animationInterval);
     // Set a timer to call us back after animationInterval before
     // running animation callbacks so that if a callback requests another
     // we'll be sure to run it at the proper time.
@@ -706,7 +706,7 @@ void RenderWidget::AnimateIfNeeded() {
   // base::Time::Now() has advanced past the animation_floor_time_.  To
   // avoid exposing this delay to javascript, we keep posting delayed
   // tasks until base::Time::Now() has advanced far enough.
-  base::TimeDelta delay = animation_floor_time_ - now;
+  int64 delay = (animation_floor_time_ - now).InMillisecondsRoundedUp();
   animation_task_posted_ = true;
   MessageLoop::current()->PostDelayedTask(
       FROM_HERE, base::Bind(&RenderWidget::AnimationCallback, this), delay);
