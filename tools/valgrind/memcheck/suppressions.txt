@@ -5572,24 +5572,6 @@
    fun:_ZN7WebCore17IDBCursorInternalL16continueCallbackERKN2v89ArgumentsE
 }
 {
-   bug_109901
-   Memcheck:Leak
-   fun:malloc_zone_malloc
-   fun:_CFRuntimeCreateInstance
-   fun:__CFStringCreateImmutableFunnel3
-   fun:CFStringCreateWithBytes
-   fun:-[NSPlaceholderString initWithBytes:length:encoding:]
-   fun:_ZN7sandbox19LoadSandboxTemplateEi
-   fun:_ZN7sandbox7Sandbox13EnableSandboxEiRK8FilePath
-   fun:_ZN7content17InitializeSandboxEiRK8FilePath
-   fun:_ZN7content17InitializeSandboxEv
-   fun:_ZN28RendererMainPlatformDelegate13EnableSandboxEv
-   fun:_Z12RendererMainRKN7content18MainFunctionParamsE
-   fun:_ZN12_GLOBAL__N_123RunNamedProcessTypeMainERKSsRKN7content18MainFunctionParamsEPNS2_19ContentMainDelegateE
-   fun:_ZN7content11ContentMainEiPPKcPNS_19ContentMainDelegateE
-   fun:ChromeMain
-}
-{
    bug_109998
    Memcheck:Leak
    ...
