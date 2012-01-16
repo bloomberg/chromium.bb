@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -755,6 +755,10 @@ def GenerateDiff(files):
 
 def OptionallyDoPresubmitChecks(change_info, committing, args):
   if FilterFlag(args, "--no_presubmit") or FilterFlag(args, "--force"):
+    breakpad.SendStack(
+        'GclHooksBypassedCommit',
+        'Issue %s/%s bypassed hook when committing' %
+        (change_info.rietveld, change_info.issue))
     return presubmit_support.PresubmitOutput()
   return DoPresubmitChecks(change_info, committing, True)
 
