@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -43,6 +43,16 @@ DirectoryModel.REMOVABLE_DIRECTORY = 'removable';
  * mounted archive file volumes.
  */
 DirectoryModel.ARCHIVE_DIRECTORY = 'archive';
+
+/**
+ * Type of a root directory.
+ * @enum
+ */
+DirectoryModel.RootType = {
+  CHROMEBOOK: 'chromebook',
+  ARCHIVE: 'archive',
+  REMOVABLE: 'removable'
+};
 
 /**
 * The name of the downloads directory.
@@ -664,11 +674,9 @@ DirectoryModel.prototype = {
 };
 
 DirectoryModel.getRootPath = function(path) {
-  function isTop(dir) {
-    return path.substr(1, dir.length) == dir;
-  }
+  var type = DirectoryModel.getRootType(path);
 
-  if (isTop(DirectoryModel.DOWNLOADS_DIRECTORY))
+  if (type == DirectoryModel.RootType.CHROMEBOOK)
     return '/' + DirectoryModel.DOWNLOADS_DIRECTORY;
 
   function subdir(dir) {
@@ -676,10 +684,24 @@ DirectoryModel.getRootPath = function(path) {
     return end == -1 ? path : path.substr(0, end);
   }
 
-  if (isTop(DirectoryModel.ARCHIVE_DIRECTORY))
+  if (type == DirectoryModel.RootType.ARCHIVE)
     return subdir(DirectoryModel.ARCHIVE_DIRECTORY);
-  if (isTop(DirectoryModel.REMOVABLE_DIRECTORY))
+  if (type == DirectoryModel.REMOVABLE_DIRECTORY)
     return subdir(DirectoryModel.REMOVABLE_DIRECTORY);
   return '/';
+};
+
+DirectoryModel.getRootType = function(path) {
+  function isTop(dir) {
+    return path.substr(1, dir.length) == dir;
+  }
+
+  if (isTop(DirectoryModel.DOWNLOADS_DIRECTORY))
+    return DirectoryModel.RootType.CHROMEBOOK;
+  else if (isTop(DirectoryModel.ARCHIVE_DIRECTORY))
+    return DirectoryModel.RootType.ARCHIVE;
+  else if(isTop(DirectoryModel.REMOVABLE_DIRECTORY))
+    return DirectoryModel.RootType.REMOVABLE;
+  return '';
 };
 

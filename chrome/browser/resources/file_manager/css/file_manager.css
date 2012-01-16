@@ -145,7 +145,7 @@ list.roots-list {
 list.roots-list > * {
   border: none;
   border-radius: 0;
-  line-height: 35px;
+  height: 35px;
   margin: 0;
   padding: 0 5px;
   background-color: rgba(240,240,240,1);
@@ -183,6 +183,30 @@ li.root-item > .text {
 
 li.root-item > .spacer {
   -webkit-box-flex: 1;
+}
+
+.root-label {
+  -webkit-padding-start: 21px;
+  background-repeat: no-repeat;
+  background-position: 0 2px;
+}
+
+.root-label[icon=chromebook] {
+  background-image: url('../images/chromebook_24x24.png');
+}
+
+.root-label[icon=archive] {
+  background-image: url('../images/icon_mount_archive_16x16.png');
+  background-position: 0 0;
+}
+
+.root-label[icon=removable] {
+  background-image: url('../images/filetype_device.png');
+}
+
+.dialog-container[sidebar] .breadcrumbs .root-label {
+  -webkit-padding-start: 0;
+  background-image: none;
 }
 
 img.root-eject {
@@ -287,7 +311,9 @@ div.open-sidebar:hover {
   display: -webkit-box;
   -webkit-box-align: center;
   font-size: 15px;
-  line-height: 15px;
+  /* Root list line-height is 20px but font is taller.
+     Adjusted to align icons accordingly. */
+  line-height: 18px;
   height: 18px;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -296,16 +322,6 @@ div.open-sidebar:hover {
 
 .dialog-container[sidebar] .breadcrumbs {
   margin-left: 10px;
-}
-
-/* Icon at the start of breadcrumb path. Corresponds to the root selected. */
-.breadcrumb-icon {
-  margin-right: 5px;
-  display: block;
-}
-
-.dialog-container[sidebar] .breadcrumb-icon {
-  display: none;
 }
 
 /* A single directory name in the list of path breadcrumbs. */
@@ -328,6 +344,10 @@ div.open-sidebar:hover {
   -webkit-margin-end: 4px;
   color: #aaa;
   font-size: 12px;
+}
+
+.breadcrumb-spacer:before {
+  content: '\025b8';
 }
 
 .dialog-header > div > button {

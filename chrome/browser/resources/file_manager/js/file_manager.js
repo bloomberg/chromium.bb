@@ -70,11 +70,6 @@ FileManager.prototype = {
   // Private variables and helper functions.
 
   /**
-   * Unicode codepoint for 'BLACK RIGHT-POINTING SMALL TRIANGLE'.
-   */
-  const RIGHT_TRIANGLE = '\u25b8';
-
-  /**
    * Location of the FAQ about the downloads directory.
    */
   const DOWNLOADS_FAQ_URL = 'http://www.google.com/support/chromeos/bin/' +
@@ -1591,39 +1586,27 @@ FileManager.prototype = {
     return path;
   };
 
-  FileManager.prototype.getRootIconUrl_ = function(path, opt_small) {
-    var iconUrl = opt_small ? 'images/chromebook_28x28.png' :
-        'images/chromebook_24x24.png';
-    if (isParentPath('/' + DirectoryModel.REMOVABLE_DIRECTORY, path))
-      iconUrl = 'images/filetype_device.png';
-    else if (isParentPath('/' + DirectoryModel.ARCHIVE_DIRECTORY, path))
-      iconUrl = 'images/icon_mount_archive_16x16.png';
-    return chrome.extension.getURL(iconUrl);
-  };
-
   FileManager.prototype.renderRoot_ = function(entry) {
     var li = this.document_.createElement('li');
     li.className = 'root-item';
 
-    var icon = this.document_.createElement('img');
-    icon.src = this.getRootIconUrl_(entry.fullPath, false);
-    li.appendChild(icon);
+    var rootType = DirectoryModel.getRootType(entry.fullPath);
 
     var div = this.document_.createElement('div');
-    div.className = 'text';
+    div.className = 'root-label';
+    div.setAttribute('icon', rootType);
     div.textContent = this.getRootLabel_(entry.fullPath);
     li.appendChild(div);
 
-    if (isParentPath('/' + DirectoryModel.REMOVABLE_DIRECTORY,
-                     entry.fullPath) ||
-        isParentPath('/' + DirectoryModel.ARCHIVE_DIRECTORY,
-                     entry.fullPath)) {
+    if (rootType == DirectoryModel.RootType.ARCHIVE ||
+        rootType == DirectoryModel.RootType.REMOVABLE) {
       var spacer = this.document_.createElement('div');
       spacer.className = 'spacer';
       li.appendChild(spacer);
 
       var eject = this.document_.createElement('img');
       eject.className = 'root-eject';
+      // TODO(serya): Move to CSS.
       eject.setAttribute('src', chrome.extension.getURL('images/eject.png'));
       eject.addEventListener('click', this.onEjectClick_.bind(this, entry));
       li.appendChild(eject);
@@ -2300,11 +2283,6 @@ FileManager.prototype = {
     var relativePath = this.directoryModel_.currentEntry.fullPath.
                        substring(rootPath.length).replace(/\/$/, '');
 
-    var icon = this.document_.createElement('img');
-    icon.className = 'breadcrumb-icon';
-    icon.setAttribute('src', this.getRootIconUrl_(rootPath, true));
-    bc.appendChild(icon);
-
     var pathNames = relativePath.replace(/\/$/, '').split('/');
     if (pathNames[0] == '')
       pathNames.splice(0, 1);
@@ -2323,6 +2301,10 @@ FileManager.prototype = {
       var div = this.document_.createElement('div');
       div.className = 'breadcrumb-path';
       div.textContent = i == 0 ? this.getRootLabel_(path) : pathName;
+      if (i == 0) {
+        div.classList.add('root-label');
+        div.setAttribute('icon', DirectoryModel.getRootType(rootPath));
+      }
 
       path = path + '/';
       div.path = path;
@@ -2335,7 +2317,6 @@ FileManager.prototype = {
       } else {
         var spacer = this.document_.createElement('div');
         spacer.className = 'breadcrumb-spacer';
-        spacer.textContent = RIGHT_TRIANGLE;
         bc.appendChild(spacer);
       }
     }
