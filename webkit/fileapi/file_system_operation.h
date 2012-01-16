@@ -26,6 +26,10 @@ namespace base {
 class Time;
 }
 
+namespace chromeos {
+class CrosMountPointProvider;
+}
+
 namespace net {
 class URLRequest;
 class URLRequestContext;
@@ -85,8 +89,8 @@ class FileSystemOperation : public FileSystemOperationInterface {
   // Only MountPointProviders or testing class can create a
   // new operation directly.
   friend class SandboxMountPointProvider;
-  friend class CrosMountPointProvider;
   friend class FileSystemTestHelper;
+  friend class chromeos::CrosMountPointProvider;
 
   FileSystemOperation(scoped_ptr<FileSystemCallbackDispatcher> dispatcher,
                       scoped_refptr<base::MessageLoopProxy> proxy,
