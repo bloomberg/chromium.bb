@@ -2523,10 +2523,9 @@
    fun:_ZN7WebCore29WebGLRenderingContextInternal21compileShaderCallbackERKN2v89ArgumentsE
 }
 {
-   bug_60668
+   bug_60668a
    Memcheck:Uninitialized
-   fun:_mesa_convert_colors
-   fun:convert_color_type
+   ...
    fun:_swrast_write_rgba_span
    fun:general_triangle
    fun:_swrast_validate_triangle
@@ -2540,10 +2539,32 @@
    fun:vbo_exec_DrawArrays
    fun:neutral_DrawArrays
    fun:glDrawArrays
-   fun:_ZN6WebKit31WebGraphicsContext3DDefaultImpl10drawArraysEmll
-   fun:_ZN7WebCore25GraphicsContext3DInternal10drawArraysEmll
-   fun:_ZN7WebCore17GraphicsContext3D10drawArraysEmll
-   fun:_ZN7WebCore21WebGLRenderingContext10drawArraysEmllRi
+}
+{
+   bug_60668b
+   Memcheck:Overlap
+   fun:memcpy
+   fun:clip_span
+   fun:_swrast_write_rgba_span
+   fun:general_triangle
+   fun:_swrast_validate_triangle
+   fun:_swrast_Triangle
+   fun:triangle_rgba
+   fun:_tnl_render_poly_elts
+   fun:_tnl_RenderClippedPolygon
+   fun:clip_tri_4
+   fun:clip_elt_triangles
+   fun:run_render
+   fun:_tnl_run_pipeline
+   fun:_tnl_draw_prims
+   fun:_tnl_vbo_draw_prims
+   fun:vbo_validated_drawrangeelements
+   fun:vbo_exec_DrawElements
+   fun:neutral_DrawElements
+   fun:glDrawElements
+   fun:_ZN3gpu5gles216GLES2DecoderImpl18HandleDrawElementsEjRKNS0_12DrawElementsE
+   fun:_ZN3gpu5gles216GLES2DecoderImpl9DoCommandEjjPKv
+   fun:_ZN3gpu13CommandParser14ProcessCommandEv
 }
 {
    bug_60670a
