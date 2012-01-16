@@ -49,9 +49,9 @@ static int on_enter_vt(int signal_number, void *data)
 {
 	struct tty *tty = data;
 
-	tty->vt_func(tty->compositor, TTY_ENTER_VT);
-
 	ioctl(tty->fd, VT_RELDISP, VT_ACKACQ);
+
+	tty->vt_func(tty->compositor, TTY_ENTER_VT);
 
 	return 1;
 }
@@ -61,9 +61,9 @@ on_leave_vt(int signal_number, void *data)
 {
 	struct tty *tty = data;
 
-	ioctl(tty->fd, VT_RELDISP, 1);
-
 	tty->vt_func(tty->compositor, TTY_LEAVE_VT);
+
+	ioctl(tty->fd, VT_RELDISP, 1);
 
 	return 1;
 }
