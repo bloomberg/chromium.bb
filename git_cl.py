@@ -1094,6 +1094,11 @@ def SendUpstream(parser, args, cmd):
       elif 'unknown' == status:
         print ('Unable to determine tree status.  Please verify manually and '
                'use "git cl dcommit -f" to commit on a closed tree.')
+  else:
+    breakpad.SendStack(
+        'GitClHooksBypassedCommit',
+        'Issue %s/%s bypassed hook when committing' %
+        (cl.GetRietveldServer(), cl.GetIssue()))
 
   description = options.message
   if not description and cl.GetIssue():
