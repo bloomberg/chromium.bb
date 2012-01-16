@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,6 +18,7 @@
 #include "chrome/browser/autofill/credit_card.h"
 #include "chrome/browser/webdata/autofill_change.h"
 #include "chrome/browser/webdata/autofill_entry.h"
+#include "chrome/browser/webdata/keyword_table.h"
 #include "chrome/browser/webdata/web_database.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/guid.h"
@@ -196,7 +197,7 @@ class WebDatabaseMigrationTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(WebDatabaseMigrationTest);
 };
 
-const int WebDatabaseMigrationTest::kCurrentTestedVersionNumber = 43;
+const int WebDatabaseMigrationTest::kCurrentTestedVersionNumber = 44;
 
 void WebDatabaseMigrationTest::LoadDatabase(const FilePath::StringType& file) {
   std::string contents;
@@ -1873,5 +1874,90 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion42ToCurrent) {
     EXPECT_EQ("{1234-5678-90AB-CDEF}", s.ColumnString(18));
 
     EXPECT_FALSE(s.Step());
+  }
+}
+
+// Tests that the default search provider is backed up and signed.
+TEST_F(WebDatabaseMigrationTest, MigrateVersion43ToCurrent) {
+  ASSERT_NO_FATAL_FAILURE(LoadDatabase(FILE_PATH_LITERAL("version_43.sql")));
+
+  int64 previous_default_search_provider_id;
+
+  // Verify pre-conditions.  These are expectations for version 43 of the
+  // database.
+  {
+    sql::Connection connection;
+    ASSERT_TRUE(connection.Open(GetDatabasePath()));
+    ASSERT_TRUE(sql::MetaTable::DoesTableExist(&connection));
+
+    sql::MetaTable meta_table;
+    ASSERT_TRUE(meta_table.Init(&connection, 43, 43));
+
+    int64 default_search_provider_id = 0;
+    EXPECT_TRUE(meta_table.GetValue(
+        "Default Search Provider ID",
+        &default_search_provider_id));
+    EXPECT_NE(default_search_provider_id, 0);
+    previous_default_search_provider_id = default_search_provider_id;
+
+    int64 default_search_provider_id_backup = 0;
+    EXPECT_TRUE(meta_table.GetValue(
+        "Default Search Provider ID Backup",
+        &default_search_provider_id_backup));
+    EXPECT_NE(default_search_provider_id_backup, 0);
+
+    // Backup ID is invalid, signature is invalid as well.
+    EXPECT_NE(default_search_provider_id, default_search_provider_id_backup);
+
+    std::string default_search_provider_id_backup_signature;
+    EXPECT_TRUE(meta_table.GetValue(
+        "Default Search Provider ID Backup Signature",
+        &default_search_provider_id_backup_signature));
+    EXPECT_FALSE(default_search_provider_id_backup_signature.empty());
+  }
+
+  // Load the database via the WebDatabase class and migrate the database to
+  // the current version.
+  {
+    WebDatabase db;
+    ASSERT_EQ(sql::INIT_OK, db.Init(GetDatabasePath()));
+    ASSERT_FALSE(db.GetKeywordTable()->DidDefaultSearchProviderChange());
+  }
+
+  // Verify post-conditions.  These are expectations for current version of the
+  // database.
+  {
+    sql::Connection connection;
+    ASSERT_TRUE(connection.Open(GetDatabasePath()));
+    ASSERT_TRUE(sql::MetaTable::DoesTableExist(&connection));
+
+    // Check version.
+    EXPECT_EQ(kCurrentTestedVersionNumber, VersionFromConnection(&connection));
+
+    sql::MetaTable meta_table;
+    ASSERT_TRUE(meta_table.Init(
+        &connection,
+        kCurrentTestedVersionNumber,
+        kCurrentTestedVersionNumber));
+
+    int64 default_search_provider_id = 0;
+    EXPECT_TRUE(meta_table.GetValue(
+        "Default Search Provider ID",
+        &default_search_provider_id));
+    // Default search provider ID should not change.
+    EXPECT_EQ(previous_default_search_provider_id, default_search_provider_id);
+
+    int64 default_search_provider_id_backup = 0;
+    EXPECT_TRUE(meta_table.GetValue(
+        "Default Search Provider ID Backup",
+        &default_search_provider_id_backup));
+    // Backup ID must be updated to match the old default search provider ID.
+    EXPECT_EQ(default_search_provider_id, default_search_provider_id_backup);
+
+    std::string default_search_provider_id_backup_signature;
+    EXPECT_TRUE(meta_table.GetValue(
+        "Default Search Provider ID Backup Signature",
+        &default_search_provider_id_backup_signature));
+    EXPECT_FALSE(default_search_provider_id_backup_signature.empty());
   }
 }

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,8 +22,8 @@ namespace {
 // Current version number.  Note: when changing the current version number,
 // corresponding changes must happen in the unit tests, and new migration test
 // added.  See |WebDatabaseMigrationTest::kCurrentTestedVersionNumber|.
-const int kCurrentVersionNumber = 43;
-const int kCompatibleVersionNumber = 43;
+const int kCurrentVersionNumber = 44;
+const int kCompatibleVersionNumber = 44;
 
 // Change the version number and possibly the compatibility version of
 // |meta_table_|.
@@ -332,6 +332,13 @@ sql::InitStatus WebDatabase::MigrateOldVersionsAsNeeded() {
         return FailedMigrationTo(43);
 
       ChangeVersion(&meta_table_, 43, true);
+      // FALL THROUGH
+
+    case 43:
+      if (!keyword_table_->MigrateToVersion44UpdateKeywordsBackup())
+        return FailedMigrationTo(44);
+
+      ChangeVersion(&meta_table_, 44, true);
       // FALL THROUGH
 
     // Add successive versions here.  Each should set the version number and
