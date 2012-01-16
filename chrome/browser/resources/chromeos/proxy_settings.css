@@ -14,3 +14,8 @@ body {
 #proxyPage {
   height: 100%;
 }
+
+#proxy-page-title {
+  /* We have a title on the window, so the title in domui should be hidden. */
+  display: none;
+}

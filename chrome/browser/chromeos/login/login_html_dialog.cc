@@ -93,6 +93,10 @@ void LoginHtmlDialog::SetDialogSize(int width, int height) {
   height_ = height;
 }
 
+void LoginHtmlDialog::SetDialogTitle(const string16& title) {
+  title_ = title;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // LoginHtmlDialog, protected:
 
