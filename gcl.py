@@ -208,15 +208,8 @@ def GetCodeReviewSetting(key):
   if '__just_initialized' not in CODEREVIEW_SETTINGS:
     settings_file = GetCachedFile(CODEREVIEW_SETTINGS_FILE)
     if settings_file:
-      for line in settings_file.splitlines():
-        if not line or line.startswith('#'):
-          continue
-        if not ':' in line:
-          raise gclient_utils.Error(
-              '%s is invalid, please fix. It\'s content:\n\n%s' %
-                  (CODEREVIEW_SETTINGS_FILE, settings_file))
-        k, v = line.split(':', 1)
-        CODEREVIEW_SETTINGS[k.strip()] = v.strip()
+      CODEREVIEW_SETTINGS.update(
+          gclient_utils.ParseCodereviewSettingsContent(settings_file))
     CODEREVIEW_SETTINGS.setdefault('__just_initialized', None)
   return CODEREVIEW_SETTINGS.get(key, "")
 

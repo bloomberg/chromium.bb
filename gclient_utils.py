@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -732,3 +732,15 @@ def RunEditor(content, git):
     return FileRead(filename)
   finally:
     os.remove(filename)
+
+
+def ParseCodereviewSettingsContent(content):
+  """Process a codereview.settings file properly."""
+  lines = (l for l in content.splitlines() if not l.strip().startswith("#"))
+  try:
+    keyvals = dict([x.strip() for x in l.split(':', 1)] for l in lines if l)
+  except ValueError:
+    raise Error(
+        'Failed to process settings, please fix. Content:\n\n%s' % content)
+  # TODO(maruel): Post-process
+  return keyvals

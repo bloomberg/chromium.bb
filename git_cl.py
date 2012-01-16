@@ -717,12 +717,7 @@ def FindCodereviewSettingsFile(filename='codereview.settings'):
 
 def LoadCodereviewSettingsFromFile(fileobj):
   """Parse a codereview.settings file and updates hooks."""
-  keyvals = {}
-  for line in fileobj.read().splitlines():
-    if not line or line.startswith("#"):
-      continue
-    k, v = line.split(": ", 1)
-    keyvals[k] = v
+  keyvals = gclient_utils.ParseCodereviewSettingsContent(fileobj.read())
 
   def SetProperty(name, setting, unset_error_ok=False):
     fullname = 'rietveld.' + name

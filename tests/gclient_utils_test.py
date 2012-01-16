@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -33,7 +33,8 @@ class GclientUtilsUnittest(GclientUtilBase):
         'FileWrite', 'FindFileUpwards', 'FindGclientRoot',
         'GetGClientRootAndEntries', 'GetEditor', 'IsDateRevision',
         'MakeDateRevision', 'MakeFileAutoFlush', 'MakeFileAnnotated',
-        'PathDifference', 'PrintableObject', 'RemoveDirectory', 'RunEditor',
+        'PathDifference', 'ParseCodereviewSettingsContent',
+        'PrintableObject', 'RemoveDirectory', 'RunEditor',
         'SplitUrlRevision', 'SyntaxErrorToError', 'Wrapper', 'WorkItem',
         'errno', 'lockedmethod', 'logging', 'os', 'Queue', 're', 'rmtree',
         'safe_makedirs', 'stat', 'subprocess2', 'sys', 'tempfile', 'threading',
@@ -169,6 +170,21 @@ class GClientUtilsTest(trial_dir.TestCase):
     os.chmod(l3, 0)
     os.chmod(l2, 0)
     os.chmod(l1, 0)
+
+  def testParseCodereviewSettingsContent(self):
+    expected = {
+        'Foo': 'bar:baz',
+        'Second': 'value',
+    }
+    content = (
+        '# bleh\n'
+        '\t# foo : bar\n'
+        'Foo:bar:baz\n'
+        ' Second : value \n\r'
+        '#inconsistency'
+    )
+    self.assertEquals(
+        expected, gclient_utils.ParseCodereviewSettingsContent(content))
 
 
 if __name__ == '__main__':
