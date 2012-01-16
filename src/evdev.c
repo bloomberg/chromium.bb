@@ -498,8 +498,7 @@ device_added(struct udev_device *udev_device, struct evdev_input *master)
 
 	c = master->base.compositor;
 	devnode = udev_device_get_devnode(udev_device);
-	if (evdev_input_device_create(master, c->wl_display, devnode))
-		fprintf(stderr, "evdev input device: added: %s\n", devnode);
+	evdev_input_device_create(master, c->wl_display, devnode);
 }
 
 static void
@@ -518,7 +517,6 @@ device_removed(struct udev_device *udev_device, struct evdev_input *master)
 			break;
 		}
 	}
-	fprintf(stderr, "evdev input device: removed: %s\n", devnode);
 }
 
 void
@@ -644,7 +642,6 @@ evdev_remove_devices(struct weston_input_device *input_base)
 	struct evdev_input_device *device, *next;
 
         wl_list_for_each_safe(device, next, &input->devices_list, link) {
-		fprintf(stderr, "evdev input device: removed: %s\n", device->devnode);
 		wl_event_source_remove(device->source);
 		wl_list_remove(&device->link);
 		close(device->fd);
