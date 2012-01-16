@@ -157,7 +157,6 @@ DownloadShelfGtk::DownloadShelfGtk(Browser* browser, GtkWidget* parent)
                    FALSE, FALSE, 0);
   // Make sure we are at the very end.
   gtk_box_reorder_child(GTK_BOX(parent), slide_widget_->widget(), 0);
-  Show();
 }
 
 DownloadShelfGtk::~DownloadShelfGtk() {
@@ -173,9 +172,8 @@ DownloadShelfGtk::~DownloadShelfGtk() {
   SetCloseOnMouseOut(false);
 }
 
-void DownloadShelfGtk::AddDownload(BaseDownloadItemModel* download_model_) {
-  download_items_.push_back(new DownloadItemGtk(this, download_model_));
-  Show();
+void DownloadShelfGtk::DoAddDownload(BaseDownloadItemModel* download_model) {
+  download_items_.push_back(new DownloadItemGtk(this, download_model));
 }
 
 bool DownloadShelfGtk::IsShowing() const {
@@ -186,13 +184,13 @@ bool DownloadShelfGtk::IsClosing() const {
   return slide_widget_->IsClosing();
 }
 
-void DownloadShelfGtk::Show() {
+void DownloadShelfGtk::DoShow() {
   slide_widget_->Open();
   browser_->UpdateDownloadShelfVisibility(true);
   CancelAutoClose();
 }
 
-void DownloadShelfGtk::Close() {
+void DownloadShelfGtk::DoClose() {
   // When we are closing, we can vertically overlap the render view. Make sure
   // we are on top.
   gdk_window_raise(gtk_widget_get_window(shelf_.get()));
@@ -213,6 +211,10 @@ Browser* DownloadShelfGtk::browser() const {
 }
 
 void DownloadShelfGtk::Closed() {
+  // Don't remove completed downloads if the shelf is just being auto-hidden
+  // rather than explicitly closed by the user.
+  if (is_hidden())
+    return;
   // When the close animation is complete, remove all completed downloads.
   size_t i = 0;
   while (i < download_items_.size()) {

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -96,7 +96,6 @@ DownloadShelfView::DownloadShelfView(Browser* browser, BrowserView* parent)
   mouse_watcher_.set_notify_on_exit_time_ms(kNotifyOnExitTimeMS);
   set_id(VIEW_ID_DOWNLOAD_SHELF);
   parent->AddChildView(this);
-  Show();
 }
 
 DownloadShelfView::~DownloadShelfView() {
@@ -105,8 +104,6 @@ DownloadShelfView::~DownloadShelfView() {
 
 void DownloadShelfView::AddDownloadView(DownloadItemView* view) {
   mouse_watcher_.Stop();
-
-  Show();
 
   DCHECK(view);
   download_views_.push_back(view);
@@ -118,7 +115,7 @@ void DownloadShelfView::AddDownloadView(DownloadItemView* view) {
   new_item_animation_->Show();
 }
 
-void DownloadShelfView::AddDownload(BaseDownloadItemModel* download_model) {
+void DownloadShelfView::DoAddDownload(BaseDownloadItemModel* download_model) {
   DownloadItemView* view = new DownloadItemView(
       download_model->download(), this, download_model);
   AddDownloadView(view);
@@ -391,11 +388,11 @@ bool DownloadShelfView::IsClosing() const {
   return shelf_animation_->IsClosing();
 }
 
-void DownloadShelfView::Show() {
+void DownloadShelfView::DoShow() {
   shelf_animation_->Show();
 }
 
-void DownloadShelfView::Close() {
+void DownloadShelfView::DoClose() {
   int num_in_progress = 0;
   for (size_t i = 0; i < download_views_.size(); ++i) {
     if (download_views_[i]->download()->IsInProgress())
@@ -413,6 +410,10 @@ Browser* DownloadShelfView::browser() const {
 }
 
 void DownloadShelfView::Closed() {
+  // Don't remove completed downloads if the shelf is just being auto-hidden
+  // rather than explicitly closed by the user.
+  if (is_hidden())
+    return;
   // When the close animation is complete, remove all completed downloads.
   size_t i = 0;
   while (i < download_views_.size()) {

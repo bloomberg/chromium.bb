@@ -1393,7 +1393,6 @@ enum {
     downloadShelfController_.reset([[DownloadShelfController alloc]
         initWithBrowser:browser_.get() resizeDelegate:self]);
     [[[self window] contentView] addSubview:[downloadShelfController_ view]];
-    [downloadShelfController_ show:nil];
   }
   return downloadShelfController_;
 }

@@ -8,6 +8,7 @@
 #include "base/command_line.h"
 #include "base/message_loop.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
+#include "chrome/browser/download/download_shelf.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -272,14 +273,20 @@ void FullscreenController::OnDenyFullscreenPermission(
 void FullscreenController::WindowFullscreenStateChanged() {
   MessageLoop::current()->PostTask(FROM_HERE,
       base::Bind(&FullscreenController::NotifyFullscreenChange, this));
-  bool notify_tab_of_exit;
+  bool exiting_fullscreen;
 #if defined(OS_MACOSX)
-  notify_tab_of_exit = !window_->InPresentationMode();
+  exiting_fullscreen = !window_->InPresentationMode();
 #else
-  notify_tab_of_exit = !window_->IsFullscreen();
+  exiting_fullscreen = !window_->IsFullscreen();
 #endif
-  if (notify_tab_of_exit)
+  if (exiting_fullscreen)
     NotifyTabOfFullscreenExitIfNecessary();
+#if !defined(OS_CHROMEOS)
+  if (exiting_fullscreen)
+    window_->GetDownloadShelf()->Unhide();
+  else
+    window_->GetDownloadShelf()->Hide();
+#endif
 }
 
 bool FullscreenController::HandleUserPressedEscape() {

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -72,11 +72,8 @@ class DownloadShelfView : public views::AccessiblePaneView,
                              const views::Event& event) OVERRIDE;
 
   // Implementation of DownloadShelf.
-  virtual void AddDownload(BaseDownloadItemModel* download_model) OVERRIDE;
   virtual bool IsShowing() const OVERRIDE;
   virtual bool IsClosing() const OVERRIDE;
-  virtual void Show() OVERRIDE;
-  virtual void Close() OVERRIDE;
   virtual Browser* browser() const OVERRIDE;
 
   // Implementation of MouseWatcherDelegate OVERRIDE.
@@ -93,6 +90,11 @@ class DownloadShelfView : public views::AccessiblePaneView,
   void RemoveDownloadView(views::View* view);
 
  protected:
+  // Implementation of DownloadShelf.
+  virtual void DoAddDownload(BaseDownloadItemModel* download_model) OVERRIDE;
+  virtual void DoShow() OVERRIDE;
+  virtual void DoClose() OVERRIDE;
+
   // From AccessiblePaneView
   virtual views::View* GetDefaultFocusableChild() OVERRIDE;
 

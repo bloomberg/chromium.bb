@@ -932,6 +932,7 @@
         'browser/download/download_service_factory.cc',
         'browser/download/download_service_factory.h',
         'browser/download/download_shelf.h',
+        'browser/download/download_shelf.cc',
         'browser/download/download_shelf_context_menu.cc',
         'browser/download/download_shelf_context_menu.h',
         'browser/download/download_started_animation.h',

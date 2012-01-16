@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -346,6 +346,10 @@ const NSSize kHoverCloseButtonDefaultSize = { 16, 16 };
 }
 
 - (void)closed {
+  // Don't remove completed downloads if the shelf is just being auto-hidden
+  // rather than explicitly closed by the user.
+  if (bridge_->is_hidden())
+    return;
   NSUInteger i = 0;
   while (i < [downloadItemControllers_ count]) {
     DownloadItemController* itemController =

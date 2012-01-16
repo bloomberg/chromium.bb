@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,9 +15,8 @@ DownloadShelfMac::DownloadShelfMac(Browser* browser,
       shelf_controller_(controller) {
 }
 
-void DownloadShelfMac::AddDownload(BaseDownloadItemModel* download_model) {
+void DownloadShelfMac::DoAddDownload(BaseDownloadItemModel* download_model) {
   [shelf_controller_ addDownloadItem:download_model];
-  Show();
 }
 
 bool DownloadShelfMac::IsShowing() const {
@@ -29,12 +28,12 @@ bool DownloadShelfMac::IsClosing() const {
   return false;
 }
 
-void DownloadShelfMac::Show() {
+void DownloadShelfMac::DoShow() {
   [shelf_controller_ show:nil];
   browser_->UpdateDownloadShelfVisibility(true);
 }
 
-void DownloadShelfMac::Close() {
+void DownloadShelfMac::DoClose() {
   [shelf_controller_ hide:nil];
   browser_->UpdateDownloadShelfVisibility(false);
 }

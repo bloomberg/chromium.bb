@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,12 +23,14 @@ class DownloadShelfMac : public DownloadShelf {
   DownloadShelfMac(Browser* browser, DownloadShelfController* controller);
 
   // DownloadShelf implementation.
-  virtual void AddDownload(BaseDownloadItemModel* download_model) OVERRIDE;
   virtual bool IsShowing() const OVERRIDE;
   virtual bool IsClosing() const OVERRIDE;
-  virtual void Show() OVERRIDE;
-  virtual void Close() OVERRIDE;
   virtual Browser* browser() const OVERRIDE;
+
+ protected:
+  virtual void DoAddDownload(BaseDownloadItemModel* download_model) OVERRIDE;
+  virtual void DoShow() OVERRIDE;
+  virtual void DoClose() OVERRIDE;
 
  private:
   // The browser that owns this shelf.
