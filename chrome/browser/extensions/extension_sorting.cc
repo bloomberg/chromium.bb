@@ -140,6 +140,54 @@ void ExtensionSorting::MigrateAppIndex(
   }
 }
 
+void ExtensionSorting::FixNTPOrdinalCollisions() {
+  for (PageOrdinalMap::iterator page_it = ntp_ordinal_map_.begin();
+       page_it != ntp_ordinal_map_.end(); ++page_it) {
+    AppLaunchOrdinalMap& page = page_it->second;
+
+    for (AppLaunchOrdinalMap::iterator app_launch_it = page.begin();
+         app_launch_it != page.end(); ++app_launch_it) {
+      int collisions = page.count(app_launch_it->first);
+      if (collisions == 1)
+        continue;
+
+      StringOrdinal repeated_ordinal = app_launch_it->first;
+
+      // Sort the conflicting keys by their extension id, this is how
+      // the order is decided.
+      std::vector<std::string> conflicting_ids;
+      for (int i = 0; i < collisions; ++i, ++app_launch_it)
+        conflicting_ids.push_back(app_launch_it->second);
+      std::sort(conflicting_ids.begin(), conflicting_ids.end());
+
+      StringOrdinal upper_bound_ordinal = app_launch_it == page.end() ?
+          StringOrdinal() :
+          app_launch_it->first;
+      StringOrdinal lower_bound_ordinal = repeated_ordinal;
+
+      // Start at position 1 because the first extension can keep the conflicted
+      // value.
+      for (int i = 1; i < collisions; ++i) {
+        StringOrdinal unique_app_launch;
+        if (upper_bound_ordinal.IsValid()) {
+          unique_app_launch =
+              lower_bound_ordinal.CreateBetween(upper_bound_ordinal);
+        } else {
+          unique_app_launch = lower_bound_ordinal.CreateAfter();
+        }
+
+        SetAppLaunchOrdinal(conflicting_ids[i], unique_app_launch);
+        lower_bound_ordinal = unique_app_launch;
+      }
+
+      // This exit condition exists because the iterator may have moved to
+      // the end of the map after getting the conflicting ids.
+      if (app_launch_it == page.end())
+        break;
+    }
+  }
+}
+
 void ExtensionSorting::OnExtensionMoved(
     const std::string& moved_extension_id,
     const std::string& predecessor_extension_id,

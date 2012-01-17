@@ -25,6 +25,11 @@ class ExtensionSorting {
   // |extension_ids|.
   void Initialize(const ExtensionPrefs::ExtensionIdSet& extension_ids);
 
+  // Resolves any conflicts the might be created as a result of syncing that
+  // results in two icons having the same page and app launch ordinal. After
+  // this is called it is guaranteed that there are no collisions of NTP icons.
+  void FixNTPOrdinalCollisions();
+
   // Updates the app launcher value for the moved extension so that it is now
   // located after the given predecessor and before the successor.
   // Empty strings are used to indicate no successor or predecessor.
@@ -131,7 +136,9 @@ class ExtensionSorting {
   // app launch ordinals that exist on that page. This is used for mapping
   // StringOrdinals to their Integer equivalent as well as quick lookup of the
   // any collision of on the NTP (icons with the same page and same app launch
-  // ordinal).
+  // ordinals). The possiblity of collisions means that a multimap must be used
+  // (although the collisions must all be resolved once all the syncing is
+  // done).
   // The StringOrdinal is the app launch ordinal and the string is the extension
   // id.
   typedef std::multimap<
