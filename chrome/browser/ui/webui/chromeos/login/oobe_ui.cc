@@ -171,6 +171,9 @@ OobeUI::OobeUI(WebUI* web_ui)
   profile->GetChromeURLDataManager()->AddDataSource(user_image_source);
 }
 
+OobeUI::~OobeUI() {
+}
+
 void OobeUI::ShowScreen(WizardScreen* screen) {
   screen->Show();
 }
