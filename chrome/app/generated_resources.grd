@@ -5979,8 +5979,8 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
         Web Intents
       </message>
 
-      <!-- Mac users do not close their browser; they quit it. -->
-      <if expr="not is_macosx">
+      <!-- Mac and ChromeOS users do not close their browser. Mac users quit it and ChromeOS users log out. -->
+      <if expr="not is_macosx and not pp_ifdef('chromeos')">
         <message name="IDS_COOKIES_CLEAR_WHEN_CLOSE_CHKBOX" desc="A checkbox in the Content Settings dialog for removing all cookies on when browser is closed.">
           Clear cookies and other site data when I close my browser
         </message>
@@ -5994,6 +5994,14 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
         </message>
         <message name="IDS_COOKIES_LSO_CLEAR_WHEN_CLOSE_CHKBOX" desc="A checkbox in the Content Settings dialog for removing all cookies on when browser is quit (Mac).">
           Clear cookies and other site and plug-in data when I quit my browser
+        </message>
+      </if>
+      <if expr="pp_ifdef('chromeos')">
+        <message name="IDS_COOKIES_CLEAR_WHEN_CLOSE_CHKBOX" desc="A checkbox in the Content Settings dialog for removing all cookies on when browser is closed.">
+          Clear cookies and other site data when I log out
+        </message>
+        <message name="IDS_COOKIES_LSO_CLEAR_WHEN_CLOSE_CHKBOX" desc="A checkbox in the Content Settings dialog for removing all cookies on when browser is closed.">
+          Clear cookies and other site and plug-in data when I log out
         </message>
       </if>
 
