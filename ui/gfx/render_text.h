@@ -41,6 +41,7 @@ class SkiaTextRenderer {
   void SetFont(const gfx::Font& font);
   void SetFontStyle(int font_style);
   void SetForegroundColor(SkColor foreground);
+  void SetShader(SkShader* shader);
   void DrawSelection(const std::vector<Rect>& selection, SkColor color);
   void DrawPosText(const SkPoint* pos,
                    const uint16* glyphs,
@@ -128,6 +129,11 @@ class UI_EXPORT RenderText {
   const Rect& display_rect() const { return display_rect_; }
   void SetDisplayRect(const Rect& r);
 
+  void set_fade_head(bool fade_head) { fade_head_ = fade_head; }
+  bool fade_head() const { return fade_head_; }
+  void set_fade_tail(bool fade_tail) { fade_tail_ = fade_tail; }
+  bool fade_tail() const { return fade_tail_; }
+
   // This cursor position corresponds to SelectionModel::selection_end. In
   // addition to representing the selection end, it's also where logical text
   // edits take place, and doesn't necessarily correspond to
@@ -162,16 +168,16 @@ class UI_EXPORT RenderText {
   bool SelectRange(const ui::Range& range);
 
   size_t GetSelectionStart() const {
-      return selection_model_.selection_start();
+    return selection_model_.selection_start();
   }
   size_t MinOfSelection() const {
-      return std::min(GetSelectionStart(), GetCursorPosition());
+    return std::min(GetSelectionStart(), GetCursorPosition());
   }
   size_t MaxOfSelection() const {
-      return std::max(GetSelectionStart(), GetCursorPosition());
+    return std::max(GetSelectionStart(), GetCursorPosition());
   }
   bool EmptySelection() const {
-      return GetSelectionStart() == GetCursorPosition();
+    return GetSelectionStart() == GetCursorPosition();
   }
 
   // Returns true if the local point is over selected text.
@@ -227,7 +233,7 @@ class UI_EXPORT RenderText {
   const Point& GetUpdatedDisplayOffset();
 
   void set_cached_bounds_and_offset_valid(bool valid) {
-      cached_bounds_and_offset_valid_ = valid;
+    cached_bounds_and_offset_valid_ = valid;
   }
 
   const StyleRanges& style_ranges() const { return style_ranges_; }
@@ -289,6 +295,14 @@ class UI_EXPORT RenderText {
   // Returns the origin point for drawing text via Skia.
   Point GetOriginForSkiaDrawing();
 
+  // Applies fade effects to |renderer| and returns a text drawing offset when
+  // fading the head would cause the text to change alignment.
+  // TODO(asvitkine): Applying right-alignment in this way doesn't work well
+  //                  with drawing the text selection and cursor. Instead, we
+  //                  should make RenderText support horizontal alignment
+  //                  explicitly.
+  int ApplyFadeEffects(internal::SkiaTextRenderer* renderer);
+
  private:
   friend class RenderTextTest;
 
@@ -349,8 +363,13 @@ class UI_EXPORT RenderText {
   // The default text style.
   StyleRange default_style_;
 
+  // Fade text head and/or tail, if text doesn't fit into |display_rect_|.
+  bool fade_head_;
+  bool fade_tail_;
+
   // The local display area for rendering the text.
   Rect display_rect_;
+
   // The offset for the text to be drawn, relative to the display area.
   // Get this point with GetUpdatedDisplayOffset (or risk using a stale value).
   Point display_offset_;

@@ -401,6 +401,9 @@ void RenderTextWin::DrawVisualText(Canvas* canvas) {
   std::vector<SkPoint> pos;
 
   internal::SkiaTextRenderer renderer(canvas);
+  // Fade effects may force right alignment, requiring an offset to |x|.
+  x += ApplyFadeEffects(&renderer);
+
   for (size_t i = 0; i < runs_.size(); ++i) {
     // Get the run specified by the visual-to-logical map.
     internal::TextRun* run = runs_[visual_to_logical_[i]];
@@ -409,16 +412,16 @@ void RenderTextWin::DrawVisualText(Canvas* canvas) {
     pos.resize(run->glyph_count);
     SkScalar glyph_x = x;
     for (int glyph = 0; glyph < run->glyph_count; glyph++) {
-        pos[glyph].set(glyph_x + run->offsets[glyph].du,
-                       y + run->offsets[glyph].dv);
-        glyph_x += SkIntToScalar(run->advance_widths[glyph]);
+      pos[glyph].set(glyph_x + run->offsets[glyph].du,
+                     y + run->offsets[glyph].dv);
+      glyph_x += SkIntToScalar(run->advance_widths[glyph]);
     }
 
     renderer.SetFont(run->font);
     renderer.SetForegroundColor(run->foreground);
     renderer.DrawPosText(&pos[0], run->glyphs.get(), run->glyph_count);
 
-    if (run->strike || run->underline)
+    if (run->underline || run->strike)
       renderer.DrawDecorations(x, y, run->width, run->underline, run->strike);
 
     x = glyph_x;

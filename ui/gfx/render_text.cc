@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "third_party/skia/include/core/SkTypeface.h"
+#include "third_party/skia/include/effects/SkGradientShader.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/canvas_skia.h"
 #include "unicode/uchar.h"
@@ -87,6 +88,76 @@ SkTypeface::Style ConvertFontStyleToSkiaTypefaceStyle(int font_style) {
   return static_cast<SkTypeface::Style>(skia_style);
 }
 
+// Given |font| and |display_width|, returns the width of the fade gradient.
+int CalculateFadeGradientWidth(const gfx::Font& font, int display_width) {
+  // Fade in/out about 2.5 characters of the beginning/end of the string.
+  // The .5 here is helpful if one of the characters is a space.
+  // Use a quarter of the display width if the display width is very short.
+  const int average_character_width = font.GetAverageCharacterWidth();
+  const double gradient_width = std::min(average_character_width * 2.5,
+                                         display_width / 4.0);
+  DCHECK_GE(gradient_width, 0.0);
+  return static_cast<int>(floor(gradient_width + 0.5));
+}
+
+// Appends to |positions| and |colors| values corresponding to the fade over
+// |fade_rect| from color |c0| to color |c1|.
+void AddFadeEffect(const gfx::Rect& text_rect,
+                   const gfx::Rect& fade_rect,
+                   SkColor c0,
+                   SkColor c1,
+                   std::vector<SkScalar>* positions,
+                   std::vector<SkColor>* colors) {
+  const SkScalar left = static_cast<SkScalar>(fade_rect.x() - text_rect.x());
+  const SkScalar width = static_cast<SkScalar>(fade_rect.width());
+  const SkScalar p0 = left / text_rect.width();
+  const SkScalar p1 = (left + width) / text_rect.width();
+  // Prepend 0.0 to |positions|, as required by Skia.
+  if (positions->empty() && p0 != 0.0) {
+    positions->push_back(0.0);
+    colors->push_back(c0);
+  }
+  positions->push_back(p0);
+  colors->push_back(c0);
+  positions->push_back(p1);
+  colors->push_back(c1);
+}
+
+// Creates a SkShader to fade the text, with |left_part| specifying the left
+// fade effect, if any, and |right_part| specifying the right fade effect.
+SkShader* CreateFadeShader(const gfx::Rect& text_rect,
+                           const gfx::Rect& left_part,
+                           const gfx::Rect& right_part,
+                           SkColor color) {
+  // Fade alpha of 51/255 corresponds to a fade of 0.2 of the original color.
+  const SkColor fade_color = SkColorSetA(color, 51);
+  const SkPoint points[2] = {
+    SkPoint::Make(text_rect.x(), text_rect.y()),
+    SkPoint::Make(text_rect.right(), text_rect.y())
+  };
+  std::vector<SkScalar> positions;
+  std::vector<SkColor> colors;
+
+  if (!left_part.IsEmpty())
+    AddFadeEffect(text_rect, left_part, fade_color, color,
+                  &positions, &colors);
+  if (!right_part.IsEmpty())
+    AddFadeEffect(text_rect, right_part, color, fade_color,
+                  &positions, &colors);
+  DCHECK(!positions.empty());
+
+  // Terminate |positions| with 1.0, as required by Skia.
+  if (positions.back() != 1.0) {
+    positions.push_back(1.0);
+    colors.push_back(colors.back());
+  }
+
+  return SkGradientShader::CreateLinear(&points[0], &colors[0], &positions[0],
+                                        colors.size(),
+                                        SkShader::kClamp_TileMode);
+}
+
+
 }  // namespace
 
 namespace gfx {
@@ -143,6 +214,10 @@ void SkiaTextRenderer::SetFont(const gfx::Font& font) {
 
 void SkiaTextRenderer::SetForegroundColor(SkColor foreground) {
   paint_.setColor(foreground);
+}
+
+void SkiaTextRenderer::SetShader(SkShader* shader) {
+  paint_.setShader(shader);
 }
 
 void SkiaTextRenderer::DrawPosText(const SkPoint* pos,
@@ -467,12 +542,15 @@ void RenderText::Draw(Canvas* canvas) {
     EnsureLayout();
   }
 
+  canvas->Save();
+  canvas->ClipRect(display_rect());
   if (!text().empty()) {
     TRACE_EVENT0("gfx", "RenderText::Draw draw text");
     DrawSelection(canvas);
     DrawVisualText(canvas);
   }
   DrawCursor(canvas);
+  canvas->Restore();
 }
 
 const Rect& RenderText::GetUpdatedCursorBounds() {
@@ -499,17 +577,12 @@ SelectionModel RenderText::GetSelectionModelForSelectionStart() {
 }
 
 RenderText::RenderText()
-    : text_(),
-      selection_model_(),
-      cursor_bounds_(),
-      cursor_visible_(false),
+    : cursor_visible_(false),
       insert_mode_(true),
       focused_(false),
       composition_range_(ui::Range::InvalidRange()),
-      style_ranges_(),
-      default_style_(),
-      display_rect_(),
-      display_offset_(),
+      fade_head_(false),
+      fade_tail_(false),
       cached_bounds_and_offset_valid_(false) {
 }
 
@@ -655,6 +728,61 @@ Point RenderText::GetOriginForSkiaDrawing() {
   // Offset by the font size to account for Skia expecting y to be the bottom.
   origin.Offset(0, font.GetFontSize());
   return origin;
+}
+
+int RenderText::ApplyFadeEffects(internal::SkiaTextRenderer* renderer) {
+  if (!fade_head() && !fade_tail())
+    return 0;
+
+  const int text_width = GetStringWidth();
+  const int display_width = display_rect().width();
+
+  // If the text fits as-is, no need to fade.
+  if (text_width <= display_width)
+    return 0;
+
+  int gradient_width = CalculateFadeGradientWidth(GetFont(), display_width);
+  if (gradient_width == 0)
+    return 0;
+
+  bool fade_left = fade_head();
+  bool fade_right = fade_tail();
+  // Under RTL, |fade_right| == |fade_head|.
+  if (GetTextDirection() == base::i18n::RIGHT_TO_LEFT)
+    std::swap(fade_left, fade_right);
+
+  gfx::Rect solid_part = display_rect();
+  gfx::Rect left_part;
+  gfx::Rect right_part;
+  if (fade_left) {
+    left_part = solid_part;
+    left_part.Inset(0, 0, solid_part.width() - gradient_width, 0);
+    solid_part.Inset(gradient_width, 0, 0, 0);
+  }
+  if (fade_right) {
+    right_part = solid_part;
+    right_part.Inset(solid_part.width() - gradient_width, 0, 0, 0);
+    solid_part.Inset(0, 0, gradient_width, 0);
+  }
+
+  // Right-align the text when fading left.
+  int x_offset = 0;
+  gfx::Rect text_rect = display_rect();
+  if (fade_left && !fade_right) {
+    x_offset = display_width - text_width;
+    text_rect.Offset(x_offset, 0);
+    text_rect.set_width(text_width);
+  }
+
+  const SkColor color = default_style().foreground;
+  SkAutoTUnref<SkShader> shader(
+      CreateFadeShader(text_rect, left_part, right_part, color));
+  if (shader.get()) {
+    // |renderer| adds its own ref. So don't |release()| it from the ref ptr.
+    renderer->SetShader(shader.get());
+  }
+
+  return x_offset;
 }
 
 void RenderText::MoveCursorTo(size_t position, bool select) {
