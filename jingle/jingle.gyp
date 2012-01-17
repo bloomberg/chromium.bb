@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -156,6 +156,7 @@
         'glue/channel_socket_adapter_unittest.cc',
         'glue/jingle_glue_mock_objects.cc',
         'glue/jingle_glue_mock_objects.h',
+        'glue/logging_unittest.cc',
         'glue/pseudotcp_adapter_unittest.cc',
         'glue/thread_wrapper_unittest.cc',
         'notifier/base/chrome_async_socket_unittest.cc',

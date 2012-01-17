@@ -3,9 +3,6 @@
 # found in the LICENSE file.
 
 {
-  'variables': {
-    'no_libjingle_logging%': 0,
-  },
   'includes': [
     '../../build/win_precompile.gypi',
   ],
@@ -14,7 +11,7 @@
       'FEATURE_ENABLE_SSL',
       'FEATURE_ENABLE_VOICEMAIL',  # TODO(ncarter): Do we really need this?
       '_USE_32BIT_TIME_T',
-      'SAFE_TO_DEFINE_TALK_BASE_LOGGING_MACROS',
+      'LOGGING_INSIDE_LIBJINGLE',
       'EXPAT_RELATIVE_PATH',
       'JSONCPP_RELATIVE_PATH',
       'WEBRTC_RELATIVE_PATH',
@@ -105,11 +102,6 @@
             'FREEBSD',
           ],
         }],
-        ['no_libjingle_logging==1', {
-          'defines': [
-            'NO_LIBJINGLE_LOGGING',
-          ],
-        }],
       ],
     },
     'all_dependent_settings': {
@@ -169,10 +161,9 @@
         'overrides/talk/base/basictypes.h',
         'overrides/talk/base/constructormagic.h',
 
-        # Need to override logging.h because we need
-        # SAFE_TO_DEFINE_TALK_BASE_LOGGING_MACROS to work.
-        # TODO(sergeyu): push SAFE_TO_DEFINE_TALK_BASE_LOGGING_MACROS to
-        # libjingle and remove this override.
+        # Overrides logging.h/.cc because libjingle logging should be done to
+        # the same place as the chromium logging.
+        'overrides/talk/base/logging.cc',
         'overrides/talk/base/logging.h',
 
         'overrides/talk/base/scoped_ptr.h',
@@ -233,7 +224,6 @@
         'source/talk/base/json.cc',
         'source/talk/base/json.h',
         'source/talk/base/linked_ptr.h',
-        'source/talk/base/logging.cc',
         'source/talk/base/md5.h',
         'source/talk/base/md5c.c',
         'source/talk/base/messagehandler.cc',
