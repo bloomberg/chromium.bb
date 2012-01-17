@@ -33,7 +33,7 @@ class OobeUI : public OobeDisplay,
                public content::WebUIController {
  public:
   explicit OobeUI(WebUI* web_ui);
-  ~OobeUI();
+  virtual ~OobeUI();
 
   // OobeDisplay implementation:
   virtual void ShowScreen(WizardScreen* screen) OVERRIDE;
