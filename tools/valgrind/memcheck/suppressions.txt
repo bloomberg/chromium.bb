@@ -5602,20 +5602,6 @@
    fun:_ZN7WebCore9IDBCursor16continueFunctionERi
    fun:_ZN7WebCore17IDBCursorInternalL16continueCallbackERKN2v89ArgumentsE
 }
-{
-   bug_109998
-   Memcheck:Leak
-   ...
-   fun:_ZN8SkDevice11getMetaDataEv
-   fun:_ZN4skia17SetPlatformDeviceEP8SkDevicePNS_14PlatformDeviceE
-   fun:_ZN4skia20BitmapPlatformDeviceC1ERK8SkBitmapPNS0_24BitmapPlatformDeviceDataE
-   fun:_ZN4skia20BitmapPlatformDevice6CreateEiibP14_cairo_surface
-   fun:_ZN4skia20BitmapPlatformDevice6CreateEiibPh
-   fun:_ZN4skia14PlatformCanvas10initializeEiibPh
-   fun:_ZL19PaintViewIntoCanvasPN6WebKit7WebViewERN4skia14PlatformCanvasE
-   fun:_ZN24ChromeRenderViewObserver21CaptureFrameThumbnailEPN6WebKit7WebViewEiiP8SkBitmapP14ThumbnailScore
-}
-
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
