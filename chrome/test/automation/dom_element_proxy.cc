@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -220,6 +220,10 @@ bool DOMElementProxy::GetAttribute(const std::string& attribute,
 
 bool DOMElementProxy::GetText(std::string* text) {
   return GetValue("text", text);
+}
+
+bool DOMElementProxy::GetInnerText(std::string* text) {
+  return GetValue("innertext", text);
 }
 
 bool DOMElementProxy::GetInnerHTML(std::string* html) {

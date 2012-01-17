@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -144,6 +144,7 @@ class DOMElementProxy : public JavaScriptObjectProxy {
   // Retrieves all the text in this element. This includes the value
   // of textfields and inputs. Returns true on success.
   bool GetText(std::string* text);
+  bool GetInnerText(std::string* text);
 
   // Retrieves the element's inner HTML. Returns true on success.
   bool GetInnerHTML(std::string* html);

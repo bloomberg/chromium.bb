@@ -34,6 +34,7 @@ static const char kTestCompleteCookie[] = "status";
 UILayoutTest::UILayoutTest()
     : initialized_for_layout_test_(false),
       test_count_(0) {
+  dom_automation_enabled_ = true;
 }
 
 UILayoutTest::~UILayoutTest() {
@@ -219,12 +220,13 @@ void UILayoutTest::RunLayoutTest(const std::string& test_case_file_name,
       WaitUntilCookieNonEmpty(tab.get(), *new_test_url.get(),
           status_cookie.c_str(), TestTimeouts::action_max_timeout_ms());
 
-  // Unescapes and normalizes the actual result.
-  std::string value = net::UnescapeURLComponent(escaped_value,
-      net::UnescapeRule::NORMAL | net::UnescapeRule::SPACES |
-      net::UnescapeRule::URL_SPECIAL_CHARS | net::UnescapeRule::CONTROL_CHARS);
-  value += "\n";
-  ReplaceSubstringsAfterOffset(&value, 0, "\r", "");
+  DOMElementProxyRef body =
+      tab->GetDOMDocument()->FindElement(DOMElementProxy::By::XPath("//body"));
+  ASSERT_TRUE(body.get());
+  std::string inner_text;
+  ASSERT_TRUE(body->GetInnerText(&inner_text));
+  inner_text += "\n";
+  ReplaceSubstringsAfterOffset(&inner_text, 0, "\r", "");
 
   // Reads the expected result. First try to read from rebase directory.
   // If failed, read from original directory.
@@ -249,7 +251,7 @@ void UILayoutTest::RunLayoutTest(const std::string& test_case_file_name,
   ReplaceSubstringsAfterOffset(&expected_result_value, 0, "\r", "");
 
   // Compares the results.
-  EXPECT_STREQ(expected_result_value.c_str(), value.c_str());
+  EXPECT_STREQ(expected_result_value.c_str(), inner_text.c_str());
 
   VLOG(1) << "Test " << test_case_file_name
           << " took " << (base::Time::Now() - start).InMilliseconds() << "ms";

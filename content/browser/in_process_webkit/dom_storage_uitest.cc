@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,9 +22,9 @@ static const char* kRootFiles[] = {
 };
 
 static const char* kEventsFiles[] = {
-//  "basic-body-attribute.html",  // crbug.com/33472
-//  "basic.html",  // crbug.com/33472
-//  "basic-setattribute.html",  // crbug.com/33472
+  "basic-body-attribute.html",
+  "basic.html",
+  "basic-setattribute.html",
   "case-sensitive.html",
   "documentURI.html",
   NULL
