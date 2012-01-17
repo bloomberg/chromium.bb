@@ -1281,8 +1281,7 @@ desktop_shell_sigchld(struct weston_process *process, int status)
 
 	/* if desktop-shell dies more than 5 times in 30 seconds, give up */
 	time = weston_compositor_get_time();
-	if (shell->child.deathstamp == 0 ||
-	    time - shell->child.deathstamp > 30000) {
+	if (time - shell->child.deathstamp > 30000) {
 		shell->child.deathstamp = time;
 		shell->child.deathcount = 0;
 	}
@@ -1464,6 +1463,7 @@ shell_init(struct weston_compositor *ec)
 				  shell, bind_screensaver) == NULL)
 		return -1;
 
+	shell->child.deathstamp = weston_compositor_get_time();
 	if (launch_desktop_shell_process(shell) != 0)
 		return -1;
 
