@@ -2,6 +2,10 @@
   overflow: hidden;
 }
 
+.font-setting-container {
+  display: -webkit-box;
+}
+
 #font-settings input[type="range"] {
   width: 100%;
 }
