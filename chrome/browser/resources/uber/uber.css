@@ -2,11 +2,9 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-#navigation h3 {
-  color: rgb(92, 97, 102);
-  font-size: 18px;
-  font-weight: normal;
+#navigation h1 {
   -webkit-margin-start: 23px;
+  color: rgb(92, 97, 102);
 }
 
 #navigation ol {
@@ -16,11 +14,11 @@
 
 #navigation li {
   -webkit-border-start: 6px solid white;
+  -webkit-padding-start: 18px;
   color: #999;
   cursor: pointer;
   line-height: 17px;
   margin: 5px 0;
-  -webkit-padding-start: 18px;
   text-transform: uppercase;
 }
 

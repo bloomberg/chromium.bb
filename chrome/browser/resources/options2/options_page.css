@@ -28,10 +28,10 @@ html.hide-menu #mainview {
 }
 
 #page-container {
+  -webkit-padding-end: 24px;
   box-sizing: border-box;
   max-width: 888px;
   min-width: 600px;
-  padding: 0 24px;
 }
 
 div.disabled {
@@ -60,18 +60,6 @@ input:not([type]) {
 
 input[type='text']:disabled {
   color: #888;
-}
-
-.page h1 {
-  -webkit-padding-end: 24px;
-  -webkit-user-select: none;
-  color: #333;
-  font-size: 200%;
-  font-weight: normal;
-  margin: 0;
-  padding-bottom: 4px;
-  padding-top: 13px;
-  text-shadow: white 0 1px 2px;
 }
 
 .hbox {

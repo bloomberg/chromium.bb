@@ -24,9 +24,11 @@ p {
 }
 
 h1 {
-  color: rgb(17, 85, 204);
+  -webkit-user-select: none;
+  color: rgb(48, 57, 66);
   font-size: 18px;
   font-weight: normal;
+  margin-top: 1em;
 }
 
 a:link {
@@ -111,3 +113,15 @@ html[dir='rtl'] .weakrtl input::-webkit-input-placeholder {
   right: 0;
   top: 0;
 }
+
+/* TODO(estade): remove this: http://crbug.com/109967
+ * For now it's a bandaid until we install open sans properly. */
+<if expr="not pp_ifdef('chromeos')">
+@font-face {
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Open Sans'), local('OpenSans'),
+      url('chrome://resources/fonts/open_sans.woff') format('woff');
+}
+</if>
