@@ -15,6 +15,8 @@ NaClValidatorState* NaClValidatorStateCreateDetailed(
     const CPUFeatures* features) {
   NaClValidatorState* state =
       NaClValidatorStateCreate(vbase, sz, alignment, base_register, features);
-  state->do_detailed = TRUE;
+  if (state != NULL) {
+    state->do_detailed = TRUE;
+  }
   return state;
 }

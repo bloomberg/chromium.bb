@@ -33,7 +33,7 @@ static Bool NaClCheckAddressRange(NaClPcAddress address,
   if (address < vstate->vbase) {
     return FALSE;
   }
-  if (address >= vstate->vlimit) {
+  if (address >= vstate->vbase + vstate->codesize) {
     return FALSE;
   }
   return TRUE;
@@ -120,7 +120,7 @@ void NaClJumpValidatorSummarizeDetailed(NaClValidatorState* vstate) {
       LOG_INFO, vstate,
       "Checking block alignment and jump targets: %"NACL_PRIxNaClPcAddress
       " to %"NACL_PRIxNaClPcAddress"\n",
-      vstate->vbase, vstate->vlimit);
+      vstate->vbase, vstate->vbase + vstate->codesize);
 
   /* Check that code segment starts at an aligned address. */
   if (vstate->vbase & vstate->alignment_mask) {

@@ -493,19 +493,16 @@ void NaClValidatorStateIterFinish(NaClValidatorState *vstate) {
 }
 
 NaClValidatorState *NaClValidatorStateCreate(const NaClPcAddress vbase,
-                                             const NaClMemorySize sz,
+                                             const NaClMemorySize codesize,
                                              const uint8_t alignment,
                                              const NaClOpKind base_register,
                                              const CPUFeatures* features) {
   NaClValidatorState *vstate;
   NaClValidatorState *return_value = NULL;
-  NaClPcAddress vlimit = vbase + sz;
   DEBUG(NaClLog(LOG_INFO,
                 "Validator Create: vbase = %"NACL_PRIxNaClPcAddress", "
-                "sz = %"NACL_PRIxNaClMemorySize", alignment = %u, vlimit = %"
-                NACL_PRIxNaClPcAddress"\n",
-                vbase, sz, alignment, vlimit));
-  if (vlimit <= vbase) return NULL;
+                "sz = %"NACL_PRIxNaClMemorySize", alignment = %u\n",
+                vbase, codesize, alignment));
   if (alignment != 16 && alignment != 32) return NULL;
   vstate = (NaClValidatorState*) malloc(sizeof(NaClValidatorState));
   if (vstate != NULL) {
@@ -513,7 +510,7 @@ NaClValidatorState *NaClValidatorStateCreate(const NaClPcAddress vbase,
     vstate->decoder_tables = kNaClValDecoderTables;
     vstate->vbase = vbase;
     vstate->alignment = alignment;
-    vstate->vlimit = vlimit;
+    vstate->codesize = codesize;
     vstate->alignment_mask = alignment - 1;
     if (NULL == features) {
       if (NULL == nacl_validator_features) {
@@ -664,13 +661,23 @@ void NaClValidateSegment(uint8_t *mbase, NaClPcAddress vbase,
       NaClValidatorMessage(LOG_ERROR, vstate, "Mismatched vbase address\n");
       break;
     }
-    if (vbase + size != vstate->vlimit) {
-      NaClValidatorMessage(LOG_ERROR, vstate, "Mismatched vlimit address\n");
+    if (size != vstate->codesize) {
+      NaClValidatorMessage(LOG_ERROR, vstate, "Mismatched code size\n");
+      break;
+    }
+    if (vbase > vbase + size) {
+      NaClValidatorMessage(LOG_ERROR, vstate, "Text segment too big for given "
+                           "vbase (address overflow)\n");
       break;
     }
 
     size = NCHaltTrimSize(mbase, size, vstate->alignment);
-    vstate->vlimit = vbase + size;
+    vstate->codesize = size;
+
+    if (size == 0) {
+      NaClValidatorMessage(LOG_ERROR, vstate, "Bad text segment (zero size)\n");
+      break;
+    }
 
     NaClSegmentInitialize(mbase, vbase, size, &segment);
 

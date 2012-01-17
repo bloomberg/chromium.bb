@@ -41,14 +41,10 @@ static INLINE uint8_t NaClGetJumpMask(NaClValidatorState* vstate) {
 
 /* Generates a jump validator. */
 Bool NaClJumpValidatorInitialize(NaClValidatorState* vstate) {
-  NaClPcAddress align_base = vstate->vbase & (~vstate->alignment);
   NaClJumpSets* jump_sets = &vstate->jump_sets;
-  jump_sets->actual_targets =
-      NaClAddressSetCreate(vstate->vlimit - align_base);
-  jump_sets->possible_targets =
-      NaClAddressSetCreate(vstate->vlimit - align_base);
-  jump_sets->removed_targets =
-      NaClAddressSetCreate(vstate->vlimit - align_base);
+  jump_sets->actual_targets = NaClAddressSetCreate(vstate->codesize);
+  jump_sets->possible_targets = NaClAddressSetCreate(vstate->codesize);
+  jump_sets->removed_targets = NaClAddressSetCreate(vstate->codesize);
   if (jump_sets->actual_targets == NULL ||
       jump_sets->possible_targets == NULL ||
       jump_sets->removed_targets == NULL) {
@@ -56,8 +52,7 @@ Bool NaClJumpValidatorInitialize(NaClValidatorState* vstate) {
     NaClJumpValidatorCleanUp(vstate);
     return FALSE;
   }
-  jump_sets->set_array_size =
-      NaClAddressSetArraySize(vstate->vlimit - align_base);
+  jump_sets->set_array_size = NaClAddressSetArraySize(vstate->codesize);
   return TRUE;
 }
 
@@ -71,14 +66,14 @@ Bool NaClJumpValidatorInitialize(NaClValidatorState* vstate) {
 static void NaClAddJumpToJumpSets(NaClValidatorState* vstate,
                                   NaClPcAddress from_address,
                                   NaClPcAddress to_address) {
-  /* If the address is between state->vbase and state->vlimit, assume
-   * good (unless we later find it jumping into a pseudo instruction).
-   * Otherwise, only allow if 0 mod 32.
+  /* If the address is in the code segment, assume good (unless we later find it
+   * jumping into a pseudo instruction). Otherwise, only allow if 0 mod 32.
    */
   DEBUG(NaClLog(LOG_INFO, "Add jump to jump sets: %"
                 NACL_PRIxNaClPcAddress" -> %"NACL_PRIxNaClPcAddress"\n",
                 from_address, to_address));
-  if (vstate->vbase <= to_address && to_address < vstate->vlimit) {
+  if (vstate->vbase <= to_address
+      && to_address < vstate->vbase + vstate->codesize) {
     /* Remember address for checking later. */
     DEBUG(NaClLog(LOG_INFO, "Add jump to target: %"NACL_PRIxNaClPcAddress
                   " -> %"NACL_PRIxNaClPcAddress"\n",
@@ -487,7 +482,7 @@ static void NaClValidateCallAlignment(NaClValidatorState* vstate) {
  */
 static void NaClRememberIp(NaClValidatorState* vstate,
                            NaClPcAddress pc) {
-  if (pc < vstate->vbase || pc >= vstate->vlimit) {
+  if (pc < vstate->vbase || pc >= vstate->vbase + vstate->codesize) {
     NaClValidatorInstMessage(LOG_ERROR, vstate, vstate->cur_inst_state,
                              "Instruction pc out of range\n");
   } else {
@@ -543,13 +538,13 @@ void NaClJumpValidatorSummarize(NaClValidatorState* vstate) {
       LOG_INFO, vstate,
       "Checking jump targets: %"NACL_PRIxNaClPcAddress
       " to %"NACL_PRIxNaClPcAddress"\n",
-      vstate->vbase, vstate->vlimit);
+      vstate->vbase, vstate->vbase + vstate->codesize);
 
   /* Note: The following is the high-level code that has been commented
    * out, because it is too slow. It represents slightly more than
    * 15% of the overall validator time.
    *
-  for (addr = vstate->vbase; addr < vstate->vlimit; addr++) {
+  for (addr = vstate->vbase; addr < vstate->vbase + vstate->codesize; addr++) {
     if (NaClAddressSetContains(jump_sets->actual_targets, addr, vstate)) {
       DEBUG(NaClLog(LOG_INFO,
                     "Checking jump address: %"NACL_PRIxNaClPcAddress"\n",
@@ -577,7 +572,7 @@ void NaClJumpValidatorSummarize(NaClValidatorState* vstate) {
       NaClPcAddress base = (i << 3) + vstate->vbase;
       for (j = 0; j < 8; ++j) {
         addr = base + j;
-        if (addr < vstate->vlimit) {
+        if (addr < vstate->vbase + vstate->codesize) {
           if (NaClAddressSetContains(jump_sets->actual_targets, addr, vstate)) {
             DEBUG(NaClLog(LOG_INFO,
                           "Checking jump address: %"NACL_PRIxNaClPcAddress"\n",
@@ -601,7 +596,7 @@ void NaClJumpValidatorSummarize(NaClValidatorState* vstate) {
                          "which isn't aligned properly.\n",
                          vstate->vbase);
   } else {
-    for (addr = vstate->vbase; addr < vstate->vlimit;
+    for (addr = vstate->vbase; addr < vstate->vbase + vstate->codesize;
          addr += vstate->alignment) {
       DEBUG(NaClLog(LOG_INFO,
                     "Checking block address: %"NACL_PRIxNaClPcAddress"\n",
@@ -629,7 +624,7 @@ void NaClJumpValidatorCleanUp(NaClValidatorState* vstate) {
 void NaClMarkInstructionJumpIllegal(struct NaClValidatorState* vstate,
                                     struct NaClInstState* inst) {
   NaClPcAddress pc = NaClInstStateVpc(inst);
-  if (pc < vstate->vbase || pc >= vstate->vlimit) {
+  if (pc < vstate->vbase || pc >= vstate->vbase + vstate->codesize) {
     /* ERROR instruction out of range.
      * Note: Not reported here, because this will already be reported by
      * the call to NaClRememberIp in JumpValidator.

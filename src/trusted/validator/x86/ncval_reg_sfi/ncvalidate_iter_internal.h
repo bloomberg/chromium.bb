@@ -35,8 +35,8 @@ struct NaClValidatorState {
   NaClPcAddress vbase;
   /* Holds the alignment value passed to NaClValidatorStateCreate. */
   uint8_t alignment;
-  /* Holds the upper limit of all possible addresses */
-  NaClPcAddress vlimit;
+  /* Holds the size value passed to NaClValidatorStateCreate. */
+  NaClMemorySize codesize;
   /* Holds the alignment mask, which when applied, catches any lower
    * bits in an address that violate alignment.
    */

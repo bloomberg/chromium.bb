@@ -113,7 +113,7 @@ void NaClValidateSetCPUFeatures(CPUFeatures *features);
  *  otherwise.
  */
 NaClValidatorState* NaClValidatorStateCreate(const NaClPcAddress vbase,
-                                             const NaClMemorySize sz,
+                                             const NaClMemorySize codesize,
                                              const uint8_t alignment,
                                              const NaClOpKind base_register,
                                              const CPUFeatures* features);

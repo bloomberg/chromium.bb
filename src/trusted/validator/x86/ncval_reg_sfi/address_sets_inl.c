@@ -50,7 +50,7 @@ static INLINE Bool NaClCheckAddressRange(NaClPcAddress address,
                                   "Jump to address before code block.\n");
     return FALSE;
   }
-  if (address >= state->vlimit) {
+  if (address >= state->vbase + state->codesize) {
     NaClValidatorPcAddressMessage(LOG_ERROR, state, address,
                                   "Jump to address beyond code block limit.\n");
     return FALSE;
