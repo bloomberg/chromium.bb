@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -142,8 +142,8 @@ class Scanner(object):
   """Scanner searches for '#include' to find dependencies."""
 
   def __init__(self, loader=None):
-    regex = r'\#[ \t]*include[ \t]*[<"]([^>^"]+)[>"]'
-    self.parser = re.compile(regex)
+    regex = r'^\s*\#[ \t]*include[ \t]*[<"]([^>^"]+)[>"]'
+    self.parser = re.compile(regex, re.M)
     self.loader = loader
     if not loader:
       self.loader = LoadFile
