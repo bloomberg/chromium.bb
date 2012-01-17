@@ -53,6 +53,8 @@
         'event.h',
         'event_filter.cc',
         'event_filter.h',
+        'event_mac.cc',
+        'event_mac.h',
         'focus_manager.h',
         'layout_manager.cc',
         'layout_manager.h',
@@ -155,6 +157,7 @@
       ],
       # osmesa GL implementation is used on linux.
       'conditions': [
+        # osmesa GL implementation is used on linux.
         ['OS=="linux"', {
           'dependencies': [
             '<(DEPTH)/third_party/mesa/mesa.gyp:osmesa',

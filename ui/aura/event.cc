@@ -15,9 +15,32 @@
 #include "ui/gfx/point3.h"
 #include "ui/gfx/transform.h"
 
+#if defined(OS_MACOSX)
+#include "ui/aura/event_mac.h"
+#endif
+
 #if defined(USE_X11)
 #include "ui/base/keycodes/keyboard_code_conversion_x.h"
 #endif
+
+namespace {
+
+base::NativeEvent CopyNativeEvent(const base::NativeEvent& event) {
+#if defined(USE_X11)
+  XEvent* copy = new XEvent;
+  *copy = *event;
+  return copy;
+#elif defined(OS_WIN)
+  return event;
+#elif defined(OS_MACOSX)
+  return aura::CopyNativeEvent(event);
+#else
+  NOTREACHED() <<
+      "Don't know how to copy base::NativeEvent for this platform";
+#endif
+}
+
+}  // namespace
 
 namespace aura {
 
@@ -316,22 +339,8 @@ uint16 KeyEvent::GetUnmodifiedCharacter() const {
 #endif
 }
 
-base::NativeEvent CopyNativeEvent(const base::NativeEvent& event) {
-#if defined(USE_X11)
-  XEvent* copy = new XEvent;
-  *copy = *event;
-  return copy;
-#elif defined(OS_WIN)
-  return event;
-#else
-  NOTREACHED() <<
-      "Don't know how to copy base::NativeEvent for this platform";
-#endif
-}
-
 KeyEvent* KeyEvent::Copy() {
-  KeyEvent* copy = new KeyEvent(CopyNativeEvent(native_event()),
-                                is_char());
+  KeyEvent* copy = new KeyEvent(::CopyNativeEvent(native_event()), is_char());
 #if defined(USE_X11)
   copy->set_delete_native_event(true);
 #endif
