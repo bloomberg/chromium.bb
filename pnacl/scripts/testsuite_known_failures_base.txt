@@ -62,6 +62,8 @@ tramp3d-v4
 fftbench
 # complex type undeclared (_Complex is implemented, maybe just need header?)
 mandel-2
+# newlib does not have complex.h
+mandel
 ############################################################################
 # Stderr/stdout related issues
 ############################################################################
