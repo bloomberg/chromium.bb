@@ -80,6 +80,41 @@ on_tty_input(int fd, uint32_t mask, void *data)
 	return 1;
 }
 
+static int
+try_open_vt(void)
+{
+	int tty0, vt, fd;
+	char filename[16];
+
+	tty0 = open("/dev/tty0", O_WRONLY | O_CLOEXEC);
+	if (tty0 < 0) {
+		fprintf(stderr, "could not open tty0: %m\n");
+		return -1;
+	}
+
+	if (ioctl(tty0, VT_OPENQRY, &vt) < 0 || vt == -1) {
+		fprintf(stderr, "could not open tty0: %m\n");
+		close(tty0);
+		return -1;
+	}
+
+	close(tty0);
+	snprintf(filename, sizeof filename, "/dev/tty%d", vt);
+	fprintf(stderr, "compositor: using new vt %s\n", filename);
+	fd = open(filename, O_RDWR | O_NOCTTY | O_CLOEXEC);
+	if (fd < 0)
+		return fd;
+
+	if (ioctl(fd, VT_ACTIVATE, vt) < 0 ||
+	    ioctl(fd, VT_WAITACTIVE, vt) < 0) {
+		fprintf(stderr, "failed to swtich to new vt\n");
+		close(fd);
+		return -1;
+	}
+
+	return fd;
+}
+
 struct tty *
 tty_create(struct weston_compositor *compositor, tty_vt_func_t vt_func,
            int tty_nr)
@@ -103,19 +138,18 @@ tty_create(struct weston_compositor *compositor, tty_vt_func_t vt_func,
 		snprintf(filename, sizeof filename, "/dev/tty%d", tty_nr);
 		fprintf(stderr, "compositor: using %s\n", filename);
 		tty->fd = open(filename, O_RDWR | O_NOCTTY | O_CLOEXEC);
-	} else {
+	} else if (fstat(tty->fd, &buf) == 0 &&
+		   major(buf.st_rdev) == TTY_MAJOR &&
+		   minor(buf.st_rdev) > 0) {
 		tty->fd = fcntl(0, F_DUPFD_CLOEXEC, 0);
+	} else {
+		/* Fall back to try opening a new VT.  This typically
+		 * requires root. */
+		tty->fd = try_open_vt();
 	}
 
 	if (tty->fd <= 0) {
 		fprintf(stderr, "failed to open tty: %m\n");
-		return NULL;
-	}
-
-	if (fstat(tty->fd, &buf) < 0 ||
-	    major(buf.st_rdev) != TTY_MAJOR || minor(buf.st_rdev) == 0) {
-		fprintf(stderr, "stdin not a vt (%d, %d)\n",
-			major(buf.st_dev), minor(buf.st_dev));
 		return NULL;
 	}
 
