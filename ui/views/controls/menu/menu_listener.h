@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,11 +13,13 @@ namespace views {
 // An interface for clients that want a notification when a menu is opened.
 class VIEWS_EXPORT MenuListener {
  public:
+  MenuListener();
+
   // This will be called after the menu has actually opened.
   virtual void OnMenuOpened() = 0;
 
  protected:
-  virtual ~MenuListener() {}
+  virtual ~MenuListener();
 };
 
 }  // namespace views

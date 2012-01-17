@@ -122,6 +122,7 @@
         'controls/menu/menu_item_view.h',
         'controls/menu/menu_item_view_views.cc',
         'controls/menu/menu_item_view_win.cc',
+        'controls/menu/menu_listener.cc',
         'controls/menu/menu_listener.h',
         'controls/menu/menu_model_adapter.cc',
         'controls/menu/menu_model_adapter.h',
