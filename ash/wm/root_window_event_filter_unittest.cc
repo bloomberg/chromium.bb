@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -133,11 +133,11 @@ TEST_F(RootWindowEventFilterTest, ActivateOnMouse) {
   TestActivationDelegate d1;
   aura::test::TestWindowDelegate wd;
   scoped_ptr<aura::Window> w1(aura::test::CreateTestWindowWithDelegate(
-      &wd, 1, gfx::Rect(10, 10, 50, 50), NULL));
+      &wd, -1, gfx::Rect(10, 10, 50, 50), NULL));
   d1.SetWindow(w1.get());
   TestActivationDelegate d2;
   scoped_ptr<aura::Window> w2(aura::test::CreateTestWindowWithDelegate(
-      &wd, 2, gfx::Rect(70, 70, 50, 50), NULL));
+      &wd, -1, gfx::Rect(70, 70, 50, 50), NULL));
   d2.SetWindow(w2.get());
 
   aura::internal::FocusManager* focus_manager = w1->GetFocusManager();
@@ -155,9 +155,7 @@ TEST_F(RootWindowEventFilterTest, ActivateOnMouse) {
 
   {
     // Click on window2.
-    gfx::Point press_point = w2->bounds().CenterPoint();
-    aura::Window::ConvertPointToWindow(w2->parent(), root_window, &press_point);
-    aura::test::EventGenerator generator(press_point);
+    aura::test::EventGenerator generator(w2.get());
     generator.ClickLeftButton();
 
     // Window2 should have become active.
@@ -173,9 +171,7 @@ TEST_F(RootWindowEventFilterTest, ActivateOnMouse) {
 
   {
     // Click back on window1, but set it up so w1 doesn't activate on click.
-    gfx::Point press_point = w1->bounds().CenterPoint();
-    aura::Window::ConvertPointToWindow(w1->parent(), root_window, &press_point);
-    aura::test::EventGenerator generator(press_point);
+    aura::test::EventGenerator generator(w1.get());
     d1.set_activate(false);
     generator.ClickLeftButton();
 
@@ -199,6 +195,27 @@ TEST_F(RootWindowEventFilterTest, ActivateOnMouse) {
   EXPECT_EQ(w1.get(), focus_manager->GetFocusedWindow());
   EXPECT_EQ(1, d1.activated_count());
   EXPECT_EQ(0, d1.lost_active_count());
+
+  // Clicking an active window with a child shouldn't steal the
+  // focus from the child.
+  scoped_ptr<aura::Window> w11(CreateTestWindowWithDelegate(
+      &wd, -1, gfx::Rect(10, 10, 10, 10), w1.get()));
+  {
+    aura::test::EventGenerator generator(w11.get());
+    // First set the focus to the child |w11|.
+    generator.ClickLeftButton();
+    EXPECT_EQ(w11.get(), focus_manager->GetFocusedWindow());
+    EXPECT_EQ(w1.get(), GetActiveWindow());
+
+    // Then click the parent active window. The focus shouldn't move.
+    gfx::Point left_top = w1->bounds().origin();
+    aura::Window::ConvertPointToWindow(w1->parent(), root_window, &left_top);
+    left_top.Offset(1, 1);
+    generator.MoveMouseTo(left_top);
+    generator.ClickLeftButton();
+    EXPECT_EQ(w11.get(), focus_manager->GetFocusedWindow());
+    EXPECT_EQ(w1.get(), GetActiveWindow());
+  }
 }
 
 // Essentially the same as ActivateOnMouse, but for touch events.
