@@ -3,8 +3,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 #
-#  This script extracts  "nacl syscall" prototypes from a c file
-#  given on stdin and then produces wrapped versions of the syscalls.
+#  This script produces wrapped versions of syscall implementation
+#  functions.  The wrappers extract syscall arguments from where the
+#  syscall trampoline saves them.
 #
 #  Note that NaCl modules are always ILP32 and compiled with a
 #  compiler that passes all arguments on the stack, but the service
@@ -18,7 +19,6 @@
 #
 import getopt
 import re
-import StringIO
 import sys
 
 AUTOGEN_COMMENT = """\
@@ -254,40 +254,6 @@ def PrintImplSkel(architecture, protos, ostr):
     print >>ostr, IMPLEMENTATION_SKELETON % values
 
 
-def CanonicalizeSpaces(string):
-  return ' '.join(string.split())
-
-
-def GetProtoArgs(s, fin):
-  if "{" not in s:
-    for line in fin:
-      s += line
-      if "{" in line:
-        break
-    else:
-      raise Exception('broken input')
-  pos = s.rfind(")")
-  assert pos >= 0
-  # prune stuff after )
-  s = s[0:pos]
-  args = [CanonicalizeSpaces(a) for a in s.split(",")]
-  return args
-
-
-def ParseFileToBeWrapped(fin):
-  protos = []
-  for line in fin:
-    match = re.search(r"^int32_t (NaClSys[_a-zA-Z0-9]+)[(](.*)$", line)
-    if not match:
-      continue
-    name = match.group(1)
-    args = GetProtoArgs(match.group(2), fin)
-    # We discard the first argument because it is always
-    # "struct NaClAppThread *natp".
-    protos.append((name, args[1:]))
-  return protos
-
-
 def main(argv):
   usage='Usage: nacl_syscall_handlers_gen.py [-f regex] [-c] [-d] [-a arch]'
   mode = "dump"
@@ -327,10 +293,7 @@ def main(argv):
     raise Exception()
 
   data = input_src.read()
-  protos = ParseFileToBeWrapped(StringIO.StringIO(data))
-  # TODO(mseaborn): Make SYSCALL_LIST the authoritative list of system
-  # calls, and remove the code for scraping the C files.
-  assert protos == SYSCALL_LIST, protos
+  protos = SYSCALL_LIST
   if mode == "dump":
     for f, a in  protos:
       print >>output_dst, f
