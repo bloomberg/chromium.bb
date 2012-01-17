@@ -539,24 +539,17 @@ void Browser::InitBrowserWindow() {
   fullscreen_controller_ = new FullscreenController(window_, profile_, this);
 
 #if defined(OS_WIN) && !defined(USE_AURA)
-  {
-    // TODO: This might hit the disk
-    //   http://code.google.com/p/chromium/issues/detail?id=61638
-    base::ThreadRestrictions::ScopedAllowIO allow_io;
+  // Set the app user model id for this application to that of the application
+  // name.  See http://crbug.com/7028.
+  ui::win::SetAppIdForWindow(
+      is_app() && !is_type_panel() ?
+      ShellIntegration::GetAppId(UTF8ToWide(app_name_), profile_->GetPath()) :
+      ShellIntegration::GetChromiumAppId(profile_->GetPath()),
+      window()->GetNativeHandle());
 
-    // Set the app user model id for this application to that of the application
-    // name.  See http://crbug.com/7028.
-    ui::win::SetAppIdForWindow(
-        is_app() && !is_type_panel() ?
-        ShellIntegration::GetAppId(UTF8ToWide(app_name_), profile_->GetPath()) :
-        ShellIntegration::GetChromiumAppId(profile_->GetPath()),
-        window()->GetNativeHandle());
-
-    if (is_type_panel()) {
-      ui::win::SetAppIconForWindow(
-          ShellIntegration::GetChromiumIconPath(),
-          window()->GetNativeHandle());
-    }
+  if (is_type_panel()) {
+    ui::win::SetAppIconForWindow(ShellIntegration::GetChromiumIconPath(),
+                                 window()->GetNativeHandle());
   }
 #endif
 
