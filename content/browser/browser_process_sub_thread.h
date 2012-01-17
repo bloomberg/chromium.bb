@@ -35,6 +35,11 @@ class CONTENT_EXPORT BrowserProcessSubThread : public BrowserThreadImpl {
   virtual void CleanUp() OVERRIDE;
 
  private:
+  // These methods encapsulate cleanup that needs to happen on the IO thread
+  // before/after we call the embedder's CleanUp function.
+  void IOThreadPreCleanUp();
+  void IOThreadPostCleanUp();
+
   // Each specialized thread has its own notification service.
   // Note: We don't use scoped_ptr because the destructor runs on the wrong
   // thread.

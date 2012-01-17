@@ -77,7 +77,6 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/common/url_fetcher.h"
 #include "media/audio/audio_manager.h"
 #include "net/socket/client_socket_pool_manager.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -197,14 +196,6 @@ void BrowserProcessImpl::StartTearDown() {
   // before the profiles, since if there are any still showing we will access
   // those things during teardown.
   notification_ui_manager_.reset();
-
-  // FIXME - We shouldn't need this, it's because of DefaultRequestContext! :(
-  // We need to kill off all URLFetchers using profile related
-  // URLRequestContexts. Normally that'd be covered by deleting the Profiles,
-  // but we have some URLFetchers using the DefaultRequestContext, so they need
-  // to be cancelled too. Remove this when DefaultRequestContext goes away.
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::Bind(&content::URLFetcher::CancelAll));
 
   // Need to clear profiles (download managers) before the io_thread_.
   profile_manager_.reset();

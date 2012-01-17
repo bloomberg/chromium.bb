@@ -32,8 +32,6 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
-#include "content/browser/gpu/gpu_process_host.h"
-#include "content/browser/in_process_webkit/indexed_db_key_utility_client.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/url_fetcher.h"
@@ -478,27 +476,14 @@ void IOThread::CleanUp() {
   delete sdch_manager_;
   sdch_manager_ = NULL;
 
-  // Step 1: Kill all things that might be holding onto
-  // net::URLRequest/net::URLRequestContexts.
-
 #if defined(USE_NSS)
   net::ShutdownOCSP();
 #endif  // defined(USE_NSS)
 
-  // Destroy all URLRequests started by URLFetchers.
-  content::URLFetcher::CancelAll();
-
-  IndexedDBKeyUtilityClient::Shutdown();
-
-  // If any child processes are still running, terminate them and
-  // and delete the BrowserChildProcessHost instances to release whatever
-  // IO thread only resources they are referencing.
-  BrowserChildProcessHost::TerminateAll();
-
   system_url_request_context_getter_ = NULL;
 
-  // Step 2: Release objects that the net::URLRequestContext could have been
-  // pointing to.
+  // Release objects that the net::URLRequestContext could have been pointing
+  // to.
 
   // This must be reset before the ChromeNetLog is destroyed.
   network_change_observer_.reset();
@@ -507,9 +492,6 @@ void IOThread::CleanUp() {
 
   delete globals_;
   globals_ = NULL;
-
-  // net::URLRequest instances must NOT outlive the IO thread.
-  base::debug::LeakTracker<net::URLRequest>::CheckForLeaks();
 
   base::debug::LeakTracker<SystemURLRequestContextGetter>::CheckForLeaks();
 }

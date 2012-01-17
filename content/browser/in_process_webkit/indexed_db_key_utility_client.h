@@ -43,7 +43,7 @@ class IndexedDBKeyUtilityClient {
       const string16& key_path);
 
   // Shut down the underlying implementation. Must be called on the IO thread.
-  CONTENT_EXPORT static void Shutdown();
+  static void Shutdown();
 
  private:
   friend struct base::DefaultLazyInstanceTraits<IndexedDBKeyUtilityClient>;
