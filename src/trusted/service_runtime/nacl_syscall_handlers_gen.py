@@ -53,6 +53,17 @@ static int32_t %(name)sDecoder(struct NaClAppThread *natp) {
 %(members)s\
   return %(name)s(natp%(arglist)s);
 }
+
+/*
+ * Check that the function being wrapped has the same type as the type
+ * declared in SYSCALL_LIST.
+ */
+static INLINE void AssertSameType_%(name)s() {
+  /* This assignment will give an error if the argument types don't match. */
+  int32_t (*dummy)(%(arg_type_list)s) = %(name)s;
+  /* 'dummy' is not actually a parameter but this suppresses the warning. */
+  UNREFERENCED_PARAMETER(dummy);
+}
 """
 
 # Integer/pointer registers used in x86-64 calling convention.  NB:
@@ -249,6 +260,8 @@ def PrintImplSkel(architecture, protos, ostr):
   for name, alist in protos:
     values = { 'name' : name,
                'arglist' : ArgList(architecture, alist),
+               'arg_type_list' :
+                   ', '.join(['struct NaClAppThread *natp'] + alist),
                'members' : MemoryArgStruct(architecture, name, alist),
                }
     print >>ostr, IMPLEMENTATION_SKELETON % values
