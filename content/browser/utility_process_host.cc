@@ -87,7 +87,7 @@ bool UtilityProcessHost::StartProcess() {
     return true;
   // Name must be set or metrics_service will crash in any test which
   // launches a UtilityProcessHost.
-  set_name(ASCIIToUTF16("utility process"));
+  SetName(ASCIIToUTF16("utility process"));
 
   std::string channel_id = child_process_host()->CreateChannel();
   if (channel_id.empty())

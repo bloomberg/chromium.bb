@@ -490,7 +490,7 @@ void WorkerProcessHost::UpdateTitle() {
     display_title += *i;
   }
 
-  set_name(ASCIIToUTF16(display_title));
+  SetName(ASCIIToUTF16(display_title));
 }
 
 void WorkerProcessHost::DocumentDetached(WorkerMessageFilter* filter,

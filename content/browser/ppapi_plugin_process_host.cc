@@ -118,9 +118,9 @@ PpapiPluginProcessHost::PpapiPluginProcessHost()
 bool PpapiPluginProcessHost::Init(const content::PepperPluginInfo& info) {
   plugin_path_ = info.path;
   if (info.name.empty()) {
-    set_name(plugin_path_.BaseName().LossyDisplayName());
+    SetName(plugin_path_.BaseName().LossyDisplayName());
   } else {
-    set_name(UTF8ToUTF16(info.name));
+    SetName(UTF8ToUTF16(info.name));
   }
 
   std::string channel_id = child_process_host()->CreateChannel();

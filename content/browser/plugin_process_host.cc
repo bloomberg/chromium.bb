@@ -166,7 +166,7 @@ PluginProcessHost::~PluginProcessHost() {
 
 bool PluginProcessHost::Init(const webkit::WebPluginInfo& info) {
   info_ = info;
-  set_name(info_.name);
+  SetName(info_.name);
 
   std::string channel_id = child_process_host()->CreateChannel();
   if (channel_id.empty())

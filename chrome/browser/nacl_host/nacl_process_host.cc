@@ -113,7 +113,7 @@ NaClProcessHost::NaClProcessHost(const std::wstring& url)
       reply_msg_(NULL),
       internal_(new NaClInternal()),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
-  set_name(WideToUTF16Hack(url));
+  SetName(WideToUTF16Hack(url));
 }
 
 NaClProcessHost::~NaClProcessHost() {
@@ -295,7 +295,7 @@ bool NaClProcessHost::LaunchSelLdr() {
 }
 
 void NaClProcessHost::OnProcessLaunchedByBroker(base::ProcessHandle handle) {
-  set_handle(handle);
+  SetHandle(handle);
   OnProcessLaunched();
 }
 

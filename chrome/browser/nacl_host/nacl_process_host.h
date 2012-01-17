@@ -39,12 +39,11 @@ class NaClProcessHost : public BrowserChildProcessHost {
               int socket_count,
               IPC::Message* reply_msg);
 
+  // BrowserChildProcessHost implementation:
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
+  virtual void OnProcessCrashed(int exit_code) OVERRIDE;
 
   void OnProcessLaunchedByBroker(base::ProcessHandle handle);
-
- protected:
-  virtual void OnProcessCrashed(int exit_code) OVERRIDE;
 
  private:
   // Internal class that holds the nacl::Handle objecs so that

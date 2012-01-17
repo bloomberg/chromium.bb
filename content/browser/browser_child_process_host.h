@@ -43,7 +43,8 @@ class CONTENT_EXPORT BrowserChildProcessHost :
   virtual void OnWaitableEventSignaled(
       base::WaitableEvent* waitable_event) OVERRIDE;
 
-  // Terminates all child processes and deletes each ChildProcessHost instance.
+  // Terminates all child processes and deletes each BrowserChildProcessHost
+  // instance.
   static void TerminateAll();
 
   // The Iterator class allows iteration through either all child processes, or
@@ -85,9 +86,8 @@ class CONTENT_EXPORT BrowserChildProcessHost :
 #endif
       CommandLine* cmd_line);
 
-  // Returns the handle of the child process. This can be called only after
-  // OnProcessLaunched is called or it will be invalid and may crash.
-  base::ProcessHandle GetChildProcessHandle() const;
+  // TODO(jam): below is what will be in the BrowserChildProcessHostDelegate
+  // interface.
 
   // ChildProcessLauncher::Client implementation.
   virtual void OnProcessLaunched() OVERRIDE {}
@@ -98,18 +98,32 @@ class CONTENT_EXPORT BrowserChildProcessHost :
   // GetExitCodeProcess()).
   virtual void OnProcessCrashed(int exit_code) {}
 
-  // Returns the termination status of a child.  |exit_code| is the
-  // status returned when the process exited (for posix, as returned
-  // from waitpid(), for Windows, as returned from
-  // GetExitCodeProcess()).  |exit_code| may be NULL.
-  base::TerminationStatus GetChildTerminationStatus(int* exit_code);
-
   // Overrides from ChildProcessHostDelegate
   virtual bool CanShutdown() OVERRIDE;
   virtual void OnChildDisconnected() OVERRIDE;
   virtual void ShutdownStarted() OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
+
+  // Returns the termination status of a child.  |exit_code| is the
+  // status returned when the process exited (for posix, as returned
+  // from waitpid(), for Windows, as returned from
+  // GetExitCodeProcess()).  |exit_code| may be NULL.
+  base::TerminationStatus GetChildTerminationStatus(int* exit_code);
+
+  // Returns the handle of the child process. This can be called only after
+  // OnProcessLaunched is called or it will be invalid and may crash.
+  base::ProcessHandle GetChildProcessHandle() const;
+
+  // Sets the user-visible name of the process.
+  void SetName(const string16& name);
+
+  // Set the handle of the process. BrowserChildProcessHost will do this when
+  // the Launch method is used to start the process. However if the owner
+  // of this object doesn't call Launch and starts the process in another way,
+  // they need to call this method so that the process handle is associated with
+  // this object.
+  void SetHandle(base::ProcessHandle handle);
 
   // Removes this host from the host list. Calls ChildProcessHost::ForceShutdown
   void ForceShutdown();
@@ -124,8 +138,6 @@ class CONTENT_EXPORT BrowserChildProcessHost :
   content::ChildProcessHost* child_process_host() const {
     return child_process_host_.get();
   }
-  void set_name(const string16& name) { data_.name = name; }
-  void set_handle(base::ProcessHandle handle) { data_.handle = handle; }
 
  private:
   // By using an internal class as the ChildProcessLauncher::Client, we can

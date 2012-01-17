@@ -26,13 +26,11 @@ class NaClBrokerHost : public BrowserChildProcessHost {
   void StopBroker();
 
  private:
-  virtual bool CanShutdown() { return true; }
-
   // Handler for NaClProcessMsg_LoaderLaunched message
   void OnLoaderLaunched(const std::wstring& loader_channel_id,
                         base::ProcessHandle handle);
 
-  // IPC::Channel::Listener
+  // BrowserChildProcessHost implementation:
   virtual bool OnMessageReceived(const IPC::Message& msg);
 
   bool stopping_;

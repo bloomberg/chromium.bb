@@ -39,8 +39,8 @@ using content::ChildProcessHostImpl;
 
 namespace {
 
-typedef std::list<BrowserChildProcessHost*> ChildProcessList;
-static base::LazyInstance<ChildProcessList> g_child_process_list =
+typedef std::list<BrowserChildProcessHost*> BrowserChildProcessList;
+static base::LazyInstance<BrowserChildProcessList> g_child_process_list =
     LAZY_INSTANCE_INITIALIZER;
 
 // Helper functions since the child process related notifications happen on the
@@ -77,8 +77,9 @@ BrowserChildProcessHost::~BrowserChildProcessHost() {
 
 // static
 void BrowserChildProcessHost::TerminateAll() {
-  // Make a copy since the ChildProcessHost dtor mutates the original list.
-  ChildProcessList copy = g_child_process_list.Get();
+  // Make a copy since the BrowserChildProcessHost dtor mutates the original
+  // list.
+  BrowserChildProcessList copy = g_child_process_list.Get();
   STLDeleteElements(&copy);
 }
 
@@ -112,6 +113,14 @@ base::ProcessHandle BrowserChildProcessHost::GetChildProcessHandle() const {
   DCHECK(child_process_->GetHandle())
       << "Requesting a child process handle before launch has completed OK.";
   return child_process_->GetHandle();
+}
+
+void BrowserChildProcessHost::SetName(const string16& name) {
+  data_.name = name;
+}
+
+void BrowserChildProcessHost::SetHandle(base::ProcessHandle handle) {
+  data_.handle = handle;
 }
 
 void BrowserChildProcessHost::ForceShutdown() {
