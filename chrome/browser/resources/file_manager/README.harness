@@ -6,12 +6,17 @@ useful for development and manual unit testing.
 
 In order to use the harness, you must start chrome with the following
 arguments:
-  chrome --allow-file-access-from-files --unlimited-quota-for-files
+  chrome --allow-file-access-from-files --user-data-dir=UDD_PATH
+
+It is recommended to use the harness with a dedicated user data directory.
 
 To view the harness, visit:
   file://PATH/TO/src/chrome/browser/resources/file_manager/harness.html
 
-This will display a "Open File" dialog by default.  You can switch to another
+On the first page load Chrome will ask for the permission to store local files.
+Click OK, then reload the page.
+
+"Full page" view is displayed by default.  You can switch to another
 kind of dialog using the links at the top of the page.
 
 Populating the development filesystem
