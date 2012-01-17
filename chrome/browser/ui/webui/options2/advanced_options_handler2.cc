@@ -47,6 +47,12 @@
 #include "chrome/browser/ui/webui/options2/advanced_options_utils2.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/accessibility/accessibility_util.h"
+#include "chrome/browser/chromeos/cros_settings.h"
+#include "chrome/browser/ui/webui/options2/chromeos/system_settings_provider2.h"
+#endif
+
 using content::DownloadManager;
 using content::OpenURLParams;
 using content::Referrer;
@@ -192,6 +198,24 @@ void AdvancedOptionsHandler::GetLocalizedValues(
       IDS_OPTIONS_AUTOFILL_ENABLE },
     { "manageAutofillSettings",
       IDS_OPTIONS_MANAGE_AUTOFILL_SETTINGS_LINK },
+#if defined(OS_CHROMEOS)
+    { "datetimeTitle",
+      IDS_OPTIONS_SETTINGS_SECTION_TITLE_DATETIME },
+    { "timezone",
+      IDS_OPTIONS_SETTINGS_TIMEZONE_DESCRIPTION },
+    { "use24HourClock",
+      IDS_OPTIONS_SETTINGS_USE_24HOUR_CLOCK_DESCRIPTION },
+    { "accessibilityTitle",
+      IDS_OPTIONS_SETTINGS_SECTION_TITLE_ACCESSIBILITY },
+    { "accessibilitySpokenFeedback",
+      IDS_OPTIONS_SETTINGS_ACCESSIBILITY_DESCRIPTION },
+    { "accessibilityHighContrast",
+      IDS_OPTIONS_SETTINGS_ACCESSIBILITY_HIGH_CONTRAST_DESCRIPTION },
+    { "accessibilityScreenMagnifier",
+      IDS_OPTIONS_SETTINGS_ACCESSIBILITY_SCREEN_MAGNIFIER_DESCRIPTION },
+    { "accessibilityVirtualKeyboard",
+      IDS_OPTIONS_SETTINGS_ACCESSIBILITY_VIRTUAL_KEYBOARD_DESCRIPTION },
+#endif
   };
 
   RegisterStrings(localized_strings, resources, arraysize(resources));
@@ -213,6 +237,13 @@ void AdvancedOptionsHandler::GetLocalizedValues(
   localized_strings->SetString("cloudPrintLearnMoreURL",
       google_util::AppendGoogleLocaleParam(
           GURL(chrome::kCloudPrintLearnMoreURL)).spec());
+
+  // TODO(pastarmovj): replace this with a call to the CrosSettings list
+  // handling functionality to come.
+  localized_strings->Set("timezoneList",
+      static_cast<chromeos::options2::SystemSettingsProvider*>(
+          chromeos::CrosSettings::Get()->GetProvider(
+              chromeos::kSystemTimezone))->GetTimezoneList());
 #endif
 #if defined(OS_MACOSX)
   ProfileManager* profile_manager = g_browser_process->profile_manager();
@@ -267,6 +298,9 @@ void AdvancedOptionsHandler::Initialize() {
     RemoveCloudPrintConnectorSection();
   }
 #endif
+#if defined(OS_CHROMEOS)
+  SetupAccessibilityFeatures();
+#endif
 #if !defined(OS_MACOSX) && !defined(OS_CHROMEOS)
   SetupBackgroundModeSettings();
 #endif
@@ -304,50 +338,80 @@ void AdvancedOptionsHandler::RegisterMessages() {
 #endif  // !defined(OS_CHROMEOS)
 
   // Setup handlers specific to this panel.
-  web_ui()->RegisterMessageCallback("selectDownloadLocation",
+  web_ui()->RegisterMessageCallback(
+      "selectDownloadLocation",
       base::Bind(&AdvancedOptionsHandler::HandleSelectDownloadLocation,
                  base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("autoOpenFileTypesAction",
+  web_ui()->RegisterMessageCallback(
+      "autoOpenFileTypesAction",
       base::Bind(&AdvancedOptionsHandler::HandleAutoOpenButton,
                  base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("defaultFontSizeAction",
+  web_ui()->RegisterMessageCallback(
+      "defaultFontSizeAction",
       base::Bind(&AdvancedOptionsHandler::HandleDefaultFontSize,
                  base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("defaultZoomFactorAction",
+  web_ui()->RegisterMessageCallback(
+      "defaultZoomFactorAction",
       base::Bind(&AdvancedOptionsHandler::HandleDefaultZoomFactor,
                  base::Unretained(this)));
 #if !defined(OS_CHROMEOS)
-  web_ui()->RegisterMessageCallback("metricsReportingCheckboxAction",
+  web_ui()->RegisterMessageCallback(
+      "metricsReportingCheckboxAction",
       base::Bind(&AdvancedOptionsHandler::HandleMetricsReportingCheckbox,
                  base::Unretained(this)));
 #endif
 #if !defined(USE_NSS) && !defined(USE_OPENSSL)
-  web_ui()->RegisterMessageCallback("showManageSSLCertificates",
+  web_ui()->RegisterMessageCallback(
+      "showManageSSLCertificates",
       base::Bind(&AdvancedOptionsHandler::ShowManageSSLCertificates,
                  base::Unretained(this)));
 #endif
-  web_ui()->RegisterMessageCallback("showCloudPrintManagePage",
+  web_ui()->RegisterMessageCallback(
+      "showCloudPrintManagePage",
       base::Bind(&AdvancedOptionsHandler::ShowCloudPrintManagePage,
                  base::Unretained(this)));
 #if !defined(OS_CHROMEOS)
   if (cloud_print_connector_ui_enabled_) {
-    web_ui()->RegisterMessageCallback("showCloudPrintSetupDialog",
+    web_ui()->RegisterMessageCallback(
+        "showCloudPrintSetupDialog",
         base::Bind(&AdvancedOptionsHandler::ShowCloudPrintSetupDialog,
                    base::Unretained(this)));
-    web_ui()->RegisterMessageCallback("disableCloudPrintConnector",
+    web_ui()->RegisterMessageCallback(
+        "disableCloudPrintConnector",
         base::Bind(&AdvancedOptionsHandler::HandleDisableCloudPrintConnector,
                    base::Unretained(this)));
   }
-  web_ui()->RegisterMessageCallback("showNetworkProxySettings",
+  web_ui()->RegisterMessageCallback(
+      "showNetworkProxySettings",
       base::Bind(&AdvancedOptionsHandler::ShowNetworkProxySettings,
                  base::Unretained(this)));
 #endif
-  web_ui()->RegisterMessageCallback("checkRevocationCheckboxAction",
+  web_ui()->RegisterMessageCallback(
+      "checkRevocationCheckboxAction",
       base::Bind(&AdvancedOptionsHandler::HandleCheckRevocationCheckbox,
                  base::Unretained(this)));
 #if !defined(OS_MACOSX) && !defined(OS_CHROMEOS)
-  web_ui()->RegisterMessageCallback("backgroundModeAction",
+  web_ui()->RegisterMessageCallback(
+      "backgroundModeAction",
       base::Bind(&AdvancedOptionsHandler::HandleBackgroundModeCheckbox,
+                 base::Unretained(this)));
+#endif
+#if defined(OS_CHROMEOS)
+  web_ui()->RegisterMessageCallback(
+      "spokenFeedbackChange",
+      base::Bind(&AdvancedOptionsHandler::SpokenFeedbackChangeCallback,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "highContrastChange",
+      base::Bind(&AdvancedOptionsHandler::HighContrastChangeCallback,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "screenMagnifierChange",
+      base::Bind(&AdvancedOptionsHandler::ScreenMagnifierChangeCallback,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "virtualKeyboardChange",
+      base::Bind(&AdvancedOptionsHandler::VirtualKeyboardChangeCallback,
                  base::Unretained(this)));
 #endif
 }
@@ -474,7 +538,7 @@ void AdvancedOptionsHandler::HandleBackgroundModeCheckbox(
 void AdvancedOptionsHandler::SetupBackgroundModeSettings() {
     base::FundamentalValue checked(background_mode_enabled_.GetValue());
     web_ui()->CallJavascriptFunction(
-        "options.AdvancedOptions.SetBackgroundModeCheckboxState", checked);
+        "AdvancedOptions.SetBackgroundModeCheckboxState", checked);
 }
 #endif
 
@@ -562,15 +626,71 @@ void AdvancedOptionsHandler::SetupCloudPrintConnectorSection() {
   StringValue label(label_str);
 
   web_ui()->CallJavascriptFunction(
-      "options.AdvancedOptions.SetupCloudPrintConnectorSection",
-      disabled, label, allowed);
+      "AdvancedOptions.SetupCloudPrintConnectorSection", disabled, label,
+      allowed);
 }
 
 void AdvancedOptionsHandler::RemoveCloudPrintConnectorSection() {
   web_ui()->CallJavascriptFunction(
-      "options.AdvancedOptions.RemoveCloudPrintConnectorSection");
+      "AdvancedOptions.RemoveCloudPrintConnectorSection");
+}
+#endif
+
+#if defined(OS_CHROMEOS)
+void AdvancedOptionsHandler::SpokenFeedbackChangeCallback(
+    const ListValue* args) {
+  bool enabled = false;
+  args->GetBoolean(0, &enabled);
+
+  chromeos::accessibility::EnableAccessibility(enabled, NULL);
 }
 
+void AdvancedOptionsHandler::HighContrastChangeCallback(const ListValue* args) {
+  bool enabled = false;
+  args->GetBoolean(0, &enabled);
+
+  chromeos::accessibility::EnableHighContrast(enabled);
+}
+
+void AdvancedOptionsHandler::ScreenMagnifierChangeCallback(
+    const ListValue* args) {
+  bool enabled = false;
+  args->GetBoolean(0, &enabled);
+
+  chromeos::accessibility::EnableScreenMagnifier(enabled);
+}
+
+void AdvancedOptionsHandler::VirtualKeyboardChangeCallback(
+    const ListValue* args) {
+  bool enabled = false;
+  args->GetBoolean(0, &enabled);
+
+  chromeos::accessibility::EnableVirtualKeyboard(enabled);
+}
+
+void AdvancedOptionsHandler::SetupAccessibilityFeatures() {
+  PrefService* pref_service = g_browser_process->local_state();
+  base::FundamentalValue spoken_feedback_enabled(
+      pref_service->GetBoolean(prefs::kSpokenFeedbackEnabled));
+  web_ui()->CallJavascriptFunction(
+      "AdvancedOptions.setSpokenFeedbackCheckboxState",
+      spoken_feedback_enabled);
+  base::FundamentalValue high_contrast_enabled(
+      pref_service->GetBoolean(prefs::kHighContrastEnabled));
+  web_ui()->CallJavascriptFunction(
+      "AdvancedOptions.setHighContrastCheckboxState",
+      high_contrast_enabled);
+  base::FundamentalValue screen_magnifier_enabled(
+      pref_service->GetBoolean(prefs::kScreenMagnifierEnabled));
+  web_ui()->CallJavascriptFunction(
+      "AdvancedOptions.setScreenMagnifierCheckboxState",
+      screen_magnifier_enabled);
+  base::FundamentalValue virtual_keyboard_enabled(
+      pref_service->GetBoolean(prefs::kVirtualKeyboardEnabled));
+  web_ui()->CallJavascriptFunction(
+      "AdvancedOptions.setVirtualKeyboardCheckboxState",
+      virtual_keyboard_enabled);
+}
 #endif
 
 void AdvancedOptionsHandler::SetupMetricsReportingCheckbox() {
@@ -578,8 +698,7 @@ void AdvancedOptionsHandler::SetupMetricsReportingCheckbox() {
   base::FundamentalValue checked(enable_metrics_recording_.GetValue());
   base::FundamentalValue disabled(enable_metrics_recording_.IsManaged());
   web_ui()->CallJavascriptFunction(
-      "options.AdvancedOptions.SetMetricsReportingCheckboxState", checked,
-      disabled);
+      "AdvancedOptions.SetMetricsReportingCheckboxState", checked, disabled);
 #endif
 }
 
@@ -589,8 +708,7 @@ void AdvancedOptionsHandler::SetupMetricsReportingSettingVisibility() {
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kGuestSession)) {
     base::FundamentalValue visible(false);
     web_ui()->CallJavascriptFunction(
-        "options.AdvancedOptions.SetMetricsReportingSettingVisibility",
-        visible);
+        "AdvancedOptions.SetMetricsReportingSettingVisibility", visible);
   }
 #endif
 }
@@ -598,8 +716,7 @@ void AdvancedOptionsHandler::SetupMetricsReportingSettingVisibility() {
 void AdvancedOptionsHandler::SetupFontSizeSelector() {
   // We're only interested in integer values, so convert to int.
   base::FundamentalValue font_size(default_font_size_.GetValue());
-  web_ui()->CallJavascriptFunction(
-      "options.AdvancedOptions.SetFontSize", font_size);
+  web_ui()->CallJavascriptFunction("AdvancedOptions.SetFontSize", font_size);
 }
 
 void AdvancedOptionsHandler::SetupPageZoomSelector() {
@@ -634,7 +751,7 @@ void AdvancedOptionsHandler::SetupPageZoomSelector() {
   }
 
   web_ui()->CallJavascriptFunction(
-      "options.AdvancedOptions.SetupPageZoomSelector", zoom_factors_value);
+      "AdvancedOptions.SetupPageZoomSelector", zoom_factors_value);
 }
 
 void AdvancedOptionsHandler::SetupAutoOpenFileTypesDisabledAttribute() {
@@ -646,7 +763,7 @@ void AdvancedOptionsHandler::SetupAutoOpenFileTypesDisabledAttribute() {
       DownloadPrefs::FromDownloadManager(manager)->IsAutoOpenUsed());
   base::FundamentalValue value(disabled);
   web_ui()->CallJavascriptFunction(
-      "options.AdvancedOptions.SetAutoOpenFileTypesDisabledAttribute", value);
+      "AdvancedOptions.SetAutoOpenFileTypesDisabledAttribute", value);
 }
 
 void AdvancedOptionsHandler::SetupProxySettingsSection() {
@@ -673,7 +790,7 @@ void AdvancedOptionsHandler::SetupProxySettingsSection() {
   StringValue label(label_str);
 
   web_ui()->CallJavascriptFunction(
-      "options.AdvancedOptions.SetupProxySettingsSection", disabled, label);
+      "AdvancedOptions.SetupProxySettingsSection", disabled, label);
 #endif  // !defined(OS_CHROMEOS)
 }
 
@@ -682,8 +799,7 @@ void AdvancedOptionsHandler::SetupSSLConfigSettings() {
     base::FundamentalValue checked(rev_checking_enabled_.GetValue());
     base::FundamentalValue disabled(rev_checking_enabled_.IsManaged());
     web_ui()->CallJavascriptFunction(
-        "options.AdvancedOptions.SetCheckRevocationCheckboxState", checked,
-        disabled);
+        "AdvancedOptions.SetCheckRevocationCheckboxState", checked, disabled);
   }
 }
 

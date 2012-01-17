@@ -18,6 +18,10 @@
 #include "chrome/browser/ui/webui/options2/options_ui2.h"
 #include "ui/base/models/table_model_observer.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/device_hierarchy_observer.h"
+#endif
+
 class AutocompleteController;
 class CustomHomePagesTableModel;
 class TemplateURLService;
@@ -25,11 +29,16 @@ class TemplateURLService;
 namespace options2 {
 
 // Chrome browser options page UI handler.
-class BrowserOptionsHandler : public OptionsPageUIHandler,
-                              public ProfileSyncServiceObserver,
-                              public AutocompleteControllerDelegate,
-                              public ShellIntegration::DefaultWebClientObserver,
-                              public TemplateURLServiceObserver {
+class BrowserOptionsHandler
+    : public OptionsPageUIHandler,
+      public ProfileSyncServiceObserver,
+      public AutocompleteControllerDelegate,
+      public ShellIntegration::DefaultWebClientObserver,
+      public TemplateURLServiceObserver,
+#if defined(OS_CHROMEOS)
+      public chromeos::DeviceHierarchyObserver,
+#endif
+      public base::SupportsWeakPtr<BrowserOptionsHandler> {
  public:
   BrowserOptionsHandler();
   virtual ~BrowserOptionsHandler();
@@ -53,6 +62,11 @@ class BrowserOptionsHandler : public OptionsPageUIHandler,
   // TemplateURLServiceObserver implementation.
   virtual void OnTemplateURLServiceChanged() OVERRIDE;
 
+#if defined(OS_CHROMEOS)
+  // DeviceHierarchyObserver implementation.
+  virtual void DeviceHierarchyChanged() OVERRIDE;
+#endif
+
  private:
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
@@ -60,21 +74,21 @@ class BrowserOptionsHandler : public OptionsPageUIHandler,
                        const content::NotificationDetails& details) OVERRIDE;
 
   // Makes this the default browser. Called from WebUI.
-  void BecomeDefaultBrowser(const ListValue* args);
+  void BecomeDefaultBrowser(const base::ListValue* args);
 
   // Sets the search engine at the given index to be default. Called from WebUI.
-  void SetDefaultSearchEngine(const ListValue* args);
+  void SetDefaultSearchEngine(const base::ListValue* args);
 
   // Gets autocomplete suggestions asynchronously for the given string.
   // Called from WebUI.
-  void RequestAutocompleteSuggestions(const ListValue* args);
+  void RequestAutocompleteSuggestions(const base::ListValue* args);
 
   // Enables/disables Instant.
-  void EnableInstant(const ListValue* args);
-  void DisableInstant(const ListValue* args);
+  void EnableInstant(const base::ListValue* args);
+  void DisableInstant(const base::ListValue* args);
 
   // Enables/disables auto-launching of Chrome on computer startup.
-  void ToggleAutoLaunch(const ListValue* args);
+  void ToggleAutoLaunch(const base::ListValue* args);
 
   // Checks (on the file thread) whether the user is in the auto-launch trial
   // and whether Chrome is set to auto-launch at login. Gets a reply on the UI
@@ -90,7 +104,7 @@ class BrowserOptionsHandler : public OptionsPageUIHandler,
                                bool will_launch_at_login);
 
   // Called to request information about the Instant field trial.
-  void GetInstantFieldTrialStatus(const ListValue* args);
+  void GetInstantFieldTrialStatus(const base::ListValue* args);
 
   // Returns the string ID for the given default browser state.
   int StatusStringIdForState(ShellIntegration::DefaultWebClientState state);
@@ -120,15 +134,29 @@ class BrowserOptionsHandler : public OptionsPageUIHandler,
 
   // Asynchronously opens a new browser window to create a new profile.
   // |args| is not used.
-  void CreateProfile(const ListValue* args);
+  void CreateProfile(const base::ListValue* args);
 
   void ObserveThemeChanged();
-  void ThemesReset(const ListValue* args);
+  void ThemesReset(const base::ListValue* args);
 #if defined(TOOLKIT_GTK)
-  void ThemesSetGTK(const ListValue* args);
+  void ThemesSetGTK(const base::ListValue* args);
 #endif
 
 #if defined(OS_CHROMEOS)
+  // Check for input devices.
+  void CheckTouchpadExists();
+  void CheckMouseExists();
+
+  // Callback for input device checks.
+  void TouchpadExists(bool* exists);
+  void MouseExists(bool* exists);
+
+  // Called when the System configuration screen is used to adjust
+  // the screen brightness.
+  // |args| will be an empty list.
+  void DecreaseScreenBrightnessCallback(const base::ListValue* args);
+  void IncreaseScreenBrightnessCallback(const base::ListValue* args);
+
   void UpdateAccountPicture();
 #endif
 

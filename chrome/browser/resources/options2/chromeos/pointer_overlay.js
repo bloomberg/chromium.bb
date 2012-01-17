@@ -31,6 +31,20 @@ cr.define('options', function() {
     },
   };
 
+  /**
+   * Sets the visibility state of the touchpad group.
+   */
+  PointerOverlay.showTouchpadControls = function(show) {
+    $('pointer-section-touchpad').hidden = !show;
+  };
+
+  /**
+   * Sets the visibility state of the mouse group.
+   */
+  PointerOverlay.showMouseControls = function(show) {
+    $('pointer-section-mouse').hidden = !show;
+  };
+
   // Export
   return {
     PointerOverlay: PointerOverlay

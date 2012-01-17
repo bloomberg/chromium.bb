@@ -71,7 +71,6 @@
 #include "chrome/browser/ui/webui/options2/chromeos/pointer_handler2.h"
 #include "chrome/browser/ui/webui/options2/chromeos/proxy_handler2.h"
 #include "chrome/browser/ui/webui/options2/chromeos/stats_options_handler2.h"
-#include "chrome/browser/ui/webui/options2/chromeos/system_options_handler2.h"
 #include "chrome/browser/ui/webui/options2/chromeos/user_image_source2.h"
 #include "chrome/browser/ui/webui/options2/chromeos/virtual_keyboard_manager_handler2.h"
 #endif
@@ -261,7 +260,6 @@ OptionsUI::OptionsUI(WebUI* web_ui)
       new chromeos::options2::ChangePictureOptionsHandler());
   AddOptionsPageUIHandler(localized_strings,
                           new chromeos::options2::StatsOptionsHandler());
-  AddOptionsPageUIHandler(localized_strings, new SystemOptionsHandler());
 #endif
 #if defined(USE_NSS)
   AddOptionsPageUIHandler(localized_strings, new CertificateManagerHandler());

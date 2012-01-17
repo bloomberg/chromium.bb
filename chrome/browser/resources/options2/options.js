@@ -72,9 +72,8 @@ function load() {
                               BrowserOptions.getInstance(),
                               [$('advancedOptionsButton')]);
   if (cr.isChromeOS) {
-    OptionsPage.register(SystemOptions.getInstance());
     OptionsPage.registerSubPage(LanguageOptions.getInstance(),
-                                SystemOptions.getInstance(),
+                                AdvancedOptions.getInstance(),
                                 [$('language-button')]);
     OptionsPage.registerSubPage(
         new OptionsPage('languageChewing',
@@ -186,15 +185,16 @@ function load() {
     OptionsPage.registerOverlay(DetailsInternetPage.getInstance(),
                                 InternetOptions.getInstance());
     OptionsPage.registerOverlay(KeyboardOverlay.getInstance(),
-                                SystemOptions.getInstance(),
-                                [$('modifier-keys-button')]);
+                                BrowserOptions.getInstance(),
+                                [$('keyboard-settings-button')]);
     OptionsPage.registerOverlay(PointerOverlay.getInstance(),
-                                SystemOptions.getInstance());
+                                BrowserOptions.getInstance(),
+                                [$('pointer-settings-button')]);
     OptionsPage.registerOverlay(BluetoothOptions.getInstance(),
-                                SystemOptions.getInstance(),
+                                AdvancedOptions.getInstance(),
                                 [$('bluetooth-add-device')]);
     OptionsPage.registerOverlay(BluetoothPairing.getInstance(),
-                                SystemOptions.getInstance());
+                                AdvancedOptions.getInstance());
   }
 
   Preferences.getInstance().initialize();

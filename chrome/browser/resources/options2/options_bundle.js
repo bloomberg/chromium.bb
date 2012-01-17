@@ -20,7 +20,6 @@
   <include src="chromeos/internet_network_element.js"></include>
   <include src="chromeos/internet_options.js"></include>
   <include src="chromeos/internet_detail.js"></include>
-  <include src="chromeos/system_options.js"></include>
   <include src="chromeos/bluetooth_device_list.js"></include>
   <include src="chromeos/bluetooth_add_device_overlay.js"></include>
   <include src="chromeos/bluetooth_pair_device_overlay.js"></include>
@@ -37,7 +36,6 @@
   var ChangePictureOptions = options.ChangePictureOptions;
   var InternetOptions = options.InternetOptions;
   var DetailsInternetPage = options.internet.DetailsInternetPage;
-  var SystemOptions = options.SystemOptions;
   var BluetoothOptions = options.BluetoothOptions;
   var BluetoothPairing = options.BluetoothPairing;
   var KeyboardOverlay = options.KeyboardOverlay;

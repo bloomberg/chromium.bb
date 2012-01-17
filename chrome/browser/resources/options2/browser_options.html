@@ -106,6 +106,39 @@
 </if>
     </div>
   </section>
+<if expr="pp_ifdef('chromeos')">
+  <section>
+    <h3 i18n-content="deviceGroupName"></h3>
+    <div class="option-control-table">
+      <span class="option-name" i18n-content="deviceGroupPointer"></span>
+      <div id="pointer-value">
+        <div id="slider-control">
+          <input id="sensitivity-range" type="range" min="1" max="5"
+              pref="settings.touchpad.sensitivity2" class="touch-slider">
+          <div>
+            <span i18n-content="pointerSensitivityLess"></span>
+            <span id="pointer-sensitivity-more"
+                i18n-content="pointerSensitivityMore"></span>
+          </div>
+        </div>
+      </div>
+      <button id="pointer-settings-button"
+          i18n-content="pointerSettingsButtonTitle"></button>
+    </div>
+    <div>
+      <span i18n-content="deviceGroupKeyboard"></span>
+      <button id="keyboard-settings-button"
+          i18n-content="keyboardSettingsButtonTitle"></button>
+    </div>
+    <div id="brightness-value">
+      <span i18n-content="deviceGroupBrightness"></span>
+      <button id="brightness-decrease-button"
+          i18n-content="brightnessDecrease"></button>
+      <button id="brightness-increase-button"
+          i18n-content="brightnessIncrease"></button>
+    </div>
+  </section>
+</if>
   <section>
     <h3 i18n-content="defaultSearchGroupName"></h3>
       <div id="defaultSearchEngineGroup">

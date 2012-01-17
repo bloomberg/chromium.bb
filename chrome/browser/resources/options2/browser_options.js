@@ -5,6 +5,7 @@
 cr.define('options', function() {
   const OptionsPage = options.OptionsPage;
   const ArrayDataModel = cr.ui.ArrayDataModel;
+  var RepeatingButton = cr.ui.RepeatingButton;
 
   //
   // BrowserOptions class
@@ -75,6 +76,20 @@ cr.define('options', function() {
       $('themes-reset').onclick = function(event) {
         chrome.send('themesReset');
       };
+
+      // Device section (ChromeOS only).
+      if (cr.isChromeOS) {
+        $('keyboard-settings-button').onclick = function(event) {
+          OptionsPage.navigateToPage('keyboard-overlay');
+        };
+        $('pointer-settings-button').onclick = function(event) {
+          OptionsPage.navigateToPage('pointer-overlay');
+        };
+        this.initBrightnessButton_('brightness-decrease-button',
+            'decreaseScreenBrightness');
+        this.initBrightnessButton_('brightness-increase-button',
+            'increaseScreenBrightness');
+      }
 
       // Search section.
       $('defaultSearchManageEnginesButton').onclick = function(event) {
@@ -190,11 +205,25 @@ cr.define('options', function() {
       };
     },
 
+    /**
+     * Initializes a button for controlling screen brightness.
+     * @param {string} id Button ID.
+     * @param {string} callback Name of the callback function.
+     */
+    initBrightnessButton_: function(id, callback) {
+      var button = $(id);
+      cr.ui.decorate(button, RepeatingButton);
+      button.repeatInterval = 300;
+      button.addEventListener(RepeatingButton.Event.BUTTON_HELD, function(e) {
+        chrome.send(callback);
+      });
+    },
+
     setSyncEnabled_: function(enabled) {
       this.syncEnabled = enabled;
     },
 
-    setAutoLoginVisible_ : function(visible) {
+    setAutoLoginVisible_: function(visible) {
       $('enable-auto-login-checkbox').hidden = !visible;
     },
 
@@ -338,6 +367,7 @@ cr.define('options', function() {
      * @param {number} defaultValue The value of the current default engine.
      * @param {boolean} defaultManaged Whether the default search provider is
      *     managed. If true, the default search provider can't be changed.
+     * @private
      */
     updateSearchEngines_: function(engines, defaultValue, defaultManaged) {
       this.clearSearchEngines_();
@@ -386,6 +416,7 @@ cr.define('options', function() {
 
     /**
      * Set the default search engine based on the popup selection.
+     * @private
      */
     setDefaultSearchEngine_: function() {
       var engineSelect = $('defaultSearchEngine');
@@ -447,6 +478,7 @@ cr.define('options', function() {
      * Helper function to set the status of profile view buttons to disabled or
      * enabled, depending on the number of profiles and selection status of the
      * profiles list.
+     * @private
      */
     setProfileViewButtonsStatus_: function() {
       var profilesList = $('profiles-list');
@@ -462,6 +494,7 @@ cr.define('options', function() {
      * Display the correct dialog layout, depending on how many profiles are
      * available.
      * @param {number} numProfiles The number of profiles to display.
+     * @private
      */
     setProfileViewSingle_: function(numProfiles) {
       var hasSingleProfile = numProfiles == 1;
@@ -483,6 +516,7 @@ cr.define('options', function() {
      *         filePath: "/path/to/profile/data/on/disk",
      *         isCurrentProfile: false
      *       };
+     * @private
      */
     setProfilesInfo_: function(profiles) {
       this.setProfileViewSingle_(profiles.length);
@@ -509,6 +543,26 @@ cr.define('options', function() {
       $('account-picture').src =
           'chrome://userimage/' + this.username_ +
           '?id=' + (new Date()).getTime();
+    },
+
+    /**
+     * Displays the touchpad controls section when we detect a touchpad, hides
+     * it otherwise.
+     * @param {boolean} show Whether or not to show the controls.
+     * @private
+     */
+    showTouchpadControls_: function() {
+      $('touchpad-controls').hidden = !show;
+    },
+
+    /**
+     * Displays the mouse controls section when we detect a mouse, hides it
+     * otherwise.
+     * @param {boolean} show Whether or not to show the controls.
+     * @private
+     */
+    showMouseControls_: function(show) {
+      $('mouse-controls').hidden = !show;
     },
   };
 
@@ -537,6 +591,8 @@ cr.define('options', function() {
     'updateHomePageLabel',
     'updateSearchEngines',
     'updateStartupPages',
+    'showTouchpadControls',
+    'showMouseControls',
   ].forEach(function(name) {
     BrowserOptions[name] = function(value) {
       return BrowserOptions.getInstance()[name + '_'](value);

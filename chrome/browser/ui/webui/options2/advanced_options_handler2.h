@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -124,6 +124,16 @@ class AdvancedOptionsHandler
   void RemoveCloudPrintConnectorSection();
 #endif
 
+#if defined(OS_CHROMEOS)
+  // Called when the accessibility checkbox values are changed.
+  // |args| will contain the checkbox checked state as a string
+  // ("true" or "false").
+  void SpokenFeedbackChangeCallback(const base::ListValue* args);
+  void HighContrastChangeCallback(const base::ListValue* args);
+  void ScreenMagnifierChangeCallback(const base::ListValue* args);
+  void VirtualKeyboardChangeCallback(const base::ListValue* args);
+#endif
+
 #if !defined(OS_MACOSX) && !defined(OS_CHROMEOS)
   // Sets up the checked state for the "Continue running background apps..."
   // checkbox.
@@ -153,6 +163,11 @@ class AdvancedOptionsHandler
 
   // Setup the checked state for SSL related checkboxes.
   void SetupSSLConfigSettings();
+
+#if defined(OS_CHROMEOS)
+  // Setup the accessibility features for ChromeOS.
+  void SetupAccessibilityFeatures();
+#endif
 
   scoped_refptr<SelectFileDialog> select_folder_dialog_;
 

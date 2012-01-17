@@ -46,7 +46,6 @@
   <link rel="stylesheet" href="chromeos/internet_options_page.css">
   <link rel="stylesheet" herf="chromeos/pointer_overlay.css">
   <link rel="stylesheet" href="chromeos/proxy.css">
-  <link rel="stylesheet" href="chromeos/system_options_page.css">
 </if>
 <if expr="pp_ifdef('chromeos') and pp_ifdef('use_virtual_keyboard')">
   <link rel="stylesheet" href="chromeos/virtual_keyboard.css">
@@ -119,7 +118,6 @@
          <include src="search_page.html">
          <include src="browser_options.html">
          <if expr="pp_ifdef('chromeos')">
-           <include src="chromeos/system_options.html">
            <include src="chromeos/internet_options.html">
            <include src="chromeos/accounts_options.html">
          </if>

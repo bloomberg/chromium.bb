@@ -1,5 +1,24 @@
 <div id="advancedPage" class="page" hidden>
   <h1 i18n-content="advancedPage"></h1>
+<if expr="pp_ifdef('chromeos')">
+  <section>
+    <h3 i18n-content="datetimeTitle"></h3>
+    <div class="option-control-table">
+      <span class="option-name" i18n-content="timezone"></span>
+      <div id="timezone-value">
+        <select id="timezone-select" class="control" i18n-options="timezoneList"
+            data-type="string" pref="cros.system.timezone"></select>
+      </div>
+      <div class="checkbox">
+        <label>
+          <input id="use-24hour-clock" pref="settings.clock.use_24hour_clock"
+              type="checkbox">
+          <span i18n-content="use24HourClock"></span>
+        </label>
+      </div>
+    </div>
+  </section>
+</if>
   <section>
     <h3 i18n-content="advancedSectionTitlePrivacy"></h3>
     <div>
@@ -69,6 +88,25 @@
 </if>
     </div>
   </section>
+  <!-- By default, the bluetooth section is hidden.  It is only
+       visible if the command line flag 'enable_bluetooth' is set
+       and a bluetooth adapter is discovered or emmulating ChromeOS. -->
+<if expr="pp_ifdef('chromeos')">
+  <section id="bluetooth-devices" hidden>
+    <h3 i18n-content="bluetooth"></h3>
+    <div id="bluetooth-options-div">
+      <div id="bluetooth-buttons">
+        <button id="enable-bluetooth" i18n-content="enableBluetooth" hidden>
+        <button id="disable-bluetooth" i18n-content="disableBluetooth">
+      </div>
+      <div class="settings-list bluetooth-device-list" hidden>
+        <list id="bluetooth-paired-devices-list"></list>
+      </div>
+      <button id="bluetooth-add-device" hidden
+          i18n-content="addBluetoothDevice"></button>
+    </div>
+  </section>
+</if>
   <section id="passwords-and-autofill-section">
     <h3 i18n-content="passwordsAndAutofillGroupName"></h3>
     <div class="checkbox">
@@ -239,6 +277,43 @@
       <div class="section-group">
         <button id="cloudPrintManageButton"
                 i18n-content="cloudPrintChromeosOptionButton"></button>
+      </div>
+    </div>
+  </section>
+  <section>
+    <h3 i18n-content="accessibilityTitle"></h3>
+    <div class="option-control-table">
+      <div class="option-name">
+        <div class="checkbox">
+          <label>
+            <input id="accessibility-spoken-feedback-check" type="checkbox">
+            <span i18n-content="accessibilitySpokenFeedback"></span>
+          </label>
+        </div>
+      </div>
+      <div class="option-name">
+        <div class="checkbox">
+          <label>
+            <input id="accessibility-high-contrast-check" type="checkbox">
+            <span i18n-content="accessibilityHighContrast"></span>
+          </label>
+        </div>
+      </div>
+      <div class="option-name">
+        <div class="checkbox">
+          <label>
+            <input id="accessibility-screen-magnifier-check" type="checkbox">
+            <span i18n-content="accessibilityScreenMagnifier"></span>
+          </label>
+        </div>
+      </div>
+      <div class="option-name">
+        <div class="checkbox">
+          <label>
+            <input id="accessibility-virtual-keyboard-check" type="checkbox">
+            <span i18n-content="accessibilityVirtualKeyboard"></span>
+          </label>
+        </div>
       </div>
     </div>
   </section>

@@ -4,7 +4,7 @@
 
 cr.define('options', function() {
 
-var OptionsPage = options.OptionsPage;
+  var OptionsPage = options.OptionsPage;
 
   //
   // AdvancedOptions class
@@ -22,13 +22,26 @@ var OptionsPage = options.OptionsPage;
     __proto__: options.OptionsPage.prototype,
 
     /**
+     * Flag indicating if currently scanning for Bluetooth devices.
+     * @type {boolean}
+     */
+    isScanning_: false,
+
+    /**
      * Initializes the page.
      */
     initializePage: function() {
       // Call base class implementation to starts preference initialization.
       OptionsPage.prototype.initializePage.call(this);
 
-      // Set up click handlers for buttons.
+      // Date and time section (CrOS only).
+      if (cr.isChromeOS && AccountsOptions.loggedInAsGuest()) {
+        // Disable time-related settings if we're not logged in as a real user.
+        $('timezone-select').disabled = true;
+        $('use-24hour-clock').disabled = true;
+      }
+
+      // Privacy section.
       $('privacyContentSettingsButton').onclick = function(event) {
         OptionsPage.navigateToPage('content');
         OptionsPage.showTab($('cookies-nav-tab'));
@@ -39,7 +52,6 @@ var OptionsPage = options.OptionsPage;
         OptionsPage.navigateToPage('clearBrowserData');
         chrome.send('coreOptionsUserMetricsAction', ['Options_ClearData']);
       };
-
       // 'metricsReportingEnabled' element is only present on Chrome branded
       // builds.
       if ($('metricsReportingEnabled')) {
@@ -49,7 +61,25 @@ var OptionsPage = options.OptionsPage;
         };
       }
 
-      // Passwords and Forms.
+      // Bluetooth (CrOS only).
+      if (cr.isChromeOS) {
+        options.system.bluetooth.BluetoothDeviceList.decorate(
+            $('bluetooth-paired-devices-list'));
+
+        $('bluetooth-add-device').onclick = function(event) {
+          if (!this.isScanning_)
+            findBluetoothDevices_(true);
+          OptionsPage.navigateToPage('bluetooth');
+        };
+        $('enable-bluetooth').onclick = function(event) {
+          chrome.send('bluetoothEnableChange', [Boolean(true)]);
+        };
+        $('disable-bluetooth').onclick = function(event) {
+          chrome.send('bluetoothEnableChange', [Boolean(false)]);
+        };
+      }
+
+      // Passwords and Forms section.
       $('autofill-settings').onclick = function(event) {
         OptionsPage.navigateToPage('autofill');
         chrome.send('coreOptionsUserMetricsAction',
@@ -83,12 +113,14 @@ var OptionsPage = options.OptionsPage;
       $('mac-passwords-warning').hidden =
           !(localStrings.getString('macPasswordsWarning'));
 
+      // Network section.
       if (!cr.isChromeOS) {
-        $('autoOpenFileTypesResetToDefault').onclick = function(event) {
-          chrome.send('autoOpenFileTypesAction');
+        $('proxiesConfigureButton').onclick = function(event) {
+          chrome.send('showNetworkProxySettings');
         };
       }
 
+      // Web Content section.
       $('fontSettingsCustomizeFontsButton').onclick = function(event) {
         OptionsPage.navigateToPage('fonts');
         chrome.send('coreOptionsUserMetricsAction', ['Options_FontSettings']);
@@ -102,12 +134,28 @@ var OptionsPage = options.OptionsPage;
             [String(event.target.options[event.target.selectedIndex].value)]);
       };
 
+      // Languages section.
       $('language-button').onclick = function(event) {
         OptionsPage.navigateToPage('languages');
         chrome.send('coreOptionsUserMetricsAction',
             ['Options_LanuageAndSpellCheckSettings']);
       };
 
+      // Downloads section.
+      if (!cr.isChromeOS) {
+        $('downloadLocationChangeButton').onclick = function(event) {
+          chrome.send('selectDownloadLocation');
+        };
+        // This text field is always disabled. Setting ".disabled = true" isn't
+        // enough, since a policy can disable it but shouldn't re-enable when
+        // it is removed.
+        $('downloadLocationPath').setDisabled('readonly', true);
+        $('autoOpenFileTypesResetToDefault').onclick = function(event) {
+          chrome.send('autoOpenFileTypesAction');
+        };
+      }
+
+      // HTTPS/SSL section.
       if (cr.isWindows || cr.isMac) {
         $('certificatesManageButton').onclick = function(event) {
           chrome.send('showManageSSLCertificates');
@@ -119,32 +167,12 @@ var OptionsPage = options.OptionsPage;
                       ['Options_ManageSSLCertificates']);
         };
       }
-
-      if (!cr.isChromeOS) {
-        $('proxiesConfigureButton').onclick = function(event) {
-          chrome.send('showNetworkProxySettings');
-        };
-        $('downloadLocationChangeButton').onclick = function(event) {
-          chrome.send('selectDownloadLocation');
-        };
-        // This text field is always disabled. Setting ".disabled = true" isn't
-        // enough, since a policy can disable it but shouldn't re-enable when
-        // it is removed.
-        $('downloadLocationPath').setDisabled('readonly', true);
-      }
-
       $('sslCheckRevocation').onclick = function(event) {
         chrome.send('checkRevocationCheckboxAction',
             [String($('sslCheckRevocation').checked)]);
       };
 
-      if ($('backgroundModeCheckbox')) {
-        $('backgroundModeCheckbox').onclick = function(event) {
-          chrome.send('backgroundModeAction',
-              [String($('backgroundModeCheckbox').checked)]);
-        };
-      }
-
+      // Cloud Print section.
       // 'cloudPrintProxyEnabled' is true for Chrome branded builds on
       // certain platforms, or could be enabled by a lab.
       if (!cr.isChromeOS) {
@@ -164,8 +192,48 @@ var OptionsPage = options.OptionsPage;
         chrome.send('showCloudPrintManagePage');
       };
 
-  }
+      // Accessibility section (CrOS only).
+      if (cr.isChromeOS) {
+        $('accessibility-spoken-feedback-check').onchange = function(event) {
+          chrome.send('spokenFeedbackChange',
+          [$('accessibility-spoken-feedback-check').checked]);
+        };
+        $('accessibility-high-contrast-check').onchange = function(event) {
+          chrome.send('highContrastChange',
+          [$('accessibility-high-contrast-check').checked]);
+        };
+        $('accessibility-screen-magnifier-check').onchange = function(event) {
+          chrome.send('screenMagnifierChange',
+          [$('accessibility-screen-magnifier-check').checked]);
+        };
+        $('accessibility-virtual-keyboard-check').onchange = function(event) {
+          chrome.send('virtualKeyboardChange',
+          [$('accessibility-virtual-keyboard-check').checked]);
+        };
+      }
+
+      // Background mode section.
+      if ($('backgroundModeCheckbox')) {
+        $('backgroundModeCheckbox').onclick = function(event) {
+          chrome.send('backgroundModeAction',
+              [String($('backgroundModeCheckbox').checked)]);
+        };
+      }
+    }
   };
+
+  /**
+   * Scan for bluetooth devices.
+   * @param {boolean} reset Indicates if the list of unpaired devices should be
+   *     cleared.
+   * @private
+   */
+  function findBluetoothDevices_(reset) {
+    this.isScanning_ = true;
+    if (reset)
+      $('bluetooth-unpaired-devices-list').clear();
+    chrome.send('findBluetoothDevices');
+  }
 
   //
   // Chrome callbacks
@@ -299,6 +367,97 @@ var OptionsPage = options.OptionsPage;
       if (connectorSectionElm)
         connectorSectionElm.parentNode.removeChild(connectorSectionElm);
     }
+  };
+
+  /**
+   * Set the initial state of the spoken feedback checkbox.
+   */
+  AdvancedOptions.setSpokenFeedbackCheckboxState = function(checked) {
+    $('accessibility-spoken-feedback-check').checked = checked;
+  };
+
+  /**
+   * Set the initial state of the high contrast checkbox.
+   */
+  AdvancedOptions.setHighContrastCheckboxState = function(checked) {
+    $('accessibility-high-contrast-check').checked = checked;
+  };
+
+  /**
+   * Set the initial state of the screen magnifier checkbox.
+   */
+  AdvancedOptions.setScreenMagnifierCheckboxState = function(checked) {
+    $('accessibility-screen-magnifier-check').checked = checked;
+  };
+
+  /**
+   * Set the initial state of the virtual keyboard checkbox.
+   */
+  AdvancedOptions.setVirtualKeyboardCheckboxState = function(checked) {
+    $('accessibility-virtual-keyboard-check').checked = checked;
+  };
+
+  /**
+   * Activate the bluetooth settings section on the System settings page.
+   */
+  AdvancedOptions.showBluetoothSettings = function() {
+    $('bluetooth-devices').hidden = false;
+  };
+
+  /**
+   * Sets the state of the checkbox indicating if bluetooth is turned on. The
+   * state of the "Find devices" button and the list of discovered devices may
+   * also be affected by a change to the state.
+   * @param {boolean} checked Flag Indicating if Bluetooth is turned on.
+   */
+  AdvancedOptions.setBluetoothState = function(checked) {
+    $('disable-bluetooth').hidden = !checked;
+    $('enable-bluetooth').hidden = checked;
+    $('bluetooth-paired-devices-list').parentNode.hidden = !checked;
+    $('bluetooth-add-device').hidden = !checked;
+    // Flush list of previously discovered devices if bluetooth is turned off.
+    if (!checked) {
+      $('bluetooth-paired-devices-list').clear();
+      $('bluetooth-unpaired-devices-list').clear();
+    }
+    if (checked && ! this.isScanning_)
+      findBluetoothDevices_(true);
+  }
+
+  /**
+   * Adds an element to the list of available bluetooth devices. If an element
+   * with a matching address is found, the existing element is updated.
+   * @param {{name: string,
+   *          address: string,
+   *          icon: string,
+   *          paired: boolean,
+   *          connected: boolean}} device
+   *     Decription of the bluetooth device.
+   */
+  AdvancedOptions.addBluetoothDevice = function(device) {
+    if (device.paired) {
+      // Test to see if the device is currently in the unpaired list, in which
+      // case it should be removed from that list.
+      var index = $('bluetooth-unpaired-devices-list').find(device.address);
+      if (index != undefined)
+        $('bluetooth-unpaired-devices-list').deleteItemAtIndex(index);
+      $('bluetooth-paired-devices-list').appendDevice(device);
+    } else {
+      $('bluetooth-unpaired-devices-list').appendDevice(device);
+    }
+    // One device can be in the process of pairing.  If found, display
+    // the Bluetooth pairing overlay.
+    if (device.pairing)
+      BluetoothPairing.showDialog(device);
+  };
+
+  /**
+   * Notification that a single pass of device discovery has completed.
+   */
+  AdvancedOptions.notifyBluetoothSearchComplete = function() {
+    // TODO(kevers): Determine the fate of this method once continuous
+    // scanning is implemented in the Bluetooth code.
+    this.isScanning_ = false;
   };
 
   // Export

@@ -40,3 +40,8 @@
 #password-manager-label {
   display: inline;
 }
+
+#timezone-value {
+   display: inline-block;
+   vertical-align: baseline;
+}

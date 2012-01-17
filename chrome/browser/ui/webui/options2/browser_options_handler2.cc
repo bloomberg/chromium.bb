@@ -60,17 +60,22 @@
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
-#if defined(OS_WIN)
-#include "chrome/installer/util/auto_launch_util.h"
-#endif  // defined(OS_WIN)
-
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/cros_settings.h"
+#include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
+#include "chrome/browser/chromeos/dbus/power_manager_client.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/options/take_photo_dialog.h"
+#include "chrome/browser/chromeos/system/input_device_settings.h"
+#include "chrome/browser/chromeos/xinput_hierarchy_changed_event_listener.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/views/window.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #endif  // defined(OS_CHROMEOS)
+
+#if defined(OS_WIN)
+#include "chrome/installer/util/auto_launch_util.h"
+#endif  // defined(OS_WIN)
 
 #if defined(TOOLKIT_GTK)
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
@@ -78,6 +83,20 @@
 
 using content::BrowserThread;
 using content::UserMetricsAction;
+
+namespace {
+
+#if defined(OS_CHROMEOS)
+void TouchpadExistsFileThread(bool* exists) {
+  *exists = chromeos::system::touchpad_settings::TouchpadExists();
+}
+
+void MouseExistsFileThread(bool* exists) {
+  *exists = chromeos::system::mouse_settings::MouseExists();
+}
+#endif  // defined(OS_CHROMEOS)
+
+}  // namespace
 
 namespace options2 {
 
@@ -101,6 +120,11 @@ BrowserOptionsHandler::~BrowserOptionsHandler() {
     default_browser_worker_->ObserverDestroyed();
   if (template_url_service_)
     template_url_service_->RemoveObserver(this);
+
+#if defined(OS_CHROMEOS)
+  chromeos::XInputHierarchyChangedEventListener::GetInstance()
+      ->RemoveObserver(this);
+#endif
 }
 
 void BrowserOptionsHandler::GetLocalizedValues(
@@ -154,6 +178,20 @@ void BrowserOptionsHandler::GetLocalizedValues(
 #if defined(OS_CHROMEOS)
     { "changePicture", IDS_OPTIONS_CHANGE_PICTURE },
     { "enableScreenlock", IDS_OPTIONS_ENABLE_SCREENLOCKER_CHECKBOX },
+    { "deviceGroupName", IDS_OPTIONS_DEVICE_GROUP_NAME },
+    { "deviceGroupBrightness", IDS_OPTIONS_SETTINGS_BRIGHTNESS_DESCRIPTION },
+    { "brightnessDecrease", IDS_OPTIONS_SETTINGS_BRIGHTNESS_DECREASE },
+    { "brightnessIncrease", IDS_OPTIONS_SETTINGS_BRIGHTNESS_INCREASE },
+    { "deviceGroupKeyboard", IDS_OPTIONS_DEVICE_GROUP_KEYBOARD_SECTION },
+    { "keyboardSettingsButtonTitle",
+      IDS_OPTIONS_DEVICE_GROUP_KEYBOARD_SETTINGS_BUTTON_TITLE },
+    { "deviceGroupPointer", IDS_OPTIONS_DEVICE_GROUP_POINTER_SECTION },
+    { "pointerSettingsButtonTitle",
+      IDS_OPTIONS_DEVICE_GROUP_POINTER_SETTINGS_BUTTON_TITLE },
+    { "pointerSensitivityLess",
+      IDS_OPTIONS_SETTINGS_SENSITIVITY_LESS_DESCRIPTION },
+    { "pointerSensitivityMore",
+      IDS_OPTIONS_SETTINGS_SENSITIVITY_MORE_DESCRIPTION },
 #endif
   };
 
@@ -247,6 +285,16 @@ void BrowserOptionsHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "themesSetGTK",
       base::Bind(&BrowserOptionsHandler::ThemesSetGTK,
+                 base::Unretained(this)));
+#endif
+#if defined(OS_CHROMEOS)
+  web_ui()->RegisterMessageCallback(
+      "decreaseScreenBrightness",
+      base::Bind(&BrowserOptionsHandler::DecreaseScreenBrightnessCallback,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "increaseScreenBrightness",
+      base::Bind(&BrowserOptionsHandler::IncreaseScreenBrightnessCallback,
                  base::Unretained(this)));
 #endif
 }
@@ -390,7 +438,46 @@ void BrowserOptionsHandler::Initialize() {
                  weak_ptr_factory_for_file_.GetWeakPtr()));
   weak_ptr_factory_for_ui_.DetachFromThread();
 #endif
+
+#if defined(OS_CHROMEOS)
+  chromeos::XInputHierarchyChangedEventListener::GetInstance()
+      ->AddObserver(this);
+  DeviceHierarchyChanged();
+#endif
 }
+
+#if defined(OS_CHROMEOS)
+void BrowserOptionsHandler::CheckTouchpadExists() {
+  bool* exists = new bool;
+  BrowserThread::PostTaskAndReply(BrowserThread::FILE, FROM_HERE,
+      base::Bind(&TouchpadExistsFileThread, exists),
+      base::Bind(&BrowserOptionsHandler::TouchpadExists, AsWeakPtr(), exists));
+}
+
+void BrowserOptionsHandler::CheckMouseExists() {
+  bool* exists = new bool;
+  BrowserThread::PostTaskAndReply(BrowserThread::FILE, FROM_HERE,
+      base::Bind(&MouseExistsFileThread, exists),
+      base::Bind(&BrowserOptionsHandler::MouseExists, AsWeakPtr(), exists));
+}
+
+void BrowserOptionsHandler::TouchpadExists(bool* exists) {
+  base::FundamentalValue val(*exists);
+  web_ui()->CallJavascriptFunction("BrowserOptions.showTouchpadControls", val);
+  delete exists;
+}
+
+void BrowserOptionsHandler::MouseExists(bool* exists) {
+  base::FundamentalValue val(*exists);
+  web_ui()->CallJavascriptFunction("BrowserOptions.showMouseControls", val);
+  delete exists;
+}
+
+void BrowserOptionsHandler::DeviceHierarchyChanged() {
+  CheckMouseExists();
+  CheckTouchpadExists();
+}
+#endif
 
 void BrowserOptionsHandler::CheckAutoLaunch(
     base::WeakPtr<BrowserOptionsHandler> weak_this) {
@@ -764,6 +851,20 @@ void BrowserOptionsHandler::UpdateAccountPicture() {
     web_ui()->CallJavascriptFunction("BrowserOptions.updateAccountPicture",
                                      email_value);
   }
+}
+
+void BrowserOptionsHandler::DecreaseScreenBrightnessCallback(
+    const ListValue* args) {
+  // Do not allow the options button to turn off the backlight, as that
+  // can make it very difficult to see the increase brightness button.
+  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->
+      DecreaseScreenBrightness(false);
+}
+
+void BrowserOptionsHandler::IncreaseScreenBrightnessCallback(
+    const ListValue* args) {
+  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->
+      IncreaseScreenBrightness();
 }
 #endif
 

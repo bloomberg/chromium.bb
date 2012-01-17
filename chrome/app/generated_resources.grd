@@ -12033,6 +12033,21 @@ changed since last sign in
       <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_REMEMBERED_NETWORK" desc="Title for section in settings/internet for list of remembered (favirote) networks">
         Remembered networks
       </message>
+      <message name="IDS_OPTIONS_DEVICE_GROUP_NAME">
+        Device
+      </message>
+      <message name="IDS_OPTIONS_DEVICE_GROUP_KEYBOARD_SECTION">
+        Keyboard:
+      </message>
+      <message name="IDS_OPTIONS_DEVICE_GROUP_KEYBOARD_SETTINGS_BUTTON_TITLE">
+        Keyboard settings...
+      </message>
+      <message name="IDS_OPTIONS_DEVICE_GROUP_POINTER_SECTION">
+        Pointer sensitivity:
+      </message>
+      <message name="IDS_OPTIONS_DEVICE_GROUP_POINTER_SETTINGS_BUTTON_TITLE">
+        Pointer settings...
+      </message>
       <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_TOUCHPAD">
         Touchpad
       </message>
