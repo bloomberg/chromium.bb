@@ -191,6 +191,10 @@ li.root-item > .spacer {
   background-position: 0 2px;
 }
 
+.breadcrumbs .root-label {
+  background-position: 0 3px;
+}
+
 .root-label[icon=chromebook] {
   -webkit-padding-start: 29px;
   background-image: url('../images/chromebook_24x24.png');
@@ -206,6 +210,10 @@ li.root-item > .spacer {
 .root-label[icon=archive] {
   background-image: url('../images/icon_mount_archive_16x16.png');
   background-position: 0 0;
+}
+
+.breadcrumbs .root-label[icon=archive] {
+  background-position: 0 1px;
 }
 
 .root-label[icon=removable] {
@@ -322,8 +330,8 @@ div.open-sidebar:hover {
   font-size: 15px;
   /* Root list line-height is 20px but font is taller.
      Adjusted to align icons accordingly. */
-  line-height: 18px;
-  height: 18px;
+  line-height: 20px;
+  height: 20px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
