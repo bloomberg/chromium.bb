@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/webui/extensions/extensions_ui.h"
 #include "chrome/browser/ui/webui/options2/options_ui2.h"
 #include "chrome/common/url_constants.h"
+#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
@@ -50,8 +51,9 @@ ChromeWebUIDataSource* CreateUberHTMLSource() {
 
 }  // namespace
 
-UberUI::UberUI(WebContents* contents) : WebUI(contents, this) {
-  Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
+UberUI::UberUI(WebUI* web_ui) : WebUIController(web_ui) {
+  Profile* profile = Profile::FromBrowserContext(
+      web_ui->web_contents()->GetBrowserContext());
   profile->GetChromeURLDataManager()->AddDataSource(CreateUberHTMLSource());
 
   RegisterSubpage(chrome::kChromeUISettingsFrameURL);
@@ -66,31 +68,30 @@ UberUI::~UberUI() {
 }
 
 void UberUI::RegisterSubpage(const std::string& page_url) {
-  WebUI* web_ui = ChromeWebUIFactory::GetInstance()->CreateWebUIForURL(
-      web_contents_, GURL(page_url));
+  WebUI* webui = web_ui()->web_contents()->CreateWebUI(GURL(page_url));
 
-  web_ui->set_frame_xpath("//iframe[@src='" + page_url + "']");
-  sub_uis_[page_url] = web_ui;
+  webui->SetFrameXPath("//iframe[@src='" + page_url + "']");
+  sub_uis_[page_url] = webui;
 }
 
 void UberUI::RenderViewCreated(RenderViewHost* render_view_host) {
   for (SubpageMap::iterator iter = sub_uis_.begin(); iter != sub_uis_.end();
        ++iter) {
-    iter->second->controller()->RenderViewCreated(render_view_host);
+    iter->second->GetController()->RenderViewCreated(render_view_host);
   }
 }
 
 void UberUI::RenderViewReused(RenderViewHost* render_view_host) {
   for (SubpageMap::iterator iter = sub_uis_.begin(); iter != sub_uis_.end();
        ++iter) {
-    iter->second->controller()->RenderViewReused(render_view_host);
+    iter->second->GetController()->RenderViewReused(render_view_host);
   }
 }
 
 void UberUI::DidBecomeActiveForReusedRenderView() {
   for (SubpageMap::iterator iter = sub_uis_.begin(); iter != sub_uis_.end();
        ++iter) {
-    iter->second->controller()->DidBecomeActiveForReusedRenderView();
+    iter->second->GetController()->DidBecomeActiveForReusedRenderView();
   }
 }
 
@@ -107,7 +108,7 @@ bool UberUI::OverrideHandleWebUIMessage(const GURL& source_url,
 
   // The message was sent from a subpage.
   // TODO(jam) fix this to use interface
-  //return subpage->second->controller()->OverrideHandleWebUIMessage(
+  //return subpage->second->GetController()->OverrideHandleWebUIMessage(
     //  source_url, message, args);
   subpage->second->OnWebUISend(source_url, message, args);
   return true;

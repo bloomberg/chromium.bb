@@ -13,7 +13,6 @@
 #include "base/timer.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
-#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_ui_controller.h"
@@ -23,10 +22,10 @@ class PrefService;
 class Profile;
 
 // The TabContents used for the New Tab page.
-class NewTabUI : public WebUI, public content::WebUIController,
+class NewTabUI : public content::WebUIController,
                  public content::NotificationObserver {
  public:
-  explicit NewTabUI(content::WebContents* manager);
+  explicit NewTabUI(WebUI* web_ui);
   virtual ~NewTabUI();
 
   static void RegisterUserPrefs(PrefService* prefs);
@@ -37,8 +36,9 @@ class NewTabUI : public WebUI, public content::WebUIController,
                                       const string16& title,
                                       const GURL& gurl);
 
-  // Returns a pointer to a NewTabUI if the WebUI object is a new tab page.
-  static NewTabUI* FromWebUI(WebUI* ui);
+  // Returns a pointer to a NewTabUI if the WebUIController object is a new tab
+  // page.
+  static NewTabUI* FromWebUIController(content::WebUIController* ui);
 
   // The current preference version.
   static int current_pref_version() { return current_pref_version_; }

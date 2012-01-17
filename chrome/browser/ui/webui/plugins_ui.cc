@@ -29,6 +29,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/web_contents.h"
@@ -374,11 +375,12 @@ void PluginsDOMHandler::PluginsLoaded(const std::vector<PluginGroup>& groups) {
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-PluginsUI::PluginsUI(WebContents* contents) : WebUI(contents, this) {
-  AddMessageHandler(new PluginsDOMHandler());
+PluginsUI::PluginsUI(WebUI* web_ui) : WebUIController(web_ui) {
+  web_ui->AddMessageHandler(new PluginsDOMHandler());
 
   // Set up the chrome://plugins/ source.
-  Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
+  Profile* profile = Profile::FromBrowserContext(
+      web_ui->web_contents()->GetBrowserContext());
   profile->GetChromeURLDataManager()->AddDataSource(
       CreatePluginsUIHTMLSource());
 }

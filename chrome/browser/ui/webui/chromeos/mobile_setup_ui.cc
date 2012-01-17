@@ -32,6 +32,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
+#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_view_host_observer.h"
 #include "content/public/browser/web_contents.h"
@@ -156,15 +157,16 @@ class PortalFrameLoadObserver : public content::RenderViewHostObserver {
       return;
 
     base::FundamentalValue result_value(error);
-    parent_->CallJavascriptFunction(kJsPortalFrameLoadFailedCallback,
-                                    result_value);
+    parent_->web_ui()->CallJavascriptFunction(kJsPortalFrameLoadFailedCallback,
+                                              result_value);
   }
 
   void OnFrameLoadCompleted() {
     if (!parent_.get())
       return;
 
-    parent_->CallJavascriptFunction(kJsPortalFrameLoadCompletedCallback);
+    parent_->web_ui()->CallJavascriptFunction(
+        kJsPortalFrameLoadCompletedCallback);
   }
 
   base::WeakPtr<MobileSetupUI> parent_;
@@ -1389,17 +1391,18 @@ void MobileSetupHandler::StartActivationOnUIThread() {
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-MobileSetupUI::MobileSetupUI(WebContents* contents)
-    : WebUI(contents, this),
+MobileSetupUI::MobileSetupUI(WebUI* web_ui)
+    : WebUIController(web_ui),
       frame_load_observer_(NULL) {
   chromeos::CellularNetwork* network = GetCellularNetwork();
   std::string service_path = network ? network->service_path() : std::string();
-  AddMessageHandler(new MobileSetupHandler(service_path));
+  web_ui->AddMessageHandler(new MobileSetupHandler(service_path));
   MobileSetupUIHTMLSource* html_source =
       new MobileSetupUIHTMLSource(service_path);
 
   // Set up the chrome://mobilesetup/ source.
-  Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
+  Profile* profile = Profile::FromBrowserContext(
+      web_ui->web_contents()->GetBrowserContext());
   profile->GetChromeURLDataManager()->AddDataSource(html_source);
 }
 

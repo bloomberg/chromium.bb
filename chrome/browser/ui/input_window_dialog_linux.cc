@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/input_window_dialog.h"
 
+#include "base/logging.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/webui/chrome_web_ui.h"
 #include "chrome/browser/ui/webui/input_window_dialog_webui.h"

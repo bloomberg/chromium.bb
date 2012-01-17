@@ -82,7 +82,7 @@ bool FaviconTabHelper::ShouldDisplayFavicon() {
 
   WebUI* web_ui = web_contents()->GetWebUIForCurrentState();
   if (web_ui)
-    return !web_ui->hide_favicon();
+    return !web_ui->ShouldHideFavicon();
   return true;
 }
 

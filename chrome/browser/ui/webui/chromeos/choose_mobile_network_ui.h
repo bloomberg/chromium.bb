@@ -6,15 +6,14 @@
 #define CHROME_BROWSER_UI_WEBUI_CHROMEOS_CHOOSE_MOBILE_NETWORK_UI_H_
 #pragma once
 
-#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/web_ui_controller.h"
 
 namespace chromeos {
 
 // A custom WebUI that defines datasource for choosing cellular network dialog.
-class ChooseMobileNetworkUI : public WebUI, public content::WebUIController {
+class ChooseMobileNetworkUI : public content::WebUIController {
  public:
-  explicit ChooseMobileNetworkUI(content::WebContents* contents);
+  explicit ChooseMobileNetworkUI(WebUI* web_ui);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChooseMobileNetworkUI);

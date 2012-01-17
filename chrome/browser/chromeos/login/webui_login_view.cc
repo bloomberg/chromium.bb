@@ -21,6 +21,7 @@
 #include "chrome/browser/ui/views/dom_view.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/common/render_messages.h"
+#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/render_view_host_observer.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/gfx/rect.h"
@@ -317,7 +318,7 @@ void WebUILoginView::OnTabMainFrameFirstRender() {
     chromeos::DBusThreadManager::Get()->GetSessionManagerClient()
         ->EmitLoginPromptVisible();
 
-  OobeUI* oobe_ui = static_cast<OobeUI*>(GetWebUI());
+  OobeUI* oobe_ui = static_cast<OobeUI*>(GetWebUI()->GetController());
   // Notify OOBE that the login frame has been rendered. Currently
   // this is used to start camera presence check.
   oobe_ui->OnLoginPromptVisible();

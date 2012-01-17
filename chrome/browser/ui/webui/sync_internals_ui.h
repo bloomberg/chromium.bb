@@ -13,7 +13,6 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/sync/js/js_event_handler.h"
 #include "chrome/browser/sync/js/js_reply_handler.h"
-#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/web_ui_controller.h"
 
 namespace browser_sync {
@@ -21,11 +20,11 @@ class JsController;
 }  // namespace browser_sync
 
 // The implementation for the chrome://sync-internals page.
-class SyncInternalsUI : public WebUI, public content::WebUIController,
+class SyncInternalsUI : public content::WebUIController,
                         public browser_sync::JsEventHandler,
                         public browser_sync::JsReplyHandler {
  public:
-  explicit SyncInternalsUI(content::WebContents* contents);
+  explicit SyncInternalsUI(WebUI* web_ui);
   virtual ~SyncInternalsUI();
 
   // WebUIController implementation.

@@ -12,6 +12,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::WebContents;
+using content::WebUIController;
 using ::testing::_;
 using ::testing::Eq;
 using ::testing::StrictMock;
@@ -20,15 +21,14 @@ namespace {
 
 // Returns a new WebUI object for the TabContents from |arg0|.
 ACTION(ReturnNewWebUI) {
-  static content::WebUIController temp_controller;
-  return new WebUI(arg0, &temp_controller);
+  return new WebUIController(arg0);
 }
 
 // Mock the TestChromeWebUIFactory::WebUIProvider to prove that we are called as
 // expected.
 class MockWebUIProvider : public TestChromeWebUIFactory::WebUIProvider {
  public:
-  MOCK_METHOD2(NewWebUI, WebUI*(WebContents* tab_contents, const GURL& url));
+  MOCK_METHOD2(NewWebUI, WebUIController*(WebUI* web_ui, const GURL& url));
 };
 
 // Dummy URL location for us to override.

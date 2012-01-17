@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/user_metrics.h"
 
 using content::UserMetricsAction;

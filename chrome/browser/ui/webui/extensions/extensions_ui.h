@@ -6,12 +6,11 @@
 #define CHROME_BROWSER_UI_WEBUI_EXTENSIONS_EXTENSIONS_UI_H_
 #pragma once
 
-#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/web_ui_controller.h"
 
-class ExtensionsUI : public WebUI, public content::WebUIController {
+class ExtensionsUI : public content::WebUIController {
  public:
-  explicit ExtensionsUI(content::WebContents* contents);
+  explicit ExtensionsUI(WebUI* web_ui);
   virtual ~ExtensionsUI();
 };
 

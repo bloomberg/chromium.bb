@@ -85,53 +85,55 @@
 #endif
 
 using content::WebContents;
+using content::WebUIController;
 
 namespace {
 
 // A function for creating a new WebUI. The caller owns the return value, which
 // may be NULL (for example, if the URL refers to an non-existent extension).
-typedef WebUI* (*WebUIFactoryFunction)(WebContents* web_contents,
-                                       const GURL& url);
+typedef WebUIController* (*WebUIFactoryFunction)(WebUI* web_ui,
+                                                 const GURL& url);
 
 // Template for defining WebUIFactoryFunction.
 template<class T>
-WebUI* NewWebUI(WebContents* contents, const GURL& url) {
-  return new T(contents);
+WebUIController* NewWebUI(WebUI* web_ui, const GURL& url) {
+  return new T(web_ui);
 }
 
 // Special case for extensions.
 template<>
-WebUI* NewWebUI<ExtensionWebUI>(WebContents* contents, const GURL& url) {
-  return new ExtensionWebUI(contents, url);
+WebUIController* NewWebUI<ExtensionWebUI>(WebUI* web_ui, const GURL& url) {
+  return new ExtensionWebUI(web_ui, url);
 }
 
 // Special case for older about: handlers.
 template<>
-WebUI* NewWebUI<AboutUI>(WebContents* contents, const GURL& url) {
-  return new AboutUI(contents, url.host());
+WebUIController* NewWebUI<AboutUI>(WebUI* web_ui, const GURL& url) {
+  return new AboutUI(web_ui, url.host());
 }
 
 // Only create ExtensionWebUI for URLs that are allowed extension bindings,
 // hosted by actual tabs. If tab_contents has no wrapper, it likely refers
 // to another container type, like an extension background page. If there is
-// no tab_contents (it's not accessible when calling GetWebUIType and related
+// no WebUI (it's not accessible when calling GetWebUIType and related
 // functions) then we conservatively assume that we need a WebUI.
-bool NeedsExtensionWebUI(WebContents* web_contents,
+bool NeedsExtensionWebUI(WebUI* web_ui,
                          Profile* profile,
                          const GURL& url) {
   ExtensionService* service = profile ? profile->GetExtensionService() : NULL;
   return service && service->ExtensionBindingsAllowed(url) &&
-      (!web_contents ||
-        TabContentsWrapper::GetCurrentWrapperForContents(web_contents));
+      (!web_ui ||
+        TabContentsWrapper::GetCurrentWrapperForContents(
+            web_ui->GetWebContents()));
 }
 
 // Returns a function that can be used to create the right type of WebUI for a
 // tab, based on its URL. Returns NULL if the URL doesn't have WebUI associated
 // with it.
-WebUIFactoryFunction GetWebUIFactoryFunction(WebContents* web_contents,
+WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
                                              Profile* profile,
                                              const GURL& url) {
-  if (NeedsExtensionWebUI(web_contents, profile, url))
+  if (NeedsExtensionWebUI(web_ui, profile, url))
     return &NewWebUI<ExtensionWebUI>;
 
   // This will get called a lot to check all URLs, so do a quick check of other
@@ -395,16 +397,17 @@ bool ChromeWebUIFactory::IsURLAcceptableForWebUI(
       url == GURL(chrome::kChromeUIShorthangURL);
 }
 
-WebUI* ChromeWebUIFactory::CreateWebUIForURL(
-    content::WebContents* web_contents,
+WebUIController* ChromeWebUIFactory::CreateWebUIForURL(
+    WebUI* web_ui,
     const GURL& url) const {
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  WebUIFactoryFunction function = GetWebUIFactoryFunction(web_contents,
+  Profile* profile = Profile::FromBrowserContext(
+      web_ui->GetWebContents()->GetBrowserContext());
+  WebUIFactoryFunction function = GetWebUIFactoryFunction(web_ui,
                                                           profile, url);
   if (!function)
     return NULL;
-  return (*function)(web_contents, url);
+
+  return (*function)(web_ui, url);  
 }
 
 void ChromeWebUIFactory::GetFaviconForURL(

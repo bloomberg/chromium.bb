@@ -19,7 +19,7 @@ void ShowHtmlFeedbackView(Browser* browser,
 
 class FeedbackUI : public HtmlDialogUI {
  public:
-  explicit FeedbackUI(content::WebContents* contents);
+  explicit FeedbackUI(WebUI* web_ui);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FeedbackUI);

@@ -8,6 +8,7 @@
 #include "content/public/browser/web_contents.h"
 
 using content::WebContents;
+using content::WebUIController;
 
 TestChromeWebUIFactory::WebUIProvider::~WebUIProvider() {
 }
@@ -37,13 +38,13 @@ WebUI::TypeID TestChromeWebUIFactory::GetWebUIType(
       ChromeWebUIFactory::GetWebUIType(profile, url);
 }
 
-WebUI* TestChromeWebUIFactory::CreateWebUIForURL(WebContents* web_contents,
-                                                 const GURL& url) const {
+WebUIController* TestChromeWebUIFactory::CreateWebUIForURL(
+    WebUI* web_ui, const GURL& url) const {
   Profile* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+      Profile::FromBrowserContext(web_ui->web_contents()->GetBrowserContext());
   WebUIProvider* provider = GetWebUIProvider(profile, url);
-  return provider ? provider->NewWebUI(web_contents, url) :
-      ChromeWebUIFactory::CreateWebUIForURL(web_contents, url);
+  return provider ? provider->NewWebUI(web_ui, url) :
+      ChromeWebUIFactory::CreateWebUIForURL(web_ui, url);
 }
 
 TestChromeWebUIFactory* TestChromeWebUIFactory::GetInstance() {

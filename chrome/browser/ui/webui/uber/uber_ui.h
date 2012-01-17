@@ -10,15 +10,14 @@
 
 #include "base/memory/scoped_vector.h"
 #include "base/values.h"
-#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/web_ui_controller.h"
 
 // The WebUI class for the uber page (chrome://chrome). It manages the UI for
 // the uber page (navigation bar and so forth) as well as WebUI objects for
 // pages that appear in the uber page.
-class UberUI : public WebUI, public content::WebUIController {
+class UberUI : public content::WebUIController {
  public:
-  explicit UberUI(content::WebContents* contents);
+  explicit UberUI(WebUI* web_ui);
   virtual ~UberUI();
 
   // WebUIController implementation.

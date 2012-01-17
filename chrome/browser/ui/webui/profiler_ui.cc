@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/trace_controller.h"
+#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui_message_handler.h"
@@ -144,14 +145,14 @@ void ProfilerMessageHandler::OnResetData(const ListValue* list) {
 
 }  // namespace
 
-ProfilerUI::ProfilerUI(WebContents* contents) : WebUI(contents, this) {
+ProfilerUI::ProfilerUI(WebUI* web_ui) : WebUIController(web_ui) {
   ui_weak_ptr_factory_.reset(new base::WeakPtrFactory<ProfilerUI>(this));
   ui_weak_ptr_ = ui_weak_ptr_factory_->GetWeakPtr();
 
-  AddMessageHandler(new ProfilerMessageHandler());
+  web_ui->AddMessageHandler(new ProfilerMessageHandler());
 
   // Set up the chrome://profiler/ source.
-  Profile::FromBrowserContext(contents->GetBrowserContext())->
+  Profile::FromBrowserContext(web_ui->web_contents()->GetBrowserContext())->
       GetChromeURLDataManager()->AddDataSource(CreateProfilerHTMLSource());
 }
 
@@ -165,6 +166,7 @@ void ProfilerUI::GetData() {
 void ProfilerUI::ReceivedData(base::Value* value) {
   // Send the data to the renderer.
   scoped_ptr<Value> data_values(value);
-  CallJavascriptFunction("g_browserBridge.receivedData", *data_values.get());
+  web_ui()->CallJavascriptFunction(
+      "g_browserBridge.receivedData", *data_values.get());
 }
 

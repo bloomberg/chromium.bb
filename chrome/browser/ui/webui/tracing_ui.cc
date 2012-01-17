@@ -22,6 +22,7 @@
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/browser/trace_controller.h"
+#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui_message_handler.h"
@@ -411,10 +412,10 @@ void TracingMessageHandler::OnTraceBufferPercentFullReply(float percent_full) {
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-TracingUI::TracingUI(WebContents* contents) : WebUI(contents, this) {
-  AddMessageHandler(new TracingMessageHandler());
+TracingUI::TracingUI(WebUI* web_ui) : WebUIController(web_ui) {
+  web_ui->AddMessageHandler(new TracingMessageHandler());
 
   // Set up the chrome://tracing/ source.
-  Profile::FromBrowserContext(contents->GetBrowserContext())->
+  Profile::FromBrowserContext(web_ui->web_contents()->GetBrowserContext())->
       GetChromeURLDataManager()->AddDataSource(CreateTracingHTMLSource());
 }

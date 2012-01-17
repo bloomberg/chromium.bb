@@ -44,6 +44,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/renderer_host/render_view_host.h"
+#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/user_metrics.h"
@@ -55,6 +56,7 @@
 using content::BrowserThread;
 using content::UserMetricsAction;
 using content::WebContents;
+using content::WebUIController;
 
 namespace {
 
@@ -67,47 +69,47 @@ const int kTimeoutMs = 2000;
 const char kRTLHtmlTextDirection[] = "rtl";
 const char kLTRHtmlTextDirection[] = "ltr";
 
-static base::LazyInstance<std::set<const WebUI*> > g_live_new_tabs;
+static base::LazyInstance<std::set<const WebUIController*> > g_live_new_tabs;
 
 }  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
 // NewTabUI
 
-NewTabUI::NewTabUI(WebContents* contents)
-    : WebUI(contents, this) {
+NewTabUI::NewTabUI(WebUI* web_ui)
+    : WebUIController(web_ui) {
   g_live_new_tabs.Pointer()->insert(this);
   // Override some options on the Web UI.
-  hide_favicon_ = true;
+  web_ui->HideFavicon();
 
-  focus_location_bar_by_default_ = true;
-  should_hide_url_ = true;
-  overridden_title_ = l10n_util::GetStringUTF16(IDS_NEW_TAB_TITLE);
+  web_ui->FocusLocationBarByDefault();
+  web_ui->HideURL();
+  web_ui->OverrideTitle(l10n_util::GetStringUTF16(IDS_NEW_TAB_TITLE));
 
   // We count all link clicks as AUTO_BOOKMARK, so that site can be ranked more
   // highly. Note this means we're including clicks on not only most visited
   // thumbnails, but also clicks on recently bookmarked.
-  link_transition_type_ = content::PAGE_TRANSITION_AUTO_BOOKMARK;
+  web_ui->SetLinkTransitionType(content::PAGE_TRANSITION_AUTO_BOOKMARK);
 
   if (!GetProfile()->IsOffTheRecord()) {
-    AddMessageHandler(new browser_sync::ForeignSessionHandler());
-    AddMessageHandler(new MostVisitedHandler());
-    AddMessageHandler(new RecentlyClosedTabsHandler());
-    AddMessageHandler(new MetricsHandler());
+    web_ui->AddMessageHandler(new browser_sync::ForeignSessionHandler());
+    web_ui->AddMessageHandler(new MostVisitedHandler());
+    web_ui->AddMessageHandler(new RecentlyClosedTabsHandler());
+    web_ui->AddMessageHandler(new MetricsHandler());
     if (GetProfile()->IsSyncAccessible())
-      AddMessageHandler(new NewTabPageSyncHandler());
+      web_ui->AddMessageHandler(new NewTabPageSyncHandler());
     ExtensionService* service = GetProfile()->GetExtensionService();
     // We might not have an ExtensionService (on ChromeOS when not logged in
     // for example).
     if (service)
-      AddMessageHandler(new AppLauncherHandler(service));
+      web_ui->AddMessageHandler(new AppLauncherHandler(service));
 
-    AddMessageHandler(new NewTabPageHandler());
-    AddMessageHandler(new FaviconWebUIHandler());
+    web_ui->AddMessageHandler(new NewTabPageHandler());
+    web_ui->AddMessageHandler(new FaviconWebUIHandler());
   }
 
   if (NTPLoginHandler::ShouldShow(GetProfile()))
-    AddMessageHandler(new NTPLoginHandler());
+    web_ui->AddMessageHandler(new NTPLoginHandler());
 
   // Initializing the CSS and HTML can require some CPU, so do it after
   // we've hooked up the most visited handler.  This allows the DB query
@@ -115,8 +117,7 @@ NewTabUI::NewTabUI(WebContents* contents)
   InitializeCSSCaches();
   NewTabHTMLSource* html_source =
       new NewTabHTMLSource(GetProfile()->GetOriginalProfile());
-  Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
-  profile->GetChromeURLDataManager()->AddDataSource(html_source);
+  GetProfile()->GetChromeURLDataManager()->AddDataSource(html_source);
 
   // Listen for theme installation.
   registrar_.Add(this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
@@ -189,7 +190,7 @@ void NewTabUI::Observe(int type,
           ThemeServiceFactory::GetForProfile(GetProfile())->HasCustomImage(
               IDR_THEME_NTP_ATTRIBUTION) ?
           "true" : "false"));
-      CallJavascriptFunction("themeChanged", args);
+      web_ui()->CallJavascriptFunction("themeChanged", args);
       break;
     }
     case content::NOTIFICATION_RENDER_WIDGET_HOST_DID_PAINT: {
@@ -251,14 +252,15 @@ void NewTabUI::SetURLTitleAndDirection(DictionaryValue* dictionary,
 }
 
 // static
-NewTabUI* NewTabUI::FromWebUI(WebUI* ui) {
+NewTabUI* NewTabUI::FromWebUIController(content::WebUIController* ui) {
   if (!g_live_new_tabs.Pointer()->count(ui))
     return NULL;
   return static_cast<NewTabUI*>(ui);
 }
 
 Profile* NewTabUI::GetProfile() const {
-  return Profile::FromBrowserContext(web_contents()->GetBrowserContext());
+  return Profile::FromBrowserContext(
+      web_ui()->web_contents()->GetBrowserContext());
 }
 
 ///////////////////////////////////////////////////////////////////////////////

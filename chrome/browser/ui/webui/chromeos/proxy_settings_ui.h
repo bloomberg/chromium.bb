@@ -7,26 +7,27 @@
 #pragma once
 
 #include "chrome/browser/ui/webui/options/options_ui.h"
-#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/web_ui_controller.h"
 
 namespace chromeos {
 
+class CoreChromeOSOptionsHandler;
 class ProxyHandler;
 
 // A WebUI to host proxy settings splitted from settings page for better
 // performance.
-class ProxySettingsUI : public WebUI, public content::WebUIController,
+class ProxySettingsUI : public content::WebUIController,
                         public OptionsPageUIHandlerHost {
  public:
-  explicit ProxySettingsUI(content::WebContents* contents);
+  explicit ProxySettingsUI(WebUI* web_ui);
   virtual ~ProxySettingsUI();
 
  private:
   // Overridden from OptionsPageUIHandlerHost:
   virtual void InitializeHandlers() OVERRIDE;
 
-  chromeos::ProxyHandler* proxy_handler_;  // Weak ptr.
+  ProxyHandler* proxy_handler_;  // Weak ptr.
+  CoreChromeOSOptionsHandler* core_handler_; // WeakPtr.
 
   DISALLOW_COPY_AND_ASSIGN(ProxySettingsUI);
 };

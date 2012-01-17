@@ -10,6 +10,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/common/url_constants.h"
+#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -18,8 +19,8 @@ using content::WebContents;
 ///////////////////////////////////////////////////////////////////////////////
 // KeyboardUI
 
-KeyboardUI::KeyboardUI(WebContents* contents)
-    : WebUI(contents, this) {
+KeyboardUI::KeyboardUI(WebUI* web_ui)
+    : WebUIController(web_ui) {
   KeyboardHTMLSource* html_source = new KeyboardHTMLSource();
   Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
   profile->GetChromeURLDataManager()->AddDataSource(html_source);

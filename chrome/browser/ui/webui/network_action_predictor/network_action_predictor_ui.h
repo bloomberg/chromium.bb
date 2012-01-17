@@ -6,12 +6,11 @@
 #define CHROME_BROWSER_UI_WEBUI_NETWORK_ACTION_PREDICTOR_NETWORK_ACTION_PREDICTOR_UI_H_
 #pragma once
 
-#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/web_ui_controller.h"
 
-class NetworkActionPredictorUI : public WebUI, public content::WebUIController {
+class NetworkActionPredictorUI : public content::WebUIController {
  public:
-  explicit NetworkActionPredictorUI(content::WebContents* contents);
+  explicit NetworkActionPredictorUI(WebUI* web_ui);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NetworkActionPredictorUI);

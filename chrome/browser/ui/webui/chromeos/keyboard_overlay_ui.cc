@@ -19,6 +19,7 @@
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui_message_handler.h"
@@ -28,7 +29,6 @@
 #include "ui/base/resource/resource_bundle.h"
 
 using chromeos::input_method::ModifierKey;
-using content::WebContents;
 using content::WebUIMessageHandler;
 
 namespace {
@@ -308,11 +308,12 @@ void KeyboardOverlayHandler::OpenLearnMorePage(const ListValue* args) {
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-KeyboardOverlayUI::KeyboardOverlayUI(WebContents* contents)
-    : HtmlDialogUI(contents) {
-  Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
+KeyboardOverlayUI::KeyboardOverlayUI(WebUI* web_ui)
+    : HtmlDialogUI(web_ui) {
+  Profile* profile = Profile::FromBrowserContext(
+      web_ui->web_contents()->GetBrowserContext());
   KeyboardOverlayHandler* handler = new KeyboardOverlayHandler(profile);
-  AddMessageHandler(handler);
+  web_ui->AddMessageHandler(handler);
 
   // Set up the chrome://keyboardoverlay/ source.
   profile->GetChromeURLDataManager()->AddDataSource(

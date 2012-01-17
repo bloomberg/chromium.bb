@@ -645,9 +645,10 @@ bool WebUIHandler::CheckNetwork() {
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-ImageBurnUI::ImageBurnUI(WebContents* contents) : WebUI(contents, this) {
+ImageBurnUI::ImageBurnUI(WebUI* web_ui) : WebUIController(web_ui) {
+  WebContents* contents = web_ui->web_contents();
   imageburner::WebUIHandler* handler = new imageburner::WebUIHandler(contents);
-  AddMessageHandler(handler);
+  web_ui->AddMessageHandler(handler);
 
   Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
   profile->GetChromeURLDataManager()->AddDataSource(

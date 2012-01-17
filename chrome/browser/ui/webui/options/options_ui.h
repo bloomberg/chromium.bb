@@ -7,11 +7,11 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
-#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_types.h"
@@ -80,10 +80,10 @@ class OptionsPageUIHandlerHost {
 };
 
 // The WebUI for chrome:settings.
-class OptionsUI : public WebUI, public content::WebUIController,
+class OptionsUI : public content::WebUIController,
                   public OptionsPageUIHandlerHost {
  public:
-  explicit OptionsUI(content::WebContents* contents);
+  explicit OptionsUI(WebUI* web_ui);
   virtual ~OptionsUI();
 
   static RefCountedMemory* GetFaviconResourceBytes();
@@ -106,6 +106,8 @@ class OptionsUI : public WebUI, public content::WebUIController,
   void SetCommandLineString(RenderViewHost* render_view_host);
 
   bool initialized_handlers_;
+
+  std::vector<OptionsPageUIHandler*> handlers_;
 
   DISALLOW_COPY_AND_ASSIGN(OptionsUI);
 };

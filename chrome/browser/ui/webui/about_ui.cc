@@ -49,6 +49,7 @@
 #include "content/browser/gpu/gpu_process_host_ui_shim.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/sensors/sensors_provider.h"
+#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/render_process_host.h"
@@ -1378,9 +1379,10 @@ std::string AboutUIHTMLSource::GetMimeType(const std::string& path) const {
   return "text/html";
 }
 
-AboutUI::AboutUI(WebContents* contents, const std::string& name)
-    : WebUI(contents, this) {
-  Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
+AboutUI::AboutUI(WebUI* web_ui, const std::string& name)
+    : WebUIController(web_ui) {
+  Profile* profile = Profile::FromBrowserContext(
+      web_ui->web_contents()->GetBrowserContext());
   ChromeURLDataManager::DataSource* source =
       new AboutUIHTMLSource(name, profile);
   if (source)

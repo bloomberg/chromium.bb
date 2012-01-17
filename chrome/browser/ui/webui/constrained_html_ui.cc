@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/browser/renderer_host/render_view_host.h"
+#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 
@@ -24,8 +25,8 @@ using content::WebUIMessageHandler;
 static base::LazyInstance<base::PropertyAccessor<ConstrainedHtmlUIDelegate*> >
     g_constrained_html_ui_property_accessor = LAZY_INSTANCE_INITIALIZER;
 
-ConstrainedHtmlUI::ConstrainedHtmlUI(WebContents* contents)
-    : WebUI(contents, this) {
+ConstrainedHtmlUI::ConstrainedHtmlUI(WebUI* web_ui)
+    : WebUIController(web_ui) {
 }
 
 ConstrainedHtmlUI::~ConstrainedHtmlUI() {
@@ -43,17 +44,17 @@ void ConstrainedHtmlUI::RenderViewCreated(RenderViewHost* render_view_host) {
                                      dialog_delegate->GetDialogArgs());
   for (std::vector<WebUIMessageHandler*>::iterator it = handlers.begin();
        it != handlers.end(); ++it) {
-    AddMessageHandler(*it);
+    web_ui()->AddMessageHandler(*it);
   }
 
   // Add a "DialogClose" callback which matches HTMLDialogUI behavior.
-  RegisterMessageCallback("DialogClose",
+  web_ui()->RegisterMessageCallback("DialogClose",
       base::Bind(&ConstrainedHtmlUI::OnDialogCloseMessage,
                  base::Unretained(this)));
 
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_HTML_DIALOG_SHOWN,
-      content::Source<WebUI>(this),
+      content::Source<WebUI>(web_ui()),
       content::Details<RenderViewHost>(render_view_host));
 }
 
@@ -70,8 +71,8 @@ void ConstrainedHtmlUI::OnDialogCloseMessage(const ListValue* args) {
 }
 
 ConstrainedHtmlUIDelegate* ConstrainedHtmlUI::GetConstrainedDelegate() {
-  ConstrainedHtmlUIDelegate** property =
-      GetPropertyAccessor().GetProperty(web_contents()->GetPropertyBag());
+  ConstrainedHtmlUIDelegate** property = GetPropertyAccessor().GetProperty(
+      web_ui()->web_contents()->GetPropertyBag());
   return property ? *property : NULL;
 }
 

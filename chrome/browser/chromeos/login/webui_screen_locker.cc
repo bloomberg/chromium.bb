@@ -18,6 +18,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
+#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -61,7 +62,8 @@ void WebUIScreenLocker::LockScreen(bool unlock_on_input) {
   login_display_->set_background_bounds(bounds);
   login_display_->Init(users, false, true, false);
 
-  static_cast<OobeUI*>(GetWebUI())->ShowSigninScreen(login_display_.get());
+  static_cast<OobeUI*>(GetWebUI()->GetController())->ShowSigninScreen(
+      login_display_.get());
 
   registrar_.Add(this,
                  chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED,
@@ -119,8 +121,10 @@ WebUIScreenLocker::~WebUIScreenLocker() {
   lock_window_->Close();
   // If LockScreen() was called, we need to clear the signin screen handler
   // delegate set in ShowSigninScreen so that it no longer points to us.
-  if (login_display_.get())
-    static_cast<OobeUI*>(GetWebUI())->ResetSigninScreenHandlerDelegate();
+  if (login_display_.get()) {
+    static_cast<OobeUI*>(GetWebUI()->GetController())->
+        ResetSigninScreenHandlerDelegate();
+  }
   SetStatusAreaEnabled(true);
 }
 

@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/browser/ui/webui/shared_resources_data_source.h"
 #include "chrome/common/url_constants.h"
+#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/browser_resources.h"
 
@@ -27,9 +28,10 @@ ChromeWebUIDataSource* CreateAboutPageHTMLSource() {
 
 }  // namespace
 
-AboutPageUI::AboutPageUI(content::WebContents* contents)
-    : WebUI(contents, this) {
-  Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
+AboutPageUI::AboutPageUI(WebUI* web_ui)
+    : WebUIController(web_ui) {
+  Profile* profile = Profile::FromBrowserContext(
+      web_ui->web_contents()->GetBrowserContext());
   ChromeWebUIDataSource* source = CreateAboutPageHTMLSource();
   profile->GetChromeURLDataManager()->AddDataSource(source);
   profile->GetChromeURLDataManager()->AddDataSource(
@@ -37,7 +39,7 @@ AboutPageUI::AboutPageUI(content::WebContents* contents)
 
   AboutPageHandler* handler = new AboutPageHandler();
   handler->GetLocalizedValues(source->localized_strings());
-  AddMessageHandler(handler);
+  web_ui->AddMessageHandler(handler);
 }
 
 AboutPageUI::~AboutPageUI() {

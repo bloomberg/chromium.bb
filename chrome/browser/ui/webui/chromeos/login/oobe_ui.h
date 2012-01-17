@@ -6,8 +6,10 @@
 #define CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_OOBE_UI_H_
 #pragma once
 
+#include <vector>
+
+#include "base/compiler_specific.h"
 #include "chrome/browser/chromeos/login/oobe_display.h"
-#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/web_ui_controller.h"
 
 namespace base {
@@ -28,9 +30,9 @@ namespace chromeos {
 // - eula screen (CrOS (+ OEM) EULA content/TPM password/crash reporting).
 // - update screen.
 class OobeUI : public OobeDisplay,
-               public WebUI, public content::WebUIController {
+               public content::WebUIController {
  public:
-  explicit OobeUI(content::WebContents* contents);
+  explicit OobeUI(WebUI* web_ui);
 
   // OobeDisplay implementation:
   virtual void ShowScreen(WizardScreen* screen) OVERRIDE;
@@ -78,6 +80,8 @@ class OobeUI : public OobeDisplay,
   // forward calls from native code to JS side.
   SigninScreenHandler* signin_screen_handler_;
   UserImageScreenActor* user_image_screen_actor_;
+
+  std::vector<BaseScreenHandler*> handlers_;  // Non-owning pointers.
 
   DISALLOW_COPY_AND_ASSIGN(OobeUI);
 };

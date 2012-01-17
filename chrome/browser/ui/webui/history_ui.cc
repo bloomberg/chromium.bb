@@ -423,13 +423,14 @@ void BrowsingHistoryHandler::Observe(
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-HistoryUI::HistoryUI(WebContents* contents) : WebUI(contents, this) {
-  AddMessageHandler(new BrowsingHistoryHandler());
+HistoryUI::HistoryUI(WebUI* web_ui) : WebUIController(web_ui) {
+  web_ui->AddMessageHandler(new BrowsingHistoryHandler());
 
   HistoryUIHTMLSource* html_source = new HistoryUIHTMLSource();
 
   // Set up the chrome://history/ source.
-  Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
+  Profile* profile = Profile::FromBrowserContext(
+      web_ui->web_contents()->GetBrowserContext());
   profile->GetChromeURLDataManager()->AddDataSource(html_source);
 }
 

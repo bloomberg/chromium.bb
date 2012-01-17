@@ -30,19 +30,19 @@ using content::BrowserThread;
 using content::NavigationEntry;
 using content::NavigationEntryImpl;
 using content::WebContents;
+using content::WebUIController;
 using webkit::forms::PasswordForm;
 
 namespace {
 
 class TabContentsTestWebUIFactory : public content::EmptyWebUIFactory {
  public:
-  virtual WebUI* CreateWebUIForURL(WebContents* source,
-                                   const GURL& url) const OVERRIDE {
+  virtual WebUIController* CreateWebUIForURL(WebUI* web_ui,
+                                             const GURL& url) const OVERRIDE {
    if (!HasWebUIScheme(url))
      return NULL;
 
-   static content::WebUIController temp_controller;
-   return new WebUI(source, &temp_controller);
+   return new WebUIController(web_ui);
   }
 
   virtual bool UseWebUIForURL(content::BrowserContext* browser_context,
@@ -58,7 +58,6 @@ class TabContentsTestWebUIFactory : public content::EmptyWebUIFactory {
       const GURL& url) const {
     return HasWebUIScheme(url);
   }
-
 };
 
 class TabContentsTestBrowserClient : public content::MockContentBrowserClient {

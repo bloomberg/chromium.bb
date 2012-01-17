@@ -133,6 +133,7 @@ class CONTENT_EXPORT TabContents
   virtual RenderViewHost* GetRenderViewHost() const OVERRIDE;
   virtual RenderWidgetHostView* GetRenderWidgetHostView() const OVERRIDE;
   virtual TabContentsView* GetView() const OVERRIDE;
+  virtual WebUI* CreateWebUI(const GURL& url) OVERRIDE;
   virtual WebUI* GetWebUI() const OVERRIDE;
   virtual WebUI* GetCommittedWebUI() const OVERRIDE;
   virtual const string16& GetTitle() const OVERRIDE;

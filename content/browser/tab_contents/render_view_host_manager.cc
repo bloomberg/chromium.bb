@@ -542,7 +542,7 @@ bool RenderViewHostManager::InitRenderView(RenderViewHost* render_view_host,
   // If the pending navigation is to a WebUI, tell the RenderView about any
   // bindings it will need enabled.
   if (pending_web_ui_.get())
-    render_view_host->AllowBindings(pending_web_ui_->bindings());
+    render_view_host->AllowBindings(pending_web_ui_->GetBindings());
 
   return delegate_->CreateRenderViewForRenderManager(render_view_host);
 }
@@ -557,7 +557,7 @@ void RenderViewHostManager::CommitPending() {
   // Next commit the Web UI, if any.
   web_ui_.swap(pending_web_ui_);
   if (web_ui_.get() && pending_web_ui_.get() && !pending_render_view_host_)
-    web_ui_->controller()->DidBecomeActiveForReusedRenderView();
+    web_ui_->GetController()->DidBecomeActiveForReusedRenderView();
   pending_web_ui_.reset();
 
   // It's possible for the pending_render_view_host_ to be NULL when we aren't
@@ -737,7 +737,7 @@ RenderViewHost* RenderViewHostManager::UpdateRendererStateForNavigate(
     return pending_render_view_host_;
   } else {
     if (pending_web_ui_.get() && render_view_host_->IsRenderViewLive())
-      pending_web_ui_->controller()->RenderViewReused(render_view_host_);
+      pending_web_ui_->GetController()->RenderViewReused(render_view_host_);
 
     // The renderer can exit view source mode when any error or cancellation
     // happen. We must overwrite to recover the mode.

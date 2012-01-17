@@ -19,6 +19,7 @@
 #include "chrome/browser/ui/webui/print_preview/print_preview_ui.h"
 #include "chrome/common/print_messages.h"
 #include "content/browser/renderer_host/render_view_host.h"
+#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "printing/page_size_margins.h"
@@ -97,7 +98,7 @@ PrintPreviewUI* PrintPreviewMessageHandler::OnFailure(int document_cookie) {
     return NULL;
 
   return static_cast<PrintPreviewUI*>(
-      print_preview_tab->web_contents()->GetWebUI());
+      print_preview_tab->web_contents()->GetWebUI()->GetController());
 }
 
 void PrintPreviewMessageHandler::OnRequestPrintPreview(
@@ -119,7 +120,7 @@ void PrintPreviewMessageHandler::OnDidGetPreviewPageCount(
     return;
 
   PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(
-      print_preview_tab->web_contents()->GetWebUI());
+      print_preview_tab->web_contents()->GetWebUI()->GetController());
 
   if (!params.is_modifiable || params.clear_preview_data)
     print_preview_ui->ClearAllPreviewData();
@@ -134,7 +135,7 @@ void PrintPreviewMessageHandler::OnDidPreviewPage(
     return;
 
   PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(
-      print_preview_tab->web_contents()->GetWebUI());
+      print_preview_tab->web_contents()->GetWebUI()->GetController());
   int page_number = params.page_number;
   if (page_number >= FIRST_PAGE_INDEX && params.data_size) {
     RefCountedBytes* data_bytes =
@@ -163,7 +164,7 @@ void PrintPreviewMessageHandler::OnMetafileReadyForPrinting(
     return;
 
   PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(
-      print_preview_tab->web_contents()->GetWebUI());
+      print_preview_tab->web_contents()->GetWebUI()->GetController());
 
   if (params.reuse_existing_data) {
     // Need to match normal rendering where we are expected to send this.
@@ -206,7 +207,7 @@ void PrintPreviewMessageHandler::OnDidGetDefaultPageLayout(
     return;
 
   PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(
-      print_preview_tab->web_contents()->GetWebUI());
+      print_preview_tab->web_contents()->GetWebUI()->GetController());
   print_preview_ui->OnDidGetDefaultPageLayout(page_layout_in_points,
                                               has_custom_page_size_style);
 }

@@ -11,7 +11,7 @@
 // The WebUI for chrome://input-window-dialog
 class InputWindowDialogUI : public HtmlDialogUI {
  public:
-  explicit InputWindowDialogUI(content::WebContents* contents);
+  explicit InputWindowDialogUI(WebUI* web_ui);
   virtual ~InputWindowDialogUI();
 
  protected:

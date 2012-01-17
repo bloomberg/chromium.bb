@@ -18,7 +18,6 @@
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/browser/ui/webui/options/chromeos/cros_language_options_handler.h"
 #include "content/browser/webui/web_ui.h"
-#include "content/browser/webui/web_ui.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -168,7 +167,8 @@ void NetworkScreenHandler::HandleOnLanguageChanged(const ListValue* args) {
   LanguageSwitchMenu::SwitchLanguageAndEnableKeyboardLayouts(locale);
 
   DictionaryValue localized_strings;
-  static_cast<OobeUI*>(web_ui())->GetLocalizedStrings(&localized_strings);
+  static_cast<OobeUI*>(web_ui()->GetController())->GetLocalizedStrings(
+      &localized_strings);
   web_ui()->CallJavascriptFunction("cr.ui.Oobe.reloadContent",
                                    localized_strings);
   // Buttons are recreated, updated "Continue" button state.

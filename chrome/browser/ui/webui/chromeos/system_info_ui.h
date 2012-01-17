@@ -6,12 +6,11 @@
 #define CHROME_BROWSER_UI_WEBUI_CHROMEOS_SYSTEM_INFO_UI_H_
 #pragma once
 
-#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/web_ui_controller.h"
 
-class SystemInfoUI : public WebUI, public content::WebUIController {
+class SystemInfoUI : public content::WebUIController {
  public:
-  explicit SystemInfoUI(content::WebContents* contents);
+  explicit SystemInfoUI(WebUI* web_ui);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SystemInfoUI);

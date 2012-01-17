@@ -9,13 +9,12 @@
 #include <string>
 
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
-#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/web_ui_controller.h"
 
 // The TabContents used for the keyboard page.
-class KeyboardUI : public WebUI, public content::WebUIController {
+class KeyboardUI : public content::WebUIController {
  public:
-  explicit KeyboardUI(content::WebContents* manager);
+  explicit KeyboardUI(WebUI* web_ui);
   virtual ~KeyboardUI();
 
   class KeyboardHTMLSource : public ChromeURLDataManager::DataSource {

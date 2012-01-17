@@ -109,6 +109,12 @@ class WebContents : public PageNavigator {
   // The TabContentsView will never change and is guaranteed non-NULL.
   virtual TabContentsView* GetView() const = 0;
 
+  // Create a WebUI page for the given url. In most cases, this doesn't need to
+  // be called by embedders since content will create its own WebUI objects as
+  // necessary. However if the embedder wants to create its own WebUI object and
+  // keep track of it manually, it can use this.
+  virtual WebUI* CreateWebUI(const GURL& url) = 0;
+
   // Returns the committed WebUI if one exists, otherwise the pending one.
   // Callers who want to use the pending WebUI for the pending navigation entry
   // should use GetWebUIForCurrentState instead.

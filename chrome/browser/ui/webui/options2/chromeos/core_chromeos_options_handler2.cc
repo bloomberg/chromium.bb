@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/webui/options2/chromeos/accounts_options_handler2.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
+#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"

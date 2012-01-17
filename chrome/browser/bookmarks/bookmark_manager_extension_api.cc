@@ -25,6 +25,7 @@
 #include "chrome/common/chrome_view_type.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
+#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -427,7 +428,7 @@ bool DropBookmarkManagerFunction::RunImpl() {
         dispatcher()->delegate()->GetAssociatedWebContents();
     CHECK(web_contents);
     ExtensionWebUI* web_ui =
-        static_cast<ExtensionWebUI*>(web_contents->GetWebUI());
+        static_cast<ExtensionWebUI*>(web_contents->GetWebUI()->GetController());
     CHECK(web_ui);
     BookmarkManagerExtensionEventRouter* router =
         web_ui->bookmark_manager_extension_event_router();

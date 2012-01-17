@@ -72,8 +72,8 @@ base::LazyInstance<PrintPreviewRequestIdMapWithLock>
 
 }  // namespace
 
-PrintPreviewUI::PrintPreviewUI(WebContents* contents)
-    : ConstrainedHtmlUI(contents),
+PrintPreviewUI::PrintPreviewUI(WebUI* web_ui)
+    : ConstrainedHtmlUI(web_ui),
       initial_preview_start_time_(base::TimeTicks::Now()),
       handler_(NULL),
       source_is_modifiable_(true),
@@ -83,7 +83,8 @@ PrintPreviewUI::PrintPreviewUI(WebContents* contents)
   is_dummy_ = (!controller || !controller->is_creating_print_preview_tab());
 
   // Set up the chrome://print/ data source.
-  Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
+  Profile* profile = Profile::FromBrowserContext(
+      web_ui->web_contents()->GetBrowserContext());
   profile->GetChromeURLDataManager()->AddDataSource(
       new PrintPreviewDataSource(is_dummy_));
   if (is_dummy_)
@@ -91,7 +92,7 @@ PrintPreviewUI::PrintPreviewUI(WebContents* contents)
 
   // WebUI owns |handler_|.
   handler_ = new PrintPreviewHandler();
-  AddMessageHandler(handler_);
+  web_ui->AddMessageHandler(handler_);
 
   preview_ui_addr_str_ = GetPrintPreviewUIAddress();
   g_print_preview_request_id_map.Get().Set(preview_ui_addr_str_, -1);
@@ -139,7 +140,7 @@ void PrintPreviewUI::SetSourceIsModifiable(
   if (!print_preview_tab || !print_preview_tab->web_contents()->GetWebUI())
     return;
   PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(
-      print_preview_tab->web_contents()->GetWebUI());
+      print_preview_tab->web_contents()->GetWebUI()->GetController());
   print_preview_ui->source_is_modifiable_ = source_is_modifiable;
 }
 
@@ -166,7 +167,8 @@ std::string PrintPreviewUI::GetPrintPreviewUIAddress() const {
 
 void PrintPreviewUI::OnPrintPreviewTabClosed() {
   TabContentsWrapper* preview_tab =
-      TabContentsWrapper::GetCurrentWrapperForContents(web_contents());
+      TabContentsWrapper::GetCurrentWrapperForContents(
+        web_ui()->web_contents());
   printing::BackgroundPrintingManager* background_printing_manager =
       g_browser_process->background_printing_manager();
   if (background_printing_manager->HasPrintPreviewTab(preview_tab))
@@ -176,11 +178,12 @@ void PrintPreviewUI::OnPrintPreviewTabClosed() {
 
 void PrintPreviewUI::OnInitiatorTabClosed() {
   TabContentsWrapper* preview_tab =
-      TabContentsWrapper::GetCurrentWrapperForContents(web_contents());
+      TabContentsWrapper::GetCurrentWrapperForContents(
+          web_ui()->web_contents());
   printing::BackgroundPrintingManager* background_printing_manager =
       g_browser_process->background_printing_manager();
   if (background_printing_manager->HasPrintPreviewTab(preview_tab))
-    CallJavascriptFunction("cancelPendingPrintRequest");
+    web_ui()->CallJavascriptFunction("cancelPendingPrintRequest");
   else
     OnClosePrintPreviewTab();
 }
@@ -190,7 +193,7 @@ void PrintPreviewUI::OnPrintPreviewRequest(int request_id) {
 }
 
 void PrintPreviewUI::OnShowSystemDialog() {
-  CallJavascriptFunction("onSystemDialogLinkClicked");
+  web_ui()->CallJavascriptFunction("onSystemDialogLinkClicked");
 }
 
 void PrintPreviewUI::OnDidGetPreviewPageCount(
@@ -198,7 +201,7 @@ void PrintPreviewUI::OnDidGetPreviewPageCount(
   DCHECK_GT(params.page_count, 0);
   base::FundamentalValue count(params.page_count);
   base::FundamentalValue request_id(params.preview_request_id);
-  CallJavascriptFunction("onDidGetPreviewPageCount", count, request_id);
+  web_ui()->CallJavascriptFunction("onDidGetPreviewPageCount", count, request_id);
 }
 
 void PrintPreviewUI::OnDidGetDefaultPageLayout(
@@ -219,8 +222,8 @@ void PrintPreviewUI::OnDidGetDefaultPageLayout(
   layout.SetDouble(printing::kSettingContentHeight, page_layout.content_height);
 
   base::FundamentalValue has_page_size_style(has_custom_page_size_style);
-  CallJavascriptFunction("onDidGetDefaultPageLayout", layout,
-                         has_page_size_style);
+  web_ui()->CallJavascriptFunction("onDidGetDefaultPageLayout", layout,
+                                   has_page_size_style);
 }
 
 void PrintPreviewUI::OnDidPreviewPage(int page_number,
@@ -229,14 +232,15 @@ void PrintPreviewUI::OnDidPreviewPage(int page_number,
   base::FundamentalValue number(page_number);
   StringValue ui_identifier(preview_ui_addr_str_);
   base::FundamentalValue request_id(preview_request_id);
-  CallJavascriptFunction("onDidPreviewPage", number, ui_identifier, request_id);
+  web_ui()->CallJavascriptFunction(
+      "onDidPreviewPage", number, ui_identifier, request_id);
 }
 
 void PrintPreviewUI::OnReusePreviewData(int preview_request_id) {
   base::StringValue ui_identifier(preview_ui_addr_str_);
   base::FundamentalValue ui_preview_request_id(preview_request_id);
-  CallJavascriptFunction("reloadPreviewPages", ui_identifier,
-                         ui_preview_request_id);
+  web_ui()->CallJavascriptFunction("reloadPreviewPages", ui_identifier,
+                                   ui_preview_request_id);
 }
 
 void PrintPreviewUI::OnPreviewDataIsAvailable(int expected_pages_count,
@@ -253,8 +257,8 @@ void PrintPreviewUI::OnPreviewDataIsAvailable(int expected_pages_count,
   }
   base::StringValue ui_identifier(preview_ui_addr_str_);
   base::FundamentalValue ui_preview_request_id(preview_request_id);
-  CallJavascriptFunction("updatePrintPreview", ui_identifier,
-                         ui_preview_request_id);
+  web_ui()->CallJavascriptFunction("updatePrintPreview", ui_identifier,
+                                   ui_preview_request_id);
 }
 
 void PrintPreviewUI::OnTabDestroyed() {
@@ -262,7 +266,7 @@ void PrintPreviewUI::OnTabDestroyed() {
 }
 
 void PrintPreviewUI::OnFileSelectionCancelled() {
-  CallJavascriptFunction("fileSelectionCancelled");
+  web_ui()->CallJavascriptFunction("fileSelectionCancelled");
 }
 
 void PrintPreviewUI::OnCancelPendingPreviewRequest() {
@@ -271,11 +275,11 @@ void PrintPreviewUI::OnCancelPendingPreviewRequest() {
 
 void PrintPreviewUI::OnPrintPreviewFailed() {
   handler_->OnPrintPreviewFailed();
-  CallJavascriptFunction("printPreviewFailed");
+  web_ui()->CallJavascriptFunction("printPreviewFailed");
 }
 
 void PrintPreviewUI::OnInvalidPrinterSettings() {
-  CallJavascriptFunction("invalidPrinterSettings");
+  web_ui()->CallJavascriptFunction("invalidPrinterSettings");
 }
 
 PrintPreviewDataService* PrintPreviewUI::print_preview_data_service() {
@@ -284,7 +288,8 @@ PrintPreviewDataService* PrintPreviewUI::print_preview_data_service() {
 
 void PrintPreviewUI::OnHidePreviewTab() {
   TabContentsWrapper* preview_tab =
-      TabContentsWrapper::GetCurrentWrapperForContents(web_contents());
+      TabContentsWrapper::GetCurrentWrapperForContents(
+          web_ui()->web_contents());
   printing::BackgroundPrintingManager* background_printing_manager =
       g_browser_process->background_printing_manager();
   if (background_printing_manager->HasPrintPreviewTab(preview_tab))
@@ -310,5 +315,5 @@ void PrintPreviewUI::OnClosePrintPreviewTab() {
 }
 
 void PrintPreviewUI::OnReloadPrintersList() {
-  CallJavascriptFunction("reloadPrintersList");
+  web_ui()->CallJavascriptFunction("reloadPrintersList");
 }

@@ -121,6 +121,7 @@ using content::SSLStatus;
 using content::UserMetricsAction;
 using content::WebContents;
 using content::WebContentsObserver;
+using content::WebUIController;
 
 namespace {
 
@@ -431,6 +432,20 @@ TabContentsView* TabContents::GetView() const {
   return view_.get();
 }
 
+WebUI* TabContents::CreateWebUI(const GURL& url) {
+  WebUI* web_ui = new WebUI(this);
+  WebUIController* controller =
+      content::GetContentClient()->browser()->GetWebUIFactory()->
+          CreateWebUIForURL(web_ui, url);
+  if (controller) {
+    web_ui->SetController(controller);
+    return web_ui;
+  }
+
+  delete web_ui;
+  return NULL;
+}
+
 WebUI* TabContents::GetWebUI() const {
   return render_manager_.web_ui() ? render_manager_.web_ui()
       : render_manager_.pending_web_ui();
@@ -457,7 +472,7 @@ const string16& TabContents::GetTitle() const {
     entry = controller_.GetActiveEntry();
     if (!(entry && entry->IsViewSourceMode())) {
       // Give the Web UI the chance to override our title.
-      const string16& title = our_web_ui->overridden_title();
+      const string16& title = our_web_ui->GetOverriddenTitle();
       if (!title.empty())
         return title;
     }
@@ -1121,7 +1136,7 @@ bool TabContents::GotResponseToLockMouseRequest(bool allowed) {
 bool TabContents::FocusLocationBarByDefault() {
   WebUI* web_ui = GetWebUIForCurrentState();
   if (web_ui)
-    return web_ui->focus_location_bar_by_default();
+    return web_ui->ShouldFocusLocationBarByDefault();
   NavigationEntry* entry = controller_.GetActiveEntry();
   if (entry && entry->GetURL() == GURL(chrome::kAboutBlankURL))
     return true;
@@ -1465,8 +1480,7 @@ void TabContents::DidNavigateMainFramePostCommit(
     // that opened the window, as long as both renderers have the same
     // privileges.
     if (delegate_ && opener_web_ui_type_ == GetWebUITypeForCurrentState()) {
-      WebUI* web_ui = content::GetContentClient()->browser()->
-          GetWebUIFactory()->CreateWebUIForURL(this, GetURL());
+      WebUI* web_ui = CreateWebUI(GetURL());
       // web_ui might be NULL if the URL refers to a non-existent extension.
       if (web_ui) {
         render_manager_.SetWebUIPostCommit(web_ui);
@@ -1944,11 +1958,11 @@ void TabContents::RequestTransferURL(const GURL& url,
     // chrome: URLs might have search terms or other stuff we don't want to
     // send to the site), so we send no referrer.
     OpenURLParams params(url, content::Referrer(), disposition,
-        render_manager_.web_ui()->link_transition_type(),
+        render_manager_.web_ui()->GetLinkTransitionType(),
         false /* is_renderer_initiated */);
     params.transferred_global_request_id = old_request_id;
     new_contents = OpenURL(params);
-    transition_type = render_manager_.web_ui()->link_transition_type();
+    transition_type = render_manager_.web_ui()->GetLinkTransitionType();
   } else {
     OpenURLParams params(url, referrer, disposition,
         content::PAGE_TRANSITION_LINK, true /* is_renderer_initiated */);
@@ -2178,8 +2192,7 @@ NavigationControllerImpl& TabContents::GetControllerForRenderManager() {
 }
 
 WebUI* TabContents::CreateWebUIForRenderManager(const GURL& url) {
-  return content::GetContentClient()->browser()->GetWebUIFactory()->
-      CreateWebUIForURL(this, url);
+  return CreateWebUI(url);
 }
 
 NavigationEntry*

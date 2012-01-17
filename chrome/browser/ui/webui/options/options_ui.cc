@@ -44,6 +44,7 @@
 #include "chrome/common/time_format.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/renderer_host/render_view_host.h"
+#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/user_metrics.h"
@@ -198,8 +199,8 @@ void OptionsPageUIHandler::RegisterTitle(DictionaryValue* localized_strings,
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-OptionsUI::OptionsUI(WebContents* contents)
-    : WebUI(contents, this),
+OptionsUI::OptionsUI(WebUI* web_ui)
+    : WebUIController(web_ui),
       initialized_handlers_(false) {
   DictionaryValue* localized_strings = new DictionaryValue();
 
@@ -274,7 +275,8 @@ OptionsUI::OptionsUI(WebContents* contents)
       new OptionsUIHTMLSource(localized_strings);
 
   // Set up the chrome://settings/ source.
-  Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
+  Profile* profile = Profile::FromBrowserContext(
+      web_ui->web_contents()->GetBrowserContext());
   profile->GetChromeURLDataManager()->AddDataSource(html_source);
 
   // Set up the chrome://theme/ source.
@@ -292,11 +294,8 @@ OptionsUI::OptionsUI(WebContents* contents)
 OptionsUI::~OptionsUI() {
   // Uninitialize all registered handlers. The base class owns them and it will
   // eventually delete them. Skip over the generic handler.
-  for (std::vector<WebUIMessageHandler*>::iterator iter = handlers_.begin() + 1;
-       iter != handlers_.end();
-       ++iter) {
-    static_cast<OptionsPageUIHandler*>(*iter)->Uninitialize();
-  }
+  for (size_t i = 0; i < handlers_.size(); ++i)
+   handlers_[i]->Uninitialize();
 }
 
 // Override.
@@ -315,7 +314,7 @@ void OptionsUI::DidBecomeActiveForReusedRenderView() {
   // won't fire to initilize the handlers. To make sure initialization always
   // happens, call reinitializeCore (which is a no-op unless the DOM was already
   // initialized).
-  CallJavascriptFunction("OptionsPage.reinitializeCore");
+  web_ui()->CallJavascriptFunction("OptionsPage.reinitializeCore");
 }
 
 // static
@@ -325,8 +324,8 @@ RefCountedMemory* OptionsUI::GetFaviconResourceBytes() {
 }
 
 void OptionsUI::InitializeHandlers() {
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
+  Profile* profile = Profile::FromBrowserContext(
+      web_ui()->web_contents()->GetBrowserContext());
   DCHECK(!profile->IsOffTheRecord() || Profile::IsGuestSession());
 
   // The reinitialize call from DidBecomeActiveForReusedRenderView end up being
@@ -337,11 +336,8 @@ void OptionsUI::InitializeHandlers() {
     return;
   initialized_handlers_ = true;
 
-  std::vector<WebUIMessageHandler*>::iterator iter;
-  // Skip over the generic handler.
-  for (iter = handlers_.begin() + 1; iter != handlers_.end(); ++iter) {
-    (static_cast<OptionsPageUIHandler*>(*iter))->Initialize();
-  }
+  for (size_t i = 0; i < handlers_.size(); ++i)
+    handlers_[i]->Initialize();
 }
 
 void OptionsUI::AddOptionsPageUIHandler(DictionaryValue* localized_strings,
@@ -352,7 +348,8 @@ void OptionsUI::AddOptionsPageUIHandler(DictionaryValue* localized_strings,
   if (handler->IsEnabled()) {
     handler->GetLocalizedValues(localized_strings);
     // Add handler to the list and also pass the ownership.
-    AddMessageHandler(handler.release());
+    web_ui()->AddMessageHandler(handler.release());
+    handlers_.push_back(handler_raw);
   }
 }
 

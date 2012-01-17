@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/time.h"
@@ -24,7 +25,7 @@ struct PageSizeMargins;
 
 class PrintPreviewUI : public ConstrainedHtmlUI {
  public:
-  explicit PrintPreviewUI(content::WebContents* contents);
+  explicit PrintPreviewUI(WebUI* web_ui);
   virtual ~PrintPreviewUI();
 
   // Gets the print preview |data|. |index| is zero-based, and can be

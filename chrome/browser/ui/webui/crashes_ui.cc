@@ -21,6 +21,7 @@
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "grit/browser_resources.h"
@@ -159,11 +160,12 @@ void CrashesDOMHandler::UpdateUI() {
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-CrashesUI::CrashesUI(WebContents* contents) : WebUI(contents, this) {
-  AddMessageHandler(new CrashesDOMHandler());
+CrashesUI::CrashesUI(WebUI* web_ui) : WebUIController(web_ui) {
+  web_ui->AddMessageHandler(new CrashesDOMHandler());
 
   // Set up the chrome://crashes/ source.
-  Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
+  Profile* profile = Profile::FromBrowserContext(
+      web_ui->web_contents()->GetBrowserContext());
   profile->GetChromeURLDataManager()->AddDataSource(
       CreateCrashesUIHTMLSource());
 }

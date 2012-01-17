@@ -21,7 +21,7 @@ namespace {
 bool CanShowBookmarkBar(WebUI* ui) {
   if (!ui)
     return false;
-  NewTabUI* new_tab = NewTabUI::FromWebUI(ui);
+  NewTabUI* new_tab = NewTabUI::FromWebUIController(ui->GetController());
   return new_tab && new_tab->CanShowBookmarkBar();
 }
 

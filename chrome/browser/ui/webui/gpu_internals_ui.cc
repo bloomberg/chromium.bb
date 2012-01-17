@@ -243,10 +243,11 @@ void GpuMessageHandler::OnGpuInfoUpdate() {
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-GpuInternalsUI::GpuInternalsUI(WebContents* contents) : WebUI(contents, this) {
-  AddMessageHandler(new GpuMessageHandler());
+GpuInternalsUI::GpuInternalsUI(WebUI* web_ui) : WebUIController(web_ui) {
+  web_ui->AddMessageHandler(new GpuMessageHandler());
 
   // Set up the chrome://gpu-internals/ source.
-  Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
+  Profile* profile = Profile::FromBrowserContext(
+      web_ui->web_contents()->GetBrowserContext());
   profile->GetChromeURLDataManager()->AddDataSource(CreateGpuHTMLSource());
 }

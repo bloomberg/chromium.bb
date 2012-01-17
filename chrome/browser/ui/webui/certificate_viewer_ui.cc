@@ -8,17 +8,16 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/common/url_constants.h"
+#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
 
-using content::WebContents;
-
-CertificateViewerUI::CertificateViewerUI(WebContents* contents)
+CertificateViewerUI::CertificateViewerUI(WebUI* web_ui)
 #if defined(USE_AURA)
-    : ConstrainedHtmlUI(contents) {
+    : ConstrainedHtmlUI(web_ui) {
 #else
-    : HtmlDialogUI(contents) {
+    : HtmlDialogUI(web_ui) {
 #endif
 
   // Set up the chrome://view-cert source.
@@ -63,7 +62,8 @@ CertificateViewerUI::CertificateViewerUI(WebContents* contents)
       IDR_CERTIFICATE_VIEWER_CSS);
   html_source->set_default_resource(IDR_CERTIFICATE_VIEWER_HTML);
 
-  Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
+  Profile* profile = Profile::FromBrowserContext(
+      web_ui->web_contents()->GetBrowserContext());
   profile->GetChromeURLDataManager()->AddDataSource(html_source);
 }
 

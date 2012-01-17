@@ -12,7 +12,6 @@
 #include "chrome/browser/bookmarks/bookmark_manager_extension_api.h"
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/common/extensions/extension.h"
-#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/web_ui_controller.h"
 
 class PrefService;
@@ -22,11 +21,11 @@ class Profile;
 // the main tab contents area. For example, each extension can specify an
 // "options_page", and that page is displayed in the tab contents area and is
 // hosted by this class.
-class ExtensionWebUI : public WebUI, public content::WebUIController {
+class ExtensionWebUI : public content::WebUIController {
  public:
   static const char kExtensionURLOverrides[];
 
-  ExtensionWebUI(content::WebContents* web_contents, const GURL& url);
+  ExtensionWebUI(WebUI* web_ui, const GURL& url);
 
   virtual ~ExtensionWebUI();
 

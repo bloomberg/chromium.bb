@@ -7,12 +7,11 @@
 #define CHROME_BROWSER_UI_WEBUI_ABOUT_PAGE_ABOUT_PAGE_UI_H_
 #pragma once
 
-#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/web_ui_controller.h"
 
-class AboutPageUI : public WebUI, public content::WebUIController {
+class AboutPageUI : public content::WebUIController {
  public:
-  explicit AboutPageUI(content::WebContents* contents);
+  explicit AboutPageUI(WebUI* web_ui);
   virtual ~AboutPageUI();
 
  private:

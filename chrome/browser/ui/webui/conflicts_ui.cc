@@ -19,6 +19,7 @@
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/url_constants.h"
+#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
@@ -159,12 +160,13 @@ void ConflictsDOMHandler::Observe(int type,
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-ConflictsUI::ConflictsUI(WebContents* contents) : WebUI(contents, this) {
+ConflictsUI::ConflictsUI(WebUI* web_ui) : WebUIController(web_ui) {
   content::RecordAction(UserMetricsAction("ViewAboutConflicts"));
-  AddMessageHandler(new ConflictsDOMHandler());
+  web_ui->AddMessageHandler(new ConflictsDOMHandler());
 
   // Set up the about:conflicts source.
-  Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
+  Profile* profile = Profile::FromBrowserContext(
+      web_ui->web_contents()->GetBrowserContext());
   profile->GetChromeURLDataManager()->AddDataSource(
       CreateConflictsUIHTMLSource());
 }

@@ -6,18 +6,16 @@
 #define CHROME_BROWSER_UI_WEBUI_SYNC_PROMO_SYNC_PROMO_UI_H_
 #pragma once
 
-#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/web_ui_controller.h"
 
 class Profile;
 class PrefService;
 
 // The Web UI handler for chrome://syncpromo.
-class SyncPromoUI : public WebUI, public content::WebUIController {
+class SyncPromoUI : public content::WebUIController {
  public:
-  // Constructs a SyncPromoUI. |contents| is the WebContents that this WebUI is
-  // associated with. |contents| may not be NULL.
-  explicit SyncPromoUI(content::WebContents* contents);
+  // Constructs a SyncPromoUI.
+  explicit SyncPromoUI(WebUI* web_ui);
 
   // Returns true if the sync promo should be visible.
   // |profile| is the profile of the tab the promo would be shown on.

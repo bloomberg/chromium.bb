@@ -20,7 +20,6 @@ class CoreChromeOSOptionsHandler : public CoreOptionsHandler {
   CoreChromeOSOptionsHandler();
   virtual ~CoreChromeOSOptionsHandler();
 
- protected:
   // ::CoreOptionsHandler overrides
   virtual void Initialize() OVERRIDE;
   virtual base::Value* FetchPref(const std::string& pref_name) OVERRIDE;
@@ -30,6 +29,7 @@ class CoreChromeOSOptionsHandler : public CoreOptionsHandler {
                        const std::string& metric) OVERRIDE;
   virtual void StopObservingPref(const std::string& path) OVERRIDE;
 
+ protected:
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,

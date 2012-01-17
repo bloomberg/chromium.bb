@@ -93,7 +93,7 @@ void CloudPrintSigninFlowHandler::Observe(
       StoreDialogSize();
       web_ui()->web_contents()->GetRenderViewHost()->ClosePage();
       static_cast<PrintPreviewUI*>(
-          parent_tab_->GetWebUI())->OnReloadPrintersList();
+          parent_tab_->GetWebUI()->GetController())->OnReloadPrintersList();
     }
   }
 }

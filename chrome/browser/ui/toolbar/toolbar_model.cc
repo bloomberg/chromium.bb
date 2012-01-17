@@ -86,7 +86,7 @@ bool ToolbarModel::ShouldDisplayURL() const {
 
   WebContents* web_contents = browser_->GetSelectedWebContents();
   if (web_contents && web_contents->GetWebUIForCurrentState())
-    return !web_contents->GetWebUIForCurrentState()->should_hide_url();
+    return !web_contents->GetWebUIForCurrentState()->ShouldHideURL();
 
   if (entry && entry->GetURL().SchemeIs(chrome::kExtensionScheme))
     return false;

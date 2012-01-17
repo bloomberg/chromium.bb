@@ -268,31 +268,20 @@ class MockWebUIDataSource : public ChromeURLDataManager::DataSource {
   DISALLOW_COPY_AND_ASSIGN(MockWebUIDataSource);
 };
 
-// WebUI to attach the DataSource for the dummy URL.
-class MockWebUI : public WebUI {
- public:
-  explicit MockWebUI(WebContents* contents, WebUIController* controller)
-    : WebUI(contents, controller) {
-    Profile* profile =
-        Profile::FromBrowserContext(contents->GetBrowserContext());
-    profile->GetChromeURLDataManager()->AddDataSource(
-        new MockWebUIDataSource());
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockWebUI);
-};
-
-// WebUIProvider to allow injection of our WebUI classes for the dummy URL when
+// WebUIProvider to allow attaching the DataSource for the dummy URL when
 // testing.
 class MockWebUIProvider : public TestChromeWebUIFactory::WebUIProvider {
  public:
   MockWebUIProvider() {}
 
   // Returns a new WebUI
-  WebUI* NewWebUI(WebContents* web_contents, const GURL& url) OVERRIDE {
-    static content::WebUIController temp_controller;
-    return new MockWebUI(web_contents, &temp_controller);
+  WebUIController* NewWebUI(WebUI* web_ui, const GURL& url) OVERRIDE {
+    WebUIController* controller = new content::WebUIController(web_ui);
+    Profile* profile = Profile::FromBrowserContext(
+        web_ui->web_contents()->GetBrowserContext());
+    profile->GetChromeURLDataManager()->AddDataSource(
+        new MockWebUIDataSource());
+    return controller;
   }
 
  private:

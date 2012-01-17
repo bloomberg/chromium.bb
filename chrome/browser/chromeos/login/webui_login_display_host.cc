@@ -11,6 +11,7 @@
 #include "chrome/browser/chromeos/login/webui_login_view.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
+#include "content/browser/webui/web_ui.h"
 #include "ui/views/widget/widget.h"
 
 #if defined(USE_AURA)
@@ -149,7 +150,7 @@ void WebUILoginDisplayHost::LoadURL(const GURL& url) {
 }
 
 OobeUI* WebUILoginDisplayHost::GetOobeUI() const {
-  return static_cast<OobeUI*>(login_view_->GetWebUI());
+  return static_cast<OobeUI*>(login_view_->GetWebUI()->GetController());
 }
 
 WizardController* WebUILoginDisplayHost::CreateWizardController() {

@@ -20,7 +20,7 @@ class CertificateViewerUI
     : public HtmlDialogUI {
 #endif
  public:
-  explicit CertificateViewerUI(content::WebContents* contents);
+  explicit CertificateViewerUI(WebUI* web_ui);
   virtual ~CertificateViewerUI();
 
   DISALLOW_COPY_AND_ASSIGN(CertificateViewerUI);

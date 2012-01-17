@@ -6,14 +6,13 @@
 #define CHROME_BROWSER_UI_WEBUI_DOWNLOADS_UI_H_
 #pragma once
 
-#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/web_ui_controller.h"
 
 class RefCountedMemory;
 
-class DownloadsUI : public WebUI, public content::WebUIController {
+class DownloadsUI : public content::WebUIController {
  public:
-  explicit DownloadsUI(content::WebContents* contents);
+  explicit DownloadsUI(WebUI* web_ui);
 
   static RefCountedMemory* GetFaviconResourceBytes();
 

@@ -67,8 +67,8 @@ class PrintPreviewHandlerTest : public PrintPreviewUnitTestBase {
     preview_tab_ = controller->GetOrCreatePreviewTab(initiator_tab);
     ASSERT_TRUE(preview_tab_);
 
-    preview_ui_ =
-        static_cast<PrintPreviewUI*>(preview_tab_->web_contents()->GetWebUI());
+    preview_ui_ = static_cast<PrintPreviewUI*>(
+        preview_tab_->web_contents()->GetWebUI()->GetController());
     ASSERT_TRUE(preview_ui_);
   }
 

@@ -5,17 +5,15 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_NET_INTERNALS_NET_INTERNALS_UI_H_
 #define CHROME_BROWSER_UI_WEBUI_NET_INTERNALS_NET_INTERNALS_UI_H_
 #pragma once
-
-#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/web_ui_controller.h"
 
 namespace base {
 class Value;
 }
 
-class NetInternalsUI : public WebUI, public content::WebUIController {
+class NetInternalsUI : public content::WebUIController {
  public:
-  explicit NetInternalsUI(content::WebContents* contents);
+  explicit NetInternalsUI(WebUI* web_ui);
 
   // Returns a Value containing constants NetInternals needs to load a log file.
   // Safe to call on any thread.  Caller takes ownership of the returned Value.

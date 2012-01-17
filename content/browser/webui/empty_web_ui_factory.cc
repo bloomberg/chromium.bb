@@ -12,8 +12,8 @@ EmptyWebUIFactory::EmptyWebUIFactory() {
 EmptyWebUIFactory::~EmptyWebUIFactory() {
 }
 
-WebUI* EmptyWebUIFactory::CreateWebUIForURL(WebContents* source,
-                                            const GURL& url) const {
+WebUIController* EmptyWebUIFactory::CreateWebUIForURL(WebUI* web_ui,
+                                                      const GURL& url) const {
   return NULL;
 }
 

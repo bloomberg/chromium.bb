@@ -44,6 +44,7 @@
 #include "chrome/common/url_constants.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
+#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/navigation_controller.h"
@@ -321,13 +322,14 @@ void ActiveDownloadsHandler::OnDownloadUpdated(DownloadItem* item) {
 ////////////////////////////////////////////////////////////////////////////////
 
 
-ActiveDownloadsUI::ActiveDownloadsUI(WebContents* contents)
-    : HtmlDialogUI(contents),
+ActiveDownloadsUI::ActiveDownloadsUI(WebUI* web_ui)
+    : HtmlDialogUI(web_ui),
       handler_(new ActiveDownloadsHandler()) {
-  AddMessageHandler(handler_);
+  web_ui->AddMessageHandler(handler_);
 
   // Set up the chrome://active-downloads/ source.
-  Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
+  Profile* profile = Profile::FromBrowserContext(
+      web_ui->web_contents()->GetBrowserContext());
   profile->GetChromeURLDataManager()->AddDataSource(
       CreateActiveDownloadsUIHTMLSource());
 }

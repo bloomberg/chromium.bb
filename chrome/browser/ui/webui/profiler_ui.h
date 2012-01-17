@@ -9,13 +9,12 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
-#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/web_ui_controller.h"
 
 // The C++ back-end for the chrome://profiler webui page.
-class ProfilerUI : public WebUI, public content::WebUIController {
+class ProfilerUI : public content::WebUIController {
  public:
-  explicit ProfilerUI(content::WebContents* contents);
+  explicit ProfilerUI(WebUI* web_ui);
   virtual ~ProfilerUI();
 
   // Get the tracking data from TrackingSynchronizer.

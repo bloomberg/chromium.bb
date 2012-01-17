@@ -28,18 +28,19 @@ using browser_sync::HasArgsAsList;
 using browser_sync::JsArgList;
 using browser_sync::JsEventDetails;
 using content::BrowserThread;
+using content::WebContents;
 using testing::_;
 using testing::Mock;
 using testing::NiceMock;
 using testing::Return;
 using testing::StrictMock;
 
-// Subclass of SyncInternalsUI to mock out ExecuteJavascript.
-class TestSyncInternalsUI : public SyncInternalsUI {
+// Subclass of WebUI to mock out ExecuteJavascript.
+class TestSyncWebUI: public WebUI {
  public:
-  explicit TestSyncInternalsUI(TabContents* contents)
-      : SyncInternalsUI(contents) {}
-  virtual ~TestSyncInternalsUI() {}
+  explicit TestSyncWebUI(WebContents* web_contents)
+      : WebUI(web_contents) {}
+  virtual ~TestSyncWebUI() {}
 
   MOCK_METHOD1(ExecuteJavascript, void(const string16&));
 };
@@ -47,7 +48,7 @@ class TestSyncInternalsUI : public SyncInternalsUI {
 // Tests with non-NULL ProfileSyncService.
 class SyncInternalsUITestWithService : public ChromeRenderViewHostTestHarness {
  protected:
-  SyncInternalsUITestWithService() {}
+  SyncInternalsUITestWithService() : sync_internals_ui_(NULL) {}
 
   virtual ~SyncInternalsUITestWithService() {}
 
@@ -66,13 +67,15 @@ class SyncInternalsUITestWithService : public ChromeRenderViewHostTestHarness {
     EXPECT_CALL(mock_js_controller_, AddJsEventHandler(_));
 
     {
-      // Needed by |test_sync_internals_ui_|'s constructor.  The
+      // Needed by |sync_internals_ui_|'s constructor.  The
       // message loop is provided by ChromeRenderViewHostTestHarness.
       content::TestBrowserThread ui_thread_(BrowserThread::UI,
                                             MessageLoopForUI::current());
-      // |test_sync_internals_ui_|'s constructor triggers all the
+      // |sync_internals_ui_|'s constructor triggers all the
       // expectations above.
-      test_sync_internals_ui_.reset(new TestSyncInternalsUI(contents()));
+      web_ui_.reset(new TestSyncWebUI(contents()));
+      sync_internals_ui_ = new SyncInternalsUI(web_ui_.get());
+      web_ui_->SetController(sync_internals_ui_);
     }
 
     Mock::VerifyAndClearExpectations(profile_mock);
@@ -82,36 +85,38 @@ class SyncInternalsUITestWithService : public ChromeRenderViewHostTestHarness {
   virtual void TearDown() {
     Mock::VerifyAndClearExpectations(&mock_js_controller_);
 
-    // Called by |test_sync_internals_ui_|'s destructor.
+    // Called by |sync_internals_ui_|'s destructor.
     EXPECT_CALL(mock_js_controller_,
-                RemoveJsEventHandler(test_sync_internals_ui_.get()));
-    test_sync_internals_ui_.reset();
+                RemoveJsEventHandler(sync_internals_ui_));
+    sync_internals_ui_ = NULL;
+    web_ui_.reset();
 
     ChromeRenderViewHostTestHarness::TearDown();
   }
 
   StrictMock<browser_sync::MockJsController> mock_js_controller_;
-  scoped_ptr<TestSyncInternalsUI> test_sync_internals_ui_;
+  scoped_ptr<TestSyncWebUI> web_ui_;
+  SyncInternalsUI* sync_internals_ui_;
 };
 
 TEST_F(SyncInternalsUITestWithService, HandleJsEvent) {
-  EXPECT_CALL(*test_sync_internals_ui_,
+  EXPECT_CALL(*web_ui_,
               ExecuteJavascript(
                   ASCIIToUTF16("chrome.sync.testMessage.fire({});")));
 
-  test_sync_internals_ui_->HandleJsEvent("testMessage", JsEventDetails());
+  sync_internals_ui_->HandleJsEvent("testMessage", JsEventDetails());
 }
 
 TEST_F(SyncInternalsUITestWithService, HandleJsReply) {
   EXPECT_CALL(
-      *test_sync_internals_ui_,
+      *web_ui_,
       ExecuteJavascript(
           ASCIIToUTF16("chrome.sync.testMessage.handleReply(5,true);")));
 
   ListValue args;
   args.Append(Value::CreateIntegerValue(5));
   args.Append(Value::CreateBooleanValue(true));
-  test_sync_internals_ui_->HandleJsReply("testMessage", JsArgList(&args));
+  sync_internals_ui_->HandleJsReply("testMessage", JsArgList(&args));
 }
 
 TEST_F(SyncInternalsUITestWithService, OnWebUISendBasic) {
@@ -122,15 +127,14 @@ TEST_F(SyncInternalsUITestWithService, OnWebUISendBasic) {
   EXPECT_CALL(mock_js_controller_,
               ProcessJsMessage(name, HasArgsAsList(args), _));
 
-  test_sync_internals_ui_->controller()->OverrideHandleWebUIMessage(
-      GURL(), name, args);
+  sync_internals_ui_->OverrideHandleWebUIMessage(GURL(), name, args);
 }
 
 // Tests with NULL ProfileSyncService.
 class SyncInternalsUITestWithoutService
     : public ChromeRenderViewHostTestHarness {
  protected:
-  SyncInternalsUITestWithoutService() {}
+  SyncInternalsUITestWithoutService() : sync_internals_ui_(NULL) {}
 
   virtual ~SyncInternalsUITestWithoutService() {}
 
@@ -143,39 +147,42 @@ class SyncInternalsUITestWithoutService
     ChromeRenderViewHostTestHarness::SetUp();
 
     {
-      // Needed by |test_sync_internals_ui_|'s constructor.  The
+      // Needed by |sync_internals_ui_|'s constructor.  The
       // message loop is provided by ChromeRenderViewHostTestHarness.
       content::TestBrowserThread ui_thread_(BrowserThread::UI,
                                             MessageLoopForUI::current());
-      // |test_sync_internals_ui_|'s constructor triggers all the
+      // |sync_internals_ui_|'s constructor triggers all the
       // expectations above.
-      test_sync_internals_ui_.reset(new TestSyncInternalsUI(contents()));
+      web_ui_.reset(new TestSyncWebUI(contents()));
+      sync_internals_ui_ = new SyncInternalsUI(web_ui_.get());
+      web_ui_->SetController(sync_internals_ui_);
     }
 
     Mock::VerifyAndClearExpectations(profile_mock);
   }
 
-  scoped_ptr<TestSyncInternalsUI> test_sync_internals_ui_;
+  scoped_ptr<TestSyncWebUI> web_ui_;
+  SyncInternalsUI* sync_internals_ui_;
 };
 
 TEST_F(SyncInternalsUITestWithoutService, HandleJsEvent) {
-  EXPECT_CALL(*test_sync_internals_ui_,
+  EXPECT_CALL(*web_ui_,
               ExecuteJavascript(
                   ASCIIToUTF16("chrome.sync.testMessage.fire({});")));
 
-  test_sync_internals_ui_->HandleJsEvent("testMessage", JsEventDetails());
+  sync_internals_ui_->HandleJsEvent("testMessage", JsEventDetails());
 }
 
 TEST_F(SyncInternalsUITestWithoutService, HandleJsReply) {
   EXPECT_CALL(
-      *test_sync_internals_ui_,
+      *web_ui_,
       ExecuteJavascript(
           ASCIIToUTF16("chrome.sync.testMessage.handleReply(5,true);")));
 
   ListValue args;
   args.Append(Value::CreateIntegerValue(5));
   args.Append(Value::CreateBooleanValue(true));
-  test_sync_internals_ui_->HandleJsReply(
+  sync_internals_ui_->HandleJsReply(
       "testMessage", JsArgList(&args));
 }
 
@@ -185,8 +192,7 @@ TEST_F(SyncInternalsUITestWithoutService, OnWebUISendBasic) {
   args.Append(Value::CreateIntegerValue(5));
 
   // Should drop the message.
-  test_sync_internals_ui_->controller()->OverrideHandleWebUIMessage(
-      GURL(), name, args);
+  sync_internals_ui_->OverrideHandleWebUIMessage(GURL(), name, args);
 }
 
 // TODO(lipalani) - add a test case to test about:sync with a non null
@@ -194,11 +200,11 @@ TEST_F(SyncInternalsUITestWithoutService, OnWebUISendBasic) {
 TEST_F(SyncInternalsUITestWithoutService, OnWebUISendGetAboutInfo) {
   const char kAboutInfoCall[] =
       "chrome.sync.getAboutInfo.handleReply({\"summary\":\"SYNC DISABLED\"});";
-  EXPECT_CALL(*test_sync_internals_ui_,
+  EXPECT_CALL(*web_ui_,
               ExecuteJavascript(ASCIIToUTF16(kAboutInfoCall)));
 
   ListValue args;
-  test_sync_internals_ui_->controller()->OverrideHandleWebUIMessage(
+  sync_internals_ui_->OverrideHandleWebUIMessage(
       GURL(), "getAboutInfo", args);
 }
 

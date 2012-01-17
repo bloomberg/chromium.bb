@@ -12,7 +12,6 @@
 #include "chrome/browser/cancelable_request.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
-#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_ui_controller.h"
 #include "content/public/browser/web_ui_message_handler.h"
@@ -77,9 +76,9 @@ class BrowsingHistoryHandler : public content::WebUIMessageHandler,
   DISALLOW_COPY_AND_ASSIGN(BrowsingHistoryHandler);
 };
 
-class HistoryUI : public WebUI, public content::WebUIController {
+class HistoryUI : public content::WebUIController {
  public:
-  explicit HistoryUI(content::WebContents* contents);
+  explicit HistoryUI(WebUI* web_ui);
 
   // Return the URL for a given search term.
   static const GURL GetHistoryURLWithSearchText(const string16& text);

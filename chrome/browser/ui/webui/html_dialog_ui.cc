@@ -11,19 +11,19 @@
 #include "base/values.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/browser/renderer_host/render_view_host.h"
+#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "content/public/common/bindings_policy.h"
 
-using content::WebContents;
 using content::WebUIMessageHandler;
 
 static base::LazyInstance<base::PropertyAccessor<HtmlDialogUIDelegate*> >
     g_html_dialog_ui_property_accessor = LAZY_INSTANCE_INITIALIZER;
 
-HtmlDialogUI::HtmlDialogUI(WebContents* web_contents)
-    : WebUI(web_contents, this) {
+HtmlDialogUI::HtmlDialogUI(WebUI* web_ui)
+    : WebUIController(web_ui) {
 }
 
 HtmlDialogUI::~HtmlDialogUI() {
@@ -53,35 +53,35 @@ base::PropertyAccessor<HtmlDialogUIDelegate*>&
 void HtmlDialogUI::RenderViewCreated(RenderViewHost* render_view_host) {
   // Hook up the javascript function calls, also known as chrome.send("foo")
   // calls in the HTML, to the actual C++ functions.
-  RegisterMessageCallback("DialogClose",
+  web_ui()->RegisterMessageCallback("DialogClose",
       base::Bind(&HtmlDialogUI::OnDialogClosed, base::Unretained(this)));
 
   // Pass the arguments to the renderer supplied by the delegate.
   std::string dialog_args;
   std::vector<WebUIMessageHandler*> handlers;
   HtmlDialogUIDelegate** delegate = GetPropertyAccessor().GetProperty(
-      web_contents()->GetPropertyBag());
+      web_ui()->web_contents()->GetPropertyBag());
   if (delegate) {
     dialog_args = (*delegate)->GetDialogArgs();
     (*delegate)->GetWebUIMessageHandlers(&handlers);
   }
 
-  if (0 != (bindings_ & content::BINDINGS_POLICY_WEB_UI))
+  if (0 != (web_ui()->GetBindings() & content::BINDINGS_POLICY_WEB_UI))
     render_view_host->SetWebUIProperty("dialogArguments", dialog_args);
   for (std::vector<WebUIMessageHandler*>::iterator it = handlers.begin();
        it != handlers.end(); ++it) {
-    AddMessageHandler(*it);
+    web_ui()->AddMessageHandler(*it);
   }
 
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_HTML_DIALOG_SHOWN,
-      content::Source<WebUI>(this),
+      content::Source<WebUI>(web_ui()),
       content::Details<RenderViewHost>(render_view_host));
 }
 
 void HtmlDialogUI::OnDialogClosed(const ListValue* args) {
   HtmlDialogUIDelegate** delegate = GetPropertyAccessor().GetProperty(
-      web_contents()->GetPropertyBag());
+      web_ui()->web_contents()->GetPropertyBag());
   if (delegate) {
     std::string json_retval;
     if (args && !args->empty() && !args->GetString(0, &json_retval))
@@ -91,13 +91,13 @@ void HtmlDialogUI::OnDialogClosed(const ListValue* args) {
   }
 }
 
-ExternalHtmlDialogUI::ExternalHtmlDialogUI(WebContents* web_contents)
-    : HtmlDialogUI(web_contents) {
+ExternalHtmlDialogUI::ExternalHtmlDialogUI(WebUI* web_ui)
+    : HtmlDialogUI(web_ui) {
   // Non-file based UI needs to not have access to the Web UI bindings
   // for security reasons. The code hosting the dialog should provide
   // dialog specific functionality through other bindings and methods
   // that are scoped in duration to the dialogs existence.
-  bindings_ &= ~content::BINDINGS_POLICY_WEB_UI;
+  web_ui->SetBindings(web_ui->GetBindings() & ~content::BINDINGS_POLICY_WEB_UI);
 }
 
 ExternalHtmlDialogUI::~ExternalHtmlDialogUI() {

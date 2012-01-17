@@ -23,6 +23,7 @@
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/url_constants.h"
+#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/sync_internals_resources.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -72,11 +73,12 @@ ProfileSyncService* GetProfileSyncService(Profile* profile) {
 
 }  // namespace
 
-SyncInternalsUI::SyncInternalsUI(WebContents* contents)
-    : WebUI(contents, this),
+SyncInternalsUI::SyncInternalsUI(WebUI* web_ui)
+    : WebUIController(web_ui),
       weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   // TODO(akalin): Fix.
-  Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
+  Profile* profile = Profile::FromBrowserContext(
+      web_ui->web_contents()->GetBrowserContext());
   profile->GetChromeURLDataManager()->AddDataSource(
       CreateSyncInternalsHTMLSource());
   ProfileSyncService* sync_service = GetProfileSyncService(profile);
@@ -107,8 +109,8 @@ bool SyncInternalsUI::OverrideHandleWebUIMessage(const GURL& source_url,
     ListValue return_args;
     DictionaryValue* about_info = new DictionaryValue();
     return_args.Append(about_info);
-    Profile* profile =
-      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
+    Profile* profile = Profile::FromBrowserContext(
+        web_ui()->web_contents()->GetBrowserContext());
     ProfileSyncService* service = GetProfileSyncService(profile);
     sync_ui_util::ConstructAboutInformation(service, about_info);
     HandleJsReply(name, JsArgList(&return_args));
@@ -131,7 +133,7 @@ void SyncInternalsUI::HandleJsEvent(
           << details.ToString();
   const std::string& event_handler = "chrome.sync." + name + ".fire";
   std::vector<const Value*> arg_list(1, &details.Get());
-  CallJavascriptFunction(event_handler, arg_list);
+  web_ui()->CallJavascriptFunction(event_handler, arg_list);
 }
 
 void SyncInternalsUI::HandleJsReply(
@@ -140,5 +142,5 @@ void SyncInternalsUI::HandleJsReply(
           << args.ToString();
   const std::string& reply_handler = "chrome.sync." + name + ".handleReply";
   std::vector<const Value*> arg_list(args.Get().begin(), args.Get().end());
-  CallJavascriptFunction(reply_handler, arg_list);
+  web_ui()->CallJavascriptFunction(reply_handler, arg_list);
 }

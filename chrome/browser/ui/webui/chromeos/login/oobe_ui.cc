@@ -31,6 +31,7 @@
 #include "chrome/browser/ui/webui/theme_source.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/url_constants.h"
+#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/browser_resources.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -108,8 +109,8 @@ std::string OobeUIHTMLSource::GetDataResource(int resource_id) const {
 
 // OobeUI ----------------------------------------------------------------------
 
-OobeUI::OobeUI(WebContents* contents)
-    : WebUI(contents, this),
+OobeUI::OobeUI(WebUI* web_ui)
+    : WebUIController(web_ui),
       update_screen_actor_(NULL),
       network_screen_actor_(NULL),
       eula_screen_actor_(NULL),
@@ -150,7 +151,8 @@ OobeUI::OobeUI(WebContents* contents)
   DictionaryValue* localized_strings = new DictionaryValue();
   GetLocalizedStrings(localized_strings);
 
-  Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
+  Profile* profile = Profile::FromBrowserContext(
+      web_ui->web_contents()->GetBrowserContext());
   // Set up the chrome://theme/ source, for Chrome logo.
   ThemeSource* theme = new ThemeSource(profile);
   profile->GetChromeURLDataManager()->AddDataSource(theme);
@@ -212,22 +214,19 @@ ViewScreenDelegate* OobeUI::GetHTMLPageScreenActor() {
 
 void OobeUI::GetLocalizedStrings(base::DictionaryValue* localized_strings) {
   // Note, handlers_[0] is a GenericHandler used by the WebUI.
-  for (size_t i = 1; i < handlers_.size(); ++i) {
-    static_cast<BaseScreenHandler*>(handlers_[i])->
-        GetLocalizedStrings(localized_strings);
-  }
+  for (size_t i = 0; i < handlers_.size(); ++i)
+    handlers_[i]->GetLocalizedStrings(localized_strings);
   ChromeURLDataManager::DataSource::SetFontAndTextDirection(localized_strings);
 }
 
 void OobeUI::AddScreenHandler(BaseScreenHandler* handler) {
-  AddMessageHandler(handler);
+  web_ui()->AddMessageHandler(handler);
+  handlers_.push_back(handler);
 }
 
 void OobeUI::InitializeHandlers() {
-  // Note, handlers_[0] is a GenericHandler used by the WebUI.
-  for (size_t i = 1; i < handlers_.size(); ++i) {
-    static_cast<BaseScreenHandler*>(handlers_[i])->InitializeBase();
-  }
+  for (size_t i = 0; i < handlers_.size(); ++i)
+    handlers_[i]->InitializeBase();
 }
 
 void OobeUI::ShowOobeUI(bool show) {

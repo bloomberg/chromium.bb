@@ -97,7 +97,7 @@ class SavePageBrowserTest : public InProcessBrowserTest {
     Browser* popup = ActiveDownloadsUI::GetPopup();
     EXPECT_TRUE(popup);
     ActiveDownloadsUI* downloads_ui = static_cast<ActiveDownloadsUI*>(
-        popup->GetSelectedWebContents()->GetWebUI());
+        popup->GetSelectedWebContents()->GetWebUI()->GetController());
     EXPECT_TRUE(downloads_ui);
     return downloads_ui->GetDownloads();
   }

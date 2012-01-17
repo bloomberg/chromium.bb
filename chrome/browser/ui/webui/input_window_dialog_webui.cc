@@ -151,7 +151,7 @@ InputWindowDialogHandler::InputWindowDialogHandler(
 }
 
 void InputWindowDialogHandler::CloseDialog() {
-  static_cast<HtmlDialogUI*>(web_ui())->CloseDialog(NULL);
+  static_cast<HtmlDialogUI*>(web_ui()->GetController())->CloseDialog(NULL);
 }
 
 void InputWindowDialogHandler::RegisterMessages() {

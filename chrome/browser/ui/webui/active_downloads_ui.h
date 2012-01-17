@@ -24,7 +24,7 @@ class DownloadItem;
 
 class ActiveDownloadsUI : public HtmlDialogUI {
  public:
-  explicit ActiveDownloadsUI(content::WebContents* contents);
+  explicit ActiveDownloadsUI(WebUI* web_ui);
 
   static bool ShouldShowPopup(Profile* profile,
                               content::DownloadItem* download);

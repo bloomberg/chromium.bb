@@ -16,8 +16,9 @@
 #include "chrome/browser/ui/webui/chrome_url_data_manager_backend.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/common/url_constants.h"
-#include "content/public/browser/devtools_agent_host_registry.h"
+#include "content/browser/webui/web_ui.h"
 #include "content/browser/worker_host/worker_process_host.h"
+#include "content/public/browser/devtools_agent_host_registry.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/worker_service.h"
@@ -233,13 +234,17 @@ class WorkersUI::WorkerCreationDestructionListener
   virtual void WorkerContextStarted(WorkerProcessHost*, int) OVERRIDE {}
 
   void NotifyWorkerCreated(DictionaryValue* worker_data) {
-    if (workers_ui_)
-      workers_ui_->CallJavascriptFunction("workerCreated", *worker_data);
+    if (!workers_ui_) {
+      workers_ui_->web_ui()->CallJavascriptFunction(
+          "workerCreated", *worker_data);
+    }
   }
 
   void NotifyWorkerDestroyed(DictionaryValue* worker_data) {
-    if (workers_ui_)
-      workers_ui_->CallJavascriptFunction("workerDestroyed", *worker_data);
+    if (workers_ui_) {
+      workers_ui_->web_ui()->CallJavascriptFunction(
+          "workerDestroyed", *worker_data);
+    }
   }
 
   void RegisterObserver() {
@@ -252,15 +257,16 @@ class WorkersUI::WorkerCreationDestructionListener
   WorkersUI* workers_ui_;
 };
 
-WorkersUI::WorkersUI(WebContents* contents)
-    : WebUI(contents, this),
+WorkersUI::WorkersUI(WebUI* web_ui)
+    : WebUIController(web_ui),
       observer_(new WorkerCreationDestructionListener(this)){
-  AddMessageHandler(new WorkersDOMHandler());
+  web_ui->AddMessageHandler(new WorkersDOMHandler());
 
   WorkersUIHTMLSource* html_source = new WorkersUIHTMLSource();
 
   // Set up the chrome://workers/ source.
-  Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
+  Profile* profile = Profile::FromBrowserContext(
+      web_ui->web_contents()->GetBrowserContext());
   profile->GetChromeURLDataManager()->AddDataSource(html_source);
 }
 

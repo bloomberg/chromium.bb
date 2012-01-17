@@ -24,6 +24,7 @@
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/url_constants.h"
+#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/page_transition_types.h"
@@ -127,48 +128,53 @@ class ExtensionWebUIImageLoadingTracker : public ImageLoadingTracker::Observer {
 const char ExtensionWebUI::kExtensionURLOverrides[] =
     "extensions.chrome_url_overrides";
 
-ExtensionWebUI::ExtensionWebUI(WebContents* web_contents, const GURL& url)
-    : WebUI(web_contents, this),
+ExtensionWebUI::ExtensionWebUI(WebUI* web_ui, const GURL& url)
+    : WebUIController(web_ui),
       url_(url) {
   Profile* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+      Profile::FromBrowserContext(web_ui->web_contents()->GetBrowserContext());
   ExtensionService* service = profile->GetExtensionService();
   const Extension* extension =
       service->extensions()->GetExtensionOrAppByURL(ExtensionURLInfo(url));
   DCHECK(extension);
   // Only hide the url for internal pages (e.g. chrome-extension or packaged
   // component apps like bookmark manager.
-  should_hide_url_ = !extension->is_hosted_app();
+  bool should_hide_url = !extension->is_hosted_app();
 
   // The base class defaults to enabling WebUI bindings, but we don't need
   // those (this is also reflected in ChromeWebUIFactory::
   // UseWebUIBindingsForURL).
-  bindings_ = 0;
+  int bindings = 0;
 
   // Bind externalHost to Extension WebUI loaded in Chrome Frame.
   const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
   if (browser_command_line.HasSwitch(switches::kChromeFrame))
-    bindings_ |= content::BINDINGS_POLICY_EXTERNAL_HOST;
+    bindings |= content::BINDINGS_POLICY_EXTERNAL_HOST;
   // For chrome:// overrides, some of the defaults are a little different.
-  GURL effective_url = web_contents->GetURL();
+  GURL effective_url = web_ui->web_contents()->GetURL();
   if (effective_url.SchemeIs(chrome::kChromeUIScheme)) {
     if (effective_url.host() == chrome::kChromeUINewTabHost) {
-      focus_location_bar_by_default_ = true;
+      web_ui->FocusLocationBarByDefault();
     } else {
       // Current behavior of other chrome:// pages is to display the URL.
-      should_hide_url_ = false;
+      should_hide_url = false;
     }
   }
 
+  if (should_hide_url)
+    web_ui->HideURL();
+
+  web_ui->SetBindings(bindings);
+
   // Hack: A few things we specialize just for the bookmark manager.
   if (extension->id() == extension_misc::kBookmarkManagerId) {
-    TabContentsWrapper* tab =
-        TabContentsWrapper::GetCurrentWrapperForContents(web_contents);
+    TabContentsWrapper* tab = TabContentsWrapper::GetCurrentWrapperForContents(
+        web_ui->web_contents());
     DCHECK(tab);
     bookmark_manager_extension_event_router_.reset(
         new BookmarkManagerExtensionEventRouter(profile, tab));
 
-    link_transition_type_ = content::PAGE_TRANSITION_AUTO_BOOKMARK;
+    web_ui->SetLinkTransitionType(content::PAGE_TRANSITION_AUTO_BOOKMARK);
   }
 }
 

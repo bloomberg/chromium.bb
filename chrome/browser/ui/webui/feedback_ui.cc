@@ -26,6 +26,7 @@
 #include "chrome/browser/ui/window_snapshot/window_snapshot.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
+#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -529,9 +530,10 @@ void FeedbackHandler::CloseFeedbackTab() {
 // FeedbackUI
 //
 ////////////////////////////////////////////////////////////////////////////////
-FeedbackUI::FeedbackUI(WebContents* tab) : HtmlDialogUI(tab) {
+FeedbackUI::FeedbackUI(WebUI* web_ui) : HtmlDialogUI(web_ui) {
+  WebContents* tab = web_ui->web_contents();
   FeedbackHandler* handler = new FeedbackHandler(tab);
-  AddMessageHandler(handler);
+  web_ui->AddMessageHandler(handler);
 
   // The handler's init will determine whether we show the error html page.
   ChromeWebUIDataSource* html_source =

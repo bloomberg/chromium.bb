@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/webui/options/chromeos/proxy_handler.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/url_constants.h"
+#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "grit/browser_resources.h"
@@ -68,45 +69,39 @@ void ProxySettingsHTMLSource::StartDataRequest(const std::string& path,
 
 namespace chromeos {
 
-ProxySettingsUI::ProxySettingsUI(WebContents* contents)
-    : WebUI(contents, this),
-      proxy_handler_(new ProxyHandler()) {
+ProxySettingsUI::ProxySettingsUI(WebUI* web_ui)
+    : WebUIController(web_ui),
+      proxy_handler_(new ProxyHandler()),
+      core_handler_(new CoreChromeOSOptionsHandler()) {
   // |localized_strings| will be owned by ProxySettingsHTMLSource.
   DictionaryValue* localized_strings = new DictionaryValue();
 
-  CoreChromeOSOptionsHandler* core_handler = new CoreChromeOSOptionsHandler();
-  core_handler->set_handlers_host(this);
-  core_handler->GetLocalizedValues(localized_strings);
-  AddMessageHandler(core_handler);
+  core_handler_->set_handlers_host(this);
+  core_handler_->GetLocalizedValues(localized_strings);
+  web_ui->AddMessageHandler(core_handler_);
 
   proxy_handler_->GetLocalizedValues(localized_strings);
-  AddMessageHandler(proxy_handler_);
+  web_ui->AddMessageHandler(proxy_handler_);
 
   ProxySettingsHTMLSource* source =
       new ProxySettingsHTMLSource(localized_strings);
-  Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
+  Profile* profile = Profile::FromBrowserContext(
+      web_ui->web_contents()->GetBrowserContext());
   profile->GetChromeURLDataManager()->AddDataSource(source);
 }
 
 ProxySettingsUI::~ProxySettingsUI() {
   // Uninitialize all registered handlers. The base class owns them and it will
-  // eventually delete them. Skip over the generic handler.
-  for (std::vector<WebUIMessageHandler*>::iterator iter = handlers_.begin() + 1;
-       iter != handlers_.end();
-       ++iter) {
-    static_cast<OptionsPageUIHandler*>(*iter)->Uninitialize();
-  }
-  proxy_handler_ = NULL;  // Weak ptr that is owned by base class, nullify it.
+  // eventually delete them.
+  core_handler_->Uninitialize();
+  proxy_handler_->Uninitialize();
 }
 
 void ProxySettingsUI::InitializeHandlers() {
-  std::vector<WebUIMessageHandler*>::iterator iter;
-  // Skip over the generic handler.
-  for (iter = handlers_.begin() + 1; iter != handlers_.end(); ++iter) {
-    (static_cast<OptionsPageUIHandler*>(*iter))->Initialize();
-  }
-  Profile* profile =
-    Profile::FromBrowserContext(web_contents()->GetBrowserContext());
+  core_handler_->Initialize();
+  proxy_handler_->Initialize();
+  Profile* profile = Profile::FromBrowserContext(
+      web_ui()->web_contents()->GetBrowserContext());
   PrefProxyConfigTracker* proxy_tracker = profile->GetProxyConfigTracker();
   proxy_tracker->UIMakeActiveNetworkCurrent();
   std::string network_name;

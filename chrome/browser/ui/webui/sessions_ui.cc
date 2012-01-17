@@ -257,11 +257,12 @@ void SessionsDOMHandler::UpdateUI() {
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-SessionsUI::SessionsUI(WebContents* contents) : WebUI(contents, this) {
-  AddMessageHandler(new SessionsDOMHandler());
+SessionsUI::SessionsUI(WebUI* web_ui) : WebUIController(web_ui) {
+  web_ui->AddMessageHandler(new SessionsDOMHandler());
 
   // Set up the chrome://sessions/ source.
-  Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
+  Profile* profile = Profile::FromBrowserContext(
+      web_ui->web_contents()->GetBrowserContext());
   profile->GetChromeURLDataManager()->AddDataSource(
       CreateSessionsUIHTMLSource());
 }

@@ -6,15 +6,14 @@
 #define CHROME_BROWSER_UI_WEBUI_FLASH_UI_H_
 #pragma once
 
-#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/web_ui_controller.h"
 
 class RefCountedMemory;
 
 // The Web UI handler for about:flash.
-class FlashUI : public WebUI, public content::WebUIController {
+class FlashUI : public content::WebUIController {
  public:
-  explicit FlashUI(content::WebContents* contents);
+  explicit FlashUI(WebUI* web_ui);
 
   static RefCountedMemory* GetFaviconResourceBytes();
 

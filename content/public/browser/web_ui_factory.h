@@ -15,6 +15,7 @@ namespace content {
 
 class BrowserContext;
 class WebContents;
+class WebUIController;
 
 // Interface for an object which controls which URLs are considered WebUI URLs
 // and creates WebUI instances for given URLs.
@@ -22,8 +23,8 @@ class CONTENT_EXPORT WebUIFactory {
  public:
   // Returns a WebUI instance for the given URL, or NULL if the URL doesn't
   // correspond to a WebUI.
-  virtual WebUI* CreateWebUIForURL(WebContents* source,
-                                   const GURL& url) const = 0;
+  virtual WebUIController* CreateWebUIForURL(WebUI* web_ui,
+                                             const GURL& url) const = 0;
 
   // Gets the WebUI type for the given URL. This will return kNoWebUI if the
   // corresponding call to CreateWebUIForURL would fail, or something non-NULL

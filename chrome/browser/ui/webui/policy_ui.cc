@@ -233,11 +233,12 @@ string16 PolicyUIHandler::CreateStatusMessageString(
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-PolicyUI::PolicyUI(WebContents* contents) : WebUI(contents, this) {
-  AddMessageHandler(new PolicyUIHandler);
+PolicyUI::PolicyUI(WebUI* web_ui) : WebUIController(web_ui) {
+  web_ui->AddMessageHandler(new PolicyUIHandler);
 
   // Set up the chrome://policy/ source.
-  Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
+  Profile* profile = Profile::FromBrowserContext(
+      web_ui->web_contents()->GetBrowserContext());
   profile->GetChromeURLDataManager()->AddDataSource(CreatePolicyUIHTMLSource());
 }
 

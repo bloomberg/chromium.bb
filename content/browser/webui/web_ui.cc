@@ -41,21 +41,21 @@ string16 WebUI::GetJavascriptCall(
       char16('(') + parameters + char16(')') + char16(';');
 }
 
-WebUI::WebUI(WebContents* contents,
-             WebUIController* controller)
-    : hide_favicon_(false),
-      focus_location_bar_by_default_(false),
+WebUI::WebUI(WebContents* contents)
+    : focus_location_bar_by_default_(false),
       should_hide_url_(false),
       link_transition_type_(content::PAGE_TRANSITION_LINK),
       bindings_(content::BINDINGS_POLICY_WEB_UI),
       register_callback_overwrites_(false),
-      web_contents_(contents),
-      controller_(controller) {
+      web_contents_(contents) {
   DCHECK(contents);
   AddMessageHandler(new GenericHandler());
 }
 
 WebUI::~WebUI() {
+  // Delete the controller first, since it may also be keeping a pointer to some
+  // of the handlers and can call them at destruction.
+  controller_.reset();
   STLDeleteContainerPointers(handlers_.begin(), handlers_.end());
 }
 
@@ -113,6 +113,70 @@ void WebUI::RenderViewCreated(RenderViewHost* render_view_host) {
   // (http://crbug.com/105380).
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kTouchOptimizedUI))
     render_view_host->SetWebUIProperty("touchOptimized", "true");
+}
+
+WebContents* WebUI::GetWebContents() const {
+  return web_contents_;
+}
+
+bool WebUI::ShouldHideFavicon() const {
+  return hide_favicon_;
+}
+
+void WebUI::HideFavicon() {
+  hide_favicon_ = true;
+}
+
+bool WebUI::ShouldFocusLocationBarByDefault() const {
+  return focus_location_bar_by_default_;
+}
+
+void WebUI::FocusLocationBarByDefault() {
+  focus_location_bar_by_default_ = true;
+}
+
+bool WebUI::ShouldHideURL() const {
+  return should_hide_url_;
+}
+
+void WebUI::HideURL() {
+  should_hide_url_ = true;
+}
+
+const string16& WebUI::GetOverriddenTitle() const {
+  return overridden_title_;
+}
+
+void WebUI::OverrideTitle(const string16& title) {
+  overridden_title_ = title;
+}
+
+content::PageTransition WebUI::GetLinkTransitionType() const {
+  return link_transition_type_;
+}
+
+void WebUI::SetLinkTransitionType(content::PageTransition type) {
+  link_transition_type_ = type;
+}
+
+int WebUI::GetBindings() const {
+  return bindings_;
+}
+
+void WebUI::SetBindings(int bindings) {
+  bindings_ = bindings;
+}
+
+void WebUI::SetFrameXPath(const std::string& xpath) {
+  frame_xpath_ = xpath;
+}
+
+WebUIController* WebUI::GetController() const {
+  return controller_.get();
+}
+
+void WebUI::SetController(WebUIController* controller) {
+  controller_.reset(controller);
 }
 
 void WebUI::CallJavascriptFunction(const std::string& function_name) {

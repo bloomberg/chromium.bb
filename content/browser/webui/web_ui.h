@@ -38,7 +38,7 @@ class WebUIMessageHandler;
 // ChromeWebUI.
 class CONTENT_EXPORT WebUI : public IPC::Channel::Listener {
  public:
-  WebUI(content::WebContents* contents, content::WebUIController* controller);
+  explicit WebUI(content::WebContents* contents);
   virtual ~WebUI();
 
   // IPC::Channel::Listener implementation:
@@ -54,47 +54,56 @@ class CONTENT_EXPORT WebUI : public IPC::Channel::Listener {
   // reuse RenderView instances.
   void RenderViewCreated(RenderViewHost* render_view_host);
 
+  // TODO(jam): below is what will be the public API of WebUI
+  content::WebContents* GetWebContents() const;
+
+  // Returns true if the favicon should be hidden for the current tab.
+  bool ShouldHideFavicon() const;
+  void HideFavicon();
+
+  // Returns true if the location bar should be focused by default rather than
+  // the page contents. Some pages will want to use this to encourage the user
+  // to type in the URL bar.
+  bool ShouldFocusLocationBarByDefault() const;
+  void FocusLocationBarByDefault();
+
+  // Returns true if the page's URL should be hidden. Some Web UI pages
+  // like the new tab page will want to hide it.
+  bool ShouldHideURL() const;
+  void HideURL();
+
+  // Gets a custom tab title provided by the Web UI. If there is no title
+  // override, the string will be empty which should trigger the default title
+  // behavior for the tab.
+  const string16& GetOverriddenTitle() const;
+  void OverrideTitle(const string16& title);
+
+  // Returns the transition type that should be used for link clicks on this
+  // Web UI. This will default to LINK but may be overridden.
+  content::PageTransition GetLinkTransitionType() const;
+  void SetLinkTransitionType(content::PageTransition type);
+
+  // Allows a controller to override the BindingsPolicy that should be enabled
+  // for this page.
+  int GetBindings() const;
+  void SetBindings(int bindings);
+
+  // Sets the path for the iframe if this WebUI is embedded in a page.
+  void SetFrameXPath(const std::string& xpath);
+
+  // Takes ownership of |handler|, which will be destroyed when the WebUI is.
+  void AddMessageHandler(content::WebUIMessageHandler* handler);
+
+  // Execute a string of raw Javascript on the page.  Overridable for
+  // testing purposes.
+  virtual void ExecuteJavascript(const string16& javascript);
+
   // Used by WebUIMessageHandlers. If the given message is already registered,
   // the call has no effect unless |register_callback_overwrites_| is set to
   // true.
   typedef base::Callback<void(const base::ListValue*)> MessageCallback;
   void RegisterMessageCallback(const std::string& message,
                                const MessageCallback& callback);
-
-  // Returns true if the favicon should be hidden for the current tab.
-  bool hide_favicon() const {
-    return hide_favicon_;
-  }
-
-  // Returns true if the location bar should be focused by default rather than
-  // the page contents. Some pages will want to use this to encourage the user
-  // to type in the URL bar.
-  bool focus_location_bar_by_default() const {
-    return focus_location_bar_by_default_;
-  }
-
-  // Returns true if the page's URL should be hidden. Some Web UI pages
-  // like the new tab page will want to hide it.
-  bool should_hide_url() const {
-    return should_hide_url_;
-  }
-
-  // Gets a custom tab title provided by the Web UI. If there is no title
-  // override, the string will be empty which should trigger the default title
-  // behavior for the tab.
-  const string16& overridden_title() const {
-    return overridden_title_;
-  }
-
-  // Returns the transition type that should be used for link clicks on this
-  // Web UI. This will default to LINK but may be overridden.
-  content::PageTransition link_transition_type() const {
-    return link_transition_type_;
-  }
-
-  int bindings() const {
-    return bindings_;
-  }
 
   // Indicates whether RegisterMessageCallback() will overwrite an existing
   // message callback mapping.  Serves as the hook for test mocks.
@@ -106,11 +115,8 @@ class CONTENT_EXPORT WebUI : public IPC::Channel::Listener {
     register_callback_overwrites_ = value;
   }
 
-  void set_frame_xpath(const std::string& xpath) {
-    frame_xpath_ = xpath;
-  }
-
-  content::WebUIController* controller() const { return controller_; }
+  content::WebUIController* GetController() const;
+  void SetController(content::WebUIController* controller);
 
   // Call a Javascript function by sending its name and arguments down to
   // the renderer.  This is asynchronous; there's no way to get the result
@@ -152,13 +158,10 @@ class CONTENT_EXPORT WebUI : public IPC::Channel::Listener {
       const std::string& function_name,
       const std::vector<const base::Value*>& arg_list);
 
- protected:
-  // Takes ownership of |handler|, which will be destroyed when the WebUI is.
-  void AddMessageHandler(content::WebUIMessageHandler* handler);
-
-  // Execute a string of raw Javascript on the page.  Overridable for
-  // testing purposes.
-  virtual void ExecuteJavascript(const string16& javascript);
+ private:
+  // A map of message name -> message handling callback.
+  typedef std::map<std::string, MessageCallback> MessageCallbackMap;
+  MessageCallbackMap message_callbacks_;
 
   // Options that may be overridden by individual Web UI implementations. The
   // bool options default to false. See the public getters for more information.
@@ -179,18 +182,11 @@ class CONTENT_EXPORT WebUI : public IPC::Channel::Listener {
   // Non-owning pointer to the WebContents this WebUI is associated with.
   content::WebContents* web_contents_;
 
-  // TODO(jam): once WebUI objects aren't also WebUIController, make one own the
-  // other.
-  content::WebUIController* controller_;
-
- private:
-  // A map of message name -> message handling callback.
-  typedef std::map<std::string, MessageCallback> MessageCallbackMap;
-  MessageCallbackMap message_callbacks_;
-
   // The path for the iframe this WebUI is embedded in (empty if not in an
   // iframe).
   std::string frame_xpath_;
+
+  scoped_ptr<content::WebUIController> controller_;
 
   DISALLOW_COPY_AND_ASSIGN(WebUI);
 };

@@ -24,6 +24,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/common/url_constants.h"
+#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui_message_handler.h"
@@ -294,12 +295,13 @@ void RegisterPageHandler::SendUserInfo() {
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-RegisterPageUI::RegisterPageUI(WebContents* contents) : WebUI(contents, this) {
+RegisterPageUI::RegisterPageUI(WebUI* web_ui) : WebUIController(web_ui) {
   RegisterPageHandler* handler = new RegisterPageHandler();
-  AddMessageHandler(handler);
+  web_ui->AddMessageHandler(handler);
   RegisterPageUIHTMLSource* html_source = new RegisterPageUIHTMLSource();
 
   // Set up the chrome://register/ source.
-  Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
+  Profile* profile = Profile::FromBrowserContext(
+      web_ui->web_contents()->GetBrowserContext());
   profile->GetChromeURLDataManager()->AddDataSource(html_source);
 }

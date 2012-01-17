@@ -7,6 +7,7 @@
 #include "chrome/browser/extensions/extension_creator.h"
 #include "base/bind.h"
 #include "base/utf_string_conversions.h"
+#include "content/browser/webui/web_ui.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 

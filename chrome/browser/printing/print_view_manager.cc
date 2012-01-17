@@ -105,7 +105,7 @@ bool PrintViewManager::AdvancedPrintNow() {
     if (!print_preview_tab->web_contents()->GetWebUI())
       return false;
     PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(
-        print_preview_tab->web_contents()->GetWebUI());
+        print_preview_tab->web_contents()->GetWebUI()->GetController());
     print_preview_ui->OnShowSystemDialog();
     return true;
   } else {

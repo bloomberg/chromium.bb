@@ -7,14 +7,13 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/common/url_constants.h"
+#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
 
-using content::WebContents;
-
-EditSearchEngineDialogUI::EditSearchEngineDialogUI(WebContents* contents)
-    : HtmlDialogUI(contents) {
+EditSearchEngineDialogUI::EditSearchEngineDialogUI(WebUI* web_ui)
+    : HtmlDialogUI(web_ui) {
   ChromeWebUIDataSource* source =
       new ChromeWebUIDataSource(chrome::kChromeUIEditSearchEngineDialogHost);
 
@@ -49,7 +48,8 @@ EditSearchEngineDialogUI::EditSearchEngineDialogUI(WebContents* contents)
   // Set default resource.
   source->set_default_resource(IDR_EDIT_SEARCH_ENGINE_DIALOG_HTML);
 
-  Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
+  Profile* profile = Profile::FromBrowserContext(
+      web_ui->web_contents()->GetBrowserContext());
   profile->GetChromeURLDataManager()->AddDataSource(source);
 }
 

@@ -12,6 +12,7 @@
 
 class GURL;
 class RenderViewHost;
+class WebUI;
 
 namespace base {
 class ListValue;
@@ -23,6 +24,7 @@ namespace content {
 // manages the data source and message handlers.
 class CONTENT_EXPORT WebUIController {
  public:
+  explicit WebUIController(WebUI* web_ui) : web_ui_(web_ui) {}
   virtual ~WebUIController() {}
 
   // Allows the controller to override handling all messages from the page.
@@ -49,6 +51,12 @@ class CONTENT_EXPORT WebUIController {
   // within the same page), and if so trigger that code manually since onload
   // won't be run in that case.
   virtual void DidBecomeActiveForReusedRenderView() {}
+
+  WebUI* web_ui() const { return web_ui_; }
+
+ private:
+  WebUI* web_ui_;
+
 };
 
 }  // namespace content

@@ -10,7 +10,6 @@
 #include "base/values.h"
 #include "chrome/browser/policy/cloud_policy_subsystem.h"
 #include "chrome/browser/policy/configuration_policy_reader.h"
-#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/web_ui_controller.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
@@ -71,9 +70,9 @@ class PolicyUIHandler : public content::WebUIMessageHandler,
 };
 
 // The Web UI handler for about:policy.
-class PolicyUI : public WebUI, public content::WebUIController {
+class PolicyUI : public content::WebUIController {
  public:
-  explicit PolicyUI(content::WebContents* contents);
+  explicit PolicyUI(WebUI* web_ui);
   virtual ~PolicyUI();
 
  private:

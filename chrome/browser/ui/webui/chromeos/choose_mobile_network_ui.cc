@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/url_constants.h"
+#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui_message_handler.h"
@@ -210,12 +211,13 @@ void ChooseMobileNetworkHandler::HandlePageReady(const ListValue* args) {
 
 }  // namespace
 
-ChooseMobileNetworkUI::ChooseMobileNetworkUI(WebContents* contents)
-    : WebUI(contents, this) {
+ChooseMobileNetworkUI::ChooseMobileNetworkUI(WebUI* web_ui)
+    : WebUIController(web_ui) {
   ChooseMobileNetworkHandler* handler = new ChooseMobileNetworkHandler();
-  AddMessageHandler(handler);
+  web_ui->AddMessageHandler(handler);
   // Set up the "chrome://choose-mobile-network" source.
-  Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
+  Profile* profile = Profile::FromBrowserContext(
+      web_ui->web_contents()->GetBrowserContext());
   profile->GetChromeURLDataManager()->AddDataSource(
       CreateChooseMobileNetworkUIHTMLSource());
 }

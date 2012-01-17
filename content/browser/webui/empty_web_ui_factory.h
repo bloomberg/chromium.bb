@@ -17,8 +17,8 @@ class CONTENT_EXPORT EmptyWebUIFactory : public content::WebUIFactory {
   // Returns the singleton instance.
   static EmptyWebUIFactory* GetInstance();
 
-  virtual WebUI* CreateWebUIForURL(WebContents* source,
-                                   const GURL& url) const OVERRIDE;
+  virtual WebUIController* CreateWebUIForURL(WebUI* web_ui,
+                                             const GURL& url) const OVERRIDE;
   virtual WebUI::TypeID GetWebUIType(content::BrowserContext* browser_context,
                                      const GURL& url) const OVERRIDE;
   virtual bool UseWebUIForURL(content::BrowserContext* browser_context,

@@ -9,8 +9,8 @@
 #include <string>
 #include <vector>
 
+#include "base/compiler_specific.h"
 #include "base/string16.h"
-#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/web_ui_controller.h"
 #include "googleurl/src/gurl.h"
 #include "ui/base/ui_base_types.h"
@@ -25,6 +25,7 @@ template<class T> class PropertyAccessor;
 
 namespace content {
 class WebContents;
+class WebUIMessageHandler;
 }
 
 namespace gfx {
@@ -96,7 +97,7 @@ class HtmlDialogUIDelegate {
 // there and call it back. This is a bit of a hack to allow the dialog to pass
 // its delegate to the Web UI without having nasty accessors on the WebContents.
 // The correct design using RVH directly would avoid all of this.
-class HtmlDialogUI : public WebUI, public content::WebUIController {
+class HtmlDialogUI : public content::WebUIController {
  public:
   struct HtmlDialogParams {
     // The URL for the content that will be loaded in the dialog.
@@ -110,7 +111,7 @@ class HtmlDialogUI : public WebUI, public content::WebUIController {
   };
 
   // When created, the property should already be set on the WebContents.
-  explicit HtmlDialogUI(content::WebContents* web_contents);
+  explicit HtmlDialogUI(WebUI* web_ui);
   virtual ~HtmlDialogUI();
 
   // Close the dialog, passing the specified arguments to the close handler.
@@ -137,7 +138,7 @@ class HtmlDialogUI : public WebUI, public content::WebUIController {
 // cloud print dialog).
 class ExternalHtmlDialogUI : public HtmlDialogUI {
  public:
-  explicit ExternalHtmlDialogUI(content::WebContents* web_contents);
+  explicit ExternalHtmlDialogUI(WebUI* web_ui);
   virtual ~ExternalHtmlDialogUI();
 };
 

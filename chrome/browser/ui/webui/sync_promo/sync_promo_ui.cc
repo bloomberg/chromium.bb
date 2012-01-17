@@ -21,6 +21,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/web_contents.h"
 #include "googleurl/src/url_util.h"
 #include "grit/browser_resources.h"
@@ -105,20 +106,21 @@ bool GetValueForKeyInQuery(const GURL& url, const std::string& search_key,
 
 }  // namespace
 
-SyncPromoUI::SyncPromoUI(WebContents* contents) : WebUI(contents, this) {
-  should_hide_url_ = true;
+SyncPromoUI::SyncPromoUI(WebUI* web_ui) : WebUIController(web_ui) {
+  web_ui->HideURL();
 
   SyncPromoHandler* handler = new SyncPromoHandler(
       g_browser_process->profile_manager());
-  AddMessageHandler(handler);
+  web_ui->AddMessageHandler(handler);
 
   // Set up the chrome://theme/ source.
+  WebContents* contents = web_ui->web_contents();
   Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
   ThemeSource* theme = new ThemeSource(profile);
   profile->GetChromeURLDataManager()->AddDataSource(theme);
 
   // Set up the sync promo source.
-  SyncPromoUIHTMLSource* html_source = new SyncPromoUIHTMLSource(this);
+  SyncPromoUIHTMLSource* html_source = new SyncPromoUIHTMLSource(web_ui);
   html_source->set_json_path(kStringsJsFile);
   html_source->add_resource_path(kSyncPromoJsFile, IDR_SYNC_PROMO_JS);
   html_source->set_default_resource(IDR_SYNC_PROMO_HTML);

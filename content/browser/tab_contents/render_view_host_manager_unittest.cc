@@ -32,6 +32,7 @@ using content::NavigationController;
 using content::NavigationEntry;
 using content::NavigationEntryImpl;
 using content::WebContents;
+using content::WebUIController;
 
 namespace {
 
@@ -50,12 +51,11 @@ class RenderViewHostManagerTestWebUIFactory
   }
 
   // WebUIFactory implementation.
-  virtual WebUI* CreateWebUIForURL(WebContents* source,
-                                   const GURL& url) const OVERRIDE {
+  virtual WebUIController* CreateWebUIForURL(WebUI* web_ui,
+                                             const GURL& url) const OVERRIDE {
     if (!(should_create_webui_ && HasWebUIScheme(url)))
       return NULL;
-    static content::WebUIController temp_controller;
-    return new WebUI(source, &temp_controller);
+    return new WebUIController(web_ui);
   }
 
   virtual bool UseWebUIForURL(content::BrowserContext* browser_context,
