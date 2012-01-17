@@ -13,13 +13,6 @@ var chrome = chrome || {};
   native function StartRequest();
   native function SetIconCommon();
 
-  native function CreateBlob(filePath);
-  native function DecodeJPEG(jpegImage);
-  native function GetCurrentPageActions(extensionId);
-  native function GetExtensionViews();
-  native function GetLocalFileSystem(name, path);
-  native function SendResponseAck(requestId);
-
   var chromeHidden = GetChromeHidden();
 
   if (!chrome)
@@ -657,9 +650,6 @@ var chrome = chrome || {};
       }, extensionId);
     });
 
-    // getTabContentses is retained for backwards compatibility
-    // See http://crbug.com/21433
-    chrome.extension.getTabContentses = chrome.extension.getExtensionTabs;
     // TOOD(mihaip): remove this alias once the webstore stops calling
     // beginInstallWithManifest2.
     // See http://crbug.com/100242
@@ -667,62 +657,6 @@ var chrome = chrome || {};
       chrome.webstorePrivate.beginInstallWithManifest2 =
           chrome.webstorePrivate.beginInstallWithManifest3;
     }
-
-    apiFunctions.setCustomCallback("pageCapture.saveAsMHTML",
-      function(name, request, response) {
-        var params = chromeHidden.JSON.parse(response);
-        var path = params.mhtmlFilePath;
-        var size = params.mhtmlFileLength;
-
-        if (request.callback)
-          request.callback(CreateBlob(path, size));
-        request.callback = null;
-
-        // Notify the browser. Now that the blob is referenced from JavaScript,
-        // the browser can drop its reference to it.
-        SendResponseAck(request.id);
-      });
-
-    apiFunctions.setCustomCallback("fileBrowserPrivate.requestLocalFileSystem",
-      function(name, request, response) {
-        var resp = response ? [chromeHidden.JSON.parse(response)] : [];
-        var fs = null;
-        if (!resp[0].error)
-          fs = GetLocalFileSystem(resp[0].name, resp[0].path);
-        if (request.callback)
-          request.callback(fs);
-        request.callback = null;
-      });
-
-    apiFunctions.setHandleRequest("chromePrivate.decodeJPEG",
-      function(jpeg_image) {
-        return DecodeJPEG(jpeg_image);
-      });
-
-    apiFunctions.setHandleRequest("extension.getViews", function(properties) {
-      var windowId = chrome.windows.WINDOW_ID_NONE;
-      var type = "ALL";
-      if (typeof(properties) != "undefined") {
-        if (typeof(properties.type) != "undefined") {
-          type = properties.type;
-        }
-        if (typeof(properties.windowId) != "undefined") {
-          windowId = properties.windowId;
-        }
-      }
-      return GetExtensionViews(windowId, type) || null;
-    });
-
-    apiFunctions.setHandleRequest("extension.getBackgroundPage", function() {
-      return GetExtensionViews(-1, "BACKGROUND")[0] || null;
-    });
-
-    apiFunctions.setHandleRequest("extension.getExtensionTabs",
-        function(windowId) {
-      if (typeof(windowId) == "undefined")
-        windowId = chrome.windows.WINDOW_ID_NONE;
-      return GetExtensionViews(windowId, "TAB");
-    });
 
     apiFunctions.setHandleRequest("devtools.getTabEvents", function(tabId) {
       var tabIdProxy = {};

@@ -1,8 +1,8 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/extensions/file_browser_private_bindings.h"
+#include "chrome/renderer/extensions/file_browser_handler_custom_bindings.h"
 
 #include <string>
 
@@ -13,11 +13,16 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 
-namespace {
+namespace extensions {
 
-const char* kDeps[] = {
-  "extensions/event.js"
-};
+FileBrowserHandlerCustomBindings::FileBrowserHandlerCustomBindings(
+    int dependency_count,
+    const char** dependencies)
+    : ChromeV8Extension("extensions/file_browser_handler_custom_bindings.js",
+                        IDR_FILE_BROWSER_HANDLER_CUSTOM_BINDINGS_JS,
+                        dependency_count,
+                        dependencies,
+                        NULL) {}
 
 static v8::Handle<v8::Value> GetExternalFileEntry(const v8::Arguments& args) {
   // TODO(zelidrag): Make this magic work on other platforms when file browser
@@ -47,20 +52,15 @@ static v8::Handle<v8::Value> GetExternalFileEntry(const v8::Arguments& args) {
 #else
     return v8::Undefined();
 #endif
-  }
-
 }
 
-FileBrowserPrivateBindings::FileBrowserPrivateBindings()
-    : ChromeV8Extension("extensions/file_browser_private.js",
-                        IDR_FILE_BROWSER_PRIVATE_BINDINGS_JS,
-                        arraysize(kDeps), kDeps, NULL) {
-}
-
-v8::Handle<v8::FunctionTemplate> FileBrowserPrivateBindings::GetNativeFunction(
+v8::Handle<v8::FunctionTemplate>
+FileBrowserHandlerCustomBindings::GetNativeFunction(
     v8::Handle<v8::String> name) {
   if (name->Equals(v8::String::New("GetExternalFileEntry")))
     return v8::FunctionTemplate::New(GetExternalFileEntry);
   else
     return ChromeV8Extension::GetNativeFunction(name);
 }
+
+}  // namespace extensions

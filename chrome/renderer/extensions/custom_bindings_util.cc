@@ -10,10 +10,15 @@
 #include "base/string_util.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/renderer/extensions/chrome_v8_extension.h"
+#include "chrome/renderer/extensions/chrome_private_custom_bindings.h"
 #include "chrome/renderer/extensions/context_menus_custom_bindings.h"
 #include "chrome/renderer/extensions/experimental.socket_custom_bindings.h"
+#include "chrome/renderer/extensions/extension_custom_bindings.h"
 #include "chrome/renderer/extensions/extension_dispatcher.h"
+#include "chrome/renderer/extensions/file_browser_handler_custom_bindings.h"
+#include "chrome/renderer/extensions/file_browser_private_custom_bindings.h"
 #include "chrome/renderer/extensions/page_actions_custom_bindings.h"
+#include "chrome/renderer/extensions/page_capture_custom_bindings.h"
 #include "chrome/renderer/extensions/tabs_custom_bindings.h"
 #include "chrome/renderer/extensions/tts_custom_bindings.h"
 #include "chrome/renderer/extensions/web_request_custom_bindings.h"
@@ -55,11 +60,21 @@ std::vector<v8::Extension*> GetAll(ExtensionDispatcher* extension_dispatcher) {
   std::vector<v8::Extension*> result;
 
   // Custom bindings that have native code parts.
+  result.push_back(new ChromePrivateCustomBindings(
+      kDependencyCount, kDependencies, extension_dispatcher));
   result.push_back(new ContextMenusCustomBindings(
+      kDependencyCount, kDependencies));
+  result.push_back(new ExtensionCustomBindings(
+      kDependencyCount, kDependencies, extension_dispatcher));
+  result.push_back(new ExperimentalSocketCustomBindings(
+      kDependencyCount, kDependencies));
+  result.push_back(new FileBrowserHandlerCustomBindings(
+      kDependencyCount, kDependencies));
+  result.push_back(new FileBrowserPrivateCustomBindings(
       kDependencyCount, kDependencies));
   result.push_back(new PageActionsCustomBindings(
       kDependencyCount, kDependencies, extension_dispatcher));
-  result.push_back(new ExperimentalSocketCustomBindings(
+  result.push_back(new PageCaptureCustomBindings(
       kDependencyCount, kDependencies));
   result.push_back(new TabsCustomBindings(
       kDependencyCount, kDependencies));
