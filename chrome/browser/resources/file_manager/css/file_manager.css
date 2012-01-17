@@ -174,7 +174,7 @@ li.root-item > * {
   margin-right: 5px;
 }
 
-li.root-item > .text {
+li.root-item > .root-label {
   max-width: 130px;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -192,7 +192,15 @@ li.root-item > .spacer {
 }
 
 .root-label[icon=chromebook] {
+  -webkit-padding-start: 29px;
   background-image: url('../images/chromebook_24x24.png');
+  background-position: 0 -2px;
+}
+
+.breadcrumbs .root-label[icon=chromebook] {
+  -webkit-padding-start: 33px;
+  background-image: url('../images/chromebook_28x28.png');
+  background-position: 0 -3px;
 }
 
 .root-label[icon=archive] {
@@ -308,6 +316,7 @@ div.open-sidebar:hover {
 .breadcrumbs {
   -webkit-box-orient: horizontal;
   -webkit-box-flex: 1;
+  -webkit-margin-end: 5px;
   display: -webkit-box;
   -webkit-box-align: center;
   font-size: 15px;
@@ -320,6 +329,14 @@ div.open-sidebar:hover {
   white-space: nowrap;
 }
 
+.breadcrumbs > [collapsed]:before {
+  content: '...';
+}
+
+.breadcrumbs > [collapsed] {
+  width: 1em;
+}
+
 .dialog-container[sidebar] .breadcrumbs {
   margin-left: 10px;
 }
@@ -329,6 +346,9 @@ div.open-sidebar:hover {
   color: #265692;
   cursor: pointer;
   font-size: 14px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
 }
 
 /* The final breadcrumb, representing the current directory. */
@@ -339,15 +359,16 @@ div.open-sidebar:hover {
 }
 
 /* The > arrow between breadcrumbs. */
-.breadcrumb-spacer {
-  -webkit-margin-start: 7px;
-  -webkit-margin-end: 4px;
+.breadcrumbs .separator:before{
+  -webkit-padding-start: 7px;
+  -webkit-padding-end: 4px;
   color: #aaa;
   font-size: 12px;
+  content: '\025b8';  /* Arrow symbol. */
 }
 
-.breadcrumb-spacer:before {
-  content: '\025b8';
+.breadcrumbs .separator {
+  overflow: hidden;
 }
 
 .dialog-header > div > button {

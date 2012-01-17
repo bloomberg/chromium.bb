@@ -1333,6 +1333,7 @@ FileManager.prototype = {
     this.rootsList_.style.height =
         this.rootsList_.parentNode.clientHeight + 'px';
     this.rootsList_.redraw();
+    this.truncateBreadcrumbs_();
   };
 
   FileManager.prototype.resolvePath = function(
@@ -2293,33 +2294,128 @@ FileManager.prototype = {
     pathNames.splice(0, 0, rootPathNames[rootPathNames.length - 1]);
     rootPathNames.splice(rootPathNames.length - 1, 1);
     var path = rootPathNames.join('/') + '/';
+    var doc = this.document_;
 
     for (var i = 0; i < pathNames.length; i++) {
       var pathName = pathNames[i];
       path += pathName;
 
-      var div = this.document_.createElement('div');
+      var div = doc.createElement('div');
+
       div.className = 'breadcrumb-path';
       div.textContent = i == 0 ? this.getRootLabel_(path) : pathName;
-      if (i == 0) {
-        div.classList.add('root-label');
-        div.setAttribute('icon', DirectoryModel.getRootType(rootPath));
-      }
 
       path = path + '/';
       div.path = path;
       div.addEventListener('click', this.onBreadcrumbClick_.bind(this));
 
-      bc.appendChild(div);
+      if (i == 0) {
+        div.classList.add('root-label');
+        div.setAttribute('icon', DirectoryModel.getRootType(rootPath));
+
+        // Wrapper with zero margins.
+        var wrapper = doc.createElement('div');
+        wrapper.appendChild(div);
+        bc.appendChild(wrapper);
+      } else {
+        bc.appendChild(div);
+      }
 
       if (i == pathNames.length - 1) {
         div.classList.add('breadcrumb-last');
       } else {
-        var spacer = this.document_.createElement('div');
-        spacer.className = 'breadcrumb-spacer';
+        var spacer = doc.createElement('div');
+        spacer.className = 'separator';
         bc.appendChild(spacer);
       }
     }
+    this.truncateBreadcrumbs_();
+  };
+
+  /**
+   * Updates breadcrumbs widths in order to truncate it properly.
+   */
+  FileManager.prototype.truncateBreadcrumbs_ = function() {
+    var bc = this.dialogDom_.querySelector('.breadcrumbs');
+    if (!bc.firstChild)
+     return;
+
+    // Assume style.width == clientWidth (items have no margins or paddings).
+
+    for (var item = bc.firstChild; item; item = item.nextSibling) {
+      item.removeAttribute('style');
+      item.removeAttribute('collapsed');
+    }
+
+    var containerWidth = bc.clientWidth;
+
+    var pathWidth = 0;
+    var currentWidth = 0;
+    var lastSeparator;
+    for (var item = bc.firstChild; item; item = item.nextSibling) {
+      if (item.className == 'separator') {
+        pathWidth += currentWidth;
+        currentWidth = item.clientWidth;
+        lastSeparator = item;
+      } else {
+        currentWidth += item.clientWidth;
+      }
+    }
+    if (pathWidth + currentWidth <= containerWidth)
+      return;
+    if (!lastSeparator) {
+      bc.lastChild.style.width = Math.min(currentWidth, containerWidth) + 'px';
+      return;
+    }
+    var lastCrumbSeparatorWidth = lastSeparator.clientWidth;
+    // Current directory name may occupy up to 70% of space or even more if the
+    // path is short.
+    var maxPathWidth = Math.max(Math.round(containerWidth * 0.3),
+                                containerWidth - currentWidth);
+    maxPathWidth = Math.min(pathWidth, maxPathWidth);
+
+    var parentCrumb = lastSeparator.previousSibling;
+    var collapsedWidth = 0;
+    if (parentCrumb && pathWidth - maxPathWidth > parentCrumb.clientWidth) {
+      // At least one crumb is hidden completely (or almost completely).
+      // Show sign of hidden crumbs like this:
+      // root > some di... > ... > current directory.
+      parentCrumb.setAttribute('collapsed', '');
+      collapsedWidth = Math.min(maxPathWidth, parentCrumb.clientWidth);
+      maxPathWidth -= collapsedWidth;
+      if (parentCrumb.clientWidth != collapsedWidth)
+        parentCrumb.style.width = collapsedWidth + 'px';
+
+      lastSeparator = parentCrumb.previousSibling;
+      if (!lastSeparator)
+        return;
+      collapsedWidth += lastSeparator.clientWidth;
+      maxPathWidth = Math.max(0, maxPathWidth - lastSeparator.clientWidth);
+    }
+
+    pathWidth = 0;
+    for (var item = bc.firstChild; item != lastSeparator;
+         item = item.nextSibling) {
+      // TODO(serya): Mixing access item.clientWidth and modifying style and
+      // attributes could cause multiple layout reflows.
+      if (pathWidth + item.clientWidth <= maxPathWidth) {
+        pathWidth += item.clientWidth;
+      } else if (pathWidth == maxPathWidth) {
+        item.style.width = '0';
+      } else if (item.classList.contains('separator')) {
+        // Do not truncate separator. Instead let the last crumb be longer.
+        item.style.width = '0';
+        maxPathWidth = pathWidth;
+      } else {
+        // Truncate the last visible crumb.
+        item.style.width = (maxPathWidth - pathWidth) + 'px';
+        pathWidth = maxPathWidth;
+      }
+    }
+
+    currentWidth = Math.min(currentWidth,
+                            containerWidth - pathWidth - collapsedWidth);
+    bc.lastChild.style.width = (currentWidth - lastCrumbSeparatorWidth) + 'px';
   };
 
   FileManager.prototype.formatMetadataValue_ = function(obj) {
