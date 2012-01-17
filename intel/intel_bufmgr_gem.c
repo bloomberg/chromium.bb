@@ -107,6 +107,7 @@ typedef struct _drm_intel_bufmgr_gem {
 	unsigned int has_bsd : 1;
 	unsigned int has_blt : 1;
 	unsigned int has_relaxed_fencing : 1;
+	unsigned int has_llc : 1;
 	unsigned int bo_reuse : 1;
 	bool fenced_relocs;
 } drm_intel_bufmgr_gem;
@@ -2357,6 +2358,17 @@ drm_intel_bufmgr_gem_init(int fd, int batch_size)
 	gp.param = I915_PARAM_HAS_RELAXED_FENCING;
 	ret = drmIoctl(bufmgr_gem->fd, DRM_IOCTL_I915_GETPARAM, &gp);
 	bufmgr_gem->has_relaxed_fencing = ret == 0;
+
+	gp.param = I915_PARAM_HAS_LLC;
+	ret = drmIoctl(bufmgr_gem->fd, DRM_IOCTL_I915_GETPARAM, &gp);
+	if (ret == -EINVAL) {
+		/* Kernel does not supports HAS_LLC query, fallback to GPU
+		 * generation detection and assume that we have LLC on GEN6/7
+		 */
+		bufmgr_gem->has_llc = (IS_GEN6(bufmgr_gem->pci_device) |
+				IS_GEN7(bufmgr_gem->pci_device));
+	} else
+		bufmgr_gem->has_llc = ret == 0;
 
 	if (bufmgr_gem->gen < 4) {
 		gp.param = I915_PARAM_NUM_FENCES_AVAIL;
