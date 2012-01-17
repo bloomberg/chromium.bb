@@ -134,6 +134,7 @@
 
       <!-- Images only used by Aura. -->
       <if expr="pp_ifdef('use_aura')">
+        <include name="IDR_AURA_LAUNCHER_BROWSER_SHORTCUT" file="aura/chromium-32.png" type="BINDATA" />
         <include name="IDR_AURA_LAUNCHER_NEW_BROWSER" file="aura/new_browser.png" type="BINDATA" />
         <include name="IDR_AURA_LAUNCHER_NEW_BROWSER_HOT" file="aura/new_browser_h.png" type="BINDATA" />
         <include name="IDR_AURA_LAUNCHER_NEW_BROWSER_PUSHED" file="aura/new_browser_p.png" type="BINDATA" />
