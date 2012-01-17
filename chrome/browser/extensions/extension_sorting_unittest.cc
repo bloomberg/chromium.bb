@@ -129,13 +129,13 @@ class ExtensionSortingPageOrdinal : public ExtensionSortingTest {
 };
 TEST_F(ExtensionSortingPageOrdinal, ExtensionSortingPageOrdinal) {}
 
-// Tests the application index to ordinal migration code. This should be removed
-// when the migrate code is taken out.
-class ExtensionSortingMigrateAppIndex
+// Ensure that ExtensionSorting is able to properly initialize off a set
+// of old page and app launch indices and properly convert them.
+class ExtensionSortingInitialize
     : public ExtensionPrefsPrepopulatedTest {
  public:
-  ExtensionSortingMigrateAppIndex() {}
-  virtual ~ExtensionSortingMigrateAppIndex() {}
+  ExtensionSortingInitialize() {}
+  virtual ~ExtensionSortingInitialize() {}
 
   virtual void Initialize() OVERRIDE {
     // A preference determining the order of which the apps appear on the NTP.
@@ -174,7 +174,7 @@ class ExtensionSortingMigrateAppIndex
     ids.push_back(ext2_->id());
     ids.push_back(ext1_->id());
 
-    prefs()->extension_sorting()->MigrateAppIndex(ids);
+    prefs()->extension_sorting()->Initialize(ids);
   }
   virtual void Verify() OVERRIDE {
     StringOrdinal first_ordinal = StringOrdinal::CreateInitialOrdinal();
@@ -195,7 +195,51 @@ class ExtensionSortingMigrateAppIndex
         extension_sorting->GetPageOrdinal(ext3_->id())));
   }
 };
-TEST_F(ExtensionSortingMigrateAppIndex, ExtensionSortingMigrateAppIndex) {}
+TEST_F(ExtensionSortingInitialize, ExtensionSortingInitialize) {}
+
+// Make sure that initialization still works when no extensions are present
+// (i.e. make sure that the web store icon is still loaded into the map).
+class ExtensionSortingInitializeWithNoApps
+    : public ExtensionPrefsPrepopulatedTest {
+ public:
+  ExtensionSortingInitializeWithNoApps() {}
+  virtual ~ExtensionSortingInitializeWithNoApps() {}
+
+  virtual void Initialize() OVERRIDE {
+    ExtensionSorting* extension_sorting = prefs()->extension_sorting();
+
+    // Make sure that the web store has valid ordinals.
+    StringOrdinal initial_ordinal = StringOrdinal::CreateInitialOrdinal();
+    extension_sorting->SetPageOrdinal(extension_misc::kWebStoreAppId,
+                                      initial_ordinal);
+    extension_sorting->SetAppLaunchOrdinal(extension_misc::kWebStoreAppId,
+                                           initial_ordinal);
+
+    ExtensionPrefs::ExtensionIdSet ids;
+    extension_sorting->Initialize(ids);
+  }
+  virtual void Verify() OVERRIDE {
+    ExtensionSorting* extension_sorting = prefs()->extension_sorting();
+
+    StringOrdinal page =
+        extension_sorting->GetPageOrdinal(extension_misc::kWebStoreAppId);
+    EXPECT_TRUE(page.IsValid());
+
+    ExtensionSorting::PageOrdinalMap::iterator page_it =
+        extension_sorting->ntp_ordinal_map_.find(page);
+    EXPECT_TRUE(page_it != extension_sorting->ntp_ordinal_map_.end());
+
+    StringOrdinal app_launch =
+        extension_sorting->GetPageOrdinal(extension_misc::kWebStoreAppId);
+    EXPECT_TRUE(app_launch.IsValid());
+
+    ExtensionSorting::AppLaunchOrdinalMap::iterator app_launch_it =
+        page_it->second.find(app_launch);
+    EXPECT_TRUE(app_launch_it != page_it->second.end());
+  }
+};
+TEST_F(ExtensionSortingInitializeWithNoApps,
+       ExtensionSortingInitializeWithNoApps) {}
 
 // Tests the application index to ordinal migration code for values that
 // shouldn't be converted. This should be removed when the migrate code
@@ -226,7 +270,7 @@ class ExtensionSortingMigrateAppIndexInvalid
     ExtensionPrefs::ExtensionIdSet ids;
     ids.push_back(ext1_->id());
 
-    prefs()->extension_sorting()->MigrateAppIndex(ids);
+    prefs()->extension_sorting()->Initialize(ids);
   }
   virtual void Verify() OVERRIDE {
     // Make sure that the invalid page_index wasn't converted over.

@@ -21,8 +21,9 @@ class ExtensionSorting {
                             PrefService* pref_service);
   ~ExtensionSorting();
 
-  // Migrates the app launcher and page index values.
-  void MigrateAppIndex(const ExtensionPrefs::ExtensionIdSet& extension_ids);
+  // Properly initialize ExtensionSorting internal values that require
+  // |extension_ids|.
+  void Initialize(const ExtensionPrefs::ExtensionIdSet& extension_ids);
 
   // Updates the app launcher value for the moved extension so that it is now
   // located after the given predecessor and before the successor.
@@ -84,6 +85,7 @@ class ExtensionSorting {
  private:
   // Unit tests.
   friend class ExtensionSortingGetMinOrMaxAppLaunchOrdinalsOnPage;
+  friend class ExtensionSortingInitializeWithNoApps;
   friend class ExtensionSortingPageOrdinalMapping;
 
   // An enum used by GetMinOrMaxAppLaunchOrdinalsOnPage to specify which
@@ -103,6 +105,9 @@ class ExtensionSorting {
   // given extensions.
   void InitializePageOrdinalMap(
       const ExtensionPrefs::ExtensionIdSet& extension_ids);
+
+  // Migrates the app launcher and page index values.
+  void MigrateAppIndex(const ExtensionPrefs::ExtensionIdSet& extension_ids);
 
   // Called to add a new mapping value for |extension_id| with a page ordinal
   // of |page_ordinal| and a app launch ordinal of |app_launch_ordinal|. This

@@ -34,12 +34,17 @@ ExtensionSorting::ExtensionSorting(ExtensionScopedPrefs* extension_scoped_prefs,
 ExtensionSorting::~ExtensionSorting() {
 }
 
+void ExtensionSorting::Initialize(
+    const ExtensionPrefs::ExtensionIdSet& extension_ids) {
+  InitializePageOrdinalMap(extension_ids);
+
+  MigrateAppIndex(extension_ids);
+}
+
 void ExtensionSorting::MigrateAppIndex(
     const ExtensionPrefs::ExtensionIdSet& extension_ids) {
   if (extension_ids.empty())
     return;
-
-  InitializePageOrdinalMap(extension_ids);
 
   // Convert all the page index values to page ordinals. If there are any
   // app launch values that need to be migrated, inserted them into a sorted

@@ -1584,7 +1584,7 @@ void ExtensionPrefs::InitPrefStore(bool extensions_disabled) {
 
   FixMissingPrefs(extension_ids);
   MigratePermissions(extension_ids);
-  extension_sorting_->MigrateAppIndex(extension_ids);
+  extension_sorting_->Initialize(extension_ids);
 
   // Store extension controlled preference values in the
   // |extension_pref_value_map_|, which then informs the subscribers
