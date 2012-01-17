@@ -2390,7 +2390,7 @@
             'test/data/resource.rc',
           ],
         }],
-        ['enable_plugin_installation', {
+        ['enable_plugin_installation==0', {
           'sources!': [
             'browser/plugin_finder_unittest.cc',
           ],

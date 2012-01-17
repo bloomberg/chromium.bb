@@ -303,11 +303,6 @@
             '../remoting/remoting.gyp:remoting_client_plugin',
           ],
         }],
-        ['enable_plugin_installation', {
-          'defines': [
-            'ENABLE_PLUGIN_INSTALLATION',
-          ],
-        }],
       ],
       'export_dependent_settings': [
         '../base/base.gyp:base',

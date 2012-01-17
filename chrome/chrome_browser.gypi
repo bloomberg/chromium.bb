@@ -4234,11 +4234,6 @@
             ['include', '^browser/safe_browsing/safe_browsing_tab_observer.h'],
           ],
         }],
-        ['enable_plugin_installation', {
-          'defines': [
-            'ENABLE_PLUGIN_INSTALLATION',
-          ],
-        }],
         ['chromeos==0', {
           'sources/': [
             ['exclude', '^browser/chromeos'],
