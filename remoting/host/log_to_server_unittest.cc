@@ -32,7 +32,7 @@ class LogToServerTest : public testing::Test {
   virtual void SetUp() OVERRIDE {
     message_loop_proxy_ = base::MessageLoopProxy::current();
     EXPECT_CALL(signal_strategy_, AddListener(_));
-    log_to_server_.reset(new LogToServer(&signal_strategy_));
+    log_to_server_.reset(new LogToServer(NULL, &signal_strategy_));
     EXPECT_CALL(signal_strategy_, RemoveListener(_));
   }
 

@@ -24,13 +24,21 @@ namespace {
 const char kLogCommand[] = "log";
 }  // namespace
 
-LogToServer::LogToServer(SignalStrategy* signal_strategy)
-    : signal_strategy_(signal_strategy) {
+LogToServer::LogToServer(ChromotingHost* host,
+                         SignalStrategy* signal_strategy)
+    : host_(host),
+      signal_strategy_(signal_strategy) {
   signal_strategy_->AddListener(this);
+
+  // |host| may be NULL in tests.
+  if (host_)
+    host_->AddStatusObserver(this);
 }
 
 LogToServer::~LogToServer() {
   signal_strategy_->RemoveListener(this);
+  if (host_)
+    host_->RemoveStatusObserver(this);
 }
 
 void LogToServer::LogSessionStateChange(bool connected) {

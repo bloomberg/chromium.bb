@@ -217,14 +217,12 @@ class SimpleHost {
                                desktop_environment_.get(), network_settings_);
     host_->set_it2me(is_it2me_);
 
-    log_to_server_.reset(new LogToServer(signal_strategy_.get()));
-    host_->AddStatusObserver(log_to_server_.get());
+    log_to_server_.reset(new LogToServer(host_, signal_strategy_.get()));
 
     if (is_it2me_) {
       it2me_host_user_interface_.reset(
           new It2MeHostUserInterface(host_, &context_));
       it2me_host_user_interface_->Init();
-      host_->AddStatusObserver(it2me_host_user_interface_.get());
     }
 
     if (protocol_config_.get()) {

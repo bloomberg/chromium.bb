@@ -103,8 +103,7 @@ class ChromotingHostTest : public testing::Test {
     it2me_host_user_interface_.reset(new It2MeHostUserInterface(host_,
                                                                 &context_));
     it2me_host_user_interface_->InitFrom(disconnect_window_, continue_window_,
-                              local_input_monitor_);
-    host_->AddStatusObserver(it2me_host_user_interface_.get());
+                                         local_input_monitor_);
 
     session_ = new MockSession();
     session2_ = new MockSession();

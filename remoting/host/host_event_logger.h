@@ -8,13 +8,16 @@
 #include <string>
 
 #include "base/compiler_specific.h"
+#include "base/memory/ref_counted.h"
 #include "remoting/host/host_status_observer.h"
 
 namespace remoting {
 
+class ChromotingHost;
+
 class HostEventLogger : public HostStatusObserver {
  public:
-  HostEventLogger();
+  HostEventLogger(ChromotingHost* host);
   virtual ~HostEventLogger();
 
   // HostStatusObserver implementation.  These methods will be called from the
@@ -23,6 +26,11 @@ class HostEventLogger : public HostStatusObserver {
   virtual void OnClientDisconnected(const std::string& jid) OVERRIDE;
   virtual void OnAccessDenied() OVERRIDE;
   virtual void OnShutdown() OVERRIDE;
+
+ private:
+  scoped_refptr<ChromotingHost> host_;
+
+  DISALLOW_COPY_AND_ASSIGN(HostEventLogger);
 };
 
 }

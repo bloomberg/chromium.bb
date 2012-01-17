@@ -374,6 +374,7 @@ void HostNPScriptObject::OnShutdown() {
   register_request_.reset();
   log_to_server_.reset();
   signal_strategy_.reset();
+  host_->RemoveStatusObserver(this);
   host_ = NULL;
 
   if (state_ != kDisconnected) {
@@ -514,13 +515,11 @@ void HostNPScriptObject::FinishConnectNetworkThread(
       &host_context_, signal_strategy_.get(), desktop_environment_.get(),
       protocol::NetworkSettings(nat_traversal_enabled_));
   host_->AddStatusObserver(this);
-  log_to_server_.reset(new LogToServer(signal_strategy_.get()));
-  host_->AddStatusObserver(log_to_server_.get());
+  log_to_server_.reset(new LogToServer(host_, signal_strategy_.get()));
   host_->set_it2me(true);
   it2me_host_user_interface_.reset(new It2MeHostUserInterface(host_.get(),
                                                               &host_context_));
   it2me_host_user_interface_->Init();
-  host_->AddStatusObserver(it2me_host_user_interface_.get());
 
   {
     base::AutoLock auto_lock(ui_strings_lock_);

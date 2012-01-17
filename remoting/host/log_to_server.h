@@ -34,7 +34,8 @@ class LogToServer : public base::NonThreadSafe,
                     public HostStatusObserver,
                     public SignalStrategy::Listener {
  public:
-  explicit LogToServer(SignalStrategy* signal_strategy);
+  explicit LogToServer(ChromotingHost* host,
+                       SignalStrategy* signal_strategy);
   virtual ~LogToServer();
 
   // Logs a session state change. Currently, this is either

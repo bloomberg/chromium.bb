@@ -50,6 +50,7 @@ void It2MeHostUserInterface::InitFrom(DisconnectWindow* disconnect_window,
   disconnect_window_.reset(disconnect_window);
   continue_window_.reset(continue_window);
   local_input_monitor_.reset(monitor);
+  host_->AddStatusObserver(this);
 }
 
 void It2MeHostUserInterface::OnClientAuthenticated(const std::string& jid) {
@@ -76,6 +77,9 @@ void It2MeHostUserInterface::OnAccessDenied() {
 }
 
 void It2MeHostUserInterface::OnShutdown() {
+  // Host status observers must be removed on the network thread, so
+  // it must happen here instead of in the destructor.
+  host_->RemoveStatusObserver(this);
 }
 
 void It2MeHostUserInterface::Shutdown() {

@@ -173,11 +173,8 @@ class HostProcess {
     heartbeat_sender_.reset(
         new HeartbeatSender(host_id_, signal_strategy_.get(), &key_pair_));
 
-    log_to_server_.reset(new LogToServer(signal_strategy_.get()));
-    host_->AddStatusObserver(log_to_server_.get());
-
-    host_event_logger_.reset(new HostEventLogger());
-    host_->AddStatusObserver(host_event_logger_.get());
+    log_to_server_.reset(new LogToServer(host_, signal_strategy_.get()));
+    host_event_logger_.reset(new HostEventLogger(host_));
 
     host_->Start();
 

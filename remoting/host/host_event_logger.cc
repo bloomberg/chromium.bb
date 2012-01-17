@@ -6,7 +6,13 @@
 
 #if defined(OS_LINUX)
 #include <syslog.h>
-#endif
+// Following defines from syslog.h conflict with constants in
+// base/logging.h.
+#undef LOG_INFO
+#undef LOG_WARNING
+#endif  // defined(OS_LINUX)
+
+#include "remoting/host/chromoting_host.h"
 
 namespace {
 
@@ -21,13 +27,16 @@ void Log(const std::string& message) {
 
 namespace remoting {
 
-HostEventLogger::HostEventLogger() {
+HostEventLogger::HostEventLogger(ChromotingHost* host)
+    : host_(host) {
 #if defined(OS_LINUX)
   openlog("chromoting_host", 0, LOG_USER);
 #endif
+  host_->AddStatusObserver(this);
 }
 
 HostEventLogger::~HostEventLogger() {
+  host_->RemoveStatusObserver(this);
 }
 
 void HostEventLogger::OnClientAuthenticated(const std::string& jid) {

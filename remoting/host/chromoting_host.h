@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
+#include "base/observer_list.h"
 #include "base/threading/thread.h"
 #include "remoting/base/encoder.h"
 #include "remoting/host/capturer.h"
@@ -83,11 +84,10 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   // called after shutdown is completed.
   void Shutdown(const base::Closure& shutdown_task);
 
-  // Adds |observer| to the list of status observers. Doesn't take
-  // ownership of |observer|, so |observer| must outlive this
-  // object. All status observers must be added before the host is
-  // started.
+  // Add/Remove |observer| to/from the list of status observers. Both
+  // methods can be called on the network thread only.
   void AddStatusObserver(HostStatusObserver* observer);
+  void RemoveStatusObserver(HostStatusObserver* observer);
 
   // Sets the authenticator factory to use for incoming
   // connections. Incoming connections are rejected until
@@ -138,7 +138,6 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   friend class base::RefCountedThreadSafe<ChromotingHost>;
   friend class ChromotingHostTest;
 
-  typedef std::vector<HostStatusObserver*> StatusObserverList;
   typedef std::vector<ClientSession*> ClientList;
 
   enum State {
@@ -188,8 +187,8 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   SignalStrategy* signal_strategy_;
   scoped_ptr<protocol::SessionManager> session_manager_;
 
-  // StatusObserverList is thread-safe and can be used on any thread.
-  StatusObserverList status_observers_;
+  // Must be used on the network thread only.
+  ObserverList<HostStatusObserver> status_observers_;
 
   // The connections to remote clients.
   ClientList clients_;

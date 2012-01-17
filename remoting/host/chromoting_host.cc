@@ -118,8 +118,12 @@ void ChromotingHost::Shutdown(const base::Closure& shutdown_task) {
 
 void ChromotingHost::AddStatusObserver(HostStatusObserver* observer) {
   DCHECK(context_->network_message_loop()->BelongsToCurrentThread());
-  DCHECK_EQ(state_, kInitial);
-  status_observers_.push_back(observer);
+  status_observers_.AddObserver(observer);
+}
+
+void ChromotingHost::RemoveStatusObserver(HostStatusObserver* observer) {
+  DCHECK(context_->network_message_loop()->BelongsToCurrentThread());
+  status_observers_.RemoveObserver(observer);
 }
 
 void ChromotingHost::SetAuthenticatorFactory(
@@ -164,20 +168,16 @@ void ChromotingHost::OnSessionAuthenticated(ClientSession* client) {
 
   // Notify observers that there is at least one authenticated client.
   const std::string& jid = client->connection()->session()->jid();
-  for (StatusObserverList::iterator it = status_observers_.begin();
-       it != status_observers_.end(); ++it) {
-    (*it)->OnClientAuthenticated(jid);
-  }
+  FOR_EACH_OBSERVER(HostStatusObserver, status_observers_,
+                    OnClientAuthenticated(jid));
 }
 
 void ChromotingHost::OnSessionAuthenticationFailed(ClientSession* client) {
   DCHECK(context_->network_message_loop()->BelongsToCurrentThread());
 
   // Notify observers.
-  for (StatusObserverList::iterator it = status_observers_.begin();
-       it != status_observers_.end(); ++it) {
-    (*it)->OnAccessDenied();
-  }
+  FOR_EACH_OBSERVER(HostStatusObserver, status_observers_,
+                    OnAccessDenied());
 }
 
 void ChromotingHost::OnSessionClosed(ClientSession* client) {
@@ -193,10 +193,8 @@ void ChromotingHost::OnSessionClosed(ClientSession* client) {
     recorder_->RemoveConnection(client->connection());
   }
 
-  for (StatusObserverList::iterator it = status_observers_.begin();
-       it != status_observers_.end(); ++it) {
-    (*it)->OnClientDisconnected(client->client_jid());
-  }
+  FOR_EACH_OBSERVER(HostStatusObserver, status_observers_,
+                    OnClientDisconnected(client->client_jid()));
 
   if (recorder_.get()) {
     // Currently we don't allow more than one similtaneous connection,
@@ -365,10 +363,8 @@ void ChromotingHost::ShutdownFinish() {
   scoped_refptr<ChromotingHost> self(this);
 
   // Notify observers.
-  for (StatusObserverList::iterator it = status_observers_.begin();
-       it != status_observers_.end(); ++it) {
-    (*it)->OnShutdown();
-  }
+  FOR_EACH_OBSERVER(HostStatusObserver, status_observers_,
+                    OnShutdown());
 
   for (std::vector<base::Closure>::iterator it = shutdown_tasks_.begin();
        it != shutdown_tasks_.end(); ++it) {
