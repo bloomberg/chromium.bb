@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,6 +15,7 @@
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_options_menu_model.h"
+#include "chrome/browser/ui/views/notifications/balloon_view_host.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
@@ -41,12 +42,6 @@
 #include "ui/views/controls/native/native_view_host.h"
 #include "ui/views/painter.h"
 #include "ui/views/widget/widget.h"
-
-#if defined(OS_CHROMEOS) && defined(USE_AURA)
-#include "chrome/browser/chromeos/notifications/balloon_view_host.h"
-#else
-#include "chrome/browser/ui/views/notifications/balloon_view_host.h"
-#endif
 
 using views::Widget;
 
@@ -108,8 +103,7 @@ BalloonViewImpl::BalloonViewImpl(BalloonCollection* collection)
       close_button_(NULL),
       animation_(NULL),
       options_menu_model_(NULL),
-      options_menu_button_(NULL),
-      enable_web_ui_(false) {
+      options_menu_button_(NULL) {
   // This object is not to be deleted by the views hierarchy,
   // as it is owned by the balloon.
   set_parent_owned(false);
@@ -339,15 +333,8 @@ void BalloonViewImpl::Show(Balloon* balloon) {
   // We don't let the OS manage the RTL layout of these widgets, because
   // this code is already taking care of correctly reversing the layout.
   gfx::Rect contents_rect = GetContentsRectangle();
-#if defined(OS_CHROMEOS) && defined(USE_AURA)
-  html_contents_.reset(new chromeos::BalloonViewHost(balloon));
-#else
   html_contents_.reset(new BalloonViewHost(balloon));
-#endif
   html_contents_->SetPreferredSize(gfx::Size(10000, 10000));
-  if (enable_web_ui_)
-    html_contents_->EnableWebUI();
-
   html_container_ = new Widget;
   Widget::InitParams params(Widget::InitParams::TYPE_POPUP);
   params.bounds = contents_rect;

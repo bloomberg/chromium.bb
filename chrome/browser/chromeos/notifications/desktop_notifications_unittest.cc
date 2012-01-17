@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,19 +10,6 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "content/public/common/show_desktop_notification_params.h"
 
-#if defined(USE_AURA)
-#include "chrome/browser/chromeos/notifications/balloon_collection_impl_aura.h"
-#include "ui/aura/root_window.h"
-#else
-#include "chrome/browser/chromeos/notifications/balloon_collection_impl.h"
-#endif
-
-#if defined(USE_AURA)
-typedef class chromeos::BalloonCollectionImplAura BalloonCollectionImplType;
-#else
-typedef class chromeos::BalloonCollectionImpl BalloonCollectionImplType;
-#endif
-
 using content::BrowserThread;
 
 namespace chromeos {
@@ -30,10 +17,7 @@ namespace chromeos {
 // static
 std::string DesktopNotificationsTest::log_output_;
 
-class BalloonViewImpl;
-
-#if !defined(USE_AURA)
-class MockNotificationUI : public BalloonCollectionImplType::NotificationUI {
+class MockNotificationUI : public BalloonCollectionImpl::NotificationUI {
  public:
   virtual void Add(Balloon* balloon) {}
   virtual bool Update(Balloon* balloon) { return false; }
@@ -43,54 +27,31 @@ class MockNotificationUI : public BalloonCollectionImplType::NotificationUI {
                                   const gfx::Size& size) {}
   virtual void SetActiveView(BalloonViewImpl* view) {}
 };
-#endif
 
-// Test version of the balloon collection which counts the number
-// of notifications that are added to it.
-class MockBalloonCollection : public BalloonCollectionImplType {
- public:
-  MockBalloonCollection() {
-#if !defined(USE_AURA)
-    set_notification_ui(new MockNotificationUI());
-#endif
-  }
-  virtual ~MockBalloonCollection() {};
+MockBalloonCollection::MockBalloonCollection() {
+  set_notification_ui(new MockNotificationUI());
+}
 
-  // BalloonCollectionImplType overrides
-  virtual void Add(const Notification& notification, Profile* profile) OVERRIDE;
-  virtual Balloon* MakeBalloon(const Notification& notification,
-                               Profile* profile) OVERRIDE;
-  virtual void OnBalloonClosed(Balloon* source) OVERRIDE;
-
-  // Number of balloons being shown.
-  std::set<Balloon*>& balloons() { return balloons_; }
-  int count() const { return balloons_.size(); }
-
- private:
-  std::set<Balloon*> balloons_;
-};
+MockBalloonCollection::~MockBalloonCollection() {}
 
 void MockBalloonCollection::Add(const Notification& notification,
                                 Profile* profile) {
   // Swap in a logging proxy for the purpose of logging calls that
   // would be made into javascript, then pass this down to the
   // balloon collection.
-  typedef LoggingNotificationDelegate<DesktopNotificationsTest>
-      LoggingNotificationProxy;
   Notification test_notification(
       notification.origin_url(),
       notification.content_url(),
       notification.display_source(),
       notification.replace_id(),
       new LoggingNotificationProxy(notification.notification_id()));
-  BalloonCollectionImplType::Add(test_notification, profile);
+  BalloonCollectionImpl::Add(test_notification, profile);
 }
 
 Balloon* MockBalloonCollection::MakeBalloon(const Notification& notification,
                                             Profile* profile) {
   // Start with a normal balloon but mock out the view.
-  Balloon* balloon =
-      BalloonCollectionImplType::MakeBalloon(notification, profile);
+  Balloon* balloon = BalloonCollectionImpl::MakeBalloon(notification, profile);
   balloon->set_view(new MockBalloonView(balloon));
   balloons_.insert(balloon);
   return balloon;
@@ -98,10 +59,19 @@ Balloon* MockBalloonCollection::MakeBalloon(const Notification& notification,
 
 void MockBalloonCollection::OnBalloonClosed(Balloon* source) {
   balloons_.erase(source);
-  BalloonCollectionImplType::OnBalloonClosed(source);
+  BalloonCollectionImpl::OnBalloonClosed(source);
 }
 
-// DesktopNotificationsTest
+int MockBalloonCollection::UppermostVerticalPosition() {
+  int min = 0;
+  std::set<Balloon*>::iterator iter;
+  for (iter = balloons_.begin(); iter != balloons_.end(); ++iter) {
+    int pos = (*iter)->GetPosition().y();
+    if (iter == balloons_.begin() || pos < min)
+      min = pos;
+  }
+  return min;
+}
 
 DesktopNotificationsTest::DesktopNotificationsTest()
     : ui_thread_(BrowserThread::UI, &message_loop_) {
@@ -111,10 +81,6 @@ DesktopNotificationsTest::~DesktopNotificationsTest() {
 }
 
 void DesktopNotificationsTest::SetUp() {
-#if defined(USE_AURA)
-  // Make sure a root window has been instantiated.
-  aura::RootWindow::GetInstance();
-#endif
   browser::RegisterLocalState(&local_state_);
   profile_.reset(new TestingProfile());
   balloon_collection_ = new MockBalloonCollection();
@@ -229,13 +195,7 @@ TEST_F(DesktopNotificationsTest, TestManyNotifications) {
   int route_id = 0;
 
   // Request lots of identical notifications.
-#if defined(USE_AURA)
-  // Aura is using the non-chromeos notification system which has a limit
-  // of 4 visible toasts.
-  const int kLotsOfToasts = 4;
-#else
   const int kLotsOfToasts = 20;
-#endif
   for (int id = 1; id <= kLotsOfToasts; ++id) {
     SCOPED_TRACE(base::StringPrintf("Creation loop: id=%d", id));
     content::ShowDesktopNotificationHostMsgParams params =

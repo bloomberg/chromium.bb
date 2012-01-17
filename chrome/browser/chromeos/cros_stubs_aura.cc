@@ -3,24 +3,15 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/chromeos/notifications/system_notification.h"
-
-#include "base/callback.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/notifications/balloon_collection_impl.h"
-#include "chrome/browser/chromeos/notifications/system_notification_factory.h"
-#include "chrome/browser/notifications/notification.h"
-#include "chrome/browser/notifications/notification_ui_manager.h"
-#include "chrome/browser/ui/webui/web_ui_util.h"
+#include "chrome/browser/notifications/balloon_collection.h"
 
 namespace chromeos {
 
+////////////////////////////////////////////////////////////////////////////////
+// SystemNotification
+
 void SystemNotification::Init(int icon_resource_id) {
-  collection_ = static_cast<BalloonCollectionImpl*>(
-       g_browser_process->notification_ui_manager()->balloon_collection());
-  std::string url = web_ui_util::GetImageDataUrlFromResource(icon_resource_id);
-  DCHECK(!url.empty());
-  GURL tmp_gurl(url);
-  icon_.Swap(&tmp_gurl);
+  NOTIMPLEMENTED();
 }
 
 SystemNotification::SystemNotification(Profile* profile,
@@ -33,7 +24,7 @@ SystemNotification::SystemNotification(Profile* profile,
       title_(title),
       visible_(false),
       urgent_(false) {
-  Init(icon_resource_id);
+  NOTIMPLEMENTED();
 }
 
 SystemNotification::SystemNotification(Profile* profile,
@@ -46,7 +37,7 @@ SystemNotification::SystemNotification(Profile* profile,
       title_(title),
       visible_(false),
       urgent_(false) {
-  Init(icon_resource_id);
+  NOTIMPLEMENTED();
 }
 
 SystemNotification::~SystemNotification() {
@@ -55,7 +46,7 @@ SystemNotification::~SystemNotification() {
 void SystemNotification::Show(const string16& message,
                               bool urgent,
                               bool sticky) {
-  Show(message, string16(), MessageCallback(), urgent, sticky);
+  NOTIMPLEMENTED() << " " << message;
 }
 
 void SystemNotification::Show(const string16& message,
@@ -63,31 +54,11 @@ void SystemNotification::Show(const string16& message,
                               const MessageCallback& callback,
                               bool urgent,
                               bool sticky) {
-  Notification notify = SystemNotificationFactory::Create(icon_,
-      title_, message, link, delegate_.get());
-  if (visible_) {
-    // Force showing a user hidden notification on an urgent transition.
-    if (urgent && !urgent_) {
-      collection_->UpdateAndShowNotification(notify);
-    } else {
-      collection_->UpdateNotification(notify);
-    }
-  } else {
-    collection_->AddSystemNotification(notify, profile_,
-                                       sticky,
-                                       false /* no controls */);
-    collection_->AddWebUIMessageCallback(notify, "link", callback);
-  }
-  visible_ = true;
-  urgent_ = urgent;
+  NOTIMPLEMENTED();
 }
 
 void SystemNotification::Hide() {
-  if (visible_) {
-    collection_->RemoveById(delegate_->id());
-    visible_ = false;
-    urgent_ = false;
-  }
+  NOTIMPLEMENTED();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -95,9 +66,11 @@ void SystemNotification::Hide() {
 
 SystemNotification::Delegate::Delegate(const std::string& id)
     : id_(id) {
+  NOTIMPLEMENTED();
 }
 
 std::string SystemNotification::Delegate::id() const {
+  NOTIMPLEMENTED();
   return id_;
 }
 

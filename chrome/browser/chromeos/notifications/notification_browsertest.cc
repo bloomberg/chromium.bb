@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -226,7 +226,7 @@ IN_PROC_BROWSER_TEST_F(NotificationTest, TestSystemNotification) {
   NotificationPanelTester* tester = panel->GetTester();
 
   Notification notify = NewMockNotification(delegate.get());
-  collection->AddSystemNotification(notify, browser()->profile(), true);
+  collection->AddSystemNotification(notify, browser()->profile(), true, false);
 
   EXPECT_EQ(1, tester->GetNewNotificationCount());
   EXPECT_EQ(1, tester->GetStickyNotificationCount());
@@ -331,7 +331,7 @@ IN_PROC_BROWSER_TEST_F(NotificationTest, TestStateTransition2) {
 
   // The panel must be expanded again when a new system notification is added.
   collection->AddSystemNotification(
-      NewMockNotification("3"), browser()->profile(), true);
+      NewMockNotification("3"), browser()->profile(), true, false);
   EXPECT_EQ(3, tester->GetNotificationCount());
   EXPECT_EQ(NotificationPanel::STICKY_AND_NEW, tester->state());
   WaitForPanelState(tester, PanelController::EXPANDED);
@@ -433,7 +433,7 @@ IN_PROC_BROWSER_TEST_F(NotificationTest, DISABLED_TestScrollBalloonToVisible) {
       SCOPED_TRACE(base::StringPrintf("new system %d", i));
       std::string id = base::StringPrintf("s%d", i);
       collection->AddSystemNotification(
-          NewMockNotification(id), browser()->profile(), true);
+          NewMockNotification(id), browser()->profile(), true, false);
       BalloonViewImpl* view =
           tester->GetBalloonView(collection, NewMockNotification(id));
       WaitForVisible(view);
@@ -493,7 +493,7 @@ IN_PROC_BROWSER_TEST_F(NotificationTest, FLAKY_TestActivateDeactivate) {
 
   collection->Add(NewMockNotification("1"), profile);
   collection->AddSystemNotification(
-      NewMockNotification("2"), profile, true);
+      NewMockNotification("2"), profile, true, false);
   ui_test_utils::RunAllPendingInMessageLoop();
   EXPECT_EQ(NotificationPanel::STICKY_AND_NEW, tester->state());
   BalloonViewImpl* view1 =
@@ -526,7 +526,7 @@ IN_PROC_BROWSER_TEST_F(NotificationTest, TestCloseDismissAllNonSticky) {
 
   collection->Add(NewMockNotification("1"), profile);
   collection->AddSystemNotification(
-      NewMockNotification("2"), profile, true);
+      NewMockNotification("2"), profile, true, false);
   collection->Add(NewMockNotification("3"), profile);
 
   ui_test_utils::RunAllPendingInMessageLoop();
@@ -546,7 +546,7 @@ IN_PROC_BROWSER_TEST_F(NotificationTest, TestAddWebUIMessageCallback) {
   Profile* profile = browser()->profile();
 
   collection->AddSystemNotification(
-      NewMockNotification("1"), profile, false);
+      NewMockNotification("1"), profile, false, false);
 
   EXPECT_TRUE(collection->AddWebUIMessageCallback(
       NewMockNotification("1"),
@@ -582,6 +582,7 @@ IN_PROC_BROWSER_TEST_F(NotificationTest, TestWebUIMessageCallback) {
       Notification(GURL(), content_url, string16(), string16(),
                    new MockNotificationDelegate("1")),
       profile,
+      false,
       false);
   EXPECT_TRUE(collection->AddWebUIMessageCallback(
       NewMockNotification("1"),

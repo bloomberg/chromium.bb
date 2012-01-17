@@ -2173,6 +2173,13 @@
             ['exclude', '^browser/plugin_download_helper_unittest.cc'],
             ['exclude', '^browser/safe_browsing/download_protection_service_unittest.cc' ],
           ],
+          'conditions': [
+            ['use_aura==1', {
+              'sources!': [
+                'browser/chromeos/notifications/desktop_notifications_unittest.cc',
+              ],
+            }],
+          ],
         }, { # else: chromeos == 0
           'sources/': [
             ['exclude', '^browser/chromeos/'],
@@ -2525,7 +2532,6 @@
         'browser/chromeos/login/wizard_in_process_browser_test.h',
         'browser/chromeos/media/media_player_browsertest.cc',
         'browser/chromeos/notifications/notification_browsertest.cc',
-        'browser/chromeos/notifications/system_notification_browsertest.cc',
         'browser/chromeos/panels/panel_browsertest.cc',
         'browser/chromeos/process_proxy/process_proxy_browsertest.cc',
         'browser/chromeos/status/accessibility_menu_button_browsertest.cc',
@@ -2883,7 +2889,7 @@
           'conditions': [
             ['use_aura==1', {
               'sources/': [
-                ['exclude', '^browser/chromeos/notifications/notification_browsertest.cc'],
+                ['exclude', '^browser/chromeos/notifications/'],
                 ['exclude', '^browser/chromeos/panels/panel_browsertest.cc'],
                 ['exclude', '^browser/ui/views/status_icons/status_tray_chromeos_browsertest.cc'],
               ],

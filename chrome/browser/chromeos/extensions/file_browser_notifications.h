@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -110,7 +110,7 @@ class FileBrowserNotifications
   void OnLinkClicked(const base::ListValue* arg);
   bool HasMoreInfoLink(NotificationType type);
   const string16& GetLinkText();
-  chromeos::BalloonViewHost::MessageCallback GetLinkCallback();
+  chromeos::MessageCallback GetLinkCallback();
 
   string16 link_text_;
   NotificationMap notifications_;
@@ -121,3 +121,4 @@ class FileBrowserNotifications
 };
 
 #endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_BROWSER_NOTIFICATIONS_H_
+

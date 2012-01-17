@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -81,17 +81,16 @@ class BalloonCollectionImpl : public BalloonCollection,
   // there is no notification that matches NotificationDelegate::id(),
   // or a callback for given message already exists. The callback
   // object is owned and deleted by callee.
-  bool AddWebUIMessageCallback(
-      const Notification& notification,
-      const std::string& message,
-      const BalloonViewHost::MessageCallback& callback);
+  bool AddWebUIMessageCallback(const Notification& notification,
+                               const std::string& message,
+                               const MessageCallback& callback);
 
   // Adds new system notification.
   // |sticky| is used to indicate that the notification
-  // is sticky and cannot be dismissed by a user.
+  // is sticky and cannot be dismissed by a user. |controls| turns on/off
+  // info label and option/dismiss buttons.
   void AddSystemNotification(const Notification& notification,
-                             Profile* profile,
-                             bool sticky);
+                             Profile* profile, bool sticky, bool controls);
 
   // Updates the notification's content. It uses
   // NotificationDelegate::id() to check the equality of notifications.
@@ -104,10 +103,6 @@ class BalloonCollectionImpl : public BalloonCollection,
   // if it's closed or minimized, and scroll the viewport so that
   // the updated notification is visible.
   bool UpdateAndShowNotification(const Notification& notification);
-
-  // base_ is embedded, so this is a simple accessor for the number of
-  // balloons in the collection.
-  int count() const { return base_.count(); }
 
   // Injects notification ui. Used to inject a mock implementation in tests.
   void set_notification_ui(NotificationUI* ui) {
