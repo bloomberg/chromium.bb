@@ -50,6 +50,8 @@ TEST(AccelFilterInterpreterTest, SimpleTest) {
   AccelFilterInterpreterTestInterpreter* base_interpreter =
       new AccelFilterInterpreterTestInterpreter;
   AccelFilterInterpreter interpreter(NULL, base_interpreter);
+  interpreter.scroll_x_out_scale_.val_ =
+      interpreter.scroll_y_out_scale_.val_ = 1.0;
 
   float last_move_dx = 0.0;
   float last_move_dy = 0.0;
@@ -109,6 +111,8 @@ TEST(AccelFilterInterpreterTest, TinyMoveTest) {
   AccelFilterInterpreterTestInterpreter* base_interpreter =
       new AccelFilterInterpreterTestInterpreter;
   AccelFilterInterpreter interpreter(NULL, base_interpreter);
+  interpreter.scroll_x_out_scale_.val_ =
+      interpreter.scroll_y_out_scale_.val_ = 1.0;
 
   base_interpreter->return_values_.push_back(Gesture(kGestureMove,
                                                      1,  // start time
@@ -147,6 +151,8 @@ TEST(AccelFilterInterpreterTest, TimingTest) {
   AccelFilterInterpreterTestInterpreter* base_interpreter =
       new AccelFilterInterpreterTestInterpreter;
   AccelFilterInterpreter interpreter(NULL, base_interpreter);
+  interpreter.scroll_x_out_scale_.val_ =
+      interpreter.scroll_y_out_scale_.val_ = 1.0;
 
   interpreter.sensitivity_.val_ = 3;  // standard sensitivity
 
@@ -207,6 +213,8 @@ TEST(AccelFilterInterpreterTest, CustomAccelTest) {
   AccelFilterInterpreterTestInterpreter* base_interpreter =
       new AccelFilterInterpreterTestInterpreter;
   AccelFilterInterpreter interpreter(NULL, base_interpreter);
+  interpreter.scroll_x_out_scale_.val_ =
+      interpreter.scroll_y_out_scale_.val_ = 1.0;
 
   interpreter.sensitivity_.val_ = 0;  // custom sensitivity
   interpreter.custom_point_str_.val_ = "2.0 1.0 3 3 4.1 3";
