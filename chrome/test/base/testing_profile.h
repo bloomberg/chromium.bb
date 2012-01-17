@@ -281,10 +281,6 @@ class TestingProfile : public Profile {
   // history service processes all pending requests.
   void BlockUntilHistoryProcessesPendingRequests();
 
-  // Sets the profile's SigninManager - lets test code provide their own.
-  // TestingProfile takes ownership of the passed pointer.
-  void SetSigninManager(SigninManager* signin_manager);
-  virtual SigninManager* GetSigninManager() OVERRIDE;
   virtual TokenService* GetTokenService() OVERRIDE;
   // Creates and initializes a profile sync service if the tests require one.
   virtual ProfileSyncService* GetProfileSyncService() OVERRIDE;
@@ -338,9 +334,6 @@ class TestingProfile : public Profile {
   // The ProtocolHandlerRegistry. Only created if CreateProtocolHandlerRegistry
   // is invoked.
   scoped_refptr<ProtocolHandlerRegistry> protocol_handler_registry_;
-
-  // The SigninManager. Created by GetSigninManager.
-  scoped_ptr<SigninManager> signin_manager_;
 
   // The TokenService. Created by CreateTokenService. Filled with dummy data.
   scoped_ptr<TokenService> token_service_;

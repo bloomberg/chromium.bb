@@ -16,6 +16,7 @@
 #include "chrome/browser/prefs/pref_model_associator.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/signin/signin_manager.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/token_service.h"
 #include "chrome/browser/sync/abstract_profile_sync_service_test.h"
 #include "chrome/browser/sync/api/sync_data.h"
@@ -120,7 +121,7 @@ class ProfileSyncServicePreferenceTest
     if (service_.get())
       return false;
 
-    SigninManager* signin = profile_->GetSigninManager();
+    SigninManager* signin = SigninManagerFactory::GetForProfile(profile_.get());
     signin->SetAuthenticatedUsername("test");
     service_.reset(new TestProfileSyncService(
         &factory_,

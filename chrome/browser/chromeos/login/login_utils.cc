@@ -51,6 +51,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/signin_manager.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/token_service.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/ui/browser_init.h"
@@ -893,7 +894,8 @@ void LoginUtilsImpl::StartSignedInServices(
   // Fetch/Create the SigninManager - this will cause the TokenService to load
   // tokens for the currently signed-in user if the SigninManager hasn't already
   // been initialized.
-  SigninManager* signin = user_profile->GetSigninManager();
+  SigninManager* signin = SigninManagerFactory::GetForProfile(user_profile);
+  DCHECK(signin);
   // Make sure SigninManager is connected to our current user (this should
   // happen automatically because we set kGoogleServicesUsername in
   // OnProfileCreated()).
