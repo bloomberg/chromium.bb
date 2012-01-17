@@ -47,6 +47,7 @@ class TestURLLoader : public TestCase {
                       const std::string& header);
   int32_t Open(const pp::URLRequestInfo& request,
                bool with_universal_access);
+  int32_t OpenWithPrefetchBufferThreshold(int32_t lower, int32_t upper);
 
   std::string TestBasicGET();
   std::string TestBasicPOST();
@@ -70,6 +71,7 @@ class TestURLLoader : public TestCase {
   std::string TestAuditURLRedirect();
   std::string TestAbortCalls();
   std::string TestUntendedLoad();
+  std::string TestPrefetchBufferThreshold();
 
   const PPB_FileIOTrusted* file_io_trusted_interface_;
   const PPB_URLLoaderTrusted* url_loader_trusted_interface_;

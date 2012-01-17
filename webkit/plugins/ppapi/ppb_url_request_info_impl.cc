@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -131,6 +131,13 @@ bool PPB_URLRequestInfo_Impl::RequiresUniversalAccess() const {
 }
 
 bool PPB_URLRequestInfo_Impl::ValidateData() {
+  if (data().prefetch_buffer_lower_threshold < 0 ||
+      data().prefetch_buffer_upper_threshold < 0 ||
+      data().prefetch_buffer_upper_threshold <=
+      data().prefetch_buffer_lower_threshold) {
+    return false;
+  }
+
   // Get the Resource objects for any file refs with only host resource (this
   // is the state of the request as it comes off IPC).
   for (size_t i = 0; i < data().body.size(); ++i) {

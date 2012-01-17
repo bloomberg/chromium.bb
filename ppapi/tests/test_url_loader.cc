@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -117,6 +117,7 @@ void TestURLLoader::RunTests(const std::string& filter) {
   RUN_TEST_FORCEASYNC_AND_NOT(AuditURLRedirect, filter);
   RUN_TEST_FORCEASYNC_AND_NOT(AbortCalls, filter);
   RUN_TEST_FORCEASYNC_AND_NOT(UntendedLoad, filter);
+  RUN_TEST_FORCEASYNC_AND_NOT(PrefetchBufferThreshold, filter);
 }
 
 std::string TestURLLoader::ReadEntireFile(pp::FileIO* file_io,
@@ -871,6 +872,37 @@ std::string TestURLLoader::TestUntendedLoad() {
   PASS();
 }
 
+int32_t TestURLLoader::OpenWithPrefetchBufferThreshold(int32_t lower,
+                                                       int32_t upper) {
+  pp::URLRequestInfo request(instance_);
+  request.SetURL("test_url_loader_data/hello.txt");
+  request.SetPrefetchBufferLowerThreshold(lower);
+  request.SetPrefetchBufferUpperThreshold(upper);
+
+  return OpenUntrusted(request);
+}
+
+std::string TestURLLoader::TestPrefetchBufferThreshold() {
+  int32_t rv = OpenWithPrefetchBufferThreshold(-1, 1);
+  if (rv != PP_ERROR_FAILED) {
+    return ReportError("The prefetch limits contained a negative value but "
+                       "the URLLoader did not fail.", rv);
+  }
+
+  rv = OpenWithPrefetchBufferThreshold(0, 1);
+  if (rv != PP_OK) {
+    return ReportError("The prefetch buffer limits were legal values but "
+                       "the URLLoader failed.", rv);
+  }
+
+  rv = OpenWithPrefetchBufferThreshold(1000, 1);
+  if (rv != PP_ERROR_FAILED) {
+    return ReportError("The lower buffer value was higher than the upper but "
+                       "the URLLoader did not fail.", rv);
+  }
+
+  PASS();
+}
+
 // TODO(viettrungluu): Add tests for  Get{Upload,Download}Progress, Close
 // (including abort tests if applicable).
-
