@@ -1,10 +1,6 @@
 # Failures which are probably or potentially real bugs
 
 # library or compiler errors
-# libstdcpp/include/c++/4.6.2/ext/hash_map:61 includes 'backward_warning.h'
-# which is not found
-hash2
-SingleSource/Benchmarks/Shootout-C++/hash
 # pnacl-clang does not recognize -w flag
 SPASS
 # newlib does not have ffsl function?
