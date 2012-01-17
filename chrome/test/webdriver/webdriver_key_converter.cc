@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -261,8 +261,16 @@ bool ConvertKeysToWebKeyEvents(const string16& client_keys,
         // For some reason Chrome expects a carriage return for the return key.
         modified_text = unmodified_text = "\r";
       } else {
-        unmodified_text = ConvertKeyCodeToText(key_code, 0);
-        modified_text = ConvertKeyCodeToText(key_code, all_modifiers);
+        // WebDriver assumes a numpad key should translate to the number,
+        // which requires NumLock to be on with some platforms. This isn't
+        // formally in the spec, but is expected by their tests.
+        int webdriver_modifiers = 0;
+        if (key_code >= ui::VKEY_NUMPAD0 && key_code <= ui::VKEY_NUMPAD9)
+          webdriver_modifiers = automation::kNumLockKeyMask;
+        unmodified_text = ConvertKeyCodeToText(key_code, webdriver_modifiers);
+        modified_text = ConvertKeyCodeToText(
+            key_code,
+            all_modifiers | webdriver_modifiers);
       }
     } else {
       int necessary_modifiers = 0;

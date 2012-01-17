@@ -45,6 +45,7 @@ enum KeyModifierMasks {
   kControlKeyMask = 1 << 1,
   kAltKeyMask     = 1 << 2,
   kMetaKeyMask    = 1 << 3,
+  kNumLockKeyMask = 1 << 4,
 };
 
 // Recognized by the AutomationProvider's ProcessWebMouseEvent command.

@@ -1037,9 +1037,10 @@
         'test/webdriver/http_response.cc',
         'test/webdriver/http_response.h',
         'test/webdriver/keycode_text_conversion.h',
-        'test/webdriver/keycode_text_conversion_linux.cc',
+        'test/webdriver/keycode_text_conversion_gtk.cc',
         'test/webdriver/keycode_text_conversion_mac.mm',
         'test/webdriver/keycode_text_conversion_win.cc',
+        'test/webdriver/keycode_text_conversion_x.cc',
         'test/webdriver/webdriver_automation.cc',
         'test/webdriver/webdriver_automation.h',
         'test/webdriver/webdriver_basic_types.cc',
@@ -1069,6 +1070,14 @@
           'dependencies': [
             '../build/linux/system.gyp:gtk',
             '../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
+          ],
+          'sources!': [
+            'test/webdriver/keycode_text_conversion_x.cc',
+          ],
+        }],
+        ['toolkit_uses_gtk == 0', {
+          'sources!': [
+            'test/webdriver/keycode_text_conversion_gtk.cc',
           ],
         }],
         ['OS=="linux" and toolkit_views==1', {

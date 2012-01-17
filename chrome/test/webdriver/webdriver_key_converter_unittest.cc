@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -233,8 +233,14 @@ TEST(WebDriverKeyConverter, AllShorthandKeys) {
       CreateCharEvent("\r", "\r", 0),
       CreateKeyUpEvent(ui::VKEY_RETURN, 0),
       CreateKeyDownEvent(ui::VKEY_TAB, 0),
+#if defined(USE_AURA)
+      CreateCharEvent("\t", "\t", 0),
+#endif
       CreateKeyUpEvent(ui::VKEY_TAB, 0),
       CreateKeyDownEvent(ui::VKEY_BACK, 0),
+#if defined(USE_AURA)
+      CreateCharEvent("\b", "\b", 0),
+#endif
       CreateKeyUpEvent(ui::VKEY_BACK, 0),
       CreateKeyDownEvent(ui::VKEY_SPACE, 0),
       CreateCharEvent(" ", " ", 0),
@@ -289,9 +295,15 @@ TEST(WebDriverKeyConverter, AllEnglishKeyboardTextChars) {
 }
 
 TEST(WebDriverKeyConverter, AllSpecialWebDriverKeysOnEnglishKeyboard) {
-  const char kTextKeys[] = {
-      0, 0, 0, 0, 0, 0, '\r', '\r', 0, 0, 0, 0, 0, ' ', 0, 0, 0, 0, 0, 0, 0, 0,
-      0, 0, ';', '=', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+  const char kTextForKeys[] = {
+#if defined(USE_AURA)
+      0, 0, 0, '\b', '\t', 0, '\r', '\r', 0, 0, 0, 0, 0x1B,
+      ' ', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x7F, ';', '=',
+#else
+      0, 0, 0, 0, 0, 0, '\r', '\r', 0, 0, 0, 0, 0,
+      ' ', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ';', '=',
+#endif
+      '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
       '*', '+', ',', '-', '.', '/'};
   for (size_t i = 0; i <= 0x3D; ++i) {
     if (i > 0x29 && i < 0x31)
@@ -314,13 +326,13 @@ TEST(WebDriverKeyConverter, AllSpecialWebDriverKeysOnEnglishKeyboard) {
           << "Index: " << i;
       if (i == 0) {
         EXPECT_EQ(0u, events.size()) << "Index: " << i;
-      } else if (i == 6 || i == 7 || i == 0xD || (i >= 0x18 && i <= 0x29)) {
+      } else if (i >= arraysize(kTextForKeys) || kTextForKeys[i] == 0) {
+        EXPECT_EQ(2u, events.size()) << "Index: " << i;
+      } else {
         ASSERT_EQ(3u, events.size()) << "Index: " << i;
         ASSERT_EQ(1u, events[1].unmodified_text.length()) << "Index: " << i;
-        EXPECT_EQ(kTextKeys[i], events[1].unmodified_text[0])
+        EXPECT_EQ(kTextForKeys[i], events[1].unmodified_text[0])
             << "Index: " << i;
-      } else {
-        EXPECT_EQ(2u, events.size()) << "Index: " << i;
       }
     }
   }
