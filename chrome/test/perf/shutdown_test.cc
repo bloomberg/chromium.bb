@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -127,7 +127,14 @@ TEST_F(ShutdownTest, SimpleSessionEnding) {
                   true, /* important */ SIMPLE, ProxyLauncher::SESSION_ENDING);
 }
 
-TEST_F(ShutdownTest, TwentyTabsWindowClose) {
+// http://crbug.com/110471
+#if defined(OS_WIN) && !defined(NDEBUG)
+#define MAYBE_TwentyTabsWindowClose DISABLED_TwentyTabsWindowClose
+#else
+#define MAYBE_TwentyTabsWindowClose TwentyTabsWindowClose
+#endif
+
+TEST_F(ShutdownTest, MAYBE_TwentyTabsWindowClose) {
   RunShutdownTest("shutdown", "twentytabs-window-close",
                   true, /* important */ TWENTY_TABS,
                   ProxyLauncher::WINDOW_CLOSE);
