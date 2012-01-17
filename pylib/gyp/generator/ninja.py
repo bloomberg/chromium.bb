@@ -31,8 +31,6 @@ generator_default_variables = {
   'INTERMEDIATE_DIR': '$!INTERMEDIATE_DIR',
   'SHARED_INTERMEDIATE_DIR': '$!PRODUCT_DIR/gen',
   'PRODUCT_DIR': '$!PRODUCT_DIR',
-  'SHARED_LIB_DIR': '$!PRODUCT_DIR/lib',
-  'LIB_DIR': '',
 
   # Special variables that may be used by gyp 'rule' targets.
   # We generate definitions for these variables on the fly when processing a
@@ -890,8 +888,10 @@ def CalculateVariables(default_variables, params):
   if flavor == 'mac':
     default_variables.setdefault('OS', 'mac')
     default_variables.setdefault('SHARED_LIB_SUFFIX', '.dylib')
-
-    # TODO(jeremya/thakis): Set SHARED_LIB_DIR / LIB_DIR.
+    default_variables.setdefault('SHARED_LIB_DIR',
+                                 generator_default_variables['PRODUCT_DIR'])
+    default_variables.setdefault('LIB_DIR',
+                                 generator_default_variables['PRODUCT_DIR'])
 
     # Copy additional generator configuration data from Xcode, which is shared
     # by the Mac Ninja generator.
@@ -911,6 +911,8 @@ def CalculateVariables(default_variables, params):
       operating_system = 'linux'  # Keep this legacy behavior for now.
     default_variables.setdefault('OS', operating_system)
     default_variables.setdefault('SHARED_LIB_SUFFIX', '.so')
+    default_variables.setdefault('SHARED_LIB_DIR', '$!PRODUCT_DIR/lib')
+    default_variables.setdefault('LIB_DIR', '')
 
 
 def OpenOutput(path):
