@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 #
@@ -91,11 +91,15 @@ EXTRA_ENV = {
   #             libstdc++.so ourselves.
   'ISYSTEM_CXX_newlib' :
     '${BASE_USR}/include/c++/4.6.2 ' +
-    '${BASE_USR}/include/c++/4.6.2/arm-none-linux-gnueabi',
+    '${BASE_USR}/include/c++/4.6.2/arm-none-linux-gnueabi ' +
+    '${BASE_USR}/include/c++/4.6.2/backward',
+
 
   'ISYSTEM_CXX_glibc' :
     '${BASE_USR}/include/c++/4.4.3 ' +
-    '${BASE_USR}/include/c++/4.4.3/x86_64-nacl',
+    '${BASE_USR}/include/c++/4.4.3/x86_64-nacl ' +
+    '${BASE_USR}/include/c++/4.4.3/backward',
+
 
   'LD_FLAGS' : '-O${OPT_LEVEL} ${STATIC ? -static} ${SHARED ? -shared} ' +
                '${PIC ? -fPIC} ${@AddPrefix:-L:SEARCH_DIRS}',
@@ -262,10 +266,12 @@ GCCPatterns = [
   ( '-L(.+)',      "env.append('SEARCH_DIRS_USER', pathtools.normalize($0))"),
 
   ( '(-Wp,.*)',       AddCCFlag),
+  ( '(-MG)',          AddCCFlag),
   ( '(-MMD)',         AddCCFlag),
   ( '(-MM)',          "env.append('CC_FLAGS', $0)\n"
                       "env.set('GCC_MODE', '-E')"),
   ( '(-MP)',          AddCCFlag),
+  ( ('(-MQ)','(.*)'), AddCCFlag),
   ( '(-MD)',          AddCCFlag),
   ( ('(-MT)','(.*)'), AddCCFlag),
   ( ('(-MF)','(.*)'), "env.append('CC_FLAGS', $0, pathtools.normalize($1))"),
