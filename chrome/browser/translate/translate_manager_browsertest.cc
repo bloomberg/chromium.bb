@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,8 +7,11 @@
 #include <set>
 #include <vector>
 
+#include "base/json/json_writer.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
+#include "base/values.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
@@ -616,6 +619,63 @@ TEST_F(TranslateManagerTest, FetchLanguagesFromTranslateServer) {
   // Reset to original state.
   TranslateManager::GetInstance()->FetchLanguageListFromTranslateServer(prefs);
   SimulateSupportedLanguagesURLFetch(true, default_supported_languages);
+}
+
+std::string GetLanguageListString(
+    const std::vector<std::string>& language_list) {
+  // The translate manager is expecting a JSON string like:
+  // sl({'sl': {'XX': 'LanguageName', ...}, 'tl': {'XX': 'LanguageName', ...}})
+  // We only need to set the tl (target languages) dictionary.
+  scoped_ptr<DictionaryValue> target_languages_dict(new DictionaryValue);
+  for (size_t i = 0; i < language_list.size(); ++i) {
+    // The value is ignored, we only use the key.
+    target_languages_dict->Set(language_list[i], Value::CreateNullValue());
+  }
+
+  DictionaryValue language_list_dict;
+  language_list_dict.Set("tl", target_languages_dict.release());
+  std::string language_list_json_str;
+  base::JSONWriter::Write(&language_list_dict, false, &language_list_json_str);
+  std::string language_list_str("sl(");
+  language_list_str += language_list_json_str;
+  language_list_str += ")";
+  return language_list_str;
+}
+
+// Test Language Code synonyms.
+TEST_F(TranslateManagerTest, LanguageCodeSynonyms) {
+  // The current set of synonyms are {"nb", "no"}, {"he", "iw"}, {"jw", "jv"}.
+
+  std::vector<std::string> language_list;
+  // Add some values around ht potential synonyms.
+  language_list.push_back("fr");
+  language_list.push_back("nb");
+  language_list.push_back("en");
+  TranslateManager::SetSupportedLanguages(GetLanguageListString(language_list));
+
+  EXPECT_TRUE(TranslateManager::IsSupportedLanguage("no"));
+  EXPECT_TRUE(TranslateManager::IsSupportedLanguage("nb"));
+
+  EXPECT_FALSE(TranslateManager::IsSupportedLanguage("he"));
+  EXPECT_FALSE(TranslateManager::IsSupportedLanguage("iw"));
+  EXPECT_FALSE(TranslateManager::IsSupportedLanguage("jw"));
+  EXPECT_FALSE(TranslateManager::IsSupportedLanguage("jv"));
+
+  language_list.push_back("iw");
+  TranslateManager::SetSupportedLanguages(GetLanguageListString(language_list));
+  EXPECT_TRUE(TranslateManager::IsSupportedLanguage("he"));
+  EXPECT_TRUE(TranslateManager::IsSupportedLanguage("iw"));
+
+  language_list.clear();
+  language_list.push_back("jw");
+  TranslateManager::SetSupportedLanguages(GetLanguageListString(language_list));
+  EXPECT_TRUE(TranslateManager::IsSupportedLanguage("jw"));
+  EXPECT_TRUE(TranslateManager::IsSupportedLanguage("jv"));
+
+  EXPECT_FALSE(TranslateManager::IsSupportedLanguage("no"));
+  EXPECT_FALSE(TranslateManager::IsSupportedLanguage("nb"));
+  EXPECT_FALSE(TranslateManager::IsSupportedLanguage("he"));
+  EXPECT_FALSE(TranslateManager::IsSupportedLanguage("iw"));
 }
 
 // Tests auto-translate on page.

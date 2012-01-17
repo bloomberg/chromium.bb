@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 
+#include "base/gtest_prod_util.h"
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -111,6 +112,8 @@ class TranslateManager : public content::NotificationObserver,
 
  private:
   friend struct DefaultSingletonTraits<TranslateManager>;
+  friend class TranslateManagerTest;
+  FRIEND_TEST_ALL_PREFIXES(TranslateManagerTest, LanguageCodeSynonyms);
 
   // Structure that describes a translate request.
   // Translation may be deferred while the translate script is being retrieved
