@@ -29,9 +29,9 @@ namespace internal {
 
 class WorkspaceManager;
 
-// WorkspaceControlls owns a WorkspaceManager. WorkspaceControlls bridges
-// events From RootWindowObserver translating them to WorkspaceManager, and
-// a move event between Laucher and Workspace.
+// WorkspaceController owns a WorkspaceManager. WorkspaceController bridges
+// events from RootWindowObserver translating them to WorkspaceManager, and
+// a move event between Launcher and Workspace.
 class ASH_EXPORT WorkspaceController :
       public aura::RootWindowObserver,
       public aura::WindowObserver,

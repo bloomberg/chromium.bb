@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,9 +18,6 @@ namespace ash {
 
 // TODO(jamescook): Put all these functions in namespace window_util.
 
-// Returns true if |window| is in the maximized state.
-ASH_EXPORT bool IsWindowMaximized(aura::Window* window);
-
 // Convenience setters/getters for |aura::client::kRootWindowActiveWindow|.
 ASH_EXPORT void ActivateWindow(aura::Window* window);
 ASH_EXPORT void DeactivateWindow(aura::Window* window);
@@ -34,13 +31,19 @@ ASH_EXPORT aura::Window* GetActiveWindow();
 // this is probably what you're looking for.
 ASH_EXPORT aura::Window* GetActivatableWindow(aura::Window* window);
 
-// Update window bounds based on a change in show state.
-ASH_EXPORT void UpdateBoundsFromShowState(aura::Window* window);
+namespace window_util {
+
+// Returns true if |window| is in the maximized state.
+ASH_EXPORT bool IsWindowMaximized(aura::Window* window);
+
+// Returns true if |window| is in the fullscreen state.
+ASH_EXPORT bool IsWindowFullscreen(aura::Window* window);
 
 // Returns true if the set of |windows| contains a full-screen window.
 typedef std::set<aura::Window*> WindowSet;
 ASH_EXPORT bool HasFullscreenWindow(const WindowSet& windows);
 
+}  // namespace window_util
 }  // namespace ash
 
 #endif  // ASH_WM_WINDOW_UTIL_H_

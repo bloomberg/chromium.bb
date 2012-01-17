@@ -309,15 +309,15 @@ TEST_F(ToplevelWindowEventFilterTest, BottomRightPastMinimum) {
 
 TEST_F(ToplevelWindowEventFilterTest, DoubleClickCaptionTogglesMaximize) {
   scoped_ptr<aura::Window> w1(CreateWindow(HTCAPTION));
-  EXPECT_FALSE(IsWindowMaximized(w1.get()));
+  EXPECT_FALSE(window_util::IsWindowMaximized(w1.get()));
 
   aura::test::EventGenerator generator(w1.get());
   generator.DoubleClickLeftButton();
 
-  EXPECT_TRUE(IsWindowMaximized(w1.get()));
+  EXPECT_TRUE(window_util::IsWindowMaximized(w1.get()));
   generator.DoubleClickLeftButton();
 
-  EXPECT_FALSE(IsWindowMaximized(w1.get()));
+  EXPECT_FALSE(window_util::IsWindowMaximized(w1.get()));
 }
 
 TEST_F(ToplevelWindowEventFilterTest, BottomRightWorkArea) {

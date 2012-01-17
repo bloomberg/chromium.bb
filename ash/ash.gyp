@@ -100,8 +100,6 @@
         'wm/activation_controller.h',
         'wm/always_on_top_controller.cc',
         'wm/always_on_top_controller.h',
-        'wm/compact_layout_manager.cc',
-        'wm/compact_layout_manager.h',
         'wm/compact_status_area_layout_manager.cc',
         'wm/compact_status_area_layout_manager.h',
         'wm/default_container_event_filter.cc',

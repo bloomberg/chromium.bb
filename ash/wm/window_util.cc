@@ -1,11 +1,10 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "ash/wm/window_util.h"
 
 #include "ash/wm/activation_controller.h"
-#include "ash/wm/property_util.h"
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
@@ -14,11 +13,6 @@
 #include "ui/gfx/screen.h"
 
 namespace ash {
-
-bool IsWindowMaximized(aura::Window* window) {
-  return window->GetIntProperty(aura::client::kShowStateKey) ==
-      ui::SHOW_STATE_MAXIMIZED;
-}
 
 void ActivateWindow(aura::Window* window) {
   aura::client::GetActivationClient()->ActivateWindow(window);
@@ -40,30 +34,16 @@ aura::Window* GetActivatableWindow(aura::Window* window) {
   return internal::ActivationController::GetActivatableWindow(window);
 }
 
-void UpdateBoundsFromShowState(aura::Window* window) {
-  switch (window->GetIntProperty(aura::client::kShowStateKey)) {
-    case ui::SHOW_STATE_NORMAL: {
-      const gfx::Rect* restore = GetRestoreBounds(window);
-      window->SetProperty(aura::client::kRestoreBoundsKey, NULL);
-      if (restore)
-        window->SetBounds(*restore);
-      delete restore;
-      break;
-    }
+namespace window_util {
 
-    case ui::SHOW_STATE_MAXIMIZED:
-      SetRestoreBoundsIfNotSet(window);
-      window->SetBounds(gfx::Screen::GetMonitorWorkAreaNearestWindow(window));
-      break;
+bool IsWindowMaximized(aura::Window* window) {
+  return window->GetIntProperty(aura::client::kShowStateKey) ==
+      ui::SHOW_STATE_MAXIMIZED;
+}
 
-    case ui::SHOW_STATE_FULLSCREEN:
-      SetRestoreBoundsIfNotSet(window);
-      window->SetBounds(gfx::Screen::GetMonitorAreaNearestWindow(window));
-      break;
-
-    default:
-      break;
-  }
+bool IsWindowFullscreen(aura::Window* window) {
+  return window->GetIntProperty(aura::client::kShowStateKey) ==
+      ui::SHOW_STATE_FULLSCREEN;
 }
 
 bool HasFullscreenWindow(const WindowSet& windows) {
@@ -76,4 +56,5 @@ bool HasFullscreenWindow(const WindowSet& windows) {
   return false;
 }
 
+}  // namespace window_util
 }  // namespace ash

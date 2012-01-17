@@ -129,7 +129,7 @@ bool IsBottomEdge(int window_component) {
 
 void ToggleMaximizedState(aura::Window* window) {
   window->SetIntProperty(aura::client::kShowStateKey,
-                         IsWindowMaximized(window) ?
+                         window_util::IsWindowMaximized(window) ?
                              ui::SHOW_STATE_NORMAL : ui::SHOW_STATE_MAXIMIZED);
 }
 
