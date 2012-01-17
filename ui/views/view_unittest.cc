@@ -30,6 +30,7 @@
 #include "ui/views/focus/view_storage.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/touchui/gesture_manager.h"
+#include "ui/views/touchui/gesture_recognizer.h"
 #include "ui/views/view.h"
 #include "ui/views/views_delegate.h"
 #include "ui/views/widget/native_widget.h"
@@ -206,6 +207,8 @@ class TestView : public View {
     location_.SetPoint(0, 0);
     last_touch_event_type_ = 0;
     last_touch_event_was_handled_ = false;
+    last_gesture_event_type_ = 0;
+    last_gesture_event_was_handled_ = false;
     last_clip_.setEmpty();
     accelerator_count_map_.clear();
   }
@@ -215,6 +218,8 @@ class TestView : public View {
   virtual bool OnMouseDragged(const MouseEvent& event) OVERRIDE;
   virtual void OnMouseReleased(const MouseEvent& event) OVERRIDE;
   virtual ui::TouchStatus OnTouchEvent(const TouchEvent& event) OVERRIDE;
+  // Ignores GestureEvent by default.
+  virtual ui::GestureStatus OnGestureEvent(const GestureEvent& event) OVERRIDE;
   virtual void Paint(gfx::Canvas* canvas) OVERRIDE;
   virtual void SchedulePaintInRect(const gfx::Rect& rect) OVERRIDE;
   virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;
@@ -229,6 +234,10 @@ class TestView : public View {
 
   // Painting.
   std::vector<gfx::Rect> scheduled_paint_rects_;
+
+  // GestureEvent
+  int last_gesture_event_type_;
+  bool last_gesture_event_was_handled_;
 
   // TouchEvent.
   int last_touch_event_type_;
@@ -266,6 +275,27 @@ class MockGestureManager : public GestureManager {
   DISALLOW_COPY_AND_ASSIGN(MockGestureManager);
 };
 
+// GestureRecognizer for testing.
+class TestGestureRecognizer : public GestureRecognizer {
+ public:
+  TestGestureRecognizer();
+
+  // Reset all test state.
+  void reset() {
+    last_touch_event_ = 0;
+    previously_handled_flag_ = false;
+  }
+
+  virtual Gestures* ProcessTouchEventForGesture(
+      const TouchEvent& event,
+      ui::TouchStatus status) OVERRIDE;
+
+  bool previously_handled_flag_;
+  int last_touch_event_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestGestureRecognizer);
+};
+
 // A view subclass that ignores all touch events for testing purposes.
 class TestViewIgnoreTouch : public TestView {
  public:
@@ -274,6 +304,32 @@ class TestViewIgnoreTouch : public TestView {
 
  private:
   virtual ui::TouchStatus OnTouchEvent(const TouchEvent& event) OVERRIDE;
+};
+
+// A view subclass that consumes all Gesture events for testing purposes.
+class TestViewConsumeGesture : public TestView {
+ public:
+  TestViewConsumeGesture() : TestView() {}
+  virtual ~TestViewConsumeGesture() {}
+
+ private:
+  virtual ui::TouchStatus OnTouchEvent(const TouchEvent& event) OVERRIDE;
+  virtual ui::GestureStatus OnGestureEvent(const GestureEvent& event) OVERRIDE;
+
+  DISALLOW_COPY_AND_ASSIGN(TestViewConsumeGesture);
+};
+
+// A view subclass that ignores all Gesture and touch events.
+class TestViewIgnoreTouchAndGesture: public TestView {
+ public:
+  TestViewIgnoreTouchAndGesture() : TestView() {}
+  virtual ~TestViewIgnoreTouchAndGesture() {}
+
+ private:
+  virtual ui::TouchStatus OnTouchEvent(const TouchEvent& event) OVERRIDE;
+  virtual ui::GestureStatus OnGestureEvent(const GestureEvent& event) OVERRIDE;
+
+  DISALLOW_COPY_AND_ASSIGN(TestViewIgnoreTouchAndGesture);
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -538,6 +594,284 @@ TEST_F(ViewTest, TouchEvent) {
 
   widget->CloseNow();
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// GestureEvent
+////////////////////////////////////////////////////////////////////////////////
+
+GestureRecognizer::Gestures* TestGestureRecognizer::ProcessTouchEventForGesture(
+    const TouchEvent& event,
+    ui::TouchStatus status) {
+  if (status != ui::TOUCH_STATUS_UNKNOWN) {
+    return NULL;
+  }
+  last_touch_event_ =  event.type();
+  previously_handled_flag_ = status != ui::TOUCH_STATUS_UNKNOWN;
+  return GestureRecognizer::ProcessTouchEventForGesture(event, status);
+}
+
+TestGestureRecognizer::TestGestureRecognizer() {
+}
+
+ui::GestureStatus TestView::OnGestureEvent(const GestureEvent& event) {
+  return ui::GESTURE_STATUS_UNKNOWN;
+}
+
+// GestureConsumer view should ignore TouchEvent for testing purposes.
+ui::TouchStatus TestViewConsumeGesture::OnTouchEvent(
+    const TouchEvent& event) {
+  return ui::TOUCH_STATUS_UNKNOWN;
+}
+
+ui::GestureStatus TestViewConsumeGesture::OnGestureEvent(
+    const GestureEvent& event) {
+  last_gesture_event_type_ = event.type();
+  location_.SetPoint(event.x(), event.y());
+  return ui::GESTURE_STATUS_CONSUMED;
+}
+
+// IgnoreTouchAndGesture view should ignore touch and Gesture event for
+// testing purposes.
+ui::TouchStatus TestViewIgnoreTouchAndGesture::OnTouchEvent(
+    const TouchEvent& event) {
+  return ui::TOUCH_STATUS_UNKNOWN;
+}
+
+ui::GestureStatus TestViewIgnoreTouchAndGesture::OnGestureEvent(
+    const GestureEvent& event) {
+  return ui::GESTURE_STATUS_UNKNOWN;
+}
+
+#if defined(TOUCH_UI)
+TEST_F(ViewTest, GestureEvent) {
+  MockGestureManager gm;
+  TestGestureRecognizer gr;
+
+  // Views hierarchy for non delivery of GestureEvent.
+  TestView* v1 = new TestViewConsumeGesture();
+  v1->SetBounds(0, 0, 300, 300);
+
+  TestView* v2 = new TestView();
+  v2->SetBounds(100, 100, 100, 100);
+
+  TestView* v3 = new TestViewConsumeGesture();
+  v3->SetBounds(0, 0, 100, 100);
+
+  // Views hierarchy for delivery of GestureEvent.
+  TestView* v4 = new TestViewConsumeGesture();
+  v4->SetBounds(200, 200, 100, 100);
+
+  scoped_ptr<Widget> widget(new Widget());
+  Widget::InitParams params(Widget::InitParams::TYPE_POPUP);
+  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params.bounds = gfx::Rect(50, 50, 650, 650);
+  widget->Init(params);
+  View* root = widget->GetRootView();
+
+  root->AddChildView(v1);
+  static_cast<internal::RootView*>(root)->SetGestureManagerForTesting(&gm);
+  static_cast<internal::RootView*>(root)->SetGestureRecognizerForTesting(&gr);
+  v1->AddChildView(v2);
+  v2->AddChildView(v3);
+  v1->AddChildView(v4);
+
+  // |v3| completely obscures |v2|, but all the touch events on |v3| should
+  // reach |v2| because |v3| doesn't process any touch events, hence no gesture
+  // conversion take place.
+
+  // Both |v4| and |v1| ignore touch events, hence |v4| should recieve gesture
+  // events.
+
+  // Make sure if none of the views handle the touch event, the gesture manager
+  // does.
+  v1->Reset();
+  v2->Reset();
+  v3->Reset();
+  v4->Reset();
+  gr.reset();
+  gm.Reset();
+
+  TouchEvent unhandled(ui::ET_TOUCH_MOVED,
+                       400,
+                       400,
+                       0, /* no flags */
+                       0, /* first finger touch */
+                       1.0, 0.0, 1.0, 0.0);
+  root->OnTouchEvent(unhandled);
+
+  EXPECT_EQ(v1->last_touch_event_type_, 0);
+  EXPECT_EQ(v2->last_touch_event_type_, 0);
+  EXPECT_EQ(v4->last_touch_event_type_, 0);
+  EXPECT_EQ(v4->last_gesture_event_type_, 0);
+
+  EXPECT_EQ(gr.previously_handled_flag_, false);
+  EXPECT_EQ(gr.last_touch_event_, ui::ET_TOUCH_MOVED);
+
+  // Test press, drag, release touch sequence.
+  v1->Reset();
+  v2->Reset();
+  v3->Reset();
+  v4->Reset();
+  gr.reset();
+  gm.Reset();
+
+  TouchEvent pressed(ui::ET_TOUCH_PRESSED,
+                     110,
+                     120,
+                     0, /* no flags */
+                     0, /* first finger touch */
+                     1.0, 0.0, 1.0, 0.0);
+  v2->last_touch_event_was_handled_ = true;
+  root->OnTouchEvent(pressed);
+
+  EXPECT_EQ(v2->last_touch_event_type_, ui::ET_TOUCH_PRESSED);
+  EXPECT_EQ(v2->location_.x(), 10);
+  EXPECT_EQ(v2->location_.y(), 20);
+  // Make sure v1 did not receive the event
+  EXPECT_EQ(v1->last_touch_event_type_, 0);
+
+  // Since v2 handled the touch-event, the gesture recognizer should not
+  // handle it.
+  EXPECT_EQ(gr.last_touch_event_, 0);
+  EXPECT_EQ(gr.previously_handled_flag_, false);
+
+  // Drag event out of bounds. Should still go to v2
+  v1->Reset();
+  v2->Reset();
+  TouchEvent dragged(ui::ET_TOUCH_MOVED,
+                     50,
+                     40,
+                     0, /* no flags */
+                     0, /* first finger touch */
+                     1.0, 0.0, 1.0, 0.0);
+  root->OnTouchEvent(dragged);
+  EXPECT_EQ(v2->last_touch_event_type_, ui::ET_TOUCH_MOVED);
+  EXPECT_EQ(v2->location_.x(), -50);
+  EXPECT_EQ(v2->location_.y(), -60);
+  // Make sure v1 did not receive the event
+  EXPECT_EQ(v1->last_touch_event_type_, 0);
+
+  EXPECT_EQ(gr.last_touch_event_, 0);
+  EXPECT_EQ(gr.previously_handled_flag_, false);
+
+  // Released event out of bounds. Should still go to v2
+  v1->Reset();
+  v2->Reset();
+  TouchEvent released(ui::ET_TOUCH_RELEASED, 0, 0, 0, 0 /* first finger */,
+                      1.0, 0.0, 1.0, 0.0);
+  v2->last_touch_event_was_handled_ = true;
+  root->OnTouchEvent(released);
+  EXPECT_EQ(v2->last_touch_event_type_, ui::ET_TOUCH_RELEASED);
+  EXPECT_EQ(v2->location_.x(), -100);
+  EXPECT_EQ(v2->location_.y(), -100);
+  // Make sure v1 did not receive the event
+  EXPECT_EQ(v1->last_touch_event_type_, 0);
+
+  EXPECT_EQ(gr.last_touch_event_, 0);
+  EXPECT_EQ(gr.previously_handled_flag_, false);
+
+  // Gesture event handling test.
+  // 1) Test gesture type ui::ET_GESTURE_TAP_DOWN.
+  v1->Reset();
+  v4->Reset();
+  gr.reset();
+  gm.Reset();
+
+  TouchEvent second_pressed(ui::ET_TOUCH_PRESSED,
+                            210,
+                            220,
+                            0, /* no flags */
+                            0, /* first finger touch */
+                            1.0, 0.0, 1.0, 0.0);
+  base::Time pressed_time = second_pressed.time_stamp();
+  root->OnTouchEvent(second_pressed);
+
+  // Since v1 and V4 didn't handled touch event, the gesture manager should
+  // handle it.
+  EXPECT_EQ(gr.last_touch_event_, ui::ET_TOUCH_PRESSED);
+  EXPECT_EQ(gr.previously_handled_flag_, false);
+
+  // Check v4 should receive gesture event but not v1.
+  EXPECT_EQ(v1->last_touch_event_type_, 0);
+  EXPECT_EQ(v4->last_touch_event_type_, 0);
+  EXPECT_EQ(v4->last_gesture_event_type_, ui::ET_GESTURE_TAP_DOWN);
+  EXPECT_EQ(v4->location_.x(), 10);
+  EXPECT_EQ(v4->location_.y(), 20);
+
+  // 2) Test gesture type ui::ET_GESTURE_TAP.
+  v1->Reset();
+  v4->Reset();
+  gr.reset();
+  gm.Reset();
+
+  TouchEvent second_released(ui::ET_TOUCH_RELEASED,
+                      210,
+                      220,
+                      0, /* no flags */
+                      0, /* first finger touch */
+                      1.0, 0.0, 1.0, 0.0);
+
+  // Set touch time with-in click window.
+  second_released.set_time_stamp(base::Time::FromDoubleT(
+      pressed_time.ToDoubleT() + 0.7));
+  root->OnTouchEvent(second_released);
+
+  // Since v1 and V4 didn't handled touch event, the gesture manager should
+  // handle it.
+  EXPECT_EQ(gr.last_touch_event_, ui::ET_TOUCH_RELEASED);
+  EXPECT_EQ(gr.previously_handled_flag_, false);
+
+  // Check v4 should receive gesture event but not v1.
+  EXPECT_EQ(v1->last_touch_event_type_, 0);
+  EXPECT_EQ(v4->last_touch_event_type_, 0);
+  EXPECT_EQ(v4->last_gesture_event_type_, ui::ET_GESTURE_TAP);
+  EXPECT_EQ(v4->location_.x(), 10);
+  EXPECT_EQ(v4->location_.y(), 20);
+
+  // 3) Test Gesture to mouse conversion.
+  // Views hierarchy for delivery of mouse event in absence of Touch and
+  // Gesture handlers.
+  TestView* v5 = new TestViewIgnoreTouchAndGesture();
+  v5->SetBounds(0, 0, 300, 300);
+
+  TestView* v6 = new TestViewIgnoreTouchAndGesture();
+  v6->SetBounds(100, 100, 100, 100);
+
+  root->AddChildView(v5);
+  v5->AddChildView(v6);
+
+  v5->Reset();
+  v6->Reset();
+  gr.reset();
+  gm.Reset();
+
+  TouchEvent third_pressed(ui::ET_TOUCH_PRESSED,
+                            110,
+                            120,
+                            0, /* no flags */
+                            0, /* first finger touch */
+                            1.0, 0.0, 1.0, 0.0);
+  root->OnTouchEvent(third_pressed);
+
+  // Since v5 and V6 didn't handled touch and gesture event, gesture recognizer
+  // and manager should recieve touch event.
+  EXPECT_EQ(gr.last_touch_event_, ui::ET_TOUCH_PRESSED);
+  EXPECT_EQ(gr.previously_handled_flag_, false);
+  EXPECT_EQ(gm.previously_handled_flag_, false);
+  EXPECT_EQ(gm.last_touch_event_, ui::ET_TOUCH_PRESSED);
+  EXPECT_EQ(gm.last_view_, root);
+  EXPECT_EQ(gm.dispatched_synthetic_event_, true);
+
+  // Check v6  shouldn't recieve touch and gesture event but mouse event.
+  EXPECT_EQ(v6->last_touch_event_type_, 0);
+  EXPECT_EQ(v6->last_gesture_event_type_, 0);
+
+  // Check v5  shouldn't recieve touch, gesture and mouse event.
+  EXPECT_EQ(v5->last_touch_event_type_, 0);
+  EXPECT_EQ(v5->last_gesture_event_type_, 0);
+  widget->CloseNow();
+}
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 // Painting

@@ -314,6 +314,8 @@
         'repeat_controller.h',
         'touchui/gesture_manager.cc',
         'touchui/gesture_manager.h',
+        'touchui/gesture_recognizer.cc',
+        'touchui/gesture_recognizer.h',
         'touchui/touch_selection_controller.cc',
         'touchui/touch_selection_controller.h',
         'view.cc',

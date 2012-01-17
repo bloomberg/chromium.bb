@@ -1074,7 +1074,12 @@ void Widget::OnMouseCaptureLost() {
 
 ui::TouchStatus Widget::OnTouchEvent(const TouchEvent& event) {
   ScopedEvent scoped(this, event);
-  return static_cast<internal::RootView*>(GetRootView())->OnTouchEvent(event);
+  return GetRootView()->OnTouchEvent(event);
+}
+
+ui::GestureStatus Widget::OnGestureEvent(const GestureEvent& event) {
+  ScopedEvent scoped(this, event);
+  return GetRootView()->OnGestureEvent(event);
 }
 
 bool Widget::ExecuteCommand(int command_id) {
