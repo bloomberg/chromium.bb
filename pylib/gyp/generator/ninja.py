@@ -924,19 +924,11 @@ def OpenOutput(path):
   return open(path, 'w')
 
 
-def GenerateOutput(target_list, target_dicts, data, params):
+def GenerateOutputForConfig(target_list, target_dicts, data, params,
+                            config_name):
   options = params['options']
   flavor = gyp.common.GetFlavor(params)
   generator_flags = params.get('generator_flags', {})
-
-  if options.generator_output:
-    raise NotImplementedError, "--generator_output not implemented for ninja"
-
-  config_name = generator_flags.get('config', None)
-  if config_name is None:
-    # Guess which config we want to use: pick the first one from the
-    # first target.
-    config_name = target_dicts[target_list[0]]['default_configuration']
 
   # builddir: relative path from source root to our output files.
   # e.g. "out/Debug"
@@ -1096,3 +1088,18 @@ def GenerateOutput(target_list, target_dicts, data, params):
 
   if all_outputs:
     master_ninja.build('all', 'phony', list(all_outputs))
+
+
+def GenerateOutput(target_list, target_dicts, data, params):
+  if params['options'].generator_output:
+    raise NotImplementedError, "--generator_output not implemented for ninja"
+
+  if params.get('generator_flags', {}).get('config', None):
+    print "WARNING: ninja now ignored the 'config' generator flag,"
+    print "instead always generating all configs."
+    print "remove the config generator flag from your command line."
+
+  config_names = target_dicts[target_list[0]]['configurations'].keys()
+  for config_name in config_names:
+    GenerateOutputForConfig(target_list, target_dicts, data, params,
+                            config_name)

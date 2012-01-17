@@ -420,19 +420,9 @@ class TestGypNinja(TestGypBase):
   DEFAULT = 'all'
 
   def run_gyp(self, gyp_file, *args, **kw):
-    # We must pass the desired configuration as a parameter.
-    if self.configuration:
-      args = list(args) + ['-Gconfig=' + self.configuration]
-    # Stash the gyp configuration we used to run gyp, so we can
-    # know whether we need to rerun it later.
-    self.last_gyp_configuration = self.configuration
     TestGypBase.run_gyp(self, gyp_file, *args, **kw)
 
   def build(self, gyp_file, target=None, **kw):
-    if self.last_gyp_configuration != self.configuration:
-      # Rerun gyp if necessary.
-      self.run_gyp(gyp_file)
-
     arguments = kw.get('arguments', [])[:]
 
     # Add a -C output/path to the command line.
