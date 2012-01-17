@@ -550,7 +550,7 @@ or verify this branch is set up to track another (via the --track argument to
       self.SetWatchers(watchlist.GetWatchersForPaths(files))
 
     try:
-      output = presubmit_support.DoPresubmitChecks(change, committing,
+      return presubmit_support.DoPresubmitChecks(change, committing,
           verbose=verbose, output_stream=sys.stdout, input_stream=sys.stdin,
           default_presubmit=None, may_prompt=may_prompt,
           rietveld_obj=self.RpcServer())
@@ -558,13 +558,6 @@ or verify this branch is set up to track another (via the --track argument to
       DieWithError(
           ('%s\nMaybe your depot_tools is out of date?\n'
            'If all fails, contact maruel@') % e)
-
-    # TODO(dpranke): We should propagate the error out instead of calling
-    # exit().
-    if not output.should_continue():
-      sys.exit(1)
-
-    return output
 
   def CloseIssue(self):
     """Updates the description and closes the issue."""
@@ -909,14 +902,15 @@ def CMDupload(parser, args):
     base_branch = cl.GetUpstreamBranch()
     args = [base_branch + "..."]
 
-  if not options.bypass_hooks and not options.force:
+  if not options.bypass_hooks:
     hook_results = cl.RunHook(committing=False, upstream_branch=base_branch,
-                              may_prompt=True,
+                              may_prompt=not options.force,
                               verbose=options.verbose,
                               author=None)
+    if not hook_results.should_continue():
+      return 1
     if not options.reviewers and hook_results.reviewers:
       options.reviewers = hook_results.reviewers
-
 
   # --no-ext-diff is broken in some versions of Git, so try to work around
   # this by overriding the environment (but there is still a problem if the
@@ -1068,24 +1062,29 @@ def SendUpstream(parser, args, cmd):
              'before attempting to %s.' % (base_branch, cmd))
       return 1
 
-  if not options.bypass_hooks and not options.force:
+  if not options.bypass_hooks:
     author = None
     if options.contributor:
       author = re.search(r'\<(.*)\>', options.contributor).group(1)
-    cl.RunHook(committing=True, upstream_branch=base_branch,
-               may_prompt=True, verbose=options.verbose,
-               author=author)
+    hook_results = cl.RunHook(
+        committing=True,
+        upstream_branch=base_branch,
+        may_prompt=not options.force,
+        verbose=options.verbose,
+        author=author)
+    if not hook_results.should_continue():
+      return 1
 
     if cmd == 'dcommit':
       # Check the tree status if the tree status URL is set.
       status = GetTreeStatus()
       if 'closed' == status:
-        print ('The tree is closed.  Please wait for it to reopen. Use '
-               '"git cl dcommit -f" to commit on a closed tree.')
+        print('The tree is closed.  Please wait for it to reopen. Use '
+              '"git cl dcommit --bypass-hooks" to commit on a closed tree.')
         return 1
       elif 'unknown' == status:
-        print ('Unable to determine tree status.  Please verify manually and '
-               'use "git cl dcommit -f" to commit on a closed tree.')
+        print('Unable to determine tree status.  Please verify manually and '
+              'use "git cl dcommit --bypass-hooks" to commit on a closed tree.')
   else:
     breakpad.SendStack(
         'GitClHooksBypassedCommit',
