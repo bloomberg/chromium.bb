@@ -642,11 +642,38 @@ bool ExtensionService::UpdateExtension(
   // webstore, treat it as a webstore install. Note that we ignore some older
   // extensions with blank auto-update URLs because we are mostly concerned
   // with restrictions on NaCl extensions, which are newer.
+  int creation_flags = Extension::NO_FLAGS;
   if ((extension && extension->from_webstore()) ||
       (!extension && pending_extension_info.is_from_sync() &&
        extension_urls::IsWebstoreUpdateUrl(
-           pending_extension_info.update_url())))
-    installer->set_is_gallery_install(true);
+           pending_extension_info.update_url()))) {
+    creation_flags |= Extension::FROM_WEBSTORE;
+  }
+
+  // Bookmark apps being updated is kind of a contradiction, but that's because
+  // we mark the default apps as bookmark apps, and they're hosted in the web
+  // store, thus they can get updated. See http://crbug.com/101605 for more
+  // details.
+  if (extension && extension->from_bookmark())
+    creation_flags |= Extension::FROM_BOOKMARK;
+
+  if (extension) {
+    // Additionally, if the extension is an external extension, we preserve the
+    // creation flags (usually from_bookmark), even if the current pref values
+    // don't reflect them. This is to fix http://crbug.com/109791 for users that
+    // had default apps updated and lost the from_bookmark bit.
+    ProviderCollection::const_iterator i;
+    for (i = external_extension_providers_.begin();
+        i != external_extension_providers_.end(); ++i) {
+      ExternalExtensionProviderInterface* provider = i->get();
+      if (provider->HasExtension(extension->id())) {
+        creation_flags |= provider->GetCreationFlags();
+        break;
+      }
+    }
+  }
+  installer->set_creation_flags(creation_flags);
+
   installer->set_delete_source(true);
   installer->set_download_url(download_url);
   installer->set_install_cause(extension_misc::INSTALL_CAUSE_UPDATE);

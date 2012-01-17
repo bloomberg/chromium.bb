@@ -134,11 +134,25 @@ static void AddPattern(URLPatternSet* extent, const std::string& pattern) {
 
 class MockExtensionProvider : public ExternalExtensionProviderInterface {
  public:
-  explicit MockExtensionProvider(
+  MockExtensionProvider(
       VisitorInterface* visitor,
       Extension::Location location)
-  : location_(location), visitor_(visitor), visit_count_(0) {
+    : location_(location),
+      visitor_(visitor),
+      visit_count_(0),
+      creation_flags_(Extension::NO_FLAGS) {
   }
+
+  MockExtensionProvider(
+      VisitorInterface* visitor,
+      Extension::Location location,
+      int creation_flags)
+  : location_(location),
+    visitor_(visitor),
+    visit_count_(0),
+    creation_flags_(creation_flags) {
+  }
+
   virtual ~MockExtensionProvider() {}
 
   void UpdateOrAddExtension(const std::string& id,
@@ -152,7 +166,7 @@ class MockExtensionProvider : public ExternalExtensionProviderInterface {
   }
 
   // ExternalExtensionProvider implementation:
-  virtual void VisitRegisteredExtension() {
+  virtual void VisitRegisteredExtension() OVERRIDE {
     visit_count_++;
     for (DataMap::const_iterator i = extension_map_.begin();
          i != extension_map_.end(); ++i) {
@@ -161,18 +175,19 @@ class MockExtensionProvider : public ExternalExtensionProviderInterface {
 
       visitor_->OnExternalExtensionFileFound(
           i->first, version.get(), i->second.second, location_,
-          Extension::NO_FLAGS, false);
+          creation_flags_, false);
     }
     visitor_->OnExternalProviderReady(this);
   }
 
-  virtual bool HasExtension(const std::string& id) const {
+  virtual bool HasExtension(const std::string& id) const OVERRIDE {
     return extension_map_.find(id) != extension_map_.end();
   }
 
-  virtual bool GetExtensionDetails(const std::string& id,
-                                   Extension::Location* location,
-                                   scoped_ptr<Version>* version) const {
+  virtual bool GetExtensionDetails(
+      const std::string& id,
+      Extension::Location* location,
+      scoped_ptr<Version>* version) const OVERRIDE {
     DataMap::const_iterator it = extension_map_.find(id);
     if (it == extension_map_.end())
       return false;
@@ -186,11 +201,15 @@ class MockExtensionProvider : public ExternalExtensionProviderInterface {
     return true;
   }
 
-  virtual bool IsReady() const {
+  virtual bool IsReady() const OVERRIDE {
     return true;
   }
 
-  virtual void ServiceShutdown() {
+  virtual int GetCreationFlags() const OVERRIDE {
+    return creation_flags_;
+  }
+
+  virtual void ServiceShutdown() OVERRIDE {
   }
 
   int visit_count() const { return visit_count_; }
@@ -209,6 +228,8 @@ class MockExtensionProvider : public ExternalExtensionProviderInterface {
   // VisitRegisteredExtension(), which must be a const method to inherit
   // from the class being mocked.
   mutable int visit_count_;
+
+  int creation_flags_;
 
   DISALLOW_COPY_AND_ASSIGN(MockExtensionProvider);
 };
@@ -1266,23 +1287,53 @@ TEST_F(ExtensionServiceTest, InstallExtension) {
 // Tests that flags passed to OnExternalExtensionFileFound() make it to the
 // extension object.
 TEST_F(ExtensionServiceTest, InstallingExternalExtensionWithFlags) {
+  const char kPrefFromBookmark[] = "from_bookmark";
+
   InitializeEmptyExtensionService();
 
   FilePath path = data_dir_.AppendASCII("good.crx");
   set_extensions_enabled(true);
 
-  scoped_ptr<Version> version;
-  version.reset(Version::GetVersionFromString("1.0.0.0"));
-  // Install an external extension.
-  service_->OnExternalExtensionFileFound(good_crx, version.get(),
-                                         path, Extension::EXTERNAL_PREF,
-                                         Extension::FROM_BOOKMARK, false);
+  // Register and install an external extension.
+  MockExtensionProvider* provider =
+      new MockExtensionProvider(service_,
+                                Extension::EXTERNAL_POLICY_DOWNLOAD,
+                                Extension::FROM_BOOKMARK);
+  AddMockExternalProvider(provider);
+  provider->UpdateOrAddExtension(good_crx, "1.0.0.0",
+                                 data_dir_.AppendASCII("good.crx"));
+  service_->CheckForExternalUpdates();
   loop_.RunAllPending();
 
   const Extension* extension = service_->GetExtensionById(good_crx, false);
   ASSERT_TRUE(extension);
-  ASSERT_EQ(Extension::FROM_BOOKMARK,
-            Extension::FROM_BOOKMARK & extension->creation_flags());
+  ASSERT_TRUE(extension->from_bookmark());
+  ValidateBooleanPref(good_crx, kPrefFromBookmark, true);
+
+  // Upgrade to version 2.0, the flag should be preserved.
+  path = data_dir_.AppendASCII("good2.crx");
+  UpdateExtension(good_crx, path, ENABLED);
+  ValidateBooleanPref(good_crx, kPrefFromBookmark, true);
+  extension = service_->GetExtensionById(good_crx, false);
+  ASSERT_TRUE(extension);
+  ASSERT_TRUE(extension->from_bookmark());
+
+  // Somehow, the "from bookmark pref" gets reset (simulating
+  // http://crbug.com/109791).
+  SetPrefBool(extension->id(), kPrefFromBookmark, false);
+  service_->ReloadExtensions();
+  extension = service_->GetExtensionById(good_crx, false);
+  ASSERT_TRUE(extension);
+  ASSERT_FALSE(extension->from_bookmark());
+  ValidateBooleanPref(good_crx, kPrefFromBookmark, false);
+
+  // If the app gets updated again, we'll reset the "from bookmark" pref if
+  // the external extension provider is still serving that extension.
+  UpdateExtension(good_crx, path, ENABLED);
+  ValidateBooleanPref(good_crx, kPrefFromBookmark, true);
+  extension = service_->GetExtensionById(good_crx, false);
+  ASSERT_TRUE(extension);
+  ASSERT_TRUE(extension->from_bookmark());
 }
 
 // Test the handling of Extension::EXTERNAL_EXTENSION_UNINSTALLED
