@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -74,7 +74,9 @@ class IBusEngineControllerImpl : public IBusEngineController {
         vertical_(false),
         page_size_(kDefaultCandidatePageSize),
         cursor_position_(0),
-        aux_text_visible_(false) {
+        aux_text_visible_(false),
+        active_(false),
+        focused_(false) {
     if (!g_connections_) {
       g_connections_ = new ConnectionMap;
     }
@@ -738,7 +740,11 @@ class IBusEngineControllerImpl : public IBusEngineController {
     IBusChromeOSEngine* engine = IBUS_CHROMEOS_ENGINE(ibus_engine);
     if (engine->connection) {
       engine->connection->active_engine_ = engine;
+      engine->connection->active_ = true;
       engine->connection->observer_->OnEnable();
+      if (engine->connection->focused_) {
+        engine->connection->observer_->OnFocusIn();
+      }
       engine->connection->SetProperties();
     }
   }
@@ -747,6 +753,7 @@ class IBusEngineControllerImpl : public IBusEngineController {
     VLOG(1) << "OnDisable";
     IBusChromeOSEngine* engine = IBUS_CHROMEOS_ENGINE(ibus_engine);
     if (engine->connection) {
+      engine->connection->active_ = false;
       engine->connection->observer_->OnDisable();
       if (engine->connection->active_engine_ == engine) {
         engine->connection->active_engine_ = NULL;
@@ -758,7 +765,10 @@ class IBusEngineControllerImpl : public IBusEngineController {
     VLOG(1) << "OnFocusIn";
     IBusChromeOSEngine* engine = IBUS_CHROMEOS_ENGINE(ibus_engine);
     if (engine->connection) {
-      engine->connection->observer_->OnFocusIn();
+      engine->connection->focused_ = true;
+      if (engine->connection->active_) {
+        engine->connection->observer_->OnFocusIn();
+      }
       engine->connection->SetProperties();
     }
   }
@@ -767,7 +777,10 @@ class IBusEngineControllerImpl : public IBusEngineController {
     VLOG(1) << "OnFocusOut";
     IBusChromeOSEngine* engine = IBUS_CHROMEOS_ENGINE(ibus_engine);
     if (engine->connection) {
-      engine->connection->observer_->OnFocusOut();
+      engine->connection->focused_ = false;
+      if (engine->connection->active_) {
+        engine->connection->observer_->OnFocusOut();
+      }
     }
   }
 
@@ -897,6 +910,9 @@ class IBusEngineControllerImpl : public IBusEngineController {
   bool aux_text_visible_;
   std::vector<EngineProperty*> properties_;
   std::map<std::string, EngineProperty*> property_map_;
+
+  bool active_;
+  bool focused_;
 
   std::set<IBusChromeOSEngine*> engine_instances_;
 
