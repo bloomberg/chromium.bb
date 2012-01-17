@@ -12,6 +12,7 @@
 
 #include "base/command_line.h"
 #include "base/mac/mac_util.h"
+#include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/autocomplete/autocomplete.h"
@@ -171,11 +172,21 @@ private:
 
 - (id)initWithFrame:(NSRect)frameRect
          controller:(TabStripController*)controller;
+
+// Runs a nested runloop to do window move tracking. Overriding
+// -mouseDownCanMoveWindow with a dynamic result instead doesn't work:
+// http://www.cocoabuilder.com/archive/cocoa/219261-conditional-mousedowncanmovewindow-for-nsview.html
+// http://www.cocoabuilder.com/archive/cocoa/92973-brushed-metal-window-dragging.html
+- (void)trackClickForWindowMove:(NSEvent*)event;
 @end
 
 @implementation TabStripControllerDragBlockingView
-- (BOOL)mouseDownCanMoveWindow {return NO;}
-- (void)drawRect:(NSRect)rect {}
+- (BOOL)mouseDownCanMoveWindow {
+  return NO;
+}
+
+- (void)drawRect:(NSRect)rect {
+}
 
 - (id)initWithFrame:(NSRect)frameRect
          controller:(TabStripController*)controller {
@@ -191,19 +202,50 @@ private:
 // closure, and if we find that we got a mouse down we shouldn't have, we send
 // it off to the appropriate view.
 - (void)mouseDown:(NSEvent*)event {
+  NSView* superview = [self superview];
+  NSPoint hitLocation =
+      [[superview superview] convertPoint:[event locationInWindow]
+                                 fromView:nil];
+  NSView* hitView = [superview hitTest:hitLocation];
+
   if ([controller_ inRapidClosureMode]) {
-    NSView* superview = [self superview];
-    NSPoint hitLocation =
-        [[superview superview] convertPoint:[event locationInWindow]
-                                   fromView:nil];
-    NSView* hitView = [superview hitTest:hitLocation];
     if (hitView != self) {
       [hitView mouseDown:event];
       return;
     }
   }
+
+  if (hitView == self) {
+    BrowserWindowController* windowController =
+        [BrowserWindowController browserWindowControllerForView:self];
+    if (![windowController isFullscreen]) {
+      [self trackClickForWindowMove:event];
+      return;
+    }
+  }
   [super mouseDown:event];
 }
+
+- (void)trackClickForWindowMove:(NSEvent*)event {
+  NSWindow* window = [self window];
+  NSPoint frameOrigin = [window frame].origin;
+  NSPoint lastEventLoc = [window convertBaseToScreen:[event locationInWindow]];
+  while ((event = [NSApp nextEventMatchingMask:
+      NSLeftMouseDownMask|NSLeftMouseDraggedMask|NSLeftMouseUpMask
+                                    untilDate:[NSDate distantFuture]
+                                       inMode:NSEventTrackingRunLoopMode
+                                      dequeue:YES]) &&
+      [event type] != NSLeftMouseUp) {
+    base::mac::ScopedNSAutoreleasePool pool;
+
+    NSPoint now = [window convertBaseToScreen:[event locationInWindow]];
+    frameOrigin.x += now.x - lastEventLoc.x;
+    frameOrigin.y += now.y - lastEventLoc.y;
+    [window setFrameOrigin:frameOrigin];
+    lastEventLoc = now;
+  }
+}
+
 @end
 
 #pragma mark -
