@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -27,12 +27,12 @@ TEST(GeolocationDeviceDataProviderWifiData, CreateDestroy) {
   for (int i = 0; i < 10; i++) {
     DeviceDataProvider<WifiData>::Register(&listener);
     for (int j = 0; j < 10; j++) {
-      base::PlatformThread::Sleep(base::TimeDelta());
+      base::PlatformThread::Sleep(0);
       main_message_loop.RunAllPending();  // See comment above
     }
     DeviceDataProvider<WifiData>::Unregister(&listener);
     for (int j = 0; j < 10; j++) {
-      base::PlatformThread::Sleep(base::TimeDelta());
+      base::PlatformThread::Sleep(0);
       main_message_loop.RunAllPending();  // See comment above
     }
   }
