@@ -70,5 +70,45 @@ TEST(EventTest, GetCharacter) {
 #endif
 }
 
+TEST(EventTest, ClickCount) {
+  MouseEvent mouseev(ui::ET_MOUSE_PRESSED, gfx::Point(0, 0), 0);
+  for (int i = 1; i <=3 ; ++i) {
+    mouseev.SetClickCount(i);
+    EXPECT_EQ(i, mouseev.GetClickCount());
+  }
+}
+
+TEST(EventTest, Repeated) {
+  MouseEvent mouse_ev1(ui::ET_MOUSE_PRESSED, gfx::Point(0, 0), 0);
+  MouseEvent mouse_ev2(ui::ET_MOUSE_PRESSED, gfx::Point(0, 0), 0);
+  MouseEvent::TestApi test_ev1(&mouse_ev1);
+  MouseEvent::TestApi test_ev2(&mouse_ev2);
+
+  base::TimeDelta start = base::TimeDelta::FromMilliseconds(0);
+  base::TimeDelta soon = start + base::TimeDelta::FromMilliseconds(1);
+  base::TimeDelta later = start + base::TimeDelta::FromMilliseconds(1000);
+
+  // Close point.
+  test_ev1.set_location(gfx::Point(0, 0));
+  test_ev2.set_location(gfx::Point(1, 0));
+  test_ev1.set_time_stamp(start);
+  test_ev2.set_time_stamp(soon);
+  EXPECT_TRUE(MouseEvent::IsRepeatedClickEvent(mouse_ev1, mouse_ev2));
+
+  // Too far.
+  test_ev1.set_location(gfx::Point(0, 0));
+  test_ev2.set_location(gfx::Point(10, 0));
+  test_ev1.set_time_stamp(start);
+  test_ev2.set_time_stamp(soon);
+  EXPECT_FALSE(MouseEvent::IsRepeatedClickEvent(mouse_ev1, mouse_ev2));
+
+  // Too long a time between clicks.
+  test_ev1.set_location(gfx::Point(0, 0));
+  test_ev2.set_location(gfx::Point(0, 0));
+  test_ev1.set_time_stamp(start);
+  test_ev2.set_time_stamp(later);
+  EXPECT_FALSE(MouseEvent::IsRepeatedClickEvent(mouse_ev1, mouse_ev2));
+}
+
 }  // namespace test
 }  // namespace aura

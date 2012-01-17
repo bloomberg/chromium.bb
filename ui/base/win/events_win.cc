@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 #include "ui/base/events.h"
 
 #include "base/logging.h"
+#include "base/time.h"
 #include "ui/base/keycodes/keyboard_code_conversion_win.h"
 #include "ui/gfx/point.h"
 
@@ -71,17 +72,6 @@ bool IsMouseWheelEvent(const base::NativeEvent& native_event) {
          native_event.message == WM_MOUSEHWHEEL;
 }
 
-bool IsDoubleClickMouseEvent(const base::NativeEvent& native_event) {
-  return native_event.message == WM_NCLBUTTONDBLCLK ||
-         native_event.message == WM_NCMBUTTONDBLCLK ||
-         native_event.message == WM_NCRBUTTONDBLCLK ||
-         native_event.message == WM_NCXBUTTONDBLCLK ||
-         native_event.message == WM_LBUTTONDBLCLK ||
-         native_event.message == WM_MBUTTONDBLCLK ||
-         native_event.message == WM_RBUTTONDBLCLK ||
-         native_event.message == WM_XBUTTONDBLCLK;
-}
-
 bool IsKeyEvent(const base::NativeEvent& native_event) {
   return native_event.message == WM_KEYDOWN ||
          native_event.message == WM_SYSKEYDOWN ||
@@ -129,7 +119,6 @@ int MouseStateFlagsFromNative(const base::NativeEvent& native_event) {
   flags |= (win_flags & MK_LBUTTON) ? ui::EF_LEFT_MOUSE_BUTTON : 0;
   flags |= (win_flags & MK_MBUTTON) ? ui::EF_MIDDLE_MOUSE_BUTTON : 0;
   flags |= (win_flags & MK_RBUTTON) ? ui::EF_RIGHT_MOUSE_BUTTON : 0;
-  flags |= IsDoubleClickMouseEvent(native_event) ? ui::EF_IS_DOUBLE_CLICK: 0;
   flags |= IsNonClientMouseEvent(native_event) ? ui::EF_IS_NON_CLIENT : 0;
   return flags;
 }
@@ -198,6 +187,10 @@ int EventFlagsFromNative(const base::NativeEvent& native_event) {
   return flags;
 }
 
+base::TimeDelta EventTimeFromNative(const base::NativeEvent& native_event) {
+  return base::TimeDelta::FromMilliseconds(native_event.time);
+}
+
 gfx::Point EventLocationFromNative(const base::NativeEvent& native_event) {
   // Note: Wheel events are considered client, but their position is in screen
   //       coordinates.
@@ -257,6 +250,15 @@ bool GetScrollOffsets(const base::NativeEvent& native_event,
                       float* x_offset,
                       float* y_offset) {
   NOTIMPLEMENTED();
+  return false;
+}
+
+bool GetGestureTimes(const base::NativeEvent& native_event,
+                     double* start_time,
+                     double* end_time) {
+  // Not supported in Windows.
+  *start_time = 0;
+  *end_time = 0;
   return false;
 }
 

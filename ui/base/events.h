@@ -14,6 +14,10 @@ namespace gfx {
 class Point;
 }
 
+namespace base {
+class TimeDelta;
+}
+
 namespace ui {
 
 // Event types. (prefixed because of a conflict with windows headers)
@@ -64,7 +68,8 @@ enum EventFlags {
 // Flags specific to mouse events
 enum MouseEventFlags {
   EF_IS_DOUBLE_CLICK    = 1 << 16,
-  EF_IS_NON_CLIENT      = 1 << 17
+  EF_IS_TRIPLE_CLICK    = 1 << 17,
+  EF_IS_NON_CLIENT      = 1 << 18
 };
 
 enum TouchStatus {
@@ -99,6 +104,9 @@ UI_EXPORT EventType EventTypeFromNative(const base::NativeEvent& native_event);
 
 // Get the EventFlags from a native event.
 UI_EXPORT int EventFlagsFromNative(const base::NativeEvent& native_event);
+
+UI_EXPORT base::TimeDelta EventTimeFromNative(
+    const base::NativeEvent& native_event);
 
 // Get the location from a native event.  The coordinate system of the resultant
 // |Point| has the origin at top-left of the "root window".  The nature of
@@ -143,6 +151,10 @@ UI_EXPORT float GetTouchForce(const base::NativeEvent& native_event);
 UI_EXPORT bool GetScrollOffsets(const base::NativeEvent& native_event,
                                 float* x_offset,
                                 float* y_offset);
+
+UI_EXPORT bool GetGestureTimes(const base::NativeEvent& native_event,
+                               double* start_time,
+                               double* end_time);
 
 // Creates and returns no-op event.
 UI_EXPORT base::NativeEvent CreateNoopEvent();

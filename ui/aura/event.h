@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -27,9 +27,24 @@ class AURA_EXPORT Event {
  public:
   virtual ~Event();
 
+  // For testing.
+  class TestApi {
+   public:
+    explicit TestApi(Event* event) : event_(event) {}
+
+    void set_time_stamp(const base::TimeDelta& time_stamp) {
+      event_->time_stamp_ = time_stamp;
+    }
+
+   private:
+    TestApi();
+    Event* event_;
+  };
+
   const base::NativeEvent& native_event() const { return native_event_; }
   ui::EventType type() const { return type_; }
-  const base::Time& time_stamp() const { return time_stamp_; }
+  // time_stamp represents time since machine was booted.
+  const base::TimeDelta& time_stamp() const { return time_stamp_; }
   int flags() const { return flags_; }
 
   // The following methods return true if the respective keys were pressed at
@@ -61,13 +76,29 @@ class AURA_EXPORT Event {
 
   base::NativeEvent native_event_;
   ui::EventType type_;
-  base::Time time_stamp_;
+  base::TimeDelta time_stamp_;
   int flags_;
   bool delete_native_event_;
 };
 
 class AURA_EXPORT LocatedEvent : public Event {
  public:
+  // For testing.
+  class TestApi : public Event::TestApi {
+   public:
+    explicit TestApi(LocatedEvent* located_event)
+        : Event::TestApi(located_event),
+          located_event_(located_event) {}
+
+    void set_location(const gfx::Point& location) {
+      located_event_->location_ = location;
+    }
+
+   private:
+    TestApi();
+    LocatedEvent* located_event_;
+  };
+
   int x() const { return location_.x(); }
   int y() const { return location_.y(); }
   gfx::Point location() const { return location_; }
@@ -109,7 +140,24 @@ class AURA_EXPORT MouseEvent : public LocatedEvent {
   // Used for synthetic events in testing.
   MouseEvent(ui::EventType type, const gfx::Point& location, int flags);
 
+  // Compares two mouse down events and returns true if the second one should
+  // be considered a repeat of the first.
+  static bool IsRepeatedClickEvent(
+      const MouseEvent& event1,
+      const MouseEvent& event2);
+
+  // Get the click count. Can be 1, 2 or 3 for mousedown messages, 0 otherwise.
+  int GetClickCount() const;
+
+  // Set the click count for a mousedown message. Can be 1, 2 or 3.
+  void SetClickCount(int click_count);
+
  private:
+  static MouseEvent* last_click_event_;
+  // Returns the repeat count based on the previous mouse click, if it is
+  // recent enough and within a small enough distance.
+  static int GetRepeatCount(const MouseEvent& click_event);
+
   DISALLOW_COPY_AND_ASSIGN(MouseEvent);
 };
 
