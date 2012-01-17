@@ -371,7 +371,7 @@ int32_t NaClCommonSysThreadExit(struct NaClAppThread  *natp,
        */
       NaClLog(4,
               "NaClCommonSysThreadExit: clearing stack flag\n");
-      *(int32_t *) sys_stack_flag = 0;
+      *(volatile int32_t *) sys_stack_flag = 0;
     }
   }
 
@@ -2716,7 +2716,7 @@ int32_t NaClCommonSysException_Handler(struct NaClAppThread *natp,
   }
   NaClXMutexLock(&natp->nap->exception_mu);
   if (old_handler) {
-    *(uint32_t*)safe_old_handler = natp->nap->exception_handler;
+    *(volatile uint32_t *) safe_old_handler = natp->nap->exception_handler;
   }
   natp->nap->exception_handler = handler_addr;
   NaClXMutexUnlock(&natp->nap->exception_mu);
