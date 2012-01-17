@@ -240,7 +240,7 @@ if env.Bit('mac'):
     raise Exception("Unsupported target")
 
 
-syscall_gen_flags = '-c -a ${TARGET_ARCHITECTURE} -s ${TARGET_SUBARCH}'
+syscall_gen_flags = '-a ${TARGET_ARCHITECTURE} -s ${TARGET_SUBARCH}'
 
 env.Append(SYSCALL_GEN_FLAGS=syscall_gen_flags)
 

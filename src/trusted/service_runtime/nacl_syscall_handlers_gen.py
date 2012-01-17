@@ -268,14 +268,13 @@ def PrintImplSkel(architecture, protos, ostr):
 
 
 def main(argv):
-  usage='Usage: nacl_syscall_handlers_gen.py [-f regex] [-c] [-d] [-a arch]'
-  mode = "dump"
+  usage = 'Usage: nacl_syscall_handlers_gen.py [-f regex] [-a arch]'
   input_src = sys.stdin
   output_dst = sys.stdout
   arch = 'x86'
   subarch = '32'
   try:
-    opts, pargs = getopt.getopt(argv[1:], 'a:cdi:o:s:')
+    opts, pargs = getopt.getopt(argv[1:], 'a:i:o:s:')
   except getopt.error, e:
     print >>sys.stderr, 'Illegal option:', str(e)
     print >>sys.stderr, usage
@@ -284,10 +283,6 @@ def main(argv):
   for opt, val in opts:
     if opt == '-a':
       arch = val
-    elif opt == '-d':
-      mode = "dump"
-    elif opt == '-c':
-      mode = "codegen"
     elif opt == '-i':
       input_src = open(val, 'r')
     elif opt == '-o':
@@ -307,15 +302,9 @@ def main(argv):
 
   data = input_src.read()
   protos = SYSCALL_LIST
-  if mode == "dump":
-    for f, a in  protos:
-      print >>output_dst, f
-      print >>output_dst, "\t", a
-  elif mode == "codegen":
-    print >>output_dst, data
-    PrintImplSkel(arch, protos, output_dst)
-    PrintSyscallTableInitializer(protos, output_dst)
-
+  print >>output_dst, data
+  PrintImplSkel(arch, protos, output_dst)
+  PrintSyscallTableInitializer(protos, output_dst)
 
   return 0
 
