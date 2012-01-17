@@ -115,6 +115,10 @@ void RootWindow::ShowCursor(bool show) {
   host_->ShowCursor(show);
 }
 
+void RootWindow::MoveCursorTo(const gfx::Point& location) {
+  host_->MoveCursorTo(location);
+}
+
 void RootWindow::Run() {
   ShowRootWindow();
   MessageLoopForUI::current()->Run();

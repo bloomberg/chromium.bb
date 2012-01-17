@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -67,6 +67,9 @@ class RootWindowHost : public MessageLoop::Dispatcher {
   // You should probably call RootWindow::last_mouse_location() instead; this
   // method can be expensive.
   virtual gfx::Point QueryMouseLocation() = 0;
+
+  // Moves the cursor to the specified location relative to the root window.
+  virtual void MoveCursorTo(const gfx::Point& location) = 0;
 
   // Posts |native_event| to the platform's event queue.
   virtual void PostNativeEvent(const base::NativeEvent& native_event) = 0;
