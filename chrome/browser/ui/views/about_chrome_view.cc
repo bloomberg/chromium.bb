@@ -718,6 +718,7 @@ void AboutChromeView::UpdateStatus(GoogleUpdateUpgradeResult result,
             UserMetricsAction("UpgradeCheck_AlreadyUpToDate"));
         string16 update_label_text = l10n_util::GetStringFUTF16(
             IDS_UPGRADE_ALREADY_UP_TO_DATE,
+            l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),
             ASCIIToUTF16(version_info.Version()));
         if (base::i18n::IsRTL()) {
           update_label_text.push_back(
@@ -736,8 +737,10 @@ void AboutChromeView::UpdateStatus(GoogleUpdateUpgradeResult result,
       else
         content::RecordAction(UserMetricsAction("UpgradeCheck_Upgraded"));
       restart_button_visible_ = true;
-      const string16& update_string = UTF16ToWide(
-          l10n_util::GetStringUTF16(IDS_UPGRADE_SUCCESSFUL_RELAUNCH));
+      const string16& update_string =
+          UTF16ToWide(l10n_util::GetStringFUTF16(
+              IDS_UPGRADE_SUCCESSFUL_RELAUNCH,
+              l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
       update_label_.SetText(update_string);
       show_success_indicator = true;
       break;

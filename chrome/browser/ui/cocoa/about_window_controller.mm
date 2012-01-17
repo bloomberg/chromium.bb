@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -461,13 +461,15 @@ static BOOL recentShownUserActionFailedStatus = NO;
       imageID = IDR_UPDATE_UPTODATE;
       message = l10n_util::GetNSStringFWithFixup(
           IDS_UPGRADE_ALREADY_UP_TO_DATE,
+          l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),
           base::SysNSStringToUTF16(version));
 
       break;
 
     case kAutoupdateAvailable:
       imageID = IDR_UPDATE_AVAILABLE;
-      message = l10n_util::GetNSStringWithFixup(IDS_UPGRADE_AVAILABLE);
+      message = l10n_util::GetNSStringFWithFixup(
+          IDS_UPGRADE_AVAILABLE, l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
       enableUpdateButton = true;
 
       break;
@@ -482,13 +484,15 @@ static BOOL recentShownUserActionFailedStatus = NO;
     case kAutoupdateInstalled:
       {
         imageID = IDR_UPDATE_UPTODATE;
+        string16 productName = l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
         if (version) {
           message = l10n_util::GetNSStringFWithFixup(
               IDS_UPGRADE_SUCCESSFUL,
+              productName,
               base::SysNSStringToUTF16(version));
         } else {
-          message = l10n_util::GetNSStringWithFixup(
-              IDS_UPGRADE_SUCCESSFUL_NOVERSION);
+          message = l10n_util::GetNSStringFWithFixup(
+              IDS_UPGRADE_SUCCESSFUL_NOVERSION, productName);
         }
 
         // TODO(mark): Turn the button in the dialog into a restart button
