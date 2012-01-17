@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -913,7 +913,7 @@ Ribbon.Item.prototype.save = function(
 };
 
 // TODO: Localize?
-Ribbon.Item.COPY_SIGNATURE = 'Copy of ';
+Ribbon.Item.COPY_SIGNATURE = 'Edited - ';
 
 Ribbon.Item.REGEXP_COPY_N =
     new RegExp('^' + Ribbon.Item.COPY_SIGNATURE + '(.+) \\((\\d+)\\)$');
