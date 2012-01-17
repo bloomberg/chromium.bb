@@ -363,6 +363,7 @@ WebKit::WebTouchPoint* UpdateWebTouchEventFromAuraEvent(
   // Update the type of the touch event.
   web_event->type = TouchEventTypeFromEvent(event);
   web_event->timeStampSeconds = event->time_stamp().InSecondsF();
+  web_event->modifiers = EventFlagsToWebEventModifiers(event->flags());
 
   return point;
 }

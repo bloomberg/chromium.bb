@@ -212,6 +212,68 @@ class UI_EXPORT CMTEventData {
   DISALLOW_COPY_AND_ASSIGN(CMTEventData);
 };
 
+// A class to track current modifier state on master device. Only track ctrl,
+// alt, shift and caps lock keys currently. The tracked state can then be used
+// by floating device.
+class UI_EXPORT XModifierStateWatcher{
+ public:
+  static XModifierStateWatcher* GetInstance() {
+    return Singleton<XModifierStateWatcher>::get();
+  }
+
+  void UpdateStateFromEvent(const base::NativeEvent& native_event) {
+    // Floating device can't access the modifer state from master device.
+    // We need to track the states of modifier keys in a singleton for
+    // floating devices such as touch screen. Issue 106426 is one example
+    // of why we need the modifier states for floating device.
+    state_ = native_event->xkey.state;
+    // master_state is the state before key press. We need to track the
+    // state after key press for floating device. Currently only ctrl,
+    // shift, alt and caps lock keys are tracked.
+    ui::KeyboardCode keyboard_code = ui::KeyboardCodeFromNative(native_event);
+    unsigned int mask = 0;
+
+    switch (keyboard_code) {
+      case ui::VKEY_CONTROL: {
+        mask = ControlMask;
+        break;
+      }
+      case ui::VKEY_SHIFT: {
+        mask = ShiftMask;
+        break;
+      }
+      case ui::VKEY_MENU: {
+        mask = Mod1Mask;
+        break;
+      }
+      case ui::VKEY_CAPITAL: {
+        mask = LockMask;
+        break;
+      }
+      default:
+        break;
+    }
+
+    if (native_event->type == KeyPress)
+      state_ |= mask;
+    else
+      state_ &= ~mask;
+  }
+
+  // Returns the current modifer state in master device. It only contains the
+  // state of ctrl, shift, alt and caps lock keys.
+  unsigned int state() { return state_; }
+
+ private:
+  friend struct DefaultSingletonTraits<XModifierStateWatcher>;
+
+  XModifierStateWatcher() : state_(0) { }
+
+  unsigned int state_;
+
+  DISALLOW_COPY_AND_ASSIGN(XModifierStateWatcher);
+};
+
 int GetEventFlagsFromXState(unsigned int state) {
   int flags = 0;
   if (state & ControlMask)
@@ -396,8 +458,10 @@ EventType EventTypeFromNative(const base::NativeEvent& native_event) {
 int EventFlagsFromNative(const base::NativeEvent& native_event) {
   switch (native_event->type) {
     case KeyPress:
-    case KeyRelease:
-      return GetEventFlagsFromXState(native_event->xbutton.state);
+    case KeyRelease: {
+      XModifierStateWatcher::GetInstance()->UpdateStateFromEvent(native_event);
+      return GetEventFlagsFromXState(native_event->xkey.state);
+    }
     case ButtonPress:
     case ButtonRelease: {
       int flags = GetEventFlagsFromXState(native_event->xbutton.state);
@@ -418,6 +482,11 @@ int EventFlagsFromNative(const base::NativeEvent& native_event) {
         case XI_ButtonRelease: {
           int flags = GetButtonMaskForX2Event(xievent) |
               GetEventFlagsFromXState(xievent->mods.effective);
+          if (touch) {
+            flags |= GetEventFlagsFromXState(
+                XModifierStateWatcher::GetInstance()->state());
+          }
+
           const EventType type = EventTypeFromNative(native_event);
           int button = EventButtonFromNative(native_event);
           if ((type == ET_MOUSE_PRESSED || type == ET_MOUSE_RELEASED) && !touch)
