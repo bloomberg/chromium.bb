@@ -34,7 +34,7 @@ using content::WebContents;
 void SSLManager::OnSSLCertificateError(ResourceDispatcherHost* rdh,
                                        net::URLRequest* request,
                                        const net::SSLInfo& ssl_info,
-                                       bool is_hsts_host) {
+                                       bool fatal) {
   DVLOG(1) << "OnSSLCertificateError() cert_error: "
            << net::MapCertStatusToNetError(ssl_info.cert_status)
            << " url: " << request->url().spec()
@@ -52,7 +52,7 @@ void SSLManager::OnSSLCertificateError(ResourceDispatcherHost* rdh,
                                          request,
                                          info->resource_type(),
                                          ssl_info,
-                                         is_hsts_host)));
+                                         fatal)));
 }
 
 // static
