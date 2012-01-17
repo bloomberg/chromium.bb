@@ -6,7 +6,8 @@
 Import('env')
 
 # Breakpad crash reporting only works when NaCl is built into Chromium.
-if env.Bit('disable_dynamic_plugin_loading') and env.Bit('host_windows'):
+if (env.Bit('disable_dynamic_plugin_loading') and
+    (env.Bit('host_windows') or env.Bit('host_mac'))):
   expected_crash_dumps = 1
 else:
   # We are also checking that crash dumping does not work

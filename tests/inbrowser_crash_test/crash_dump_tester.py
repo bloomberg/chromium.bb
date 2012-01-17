@@ -1,10 +1,9 @@
 #!/usr/bin/python
-# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 import os
-import shutil
 import subprocess
 import sys
 import tempfile
@@ -103,11 +102,14 @@ def Main():
   windows_pipe_name = r'\\.\pipe\%s_crash_service' % os.path.basename(dumps_dir)
 
   # This environment variable enables Breakpad crash dumping in
-  # non-official Windows builds of Chromium.
+  # non-official builds of Chromium.
   os.environ['CHROME_HEADLESS'] = '1'
-  # Override the default (global) Windows pipe name that Chromium will
-  # use for out-of-process crash reporting.
-  os.environ['CHROME_BREAKPAD_PIPE_NAME'] = windows_pipe_name
+  if sys.platform == 'win32':
+    # Override the default (global) Windows pipe name that Chromium will
+    # use for out-of-process crash reporting.
+    os.environ['CHROME_BREAKPAD_PIPE_NAME'] = windows_pipe_name
+  elif sys.platform == 'darwin':
+    os.environ['BREAKPAD_DUMP_LOCATION'] = dumps_dir
 
   cleanup_func = StartCrashService(options.browser_path, dumps_dir,
                                    windows_pipe_name, options.win64)
@@ -123,26 +125,28 @@ def Main():
   if len(dmp_files) != options.expected_crash_dumps:
     sys.stdout.write(msg)
     failed = True
-  for dump_file in dmp_files:
-    # The crash dumps should come in pairs of a .dmp and .txt file.
-    second_file = dump_file[:-4] + '.txt'
-    msg = ('crash_dump_tester: ERROR: File %r is missing a corresponding '
-           '%r file\n' % (dump_file, second_file))
-    if not os.path.exists(second_file):
-      sys.stdout.write(msg)
-      failed = True
-      continue
-    # Check that the crash dump comes from the NaCl process.
-    dump_info = ReadDumpTxtFile(second_file)
-    if 'ptype' in dump_info:
-      msg = ('crash_dump_tester: ERROR: Unexpected ptype value: %r\n'
-             % dump_info['ptype'])
-      if dump_info['ptype'] != 'nacl-loader':
+  # On Windows, the crash dumps should come in pairs of a .dmp and
+  # .txt file.
+  if sys.platform == 'win32':
+    for dump_file in dmp_files:
+      second_file = dump_file[:-4] + '.txt'
+      msg = ('crash_dump_tester: ERROR: File %r is missing a corresponding '
+             '%r file\n' % (dump_file, second_file))
+      if not os.path.exists(second_file):
         sys.stdout.write(msg)
         failed = True
-    else:
-      sys.stdout.write('crash_dump_tester: ERROR: Missing ptype field\n')
-      failed = True
+        continue
+      # Check that the crash dump comes from the NaCl process.
+      dump_info = ReadDumpTxtFile(second_file)
+      if 'ptype' in dump_info:
+        msg = ('crash_dump_tester: ERROR: Unexpected ptype value: %r\n'
+               % dump_info['ptype'])
+        if dump_info['ptype'] != 'nacl-loader':
+          sys.stdout.write(msg)
+          failed = True
+      else:
+        sys.stdout.write('crash_dump_tester: ERROR: Missing ptype field\n')
+        failed = True
     # TODO(mseaborn): Ideally we would also check that a backtrace
     # containing an expected function name can be extracted from the
     # crash dump.
