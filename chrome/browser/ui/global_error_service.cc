@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,7 +31,7 @@ void GlobalErrorService::RemoveGlobalError(GlobalError* error) {
 
 GlobalError* GlobalErrorService::GetGlobalErrorByMenuItemCommandID(
     int command_id) const {
-  for (std::vector<GlobalError*>::const_iterator
+  for (GlobalErrorList::const_iterator
        it = errors_.begin(); it != errors_.end(); ++it) {
     GlobalError* error = *it;
     if (error->HasMenuItem() && command_id == error->MenuItemCommandID())
@@ -41,7 +41,7 @@ GlobalError* GlobalErrorService::GetGlobalErrorByMenuItemCommandID(
 }
 
 int GlobalErrorService::GetFirstBadgeResourceID() const {
-  for (std::vector<GlobalError*>::const_iterator
+  for (GlobalErrorList::const_iterator
        it = errors_.begin(); it != errors_.end(); ++it) {
     GlobalError* error = *it;
     if (error->HasBadge())
@@ -51,7 +51,7 @@ int GlobalErrorService::GetFirstBadgeResourceID() const {
 }
 
 GlobalError* GlobalErrorService::GetFirstGlobalErrorWithBubbleView() const {
-  for (std::vector<GlobalError*>::const_iterator
+  for (GlobalErrorList::const_iterator
        it = errors_.begin(); it != errors_.end(); ++it) {
     GlobalError* error = *it;
     if (error->HasBubbleView() && !error->HasShownBubbleView())

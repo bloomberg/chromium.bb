@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,9 +6,13 @@
 
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/global_error.h"
+#include "chrome/browser/ui/global_error_service.h"
+#include "chrome/browser/ui/global_error_service_factory.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar_view.h"
 #include "chrome/browser/ui/views/window.h"
+#include "chrome/common/chrome_notification_types.h"
+#include "content/public/browser/notification_service.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 #include "ui/views/controls/button/text_button.h"
@@ -118,6 +122,9 @@ GlobalErrorBubbleView::GlobalErrorBubbleView(
 
   // Adjust the message label size in case buttons are too long.
   message_label->SizeToFit(layout->GetPreferredSize(this).width());
+
+  registrar_.Add(this, chrome::NOTIFICATION_GLOBAL_ERRORS_CHANGED,
+                 content::Source<Profile>(browser->profile()));
 }
 
 GlobalErrorBubbleView::~GlobalErrorBubbleView() {
@@ -131,6 +138,9 @@ gfx::Rect GlobalErrorBubbleView::GetAnchorRect() {
 
 void GlobalErrorBubbleView::ButtonPressed(views::Button* sender,
                                           const views::Event& event) {
+  // We unsubscribe from removal notifications here and below because any of
+  // GlobalError callbacks may remove it from the profile.
+  registrar_.RemoveAll();
   if (sender->tag() == TAG_ACCEPT_BUTTON)
     error_->BubbleViewAcceptButtonPressed();
   else if (sender->tag() == TAG_CANCEL_BUTTON)
@@ -141,7 +151,31 @@ void GlobalErrorBubbleView::ButtonPressed(views::Button* sender,
 }
 
 void GlobalErrorBubbleView::WindowClosing() {
-  error_->BubbleViewDidClose();
+  registrar_.RemoveAll();
+  if (error_)
+    error_->BubbleViewDidClose();
+}
+
+void GlobalErrorBubbleView::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  DCHECK(type == chrome::NOTIFICATION_GLOBAL_ERRORS_CHANGED);
+  DCHECK(error_);
+  if (content::Details<GlobalError>(details).ptr() == error_) {
+    Profile* profile = content::Source<Profile>(source).ptr();
+    const std::vector<GlobalError*>& errors =
+        GlobalErrorServiceFactory::GetForProfile(profile)->errors();
+    // This handles the case when a GlobalError instance is removed from profile
+    // not as a part of normal flow (i.e., after the bubble has been closed)
+    // but while the bubble is still showing. |error_| is no longer guaranteed
+    // to exist so we set it to |NULL| and dismiss the bubble.
+    if (std::find(errors.begin(), errors.end(), error_) == errors.end()) {
+      error_ = NULL;
+      registrar_.RemoveAll();
+      GetWidget()->Close();
+    }
+  }
 }
 
 void GlobalError::ShowBubbleView(Browser* browser, GlobalError* error) {

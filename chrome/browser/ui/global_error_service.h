@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,6 +21,9 @@ class Profile;
 //   - a sync error occurred
 class GlobalErrorService : public ProfileKeyedService {
  public:
+  // Type used to represent the list of currently active errors.
+  typedef std::vector<GlobalError*> GlobalErrorList;
+
   // Constructs a GlobalErrorService object for the given profile. The profile
   // maybe NULL for tests.
   explicit GlobalErrorService(Profile* profile);
@@ -49,7 +52,7 @@ class GlobalErrorService : public ProfileKeyedService {
   GlobalError* GetFirstGlobalErrorWithBubbleView() const;
 
   // Gets all errors.
-  const std::vector<GlobalError*>& errors() { return errors_; }
+  const GlobalErrorList& errors() { return errors_; }
 
   // Post a notification that a global error has changed and that the error UI
   // should update it self. Pass NULL for the given error to mean all error UIs
@@ -57,7 +60,7 @@ class GlobalErrorService : public ProfileKeyedService {
   void NotifyErrorsChanged(GlobalError* error);
 
  private:
-  std::vector<GlobalError*> errors_;
+  GlobalErrorList errors_;
   Profile* profile_;
 
   DISALLOW_COPY_AND_ASSIGN(GlobalErrorService);

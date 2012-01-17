@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -50,7 +50,8 @@ class GlobalError {
   // Returns the cancel button label for the bubble view. To hide the cancel
   // button return an empty string.
   virtual string16 GetBubbleViewCancelButtonLabel() = 0;
-  // Called when the bubble view is closed.
+  // Called when the bubble view is closed unless the bubble is closed as the
+  // result of |this| being removed from GlobalErrorService.
   virtual void BubbleViewDidClose() = 0;
   // Called when the user clicks on the accept button.
   virtual void BubbleViewAcceptButtonPressed() = 0;
