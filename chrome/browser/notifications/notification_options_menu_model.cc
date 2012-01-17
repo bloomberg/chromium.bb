@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -129,16 +129,18 @@ NotificationOptionsMenuModel::NotificationOptionsMenuModel(Balloon* balloon)
           IDS_EXTENSIONS_DISABLE);
       AddItem(kToggleExtensionCommand, disable_label);
     }
-  } else {
+  } else if (!notification.display_source().empty()) {
     const string16 disable_label = l10n_util::GetStringFUTF16(
         IDS_NOTIFICATION_BALLOON_REVOKE_MESSAGE,
         notification.display_source());
     AddItem(kTogglePermissionCommand, disable_label);
   }
 
-  const string16 settings_label = l10n_util::GetStringUTF16(
-      IDS_NOTIFICATIONS_SETTINGS_BUTTON);
-  AddItem(kOpenContentSettingsCommand, settings_label);
+  if (!notification.display_source().empty()) {
+    const string16 settings_label = l10n_util::GetStringUTF16(
+        IDS_NOTIFICATIONS_SETTINGS_BUTTON);
+    AddItem(kOpenContentSettingsCommand, settings_label);
+  }
 
   corner_menu_model_.reset(new CornerSelectionMenuModel(balloon));
   AddSubMenu(kCornerSelectionSubMenu,

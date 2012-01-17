@@ -58,8 +58,9 @@ BalloonCollectionImpl::BalloonCollectionImpl()
 BalloonCollectionImpl::~BalloonCollectionImpl() {
 }
 
-void BalloonCollectionImpl::Add(const Notification& notification,
-                                Profile* profile) {
+void BalloonCollectionImpl::AddImpl(const Notification& notification,
+                                    Profile* profile,
+                                    bool add_to_front) {
   Balloon* new_balloon = MakeBalloon(notification, profile);
   // The +1 on width is necessary because width is fixed on notifications,
   // so since we always have the max size, we would always hit the scrollbar
@@ -73,7 +74,7 @@ void BalloonCollectionImpl::Add(const Notification& notification,
   if (count > 0 && layout_.RequiresOffsets())
     new_balloon->set_offset(base_.balloons()[count - 1]->offset());
 #endif
-  base_.Add(new_balloon);
+  base_.Add(new_balloon, add_to_front);
   PositionBalloons(false);
 
   // There may be no listener in a unit test.
@@ -83,6 +84,11 @@ void BalloonCollectionImpl::Add(const Notification& notification,
   // This is used only for testing.
   if (!on_collection_changed_callback_.is_null())
     on_collection_changed_callback_.Run();
+}
+
+void BalloonCollectionImpl::Add(const Notification& notification,
+                                Profile* profile) {
+  AddImpl(notification, profile, false);
 }
 
 bool BalloonCollectionImpl::RemoveById(const std::string& id) {
