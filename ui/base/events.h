@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -38,6 +38,14 @@ enum EventType {
   ET_SCROLL,
   ET_TRANSLATED_KEY_PRESS,
   ET_TRANSLATED_KEY_RELEASE,
+
+  // GestureEvent types
+  ET_GESTURE_SCROLL_BEGIN,
+  ET_GESTURE_SCROLL_END,
+  ET_GESTURE_SCROLL_UPDATE,
+  ET_GESTURE_TAP,
+  ET_GESTURE_TAP_DOWN,
+  ET_GESTURE_DOUBLE_TAP,
 };
 
 // Event flags currently supported
@@ -75,6 +83,16 @@ enum TouchStatus {
 
 // Updates the list of devices for cached properties.
 UI_EXPORT void UpdateDeviceList();
+
+enum GestureStatus {
+  GESTURE_STATUS_UNKNOWN = 0,  // Unknown Gesture status. This is used to
+                               // indicate that the Gesture event was not
+                               // handled.
+  GESTURE_STATUS_CONSUMED,     // The Gesture event got consumed.
+  GESTURE_STATUS_SYNTH_MOUSE   // The Gesture event was not processed, but a
+                               // synthetic mouse event generated from the
+                               // unused Gesture event was handled.
+};
 
 // Get the EventType from a native event.
 UI_EXPORT EventType EventTypeFromNative(const base::NativeEvent& native_event);

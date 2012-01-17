@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -201,4 +201,39 @@ const int MouseWheelEvent::kWheelDelta = 120;
 // This value matches GTK+ wheel scroll amount.
 const int MouseWheelEvent::kWheelDelta = 53;
 #endif
+
+////////////////////////////////////////////////////////////////////////////////
+// GestureEvent, public:
+
+GestureEvent::GestureEvent(ui::EventType type,
+                           int x,
+                           int y,
+                           int flags,
+                           base::Time time_stamp,
+                           float delta_x,
+                           float delta_y)
+    : LocatedEvent(type, gfx::Point(x, y), flags),
+      delta_x_(delta_x),
+      delta_y_(delta_y) {
+  set_time_stamp(time_stamp);
+}
+
+GestureEvent::GestureEvent(const GestureEvent& model, View* source,
+                           View* target)
+    : LocatedEvent(model, source, target),
+      delta_x_(model.delta_x_),
+      delta_y_(model.delta_y_) {
+  set_time_stamp(model.time_stamp());
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// GestureEvent, private:
+
+GestureEvent::GestureEvent(const GestureEvent& model, View* root)
+    : LocatedEvent(model, root),
+      delta_x_(model.delta_x_),
+      delta_y_(model.delta_y_) {
+  set_time_stamp(model.time_stamp());
+}
+
 }  // namespace views

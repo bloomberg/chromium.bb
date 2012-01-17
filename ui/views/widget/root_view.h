@@ -21,6 +21,7 @@ namespace views {
 
 class Widget;
 class GestureManager;
+class GestureRecognizer;
 
 // This is a views-internal API and should not be used externally.
 // Widget exposes this object as a View*.
@@ -71,6 +72,9 @@ class VIEWS_EXPORT RootView : public View, public FocusTraversable {
 
   // Provided only for testing:
   void SetGestureManagerForTesting(GestureManager* g) { gesture_manager_ = g; }
+  void SetGestureRecognizerForTesting(GestureRecognizer* gr) {
+    gesture_recognizer_ = gr;
+  }
 
   // Focus ---------------------------------------------------------------------
 
@@ -110,6 +114,7 @@ class VIEWS_EXPORT RootView : public View, public FocusTraversable {
   virtual void OnMouseExited(const MouseEvent& event) OVERRIDE;
   virtual bool OnMouseWheel(const MouseWheelEvent& event) OVERRIDE;
   virtual ui::TouchStatus OnTouchEvent(const TouchEvent& event) OVERRIDE;
+  virtual ui::GestureStatus OnGestureEvent(const GestureEvent& event) OVERRIDE;
   virtual void SetMouseHandler(View* new_mouse_handler) OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
   virtual void ReorderChildLayers(ui::Layer* parent_layer) OVERRIDE;
@@ -145,6 +150,10 @@ class VIEWS_EXPORT RootView : public View, public FocusTraversable {
   // be applied to the point prior to calling this).
   void SetMouseLocationAndFlags(const MouseEvent& event);
 
+  // Feeds touch event to GestureRecognizer.
+  // Returns true if the event resulted in firing a synthetic event.
+  bool DoGestureProcessing(const TouchEvent& event, ui::TouchStatus status);
+
   //////////////////////////////////////////////////////////////////////////////
 
   // Tree operations -----------------------------------------------------------
@@ -178,6 +187,12 @@ class VIEWS_EXPORT RootView : public View, public FocusTraversable {
 
   // The view currently handling touch events.
   View* touch_pressed_handler_;
+
+  // The gesture_recognizer_ for this.
+  GestureRecognizer* gesture_recognizer_;
+
+  // The view currently handling gesture events.
+  View* gesture_handling_view_;
 
   // Focus ---------------------------------------------------------------------
 
