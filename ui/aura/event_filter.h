@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,7 @@
 
 namespace aura {
 
+class GestureEvent;
 class KeyEvent;
 class MouseEvent;
 class TouchEvent;
@@ -52,6 +53,11 @@ class AURA_EXPORT EventFilter {
   // consumed.
   virtual ui::TouchStatus PreHandleTouchEvent(Window* target,
                                               TouchEvent* event) = 0;
+
+  // Returns a value other than ui::GESTURE_STATUS_UNKNOWN if the gesture is
+  // consumed.
+  virtual ui::GestureStatus PreHandleGestureEvent(Window* target,
+                                                  GestureEvent* event) = 0;
 
  protected:
   Window* owner() { return owner_; }

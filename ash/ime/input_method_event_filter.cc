@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -60,6 +60,12 @@ ui::TouchStatus InputMethodEventFilter::PreHandleTouchEvent(
     aura::Window* target,
     aura::TouchEvent* event) {
   return ui::TOUCH_STATUS_UNKNOWN;
+}
+
+ui::GestureStatus InputMethodEventFilter::PreHandleGestureEvent(
+    aura::Window* target,
+    aura::GestureEvent* event) {
+  return ui::GESTURE_STATUS_UNKNOWN;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

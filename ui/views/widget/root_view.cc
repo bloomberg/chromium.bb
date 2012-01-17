@@ -414,17 +414,17 @@ ui::GestureStatus RootView::OnGestureEvent(const GestureEvent& event) {
     // The view could have removed itself from the tree when handling
     // OnGestureEvent(). So handle as per OnMousePressed. NB: we
     // assume that the RootView itself cannot be so removed.
-    if (!gesture_handling_view_) return ui::GESTURE_STATUS_UNKNOWN;
+    if (!gesture_handling_view_)
+      return ui::GESTURE_STATUS_UNKNOWN;
 
     // The gesture event wasn't processed. Go up the view hierarchy and
     // dispatch the gesture event.
-    if (status == ui::GESTURE_STATUS_UNKNOWN) {
+    if (status == ui::GESTURE_STATUS_UNKNOWN)
       continue;
-    } else if (status == ui::GESTURE_STATUS_CONSUMED) {
+    else if (status == ui::GESTURE_STATUS_CONSUMED)
       return status;
-    } else {
+    else
       return ui::GESTURE_STATUS_UNKNOWN;
-    }
   }
   return status;
 }

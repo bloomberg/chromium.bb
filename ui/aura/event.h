@@ -266,7 +266,7 @@ class AURA_EXPORT DropTargetEvent : public LocatedEvent {
 
 class AURA_EXPORT ScrollEvent : public MouseEvent {
  public:
-  ScrollEvent(const base::NativeEvent& native_event);
+  explicit ScrollEvent(const base::NativeEvent& native_event);
   ScrollEvent(const ScrollEvent& model,
               Window* source,
               Window* target,
@@ -285,6 +285,9 @@ class AURA_EXPORT ScrollEvent : public MouseEvent {
   float y_offset_;
 
   DISALLOW_COPY_AND_ASSIGN(ScrollEvent);
+};
+
+class AURA_EXPORT GestureEvent : public LocatedEvent {
 };
 
 }  // namespace aura

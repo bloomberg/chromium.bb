@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -38,6 +38,9 @@ class ASH_EXPORT InputMethodEventFilter
   virtual ui::TouchStatus PreHandleTouchEvent(
       aura::Window* target,
       aura::TouchEvent* event) OVERRIDE;
+  virtual ui::GestureStatus PreHandleGestureEvent(
+      aura::Window* target,
+      aura::GestureEvent* event) OVERRIDE;
 
   // Overridden from ui::internal::InputMethodDelegate.
   virtual void DispatchKeyEventPostIME(const base::NativeEvent& event) OVERRIDE;

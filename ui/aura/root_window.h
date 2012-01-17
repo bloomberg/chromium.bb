@@ -39,6 +39,7 @@ class ScreenAura;
 class StackingClient;
 class ScrollEvent;
 class TouchEvent;
+class GestureEvent;
 
 // RootWindow is responsible for hosting a set of windows.
 class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
@@ -93,6 +94,11 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
 
   // Handles a touch event. Returns true if handled.
   bool DispatchTouchEvent(TouchEvent* event);
+
+  // Handles a gesture event. Returns true if handled. Unlike the other
+  // event-dispatching function (e.g. for touch/mouse/keyboard events), gesture
+  // events are dispatched from GestureRecognizer instead of RootWindowHost.
+  bool DispatchGestureEvent(GestureEvent* event);
 
   // Called when the host changes size.
   void OnHostResized(const gfx::Size& size);
@@ -156,6 +162,7 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   bool ProcessMouseEvent(Window* target, MouseEvent* event);
   bool ProcessKeyEvent(Window* target, KeyEvent* event);
   ui::TouchStatus ProcessTouchEvent(Window* target, TouchEvent* event);
+  ui::GestureStatus ProcessGestureEvent(Window* target, GestureEvent* event);
 
   // Overridden from Window:
   virtual bool CanFocus() const OVERRIDE;

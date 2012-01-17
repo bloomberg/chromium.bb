@@ -62,6 +62,9 @@ class ASH_EXPORT DragDropController
                                    aura::MouseEvent* event) OVERRIDE;
   virtual ui::TouchStatus PreHandleTouchEvent(aura::Window* target,
                                               aura::TouchEvent* event) OVERRIDE;
+  virtual ui::GestureStatus PreHandleGestureEvent(
+      aura::Window* target,
+      aura::GestureEvent* event) OVERRIDE;
 
  private:
   friend class ash::test::DragDropControllerTest;

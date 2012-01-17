@@ -112,6 +112,9 @@ class CaptureWindowDelegateImpl : public TestWindowDelegate {
     touch_event_count_++;
     return ui::TOUCH_STATUS_UNKNOWN;
   }
+  virtual ui::GestureStatus OnGestureEvent(GestureEvent* event) OVERRIDE {
+    return ui::GESTURE_STATUS_UNKNOWN;
+  }
   virtual void OnCaptureLost() OVERRIDE {
     capture_lost_count_++;
   }

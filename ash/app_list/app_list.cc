@@ -149,6 +149,12 @@ ui::TouchStatus AppList::PreHandleTouchEvent(aura::Window* target,
   return ui::TOUCH_STATUS_UNKNOWN;
 }
 
+ui::GestureStatus AppList::PreHandleGestureEvent(
+    aura::Window* target,
+    aura::GestureEvent* event) {
+  return ui::GESTURE_STATUS_UNKNOWN;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // AppList, ui::LayerAnimationObserver implementation:
 

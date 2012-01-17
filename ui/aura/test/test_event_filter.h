@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -44,6 +44,8 @@ class TestEventFilter : public EventFilter {
   virtual bool PreHandleMouseEvent(Window* target, MouseEvent* event) OVERRIDE;
   virtual ui::TouchStatus PreHandleTouchEvent(Window* target,
                                               TouchEvent* event) OVERRIDE;
+  virtual ui::GestureStatus PreHandleGestureEvent(Window* target,
+                                                  GestureEvent* event) OVERRIDE;
 
  private:
   int key_event_count_;

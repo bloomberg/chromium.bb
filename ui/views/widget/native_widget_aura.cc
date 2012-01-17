@@ -673,6 +673,12 @@ ui::TouchStatus NativeWidgetAura::OnTouchEvent(aura::TouchEvent* event) {
   return delegate_->OnTouchEvent(touch_event);
 }
 
+ui::GestureStatus NativeWidgetAura::OnGestureEvent(aura::GestureEvent* event) {
+  DCHECK(window_->IsVisible());
+  // TODO(sad):
+  return ui::GESTURE_STATUS_UNKNOWN;
+}
+
 bool NativeWidgetAura::CanFocus() {
   return can_activate_;
 }

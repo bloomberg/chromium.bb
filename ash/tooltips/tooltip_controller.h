@@ -48,6 +48,8 @@ class ASH_EXPORT TooltipController : public aura::client::TooltipClient,
                                    aura::MouseEvent* event) OVERRIDE;
   virtual ui::TouchStatus PreHandleTouchEvent(aura::Window* target,
                                               aura::TouchEvent* event) OVERRIDE;
+  virtual ui::GestureStatus PreHandleGestureEvent(aura::Window* target,
+      aura::GestureEvent* event) OVERRIDE;
 
   // Overridden from aura::WindowObserver.
   virtual void OnWindowDestroyed(aura::Window* window) OVERRIDE;

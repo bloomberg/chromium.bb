@@ -180,6 +180,12 @@ ui::TouchStatus DragDropController::PreHandleTouchEvent(
   return ui::TOUCH_STATUS_UNKNOWN;
 }
 
+ui::GestureStatus DragDropController::PreHandleGestureEvent(
+    aura::Window* target,
+    aura::GestureEvent* event) {
+  return ui::GESTURE_STATUS_UNKNOWN;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // DragDropController, private:
 

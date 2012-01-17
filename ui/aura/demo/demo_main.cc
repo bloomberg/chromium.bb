@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -52,6 +52,9 @@ class DemoWindowDelegate : public aura::WindowDelegate {
   }
   virtual ui::TouchStatus OnTouchEvent(aura::TouchEvent* event) OVERRIDE {
     return ui::TOUCH_STATUS_END;
+  }
+  virtual ui::GestureStatus OnGestureEvent(aura::GestureEvent* event) OVERRIDE {
+    return ui::GESTURE_STATUS_UNKNOWN;
   }
   virtual bool CanFocus() OVERRIDE { return true; }
   virtual void OnCaptureLost() OVERRIDE {}

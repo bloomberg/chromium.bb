@@ -150,6 +150,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   virtual int GetNonClientComponent(const gfx::Point& point) const OVERRIDE;
   virtual bool OnMouseEvent(aura::MouseEvent* event) OVERRIDE;
   virtual ui::TouchStatus OnTouchEvent(aura::TouchEvent* event) OVERRIDE;
+  virtual ui::GestureStatus OnGestureEvent(aura::GestureEvent* event) OVERRIDE;
   virtual bool CanFocus() OVERRIDE;
   virtual void OnCaptureLost() OVERRIDE;
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;

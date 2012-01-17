@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -41,6 +41,12 @@ ui::TouchStatus TestEventFilter::PreHandleTouchEvent(Window* target,
   ++touch_event_count_;
   // TODO(sadrul): !
   return ui::TOUCH_STATUS_UNKNOWN;
+}
+
+ui::GestureStatus TestEventFilter::PreHandleGestureEvent(Window* target,
+                                                         GestureEvent* event) {
+  // TODO(sad):
+  return ui::GESTURE_STATUS_UNKNOWN;
 }
 
 }  // namespace test

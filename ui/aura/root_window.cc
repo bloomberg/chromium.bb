@@ -213,7 +213,17 @@ bool RootWindow::DispatchTouchEvent(TouchEvent* event) {
       touch_event_handler_ = NULL;
     handled = status != ui::TOUCH_STATUS_UNKNOWN;
   }
+
+  if (!handled) {
+    // TODO(sad): Send the touch to the gesture recognizer.
+  }
+
   return handled;
+}
+
+bool RootWindow::DispatchGestureEvent(GestureEvent* event) {
+  // TODO(sad):
+  return false;
 }
 
 void RootWindow::OnHostResized(const gfx::Size& size) {
@@ -437,6 +447,23 @@ ui::TouchStatus RootWindow::ProcessTouchEvent(Window* target,
   }
 
   return target->delegate()->OnTouchEvent(event);
+}
+
+ui::GestureStatus RootWindow::ProcessGestureEvent(Window* target,
+                                                  GestureEvent* event) {
+  if (!target->IsVisible())
+    return ui::GESTURE_STATUS_UNKNOWN;
+
+  EventFilters filters;
+  GetEventFiltersToNotify(target, &filters);
+  for (EventFilters::const_reverse_iterator it = filters.rbegin();
+       it != filters.rend(); ++it) {
+    ui::GestureStatus status = (*it)->PreHandleGestureEvent(target, event);
+    if (status != ui::GESTURE_STATUS_UNKNOWN)
+      return status;
+  }
+
+  return target->delegate()->OnGestureEvent(event);
 }
 
 void RootWindow::ScheduleDraw() {

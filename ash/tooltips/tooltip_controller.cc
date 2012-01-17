@@ -270,6 +270,12 @@ ui::TouchStatus TooltipController::PreHandleTouchEvent(
   return ui::TOUCH_STATUS_UNKNOWN;
 }
 
+ui::GestureStatus TooltipController::PreHandleGestureEvent(
+    aura::Window* target,
+    aura::GestureEvent* event) {
+  return ui::GESTURE_STATUS_UNKNOWN;
+}
+
 void TooltipController::OnWindowDestroyed(aura::Window* window) {
   if (tooltip_window_ == window) {
     tooltip_window_->RemoveObserver(this);

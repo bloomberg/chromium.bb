@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,6 +20,7 @@ class Size;
 namespace aura {
 
 class Event;
+class GestureEvent;
 class KeyEvent;
 class MouseEvent;
 class TouchEvent;
@@ -51,6 +52,8 @@ class AURA_EXPORT WindowDelegate {
   virtual bool OnMouseEvent(MouseEvent* event) = 0;
 
   virtual ui::TouchStatus OnTouchEvent(TouchEvent* event) = 0;
+
+  virtual ui::GestureStatus OnGestureEvent(GestureEvent* event) = 0;
 
   // Returns true of the window can be focused.
   virtual bool CanFocus() = 0;

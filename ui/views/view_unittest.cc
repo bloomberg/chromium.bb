@@ -42,6 +42,7 @@
 #endif
 #if defined(USE_AURA)
 #include "ui/aura/root_window.h"
+#include "ui/views/touchui/gesture_recognizer.h"
 #endif
 #if !defined(USE_WEBKIT_COMPOSITOR)
 #include "ui/gfx/compositor/test/test_texture.h"

@@ -223,6 +223,13 @@ ui::TouchStatus ToplevelWindowEventFilter::PreHandleTouchEvent(
   return ui::TOUCH_STATUS_UNKNOWN;
 }
 
+ui::GestureStatus ToplevelWindowEventFilter::PreHandleGestureEvent(
+    aura::Window* target, aura::GestureEvent* event) {
+  // TODO(sad): Process gestures as appropriate (e.g. switch between windows,
+  // close window etc.)
+  return ui::GESTURE_STATUS_UNKNOWN;
+}
+
 void ToplevelWindowEventFilter::RunMoveLoop(aura::Window* source) {
   DCHECK(!in_move_loop_);  // Can only handle one nested loop at a time.
   in_move_loop_ = true;

@@ -31,6 +31,9 @@ class WindowModalityController : public aura::EventFilter {
                                    aura::MouseEvent* event) OVERRIDE;
   virtual ui::TouchStatus PreHandleTouchEvent(aura::Window* target,
                                               aura::TouchEvent* event) OVERRIDE;
+  virtual ui::GestureStatus PreHandleGestureEvent(
+      aura::Window* target,
+      aura::GestureEvent* event) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WindowModalityController);
