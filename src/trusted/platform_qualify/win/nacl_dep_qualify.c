@@ -1,7 +1,7 @@
 /*
- * Copyright 2010 The Native Client Authors.  All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -54,7 +54,11 @@ int NaClAttemptToExecuteData() {
   int result;
   int handlerId;
   char *thunk_buffer = malloc(64);
-  nacl_void_thunk thunk = NaClGenerateThunk(thunk_buffer, 64);
+  nacl_void_thunk thunk;
+  if (NULL == thunk_buffer) {
+    return 0;
+  }
+  thunk = NaClGenerateThunk(thunk_buffer, 64);
 
   handlerId = setup_signals();
   g_SigFound = 0;
@@ -71,5 +75,6 @@ int NaClAttemptToExecuteData() {
   }
 
   restore_signals(handlerId);
+  free(thunk_buffer);
   return result;
 }
