@@ -1065,6 +1065,10 @@ def GenerateOutput(target_list, target_dicts, data, params):
     build_file, name, toolset = \
         gyp.common.ParseQualifiedTarget(qualified_target)
 
+    spec = target_dicts[qualified_target]
+    if flavor == 'mac':
+      gyp.xcode_emulation.MergeGlobalXcodeSettingsToSpec(data[build_file], spec)
+
     # TODO: what is options.depth and how is it different than
     # options.toplevel_dir?
     build_file = gyp.common.RelativePath(build_file, options.depth)
@@ -1081,10 +1085,6 @@ def GenerateOutput(target_list, target_dicts, data, params):
                                                  output_file)),
                          flavor)
     master_ninja.subninja(output_file)
-
-    spec = target_dicts[qualified_target]
-    if flavor == 'mac':
-      gyp.xcode_emulation.MergeGlobalXcodeSettingsToSpec(data[build_file], spec)
 
     target = writer.WriteSpec(spec, config_name)
     if target:

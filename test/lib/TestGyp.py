@@ -222,7 +222,11 @@ class TestGypBase(TestCommon.TestCommon):
     Runs gyp against the specified gyp_file with the specified args.
     """
     # TODO:  --depth=. works around Chromium-specific tree climbing.
-    args = ('--depth=.', '--format='+self.format, gyp_file) + args
+    depth = '.'
+    if 'depth' in kw:
+      depth = kw['depth']
+      del kw['depth']
+    args = ('--depth='+depth, '--format='+self.format, gyp_file) + args
     return self.run(program=self.gyp, arguments=args, **kw)
 
   def run(self, *args, **kw):
