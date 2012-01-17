@@ -678,12 +678,10 @@ bool ChromeContentRendererClient::WillSendRequest(WebKit::WebFrame* frame,
 }
 
 bool ChromeContentRendererClient::ShouldPumpEventsDuringCookieMessage() {
-  // We only need to pump events for chrome frame processes as the
-  // cookie policy is controlled by the host browser (IE). If the
-  // policy is set to prompt then the host would put up UI which
-  // would require plugins if any to also pump to ensure that we
-  // don't have a deadlock.
-  return CommandLine::ForCurrentProcess()->HasSwitch(switches::kChromeFrame);
+  // We no longer pump messages, even under Chrome Frame. We rely on cookie
+  // read requests handled by CF not putting up UI or causing other actions
+  // that would require us to pump messages. This fixes http://crbug.com/110090.
+  return false;
 }
 
 void ChromeContentRendererClient::DidCreateScriptContext(
@@ -728,7 +726,6 @@ bool ChromeContentRendererClient::HandleGetCookieRequest(
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kChromeFrame)) {
     IPC::SyncMessage* msg = new ChromeViewHostMsg_GetCookies(
         MSG_ROUTING_NONE, url, first_party_for_cookies, cookies);
-    msg->EnableMessagePumping();
     sender->Send(msg);
     return true;
   }
