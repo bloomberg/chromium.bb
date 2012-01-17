@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -39,6 +39,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
+#include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/common/about_handler.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_version_info.h"
@@ -1100,6 +1101,7 @@ std::string AboutVersionStrings(DictionaryValue* localized_strings,
     localized_strings->SetString("profile_path",
         l10n_util::GetStringUTF16(IDS_ABOUT_VERSION_PATH_NOTFOUND));
   }
+  ChromeWebUIDataSource::SetFontAndTextDirection(localized_strings);
 
   std::string data;
   jstemplate_builder::AppendJsonJS(localized_strings, &data);

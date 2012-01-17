@@ -4,7 +4,7 @@
 about:version template page
 -->
 
-<html id="t">
+<html id="t" i18n-values="dir:textdirection;">
   <head>
     <title i18n-content="title"></title>
     <style>
@@ -15,7 +15,6 @@ about:version template page
         margin: 0px;
       }
       #outer {
-        text-align: left;
         margin-top: 10px;
         margin-left: auto;
         margin-right: auto;
@@ -26,12 +25,11 @@ about:version template page
         width: 550px;
       }
       .label {
-        font-weight: bold;
-        text-align: right;
-        white-space: nowrap;
-        padding-right: 5px;
+        -webkit-padding-end: 5px;
         font-size: 0.9em;
-        border-right: 0px solid black;
+        font-weight: bold;
+        text-align: end;
+        white-space: nowrap;
       }
       .label:after {
         content: ":";
