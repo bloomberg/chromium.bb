@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -75,7 +75,7 @@ cr.define('options.internet', function() {
       indicator.controlledBy = controlledBy;
 
       if (forElement) {
-        forElement.disabled = !recommended;
+        forElement.disabled = (controlledBy != null) && !recommended;
 
         // Special handling for radio buttons:
         //  - If the setting is recommended, show the recommended indicator
