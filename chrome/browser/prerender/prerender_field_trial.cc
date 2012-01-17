@@ -36,13 +36,8 @@ void SetupPrefetchFieldTrial() {
                            "ContentPrefetchPrefetchOff", 2012, 6, 30));
   const int kPrefetchOnGroup = trial->AppendGroup("ContentPrefetchPrefetchOn",
                                                   prefetch_probability);
-  const int trial_group = trial->group();
-
-  if (trial_group == kPrefetchOnGroup) {
-    ResourceDispatcherHost::set_is_prefetch_enabled(true);
-  } else {
-    ResourceDispatcherHost::set_is_prefetch_enabled(false);
-  }
+  ResourceDispatcherHost::set_is_prefetch_enabled(
+      trial->group() == kPrefetchOnGroup);
 }
 
 void SetupPrerenderFieldTrial() {
@@ -173,7 +168,12 @@ void ConfigurePrerenderFromOmnibox() {
   // Field trial to see if we're enabled.
   const base::FieldTrial::Probability kDivisor = 100;
 
-  const base::FieldTrial::Probability kEnabledProbability = 90;
+  base::FieldTrial::Probability kEnabledProbability = 90;
+  chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
+  if (channel == chrome::VersionInfo::CHANNEL_STABLE ||
+      channel == chrome::VersionInfo::CHANNEL_BETA) {
+    kEnabledProbability = 99;
+  }
   scoped_refptr<base::FieldTrial> enabled_trial(
       new base::FieldTrial(kPrerenderFromOmniboxTrialName, kDivisor,
                            "OmniboxPrerenderDisabled", 2012, 8, 30));
