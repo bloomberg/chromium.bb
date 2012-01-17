@@ -26,8 +26,8 @@ typedef enum NaClExpFlag {
   ExprSignedInt = 11,
   ExprImplicit = 12,
   ExprJumpTarget = 13,
-  ExprDSrDICase = 14,
-  ExprESrDICase = 15,
+  ExprDSrCase = 14,
+  ExprESrCase = 15,
   NaClExpFlagEnumSize = 16, /* special size marker */
 } NaClExpFlag;
 

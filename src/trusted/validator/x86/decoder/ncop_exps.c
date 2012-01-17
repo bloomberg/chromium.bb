@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -453,10 +453,10 @@ static void NaClPrintDisassembled(struct Gio* file,
         int seg_addr_index = tree_index + 1;
         if (ExprSegmentAddress == vector->node[seg_addr_index].kind) {
           if (NaClHasSegmentOverride(vector, seg_addr_index,
-                                     ExprDSrDICase, RegDS)) {
+                                     ExprDSrCase, RegDS)) {
             NaClPrintSegmentOverride(file, &is_first, vector, seg_addr_index);
           } else if (NaClHasSegmentOverride(vector, seg_addr_index,
-                                            ExprESrDICase, RegES)) {
+                                            ExprESrCase, RegES)) {
             NaClPrintSegmentOverride(file, &is_first, vector, seg_addr_index);
           }
         }

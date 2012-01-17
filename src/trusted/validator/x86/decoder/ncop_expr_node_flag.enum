@@ -33,9 +33,9 @@ ExprImplicit
 ExprJumpTarget
 # Defines that we have special case of segment register that should
 # be printed in the segment address, even if the operand is implicit,
-# which happens for instances of DS.[rDI].
-ExprDSrDICase
+# which happens for instances of DS:[r].
+ExprDSrCase
 # Defines that we have special case of segment register that should
 # be printed in the segment address, even if the operand is implicit,
-# which happens for instances of ES.[rDI].
-ExprESrDICase
+# which happens for instances of ES:[r].
+ExprESrCase

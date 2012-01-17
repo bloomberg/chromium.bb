@@ -391,11 +391,14 @@ RegREDI
 #  REAXa          AX       EAX       RAX
 RegREAXa
 
-# Use DS:(E)DI, like that specified in movsb, movsw, and movsd, and movsq instructions.
+# Use DS:(R,E)SI, like that specified in movsb, movsw, and movsd, and movsq
+# instructions.
+RegDS_ESI
+# Use DS:(R,E)DI, like that specified in maskmovq and maskmovdqu instructions.
 RegDS_EDI
-# Use ES:(E)DI, like that specified in the insb, insw, and insd instructions.
+# Use ES:(R,E)DI, like that specified in the insb, insw, and insd instructions.
 RegES_EDI
-# Use DS:(E)BX, like that specified in the xlat instruction.
+# Use DS:(R,E)BX, like that specified in the xlat instruction.
 RegDS_EBX,
 
 # Floating point stack registers.

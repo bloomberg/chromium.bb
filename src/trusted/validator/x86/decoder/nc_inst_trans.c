@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -1066,7 +1066,25 @@ static void NaClAppendEDI(NaClInstState* state) {
       NaClAppendReg(RegRDI, &state->nodes);
       break;
     default:
-      NaClFatal("Address size for ES:EDI not correctly defined", state);
+      NaClFatal("Address size for %EDI not correctly defined",
+                state);
+      break;
+  }
+}
+
+static void NaClAppendESI(NaClInstState* state) {
+  switch (state->address_size) {
+    case 16:
+      NaClAppendReg(RegSI, &state->nodes);
+      break;
+    case 32:
+      NaClAppendReg(RegESI, &state->nodes);
+      break;
+    case 64:
+      NaClAppendReg(RegRSI, &state->nodes);
+      break;
+    default:
+      NaClFatal("Address size for %ESI not correctly defined", state);
       break;
   }
 }
@@ -1083,22 +1101,30 @@ static void NaClAppendEBX(NaClInstState* state) {
       NaClAppendReg(RegRDX, &state->nodes);
       break;
     default:
-      NaClFatal("Address size for DS:EDX not correctly defined", state);
+      NaClFatal("Address size for %EDX not correctly defined", state);
       break;
   }
 }
 
 static NaClExp* NaClAppendDS_EDI(NaClInstState* state) {
   NaClExp* results = NaClAppendSegmentAddress(state);
-  results->flags |= NACL_EFLAG(ExprDSrDICase);
+  results->flags |= NACL_EFLAG(ExprDSrCase);
   NaClAppendReg(NaClGetDsSegmentReg(state),  &state->nodes);
   NaClAppendEDI(state);
   return results;
 }
 
+static NaClExp* NaClAppendDS_ESI(NaClInstState* state) {
+  NaClExp* results = NaClAppendSegmentAddress(state);
+  results->flags |= NACL_EFLAG(ExprDSrCase);
+  NaClAppendReg(NaClGetDsSegmentReg(state),  &state->nodes);
+  NaClAppendESI(state);
+  return results;
+}
+
 static NaClExp* NaClAppendDS_EBX(NaClInstState* state) {
   NaClExp* results = NaClAppendSegmentAddress(state);
-  results->flags |= NACL_EFLAG(ExprDSrDICase);
+  results->flags |= NACL_EFLAG(ExprDSrCase);
   NaClAppendReg(NaClGetDsSegmentReg(state),  &state->nodes);
   NaClAppendEBX(state);
   return results;
@@ -1106,7 +1132,7 @@ static NaClExp* NaClAppendDS_EBX(NaClInstState* state) {
 
 static NaClExp* NaClAppendES_EDI(NaClInstState* state) {
   NaClExp* results = NaClAppendSegmentAddress(state);
-  results->flags |= NACL_EFLAG(ExprESrDICase);
+  results->flags |= NACL_EFLAG(ExprESrCase);
   NaClAppendReg(NaClGetEsSegmentReg(state),  &state->nodes);
   NaClAppendEDI(state);
   return results;
@@ -1525,6 +1551,8 @@ static NaClExp* NaClAppendOperand(NaClInstState* state,
     case RegREAXa:
       return NaClAppendBasedOnAddressSize(RegAX, RegEAX, RegRAX, state);
 
+    case RegDS_ESI:
+      return NaClAppendDS_ESI(state);
     case RegDS_EDI:
       return NaClAppendDS_EDI(state);
     case RegDS_EBX:

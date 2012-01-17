@@ -183,6 +183,7 @@ static const char* const g_NaClOpKindName[NaClOpKindEnumSize + 1] = {
   "RegRESI",
   "RegREDI",
   "RegREAXa",
+  "RegDS_ESI",
   "RegDS_EDI",
   "RegES_EDI",
   "RegDS_EBX",
