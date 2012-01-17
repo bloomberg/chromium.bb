@@ -747,9 +747,11 @@ def GenerateDiff(files):
 def OptionallyDoPresubmitChecks(change_info, committing, args):
   if FilterFlag(args, "--no_presubmit") or FilterFlag(args, "--force"):
     breakpad.SendStack(
+        breakpad.DEFAULT_URL + '/breakpad',
         'GclHooksBypassedCommit',
         'Issue %s/%s bypassed hook when committing' %
-        (change_info.rietveld, change_info.issue))
+        (change_info.rietveld, change_info.issue),
+        verbose=False)
     return presubmit_support.PresubmitOutput()
   return DoPresubmitChecks(change_info, committing, True)
 

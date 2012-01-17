@@ -42,13 +42,19 @@ IS_ENABLED = (
 
 def post(url, params):
   """HTTP POST with timeout when it's supported."""
+  if not IS_ENABLED:
+    # Make sure to not send anything for non googler.
+    return
   kwargs = {}
   if (sys.version_info[0] * 10 + sys.version_info[1]) >= 26:
     kwargs['timeout'] = 4
-  request = urllib2.urlopen(url, urllib.urlencode(params), **kwargs)
-  out = request.read()
-  request.close()
-  return out
+  try:
+    request = urllib2.urlopen(url, urllib.urlencode(params), **kwargs)
+    out = request.read()
+    request.close()
+    return out
+  except IOError:
+    return 'There was a failure while trying to send the stack trace. Too bad.'
 
 
 def FormatException(e):
@@ -79,46 +85,36 @@ def FormatException(e):
   return out
 
 
-def SendStack(last_tb, stack, url=None, maxlen=50):
+def SendStack(last_tb, stack, url=None, maxlen=50, verbose=True):
   """Sends the stack trace to the breakpad server."""
   if not IS_ENABLED:
-    # Make sure to not send anything for non googler.
     return
-  if not url:
-    url = DEFAULT_URL + '/breakpad'
-  print 'Sending crash report ...'
-  try:
-    params = {
-        'args': sys.argv,
-        'stack': stack[0:4096],
-        'user': getpass.getuser(),
-        'exception': FormatException(last_tb),
-        'host': _HOST_NAME,
-        'cwd': os.getcwd(),
-        'version': sys.version,
-    }
-    # pylint: disable=W0702
-    print('\n'.join('  %s: %s' % (k, params[k][0:maxlen])
-                    for k in sorted(params)))
-    print(post(url, params))
-  except IOError:
-    print('There was a failure while trying to send the stack trace. Too bad.')
+  def p(o):
+    if verbose:
+      print(o)
+  p('Sending crash report ...')
+  params = {
+    'args': sys.argv,
+    'cwd': os.getcwd(),
+    'exception': FormatException(last_tb),
+    'host': _HOST_NAME,
+    'stack': stack[0:4096],
+    'user': getpass.getuser(),
+    'version': sys.version,
+  }
+  p('\n'.join('  %s: %s' % (k, params[k][0:maxlen]) for k in sorted(params)))
+  p(post(url or DEFAULT_URL + '/breakpad', params))
 
 
 def SendProfiling(url=None):
-  try:
-    if not url:
-      url = DEFAULT_URL + '/profiling'
-    params = {
-        'argv': ' '.join(sys.argv),
-        # Strip the hostname.
-        'domain': _HOST_NAME.split('.', 1)[-1],
-        'duration': time.time() - _TIME_STARTED,
-        'platform': sys.platform,
-    }
-    post(url, params)
-  except IOError:
-    pass
+  params = {
+    'argv': ' '.join(sys.argv),
+    # Strip the hostname.
+    'domain': _HOST_NAME.split('.', 1)[-1],
+    'duration': time.time() - _TIME_STARTED,
+    'platform': sys.platform,
+  }
+  post(url or DEFAULT_URL + '/profiling', params)
 
 
 def CheckForException():

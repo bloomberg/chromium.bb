@@ -1090,7 +1090,8 @@ def SendUpstream(parser, args, cmd):
     breakpad.SendStack(
         'GitClHooksBypassedCommit',
         'Issue %s/%s bypassed hook when committing' %
-        (cl.GetRietveldServer(), cl.GetIssue()))
+        (cl.GetRietveldServer(), cl.GetIssue()),
+        verbose=False)
 
   description = options.message
   if not description and cl.GetIssue():
