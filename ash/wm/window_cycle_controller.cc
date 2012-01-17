@@ -108,10 +108,12 @@ void WindowCycleController::AltKeyReleased() {
 // WindowCycleController, private:
 
 void WindowCycleController::StartCycling() {
-  // Our delegate will provide a list of windows to use for cycling, in an
-  // order that makes sense for that application.
-  ShellDelegate* shell_delegate = ash::Shell::GetInstance()->delegate();
-  windows_ = shell_delegate->GetCycleWindowList();
+  // Most-recently-used cycling is confusing in compact window mode because
+  // you can't see all the windows.
+  windows_ = ash::Shell::GetInstance()->delegate()->GetCycleWindowList(
+      Shell::GetInstance()->IsWindowModeCompact() ?
+          ShellDelegate::ORDER_LINEAR :
+          ShellDelegate::ORDER_MRU);
 
   // Locate the currently active window in the list to use as our start point.
   aura::Window* active_window = GetActiveWindow();

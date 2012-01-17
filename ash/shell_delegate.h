@@ -32,6 +32,11 @@ struct LauncherItem;
 // Delegate of the Shell.
 class ASH_EXPORT ShellDelegate {
  public:
+  enum CycleOrder {
+    ORDER_MRU,  // Most recently used
+    ORDER_LINEAR
+  };
+
   // The Shell owns the delegate.
   virtual ~ShellDelegate() {}
 
@@ -50,10 +55,12 @@ class ASH_EXPORT ShellDelegate {
   virtual AppListViewDelegate* CreateAppListViewDelegate() = 0;
 
   // Returns a list of windows to cycle with keyboard shortcuts (e.g. alt-tab
-  // or the window switching key).  Windows should be in most-recently-used
-  // order with the currently active window at the front of the list.  The list
+  // or the window switching key).  If |order_by_activity| is true then windows
+  // are returned in most-recently-used order with the currently active window
+  // at the front of the list.  Otherwise any order may be returned.  The list
   // does not contain NULL pointers.
-  virtual std::vector<aura::Window*> GetCycleWindowList() const = 0;
+  virtual std::vector<aura::Window*> GetCycleWindowList(
+      CycleOrder order) const = 0;
 
   // Invoked when the user clicks on a window entry in the launcher.
   virtual void LauncherItemClicked(const LauncherItem& item) = 0;

@@ -36,7 +36,9 @@ TEST_F(WindowCycleControllerTest, HandleCycleWindowBaseCases) {
       Shell::GetInstance()->window_cycle_controller();
 
   // Cycling doesn't crash if there are no windows.
-  EXPECT_TRUE(Shell::GetInstance()->delegate()->GetCycleWindowList().empty());
+  std::vector<Window*> windows = Shell::GetInstance()->delegate()->
+      GetCycleWindowList(ShellDelegate::ORDER_MRU);
+  EXPECT_TRUE(windows.empty());
   controller->HandleCycleWindow(WindowCycleController::FORWARD, false);
 
   // Create a single test window.
@@ -67,8 +69,8 @@ TEST_F(WindowCycleControllerTest, HandleCycleWindow) {
   ActivateWindow(window0.get());
 
   // Window lists should return the topmost window in front.
-  std::vector<Window*> windows =
-      Shell::GetInstance()->delegate()->GetCycleWindowList();
+  std::vector<Window*> windows = Shell::GetInstance()->delegate()->
+      GetCycleWindowList(ShellDelegate::ORDER_MRU);
   ASSERT_EQ(3u, windows.size());
   ASSERT_EQ(window0.get(), windows[0]);
   ASSERT_EQ(window1.get(), windows[1]);

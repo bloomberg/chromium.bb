@@ -33,7 +33,8 @@ AppListViewDelegate* TestShellDelegate::CreateAppListViewDelegate() {
   return NULL;
 }
 
-std::vector<aura::Window*> TestShellDelegate::GetCycleWindowList() const {
+std::vector<aura::Window*> TestShellDelegate::GetCycleWindowList(
+    CycleOrder order) const {
   // We just use the Shell's default container of windows, so tests can be
   // written with the usual CreateTestWindowWithId() calls. But window cycling
   // expects the topmost window at the front of the list, so reverse the order.

@@ -65,7 +65,8 @@ class ShellDelegateImpl : public ash::ShellDelegate {
     return ash::shell::CreateAppListViewDelegate();
   }
 
-  std::vector<aura::Window*> GetCycleWindowList() const OVERRIDE {
+  std::vector<aura::Window*> GetCycleWindowList(
+      CycleOrder order) const OVERRIDE {
     aura::Window* default_container = ash::Shell::GetInstance()->GetContainer(
         ash::internal::kShellWindowId_DefaultContainer);
     std::vector<aura::Window*> windows = default_container->children();

@@ -22,7 +22,8 @@ class TestShellDelegate : public ShellDelegate {
   virtual views::Widget* CreateStatusArea() OVERRIDE;
   virtual void BuildAppListModel(AppListModel* model) OVERRIDE;
   virtual AppListViewDelegate* CreateAppListViewDelegate() OVERRIDE;
-  virtual std::vector<aura::Window*> GetCycleWindowList() const OVERRIDE;
+  virtual std::vector<aura::Window*> GetCycleWindowList(
+      CycleOrder order) const OVERRIDE;
   virtual void LauncherItemClicked(const LauncherItem& item) OVERRIDE;
   virtual bool ConfigureLauncherItem(LauncherItem* item) OVERRIDE;
 };

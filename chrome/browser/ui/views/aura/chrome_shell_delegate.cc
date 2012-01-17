@@ -18,6 +18,26 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "ui/aura/window.h"
 
+namespace {
+
+// Returns a list of Aura windows from a BrowserList, using either a
+// const_iterator or const_reverse_iterator.
+template<typename IT>
+std::vector<aura::Window*> GetTabbedBrowserWindows(IT begin, IT end) {
+  std::vector<aura::Window*> windows;
+  for (IT it = begin; it != end; ++it) {
+    Browser* browser = *it;
+    if (browser &&
+        browser->is_type_tabbed() &&
+        browser->window()->GetNativeHandle())
+      windows.push_back(browser->window()->GetNativeHandle());
+  }
+  return windows;
+}
+
+
+}  // namespace
+
 // static
 ChromeShellDelegate* ChromeShellDelegate::instance_ = NULL;
 
@@ -79,19 +99,23 @@ ChromeShellDelegate::CreateAppListViewDelegate() {
   return new AppListViewDelegate;
 }
 
-std::vector<aura::Window*> ChromeShellDelegate::GetCycleWindowList() const {
+std::vector<aura::Window*> ChromeShellDelegate::GetCycleWindowList(
+    CycleOrder order) const {
   std::vector<aura::Window*> windows;
-  // BrowserList maintains a list of browsers sorted by activity.
-  for (BrowserList::const_reverse_iterator it =
-           BrowserList::begin_last_active();
-       it != BrowserList::end_last_active();
-       ++it) {
-    Browser* browser = *it;
-    // Only cycle through tabbed browsers.
-    if (browser &&
-        browser->is_type_tabbed() &&
-        browser->window()->GetNativeHandle())
-      windows.push_back(browser->window()->GetNativeHandle());
+  switch (order) {
+    case ORDER_MRU:
+      // BrowserList maintains a list of browsers sorted by activity.
+      windows = GetTabbedBrowserWindows(BrowserList::begin_last_active(),
+                                        BrowserList::end_last_active());
+      break;
+    case ORDER_LINEAR:
+      // Just return windows in creation order.
+      windows = GetTabbedBrowserWindows(BrowserList::begin(),
+                                        BrowserList::end());
+      break;
+    default:
+      NOTREACHED();
+      break;
   }
   return windows;
 }
