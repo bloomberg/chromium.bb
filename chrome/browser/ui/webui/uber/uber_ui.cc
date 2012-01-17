@@ -67,7 +67,7 @@ UberUI::~UberUI() {
 
 void UberUI::RegisterSubpage(const std::string& page_url) {
   WebUI* web_ui = ChromeWebUIFactory::GetInstance()->CreateWebUIForURL(
-          web_contents_, GURL(page_url));
+      web_contents_, GURL(page_url));
 
   web_ui->set_frame_xpath("//iframe[@src='" + page_url + "']");
   sub_uis_[page_url] = web_ui;

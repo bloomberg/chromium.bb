@@ -36,9 +36,12 @@
 }
 
 .iframe-container {
+  -webkit-margin-start: -20px;
+  -webkit-transition: margin 100ms, opacity 100ms;
   background-color: white;
   bottom: 0;
   left: 155px;
+  opacity: 0;
   position: absolute;
   right: 0;
   top: 0;
@@ -51,6 +54,10 @@ html[dir="rtl"] .iframe-container {
 }
 
 .iframe-container.selected {
+  -webkit-margin-start: 0;
+  -webkit-transition: margin 200ms, opacity 200ms;
+  -webkit-transition-delay: 100ms;
+  opacity: 1;
   z-index: 2;
 }
 
