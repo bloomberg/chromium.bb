@@ -1,6 +1,8 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+//
+// This file defines utility functions for eliding and formatting UI text.
 
 #ifndef UI_BASE_TEXT_TEXT_ELIDER_H_
 #define UI_BASE_TEXT_TEXT_ELIDER_H_
@@ -98,6 +100,8 @@ class UI_EXPORT SortedDisplayURL {
   size_t prefix_end_;
 
   string16 display_url_;
+
+  DISALLOW_COPY_AND_ASSIGN(SortedDisplayURL);
 };
 
 // Functions to elide strings when the font information is unknown.  As

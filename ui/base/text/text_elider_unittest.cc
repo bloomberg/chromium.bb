@@ -1,6 +1,10 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+//
+// Unit tests for eliding and formatting utility functions.
+
+#include "ui/base/text/text_elider.h"
 
 #include "base/file_path.h"
 #include "base/i18n/rtl.h"
@@ -9,7 +13,6 @@
 #include "base/utf_string_conversions.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/text/text_elider.h"
 #include "ui/gfx/font.h"
 
 namespace ui {
@@ -231,8 +234,8 @@ TEST(TextEliderTest, ElideTextTruncate) {
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
-    string16 result = ui::ElideText(UTF8ToUTF16(cases[i].input), font,
-                                    cases[i].width, ui::TRUNCATE_AT_END);
+    string16 result = ElideText(UTF8ToUTF16(cases[i].input), font,
+                                cases[i].width, TRUNCATE_AT_END);
     EXPECT_EQ(cases[i].output, UTF16ToUTF8(result));
   }
 }
@@ -271,13 +274,13 @@ TEST(TextEliderTest, ElideTextSurrogatePairs) {
   // Elide |kTextString| to all possible widths and check that no instance of
   // |kSurrogate| was split in two.
   for (int width = 0; width <= kTestStringWidth; width++) {
-    result = ui::ElideText(kTestString, font, width, ui::TRUNCATE_AT_END);
+    result = ElideText(kTestString, font, width, TRUNCATE_AT_END);
     CheckSurrogatePairs(result, kSurrogateFirstChar, kSurrogateSecondChar);
 
-    result = ui::ElideText(kTestString, font, width, ui::ELIDE_AT_END);
+    result = ElideText(kTestString, font, width, ELIDE_AT_END);
     CheckSurrogatePairs(result, kSurrogateFirstChar, kSurrogateSecondChar);
 
-    result = ui::ElideText(kTestString, font, width, ui::ELIDE_IN_MIDDLE);
+    result = ElideText(kTestString, font, width, ELIDE_IN_MIDDLE);
     CheckSurrogatePairs(result, kSurrogateFirstChar, kSurrogateSecondChar);
   }
 }
@@ -314,10 +317,10 @@ TEST(TextEliderTest, ElideTextLongStrings) {
     EXPECT_EQ(testcases_end[i].output.size(),
               ElideText(testcases_end[i].input, font,
                         font.GetStringWidth(testcases_end[i].output),
-                        ui::ELIDE_AT_END).size());
+                        ELIDE_AT_END).size());
     EXPECT_EQ(kEllipsisStr,
               ElideText(testcases_end[i].input, font, ellipsis_width,
-                        ui::ELIDE_AT_END));
+                        ELIDE_AT_END));
   }
 
   size_t number_of_trailing_as = (data_scheme_length + number_of_as) / 2;
@@ -339,16 +342,16 @@ TEST(TextEliderTest, ElideTextLongStrings) {
     EXPECT_EQ(testcases_middle[i].output.size(),
               ElideText(testcases_middle[i].input, font,
                         font.GetStringWidth(testcases_middle[i].output),
-                        ui::ELIDE_AT_END).size());
+                        ELIDE_AT_END).size());
     EXPECT_EQ(kEllipsisStr,
               ElideText(testcases_middle[i].input, font, ellipsis_width,
-                        ui::ELIDE_AT_END));
+                        ELIDE_AT_END));
   }
 }
 
 // Verifies display_url is set correctly.
 TEST(TextEliderTest, SortedDisplayURL) {
-  ui::SortedDisplayURL d_url(GURL("http://www.google.com"), std::string());
+  SortedDisplayURL d_url(GURL("http://www.google.com"), std::string());
   EXPECT_EQ("www.google.com", UTF16ToASCII(d_url.display_url()));
 }
 
@@ -383,8 +386,8 @@ TEST(TextEliderTest, SortedDisplayURLCompare) {
   };
 
   for (size_t i = 0; i < arraysize(tests); ++i) {
-    ui::SortedDisplayURL url1(GURL(tests[i].a), std::string());
-    ui::SortedDisplayURL url2(GURL(tests[i].b), std::string());
+    SortedDisplayURL url1(GURL(tests[i].a), std::string());
+    SortedDisplayURL url2(GURL(tests[i].b), std::string());
     EXPECT_EQ(tests[i].compare_result, url1.Compare(url2, collator.get()));
     EXPECT_EQ(-tests[i].compare_result, url2.Compare(url1, collator.get()));
   }
@@ -412,16 +415,17 @@ TEST(TextEliderTest, ElideString) {
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
     string16 output;
     EXPECT_EQ(cases[i].result,
-              ui::ElideString(UTF8ToUTF16(cases[i].input),
-                              cases[i].max_len, &output));
+              ElideString(UTF8ToUTF16(cases[i].input),
+                          cases[i].max_len, &output));
     EXPECT_EQ(cases[i].output, UTF16ToUTF8(output));
   }
 }
 
 TEST(TextEliderTest, ElideRectangleText) {
   const gfx::Font font;
-  const int kLineHeight = font.GetHeight();
-  const int kTestWidth = font.GetStringWidth(ASCIIToUTF16("Test"));
+  const int line_height = font.GetHeight();
+  const int test_width = font.GetStringWidth(ASCIIToUTF16("Test"));
+
   struct TestData {
     const char* input;
     int available_pixel_width;
@@ -431,32 +435,32 @@ TEST(TextEliderTest, ElideRectangleText) {
   } cases[] = {
     { "", 0, 0, false, NULL },
     { "", 1, 1, false, NULL },
-    { "Test", kTestWidth, 0, true, NULL },
-    { "Test", kTestWidth, 1, false, "Test" },
-    { "Test", kTestWidth, kLineHeight, false, "Test" },
-    { "Test Test", kTestWidth, kLineHeight, true, "Test" },
-    { "Test Test", kTestWidth, kLineHeight + 1, false, "Test|Test" },
-    { "Test Test", kTestWidth, kLineHeight * 2, false, "Test|Test" },
-    { "Test Test", kTestWidth, kLineHeight * 3, false, "Test|Test" },
-    { "Test Test", kTestWidth * 2, kLineHeight * 2, false, "Test|Test" },
-    { "Test Test", kTestWidth * 3, kLineHeight, false, "Test Test" },
-    { "Test\nTest", kTestWidth * 3, kLineHeight * 2, false, "Test|Test" },
-    { "Te\nst Te", kTestWidth, kLineHeight * 3, false, "Te|st|Te" },
-    { "\nTest", kTestWidth, kLineHeight * 2, false, "|Test" },
-    { "\nTest", kTestWidth, kLineHeight, true, "" },
-    { "\n\nTest", kTestWidth, kLineHeight * 3, false, "||Test" },
-    { "\n\nTest", kTestWidth, kLineHeight * 2, true, "|" },
+    { "Test", test_width, 0, true, NULL },
+    { "Test", test_width, 1, false, "Test" },
+    { "Test", test_width, line_height, false, "Test" },
+    { "Test Test", test_width, line_height, true, "Test" },
+    { "Test Test", test_width, line_height + 1, false, "Test|Test" },
+    { "Test Test", test_width, line_height * 2, false, "Test|Test" },
+    { "Test Test", test_width, line_height * 3, false, "Test|Test" },
+    { "Test Test", test_width * 2, line_height * 2, false, "Test|Test" },
+    { "Test Test", test_width * 3, line_height, false, "Test Test" },
+    { "Test\nTest", test_width * 3, line_height * 2, false, "Test|Test" },
+    { "Te\nst Te", test_width, line_height * 3, false, "Te|st|Te" },
+    { "\nTest", test_width, line_height * 2, false, "|Test" },
+    { "\nTest", test_width, line_height, true, "" },
+    { "\n\nTest", test_width, line_height * 3, false, "||Test" },
+    { "\n\nTest", test_width, line_height * 2, true, "|" },
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
     std::vector<string16> lines;
     EXPECT_EQ(cases[i].truncated,
-              ui::ElideRectangleText(UTF8ToUTF16(cases[i].input),
-                                     font,
-                                     cases[i].available_pixel_width,
-                                     cases[i].available_pixel_height,
-                                     ui::TRUNCATE_LONG_WORDS,
-                                     &lines));
+              ElideRectangleText(UTF8ToUTF16(cases[i].input),
+                                 font,
+                                 cases[i].available_pixel_width,
+                                 cases[i].available_pixel_height,
+                                 TRUNCATE_LONG_WORDS,
+                                 &lines));
     if (cases[i].output)
       EXPECT_EQ(cases[i].output, UTF16ToUTF8(JoinString(lines, '|')));
     else
@@ -466,9 +470,10 @@ TEST(TextEliderTest, ElideRectangleText) {
 
 TEST(TextEliderTest, ElideRectangleTextPunctuation) {
   const gfx::Font font;
-  const int kLineHeight = font.GetHeight();
-  const int kTestWidth = font.GetStringWidth(ASCIIToUTF16("Test"));
-  const int kTestTWidth = font.GetStringWidth(ASCIIToUTF16("Test T"));
+  const int line_height = font.GetHeight();
+  const int test_width = font.GetStringWidth(ASCIIToUTF16("Test"));
+  const int test_t_width = font.GetStringWidth(ASCIIToUTF16("Test T"));
+
   struct TestData {
     const char* input;
     int available_pixel_width;
@@ -477,23 +482,23 @@ TEST(TextEliderTest, ElideRectangleTextPunctuation) {
     bool truncated;
     const char* output;
   } cases[] = {
-    { "Test T.", kTestTWidth, kLineHeight * 2, false, false, "Test|T." },
-    { "Test T ?", kTestTWidth, kLineHeight * 2, false, false, "Test|T ?" },
-    { "Test. Test", kTestWidth, kLineHeight * 3, false, false, "Test|Test" },
-    { "Test. Test", kTestWidth, kLineHeight * 3, true, false, "Test|.|Test" },
+    { "Test T.", test_t_width, line_height * 2, false, false, "Test|T." },
+    { "Test T ?", test_t_width, line_height * 2, false, false, "Test|T ?" },
+    { "Test. Test", test_width, line_height * 3, false, false, "Test|Test" },
+    { "Test. Test", test_width, line_height * 3, true, false, "Test|.|Test" },
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
     std::vector<string16> lines;
-    ui::WordWrapBehavior wrap_behavior =
-        (cases[i].wrap_words ? ui::WRAP_LONG_WORDS : ui::TRUNCATE_LONG_WORDS);
+    const WordWrapBehavior wrap_behavior =
+        (cases[i].wrap_words ? WRAP_LONG_WORDS : TRUNCATE_LONG_WORDS);
     EXPECT_EQ(cases[i].truncated,
-              ui::ElideRectangleText(UTF8ToUTF16(cases[i].input),
-                                     font,
-                                     cases[i].available_pixel_width,
-                                     cases[i].available_pixel_height,
-                                     wrap_behavior,
-                                     &lines));
+              ElideRectangleText(UTF8ToUTF16(cases[i].input),
+                                 font,
+                                 cases[i].available_pixel_width,
+                                 cases[i].available_pixel_height,
+                                 wrap_behavior,
+                                 &lines));
     if (cases[i].output)
       EXPECT_EQ(cases[i].output, UTF16ToUTF8(JoinString(lines, '|')));
     else
@@ -505,52 +510,52 @@ TEST(TextEliderTest, ElideRectangleTextLongWords) {
   const gfx::Font font;
   const int kAvailableHeight = 1000;
   const string16 kElidedTesting = UTF8ToUTF16(std::string("Tes") + kEllipsis);
-  const int kElidedWidth = font.GetStringWidth(kElidedTesting);
-  const int kTestWidth = font.GetStringWidth(ASCIIToUTF16("Test"));
+  const int elided_width = font.GetStringWidth(kElidedTesting);
+  const int test_width = font.GetStringWidth(ASCIIToUTF16("Test"));
 
   struct TestData {
     const char* input;
     int available_pixel_width;
-    ui::WordWrapBehavior wrap_behavior;
+    WordWrapBehavior wrap_behavior;
     const char* output;
   } cases[] = {
-    { "Testing", kTestWidth, ui::IGNORE_LONG_WORDS, "Testing" },
-    { "X Testing", kTestWidth, ui::IGNORE_LONG_WORDS, "X|Testing" },
-    { "Test Testing", kTestWidth, ui::IGNORE_LONG_WORDS, "Test|Testing" },
-    { "Test\nTesting", kTestWidth, ui::IGNORE_LONG_WORDS, "Test|Testing" },
-    { "Test Tests ", kTestWidth, ui::IGNORE_LONG_WORDS, "Test|Tests" },
-    { "Test Tests T", kTestWidth, ui::IGNORE_LONG_WORDS, "Test|Tests|T" },
+    { "Testing", test_width, IGNORE_LONG_WORDS, "Testing" },
+    { "X Testing", test_width, IGNORE_LONG_WORDS, "X|Testing" },
+    { "Test Testing", test_width, IGNORE_LONG_WORDS, "Test|Testing" },
+    { "Test\nTesting", test_width, IGNORE_LONG_WORDS, "Test|Testing" },
+    { "Test Tests ", test_width, IGNORE_LONG_WORDS, "Test|Tests" },
+    { "Test Tests T", test_width, IGNORE_LONG_WORDS, "Test|Tests|T" },
 
-    { "Testing", kElidedWidth, ui::ELIDE_LONG_WORDS, "Tes..." },
-    { "X Testing", kElidedWidth, ui::ELIDE_LONG_WORDS, "X|Tes..." },
-    { "Test Testing", kElidedWidth, ui::ELIDE_LONG_WORDS, "Test|Tes..." },
-    { "Test\nTesting", kElidedWidth, ui::ELIDE_LONG_WORDS, "Test|Tes..." },
+    { "Testing", elided_width, ELIDE_LONG_WORDS, "Tes..." },
+    { "X Testing", elided_width, ELIDE_LONG_WORDS, "X|Tes..." },
+    { "Test Testing", elided_width, ELIDE_LONG_WORDS, "Test|Tes..." },
+    { "Test\nTesting", elided_width, ELIDE_LONG_WORDS, "Test|Tes..." },
 
-    { "Testing", kTestWidth, ui::TRUNCATE_LONG_WORDS, "Test" },
-    { "X Testing", kTestWidth, ui::TRUNCATE_LONG_WORDS, "X|Test" },
-    { "Test Testing", kTestWidth, ui::TRUNCATE_LONG_WORDS, "Test|Test" },
-    { "Test\nTesting", kTestWidth, ui::TRUNCATE_LONG_WORDS, "Test|Test" },
-    { "Test Tests ", kTestWidth, ui::TRUNCATE_LONG_WORDS, "Test|Test" },
-    { "Test Tests T", kTestWidth, ui::TRUNCATE_LONG_WORDS, "Test|Test|T" },
+    { "Testing", test_width, TRUNCATE_LONG_WORDS, "Test" },
+    { "X Testing", test_width, TRUNCATE_LONG_WORDS, "X|Test" },
+    { "Test Testing", test_width, TRUNCATE_LONG_WORDS, "Test|Test" },
+    { "Test\nTesting", test_width, TRUNCATE_LONG_WORDS, "Test|Test" },
+    { "Test Tests ", test_width, TRUNCATE_LONG_WORDS, "Test|Test" },
+    { "Test Tests T", test_width, TRUNCATE_LONG_WORDS, "Test|Test|T" },
 
-    { "Testing", kTestWidth, ui::WRAP_LONG_WORDS, "Test|ing" },
-    { "X Testing", kTestWidth, ui::WRAP_LONG_WORDS, "X|Test|ing" },
-    { "Test Testing", kTestWidth, ui::WRAP_LONG_WORDS, "Test|Test|ing" },
-    { "Test\nTesting", kTestWidth, ui::WRAP_LONG_WORDS, "Test|Test|ing" },
-    { "Test Tests ", kTestWidth, ui::WRAP_LONG_WORDS, "Test|Test|s" },
-    { "Test Tests T", kTestWidth, ui::WRAP_LONG_WORDS, "Test|Test|s T" },
-    { "TestTestTest", kTestWidth, ui::WRAP_LONG_WORDS, "Test|Test|Test" },
-    { "TestTestTestT", kTestWidth, ui::WRAP_LONG_WORDS, "Test|Test|Test|T" },
+    { "Testing", test_width, WRAP_LONG_WORDS, "Test|ing" },
+    { "X Testing", test_width, WRAP_LONG_WORDS, "X|Test|ing" },
+    { "Test Testing", test_width, WRAP_LONG_WORDS, "Test|Test|ing" },
+    { "Test\nTesting", test_width, WRAP_LONG_WORDS, "Test|Test|ing" },
+    { "Test Tests ", test_width, WRAP_LONG_WORDS, "Test|Test|s" },
+    { "Test Tests T", test_width, WRAP_LONG_WORDS, "Test|Test|s T" },
+    { "TestTestTest", test_width, WRAP_LONG_WORDS, "Test|Test|Test" },
+    { "TestTestTestT", test_width, WRAP_LONG_WORDS, "Test|Test|Test|T" },
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
     std::vector<string16> lines;
-    ui::ElideRectangleText(UTF8ToUTF16(cases[i].input),
-                           font,
-                           cases[i].available_pixel_width,
-                           kAvailableHeight,
-                           cases[i].wrap_behavior,
-                           &lines);
+    ElideRectangleText(UTF8ToUTF16(cases[i].input),
+                       font,
+                       cases[i].available_pixel_width,
+                       kAvailableHeight,
+                       cases[i].wrap_behavior,
+                       &lines);
     std::string expected_output(cases[i].output);
     ReplaceSubstringsAfterOffset(&expected_output, 0, "...", kEllipsis);
     EXPECT_EQ(expected_output, UTF16ToUTF8(JoinString(lines, '|')));
@@ -633,9 +638,9 @@ TEST(TextEliderTest, ElideRectangleString) {
   string16 output;
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
     EXPECT_EQ(cases[i].result,
-              ui::ElideRectangleString(UTF8ToUTF16(cases[i].input),
-                                       cases[i].max_rows, cases[i].max_cols,
-                                       true, &output));
+              ElideRectangleString(UTF8ToUTF16(cases[i].input),
+                                   cases[i].max_rows, cases[i].max_cols,
+                                   true, &output));
     EXPECT_EQ(cases[i].output, UTF16ToUTF8(output));
   }
 }
@@ -715,9 +720,9 @@ TEST(TextEliderTest, ElideRectangleStringNotStrict) {
   string16 output;
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
     EXPECT_EQ(cases[i].result,
-              ui::ElideRectangleString(UTF8ToUTF16(cases[i].input),
-                                       cases[i].max_rows, cases[i].max_cols,
-                                       false, &output));
+              ElideRectangleString(UTF8ToUTF16(cases[i].input),
+                                   cases[i].max_rows, cases[i].max_cols,
+                                   false, &output));
     EXPECT_EQ(cases[i].output, UTF16ToUTF8(output));
   }
 }
@@ -735,9 +740,9 @@ TEST(TextEliderTest, ElideRectangleWide16) {
       L"\x03a0\x03b1\x03b3\x03ba\x03cc\x03c3\x03bc\x03b9\x03bf\x03c2\x0020\n"
       L"\x0399\x03c3\x03c4\x03cc\x03c2"));
   string16 output;
-  EXPECT_TRUE(ui::ElideRectangleString(str, 2, 4, true, &output));
+  EXPECT_TRUE(ElideRectangleString(str, 2, 4, true, &output));
   EXPECT_EQ(out1, output);
-  EXPECT_FALSE(ui::ElideRectangleString(str, 2, 12, true, &output));
+  EXPECT_FALSE(ElideRectangleString(str, 2, 12, true, &output));
   EXPECT_EQ(out2, output);
 }
 
@@ -750,7 +755,7 @@ TEST(TextEliderTest, ElideRectangleWide32) {
       "\xF0\x9D\x92\x9C\xF0\x9D\x92\x9C\xF0\x9D\x92\x9C\n"
       "\xF0\x9D\x92\x9C \naaa\n..."));
   string16 output;
-  EXPECT_TRUE(ui::ElideRectangleString(str, 3, 3, true, &output));
+  EXPECT_TRUE(ElideRectangleString(str, 3, 3, true, &output));
   EXPECT_EQ(out, output);
 }
 
@@ -758,27 +763,27 @@ TEST(TextEliderTest, TruncateString) {
   string16 string = ASCIIToUTF16("foooooey    bxxxar baz");
 
   // Make sure it doesn't modify the string if length > string length.
-  EXPECT_EQ(string, ui::TruncateString(string, 100));
+  EXPECT_EQ(string, TruncateString(string, 100));
 
   // Test no characters.
-  EXPECT_EQ(L"", UTF16ToWide(ui::TruncateString(string, 0)));
+  EXPECT_EQ(L"", UTF16ToWide(TruncateString(string, 0)));
 
   // Test 1 character.
-  EXPECT_EQ(L"\x2026", UTF16ToWide(ui::TruncateString(string, 1)));
+  EXPECT_EQ(L"\x2026", UTF16ToWide(TruncateString(string, 1)));
 
   // Test adds ... at right spot when there is enough room to break at a
   // word boundary.
-  EXPECT_EQ(L"foooooey\x2026", UTF16ToWide(ui::TruncateString(string, 14)));
+  EXPECT_EQ(L"foooooey\x2026", UTF16ToWide(TruncateString(string, 14)));
 
   // Test adds ... at right spot when there is not enough space in first word.
-  EXPECT_EQ(L"f\x2026", UTF16ToWide(ui::TruncateString(string, 2)));
+  EXPECT_EQ(L"f\x2026", UTF16ToWide(TruncateString(string, 2)));
 
   // Test adds ... at right spot when there is not enough room to break at a
   // word boundary.
-  EXPECT_EQ(L"foooooey\x2026", UTF16ToWide(ui::TruncateString(string, 11)));
+  EXPECT_EQ(L"foooooey\x2026", UTF16ToWide(TruncateString(string, 11)));
 
   // Test completely truncates string if break is on initial whitespace.
-  EXPECT_EQ(L"\x2026", UTF16ToWide(ui::TruncateString(ASCIIToUTF16("   "), 2)));
+  EXPECT_EQ(L"\x2026", UTF16ToWide(TruncateString(ASCIIToUTF16("   "), 2)));
 }
 
 }  // namespace ui
