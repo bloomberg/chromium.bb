@@ -329,3 +329,22 @@ def SignInToSyncAndVerifyState(test, account_key):
   test.assertTrue(test.SignInToSync(username, password))
   test.assertTrue(test.GetSyncInfo()['summary'] == 'READY')
   test.assertTrue(test.GetSyncInfo()['last synced'] == 'Just now')
+
+
+def LoginToDevice(test, test_account='test_google_account'):
+  """Login to the Chromeos device using the given test account.
+
+  If no test account is specified, we use test_google_account as the default.
+  You can choose test accounts from -
+  chrome/test/data/pyauto_private/private_tests_info.txt 
+
+  Args:
+    test_account: The account used to login to the Chromeos device.
+  """
+  if not test.GetLoginInfo()['is_logged_in']:
+    credentials = test.GetPrivateInfo()[test_account]
+    test.Login(credentials['username'], credentials['password'])
+    login_info = test.GetLoginInfo()
+    test.assertTrue(login_info['is_logged_in'], msg='Login failed.')
+  else:
+    test.fail(msg='Another user is already logged in. Please logout first.')

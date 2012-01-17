@@ -4,6 +4,7 @@
 # found in the LICENSE file.
 
 import os
+import test_utils
 
 import pyauto_functional
 import chromeos_network  # pyauto_functional must come before chromeos_network
@@ -16,31 +17,11 @@ class ChromeosWifiFunctional(chromeos_network.PyNetworkUITest):
   These tests should be run within vacinity of the power strip where the wifi
   routers are attached.
   """
-
-  def _LoginDevice(self, test_account='test_google_account'):
-    """Logs into the device and cleans up flimflam profile.
-
-    Args: 
-      test_account: The account used to login to the device.
-    """
-    if not self.GetLoginInfo()['is_logged_in']:
-      credentials = self.GetPrivateInfo()[test_account]
-      self.Login(credentials['username'], credentials['password'])
-      login_info = self.GetLoginInfo()
-      self.assertTrue(login_info['is_logged_in'], msg='Login failed.')
-
-    ff_dir = '/home/chronos/user/flimflam'
-    self.assertTrue(os.path.isdir(ff_dir), 'User is logged in but user '
-                    'flimflam profile is not present.')
-
-    # Clean up the items in the flimflam profile directory.
-    for item in os.listdir(ff_dir):
-      pyauto_utils.RemovePath(os.path.join(ff_dir, item))
-
-  def tearDown(self):
+ 
+  def setUp(self):
+    chromeos_network.PyNetworkUITest.setUp(self)
     if self.GetLoginInfo().get('is_logged_in'):
       self.Logout()
-    chromeos_network.PyNetworkUITest.tearDown(self)
 
   def _SetupRouter(self, router_name):
     """Turn on the router and wait for it to come on.
@@ -99,7 +80,7 @@ class ChromeosWifiFunctional(chromeos_network.PyNetworkUITest):
     profile
     """
     router_name = 'D-Link_N150'
-    self._LoginDevice()
+    test_utils.LoginToDevice(self)
     router = self._SetupRouter(router_name)
     error = self.ConnectToWifiRouter(router_name, shared=True)
     self.assertFalse(error, 'Failed to connect to wifi network %s. '
@@ -118,7 +99,7 @@ class ChromeosWifiFunctional(chromeos_network.PyNetworkUITest):
     profile
     """
     router_name = 'D-Link_N150'
-    self._LoginDevice()
+    test_utils.LoginToDevice(self)
     router = self._SetupRouter(router_name)
     error = self.ConnectToWifiRouter(router_name, shared=False)
     self.assertFalse(error, 'Failed to connect to wifi network %s. '
@@ -137,7 +118,7 @@ class ChromeosWifiFunctional(chromeos_network.PyNetworkUITest):
     for all the users.
     """
     router_name = 'Trendnet_639gr_4'
-    self._LoginDevice()
+    test_utils.LoginToDevice(self)
     router = self._SetupRouter(router_name)
     error = self.ConnectToWifiRouter(router_name)
     self.assertFalse(error, msg='Failed to connect to wifi network %s. '
@@ -146,14 +127,14 @@ class ChromeosWifiFunctional(chromeos_network.PyNetworkUITest):
     self.assertTrue(service_path in self.GetNetworkInfo()['remembered_wifi'],
                     msg='Open wifi is not remembered for the current user.')
     self.Logout()
-    self._LoginDevice(test_account='test_google_account_2')
+    test_utils.LoginToDevice(self, test_account='test_google_account_2')
     self.assertTrue(service_path in self.NetworkScan()['remembered_wifi'],
                     msg='Open network is not shared with other users.')
 
   def testConnectToSharedHiddenNetwork(self):
     """Can connect to shared hidden network and verify that it's shared."""
     router_name = 'Netgear_WGR614'
-    self._LoginDevice()
+    test_utils.LoginToDevice(self)
     router = self._SetupRouter(router_name)
     error = self.ConnectToWifiRouter(router_name)
     self.assertFalse(error, msg='Failed to connect to hidden network %s. '
@@ -162,7 +143,7 @@ class ChromeosWifiFunctional(chromeos_network.PyNetworkUITest):
     self.assertTrue(service_path in self.NetworkScan()['remembered_wifi'],
                     msg='Hidden network is not added to the remembered list.')
     self.Logout()
-    self._LoginDevice(test_account='test_google_account_2')
+    test_utils.LoginToDevice(self, test_account='test_google_account_2')
     self.assertTrue(service_path in self.NetworkScan()['remembered_wifi'],
                     msg='Shared hidden network is not in other user\'s '
                     'remembered list.')
@@ -173,7 +154,7 @@ class ChromeosWifiFunctional(chromeos_network.PyNetworkUITest):
     Verify that it is not shared with other users.
     """  
     router_name = 'Linksys_WRT54GL'
-    self._LoginDevice()
+    test_utils.LoginToDevice(self)
     router = self._SetupRouter(router_name)
     error = self.ConnectToWifiRouter(router_name, shared=False)
     self.assertFalse(error, msg='Failed to connect to hidden network %s. '
@@ -182,7 +163,7 @@ class ChromeosWifiFunctional(chromeos_network.PyNetworkUITest):
     self.assertTrue(service_path in self.NetworkScan()['remembered_wifi'],
                     msg='Hidden network is not added to the remembered list.')
     self.Logout()
-    self._LoginDevice(test_account='test_google_account_2')
+    test_utils.LoginToDevice(self, test_account='test_google_account_2')
     self.assertFalse(service_path in self.NetworkScan()['remembered_wifi'],
                      msg='Non-shared hidden network %s is shared.'
                      % router['ssid'])
@@ -201,7 +182,7 @@ class ChromeosWifiFunctional(chromeos_network.PyNetworkUITest):
                             'Reason: %s.' % (router['ssid'], error))
     service_path = self.GetServicePath(router['ssid'])
     self._VerifyIfConnectedToNetwork(router['ssid'], 'Connected')   
-    self._LoginDevice()
+    test_utils.LoginToDevice(self)
     self.assertTrue(service_path in self.NetworkScan()['remembered_wifi'],
                     msg='Network is not added to the remembered list.')
 
