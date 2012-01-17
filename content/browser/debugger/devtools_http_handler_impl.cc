@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -268,8 +268,13 @@ struct PageInfo
   std::string title;
   std::string thumbnail_url;
   std::string favicon_url;
+  base::TimeTicks last_selected_time;
 };
 typedef std::vector<PageInfo> PageList;
+
+static bool SortPageListByTime(const PageInfo& info1, const PageInfo& info2) {
+  return info1.last_selected_time > info2.last_selected_time;
+}
 
 static PageList GeneratePageList(
     DevToolsHttpHandlerDelegate* delegate,
@@ -301,8 +306,10 @@ static PageList GeneratePageList(
     page_info.title = UTF16ToUTF8(net::EscapeForHTML(entry->GetTitle()));
     page_info.thumbnail_url = "/thumb/" + entry->GetURL().spec();
     page_info.favicon_url = entry->GetFavicon().url.spec();
+    page_info.last_selected_time = web_contents->GetLastSelectedTime();
     page_list.push_back(page_info);
   }
+  std::sort(page_list.begin(), page_list.end(), SortPageListByTime);
   return page_list;
 }
 
