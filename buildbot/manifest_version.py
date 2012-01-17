@@ -468,7 +468,7 @@ class BuildSpecsManager(object):
     self.latest_passed = self._LatestSpecFromDir(version_info, self.pass_dir)
 
     # Calculate latest processed spec.
-    dirs = (self.pass_dir, self.fail_dir, self.inflight_dir)
+    dirs = (self.pass_dir, self.fail_dir,  self.inflight_dir)
     self.latest_processed = self._LatestSpecFromList(
         filter(None, [self._LatestSpecFromDir(version_info, d) for d in dirs]))
 
@@ -492,7 +492,7 @@ class BuildSpecsManager(object):
     return VersionInfo(version_file=version_file_path,
                        incr_type=self.incr_type)
 
-  def _CreateNewBuildSpec(self, version_info, sync=True):
+  def _CreateNewBuildSpec(self, version_info):
     """Generates a new buildspec for the builders to consume.
 
     Checks to see, if there are new changes that need to be built from the
@@ -502,7 +502,6 @@ class BuildSpecsManager(object):
 
     Args:
       version_info: Info class for version information of cros.
-      sync: Re-sync after incrementing the version.
     Returns:
       next build number: on new changes or
       None: on no new changes
@@ -520,8 +519,8 @@ class BuildSpecsManager(object):
       version = version_info.IncrementVersion(message, dry_run=self.dry_run)
       logging.debug('Incremented version number to  %s', version)
       # TODO(ferringb): Gut cleanup=False hack- see http://crosbug.com/24709.
-      if sync: self.cros_source.Sync(repository.RepoRepository.DEFAULT_MANIFEST,
-                                     cleanup=False)
+      self.cros_source.Sync(repository.RepoRepository.DEFAULT_MANIFEST,
+                            cleanup=False)
 
     spec_file = '%s.xml' % os.path.join(self.all_specs_dir, version)
     if not os.path.exists(os.path.dirname(spec_file)):

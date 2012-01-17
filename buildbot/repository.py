@@ -175,7 +175,8 @@ class RepoRepository(object):
         # selfupdate prior to sync'ing.  Repo's first sync is  the manifest.
         # if we're deploying a new manifest that uses new repo functionality,
         # we have to repo up to date else it would fail.
-        cros_lib.RunCommand(['repo', 'selfupdate'], cwd=self.directory)
+        cros_lib.RunCommand(['repo', 'selfupdate'],
+                             cwd=self.directory)
 
       if cleanup:
         configure_repo.FixBrokenExistingRepos(self.directory)
@@ -192,7 +193,8 @@ class RepoRepository(object):
       raise SrcCheckOutException(err_msg)
 
     if self._stable_sync:
-      logging.info('Syncing cros-workon repositories to last stable commit.')
+      cros_lib.Info('Syncing cros-workon repositories '
+                    'to last stable commit.')
       self._SyncToEBuilds()
 
   def GetRelativePath(self, path):

@@ -172,11 +172,11 @@ class GerritPatch(Patch):
       if trivial: git_rb.extend(['--strategy', 'resolve', '-X', 'trivial'])
       git_rb.extend(['--onto', branch, upstream, 'FETCH_HEAD'])
       # Run the rebase command.
-      cros_lib.RunCommand(git_rb, cwd=project_dir, print_cmd=False)
+      cros_lib.RunCommand(git_rb, cwd=project_dir)
 
     except cros_lib.RunCommandError:
       cros_lib.RunCommand(['git', 'rebase', '--abort'], cwd=project_dir,
-                          error_ok=True, print_cmd=False)
+                          error_ok=True)
       raise
 
   def _RebasePatch(self, buildroot, project_dir, trivial):
@@ -196,12 +196,11 @@ class GerritPatch(Patch):
     """
     url = self._GetProjectUrl()
     upstream = _GetProjectManifestBranch(buildroot, self.project)
-    cros_lib.RunCommand(['git', 'fetch', url, self.ref], cwd=project_dir,
-                        print_cmd=False)
+    cros_lib.RunCommand(['git', 'fetch', url, self.ref], cwd=project_dir)
     try:
       self._RebaseOnto(constants.PATCH_BRANCH, upstream, project_dir, trivial)
       cros_lib.RunCommand(['git', 'checkout', '-B', constants.PATCH_BRANCH],
-                          cwd=project_dir, print_cmd=False)
+                          cwd=project_dir)
     except cros_lib.RunCommandError:
       try:
         # Failed to rebase against branch, try TOT.
@@ -217,7 +216,7 @@ class GerritPatch(Patch):
 
     finally:
       cros_lib.RunCommand(['git', 'checkout', constants.PATCH_BRANCH],
-                          cwd=project_dir, print_cmd=False)
+                          cwd=project_dir)
 
   def Apply(self, buildroot, trivial=False):
     """Implementation of Patch.Apply().
@@ -225,13 +224,12 @@ class GerritPatch(Patch):
     Raises:
       ApplyPatchException: If the patch failed to apply.
     """
-    logging.info('Attempting to apply change %s', self)
     project_dir = cros_lib.GetProjectDir(buildroot, self.project)
     if not cros_lib.DoesLocalBranchExist(project_dir, constants.PATCH_BRANCH):
       upstream = cros_lib.GetManifestDefaultBranch(buildroot)
       cros_lib.RunCommand(['git', 'checkout', '-b', constants.PATCH_BRANCH,
-                           '-t', 'm/' + upstream], cwd=project_dir,
-                          print_cmd=False)
+                           '-t', 'm/' + upstream],
+                          cwd=project_dir)
     self._RebasePatch(buildroot, project_dir, trivial)
 
   # --------------------- Gerrit Operations --------------------------------- #
@@ -321,11 +319,9 @@ class GerritPatch(Patch):
     """Returns the commit message for the patch as a string."""
     url = self._GetProjectUrl()
     project_dir = cros_lib.GetProjectDir(buildroot, self.project)
-    cros_lib.RunCommand(['git', 'fetch', url, self.ref], cwd=project_dir,
-                        print_cmd=False)
+    cros_lib.RunCommand(['git', 'fetch', url, self.ref], cwd=project_dir)
     return_obj = cros_lib.RunCommand(['git', 'show', '-s', 'FETCH_HEAD'],
-                                     cwd=project_dir, redirect_stdout=True,
-                                     print_cmd=False)
+                                     cwd=project_dir, redirect_stdout=True)
     return return_obj.output
 
   def GerritDependencies(self, buildroot):
@@ -342,14 +338,12 @@ class GerritPatch(Patch):
     """
     dependencies = []
     url = self._GetProjectUrl()
-    logging.info('Checking for Gerrit dependencies for change %s', self)
     project_dir = cros_lib.GetProjectDir(buildroot, self.project)
-    cros_lib.RunCommand(['git', 'fetch', url, self.ref], cwd=project_dir,
-                        print_cmd=False)
+    cros_lib.RunCommand(['git', 'fetch', url, self.ref], cwd=project_dir)
     return_obj = cros_lib.RunCommand(
         ['git', 'log', '-z', '%s..FETCH_HEAD^' %
           _GetProjectManifestBranch(buildroot, self.project)],
-        cwd=project_dir, redirect_stdout=True, print_cmd=False)
+        cwd=project_dir, redirect_stdout=True)
 
     for patch_output in return_obj.output.split('\0'):
       if not patch_output: continue
@@ -359,10 +353,8 @@ class GerritPatch(Patch):
       else:
         raise MissingChangeIDException('Missing Change-Id in %s' % patch_output)
 
-    if dependencies:
-      logging.info('Found %s Gerrit dependencies for change %s', dependencies,
-                   self)
-
+    logging.debug('Found %s Gerrit dependencies for change %s', dependencies,
+                  self)
     return dependencies
 
   def PaladinDependencies(self, buildroot):
@@ -380,15 +372,13 @@ class GerritPatch(Patch):
     CQ-DEPEND=10001,10002
     """
     dependencies = []
-    logging.info('Checking for CQ-DEPEND dependencies for change %s', self)
     commit_message = self.CommitMessage(buildroot)
     matches = self._PALADIN_DEPENDENCY_RE.findall(commit_message)
     for match in matches:
       dependencies.extend(self._PALADIN_BUG_RE.findall(match))
 
-    if dependencies:
-      logging.info('Found %s Paladin dependencies for change %s', dependencies,
-                   self)
+    logging.debug('Found %s Paladin dependencies for change %s', dependencies,
+                  self)
     return dependencies
 
   def Submit(self, helper, dryrun=False):

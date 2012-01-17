@@ -144,8 +144,7 @@ class LKGMManagerTest(mox.MoxTestBase):
     lkgm_manager.LKGMManager._LoadSpecs(my_info)
     lkgm_manager.LKGMManager._PrepSpecChanges()
     lkgm_manager.LKGMManager._CreateNewBuildSpec(mox.Func(
-        IsMostRecentCandidate), sync=False).AndReturn(
-            new_candidate.VersionString())
+        IsMostRecentCandidate)).AndReturn(new_candidate.VersionString())
     lkgm_manager.LKGMManager._SetInFlight()
     lkgm_manager.LKGMManager._PushSpecChanges(
         mox.StrContains(new_candidate.VersionString()))
@@ -176,7 +175,7 @@ class LKGMManagerTest(mox.MoxTestBase):
     lkgm_manager.LKGMManager._LoadSpecs(my_info)
     lkgm_manager.LKGMManager._PrepSpecChanges()
     lkgm_manager.LKGMManager._CreateNewBuildSpec(mox.Func(
-        IsMostRecentCandidate), sync=False).AndReturn(None)
+        IsMostRecentCandidate)).AndReturn(None)
 
     self.mox.ReplayAll()
     self.manager.latest = most_recent_candidate.VersionString()

@@ -20,7 +20,6 @@ if __name__ == '__main__':
 from chromite.buildbot import cbuildbot_config
 from chromite.buildbot import configure_repo
 from chromite.buildbot import manifest_version
-from chromite.buildbot import repository
 from chromite.lib import cros_build_lib as cros_lib
 
 # pylint: disable=W0212,R0904
@@ -88,6 +87,7 @@ class HelperMethodsTest(unittest.TestCase):
                          'config',
                          'url.%s.insteadof' % constants.GERRIT_SSH_URL,
                          constants.GIT_HTTP_URL], cwd=git_dir)
+
     manifest_version.PrepForChanges(git_dir, dry_run=True)
 
     # Change something.

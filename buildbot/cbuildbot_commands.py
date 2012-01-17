@@ -12,6 +12,7 @@ import shutil
 import tempfile
 
 from chromite.buildbot import cbuildbot_background as background
+from chromite.buildbot import repository
 from chromite.lib import cros_build_lib as cros_lib
 
 _DEFAULT_RETRIES = 3
@@ -136,6 +137,18 @@ def PreFlightRinse(buildroot):
   _BuildRootGitCleanup(buildroot)
   _CleanUpMountPoints(buildroot)
   cros_lib.RunCommand(['sudo', 'killall', 'kvm'], error_ok=True)
+
+
+def ManifestCheckout(buildroot, tracking_branch, next_manifest, url):
+  """Performs a manifest checkout and clobbers any previous checkouts."""
+
+  print "BUILDROOT: %s" % buildroot
+  print "TRACKING BRANCH: %s" % tracking_branch
+  print "NEXT MANIFEST: %s" % next_manifest
+
+  repo = repository.RepoRepository(url, buildroot, branch=tracking_branch)
+  repo.Sync(next_manifest)
+  repo.ExportManifest('/dev/stderr')
 
 
 def MakeChroot(buildroot, replace, use_sdk, chrome_root=None, extra_env=None):
