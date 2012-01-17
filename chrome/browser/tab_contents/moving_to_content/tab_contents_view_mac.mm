@@ -4,7 +4,7 @@
 
 #import <Carbon/Carbon.h>
 
-#include "chrome/browser/tab_contents/tab_contents_view_mac.h"
+#include "chrome/browser/tab_contents/moving_to_content/tab_contents_view_mac.h"
 
 #include <string>
 
@@ -30,6 +30,7 @@
 
 using WebKit::WebDragOperation;
 using WebKit::WebDragOperationsMask;
+using content::WebContents;
 
 // Ensure that the WebKit::WebDragOperation enum values stay in sync with
 // NSDragOperation constants, since the code below static_casts between 'em.
@@ -62,13 +63,13 @@ COMPILE_ASSERT_MATCHING_ENUM(DragOperationEvery);
 @end
 
 namespace tab_contents_view_mac {
-TabContentsView* CreateTabContentsView(TabContents* tab_contents) {
-  return new TabContentsViewMac(tab_contents);
+TabContentsView* CreateTabContentsView(WebContents* web_contents) {
+  return new TabContentsViewMac(web_contents);
 }
 }
 
-TabContentsViewMac::TabContentsViewMac(TabContents* tab_contents)
-    : tab_contents_(tab_contents),
+TabContentsViewMac::TabContentsViewMac(WebContents* web_contents)
+    : tab_contents_(static_cast<TabContents*>(web_contents)),
       overlaid_view_(nil) {
 }
 

@@ -12,7 +12,7 @@
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/tab_contents/tab_contents_view_mac.h"
+#include "chrome/browser/tab_contents/moving_to_content/tab_contents_view_mac.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_controller.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "ui/gfx/mac/nsimage_cache.h"

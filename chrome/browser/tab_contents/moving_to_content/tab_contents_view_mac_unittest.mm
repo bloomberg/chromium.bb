@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/tab_contents/tab_contents_view_mac.h"
+#import "chrome/browser/tab_contents/moving_to_content/tab_contents_view_mac.h"
 
 #include "base/memory/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"

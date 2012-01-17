@@ -37,12 +37,11 @@ include_rules = [
   "-content/browser/tab_contents/navigation_controller_impl.h",
   "-content/browser/tab_contents/navigation_entry_impl.h",
   "-content/browser/tab_contents/render_view_host_manager.h",
+  "+content/browser/tab_contents/tab_contents.h",
   "-content/browser/plugin_service_impl.h",
   "-content/browser/worker_service_impl.h",
 
   "-content/common",
-  # TODO(jam): remove all the exceptions. BUG=98716
-  "+content/common/view_messages.h",
 
   # Other libraries.
   "+chrome/third_party/hunspell",

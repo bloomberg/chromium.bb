@@ -11,6 +11,8 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 
+using content::WebContents;
+
 namespace {
 
 // We need to have a parent window for the compositing code to work correctly.
@@ -46,9 +48,9 @@ class TempParent : public ui::WindowImpl {
 
 }  // namespace namespace
 
-TabContentsViewWin::TabContentsViewWin(TabContents* tab_contents)
+TabContentsViewWin::TabContentsViewWin(WebContents* web_contents)
     : parent_(NULL),
-      tab_contents_(tab_contents),
+      tab_contents_(static_cast<TabContents*>(web_contents)),
       view_(NULL) {
 }
 

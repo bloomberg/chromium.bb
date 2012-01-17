@@ -35,11 +35,11 @@ BrowserMainParts* ShellContentBrowserClient::CreateBrowserMainParts(
 }
 
 TabContentsView* ShellContentBrowserClient::CreateTabContentsView(
-    TabContents* tab_contents) {
+    WebContents* web_contents) {
 #if defined(OS_WIN)
-  return new TabContentsViewWin(tab_contents);
+  return new TabContentsViewWin(web_contents);
 #elif defined(OS_LINUX)
-  return new TabContentsViewGtk(tab_contents, NULL);
+  return new TabContentsViewGtk(web_contents, NULL);
 #else
   return NULL;
 #endif

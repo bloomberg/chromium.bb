@@ -29,7 +29,7 @@ BrowserMainParts* MockContentBrowserClient::CreateBrowserMainParts(
 }
 
 TabContentsView* MockContentBrowserClient::CreateTabContentsView(
-    TabContents* tab_contents) {
+    WebContents* web_contents) {
   return new TestTabContentsView;
 }
 

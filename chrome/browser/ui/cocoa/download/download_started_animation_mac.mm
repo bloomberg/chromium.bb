@@ -11,7 +11,7 @@
 
 #import <QuartzCore/QuartzCore.h>
 
-#include "chrome/browser/tab_contents/tab_contents_view_mac.h"
+#include "chrome/browser/tab_contents/moving_to_content/tab_contents_view_mac.h"
 #import "chrome/browser/ui/cocoa/animatable_image.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_registrar.h"

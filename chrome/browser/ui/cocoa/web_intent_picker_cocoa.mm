@@ -15,7 +15,7 @@
 #include "chrome/browser/ui/intents/web_intent_picker.h"
 #include "chrome/browser/ui/intents/web_intent_picker_delegate.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/web_contents.h"
 #include "skia/ext/skia_utils_mac.h"
 
 using content::WebContents;
@@ -104,11 +104,11 @@ void WebIntentPickerCocoa::Close() {
 }
 
 WebContents* WebIntentPickerCocoa::SetInlineDisposition(const GURL& url) {
-  TabContents* tab_contents = new TabContents(
+  WebContents* web_contents = WebContents::Create(
       browser_->profile(), NULL, MSG_ROUTING_NONE, NULL, NULL);
-  inline_disposition_tab_contents_.reset(new TabContentsWrapper(tab_contents));
+  inline_disposition_tab_contents_.reset(new TabContentsWrapper(web_contents));
   inline_disposition_delegate_.reset(new InlineHtmlContentDelegate);
-  tab_contents->SetDelegate(inline_disposition_delegate_.get());
+  web_contents->SetDelegate(inline_disposition_delegate_.get());
 
   inline_disposition_tab_contents_->web_contents()->GetController().LoadURL(
       url,

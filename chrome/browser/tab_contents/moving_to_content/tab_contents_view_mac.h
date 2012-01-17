@@ -56,7 +56,8 @@ class TabContentsViewMac : public TabContentsView {
   // The corresponding TabContents is passed in the constructor, and manages our
   // lifetime. This doesn't need to be the case, but is this way currently
   // because that's what was easiest when they were split.
-  explicit TabContentsViewMac(TabContents* web_contents);
+  // TODO(jam): make this take a WebContents once it's created from content.
+  explicit TabContentsViewMac(content::WebContents* web_contents);
   virtual ~TabContentsViewMac();
 
   // TabContentsView implementation --------------------------------------------
@@ -147,11 +148,14 @@ class TabContentsViewMac : public TabContentsView {
 #endif  // __OBJC__
 
 // Functions that may be accessed from non-Objective-C C/C++ code.
-class TabContents;
 class TabContentsView;
 
+namespace content {
+class WebContents;
+}
+
 namespace tab_contents_view_mac {
-TabContentsView* CreateTabContentsView(TabContents* tab_contents);
+TabContentsView* CreateTabContentsView(content::WebContents* web_contents);
 }
 
 #endif  // CHROME_BROWSER_TAB_CONTENTS_TAB_CONTENTS_VIEW_MAC_H_

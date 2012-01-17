@@ -1,0 +1,4 @@
+include_rules = [
+  "+content/browser/tab_contents/tab_contents.h",
+  "+content/common/view_messages.h",
+]

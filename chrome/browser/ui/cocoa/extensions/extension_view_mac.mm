@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/cocoa/extensions/extension_view_mac.h"
 
 #include "chrome/browser/extensions/extension_host.h"
-#include "chrome/browser/tab_contents/tab_contents_view_mac.h"
+#include "chrome/browser/tab_contents/moving_to_content/tab_contents_view_mac.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/browser/tab_contents/tab_contents_view.h"

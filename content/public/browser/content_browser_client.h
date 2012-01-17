@@ -27,7 +27,6 @@ class SiteInstance;
 class SSLCertErrorHandler;
 class SSLClientAuthHandler;
 class SkBitmap;
-class TabContents;
 class TabContentsView;
 class WorkerProcessHost;
 struct WebPreferences;
@@ -35,9 +34,10 @@ struct WebPreferences;
 namespace content {
 class AccessTokenStore;
 class BrowserMainParts;
+class RenderProcessHost;
+class WebContents;
 struct MainFunctionParams;
 struct ShowDesktopNotificationHostMsgParams;
-class RenderProcessHost;
 }
 
 namespace crypto {
@@ -85,7 +85,7 @@ class ContentBrowserClient {
   virtual BrowserMainParts* CreateBrowserMainParts(
       const content::MainFunctionParams& parameters) = 0;
 
-  virtual TabContentsView* CreateTabContentsView(TabContents* tab_contents) = 0;
+  virtual TabContentsView* CreateTabContentsView(WebContents* web_contents) = 0;
 
   // Notifies that a new RenderHostView has been created.
   virtual void RenderViewHostCreated(RenderViewHost* render_view_host) = 0;

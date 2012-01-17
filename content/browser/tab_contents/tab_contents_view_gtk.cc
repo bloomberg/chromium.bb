@@ -78,9 +78,9 @@ gboolean OnMouseScroll(GtkWidget* widget, GdkEventScroll* event,
 namespace content {
 
 TabContentsViewGtk::TabContentsViewGtk(
-    TabContents* tab_contents,
+    content::WebContents* web_contents,
     content::TabContentsViewWrapperGtk* view_wrapper)
-    : tab_contents_(tab_contents),
+    : tab_contents_(static_cast<TabContents*>(web_contents)),
       expanded_(gtk_expanded_container_new()),
       view_wrapper_(view_wrapper),
       overlaid_view_(NULL) {
@@ -91,7 +91,7 @@ TabContentsViewGtk::TabContentsViewGtk(
                    G_CALLBACK(OnChildSizeRequestThunk), this);
 
   gtk_widget_show(expanded_.get());
-  drag_source_.reset(new content::WebDragSourceGtk(tab_contents));
+  drag_source_.reset(new content::WebDragSourceGtk(web_contents));
 
   if (view_wrapper_.get())
     view_wrapper_->WrapView(this);

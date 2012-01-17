@@ -32,7 +32,8 @@ class CONTENT_EXPORT TabContentsViewGtk : public TabContentsView {
   // because that's what was easiest when they were split. We optionally take
   // |wrapper| which creates an intermediary widget layer for features from the
   // embedding layer that live with the TabContentsView.
-  explicit TabContentsViewGtk(TabContents* tab_contents,
+  // TODO(jam): make this take a WebContents once it's created from content.
+  explicit TabContentsViewGtk(content::WebContents* web_contents,
                               TabContentsViewWrapperGtk* wrapper);
   virtual ~TabContentsViewGtk();
 
