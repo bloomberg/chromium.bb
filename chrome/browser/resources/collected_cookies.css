@@ -1,16 +1,48 @@
+/*
+ * Copyright (c) 2012 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+html {
+  height: 100%;
+}
+
 body {
-  font-size: 84%;
+  -webkit-box-orient: vertical;
+  -webkit-box-sizing: border-box;
+  display: -webkit-box;
   font-family: Arial, Helvetica, sans-serif;
+  font-size: 84%;
+  height: 100%;
+  margin: 0;
+  padding: 8px;
+}
+
+.spacer {
+  -webkit-box-flex: 1;
 }
 
 .cookies-tree {
+  -webkit-box-flex: 1;
   border: 1px solid lightgrey;
   padding: 5px;
-  width: 450px;
-  height: 135px;
 }
 
 #info-banner {
   background: -webkit-linear-gradient(#fff2b7, #fae691 97%, #878787);
   padding: 2px 0;
+}
+
+.button-strip {
+  -webkit-box-orient: horizontal;
+  display: -webkit-box;
+}
+
+.button-strip > button {
+  -webkit-margin-end: 10px;
+}
+
+.button-strip > button:last-child {
+  -webkit-margin-end: 0;
 }

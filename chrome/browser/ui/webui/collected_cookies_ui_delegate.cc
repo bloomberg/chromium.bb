@@ -36,7 +36,7 @@ namespace {
 
 // TODO(xiyuan): Localize this.
 const int kDialogWidth = 480;
-const int kDialogHeight = 470;
+const int kDialogHeight = 465;
 
 CookieTreeOriginNode* GetOriginNode(CookiesTreeModel* model,
                                     const std::string& node_path) {
@@ -100,9 +100,6 @@ void CollectedCookiesSource::StartDataRequest(const std::string& path,
                                               bool is_incognito,
                                               int request_id) {
   DictionaryValue localized_strings;
-  localized_strings.SetString("title",
-      l10n_util::GetStringUTF16(IDS_COLLECTED_COOKIES_DIALOG_TITLE));
-
   localized_strings.SetString("title",
       l10n_util::GetStringUTF16(IDS_COLLECTED_COOKIES_DIALOG_TITLE));
   localized_strings.SetString("allowedCookies",
@@ -183,7 +180,7 @@ ui::ModalType CollectedCookiesUIDelegate::GetDialogModalType() const {
 }
 
 string16 CollectedCookiesUIDelegate::GetDialogTitle() const {
-  return string16();
+  return l10n_util::GetStringUTF16(IDS_COLLECTED_COOKIES_DIALOG_TITLE);
 }
 
 GURL CollectedCookiesUIDelegate::GetDialogContentURL() const {
