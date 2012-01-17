@@ -1873,7 +1873,10 @@ def _MapFileToMsBuildSourceType(source, extension_to_rule_name):
       A pair of (group this file should be part of, the label of element)
   """
   _, ext = os.path.splitext(source)
-  if ext in ['.cc', '.cpp', '.c', '.cxx']:
+  if ext in extension_to_rule_name:
+    group = 'rule'
+    element = extension_to_rule_name[ext]
+  elif ext in ['.cc', '.cpp', '.c', '.cxx']:
     group = 'compile'
     element = 'ClCompile'
   elif ext in ['.h', '.hxx']:
@@ -1885,9 +1888,6 @@ def _MapFileToMsBuildSourceType(source, extension_to_rule_name):
   elif ext == '.idl':
     group = 'midl'
     element = 'Midl'
-  elif ext in extension_to_rule_name:
-    group = 'rule'
-    element = extension_to_rule_name[ext]
   else:
     group = 'none'
     element = 'None'
