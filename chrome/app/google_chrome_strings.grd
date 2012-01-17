@@ -526,6 +526,30 @@ Google Chrome is unable to recover your settings.
          Google Chrome is no longer updating because your operating system is obsolete.
       </message>
 
+      <!-- About Chrome View -->
+      <message name="IDS_UPGRADE_AVAILABLE" desc="Status label: A new version of Chrome is available">
+        A new version of Google Chrome is available
+      </message>
+      <message name="IDS_UPGRADE_SUCCESSFUL" desc="Status label: Successfully upgraded">
+        Google Chrome has been updated to <ph name="VERSION">$1<ex>0.1.131</ex></ph>
+      </message>
+      <message name="IDS_UPGRADE_SUCCESSFUL_NOVERSION" desc="Status label: Successfully upgraded">
+        Google Chrome has been updated
+      </message>
+      <message name="IDS_UPGRADE_SUCCESSFUL_RELAUNCH" desc="Status label: Successfully updated">
+        Relaunch Google Chrome to finish updating
+      </message>
+      <if expr="pp_ifdef('chromeos')">
+        <message name="IDS_UPGRADE_ALREADY_UP_TO_DATE" desc="Status label: Already up to date">
+          Google Chrome is up to date
+        </message>
+      </if>
+      <if expr="not pp_ifdef('chromeos')">
+        <message name="IDS_UPGRADE_ALREADY_UP_TO_DATE" desc="Status label: Already up to date">
+          Google Chrome is up to date (<ph name="VERSION">$1<ex>0.1.131</ex></ph>)
+        </message>
+      </if>
+
       <if expr="is_macosx">
         <message name="IDS_APP_MENU_PRODUCT_NAME" desc="The application's short name, used for the Mac's application menu, activity monitor, etc. This should be less than 16 characters. Example: Chrome, not Google Chrome.">
           Chrome

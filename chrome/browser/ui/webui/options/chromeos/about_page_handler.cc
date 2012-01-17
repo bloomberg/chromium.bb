@@ -346,8 +346,7 @@ void AboutPageHandler::UpdateStatus(
   switch (status.status) {
     case UpdateEngineClient::UPDATE_STATUS_IDLE:
       if (!sticky_) {
-        message = l10n_util::GetStringFUTF16(IDS_UPGRADE_ALREADY_UP_TO_DATE,
-            l10n_util::GetStringUTF16(IDS_PRODUCT_OS_NAME));
+        message = l10n_util::GetStringUTF16(IDS_UPGRADE_ALREADY_UP_TO_DATE);
         enabled = true;
       }
       break;
