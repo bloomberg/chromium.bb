@@ -627,6 +627,12 @@ internal_arm_pfq.add_config('arm-tegra2_kaen-aura-private-bin',
   important=False,
 )
 
+internal_arm_pfq.add_config('arm-ironhide-private-bin',
+  boards=['ironhide'],
+  description='ironhide PFQ',
+  important=False,
+)
+
 
 x86_internal_pfq = internal.derive(pfq,
   overlays='private'
@@ -773,6 +779,10 @@ _arm_release.add_config('arm-tegra2_kaen-release',
 _arm_release.add_config('arm-tegra2_kaen-aura-release',
   boards=['tegra2_kaen'],
   profile='aura',
+)
+
+_arm_release.add_config('arm-ironhide-release',
+  boards=['ironhide'],
 )
 
 
