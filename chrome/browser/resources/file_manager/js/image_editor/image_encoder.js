@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -64,12 +64,17 @@ ImageEncoder.getBlob = function(canvas, metadataEncoder, quality) {
  * @param {BlobBuilder} blobBuilder
  * @param {HTMLCanvasElement} canvas The canvas with the image to be encoded.
  * @param {ImageEncoder.MetadataEncoder} metadataEncoder
- * @param {Number} quality (0..1], Encoding quality, default is 0.5
+ * @param {Number} quality (0..1], Encoding quality, defaults to 0.9.
  */
 ImageEncoder.buildBlob = function(
     blobBuilder, canvas, metadataEncoder, quality) {
 
-  quality = quality || 0.5;
+  // Contrary to what one might think 1.0 is not a good default. Opening and
+  // saving an typical photo taken with consumer camera increases its file size
+  // by 50-100%.
+  // Experiments show that 0.9 is much better. It shrinks some photos a bit,
+  // keeps others about the same size, but does not visibly lower the quality.
+  quality = quality || 0.9;
 
   ImageUtil.trace.resetTimer('dataurl');
   // WebKit does not support canvas.toBlob yet so canvas.toDataURL is
