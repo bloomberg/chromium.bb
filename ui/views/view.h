@@ -582,10 +582,6 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // does nothing. Override as needed.
   virtual ui::TouchStatus OnTouchEvent(const TouchEvent& event);
 
-  // This method is invoked for each GestureEvent recognized from GestureManager
-  // Default implementation does nothing. Override as needed.
-  virtual ui::GestureStatus OnGestureEvent(const GestureEvent& event);
-
   // Set the MouseHandler for a drag session.
   //
   // A drag session is a stream of mouse events starting
@@ -1260,10 +1256,6 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // RootView will invoke this with incoming TouchEvents. Returns the
   // the result of OnTouchEvent.
   ui::TouchStatus ProcessTouchEvent(const TouchEvent& event);
-
-  // GestureManager will invoke this with incoming GestureEvents. Returns the
-  // the result of OnGestureEvent.
-  ui::GestureStatus ProcessGestureEvent(const GestureEvent& event);
 
   // Accelerators --------------------------------------------------------------
 

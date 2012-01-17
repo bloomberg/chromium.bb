@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -62,10 +62,6 @@ class VIEWS_EXPORT Event {
 #endif
   ui::EventType type() const { return type_; }
   const base::Time& time_stamp() const { return time_stamp_; }
-
-  // Required for Gesture testing purposes.
-  void set_time_stamp(base::Time time_stamp) { time_stamp_ = time_stamp; }
-
   int flags() const { return flags_; }
   void set_flags(int flags) { flags_ = flags; }
 
@@ -421,39 +417,6 @@ class VIEWS_EXPORT ScrollEvent : public MouseEvent {
   float y_offset_;
 
   DISALLOW_COPY_AND_ASSIGN(ScrollEvent);
-};
-
-////////////////////////////////////////////////////////////////////////////////
-// GestureEvent class
-//
-////////////////////////////////////////////////////////////////////////////////
-class VIEWS_EXPORT GestureEvent : public LocatedEvent {
- public:
-  GestureEvent(ui::EventType type,
-               int x,
-               int y,
-               int flags,
-               base::Time time_stamp,
-               float delta_x,
-               float delta_y);
-
-  // Create a new GestureEvent which is identical to the provided model.
-  // If source / target views are provided, the model location will be converted
-  // from |source| coordinate system to |target| coordinate system.
-  GestureEvent(const GestureEvent& model, View* source, View* target);
-
-  float delta_x() const { return delta_x_; }
-  float delta_y() const { return delta_y_; }
-
- private:
-  friend class internal::RootView;
-
-  GestureEvent(const GestureEvent& model, View* root);
-
-  float delta_x_;
-  float delta_y_;
-
-  DISALLOW_COPY_AND_ASSIGN(GestureEvent);
 };
 
 }  // namespace views

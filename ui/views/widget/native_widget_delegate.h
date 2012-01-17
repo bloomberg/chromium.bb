@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,7 +17,6 @@ class Size;
 
 namespace views {
 class InputMethod;
-class GestureEvent;
 class KeyEvent;
 class MouseEvent;
 class TouchEvent;
@@ -97,7 +96,6 @@ class VIEWS_EXPORT NativeWidgetDelegate {
   virtual bool OnMouseEvent(const MouseEvent& event) = 0;
   virtual void OnMouseCaptureLost() = 0;
   virtual ui::TouchStatus OnTouchEvent(const TouchEvent& event) = 0;
-  virtual ui::GestureStatus OnGestureEvent(const GestureEvent& event) = 0;
 
   // Runs the specified native command. Returns true if the command is handled.
   virtual bool ExecuteCommand(int command_id) = 0;
