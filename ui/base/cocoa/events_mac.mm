@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 #include "ui/base/events.h"
 
 #include "base/logging.h"
+#include "base/time.h"
 #import "ui/base/keycodes/keyboard_code_conversion_mac.h"
 #include "ui/gfx/point.h"
 
@@ -103,6 +104,11 @@ int EventFlagsFromNative(const base::NativeEvent& native_event) {
   }
 
   return event_flags;
+}
+
+base::TimeDelta EventTimeFromNative(const base::NativeEvent& native_event) {
+  return base::TimeDelta::FromMicroseconds(
+      [native_event timestamp] * 1000000.0f);
 }
 
 gfx::Point EventLocationFromNative(const base::NativeEvent& native_event) {
