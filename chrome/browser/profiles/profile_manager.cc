@@ -33,6 +33,9 @@
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#if defined(OS_WIN)
+#include "chrome/installer/util/browser_distribution.h"
+#endif
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/user_metrics.h"
@@ -676,8 +679,8 @@ ProfileInfoCache& ProfileManager::GetProfileInfoCache() {
     profile_info_cache_.reset(new ProfileInfoCache(
         g_browser_process->local_state(), user_data_dir_));
 #if defined(OS_WIN)
-    const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-    if (!command_line.HasSwitch(switches::kNoFirstRun)) {
+    BrowserDistribution* dist = BrowserDistribution::GetDistribution();
+    if (dist && dist->CanCreateDesktopShortcuts()) {
       profile_shortcut_manager_.reset(new ProfileShortcutManagerWin());
       profile_info_cache_->AddObserver(profile_shortcut_manager_.get());
     }

@@ -107,7 +107,7 @@ bool CreateChromeDesktopShortcut() {
   if (!PathService::Get(base::FILE_EXE, &chrome_exe))
     return false;
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  if (!dist)
+  if (!dist || !dist->CanCreateDesktopShortcuts())
     return false;
   return ShellUtil::CreateChromeDesktopShortcut(
       dist,
