@@ -621,8 +621,9 @@ void NaClJumpValidatorCleanUp(NaClValidatorState* vstate) {
   }
 }
 
-void NaClMarkInstructionJumpIllegal(struct NaClValidatorState* vstate,
-                                    struct NaClInstState* inst) {
+static INLINE void NaClMarkInstructionJumpIllegalInline(
+    struct NaClValidatorState* vstate,
+    struct NaClInstState* inst) {
   NaClPcAddress pc = NaClInstStateVpc(inst);
   if (pc < vstate->vbase || pc >= vstate->vbase + vstate->codesize) {
     /* ERROR instruction out of range.
@@ -635,6 +636,21 @@ void NaClMarkInstructionJumpIllegal(struct NaClValidatorState* vstate,
                  "\n",
                  pc));
     NaClAddressSetAddInline(vstate->jump_sets.removed_targets, pc, vstate);
+  }
+}
+
+void NaClMarkInstructionJumpIllegal(struct NaClValidatorState* vstate,
+                                    struct NaClInstState* inst) {
+  NaClMarkInstructionJumpIllegalInline(vstate, inst);
+}
+
+void NaClMarkInstructionsJumpRangeIllegal(struct NaClValidatorState* vstate,
+                                          int distance) {
+  int i;
+  for (i = 0; i < distance; i++) {
+    struct NaClInstState* inst =
+        NaClInstIterGetLookbackStateInline(vstate->cur_iter, i);
+    NaClMarkInstructionJumpIllegalInline(vstate, inst);
   }
 }
 

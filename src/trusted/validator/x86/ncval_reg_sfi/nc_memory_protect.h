@@ -14,14 +14,7 @@
 #include "native_client/src/shared/utils/types.h"
 #include "native_client/src/trusted/validator/x86/decoder/gen/ncopcode_operand_kind.h"
 
-/*
- * Note: The function NcMemoryReferenceValidator is used as a validator
- * function to be applied to a validated segment, as defined in
- * ncvalidate_iter.h.
- */
-
 struct NaClValidatorState;
-struct NaClInstState;
 
 /*
  * When true, check both uses and sets of memory. When false, only
@@ -52,33 +45,5 @@ extern Bool NACL_FLAGS_read_sandbox;
  * NOTE: in x86 code, displacements can't be larger than 32 bits.
  */
 void NaClMemoryReferenceValidator(struct NaClValidatorState* state);
-
-/*
- * Returns true if the specified instruction is an LEA instruction that
- * generates a nacl safe address. Assumes that the given register is a
- * 64-bit register. That is, generated from a sequence of instructions of
- * the form:
- *
- *    mov %r32, ..              ; zero out top half of r32
- *    lea %r64, [%r15+%r32*1]   ; calculate address, put in r64
- *
- * where r32 is the corresponding 32-bit register for the 64-bit register
- * r64.
- */
-Bool NaClIsLeaSafeAddress(
-    struct NaClValidatorState* state,  /* The validator state associated with
-                                        * the instruction using the address to
-                                        * check.
-                                        */
-    size_t distance,                    /* The number of instructions, before
-                                         * the current instruction, we are
-                                         * looking at.
-                                         */
-    struct NaClInstState* inst_state,   /* The state associated with the
-                                         * instruction being checked.
-                                         */
-    NaClOpKind addr_reg);               /* The register containing the address
-                                         * that must be safe.
-                                         */
 
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCVAL_REG_SFI_NC_MEMORY_PROTECT_H__ */

@@ -90,6 +90,14 @@ void NaClJumpValidatorCleanUp(struct NaClValidatorState* state);
 void NaClMarkInstructionJumpIllegal(struct NaClValidatorState* state,
                                     struct NaClInstState* inst);
 
+/* Records that the given sequence of distance instructions (starting with the
+ * current instruction, and proceeding backwards) can't be a possible target
+ * of a jump, because they appear as the non-first instruction of a NACL
+ * pattern.
+ */
+void NaClMarkInstructionsJumpRangeIllegal(struct NaClValidatorState* vstate,
+                                          int distance);
+
 /* Same as NaClMarkInstructionJumpIllegal, except that it marks the
  * n-th instruction back from the current instruction.
  */

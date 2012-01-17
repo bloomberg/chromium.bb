@@ -9,10 +9,7 @@ VALIDATOR: 15: This instruction has been marked illegal by Native Client
 VALIDATOR: 15: Use of REPNE (F2) prefix for instruction not allowed by Native Client
 VALIDATOR: 15: Segment memory reference not allowed
 VALIDATOR: 17: Segment memory reference not allowed
-VALIDATOR: 17: Segment memory reference not allowed
 VALIDATOR: 18: Segment memory reference not allowed
-VALIDATOR: 18: Segment memory reference not allowed
-VALIDATOR: 1a: Segment memory reference not allowed
 VALIDATOR: 1a: Segment memory reference not allowed
 VALIDATOR: Checking jump targets: 0 to 1c
 VALIDATOR: Checking that basic blocks are aligned

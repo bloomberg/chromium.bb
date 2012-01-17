@@ -641,8 +641,10 @@ static INLINE void NaClApplyPostValidators(NaClValidatorState *vstate) {
   }
 }
 
-/* The maximum lookback for the instruction iterator of the segment. */
-static const size_t kLookbackSize = 4;
+/* The maximum lookback for the instruction iterator of the segment.
+ * Note: Allows for two memory patterns (4 instructions for each pattern).
+ */
+static const size_t kLookbackSize = 8;
 
 void NaClValidateSegment(uint8_t *mbase, NaClPcAddress vbase,
                          NaClMemorySize size, NaClValidatorState *vstate) {

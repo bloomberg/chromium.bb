@@ -1,18 +1,16 @@
+VALIDATOR: 000000000000000d: ae                                           [P] dontcare %al (u), %es:%rdi (u)
+VALIDATOR: ERROR: Segment memory reference not allowed
 VALIDATOR: 0000000000000013: ae                                           [P] dontcare %al (u), %es:%rdi (u)
 VALIDATOR: ERROR: Segment memory reference not allowed
 VALIDATOR: 000000000000001a: ae                                           [P] dontcare %al (u), %es:%rdi (u)
 VALIDATOR: ERROR: Segment memory reference not allowed
 VALIDATOR: 0000000000000025: a5                                           [P] dontcare %es:%rdi (s), %ds:%rdi (u)
 VALIDATOR: ERROR: Segment memory reference not allowed
-VALIDATOR: 0000000000000025: a5                                           [P] dontcare %es:%rdi (s), %ds:%rdi (u)
-VALIDATOR: ERROR: Segment memory reference not allowed
-VALIDATOR: 0000000000000030: a7                                           [P] dontcare %ds:%rdi (u), %es:%rdi (u)
-VALIDATOR: ERROR: Segment memory reference not allowed
 VALIDATOR: 0000000000000030: a7                                           [P] dontcare %ds:%rdi (u), %es:%rdi (u)
 VALIDATOR: ERROR: Segment memory reference not allowed
 VALIDATOR: 000000000000004a: a7                                           [P] dontcare %ds:%rdi (u), %es:%rdi (u)
 VALIDATOR: ERROR: Segment memory reference not allowed
-VALIDATOR: 000000000000004a: a7                                           [P] dontcare %ds:%rdi (u), %es:%rdi (u)
+VALIDATOR: 0000000000000057: a7                                           [P] dontcare %ds:%rdi (u), %es:%rdi (u)
 VALIDATOR: ERROR: Segment memory reference not allowed
 VALIDATOR: Checking jump targets: 0 to 58
 VALIDATOR: Checking that basic blocks are aligned
