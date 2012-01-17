@@ -817,7 +817,8 @@ void RenderViewContextMenu::AppendPluginItems() {
   }
 
   if (params_.media_flags & WebContextMenuData::MediaCanRotate) {
-    menu_model_.AddSeparator();
+    if (menu_model_.GetItemCount() > 0)
+      menu_model_.AddSeparator();
     menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_ROTATECW,
                                     IDS_CONTENT_CONTEXT_ROTATECW);
     menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_ROTATECCW,
