@@ -69,9 +69,7 @@ frame_callback(void *data, struct wl_callback *callback, uint32_t time)
 	struct ModeInfo *mi = data;
 
 	window_schedule_redraw(mi->window);
-
-	if (callback)
-		wl_callback_destroy(callback);
+	wl_callback_destroy(callback);
 }
 
 static const struct wl_callback_listener listener = {
@@ -172,62 +170,49 @@ errout:
 }
 
 static struct ModeInfo *
-create_modeinfo(struct wscreensaver *wscr, struct window *window)
+create_wscreensaver_instance(struct wscreensaver *screensaver,
+			     struct wl_output *output, int width, int height)
 {
+	static int instance;
 	struct ModeInfo *mi;
 	struct rectangle drawarea;
-	static int instance;
 
 	mi = calloc(1, sizeof *mi);
 	if (!mi)
 		return NULL;
 
-	window_get_allocation(window, &drawarea);
+	mi->window = window_create(screensaver->display, width, height);
+	if (!mi->window) {
+		fprintf(stderr, "%s: creating a window failed.\n", progname);
+		free(mi);
+		return NULL;
+	}
 
-	mi->priv = wscr;
-	mi->eglctx = EGL_NO_CONTEXT;
+	window_set_transparent(mi->window, 0);
+	window_set_title(mi->window, progname);
 
-	mi->window = window;
-	mi->widget = window_add_widget(window, mi);
+	if (screensaver->interface) {
+		window_set_custom(mi->window);
+		mi->widget = window_add_widget(mi->window, mi);
+		screensaver_set_surface(screensaver->interface,
+					window_get_wl_shell_surface(mi->window),
+					output);
+	} else {
+		mi->widget = frame_create(mi->window, mi);
+	}
 	widget_set_redraw_handler(mi->widget, redraw_handler);
 
+	mi->priv = screensaver;
+	mi->eglctx = EGL_NO_CONTEXT;
 	mi->instance_number = instance++; /* XXX */
+
+	widget_get_allocation(mi->widget, &drawarea);
 	mi->width = drawarea.width;
 	mi->height = drawarea.height;
 
-	return mi;
-}
-
-static struct ModeInfo *
-create_wscreensaver_instance(struct wscreensaver *screensaver,
-			     struct wl_output *output, int width, int height)
-{
-	struct ModeInfo *mi;
-	struct window *window;
-	
-	window = window_create(screensaver->display, width, height);
-	if (!window) {
-		fprintf(stderr, "%s: creating a window failed.\n", progname);
-		return NULL;
-	}
-
-	window_set_transparent(window, 0);
-	window_set_title(window, progname);
-
-	if (screensaver->interface) {
-		window_set_custom(window);
-		screensaver_set_surface(screensaver->interface,
-					window_get_wl_shell_surface(window),
-					output);
-	}
-
-	mi = create_modeinfo(screensaver, window);
-	if (!mi)
-		return NULL;
-
 	screensaver->plugin->init(mi);
 
-	frame_callback(mi, NULL, 0);
+	window_schedule_resize(mi->window, width, height);
 	return mi;
 }
 
