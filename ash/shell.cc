@@ -159,6 +159,17 @@ Shell::~Shell() {
   RemoveRootWindowEventFilter(tooltip_controller_.get());
   aura::client::SetTooltipClient(NULL);
 
+  // The LayoutManagers for the default and status containers talk to
+  // ShelfLayoutManager (LayoutManager installed on the launcher container).
+  // ShelfLayoutManager has a reference to the launcher widget. To avoid any of
+  // these trying to reference launcher after it's deleted we delete them all,
+  // then the launcher.
+  if (!CommandLine::ForCurrentProcess()->
+      HasSwitch(switches::kAuraWorkspaceManager)) {
+    ResetLayoutManager(internal::kShellWindowId_DefaultContainer);
+  }
+  ResetLayoutManager(internal::kShellWindowId_StatusContainer);
+  ResetLayoutManager(internal::kShellWindowId_LauncherContainer);
   // Make sure we delete WorkspaceController before launcher is
   // deleted as it has a reference to launcher model.
   workspace_controller_.reset();
@@ -411,6 +422,10 @@ void Shell::EnableWorkspaceManager() {
   default_container->SetLayoutManager(
       new internal::DefaultContainerLayoutManager(
           workspace_controller_->workspace_manager()));
+}
+
+void Shell::ResetLayoutManager(int container_id) {
+  GetContainer(container_id)->SetLayoutManager(NULL);
 }
 
 }  // namespace ash

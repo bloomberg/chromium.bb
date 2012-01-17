@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -28,7 +28,7 @@ namespace internal {
 // To respond to bounds changes in the status area StatusAreaLayoutManager works
 // closely with ShelfLayoutManager.
 class ASH_EXPORT ShelfLayoutManager : public aura::LayoutManager,
-                                             public ui::LayerAnimationObserver {
+                                      public ui::LayerAnimationObserver {
  public:
   ShelfLayoutManager(views::Widget* launcher, views::Widget* status);
   virtual ~ShelfLayoutManager();

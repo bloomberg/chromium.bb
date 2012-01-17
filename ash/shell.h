@@ -147,6 +147,10 @@ class ASH_EXPORT Shell {
   // Enables WorkspaceManager.
   void EnableWorkspaceManager();
 
+  // Sets the LayoutManager of the container with the specified id to NULL. This
+  // has the effect of deleting the current LayoutManager.
+  void ResetLayoutManager(int container_id);
+
   static Shell* instance_;
 
   std::vector<WindowAndBoundsPair> to_restore_;

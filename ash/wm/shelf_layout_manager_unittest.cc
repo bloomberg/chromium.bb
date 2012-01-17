@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -128,6 +128,17 @@ TEST_F(ShelfLayoutManagerTest, LauncherUpdatedWhenStatusAreaChangesSize) {
   ASSERT_TRUE(shelf_layout_manager->status());
   shelf_layout_manager->status()->SetBounds(gfx::Rect(0, 0, 200, 200));
   EXPECT_EQ(200, launcher->GetStatusWidth());
+}
+
+// Verifies when the shell is deleted with a full screen window we don't
+// crash. This test is here as originally the crash was in ShelfLayoutManager.
+TEST_F(ShelfLayoutManagerTest, DontReferenceLauncherAfterDeletion) {
+  views::Widget* widget = new views::Widget;
+  views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
+  params.bounds = gfx::Rect(0, 0, 200, 200);
+  // Widget is now owned by the parent window.
+  widget->Init(params);
+  widget->SetFullscreen(true);
 }
 
 }  // namespace internal
