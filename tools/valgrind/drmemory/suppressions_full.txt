@@ -536,15 +536,15 @@ dbghelp.dll!*
 ...
 dbghelp.dll!StackWalk64
 
-# symbols w/o PDB make no sense, so sticking with mod+offs
+# Symbols w/o PDB make no sense, first ntdll frame is TpSetTimer w/o syms and
+# TppWorkerThread w/ syms.  We used to use mod+offs here, but that was too
+# brittle, so we switched to RPCRT4.dll!*.
 POSSIBLE LEAK
 name=http://code.google.com/p/drmemory/issues/detail?id=569
-<RPCRT4.dll+0x10636>
-<RPCRT4.dll+0x10610>
-...
-<RPCRT4.dll+0x3474?>
-<ntdll.dll+0x64fde>
-<ntdll.dll+0x447f3>
+RPCRT4.dll!...
+ntdll.dll!*
+ntdll.dll!*
+KERNEL*.dll!BaseThreadInitThunk
 
 # TODO(timurrrr): investigate these
 UNINITIALIZED READ
@@ -634,6 +634,90 @@ name=http://crbug.com/109281 TLS root isn't found by DrMemory
 ...
 *!base::ThreadLocalStorage::Initialize
 
+# Looks like an unhandled syscall.
+UNINITIALIZED READ
+name=http://code.google.com/p/drmemory/issues/detail?id=744 a
+...
+*!cricket::UDPPort::OnReadPacket
+
+UNINITIALIZED READ
+name=http://code.google.com/p/drmemory/issues/detail?id=744 b
+...
+*!cricket::PseudoTcp::NotifyPacket
+
+UNINITIALIZED READ
+name=http://code.google.com/p/drmemory/issues/detail?id=744 c
+...
+*!cricket::PseudoTcp::GetNextClock
+
+# False pos uninit in shell32 when resolving links.
+UNINITIALIZED READ
+name=http://code.google.com/p/drmemory/issues/detail?id=745
+SHELL*.dll!*
+...
+SHELL*.dll!*
+*!file_util::ResolveShortcut
+
+# Probable false pos uninit in ffmpeg.  Probably due to running off the end of a
+# buffer with SSE/MMX instructions whose results are then masked out later.
+UNINITIALIZED READ
+name=http://code.google.com/p/drmemory/issues/detail?id=747 a
+*!ff_pred4x4_vertical_vp8_mmxext
+
+UNINITIALIZED READ
+name=http://code.google.com/p/drmemory/issues/detail?id=747 b
+*!ff_pred4x4_down_left_mmxext
+
+UNINITIALIZED READ
+name=http://code.google.com/p/drmemory/issues/detail?id=747 c
+*!ff_vorbis_floor1_render_list
+
+UNINITIALIZED READ
+name=http://code.google.com/p/drmemory/issues/detail?id=747 d
+*!ff_put_vp8_epel8_h6_ssse3
+
+UNINITIALIZED READ
+name=http://code.google.com/p/drmemory/issues/detail?id=747 e
+*!ff_put_vp8_epel8_h4_ssse3
+
+# ffmpeg seems to leak a pthread condition variable.
+LEAK
+name=http://crbug.com/110042
+*!ptw32_new
+*!pthread_self
+*!sem_wait
+*!pthread_cond_wait
+*!ff_thread_decode_frame
+*!avcodec_decode_video2
+
+# Improperly handled ioctl in bcrypt.
+UNINITIALIZED READ
+name=http://code.google.com/p/drmemory/issues/detail?id=748
+system call NtDeviceIoControlFile InputBuffer
+bcrypt.dll!BCryptUnregisterConfigChangeNotify
+bcrypt.dll!BCryptGetFipsAlgorithmMode
+ntdll.dll!RtlQueryEnvironmentVariable
+
+# Not sure what this is.
+POSSIBLE LEAK
+name=http://code.google.com/p/drmemory/issues/detail?id=749
+...
+fwpuclnt.dll!*
+...
+RPCRT4.dll!*
+...
+fwpuclnt.dll!*
+...
+WS2_32.dll!*
+*!talk_base::SafeGetHostByName
+*!talk_base::SocketAddress::GetLocalIPs
+*!talk_base::SocketAddress::IsLocalIP
+*!cricket::Transport::VerifyCandidate
+*!cricket::Session::OnRemoteCandidates
+*!cricket::Session::OnTransportInfoMessage
+*!cricket::Session::OnIncomingMessage
+*!cricket::SessionManager::OnIncomingMessage
+
 ###############################################################
 # Benign issues in Chromium
 
@@ -672,6 +756,14 @@ name=http://crbug.com/79933 (3)
 *!TestURLRequestContext::TestURLRequestContext
 *!TestURLRequestContextGetter::GetURLRequestContext
 *!URLFetcher::Core::StartURLRequest
+
+# Test intentionally leaks an object.
+LEAK
+name=http://crbug.com/86301
+*!operator new
+*!base::internal::PostTaskAndReplyImpl::PostTaskAndReply
+*!base::MessageLoopProxy::PostTaskAndReply
+*!*_DeadReplyLoopDoesNotDelete_Test::TestBody
 
 ###############################################################
 # Real issues in Chromium
@@ -798,6 +890,13 @@ name=http://crbug.com/92166
 ...
 *!operator new
 *!views::NativeWidgetWin::OnCreate
+
+# Possible real Chromium issue in DoCrossfade.
+UNINITIALIZED READ
+name=http://crbug.com/110049
+*!media::DoCrossfade<*>
+*!media::Crossfade
+*!media::AudioRendererAlgorithmBase::FillBuffer
 
 # Empty line at EOF - workaround for
 # http://code.google.com/p/drmemory/issues/detail?id=41
