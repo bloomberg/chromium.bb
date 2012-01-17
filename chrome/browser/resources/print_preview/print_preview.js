@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -774,11 +774,10 @@ function addDestinationListOptionAtPosition(position,
  * @param {boolean} color is true if the PDF plugin should display in color.
  */
 function setColor(color) {
-  var pdfViewer = $('pdf-viewer');
-  if (!pdfViewer) {
+  if (!previewArea.pdfPlugin)
     return;
-  }
-  pdfViewer.grayscale(!color);
+
+  previewArea.pdfPlugin.grayscale(!color);
   var printerList = $('printer-list');
   cloudprint.setColor(printerList[printerList.selectedIndex], color);
 }
@@ -829,7 +828,7 @@ function onPDFLoad() {
 }
 
 function setPluginPreviewPageCount() {
-  $('pdf-viewer').printPreviewPageCount(
+  previewArea.pdfPlugin.printPreviewPageCount(
       pageSettings.previouslySelectedPages.length);
 }
 
@@ -897,7 +896,7 @@ function reloadPreviewPages(previewUid, previewResponseId) {
   checkAndHideOverlayLayerIfValid();
   var pageSet = pageSettings.previouslySelectedPages;
   for (var i = 0; i < pageSet.length; i++) {
-    $('pdf-viewer').loadPreviewPage(
+    previewArea.pdfPlugin.loadPreviewPage(
         getPageSrcURL(previewUid, pageSet[i] - 1), i);
   }
 
@@ -933,9 +932,9 @@ function onDidPreviewPage(pageNumber, previewUid, previewResponseId) {
 
   currentPreviewUid = previewUid;
   if (pageIndex == 0)
-    createPDFPlugin(pageNumber);
+    previewArea.createOrReloadPDFPlugin(pageNumber);
 
-  $('pdf-viewer').loadPreviewPage(
+  previewArea.pdfPlugin.loadPreviewPage(
       getPageSrcURL(previewUid, pageNumber), pageIndex);
 
   if (pageIndex + 1 == pageSettings.previouslySelectedPages.length) {
@@ -962,7 +961,7 @@ function updatePrintPreview(previewUid, previewResponseId) {
     // If the preview is not modifiable the plugin has not been created yet.
     currentPreviewUid = previewUid;
     hasPendingPreviewRequest = false;
-    createPDFPlugin(PRINT_READY_DATA_INDEX);
+    previewArea.createOrReloadPDFPlugin(PRINT_READY_DATA_INDEX);
   }
 
   cr.dispatchSimpleEvent(document, customEvents.UPDATE_PRINT_BUTTON);
@@ -1013,39 +1012,6 @@ function hasOnlyPageSettingsChanged() {
             printSettings.hasHeaderFooter ==
                 tempPrintSettings.hasHeaderFooter &&
             pageSettings.hasPageSelectionChangedAndIsValid());
-}
-
-/**
- * Create the PDF plugin or reload the existing one.
- * @param {number} srcDataIndex Preview data source index.
- */
-function createPDFPlugin(srcDataIndex) {
-  var pdfViewer = $('pdf-viewer');
-  var srcURL = getPageSrcURL(currentPreviewUid, srcDataIndex);
-  if (pdfViewer) {
-    // Need to call this before the reload(), where the plugin resets its
-    // internal page count.
-    pdfViewer.goToPage('0');
-    pdfViewer.resetPrintPreviewUrl(srcURL);
-    pdfViewer.reload();
-    pdfViewer.grayscale(
-        colorSettings.colorMode == print_preview.ColorSettings.GRAY);
-    return;
-  }
-
-  pdfViewer = document.createElement('embed');
-  pdfViewer.setAttribute('id', 'pdf-viewer');
-  pdfViewer.setAttribute('type',
-                         'application/x-google-chrome-print-preview-pdf');
-  pdfViewer.setAttribute('src', srcURL);
-  pdfViewer.setAttribute('aria-live', 'polite');
-  pdfViewer.setAttribute('aria-atomic', 'true');
-  $('mainview').appendChild(pdfViewer);
-  pdfViewer.onload('onPDFLoad()');
-  pdfViewer.onScroll('onPreviewPositionChanged()');
-  pdfViewer.onPluginSizeChanged('onPreviewPositionChanged()');
-  pdfViewer.removePrintButton();
-  pdfViewer.grayscale(true);
 }
 
 /**

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -101,6 +101,54 @@ cr.define('print_preview', function() {
 
     set pdfLoaded(pdfLoaded) {
       this.pdfLoaded_ = pdfLoaded;
+    },
+
+    /**
+     * Initializes the PDF plugin and places it on the page.
+     * @param {!string} srcURL The URL of the document to be loaded in the
+     *     plugin.
+     * @private
+     */
+    createPDFPlugin_: function(srcURL) {
+      this.pdfPlugin_ = document.createElement('embed');
+      this.pdfPlugin_.setAttribute('id', 'pdf-viewer');
+      this.pdfPlugin_.setAttribute(
+          'type', 'application/x-google-chrome-print-preview-pdf');
+      this.pdfPlugin_.setAttribute('src', srcURL);
+      this.pdfPlugin_.setAttribute('aria-live', 'polite');
+      this.pdfPlugin_.setAttribute('aria-atomic', 'true');
+      $('mainview').appendChild(this.pdfPlugin_);
+
+      this.pdfPlugin_.onload('onPDFLoad()');
+      this.pdfPlugin_.onScroll('onPreviewPositionChanged()');
+      this.pdfPlugin_.onPluginSizeChanged('onPreviewPositionChanged()');
+      this.pdfPlugin_.removePrintButton();
+      this.pdfPlugin_.grayscale(true);
+    },
+
+    /**
+     * Reloads the plugin with a new url.
+     * @param {string} srcURL The URL to load in the plugin.
+     * @private
+     */
+    reloadPDFPlugin_: function(srcURL) {
+      // Need to call this before the reload(), where the plugin resets its
+      // internal page count.
+      this.pdfPlugin_.goToPage('0');
+      this.pdfPlugin_.resetPrintPreviewUrl(srcURL);
+      this.pdfPlugin_.reload();
+      this.pdfPlugin_.grayscale(
+          colorSettings.colorMode == print_preview.ColorSettings.GRAY);
+    },
+
+    /**
+     * Creates the PDF plugin or reloads the existing one.
+     * @param {number} srcDataIndex Preview data source index.
+     */
+    createOrReloadPDFPlugin: function(srcDataIndex) {
+      var srcURL = getPageSrcURL(currentPreviewUid, srcDataIndex);
+      this.pdfPlugin_ ? this.reloadPDFPlugin_(srcURL) :
+          this.createPDFPlugin_(srcURL);
     },
 
     /**

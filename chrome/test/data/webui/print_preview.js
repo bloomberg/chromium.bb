@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -91,7 +91,11 @@ PrintPreviewWebUITest.prototype = {
       if (!this.checkCompatiblePluginExists()) {
         // TODO(scr) remove this after tests pass consistently.
         console.info('no PDF Plugin; providing fake methods.');
-        this.createPDFPlugin = self.createPDFPlugin;
+
+        // Initializing |previewArea| object here because we need to replace a
+        // method.
+        previewArea = print_preview.PreviewArea.getInstance();
+        this.previewArea.createOrReloadPDFPlugin = self.createOrReloadPDFPlugin;
       }
 
       this.checkCompatiblePluginExists =
@@ -108,15 +112,15 @@ PrintPreviewWebUITest.prototype = {
 
   /**
    * Create the PDF plugin or reload the existing one. This function replaces
-   * createPDFPlugin defined in
-   * chrome/browser/resources/print_preview/print_preview.js when there is no
+   * createOrReloadPDFPlugin defined in
+   * chrome/browser/resources/print_preview/preview_area.js when there is no
    * official pdf plugin so that the WebUI logic can be tested. It creates and
    * attaches an HTMLDivElement to the |mainview| element with attributes and
    * empty methods, which are used by testing and that would be provided by the
    * HTMLEmbedElement when the PDF plugin exists.
    * @param {number} srcDataIndex Preview data source index.
    */
-  createPDFPlugin: function(srcDataIndex) {
+  createOrReloadPDFPlugin: function(srcDataIndex) {
     var pdfViewer = $('pdf-viewer');
     if (pdfViewer)
       return;
