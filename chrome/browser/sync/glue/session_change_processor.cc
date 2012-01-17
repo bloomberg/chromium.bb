@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -97,7 +97,9 @@ void SessionChangeProcessor::Observe(
     }
 
     case content::NOTIFICATION_TAB_PARENTED: {
-      SyncedTabDelegate* tab = content::Source<SyncedTabDelegate>(source).ptr();
+      SyncedTabDelegate* tab =
+          content::Source<TabContentsWrapper>(source).ptr()->
+              synced_tab_delegate();
       if (!tab || tab->profile() != profile_) {
         return;
       }
