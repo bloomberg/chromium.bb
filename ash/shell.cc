@@ -395,7 +395,7 @@ bool Shell::IsScreenLocked() const {
 bool Shell::IsModalWindowOpen() const {
   aura::Window* modal_container =
       ash::Shell::GetInstance()->GetContainer(
-          internal::kShellWindowId_AlwaysOnTopContainer);
+          internal::kShellWindowId_ModalContainer);
   return !modal_container->children().empty();
 }
 

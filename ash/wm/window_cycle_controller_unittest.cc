@@ -154,7 +154,7 @@ TEST_F(WindowCycleControllerTest, HandleCycleWindow) {
   // When a modal window is active, cycling window does not take effect.
   aura::Window* modal_container =
       ash::Shell::GetInstance()->GetContainer(
-          internal::kShellWindowId_AlwaysOnTopContainer);
+          internal::kShellWindowId_ModalContainer);
   scoped_ptr<Window> modal_window(
       CreateTestWindowWithId(-2, modal_container));
   ActivateWindow(modal_window.get());
