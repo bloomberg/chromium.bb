@@ -165,6 +165,7 @@ TaskManager.prototype = {
     $('about-memory-link').addEventListener('click',
                                             this.openAboutMemory.bind(this));
 
+    this.pendingTaskUpdates_ = [];
     this.is_column_shown_ = [];
     for (var i = 0; i < DEFAULT_COLUMNS.length; i++) {
       this.is_column_shown_[i] = DEFAULT_COLUMNS[i][3];
@@ -399,46 +400,78 @@ TaskManager.prototype = {
     return container;
   },
 
-  onTaskChange: function (start, length, tasks) {
+  /**
+   * Updates the task list with the |this.pendingTaskUpdates_| queue.
+   * This function does nothing if it is less than 900 ms after last update. In
+   * such case, the queue remains at that time, and it will update the list
+   * at next change event or at periodical every-second reflesh.
+   * @private
+   */
+  processTaskChange_: function() {
+    var now = +new Date();  // Casts to integer and gets milliseconds.
+
+    // If it is less than 900 ms after last update, the list isn't updated now.
+    // 900 ms is a time to allow at least periodical reflesh of every second.
+    if ((now - this.lastUpdate_) < 900)
+      return;
+    this.lastUpdate_ = now;
+
     var dm = this.dataModel_;
     var sm = this.selectionModel_;
-    if (!dm || !sm)
+    if (!dm || !sm || this.pendingTaskUpdates_.length == 0)
       return;
 
     this.table_.list.startBatchUpdates();
-    // Splice takes the to-be-spliced-in array as individual parameters,
-    // rather than as an array, so we need to perform some acrobatics...
-    var args = [].slice.call(tasks);
-    args.unshift(start, length);
-
     sm.beginChange();
-    var oldSelectedIndexes = sm.selectedIndexes;
 
-    dm.splice.apply(dm, args);
+    var task;
+    while (task = this.pendingTaskUpdates_.shift()) {
+      var type = task.type;
+      var start = task.start;
+      var length = task.length;
+      var tasks = task.tasks;
+      if (type == 'change') {
+        // We have to store the selected indexes and restore them after
+        // splice(), because it might replace some items but the replaced
+        // items would lost the selection.
+        var oldSelectedIndexes = sm.selectedIndexes;
 
-    sm.selectedIndexes = oldSelectedIndexes;
+        var args = [].slice.call(tasks);
+        args.unshift(start, length);
+        dm.splice.apply(dm, args);
+
+        sm.selectedIndexes = oldSelectedIndexes.filter(function(index) {
+          return index < dm.length;
+        });
+      } else if (type == 'add') {
+        var args = [].slice.call(tasks);
+        args.unshift(start, 0);
+        dm.splice.apply(dm, args);
+      } else if (type == 'remove') {
+        dm.splice(start, length);
+      }
+    }
+
     sm.endChange();
     this.table_.list.endBatchUpdates();
   },
 
-  onTaskAdd: function (start, length, tasks) {
-    var dm = this.dataModel_;
-    if (!dm)
-      return;
-
-    // Splice takes the to-be-spliced-in array as individual parameters,
-    // rather than as an array, so we need to perform some acrobatics...
-    var args = [].slice.call(tasks);
-    args.unshift(start, 0);
-
-    dm.splice.apply(dm, args);
+  onTaskChange: function(start, length, tasks) {
+    this.pendingTaskUpdates_.push(
+          {type:'change', start:start, length:length, tasks:tasks});
+    this.processTaskChange_();
   },
 
-  onTaskRemove: function (start, length, tasks) {
-    var dm = this.dataModel_;
-    if (!dm)
-      return;
-    dm.splice(start, length);
+  onTaskAdd: function(start, length, tasks) {
+    this.pendingTaskUpdates_.push(
+        {type:'add', start:start, length:length, tasks:tasks});
+    this.processTaskChange_();
+  },
+
+  onTaskRemove: function(start, length, tasks) {
+    this.pendingTaskUpdates_.push(
+        {type:'remove', start:start, length:length, tasks:tasks});
+    this.processTaskChange_();
   },
 
   /**
