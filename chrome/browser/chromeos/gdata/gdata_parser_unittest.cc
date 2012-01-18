@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -64,36 +64,34 @@ TEST_F(GDataParserTest, DocumentFeedParser) {
   EXPECT_EQ(update_time, feed->updated_time());
 
   // Check authors.
-  ASSERT_EQ(1U, feed->authors()->size());
+  ASSERT_EQ(1U, feed->authors().size());
   EXPECT_EQ(ASCIIToUTF16("tester"), feed->authors()[0]->name());
-  EXPECT_STREQ("tester@testing.com", feed->authors()[0]->email().c_str());
+  EXPECT_EQ("tester@testing.com", feed->authors()[0]->email());
 
   // Check links.
-  ASSERT_EQ(feed->links()->size(), 6U);
+  ASSERT_EQ(feed->links().size(), 6U);
   const Link* self_link = feed->GetLinkByType(gdata::Link::SELF);
   ASSERT_TRUE(self_link);
-  EXPECT_STREQ("https://self_link/", self_link->href().spec().c_str());
-  EXPECT_STREQ("application/atom+xml", self_link->mime_type().c_str());
+  EXPECT_EQ("https://self_link/", self_link->href().spec());
+  EXPECT_EQ("application/atom+xml", self_link->mime_type());
 
   const Link* resumable_link =
       feed->GetLinkByType(gdata::Link::RESUMABLE_CREATE_MEDIA);
   ASSERT_TRUE(resumable_link);
-  EXPECT_STREQ("https://resumable_create_media_link/",
-               resumable_link->href().spec().c_str());
-  EXPECT_STREQ("application/atom+xml",
-               resumable_link->mime_type().c_str());
+  EXPECT_EQ("https://resumable_create_media_link/",
+            resumable_link->href().spec());
+  EXPECT_EQ("application/atom+xml", resumable_link->mime_type());
 
   // Check entries.
-  ASSERT_EQ(3U, feed->entries()->size());
+  ASSERT_EQ(3U, feed->entries().size());
 
   // Check a folder entry.
   const DocumentEntry* folder_entry = feed->entries()[0];
   ASSERT_TRUE(folder_entry);
   EXPECT_EQ(gdata::DocumentEntry::FOLDER, folder_entry->kind());
-  EXPECT_STREQ("\"HhMOFgcNHSt7ImBr\"", folder_entry->etag().c_str());
-  EXPECT_STREQ("folder:1_folder_resouce_id",
-               folder_entry->resource_id().c_str());
-  EXPECT_STREQ("https://1_folder_id", folder_entry->id().c_str());
+  EXPECT_EQ("\"HhMOFgcNHSt7ImBr\"", folder_entry->etag());
+  EXPECT_EQ("folder:1_folder_resouce_id", folder_entry->resource_id());
+  EXPECT_EQ("https://1_folder_id", folder_entry->id());
   EXPECT_EQ(ASCIIToUTF16("Entry 1 Title"), folder_entry->title());
   base::Time entry1_update_time;
   base::Time entry1_publish_time;
@@ -104,16 +102,15 @@ TEST_F(GDataParserTest, DocumentFeedParser) {
   ASSERT_EQ(entry1_update_time, folder_entry->updated_time());
   ASSERT_EQ(entry1_publish_time, folder_entry->published_time());
 
-  ASSERT_EQ(1U, folder_entry->authors()->size());
+  ASSERT_EQ(1U, folder_entry->authors().size());
   EXPECT_EQ(ASCIIToUTF16("entry_tester"), folder_entry->authors()[0]->name());
-  EXPECT_STREQ("entry_tester@testing.com",
-               folder_entry->authors()[0]->email().c_str());
-  EXPECT_STREQ("https://1_folder_content_url/",
-               folder_entry->content_url().spec().c_str());
-  EXPECT_STREQ("application/atom+xml;type=feed",
-               folder_entry->content_mime_type().c_str());
+  EXPECT_EQ("entry_tester@testing.com", folder_entry->authors()[0]->email());
+  EXPECT_EQ("https://1_folder_content_url/",
+            folder_entry->content_url().spec());
+  EXPECT_EQ("application/atom+xml;type=feed",
+            folder_entry->content_mime_type());
 
-  ASSERT_EQ(1U, folder_entry->feed_links()->size());
+  ASSERT_EQ(1U, folder_entry->feed_links().size());
   const FeedLink* feed_link = folder_entry->feed_links()[0];
   ASSERT_TRUE(feed_link);
   ASSERT_EQ(gdata::FeedLink::ACL, feed_link->type());
@@ -121,17 +118,15 @@ TEST_F(GDataParserTest, DocumentFeedParser) {
   const Link* entry1_alternate_link =
       folder_entry->GetLinkByType(gdata::Link::ALTERNATE);
   ASSERT_TRUE(entry1_alternate_link);
-  EXPECT_STREQ("https://1_folder_alternate_link/",
-               entry1_alternate_link->href().spec().c_str());
-  EXPECT_STREQ("text/html", entry1_alternate_link->mime_type().c_str());
+  EXPECT_EQ("https://1_folder_alternate_link/",
+            entry1_alternate_link->href().spec());
+  EXPECT_EQ("text/html", entry1_alternate_link->mime_type());
 
   const Link* entry1_edit_link =
       folder_entry->GetLinkByType(gdata::Link::EDIT);
   ASSERT_TRUE(entry1_edit_link);
-  EXPECT_STREQ("https://1_edit_link/",
-               entry1_edit_link->href().spec().c_str());
-  EXPECT_STREQ("application/atom+xml",
-               entry1_edit_link->mime_type().c_str());
+  EXPECT_EQ("https://1_edit_link/", entry1_edit_link->href().spec());
+  EXPECT_EQ("application/atom+xml", entry1_edit_link->mime_type());
 
   // Check a file entry.
   const DocumentEntry* file_entry = feed->entries()[1];
@@ -140,15 +135,13 @@ TEST_F(GDataParserTest, DocumentFeedParser) {
   EXPECT_EQ(ASCIIToUTF16("filename.m4a"), file_entry->filename());
   EXPECT_EQ(ASCIIToUTF16("sugg_file_name.m4a"),
             file_entry->suggested_filename());
-  EXPECT_STREQ("3b4382ebefec6e743578c76bbd0575ce",
-               file_entry->file_md5().c_str());
+  EXPECT_EQ("3b4382ebefec6e743578c76bbd0575ce", file_entry->file_md5());
   EXPECT_EQ(892721, file_entry->file_size());
   const Link* file_parent_link =
       file_entry->GetLinkByType(gdata::Link::PARENT);
   ASSERT_TRUE(file_parent_link);
-  EXPECT_STREQ("https://file_link_parent/",
-               file_parent_link->href().spec().c_str());
-  EXPECT_STREQ("application/atom+xml", file_parent_link->mime_type().c_str());
+  EXPECT_EQ("https://file_link_parent/", file_parent_link->href().spec());
+  EXPECT_EQ("application/atom+xml", file_parent_link->mime_type());
   EXPECT_EQ(ASCIIToUTF16("Medical"), file_parent_link->title());
 
   // Check a file entry.
@@ -156,4 +149,3 @@ TEST_F(GDataParserTest, DocumentFeedParser) {
   ASSERT_TRUE(document_entry);
   EXPECT_EQ(gdata::DocumentEntry::DOCUMENT, document_entry->kind());
 }
-

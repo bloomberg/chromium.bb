@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_vector.h"
+#include "base/string_piece.h"
 #include "base/time.h"
 #include "googleurl/src/gurl.h"
 
@@ -18,6 +19,12 @@ class Profile;
 namespace base {
 class Value;
 class DictionaryValue;
+template <class StructType>
+class JSONValueConverter;
+namespace internal {
+template <class NestedType>
+class RepeatedMessageConverter;
+}
 }
 
 // Defines data elements of Google Documents API as described in
@@ -47,8 +54,9 @@ class Link {
   };
   Link();
 
-  // Reads link fields from corresponding fields from |dictionary|.
-  bool Parse(const base::DictionaryValue* dictionary);
+  // Registers the mapping between JSON field names and the members in
+  // this class.
+  static void RegisterJSONConverter(base::JSONValueConverter<Link>* converter);
 
   // Type of the link.
   LinkType type() const { return type_; }
@@ -63,8 +71,10 @@ class Link {
   const std::string& mime_type() const { return mime_type_; }
 
  private:
-  // Converts value of link.rel into LinkType.
-  static LinkType GetLinkType(const std::string& rel);
+  // Converts value of link.rel into LinkType. Outputs to |result| and
+  // returns true when |rel| has a valid value. Otherwise does nothing
+  // and returns false.
+  static bool GetLinkType(const base::StringPiece& rel, LinkType* result);
 
   LinkType type_;
   GURL href_;
@@ -75,6 +85,8 @@ class Link {
   static const char kRelField[];
   static const char kTitleField[];
   static const char kTypeField[];
+
+  DISALLOW_COPY_AND_ASSIGN(Link);
 };
 
 // Feed links define links (URLs) to special list of entries (i.e. list of
@@ -88,8 +100,10 @@ class FeedLink {
   };
   FeedLink();
 
-  // Reads link details from corresponding fields from |dictionary|.
-  bool Parse(const base::DictionaryValue* dictionary);
+  // Registers the mapping between JSON field names and the members in
+  // this class.
+  static void RegisterJSONConverter(
+      base::JSONValueConverter<FeedLink>* converter);
 
   // URL of the feed.
   FeedLinkType type() const { return type_; }
@@ -99,21 +113,29 @@ class FeedLink {
 
  private:
   // Converts value of gd$feedLink.rel into FeedLinkType enum.
-  static FeedLinkType GetFeedLinkType(const std::string& rel);
+  // Outputs to |result| and returns true when |rel| has a valid
+  // value.  Otherwise does nothing and returns false.
+  static bool GetFeedLinkType(
+      const base::StringPiece& rel, FeedLinkType* result);
 
   FeedLinkType type_;
   GURL href_;
 
   static const char kHrefField[];
   static const char kRelField[];
+
+  DISALLOW_COPY_AND_ASSIGN(FeedLink);
 };
 
+// Author represents an author of an entity.
 class Author {
  public:
   Author();
 
-  // Reads author details from corresponding fields from |dictionary|.
-  bool Parse(const base::DictionaryValue* dictionary);
+  // Registers the mapping between JSON field names and the members in
+  // this class.
+  static void RegisterJSONConverter(
+      base::JSONValueConverter<Author>* converter);
 
   // Getters.
   const string16& name() const { return name_; }
@@ -124,6 +146,8 @@ class Author {
   std::string email_;
   static const char kNameField[];
   static const char kEmailField[];
+
+  DISALLOW_COPY_AND_ASSIGN(Author);
 };
 
 // Entry category.
@@ -137,8 +161,10 @@ class Category {
   };
   Category();
 
-  // Reads category details from corresponding fields from |dictionary|.
-  bool Parse(const base::DictionaryValue* dictionary);
+  // Registers the mapping between JSON field names and the members in
+  // this class.
+  static void RegisterJSONConverter(
+      base::JSONValueConverter<Category>* converter);
 
   // Category label.
   const string16& label() const { return label_; }
@@ -152,15 +178,42 @@ class Category {
  private:
   // Converts catory scheme into CategoryType enum. For example,
   // http://schemas.google.com/g/2005#kind => Category::KIND
-  CategoryType GetCategoryTypeFromScheme(const std::string& scheme);
+  // Returns false and does not change |result| when |scheme| has an
+  // unrecognizable value.
+  static bool GetCategoryTypeFromScheme(
+      const base::StringPiece& scheme, CategoryType* result);
 
   string16 label_;
   CategoryType type_;
   std::string term_;
-
   static const char kLabelField[];
   static const char kSchemeField[];
   static const char kTermField[];
+
+  DISALLOW_COPY_AND_ASSIGN(Category);
+};
+
+// Content details of a document: mime-type, url, and so on.
+class Content {
+ public:
+  Content();
+
+  // Registers the mapping between JSON field names and the members in
+  // this class.
+  static void RegisterJSONConverter(
+      base::JSONValueConverter<Content>* converter);
+
+  const GURL& url() const { return url_; }
+  const std::string& mime_type() const { return mime_type_; }
+
+ private:
+  GURL url_;
+  std::string mime_type_;
+
+  static const char kSrcField[];
+  static const char kTypeField[];
+
+  DISALLOW_COPY_AND_ASSIGN(Content);
 };
 
 // Base class for feed entries.
@@ -190,27 +243,15 @@ class GDataEntry {
 
   // Returns true when time string (in format yyyy-mm-ddThh:mm:ss.dddZ), is
   // successfully parsed and output as |time|.
-  static bool GetTimeFromString(const std::string& raw_value, base::Time* time);
+  static bool GetTimeFromString(
+      const base::StringPiece& raw_value, base::Time* time);
+
+  // Registers the mapping between JSON field names and the members in
+  // this class.
+  static void RegisterJSONConverter(
+      base::JSONValueConverter<GDataEntry>* converter);
 
  protected:
-  // Handler method, invoked when a new category is added to the entry.
-  virtual void OnAddCategory(Category* category) {}
-
-  // Parses links from |dictionary|.
-  bool ParseLinks(const base::DictionaryValue* dictionary);
-
-  // Parses categories from |dictionary|.
-  bool ParseCategories(const base::DictionaryValue* dictionary);
-
-  // Parses authors from |dictionary|.
-  bool ParseAuthors(const base::DictionaryValue* dictionary);
-
-  // Returns true when time string (in format yyyy-mm-ddThh:mm:ss.dddZ), is
-  // successfully parsed and output as |time|.
-  static bool ParseDateTime(const base::DictionaryValue* dict,
-                            const std::string& field,
-                            base::Time* time);
-
   std::string etag_;
   ScopedVector<Author> authors_;
   ScopedVector<Link> links_;
@@ -221,6 +262,10 @@ class GDataEntry {
   static const char kAuthorField[];
   static const char kLinkField[];
   static const char kCategoryField[];
+  static const char kUpdatedField[];
+  static const char kETagField[];
+
+  DISALLOW_COPY_AND_ASSIGN(GDataEntry);
 };
 
 // Document feed entry.
@@ -237,8 +282,17 @@ class DocumentEntry : public GDataEntry {
     PDF,
   };
   virtual ~DocumentEntry();
-  // Creates document entry from parsed JSON Value.
+
+  // Creates document entry from parsed JSON Value.  You should call
+  // this instead of instantiating JSONValueConverter by yourself
+  // because this method does some post-process for some fields.  See
+  // FillRemainingFields comment and implementation for the details.
   static DocumentEntry* CreateFrom(base::Value* value);
+
+  // Registers the mapping between JSON field names and the members in
+  // this class.
+  static void RegisterJSONConverter(
+      base::JSONValueConverter<DocumentEntry>* converter);
 
   // Document entry resource id.
   const std::string& resource_id() const { return resource_id_; }
@@ -259,10 +313,10 @@ class DocumentEntry : public GDataEntry {
   const std::vector<string16>& labels() const { return labels_; }
 
   // Document entry content URL.
-  const GURL& content_url() const { return content_url_; }
+  const GURL& content_url() const { return content_.url(); }
 
   // Document entry MIME type.
-  const std::string& content_mime_type() const { return content_mime_type_; }
+  const std::string& content_mime_type() const { return content_.mime_type(); }
 
   // List of document feed links.
   const ScopedVector<FeedLink>& feed_links() const { return feed_links_; }
@@ -280,23 +334,14 @@ class DocumentEntry : public GDataEntry {
   int64 file_size() const { return file_size_; }
 
  private:
+  friend class base::internal::RepeatedMessageConverter<DocumentEntry>;
+  friend class DocumentFeed;
+
   DocumentEntry();
 
-  // Parses and initializes data members from content of |dictionary|. Returns
-  // false if parsing fails.
-  bool Parse(const base::DictionaryValue* dictionary);
+  // Fills the remaining fields where JSONValueConverter cannot catch.
+  void FillRemainingFields();
 
-  // Parses properties for file entry from |dictionary|.
-  bool ParseFileProperties(const base::DictionaryValue* dictionary);
-
-  // Parses content properties from |dictionary|.
-  bool ParseContent(const base::DictionaryValue* dictionary);
-
-  // Parses feed links from |dictionary|.
-  bool ParseFeedLinks(const base::DictionaryValue* dictionary);
-
-  // GDataEntry overrides.
-  virtual void OnAddCategory(Category* category) OVERRIDE;
   // Converts categories.term into EntryKind enum.
   static EntryKind GetEntryKindFromTerm(const std::string& term);
 
@@ -306,8 +351,7 @@ class DocumentEntry : public GDataEntry {
   string16 title_;
   base::Time published_time_;
   std::vector<string16> labels_;
-  GURL content_url_;
-  std::string content_mime_type_;
+  Content content_;
   ScopedVector<FeedLink> feed_links_;
   // Optional fields for files only.
   string16 filename_;
@@ -317,18 +361,16 @@ class DocumentEntry : public GDataEntry {
 
   static const char kFeedLinkField[];
   static const char kContentField[];
-  static const char kSrcField[];
-  static const char kTypeField[];
   static const char kFileNameField[];
   static const char kMD5Field[];
   static const char kSizeField[];
   static const char kSuggestedFileNameField[];
-  static const char kETagField[];
   static const char kResourceIdField[];
   static const char kIDField[];
   static const char kTitleField[];
-  static const char kUpdatedField[];
   static const char kPublishedField[];
+
+  DISALLOW_COPY_AND_ASSIGN(DocumentEntry);
 };
 
 // Document feed represents a list of entries. The feed is paginated and
@@ -338,8 +380,17 @@ class DocumentFeed : public GDataEntry {
  public:
   virtual ~DocumentFeed();
 
-  // Creates feed from parsed JSON Value.
+  // Creates feed from parsed JSON Value.  You should call this
+  // instead of instantiating JSONValueConverter by yourself because
+  // this method does some post-process for some fields.  See
+  // FillRemainingFields comment and implementation in DocumentEntry
+  // class for the details.
   static DocumentFeed* CreateFrom(base::Value* value);
+
+  // Registers the mapping between JSON field names and the members in
+  // this class.
+  static void RegisterJSONConverter(
+      base::JSONValueConverter<DocumentFeed>* converter);
 
   // Returns true and passes|url| of the next feed if the current entry list
   // does not completed this feed.
@@ -359,21 +410,22 @@ class DocumentFeed : public GDataEntry {
 
  private:
   DocumentFeed();
-  // Parses and initializes data members from content of |dictionary|. Returns
-  // false if parsing fails.
-  bool Parse(const base::DictionaryValue* dictionary);
+
+  // Parses and initializes data members from content of |value|.
+  // Return false if parsing fails.
+ bool Parse(base::Value* value);
 
   ScopedVector<DocumentEntry> entries_;
   int start_index_;
   int items_per_page_;
   std::string title_;
 
-  static const char kETagField[];
   static const char kStartIndexField[];
   static const char kItemsPerPageField[];
-  static const char kUpdatedField[];
   static const char kTitleField[];
   static const char kEntryField[];
+
+  DISALLOW_COPY_AND_ASSIGN(DocumentFeed);
 };
 
 }  // namespace gdata

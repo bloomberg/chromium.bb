@@ -5,8 +5,10 @@
 #include "chrome/browser/chromeos/gdata/gdata_parser.h"
 
 #include "base/basictypes.h"
-#include "base/scoped_ptr.h"
+#include "base/json/json_value_converter.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/string_number_conversions.h"
+#include "base/string_piece.h"
 #include "base/string_util.h"
 #include "base/values.h"
 
@@ -31,10 +33,12 @@ const char kPresentationTerm[] = "presentation";
 
 const char kSchemeLabels[] = "http://schemas.google.com/g/2005/labels";
 
-const struct {
+struct EntryKindMap {
   DocumentEntry::EntryKind kind;
   const char* entry;
-} kEntryKindMap[] = {
+};
+
+const EntryKindMap kEntryKindMap[] = {
     { DocumentEntry::ITEM,         "item" },
     { DocumentEntry::DOCUMENT,     "document"},
     { DocumentEntry::SPREADSHEET,  "spreadsheet" },
@@ -42,13 +46,14 @@ const struct {
     { DocumentEntry::FOLDER,       "folder"},
     { DocumentEntry::FILE,         "file"},
     { DocumentEntry::PDF,          "pdf"},
-    { DocumentEntry::UNKNOWN,      NULL}
 };
 
-const struct {
+struct LinkTypeMap {
   Link::LinkType type;
   const char* rel;
-} kLinkTypeMap[] = {
+};
+
+const LinkTypeMap kLinkTypeMap[] = {
     { Link::SELF,
       "self" },
     { Link::NEXT,
@@ -77,33 +82,39 @@ const struct {
       "http://schemas.google.com/spreadsheets/2006#tablesfeed"},
     { Link::WORKSHEET_FEED,
       "http://schemas.google.com/spreadsheets/2006#worksheetsfeed"},
-    { Link::UNKNOWN,
-      NULL}
 };
 
-const struct {
+struct FeedLinkTypeMap {
   FeedLink::FeedLinkType type;
   const char* rel;
-} kFeedLinkTypeMap[] = {
+};
+
+const FeedLinkTypeMap kFeedLinkTypeMap[] = {
     { FeedLink::ACL,
       "http://schemas.google.com/acl/2007#accessControlList" },
     { FeedLink::REVISIONS,
       "http://schemas.google.com/docs/2007/revisions" },
-    { FeedLink::UNKNOWN,
-      NULL}
 };
 
-const struct {
+struct CategoryTypeMap {
   Category::CategoryType type;
   const char* scheme;
-} kCategoryTypeMap[] = {
+};
+
+const CategoryTypeMap kCategoryTypeMap[] = {
     { Category::KIND,
       "http://schemas.google.com/g/2005#kind" },
     { Category::LABEL,
       "http://schemas.google.com/g/2005/labels" },
-    { Category::UNKNOWN,
-      NULL}
 };
+
+// Converts |url_string| to |result|.  Always returns true to be used
+// for JSONValueConverter::RegisterCustomField method.
+// TODO(mukai): make it return false in case of invalid |url_string|.
+bool GetGURLFromString(const base::StringPiece& url_string, GURL* result) {
+  *result = GURL(url_string.as_string());
+  return true;
+}
 
 }  // namespace
 
@@ -113,12 +124,11 @@ const char Author::kEmailField[] = "email.$t";
 Author::Author() {
 }
 
-bool Author::Parse(const DictionaryValue* dictionary) {
-  if (dictionary->GetString(kNameField, &name_) &&
-      dictionary->GetString(kEmailField, &email_)) {
-    return true;
-  }
-  return false;
+// static
+void Author::RegisterJSONConverter(
+    base::JSONValueConverter<Author>* converter) {
+  converter->RegisterStringField(kNameField, &Author::name_);
+  converter->RegisterStringField(kEmailField, &Author::email_);
 }
 
 const char Link::kHrefField[] = "href";
@@ -129,31 +139,25 @@ const char Link::kTypeField[] = "type";
 Link::Link() : type_(Link::UNKNOWN) {
 }
 
-bool Link::Parse(const DictionaryValue* dictionary) {
-  std::string rel;
-  std::string href;
-  if (dictionary->GetString(kRelField, &rel) &&
-      dictionary->GetString(kHrefField, &href) &&
-      dictionary->GetString(kTypeField, &mime_type_)) {
-    href_ = GURL(href);
-    type_ = GetLinkType(rel);
-    if (type_ == Link::PARENT)
-      dictionary->GetString(kTitleField, &title_);
-
-    if (type_ != Link::UNKNOWN)
+// static.
+bool Link::GetLinkType(const base::StringPiece& rel, Link::LinkType* result) {
+  for (size_t i = 0; i < arraysize(kLinkTypeMap); i++) {
+    if (rel == kLinkTypeMap[i].rel) {
+      *result = kLinkTypeMap[i].type;
       return true;
+    }
   }
+  DVLOG(1) << "Unknown link type for rel " << rel;
   return false;
 }
 
-// static.
-Link::LinkType Link::GetLinkType(const std::string& rel) {
-  for (size_t i = 0; kLinkTypeMap[i].rel; i++) {
-    if (rel == kLinkTypeMap[i].rel)
-      return kLinkTypeMap[i].type;
-  }
-  DVLOG(1) << "Unknown link type for rel " << rel;
-  return Link::UNKNOWN;
+// static
+void Link::RegisterJSONConverter(base::JSONValueConverter<Link>* converter) {
+  converter->RegisterCustomField<Link::LinkType>(
+      kRelField, &Link::type_, &Link::GetLinkType);
+  converter->RegisterCustomField(kHrefField, &Link::href_, &GetGURLFromString);
+  converter->RegisterStringField(kTitleField, &Link::title_);
+  converter->RegisterStringField(kTypeField, &Link::mime_type_);
 }
 
 const char FeedLink::kHrefField[] = "href";
@@ -162,78 +166,84 @@ const char FeedLink::kRelField[] = "rel";
 FeedLink::FeedLink() : type_(FeedLink::UNKNOWN) {
 }
 
-bool FeedLink::Parse(const DictionaryValue* dictionary) {
-  std::string rel;
-  std::string href;
-  if (dictionary->GetString(kRelField, &rel) &&
-      dictionary->GetString(kHrefField, &href)) {
-    href_ = GURL(href);
-    type_ = GetFeedLinkType(rel);
-    if (type_ != FeedLink::UNKNOWN)
+// static.
+bool FeedLink::GetFeedLinkType(
+    const base::StringPiece& rel, FeedLink::FeedLinkType* result) {
+  for (size_t i = 0; i < arraysize(kFeedLinkTypeMap); i++) {
+    if (rel == kFeedLinkTypeMap[i].rel) {
+      *result = kFeedLinkTypeMap[i].type;
       return true;
+    }
   }
+  DVLOG(1) << "Unknown feed link type for rel " << rel;
   return false;
 }
 
-// static.
-FeedLink::FeedLinkType FeedLink::GetFeedLinkType(const std::string& rel) {
-  for (size_t i = 0; kFeedLinkTypeMap[i].rel; i++) {
-    if (rel == kFeedLinkTypeMap[i].rel)
-      return kFeedLinkTypeMap[i].type;
-  }
-  DVLOG(1) << "Unknown feed link type for rel " << rel;
-  return FeedLink::UNKNOWN;
+// static
+void FeedLink::RegisterJSONConverter(
+    base::JSONValueConverter<FeedLink>* converter) {
+  converter->RegisterCustomField<FeedLink::FeedLinkType>(
+      kRelField, &FeedLink::type_, &FeedLink::GetFeedLinkType);
+  converter->RegisterCustomField(
+      kHrefField, &FeedLink::href_, &GetGURLFromString);
 }
 
 const char Category::kLabelField[] = "label";
 const char Category::kSchemeField[] = "scheme";
 const char Category::kTermField[] = "term";
 
-Category::Category() {
-}
-
-bool Category::Parse(const DictionaryValue* dictionary) {
-  std::string scheme;
-  if (dictionary->GetString(kLabelField, &label_) &&
-      dictionary->GetString(kSchemeField, &scheme) &&
-      dictionary->GetString(kTermField, &term_)) {
-    type_ = GetCategoryTypeFromScheme(scheme);
-    if (type_ != Category::UNKNOWN)
-      return true;
-
-    DVLOG(1) << "Unknown category:"
-             << "\n  label = " << label_
-             << "\n  scheme = " << scheme
-             << "\n  term = " << term_;
-  }
-  return false;
+Category::Category() : type_(UNKNOWN) {
 }
 
 // Converts category.scheme into CategoryType enum.
-Category::CategoryType Category::GetCategoryTypeFromScheme(
-    const std::string& scheme) {
-  for (size_t i = 0; kCategoryTypeMap[i].scheme; i++) {
-    if (scheme == kCategoryTypeMap[i].scheme)
-      return kCategoryTypeMap[i].type;
+bool Category::GetCategoryTypeFromScheme(
+    const base::StringPiece& scheme, Category::CategoryType* result) {
+  for (size_t i = 0; i < arraysize(kCategoryTypeMap); i++) {
+    if (scheme == kCategoryTypeMap[i].scheme) {
+      *result = kCategoryTypeMap[i].type;
+      return true;
+    }
   }
   DVLOG(1) << "Unknown feed link type for scheme " << scheme;
-  return Category::UNKNOWN;
+  return false;
 }
 
+// static
+void Category::RegisterJSONConverter(
+    base::JSONValueConverter<Category>* converter) {
+  converter->RegisterStringField(kLabelField, &Category::label_);
+  converter->RegisterCustomField<Category::CategoryType>(
+      kSchemeField, &Category::type_, &Category::GetCategoryTypeFromScheme);
+  converter->RegisterStringField(kTermField, &Category::term_);
+}
 
 const Link* GDataEntry::GetLinkByType(Link::LinkType type) const {
-  for (ScopedVector<Link>::const_iterator iter = links_.begin();
-       iter != links_.end(); ++iter) {
-    if ((*iter)->type() == type)
-      return (*iter);
+  for (size_t i = 0; i < links_.size(); ++i) {
+    if (links_[i]->type() == type)
+      return links_[i];
   }
   return NULL;
+}
+
+const char Content::kSrcField[] = "src";
+const char Content::kTypeField[] = "type";
+
+Content::Content() {
+}
+
+// static
+void Content::RegisterJSONConverter(
+    base::JSONValueConverter<Content>* converter) {
+  converter->RegisterCustomField(kSrcField, &Content::url_, &GetGURLFromString);
+  converter->RegisterStringField(kTypeField, &Content::mime_type_);
 }
 
 const char GDataEntry::kTimeParsingDelimiters[] = "-:.TZ";
 const char GDataEntry::kAuthorField[] = "author";
 const char GDataEntry::kLinkField[] = "link";
 const char GDataEntry::kCategoryField[] = "category";
+const char GDataEntry::kETagField[] = "gd$etag";
+const char GDataEntry::kUpdatedField[] = "updated.$t";
 
 GDataEntry::GDataEntry() {
 }
@@ -241,55 +251,23 @@ GDataEntry::GDataEntry() {
 GDataEntry::~GDataEntry() {
 }
 
-bool GDataEntry::ParseAuthors(const DictionaryValue* value_dict) {
-  ListValue* authors = NULL;
-  if (value_dict->GetList(kAuthorField, &authors)) {
-    for (ListValue::iterator iter = authors->begin();
-         iter != authors->end();
-         ++iter) {
-      if ((*iter)->GetType() != Value::TYPE_DICTIONARY) {
-        DVLOG(1) << "Invalid author list element";
-        return false;
-      }
-      DictionaryValue* author_dict =
-          reinterpret_cast<DictionaryValue*>(*iter);
-      scoped_ptr<Author> author(new Author());
-      if (author->Parse(author_dict)) {
-        authors_.push_back(author.release());
-      } else {
-        DVLOG(1) << "Invalid author etag = " << etag_;
-      }
-    }
-  }
-  return true;
+// static
+void GDataEntry::RegisterJSONConverter(
+    base::JSONValueConverter<GDataEntry>* converter) {
+  converter->RegisterStringField(kETagField, &GDataEntry::etag_);
+  converter->RegisterRepeatedMessage(kAuthorField, &GDataEntry::authors_);
+  converter->RegisterRepeatedMessage(kLinkField, &GDataEntry::links_);
+  converter->RegisterRepeatedMessage(kCategoryField, &GDataEntry::categories_);
+  converter->RegisterCustomField<base::Time>(
+      kUpdatedField,
+      &GDataEntry::updated_time_,
+      &GDataEntry::GetTimeFromString);
 }
 
-bool GDataEntry::ParseLinks(const DictionaryValue* value_dict) {
-  ListValue* links = NULL;
-  if (value_dict->GetList(kLinkField, &links)) {
-    for (ListValue::iterator iter = links->begin();
-         iter != links->end();
-         ++iter) {
-      if ((*iter)->GetType() != Value::TYPE_DICTIONARY) {
-        DVLOG(1) << "Invalid link list element";
-        return false;
-      }
-      DictionaryValue* link_dict =
-          reinterpret_cast<DictionaryValue*>(*iter);
-      scoped_ptr<Link> link(new Link());
-      if (link->Parse(link_dict))
-        links_.push_back(link.release());
-      else
-        DVLOG(1) << "Invalid link etag = " << etag_;
-    }
-  }
-  return true;
-}
-
-// static.
-bool GDataEntry::GetTimeFromString(const std::string& raw_value,
+// static
+bool GDataEntry::GetTimeFromString(const base::StringPiece& raw_value,
                                    base::Time* time) {
-  std::vector<std::string> parts;
+  std::vector<base::StringPiece> parts;
   if (Tokenize(raw_value, kTimeParsingDelimiters, &parts) != 7)
     return false;
 
@@ -312,55 +290,16 @@ bool GDataEntry::GetTimeFromString(const std::string& raw_value,
   return true;
 }
 
-bool GDataEntry::ParseCategories(const DictionaryValue* value_dict) {
-  ListValue* categories = NULL;
-  if (value_dict->GetList(kCategoryField, &categories)) {
-    for (ListValue::iterator iter = categories->begin();
-         iter != categories->end();
-         ++iter) {
-      if ((*iter)->GetType() != Value::TYPE_DICTIONARY) {
-        DVLOG(1) << "Invalid category list element";
-        return false;
-      }
-      DictionaryValue* category_dict =
-          reinterpret_cast<DictionaryValue*>(*iter);
-      scoped_ptr<Category> category(new Category());
-      if (category->Parse(category_dict)) {
-        OnAddCategory(category.get());
-        categories_->push_back(category.release());
-      } else {
-        DVLOG(1) << "Invalid category etag = " << etag_;
-      }
-    }
-  }
-  return true;
-}
-
-// static.
-bool GDataEntry::ParseDateTime(const DictionaryValue* dict,
-                               const std::string& field,
-                               base::Time* time) {
-  std::string raw_value;
-  if (!dict->GetString(field, &raw_value))
-    return false;
-
-  return GetTimeFromString(raw_value, time);
-}
-
 const char DocumentEntry::kFeedLinkField[] = "gd$feedLink";
 const char DocumentEntry::kContentField[] = "content";
-const char DocumentEntry::kSrcField[] = "src";
-const char DocumentEntry::kTypeField[] = "type";
 const char DocumentEntry::kFileNameField[] = "docs$filename.$t";
 const char DocumentEntry::kMD5Field[] = "docs$md5Checksum.$t";
 const char DocumentEntry::kSizeField[] = "docs$size.$t";
 const char DocumentEntry::kSuggestedFileNameField[] =
     "docs$suggestedFilename.$t";
-const char DocumentEntry::kETagField[] = "gd$etag";
 const char DocumentEntry::kResourceIdField[] = "gd$resourceId.$t";
 const char DocumentEntry::kIDField[] = "id.$t";
 const char DocumentEntry::kTitleField[] = "title.$t";
-const char DocumentEntry::kUpdatedField[] = "updated.$t";
 const char DocumentEntry::kPublishedField[] = "published.$t";
 
 DocumentEntry::DocumentEntry() : kind_(DocumentEntry::UNKNOWN), file_size_(0) {
@@ -369,128 +308,35 @@ DocumentEntry::DocumentEntry() : kind_(DocumentEntry::UNKNOWN), file_size_(0) {
 DocumentEntry::~DocumentEntry() {
 }
 
-bool DocumentEntry::ParseFeedLinks(const DictionaryValue* value_dict) {
-  ListValue* links = NULL;
-  if (value_dict->GetList(kFeedLinkField, &links)) {
-    for (ListValue::iterator iter = links->begin();
-         iter != links->end();
-         ++iter) {
-      if ((*iter)->GetType() != Value::TYPE_DICTIONARY) {
-        DVLOG(1) << "Invalid feed link list element";
-        return false;
-      }
-      DictionaryValue* link_dict =
-          reinterpret_cast<DictionaryValue*>(*iter);
-      scoped_ptr<FeedLink> link(new FeedLink());
-      if (link->Parse(link_dict)) {
-        feed_links_.push_back(link.release());
-      } else {
-        DVLOG(1) << "Invalid feed link etag = " << etag_;
-      }
-    }
-  }
-  return true;
+// static
+void DocumentEntry::RegisterJSONConverter(
+    base::JSONValueConverter<DocumentEntry>* converter) {
+  // inheritant the parent registrations.
+  GDataEntry::RegisterJSONConverter(
+      reinterpret_cast<base::JSONValueConverter<GDataEntry>*>(converter));
+  converter->RegisterStringField(
+      kResourceIdField, &DocumentEntry::resource_id_);
+  converter->RegisterStringField(kIDField, &DocumentEntry::id_);
+  converter->RegisterStringField(kTitleField, &DocumentEntry::title_);
+  converter->RegisterCustomField<base::Time>(
+      kPublishedField, &DocumentEntry::published_time_,
+      &GDataEntry::GetTimeFromString);
+  converter->RegisterRepeatedMessage(
+      kFeedLinkField, &DocumentEntry::feed_links_);
+  converter->RegisterNestedField(kContentField, &DocumentEntry::content_);
+
+  // File properties.  If the document type is not a normal file, then
+  // that's no problem because those feed must not have these fields
+  // themselves, which does not report errors.
+  converter->RegisterStringField(kFileNameField, &DocumentEntry::filename_);
+  converter->RegisterStringField(kMD5Field, &DocumentEntry::file_md5_);
+  converter->RegisterCustomField<int64>(
+      kSizeField, &DocumentEntry::file_size_, &base::StringToInt64);
+  converter->RegisterStringField(
+      kSuggestedFileNameField, &DocumentEntry::suggested_filename_);
 }
 
-bool DocumentEntry::ParseContent(const DictionaryValue* value_dict) {
-  base::DictionaryValue* content = NULL;
-  if (value_dict->GetDictionary(kContentField, &content)) {
-    std::string src;
-    if (content->GetString(kSrcField, &src) &&
-        content->GetString(kTypeField, &content_mime_type_)) {
-      content_url_ = GURL(src);
-      return true;
-    }
-  }
-  DVLOG(1) << "Invalid item content etag = " << etag_;
-  return false;
-}
-
-bool DocumentEntry::ParseFileProperties(const DictionaryValue* value_dict) {
-  if (!value_dict->GetString(kFileNameField, &filename_)) {
-    DVLOG(1) << "File item with no name! " << etag_;
-    return false;
-  }
-
-  if (!value_dict->GetString(kMD5Field, &file_md5_)) {
-    DVLOG(1) << "File item with no md5! " << etag_;
-    return false;
-  }
-
-  std::string file_size;
-  if (!value_dict->GetString(kSizeField, &file_size) ||
-      !file_size.length()) {
-    DVLOG(1) << "File item with no size! " << etag_;
-    return false;
-  }
-
-  if (!base::StringToInt64(file_size, &file_size_)) {
-    DVLOG(1) << "Invalid file size '" << file_size << "' for " << etag_;
-    return false;
-  }
-
-  if (!value_dict->GetString(kSuggestedFileNameField, &suggested_filename_))
-    DVLOG(1) << "File item with no docs$suggestedFilename! " << etag_;
-
-  return true;
-}
-
-bool DocumentEntry::Parse(const DictionaryValue* value_dict) {
-  if (!value_dict->GetString(kETagField, &etag_)) {
-    DVLOG(1) << "Item with no etag!";
-    return false;
-  }
-
-  if (!value_dict->GetString(kResourceIdField, &resource_id_)) {
-    DVLOG(1) << "Item with no resource id! " << etag_;
-    return false;
-  }
-
-  if (!value_dict->GetString(kIDField, &id_)) {
-    DVLOG(1) << "Item with no id! " << etag_;
-    return false;
-  }
-
-  if (!value_dict->GetString(kTitleField, &title_)) {
-    DVLOG(1) << "Item with no title! " << etag_;
-    return false;
-  }
-
-  if (!ParseDateTime(value_dict, kUpdatedField, &updated_time_)) {
-    DVLOG(1) << "Item with no updated date! " << etag_;
-    return false;
-  }
-
-  if (!ParseDateTime(value_dict, kPublishedField, &published_time_)) {
-    DVLOG(1) << "Item with no published date! " << etag_;
-    return false;
-  }
-
-  // Parse categories, will set up entry->kind as well.
-  if (!ParseCategories(value_dict))
-    return false;
-
-  if (kind_ == DocumentEntry::FILE || kind_ == DocumentEntry::PDF) {
-    if (!ParseFileProperties(value_dict))
-      return false;
-  }
-
-  if (!ParseAuthors(value_dict))
-    return false;
-
-  if (!ParseContent(value_dict))
-    return false;
-
-  if (!ParseLinks(value_dict))
-    return false;
-
-  if (!ParseFeedLinks(value_dict))
-    return false;
-
-  return true;
-}
-
-// static.
+// static
 DocumentEntry::EntryKind DocumentEntry::GetEntryKindFromTerm(
     const std::string& term) {
   if (!StartsWithASCII(term, kTermPrefix, false)) {
@@ -499,7 +345,7 @@ DocumentEntry::EntryKind DocumentEntry::GetEntryKindFromTerm(
   }
 
   std::string type = term.substr(strlen(kTermPrefix));
-  for (size_t i = 0; kEntryKindMap[i].entry; i++) {
+  for (size_t i = 0; i < arraysize(kEntryKindMap); i++) {
     if (type == kEntryKindMap[i].entry)
       return kEntryKindMap[i].kind;
   }
@@ -507,19 +353,23 @@ DocumentEntry::EntryKind DocumentEntry::GetEntryKindFromTerm(
   return DocumentEntry::UNKNOWN;
 }
 
-void DocumentEntry::OnAddCategory(Category* category) {
-  if (category->type() == Category::KIND)
-    kind_ = GetEntryKindFromTerm(category->term());
-  else if (category->type() == Category::LABEL)
-    labels_.push_back(category->label());
+void DocumentEntry::FillRemainingFields() {
+  // Set |kind_| and |labels_| based on the |categories_| in the class.
+  // JSONValueConverter does not have the ability to catch an element in a list
+  // based on a predicate.  Thus we need to iterate over |categories_| and
+  // find the elements to set these fields as a post-process.
+  for (size_t i = 0; i < categories_.size(); ++i) {
+    const Category* category = categories_[i];
+    if (category->type() == Category::KIND)
+      kind_ = GetEntryKindFromTerm(category->term());
+    else if (category->type() == Category::LABEL)
+      labels_.push_back(category->label());
+  }
 }
 
-
-const char DocumentFeed::kETagField[] = "gd$etag";
 const char DocumentFeed::kStartIndexField[] = "openSearch$startIndex.$t";
 const char DocumentFeed::kItemsPerPageField[] =
     "openSearch$itemsPerPage.$t";
-const char DocumentFeed::kUpdatedField[] = "updated.$t";
 const char DocumentFeed::kTitleField[] = "title.$t";
 const char DocumentFeed::kEntryField[] = "entry";
 
@@ -529,88 +379,53 @@ DocumentFeed::DocumentFeed() : start_index_(0), items_per_page_(0) {
 DocumentFeed::~DocumentFeed() {
 }
 
-bool DocumentFeed::Parse(const DictionaryValue* value_dict) {
-  if (!value_dict->GetString(kETagField, &etag_)) {
-    DVLOG(1) << "Feed with no etag!";
-    return false;
-  }
-
+// static
+void DocumentFeed::RegisterJSONConverter(
+    base::JSONValueConverter<DocumentFeed>* converter) {
+  // inheritance
+  GDataEntry::RegisterJSONConverter(
+      reinterpret_cast<base::JSONValueConverter<GDataEntry>*>(converter));
   // TODO(zelidrag): Once we figure out where these will be used, we should
   // check for valid start_index_ and items_per_page_ values.
-  std::string start_index;
-  if (!value_dict->GetString(kStartIndexField, &start_index) ||
-      !base::StringToInt(start_index, &start_index_)) {
-    DVLOG(1) << "Feed with no startIndex! " << etag_;
-    return false;
-  }
-
-  std::string items_per_page;
-  if (!value_dict->GetString(kItemsPerPageField, &items_per_page) ||
-      !base::StringToInt(items_per_page, &items_per_page_)) {
-    DVLOG(1) << "Feed with no itemsPerPage! " << etag_;
-    return false;
-  }
-
-  if (!ParseDateTime(value_dict, kUpdatedField, &updated_time_)) {
-    DVLOG(1) << "Feed with no updated date! " << etag_;
-    return false;
-  }
-
-  if (!value_dict->GetString(kTitleField, &title_)) {
-    DVLOG(1) << "Feed with no title!";
-    return false;
-  }
-
-  ListValue* entries = NULL;
-  if (value_dict->GetList(kEntryField, &entries)) {
-    for (ListValue::iterator iter = entries->begin();
-         iter != entries->end();
-         ++iter) {
-      DocumentEntry* entry = DocumentEntry::CreateFrom(*iter);
-      if (entry)
-        entries_.push_back(entry);
-    }
-  }
-
-  // Parse categories.
-  if (!ParseCategories(value_dict))
-    return false;
-
-  // Parse author list.
-  if (!ParseAuthors(value_dict))
-    return false;
-
-  if (!ParseLinks(value_dict))
-    return false;
-
-  return true;
+  converter->RegisterCustomField<int>(
+      kStartIndexField, &DocumentFeed::start_index_, &base::StringToInt);
+  converter->RegisterCustomField<int>(
+      kItemsPerPageField, &DocumentFeed::items_per_page_, &base::StringToInt);
+  converter->RegisterStringField(kTitleField, &DocumentFeed::title_);
+  converter->RegisterRepeatedMessage(kEntryField, &DocumentFeed::entries_);
 }
 
-// static.
+// static
 DocumentEntry* DocumentEntry::CreateFrom(base::Value* value) {
-  if (!value || value->GetType() != Value::TYPE_DICTIONARY)
-    return NULL;
-
-  DictionaryValue* root = reinterpret_cast<DictionaryValue*>(value);
+  base::JSONValueConverter<DocumentEntry> converter;
   scoped_ptr<DocumentEntry> entry(new DocumentEntry());
-  if (!entry->Parse(root)) {
+  if (!converter.Convert(*value, entry.get())) {
     DVLOG(1) << "Invalid document entry!";
     return NULL;
   }
 
+  entry->FillRemainingFields();
   return entry.release();
 }
 
 
-// static.
-DocumentFeed* DocumentFeed::CreateFrom(base::Value* value) {
-  if (!value || value->GetType() != Value::TYPE_DICTIONARY)
-    return NULL;
+bool DocumentFeed::Parse(base::Value* value) {
+  base::JSONValueConverter<DocumentFeed> converter;
+  if (!converter.Convert(*value, this)) {
+    DVLOG(1) << "Invalid document feed!";
+    return false;
+  }
 
-  DictionaryValue* root_entry_dict =
-      reinterpret_cast<DictionaryValue*>(value);
+  for (size_t i = 0; i < entries_.size(); ++i) {
+    entries_[i]->FillRemainingFields();
+  }
+  return true;
+}
+
+// static
+DocumentFeed* DocumentFeed::CreateFrom(base::Value* value) {
   scoped_ptr<DocumentFeed> feed(new DocumentFeed());
-  if (!feed->Parse(root_entry_dict)) {
+  if (!feed->Parse(value)) {
     DVLOG(1) << "Invalid document feed!";
     return NULL;
   }
@@ -620,10 +435,9 @@ DocumentFeed* DocumentFeed::CreateFrom(base::Value* value) {
 
 bool DocumentFeed::GetNextFeedURL(GURL* url) {
   DCHECK(url);
-  for (ScopedVector<Link>::iterator iter = links_.begin();
-      iter != links_.end(); ++iter) {
-    if ((*iter)->type() == Link::NEXT) {
-      *url = (*iter)->href();
+  for (size_t i = 0; i < links_.size(); ++i) {
+    if (links_[i]->type() == Link::NEXT) {
+      *url = links_[i]->href();
       return true;
     }
   }
