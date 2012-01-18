@@ -4673,10 +4673,10 @@
    fun:_Znw*
    ...
    fun:_ZN15DownloadService18GetDownloadManagerEv
-   fun:_ZN11DownloadsUIC1EP5WebUI
-   fun:_ZN12_GLOBAL__N_18NewWebUII11DownloadsUIEEPN7content15WebUIControllerEP5WebUIRK4GURL
-   fun:_ZNK18ChromeWebUIFactory17CreateWebUIForURLEP5WebUIRK4GURL
-   fun:_ZNK22TestChromeWebUIFactory17CreateWebUIForURLEP5WebUIRK4GURL
+   fun:_ZN11DownloadsUIC1EPN7content5WebUIE
+   fun:_ZN12_GLOBAL__N_18NewWebUII11DownloadsUIEEPN7content15WebUIControllerEPNS2_5WebUIERK4GURL
+   fun:_ZNK18ChromeWebUIFactory17CreateWebUIForURLEPN7content5WebUIERK4GURL
+   fun:_ZNK22TestChromeWebUIFactory17CreateWebUIForURLEPN7content5WebUIERK4GURL
    fun:_ZN11TabContents11CreateWebUIERK4GURL
    fun:_ZN11TabContents27CreateWebUIForRenderManagerERK4GURL
    fun:_ZN21RenderViewHostManager30UpdateRendererStateForNavigateERKN7content19NavigationEntryImplE
@@ -4688,7 +4688,6 @@
    fun:_ZN7browser8NavigateEPNS_14NavigateParamsE
    fun:_ZN7Browser30ShowSingletonTabOverwritingNTPERKN7browser14NavigateParamsE
    fun:_ZN7Browser16ShowDownloadsTabEv
-   fun:_ZN7Browser29ExecuteCommandWithDispositionEi21WindowOpenDisposition
 }
 {
    bug_102257
