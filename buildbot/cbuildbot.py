@@ -360,33 +360,32 @@ class SimpleBuilder(Builder):
     try:
       bg.AddStep(archive_stage.Run)
       bg.start()
+      # Tell the archive_stage not to wait for any more data from the test
+      # phase. If the test phase failed strangely, this failsafe ensures
+      # that the archive stage doesn't sit around waiting for data.
+      try:
+        # Run the steps in parallel. If any exceptions occur, RunParallelSteps
+        # will combine them into a single BackgroundException and throw it.
+        steps = []
+        if self.build_config['vm_tests']:
+          steps.append(vm_test_stage.Run)
+          if self.build_config['chrome_tests']:
+            steps.append(chrome_test_stage.Run)
+        steps += [unit_test_stage.Run, prebuilts_stage.Run]
+        background.RunParallelSteps(steps)
+      finally:
+        archive_stage.TestStageExited()
 
-      steps = []
-      if self.build_config['vm_tests']:
-        steps.append(vm_test_stage.Run)
-        if self.build_config['chrome_tests']:
-          steps.append(chrome_test_stage.Run)
-        if self.options.archive:
-            for suite in self.build_config['hw_tests']:
-              hw_test_stage = self._GetStageInstance(
-                  stages.HWTestStage,
-                  archive_stage=archive_stage,
-                  suite=suite,
-                  platform=self.build_config['platform'])
-              steps.append(hw_test_stage.Run)
-      steps += [unit_test_stage.Run, prebuilts_stage.Run]
-      # Run the steps in parallel. If any exceptions occur, RunParallelSteps
-      # will combine them into a single BackgroundException and throw it.
-      background.RunParallelSteps(steps)
-
+      self._RunStage(stages.HWTestStage)
+      self._RunStage(stages.RemoteTestStatusStage)
       build_and_test_success = True
 
     # We skipped out of this build block early, so one of the tests we ran in
     # the background or in parallel must have failed.
-    except background.BackgroundException:
+    except (bs.NonBacktraceBuildException, background.BackgroundException):
       pass
 
-    # Wait for archive stage to finish. Ignore any errors.
+    # Wait for remaining stages to finish. Ignore any errors.
     while not bg.Empty(): bg.WaitForStep()
     bg.join()
 
@@ -732,6 +731,9 @@ def _CreateParser():
   group.add_option('--clobber', action='store_true', dest='clobber',
                     default=False,
                     help='Clears an old checkout before syncing')
+  group.add_option('--hwtests', action='store_true', dest='hw_tests',
+                    default=False,
+                    help='Run tests on remote machine')
   group.add_option('--lkgm', action='store_true', dest='lkgm', default=False,
                     help='Sync to last known good manifest blessed by PFQ')
   parser.add_option('--log_dir', action='callback', dest='log_dir',
@@ -761,6 +763,11 @@ def _CreateParser():
   group.add_option('--nouprev', action='store_false', dest='uprev',
                     default=True,
                     help='Override values from buildconfig and never uprev.')
+  group.add_option('--remoteip', dest='remote_ip', default=None,
+                    help='IP of the remote Chromium OS machine used for '
+                         'testing.')
+  group.add_option('--remoteteststatus', dest='remote_test_status',
+                    default=None, help='List of remote jobs to check status')
   group.add_option('--resume', action='store_true',
                     default=False,
                     help='Skip stages already successfully completed.')

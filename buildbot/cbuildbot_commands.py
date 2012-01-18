@@ -30,8 +30,6 @@ _PRIVATE_BINHOST_CONF_DIR = ('src/private-overlays/chromeos-partner-overlay/'
 _GSUTIL_PATH = '/b/build/scripts/slave/gsutil'
 _GS_ACL = '/home/chrome-bot/slave_archive_acl'
 _BINHOST_PACKAGE_FILE = '/etc/portage/make.profile/package.installable'
-_AUTOTEST_RPC_CLIENT = ('/b/build_internal/scripts/slave-internal/autotest_rpc/'
-                        'autotest_rpc_client.py')
 
 class TestException(Exception):
   pass
@@ -352,6 +350,37 @@ def RunTestSuite(buildroot, board, image_dir, results_dir, test_type,
       % result.returncode)
 
 
+def UpdateRemoteHW(buildroot, image_dir, remote_ip):
+  """Reimage the remote machine using the image modified for test."""
+
+  cwd = os.path.join(buildroot, 'src', 'scripts')
+  test_image_path = os.path.join(image_dir, 'chromiumos_test_image.bin')
+  cmd = ['./image_to_live.sh',
+         '--remote=%s' % remote_ip,
+         '--image=%s' % test_image_path, ]
+
+  cros_lib.RunCommand(cmd, cwd=cwd, enter_chroot=False, error_ok=False,
+                      print_cmd=True)
+
+
+def RunRemoteTest(buildroot, board, remote_ip, test_name, args=None):
+  """Execute an autotest on a remote machine."""
+
+  cwd = os.path.join(buildroot, 'src', 'scripts')
+
+  cmd = ['./run_remote_tests.sh',
+         '--board=%s' % board,
+         '--remote=%s' % remote_ip]
+
+  if args and len(args) > 0:
+    cmd.append('--args=%s' % ','.join(args))
+
+  cmd.append(test_name)
+
+  cros_lib.RunCommand(cmd, cwd=cwd, enter_chroot=True, error_ok=False,
+                      print_cmd=True)
+
+
 def ArchiveTestResults(buildroot, test_results_dir, prefix):
   """Archives the test results into a tarball.
 
@@ -382,25 +411,6 @@ def ArchiveTestResults(buildroot, test_results_dir, prefix):
     cros_lib.Warning('------>  We failed to archive test results. <-----------')
     cros_lib.Warning(str(e))
     cros_lib.Warning('========================================================')
-
-
-def RunHWTestSuite(archive_url, suite, platform, debug):
-  """Run the test suite in the Autotest lab.
-
-  Args:
-    archive_url: Google Storage URL.
-    suite: Name of the Autotest suite.
-    platform: Platform to to run the test on.
-    debug: Whether we are in debug mode.
-  """
-  if not debug:
-    cmd = [_AUTOTEST_RPC_CLIENT,
-           'master2',  # TODO(frankf): Pass master_host param to cbuildbot.
-           'RunJob',
-           '--image_url=%s' % archive_url,
-           '--suite_name=%s' % suite,
-           '--board_type=%s' % platform]
-    cros_lib.RunCommand(cmd)
 
 
 def GenerateMinidumpStackTraces(buildroot, board, gzipped_test_tarball,
