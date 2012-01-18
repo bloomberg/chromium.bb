@@ -62,6 +62,11 @@ TEST_F(ExtensionUnpackerTest, MAYBE_EmptyDefaultLocale) {
   LOG(WARNING) << "Done.";
   EXPECT_EQ(ASCIIToUTF16(errors::kInvalidDefaultLocale),
             unpacker_->error_message());
+  LOG(WARNING) << "Equal.";
+  LOG(WARNING) << "Cleanup: " << temp_dir_.Delete();
+  LOG(WARNING) << "Cleanup2:";
+  unpacker_.reset();
+  LOG(WARNING) << "All clean.";
   g_bug108724_debug = false;
 }
 
@@ -83,6 +88,11 @@ TEST_F(ExtensionUnpackerTest, MAYBE_HasDefaultLocaleMissingLocalesFolder) {
   LOG(WARNING) << "Done.";
   EXPECT_EQ(ASCIIToUTF16(errors::kLocalesTreeMissing),
             unpacker_->error_message());
+  LOG(WARNING) << "Equal.";
+  LOG(WARNING) << "Cleanup: " << temp_dir_.Delete();
+  LOG(WARNING) << "Cleanup2:";
+  unpacker_.reset();
+  LOG(WARNING) << "All clean.";
   g_bug108724_debug = false;
 }
 
@@ -102,6 +112,11 @@ TEST_F(ExtensionUnpackerTest, MAYBE_InvalidDefaultLocale) {
   LOG(WARNING) << "Done.";
   EXPECT_EQ(ASCIIToUTF16(errors::kInvalidDefaultLocale),
             unpacker_->error_message());
+  LOG(WARNING) << "Equal.";
+  LOG(WARNING) << "Cleanup: " << temp_dir_.Delete();
+  LOG(WARNING) << "Cleanup2:";
+  unpacker_.reset();
+  LOG(WARNING) << "All clean.";
   g_bug108724_debug = false;
 }
 
