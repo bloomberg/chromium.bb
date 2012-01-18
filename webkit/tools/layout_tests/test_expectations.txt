@@ -32,9 +32,3 @@ BUGTOMHUDSON MAC : svg/W3C-SVG-1.1/masking-path-02-b.svg = IMAGE
 BUGTOMHUDSON MAC : svg/carto.net/button.svg = IMAGE
 BUGTOMHUDSON MAC : svg/custom/glyph-selection-lang-attribute.svg = IMAGE
 
-// require rebaselining
-BUGROLANDSTEINER LINUX : svg/W3C-I18N/tspan-dirNone-ubOverride-in-default-context.svg = IMAGE
-BUGROLANDSTEINER LINUX : svg/W3C-I18N/tspan-dirNone-ubOverride-in-ltr-context.svg = IMAGE
-
-BUGCR110439 : animations/cross-fade-webkit-mask-box-image.html = IMAGE
-
