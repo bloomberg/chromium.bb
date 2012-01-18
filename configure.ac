@@ -91,6 +91,16 @@ if test x$enable_wayland_compositor == xyes; then
   PKG_CHECK_MODULES(WAYLAND_COMPOSITOR, [wayland-client wayland-egl])
 fi
 
+AC_ARG_WITH(cairo-glesv2, AS_HELP_STRING([--with-cairo-gles2],
+              [Use GLESv2 cairo instead of full GL]),
+              [cairo_modules="cairo-glesv2"],
+              [cairo_modules="cairo-gl"])
+AM_CONDITIONAL(BUILD_FULL_GL_CLIENTS,
+	       test x$cairo_modules == "xcairo-gl")
+if test x$cairo_modules == xcairo-glesv2; then
+  AC_DEFINE([USE_CAIRO_GLESV2], [1], [Use the GLESv2 GL cairo backend])
+fi
+
 AC_ARG_ENABLE(simple-clients, [  --enable-simple-clients],, enable_simple_clients=yes)
 AM_CONDITIONAL(BUILD_SIMPLE_CLIENTS, test x$enable_simple_clients == xyes)
 if test x$enable_simple_clients == xyes; then
@@ -104,12 +114,13 @@ AM_CONDITIONAL(BUILD_CLIENTS, test x$enable_clients == xyes)
 if test x$enable_clients == xyes; then
   AC_DEFINE([BUILD_CLIENTS], [1], [Build the Wayland clients])
 
-  PKG_CHECK_MODULES(CLIENT, [wayland-client wayland-egl egl >= 7.10 gl cairo >= 1.10.0 gdk-pixbuf-2.0 glib-2.0 gobject-2.0 gio-2.0 xkbcommon])
+  PKG_CHECK_MODULES(CLIENT, [wayland-client wayland-egl egl >= 7.10 cairo >= 1.10.0 gdk-pixbuf-2.0 glib-2.0 gobject-2.0 gio-2.0 xkbcommon])
 
   PKG_CHECK_MODULES(POPPLER, [poppler-glib],
 			     [have_poppler=yes], [have_poppler=no])
-  PKG_CHECK_MODULES(CAIRO_EGL, [cairo-egl >= 1.11.3],
+  PKG_CHECK_MODULES(CAIRO_EGL, [cairo-egl >= 1.11.3 $cairo_modules],
 		    [have_cairo_egl=yes], [have_cairo_egl=no])
+
   AS_IF([test "x$have_cairo_egl" = "xyes"],
         [AC_DEFINE([HAVE_CAIRO_EGL], [1], [Have cairo-egl])],
         [AC_MSG_WARN([Cairo-EGL not found - clients will use cairo image])])

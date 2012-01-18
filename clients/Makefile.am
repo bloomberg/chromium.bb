@@ -18,7 +18,6 @@ endif
 
 if BUILD_CLIENTS
 clients_programs =				\
-	gears					\
 	flower					\
 	screenshot				\
 	terminal				\
@@ -26,8 +25,8 @@ clients_programs =				\
 	dnd					\
 	smoke					\
 	resizor					\
-	wscreensaver				\
-	eventdemo
+	eventdemo				\
+	$(full_gl_client_programs)
 
 desktop_shell = weston-desktop-shell
 tablet_shell = weston-tablet-shell
@@ -37,7 +36,7 @@ noinst_LIBRARIES = libtoytoolkit.a
 AM_CFLAGS = $(GCC_CFLAGS)
 AM_CPPFLAGS =					\
 	-DDATADIR='"$(datadir)"'		\
-	$(CLIENT_CFLAGS)
+	$(CLIENT_CFLAGS) $(CAIRO_EGL_CFLAGS)
 
 libtoytoolkit_a_SOURCES =			\
 	window.c				\
@@ -47,10 +46,7 @@ libtoytoolkit_a_SOURCES =			\
 
 toolkit_libs =					\
 	libtoytoolkit.a				\
-	$(CLIENT_LIBS) -lrt -lm
-
-gears_SOURCES = gears.c
-gears_LDADD = $(toolkit_libs)
+	$(CLIENT_LIBS) $(CAIRO_EGL_LIBS) -lrt -lm
 
 flower_SOURCES = flower.c
 flower_LDADD = $(toolkit_libs)
@@ -72,17 +68,6 @@ smoke_LDADD = $(toolkit_libs)
 
 resizor_SOURCES = resizor.c
 resizor_LDADD = $(toolkit_libs)
-
-wscreensaver_SOURCES =				\
-	wscreensaver.c				\
-	wscreensaver.h				\
-	desktop-shell-client-protocol.h		\
-	desktop-shell-protocol.c		\
-	wscreensaver-glue.c			\
-	wscreensaver-glue.h			\
-	glmatrix.c				\
-	matrix3.xpm
-wscreensaver_LDADD = $(toolkit_libs) -lGLU
 
 eventdemo_SOURCES = eventdemo.c
 eventdemo_LDADD = $(toolkit_libs)
@@ -110,6 +95,26 @@ BUILT_SOURCES =					\
 	tablet-shell-protocol.c
 
 CLEANFILES = $(BUILT_SOURCES)
+endif
+
+if BUILD_FULL_GL_CLIENTS
+full_gl_client_programs =			\
+	gears					\
+	wscreensaver
+
+gears_SOURCES = gears.c
+gears_LDADD = $(toolkit_libs)
+
+wscreensaver_SOURCES =				\
+	wscreensaver.c				\
+	wscreensaver.h				\
+	desktop-shell-client-protocol.h		\
+	desktop-shell-protocol.c		\
+	wscreensaver-glue.c			\
+	wscreensaver-glue.h			\
+	glmatrix.c				\
+	matrix3.xpm
+wscreensaver_LDADD = $(toolkit_libs) -lGLU
 endif
 
 @wayland_scanner_rules@

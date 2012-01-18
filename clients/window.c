@@ -2743,13 +2743,24 @@ init_egl(struct display *d)
 		EGL_NONE
 	};
 
+#ifdef USE_CAIRO_GLESV2
+	static const EGLint context_attribs[] = {
+		EGL_CONTEXT_CLIENT_VERSION, 2,
+		EGL_NONE
+	};
+	EGLint api = EGL_OPENGL_ES_API;
+#else
+	EGLint *context_attribs = NULL;
+	EGLint api = EGL_OPENGL_API;
+#endif
+
 	d->dpy = eglGetDisplay(d->display);
 	if (!eglInitialize(d->dpy, &major, &minor)) {
 		fprintf(stderr, "failed to initialize display\n");
 		return -1;
 	}
 
-	if (!eglBindAPI(EGL_OPENGL_API)) {
+	if (!eglBindAPI(api)) {
 		fprintf(stderr, "failed to bind api EGL_OPENGL_API\n");
 		return -1;
 	}
@@ -2766,13 +2777,14 @@ init_egl(struct display *d)
 		return -1;
 	}
 
-	d->rgb_ctx = eglCreateContext(d->dpy, d->rgb_config, EGL_NO_CONTEXT, NULL);
+	d->rgb_ctx = eglCreateContext(d->dpy, d->rgb_config,
+				      EGL_NO_CONTEXT, context_attribs);
 	if (d->rgb_ctx == NULL) {
 		fprintf(stderr, "failed to create context\n");
 		return -1;
 	}
 	d->argb_ctx = eglCreateContext(d->dpy, d->argb_config,
-				       EGL_NO_CONTEXT, NULL);
+				       EGL_NO_CONTEXT, context_attribs);
 	if (d->argb_ctx == NULL) {
 		fprintf(stderr, "failed to create context\n");
 		return -1;
