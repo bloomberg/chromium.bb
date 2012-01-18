@@ -18,6 +18,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_switches.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -340,16 +341,11 @@ class GpuPixelBrowserTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(GpuPixelBrowserTest);
 };
 
-// Enable initially only on Windows and progressively enable on more
-// platforms.
-// Bug tracking test failure on Windows/Mac: http://crbug.com/95214
-// Bug tracking test failure on Linux: http://crbug.com/95214
 #if defined(USE_AURA)
 #define MAYBE_WebGLTeapot DISABLED_WebGLTeapot
 #else
 #define MAYBE_WebGLTeapot WebGLTeapot
 #endif
-
 IN_PROC_BROWSER_TEST_F(GpuPixelBrowserTest, MAYBE_WebGLTeapot) {
   // If test baseline needs to be updated after a given revision, update the
   // following number. If no revision requirement, then 0.
@@ -358,6 +354,54 @@ IN_PROC_BROWSER_TEST_F(GpuPixelBrowserTest, MAYBE_WebGLTeapot) {
   gfx::Size container_size(500, 500);
   FilePath url =
       test_data_dir().AppendASCII("webgl_teapot").AppendASCII("teapot.html");
+  RunPixelTest(container_size, url, ref_img_revision_update);
+}
+
+class Canvas2DPixelTestHD : public GpuPixelBrowserTest {
+ public:
+  virtual void SetUpCommandLine(CommandLine* command_line) {
+    GpuPixelBrowserTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitch(switches::kEnableAccelerated2dCanvas);
+  }
+};
+
+#if defined(USE_AURA)
+#define MAYBE_Canvas2DRedBoxHD DISABLED_Canvas2DRedBoxHD
+#else
+#define MAYBE_Canvas2DRedBoxHD Canvas2DRedBoxHD
+#endif
+IN_PROC_BROWSER_TEST_F(Canvas2DPixelTestHD, MAYBE_Canvas2DRedBoxHD) {
+  // If test baseline needs to be updated after a given revision, update the
+  // following number. If no revision requirement, then 0.
+  const int64 ref_img_revision_update = 0;
+
+  gfx::Size container_size(500, 500);
+  FilePath url =
+      test_data_dir().AppendASCII("pixel_canvas2d.html");
+  RunPixelTest(container_size, url, ref_img_revision_update);
+}
+
+class Canvas2DPixelTestSD : public GpuPixelBrowserTest {
+ public:
+  virtual void SetUpCommandLine(CommandLine* command_line) {
+    GpuPixelBrowserTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitch(switches::kDisableAccelerated2dCanvas);
+  }
+};
+
+#if defined(USE_AURA)
+#define MAYBE_Canvas2DRedBoxSD DISABLED_Canvas2DRedBoxSD
+#else
+#define MAYBE_Canvas2DRedBoxSD Canvas2DRedBoxSD
+#endif
+IN_PROC_BROWSER_TEST_F(Canvas2DPixelTestSD, MAYBE_Canvas2DRedBoxSD) {
+  // If test baseline needs to be updated after a given revision, update the
+  // following number. If no revision requirement, then 0.
+  const int64 ref_img_revision_update = 0;
+
+  gfx::Size container_size(500, 500);
+  FilePath url =
+      test_data_dir().AppendASCII("pixel_canvas2d.html");
   RunPixelTest(container_size, url, ref_img_revision_update);
 }
 
