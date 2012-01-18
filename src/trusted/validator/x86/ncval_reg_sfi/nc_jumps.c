@@ -80,17 +80,14 @@ static void NaClAddJumpToJumpSets(NaClValidatorState* vstate,
                   from_address, to_address));
     NaClAddressSetAddInline(vstate->jump_sets.actual_targets,
                             to_address, vstate);
-  }
-  /* The range check may not be strictly necessary given that we have
-   * guard regions around the sandbox address space, but it shouldn't
-   * hurt to disallow branches that overflow or underflow the address
-   * space.
-   */
-  else if ((to_address & vstate->alignment_mask) == 0 &&
-           (to_address & ~(NaClPcAddress) 0xffffffff) == 0) {
-    /* Allow bundle-aligned jump. */
-  }
-  else {
+  } else if ((to_address & vstate->alignment_mask) == 0) {
+    /* Allow bundle-aligned jump.  If the jump overflows or underflows the
+     * 4GB untrusted address space it will hit the guard regions.  The largest
+     * potential jump offset is +/-2GB.  We could allow direct jumps only within
+     * the 4GB untrusted address space, but there is no need for this
+     * restriction and it would make validation judgements position-dependent.
+     */
+  } else {
     NaClValidatorInstMessage(LOG_ERROR, vstate, vstate->cur_inst_state,
                              "Instruction jumps to bad address\n");
   }
@@ -430,17 +427,11 @@ static void NaClAddExprJumpTarget(NaClValidatorState* vstate) {
         }
         break;
       case ExprConstant:
-      case ExprConstant64: {
-        /* Explicit jump value. Allow "call 0" as special case. */
-        uint64_t target = NaClGetExpConstant(vector, i);
-        if (! (target == 0 &&
-               NaClInstStateInst(inst_state)->name == InstCall)) {
-          NaClAddJumpToJumpSets(vstate,
-                                NaClInstStateVpc(inst_state),
-                                (NaClPcAddress) target);
-        }
+      case ExprConstant64:
+        /* Direct jump. */
+        NaClAddJumpToJumpSets(vstate, NaClInstStateVpc(inst_state),
+                              (NaClPcAddress) NaClGetExpConstant(vector, i));
         break;
-      }
       default:
         NaClValidatorInstMessage(
             LOG_ERROR, vstate, inst_state,

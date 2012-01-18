@@ -1,4 +1,2 @@
-VALIDATOR: 0000000000020000: e9 fb ff ff bf                               jmp 0xffffffffc0020000
-VALIDATOR: ERROR: Instruction jumps to bad address
 VALIDATOR: Checking block alignment and jump targets: 20000 to 20005
-*** <input> IS UNSAFE ***
+*** <input> is safe ***
