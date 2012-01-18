@@ -1,5 +1,5 @@
-# -*- python -*-
-# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# -*- gyp -*-
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -268,11 +268,6 @@
       ],
       'conditions': [
         ['OS=="linux"', {
-          'link_settings': {
-            'libraries': [
-              '-ldl',
-            ],
-          },
 # TODO(mcgrathr): What this is supposed to do is just ensure that making
 # sel_ldr will also make nacl_helper_bootstrap.  However, there is a Gyp
 # bug such that nacl_bootstrap_lib will be included in the sel_ldr link,
