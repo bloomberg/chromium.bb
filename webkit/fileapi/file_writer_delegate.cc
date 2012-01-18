@@ -158,7 +158,7 @@ void FileWriterDelegate::OnCertificateRequested(
 
 void FileWriterDelegate::OnSSLCertificateError(net::URLRequest* request,
                                                const net::SSLInfo& ssl_info,
-                                               bool is_hsts_host) {
+                                               bool fatal) {
   NOTREACHED();
   OnError(base::PLATFORM_FILE_ERROR_SECURITY);
 }

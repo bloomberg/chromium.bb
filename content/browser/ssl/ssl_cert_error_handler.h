@@ -21,14 +21,14 @@ class SSLCertErrorHandler : public SSLErrorHandler {
                       net::URLRequest* request,
                       ResourceType::Type resource_type,
                       const net::SSLInfo& ssl_info,
-                      bool is_hsts_host);
+                      bool fatal);
 
   virtual SSLCertErrorHandler* AsSSLCertErrorHandler() OVERRIDE;
 
   // These accessors are available on either thread
   const net::SSLInfo& ssl_info() const { return ssl_info_; }
   int cert_error() const { return cert_error_; }
-  bool is_hsts_host() const { return is_hsts_host_; }
+  bool fatal() const { return fatal_; }
 
  protected:
   // SSLErrorHandler methods
@@ -41,7 +41,8 @@ class SSLCertErrorHandler : public SSLErrorHandler {
   // These read-only members may be accessed on any thread.
   const net::SSLInfo ssl_info_;
   const int cert_error_;  // The error we represent.
-  const bool is_hsts_host_;  // true if the error is from an HSTS host.
+  const bool fatal_;  // True if the error is from a host requiring
+                      // certificate errors to be fatal.
 
   DISALLOW_COPY_AND_ASSIGN(SSLCertErrorHandler);
 };

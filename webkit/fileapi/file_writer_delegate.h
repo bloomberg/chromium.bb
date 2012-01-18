@@ -45,7 +45,7 @@ class FileWriterDelegate : public net::URLRequest::Delegate {
       net::SSLCertRequestInfo* cert_request_info) OVERRIDE;
   virtual void OnSSLCertificateError(net::URLRequest* request,
                                      const net::SSLInfo& ssl_info,
-                                     bool is_hsts_host) OVERRIDE;
+                                     bool fatal) OVERRIDE;
   virtual void OnResponseStarted(net::URLRequest* request) OVERRIDE;
   virtual void OnReadCompleted(net::URLRequest* request,
                                int bytes_read) OVERRIDE;
