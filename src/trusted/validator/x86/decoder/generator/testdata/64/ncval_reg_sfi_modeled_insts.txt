@@ -837,38 +837,38 @@ Target: x86-64 bit mode
   a4                          386 OpcodeAllowsRep OperandSize_b PartialInstruction
     [P] DontCare $Yb (s), $Xb (u)
       RegES_EDI               OpSet
-      RegDS_EDI               OpUse
+      RegDS_ESI               OpUse
   --- a5 ---
   a5                          386 OpcodeAllowsRep OpcodeAllowsData16 OperandSize_w PartialInstruction
     [P] DontCare $Yvw (s), $Xvw (u)
       RegES_EDI               OpSet
-      RegDS_EDI               OpUse
+      RegDS_ESI               OpUse
   a5                          386 OpcodeAllowsRep OperandSize_v PartialInstruction
     [P] DontCare $Yvd (s), $Xvd (u)
       RegES_EDI               OpSet
-      RegDS_EDI               OpUse
+      RegDS_ESI               OpUse
   a5                          386 OpcodeAllowsRep OperandSize_o LongMode PartialInstruction
     [P] DontCare $Yvq (s), $Xvq (u)
       RegES_EDI               OpSet
-      RegDS_EDI               OpUse
+      RegDS_ESI               OpUse
   --- a6 ---
   a6                          386 OpcodeAllowsRep OpcodeAllowsRepne OperandSize_b PartialInstruction
-    [P] DontCare $Xb (u), $Yb (u)
-      RegDS_EDI               OpUse
+    [P] DontCare $Yb (u), $Xb (u)
       RegES_EDI               OpUse
+      RegDS_ESI               OpUse
   --- a7 ---
   a7                          386 OpcodeAllowsRep OpcodeAllowsRepne OpcodeAllowsData16 OperandSize_w PartialInstruction
-    [P] DontCare $Xvw (u), $Yvw (u)
-      RegDS_EDI               OpUse
+    [P] DontCare $Yvw (u), $Xvw (u)
       RegES_EDI               OpUse
+      RegDS_ESI               OpUse
   a7                          386 OpcodeAllowsRep OpcodeAllowsRepne OperandSize_v PartialInstruction
-    [P] DontCare $Xvd (u), $Yvd (u)
-      RegDS_EDI               OpUse
+    [P] DontCare $Yvd (u), $Xvd (u)
       RegES_EDI               OpUse
+      RegDS_ESI               OpUse
   a7                          386 OpcodeAllowsRep OpcodeAllowsRepne OperandSize_o LongMode PartialInstruction
-    [P] DontCare $Xvq (u), $Yvq (u)
-      RegDS_EDI               OpUse
+    [P] DontCare $Yvq (u), $Xvq (u)
       RegES_EDI               OpUse
+      RegDS_ESI               OpUse
   --- a8 ---
   a8                          386 OpcodeHasImmed_b PartialInstruction
     [P] DontCare %al (u), $Ib (u)
@@ -901,20 +901,20 @@ Target: x86-64 bit mode
   ac                          386 OpcodeAllowsRep OperandSize_b PartialInstruction
     [P] DontCare %al (s), $Xb (u)
       RegAL                   OpSet
-      RegDS_EDI               OpUse
+      RegDS_ESI               OpUse
   --- ad ---
   ad                          386 OpcodeAllowsRep OpcodeAllowsData16 OperandSize_w PartialInstruction
     [P] DontCare $rAXvw (s), $Xvw (u)
       RegAX                   OpSet
-      RegDS_EDI               OpUse
+      RegDS_ESI               OpUse
   ad                          386 OpcodeAllowsRep OperandSize_v PartialInstruction
     [P] DontCare $rAXvd (s), $Xvd (u)
       RegEAX                  OpSet
-      RegDS_EDI               OpUse
+      RegDS_ESI               OpUse
   ad                          386 OpcodeAllowsRep OperandSize_o LongMode PartialInstruction
     [P] DontCare $rAXvq (s), $Xvq (u)
       RegRAX                  OpSet
-      RegDS_EDI               OpUse
+      RegDS_ESI               OpUse
   --- ae ---
   ae                          386 OpcodeAllowsRep OpcodeAllowsRepne OperandSize_b PartialInstruction
     [P] DontCare %al (u), $Yb (u)
@@ -2843,7 +2843,7 @@ Target: x86-64 bit mode
       Mmx_E_Operand           OpUse
   --- f7 ---
   0f f7                       MMX ModRmModIs0x3 OpcodeUsesModRm OperandSize_v PartialInstruction
-    [P] DontCare $Xvd (s), $PRq (u)
+    [P] DontCare $Zvd (s), $PRq (u)
       RegDS_EDI               OpSet
       Mmx_E_Operand           OpUse
   --- f8 ---
@@ -3986,7 +3986,7 @@ Target: x86-64 bit mode
       Xmm_E_Operand           OpUse
   --- f7 ---
   66 0f f7                    SSE2 ModRmModIs0x3 OpcodeUsesModRm OpcodeAllowsData16 SizeIgnoresData16 OperandSize_v PartialInstruction
-    [P] DontCare $Xvd (s), $VRdq (u)
+    [P] DontCare $Zvd (s), $VRdq (u)
       RegDS_EDI               OpSet
       Xmm_E_Operand           OpUse
   --- f8 ---

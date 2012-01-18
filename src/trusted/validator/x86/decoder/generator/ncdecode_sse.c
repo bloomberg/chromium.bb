@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that be
  * found in the LICENSE file.
  */
@@ -424,7 +424,7 @@ static void NaClDefBinarySseInsts(struct NaClSymbolTable* st) {
   NaClDefine("   660ff4:     Pmuludq $Vdq, $Wdq",  NACLi_SSE2,    st, Binary);
   NaClDefine("   660ff5:     Pmaddwd $Vdq, $Wdq",  NACLi_SSE2,    st, Binary);
   NaClDefine("   660ff6:     Psadbw $Vdq, $Wdq",   NACLi_SSE2,    st, Binary);
-  NaClDefine("   660ff7:     Maskmovdqu {$Xvd}, $Vdq, $VRdq",
+  NaClDefine("   660ff7:     Maskmovdqu {$Zvd}, $Vdq, $VRdq",
                                                    NACLi_SSE2,    st, Binary);
   NaClDefine("   f20ff0:     Lddqu $Vdq, $Mdq",    NACLi_SSE3,    st, Move);
   NaClDefIter("  f20ff1+@i:  Invalid", 0, 6,       NACLi_INVALID, st, Other);
@@ -529,7 +529,7 @@ static void NaClDefMmxInsts(struct NaClSymbolTable* st) {
   NaClDefine("     0ff4:     Pmuludq $Pq, $Qq",    NACLi_MMX,     st, Binary);
   NaClDefine("     0ff5:     Pmaddwd $Pq, $Qq",    NACLi_MMX,     st, Binary);
   NaClDefine("     0ff6:     Psadbw $Pq, $Qq",     NACLi_MMX,     st, Binary);
-  NaClDefine("     0ff7:     Maskmovq {$Xvd}, $Pq, $PRq",
+  NaClDefine("     0ff7:     Maskmovq {$Zvd}, $Pq, $PRq",
                                                    NACLi_MMX,     st, Binary);
   NaClDefine("     0ff8:     Psubb $Pq, $Qq",      NACLi_MMX,     st, Binary);
   NaClDefine("     0ff9:     Psubw $Pq, $Qq",      NACLi_MMX,     st, Binary);

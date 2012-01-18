@@ -1,5 +1,5 @@
-/*/*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+/*
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -254,6 +254,8 @@ typedef void (*NaClDefOperand)();
  *       instructions.
  *   Y - A memory operand addressed by the ES.rDI registers. Used in string
  *       instructions.
+ *   Z - A memory operand addressed by the DS.rDI registers. Used in maskmov
+ *       instructions.
  *   r8 - The 8 registers rAX, rCX, rDX, rBX, rSP, rBP, rSI, rDI, and the
  *        optional registers r8-r15 if REX.b is set, based on the register value
  *        embedded in the opcode.
@@ -278,6 +280,9 @@ typedef void (*NaClDefOperand)();
  * with the instructions lds, les, lfs, lgs, and lss, which generate a
  * segment address from a General purpose register specified in the ModRm reg
  * field.
+ *
+ * Note: Z is also not in the manual cited above. It has been added to deal with
+ * the implicit argument of maskmov instructions.
  *
  * Valid SIZEs are:
  *   a - Two 16-bit or 32-bit memory operands, depending on the effective

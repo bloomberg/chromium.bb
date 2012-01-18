@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -1066,32 +1066,32 @@ static void NaClOperandForm_Wss() {
 }
 
 static void NaClOperandForm_Xb() {
-  NaClDefOp(RegDS_EDI, NACL_EMPTY_OPFLAGS);
+  NaClDefOp(RegDS_ESI, NACL_EMPTY_OPFLAGS);
   NaClAddIFlags(NACL_IFLAG(OperandSize_b));
 }
 
 static void NaClOperandForm_Xvw() {
-  NaClDefOp(RegDS_EDI, NACL_EMPTY_OPFLAGS);
+  NaClDefOp(RegDS_ESI, NACL_EMPTY_OPFLAGS);
   NaClAddIFlags(NACL_IFLAG(OperandSize_w));
 }
 
 static void NaClOperandForm_Xvd() {
-  NaClDefOp(RegDS_EDI, NACL_EMPTY_OPFLAGS);
+  NaClDefOp(RegDS_ESI, NACL_EMPTY_OPFLAGS);
   NaClAddIFlags(NACL_IFLAG(OperandSize_v));
 }
 
 static void NaClOperandForm_Xvq() {
-  NaClDefOp(RegDS_EDI, NACL_EMPTY_OPFLAGS);
+  NaClDefOp(RegDS_ESI, NACL_EMPTY_OPFLAGS);
   NaClAddIFlags(NACL_IFLAG(OperandSize_o));
 }
 
 static void NaClOperandForm_Xzd() {
-  NaClDefOp(RegES_EDI, NACL_EMPTY_OPFLAGS);
+  NaClDefOp(RegDS_ESI, NACL_EMPTY_OPFLAGS);
   NaClAddIFlags(NACL_IFLAG(OperandSize_v) | NACL_IFLAG(OperandSize_o));
 }
 
 static void NaClOperandForm_Xzw() {
-  NaClDefOp(RegES_EDI, NACL_EMPTY_OPFLAGS);
+  NaClDefOp(RegDS_ESI, NACL_EMPTY_OPFLAGS);
   NaClAddIFlags(NACL_IFLAG(OperandSize_w));
 }
 
@@ -1123,6 +1123,11 @@ static void NaClOperandForm_Yzw() {
 static void NaClOperandForm_Yzd() {
   NaClDefOp(RegES_EDI, NACL_EMPTY_OPFLAGS);
   NaClAddIFlags(NACL_IFLAG(OperandSize_v) | NACL_IFLAG(OperandSize_o));
+}
+
+static void NaClOperandForm_Zvd() {
+  NaClDefOp(RegDS_EDI, NACL_EMPTY_OPFLAGS);
+  NaClAddIFlags(NACL_IFLAG(OperandSize_v));
 }
 
 /**************************************************************************
@@ -1605,6 +1610,7 @@ static void NaClExtractOperandForm(const char* form) {
     NaClSymbolTablePutDefOp("Yvw",     NaClOperandForm_Yvw,       defop_st);
     NaClSymbolTablePutDefOp("Yzd",     NaClOperandForm_Yzd,       defop_st);
     NaClSymbolTablePutDefOp("Yzw",     NaClOperandForm_Yzw,       defop_st);
+    NaClSymbolTablePutDefOp("Zvd",     NaClOperandForm_Zvd,       defop_st);
   }
   value = NaClSymbolTableGet(form, defop_st);
   if (NULL == value || (value->kind != nacl_defop)) {

@@ -12,11 +12,17 @@ VALIDATOR: 0000000000000015: f2 6c                                        [P] do
 VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
 VALIDATOR: 0000000000000015: f2 6c                                        [P] dontcare(illegal)
 VALIDATOR: ERROR: Use of REPNE (F2) prefix for instruction not allowed by Native Client
-VALIDATOR: 0000000000000017: a6                                           [P] dontcare %ds:%rdi (u), %es:%rdi (u)
+VALIDATOR: 0000000000000017: a6                                           [P] dontcare %es:%rdi (u), %ds:%rsi (u)
 VALIDATOR: ERROR: Segment memory reference not allowed
-VALIDATOR: 0000000000000018: f3 a6                                        [P] dontcare %ds:%rdi (u), %es:%rdi (u)
+VALIDATOR: 0000000000000017: a6                                           [P] dontcare %es:%rdi (u), %ds:%rsi (u)
 VALIDATOR: ERROR: Segment memory reference not allowed
-VALIDATOR: 000000000000001a: f2 a6                                        [P] dontcare %ds:%rdi (u), %es:%rdi (u)
+VALIDATOR: 0000000000000018: f3 a6                                        [P] dontcare %es:%rdi (u), %ds:%rsi (u)
+VALIDATOR: ERROR: Segment memory reference not allowed
+VALIDATOR: 0000000000000018: f3 a6                                        [P] dontcare %es:%rdi (u), %ds:%rsi (u)
+VALIDATOR: ERROR: Segment memory reference not allowed
+VALIDATOR: 000000000000001a: f2 a6                                        [P] dontcare %es:%rdi (u), %ds:%rsi (u)
+VALIDATOR: ERROR: Segment memory reference not allowed
+VALIDATOR: 000000000000001a: f2 a6                                        [P] dontcare %es:%rdi (u), %ds:%rsi (u)
 VALIDATOR: ERROR: Segment memory reference not allowed
 VALIDATOR: Checking jump targets: 0 to 1c
 VALIDATOR: Checking that basic blocks are aligned

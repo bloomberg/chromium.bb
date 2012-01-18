@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -414,11 +414,11 @@ void NaClDefOneByteInsts(struct NaClSymbolTable* st) {
   NaClDefine("a5: Movsw {$Yvw}, {$Xvw}", NACLi_386, st, Move);
   NaClDefine("a5: Movsd {$Yvd}, {$Xvd}", NACLi_386, st, Move);
   NaClDef_64("a5: Movsq {$Yvq}, {$Xvq}", NACLi_386, st, Move);
-  NaClDefine("a6: Cmpsb {$Xb}, {$Yb}", NACLi_386, st, Compare);
+  NaClDefine("a6: Cmpsb {$Yb}, {$Xb}", NACLi_386, st, Compare);
   NaClDefPrefixInstChoices_32_64(NoPrefix, 0xa7, 2, 3);
-  NaClDefine("a7: Cmpsw {$Xvw}, {$Yvw}", NACLi_386, st, Compare);
-  NaClDefine("a7: Cmpsd {$Xvd}, {$Yvd}", NACLi_386, st, Compare);
-  NaClDef_64("a7: Cmpsq {$Xvq}, {$Yvq}", NACLi_386, st, Compare);
+  NaClDefine("a7: Cmpsw {$Yvw}, {$Xvw}", NACLi_386, st, Compare);
+  NaClDefine("a7: Cmpsd {$Yvd}, {$Xvd}", NACLi_386, st, Compare);
+  NaClDef_64("a7: Cmpsq {$Yvq}, {$Xvq}", NACLi_386, st, Compare);
   NaClDefine("a8: Test %al, $Ib", NACLi_386, st, Compare);
   NaClDefine("a9: Test $rAXv, $Iz", NACLi_386, st, Compare);
   NaClDefine("aa: Stosb {$Yb}, {%al}", NACLi_386, st, Move);

@@ -905,65 +905,65 @@ NaClExpVector[8] = {
   { OperandReference[1] , 1, 0 },
   { ExprRegister[0] , %eax, ExprSet | ExprUsed | ExprDest | ExprSize32 },
 };
-0000000000000000: a6                                           [P] dontcare %ds:%rdi (u), %es:%rdi (u)
+0000000000000000: a6                                           [P] dontcare %es:%rdi (u), %ds:%rsi (u)
   a6                          386 OpcodeAllowsRep OpcodeAllowsRepne OperandSize_b PartialInstruction
-    DontCare $Xb, $Yb
-      RegDS_EDI               OpUse
+    DontCare $Yb, $Xb
       RegES_EDI               OpUse
+      RegDS_ESI               OpUse
 NaClExpVector[8] = {
   { OperandReference[1] , 0, 0 },
-  { ExprSegmentAddress[2] , 0, ExprUsed | ExprSize64 | ExprDSrCase },
-  { ExprRegister[0] , %ds, ExprSize16 },
-  { ExprRegister[0] , %rdi, ExprSize64 },
-  { OperandReference[1] , 1, 0 },
   { ExprSegmentAddress[2] , 0, ExprUsed | ExprSize64 | ExprESrCase },
   { ExprRegister[0] , %es, ExprSize16 },
   { ExprRegister[0] , %rdi, ExprSize64 },
+  { OperandReference[1] , 1, 0 },
+  { ExprSegmentAddress[2] , 0, ExprUsed | ExprSize64 | ExprDSrCase },
+  { ExprRegister[0] , %ds, ExprSize16 },
+  { ExprRegister[0] , %rsi, ExprSize64 },
 };
-0000000000000000: 66 a7                                        [P] dontcare %ds:%rdi (u), %es:%rdi (u)
+0000000000000000: 66 a7                                        [P] dontcare %es:%rdi (u), %ds:%rsi (u)
   a7                          386 OpcodeAllowsRep OpcodeAllowsRepne OpcodeAllowsData16 OperandSize_w PartialInstruction
-    DontCare $Xvw, $Yvw
-      RegDS_EDI               OpUse
+    DontCare $Yvw, $Xvw
       RegES_EDI               OpUse
+      RegDS_ESI               OpUse
 NaClExpVector[8] = {
   { OperandReference[1] , 0, 0 },
-  { ExprSegmentAddress[2] , 0, ExprUsed | ExprSize64 | ExprDSrCase },
-  { ExprRegister[0] , %ds, ExprSize16 },
-  { ExprRegister[0] , %rdi, ExprSize64 },
-  { OperandReference[1] , 1, 0 },
   { ExprSegmentAddress[2] , 0, ExprUsed | ExprSize64 | ExprESrCase },
   { ExprRegister[0] , %es, ExprSize16 },
   { ExprRegister[0] , %rdi, ExprSize64 },
+  { OperandReference[1] , 1, 0 },
+  { ExprSegmentAddress[2] , 0, ExprUsed | ExprSize64 | ExprDSrCase },
+  { ExprRegister[0] , %ds, ExprSize16 },
+  { ExprRegister[0] , %rsi, ExprSize64 },
 };
-0000000000000000: a7                                           [P] dontcare %ds:%rdi (u), %es:%rdi (u)
+0000000000000000: a7                                           [P] dontcare %es:%rdi (u), %ds:%rsi (u)
   a7                          386 OpcodeAllowsRep OpcodeAllowsRepne OperandSize_v PartialInstruction
-    DontCare $Xvd, $Yvd
-      RegDS_EDI               OpUse
+    DontCare $Yvd, $Xvd
       RegES_EDI               OpUse
+      RegDS_ESI               OpUse
 NaClExpVector[8] = {
   { OperandReference[1] , 0, 0 },
-  { ExprSegmentAddress[2] , 0, ExprUsed | ExprSize64 | ExprDSrCase },
-  { ExprRegister[0] , %ds, ExprSize16 },
-  { ExprRegister[0] , %rdi, ExprSize64 },
-  { OperandReference[1] , 1, 0 },
   { ExprSegmentAddress[2] , 0, ExprUsed | ExprSize64 | ExprESrCase },
   { ExprRegister[0] , %es, ExprSize16 },
   { ExprRegister[0] , %rdi, ExprSize64 },
+  { OperandReference[1] , 1, 0 },
+  { ExprSegmentAddress[2] , 0, ExprUsed | ExprSize64 | ExprDSrCase },
+  { ExprRegister[0] , %ds, ExprSize16 },
+  { ExprRegister[0] , %rsi, ExprSize64 },
 };
-0000000000000000: 48 a7                                        [P] dontcare %ds:%rdi (u), %es:%rdi (u)
+0000000000000000: 48 a7                                        [P] dontcare %es:%rdi (u), %ds:%rsi (u)
   a7                          386 OpcodeAllowsRep OpcodeAllowsRepne OperandSize_o LongMode PartialInstruction
-    DontCare $Xvq, $Yvq
-      RegDS_EDI               OpUse
+    DontCare $Yvq, $Xvq
       RegES_EDI               OpUse
+      RegDS_ESI               OpUse
 NaClExpVector[8] = {
   { OperandReference[1] , 0, 0 },
-  { ExprSegmentAddress[2] , 0, ExprUsed | ExprSize64 | ExprDSrCase },
-  { ExprRegister[0] , %ds, ExprSize16 },
-  { ExprRegister[0] , %rdi, ExprSize64 },
-  { OperandReference[1] , 1, 0 },
   { ExprSegmentAddress[2] , 0, ExprUsed | ExprSize64 | ExprESrCase },
   { ExprRegister[0] , %es, ExprSize16 },
   { ExprRegister[0] , %rdi, ExprSize64 },
+  { OperandReference[1] , 1, 0 },
+  { ExprSegmentAddress[2] , 0, ExprUsed | ExprSize64 | ExprDSrCase },
+  { ExprRegister[0] , %ds, ExprSize16 },
+  { ExprRegister[0] , %rsi, ExprSize64 },
 };
 0000000000000000: aa                                           [P] dontcare %es:%rdi (s), %al (u)
   aa                          386 OpcodeAllowsRep OperandSize_b PartialInstruction
@@ -1017,11 +1017,11 @@ NaClExpVector[6] = {
   { OperandReference[1] , 1, 0 },
   { ExprRegister[0] , %rax, ExprUsed | ExprSize64 },
 };
-0000000000000000: a4                                           [P] dontcare %es:%rdi (s), %ds:%rdi (u)
+0000000000000000: a4                                           [P] dontcare %es:%rdi (s), %ds:%rsi (u)
   a4                          386 OpcodeAllowsRep OperandSize_b PartialInstruction
     DontCare $Yb, $Xb
       RegES_EDI               OpSet
-      RegDS_EDI               OpUse
+      RegDS_ESI               OpUse
 NaClExpVector[8] = {
   { OperandReference[1] , 0, 0 },
   { ExprSegmentAddress[2] , 0, ExprSet | ExprSize64 | ExprESrCase },
@@ -1030,13 +1030,13 @@ NaClExpVector[8] = {
   { OperandReference[1] , 1, 0 },
   { ExprSegmentAddress[2] , 0, ExprUsed | ExprSize64 | ExprDSrCase },
   { ExprRegister[0] , %ds, ExprSize16 },
-  { ExprRegister[0] , %rdi, ExprSize64 },
+  { ExprRegister[0] , %rsi, ExprSize64 },
 };
-0000000000000000: 66 a5                                        [P] dontcare %es:%rdi (s), %ds:%rdi (u)
+0000000000000000: 66 a5                                        [P] dontcare %es:%rdi (s), %ds:%rsi (u)
   a5                          386 OpcodeAllowsRep OpcodeAllowsData16 OperandSize_w PartialInstruction
     DontCare $Yvw, $Xvw
       RegES_EDI               OpSet
-      RegDS_EDI               OpUse
+      RegDS_ESI               OpUse
 NaClExpVector[8] = {
   { OperandReference[1] , 0, 0 },
   { ExprSegmentAddress[2] , 0, ExprSet | ExprSize64 | ExprESrCase },
@@ -1045,13 +1045,13 @@ NaClExpVector[8] = {
   { OperandReference[1] , 1, 0 },
   { ExprSegmentAddress[2] , 0, ExprUsed | ExprSize64 | ExprDSrCase },
   { ExprRegister[0] , %ds, ExprSize16 },
-  { ExprRegister[0] , %rdi, ExprSize64 },
+  { ExprRegister[0] , %rsi, ExprSize64 },
 };
-0000000000000000: a5                                           [P] dontcare %es:%rdi (s), %ds:%rdi (u)
+0000000000000000: a5                                           [P] dontcare %es:%rdi (s), %ds:%rsi (u)
   a5                          386 OpcodeAllowsRep OperandSize_v PartialInstruction
     DontCare $Yvd, $Xvd
       RegES_EDI               OpSet
-      RegDS_EDI               OpUse
+      RegDS_ESI               OpUse
 NaClExpVector[8] = {
   { OperandReference[1] , 0, 0 },
   { ExprSegmentAddress[2] , 0, ExprSet | ExprSize64 | ExprESrCase },
@@ -1060,13 +1060,13 @@ NaClExpVector[8] = {
   { OperandReference[1] , 1, 0 },
   { ExprSegmentAddress[2] , 0, ExprUsed | ExprSize64 | ExprDSrCase },
   { ExprRegister[0] , %ds, ExprSize16 },
-  { ExprRegister[0] , %rdi, ExprSize64 },
+  { ExprRegister[0] , %rsi, ExprSize64 },
 };
-0000000000000000: 48 a5                                        [P] dontcare %es:%rdi (s), %ds:%rdi (u)
+0000000000000000: 48 a5                                        [P] dontcare %es:%rdi (s), %ds:%rsi (u)
   a5                          386 OpcodeAllowsRep OperandSize_o LongMode PartialInstruction
     DontCare $Yvq, $Xvq
       RegES_EDI               OpSet
-      RegDS_EDI               OpUse
+      RegDS_ESI               OpUse
 NaClExpVector[8] = {
   { OperandReference[1] , 0, 0 },
   { ExprSegmentAddress[2] , 0, ExprSet | ExprSize64 | ExprESrCase },
@@ -1075,7 +1075,7 @@ NaClExpVector[8] = {
   { OperandReference[1] , 1, 0 },
   { ExprSegmentAddress[2] , 0, ExprUsed | ExprSize64 | ExprDSrCase },
   { ExprRegister[0] , %ds, ExprSize16 },
-  { ExprRegister[0] , %rdi, ExprSize64 },
+  { ExprRegister[0] , %rsi, ExprSize64 },
 };
 0000000000000000: 9c                                           [P] dontcare(illegal)
   9c                          386 OperandSize_o NaClIllegal OperandSizeDefaultIs64 LongMode PartialInstruction
@@ -1087,57 +1087,57 @@ NaClExpVector[0] = {
     DontCare
 NaClExpVector[0] = {
 };
-0000000000000000: ac                                           [P] dontcare %al (s), %ds:%rdi (u)
+0000000000000000: ac                                           [P] dontcare %al (s), %ds:%rsi (u)
   ac                          386 OpcodeAllowsRep OperandSize_b PartialInstruction
     DontCare %al, $Xb
       RegAL                   OpSet
-      RegDS_EDI               OpUse
+      RegDS_ESI               OpUse
 NaClExpVector[6] = {
   { OperandReference[1] , 0, 0 },
   { ExprRegister[0] , %al, ExprSet | ExprSize8 },
   { OperandReference[1] , 1, 0 },
   { ExprSegmentAddress[2] , 0, ExprUsed | ExprSize64 | ExprDSrCase },
   { ExprRegister[0] , %ds, ExprSize16 },
-  { ExprRegister[0] , %rdi, ExprSize64 },
+  { ExprRegister[0] , %rsi, ExprSize64 },
 };
-0000000000000000: ad                                           [P] dontcare %eax (s), %ds:%rdi (u)
+0000000000000000: ad                                           [P] dontcare %eax (s), %ds:%rsi (u)
   ad                          386 OpcodeAllowsRep OperandSize_v PartialInstruction
     DontCare $rAXvd, $Xvd
       RegEAX                  OpSet
-      RegDS_EDI               OpUse
+      RegDS_ESI               OpUse
 NaClExpVector[6] = {
   { OperandReference[1] , 0, 0 },
   { ExprRegister[0] , %eax, ExprSet | ExprSize32 },
   { OperandReference[1] , 1, 0 },
   { ExprSegmentAddress[2] , 0, ExprUsed | ExprSize64 | ExprDSrCase },
   { ExprRegister[0] , %ds, ExprSize16 },
-  { ExprRegister[0] , %rdi, ExprSize64 },
+  { ExprRegister[0] , %rsi, ExprSize64 },
 };
-0000000000000000: 66 ad                                        [P] dontcare %ax (s), %ds:%rdi (u)
+0000000000000000: 66 ad                                        [P] dontcare %ax (s), %ds:%rsi (u)
   ad                          386 OpcodeAllowsRep OpcodeAllowsData16 OperandSize_w PartialInstruction
     DontCare $rAXvw, $Xvw
       RegAX                   OpSet
-      RegDS_EDI               OpUse
+      RegDS_ESI               OpUse
 NaClExpVector[6] = {
   { OperandReference[1] , 0, 0 },
   { ExprRegister[0] , %ax, ExprSet | ExprSize16 },
   { OperandReference[1] , 1, 0 },
   { ExprSegmentAddress[2] , 0, ExprUsed | ExprSize64 | ExprDSrCase },
   { ExprRegister[0] , %ds, ExprSize16 },
-  { ExprRegister[0] , %rdi, ExprSize64 },
+  { ExprRegister[0] , %rsi, ExprSize64 },
 };
-0000000000000000: 48 ad                                        [P] dontcare %rax (s), %ds:%rdi (u)
+0000000000000000: 48 ad                                        [P] dontcare %rax (s), %ds:%rsi (u)
   ad                          386 OpcodeAllowsRep OperandSize_o LongMode PartialInstruction
     DontCare $rAXvq, $Xvq
       RegRAX                  OpSet
-      RegDS_EDI               OpUse
+      RegDS_ESI               OpUse
 NaClExpVector[6] = {
   { OperandReference[1] , 0, 0 },
   { ExprRegister[0] , %rax, ExprSet | ExprSize64 },
   { OperandReference[1] , 1, 0 },
   { ExprSegmentAddress[2] , 0, ExprUsed | ExprSize64 | ExprDSrCase },
   { ExprRegister[0] , %ds, ExprSize16 },
-  { ExprRegister[0] , %rdi, ExprSize64 },
+  { ExprRegister[0] , %rsi, ExprSize64 },
 };
 0000000000000000: ae                                           [P] dontcare %al (u), %es:%rdi (u)
   ae                          386 OpcodeAllowsRep OpcodeAllowsRepne OperandSize_b PartialInstruction

@@ -483,16 +483,16 @@ Target: x86-64 bit mode
   6e                          386 OpcodeAllowsRep OperandSize_b NaClIllegal
     Outsb {%dx}, {$Xb}
       RegDX                   OpUse OpImplicit
-      RegDS_EDI               OpUse OpImplicit
+      RegDS_ESI               OpUse OpImplicit
   --- 6f ---
   6f                          386 OpcodeAllowsRep OpcodeAllowsData16 OperandSize_w NaClIllegal
     Outsw {%dx}, {$Xzw}
       RegDX                   OpUse OpImplicit
-      RegES_EDI               OpUse OpImplicit
+      RegDS_ESI               OpUse OpImplicit
   6f                          386 OpcodeAllowsRep OperandSize_v OperandSize_o NaClIllegal
     Outsd {%dx}, {$Xzd}
       RegDX                   OpUse OpImplicit
-      RegES_EDI               OpUse OpImplicit
+      RegDS_ESI               OpUse OpImplicit
   --- 70 ---
   70                          386 OpcodeHasImmed OperandSize_b ConditionalJump
     Jo {%rip}, $Jb
@@ -863,38 +863,38 @@ Target: x86-64 bit mode
   a4                          386 OpcodeAllowsRep OperandSize_b
     Movsb {$Yb}, {$Xb}
       RegES_EDI               OpSet OpImplicit
-      RegDS_EDI               OpUse OpImplicit
+      RegDS_ESI               OpUse OpImplicit
   --- a5 ---
   a5                          386 OpcodeAllowsRep OpcodeAllowsData16 OperandSize_w
     Movsw {$Yvw}, {$Xvw}
       RegES_EDI               OpSet OpImplicit
-      RegDS_EDI               OpUse OpImplicit
+      RegDS_ESI               OpUse OpImplicit
   a5                          386 OpcodeAllowsRep OperandSize_v
     Movsd {$Yvd}, {$Xvd}
       RegES_EDI               OpSet OpImplicit
-      RegDS_EDI               OpUse OpImplicit
+      RegDS_ESI               OpUse OpImplicit
   a5                          386 OpcodeAllowsRep OperandSize_o LongMode
     Movsq {$Yvq}, {$Xvq}
       RegES_EDI               OpSet OpImplicit
-      RegDS_EDI               OpUse OpImplicit
+      RegDS_ESI               OpUse OpImplicit
   --- a6 ---
   a6                          386 OpcodeAllowsRep OpcodeAllowsRepne OperandSize_b
-    Cmpsb {$Xb}, {$Yb}
-      RegDS_EDI               OpUse OpImplicit
+    Cmpsb {$Yb}, {$Xb}
       RegES_EDI               OpUse OpImplicit
+      RegDS_ESI               OpUse OpImplicit
   --- a7 ---
   a7                          386 OpcodeAllowsRep OpcodeAllowsRepne OpcodeAllowsData16 OperandSize_w
-    Cmpsw {$Xvw}, {$Yvw}
-      RegDS_EDI               OpUse OpImplicit
+    Cmpsw {$Yvw}, {$Xvw}
       RegES_EDI               OpUse OpImplicit
+      RegDS_ESI               OpUse OpImplicit
   a7                          386 OpcodeAllowsRep OpcodeAllowsRepne OperandSize_v
-    Cmpsd {$Xvd}, {$Yvd}
-      RegDS_EDI               OpUse OpImplicit
+    Cmpsd {$Yvd}, {$Xvd}
       RegES_EDI               OpUse OpImplicit
+      RegDS_ESI               OpUse OpImplicit
   a7                          386 OpcodeAllowsRep OpcodeAllowsRepne OperandSize_o LongMode
-    Cmpsq {$Xvq}, {$Yvq}
-      RegDS_EDI               OpUse OpImplicit
+    Cmpsq {$Yvq}, {$Xvq}
       RegES_EDI               OpUse OpImplicit
+      RegDS_ESI               OpUse OpImplicit
   --- a8 ---
   a8                          386 OpcodeHasImmed_b
     Test %al, $Ib
@@ -927,20 +927,20 @@ Target: x86-64 bit mode
   ac                          386 OpcodeAllowsRep OperandSize_b
     Lodsb {%al}, {$Xb}
       RegAL                   OpSet OpImplicit
-      RegDS_EDI               OpUse OpImplicit
+      RegDS_ESI               OpUse OpImplicit
   --- ad ---
   ad                          386 OpcodeAllowsRep OpcodeAllowsData16 OperandSize_w
     Lodsw {$rAXvw}, {$Xvw}
       RegAX                   OpSet OpImplicit
-      RegDS_EDI               OpUse OpImplicit
+      RegDS_ESI               OpUse OpImplicit
   ad                          386 OpcodeAllowsRep OperandSize_v
     Lodsd {$rAXvd}, {$Xvd}
       RegEAX                  OpSet OpImplicit
-      RegDS_EDI               OpUse OpImplicit
+      RegDS_ESI               OpUse OpImplicit
   ad                          386 OpcodeAllowsRep OperandSize_o LongMode
     Lodsq {$rAXvq}, {$Xvq}
       RegRAX                  OpSet OpImplicit
-      RegDS_EDI               OpUse OpImplicit
+      RegDS_ESI               OpUse OpImplicit
   --- ae ---
   ae                          386 OpcodeAllowsRep OpcodeAllowsRepne OperandSize_b
     Scasb {%al}, {$Yb}
@@ -3155,7 +3155,7 @@ Target: x86-64 bit mode
       Mmx_E_Operand           OpUse
   --- f7 ---
   0f f7                       MMX ModRmModIs0x3 OpcodeUsesModRm OperandSize_v
-    Maskmovq {$Xvd}, $Pq, $PRq
+    Maskmovq {$Zvd}, $Pq, $PRq
       RegDS_EDI               OpSet OpImplicit
       Mmx_G_Operand           OpUse
       Mmx_E_Operand           OpUse
@@ -4452,7 +4452,7 @@ Target: x86-64 bit mode
       Xmm_E_Operand           OpUse
   --- f7 ---
   66 0f f7                    SSE2 ModRmModIs0x3 OpcodeUsesModRm OpcodeAllowsData16 SizeIgnoresData16 OperandSize_v
-    Maskmovdqu {$Xvd}, $Vdq, $VRdq
+    Maskmovdqu {$Zvd}, $Vdq, $VRdq
       RegDS_EDI               OpSet OpImplicit
       Xmm_G_Operand           OpUse
       Xmm_E_Operand           OpUse
