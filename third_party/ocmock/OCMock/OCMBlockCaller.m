@@ -1,5 +1,5 @@
 //---------------------------------------------------------------------------------------
-//	$Id: OCMBlockCaller.m 57 2010-07-19 06:14:27Z erik $
+//	$Id$
 //  Copyright (c) 2010 by Mulle Kybernetik. See License file for details.
 //---------------------------------------------------------------------------------------
 
@@ -11,7 +11,7 @@
 
 -(id)initWithCallBlock:(void (^)(NSInvocation *))theBlock 
 {
-	[super init];
+	self = [super init];
 	block = [theBlock copy];
 	return self;
 }

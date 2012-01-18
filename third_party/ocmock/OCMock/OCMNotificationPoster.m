@@ -1,5 +1,5 @@
 //---------------------------------------------------------------------------------------
-//  $Id: OCMNotificationPoster.m 50 2009-07-16 06:48:19Z erik $
+//  $Id$
 //  Copyright (c) 2009 by Mulle Kybernetik. See License file for details.
 //---------------------------------------------------------------------------------------
 
@@ -10,7 +10,7 @@
 
 - (id)initWithNotification:(id)aNotification
 {
-	[super init];
+	self = [super init];
 	notification = [aNotification retain];
 	return self;
 }

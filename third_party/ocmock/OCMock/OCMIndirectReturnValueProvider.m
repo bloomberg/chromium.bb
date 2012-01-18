@@ -1,5 +1,5 @@
 //---------------------------------------------------------------------------------------
-//  $Id: OCMIndirectReturnValueProvider.m 54 2009-08-18 06:27:36Z erik $
+//  $Id$
 //  Copyright (c) 2009 by Mulle Kybernetik. See License file for details.
 //---------------------------------------------------------------------------------------
 
@@ -11,7 +11,7 @@
 
 - (id)initWithProvider:(id)aProvider andSelector:(SEL)aSelector
 {
-	[super init];
+	self = [super init];
 	provider = [aProvider retain];
 	selector = aSelector;
 	return self;

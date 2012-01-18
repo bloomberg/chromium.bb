@@ -1,5 +1,5 @@
 //---------------------------------------------------------------------------------------
-//  $Id: OCObserverMockObject.m 57 2010-07-19 06:14:27Z erik $
+//  $Id$
 //  Copyright (c) 2009 by Mulle Kybernetik. See License file for details.
 //---------------------------------------------------------------------------------------
 
@@ -13,7 +13,7 @@
 
 - (id)init
 {
-	[super init];
+	self = [super init];
 	recorders = [[NSMutableArray alloc] init];
 	return self;
 }
@@ -64,7 +64,7 @@
 
 - (void)handleNotification:(NSNotification *)aNotification
 {
-	int i, limit;
+	NSUInteger i, limit;
 	
 	limit = expectationOrderMatters ? 1 : [recorders count];
 	for(i = 0; i < limit; i++)

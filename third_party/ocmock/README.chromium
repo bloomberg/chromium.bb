@@ -1,9 +1,9 @@
 Name: ocmock
-URL: http://www.mulle-kybernetik.com/software/OCMock/
+URL: https://github.com/erikdoe/ocmock
 Version: unknown
-Revision: 77
+Revision: 7f521db0628086185123666b0979e48d6ecaeac1
 License: BSD with advertising clause
-License File: OCMock/License.txt
+License File: License.txt
 Security Critical: no
 
 Description:
@@ -12,5 +12,8 @@ with the concept of mock objects please visit mockobjects.com which has more
 details and discussions about this approach to testing software.
 
 Local Modifications:
-gtest_support.h/.mm and ocmock_extensions.h/.mm are not part of the
-ocmock package, and are chromium specific additions.
+This is only a partial inclusion of the OCMock tree. This only includes
+/Source/OCMock because the tests and other files are not necessary for Chromium.
+The License.txt and Changes.txt file are also present from /Source.
+
+Chromium adds gtest_support.h/.mm and ocmock_extensions.h/.mm.

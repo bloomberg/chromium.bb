@@ -1,5 +1,5 @@
 //---------------------------------------------------------------------------------------
-//  $Id: NSInvocation+OCMAdditions.m 67 2010-08-02 03:25:16Z erik $
+//  $Id$
 //  Copyright (c) 2006-2009 by Mulle Kybernetik. See License file for details.
 //---------------------------------------------------------------------------------------
 
@@ -121,7 +121,7 @@
         }
 		case '{': // structure
 		{
-			unsigned maxArgSize = [[self methodSignature] frameLength];
+			NSUInteger maxArgSize = [[self methodSignature] frameLength];
 			NSMutableData *argumentData = [[[NSMutableData alloc] initWithLength:maxArgSize] autorelease];
 			[self getArgument:[argumentData mutableBytes] atIndex:argIndex];
 			return [NSValue valueWithBytes:[argumentData bytes] objCType:argType];
@@ -135,14 +135,14 @@
 - (NSString *)invocationDescription
 {
 	NSMethodSignature *methodSignature = [self methodSignature];
-	unsigned int numberOfArgs = [methodSignature numberOfArguments];
+	NSUInteger numberOfArgs = [methodSignature numberOfArguments];
 	
 	if (numberOfArgs == 2)
 		return NSStringFromSelector([self selector]);
 	
 	NSArray *selectorParts = [NSStringFromSelector([self selector]) componentsSeparatedByString:@":"];
 	NSMutableString *description = [[NSMutableString alloc] init];
-	int i;
+	unsigned int i;
 	for(i = 2; i < numberOfArgs; i++)
 	{
 		[description appendFormat:@"%@%@:", (i > 2 ? @" " : @""), [selectorParts objectAtIndex:(i - 2)]];

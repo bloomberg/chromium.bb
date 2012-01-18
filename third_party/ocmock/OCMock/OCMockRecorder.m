@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------------------
-//  $Id: OCMockRecorder.m 68 2010-08-20 13:20:52Z erik $
-//  Copyright (c) 2004-2010 by Mulle Kybernetik. See License file for details.
+//  $Id$
+//  Copyright (c) 2004-2011 by Mulle Kybernetik. See License file for details.
 //---------------------------------------------------------------------------------------
 
 #import <objc/runtime.h>
@@ -137,7 +137,7 @@
 	if([anInvocation selector] != [recordedInvocation selector])
 		return NO;
 	
-	n = [[recordedInvocation methodSignature] numberOfArguments];
+	n = (int)[[recordedInvocation methodSignature] numberOfArguments];
 	for(i = 2; i < n; i++)
 	{
 		recordedArg = [recordedInvocation getArgumentAtIndexAsObject:i];
@@ -170,8 +170,6 @@
 		}
 		else
 		{
-			if([recordedArg class] != [passedArg class])
-				return NO;
 			if(([recordedArg class] == [NSNumber class]) && 
 				([(NSNumber*)recordedArg compare:(NSNumber*)passedArg] != NSOrderedSame))
 				return NO;

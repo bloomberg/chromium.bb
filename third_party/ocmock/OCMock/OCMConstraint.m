@@ -1,5 +1,5 @@
 //---------------------------------------------------------------------------------------
-//  $Id: OCMConstraint.m 57 2010-07-19 06:14:27Z erik $
+//  $Id$
 //  Copyright (c) 2007-2010 by Mulle Kybernetik. See License file for details.
 //---------------------------------------------------------------------------------------
 
@@ -121,7 +121,7 @@
 
 - (id)initWithConstraintBlock:(BOOL (^)(id))aBlock;
 {
-	[super init];
+	self = [super init];
 	block = aBlock;
 	return self;
 }

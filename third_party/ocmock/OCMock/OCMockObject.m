@@ -1,5 +1,5 @@
 //---------------------------------------------------------------------------------------
-//  $Id: OCMockObject.m 72 2011-01-28 18:45:19Z erik $
+//  $Id$
 //  Copyright (c) 2004-2009 by Mulle Kybernetik. See License file for details.
 //---------------------------------------------------------------------------------------
 
@@ -164,7 +164,7 @@
 - (BOOL)handleInvocation:(NSInvocation *)anInvocation
 {
 	OCMockRecorder *recorder = nil;
-	int			   i;
+	unsigned int			   i;
 	
 	for(i = 0; i < [recorders count]; i++)
 	{

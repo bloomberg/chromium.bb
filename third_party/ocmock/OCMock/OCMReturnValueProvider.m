@@ -1,5 +1,5 @@
 //---------------------------------------------------------------------------------------
-//  $Id: OCMReturnValueProvider.m 52 2009-08-14 07:21:10Z erik $
+//  $Id$
 //  Copyright (c) 2009 by Mulle Kybernetik. See License file for details.
 //---------------------------------------------------------------------------------------
 
@@ -11,7 +11,7 @@
 
 - (id)initWithValue:(id)aValue
 {
-	[super init];
+	self = [super init];
 	returnValue = [aValue retain];
 	return self;
 }
@@ -26,7 +26,7 @@
 {
 	const char *returnType = [[anInvocation methodSignature] methodReturnTypeWithoutQualifiers];
 	if(strcmp(returnType, @encode(id)) != 0)
-		@throw [NSException exceptionWithName:NSInvalidArgumentException reason:@"Expected invocation with object return type." userInfo:nil];
+		@throw [NSException exceptionWithName:NSInvalidArgumentException reason:@"Expected invocation with object return type. Did you mean to use andReturnValue: instead?" userInfo:nil];
 	[anInvocation setReturnValue:&returnValue];	
 }
 
