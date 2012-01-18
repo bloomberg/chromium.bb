@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -788,10 +788,6 @@ void WebGraphicsContext3DInProcessCommandBufferImpl::reshape(
 #ifdef FLIP_FRAMEBUFFER_VERTICALLY
   scanline_.reset(new uint8[width * 4]);
 #endif  // FLIP_FRAMEBUFFER_VERTICALLY
-}
-
-void WebGraphicsContext3DInProcessCommandBufferImpl::setVisibility(
-    bool visible) {
 }
 
 WebGLId WebGraphicsContext3DInProcessCommandBufferImpl::createCompositorTexture(
