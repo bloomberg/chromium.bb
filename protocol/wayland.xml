@@ -30,7 +30,13 @@
   <!-- The core global object. This is a special singleton object.
        It is used for internal wayland protocol features. -->
   <interface name="wl_display" version="1">
+    <description summary="core global object">
+      The core global object. This is a special singleton object.
+      It is used for internal wayland protocol features.
+    </description>
     <request name="bind">
+      <description summary="bind an object to the display">
+      </description>
       <arg name="name" type="uint"/>
       <arg name="interface" type="string"/>
       <arg name="version" type="uint"/>
@@ -54,9 +60,16 @@
     </event>
 
     <enum name="error">
-      <entry name="invalid_object" value="0"/>
-      <entry name="invalid_method" value="1"/>
-      <entry name="no_memory" value="2"/>
+      <description summary="global error values">
+	These errors are global and can be emitted in response to any
+	server request.
+      </description>
+      <entry name="invalid_object" value="0"
+	     summary="server couldn't find object"/>
+      <entry name="invalid_method" value="1"
+	     summary="method doesn't exist on the specified interface"/>
+      <entry name="no_memory" value="2"
+	     summary="server is out of memory"/>
     </enum>
 
     <!-- Notify the client of global objects. These are objects that

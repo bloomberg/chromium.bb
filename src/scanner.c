@@ -47,6 +47,11 @@ struct protocol {
 	char *copyright;
 };
 
+struct description {
+	char *summary;
+	char *text;
+};
+
 struct interface {
 	char *name;
 	char *uppercase_name;
@@ -55,6 +60,7 @@ struct interface {
 	struct wl_list event_list;
 	struct wl_list enumeration_list;
 	struct wl_list link;
+	struct description *description;
 };
 
 struct message {
@@ -66,6 +72,7 @@ struct message {
 	int type_index;
 	int all_null;
 	int destructor;
+	struct description *description;
 };
 
 enum arg_type {
@@ -90,12 +97,14 @@ struct enumeration {
 	char *uppercase_name;
 	struct wl_list entry_list;
 	struct wl_list link;
+	struct description *description;
 };
 
 struct entry {
 	char *name;
 	char *uppercase_name;
 	char *value;
+	char *summary;
 	struct wl_list link;
 };
 
@@ -106,6 +115,7 @@ struct parse_context {
 	struct interface *interface;
 	struct message *message;
 	struct enumeration *enumeration;
+	struct description *description;
 	char character_data[8192];
 	int character_data_length;
 };
@@ -120,6 +130,50 @@ uppercase_dup(const char *src)
 	for (i = 0; u[i]; i++)
 		u[i] = toupper(u[i]);
 	u[i] = '\0';
+
+	return u;
+}
+
+static char *
+desc_dup(char *src)
+{
+	char *u;
+	int i, j = 0, col = 0, line = 0, len;
+
+	len = strlen(src) * 2;
+	u = malloc(len); /* enough room for newlines & comments */
+	if (!u)
+		return NULL;
+
+	memset(u, 0, len);
+
+	/* Strip leading space */
+	for (i = 0; isspace(src[i]); i++)
+		;
+
+	for (; src[i]; i++) {
+		/* Collapse multiple spaces into 1 */
+		if (isspace(src[i]) && isspace(src[i + 1]))
+		    continue;
+
+		if (isspace(src[i]))
+			src[i] = ' ';
+
+		if (col > 72 && isspace(src[i])) {
+			if (src[i+1]) {
+				u[j++] = '\n';
+				u[j++] = ' ';
+				u[j++] = '*';
+				u[j++] = ' ';
+			}
+			line++;
+			col = 0;
+		} else {
+			u[j++] = src[i];
+			col++;
+		}
+	}
+	u[j++] = '\0';
 
 	return u;
 }
@@ -141,7 +195,8 @@ start_element(void *data, const char *element_name, const char **atts)
 	struct arg *arg;
 	struct enumeration *enumeration;
 	struct entry *entry;
-	const char *name, *type, *interface_name, *value;
+	struct description *description;
+	const char *name, *type, *interface_name, *value, *summary;
 	int i, version;
 
 	name = NULL;
@@ -149,6 +204,8 @@ start_element(void *data, const char *element_name, const char **atts)
 	version = 0;
 	interface_name = NULL;
 	value = NULL;
+	summary = NULL;
+	description = NULL;
 	for (i = 0; atts[i]; i += 2) {
 		if (strcmp(atts[i], "name") == 0)
 			name = atts[i + 1];
@@ -160,6 +217,8 @@ start_element(void *data, const char *element_name, const char **atts)
 			value = atts[i + 1];
 		if (strcmp(atts[i], "interface") == 0)
 			interface_name = atts[i + 1];
+		if (strcmp(atts[i], "summary") == 0)
+			summary = atts[i + 1];
 	}
 
 	ctx->character_data_length = 0;
@@ -182,6 +241,7 @@ start_element(void *data, const char *element_name, const char **atts)
 		interface->name = strdup(name);
 		interface->uppercase_name = uppercase_dup(name);
 		interface->version = version;
+		interface->description = NULL;
 		wl_list_init(&interface->request_list);
 		wl_list_init(&interface->event_list);
 		wl_list_init(&interface->enumeration_list);
@@ -259,6 +319,7 @@ start_element(void *data, const char *element_name, const char **atts)
 		enumeration = malloc(sizeof *enumeration);
 		enumeration->name = strdup(name);
 		enumeration->uppercase_name = uppercase_dup(name);
+		enumeration->description = NULL;
 		wl_list_init(&enumeration->entry_list);
 
 		wl_list_insert(ctx->interface->enumeration_list.prev,
@@ -273,8 +334,32 @@ start_element(void *data, const char *element_name, const char **atts)
 		entry->name = strdup(name);
 		entry->uppercase_name = uppercase_dup(name);
 		entry->value = strdup(value);
+		if (summary)
+			entry->summary = strdup(summary);
+		else
+			entry->summary = NULL;
 		wl_list_insert(ctx->enumeration->entry_list.prev,
 			       &entry->link);
+	} else if (strcmp(element_name, "description") == 0) {
+		if (summary == NULL)
+			fail(ctx, "description without summary");
+
+		description = malloc(sizeof *description);
+		if (summary)
+			description->summary = strdup(summary);
+		else
+			description->summary = NULL;
+
+		if (ctx->message)
+			ctx->message->description = description;
+		else if (ctx->enumeration)
+			ctx->enumeration->description = description;
+		else if (ctx->interface)
+			ctx->interface->description = description;
+		else
+			fprintf(stderr,
+				"<description> found in unsupported element\n");
+		ctx->description = description;
 	}
 }
 
@@ -287,6 +372,17 @@ end_element(void *data, const XML_Char *name)
 		ctx->protocol->copyright =
 			strndup(ctx->character_data,
 				ctx->character_data_length);
+	} else if (strcmp(name, "description") == 0) {
+		char *text = strndup(ctx->character_data,
+				     ctx->character_data_length);
+		if (text)
+			ctx->description->text = desc_dup(text);
+		ctx->description = NULL;
+	} else if (strcmp(name, "request") == 0 ||
+		   strcmp(name, "event") == 0) {
+		ctx->message = NULL;
+	} else if (strcmp(name, "enum") == 0) {
+		ctx->enumeration = NULL;
 	}
 }
 
@@ -489,10 +585,30 @@ emit_enumerations(struct interface *interface)
 	struct entry *entry;
 
 	wl_list_for_each(e, &interface->enumeration_list, link) {
+		struct description *desc = e->description;
+
 		printf("#ifndef %s_%s_ENUM\n",
 		       interface->uppercase_name, e->uppercase_name);
 		printf("#define %s_%s_ENUM\n",
 		       interface->uppercase_name, e->uppercase_name);
+
+		if (desc) {
+			printf("/**\n"
+			       " * %s_%s - %s\n", interface->name,
+			       e->name, desc->summary);
+			wl_list_for_each(entry, &e->entry_list, link) {
+				printf(" * @%s_%s_%s: %s\n",
+				       interface->uppercase_name,
+				       e->uppercase_name,
+				       entry->uppercase_name,
+				       entry->summary);
+			}
+			if (desc->text) {
+				printf(" *\n"
+				       " * %s\n", desc->text);
+			}
+			printf(" */\n");
+		}
 		printf("enum %s_%s {\n", interface->name, e->name);
 		wl_list_for_each(entry, &e->entry_list, link)
 			printf("\t%s_%s_%s = %s,\n",
@@ -516,6 +632,19 @@ emit_structs(struct wl_list *message_list, struct interface *interface)
 		return;
 
 	is_interface = message_list == &interface->request_list;
+	if (interface->description) {
+		struct description *desc = interface->description;
+		printf("/**\n"
+		       " * %s - %s\n", interface->name, desc->summary);
+		wl_list_for_each(m, message_list, link) {
+			struct description *mdesc = m->description;
+			printf(" * @%s: %s\n", m->name, mdesc ? mdesc->summary :
+			       "(none)");
+		}
+		printf(" *\n"
+		       " * %s\n"
+		       " */\n", desc->text);
+	}
 	printf("struct %s_%s {\n", interface->name,
 	       is_interface ? "interface" : "listener");
 
