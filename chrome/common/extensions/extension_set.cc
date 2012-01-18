@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -39,6 +39,15 @@ bool ExtensionSet::Contains(const std::string& extension_id) const {
 
 void ExtensionSet::Insert(const scoped_refptr<const Extension>& extension) {
   extensions_[extension->id()] = extension;
+}
+
+bool ExtensionSet::InsertAll(const ExtensionSet& extensions) {
+  size_t before = size();
+  for (ExtensionSet::const_iterator iter = extensions.begin();
+       iter != extensions.end(); ++iter) {
+    Insert(*iter);
+  }
+  return size() != before;
 }
 
 void ExtensionSet::Remove(const std::string& id) {

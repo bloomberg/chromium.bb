@@ -471,6 +471,14 @@ const ExtensionSet* ExtensionService::terminated_extensions() const {
   return &terminated_extensions_;
 }
 
+const ExtensionSet* ExtensionService::GenerateInstalledExtensionsSet() const {
+  ExtensionSet* installed_extensions = new ExtensionSet();
+  installed_extensions->InsertAll(extensions_);
+  installed_extensions->InsertAll(disabled_extensions_);
+  installed_extensions->InsertAll(terminated_extensions_);
+  return installed_extensions;
+}
+
 PendingExtensionManager* ExtensionService::pending_extension_manager() {
   return &pending_extension_manager_;
 }

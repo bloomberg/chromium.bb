@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -114,4 +114,21 @@ TEST(ExtensionSetTest, ExtensionSet) {
   extensions.Remove(ext2->id());
   EXPECT_EQ(2u, extensions.size());
   EXPECT_FALSE(extensions.GetByID(ext2->id()));
+
+  // Make a union of a set with 3 more extensions (only 2 are new).
+  scoped_refptr<Extension> ext5(CreateTestExtension("d", "", ""));
+  scoped_refptr<Extension> ext6(CreateTestExtension("e", "", ""));
+  ASSERT_TRUE(ext5 && ext6);
+
+  scoped_ptr<ExtensionSet> to_add(new ExtensionSet());
+  to_add->Insert(ext3);  // Already in |extensions|, should not affect size.
+  to_add->Insert(ext5);
+  to_add->Insert(ext6);
+
+  ASSERT_TRUE(extensions.Contains(ext3->id()));
+  ASSERT_TRUE(extensions.InsertAll(*to_add));
+  EXPECT_EQ(4u, extensions.size());
+
+  ASSERT_FALSE(extensions.InsertAll(*to_add));  // Re-adding same set no-ops.
+  EXPECT_EQ(4u, extensions.size());
 }

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -84,6 +84,10 @@ class ExtensionSet {
   // Adds the specified extension to the set. The set becomes an owner. Any
   // previous extension with the same ID is removed.
   void Insert(const scoped_refptr<const Extension>& extension);
+
+  // Copies different items from |extensions| to the current set and returns
+  // whether anything changed.
+  bool InsertAll(const ExtensionSet& extensions);
 
   // Removes the specified extension.
   void Remove(const std::string& id);

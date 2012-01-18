@@ -199,6 +199,10 @@ class ExtensionService
   const ExtensionSet* disabled_extensions() const;
   const ExtensionSet* terminated_extensions() const;
 
+  // Retuns a set of all installed, disabled, and terminated extensions and
+  // transfers ownership to caller.
+  const ExtensionSet* GenerateInstalledExtensionsSet() const;
+
   // Gets the object managing the set of pending extensions.
   virtual PendingExtensionManager* pending_extension_manager() OVERRIDE;
 
