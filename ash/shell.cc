@@ -18,6 +18,7 @@
 #include "ash/shell_window_ids.h"
 #include "ash/tooltips/tooltip_controller.h"
 #include "ash/wm/activation_controller.h"
+#include "ash/wm/compact_layout_manager.h"
 #include "ash/wm/compact_status_area_layout_manager.h"
 #include "ash/wm/default_container_event_filter.h"
 #include "ash/wm/default_container_layout_manager.h"
@@ -315,10 +316,10 @@ void Shell::InitLayoutManagers(aura::RootWindow* root_window) {
   // desktop background, etc.  The launcher still exists so we can use its
   // data model and list of open windows, but we hide the UI to save space.
   if (IsWindowModeCompact()) {
-    internal::ToplevelLayoutManager* toplevel_layout_manager =
-        new internal::ToplevelLayoutManager();
-    default_container->SetLayoutManager(toplevel_layout_manager);
-    toplevel_layout_manager->set_status_area_widget(status_widget);
+    internal::CompactLayoutManager* compact_layout_manager =
+        new internal::CompactLayoutManager();
+    default_container->SetLayoutManager(compact_layout_manager);
+    compact_layout_manager->set_status_area_widget(status_widget);
     internal::CompactStatusAreaLayoutManager* status_area_layout_manager =
         new internal::CompactStatusAreaLayoutManager(status_widget);
     GetContainer(internal::kShellWindowId_StatusContainer)->

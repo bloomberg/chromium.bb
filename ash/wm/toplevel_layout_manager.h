@@ -6,21 +6,10 @@
 #define ASH_WM_TOPLEVEL_LAYOUT_MANAGER_H_
 #pragma once
 
-#include <set>
-
+#include "ash/ash_export.h"
+#include "ash/wm/base_layout_manager.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "ui/aura/layout_manager.h"
-#include "ui/aura/root_window_observer.h"
-#include "ui/aura/window_observer.h"
-#include "ash/ash_export.h"
-
-namespace aura {
-class Window;
-}
-namespace views {
-class Widget;
-}
 
 namespace ash {
 namespace internal {
@@ -28,23 +17,20 @@ namespace internal {
 class ShelfLayoutManager;
 
 // ToplevelLayoutManager is the LayoutManager installed on a container that
-// hosts what the shell considers to be top-level windows. It is used if the
-// WorkspaceManager is not enabled. ToplevelLayoutManager listens for changes to
-// kShowStateKey and resizes the window appropriately.
-class ASH_EXPORT ToplevelLayoutManager : public aura::LayoutManager,
-                                         public aura::RootWindowObserver,
-                                         public aura::WindowObserver {
+// hosts what the shell considers to be top-level windows.
+//
+// ToplevelLayoutManager is used if the WorkspaceManager is not enabled and
+// compact window mode is not enabled. It is intended to implement the simplest
+// possible window management code. If you have a more complex window mode
+// please implement a new LayoutManager for it.
+class ASH_EXPORT ToplevelLayoutManager : public BaseLayoutManager {
  public:
   ToplevelLayoutManager();
   virtual ~ToplevelLayoutManager();
 
   void set_shelf(ShelfLayoutManager* shelf) { shelf_ = shelf; }
-  void set_status_area_widget(views::Widget* widget) {
-    status_area_widget_ = widget;
-  }
 
   // LayoutManager overrides:
-  virtual void OnWindowResized() OVERRIDE;
   virtual void OnWindowAddedToLayout(aura::Window* child) OVERRIDE;
   virtual void OnWillRemoveWindowFromLayout(aura::Window* child) OVERRIDE;
   virtual void OnChildWindowVisibilityChanged(aura::Window* child,
@@ -52,38 +38,19 @@ class ASH_EXPORT ToplevelLayoutManager : public aura::LayoutManager,
   virtual void SetChildBounds(aura::Window* child,
                               const gfx::Rect& requested_bounds) OVERRIDE;
 
-  // RootWindowObserver overrides:
-  virtual void OnRootWindowResized(const gfx::Size& new_size) OVERRIDE;
-
   // WindowObserver overrides:
   virtual void OnWindowPropertyChanged(aura::Window* window,
                                        const char* name,
                                        void* old) OVERRIDE;
 
  private:
-  typedef std::set<aura::Window*> WindowSet;
-
-  // Update window bounds based on a change in show state.
-  void UpdateBoundsFromShowState(aura::Window* window);
-
   // Updates the visibility of the shelf based on if there are any full screen
   // windows.
   void UpdateShelfVisibility();
 
-  // Hides the status area if we are managing it and full screen windows are
-  // visible.
-  void UpdateStatusAreaVisibility();
-
-  // Set of windows we're listening to.
-  WindowSet windows_;
-
   // Owned by the Shell container window LauncherContainer. May be NULL if
   // we're not using a shelf.
   ShelfLayoutManager* shelf_;
-
-  // Status area with clock, network, battery, etc. icons. May be NULL if the
-  // shelf is managing the status area.
-  views::Widget* status_area_widget_;
 
   DISALLOW_COPY_AND_ASSIGN(ToplevelLayoutManager);
 };

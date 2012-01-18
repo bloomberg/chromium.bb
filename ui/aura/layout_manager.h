@@ -35,7 +35,7 @@ class AURA_EXPORT LayoutManager {
   // |visible| is the value supplied to |SetVisible()|. If |visible| is true,
   // window->IsVisible() may still return false. See description in
   // Window::IsVisible() for details.
-  virtual void OnChildWindowVisibilityChanged(Window* child, bool visibile) = 0;
+  virtual void OnChildWindowVisibilityChanged(Window* child, bool visible) = 0;
 
   // Invoked when |Window::SetBounds| is called on |child|.
   // Implementation must call |SetChildBoundsDirect| to change the
