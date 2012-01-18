@@ -18,6 +18,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/message_loop.h"
 #include "base/string_number_conversions.h"
@@ -514,11 +515,46 @@ bool GetStringProperty(
   return true;
 }
 
+bool SetIntProperty(XID window,
+                    const std::string& name,
+                    const std::string& type,
+                    int value) {
+  std::vector<int> values(1, value);
+  return SetIntArrayProperty(window, name, type, values);
+}
+
+bool SetIntArrayProperty(XID window,
+                         const std::string& name,
+                         const std::string& type,
+                         const std::vector<int>& value) {
+  DCHECK(!value.empty());
+  Atom name_atom = GetAtom(name.c_str());
+  Atom type_atom = GetAtom(type.c_str());
+
+  // XChangeProperty() expects values of type 32 to be longs.
+  scoped_array<long> data(new long[value.size()]);
+  for (size_t i = 0; i < value.size(); ++i)
+    data[i] = value[i];
+
+  gdk_error_trap_push();
+  XChangeProperty(ui::GetXDisplay(),
+                  window,
+                  name_atom,
+                  type_atom,
+                  32,  // size in bits of items in 'value'
+                  PropModeReplace,
+                  reinterpret_cast<const unsigned char*>(data.get()),
+                  value.size());  // num items
+  XSync(ui::GetXDisplay(), False);
+  return gdk_error_trap_pop() == 0;
+}
+
 Atom GetAtom(const char* name) {
 #if defined(TOOLKIT_USES_GTK)
   return gdk_x11_get_xatom_by_name_for_display(
       gdk_display_get_default(), name);
 #else
+  // TODO(derat): Cache atoms to avoid round-trips to the server.
   return XInternAtom(GetXDisplay(), name, false);
 #endif
 }

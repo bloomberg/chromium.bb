@@ -333,11 +333,11 @@ void RenderWidgetHostViewAura::UpdateExternalTexture() {
 #if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
   if (current_surface_ != gfx::kNullPluginWindow &&
       host_->is_accelerated_compositing_active()) {
-    window_->layer()->SetExternalTexture(
+    window_->SetExternalTexture(
         accelerated_surface_containers_[current_surface_]->GetTexture());
     glFlush();
   } else {
-    window_->layer()->SetExternalTexture(NULL);
+    window_->SetExternalTexture(NULL);
   }
 #endif
 }

@@ -124,6 +124,15 @@ UI_EXPORT bool GetAtomArrayProperty(XID window,
 UI_EXPORT bool GetStringProperty(
     XID window, const std::string& property_name, std::string* value);
 
+UI_EXPORT bool SetIntProperty(XID window,
+                              const std::string& name,
+                              const std::string& type,
+                              int value);
+UI_EXPORT bool SetIntArrayProperty(XID window,
+                                   const std::string& name,
+                                   const std::string& type,
+                                   const std::vector<int>& value);
+
 // Gets the X atom for default display corresponding to atom_name.
 Atom GetAtom(const char* atom_name);
 

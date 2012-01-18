@@ -27,6 +27,7 @@ class SkCanvas;
 
 namespace ui {
 class Layer;
+class Texture;
 class Transform;
 }
 
@@ -115,6 +116,9 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
 
   // Sets the contents of the window.
   void SetCanvas(const SkCanvas& canvas, const gfx::Point& origin);
+
+  // Assigns a new external texture to the window's layer.
+  void SetExternalTexture(ui::Texture* texture);
 
   // Sets the parent window of the window. If NULL, the window is parented to
   // the root window.

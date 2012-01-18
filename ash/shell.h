@@ -38,6 +38,7 @@ class AcceleratorController;
 class Launcher;
 class PowerButtonController;
 class ShellDelegate;
+class VideoDetector;
 class WindowCycleController;
 
 namespace internal {
@@ -106,6 +107,9 @@ class ASH_EXPORT Shell {
   PowerButtonController* power_button_controller() {
     return power_button_controller_.get();
   }
+  VideoDetector* video_detector() {
+    return video_detector_.get();
+  }
   WindowCycleController* window_cycle_controller() {
     return window_cycle_controller_.get();
   }
@@ -173,6 +177,7 @@ class ASH_EXPORT Shell {
   scoped_ptr<internal::ShadowController> shadow_controller_;
   scoped_ptr<internal::TooltipController> tooltip_controller_;
   scoped_ptr<PowerButtonController> power_button_controller_;
+  scoped_ptr<VideoDetector> video_detector_;
   scoped_ptr<WindowCycleController> window_cycle_controller_;
 
   // An event filter that pre-handles all key events to send them to an IME.

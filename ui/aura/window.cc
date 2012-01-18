@@ -153,6 +153,8 @@ const gfx::Rect& Window::bounds() const {
 
 void Window::SchedulePaintInRect(const gfx::Rect& rect) {
   layer_->SchedulePaint(rect);
+  FOR_EACH_OBSERVER(
+      WindowObserver, observers_, OnWindowPaintScheduled(this, rect));
 }
 
 void Window::SetCanvas(const SkCanvas& canvas, const gfx::Point& origin) {
@@ -161,6 +163,16 @@ void Window::SetCanvas(const SkCanvas& canvas, const gfx::Point& origin) {
   // to be unhappy if we try to set a texture on a size bigger than the size of
   // the texture.
   layer_->SetCanvas(canvas, origin);
+  gfx::Rect region(gfx::Point(), bounds().size());
+  FOR_EACH_OBSERVER(
+      WindowObserver, observers_, OnWindowPaintScheduled(this, region));
+}
+
+void Window::SetExternalTexture(ui::Texture* texture) {
+  layer_->SetExternalTexture(texture);
+  gfx::Rect region(gfx::Point(), bounds().size());
+  FOR_EACH_OBSERVER(
+      WindowObserver, observers_, OnWindowPaintScheduled(this, region));
 }
 
 void Window::SetParent(Window* parent) {

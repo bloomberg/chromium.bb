@@ -36,6 +36,7 @@
 #include "ash/wm/window_modality_controller.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace_controller.h"
+#include "ash/wm/video_detector.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "ui/aura/client/aura_constants.h"
@@ -265,6 +266,7 @@ void Shell::Init() {
 
   drag_drop_controller_.reset(new internal::DragDropController);
   power_button_controller_.reset(new PowerButtonController);
+  video_detector_.reset(new VideoDetector);
   window_cycle_controller_.reset(new WindowCycleController);
 }
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -45,6 +45,10 @@ class AURA_EXPORT WindowObserver {
   // Invoked when |window|'s position among its siblings in the stacking order
   // has changed.
   virtual void OnWindowStackingChanged(Window* window) {}
+
+  // Invoked when a region of |window| is scheduled to be redrawn.
+  virtual void OnWindowPaintScheduled(Window* window,
+                                      const gfx::Rect& region) {}
 
   // Invoked when the Window has been destroyed (i.e. from its destructor).
   virtual void OnWindowDestroyed(Window* window) {}

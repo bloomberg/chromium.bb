@@ -64,7 +64,8 @@ class ASH_EXPORT PowerButtonController : public aura::RootWindowObserver {
   // Helper class used by tests to access internal state.
   class ASH_EXPORT TestApi {
    public:
-    TestApi(PowerButtonController* controller) : controller_(controller) {}
+    explicit TestApi(PowerButtonController* controller)
+        : controller_(controller) {}
 
     bool lock_timer_is_running() const {
       return controller_->lock_timer_.IsRunning();
