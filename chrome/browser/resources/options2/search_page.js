@@ -129,14 +129,7 @@ cr.define('options', function() {
 
       var self = this;
 
-      // Create a search field element.
-      // TODO(csilv): Move this into the HTML.
-      var searchField = document.createElement('input');
-      searchField.id = 'search-field';
-      searchField.type = 'search';
-      searchField.incremental = true;
-      searchField.placeholder = localStrings.getString('searchPlaceholder');
-      searchField.setAttribute('aria-label', searchField.placeholder);
+      var searchField = $('search-field');
       this.searchField = searchField;
 
       // Handle search events. (No need to throttle, WebKit's search field
@@ -238,21 +231,11 @@ cr.define('options', function() {
         // sections (ie titles, button strips).  We do this before changing
         // the page visibility to avoid excessive re-draw.
         for (var i = 0, childDiv; childDiv = page.pageDiv.children[i]; i++) {
-          if (childDiv.classList.contains('displaytable')) {
-            childDiv.setAttribute('searching', active ? 'true' : 'false');
-            for (var j = 0, subDiv; subDiv = childDiv.children[j]; j++) {
-              if (active) {
-                if (subDiv.tagName != 'SECTION')
-                  subDiv.classList.add('search-hidden');
-              } else {
-                subDiv.classList.remove('search-hidden');
-              }
-            }
-          } else {
-            if (active)
+          if (active) {
+            if (childDiv.tagName != 'SECTION')
               childDiv.classList.add('search-hidden');
-            else
-              childDiv.classList.remove('search-hidden');
+          } else {
+            childDiv.classList.remove('search-hidden');
           }
         }
 
@@ -265,7 +248,11 @@ cr.define('options', function() {
 
       if (active) {
         this.setSearchText_(this.searchField.value);
+        $('search-page-search-field-container').appendChild(this.searchField);
+        this.searchField.focus();
       } else {
+        $('browser-options-search-field-container').appendChild(
+            this.searchField);
         // After hiding all page content, remove any search results.
         this.unhighlightMatches_();
         this.removeSearchBubbles_();
@@ -304,7 +291,6 @@ cr.define('options', function() {
       }
 
       var foundMatches = false;
-      var bubbleControls = [];
 
       // Remove any prior search results.
       this.unhighlightMatches_();
@@ -320,33 +306,24 @@ cr.define('options', function() {
       var regEx = new RegExp('(' + searchText + ')', 'ig');
       var replaceString = '<span class="search-highlighted">$1</span>';
 
-      // Initialize all sections.  If the search string matches a title page,
-      // show sections for that page.
-      var page, pageMatch, childDiv, length;
+      var page, length;
       var pagesToSearch = this.getSearchablePages_();
       for (var key in pagesToSearch) {
         page = pagesToSearch[key];
-        pageMatch = false;
-        if (searchText.length) {
-          pageMatch = this.performReplace_(regEx, replaceString, page.tab);
-        }
-        if (pageMatch)
-          foundMatches = true;
-        var elements = page.pageDiv.querySelectorAll('.displaytable > section');
+        var elements = page.pageDiv.querySelectorAll('section');
         for (var i = 0, node; node = elements[i]; i++) {
-          if (pageMatch)
-            node.classList.remove('search-hidden');
-          else
-            node.classList.add('search-hidden');
+          node.classList.add('search-hidden');
         }
       }
+
+      var bubbleControls = [];
 
       if (searchText.length) {
         // Search all top-level sections for anchored string matches.
         for (var key in pagesToSearch) {
           page = pagesToSearch[key];
           var elements =
-              page.pageDiv.querySelectorAll('.displaytable > section');
+              page.pageDiv.querySelectorAll('section');
           for (var i = 0, node; node = elements[i]; i++) {
             if (this.performReplace_(regEx, replaceString, node)) {
               node.classList.remove('search-hidden');
@@ -362,18 +339,10 @@ cr.define('options', function() {
         for (var key in subPagesToSearch) {
           page = subPagesToSearch[key];
           if (this.performReplace_(regEx, replaceString, page.pageDiv)) {
-            // Reveal the section for this search result.
-            section = page.associatedSection;
-            if (section)
-              section.classList.remove('search-hidden');
+            this.revealAssociatedSections_(page);
 
-            // Identify any controls that should have bubbles.
-            var controls = page.associatedControls;
-            if (controls) {
-              length = controls.length;
-              for (var i = 0; i < length; i++)
-                bubbleControls.push(controls[i]);
-            }
+            bubbleControls =
+                bubbleControls.concat(this.getAssociatedControls_(page));
 
             foundMatches = true;
           }
@@ -393,6 +362,34 @@ cr.define('options', function() {
 
       // Cleanup the recursion-prevention variable.
       this.insideSetSearchText_ = false;
+    },
+
+    /**
+     * Reveal the associated section for |subpage|, as well as the one for its
+     * |parentPage|, and its |parentPage|'s |parentPage|, etc.
+     * @private
+     */
+    revealAssociatedSections_: function(subpage) {
+      for (var page = subpage; page; page = page.parentPage) {
+        var section = page.associatedSection;
+        if (section)
+          section.classList.remove('search-hidden');
+      }
+    },
+
+    /**
+     * @return {!Array.<HTMLElement>} all the associated controls for |subpage|,
+     * including |subpage.associatedControls| as well as any controls on parent
+     * pages that are indirectly necessary to get to the subpage.
+     * @private
+     */
+    getAssociatedControls_: function(subpage) {
+      var controls = [];
+      for (var page = subpage; page; page = page.parentPage) {
+        if (page.associatedControls)
+          controls = controls.concat(page.associatedControls);
+      }
+      return controls;
     },
 
     /**

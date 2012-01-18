@@ -81,9 +81,16 @@ input[type='text']:disabled {
   position: fixed;
 }
 
+.search-field-container {
+  position: absolute;
+  left: 400px;
+  right: 400px;
+}
+
 #search-field {
   font-size: inherit;
   margin: 0;
+  width: 160px;
 }
 
 /*
