@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -105,6 +105,20 @@
     {
       'target_name': 'nacl_bootstrap_raw',
       'type': 'none',
+      # This magical flag tells Gyp that the dependencies of this target
+      # are nobody else's business and it should not propagate them up
+      # to things that list this as a dependency.  Without this, it will
+      # wind up adding the nacl_bootstrap_lib static library into the
+      # link of sel_ldr or chrome just because one executable depends on
+      # the other.
+      # TODO(mcgrathr): Maybe one day Gyp will grow a proper target type
+      # for the use we really want here: custom commands for linking an
+      # executable, and no peeking inside this target just because you
+      # depend on it.  Then we could stop using this utterly arcane flag
+      # in favor of something vaguely self-explanatory.
+      # See http://code.google.com/p/gyp/issues/detail?id=239 for the
+      # history of the arcana.
+      'dependencies_traverse': 0,
       'dependencies': [
         'nacl_bootstrap_lib',
       ],
@@ -174,6 +188,11 @@
         'nacl_bootstrap_munge_phdr#host',
       ],
       'type': 'none',
+      # See above about this magical flag.
+      # It's actually redundant in practice to have it here as well.
+      # But it expresses the intent: that anything that depends on
+      # this target has no interest in what goes into building it.
+      'dependencies_traverse': 0,
       'actions': [{
         'action_name': 'munge_phdr',
         'inputs': ['nacl_bootstrap_munge_phdr.py',
