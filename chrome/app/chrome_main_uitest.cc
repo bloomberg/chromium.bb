@@ -27,7 +27,7 @@ TEST_F(ChromeMainTest, SecondLaunch) {
   ASSERT_TRUE(automation()->WaitForWindowCountToBecome(2));
 }
 
-TEST_F(ChromeMainTest, ReuseBrowserInstanceWhenOpeningFile) {
+TEST_F(ChromeMainTest, DISABLED_ReuseBrowserInstanceWhenOpeningFile) {
   include_testing_id_ = false;
 
   FilePath test_file = test_data_directory_.AppendASCII("empty.html");
