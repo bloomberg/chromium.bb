@@ -71,14 +71,14 @@ int32_t SendMessage(PP_Resource resource, PP_Var message) {
 uint64_t GetBufferedAmount(PP_Resource resource) {
   EnterResource<PPB_WebSocket_API> enter(resource, false);
   if (enter.failed())
-    return PP_ERROR_BADRESOURCE;
+    return 0;
   return enter.object()->GetBufferedAmount();
 }
 
 uint16_t GetCloseCode(PP_Resource resource) {
   EnterResource<PPB_WebSocket_API> enter(resource, false);
   if (enter.failed())
-    return PP_ERROR_BADRESOURCE;
+    return 0;
   return enter.object()->GetCloseCode();
 }
 
