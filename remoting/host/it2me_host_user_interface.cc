@@ -54,8 +54,16 @@ void It2MeHostUserInterface::InitFrom(DisconnectWindow* disconnect_window,
 }
 
 void It2MeHostUserInterface::OnClientAuthenticated(const std::string& jid) {
-  // There should not be more than one concurrent authenticated connection.
-  DCHECK(authenticated_jid_.empty());
+  if (!authenticated_jid_.empty()) {
+    // If we already authenticated another client then one of the
+    // connections may be an attacker, so both are suspect and we have
+    // to reject the second connection and shutdown the host.
+    host_->RejectAuthenticatingClient();
+    context_->network_message_loop()->PostTask(FROM_HERE, base::Bind(
+        &ChromotingHost::Shutdown, host_, base::Closure()));
+    return;
+  }
+
   authenticated_jid_ = jid;
 
   std::string username = jid.substr(0, jid.find('/'));
@@ -66,7 +74,6 @@ void It2MeHostUserInterface::OnClientAuthenticated(const std::string& jid) {
 
 void It2MeHostUserInterface::OnClientDisconnected(const std::string& jid) {
   if (jid == authenticated_jid_) {
-    authenticated_jid_.clear();
     ui_thread_proxy_.PostTask(FROM_HERE, base::Bind(
         &It2MeHostUserInterface::ProcessOnClientDisconnected,
         base::Unretained(this)));

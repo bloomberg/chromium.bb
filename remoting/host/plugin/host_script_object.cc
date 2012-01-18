@@ -516,9 +516,8 @@ void HostNPScriptObject::FinishConnectNetworkThread(
       protocol::NetworkSettings(nat_traversal_enabled_));
   host_->AddStatusObserver(this);
   log_to_server_.reset(new LogToServer(host_, signal_strategy_.get()));
-  host_->set_it2me(true);
-  it2me_host_user_interface_.reset(new It2MeHostUserInterface(host_.get(),
-                                                              &host_context_));
+  it2me_host_user_interface_.reset(
+      new It2MeHostUserInterface(host_.get(), &host_context_));
   it2me_host_user_interface_->Init();
 
   {

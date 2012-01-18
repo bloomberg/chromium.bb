@@ -89,6 +89,11 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   void AddStatusObserver(HostStatusObserver* observer);
   void RemoveStatusObserver(HostStatusObserver* observer);
 
+  // This method may be called only form
+  // HostStatusObserver::OnClientAuthenticated() to reject the new
+  // client.
+  void RejectAuthenticatingClient();
+
   // Sets the authenticator factory to use for incoming
   // connections. Incoming connections are rejected until
   // authenticator factory is set. Must be called on the network
@@ -115,11 +120,6 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   // Sets desired configuration for the protocol. Ownership of the
   // |config| is transferred to the object. Must be called before Start().
   void set_protocol_config(protocol::CandidateSessionConfig* config);
-
-  // TODO(wez): ChromotingHost shouldn't need to know about Me2Mom.
-  void set_it2me(bool is_it2me) {
-    is_it2me_ = is_it2me;
-  }
 
   // Notify all active client sessions that local input has been detected, and
   // that remote input should be ignored for a short time.
@@ -157,8 +157,6 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   void AddAuthenticatedClient(ClientSession* client,
                               const protocol::SessionConfig& config,
                               const std::string& jid);
-
-  int AuthenticatedClientsCount() const;
 
   void StopScreenRecorder();
   void OnScreenRecorderStopped();
@@ -209,14 +207,16 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   // Configuration of the protocol.
   scoped_ptr<protocol::CandidateSessionConfig> protocol_config_;
 
+  // Flags used for RejectAuthenticatingClient().
+  bool authenticating_client_;
+  bool reject_authenticating_client_;
+
   // Stores list of tasks that should be executed when we finish
   // shutdown. Used only while |state_| is set to kStopping.
   std::vector<base::Closure> shutdown_tasks_;
 
   // TODO(sergeyu): The following members do not belong to
   // ChromotingHost and should be moved elsewhere.
-  bool is_it2me_;
-  std::string access_code_;
   UiStrings ui_strings_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromotingHost);

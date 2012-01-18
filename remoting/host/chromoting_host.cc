@@ -43,7 +43,8 @@ ChromotingHost::ChromotingHost(
       stopping_recorders_(0),
       state_(kInitial),
       protocol_config_(protocol::CandidateSessionConfig::CreateDefault()),
-      is_it2me_(false) {
+      authenticating_client_(false),
+      reject_authenticating_client_(false) {
   DCHECK(context_);
   DCHECK(signal_strategy);
   DCHECK(desktop_environment_);
@@ -126,6 +127,11 @@ void ChromotingHost::RemoveStatusObserver(HostStatusObserver* observer) {
   status_observers_.RemoveObserver(observer);
 }
 
+void ChromotingHost::RejectAuthenticatingClient() {
+  DCHECK(authenticating_client_);
+  reject_authenticating_client_ = true;
+}
+
 void ChromotingHost::SetAuthenticatorFactory(
     scoped_ptr<protocol::AuthenticatorFactory> authenticator_factory) {
   DCHECK(context_->network_message_loop()->BelongsToCurrentThread());
@@ -168,8 +174,17 @@ void ChromotingHost::OnSessionAuthenticated(ClientSession* client) {
 
   // Notify observers that there is at least one authenticated client.
   const std::string& jid = client->connection()->session()->jid();
+
+  reject_authenticating_client_ = false;
+
+  authenticating_client_ = true;
   FOR_EACH_OBSERVER(HostStatusObserver, status_observers_,
                     OnClientAuthenticated(jid));
+  authenticating_client_ = false;
+
+  if (reject_authenticating_client_) {
+    client->Disconnect();
+  }
 }
 
 void ChromotingHost::OnSessionAuthenticationFailed(ClientSession* client) {
@@ -223,16 +238,6 @@ void ChromotingHost::OnIncomingSession(
 
   if (state_ != kStarted) {
     *response = protocol::SessionManager::DECLINE;
-    return;
-  }
-
-  // If we are running Me2Mom and already have an authenticated client then
-  // one of the connections may be an attacker, so both are suspect.
-  if (is_it2me_ && AuthenticatedClientsCount() > 0) {
-    *response = protocol::SessionManager::DECLINE;
-
-    // Close existing sessions and shutdown the host.
-    Shutdown(base::Closure());
     return;
   }
 
@@ -314,18 +319,6 @@ Encoder* ChromotingHost::CreateEncoder(const protocol::SessionConfig& config) {
   }
 
   return NULL;
-}
-
-int ChromotingHost::AuthenticatedClientsCount() const {
-  DCHECK(context_->network_message_loop()->BelongsToCurrentThread());
-
-  int authenticated_clients = 0;
-  for (ClientList::const_iterator it = clients_.begin(); it != clients_.end();
-       ++it) {
-    if ((*it)->authenticated())
-      ++authenticated_clients;
-  }
-  return authenticated_clients;
 }
 
 void ChromotingHost::StopScreenRecorder() {

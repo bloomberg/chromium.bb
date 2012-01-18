@@ -215,7 +215,6 @@ class SimpleHost {
 
     host_ = new ChromotingHost(&context_, signal_strategy_.get(),
                                desktop_environment_.get(), network_settings_);
-    host_->set_it2me(is_it2me_);
 
     log_to_server_.reset(new LogToServer(host_, signal_strategy_.get()));
 
