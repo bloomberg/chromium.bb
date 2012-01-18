@@ -97,9 +97,19 @@ table.results-table,
   color: green;
 }
 
+.errormsg {
+  color: red;
+}
+
 </style>
 </head>
 <body>
+  <b>Save:</b><button id=save-snapshots-button>Save</button>
+  <b>Restore:</b> <input type=file id=snapshot-file-loader />
+  <span id=file-load-error hidden class=errormsg></span>
+
+  <hr/>
+
   <table width=100%>
     <tr>
       <td>
@@ -126,7 +136,7 @@ table.results-table,
     </tr>
     <tr id=snapshots-row style='display:none'>
       <td colspan=2>
-        <button id=snapshot-button>Add snapshot</button>
+        <button id=take-snapshot-button>Add snapshot</button>
         <table><tbody id=snapshots-tbody></tbody></table>
         <div id=snapshot-selection-summary></div>
       </td>
@@ -140,5 +150,7 @@ table.results-table,
   <!-- TODO(eroman): This should only be a short-lived solution,
        which will eventually be superceded by snapshotting -->
   <span id=reset-data-link class=pseudo-link>[Reset tracking data]</span>
+
+  <iframe style="display: none" id="download-iframe"></iframe>
 </body>
 </html>

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -104,7 +104,13 @@ var MainView = (function() {
   var TOGGLE_SNAPSHOTS_LINK_ID = 'snapshots-link';
   var SNAPSHOTS_ROW = 'snapshots-row';
   var SNAPSHOT_SELECTION_SUMMARY_ID = 'snapshot-selection-summary';
-  var TAKE_SNAPSHOT_BUTTON_ID = 'snapshot-button';
+  var TAKE_SNAPSHOT_BUTTON_ID = 'take-snapshot-button';
+
+  var SAVE_SNAPSHOTS_BUTTON_ID = 'save-snapshots-button';
+  var SNAPSHOT_FILE_LOADER_ID = 'snapshot-file-loader';
+  var LOAD_ERROR_ID = 'file-load-error';
+
+  var DOWNLOAD_IFRAME_ID = 'download-iframe';
 
   // --------------------------------------------------------------------------
   // Row keys
@@ -799,6 +805,17 @@ var MainView = (function() {
     }
   }
 
+  /**
+   * Set the visibility state of a node.
+   */
+  function setNodeDisplay(n, visible) {
+    if (visible) {
+      n.style.display = '';
+    } else {
+      n.style.display = 'none';
+    }
+  }
+
   // --------------------------------------------------------------------------
   // Functions that augment, bucket, and compute aggregates for the input data.
   // --------------------------------------------------------------------------
@@ -1203,6 +1220,9 @@ var MainView = (function() {
       var pid = data.process_id;
       var ptype = data.process_type;
 
+      // Save the browser's representation of the data
+      snapshot.origData.push(data);
+
       // Augment each data row with the process information.
       var rows = data.list;
       for (var i = 0; i < rows.length; ++i) {
@@ -1312,7 +1332,14 @@ var MainView = (function() {
       var summaryDiv = $(SNAPSHOT_SELECTION_SUMMARY_ID);
 
       var selectedSnapshots = this.getSelectedSnapshotIndexes_();
-      if (selectedSnapshots.length == 1) {
+      if (selectedSnapshots.length == 0) {
+        // This can occur during an attempt to load a file or following file
+        // load failure.  We just ignore it and move on.
+      } else if (selectedSnapshots.length == 1) {
+        // If only one snapshot is chosen then we will display that snapshot's
+        // data in its entirety.
+        this.flatData_ = this.snapshots_[selectedSnapshots[0]].flatData;
+
         // Don't bother displaying any text when just 1 snapshot is selected,
         // since it is obvious what this should do.
         summaryDiv.innerText = '';
@@ -1739,12 +1766,15 @@ var MainView = (function() {
           g_browserBridge.sendResetData.bind(g_browserBridge);
 
       $(TAKE_SNAPSHOT_BUTTON_ID).onclick = this.takeSnapshot_.bind(this);
+
+      $(SAVE_SNAPSHOTS_BUTTON_ID).onclick = this.saveSnapshots_.bind(this);
+      $(SNAPSHOT_FILE_LOADER_ID).onchange = this.loadFileChanged_.bind(this);
     },
 
     takeSnapshot_: function() {
       // Start a new empty snapshot. Make note of the current time, so we know
       // when the snaphot was taken.
-      this.snapshots_.push({flatData: [], time: getTimeMillis()});
+      this.snapshots_.push({flatData: [], origData: [], time: getTimeMillis()});
 
       // Update the UI to reflect the new snapshot.
       this.addSnapshotToList_(this.snapshots_.length - 1);
@@ -1752,6 +1782,106 @@ var MainView = (function() {
       // Ask the browser for the profiling data. We will receive the data
       // later through a callback to addDataToSnapshot_().
       g_browserBridge.sendGetData();
+    },
+
+    saveSnapshots_: function() {
+      var snapshots = [];
+      for (var i = 0; i < this.snapshots_.length; ++i) {
+        snapshots.push({ data: this.snapshots_[i].origData,
+                         timestamp: Math.floor(
+                                 this.snapshots_[i].time / 1000) });
+      }
+
+      var dump = {
+        'userAgent': navigator.userAgent,
+        'version': 1,
+        'snapshots': snapshots
+      }
+
+      var dumpText = JSON.stringify(dump, null, ' ');
+      var blobBuilder = new WebKitBlobBuilder();
+      blobBuilder.append(dumpText, 'native');
+      var textBlob = blobBuilder.getBlob('octet/stream');
+      var blobUrl = window.webkitURL.createObjectURL(textBlob);
+      $(DOWNLOAD_IFRAME_ID).src = blobUrl;
+    },
+
+    loadFileChanged_: function() {
+      this.loadSnapshots_($(SNAPSHOT_FILE_LOADER_ID).files[0])
+    },
+
+    loadSnapshots_: function(file) {
+      if (file) {
+        var fileReader = new FileReader();
+
+        fileReader.onload = this.onLoadSnapshotsFile_.bind(this, file);
+        fileReader.onerror = this.onLoadSnapshotsFileError_.bind(this, file);
+
+        fileReader.readAsText(file);
+      }
+    },
+
+    onLoadSnapshotsFile_: function(file, event) {
+      try {
+        var parsed = null;
+        parsed = JSON.parse(event.target.result)
+
+        if (parsed.version != 1) {
+          throw new Error('Unrecognized version: ' + parsed.version);
+        }
+
+        if (parsed.snapshots.length < 1) {
+          throw new Error('File contains no data');
+        }
+
+        this.displayLoadedFile_(file, parsed);
+        this.hideFileLoadError_();
+      } catch (error) {
+        this.displayFileLoadError_('File load failure: ' + error.message);
+      }
+    },
+
+    clearExistingSnapshots_: function() {
+      var tbody = $('snapshots-tbody');
+      this.snapshots_ = [];
+      tbody.innerHTML = '';
+      this.updateMergedDataSoon_();
+    },
+
+    displayLoadedFile_: function (file, content) {
+      this.clearExistingSnapshots_();
+      $(TAKE_SNAPSHOT_BUTTON_ID).disabled = true;
+      $(SAVE_SNAPSHOTS_BUTTON_ID).disabled = true;
+
+      if (content.snapshots.length > 1) {
+        setNodeDisplay($(SNAPSHOTS_ROW), true);
+      }
+
+      for (var i = 0; i < content.snapshots.length; ++i) {
+        var snapshot = content.snapshots[i];
+        this.snapshots_.push({flatData: [], origData: [],
+                              time: snapshot.timestamp * 1000});
+        this.addSnapshotToList_(this.snapshots_.length - 1);
+        var snapshotData = snapshot.data;
+        for (var j = 0; j < snapshotData.length; ++j){
+          this.addDataToSnapshot(snapshotData[j]);
+        }
+      }
+      this.redrawData_();
+    },
+
+    onLoadSnapshotsFileError_: function(file, filedata) {
+      this.displayFileLoadError_('Error loading ' + file.name);
+    },
+
+    displayFileLoadError_: function(message) {
+      $(LOAD_ERROR_ID).textContent = message;
+      $(LOAD_ERROR_ID).hidden = false;
+    },
+
+    hideFileLoadError_: function() {
+      $(LOAD_ERROR_ID).textContent = '';
+      $(LOAD_ERROR_ID).hidden = true;
     },
 
     getSnapshotCheckbox_: function(i) {
