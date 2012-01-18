@@ -76,6 +76,7 @@
     'public/browser/render_view_host_delegate.h',
     'public/browser/render_view_host_observer.cc',
     'public/browser/render_view_host_observer.h',
+    'public/browser/resource_dispatcher_host_delegate.cc',
     'public/browser/resource_dispatcher_host_delegate.h',
     'public/browser/resource_dispatcher_host_login_delegate.h',
     'public/browser/sensors.h',

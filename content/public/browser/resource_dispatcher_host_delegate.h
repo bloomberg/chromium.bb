@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "content/common/content_export.h"
 #include "webkit/glue/resource_type.h"
 
 class GURL;
@@ -33,7 +34,7 @@ class ResourceDispatcherHostLoginDelegate;
 
 // Interface that the embedder provides to ResourceDispatcherHost to allow
 // observing and modifying requests.
-class ResourceDispatcherHostDelegate {
+class CONTENT_EXPORT ResourceDispatcherHostDelegate {
  public:
   // Called when a request begins. Return false to abort the request.
   virtual bool ShouldBeginRequest(
@@ -43,7 +44,7 @@ class ResourceDispatcherHostDelegate {
       const GURL& url,
       ResourceType::Type resource_type,
       const ResourceContext& resource_context,
-      const Referrer& referrer) = 0;
+      const Referrer& referrer);
 
   // Called after ShouldBeginRequest when all the resource handlers from the
   // content layer have been added.  To add new handlers to the front, return
@@ -56,7 +57,7 @@ class ResourceDispatcherHostDelegate {
       bool is_subresource,
       int child_id,
       int route_id,
-      bool is_continuation_of_transferred_request) = 0;
+      bool is_continuation_of_transferred_request);
 
   // Allows an embedder to add additional resource handlers for a download.
   // |is_new_request| is true if this is a request that is just starting, i.e.
@@ -71,7 +72,7 @@ class ResourceDispatcherHostDelegate {
       int child_id,
       int route_id,
       int request_id,
-      bool is_new_request) = 0;
+      bool is_new_request);
 
   // Called to determine whether a request's start should be deferred. This
   // is only called if the ResourceHandler associated with the request does
@@ -79,51 +80,51 @@ class ResourceDispatcherHostDelegate {
   // the request, false will continue the request.
   virtual bool ShouldDeferStart(
       net::URLRequest* request,
-      const ResourceContext& resource_context) = 0;
+      const ResourceContext& resource_context);
 
   // Called when an SSL Client Certificate is requested. If false is returned,
   // the request is canceled. Otherwise, the certificate is chosen.
   virtual bool AcceptSSLClientCertificateRequest(
       net::URLRequest* request,
-      net::SSLCertRequestInfo* cert_request_info) = 0;
+      net::SSLCertRequestInfo* cert_request_info);
 
   // Called when authentication is required and credentials are needed. If
   // false is returned, CancelAuth() is called on the URLRequest and the error
   // page is shown. If true is returned, the user will be prompted for
   // authentication credentials.
   virtual bool AcceptAuthRequest(net::URLRequest* request,
-                                 net::AuthChallengeInfo* auth_info) = 0;
+                                 net::AuthChallengeInfo* auth_info);
 
   // Creates a ResourceDispatcherHostLoginDelegate that asks the user for a
   // username and password.
   virtual ResourceDispatcherHostLoginDelegate* CreateLoginDelegate(
-      net::AuthChallengeInfo* auth_info, net::URLRequest* request) = 0;
+      net::AuthChallengeInfo* auth_info, net::URLRequest* request);
 
   // Launches the url for the given tab.
   virtual void HandleExternalProtocol(const GURL& url,
                                       int child_id,
-                                      int route_id) = 0;
+                                      int route_id);
 
   // Returns true if we should force the given resource to be downloaded.
   // Otherwise, the content layer decides.
   virtual bool ShouldForceDownloadResource(
-      const GURL& url, const std::string& mime_type) = 0;
+      const GURL& url, const std::string& mime_type);
 
   // Informs the delegate that a response has started.
   virtual void OnResponseStarted(
       net::URLRequest* request,
       ResourceResponse* response,
-      ResourceMessageFilter* filter) = 0;
+      ResourceMessageFilter* filter);
 
   // Informs the delegate that a request has been redirected.
   virtual void OnRequestRedirected(
       net::URLRequest* request,
       ResourceResponse* response,
-      ResourceMessageFilter* filter) = 0;
+      ResourceMessageFilter* filter);
 
  protected:
-  ResourceDispatcherHostDelegate() {}
-  virtual ~ResourceDispatcherHostDelegate() {}
+  ResourceDispatcherHostDelegate();
+  virtual ~ResourceDispatcherHostDelegate();
 };
 
 }  // namespace content

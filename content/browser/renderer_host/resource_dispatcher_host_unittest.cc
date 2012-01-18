@@ -16,6 +16,7 @@
 #include "content/browser/download/download_id_factory.h"
 #include "content/browser/mock_resource_context.h"
 #include "content/browser/renderer_host/dummy_resource_handler.h"
+#include "content/browser/renderer_host/layered_resource_handler.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "content/browser/renderer_host/resource_handler.h"
@@ -24,6 +25,7 @@
 #include "content/common/resource_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/global_request_id.h"
+#include "content/public/browser/resource_dispatcher_host_delegate.h"
 #include "content/public/common/resource_response.h"
 #include "net/base/net_errors.h"
 #include "net/base/upload_data.h"
@@ -268,6 +270,72 @@ class URLRequestTestDelayedStartJob : public net::URLRequestTestJob {
 
 URLRequestTestDelayedStartJob*
 URLRequestTestDelayedStartJob::list_head_ = NULL;
+
+class TestResourceHandler : public content::LayeredResourceHandler {
+ public:
+  TestResourceHandler()
+      : content::LayeredResourceHandler(NULL),
+        request_closed_(false) {
+  }
+
+  bool request_closed() const { return request_closed_; }
+
+  void set_next_handler(ResourceHandler* handler) {
+    next_handler_ = handler;
+  }
+
+  // LayeredResourceHandler implementation:
+
+  virtual void OnRequestClosed() {
+    request_closed_ = true;
+  }
+
+ private:
+  bool request_closed_;
+};
+
+class TestResourceDispatcherHostDelegate
+    : public content::ResourceDispatcherHostDelegate {
+ public:
+  TestResourceDispatcherHostDelegate()
+      : defer_start_(false) {
+  }
+
+  void set_resource_handler(TestResourceHandler* handler) {
+    handler_ = handler;
+  }
+
+  void set_defer_start(bool value) {
+    defer_start_ = value;
+  }
+
+  // ResourceDispatcherHostDelegate implementation:
+
+  virtual ResourceHandler* RequestBeginning(
+      ResourceHandler* current_handler,
+      net::URLRequest* request,
+      const content::ResourceContext& resource_context,
+      bool is_subresource,
+      int child_id,
+      int route_id,
+      bool is_continuation_of_transferred_request) {
+    if (handler_) {
+      handler_->set_next_handler(current_handler);
+      return handler_;
+    }
+    return current_handler;
+  }
+
+  virtual bool ShouldDeferStart(
+      net::URLRequest* request,
+      const content::ResourceContext& resource_context) OVERRIDE {
+    return defer_start_;
+  }
+
+ private:
+  bool defer_start_;
+  scoped_refptr<TestResourceHandler> handler_;
+};
 
 class ResourceDispatcherHostTest : public testing::Test,
                                    public IPC::Message::Sender {
@@ -557,6 +625,34 @@ TEST_F(ResourceDispatcherHostTest, Cancel) {
   ASSERT_TRUE(IPC::ReadParam(&msgs[1][1], &iter, &status));
 
   EXPECT_EQ(net::URLRequestStatus::CANCELED, status.status());
+}
+
+TEST_F(ResourceDispatcherHostTest, CancelWhileStartIsDeferred) {
+  EXPECT_EQ(0, host_.GetOutstandingRequestsMemoryCost(0));
+
+  scoped_refptr<TestResourceHandler> handler(new TestResourceHandler);
+
+  // Arrange to have requests deferred before starting.
+  TestResourceDispatcherHostDelegate delegate;
+  delegate.set_defer_start(true);
+  delegate.set_resource_handler(handler);
+  host_.set_delegate(&delegate);
+
+  MakeTestRequest(0, 1, net::URLRequestTestJob::test_url_1());
+  CancelRequest(1);
+
+  // We should not have observed OnRequestClosed yet.  This is to ensure that
+  // destruction of the URLRequest happens asynchronously to calling
+  // CancelRequest.
+  EXPECT_FALSE(handler->request_closed());
+
+  // flush all the pending requests
+  while (net::URLRequestTestJob::ProcessOnePendingMessage()) {}
+  MessageLoop::current()->RunAllPending();
+
+  EXPECT_TRUE(handler->request_closed());
+
+  EXPECT_EQ(0, host_.GetOutstandingRequestsMemoryCost(0));
 }
 
 TEST_F(ResourceDispatcherHostTest, PausedStartError) {

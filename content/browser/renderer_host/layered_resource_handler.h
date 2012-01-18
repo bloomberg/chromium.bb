@@ -7,12 +7,13 @@
 #pragma once
 
 #include "content/browser/renderer_host/resource_handler.h"
+#include "content/common/content_export.h"
 
 namespace content {
 
 // A ResourceHandler that simply delegates all calls to a next handler.  This
 // class is intended to be subclassed.
-class LayeredResourceHandler : public ResourceHandler {
+class CONTENT_EXPORT LayeredResourceHandler : public ResourceHandler {
  public:
   LayeredResourceHandler(ResourceHandler* next_handler);
 

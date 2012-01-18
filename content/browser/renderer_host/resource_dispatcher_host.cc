@@ -1465,7 +1465,7 @@ void ResourceDispatcherHost::OnResponseStarted(net::URLRequest* request) {
       StartReading(request);
     }
   } else {
-    OnResponseCompleted(request);
+    ResponseCompleted(request);
   }
 }
 
@@ -1517,14 +1517,19 @@ void ResourceDispatcherHost::CancelRequest(int child_id,
     return;
   }
   net::URLRequest* request = i->second;
-  const bool started_before_cancel = request->is_pending();
 
+  bool started_before_cancel = request->is_pending();
   if (CancelRequestInternal(request, from_renderer) &&
       !started_before_cancel) {
-    // If the request isn't in flight, then we won't get asyncronous
-    // notification, so we have to signal ourselves to finish this
-    // request.
-    OnResponseCompleted(request);
+    // If the request isn't in flight, then we won't get an asynchronous
+    // notification from the request, so we have to signal ourselves to finish
+    // this request.
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&ResourceDispatcherHost::CallResponseCompleted,
+                   base::Unretained(this),
+                   child_id,
+                   request_id));
   }
 }
 
@@ -1616,10 +1621,10 @@ void ResourceDispatcherHost::BeginRequestInternal(net::URLRequest* request) {
     request->SimulateError(net::ERR_INSUFFICIENT_RESOURCES);
 
     // TODO(eroman): this is kinda funky -- we insert the unstarted request into
-    // |pending_requests_| simply to please OnResponseCompleted().
+    // |pending_requests_| simply to please ResponseCompleted().
     GlobalRequestID global_id(info->child_id(), info->request_id());
     pending_requests_[global_id] = request;
-    OnResponseCompleted(request);
+    ResponseCompleted(request);
     return;
   }
 
@@ -1721,7 +1726,7 @@ void ResourceDispatcherHost::StartReading(net::URLRequest* request) {
   } else if (!request->status().is_io_pending()) {
     DCHECK(!InfoForRequest(request)->is_paused());
     // If the error is not an IO pending, then we're done reading.
-    OnResponseCompleted(request);
+    ResponseCompleted(request);
   }
 }
 
@@ -1750,12 +1755,12 @@ void ResourceDispatcherHost::OnReadCompleted(net::URLRequest* request,
           << " bytes_read = " << bytes_read;
   ResourceDispatcherHostRequestInfo* info = InfoForRequest(request);
 
-  // bytes_read == -1 always implies an error, so we want to skip the
-  // pause checks and just call OnResponseCompleted.
+  // bytes_read == -1 always implies an error, so we want to skip the pause
+  // checks and just call ResponseCompleted.
   if (bytes_read == -1) {
     DCHECK(!request->status().is_success());
 
-    OnResponseCompleted(request);
+    ResponseCompleted(request);
     return;
   }
 
@@ -1809,7 +1814,7 @@ void ResourceDispatcherHost::OnReadCompleted(net::URLRequest* request,
   // If the status is not IO pending then we've either finished (success) or we
   // had an error.  Either way, we're done!
   if (!request->status().is_io_pending())
-    OnResponseCompleted(request);
+    ResponseCompleted(request);
 }
 
 bool ResourceDispatcherHost::CompleteRead(net::URLRequest* request,
@@ -1829,8 +1834,8 @@ bool ResourceDispatcherHost::CompleteRead(net::URLRequest* request,
   return *bytes_read != 0;
 }
 
-void ResourceDispatcherHost::OnResponseCompleted(net::URLRequest* request) {
-  VLOG(1) << "OnResponseCompleted: " << request->url().spec();
+void ResourceDispatcherHost::ResponseCompleted(net::URLRequest* request) {
+  VLOG(1) << "ResponseCompleted: " << request->url().spec();
   ResourceDispatcherHostRequestInfo* info = InfoForRequest(request);
 
   // If the load for a main frame has failed, track it in a histogram,
@@ -1876,6 +1881,14 @@ void ResourceDispatcherHost::OnResponseCompleted(net::URLRequest* request) {
   }
   // If the handler's OnResponseCompleted returns false, we are deferring the
   // call until later.  We will notify the world and clean up when we resume.
+}
+
+void ResourceDispatcherHost::CallResponseCompleted(int child_id,
+                                                   int request_id) {
+  PendingRequestList::iterator i = pending_requests_.find(
+      GlobalRequestID(child_id, request_id));
+  if (i != pending_requests_.end())
+    ResponseCompleted(i->second);
 }
 
 void ResourceDispatcherHost::OnUserGesture(TabContents* tab) {

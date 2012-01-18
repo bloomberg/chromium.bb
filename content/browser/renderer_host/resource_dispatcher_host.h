@@ -198,8 +198,6 @@ class CONTENT_EXPORT ResourceDispatcherHost : public net::URLRequest::Delegate {
   virtual void OnReadCompleted(net::URLRequest* request,
                                int bytes_read) OVERRIDE;
 
-  void OnResponseCompleted(net::URLRequest* request);
-
   void OnUserGesture(TabContents* tab);
 
   // Helper functions to get the dispatcher's request info for the request.
@@ -319,6 +317,9 @@ class CONTENT_EXPORT ResourceDispatcherHost : public net::URLRequest::Delegate {
   // Internal function to finish handling the ResponseStarted message.  Returns
   // true on success.
   bool CompleteResponseStarted(net::URLRequest* request);
+
+  void ResponseCompleted(net::URLRequest* request);
+  void CallResponseCompleted(int child_id, int request_id);
 
   // Helper function for regular and download requests.
   void BeginRequestInternal(net::URLRequest* request);

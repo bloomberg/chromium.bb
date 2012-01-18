@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,6 +16,7 @@
 #include <string>
 
 #include "base/message_loop_helpers.h"
+#include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"
 
 class GURL;
@@ -32,7 +33,7 @@ class URLRequestStatus;
 // The resource dispatcher host uses this interface to push load events to the
 // renderer, allowing for differences in the types of IPC messages generated.
 // See the implementations of this interface defined below.
-class ResourceHandler
+class CONTENT_EXPORT ResourceHandler
     : public base::RefCountedThreadSafe<
             ResourceHandler, content::BrowserThread::DeleteOnIOThread> {
  public:
@@ -92,6 +93,8 @@ class ResourceHandler
 
  protected:
   friend class content::BrowserThread;
+  friend class base::RefCountedThreadSafe<
+      ResourceHandler, content::BrowserThread::DeleteOnIOThread>;
   friend class base::DeleteHelper<ResourceHandler>;
 
   virtual ~ResourceHandler() {}
