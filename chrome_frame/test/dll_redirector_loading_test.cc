@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -122,7 +122,16 @@ scoped_ptr<Version> DllRedirectorLoadingTest::original_version_;
 scoped_ptr<Version> DllRedirectorLoadingTest::new_version_;
 ScopedTempDir DllRedirectorLoadingTest::temp_dir_;
 
-TEST_F(DllRedirectorLoadingTest, TestDllRedirection) {
+#if defined(COMPONENT_BUILD)
+// Disabling since npchrome_frame.dll's DllMain can't handle being loaded into
+// a process that has already started services in base.dll such as logging; see
+// http://crbug.com/110492.
+#define MAYBE_TestDllRedirection DISABLED_TestDllRedirection
+#else
+#define MAYBE_TestDllRedirection TestDllRedirection
+#endif
+
+TEST_F(DllRedirectorLoadingTest, MAYBE_TestDllRedirection) {
   struct TestData {
     FilePath first_dll;
     FilePath second_dll;
