@@ -239,7 +239,8 @@ int GetMappedButton(int button);
 // received.
 UI_EXPORT void UpdateButtonMap();
 
-// Initializes a XEvent that holds XKeyEvent for testing.
+// Initializes a XEvent that holds XKeyEvent for testing. Note that ui::EF_
+// flags should be passed as |flags|, not the native ones in <X11/X.h>.
 UI_EXPORT void InitXKeyEventForTesting(EventType type,
                                        KeyboardCode key_code,
                                        int flags,
