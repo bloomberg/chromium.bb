@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -104,13 +104,15 @@ void VisitDatabase::FillVisitRow(sql::Statement& statement, VisitRow* visit) {
 }
 
 // static
-void VisitDatabase::FillVisitVector(sql::Statement& statement,
+bool VisitDatabase::FillVisitVector(sql::Statement& statement,
                                     VisitVector* visits) {
   while (statement.Step()) {
     history::VisitRow visit;
     FillVisitRow(statement, &visit);
     visits->push_back(visit);
   }
+
+  return statement.Succeeded();
 }
 
 VisitID VisitDatabase::AddVisit(VisitRow* visit, VisitSource source) {
@@ -118,12 +120,6 @@ VisitID VisitDatabase::AddVisit(VisitRow* visit, VisitSource source) {
       "INSERT INTO visits "
       "(url, visit_time, from_visit, transition, segment_id, is_indexed) "
       "VALUES (?,?,?,?,?,?)"));
-  if (!statement) {
-    VLOG(0) << "Failed to build visit insert statement:  "
-            << "url_id = " << visit->url_id;
-    return 0;
-  }
-
   statement.BindInt64(0, visit->url_id);
   statement.BindInt64(1, visit->visit_time.ToInternalValue());
   statement.BindInt64(2, visit->referring_visit);
@@ -143,14 +139,9 @@ VisitID VisitDatabase::AddVisit(VisitRow* visit, VisitSource source) {
     // Record the source of this visit when it is not browsed.
     sql::Statement statement1(GetDB().GetCachedStatement(SQL_FROM_HERE,
         "INSERT INTO visit_source (id, source) VALUES (?,?)"));
-    if (!statement1.is_valid()) {
-      VLOG(0) << "Failed to build visit_source insert statement:  "
-              << "url_id = " << visit->visit_id;
-      return 0;
-    }
-
     statement1.BindInt64(0, visit->visit_id);
     statement1.BindInt64(1, source);
+
     if (!statement1.Run()) {
       VLOG(0) << "Failed to execute visit_source insert statement:  "
               << "url_id = " << visit->visit_id;
@@ -166,27 +157,23 @@ void VisitDatabase::DeleteVisit(const VisitRow& visit) {
   // "source" be the deleted visit's source.
   sql::Statement update_chain(GetDB().GetCachedStatement(SQL_FROM_HERE,
       "UPDATE visits SET from_visit=? WHERE from_visit=?"));
-  if (!update_chain)
-    return;
   update_chain.BindInt64(0, visit.referring_visit);
   update_chain.BindInt64(1, visit.visit_id);
-  update_chain.Run();
+  if (!update_chain.Run())
+    return;
 
   // Now delete the actual visit.
   sql::Statement del(GetDB().GetCachedStatement(SQL_FROM_HERE,
       "DELETE FROM visits WHERE id=?"));
-  if (!del)
-    return;
   del.BindInt64(0, visit.visit_id);
-  del.Run();
+  if (!del.Run())
+    return;
 
   // Try to delete the entry in visit_source table as well.
   // If the visit was browsed, there is no corresponding entry in visit_source
   // table, and nothing will be deleted.
   del.Assign(GetDB().GetCachedStatement(SQL_FROM_HERE,
              "DELETE FROM visit_source WHERE id=?"));
-  if (!del.is_valid())
-    return;
   del.BindInt64(0, visit.visit_id);
   del.Run();
 }
@@ -194,10 +181,8 @@ void VisitDatabase::DeleteVisit(const VisitRow& visit) {
 bool VisitDatabase::GetRowForVisit(VisitID visit_id, VisitRow* out_visit) {
   sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
       "SELECT" HISTORY_VISIT_ROW_FIELDS "FROM visits WHERE id=?"));
-  if (!statement)
-    return false;
-
   statement.BindInt64(0, visit_id);
+
   if (!statement.Step())
     return false;
 
@@ -221,9 +206,6 @@ bool VisitDatabase::UpdateVisitRow(const VisitRow& visit) {
       "UPDATE visits SET "
       "url=?,visit_time=?,from_visit=?,transition=?,segment_id=?,is_indexed=? "
       "WHERE id=?"));
-  if (!statement)
-    return false;
-
   statement.BindInt64(0, visit.url_id);
   statement.BindInt64(1, visit.visit_time.ToInternalValue());
   statement.BindInt64(2, visit.referring_visit);
@@ -231,6 +213,7 @@ bool VisitDatabase::UpdateVisitRow(const VisitRow& visit) {
   statement.BindInt64(4, visit.segment_id);
   statement.BindInt64(5, visit.is_indexed);
   statement.BindInt64(6, visit.visit_id);
+
   return statement.Run();
 }
 
@@ -242,12 +225,8 @@ bool VisitDatabase::GetVisitsForURL(URLID url_id, VisitVector* visits) {
       "FROM visits "
       "WHERE url=? "
       "ORDER BY visit_time ASC"));
-  if (!statement)
-    return false;
-
   statement.BindInt64(0, url_id);
-  FillVisitVector(statement, visits);
-  return true;
+  return FillVisitVector(statement, visits);
 }
 
 bool VisitDatabase::GetIndexedVisitsForURL(URLID url_id, VisitVector* visits) {
@@ -257,15 +236,11 @@ bool VisitDatabase::GetIndexedVisitsForURL(URLID url_id, VisitVector* visits) {
       "SELECT" HISTORY_VISIT_ROW_FIELDS
       "FROM visits "
       "WHERE url=? AND is_indexed=1"));
-   if (!statement)
-    return false;
-
   statement.BindInt64(0, url_id);
-  FillVisitVector(statement, visits);
-  return true;
+  return FillVisitVector(statement, visits);
 }
 
-void VisitDatabase::GetAllVisitsInRange(base::Time begin_time,
+bool VisitDatabase::GetAllVisitsInRange(base::Time begin_time,
                                         base::Time end_time,
                                         int max_results,
                                         VisitVector* visits) {
@@ -275,8 +250,6 @@ void VisitDatabase::GetAllVisitsInRange(base::Time begin_time,
       "SELECT" HISTORY_VISIT_ROW_FIELDS "FROM visits "
       "WHERE visit_time >= ? AND visit_time < ?"
       "ORDER BY visit_time LIMIT ?"));
-  if (!statement)
-    return;
 
   // See GetVisibleVisitsInRange for more info on how these times are bound.
   int64 end = end_time.ToInternalValue();
@@ -285,10 +258,10 @@ void VisitDatabase::GetAllVisitsInRange(base::Time begin_time,
   statement.BindInt64(2,
       max_results ? max_results : std::numeric_limits<int64>::max());
 
-  FillVisitVector(statement, visits);
+  return FillVisitVector(statement, visits);
 }
 
-void VisitDatabase::GetVisitsInRangeForTransition(
+bool VisitDatabase::GetVisitsInRangeForTransition(
     base::Time begin_time,
     base::Time end_time,
     int max_results,
@@ -302,8 +275,6 @@ void VisitDatabase::GetVisitsInRangeForTransition(
       "WHERE visit_time >= ? AND visit_time < ? "
       "AND (transition & ?) == ?"
       "ORDER BY visit_time LIMIT ?"));
-  if (!statement)
-    return;
 
   // See GetVisibleVisitsInRange for more info on how these times are bound.
   int64 end = end_time.ToInternalValue();
@@ -314,7 +285,7 @@ void VisitDatabase::GetVisitsInRangeForTransition(
   statement.BindInt64(4,
       max_results ? max_results : std::numeric_limits<int64>::max());
 
-  FillVisitVector(statement, visits);
+  return FillVisitVector(statement, visits);
 }
 
 void VisitDatabase::GetVisibleVisitsInRange(base::Time begin_time,
@@ -331,8 +302,6 @@ void VisitDatabase::GetVisibleVisitsInRange(base::Time begin_time,
       "AND (transition & ?) NOT IN (?, ?, ?) "  // NO SUBFRAME or
                                                 // KEYWORD_GENERATED
       "ORDER BY visit_time DESC, id DESC"));
-  if (!statement)
-    return;
 
   // Note that we use min/max values for querying unlimited ranges of time using
   // the same statement. Since the time has an index, this will be about the
@@ -370,9 +339,6 @@ VisitID VisitDatabase::GetMostRecentVisitForURL(URLID url_id,
       "WHERE url=? "
       "ORDER BY visit_time DESC, id DESC "
       "LIMIT 1"));
-  if (!statement)
-    return 0;
-
   statement.BindInt64(0, url_id);
   if (!statement.Step())
     return 0;  // No visits for this URL.
@@ -397,13 +363,10 @@ bool VisitDatabase::GetMostRecentVisitsForURL(URLID url_id,
       "WHERE url=? "
       "ORDER BY visit_time DESC, id DESC "
       "LIMIT ?"));
-  if (!statement)
-    return false;
-
   statement.BindInt64(0, url_id);
   statement.BindInt(1, max_results);
-  FillVisitVector(statement, visits);
-  return true;
+
+  return FillVisitVector(statement, visits);
 }
 
 bool VisitDatabase::GetRedirectFromVisit(VisitID from_visit,
@@ -414,14 +377,11 @@ bool VisitDatabase::GetRedirectFromVisit(VisitID from_visit,
       "FROM visits v JOIN urls u ON v.url = u.id "
       "WHERE v.from_visit = ? "
       "AND (v.transition & ?) != 0"));  // IS_REDIRECT_MASK
-  if (!statement)
-    return false;
-
   statement.BindInt64(0, from_visit);
   statement.BindInt(1, content::PAGE_TRANSITION_IS_REDIRECT_MASK);
 
   if (!statement.Step())
-    return false;  // No redirect from this visit.
+    return false;  // No redirect from this visit. (Or SQL error)
   if (to_visit)
     *to_visit = statement.ColumnInt64(0);
   if (to_url)
@@ -479,9 +439,6 @@ bool VisitDatabase::GetVisibleVisitCountToHost(const GURL& url,
       "WHERE u.url >= ? AND u.url < ? "
       "AND (transition & ?) != 0 "
       "AND (transition & ?) NOT IN (?, ?, ?)"));
-  if (!statement)
-    return false;
-
   statement.BindString(0, host_query_min);
   statement.BindString(1,
       host_query_min.substr(0, host_query_min.size() - 1) + '0');
@@ -497,6 +454,9 @@ bool VisitDatabase::GetVisibleVisitCountToHost(const GURL& url,
     return true;
   }
 
+  if (!statement.Succeeded())
+    return false;
+
   *first_visit = base::Time::FromInternalValue(statement.ColumnInt64(0));
   *count = statement.ColumnInt(1);
   return true;
@@ -505,7 +465,7 @@ bool VisitDatabase::GetVisibleVisitCountToHost(const GURL& url,
 bool VisitDatabase::GetStartDate(base::Time* first_visit) {
   sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
       "SELECT MIN(visit_time) FROM visits WHERE visit_time != 0"));
-  if (!statement || !statement.Step() || statement.ColumnInt64(0) == 0) {
+  if (!statement.Step() || statement.ColumnInt64(0) == 0) {
     *first_visit = base::Time::Now();
     return false;
   }
@@ -539,8 +499,6 @@ void VisitDatabase::GetVisitsSource(const VisitVector& visits,
     }
     sql.append(") ORDER BY id");
     sql::Statement statement(GetDB().GetUniqueStatement(sql.c_str()));
-    if (!statement)
-      return;
 
     // Get the source entries out of the query result.
     while (statement.Step()) {

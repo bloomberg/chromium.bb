@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -239,7 +239,7 @@ TEST_F(URLDatabaseTest, IconMappingEnumerator) {
       SQL_FROM_HERE,
       "UPDATE urls SET favicon_id =? WHERE id=?"));
 
-  ASSERT_TRUE(statement);
+  ASSERT_TRUE(statement.is_valid());
 
   statement.BindInt64(0, icon_id);
   statement.BindInt64(1, url_id1);

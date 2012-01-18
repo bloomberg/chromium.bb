@@ -102,7 +102,7 @@ void InMemoryURLIndexTest::SetUp() {
   // such that it represents a time relative to 'now'.
   sql::Statement statement(db.GetUniqueStatement(
       "SELECT" HISTORY_URL_ROW_FIELDS "FROM urls;"));
-  EXPECT_TRUE(statement);
+  ASSERT_TRUE(statement.is_valid());
   base::Time time_right_now = base::Time::NowFromSystemTime();
   base::TimeDelta day_delta = base::TimeDelta::FromDays(1);
   {
@@ -204,7 +204,7 @@ TEST_F(LimitedInMemoryURLIndexTest, Initialization) {
   // Verify that the database contains the expected number of items, which
   // is the pre-filtered count, i.e. all of the items.
   sql::Statement statement(GetDB().GetUniqueStatement("SELECT * FROM urls;"));
-  EXPECT_TRUE(statement);
+  ASSERT_TRUE(statement.is_valid());
   uint64 row_count = 0;
   while (statement.Step()) ++row_count;
   EXPECT_EQ(1U, row_count);

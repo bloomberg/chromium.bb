@@ -126,8 +126,6 @@ void DownloadDatabase::QueryDownloads(
         "total_bytes, state, end_time, opened "
       "FROM downloads "
       "ORDER BY start_time"));
-  if (!statement)
-    return;
 
   while (statement.Step()) {
     DownloadPersistentStoreInfo info;
@@ -159,14 +157,12 @@ bool DownloadDatabase::UpdateDownload(const DownloadPersistentStoreInfo& data) {
   sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
       "UPDATE downloads "
       "SET received_bytes=?, state=?, end_time=?, opened=? WHERE id=?"));
-  if (!statement)
-    return false;
-
   statement.BindInt64(0, data.received_bytes);
   statement.BindInt(1, data.state);
   statement.BindInt64(2, data.end_time.ToTimeT());
   statement.BindInt(3, (data.opened ? 1 : 0));
   statement.BindInt64(4, data.db_handle);
+
   return statement.Run();
 }
 
@@ -176,11 +172,9 @@ bool DownloadDatabase::UpdateDownloadPath(const FilePath& path,
   DCHECK(db_handle > 0);
   sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
       "UPDATE downloads SET full_path=? WHERE id=?"));
-  if (!statement)
-    return false;
-
   BindFilePath(statement, path, 0);
   statement.BindInt64(1, db_handle);
+
   return statement.Run();
 }
 
@@ -188,10 +182,9 @@ bool DownloadDatabase::CleanUpInProgressEntries() {
   CheckThread();
   sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
       "UPDATE downloads SET state=? WHERE state=?"));
-  if (!statement)
-    return false;
   statement.BindInt(0, DownloadItem::CANCELLED);
   statement.BindInt(1, DownloadItem::IN_PROGRESS);
+
   return statement.Run();
 }
 
@@ -204,9 +197,6 @@ int64 DownloadDatabase::CreateDownload(
       "(full_path, url, start_time, received_bytes, total_bytes, state, "
       "end_time, opened) "
       "VALUES (?, ?, ?, ?, ?, ?, ?, ?)"));
-  if (!statement)
-    return 0;
-
   BindFilePath(statement, info.path, 0);
   statement.BindString(1, info.url.spec());
   statement.BindInt64(2, info.start_time.ToTimeT());
@@ -226,7 +216,7 @@ int64 DownloadDatabase::CreateDownload(
       sql::Statement dbg_statement(GetDB().GetCachedStatement(
           SQL_FROM_HERE,
           "SELECT id FROM downloads;"));
-      CHECK_96627(dbg_statement);
+      CHECK_96627(dbg_statement.is_valid());
 
       std::set<int64> database_ids;
       while (dbg_statement.Step()) {
@@ -250,16 +240,16 @@ void DownloadDatabase::RemoveDownload(DownloadID db_handle) {
   CheckThread();
   sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
       "DELETE FROM downloads WHERE id=?"));
-  if (!statement)
+  statement.BindInt64(0, db_handle);
+
+  if (!statement.Run())
     return;
 
-  statement.BindInt64(0, db_handle);
-  if (statement.Run())
-    // TODO(rdsmith): Remove when http://crbug.com/96627 is resolved.
-    returned_ids_.erase(db_handle);
+  // TODO(rdsmith): Remove when http://crbug.com/96627 is resolved.
+  returned_ids_.erase(db_handle);
 }
 
-void DownloadDatabase::RemoveDownloadsBetween(base::Time delete_begin,
+bool DownloadDatabase::RemoveDownloadsBetween(base::Time delete_begin,
                                               base::Time delete_end) {
   CheckThread();
   time_t start_time = delete_begin.ToTimeT();
@@ -271,8 +261,6 @@ void DownloadDatabase::RemoveDownloadsBetween(base::Time delete_begin,
         SQL_FROM_HERE,
         "SELECT id FROM downloads WHERE start_time >= ? AND start_time < ? "
         "AND (State = ? OR State = ? OR State = ?)"));
-    if (!dbg_statement)
-      return;
     dbg_statement.BindInt64(0, start_time);
     dbg_statement.BindInt64(
         1,
@@ -280,6 +268,10 @@ void DownloadDatabase::RemoveDownloadsBetween(base::Time delete_begin,
     dbg_statement.BindInt(2, DownloadItem::COMPLETE);
     dbg_statement.BindInt(3, DownloadItem::CANCELLED);
     dbg_statement.BindInt(4, DownloadItem::INTERRUPTED);
+
+    if (!dbg_statement.is_valid())
+      return false;
+
     while (dbg_statement.Step()) {
       int64 id_to_delete = dbg_statement.ColumnInt64(0);
       returned_ids_.erase(id_to_delete);
@@ -294,9 +286,6 @@ void DownloadDatabase::RemoveDownloadsBetween(base::Time delete_begin,
   sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
       "DELETE FROM downloads WHERE start_time >= ? AND start_time < ? "
       "AND (State = ? OR State = ? OR State = ?)"));
-  if (!statement)
-    return;
-
   statement.BindInt64(0, start_time);
   statement.BindInt64(
       1,
@@ -304,7 +293,8 @@ void DownloadDatabase::RemoveDownloadsBetween(base::Time delete_begin,
   statement.BindInt(2, DownloadItem::COMPLETE);
   statement.BindInt(3, DownloadItem::CANCELLED);
   statement.BindInt(4, DownloadItem::INTERRUPTED);
-  statement.Run();
+
+  return statement.Run();
 }
 
 }  // namespace history

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -48,13 +48,13 @@ void ComputeDatabaseMetrics(const FilePath& history_name,
   UMA_HISTOGRAM_MEMORY_MB("History.DatabaseFileMB", file_mb);
 
   sql::Statement url_count(db.GetUniqueStatement("SELECT count(*) FROM urls"));
-  if (!url_count || !url_count.Step())
+  if (!url_count.Step())
     return;
   UMA_HISTOGRAM_COUNTS("History.URLTableCount", url_count.ColumnInt(0));
 
   sql::Statement visit_count(db.GetUniqueStatement(
       "SELECT count(*) FROM visits"));
-  if (!visit_count || !visit_count.Step())
+  if (!visit_count.Step())
     return;
   UMA_HISTOGRAM_COUNTS("History.VisitTableCount", visit_count.ColumnInt(0));
 }
@@ -188,25 +188,18 @@ bool HistoryDatabase::GetNeedsThumbnailMigration() {
 bool HistoryDatabase::SetSegmentID(VisitID visit_id, SegmentID segment_id) {
   sql::Statement s(db_.GetCachedStatement(SQL_FROM_HERE,
       "UPDATE visits SET segment_id = ? WHERE id = ?"));
-  if (!s) {
-    NOTREACHED() << db_.GetErrorMessage();
-    return false;
-  }
   s.BindInt64(0, segment_id);
   s.BindInt64(1, visit_id);
   DCHECK(db_.GetLastChangeCount() == 1);
+
   return s.Run();
 }
 
 SegmentID HistoryDatabase::GetSegmentID(VisitID visit_id) {
   sql::Statement s(db_.GetCachedStatement(SQL_FROM_HERE,
       "SELECT segment_id FROM visits WHERE id = ?"));
-  if (!s) {
-    NOTREACHED() << db_.GetErrorMessage();
-    return 0;
-  }
-
   s.BindInt64(0, visit_id);
+
   if (s.Step()) {
     if (s.ColumnType(0) == sql::COLUMN_TYPE_NULL)
       return 0;

@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -60,10 +60,10 @@ class VisitSegmentDatabase {
 
   // Delete all the segment usage data which is older than the provided time
   // stamp.
-  void DeleteSegmentData(base::Time older_than);
+  bool DeleteSegmentData(base::Time older_than);
 
   // Change the presentation id for the segment identified by |segment_id|
-  void SetSegmentPresentationIndex(SegmentID segment_id, int index);
+  bool SetSegmentPresentationIndex(SegmentID segment_id, int index);
 
   // Delete the segment currently using the provided url for representation.
   // This will also delete any associated segment usage data.

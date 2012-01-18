@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -75,7 +75,7 @@ class ThumbnailDatabase {
   // Sets the given data to be the thumbnail for the given URL,
   // overwriting any previous data. If the SkBitmap contains no pixel
   // data, the thumbnail will be deleted.
-  void SetPageThumbnail(const GURL& url,
+  bool SetPageThumbnail(const GURL& url,
                         URLID id,
                         const gfx::Image* thumbnail,
                         const ThumbnailScore& score,

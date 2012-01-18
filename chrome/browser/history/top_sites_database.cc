@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -121,7 +121,7 @@ void TopSitesDatabase::GetPageThumbnails(MostVisitedURLList* urls,
       "boring_score, good_clipping, at_top, last_updated, load_completed "
       "FROM thumbnails ORDER BY url_rank "));
 
-  if (!statement) {
+  if (!statement.is_valid()) {
     LOG(WARNING) << db_->GetErrorMessage();
     return;
   }
@@ -189,7 +189,7 @@ void TopSitesDatabase::SetPageThumbnail(const MostVisitedURL& url,
   transaction.Commit();
 }
 
-void TopSitesDatabase::UpdatePageThumbnail(
+bool TopSitesDatabase::UpdatePageThumbnail(
     const MostVisitedURL& url, const Images& thumbnail) {
   sql::Statement statement(db_->GetCachedStatement(
       SQL_FROM_HERE,
@@ -198,9 +198,6 @@ void TopSitesDatabase::UpdatePageThumbnail(
       "boring_score = ?, good_clipping = ?, at_top = ?, last_updated = ?, "
       "load_completed = ? "
       "WHERE url = ? "));
-  if (!statement)
-    return;
-
   statement.BindString16(0, url.title);
   if (thumbnail.thumbnail.get() && thumbnail.thumbnail->front()) {
     statement.BindBlob(1, thumbnail.thumbnail->front(),
@@ -214,8 +211,8 @@ void TopSitesDatabase::UpdatePageThumbnail(
   statement.BindInt64(6, score.time_at_snapshot.ToInternalValue());
   statement.BindBool(7, score.load_completed);
   statement.BindString(8, url.url.spec());
-  if (!statement.Run())
-    NOTREACHED() << db_->GetErrorMessage();
+
+  return statement.Run();
 }
 
 void TopSitesDatabase::AddPageThumbnail(const MostVisitedURL& url,
@@ -229,9 +226,6 @@ void TopSitesDatabase::AddPageThumbnail(const MostVisitedURL& url,
       "(url, url_rank, title, thumbnail, redirects, "
       "boring_score, good_clipping, at_top, last_updated, load_completed) "
       "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"));
-  if (!statement)
-    return;
-
   statement.BindString(0, url.url.spec());
   statement.BindInt(1, count);  // Make it the last url.
   statement.BindString16(2, url.title);
@@ -247,7 +241,7 @@ void TopSitesDatabase::AddPageThumbnail(const MostVisitedURL& url,
   statement.BindInt64(8, score.time_at_snapshot.ToInternalValue());
   statement.BindBool(9, score.load_completed);
   if (!statement.Run())
-    NOTREACHED() << db_->GetErrorMessage();
+    return;
 
   UpdatePageRankNoTransaction(url, new_rank);
 }
@@ -279,8 +273,7 @@ void TopSitesDatabase::UpdatePageRankNoTransaction(
         "WHERE url_rank >= ? AND url_rank < ?"));
     shift_statement.BindInt(0, new_rank);
     shift_statement.BindInt(1, prev_rank);
-    if (shift_statement)
-      shift_statement.Run();
+    shift_statement.Run();
   } else if (prev_rank < new_rank) {
     // Shift down
     sql::Statement shift_statement(db_->GetCachedStatement(
@@ -290,8 +283,7 @@ void TopSitesDatabase::UpdatePageRankNoTransaction(
         "WHERE url_rank > ? AND url_rank <= ?"));
     shift_statement.BindInt(0, prev_rank);
     shift_statement.BindInt(1, new_rank);
-    if (shift_statement)
-      shift_statement.Run();
+    shift_statement.Run();
   }
 
   // Set the url's rank.
@@ -302,8 +294,7 @@ void TopSitesDatabase::UpdatePageRankNoTransaction(
       "WHERE url == ?"));
   set_statement.BindInt(0, new_rank);
   set_statement.BindString(1, url.url.spec());
-  if (set_statement)
-    set_statement.Run();
+  set_statement.Run();
 }
 
 bool TopSitesDatabase::GetPageThumbnail(const GURL& url,
@@ -312,12 +303,6 @@ bool TopSitesDatabase::GetPageThumbnail(const GURL& url,
       SQL_FROM_HERE,
       "SELECT thumbnail, boring_score, good_clipping, at_top, last_updated "
       "FROM thumbnails WHERE url=?"));
-
-  if (!statement) {
-    LOG(WARNING) << db_->GetErrorMessage();
-    return false;
-  }
-
   statement.BindString(0, url.spec());
   if (!statement.Step())
     return false;
@@ -334,37 +319,25 @@ bool TopSitesDatabase::GetPageThumbnail(const GURL& url,
 }
 
 int TopSitesDatabase::GetRowCount() {
-  int result = 0;
   sql::Statement select_statement(db_->GetCachedStatement(
       SQL_FROM_HERE,
       "SELECT COUNT (url) FROM thumbnails"));
-  if (!select_statement) {
-    LOG(WARNING) << db_->GetErrorMessage();
-    return result;
-  }
-
   if (select_statement.Step())
-    result = select_statement.ColumnInt(0);
+    return select_statement.ColumnInt(0);
 
-  return result;
+  return 0;
 }
 
 int TopSitesDatabase::GetURLRank(const MostVisitedURL& url) {
-  int result = -1;
   sql::Statement select_statement(db_->GetCachedStatement(
       SQL_FROM_HERE,
       "SELECT url_rank "
       "FROM thumbnails WHERE url=?"));
-  if (!select_statement) {
-    LOG(WARNING) << db_->GetErrorMessage();
-    return result;
-  }
-
   select_statement.BindString(0, url.url.spec());
   if (select_statement.Step())
-    result = select_statement.ColumnInt(0);
+    return select_statement.ColumnInt(0);
 
-  return result;
+  return -1;
 }
 
 // Remove the record for this URL. Returns true iff removed successfully.
@@ -381,18 +354,18 @@ bool TopSitesDatabase::RemoveURL(const MostVisitedURL& url) {
       "UPDATE thumbnails "
       "SET url_rank = url_rank - 1 "
       "WHERE url_rank > ?"));
-  if (!shift_statement)
-    return false;
   shift_statement.BindInt(0, old_rank);
-  shift_statement.Run();
+
+  if (!shift_statement.Run())
+    return false;
 
   sql::Statement delete_statement(
       db_->GetCachedStatement(SQL_FROM_HERE,
                               "DELETE FROM thumbnails WHERE url = ?"));
-  if (!delete_statement)
-    return false;
   delete_statement.BindString(0, url.url.spec());
-  delete_statement.Run();
+
+  if (!delete_statement.Run())
+    return false;
 
   return transaction.Commit();
 }

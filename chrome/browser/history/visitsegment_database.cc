@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -48,12 +48,11 @@ bool VisitSegmentDatabase::InitSegmentTables() {
         "name VARCHAR,"
         "url_id INTEGER NON NULL,"
         "pres_index INTEGER DEFAULT -1 NOT NULL)")) {
-      NOTREACHED();
       return false;
     }
 
-    if (!GetDB().Execute("CREATE INDEX segments_name ON segments(name)")) {
-      NOTREACHED();
+    if (!GetDB().Execute(
+        "CREATE INDEX segments_name ON segments(name)")) {
       return false;
     }
   }
@@ -71,13 +70,11 @@ bool VisitSegmentDatabase::InitSegmentTables() {
         "segment_id INTEGER NOT NULL,"
         "time_slot INTEGER NOT NULL,"
         "visit_count INTEGER DEFAULT 0 NOT NULL)")) {
-      NOTREACHED();
       return false;
     }
     if (!GetDB().Execute(
         "CREATE INDEX segment_usage_time_slot_segment_id ON "
         "segment_usage(time_slot, segment_id)")) {
-      NOTREACHED();
       return false;
     }
   }
@@ -144,10 +141,8 @@ SegmentID VisitSegmentDatabase::GetSegmentNamed(
     const std::string& segment_name) {
   sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
       "SELECT id FROM segments WHERE name = ?"));
-  if (!statement)
-    return 0;
-
   statement.BindString(0, segment_name);
+
   if (statement.Step())
     return statement.ColumnInt64(0);
   return 0;
@@ -157,21 +152,17 @@ bool VisitSegmentDatabase::UpdateSegmentRepresentationURL(SegmentID segment_id,
                                                           URLID url_id) {
   sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
       "UPDATE segments SET url_id = ? WHERE id = ?"));
-  if (!statement)
-    return false;
-
   statement.BindInt64(0, url_id);
   statement.BindInt64(1, segment_id);
+
   return statement.Run();
 }
 
 URLID VisitSegmentDatabase::GetSegmentRepresentationURL(SegmentID segment_id) {
   sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
       "SELECT url_id FROM segments WHERE id = ?"));
-  if (!statement)
-    return 0;
-
   statement.BindInt64(0, segment_id);
+
   if (statement.Step())
     return statement.ColumnInt64(0);
   return 0;
@@ -181,14 +172,12 @@ SegmentID VisitSegmentDatabase::CreateSegment(URLID url_id,
                                               const std::string& segment_name) {
   sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
       "INSERT INTO segments (name, url_id) VALUES (?,?)"));
-  if (!statement)
-    return false;
-
   statement.BindString(0, segment_name);
   statement.BindInt64(1, url_id);
+
   if (statement.Run())
     return GetDB().GetLastInsertRowId();
-  return false;
+  return 0;
 }
 
 bool VisitSegmentDatabase::IncreaseSegmentVisitCount(SegmentID segment_id,
@@ -199,31 +188,27 @@ bool VisitSegmentDatabase::IncreaseSegmentVisitCount(SegmentID segment_id,
   sql::Statement select(GetDB().GetCachedStatement(SQL_FROM_HERE,
       "SELECT id, visit_count FROM segment_usage "
       "WHERE time_slot = ? AND segment_id = ?"));
-  if (!select)
-    return false;
-
   select.BindInt64(0, t.ToInternalValue());
   select.BindInt64(1, segment_id);
+
+  if (!select.is_valid())
+    return false;
+
   if (select.Step()) {
     sql::Statement update(GetDB().GetCachedStatement(SQL_FROM_HERE,
         "UPDATE segment_usage SET visit_count = ? WHERE id = ?"));
-    if (!update)
-      return false;
-
     update.BindInt64(0, select.ColumnInt64(1) + static_cast<int64>(amount));
     update.BindInt64(1, select.ColumnInt64(0));
-    return update.Run();
 
+    return update.Run();
   } else {
     sql::Statement insert(GetDB().GetCachedStatement(SQL_FROM_HERE,
         "INSERT INTO segment_usage "
         "(segment_id, time_slot, visit_count) VALUES (?, ?, ?)"));
-    if (!insert)
-      return false;
-
     insert.BindInt64(0, segment_id);
     insert.BindInt64(1, t.ToInternalValue());
     insert.BindInt64(2, static_cast<int64>(amount));
+
     return insert.Run();
   }
 }
@@ -245,10 +230,8 @@ void VisitSegmentDatabase::QuerySegmentUsage(
       "SELECT segment_id, time_slot, visit_count "
       "FROM segment_usage WHERE time_slot >= ? "
       "ORDER BY segment_id"));
-  if (!statement) {
-    NOTREACHED() << GetDB().GetErrorMessage();
+  if (!statement.is_valid())
     return;
-  }
 
   base::Time ts = from_time.LocalMidnight();
   statement.BindInt64(0, ts.ToInternalValue());
@@ -304,10 +287,10 @@ void VisitSegmentDatabase::QuerySegmentUsage(
       "SELECT urls.url, urls.title FROM urls "
       "JOIN segments ON segments.url_id = urls.id "
       "WHERE segments.id = ?"));
-  if (!statement2) {
-    NOTREACHED() << GetDB().GetErrorMessage();
+
+  if (!statement2.is_valid())
     return;
-  }
+
   for (size_t i = 0; i < results->size(); ++i) {
     PageUsageData* pud = (*results)[i];
     statement2.BindInt64(0, pud->GetID());
@@ -319,70 +302,43 @@ void VisitSegmentDatabase::QuerySegmentUsage(
   }
 }
 
-void VisitSegmentDatabase::DeleteSegmentData(base::Time older_than) {
+bool VisitSegmentDatabase::DeleteSegmentData(base::Time older_than) {
   sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
       "DELETE FROM segment_usage WHERE time_slot < ?"));
-  if (!statement)
-    return;
-
   statement.BindInt64(0, older_than.LocalMidnight().ToInternalValue());
-  if (!statement.Run())
-    NOTREACHED();
+
+  return statement.Run();
 }
 
-void VisitSegmentDatabase::SetSegmentPresentationIndex(SegmentID segment_id,
+bool VisitSegmentDatabase::SetSegmentPresentationIndex(SegmentID segment_id,
                                                        int index) {
   sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
       "UPDATE segments SET pres_index = ? WHERE id = ?"));
-  if (!statement)
-    return;
-
   statement.BindInt(0, index);
   statement.BindInt64(1, segment_id);
-  if (!statement.Run())
-    NOTREACHED();
-  else
-    DCHECK_EQ(1, GetDB().GetLastChangeCount());
+
+  bool success = statement.Run();
+  DCHECK_EQ(1, GetDB().GetLastChangeCount());
+  return success;
 }
 
 bool VisitSegmentDatabase::DeleteSegmentForURL(URLID url_id) {
-  sql::Statement select(GetDB().GetCachedStatement(SQL_FROM_HERE,
-      "SELECT id FROM segments WHERE url_id = ?"));
-  if (!select)
+  sql::Statement delete_usage(GetDB().GetCachedStatement(SQL_FROM_HERE,
+      "DELETE FROM segment_usage WHERE segment_id IN "
+      "(SELECT id FROM segments WHERE url_id = ?)"));
+  delete_usage.BindInt64(0, url_id);
+
+  if (!delete_usage.Run())
     return false;
 
   sql::Statement delete_seg(GetDB().GetCachedStatement(SQL_FROM_HERE,
-      "DELETE FROM segments WHERE id = ?"));
-  if (!delete_seg)
+      "DELETE FROM segments WHERE url_id = ?"));
+  delete_seg.BindInt64(0, url_id);
+
+  if (!delete_seg.Run())
     return false;
 
-  sql::Statement delete_usage(GetDB().GetCachedStatement(SQL_FROM_HERE,
-      "DELETE FROM segment_usage WHERE segment_id = ?"));
-  if (!delete_usage)
-    return false;
-
-  bool r = true;
-  select.BindInt64(0, url_id);
-  // In theory there could not be more than one segment using that URL but we
-  // loop anyway to cleanup any inconsistency.
-  while (select.Step()) {
-    SegmentID segment_id = select.ColumnInt64(0);
-
-    delete_usage.BindInt64(0, segment_id);
-    if (!delete_usage.Run()) {
-      NOTREACHED();
-      r = false;
-    }
-
-    delete_seg.BindInt64(0, segment_id);
-    if (!delete_seg.Run()) {
-      NOTREACHED();
-      r = false;
-    }
-    delete_usage.Reset();
-    delete_seg.Reset();
-  }
-  return r;
+  return delete_seg.Run();
 }
 
 }  // namespace history

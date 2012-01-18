@@ -124,7 +124,6 @@ bool KeywordTable::Init() {
         "instant_url VARCHAR,"
         "last_modified INTEGER DEFAULT 0,"
         "sync_guid VARCHAR)")) {
-      NOTREACHED();
       return false;
     }
     if (!UpdateBackupSignature())
@@ -151,9 +150,9 @@ bool KeywordTable::AddKeyword(const TemplateURL& url) {
   BindURLToStatement(url, &s);
   s.BindInt64(kUrlIdPosition, url.id());
 
-  if (!s.Run()) {
+  if (!s.Run())
     return false;
-  }
+
   return UpdateBackupSignature();
 }
 
@@ -227,27 +226,21 @@ TemplateURL* KeywordTable::GetDefaultSearchProviderBackup() {
       "suggest_url, prepopulate_id, autogenerate_keyword, logo_id, "
       "created_by_policy, instant_url, last_modified, sync_guid "
       "FROM keywords_backup WHERE id=?"));
-  if (!s) {
-    NOTREACHED() << "Statement prepare failed";
-    return NULL;
-  }
   s.BindInt64(0, backup_id);
+
   if (!s.Step()) {
-    LOG(ERROR) << "No default search provider with backup id.";
+    LOG_IF(ERROR, s.Succeeded())
+        << "No default search provider with backup id.";
     return NULL;
   }
 
-  scoped_ptr<TemplateURL> template_url(new TemplateURL());
-  GetURLFromStatement(s, template_url.get());
+  TemplateURL* template_url = new TemplateURL();
+  GetURLFromStatement(s, template_url);
   // ID has no meaning for the backup and should be 0 in case the TemplateURL
   // will be added to keywords if missing.
   template_url->set_id(0);
 
-  if (!s.Succeeded()) {
-    LOG(ERROR) << "Statement has not succeeded.";
-    return NULL;
-  }
-  return template_url.release();
+  return template_url;
 }
 
 bool KeywordTable::DidDefaultSearchProviderChange() {
@@ -400,10 +393,8 @@ bool KeywordTable::MigrateToVersion41RewriteDefaultSearchProviderBackup() {
 
 bool KeywordTable::MigrateToVersion42AddFullDefaultSearchProviderBackup() {
   sql::Transaction transaction(db_);
-  if (!transaction.Begin()) {
-    NOTREACHED() << "Failed to start transaction";
+  if (!transaction.Begin())
     return false;
-  }
 
   int64 id = 0;
   if (!UpdateDefaultSearchProviderIDBackup(&id))
@@ -414,23 +405,17 @@ bool KeywordTable::MigrateToVersion42AddFullDefaultSearchProviderBackup() {
     return false;
 
   std::string keywords;
-  if (!GetTableContents("keywords", &keywords)) {
-    NOTREACHED() << "Can't get keywords table contents to sign";
+  if (!GetTableContents("keywords", &keywords))
     return false;
-  }
 
   std::string data_to_sign = base::Int64ToString(id) +
                              keyword_backup +
                              keywords;
   std::string signature = protector::SignSetting(data_to_sign);
-  if (signature.empty()) {
+  if (signature.empty())
     NOTREACHED() << "Signature is empty";
-    return false;
-  }
-  if (!meta_table_->SetValue(kBackupSignatureKey, signature)) {
+  if (!meta_table_->SetValue(kBackupSignatureKey, signature))
     NOTREACHED() << "Failed to write signature.";
-    return false;
-  }
 
   return transaction.Commit();
 }
@@ -472,26 +457,19 @@ bool KeywordTable::GetTableContents(const char* table_name,
       " FROM " + std::string(table_name) + " ORDER BY id ASC";
   sql::Statement s(db_->GetCachedStatement(sql::StatementID(table_name),
                                            query.c_str()));
-  if (!s) {
-    NOTREACHED() << "Statement prepare failed";
-    return false;
-  }
   while (s.Step())
     table_data += s.ColumnString(0);
-  if (!s.Succeeded()) {
-    NOTREACHED() << "Statement execution failed";
+  if (!s.Succeeded())
     return false;
-  }
+
   *contents = table_data;
   return true;
 }
 
 bool KeywordTable::UpdateBackupSignature() {
   sql::Transaction transaction(db_);
-  if (!transaction.Begin()) {
-    NOTREACHED() << "Failed to start transaction";
+  if (!transaction.Begin())
     return false;
-  }
 
   int64 id = 0;
   if (!UpdateDefaultSearchProviderIDBackup(&id)) {
@@ -501,8 +479,9 @@ bool KeywordTable::UpdateBackupSignature() {
 
   // Backup of all keywords.
   if (db_->DoesTableExist("keywords_backup") &&
-      !db_->Execute("DROP TABLE keywords_backup"))
+      !db_->Execute("DROP TABLE keywords_backup")) {
     return false;
+  }
 
   if (!db_->Execute(
       "CREATE TABLE keywords_backup AS "
@@ -528,10 +507,8 @@ bool KeywordTable::UpdateBackupSignature() {
     return false;
   }
 
-  if (!meta_table_->SetValue(kBackupSignatureKey, signature)) {
-    NOTREACHED() << "Failed to write signature.";
+  if (!meta_table_->SetValue(kBackupSignatureKey, signature))
     return false;
-  }
 
   return transaction.Commit();
 }
@@ -602,20 +579,16 @@ bool KeywordTable::GetKeywordAsString(TemplateURLID id,
       "SELECT " + std::string(kKeywordColumnsConcatenated) +
       " FROM " + table_name + " WHERE id=?";
   sql::Statement s(db_->GetUniqueStatement(query.c_str()));
-  if (!s) {
-    NOTREACHED() << "Statement prepare failed";
-    return false;
-  }
   s.BindInt64(0, id);
+
   if (!s.Step()) {
-    LOG(WARNING) << "No keyword with id: " << id << ", ignoring.";
+    LOG_IF(WARNING, s.Succeeded())
+        << "No keyword with id: " << id << ", ignoring.";
     return true;
   }
 
-  if (!s.Succeeded()) {
-    NOTREACHED() << "Statement failed.";
+  if (!s.Succeeded())
     return false;
-  }
 
   *result = s.ColumnString(0);
   return true;

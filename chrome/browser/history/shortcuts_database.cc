@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -65,15 +65,9 @@ bool DeleteShortcut(const char* field_name, const std::string& id,
   sql::Statement s(db.GetUniqueStatement(
       base::StringPrintf("DELETE FROM %s WHERE %s = ?", kShortcutsDBName,
                          field_name).c_str()));
-  if (!s) {
-    NOTREACHED() << "Statement prepare failed";
-    return false;
-  }
-
   s.BindString(0, id);
-  if (!s.Run())
-    return false;
-  return true;
+
+  return s.Run();
 }
 
 }  // namespace
@@ -116,17 +110,9 @@ bool ShortcutsDatabase::AddShortcut(
       " (id, text, url, contents, contents_class, description,"
       " description_class, last_access_time, number_of_hits) "
       "VALUES (?,?,?,?,?,?,?,?,?)"));
-  if (!s) {
-    NOTREACHED();
-    return false;
-  }
   BindShortcutToStatement(shortcut, &s);
 
-  if (!s.Run()) {
-    NOTREACHED();
-    return false;
-  }
-  return true;
+  return s.Run();
 }
 
 bool ShortcutsDatabase::UpdateShortcut(
@@ -137,13 +123,9 @@ bool ShortcutsDatabase::UpdateShortcut(
       "     description=?, description_class=?, last_access_time=?,"
       "     number_of_hits=? "
       "WHERE id=?"));
-  if (!s) {
-    NOTREACHED() << "Statement prepare failed";
-    return false;
-  }
-
   BindShortcutToStatement(shortcut, &s);
   s.BindString(9, shortcut.id);
+
   bool result = s.Run();
   DCHECK_GT(db_.GetLastChangeCount(), 0);
   return result;
@@ -183,10 +165,10 @@ bool ShortcutsDatabase::LoadShortcuts(
       "SELECT id, text, url, contents, contents_class, "
       "description, description_class, last_access_time, number_of_hits "
       "FROM " kShortcutsDBName));
-  if (!s) {
-    NOTREACHED() << "Statement prepare failed";
+
+  if (!s.is_valid())
     return false;
-  }
+
   shortcuts->clear();
   while (s.Step()) {
     shortcuts->insert(std::make_pair(s.ColumnString(0),
