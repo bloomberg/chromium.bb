@@ -76,6 +76,11 @@ class Log(object):
   def reset(cls, log_to_file, log_filename, log_sizelimit):
     if log_to_file:
       cls.AddFile(log_filename, int(log_sizelimit))
+    cls.script_name = ""
+
+  @classmethod
+  def SetScriptName(cls, script_name):
+    cls.script_name = script_name
 
   @classmethod
   def AddFile(cls, filename, sizelimit):
@@ -102,10 +107,11 @@ class Log(object):
     cls.ErrorPrint(m, *args)
 
   @classmethod
-  def FatalWithResult(cls, ret, m, *args):
-    m = 'FATAL: ' + m
-    cls.LogPrint(m, *args)
-    cls.ErrorPrint(m, *args)
+  def FatalWithResult(cls, ret, msg, *args):
+    if cls.script_name:
+      msg = '%s: %s' % (cls.script_name, msg)
+    cls.LogPrint(msg, *args)
+    cls.ErrorPrint(msg, *args)
     DriverExit(ret)
 
   @classmethod

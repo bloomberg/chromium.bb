@@ -275,6 +275,13 @@ class env(object):
   def getbool(cls, varname):
     return bool(int(cls.getone(varname)))
 
+  @classmethod
+  def setbool(cls, varname, val):
+    if val:
+      cls.set(varname, '1')
+    else:
+      cls.set(varname, '0')
+
   # Set a variable in the environment without shell-escape
   @classmethod
   def setraw(cls, varname, val):

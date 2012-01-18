@@ -38,6 +38,7 @@ EXTRA_ENV = {
                           # TODO(pdox): Can this be removed?
   'LANGUAGE'    : 'C',    # C or CXX
   'FRONTEND'    : '',     # CLANG, or DRAGONEGG
+  'INCLUDE_CXX_HEADERS': '0', # This is set by RunCC.
 
   # Command-line options
   'GCC_MODE'    : '',     # '' (default), '-E', '-c', or '-S'
@@ -48,6 +49,8 @@ EXTRA_ENV = {
   'DIAGNOSTIC'  : '0',    # Diagnostic flag detected
   'STATIC'      : '0',    # -static
   'PIC'         : '0',    # Generate PIC
+  'NEED_DASH_E' : '0',    # Used for stdin inputs, which must have an explicit
+                          # type set (using -x) unless -E is specified.
 
   'INPUTS'      : '',    # Input files
   'OUTPUT'      : '',    # Output file
@@ -73,9 +76,9 @@ EXTRA_ENV = {
   'ISYSTEM_BUILTIN':
     '${BASE_USR}/local/include ' +
     '${ISYSTEM_%FRONTEND%} ' +
+    '${ISYSTEM_CXX} ' +
     '${BASE_USR}/include ' +
     '${BASE_SDK}/include ' +
-    '${ISYSTEM_CXX} ' +
     # This is used only for newlib bootstrapping.
     '${BASE_LIBMODE}/sysroot/include',
 
@@ -85,7 +88,7 @@ EXTRA_ENV = {
   # TODO(pdox): fill this in.
   'ISYSTEM_DRAGONEGG': '',
 
-  'ISYSTEM_CXX' : '${LANGUAGE==CXX ? ${ISYSTEM_CXX_%LIBMODE%}}',
+  'ISYSTEM_CXX' : '${INCLUDE_CXX_HEADERS ? ${ISYSTEM_CXX_%LIBMODE%}}',
 
   # TODO(pdox): This difference will go away as soon as we compile
   #             libstdc++.so ourselves.
@@ -152,10 +155,7 @@ EXTRA_ENV = {
 
   'RUN_CC': '${CC} -emit-llvm ${mode} ${CC_FLAGS} ' +
             '${@AddPrefix:-isystem :ISYSTEM} ' +
-            '${input} -o ${output}',
-
-  'RUN_PP' : '${CC} -E ${CC_FLAGS} ${@AddPrefix:-isystem :ISYSTEM} ' +
-             '"${input}" -o "${output}"'
+            '-x${typespec} "${infile}" -o ${output}',
 }
 env.update(EXTRA_ENV)
 
@@ -176,6 +176,30 @@ def AddBPrefix(prefix):
   include_dir = prefix + 'include'
   if pathtools.isdir(include_dir):
     env.append('ISYSTEM_USER', include_dir)
+
+stdin_count = 0
+def AddInputFileStdin():
+  global stdin_count
+
+  # When stdin is an input, -x or -E must be given.
+  forced_type = GetForcedFileType()
+  if not forced_type:
+    # Only allowed if -E is specified.
+    forced_type = 'c'
+    env.set('NEED_DASH_E', '1')
+
+  stdin_name = '__stdin%d__' % stdin_count
+  env.append('INPUTS', stdin_name)
+  ForceFileType(stdin_name, forced_type)
+  stdin_count += 1
+
+def IsStdinInput(f):
+  return f.startswith('__stdin') and f.endswith('__')
+
+def HandleDashX(arg):
+  if arg == 'none':
+    SetForcedFileType(None)
+  SetForcedFileType(GCCTypeToFileType(arg))
 
 CustomPatterns = [
   ( '--driver=(.+)',             "env.set('CC', pathtools.normalize($0))\n"),
@@ -243,6 +267,8 @@ GCCPatterns = [
   ( ('-iquote(.+)'),
     "env.append('CC_FLAGS', '-iquote', pathtools.normalize($0))"),
 
+  ( ('(-include)','(.+)'),    AddCCFlag),
+  ( ('(-include.+)'),         AddCCFlag),
   ( '(-g)',                   AddCCFlag),
   ( '(-W.*)',                 AddCCFlag),
   ( '(-std=.*)',              AddCCFlag),
@@ -254,7 +280,6 @@ GCCPatterns = [
   ( '(-pedantic)',            AddCCFlag),
   ( '(-pedantic-errors)',     AddCCFlag),
   ( '(-g.*)',                 AddCCFlag),
-  ( '(-xassembler-with-cpp)', AddCCFlag),
 
   ( '-shared',                "env.set('SHARED', '1')"),
   ( '-static',                "env.set('STATIC', '1')"),
@@ -276,12 +301,8 @@ GCCPatterns = [
   ( ('(-MT)','(.*)'), AddCCFlag),
   ( ('(-MF)','(.*)'), "env.append('CC_FLAGS', $0, pathtools.normalize($1))"),
 
-  # With -xc, GCC considers future inputs to be an input source file.
-  # The following is not the correct handling of -x,
-  # but it works in the limited case used by llvm/configure.
-  # TODO(pdox): Make this -x really work in the general case.
-  ( '-xc',                    "env.append('CC_FLAGS', '-xc')\n"
-                              "SetForcedFileType('src')"),
+  ( ('-x', '(.+)'),    HandleDashX),
+  ( '-x(.+)',          HandleDashX),
 
   # Ignore these gcc flags
   ( '(-msse)',                ""),
@@ -313,21 +334,34 @@ GCCPatterns = [
   ( '(-d.*)',                 "env.set('DIAGNOSTIC', '1')"),
 
   # Catch all other command-line arguments
-  ( '(-.*)',              "env.append('UNMATCHED', $0)"),
+  ( '(-.+)',              "env.append('UNMATCHED', $0)"),
+
+  # Standard input
+  ( '-',     AddInputFileStdin),
 
   # Input Files
   # Call ForceFileType for all input files at the time they are
   # parsed on the command-line. This ensures that the gcc "-x"
   # setting is correctly applied.
-
   ( '(.*)',  "env.append('INPUTS', pathtools.normalize($0))\n"
              "ForceFileType(pathtools.normalize($0))"),
 ]
 
+# This is needed because our script name is
+# "pnacl-driver" unless explicitly set.
+def SetScriptName():
+  language = env.getone('LANGUAGE') # C or CXX
+  frontend = env.getone('FRONTEND') # CLANG or DRAGONEGG
+  namemap = { ('CLANG', 'C')      : 'pnacl-clang',
+              ('CLANG', 'CXX')    : 'pnacl-clang++',
+              ('DRAGONEGG', 'C')  : 'pnacl-dgcc',
+              ('DRAGONEGG', 'CXX'): 'pnacl-dg++' }
+  Log.SetScriptName(namemap[(frontend, language)])
 
 def main(argv):
   _, real_argv = ParseArgs(argv, CustomPatterns, must_match = False)
   ParseArgs(real_argv, GCCPatterns)
+  SetScriptName()
 
   # "configure", especially when run as part of a toolchain bootstrap
   # process, will invoke gcc with various diagnostic options and
@@ -387,6 +421,9 @@ def main(argv):
   output_type = output_type_map[(gcc_mode, compiling_to_native)]
   needs_linking = (gcc_mode == '')
 
+  if env.getbool('NEED_DASH_E') and gcc_mode != '-E':
+    Log.Fatal("-E or -x required when input is from stdin")
+
   # There are multiple input files and no linking is being done.
   # There will be multiple outputs. Handle this case separately.
   if not needs_linking:
@@ -397,13 +434,14 @@ def main(argv):
       if f.startswith('-'):
         continue
       intype = FileType(f)
-      if ((output_type == 'pp' and intype not in ('src','S')) or
-          (output_type == 'll' and intype not in 'src') or
-          (output_type == 'po' and intype not in ('src','ll')) or
-          (output_type == 's' and intype not in ('src','ll','po','S')) or
-          (output_type == 'o' and intype not in ('src','ll','po','S','s'))):
-        Log.Fatal("%s: Unexpected type of file for '%s'",
-                  pathtools.touser(f), gcc_mode)
+      if not IsSourceType(intype):
+        if ((output_type == 'pp' and intype != 'S') or
+            (output_type == 'll') or
+            (output_type == 'po' and intype != 'll') or
+            (output_type == 's' and intype not in ('ll','po','S')) or
+            (output_type == 'o' and intype not in ('ll','po','S','s'))):
+          Log.Fatal("%s: Unexpected type of file for '%s'",
+                    pathtools.touser(f), gcc_mode)
 
       if output == '':
         f_output = DefaultOutputName(f, output_type)
@@ -427,7 +465,7 @@ def main(argv):
     if inputs[i].startswith('-'):
       continue
     intype = FileType(inputs[i])
-    if intype in ('src','ll'):
+    if IsSourceType(intype) or intype == 'll':
       inputs[i] = CompileOne(inputs[i], 'po', namegen)
 
   # Compile all .s/.S to .o
@@ -472,34 +510,43 @@ def main(argv):
   RunDriver('pnacl-ld', ld_flags + ld_args + ['-o', output])
   return 0
 
-def CompileOne(input, output_type, namegen, output = None):
+def CompileOne(infile, output_type, namegen, output = None):
   if output is None:
-    output = namegen.TempNameForInput(input, output_type)
+    output = namegen.TempNameForInput(infile, output_type)
 
-  chain = DriverChain(input, output, namegen)
-  SetupChain(chain, FileType(input), output_type)
+  chain = DriverChain(infile, output, namegen)
+  SetupChain(chain, FileType(infile), output_type)
   chain.run()
   return output
 
-def RunPP(input, output):
-  RunWithEnv("${RUN_PP}", input=input, output=output)
+def RunCC(infile, output, mode):
+  intype = FileType(infile)
+  typespec = FileTypeToGCCType(intype)
+  include_cxx_headers = (env.get('LANGUAGE') == 'CXX') or (intype == 'c++')
+  env.setbool('INCLUDE_CXX_HEADERS', include_cxx_headers)
+  if IsStdinInput(infile):
+    infile = '-'
+  RunWithEnv("${RUN_CC}", infile=infile, output=output,
+                          mode=mode,
+                          typespec=typespec)
 
-def RunCC(input, output, mode):
-  RunWithEnv("${RUN_CC}", input=input, output=output, mode=mode)
+def RunLLVMAS(infile, output):
+  if IsStdinInput(infile):
+    infile = '-'
+  RunDriver('pnacl-as', [infile, '-o', output], suppress_arch = True)
 
-def RunLLVMAS(input, output):
-  RunDriver('pnacl-as', [input, '-o', output], suppress_arch = True)
+def RunNativeAS(infile, output):
+  if IsStdinInput(infile):
+    infile = '-'
+  RunDriver('pnacl-as', [infile, '-o', output])
 
-def RunNativeAS(input, output):
-  RunDriver('pnacl-as', [input, '-o', output])
-
-def RunTranslate(input, output, mode):
+def RunTranslate(infile, output, mode):
   if not env.getbool('ALLOW_TRANSLATE'):
     Log.Fatal('%s: Trying to convert bitcode to an object file before '
               'bitcode linking. This is supposed to wait until '
               'translation. Use --pnacl-allow-translate to override.',
-              pathtools.touser(input))
-  args = [mode, input, '-o', output]
+              pathtools.touser(infile))
+  args = [mode, infile, '-o', output]
   if env.getbool('PIC'):
     args += ['-fPIC']
   RunDriver('pnacl-translate', args)
@@ -508,16 +555,16 @@ def SetupChain(chain, input_type, output_type):
   assert(output_type in ('pp','ll','po','s','o'))
   cur_type = input_type
 
-  # src -> pp
-  if cur_type == 'src' and output_type == 'pp':
-    chain.add(RunPP, 'cpp')
+  # source file -> pp
+  if IsSourceType(cur_type) and output_type == 'pp':
+    chain.add(RunCC, 'cpp', mode='-E')
     cur_type = 'pp'
   if cur_type == output_type:
     return
 
-  # src -> ll
-  if cur_type == 'src' and (env.getbool('FORCE_INTERMEDIATE_LL') or
-                            output_type == 'll'):
+  # source file -> ll
+  if (IsSourceType(cur_type) and
+     (env.getbool('FORCE_INTERMEDIATE_LL') or output_type == 'll')):
     chain.add(RunCC, 'll', mode='-S')
     cur_type = 'll'
   if cur_type == output_type:
@@ -530,8 +577,8 @@ def SetupChain(chain, input_type, output_type):
   if cur_type == output_type:
     return
 
-  # src -> po (we also force native output to go through this phase
-  if cur_type == 'src' and (output_type == 'po' or output_type == 'o'):
+  # source file -> po (we also force native output to go through this phase
+  if IsSourceType(cur_type) and (output_type == 'po' or output_type == 'o'):
     chain.add(RunCC, 'po', mode='-c')
     cur_type = 'po'
   if cur_type == output_type:
@@ -554,8 +601,10 @@ def SetupChain(chain, input_type, output_type):
 
   # S -> s
   if cur_type == 'S':
-    chain.add(RunPP, 's')
+    chain.add(RunCC, 's', mode='-E')
     cur_type = 's'
+    if output_type == 'pp':
+      return
   if cur_type == output_type:
     return
 

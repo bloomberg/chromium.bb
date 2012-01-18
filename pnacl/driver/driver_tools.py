@@ -439,6 +439,9 @@ def SetForcedFileType(t):
   global FORCED_FILE_TYPE
   FORCED_FILE_TYPE = t
 
+def GetForcedFileType():
+  return FORCED_FILE_TYPE
+
 def ForceFileType(filename, newtype = None):
   if newtype is None:
     if FORCED_FILE_TYPE is None:
@@ -447,13 +450,20 @@ def ForceFileType(filename, newtype = None):
   FileType.__cache[filename] = newtype
 
 # File Extension -> Type string
+# TODO(pdox): Add types for sources which should not be preprocessed.
 ExtensionMap = {
-  'c'   : 'src',
-  'cc'  : 'src',
-  'cxx' : 'src',
-  'cpp' : 'src',
-  'C'   : 'src',
-  'm'   : 'src',  # .m = "Objective-C source file"
+  'c'   : 'c',
+
+  'cc'  : 'c++',
+  'cp'  : 'c++',
+  'cxx' : 'c++',
+  'cpp' : 'c++',
+  'CPP' : 'c++',
+  'c++' : 'c++',
+  'C'   : 'c++',
+
+  'm'   : 'objc',  # .m = "Objective-C source file"
+
   'll'  : 'll',
   'bc'  : 'po',
   'po'  : 'po',   # .po = "Portable object file"
@@ -461,12 +471,16 @@ ExtensionMap = {
   'pso' : 'pso',  # .pso = "Portable Shared Object"
   'asm' : 'S',
   'S'   : 'S',
+  'sx'  : 'S',
   's'   : 's',
   'o'   : 'o',
   'os'  : 'o',
   'so'  : 'so',
   'nexe': 'nexe',
 }
+
+def IsSourceType(filetype):
+  return filetype in ('c','c++','objc')
 
 # The SimpleCache decorator is required for correctness, due to the
 # ForceFileType mechanism.
@@ -530,14 +544,14 @@ def GetBitcodeType(filename):
 ######################################################################
 
 def DefaultOutputName(filename, outtype):
+  if outtype in ('pp','dis'): return '-'; # stdout
+
   base = pathtools.basename(filename)
   base = RemoveExtension(base)
-
-  if outtype in ('pp','dis'): return '-'; # stdout
   if outtype in ('po'): return base + '.o'
 
   assert(outtype in ExtensionMap.values())
-  assert(outtype != 'src')
+  assert(not IsSourceType(outtype))
 
   return base + '.' + outtype
 
@@ -546,8 +560,6 @@ def RemoveExtension(filename):
     return filename[0:-len('.opt.bc')]
 
   name, ext = pathtools.splitext(filename)
-  if ext == '':
-    Log.Fatal('File has no extension: ' + filename)
   return name
 
 def PathSplit(f):
@@ -854,14 +866,12 @@ def Run(args,                    # Command and arguments
 
   if errexit and p.returncode != 0:
     if log_command:
-      Log.FatalWithResult(p.returncode,
-                          'failed command: %s\n'
-                          'stdout        : %s\n'
-                          'stderr        : %s\n',
-                          StringifyCommand(args, stdin),
-                          stdout_contents, stderr_contents)
-    else:
-      DriverExit(p.returncode)
+      Log.LogPrint('failed command: %s\n'
+                   'stdout        : %s\n'
+                   'stderr        : %s\n',
+                   StringifyCommand(args, stdin),
+                   stdout_contents, stderr_contents)
+    DriverExit(p.returncode)
   else:
     if log_command:
       Log.Info('Return Code: ' + str(p.returncode))
@@ -899,6 +909,23 @@ def SetupCygwinLibs():
   bindir = os.path.dirname(os.path.abspath(sys.argv[0]))
   os.environ['PATH'] += os.pathsep + bindir
 
+# Map from GCC's -x file types and this driver's file types.
+FILE_TYPE_MAP = {
+    'c'                 : 'c',
+    'c++'               : 'c++',
+    'assembler'         : 's',
+    'assembler-with-cpp': 'S',
+}
+FILE_TYPE_MAP_REVERSE = dict([reversed(_tmp) for _tmp in FILE_TYPE_MAP.items()])
+
+def FileTypeToGCCType(filetype):
+  return FILE_TYPE_MAP_REVERSE[filetype]
+
+def GCCTypeToFileType(gcctype):
+  if gcctype not in FILE_TYPE_MAP:
+    Log.Fatal('language "%s" not recognized' % gcctype)
+  return FILE_TYPE_MAP[gcctype]
+
 def DriverMain(main):
   SetupSignalHandlers()
   env.reset()
@@ -915,6 +942,7 @@ def DriverMain(main):
   # Start the Log
   Log.reset(env.getbool('LOG_TO_FILE'), env.getone('LOG_FILENAME'),
             env.getone('LOG_FILE_SIZE_LIMIT'))
+  Log.SetScriptName(os.path.basename(sys.argv[0]))
   if not env.getbool('RECURSE'):
     Log.Banner(sys.argv)
 
