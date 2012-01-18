@@ -167,6 +167,7 @@ extern const char kWebWorkerShareProcesses[];
 CONTENT_EXPORT extern const char kWorkerProcess[];
 CONTENT_EXPORT extern const char kZygoteCmdPrefix[];
 CONTENT_EXPORT extern const char kZygoteProcess[];
+CONTENT_EXPORT extern const char kDisableSoftwareRasterizer[];
 
 extern const char kEnableVisualWordMovement[];
 

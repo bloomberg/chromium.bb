@@ -158,6 +158,7 @@ GpuDataManager::UserFlags::UserFlags()
       disable_accelerated_layers_(false),
       disable_experimental_webgl_(false),
       disable_gl_multisampling_(false),
+      disable_software_rasterizer_(false),
       ignore_gpu_blacklist_(false),
       skip_gpu_data_loading_(false) {
 }
@@ -176,6 +177,8 @@ void GpuDataManager::UserFlags::Initialize() {
       switches::kDisableExperimentalWebGL);
   disable_gl_multisampling_ = browser_command_line.HasSwitch(
       switches::kDisableGLMultisampling);
+  disable_software_rasterizer_ = browser_command_line.HasSwitch(
+      switches::kDisableSoftwareRasterizer);
 
   ignore_gpu_blacklist_ = browser_command_line.HasSwitch(
       switches::kIgnoreGpuBlacklist);
@@ -667,7 +670,8 @@ void GpuDataManager::EnableSoftwareRenderingIfNecessary() {
   if (!GpuAccessAllowed() ||
       (gpu_feature_flags_.flags() & GpuFeatureFlags::kGpuFeatureWebgl)) {
 #if defined(ENABLE_SWIFTSHADER)
-    if (!swiftshader_path_.empty())
+    if (!swiftshader_path_.empty() &&
+        !user_flags_.disable_software_rasterizer())
       software_rendering_ = true;
 #endif
   }

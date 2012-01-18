@@ -5043,6 +5043,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_RESTORE_SESSION_STATE_DESCRIPTION" desc="Description for the flag to enable restoring (more) session state after restarts and crashes.">
 	Restore more session state (e.g., session cookies) after restarts and crashes.
       </message>
+      <message name="IDS_FLAGS_DISABLE_SOFTWARE_RASTERIZER_NAME" desc="Title for the flag to disable using a software rasterizer.">
+	Disable 3D software rasterizer
+      </message>
+      <message name="IDS_FLAGS_DISABLE_SOFTWARE_RASTERIZER_DESCRIPTION" desc="Description for the flag to disable using a software renderer.">
+	Don't fall back to a 3D software rasterizer when the GPU cannot be used.
+      </message>
 
 
       <!-- Crashes -->

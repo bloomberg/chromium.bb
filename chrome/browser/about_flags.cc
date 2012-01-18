@@ -532,6 +532,17 @@ const Experiment kExperiments[] = {
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kEnableRestoreSessionState)
   },
+  {
+    "disable-software-rasterizer",
+    IDS_FLAGS_DISABLE_SOFTWARE_RASTERIZER_NAME,
+    IDS_FLAGS_DISABLE_SOFTWARE_RASTERIZER_DESCRIPTION,
+#if defined(ENABLE_SWIFTSHADER)
+    kOsAll,
+#else
+    0,
+#endif
+    SINGLE_VALUE_TYPE(switches::kDisableSoftwareRasterizer)
+  },
 };
 
 const Experiment* experiments = kExperiments;

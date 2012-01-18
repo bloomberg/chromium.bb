@@ -564,4 +564,7 @@ const char kRendererCheckFalseTest[]        = "renderer-check-false-test";
 // Enable per-tile page painting.
 const char kEnablePerTilePainting[]         = "enable-per-tile-painting";
 
+// Disables the use of a 3D software rasterizer.
+const char kDisableSoftwareRasterizer[]     = "disable-software-rasterizer";
+
 }  // namespace switches

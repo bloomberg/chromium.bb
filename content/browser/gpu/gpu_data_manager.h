@@ -159,6 +159,10 @@ class CONTENT_EXPORT GpuDataManager {
 
     bool disable_gl_multisampling() const { return disable_gl_multisampling_; }
 
+    bool disable_software_rasterizer() const {
+      return disable_software_rasterizer_;
+    }
+
     bool ignore_gpu_blacklist() const { return ignore_gpu_blacklist_; }
 
     bool skip_gpu_data_loading() const { return skip_gpu_data_loading_; }
@@ -174,6 +178,7 @@ class CONTENT_EXPORT GpuDataManager {
     bool disable_accelerated_layers_;
     bool disable_experimental_webgl_;
     bool disable_gl_multisampling_;
+    bool disable_software_rasterizer_;
 
     bool ignore_gpu_blacklist_;
     bool skip_gpu_data_loading_;
