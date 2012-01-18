@@ -91,7 +91,6 @@ class DefaultSearchProviderChange : public BaseSettingChange,
   virtual void Apply() OVERRIDE;
   virtual void Discard() OVERRIDE;
   virtual void Timeout() OVERRIDE;
-  virtual void OnBeforeRemoved() OVERRIDE;
   virtual int GetBadgeIconID() const OVERRIDE;
   virtual int GetMenuItemIconID() const OVERRIDE;
   virtual int GetBubbleIconID() const OVERRIDE;
@@ -126,9 +125,6 @@ class DefaultSearchProviderChange : public BaseSettingChange,
   // Returns the TemplateURLService instance for the Profile this change is
   // related to.
   TemplateURLService* GetTemplateURLService();
-
-  // Stops observing the TemplateURLService changes.
-  void StopObservingTemplateURLService();
 
   // Histogram ID of the new search provider.
   int new_histogram_id_;
@@ -169,6 +165,7 @@ DefaultSearchProviderChange::DefaultSearchProviderChange(
 }
 
 DefaultSearchProviderChange::~DefaultSearchProviderChange() {
+  GetTemplateURLService()->RemoveObserver(this);
 }
 
 bool DefaultSearchProviderChange::Init(Protector* protector) {
@@ -225,7 +222,7 @@ bool DefaultSearchProviderChange::Init(Protector* protector) {
     new_id_ = new_search_provider_->id();
     registrar_.Add(
         this, chrome::NOTIFICATION_TEMPLATE_URL_REMOVED,
-        content::Source<Profile>(protector->profile()->GetOriginalProfile()));
+        content::Source<Profile>(profile()->GetOriginalProfile()));
   }
 
   return true;
@@ -237,7 +234,7 @@ void DefaultSearchProviderChange::Apply() {
       new_histogram_id_,
       kProtectorMaxSearchProviderID);
 
-  StopObservingTemplateURLService();
+  GetTemplateURLService()->RemoveObserver(this);
   if (new_search_provider_) {
     GetTemplateURLService()->SetDefaultSearchProvider(new_search_provider_);
   } else {
@@ -252,7 +249,7 @@ void DefaultSearchProviderChange::Discard() {
       new_histogram_id_,
       kProtectorMaxSearchProviderID);
 
-  StopObservingTemplateURLService();
+  GetTemplateURLService()->RemoveObserver(this);
   if (is_fallback_) {
     // Open settings page in case the old setting is invalid.
     OpenSearchEngineSettings();
@@ -266,10 +263,6 @@ void DefaultSearchProviderChange::Timeout() {
       kProtectorHistogramSearchProviderTimeout,
       new_histogram_id_,
       kProtectorMaxSearchProviderID);
-}
-
-void DefaultSearchProviderChange::OnBeforeRemoved() {
-  StopObservingTemplateURLService();
 }
 
 int DefaultSearchProviderChange::GetBadgeIconID() const {
@@ -396,13 +389,9 @@ void DefaultSearchProviderChange::OpenSearchEngineSettings() {
 
 TemplateURLService* DefaultSearchProviderChange::GetTemplateURLService() {
   TemplateURLService* url_service =
-      TemplateURLServiceFactory::GetForProfile(protector()->profile());
+      TemplateURLServiceFactory::GetForProfile(profile());
   DCHECK(url_service);
   return url_service;
-}
-
-void DefaultSearchProviderChange::StopObservingTemplateURLService() {
-  GetTemplateURLService()->RemoveObserver(this);
 }
 
 BaseSettingChange* CreateDefaultSearchProviderChange(

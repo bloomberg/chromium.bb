@@ -28,16 +28,16 @@ class Protector : public SettingsChangeGlobalErrorDelegate {
  public:
   explicit Protector(Profile* profile);
 
-  // Opens a tab with specified URL in the browser window we've shown error
-  // bubble for.
-  void OpenTab(const GURL& url);
-
   // Shows global error about the specified change. Owns |change|.
-  void ShowChange(BaseSettingChange* change);
+  virtual void ShowChange(BaseSettingChange* change);
 
   // Silently discards any change previously shown (without calling Discard),
   // removes global error and deletes itself.
-  void DismissChange();
+  virtual void DismissChange();
+
+  // Opens a tab with specified URL in the browser window we've shown error
+  // bubble for.
+  virtual void OpenTab(const GURL& url);
 
   // Returns the Profile instance we've shown error bubble for.
   Profile* profile() { return profile_; }
@@ -50,6 +50,8 @@ class Protector : public SettingsChangeGlobalErrorDelegate {
 
  private:
   friend class base::DeleteHelper<Protector>;
+  friend class MockProtector;
+  friend class ProtectorTest;
 
   // The object can only be allocated and destroyed on heap.
   virtual ~Protector();

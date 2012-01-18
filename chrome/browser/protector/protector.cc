@@ -28,8 +28,6 @@ Protector::Protector(Profile* profile)
 }
 
 Protector::~Protector() {
-  if (change_.get())
-    change_->OnBeforeRemoved();
 }
 
 void Protector::OpenTab(const GURL& url) {

@@ -146,6 +146,10 @@
         'browser/prefs/pref_service_mock_builder.h',
         'browser/prefs/testing_pref_store.cc',
         'browser/prefs/testing_pref_store.h',
+        'browser/protector/mock_protector.cc',
+        'browser/protector/mock_protector.h',
+        'browser/protector/mock_setting_change.cc',
+        'browser/protector/mock_setting_change.h',
         'browser/search_engines/template_url_service_test_util.cc',
         'browser/search_engines/template_url_service_test_util.h',
         'browser/sessions/session_service_test_helper.cc',
@@ -2674,6 +2678,8 @@
         'browser/printing/print_dialog_cloud_uitest.cc',
         'browser/printing/print_preview_tab_controller_browsertest.cc',
         'browser/profiles/profile_manager_browsertest.cc',
+        'browser/protector/default_search_provider_change_browsertest.cc',
+        'browser/protector/protector_browsertest.cc',
         'browser/rlz/rlz_extension_apitest.cc',
         'browser/referrer_policy_browsertest.cc',
         'browser/renderer_host/render_process_host_chrome_browsertest.cc',
@@ -2872,6 +2878,10 @@
             'browser/ui/views/status_icons/status_tray_chromeos_browsertest.cc',
           ],
         }, { #else: OS == "chromeos"
+          'sources/': [
+            # Protector is disabled on CrOS.
+            ['exclude', '^browser/protector'],
+          ],
           'sources!': [
             'browser/notifications/desktop_notifications_unittest.cc',
             'browser/printing/cloud_print/test/cloud_print_proxy_process_browsertest.cc',
@@ -3042,6 +3052,8 @@
             '../content/renderer/external_popup_menu_browsertest.cc',
           ],
           'sources!': [
+            # TODO(sail): re-enable this once http://crbug.com/109728 is fixed.
+            'browser/protector/protector_browsertest.cc',
             # TODO(hbono): This test depends on hunspell and we cannot run it on
             # Mac, which does not use hunspell by default.
             'browser/spellchecker/spellcheck_host_browsertest.cc',
