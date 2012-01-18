@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -89,7 +89,7 @@ TEST_F(RegistryControlledDomainTest, TestGetDomainAndRegistry) {
   EXPECT_EQ("", GetDomainFromURL("http://localhost."));
   EXPECT_EQ("", GetDomainFromURL("http:////Comment"));
 
-  // Test std::wstring version of GetDomainAndRegistry().  Uses the same
+  // Test std::string version of GetDomainAndRegistry().  Uses the same
   // underpinnings as the GURL version, so this is really more of a check of
   // CanonicalizeHost().
   EXPECT_EQ("baz.jp", GetDomainFromHost("a.baz.jp"));                  // 1
@@ -156,7 +156,7 @@ TEST_F(RegistryControlledDomainTest, TestGetRegistryLength) {
   EXPECT_EQ(0U, GetRegistryLengthFromURL("http://localhost.", true));
   EXPECT_EQ(0U, GetRegistryLengthFromURL("http:////Comment", false));
 
-  // Test std::wstring version of GetRegistryLength().  Uses the same
+  // Test std::string version of GetRegistryLength().  Uses the same
   // underpinnings as the GURL version, so this is really more of a check of
   // CanonicalizeHost().
   EXPECT_EQ(2U, GetRegistryLengthFromHost("a.baz.jp", false));          // 1
