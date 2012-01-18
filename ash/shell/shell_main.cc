@@ -8,11 +8,11 @@
 #include "ash/shell_factory.h"
 #include "ash/shell_window_ids.h"
 #include "ash/shell/example_factory.h"
+#include "ash/shell/shell_main_parts.h"
 #include "ash/shell/toplevel_window.h"
 #include "ash/wm/window_util.h"
 #include "base/at_exit.h"
 #include "base/command_line.h"
-#include "base/i18n/icu_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "ui/aura/root_window.h"
@@ -110,9 +110,7 @@ int main(int argc, char** argv) {
   // The exit manager is in charge of calling the dtors of singleton objects.
   base::AtExitManager exit_manager;
 
-  ui::RegisterPathProvider();
-  icu_util::Initialize();
-  ResourceBundle::InitSharedInstance("en-US");
+  ash::shell::PreMainMessageLoopStart();
 
   // Create the message-loop here before creating the root window.
   MessageLoop message_loop(MessageLoop::TYPE_UI);
