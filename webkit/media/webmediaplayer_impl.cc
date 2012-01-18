@@ -480,7 +480,7 @@ float WebMediaPlayerImpl::duration() const {
 
   // Return positive infinity if the resource is unbounded.
   // http://www.whatwg.org/specs/web-apps/current-work/multipage/video.html#dom-media-duration
-  if (duration == media::kInfiniteDuration)
+  if (duration == media::kInfiniteDuration())
     return std::numeric_limits<float>::infinity();
 
   return static_cast<float>(duration.InSecondsF());

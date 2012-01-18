@@ -65,7 +65,7 @@ class MEDIA_EXPORT AudioRendererAlgorithmBase {
   // Clears |audio_buffer_|.
   void FlushBuffers();
 
-  // Returns the time of the next byte in our data or kNoTimestamp if current
+  // Returns the time of the next byte in our data or kNoTimestamp() if current
   // time is unknown.
   base::TimeDelta GetTime();
 

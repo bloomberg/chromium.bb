@@ -230,7 +230,7 @@ static void ConvertVideoFrameToBitmap(
 }
 
 VideoRendererImpl::VideoRendererImpl()
-    : last_frame_timestamp_(media::kNoTimestamp) {
+    : last_frame_timestamp_(media::kNoTimestamp()) {
 }
 
 VideoRendererImpl::~VideoRendererImpl() {}

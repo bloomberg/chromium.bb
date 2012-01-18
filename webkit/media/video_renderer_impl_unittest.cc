@@ -167,14 +167,14 @@ TEST_F(VideoRendererImplTest, SlowPaint_Smaller) {
 
 TEST_F(VideoRendererImplTest, FastPaint_NoTimestamp) {
   VideoFrame* video_frame = natural_frame();
-  video_frame->SetTimestamp(media::kNoTimestamp);
+  video_frame->SetTimestamp(media::kNoTimestamp());
   Paint(video_frame, fast_path_canvas(), kRed);
   EXPECT_EQ(SK_ColorRED, GetColor(fast_path_canvas()));
 }
 
 TEST_F(VideoRendererImplTest, SlowPaint_NoTimestamp) {
   VideoFrame* video_frame = natural_frame();
-  video_frame->SetTimestamp(media::kNoTimestamp);
+  video_frame->SetTimestamp(media::kNoTimestamp());
   Paint(video_frame, slow_path_canvas(), kRed);
   EXPECT_EQ(SK_ColorRED, GetColor(slow_path_canvas()));
 }

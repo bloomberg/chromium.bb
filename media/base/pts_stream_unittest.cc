@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,8 +31,8 @@ class PtsStreamTest : public testing::Test {
 TEST_F(PtsStreamTest, NoTimestamp) {
   // Simulate an uninitialized |video_frame| where we cannot determine a
   // timestamp at all.
-  video_frame_->SetTimestamp(kNoTimestamp);
-  video_frame_->SetDuration(kNoTimestamp);
+  video_frame_->SetTimestamp(kNoTimestamp());
+  video_frame_->SetDuration(kNoTimestamp());
   pts_stream_.UpdatePtsAndDuration(video_frame_);
   EXPECT_EQ(0, pts_stream_.current_pts().InMicroseconds());
   EXPECT_EQ(40000, pts_stream_.current_duration().InMicroseconds());
@@ -48,8 +48,8 @@ TEST_F(PtsStreamTest, LastKnownTimestamp) {
   // Simulate an uninitialized |video_frame| where last known pts will be used
   // to generate a timestamp and |frame_duration| will be used to generate a
   // duration.
-  video_frame_->SetTimestamp(kNoTimestamp);
-  video_frame_->SetDuration(kNoTimestamp);
+  video_frame_->SetTimestamp(kNoTimestamp());
+  video_frame_->SetDuration(kNoTimestamp());
   pts_stream_.UpdatePtsAndDuration(video_frame_);
   EXPECT_EQ(116, pts_stream_.current_pts().InMicroseconds());
   EXPECT_EQ(40000, pts_stream_.current_duration().InMicroseconds());
