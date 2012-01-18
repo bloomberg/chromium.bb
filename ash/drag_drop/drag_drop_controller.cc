@@ -13,6 +13,7 @@
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_aura.h"
 #include "ui/gfx/compositor/layer_animator.h"
+#include "ui/gfx/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
 #include "ui/views/views_delegate.h"
@@ -207,7 +208,7 @@ void DragDropController::StartCanceledAnimation() {
   animator->set_preemption_strategy(
       ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
   animator->AddObserver(this);
-  ui::LayerAnimator::ScopedSettings animation_setter(animator);
+  ui::ScopedLayerAnimationSettings animation_setter(animator);
   animation_setter.SetTransitionDuration(kDragDropAnimationDuration);
   window->SetBounds(gfx::Rect(drag_start_location_, window->bounds().size()));
 }

@@ -14,6 +14,7 @@
 #include "base/command_line.h"
 #include "ui/aura/event.h"
 #include "ui/aura/window.h"
+#include "ui/gfx/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/screen.h"
 
 namespace ash {
@@ -115,13 +116,13 @@ void AppList::ResetWidget() {
 
 void AppList::ScheduleAnimation() {
   ui::Layer* layer = GetLayer(widget_);
-  ui::LayerAnimator::ScopedSettings app_list_animation(layer->GetAnimator());
+  ui::ScopedLayerAnimationSettings app_list_animation(layer->GetAnimator());
   layer->SetBounds(GetPreferredBounds(is_visible_));
   layer->SetOpacity(is_visible_ ? 1.0 : 0.0);
 
   ui::Layer* default_container_layer = Shell::GetInstance()->GetContainer(
       internal::kShellWindowId_DefaultContainer)->layer();
-  ui::LayerAnimator::ScopedSettings default_container_animation(
+  ui::ScopedLayerAnimationSettings default_container_animation(
       default_container_layer->GetAnimator());
   default_container_layer->SetOpacity(is_visible_ ? 0.0 : 1.0);
 }

@@ -51,6 +51,7 @@
 #include "ui/gfx/compositor/layer_animation_element.h"
 #include "ui/gfx/compositor/layer_animation_sequence.h"
 #include "ui/gfx/compositor/layer_animator.h"
+#include "ui/gfx/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/transform.h"
 #include "ui/views/widget/widget.h"
 #endif
@@ -320,7 +321,7 @@ void BaseLoginDisplayHost::StartAnimation() {
   // BaseLoginDisplayHost will be deleted this animation is ended.
   ui::Layer* layer = GetLayer(GetWidget());
   layer->GetAnimator()->AddObserver(this);
-  ui::LayerAnimator::ScopedSettings signin_animation(layer->GetAnimator());
+  ui::ScopedLayerAnimationSettings signin_animation(layer->GetAnimator());
   signin_animation.SetTransitionDuration(
       base::TimeDelta::FromMilliseconds(kLoginFadeoutTransitionDurationMs));
   layer->SetOpacity(0.0f);

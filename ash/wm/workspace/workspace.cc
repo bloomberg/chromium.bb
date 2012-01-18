@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,6 +16,7 @@
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/compositor/layer.h"
 #include "ui/gfx/compositor/layer_animator.h"
+#include "ui/gfx/compositor/scoped_layer_animation_settings.h"
 
 namespace {
 // Horizontal margin between windows.
@@ -256,7 +257,7 @@ void Workspace::MoveWindowTo(
                  std::min(work_area.width(), bounds.width()),
                  std::min(work_area.height(), bounds.height()));
   if (animate) {
-    ui::LayerAnimator::ScopedSettings settings(window->layer()->GetAnimator());
+    ui::ScopedLayerAnimationSettings settings(window->layer()->GetAnimator());
     window->SetBounds(bounds);
   } else {
     window->SetBounds(bounds);

@@ -23,6 +23,7 @@
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/compositor/layer.h"
+#include "ui/gfx/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/screen.h"
 
 namespace aura {
@@ -814,7 +815,7 @@ TEST_F(WindowTest, SetBoundsInternalShouldCheckTargetBounds) {
 
   // Animate to a different position.
   {
-    ui::LayerAnimator::ScopedSettings settings(w1->layer()->GetAnimator());
+    ui::ScopedLayerAnimationSettings settings(w1->layer()->GetAnimator());
     w1->SetBounds(gfx::Rect(100, 100, 100, 100));
   }
 
@@ -826,7 +827,7 @@ TEST_F(WindowTest, SetBoundsInternalShouldCheckTargetBounds) {
   // (100, 100, 100, 100). If we step the animator ahead, we should find that
   // we're at (0, 0, 100, 100). That is, the second animation should be applied.
   {
-    ui::LayerAnimator::ScopedSettings settings(w1->layer()->GetAnimator());
+    ui::ScopedLayerAnimationSettings settings(w1->layer()->GetAnimator());
     w1->SetBounds(gfx::Rect(0, 0, 100, 100));
   }
 

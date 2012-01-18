@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -54,11 +54,14 @@
         'layer_animation_delegate.h',
         'layer_animation_element.cc',
         'layer_animation_element.h',
+        'layer_animation_observer.cc',
         'layer_animation_observer.h',
         'layer_animation_sequence.cc',
         'layer_animation_sequence.h',
         'layer_animator.cc',
         'layer_animator.h',
+        'scoped_layer_animation_settings.cc',
+        'scoped_layer_animation_settings.h',
         'screen_rotation.cc',
         'screen_rotation.h',
         # UI tests need TestWebGraphicsContext3D, so we always build it.

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,7 +7,6 @@
 #pragma once
 
 #include <deque>
-#include <set>
 #include <vector>
 
 #include "base/compiler_specific.h"
@@ -29,6 +28,7 @@ class Layer;
 class LayerAnimationSequence;
 class LayerAnimationDelegate;
 class LayerAnimationObserver;
+class ScopedLayerAnimationSettings;
 class Transform;
 
 // When a property of layer needs to be changed it is set by way of
@@ -119,32 +119,12 @@ class COMPOSITOR_EXPORT LayerAnimator : public AnimationContainerElement {
   void AddObserver(LayerAnimationObserver* observer);
   void RemoveObserver(LayerAnimationObserver* observer);
 
-  // Scoped settings allow you to temporarily change the animator's settings and
-  // these changes are reverted when the object is destroyed. NOTE: when the
-  // settings object is created, it applies the default transition duration
-  // (200ms).
-  class COMPOSITOR_EXPORT ScopedSettings {
-   public:
-    explicit ScopedSettings(LayerAnimator* animator);
-    virtual ~ScopedSettings();
-
-    void AddObserver(LayerAnimationObserver* observer);
-    void SetTransitionDuration(base::TimeDelta duration);
-
-   private:
-    LayerAnimator* animator_;
-    base::TimeDelta old_transition_duration_;
-    std::set<LayerAnimationObserver*> observers_;
-
-    DISALLOW_COPY_AND_ASSIGN(ScopedSettings);
-  };
-
  protected:
   LayerAnimationDelegate* delegate() { return delegate_; }
   const LayerAnimationDelegate* delegate() const { return delegate_; }
 
  private:
-  friend class ScopedSettings;
+  friend class ScopedLayerAnimationSettings;
 
   // We need to keep track of the start time of every running animation.
   struct RunningAnimation {

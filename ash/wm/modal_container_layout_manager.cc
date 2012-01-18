@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,6 +17,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/compositor/layer.h"
 #include "ui/gfx/compositor/layer_animator.h"
+#include "ui/gfx/compositor/scoped_layer_animation_settings.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
@@ -176,7 +177,7 @@ void ModalContainerLayoutManager::CreateModalScreen() {
 
   Shell::GetInstance()->AddRootWindowEventFilter(modality_filter_.get());
 
-  ui::LayerAnimator::ScopedSettings settings(
+  ui::ScopedLayerAnimationSettings settings(
       modal_screen_->GetNativeView()->layer()->GetAnimator());
   modal_screen_->Show();
   modal_screen_->GetNativeView()->layer()->SetOpacity(0.5f);
@@ -191,7 +192,7 @@ void ModalContainerLayoutManager::DestroyModalScreen() {
 
 void ModalContainerLayoutManager::HideModalScreen() {
   Shell::GetInstance()->RemoveRootWindowEventFilter(modality_filter_.get());
-  ui::LayerAnimator::ScopedSettings settings(
+  ui::ScopedLayerAnimationSettings settings(
       modal_screen_->GetNativeView()->layer()->GetAnimator());
   modal_screen_->GetNativeView()->layer()->SetOpacity(0.0f);
 }

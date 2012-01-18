@@ -11,6 +11,7 @@
 #include "ui/aura/screen_aura.h"
 #include "ui/gfx/compositor/layer.h"
 #include "ui/gfx/compositor/layer_animator.h"
+#include "ui/gfx/compositor/scoped_layer_animation_settings.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
@@ -135,7 +136,7 @@ void ShelfLayoutManager::AnimateWidgetTo(views::Widget* widget,
                                          const gfx::Rect& target_bounds,
                                          float target_opacity) {
   ui::Layer* layer = GetLayer(widget);
-  ui::LayerAnimator::ScopedSettings animation_setter(layer->GetAnimator());
+  ui::ScopedLayerAnimationSettings animation_setter(layer->GetAnimator());
   // Don't go through the widget, otherwise we end up back in SetChildBounds and
   // cancel the animation/layout.
   layer->SetBounds(target_bounds);

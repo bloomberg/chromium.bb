@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,6 +14,7 @@
 #include "ui/gfx/compositor/layer_animation_delegate.h"
 #include "ui/gfx/compositor/layer_animation_element.h"
 #include "ui/gfx/compositor/layer_animation_sequence.h"
+#include "ui/gfx/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/compositor/test/test_layer_animation_delegate.h"
 #include "ui/gfx/compositor/test/test_layer_animation_observer.h"
 #include "ui/gfx/compositor/test/test_utils.h"
@@ -21,6 +22,26 @@
 namespace ui {
 
 namespace {
+
+class TestImplicitAnimationObserver : public ImplicitAnimationObserver {
+ public:
+  TestImplicitAnimationObserver() : animations_completed_(false) {}
+
+  bool animations_completed() const { return animations_completed_; }
+  void set_animations_completed(bool completed) {
+    animations_completed_ = completed;
+  }
+
+ private:
+  // ImplicitAnimationObserver implementation
+  virtual void OnImplicitAnimationsCompleted() OVERRIDE {
+    animations_completed_ = true;
+  }
+
+  bool animations_completed_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestImplicitAnimationObserver);
+};
 
 // Checks that setting a property on an implicit animator causes an animation to
 // happen.
@@ -701,7 +722,7 @@ TEST(LayerAnimatorTest, AddObserverImplicit) {
 
   TestLayerAnimationObserver scoped_observer;
   {
-    LayerAnimator::ScopedSettings settings(animator.get());
+    ScopedLayerAnimationSettings settings(animator.get());
     settings.AddObserver(&scoped_observer);
     for (int i = 0; i < 2; ++i) {
       // reset the observer
@@ -720,6 +741,58 @@ TEST(LayerAnimatorTest, AddObserverImplicit) {
   start_time = base::TimeTicks::Now();
   element->Step(start_time + base::TimeDelta::FromMilliseconds(1000));
   EXPECT_TRUE(!scoped_observer.last_ended_sequence());
+}
+
+// Tests that an observer added to a scoped settings object is still notified
+// when the object goes out of scope.
+TEST(LayerAnimatorTest, ImplicitAnimationObservers) {
+  scoped_ptr<LayerAnimator> animator(LayerAnimator::CreateDefaultAnimator());
+  AnimationContainerElement* element = animator.get();
+  animator->set_disable_timer_for_test(true);
+  TestImplicitAnimationObserver observer;
+  TestLayerAnimationDelegate delegate;
+  animator->SetDelegate(&delegate);
+
+  EXPECT_FALSE(observer.animations_completed());
+  animator->SetOpacity(1.0f);
+
+  {
+    ScopedLayerAnimationSettings settings(animator.get());
+    settings.AddImplicitObserver(&observer);
+    animator->SetOpacity(0.0f);
+  }
+
+  EXPECT_FALSE(observer.animations_completed());
+  base::TimeTicks start_time = animator->get_last_step_time_for_test();
+  element->Step(start_time + base::TimeDelta::FromMilliseconds(1000));
+  EXPECT_TRUE(observer.animations_completed());
+  EXPECT_FLOAT_EQ(0.0f, delegate.GetOpacityForAnimation());
+}
+
+// Tests that an observer added to a scoped settings object is still notified
+// when the object goes out of scope due to the animation being interrupted.
+TEST(LayerAnimatorTest, InterruptedImplicitAnimationObservers) {
+  scoped_ptr<LayerAnimator> animator(LayerAnimator::CreateDefaultAnimator());
+  animator->set_disable_timer_for_test(true);
+  TestImplicitAnimationObserver observer;
+  TestLayerAnimationDelegate delegate;
+  animator->SetDelegate(&delegate);
+
+  EXPECT_FALSE(observer.animations_completed());
+  animator->SetOpacity(1.0f);
+
+  {
+    ScopedLayerAnimationSettings settings(animator.get());
+    settings.AddImplicitObserver(&observer);
+    animator->SetOpacity(0.0f);
+  }
+
+  EXPECT_FALSE(observer.animations_completed());
+  // This should interrupt the implicit animation causing the observer to be
+  // notified immediately.
+  animator->SetOpacity(1.0f);
+  EXPECT_TRUE(observer.animations_completed());
+  EXPECT_FLOAT_EQ(1.0f, delegate.GetOpacityForAnimation());
 }
 
 TEST(LayerAnimatorTest, RemoveObserverShouldRemoveFromSequences) {
