@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -164,10 +164,7 @@ const std::string AutofillSyncPerfTest::IntToValue(int n) {
   return StringPrintf("Value%d", n);
 }
 
-
-// TODO(lipalani): Bug 108321. Make a bookmark change so it syncs right away.
-IN_PROC_BROWSER_TEST_F(AutofillSyncPerfTest,
-                       DISABLED_AutofillProfiles_P0) {
+IN_PROC_BROWSER_TEST_F(AutofillSyncPerfTest, AutofillProfiles_P0) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   // TCM ID - 7557873.
