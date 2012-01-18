@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -59,9 +59,10 @@ class BlockedPlugin : public PluginPlaceholder {
   // Takes no arguments, and returns nothing.
   void HideCallback(const CppArgumentList& args, CppVariant* result);
 
-  // Opens a URL in a new tab.
-  // Takes one argument, a string specifying the URL to open. Returns nothing.
-  void OpenUrlCallback(const CppArgumentList& args, CppVariant* result);
+  // Opens chrome://plugins in a new tab.
+  // Takes no arguments, and returns nothing.
+  void OpenAboutPluginsCallback(const CppArgumentList& args,
+                                CppVariant* result);
 
   // Load the blocked plugin.
   void LoadPlugin();

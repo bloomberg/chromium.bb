@@ -419,6 +419,9 @@ bool PluginObserver::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_FindMissingPlugin,
                         OnFindMissingPlugin)
 #endif
+    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_OpenAboutPlugins,
+                        OnOpenAboutPlugins)
+
     IPC_MESSAGE_UNHANDLED(return false)
   IPC_END_MESSAGE_MAP()
 
@@ -485,3 +488,11 @@ void PluginObserver::InstallMissingPlugin(PluginInstaller* installer) {
   }
 }
 #endif  // defined(ENABLE_PLUGIN_INSTALLATION)
+
+void PluginObserver::OnOpenAboutPlugins() {
+    web_contents()->OpenURL(OpenURLParams(
+        GURL(chrome::kAboutPluginsURL),
+        content::Referrer(web_contents()->GetURL(),
+                          WebKit::WebReferrerPolicyDefault),
+        NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_TYPED, false));
+}

@@ -48,6 +48,7 @@ class PluginObserver : public content::WebContentsObserver {
   void DidNotFindMissingPlugin(int placeholder_id);
   void InstallMissingPlugin(PluginInstaller* installer);
 #endif
+  void OnOpenAboutPlugins();
 
   base::WeakPtrFactory<PluginObserver> weak_ptr_factory_;
 

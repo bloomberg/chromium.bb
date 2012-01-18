@@ -102,8 +102,9 @@ void BlockedPlugin::BindWebFrame(WebFrame* frame) {
                                   base::Unretained(this)));
   BindCallback("hide", base::Bind(&BlockedPlugin::HideCallback,
                                   base::Unretained(this)));
-  BindCallback("openURL", base::Bind(&BlockedPlugin::OpenUrlCallback,
-                                     base::Unretained(this)));
+  BindCallback("openAboutPlugins",
+               base::Bind(&BlockedPlugin::OpenAboutPluginsCallback,
+                          base::Unretained(this)));
 }
 
 void BlockedPlugin::ShowContextMenu(const WebKit::WebMouseEvent& event) {
@@ -219,23 +220,10 @@ void BlockedPlugin::HideCallback(const CppArgumentList& args,
   HidePlugin();
 }
 
-void BlockedPlugin::OpenUrlCallback(const CppArgumentList& args,
-                                    CppVariant* result) {
-  if (args.size() < 1) {
-    NOTREACHED();
-    return;
-  }
-  if (!args[0].isString()) {
-    NOTREACHED();
-    return;
-  }
-
-  GURL url(args[0].ToString());
-  WebURLRequest request;
-  request.initialize();
-  request.setURL(url);
-  render_view()->LoadURLExternally(
-      frame(), request, WebKit::WebNavigationPolicyNewForegroundTab);
+void BlockedPlugin::OpenAboutPluginsCallback(const CppArgumentList& args,
+                                             CppVariant* result) {
+  RenderThread::Get()->Send(
+      new ChromeViewHostMsg_OpenAboutPlugins(routing_id()));
 }
 
 void BlockedPlugin::HidePlugin() {

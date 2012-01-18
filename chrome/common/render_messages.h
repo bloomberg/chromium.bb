@@ -446,12 +446,17 @@ IPC_MESSAGE_ROUTED0(ChromeViewMsg_StartedDownloadingPlugin)
 // Notifies a missing plug-in placeholder that we have finished downloading
 // the plug-in.
 IPC_MESSAGE_ROUTED0(ChromeViewMsg_FinishedDownloadingPlugin)
-#endif  // defined(ENABLE_PLUGIN_INSTALLATION)
 
 // Notifies a missing plug-in placeholder that there was an error downloading
 // the plug-in.
 IPC_MESSAGE_ROUTED1(ChromeViewMsg_ErrorDownloadingPlugin,
                     std::string /* message */)
+#endif  // defined(ENABLE_PLUGIN_INSTALLATION)
+
+// Tells the browser to open chrome://plugins in a new tab. We use a separate
+// message because renderer processes aren't allowed to directly navigate to
+// chrome:// URLs.
+IPC_MESSAGE_ROUTED0(ChromeViewHostMsg_OpenAboutPlugins)
 
 // Specifies the URL as the first parameter (a wstring) and thumbnail as
 // binary data as the second parameter.
