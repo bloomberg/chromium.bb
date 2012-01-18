@@ -27,6 +27,10 @@ class ChromeShellDelegate : public ash::ShellDelegate {
 
   static ChromeShellDelegate* instance() { return instance_; }
 
+  StatusAreaHostAura* status_area_host_for_test() {
+    return status_area_host_.get();
+  }
+
   StatusAreaView* GetStatusArea();
 
   // Returns whether a launcher item should be created for |browser|. If an item

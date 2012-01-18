@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -112,6 +112,14 @@ void StatusAreaView::MakeButtonsActive(bool active) {
 void StatusAreaView::UpdateButtonVisibility() {
   Layout();
   PreferredSizeChanged();
+}
+
+void StatusAreaView::UpdateButtonTextStyle() {
+  for (std::list<StatusAreaButton*>::const_iterator it = buttons_.begin();
+       it != buttons_.end(); ++it) {
+    StatusAreaButton* button = *it;
+    button->UpdateTextStyle();
+  }
 }
 
 void StatusAreaView::TakeFocus(

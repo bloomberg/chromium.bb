@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,9 @@
 
 #include "base/compiler_specific.h"
 #include "chrome/browser/chromeos/status/status_area_button.h"
+#include "chrome/browser/ui/browser_list.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 #if defined(OS_CHROMEOS)
 #include "base/memory/scoped_ptr.h"
@@ -22,7 +25,9 @@ class Views;
 class Widget;
 }
 
-class StatusAreaHostAura : public StatusAreaButton::Delegate {
+class StatusAreaHostAura : public StatusAreaButton::Delegate,
+                           public BrowserList::Observer,
+                           public content::NotificationObserver {
  public:
   StatusAreaHostAura();
   virtual ~StatusAreaHostAura();
@@ -44,6 +49,16 @@ class StatusAreaHostAura : public StatusAreaButton::Delegate {
   virtual StatusAreaButton::TextStyle GetStatusAreaTextStyle() const OVERRIDE;
   virtual void ButtonVisibilityChanged(views::View* button_view) OVERRIDE;
 
+  // BrowserList::Observer implementation.
+  virtual void OnBrowserAdded(const Browser* browser) OVERRIDE;
+  virtual void OnBrowserRemoved(const Browser* browser) OVERRIDE;
+  virtual void OnBrowserSetLastActive(const Browser* browser) OVERRIDE;
+
+  // content::NotificationObserver implementation.
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
+
  private:
   // Owned by caller of CreateStatusArea().
   views::Widget* status_area_widget_;
@@ -56,6 +71,8 @@ class StatusAreaHostAura : public StatusAreaButton::Delegate {
 
   scoped_ptr<TimezoneClockUpdater> timezone_clock_updater_;
 #endif
+
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(StatusAreaHostAura);
 };

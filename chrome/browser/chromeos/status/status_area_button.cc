@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -133,18 +133,6 @@ void StatusAreaButton::SetMenuActive(bool active) {
   menu_active_ = active;
 }
 
-int StatusAreaButton::icon_height() {
-  return 24;
-}
-
-int StatusAreaButton::icon_width() {
-  return 23;
-}
-
-int StatusAreaButton::horizontal_padding() {
-  return 1;
-}
-
 void StatusAreaButton::UpdateTextStyle() {
   ClearEmbellishing();
   switch (delegate_->GetStatusAreaTextStyle()) {
@@ -164,4 +152,17 @@ void StatusAreaButton::UpdateTextStyle() {
       SetTextShadowOffset(0, 1);
       break;
   }
+  SchedulePaint();
+}
+
+int StatusAreaButton::icon_height() {
+  return 24;
+}
+
+int StatusAreaButton::icon_width() {
+  return 23;
+}
+
+int StatusAreaButton::horizontal_padding() {
+  return 1;
 }

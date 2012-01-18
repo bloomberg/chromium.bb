@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -78,6 +78,9 @@ class StatusAreaButton : public views::MenuButton {
   // menus are activated.
   virtual void SetMenuActive(bool active);
 
+  // Refresh the style used to paint this button's text.  Schedules repaint.
+  void UpdateTextStyle();
+
   bool menu_active() const { return menu_active_; }
 
  protected:
@@ -101,8 +104,6 @@ class StatusAreaButton : public views::MenuButton {
   bool menu_active_;
 
  private:
-  void UpdateTextStyle();
-
   Delegate* delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(StatusAreaButton);
