@@ -383,7 +383,7 @@
                  'wez+watch@chromium.org',
                  'amit@chromium.org',
                  'sanjeevr@chromium.org'],
-    'ntp': ['estade+watch@chromium.org'],
+    'ntp': ['estade+watch@chromium.org', 'dbeam+watch-ntp@chromium.org'],
     'cookie_monster': ['erikwright@chromium.org', 'rdsmith@chromium.org',
                        'rkn@chromium.org', 'wtc@chromium.org'],
     'autofill': ['dhollowa+watch@chromium.org', 'georgey@chromium.org',
