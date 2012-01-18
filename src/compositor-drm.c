@@ -112,9 +112,12 @@ drm_output_present(struct weston_output *output_base)
 		fb_id = output->fb_id[output->current ^ 1];
 	}
 
-	drmModePageFlip(c->drm.fd, output->crtc_id,
-			fb_id,
-			DRM_MODE_PAGE_FLIP_EVENT, output);
+	if (drmModePageFlip(c->drm.fd, output->crtc_id,
+			    fb_id,
+			    DRM_MODE_PAGE_FLIP_EVENT, output) < 0) {
+		fprintf(stderr, "queueing pageflip failed: %m\n");
+		return -1;
+	}
 
 	return 0;
 }
