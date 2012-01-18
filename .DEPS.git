@@ -121,7 +121,7 @@ deps = {
     'src/tools/page_cycler/acid3':
         Var('git_url') + '/chromium/deps/acid3.git@633fc66cc99ae5bb92b567c6beafde7a01cfdb49',
     'src/v8':
-        Var('git_url') + '/external/v8.git@f2038fb01417bcf7698b87a5dfaa4a861539618a',
+        Var('git_url') + '/external/v8.git@b295776b8c02617720d03b6dbcf2f912dfd2c4e7',
 }
 
 deps_os = {
