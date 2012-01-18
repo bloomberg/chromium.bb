@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -69,11 +69,11 @@ def SetupEnvironment():
   # Path to PNaCl toolchain
   env.pnacl_root_newlib = os.path.join(env.nacl_root,
                                        'toolchain',
-                                       'pnacl_%s_%s_newlib' % (GetBuildOS(),
+                                       'pnacl_%s_%s/newlib' % (GetBuildOS(),
                                                                GetBuildArch()))
   env.pnacl_root_glibc = os.path.join(env.nacl_root,
                                      'toolchain',
-                                     'pnacl_%s_%s_glibc' % (GetBuildOS(),
+                                     'pnacl_%s_%s/glibc' % (GetBuildOS(),
                                                             GetBuildArch()))
 
   # QEMU
@@ -226,13 +226,19 @@ def main(argv):
 def RunSelLdr(args):
   # TODO(pdox): If we are running this script on ARM, skip the emulator.
   prefix = []
-  bootstrap = os.path.join(os.path.dirname(env.sel_ldr),
-                           'nacl_helper_bootstrap')
   if env.arch == 'arm':
     prefix = [ env.qemu, '-cpu', 'cortex-a8']
     args = ['-Q'] + args
 
-  Run(prefix + [bootstrap, env.sel_ldr] + args)
+  # Use the bootstrap loader on linux.
+  if env.scons_os == 'linux':
+    bootstrap = os.path.join(os.path.dirname(env.sel_ldr),
+                             'nacl_helper_bootstrap')
+    loader = [bootstrap, env.sel_ldr]
+  else:
+    loader = [env.sel_ldr]
+  Run(prefix + loader + args)
+
 
 def FindOrBuildIRT(allow_build = True):
   if env.force_irt:
