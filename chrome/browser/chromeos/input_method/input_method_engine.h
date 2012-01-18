@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -27,7 +27,6 @@ class InputMethodEngine {
 
     std::string type;
     std::string key;
-    std::string key_code;
     bool alt_key;
     bool ctrl_key;
     bool shift_key;
@@ -40,7 +39,6 @@ class InputMethodEngine {
     MENU_ITEM_MODIFIED_ENABLED      = 0x0008,
     MENU_ITEM_MODIFIED_CHECKED      = 0x0010,
     MENU_ITEM_MODIFIED_ICON         = 0x0020,
-    MENU_ITEM_MODIFIED_SHORTCUT_KEY = 0x0040,
   };
 
   enum MenuItemStyle {
@@ -71,8 +69,6 @@ class InputMethodEngine {
     bool visible;
     bool enabled;
     bool checked;
-    std::string icon;
-    KeyboardEvent shortcut_key;
 
     unsigned int modified;
     std::vector<MenuItem> children;
@@ -203,7 +199,6 @@ class InputMethodEngine {
       const char* description,
       const char* language,
       const std::vector<std::string>& layouts,
-      KeyboardEvent& shortcut_key,
       std::string* error);
 };
 

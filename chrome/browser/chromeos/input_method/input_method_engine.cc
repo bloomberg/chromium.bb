@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -64,7 +64,6 @@ class InputMethodEngineImpl
             const char* description,
             const char* language,
             const std::vector<std::string>& layouts,
-            KeyboardEvent& shortcut_key,
             std::string* error);
 
   virtual bool SetComposition(int context_id,
@@ -147,7 +146,6 @@ bool InputMethodEngineImpl::Init(InputMethodEngine::Observer* observer,
                                  const char* description,
                                  const char* language,
                                  const std::vector<std::string>& layouts,
-                                 KeyboardEvent& shortcut_key,
                                  std::string* error) {
   ibus_id_ = kExtensionImePrefix;
   ibus_id_ += extension_id;
@@ -487,7 +485,6 @@ void InputMethodEngineImpl::OnKeyEvent(bool key_press, unsigned int keyval,
   KeyboardEvent event;
   event.type = key_press ? "keydown" : "keyup";
   event.key = input_method::GetIBusKey(keyval);
-  event.key_code = input_method::GetIBusKeyCode(keycode);
   event.alt_key = alt_key;
   event.ctrl_key = ctrl_key;
   event.shift_key = shift_key;
@@ -538,7 +535,6 @@ class InputMethodEngineStub : public InputMethodEngine {
             const char* description,
             const char* language,
             const std::vector<std::string>& layouts,
-            KeyboardEvent& shortcut_key,
             std::string* error) {
     VLOG(0) << "Init";
     return true;
@@ -646,7 +642,6 @@ InputMethodEngine* InputMethodEngine::CreateEngine(
     const char* description,
     const char* language,
     const std::vector<std::string>& layouts,
-    KeyboardEvent& shortcut_key,
     std::string* error) {
 
 #if defined(HAVE_IBUS)
@@ -656,7 +651,7 @@ InputMethodEngine* InputMethodEngine::CreateEngine(
 #endif
 
   if (!new_engine->Init(observer, engine_name, extension_id, engine_id,
-                        description, language, layouts, shortcut_key, error)) {
+                        description, language, layouts, error)) {
     LOG(ERROR) << "Init() failed.";
     delete new_engine;
     new_engine = NULL;

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -99,45 +99,6 @@ bool ReadMenuItems(
       modified |= chromeos::InputMethodEngine::MENU_ITEM_MODIFIED_ENABLED;
     }
 
-    if (item_dict->HasKey(keys::kIconKey)) {
-      if (!item_dict->GetString(keys::kIconKey, &icon)) {
-        return false;
-      }
-      modified |= chromeos::InputMethodEngine::MENU_ITEM_MODIFIED_ICON;
-    }
-
-    if (item_dict->HasKey(keys::kShortcutKey)) {
-      DictionaryValue* shortcut_dict;
-      if (!item_dict->GetDictionary(keys::kShortcutKey, &shortcut_dict)) {
-        return false;
-      }
-
-      if (!shortcut_dict->GetString(keys::kKeyKey, &(shortcut_key.key))) {
-        return false;
-      }
-
-      if (shortcut_dict->HasKey(keys::kAltKeyKey)) {
-        if (!item_dict->GetBoolean(keys::kAltKeyKey, &(shortcut_key.alt_key))) {
-          return false;
-        }
-      }
-
-      if (shortcut_dict->HasKey(keys::kCtrlKeyKey)) {
-        if (!shortcut_dict->GetBoolean(keys::kCtrlKeyKey,
-                                       &(shortcut_key.ctrl_key))) {
-          return false;
-        }
-      }
-
-      if (shortcut_dict->HasKey(keys::kShiftKeyKey)) {
-        if (!shortcut_dict->GetBoolean(keys::kShiftKeyKey,
-                                       &(shortcut_key.shift_key))) {
-          return false;
-        }
-      }
-      modified |= chromeos::InputMethodEngine::MENU_ITEM_MODIFIED_SHORTCUT_KEY;
-    }
-
     output->push_back(chromeos::InputMethodEngine::MenuItem());
     output->back().id = id;
     output->back().label = label;
@@ -145,8 +106,6 @@ bool ReadMenuItems(
     output->back().visible = visible;
     output->back().enabled = enabled;
     output->back().checked = checked;
-    output->back().icon = icon;
-    output->back().shortcut_key = shortcut_key;
 
     output->back().modified = modified;
 
@@ -284,7 +243,6 @@ class ImeObserver : public chromeos::InputMethodEngine::Observer {
     dict->SetString("type", event.type);
     dict->SetString("requestId", request_id);
     dict->SetString("key", event.key);
-    dict->SetString("keyCode", event.key_code);
     dict->SetBoolean("altKey", event.alt_key);
     dict->SetBoolean("ctrlKey", event.ctrl_key);
     dict->SetBoolean("shiftKey", event.shift_key);
@@ -393,13 +351,6 @@ bool ExtensionInputImeEventRouter::RegisterIme(
   chromeos::ImeObserver* observer = new chromeos::ImeObserver(profile,
                                                               extension_id,
                                                               component.id);
-  chromeos::InputMethodEngine::KeyboardEvent shortcut_key;
-  shortcut_key.key = component.shortcut_keycode;
-  shortcut_key.key_code = component.shortcut_keycode;
-  shortcut_key.alt_key = component.shortcut_alt;
-  shortcut_key.ctrl_key = component.shortcut_ctrl;
-  shortcut_key.shift_key = component.shortcut_shift;
-
   std::vector<std::string> layouts;
   layouts.assign(component.layouts.begin(), component.layouts.end());
 
@@ -407,8 +358,7 @@ bool ExtensionInputImeEventRouter::RegisterIme(
       chromeos::InputMethodEngine::CreateEngine(
           observer, component.name.c_str(), extension_id.c_str(),
           component.id.c_str(), component.description.c_str(),
-          component.language.c_str(), layouts,
-          shortcut_key, &error);
+          component.language.c_str(), layouts, &error);
   if (!engine) {
     delete observer;
     LOG(ERROR) << "RegisterIme: " << error;
