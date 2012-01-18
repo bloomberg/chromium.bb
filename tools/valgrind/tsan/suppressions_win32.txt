@@ -125,3 +125,17 @@
   fun:??2@YAPAXIABU_DebugHeapTag_t@std@@PADH@Z
   fun:?_Init@ios_base@std@@IAEXXZ
 }
+{
+  bug_110514_c
+  ThreadSanitizer:Race
+  fun:memset
+  fun:_free_dbg
+  ...
+  fun:??3@YAXPAX@Z
+  fun:??_V@YAXPAX@Z
+  fun:scoped_array::reset
+  fun:media::DataBuffer::DataBuffer
+  ...
+  fun:media::FFmpegAudioDecoder::DoDecodeBuffer
+}
+
