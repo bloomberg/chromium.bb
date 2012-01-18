@@ -1103,6 +1103,19 @@ void ChromeBrowserMainParts::PostMainMessageLoopStart() {
 
 void ChromeBrowserMainParts::PreCreateThreads() {
   result_code_ = PreCreateThreadsImpl();
+
+  // The code below is here instead of in PreCreateThreadsImpl because that
+  // function has early returns. We always want to create the IOThread object
+  // because it's used by a bunch of other initialization code that runs even
+  // if the message loop doesn't.
+
+  // Now the command line has been mutated based on about:flags, we can setup
+  // metrics and initialize field trials. The field trials are needed by
+  // IOThread's initialization which happens in BrowserProcess:PreCreateThreads.
+  SetupMetricsAndFieldTrials();
+
+  // ChromeOS needs ResourceBundle::InitSharedInstance to be called before this.
+  browser_process_->PreCreateThreads();
 }
 
 int ChromeBrowserMainParts::PreCreateThreadsImpl() {
@@ -1284,14 +1297,6 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
   // any callbacks, I just want to initialize the mechanism.)
   SecKeychainAddCallback(&KeychainCallback, 0, NULL);
 #endif
-
-  // Now the command line has been mutated based on about:flags, we can setup
-  // metrics and initialize field trials. The field trials are needed by
-  // IOThread's initialization which happens in BrowserProcess:PreCreateThreads.
-  SetupMetricsAndFieldTrials();
-
-  // ChromeOS needs ResourceBundle::InitSharedInstance to be called before this.
-  browser_process_->PreCreateThreads();
 
   return content::RESULT_CODE_NORMAL_EXIT;
 }
