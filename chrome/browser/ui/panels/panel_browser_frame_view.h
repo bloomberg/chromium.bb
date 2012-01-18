@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -204,6 +204,10 @@ class PanelBrowserFrameView : public BrowserNonClientFrameView,
   gfx::Rect settings_button_full_bounds_;
   gfx::Rect settings_button_zero_bounds_;
   bool is_settings_button_visible_;
+
+  // On Aura popups are displayed in panels. If this panel is not opened by an
+  // app, it won't have a settings button.
+  const bool has_settings_button_;
 
   DISALLOW_COPY_AND_ASSIGN(PanelBrowserFrameView);
 };

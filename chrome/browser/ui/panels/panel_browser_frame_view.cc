@@ -330,7 +330,12 @@ PanelBrowserFrameView::PanelBrowserFrameView(BrowserFrame* frame,
       close_button_(NULL),
       title_icon_(NULL),
       title_label_(NULL),
-      is_settings_button_visible_(false) {
+      is_settings_button_visible_(false),
+#if defined(USE_AURA)
+      has_settings_button_(panel_browser_view_->panel()->browser()->is_app()) {
+#else
+      has_settings_button_(true) {
+#endif
   frame->set_frame_type(views::Widget::FRAME_TYPE_FORCE_CUSTOM);
 
   const ButtonResources& settings_button_resources =
@@ -372,7 +377,8 @@ PanelBrowserFrameView::PanelBrowserFrameView(BrowserFrame* frame,
   title_label_->SetAutoColorReadabilityEnabled(false);
   AddChildView(title_label_);
 
-  mouse_watcher_.reset(new MouseWatcher(this));
+  if (has_settings_button_)
+    mouse_watcher_.reset(new MouseWatcher(this));
 }
 
 PanelBrowserFrameView::~PanelBrowserFrameView() {
@@ -497,6 +503,10 @@ void PanelBrowserFrameView::Layout() {
       show_settings_button = false;
     }
   }
+
+  if (!has_settings_button_)
+    show_settings_button = false;
+
   close_button_->SetVisible(show_close_button);
   settings_button_->SetVisible(show_settings_button);
   title_label_->SetVisible(show_title_label);
@@ -830,6 +840,9 @@ void PanelBrowserFrameView::UpdateTitleBar() {
 }
 
 void PanelBrowserFrameView::OnFocusChanged(bool focused) {
+  if (!has_settings_button_)
+    return;
+
   UpdateSettingsButtonVisibility(focused,
                                  mouse_watcher_->IsCursorInViewBounds());
   SchedulePaint();
@@ -839,12 +852,18 @@ void PanelBrowserFrameView::OnMouseEnterOrLeaveWindow(bool mouse_entered) {
   // Panel might be closed when we still watch the mouse event.
   if (!panel_browser_view_->panel())
     return;
+
+  if (!has_settings_button_)
+    return;
+
   UpdateSettingsButtonVisibility(panel_browser_view_->focused(),
                                  mouse_entered);
 }
 
 void PanelBrowserFrameView::UpdateSettingsButtonVisibility(
     bool focused, bool cursor_in_view) {
+  DCHECK(has_settings_button_);
+
   // The settings button is not shown in the overflow state.
   if (panel_browser_view_->panel()->expansion_state() == Panel::IN_OVERFLOW)
     return;
@@ -854,7 +873,7 @@ void PanelBrowserFrameView::UpdateSettingsButtonVisibility(
     return;
   is_settings_button_visible_ = is_settings_button_visible;
 
-  // Even if we're hidng the settings button, we still make it visible for the
+  // Even if we're hiding the settings button, we still make it visible for the
   // time period that the animation is running.
   settings_button_->SetVisible(true);
 
