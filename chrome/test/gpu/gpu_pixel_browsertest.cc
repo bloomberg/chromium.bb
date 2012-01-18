@@ -342,18 +342,18 @@ class GpuPixelBrowserTest : public InProcessBrowserTest {
 };
 
 #if defined(USE_AURA)
-#define MAYBE_WebGLTeapot DISABLED_WebGLTeapot
+#define MAYBE_WebGLGreenTriangle DISABLED_WebGLGreenTriangle
 #else
-#define MAYBE_WebGLTeapot WebGLTeapot
+#define MAYBE_WebGLGreenTriangle WebGLGreenTriangle
 #endif
-IN_PROC_BROWSER_TEST_F(GpuPixelBrowserTest, MAYBE_WebGLTeapot) {
+IN_PROC_BROWSER_TEST_F(GpuPixelBrowserTest, MAYBE_WebGLGreenTriangle) {
   // If test baseline needs to be updated after a given revision, update the
   // following number. If no revision requirement, then 0.
   const int64 ref_img_revision_update = 116356;
 
   gfx::Size container_size(500, 500);
   FilePath url =
-      test_data_dir().AppendASCII("webgl_teapot").AppendASCII("teapot.html");
+      test_data_dir().AppendASCII("pixel_webgl.html");
   RunPixelTest(container_size, url, ref_img_revision_update);
 }
 
