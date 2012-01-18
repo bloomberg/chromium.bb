@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,7 +7,9 @@
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/command_line.h"
 #include "base/environment.h"
+#include "base/file_path.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -152,7 +154,8 @@ class KDEPowerSaveBlocker: public DBusPowerSaveBlocker::Delegate {
         // the reason of the power save block request.
         // The method returns a cookie (an int), which we must pass back to the
         // UnInhibit method when we cancel our request.
-        message_writer.AppendString(base::PlatformThread::GetName());
+        message_writer.AppendString(
+            CommandLine::ForCurrentProcess()->GetProgram().value());
         message_writer.AppendString(DBusPowerSaveBlocker::kPowerSaveReason);
         bus_callback = base::Bind(&KDEPowerSaveBlocker::OnInhibitResponse,
                                   this);
@@ -316,7 +319,8 @@ class GnomePowerSaveBlocker: public DBusPowerSaveBlocker::Delegate {
         // The method returns and inhibit_cookie, used to uniquely identify
         // this request. It should be used as an argument to Uninhibit()
         // in order to remove the request.
-        message_writer.AppendString(base::PlatformThread::GetName());
+        message_writer.AppendString(
+            CommandLine::ForCurrentProcess()->GetProgram().value());
         message_writer.AppendUint32(0);  // should be toplevel_xid
         message_writer.AppendString(DBusPowerSaveBlocker::kPowerSaveReason);
         message_writer.AppendUint32(flags);
