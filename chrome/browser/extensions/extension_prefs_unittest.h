@@ -74,9 +74,10 @@ class ExtensionPrefsPrepopulatedTest : public ExtensionPrefsTest {
   Extension* ext1_;
   Extension* ext2_;
   Extension* ext3_;
+  Extension* ext4_;
 
   // Flags indicating whether each of the extensions has been installed, yet.
-  bool installed[3];
+  bool installed[4];
 
  private:
   void EnsureExtensionInstalled(Extension *ext);
@@ -86,6 +87,7 @@ class ExtensionPrefsPrepopulatedTest : public ExtensionPrefsTest {
   scoped_refptr<Extension> ext1_scoped_;
   scoped_refptr<Extension> ext2_scoped_;
   scoped_refptr<Extension> ext3_scoped_;
+  scoped_refptr<Extension> ext4_scoped_;
 };
 
 

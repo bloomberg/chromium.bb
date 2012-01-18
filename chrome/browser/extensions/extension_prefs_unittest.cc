@@ -711,6 +711,7 @@ ExtensionPrefsPrepopulatedTest::ExtensionPrefsPrepopulatedTest()
       ext1_(NULL),
       ext2_(NULL),
       ext3_(NULL),
+      ext4_(NULL),
       installed() {
   DictionaryValue simple_dict;
   std::string error;
@@ -727,10 +728,14 @@ ExtensionPrefsPrepopulatedTest::ExtensionPrefsPrepopulatedTest()
   ext3_scoped_ = Extension::Create(
       prefs_.temp_dir().AppendASCII("ext3_"), Extension::EXTERNAL_PREF,
       simple_dict, Extension::STRICT_ERROR_CHECKS, &error);
+  ext4_scoped_ = Extension::Create(
+      prefs_.temp_dir().AppendASCII("ext4_"), Extension::EXTERNAL_PREF,
+      simple_dict, Extension::STRICT_ERROR_CHECKS, &error);
 
   ext1_ = ext1_scoped_.get();
   ext2_ = ext2_scoped_.get();
   ext3_ = ext3_scoped_.get();
+  ext4_ = ext4_scoped_.get();
 
   for (size_t i = 0; i < arraysize(installed); ++i)
     installed[i] = false;
@@ -791,8 +796,8 @@ void ExtensionPrefsPrepopulatedTest::UninstallExtension(
 
 void ExtensionPrefsPrepopulatedTest::EnsureExtensionInstalled(Extension *ext) {
   // Install extension the first time a preference is set for it.
-  Extension* extensions[] = {ext1_, ext2_, ext3_};
-  for (int i = 0; i < 3; ++i) {
+  Extension* extensions[] = {ext1_, ext2_, ext3_, ext4_};
+  for (size_t i = 0; i < arraysize(extensions); ++i) {
     if (ext == extensions[i] && !installed[i]) {
       prefs()->OnExtensionInstalled(ext, Extension::ENABLED,
                                     false, StringOrdinal());
@@ -804,8 +809,8 @@ void ExtensionPrefsPrepopulatedTest::EnsureExtensionInstalled(Extension *ext) {
 
 void ExtensionPrefsPrepopulatedTest::EnsureExtensionUninstalled(
     const std::string& extension_id) {
-  Extension* extensions[] = {ext1_, ext2_, ext3_};
-  for (int i = 0; i < 3; ++i) {
+  Extension* extensions[] = {ext1_, ext2_, ext3_, ext4_};
+  for (size_t i = 0; i < arraysize(extensions); ++i) {
     if (extensions[i]->id() == extension_id) {
       installed[i] = false;
       break;

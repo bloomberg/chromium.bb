@@ -452,6 +452,74 @@ class ExtensionSortingFixNTPCollisionsSomeCollideAtEnd
 TEST_F(ExtensionSortingFixNTPCollisionsSomeCollideAtEnd,
        ExtensionSortingFixNTPCollisionsSomeCollideAtEnd) {}
 
+class ExtensionSortingFixNTPCollisionsTwoCollisions
+    : public ExtensionPrefsPrepopulatedTest {
+ public:
+  ExtensionSortingFixNTPCollisionsTwoCollisions() {}
+  virtual ~ExtensionSortingFixNTPCollisionsTwoCollisions() {}
+
+  virtual void Initialize() OVERRIDE {
+    first_ordinal_ = StringOrdinal::CreateInitialOrdinal();
+    StringOrdinal second_ordinal = first_ordinal_.CreateAfter();
+
+    ExtensionSorting* extension_sorting = prefs()->extension_sorting();
+
+    // Have two extensions colliding, followed by two more colliding extensions.
+    extension_sorting->SetAppLaunchOrdinal(ext1_->id(), first_ordinal_);
+    extension_sorting->SetPageOrdinal(ext1_->id(), first_ordinal_);
+
+    extension_sorting->SetAppLaunchOrdinal(ext2_->id(), first_ordinal_);
+    extension_sorting->SetPageOrdinal(ext2_->id(), first_ordinal_);
+
+    extension_sorting->SetAppLaunchOrdinal(ext3_->id(), second_ordinal);
+    extension_sorting->SetPageOrdinal(ext3_->id(), first_ordinal_);
+
+    extension_sorting->SetAppLaunchOrdinal(ext4_->id(), second_ordinal);
+    extension_sorting->SetPageOrdinal(ext4_->id(), first_ordinal_);
+
+    extension_sorting->FixNTPOrdinalCollisions();
+  }
+  virtual void Verify() OVERRIDE {
+    ExtensionSorting* extension_sorting = prefs()->extension_sorting();
+    StringOrdinal ext1_app_launch = extension_sorting->GetAppLaunchOrdinal(
+        ext1_->id());
+    StringOrdinal ext2_app_launch = extension_sorting->GetAppLaunchOrdinal(
+        ext2_->id());
+    StringOrdinal ext3_app_launch = extension_sorting->GetAppLaunchOrdinal(
+        ext3_->id());
+    StringOrdinal ext4_app_launch = extension_sorting->GetAppLaunchOrdinal(
+        ext4_->id());
+
+    // The overlapping extensions should have be adjusted so that they are
+    // sorted by their id, with |ext1| and |ext2| appearing before |ext3| and
+    // |ext4|.
+    EXPECT_TRUE(ext1_app_launch.LessThan(ext3_app_launch));
+    EXPECT_TRUE(ext1_app_launch.LessThan(ext4_app_launch));
+    EXPECT_TRUE(ext2_app_launch.LessThan(ext3_app_launch));
+    EXPECT_TRUE(ext2_app_launch.LessThan(ext4_app_launch));
+
+    EXPECT_EQ(ext1_->id() < ext2_->id(),
+              ext1_app_launch.LessThan(ext2_app_launch));
+    EXPECT_EQ(ext3_->id() < ext4_->id(),
+              ext3_app_launch.LessThan(ext4_app_launch));
+
+    // The page ordinal should be unchanged.
+    EXPECT_TRUE(extension_sorting->GetPageOrdinal(ext1_->id()).Equal(
+        first_ordinal_));
+    EXPECT_TRUE(extension_sorting->GetPageOrdinal(ext2_->id()).Equal(
+        first_ordinal_));
+    EXPECT_TRUE(extension_sorting->GetPageOrdinal(ext3_->id()).Equal(
+        first_ordinal_));
+    EXPECT_TRUE(extension_sorting->GetPageOrdinal(ext4_->id()).Equal(
+        first_ordinal_));
+  }
+
+ private:
+  StringOrdinal first_ordinal_;
+};
+TEST_F(ExtensionSortingFixNTPCollisionsTwoCollisions,
+       ExtensionSortingFixNTPCollisionsTwoCollisions) {}
+
 class ExtensionSortingPageOrdinalMapping :
     public ExtensionPrefsPrepopulatedTest {
  public:

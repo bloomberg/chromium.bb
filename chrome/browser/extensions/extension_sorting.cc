@@ -145,18 +145,20 @@ void ExtensionSorting::FixNTPOrdinalCollisions() {
        page_it != ntp_ordinal_map_.end(); ++page_it) {
     AppLaunchOrdinalMap& page = page_it->second;
 
-    for (AppLaunchOrdinalMap::iterator app_launch_it = page.begin();
-         app_launch_it != page.end(); ++app_launch_it) {
-      int collisions = page.count(app_launch_it->first);
-      if (collisions == 1)
+    AppLaunchOrdinalMap::iterator app_launch_it = page.begin();
+    while (app_launch_it != page.end()) {
+      int app_count = page.count(app_launch_it->first);
+      if (app_count == 1) {
+        ++app_launch_it;
         continue;
+      }
 
       StringOrdinal repeated_ordinal = app_launch_it->first;
 
       // Sort the conflicting keys by their extension id, this is how
       // the order is decided.
       std::vector<std::string> conflicting_ids;
-      for (int i = 0; i < collisions; ++i, ++app_launch_it)
+      for (int i = 0; i < app_count; ++i, ++app_launch_it)
         conflicting_ids.push_back(app_launch_it->second);
       std::sort(conflicting_ids.begin(), conflicting_ids.end());
 
@@ -167,7 +169,7 @@ void ExtensionSorting::FixNTPOrdinalCollisions() {
 
       // Start at position 1 because the first extension can keep the conflicted
       // value.
-      for (int i = 1; i < collisions; ++i) {
+      for (int i = 1; i < app_count; ++i) {
         StringOrdinal unique_app_launch;
         if (upper_bound_ordinal.IsValid()) {
           unique_app_launch =
@@ -179,11 +181,6 @@ void ExtensionSorting::FixNTPOrdinalCollisions() {
         SetAppLaunchOrdinal(conflicting_ids[i], unique_app_launch);
         lower_bound_ordinal = unique_app_launch;
       }
-
-      // This exit condition exists because the iterator may have moved to
-      // the end of the map after getting the conflicting ids.
-      if (app_launch_it == page.end())
-        break;
     }
   }
 }
