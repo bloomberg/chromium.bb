@@ -830,7 +830,7 @@ void RenderText::UpdateCachedBoundsAndOffset() {
   int string_width = GetStringWidth();
   int delta_offset = 0;
   if (string_width < display_width) {
-    // Show all text whenever the text fits to the size.
+    // Show all text whenever it fits in the display width.
     delta_offset = -display_offset_.x();
   } else if (cursor_bounds_.right() >= display_rect_.right()) {
     // TODO(xji): when the character overflow is a RTL character, currently, if
@@ -845,6 +845,12 @@ void RenderText::UpdateCachedBoundsAndOffset() {
     //
     // Pan to show the cursor when it overflows to the left.
     delta_offset = display_rect_.x() - cursor_bounds_.x();
+  } else {
+    // Pan to show additional overflow text when the display width increases.
+    int negate_rtl = base::i18n::IsRTL() ? -1 : 1;
+    int offset = negate_rtl * display_offset_.x();
+    if (display_width > (string_width + offset))
+      delta_offset = negate_rtl * (display_width - (string_width + offset) - 1);
   }
   display_offset_.Offset(delta_offset, 0);
   cursor_bounds_.Offset(delta_offset, 0);

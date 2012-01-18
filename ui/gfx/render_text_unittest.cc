@@ -7,6 +7,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
@@ -925,6 +926,111 @@ TEST_F(RenderTextTest, OriginForSkiaDrawing) {
   origin = render_text->GetOriginForSkiaDrawing();
   EXPECT_EQ(origin.x(), 0);
   EXPECT_EQ(origin.y(), 12);
+}
+
+TEST_F(RenderTextTest, DisplayRectShowsCursorLTR) {
+  scoped_ptr<RenderText> render_text(RenderText::CreateRenderText());
+  render_text->SetText(WideToUTF16(L"abcdefghijklmnopqrstuvwxzyabcdefg"));
+  render_text->MoveCursorTo(SelectionModel(render_text->text().length()));
+  int width = render_text->GetStringWidth();
+
+  // Ensure that the cursor is placed at the width of its preceding text.
+  render_text->SetDisplayRect(Rect(width + 10, 1));
+  EXPECT_EQ(width, render_text->GetUpdatedCursorBounds().x());
+
+  // Ensure that shrinking the display rectangle keeps the cursor in view.
+  render_text->SetDisplayRect(Rect(width - 10, 1));
+  EXPECT_EQ(render_text->display_rect().width() - 1,
+            render_text->GetUpdatedCursorBounds().x());
+
+  // Ensure that the text will pan to fill its expanding display rectangle.
+  render_text->SetDisplayRect(Rect(width - 5, 1));
+  EXPECT_EQ(render_text->display_rect().width() - 1,
+            render_text->GetUpdatedCursorBounds().x());
+
+  // Ensure that a sufficiently large display rectangle shows all the text.
+  render_text->SetDisplayRect(Rect(width + 10, 1));
+  EXPECT_EQ(width, render_text->GetUpdatedCursorBounds().x());
+
+  // Repeat the test with RTL text.
+  render_text->SetText(WideToUTF16(L"\x5d0\x5d1\x5d2\x5d3\x5d4\x5d5\x5d6\x5d7"
+      L"\x5d8\x5d9\x5da\x5db\x5dc\x5dd\x5de\x5df"));
+  render_text->MoveCursorTo(SelectionModel(0));
+  width = render_text->GetStringWidth();
+
+  // Ensure that the cursor is placed at the width of its preceding text.
+  render_text->SetDisplayRect(Rect(width + 10, 1));
+  EXPECT_EQ(width, render_text->GetUpdatedCursorBounds().x());
+
+  // Ensure that shrinking the display rectangle keeps the cursor in view.
+  render_text->SetDisplayRect(Rect(width - 10, 1));
+  EXPECT_EQ(render_text->display_rect().width() - 1,
+            render_text->GetUpdatedCursorBounds().x());
+
+  // Ensure that the text will pan to fill its expanding display rectangle.
+  render_text->SetDisplayRect(Rect(width - 5, 1));
+  EXPECT_EQ(render_text->display_rect().width() - 1,
+            render_text->GetUpdatedCursorBounds().x());
+
+  // Ensure that a sufficiently large display rectangle shows all the text.
+  render_text->SetDisplayRect(Rect(width + 10, 1));
+  EXPECT_EQ(width, render_text->GetUpdatedCursorBounds().x());
+}
+
+TEST_F(RenderTextTest, DisplayRectShowsCursorRTL) {
+  // Set the locale to Hebrew for RTL UI.
+  std::string locale = l10n_util::GetApplicationLocale("");
+  base::i18n::SetICUDefaultLocale("he");
+
+  scoped_ptr<RenderText> render_text(RenderText::CreateRenderText());
+  render_text->SetText(WideToUTF16(L"abcdefghijklmnopqrstuvwxzyabcdefg"));
+  render_text->MoveCursorTo(SelectionModel(0));
+  int width = render_text->GetStringWidth();
+
+  // Ensure that the cursor is placed at the width of its preceding text.
+  render_text->SetDisplayRect(Rect(width + 10, 1));
+  EXPECT_EQ(render_text->display_rect().width() - width - 1,
+            render_text->GetUpdatedCursorBounds().x());
+
+  // Ensure that shrinking the display rectangle keeps the cursor in view.
+  render_text->SetDisplayRect(Rect(width - 10, 1));
+  EXPECT_EQ(0, render_text->GetUpdatedCursorBounds().x());
+
+  // Ensure that the text will pan to fill its expanding display rectangle.
+  render_text->SetDisplayRect(Rect(width - 5, 1));
+  EXPECT_EQ(0, render_text->GetUpdatedCursorBounds().x());
+
+  // Ensure that a sufficiently large display rectangle shows all the text.
+  render_text->SetDisplayRect(Rect(width + 10, 1));
+  EXPECT_EQ(render_text->display_rect().width() - width - 1,
+            render_text->GetUpdatedCursorBounds().x());
+
+  // Repeat the test with RTL text.
+  render_text->SetText(WideToUTF16(L"\x5d0\x5d1\x5d2\x5d3\x5d4\x5d5\x5d6\x5d7"
+      L"\x5d8\x5d9\x5da\x5db\x5dc\x5dd\x5de\x5df"));
+  render_text->MoveCursorTo(SelectionModel(render_text->text().length()));
+  width = render_text->GetStringWidth();
+
+  // Ensure that the cursor is placed at the width of its preceding text.
+  render_text->SetDisplayRect(Rect(width + 10, 1));
+  EXPECT_EQ(render_text->display_rect().width() - width - 1,
+            render_text->GetUpdatedCursorBounds().x());
+
+  // Ensure that shrinking the display rectangle keeps the cursor in view.
+  render_text->SetDisplayRect(Rect(width - 10, 1));
+  EXPECT_EQ(0, render_text->GetUpdatedCursorBounds().x());
+
+  // Ensure that the text will pan to fill its expanding display rectangle.
+  render_text->SetDisplayRect(Rect(width - 5, 1));
+  EXPECT_EQ(0, render_text->GetUpdatedCursorBounds().x());
+
+  // Ensure that a sufficiently large display rectangle shows all the text.
+  render_text->SetDisplayRect(Rect(width + 10, 1));
+  EXPECT_EQ(render_text->display_rect().width() - width - 1,
+            render_text->GetUpdatedCursorBounds().x());
+
+  // Reset locale.
+  base::i18n::SetICUDefaultLocale(locale);
 }
 
 }  // namespace gfx
