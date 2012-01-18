@@ -10,7 +10,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
-#include "third_party/libjingle/source/talk/app/webrtc/peerconnectionfactory.h"
+#include "third_party/libjingle/source/talk/app/webrtcv1/peerconnectionfactory.h"
 #include "webkit/glue/p2p_transport.h"
 
 namespace content {

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -49,7 +49,7 @@ JingleThreadWrapper::JingleThreadWrapper(MessageLoop* message_loop)
       pending_send_event_(true, false) {
   DCHECK_EQ(message_loop_, MessageLoop::current());
 
-  talk_base::ThreadManager::SetCurrent(this);
+  talk_base::ThreadManager::Instance()->SetCurrentThread(this);
   talk_base::MessageQueueManager::Instance()->Add(this);
   message_loop_->AddDestructionObserver(this);
 
@@ -63,7 +63,7 @@ void JingleThreadWrapper::WillDestroyCurrentMessageLoop() {
   DCHECK_EQ(talk_base::Thread::Current(), current());
   UnwrapCurrent();
   g_jingle_thread_wrapper.Get().Set(NULL);
-  talk_base::ThreadManager::SetCurrent(NULL);
+  talk_base::ThreadManager::Instance()->SetCurrentThread(NULL);
   talk_base::MessageQueueManager::Instance()->Remove(this);
   message_loop_->RemoveDestructionObserver(this);
   delete this;
