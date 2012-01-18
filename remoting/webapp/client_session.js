@@ -40,6 +40,7 @@ remoting.ClientSession = function(hostJid, hostPublicKey, authenticationCode,
   this.sessionId = '';
   /** @type {remoting.ViewerPlugin} */
   this.plugin = null;
+  this.scaleToFit = false;
   this.logToServer = new remoting.LogToServer();
   this.onStateChange = onStateChange;
   /** @type {remoting.ClientSession} */
@@ -104,7 +105,7 @@ remoting.ClientSession.prototype.error =
  * @const
  * @private
  */
-remoting.ClientSession.prototype.API_VERSION_ = 2;
+remoting.ClientSession.prototype.API_VERSION_ = 3;
 
 /**
  * The oldest API version that we support.
@@ -170,6 +171,9 @@ remoting.ClientSession.prototype.createPluginAndConnect =
     this.setState_(remoting.ClientSession.State.BAD_PLUGIN_VERSION);
     return;
   }
+
+  // Enable scale-to-fit if the plugin is new enough for high-quality scaling.
+  this.setScaleToFit(this.plugin.apiVersion >= 3);
 
   /** @type {remoting.ClientSession} */ var that = this;
   /** @param {string} msg The IQ stanza to send. */
@@ -246,6 +250,26 @@ remoting.ClientSession.prototype.disconnect = function() {
   }
   this.removePlugin();
 };
+
+/**
+ * Enables or disables the client's scale-to-fit feature.
+ *
+ * @param {boolean} scaleToFit True to enable scale-to-fit, false otherwise.
+ * @return {void} Nothing.
+ */
+remoting.ClientSession.prototype.setScaleToFit = function(scaleToFit) {
+  this.scaleToFit = scaleToFit;
+  this.updateDimensions();
+}
+
+/**
+ * Returns whether the client is currently scaling the host to fit the tab.
+ *
+ * @return {boolean} The current scale-to-fit setting.
+ */
+remoting.ClientSession.prototype.getScaleToFit = function() {
+  return this.scaleToFit;
+}
 
 /**
  * Sends an IQ stanza via the http xmpp proxy.
@@ -398,7 +422,7 @@ remoting.ClientSession.prototype.updateDimensions = function() {
   var windowHeight = window.innerHeight;
   var scale = 1.0;
 
-  if (remoting.scaleToFit) {
+  if (this.getScaleToFit()) {
     var scaleFitHeight = 1.0 * windowHeight / this.plugin.desktopHeight;
     var scaleFitWidth = 1.0 * windowWidth / this.plugin.desktopWidth;
     scale = Math.min(1.0, scaleFitHeight, scaleFitWidth);
@@ -424,7 +448,7 @@ remoting.ClientSession.prototype.updateDimensions = function() {
                      parentNode.style.left + ',' +
                      parentNode.style.top + '-' +
                      this.plugin.width + 'x' + this.plugin.height + '.');
-  this.plugin.setScaleToFit(remoting.scaleToFit);
+  this.plugin.setScaleToFit(this.getScaleToFit());
 };
 
 /**

@@ -57,7 +57,7 @@ void ChromotingScriptableObject::Init() {
 
   // Plugin API version.
   // This should be incremented whenever the API interface changes.
-  AddAttribute(kApiVersionAttribute, Var(2));
+  AddAttribute(kApiVersionAttribute, Var(3));
 
   // This should be updated whenever we remove support for an older version
   // of the API.

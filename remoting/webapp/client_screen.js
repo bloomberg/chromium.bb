@@ -13,11 +13,6 @@
 var remoting = remoting || {};
 
 /**
- * @type {boolean} Whether or not the plugin should scale itself.
- */
-remoting.scaleToFit = false;
-
-/**
  * @type {remoting.ClientSession} The client session object, set once the
  *     access code has been successfully verified.
  */
@@ -97,21 +92,28 @@ remoting.cancelConnect = function() {
 };
 
 /**
- * Enable or disable scale-to-fit.
+ * Toggle the scale-to-fit feature for the current client session.
  *
- * @param {Event} event The click event. The style of the target is updated to
- *     reflect the new scaling state.
  * @return {void} Nothing.
  */
-remoting.toggleScaleToFit = function(event) {
-  var button = /** @type Element */(event.target);
-  remoting.scaleToFit = !remoting.scaleToFit;
-  if (remoting.scaleToFit) {
+remoting.toggleScaleToFit = function() {
+  remoting.setScaleToFit(!remoting.clientSession.getScaleToFit());
+};
+
+/**
+ * Enable or disable scale-to-fit for the current client session.
+ *
+ * @param {boolean} scaleToFit True to enable scale-to-fit, false otherwise.
+ * @return {void} Nothing.
+ */
+remoting.setScaleToFit = function(scaleToFit) {
+  remoting.clientSession.setScaleToFit(scaleToFit);
+  var button = document.getElementById('toggle-scaling');
+  if (remoting.clientSession.getScaleToFit()) {
     addClass(button, 'toggle-button-active');
   } else {
     removeClass(button, 'toggle-button-active');
   }
-  remoting.clientSession.updateDimensions();
 };
 
 /**
@@ -294,6 +296,7 @@ function startSession_() {
     remoting.clientSession.createPluginAndConnect(
         document.getElementById('session-mode'),
         token);
+    remoting.setScaleToFit(remoting.clientSession.getScaleToFit());
   };
   remoting.oauth2.callWithToken(createPluginAndConnect);
 }
@@ -463,6 +466,7 @@ function connectMe2MeWithAccessToken_(token) {
     remoting.clientSession.createPluginAndConnect(
         document.getElementById('session-mode'),
         token);
+    remoting.setScaleToFit(remoting.clientSession.getScaleToFit());
   } else {
     showConnectError_(remoting.Error.AUTHENTICATION_FAILED);
   }
