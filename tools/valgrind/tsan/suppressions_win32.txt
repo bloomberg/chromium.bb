@@ -107,3 +107,21 @@
   fun:ff_thread_flush
   fun:media::FFmpegVideoDecoder::Flush
 }
+{
+  bug_110514_a
+  ThreadSanitizer:Race
+  fun:memset
+  fun:_malloc_dbg
+  ...
+  fun:??2@YAPAXIABU_DebugHeapTag_t@std@@PADH@Z
+  fun:??0?$basic_streambuf@DU?$char_traits@D@std@@@std@@IAE@XZ
+}
+{
+  bug_110514_b
+  ThreadSanitizer:Race
+  fun:memset
+  fun:_malloc_dbg
+  ...
+  fun:??2@YAPAXIABU_DebugHeapTag_t@std@@PADH@Z
+  fun:?_Init@ios_base@std@@IAEXXZ
+}
