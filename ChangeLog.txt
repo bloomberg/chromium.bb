@@ -1,3 +1,25 @@
+1.2.0
+=====
+
+[1] Fixed build issue with YASM on Unix systems (the libjpeg-turbo build system
+was not adding the current directory to the assembler include path, so YASM
+was not able to find jsimdcfg.inc.)
+
+[2] Fixed out-of-bounds read in SSE2 SIMD code that occurred when decompressing
+a JPEG image to a bitmap buffer whose size was not a multiple of 16 bytes.
+This was more of an annoyance than an actual bug, since it did not cause any
+actual run-time problems, but the issue showed up when running libjpeg-turbo in
+valgrind.  See http://crbug.com/72399 for more information.
+
+[3] Added a compile-time macro (LIBJPEG_TURBO_VERSION) that can be used to
+check the version of libjpeg-turbo against which an application was compiled.
+
+[4] Added new RGBA/BGRA/ABGR/ARGB colorspace extension constants (libjpeg API)
+and pixel formats (TurboJPEG API), which allow applications to specify that,
+when decompressing to a 4-component RGB buffer, the unused byte should be set
+to 0xFF so that it can be interpreted as an opaque alpha channel.
+
+
 1.1.90 (1.2 beta1)
 ==================
 

@@ -7,10 +7,10 @@
 #endif /* JPEG_LIB_VERSION */
 
 /* Support arithmetic encoding */
-#define C_ARITH_CODING_SUPPORTED 1
+/* #undef C_ARITH_CODING_SUPPORTED */
 
 /* Support arithmetic decoding */
-#define D_ARITH_CODING_SUPPORTED 1
+/* #undef D_ARITH_CODING_SUPPORTED */
 
 /* Define if your compiler supports prototypes */
 #ifndef HAVE_PROTOTYPES

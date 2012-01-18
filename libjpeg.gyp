@@ -35,10 +35,8 @@
             'WITH_SIMD', 'MOTION_JPEG_SUPPORTED',
           ],
           'sources': [
-            'jaricom.c',
             'jcapimin.c',
             'jcapistd.c',
-            'jcarith.c',
             'jccoefct.c',
             'jccolor.c',
             'jcdctmgr.c',
@@ -56,7 +54,6 @@
             'jcsample.c',
             'jdapimin.c',
             'jdapistd.c',
-            'jdarith.c',
             'jdatadst.c',
             'jdatasrc.c',
             'jdcoefct.c',
