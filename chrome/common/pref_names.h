@@ -611,6 +611,7 @@ extern const char kManagedAutoSelectCertificateForUrls[];
 extern const char kSignedSettingsCache[];
 extern const char kHardwareKeyboardLayout[];
 extern const char kCarrierDealPromoShown[];
+extern const char kShouldAutoEnroll[];
 #endif
 
 extern const char kClearPluginLSODataEnabled[];

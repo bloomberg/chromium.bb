@@ -1586,6 +1586,11 @@ const char kHardwareKeyboardLayout[] = "intl.hardware_keyboard";
 // notification has been shown to user.
 const char kCarrierDealPromoShown[] =
     "settings.internet.mobile.carrier_deal_promo_shown";
+
+// A boolean pref of the auto-enrollment decision. This pref only exists if the
+// auto-enrollment check has been done once and completed. It can be reset to
+// false if the user opts out of auto enrollment.
+const char kShouldAutoEnroll[] = "ShouldAutoEnroll";
 #endif
 
 // Whether there is a Flash version installed that supports clearing LSO data.

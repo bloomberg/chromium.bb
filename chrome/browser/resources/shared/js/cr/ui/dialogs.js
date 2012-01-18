@@ -103,6 +103,10 @@ cr.define('cr.ui.dialogs', function() {
     this.cancelButton_.textContent = label;
   };
 
+  BaseDialog.prototype.setInitialFocusOnCancel = function() {
+    this.initialFocusElement_ = this.cancelButton_;
+  };
+
   BaseDialog.prototype.show = function(message, onOk, onCancel, onShow) {
     this.showWithTitle(null, message, onOk, onCancel, onShow);
   }

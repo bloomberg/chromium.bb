@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,13 +9,16 @@
 #include "base/callback.h"
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/net/gaia/gaia_oauth_fetcher.h"
 #include "chrome/browser/policy/enterprise_metrics.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/net/gaia/gaia_urls.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
+#include "chrome/common/pref_names.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -98,10 +101,6 @@ void EnterpriseOAuthEnrollmentScreenHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "oauthEnrollClose",
       base::Bind(&EnterpriseOAuthEnrollmentScreenHandler::HandleClose,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
-      "oauthEnrollCancel",
-      base::Bind(&EnterpriseOAuthEnrollmentScreenHandler::HandleCancel,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "oauthEnrollCompleteLogin",
@@ -256,6 +255,27 @@ void EnterpriseOAuthEnrollmentScreenHandler::GetLocalizedStrings(
   localized_strings->SetString(
       "oauthEnrollSuccess",
       l10n_util::GetStringUTF16(IDS_ENTERPRISE_ENROLLMENT_SUCCESS));
+  localized_strings->SetString(
+      "oauthEnrollExplain",
+      l10n_util::GetStringUTF16(IDS_ENTERPRISE_ENROLLMENT_EXPLAIN));
+  localized_strings->SetString(
+      "oauthEnrollExplainLink",
+      l10n_util::GetStringUTF16(IDS_ENTERPRISE_ENROLLMENT_EXPLAIN_LINK));
+  localized_strings->SetString(
+      "oauthEnrollExplainButton",
+      l10n_util::GetStringUTF16(IDS_ENTERPRISE_ENROLLMENT_EXPLAIN_BUTTON));
+  localized_strings->SetString(
+      "oauthEnrollCancelAutoEnrollment",
+      l10n_util::GetStringUTF16(IDS_ENTERPRISE_ENROLLMENT_CANCEL_AUTO));
+  localized_strings->SetString(
+      "oauthEnrollCancelAutoEnrollmentReally",
+      l10n_util::GetStringUTF16(IDS_ENTERPRISE_ENROLLMENT_CANCEL_AUTO_REALLY));
+  localized_strings->SetString(
+      "oauthEnrollCancelAutoEnrollmentConfirm",
+      l10n_util::GetStringUTF16(IDS_ENTERPRISE_ENROLLMENT_CANCEL_AUTO_CONFIRM));
+  localized_strings->SetString(
+      "oauthEnrollCancelAutoEnrollmentGoBack",
+      l10n_util::GetStringUTF16(IDS_ENTERPRISE_ENROLLMENT_CANCEL_AUTO_GO_BACK));
 }
 
 void EnterpriseOAuthEnrollmentScreenHandler::OnGetOAuthTokenFailure(
@@ -321,19 +341,41 @@ void EnterpriseOAuthEnrollmentScreenHandler::OnBrowsingDataRemoverDone() {
 
 void EnterpriseOAuthEnrollmentScreenHandler::HandleClose(
     const base::ListValue* value) {
+  bool back_to_signin = true;
+
+  std::string reason;
+  CHECK_EQ(1U, value->GetSize());
+  CHECK(value->GetString(0, &reason));
+
+  if (reason == "cancel") {
+    DCHECK(!is_auto_enrollment_);
+    UMA_HISTOGRAM_ENUMERATION(policy::kMetricEnrollment,
+                              policy::kMetricEnrollmentCancelled,
+                              policy::kMetricEnrollmentSize);
+  } else if (reason == "autocancel") {
+    // Store the user's decision so that the sign-in screen doesn't go
+    // automatically to the enrollment screen again.
+    PrefService* local_state = g_browser_process->local_state();
+    local_state->SetBoolean(prefs::kShouldAutoEnroll, false);
+    local_state->CommitPendingWrite();
+    // TODO(joaodasilva): record UMA for this.
+  } else if (reason == "done") {
+    // If the user account used for enrollment is not whitelisted, send the user
+    // back to the login screen. In that case, clear the profile data too.
+    bool is_whitelisted = !user_.empty() && LoginUtils::IsWhitelisted(user_);
+
+    // If enrollment failed at least once, the profile was cleared and the user
+    // had to retry with another account, or even cancelled the whole thing.
+    // In that case, go back to the sign-in screen; otherwise, if this was an
+    // auto-enrollment, resume the pending signin.
+    back_to_signin = !is_auto_enrollment_ ||
+                     enrollment_failed_once_ ||
+                     !is_whitelisted;
+  } else {
+    NOTREACHED();
+  }
+
   RevokeTokens();
-
-  // If the user account used for enrollment is not whitelisted, send the user
-  // back to the login screen. In that case, clear the profile data too.
-  bool is_whitelisted = !user_.empty() && LoginUtils::IsWhitelisted(user_);
-
-  // If enrollment failed at least once, the profile was cleared and the user
-  // had to retry with another account, or even cancelled the whole thing.
-  // In that case, go back to the sign-in screen; otherwise, if this was an
-  // auto-enrollment, resume the pending signin.
-  bool back_to_signin = !is_auto_enrollment_ ||
-                        enrollment_failed_once_ ||
-                        !is_whitelisted;
 
   if (back_to_signin) {
     // Clean the profile before going back to signin.
@@ -347,14 +389,6 @@ void EnterpriseOAuthEnrollmentScreenHandler::HandleClose(
     // In that case, keep the profile data.
     DoClose(false);
   }
-}
-
-void EnterpriseOAuthEnrollmentScreenHandler::HandleCancel(
-    const base::ListValue* value) {
-  UMA_HISTOGRAM_ENUMERATION(policy::kMetricEnrollment,
-                            policy::kMetricEnrollmentCancelled,
-                            policy::kMetricEnrollmentSize);
-  HandleClose(value);
 }
 
 void EnterpriseOAuthEnrollmentScreenHandler::HandleCompleteLogin(

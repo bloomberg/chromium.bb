@@ -78,15 +78,12 @@ const int kBackgroundTranslate = -50;
 // network requests are made while the system is idle waiting for user input.
 const int64 kPolicyServiceInitializationDelayMilliseconds = 100;
 
-// A boolean pref of the auto-enrollment decision. This pref only exists if the
-// auto-enrollment check has been done once and completed.
-const char kShouldAutoEnroll[] = "ShouldAutoEnroll";
-
 // Returns true if an auto-enrollment decision has been made and is cached in
 // local state. If so, the decision is stored in |auto_enroll|.
 bool GetAutoEnrollmentDecision(bool* auto_enroll) {
+  PrefService* local_state = g_browser_process->local_state();
   const PrefService::Preference* pref =
-      g_browser_process->local_state()->FindPreference(kShouldAutoEnroll);
+      local_state->FindPreference(prefs::kShouldAutoEnroll);
   if (pref && !pref->IsDefaultValue())
     return pref->GetValue()->GetAsBoolean(auto_enroll);
   else
@@ -174,7 +171,7 @@ BaseLoginDisplayHost::~BaseLoginDisplayHost() {
 
 // static
 void BaseLoginDisplayHost::RegisterPrefs(PrefService* local_state) {
-  local_state->RegisterBooleanPref(kShouldAutoEnroll,
+  local_state->RegisterBooleanPref(prefs::kShouldAutoEnroll,
                                    false,
                                    PrefService::UNSYNCABLE_PREF);
 }
@@ -445,7 +442,7 @@ void BaseLoginDisplayHost::OnAutoEnrollmentClientDone() {
   // Auto-update might be in progress and might force a reboot. Cache the
   // decision in local_state.
   PrefService* local_state = g_browser_process->local_state();
-  local_state->SetBoolean(kShouldAutoEnroll, auto_enroll);
+  local_state->SetBoolean(prefs::kShouldAutoEnroll, auto_enroll);
   local_state->CommitPendingWrite();
 
   if (auto_enroll)

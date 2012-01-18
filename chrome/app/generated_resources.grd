@@ -14606,6 +14606,33 @@ Battery full
       <message name="IDS_ENTERPRISE_ENROLLMENT_RESUMING_LOGIN" desc="Status message to show after enterprise enrollment is complete and the first user login is prepared.">
         Preparing for first enterprise login...
       </message>
+      <message name="IDS_ENTERPRISE_ENROLLMENT_EXPLAIN" desc="Explanatory text describing what enterprise enrollment is and guiding the user to sign in with an account from the enterprise domain.">
+        Welcome to your managed Chromebook!
+
+        To complete the setup of this Chromebook, you must sign in with a username given to you by your organization.
+
+        Contact your system administrator for more information.
+
+        If this device does not belong to your organization, and is your personal device, you can use the link below to go back to the sign in screen and cancel enrollment of the device.
+      </message>
+      <message name="IDS_ENTERPRISE_ENROLLMENT_EXPLAIN_LINK" desc="Text on the link to the screen that explain what enterprise enrollment is.">
+        Learn more about Enterprise Enrollment
+      </message>
+      <message name="IDS_ENTERPRISE_ENROLLMENT_EXPLAIN_BUTTON" desc="Text on the button that closes the explanatory dialog and sends to user back to the sign in screen.">
+        Sign in now
+      </message>
+      <message name="IDS_ENTERPRISE_ENROLLMENT_CANCEL_AUTO" desc="Text on the link that cancels and opts out of auto enrollment.">
+        Cancel enterprise enrollment on this device.
+      </message>
+      <message name="IDS_ENTERPRISE_ENROLLMENT_CANCEL_AUTO_REALLY" desc="Message asking the user to confirm if he really wants to cancel auto enrollment.">
+        Please confirm that this is not an enterprise device. Enterprise enrollment will be cancelled.
+      </message>
+      <message name="IDS_ENTERPRISE_ENROLLMENT_CANCEL_AUTO_CONFIRM" desc="Text on the button that confirms opting out of auto enrollment.">
+        Cancel enterprise enrollment
+      </message>
+      <message name="IDS_ENTERPRISE_ENROLLMENT_CANCEL_AUTO_GO_BACK" desc="Text on the button that goes back to enrollment from the confirmation dialog.">
+        Back
+      </message>
     </if>
 
     <!-- Fullscreen Strings -->
