@@ -10,6 +10,7 @@
 
 namespace switches {
 
+extern const char kCompileShaderAlwaysSucceeds[];
 extern const char kEnableGPUDebugging[];
 
 }  // namespace switches

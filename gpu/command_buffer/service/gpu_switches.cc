@@ -7,6 +7,9 @@
 namespace switches {
 
 // Turn on Calling GL Error after every command.
+const char kCompileShaderAlwaysSucceeds[]   = "compile-shader-always-succeeds";
+
+// Turn on Calling GL Error after every command.
 const char kEnableGPUDebugging[]            = "enable-gpu-debugging";
 
 }  // namespace switches

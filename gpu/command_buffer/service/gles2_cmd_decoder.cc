@@ -1498,6 +1498,8 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   bool force_webgl_glsl_validation_;
   bool derivatives_explicitly_enabled_;
 
+  bool compile_shader_always_succeeds_;
+
 #if defined(OS_MACOSX)
   typedef std::map<GLuint, CFTypeRef> TextureToIOSurfaceMap;
   TextureToIOSurfaceMap texture_to_io_surface_map_;
@@ -1890,7 +1892,8 @@ GLES2DecoderImpl::GLES2DecoderImpl(ContextGroup* group)
       needs_mac_nvidia_driver_workaround_(false),
       needs_glsl_built_in_function_emulation_(false),
       force_webgl_glsl_validation_(false),
-      derivatives_explicitly_enabled_(false) {
+      derivatives_explicitly_enabled_(false),
+      compile_shader_always_succeeds_(false) {
   DCHECK(group);
 
   attrib_0_value_.v[0] = 0.0f;
@@ -1933,6 +1936,9 @@ bool GLES2DecoderImpl::Initialize(
       switches::kEnableGPUDebugging)) {
     set_debug(true);
   }
+
+  compile_shader_always_succeeds_ = CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kCompileShaderAlwaysSucceeds);
 
   // Take ownership of the GLSurface. TODO(apatrick): once the parent / child
   // context is retired, the decoder should not take an initial surface as
@@ -5305,7 +5311,7 @@ void GLES2DecoderImpl::DoGetShaderiv(
       *params = info->source() ? info->source()->size() + 1 : 0;
       return;
     case GL_COMPILE_STATUS:
-      *params = info->IsValid();
+      *params = compile_shader_always_succeeds_ ? true : info->IsValid();
       return;
     case GL_INFO_LOG_LENGTH:
       *params = info->log_info() ? info->log_info()->size() + 1 : 0;
