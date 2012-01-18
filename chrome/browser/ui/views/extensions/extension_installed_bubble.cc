@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -114,9 +114,7 @@ class InstalledBubbleContent : public views::View,
     string16 extension_name = UTF8ToUTF16(extension->name());
     base::i18n::AdjustStringForLocaleDirection(&extension_name);
     heading_ = new views::Label(l10n_util::GetStringFUTF16(
-        IDS_EXTENSION_INSTALLED_HEADING,
-        extension_name,
-        l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME)));
+        IDS_EXTENSION_INSTALLED_HEADING, extension_name));
     heading_->SetFont(rb.GetFont(ResourceBundle::MediumFont));
     heading_->SetMultiLine(true);
     heading_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -98,10 +98,8 @@ string16 ExtensionGlobalError::GenerateMessageSection(
   for (ExtensionIdSet::const_iterator iter = extensions->begin();
        iter != extensions->end(); ++iter) {
     const Extension* e = extension_service_->GetExtensionById(*iter, true);
-    message += l10n_util::GetStringFUTF16(
-        template_message_id,
-        string16(ASCIIToUTF16(e->name())),
-        l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME));
+    message += l10n_util::GetStringFUTF16(template_message_id,
+                                          string16(ASCIIToUTF16(e->name())));
   }
   return message;
 }

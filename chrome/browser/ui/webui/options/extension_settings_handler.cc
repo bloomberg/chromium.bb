@@ -545,8 +545,7 @@ void ExtensionSettingsHandler::GetLocalizedValues(
   localized_strings->SetString("extensionSettingsAllowFileAccess",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_ALLOW_FILE_ACCESS));
   localized_strings->SetString("extensionSettingsIncognitoWarning",
-      l10n_util::GetStringFUTF16(IDS_EXTENSIONS_INCOGNITO_WARNING,
-                                 l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
+      l10n_util::GetStringUTF16(IDS_EXTENSIONS_INCOGNITO_WARNING));
   localized_strings->SetString("extensionSettingsReload",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_RELOAD));
   localized_strings->SetString("extensionSettingsOptions",

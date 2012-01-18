@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -174,9 +174,7 @@ int CurrentTabId() {
         [NSMenuItem separatorItem],
         l10n_util::GetNSStringWithFixup(IDS_EXTENSIONS_OPTIONS),
         l10n_util::GetNSStringWithFixup(IDS_EXTENSIONS_DISABLE),
-        l10n_util::GetNSStringFWithFixup(
-            IDS_EXTENSIONS_UNINSTALL,
-            l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME)),
+        l10n_util::GetNSStringWithFixup(IDS_EXTENSIONS_UNINSTALL),
         l10n_util::GetNSStringWithFixup(IDS_EXTENSIONS_HIDE_BUTTON),
         [NSMenuItem separatorItem],
         l10n_util::GetNSStringWithFixup(IDS_MANAGE_EXTENSIONS),

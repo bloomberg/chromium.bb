@@ -550,6 +550,30 @@ Google Chrome is unable to recover your settings.
         </message>
       </if>
 
+      <!-- Extension/App install prompt -->
+      <message name="IDS_EXTENSION_INLINE_INSTALL_PROMPT_TITLE" desc="Titlebar of the extension or app inline installation prompt window">
+        Add to Chrome
+      </message>
+
+      <!-- Extension alerts. -->
+      <message name="IDS_EXTENSION_ALERT_ITEM_EXTERNAL" desc="A statement that an external extension has been newly installed. End users have no idea what an 'external' extension is, so we simply call them extensions.">
+The extension "<ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph>" has been added to Chrome.
+'''
+      </message>
+
+      <!-- Extension installed bubble -->
+      <message name="IDS_EXTENSION_INSTALLED_HEADING" desc="First line in the content area of the extension installed bubble. Instructs that the extension was installed.">
+        <ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph> has been added to Chrome.
+      </message>
+
+      <!-- chrome://settings/extensions page -->
+      <message name="IDS_EXTENSIONS_INCOGNITO_WARNING" desc="Warns the user that Chrome cannot prevent extensions from recording history in incognito mode. Displayed in extensions management UI after an extension is selected to be run in incognito mode.">
+        <ph name="BEGIN_BOLD">&lt;b&gt;</ph>Warning:<ph name="END_BOLD">&lt;/b&gt;</ph> Google Chrome cannot prevent extensions from recording your browsing history. To disable this extension in incognito mode, unselect this option.
+      </message>
+      <message name="IDS_EXTENSIONS_UNINSTALL" desc="The link for uninstalling extensions.">
+        Remove from Chrome
+      </message>
+
       <if expr="is_macosx">
         <message name="IDS_APP_MENU_PRODUCT_NAME" desc="The application's short name, used for the Mac's application menu, activity monitor, etc. This should be less than 16 characters. Example: Chrome, not Google Chrome.">
           Chrome

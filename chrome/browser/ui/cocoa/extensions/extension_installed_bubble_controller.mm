@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -305,8 +305,7 @@ class ExtensionLoadedNotificationObserver
   string16 extension_name = UTF8ToUTF16(extension_->name().c_str());
   base::i18n::AdjustStringForLocaleDirection(&extension_name);
   [extensionInstalledMsg_ setStringValue:l10n_util::GetNSStringF(
-      IDS_EXTENSION_INSTALLED_HEADING, extension_name,
-      l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME))];
+      IDS_EXTENSION_INSTALLED_HEADING, extension_name)];
   [GTMUILocalizerAndLayoutTweaker
       sizeToFitFixedWidthTextField:extensionInstalledMsg_];
   newWindowHeight += [extensionInstalledMsg_ frame].size.height +

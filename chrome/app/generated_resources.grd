@@ -3935,9 +3935,6 @@ Public Exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS">$3<ex>24</ex></ph> bits):
       <message name="IDS_EXTENSION_INSTALL_EXTENSION_PROMPT_TITLE" desc="Titlebar of the extension or app installation prompt window">
         Confirm New Extension
       </message>
-      <message name="IDS_EXTENSION_INLINE_INSTALL_PROMPT_TITLE" desc="Titlebar of the extension or app inline installation prompt window">
-        Add to <ph name="SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph>
-      </message>
       <message name="IDS_EXTENSION_UNINSTALL_PROMPT_TITLE" desc="Titlebar of the extension or app uninstallation prompt window">
         Confirm Removal
       </message>
@@ -3963,10 +3960,6 @@ Public Exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS">$3<ex>24</ex></ph> bits):
       <!-- Extension alerts. -->
       <message name="IDS_EXTENSION_ALERT_TITLE" desc="Titlebar of the extension notification alert">
         Confirm Changes
-      </message>
-      <message name="IDS_EXTENSION_ALERT_ITEM_EXTERNAL" desc="A statement that an external extension has been newly installed. End users have no idea what an 'external' extension is, so we simply call them extensions.">
-The extension "<ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph>" has been added to <ph name="PRODUCT_NAME_SHORT">$1<ex>Chrome</ex></ph>.
-'''
       </message>
       <message name="IDS_EXTENSION_ALERT_ITEM_BLACKLISTED" desc="A statement that an extension has been newly blacklisted. http://www.google.com/support/chrome/bin/answer.py?hl=en&amp;answer=1210215 contains the language on which we're basing the phrasing.">
 The extension "<ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph>" was automatically removed.
@@ -4192,10 +4185,6 @@ Update checks have repeatedly failed for the extension "<ph name="EXTENSION_NAME
       </message>
 
       <!-- Extension installed bubble -->
-      <message name="IDS_EXTENSION_INSTALLED_HEADING" desc="First line in the content area of the extension installed bubble. Instructs that the extension was installed.">
-        <ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph> has been added to <ph name="SHORT_PRODUCT_NAME">$2<ex>Chrome</ex></ph>.
-      </message>
-
       <message name="IDS_EXTENSION_INSTALLED_APP_INFO" desc="Text displayed inside a link when an app is installed. Clicking this link opens up the New Tab Page to show the app's icon.">
         Show me
       </message>
@@ -4284,14 +4273,8 @@ Update checks have repeatedly failed for the extension "<ph name="EXTENSION_NAME
       <message name="IDS_EXTENSIONS_VISIT_WEBSITE" desc="The link for visiting the extension's gallery page.">
         View in Web Store
       </message>
-      <message name="IDS_EXTENSIONS_INCOGNITO_WARNING" desc="Warns the user that Chrome cannot prevent extensions from recording history in incognito mode. Displayed in extensions management UI after an extension is selected to be run in incognito mode.">
-        <ph name="BEGIN_BOLD">&lt;b&gt;</ph>Warning:<ph name="END_BOLD">&lt;/b&gt;</ph> <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> cannot prevent extensions from recording your browsing history. To disable this extension in incognito mode, unselect this option.
-      </message>
       <message name="IDS_EXTENSIONS_RELOAD" desc="The link for reloading extensions.">
         Reload
-      </message>
-      <message name="IDS_EXTENSIONS_UNINSTALL" desc="The link for uninstalling extensions.">
-        Remove from <ph name="SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph>
       </message>
       <message name="IDS_EXTENSIONS_OPTIONS" desc="The button text for the options button.">
         Options

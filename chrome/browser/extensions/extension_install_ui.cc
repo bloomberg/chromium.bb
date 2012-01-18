@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -111,9 +111,6 @@ string16 ExtensionInstallUI::Prompt::GetDialogTitle(
     return l10n_util::GetStringUTF16(extension->is_app() ?
         IDS_EXTENSION_INSTALL_APP_PROMPT_TITLE :
         IDS_EXTENSION_INSTALL_EXTENSION_PROMPT_TITLE);
-  } else if (type_ == INLINE_INSTALL_PROMPT) {
-    return l10n_util::GetStringFUTF16(
-      kTitleIds[type_], l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME));
   } else {
     return l10n_util::GetStringUTF16(kTitleIds[type_]);
   }

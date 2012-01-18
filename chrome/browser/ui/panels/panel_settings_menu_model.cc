@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,8 +30,7 @@ PanelSettingsMenuModel::PanelSettingsMenuModel(Panel* panel)
   AddItem(COMMAND_CONFIGURE, l10n_util::GetStringUTF16(IDS_EXTENSIONS_OPTIONS));
   AddItem(COMMAND_DISABLE, l10n_util::GetStringUTF16(IDS_EXTENSIONS_DISABLE));
   AddItem(COMMAND_UNINSTALL,
-      l10n_util::GetStringFUTF16(IDS_EXTENSIONS_UNINSTALL,
-          l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME)));
+      l10n_util::GetStringUTF16(IDS_EXTENSIONS_UNINSTALL));
   AddSeparator();
   AddItem(COMMAND_MANAGE, l10n_util::GetStringUTF16(IDS_MANAGE_EXTENSIONS));
 }

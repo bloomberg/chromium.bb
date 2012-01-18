@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -70,8 +70,7 @@ void ExtensionContextMenuModel::InitCommonCommands() {
   AddSeparator();
   AddItemWithStringId(CONFIGURE, IDS_EXTENSIONS_OPTIONS);
   AddItemWithStringId(DISABLE, IDS_EXTENSIONS_DISABLE);
-  AddItem(UNINSTALL, l10n_util::GetStringFUTF16(IDS_EXTENSIONS_UNINSTALL,
-      l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME)));
+  AddItem(UNINSTALL, l10n_util::GetStringUTF16(IDS_EXTENSIONS_UNINSTALL));
   if (extension->browser_action())
     AddItemWithStringId(HIDE, IDS_EXTENSIONS_HIDE_BUTTON);
   AddSeparator();
