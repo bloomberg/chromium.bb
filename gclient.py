@@ -930,12 +930,6 @@ solutions = [
         # Support for --revision 123
         revision = '%s@%s' % (solutions_names[index], revision)
       sol, rev = revision.split('@', 1)
-
-      if not sol in solutions_names and sol == 'trunk':
-        print >> sys.stderr, 'Rewriting "trunk" to "src" in --revision'
-        # Fix attempt for http://crbug.com/108515
-        sol = 'src'
-
       if not sol in solutions_names:
         #raise gclient_utils.Error('%s is not a valid solution.' % sol)
         print >> sys.stderr, ('Please fix your script, having invalid '
