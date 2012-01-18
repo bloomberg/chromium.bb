@@ -16,7 +16,8 @@
  */
 
 // Include the C++ browser test class when generating *.cc files.
-GEN('#include "chrome/browser/ui/webui/net_internals/net_internals_ui_browsertest.h"');
+GEN('#include ' +
+    '"chrome/browser/ui/webui/net_internals/net_internals_ui_browsertest.h"');
 
 var NetInternalsTest = (function() {
   /**

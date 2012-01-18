@@ -20,6 +20,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_ui_message_handler.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/address_list.h"
 #include "net/base/host_cache.h"
@@ -101,59 +102,61 @@ void EnableHttpPipeliningOnIOThread(bool enable) {
 
 }  // namespace
 
-NetInternalsTest::NetInternalsTest()
-    : ALLOW_THIS_IN_INITIALIZER_LIST(message_handler_(this)),
-      test_server_started_(false) {
-}
-
-NetInternalsTest::~NetInternalsTest() {
-}
-
-void NetInternalsTest::SetUpCommandLine(CommandLine* command_line) {
-  WebUIBrowserTest::SetUpCommandLine(command_line);
-  // Needed to test the prerender view.
-  command_line->AppendSwitchASCII(switches::kPrerenderMode,
-                                  switches::kPrerenderModeSwitchValueEnabled);
-}
-
-void NetInternalsTest::SetUpOnMainThread() {
-  // Increase the memory allowed in a prerendered page above normal settings,
-  // as debug builds use more memory and often go over the usual limit.
-  Profile* profile = browser()->GetSelectedTabContentsWrapper()->profile();
-  prerender::PrerenderManager* prerender_manager =
-      prerender::PrerenderManagerFactory::GetForProfile(profile);
-  prerender_manager->mutable_config().max_bytes = 1000 * 1024 * 1024;
-}
-
-content::WebUIMessageHandler* NetInternalsTest::GetMockMessageHandler() {
-  return &message_handler_;
-}
-
-GURL NetInternalsTest::CreatePrerenderLoaderUrl(
-    const GURL& prerender_url) {
-  EXPECT_TRUE(StartTestServer());
-  std::vector<net::TestServer::StringPair> replacement_text;
-  replacement_text.push_back(
-      make_pair("REPLACE_WITH_PRERENDER_URL", prerender_url.spec()));
-  std::string replacement_path;
-  EXPECT_TRUE(net::TestServer::GetFilePathWithReplacements(
-      "files/prerender/prerender_loader.html",
-      replacement_text,
-      &replacement_path));
-  GURL url_loader = test_server()->GetURL(replacement_path);
-  return url_loader;
-}
-
-bool NetInternalsTest::StartTestServer() {
-  if (test_server_started_)
-    return true;
-  test_server_started_ = test_server()->Start();
-  return test_server_started_;
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // NetInternalsTest::MessageHandler
 ////////////////////////////////////////////////////////////////////////////////
+
+// Class to handle messages from the renderer needed by certain tests.
+class NetInternalsTest::MessageHandler : public content::WebUIMessageHandler {
+ public:
+  explicit MessageHandler(NetInternalsTest* net_internals_test);
+
+ private:
+  virtual void RegisterMessages() OVERRIDE;
+
+  // Runs NetInternalsTest.callback with the given value.
+  void RunJavascriptCallback(base::Value* value);
+
+  // Takes a string and provides the corresponding URL from the test server,
+  // which must already have been started.
+  void GetTestServerURL(const base::ListValue* list_value);
+
+  // Called on UI thread.  Adds an entry to the cache for the specified
+  // hostname by posting a task to the IO thread.  Takes the host name,
+  // ip address, net error code, and expiration time in days from now
+  // as parameters.  If the error code indicates failure, the ip address
+  // must be an empty string.
+  void AddCacheEntry(const base::ListValue* list_value);
+
+  // Opens a page in a new tab that prerenders the given URL.
+  void PrerenderPage(const base::ListValue* list_value);
+
+  // Navigates to the prerender in the background tab. This assumes that
+  // there is a "Click()" function in the background tab which will navigate
+  // there, and that the background tab exists at slot 1.
+  void NavigateToPrerender(const base::ListValue* list_value);
+
+  // Creates an incognito browser.  Once creation is complete, passes a
+  // message to the Javascript test harness.
+  void CreateIncognitoBrowser(const base::ListValue* list_value);
+
+  // Closes an incognito browser created with CreateIncognitoBrowser.
+  void CloseIncognitoBrowser(const base::ListValue* list_value);
+
+  // Takes in a boolean and enables/disabled HTTP pipelining accordingly.
+  void EnableHttpPipelining(const base::ListValue* list_value);
+
+  // Called on UI thread. Adds an entry to the list of known HTTP pipelining
+  // hosts.
+  void AddDummyHttpPipelineFeedback(const base::ListValue* list_value);
+
+  Browser* browser() { return net_internals_test_->browser(); }
+
+  NetInternalsTest* net_internals_test_;
+  Browser* incognito_browser_;
+
+  DISALLOW_COPY_AND_ASSIGN(MessageHandler);
+};
 
 NetInternalsTest::MessageHandler::MessageHandler(
     NetInternalsTest* net_internals_test)
@@ -296,4 +299,58 @@ void NetInternalsTest::MessageHandler::AddDummyHttpPipelineFeedback(
                  hostname,
                  static_cast<int>(port),
                  capability));
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// NetInternalsTest
+////////////////////////////////////////////////////////////////////////////////
+
+NetInternalsTest::NetInternalsTest()
+    : test_server_started_(false) {
+  message_handler_.reset(new MessageHandler(this));
+}
+
+NetInternalsTest::~NetInternalsTest() {
+}
+
+void NetInternalsTest::SetUpCommandLine(CommandLine* command_line) {
+  WebUIBrowserTest::SetUpCommandLine(command_line);
+  // Needed to test the prerender view.
+  command_line->AppendSwitchASCII(switches::kPrerenderMode,
+                                  switches::kPrerenderModeSwitchValueEnabled);
+}
+
+void NetInternalsTest::SetUpOnMainThread() {
+  // Increase the memory allowed in a prerendered page above normal settings,
+  // as debug builds use more memory and often go over the usual limit.
+  Profile* profile = browser()->GetSelectedTabContentsWrapper()->profile();
+  prerender::PrerenderManager* prerender_manager =
+      prerender::PrerenderManagerFactory::GetForProfile(profile);
+  prerender_manager->mutable_config().max_bytes = 1000 * 1024 * 1024;
+}
+
+content::WebUIMessageHandler* NetInternalsTest::GetMockMessageHandler() {
+  return message_handler_.get();
+}
+
+GURL NetInternalsTest::CreatePrerenderLoaderUrl(
+    const GURL& prerender_url) {
+  EXPECT_TRUE(StartTestServer());
+  std::vector<net::TestServer::StringPair> replacement_text;
+  replacement_text.push_back(
+      make_pair("REPLACE_WITH_PRERENDER_URL", prerender_url.spec()));
+  std::string replacement_path;
+  EXPECT_TRUE(net::TestServer::GetFilePathWithReplacements(
+      "files/prerender/prerender_loader.html",
+      replacement_text,
+      &replacement_path));
+  GURL url_loader = test_server()->GetURL(replacement_path);
+  return url_loader;
+}
+
+bool NetInternalsTest::StartTestServer() {
+  if (test_server_started_)
+    return true;
+  test_server_started_ = test_server()->Start();
+  return test_server_started_;
 }
