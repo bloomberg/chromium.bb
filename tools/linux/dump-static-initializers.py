@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -46,6 +46,50 @@ class Demangler(object):
     self.cppfilt.stdin.write(sym + '\n')
     return self.cppfilt.stdout.readline().strip()
 
+# Matches for example: "cert_logger.pb.cc", capturing "cert_logger".
+protobuf_filename_re = re.compile(r'(.*)\.pb\.cc$')
+def QualifyFilenameAsProto(filename):
+  """Attempt to qualify a bare |filename| with a src-relative path, assuming it
+  is a protoc-generated file.  If a single match is found, it is returned.
+  Otherwise the original filename is returned."""
+  match = protobuf_filename_re.match(filename)
+  if not match:
+    return filename
+  basename = match.groups(0)
+  gitlsfiles = subprocess.Popen(
+    ['git', 'ls-files', '--', '*/%s.proto' % basename],
+    stdout=subprocess.PIPE)
+  candidate = filename
+  for line in gitlsfiles.stdout:
+    if candidate != filename:
+      return filename # Multiple hits, can't help.
+    candidate = line.strip()
+  return candidate
+
+# Regex matching the substring of a symbol's demangled text representation most
+# likely to appear in a source file.
+# Example: "v8::internal::Builtins::InitBuiltinFunctionTable()" becomes
+# "InitBuiltinFunctionTable", since the first (optional & non-capturing) group
+# picks up any ::-qualification and the last fragment picks up a suffix that
+# starts with an opener.
+symbol_code_name_re = re.compile(r'^(?:[^(<[]*::)?([^:(<[]*).*?$')
+def QualifyFilename(filename, symbol):
+  """Given a bare filename and a symbol that occurs in it, attempt to qualify
+  it with a src-relative path.  If more than one file matches, return the
+  original filename."""
+  match = symbol_code_name_re.match(symbol)
+  if not match:
+    return filename
+  symbol = match.group(1)
+  gitgrep = subprocess.Popen(
+    ['git', 'grep', '-l', symbol, '--', '*/%s' % filename],
+    stdout=subprocess.PIPE)
+  candidate = filename
+  for line in gitgrep.stdout:
+    if candidate != filename:  # More than one candidate; return bare filename.
+      return filename
+    candidate = line.strip()
+  return candidate
 
 # Regex matching nm output for the symbols we're interested in.
 # Example line:
@@ -118,14 +162,19 @@ def main():
       static_initializers_count += 1
       continue
 
-    print '%s (initializer offset 0x%x size 0x%x)' % (filename, addr, size)
+    ref_output = ''
+    qualified_filename = QualifyFilenameAsProto(filename)
     for ref in ExtractSymbolReferences(binary, addr, addr+size):
       ref = demangler.Demangle(ref)
+      if qualified_filename == filename:
+        qualified_filename = QualifyFilename(filename, ref)
       if ref in NOTES:
-        print ' ', '%s [%s]' % (ref, NOTES[ref])
+        ref_output = ref_output + '  %s [%s]\n' % (ref, NOTES[ref])
       else:
-        print ' ', ref
-    print
+        ref_output = ref_output + '  ' + ref + '\n'
+    print '%s (initializer offset 0x%x size 0x%x)' % (qualified_filename,
+                                                      addr, size)
+    print ref_output
 
   if opts.calculate_instances:
     print static_initializers_count
