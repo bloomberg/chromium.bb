@@ -26,7 +26,6 @@ spirit arm
 spirit x86-32
 AMGmk arm
 flops arm
-lpbench arm
 CrystalMk arm
 # wrong output on ARM (a time? really?)
 stepanov_v1p2 arm
