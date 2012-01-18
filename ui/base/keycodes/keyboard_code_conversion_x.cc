@@ -289,10 +289,8 @@ KeyboardCode KeyboardCodeFromXKeysym(unsigned int keysym) {
       return VKEY_INSERT;
     case XK_Help:
       return VKEY_HELP;
-    case XK_Meta_L:
     case XK_Super_L:
       return VKEY_LWIN;
-    case XK_Meta_R:
     case XK_Super_R:
       return VKEY_RWIN;
     case XK_Menu:
@@ -588,9 +586,9 @@ int XKeysymForWindowsKeyCode(KeyboardCode keycode, bool shift) {
       return (shift ? XK_A : XK_a) + (keycode - VKEY_A);
 
     case VKEY_LWIN:
-      return XK_Meta_L;
+      return XK_Super_L;
     case VKEY_RWIN:
-      return XK_Meta_R;
+      return XK_Super_R;
 
     case VKEY_NUMLOCK:
       return XK_Num_Lock;
