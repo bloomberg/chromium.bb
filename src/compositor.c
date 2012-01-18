@@ -840,9 +840,8 @@ struct weston_frame_callback {
 };
 
 static void
-repaint(void *data, int msecs)
+repaint(struct weston_output *output, int msecs)
 {
-	struct weston_output *output = data;
 	struct weston_compositor *compositor = output->compositor;
 	struct weston_animation *animation, *next;
 	struct weston_frame_callback *cb, *cnext;
@@ -865,7 +864,11 @@ repaint(void *data, int msecs)
 static void
 idle_repaint(void *data)
 {
-	repaint(data, weston_compositor_get_time());
+	struct weston_output *output = data;
+
+	/* An idle repaint may have been cancelled by vt switching away. */
+	if (output->repaint_needed)
+		repaint(output, weston_compositor_get_time());
 }
 
 WL_EXPORT void

@@ -835,10 +835,21 @@ vt_func(struct weston_compositor *compositor, int event)
 		ec->prev_state = compositor->state;
 		compositor->state = WESTON_COMPOSITOR_SLEEPING;
 
+		/* If we have a repaint scheduled (either from a
+		 * pending pageflip or the idle handler), make sure we
+		 * cancel that so we don't try to pageflip when we're
+		 * vt switched away.  The SLEEPING state will prevent
+		 * further attemps at repainting.  When we switch
+		 * back, we schedule a repaint, which will process
+		 * pending frame callbacks. */
+
+		wl_list_for_each(output, &ec->base.output_list, link) {
+			output->repaint_needed = 0;
+			drm_output_set_cursor(output, NULL);
+		}
+
 		wl_list_for_each(input, &compositor->input_device_list, link)
 			evdev_remove_devices(input);
-		wl_list_for_each(output, &ec->base.output_list, link)
-			drm_output_set_cursor(output, NULL);
 
 		if (drmDropMaster(ec->drm.fd) < 0)
 			fprintf(stderr, "failed to drop master: %m\n");
