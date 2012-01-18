@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -113,11 +113,7 @@ TaskManagerRendererResource::TaskManagerRendererResource(
   // We cache the process and pid as when a Tab/BackgroundContents is closed the
   // process reference becomes NULL and the TaskManager still needs it.
   pid_ = base::GetProcId(process_);
-  stats_.images.size = 0;
-  stats_.cssStyleSheets.size = 0;
-  stats_.scripts.size = 0;
-  stats_.xslStyleSheets.size = 0;
-  stats_.fonts.size = 0;
+  memset(&stats_, 0, sizeof(stats_));
 }
 
 TaskManagerRendererResource::~TaskManagerRendererResource() {

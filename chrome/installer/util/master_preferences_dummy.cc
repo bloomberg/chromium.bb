@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -55,4 +55,18 @@ const MasterPreferences& MasterPreferences::ForCurrentProcess() {
   static MasterPreferences prefs(*CommandLine::ForCurrentProcess());
   return prefs;
 }
+}
+
+// The use of std::vector<GURL>() above requires us to have a destructor for
+// GURL.  GURL contains a member of type url_parse::Parsed, which declares (but
+// does not implement) an explicit destructor in its header file.  We're missing
+// the real implementation by not depending on the googleurl library.  However,
+// we don't really need it, so we just replace it here rather than building a
+// 64-bit version of the googleurl library with all its dependencies.
+namespace url_parse {
+
+Parsed::~Parsed() {
+  NOTREACHED();
+}
+
 }
