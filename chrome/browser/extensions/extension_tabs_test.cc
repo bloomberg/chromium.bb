@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -383,31 +383,24 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest,
       keys::kIncognitoModeIsDisabled));
 }
 
-#if defined(USE_AURA)
-// crbug.com/105173.
-#define MAYBE_InvalidUpdateWindowState DISABLED_InvalidUpdateWindowState
-#else
-#define MAYBE_InvalidUpdateWindowState InvalidUpdateWindowState
-#endif
-
-IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, MAYBE_InvalidUpdateWindowState) {
-  static const char kArgsMinimizedWithFocus[] =
-      "[%u, {\"state\": \"minimized\", \"focused\": true}]";
-  static const char kArgsMaximizedWithoutFocus[] =
-      "[%u, {\"state\": \"maximized\", \"focused\": false}]";
-  static const char kArgsMinimizedWithBounds[] =
-      "[%u, {\"state\": \"minimized\", \"width\": 500}]";
-  static const char kArgsMaximizedWithBounds[] =
-      "[%u, {\"state\": \"maximized\", \"width\": 500}]";
+IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, InvalidUpdateWindowState) {
   int window_id = ExtensionTabUtil::GetWindowId(browser());
 
+#if !defined(USE_AURA)
+  // Disabled for now (crbug.com/105173) because window minimization is not
+  // supported on Aura yet (crbug.com/104571).
+  static const char kArgsMinimizedWithFocus[] =
+      "[%u, {\"state\": \"minimized\", \"focused\": true}]";
   EXPECT_TRUE(MatchPattern(
       RunFunctionAndReturnError(
           new UpdateWindowFunction(),
           base::StringPrintf(kArgsMinimizedWithFocus, window_id),
           browser()),
       keys::kInvalidWindowStateError));
+#endif
 
+  static const char kArgsMaximizedWithoutFocus[] =
+      "[%u, {\"state\": \"maximized\", \"focused\": false}]";
   EXPECT_TRUE(MatchPattern(
       RunFunctionAndReturnError(
           new UpdateWindowFunction(),
@@ -415,13 +408,21 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, MAYBE_InvalidUpdateWindowState) {
           browser()),
       keys::kInvalidWindowStateError));
 
+#if !defined(USE_AURA)
+  // Disabled for now (crbug.com/105173) because window minimization is not
+  // supported on Aura yet (crbug.com/104571).
+  static const char kArgsMinimizedWithBounds[] =
+      "[%u, {\"state\": \"minimized\", \"width\": 500}]";
   EXPECT_TRUE(MatchPattern(
       RunFunctionAndReturnError(
           new UpdateWindowFunction(),
           base::StringPrintf(kArgsMinimizedWithBounds, window_id),
           browser()),
       keys::kInvalidWindowStateError));
+#endif
 
+  static const char kArgsMaximizedWithBounds[] =
+      "[%u, {\"state\": \"maximized\", \"width\": 500}]";
   EXPECT_TRUE(MatchPattern(
       RunFunctionAndReturnError(
           new UpdateWindowFunction(),
