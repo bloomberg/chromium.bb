@@ -4779,6 +4779,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_WEBGL_DESCRIPTION" desc="Description of the 'WebGL' lab.">
         Enables canvas elements to use 3D graphics via the WebGL API.
       </message>
+      <message name="IDS_FLAGS_DISABLE_PRINT_PREVIEW_NAME" desc="Name of the 'Disable Print Preview' lab.">
+        Disable Print Preview
+      </message>
+      <message name="IDS_FLAGS_DISABLE_PRINT_PREVIEW_DESCRIPTION" desc="Description of the 'Disable Print Preview' lab.">
+        Disables an in-tab preview of a print operation and use the system print dialog instead. This lab will be removed from this page in the next version.
+      </message>
       <message name="IDS_FLAGS_PRINT_PREVIEW_NAME" desc="Name of the 'Print Preview' lab.">
         Print Preview
       </message>

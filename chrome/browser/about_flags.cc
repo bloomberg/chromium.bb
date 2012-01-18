@@ -219,12 +219,18 @@ const Experiment kExperiments[] = {
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kDisableExperimentalWebGL)
   },
-  // Exposed on all platforms until there is a workaround for easy access to
-  // the native print dialog for users that need it. Once that's done, revert
-  // back to:
-  // Only expose this for Chromium builds where users may not have the PDF
-  // plugin. Do not give Google Chrome users the option to disable it here.
-  // Also expose it for Chrome OS where print preview is still experimental.
+
+#if defined(GOOGLE_CHROME_BUILD)
+  // TODO(thestig) Remove this for bug 107600.
+  {
+    "disable-print-preview",  // FLAGS:RECORD_UMA
+    IDS_FLAGS_DISABLE_PRINT_PREVIEW_NAME,
+    IDS_FLAGS_DISABLE_PRINT_PREVIEW_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kDisablePrintPreview)
+  },
+#else
+  // For Chromium builds where users may not have the PDF plugin.
   {
     "print-preview",  // FLAGS:RECORD_UMA
     IDS_FLAGS_PRINT_PREVIEW_NAME,
@@ -232,6 +238,8 @@ const Experiment kExperiments[] = {
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kEnablePrintPreview)
   },
+#endif
+
   // TODO(dspringer): When NaCl is on by default, remove this flag entry.
   {
     "enable-nacl",  // FLAGS:RECORD_UMA
