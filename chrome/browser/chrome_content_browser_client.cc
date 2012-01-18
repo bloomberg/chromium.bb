@@ -1324,6 +1324,11 @@ WebPreferences ChromeContentBrowserClient::GetWebkitPrefs(RenderViewHost* rvh) {
       web_prefs.accelerated_2d_canvas_enabled = false;
     if (blacklist_flags & GpuFeatureFlags::kGpuFeatureMultisampling)
       web_prefs.gl_multisampling_enabled = false;
+
+    // Accelerated video is slower than regular when using a software 3d
+    // rasterizer.
+    if (gpu_data_manager->software_rendering())
+      web_prefs.accelerated_video_enabled = false;
   }
 
   web_prefs.uses_universal_detector =
