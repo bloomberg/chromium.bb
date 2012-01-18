@@ -578,10 +578,6 @@ int32_t NaClSysCond_Timed_Wait_Abs(struct NaClAppThread     *natp,
                                           ts);
 }
 
-int32_t NaClSysImc_SocketPair(struct NaClAppThread  *natp,
-                              int32_t               *d_out) {
-  return NaClCommonSysImc_SocketPair(natp, d_out);
-}
 int32_t NaClSysSem_Create(struct NaClAppThread *natp,
                           int32_t              init_value) {
   return NaClCommonSysSem_Create(natp, init_value);

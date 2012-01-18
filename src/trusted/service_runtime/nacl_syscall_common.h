@@ -241,7 +241,7 @@ int32_t NaClCommonSysCond_Timed_Wait_Abs(struct NaClAppThread     *natp,
 int32_t NaClCommonDescSocketPair(struct NaClDesc      **pair);
 
 int32_t NaClCommonSysImc_SocketPair(struct NaClAppThread *natp,
-                                    int32_t volatile     *d_out);
+                                    uint32_t             descs_out);
 /* Semaphores */
 int32_t NaClCommonSysSem_Create(struct NaClAppThread *natp,
                                 int32_t              init_value);

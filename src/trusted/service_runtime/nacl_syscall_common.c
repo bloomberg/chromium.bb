@@ -2162,38 +2162,38 @@ cleanup:
 }
 
 int32_t NaClCommonSysImc_SocketPair(struct NaClAppThread *natp,
-                                    int32_t volatile     *d_out) {
+                                    uint32_t             descs_out) {
   uintptr_t               sysaddr;
+  volatile int32_t        *descs_out_trusted;
   struct NaClDesc         *pair[2];
   int32_t                 retval;
 
   NaClLog(3,
           ("Entered NaClCommonSysImc_SocketPair(0x%08"NACL_PRIxPTR
-           " 0x%08"NACL_PRIxPTR")\n"),
-          (uintptr_t) natp, (uintptr_t) d_out);
+           " 0x%08"NACL_PRIx32")\n"),
+          (uintptr_t) natp, descs_out);
 
   NaClSysCommonThreadSyscallEnter(natp);
 
-  sysaddr = NaClUserToSysAddrRange(natp->nap,
-                                   (uintptr_t) d_out,
-                                   2 * sizeof *d_out);
+  sysaddr = NaClUserToSysAddrRange(natp->nap, descs_out,
+                                   2 * sizeof(*descs_out_trusted));
   if (kNaClBadAddress == sysaddr) {
     NaClLog(1,
             ("NaClCommonSysImc_Socket_Pair: bad output descriptor array "
-             " (0x%08"NACL_PRIxPTR")\n"),
-            (uintptr_t) d_out);
+             " (0x%08"NACL_PRIx32")\n"),
+            descs_out);
     retval = -NACL_ABI_EFAULT;
     goto cleanup;
   }
+  descs_out_trusted = (volatile int32_t *) sysaddr;
 
-  d_out = (int32_t volatile *) sysaddr;
   retval = NaClCommonDescSocketPair(pair);
   if (0 != retval) {
     goto cleanup;
   }
 
-  d_out[0] = NaClSetAvail(natp->nap, pair[0]);
-  d_out[1] = NaClSetAvail(natp->nap, pair[1]);
+  descs_out_trusted[0] = NaClSetAvail(natp->nap, pair[0]);
+  descs_out_trusted[1] = NaClSetAvail(natp->nap, pair[1]);
 
   retval = 0;
 cleanup:
