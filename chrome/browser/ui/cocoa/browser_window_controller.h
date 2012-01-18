@@ -263,9 +263,6 @@ class WebContents;
 // The user changed the theme.
 - (void)userChangedTheme;
 
-// Called when the user picks a menu or toolbar item when this window is key.
-- (void)commandDispatch:(id)sender;
-
 // Executes the command in the context of the current browser.
 // |command| is an integer value containing one of the constants defined in the
 // "chrome/app/chrome_command_ids.h" file.

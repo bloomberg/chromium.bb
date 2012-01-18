@@ -972,8 +972,8 @@ enum {
 }
 
 // Called to validate menu and toolbar items when this window is key. All the
-// items we care about have been set with the -performClose:, -commandDispatch:
-// or -commandDispatchUsingKeyModifiers: actions and a target of FirstResponder
+// items we care about have been set with the |-commandDispatch:| or
+// |-commandDispatchUsingKeyModifiers:| actions and a target of FirstResponder
 // in IB. If it's not one of those, let it continue up the responder chain to be
 // handled elsewhere. We pull out the tag as the cross-platform constant to
 // differentiate and dispatch the various commands.
@@ -984,8 +984,7 @@ enum {
 - (BOOL)validateUserInterfaceItem:(id<NSValidatedUserInterfaceItem>)item {
   SEL action = [item action];
   BOOL enable = NO;
-  if (action == @selector(performClose:) ||
-      action == @selector(commandDispatch:) ||
+  if (action == @selector(commandDispatch:) ||
       action == @selector(commandDispatchUsingKeyModifiers:)) {
     NSInteger tag = [item tag];
     if (browser_->command_updater()->SupportsCommand(tag)) {

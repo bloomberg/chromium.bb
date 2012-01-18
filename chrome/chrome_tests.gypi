@@ -1248,8 +1248,7 @@
       'sources': [
         'app/breakpad_mac_stubs.mm',
         'app/chrome_dll.rc',
-        # All unittests in app, browser, common, renderer and service.
-        'app/nibs/main_menu_unittest.mm',
+        # All unittests in browser, common, renderer and service.
         'browser/about_flags_unittest.cc',
         'browser/accessibility/browser_accessibility_mac_unittest.mm',
         'browser/app_controller_mac_unittest.mm',

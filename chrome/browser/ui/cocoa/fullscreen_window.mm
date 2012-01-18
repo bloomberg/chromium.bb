@@ -4,7 +4,6 @@
 
 #import "chrome/browser/ui/cocoa/fullscreen_window.h"
 
-#import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
 
 @implementation FullscreenWindow
@@ -73,17 +72,10 @@
 // We need our own version, since the default one wants to flash the close
 // button (and possibly other things), which results in nothing happening.
 - (void)performClose:(id)sender {
-  id delegate = [self delegate];
-
-  // Route -performClose: to -commandDispatch: on the delegate when coming from
-  // the "close tab" menu item. See comment in chrome_browser_window.mm.
-  if ([self performCloseShouldRouteToCommandDispatch:sender]) {
-    [delegate commandDispatch:sender];
-    return;
-  }
+  BOOL shouldClose = YES;
 
   // If applicable, check if this window should close.
-  BOOL shouldClose = YES;
+  id delegate = [self delegate];
   if ([delegate respondsToSelector:@selector(windowShouldClose:)])
     shouldClose = [delegate windowShouldClose:self];
 

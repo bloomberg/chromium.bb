@@ -63,13 +63,13 @@ class Profile;
 
   // Outlet for the tabpose menu item so we can hide it.
   IBOutlet NSMenuItem* tabposeMenuItem_;
+
+  // Indicates wheter an NSPopover is currently being shown.
+  BOOL hasPopover_;
 }
 
 @property(readonly, nonatomic) BOOL startupComplete;
 @property(readonly, nonatomic) Profile* lastProfile;
-
-// Registers for various event handlers and performs initialization.
-- (void)registerEventHandlersAndInitialize;
 
 - (void)didEndMainMessageLoop;
 

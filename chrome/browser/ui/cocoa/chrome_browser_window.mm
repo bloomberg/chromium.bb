@@ -5,8 +5,6 @@
 #import "chrome/browser/ui/cocoa/chrome_browser_window.h"
 
 #include "base/logging.h"
-#include "chrome/app/chrome_command_ids.h"
-#import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
 #include "ui/base/theme_provider.h"
 
@@ -49,27 +47,6 @@
   if (![delegate respondsToSelector:@selector(themePatternPhase)])
     return NSMakePoint(0, 0);
   return [delegate themePatternPhase];
-}
-
-- (BOOL)performCloseShouldRouteToCommandDispatch:(id)sender {
-  return [[self delegate] respondsToSelector:@selector(commandDispatch:)] &&
-         [sender isKindOfClass:[NSMenuItem class]] &&
-         [sender tag] == IDC_CLOSE_TAB;
-}
-
-- (void)performClose:(id)sender {
-  // Route -performClose: to -commandDispatch: on the delegate when coming from
-  // the "close tab" menu item. This is done here, rather than simply connecting
-  // the menu item to -commandDispatch: in IB because certain parts of AppKit,
-  // such as the Lion dictionary pop up, expect Cmd-W to send -performClose:.
-  // See http://crbug.com/104931 for details.
-  if ([self performCloseShouldRouteToCommandDispatch:sender]) {
-    id delegate = [self delegate];
-    [delegate commandDispatch:sender];
-    return;
-  }
-
-  [super performClose:sender];
 }
 
 @end

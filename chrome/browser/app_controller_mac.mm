@@ -89,6 +89,13 @@ using content::UserMetricsAction;
 
 namespace {
 
+// Declare notification names from the 10.7 SDK.
+#if !defined(MAC_OS_X_VERSION_10_7) || \
+    MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_7
+NSString* NSPopoverDidShowNotification = @"NSPopoverDidShowNotification";
+NSString* NSPopoverDidCloseNotification = @"NSPopoverDidCloseNotification";
+#endif
+
 // True while AppController is calling Browser::OpenEmptyWindow(). We need a
 // global flag here, analogue to BrowserInit::InProcessStartup() because
 // otherwise the SessionService will try to restore sessions when we make a new
@@ -192,13 +199,6 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
 // the profile is loaded or any preferences have been registered). Defer any
 // user-data initialization until -applicationDidFinishLaunching:.
 - (void)awakeFromNib {
-}
-
-// This method is called very early in application startup (ie, before
-// the profile is loaded or any preferences have been registered), just
-// after -awakeFromNib. This is separate from -awakeFromNib: so that
-// test code can load nibs without these side effects.
-- (void)registerEventHandlersAndInitialize {
   // We need to register the handlers early to catch events fired on launch.
   NSAppleEventManager* em = [NSAppleEventManager sharedAppleEventManager];
   [em setEventHandler:self
@@ -249,6 +249,19 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
              name:NSWindowDidResignMainNotification
            object:nil];
 
+  if (base::mac::IsOSLionOrLater()) {
+    [notificationCenter
+        addObserver:self
+           selector:@selector(popoverDidShow:)
+               name:NSPopoverDidShowNotification
+             object:nil];
+    [notificationCenter
+        addObserver:self
+           selector:@selector(popoverDidClose:)
+               name:NSPopoverDidCloseNotification
+             object:nil];
+  }
+
   // Set up the command updater for when there are no windows open
   [self initMenuState];
 
@@ -269,12 +282,6 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
   [em removeEventHandlerForEventClass:'WWW!'
                            andEventID:'OURL'];
   [[NSNotificationCenter defaultCenter] removeObserver:self];
-}
-
-- (void)dealloc {
-  if ([NSApp delegate] == self)
-    [NSApp setDelegate:nil];
-  [super dealloc];
 }
 
 // (NSApplicationDelegate protocol) This is the Apple-approved place to override
@@ -377,15 +384,16 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
 // If the window has a tab controller, make "close window" be cmd-shift-w,
 // otherwise leave it as the normal cmd-w. Capitalization of the key equivalent
 // affects whether the shift modifer is used.
-- (void)adjustCloseWindowMenuItemKeyEquivalent:(BOOL)hasTabs {
-  [closeWindowMenuItem_ setKeyEquivalent:(hasTabs ? @"W" : @"w")];
+- (void)adjustCloseWindowMenuItemKeyEquivalent:(BOOL)enableCloseTabShortcut {
+  [closeWindowMenuItem_ setKeyEquivalent:(enableCloseTabShortcut ? @"W" :
+                                                                   @"w")];
   [closeWindowMenuItem_ setKeyEquivalentModifierMask:NSCommandKeyMask];
 }
 
 // If the window has a tab controller, make "close tab" take over cmd-w,
 // otherwise it shouldn't have any key-equivalent because it should be disabled.
-- (void)adjustCloseTabMenuItemKeyEquivalent:(BOOL)hasTabs {
-  if (hasTabs) {
+- (void)adjustCloseTabMenuItemKeyEquivalent:(BOOL)enableCloseTabShortcut {
+  if (enableCloseTabShortcut) {
     [closeTabMenuItem_ setKeyEquivalent:@"w"];
     [closeTabMenuItem_ setKeyEquivalentModifierMask:NSCommandKeyMask];
   } else {
@@ -423,8 +431,9 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
 
   BOOL hasTabs =
       [[window windowController] isKindOfClass:[TabWindowController class]];
-  [self adjustCloseWindowMenuItemKeyEquivalent:hasTabs];
-  [self adjustCloseTabMenuItemKeyEquivalent:hasTabs];
+  BOOL enableCloseTabShortcut = hasTabs && !hasPopover_;
+  [self adjustCloseWindowMenuItemKeyEquivalent:enableCloseTabShortcut];
+  [self adjustCloseTabMenuItemKeyEquivalent:enableCloseTabShortcut];
 }
 
 // Fix up the "close tab/close window" command-key equivalents. We do this
@@ -485,6 +494,18 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
     [self windowChangedToProfile:
         g_browser_process->profile_manager()->GetLastUsedProfile()];
   }
+}
+
+// Called on Lion and later when a popover (e.g. dictionary) is shown.
+- (void)popoverDidShow:(NSNotification*)notify {
+  hasPopover_ = YES;
+  [self fixCloseMenuItemKeyEquivalents];
+}
+
+// Called on Lion and later when a popover (e.g. dictionary) is closed.
+- (void)popoverDidClose:(NSNotification*)notify {
+  hasPopover_ = NO;
+  [self fixCloseMenuItemKeyEquivalents];
 }
 
 // Called when the user has changed browser windows, meaning the backing profile
@@ -1109,7 +1130,7 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
 // process, gets the required data and launches Print dialog.
 - (void)submitCloudPrintJob:(NSAppleEventDescriptor*)event {
   // Pull parameter list out of Apple Event.
-  NSAppleEventDescriptor *paramList =
+  NSAppleEventDescriptor* paramList =
       [event paramDescriptorForKeyword:cloud_print::kAECloudPrintClass];
 
   if (paramList != nil) {
@@ -1282,7 +1303,7 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
   return bookmarkMenuBridge_.get();
 }
 
-- (void)applicationDidChangeScreenParameters:(NSNotification *)notification {
+- (void)applicationDidChangeScreenParameters:(NSNotification*)notification {
   // During this callback the working area is not always already updated. Defer.
   [self performSelector:@selector(delayedPanelManagerScreenParametersUpdate)
              withObject:nil

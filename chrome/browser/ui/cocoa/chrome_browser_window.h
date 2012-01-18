@@ -22,11 +22,6 @@
 - (void)underlaySurfaceAdded;
 - (void)underlaySurfaceRemoved;
 
-
-// Indicates whether -performClose: with the given |sender| should be routed
-// to -commandDispatch: on the delegate.
-- (BOOL)performCloseShouldRouteToCommandDispatch:(id)sender;
-
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_CHROME_BROWSER_WINDOW_H_
