@@ -8,7 +8,6 @@
 #include "base/file_util.h"
 #include "base/message_loop_proxy.h"
 #include "googleurl/src/gurl.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebFileSystem.h"
 #include "webkit/fileapi/file_system_callback_dispatcher.h"
 #include "webkit/fileapi/file_system_file_util.h"
 #include "webkit/fileapi/file_system_operation_interface.h"
@@ -196,10 +195,3 @@ FileSystemOperationInterface* FileSystemContext::CreateFileSystemOperation(
 }
 
 }  // namespace fileapi
-
-COMPILE_ASSERT(int(WebKit::WebFileSystem::TypeTemporary) == \
-               int(fileapi::kFileSystemTypeTemporary), mismatching_enums);
-COMPILE_ASSERT(int(WebKit::WebFileSystem::TypePersistent) == \
-               int(fileapi::kFileSystemTypePersistent), mismatching_enums);
-COMPILE_ASSERT(int(WebKit::WebFileSystem::TypeExternal) == \
-               int(fileapi::kFileSystemTypeExternal), mismatching_enums);
