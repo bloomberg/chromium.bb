@@ -4075,7 +4075,7 @@ Update checks have repeatedly failed for the extension "<ph name="EXTENSION_NAME
         Pack Extension Warning
       </message>
       <message name="IDS_EXTENSION_CRX_EXISTS" desc="Warning displayed in pack dialog when the crx file already exists.">
-        There is already a CRX file present with this name.  
+        There is already a CRX file present with this name.
       </message>
       <message name="IDS_EXTENSION_PROCEED_ANYWAY" desc="Button to continue with operation in extension packing">
         Proceed anyway
@@ -4783,7 +4783,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Disable Print Preview
       </message>
       <message name="IDS_FLAGS_DISABLE_PRINT_PREVIEW_DESCRIPTION" desc="Description of the 'Disable Print Preview' lab.">
-        Disables an in-tab preview of a print operation and use the system print dialog instead. This lab will be removed from this page in the next version.
+        Disables an in-tab preview of a print operation and use the system print dialog instead. This flag will be removed from this page in the next version.
       </message>
       <message name="IDS_FLAGS_PRINT_PREVIEW_NAME" desc="Name of the 'Print Preview' lab.">
         Print Preview
