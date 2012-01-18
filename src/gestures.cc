@@ -244,3 +244,7 @@ void GestureInterpreter::SetPropProvider(GesturesPropProvider* pp,
                                          void* data) {
   prop_reg_->SetPropProvider(pp, data);
 }
+
+const GestureMove kGestureMove = { 0, 0 };
+const GestureScroll kGestureScroll = { 0, 0 };
+const GestureButtonsChange kGestureButtonsChange = { 0, 0 };
