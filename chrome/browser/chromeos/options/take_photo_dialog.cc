@@ -65,7 +65,8 @@ bool TakePhotoDialog::Accept() {
 }
 
 ui::ModalType TakePhotoDialog::GetModalType() const {
-  return ui::MODAL_TYPE_WINDOW;
+  // TODO(flackr): Use MODAL_TYPE_WINDOW when launched from the settings page.
+  return ui::MODAL_TYPE_SYSTEM;
 }
 
 views::View* TakePhotoDialog::GetContentsView() {
