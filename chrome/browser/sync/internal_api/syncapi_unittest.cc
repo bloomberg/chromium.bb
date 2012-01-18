@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -44,6 +44,7 @@
 #include "chrome/browser/sync/notifier/sync_notifier.h"
 #include "chrome/browser/sync/notifier/sync_notifier_observer.h"
 #include "chrome/browser/sync/protocol/bookmark_specifics.pb.h"
+#include "chrome/browser/sync/protocol/encryption.pb.h"
 #include "chrome/browser/sync/protocol/extension_specifics.pb.h"
 #include "chrome/browser/sync/protocol/password_specifics.pb.h"
 #include "chrome/browser/sync/protocol/proto_value_conversions.h"
@@ -663,8 +664,9 @@ class SyncManagerObserverMock : public SyncManager::Observer {
   MOCK_METHOD2(OnInitializationComplete,
                void(const WeakHandle<JsBackend>&, bool));  // NOLINT
   MOCK_METHOD1(OnAuthError, void(const GoogleServiceAuthError&));  // NOLINT
-  MOCK_METHOD1(OnPassphraseRequired,
-               void(sync_api::PassphraseRequiredReason));  // NOLINT
+  MOCK_METHOD2(OnPassphraseRequired,
+               void(sync_api::PassphraseRequiredReason,
+                    const sync_pb::EncryptedData&));  // NOLINT
   MOCK_METHOD1(OnPassphraseAccepted, void(const std::string&));  // NOLINT
   MOCK_METHOD0(OnStopSyncingPermanently, void());  // NOLINT
   MOCK_METHOD1(OnUpdatedToken, void(const std::string&));  // NOLINT
@@ -674,7 +676,7 @@ class SyncManagerObserverMock : public SyncManager::Observer {
                void(ModelTypeSet, bool));  // NOLINT
   MOCK_METHOD0(OnEncryptionComplete, void());  // NOLINT
   MOCK_METHOD1(OnActionableError,
-                 void(const browser_sync::SyncProtocolError&));  // NOLINT
+               void(const browser_sync::SyncProtocolError&));  // NOLINT
 };
 
 class SyncNotifierMock : public sync_notifier::SyncNotifier {

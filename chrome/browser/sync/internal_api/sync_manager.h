@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,6 +35,10 @@ struct SyncSessionSnapshot;
 namespace sync_notifier {
 class SyncNotifier;
 }  // namespace sync_notifier
+
+namespace sync_pb {
+class EncryptedData;
+}  // namespace sync_pb
 
 namespace sync_api {
 
@@ -277,7 +281,12 @@ class SyncManager {
     //   already been encrypted, |reason| will be REASON_DECRYPTION.
     // - If the passphrase is required because decryption failed, and a new
     //   passphrase is required, |reason| will be REASON_SET_PASSPHRASE_FAILED.
-    virtual void OnPassphraseRequired(PassphraseRequiredReason reason) = 0;
+    //
+    // |pending_keys| is a copy of the cryptographer's pending keys, that may be
+    // cached by the frontend for subsequent use by the UI.
+    virtual void OnPassphraseRequired(
+        PassphraseRequiredReason reason,
+        const sync_pb::EncryptedData& pending_keys) = 0;
 
     // Called when the passphrase provided by the user has been accepted and is
     // now used to encrypt sync data.  |bootstrap_token| is an opaque base64

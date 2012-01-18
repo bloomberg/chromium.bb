@@ -11,6 +11,7 @@
 #include "chrome/browser/sync/internal_api/user_share.h"
 #include "chrome/browser/sync/js/js_reply_handler.h"
 #include "chrome/browser/sync/profile_sync_components_factory.h"
+#include "chrome/browser/sync/protocol/encryption.pb.h"
 #include "chrome/browser/sync/sessions/session_state.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/syncable.h"
@@ -199,7 +200,7 @@ void TestProfileSyncService::OnBackendInitialized(
 
   ProfileSyncService::OnBackendInitialized(backend, success);
   if (success && send_passphrase_required)
-    OnPassphraseRequired(sync_api::REASON_DECRYPTION);
+    OnPassphraseRequired(sync_api::REASON_DECRYPTION, sync_pb::EncryptedData());
 
   // TODO(akalin): Figure out a better way to do this.
   if (synchronous_backend_initialization_) {

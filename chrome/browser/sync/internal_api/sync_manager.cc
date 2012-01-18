@@ -42,6 +42,7 @@
 #include "chrome/browser/sync/js/js_sync_manager_observer.h"
 #include "chrome/browser/sync/notifier/sync_notifier.h"
 #include "chrome/browser/sync/notifier/sync_notifier_observer.h"
+#include "chrome/browser/sync/protocol/encryption.pb.h"
 #include "chrome/browser/sync/protocol/proto_value_conversions.h"
 #include "chrome/browser/sync/protocol/sync.pb.h"
 #include "chrome/browser/sync/syncable/directory_change_delegate.h"
@@ -977,8 +978,12 @@ void SyncManager::SyncInternal::UpdateCryptographerAndNigoriCallback(
       sync_pb::NigoriSpecifics nigori(node.GetNigoriSpecifics());
       Cryptographer::UpdateResult result = cryptographer->Update(nigori);
       if (result == Cryptographer::NEEDS_PASSPHRASE) {
+        sync_pb::EncryptedData pending_keys;
+        if (cryptographer->has_pending_keys())
+          pending_keys = cryptographer->GetPendingKeys();
         FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
-                          OnPassphraseRequired(sync_api::REASON_DECRYPTION));
+                          OnPassphraseRequired(sync_api::REASON_DECRYPTION,
+                                               pending_keys));
       }
 
       // Due to http://crbug.com/102526, we must check if the encryption keys
@@ -1182,8 +1187,14 @@ void SyncManager::SyncInternal::SetPassphrase(
   // We do not accept empty passphrases.
   if (passphrase.empty()) {
     DVLOG(1) << "Rejecting empty passphrase.";
+    WriteTransaction trans(FROM_HERE, GetUserShare());
+    Cryptographer* cryptographer = trans.GetCryptographer();
+    sync_pb::EncryptedData pending_keys;
+    if (cryptographer->has_pending_keys())
+      pending_keys = cryptographer->GetPendingKeys();
     FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
-        OnPassphraseRequired(sync_api::REASON_SET_PASSPHRASE_FAILED));
+        OnPassphraseRequired(sync_api::REASON_SET_PASSPHRASE_FAILED,
+                             pending_keys));
     return;
   }
 
@@ -1219,8 +1230,12 @@ void SyncManager::SyncInternal::SetPassphrase(
     }
 
     if (!succeeded) {
+      sync_pb::EncryptedData pending_keys;
+      if (cryptographer->has_pending_keys())
+        pending_keys = cryptographer->GetPendingKeys();
       FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
-          OnPassphraseRequired(sync_api::REASON_SET_PASSPHRASE_FAILED));
+          OnPassphraseRequired(sync_api::REASON_SET_PASSPHRASE_FAILED,
+                               pending_keys));
       return;
     }
 
@@ -1293,8 +1308,12 @@ void SyncManager::SyncInternal::RefreshEncryption() {
              << "initialized, prompting for passphrase.";
     // TODO(zea): this isn't really decryption, but that's the only way we have
     // to prompt the user for a passsphrase. See http://crbug.com/91379.
+    sync_pb::EncryptedData pending_keys;
+    if (cryptographer->has_pending_keys())
+      pending_keys = cryptographer->GetPendingKeys();
     FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
-                      OnPassphraseRequired(sync_api::REASON_DECRYPTION));
+                      OnPassphraseRequired(sync_api::REASON_DECRYPTION,
+                                           pending_keys));
     return;
   }
 
@@ -1764,14 +1783,17 @@ void SyncManager::SyncInternal::OnSyncEngineEvent(
       // yet, prompt the user for a passphrase.
       if (cryptographer->has_pending_keys()) {
         DVLOG(1) << "OnPassPhraseRequired Sent";
+        sync_pb::EncryptedData pending_keys = cryptographer->GetPendingKeys();
         FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
-                          OnPassphraseRequired(sync_api::REASON_DECRYPTION));
+                          OnPassphraseRequired(sync_api::REASON_DECRYPTION,
+                                               pending_keys));
       } else if (!cryptographer->is_ready() &&
                  event.snapshot->initial_sync_ended.Has(syncable::NIGORI)) {
         DVLOG(1) << "OnPassphraseRequired sent because cryptographer is not "
                  << "ready";
         FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
-                          OnPassphraseRequired(sync_api::REASON_ENCRYPTION));
+                          OnPassphraseRequired(sync_api::REASON_ENCRYPTION,
+                                               sync_pb::EncryptedData()));
       }
 
       allstatus_.SetCryptographerReady(cryptographer->is_ready());

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 #include "base/message_loop.h"
 #include "chrome/browser/sync/engine/model_safe_worker.h"
 #include "chrome/browser/sync/internal_api/includes/unrecoverable_error_handler_mock.h"
+#include "chrome/browser/sync/protocol/encryption.pb.h"
 #include "chrome/browser/sync/protocol/sync_protocol_error.h"
 #include "chrome/browser/sync/sync_prefs.h"
 #include "chrome/browser/sync/syncable/model_type.h"
@@ -38,7 +39,9 @@ class MockSyncFrontend : public SyncFrontend {
   MOCK_METHOD0(OnStopSyncingPermanently, void());
   MOCK_METHOD0(OnClearServerDataSucceeded, void());
   MOCK_METHOD0(OnClearServerDataFailed, void());
-  MOCK_METHOD1(OnPassphraseRequired, void(sync_api::PassphraseRequiredReason));
+  MOCK_METHOD2(OnPassphraseRequired,
+               void(sync_api::PassphraseRequiredReason,
+                    const sync_pb::EncryptedData&));
   MOCK_METHOD0(OnPassphraseAccepted, void());
   MOCK_METHOD2(OnEncryptedTypesChanged,
                void(syncable::ModelTypeSet, bool));

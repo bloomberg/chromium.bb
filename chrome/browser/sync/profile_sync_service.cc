@@ -763,7 +763,8 @@ void ProfileSyncService::OnClearServerDataSucceeded() {
 }
 
 void ProfileSyncService::OnPassphraseRequired(
-    sync_api::PassphraseRequiredReason reason) {
+    sync_api::PassphraseRequiredReason reason,
+    const sync_pb::EncryptedData& pending_keys) {
   DCHECK(backend_.get());
   DCHECK(backend_->IsNigoriEnabled());
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -167,11 +167,15 @@ TEST_F(JsSyncManagerObserverTest, OnPassphraseRequired) {
                                reason_set_passphrase_failed_details)));
 
   js_sync_manager_observer_.OnPassphraseRequired(
-      sync_api::REASON_PASSPHRASE_NOT_REQUIRED);
-  js_sync_manager_observer_.OnPassphraseRequired(sync_api::REASON_ENCRYPTION);
-  js_sync_manager_observer_.OnPassphraseRequired(sync_api::REASON_DECRYPTION);
+      sync_api::REASON_PASSPHRASE_NOT_REQUIRED,
+      sync_pb::EncryptedData());
+  js_sync_manager_observer_.OnPassphraseRequired(sync_api::REASON_ENCRYPTION,
+                                                 sync_pb::EncryptedData());
+  js_sync_manager_observer_.OnPassphraseRequired(sync_api::REASON_DECRYPTION,
+                                                 sync_pb::EncryptedData());
   js_sync_manager_observer_.OnPassphraseRequired(
-      sync_api::REASON_SET_PASSPHRASE_FAILED);
+      sync_api::REASON_SET_PASSPHRASE_FAILED,
+      sync_pb::EncryptedData());
   PumpLoop();
 }
 

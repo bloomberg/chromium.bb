@@ -57,6 +57,10 @@ struct SyncCredentials;
 struct UserShare;
 }
 
+namespace sync_pb {
+class EncryptedData;
+}  // namespace sync_pb
+
 // ProfileSyncService is the layer between browser subsystems like bookmarks,
 // and the sync backend.  Each subsystem is logically thought of as being
 // a sync datatype.
@@ -214,7 +218,8 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   virtual void OnClearServerDataFailed() OVERRIDE;
   virtual void OnClearServerDataSucceeded() OVERRIDE;
   virtual void OnPassphraseRequired(
-      sync_api::PassphraseRequiredReason reason) OVERRIDE;
+      sync_api::PassphraseRequiredReason reason,
+      const sync_pb::EncryptedData& pending_keys) OVERRIDE;
   virtual void OnPassphraseAccepted() OVERRIDE;
   virtual void OnEncryptedTypesChanged(
       syncable::ModelTypeSet encrypted_types,

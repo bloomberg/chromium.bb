@@ -26,11 +26,13 @@
 #include "chrome/browser/sync/internal_api/base_transaction.h"
 #include "chrome/browser/sync/internal_api/read_transaction.h"
 #include "chrome/browser/sync/notifier/sync_notifier.h"
+#include "chrome/browser/sync/protocol/encryption.pb.h"
 #include "chrome/browser/sync/protocol/sync.pb.h"
 #include "chrome/browser/sync/sessions/session_state.h"
 #include "chrome/browser/sync/sync_prefs.h"
 // TODO(tim): Remove this! We should have a syncapi pass-thru instead.
 #include "chrome/browser/sync/syncable/directory_manager.h"  // Cryptographer.
+#include "chrome/browser/sync/util/nigori.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
@@ -78,7 +80,8 @@ class SyncBackendHost::Core
   virtual void OnAuthError(
       const GoogleServiceAuthError& auth_error) OVERRIDE;
   virtual void OnPassphraseRequired(
-      sync_api::PassphraseRequiredReason reason) OVERRIDE;
+      sync_api::PassphraseRequiredReason reason,
+      const sync_pb::EncryptedData& pending_keys) OVERRIDE;
   virtual void OnPassphraseAccepted(
       const std::string& bootstrap_token) OVERRIDE;
   virtual void OnStopSyncingPermanently() OVERRIDE;
@@ -773,13 +776,14 @@ void SyncBackendHost::Core::OnAuthError(const AuthError& auth_error) {
 }
 
 void SyncBackendHost::Core::OnPassphraseRequired(
-    sync_api::PassphraseRequiredReason reason) {
+    sync_api::PassphraseRequiredReason reason,
+    const sync_pb::EncryptedData& pending_keys) {
   if (!sync_loop_)
     return;
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
   host_.Call(
       FROM_HERE,
-      &SyncBackendHost::NotifyPassphraseRequired, reason);
+      &SyncBackendHost::NotifyPassphraseRequired, reason, pending_keys);
 }
 
 void SyncBackendHost::Core::OnPassphraseAccepted(
@@ -1139,14 +1143,28 @@ void SyncBackendHost::HandleActionableErrorEventOnFrontendLoop(
   frontend_->OnActionableError(sync_error);
 }
 
+bool SyncBackendHost::CheckPassphraseAgainstCachedPendingKeys(
+    const std::string& passphrase) const {
+  DCHECK(cached_pending_keys_.has_blob());
+  browser_sync::Nigori nigori;
+  nigori.InitByDerivation("localhost", "dummy", passphrase);
+  std::string plaintext;
+  bool result = nigori.Decrypt(cached_pending_keys_.blob(), &plaintext);
+  return result;
+}
+
 void SyncBackendHost::NotifyPassphraseRequired(
-    sync_api::PassphraseRequiredReason reason) {
+    sync_api::PassphraseRequiredReason reason,
+    sync_pb::EncryptedData pending_keys) {
   if (!frontend_)
     return;
 
   DCHECK_EQ(MessageLoop::current(), frontend_loop_);
 
-  frontend_->OnPassphraseRequired(reason);
+  // Update our cache of the cryptographer's pending keys.
+  cached_pending_keys_ = pending_keys;
+
+  frontend_->OnPassphraseRequired(reason, pending_keys);
 }
 
 void SyncBackendHost::NotifyPassphraseAccepted(
@@ -1155,6 +1173,9 @@ void SyncBackendHost::NotifyPassphraseAccepted(
     return;
 
   DCHECK_EQ(MessageLoop::current(), frontend_loop_);
+
+  // Clear our cache of the cryptographer's pending keys.
+  cached_pending_keys_.clear_blob();
 
   PersistEncryptionBootstrapToken(bootstrap_token);
   frontend_->OnPassphraseAccepted();

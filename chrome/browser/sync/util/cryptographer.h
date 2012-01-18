@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,6 +13,7 @@
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
+#include "chrome/browser/sync/protocol/encryption.pb.h"
 #include "chrome/browser/sync/protocol/nigori_specifics.pb.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/util/nigori.h"
@@ -139,6 +140,12 @@ class Cryptographer {
   // DecryptPendingKeys. This should only be used if CanDecrypt(encrypted) ==
   // false.
   void SetPendingKeys(const sync_pb::EncryptedData& encrypted);
+
+  // Makes |pending_keys_| available to callers that may want to cache its
+  // value for later use on the UI thread. It is illegal to call this if the
+  // cryptographer has no pending keys. Like other calls that access the
+  // cryptographer, this method must be called from within a transaction.
+  const sync_pb::EncryptedData& GetPendingKeys() const;
 
   // Attempts to decrypt the set of keys that was copied in the previous call to
   // SetPendingKeys using |params|. Returns true if the pending keys were

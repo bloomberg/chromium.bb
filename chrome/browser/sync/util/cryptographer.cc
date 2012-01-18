@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -170,6 +170,11 @@ bool Cryptographer::SetKeys(const sync_pb::EncryptedData& encrypted) {
 void Cryptographer::SetPendingKeys(const sync_pb::EncryptedData& encrypted) {
   DCHECK(!CanDecrypt(encrypted));
   pending_keys_.reset(new sync_pb::EncryptedData(encrypted));
+}
+
+const sync_pb::EncryptedData& Cryptographer::GetPendingKeys() const {
+  DCHECK(has_pending_keys());
+  return *(pending_keys_.get());
 }
 
 bool Cryptographer::DecryptPendingKeys(const KeyParams& params) {

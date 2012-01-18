@@ -19,6 +19,7 @@
 #include "chrome/browser/sync/internal_api/configure_reason.h"
 #include "chrome/browser/sync/internal_api/sync_manager.h"
 #include "chrome/browser/sync/notifier/sync_notifier_factory.h"
+#include "chrome/browser/sync/protocol/encryption.pb.h"
 #include "chrome/browser/sync/protocol/sync_protocol_error.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/util/weak_handle.h"
@@ -78,9 +79,12 @@ class SyncFrontend {
   // The syncer requires a passphrase to decrypt sensitive updates. This is
   // called when the first sensitive data type is setup by the user and anytime
   // the passphrase is changed by another synced client. |reason| denotes why
-  // the passphrase was required.
+  // the passphrase was required. |pending_keys| is a copy of the
+  // cryptographer's pending keys to be passed on to the frontend in order to
+  // be cached.
   virtual void OnPassphraseRequired(
-      sync_api::PassphraseRequiredReason reason) = 0;
+      sync_api::PassphraseRequiredReason reason,
+      const sync_pb::EncryptedData& pending_keys) = 0;
 
   // Called when the passphrase provided by the user is
   // accepted. After this is called, updates to sensitive nodes are
@@ -366,9 +370,24 @@ class SyncBackendHost {
   void HandleActionableErrorEventOnFrontendLoop(
       const browser_sync::SyncProtocolError& sync_error);
 
+  // Checks if |passphrase| can be used to decrypt the cryptographer's pending
+  // keys that were cached during NotifyPassphraseRequired. Returns true if
+  // decryption was successful. Returns false otherwise. Must be called with a
+  // non-empty pending keys cache.
+  // TODO(sync): Have the UI layer first call this method before calling
+  // SetPassphrase, and if the result is false, directly bubble up an error to
+  // the user.
+  bool CheckPassphraseAgainstCachedPendingKeys(
+      const std::string& passphrase) const;
+
   // Invoked when a passphrase is required to decrypt a set of Nigori keys,
-  // or for encrypting. |reason| denotes why the passhrase was required.
-  void NotifyPassphraseRequired(sync_api::PassphraseRequiredReason reason);
+  // or for encrypting. |reason| denotes why the passphrase was required.
+  // |pending_keys| is a copy of the cryptographer's pending keys, that are
+  // cached by the frontend. If there are no pending keys, or if the passphrase
+  // required reason is REASON_ENCRYPTION, an empty EncryptedData object is
+  // passed.
+  void NotifyPassphraseRequired(sync_api::PassphraseRequiredReason reason,
+                                sync_pb::EncryptedData pending_keys);
 
   // Invoked when the passphrase provided by the user has been accepted.
   void NotifyPassphraseAccepted(const std::string& bootstrap_token);
@@ -440,6 +459,13 @@ class SyncBackendHost {
 
   scoped_ptr<PendingConfigureDataTypesState> pending_download_state_;
   scoped_ptr<PendingConfigureDataTypesState> pending_config_mode_state_;
+
+  // We cache the cryptographer's pending keys whenever NotifyPassphraseRequired
+  // is called. This way, before the UI calls SetPassphrase on the frontend, it
+  // can avoid the overhead of an asynchronous decryption call and give the user
+  // immediate feedback about the passphrase entered by first trying to decrypt
+  // the cached pending keys on the UI thread.
+  sync_pb::EncryptedData cached_pending_keys_;
 
   // UI-thread cache of the last AuthErrorState received from syncapi.
   GoogleServiceAuthError last_auth_error_;
