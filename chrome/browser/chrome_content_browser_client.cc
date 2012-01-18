@@ -66,7 +66,6 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/browser_url_handler.h"
-#include "content/browser/browsing_instance.h"
 #include "content/browser/child_process_security_policy.h"
 #include "content/browser/gpu/gpu_data_manager.h"
 #include "content/browser/gpu/gpu_process_host.h"
@@ -326,7 +325,7 @@ void ChromeContentBrowserClient::RenderViewHostCreated(
 
   SiteInstance* site_instance = render_view_host->site_instance();
   Profile* profile = Profile::FromBrowserContext(
-      site_instance->browsing_instance()->browser_context());
+      site_instance->GetBrowserContext());
 
   new ChromeRenderViewHostObserver(render_view_host,
                                    profile->GetNetworkPredictor());
@@ -488,7 +487,7 @@ void ChromeContentBrowserClient::SiteInstanceGotProcess(
   CHECK(site_instance->HasProcess());
 
   Profile* profile = Profile::FromBrowserContext(
-      site_instance->browsing_instance()->browser_context());
+      site_instance->GetBrowserContext());
   ExtensionService* service = profile->GetExtensionService();
   if (!service)
     return;
@@ -517,7 +516,7 @@ void ChromeContentBrowserClient::SiteInstanceDeleting(
     return;
 
   Profile* profile = Profile::FromBrowserContext(
-      site_instance->browsing_instance()->browser_context());
+      site_instance->GetBrowserContext());
   ExtensionService* service = profile->GetExtensionService();
   if (!service)
     return;

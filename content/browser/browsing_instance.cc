@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -97,7 +97,7 @@ SiteInstance* BrowsingInstance::GetSiteInstanceForURL(const GURL& url) {
 }
 
 void BrowsingInstance::RegisterSiteInstance(SiteInstance* site_instance) {
-  DCHECK(site_instance->browsing_instance() == this);
+  DCHECK(site_instance->browsing_instance_ == this);
   DCHECK(site_instance->has_site());
   std::string site = site_instance->site().possibly_invalid_spec();
 
@@ -116,7 +116,7 @@ void BrowsingInstance::RegisterSiteInstance(SiteInstance* site_instance) {
 }
 
 void BrowsingInstance::UnregisterSiteInstance(SiteInstance* site_instance) {
-  DCHECK(site_instance->browsing_instance() == this);
+  DCHECK(site_instance->browsing_instance_ == this);
   DCHECK(site_instance->has_site());
   std::string site = site_instance->site().possibly_invalid_spec();
 

@@ -141,6 +141,10 @@ bool SiteInstance::HasWrongProcessForURL(const GURL& url) const {
       process_, browsing_instance_->browser_context(), site_url);
 }
 
+content::BrowserContext* SiteInstance::GetBrowserContext() const {
+  return browsing_instance_->browser_context();
+}
+
 /*static*/
 SiteInstance* SiteInstance::CreateSiteInstance(
     content::BrowserContext* browser_context) {

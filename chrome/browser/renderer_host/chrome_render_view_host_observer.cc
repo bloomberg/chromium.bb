@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,7 +14,6 @@
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/browsing_instance.h"
 #include "content/browser/child_process_security_policy.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_view_host.h"
@@ -27,7 +26,7 @@ ChromeRenderViewHostObserver::ChromeRenderViewHostObserver(
       predictor_(predictor) {
   SiteInstance* site_instance = render_view_host->site_instance();
   profile_ = Profile::FromBrowserContext(
-      site_instance->browsing_instance()->browser_context());
+      site_instance->GetBrowserContext());
 
   InitRenderViewHostForExtensions();
 }

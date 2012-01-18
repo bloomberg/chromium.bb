@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -59,9 +59,6 @@ class CONTENT_EXPORT SiteInstance : public base::RefCounted<SiteInstance>,
   // Returns a unique ID for this SiteInstance.
   int32 id() { return id_; }
 
-  // Get the BrowsingInstance to which this SiteInstance belongs.
-  BrowsingInstance* browsing_instance() { return browsing_instance_; }
-
   // Sets the factory used to create new RenderProcessHosts. This will also be
   // passed on to SiteInstances spawned by this one.
   //
@@ -109,6 +106,10 @@ class CONTENT_EXPORT SiteInstance : public base::RefCounted<SiteInstance>,
   // the given URL.  If so, the browser should force a process swap when
   // navigating to the URL.
   bool HasWrongProcessForURL(const GURL& url) const;
+
+  // Browser context to which this SiteInstance (and all related
+  // SiteInstances) belongs.
+  content::BrowserContext* GetBrowserContext() const;
 
   // Factory method to create a new SiteInstance.  This will create a new
   // new BrowsingInstance, so it should only be used when creating a new tab
@@ -194,6 +195,8 @@ class CONTENT_EXPORT SiteInstance : public base::RefCounted<SiteInstance>,
 
   // Whether SetSite has been called.
   bool has_site_;
+
+  FRIEND_TEST_ALL_PREFIXES(RenderViewHostManagerTest, NewTabPageProcesses);
 
   DISALLOW_COPY_AND_ASSIGN(SiteInstance);
 };

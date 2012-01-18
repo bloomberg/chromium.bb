@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -50,16 +50,17 @@ class BrowserContext;
 // have references to it.  Because both classes are RefCounted, they do not
 // need to be manually deleted.
 //
-// Currently, the BrowsingInstance class is not visible outside of the
-// SiteInstance class.  To get a new SiteInstance that is part of the same
-// BrowsingInstance, use SiteInstance::GetRelatedSiteInstance.  Because of
-// this, BrowsingInstances and SiteInstances are tested together in
+// BrowsingInstance has no public members, as it is designed to be
+// visible only from the SiteInstance class.  To get a new
+// SiteInstance that is part of the same BrowsingInstance, use
+// SiteInstance::GetRelatedSiteInstance.  Because of this,
+// BrowsingInstances and SiteInstances are tested together in
 // site_instance_unittest.cc.
 //
 ///////////////////////////////////////////////////////////////////////////////
 class CONTENT_EXPORT BrowsingInstance
     : public base::RefCounted<BrowsingInstance> {
- public:
+ protected:
   // Create a new BrowsingInstance.
   explicit BrowsingInstance(content::BrowserContext* context);
 
@@ -70,7 +71,7 @@ class CONTENT_EXPORT BrowsingInstance
   virtual bool ShouldUseProcessPerSite(const GURL& url);
 
   // Get the browser context to which this BrowsingInstance belongs.
-  content::BrowserContext* browser_context() { return browser_context_; }
+  content::BrowserContext* browser_context() const { return browser_context_; }
 
   // Returns whether this BrowsingInstance has registered a SiteInstance for
   // the site of the given URL.
@@ -91,7 +92,8 @@ class CONTENT_EXPORT BrowsingInstance
   // BrowsingInstance.
   void UnregisterSiteInstance(SiteInstance* site_instance);
 
- protected:
+  friend class SiteInstance;
+
   friend class base::RefCounted<BrowsingInstance>;
 
   // Virtual to allow tests to extend it.

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -198,8 +198,8 @@ TEST_F(RenderViewHostManagerTest, NewTabPageProcesses) {
   // The two RVH's should be different in every way.
   EXPECT_NE(active_rvh()->process(), dest_rvh2->process());
   EXPECT_NE(active_rvh()->site_instance(), dest_rvh2->site_instance());
-  EXPECT_NE(active_rvh()->site_instance()->browsing_instance(),
-            dest_rvh2->site_instance()->browsing_instance());
+  EXPECT_NE(active_rvh()->site_instance()->browsing_instance_,
+            dest_rvh2->site_instance()->browsing_instance_);
 
   // Navigate both to the new tab page, and verify that they share a
   // SiteInstance.

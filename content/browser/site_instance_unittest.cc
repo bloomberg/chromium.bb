@@ -133,6 +133,14 @@ class TestBrowsingInstance : public BrowsingInstance {
     use_process_per_site_ = use_process_per_site;
   }
 
+  // Make a few methods public for tests.
+  using BrowsingInstance::ShouldUseProcessPerSite;
+  using BrowsingInstance::browser_context;
+  using BrowsingInstance::HasSiteInstance;
+  using BrowsingInstance::GetSiteInstanceForURL;
+  using BrowsingInstance::RegisterSiteInstance;
+  using BrowsingInstance::UnregisterSiteInstance;
+
  private:
   virtual ~TestBrowsingInstance() {
     (*delete_counter_)++;

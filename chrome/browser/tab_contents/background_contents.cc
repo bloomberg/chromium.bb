@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,7 +13,6 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/chrome_view_type.h"
-#include "content/browser/browsing_instance.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/site_instance.h"
 #include "content/public/browser/notification_service.h"
@@ -27,7 +26,7 @@ BackgroundContents::BackgroundContents(SiteInstance* site_instance,
                                        Delegate* delegate)
     : delegate_(delegate) {
   profile_ = Profile::FromBrowserContext(
-      site_instance->browsing_instance()->browser_context());
+      site_instance->GetBrowserContext());
 
   // TODO(rafaelw): Implement correct session storage.
   web_contents_.reset(WebContents::Create(

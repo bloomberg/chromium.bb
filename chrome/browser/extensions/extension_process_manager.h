@@ -17,7 +17,6 @@
 #include "content/public/browser/notification_registrar.h"
 
 class Browser;
-class BrowsingInstance;
 class Extension;
 class ExtensionHost;
 class GURL;
@@ -110,6 +109,10 @@ class ExtensionProcessManager : public content::NotificationObserver {
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
+  // Gets the profile associated with site_instance_ and all other
+  // related SiteInstances.
+  Profile* GetProfile() const;
+
   content::NotificationRegistrar registrar_;
 
   // The set of all ExtensionHosts managed by this process manager.
@@ -118,9 +121,10 @@ class ExtensionProcessManager : public content::NotificationObserver {
   // The set of running viewless background extensions.
   ExtensionHostSet background_hosts_;
 
-  // The BrowsingInstance shared by all extensions in this profile.  This
-  // controls process grouping.
-  scoped_refptr<BrowsingInstance> browsing_instance_;
+  // A SiteInstance related to the SiteInstance for all extensions in
+  // this profile.  We create it in such a way that a new
+  // browsing instance is created.  This controls process grouping.
+  scoped_refptr<SiteInstance> site_instance_;
 
  private:
   // Contains all extension-related RenderViewHost instances for all extensions.

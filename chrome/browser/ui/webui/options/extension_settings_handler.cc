@@ -31,7 +31,6 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/browsing_instance.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/site_instance.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
@@ -597,7 +596,7 @@ void ExtensionSettingsHandler::Observe(
     case content::NOTIFICATION_RENDER_VIEW_HOST_CREATED:
       source_profile = Profile::FromBrowserContext(
           content::Source<RenderViewHost>(source)->site_instance()->
-          browsing_instance()->browser_context());
+          GetBrowserContext());
       if (!profile->IsSameProfile(source_profile))
         return;
       MaybeUpdateAfterNotification();
