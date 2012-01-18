@@ -789,6 +789,28 @@ drm_destroy(struct weston_compositor *ec)
 }
 
 static void
+drm_compositor_set_modes(struct drm_compositor *compositor)
+{
+	struct drm_output *output;
+	struct drm_mode *drm_mode;
+	int ret;
+
+	wl_list_for_each(output, &compositor->base.output_list, base.link) {
+		drm_mode = (struct drm_mode *) output->base.current;
+		ret = drmModeSetCrtc(compositor->drm.fd, output->crtc_id,
+				     output->fb_id[output->current ^ 1], 0, 0,
+				     &output->connector_id, 1,
+				     &drm_mode->mode_info);
+		if (ret < 0) {
+			fprintf(stderr,
+				"failed to set mode %dx%d for output at %d,%d: %m",
+				drm_mode->base.width, drm_mode->base.height, 
+				output->base.x, output->base.y);
+		}
+	}
+}
+
+static void
 vt_func(struct weston_compositor *compositor, int event)
 {
 	struct drm_compositor *ec = (struct drm_compositor *) compositor;
@@ -803,6 +825,7 @@ vt_func(struct weston_compositor *compositor, int event)
 			wl_display_terminate(compositor->wl_display);
 		}
 		compositor->state = ec->prev_state;
+		drm_compositor_set_modes(ec);
 		weston_compositor_damage_all(compositor);
 		wl_list_for_each(input, &compositor->input_device_list, link)
 			evdev_add_devices(ec->udev, input);
