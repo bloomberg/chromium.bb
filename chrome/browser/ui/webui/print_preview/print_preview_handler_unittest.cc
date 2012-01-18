@@ -52,6 +52,8 @@ class PrintPreviewHandlerTest : public PrintPreviewUnitTestBase {
   virtual void TearDown() OVERRIDE {
     DeletePrintPreviewTab();
     ClearStickySettings();
+
+    PrintPreviewUnitTestBase::TearDown();
   }
 
   void OpenPrintPreviewTab() {

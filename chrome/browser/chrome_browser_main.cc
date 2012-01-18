@@ -1247,17 +1247,6 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
   if (!parsed_command_line().HasSwitch(switches::kNoErrorDialogs))
     WarnAboutMinimumSystemRequirements();
 
-  // Enable print preview once for supported platforms.
-#if defined(GOOGLE_CHROME_BUILD)
-  local_state_->RegisterBooleanPref(prefs::kPrintingPrintPreviewEnabledOnce,
-                                   false,
-                                   PrefService::UNSYNCABLE_PREF);
-  if (!local_state_->GetBoolean(prefs::kPrintingPrintPreviewEnabledOnce)) {
-    local_state_->SetBoolean(prefs::kPrintingPrintPreviewEnabledOnce, true);
-    about_flags::SetExperimentEnabled(local_state_, "print-preview", true);
-  }
-#endif
-
   // Convert active labs into switches. Modifies the current command line.
   about_flags::ConvertFlagsToSwitches(local_state_,
                                       CommandLine::ForCurrentProcess());

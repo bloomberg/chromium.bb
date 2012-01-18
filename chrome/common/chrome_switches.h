@@ -134,6 +134,7 @@ extern const char kEnableAeroPeekTabs[];
 extern const char kEnableAuthNegotiatePort[];
 extern const char kEnableAutofillFeedback[];
 extern const char kEnableAutologin[];
+extern const char kEnableBenchmarking[];
 extern const char kEnableClearServerData[];
 extern const char kEnableClickToPlay[];
 extern const char kEnableCloudPrintProxy[];
@@ -274,6 +275,7 @@ extern const char kPurgeMemoryButton[];
 extern const char kReloadKilledTabs[];
 extern const char kRemoteDebuggingFrontend[];
 extern const char kRemoteDebuggingPort[];
+extern const char kRendererPrintPreview[];
 extern const char kRestoreLastSession[];
 extern const char kSbInfoURLPrefix[];
 extern const char kSbMacKeyURLPrefix[];
@@ -385,15 +387,15 @@ extern const char kWebSocketLiveExperimentHost[];
 extern const char kFileManagerExtensionPath[];
 #endif
 
+#if defined(GOOGLE_CHROME_BUILD)
 extern const char kDisablePrintPreview[];
+#else
 extern const char kEnablePrintPreview[];
-extern const char kEnableBenchmarking[];
+#endif
 
 #if defined(USE_AURA)
 extern const char kTestCompositor[];
 #endif
-
-bool IsPrintPreviewEnabled();
 
 // DON'T ADD RANDOM STUFF HERE. Put it in the main section above in
 // alphabetical order, or in one of the ifdefs (also in order in each section).

@@ -145,7 +145,7 @@ class PrintWebViewHelperTest : public PrintWebViewHelperTestBase {
   PrintWebViewHelperTest() {}
   virtual ~PrintWebViewHelperTest() {}
 
-  virtual void SetUp() {
+  virtual void SetUp() OVERRIDE {
     ChromeRenderViewTest::SetUp();
   }
 
@@ -340,10 +340,10 @@ class PrintWebViewHelperPreviewTest : public PrintWebViewHelperTestBase {
   PrintWebViewHelperPreviewTest() {}
   virtual ~PrintWebViewHelperPreviewTest() {}
 
-  virtual void SetUp() {
+  virtual void SetUp() OVERRIDE {
     // Append the print preview switch before creating the PrintWebViewHelper.
     CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kEnablePrintPreview);
+        switches::kRendererPrintPreview);
 
     ChromeRenderViewTest::SetUp();
   }

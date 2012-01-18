@@ -1868,10 +1868,12 @@ void Browser::EmailPageLocation() {
 }
 
 void Browser::Print() {
-  if (switches::IsPrintPreviewEnabled())
-    GetSelectedTabContentsWrapper()->print_view_manager()->PrintPreviewNow();
-  else
+  if (g_browser_process->local_state()->GetBoolean(
+          prefs::kPrintPreviewDisabled)) {
     GetSelectedTabContentsWrapper()->print_view_manager()->PrintNow();
+  } else {
+    GetSelectedTabContentsWrapper()->print_view_manager()->PrintPreviewNow();
+  }
 }
 
 void Browser::AdvancedPrint() {
@@ -2400,6 +2402,13 @@ void Browser::RegisterPrefs(PrefService* prefs) {
   prefs->RegisterIntegerPref(prefs::kOptionsWindowLastTabIndex, 0);
   prefs->RegisterBooleanPref(prefs::kAllowFileSelectionDialogs, true);
   prefs->RegisterBooleanPref(prefs::kShouldShowFirstRunBubble, false);
+  prefs->RegisterBooleanPref(prefs::kPrintPreviewDisabled,
+#if defined(GOOGLE_CHROME_BUILD)
+                             false
+#else
+                             true
+#endif
+                             );
 }
 
 // static

@@ -1,8 +1,11 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/prefs/command_line_pref_store.h"
+
+#include <string>
+#include <vector>
 
 #include "base/logging.h"
 #include "base/string_number_conversions.h"
@@ -49,6 +52,11 @@ const CommandLinePrefStore::BooleanSwitchToPreferenceMapEntry
       { switches::kEnableOriginBoundCerts, prefs::kEnableOriginBoundCerts,
           true },
       { switches::kEnableMemoryInfo, prefs::kEnableMemoryInfo, false },
+#if defined(GOOGLE_CHROME_BUILD)
+      { switches::kDisablePrintPreview, prefs::kPrintPreviewDisabled, true },
+#else
+      { switches::kEnablePrintPreview, prefs::kPrintPreviewDisabled, false },
+#endif
 };
 
 const CommandLinePrefStore::IntegerSwitchToPreferenceMapEntry

@@ -627,7 +627,15 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
             switches::kDisableClientSidePhishingDetection);
       }
     }
+    {
+      PrefService* local_state = g_browser_process->local_state();
+      if (local_state &&
+          !local_state->GetBoolean(prefs::kPrintPreviewDisabled)) {
+        command_line->AppendSwitch(switches::kRendererPrintPreview);
+      }
+    }
 
+    // Please keep this in alphabetical order.
     static const char* const kSwitchNames[] = {
       switches::kAllowHTTPBackgroundPage,
       switches::kAllowLegacyExtensionManifests,
@@ -637,9 +645,9 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       switches::kAppsGalleryURL,
       switches::kCloudPrintServiceURL,
       switches::kDebugPrint,
-      switches::kDisablePrintPreview,
       switches::kDomAutomationController,
       switches::kDumpHistogramsOnExit,
+      switches::kEnableBenchmarking,
       switches::kEnableClickToPlay,
       switches::kEnableCrxlessWebApps,
       switches::kEnableExperimentalExtensionApis,
@@ -648,7 +656,6 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       switches::kEnableLazyBackgroundPages,
       switches::kEnableNaCl,
       switches::kEnablePlatformApps,
-      switches::kEnablePrintPreview,
       switches::kEnableSearchProviderApiV2,
       switches::kEnableWatchdog,
       switches::kExperimentalSpellcheckerFeatures,
@@ -662,8 +669,8 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       switches::kProfilingAtStart,
       switches::kProfilingFile,
       switches::kProfilingFlush,
+      switches::kRendererPrintPreview,
       switches::kSilentDumpOnDCHECK,
-      switches::kEnableBenchmarking,
     };
 
     command_line->CopySwitchesFrom(browser_command_line, kSwitchNames,

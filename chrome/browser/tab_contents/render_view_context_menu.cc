@@ -1608,10 +1608,12 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
                 source_web_contents_);
         if (!tab_contents_wrapper)
           break;
-        if (switches::IsPrintPreviewEnabled())
-          tab_contents_wrapper->print_view_manager()->PrintPreviewNow();
-        else
+        if (g_browser_process->local_state()->GetBoolean(
+                prefs::kPrintPreviewDisabled)) {
           tab_contents_wrapper->print_view_manager()->PrintNow();
+        } else {
+          tab_contents_wrapper->print_view_manager()->PrintPreviewNow();
+        }
       } else {
         rvh->Send(new PrintMsg_PrintNodeUnderContextMenu(rvh->routing_id()));
       }
@@ -1940,4 +1942,3 @@ void RenderViewContextMenu::PluginActionAt(
   source_web_contents_->GetRenderViewHost()->
       ExecutePluginActionAtLocation(location, action);
 }
-

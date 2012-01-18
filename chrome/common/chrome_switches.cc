@@ -148,6 +148,10 @@ const char kChromeVersion[]                 = "chrome-version";
 // Comma-separated list of SSL cipher suites to disable.
 const char kCipherSuiteBlacklist[]          = "cipher-suite-blacklist";
 
+// Clears the token service before using it. This allows simulating the
+// expiration of credentials during testing.
+const char kClearTokenService[]             = "clear-token-service";
+
 // Used with kCloudPrintFile. Tells Chrome to delete the file when finished
 // displaying the print dialog.
 const char kCloudPrintDeleteFile[]          = "cloud-print-delete-file";
@@ -462,6 +466,9 @@ const char kEnableAutofillFeedback[]        = "enable-autofill-feedback";
 // browser's cookie jar is pre-filled with GAIA cookies. When the user visits a
 // GAIA login page, an info bar can help the user login.
 const char kEnableAutologin[]               = "enable-autologin";
+
+// Enables the benchmarking extensions.
+const char kEnableBenchmarking[]            = "enable-benchmarking";
 
 // This flag enables UI for clearing server data. Temporarily in place until
 // there's a server endpoint deployed.
@@ -1001,6 +1008,10 @@ const char kReloadKilledTabs[]              = "reload-killed-tabs";
 // Uses custom front-end URL for the remote debugging.
 const char kRemoteDebuggingFrontend[]       = "remote-debugging-frontend";
 
+// Enables print preview in the renderer. This flag is generated internally by
+// Chrome and does nothing when directly passed to the browser.
+const char kRendererPrintPreview[]          = "renderer-print-preview";
+
 // Enables remote debug over HTTP on the specified port.
 const char kRemoteDebuggingPort[]           = "remote-debugging-port";
 
@@ -1036,6 +1047,9 @@ const char kSearchInOmniboxHint[]           = "search-in-omnibox-hint";
 
 // The LSID of the account to use for the service process.
 const char kServiceAccountLsid[]            = "service-account-lsid";
+
+// Sets a token in the token service, for testing.
+const char kSetToken[]                      = "set-token";
 
 // Annotates forms with Autofill field type predictions.
 const char kShowAutofillTypePredictions[]   = "show-autofill-type-predictions";
@@ -1323,13 +1337,6 @@ const char kDebugViewsPaint[]               = "debug-views-paint";
 const char kTouchDevices[]                  = "touch-devices";
 #endif
 
-// Clears the token service before using it. This allows simulating the
-// expiration of credentials during testing.
-const char kClearTokenService[]             = "clear-token-service";
-
-// Sets a token in the token service, for testing.
-const char kSetToken[]                      = "set-token";
-
 #ifndef NDEBUG
 // URL of the OAuth server host
 const char kOAuthHostUrl[]                  = "oauth-host-url";
@@ -1343,26 +1350,20 @@ const char kWebSocketLiveExperimentHost[]   = "websocket-live-experiment-host";
 const char kFileManagerExtensionPath[]      = "filemgr-ext-path";
 #endif  // NDEBUG
 
-// Disables print preview (Not exposed via about:flags. Only used for testing.)
+// Controls print preview in the browser process.
+#if defined(GOOGLE_CHROME_BUILD)
+// Disables print preview (For testing, and for users who don't like us. :[ )
 const char kDisablePrintPreview[]           = "disable-print-preview";
-
-// Enables print preview (no PDF viewer, thus not supported with Chromium).
-// kDisablePrintPreview overrides this.
+#else
+// Enables print preview (Force enable on Chromium, which normally does not
+//                        have the PDF viewer required for print preview.)
 const char kEnablePrintPreview[]            = "enable-print-preview";
-
-// Enables the benchmarking extensions.
-const char kEnableBenchmarking[]            = "enable-benchmarking";
+#endif
 
 #if defined(USE_AURA)
 // Forces usage of the test compositor. Needed to run ui tests on bots.
 extern const char kTestCompositor[]         = "test-compositor";
 #endif
-
-bool IsPrintPreviewEnabled() {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(kDisablePrintPreview))
-    return false;
-  return CommandLine::ForCurrentProcess()->HasSwitch(kEnablePrintPreview);
-}
 
 // -----------------------------------------------------------------------------
 // DO NOT ADD YOUR CRAP TO THE BOTTOM OF THIS FILE.

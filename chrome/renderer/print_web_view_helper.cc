@@ -462,6 +462,11 @@ PrintMsg_Print_Params CalculatePrintParamsForCss(
   return result_params;
 }
 
+bool IsPrintPreviewEnabled() {
+  return CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kRendererPrintPreview);
+}
+
 }  // namespace
 
 // static - Not anonymous so that platform implementations can use it.
@@ -647,7 +652,7 @@ PrintWebViewHelper::PrintWebViewHelper(content::RenderView* render_view)
     : content::RenderViewObserver(render_view),
       content::RenderViewObserverTracker<PrintWebViewHelper>(render_view),
       print_web_view_(NULL),
-      is_preview_enabled_(switches::IsPrintPreviewEnabled()),
+      is_preview_enabled_(IsPrintPreviewEnabled()),
       is_print_ready_metafile_sent_(false),
       ignore_css_margins_(false),
       fit_to_page_(true),

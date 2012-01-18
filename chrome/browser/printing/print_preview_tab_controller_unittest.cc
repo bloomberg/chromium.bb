@@ -30,11 +30,6 @@ class PrintPreviewTabControllerUnitTest : public PrintPreviewUnitTestBase {
  public:
   PrintPreviewTabControllerUnitTest() {}
   virtual ~PrintPreviewTabControllerUnitTest() {}
-
- protected:
-  virtual void SetUp() OVERRIDE {
-    PrintPreviewUnitTestBase::SetUp();
-  }
 };
 
 // Create/Get a preview tab for initiator tab.

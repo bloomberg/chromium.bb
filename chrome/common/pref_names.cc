@@ -688,15 +688,6 @@ const char kSpeechInputTrayNotificationShown[] =
 // Boolean controlling whether history saving is disabled.
 const char kSavingBrowserHistoryDisabled[] = "history.saving_disabled";
 
-// Boolean controlling whether printing is enabled.
-const char kPrintingEnabled[] = "printing.enabled";
-
-// Enable print preview once for supported platforms.
-#if defined(GOOGLE_CHROME_BUILD)
-const char kPrintingPrintPreviewEnabledOnce[] =
-    "printing.print_preview_enabled_once";
-#endif
-
 #if defined(TOOLKIT_USES_GTK)
 // GTK specific preference on whether we should match the system GTK theme.
 const char kUsesSystemTheme[] = "extensions.theme.use_system";
@@ -1530,6 +1521,12 @@ const char kLoginDatabaseMigrated[] = "login_database.migrated";
 // establish the initial connection from the client or host.
 const char kRemoteAccessHostFirewallTraversal[] =
     "remote_access.host_firewall_traversal";
+
+// Boolean controlling whether printing is enabled.
+const char kPrintingEnabled[] = "printing.enabled";
+
+// Boolean controlling whether print preview is disabled.
+const char kPrintPreviewDisabled[] = "printing.print_preview_disabled";
 
 // The root URL of the cloud print service.
 const char kCloudPrintServiceURL[] = "cloud_print.service_url";

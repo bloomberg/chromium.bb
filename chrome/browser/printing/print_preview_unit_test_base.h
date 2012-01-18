@@ -6,7 +6,10 @@
 #define CHROME_BROWSER_PRINTING_PRINT_PREVIEW_UNIT_TEST_BASE_H_
 #pragma once
 
+#include "base/memory/scoped_ptr.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
+
+class TestingPrefService;
 
 class PrintPreviewUnitTestBase : public BrowserWithTestWindowTest {
  public:
@@ -15,6 +18,10 @@ class PrintPreviewUnitTestBase : public BrowserWithTestWindowTest {
 
  protected:
   virtual void SetUp() OVERRIDE;
+  virtual void TearDown() OVERRIDE;
+
+ private:
+  scoped_ptr<TestingPrefService> testing_local_state_;
 };
 
 #endif  // CHROME_BROWSER_PRINTING_PRINT_PREVIEW_UNIT_TEST_BASE_H_

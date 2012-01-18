@@ -235,7 +235,7 @@ extern const char kShow3gPromoNotification[];
 extern const char kUseSharedProxies[];
 extern const char kOAuth1Token[];
 extern const char kOAuth1Secret[];
-#endif
+#endif  // defined(OS_CHROMEOS)
 extern const char kIpcDisabledMessages[];
 extern const char kShowHomeButton[];
 extern const char kRecentlySelectedEncoding[];
@@ -252,10 +252,6 @@ extern const char kEnabledLabsExperiments[];
 extern const char kEnableAutoSpellCorrect[];
 extern const char kSavingBrowserHistoryDisabled[];
 extern const char kDeleteTimePeriod[];
-extern const char kPrintingEnabled[];
-#if defined(GOOGLE_CHROME_BUILD)
-extern const char kPrintingPrintPreviewEnabledOnce[];
-#endif
 #if defined(TOOLKIT_USES_GTK)
 extern const char kUsesSystemTheme[];
 #endif
@@ -563,6 +559,9 @@ extern const char kGeolocationContentSettings[];
 extern const char kLoginDatabaseMigrated[];
 
 extern const char kRemoteAccessHostFirewallTraversal[];
+
+extern const char kPrintingEnabled[];
+extern const char kPrintPreviewDisabled[];
 
 extern const char kCloudPrintServiceURL[];
 extern const char kCloudPrintSigninURL[];

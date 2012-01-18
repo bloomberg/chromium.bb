@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "chrome/browser/about_flags.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_web_ui.h"
 #include "chrome/browser/history/history_types.h"
@@ -48,6 +49,7 @@
 #include "chrome/browser/ui/webui/workers_ui.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/webui/web_ui.h"
 #include "content/public/browser/web_contents.h"
@@ -289,7 +291,8 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
 #endif
 
   if (url.host() == chrome::kChromeUIPrintHost &&
-      switches::IsPrintPreviewEnabled()) {
+      !g_browser_process->local_state()->GetBoolean(
+          prefs::kPrintPreviewDisabled)) {
     return &NewWebUI<PrintPreviewUI>;
   }
 
@@ -407,7 +410,7 @@ WebUIController* ChromeWebUIFactory::CreateWebUIForURL(
   if (!function)
     return NULL;
 
-  return (*function)(web_ui, url);  
+  return (*function)(web_ui, url);
 }
 
 void ChromeWebUIFactory::GetFaviconForURL(
