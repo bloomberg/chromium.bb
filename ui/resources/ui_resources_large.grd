@@ -12,7 +12,7 @@
   <release seq="1">
     <includes>
       <!-- KEEP THESE IN ALPHABETICAL ORDER AND SYNCHRONIZED WITH
-           theme_resources_standard.grd. THIS MEANS THAT EACH ICON IN THIS FILE
+           ui_resources_standard.grd. THIS MEANS THAT EACH ICON IN THIS FILE
            MUST HAVE AN EQUIVALENT ICON IN THE OTHER FILE.-->
       <include name="IDR_BUBBLE_B" file="large_bubble_b.png" type="BINDATA" />
       <include name="IDR_BUBBLE_BL" file="large_bubble_bl.png" type="BINDATA" />
@@ -35,6 +35,11 @@
       <include name="IDR_BUBBLE_SHADOW_T" file="large_bubble_shadow_t.png" type="BINDATA" />
       <include name="IDR_BUBBLE_SHADOW_TL" file="large_bubble_shadow_tl.png" type="BINDATA" />
       <include name="IDR_BUBBLE_SHADOW_TR" file="large_bubble_shadow_tr.png" type="BINDATA" />
+
+      <include name="IDR_CLOSE_BAR" file="large_close_bar.png" type="BINDATA" />
+      <include name="IDR_CLOSE_BAR_H" file="large_close_bar_h.png" type="BINDATA" />
+      <include name="IDR_CLOSE_BAR_MASK" file="large_close_bar_mask.png" type="BINDATA" />
+      <include name="IDR_CLOSE_BAR_P" file="large_close_bar_p.png" type="BINDATA" />
     </includes>
   </release>
 </grit>

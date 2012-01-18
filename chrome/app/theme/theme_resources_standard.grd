@@ -43,10 +43,6 @@
         <include name="IDR_BROWSER_ACTIONS_OVERFLOW_H" file="browser_actions_overflow_win_h.png" type="BINDATA" />
         <include name="IDR_BROWSER_ACTIONS_OVERFLOW_P" file="browser_actions_overflow_win_p.png" type="BINDATA" />
       </if>
-      <include name="IDR_CLOSE_BAR" file="close_bar.png" type="BINDATA" />
-      <include name="IDR_CLOSE_BAR_H" file="close_bar_h.png" type="BINDATA" />
-      <include name="IDR_CLOSE_BAR_MASK" file="close_bar_mask.png" type="BINDATA" />
-      <include name="IDR_CLOSE_BAR_P" file="close_bar_p.png" type="BINDATA" />
       <if expr="is_win">
         <include name="IDR_CONFLICT_FAVICON" file="about_conflicts_favicon.png" type="BINDATA" />
       </if>

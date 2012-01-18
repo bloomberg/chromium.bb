@@ -6,17 +6,25 @@
 #define ASH_WM_DIALOG_FRAME_VIEW_H_
 #pragma once
 
+#include "ui/views/controls/button/button.h"
 #include "ui/views/window/non_client_view.h"
+
+class SkBitmap;
 
 namespace gfx {
 class Font;
+}
+
+namespace views {
+class ImageButton;
 }
 
 namespace ash {
 namespace internal {
 
 // A NonClientFrameView that implements a Google-style for dialogs.
-class DialogFrameView : public views::NonClientFrameView {
+class DialogFrameView : public views::NonClientFrameView,
+                        public views::ButtonListener {
  public:
   // Internal class name.
   static const char kViewClassName[];
@@ -38,14 +46,18 @@ class DialogFrameView : public views::NonClientFrameView {
   virtual std::string GetClassName() const OVERRIDE;
   virtual void Layout() OVERRIDE;
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
-  virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE;
-  virtual void OnMouseReleased(const views::MouseEvent& event) OVERRIDE;
+
+  // Overridden from views::ButtonListener:
+  virtual void ButtonPressed(views::Button* sender,
+                             const views::Event& event) OVERRIDE;
 
  private:
-  int GetNonClientTopHeight() const;
+  gfx::Insets GetPaddingInsets() const;
+  gfx::Insets GetClientInsets() const;
 
   gfx::Rect title_display_rect_;
-  gfx::Rect close_button_rect_;
+
+  views::ImageButton* close_button_;
 
   static gfx::Font* title_font_;
 

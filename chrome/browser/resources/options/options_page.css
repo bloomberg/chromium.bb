@@ -96,7 +96,7 @@ html[touch-optimized] body {
 }
 
 .close-subpage {
-  background-image: url('chrome://theme/IDR_CLOSE_BAR');
+  background-image: url('../../../../ui/resources/close_bar.png');
   height: 16px;
   min-width: 0;
   position: relative;
@@ -105,11 +105,11 @@ html[touch-optimized] body {
 }
 
 .close-subpage:hover {
-  background-image: url('chrome://theme/IDR_CLOSE_BAR_H');
+  background-image: url('../../../../ui/resources/close_bar_h.png');
 }
 
 .close-subpage:active {
-  background-image: url('chrome://theme/IDR_CLOSE_BAR_P');
+  background-image: url('../../../../ui/resources/close_bar_p.png');
 }
 
 html[dir='ltr'] .close-subpage {
@@ -436,7 +436,7 @@ list .close-button {
   -webkit-transition: 150ms opacity;
   background-color: transparent;
   /* TODO(stuartmorgan): Replace with real images once they are available. */
-  background-image: url("../../../app/theme/close_bar.png");
+  background-image: url("../../../../ui/resources/close_bar.png");
   border: none;
   display: block;
   height: 16px;
@@ -454,11 +454,11 @@ list .close-button[disabled] {
 }
 
 list .close-button:hover {
-  background-image: url("../../../app/theme/close_bar_h.png");
+  background-image: url("../../../../ui/resources/close_bar_h.png");
 }
 
 list .close-button:active {
-  background-image: url("../../../app/theme/close_bar_p.png");
+  background-image: url("../../../../ui/resources/close_bar_p.png");
 }
 
 list .static-text {
