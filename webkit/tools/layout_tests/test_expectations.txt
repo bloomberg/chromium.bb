@@ -32,3 +32,10 @@ BUGTOMHUDSON MAC : svg/W3C-SVG-1.1/masking-path-02-b.svg = IMAGE
 BUGTOMHUDSON MAC : svg/carto.net/button.svg = IMAGE
 BUGTOMHUDSON MAC : svg/custom/glyph-selection-lang-attribute.svg = IMAGE
 
+// To be rebaselined after skia rev. 3039 lands
+BUGCR110493 CPU : fast/backgrounds/repeat/negative-offset-repeat-transformed.html = IMAGE
+BUGCR110493 CPU : svg/transforms/animated-path-inside-transformed-html.xhtml = IMAGE
+BUGCR110493 CPU : fast/borders/border-image-rotate-transform.html = IMAGE
+BUGCR110493 CPU : svg/custom/focus-ring.svg = IMAGE
+
+

@@ -741,6 +741,11 @@
         # it ever gets used the processes that use it need to call
         # SkGraphics::Init().
         'SK_ALLOW_STATIC_GLOBAL_INITIALIZERS=0',
+
+        # Temporarily disable the Skia fix in
+        # http://code.google.com/p/skia/source/detail?r=3037 ; enabling that
+        # fix will require substantial rebaselining.
+        'SK_DRAW_POS_TEXT_IGNORE_SUBPIXEL_LEFT_ALIGN_FIX',
       ],
       'sources!': [
         '../third_party/skia/include/core/SkTypes.h',
