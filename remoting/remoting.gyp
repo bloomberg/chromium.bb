@@ -217,11 +217,6 @@
             '../media/media.gyp:media',
           ],
           'sources': [
-            # TODO(lambroslambrou): Remove the dependencies on the Disconnect
-            # and Continue windows for the Me2Me case - crbug.com/104377.
-            'host/continue_window.h',
-            'host/continue_window_linux.cc',
-            'host/disconnect_window_linux.cc',
             'host/host_event_logger.cc',
             'host/host_event_logger.h',
             'host/remoting_me2me_host.cc',
