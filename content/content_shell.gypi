@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -104,6 +104,46 @@
       ],
     },
     {
+      # We build a minimal set of resources so WebKit in content_shell has
+      # access to necessary resources.
+      'target_name': 'content_shell_pak',
+      'type': 'none',
+      'variables': {
+        'repack_path': '<(DEPTH)/tools/grit/grit/format/repack.py',
+      },
+      'actions': [
+        {
+          'action_name': 'repack_content_shell_pack',
+          'variables': {
+            'pak_inputs': [
+              '<(SHARED_INTERMEDIATE_DIR)/content/content_resources.pak',
+              '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.pak',
+              '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources.pak',
+              '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources_standard/ui_resources_standard.pak',
+              '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_chromium_resources.pak',
+              '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_resources.pak',
+            ],
+            'conditions': [
+              ['OS != "mac"', {
+                'pak_inputs': [
+                  '<(SHARED_INTERMEDIATE_DIR)/ui/gfx/gfx_resources.pak',
+                ]
+              }],
+            ],
+          },
+          'inputs': [
+            '<(repack_path)',
+            '<@(pak_inputs)',
+          ],
+          'outputs': [
+            '<(PRODUCT_DIR)/content_shell.pak',
+          ],
+          'action': ['python', '<(repack_path)', '<@(_outputs)',
+                     '<@(pak_inputs)'],
+        },
+      ],
+    },
+    {
       'target_name': 'content_shell',
       'type': 'executable',
       'defines!': ['CONTENT_IMPLEMENTATION'],
@@ -112,6 +152,7 @@
       },
       'dependencies': [
         'content_shell_lib',
+        'content_shell_pak',
       ],
       'include_dirs': [
         '..',

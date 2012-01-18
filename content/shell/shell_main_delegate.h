@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -43,6 +43,7 @@ class ShellMainDelegate : public content::ContentMainDelegate {
 
  private:
   void InitializeShellContentClient(const std::string& process_type);
+  void InitializeResourceBundle();
 
   scoped_ptr<content::ShellContentBrowserClient> browser_client_;
   scoped_ptr<content::ShellContentRendererClient> renderer_client_;

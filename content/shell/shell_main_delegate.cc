@@ -1,15 +1,19 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "content/shell/shell_main_delegate.h"
 
 #include "base/command_line.h"
+#include "base/file_path.h"
+#include "base/path_service.h"
 #include "content/public/common/content_switches.h"
 #include "content/shell/shell_content_browser_client.h"
 #include "content/shell/shell_content_plugin_client.h"
 #include "content/shell/shell_content_renderer_client.h"
 #include "content/shell/shell_content_utility_client.h"
+#include "ui/base/resource/resource_bundle.h"
+#include "ui/base/ui_base_paths.h"
 
 ShellMainDelegate::ShellMainDelegate() {
 }
@@ -28,6 +32,8 @@ void ShellMainDelegate::PreSandboxStartup() {
 
   content::SetContentClient(&content_client_);
   InitializeShellContentClient(process_type);
+
+  InitializeResourceBundle();
 }
 
 void ShellMainDelegate::SandboxInitialized(const std::string& process_type) {
@@ -86,4 +92,16 @@ void ShellMainDelegate::InitializeShellContentClient(
     utility_client_.reset(new content::ShellContentUtilityClient);
     content::GetContentClient()->set_utility(utility_client_.get());
   }
+}
+
+void ShellMainDelegate::InitializeResourceBundle() {
+  FilePath pak_dir;
+  PathService::Get(base::DIR_MODULE, &pak_dir);
+  PathService::Override(ui::FILE_RESOURCES_PAK,
+                        pak_dir.Append(
+                            FILE_PATH_LITERAL("content_shell.pak")));
+
+  // Force the content shell to run using en-US because our ResourceBundle
+  // can't run without a language and it doesn't matter.
+  ui::ResourceBundle::InitSharedInstance("en-US");
 }
