@@ -1,8 +1,9 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "remoting/client/mouse_input_filter.h"
+
 #include "remoting/proto/event.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -27,24 +28,24 @@ class MockInputStub : public protocol::InputStub {
   DISALLOW_COPY_AND_ASSIGN(MockInputStub);
 };
 
-static protocol::MouseEvent mouseMoveEvent(int x, int y) {
+static protocol::MouseEvent MouseMoveEvent(int x, int y) {
   protocol::MouseEvent event;
   event.set_x(x);
   event.set_y(y);
   return event;
 }
 
-static void injectTestSequence(protocol::InputStub* input_stub) {
+static void InjectTestSequence(protocol::InputStub* input_stub) {
   static const SkIPoint input_sequence[] = {
     {-5, 10}, {0, 10}, {-1, 10}, {15, 40}, {15, 45}, {15, 39}, {15, 25}
   };
   for (unsigned int i=0; i<arraysize(input_sequence); ++i) {
     const SkIPoint& point = input_sequence[i];
-    input_stub->InjectMouseEvent(mouseMoveEvent(point.x(), point.y()));
+    input_stub->InjectMouseEvent(MouseMoveEvent(point.x(), point.y()));
   }
   for (unsigned int i=0; i<arraysize(input_sequence); ++i) {
     const SkIPoint& point = input_sequence[i];
-    input_stub->InjectMouseEvent(mouseMoveEvent(point.y(), point.x()));
+    input_stub->InjectMouseEvent(MouseMoveEvent(point.y(), point.x()));
   }
 }
 
@@ -56,7 +57,7 @@ TEST(MouseInputFilterTest, BothDimensionsZero) {
   EXPECT_CALL(mock_stub, InjectMouseEvent(_))
         .Times(0);
 
-  injectTestSequence(&mouse_filter);
+  InjectTestSequence(&mouse_filter);
 }
 
 // Verify that no events get through if there's no input size.
@@ -68,7 +69,7 @@ TEST(MouseInputFilterTest, InputDimensionsZero) {
   EXPECT_CALL(mock_stub, InjectMouseEvent(_))
       .Times(0);
 
-  injectTestSequence(&mouse_filter);
+  InjectTestSequence(&mouse_filter);
 }
 
 // Verify that no events get through if there's no output size.
@@ -80,7 +81,7 @@ TEST(MouseInputFilterTest, OutputDimensionsZero) {
   EXPECT_CALL(mock_stub, InjectMouseEvent(_))
       .Times(0);
 
-  injectTestSequence(&mouse_filter);
+  InjectTestSequence(&mouse_filter);
 }
 
 // Verify that all events get through, clamped to the output.
@@ -108,7 +109,7 @@ TEST(MouseInputFilterTest, NoScalingOrClipping) {
         Times(1);
   }
 
-  injectTestSequence(&mouse_filter);
+  InjectTestSequence(&mouse_filter);
 }
 
 // Verify that we can up-scale with clamping.
@@ -136,7 +137,7 @@ TEST(MouseInputFilterTest, UpScalingAndClamping) {
         Times(1);
   }
 
-  injectTestSequence(&mouse_filter);
+  InjectTestSequence(&mouse_filter);
 }
 
 // Verify that we can down-scale with clamping.
@@ -165,7 +166,7 @@ TEST(MouseInputFilterTest, DownScalingAndClamping) {
 
   }
 
-  injectTestSequence(&mouse_filter);
+  InjectTestSequence(&mouse_filter);
 }
 
 }  // namespace remoting
