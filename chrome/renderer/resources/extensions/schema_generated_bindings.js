@@ -311,8 +311,6 @@ var chrome = chrome || {};
     customHooks[namespace] = fn;
   };
 
-  // --- Setup additional api's not currently handled in common/extensions/api
-
   function CustomBindingsObject() {
   }
   CustomBindingsObject.prototype.setSchema = function(schema) {
@@ -325,105 +323,16 @@ var chrome = chrome || {};
     });
   };
 
-  function extendSchema(schema) {
-    var extendedSchema = schema.slice();
-    extendedSchema.unshift({'type': 'string'});
-    return extendedSchema;
-  }
-
+  // Registers a custom type referenced via "$ref" fields in the API schema
+  // JSON.
   var customTypes = {};
-
-  function setupChromeSetting() {
-    function ChromeSetting(prefKey, valueSchema) {
-      this.get = function(details, callback) {
-        var getSchema = this.parameters.get;
-        chromeHidden.validate([details, callback], getSchema);
-        return sendRequest('types.ChromeSetting.get',
-                           [prefKey, details, callback],
-                           extendSchema(getSchema));
-      };
-      this.set = function(details, callback) {
-        var setSchema = this.parameters.set.slice();
-        setSchema[0].properties.value = valueSchema;
-        chromeHidden.validate([details, callback], setSchema);
-        return sendRequest('types.ChromeSetting.set',
-                           [prefKey, details, callback],
-                           extendSchema(setSchema));
-      };
-      this.clear = function(details, callback) {
-        var clearSchema = this.parameters.clear;
-        chromeHidden.validate([details, callback], clearSchema);
-        return sendRequest('types.ChromeSetting.clear',
-                           [prefKey, details, callback],
-                           extendSchema(clearSchema));
-      };
-      this.onChange = new chrome.Event('types.ChromeSetting.' + prefKey +
-                                       '.onChange');
-    };
-    ChromeSetting.prototype = new CustomBindingsObject();
-    customTypes['ChromeSetting'] = ChromeSetting;
-  }
-
-  function setupContentSetting() {
-    function ContentSetting(contentType, settingSchema) {
-      this.get = function(details, callback) {
-        var getSchema = this.parameters.get;
-        chromeHidden.validate([details, callback], getSchema);
-        return sendRequest('contentSettings.get',
-                           [contentType, details, callback],
-                           extendSchema(getSchema));
-      };
-      this.set = function(details, callback) {
-        var setSchema = this.parameters.set.slice();
-        setSchema[0].properties.setting = settingSchema;
-        chromeHidden.validate([details, callback], setSchema);
-        return sendRequest('contentSettings.set',
-                           [contentType, details, callback],
-                           extendSchema(setSchema));
-      };
-      this.clear = function(details, callback) {
-        var clearSchema = this.parameters.clear;
-        chromeHidden.validate([details, callback], clearSchema);
-        return sendRequest('contentSettings.clear',
-                           [contentType, details, callback],
-                           extendSchema(clearSchema));
-      };
-      this.getResourceIdentifiers = function(callback) {
-        var schema = this.parameters.getResourceIdentifiers;
-        chromeHidden.validate([callback], schema);
-        return sendRequest(
-            'contentSettings.getResourceIdentifiers',
-            [contentType, callback],
-            extendSchema(schema));
-      };
-    }
-    ContentSetting.prototype = new CustomBindingsObject();
-    customTypes['ContentSetting'] = ContentSetting;
-  }
-
-  function setupStorageNamespace() {
-    function StorageNamespace(namespace, schema) {
-      // Binds an API function for a namespace to its browser-side call, e.g.
-      // experimental.storage.sync.get('foo') -> (binds to) ->
-      // experimental.storage.get('sync', 'foo').
-      //
-      // TODO(kalman): Put as a method on CustomBindingsObject and re-use (or
-      // even generate) for other APIs that need to do this.
-      function bindApiFunction(functionName) {
-        this[functionName] = function() {
-          var schema = this.parameters[functionName];
-          chromeHidden.validate(arguments, schema);
-          return sendRequest(
-              'experimental.storage.' + functionName,
-              [namespace].concat(Array.prototype.slice.call(arguments)),
-              extendSchema(schema));
-        };
-      }
-      ['get', 'set', 'remove', 'clear'].forEach(bindApiFunction.bind(this));
-    }
-    StorageNamespace.prototype = new CustomBindingsObject();
-    customTypes['StorageNamespace'] = StorageNamespace;
-  }
+  chromeHidden.registerCustomType = function(typeName, customTypeFactory) {
+    var customType = customTypeFactory({
+      sendRequest: sendRequest,
+    });
+    customType.prototype = new CustomBindingsObject();
+    customTypes[typeName] = customType;
+  };
 
   // Get the platform from navigator.appVersion.
   function getPlatform() {
@@ -446,24 +355,6 @@ var chrome = chrome || {};
   chromeHidden.onLoad.addListener(function(extensionId, isExtensionProcess,
                                            isIncognitoProcess) {
     var apiDefinitions = GetExtensionAPIDefinition();
-
-    // Setup custom classes so we can use them to construct $ref'd objects from
-    // the API definition.
-    apiDefinitions.forEach(function(apiDef) {
-      switch (apiDef.namespace) {
-        case "types":
-          setupChromeSetting();
-          break;
-
-        case "contentSettings":
-          setupContentSetting();
-          break;
-
-        case "experimental.storage":
-          setupStorageNamespace();
-          break;
-      }
-    });
 
     // Read api definitions and setup api functions in the chrome namespace.
     // TODO(rafaelw): Consider defining a json schema for an api definition
@@ -497,7 +388,7 @@ var chrome = chrome || {};
       }
 
       // Adds a getter that throws an access denied error to object |module|
-      // for property |name| described by |schemaNode| if necessary.
+      // for property |name|.
       //
       // Returns true if the getter was necessary (access is disallowed), or
       // false otherwise.

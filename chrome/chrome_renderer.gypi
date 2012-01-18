@@ -143,6 +143,7 @@
         'renderer/resources/extensions/schema_generated_bindings.js',
         'renderer/resources/extensions/tts_custom_bindings.js',
         'renderer/resources/extensions/tts_engine_custom_bindings.js',
+        'renderer/resources/extensions/type_custom_bindings.js',
         'renderer/resources/extensions/web_request_custom_bindings.js',
         'renderer/resources/extensions/windows_custom_bindings.js',
         'renderer/about_handler.cc',
