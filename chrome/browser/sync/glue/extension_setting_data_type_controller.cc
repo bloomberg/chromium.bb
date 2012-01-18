@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,7 +22,9 @@ ExtensionSettingDataTypeController::ExtensionSettingDataTypeController(
     ProfileSyncComponentsFactory* profile_sync_factory,
     Profile* profile,
     ProfileSyncService* profile_sync_service)
-    : NonFrontendDataTypeController(profile_sync_factory, profile),
+    : NonFrontendDataTypeController(profile_sync_factory,
+                                    profile,
+                                    profile_sync_service),
       type_(type),
       settings_frontend_(
           profile->GetExtensionService()->settings_frontend()),

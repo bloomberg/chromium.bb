@@ -287,7 +287,7 @@ class AutofillEntryFactory : public AbstractAutofillFactory {
       ProfileSyncComponentsFactory* factory,
       ProfileMock* profile,
       ProfileSyncService* service) OVERRIDE {
-    return new AutofillDataTypeController(factory, profile);
+    return new AutofillDataTypeController(factory, profile, service);
   }
 
   virtual void SetExpectation(ProfileSyncComponentsFactoryMock* factory,
@@ -309,7 +309,7 @@ class AutofillProfileFactory : public AbstractAutofillFactory {
       ProfileSyncComponentsFactory* factory,
       ProfileMock* profile,
       ProfileSyncService* service) OVERRIDE {
-    return new AutofillProfileDataTypeController(factory, profile);
+    return new AutofillProfileDataTypeController(factory, profile, service);
   }
 
   virtual void SetExpectation(ProfileSyncComponentsFactoryMock* factory,

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -52,9 +52,11 @@ class NonFrontendDataTypeControllerFake : public NonFrontendDataTypeController {
   NonFrontendDataTypeControllerFake(
       ProfileSyncComponentsFactory* profile_sync_factory,
       Profile* profile,
+      ProfileSyncService* sync_service,
       NonFrontendDataTypeControllerMock* mock)
       : NonFrontendDataTypeController(profile_sync_factory,
-                                      profile),
+                                      profile,
+                                      sync_service),
         mock_(mock) {}
 
   virtual syncable::ModelType type() const { return syncable::BOOKMARKS; }
@@ -123,8 +125,9 @@ class NonFrontendDataTypeControllerTest : public testing::Test {
     dtc_mock_ = new StrictMock<NonFrontendDataTypeControllerMock>();
     non_frontend_dtc_ =
         new NonFrontendDataTypeControllerFake(profile_sync_factory_.get(),
-                                           &profile_,
-                                           dtc_mock_.get());
+                                              &profile_,
+                                              &service_,
+                                              dtc_mock_.get());
   }
 
   virtual void TearDown() {

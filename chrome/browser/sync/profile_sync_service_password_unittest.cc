@@ -229,7 +229,8 @@ class ProfileSyncServicePasswordTest : public AbstractProfileSyncServiceTest {
           Return(service_.get()));
       PasswordDataTypeController* data_type_controller =
           new PasswordDataTypeController(&factory_,
-                                         &profile_);
+                                         &profile_,
+                                         service_.get());
 
       EXPECT_CALL(factory_, CreatePasswordSyncComponents(_, _, _)).
           Times(AtLeast(1)).  // Can be more if we hit NEEDS_CRYPTO.

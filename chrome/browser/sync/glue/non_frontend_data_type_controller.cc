@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,10 +31,11 @@ NonFrontendDataTypeController::NonFrontendDataTypeController()
 
 NonFrontendDataTypeController::NonFrontendDataTypeController(
     ProfileSyncComponentsFactory* profile_sync_factory,
-    Profile* profile)
+    Profile* profile,
+    ProfileSyncService* sync_service)
     : profile_sync_factory_(profile_sync_factory),
       profile_(profile),
-      profile_sync_service_(profile->GetProfileSyncService()),
+      profile_sync_service_(sync_service),
       state_(NOT_RUNNING),
       abort_association_(false),
       abort_association_complete_(false, false),

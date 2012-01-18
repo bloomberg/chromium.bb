@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,7 +21,8 @@ class PasswordDataTypeController : public NonFrontendDataTypeController {
  public:
   PasswordDataTypeController(
       ProfileSyncComponentsFactory* profile_sync_factory,
-      Profile* profile);
+      Profile* profile,
+      ProfileSyncService* sync_service);
   virtual ~PasswordDataTypeController();
 
   // NonFrontendDataTypeController implementation

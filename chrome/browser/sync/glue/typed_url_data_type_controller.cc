@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -43,9 +43,11 @@ class ControlTask : public HistoryDBTask {
 
 TypedUrlDataTypeController::TypedUrlDataTypeController(
     ProfileSyncComponentsFactory* profile_sync_factory,
-    Profile* profile)
+    Profile* profile,
+    ProfileSyncService* sync_service)
     : NonFrontendDataTypeController(profile_sync_factory,
-                                 profile),
+                                    profile,
+                                    sync_service),
       backend_(NULL) {
   pref_registrar_.Init(profile->GetPrefs());
   pref_registrar_.Add(prefs::kSavingBrowserHistoryDisabled, this);

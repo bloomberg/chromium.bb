@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -69,9 +69,11 @@ class NewNonFrontendDataTypeControllerFake
   NewNonFrontendDataTypeControllerFake(
       ProfileSyncComponentsFactory* profile_sync_factory,
       Profile* profile,
+      ProfileSyncService* sync_service,
       NewNonFrontendDataTypeControllerMock* mock)
       : NewNonFrontendDataTypeController(profile_sync_factory,
-                                         profile),
+                                         profile,
+                                         sync_service),
         mock_(mock) {}
 
   virtual syncable::ModelType type() const OVERRIDE {
@@ -143,6 +145,7 @@ class NewNonFrontendDataTypeControllerTest : public testing::Test {
     new_non_frontend_dtc_ =
         new NewNonFrontendDataTypeControllerFake(profile_sync_factory_.get(),
                                                  &profile_,
+                                                 &service_,
                                                  dtc_mock_.get());
   }
 

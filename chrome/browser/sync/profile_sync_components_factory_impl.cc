@@ -121,7 +121,7 @@ void ProfileSyncComponentsFactoryImpl::RegisterDataTypes(
   // disabled.
   if (!command_line_->HasSwitch(switches::kDisableSyncAutofill)) {
     pss->RegisterDataTypeController(
-        new AutofillDataTypeController(this, profile_));
+        new AutofillDataTypeController(this, profile_, pss));
   }
 
   // Bookmark sync is enabled by default.  Register unless explicitly
@@ -142,7 +142,7 @@ void ProfileSyncComponentsFactoryImpl::RegisterDataTypes(
   // disabled.
   if (!command_line_->HasSwitch(switches::kDisableSyncPasswords)) {
     pss->RegisterDataTypeController(
-        new PasswordDataTypeController(this, profile_));
+        new PasswordDataTypeController(this, profile_, pss));
   }
 
   // Preference sync is enabled by default.  Register unless explicitly
@@ -163,7 +163,7 @@ void ProfileSyncComponentsFactoryImpl::RegisterDataTypes(
   if (!profile_->GetPrefs()->GetBoolean(prefs::kSavingBrowserHistoryDisabled) &&
       !command_line_->HasSwitch(switches::kDisableSyncTypedUrls)) {
     pss->RegisterDataTypeController(
-        new TypedUrlDataTypeController(this, profile_));
+        new TypedUrlDataTypeController(this, profile_, pss));
   }
 
   // Search Engine sync is enabled by default.  Register only if explicitly
@@ -193,7 +193,7 @@ void ProfileSyncComponentsFactoryImpl::RegisterDataTypes(
 
   if (!command_line_->HasSwitch(switches::kDisableSyncAutofillProfile)) {
     pss->RegisterDataTypeController(
-        new AutofillProfileDataTypeController(this, profile_));
+        new AutofillProfileDataTypeController(this, profile_, pss));
   }
 
   // App notifications sync is enabled by default.  Register only if

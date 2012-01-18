@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -84,8 +84,11 @@ class AutofillDataTypeControllerMock : public AutofillDataTypeController {
  public:
   AutofillDataTypeControllerMock(
       ProfileSyncComponentsFactory* profile_sync_factory,
-      Profile* profile)
-      : AutofillDataTypeController(profile_sync_factory, profile),
+      Profile* profile,
+      ProfileSyncService* sync_service)
+      : AutofillDataTypeController(profile_sync_factory,
+                                   profile,
+                                   sync_service),
         start_called_(false, false) {}
 
   MOCK_METHOD0(StartAssociation, void());
@@ -123,7 +126,9 @@ class AutofillDataTypeControllerTest : public testing::Test {
     EXPECT_CALL(profile_, GetProfileSyncService()).WillRepeatedly(
         Return(&service_));
     autofill_dtc_ =
-        new AutofillDataTypeControllerMock(&profile_sync_factory_, &profile_);
+        new AutofillDataTypeControllerMock(&profile_sync_factory_,
+                                           &profile_,
+                                           &service_);
     EXPECT_CALL(profile_, GetWebDataService(_)).
         WillRepeatedly(Return(web_data_service_.get()));
   }

@@ -194,7 +194,8 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
           Return(service_.get()));
       TypedUrlDataTypeController* data_type_controller =
           new TypedUrlDataTypeController(&factory_,
-                                         &profile_);
+                                         &profile_,
+                                         service_.get());
 
       EXPECT_CALL(factory_, CreateTypedUrlSyncComponents(_, _, _)).
           WillOnce(MakeTypedUrlSyncComponents(&profile_,
