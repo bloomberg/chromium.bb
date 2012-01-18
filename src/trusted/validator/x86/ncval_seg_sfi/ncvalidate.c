@@ -450,9 +450,7 @@ static void ForgetInstructionBoundary(const NCDecoderInst *dinst,
 
 int NCValidateFinish(struct NCValidatorState *vstate) {
   if (vstate == NULL) {
-    vprint(vstate,
-           (reporter,
-            "validator not initialized. Did you call ncvalidate_init()?\n"));
+    dprint(("validator not initialized. Did you call ncvalidate_init()?\n"));
     /* non-zero indicates failure */
     return 1;
   }
