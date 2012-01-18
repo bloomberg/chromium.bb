@@ -60,6 +60,7 @@
         'app_list/drop_shadow_label.h',
         'ash_switches.cc',
         'ash_switches.h',
+        'caps_lock_delegate.h',
         'desktop_background/desktop_background_view.cc',
         'desktop_background/desktop_background_view.h',
         'drag_drop/drag_drop_controller.cc',

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "ash/accelerators/accelerator_controller.h"
+#include "ash/caps_lock_delegate.h"
 #include "ash/ime/event.h"
 #include "ash/screenshot_delegate.h"
 #include "ash/shell.h"
@@ -67,6 +68,30 @@ class DummyScreenshotDelegate : public ScreenshotDelegate {
   int handle_take_screenshot_count_;
 
   DISALLOW_COPY_AND_ASSIGN(DummyScreenshotDelegate);
+};
+
+class DummyCapsLockDelegate : public CapsLockDelegate {
+ public:
+  explicit DummyCapsLockDelegate(bool consume)
+      : consume_(consume),
+        handle_caps_lock_count_(0) {
+  }
+  virtual ~DummyCapsLockDelegate() {}
+
+  virtual bool HandleToggleCapsLock() OVERRIDE {
+    ++handle_caps_lock_count_;
+    return consume_;
+  }
+
+  int handle_caps_lock_count() const {
+    return handle_caps_lock_count_;
+  }
+
+ private:
+  const bool consume_;
+  int handle_caps_lock_count_;
+
+  DISALLOW_COPY_AND_ASSIGN(DummyCapsLockDelegate);
 };
 
 bool TestTarget::AcceleratorPressed(const ui::Accelerator& accelerator) {
@@ -248,19 +273,42 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
       ui::Accelerator(ui::VKEY_TAB, false, false, true)));
   // TakeScreenshot
   // True should always be returned regardless of the existence of the delegate.
-  EXPECT_TRUE(GetController()->Process(
-      ui::Accelerator(ui::VKEY_F5, false, true, false)));
-  EXPECT_TRUE(GetController()->Process(
-      ui::Accelerator(ui::VKEY_PRINT, false, false, false)));
-  DummyScreenshotDelegate* delegate = new DummyScreenshotDelegate;
-  GetController()->SetScreenshotDelegate(delegate);
-  EXPECT_EQ(0, delegate->handle_take_screenshot_count());
-  EXPECT_TRUE(GetController()->Process(
-      ui::Accelerator(ui::VKEY_F5, false, true, false)));
-  EXPECT_EQ(1, delegate->handle_take_screenshot_count());
-  EXPECT_TRUE(GetController()->Process(
-      ui::Accelerator(ui::VKEY_PRINT, false, false, false)));
-  EXPECT_EQ(2, delegate->handle_take_screenshot_count());
+  {
+    EXPECT_TRUE(GetController()->Process(
+        ui::Accelerator(ui::VKEY_F5, false, true, false)));
+    EXPECT_TRUE(GetController()->Process(
+        ui::Accelerator(ui::VKEY_PRINT, false, false, false)));
+    DummyScreenshotDelegate* delegate = new DummyScreenshotDelegate;
+    GetController()->SetScreenshotDelegate(delegate);
+    EXPECT_EQ(0, delegate->handle_take_screenshot_count());
+    EXPECT_TRUE(GetController()->Process(
+        ui::Accelerator(ui::VKEY_F5, false, true, false)));
+    EXPECT_EQ(1, delegate->handle_take_screenshot_count());
+    EXPECT_TRUE(GetController()->Process(
+        ui::Accelerator(ui::VKEY_PRINT, false, false, false)));
+    EXPECT_EQ(2, delegate->handle_take_screenshot_count());
+  }
+  // ToggleCapsLock
+  {
+    EXPECT_FALSE(GetController()->Process(
+        ui::Accelerator(ui::VKEY_LWIN, true, false, false)));
+    DummyCapsLockDelegate* delegate = new DummyCapsLockDelegate(false);
+    GetController()->SetCapsLockDelegate(
+        scoped_ptr<CapsLockDelegate>(delegate).Pass());
+    EXPECT_EQ(0, delegate->handle_caps_lock_count());
+    EXPECT_FALSE(GetController()->Process(
+        ui::Accelerator(ui::VKEY_LWIN, true, false, false)));
+    EXPECT_EQ(1, delegate->handle_caps_lock_count());
+  }
+  {
+    DummyCapsLockDelegate* delegate = new DummyCapsLockDelegate(true);
+    GetController()->SetCapsLockDelegate(
+        scoped_ptr<CapsLockDelegate>(delegate).Pass());
+    EXPECT_EQ(0, delegate->handle_caps_lock_count());
+    EXPECT_TRUE(GetController()->Process(
+        ui::Accelerator(ui::VKEY_LWIN, true, false, false)));
+    EXPECT_EQ(1, delegate->handle_caps_lock_count());
+  }
 #if !defined(NDEBUG)
   // RotateScreen
   EXPECT_TRUE(GetController()->Process(

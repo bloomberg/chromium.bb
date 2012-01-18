@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,6 +21,7 @@ class AcceleratorManager;
 namespace ash {
 
 class ScreenshotDelegate;
+class CapsLockDelegate;
 
 // AcceleratorController provides functions for registering or unregistering
 // global keyboard accelerators, which are handled earlier than any windows. It
@@ -56,6 +57,7 @@ class ASH_EXPORT AcceleratorController : public ui::AcceleratorTarget {
   virtual bool CanHandleAccelerators() const OVERRIDE;
 
   void SetScreenshotDelegate(ScreenshotDelegate* screenshot_delegate);
+  void SetCapsLockDelegate(scoped_ptr<CapsLockDelegate> caps_lock_delegate);
 
  private:
   // Initialize the accelerators this class handles as a target.
@@ -64,6 +66,7 @@ class ASH_EXPORT AcceleratorController : public ui::AcceleratorTarget {
   scoped_ptr<ui::AcceleratorManager> accelerator_manager_;
 
   scoped_ptr<ScreenshotDelegate> screenshot_delegate_;
+  scoped_ptr<CapsLockDelegate> caps_lock_delegate_;
 
   // A map from accelerators to the AcceleratorAction values, which are used in
   // the implementation.

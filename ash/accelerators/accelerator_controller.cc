@@ -4,6 +4,7 @@
 
 #include "ash/accelerators/accelerator_controller.h"
 
+#include "ash/caps_lock_delegate.h"
 #include "ash/launcher/launcher.h"
 #include "ash/launcher/launcher_model.h"
 #include "ash/screenshot_delegate.h"
@@ -25,6 +26,7 @@ enum AcceleratorAction {
   CYCLE_BACKWARD,
   CYCLE_FORWARD,
   TAKE_SCREENSHOT,
+  TOGGLE_CAPS_LOCK,
 #if !defined(NDEBUG)
   ROTATE_SCREEN,
   PRINT_LAYER_HIERARCHY,
@@ -46,6 +48,8 @@ struct AcceleratorData {
   { ui::VKEY_F5, true, false, false, CYCLE_BACKWARD },
   { ui::VKEY_F5, false, true, false, TAKE_SCREENSHOT },
   { ui::VKEY_PRINT, false, false, false, TAKE_SCREENSHOT },
+  // On Chrome OS, Search key is mapped to LWIN.
+  { ui::VKEY_LWIN, true, false, false, TOGGLE_CAPS_LOCK },
 #if !defined(NDEBUG)
   { ui::VKEY_HOME, false, true, false, ROTATE_SCREEN },
   { ui::VKEY_F11, false, true, false, TOGGLE_ROOT_WINDOW_FULL_SCREEN },
@@ -162,6 +166,11 @@ void AcceleratorController::SetScreenshotDelegate(
   screenshot_delegate_.reset(screenshot_delegate);
 }
 
+void AcceleratorController::SetCapsLockDelegate(
+    scoped_ptr<CapsLockDelegate> caps_lock_delegate) {
+  caps_lock_delegate_.swap(caps_lock_delegate);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // AcceleratorController, ui::AcceleratorTarget implementation:
 
@@ -182,6 +191,10 @@ bool AcceleratorController::AcceleratorPressed(
         screenshot_delegate_->HandleTakeScreenshot();
       // Return true to prevent propagation of the key event.
       return true;
+    case TOGGLE_CAPS_LOCK:
+      if (caps_lock_delegate_.get())
+        return caps_lock_delegate_->HandleToggleCapsLock();
+      break;
 #if !defined(NDEBUG)
     case ROTATE_SCREEN:
       return HandleRotateScreen();
