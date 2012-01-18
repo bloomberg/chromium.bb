@@ -3,7 +3,8 @@
   "version": "1",
   "intents": {
     "http://webintents.org/intent/share" : {
-      "title" : { "shouldBeA" : "string" }
+      "title" : { "shouldBeA" : "string" },
+      "type" : [ "*" ]
     }
   }
 }

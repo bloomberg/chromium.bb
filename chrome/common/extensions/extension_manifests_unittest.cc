@@ -775,7 +775,7 @@ TEST_F(ExtensionManifestTest, TtsEngine) {
 }
 
 TEST_F(ExtensionManifestTest, WebIntents) {
-  CommandLine::ForCurrentProcess()->AppendSwitch("--enable-web-intents");
+  CommandLine::ForCurrentProcess()->AppendSwitch(switches::kEnableWebIntents);
 
   LoadAndExpectError("intent_invalid_1.json",
                      extension_manifest_errors::kInvalidIntents);
@@ -812,13 +812,43 @@ TEST_F(ExtensionManifestTest, WebIntents) {
   ASSERT_TRUE(extension.get() != NULL);
 
   ASSERT_EQ(1u, extension->intents_services().size());
-  EXPECT_EQ("", UTF16ToUTF8(extension->intents_services()[0].type));
+  EXPECT_EQ("*", UTF16ToUTF8(extension->intents_services()[0].type));
   EXPECT_EQ("http://webintents.org/share",
             UTF16ToUTF8(extension->intents_services()[0].action));
   EXPECT_TRUE(extension->intents_services()[0].service_url.is_empty());
   EXPECT_EQ("", UTF16ToUTF8(extension->intents_services()[0].title));
   EXPECT_EQ(webkit_glue::WebIntentServiceData::DISPOSITION_WINDOW,
             extension->intents_services()[0].disposition);
+}
+
+TEST_F(ExtensionManifestTest, WebIntentsWithMultipleMimeTypes) {
+  CommandLine::ForCurrentProcess()->AppendSwitch(switches::kEnableWebIntents);
+
+  scoped_refptr<Extension> extension(
+      LoadAndExpectSuccess("intent_valid_multitype.json"));
+  ASSERT_TRUE(extension.get() != NULL);
+
+  ASSERT_EQ(2u, extension->intents_services().size());
+
+  // One registration with multiple types generates a separate service for
+  // each MIME type.
+  for (int i = 0; i < 2; ++i) {
+    EXPECT_EQ("http://webintents.org/share",
+              UTF16ToUTF8(extension->intents_services()[i].action));
+    EXPECT_EQ("chrome-extension",
+              extension->intents_services()[i].service_url.scheme());
+    EXPECT_EQ("///services/share",
+              extension->intents_services()[i].service_url.path());
+    EXPECT_EQ("Sample Sharing Intent",
+              UTF16ToUTF8(extension->intents_services()[i].title));
+    EXPECT_EQ(webkit_glue::WebIntentServiceData::DISPOSITION_INLINE,
+              extension->intents_services()[i].disposition);
+  }
+  EXPECT_EQ("image/jpeg", UTF16ToUTF8(extension->intents_services()[0].type));
+  EXPECT_EQ("image/bmp", UTF16ToUTF8(extension->intents_services()[1].type));
+
+  LoadAndExpectError("intent_invalid_type_element.json",
+                     extension_manifest_errors::kInvalidIntentTypeElement);
 }
 
 TEST_F(ExtensionManifestTest, PortsInPermissions) {

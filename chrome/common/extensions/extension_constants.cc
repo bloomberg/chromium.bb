@@ -246,6 +246,8 @@ const char kInvalidIntents[] =
     "Invalid value for intents";
 const char kInvalidIntentType[] =
     "Invalid value for intents[*].type";
+const char kInvalidIntentTypeElement[] =
+    "Invalid value for intents[*].type[*]";
 const char kInvalidIntentTitle[] =
     "Invalid value for intents[*].title";
 const char kInvalidIsolation[] =

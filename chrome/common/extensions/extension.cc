@@ -1156,10 +1156,12 @@ bool Extension::LoadWebIntentServices(const extensions::Manifest* manifest,
     }
     service.action = UTF8ToUTF16(*iter);
 
-    // TODO(groby): Support an array of types.
-    if (one_service->HasKey(keys::kIntentType) &&
-        !one_service->GetString(keys::kIntentType, &service.type)) {
-      *error = ASCIIToUTF16(errors::kInvalidIntentType);
+    ListValue* mime_types = NULL;
+    if (!one_service->HasKey(keys::kIntentType) ||
+        !one_service->GetList(keys::kIntentType, &mime_types) ||
+        mime_types->GetSize() == 0) {
+      *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
+          errors::kInvalidIntentType,*iter);
       return false;
     }
 
@@ -1193,7 +1195,15 @@ bool Extension::LoadWebIntentServices(const extensions::Manifest* manifest,
       }
     }
 
-    intents_services_.push_back(service);
+    for (size_t i = 0; i < mime_types->GetSize(); ++i) {
+      if (!mime_types->GetString(i, &service.type)) {
+        *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
+            errors::kInvalidIntentTypeElement, *iter,
+            std::string(base::IntToString(i)));
+        return false;
+      }
+      intents_services_.push_back(service);
+    }
   }
   return true;
 }
