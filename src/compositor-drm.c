@@ -780,6 +780,7 @@ drm_destroy(struct weston_compositor *ec)
 
 	weston_compositor_shutdown(ec);
 	gbm_device_destroy(d->gbm);
+	drmDropMaster(d->drm.fd);
 	tty_destroy(d->tty);
 
 	wl_list_for_each_safe(input, next, &ec->input_device_list, link)

@@ -43,6 +43,7 @@ struct tty {
 	struct wl_event_source *enter_vt_source;
 	struct wl_event_source *leave_vt_source;
 	tty_vt_func_t vt_func;
+	int vt, starting_vt, has_vt;
 };
 
 static int on_enter_vt(int signal_number, void *data)
@@ -52,6 +53,7 @@ static int on_enter_vt(int signal_number, void *data)
 	ioctl(tty->fd, VT_RELDISP, VT_ACKACQ);
 
 	tty->vt_func(tty->compositor, TTY_ENTER_VT);
+	tty->has_vt = 1;
 
 	return 1;
 }
@@ -62,6 +64,7 @@ on_leave_vt(int signal_number, void *data)
 	struct tty *tty = data;
 
 	tty->vt_func(tty->compositor, TTY_LEAVE_VT);
+	tty->has_vt = 0;
 
 	ioctl(tty->fd, VT_RELDISP, 1);
 
@@ -81,10 +84,11 @@ on_tty_input(int fd, uint32_t mask, void *data)
 }
 
 static int
-try_open_vt(void)
+try_open_vt(struct tty *tty)
 {
-	int tty0, vt, fd;
+	int tty0, fd;
 	char filename[16];
+	struct vt_stat vts;
 
 	tty0 = open("/dev/tty0", O_WRONLY | O_CLOEXEC);
 	if (tty0 < 0) {
@@ -92,21 +96,26 @@ try_open_vt(void)
 		return -1;
 	}
 
-	if (ioctl(tty0, VT_OPENQRY, &vt) < 0 || vt == -1) {
+	if (ioctl(tty0, VT_OPENQRY, &tty->vt) < 0 || tty->vt == -1) {
 		fprintf(stderr, "could not open tty0: %m\n");
 		close(tty0);
 		return -1;
 	}
 
 	close(tty0);
-	snprintf(filename, sizeof filename, "/dev/tty%d", vt);
+	snprintf(filename, sizeof filename, "/dev/tty%d", tty->vt);
 	fprintf(stderr, "compositor: using new vt %s\n", filename);
 	fd = open(filename, O_RDWR | O_NOCTTY | O_CLOEXEC);
 	if (fd < 0)
 		return fd;
 
-	if (ioctl(fd, VT_ACTIVATE, vt) < 0 ||
-	    ioctl(fd, VT_WAITACTIVE, vt) < 0) {
+	if (ioctl(fd, VT_GETSTATE, &vts) == 0)
+		tty->starting_vt = vts.v_active;
+	else
+		tty->starting_vt = tty->vt;
+
+	if (ioctl(fd, VT_ACTIVATE, tty->vt) < 0 ||
+	    ioctl(fd, VT_WAITACTIVE, tty->vt) < 0) {
 		fprintf(stderr, "failed to swtich to new vt\n");
 		close(fd);
 		return -1;
@@ -145,7 +154,7 @@ tty_create(struct weston_compositor *compositor, tty_vt_func_t vt_func,
 	} else {
 		/* Fall back to try opening a new VT.  This typically
 		 * requires root. */
-		tty->fd = try_open_vt();
+		tty->fd = try_open_vt(tty);
 	}
 
 	if (tty->fd <= 0) {
@@ -179,7 +188,7 @@ tty_create(struct weston_compositor *compositor, tty_vt_func_t vt_func,
 		return NULL;
 	}
 
-	tty->compositor->focus = 1;
+	tty->has_vt = 1;
 	mode.mode = VT_PROCESS;
 	mode.relsig = SIGUSR1;
 	mode.acqsig = SIGUSR2;
@@ -199,6 +208,8 @@ tty_create(struct weston_compositor *compositor, tty_vt_func_t vt_func,
 void
 tty_destroy(struct tty *tty)
 {
+	struct vt_mode mode = { 0 };
+
         if(!tty)
                 return;
 
@@ -209,6 +220,15 @@ tty_destroy(struct tty *tty)
 	if (tcsetattr(tty->fd, TCSANOW, &tty->terminal_attributes) < 0)
 		fprintf(stderr,
 			"could not restore terminal to canonical mode\n");
+
+	mode.mode = VT_AUTO;
+	if (ioctl(tty->fd, VT_SETMODE, &mode) < 0)
+		fprintf(stderr, "could not reset vt handling\n");
+
+	if (tty->has_vt && tty->vt != tty->starting_vt) {
+		ioctl(tty->fd, VT_ACTIVATE, tty->starting_vt);
+		ioctl(tty->fd, VT_WAITACTIVE, tty->starting_vt);
+	}
 
 	close(tty->fd);
 
