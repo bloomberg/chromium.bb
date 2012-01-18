@@ -162,7 +162,7 @@ The message header has 2 words in it:
 \end{itemize}
 
 The payload describes the request/event arguments.  Every argument is always
-aligned to 32-bit.  There is no prefix that describes the type, but it is
+aligned to 32-bits.  There is no prefix that describes the type, but it is
 inferred implicitly from the xml specification.
 
 The representation of argument types are as follows:
@@ -174,12 +174,39 @@ The representation of argument types are as follows:
   32-bit boundary.
 \item "object": A 32-bit object ID.
 \item "new\_id": the 32-bit object ID.  On requests, the client
-  decides the ID.  The only event with "new\_id" is advertisements of
+  decides the ID.  The only events with "new\_id" are advertisements of
   globals, and the server will use IDs below 0x10000.
 \item "array": Starts with 32-bit array size in bytes, followed by the array
   contents verbatim, and finally padding to a 32-bit boundary.
 \item "fd": the file descriptor is not stored in the message buffer, but in
   the ancillary data of the UNIX domain socket message (msg\_control).
+\end{itemize}
+
+\subsection{Interfaces}
+
+The protocol includes several interfaces which are used for
+interacting with the server.  Each interface provides requests,
+events, and errors (which are really just special events) as described
+above.  Specific compositor implementations may have their own
+interfaces provided as extensions, but there are several which are
+always expected to be present.
+
+Core interfaces:
+\begin{itemize}
+\item wl_display: provides global functionality like objecting binding and fatal error events
+\item wl_callback: callback interface for dnoe events
+\item wl_compositor: core compositor interface, allows surface creation
+\item wl_shm: buffer management interface with buffer creation and format handling
+\item wl_buffer: buffer handling interface for indicating damage and object destruction, also provides buffer release events from the server
+\item wl_data_offer: for accepting and receiving specific mime types
+\item wl_data_source: for offering specific mime types
+\item wl_data_Device: lets clients manage drag & drop, provides pointer enter/leave events and motion
+\item wl_data_device_manager: for managing data sources and devices
+\item wl_shell: shell surface handling
+\item wl_shell_surface: shell surface handling and desktop-like events (e.g. set a surface to fullscreen, display a popup, etc.)
+\item wl_surface: surface management (destruction, damage, buffer attach, frame handling)
+\item wl_input_device: cursor setting, motion, button, and key events, etc.
+\item wl_output: events describing an attached output (subpixel orientation, current mode & geometry, etc.)
 \end{itemize}
 
 \subsection{Connect Time}
@@ -228,7 +255,7 @@ The compositor is a global object, advertised at connect time.
 
 \begin{itemize}
 \item a global object
-\item broadcasts drm file name, or at least a string like drm:/dev/card0
+\item broadcasts drm file name, or at least a string like drm:/dev/dri/card0
 \item commit/ack/frame protocol
 \end{itemize}
 
