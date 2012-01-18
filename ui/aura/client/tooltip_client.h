@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,6 +26,9 @@ class AURA_EXPORT TooltipClient {
  public:
   // Informs the shell tooltip manager of change in tooltip for window |target|.
   virtual void UpdateTooltip(Window* target) = 0;
+
+  // Enables/Disables tooltips.
+  virtual void SetTooltipsEnabled(bool enable) = 0;
 };
 
 AURA_EXPORT void SetTooltipClient(TooltipClient* client);

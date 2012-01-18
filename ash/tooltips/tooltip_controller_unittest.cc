@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -93,6 +93,10 @@ class TooltipControllerTest : public AuraShellTestBase {
     GetController()->TooltipTimerFired();
   }
 
+  bool IsTooltipVisible() {
+    return GetController()->IsTooltipVisible();
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(TooltipControllerTest);
 };
@@ -101,6 +105,7 @@ TEST_F(TooltipControllerTest, NonNullTooltipClient) {
   EXPECT_TRUE(aura::client::GetTooltipClient() != NULL);
   EXPECT_EQ(ASCIIToUTF16(""), GetTooltipText());
   EXPECT_EQ(NULL, GetTooltipWindow());
+  EXPECT_FALSE(IsTooltipVisible());
 }
 
 TEST_F(TooltipControllerTest, ViewTooltip) {
@@ -125,9 +130,11 @@ TEST_F(TooltipControllerTest, ViewTooltip) {
   // Fire tooltip timer so tooltip becomes visible.
   FireTooltipTimer();
 
+  EXPECT_TRUE(IsTooltipVisible());
   point.Offset(1, 0);
   SimulateMouseMoveAtPoint(point);
 
+  EXPECT_TRUE(IsTooltipVisible());
   EXPECT_TRUE(aura::client::GetTooltipText(window) != NULL);
   EXPECT_EQ(expected_tooltip, *aura::client::GetTooltipText(window));
   EXPECT_EQ(expected_tooltip, GetTooltipText());
@@ -151,9 +158,11 @@ TEST_F(TooltipControllerTest, TooltipsInMultipleViews) {
   // Fire tooltip timer so tooltip becomes visible.
   SimulateMouseMoveAtPoint(point);
   FireTooltipTimer();
+  EXPECT_TRUE(IsTooltipVisible());
   for (int i = 0; i < 50; i++) {
     point.Offset(1, 0);
     SimulateMouseMoveAtPoint(point);
+    EXPECT_TRUE(IsTooltipVisible());
     EXPECT_EQ(window,
         aura::RootWindow::GetInstance()->GetEventHandlerForPoint(point));
     EXPECT_TRUE(aura::client::GetTooltipText(window) != NULL);
@@ -165,6 +174,7 @@ TEST_F(TooltipControllerTest, TooltipsInMultipleViews) {
   for (int i = 0; i < 50; i++) {
     point.Offset(1, 0);
     SimulateMouseMoveAtPoint(point);
+    EXPECT_FALSE(IsTooltipVisible());
     EXPECT_EQ(window,
         aura::RootWindow::GetInstance()->GetEventHandlerForPoint(point));
     EXPECT_TRUE(aura::client::GetTooltipText(window) != NULL);
@@ -173,6 +183,35 @@ TEST_F(TooltipControllerTest, TooltipsInMultipleViews) {
     EXPECT_EQ(expected_tooltip, GetTooltipText());
     EXPECT_EQ(window, GetTooltipWindow());
   }
+}
+
+TEST_F(TooltipControllerTest, EnableOrDisableTooltips) {
+  views::Widget* widget = CreateNewWidget();
+  TooltipTestView* view = new TooltipTestView;
+  AddViewToWidgetAndResize(widget, view);
+  view->set_tooltip_text(ASCIIToUTF16("Tooltip Text"));
+  EXPECT_EQ(ASCIIToUTF16(""), GetTooltipText());
+  EXPECT_EQ(NULL, GetTooltipWindow());
+
+  gfx::Point point = gfx::Rect(view->bounds()).CenterPoint();
+  SimulateMouseMoveAtPoint(point);
+  string16 expected_tooltip = ASCIIToUTF16("Tooltip Text");
+
+  // Fire tooltip timer so tooltip becomes visible.
+  FireTooltipTimer();
+  EXPECT_TRUE(IsTooltipVisible());
+
+  // Diable tooltips and check again.
+  GetController()->SetTooltipsEnabled(false);
+  EXPECT_FALSE(IsTooltipVisible());
+  FireTooltipTimer();
+  EXPECT_FALSE(IsTooltipVisible());
+
+  // Enable tooltips back and check again.
+  GetController()->SetTooltipsEnabled(true);
+  EXPECT_FALSE(IsTooltipVisible());
+  FireTooltipTimer();
+  EXPECT_TRUE(IsTooltipVisible());
 }
 
 }  // namespace test

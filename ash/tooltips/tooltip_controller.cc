@@ -203,7 +203,8 @@ class TooltipController::Tooltip {
 TooltipController::TooltipController()
     : aura::EventFilter(NULL),
       tooltip_window_(NULL),
-      tooltip_(new Tooltip) {
+      tooltip_(new Tooltip),
+      tooltips_enabled_(true) {
   tooltip_timer_.Start(FROM_HERE,
       base::TimeDelta::FromMilliseconds(kTooltipTimeoutMs),
       this, &TooltipController::TooltipTimerFired);
@@ -218,6 +219,13 @@ void TooltipController::UpdateTooltip(aura::Window* target) {
   // If tooltip is visible, we may want to hide it. If it is not, we are ok.
   if (tooltip_window_ == target && tooltip_->IsVisible())
     UpdateIfRequired();
+}
+
+void TooltipController::SetTooltipsEnabled(bool enable) {
+  if (tooltips_enabled_ == enable)
+    return;
+  tooltips_enabled_ = enable;
+  UpdateTooltip(tooltip_window_);
 }
 
 bool TooltipController::PreHandleKeyEvent(aura::Window* target,
@@ -288,11 +296,20 @@ void TooltipController::TooltipTimerFired() {
 }
 
 void TooltipController::UpdateIfRequired() {
+  if (!tooltips_enabled_) {
+    tooltip_->Hide();
+    return;
+  }
   string16 tooltip_text;
   if (tooltip_window_)
     tooltip_text = *aura::client::GetTooltipText(tooltip_window_);
 
-  if (tooltip_text_ != tooltip_text) {
+  // We add the !tooltip_->IsVisible() below because when we come here from
+  // TooltipTimerFired(), the tooltip_text may not have changed but we still
+  // want to update the tooltip because the timer has fired.
+  // If we come here from UpdateTooltip(), we have already checked for tooltip
+  // visibility and this check below will have no effect.
+  if (tooltip_text_ != tooltip_text || !tooltip_->IsVisible()) {
     tooltip_text_ = tooltip_text;
     if (tooltip_text_.empty()) {
       tooltip_->Hide();
@@ -304,6 +321,10 @@ void TooltipController::UpdateIfRequired() {
       tooltip_->Show();
     }
   }
+}
+
+bool TooltipController::IsTooltipVisible() {
+  return tooltip_->IsVisible();
 }
 
 }  // namespace internal

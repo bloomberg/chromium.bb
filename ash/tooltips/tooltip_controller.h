@@ -40,6 +40,7 @@ class ASH_EXPORT TooltipController : public aura::client::TooltipClient,
 
   // Overridden from aura::client::TooltipClient.
   virtual void UpdateTooltip(aura::Window* target) OVERRIDE;
+  virtual void SetTooltipsEnabled(bool enable) OVERRIDE;
 
   // Overridden from aura::EventFilter.
   virtual bool PreHandleKeyEvent(aura::Window* target,
@@ -65,6 +66,9 @@ class ASH_EXPORT TooltipController : public aura::client::TooltipClient,
   // text or the aura::Window.
   void UpdateIfRequired();
 
+  // Only used in tests.
+  bool IsTooltipVisible();
+
   aura::Window* tooltip_window_;
   string16 tooltip_text_;
   scoped_ptr<Tooltip> tooltip_;
@@ -72,6 +76,8 @@ class ASH_EXPORT TooltipController : public aura::client::TooltipClient,
   base::RepeatingTimer<TooltipController> tooltip_timer_;
 
   gfx::Point curr_mouse_loc_;
+
+  bool tooltips_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(TooltipController);
 };
