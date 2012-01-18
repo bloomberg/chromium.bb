@@ -883,6 +883,19 @@ TEST_F(RenderTextTest, StringWidthTest) {
 
 #endif
 
+TEST_F(RenderTextTest, CursorBoundsInReplacementMode) {
+  scoped_ptr<RenderText> render_text(RenderText::CreateRenderText());
+  render_text->SetText(ASCIIToUTF16("abcdefg"));
+  render_text->SetDisplayRect(Rect(100, 17));
+  SelectionModel sel_b(1);
+  SelectionModel sel_c(2);
+  Rect cursor_around_b = render_text->GetCursorBounds(sel_b, false);
+  Rect cursor_before_b = render_text->GetCursorBounds(sel_b, true);
+  Rect cursor_before_c = render_text->GetCursorBounds(sel_c, true);
+  EXPECT_EQ(cursor_around_b.x(), cursor_before_b.x());
+  EXPECT_EQ(cursor_around_b.right(), cursor_before_c.x());
+}
+
 TEST_F(RenderTextTest, OriginForSkiaDrawing) {
   scoped_ptr<RenderText> render_text(RenderText::CreateRenderText());
   render_text->SetText(ASCIIToUTF16("abcdefg"));

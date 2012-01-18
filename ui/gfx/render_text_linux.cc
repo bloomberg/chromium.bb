@@ -128,7 +128,7 @@ Rect RenderTextLinux::GetCursorBounds(const SelectionModel& selection,
   bounds.set_origin(ToViewPoint(bounds.origin()));
 
   if (!insert_mode)
-    bounds.set_width(std::abs(pos.width));
+    bounds.set_width(PANGO_PIXELS(std::abs(pos.width)));
 
   return bounds;
 }

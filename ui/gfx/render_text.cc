@@ -544,12 +544,16 @@ void RenderText::Draw(Canvas* canvas) {
 
   canvas->Save();
   canvas->ClipRect(display_rect());
+
+  if (!text().empty())
+    DrawSelection(canvas);
+
+  DrawCursor(canvas);
+
   if (!text().empty()) {
     TRACE_EVENT0("gfx", "RenderText::Draw draw text");
-    DrawSelection(canvas);
     DrawVisualText(canvas);
   }
-  DrawCursor(canvas);
   canvas->Restore();
 }
 
@@ -681,7 +685,7 @@ size_t RenderText::GetIndexOfPreviousGrapheme(size_t position) {
 }
 
 void RenderText::ApplyCompositionAndSelectionStyles(
-    StyleRanges* style_ranges) const {
+    StyleRanges* style_ranges) {
   // TODO(msw): This pattern ought to be reconsidered; what about composition
   //            and selection overlaps, retain existing local style features?
   // Apply a composition style override to a copy of the style ranges.
@@ -699,6 +703,22 @@ void RenderText::ApplyCompositionAndSelectionStyles(
     selection_style.range.set_start(MinOfSelection());
     selection_style.range.set_end(MaxOfSelection());
     ApplyStyleRangeImpl(style_ranges, selection_style);
+  }
+  // Apply replacement-mode style override to a copy of the style ranges.
+  //
+  // TODO(xji): NEED TO FIX FOR WINDOWS ASAP. Windows call this function (to
+  // apply styles) in ItemizeLogicalText(). In order for the cursor's underline
+  // character to be drawn correctly, we will need to re-layout the text. It's
+  // not practical to do layout on every cursor blink. We need to fix Windows
+  // port to apply styles during drawing phase like Linux port does.
+  // http://crbug.com/110109
+  if (!insert_mode_ && cursor_visible() && focused()) {
+    StyleRange replacement_mode_style(default_style_);
+    replacement_mode_style.foreground = kSelectedTextColor;
+    size_t cursor = GetCursorPosition();
+    replacement_mode_style.range.set_start(cursor);
+    replacement_mode_style.range.set_end(GetIndexOfNextGrapheme(cursor));
+    ApplyStyleRangeImpl(style_ranges, replacement_mode_style);
   }
 }
 
@@ -843,8 +863,13 @@ void RenderText::DrawCursor(Canvas* canvas) {
   TRACE_EVENT0("gfx", "RenderText::DrawCursor");
   // Paint cursor. Replace cursor is drawn as rectangle for now.
   // TODO(msw): Draw a better cursor with a better indication of association.
-  if (cursor_visible() && focused())
-    canvas->DrawRect(GetUpdatedCursorBounds(), kCursorColor);
+  if (cursor_visible() && focused()) {
+    const Rect& bounds = GetUpdatedCursorBounds();
+    if (bounds.width() != 0)
+      canvas->FillRect(kCursorColor, bounds);
+    else
+      canvas->DrawRect(bounds, kCursorColor);
+  }
 }
 
 }  // namespace gfx

@@ -285,7 +285,7 @@ class UI_EXPORT RenderText {
 
   // Apply composition style (underline) to composition range and selection
   // style (foreground) to selection range.
-  void ApplyCompositionAndSelectionStyles(StyleRanges* style_ranges) const;
+  void ApplyCompositionAndSelectionStyles(StyleRanges* style_ranges);
 
   // Convert points from the text space to the view space and back.
   // Handles the display area, display offset, and the application LTR/RTL mode.
