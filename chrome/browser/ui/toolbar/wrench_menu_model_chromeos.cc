@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -47,15 +47,13 @@ void WrenchMenuModel::Build() {
   AddSeparator();
 
   AddItemWithStringId(IDC_OPTIONS, IDS_SETTINGS);
-  const string16 product_name = l10n_util::GetStringUTF16(IDS_PRODUCT_OS_NAME);
-  AddItem(IDC_ABOUT, l10n_util::GetStringFUTF16(IDS_ABOUT, product_name));
+  AddItem(IDC_ABOUT, l10n_util::GetStringUTF16(IDS_ABOUT));
   string16 num_background_pages = base::FormatNumber(
       TaskManager::GetBackgroundPageCount());
   AddItem(IDC_VIEW_BACKGROUND_PAGES,
       l10n_util::GetStringFUTF16(IDS_VIEW_BACKGROUND_PAGES,
           num_background_pages));
-  AddItem(IDC_UPGRADE_DIALOG,
-      l10n_util::GetStringFUTF16(IDS_UPDATE_NOW, product_name));
+  AddItem(IDC_UPGRADE_DIALOG, l10n_util::GetStringUTF16(IDS_UPDATE_NOW));
   AddItem(IDC_VIEW_INCOMPATIBILITIES,
       l10n_util::GetStringUTF16(IDS_VIEW_INCOMPATIBILITIES));
 

@@ -574,6 +574,32 @@ The extension "<ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph>" has been
         Remove from Chrome
       </message>
 
+      <!-- Wrench menu -->
+      <if expr="pp_ifdef('use_titlecase') and not pp_ifdef('chromeos')">
+        <message name="IDS_ABOUT" desc="In Title Case: The text label of the About Chrome menu item">
+          About &amp;Google Chrome
+        </message>
+        <message name="IDS_UPDATE_NOW" desc="In Title Case: The text label of the Update Chrome Now menu item">
+          Update &amp;Google Chrome
+        </message>
+      </if>
+      <if expr="not pp_ifdef('use_titlecase') and not pp_ifdef('chromeos')">
+        <message name="IDS_ABOUT" desc="The text label of the About Chrome menu item">
+          About &amp;Google Chrome
+        </message>
+        <message name="IDS_UPDATE_NOW" desc="The text label of the Update Chrome Now menu item">
+          Update &amp;Google Chrome
+        </message>
+      </if>
+      <if expr="pp_ifdef('chromeos')">
+        <message name="IDS_ABOUT" desc="The text label of the About Chrome OS menu item">
+          About &amp;Chrome OS
+        </message>
+        <message name="IDS_UPDATE_NOW" desc="The text label of the Update Chrome OS Now menu item">
+          Update &amp;Chrome OS
+        </message>
+      </if>
+
       <if expr="is_macosx">
         <message name="IDS_APP_MENU_PRODUCT_NAME" desc="The application's short name, used for the Mac's application menu, activity monitor, etc. This should be less than 16 characters. Example: Chrome, not Google Chrome.">
           Chrome

@@ -1170,12 +1170,6 @@ are declared in build/common.gypi.
         <message name="IDS_HELP_PAGE" desc="The text label of the Help menu item">
           H&amp;elp
         </message>
-        <message name="IDS_ABOUT" desc="The text label of the About Chrome menu item">
-          About &amp;<ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>
-        </message>
-        <message name="IDS_UPDATE_NOW" desc="The text label of the Update Chrome Now menu item">
-          Update &amp;<ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>
-        </message>
         <message name="IDS_VIEW_INCOMPATIBILITIES" desc="The text label of the View incompatibilities menu item">
           View incompatibilities
         </message>
@@ -1216,12 +1210,6 @@ are declared in build/common.gypi.
         </message>
         <message name="IDS_HELP_PAGE" desc="In Title Case: The text label of the Help menu item">
           H&amp;elp
-        </message>
-        <message name="IDS_ABOUT" desc="In Title Case: The text label of the About Chrome menu item">
-          About &amp;<ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>
-        </message>
-        <message name="IDS_UPDATE_NOW" desc="In Title Case: The text label of the Update Chrome Now menu item">
-          Update &amp;<ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>
         </message>
         <message name="IDS_VIEW_INCOMPATIBILITIES" desc="The text label of the View incompatibilities menu item">
           View Incompatibilities

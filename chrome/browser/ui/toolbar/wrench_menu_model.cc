@@ -256,16 +256,8 @@ string16 WrenchMenuModel::GetLabelForCommandId(int command_id) const {
       return l10n_util::GetStringFUTF16(IDS_VIEW_BACKGROUND_PAGES,
                                         num_background_pages);
     }
-    case IDC_UPGRADE_DIALOG: {
-#if defined(OS_CHROMEOS)
-      const string16 product_name =
-          l10n_util::GetStringUTF16(IDS_PRODUCT_OS_NAME);
-#else
-      const string16 product_name = l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
-#endif
-
-      return l10n_util::GetStringFUTF16(IDS_UPDATE_NOW, product_name);
-    }
+    case IDC_UPGRADE_DIALOG:
+      return l10n_util::GetStringUTF16(IDS_UPDATE_NOW);
     case IDC_SHOW_SYNC_SETUP: {
       ProfileSyncService* service =
           browser_->GetProfile()->GetOriginalProfile()->GetProfileSyncService();
@@ -520,14 +512,12 @@ void WrenchMenuModel::Build() {
   AddItemWithStringId(IDC_OPTIONS, IDS_OPTIONS);
 #endif
 
-  const string16 product_name = l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
-  AddItem(IDC_ABOUT, l10n_util::GetStringFUTF16(IDS_ABOUT, product_name));
+  AddItem(IDC_ABOUT, l10n_util::GetStringUTF16(IDS_ABOUT));
   string16 num_background_pages = base::FormatNumber(
       TaskManager::GetBackgroundPageCount());
   AddItem(IDC_VIEW_BACKGROUND_PAGES, l10n_util::GetStringFUTF16(
       IDS_VIEW_BACKGROUND_PAGES, num_background_pages));
-  AddItem(IDC_UPGRADE_DIALOG, l10n_util::GetStringFUTF16(
-      IDS_UPDATE_NOW, product_name));
+  AddItem(IDC_UPGRADE_DIALOG, l10n_util::GetStringUTF16(IDS_UPDATE_NOW));
   AddItem(IDC_VIEW_INCOMPATIBILITIES, l10n_util::GetStringUTF16(
       IDS_VIEW_INCOMPATIBILITIES));
 

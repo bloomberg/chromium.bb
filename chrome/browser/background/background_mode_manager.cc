@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -668,8 +668,7 @@ void BackgroundModeManager::UpdateStatusTrayIconContextMenu() {
   // Create a context menu item for Chrome.
   ui::SimpleMenuModel* menu = new ui::SimpleMenuModel(this);
   // Add About item
-  menu->AddItem(IDC_ABOUT, l10n_util::GetStringFUTF16(IDS_ABOUT,
-      l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
+  menu->AddItem(IDC_ABOUT, l10n_util::GetStringUTF16(IDS_ABOUT));
   menu->AddItemWithStringId(IDC_TASK_MANAGER, IDS_TASK_MANAGER);
   menu->AddSeparator();
 
