@@ -42,7 +42,8 @@ string16 WebUI::GetJavascriptCall(
 }
 
 WebUI::WebUI(WebContents* contents)
-    : focus_location_bar_by_default_(false),
+    : hide_favicon_(false),
+      focus_location_bar_by_default_(false),
       should_hide_url_(false),
       link_transition_type_(content::PAGE_TRANSITION_LINK),
       bindings_(content::BINDINGS_POLICY_WEB_UI),
