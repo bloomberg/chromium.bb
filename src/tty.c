@@ -40,33 +40,26 @@ struct tty {
 	struct termios terminal_attributes;
 
 	struct wl_event_source *input_source;
-	struct wl_event_source *enter_vt_source;
-	struct wl_event_source *leave_vt_source;
+	struct wl_event_source *vt_source;
 	tty_vt_func_t vt_func;
 	int vt, starting_vt, has_vt;
 };
 
-static int on_enter_vt(int signal_number, void *data)
+static int vt_handler(int signal_number, void *data)
 {
 	struct tty *tty = data;
 
-	ioctl(tty->fd, VT_RELDISP, VT_ACKACQ);
+	if (tty->has_vt) {
+		tty->vt_func(tty->compositor, TTY_LEAVE_VT);
+		tty->has_vt = 0;
 
-	tty->vt_func(tty->compositor, TTY_ENTER_VT);
-	tty->has_vt = 1;
+		ioctl(tty->fd, VT_RELDISP, 1);
+	} else {
+		ioctl(tty->fd, VT_RELDISP, VT_ACKACQ);
 
-	return 1;
-}
-
-static int
-on_leave_vt(int signal_number, void *data)
-{
-	struct tty *tty = data;
-
-	tty->vt_func(tty->compositor, TTY_LEAVE_VT);
-	tty->has_vt = 0;
-
-	ioctl(tty->fd, VT_RELDISP, 1);
+		tty->vt_func(tty->compositor, TTY_ENTER_VT);
+		tty->has_vt = 1;
+	}
 
 	return 1;
 }
@@ -191,16 +184,14 @@ tty_create(struct weston_compositor *compositor, tty_vt_func_t vt_func,
 	tty->has_vt = 1;
 	mode.mode = VT_PROCESS;
 	mode.relsig = SIGUSR1;
-	mode.acqsig = SIGUSR2;
+	mode.acqsig = SIGUSR1;
 	if (ioctl(tty->fd, VT_SETMODE, &mode) < 0) {
 		fprintf(stderr, "failed to take control of vt handling\n");
 		return NULL;
 	}
 
-	tty->leave_vt_source =
-		wl_event_loop_add_signal(loop, SIGUSR1, on_leave_vt, tty);
-	tty->enter_vt_source =
-		wl_event_loop_add_signal(loop, SIGUSR2, on_enter_vt, tty);
+	tty->vt_source =
+		wl_event_loop_add_signal(loop, SIGUSR1, vt_handler, tty);
 
 	return tty;
 }
