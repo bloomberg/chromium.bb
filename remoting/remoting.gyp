@@ -946,6 +946,7 @@
         'protocol/fake_session.h',
         'protocol/jingle_messages_unittest.cc',
         'protocol/jingle_session_unittest.cc',
+        'protocol/key_event_tracker_unittest.cc',
         'protocol/message_decoder_unittest.cc',
         'protocol/message_reader_unittest.cc',
         'protocol/pepper_session_unittest.cc',
