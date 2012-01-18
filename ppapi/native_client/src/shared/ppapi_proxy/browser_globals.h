@@ -35,6 +35,7 @@
 #include "ppapi/c/ppb_url_response_info.h"
 #include "ppapi/c/ppb_var.h"
 #include "ppapi/c/ppb_view.h"
+#include "ppapi/c/private/ppb_net_address_private.h"
 #include "ppapi/c/private/ppb_pdf.h"
 #include "ppapi/c/private/ppb_tcp_socket_private.h"
 #include "ppapi/c/private/ppb_udp_socket_private.h"
@@ -118,6 +119,7 @@ const PPB_Memory_Dev* PPBMemoryInterface();  // shared
 const PPB_MouseInputEvent* PPBMouseInputEventInterface();
 const PPB_Messaging* PPBMessagingInterface();
 const PPB_MouseLock* PPBMouseLockInterface();
+const PPB_NetAddress_Private* PPBNetAddressPrivateInterface();
 const PPB_PDF* PPBPDFInterface();
 const PPB_Scrollbar_Dev* PPBScrollbarInterface();
 const PPB_TCPSocket_Private* PPBTCPSocketPrivateInterface();

@@ -274,6 +274,8 @@
       'tests/pp_thread.h',
       'tests/test_case.cc',
       'tests/test_case.h',
+      'tests/test_net_address_private_untrusted.cc',
+      'tests/test_net_address_private_untrusted.h',
       'tests/test_tcp_socket_private_shared.cc',
       'tests/test_tcp_socket_private_shared.h',
       'tests/test_udp_socket_private_shared.cc',

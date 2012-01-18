@@ -709,6 +709,41 @@ class PpbMouseLockRpcClient {
   void operator=(const PpbMouseLockRpcClient);
 };  // class PpbMouseLockRpcClient
 
+class PpbNetAddressPrivateRpcClient {
+ public:
+  static NaClSrpcError PPB_NetAddress_Private_AreEqual(
+      NaClSrpcChannel* channel,
+      nacl_abi_size_t addr1_bytes, char* addr1,
+      nacl_abi_size_t addr2_bytes, char* addr2,
+      int32_t* equals);
+  static NaClSrpcError PPB_NetAddress_Private_AreHostsEqual(
+      NaClSrpcChannel* channel,
+      nacl_abi_size_t addr1_bytes, char* addr1,
+      nacl_abi_size_t addr2_bytes, char* addr2,
+      int32_t* equals);
+  static NaClSrpcError PPB_NetAddress_Private_Describe(
+      NaClSrpcChannel* channel,
+      int32_t module,
+      nacl_abi_size_t addr_bytes, char* addr,
+      int32_t include_port,
+      nacl_abi_size_t* description_bytes, char* description);
+  static NaClSrpcError PPB_NetAddress_Private_ReplacePort(
+      NaClSrpcChannel* channel,
+      nacl_abi_size_t src_addr_bytes, char* src_addr,
+      int32_t port,
+      nacl_abi_size_t* dst_addr_bytes, char* dst_addr,
+      int32_t* success);
+  static NaClSrpcError PPB_NetAddress_Private_GetAnyAddress(
+      NaClSrpcChannel* channel,
+      int32_t is_ipv6,
+      nacl_abi_size_t* addr_bytes, char* addr);
+
+ private:
+  PpbNetAddressPrivateRpcClient();
+  PpbNetAddressPrivateRpcClient(const PpbNetAddressPrivateRpcClient&);
+  void operator=(const PpbNetAddressPrivateRpcClient);
+};  // class PpbNetAddressPrivateRpcClient
+
 class PpbPdfRpcClient {
  public:
   static NaClSrpcError PPB_PDF_GetLocalizedString(

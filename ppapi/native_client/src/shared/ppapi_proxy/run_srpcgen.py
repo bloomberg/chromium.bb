@@ -76,6 +76,7 @@ all_units = [
          'ppb_instance.srpc',
          'ppb_messaging.srpc',
          'ppb_mouse_lock.srpc',
+         'ppb_net_address_private.srpc',
          'ppb_pdf.srpc',
          'ppb_scrollbar.srpc',
          'ppb_tcp_socket_private.srpc',

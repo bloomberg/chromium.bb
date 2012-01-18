@@ -654,6 +654,12 @@ TEST_PPAPI_OUT_OF_PROCESS(NetAddressPrivate_ReplacePort)
 TEST_PPAPI_OUT_OF_PROCESS(NetAddressPrivate_GetAnyAddress)
 TEST_PPAPI_OUT_OF_PROCESS(NetAddressPrivate_DescribeIPv6)
 
+TEST_PPAPI_NACL_VIA_HTTP(NetAddressPrivateUntrusted_AreEqual)
+TEST_PPAPI_NACL_VIA_HTTP(NetAddressPrivateUntrusted_AreHostsEqual)
+TEST_PPAPI_NACL_VIA_HTTP(NetAddressPrivateUntrusted_Describe)
+TEST_PPAPI_NACL_VIA_HTTP(NetAddressPrivateUntrusted_ReplacePort)
+TEST_PPAPI_NACL_VIA_HTTP(NetAddressPrivateUntrusted_GetAnyAddress)
+
 // PPB_TCPSocket_Private currently isn't supported in-process.
 TEST_F(OutOfProcessPPAPITest, TCPSocketPrivate) {
   RunTestViaHTTP("TCPSocketPrivate");

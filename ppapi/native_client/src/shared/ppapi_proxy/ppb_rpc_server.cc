@@ -1543,6 +1543,82 @@ static void PPB_MouseLock_UnlockMouseDispatcher(
   );
 }
 
+static void PPB_NetAddress_Private_AreEqualDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbNetAddressPrivateRpcServer::PPB_NetAddress_Private_AreEqual(
+      rpc,
+      done,
+      inputs[0]->u.count, inputs[0]->arrays.carr,
+      inputs[1]->u.count, inputs[1]->arrays.carr,
+      &(outputs[0]->u.ival)
+  );
+}
+
+static void PPB_NetAddress_Private_AreHostsEqualDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbNetAddressPrivateRpcServer::PPB_NetAddress_Private_AreHostsEqual(
+      rpc,
+      done,
+      inputs[0]->u.count, inputs[0]->arrays.carr,
+      inputs[1]->u.count, inputs[1]->arrays.carr,
+      &(outputs[0]->u.ival)
+  );
+}
+
+static void PPB_NetAddress_Private_DescribeDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbNetAddressPrivateRpcServer::PPB_NetAddress_Private_Describe(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      inputs[1]->u.count, inputs[1]->arrays.carr,
+      inputs[2]->u.ival,
+      &(outputs[0]->u.count), outputs[0]->arrays.carr
+  );
+}
+
+static void PPB_NetAddress_Private_ReplacePortDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbNetAddressPrivateRpcServer::PPB_NetAddress_Private_ReplacePort(
+      rpc,
+      done,
+      inputs[0]->u.count, inputs[0]->arrays.carr,
+      inputs[1]->u.ival,
+      &(outputs[0]->u.count), outputs[0]->arrays.carr,
+      &(outputs[1]->u.ival)
+  );
+}
+
+static void PPB_NetAddress_Private_GetAnyAddressDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbNetAddressPrivateRpcServer::PPB_NetAddress_Private_GetAnyAddress(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      &(outputs[0]->u.count), outputs[0]->arrays.carr
+  );
+}
+
 static void PPB_PDF_GetLocalizedStringDispatcher(
     NaClSrpcRpc* rpc,
     NaClSrpcArg** inputs,
@@ -2687,6 +2763,11 @@ NaClSrpcHandlerDesc PpbRpcs::srpc_methods[] = {
   { "PPB_Messaging_PostMessage:iC:", PPB_Messaging_PostMessageDispatcher },
   { "PPB_MouseLock_LockMouse:ii:i", PPB_MouseLock_LockMouseDispatcher },
   { "PPB_MouseLock_UnlockMouse:i:", PPB_MouseLock_UnlockMouseDispatcher },
+  { "PPB_NetAddress_Private_AreEqual:CC:i", PPB_NetAddress_Private_AreEqualDispatcher },
+  { "PPB_NetAddress_Private_AreHostsEqual:CC:i", PPB_NetAddress_Private_AreHostsEqualDispatcher },
+  { "PPB_NetAddress_Private_Describe:iCi:C", PPB_NetAddress_Private_DescribeDispatcher },
+  { "PPB_NetAddress_Private_ReplacePort:Ci:Ci", PPB_NetAddress_Private_ReplacePortDispatcher },
+  { "PPB_NetAddress_Private_GetAnyAddress:i:C", PPB_NetAddress_Private_GetAnyAddressDispatcher },
   { "PPB_PDF_GetLocalizedString:ii:C", PPB_PDF_GetLocalizedStringDispatcher },
   { "PPB_PDF_GetResourceImage:ii:i", PPB_PDF_GetResourceImageDispatcher },
   { "PPB_PDF_GetFontFileWithFallback:iCCi:i", PPB_PDF_GetFontFileWithFallbackDispatcher },

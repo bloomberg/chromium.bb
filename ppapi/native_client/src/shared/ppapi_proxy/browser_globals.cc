@@ -283,6 +283,13 @@ const PPB_MouseInputEvent* PPBMouseInputEventInterface() {
   return ppb;
 }
 
+const PPB_NetAddress_Private* PPBNetAddressPrivateInterface() {
+  static const PPB_NetAddress_Private* ppb =
+      static_cast<const PPB_NetAddress_Private*>(
+          GetBrowserInterfaceSafe(PPB_NETADDRESS_PRIVATE_INTERFACE));
+  return ppb;
+}
+
 const PPB_URLLoader* PPBURLLoaderInterface() {
   static const PPB_URLLoader* ppb =
       static_cast<const PPB_URLLoader*>(
