@@ -34,7 +34,7 @@ BrowserMainParts* ShellContentBrowserClient::CreateBrowserMainParts(
   return new ShellBrowserMainParts(parameters);
 }
 
-TabContentsView* ShellContentBrowserClient::CreateTabContentsView(
+WebContentsView* ShellContentBrowserClient::CreateWebContentsView(
     WebContents* web_contents) {
 #if defined(OS_WIN)
   return new TabContentsViewWin(web_contents);

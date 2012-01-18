@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,10 +6,10 @@
 
 #include <string>
 
-#include "base/logging.h"
 #include "base/file_path.h"
+#include "base/logging.h"
 #include "content/browser/webui/empty_web_ui_factory.h"
-#include "content/test/test_tab_contents_view.h"
+#include "content/test/test_web_contents_view.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/clipboard/clipboard.h"
@@ -28,9 +28,9 @@ BrowserMainParts* MockContentBrowserClient::CreateBrowserMainParts(
   return NULL;
 }
 
-TabContentsView* MockContentBrowserClient::CreateTabContentsView(
+WebContentsView* MockContentBrowserClient::CreateWebContentsView(
     WebContents* web_contents) {
-  return new TestTabContentsView;
+  return new TestWebContentsView;
 }
 
 void MockContentBrowserClient::RenderViewHostCreated(

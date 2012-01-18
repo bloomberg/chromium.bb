@@ -8,13 +8,13 @@
 #include "content/browser/renderer_host/render_widget_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "content/public/browser/web_contents_view.h"
 
 using content::WebContents;
 
@@ -58,7 +58,7 @@ TabContents* TabContentsViewHelper::CreateNewWindow(
     return NULL;
 
   // Create the new web contents. This will automatically create the new
-  // TabContentsView. In the future, we may want to create the view separately.
+  // WebContentsView. In the future, we may want to create the view separately.
   TabContents* new_contents =
       new TabContents(web_contents->GetBrowserContext(),
                       web_contents->GetSiteInstance(),
@@ -67,7 +67,7 @@ TabContents* TabContentsViewHelper::CreateNewWindow(
                       NULL);
   new_contents->set_opener_web_ui_type(
       web_contents->GetWebUITypeForCurrentState());
-  TabContentsView* new_view = new_contents->GetView();
+  content::WebContentsView* new_view = new_contents->GetView();
 
   // TODO(brettw): It seems bogus that we have to call this function on the
   // newly created object and give it one of its own member variables.

@@ -77,10 +77,10 @@
 #include "content/browser/ssl/ssl_cert_error_handler.h"
 #include "content/browser/ssl/ssl_client_auth_handler.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/browser/worker_host/worker_process_host.h"
 #include "content/public/browser/browser_main_parts.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/web_contents_view.h"
 #include "grit/generated_resources.h"
 #include "grit/ui_resources.h"
 #include "net/base/cookie_monster.h"
@@ -306,7 +306,7 @@ content::BrowserMainParts* ChromeContentBrowserClient::CreateBrowserMainParts(
   return main_parts;
 }
 
-TabContentsView* ChromeContentBrowserClient::CreateTabContentsView(
+content::WebContentsView* ChromeContentBrowserClient::CreateWebContentsView(
     WebContents* web_contents) {
 #if defined(TOOLKIT_VIEWS)
   return new TabContentsViewViews(web_contents);
@@ -314,9 +314,9 @@ TabContentsView* ChromeContentBrowserClient::CreateTabContentsView(
   return new content::TabContentsViewGtk(web_contents,
                                          new ChromeTabContentsViewWrapperGtk);
 #elif defined(OS_MACOSX)
-  return tab_contents_view_mac::CreateTabContentsView(web_contents);
+  return tab_contents_view_mac::CreateWebContentsView(web_contents);
 #else
-#error Need to create your platform TabContentsView here.
+#error Need to create your platform WebContentsView here.
 #endif
 }
 

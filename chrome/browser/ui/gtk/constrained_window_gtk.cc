@@ -93,8 +93,8 @@ ConstrainedWindowGtk::~ConstrainedWindowGtk() {
 void ConstrainedWindowGtk::ShowConstrainedWindow() {
   gtk_widget_show_all(border_.get());
 
-  // We collaborate with TabContentsView and stick ourselves in the
-  // TabContentsView's floating container.
+  // We collaborate with WebContentsView and stick ourselves in the
+  // WebContentsView's floating container.
   ContainingView()->AttachConstrainedWindow(this);
 
   visible_ = true;

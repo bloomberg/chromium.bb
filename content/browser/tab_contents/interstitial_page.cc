@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,7 +20,6 @@
 #include "content/browser/tab_contents/navigation_controller_impl.h"
 #include "content/browser/tab_contents/navigation_entry_impl.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/common/dom_storage_common.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_thread.h"
@@ -28,6 +27,7 @@
 #include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/browser/web_contents_view.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/page_transition_types.h"
 #include "content/public/common/view_type.h"
@@ -39,6 +39,7 @@ using content::NavigationController;
 using content::NavigationEntry;
 using content::NavigationEntryImpl;
 using content::WebContents;
+using content::WebContentsView;
 using WebKit::WebDragOperation;
 using WebKit::WebDragOperationsMask;
 
@@ -203,7 +204,7 @@ void InterstitialPage::Show() {
 
   DCHECK(!render_view_host_);
   render_view_host_ = CreateRenderViewHost();
-  CreateTabContentsView();
+  CreateWebContentsView();
 
   std::string data_url = "data:text/html;charset=utf-8," +
                          net::EscapePath(GetHTMLContents());
@@ -432,20 +433,20 @@ RenderViewHost* InterstitialPage::CreateRenderViewHost() {
   return render_view_host;
 }
 
-TabContentsView* InterstitialPage::CreateTabContentsView() {
-  TabContentsView* tab_contents_view = tab()->GetView();
+WebContentsView* InterstitialPage::CreateWebContentsView() {
+  WebContentsView* web_contents_view = tab()->GetView();
   RenderWidgetHostView* view =
-      tab_contents_view->CreateViewForWidget(render_view_host_);
+      web_contents_view->CreateViewForWidget(render_view_host_);
   render_view_host_->SetView(view);
   render_view_host_->AllowBindings(content::BINDINGS_POLICY_DOM_AUTOMATION);
 
   int32 max_page_id =
       tab()->GetMaxPageIDForSiteInstance(render_view_host_->site_instance());
   render_view_host_->CreateRenderView(string16(), max_page_id);
-  view->SetSize(tab_contents_view->GetContainerSize());
+  view->SetSize(web_contents_view->GetContainerSize());
   // Don't show the interstitial until we have navigated to it.
   view->Hide();
-  return tab_contents_view;
+  return web_contents_view;
 }
 
 void InterstitialPage::Proceed() {

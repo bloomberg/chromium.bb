@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -108,10 +108,10 @@
         'test/test_navigation_observer.h',
         'test/test_notification_tracker.cc',
         'test/test_notification_tracker.h',
-        'test/test_tab_contents_view.cc',
-        'test/test_tab_contents_view.h',
         'test/test_url_fetcher_factory.cc',
         'test/test_url_fetcher_factory.h',
+        'test/test_web_contents_view.cc',
+        'test/test_web_contents_view.h',
         'test/unittest_test_suite.cc',
         'test/unittest_test_suite.h',
         'test/webrtc_audio_device_test.cc',
@@ -438,7 +438,7 @@
                 '../third_party/angle/src/build_angle.gyp:libEGL',
                 '../third_party/angle/src/build_angle.gyp:libGLESv2',
                 '../media/media.gyp:media',
-                '../ui/gfx/gl/gl.gyp:gl',        
+                '../ui/gfx/gl/gl.gyp:gl',
               ],
               'conditions': [
                 ['win_use_allocator_shim==1', {
@@ -446,9 +446,9 @@
                     '../base/allocator/allocator.gyp:allocator',
                   ],
                 }],
-              ],              
+              ],
             }],
-          ],            
+          ],
           'defines!': ['CONTENT_IMPLEMENTATION'],
           'type': 'executable',
           'dependencies': [

@@ -33,7 +33,7 @@ class Rect;
 // WebContentsImpl rather than WebContents.
 
 // Provides helper methods that provide common implementations of some
-// TabContentsView methods.
+// WebContentsView methods.
 class CONTENT_EXPORT TabContentsViewHelper
     : public content::NotificationObserver {
  public:

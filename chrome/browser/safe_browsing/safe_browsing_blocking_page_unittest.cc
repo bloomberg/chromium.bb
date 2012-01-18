@@ -15,6 +15,7 @@
 using content::BrowserThread;
 using content::NavigationEntry;
 using content::WebContents;
+using content::WebContentsView;
 
 static const char* kGoogleURL = "http://www.google.com/";
 static const char* kGoodURL = "http://www.goodguys.com/";
@@ -34,7 +35,7 @@ class TestSafeBrowsingBlockingPage :  public SafeBrowsingBlockingPage {
   }
 
   // Overriden from InterstitialPage.  Don't create a view.
-  virtual TabContentsView* CreateTabContentsView() {
+  virtual WebContentsView* CreateWebContentsView() {
     return NULL;
   }
 };

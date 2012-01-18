@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -27,10 +27,10 @@
 #include "chrome/installer/util/browser_distribution.h"
 #include "content/browser/renderer_host/backing_store.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "content/public/browser/web_contents_view.h"
 #include "skia/ext/image_operations.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/skia/include/core/SkBitmap.h"

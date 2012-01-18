@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,14 +6,14 @@
 #define CONTENT_BROWSER_TAB_CONTENTS_TAB_CONTENTS_VIEW_WIN_H_
 #pragma once
 
-#include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/browser/tab_contents/tab_contents_view_helper.h"
+#include "content/public/browser/web_contents_view.h"
 #include "ui/base/win/window_impl.h"
 
 class RenderWidgetHostViewWin;
 
-// An implementation of TabContentsView for Windows.
-class TabContentsViewWin : public TabContentsView,
+// An implementation of WebContentsView for Windows.
+class TabContentsViewWin : public content::WebContentsView,
                            public ui::WindowImpl {
  public:
   // TODO(jam): make this take a WebContents once it's created from content.
@@ -26,7 +26,7 @@ class TabContentsViewWin : public TabContentsView,
     MESSAGE_HANDLER(WM_WINDOWPOSCHANGED, OnWindowPosChanged)
   END_MSG_MAP()
 
-  // Overridden from TabContentsView:
+  // Overridden from WebContentsView:
   virtual void CreateView(const gfx::Size& initial_size) OVERRIDE;
   virtual RenderWidgetHostView* CreateViewForWidget(
       RenderWidgetHost* render_widget_host) OVERRIDE;
@@ -95,7 +95,7 @@ class TabContentsViewWin : public TabContentsView,
 
   RenderWidgetHostViewWin* view_;
 
-  // Common implementations of some TabContentsView methods.
+  // Common implementations of some WebContentsView methods.
   TabContentsViewHelper tab_contents_view_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(TabContentsViewWin);

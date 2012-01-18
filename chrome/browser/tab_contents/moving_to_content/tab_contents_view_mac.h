@@ -15,8 +15,8 @@
 
 #include "base/memory/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
-#include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/browser/tab_contents/tab_contents_view_helper.h"
+#include "content/public/browser/web_contents_view.h"
 #include "ui/base/cocoa/base_view.h"
 #include "ui/gfx/size.h"
 
@@ -49,9 +49,9 @@ class Point;
 - (void)setFrameWithDeferredUpdate:(NSRect)frame;
 @end
 
-// Mac-specific implementation of the TabContentsView. It owns an NSView that
+// Mac-specific implementation of the WebContentsView. It owns an NSView that
 // contains all of the contents of the tab and associated child views.
-class TabContentsViewMac : public TabContentsView {
+class TabContentsViewMac : public content::WebContentsView {
  public:
   // The corresponding TabContents is passed in the constructor, and manages our
   // lifetime. This doesn't need to be the case, but is this way currently
@@ -60,7 +60,7 @@ class TabContentsViewMac : public TabContentsView {
   explicit TabContentsViewMac(content::WebContents* web_contents);
   virtual ~TabContentsViewMac();
 
-  // TabContentsView implementation --------------------------------------------
+  // WebContentsView implementation --------------------------------------------
 
   virtual void CreateView(const gfx::Size& initial_size) OVERRIDE;
   virtual RenderWidgetHostView* CreateViewForWidget(
@@ -125,7 +125,7 @@ class TabContentsViewMac : public TabContentsView {
   // The TabContents whose contents we display.
   TabContents* tab_contents_;
 
-  // Common implementations of some TabContentsView methods.
+  // Common implementations of some WebContentsView methods.
   TabContentsViewHelper tab_contents_view_helper_;
 
   // The Cocoa NSView that lives in the view hierarchy.
@@ -148,14 +148,14 @@ class TabContentsViewMac : public TabContentsView {
 #endif  // __OBJC__
 
 // Functions that may be accessed from non-Objective-C C/C++ code.
-class TabContentsView;
-
 namespace content {
 class WebContents;
+class WebContentsView;
 }
 
 namespace tab_contents_view_mac {
-TabContentsView* CreateTabContentsView(content::WebContents* web_contents);
+content::WebContentsView* CreateWebContentsView(
+    content::WebContents* web_contents);
 }
 
 #endif  // CHROME_BROWSER_TAB_CONTENTS_TAB_CONTENTS_VIEW_MAC_H_

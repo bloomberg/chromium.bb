@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,8 +8,8 @@
 #include "chrome/browser/ui/views/tab_contents/native_tab_contents_view_delegate.h"
 #include "chrome/browser/ui/views/tab_contents/tab_contents_drag_win.h"
 #include "content/browser/renderer_host/render_widget_host_view_win.h"
-#include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 #include "ui/views/views_delegate.h"
 #include "ui/views/widget/widget.h"
 

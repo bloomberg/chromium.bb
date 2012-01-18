@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,8 +13,8 @@
 #include "chrome/browser/ui/views/find_bar_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/views/focus/external_focus_tracker.h"
 #include "ui/views/focus/view_storage.h"
@@ -157,7 +157,7 @@ bool FindBarHost::IsFindBarVisible() {
 
 void FindBarHost::RestoreSavedFocus() {
   if (focus_tracker() == NULL) {
-    // TODO(brettw) Focus() should be on TabContentsView.
+    // TODO(brettw) Focus() should be on WebContentsView.
     find_bar_controller_->tab_contents()->web_contents()->Focus();
   } else {
     focus_tracker()->FocusLastFocusedExternalView();
@@ -324,7 +324,7 @@ void FindBarHost::UnregisterAccelerators() {
 
 void FindBarHost::GetWidgetPositionNative(gfx::Rect* avoid_overlapping_rect) {
   gfx::Rect frame_rect = host()->GetTopLevelWidget()->GetWindowScreenBounds();
-  TabContentsView* tab_view =
+  content::WebContentsView* tab_view =
       find_bar_controller_->tab_contents()->web_contents()->GetView();
   gfx::Rect webcontents_rect;
   tab_view->GetViewBounds(&webcontents_rect);

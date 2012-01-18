@@ -11,9 +11,9 @@
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
-#include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/browser/tab_contents/tab_contents_view_helper.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/web_contents_view.h"
 #include "ui/base/gtk/focus_store_gtk.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/base/gtk/owned_widget_gtk.h"
@@ -25,13 +25,13 @@ class WebDragDestDelegate;
 class WebDragDestGtk;
 class WebDragSourceGtk;
 
-class CONTENT_EXPORT TabContentsViewGtk : public TabContentsView {
+class CONTENT_EXPORT TabContentsViewGtk : public WebContentsView {
  public:
   // The corresponding TabContents is passed in the constructor, and manages
   // our lifetime. This doesn't need to be the case, but is this way currently
   // because that's what was easiest when they were split. We optionally take
   // |wrapper| which creates an intermediary widget layer for features from the
-  // embedding layer that live with the TabContentsView.
+  // Embedding layer that lives with the WebContentsView.
   // TODO(jam): make this take a WebContents once it's created from content.
   explicit TabContentsViewGtk(content::WebContents* web_contents,
                               TabContentsViewWrapperGtk* wrapper);
@@ -49,7 +49,7 @@ class CONTENT_EXPORT TabContentsViewGtk : public TabContentsView {
   // Allows our embeder to intercept incoming drag messages.
   void SetDragDestDelegate(WebDragDestDelegate* delegate);
 
-  // TabContentsView implementation --------------------------------------------
+  // WebContentsView implementation --------------------------------------------
 
   virtual void CreateView(const gfx::Size& initial_size) OVERRIDE;
   virtual RenderWidgetHostView* CreateViewForWidget(
@@ -129,7 +129,7 @@ class CONTENT_EXPORT TabContentsViewGtk : public TabContentsView {
   // The TabContents whose contents we display.
   TabContents* tab_contents_;
 
-  // Common implementations of some TabContentsView methods.
+  // Common implementations of some WebContentsView methods.
   TabContentsViewHelper tab_contents_view_helper_;
 
   // This container holds the tab's web page views. It is a GtkExpandedContainer

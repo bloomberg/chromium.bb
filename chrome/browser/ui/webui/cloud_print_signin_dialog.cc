@@ -20,7 +20,6 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_registrar.h"
@@ -28,6 +27,7 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
 using content::BrowserThread;

@@ -6,8 +6,8 @@
 
 #include "chrome/browser/ui/gtk/autofill/autofill_popup_view_gtk.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
-#include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 
 AutofillExternalDelegate* AutofillExternalDelegate::Create(
     TabContentsWrapper* tab_contents_wrapper,

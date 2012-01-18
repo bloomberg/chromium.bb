@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -165,7 +165,7 @@ class RenderWidgetHostViewGtkWidget {
 
 
     // Connect after so that we are called after the handler installed by the
-    // TabContentsView which handles zoom events.
+    // WebContentsView which handles zoom events.
     g_signal_connect_after(widget, "scroll-event",
                            G_CALLBACK(OnMouseScrollEvent), host_view);
 
@@ -529,7 +529,7 @@ class RenderWidgetHostViewGtkWidget {
                                      RenderWidgetHostViewGtk* host_view) {
     // If the user is holding shift, translate it into a horizontal scroll. We
     // don't care what other modifiers the user may be holding (zooming is
-    // handled at the TabContentsView level).
+    // handled at the WebContentsView level).
     if (event->state & GDK_SHIFT_MASK) {
       if (event->direction == GDK_SCROLL_UP)
         event->direction = GDK_SCROLL_LEFT;

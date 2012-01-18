@@ -35,13 +35,13 @@ class LoadNotificationDetails;
 class RenderViewHost;
 class SessionStorageNamespace;
 class SiteInstance;
-class TabContentsView;
 struct ViewHostMsg_DidFailProvisionalLoadWithError_Params;
 
 namespace content {
 class DownloadItem;
 class WebContentsObserver;
 class WebContentsDelegate;
+class WebContentsView;
 }
 
 namespace webkit_glue {
@@ -132,7 +132,7 @@ class CONTENT_EXPORT TabContents
   virtual content::RenderProcessHost* GetRenderProcessHost() const OVERRIDE;
   virtual RenderViewHost* GetRenderViewHost() const OVERRIDE;
   virtual RenderWidgetHostView* GetRenderWidgetHostView() const OVERRIDE;
-  virtual TabContentsView* GetView() const OVERRIDE;
+  virtual content::WebContentsView* GetView() const OVERRIDE;
   virtual content::WebUI* CreateWebUI(const GURL& url) OVERRIDE;
   virtual content::WebUI* GetWebUI() const OVERRIDE;
   virtual content::WebUI* GetCommittedWebUI() const OVERRIDE;
@@ -361,7 +361,7 @@ class CONTENT_EXPORT TabContents
   FRIEND_TEST_ALL_PREFIXES(RenderViewHostManagerTest, PageDoesBackAndReload);
 
   // Temporary until the view/contents separation is complete.
-  friend class TabContentsView;
+  friend class content::WebContentsView;
 #if defined(TOOLKIT_VIEWS)
   friend class TabContentsViewViews;
 #elif defined(OS_MACOSX)
@@ -507,7 +507,7 @@ class CONTENT_EXPORT TabContents
   NavigationControllerImpl controller_;
 
   // The corresponding view.
-  scoped_ptr<TabContentsView> view_;
+  scoped_ptr<content::WebContentsView> view_;
 
   // A list of observers notified when page state changes. Weak references.
   // This MUST be listed above render_manager_ since at destruction time the

@@ -10,8 +10,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/timer.h"
 #include "chrome/browser/ui/views/tab_contents/native_tab_contents_view_delegate.h"
-#include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/browser/tab_contents/tab_contents_view_helper.h"
+#include "content/public/browser/web_contents_view.h"
 #include "ui/views/widget/widget.h"
 
 class ConstrainedWindowGtk;
@@ -27,9 +27,9 @@ namespace views {
 class Widget;
 }
 
-// Views-specific implementation of the TabContentsView.
+// Views-specific implementation of the WebContentsView.
 class TabContentsViewViews : public views::Widget,
-                             public TabContentsView,
+                             public content::WebContentsView,
                              public internal::NativeTabContentsViewDelegate {
  public:
   // The corresponding WebContents is passed in the constructor, and manages our
@@ -51,7 +51,7 @@ class TabContentsViewViews : public views::Widget,
     return native_tab_contents_view_;
   }
 
-  // Overridden from TabContentsView:
+  // Overridden from WebContentsView:
   virtual void CreateView(const gfx::Size& initial_size) OVERRIDE;
   virtual RenderWidgetHostView* CreateViewForWidget(
       RenderWidgetHost* render_widget_host) OVERRIDE;
@@ -147,7 +147,7 @@ class TabContentsViewViews : public views::Widget,
   // The WebContents whose contents we display.
   content::WebContents* web_contents_;
 
-  // Common implementations of some TabContentsView methods.
+  // Common implementations of some WebContentsView methods.
   TabContentsViewHelper tab_contents_view_helper_;
 
   NativeTabContentsView* native_tab_contents_view_;

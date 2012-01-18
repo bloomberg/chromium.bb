@@ -1,20 +1,20 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/views/tab_contents/native_tab_contents_view_gtk.h"
 
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/ui/gtk/constrained_window_gtk.h"
 #include "chrome/browser/tab_contents/web_drag_bookmark_handler_gtk.h"
+#include "chrome/browser/ui/gtk/constrained_window_gtk.h"
 #include "chrome/browser/ui/views/tab_contents/native_tab_contents_view_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_view_gtk.h"
-#include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/browser/tab_contents/web_drag_dest_gtk.h"
 #include "content/browser/tab_contents/web_drag_source_gtk.h"
 #include "content/public/browser/web_contents.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebDragData.h"
+#include "content/public/browser/web_contents_view.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebDragData.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/user_manager.h"

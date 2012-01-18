@@ -22,9 +22,6 @@ class RenderViewHost;
 class RenderWidgetHostView;
 class SessionStorageNamespace;
 class SiteInstance;
-// TODO(jam): of course we will have to rename TabContentsView etc to use
-// WebContents.
-class TabContentsView;
 
 namespace base {
 class PropertyBag;
@@ -48,6 +45,9 @@ class RenderProcessHost;
 class WebContentsDelegate;
 struct RendererPreferences;
 struct SSLStatus;
+// TODO(jam): of course we will have to rename WebContentsView etc to use
+// WebContents.
+class WebContentsView;
 
 // Describes what goes in the main content area of a tab.
 class WebContents : public PageNavigator {
@@ -106,8 +106,8 @@ class WebContents : public PageNavigator {
   // time and can be NULL (during setup and teardown).
   virtual RenderWidgetHostView* GetRenderWidgetHostView() const = 0;
 
-  // The TabContentsView will never change and is guaranteed non-NULL.
-  virtual TabContentsView* GetView() const = 0;
+  // The WebContentsView will never change and is guaranteed non-NULL.
+  virtual WebContentsView* GetView() const = 0;
 
   // Create a WebUI page for the given url. In most cases, this doesn't need to
   // be called by embedders since content will create its own WebUI objects as
@@ -304,7 +304,7 @@ class WebContents : public PageNavigator {
   // times, subsequent calls are ignored.
   virtual void OnCloseStarted() = 0;
 
-  // Returns true if underlying TabContentsView should accept drag-n-drop.
+  // Returns true if underlying WebContentsView should accept drag-n-drop.
   virtual bool ShouldAcceptDragAndDrop() const = 0;
 
   // A render view-originated drag has ended. Informs the render view host and

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,7 +25,6 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
@@ -33,6 +32,7 @@
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "content/public/browser/web_contents_view.h"
 
 using content::NavigationController;
 using content::NavigationEntry;
@@ -719,8 +719,8 @@ void TabStripModel::AddTabContents(TabContentsWrapper* contents,
 
   // TODO(sky): figure out why this is here and not in InsertTabContentsAt. When
   // here we seem to get failures in startup perf tests.
-  // Ensure that the new TabContentsView begins at the same size as the
-  // previous TabContentsView if it existed.  Otherwise, the initial WebKit
+  // Ensure that the new WebContentsView begins at the same size as the
+  // previous WebContentsView if it existed.  Otherwise, the initial WebKit
   // layout will be performed based on a width of 0 pixels, causing a
   // very long, narrow, inaccurate layout.  Because some scripts on pages (as
   // well as WebKit's anchor link location calculation) are run on the

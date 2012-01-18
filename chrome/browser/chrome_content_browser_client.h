@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,7 +17,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
  public:
   virtual content::BrowserMainParts* CreateBrowserMainParts(
       const content::MainFunctionParams& parameters) OVERRIDE;
-  virtual TabContentsView* CreateTabContentsView(
+  virtual content::WebContentsView* CreateWebContentsView(
       content::WebContents* web_contents) OVERRIDE;
   virtual void RenderViewHostCreated(RenderViewHost* render_view_host) OVERRIDE;
   virtual void RenderProcessHostCreated(

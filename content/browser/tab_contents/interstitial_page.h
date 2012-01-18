@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,11 +20,11 @@
 #include "ui/gfx/size.h"
 
 class TabContents;
-class TabContentsView;
 
 namespace content {
 class NavigationEntry;
 class WebContents;
+class WebContentsView;
 }
 
 // This class is a base class for interstitial pages, pages that show some
@@ -163,9 +163,9 @@ class CONTENT_EXPORT InterstitialPage : public content::NotificationObserver,
   // Overriden in unit tests.
   virtual RenderViewHost* CreateRenderViewHost();
 
-  // Creates the TabContentsView that shows the interstitial RVH.
+  // Creates the WebContentsView that shows the interstitial RVH.
   // Overriden in unit tests.
-  virtual TabContentsView* CreateTabContentsView();
+  virtual content::WebContentsView* CreateWebContentsView();
 
   // Notification magic.
   content::NotificationRegistrar notification_registrar_;

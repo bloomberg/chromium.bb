@@ -19,10 +19,10 @@
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #import "content/browser/accessibility/browser_accessibility_cocoa.h"
+#include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/mac/closure_blocks_leopard_compat.h"
 #include "content/browser/plugin_process_host.h"
 #import "content/browser/renderer_host/accelerated_plugin_view_mac.h"
-#include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/renderer_host/backing_store_mac.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host.h"
@@ -1409,7 +1409,7 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
 
   // Command key combinations are sent via performKeyEquivalent rather than
   // keyDown:. We just forward this on and if WebCore doesn't want to handle
-  // it, we let the TabContentsView figure out how to reinject it.
+  // it, we let the WebContentsView figure out how to reinject it.
   [self keyEvent:theEvent wasKeyEquivalent:YES];
   return YES;
 }

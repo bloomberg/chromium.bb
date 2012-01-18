@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,8 +12,8 @@
 #include "chrome/browser/ui/cocoa/browser_window_controller.h"
 #include "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #import "chrome/browser/ui/cocoa/speech_input_window_controller.h"
-#include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 #include "skia/ext/skia_utils_mac.h"
 
 using content::WebContents;

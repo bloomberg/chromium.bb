@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,8 +10,8 @@
 #include <vector>
 
 #include "base/callback_forward.h"
-#include "content/public/common/window_container_type.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/window_container_type.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNotificationPresenter.h"
 
 class BrowserURLHandler;
@@ -27,7 +27,6 @@ class SiteInstance;
 class SSLCertErrorHandler;
 class SSLClientAuthHandler;
 class SkBitmap;
-class TabContentsView;
 class WorkerProcessHost;
 struct WebPreferences;
 
@@ -36,6 +35,7 @@ class AccessTokenStore;
 class BrowserMainParts;
 class RenderProcessHost;
 class WebContents;
+class WebContentsView;
 struct MainFunctionParams;
 struct ShowDesktopNotificationHostMsgParams;
 }
@@ -85,7 +85,7 @@ class ContentBrowserClient {
   virtual BrowserMainParts* CreateBrowserMainParts(
       const content::MainFunctionParams& parameters) = 0;
 
-  virtual TabContentsView* CreateTabContentsView(WebContents* web_contents) = 0;
+  virtual WebContentsView* CreateWebContentsView(WebContents* web_contents) = 0;
 
   // Notifies that a new RenderHostView has been created.
   virtual void RenderViewHostCreated(RenderViewHost* render_view_host) = 0;

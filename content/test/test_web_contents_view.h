@@ -1,18 +1,20 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_TEST_TEST_TAB_CONTENTS_VIEW_H_
-#define CONTENT_TEST_TEST_TAB_CONTENTS_VIEW_H_
+#ifndef CONTENT_TEST_TEST_WEB_CONTENTS_VIEW_H_
+#define CONTENT_TEST_TEST_WEB_CONTENTS_VIEW_H_
 #pragma once
 
 #include "base/compiler_specific.h"
-#include "content/browser/tab_contents/tab_contents_view.h"
+#include "content/public/browser/web_contents_view.h"
 
-class TestTabContentsView : public TabContentsView {
+namespace content {
+
+class TestWebContentsView : public WebContentsView {
  public:
-  TestTabContentsView();
-  virtual ~TestTabContentsView();
+  TestWebContentsView();
+  virtual ~TestWebContentsView();
 
   // RenderViewHostDelegate::View:
   virtual void CreateNewWindow(
@@ -43,7 +45,7 @@ class TestTabContentsView : public TabContentsView {
   virtual void GotFocus() OVERRIDE;
   virtual void TakeFocus(bool reverse) OVERRIDE;
 
-  // TabContentsView:
+  // WebContentsView:
   virtual void CreateView(const gfx::Size& initial_size) OVERRIDE;
   virtual RenderWidgetHostView* CreateViewForWidget(
       RenderWidgetHost* render_widget_host) OVERRIDE;
@@ -69,7 +71,9 @@ class TestTabContentsView : public TabContentsView {
   virtual void RemoveOverlayView() OVERRIDE;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(TestTabContentsView);
+  DISALLOW_COPY_AND_ASSIGN(TestWebContentsView);
 };
 
-#endif  // CONTENT_TEST_TEST_TAB_CONTENTS_VIEW_H_
+}  // namespace content
+
+#endif  // CONTENT_TEST_TEST_WEB_CONTENTS_VIEW_H_

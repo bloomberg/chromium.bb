@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -34,7 +34,7 @@ class WebContents;
 
 @property(readonly, nonatomic) NSView* activeContainer;
 
-// Sets the current preview and installs its TabContentsView into the view
+// Sets the current preview and installs its WebContentsView into the view
 // hierarchy.  Hides the active view.  |preview| must not be NULL.
 - (void)showPreview:(content::WebContents*)preview;
 

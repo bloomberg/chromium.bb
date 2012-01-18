@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -67,7 +67,7 @@ class NativeTabContentsViewGtk : public views::NativeWidgetGtk,
   // Whether to ignore the next CHAR keyboard event.
   bool ignore_next_char_event_;
 
-  // Handles drags from this TabContentsView.
+  // Handles drags from this WebContentsView.
   scoped_ptr<content::WebDragSourceGtk> drag_source_;
 
   // The event for the last mouse down we handled. We need this for drags.

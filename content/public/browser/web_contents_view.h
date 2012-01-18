@@ -1,9 +1,9 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_TAB_CONTENTS_TAB_CONTENTS_VIEW_H_
-#define CONTENT_BROWSER_TAB_CONTENTS_TAB_CONTENTS_VIEW_H_
+#ifndef CONTENT_PUBLIC_BROWSER_WEB_CONTENTS_VIEW_H_
+#define CONTENT_PUBLIC_BROWSER_WEB_CONTENTS_VIEW_H_
 #pragma once
 
 #include <string>
@@ -20,13 +20,16 @@ class RenderWidgetHost;
 class RenderWidgetHostView;
 class TabContents;
 
-// The TabContentsView is an interface that is implemented by the platform-
+namespace content {
+
+// The WebContentsView is an interface that is implemented by the platform-
 // dependent web contents views. The TabContents uses this interface to talk to
 // them. View-related messages will also get forwarded directly to this class
 // from RenderViewHost via RenderViewHostDelegate::View.
-class CONTENT_EXPORT TabContentsView : public RenderViewHostDelegate::View {
+class CONTENT_EXPORT WebContentsView : public RenderViewHostDelegate::View {
  public:
-  virtual ~TabContentsView();
+  WebContentsView() {}
+  virtual ~WebContentsView() {}
 
   virtual void CreateView(const gfx::Size& initial_size) = 0;
 
@@ -128,11 +131,10 @@ class CONTENT_EXPORT TabContentsView : public RenderViewHostDelegate::View {
   // Removes the native overlay view installed by |InstallOverlayView|.
   virtual void RemoveOverlayView() = 0;
 
- protected:
-  TabContentsView();  // Abstract interface.
-
  private:
-  DISALLOW_COPY_AND_ASSIGN(TabContentsView);
+  DISALLOW_COPY_AND_ASSIGN(WebContentsView);
 };
 
-#endif  // CONTENT_BROWSER_TAB_CONTENTS_TAB_CONTENTS_VIEW_H_
+}  // namespace content
+
+#endif  // CONTENT_PUBLIC_BROWSER_WEB_CONTENTS_VIEW_H_

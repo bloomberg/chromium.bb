@@ -7,8 +7,8 @@
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #include "chrome/browser/ui/constrained_window_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
-#include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 #import "third_party/GTM/AppKit/GTMWindowSheetController.h"
 
 ConstrainedWindowMacDelegateSystemSheet::

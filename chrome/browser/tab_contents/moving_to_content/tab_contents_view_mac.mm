@@ -63,7 +63,7 @@ COMPILE_ASSERT_MATCHING_ENUM(DragOperationEvery);
 @end
 
 namespace tab_contents_view_mac {
-TabContentsView* CreateTabContentsView(WebContents* web_contents) {
+content::WebContentsView* CreateWebContentsView(WebContents* web_contents) {
   return new TabContentsViewMac(web_contents);
 }
 }
@@ -202,7 +202,7 @@ void TabContentsViewMac::OnTabCrashed(base::TerminationStatus /* status */,
 
 void TabContentsViewMac::SizeContents(const gfx::Size& size) {
   // TODO(brettw | japhet) This is a hack and should be removed.
-  // See tab_contents_view.h.
+  // See web_contents_view.h.
   gfx::Rect rect(gfx::Point(), size);
   TabContentsViewCocoa* view = cocoa_view_.get();
   [view setFrame:[view flipRectToNSRect:rect]];

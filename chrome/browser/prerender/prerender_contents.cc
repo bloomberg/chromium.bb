@@ -26,11 +26,11 @@
 #include "content/browser/in_process_webkit/session_storage_namespace.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/resource_request_details.h"
-#include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "content/public/browser/web_contents_view.h"
 #include "ui/gfx/rect.h"
 
 #if defined(OS_MACOSX)

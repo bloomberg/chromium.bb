@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,12 +16,12 @@
 #include "content/browser/site_instance.h"
 #include "content/browser/tab_contents/navigation_controller_impl.h"
 #include "content/browser/tab_contents/navigation_entry_impl.h"
-#include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/browser/webui/web_ui.h"
-#include "content/public/browser/notification_service.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/web_contents_view.h"
 #include "content/public/browser/web_ui_controller.h"
 #include "content/public/browser/web_ui_factory.h"
 #include "content/public/common/content_switches.h"

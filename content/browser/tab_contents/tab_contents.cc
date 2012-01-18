@@ -30,7 +30,6 @@
 #include "content/browser/tab_contents/interstitial_page.h"
 #include "content/browser/tab_contents/navigation_entry_impl.h"
 #include "content/browser/tab_contents/provisional_load_details.h"
-#include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/browser/tab_contents/title_updated_details.h"
 #include "content/common/intents_messages.h"
 #include "content/common/view_messages.h"
@@ -44,6 +43,7 @@
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/browser/web_contents_view.h"
 #include "content/public/browser/web_ui_factory.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/content_constants.h"
@@ -217,7 +217,7 @@ TabContents::TabContents(content::BrowserContext* browser_context,
       ALLOW_THIS_IN_INITIALIZER_LIST(controller_(
           this, browser_context, session_storage_namespace)),
       ALLOW_THIS_IN_INITIALIZER_LIST(view_(
-          content::GetContentClient()->browser()->CreateTabContentsView(this))),
+          content::GetContentClient()->browser()->CreateWebContentsView(this))),
       ALLOW_THIS_IN_INITIALIZER_LIST(render_manager_(this, this)),
       is_loading_(false),
       crashed_status_(base::TERMINATION_STATUS_STILL_RUNNING),
@@ -428,7 +428,7 @@ RenderWidgetHostView* TabContents::GetRenderWidgetHostView() const {
   return render_manager_.GetRenderWidgetHostView();
 }
 
-TabContentsView* TabContents::GetView() const {
+content::WebContentsView* TabContents::GetView() const {
   return view_.get();
 }
 
@@ -2173,7 +2173,7 @@ void TabContents::RenderViewGoneFromRenderManager(
 }
 
 void TabContents::UpdateRenderViewSizeForRenderManager() {
-  // TODO(brettw) this is a hack. See TabContentsView::SizeContents.
+  // TODO(brettw) this is a hack. See WebContentsView::SizeContents.
   gfx::Size size = view_->GetContainerSize();
   // 0x0 isn't a valid window size (minimal window size is 1x1) but it may be
   // here during container initialization and normal window size will be set

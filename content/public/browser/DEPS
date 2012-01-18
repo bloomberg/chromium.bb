@@ -1,6 +1,10 @@
 include_rules = [
   "+content/browser/notification_service_impl.h",
   "+content/browser/renderer_host/render_view_host.h",
+
+  # TODO(joi): Remove once render_view_host_delegate.h is moved.
+  "+content/browser/renderer_host/render_view_host_delegate.h",
+
   # TODO(jam): remove
   "+content/browser/download/download_id.h",
   "+content/browser/download/download_state_info.h",

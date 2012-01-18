@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -41,9 +41,9 @@
 #import "chrome/browser/ui/cocoa/view_resizer.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
-#include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "grit/ui_resources.h"

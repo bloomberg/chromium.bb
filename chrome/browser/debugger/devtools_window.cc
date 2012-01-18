@@ -34,7 +34,6 @@
 #include "content/browser/in_process_webkit/session_storage_namespace.h"
 #include "content/browser/load_notification_details.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/devtools_agent_host_registry.h"
 #include "content/public/browser/devtools_manager.h"
@@ -44,6 +43,7 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 #include "content/public/common/bindings_policy.h"
 #include "grit/generated_resources.h"
 

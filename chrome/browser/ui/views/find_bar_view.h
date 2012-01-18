@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -125,7 +125,7 @@ class FindBarView : public DropdownBarView,
   };
 
   // Returns the OS-specific view for the find bar that acts as an intermediary
-  // between us and the TabContentsView.
+  // between us and the WebContentsView.
   FindBarHost* find_bar_host() const;
 
   // The controls in the window.

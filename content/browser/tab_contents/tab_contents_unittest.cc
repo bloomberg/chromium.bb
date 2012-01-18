@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -172,7 +172,7 @@ class TestInterstitialPage : public InterstitialPage {
         this, MSG_ROUTING_NONE);
   }
 
-  virtual TabContentsView* CreateTabContentsView() { return NULL; }
+  virtual content::WebContentsView* CreateWebContentsView() { return NULL; }
 
 
   virtual void CommandReceived(const std::string& command) {
@@ -236,7 +236,7 @@ class TabContentsTest : public RenderViewHostTestHarness {
 
 // Test to make sure that title updates get stripped of whitespace.
 TEST_F(TabContentsTest, UpdateTitle) {
-  NavigationControllerImpl& cont = 
+  NavigationControllerImpl& cont =
       static_cast<NavigationControllerImpl&>(controller());
   ViewHostMsg_FrameNavigate_Params params;
   InitNavigateParams(&params, 0, GURL(chrome::kAboutBlankURL),
@@ -252,7 +252,7 @@ TEST_F(TabContentsTest, UpdateTitle) {
 
 // Test view source mode for a webui page.
 TEST_F(TabContentsTest, NTPViewSource) {
-  NavigationControllerImpl& cont = 
+  NavigationControllerImpl& cont =
       static_cast<NavigationControllerImpl&>(controller());
   const char kUrl[] = "view-source:tabcontentstest://blah";
   const GURL kGURL(kUrl);

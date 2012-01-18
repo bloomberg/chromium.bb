@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,8 +9,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/platform_thread.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDragOperation.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_win.h"
 #include "ui/gfx/point.h"
 
@@ -19,7 +19,7 @@ class NativeTabContentsViewWin;
 class WebDragSource;
 struct WebDropData;
 
-// Windows-specific drag-and-drop handling in TabContentsView.
+// Windows-specific drag-and-drop handling in WebContentsView.
 // If we are dragging a virtual file out of the browser, we use a background
 // thread to do the drag-and-drop because we do not want to run nested
 // message loop in the UI thread. For all other cases, the drag-and-drop happens

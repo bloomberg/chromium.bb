@@ -31,7 +31,7 @@ class TestOfflineLoadPage :  public chromeos::OfflineLoadPage {
   }
 
   // Overriden from InterstitialPage.  Don't create a view.
-  virtual TabContentsView* CreateTabContentsView() OVERRIDE {
+  virtual content::WebContentsView* CreateWebContentsView() OVERRIDE {
     return NULL;
   }
 
