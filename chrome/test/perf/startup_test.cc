@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -144,7 +144,13 @@ class StartupTest : public UIPerfTest {
           profile_type));
     }
 
+#if defined(NDEBUG)
     const int kNumCyclesMax = 20;
+#else
+    // Debug builds are too slow and we can't run that many cycles in a
+    // reasonable amount of time.
+    const int kNumCyclesMax = 10;
+#endif
     int numCycles = kNumCyclesMax;
     scoped_ptr<base::Environment> env(base::Environment::Create());
     std::string numCyclesEnv;
@@ -186,17 +192,6 @@ class StartupTest : public UIPerfTest {
       UITest::SetUp();
       TimeTicks end_time = TimeTicks::Now();
 
-      // HACK: Chrome < 5.0.368.0 did not yet implement SendJSONRequest.
-      {
-        std::string server_version = automation()->server_version();
-        std::vector<std::string> version_numbers;
-        base::SplitString(server_version, '.', &version_numbers);
-        int chrome_buildnum = 0;
-        ASSERT_TRUE(base::StringToInt(version_numbers[2], &chrome_buildnum));
-        if (chrome_buildnum < 368) {
-          num_tabs = 0;
-        }
-      }
       if (num_tabs > 0) {
         float min_start;
         float max_stop;
