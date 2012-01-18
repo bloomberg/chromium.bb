@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 #
@@ -89,8 +89,13 @@ EXTRA_ENV = {
   'TRIPLE_X8632': 'i686-none-nacl-gnu',
   'TRIPLE_X8664': 'x86_64-none-nacl-gnu',
 
+  # Override llc opt level to trade code quality for translation speed.
+  # Blank is default opt level.
+  'LLC_FAST_FLAGS' : '',
+
   'LLC_FLAGS_COMMON': '-asm-verbose=false ' +
                       '-tail-merge-threshold=50 ' +
+                      '${LLC_FAST_FLAGS} ' +
                       '${PIC ? -relocation-model=pic} ' +
                       '${PIC && ARCH==X8664 && LIBMODE_NEWLIB ? ' +
                       '  -force-tls-non-pic }',
@@ -140,6 +145,9 @@ TranslatorPatterns = [
   # the shared lib ad-hoc tests, c.f. tests/pnacl_ld_example
   ( '(-sfi-.+)',       "env.append('LLC_FLAGS', $0)"),
   ( '(-mtls-use-call)',  "env.append('LLC_FLAGS', $0)"),
+  # We may want to expose all O0-3, but nobody should really be changing this
+  # value in the browser, and O0 vs the default makes the biggest difference.
+  ( '-translate-fast',       "env.set('LLC_FAST_FLAGS', '-O0')"),
 
   # If translating a .pexe which was linked statically against
   # glibc, then you must do pnacl-translate -static. This will
