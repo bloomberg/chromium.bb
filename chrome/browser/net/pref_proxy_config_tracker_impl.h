@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -113,6 +113,11 @@ class PrefProxyConfigTrackerImpl : public content::NotificationObserver {
       ProxyPrefs::ConfigState* effective_config_state,
       net::ProxyConfig* effective_config);
 
+  // Converts a ProxyConfigDictionary to net::ProxyConfig representation.
+  // Returns true if the data from in the dictionary is valid, false otherwise.
+  static bool PrefConfigToNetConfig(const ProxyConfigDictionary& proxy_dict,
+                                    net::ProxyConfig* config);
+
   // Registers the proxy preference.
   static void RegisterPrefs(PrefService* user_prefs);
 
@@ -133,10 +138,6 @@ class PrefProxyConfigTrackerImpl : public content::NotificationObserver {
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // Converts a ProxyConfigDictionary to net::ProxyConfig representation.
-  // Returns true if the data from in the dictionary is valid, false otherwise.
-  bool PrefConfigToNetConfig(const ProxyConfigDictionary& proxy_dict,
-                             net::ProxyConfig* config);
 
   const PrefService* prefs() const { return pref_service_; }
   bool update_pending() const { return update_pending_; }

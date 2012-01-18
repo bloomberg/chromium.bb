@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@ namespace chromeos {
 namespace onc {
 
 const char kGUID[] = "GUID";
+const char kProxySettings[] = "ProxySettings";
 const char kName[] = "Name";
 const char kRemove[] = "Remove";
 const char kType[] = "Type";
@@ -79,6 +80,21 @@ const char kTLSRemote[] = "TLSRemote";
 const char kType[] = "Type";
 const char kUsername[] = "Username";
 }  // namespace vpn
+
+namespace proxy {
+const char kDirect[] = "Direct";
+const char kExcludeDomains[] = "ExcludeDomains";
+const char kFtp[] = "FTPProxy";
+const char kHost[] = "Host";
+const char kHttp[] = "HTTPProxy";
+const char kHttps[] = "SecureHTTPProxy";
+const char kManual[] = "Manual";
+const char kPAC[] = "PAC";
+const char kPort[] = "Port";
+const char kSocks[] = "SOCKS";
+const char kType[] = "Type";
+const char kWPAD[] = "WPAD";
+}  // namespace proxy
 
 }  // namespace onc
 

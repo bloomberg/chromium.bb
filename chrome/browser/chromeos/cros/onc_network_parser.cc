@@ -16,6 +16,8 @@
 #include "chrome/browser/chromeos/cros/native_network_parser.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/cros/onc_constants.h"
+#include "chrome/browser/chromeos/proxy_config_service_impl.h"
+#include "chrome/browser/prefs/proxy_config_dictionary.h"
 #include "chrome/common/net/x509_certificate_model.h"
 #include "crypto/encryptor.h"
 #include "crypto/hmac.h"
@@ -26,6 +28,7 @@
 #include "net/base/crypto_module.h"
 #include "net/base/net_errors.h"
 #include "net/base/x509_certificate.h"
+#include "net/proxy/proxy_bypass_rules.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -48,8 +51,8 @@ EnumMapper<PropertyIndex>::Pair network_configuration_table[] = {
 OncValueSignature network_configuration_signature[] = {
   // TODO(crosbug.com/23673): Support Ethernet settings.
   { onc::kGUID, PROPERTY_INDEX_GUID, TYPE_STRING },
+  { onc::kProxySettings, PROPERTY_INDEX_ONC_PROXY_SETTINGS, TYPE_DICTIONARY },
   { onc::kName, PROPERTY_INDEX_NAME, TYPE_STRING },
-  // TODO(crosbug.com/23674): Support ProxySettings.
   // TODO(crosbug.com/23604): Handle removing networks.
   { onc::kRemove, PROPERTY_INDEX_ONC_REMOVE, TYPE_BOOLEAN },
   { onc::kType, PROPERTY_INDEX_TYPE, TYPE_STRING },
@@ -63,7 +66,6 @@ OncValueSignature wifi_signature[] = {
   { onc::wifi::kEAP, PROPERTY_INDEX_EAP, TYPE_DICTIONARY },
   { onc::wifi::kHiddenSSID, PROPERTY_INDEX_HIDDEN_SSID, TYPE_BOOLEAN },
   { onc::wifi::kPassphrase, PROPERTY_INDEX_PASSPHRASE, TYPE_STRING },
-  { onc::wifi::kProxyURL, PROPERTY_INDEX_PROXY_CONFIG, TYPE_STRING },
   { onc::wifi::kSecurity, PROPERTY_INDEX_SECURITY, TYPE_STRING },
   { onc::wifi::kSSID, PROPERTY_INDEX_SSID, TYPE_STRING },
   { NULL }
@@ -159,6 +161,23 @@ OncValueSignature openvpn_signature[] = {
   { onc::vpn::kTLSRemote, PROPERTY_INDEX_OPEN_VPN_TLSREMOTE, TYPE_STRING },
   { onc::vpn::kUsername, PROPERTY_INDEX_OPEN_VPN_USER, TYPE_STRING },
   { NULL }
+};
+
+OncValueSignature proxy_settings_signature[] = {
+  { onc::proxy::kType, PROPERTY_INDEX_ONC_PROXY_TYPE, TYPE_STRING },
+  { onc::proxy::kPAC, PROPERTY_INDEX_ONC_PROXY_PAC, TYPE_STRING },
+  { onc::proxy::kManual, PROPERTY_INDEX_ONC_PROXY_MANUAL, TYPE_DICTIONARY },
+  { onc::proxy::kExcludeDomains, PROPERTY_INDEX_ONC_PROXY_EXCLUDE_DOMAINS,
+    TYPE_LIST },
+  { NULL },
+};
+
+OncValueSignature proxy_manual_signature[] = {
+  { onc::proxy::kHttp, PROPERTY_INDEX_ONC_PROXY_HTTP, TYPE_DICTIONARY },
+  { onc::proxy::kHttps, PROPERTY_INDEX_ONC_PROXY_HTTPS, TYPE_DICTIONARY },
+  { onc::proxy::kFtp, PROPERTY_INDEX_ONC_PROXY_FTP, TYPE_DICTIONARY },
+  { onc::proxy::kSocks, PROPERTY_INDEX_ONC_PROXY_SOCKS, TYPE_DICTIONARY },
+  { NULL },
 };
 
 // Serve the singleton mapper instance.
@@ -645,7 +664,9 @@ bool OncNetworkParser::ParseNetworkConfigurationValue(
                                        value,
                                        vpn_signature,
                                        OncVirtualNetworkParser::ParseVPNValue);
-      return true;
+    }
+    case PROPERTY_INDEX_ONC_PROXY_SETTINGS: {
+       return ProcessProxySettings(parser, value, network);
     }
     case PROPERTY_INDEX_ONC_REMOVE:
       VLOG(1) << network->name() << ": Remove field not yet implemented";
@@ -936,6 +957,239 @@ std::string OncNetworkParser::GetPkcs11IdFromCertGuid(const std::string& guid) {
   if (cert_list.size() == 1)
     return x509_certificate_model::GetPkcs11Id(cert_list[0]->os_cert_handle());
   return std::string();
+}
+
+// static
+bool OncNetworkParser::ProcessProxySettings(OncNetworkParser* parser,
+                                            const base::Value& value,
+                                            Network* network) {
+  VLOG(1) << "Processing ProxySettings: " << ConvertValueToString(value);
+
+  // Got "ProxySettings" field.  Immediately store the ProxySettings.Type
+  // field value so that we can properly validate fields in the ProxySettings
+  // object based on the type.
+  const DictionaryValue* dict = NULL;
+  CHECK(value.GetAsDictionary(&dict));
+  std::string proxy_type_string;
+  if (!dict->GetString(onc::proxy::kType, &proxy_type_string)) {
+    VLOG(1) << network->name() << ": ProxySettings.Type is missing";
+    return false;
+  }
+  Network::ProxyOncConfig& config = network->proxy_onc_config();
+  config.type = ParseProxyType(proxy_type_string);
+
+  // For Direct and WPAD, all other fields are ignored.
+  // Otherwise, recursively parse the children of ProxySettings dictionary.
+  if (config.type != PROXY_ONC_DIRECT && config.type != PROXY_ONC_WPAD) {
+    if (!parser->ParseNestedObject(network,
+                                   onc::kProxySettings,
+                                   value,
+                                   proxy_settings_signature,
+                                   OncNetworkParser::ParseProxySettingsValue)) {
+      return false;
+    }
+  }
+
+  // Create ProxyConfigDictionary based on parsed values.
+  scoped_ptr<DictionaryValue> proxy_dict;
+  switch (config.type) {
+    case PROXY_ONC_DIRECT: {
+      proxy_dict.reset(ProxyConfigDictionary::CreateDirect());
+      break;
+    }
+    case PROXY_ONC_WPAD: {
+      proxy_dict.reset(ProxyConfigDictionary::CreateAutoDetect());
+      break;
+    }
+    case PROXY_ONC_PAC: {
+      if (config.pac_url.empty()) {
+        VLOG(1) << "PAC field is required for this ProxySettings.Type";
+        return false;
+      }
+      GURL url(config.pac_url);
+      if (!url.is_valid()) {
+        VLOG(1) << "PAC field is invalid for this ProxySettings.Type";
+        return false;
+      }
+      proxy_dict.reset(ProxyConfigDictionary::CreatePacScript(url.spec(),
+                                                              false));
+      break;
+    }
+    case PROXY_ONC_MANUAL: {
+      if (config.manual_spec.empty()) {
+        VLOG(1) << "Manual field is required for this ProxySettings.Type";
+        return false;
+      }
+      proxy_dict.reset(ProxyConfigDictionary::CreateFixedServers(
+          config.manual_spec, config.bypass_rules));
+      break;
+    }
+    default:
+      break;
+  }
+  if (!proxy_dict.get())
+    return false;
+
+  // Serialize ProxyConfigDictionary into a string.
+  std::string proxy_dict_str = ConvertValueToString(*proxy_dict.get());
+
+  // Add ProxyConfig property to property map so that it will be updated in
+  // flimflam in NetworkLibraryImplCros::CallConfigureService after all parsing
+  // has completed.
+  scoped_ptr<StringValue> val(Value::CreateStringValue(proxy_dict_str));
+  network->UpdatePropertyMap(PROPERTY_INDEX_PROXY_CONFIG, *val.get());
+
+  // TODO(kuan): NetworkLibraryImplCros::CallConfigureService does not fire any
+  // notification when updating service properties, so chromeos::
+  // ProxyConfigServiceImpl does not get notified of changes in ProxyConfig
+  // property.  This doesn't matter for other properties, but the new
+  // ProxyConfig property needs to be processed by ProxyConfigServiceImpl via
+  // OnNetworkChanged notification so that it can be reflected in UI and, more
+  // importantly, activated on the network stack.
+  // However, calling SetProxyConfig here to set the property and trigger
+  /// flimflam to trigger firing of OnNetworkChanged notification will fail
+  // because |network| does not a service_path until flimflam resolves guid with
+  // service_path in CallConfigureService.
+  // So for now, just set the new proxy setting into proxy_config_ data member
+  // of |network| first.
+  // Note that NetworkLibrary has not migrated to using GUID yet and is still
+  // using service_path, so there's no way to identify which service this
+  // Network object is referencing.
+  network->set_proxy_config(proxy_dict_str);
+  VLOG(1) << "Parsed ProxyConfig: " << network->proxy_config();
+
+  return true;
+}
+
+// static
+bool OncNetworkParser::ParseProxySettingsValue(OncNetworkParser* parser,
+                                               PropertyIndex index,
+                                               const base::Value& value,
+                                               Network* network) {
+  Network::ProxyOncConfig& config = network->proxy_onc_config();
+  switch (index) {
+    case PROPERTY_INDEX_ONC_PROXY_PAC: {
+      if (config.type == PROXY_ONC_PAC) {
+        // This is a string specifying the url.
+        config.pac_url = GetStringValue(value);
+        return true;
+      }
+      break;
+    }
+    case PROPERTY_INDEX_ONC_PROXY_MANUAL: {
+      if (config.type == PROXY_ONC_MANUAL) {
+        // Recursively parse the children of Manual dictionary.
+        return parser->ParseNestedObject(network,
+                                         onc::proxy::kManual,
+                                         value,
+                                         proxy_manual_signature,
+                                         ParseProxyManualValue);
+      }
+      break;
+    }
+    case PROPERTY_INDEX_ONC_PROXY_EXCLUDE_DOMAINS: {
+      if (config.type == PROXY_ONC_MANUAL) {
+        // This is a list of rules, parse them into ProxyBypassRules.
+        net::ProxyBypassRules rules;
+        const ListValue* list = NULL;
+        CHECK(value.GetAsList(&list));
+        for (size_t i = 0; i < list->GetSize(); ++i) {
+          std::string val;
+          if (!list->GetString(i, &val))
+            return false;
+          rules.AddRuleFromString(val);
+        }
+        config.bypass_rules = rules.ToString();
+        return true;
+      }
+      break;
+    }
+    default:
+      break;
+  }
+  return true;
+}
+
+// static
+ProxyOncType OncNetworkParser::ParseProxyType(const std::string& type) {
+  static EnumMapper<ProxyOncType>::Pair table[] = {
+    { onc::proxy::kDirect, PROXY_ONC_DIRECT },
+    { onc::proxy::kWPAD, PROXY_ONC_WPAD },
+    { onc::proxy::kPAC, PROXY_ONC_PAC },
+    { onc::proxy::kManual, PROXY_ONC_MANUAL },
+  };
+
+  CR_DEFINE_STATIC_LOCAL(EnumMapper<ProxyOncType>, parser,
+      (table, arraysize(table), PROXY_ONC_MAX));
+
+  return parser.Get(type);
+}
+
+// static
+bool OncNetworkParser::ParseProxyManualValue(OncNetworkParser* parser,
+                                             PropertyIndex index,
+                                             const base::Value& value,
+                                             Network* network) {
+  switch (index) {
+    case PROPERTY_INDEX_ONC_PROXY_HTTP:
+      return ParseProxyServer(index, value, "http", network);
+      break;
+    case PROPERTY_INDEX_ONC_PROXY_HTTPS:
+      return ParseProxyServer(index, value, "https", network);
+      break;
+    case PROPERTY_INDEX_ONC_PROXY_FTP:
+      return ParseProxyServer(index, value, "ftp", network);
+      break;
+    case PROPERTY_INDEX_ONC_PROXY_SOCKS:
+      return ParseProxyServer(index, value, "socks", network);
+      break;
+    default:
+      break;
+  }
+  return false;
+}
+
+// static
+bool OncNetworkParser::ParseProxyServer(int property_index,
+                                        const base::Value& value,
+                                        const std::string& scheme,
+                                        Network* network) {
+  // Parse the ProxyLocation dictionary that specifies the proxy server.
+  net::ProxyServer server = ParseProxyLocationValue(property_index, value);
+  if (!server.is_valid())
+    return false;
+
+  // Append proxy server info to manual spec string.
+  ProxyConfigServiceImpl::ProxyConfig::EncodeAndAppendProxyServer(scheme,
+      server, &network->proxy_onc_config().manual_spec);
+  return true;
+}
+
+// static
+net::ProxyServer OncNetworkParser::ParseProxyLocationValue(
+    int property_index,
+    const base::Value& value) {
+  // Extract the values of Host and Port keys in ProxyLocation dictionary.
+  const DictionaryValue* dict = NULL;
+  CHECK(value.GetAsDictionary(&dict));
+  std::string host;
+  int port = 0;
+  if (!(dict->GetString(onc::proxy::kHost, &host) &&
+        dict->GetInteger(onc::proxy::kPort, &port))) {
+    return net::ProxyServer();
+  }
+
+  // Determine the scheme for the proxy server.
+  net::ProxyServer::Scheme scheme = net::ProxyServer::SCHEME_HTTP;
+  if (property_index == PROPERTY_INDEX_ONC_PROXY_SOCKS) {
+    scheme = StartsWithASCII(host, "socks5://", false) ?
+        net::ProxyServer::SCHEME_SOCKS5 : net::ProxyServer::SCHEME_SOCKS4;
+  }
+
+  // Process the Host and Port values into net::HostPortPair, and then
+  // net::ProxyServer for the specific scheme.
+  net::HostPortPair host_port(host, static_cast<uint16>(port));
+  return net::ProxyServer(scheme, host_port);
 }
 
 // -------------------- OncWirelessNetworkParser --------------------

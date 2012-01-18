@@ -119,6 +119,17 @@ enum PropertyIndex {
   PROPERTY_INDEX_ONC_IPSEC,  // Used internally for ONC parsing
   PROPERTY_INDEX_ONC_L2TP,  // Used internally for ONC parsing
   PROPERTY_INDEX_ONC_OPENVPN,  // Used internally for ONC parsing
+  PROPERTY_INDEX_ONC_PROXY_EXCLUDE_DOMAINS,  // Used internally for ONC parsing
+  PROPERTY_INDEX_ONC_PROXY_FTP,  // Used internally for ONC parsing
+  PROPERTY_INDEX_ONC_PROXY_HOST,  // Used internally for ONC parsing
+  PROPERTY_INDEX_ONC_PROXY_HTTP,  // Used internally for ONC parsing
+  PROPERTY_INDEX_ONC_PROXY_HTTPS,  // Used internally for ONC parsing
+  PROPERTY_INDEX_ONC_PROXY_MANUAL,  // Used internally for ONC parsing
+  PROPERTY_INDEX_ONC_PROXY_PAC,  // Used internally for ONC parsing
+  PROPERTY_INDEX_ONC_PROXY_PORT,  // Used internally for ONC parsing
+  PROPERTY_INDEX_ONC_PROXY_SETTINGS,  // Used internally for ONC parsing
+  PROPERTY_INDEX_ONC_PROXY_SOCKS,  // Used internally for ONC parsing
+  PROPERTY_INDEX_ONC_PROXY_TYPE,  // Used internally for ONC parsing
   PROPERTY_INDEX_ONC_REMOVE,  // Used internally for ONC parsing
   PROPERTY_INDEX_ONC_WIFI,  // Used internally for ONC parsing
   PROPERTY_INDEX_ONC_VPN,  // Used internally for ONC parsing
@@ -364,6 +375,15 @@ enum ProviderType {
   PROVIDER_TYPE_OPEN_VPN,
   // Add new provider types before PROVIDER_TYPE_MAX.
   PROVIDER_TYPE_MAX,
+};
+
+// Proxy type specified in ONC.
+enum ProxyOncType {
+  PROXY_ONC_DIRECT,
+  PROXY_ONC_WPAD,
+  PROXY_ONC_PAC,
+  PROXY_ONC_MANUAL,
+  PROXY_ONC_MAX,
 };
 
 // Simple wrapper for property Cellular.FoundNetworks.
@@ -622,6 +642,19 @@ class Network {
   };
   friend class TestApi;
 
+  // Structure used only for parsing ONC's ProxySettings value.
+  struct ProxyOncConfig {
+    ProxyOncConfig() : type(PROXY_ONC_DIRECT) {}
+
+    ProxyOncType type;
+    std::string pac_url;  // Only for PROXY_TYPE_PAC.
+    // Concatenated string of manual proxies only for PROXY_TYPE_MANUAL,
+    // formatted using chromeos::ProxyConfigServiceImpl::ProxyConfig::
+    // EncodeAndAppendProxyServer.
+    std::string manual_spec;
+    std::string bypass_rules;  // Only for PROXY_TYPE_MANUAL.
+  };
+
   const std::string& service_path() const { return service_path_; }
   const std::string& name() const { return name_; }
   const std::string& device_path() const { return device_path_; }
@@ -665,6 +698,8 @@ class Network {
 
   const DictionaryValue* ui_data() const { return &ui_data_; }
   DictionaryValue* ui_data() { return &ui_data_; }
+
+  ProxyOncConfig& proxy_onc_config() { return proxy_onc_config_; }
 
   void set_notify_failure(bool state) { notify_failure_ = state; }
 
@@ -814,7 +849,8 @@ class Network {
   int priority_;  // determines order in network list.
   bool auto_connect_;
   bool save_credentials_;  // save passphrase and EAP credentials to disk.
-  std::string proxy_config_;
+  std::string proxy_config_;  // ProxyConfig property in flimflam.
+  ProxyOncConfig proxy_onc_config_;  // Only used for parsing ONC proxy value.
 
   // Unique identifier, set the first time the network is parsed.
   std::string unique_id_;

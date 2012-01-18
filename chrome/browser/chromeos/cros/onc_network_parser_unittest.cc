@@ -8,16 +8,22 @@
 #include <keyhi.h>
 #include <pk11pub.h>
 
+#include "base/json/json_value_serializer.h"
 #include "base/lazy_instance.h"
 #include "base/scoped_temp_dir.h"
+#include "base/stringprintf.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
+#include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
 #include "chrome/browser/chromeos/system/runtime_environment.h"
+#include "chrome/browser/net/pref_proxy_config_tracker_impl.h"
 #include "crypto/nss_util.h"
 #include "net/base/cert_database.h"
 #include "net/base/cert_type.h"
 #include "net/base/crypto_module.h"
 #include "net/base/x509_certificate.h"
+#include "net/proxy/proxy_config.h"
 #include "net/third_party/mozilla_security_manager/nsNSSCertTrust.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -318,6 +324,21 @@ const char kCertificateClientAlternate[] =
     "Fi7N2HztkXvjT1pmvQsIXnvlkECI17zBtEZak1AgIIAA==\""
     "        }";
 
+const char kNetworkConfigurationWifiWepPskBegin[] =
+  "{"
+  "  \"NetworkConfigurations\": [{"
+  "    \"GUID\": \"{485d6076-dd44-6b6d-69787465725f5045}\","
+  "    \"Type\": \"WiFi\","
+  "    \"WiFi\": {"
+  "      \"Security\": \"WEP-PSK\","
+  "      \"SSID\": \"ssid\","
+  "      \"Passphrase\": \"pass\",";
+
+const char kNetworkConfigurationWifiWepPskEnd[] =
+  "    }"
+  "  }]"
+  "}";
+
 const char g_token_name[] = "OncNetworkParserTest token";
 
 net::CertType GetCertType(const net::X509Certificate* cert) {
@@ -376,6 +397,9 @@ class OncNetworkParserTest : public testing::Test {
                             PropertyIndex index,
                             bool expected);
 
+  void TestProxySettings(const std::string proxy_settings_blob,
+                         net::ProxyConfig* net_config);
+
  protected:
   scoped_refptr<net::CryptoModule> slot_;
   net::CertDatabase cert_db_;
@@ -408,6 +432,7 @@ class OncNetworkParserTest : public testing::Test {
   }
 
   static base::LazyInstance<ScopedTempDir> temp_db_dir_;
+  ScopedStubCrosEnabler stub_cros_enabler_;
 };
 
 const base::Value* OncNetworkParserTest::GetExpectedProperty(
@@ -452,23 +477,42 @@ void OncNetworkParserTest::CheckBooleanProperty(const Network* network,
   EXPECT_EQ(expected, bool_value);
 }
 
+void OncNetworkParserTest::TestProxySettings(
+    const std::string proxy_settings_blob,
+    net::ProxyConfig* net_config) {
+  std::string test_blob(
+    std::string(kNetworkConfigurationWifiWepPskBegin) +
+    "    }," +
+    "    \"ProxySettings\": {" +
+    proxy_settings_blob +
+    std::string(kNetworkConfigurationWifiWepPskEnd));
+
+  // Parse Network Configuration including ProxySettings dictionary.
+  OncNetworkParser parser(test_blob, "", NetworkUIData::ONC_SOURCE_USER_IMPORT);
+  scoped_ptr<Network> network(parser.ParseNetwork(0));
+  ASSERT_TRUE(network.get());
+  EXPECT_FALSE(network->proxy_config().empty());
+
+  // Deserialize ProxyConfig string property of Network into
+  // ProxyConfigDictionary and decode into net::ProxyConfig.
+  JSONStringValueSerializer serializer(network->proxy_config());
+  scoped_ptr<Value> value(serializer.Deserialize(NULL, NULL));
+  EXPECT_TRUE(value.get() && value->GetType() == Value::TYPE_DICTIONARY);
+  DictionaryValue* dict = static_cast<DictionaryValue*>(value.get());
+  ProxyConfigDictionary proxy_dict(dict);
+  EXPECT_TRUE(PrefProxyConfigTrackerImpl::PrefConfigToNetConfig(proxy_dict,
+                                                                net_config));
+}
+
 // static
 base::LazyInstance<ScopedTempDir> OncNetworkParserTest::temp_db_dir_ =
     LAZY_INSTANCE_INITIALIZER;
 
 TEST_F(OncNetworkParserTest, TestCreateNetworkWifi1) {
   std::string test_blob(
-      "{"
-      "  \"NetworkConfigurations\": [{"
-      "    \"GUID\": \"{485d6076-dd44-6b6d-69787465725f5045}\","
-      "    \"Type\": \"WiFi\","
-      "    \"WiFi\": {"
-      "      \"Security\": \"WEP-PSK\","
-      "      \"SSID\": \"ssid\","
-      "      \"Passphrase\": \"pass\","
-      "    }"
-      "  }]"
-      "}");
+    std::string(kNetworkConfigurationWifiWepPskBegin) +
+    std::string(kNetworkConfigurationWifiWepPskEnd));
+
   OncNetworkParser parser(test_blob, "", NetworkUIData::ONC_SOURCE_USER_IMPORT);
 
   EXPECT_EQ(1, parser.GetNetworkConfigsSize());
@@ -1034,6 +1078,114 @@ TEST_F(OncNetworkParserTest, TestNetworkAndCertificate) {
   EXPECT_EQ(network->type(), chromeos::TYPE_VPN);
   VirtualNetwork* vpn = static_cast<VirtualNetwork*>(network.get());
   EXPECT_EQ(PROVIDER_TYPE_OPEN_VPN, vpn->provider_type());
+}
+
+TEST_F(OncNetworkParserTest, TestProxySettingsDirect) {
+  std::string proxy_settings_blob(
+    "      \"Type\": \"Direct\"");
+
+  net::ProxyConfig net_config;
+  TestProxySettings(proxy_settings_blob, &net_config);
+  EXPECT_EQ(net::ProxyConfig::ProxyRules::TYPE_NO_RULES,
+            net_config.proxy_rules().type);
+  EXPECT_FALSE(net_config.HasAutomaticSettings());
+}
+
+TEST_F(OncNetworkParserTest, TestProxySettingsWpad) {
+  std::string proxy_settings_blob(
+    "      \"Type\": \"WPAD\"");
+
+  net::ProxyConfig net_config;
+  TestProxySettings(proxy_settings_blob, &net_config);
+  EXPECT_EQ(net::ProxyConfig::ProxyRules::TYPE_NO_RULES,
+            net_config.proxy_rules().type);
+  EXPECT_TRUE(net_config.HasAutomaticSettings());
+  EXPECT_TRUE(net_config.auto_detect());
+  EXPECT_FALSE(net_config.has_pac_url());
+}
+
+TEST_F(OncNetworkParserTest, TestProxySettingsPac) {
+  std::string pac_url("http://proxyconfig.corp.google.com/wpad.dat");
+  std::string proxy_settings_blob(
+    "      \"Type\": \"PAC\","
+    "      \"PAC\": \"" + pac_url + std::string("\""));
+
+  net::ProxyConfig net_config;
+  TestProxySettings(proxy_settings_blob, &net_config);
+  EXPECT_EQ(net::ProxyConfig::ProxyRules::TYPE_NO_RULES,
+            net_config.proxy_rules().type);
+  EXPECT_TRUE(net_config.HasAutomaticSettings());
+  EXPECT_FALSE(net_config.auto_detect());
+  EXPECT_TRUE(net_config.has_pac_url());
+  EXPECT_EQ(GURL(pac_url), net_config.pac_url());
+}
+
+TEST_F(OncNetworkParserTest, TestProxySettingsManual) {
+  std::string http_host("http.abc.com");
+  std::string https_host("https.abc.com");
+  std::string ftp_host("ftp.abc.com");
+  std::string socks_host("socks5://socks.abc.com");
+  uint16 http_port = 1234;
+  uint16 https_port = 3456;
+  uint16 ftp_port = 5678;
+  uint16 socks_port = 7890;
+  std::string proxy_settings_blob(
+    "      \"Type\": \"Manual\","
+    "      \"Manual\": {"
+    "        \"HTTPProxy\" : {"
+    "          \"Host\" : \"" + http_host + "\","
+    "          \"Port\" : %d"
+    "        },"
+    "        \"SecureHTTPProxy\" : {"
+    "          \"Host\" : \"" + https_host + "\","
+    "          \"Port\" : %d"
+    "        },"
+    "        \"FTPProxy\" : {"
+    "          \"Host\" : \"" + ftp_host + "\","
+    "          \"Port\" : %d"
+    "        },"
+    "        \"SOCKS\" : {"
+    "          \"Host\" : \"" + socks_host + "\","
+    "          \"Port\" : %d"
+    "        }"
+    "      },"
+    "      \"ExcludeDomains\": ["
+    "        \"google.com\","
+    "        \"<local>\""
+    "      ]");
+
+  net::ProxyConfig net_config;
+  TestProxySettings(
+      base::StringPrintf(proxy_settings_blob.data(),
+                         http_port, https_port, ftp_port, socks_port),
+      &net_config);
+  const net::ProxyConfig::ProxyRules& rules = net_config.proxy_rules();
+  EXPECT_EQ(net::ProxyConfig::ProxyRules::TYPE_PROXY_PER_SCHEME, rules.type);
+  // Verify http proxy server.
+  EXPECT_TRUE(rules.proxy_for_http.is_valid());
+  EXPECT_EQ(rules.proxy_for_http,
+            net::ProxyServer(net::ProxyServer::SCHEME_HTTP,
+                             net::HostPortPair(http_host, http_port)));
+  // Verify https proxy server.
+  EXPECT_TRUE(rules.proxy_for_https.is_valid());
+  EXPECT_EQ(rules.proxy_for_https,
+            net::ProxyServer(net::ProxyServer::SCHEME_HTTP,
+                             net::HostPortPair(https_host, https_port)));
+  // Verify ftp proxy server.
+  EXPECT_TRUE(rules.proxy_for_ftp.is_valid());
+  EXPECT_EQ(rules.proxy_for_ftp,
+            net::ProxyServer(net::ProxyServer::SCHEME_HTTP,
+                             net::HostPortPair(ftp_host, ftp_port)));
+  // Verify socks server.
+  EXPECT_TRUE(rules.fallback_proxy.is_valid());
+  EXPECT_EQ(rules.fallback_proxy,
+            net::ProxyServer(net::ProxyServer::SCHEME_SOCKS5,
+                             net::HostPortPair(socks_host, socks_port)));
+  // Verify bypass rules.
+  net::ProxyBypassRules expected_bypass_rules;
+  expected_bypass_rules.AddRuleFromString("google.com");
+  expected_bypass_rules.AddRuleToBypassLocal();
+  EXPECT_TRUE(expected_bypass_rules.Equals(rules.bypass_rules));
 }
 
 }  // namespace chromeos

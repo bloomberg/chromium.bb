@@ -22,6 +22,7 @@ class Value;
 }
 
 namespace net {
+class ProxyServer;
 class X509Certificate;
 typedef std::vector<scoped_refptr<X509Certificate> > CertificateList;
 }
@@ -130,6 +131,12 @@ class OncNetworkParser : public NetworkParser {
   // an empty string on failure.
   static std::string GetPkcs11IdFromCertGuid(const std::string& guid);
 
+  // Process ProxySettings dictionary into a format which is then updated into
+  // ProxyConfig property in flimflam.
+  static bool ProcessProxySettings(OncNetworkParser* parser,
+                                   const base::Value& value,
+                                   Network* network);
+
  private:
   FRIEND_TEST_ALL_PREFIXES(OncNetworkParserTest, TestAddClientCertificate);
   FRIEND_TEST_ALL_PREFIXES(OncNetworkParserTest, TestReplaceClientCertificate);
@@ -150,6 +157,31 @@ class OncNetworkParser : public NetworkParser {
 
   base::DictionaryValue* Decrypt(const std::string& passphrase,
                                  base::DictionaryValue* root);
+
+  // Parse the ProxySettings dictionary.
+  static bool ParseProxySettingsValue(OncNetworkParser* parser,
+                                      PropertyIndex index,
+                                      const base::Value& value,
+                                      Network* network);
+
+  // Parse Type key of ProxySettings dictionary.
+  static ProxyOncType ParseProxyType(const std::string& type);
+
+  // Parse Manual dictionary that is child of ProxySettings dictionary.
+  static bool ParseProxyManualValue(OncNetworkParser* parser,
+                                    PropertyIndex index,
+                                    const base::Value& value,
+                                    Network* network);
+
+  // Parse proxy server for different schemes in Manual dictionary.
+  static bool ParseProxyServer(int property_index,
+                               const base::Value& value,
+                               const std::string& scheme,
+                               Network* network);
+
+  // Parse ProxyLocation dictionary that specifies the manual proxy server.
+  static net::ProxyServer ParseProxyLocationValue(int property_index,
+                                                  const base::Value& value);
 
   // Error message from the JSON parser, if applicable.
   std::string parse_error_;
