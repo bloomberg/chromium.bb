@@ -158,6 +158,19 @@
       ],
       'defines': [ '<@(yasm_defines)' ],
       'cflags': [ '<@(yasm_cflags)', ],
+      'conditions': [
+        ['clang==1', {
+          'xcode_settings': {
+            'WARNING_CFLAGS': [
+              # yasm passes a `const elf_machine_sym*` through `void*`.
+              '-Wno-incompatible-pointer-types',
+            ],
+          },
+          'cflags': [
+            '-Wno-incompatible-pointer-types',
+          ],
+        }],
+      ],
       'rules': [
         {
           'rule_name': 'generate_gperf',
@@ -526,6 +539,19 @@
       ],
       'cflags': [
         '-std=gnu99',
+      ],
+      'conditions': [
+        ['clang==1', {
+          'xcode_settings': {
+            'WARNING_CFLAGS': [
+              # re2c is missing CLOSEVOP from one switch.
+              '-Wno-switch-enum',
+            ],
+          },
+          'cflags': [
+            '-Wno-switch-enum',
+          ],
+        }],
       ],
     },
     {
