@@ -49,8 +49,8 @@ void HostEventLogger::OnClientDisconnected(const std::string& jid) {
   Log("Client disconnected: " + username);
 }
 
-void HostEventLogger::OnAccessDenied() {
-  Log("Access denied");
+void HostEventLogger::OnAccessDenied(const std::string& jid) {
+  Log("Access denied for client: " + jid);
 }
 
 void HostEventLogger::OnShutdown() {

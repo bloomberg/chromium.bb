@@ -69,7 +69,7 @@ class HostNPScriptObject : public HostStatusObserver {
   bool Enumerate(std::vector<std::string>* values);
 
   // remoting::HostStatusObserver implementation.
-  virtual void OnAccessDenied() OVERRIDE;
+  virtual void OnAccessDenied(const std::string& jid) OVERRIDE;
   virtual void OnClientAuthenticated(const std::string& jid) OVERRIDE;
   virtual void OnClientDisconnected(const std::string& jid) OVERRIDE;
   virtual void OnShutdown() OVERRIDE;

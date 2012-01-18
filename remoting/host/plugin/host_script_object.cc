@@ -337,7 +337,7 @@ bool HostNPScriptObject::Enumerate(std::vector<std::string>* values) {
   return true;
 }
 
-void HostNPScriptObject::OnAccessDenied() {
+void HostNPScriptObject::OnAccessDenied(const std::string& jid) {
   DCHECK(host_context_.network_message_loop()->BelongsToCurrentThread());
 
   ++failed_login_attempts_;

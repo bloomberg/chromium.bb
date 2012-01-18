@@ -71,7 +71,7 @@ void LogToServer::OnClientDisconnected(const std::string& jid) {
   LogSessionStateChange(false);
 }
 
-void LogToServer::OnAccessDenied() {
+void LogToServer::OnAccessDenied(const std::string& jid) {
 }
 
 void LogToServer::OnShutdown() {

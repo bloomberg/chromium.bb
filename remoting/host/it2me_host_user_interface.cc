@@ -80,7 +80,7 @@ void It2MeHostUserInterface::OnClientDisconnected(const std::string& jid) {
   }
 }
 
-void It2MeHostUserInterface::OnAccessDenied() {
+void It2MeHostUserInterface::OnAccessDenied(const std::string& jid) {
 }
 
 void It2MeHostUserInterface::OnShutdown() {

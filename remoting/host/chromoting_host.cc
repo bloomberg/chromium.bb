@@ -173,7 +173,7 @@ void ChromotingHost::OnSessionAuthenticated(ClientSession* client) {
   recorder_->Start();
 
   // Notify observers that there is at least one authenticated client.
-  const std::string& jid = client->connection()->session()->jid();
+  const std::string& jid = client->client_jid();
 
   reject_authenticating_client_ = false;
 
@@ -192,7 +192,7 @@ void ChromotingHost::OnSessionAuthenticationFailed(ClientSession* client) {
 
   // Notify observers.
   FOR_EACH_OBSERVER(HostStatusObserver, status_observers_,
-                    OnAccessDenied());
+                    OnAccessDenied(client->client_jid()));
 }
 
 void ChromotingHost::OnSessionClosed(ClientSession* client) {

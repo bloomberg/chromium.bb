@@ -44,7 +44,7 @@ class It2MeHostUserInterface : public HostStatusObserver {
   // network thread.
   virtual void OnClientAuthenticated(const std::string& jid) OVERRIDE;
   virtual void OnClientDisconnected(const std::string& jid) OVERRIDE;
-  virtual void OnAccessDenied() OVERRIDE;
+  virtual void OnAccessDenied(const std::string& jid) OVERRIDE;
   virtual void OnShutdown() OVERRIDE;
 
   // Shuts down the object and all its resources synchronously. Must

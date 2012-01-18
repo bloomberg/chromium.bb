@@ -18,7 +18,7 @@ class HostStatusObserver {
   virtual ~HostStatusObserver() { }
 
   // Called when an unauthorized user attempts to connect to the host.
-  virtual void OnAccessDenied() = 0;
+  virtual void OnAccessDenied(const std::string& jid) = 0;
 
   // Called when a client authenticates, or disconnects. Observers
   // must not tear-down ChromotingHost state on receipt of this
