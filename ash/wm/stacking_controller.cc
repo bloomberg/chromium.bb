@@ -48,6 +48,11 @@ aura::Window* StackingController::GetDefaultParent(aura::Window* window) {
   switch (window->type()) {
     case aura::client::WINDOW_TYPE_NORMAL:
     case aura::client::WINDOW_TYPE_POPUP:
+    // TODO(beng): control windows with NULL parents should be parented to a
+    //             unique, probably hidden, container. Adding here now for
+    //             compatibility, since these windows were WINDOW_TYPE_POPUP
+    //             until now.
+    case aura::client::WINDOW_TYPE_CONTROL:
       if (IsSystemModal(window))
         return GetModalContainer(window);
       return always_on_top_controller_->GetContainer(window);
