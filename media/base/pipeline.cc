@@ -96,35 +96,21 @@ void Pipeline::Init(const PipelineStatusCB& ended_callback,
   network_callback_ = network_callback;
 }
 
-// Creates the PipelineInternal and calls it's start method.
-bool Pipeline::Start(scoped_ptr<FilterCollection> collection,
+void Pipeline::Start(scoped_ptr<FilterCollection> collection,
                      const std::string& url,
                      const PipelineStatusCB& start_callback) {
   base::AutoLock auto_lock(lock_);
+  CHECK(!running_) << "Media pipeline is already running";
 
-  if (running_) {
-    VLOG(1) << "Media pipeline is already running";
-    return false;
-  }
-
-  if (collection->IsEmpty()) {
-    return false;
-  }
-
-  // Kick off initialization!
   running_ = true;
   message_loop_->PostTask(FROM_HERE, base::Bind(
       &Pipeline::StartTask, this, base::Passed(&collection),
       url, start_callback));
-  return true;
 }
 
 void Pipeline::Stop(const PipelineStatusCB& stop_callback) {
   base::AutoLock auto_lock(lock_);
-  if (!running_) {
-    VLOG(1) << "Media pipeline has already stopped";
-    return;
-  }
+  CHECK(running_) << "Media pipeline isn't running";
 
   if (video_decoder_) {
     video_decoder_->PrepareForShutdownHack();
@@ -139,10 +125,7 @@ void Pipeline::Stop(const PipelineStatusCB& stop_callback) {
 void Pipeline::Seek(base::TimeDelta time,
                     const PipelineStatusCB& seek_callback) {
   base::AutoLock auto_lock(lock_);
-  if (!running_) {
-    VLOG(1) << "Media pipeline must be running";
-    return;
-  }
+  CHECK(running_) << "Media pipeline isn't running";
 
   download_rate_monitor_.Stop();
 

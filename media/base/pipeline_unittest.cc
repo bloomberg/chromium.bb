@@ -281,14 +281,6 @@ class PipelineTest : public ::testing::Test {
 TEST_F(PipelineTest, NotStarted) {
   const base::TimeDelta kZero;
 
-  // StrictMock<> will ensure these never get called, and valgrind will
-  // make sure the callbacks are instantly deleted.
-  pipeline_->Stop(base::Bind(&CallbackHelper::OnStop,
-                             base::Unretained(&callbacks_)));
-  pipeline_->Seek(kZero,
-                  base::Bind(&CallbackHelper::OnSeek,
-                             base::Unretained(&callbacks_)));
-
   EXPECT_FALSE(pipeline_->IsRunning());
   EXPECT_FALSE(pipeline_->IsInitialized());
   EXPECT_FALSE(pipeline_->HasAudio());
