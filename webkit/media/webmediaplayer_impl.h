@@ -3,15 +3,15 @@
 // found in the LICENSE file.
 
 // Delegate calls from WebCore::MediaPlayerPrivate to Chrome's video player.
-// It contains PipelineImpl which is the actual media player pipeline, it glues
+// It contains Pipeline which is the actual media player pipeline, it glues
 // the media player pipeline, data source, audio renderer and renderer.
-// PipelineImpl would creates multiple threads and access some public methods
+// Pipeline would creates multiple threads and access some public methods
 // of this class, so we need to be extra careful about concurrent access of
 // methods and members.
 //
 // WebMediaPlayerImpl works with multiple objects, the most important ones are:
 //
-// media::PipelineImpl
+// media::Pipeline
 //   The media playback pipeline.
 //
 // VideoRendererBase
@@ -26,7 +26,7 @@
 // WebMediaPlayerClient (WebKit object)
 //    ^
 //    |
-// WebMediaPlayerImpl ---> PipelineImpl
+// WebMediaPlayerImpl ---> Pipeline
 //    |        ^                  |
 //    |        |                  v r
 //    |        |        VideoRendererBase

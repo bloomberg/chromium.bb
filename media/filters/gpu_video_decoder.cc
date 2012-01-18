@@ -9,6 +9,7 @@
 #include "base/stl_util.h"
 #include "media/base/demuxer_stream.h"
 #include "media/base/filter_host.h"
+#include "media/base/pipeline.h"
 #include "media/base/video_decoder_config.h"
 #include "media/ffmpeg/ffmpeg_common.h"
 
@@ -155,7 +156,7 @@ void GpuVideoDecoder::Initialize(DemuxerStream* demuxer_stream,
   }
 
   const VideoDecoderConfig& config = demuxer_stream->video_decoder_config();
-  // TODO(scherkus): this check should go in PipelineImpl prior to creating
+  // TODO(scherkus): this check should go in Pipeline prior to creating
   // decoder objects.
   if (!config.IsValidConfig()) {
     DLOG(ERROR) << "Invalid video stream - " << config.AsHumanReadableString();

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,8 +17,10 @@
 #ifndef MEDIA_BASE_FILTER_HOST_H_
 #define MEDIA_BASE_FILTER_HOST_H_
 
-#include "media/base/filters.h"
-#include "media/base/pipeline.h"
+#include "base/time.h"
+#include "media/base/media_export.h"
+#include "media/base/pipeline_status.h"
+#include "ui/gfx/size.h"
 
 namespace media {
 

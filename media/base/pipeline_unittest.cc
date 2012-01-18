@@ -5,13 +5,14 @@
 #include <string>
 
 #include "base/bind.h"
-#include "base/callback.h"
+#include "base/message_loop.h"
 #include "base/stl_util.h"
 #include "base/threading/simple_thread.h"
+#include "media/base/clock.h"
 #include "media/base/filter_host.h"
 #include "media/base/filters.h"
 #include "media/base/media_log.h"
-#include "media/base/pipeline_impl.h"
+#include "media/base/pipeline.h"
 #include "media/base/mock_callback.h"
 #include "media/base/mock_filters.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -65,10 +66,10 @@ static void RunPipelineStatusOKCB(const PipelineStatusCB& cb) {
 // InitializationComplete(), which keeps the pipeline humming along.  If
 // either filters don't call InitializationComplete() immediately or filter
 // initialization is moved to a separate thread this test will become flaky.
-class PipelineImplTest : public ::testing::Test {
+class PipelineTest : public ::testing::Test {
  public:
-  PipelineImplTest()
-      : pipeline_(new PipelineImpl(&message_loop_, new MediaLog())) {
+  PipelineTest()
+      : pipeline_(new Pipeline(&message_loop_, new MediaLog())) {
     pipeline_->Init(
         base::Bind(&CallbackHelper::OnEnded, base::Unretained(&callbacks_)),
         base::Bind(&CallbackHelper::OnError, base::Unretained(&callbacks_)),
@@ -85,7 +86,7 @@ class PipelineImplTest : public ::testing::Test {
         .WillRepeatedly(Return(base::TimeDelta()));
   }
 
-  virtual ~PipelineImplTest() {
+  virtual ~PipelineTest() {
     if (!pipeline_->IsRunning()) {
       return;
     }
@@ -266,18 +267,18 @@ class PipelineImplTest : public ::testing::Test {
   // Fixture members.
   StrictMock<CallbackHelper> callbacks_;
   MessageLoop message_loop_;
-  scoped_refptr<PipelineImpl> pipeline_;
+  scoped_refptr<Pipeline> pipeline_;
   scoped_ptr<media::MockFilterCollection> mocks_;
   scoped_refptr<StrictMock<MockDemuxerStream> > audio_stream_;
   scoped_refptr<StrictMock<MockDemuxerStream> > video_stream_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(PipelineImplTest);
+  DISALLOW_COPY_AND_ASSIGN(PipelineTest);
 };
 
 // Test that playback controls methods no-op when the pipeline hasn't been
 // started.
-TEST_F(PipelineImplTest, NotStarted) {
+TEST_F(PipelineTest, NotStarted) {
   const base::TimeDelta kZero;
 
   // StrictMock<> will ensure these never get called, and valgrind will
@@ -321,7 +322,7 @@ TEST_F(PipelineImplTest, NotStarted) {
   EXPECT_EQ(0, size.height());
 }
 
-TEST_F(PipelineImplTest, NeverInitializes) {
+TEST_F(PipelineTest, NeverInitializes) {
   // This test hangs during initialization by never calling
   // InitializationComplete().  StrictMock<> will ensure that the callback is
   // never executed.
@@ -343,7 +344,7 @@ TEST_F(PipelineImplTest, NeverInitializes) {
   EXPECT_CALL(callbacks_, OnStart(PIPELINE_OK));
 }
 
-TEST_F(PipelineImplTest, RequiredFilterMissing) {
+TEST_F(PipelineTest, RequiredFilterMissing) {
   EXPECT_CALL(callbacks_, OnError(PIPELINE_ERROR_REQUIRED_FILTER_MISSING));
 
   // Sets up expectations on the callback and initializes the pipeline.  Called
@@ -362,7 +363,7 @@ TEST_F(PipelineImplTest, RequiredFilterMissing) {
   EXPECT_FALSE(pipeline_->IsInitialized());
 }
 
-TEST_F(PipelineImplTest, URLNotFound) {
+TEST_F(PipelineTest, URLNotFound) {
   // TODO(acolwell,fischman): Since OnStart() is getting called with an error
   // code already, OnError() doesn't also need to get called.  Fix the pipeline
   // (and it's consumers!) so that OnError doesn't need to be called after
@@ -373,7 +374,7 @@ TEST_F(PipelineImplTest, URLNotFound) {
   EXPECT_FALSE(pipeline_->IsInitialized());
 }
 
-TEST_F(PipelineImplTest, NoStreams) {
+TEST_F(PipelineTest, NoStreams) {
   // Manually set these expectations because SetPlaybackRate() is not called if
   // we cannot fully initialize the pipeline.
   EXPECT_CALL(*mocks_->demuxer(), Stop(_))
@@ -385,7 +386,7 @@ TEST_F(PipelineImplTest, NoStreams) {
   EXPECT_FALSE(pipeline_->IsInitialized());
 }
 
-TEST_F(PipelineImplTest, AudioStream) {
+TEST_F(PipelineTest, AudioStream) {
   CreateAudioStream();
   MockDemuxerStreamVector streams;
   streams.push_back(audio_stream());
@@ -400,7 +401,7 @@ TEST_F(PipelineImplTest, AudioStream) {
   EXPECT_FALSE(pipeline_->HasVideo());
 }
 
-TEST_F(PipelineImplTest, VideoStream) {
+TEST_F(PipelineTest, VideoStream) {
   CreateVideoStream();
   MockDemuxerStreamVector streams;
   streams.push_back(video_stream());
@@ -415,7 +416,7 @@ TEST_F(PipelineImplTest, VideoStream) {
   EXPECT_TRUE(pipeline_->HasVideo());
 }
 
-TEST_F(PipelineImplTest, AudioVideoStream) {
+TEST_F(PipelineTest, AudioVideoStream) {
   CreateAudioStream();
   CreateVideoStream();
   MockDemuxerStreamVector streams;
@@ -434,7 +435,7 @@ TEST_F(PipelineImplTest, AudioVideoStream) {
   EXPECT_TRUE(pipeline_->HasVideo());
 }
 
-TEST_F(PipelineImplTest, Seek) {
+TEST_F(PipelineTest, Seek) {
   CreateAudioStream();
   CreateVideoStream();
   MockDemuxerStreamVector streams;
@@ -456,7 +457,7 @@ TEST_F(PipelineImplTest, Seek) {
   DoSeek(expected);
 }
 
-TEST_F(PipelineImplTest, SetVolume) {
+TEST_F(PipelineTest, SetVolume) {
   CreateAudioStream();
   MockDemuxerStreamVector streams;
   streams.push_back(audio_stream());
@@ -474,7 +475,7 @@ TEST_F(PipelineImplTest, SetVolume) {
   pipeline_->SetVolume(expected);
 }
 
-TEST_F(PipelineImplTest, Properties) {
+TEST_F(PipelineTest, Properties) {
   CreateVideoStream();
   MockDemuxerStreamVector streams;
   streams.push_back(video_stream());
@@ -497,7 +498,7 @@ TEST_F(PipelineImplTest, Properties) {
             pipeline_->GetBufferedTime().ToInternalValue());
 }
 
-TEST_F(PipelineImplTest, GetBufferedTime) {
+TEST_F(PipelineTest, GetBufferedTime) {
   CreateVideoStream();
   MockDemuxerStreamVector streams;
   streams.push_back(video_stream());
@@ -558,7 +559,7 @@ TEST_F(PipelineImplTest, GetBufferedTime) {
             pipeline_->GetBufferedTime().ToInternalValue());
 }
 
-TEST_F(PipelineImplTest, DisableAudioRenderer) {
+TEST_F(PipelineTest, DisableAudioRenderer) {
   CreateAudioStream();
   CreateVideoStream();
   MockDemuxerStreamVector streams;
@@ -599,7 +600,7 @@ TEST_F(PipelineImplTest, DisableAudioRenderer) {
   host->NotifyEnded();
 }
 
-TEST_F(PipelineImplTest, DisableAudioRendererDuringInit) {
+TEST_F(PipelineTest, DisableAudioRendererDuringInit) {
   CreateAudioStream();
   CreateVideoStream();
   MockDemuxerStreamVector streams;
@@ -636,7 +637,7 @@ TEST_F(PipelineImplTest, DisableAudioRendererDuringInit) {
   host->NotifyEnded();
 }
 
-TEST_F(PipelineImplTest, EndedCallback) {
+TEST_F(PipelineTest, EndedCallback) {
   CreateAudioStream();
   CreateVideoStream();
   MockDemuxerStreamVector streams;
@@ -679,7 +680,7 @@ static base::Time StaticClockFunction() {
   return base::Time::FromInternalValue(g_static_clock_time);
 }
 
-TEST_F(PipelineImplTest, AudioStreamShorterThanVideo) {
+TEST_F(PipelineTest, AudioStreamShorterThanVideo) {
   base::TimeDelta duration = base::TimeDelta::FromSeconds(10);
 
   CreateAudioStream();
@@ -749,7 +750,7 @@ void SendReadErrorToCB(::testing::Unused, const FilterStatusCB& cb) {
   cb.Run(PIPELINE_ERROR_READ);
 }
 
-TEST_F(PipelineImplTest, ErrorDuringSeek) {
+TEST_F(PipelineTest, ErrorDuringSeek) {
   CreateAudioStream();
   MockDemuxerStreamVector streams;
   streams.push_back(audio_stream());
@@ -783,7 +784,7 @@ TEST_F(PipelineImplTest, ErrorDuringSeek) {
 // Invoked function OnError. This asserts that the pipeline does not enqueue
 // non-teardown related tasks while tearing down.
 static void TestNoCallsAfterError(
-    PipelineImpl* pipeline, MessageLoop* message_loop,
+    Pipeline* pipeline, MessageLoop* message_loop,
     PipelineStatus /* status */) {
   CHECK(pipeline);
   CHECK(message_loop);
@@ -800,7 +801,7 @@ static void TestNoCallsAfterError(
   message_loop->AssertIdle();
 }
 
-TEST_F(PipelineImplTest, NoMessageDuringTearDownFromError) {
+TEST_F(PipelineTest, NoMessageDuringTearDownFromError) {
   CreateAudioStream();
   MockDemuxerStreamVector streams;
   streams.push_back(audio_stream());
@@ -830,7 +831,7 @@ TEST_F(PipelineImplTest, NoMessageDuringTearDownFromError) {
   message_loop_.RunAllPending();
 }
 
-TEST_F(PipelineImplTest, StartTimeIsZero) {
+TEST_F(PipelineTest, StartTimeIsZero) {
   CreateVideoStream();
   MockDemuxerStreamVector streams;
   streams.push_back(video_stream());
@@ -848,7 +849,7 @@ TEST_F(PipelineImplTest, StartTimeIsZero) {
   EXPECT_EQ(base::TimeDelta(), pipeline_->GetCurrentTime());
 }
 
-TEST_F(PipelineImplTest, StartTimeIsNonZero) {
+TEST_F(PipelineTest, StartTimeIsNonZero) {
   const base::TimeDelta kStartTime = base::TimeDelta::FromSeconds(4);
   const base::TimeDelta kDuration = base::TimeDelta::FromSeconds(100);
 

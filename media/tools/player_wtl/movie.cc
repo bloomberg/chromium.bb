@@ -11,7 +11,7 @@
 #include "media/base/filter_collection.h"
 #include "media/base/media_log.h"
 #include "media/base/message_loop_factory_impl.h"
-#include "media/base/pipeline_impl.h"
+#include "media/base/pipeline.h"
 #include "media/filters/ffmpeg_audio_decoder.h"
 #include "media/filters/ffmpeg_demuxer_factory.h"
 #include "media/filters/ffmpeg_video_decoder.h"
@@ -25,7 +25,7 @@ using media::FFmpegDemuxerFactory;
 using media::FFmpegVideoDecoder;
 using media::FileDataSourceFactory;
 using media::FilterCollection;
-using media::PipelineImpl;
+using media::Pipeline;
 using media::ReferenceAudioRenderer;
 
 namespace media {
@@ -68,7 +68,7 @@ bool Movie::Open(const wchar_t* url, VideoRendererBase* video_renderer) {
 
   MessageLoop* pipeline_loop =
       message_loop_factory_->GetMessageLoop("PipelineThread");
-  pipeline_ = new PipelineImpl(pipeline_loop, new media::MediaLog());
+  pipeline_ = new Pipeline(pipeline_loop, new media::MediaLog());
 
   // Create filter collection.
   scoped_ptr<FilterCollection> collection(new FilterCollection());

@@ -16,7 +16,7 @@
 #include "media/base/limits.h"
 #include "media/base/media_log.h"
 #include "media/base/media_switches.h"
-#include "media/base/pipeline_impl.h"
+#include "media/base/pipeline.h"
 #include "media/base/video_frame.h"
 #include "media/filters/chunk_demuxer_factory.h"
 #include "media/filters/dummy_demuxer_factory.h"
@@ -131,7 +131,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
   MessageLoop* pipeline_message_loop =
       message_loop_factory_->GetMessageLoop("PipelineThread");
   CHECK(pipeline_message_loop) << "Failed to create a new thread";
-  pipeline_ = new media::PipelineImpl(pipeline_message_loop, media_log_);
+  pipeline_ = new media::Pipeline(pipeline_message_loop, media_log_);
   pipeline_->Init(
       base::Bind(&WebMediaPlayerProxy::PipelineEndedCallback,
                  proxy_.get()),

@@ -426,13 +426,13 @@
 {
   bug_46642a
   ThreadSanitizer:Race
-  fun:*media*PipelineImpl*InitializeTask*
+  fun:*media*Pipeline*InitializeTask*
 }
 
 {
   bug_46642b
   ThreadSanitizer:Race
-  fun:*media*PipelineImpl*GetCurrentTime*
+  fun:*media*Pipeline*GetCurrentTime*
 }
 
 {
@@ -729,7 +729,7 @@
   fun:media::AudioRendererBase::SetPlaybackRate
   fun:AudioRendererImpl::SetPlaybackRate
   fun:media::CompositeFilter::SetPlaybackRate
-  fun:media::PipelineImpl::PlaybackRateChangedTask
+  fun:media::Pipeline::PlaybackRateChangedTask
   ...
   fun:base::internal::RunnableAdapter::Run
 }

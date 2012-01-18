@@ -21,7 +21,7 @@
 #include "media/base/media_log.h"
 #include "media/base/media_switches.h"
 #include "media/base/message_loop_factory_impl.h"
-#include "media/base/pipeline_impl.h"
+#include "media/base/pipeline.h"
 #include "media/base/video_frame.h"
 #include "media/filters/ffmpeg_audio_decoder.h"
 #include "media/filters/ffmpeg_demuxer_factory.h"
@@ -100,7 +100,7 @@ bool InitPipeline(MessageLoop* message_loop,
                   const char* filename,
                   const PaintCB& paint_cb,
                   bool enable_audio,
-                  scoped_refptr<media::PipelineImpl>* pipeline,
+                  scoped_refptr<media::Pipeline>* pipeline,
                   MessageLoop* paint_message_loop,
                   media::MessageLoopFactory* message_loop_factory) {
   // Load media libraries.
@@ -135,7 +135,7 @@ bool InitPipeline(MessageLoop* message_loop,
   }
 
   // Create the pipeline and start it.
-  *pipeline = new media::PipelineImpl(message_loop, new media::MediaLog());
+  *pipeline = new media::Pipeline(message_loop, new media::MediaLog());
   media::PipelineStatusNotification note;
   (*pipeline)->Start(collection.Pass(), filename, note.Callback());
 
@@ -157,7 +157,7 @@ void TerminateHandler(int signal) {
 }
 
 void PeriodicalUpdate(
-    media::PipelineImpl* pipeline,
+    media::Pipeline* pipeline,
     MessageLoop* message_loop,
     bool audio_only) {
   if (!g_running) {
@@ -267,7 +267,7 @@ int main(int argc, char** argv) {
   scoped_ptr<media::MessageLoopFactory> message_loop_factory(
       new media::MessageLoopFactoryImpl());
   scoped_ptr<base::Thread> thread;
-  scoped_refptr<media::PipelineImpl> pipeline;
+  scoped_refptr<media::Pipeline> pipeline;
   MessageLoop message_loop;
   thread.reset(new base::Thread("PipelineThread"));
   thread->Start();

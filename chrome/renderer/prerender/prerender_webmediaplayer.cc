@@ -8,7 +8,7 @@
 #include "content/public/renderer/render_view.h"
 #include "media/base/filter_collection.h"
 #include "media/base/media_log.h"
-#include "media/base/pipeline_impl.h"
+#include "media/base/pipeline.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURL.h"
 #include "webkit/media/webmediaplayer_delegate.h"
 

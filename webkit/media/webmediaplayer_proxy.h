@@ -58,7 +58,7 @@ class WebMediaPlayerProxy
   bool HasSingleOrigin();
   void AbortDataSources();
 
-  // Methods for PipelineImpl -> WebMediaPlayerImpl communication.
+  // Methods for Pipeline -> WebMediaPlayerImpl communication.
   void PipelineInitializationCallback(media::PipelineStatus status);
   void PipelineSeekCallback(media::PipelineStatus status);
   void PipelineEndedCallback(media::PipelineStatus status);
