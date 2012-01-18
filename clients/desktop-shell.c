@@ -530,7 +530,7 @@ unlock_dialog_create(struct desktop *desktop)
 	desktop_shell_set_lock_surface(desktop->shell,
 	       window_get_wl_shell_surface(dialog->window));
 
-	window_schedule_redraw(dialog->window);
+	window_schedule_resize(dialog->window, 260, 230);
 
 	return dialog;
 }
