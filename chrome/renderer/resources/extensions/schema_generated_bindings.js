@@ -658,18 +658,6 @@ var chrome = chrome || {};
           chrome.webstorePrivate.beginInstallWithManifest3;
     }
 
-    apiFunctions.setHandleRequest("devtools.getTabEvents", function(tabId) {
-      var tabIdProxy = {};
-      var functions = ["onPageEvent", "onTabClose"];
-      functions.forEach(function(name) {
-        // Event disambiguation is handled by name munging.  See
-        // chrome/browser/extensions/extension_devtools_events.h for the C++
-        // equivalent of this logic.
-        tabIdProxy[name] = new chrome.Event("devtools." + tabId + "." + name);
-      });
-      return tabIdProxy;
-    });
-
     if (apiExists("test"))
       chrome.test.getApiDefinitions = GetExtensionAPIDefinition;
   });

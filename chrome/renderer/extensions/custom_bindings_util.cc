@@ -33,6 +33,7 @@ std::vector<v8::Extension*> GetAll(ExtensionDispatcher* extension_dispatcher) {
   // Must match kResourceIDs.
   static const char* kJavascriptFiles[] = {
     "extensions/browser_action_custom_bindings.js",
+    "extensions/devtools_custom_bindings.js",
     "extensions/experimental.input.ime_custom_bindings.js",
     "extensions/omnibox_custom_bindings.js",
     "extensions/page_action_custom_bindings.js",
@@ -44,6 +45,7 @@ std::vector<v8::Extension*> GetAll(ExtensionDispatcher* extension_dispatcher) {
   // Must match kJavascriptFiles.
   static const int kResourceIDs[] = {
     IDR_BROWSER_ACTION_CUSTOM_BINDINGS_JS,
+    IDR_DEVTOOLS_CUSTOM_BINDINGS_JS,
     IDR_EXPERIMENTAL_INPUT_IME_CUSTOM_BINDINGS_JS,
     IDR_OMNIBOX_CUSTOM_BINDINGS_JS,
     IDR_PAGE_ACTION_CUSTOM_BINDINGS_JS,

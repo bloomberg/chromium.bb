@@ -126,6 +126,7 @@
         'renderer/resources/extensions/browser_action_custom_bindings.js',
         'renderer/resources/extensions/chrome_private_custom_bindings.js',
         'renderer/resources/extensions/context_menus_custom_bindings.js',
+        'renderer/resources/extensions/devtools_custom_bindings.js',
         'renderer/resources/extensions/event.js',
         'renderer/resources/extensions/experimental.input.ime_custom_bindings.js',
         'renderer/resources/extensions/experimental.socket_custom_bindings.js',
