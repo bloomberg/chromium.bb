@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,7 +13,8 @@ namespace internal {
 
 class LauncherButtonHost;
 
-// Button used for items on the launcher corresponding to an app window.
+// Button used for items on the launcher corresponding to an app window as
+// well as one of the preset types (TYPE_APP_LIST or TYPE_BROWSER_SHORTCUT).
 class AppLauncherButton : public views::ImageButton {
  public:
   AppLauncherButton(views::ButtonListener* listener,
@@ -29,6 +30,7 @@ class AppLauncherButton : public views::ImageButton {
   virtual void OnMouseReleased(const views::MouseEvent& event) OVERRIDE;
   virtual void OnMouseCaptureLost() OVERRIDE;
   virtual bool OnMouseDragged(const views::MouseEvent& event) OVERRIDE;
+  virtual void OnMouseExited(const views::MouseEvent& event) OVERRIDE;
 
  private:
   LauncherButtonHost* host_;

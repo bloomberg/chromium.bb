@@ -10,6 +10,8 @@
 namespace ash {
 
 LauncherModel::LauncherModel() {
+  Add(0, LauncherItem(TYPE_APP_LIST, NULL));
+  Add(1, LauncherItem(TYPE_BROWSER_SHORTCUT, NULL));
 }
 
 LauncherModel::~LauncherModel() {
@@ -24,6 +26,9 @@ void LauncherModel::Add(int index, const LauncherItem& item) {
 
 void LauncherModel::RemoveItemAt(int index) {
   DCHECK(index >= 0 && index < item_count());
+  // The app list and browser shortcut can't be removed.
+  DCHECK(items_[index].type != TYPE_APP_LIST &&
+         items_[index].type != TYPE_BROWSER_SHORTCUT);
   items_.erase(items_.begin() + index);
   FOR_EACH_OBSERVER(LauncherModelObserver, observers_,
                     LauncherItemRemoved(index));

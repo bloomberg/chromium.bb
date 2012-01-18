@@ -23,9 +23,11 @@ class TestShellDelegate : public ShellDelegate {
   virtual void BuildAppListModel(AppListModel* model) OVERRIDE;
   virtual AppListViewDelegate* CreateAppListViewDelegate() OVERRIDE;
   virtual std::vector<aura::Window*> GetCycleWindowList(
+      CycleSource source,
       CycleOrder order) const OVERRIDE;
   virtual void LauncherItemClicked(const LauncherItem& item) OVERRIDE;
   virtual bool ConfigureLauncherItem(LauncherItem* item) OVERRIDE;
+  virtual int GetBrowserShortcutResourceId() OVERRIDE;
 };
 
 }  // namespace test

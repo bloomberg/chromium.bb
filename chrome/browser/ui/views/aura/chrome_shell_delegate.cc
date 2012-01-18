@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/views/aura/app_list/app_list_view_delegate.h"
 #include "chrome/browser/ui/views/aura/status_area_host_aura.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "grit/theme_resources.h"
 #include "ui/aura/window.h"
 
 namespace {
@@ -100,6 +101,7 @@ ChromeShellDelegate::CreateAppListViewDelegate() {
 }
 
 std::vector<aura::Window*> ChromeShellDelegate::GetCycleWindowList(
+    CycleSource source,
     CycleOrder order) const {
   std::vector<aura::Window*> windows;
   switch (order) {
@@ -130,4 +132,8 @@ bool ChromeShellDelegate::ConfigureLauncherItem(
   BrowserView* view = BrowserView::GetBrowserViewForNativeWindow(item->window);
   return view &&
       ShouldCreateLauncherItemForBrowser(view->browser(), &(item->type));
+}
+
+int ChromeShellDelegate::GetBrowserShortcutResourceId() {
+  return IDR_PRODUCT_LOGO_32;
 }

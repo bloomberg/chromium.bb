@@ -8,6 +8,7 @@
 
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
+#include "grit/ui_resources.h"
 #include "ui/aura/window.h"
 
 namespace ash {
@@ -34,6 +35,7 @@ AppListViewDelegate* TestShellDelegate::CreateAppListViewDelegate() {
 }
 
 std::vector<aura::Window*> TestShellDelegate::GetCycleWindowList(
+    CycleSource source,
     CycleOrder order) const {
   // We just use the Shell's default container of windows, so tests can be
   // written with the usual CreateTestWindowWithId() calls. But window cycling
@@ -50,6 +52,10 @@ void TestShellDelegate::LauncherItemClicked(const LauncherItem& item) {
 
 bool TestShellDelegate::ConfigureLauncherItem(LauncherItem* item) {
   return true;
+}
+
+int TestShellDelegate::GetBrowserShortcutResourceId() {
+  return IDR_AURA_LAUNCHER_BROWSER_SHORTCUT;
 }
 
 }  // namespace test

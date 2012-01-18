@@ -37,6 +37,15 @@ class ASH_EXPORT ShellDelegate {
     ORDER_LINEAR
   };
 
+  // Source requesting the window list.
+  enum CycleSource {
+    // Windows are going to be used for alt-tab (or F5).
+    SOURCE_KEYBOARD,
+
+    // Windows are going to be cycled from the launcher.
+    SOURCE_LAUNCHER,
+  };
+
   // The Shell owns the delegate.
   virtual ~ShellDelegate() {}
 
@@ -60,6 +69,7 @@ class ASH_EXPORT ShellDelegate {
   // at the front of the list.  Otherwise any order may be returned.  The list
   // does not contain NULL pointers.
   virtual std::vector<aura::Window*> GetCycleWindowList(
+      CycleSource source,
       CycleOrder order) const = 0;
 
   // Invoked when the user clicks on a window entry in the launcher.
@@ -69,7 +79,12 @@ class ASH_EXPORT ShellDelegate {
   // an entry for |item->window| it should configure |item| appropriately and
   // return true.
   virtual bool ConfigureLauncherItem(LauncherItem* item) = 0;
+
+  // Returns the resource id of the image to show on the browser shortcut
+  // button.
+  virtual int GetBrowserShortcutResourceId() = 0;
 };
+
 }  // namespace ash
 
 #endif  // ASH_SHELL_DELEGATE_H_

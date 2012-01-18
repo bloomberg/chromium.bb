@@ -15,6 +15,7 @@
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
+#include "grit/ui_resources.h"
 #include "ui/aura/root_window.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
@@ -66,6 +67,7 @@ class ShellDelegateImpl : public ash::ShellDelegate {
   }
 
   std::vector<aura::Window*> GetCycleWindowList(
+      CycleSource source,
       CycleOrder order) const OVERRIDE {
     aura::Window* default_container = ash::Shell::GetInstance()->GetContainer(
         ash::internal::kShellWindowId_DefaultContainer);
@@ -91,6 +93,10 @@ class ShellDelegateImpl : public ash::ShellDelegate {
                           image_count == 2 ? 255 : 0);
     image_count = (image_count + 1) % 3;
     return true;  // Makes the entry show up in the launcher.
+  }
+
+  virtual int GetBrowserShortcutResourceId() OVERRIDE {
+    return IDR_AURA_LAUNCHER_BROWSER_SHORTCUT;
   }
 };
 

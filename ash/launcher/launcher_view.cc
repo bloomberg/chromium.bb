@@ -6,6 +6,7 @@
 
 #include "ash/launcher/app_launcher_button.h"
 #include "ash/launcher/launcher_model.h"
+#include "ash/launcher/launcher_window_cycler.h"
 #include "ash/launcher/tabbed_launcher_button.h"
 #include "ash/launcher/view_model.h"
 #include "ash/launcher/view_model_utils.h"
@@ -32,9 +33,6 @@ using views::View;
 namespace ash {
 namespace internal {
 
-// Padding between each view.
-static const int kHorizontalPadding = 12;
-
 // Amount content is inset on the left edge.
 static const int kLeadingInset = 8;
 
@@ -45,9 +43,9 @@ static const int kPreferredHeight = 48;
 // Minimum distance before drag starts.
 static const int kMinimumDragDistance = 8;
 
-// Opacity for the |new_browser_button_| and |show_apps_buttons_| when the mouse
-// isn't over it.
-static const float kDimmedButtonOpacity = .8f;
+// Size given to the buttons on the launcher.
+static const int kButtonWidth = 60;
+static const int kButtonHeight = 48;
 
 namespace {
 
@@ -186,8 +184,6 @@ class LauncherView::StartFadeAnimationDelegate :
 LauncherView::LauncherView(LauncherModel* model)
     : model_(model),
       view_model_(new ViewModel),
-      new_browser_button_(NULL),
-      show_apps_button_(NULL),
       overflow_button_(NULL),
       dragging_(NULL),
       drag_view_(NULL),
@@ -205,19 +201,6 @@ void LauncherView::Init() {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   model_->AddObserver(this);
 
-  show_apps_button_ = new views::ImageButton(this);
-  show_apps_button_->SetImage(
-      views::CustomButton::BS_NORMAL,
-      rb.GetImageNamed(IDR_AURA_LAUNCHER_ICON_APPLIST).ToSkBitmap());
-  show_apps_button_->SetImage(
-      views::CustomButton::BS_HOT,
-      rb.GetImageNamed(IDR_AURA_LAUNCHER_ICON_APPLIST_HOT).ToSkBitmap());
-  show_apps_button_->SetImage(
-      views::CustomButton::BS_PUSHED,
-      rb.GetImageNamed(IDR_AURA_LAUNCHER_ICON_APPLIST_PUSHED).ToSkBitmap());
-  ConfigureChildView(show_apps_button_);
-  AddChildView(show_apps_button_);
-
   const LauncherItems& items(model_->items());
   for (LauncherItems::const_iterator i = items.begin(); i != items.end(); ++i) {
     views::View* child = CreateViewForItem(*i);
@@ -225,19 +208,6 @@ void LauncherView::Init() {
     view_model_->Add(child, static_cast<int>(i - items.begin()));
     AddChildView(child);
   }
-
-  new_browser_button_ = new views::ImageButton(this);
-  new_browser_button_->SetImage(
-      views::CustomButton::BS_NORMAL,
-      rb.GetImageNamed(IDR_AURA_LAUNCHER_NEW_BROWSER).ToSkBitmap());
-  new_browser_button_->SetImage(
-      views::CustomButton::BS_HOT,
-      rb.GetImageNamed(IDR_AURA_LAUNCHER_NEW_BROWSER_HOT).ToSkBitmap());
-  new_browser_button_->SetImage(
-      views::CustomButton::BS_PUSHED,
-      rb.GetImageNamed(IDR_AURA_LAUNCHER_NEW_BROWSER_PUSHED).ToSkBitmap());
-  ConfigureChildView(new_browser_button_);
-  AddChildView(new_browser_button_);
 
   overflow_button_ = new views::ImageButton(this);
   overflow_button_->SetImage(
@@ -258,9 +228,8 @@ void LauncherView::Init() {
 void LauncherView::LayoutToIdealBounds() {
   IdealBounds ideal_bounds;
   CalculateIdealBounds(&ideal_bounds);
-  show_apps_button_->SetBoundsRect(ideal_bounds.show_apps_bounds);
-  new_browser_button_->SetBoundsRect(ideal_bounds.new_browser_bounds);
   ViewModelUtils::SetViewBoundsToIdealBounds(*view_model_);
+  overflow_button_->SetBoundsRect(ideal_bounds.overflow_bounds);
 }
 
 void LauncherView::CalculateIdealBounds(IdealBounds* bounds) {
@@ -268,32 +237,20 @@ void LauncherView::CalculateIdealBounds(IdealBounds* bounds) {
   if (!available_width)
     return;
 
-  // show_apps_button_ first.
   int x = kLeadingInset;
-  gfx::Size pref = show_apps_button_->GetPreferredSize();
-  bounds->show_apps_bounds = gfx::Rect(
-      x, (kPreferredHeight - pref.height()) / 2, pref.width(), pref.height());
-  x += bounds->show_apps_bounds.width() + kHorizontalPadding;
-  // TODO: remove when we get better images.
-  x -= 6;
-
-  // Then launcher buttons.
   for (int i = 0; i < view_model_->view_size(); ++i) {
-    pref = view_model_->view_at(i)->GetPreferredSize();
+    gfx::Size pref(kButtonWidth, kButtonHeight);
     view_model_->set_ideal_bounds(i, gfx::Rect(
         x, (kPreferredHeight - pref.height()) / 2, pref.width(),
         pref.height()));
-    x += pref.width() + kHorizontalPadding;
+    x += pref.width();
   }
 
-  // new_browser_button_ and overflow button.
-  bounds->new_browser_bounds.set_size(new_browser_button_->GetPreferredSize());
-  bounds->overflow_bounds.set_size(overflow_button_->GetPreferredSize());
+  bounds->overflow_bounds.set_size(gfx::Size(kButtonWidth, kButtonHeight));
   int last_visible_index = DetermineLastVisibleIndex(
-      available_width - kLeadingInset - bounds->new_browser_bounds.width() -
-      kHorizontalPadding - bounds->overflow_bounds.width() -
-      kHorizontalPadding);
-  bool show_overflow = (last_visible_index + 1 != view_model_->view_size());
+      available_width - kLeadingInset - bounds->overflow_bounds.width());
+  bool show_overflow =
+      (last_visible_index + 1 != view_model_->view_size());
   if (overflow_button_->visible() != show_overflow) {
     // Only change visibility of the views if the visibility of the overflow
     // button changes. Otherwise we'll effect the insertion animation, which
@@ -303,20 +260,16 @@ void LauncherView::CalculateIdealBounds(IdealBounds* bounds) {
     for (int i = last_visible_index + 1; i < view_model_->view_size(); ++i)
       view_model_->view_at(i)->SetVisible(false);
   }
-
   overflow_button_->SetVisible(show_overflow);
   if (show_overflow) {
     DCHECK_NE(0, view_model_->view_size());
-    x = view_model_->ideal_bounds(last_visible_index).right() +
-        kHorizontalPadding;
+    x = last_visible_index == -1 ?
+        kLeadingInset : view_model_->ideal_bounds(last_visible_index).right();
     bounds->overflow_bounds.set_x(x);
     bounds->overflow_bounds.set_y(
         (kPreferredHeight - bounds->overflow_bounds.height()) / 2);
-    x = bounds->overflow_bounds.right() + kHorizontalPadding;
+    x = bounds->overflow_bounds.right();
   }
-  bounds->new_browser_bounds.set_x(x);
-  bounds->new_browser_bounds.set_y(
-      (kPreferredHeight - bounds->new_browser_bounds.height()) / 2);
 }
 
 int LauncherView::DetermineLastVisibleIndex(int max_x) {
@@ -329,29 +282,65 @@ int LauncherView::DetermineLastVisibleIndex(int max_x) {
 void LauncherView::AnimateToIdealBounds() {
   IdealBounds ideal_bounds;
   CalculateIdealBounds(&ideal_bounds);
-  bounds_animator_->AnimateViewTo(new_browser_button_,
-                                  ideal_bounds.new_browser_bounds);
   for (int i = 0; i < view_model_->view_size(); ++i) {
     bounds_animator_->AnimateViewTo(view_model_->view_at(i),
                                     view_model_->ideal_bounds(i));
   }
-  bounds_animator_->AnimateViewTo(show_apps_button_,
-                                  ideal_bounds.show_apps_bounds);
   overflow_button_->SetBoundsRect(ideal_bounds.overflow_bounds);
 }
 
 views::View* LauncherView::CreateViewForItem(const LauncherItem& item) {
   views::View* view = NULL;
-  if (item.type == TYPE_TABBED) {
-    TabbedLauncherButton* button = new TabbedLauncherButton(this, this);
-    button->SetTabImage(item.image, item.num_tabs);
-    view = button;
-  } else {
-    DCHECK_EQ(TYPE_APP, item.type);
-    AppLauncherButton* button = new AppLauncherButton(this, this);
-    button->SetAppImage(item.image);
-    view = button;
+  switch (item.type) {
+    case TYPE_TABBED: {
+      TabbedLauncherButton* button = new TabbedLauncherButton(this, this);
+      button->SetTabImage(item.image, item.num_tabs);
+      view = button;
+      break;
+    }
+
+    case TYPE_APP: {
+      AppLauncherButton* button = new AppLauncherButton(this, this);
+      button->SetAppImage(item.image);
+      view = button;
+      break;
+    }
+
+    case TYPE_APP_LIST: {
+      ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+      views::ImageButton* button = new AppLauncherButton(this, this);
+      button->SetImage(
+          views::CustomButton::BS_NORMAL,
+          rb.GetImageNamed(IDR_AURA_LAUNCHER_ICON_APPLIST).ToSkBitmap());
+      button->SetImage(
+          views::CustomButton::BS_HOT,
+          rb.GetImageNamed(IDR_AURA_LAUNCHER_ICON_APPLIST_HOT).ToSkBitmap());
+      button->SetImage(
+          views::CustomButton::BS_PUSHED,
+          rb.GetImageNamed(IDR_AURA_LAUNCHER_ICON_APPLIST_PUSHED).ToSkBitmap());
+      view = button;
+      break;
+    }
+
+    case TYPE_BROWSER_SHORTCUT: {
+      ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+      views::ImageButton* button = new AppLauncherButton(this, this);
+      ShellDelegate* delegate = Shell::GetInstance()->delegate();
+      int image_id = delegate ?
+          delegate->GetBrowserShortcutResourceId() :
+          IDR_AURA_LAUNCHER_BROWSER_SHORTCUT;
+      button->SetImage(views::CustomButton::BS_NORMAL,
+                       rb.GetImageNamed(image_id).ToSkBitmap());
+      view = button;
+      cycler_.reset(new LauncherWindowCycler);
+      break;
+    }
+
+    default:
+      break;
   }
+
+  DCHECK(view);
   ConfigureChildView(view);
   return view;
 }
@@ -473,11 +462,23 @@ void LauncherView::CancelDrag(views::View* deleted_view) {
   AnimateToIdealBounds();
 }
 
+void LauncherView::MaybeResetWindowCycler(views::View* view) {
+  int view_index = view_model_->GetIndexOfView(view);
+  if (view_index != -1 &&
+      model_->items()[view_index].type == TYPE_BROWSER_SHORTCUT) {
+    cycler_->Reset();
+  }
+}
+
 gfx::Size LauncherView::GetPreferredSize() {
   IdealBounds ideal_bounds;
   CalculateIdealBounds(&ideal_bounds);
-  return gfx::Size(ideal_bounds.new_browser_bounds.right() + kLeadingInset,
-                   kPreferredHeight);
+  if (view_model_->view_size() >= 2) {
+    // Should always have two items.
+    return gfx::Size(view_model_->ideal_bounds(1).right() + kLeadingInset,
+                     kPreferredHeight);
+  }
+  return gfx::Size(kButtonWidth * 2 + kLeadingInset * 2, kPreferredHeight);
 }
 
 void LauncherView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
@@ -561,6 +562,8 @@ void LauncherView::MouseDraggedOnButton(views::View* view,
     PrepareForDrag(event);
   if (dragging_)
     ContinueDrag(event);
+  if (!view->GetLocalBounds().Contains(event.location()))
+    MaybeResetWindowCycler(view);
 }
 
 void LauncherView::MouseReleasedOnButton(views::View* view,
@@ -574,22 +577,36 @@ void LauncherView::MouseReleasedOnButton(views::View* view,
   }
 }
 
+void LauncherView::MouseExitedButton(views::View* view) {
+  MaybeResetWindowCycler(view);
+}
+
 void LauncherView::ButtonPressed(views::Button* sender,
                                  const views::Event& event) {
   ShellDelegate* delegate = Shell::GetInstance()->delegate();
   if (!delegate)
     return;
-  if (sender == new_browser_button_) {
-    delegate->CreateNewWindow();
-  } else if (sender == show_apps_button_) {
-    Shell::GetInstance()->ToggleAppList();
-  } else if (sender == overflow_button_) {
-    ShowOverflowMenu();
-  } else {
-    int view_index = view_model_->GetIndexOfView(sender);
-    // May be -1 while in the process of animating closed.
-    if (view_index != -1)
+  int view_index = view_model_->GetIndexOfView(sender);
+  // May be -1 while in the process of animating closed.
+  if (view_index == -1)
+    return;
+
+  switch (model_->items()[view_index].type) {
+    case TYPE_TABBED:
+    case TYPE_APP:
       delegate->LauncherItemClicked(model_->items()[view_index]);
+      break;
+
+    case TYPE_APP_LIST:
+      Shell::GetInstance()->ToggleAppList();
+      break;
+
+    case TYPE_BROWSER_SHORTCUT:
+      cycler_->Cycle();
+      break;
+
+    default:
+      NOTREACHED();
   }
 }
 

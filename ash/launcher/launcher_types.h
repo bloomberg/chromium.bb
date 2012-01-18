@@ -19,8 +19,17 @@ namespace ash {
 
 // Type the LauncherItem represents.
 enum ASH_EXPORT LauncherItemType {
+  // Represents a tabbed browser.
   TYPE_TABBED,
-  TYPE_APP
+
+  // Represents an app window.
+  TYPE_APP,
+
+  // Toggles visiblity of the app list.
+  TYPE_APP_LIST,
+
+  // The browser shortcut button.
+  TYPE_BROWSER_SHORTCUT,
 };
 
 struct ASH_EXPORT LauncherItem {

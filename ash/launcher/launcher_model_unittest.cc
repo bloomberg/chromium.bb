@@ -72,11 +72,15 @@ class TestLauncherModelObserver : public LauncherModelObserver {
 TEST(LauncherModel, BasicAssertions) {
   TestLauncherModelObserver observer;
   LauncherModel model;
+
+  // Model is initially populated with two items.
+  EXPECT_EQ(2, model.item_count());
+
   // Add an item.
   model.AddObserver(&observer);
   LauncherItem item;
   model.Add(0, item);
-  EXPECT_EQ(1, model.item_count());
+  EXPECT_EQ(3, model.item_count());
   EXPECT_EQ("added=1",
             observer.StateStringAndClear());
 
@@ -87,7 +91,7 @@ TEST(LauncherModel, BasicAssertions) {
 
   // Remove the item.
   model.RemoveItemAt(0);
-  EXPECT_EQ(0, model.item_count());
+  EXPECT_EQ(2, model.item_count());
   EXPECT_EQ("removed=1", observer.StateStringAndClear());
 
   // Add an app item.

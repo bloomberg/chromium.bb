@@ -17,21 +17,6 @@
 namespace ash {
 namespace internal {
 
-// The images drawn inside the background tab are drawn at this offset from
-// the edge.
-const int kBgImageContentInset = 12;
-
-// Padding between each of the images.
-const int kImagePadding = 8;
-
-// Insets used in painting the background if it's rendered bigger than the size
-// of the background image. See ImagePainter::CreateImagePainter for how these
-// are interpreted.
-const int kBgTopInset = 12;
-const int kBgLeftInset = 30;
-const int kBgBottomInset = 12;
-const int kBgRightInset = 8;
-
 TabbedLauncherButton::AnimationDelegateImpl::AnimationDelegateImpl(
     TabbedLauncherButton* host)
     : host_(host) {

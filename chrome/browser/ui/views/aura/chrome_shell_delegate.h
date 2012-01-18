@@ -45,10 +45,12 @@ class ChromeShellDelegate : public ash::ShellDelegate {
   virtual void BuildAppListModel(ash::AppListModel* model) OVERRIDE;
   virtual ash::AppListViewDelegate* CreateAppListViewDelegate() OVERRIDE;
   virtual std::vector<aura::Window*> GetCycleWindowList(
+      CycleSource source,
       CycleOrder order) const OVERRIDE;
   virtual void LauncherItemClicked(
       const ash::LauncherItem& item) OVERRIDE;
   virtual bool ConfigureLauncherItem(ash::LauncherItem* item) OVERRIDE;
+  virtual int GetBrowserShortcutResourceId() OVERRIDE;
 
  private:
   static ChromeShellDelegate* instance_;

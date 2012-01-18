@@ -6,8 +6,6 @@
 #define ASH_WM_WINDOW_CYCLE_CONTROLLER_H_
 #pragma once
 
-#include <vector>
-
 #include "ash/ash_export.h"
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
@@ -19,6 +17,7 @@ class Window;
 namespace ash {
 
 class WindowCycleEventFilter;
+class WindowCycleList;
 
 // Controls cycling through windows with the keyboard, for example, via alt-tab.
 // We activate windows as you cycle through them, so the order on the screen
@@ -34,6 +33,10 @@ class ASH_EXPORT WindowCycleController {
   WindowCycleController();
   ~WindowCycleController();
 
+  // Returns true if cycling through windows is enabled. This is false at
+  // certain times, such as when the lock screen is visible.
+  static bool CanCycle();
+
   // Cycles between windows in the given |direction|. If |is_alt_down| then
   // interprets this call as the start of a multi-step cycle sequence and
   // installs a key filter to watch for alt being released.
@@ -44,11 +47,9 @@ class ASH_EXPORT WindowCycleController {
   void AltKeyReleased();
 
   // Returns true if we are in the middle of a window cycling gesture.
-  bool IsCycling() const { return current_index_ != -1; }
+  bool IsCycling() const { return windows_.get() != NULL; }
 
  private:
-  typedef std::vector<aura::Window*> WindowList;
-
   // Call to start cycling windows.  You must call StopCycling() when done.
   void StartCycling();
 
@@ -61,17 +62,7 @@ class ASH_EXPORT WindowCycleController {
   // Stops the current window cycle and cleans up the event filter.
   void StopCycling();
 
-  // Returns the index of |window| in |windows_| or -1 if it isn't there.
-  int GetWindowIndex(aura::Window* window);
-
-  // List of weak pointers to windows to use while cycling with the keyboard.
-  // List is built when the user initiates the gesture (e.g. hits alt-tab the
-  // first time) and is emptied when the gesture is complete (e.g. releases the
-  // alt key).
-  WindowList windows_;
-
-  // Current position in the |windows_| list or -1 if we're not cycling.
-  int current_index_;
+  scoped_ptr<WindowCycleList> windows_;
 
   // Event filter to watch for release of alt key.
   scoped_ptr<WindowCycleEventFilter> event_filter_;

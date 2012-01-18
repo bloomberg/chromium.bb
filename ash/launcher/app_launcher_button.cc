@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,7 +19,6 @@ AppLauncherButton::AppLauncherButton(views::ButtonListener* listener,
                                      LauncherButtonHost* host)
     : views::ImageButton(listener),
       host_(host) {
-  SetPreferredSize(gfx::Size(kImageSize, kImageSize));
   SetImageAlignment(views::ImageButton::ALIGN_CENTER,
                     views::ImageButton::ALIGN_MIDDLE);
 }
@@ -74,6 +73,11 @@ bool AppLauncherButton::OnMouseDragged(const views::MouseEvent& event) {
   ImageButton::OnMouseDragged(event);
   host_->MouseDraggedOnButton(this, event);
   return true;
+}
+
+void AppLauncherButton::OnMouseExited(const views::MouseEvent& event) {
+  ImageButton::OnMouseExited(event);
+  host_->MouseExitedButton(this);
 }
 
 }  // namespace internal

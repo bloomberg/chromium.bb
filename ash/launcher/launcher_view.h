@@ -23,6 +23,7 @@ namespace ash {
 
 struct LauncherItem;
 class LauncherModel;
+class LauncherWindowCycler;
 class ViewModel;
 
 namespace internal {
@@ -42,8 +43,6 @@ class LauncherView : public views::WidgetDelegateView,
   class StartFadeAnimationDelegate;
 
   struct IdealBounds {
-    gfx::Rect new_browser_bounds;
-    gfx::Rect show_apps_bounds;
     gfx::Rect overflow_bounds;
   };
 
@@ -51,8 +50,7 @@ class LauncherView : public views::WidgetDelegateView,
   void LayoutToIdealBounds();
 
   // Calculates the ideal bounds. The bounds of each button corresponding to an
-  // item in the model is set in |view_model_|, the bounds of the
-  // |new_browser_button_| and |show_apps_button_| is set in |bounds|.
+  // item in the model is set in |view_model_|.
   void CalculateIdealBounds(IdealBounds* bounds);
 
   // Returns the index of the last view whose max x-coordinate is less than
@@ -87,6 +85,10 @@ class LauncherView : public views::WidgetDelegateView,
   // Shows the overflow menu.
   void ShowOverflowMenu();
 
+  // If |view| represents TYPE_BROWSER_SHORTCUT Reset() is invoked on the
+  // LauncherWindowCycler.
+  void MaybeResetWindowCycler(views::View* view);
+
   // Overridden from views::View:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE;
@@ -105,6 +107,7 @@ class LauncherView : public views::WidgetDelegateView,
                                     const views::MouseEvent& event) OVERRIDE;
   virtual void MouseReleasedOnButton(views::View* view,
                                      bool canceled) OVERRIDE;
+  virtual void MouseExitedButton(views::View* view) OVERRIDE;
 
   // Overriden from views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
@@ -118,10 +121,6 @@ class LauncherView : public views::WidgetDelegateView,
   scoped_ptr<ViewModel> view_model_;
 
   scoped_ptr<views::BoundsAnimator> bounds_animator_;
-
-  views::ImageButton* new_browser_button_;
-
-  views::ImageButton* show_apps_button_;
 
   views::ImageButton* overflow_button_;
 
@@ -140,6 +139,9 @@ class LauncherView : public views::WidgetDelegateView,
   int start_drag_index_;
 
   scoped_ptr<views::MenuRunner> overflow_menu_runner_;
+
+  // Used to handle cycling among windows.
+  scoped_ptr<LauncherWindowCycler> cycler_;
 
   DISALLOW_COPY_AND_ASSIGN(LauncherView);
 };

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -69,7 +69,8 @@ void GlowHoverController::Draw(gfx::Canvas* canvas,
     return;
 
   // Draw a radial gradient to hover_canvas.
-  gfx::CanvasSkia hover_canvas(view_->size(), false);
+  gfx::CanvasSkia hover_canvas(
+      gfx::Size(mask_image.width(), mask_image.height()), false);
 
   // Draw a radial gradient to hover_canvas.
   int radius = view_->width() / 3;
@@ -101,7 +102,8 @@ void GlowHoverController::Draw(gfx::Canvas* canvas,
   }
   SkBitmap result = SkBitmapOperations::CreateMaskedBitmap(
       hover_canvas.ExtractBitmap(), mask_image);
-  canvas->DrawBitmapInt(result, 0, 0);
+  canvas->DrawBitmapInt(result, (view_->width() - mask_image.width()) / 2,
+                        (view_->height() - mask_image.height()) / 2);
 }
 
 void GlowHoverController::AnimationEnded(const ui::Animation* animation) {
