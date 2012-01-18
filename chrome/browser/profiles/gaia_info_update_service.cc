@@ -1,9 +1,10 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/profiles/gaia_info_update_service.h"
 
+#include "base/command_line.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -11,6 +12,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_details.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -63,7 +65,14 @@ bool GAIAInfoUpdateService::ShouldUseGAIAProfileInfo(Profile* profile) {
   if (!profile->GetOriginalProfile()->IsSyncAccessible())
     return false;
 
-  return true;
+  // To enable this feature for testing pass "--gaia-profile-info".
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kGaiaProfileInfo)) {
+    return true;
+  }
+
+  // This feature is disable by default.
+  return false;
 }
 
 // static

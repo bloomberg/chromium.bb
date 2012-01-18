@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -156,10 +156,6 @@ TEST_F(GAIAInfoUpdateServiceTest, ShouldUseGAIAProfileInfo) {
 #if defined(OS_CHROMEOS)
   // This feature should never be enabled on ChromeOS.
   EXPECT_FALSE(GAIAInfoUpdateService::ShouldUseGAIAProfileInfo(profile()));
-#else
-  bool sync_enabled = profile()->GetOriginalProfile()->IsSyncAccessible();
-  EXPECT_EQ(sync_enabled,
-            GAIAInfoUpdateService::ShouldUseGAIAProfileInfo(profile()));
 #endif
 }
 
