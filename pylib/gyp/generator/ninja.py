@@ -941,9 +941,18 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
   # Put build-time support tools in out/{config_name}.
   gyp.common.CopyTool(flavor, os.path.join(options.toplevel_dir, builddir))
 
+  # Grab make settings for CC/CXX.
+  cc, cxx = 'gcc', 'g++'
+  build_file, _, _ = gyp.common.ParseQualifiedTarget(target_list[0])
+  make_global_settings = data[build_file].get('make_global_settings', [])
+  build_to_root = InvertRelativePath(builddir)
+  for key, value in make_global_settings:
+    if key == 'CC': cc = os.path.join(build_to_root, value)
+    if key == 'CXX': cxx = os.path.join(build_to_root, value)
+
   # TODO: compute cc/cxx/ld/etc. by command-line arguments and system tests.
-  master_ninja.variable('cc', os.environ.get('CC', 'gcc'))
-  master_ninja.variable('cxx', os.environ.get('CXX', 'g++'))
+  master_ninja.variable('cc', os.environ.get('CC', cc))
+  master_ninja.variable('cxx', os.environ.get('CXX', cxx))
   # TODO(bradnelson): remove NOGOLD when this is resolved:
   #     http://code.google.com/p/chromium/issues/detail?id=108251
   if flavor != 'mac' and not os.environ.get('NOGOLD'):
@@ -1058,6 +1067,10 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
     # qualified_target is like: third_party/icu/icu.gyp:icui18n#target
     build_file, name, toolset = \
         gyp.common.ParseQualifiedTarget(qualified_target)
+
+    this_make_global_settings = data[build_file].get('make_global_settings', [])
+    assert make_global_settings == this_make_global_settings, (
+        "make_global_settings needs to be the same for all targets.")
 
     spec = target_dicts[qualified_target]
     if flavor == 'mac':
