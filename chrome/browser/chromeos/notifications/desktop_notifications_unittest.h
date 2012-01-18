@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,7 +13,6 @@
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/notifications/balloon_collection_impl.h"
 #include "chrome/browser/notifications/balloon.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/notification.h"
@@ -32,33 +31,7 @@ struct ShowDesktopNotificationHostMsgParams;
 namespace chromeos {
 
 class DesktopNotificationsTest;
-typedef LoggingNotificationDelegate<DesktopNotificationsTest>
-    LoggingNotificationProxy;
-
-// Test version of the balloon collection which counts the number
-// of notifications that are added to it.
-class MockBalloonCollection : public BalloonCollectionImpl {
- public:
-  MockBalloonCollection();
-  virtual ~MockBalloonCollection();
-
-  // BalloonCollectionImpl overrides
-  virtual void Add(const Notification& notification,
-                   Profile* profile) OVERRIDE;
-  virtual Balloon* MakeBalloon(const Notification& notification,
-                               Profile* profile) OVERRIDE;
-  virtual void OnBalloonClosed(Balloon* source) OVERRIDE;
-
-  // Number of balloons being shown.
-  std::set<Balloon*>& balloons() { return balloons_; }
-  int count() const { return balloons_.size(); }
-
-  // Returns the highest y-coordinate of all the balloons in the collection.
-  int UppermostVerticalPosition();
-
- private:
-  std::set<Balloon*> balloons_;
-};
+class MockBalloonCollection;
 
 class DesktopNotificationsTest : public testing::Test {
  public:

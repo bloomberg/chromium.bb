@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -71,6 +71,10 @@ class BalloonCollectionImpl : public BalloonCollection,
   virtual void WillProcessEvent(GdkEvent* event) OVERRIDE;
   virtual void DidProcessEvent(GdkEvent* event) OVERRIDE;
 #endif
+
+  // base_ is embedded, so this is a simple accessor for the number of
+  // balloons in the collection.
+  int count() const { return base_.count(); }
 
  protected:
   // Calculates layout values for the balloons including
@@ -165,13 +169,22 @@ class BalloonCollectionImpl : public BalloonCollection,
     DISALLOW_COPY_AND_ASSIGN(Layout);
   };
 
-  // Creates a new balloon. Overridable by unit tests.  The caller is
-  // responsible for freeing the pointer returned.
+  // Creates a new balloon. Overridable by derived classes and unit tests.
+  // The caller is responsible for freeing the pointer returned.
   virtual Balloon* MakeBalloon(const Notification& notification,
                                Profile* profile);
 
+  // Protected implementation of Add with additional add_to_front parameter
+  // for use by derived classes.
+  void AddImpl(const Notification& notification,
+               Profile* profile,
+               bool add_to_front);
+
   // Gets a bounding box for all the current balloons in screen coordinates.
   gfx::Rect GetBalloonsBoundingBox() const;
+
+  BalloonCollectionBase& base() { return base_; }
+  Layout& layout() { return layout_; }
 
  private:
   // Adjusts the positions of the balloons (e.g., when one is closed).

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -27,7 +27,7 @@ class BalloonCollectionBase {
   typedef std::deque<Balloon*> Balloons;
 
   // Adds a balloon to the collection. Takes ownership of pointer.
-  virtual void Add(Balloon* balloon);
+  virtual void Add(Balloon* balloon, bool add_to_front);
 
   // Removes a balloon from the collection (if present).  Frees
   // the pointer after removal.

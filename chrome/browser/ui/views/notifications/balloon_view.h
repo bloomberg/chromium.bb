@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -57,6 +57,8 @@ class BalloonViewImpl : public BalloonView,
   virtual void Close(bool by_user) OVERRIDE;
   virtual gfx::Size GetSize() const OVERRIDE;
   virtual BalloonHost* GetHost() const OVERRIDE;
+
+  void set_enable_web_ui(bool enable) { enable_web_ui_ = enable; }
 
  private:
   // views::View interface.
@@ -156,6 +158,9 @@ class BalloonViewImpl : public BalloonView,
   views::MenuButton* options_menu_button_;
 
   content::NotificationRegistrar notification_registrar_;
+
+  // Set to true if this is browser generate web UI.
+  bool enable_web_ui_;
 
   DISALLOW_COPY_AND_ASSIGN(BalloonViewImpl);
 };

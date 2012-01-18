@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,7 +19,13 @@ class Profile;
 
 namespace chromeos {
 
+#if defined(USE_AURA)
+class BalloonCollectionImplAura;
+typedef class BalloonCollectionImplAura BalloonCollectionImplType;
+#else
 class BalloonCollectionImpl;
+typedef class BalloonCollectionImpl BalloonCollectionImplType;
+#endif
 
 // The system notification object handles the display of a system notification
 
@@ -51,7 +57,8 @@ class SystemNotification {
   // Same as Show() above with a footer link at the bottom and a callback
   // for when the link is clicked.
   void Show(const string16& message, const string16& link_text,
-            const MessageCallback& callback, bool urgent, bool sticky);
+            const BalloonViewHost::MessageCallback& callback,
+            bool urgent, bool sticky);
 
   // Hide will dismiss the notification, if the notification is already
   // hidden it does nothing
@@ -82,7 +89,7 @@ class SystemNotification {
   void Init(int icon_resource_id);
 
   Profile* profile_;
-  BalloonCollectionImpl* collection_;
+  BalloonCollectionImplType* collection_;
   scoped_refptr<NotificationDelegate> delegate_;
   GURL icon_;
   string16 title_;

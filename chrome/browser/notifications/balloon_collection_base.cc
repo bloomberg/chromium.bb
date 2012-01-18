@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,8 +16,11 @@ BalloonCollectionBase::~BalloonCollectionBase() {
   STLDeleteElements(&balloons_);
 }
 
-void BalloonCollectionBase::Add(Balloon* balloon) {
-  balloons_.push_back(balloon);
+void BalloonCollectionBase::Add(Balloon* balloon, bool add_to_front) {
+  if (add_to_front)
+    balloons_.push_front(balloon);
+  else
+    balloons_.push_back(balloon);
 }
 
 void BalloonCollectionBase::Remove(Balloon* balloon) {
