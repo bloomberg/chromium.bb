@@ -229,16 +229,18 @@ drm_output_set_cursor(struct weston_output *output_base,
 					  c->base.display,
 					  eid->sprite->image, 64, 64,
 					  GBM_BO_USE_CURSOR_64X64);
+	/* Not suitable for hw cursor, fall back */
+	if (bo == NULL)
+		goto out;
 
 	handle = gbm_bo_get_handle(bo).s32;
 	stride = gbm_bo_get_pitch(bo);
-
 	gbm_bo_destroy(bo);
 
-	if (stride != 64 * 4) {
-		fprintf(stderr, "info: cursor stride is != 64\n");
+	/* gbm_bo_create_from_egl_image() didn't always validate the usage
+	 * flags, and in that case we might end up with a bad stride. */
+	if (stride != 64 * 4)
 		goto out;
-	}
 
 	ret = drmModeSetCursor(c->drm.fd, output->crtc_id, handle, 64, 64);
 	if (ret) {
