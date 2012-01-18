@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -19,6 +19,11 @@ class FlashTest(pyauto.PyUITest):
     if (self.IsChromeOS() and
         self.GetBrowserInfo()['properties']['branding'] == 'Google Chrome'):
       self._flash_plugin_type = 'Pepper Plugin'
+    # Forcibly trigger all plugins to get registered.  crbug.com/94123
+    # Sometimes flash files loaded too quickly after firing browser
+    # ends up getting downloaded, which seems to indicate that the plugin
+    # hasn't been registered yet.
+    self.GetPluginsInfo()
 
   def _AssertFlashProcessPresent(self):
     child_processes = self.GetBrowserInfo()['child_processes']
@@ -103,12 +108,6 @@ class FlashTest(pyauto.PyUITest):
 
   def testFlashIncognitoMode(self):
     """Verify we can play flash on an incognito window."""
-    if self.IsWin() or self.IsMac():
-      # On Mac 10.5 and XP, flash files loaded too quickly after firing browser
-      # ends up getting downloaded, which seems to indicate that the plugin
-      # hasn't been registered yet.
-      # Hack to register Flash plugin on Mac 10.5 and XP.  crbug.com/94123
-      self.GetPluginsInfo()
     # Verify no flash process is currently running
     self._AssertFlashProcessNotPresent()
     flash_url = self.GetFileURLForDataPath('plugin', 'flash.swf')

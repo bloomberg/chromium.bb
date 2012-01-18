@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -36,6 +36,11 @@ class InfobarTest(pyauto.PyUITest):
     if (self.IsChromeOS() and
         self.GetBrowserInfo()['properties']['branding'] == 'Google Chrome'):
       self._flash_plugin_type = 'Pepper Plugin'
+    # Forcibly trigger all plugins to get registered.  crbug.com/94123
+    # Sometimes flash files loaded too quickly after firing browser
+    # ends up getting downloaded, which seems to indicate that the plugin
+    # hasn't been registered yet.
+    self.GetPluginsInfo()
 
   def _GetTabInfo(self, windex=0, tab_index=0):
     """Helper to return info for the given tab in the given window.
@@ -144,12 +149,6 @@ class InfobarTest(pyauto.PyUITest):
 
   def testPluginCrashForMultiTabs(self):
     """Verify plugin crash infobar shows up only on the tabs using plugin."""
-    # Flash files loaded too quickly after firing browser end up getting
-    # downloaded, which seems to indicate that the plugin hasn't been
-    # registered yet.
-    # Hack to register Flash plugin on all platforms.  crbug.com/94123
-    self.GetPluginsInfo()
-
     non_flash_url = self.GetFileURLForDataPath('english_page.html')
     flash_url = self.GetFileURLForDataPath('plugin', 'FlashSpin.swf')
     # False = Non flash url, True = Flash url
