@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,8 +10,13 @@
 #include "ui/views/widget/widget.h"
 
 namespace {
+
 // Padding between the right edge of status area and right edge of screen.
 const int kRightEdgePad = 3;
+
+// Padding between the top of the status area and the top of the screen.
+const int kTopEdgePad = 2;
+
 }  // namespace
 
 namespace ash {
@@ -66,7 +71,7 @@ void CompactStatusAreaLayoutManager::LayoutStatusArea() {
   gfx::Rect widget_bounds = status_widget_->GetRestoredBounds();
   widget_bounds.set_x(
       monitor_bounds.width() - widget_bounds.width() - kRightEdgePad);
-  widget_bounds.set_y(0);
+  widget_bounds.set_y(kTopEdgePad);
   status_widget_->SetBounds(widget_bounds);
 }
 
