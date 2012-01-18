@@ -176,22 +176,24 @@ void BrowserOptionsHandler::GetLocalizedValues(
     { "themesReset", IDS_THEMES_RESET_BUTTON },
 #endif
 #if defined(OS_CHROMEOS)
-    { "changePicture", IDS_OPTIONS_CHANGE_PICTURE },
-    { "enableScreenlock", IDS_OPTIONS_ENABLE_SCREENLOCKER_CHECKBOX },
-    { "deviceGroupName", IDS_OPTIONS_DEVICE_GROUP_NAME },
-    { "deviceGroupBrightness", IDS_OPTIONS_SETTINGS_BRIGHTNESS_DESCRIPTION },
     { "brightnessDecrease", IDS_OPTIONS_SETTINGS_BRIGHTNESS_DECREASE },
     { "brightnessIncrease", IDS_OPTIONS_SETTINGS_BRIGHTNESS_INCREASE },
+    { "changePicture", IDS_OPTIONS_CHANGE_PICTURE },
+    { "deviceGroupBrightness", IDS_OPTIONS_SETTINGS_BRIGHTNESS_DESCRIPTION },
     { "deviceGroupKeyboard", IDS_OPTIONS_DEVICE_GROUP_KEYBOARD_SECTION },
+    { "deviceGroupPointer", IDS_OPTIONS_DEVICE_GROUP_POINTER_SECTION },
+    { "deviceGroupName", IDS_OPTIONS_DEVICE_GROUP_NAME },
+    { "enableScreenlock", IDS_OPTIONS_ENABLE_SCREENLOCKER_CHECKBOX },
+    { "internetOptionsButtonTitle", IDS_OPTIONS_INTERNET_OPTIONS_BUTTON_TITLE },
+    { "internetOptionsGroupName", IDS_OPTIONS_INTERNET_OPTIONS_GROUP_LABEL },
     { "keyboardSettingsButtonTitle",
       IDS_OPTIONS_DEVICE_GROUP_KEYBOARD_SETTINGS_BUTTON_TITLE },
-    { "deviceGroupPointer", IDS_OPTIONS_DEVICE_GROUP_POINTER_SECTION },
-    { "pointerSettingsButtonTitle",
-      IDS_OPTIONS_DEVICE_GROUP_POINTER_SETTINGS_BUTTON_TITLE },
     { "pointerSensitivityLess",
       IDS_OPTIONS_SETTINGS_SENSITIVITY_LESS_DESCRIPTION },
     { "pointerSensitivityMore",
       IDS_OPTIONS_SETTINGS_SENSITIVITY_MORE_DESCRIPTION },
+    { "pointerSettingsButtonTitle",
+      IDS_OPTIONS_DEVICE_GROUP_POINTER_SETTINGS_BUTTON_TITLE },
 #endif
   };
 

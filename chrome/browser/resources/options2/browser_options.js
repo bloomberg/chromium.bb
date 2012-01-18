@@ -61,6 +61,15 @@ cr.define('options', function() {
         SyncSetupOverlay.showSetupUI();
       };
 
+      // Internet connection section (ChromeOS only).
+      if (cr.isChromeOS) {
+        $('internet-options-button').onclick = function(event) {
+          OptionsPage.navigateToPage('internet');
+          chrome.send('coreOptionsUserMetricsAction',
+              ['Options_InternetOptions']);
+        };
+      }
+
       // On Startup section.
       $('startupSetPages').onclick = function() {
         OptionsPage.navigateToPage('startup');

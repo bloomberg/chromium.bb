@@ -7912,6 +7912,12 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
         <message name="IDS_OPTIONS_INTERNET_TAB_LABEL" desc="The title of the Internet tab">
           Internet
         </message>
+        <message name="IDS_OPTIONS_INTERNET_OPTIONS_GROUP_LABEL" desc="The title of the 'Internet connections' group">
+          Internet connection
+        </message>
+        <message name="IDS_OPTIONS_INTERNET_OPTIONS_BUTTON_TITLE" desc="The title of the 'Manage connections...' button">
+          Manage connections...
+        </message>
         <message name="IDS_OPTIONS_ACCOUNTS_TAB_LABEL" desc="The title of the Accounts tab">
           Users
         </message>

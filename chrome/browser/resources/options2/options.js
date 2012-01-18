@@ -72,6 +72,9 @@ function load() {
                               BrowserOptions.getInstance(),
                               [$('advancedOptionsButton')]);
   if (cr.isChromeOS) {
+    OptionsPage.registerSubPage(InternetOptions.getInstance(),
+                                BrowserOptions.getInstance(),
+                                [$('internet-options-button')]);
     OptionsPage.registerSubPage(LanguageOptions.getInstance(),
                                 AdvancedOptions.getInstance(),
                                 [$('language-button')]);
@@ -102,7 +105,6 @@ function load() {
       OptionsPage.registerSubPage(VirtualKeyboardManager.getInstance(),
                                   LanguageOptions.getInstance());
     }
-    OptionsPage.register(InternetOptions.getInstance());
   }
   OptionsPage.registerSubPage(AutofillOptions.getInstance(),
                               AdvancedOptions.getInstance(),

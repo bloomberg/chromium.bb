@@ -118,7 +118,6 @@
          <include src="search_page.html">
          <include src="browser_options.html">
          <if expr="pp_ifdef('chromeos')">
-           <include src="chromeos/internet_options.html">
            <include src="chromeos/accounts_options.html">
          </if>
        </div>
@@ -129,6 +128,9 @@
            <div class="subpage-sheet-contents">
              <include src="search_engine_manager.html">
              <include src="advanced_options.html">
+             <if expr="pp_ifdef('chromeos')">
+               <include src="chromeos/internet_options.html">
+             </if>
            </div>
          </div>
        </div>
