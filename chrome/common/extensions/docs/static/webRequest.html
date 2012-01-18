@@ -281,11 +281,16 @@ all requests:</p>
 <pre>
 chrome.webRequest.onBeforeSendHeaders.addListener(
   function(details) {
-    delete details.requestHeaders['User-Agent'];
+    for (var i = 0; i < details.requestHeaders.length; ++i) {
+      if (details.requestHeaders[i].name === 'User-Agent') {
+        details.requestHeaders.splice(i, 1);
+        break;
+      }
+    }
     return {requestHeaders: details.requestHeaders};
   },
   {urls: ["&lt;all_urls&gt;"]},
-  ["blocking"]);
+  ["blocking", "requestHeaders"]);
 </pre>
 
 <p> For more example code, see the <a href="samples.html#webrequest">web request
