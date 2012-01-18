@@ -68,7 +68,13 @@ class ShutdownTest : public UIPerfTest {
   void RunShutdownTest(const char* graph, const char* trace,
                        bool important, TestSize test_size,
                        ProxyLauncher::ShutdownType shutdown_type) {
+#if defined(NDEBUG)
     const int kNumCyclesMax = 20;
+#else
+    // Debug builds are too slow and we can't run that many cycles in a
+    // reasonable amount of time.
+    const int kNumCyclesMax = 10;
+#endif
     int numCycles = kNumCyclesMax;
     scoped_ptr<base::Environment> env(base::Environment::Create());
     std::string numCyclesEnv;
