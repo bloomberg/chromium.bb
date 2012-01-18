@@ -15,7 +15,7 @@
 #include "content/renderer/media/rtc_video_decoder.h"
 #include "jingle/glue/thread_wrapper.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/libjingle/source/talk/app/webrtcv1/peerconnection.h"
+#include "third_party/libjingle/source/talk/app/webrtc/peerconnection.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebMediaStreamDescriptor.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebMediaStreamSource.h"
 

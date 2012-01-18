@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -59,10 +59,5 @@ const int kForever = -1;
 #define ALIGNP(p, t) \
   (reinterpret_cast<uint8*>(((reinterpret_cast<uintptr_t>(p) + \
   ((t)-1)) & ~((t)-1))))
-
-// LIBJINGLE_DEFINE_STATIC_LOCAL() is a libjingle's copy
-// of CR_DEFINE_STATIC_LOCAL().
-#define LIBJINGLE_DEFINE_STATIC_LOCAL(type, name, arguments) \
-  CR_DEFINE_STATIC_LOCAL(type, name, arguments)
 
 #endif // OVERRIDES_TALK_BASE_BASICTYPES_H__

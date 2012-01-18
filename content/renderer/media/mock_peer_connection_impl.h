@@ -9,7 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "third_party/libjingle/source/talk/app/webrtcv1/peerconnection.h"
+#include "third_party/libjingle/source/talk/app/webrtc/peerconnection.h"
 
 namespace webrtc {
 

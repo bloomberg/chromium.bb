@@ -30,7 +30,7 @@ vars = {
       "b41a2e565716b3ddc0212d185afa79881e971c58",
   "nacl_toolchain_revision": "7537",
 
-  "libjingle_revision": "108",
+  "libjingle_revision": "100",
   "libphonenumber_revision": "407",
   "libvpx_revision": "117975",
   "lss_revision": "9",
@@ -41,7 +41,7 @@ vars = {
   # the commit queue can handle CLs rolling Skia
   # and V8 without interference from each other.
   "v8_revision": "10408",
-  "webrtc_revision": "1311",
+  "webrtc_revision": "1264",
   "jsoncpp_revision": "248",
 }
 
