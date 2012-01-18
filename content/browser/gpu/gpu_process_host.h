@@ -75,8 +75,8 @@ class GpuProcessHost : public BrowserChildProcessHost,
   // window associated with the given renderer.
   void CreateViewCommandBuffer(
       gfx::PluginWindowHandle compositing_surface,
-      int32 render_view_id,
-      int32 client_id,
+      int surface_id,
+      int client_id,
       const GPUCreateCommandBufferConfig& init_params,
       const CreateCommandBufferCallback& callback);
 
@@ -100,8 +100,7 @@ class GpuProcessHost : public BrowserChildProcessHost,
   // Message handlers.
   void OnChannelEstablished(const IPC::ChannelHandle& channel_handle);
   void OnCommandBufferCreated(const int32 route_id);
-  void OnDestroyCommandBuffer(
-      gfx::PluginWindowHandle window, int32 client_id, int32 render_view_id);
+  void OnDestroyCommandBuffer(int32 surface_id);
 
   bool LaunchGpuProcess(const std::string& channel_id);
 
@@ -125,9 +124,6 @@ class GpuProcessHost : public BrowserChildProcessHost,
   std::queue<CreateCommandBufferCallback> create_command_buffer_requests_;
 
 #if defined(TOOLKIT_USES_GTK)
-  typedef std::pair<int32 /* client_id */,
-                    int32 /* render_view_id */> ViewID;
-
   // Encapsulates surfaces that we lock when creating view command buffers.
   // We release this lock once the command buffer (or associated GPU process)
   // is destroyed. This prevents the browser from destroying the surface
@@ -136,7 +132,7 @@ class GpuProcessHost : public BrowserChildProcessHost,
   // Multimap is used to simulate reference counting, see comment in
   // GpuProcessHostUIShim::CreateViewCommandBuffer.
   class SurfaceRef;
-  typedef std::multimap<ViewID, linked_ptr<SurfaceRef> > SurfaceRefMap;
+  typedef std::multimap<int, linked_ptr<SurfaceRef> > SurfaceRefMap;
   SurfaceRefMap surface_refs_;
 #endif
 

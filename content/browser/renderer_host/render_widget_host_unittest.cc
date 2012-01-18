@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -261,7 +261,7 @@ class RenderWidgetHostTest : public testing::Test {
   void SetUp() {
     browser_context_.reset(new TestBrowserContext());
     process_ = new RenderWidgetHostProcess(browser_context_.get());
-    host_.reset(new MockRenderWidgetHost(process_, 1));
+    host_.reset(new MockRenderWidgetHost(process_, MSG_ROUTING_NONE));
     view_.reset(new TestView(host_.get()));
     host_->SetView(view_.get());
     host_->Init();

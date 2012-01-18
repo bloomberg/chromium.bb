@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -119,11 +119,6 @@ class RenderWidgetHelper
   TransportDIB* MapTransportDIB(TransportDIB::Id dib_id);
 #endif
 
-  // Set a mapping from a RenderWidgetHost to a compositing surface. Pass a null
-  // handle to remove the mapping.
-  void SetCompositingSurface(int render_widget_id,
-                             gfx::PluginWindowHandle compositing_surface);
-
   // IO THREAD ONLY -----------------------------------------------------------
 
   // Called on the IO thread when a UpdateRect message is received.
@@ -131,11 +126,13 @@ class RenderWidgetHelper
 
   void CreateNewWindow(const ViewHostMsg_CreateWindow_Params& params,
                        base::ProcessHandle render_process,
-                       int* route_id);
+                       int* route_id,
+                       int* surface_id);
   void CreateNewWidget(int opener_id,
                        WebKit::WebPopupType popup_type,
-                       int* route_id);
-  void CreateNewFullscreenWidget(int opener_id, int* route_id);
+                       int* route_id,
+                       int* surface_id);
+  void CreateNewFullscreenWidget(int opener_id, int* route_id, int* surface_id);
 
 #if defined(OS_MACOSX)
   // Called on the IO thread to handle the allocation of a TransportDIB.  If
@@ -150,9 +147,6 @@ class RenderWidgetHelper
   // Called on the IO thread to handle the freeing of a transport DIB
   void FreeTransportDIB(TransportDIB::Id dib_id);
 #endif
-
-  // Lookup the compositing surface corresponding to a widget ID.
-  gfx::PluginWindowHandle LookupCompositingSurface(int render_widget_id);
 
  private:
   // A class used to proxy a paint message.  PaintMsgProxy objects are created
@@ -209,11 +203,6 @@ class RenderWidgetHelper
   // for details about how the lifetime of instances are managed.)
   UpdateMsgProxyMap pending_paints_;
   base::Lock pending_paints_lock_;
-
-  // Maps from view ID to compositing surface.
-  typedef std::map<int, gfx::PluginWindowHandle> ViewCompositingSurfaceMap;
-  ViewCompositingSurfaceMap view_compositing_surface_map_;
-  base::Lock view_compositing_surface_map_lock_;
 
   int render_process_id_;
 

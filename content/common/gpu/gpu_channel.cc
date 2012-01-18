@@ -177,7 +177,7 @@ void GpuChannel::OnDestroy() {
 
 void GpuChannel::CreateViewCommandBuffer(
     gfx::PluginWindowHandle window,
-    int32 render_view_id,
+    int32 surface_id,
     const GPUCreateCommandBufferConfig& init_params,
     int32* route_id) {
   *route_id = MSG_ROUTING_NONE;
@@ -199,8 +199,7 @@ void GpuChannel::CreateViewCommandBuffer(
       init_params.attribs,
       init_params.gpu_preference,
       *route_id,
-      client_id_,
-      render_view_id,
+      surface_id,
       watchdog_,
       software_));
   router_.AddRoute(*route_id, stub.get());
@@ -329,7 +328,7 @@ void GpuChannel::OnCreateOffscreenCommandBuffer(
       init_params.attribs,
       init_params.gpu_preference,
       route_id,
-      0, 0, watchdog_,
+      0, watchdog_,
       software_));
   router_.AddRoute(route_id, stub.get());
   stubs_.AddWithID(stub.release(), route_id);

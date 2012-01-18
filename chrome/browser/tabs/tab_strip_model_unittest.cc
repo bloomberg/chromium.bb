@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -155,7 +155,8 @@ class TabStripModelTest : public ChromeRenderViewHostTestHarness {
   }
 
   TabContentsWrapper* CreateTabContents() {
-    return Browser::TabContentsFactory(profile(), NULL, 0, NULL, NULL);
+    return Browser::TabContentsFactory(
+        profile(), NULL, MSG_ROUTING_NONE, NULL, NULL);
   }
 
   TabContentsWrapper* CreateTabContentsWithSharedRPH(
@@ -1454,7 +1455,7 @@ TEST_F(TabStripModelTest, AddTabContents_ForgetOpeners) {
 // Added for http://b/issue?id=958960
 TEST_F(TabStripModelTest, AppendContentsReselectionTest) {
   WebContents* fake_destinations_tab =
-      WebContents::Create(profile(), NULL, 0, NULL, NULL);
+      WebContents::Create(profile(), NULL, MSG_ROUTING_NONE, NULL, NULL);
   TabContentsWrapper wrapper(fake_destinations_tab);
   TabStripDummyDelegate delegate(&wrapper);
   TabStripModel tabstrip(&delegate, profile());

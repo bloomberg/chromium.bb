@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -49,9 +49,6 @@ class MockRenderProcessHost : public content::RenderProcessHost {
   virtual void DumpHandles() OVERRIDE;
   virtual base::ProcessHandle GetHandle() OVERRIDE;
   virtual TransportDIB* GetTransportDIB(TransportDIB::Id dib_id) OVERRIDE;
-  virtual void SetCompositingSurface(
-      int render_widget_id,
-      gfx::PluginWindowHandle compositing_surface) OVERRIDE;
   virtual int GetID() const OVERRIDE;
   virtual bool HasConnection() const OVERRIDE;
   virtual void SetIgnoreInputEvents(bool ignore_input_events) OVERRIDE;

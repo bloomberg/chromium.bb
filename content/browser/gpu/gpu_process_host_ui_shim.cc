@@ -13,6 +13,7 @@
 #include "base/process_util.h"
 #include "content/browser/gpu/gpu_data_manager.h"
 #include "content/browser/gpu/gpu_process_host.h"
+#include "content/browser/gpu/gpu_surface_tracker.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
@@ -73,8 +74,13 @@ class ScopedSendOnIOThread {
   bool cancelled_;
 };
 
-RenderWidgetHostView* GetRenderWidgetHostViewFromID(int render_process_id,
-                                                    int render_widget_id) {
+RenderWidgetHostView* GetRenderWidgetHostViewFromSurfaceID(int surface_id) {
+  int render_process_id = 0;
+  int render_widget_id = 0;
+  if (!GpuSurfaceTracker::Get()->GetRenderWidgetIDForSurface(
+        surface_id, &render_process_id, &render_widget_id))
+    return NULL;
+
   content::RenderProcessHost* process =
       content::RenderProcessHost::FromID(render_process_id);
   if (!process)
@@ -226,8 +232,7 @@ void GpuProcessHostUIShim::OnGraphicsInfoCollected(
 
 #if defined(TOOLKIT_USES_GTK) || defined(OS_WIN)
 
-void GpuProcessHostUIShim::OnResizeView(int32 client_id,
-                                        int32 render_view_id,
+void GpuProcessHostUIShim::OnResizeView(int32 surface_id,
                                         int32 route_id,
                                         gfx::Size size) {
   // Always respond even if the window no longer exists. The GPU process cannot
@@ -237,8 +242,7 @@ void GpuProcessHostUIShim::OnResizeView(int32 client_id,
       host_id_,
       new AcceleratedSurfaceMsg_ResizeViewACK(route_id));
 
-  RenderWidgetHostView* view = GetRenderWidgetHostViewFromID(client_id,
-                                                             render_view_id);
+  RenderWidgetHostView* view = GetRenderWidgetHostViewFromSurfaceID(surface_id);
   if (!view)
     return;
 
@@ -278,16 +282,16 @@ void GpuProcessHostUIShim::OnAcceleratedSurfaceNew(
       host_id_,
       new AcceleratedSurfaceMsg_NewACK(
           params.route_id,
-          params.surface_id,
+          params.surface_handle,
           TransportDIB::DefaultHandleValue()));
 
-  RenderWidgetHostView* view = GetRenderWidgetHostViewFromID(
-      params.client_id, params.render_view_id);
+  RenderWidgetHostView* view = GetRenderWidgetHostViewFromSurfaceID(
+      params.surface_id);
   if (!view)
     return;
 
-  uint64 surface_id = params.surface_id;
-  TransportDIB::Handle surface_handle = TransportDIB::DefaultHandleValue();
+  uint64 surface_handle = params.surface_handle;
+  TransportDIB::Handle shm_handle = TransportDIB::DefaultHandleValue();
 
 #if defined(OS_MACOSX)
   if (params.create_transport_dib) {
@@ -305,7 +309,7 @@ void GpuProcessHostUIShim::OnAcceleratedSurfaceNew(
                                                 local_handle);
         // Create a remote handle for the GPU process to map the SHM.
         if (!shared_memory->ShareToProcess(0 /* pid, not needed */,
-                                           &surface_handle)) {
+                                           &shm_handle)) {
           return;
         }
       }
@@ -314,15 +318,15 @@ void GpuProcessHostUIShim::OnAcceleratedSurfaceNew(
     view->AcceleratedSurfaceSetIOSurface(params.window,
                                          params.width,
                                          params.height,
-                                         surface_id);
+                                         surface_handle);
   }
 #else  // defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
   view->AcceleratedSurfaceNew(
-      params.width, params.height, &surface_id, &surface_handle);
+      params.width, params.height, &surface_handle, &shm_handle);
 #endif
   delayed_send.Cancel();
   Send(new AcceleratedSurfaceMsg_NewACK(
-      params.route_id, surface_id, surface_handle));
+      params.route_id, surface_handle, shm_handle));
 }
 
 #endif
@@ -336,8 +340,8 @@ void GpuProcessHostUIShim::OnAcceleratedSurfaceBuffersSwapped(
       host_id_,
       new AcceleratedSurfaceMsg_BuffersSwappedACK(params.route_id));
 
-  RenderWidgetHostView* view = GetRenderWidgetHostViewFromID(
-      params.client_id, params.render_view_id);
+  RenderWidgetHostView* view = GetRenderWidgetHostViewFromSurfaceID(
+      params.surface_id);
   if (!view)
     return;
 
@@ -356,8 +360,8 @@ void GpuProcessHostUIShim::OnAcceleratedSurfacePostSubBuffer(
       host_id_,
       new AcceleratedSurfaceMsg_PostSubBufferACK(params.route_id));
 
-  RenderWidgetHostView* view = GetRenderWidgetHostViewFromID(
-      params.client_id, params.render_view_id);
+  RenderWidgetHostView* view = GetRenderWidgetHostViewFromSurfaceID(
+      params.surface_id);
   if (!view)
     return;
 
@@ -371,8 +375,8 @@ void GpuProcessHostUIShim::OnAcceleratedSurfacePostSubBuffer(
 
 void GpuProcessHostUIShim::OnAcceleratedSurfaceRelease(
     const GpuHostMsg_AcceleratedSurfaceRelease_Params& params) {
-  RenderWidgetHostView* view = GetRenderWidgetHostViewFromID(
-      params.client_id, params.render_view_id);
+  RenderWidgetHostView* view = GetRenderWidgetHostViewFromSurfaceID(
+      params.surface_id);
   if (!view)
     return;
   view->AcceleratedSurfaceRelease(params.identifier);

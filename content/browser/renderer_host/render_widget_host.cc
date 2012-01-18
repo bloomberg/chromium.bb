@@ -16,6 +16,7 @@
 #include "content/browser/accessibility/browser_accessibility_state.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/gpu/gpu_process_host_ui_shim.h"
+#include "content/browser/gpu/gpu_surface_tracker.h"
 #include "content/browser/renderer_host/backing_store.h"
 #include "content/browser/renderer_host/backing_store_manager.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
@@ -80,6 +81,7 @@ RenderWidgetHost::RenderWidgetHost(content::RenderProcessHost* process,
       view_(NULL),
       process_(process),
       routing_id_(routing_id),
+      surface_id_(0),
       is_loading_(false),
       is_hidden_(false),
       is_accelerated_compositing_active_(false),
@@ -101,8 +103,24 @@ RenderWidgetHost::RenderWidgetHost(content::RenderProcessHost* process,
       suppress_next_char_events_(false),
       pending_mouse_lock_request_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
-  if (routing_id_ == MSG_ROUTING_NONE)
+  if (routing_id_ == MSG_ROUTING_NONE) {
     routing_id_ = process_->GetNextRoutingID();
+    surface_id_ = GpuSurfaceTracker::Get()->AddSurfaceForRenderer(
+        process_->GetID(),
+        routing_id_);
+  } else {
+    // TODO(piman): This is a O(N) lookup, where we could forward the
+    // information from the RenderWidgetHelper. The problem is that doing so
+    // currently leaks outside of content all the way to chrome classes, and
+    // would be a layering violation. Since we don't expect more than a few
+    // hundreds of RWH, this seems acceptable. Revisit if performance become a
+    // problem, for example by tracking in the RenderWidgetHelper the routing id
+    // (and surface id) that have been created, but whose RWH haven't yet.
+    surface_id_ = GpuSurfaceTracker::Get()->LookupSurfaceForRenderer(
+        process_->GetID(),
+        routing_id_);
+    DCHECK(surface_id_);
+  }
 
   process_->Attach(this, routing_id_);
   // Because the widget initializes as is_hidden_ == false,
@@ -126,14 +144,19 @@ RenderWidgetHost::~RenderWidgetHost() {
   // Clear our current or cached backing store if either remains.
   BackingStoreManager::RemoveBackingStore(this);
 
+  GpuSurfaceTracker::Get()->RemoveSurface(surface_id_);
+  surface_id_ = 0;
+
   process_->Release(routing_id_);
 }
 
 void RenderWidgetHost::SetView(RenderWidgetHostView* view) {
   view_ = view;
 
-  if (!view_)
-    process_->SetCompositingSurface(routing_id_, gfx::kNullPluginWindow);
+  if (!view_) {
+    GpuSurfaceTracker::Get()->SetSurfaceHandle(
+        surface_id_, gfx::kNullPluginWindow);
+  }
 }
 
 gfx::NativeViewId RenderWidgetHost::GetNativeViewId() const {
@@ -159,8 +182,8 @@ void RenderWidgetHost::Init() {
 
   renderer_initialized_ = true;
 
-  process_->SetCompositingSurface(routing_id_,
-                                  GetCompositingSurface());
+  GpuSurfaceTracker::Get()->SetSurfaceHandle(
+      surface_id_, GetCompositingSurface());
 
   // Send the ack along with the information on placement.
   Send(new ViewMsg_CreatingNew_ACK(routing_id_, GetNativeViewId()));

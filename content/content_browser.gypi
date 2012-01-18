@@ -308,6 +308,8 @@
     'browser/gpu/gpu_process_host.h',
     'browser/gpu/gpu_process_host_ui_shim.cc',
     'browser/gpu/gpu_process_host_ui_shim.h',
+    'browser/gpu/gpu_surface_tracker.cc',
+    'browser/gpu/gpu_surface_tracker.h',
     'browser/host_zoom_map.cc',
     'browser/host_zoom_map.h',
     'browser/in_process_webkit/browser_webkitplatformsupport_impl.cc',

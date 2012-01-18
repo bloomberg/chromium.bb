@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -101,11 +101,15 @@ class RenderMessageFilter : public content::BrowserMessageFilter {
 
   void OnMsgCreateWindow(const ViewHostMsg_CreateWindow_Params& params,
                          int* route_id,
+                         int* surface_id,
                          int64* cloned_session_storage_namespace_id);
   void OnMsgCreateWidget(int opener_id,
                          WebKit::WebPopupType popup_type,
-                         int* route_id);
-  void OnMsgCreateFullscreenWidget(int opener_id, int* route_id);
+                         int* route_id,
+                         int* surface_id);
+  void OnMsgCreateFullscreenWidget(int opener_id,
+                                   int* route_id,
+                                   int* surface_id);
   void OnSetCookie(const IPC::Message& message,
                    const GURL& url,
                    const GURL& first_party_for_cookies,

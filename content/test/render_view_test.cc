@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -46,6 +46,7 @@ using WebKit::WebURLRequest;
 namespace {
 const int32 kOpenerId = 7;
 const int32 kRouteId = 5;
+const int32 kSurfaceId = 42;
 
 #if defined(USE_AURA) && defined(USE_X11)
 // Converts MockKeyboard::Modifiers to ui::EventFlags.
@@ -130,6 +131,7 @@ void RenderViewTest::SetUp() {
   if (!render_thread_.get())
     render_thread_.reset(new MockRenderThread());
   render_thread_->set_routing_id(kRouteId);
+  render_thread_->set_surface_id(kSurfaceId);
 
   command_line_.reset(new CommandLine(CommandLine::NO_PROGRAM));
   params_.reset(new content::MainFunctionParams(*command_line_));
@@ -151,6 +153,7 @@ void RenderViewTest::SetUp() {
       WebPreferences(),
       new SharedRenderViewCounter(0),
       kRouteId,
+      kSurfaceId,
       kInvalidSessionStorageNamespaceId,
       string16(),
       1);

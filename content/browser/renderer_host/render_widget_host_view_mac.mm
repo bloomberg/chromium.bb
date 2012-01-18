@@ -884,7 +884,7 @@ void RenderWidgetHostViewMac::AcceleratedSurfaceBuffersSwapped(
     last_frame_was_accelerated_ = (params.window ==
         plugin_container_manager_.root_container_handle());
     plugin_container_manager_.SetSurfaceWasPaintedTo(params.window,
-                                                     params.surface_id);
+                                                     params.surface_handle);
 
     // The surface is hidden until its first paint, to not show garbage.
     if (plugin_container_manager_.SurfaceShouldBeVisible(params.window))
@@ -910,7 +910,7 @@ void RenderWidgetHostViewMac::AcceleratedSurfacePostSubBuffer(
         plugin_container_manager_.root_container_handle());
     plugin_container_manager_.SetSurfaceWasPaintedTo(
         params.window,
-        params.surface_id,
+        params.surface_handle,
         gfx::Rect(params.x, params.y, params.width, params.height));
 
     // The surface is hidden until its first paint, to not show garbage.

@@ -346,7 +346,7 @@ void RenderWidgetHostViewAura::AcceleratedSurfaceBuffersSwapped(
     const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params,
     int gpu_host_id) {
 #if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
-  current_surface_ = params.surface_id;
+  current_surface_ = params.surface_handle;
   UpdateExternalTexture();
 
   if (!window_->layer()->GetCompositor()) {
@@ -355,7 +355,7 @@ void RenderWidgetHostViewAura::AcceleratedSurfaceBuffersSwapped(
     RenderWidgetHost::AcknowledgeSwapBuffers(params.route_id, gpu_host_id);
   } else {
     gfx::Size surface_size =
-        accelerated_surface_containers_[params.surface_id]->GetSize();
+        accelerated_surface_containers_[params.surface_handle]->GetSize();
     window_->SchedulePaintInRect(gfx::Rect(surface_size));
 
     // Add sending an ACK to the list of things to do OnCompositingEnded
@@ -375,7 +375,7 @@ void RenderWidgetHostViewAura::AcceleratedSurfacePostSubBuffer(
     const GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params& params,
     int gpu_host_id) {
 #if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
-  current_surface_ = params.surface_id;
+  current_surface_ = params.surface_handle;
   UpdateExternalTexture();
 
   if (!window_->layer()->GetCompositor()) {
@@ -384,7 +384,7 @@ void RenderWidgetHostViewAura::AcceleratedSurfacePostSubBuffer(
     RenderWidgetHost::AcknowledgePostSubBuffer(params.route_id, gpu_host_id);
   } else {
     gfx::Size surface_size =
-        accelerated_surface_containers_[params.surface_id]->GetSize();
+        accelerated_surface_containers_[params.surface_handle]->GetSize();
 
     // Co-ordinates come in OpenGL co-ordinate space.
     // We need to convert to layer space.
@@ -411,28 +411,29 @@ void RenderWidgetHostViewAura::AcceleratedSurfacePostSubBuffer(
 void RenderWidgetHostViewAura::AcceleratedSurfaceNew(
       int32 width,
       int32 height,
-      uint64* surface_id,
-      TransportDIB::Handle* surface_handle) {
+      uint64* surface_handle,
+      TransportDIB::Handle* shm_handle) {
   scoped_refptr<AcceleratedSurfaceContainerLinux> surface(
       AcceleratedSurfaceContainerLinux::Create(gfx::Size(width, height)));
-  if (!surface->Initialize(surface_id)) {
+  if (!surface->Initialize(surface_handle)) {
     LOG(ERROR) << "Failed to create AcceleratedSurfaceContainer";
     return;
   }
-  *surface_handle = surface->Handle();
+  *shm_handle = surface->Handle();
 
-  accelerated_surface_containers_[*surface_id] = surface;
+  accelerated_surface_containers_[*surface_handle] = surface;
 }
 
-void RenderWidgetHostViewAura::AcceleratedSurfaceRelease(uint64 surface_id) {
-  if (current_surface_ == surface_id) {
+void RenderWidgetHostViewAura::AcceleratedSurfaceRelease(
+    uint64 surface_handle) {
+  if (current_surface_ == surface_handle) {
     current_surface_ = gfx::kNullPluginWindow;
     // Don't call UpdateExternalTexture: it's possible that a new surface with
     // the same ID will be re-created right away, in which case we don't want to
     // flip back and forth. Instead wait until we got the accelerated
     // compositing deactivation.
   }
-  accelerated_surface_containers_.erase(surface_id);
+  accelerated_surface_containers_.erase(surface_handle);
 }
 #endif
 

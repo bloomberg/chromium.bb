@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,7 +14,7 @@ AcceleratedSurfaceContainerMac::AcceleratedSurfaceContainerMac(
     bool opaque)
     : manager_(manager),
       opaque_(opaque),
-      surface_id_(0),
+      surface_handle_(0),
       width_(0),
       height_(0),
       texture_(0),
@@ -219,15 +219,15 @@ bool AcceleratedSurfaceContainerMac::ShouldBeVisible() const {
   return visible_ && was_painted_to_ && !clip_rect_.IsEmpty();
 }
 
-void AcceleratedSurfaceContainerMac::set_was_painted_to(uint64 surface_id) {
-  set_was_painted_to_common(surface_id);
+void AcceleratedSurfaceContainerMac::set_was_painted_to(uint64 surface_handle) {
+  set_was_painted_to_common(surface_handle);
   update_rect_ = gfx::Rect();
 }
 
 void AcceleratedSurfaceContainerMac::set_was_painted_to(
-   uint64 surface_id,
+   uint64 surface_handle,
    const gfx::Rect& update_rect) {
-  set_was_painted_to_common(surface_id);
+  set_was_painted_to_common(surface_handle);
   update_rect_ = update_rect_.Union(update_rect);
 }
 
@@ -240,18 +240,18 @@ void AcceleratedSurfaceContainerMac::EnqueueTextureForDeletion() {
 }
 
 void AcceleratedSurfaceContainerMac::set_was_painted_to_common(
-    uint64 surface_id) {
-  if (surface_id && (!surface_ || surface_id != surface_id_)) {
+    uint64 surface_handle) {
+  if (surface_handle && (!surface_ || surface_handle != surface_handle_)) {
     // Keep the surface that was most recently painted to around.
     if (IOSurfaceSupport* io_surface_support = IOSurfaceSupport::Initialize()) {
       CFTypeRef surface = io_surface_support->IOSurfaceLookup(
-          static_cast<uint32>(surface_id));
+          static_cast<uint32>(surface_handle));
       // Can fail if IOSurface with that ID was already released by the
       // gpu process or the plugin process. We will get a |set_was_painted_to()|
       // message with a new surface soon in that case.
       if (surface) {
         surface_.reset(surface);
-        surface_id_ = surface_id;
+        surface_handle_ = surface_handle;
         surface_width_ = io_surface_support->IOSurfaceGetWidth(surface_);
         surface_height_ = io_surface_support->IOSurfaceGetHeight(surface_);
         EnqueueTextureForDeletion();

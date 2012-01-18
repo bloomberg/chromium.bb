@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -138,23 +138,23 @@ void AcceleratedSurfaceContainerManagerMac::ForceTextureReload() {
 }
 
 void AcceleratedSurfaceContainerManagerMac::SetSurfaceWasPaintedTo(
-    gfx::PluginWindowHandle id, uint64 surface_id) {
+    gfx::PluginWindowHandle id, uint64 surface_handle) {
   base::AutoLock lock(lock_);
 
   AcceleratedSurfaceContainerMac* container = MapIDToContainer(id);
   if (container)
-    container->set_was_painted_to(surface_id);
+    container->set_was_painted_to(surface_handle);
 }
 
 void AcceleratedSurfaceContainerManagerMac::SetSurfaceWasPaintedTo(
     gfx::PluginWindowHandle id,
-    uint64 surface_id,
+    uint64 surface_handle,
     const gfx::Rect& update_rect) {
   base::AutoLock lock(lock_);
 
   AcceleratedSurfaceContainerMac* container = MapIDToContainer(id);
   if (container)
-    container->set_was_painted_to(surface_id, update_rect);
+    container->set_was_painted_to(surface_handle, update_rect);
 }
 
 void AcceleratedSurfaceContainerManagerMac::SetRootSurfaceInvalid() {

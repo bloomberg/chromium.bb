@@ -2082,7 +2082,7 @@ void RenderWidgetHostViewWin::OnAcceleratedCompositingStateChange() {
 void RenderWidgetHostViewWin::AcceleratedSurfaceBuffersSwapped(
     const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params,
     int gpu_host_id) {
-  if (params.surface_id) {
+  if (params.surface_handle) {
     if (!accelerated_surface_.get() && compositor_host_window_) {
       accelerated_surface_.reset(new AcceleratedSurface);
     }
@@ -2097,7 +2097,7 @@ void RenderWidgetHostViewWin::AcceleratedSurfaceBuffersSwapped(
     accelerated_surface_->AsyncPresentAndAcknowledge(
         compositor_host_window_,
         params.size,
-        params.surface_id,
+        params.surface_handle,
         base::Bind(PostTaskOnIOThread,
                    FROM_HERE,
                    acknowledge_task));

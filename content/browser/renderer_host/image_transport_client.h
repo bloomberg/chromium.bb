@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,7 +24,7 @@ class ImageTransportClient {
 
   // Initializes the client with the surface id. This returns the GL texture id,
   // or 0 if error.
-  virtual unsigned int Initialize(uint64* surface_id) = 0;
+  virtual unsigned int Initialize(uint64* surface_handle) = 0;
 
   // Gets the surface data into the texture.
   virtual void Acquire() = 0;

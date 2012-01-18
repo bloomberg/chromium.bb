@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -55,11 +55,11 @@ class ImageTransportClientEGL : public ImageTransportClient {
     }
   }
 
-  virtual unsigned int Initialize(uint64* surface_id) {
+  virtual unsigned int Initialize(uint64* surface_handle) {
     scoped_ptr<gfx::ScopedMakeCurrent> bind(resources_->GetScopedMakeCurrent());
     image_ = eglCreateImageKHR(
         gfx::GLSurfaceEGL::GetHardwareDisplay(), EGL_NO_CONTEXT,
-        EGL_NATIVE_PIXMAP_KHR, reinterpret_cast<void*>(*surface_id), NULL);
+        EGL_NATIVE_PIXMAP_KHR, reinterpret_cast<void*>(*surface_handle), NULL);
     if (!image_)
       return 0;
     GLuint texture = CreateTexture();
@@ -100,7 +100,7 @@ class ImageTransportClientGLX : public ImageTransportClient {
       XFreePixmap(dpy, pixmap_);
   }
 
-  virtual unsigned int Initialize(uint64* surface_id) {
+  virtual unsigned int Initialize(uint64* surface_handle) {
     TRACE_EVENT0("renderer_host", "ImageTransportClientGLX::Initialize");
     Display* dpy = static_cast<Display*>(resources_->GetDisplay());
 
@@ -112,7 +112,7 @@ class ImageTransportClientGLX : public ImageTransportClient {
     // We receive a window here rather than a pixmap directly because drivers
     // require (or required) that the pixmap used to create the GL texture be
     // created in the same process as the texture.
-    pixmap_ = XCompositeNameWindowPixmap(dpy, *surface_id);
+    pixmap_ = XCompositeNameWindowPixmap(dpy, *surface_handle);
 
     const int pixmapAttribs[] = {
       GLX_TEXTURE_TARGET_EXT, GLX_TEXTURE_2D_EXT,
@@ -233,19 +233,20 @@ class ImageTransportClientOSMesa : public ImageTransportClient {
   virtual ~ImageTransportClientOSMesa() {
   }
 
-  virtual unsigned int Initialize(uint64* surface_id) {
-    // We expect to make the id here, so don't want the other end giving us one
-    DCHECK_EQ(*surface_id, static_cast<uint64>(0));
+  virtual unsigned int Initialize(uint64* surface_handle) {
+    // We expect to make the handle here, so don't want the other end giving us
+    // one.
+    DCHECK_EQ(*surface_handle, static_cast<uint64>(0));
 
     // It's possible that this ID gneration could clash with IDs from other
     // AcceleratedSurfaceContainerTouch* objects, however we should never have
     // ids active from more than one type at the same time, so we have free
     // reign of the id namespace.
-    *surface_id = next_id_++;
+    *surface_handle = next_handle_++;
 
     shared_mem_.reset(
         TransportDIB::Create(size_.GetArea() * 4,  // GL_RGBA=4 B/px
-        *surface_id));
+        *surface_handle));
     if (!shared_mem_.get())
       return 0;
 
@@ -270,9 +271,9 @@ class ImageTransportClientOSMesa : public ImageTransportClient {
   gfx::Size size_;
   scoped_ptr<TransportDIB> shared_mem_;
   GLuint texture_;
-  static uint32 next_id_;
+  static uint32 next_handle_;
 };
-uint32 ImageTransportClientOSMesa::next_id_ = 0;
+uint32 ImageTransportClientOSMesa::next_handle_ = 0;
 
 #endif //  !USE_WAYLAND
 

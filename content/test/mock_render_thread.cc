@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,7 +13,7 @@
 namespace content {
 
 MockRenderThread::MockRenderThread()
-    : routing_id_(0), opener_id_(0) {
+    : routing_id_(0), surface_id_(0), opener_id_(0) {
 }
 
 MockRenderThread::~MockRenderThread() {
@@ -169,9 +169,11 @@ void MockRenderThread::SendCloseMessage() {
 // The Widget expects to be returned valid route_id.
 void MockRenderThread::OnMsgCreateWidget(int opener_id,
                                          WebKit::WebPopupType popup_type,
-                                         int* route_id) {
+                                         int* route_id,
+                                         int* surface_id) {
   opener_id_ = opener_id;
   *route_id = routing_id_;
+  *surface_id = surface_id_;
 }
 
 bool MockRenderThread::OnMessageReceived(const IPC::Message& msg) {

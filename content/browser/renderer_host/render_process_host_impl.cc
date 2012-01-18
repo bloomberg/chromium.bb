@@ -833,12 +833,6 @@ void RenderProcessHostImpl::ClearTransportDIBCache() {
   cached_dibs_.clear();
 }
 
-void RenderProcessHostImpl::SetCompositingSurface(
-    int render_widget_id,
-    gfx::PluginWindowHandle compositing_surface) {
-  widget_helper_->SetCompositingSurface(render_widget_id, compositing_surface);
-}
-
 bool RenderProcessHostImpl::Send(IPC::Message* msg) {
   if (!channel_.get()) {
     if (!is_initialized_) {

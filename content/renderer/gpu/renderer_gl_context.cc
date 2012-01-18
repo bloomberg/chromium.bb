@@ -79,7 +79,7 @@ RendererGLContext::~RendererGLContext() {
 
 RendererGLContext* RendererGLContext::CreateViewContext(
     GpuChannelHost* channel,
-    int render_view_id,
+    int32 surface_id,
     RendererGLContext* share_group,
     const char* allowed_extensions,
     const int32* attrib_list,
@@ -89,7 +89,7 @@ RendererGLContext* RendererGLContext::CreateViewContext(
   scoped_ptr<RendererGLContext> context(new RendererGLContext(channel));
   if (!context->Initialize(
       true,
-      render_view_id,
+      surface_id,
       gfx::Size(),
       share_group,
       allowed_extensions,
@@ -289,7 +289,7 @@ RendererGLContext::RendererGLContext(GpuChannelHost* channel)
 }
 
 bool RendererGLContext::Initialize(bool onscreen,
-                                   int render_view_id,
+                                   int32 surface_id,
                                    const gfx::Size& size,
                                    RendererGLContext* share_group,
                                    const char* allowed_extensions,
@@ -348,7 +348,7 @@ bool RendererGLContext::Initialize(bool onscreen,
     TRACE_EVENT0("gpu",
                  "RendererGLContext::Initialize::CreateViewCommandBuffer");
     command_buffer_ = channel_->CreateViewCommandBuffer(
-        render_view_id,
+        surface_id,
         share_group ? share_group->command_buffer_ : NULL,
         allowed_extensions,
         attribs,

@@ -337,6 +337,7 @@ RenderViewImpl::RenderViewImpl(
     const WebPreferences& webkit_prefs,
     SharedRenderViewCounter* counter,
     int32 routing_id,
+    int32 surface_id,
     int64 session_storage_namespace_id,
     const string16& frame_name,
     int32 next_page_id)
@@ -375,6 +376,7 @@ RenderViewImpl::RenderViewImpl(
 #endif
       ALLOW_THIS_IN_INITIALIZER_LIST(pepper_delegate_(this)) {
   routing_id_ = routing_id;
+  surface_id_ = surface_id;
   if (opener_id != MSG_ROUTING_NONE)
     opener_id_ = opener_id;
 
@@ -514,6 +516,7 @@ RenderViewImpl* RenderViewImpl::Create(
     const WebPreferences& webkit_prefs,
     SharedRenderViewCounter* counter,
     int32 routing_id,
+    int32 surface_id,
     int64 session_storage_namespace_id,
     const string16& frame_name,
     int32 next_page_id) {
@@ -525,6 +528,7 @@ RenderViewImpl* RenderViewImpl::Create(
       webkit_prefs,
       counter,
       routing_id,
+      surface_id,
       session_storage_namespace_id,
       frame_name,
       next_page_id);  // adds reference
@@ -1344,12 +1348,14 @@ WebView* RenderViewImpl::createView(
     params.target_url = request.url();
 
   int32 routing_id = MSG_ROUTING_NONE;
+  int32 surface_id = 0;
   int64 cloned_session_storage_namespace_id;
   bool opener_suppressed = creator->willSuppressOpenerInNewFrame();
 
   RenderThread::Get()->Send(
       new ViewHostMsg_CreateWindow(params,
                                    &routing_id,
+                                   &surface_id,
                                    &cloned_session_storage_namespace_id));
   if (routing_id == MSG_ROUTING_NONE)
     return NULL;
@@ -1361,6 +1367,7 @@ WebView* RenderViewImpl::createView(
       webkit_preferences_,
       shared_popup_counter_,
       routing_id,
+      surface_id,
       cloned_session_storage_namespace_id,
       frame_name,
       1);

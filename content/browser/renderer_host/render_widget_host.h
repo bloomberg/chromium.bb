@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -160,6 +160,7 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Channel::Listener,
 
   content::RenderProcessHost* process() const { return process_; }
   int routing_id() const { return routing_id_; }
+  int surface_id() const { return surface_id_; }
   bool renderer_accessible() { return renderer_accessible_; }
 
   bool empty() const { return current_size_.IsEmpty(); }
@@ -653,6 +654,9 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Channel::Listener,
 
   // The ID of the corresponding object in the Renderer Instance.
   int routing_id_;
+
+  // The ID of the surface corresponding to this render widget.
+  int surface_id_;
 
   // Indicates whether a page is loading or not.
   bool is_loading_;

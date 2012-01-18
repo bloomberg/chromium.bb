@@ -639,6 +639,9 @@ IPC_STRUCT_BEGIN(ViewMsg_New_Params)
   // The ID of the view to be created.
   IPC_STRUCT_MEMBER(int32, view_id)
 
+  // The ID of the rendering surface.
+  IPC_STRUCT_MEMBER(int32, surface_id)
+
   // The session storage namespace ID this view should use.
   IPC_STRUCT_MEMBER(int64, session_storage_namespace_id)
 
@@ -1191,24 +1194,27 @@ IPC_MESSAGE_CONTROL1(ViewMsg_TempCrashWithData,
 // Sent by the renderer when it is creating a new window.  The browser creates
 // a tab for it and responds with a ViewMsg_CreatingNew_ACK.  If route_id is
 // MSG_ROUTING_NONE, the view couldn't be created.
-IPC_SYNC_MESSAGE_CONTROL1_2(ViewHostMsg_CreateWindow,
+IPC_SYNC_MESSAGE_CONTROL1_3(ViewHostMsg_CreateWindow,
                             ViewHostMsg_CreateWindow_Params,
                             int /* route_id */,
+                            int32 /* surface_id */,
                             int64 /* cloned_session_storage_namespace_id */)
 
 // Similar to ViewHostMsg_CreateWindow, except used for sub-widgets, like
 // <select> dropdowns.  This message is sent to the TabContents that
 // contains the widget being created.
-IPC_SYNC_MESSAGE_CONTROL2_1(ViewHostMsg_CreateWidget,
+IPC_SYNC_MESSAGE_CONTROL2_2(ViewHostMsg_CreateWidget,
                             int /* opener_id */,
                             WebKit::WebPopupType /* popup type */,
-                            int /* route_id */)
+                            int /* route_id */,
+                            int32 /* surface_id */)
 
 // Similar to ViewHostMsg_CreateWidget except the widget is a full screen
 // window.
-IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_CreateFullscreenWidget,
+IPC_SYNC_MESSAGE_CONTROL1_2(ViewHostMsg_CreateFullscreenWidget,
                             int /* opener_id */,
-                            int /* route_id */)
+                            int /* route_id */,
+                            int32 /* surface_id */)
 
 // Get all savable resource links from current webpage, include main
 // frame and sub-frame.

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -89,6 +89,10 @@ class CONTENT_EXPORT RenderWidget
   // messages with this ID to the parent.
   int32 routing_id() const {
     return routing_id_;
+  }
+
+  int32 surface_id() const {
+    return surface_id_;
   }
 
   // May return NULL when the window is closing.
@@ -337,6 +341,8 @@ class CONTENT_EXPORT RenderWidget
   // Routing ID that allows us to communicate to the parent browser process
   // RenderWidgetHost. When MSG_ROUTING_NONE, no messages may be sent.
   int32 routing_id_;
+
+  int32 surface_id_;
 
   // We are responsible for destroying this object via its Close method.
   WebKit::WebWidget* webwidget_;

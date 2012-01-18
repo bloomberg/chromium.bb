@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -123,11 +123,6 @@ TransportDIB* MockRenderProcessHost::GetTransportDIB(TransportDIB::Id dib_id) {
 #endif
 
   return transport_dib_;
-}
-
-void MockRenderProcessHost::SetCompositingSurface(
-    int render_widget_id,
-    gfx::PluginWindowHandle compositing_surface) {
 }
 
 int MockRenderProcessHost::GetID() const {

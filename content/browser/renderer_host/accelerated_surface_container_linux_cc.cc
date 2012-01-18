@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -37,7 +37,7 @@ class AcceleratedSurfaceContainerLinuxCC
   virtual void AddRef() { ui::TextureCC::AddRef(); }
   virtual void Release() { ui::TextureCC::Release(); }
 
-  virtual bool Initialize(uint64* surface_id) OVERRIDE {
+  virtual bool Initialize(uint64* surface_handle) OVERRIDE {
     ui::SharedResourcesCC* instance = ui::SharedResourcesCC::GetInstance();
     DCHECK(instance);
     image_transport_client_.reset(
@@ -45,7 +45,7 @@ class AcceleratedSurfaceContainerLinuxCC
     if (!image_transport_client_.get())
       return false;
 
-    texture_id_ = image_transport_client_->Initialize(surface_id);
+    texture_id_ = image_transport_client_->Initialize(surface_handle);
     if (!texture_id_) {
       image_transport_client_.reset();
       return false;

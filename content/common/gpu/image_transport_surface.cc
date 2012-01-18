@@ -22,15 +22,11 @@ ImageTransportSurface::~ImageTransportSurface() {
 
 ImageTransportHelper::ImageTransportHelper(ImageTransportSurface* surface,
                                            GpuChannelManager* manager,
-                                           int32 render_view_id,
-                                           int32 client_id,
-                                           int32 command_buffer_id,
+                                           GpuCommandBufferStub* stub,
                                            gfx::PluginWindowHandle handle)
     : surface_(surface),
       manager_(manager),
-      render_view_id_(render_view_id),
-      client_id_(client_id),
-      command_buffer_id_(command_buffer_id),
+      stub_(stub->AsWeakPtr()),
       handle_(handle) {
   route_id_ = manager_->GenerateRouteID();
   manager_->AddRoute(route_id_, this);
@@ -72,16 +68,14 @@ bool ImageTransportHelper::OnMessageReceived(const IPC::Message& message) {
 
 void ImageTransportHelper::SendAcceleratedSurfaceRelease(
     GpuHostMsg_AcceleratedSurfaceRelease_Params params) {
-  params.client_id = client_id_;
-  params.render_view_id = render_view_id_;
+  params.surface_id = stub_->surface_id();
   params.route_id = route_id_;
   manager_->Send(new GpuHostMsg_AcceleratedSurfaceRelease(params));
 }
 
 void ImageTransportHelper::SendAcceleratedSurfaceNew(
     GpuHostMsg_AcceleratedSurfaceNew_Params params) {
-  params.client_id = client_id_;
-  params.render_view_id = render_view_id_;
+  params.surface_id = stub_->surface_id();
   params.route_id = route_id_;
 #if defined(OS_MACOSX)
   params.window = handle_;
@@ -91,8 +85,7 @@ void ImageTransportHelper::SendAcceleratedSurfaceNew(
 
 void ImageTransportHelper::SendAcceleratedSurfaceBuffersSwapped(
     GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params params) {
-  params.client_id = client_id_;
-  params.render_view_id = render_view_id_;
+  params.surface_id = stub_->surface_id();
   params.route_id = route_id_;
 #if defined(OS_MACOSX)
   params.window = handle_;
@@ -102,8 +95,7 @@ void ImageTransportHelper::SendAcceleratedSurfaceBuffersSwapped(
 
 void ImageTransportHelper::SendAcceleratedSurfacePostSubBuffer(
     GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params params) {
-  params.client_id = client_id_;
-  params.render_view_id = render_view_id_;
+  params.surface_id = stub_->surface_id();
   params.route_id = route_id_;
 #if defined(OS_MACOSX)
   params.window = handle_;
@@ -112,8 +104,7 @@ void ImageTransportHelper::SendAcceleratedSurfacePostSubBuffer(
 }
 
 void ImageTransportHelper::SendResizeView(const gfx::Size& size) {
-  manager_->Send(new GpuHostMsg_ResizeView(client_id_,
-                                           render_view_id_,
+  manager_->Send(new GpuHostMsg_ResizeView(stub_->surface_id(),
                                            route_id_,
                                            size));
 }
@@ -142,9 +133,9 @@ void ImageTransportHelper::OnPostSubBufferACK() {
 }
 
 void ImageTransportHelper::OnNewSurfaceACK(
-    uint64 surface_id,
+    uint64 surface_handle,
     TransportDIB::Handle shm_handle) {
-  surface_->OnNewSurfaceACK(surface_id, shm_handle);
+  surface_->OnNewSurfaceACK(surface_handle, shm_handle);
 }
 
 void ImageTransportHelper::OnResizeViewACK() {
@@ -169,16 +160,9 @@ void ImageTransportHelper::Resize(gfx::Size size) {
 }
 
 void ImageTransportHelper::SetSwapInterval() {
-  GpuChannel* channel = manager_->LookupChannel(client_id_);
-  if (!channel)
+  if (!stub_.get())
     return;
-
-  GpuCommandBufferStub* stub =
-      channel->LookupCommandBuffer(command_buffer_id_);
-  if (!stub)
-    return;
-
-  stub->SetSwapInterval();
+  stub_->SetSwapInterval();
 }
 
 bool ImageTransportHelper::MakeCurrent() {
@@ -189,42 +173,24 @@ bool ImageTransportHelper::MakeCurrent() {
 }
 
 gpu::GpuScheduler* ImageTransportHelper::Scheduler() {
-  GpuChannel* channel = manager_->LookupChannel(client_id_);
-  if (!channel)
+  if (!stub_.get())
     return NULL;
-
-  GpuCommandBufferStub* stub =
-      channel->LookupCommandBuffer(command_buffer_id_);
-  if (!stub)
-    return NULL;
-
-  return stub->scheduler();
+  return stub_->scheduler();
 }
 
 gpu::gles2::GLES2Decoder* ImageTransportHelper::Decoder() {
-  GpuChannel* channel = manager_->LookupChannel(client_id_);
-  if (!channel)
+  if (!stub_.get())
     return NULL;
-
-  GpuCommandBufferStub* stub =
-      channel->LookupCommandBuffer(command_buffer_id_);
-  if (!stub)
-    return NULL;
-
-  return stub->decoder();
+  return stub_->decoder();
 }
 
 PassThroughImageTransportSurface::PassThroughImageTransportSurface(
     GpuChannelManager* manager,
-    int32 render_view_id,
-    int32 client_id,
-    int32 command_buffer_id,
+    GpuCommandBufferStub* stub,
     gfx::GLSurface* surface) : GLSurfaceAdapter(surface) {
   helper_.reset(new ImageTransportHelper(this,
                                          manager,
-                                         render_view_id,
-                                         client_id,
-                                         command_buffer_id,
+                                         stub,
                                          gfx::kNullPluginWindow));
 }
 
@@ -242,7 +208,7 @@ void PassThroughImageTransportSurface::Destroy() {
 }
 
 void PassThroughImageTransportSurface::OnNewSurfaceACK(
-    uint64 surface_id, TransportDIB::Handle surface_handle) {
+    uint64 surface_handle, TransportDIB::Handle shm_handle) {
 }
 
 bool PassThroughImageTransportSurface::SwapBuffers() {
@@ -251,7 +217,7 @@ bool PassThroughImageTransportSurface::SwapBuffers() {
   // Round trip to the browser UI thread, for throttling, by sending a dummy
   // SwapBuffers message.
   GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params params;
-  params.surface_id = 0;
+  params.surface_handle = 0;
 #if defined(OS_WIN)
   params.size = GetSize();
 #endif
@@ -268,7 +234,7 @@ bool PassThroughImageTransportSurface::PostSubBuffer(
   // Round trip to the browser UI thread, for throttling, by sending a dummy
   // PostSubBuffer message.
   GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params params;
-  params.surface_id = 0;
+  params.surface_handle = 0;
   params.x = x;
   params.y = y;
   params.width = width;

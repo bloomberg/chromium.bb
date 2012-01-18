@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -78,6 +78,10 @@ class MockRenderThread : public content::RenderThread {
     routing_id_ = id;
   }
 
+  void set_surface_id(int32 id) {
+    surface_id_ = id;
+  }
+
   int32 opener_id() const {
     return opener_id_;
   }
@@ -99,7 +103,8 @@ class MockRenderThread : public content::RenderThread {
   // The Widget expects to be returned valid route_id.
   void OnMsgCreateWidget(int opener_id,
                          WebKit::WebPopupType popup_type,
-                         int* route_id);
+                         int* route_id,
+                         int* surface_id);
 
 #if defined(OS_WIN)
   void OnDuplicateSection(base::SharedMemoryHandle renderer_handle,
@@ -110,6 +115,9 @@ class MockRenderThread : public content::RenderThread {
 
   // Routing id what will be assigned to the Widget.
   int32 routing_id_;
+
+  // Surface id what will be assigned to the Widget.
+  int32 surface_id_;
 
   // Opener id reported by the Widget.
   int32 opener_id_;

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,7 +30,8 @@ class TextInputClientMacTest : public testing::Test {
       : message_loop_(MessageLoop::TYPE_UI),
         browser_context_(),
         process_factory_(),
-        widget_(process_factory_.CreateRenderProcessHost(&browser_context_), 1),
+        widget_(process_factory_.CreateRenderProcessHost(&browser_context_),
+                MSG_ROUTING_NONE),
         thread_("TextInputClientMacTestThread") {}
 
   // Accessor for the TextInputClientMac instance.

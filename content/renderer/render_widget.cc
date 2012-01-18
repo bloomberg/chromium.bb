@@ -70,6 +70,7 @@ using content::RenderThread;
 
 RenderWidget::RenderWidget(WebKit::WebPopupType popup_type)
     : routing_id_(MSG_ROUTING_NONE),
+      surface_id_(0),
       webwidget_(NULL),
       opener_id_(MSG_ROUTING_NONE),
       host_window_(0),
@@ -141,7 +142,8 @@ WebWidget* RenderWidget::CreateWebWidget(RenderWidget* render_widget) {
 void RenderWidget::Init(int32 opener_id) {
   DoInit(opener_id,
          RenderWidget::CreateWebWidget(this),
-         new ViewHostMsg_CreateWidget(opener_id, popup_type_, &routing_id_));
+         new ViewHostMsg_CreateWidget(opener_id, popup_type_,
+                                      &routing_id_, &surface_id_));
 }
 
 void RenderWidget::DoInit(int32 opener_id,

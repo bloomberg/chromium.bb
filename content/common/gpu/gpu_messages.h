@@ -34,11 +34,10 @@ IPC_STRUCT_BEGIN(GPUCreateCommandBufferConfig)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(GpuHostMsg_AcceleratedSurfaceNew_Params)
-  IPC_STRUCT_MEMBER(int32, client_id)
-  IPC_STRUCT_MEMBER(int32, render_view_id)
+  IPC_STRUCT_MEMBER(int32, surface_id)
   IPC_STRUCT_MEMBER(int32, width)
   IPC_STRUCT_MEMBER(int32, height)
-  IPC_STRUCT_MEMBER(uint64, surface_id)
+  IPC_STRUCT_MEMBER(uint64, surface_handle)
   IPC_STRUCT_MEMBER(int32, route_id)
 #if defined(OS_MACOSX)
   IPC_STRUCT_MEMBER(gfx::PluginWindowHandle, window)
@@ -47,9 +46,8 @@ IPC_STRUCT_BEGIN(GpuHostMsg_AcceleratedSurfaceNew_Params)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params)
-  IPC_STRUCT_MEMBER(int32, client_id)
-  IPC_STRUCT_MEMBER(int32, render_view_id)
-  IPC_STRUCT_MEMBER(uint64, surface_id)
+  IPC_STRUCT_MEMBER(int32, surface_id)
+  IPC_STRUCT_MEMBER(uint64, surface_handle)
   IPC_STRUCT_MEMBER(int32, route_id)
 #if defined(OS_WIN)
   IPC_STRUCT_MEMBER(gfx::Size, size)
@@ -59,9 +57,8 @@ IPC_STRUCT_BEGIN(GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params)
-  IPC_STRUCT_MEMBER(int32, client_id)
-  IPC_STRUCT_MEMBER(int32, render_view_id)
-  IPC_STRUCT_MEMBER(uint64, surface_id)
+  IPC_STRUCT_MEMBER(int32, surface_id)
+  IPC_STRUCT_MEMBER(uint64, surface_handle)
   IPC_STRUCT_MEMBER(int32, route_id)
   IPC_STRUCT_MEMBER(int, x)
   IPC_STRUCT_MEMBER(int, y)
@@ -73,8 +70,7 @@ IPC_STRUCT_BEGIN(GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(GpuHostMsg_AcceleratedSurfaceRelease_Params)
-  IPC_STRUCT_MEMBER(int32, client_id)
-  IPC_STRUCT_MEMBER(int32, render_view_id)
+  IPC_STRUCT_MEMBER(int32, surface_id)
   IPC_STRUCT_MEMBER(uint64, identifier)
   IPC_STRUCT_MEMBER(int32, route_id)
 #if defined(OS_MACOSX)
@@ -148,7 +144,7 @@ IPC_MESSAGE_CONTROL1(GpuMsg_CloseChannel,
 // to a native view. A corresponding GpuCommandBufferStub is created.
 IPC_MESSAGE_CONTROL4(GpuMsg_CreateViewCommandBuffer,
                      gfx::PluginWindowHandle, /* compositing_surface */
-                     int32, /* render_view_id */
+                     int32, /* surface_id */
                      int32, /* client_id */
                      GPUCreateCommandBufferConfig /* init_params */)
 
@@ -162,7 +158,7 @@ IPC_MESSAGE_ROUTED0(AcceleratedSurfaceMsg_ResizeViewACK)
 
 // Tells the GPU process that it's safe to start rendering to the surface.
 IPC_MESSAGE_ROUTED2(AcceleratedSurfaceMsg_NewACK,
-                    uint64 /* surface_id */,
+                    uint64 /* surface_handle */,
                     TransportDIB::Handle /* shared memory buffer */)
 
 // Tells the GPU process that the browser process handled the swap
@@ -198,7 +194,7 @@ IPC_SYNC_MESSAGE_CONTROL1_3(GpuHostMsg_EstablishGpuChannel,
 // A renderer sends this to the browser process when it wants to
 // create a GL context associated with the given view_id.
 IPC_SYNC_MESSAGE_CONTROL2_1(GpuHostMsg_CreateViewCommandBuffer,
-                            int32, /* render_view_id */
+                            int32, /* surface_id */
                             GPUCreateCommandBufferConfig, /* init_params */
                             int32 /* route_id */)
 
@@ -212,10 +208,8 @@ IPC_MESSAGE_CONTROL1(GpuHostMsg_CommandBufferCreated,
 
 // Request from GPU to free the browser resources associated with the
 // command buffer.
-IPC_MESSAGE_CONTROL3(GpuHostMsg_DestroyCommandBuffer,
-                     gfx::PluginWindowHandle, /* view */
-                     int32, /* render_view_id */
-                     int32 /* client_id */)
+IPC_MESSAGE_CONTROL1(GpuHostMsg_DestroyCommandBuffer,
+                     int32 /* surface_id */)
 
 // Response from GPU to a GpuMsg_CollectGraphicsInfo.
 IPC_MESSAGE_CONTROL1(GpuHostMsg_GraphicsInfoCollected,
@@ -229,9 +223,8 @@ IPC_MESSAGE_CONTROL3(GpuHostMsg_OnLogMessage,
 
 // Resize the window that is being drawn into. It's important that this
 // resize be synchronized with the swapping of the front and back buffers.
-IPC_MESSAGE_CONTROL4(GpuHostMsg_ResizeView,
-                     int32 /* client_id */,
-                     int32 /* render_view_id */,
+IPC_MESSAGE_CONTROL3(GpuHostMsg_ResizeView,
+                     int32 /* surface_id */,
                      int32 /* route_id */,
                      gfx::Size /* size */)
 

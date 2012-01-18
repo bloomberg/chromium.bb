@@ -146,7 +146,7 @@ bool WebGraphicsContext3DCommandBufferImpl::initialize(
     RenderViewImpl* render_view = RenderViewImpl::FromWebView(web_view);
     if (!render_view)
       return false;
-    render_view_routing_id_ = render_view->routing_id();
+    surface_id_ = render_view->surface_id();
     web_view_ = web_view;
   }
   return true;
@@ -202,7 +202,7 @@ bool WebGraphicsContext3DCommandBufferImpl::MaybeInitializeGL() {
     if (render_directly_to_web_view_) {
       context_ = RendererGLContext::CreateViewContext(
           host_,
-          render_view_routing_id_,
+          surface_id_,
           share_group,
           preferred_extensions,
           attribs,

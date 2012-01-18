@@ -84,7 +84,7 @@ class GpuChannelHost : public IPC::Message::Sender,
 
   // Create and connect to a command buffer in the GPU process.
   CommandBufferProxy* CreateViewCommandBuffer(
-      int render_view_id,
+      int32 surface_id,
       CommandBufferProxy* share_group,
       const std::string& allowed_extensions,
       const std::vector<int32>& attribs,

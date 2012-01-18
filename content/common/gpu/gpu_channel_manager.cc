@@ -116,16 +116,16 @@ void GpuChannelManager::OnCloseChannel(
 
 void GpuChannelManager::OnCreateViewCommandBuffer(
     gfx::PluginWindowHandle window,
-    int32 render_view_id,
+    int32 surface_id,
     int32 client_id,
     const GPUCreateCommandBufferConfig& init_params) {
-  DCHECK(render_view_id);
+  DCHECK(surface_id);
   int32 route_id = MSG_ROUTING_NONE;
 
   GpuChannelMap::const_iterator iter = gpu_channels_.find(client_id);
   if (iter != gpu_channels_.end()) {
     iter->second->CreateViewCommandBuffer(
-        window, render_view_id, init_params, &route_id);
+        window, surface_id, init_params, &route_id);
   }
 
   Send(new GpuHostMsg_CommandBufferCreated(route_id));

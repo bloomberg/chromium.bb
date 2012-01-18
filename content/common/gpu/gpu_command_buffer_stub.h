@@ -49,8 +49,7 @@ class GpuCommandBufferStub
       const std::vector<int32>& attribs,
       gfx::GpuPreference gpu_preference,
       int32 route_id,
-      int32 client_id,
-      int32 render_view_id,
+      int32 surface_id,
       GpuWatchdog* watchdog,
       bool software);
 
@@ -74,11 +73,8 @@ class GpuCommandBufferStub
   gpu::gles2::GLES2Decoder* decoder() const { return decoder_.get(); }
   gpu::GpuScheduler* scheduler() const { return scheduler_.get(); }
 
-  // Identifies the renderer process.
-  int32 client_id() const { return client_id_; }
-
-  // Identifies a particular renderer belonging to the same renderer process.
-  int32 render_view_id() const { return render_view_id_; }
+  // Identifies the target surface.
+  int32 surface_id() const { return surface_id_; }
 
   // Identifies the various GpuCommandBufferStubs in the GPU process belonging
   // to the same renderer process.
@@ -146,10 +142,8 @@ class GpuCommandBufferStub
   bool software_;
   uint32 last_flush_count_;
 
-  // The following two fields are used on Mac OS X to identify the window
-  // for the rendering results on the browser side.
-  int32 client_id_;
-  int32 render_view_id_;
+  // Identifies the window for the rendering results on the browser side.
+  int32 surface_id_;
 
   scoped_ptr<gpu::CommandBufferService> command_buffer_;
   scoped_ptr<gpu::gles2::GLES2Decoder> decoder_;

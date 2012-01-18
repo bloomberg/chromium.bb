@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/eintr_wrapper.h"
 #include "base/threading/thread.h"
+#include "content/browser/gpu/gpu_surface_tracker.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
@@ -212,8 +213,11 @@ void RenderWidgetHelper::OnCrossSiteSwapOutACK(
 void RenderWidgetHelper::CreateNewWindow(
     const ViewHostMsg_CreateWindow_Params& params,
     base::ProcessHandle render_process,
-    int* route_id) {
+    int* route_id,
+    int* surface_id) {
   *route_id = GetNextRoutingID();
+  *surface_id = GpuSurfaceTracker::Get()->AddSurfaceForRenderer(
+      render_process_id_, *route_id);
   // Block resource requests until the view is created, since the HWND might be
   // needed if a response ends up creating a plugin.
   resource_dispatcher_host_->BlockRequestsForRoute(
@@ -221,8 +225,8 @@ void RenderWidgetHelper::CreateNewWindow(
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(
-          &RenderWidgetHelper::OnCreateWindowOnUI, this, params, *route_id));
+      base::Bind(&RenderWidgetHelper::OnCreateWindowOnUI,
+                 this, params, *route_id));
 }
 
 void RenderWidgetHelper::OnCreateWindowOnUI(
@@ -245,8 +249,11 @@ void RenderWidgetHelper::OnCreateWindowOnIO(int route_id) {
 
 void RenderWidgetHelper::CreateNewWidget(int opener_id,
                                          WebKit::WebPopupType popup_type,
-                                         int* route_id) {
+                                         int* route_id,
+                                         int* surface_id) {
   *route_id = GetNextRoutingID();
+  *surface_id = GpuSurfaceTracker::Get()->AddSurfaceForRenderer(
+      render_process_id_, *route_id);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(
@@ -255,8 +262,11 @@ void RenderWidgetHelper::CreateNewWidget(int opener_id,
 }
 
 void RenderWidgetHelper::CreateNewFullscreenWidget(int opener_id,
-                                                   int* route_id) {
+                                                   int* route_id,
+                                                   int* surface_id) {
   *route_id = GetNextRoutingID();
+  *surface_id = GpuSurfaceTracker::Get()->AddSurfaceForRenderer(
+      render_process_id_, *route_id);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(
@@ -334,24 +344,3 @@ void RenderWidgetHelper::ClearAllocatedDIBs() {
   allocated_dibs_.clear();
 }
 #endif
-
-void RenderWidgetHelper::SetCompositingSurface(
-    int render_widget_id,
-    gfx::PluginWindowHandle compositing_surface) {
-  base::AutoLock locked(view_compositing_surface_map_lock_);
-  if (compositing_surface != gfx::kNullPluginWindow)
-    view_compositing_surface_map_[render_widget_id] = compositing_surface;
-  else
-    view_compositing_surface_map_.erase(render_widget_id);
-}
-
-gfx::PluginWindowHandle RenderWidgetHelper::LookupCompositingSurface(
-    int render_widget_id) {
-  base::AutoLock locked(view_compositing_surface_map_lock_);
-  ViewCompositingSurfaceMap::iterator it =
-      view_compositing_surface_map_.find(render_widget_id);
-  if (it == view_compositing_surface_map_.end())
-    return gfx::kNullPluginWindow;
-
-  return it->second;
-}

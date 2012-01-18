@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -121,14 +121,6 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Message::Sender,
   // duplicating the handle from the remote process.  The RenderProcessHost
   // still owns the returned DIB.
   virtual TransportDIB* GetTransportDIB(TransportDIB::Id dib_id) = 0;
-
-  // RenderWidgetHost / compositing surface mapping functions ------------------
-
-  // Set a mapping from a RenderWidgetHost to a compositing surface. Pass a null
-  // handle to remove the mapping.
-  virtual void SetCompositingSurface(
-      int render_widget_id,
-      gfx::PluginWindowHandle compositing_surface) = 0;
 
   // Returns the user browser context associated with this renderer process.
   virtual content::BrowserContext* GetBrowserContext() const = 0;

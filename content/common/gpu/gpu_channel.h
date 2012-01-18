@@ -84,7 +84,7 @@ class GpuChannel : public IPC::Channel::Listener,
 
   void CreateViewCommandBuffer(
       gfx::PluginWindowHandle window,
-      int32 render_view_id,
+      int32 surface_id,
       const GPUCreateCommandBufferConfig& init_params,
       int32* route_id);
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -59,7 +59,7 @@ class ThumbnailGeneratorTest : public testing::Test {
   ThumbnailGeneratorTest() {
     profile_.reset(new TestingProfile());
     process_ = new MockRenderProcessHost(profile_.get());
-    widget_.reset(new RenderWidgetHost(process_, 1));
+    widget_.reset(new RenderWidgetHost(process_, MSG_ROUTING_NONE));
     view_.reset(new TestRenderWidgetHostViewWithBackingStoreSkia(
         widget_.get()));
     // Paiting will be skipped if there's no view.

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,9 +22,9 @@ TEST(WebContentsDelegateTest, UnregisterInDestructor) {
   TestBrowserContext browser_context;
 
   scoped_ptr<TabContents> contents_a(
-      new TabContents(&browser_context, NULL, 0, NULL, NULL));
+      new TabContents(&browser_context, NULL, MSG_ROUTING_NONE, NULL, NULL));
   scoped_ptr<TabContents> contents_b(
-      new TabContents(&browser_context, NULL, 0, NULL, NULL));
+      new TabContents(&browser_context, NULL, MSG_ROUTING_NONE, NULL, NULL));
   EXPECT_TRUE(contents_a->GetDelegate() == NULL);
   EXPECT_TRUE(contents_b->GetDelegate() == NULL);
 

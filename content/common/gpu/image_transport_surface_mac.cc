@@ -24,9 +24,7 @@ class IOSurfaceImageTransportSurface : public gfx::NoOpGLSurfaceCGL,
                                        public ImageTransportSurface {
  public:
   IOSurfaceImageTransportSurface(GpuChannelManager* manager,
-                                 int32 render_view_id,
-                                 int32 client_id,
-                                 int32 command_buffer_id,
+                                 GpuCommandBufferStub* stub,
                                  gfx::PluginWindowHandle handle);
 
   // GLSurface implementation
@@ -42,7 +40,7 @@ class IOSurfaceImageTransportSurface : public gfx::NoOpGLSurfaceCGL,
 
  protected:
   // ImageTransportSurface implementation
-  virtual void OnNewSurfaceACK(uint64 surface_id,
+  virtual void OnNewSurfaceACK(uint64 surface_handle,
                                TransportDIB::Handle shm_handle) OVERRIDE;
   virtual void OnBuffersSwappedACK() OVERRIDE;
   virtual void OnPostSubBufferACK() OVERRIDE;
@@ -58,7 +56,7 @@ class IOSurfaceImageTransportSurface : public gfx::NoOpGLSurfaceCGL,
   base::mac::ScopedCFTypeRef<CFTypeRef> io_surface_;
 
   // The id of |io_surface_| or 0 if that's NULL.
-  uint64 io_surface_id_;
+  uint64 io_surface_handle_;
 
   // Weak pointer to the context that this was last made current to.
   gfx::GLContext* context_;
@@ -79,9 +77,7 @@ class TransportDIBImageTransportSurface : public gfx::NoOpGLSurfaceCGL,
                                           public ImageTransportSurface {
  public:
   TransportDIBImageTransportSurface(GpuChannelManager* manager,
-                                    int32 render_view_id,
-                                    int32 client_id,
-                                    int32 command_buffer_id,
+                                    GpuCommandBufferStub* stub,
                                     gfx::PluginWindowHandle handle);
 
   // GLSurface implementation
@@ -99,7 +95,7 @@ class TransportDIBImageTransportSurface : public gfx::NoOpGLSurfaceCGL,
   // ImageTransportSurface implementation
   virtual void OnBuffersSwappedACK() OVERRIDE;
   virtual void OnPostSubBufferACK() OVERRIDE;
-  virtual void OnNewSurfaceACK(uint64 surface_id,
+  virtual void OnNewSurfaceACK(uint64 surface_handle,
                                TransportDIB::Handle shm_handle) OVERRIDE;
   virtual void OnResizeViewACK() OVERRIDE;
   virtual void OnResize(gfx::Size size) OVERRIDE;
@@ -114,7 +110,7 @@ class TransportDIBImageTransportSurface : public gfx::NoOpGLSurfaceCGL,
 
   gfx::Size size_;
 
-  static uint32 next_id_;
+  static uint32 next_handle_;
 
   // Whether or not we've successfully made the surface current once.
   bool made_current_;
@@ -124,7 +120,7 @@ class TransportDIBImageTransportSurface : public gfx::NoOpGLSurfaceCGL,
   DISALLOW_COPY_AND_ASSIGN(TransportDIBImageTransportSurface);
 };
 
-uint32 TransportDIBImageTransportSurface::next_id_ = 1;
+uint32 TransportDIBImageTransportSurface::next_handle_ = 1;
 
 void AddBooleanValue(CFMutableDictionaryRef dictionary,
                      const CFStringRef key,
@@ -143,23 +139,15 @@ void AddIntegerValue(CFMutableDictionaryRef dictionary,
 
 IOSurfaceImageTransportSurface::IOSurfaceImageTransportSurface(
     GpuChannelManager* manager,
-    int32 render_view_id,
-    int32 client_id,
-    int32 command_buffer_id,
+    GpuCommandBufferStub* stub,
     gfx::PluginWindowHandle handle)
-        : gfx::NoOpGLSurfaceCGL(gfx::Size(1, 1)),
-          fbo_id_(0),
-          texture_id_(0),
-          io_surface_id_(0),
-          context_(NULL),
-          made_current_(false) {
-  helper_.reset(new ImageTransportHelper(this,
-                                         manager,
-                                         render_view_id,
-                                         client_id,
-                                         command_buffer_id,
-                                         handle));
-
+    : gfx::NoOpGLSurfaceCGL(gfx::Size(1, 1)),
+      fbo_id_(0),
+      texture_id_(0),
+      io_surface_handle_(0),
+      context_(NULL),
+      made_current_(false) {
+  helper_.reset(new ImageTransportHelper(this, manager, stub, handle));
 }
 
 IOSurfaceImageTransportSurface::~IOSurfaceImageTransportSurface() {
@@ -226,7 +214,7 @@ bool IOSurfaceImageTransportSurface::SwapBuffers() {
   glFlush();
 
   GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params params;
-  params.surface_id = io_surface_id_;
+  params.surface_handle = io_surface_handle_;
   helper_->SendAcceleratedSurfaceBuffersSwapped(params);
 
   helper_->SetScheduled(false);
@@ -238,7 +226,7 @@ bool IOSurfaceImageTransportSurface::PostSubBuffer(
   glFlush();
 
   GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params params;
-  params.surface_id = io_surface_id_;
+  params.surface_handle = io_surface_handle_;
   params.x = x;
   params.y = y;
   params.width = width;
@@ -270,9 +258,9 @@ void IOSurfaceImageTransportSurface::OnPostSubBufferACK() {
 }
 
 void IOSurfaceImageTransportSurface::OnNewSurfaceACK(
-    uint64 surface_id,
+    uint64 surface_handle,
     TransportDIB::Handle /* shm_handle */) {
-  DCHECK_EQ(io_surface_id_, surface_id);
+  DCHECK_EQ(io_surface_handle_, surface_handle);
   helper_->SetScheduled(true);
 }
 
@@ -353,7 +341,7 @@ void IOSurfaceImageTransportSurface::OnResize(gfx::Size size) {
       io_surface_.get(),
       plane);
 
-  io_surface_id_ = io_surface_support->IOSurfaceGetID(io_surface_);
+  io_surface_handle_ = io_surface_support->IOSurfaceGetID(io_surface_);
   glFlush();
 
   glBindTexture(target, previous_texture_id);
@@ -362,7 +350,7 @@ void IOSurfaceImageTransportSurface::OnResize(gfx::Size size) {
   GpuHostMsg_AcceleratedSurfaceNew_Params params;
   params.width = size_.width();
   params.height = size_.height();
-  params.surface_id = io_surface_id_;
+  params.surface_handle = io_surface_handle_;
   params.create_transport_dib = false;
   helper_->SendAcceleratedSurfaceNew(params);
 
@@ -371,20 +359,13 @@ void IOSurfaceImageTransportSurface::OnResize(gfx::Size size) {
 
 TransportDIBImageTransportSurface::TransportDIBImageTransportSurface(
     GpuChannelManager* manager,
-    int32 render_view_id,
-    int32 client_id,
-    int32 command_buffer_id,
+    GpuCommandBufferStub* stub,
     gfx::PluginWindowHandle handle)
         : gfx::NoOpGLSurfaceCGL(gfx::Size(1, 1)),
           fbo_id_(0),
           render_buffer_id_(0),
           made_current_(false) {
-  helper_.reset(new ImageTransportHelper(this,
-                                         manager,
-                                         render_view_id,
-                                         client_id,
-                                         command_buffer_id,
-                                         handle));
+  helper_.reset(new ImageTransportHelper(this, manager, stub, handle));
 
 }
 
@@ -460,7 +441,7 @@ bool TransportDIBImageTransportSurface::SwapBuffers() {
   glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, previous_fbo_id);
 
   GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params params;
-  params.surface_id = next_id_;
+  params.surface_handle = next_handle_;
   helper_->SendAcceleratedSurfaceBuffersSwapped(params);
 
   helper_->SetScheduled(false);
@@ -497,7 +478,7 @@ bool TransportDIBImageTransportSurface::PostSubBuffer(
   glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, previous_fbo_id);
 
   GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params params;
-  params.surface_id = next_id_;
+  params.surface_handle = next_handle_;
   params.x = x;
   params.y = y;
   params.width = width;
@@ -529,7 +510,7 @@ void TransportDIBImageTransportSurface::OnPostSubBufferACK() {
 }
 
 void TransportDIBImageTransportSurface::OnNewSurfaceACK(
-    uint64 surface_id,
+    uint64 surface_handle,
     TransportDIB::Handle shm_handle) {
   helper_->SetScheduled(true);
 
@@ -570,7 +551,7 @@ void TransportDIBImageTransportSurface::OnResize(gfx::Size size) {
   GpuHostMsg_AcceleratedSurfaceNew_Params params;
   params.width = size_.width();
   params.height = size_.height();
-  params.surface_id = next_id_++;
+  params.surface_handle = next_handle_++;
   params.create_transport_dib = true;
   helper_->SendAcceleratedSurfaceNew(params);
 
@@ -582,9 +563,7 @@ void TransportDIBImageTransportSurface::OnResize(gfx::Size size) {
 // static
 scoped_refptr<gfx::GLSurface> ImageTransportSurface::CreateSurface(
     GpuChannelManager* manager,
-    int32 render_view_id,
-    int32 client_id,
-    int32 command_buffer_id,
+    GpuCommandBufferStub* stub,
     gfx::PluginWindowHandle handle) {
   scoped_refptr<gfx::GLSurface> surface;
   IOSurfaceSupport* io_surface_support = IOSurfaceSupport::Initialize();
@@ -593,17 +572,9 @@ scoped_refptr<gfx::GLSurface> ImageTransportSurface::CreateSurface(
     case gfx::kGLImplementationDesktopGL:
     case gfx::kGLImplementationAppleGL:
       if (!io_surface_support) {
-        surface = new TransportDIBImageTransportSurface(manager,
-                                                        render_view_id,
-                                                        client_id,
-                                                        command_buffer_id,
-                                                        handle);
+        surface = new TransportDIBImageTransportSurface(manager, stub, handle);
       } else {
-        surface = new IOSurfaceImageTransportSurface(manager,
-                                                     render_view_id,
-                                                     client_id,
-                                                     command_buffer_id,
-                                                     handle);
+        surface = new IOSurfaceImageTransportSurface(manager, stub, handle);
       }
       break;
     default:

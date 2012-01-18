@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,9 +21,9 @@ class AcceleratedSurfaceContainerLinux {
   virtual void Release() = 0;
 
   // Initialize the surface container, and returns an ID for it.
-  // The |surface_id| given to this function may be modified, and the modified
-  // value should be used to identify the object.
-  virtual bool Initialize(uint64* surface_id) = 0;
+  // The |surface_handle| given to this function may be modified, and the
+  // modified value should be used to identify the object.
+  virtual bool Initialize(uint64* surface_handle) = 0;
 
   // Some implementations of this class use shared memory, this is the handle
   // to the shared buffer, which is part of the surface container.

@@ -30,8 +30,7 @@ GpuCommandBufferStub::GpuCommandBufferStub(
     const std::vector<int32>& attribs,
     gfx::GpuPreference gpu_preference,
     int32 route_id,
-    int32 client_id,
-    int32 render_view_id,
+    int32 surface_id,
     GpuWatchdog* watchdog,
     bool software)
     : channel_(channel),
@@ -44,8 +43,7 @@ GpuCommandBufferStub::GpuCommandBufferStub(
       route_id_(route_id),
       software_(software),
       last_flush_count_(0),
-      client_id_(client_id),
-      render_view_id_(render_view_id),
+      surface_id_(surface_id),
       parent_stub_for_initialization_(),
       parent_texture_for_initialization_(0),
       watchdog_(watchdog) {
@@ -62,8 +60,7 @@ GpuCommandBufferStub::~GpuCommandBufferStub() {
   Destroy();
 
   GpuChannelManager* gpu_channel_manager = channel_->gpu_channel_manager();
-  gpu_channel_manager->Send(new GpuHostMsg_DestroyCommandBuffer(
-      handle_, client_id_, render_view_id_));
+  gpu_channel_manager->Send(new GpuHostMsg_DestroyCommandBuffer(surface_id_));
 }
 
 bool GpuCommandBufferStub::OnMessageReceived(const IPC::Message& message) {
@@ -195,9 +192,7 @@ void GpuCommandBufferStub::OnInitialize(
 
     surface_ = ImageTransportSurface::CreateSurface(
         channel_->gpu_channel_manager(),
-        render_view_id_,
-        client_id_,
-        route_id_,
+        this,
         handle_);
   } else {
     surface_ = gfx::GLSurface::CreateOffscreenGLSurface(software_,

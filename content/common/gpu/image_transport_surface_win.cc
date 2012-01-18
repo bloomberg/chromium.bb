@@ -31,9 +31,7 @@ class PbufferImageTransportSurface
       public base::SupportsWeakPtr<PbufferImageTransportSurface> {
  public:
   PbufferImageTransportSurface(GpuChannelManager* manager,
-                               int32 render_view_id,
-                               int32 client_id,
-                               int32 command_buffer_id);
+                               GpuCommandBufferStub* stub);
 
   // gfx::GLSurface implementation
   virtual bool Initialize() OVERRIDE;
@@ -46,7 +44,7 @@ class PbufferImageTransportSurface
 
  protected:
   // ImageTransportSurface implementation
-  virtual void OnNewSurfaceACK(uint64 surface_id,
+  virtual void OnNewSurfaceACK(uint64 surface_handle,
                                TransportDIB::Handle shm_handle) OVERRIDE;
   virtual void OnBuffersSwappedACK() OVERRIDE;
   virtual void OnPostSubBufferACK() OVERRIDE;
@@ -70,17 +68,12 @@ class PbufferImageTransportSurface
 
 PbufferImageTransportSurface::PbufferImageTransportSurface(
     GpuChannelManager* manager,
-    int32 render_view_id,
-    int32 client_id,
-    int32 command_buffer_id)
-        : GLSurfaceAdapter(new gfx::PbufferGLSurfaceEGL(false,
-                                                        gfx::Size(1, 1))),
-          is_visible_(true) {
+    GpuCommandBufferStub* stub)
+    : GLSurfaceAdapter(new gfx::PbufferGLSurfaceEGL(false, gfx::Size(1, 1))),
+      is_visible_(true) {
   helper_.reset(new ImageTransportHelper(this,
                                          manager,
-                                         render_view_id,
-                                         client_id,
-                                         command_buffer_id,
+                                         stub,
                                          gfx::kNullPluginWindow));
 }
 
@@ -149,7 +142,7 @@ std::string PbufferImageTransportSurface::GetExtensions() {
 
 void PbufferImageTransportSurface::SendBuffersSwapped() {
   GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params params;
-  params.surface_id = reinterpret_cast<int64>(GetShareHandle());
+  params.surface_handle = reinterpret_cast<int64>(GetShareHandle());
   params.size = GetSize();
   helper_->SendAcceleratedSurfaceBuffersSwapped(params);
 
@@ -165,7 +158,7 @@ void PbufferImageTransportSurface::OnPostSubBufferACK() {
 }
 
 void PbufferImageTransportSurface::OnNewSurfaceACK(
-    uint64 surface_id,
+    uint64 surface_handle,
     TransportDIB::Handle shm_handle) {
   NOTREACHED();
 }
@@ -186,9 +179,7 @@ void PbufferImageTransportSurface::OnResize(gfx::Size size) {
 // static
 scoped_refptr<gfx::GLSurface> ImageTransportSurface::CreateSurface(
     GpuChannelManager* manager,
-    int32 render_view_id,
-    int32 client_id,
-    int32 command_buffer_id,
+    GpuCommandBufferStub* stub,
     gfx::PluginWindowHandle handle) {
   scoped_refptr<gfx::GLSurface> surface;
 
@@ -199,10 +190,7 @@ scoped_refptr<gfx::GLSurface> ImageTransportSurface::CreateSurface(
                                             EGL_EXTENSIONS);
     if (strstr(extensions, "EGL_ANGLE_query_surface_pointer") &&
         strstr(extensions, "EGL_ANGLE_surface_d3d_texture_2d_share_handle")) {
-      surface = new PbufferImageTransportSurface(manager,
-                                                 render_view_id,
-                                                 client_id,
-                                                 command_buffer_id);
+      surface = new PbufferImageTransportSurface(manager, stub);
     }
   }
 
@@ -212,9 +200,7 @@ scoped_refptr<gfx::GLSurface> ImageTransportSurface::CreateSurface(
       return NULL;
 
     surface = new PassThroughImageTransportSurface(manager,
-                                                   render_view_id,
-                                                   client_id,
-                                                   command_buffer_id,
+                                                   stub,
                                                    surface.get());
   }
 

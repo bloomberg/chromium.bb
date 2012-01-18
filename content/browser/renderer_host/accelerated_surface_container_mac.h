@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -82,8 +82,8 @@ class AcceleratedSurfaceContainerMac {
   bool ShouldBeVisible() const;
 
   // Notifies the the container that its surface was painted to.
-  void set_was_painted_to(uint64 surface_id);
-  void set_was_painted_to(uint64 surface_id,
+  void set_was_painted_to(uint64 surface_handle);
+  void set_was_painted_to(uint64 surface_handle,
                           const gfx::Rect& update_rect);
 
   // Notifies the container that its surface is invalid.
@@ -92,7 +92,7 @@ class AcceleratedSurfaceContainerMac {
   // Enqueue our texture for later deletion.
   void EnqueueTextureForDeletion();
 
-  void set_was_painted_to_common(uint64 surface_id);
+  void set_was_painted_to_common(uint64 surface_handle);
 
   // The manager of this accelerated surface container.
   AcceleratedSurfaceContainerManagerMac* manager_;
@@ -106,8 +106,8 @@ class AcceleratedSurfaceContainerMac {
   // IOSurfaceRef type when building on 10.5.
   base::mac::ScopedCFTypeRef<CFTypeRef> surface_;
 
-  // The id of |surface_|, or 0 if |surface_| is NULL.
-  uint64 surface_id_;
+  // The handle of |surface_|, or 0 if |surface_| is NULL.
+  uint64 surface_handle_;
 
   // The width and height of the io surface. During resizing, this is different
   // from |width_| and |height_|.

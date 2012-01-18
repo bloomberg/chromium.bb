@@ -403,21 +403,19 @@ void GpuProcessHost::EstablishGpuChannel(
 
 void GpuProcessHost::CreateViewCommandBuffer(
     gfx::PluginWindowHandle compositing_surface,
-    int32 render_view_id,
-    int32 client_id,
+    int surface_id,
+    int client_id,
     const GPUCreateCommandBufferConfig& init_params,
     const CreateCommandBufferCallback& callback) {
   DCHECK(CalledOnValidThread());
 
 #if defined(TOOLKIT_USES_GTK)
-  ViewID view_id(client_id, render_view_id);
-
   // There should only be one such command buffer (for the compositor).  In
   // practice, if the GPU process lost a context, GraphicsContext3D with
   // associated command buffer and view surface will not be gone until new
   // one is in place and all layers are reattached.
   linked_ptr<SurfaceRef> surface_ref;
-  SurfaceRefMap::iterator it = surface_refs_.find(view_id);
+  SurfaceRefMap::iterator it = surface_refs_.find(surface_id);
   if (it != surface_refs_.end())
     surface_ref = (*it).second;
   else
@@ -426,11 +424,10 @@ void GpuProcessHost::CreateViewCommandBuffer(
 
   if (compositing_surface != gfx::kNullPluginWindow &&
       Send(new GpuMsg_CreateViewCommandBuffer(
-          compositing_surface, render_view_id, client_id, init_params))) {
+          compositing_surface, surface_id, client_id, init_params))) {
     create_command_buffer_requests_.push(callback);
 #if defined(TOOLKIT_USES_GTK)
-    surface_refs_.insert(std::pair<ViewID, linked_ptr<SurfaceRef> >(
-        view_id, surface_ref));
+    surface_refs_.insert(std::make_pair(surface_id, surface_ref));
 #endif
   } else {
     CreateCommandBufferError(callback, MSG_ROUTING_NONE);
@@ -478,12 +475,9 @@ void GpuProcessHost::OnCommandBufferCreated(const int32 route_id) {
   }
 }
 
-void GpuProcessHost::OnDestroyCommandBuffer(
-    gfx::PluginWindowHandle window, int32 client_id,
-    int32 render_view_id) {
+void GpuProcessHost::OnDestroyCommandBuffer(int32 surface_id) {
 #if defined(TOOLKIT_USES_GTK)
-  ViewID view_id(client_id, render_view_id);
-  SurfaceRefMap::iterator it = surface_refs_.find(view_id);
+  SurfaceRefMap::iterator it = surface_refs_.find(surface_id);
   if (it != surface_refs_.end())
     surface_refs_.erase(it);
 #endif  // defined(TOOLKIT_USES_GTK)

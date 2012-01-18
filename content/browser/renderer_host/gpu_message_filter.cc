@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "content/browser/gpu/gpu_process_host.h"
+#include "content/browser/gpu/gpu_surface_tracker.h"
 #include "content/browser/renderer_host/render_widget_helper.h"
 #include "content/common/gpu/gpu_messages.h"
 
@@ -74,16 +75,26 @@ void GpuMessageFilter::OnEstablishGpuChannel(
 }
 
 void GpuMessageFilter::OnCreateViewCommandBuffer(
-    int32 render_view_id,
+    int32 surface_id,
     const GPUCreateCommandBufferConfig& init_params,
     IPC::Message* reply) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
+  GpuSurfaceTracker* surface_tracker = GpuSurfaceTracker::Get();
+  gfx::PluginWindowHandle compositing_surface = gfx::kNullPluginWindow;
+
+  int renderer_id = 0;
+  int render_widget_id = 0;
+  bool result = surface_tracker->GetRenderWidgetIDForSurface(
+      surface_id, &renderer_id, &render_widget_id);
+  if (result && renderer_id == render_process_id_) {
+    compositing_surface = surface_tracker->GetSurfaceHandle(surface_id);
+  } else {
+    DLOG(ERROR) << "Renderer " << render_process_id_
+                << " tried to access a surface for renderer " << renderer_id;
+  }
+
   GpuProcessHost* host = GpuProcessHost::FromID(gpu_host_id_);
-
-  gfx::PluginWindowHandle compositing_surface =
-      render_widget_helper_->LookupCompositingSurface(render_view_id);
-
   if (!host || compositing_surface == gfx::kNullPluginWindow) {
     // TODO(apatrick): Eventually, this IPC message will be routed to a
     // GpuProcessStub with a particular routing ID. The error will be set if
@@ -95,7 +106,7 @@ void GpuMessageFilter::OnCreateViewCommandBuffer(
 
   host->CreateViewCommandBuffer(
       compositing_surface,
-      render_view_id,
+      surface_id,
       render_process_id_,
       init_params,
       base::Bind(&GpuMessageFilter::CreateCommandBufferCallback,

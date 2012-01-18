@@ -19,6 +19,7 @@
 #include "base/values.h"
 #include "content/browser/child_process_security_policy.h"
 #include "content/browser/cross_site_request_manager.h"
+#include "content/browser/gpu/gpu_surface_tracker.h"
 #include "content/browser/host_zoom_map.h"
 #include "content/browser/in_process_webkit/session_storage_namespace.h"
 #include "content/browser/power_save_blocker.h"
@@ -177,8 +178,8 @@ bool RenderViewHost::CreateRenderView(const string16& frame_name,
 
   renderer_initialized_ = true;
 
-  process()->SetCompositingSurface(routing_id(),
-                                   GetCompositingSurface());
+  GpuSurfaceTracker::Get()->SetSurfaceHandle(
+      surface_id(), GetCompositingSurface());
 
   // Ensure the RenderView starts with a next_page_id larger than any existing
   // page ID it might be asked to render.
@@ -192,6 +193,7 @@ bool RenderViewHost::CreateRenderView(const string16& frame_name,
       delegate_->GetRendererPrefs(process()->GetBrowserContext());
   params.web_preferences = delegate_->GetWebkitPrefs();
   params.view_id = routing_id();
+  params.surface_id = surface_id();
   params.session_storage_namespace_id = session_storage_namespace_->id();
   params.frame_name = frame_name;
   params.next_page_id = next_page_id;
