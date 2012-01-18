@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -46,12 +46,7 @@ class AURA_EXPORT WindowObserver {
   // has changed.
   virtual void OnWindowStackingChanged(Window* window) {}
 
-  // Invoked when the Window is being destroyed (i.e. from the start of its
-  // destructor).
-  virtual void OnWindowDestroying(Window* window) {}
-
-  // Invoked when the Window has been destroyed (i.e. at the end of its
-  // destructor).
+  // Invoked when the Window has been destroyed (i.e. from its destructor).
   virtual void OnWindowDestroyed(Window* window) {}
 
  protected:

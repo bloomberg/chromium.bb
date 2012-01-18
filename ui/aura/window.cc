@@ -47,13 +47,9 @@ Window::Window(WindowDelegate* delegate)
 }
 
 Window::~Window() {
-  if (layer_.get())
-    layer_->set_delegate(NULL);
-
   // Let the delegate know we're in the processing of destroying.
   if (delegate_)
     delegate_->OnWindowDestroying();
-  FOR_EACH_OBSERVER(WindowObserver, observers_, OnWindowDestroying(this));
 
   // Let the root know so that it can remove any references to us.
   RootWindow* root_window = GetRootWindow();
@@ -74,9 +70,6 @@ Window::~Window() {
     transient_parent_->RemoveTransientChild(this);
 
   // And let the delegate do any post cleanup.
-  // TODO(beng): Figure out if this notification needs to happen here, or if it
-  // can be moved down adjacent to the observer notification. If it has to be
-  // done here, the reason why should be documented.
   if (delegate_)
     delegate_->OnWindowDestroyed();
   if (parent_)
@@ -112,10 +105,6 @@ void Window::SetName(const std::string& name) {
 
   if (layer())
     UpdateLayerName(name_);
-}
-
-ui::Layer* Window::AcquireLayer() {
-  return layer_.release();
 }
 
 void Window::Show() {
@@ -263,9 +252,7 @@ void Window::RemoveChild(Window* child) {
   child->parent_ = NULL;
   if (root_window)
     root_window->WindowDetachedFromRootWindow(child);
-  // The child may have released its layer.
-  if (child->layer_.get())
-    layer_->Remove(child->layer_.get());
+  layer_->Remove(child->layer_.get());
   children_.erase(i);
   child->OnParentChanged();
 }
@@ -485,9 +472,7 @@ void Window::SetBoundsInternal(const gfx::Rect& new_bounds) {
 }
 
 void Window::SetVisible(bool visible) {
-  // TODO(beng): Replace this with layer_->GetTargetVisibility().
-  //             See http://crbug.com/110487
-  if (visible == (layer_->visible() && layer_->GetTargetOpacity() != 0.0f))
+  if (visible == layer_->visible())
     return;  // No change.
 
   bool was_visible = IsVisible();

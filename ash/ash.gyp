@@ -144,8 +144,6 @@
         'wm/toplevel_layout_manager.h',
         'wm/toplevel_window_event_filter.cc',
         'wm/toplevel_window_event_filter.h',
-        'wm/window_animations.cc',
-        'wm/window_animations.h',
         'wm/window_cycle_controller.cc',
         'wm/window_cycle_controller.h',
         'wm/window_frame.cc',

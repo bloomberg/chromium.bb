@@ -1038,36 +1038,5 @@ TEST_F(WindowObserverTest, PropertyChanged) {
   EXPECT_EQ("name= old=0 new=0", PropertyChangeInfoAndClear());
 }
 
-class LayerGrabber : public WindowObserver {
- public:
-  explicit LayerGrabber(Window* window) {
-    window->AddObserver(this);
-  }
-  virtual ~LayerGrabber() {}
-
-  ui::Layer* layer() { return layer_.get(); }
-
-  // Overridden from WindowObserver:
-  virtual void OnWindowDestroying(Window* window) OVERRIDE {
-    window->RemoveObserver(this);
-    layer_.reset(window->AcquireLayer());
-  }
-
- private:
-  scoped_ptr<ui::Layer> layer_;
-  DISALLOW_COPY_AND_ASSIGN(LayerGrabber);
-};
-
-TEST_F(WindowTest, AcquireLayer) {
-  scoped_ptr<Window> window(CreateTestWindowWithId(1, NULL));
-  window->Hide();
-  LayerGrabber grabber(window.get());
-  window.reset();
-  EXPECT_FALSE(grabber.layer() == NULL);
-  EXPECT_FALSE(grabber.layer()->visible());
-  // This should be set by the window's destructor.
-  EXPECT_TRUE(grabber.layer()->delegate() == NULL);
-}
-
 }  // namespace test
 }  // namespace aura
