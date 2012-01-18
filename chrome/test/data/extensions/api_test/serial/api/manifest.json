@@ -1,0 +1,20 @@
+{
+  "name": "chrome.experimental.serial",
+  "version": "0.1",
+  "manifest_version": 2,
+  "description": "end-to-end browser test for chrome.experimental.serial API",
+  "platform_app": true,
+  "background": {
+    "scripts": ["background.js"]
+  },
+  "app": {
+    "launch": {
+      "container": "shell",
+      "local_path": "main.html"
+    }
+  },
+  "permissions": [
+    "experimental",
+    "serial"
+  ]
+}

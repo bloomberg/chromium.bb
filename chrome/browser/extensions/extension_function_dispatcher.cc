@@ -17,6 +17,7 @@
 #include "chrome/browser/bookmarks/bookmark_manager_extension_api.h"
 #include "chrome/browser/download/download_extension_api.h"
 #include "chrome/browser/extensions/api/dns/dns_api.h"
+#include "chrome/browser/extensions/api/serial/serial_api.h"
 #include "chrome/browser/extensions/api/socket/socket_api.h"
 #include "chrome/browser/extensions/execute_code_in_tab_function.h"
 #include "chrome/browser/extensions/extension_activity_log.h"
@@ -480,6 +481,10 @@ void FactoryRegistry::ResetFunctions() {
 
   // TopSites
   RegisterFunction<GetTopSitesFunction>();
+
+  // Serial
+  RegisterFunction<extensions::SerialOpenFunction>();
+  RegisterFunction<extensions::SerialCloseFunction>();
 
   // Sockets
   RegisterFunction<extensions::SocketCreateFunction>();

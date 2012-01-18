@@ -43,6 +43,7 @@ var MODULE_SCHEMAS = [
   '../api/experimental.privacy.json',
   '../api/experimental.processes.json',
   '../api/experimental.rlz.json',
+  '../api/experimental.serial.json',
   '../api/experimental.socket.json',
   '../api/experimental.speechInput.json',
   '../api/experimental.storage.json',

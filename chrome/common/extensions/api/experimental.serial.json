@@ -1,0 +1,63 @@
+[
+  {
+    "namespace": "experimental.serial",
+    "nodoc": true,
+    "functions": [
+      {
+        "name": "open",
+        "type": "function",
+        "description": "Opens a connection to the given serial port.",
+        "parameters": [
+          {
+	    "name": "port",
+            "type": "string",
+            "description": "The name of the serial port to open."
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "description": "Called when the connection has been opened.",
+            "parameters": [
+              {
+                "type": "object",
+                "name": "serialInfo",
+                "properties": {
+                  "connectionId": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "description": "The id of the opened connection."
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "close",
+        "type": "function",
+        "description": "Closes an open connection.",
+        "parameters": [
+          {
+	    "name": "connectionId",
+            "type": "integer",
+	    "minimum": 1,
+            "description": "The id of the opened connection."
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "description": "Called when the connection has been closed.",
+            "parameters": [
+              {
+                "type": "boolean",
+                "name": "result",
+                "description": "True if the connection was successfully closed."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]
