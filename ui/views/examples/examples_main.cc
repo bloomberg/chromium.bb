@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/i18n/icu_util.h"
+#include "base/logging.h"
 #include "base/process_util.h"
 #include "base/stl_util.h"
 #include "base/utf_string_conversions.h"
@@ -26,6 +27,12 @@ int main(int argc, char** argv) {
   gtk_init(&argc, &argv);
 #endif
   CommandLine::Init(argc, argv);
+
+  logging::InitLogging(NULL,
+                       logging::LOG_ONLY_TO_SYSTEM_DEBUG_LOG,
+                       logging::LOCK_LOG_FILE,
+                       logging::DELETE_OLD_LOG_FILE,
+                       logging::DISABLE_DCHECK_FOR_NON_OFFICIAL_RELEASE_BUILDS);
 
   base::EnableTerminationOnHeapCorruption();
 
