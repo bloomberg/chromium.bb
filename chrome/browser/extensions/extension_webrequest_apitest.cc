@@ -79,8 +79,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, WebRequestAuthRequired) {
       message_;
 }
 
+// Disabled due to http://crbug.com/110463
 IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
-                       WebRequestBlocking) {
+                       DISABLED_WebRequestBlocking) {
   ASSERT_TRUE(RunExtensionSubtest("webrequest", "test_blocking.html")) <<
       message_;
 }
