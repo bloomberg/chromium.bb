@@ -1,14 +1,14 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_MODAL_CONTAINER_LAYOUT_MANAGER_H_
-#define ASH_WM_MODAL_CONTAINER_LAYOUT_MANAGER_H_
+#ifndef ASH_WM_SYSTEM_MODAL_CONTAINER_LAYOUT_MANAGER_H_
+#define ASH_WM_SYSTEM_MODAL_CONTAINER_LAYOUT_MANAGER_H_
 #pragma once
 
 #include <vector>
 
-#include "ash/wm/modality_event_filter_delegate.h"
+#include "ash/wm/system_modal_container_event_filter_delegate.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
@@ -32,14 +32,14 @@ namespace ash {
 namespace internal {
 
 // LayoutManager for the modal window container.
-class ASH_EXPORT ModalContainerLayoutManager
+class ASH_EXPORT SystemModalContainerLayoutManager
     : public aura::LayoutManager,
       public aura::WindowObserver,
       public ui::LayerAnimationObserver,
-      public ModalityEventFilterDelegate {
+      public SystemModalContainerEventFilterDelegate {
  public:
-  explicit ModalContainerLayoutManager(aura::Window* container);
-  virtual ~ModalContainerLayoutManager();
+  explicit SystemModalContainerLayoutManager(aura::Window* container);
+  virtual ~SystemModalContainerLayoutManager();
 
   // Overridden from aura::LayoutManager:
   virtual void OnWindowResized() OVERRIDE;
@@ -63,7 +63,7 @@ class ASH_EXPORT ModalContainerLayoutManager
   virtual void OnLayerAnimationScheduled(
       const ui::LayerAnimationSequence* sequence) OVERRIDE;
 
-  // Overridden from ModalityEventFilterDelegate:
+  // Overridden from SystemModalContainerEventFilterDelegate:
   virtual bool CanWindowReceiveEvents(aura::Window* window) OVERRIDE;
 
  private:
@@ -93,10 +93,10 @@ class ASH_EXPORT ModalContainerLayoutManager
   // added, and removed when the last is closed.
   scoped_ptr<aura::EventFilter> modality_filter_;
 
-  DISALLOW_COPY_AND_ASSIGN(ModalContainerLayoutManager);
+  DISALLOW_COPY_AND_ASSIGN(SystemModalContainerLayoutManager);
 };
 
 }  // namespace internal
 }  // namespace ash
 
-#endif  // ASH_WM_MODAL_CONTAINER_LAYOUT_MANAGER_H_
+#endif  // ASH_WM_SYSTEM_MODAL_CONTAINER_LAYOUT_MANAGER_H_

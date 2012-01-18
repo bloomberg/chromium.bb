@@ -64,7 +64,7 @@ const float kSlowCloseSizeRatio = 0.95f;
 // Containers holding screen locker windows.
 const int kScreenLockerContainerIds[] = {
   internal::kShellWindowId_LockScreenContainer,
-  internal::kShellWindowId_LockModalContainer,
+  internal::kShellWindowId_LockSystemModalContainer,
 };
 
 // Containers holding additional windows that should be shown while the screen

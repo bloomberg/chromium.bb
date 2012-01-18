@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,12 +25,12 @@ class StackingController : public aura::client::StackingClient {
   virtual aura::Window* GetDefaultParent(aura::Window* window) OVERRIDE;
 
  private:
-  // Returns corresponding modal container for a modal window.
-  // If screen lock is not active, all modal windows are placed into the
+  // Returns corresponding system modal container for a modal window.
+  // If screen lock is not active, all system modal windows are placed into the
   // normal modal container.
   // Otherwise those that originate from LockScreen container and above are
   // placed in the screen lock modal container.
-  aura::Window* GetModalContainer(aura::Window* window) const;
+  aura::Window* GetSystemModalContainer(aura::Window* window) const;
 
   scoped_ptr<internal::AlwaysOnTopController> always_on_top_controller_;
 

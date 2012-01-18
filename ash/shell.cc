@@ -22,7 +22,7 @@
 #include "ash/wm/default_container_event_filter.h"
 #include "ash/wm/default_container_layout_manager.h"
 #include "ash/wm/dialog_frame_view.h"
-#include "ash/wm/modal_container_layout_manager.h"
+#include "ash/wm/system_modal_container_layout_manager.h"
 #include "ash/wm/power_button_controller.h"
 #include "ash/wm/root_window_event_filter.h"
 #include "ash/wm/root_window_layout_manager.h"
@@ -98,12 +98,12 @@ void CreateSpecialContainers(aura::Window::Windows* containers,
   modal_container->SetEventFilter(
       new ToplevelWindowEventFilter(modal_container));
   modal_container->SetLayoutManager(
-      new internal::ModalContainerLayoutManager(modal_container));
-  modal_container->set_id(internal::kShellWindowId_ModalContainer);
+      new internal::SystemModalContainerLayoutManager(modal_container));
+  modal_container->set_id(internal::kShellWindowId_SystemModalContainer);
   containers->push_back(modal_container);
 
-  // TODO(beng): Figure out if we can make this use ModalityEventFilter instead
-  //             of stops_event_propagation.
+  // TODO(beng): Figure out if we can make this use
+  // SystemModalContainerEventFilter instead of stops_event_propagation.
   aura::Window* lock_container = new aura::Window(NULL);
   lock_container->set_stops_event_propagation(true);
   lock_container->set_id(internal::kShellWindowId_LockScreenContainer);
@@ -113,8 +113,9 @@ void CreateSpecialContainers(aura::Window::Windows* containers,
   lock_modal_container->SetEventFilter(
       new ToplevelWindowEventFilter(lock_modal_container));
   lock_modal_container->SetLayoutManager(
-      new internal::ModalContainerLayoutManager(lock_modal_container));
-  lock_modal_container->set_id(internal::kShellWindowId_LockModalContainer);
+      new internal::SystemModalContainerLayoutManager(lock_modal_container));
+  lock_modal_container->set_id(
+      internal::kShellWindowId_LockSystemModalContainer);
   containers->push_back(lock_modal_container);
 
   aura::Window* status_container = new aura::Window(NULL);
@@ -395,7 +396,7 @@ bool Shell::IsScreenLocked() const {
 bool Shell::IsModalWindowOpen() const {
   aura::Window* modal_container =
       ash::Shell::GetInstance()->GetContainer(
-          internal::kShellWindowId_ModalContainer);
+          internal::kShellWindowId_SystemModalContainer);
   return !modal_container->children().empty();
 }
 

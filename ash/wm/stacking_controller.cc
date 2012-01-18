@@ -49,7 +49,7 @@ aura::Window* StackingController::GetDefaultParent(aura::Window* window) {
     case aura::client::WINDOW_TYPE_NORMAL:
     case aura::client::WINDOW_TYPE_POPUP:
       if (IsSystemModal(window))
-        return GetModalContainer(window);
+        return GetSystemModalContainer(window);
       return always_on_top_controller_->GetContainer(window);
     case aura::client::WINDOW_TYPE_PANEL:
       return GetContainer(internal::kShellWindowId_PanelContainer);
@@ -67,7 +67,7 @@ aura::Window* StackingController::GetDefaultParent(aura::Window* window) {
 ////////////////////////////////////////////////////////////////////////////////
 // StackingController, private:
 
-aura::Window* StackingController::GetModalContainer(
+aura::Window* StackingController::GetSystemModalContainer(
     aura::Window* window) const {
   if (!IsSystemModal(window))
     return NULL;
@@ -77,7 +77,7 @@ aura::Window* StackingController::GetModalContainer(
   aura::Window* lock_container =
       GetContainer(internal::kShellWindowId_LockScreenContainer);
   if (!lock_container->children().size())
-    return GetContainer(internal::kShellWindowId_ModalContainer);
+    return GetContainer(internal::kShellWindowId_SystemModalContainer);
 
   // Otherwise those that originate from LockScreen container and above are
   // placed in the screen lock modal container.
@@ -86,9 +86,9 @@ aura::Window* StackingController::GetModalContainer(
 
   aura::Window* container = NULL;
   if (window_container_id < lock_container_id)
-    container = GetContainer(internal::kShellWindowId_ModalContainer);
+    container = GetContainer(internal::kShellWindowId_SystemModalContainer);
   else
-    container = GetContainer(internal::kShellWindowId_LockModalContainer);
+    container = GetContainer(internal::kShellWindowId_LockSystemModalContainer);
 
   return container;
 }

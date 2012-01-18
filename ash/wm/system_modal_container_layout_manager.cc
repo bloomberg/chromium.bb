@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/modal_container_layout_manager.h"
+#include "ash/wm/system_modal_container_layout_manager.h"
 
 #include "ash/ash_switches.h"
 #include "ash/shell.h"
-#include "ash/wm/modality_event_filter.h"
+#include "ash/wm/system_modal_container_event_filter.h"
 #include "ash/wm/window_util.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -51,60 +51,61 @@ class ScreenView : public views::View {
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
-// ModalContainerLayoutManager, public:
+// SystemModalContainerLayoutManager, public:
 
-ModalContainerLayoutManager::ModalContainerLayoutManager(
+SystemModalContainerLayoutManager::SystemModalContainerLayoutManager(
     aura::Window* container)
     : container_(container),
       modal_screen_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          modality_filter_(new ModalityEventFilter(container, this))) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(modality_filter_(
+          new SystemModalContainerEventFilter(container, this))) {
 }
 
-ModalContainerLayoutManager::~ModalContainerLayoutManager() {
+SystemModalContainerLayoutManager::~SystemModalContainerLayoutManager() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// ModalContainerLayoutManager, aura::LayoutManager implementation:
+// SystemModalContainerLayoutManager, aura::LayoutManager implementation:
 
-void ModalContainerLayoutManager::OnWindowResized() {
+void SystemModalContainerLayoutManager::OnWindowResized() {
   if (modal_screen_) {
     modal_screen_->SetBounds(gfx::Rect(0, 0, container_->bounds().width(),
                                        container_->bounds().height()));
   }
 }
 
-void ModalContainerLayoutManager::OnWindowAddedToLayout(
+void SystemModalContainerLayoutManager::OnWindowAddedToLayout(
     aura::Window* child) {
   child->AddObserver(this);
   if (child->GetIntProperty(aura::client::kModalKey))
     AddModalWindow(child);
 }
 
-void ModalContainerLayoutManager::OnWillRemoveWindowFromLayout(
+void SystemModalContainerLayoutManager::OnWillRemoveWindowFromLayout(
     aura::Window* child) {
   child->RemoveObserver(this);
   if (child->GetIntProperty(aura::client::kModalKey))
     RemoveModalWindow(child);
 }
 
-void ModalContainerLayoutManager::OnChildWindowVisibilityChanged(
+void SystemModalContainerLayoutManager::OnChildWindowVisibilityChanged(
     aura::Window* child,
     bool visible) {
 }
 
-void ModalContainerLayoutManager::SetChildBounds(
+void SystemModalContainerLayoutManager::SetChildBounds(
     aura::Window* child,
     const gfx::Rect& requested_bounds) {
   SetChildBoundsDirect(child, requested_bounds);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// ModalContainerLayoutManager, aura::WindowObserver implementation:
+// SystemModalContainerLayoutManager, aura::WindowObserver implementation:
 
-void ModalContainerLayoutManager::OnWindowPropertyChanged(aura::Window* window,
-                                                          const char* key,
-                                                          void* old) {
+void SystemModalContainerLayoutManager::OnWindowPropertyChanged(
+    aura::Window* window,
+    const char* key,
+    void* old) {
   if (key != aura::client::kModalKey)
     return;
 
@@ -116,39 +117,41 @@ void ModalContainerLayoutManager::OnWindowPropertyChanged(aura::Window* window,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// ModalContainerLayoutManager, ui::LayerAnimationObserver implementation:
+// SystemModalContainerLayoutManager, ui::LayerAnimationObserver implementation:
 
-void ModalContainerLayoutManager::OnLayerAnimationEnded(
+void SystemModalContainerLayoutManager::OnLayerAnimationEnded(
     const ui::LayerAnimationSequence* sequence) {
   if (modal_screen_ && !modal_screen_->GetNativeView()->layer()->ShouldDraw())
     DestroyModalScreen();
 }
 
-void ModalContainerLayoutManager::OnLayerAnimationAborted(
+void SystemModalContainerLayoutManager::OnLayerAnimationAborted(
     const ui::LayerAnimationSequence* sequence) {
 }
 
-void ModalContainerLayoutManager::OnLayerAnimationScheduled(
+void SystemModalContainerLayoutManager::OnLayerAnimationScheduled(
     const ui::LayerAnimationSequence* sequence) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// ModalContainerLayoutManager, ModalityEventFilter::Delegate implementation:
+// SystemModalContainerLayoutManager,
+//     SystemModalContainerEventFilter::Delegate implementation:
 
-bool ModalContainerLayoutManager::CanWindowReceiveEvents(
+bool SystemModalContainerLayoutManager::CanWindowReceiveEvents(
     aura::Window* window) {
   return GetActivatableWindow(window) == modal_window();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// ModalContainerLayoutManager, private:
+// SystemModalContainerLayoutManager, private:
 
-void ModalContainerLayoutManager::AddModalWindow(aura::Window* window) {
+void SystemModalContainerLayoutManager::AddModalWindow(aura::Window* window) {
   modal_windows_.push_back(window);
   CreateModalScreen();
 }
 
-void ModalContainerLayoutManager::RemoveModalWindow(aura::Window* window) {
+void SystemModalContainerLayoutManager::RemoveModalWindow(
+    aura::Window* window) {
   aura::Window::Windows::iterator it =
       std::find(modal_windows_.begin(), modal_windows_.end(), window);
   if (it != modal_windows_.end())
@@ -160,7 +163,7 @@ void ModalContainerLayoutManager::RemoveModalWindow(aura::Window* window) {
     ash::ActivateWindow(modal_window());
 }
 
-void ModalContainerLayoutManager::CreateModalScreen() {
+void SystemModalContainerLayoutManager::CreateModalScreen() {
   if (modal_screen_)
     return;
   modal_screen_ = new views::Widget;
@@ -170,7 +173,7 @@ void ModalContainerLayoutManager::CreateModalScreen() {
                             container_->bounds().height());
   modal_screen_->Init(params);
   modal_screen_->GetNativeView()->SetName(
-      "ModalContainerLayoutManager.ModalScreen");
+      "SystemModalContainerLayoutManager.ModalScreen");
   modal_screen_->SetContentsView(new ScreenView);
   modal_screen_->GetNativeView()->layer()->SetOpacity(0.0f);
   modal_screen_->GetNativeView()->layer()->GetAnimator()->AddObserver(this);
@@ -184,13 +187,13 @@ void ModalContainerLayoutManager::CreateModalScreen() {
   container_->StackChildAtTop(modal_screen_->GetNativeView());
 }
 
-void ModalContainerLayoutManager::DestroyModalScreen() {
+void SystemModalContainerLayoutManager::DestroyModalScreen() {
   modal_screen_->GetNativeView()->layer()->GetAnimator()->RemoveObserver(this);
   modal_screen_->Close();
   modal_screen_ = NULL;
 }
 
-void ModalContainerLayoutManager::HideModalScreen() {
+void SystemModalContainerLayoutManager::HideModalScreen() {
   Shell::GetInstance()->RemoveRootWindowEventFilter(modality_filter_.get());
   ui::ScopedLayerAnimationSettings settings(
       modal_screen_->GetNativeView()->layer()->GetAnimator());

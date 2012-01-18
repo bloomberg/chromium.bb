@@ -163,7 +163,7 @@ TEST_F(ShellTest, CreateModalWindow) {
 
   // It should be in modal container.
   aura::Window* modal_container = Shell::GetInstance()->GetContainer(
-      ash::internal::kShellWindowId_ModalContainer);
+      ash::internal::kShellWindowId_SystemModalContainer);
   EXPECT_EQ(modal_container, modal_widget->GetNativeWindow()->parent());
 
   modal_widget->Close();
@@ -200,7 +200,7 @@ TEST_F(ShellTest, CreateLockScreenModalWindow) {
 
   // It should be in LockScreen modal container.
   aura::Window* lock_modal_container = Shell::GetInstance()->GetContainer(
-      ash::internal::kShellWindowId_LockModalContainer);
+      ash::internal::kShellWindowId_LockSystemModalContainer);
   EXPECT_EQ(lock_modal_container,
             lock_modal_widget->GetNativeWindow()->parent());
 
@@ -211,7 +211,7 @@ TEST_F(ShellTest, CreateLockScreenModalWindow) {
 
   // It should be in non-LockScreen modal container.
   aura::Window* modal_container = Shell::GetInstance()->GetContainer(
-      ash::internal::kShellWindowId_ModalContainer);
+      ash::internal::kShellWindowId_SystemModalContainer);
   EXPECT_EQ(modal_container, modal_widget->GetNativeWindow()->parent());
 
   modal_widget->Close();

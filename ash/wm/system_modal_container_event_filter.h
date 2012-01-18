@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_MODALITY_EVENT_FILTER_H_
-#define ASH_WM_MODALITY_EVENT_FILTER_H_
+#ifndef ASH_WM_SYSTEM_MODAL_CONTAINER_EVENT_FILTER_H_
+#define ASH_WM_SYSTEM_MODAL_CONTAINER_EVENT_FILTER_H_
 #pragma once
 
 #include "base/compiler_specific.h"
@@ -13,13 +13,14 @@
 namespace ash {
 namespace internal {
 
-class ModalityEventFilterDelegate;
+class SystemModalContainerEventFilterDelegate;
 
-class ASH_EXPORT ModalityEventFilter : public aura::EventFilter {
+class ASH_EXPORT SystemModalContainerEventFilter : public aura::EventFilter {
  public:
-  ModalityEventFilter(aura::Window* container,
-                      ModalityEventFilterDelegate* delegate);
-  virtual ~ModalityEventFilter();
+  SystemModalContainerEventFilter(
+      aura::Window* container,
+      SystemModalContainerEventFilterDelegate* delegate);
+  virtual ~SystemModalContainerEventFilter();
 
   // Overridden from aura::EventFilter:
   virtual bool PreHandleKeyEvent(aura::Window* target,
@@ -34,12 +35,12 @@ class ASH_EXPORT ModalityEventFilter : public aura::EventFilter {
       aura::GestureEvent* event) OVERRIDE;
 
  private:
-  ModalityEventFilterDelegate* delegate_;
+  SystemModalContainerEventFilterDelegate* delegate_;
 
-  DISALLOW_COPY_AND_ASSIGN(ModalityEventFilter);
+  DISALLOW_COPY_AND_ASSIGN(SystemModalContainerEventFilter);
 };
 
 }  // namespace internal
 }  // namespace ash
 
-#endif  // ASH_WM_MODALITY_EVENT_FILTER_H_
+#endif  // ASH_WM_SYSTEM_MODAL_CONTAINER_EVENT_FILTER_H_

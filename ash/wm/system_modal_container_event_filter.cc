@@ -2,41 +2,42 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/modality_event_filter.h"
+#include "ash/wm/system_modal_container_event_filter.h"
 
-#include "ash/wm/modality_event_filter_delegate.h"
+#include "ash/wm/system_modal_container_event_filter_delegate.h"
 #include "ui/aura/event.h"
 
 namespace ash {
 namespace internal {
 
-ModalityEventFilter::ModalityEventFilter(aura::Window* container,
-                                         ModalityEventFilterDelegate* delegate)
+SystemModalContainerEventFilter::SystemModalContainerEventFilter(
+    aura::Window* container,
+    SystemModalContainerEventFilterDelegate* delegate)
     : EventFilter(container),
       delegate_(delegate) {
 }
 
-ModalityEventFilter::~ModalityEventFilter() {
+SystemModalContainerEventFilter::~SystemModalContainerEventFilter() {
 }
 
-bool ModalityEventFilter::PreHandleKeyEvent(aura::Window* target,
+bool SystemModalContainerEventFilter::PreHandleKeyEvent(aura::Window* target,
                                             aura::KeyEvent* event) {
   return !delegate_->CanWindowReceiveEvents(target);
 }
 
-bool ModalityEventFilter::PreHandleMouseEvent(aura::Window* target,
+bool SystemModalContainerEventFilter::PreHandleMouseEvent(aura::Window* target,
                                               aura::MouseEvent* event) {
   return !delegate_->CanWindowReceiveEvents(target);
 }
 
-ui::TouchStatus ModalityEventFilter::PreHandleTouchEvent(
+ui::TouchStatus SystemModalContainerEventFilter::PreHandleTouchEvent(
     aura::Window* target,
     aura::TouchEvent* event) {
   // TODO(sadrul): !
   return ui::TOUCH_STATUS_UNKNOWN;
 }
 
-ui::GestureStatus ModalityEventFilter::PreHandleGestureEvent(
+ui::GestureStatus SystemModalContainerEventFilter::PreHandleGestureEvent(
     aura::Window* target,
     aura::GestureEvent* event) {
   // TODO(sad):

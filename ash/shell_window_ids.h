@@ -28,13 +28,13 @@ const int kShellWindowId_PanelContainer = 3;
 const int kShellWindowId_LauncherContainer = 4;
 
 // The container for user-specific modal windows.
-const int kShellWindowId_ModalContainer = 5;
+const int kShellWindowId_SystemModalContainer = 5;
 
 // The container for the lock screen.
 const int kShellWindowId_LockScreenContainer = 6;
 
 // The container for the lock screen modal windows.
-const int kShellWindowId_LockModalContainer = 7;
+const int kShellWindowId_LockSystemModalContainer = 7;
 
 // The container for the status area.
 const int kShellWindowId_StatusContainer = 8;

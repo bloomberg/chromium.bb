@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/modal_container_layout_manager.h"
+#include "ash/wm/system_modal_container_layout_manager.h"
 
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
@@ -22,7 +22,7 @@ namespace {
 
 aura::Window* GetModalContainer() {
   return Shell::GetInstance()->GetContainer(
-      ash::internal::kShellWindowId_ModalContainer);
+      ash::internal::kShellWindowId_SystemModalContainer);
 }
 
 aura::Window* GetDefaultContainer() {
@@ -82,9 +82,9 @@ class TransientWindowObserver : public aura::WindowObserver {
 
 }  // namespace
 
-typedef AuraShellTestBase ModalContainerLayoutManagerTest;
+typedef AuraShellTestBase SystemModalContainerLayoutManagerTest;
 
-TEST_F(ModalContainerLayoutManagerTest, NonModalTransient) {
+TEST_F(SystemModalContainerLayoutManagerTest, NonModalTransient) {
   scoped_ptr<aura::Window> parent(TestWindow::OpenTestWindow(NULL, false));
   aura::Window* transient = TestWindow::OpenTestWindow(parent.get(), false);
   TransientWindowObserver destruction_observer;
@@ -98,7 +98,7 @@ TEST_F(ModalContainerLayoutManagerTest, NonModalTransient) {
   EXPECT_TRUE(destruction_observer.destroyed());
 }
 
-TEST_F(ModalContainerLayoutManagerTest, ModalTransient) {
+TEST_F(SystemModalContainerLayoutManagerTest, ModalTransient) {
   scoped_ptr<aura::Window> parent(TestWindow::OpenTestWindow(NULL, false));
   // parent should be active.
   EXPECT_TRUE(IsActiveWindow(parent.get()));
@@ -141,7 +141,7 @@ TEST_F(ModalContainerLayoutManagerTest, ModalTransient) {
 
 // Tests that we can activate an unrelated window after a modal window is closed
 // for a window.
-TEST_F(ModalContainerLayoutManagerTest, CanActivateAfterEndModalSession) {
+TEST_F(SystemModalContainerLayoutManagerTest, CanActivateAfterEndModalSession) {
   scoped_ptr<aura::Window> unrelated(TestWindow::OpenTestWindow(NULL, false));
   unrelated->SetBounds(gfx::Rect(100, 100, 50, 50));
   scoped_ptr<aura::Window> parent(TestWindow::OpenTestWindow(NULL, false));
