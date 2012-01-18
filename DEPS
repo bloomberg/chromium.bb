@@ -32,9 +32,9 @@ vars = {
 
   "libjingle_revision": "108",
   "libphonenumber_revision": "407",
-  "libvpx_revision": "117274",
+  "libvpx_revision": "117975",
   "lss_revision": "9",
-  "ffmpeg_revision": "112050",
+  "ffmpeg_revision": "117977",
   "sfntly_revision": "118",
   "skia_revision": "3035",
   # Three lines of non-changing comments so that
@@ -78,7 +78,7 @@ deps = {
     "/trunk/deps/third_party/WebKit@76115",
 
   "src/third_party/icu":
-    "/trunk/deps/third_party/icu46@113543",
+    "/trunk/deps/third_party/icu46@117933",
 
   "src/third_party/hunspell":
    "/trunk/deps/third_party/hunspell@110423",
@@ -342,7 +342,7 @@ deps_os = {
 
     # NSS, for SSLClientSocketNSS.
     "src/third_party/nss":
-      "/trunk/deps/third_party/nss@115445",
+      "/trunk/deps/third_party/nss@117974",
 
     "src/third_party/swig/win":
       "/trunk/deps/third_party/swig/win@" + Var("swig_revision"),
