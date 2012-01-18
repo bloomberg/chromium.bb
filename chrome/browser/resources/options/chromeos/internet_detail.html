@@ -59,10 +59,12 @@
             <div class="checkbox">
               <label>
                 <input id="preferNetworkWifi" type="checkbox">
-                <span i18n-content="inetPreferredNetwork"></span>
+                <span>
+                  <span i18n-content="inetPreferredNetwork"></span>
+                  <span class="controlled-setting-indicator" data="preferred"
+                      for="preferNetworkWifi"></span>
+                </span>
               </label>
-              <span class="controlled-setting-indicator" data="preferred"
-                  for="preferNetworkWifi"></span>
             </div>
           </td>
         </tr>
@@ -71,10 +73,12 @@
             <div class="checkbox">
               <label>
                 <input id="autoConnectNetworkWifi" type="checkbox">
-                <span i18n-content="inetAutoConnectNetwork"></span>
+                <span>
+                  <span i18n-content="inetAutoConnectNetwork"></span>
+                  <span class="controlled-setting-indicator" data="autoConnect"
+                      for="autoConnectNetworkWifi"></span>
+                </span>
               </label>
-              <span class="controlled-setting-indicator" data="autoConnect"
-                  for="autoConnectNetworkWifi"></span>
             </div>
           </td>
         </tr>
@@ -222,10 +226,12 @@
             <div class="checkbox">
               <label>
                 <input id="autoConnectNetworkCellular" type="checkbox">
-                <span i18n-content="inetAutoConnectNetwork"></span>
+                <span>
+                  <span i18n-content="inetAutoConnectNetwork"></span>
+                  <span class="controlled-setting-indicator" data="autoConnect"
+                      for="autoConnectNetworkCellular"></span>
+                <span>
               </label>
-              <span class="controlled-setting-indicator" data="autoConnect"
-                  for="autoConnectNetworkCellular"></span>
             </div>
           </td>
         </tr>
@@ -300,18 +306,22 @@
         <div id="ipTypeDHCPDiv" class="radio">
           <label>
             <input type="radio" name="iptype" id="ipTypeDHCP" value="1">
-            <span i18n-content="useDHCP"></span>
+            <span>
+              <span i18n-content="useDHCP"></span>
+              <span class="controlled-setting-indicator" data="ipconfigDHCP"
+                  for="ipTypeDHCP"></span>
+            </span>
           </label>
-          <span class="controlled-setting-indicator" data="ipconfigDHCP"
-              for="ipTypeDHCP"></span>
         </div>
         <div id="ipTypeStaticDiv" class="radio">
           <label>
             <input type="radio" name="iptype" id="ipTypeStatic" value="0">
-            <span i18n-content="useStaticIP"></span>
+            <span>
+              <span i18n-content="useStaticIP"></span>
+              <span class="controlled-setting-indicator" data="ipconfigStatic"
+                  for="ipTypeStatic"></span>
+            </span>
           </label>
-          <span class="controlled-setting-indicator" data="ipconfigStatic"
-              for="ipTypeStatic"></span>
         </div>
         <div class="suboption">
           <div id="ipConfigManagement" class="settings-list">
@@ -334,10 +344,12 @@
         <div id="sim-pin-lock" class="checkbox">
           <label>
             <input id="sim-card-lock-enabled" type="checkbox">
-            <span i18n-content="lockSimCard"></span>
+            <span>
+              <span i18n-content="lockSimCard"></span>
+              <span class="controlled-setting-indicator"
+                  data="simCardLockEnabled" for="sim-card-lock-enabled"></span>
+            </span>
           </label>
-          <span class="controlled-setting-indicator" data="simCardLockEnabled"
-              for="sim-card-lock-enabled"></span>
         </div>
       </section>
       <section>
