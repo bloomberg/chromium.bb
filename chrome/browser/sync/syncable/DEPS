@@ -16,7 +16,6 @@ include_rules = [
 
   # For the unrecoverable error handler stuff.
   "+chrome/common/random.h",
-  "+chrome/common/sqlite_utils.h",
 
   "-chrome/browser/sync/internal_api",
   "+chrome/browser/sync/internal_api/includes",

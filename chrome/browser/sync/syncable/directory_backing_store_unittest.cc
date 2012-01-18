@@ -18,7 +18,6 @@
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/syncable-inl.h"
 #include "chrome/browser/sync/syncable/syncable.h"
-#include "chrome/browser/sync/util/sqlite_utils.h"
 #include "chrome/browser/sync/util/time.h"
 #include "sql/connection.h"
 #include "sql/statement.h"

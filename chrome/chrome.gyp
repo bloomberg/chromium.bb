@@ -492,8 +492,6 @@
         'browser/sync/util/nigori.h',
         'browser/sync/util/oauth.cc',
         'browser/sync/util/oauth.h',
-        'browser/sync/util/sqlite_utils.cc',
-        'browser/sync/util/sqlite_utils.h',
         'browser/sync/util/time.cc',
         'browser/sync/util/time.h',
         'browser/sync/util/unrecoverable_error_info.h',
