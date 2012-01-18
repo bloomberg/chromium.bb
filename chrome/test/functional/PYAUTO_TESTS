@@ -292,19 +292,6 @@
       # crosbug.com/19556
       '-autofill.AutofillTest.testDisplayLineItemForEntriesWithNoCCNum',
       '-autofill.AutofillTest.testPostalCodeAndStateLabelsBasedOnCountry',
-      # FileBrowser test API as broken - crosbug.com/24257
-      '-chromeos_file_browser.ChromeosFileBrowserTest.testCopyFolderInDialog',
-      '-chromeos_file_browser.ChromeosFileBrowserTest.testCopyFolderInFullPage',
-      '-chromeos_file_browser.ChromeosFileBrowserTest.testCreateFolderInDialog',
-      '-chromeos_file_browser.ChromeosFileBrowserTest.testCreateFolderInFullPage',
-      '-chromeos_file_browser.ChromeosFileBrowserTest.testCutFolderInDialog',
-      '-chromeos_file_browser.ChromeosFileBrowserTest.testCutFolderInFullPage',
-      '-chromeos_file_browser.ChromeosFileBrowserTest.testDeleteFolderInDialog',
-      '-chromeos_file_browser.ChromeosFileBrowserTest.testDeleteFolderInFullPage',
-      '-chromeos_file_browser.ChromeosFileBrowserTest.testGetSelectedDirectorySizeStats',
-      '-chromeos_file_browser.ChromeosFileBrowserTest.testRenameFolderInDialog',
-      '-chromeos_file_browser.ChromeosFileBrowserTest.testRenameFolderInFullPage',
-      '-chromeos_file_browser.ChromeosFileBrowserTest.testSelectMultipleFoldersInFullPage',
       # Downloads panel stays even after declining a download.
       # crosbug.com/14728
       '-downloads.DownloadsTest.testDeclineDangerousDownload',
