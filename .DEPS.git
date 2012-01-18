@@ -43,7 +43,7 @@ deps = {
     'src/third_party/cacheinvalidation/files/src/google':
         Var('git_url') + '/external/google-cache-invalidation-api/src/google.git@62cccf7fba419bc64fb05d0e5dbd3aefeda36d08',
     'src/third_party/ffmpeg':
-        Var('git_url') + '/chromium/deps/ffmpeg/source.git@ee4803752a65767eaeacd8cf0eac03e0795d0e8b',
+        Var('git_url') + '/chromium/deps/ffmpeg/source.git@d2286fdc1508b30641368d247f2a5b842828db19',
     'src/third_party/flac':
         Var('git_url') + '/chromium/deps/flac.git@1cde08e295604898d14367eda0414ade8121ec43',
     'src/third_party/hunspell':
@@ -51,7 +51,7 @@ deps = {
     'src/third_party/hunspell_dictionaries':
         Var('git_url') + '/chromium/deps/hunspell_dictionaries.git@50fb79b30a2e3e512c88884152f26b255d0e4074',
     'src/third_party/icu':
-        Var('git_url') + '/chromium/deps/icu46.git@c9287557a495aad7ff3faef2ac850c85caf842c9',
+        Var('git_url') + '/chromium/deps/icu46.git@ed83a82b2cc6c00e5067880524b7bae628afaee5',
     'src/third_party/jsoncpp/source/include':
         Var('git_url') + '/external/jsoncpp/jsoncpp/include.git@b0dd48e02b6e6248328db78a65b5c601f150c349',
     'src/third_party/jsoncpp/source/src/lib_json':
@@ -69,7 +69,7 @@ deps = {
     'src/third_party/libphonenumber/src/test':
         Var('git_url') + '/external/libphonenumber/cpp/test.git@1a74d2ff51f3715eefad4be175456b4443a264ad',
     'src/third_party/libvpx':
-        Var('git_url') + '/chromium/deps/libvpx.git@f03997481c72e948cfe3b06b3c9caf894b145d09',
+        Var('git_url') + '/chromium/deps/libvpx.git@8fbb1fd72b1aa1274be4e463e632147add323a51',
     'src/third_party/libyuv':
         Var('git_url') + '/external/libyuv.git@6011ff73535b9b9f3cda016a6b325f8a03144dc1',
     'src/third_party/mozc/chrome/chromeos/renderer':
@@ -174,7 +174,7 @@ deps_os = {
         'src/third_party/nacl_sdk_binaries':
             Var('git_url') + '/chromium/deps/nacl_sdk_binaries.git@759dfca03bdc774da7ecbf974f6e2b84f43699a5',
         'src/third_party/nss':
-            Var('git_url') + '/chromium/deps/nss.git@501780b2ee93463696b5684304ae9d76116dd15b',
+            Var('git_url') + '/chromium/deps/nss.git@2437d7e50c5654025e0d04ae0b8aa6bb009988b9',
         'src/third_party/pefile':
             Var('git_url') + '/external/pefile.git@d0ca75794f69f1d09fd6d31d40ba2f1e9b3b7fb4',
         'src/third_party/psyco_win32':
