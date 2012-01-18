@@ -1,9 +1,9 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_RENDERER_HOST_RENDER_VIEW_HOST_DELEGATE_H_
-#define CONTENT_BROWSER_RENDERER_HOST_RENDER_VIEW_HOST_DELEGATE_H_
+#ifndef CONTENT_PUBLIC_BROWSER_RENDER_VIEW_HOST_DELEGATE_H_
+#define CONTENT_PUBLIC_BROWSER_RENDER_VIEW_HOST_DELEGATE_H_
 #pragma once
 
 #include <string>
@@ -39,20 +39,20 @@ namespace base {
 class ListValue;
 }
 
+namespace gfx {
+class Point;
+class Rect;
+class Size;
+}
+
 namespace content {
+
 class BrowserContext;
 class WebContents;
 struct FileChooserParams;
 struct GlobalRequestID;
 struct Referrer;
 struct RendererPreferences;
-}
-
-namespace gfx {
-class Point;
-class Rect;
-class Size;
-}
 
 //
 // RenderViewHostDelegate
@@ -66,6 +66,7 @@ class Size;
 //  exposing a more generic Send function on RenderViewHost and a response
 //  listener here to serve that need.
 //
+// TODO(joi): See if we can hide most or all of this from chrome/.
 class CONTENT_EXPORT RenderViewHostDelegate : public IPC::Channel::Listener {
  public:
   // View ----------------------------------------------------------------------
@@ -399,4 +400,6 @@ class CONTENT_EXPORT RenderViewHostDelegate : public IPC::Channel::Listener {
   virtual ~RenderViewHostDelegate() {}
 };
 
-#endif  // CONTENT_BROWSER_RENDERER_HOST_RENDER_VIEW_HOST_DELEGATE_H_
+}  // namespace content
+
+#endif  // CONTENT_PUBLIC_BROWSER_RENDER_VIEW_HOST_DELEGATE_H_

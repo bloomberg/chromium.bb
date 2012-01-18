@@ -23,7 +23,6 @@
 #include "content/browser/in_process_webkit/session_storage_namespace.h"
 #include "content/browser/power_save_blocker.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
-#include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/browser/site_instance.h"
@@ -39,6 +38,7 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/render_view_host_delegate.h"
 #include "content/public/browser/render_view_host_observer.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/common/bindings_policy.h"
@@ -56,6 +56,7 @@
 using base::TimeDelta;
 using content::BrowserMessageFilter;
 using content::BrowserThread;
+using content::RenderViewHostDelegate;
 using content::UserMetricsAction;
 using WebKit::WebConsoleMessage;
 using WebKit::WebDragOperation;

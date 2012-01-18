@@ -38,6 +38,7 @@ using content::BrowserThread;
 using content::NavigationController;
 using content::NavigationEntry;
 using content::NavigationEntryImpl;
+using content::RenderViewHostDelegate;
 using content::WebContents;
 using content::WebContentsView;
 using WebKit::WebDragOperation;

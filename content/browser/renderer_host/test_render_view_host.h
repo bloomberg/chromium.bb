@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -174,7 +174,7 @@ class TestRenderViewHost : public RenderViewHost {
       content::NavigationController* controller);
 
   TestRenderViewHost(SiteInstance* instance,
-                     RenderViewHostDelegate* delegate,
+                     content::RenderViewHostDelegate* delegate,
                      int routing_id);
   virtual ~TestRenderViewHost();
 
@@ -275,7 +275,7 @@ class TestRenderViewHostFactory : public RenderViewHostFactory {
       content::RenderProcessHostFactory* rph_factory);
   virtual RenderViewHost* CreateRenderViewHost(
       SiteInstance* instance,
-      RenderViewHostDelegate* delegate,
+      content::RenderViewHostDelegate* delegate,
       int routing_id,
       SessionStorageNamespace* session_storage) OVERRIDE;
 

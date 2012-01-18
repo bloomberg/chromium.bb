@@ -9,8 +9,8 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/render_view_host_delegate.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
@@ -26,7 +26,8 @@ namespace content {
 // dependent web contents views. The TabContents uses this interface to talk to
 // them. View-related messages will also get forwarded directly to this class
 // from RenderViewHost via RenderViewHostDelegate::View.
-class CONTENT_EXPORT WebContentsView : public RenderViewHostDelegate::View {
+class CONTENT_EXPORT WebContentsView
+    : public content::RenderViewHostDelegate::View {
  public:
   WebContentsView() {}
   virtual ~WebContentsView() {}

@@ -4,8 +4,8 @@
 
 #include "chrome/browser/ui/prefs/prefs_tab_helper.h"
 
-#include "base/stringprintf.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/overlay_user_pref_store.h"
@@ -18,9 +18,9 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/render_view_host_delegate.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/locale_settings.h"
 #include "grit/platform_locale_settings.h"
@@ -601,7 +601,7 @@ void PrefsTabHelper::Observe(int type,
 }
 
 void PrefsTabHelper::UpdateWebPreferences() {
-  RenderViewHostDelegate* rvhd =
+  content::RenderViewHostDelegate* rvhd =
       web_contents()->GetRenderViewHost()->delegate();
   WebPreferences prefs = rvhd->GetWebkitPrefs();
   prefs.javascript_enabled =

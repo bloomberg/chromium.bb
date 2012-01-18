@@ -117,6 +117,7 @@ using content::NavigationController;
 using content::NavigationEntry;
 using content::NavigationEntryImpl;
 using content::OpenURLParams;
+using content::RenderViewHostDelegate;
 using content::SSLStatus;
 using content::UserMetricsAction;
 using content::WebContents;

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -137,7 +137,7 @@ void TestTabContents::ProceedWithCrossSiteNavigation() {
   rvh->SendShouldCloseACK(true);
 }
 
-RenderViewHostDelegate::View* TestTabContents::GetViewDelegate() {
+content::RenderViewHostDelegate::View* TestTabContents::GetViewDelegate() {
   if (delegate_view_override_)
     return delegate_view_override_;
   return TabContents::GetViewDelegate();

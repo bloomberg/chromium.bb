@@ -1,13 +1,13 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/render_view_host_delegate.h"
+#include "content/public/browser/render_view_host_delegate.h"
 
 #include "googleurl/src/gurl.h"
 #include "webkit/glue/webpreferences.h"
 
-using content::WebContents;
+namespace content {
 
 RenderViewHostDelegate::View* RenderViewHostDelegate::GetViewDelegate() {
   return NULL;
@@ -46,3 +46,5 @@ bool RenderViewHostDelegate::PreHandleKeyboardEvent(
 bool RenderViewHostDelegate::IsFullscreenForCurrentTab() const {
   return false;
 }
+
+}  // namespace content

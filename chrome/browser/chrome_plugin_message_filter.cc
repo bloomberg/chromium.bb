@@ -15,9 +15,9 @@
 #include "chrome/common/chrome_plugin_messages.h"
 #include "content/browser/plugin_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/render_view_host_delegate.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "webkit/plugins/npapi/default_plugin_shared.h"
 

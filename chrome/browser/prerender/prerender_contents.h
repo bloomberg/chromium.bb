@@ -21,13 +21,16 @@
 
 class Profile;
 class RenderViewHost;
-class RenderViewHostDelegate;
 class SessionStorageNamespace;
 class TabContentsWrapper;
 struct FaviconURL;
 
 namespace base {
 class ProcessMetrics;
+}
+
+namespace content {
+class RenderViewHostDelegate;
 }
 
 namespace prerender {

@@ -10,7 +10,6 @@
 #include "base/logging.h"
 #include "content/browser/debugger/devtools_manager_impl.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_view_host_factory.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/browser/site_instance.h"
@@ -21,6 +20,7 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/render_view_host_delegate.h"
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/browser/web_ui_controller.h"
 #include "content/public/browser/web_ui_factory.h"
@@ -32,7 +32,7 @@ using content::NavigationEntry;
 using content::NavigationEntryImpl;
 
 RenderViewHostManager::RenderViewHostManager(
-    RenderViewHostDelegate* render_view_delegate,
+    content::RenderViewHostDelegate* render_view_delegate,
     Delegate* delegate)
     : delegate_(delegate),
       cross_navigation_pending_(false),

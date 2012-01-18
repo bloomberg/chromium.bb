@@ -33,7 +33,6 @@ class ChildProcessSecurityPolicy;
 class FilePath;
 class GURL;
 class PowerSaveBlocker;
-class RenderViewHostDelegate;
 class SessionStorageNamespace;
 class SiteInstance;
 class SkBitmap;
@@ -55,6 +54,7 @@ class ListValue;
 namespace content {
 struct FileChooserParams;
 struct Referrer;
+class RenderViewHostDelegate;
 class RenderViewHostObserver;
 struct ShowDesktopNotificationHostMsgParams;
 }
@@ -140,14 +140,14 @@ class CONTENT_EXPORT RenderViewHost : public RenderWidgetHost {
   // spec) space. This is useful when restoring tabs, but most callers should
   // pass in NULL which will cause a new SessionStorageNamespace to be created.
   RenderViewHost(SiteInstance* instance,
-                 RenderViewHostDelegate* delegate,
+                 content::RenderViewHostDelegate* delegate,
                  int routing_id,
                  SessionStorageNamespace* session_storage_namespace);
   virtual ~RenderViewHost();
 
   SiteInstance* site_instance() const { return instance_; }
-  RenderViewHostDelegate* delegate() const { return delegate_; }
-  void set_delegate(RenderViewHostDelegate* d) {
+  content::RenderViewHostDelegate* delegate() const { return delegate_; }
+  void set_delegate(content::RenderViewHostDelegate* d) {
     CHECK(d);  // http://crbug.com/82827
     delegate_ = d;
   }
@@ -614,7 +614,7 @@ class CONTENT_EXPORT RenderViewHost : public RenderWidgetHost {
   scoped_refptr<SiteInstance> instance_;
 
   // Our delegate, which wants to know about changes in the RenderView.
-  RenderViewHostDelegate* delegate_;
+  content::RenderViewHostDelegate* delegate_;
 
   // true if we are currently waiting for a response for drag context
   // information.

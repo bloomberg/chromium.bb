@@ -11,10 +11,10 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/process_util.h"
-#include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/render_view_host_delegate.h"
 #include "content/public/common/renderer_preferences.h"
 #include "googleurl/src/gurl.h"
 #include "ui/gfx/size.h"
@@ -46,7 +46,7 @@ enum ResourceRequestAction {
 };
 
 class CONTENT_EXPORT InterstitialPage : public content::NotificationObserver,
-                                        public RenderViewHostDelegate {
+                                        public content::RenderViewHostDelegate {
  public:
   // The different state of actions the user can take in an interstitial.
   enum ActionState {

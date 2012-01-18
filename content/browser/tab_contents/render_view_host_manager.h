@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,11 +9,11 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/site_instance.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/render_view_host_delegate.h"
 
 class InterstitialPage;
 class NavigationControllerImpl;
@@ -31,7 +31,7 @@ class NavigationEntryImpl;
 // it is easy to do. But we can also have transitions of processes (and hence
 // RenderViewHosts) that can get complex.
 class CONTENT_EXPORT RenderViewHostManager
-    : public RenderViewHostDelegate::RendererManagement,
+    : public content::RenderViewHostDelegate::RendererManagement,
       public content::NotificationObserver {
  public:
   // Functions implemented by our owner that we need.
@@ -95,7 +95,7 @@ class CONTENT_EXPORT RenderViewHostManager
   // installed into all RenderViewHosts that are created.
   //
   // You must call Init() before using this class.
-  RenderViewHostManager(RenderViewHostDelegate* render_view_delegate,
+  RenderViewHostManager(content::RenderViewHostDelegate* render_view_delegate,
                         Delegate* delegate);
   virtual ~RenderViewHostManager();
 
@@ -259,7 +259,7 @@ class CONTENT_EXPORT RenderViewHostManager
 
   // Implemented by the owner of this class, this delegate is installed into all
   // the RenderViewHosts that we create.
-  RenderViewHostDelegate* render_view_delegate_;
+  content::RenderViewHostDelegate* render_view_delegate_;
 
   // Our RenderView host and its associated Web UI (if any, will be NULL for
   // non-DOM-UI pages). This object is responsible for all communication with

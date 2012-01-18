@@ -35,15 +35,14 @@
 #include "content/browser/renderer_host/async_resource_handler.h"
 #include "content/browser/renderer_host/buffered_resource_handler.h"
 #include "content/browser/renderer_host/cross_site_resource_handler.h"
+#include "content/browser/renderer_host/doomed_resource_handler.h"
 #include "content/browser/renderer_host/redirect_to_file_resource_handler.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "content/browser/renderer_host/resource_message_filter.h"
 #include "content/browser/renderer_host/resource_queue.h"
 #include "content/browser/renderer_host/resource_request_details.h"
 #include "content/browser/renderer_host/sync_resource_handler.h"
-#include "content/browser/renderer_host/doomed_resource_handler.h"
 #include "content/browser/resource_context.h"
 #include "content/browser/ssl/ssl_client_auth_handler.h"
 #include "content/browser/ssl/ssl_manager.h"
@@ -55,6 +54,7 @@
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/render_view_host_delegate.h"
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
 #include "content/public/browser/resource_dispatcher_host_login_delegate.h"
 #include "content/public/common/content_switches.h"
@@ -1994,7 +1994,7 @@ void ResourceDispatcherHost::NotifyOnUI(int type,
   RenderViewHost* rvh =
       RenderViewHost::FromID(render_process_id, render_view_id);
   if (rvh) {
-    RenderViewHostDelegate* rvhd = rvh->delegate();
+    content::RenderViewHostDelegate* rvhd = rvh->delegate();
     content::NotificationService::current()->Notify(
         type, content::Source<WebContents>(rvhd->GetAsWebContents()),
         content::Details<T>(detail));

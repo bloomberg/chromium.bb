@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,10 +19,10 @@
 #include "content/browser/browser_child_process_host.h"
 #include "content/browser/renderer_host/backing_store_manager.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/render_view_host_delegate.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/process_type.h"
@@ -204,7 +204,7 @@ void MemoryDetails::CollectChildInfoOnUIThread() {
           continue;
 
         const RenderViewHost* host = static_cast<const RenderViewHost*>(widget);
-        RenderViewHostDelegate* host_delegate = host->delegate();
+        content::RenderViewHostDelegate* host_delegate = host->delegate();
         DCHECK(host_delegate);
         GURL url = host_delegate->GetURL();
         content::ViewType type = host_delegate->GetRenderViewType();

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -73,8 +73,8 @@ class TestTabContents : public TabContents {
   bool transition_cross_site;
 
   // Allow mocking of the RenderViewHostDelegate::View.
-  virtual RenderViewHostDelegate::View* GetViewDelegate() OVERRIDE;
-  void set_view_delegate(RenderViewHostDelegate::View* view) {
+  virtual content::RenderViewHostDelegate::View* GetViewDelegate() OVERRIDE;
+  void set_view_delegate(content::RenderViewHostDelegate::View* view) {
     delegate_view_override_ = view;
   }
 
@@ -92,7 +92,7 @@ class TestTabContents : public TabContents {
                                         int32 min_page_id) OVERRIDE;
 
  private:
-  RenderViewHostDelegate::View* delegate_view_override_;
+  content::RenderViewHostDelegate::View* delegate_view_override_;
 
   // Expectations for arguments of |SetHistoryLengthAndPrune()|.
   bool expect_set_history_length_and_prune_;

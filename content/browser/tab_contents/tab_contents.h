@@ -17,10 +17,10 @@
 #include "base/property_bag.h"
 #include "content/browser/javascript_dialogs.h"
 #include "content/browser/renderer_host/java/java_bridge_dispatcher_host_manager.h"
-#include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/tab_contents/navigation_controller_impl.h"
 #include "content/browser/tab_contents/render_view_host_manager.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/render_view_host_delegate.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/renderer_preferences.h"
 #include "net/base/load_states.h"
@@ -50,7 +50,7 @@ struct WebIntentData;
 
 class CONTENT_EXPORT TabContents
     : public NON_EXPORTED_BASE(content::WebContents),
-      public RenderViewHostDelegate,
+      public content::RenderViewHostDelegate,
       public RenderViewHostManager::Delegate,
       public content::JavaScriptDialogDelegate {
  public:
@@ -217,8 +217,8 @@ class CONTENT_EXPORT TabContents
 
   // RenderViewHostDelegate ----------------------------------------------------
 
-  virtual RenderViewHostDelegate::View* GetViewDelegate() OVERRIDE;
-  virtual RenderViewHostDelegate::RendererManagement*
+  virtual content::RenderViewHostDelegate::View* GetViewDelegate() OVERRIDE;
+  virtual content::RenderViewHostDelegate::RendererManagement*
       GetRendererManagementDelegate() OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual const GURL& GetURL() const OVERRIDE;

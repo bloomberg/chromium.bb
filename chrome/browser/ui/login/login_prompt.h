@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,15 +15,18 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/resource_dispatcher_host_login_delegate.h"
 
+class ConstrainedWindow;
+class GURL;
+
+namespace content {
+class RenderViewHostDelegate;
+}  // namespace content
+
 namespace net {
 class AuthChallengeInfo;
 class HttpNetworkSession;
 class URLRequest;
 }  // namespace net
-
-class ConstrainedWindow;
-class GURL;
-class RenderViewHostDelegate;
 
 // This is the base implementation for the OS-specific classes that route
 // authentication info to the net::URLRequest that needs it. These functions
@@ -56,7 +59,7 @@ class LoginHandler : public content::ResourceDispatcherHostLoginDelegate,
   content::WebContents* GetWebContentsForLogin() const;
 
   // Returns the RenderViewHostDelegate for the page that needs authentication.
-  RenderViewHostDelegate* GetRenderViewHostDelegate() const;
+  content::RenderViewHostDelegate* GetRenderViewHostDelegate() const;
 
   // Resend the request with authentication credentials.
   // This function can be called from either thread.

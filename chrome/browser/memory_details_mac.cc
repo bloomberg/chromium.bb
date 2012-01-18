@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,8 +32,6 @@ using content::BrowserThread;
 // TODO(viettrungluu): Many of the TODOs below are subsumed by a general need to
 // refactor the about:memory code (not just on Mac, but probably on other
 // platforms as well). I've filed crbug.com/25456.
-
-class RenderViewHostDelegate;
 
 // Known browsers which we collect details for. |CHROME_BROWSER| *must* be the
 // first browser listed. The order here must match those in |process_template|
