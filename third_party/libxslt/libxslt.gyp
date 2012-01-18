@@ -108,6 +108,17 @@
           },
           'conditions': [
             ['OS!="win"', {'product_name': 'xslt'}],
+            ['clang == 1', {
+              'xcode_settings': {
+                'WARNING_CFLAGS': [
+                  # libxslt stores a char[3] in a `const unsigned char*`.
+                  '-Wno-pointer-sign',
+                ],
+              },
+              'cflags': [
+                '-Wno-pointer-sign',
+              ],
+            }],
           ],
         }],
       ],
