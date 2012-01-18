@@ -28,7 +28,8 @@ function LayoutTestController() {
   };
 
   this.DelayedNotifyDone2 = function () {
-    document.cookie = "%COOKIE%=done";
+    var token = encodeURIComponent(document.body.innerText);
+    document.cookie = "%COOKIE%=" + token;
   };
 
   this.OnEvent = function () {
