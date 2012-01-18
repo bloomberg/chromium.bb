@@ -637,12 +637,22 @@ cr.define('cr.ui', function() {
     handleDataModelPermuted_: function(e) {
       var newCachedItems = {};
       for (var index in this.cachedItems_) {
-        if (e.permutation[index] != -1)
-          newCachedItems[e.permutation[index]] = this.cachedItems_[index];
-        else
-          delete this.cachedItems_[index];
+        if (e.permutation[index] != -1) {
+          var newIndex = e.permutation[index];
+          newCachedItems[newIndex] = this.cachedItems_[index];
+          newCachedItems[newIndex].listIndex = newIndex;
+        }
       }
       this.cachedItems_ = newCachedItems;
+
+      var newCachedItemSizes = {};
+      for (var index in this.cachedItemSizes_) {
+        if (e.permutation[index] != -1) {
+          newCachedItemSizes[e.permutation[index]] =
+              this.cachedItemSizes_[index];
+        }
+      }
+      this.cachedItemSizes_ = newCachedItemSizes;
 
       this.startBatchUpdates();
 
@@ -657,10 +667,11 @@ cr.define('cr.ui', function() {
     },
 
     handleDataModelChange_: function(e) {
+      delete this.cachedItems_[e.index];
+      delete this.cachedItemSizes_[e.index];
+
       if (e.index >= this.firstIndex_ &&
           (e.index < this.lastIndex_ || this.remainingSpace_)) {
-        if (this.cachedItems_[e.index])
-          delete this.cachedItems_[e.index];
         this.redraw();
       }
     },
