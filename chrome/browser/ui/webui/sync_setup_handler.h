@@ -47,7 +47,7 @@ class SyncSetupHandler : public GaiaOAuthConsumer,
 
   static void GetStaticLocalizedValues(
       base::DictionaryValue* localized_strings,
-      WebUI* web_ui);
+      content::WebUI* web_ui);
 
   // Initializes the sync setup flow and shows the setup UI.
   void OpenSyncSetup();

@@ -32,7 +32,7 @@ namespace chromeos {
 class OobeUI : public OobeDisplay,
                public content::WebUIController {
  public:
-  explicit OobeUI(WebUI* web_ui);
+  explicit OobeUI(content::WebUI* web_ui);
   virtual ~OobeUI();
 
   // OobeDisplay implementation:

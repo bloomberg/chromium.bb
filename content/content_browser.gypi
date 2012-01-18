@@ -87,6 +87,7 @@
     'public/browser/web_contents_observer.cc',
     'public/browser/web_contents_observer.h',
     'public/browser/web_intents_dispatcher.h',
+    'public/browser/web_ui.h',
     'public/browser/web_ui_controller.cc',
     'public/browser/web_ui_controller.h',
     'public/browser/web_ui_factory.h',

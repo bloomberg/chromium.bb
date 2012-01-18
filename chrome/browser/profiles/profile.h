@@ -17,32 +17,6 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "content/public/browser/browser_context.h"
 
-namespace base {
-class Time;
-}
-
-namespace chromeos {
-class LibCrosServiceLibraryImpl;
-class ResetDefaultProxyConfigServiceTask;
-}
-
-namespace fileapi {
-class FileSystemContext;
-}
-
-namespace history {
-class TopSites;
-class ShortcutsBackend;
-}
-
-namespace net {
-class SSLConfigService;
-}
-
-namespace chrome_browser_net {
-class Predictor;
-}
-
 class AutocompleteClassifier;
 class BookmarkModel;
 class ChromeAppCacheService;
@@ -74,7 +48,36 @@ class UserScriptMaster;
 class UserStyleSheetWatcher;
 class VisitedLinkMaster;
 class WebDataService;
+
+namespace base {
+class Time;
+}
+
+namespace chromeos {
+class LibCrosServiceLibraryImpl;
+class ResetDefaultProxyConfigServiceTask;
+}
+
+namespace chrome_browser_net {
+class Predictor;
+}
+
+namespace content {
 class WebUI;
+}
+
+namespace fileapi {
+class FileSystemContext;
+}
+
+namespace history {
+class TopSites;
+class ShortcutsBackend;
+}
+
+namespace net {
+class SSLConfigService;
+}
 
 #if !defined(OS_MACOSX) && !defined(OS_CHROMEOS) && defined(OS_POSIX)
 // Local profile ids are used to associate resources stored outside the profile
@@ -174,7 +177,7 @@ class Profile : public content::BrowserContext {
   static Profile* FromBrowserContext(content::BrowserContext* browser_context);
 
   // Returns the profile corresponding to the given WebUI.
-  static Profile* FromWebUI(WebUI* web_ui);
+  static Profile* FromWebUI(content::WebUI* web_ui);
 
   // content::BrowserContext implementation ------------------------------------
 

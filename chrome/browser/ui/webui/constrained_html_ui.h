@@ -50,7 +50,7 @@ class ConstrainedHtmlUIDelegate {
 // implementations, this class is just a factory stub.
 class ConstrainedHtmlUI : public content::WebUIController {
  public:
-  explicit ConstrainedHtmlUI(WebUI* web_ui);
+  explicit ConstrainedHtmlUI(content::WebUI* web_ui);
   virtual ~ConstrainedHtmlUI();
 
   // WebUIController implementation:

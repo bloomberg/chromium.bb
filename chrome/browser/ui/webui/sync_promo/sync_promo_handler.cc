@@ -88,12 +88,12 @@ void SyncPromoHandler::RegisterMessages() {
   prefs_ = Profile::FromWebUI(web_ui())->GetPrefs();
   DCHECK(prefs_);
   // Ignore events from view-source:chrome://syncpromo.
-  if (!web_ui()->web_contents()->GetController().GetActiveEntry()->
+  if (!web_ui()->GetWebContents()->GetController().GetActiveEntry()->
           IsViewSourceMode()) {
     // Listen to see if the tab we're in gets closed.
     registrar_.Add(this, content::NOTIFICATION_TAB_CLOSING,
         content::Source<NavigationController>(
-            &web_ui()->web_contents()->GetController()));
+            &web_ui()->GetWebContents()->GetController()));
     // Listen to see if the window we're in gets closed.
     registrar_.Add(this, chrome::NOTIFICATION_BROWSER_CLOSING,
         content::NotificationService::AllSources());
@@ -165,7 +165,7 @@ void SyncPromoHandler::Observe(int type,
       // Make sure we're in the tab strip of the closing window.
       Browser* browser = content::Source<Browser>(source).ptr();
       if (browser->tabstrip_model()->GetWrapperIndex(
-              web_ui()->web_contents()) != TabStripModel::kNoTab) {
+              web_ui()->GetWebContents()) != TabStripModel::kNoTab) {
         RecordUserFlowAction(SYNC_PROMO_CLOSED_WINDOW);
         window_already_closed_ = true;
       }
@@ -201,17 +201,17 @@ void SyncPromoHandler::HandleCloseSyncPromo(const base::ListValue* args) {
     prefs_->SetBoolean(prefs::kSyncPromoShowNTPBubble, true);
 
   GURL url = SyncPromoUI::GetNextPageURLForSyncPromoURL(
-      web_ui()->web_contents()->GetURL());
+      web_ui()->GetWebContents()->GetURL());
   OpenURLParams params(
       url, Referrer(), CURRENT_TAB, content::PAGE_TRANSITION_LINK, false);
-  web_ui()->web_contents()->OpenURL(params);
+  web_ui()->GetWebContents()->OpenURL(params);
 }
 
 void SyncPromoHandler::HandleInitializeSyncPromo(const base::ListValue* args) {
   // If the promo is also the Chrome launch page, we want to show the title and
   // log an event if we are running an experiment.
   bool is_launch_page = SyncPromoUI::GetIsLaunchPageForSyncPromoURL(
-      web_ui()->web_contents()->GetURL());
+      web_ui()->GetWebContents()->GetURL());
   if (is_launch_page && sync_promo_trial::IsExperimentActive())
     sync_promo_trial::RecordUserSawMessage();
   base::FundamentalValue visible(is_launch_page);
@@ -236,7 +236,7 @@ void SyncPromoHandler::HandleShowAdvancedSettings(
   url += chrome::kSyncSetupSubPage;
   OpenURLParams params(
       GURL(url), Referrer(), CURRENT_TAB, content::PAGE_TRANSITION_LINK, false);
-  web_ui()->web_contents()->OpenURL(params);
+  web_ui()->GetWebContents()->OpenURL(params);
   RecordUserFlowAction(SYNC_PROMO_ADVANCED_CLICKED);
 }
 
@@ -289,7 +289,7 @@ void SyncPromoHandler::RecordExperimentOutcomesOnSignIn() {
     sync_promo_trial::RecordUserSignedIn();
   if (sync_promo_trial::IsPartOfBrandTrialToEnable()) {
     bool is_start_up = SyncPromoUI::GetIsLaunchPageForSyncPromoURL(
-        web_ui()->web_contents()->GetURL());
+        web_ui()->GetWebContents()->GetURL());
     Profile* profile = Profile::FromWebUI(web_ui());
     sync_promo_trial::RecordUserSignedInWithTrialBrand(is_start_up, profile);
   }

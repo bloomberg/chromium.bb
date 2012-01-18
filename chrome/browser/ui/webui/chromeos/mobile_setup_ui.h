@@ -15,7 +15,7 @@ class PortalFrameLoadObserver;
 class MobileSetupUI : public content::WebUIController,
                       public base::SupportsWeakPtr<MobileSetupUI> {
  public:
-  explicit MobileSetupUI(WebUI* web_ui);
+  explicit MobileSetupUI(content::WebUI* web_ui);
 
   void OnObserverDeleted();
 

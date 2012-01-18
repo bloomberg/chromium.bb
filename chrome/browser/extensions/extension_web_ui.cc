@@ -24,9 +24,9 @@
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_ui.h"
 #include "content/public/common/page_transition_types.h"
 #include "content/public/common/bindings_policy.h"
 #include "net/base/file_stream.h"
@@ -128,11 +128,10 @@ class ExtensionWebUIImageLoadingTracker : public ImageLoadingTracker::Observer {
 const char ExtensionWebUI::kExtensionURLOverrides[] =
     "extensions.chrome_url_overrides";
 
-ExtensionWebUI::ExtensionWebUI(WebUI* web_ui, const GURL& url)
+ExtensionWebUI::ExtensionWebUI(content::WebUI* web_ui, const GURL& url)
     : WebUIController(web_ui),
       url_(url) {
-  Profile* profile =
-      Profile::FromBrowserContext(web_ui->web_contents()->GetBrowserContext());
+  Profile* profile = Profile::FromWebUI(web_ui);
   ExtensionService* service = profile->GetExtensionService();
   const Extension* extension =
       service->extensions()->GetExtensionOrAppByURL(ExtensionURLInfo(url));
@@ -151,7 +150,7 @@ ExtensionWebUI::ExtensionWebUI(WebUI* web_ui, const GURL& url)
   if (browser_command_line.HasSwitch(switches::kChromeFrame))
     bindings |= content::BINDINGS_POLICY_EXTERNAL_HOST;
   // For chrome:// overrides, some of the defaults are a little different.
-  GURL effective_url = web_ui->web_contents()->GetURL();
+  GURL effective_url = web_ui->GetWebContents()->GetURL();
   if (effective_url.SchemeIs(chrome::kChromeUIScheme)) {
     if (effective_url.host() == chrome::kChromeUINewTabHost) {
       web_ui->FocusLocationBarByDefault();
@@ -169,7 +168,7 @@ ExtensionWebUI::ExtensionWebUI(WebUI* web_ui, const GURL& url)
   // Hack: A few things we specialize just for the bookmark manager.
   if (extension->id() == extension_misc::kBookmarkManagerId) {
     TabContentsWrapper* tab = TabContentsWrapper::GetCurrentWrapperForContents(
-        web_ui->web_contents());
+        web_ui->GetWebContents());
     DCHECK(tab);
     bookmark_manager_extension_event_router_.reset(
         new BookmarkManagerExtensionEventRouter(profile, tab));

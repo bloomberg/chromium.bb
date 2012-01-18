@@ -19,7 +19,7 @@ class ProxyHandler;
 class ProxySettingsUI : public content::WebUIController,
                         public OptionsPageUIHandlerHost {
  public:
-  explicit ProxySettingsUI(WebUI* web_ui);
+  explicit ProxySettingsUI(content::WebUI* web_ui);
   virtual ~ProxySettingsUI();
 
  private:

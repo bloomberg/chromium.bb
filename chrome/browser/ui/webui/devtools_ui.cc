@@ -13,10 +13,10 @@
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_client_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_ui.h"
 #include "grit/devtools_resources_map.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -101,10 +101,9 @@ void DevToolsUI::RegisterDevToolsDataSource(Profile* profile) {
   }
 }
 
-DevToolsUI::DevToolsUI(WebUI* web_ui) : WebUIController(web_ui) {
+DevToolsUI::DevToolsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   DevToolsDataSource* data_source = new DevToolsDataSource();
-  Profile* profile = Profile::FromBrowserContext(
-      web_ui->web_contents()->GetBrowserContext());
+  Profile* profile = Profile::FromWebUI(web_ui);
   profile->GetChromeURLDataManager()->AddDataSource(data_source);
 }
 

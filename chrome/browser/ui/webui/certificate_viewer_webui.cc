@@ -175,7 +175,7 @@ void CertificateViewerDialogHandler::ExportCertificate(
   if (cert_index < 0 || cert_index >= (int)cert_chain_.size())
     return;
 
-  ShowCertExportDialog(web_ui()->web_contents(),
+  ShowCertExportDialog(web_ui()->GetWebContents(),
                        window_,
                        cert_chain_[cert_index]);
 }

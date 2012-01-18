@@ -13,8 +13,8 @@
 #include "chrome/browser/ui/webui/extensions/extensions_ui.h"
 #include "chrome/browser/ui/webui/options2/options_ui2.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_ui.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -51,9 +51,8 @@ ChromeWebUIDataSource* CreateUberHTMLSource() {
 
 }  // namespace
 
-UberUI::UberUI(WebUI* web_ui) : WebUIController(web_ui) {
-  Profile* profile = Profile::FromBrowserContext(
-      web_ui->web_contents()->GetBrowserContext());
+UberUI::UberUI(content::WebUI* web_ui) : WebUIController(web_ui) {
+  Profile* profile = Profile::FromWebUI(web_ui);
   profile->GetChromeURLDataManager()->AddDataSource(CreateUberHTMLSource());
 
   RegisterSubpage(chrome::kChromeUISettingsFrameURL);
@@ -68,7 +67,8 @@ UberUI::~UberUI() {
 }
 
 void UberUI::RegisterSubpage(const std::string& page_url) {
-  WebUI* webui = web_ui()->web_contents()->CreateWebUI(GURL(page_url));
+  content::WebUI* webui =
+      web_ui()->GetWebContents()->CreateWebUI(GURL(page_url));
 
   webui->SetFrameXPath("//iframe[@src='" + page_url + "']");
   sub_uis_[page_url] = webui;
@@ -110,6 +110,6 @@ bool UberUI::OverrideHandleWebUIMessage(const GURL& source_url,
   // TODO(jam) fix this to use interface
   //return subpage->second->GetController()->OverrideHandleWebUIMessage(
     //  source_url, message, args);
-  subpage->second->OnWebUISend(source_url, message, args);
+  subpage->second->ProcessWebUIMessage(source_url, message, args);
   return true;
 }

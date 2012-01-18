@@ -12,7 +12,7 @@ class RefCountedMemory;
 
 class CrashesUI : public content::WebUIController {
  public:
-  explicit CrashesUI(WebUI* web_ui);
+  explicit CrashesUI(content::WebUI* web_ui);
 
   static RefCountedMemory* GetFaviconResourceBytes();
 

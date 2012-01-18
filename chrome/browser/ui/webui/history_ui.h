@@ -78,7 +78,7 @@ class BrowsingHistoryHandler : public content::WebUIMessageHandler,
 
 class HistoryUI : public content::WebUIController {
  public:
-  explicit HistoryUI(WebUI* web_ui);
+  explicit HistoryUI(content::WebUI* web_ui);
 
   // Return the URL for a given search term.
   static const GURL GetHistoryURLWithSearchText(const string16& text);

@@ -18,8 +18,8 @@
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
@@ -257,12 +257,11 @@ void SessionsDOMHandler::UpdateUI() {
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-SessionsUI::SessionsUI(WebUI* web_ui) : WebUIController(web_ui) {
+SessionsUI::SessionsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   web_ui->AddMessageHandler(new SessionsDOMHandler());
 
   // Set up the chrome://sessions/ source.
-  Profile* profile = Profile::FromBrowserContext(
-      web_ui->web_contents()->GetBrowserContext());
+  Profile* profile = Profile::FromWebUI(web_ui);
   profile->GetChromeURLDataManager()->AddDataSource(
       CreateSessionsUIHTMLSource());
 }

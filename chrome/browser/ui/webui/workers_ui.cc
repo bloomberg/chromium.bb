@@ -16,11 +16,11 @@
 #include "chrome/browser/ui/webui/chrome_url_data_manager_backend.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/webui/web_ui.h"
 #include "content/browser/worker_host/worker_process_host.h"
 #include "content/public/browser/devtools_agent_host_registry.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_ui.h"
 #include "content/public/browser/worker_service.h"
 #include "content/public/browser/worker_service_observer.h"
 #include "content/public/browser/web_ui_message_handler.h"
@@ -257,7 +257,7 @@ class WorkersUI::WorkerCreationDestructionListener
   WorkersUI* workers_ui_;
 };
 
-WorkersUI::WorkersUI(WebUI* web_ui)
+WorkersUI::WorkersUI(content::WebUI* web_ui)
     : WebUIController(web_ui),
       observer_(new WorkerCreationDestructionListener(this)){
   web_ui->AddMessageHandler(new WorkersDOMHandler());
@@ -265,8 +265,7 @@ WorkersUI::WorkersUI(WebUI* web_ui)
   WorkersUIHTMLSource* html_source = new WorkersUIHTMLSource();
 
   // Set up the chrome://workers/ source.
-  Profile* profile = Profile::FromBrowserContext(
-      web_ui->web_contents()->GetBrowserContext());
+  Profile* profile = Profile::FromWebUI(web_ui);
   profile->GetChromeURLDataManager()->AddDataSource(html_source);
 }
 

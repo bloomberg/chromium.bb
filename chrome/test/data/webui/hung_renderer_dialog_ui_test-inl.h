@@ -41,10 +41,10 @@ void HungRendererDialogUITest::ShowHungRendererDialogInternal() {
 
   // Now we can get the WebUI object from the observer, and make some details
   // about our test available to the JavaScript.
-  WebUI* webui = dialog_observer.GetWebUI();
-  webui->web_contents()->GetRenderViewHost()->SetWebUIProperty(
+  content::WebUI* webui = dialog_observer.GetWebUI();
+  webui->GetWebContents()->GetRenderViewHost()->SetWebUIProperty(
       "expectedUrl", chrome::kChromeUIHungRendererDialogURL);
-  webui->web_contents()->GetRenderViewHost()->SetWebUIProperty(
+  webui->GetWebContents()->GetRenderViewHost()->SetWebUIProperty(
       "expectedTitle", "about:blank");
 
   // Tell the test which WebUI instance we are dealing with and complete

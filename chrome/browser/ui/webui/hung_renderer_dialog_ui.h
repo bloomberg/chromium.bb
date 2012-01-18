@@ -12,7 +12,7 @@
 // The WebUI for chrome://hung-renderer
 class HungRendererDialogUI : public HtmlDialogUI {
  public:
-  explicit HungRendererDialogUI(WebUI* web_ui);
+  explicit HungRendererDialogUI(content::WebUI* web_ui);
   virtual ~HungRendererDialogUI();
 
  protected:

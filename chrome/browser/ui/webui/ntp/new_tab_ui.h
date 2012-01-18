@@ -25,7 +25,7 @@ class Profile;
 class NewTabUI : public content::WebUIController,
                  public content::NotificationObserver {
  public:
-  explicit NewTabUI(WebUI* web_ui);
+  explicit NewTabUI(content::WebUI* web_ui);
   virtual ~NewTabUI();
 
   static void RegisterUserPrefs(PrefService* prefs);

@@ -18,8 +18,8 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/time_format.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_ui.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -233,12 +233,11 @@ string16 PolicyUIHandler::CreateStatusMessageString(
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-PolicyUI::PolicyUI(WebUI* web_ui) : WebUIController(web_ui) {
+PolicyUI::PolicyUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   web_ui->AddMessageHandler(new PolicyUIHandler);
 
   // Set up the chrome://policy/ source.
-  Profile* profile = Profile::FromBrowserContext(
-      web_ui->web_contents()->GetBrowserContext());
+  Profile* profile = Profile::FromWebUI(web_ui);
   profile->GetChromeURLDataManager()->AddDataSource(CreatePolicyUIHTMLSource());
 }
 

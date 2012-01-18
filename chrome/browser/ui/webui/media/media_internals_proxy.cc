@@ -9,10 +9,10 @@
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/media/media_internals.h"
 #include "chrome/browser/ui/webui/media/media_internals_handler.h"
-#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/web_ui.h"
 
 using content::BrowserThread;
 
@@ -187,6 +187,6 @@ void MediaInternalsProxy::CallJavaScriptFunctionOnUIThread(
   scoped_ptr<Value> args_value(args);
   std::vector<const Value*> args_vector;
   args_vector.push_back(args_value.get());
-  string16 update = WebUI::GetJavascriptCall(function, args_vector);
+  string16 update = content::WebUI::GetJavascriptCall(function, args_vector);
   UpdateUIOnUIThread(update);
 }

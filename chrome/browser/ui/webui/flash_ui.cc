@@ -27,10 +27,10 @@
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/gpu/gpu_data_manager.h"
-#include "content/browser/webui/web_ui.h"
-#include "content/public/browser/web_contents.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/user_metrics.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
@@ -368,15 +368,14 @@ void FlashDOMHandler::MaybeRespondToPage() {
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-FlashUI::FlashUI(WebUI* web_ui) : WebUIController(web_ui) {
+FlashUI::FlashUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   content::RecordAction(
       UserMetricsAction("ViewAboutFlash"));
 
   web_ui->AddMessageHandler(new FlashDOMHandler());
 
   // Set up the about:flash source.
-  Profile* profile = Profile::FromBrowserContext(
-      web_ui->web_contents()->GetBrowserContext());
+  Profile* profile = Profile::FromWebUI(web_ui);
   profile->GetChromeURLDataManager()->AddDataSource(CreateFlashUIHTMLSource());
 }
 

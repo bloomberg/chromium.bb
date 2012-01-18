@@ -10,7 +10,7 @@
 
 class GpuInternalsUI : public content::WebUIController {
  public:
-  explicit GpuInternalsUI(WebUI* web_ui);
+  explicit GpuInternalsUI(content::WebUI* web_ui);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GpuInternalsUI);

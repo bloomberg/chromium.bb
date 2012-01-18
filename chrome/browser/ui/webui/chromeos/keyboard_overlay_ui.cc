@@ -19,9 +19,9 @@
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
@@ -308,10 +308,9 @@ void KeyboardOverlayHandler::OpenLearnMorePage(const ListValue* args) {
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-KeyboardOverlayUI::KeyboardOverlayUI(WebUI* web_ui)
+KeyboardOverlayUI::KeyboardOverlayUI(content::WebUI* web_ui)
     : HtmlDialogUI(web_ui) {
-  Profile* profile = Profile::FromBrowserContext(
-      web_ui->web_contents()->GetBrowserContext());
+  Profile* profile = Profile::FromWebUI(web_ui);
   KeyboardOverlayHandler* handler = new KeyboardOverlayHandler(profile);
   web_ui->AddMessageHandler(handler);
 

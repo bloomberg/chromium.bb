@@ -7,158 +7,82 @@
 #pragma once
 
 #include <map>
-#include <string>
-#include <vector>
 
-#include "base/callback.h"
 #include "base/compiler_specific.h"
-#include "base/string16.h"
-#include "content/common/content_export.h"
-#include "content/public/common/page_transition_types.h"
+#include "content/public/browser/web_ui.h"
 #include "ipc/ipc_channel.h"
 
-class GURL;
 class RenderViewHost;
 
-namespace base {
-class ListValue;
-class Value;
-}
-
-namespace content {
-class WebContents;
-class WebUIController;
-class WebUIMessageHandler;
-}
-
-// A WebUI sets up the datasources and message handlers for a given HTML-based
-// UI.
-//
-// NOTE: If you're creating a new WebUI for Chrome code, make sure you extend
-// ChromeWebUI.
-class CONTENT_EXPORT WebUI : public IPC::Channel::Listener {
+class CONTENT_EXPORT WebUI : public content::WebUI,
+                             public IPC::Channel::Listener {
  public:
   explicit WebUI(content::WebContents* contents);
   virtual ~WebUI();
-
-  // IPC::Channel::Listener implementation:
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-  // TODO(jam): move to private
-  // IPC message handling.
-  void OnWebUISend(const GURL& source_url,
-                   const std::string& message,
-                   const base::ListValue& args);
 
   // Called by TabContents when the RenderView is first created. This is *not*
   // called for every page load because in some cases RenderViewHostManager will
   // reuse RenderView instances.
   void RenderViewCreated(RenderViewHost* render_view_host);
 
-  // TODO(jam): below is what will be the public API of WebUI
-  content::WebContents* GetWebContents() const;
-
-  // Returns true if the favicon should be hidden for the current tab.
-  bool ShouldHideFavicon() const;
-  void HideFavicon();
-
-  // Returns true if the location bar should be focused by default rather than
-  // the page contents. Some pages will want to use this to encourage the user
-  // to type in the URL bar.
-  bool ShouldFocusLocationBarByDefault() const;
-  void FocusLocationBarByDefault();
-
-  // Returns true if the page's URL should be hidden. Some Web UI pages
-  // like the new tab page will want to hide it.
-  bool ShouldHideURL() const;
-  void HideURL();
-
-  // Gets a custom tab title provided by the Web UI. If there is no title
-  // override, the string will be empty which should trigger the default title
-  // behavior for the tab.
-  const string16& GetOverriddenTitle() const;
-  void OverrideTitle(const string16& title);
-
-  // Returns the transition type that should be used for link clicks on this
-  // Web UI. This will default to LINK but may be overridden.
-  content::PageTransition GetLinkTransitionType() const;
-  void SetLinkTransitionType(content::PageTransition type);
-
-  // Allows a controller to override the BindingsPolicy that should be enabled
-  // for this page.
-  int GetBindings() const;
-  void SetBindings(int bindings);
-
-  // Sets the path for the iframe if this WebUI is embedded in a page.
-  void SetFrameXPath(const std::string& xpath);
-
-  // Takes ownership of |handler|, which will be destroyed when the WebUI is.
-  void AddMessageHandler(content::WebUIMessageHandler* handler);
-
-  // Execute a string of raw Javascript on the page.  Overridable for
-  // testing purposes.
-  virtual void ExecuteJavascript(const string16& javascript);
-
-  // Used by WebUIMessageHandlers. If the given message is already registered,
-  // the call has no effect unless |register_callback_overwrites_| is set to
-  // true.
+  // WebUI implementation:
+  virtual content::WebContents* GetWebContents() const OVERRIDE;
+  virtual content::WebUIController* GetController() const OVERRIDE;
+  virtual void SetController(content::WebUIController* controller) OVERRIDE;
+  virtual bool ShouldHideFavicon() const OVERRIDE;
+  virtual void HideFavicon() OVERRIDE;
+  virtual bool ShouldFocusLocationBarByDefault() const OVERRIDE;
+  virtual void FocusLocationBarByDefault() OVERRIDE;
+  virtual bool ShouldHideURL() const OVERRIDE;
+  virtual void HideURL() OVERRIDE;
+  virtual const string16& GetOverriddenTitle() const OVERRIDE;
+  virtual void OverrideTitle(const string16& title) OVERRIDE;
+  virtual content::PageTransition GetLinkTransitionType() const OVERRIDE;
+  virtual void SetLinkTransitionType(content::PageTransition type) OVERRIDE;
+  virtual int GetBindings() const OVERRIDE;
+  virtual void SetBindings(int bindings) OVERRIDE;
+  virtual void SetFrameXPath(const std::string& xpath) OVERRIDE;
+  virtual void AddMessageHandler(
+      content::WebUIMessageHandler* handler) OVERRIDE;
   typedef base::Callback<void(const base::ListValue*)> MessageCallback;
-  void RegisterMessageCallback(const std::string& message,
-                               const MessageCallback& callback);
-
-  // Indicates whether RegisterMessageCallback() will overwrite an existing
-  // message callback mapping.  Serves as the hook for test mocks.
-  bool register_callback_overwrites() const {
-    return register_callback_overwrites_;
-  }
-
-  void set_register_callback_overwrites(bool value) {
-    register_callback_overwrites_ = value;
-  }
-
-  content::WebUIController* GetController() const;
-  void SetController(content::WebUIController* controller);
-
-  // Call a Javascript function by sending its name and arguments down to
-  // the renderer.  This is asynchronous; there's no way to get the result
-  // of the call, and should be thought of more like sending a message to
-  // the page.
-  // All function names in WebUI must consist of only ASCII characters.
-  // There are variants for calls with more arguments.
-  void CallJavascriptFunction(const std::string& function_name);
-  void CallJavascriptFunction(const std::string& function_name,
-                              const base::Value& arg);
-  void CallJavascriptFunction(const std::string& function_name,
-                              const base::Value& arg1,
-                              const base::Value& arg2);
-  void CallJavascriptFunction(const std::string& function_name,
-                              const base::Value& arg1,
-                              const base::Value& arg2,
-                              const base::Value& arg3);
-  void CallJavascriptFunction(const std::string& function_name,
-                              const base::Value& arg1,
-                              const base::Value& arg2,
-                              const base::Value& arg3,
-                              const base::Value& arg4);
-  void CallJavascriptFunction(const std::string& function_name,
-                              const std::vector<const base::Value*>& args);
-
-  content::WebContents* web_contents() const { return web_contents_; }
-
-  // An opaque identifier used to identify a WebUI. This can only be compared to
-  // kNoWebUI or other WebUI types. See GetWebUIType.
-  typedef void* TypeID;
-
-  // A special WebUI type that signifies that a given page would not use the
-  // Web UI system.
-  static const TypeID kNoWebUI;
-
-  // Returns JavaScript code that, when executed, calls the function specified
-  // by |function_name| with the arguments specified in |arg_list|.
-  static string16 GetJavascriptCall(
+  virtual void RegisterMessageCallback(
+      const std::string& message,
+      const MessageCallback& callback) OVERRIDE;
+  virtual void ProcessWebUIMessage(const GURL& source_url,
+                                   const std::string& message,
+                                   const base::ListValue& args) OVERRIDE;
+  virtual void CallJavascriptFunction(
+      const std::string& function_name) OVERRIDE;
+  virtual void CallJavascriptFunction(const std::string& function_name,
+                                      const base::Value& arg) OVERRIDE;
+  virtual void CallJavascriptFunction(const std::string& function_name,
+                                      const base::Value& arg1,
+                                      const base::Value& arg2) OVERRIDE;
+  virtual void CallJavascriptFunction(const std::string& function_name,
+                                      const base::Value& arg1,
+                                      const base::Value& arg2,
+                                      const base::Value& arg3) OVERRIDE;
+  virtual void CallJavascriptFunction(const std::string& function_name,
+                                      const base::Value& arg1,
+                                      const base::Value& arg2,
+                                      const base::Value& arg3,
+                                      const base::Value& arg4) OVERRIDE;
+  virtual void CallJavascriptFunction(
       const std::string& function_name,
-      const std::vector<const base::Value*>& arg_list);
+      const std::vector<const base::Value*>& args) OVERRIDE;
+
+  // IPC::Channel::Listener implementation:
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
  private:
+  // IPC message handling.
+  void OnWebUISend(const GURL& source_url,
+                   const std::string& message,
+                   const base::ListValue& args);
+
+  // Execute a string of raw Javascript on the page.
+  void ExecuteJavascript(const string16& javascript);
+
   // A map of message name -> message handling callback.
   typedef std::map<std::string, MessageCallback> MessageCallbackMap;
   MessageCallbackMap message_callbacks_;
@@ -172,9 +96,6 @@ class CONTENT_EXPORT WebUI : public IPC::Channel::Listener {
   content::PageTransition link_transition_type_;  // Defaults to LINK.
   int bindings_;  // The bindings from BindingsPolicy that should be enabled for
                   // this page.
-
-  // Used by test mocks. See the public getters for more information.
-  bool register_callback_overwrites_;  // Defaults to false.
 
   // The WebUIMessageHandlers we own.
   std::vector<content::WebUIMessageHandler*> handlers_;

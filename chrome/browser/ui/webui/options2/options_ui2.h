@@ -85,7 +85,7 @@ class OptionsPageUIHandlerHost {
 class OptionsUI : public content::WebUIController,
                   public OptionsPageUIHandlerHost {
  public:
-  explicit OptionsUI(WebUI* web_ui);
+  explicit OptionsUI(content::WebUI* web_ui);
   virtual ~OptionsUI();
 
   static RefCountedMemory* GetFaviconResourceBytes();

@@ -12,8 +12,8 @@
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/browser/ui/webui/quota_internals_handler.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_ui.h"
 #include "grit/quota_internals_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -37,11 +37,10 @@ ChromeWebUIDataSource* CreateQuotaInternalsHTMLSource() {
 
 }  // namespace
 
-QuotaInternalsUI::QuotaInternalsUI(WebUI* web_ui)
+QuotaInternalsUI::QuotaInternalsUI(content::WebUI* web_ui)
     : WebUIController(web_ui) {
   web_ui->AddMessageHandler(new quota_internals::QuotaInternalsHandler);
-  Profile* profile = Profile::FromBrowserContext(
-      web_ui->web_contents()->GetBrowserContext());
+  Profile* profile = Profile::FromWebUI(web_ui);
   profile->GetChromeURLDataManager()->AddDataSource(
       CreateQuotaInternalsHTMLSource());
 }

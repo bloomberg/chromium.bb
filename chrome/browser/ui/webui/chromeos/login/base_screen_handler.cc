@@ -6,7 +6,7 @@
 
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/base_login_display_host.h"
-#include "content/browser/webui/web_ui.h"
+#include "content/public/browser/web_ui.h"
 
 namespace chromeos {
 

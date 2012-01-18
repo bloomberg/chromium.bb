@@ -8,8 +8,8 @@
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/browser/ui/webui/network_action_predictor/network_action_predictor_dom_handler.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_ui.h"
 #include "grit/browser_resources.h"
 
 namespace {
@@ -25,10 +25,9 @@ ChromeWebUIDataSource* CreateNetworkActionPredictorUIHTMLSource() {
 
 }  // namespace
 
-NetworkActionPredictorUI::NetworkActionPredictorUI(WebUI* web_ui)
+NetworkActionPredictorUI::NetworkActionPredictorUI(content::WebUI* web_ui)
     : WebUIController(web_ui) {
-  Profile* profile = Profile::FromBrowserContext(
-      web_ui->web_contents()->GetBrowserContext());
+  Profile* profile = Profile::FromWebUI(web_ui);
   web_ui->AddMessageHandler(new NetworkActionPredictorDOMHandler(profile));
   profile->GetChromeURLDataManager()->AddDataSource(
       CreateNetworkActionPredictorUIHTMLSource());

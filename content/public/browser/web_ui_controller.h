@@ -12,13 +12,14 @@
 
 class GURL;
 class RenderViewHost;
-class WebUI;
 
 namespace base {
 class ListValue;
 }
 
 namespace content {
+
+class WebUI;
 
 // A WebUI page is controller by the embedder's WebUIController object. It
 // manages the data source and message handlers.
@@ -56,7 +57,6 @@ class CONTENT_EXPORT WebUIController {
 
  private:
   WebUI* web_ui_;
-
 };
 
 }  // namespace content

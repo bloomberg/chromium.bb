@@ -9,11 +9,13 @@
 #include "base/compiler_specific.h"
 #include "chrome/browser/cookies_tree_model.h"
 
-class WebUI;
-
 namespace base {
 class ListValue;
 class Value;
+}
+
+namespace content {
+class WebUI;
 }
 
 // CookiesTreeModelAdapter binds a CookiesTreeModel with a JS tree. It observes
@@ -25,7 +27,7 @@ class CookiesTreeModelAdapter : public CookiesTreeModel::Observer {
   virtual ~CookiesTreeModelAdapter();
 
   // Initializes with given WebUI.
-  void Init(WebUI* web_ui);
+  void Init(content::WebUI* web_ui);
 
   // Sets up the bindings between js tree and |model|.
   // Note that this class does not take ownership of the model.
@@ -59,7 +61,7 @@ class CookiesTreeModelAdapter : public CookiesTreeModel::Observer {
   base::Value* GetTreeNodeId(CookieTreeNode* node);
 
   // Hosting WebUI of the js tree.
-  WebUI* web_ui_;
+  content::WebUI* web_ui_;
 
   // Id of JS tree that is managed by this handler.
   std::string tree_id_;

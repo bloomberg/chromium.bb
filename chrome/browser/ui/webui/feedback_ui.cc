@@ -26,11 +26,11 @@
 #include "chrome/browser/ui/window_snapshot/window_snapshot.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
@@ -530,9 +530,8 @@ void FeedbackHandler::CloseFeedbackTab() {
 // FeedbackUI
 //
 ////////////////////////////////////////////////////////////////////////////////
-FeedbackUI::FeedbackUI(WebUI* web_ui) : HtmlDialogUI(web_ui) {
-  WebContents* tab = web_ui->web_contents();
-  FeedbackHandler* handler = new FeedbackHandler(tab);
+FeedbackUI::FeedbackUI(content::WebUI* web_ui) : HtmlDialogUI(web_ui) {
+  FeedbackHandler* handler = new FeedbackHandler(web_ui->GetWebContents());
   web_ui->AddMessageHandler(handler);
 
   // The handler's init will determine whether we show the error html page.
@@ -540,6 +539,6 @@ FeedbackUI::FeedbackUI(WebUI* web_ui) : HtmlDialogUI(web_ui) {
       CreateFeedbackUIHTMLSource(handler->Init());
 
   // Set up the chrome://feedback/ source.
-  Profile* profile = Profile::FromBrowserContext(tab->GetBrowserContext());
+  Profile* profile = Profile::FromWebUI(web_ui);
   profile->GetChromeURLDataManager()->AddDataSource(html_source);
 }

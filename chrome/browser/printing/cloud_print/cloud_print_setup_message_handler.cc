@@ -10,7 +10,7 @@
 #include "base/json/json_writer.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_setup_flow.h"
-#include "content/browser/webui/web_ui.h"
+#include "content/public/browser/web_ui.h"
 
 void CloudPrintSetupMessageHandler::RegisterMessages() {
   // Pass the WebUI object to the setup flow.

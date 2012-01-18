@@ -18,9 +18,9 @@
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/gpu/gpu_data_manager.h"
-#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
@@ -243,11 +243,11 @@ void GpuMessageHandler::OnGpuInfoUpdate() {
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-GpuInternalsUI::GpuInternalsUI(WebUI* web_ui) : WebUIController(web_ui) {
+GpuInternalsUI::GpuInternalsUI(content::WebUI* web_ui)
+    : WebUIController(web_ui) {
   web_ui->AddMessageHandler(new GpuMessageHandler());
 
   // Set up the chrome://gpu-internals/ source.
-  Profile* profile = Profile::FromBrowserContext(
-      web_ui->web_contents()->GetBrowserContext());
+  Profile* profile = Profile::FromWebUI(web_ui);
   profile->GetChromeURLDataManager()->AddDataSource(CreateGpuHTMLSource());
 }

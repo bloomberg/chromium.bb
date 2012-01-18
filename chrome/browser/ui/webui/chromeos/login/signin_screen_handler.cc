@@ -111,7 +111,7 @@ class NetworkStateInformer
     : public chromeos::NetworkLibrary::NetworkManagerObserver,
       public content::NotificationObserver {
  public:
-  explicit NetworkStateInformer(WebUI* web_ui);
+  explicit NetworkStateInformer(content::WebUI* web_ui);
   virtual ~NetworkStateInformer();
 
   // Adds observer's callback to be called when network state has been changed.
@@ -144,12 +144,12 @@ class NetworkStateInformer
   ConnectionType last_network_type_;
   std::string network_name_;
   State state_;
-  WebUI* web_ui_;
+  content::WebUI* web_ui_;
 };
 
 // NetworkStateInformer implementation -----------------------------------------
 
-NetworkStateInformer::NetworkStateInformer(WebUI* web_ui)
+NetworkStateInformer::NetworkStateInformer(content::WebUI* web_ui)
     : last_network_type_(TYPE_WIFI),
       state_(OFFLINE),
       web_ui_(web_ui) {
@@ -814,8 +814,7 @@ void SigninScreenHandler::StartClearingCookies() {
     cookie_remover_->RemoveObserver(this);
 
   cookie_remover_ = new BrowsingDataRemover(
-      Profile::FromBrowserContext(
-          web_ui()->web_contents()->GetBrowserContext()),
+      Profile::FromWebUI(web_ui()),
       BrowsingDataRemover::EVERYTHING,
       base::Time());
   cookie_remover_->AddObserver(this);

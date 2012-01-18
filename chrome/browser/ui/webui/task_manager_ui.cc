@@ -11,8 +11,8 @@
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/browser/ui/webui/task_manager_handler.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_ui.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
 #include "grit/chromium_strings.h"
@@ -78,12 +78,11 @@ ChromeWebUIDataSource* CreateTaskManagerUIHTMLSource() {
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-TaskManagerUI::TaskManagerUI(WebUI* web_ui) : WebUIController(web_ui) {
+TaskManagerUI::TaskManagerUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   web_ui->AddMessageHandler(new TaskManagerHandler(TaskManager::GetInstance()));
 
   // Set up the chrome://taskmanager/ source.
   ChromeWebUIDataSource* html_source = CreateTaskManagerUIHTMLSource();
-  Profile* profile = Profile::FromBrowserContext(
-      web_ui->web_contents()->GetBrowserContext());
+  Profile* profile = Profile::FromWebUI(web_ui);
   profile->GetChromeURLDataManager()->AddDataSource(html_source);
 }

@@ -42,11 +42,11 @@
 #include "chrome/common/time_format.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "content/public/browser/web_ui.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -196,7 +196,7 @@ void OptionsPageUIHandler::RegisterTitle(DictionaryValue* localized_strings,
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-OptionsUI::OptionsUI(WebUI* web_ui)
+OptionsUI::OptionsUI(content::WebUI* web_ui)
     : WebUIController(web_ui),
       initialized_handlers_(false) {
   DictionaryValue* localized_strings = new DictionaryValue();
@@ -271,8 +271,7 @@ OptionsUI::OptionsUI(WebUI* web_ui)
       new OptionsUIHTMLSource(localized_strings);
 
   // Set up the chrome://settings-frame/ source.
-  Profile* profile = Profile::FromBrowserContext(
-      web_ui->web_contents()->GetBrowserContext());
+  Profile* profile = Profile::FromWebUI(web_ui);
   profile->GetChromeURLDataManager()->AddDataSource(html_source);
 
   // Set up the chrome://theme/ source.
@@ -319,8 +318,7 @@ RefCountedMemory* OptionsUI::GetFaviconResourceBytes() {
 }
 
 void OptionsUI::InitializeHandlers() {
-  Profile* profile = Profile::FromBrowserContext(
-      web_ui()->web_contents()->GetBrowserContext());
+  Profile* profile = Profile::FromWebUI(web_ui());
   DCHECK(!profile->IsOffTheRecord() || Profile::IsGuestSession());
 
   // The reinitialize call from DidBecomeActiveForReusedRenderView end up being

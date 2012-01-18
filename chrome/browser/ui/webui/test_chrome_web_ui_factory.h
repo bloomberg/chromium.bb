@@ -11,7 +11,7 @@
 #include <string>
 
 #include "chrome/browser/ui/webui/chrome_web_ui_factory.h"
-#include "content/browser/webui/web_ui.h"
+#include "content/public/browser/web_ui.h"
 
 // This class replaces the ChromeWebUIFactory when the switches::kTestType flag
 // is passed. It provides a registry to override CreateWebUIForURL() by host.
@@ -22,7 +22,7 @@ class TestChromeWebUIFactory : public ChromeWebUIFactory {
    public:
     // Create and return a new WebUI object for the |tab_contents| based on the
     // |url|.
-     virtual content::WebUIController* NewWebUI(WebUI* web_ui,
+     virtual content::WebUIController* NewWebUI(content::WebUI* web_ui,
                                                 const GURL& url) = 0;
 
    protected:
@@ -42,7 +42,7 @@ class TestChromeWebUIFactory : public ChromeWebUIFactory {
   virtual WebUI::TypeID GetWebUIType(content::BrowserContext* browser_context,
                                      const GURL& url) const OVERRIDE;
   virtual content::WebUIController* CreateWebUIForURL(
-      WebUI* web_ui, const GURL& url) const OVERRIDE;
+      content::WebUI* web_ui, const GURL& url) const OVERRIDE;
 
   // Return the singleton instance.
   static TestChromeWebUIFactory* GetInstance();

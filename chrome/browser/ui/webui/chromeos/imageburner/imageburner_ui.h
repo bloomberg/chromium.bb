@@ -9,7 +9,7 @@
 
 class ImageBurnUI : public content::WebUIController {
  public:
-  explicit ImageBurnUI(WebUI* web_ui);
+  explicit ImageBurnUI(content::WebUI* web_ui);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ImageBurnUI);

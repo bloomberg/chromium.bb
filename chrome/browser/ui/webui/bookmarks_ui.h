@@ -33,7 +33,7 @@ class BookmarksUIHTMLSource : public ChromeURLDataManager::DataSource {
 // overridden by an extension.
 class BookmarksUI : public content::WebUIController {
  public:
-  explicit BookmarksUI(WebUI* web_ui);
+  explicit BookmarksUI(content::WebUI* web_ui);
 
   static RefCountedMemory* GetFaviconResourceBytes();
 

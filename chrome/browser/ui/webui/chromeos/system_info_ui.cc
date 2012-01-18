@@ -22,9 +22,9 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
@@ -173,13 +173,12 @@ void SystemInfoHandler::RegisterMessages() {
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-SystemInfoUI::SystemInfoUI(WebUI* web_ui) : WebUIController(web_ui) {
+SystemInfoUI::SystemInfoUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   SystemInfoHandler* handler = new SystemInfoHandler();
   web_ui->AddMessageHandler(handler);
   SystemInfoUIHTMLSource* html_source = new SystemInfoUIHTMLSource();
 
   // Set up the chrome://system/ source.
-  Profile* profile = Profile::FromBrowserContext(
-      web_ui->web_contents()->GetBrowserContext());
+  Profile* profile = Profile::FromWebUI(web_ui);
   profile->GetChromeURLDataManager()->AddDataSource(html_source);
 }

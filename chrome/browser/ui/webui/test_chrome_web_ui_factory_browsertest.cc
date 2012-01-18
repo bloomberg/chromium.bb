@@ -28,7 +28,8 @@ ACTION(ReturnNewWebUI) {
 // expected.
 class MockWebUIProvider : public TestChromeWebUIFactory::WebUIProvider {
  public:
-  MOCK_METHOD2(NewWebUI, WebUIController*(WebUI* web_ui, const GURL& url));
+  MOCK_METHOD2(NewWebUI, WebUIController*(content::WebUI* web_ui,
+                                          const GURL& url));
 };
 
 // Dummy URL location for us to override.

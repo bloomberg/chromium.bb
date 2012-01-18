@@ -16,7 +16,7 @@ namespace chromeos {
 // - Display "SIM card is blocked" message when there're no PUK tries left.
 class SimUnlockUI : public content::WebUIController {
  public:
-  explicit SimUnlockUI(WebUI* web_ui);
+  explicit SimUnlockUI(content::WebUI* web_ui);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SimUnlockUI);

@@ -13,8 +13,8 @@
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 #include "chrome/browser/ui/webui/web_ui_util.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_ui.h"
 
 namespace {
 
@@ -63,7 +63,7 @@ RecentlyClosedTabsHandler::~RecentlyClosedTabsHandler() {
 void RecentlyClosedTabsHandler::HandleReopenTab(const ListValue* args) {
   TabRestoreServiceDelegate* delegate =
       TabRestoreServiceDelegate::FindDelegateForController(
-      &web_ui()->web_contents()->GetController(), NULL);
+          &web_ui()->GetWebContents()->GetController(), NULL);
   if (!delegate || !tab_restore_service_)
     return;
 

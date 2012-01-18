@@ -20,8 +20,8 @@
 #include "chrome/common/pref_names.h"
 #include "content/browser/accessibility/browser_accessibility_state.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_ui.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -83,7 +83,7 @@ class ContentScriptLoader {
   std::queue<ExtensionResource> resources_;
 };
 
-void EnableAccessibility(bool enabled, WebUI* login_web_ui) {
+void EnableAccessibility(bool enabled, content::WebUI* login_web_ui) {
   bool accessibility_enabled = g_browser_process &&
       g_browser_process->local_state()->GetBoolean(
           prefs::kSpokenFeedbackEnabled);
@@ -117,7 +117,7 @@ void EnableAccessibility(bool enabled, WebUI* login_web_ui) {
 
     if (login_web_ui) {
       RenderViewHost* render_view_host =
-          login_web_ui->web_contents()->GetRenderViewHost();
+          login_web_ui->GetWebContents()->GetRenderViewHost();
       // Set a flag to tell ChromeVox that it's just been enabled,
       // so that it won't interrupt our speech feedback enabled message.
       ExtensionMsg_ExecuteCode_Params params;
@@ -171,7 +171,7 @@ void EnableVirtualKeyboard(bool enabled) {
   pref_service->CommitPendingWrite();
 }
 
-void ToggleAccessibility(WebUI* login_web_ui) {
+void ToggleAccessibility(content::WebUI* login_web_ui) {
   bool accessibility_enabled = g_browser_process &&
       g_browser_process->local_state()->GetBoolean(
           prefs::kSpokenFeedbackEnabled);

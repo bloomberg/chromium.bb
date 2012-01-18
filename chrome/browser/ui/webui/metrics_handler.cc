@@ -13,10 +13,10 @@
 #include "chrome/browser/metrics/metric_event_duration_details.h"
 #include "chrome/browser/ui/webui/chrome_web_ui.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_ui.h"
 
 using base::ListValue;
 using content::UserMetricsAction;
@@ -79,7 +79,7 @@ void MetricsHandler::HandleRecordInHistogram(const ListValue* args) {
 
 void MetricsHandler::HandleLogEventTime(const ListValue* args) {
   std::string event_name = UTF16ToUTF8(ExtractStringValue(args));
-  WebContents* tab = web_ui()->web_contents();
+  WebContents* tab = web_ui()->GetWebContents();
 
   // Not all new tab pages get timed. In those cases, we don't have a
   // new_tab_start_time_.

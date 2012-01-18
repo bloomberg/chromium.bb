@@ -12,7 +12,7 @@
 // is used in Chrome OS to register product on first sign in.
 class RegisterPageUI : public content::WebUIController {
  public:
-  explicit RegisterPageUI(WebUI* web_ui);
+  explicit RegisterPageUI(content::WebUI* web_ui);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(RegisterPageUI);

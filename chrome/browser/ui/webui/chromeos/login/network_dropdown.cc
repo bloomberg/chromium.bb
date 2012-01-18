@@ -11,7 +11,7 @@
 #include "chrome/browser/chromeos/login/base_login_display_host.h"
 #include "chrome/browser/chromeos/login/proxy_settings_dialog.h"
 #include "chrome/browser/ui/webui/web_ui_util.h"
-#include "content/browser/webui/web_ui.h"
+#include "content/public/browser/web_ui.h"
 #include "ui/base/models/menu_model.h"
 #include "ui/gfx/font.h"
 
@@ -20,7 +20,7 @@ namespace chromeos {
 // WebUI specific implementation of the NetworkMenu class.
 class NetworkMenuWebUI : public NetworkMenu {
  public:
-  NetworkMenuWebUI(NetworkMenu::Delegate* delegate, WebUI* web_ui);
+  NetworkMenuWebUI(NetworkMenu::Delegate* delegate, content::WebUI* web_ui);
 
   // NetworkMenu override:
   virtual void UpdateMenu() OVERRIDE;
@@ -33,7 +33,7 @@ class NetworkMenuWebUI : public NetworkMenu {
   base::ListValue* ConvertMenuModel(ui::MenuModel* model);
 
   // WebUI where network menu is located.
-  WebUI* web_ui_;
+  content::WebUI* web_ui_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkMenuWebUI);
 };
@@ -41,7 +41,7 @@ class NetworkMenuWebUI : public NetworkMenu {
 // NetworkMenuWebUI ------------------------------------------------------------
 
 NetworkMenuWebUI::NetworkMenuWebUI(NetworkMenu::Delegate* delegate,
-                                   WebUI* web_ui)
+                                   content::WebUI* web_ui)
     : NetworkMenu(delegate),
       web_ui_(web_ui) {
 }
@@ -93,7 +93,7 @@ base::ListValue* NetworkMenuWebUI::ConvertMenuModel(ui::MenuModel* model) {
 
 // NetworkDropdown -------------------------------------------------------------
 
-NetworkDropdown::NetworkDropdown(WebUI* web_ui,
+NetworkDropdown::NetworkDropdown(content::WebUI* web_ui,
                                  bool oobe)
     : web_ui_(web_ui),
       oobe_(oobe) {

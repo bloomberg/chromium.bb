@@ -11,9 +11,9 @@
 #include "base/values.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "content/public/common/bindings_policy.h"
 
@@ -22,7 +22,7 @@ using content::WebUIMessageHandler;
 static base::LazyInstance<base::PropertyAccessor<HtmlDialogUIDelegate*> >
     g_html_dialog_ui_property_accessor = LAZY_INSTANCE_INITIALIZER;
 
-HtmlDialogUI::HtmlDialogUI(WebUI* web_ui)
+HtmlDialogUI::HtmlDialogUI(content::WebUI* web_ui)
     : WebUIController(web_ui) {
 }
 
@@ -60,7 +60,7 @@ void HtmlDialogUI::RenderViewCreated(RenderViewHost* render_view_host) {
   std::string dialog_args;
   std::vector<WebUIMessageHandler*> handlers;
   HtmlDialogUIDelegate** delegate = GetPropertyAccessor().GetProperty(
-      web_ui()->web_contents()->GetPropertyBag());
+      web_ui()->GetWebContents()->GetPropertyBag());
   if (delegate) {
     dialog_args = (*delegate)->GetDialogArgs();
     (*delegate)->GetWebUIMessageHandlers(&handlers);
@@ -75,13 +75,13 @@ void HtmlDialogUI::RenderViewCreated(RenderViewHost* render_view_host) {
 
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_HTML_DIALOG_SHOWN,
-      content::Source<WebUI>(web_ui()),
+      content::Source<content::WebUI>(web_ui()),
       content::Details<RenderViewHost>(render_view_host));
 }
 
 void HtmlDialogUI::OnDialogClosed(const ListValue* args) {
   HtmlDialogUIDelegate** delegate = GetPropertyAccessor().GetProperty(
-      web_ui()->web_contents()->GetPropertyBag());
+      web_ui()->GetWebContents()->GetPropertyBag());
   if (delegate) {
     std::string json_retval;
     if (args && !args->empty() && !args->GetString(0, &json_retval))
@@ -91,7 +91,7 @@ void HtmlDialogUI::OnDialogClosed(const ListValue* args) {
   }
 }
 
-ExternalHtmlDialogUI::ExternalHtmlDialogUI(WebUI* web_ui)
+ExternalHtmlDialogUI::ExternalHtmlDialogUI(content::WebUI* web_ui)
     : HtmlDialogUI(web_ui) {
   // Non-file based UI needs to not have access to the Web UI bindings
   // for security reasons. The code hosting the dialog should provide

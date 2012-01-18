@@ -18,8 +18,8 @@
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
@@ -154,12 +154,11 @@ void FlagsDOMHandler::HandleRestartBrowser(const ListValue* args) {
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-FlagsUI::FlagsUI(WebUI* web_ui) : WebUIController(web_ui) {
+FlagsUI::FlagsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   web_ui->AddMessageHandler(new FlagsDOMHandler());
 
   // Set up the about:flags source.
-  Profile* profile = Profile::FromBrowserContext(
-      web_ui->web_contents()->GetBrowserContext());
+  Profile* profile = Profile::FromWebUI(web_ui);
   profile->GetChromeURLDataManager()->AddDataSource(CreateFlagsUIHTMLSource());
 }
 

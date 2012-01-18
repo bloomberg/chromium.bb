@@ -144,7 +144,7 @@ void ChangePictureOptionsHandler::HandleChooseFile(const ListValue* args) {
       &file_type_info,
       0,
       FILE_PATH_LITERAL(""),
-      web_ui()->web_contents(),
+      web_ui()->GetWebContents(),
       GetBrowserWindow(),
       NULL);
 }

@@ -25,7 +25,7 @@ class ExtensionWebUI : public content::WebUIController {
  public:
   static const char kExtensionURLOverrides[];
 
-  ExtensionWebUI(WebUI* web_ui, const GURL& url);
+  ExtensionWebUI(content::WebUI* web_ui, const GURL& url);
 
   virtual ~ExtensionWebUI();
 

@@ -51,7 +51,7 @@ class RenderViewHostManagerTestWebUIFactory
   }
 
   // WebUIFactory implementation.
-  virtual WebUIController* CreateWebUIForURL(WebUI* web_ui,
+  virtual WebUIController* CreateWebUIForURL(content::WebUI* web_ui,
                                              const GURL& url) const OVERRIDE {
     if (!(should_create_webui_ && HasWebUIScheme(url)))
       return NULL;

@@ -24,6 +24,10 @@ using content::WebContents;
 using content::WebUIController;
 using content::WebUIMessageHandler;
 
+namespace content {
+
+const WebUI::TypeID WebUI::kNoWebUI = NULL;
+
 // static
 string16 WebUI::GetJavascriptCall(
     const std::string& function_name,
@@ -41,13 +45,14 @@ string16 WebUI::GetJavascriptCall(
       char16('(') + parameters + char16(')') + char16(';');
 }
 
+}
+
 WebUI::WebUI(WebContents* contents)
     : hide_favicon_(false),
       focus_location_bar_by_default_(false),
       should_hide_url_(false),
       link_transition_type_(content::PAGE_TRANSITION_LINK),
       bindings_(content::BINDINGS_POLICY_WEB_UI),
-      register_callback_overwrites_(false),
       web_contents_(contents) {
   DCHECK(contents);
   AddMessageHandler(new GenericHandler());
@@ -61,8 +66,6 @@ WebUI::~WebUI() {
 }
 
 // WebUI, public: -------------------------------------------------------------
-
-const WebUI::TypeID WebUI::kNoWebUI = NULL;
 
 bool WebUI::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
@@ -191,7 +194,7 @@ void WebUI::CallJavascriptFunction(const std::string& function_name,
   DCHECK(IsStringASCII(function_name));
   std::vector<const Value*> args;
   args.push_back(&arg);
-  ExecuteJavascript(WebUI::GetJavascriptCall(function_name, args));
+  ExecuteJavascript(GetJavascriptCall(function_name, args));
 }
 
 void WebUI::CallJavascriptFunction(
@@ -201,7 +204,7 @@ void WebUI::CallJavascriptFunction(
   std::vector<const Value*> args;
   args.push_back(&arg1);
   args.push_back(&arg2);
-  ExecuteJavascript(WebUI::GetJavascriptCall(function_name, args));
+  ExecuteJavascript(GetJavascriptCall(function_name, args));
 }
 
 void WebUI::CallJavascriptFunction(
@@ -212,7 +215,7 @@ void WebUI::CallJavascriptFunction(
   args.push_back(&arg1);
   args.push_back(&arg2);
   args.push_back(&arg3);
-  ExecuteJavascript(WebUI::GetJavascriptCall(function_name, args));
+  ExecuteJavascript(GetJavascriptCall(function_name, args));
 }
 
 void WebUI::CallJavascriptFunction(
@@ -227,24 +230,25 @@ void WebUI::CallJavascriptFunction(
   args.push_back(&arg2);
   args.push_back(&arg3);
   args.push_back(&arg4);
-  ExecuteJavascript(WebUI::GetJavascriptCall(function_name, args));
+  ExecuteJavascript(GetJavascriptCall(function_name, args));
 }
 
 void WebUI::CallJavascriptFunction(
     const std::string& function_name,
     const std::vector<const Value*>& args) {
   DCHECK(IsStringASCII(function_name));
-  ExecuteJavascript(WebUI::GetJavascriptCall(function_name, args));
+  ExecuteJavascript(GetJavascriptCall(function_name, args));
 }
 
 void WebUI::RegisterMessageCallback(const std::string &message,
                                     const MessageCallback& callback) {
-  std::pair<MessageCallbackMap::iterator, bool> result =
-      message_callbacks_.insert(std::make_pair(message, callback));
+  message_callbacks_.insert(std::make_pair(message, callback));
+}
 
-  // Overwrite preexisting message callback mappings.
-  if (!result.second && register_callback_overwrites())
-    result.first->second = callback;
+void WebUI::ProcessWebUIMessage(const GURL& source_url,
+                                const std::string& message,
+                                const base::ListValue& args) {
+  OnWebUISend(source_url, message, args);
 }
 
 // WebUI, protected: ----------------------------------------------------------

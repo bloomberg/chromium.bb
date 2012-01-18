@@ -105,7 +105,7 @@ class CONTENT_EXPORT TabContents
     render_manager_.remove_interstitial_page();
   }
 
-  void set_opener_web_ui_type(WebUI::TypeID opener_web_ui_type) {
+  void set_opener_web_ui_type(content::WebUI::TypeID opener_web_ui_type) {
     opener_web_ui_type_ = opener_web_ui_type;
   }
 
@@ -133,9 +133,9 @@ class CONTENT_EXPORT TabContents
   virtual RenderViewHost* GetRenderViewHost() const OVERRIDE;
   virtual RenderWidgetHostView* GetRenderWidgetHostView() const OVERRIDE;
   virtual TabContentsView* GetView() const OVERRIDE;
-  virtual WebUI* CreateWebUI(const GURL& url) OVERRIDE;
-  virtual WebUI* GetWebUI() const OVERRIDE;
-  virtual WebUI* GetCommittedWebUI() const OVERRIDE;
+  virtual content::WebUI* CreateWebUI(const GURL& url) OVERRIDE;
+  virtual content::WebUI* GetWebUI() const OVERRIDE;
+  virtual content::WebUI* GetCommittedWebUI() const OVERRIDE;
   virtual const string16& GetTitle() const OVERRIDE;
   virtual int32 GetMaxPageID() OVERRIDE;
   virtual int32 GetMaxPageIDForSiteInstance(
@@ -207,8 +207,8 @@ class CONTENT_EXPORT TabContents
   virtual int GetMaximumZoomPercent() const OVERRIDE;
   virtual gfx::Size GetPreferredSize() const OVERRIDE;
   virtual int GetContentRestrictions() const OVERRIDE;
-  virtual WebUI::TypeID GetWebUITypeForCurrentState() OVERRIDE;
-  virtual WebUI* GetWebUIForCurrentState() OVERRIDE;
+  virtual content::WebUI::TypeID GetWebUITypeForCurrentState() OVERRIDE;
+  virtual content::WebUI* GetWebUIForCurrentState() OVERRIDE;
   virtual bool GotResponseToLockMouseRequest(bool allowed) OVERRIDE;
 
   // Implementation of PageNavigator.
@@ -609,7 +609,7 @@ class CONTENT_EXPORT TabContents
 
   // If this tab was created from a renderer using window.open, this will be
   // non-NULL and represent the WebUI of the opening renderer.
-  WebUI::TypeID opener_web_ui_type_;
+  content::WebUI::TypeID opener_web_ui_type_;
 
   // The time that we started to create the new tab page.
   base::TimeTicks new_tab_start_time_;

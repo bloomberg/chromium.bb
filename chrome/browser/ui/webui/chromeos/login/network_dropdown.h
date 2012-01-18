@@ -22,7 +22,7 @@ class NetworkDropdown : public NetworkMenu::Delegate,
                         NetworkLibrary::NetworkManagerObserver,
                         public LoginHtmlDialog::Delegate {
  public:
-  NetworkDropdown(WebUI* web_ui, bool oobe);
+  NetworkDropdown(content::WebUI* web_ui, bool oobe);
   virtual ~NetworkDropdown();
 
   // Sets last active network type. Used to show correct disconnected icon.
@@ -62,7 +62,7 @@ class NetworkDropdown : public NetworkMenu::Delegate,
   // Proxy settings dialog that can be invoked from network menu.
   scoped_ptr<LoginHtmlDialog> proxy_settings_dialog_;
 
-  WebUI* web_ui_;
+  content::WebUI* web_ui_;
 
   // Is the dropdown shown on one of the OOBE screens.
   bool oobe_;

@@ -44,11 +44,11 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_ui.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -76,7 +76,7 @@ static base::LazyInstance<std::set<const WebUIController*> > g_live_new_tabs;
 ///////////////////////////////////////////////////////////////////////////////
 // NewTabUI
 
-NewTabUI::NewTabUI(WebUI* web_ui)
+NewTabUI::NewTabUI(content::WebUI* web_ui)
     : WebUIController(web_ui) {
   g_live_new_tabs.Pointer()->insert(this);
   // Override some options on the Web UI.
@@ -259,8 +259,7 @@ NewTabUI* NewTabUI::FromWebUIController(content::WebUIController* ui) {
 }
 
 Profile* NewTabUI::GetProfile() const {
-  return Profile::FromBrowserContext(
-      web_ui()->web_contents()->GetBrowserContext());
+  return Profile::FromWebUI(web_ui());
 }
 
 ///////////////////////////////////////////////////////////////////////////////

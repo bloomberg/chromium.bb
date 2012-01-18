@@ -275,10 +275,9 @@ class MockWebUIProvider : public TestChromeWebUIFactory::WebUIProvider {
   MockWebUIProvider() {}
 
   // Returns a new WebUI
-  WebUIController* NewWebUI(WebUI* web_ui, const GURL& url) OVERRIDE {
+  WebUIController* NewWebUI(content::WebUI* web_ui, const GURL& url) OVERRIDE {
     WebUIController* controller = new content::WebUIController(web_ui);
-    Profile* profile = Profile::FromBrowserContext(
-        web_ui->web_contents()->GetBrowserContext());
+    Profile* profile = Profile::FromWebUI(web_ui);
     profile->GetChromeURLDataManager()->AddDataSource(
         new MockWebUIDataSource());
     return controller;
@@ -335,7 +334,7 @@ void WebUIBrowserTest::TearDownInProcessBrowserTestFixture() {
   TestChromeWebUIFactory::RemoveFactoryOverride(GURL(kDummyURL).host());
 }
 
-void WebUIBrowserTest::SetWebUIInstance(WebUI* web_ui) {
+void WebUIBrowserTest::SetWebUIInstance(content::WebUI* web_ui) {
   override_selected_web_ui_ = web_ui;
 }
 
@@ -403,7 +402,7 @@ string16 WebUIBrowserTest::BuildRunTestJSCall(
     baked_argument_list.Append(const_cast<Value*>(*arguments_iterator));
   }
   arguments.push_back(&baked_argument_list);
-  return WebUI::GetJavascriptCall(std::string("runTest"), arguments);
+  return content::WebUI::GetJavascriptCall(std::string("runTest"), arguments);
 }
 
 bool WebUIBrowserTest::RunJavascriptUsingHandler(
@@ -423,8 +422,8 @@ bool WebUIBrowserTest::RunJavascriptUsingHandler(
       called_function = BuildRunTestJSCall(
           is_async, function_name, function_arguments);
     } else {
-      called_function = WebUI::GetJavascriptCall(function_name,
-                                                 function_arguments);
+      called_function = content::WebUI::GetJavascriptCall(function_name,
+                                                          function_arguments);
     }
     content.append(called_function);
   }
@@ -450,11 +449,11 @@ bool WebUIBrowserTest::RunJavascriptUsingHandler(
 }
 
 void WebUIBrowserTest::SetupHandlers() {
-  WebUI* web_ui_instance = override_selected_web_ui_ ?
+  content::WebUI* web_ui_instance = override_selected_web_ui_ ?
       override_selected_web_ui_ :
       browser()->GetSelectedWebContents()->GetWebUI();
   ASSERT_TRUE(web_ui_instance != NULL);
-  web_ui_instance->set_register_callback_overwrites(true);
+
   test_handler_->set_web_ui(web_ui_instance);
   test_handler_->RegisterMessages();
 

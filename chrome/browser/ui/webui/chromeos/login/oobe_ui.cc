@@ -31,8 +31,8 @@
 #include "chrome/browser/ui/webui/theme_source.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_ui.h"
 #include "grit/browser_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -109,7 +109,7 @@ std::string OobeUIHTMLSource::GetDataResource(int resource_id) const {
 
 // OobeUI ----------------------------------------------------------------------
 
-OobeUI::OobeUI(WebUI* web_ui)
+OobeUI::OobeUI(content::WebUI* web_ui)
     : WebUIController(web_ui),
       update_screen_actor_(NULL),
       network_screen_actor_(NULL),
@@ -151,8 +151,7 @@ OobeUI::OobeUI(WebUI* web_ui)
   DictionaryValue* localized_strings = new DictionaryValue();
   GetLocalizedStrings(localized_strings);
 
-  Profile* profile = Profile::FromBrowserContext(
-      web_ui->web_contents()->GetBrowserContext());
+  Profile* profile = Profile::FromWebUI(web_ui);
   // Set up the chrome://theme/ source, for Chrome logo.
   ThemeSource* theme = new ThemeSource(profile);
   profile->GetChromeURLDataManager()->AddDataSource(theme);

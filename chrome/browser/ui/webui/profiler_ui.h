@@ -14,7 +14,7 @@
 // The C++ back-end for the chrome://profiler webui page.
 class ProfilerUI : public content::WebUIController {
  public:
-  explicit ProfilerUI(WebUI* web_ui);
+  explicit ProfilerUI(content::WebUI* web_ui);
   virtual ~ProfilerUI();
 
   // Get the tracking data from TrackingSynchronizer.

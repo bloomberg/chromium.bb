@@ -67,9 +67,9 @@ CloudPrintSigninFlowHandler::CloudPrintSigninFlowHandler(
 }
 
 void CloudPrintSigninFlowHandler::RegisterMessages() {
-  if (web_ui() && web_ui()->web_contents()) {
+  if (web_ui() && web_ui()->GetWebContents()) {
     NavigationController* controller =
-        &web_ui()->web_contents()->GetController();
+        &web_ui()->GetWebContents()->GetController();
     NavigationEntry* pending_entry = controller->GetPendingEntry();
     if (pending_entry)
       pending_entry->SetURL(CloudPrintURL(
@@ -84,14 +84,14 @@ void CloudPrintSigninFlowHandler::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   if (type == content::NOTIFICATION_NAV_ENTRY_COMMITTED) {
-    GURL url = web_ui()->web_contents()->GetURL();
+    GURL url = web_ui()->GetWebContents()->GetURL();
     GURL dialog_url = CloudPrintURL(
         Profile::FromWebUI(web_ui())).GetCloudPrintServiceURL();
     if (url.host() == dialog_url.host() &&
         url.path() == dialog_url.path() &&
         url.scheme() == dialog_url.scheme()) {
       StoreDialogSize();
-      web_ui()->web_contents()->GetRenderViewHost()->ClosePage();
+      web_ui()->GetWebContents()->GetRenderViewHost()->ClosePage();
       static_cast<PrintPreviewUI*>(
           parent_tab_->GetWebUI()->GetController())->OnReloadPrintersList();
     }
@@ -100,9 +100,9 @@ void CloudPrintSigninFlowHandler::Observe(
 
 void CloudPrintSigninFlowHandler::StoreDialogSize() {
   if (web_ui() &&
-      web_ui()->web_contents() &&
-      web_ui()->web_contents()->GetView()) {
-    gfx::Size size = web_ui()->web_contents()->GetView()->GetContainerSize();
+      web_ui()->GetWebContents() &&
+      web_ui()->GetWebContents()->GetView()) {
+    gfx::Size size = web_ui()->GetWebContents()->GetView()->GetContainerSize();
     Profile* profile = Profile::FromWebUI(web_ui());
     profile->GetPrefs()->SetInteger(prefs::kCloudPrintSigninDialogWidth,
                                     size.width());

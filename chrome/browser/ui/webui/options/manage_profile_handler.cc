@@ -21,8 +21,8 @@
 #include "chrome/browser/ui/webui/web_ui_util.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
-#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/web_ui.h"
 #include "grit/generated_resources.h"
 
 ManageProfileHandler::ManageProfileHandler() {

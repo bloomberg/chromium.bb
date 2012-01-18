@@ -6,7 +6,7 @@
 
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
-#include "content/browser/webui/web_ui.h"
+#include "content/public/browser/web_ui.h"
 
 namespace options2 {
 

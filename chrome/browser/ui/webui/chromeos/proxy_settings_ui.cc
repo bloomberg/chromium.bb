@@ -15,8 +15,8 @@
 #include "chrome/browser/ui/webui/options/chromeos/proxy_handler.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "grit/browser_resources.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -69,7 +69,7 @@ void ProxySettingsHTMLSource::StartDataRequest(const std::string& path,
 
 namespace chromeos {
 
-ProxySettingsUI::ProxySettingsUI(WebUI* web_ui)
+ProxySettingsUI::ProxySettingsUI(content::WebUI* web_ui)
     : WebUIController(web_ui),
       proxy_handler_(new ProxyHandler()),
       core_handler_(new CoreChromeOSOptionsHandler()) {
@@ -85,8 +85,7 @@ ProxySettingsUI::ProxySettingsUI(WebUI* web_ui)
 
   ProxySettingsHTMLSource* source =
       new ProxySettingsHTMLSource(localized_strings);
-  Profile* profile = Profile::FromBrowserContext(
-      web_ui->web_contents()->GetBrowserContext());
+  Profile* profile = Profile::FromWebUI(web_ui);
   profile->GetChromeURLDataManager()->AddDataSource(source);
 }
 
@@ -100,8 +99,7 @@ ProxySettingsUI::~ProxySettingsUI() {
 void ProxySettingsUI::InitializeHandlers() {
   core_handler_->Initialize();
   proxy_handler_->Initialize();
-  Profile* profile = Profile::FromBrowserContext(
-      web_ui()->web_contents()->GetBrowserContext());
+  Profile* profile = Profile::FromWebUI(web_ui());
   PrefProxyConfigTracker* proxy_tracker = profile->GetProxyConfigTracker();
   proxy_tracker->UIMakeActiveNetworkCurrent();
   std::string network_name;

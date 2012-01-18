@@ -42,11 +42,11 @@
 #include "chrome/common/print_messages.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
-#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_ui.h"
 #include "printing/backend/print_backend.h"
 #include "printing/metafile.h"
 #include "printing/metafile_impl.h"
@@ -268,7 +268,7 @@ TabContentsWrapper* PrintPreviewHandler::preview_tab_wrapper() const {
 }
 
 WebContents* PrintPreviewHandler::preview_tab() const {
-  return web_ui()->web_contents();
+  return web_ui()->GetWebContents();
 }
 
 void PrintPreviewHandler::HandleGetPrinters(const ListValue* /*args*/) {
@@ -434,7 +434,7 @@ void PrintPreviewHandler::HandlePrint(const ListValue* args) {
     // The PDF being printed contains only the pages that the user selected,
     // so ignore the page range and print all pages.
     settings->Remove(printing::kSettingPageRange, NULL);
-    RenderViewHost* rvh = web_ui()->web_contents()->GetRenderViewHost();
+    RenderViewHost* rvh = web_ui()->GetWebContents()->GetRenderViewHost();
     rvh->Send(new PrintMsg_PrintForPrintPreview(rvh->routing_id(), *settings));
   }
   if (initiator_tab)

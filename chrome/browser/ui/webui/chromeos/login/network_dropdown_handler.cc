@@ -10,7 +10,7 @@
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/login/webui_login_display.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_dropdown.h"
-#include "content/browser/webui/web_ui.h"
+#include "content/public/browser/web_ui.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 

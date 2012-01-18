@@ -9,7 +9,7 @@
 #include "chrome/browser/autocomplete/network_action_predictor.h"
 #include "chrome/browser/autocomplete/network_action_predictor_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "content/browser/webui/web_ui.h"
+#include "content/public/browser/web_ui.h"
 
 NetworkActionPredictorDOMHandler::NetworkActionPredictorDOMHandler(
   Profile* profile) {

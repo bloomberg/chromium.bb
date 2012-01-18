@@ -13,7 +13,7 @@ class Value;
 
 class NetInternalsUI : public content::WebUIController {
  public:
-  explicit NetInternalsUI(WebUI* web_ui);
+  explicit NetInternalsUI(content::WebUI* web_ui);
 
   // Returns a Value containing constants NetInternals needs to load a log file.
   // Safe to call on any thread.  Caller takes ownership of the returned Value.

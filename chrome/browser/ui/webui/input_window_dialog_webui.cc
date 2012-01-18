@@ -16,7 +16,7 @@
 #include "chrome/browser/ui/dialog_style.h"
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/webui/web_ui.h"
+#include "content/public/browser/web_ui.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 

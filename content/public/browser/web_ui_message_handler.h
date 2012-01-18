@@ -21,6 +21,8 @@ class ListValue;
 
 namespace content {
 
+class WebUI;
+
 // Messages sent from the DOM are forwarded via the WebUI to handler
 // classes. These objects are owned by WebUI and destroyed when the
 // host is destroyed.

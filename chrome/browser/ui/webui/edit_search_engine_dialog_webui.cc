@@ -19,7 +19,7 @@
 #include "chrome/browser/ui/search_engines/edit_search_engine_controller.h"
 #include "chrome/browser/ui/webui/theme_source.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/webui/web_ui.h"
+#include "content/public/browser/web_ui.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "grit/ui_resources.h"

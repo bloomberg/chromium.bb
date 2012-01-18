@@ -15,9 +15,9 @@
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_ui.h"
 
 using content::WebContents;
 using content::WebUIMessageHandler;
@@ -25,7 +25,7 @@ using content::WebUIMessageHandler;
 static base::LazyInstance<base::PropertyAccessor<ConstrainedHtmlUIDelegate*> >
     g_constrained_html_ui_property_accessor = LAZY_INSTANCE_INITIALIZER;
 
-ConstrainedHtmlUI::ConstrainedHtmlUI(WebUI* web_ui)
+ConstrainedHtmlUI::ConstrainedHtmlUI(content::WebUI* web_ui)
     : WebUIController(web_ui) {
 }
 
@@ -54,7 +54,7 @@ void ConstrainedHtmlUI::RenderViewCreated(RenderViewHost* render_view_host) {
 
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_HTML_DIALOG_SHOWN,
-      content::Source<WebUI>(web_ui()),
+      content::Source<content::WebUI>(web_ui()),
       content::Details<RenderViewHost>(render_view_host));
 }
 
@@ -72,7 +72,7 @@ void ConstrainedHtmlUI::OnDialogCloseMessage(const ListValue* args) {
 
 ConstrainedHtmlUIDelegate* ConstrainedHtmlUI::GetConstrainedDelegate() {
   ConstrainedHtmlUIDelegate** property = GetPropertyAccessor().GetProperty(
-      web_ui()->web_contents()->GetPropertyBag());
+      web_ui()->GetWebContents()->GetPropertyBag());
   return property ? *property : NULL;
 }
 

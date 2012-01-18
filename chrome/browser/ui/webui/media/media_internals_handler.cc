@@ -10,9 +10,9 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/ui/webui/media/media_internals_proxy.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_ui.h"
 
 using content::BrowserThread;
 
@@ -38,7 +38,7 @@ void MediaInternalsMessageHandler::OnGetEverything(const ListValue* list) {
 
 void MediaInternalsMessageHandler::OnUpdate(const string16& update) {
   // Don't try to execute JavaScript in a RenderView that no longer exists.
-  RenderViewHost* host = web_ui()->web_contents()->GetRenderViewHost();
+  RenderViewHost* host = web_ui()->GetWebContents()->GetRenderViewHost();
   if (host)
     host->ExecuteJavascriptInWebFrame(string16(), update);
 }

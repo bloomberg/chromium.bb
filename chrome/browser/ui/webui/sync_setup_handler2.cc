@@ -196,7 +196,7 @@ void SyncSetupHandler2::GetLocalizedValues(DictionaryValue* localized_strings) {
 
 void SyncSetupHandler2::GetStaticLocalizedValues(
     DictionaryValue* localized_strings,
-    WebUI* web_ui) {
+    content::WebUI* web_ui) {
   DCHECK(localized_strings);
 
   localized_strings->SetString(
@@ -249,7 +249,7 @@ void SyncSetupHandler2::GetStaticLocalizedValues(
   // version of the Sync Promo.
   int message_body_resource_id = IDS_SYNC_PROMO_MESSAGE_BODY_A;
   if (web_ui && SyncPromoUI::GetIsLaunchPageForSyncPromoURL(
-      web_ui->web_contents()->GetURL())) {
+      web_ui->GetWebContents()->GetURL())) {
     message_body_resource_id = sync_promo_trial::GetMessageBodyResID();
   }
   localized_strings->SetString(
@@ -456,7 +456,7 @@ void SyncSetupHandler2::SetFlow(SyncSetupFlow* flow) {
 }
 
 void SyncSetupHandler2::Focus() {
-  web_ui()->web_contents()->GetRenderViewHost()->delegate()->Activate();
+  web_ui()->GetWebContents()->GetRenderViewHost()->delegate()->Activate();
 }
 
 void SyncSetupHandler2::OnDidClosePage(const ListValue* args) {

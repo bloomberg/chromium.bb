@@ -11,7 +11,7 @@
 // The implementation for the chrome://media-internals page.
 class MediaInternalsUI : public content::WebUIController {
  public:
-  explicit MediaInternalsUI(WebUI* web_ui);
+  explicit MediaInternalsUI(content::WebUI* web_ui);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MediaInternalsUI);

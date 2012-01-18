@@ -10,8 +10,8 @@
 #include "chrome/browser/ui/webui/options/extension_settings_handler.h"
 #include "chrome/browser/ui/webui/shared_resources_data_source.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_ui.h"
 #include "grit/browser_resources.h"
 
 using content::WebContents;
@@ -31,9 +31,8 @@ ChromeWebUIDataSource* CreateExtensionsHTMLSource() {
 
 }  // namespace
 
-ExtensionsUI::ExtensionsUI(WebUI* web_ui) : WebUIController(web_ui) {
-  Profile* profile = Profile::FromBrowserContext(
-      web_ui->web_contents()->GetBrowserContext());
+ExtensionsUI::ExtensionsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
+  Profile* profile = Profile::FromWebUI(web_ui);
   ChromeWebUIDataSource* source = CreateExtensionsHTMLSource();
   profile->GetChromeURLDataManager()->AddDataSource(source);
   profile->GetChromeURLDataManager()->AddDataSource(

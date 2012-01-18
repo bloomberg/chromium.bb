@@ -12,7 +12,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/quota_internals_proxy.h"
 #include "chrome/browser/ui/webui/quota_internals_types.h"
-#include "content/browser/webui/web_ui.h"
+#include "content/public/browser/web_ui.h"
 #include "net/base/net_util.h"
 
 namespace quota_internals {

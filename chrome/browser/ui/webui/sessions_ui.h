@@ -12,7 +12,7 @@ class RefCountedMemory;
 
 class SessionsUI : public content::WebUIController {
  public:
-  explicit SessionsUI(WebUI* web_ui);
+  explicit SessionsUI(content::WebUI* web_ui);
 
   static RefCountedMemory* GetFaviconResourceBytes();
 

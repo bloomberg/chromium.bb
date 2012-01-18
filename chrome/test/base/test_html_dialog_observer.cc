@@ -38,7 +38,7 @@ void TestHtmlDialogObserver::Observe(
         js_injection_ready_observer_->OnJsInjectionReady(
             content::Details<RenderViewHost>(details).ptr());
       }
-      web_ui_ = content::Source<WebUI>(source).ptr();
+      web_ui_ = content::Source<content::WebUI>(source).ptr();
       registrar_.Remove(this, chrome::NOTIFICATION_HTML_DIALOG_SHOWN,
                         content::NotificationService::AllSources());
       // Wait for navigation on the new WebUI instance to complete. This depends
@@ -50,13 +50,13 @@ void TestHtmlDialogObserver::Observe(
       // navigate in this method, ensuring that this is not a race condition.
       registrar_.Add(this, content::NOTIFICATION_LOAD_STOP,
                      content::Source<NavigationController>(
-                         &web_ui_->web_contents()->GetController()));
+                         &web_ui_->GetWebContents()->GetController()));
       break;
     case content::NOTIFICATION_LOAD_STOP:
       DCHECK(web_ui_);
       registrar_.Remove(this, content::NOTIFICATION_LOAD_STOP,
                         content::Source<NavigationController>(
-                            &web_ui_->web_contents()->GetController()));
+                            &web_ui_->GetWebContents()->GetController()));
       done_ = true;
       // If the message loop is running stop it.
       if (running_) {
@@ -69,7 +69,7 @@ void TestHtmlDialogObserver::Observe(
   };
 }
 
-WebUI* TestHtmlDialogObserver::GetWebUI() {
+content::WebUI* TestHtmlDialogObserver::GetWebUI() {
   if (!done_) {
     EXPECT_FALSE(running_);
     running_ = true;

@@ -37,7 +37,7 @@ namespace {
 
 class TabContentsTestWebUIFactory : public content::EmptyWebUIFactory {
  public:
-  virtual WebUIController* CreateWebUIForURL(WebUI* web_ui,
+  virtual WebUIController* CreateWebUIForURL(content::WebUI* web_ui,
                                              const GURL& url) const OVERRIDE {
    if (!HasWebUIScheme(url))
      return NULL;

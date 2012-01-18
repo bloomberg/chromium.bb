@@ -11,7 +11,7 @@
 // The C++ back-end for the chrome://tracing webui page.
 class TracingUI : public content::WebUIController {
  public:
-  explicit TracingUI(WebUI* web_ui);
+  explicit TracingUI(content::WebUI* web_ui);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TracingUI);

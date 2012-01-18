@@ -15,7 +15,7 @@ class RefCountedMemory;
 // The Web UI handler for about:conflicts.
 class ConflictsUI : public content::WebUIController {
  public:
-  explicit ConflictsUI(WebUI* web_ui);
+  explicit ConflictsUI(content::WebUI* web_ui);
 
   static RefCountedMemory* GetFaviconResourceBytes();
 

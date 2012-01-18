@@ -13,7 +13,7 @@ class RefCountedMemory;
 
 class PluginsUI : public content::WebUIController {
  public:
-  explicit PluginsUI(WebUI* web_ui);
+  explicit PluginsUI(content::WebUI* web_ui);
 
   static RefCountedMemory* GetFaviconResourceBytes();
   static void RegisterUserPrefs(PrefService* prefs);

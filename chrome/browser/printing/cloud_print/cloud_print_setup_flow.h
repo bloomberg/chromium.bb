@@ -99,7 +99,7 @@ class CloudPrintSetupFlow : public HtmlDialogUIDelegate,
   // Called CloudPrintSetupMessageHandler when a DOM is attached. This method
   // is called when the HTML page is fully loaded. We then operate on this
   // WebUI object directly.
-  void Attach(WebUI* web_ui);
+  void Attach(content::WebUI* web_ui);
 
   // Called by CloudPrintSetupMessageHandler when user authentication is
   // registered.
@@ -124,7 +124,7 @@ class CloudPrintSetupFlow : public HtmlDialogUIDelegate,
   // Pointer to the Web UI. This is provided by CloudPrintSetupMessageHandler
   // when attached. We do not own the pointer, instead WebUI owns it's delegate
   // (us) and controls our lifetime.
-  WebUI* web_ui_;
+  content::WebUI* web_ui_;
 
   // The args to pass to the initial page.
   std::string dialog_start_args_;

@@ -21,10 +21,10 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
@@ -663,14 +663,13 @@ void SimUnlockHandler::UpdatePage(const chromeos::NetworkDevice* cellular,
 
 // SimUnlockUI -----------------------------------------------------------------
 
-SimUnlockUI::SimUnlockUI(WebUI* web_ui) : WebUIController(web_ui) {
+SimUnlockUI::SimUnlockUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   SimUnlockHandler* handler = new SimUnlockHandler();
   web_ui->AddMessageHandler(handler);
   SimUnlockUIHTMLSource* html_source = new SimUnlockUIHTMLSource();
 
   // Set up the chrome://sim-unlock/ source.
-  Profile* profile = Profile::FromBrowserContext(
-      web_ui->web_contents()->GetBrowserContext());
+  Profile* profile = Profile::FromWebUI(web_ui);
   profile->GetChromeURLDataManager()->AddDataSource(html_source);
 }
 

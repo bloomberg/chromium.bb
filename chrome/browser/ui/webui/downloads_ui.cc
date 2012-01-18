@@ -16,9 +16,9 @@
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/browser/ui/webui/downloads_dom_handler.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_ui.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -85,9 +85,8 @@ ChromeWebUIDataSource* CreateDownloadsUIHTMLSource() {
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-DownloadsUI::DownloadsUI(WebUI* web_ui) : WebUIController(web_ui) {
-  Profile* profile = Profile::FromBrowserContext(
-      web_ui->web_contents()->GetBrowserContext());
+DownloadsUI::DownloadsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
+  Profile* profile = Profile::FromWebUI(web_ui);
   DownloadManager* dlm =
       DownloadServiceFactory::GetForProfile(profile)->GetDownloadManager();
 

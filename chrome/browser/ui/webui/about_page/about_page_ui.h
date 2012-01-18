@@ -11,7 +11,7 @@
 
 class AboutPageUI : public content::WebUIController {
  public:
-  explicit AboutPageUI(WebUI* web_ui);
+  explicit AboutPageUI(content::WebUI* web_ui);
   virtual ~AboutPageUI();
 
  private:

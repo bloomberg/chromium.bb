@@ -22,6 +22,7 @@ class Value;
 }
 
 namespace content {
+class WebUI;
 class WebUIMessageHandler;
 }
 
@@ -134,7 +135,7 @@ class WebUIBrowserTest
   virtual void TearDownInProcessBrowserTestFixture() OVERRIDE;
 
   // Set a WebUI instance to run tests on.
-  void SetWebUIInstance(WebUI* web_ui);
+  void SetWebUIInstance(content::WebUI* web_ui);
 
   // Returns a mock WebUI object under test (if any).
   virtual content::WebUIMessageHandler* GetMockMessageHandler();
@@ -195,7 +196,7 @@ class WebUIBrowserTest
 
   // When this is non-NULL, this is The WebUI instance used for testing.
   // Otherwise the selected tab's web_ui is used.
-  WebUI* override_selected_web_ui_;
+  content::WebUI* override_selected_web_ui_;
 };
 
 #endif  // CHROME_BROWSER_UI_WEBUI_WEB_UI_BROWSERTEST_H_

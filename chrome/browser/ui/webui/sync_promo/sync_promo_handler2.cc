@@ -84,7 +84,7 @@ void SyncPromoHandler2::RegisterUserPrefs(PrefService* prefs) {
       PrefService::UNSYNCABLE_PREF);
 }
 
-WebUIMessageHandler* SyncPromoHandler2::Attach(WebUI* web_ui) {
+WebUIMessageHandler* SyncPromoHandler2::Attach(content::WebUI* web_ui) {
   DCHECK(web_ui);
   // Keep a reference to the preferences service for convenience and it's
   // probably a little faster that getting it via Profile::FromWebUI() every
@@ -92,12 +92,12 @@ WebUIMessageHandler* SyncPromoHandler2::Attach(WebUI* web_ui) {
   prefs_ = Profile::FromWebUI(web_ui)->GetPrefs();
   DCHECK(prefs_);
   // Ignore events from view-source:chrome://syncpromo.
-  if (!web_ui->tab_contents()->controller().GetActiveEntry()->
+  if (!web_ui->GetWebContents()->GetController().GetActiveEntry()->
           IsViewSourceMode()) {
     // Listen to see if the tab we're in gets closed.
     registrar_.Add(this, content::NOTIFICATION_TAB_CLOSING,
         content::Source<NavigationController>(
-            &web_ui->tab_contents()->controller()));
+            &web_ui->GetWebContents()->GetController()));
     // Listen to see if the window we're in gets closed.
     registrar_.Add(this, chrome::NOTIFICATION_BROWSER_CLOSING,
         content::NotificationService::AllSources());

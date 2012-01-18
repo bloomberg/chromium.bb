@@ -13,7 +13,7 @@ class RefCountedMemory;
 // The Web UI handler for about:flash.
 class FlashUI : public content::WebUIController {
  public:
-  explicit FlashUI(WebUI* web_ui);
+  explicit FlashUI(content::WebUI* web_ui);
 
   static RefCountedMemory* GetFaviconResourceBytes();
 

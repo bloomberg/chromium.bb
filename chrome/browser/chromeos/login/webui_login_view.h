@@ -20,7 +20,10 @@
 class DOMView;
 class GURL;
 class StatusAreaView;
+
+namespace content {
 class WebUI;
+}
 
 namespace views {
 class View;
@@ -64,7 +67,7 @@ class WebUILoginView : public views::WidgetDelegateView,
   void LoadURL(const GURL& url);
 
   // Returns current WebUI.
-  WebUI* GetWebUI();
+  content::WebUI* GetWebUI();
 
   // Toggles whether status area is enabled.
   void SetStatusAreaEnabled(bool enable);

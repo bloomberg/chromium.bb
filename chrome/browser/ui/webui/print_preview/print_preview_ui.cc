@@ -72,7 +72,7 @@ base::LazyInstance<PrintPreviewRequestIdMapWithLock>
 
 }  // namespace
 
-PrintPreviewUI::PrintPreviewUI(WebUI* web_ui)
+PrintPreviewUI::PrintPreviewUI(content::WebUI* web_ui)
     : ConstrainedHtmlUI(web_ui),
       initial_preview_start_time_(base::TimeTicks::Now()),
       handler_(NULL),
@@ -83,8 +83,7 @@ PrintPreviewUI::PrintPreviewUI(WebUI* web_ui)
   is_dummy_ = (!controller || !controller->is_creating_print_preview_tab());
 
   // Set up the chrome://print/ data source.
-  Profile* profile = Profile::FromBrowserContext(
-      web_ui->web_contents()->GetBrowserContext());
+  Profile* profile = Profile::FromWebUI(web_ui);
   profile->GetChromeURLDataManager()->AddDataSource(
       new PrintPreviewDataSource(is_dummy_));
   if (is_dummy_)
@@ -168,7 +167,7 @@ std::string PrintPreviewUI::GetPrintPreviewUIAddress() const {
 void PrintPreviewUI::OnPrintPreviewTabClosed() {
   TabContentsWrapper* preview_tab =
       TabContentsWrapper::GetCurrentWrapperForContents(
-        web_ui()->web_contents());
+        web_ui()->GetWebContents());
   printing::BackgroundPrintingManager* background_printing_manager =
       g_browser_process->background_printing_manager();
   if (background_printing_manager->HasPrintPreviewTab(preview_tab))
@@ -179,7 +178,7 @@ void PrintPreviewUI::OnPrintPreviewTabClosed() {
 void PrintPreviewUI::OnInitiatorTabClosed() {
   TabContentsWrapper* preview_tab =
       TabContentsWrapper::GetCurrentWrapperForContents(
-          web_ui()->web_contents());
+          web_ui()->GetWebContents());
   printing::BackgroundPrintingManager* background_printing_manager =
       g_browser_process->background_printing_manager();
   if (background_printing_manager->HasPrintPreviewTab(preview_tab))
@@ -289,7 +288,7 @@ PrintPreviewDataService* PrintPreviewUI::print_preview_data_service() {
 void PrintPreviewUI::OnHidePreviewTab() {
   TabContentsWrapper* preview_tab =
       TabContentsWrapper::GetCurrentWrapperForContents(
-          web_ui()->web_contents());
+          web_ui()->GetWebContents());
   printing::BackgroundPrintingManager* background_printing_manager =
       g_browser_process->background_printing_manager();
   if (background_printing_manager->HasPrintPreviewTab(preview_tab))

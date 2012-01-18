@@ -16,10 +16,10 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
-#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_ui.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "webkit/glue/webpreferences.h"
 
@@ -404,7 +404,7 @@ void TaskManagerHandler::EnableTaskManager(const ListValue* indexes) {
 }
 
 void TaskManagerHandler::OpenAboutMemory(const ListValue* indexes) {
-  RenderViewHost* rvh = web_ui()->web_contents()->GetRenderViewHost();
+  RenderViewHost* rvh = web_ui()->GetWebContents()->GetRenderViewHost();
   if (rvh && rvh->delegate()) {
     WebPreferences webkit_prefs = rvh->delegate()->GetWebkitPrefs();
     webkit_prefs.allow_scripts_to_close_windows = true;
@@ -419,7 +419,7 @@ void TaskManagerHandler::OpenAboutMemory(const ListValue* indexes) {
 // TaskManagerHandler, private: -----------------------------------------------
 
 bool TaskManagerHandler::is_alive() {
-  return web_ui()->web_contents()->GetRenderViewHost() != NULL;
+  return web_ui()->GetWebContents()->GetRenderViewHost() != NULL;
 }
 
 void TaskManagerHandler::UpdateResourceGroupTable(int start, int length) {

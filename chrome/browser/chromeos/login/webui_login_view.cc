@@ -21,9 +21,9 @@
 #include "chrome/browser/ui/views/dom_view.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/common/render_messages.h"
-#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/render_view_host_observer.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_ui.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 #include "ui/views/widget/widget.h"
@@ -56,7 +56,7 @@ const char kAccelNameEnrollment[] = "enrollment";
 // appears.
 class SnifferObserver : public content::RenderViewHostObserver {
  public:
-  SnifferObserver(RenderViewHost* host, WebUI* webui)
+  SnifferObserver(RenderViewHost* host, content::WebUI* webui)
       : content::RenderViewHostObserver(host), webui_(webui) {
     DCHECK(webui_);
     Send(new ChromeViewMsg_StartFrameSniffer(routing_id(),
@@ -82,7 +82,7 @@ class SnifferObserver : public content::RenderViewHostObserver {
                                    error_value);
   }
 
-  WebUI* webui_;
+  content::WebUI* webui_;
 };
 
 // A View class which places its first child at the right most position.
@@ -168,7 +168,7 @@ bool WebUILoginView::AcceleratorPressed(
   if (!webui_login_)
     return true;
 
-  WebUI* web_ui = GetWebUI();
+  content::WebUI* web_ui = GetWebUI();
   if (web_ui) {
     base::StringValue accel_name(entry->second);
     web_ui->CallJavascriptFunction("cr.ui.Oobe.handleAccelerator",
@@ -209,7 +209,7 @@ void WebUILoginView::LoadURL(const GURL & url) {
   webui_login_->RequestFocus();
 }
 
-WebUI* WebUILoginView::GetWebUI() {
+content::WebUI* WebUILoginView::GetWebUI() {
   return webui_login_->dom_contents()->web_contents()->GetWebUI();
 }
 
@@ -422,7 +422,7 @@ void WebUILoginView::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
   // when the focus is inside an iframe. Only clear on KeyDown to prevent hiding
   // an immediate authentication error (See crbug.com/103643).
   if (event.type == WebKit::WebInputEvent::KeyDown) {
-    WebUI* web_ui = GetWebUI();
+    content::WebUI* web_ui = GetWebUI();
     if (web_ui)
       web_ui->CallJavascriptFunction("cr.ui.Oobe.clearErrors");
   }

@@ -15,7 +15,7 @@ class PrefService;
 class SyncPromoUI : public content::WebUIController {
  public:
   // Constructs a SyncPromoUI.
-  explicit SyncPromoUI(WebUI* web_ui);
+  explicit SyncPromoUI(content::WebUI* web_ui);
 
   // Returns true if the sync promo should be visible.
   // |profile| is the profile of the tab the promo would be shown on.

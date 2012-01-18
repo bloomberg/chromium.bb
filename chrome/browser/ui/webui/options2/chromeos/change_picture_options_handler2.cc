@@ -23,8 +23,8 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/web_ui.h"
 #include "content/public/common/url_constants.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -145,7 +145,7 @@ void ChangePictureOptionsHandler::HandleChooseFile(const ListValue* args) {
       &file_type_info,
       0,
       FILE_PATH_LITERAL(""),
-      web_ui()->web_contents(),
+      web_ui()->GetWebContents(),
       GetBrowserWindow(),
       NULL);
 }

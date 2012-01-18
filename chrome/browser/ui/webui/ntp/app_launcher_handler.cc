@@ -41,8 +41,8 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/web_apps.h"
-#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/web_ui.h"
 #include "googleurl/src/gurl.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
@@ -197,7 +197,7 @@ void AppLauncherHandler::CreateAppInfo(const Extension* extension,
 
 void AppLauncherHandler::RegisterMessages() {
   registrar_.Add(this, chrome::NOTIFICATION_APP_INSTALLED_TO_NTP,
-      content::Source<WebContents>(web_ui()->web_contents()));
+      content::Source<WebContents>(web_ui()->GetWebContents()));
 
   web_ui()->RegisterMessageCallback("getApps",
       base::Bind(&AppLauncherHandler::HandleGetApps,

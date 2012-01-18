@@ -13,7 +13,7 @@ class RefCountedMemory;
 
 class FlagsUI : public content::WebUIController {
  public:
-  explicit FlagsUI(WebUI* web_ui);
+  explicit FlagsUI(content::WebUI* web_ui);
 
   static RefCountedMemory* GetFaviconResourceBytes();
   static void RegisterPrefs(PrefService* prefs);

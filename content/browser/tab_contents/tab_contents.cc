@@ -303,7 +303,7 @@ RenderViewHostManager* TabContents::GetRenderManagerForTesting() {
 }
 
 bool TabContents::OnMessageReceived(const IPC::Message& message) {
-  if (GetWebUI() && GetWebUI()->OnMessageReceived(message))
+  if (GetWebUI() && static_cast<WebUI*>(GetWebUI())->OnMessageReceived(message))
     return true;
 
   ObserverListBase<WebContentsObserver>::Iterator it(observers_);
@@ -432,7 +432,7 @@ TabContentsView* TabContents::GetView() const {
   return view_.get();
 }
 
-WebUI* TabContents::CreateWebUI(const GURL& url) {
+content::WebUI* TabContents::CreateWebUI(const GURL& url) {
   WebUI* web_ui = new WebUI(this);
   WebUIController* controller =
       content::GetContentClient()->browser()->GetWebUIFactory()->
@@ -446,12 +446,12 @@ WebUI* TabContents::CreateWebUI(const GURL& url) {
   return NULL;
 }
 
-WebUI* TabContents::GetWebUI() const {
+content::WebUI* TabContents::GetWebUI() const {
   return render_manager_.web_ui() ? render_manager_.web_ui()
       : render_manager_.pending_web_ui();
 }
 
-WebUI* TabContents::GetCommittedWebUI() const {
+content::WebUI* TabContents::GetCommittedWebUI() const {
   return render_manager_.web_ui();
 }
 
@@ -1088,7 +1088,7 @@ WebUI::TypeID TabContents::GetWebUITypeForCurrentState() {
       GetWebUIType(GetBrowserContext(), GetURL());
 }
 
-WebUI* TabContents::GetWebUIForCurrentState() {
+content::WebUI* TabContents::GetWebUIForCurrentState() {
   // When there is a pending navigation entry, we want to use the pending WebUI
   // that goes along with it to control the basic flags. For example, we want to
   // show the pending URL in the URL bar, so we want the display_url flag to
@@ -1134,7 +1134,7 @@ bool TabContents::GotResponseToLockMouseRequest(bool allowed) {
 }
 
 bool TabContents::FocusLocationBarByDefault() {
-  WebUI* web_ui = GetWebUIForCurrentState();
+  content::WebUI* web_ui = GetWebUIForCurrentState();
   if (web_ui)
     return web_ui->ShouldFocusLocationBarByDefault();
   NavigationEntry* entry = controller_.GetActiveEntry();
@@ -1480,7 +1480,7 @@ void TabContents::DidNavigateMainFramePostCommit(
     // that opened the window, as long as both renderers have the same
     // privileges.
     if (delegate_ && opener_web_ui_type_ == GetWebUITypeForCurrentState()) {
-      WebUI* web_ui = CreateWebUI(GetURL());
+      WebUI* web_ui = static_cast<WebUI*>(CreateWebUI(GetURL()));
       // web_ui might be NULL if the URL refers to a non-existent extension.
       if (web_ui) {
         render_manager_.SetWebUIPostCommit(web_ui);
@@ -2192,7 +2192,7 @@ NavigationControllerImpl& TabContents::GetControllerForRenderManager() {
 }
 
 WebUI* TabContents::CreateWebUIForRenderManager(const GURL& url) {
-  return CreateWebUI(url);
+  return static_cast<WebUI*>(CreateWebUI(url));
 }
 
 NavigationEntry*

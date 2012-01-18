@@ -42,10 +42,10 @@
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "grit/generated_resources.h"
 #include "grit/net_internals_resources.h"
@@ -1638,12 +1638,12 @@ Value* NetInternalsUI::GetConstants() {
   return constants_dict;
 }
 
-NetInternalsUI::NetInternalsUI(WebUI* web_ui) : WebUIController(web_ui) {
+NetInternalsUI::NetInternalsUI(content::WebUI* web_ui)
+    : WebUIController(web_ui) {
   web_ui->AddMessageHandler(new NetInternalsMessageHandler());
 
   // Set up the chrome://net-internals/ source.
-  Profile* profile = Profile::FromBrowserContext(
-      web_ui->web_contents()->GetBrowserContext());
+  Profile* profile = Profile::FromWebUI(web_ui);
   profile->GetChromeURLDataManager()->AddDataSource(
       CreateNetInternalsHTMLSource());
 }

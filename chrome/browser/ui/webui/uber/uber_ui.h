@@ -17,7 +17,7 @@
 // pages that appear in the uber page.
 class UberUI : public content::WebUIController {
  public:
-  explicit UberUI(WebUI* web_ui);
+  explicit UberUI(content::WebUI* web_ui);
   virtual ~UberUI();
 
   // WebUIController implementation.
@@ -32,7 +32,7 @@ class UberUI : public content::WebUIController {
 
  private:
   // A map from URL origin to WebUI instance.
-  typedef std::map<std::string, WebUI*> SubpageMap;
+  typedef std::map<std::string, content::WebUI*> SubpageMap;
 
   // Creates and stores a WebUI for the given URL.
   void RegisterSubpage(const std::string& page_url);

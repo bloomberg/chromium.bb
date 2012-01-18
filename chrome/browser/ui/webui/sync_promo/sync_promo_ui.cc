@@ -21,8 +21,8 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_ui.h"
 #include "googleurl/src/url_util.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
@@ -66,14 +66,14 @@ bool AllowPromoAtStartupForCurrentBrand() {
 // The Web UI data source for the sync promo page.
 class SyncPromoUIHTMLSource : public ChromeWebUIDataSource {
  public:
-  explicit SyncPromoUIHTMLSource(WebUI* web_ui);
+  explicit SyncPromoUIHTMLSource(content::WebUI* web_ui);
 
  private:
   ~SyncPromoUIHTMLSource() {}
   DISALLOW_COPY_AND_ASSIGN(SyncPromoUIHTMLSource);
 };
 
-SyncPromoUIHTMLSource::SyncPromoUIHTMLSource(WebUI* web_ui)
+SyncPromoUIHTMLSource::SyncPromoUIHTMLSource(content::WebUI* web_ui)
     : ChromeWebUIDataSource(chrome::kChromeUISyncPromoHost) {
   DictionaryValue localized_strings;
   CoreOptionsHandler::GetStaticLocalizedValues(&localized_strings);
@@ -106,7 +106,7 @@ bool GetValueForKeyInQuery(const GURL& url, const std::string& search_key,
 
 }  // namespace
 
-SyncPromoUI::SyncPromoUI(WebUI* web_ui) : WebUIController(web_ui) {
+SyncPromoUI::SyncPromoUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   web_ui->HideURL();
 
   SyncPromoHandler* handler = new SyncPromoHandler(
@@ -114,8 +114,7 @@ SyncPromoUI::SyncPromoUI(WebUI* web_ui) : WebUIController(web_ui) {
   web_ui->AddMessageHandler(handler);
 
   // Set up the chrome://theme/ source.
-  WebContents* contents = web_ui->web_contents();
-  Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
+  Profile* profile = Profile::FromWebUI(web_ui);
   ThemeSource* theme = new ThemeSource(profile);
   profile->GetChromeURLDataManager()->AddDataSource(theme);
 
@@ -127,7 +126,8 @@ SyncPromoUI::SyncPromoUI(WebUI* web_ui) : WebUIController(web_ui) {
   profile->GetChromeURLDataManager()->AddDataSource(html_source);
 
   if (sync_promo_trial::IsPartOfBrandTrialToEnable()) {
-    bool is_start_up = GetIsLaunchPageForSyncPromoURL(contents->GetURL());
+    bool is_start_up = GetIsLaunchPageForSyncPromoURL(
+        web_ui->GetWebContents()->GetURL());
     sync_promo_trial::RecordUserShownPromoWithTrialBrand(is_start_up, profile);
   }
 }

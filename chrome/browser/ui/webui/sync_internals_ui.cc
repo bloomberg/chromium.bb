@@ -23,8 +23,8 @@
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_ui.h"
 #include "grit/sync_internals_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -73,12 +73,11 @@ ProfileSyncService* GetProfileSyncService(Profile* profile) {
 
 }  // namespace
 
-SyncInternalsUI::SyncInternalsUI(WebUI* web_ui)
+SyncInternalsUI::SyncInternalsUI(content::WebUI* web_ui)
     : WebUIController(web_ui),
       weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   // TODO(akalin): Fix.
-  Profile* profile = Profile::FromBrowserContext(
-      web_ui->web_contents()->GetBrowserContext());
+  Profile* profile = Profile::FromWebUI(web_ui);
   profile->GetChromeURLDataManager()->AddDataSource(
       CreateSyncInternalsHTMLSource());
   ProfileSyncService* sync_service = GetProfileSyncService(profile);
@@ -109,8 +108,7 @@ bool SyncInternalsUI::OverrideHandleWebUIMessage(const GURL& source_url,
     ListValue return_args;
     DictionaryValue* about_info = new DictionaryValue();
     return_args.Append(about_info);
-    Profile* profile = Profile::FromBrowserContext(
-        web_ui()->web_contents()->GetBrowserContext());
+    Profile* profile = Profile::FromWebUI(web_ui());
     ProfileSyncService* service = GetProfileSyncService(profile);
     sync_ui_util::ConstructAboutInformation(service, about_info);
     HandleJsReply(name, JsArgList(&return_args));

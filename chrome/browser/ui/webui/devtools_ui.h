@@ -15,7 +15,7 @@ class DevToolsUI : public content::WebUIController {
  public:
   static void RegisterDevToolsDataSource(Profile* profile);
 
-  explicit DevToolsUI(WebUI* web_ui);
+  explicit DevToolsUI(content::WebUI* web_ui);
 
   // WebUIController
   virtual void RenderViewCreated(RenderViewHost* render_view_host) OVERRIDE;

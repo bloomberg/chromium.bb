@@ -8,8 +8,8 @@
 #include "base/string16.h"
 #include "base/stringprintf.h"
 #include "chrome/browser/media/media_internals_observer.h"
-#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/web_ui.h"
 #include "media/base/media_log.h"
 #include "media/base/media_log_event.h"
 
@@ -105,7 +105,7 @@ void MediaInternals::SendUpdate(const std::string& function, Value* value) {
   if (observers_.size()) {
     std::vector<const Value*> args;
     args.push_back(value);
-    string16 update = WebUI::GetJavascriptCall(function, args);
+    string16 update = content::WebUI::GetJavascriptCall(function, args);
     FOR_EACH_OBSERVER(MediaInternalsObserver, observers_, OnUpdate(update));
   }
 }

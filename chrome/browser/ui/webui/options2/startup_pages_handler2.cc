@@ -16,8 +16,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
-#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/notification_details.h"
+#include "content/public/browser/web_ui.h"
 #include "grit/generated_resources.h"
 
 namespace options2 {

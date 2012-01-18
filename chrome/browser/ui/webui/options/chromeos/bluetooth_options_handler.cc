@@ -12,7 +12,7 @@
 #include "chrome/browser/chromeos/system/runtime_environment.h"
 #include "chrome/browser/ui/webui/options/chromeos/system_settings_provider.h"
 #include "chrome/common/chrome_switches.h"
-#include "content/browser/webui/web_ui.h"
+#include "content/public/browser/web_ui.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"

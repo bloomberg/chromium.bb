@@ -386,8 +386,7 @@ void EnterpriseOAuthEnrollmentScreenHandler::EnrollAfterLogin() {
   UMA_HISTOGRAM_ENUMERATION(policy::kMetricEnrollment,
                             policy::kMetricEnrollmentStarted,
                             policy::kMetricEnrollmentSize);
-  Profile* profile = Profile::FromBrowserContext(
-      web_ui()->web_contents()->GetBrowserContext());
+  Profile* profile = Profile::FromWebUI(web_ui());
   oauth_fetcher_.reset(
       new GaiaOAuthFetcher(this,
                            profile->GetRequestContext(),
@@ -435,7 +434,7 @@ void EnterpriseOAuthEnrollmentScreenHandler::ResetAuth() {
     return;
 
   Profile* profile = Profile::FromBrowserContext(
-      web_ui()->web_contents()->GetBrowserContext());
+      web_ui()->GetWebContents()->GetBrowserContext());
   browsing_data_remover_ =
       new BrowsingDataRemover(profile,
                               BrowsingDataRemover::EVERYTHING,
@@ -446,7 +445,7 @@ void EnterpriseOAuthEnrollmentScreenHandler::ResetAuth() {
 
 void EnterpriseOAuthEnrollmentScreenHandler::RevokeTokens() {
   Profile* profile = Profile::FromBrowserContext(
-      web_ui()->web_contents()->GetBrowserContext());
+      web_ui()->GetWebContents()->GetBrowserContext());
 
   if (!access_token_.empty()) {
     new TokenRevoker(access_token_, access_token_secret_, profile);

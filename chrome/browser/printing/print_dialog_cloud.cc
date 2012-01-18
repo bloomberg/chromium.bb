@@ -29,7 +29,6 @@
 #include "chrome/common/url_constants.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
-#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -37,6 +36,7 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_ui.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "webkit/glue/webpreferences.h"
 
@@ -311,7 +311,7 @@ void CloudPrintFlowHandler::RegisterMessages() {
   // to the real server URL, now that we've gotten an HTML dialog
   // going.
   NavigationController* controller =
-      &web_ui()->web_contents()->GetController();
+      &web_ui()->GetWebContents()->GetController();
   NavigationEntry* pending_entry = controller->GetPendingEntry();
   if (pending_entry) {
     Profile* profile = Profile::FromWebUI(web_ui());
@@ -329,13 +329,13 @@ void CloudPrintFlowHandler::Observe(
   if (type == content::NOTIFICATION_LOAD_STOP) {
     // Take the opportunity to set some (minimal) additional
     // script permissions required for the web UI.
-    GURL url = web_ui()->web_contents()->GetURL();
+    GURL url = web_ui()->GetWebContents()->GetURL();
     GURL dialog_url = CloudPrintURL(
         Profile::FromWebUI(web_ui())).GetCloudPrintServiceDialogURL();
     if (url.host() == dialog_url.host() &&
         url.path() == dialog_url.path() &&
         url.scheme() == dialog_url.scheme()) {
-      RenderViewHost* rvh = web_ui()->web_contents()->GetRenderViewHost();
+      RenderViewHost* rvh = web_ui()->GetWebContents()->GetRenderViewHost();
       if (rvh && rvh->delegate()) {
         WebPreferences webkit_prefs = rvh->delegate()->GetWebkitPrefs();
         webkit_prefs.allow_scripts_to_close_windows = true;
@@ -361,7 +361,7 @@ void CloudPrintFlowHandler::HandleShowDebugger(const ListValue* args) {
 
 void CloudPrintFlowHandler::ShowDebugger() {
   if (web_ui()) {
-    RenderViewHost* rvh = web_ui()->web_contents()->GetRenderViewHost();
+    RenderViewHost* rvh = web_ui()->GetWebContents()->GetRenderViewHost();
     if (rvh)
       DevToolsWindow::OpenDevToolsWindow(rvh);
   }
@@ -441,9 +441,9 @@ void CloudPrintFlowHandler::HandleSetPageParameters(const ListValue* args) {
 }
 
 void CloudPrintFlowHandler::StoreDialogClientSize() const {
-  if (web_ui() && web_ui()->web_contents() &&
-      web_ui()->web_contents()->GetView()) {
-    gfx::Size size = web_ui()->web_contents()->GetView()->GetContainerSize();
+  if (web_ui() && web_ui()->GetWebContents() &&
+      web_ui()->GetWebContents()->GetView()) {
+    gfx::Size size = web_ui()->GetWebContents()->GetView()->GetContainerSize();
     Profile* profile = Profile::FromWebUI(web_ui());
     profile->GetPrefs()->SetInteger(prefs::kCloudPrintDialogWidth,
                                     size.width());

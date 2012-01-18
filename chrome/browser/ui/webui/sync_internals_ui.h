@@ -24,7 +24,7 @@ class SyncInternalsUI : public content::WebUIController,
                         public browser_sync::JsEventHandler,
                         public browser_sync::JsReplyHandler {
  public:
-  explicit SyncInternalsUI(WebUI* web_ui);
+  explicit SyncInternalsUI(content::WebUI* web_ui);
   virtual ~SyncInternalsUI();
 
   // WebUIController implementation.

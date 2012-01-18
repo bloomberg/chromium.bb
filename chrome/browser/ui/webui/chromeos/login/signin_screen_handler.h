@@ -15,8 +15,8 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/system_key_event_listener.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
-#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/notification_observer.h"
+#include "content/public/browser/web_ui.h"
 
 class BrowsingDataRemover;
 

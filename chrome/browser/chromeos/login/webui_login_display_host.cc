@@ -11,7 +11,7 @@
 #include "chrome/browser/chromeos/login/webui_login_view.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
-#include "content/browser/webui/web_ui.h"
+#include "content/public/browser/web_ui.h"
 #include "ui/views/widget/widget.h"
 
 #if defined(USE_AURA)

@@ -11,7 +11,7 @@
 
 class WorkersUI : public content::WebUIController {
  public:
-  explicit WorkersUI(WebUI* web_ui);
+  explicit WorkersUI(content::WebUI* web_ui);
   virtual ~WorkersUI();
 
  private:

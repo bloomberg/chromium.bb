@@ -488,8 +488,8 @@ void ExtensionSettingsHandler::HandleSelectFilePathMessage(
 
   load_extension_dialog_ = SelectFileDialog::Create(this);
   load_extension_dialog_->SelectFile(type, select_title, FilePath(), &info,
-      file_type_index, FILE_PATH_LITERAL(""), web_ui()->web_contents(),
-      web_ui()->web_contents()->GetView()->GetTopLevelNativeWindow(), NULL);
+      file_type_index, FILE_PATH_LITERAL(""), web_ui()->GetWebContents(),
+      web_ui()->GetWebContents()->GetView()->GetTopLevelNativeWindow(), NULL);
 }
 
 
@@ -632,7 +632,7 @@ const Extension* ExtensionSettingsHandler::GetExtension(const ListValue* args) {
 }
 
 void ExtensionSettingsHandler::MaybeUpdateAfterNotification() {
-  WebContents* contents = web_ui()->web_contents();
+  WebContents* contents = web_ui()->GetWebContents();
   if (!ignore_notifications_ && contents && contents->GetRenderViewHost())
     HandleRequestExtensionsData(NULL);
   deleting_rvh_ = NULL;

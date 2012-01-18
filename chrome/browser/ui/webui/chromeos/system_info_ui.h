@@ -10,7 +10,7 @@
 
 class SystemInfoUI : public content::WebUIController {
  public:
-  explicit SystemInfoUI(WebUI* web_ui);
+  explicit SystemInfoUI(content::WebUI* web_ui);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SystemInfoUI);

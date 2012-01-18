@@ -11,7 +11,10 @@
 #include "content/public/browser/notification_registrar.h"
 
 class JsInjectionReadyObserver;
+
+namespace content {
 class WebUI;
+}
 
 // For browser_tests, which run on the UI thread, run a second message
 // MessageLoop to detect HtmlDialog creation and quit when the constructed
@@ -27,7 +30,7 @@ class TestHtmlDialogObserver : public content::NotificationObserver {
 
   // Waits for an HtmlDialog to be created. The WebUI instance is captured
   // and the method returns it when the navigation on the dialog is complete.
-  WebUI* GetWebUI();
+  content::WebUI* GetWebUI();
 
  private:
   // content::NotificationObserver:
@@ -39,7 +42,7 @@ class TestHtmlDialogObserver : public content::NotificationObserver {
   // Observer to take some action when the dialog is ready for JavaScript
   // injection.
   JsInjectionReadyObserver* js_injection_ready_observer_;
-  WebUI* web_ui_;
+  content::WebUI* web_ui_;
   bool done_;
   bool running_;
 

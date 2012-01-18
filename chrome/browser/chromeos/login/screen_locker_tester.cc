@@ -16,8 +16,8 @@
 #include "chrome/browser/chromeos/login/webui_screen_locker.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_ui.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/textfield/textfield.h"
@@ -118,7 +118,7 @@ class WebUIScreenLockerTester : public ScreenLockerTester {
   WebUIScreenLocker* webui_screen_locker() const;
 
   // Returns the WebUI object from the screen locker.
-  WebUI* webui() const;
+  content::WebUI* webui() const;
 
   DISALLOW_COPY_AND_ASSIGN(WebUIScreenLockerTester);
 };
@@ -170,7 +170,7 @@ views::Widget* WebUIScreenLockerTester::GetChildWidget() const {
 
 base::Value* WebUIScreenLockerTester::ExecuteJavascriptAndGetValue(
     const std::string& js_text) {
-  RenderViewHost* rvh = webui()->web_contents()->GetRenderViewHost();
+  RenderViewHost* rvh = webui()->GetWebContents()->GetRenderViewHost();
   return rvh->ExecuteJavascriptAndGetValue(string16(),
                                            ASCIIToUTF16(js_text));
 }
@@ -181,9 +181,9 @@ WebUIScreenLocker* WebUIScreenLockerTester::webui_screen_locker() const {
       ScreenLocker::screen_locker_->delegate_.get());
 }
 
-WebUI* WebUIScreenLockerTester::webui() const {
+content::WebUI* WebUIScreenLockerTester::webui() const {
   DCHECK(webui_screen_locker()->webui_ready_);
-  WebUI* webui = webui_screen_locker()->GetWebUI();
+  content::WebUI* webui = webui_screen_locker()->GetWebUI();
   DCHECK(webui);
   return webui;
 }

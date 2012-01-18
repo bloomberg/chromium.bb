@@ -50,11 +50,11 @@
 #include "content/browser/gpu/gpu_process_host_ui_shim.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/sensors/sensors_provider.h"
-#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_ui.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/process_type.h"
 #include "crypto/nss_util.h"
@@ -1381,10 +1381,9 @@ std::string AboutUIHTMLSource::GetMimeType(const std::string& path) const {
   return "text/html";
 }
 
-AboutUI::AboutUI(WebUI* web_ui, const std::string& name)
+AboutUI::AboutUI(content::WebUI* web_ui, const std::string& name)
     : WebUIController(web_ui) {
-  Profile* profile = Profile::FromBrowserContext(
-      web_ui->web_contents()->GetBrowserContext());
+  Profile* profile = Profile::FromWebUI(web_ui);
   ChromeURLDataManager::DataSource* source =
       new AboutUIHTMLSource(name, profile);
   if (source)

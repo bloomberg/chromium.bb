@@ -44,7 +44,7 @@ class AboutUIHTMLSource : public ChromeURLDataManager::DataSource {
 
 class AboutUI : public content::WebUIController {
  public:
-  explicit AboutUI(WebUI* web_ui, const std::string& host);
+  explicit AboutUI(content::WebUI* web_ui, const std::string& host);
   virtual ~AboutUI() {}
 
  private:

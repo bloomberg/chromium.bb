@@ -39,6 +39,7 @@ include_rules = [
   "-content/browser/tab_contents/render_view_host_manager.h",
   "+content/browser/tab_contents/tab_contents.h",
   "-content/browser/plugin_service_impl.h",
+  "-content/browser/webui/web_ui.h",
   "-content/browser/worker_service_impl.h",
 
   "-content/common",

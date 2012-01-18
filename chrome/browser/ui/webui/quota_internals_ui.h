@@ -9,7 +9,7 @@
 
 class QuotaInternalsUI : public content::WebUIController {
  public:
-  explicit QuotaInternalsUI(WebUI* web_ui);
+  explicit QuotaInternalsUI(content::WebUI* web_ui);
   virtual ~QuotaInternalsUI() {}
  private:
   DISALLOW_COPY_AND_ASSIGN(QuotaInternalsUI);

@@ -17,8 +17,8 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_ui.h"
 #include "grit/theme_resources.h"
 #include "grit/theme_resources_standard.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -57,12 +57,11 @@ std::string BookmarksUIHTMLSource::GetMimeType(const std::string& path) const {
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-BookmarksUI::BookmarksUI(WebUI* web_ui) : WebUIController(web_ui) {
+BookmarksUI::BookmarksUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   BookmarksUIHTMLSource* html_source = new BookmarksUIHTMLSource();
 
   // Set up the chrome://bookmarks/ source.
-  Profile* profile = Profile::FromBrowserContext(
-      web_ui->web_contents()->GetBrowserContext());
+  Profile* profile = Profile::FromWebUI(web_ui);
   profile->GetChromeURLDataManager()->AddDataSource(html_source);
 }
 

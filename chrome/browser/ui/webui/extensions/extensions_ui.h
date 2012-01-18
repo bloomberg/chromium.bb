@@ -10,7 +10,7 @@
 
 class ExtensionsUI : public content::WebUIController {
  public:
-  explicit ExtensionsUI(WebUI* web_ui);
+  explicit ExtensionsUI(content::WebUI* web_ui);
   virtual ~ExtensionsUI();
 };
 

@@ -20,9 +20,9 @@
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/trace_controller.h"
-#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
@@ -145,14 +145,14 @@ void ProfilerMessageHandler::OnResetData(const ListValue* list) {
 
 }  // namespace
 
-ProfilerUI::ProfilerUI(WebUI* web_ui) : WebUIController(web_ui) {
+ProfilerUI::ProfilerUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   ui_weak_ptr_factory_.reset(new base::WeakPtrFactory<ProfilerUI>(this));
   ui_weak_ptr_ = ui_weak_ptr_factory_->GetWeakPtr();
 
   web_ui->AddMessageHandler(new ProfilerMessageHandler());
 
   // Set up the chrome://profiler/ source.
-  Profile::FromBrowserContext(web_ui->web_contents()->GetBrowserContext())->
+  Profile::FromWebUI(web_ui)->
       GetChromeURLDataManager()->AddDataSource(CreateProfilerHTMLSource());
 }
 

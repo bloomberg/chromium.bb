@@ -23,7 +23,7 @@ class SyncPromoHandler2 : public SyncSetupHandler2 {
   static void RegisterUserPrefs(PrefService* prefs);
 
   // WebUIMessageHandler implementation.
-  virtual WebUIMessageHandler* Attach(WebUI* web_ui) OVERRIDE;
+  virtual WebUIMessageHandler* Attach(content::WebUI* web_ui) OVERRIDE;
   virtual void RegisterMessages() OVERRIDE;
 
   // SyncSetupFlowHandler implementation.

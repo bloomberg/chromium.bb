@@ -20,9 +20,9 @@
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/time_format.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_ui.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -645,12 +645,12 @@ bool WebUIHandler::CheckNetwork() {
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-ImageBurnUI::ImageBurnUI(WebUI* web_ui) : WebUIController(web_ui) {
-  WebContents* contents = web_ui->web_contents();
-  imageburner::WebUIHandler* handler = new imageburner::WebUIHandler(contents);
+ImageBurnUI::ImageBurnUI(content::WebUI* web_ui) : WebUIController(web_ui) {
+  imageburner::WebUIHandler* handler = new imageburner::WebUIHandler(
+      web_ui->GetWebContents());
   web_ui->AddMessageHandler(handler);
 
-  Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
+  Profile* profile = Profile::FromWebUI(web_ui);
   profile->GetChromeURLDataManager()->AddDataSource(
       CreateImageburnerUIHTMLSource());
 }

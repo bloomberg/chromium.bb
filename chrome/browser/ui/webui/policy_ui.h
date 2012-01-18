@@ -72,7 +72,7 @@ class PolicyUIHandler : public content::WebUIMessageHandler,
 // The Web UI handler for about:policy.
 class PolicyUI : public content::WebUIController {
  public:
-  explicit PolicyUI(WebUI* web_ui);
+  explicit PolicyUI(content::WebUI* web_ui);
   virtual ~PolicyUI();
 
  private:

@@ -232,7 +232,7 @@ void CloudPrintSetupFlow::OnClientLoginFailure(
 
 ///////////////////////////////////////////////////////////////////////////////
 // Methods called by CloudPrintSetupMessageHandler
-void CloudPrintSetupFlow::Attach(WebUI* web_ui) {
+void CloudPrintSetupFlow::Attach(content::WebUI* web_ui) {
   web_ui_ = web_ui;
 }
 
@@ -265,14 +265,14 @@ void CloudPrintSetupFlow::OnUserClickedLearnMore() {
   OpenURLParams params(CloudPrintURL::GetCloudPrintLearnMoreURL(),
                        Referrer(), NEW_FOREGROUND_TAB,
                        content::PAGE_TRANSITION_LINK, false);
-  web_ui_->web_contents()->OpenURL(params);
+  web_ui_->GetWebContents()->OpenURL(params);
 }
 
 void CloudPrintSetupFlow::OnUserClickedPrintTestPage() {
   OpenURLParams params(CloudPrintURL::GetCloudPrintTestPageURL(),
                        Referrer(), NEW_FOREGROUND_TAB,
                        content::PAGE_TRANSITION_LINK, false);
-  web_ui_->web_contents()->OpenURL(params);
+  web_ui_->GetWebContents()->OpenURL(params);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -338,7 +338,7 @@ void CloudPrintSetupFlow::ExecuteJavascriptInIFrame(
     const string16& iframe_xpath,
     const string16& js) {
   if (web_ui_) {
-    RenderViewHost* rvh = web_ui_->web_contents()->GetRenderViewHost();
+    RenderViewHost* rvh = web_ui_->GetWebContents()->GetRenderViewHost();
     rvh->ExecuteJavascriptInWebFrame(iframe_xpath, js);
   }
 }

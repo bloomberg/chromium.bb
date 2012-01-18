@@ -22,6 +22,13 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+// Rewrite to use WebUI testing infrastructure. Current code below is mostly
+// testing how WebUI concrete class serializes function parameters, and that
+// SyncInternalsUI::HandleJSEvent/HandleJsReply prefix the given function with
+// "chrome.sync." and postfix it with ".fire" or ".handleReply".
+// http://crbug.com/110517
+/*
+
 namespace {
 
 using browser_sync::HasArgsAsList;
@@ -209,3 +216,5 @@ TEST_F(SyncInternalsUITestWithoutService, OnWebUISendGetAboutInfo) {
 }
 
 }  // namespace
+
+*/

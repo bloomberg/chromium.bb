@@ -111,7 +111,7 @@ class HtmlDialogUI : public content::WebUIController {
   };
 
   // When created, the property should already be set on the WebContents.
-  explicit HtmlDialogUI(WebUI* web_ui);
+  explicit HtmlDialogUI(content::WebUI* web_ui);
   virtual ~HtmlDialogUI();
 
   // Close the dialog, passing the specified arguments to the close handler.
@@ -138,7 +138,7 @@ class HtmlDialogUI : public content::WebUIController {
 // cloud print dialog).
 class ExternalHtmlDialogUI : public HtmlDialogUI {
  public:
-  explicit ExternalHtmlDialogUI(WebUI* web_ui);
+  explicit ExternalHtmlDialogUI(content::WebUI* web_ui);
   virtual ~ExternalHtmlDialogUI();
 };
 
