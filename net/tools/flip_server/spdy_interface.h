@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
-#include "net/spdy/spdy_framer.h"
+#include "net/spdy/buffered_spdy_framer.h"
 #include "net/spdy/spdy_protocol.h"
 #include "net/tools/flip_server/balsa_headers.h"
 #include "net/tools/flip_server/balsa_visitor_interface.h"
@@ -23,7 +23,7 @@ namespace net {
 class FlipAcceptor;
 class MemoryCache;
 
-class SpdySM : public spdy::SpdyFramerVisitorInterface,
+class SpdySM : public spdy::BufferedSpdyFramerVisitorInterface,
                public SMInterface {
  public:
   SpdySM(SMConnection* connection,
@@ -60,7 +60,7 @@ class SpdySM : public spdy::SpdyFramerVisitorInterface,
                           std::string& http_data,
                           bool* is_https_scheme);
 
-  // SpdyFramerVisitor interface.
+  // BufferedSpdyFramerVisitorInterface:
   virtual void OnControl(const spdy::SpdyControlFrame* frame) OVERRIDE;
   virtual bool OnControlFrameHeaderData(
       const spdy::SpdyControlFrame* control_frame,
@@ -71,6 +71,14 @@ class SpdySM : public spdy::SpdyFramerVisitorInterface,
                                  const char* data, size_t len) OVERRIDE;
   virtual bool OnCredentialFrameData(const char* frame_data,
                                      size_t len) OVERRIDE;
+  virtual void OnSyn(const spdy::SpdySynStreamControlFrame& frame,
+                     const linked_ptr<spdy::SpdyHeaderBlock>& headers) OVERRIDE;
+  virtual void OnSynReply(
+      const spdy::SpdySynReplyControlFrame& frame,
+      const linked_ptr<spdy::SpdyHeaderBlock>& headers) OVERRIDE;
+  virtual void OnHeaders(
+      const spdy::SpdyHeadersControlFrame& frame,
+      const linked_ptr<spdy::SpdyHeaderBlock>& headers) OVERRIDE;
 
  public:
   virtual size_t ProcessReadInput(const char* data, size_t len) OVERRIDE;
@@ -103,7 +111,9 @@ class SpdySM : public spdy::SpdyFramerVisitorInterface,
                               const BalsaHeaders& headers) OVERRIDE;
   virtual void SendDataFrame(uint32 stream_id, const char* data, int64 len,
                              uint32 flags, bool compress) OVERRIDE;
-  spdy::SpdyFramer* spdy_framer() { return spdy_framer_; }
+  spdy::BufferedSpdyFramer* spdy_framer() {
+      return buffered_spdy_framer_;
+  }
 
   static std::string forward_ip_header() { return forward_ip_header_; }
   static void set_forward_ip_header(std::string value) {
@@ -124,7 +134,7 @@ class SpdySM : public spdy::SpdyFramerVisitorInterface,
   virtual void GetOutput() OVERRIDE;
  private:
   uint64 seq_num_;
-  spdy::SpdyFramer* spdy_framer_;
+  spdy::BufferedSpdyFramer* buffered_spdy_framer_;
   bool valid_spdy_session_;  // True if we have seen valid data on this session.
                              // Use this to fail fast when junk is sent to our
                              // port.

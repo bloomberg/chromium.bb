@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,6 +21,7 @@ using spdy::RST_STREAM;
 using spdy::SETTINGS_MAX_CONCURRENT_STREAMS;
 using spdy::SYN_REPLY;
 using spdy::SYN_STREAM;
+using spdy::BufferedSpdyFramer;
 using spdy::SettingsFlagsAndId;
 using spdy::SpdyControlFrame;
 using spdy::SpdySettingsControlFrame;
@@ -65,7 +66,7 @@ SpdySM::SpdySM(SMConnection* connection,
                MemoryCache* memory_cache,
                FlipAcceptor* acceptor)
     : seq_num_(0),
-      spdy_framer_(new SpdyFramer),
+      buffered_spdy_framer_(new BufferedSpdyFramer),
       valid_spdy_session_(false),
       connection_(connection),
       client_output_list_(connection->output_list()),
@@ -75,11 +76,11 @@ SpdySM::SpdySM(SMConnection* connection,
       acceptor_(acceptor),
       memory_cache_(memory_cache),
       close_on_error_(false) {
-  spdy_framer_->set_visitor(this);
+  buffered_spdy_framer_->set_visitor(this);
 }
 
 SpdySM::~SpdySM() {
-  delete spdy_framer_;
+  delete buffered_spdy_framer_;
 }
 
 void SpdySM::InitSMConnection(SMConnectionPoolInterface* connection_pool,
@@ -153,7 +154,7 @@ int SpdySM::SpdyHandleNewStream(const SpdyControlFrame* frame,
     reinterpret_cast<const SpdySynStreamControlFrame*>(frame);
 
   *is_https_scheme = false;
-  parsed_headers = spdy_framer_->ParseHeaderBlock(frame, &headers);
+  parsed_headers = buffered_spdy_framer_->ParseHeaderBlock(frame, &headers);
   VLOG(2) << ACCEPTOR_CLIENT_IDENT << "SpdySM: OnSyn("
           << syn_stream->stream_id() << ")";
   VLOG(2) << ACCEPTOR_CLIENT_IDENT << "SpdySM: headers parsed?: "
@@ -257,7 +258,7 @@ void SpdySM::OnControl(const SpdyControlFrame* frame) {
       break;
 
     case SYN_REPLY:
-      parsed_headers = spdy_framer_->ParseHeaderBlock(frame, &headers);
+      parsed_headers = buffered_spdy_framer_->ParseHeaderBlock(frame, &headers);
       DCHECK(parsed_headers);
       // TODO(willchan): if there is an error parsing headers, we
       // should send a RST_STREAM.
@@ -289,7 +290,7 @@ bool SpdySM::OnControlFrameHeaderData(
 }
 
 void SpdySM::OnDataFrameHeader(const spdy::SpdyDataFrame* frame) {
-  DCHECK(false);
+  buffered_spdy_framer_->OnDataFrameHeader(frame);
 }
 
 void SpdySM::OnStreamFrameData(SpdyStreamId stream_id,
@@ -314,8 +315,20 @@ bool SpdySM::OnCredentialFrameData(const char* frame_data,
   return false;
 }
 
+void SpdySM::OnSyn(const spdy::SpdySynStreamControlFrame& frame,
+                   const linked_ptr<spdy::SpdyHeaderBlock>& headers) {
+}
+
+void SpdySM::OnSynReply(const spdy::SpdySynReplyControlFrame& frame,
+                        const linked_ptr<spdy::SpdyHeaderBlock>& headers) {
+}
+
+void SpdySM::OnHeaders(const spdy::SpdyHeadersControlFrame& frame,
+                       const linked_ptr<spdy::SpdyHeaderBlock>& headers) {
+}
+
 size_t SpdySM::ProcessReadInput(const char* data, size_t len) {
-  return spdy_framer_->ProcessInput(data, len);
+  return buffered_spdy_framer_->ProcessInput(data, len);
 }
 
 size_t SpdySM::ProcessWriteInput(const char* data, size_t len) {
@@ -323,16 +336,16 @@ size_t SpdySM::ProcessWriteInput(const char* data, size_t len) {
 }
 
 bool SpdySM::MessageFullyRead() const {
-  return spdy_framer_->MessageFullyRead();
+  return buffered_spdy_framer_->MessageFullyRead();
 }
 
 bool SpdySM::Error() const {
-  return close_on_error_ || spdy_framer_->HasError();
+  return close_on_error_ || buffered_spdy_framer_->HasError();
 }
 
 const char* SpdySM::ErrorAsString() const {
   DCHECK(Error());
-  return SpdyFramer::ErrorCodeToString(spdy_framer_->error_code());
+  return SpdyFramer::ErrorCodeToString(buffered_spdy_framer_->error_code());
 }
 
 void SpdySM::ResetForNewInterface(int32 server_idx) {
@@ -343,9 +356,9 @@ void SpdySM::ResetForNewInterface(int32 server_idx) {
 
 void SpdySM::ResetForNewConnection() {
   // seq_num is not cleared, intentionally.
-  delete spdy_framer_;
-  spdy_framer_ = new SpdyFramer;
-  spdy_framer_->set_visitor(this);
+  delete buffered_spdy_framer_;
+  buffered_spdy_framer_ = new BufferedSpdyFramer;
+  buffered_spdy_framer_->set_visitor(this);
   valid_spdy_session_ = false;
   client_output_ordering_.Reset();
   next_outgoing_stream_id_ = 2;
@@ -357,7 +370,7 @@ int SpdySM::PostAcceptHook() {
   SettingsFlagsAndId settings_id(SETTINGS_MAX_CONCURRENT_STREAMS);
   settings.push_back(SpdySetting(settings_id, 100));
   SpdySettingsControlFrame* settings_frame =
-      spdy_framer_->CreateSettings(settings);
+      SpdyFramer::CreateSettings(settings);
 
   VLOG(1) << ACCEPTOR_CLIENT_IDENT << "Sending Settings Frame";
   EnqueueDataFrame(new SpdyFrameDataFrame(settings_frame));
@@ -482,9 +495,8 @@ size_t SpdySM::SendSynStreamImpl(uint32 stream_id,
   }
   CopyHeaders(block, headers);
 
-  SpdySynStreamControlFrame* fsrcf =
-    spdy_framer_->CreateSynStream(stream_id, 0, 0, CONTROL_FLAG_NONE, true,
-                                  &block);
+  SpdySynStreamControlFrame* fsrcf = buffered_spdy_framer_->CreateSynStream(
+      stream_id, 0, 0, CONTROL_FLAG_NONE, true, &block);
   size_t df_size = fsrcf->length() + SpdyFrame::kHeaderSize;
   EnqueueDataFrame(new SpdyFrameDataFrame(fsrcf));
 
@@ -500,8 +512,8 @@ size_t SpdySM::SendSynReplyImpl(uint32 stream_id, const BalsaHeaders& headers) {
                     headers.response_reason_phrase().as_string();
   block["version"] = headers.response_version().as_string();
 
-  SpdySynReplyControlFrame* fsrcf =
-    spdy_framer_->CreateSynReply(stream_id, CONTROL_FLAG_NONE, true, &block);
+  SpdySynReplyControlFrame* fsrcf = buffered_spdy_framer_->CreateSynReply(
+      stream_id, CONTROL_FLAG_NONE, true, &block);
   size_t df_size = fsrcf->length() + SpdyFrame::kHeaderSize;
   EnqueueDataFrame(new SpdyFrameDataFrame(fsrcf));
 
@@ -520,8 +532,8 @@ void SpdySM::SendDataFrameImpl(uint32 stream_id, const char* data, int64 len,
   //                 priority queue.  Compression needs to be done
   //                 with late binding.
   if (len == 0) {
-    SpdyDataFrame* fdf = spdy_framer_->CreateDataFrame(stream_id, data, len,
-                                                       flags);
+    SpdyDataFrame* fdf = buffered_spdy_framer_->CreateDataFrame(
+        stream_id, data, len, flags);
     EnqueueDataFrame(new SpdyFrameDataFrame(fdf));
     return;
   }
@@ -537,8 +549,8 @@ void SpdySM::SendDataFrameImpl(uint32 stream_id, const char* data, int64 len,
     if ((size < len) && (flags & DATA_FLAG_FIN))
       chunk_flags = static_cast<SpdyDataFlags>(chunk_flags & ~DATA_FLAG_FIN);
 
-    SpdyDataFrame* fdf = spdy_framer_->CreateDataFrame(stream_id, data, size,
-                                                       chunk_flags);
+    SpdyDataFrame* fdf = buffered_spdy_framer_->CreateDataFrame(
+        stream_id, data, size, chunk_flags);
     EnqueueDataFrame(new SpdyFrameDataFrame(fdf));
 
     VLOG(2) << ACCEPTOR_CLIENT_IDENT << "SpdySM: Sending data frame "
