@@ -53,7 +53,7 @@ class SSLManager : public content::NotificationObserver {
   static void OnSSLCertificateError(ResourceDispatcherHost* resource_dispatcher,
                                     net::URLRequest* request,
                                     const net::SSLInfo& ssl_info,
-                                    bool fatal);
+                                    bool is_hsts_host);
 
   // Called when SSL state for a host or tab changes.  Broadcasts the
   // SSL_INTERNAL_STATE_CHANGED notification.

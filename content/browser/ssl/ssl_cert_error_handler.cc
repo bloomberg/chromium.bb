@@ -14,11 +14,11 @@ SSLCertErrorHandler::SSLCertErrorHandler(
     net::URLRequest* request,
     ResourceType::Type resource_type,
     const net::SSLInfo& ssl_info,
-    bool fatal)
+    bool is_hsts_host)
     : SSLErrorHandler(rdh, request, resource_type),
       ssl_info_(ssl_info),
       cert_error_(net::MapCertStatusToNetError(ssl_info.cert_status)),
-      fatal_(fatal) {
+      is_hsts_host_(is_hsts_host) {
   DCHECK(request == resource_dispatcher_host_->GetURLRequest(request_id_));
 }
 
