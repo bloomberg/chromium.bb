@@ -6,8 +6,8 @@
 #define CONTENT_PUBLIC_BROWSER_WEB_UI_FACTORY_H_
 #pragma once
 
-#include "content/browser/webui/web_ui.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/web_ui.h"
 
 class GURL;
 

@@ -12,6 +12,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::WebContents;
+using content::WebUI;
 using content::WebUIController;
 using ::testing::_;
 using ::testing::Eq;

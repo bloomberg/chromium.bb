@@ -9,9 +9,10 @@
 #include "base/basictypes.h"
 #include "base/string16.h"
 #include "content/common/content_export.h"
+#include "testing/gtest/include/gtest/gtest_prod.h"
 
 class GURL;
-class WebUI;
+class WebUIImpl;
 class WebUIBrowserTest;
 
 namespace base {
@@ -59,8 +60,11 @@ class CONTENT_EXPORT WebUIMessageHandler {
   WebUI* web_ui() const { return web_ui_; }
 
  private:
-  friend class ::WebUI;
+  friend class ::WebUIImpl;
   friend class ::WebUIBrowserTest;
+  FRIEND_TEST(WebUIMessageHandlerTest, ExtractIntegerValue);
+  FRIEND_TEST(WebUIMessageHandlerTest, ExtractDoubleValue);
+  FRIEND_TEST(WebUIMessageHandlerTest, ExtractStringValue);
 
   void set_web_ui(WebUI* web_ui) { web_ui_ = web_ui; }
 

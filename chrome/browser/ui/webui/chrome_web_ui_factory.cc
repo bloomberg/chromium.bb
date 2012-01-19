@@ -87,6 +87,7 @@
 #endif
 
 using content::WebContents;
+using content::WebUI;
 using content::WebUIController;
 
 namespace {

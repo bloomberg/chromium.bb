@@ -8,7 +8,7 @@
 #include "content/test/js_injection_ready_observer.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_service.h"
-#include "content/browser/webui/web_ui.h"
+#include "content/browser/webui/web_ui_impl.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"

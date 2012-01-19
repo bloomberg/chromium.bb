@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/webui/web_ui.h"
+#include "content/browser/webui/web_ui_impl.h"
 
 #include "base/command_line.h"
 #include "base/json/json_writer.h"
@@ -47,7 +47,7 @@ string16 WebUI::GetJavascriptCall(
 
 }
 
-WebUI::WebUI(WebContents* contents)
+WebUIImpl::WebUIImpl(WebContents* contents)
     : hide_favicon_(false),
       focus_location_bar_by_default_(false),
       should_hide_url_(false),
@@ -58,27 +58,27 @@ WebUI::WebUI(WebContents* contents)
   AddMessageHandler(new GenericHandler());
 }
 
-WebUI::~WebUI() {
+WebUIImpl::~WebUIImpl() {
   // Delete the controller first, since it may also be keeping a pointer to some
   // of the handlers and can call them at destruction.
   controller_.reset();
   STLDeleteContainerPointers(handlers_.begin(), handlers_.end());
 }
 
-// WebUI, public: -------------------------------------------------------------
+// WebUIImpl, public: ----------------------------------------------------------
 
-bool WebUI::OnMessageReceived(const IPC::Message& message) {
+bool WebUIImpl::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(WebUI, message)
+  IPC_BEGIN_MESSAGE_MAP(WebUIImpl, message)
     IPC_MESSAGE_HANDLER(ViewHostMsg_WebUISend, OnWebUISend)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
 }
 
-void WebUI::OnWebUISend(const GURL& source_url,
-                        const std::string& message,
-                        const ListValue& args) {
+void WebUIImpl::OnWebUISend(const GURL& source_url,
+                            const std::string& message,
+                            const ListValue& args) {
   if (!ChildProcessSecurityPolicy::GetInstance()->
           HasWebUIBindings(web_contents_->GetRenderProcessHost()->GetID())) {
     NOTREACHED() << "Blocked unauthorized use of WebUIBindings.";
@@ -97,7 +97,7 @@ void WebUI::OnWebUISend(const GURL& source_url,
   }
 }
 
-void WebUI::RenderViewCreated(RenderViewHost* render_view_host) {
+void WebUIImpl::RenderViewCreated(RenderViewHost* render_view_host) {
   controller_->RenderViewCreated(render_view_host);
 
   // Do not attempt to set the toolkit property if WebUI is not enabled, e.g.,
@@ -119,85 +119,85 @@ void WebUI::RenderViewCreated(RenderViewHost* render_view_host) {
     render_view_host->SetWebUIProperty("touchOptimized", "true");
 }
 
-WebContents* WebUI::GetWebContents() const {
+WebContents* WebUIImpl::GetWebContents() const {
   return web_contents_;
 }
 
-bool WebUI::ShouldHideFavicon() const {
+bool WebUIImpl::ShouldHideFavicon() const {
   return hide_favicon_;
 }
 
-void WebUI::HideFavicon() {
+void WebUIImpl::HideFavicon() {
   hide_favicon_ = true;
 }
 
-bool WebUI::ShouldFocusLocationBarByDefault() const {
+bool WebUIImpl::ShouldFocusLocationBarByDefault() const {
   return focus_location_bar_by_default_;
 }
 
-void WebUI::FocusLocationBarByDefault() {
+void WebUIImpl::FocusLocationBarByDefault() {
   focus_location_bar_by_default_ = true;
 }
 
-bool WebUI::ShouldHideURL() const {
+bool WebUIImpl::ShouldHideURL() const {
   return should_hide_url_;
 }
 
-void WebUI::HideURL() {
+void WebUIImpl::HideURL() {
   should_hide_url_ = true;
 }
 
-const string16& WebUI::GetOverriddenTitle() const {
+const string16& WebUIImpl::GetOverriddenTitle() const {
   return overridden_title_;
 }
 
-void WebUI::OverrideTitle(const string16& title) {
+void WebUIImpl::OverrideTitle(const string16& title) {
   overridden_title_ = title;
 }
 
-content::PageTransition WebUI::GetLinkTransitionType() const {
+content::PageTransition WebUIImpl::GetLinkTransitionType() const {
   return link_transition_type_;
 }
 
-void WebUI::SetLinkTransitionType(content::PageTransition type) {
+void WebUIImpl::SetLinkTransitionType(content::PageTransition type) {
   link_transition_type_ = type;
 }
 
-int WebUI::GetBindings() const {
+int WebUIImpl::GetBindings() const {
   return bindings_;
 }
 
-void WebUI::SetBindings(int bindings) {
+void WebUIImpl::SetBindings(int bindings) {
   bindings_ = bindings;
 }
 
-void WebUI::SetFrameXPath(const std::string& xpath) {
+void WebUIImpl::SetFrameXPath(const std::string& xpath) {
   frame_xpath_ = xpath;
 }
 
-WebUIController* WebUI::GetController() const {
+WebUIController* WebUIImpl::GetController() const {
   return controller_.get();
 }
 
-void WebUI::SetController(WebUIController* controller) {
+void WebUIImpl::SetController(WebUIController* controller) {
   controller_.reset(controller);
 }
 
-void WebUI::CallJavascriptFunction(const std::string& function_name) {
+void WebUIImpl::CallJavascriptFunction(const std::string& function_name) {
   DCHECK(IsStringASCII(function_name));
   string16 javascript = ASCIIToUTF16(function_name + "();");
   ExecuteJavascript(javascript);
 }
 
-void WebUI::CallJavascriptFunction(const std::string& function_name,
-                                   const Value& arg) {
+void WebUIImpl::CallJavascriptFunction(const std::string& function_name,
+                                       const Value& arg) {
   DCHECK(IsStringASCII(function_name));
   std::vector<const Value*> args;
   args.push_back(&arg);
   ExecuteJavascript(GetJavascriptCall(function_name, args));
 }
 
-void WebUI::CallJavascriptFunction(
+void WebUIImpl::CallJavascriptFunction(
     const std::string& function_name,
     const Value& arg1, const Value& arg2) {
   DCHECK(IsStringASCII(function_name));
@@ -207,7 +207,7 @@ void WebUI::CallJavascriptFunction(
   ExecuteJavascript(GetJavascriptCall(function_name, args));
 }
 
-void WebUI::CallJavascriptFunction(
+void WebUIImpl::CallJavascriptFunction(
     const std::string& function_name,
     const Value& arg1, const Value& arg2, const Value& arg3) {
   DCHECK(IsStringASCII(function_name));
@@ -218,7 +218,7 @@ void WebUI::CallJavascriptFunction(
   ExecuteJavascript(GetJavascriptCall(function_name, args));
 }
 
-void WebUI::CallJavascriptFunction(
+void WebUIImpl::CallJavascriptFunction(
     const std::string& function_name,
     const Value& arg1,
     const Value& arg2,
@@ -233,34 +233,34 @@ void WebUI::CallJavascriptFunction(
   ExecuteJavascript(GetJavascriptCall(function_name, args));
 }
 
-void WebUI::CallJavascriptFunction(
+void WebUIImpl::CallJavascriptFunction(
     const std::string& function_name,
     const std::vector<const Value*>& args) {
   DCHECK(IsStringASCII(function_name));
   ExecuteJavascript(GetJavascriptCall(function_name, args));
 }
 
-void WebUI::RegisterMessageCallback(const std::string &message,
-                                    const MessageCallback& callback) {
+void WebUIImpl::RegisterMessageCallback(const std::string &message,
+                                        const MessageCallback& callback) {
   message_callbacks_.insert(std::make_pair(message, callback));
 }
 
-void WebUI::ProcessWebUIMessage(const GURL& source_url,
-                                const std::string& message,
-                                const base::ListValue& args) {
+void WebUIImpl::ProcessWebUIMessage(const GURL& source_url,
+                                    const std::string& message,
+                                    const base::ListValue& args) {
   OnWebUISend(source_url, message, args);
 }
 
-// WebUI, protected: ----------------------------------------------------------
+// WebUIImpl, protected: -------------------------------------------------------
 
-void WebUI::AddMessageHandler(WebUIMessageHandler* handler) {
+void WebUIImpl::AddMessageHandler(WebUIMessageHandler* handler) {
   DCHECK(!handler->web_ui());
   handler->set_web_ui(this);
   handler->RegisterMessages();
   handlers_.push_back(handler);
 }
 
-void WebUI::ExecuteJavascript(const string16& javascript) {
+void WebUIImpl::ExecuteJavascript(const string16& javascript) {
   web_contents_->GetRenderViewHost()->ExecuteJavascriptInWebFrame(
       ASCIIToUTF16(frame_xpath_), javascript);
 }

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_WEBUI_WEB_UI_H_
-#define CONTENT_BROWSER_WEBUI_WEB_UI_H_
+#ifndef CONTENT_BROWSER_WEBUI_WEB_UI_IMPL_H_
+#define CONTENT_BROWSER_WEBUI_WEB_UI_IMPL_H_
 #pragma once
 
 #include <map>
@@ -14,11 +14,11 @@
 
 class RenderViewHost;
 
-class CONTENT_EXPORT WebUI : public content::WebUI,
-                             public IPC::Channel::Listener {
+class CONTENT_EXPORT WebUIImpl : public content::WebUI,
+                                 public IPC::Channel::Listener {
  public:
-  explicit WebUI(content::WebContents* contents);
-  virtual ~WebUI();
+  explicit WebUIImpl(content::WebContents* contents);
+  virtual ~WebUIImpl();
 
   // Called by TabContents when the RenderView is first created. This is *not*
   // called for every page load because in some cases RenderViewHostManager will
@@ -109,7 +109,7 @@ class CONTENT_EXPORT WebUI : public content::WebUI,
 
   scoped_ptr<content::WebUIController> controller_;
 
-  DISALLOW_COPY_AND_ASSIGN(WebUI);
+  DISALLOW_COPY_AND_ASSIGN(WebUIImpl);
 };
 
-#endif  // CONTENT_BROWSER_WEBUI_WEB_UI_H_
+#endif  // CONTENT_BROWSER_WEBUI_WEB_UI_IMPL_H_

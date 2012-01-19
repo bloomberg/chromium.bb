@@ -15,7 +15,7 @@
 #include "content/browser/site_instance.h"
 #include "content/browser/tab_contents/navigation_controller_impl.h"
 #include "content/browser/tab_contents/navigation_entry_impl.h"
-#include "content/browser/webui/web_ui.h"
+#include "content/browser/webui/web_ui_impl.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/notification_service.h"
@@ -216,7 +216,7 @@ void RenderViewHostManager::DidNavigateMainFrame(
   }
 }
 
-void RenderViewHostManager::SetWebUIPostCommit(WebUI* web_ui) {
+void RenderViewHostManager::SetWebUIPostCommit(WebUIImpl* web_ui) {
   DCHECK(!web_ui_.get());
   web_ui_.reset(web_ui);
 }

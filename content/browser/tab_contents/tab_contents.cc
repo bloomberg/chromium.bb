@@ -31,6 +31,7 @@
 #include "content/browser/tab_contents/navigation_entry_impl.h"
 #include "content/browser/tab_contents/provisional_load_details.h"
 #include "content/browser/tab_contents/title_updated_details.h"
+#include "content/browser/webui/web_ui_impl.h"
 #include "content/common/intents_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_context.h"
@@ -122,6 +123,7 @@ using content::SSLStatus;
 using content::UserMetricsAction;
 using content::WebContents;
 using content::WebContentsObserver;
+using content::WebUI;
 using content::WebUIController;
 
 namespace {
@@ -304,8 +306,10 @@ RenderViewHostManager* TabContents::GetRenderManagerForTesting() {
 }
 
 bool TabContents::OnMessageReceived(const IPC::Message& message) {
-  if (GetWebUI() && static_cast<WebUI*>(GetWebUI())->OnMessageReceived(message))
+  if (GetWebUI() &&
+      static_cast<WebUIImpl*>(GetWebUI())->OnMessageReceived(message)) {
     return true;
+  }
 
   ObserverListBase<WebContentsObserver>::Iterator it(observers_);
   WebContentsObserver* observer;
@@ -434,7 +438,7 @@ content::WebContentsView* TabContents::GetView() const {
 }
 
 content::WebUI* TabContents::CreateWebUI(const GURL& url) {
-  WebUI* web_ui = new WebUI(this);
+  WebUIImpl* web_ui = new WebUIImpl(this);
   WebUIController* controller =
       content::GetContentClient()->browser()->GetWebUIFactory()->
           CreateWebUIForURL(web_ui, url);
@@ -1481,7 +1485,7 @@ void TabContents::DidNavigateMainFramePostCommit(
     // that opened the window, as long as both renderers have the same
     // privileges.
     if (delegate_ && opener_web_ui_type_ == GetWebUITypeForCurrentState()) {
-      WebUI* web_ui = static_cast<WebUI*>(CreateWebUI(GetURL()));
+      WebUIImpl* web_ui = static_cast<WebUIImpl*>(CreateWebUI(GetURL()));
       // web_ui might be NULL if the URL refers to a non-existent extension.
       if (web_ui) {
         render_manager_.SetWebUIPostCommit(web_ui);
@@ -2192,8 +2196,8 @@ NavigationControllerImpl& TabContents::GetControllerForRenderManager() {
   return GetControllerImpl();
 }
 
-WebUI* TabContents::CreateWebUIForRenderManager(const GURL& url) {
-  return static_cast<WebUI*>(CreateWebUI(url));
+WebUIImpl* TabContents::CreateWebUIForRenderManager(const GURL& url) {
+  return static_cast<WebUIImpl*>(CreateWebUI(url));
 }
 
 NavigationEntry*

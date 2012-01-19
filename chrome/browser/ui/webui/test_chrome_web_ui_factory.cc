@@ -8,6 +8,7 @@
 #include "content/public/browser/web_contents.h"
 
 using content::WebContents;
+using content::WebUI;
 using content::WebUIController;
 
 TestChromeWebUIFactory::WebUIProvider::~WebUIProvider() {

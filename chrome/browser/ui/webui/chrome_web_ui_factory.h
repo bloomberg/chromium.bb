@@ -17,8 +17,9 @@ class RefCountedMemory;
 
 class ChromeWebUIFactory : public content::WebUIFactory {
  public:
-  virtual WebUI::TypeID GetWebUIType(content::BrowserContext* browser_context,
-                                     const GURL& url) const OVERRIDE;
+  virtual content::WebUI::TypeID GetWebUIType(
+      content::BrowserContext* browser_context,
+      const GURL& url) const OVERRIDE;
   virtual bool UseWebUIForURL(content::BrowserContext* browser_context,
                               const GURL& url) const OVERRIDE;
   virtual bool UseWebUIBindingsForURL(content::BrowserContext* browser_context,

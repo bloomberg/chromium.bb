@@ -19,7 +19,7 @@ class InterstitialPage;
 class NavigationControllerImpl;
 class RenderViewHost;
 class RenderWidgetHostView;
-class WebUI;
+class WebUIImpl;
 
 namespace content {
 class BrowserContext;
@@ -68,7 +68,7 @@ class CONTENT_EXPORT RenderViewHostManager
     // Creates a WebUI object for the given URL if one applies. Ownership of the
     // returned pointer will be passed to the caller. If no WebUI applies,
     // returns NULL.
-    virtual WebUI* CreateWebUIForRenderManager(const GURL& url) = 0;
+    virtual WebUIImpl* CreateWebUIForRenderManager(const GURL& url) = 0;
 
     // Returns the navigation entry of the current navigation, or NULL if there
     // is none.
@@ -123,10 +123,10 @@ class CONTENT_EXPORT RenderViewHostManager
   }
 
   // Returns the current committed Web UI or NULL if none applies.
-  WebUI* web_ui() const { return web_ui_.get(); }
+  WebUIImpl* web_ui() const { return web_ui_.get(); }
 
   // Returns the Web UI for the pending navigation, or NULL of none applies.
-  WebUI* pending_web_ui() const { return pending_web_ui_.get(); }
+  WebUIImpl* pending_web_ui() const { return pending_web_ui_.get(); }
 
   // Called when we want to instruct the renderer to navigate to the given
   // navigation entry. It may create a new RenderViewHost or re-use an existing
@@ -154,7 +154,7 @@ class CONTENT_EXPORT RenderViewHostManager
   // Set the WebUI after committing a page load. This is useful for navigations
   // initiated from a renderer, where we want to give the new renderer WebUI
   // privileges from the originating renderer.
-  void SetWebUIPostCommit(WebUI* web_ui);
+  void SetWebUIPostCommit(WebUIImpl* web_ui);
 
   // Called when a provisional load on the given renderer is aborted.
   void RendererAbortedProvisionalLoad(RenderViewHost* render_view_host);
@@ -265,7 +265,7 @@ class CONTENT_EXPORT RenderViewHostManager
   // non-DOM-UI pages). This object is responsible for all communication with
   // a child RenderView instance.
   RenderViewHost* render_view_host_;
-  scoped_ptr<WebUI> web_ui_;
+  scoped_ptr<WebUIImpl> web_ui_;
 
   // A RenderViewHost used to load a cross-site page. This remains hidden
   // while a cross-site request is pending until it calls DidNavigate. It may
@@ -277,7 +277,7 @@ class CONTENT_EXPORT RenderViewHostManager
   // the RVH won't be swapped, so the pending pointer will be unused, but there
   // will be a pending Web UI associated with the navigation.
   RenderViewHost* pending_render_view_host_;
-  scoped_ptr<WebUI> pending_web_ui_;
+  scoped_ptr<WebUIImpl> pending_web_ui_;
 
   // A map of site instance ID to swapped out RenderViewHosts.
   typedef base::hash_map<int32, RenderViewHost*> RenderViewHostMap;

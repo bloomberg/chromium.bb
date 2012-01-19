@@ -13,8 +13,8 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/test_html_dialog_observer.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_ui.h"
 
 namespace {
 
