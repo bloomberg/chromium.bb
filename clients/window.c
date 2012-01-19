@@ -2416,7 +2416,8 @@ menu_redraw_handler(struct widget *widget, void *data)
 	width = window->allocation.width;
 	height = window->allocation.height;
 	rounded_rect(cr, 0, 0, width, height, r);
-	cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
+
+	cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
 	cairo_set_source_rgba(cr, 0.0, 0.0, 0.4, 0.8);
 	cairo_fill(cr);
 
