@@ -98,7 +98,6 @@ class WebMediaPlayerImpl
   // filter if they wish to hear any sound coming out the speakers, otherwise
   // audio data is discarded and media plays back based on wall clock time.
   //
-  // This object takes ownership of the |audio_source_provider|.
   WebMediaPlayerImpl(WebKit::WebFrame* frame,
                      WebKit::WebMediaPlayerClient* client,
                      base::WeakPtr<WebMediaPlayerDelegate> delegate,
