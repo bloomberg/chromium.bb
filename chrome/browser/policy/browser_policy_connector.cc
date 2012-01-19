@@ -442,7 +442,9 @@ void BrowserPolicyConnector::CompleteInitialization() {
         kServiceInitializationStartupDelay);
   }
   device_data_store_->set_device_status_collector(
-      new DeviceStatusCollector(g_browser_process->local_state()));
+      new DeviceStatusCollector(
+          g_browser_process->local_state(),
+          chromeos::system::StatisticsProvider::GetInstance()));
 #endif
 }
 

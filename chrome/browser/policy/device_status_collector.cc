@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/string_number_conversions.h"
+#include "chrome/browser/chromeos/system/statistics_provider.h"
 #include "chrome/browser/policy/proto/device_management_backend.pb.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
@@ -42,11 +43,14 @@ bool GetTimestamp(const ListValue* list, int index, int64* out_value) {
 
 namespace policy {
 
-DeviceStatusCollector::DeviceStatusCollector(PrefService* local_state)
+DeviceStatusCollector::DeviceStatusCollector(
+    PrefService* local_state,
+    chromeos::system::StatisticsProvider* provider)
     : max_stored_active_periods_(kMaxStoredActivePeriods),
       local_state_(local_state),
       last_idle_check_(Time()),
-      last_idle_state_(IDLE_STATE_UNKNOWN) {
+      last_idle_state_(IDLE_STATE_UNKNOWN),
+      statistics_provider_(provider) {
   timer_.Start(FROM_HERE,
                TimeDelta::FromSeconds(
                    DeviceStatusCollector::kPollIntervalSeconds),
@@ -131,6 +135,7 @@ void DeviceStatusCollector::IdleStateCallback(IdleState state) {
 }
 
 void DeviceStatusCollector::GetStatus(em::DeviceStatusReportRequest* request) {
+  // Report device active periods.
   const ListValue* active_periods =
       local_state_->GetList(kPrefDeviceActivePeriods);
   em::TimePeriod* time_period;
@@ -159,6 +164,16 @@ void DeviceStatusCollector::GetStatus(em::DeviceStatusReportRequest* request) {
   request->set_browser_version(version_info.Version());
   request->set_os_version(os_version_);
   request->set_firmware_version(firmware_version_);
+
+  // Report the state of the dev switch at boot.
+  std::string dev_switch_mode;
+  if (statistics_provider_->GetMachineStatistic(
+      "devsw_boot", &dev_switch_mode)) {
+    if (dev_switch_mode == "1")
+      request->set_boot_mode("Dev");
+    else if (dev_switch_mode == "0")
+      request->set_boot_mode("Verified");
+  }
 }
 
 void DeviceStatusCollector::OnOSVersion(VersionLoader::Handle handle,

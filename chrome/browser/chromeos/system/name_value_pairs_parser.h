@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,6 @@
 
 #include <map>
 #include <string>
-#include <vector>
 
 #include "base/basictypes.h"
 
@@ -40,13 +39,29 @@ class NameValuePairsParser {
                                  const std::string& eq,
                                  const std::string& delim);
 
-  // This will parse strings with output in the format:
+  // These will parse strings with output in the format:
   // <key><EQ><value><DELIM>[<key><EQ><value>][...]
   // e.g. ParseNameValuePairs("key1=value1 key2=value2", "=", " ")
   bool ParseNameValuePairs(const std::string& in_string,
                            const std::string& eq,
                            const std::string& delim);
 
+  // This version allows for values which end with a comment
+  // beginning with comment_delim.
+  // e.g."key2=value2 # Explanation of value\n"
+  bool ParseNameValuePairsWithComments(const std::string& in_string,
+                                       const std::string& eq,
+                                       const std::string& delim,
+                                       const std::string& comment_delim);
+
+  bool ParseNameValuePairsFromTool(
+      int argc,
+      const char* argv[],
+      const std::string& eq,
+      const std::string& delim,
+      const std::string& comment_delim);
+
+ private:
   NameValueMap* map_;
 
   DISALLOW_COPY_AND_ASSIGN(NameValuePairsParser);

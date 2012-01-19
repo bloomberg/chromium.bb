@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -55,6 +55,28 @@ TEST(NameValuePairsParser, TestParseNameValuePairs) {
   EXPECT_EQ("ja", map["initial_locale"]);
   EXPECT_EQ("Asia/Tokyo", map["initial_timezone"]);
   EXPECT_EQ("mozc-jp", map["keyboard_layout"]);
+}
+
+TEST(NameValuePairsParser, TestParseNameValuePairsFromTool) {
+  // Sample output is taken from the /usr/bin/crosssytem tool.
+  const char* command[] = { "/bin/echo",
+    "arch                   = x86           # Platform architecture\n" \
+    "cros_debug             = 1             # OS should allow debug\n" \
+    "dbg_reset              = (error)       # Debug reset mode request\n" \
+    "key#with_comment       = some value    # Multiple # comment # delims\n" \
+    "key                    =               # No value."
+  };
+
+  NameValuePairsParser::NameValueMap map;
+  NameValuePairsParser parser(&map);
+  parser.ParseNameValuePairsFromTool(
+      arraysize(command), command, "=", "\n", "#");
+  EXPECT_EQ("x86", map["arch"]);
+  EXPECT_EQ("1", map["cros_debug"]);
+  EXPECT_EQ("(error)", map["dbg_reset"]);
+  EXPECT_EQ("some value", map["key#with_comment"]);
+  EXPECT_EQ("", map["key"]);
+  EXPECT_EQ(5u, map.size());
 }
 
 }  // namespace system

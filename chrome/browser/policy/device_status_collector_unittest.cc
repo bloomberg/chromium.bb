@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,9 +7,11 @@
 #include "base/message_loop.h"
 #include "base/time.h"
 #include "chrome/browser/idle.h"
+#include "chrome/browser/chromeos/system/mock_statistics_provider.h"
 #include "chrome/browser/policy/proto/device_management_backend.pb.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/test/base/testing_pref_service.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::TimeDelta;
@@ -21,8 +23,10 @@ namespace {
 
 class TestingDeviceStatusCollector : public policy::DeviceStatusCollector {
  public:
-  explicit TestingDeviceStatusCollector(PrefService* local_state)
-    :  policy::DeviceStatusCollector(local_state),
+  TestingDeviceStatusCollector(
+      PrefService* local_state,
+      chromeos::system::StatisticsProvider* provider)
+    :  policy::DeviceStatusCollector(local_state, provider),
        local_state_(local_state),
        baseline_time_(Time::Now()) {
   }
@@ -79,13 +83,19 @@ int64 GetActiveMilliseconds(em::DeviceStatusReportRequest& status) {
 
 namespace policy {
 
+using ::testing::_;
+using ::testing::NotNull;
+using ::testing::Return;
+using ::testing::SetArgPointee;
+
 class DeviceStatusCollectorTest : public testing::Test {
  public:
   DeviceStatusCollectorTest()
-    :  message_loop_(new MessageLoop),
-       prefs_(),
-       status_collector_(&prefs_) {
+    :  prefs_(),
+       status_collector_(&prefs_, &statistics_provider_) {
     DeviceStatusCollector::RegisterPrefs(&prefs_);
+    EXPECT_CALL(statistics_provider_, GetMachineStatistic(_, NotNull()))
+        .WillRepeatedly(Return(false));
   }
 
  protected:
@@ -94,9 +104,9 @@ class DeviceStatusCollectorTest : public testing::Test {
     return policy::DeviceStatusCollector::kPollIntervalSeconds * 1000;
   }
 
-  scoped_ptr<MessageLoop> message_loop_;
-
+  MessageLoop message_loop_;
   TestingPrefService prefs_;
+  chromeos::system::MockStatisticsProvider statistics_provider_;
   TestingDeviceStatusCollector status_collector_;
   em::DeviceStatusReportRequest status_;
 };
@@ -180,7 +190,8 @@ TEST_F(DeviceStatusCollectorTest, StateKeptInPref) {
   // Process the list a second time with a different collector.
   // It should be able to count the active periods found by the first
   // collector, because the results are stored in a pref.
-  TestingDeviceStatusCollector second_collector(&prefs_);
+  TestingDeviceStatusCollector second_collector(&prefs_,
+                                                &statistics_provider_);
   second_collector.Simulate(test_states,
                             sizeof(test_states) / sizeof(IdleState));
 
@@ -224,6 +235,35 @@ TEST_F(DeviceStatusCollectorTest, MaxStoredPeriods) {
   // Check that we don't exceed the max number of periods.
   status_collector_.GetStatus(&status_);
   EXPECT_EQ(static_cast<int>(max_periods), status_.active_time_size());
+}
+
+TEST_F(DeviceStatusCollectorTest, DevSwitchBootMode) {
+  status_collector_.GetStatus(&status_);
+  EXPECT_EQ(false, status_.has_boot_mode());
+
+  EXPECT_CALL(statistics_provider_,
+              GetMachineStatistic("devsw_boot", NotNull()))
+      .WillOnce(DoAll(SetArgPointee<1>("(error)"), Return(true)));
+  status_collector_.GetStatus(&status_);
+  EXPECT_EQ(false, status_.has_boot_mode());
+
+  EXPECT_CALL(statistics_provider_,
+              GetMachineStatistic("devsw_boot", NotNull()))
+      .WillOnce(DoAll(SetArgPointee<1>(" "), Return(true)));
+  status_collector_.GetStatus(&status_);
+  EXPECT_EQ(false, status_.has_boot_mode());
+
+  EXPECT_CALL(statistics_provider_,
+              GetMachineStatistic("devsw_boot", NotNull()))
+      .WillOnce(DoAll(SetArgPointee<1>("0"), Return(true)));
+  status_collector_.GetStatus(&status_);
+  EXPECT_EQ("Verified", status_.boot_mode());
+
+  EXPECT_CALL(statistics_provider_,
+              GetMachineStatistic("devsw_boot", NotNull()))
+      .WillOnce(DoAll(SetArgPointee<1>("1"), Return(true)));
+  status_collector_.GetStatus(&status_);
+  EXPECT_EQ("Dev", status_.boot_mode());
 }
 
 }  // namespace policy

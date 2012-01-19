@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,7 +11,6 @@
 #include "base/process_util.h"
 #include "base/string_tokenizer.h"
 #include "base/string_util.h"
-#include "base/threading/thread_restrictions.h"
 
 namespace chromeos {  // NOLINT
 namespace system {
@@ -19,6 +18,24 @@ namespace system {
 namespace {
 
 const char kQuoteChars[] = "\"";
+const char kTrimChars[] = "\" ";
+
+bool GetToolOutput(int argc, const char* argv[], std::string& output) {
+  DCHECK_GE(argc, 1);
+
+  if (!file_util::PathExists(FilePath(argv[0]))) {
+    LOG(WARNING) << "Tool for statistics not found: " << argv[0];
+    return false;
+  }
+
+  CommandLine command_line(argc, argv);
+  if (!base::GetAppOutput(command_line, &output)) {
+    LOG(WARNING) << "Error executing: " << command_line.GetCommandLineString();
+    return false;
+  }
+
+  return true;
+}
 
 }  // namespace
 
@@ -35,6 +52,14 @@ void NameValuePairsParser::AddNameValuePair(const std::string& key,
 bool NameValuePairsParser::ParseNameValuePairs(const std::string& in_string,
                                                const std::string& eq,
                                                const std::string& delim) {
+  return ParseNameValuePairsWithComments(in_string, eq, delim, "");
+}
+
+bool NameValuePairsParser::ParseNameValuePairsWithComments(
+    const std::string& in_string,
+    const std::string& eq,
+    const std::string& delim,
+    const std::string& comment_delim) {
   // Set up the pair tokenizer.
   StringTokenizer pair_toks(in_string, delim);
   pair_toks.set_quote_chars(kQuoteChars);
@@ -46,15 +71,25 @@ bool NameValuePairsParser::ParseNameValuePairs(const std::string& in_string,
       return false;
     }
     StringTokenizer keyvalue(pair, eq);
-    std::string key,value;
+    std::string key;
+    std::string value;
     if (keyvalue.GetNext()) {
-      TrimString(keyvalue.token(), kQuoteChars, &key);
+      TrimString(keyvalue.token(), kTrimChars, &key);
       if (keyvalue.GetNext()) {
-        TrimString(keyvalue.token(), kQuoteChars, &value);
+        value = keyvalue.token();
         if (keyvalue.GetNext()) {
           LOG(WARNING) << "Multiple key tokens: '" << pair << "'. Aborting.";
           return false;
         }
+        // If value ends with a comment, throw away everything after
+        // comment_delim is encountered.
+        if (!comment_delim.empty()) {
+          StringTokenizer value_with_comment(value, comment_delim);
+          value_with_comment.GetNext();
+          value = value_with_comment.token();
+        }
+
+        TrimString(value, kTrimChars, &value);
       }
     }
     if (key.empty()) {
@@ -69,19 +104,10 @@ bool NameValuePairsParser::ParseNameValuePairs(const std::string& in_string,
 bool NameValuePairsParser::GetSingleValueFromTool(int argc,
                                                   const char* argv[],
                                                   const std::string& key) {
-  DCHECK_GE(argc, 1);
-
-  if (!file_util::PathExists(FilePath(argv[0]))) {
-    LOG(WARNING) << "Tool for statistics not found: " << argv[0];
-    return false;
-  }
-
-  CommandLine command_line(argc, argv);
   std::string output_string;
-  if (!base::GetAppOutput(command_line, &output_string)) {
-    LOG(WARNING) << "Error executing: " << command_line.GetCommandLineString();
+  if (!GetToolOutput(argc, argv, output_string))
     return false;
-  }
+
   TrimWhitespaceASCII(output_string, TRIM_ALL, &output_string);
   AddNameValuePair(key, output_string);
   return true;
@@ -96,6 +122,20 @@ void NameValuePairsParser::GetNameValuePairsFromFile(const FilePath& file_path,
   } else {
     LOG(WARNING) << "Unable to read statistics file: " << file_path.value();
   }
+}
+
+bool NameValuePairsParser::ParseNameValuePairsFromTool(
+    int argc,
+    const char* argv[],
+    const std::string& eq,
+    const std::string& delim,
+    const std::string& comment_delim) {
+  std::string output_string;
+  if (!GetToolOutput(argc, argv, output_string))
+    return false;
+
+  return ParseNameValuePairsWithComments(
+      output_string, eq, delim, comment_delim);
 }
 
 }  // namespace system

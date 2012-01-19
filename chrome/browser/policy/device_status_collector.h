@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,12 @@
 #include "chrome/browser/chromeos/version_loader.h"
 #include "chrome/browser/idle.h"
 
+namespace chromeos {
+namespace system {
+class StatisticsProvider;
+}
+}
+
 namespace enterprise_management {
 class DeviceStatusReportRequest;
 }
@@ -22,7 +28,8 @@ namespace policy {
 // Collects and summarizes the status of an enterprised-managed ChromeOS device.
 class DeviceStatusCollector {
  public:
-  explicit DeviceStatusCollector(PrefService* local_state);
+  DeviceStatusCollector(PrefService* local_state,
+                        chromeos::system::StatisticsProvider* provider);
   virtual ~DeviceStatusCollector();
 
   void GetStatus(enterprise_management::DeviceStatusReportRequest* request);
@@ -72,6 +79,8 @@ class DeviceStatusCollector {
 
   std::string os_version_;
   std::string firmware_version_;
+
+  chromeos::system::StatisticsProvider* statistics_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceStatusCollector);
 };
