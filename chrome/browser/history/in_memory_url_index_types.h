@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -81,7 +81,7 @@ typedef std::set<string16> String16Set;
 typedef std::set<char16> Char16Set;
 typedef std::vector<char16> Char16Vector;
 
-// Utility Functions Relates to Convenience Types ------------------------------
+// Utility Functions -----------------------------------------------------------
 
 // Breaks a string down into individual words.
 String16Set String16SetFromString16(const string16& uni_string);
@@ -113,6 +113,9 @@ String16Vector String16VectorFromString16(const string16& uni_string,
 // by score. Also, provide the metrics for where the matches occur so that
 // the UI can highlight the matched sections.
 Char16Set Char16SetFromString16(const string16& uni_word);
+
+// Determine if |prefix| is any of the standard 'ftp' or 'http[s]' prefixes.
+bool IsInlineablePrefix(const string16& prefix);
 
 // Support for InMemoryURLIndex Private Data -----------------------------------
 

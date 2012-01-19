@@ -267,6 +267,69 @@ TEST_F(InMemoryURLIndexTest, Retrieval) {
   ASSERT_EQ(1U, matches.size());
 }
 
+TEST_F(InMemoryURLIndexTest, URLPrefixMatching) {
+  url_index_.reset(new InMemoryURLIndex(FilePath()));
+  url_index_->Init(this, "en,ja,hi,zh");
+
+  // "drudgere" - found, can inline
+  ScoredHistoryMatches matches =
+      url_index_->HistoryItemsForTerms(ASCIIToUTF16("drudgere"));
+  ASSERT_EQ(1U, matches.size());
+  EXPECT_TRUE(matches[0].can_inline);
+
+  // "http://drudgere" - found, can inline
+  matches = url_index_->HistoryItemsForTerms(ASCIIToUTF16("http://drudgere"));
+  ASSERT_EQ(1U, matches.size());
+  EXPECT_TRUE(matches[0].can_inline);
+
+  // "www.atdmt" - not found
+  matches = url_index_->HistoryItemsForTerms(ASCIIToUTF16("www.atdmt"));
+  EXPECT_EQ(0U, matches.size());
+
+  // "atdmt" - found, cannot inline
+  matches = url_index_->HistoryItemsForTerms(ASCIIToUTF16("atdmt"));
+  ASSERT_EQ(1U, matches.size());
+  EXPECT_FALSE(matches[0].can_inline);
+
+  // "view.atdmt" - found, can inline
+  matches = url_index_->HistoryItemsForTerms(ASCIIToUTF16("view.atdmt"));
+  ASSERT_EQ(1U, matches.size());
+  EXPECT_TRUE(matches[0].can_inline);
+
+  // "http://view.atdmt" - found, can inline
+  matches = url_index_->HistoryItemsForTerms(ASCIIToUTF16("http://view.atdmt"));
+  ASSERT_EQ(1U, matches.size());
+  EXPECT_TRUE(matches[0].can_inline);
+
+  // "cnn.com" - found, can inline
+  matches = url_index_->HistoryItemsForTerms(ASCIIToUTF16("cnn.com"));
+  ASSERT_EQ(2U, matches.size());
+  // One match should be inline-able, the other not.
+  EXPECT_TRUE(matches[0].can_inline != matches[1].can_inline);
+
+  // "www.cnn.com" - found, can inline
+  matches = url_index_->HistoryItemsForTerms(ASCIIToUTF16("www.cnn.com"));
+  ASSERT_EQ(1U, matches.size());
+  EXPECT_TRUE(matches[0].can_inline);
+
+  // "www.cnn.com" - found, cannot inline
+  matches = url_index_->HistoryItemsForTerms(ASCIIToUTF16("ww.cnn.com"));
+  ASSERT_EQ(1U, matches.size());
+  EXPECT_TRUE(!matches[0].can_inline);
+
+  // "http://www.cnn.com" - found, can inline
+  matches =
+      url_index_->HistoryItemsForTerms(ASCIIToUTF16("http://www.cnn.com"));
+  ASSERT_EQ(1U, matches.size());
+  EXPECT_TRUE(matches[0].can_inline);
+
+  // "tp://www.cnn.com" - found, cannot inline
+  matches =
+      url_index_->HistoryItemsForTerms(ASCIIToUTF16("tp://www.cnn.com"));
+  ASSERT_EQ(1U, matches.size());
+  EXPECT_TRUE(!matches[0].can_inline);
+}
+
 TEST_F(InMemoryURLIndexTest, ProperStringMatching) {
   url_index_.reset(new InMemoryURLIndex(FilePath()));
   url_index_->Init(this, "en,ja,hi,zh");
@@ -456,35 +519,35 @@ TEST_F(InMemoryURLIndexTest, TypedCharacterCaching) {
 TEST_F(InMemoryURLIndexTest, Scoring) {
   URLRow row_a(MakeURLRow("http://abcdef", "fedcba", 3, 30, 1));
   // Test scores based on position.
-  ScoredHistoryMatch scored_a(
-      URLIndexPrivateData::ScoredMatchForURL(row_a, Make1Term("abc")));
-  ScoredHistoryMatch scored_b(
-      URLIndexPrivateData::ScoredMatchForURL(row_a, Make1Term("bcd")));
+  ScoredHistoryMatch scored_a(URLIndexPrivateData::ScoredMatchForURL(
+      row_a, ASCIIToUTF16("abc"), Make1Term("abc")));
+  ScoredHistoryMatch scored_b(URLIndexPrivateData::ScoredMatchForURL(
+      row_a, ASCIIToUTF16("bcd"), Make1Term("bcd")));
   EXPECT_GT(scored_a.raw_score, scored_b.raw_score);
   // Test scores based on length.
-  ScoredHistoryMatch scored_c(
-      URLIndexPrivateData::ScoredMatchForURL(row_a, Make1Term("abcd")));
+  ScoredHistoryMatch scored_c(URLIndexPrivateData::ScoredMatchForURL(
+      row_a, ASCIIToUTF16("abcd"), Make1Term("abcd")));
   EXPECT_LT(scored_a.raw_score, scored_c.raw_score);
   // Test scores based on order.
-  ScoredHistoryMatch scored_d(
-      URLIndexPrivateData::ScoredMatchForURL(row_a, Make2Terms("abc", "def")));
-  ScoredHistoryMatch scored_e(
-      URLIndexPrivateData::ScoredMatchForURL(row_a, Make2Terms("def", "abc")));
+  ScoredHistoryMatch scored_d(URLIndexPrivateData::ScoredMatchForURL(
+      row_a, ASCIIToUTF16("abcdef"), Make2Terms("abc", "def")));
+  ScoredHistoryMatch scored_e(URLIndexPrivateData::ScoredMatchForURL(
+      row_a, ASCIIToUTF16("def abc"), Make2Terms("def", "abc")));
   EXPECT_GT(scored_d.raw_score, scored_e.raw_score);
   // Test scores based on visit_count.
   URLRow row_b(MakeURLRow("http://abcdef", "fedcba", 10, 30, 1));
-  ScoredHistoryMatch scored_f(
-      URLIndexPrivateData::ScoredMatchForURL(row_b, Make1Term("abc")));
+  ScoredHistoryMatch scored_f(URLIndexPrivateData::ScoredMatchForURL(
+      row_b, ASCIIToUTF16("abc"), Make1Term("abc")));
   EXPECT_GT(scored_f.raw_score, scored_a.raw_score);
   // Test scores based on last_visit.
   URLRow row_c(MakeURLRow("http://abcdef", "fedcba", 3, 10, 1));
-  ScoredHistoryMatch scored_g(
-      URLIndexPrivateData::ScoredMatchForURL(row_c, Make1Term("abc")));
+  ScoredHistoryMatch scored_g(URLIndexPrivateData::ScoredMatchForURL(
+      row_c, ASCIIToUTF16("abc"), Make1Term("abc")));
   EXPECT_GT(scored_g.raw_score, scored_a.raw_score);
   // Test scores based on typed_count.
   URLRow row_d(MakeURLRow("http://abcdef", "fedcba", 3, 30, 10));
-  ScoredHistoryMatch scored_h(
-      URLIndexPrivateData::ScoredMatchForURL(row_d, Make1Term("abc")));
+  ScoredHistoryMatch scored_h(URLIndexPrivateData::ScoredMatchForURL(
+      row_d, ASCIIToUTF16("abc"), Make1Term("abc")));
   EXPECT_GT(scored_h.raw_score, scored_a.raw_score);
 }
 

@@ -435,7 +435,7 @@ ScoredHistoryMatches URLIndexPrivateData::HistoryItemsForTerms(
   history::String16Vector lower_words;
   Tokenize(lower_string, kWhitespaceUTF16, &lower_words);
   scored_items = std::for_each(history_id_set.begin(), history_id_set.end(),
-      AddHistoryMatch(*this, lower_words)).ScoredMatches();
+      AddHistoryMatch(*this, lower_string, lower_words)).ScoredMatches();
 
   // Select and sort only the top kMaxMatches results.
   if (scored_items.size() > AutocompleteProvider::kMaxMatches) {
@@ -471,8 +471,10 @@ ScoredHistoryMatches URLIndexPrivateData::HistoryItemsForTerms(
 
 URLIndexPrivateData::AddHistoryMatch::AddHistoryMatch(
     const URLIndexPrivateData& private_data,
+    const string16& lower_string,
     const String16Vector& lower_terms)
   : private_data_(private_data),
+    lower_string_(lower_string),
     lower_terms_(lower_terms) {}
 
 URLIndexPrivateData::AddHistoryMatch::~AddHistoryMatch() {}
@@ -486,7 +488,8 @@ void URLIndexPrivateData::AddHistoryMatch::operator()(
   // deleted by the user or the item no longer qualifies as a quick result.
   if (hist_pos != private_data_.history_info_map_.end()) {
     const URLRow& hist_item = hist_pos->second;
-    ScoredHistoryMatch match(ScoredMatchForURL(hist_item, lower_terms_));
+    ScoredHistoryMatch match(
+        ScoredMatchForURL(hist_item, lower_string_, lower_terms_));
     if (match.raw_score > 0)
       scored_matches_.push_back(match);
   }
@@ -496,6 +499,7 @@ void URLIndexPrivateData::AddHistoryMatch::operator()(
 // TODO(mrossetti): This can be made a ctor for ScoredHistoryMatch.
 ScoredHistoryMatch URLIndexPrivateData::ScoredMatchForURL(
     const URLRow& row,
+    const string16& lower_string,
     const String16Vector& terms) {
   ScoredHistoryMatch match(row);
   GURL gurl = row.url();
@@ -525,12 +529,13 @@ ScoredHistoryMatch URLIndexPrivateData::ScoredMatchForURL(
   match.url_matches = SortAndDeoverlapMatches(match.url_matches);
   match.title_matches = SortAndDeoverlapMatches(match.title_matches);
 
-  // We should not (currently) inline autocomplete a result unless both of the
-  // following are true:
-  //   * There is exactly one substring matches in the URL, and
-  //   * The one URL match starts at the beginning of the URL.
-  match.can_inline =
-      match.url_matches.size() == 1 && match.url_matches[0].offset == 0;
+  // We can inline autocomplete a result if:
+  //  1) the search term starts at the beginning of the candidate URL, OR
+  //  2) the candidate URL has one of the standard 'ftp' or 'http[s]'
+  //     prefixes.
+  match.can_inline = match.url_matches.size() &&
+      (match.url_matches[0].offset == 0 ||
+       IsInlineablePrefix(url.substr(0, match.url_matches[0].offset)));
 
   // Get partial scores based on term matching. Note that the score for
   // each of the URL and title are adjusted by the fraction of the

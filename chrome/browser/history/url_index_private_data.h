@@ -75,6 +75,7 @@ class URLIndexPrivateData {
   class AddHistoryMatch : public std::unary_function<HistoryID, void> {
    public:
     AddHistoryMatch(const URLIndexPrivateData& private_data,
+                    const string16& lower_string,
                     const String16Vector& lower_terms);
     ~AddHistoryMatch();
 
@@ -85,6 +86,7 @@ class URLIndexPrivateData {
    private:
     const URLIndexPrivateData& private_data_;
     ScoredHistoryMatches scored_matches_;
+    const string16& lower_string_;
     const String16Vector& lower_terms_;
   };
 
@@ -207,6 +209,7 @@ class URLIndexPrivateData {
   // substring matching metrics.
   static ScoredHistoryMatch ScoredMatchForURL(
       const URLRow& row,
+      const string16& lower_string,
       const String16Vector& terms_vector);
 
   // Calculates a component score based on position, ordering and total

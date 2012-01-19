@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,10 +6,12 @@
 
 #include <algorithm>
 #include <iterator>
+#include <set>
 
 #include "base/i18n/break_iterator.h"
 #include "base/i18n/case_conversion.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 
 namespace history {
 
@@ -129,6 +131,20 @@ Char16Set Char16SetFromString16(const string16& term) {
   for (string16::const_iterator iter = term.begin(); iter != term.end(); ++iter)
     characters.insert(*iter);
   return characters;
+}
+
+bool IsInlineablePrefix(const string16& prefix) {
+  CR_DEFINE_STATIC_LOCAL(std::set<string16>, prefixes, ());
+  if (prefixes.empty()) {
+    prefixes.insert(ASCIIToUTF16("ftp://ftp."));
+    prefixes.insert(ASCIIToUTF16("ftp://www."));
+    prefixes.insert(ASCIIToUTF16("ftp://"));
+    prefixes.insert(ASCIIToUTF16("https://www."));
+    prefixes.insert(ASCIIToUTF16("https://"));
+    prefixes.insert(ASCIIToUTF16("http://www."));
+    prefixes.insert(ASCIIToUTF16("http://"));
+  }
+  return prefixes.count(prefix) != 0;
 }
 
 }  // namespace history
