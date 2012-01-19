@@ -2133,6 +2133,7 @@ int main(int argc, char *argv[])
 
 	segv_action.sa_flags = SA_SIGINFO | SA_RESETHAND;
 	segv_action.sa_sigaction = on_segv_signal;
+	sigemptyset(&segv_action.sa_mask);
 	sigaction(SIGSEGV, &segv_action, NULL);
 
 	if (!backend) {
