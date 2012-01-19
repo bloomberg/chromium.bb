@@ -10,9 +10,10 @@
       'variables': { 'enable_wexit_time_destructors': 1, },
       'dependencies': [
         '<(DEPTH)/base/base.gyp:base',
-	'<(DEPTH)/gpu/gpu.gyp:command_buffer_service',
-	'<(DEPTH)/gpu/gpu.gyp:command_buffer_client',
-	'<(DEPTH)/gpu/gpu.gyp:gles2_c_lib',
+        '<(DEPTH)/gpu/gpu.gyp:command_buffer_service',
+        '<(DEPTH)/gpu/gpu.gyp:command_buffer_client',
+        '<(DEPTH)/gpu/gpu.gyp:gles2_c_lib',
+        '<(DEPTH)/gpu/gpu.gyp:gles2_implementation',
         '<(DEPTH)/third_party/angle/src/build_angle.gyp:translator_glsl',
         '<(DEPTH)/ui/gfx/gl/gl.gyp:gl',
       ],

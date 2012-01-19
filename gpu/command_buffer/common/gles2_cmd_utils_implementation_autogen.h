@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -205,7 +205,7 @@ static GLES2Util::EnumToString enum_to_string_table[] = {
   { 0x00000400, "GL_STENCIL_BUFFER_BIT", },
   { 0x800A, "GL_FUNC_SUBTRACT", },
   { 0x8E2C, "GL_DEPTH_COMPONENT16_NONLINEAR_NV", },
-  { 0x889F, "GL_VERTEX_ATTRIB_ARRAY_BUFFER_BINDING", },
+  { 0x8508, "GL_DECR_WRAP", },
   { 0x8006, "GL_FUNC_ADD", },
   { 0x8007, "GL_MIN_EXT", },
   { 0x8004, "GL_ONE_MINUS_CONSTANT_ALPHA", },
@@ -465,7 +465,7 @@ static GLES2Util::EnumToString enum_to_string_table[] = {
   { 0x8CE4, "GL_COLOR_ATTACHMENT4_NV", },
   { 0x8CD6, "GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT", },
   { 0x8872, "GL_MAX_TEXTURE_IMAGE_UNITS", },
-  { 0x8508, "GL_DECR_WRAP", },
+  { 0x889F, "GL_VERTEX_ATTRIB_ARRAY_BUFFER_BINDING", },
   { 0x8507, "GL_INCR_WRAP", },
   { 0x8895, "GL_ELEMENT_ARRAY_BUFFER_BINDING", },
   { 0x8894, "GL_ARRAY_BUFFER_BINDING", },

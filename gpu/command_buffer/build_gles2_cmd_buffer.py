@@ -15,7 +15,7 @@ _SIZE_OF_UINT32 = 4
 _SIZE_OF_COMMAND_HEADER = 4
 _FIRST_SPECIFIC_COMMAND_ID = 256
 
-_LICENSE = """// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+_LICENSE = """// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -201,7 +201,7 @@ GL_APICALL void         GL_APIENTRY glVertexAttribPointer (GLuint indx, GLintVer
 GL_APICALL void         GL_APIENTRY glViewport (GLint x, GLint y, GLsizei width, GLsizei height);
 GL_APICALL void         GL_APIENTRY glBlitFramebufferEXT (GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1, GLint dstX0, GLint dstY0, GLint dstX1, GLint dstY1, GLbitfield mask, GLenumBlitFilter filter);
 GL_APICALL void         GL_APIENTRY glRenderbufferStorageMultisampleEXT (GLenumRenderBufferTarget target, GLsizei samples, GLenumRenderBufferFormat internalformat, GLsizei width, GLsizei height);
-GL_APICALL void         GL_APIENTRY glTexStorage2DEXT (GLenumTextureTarget target, GLsizei levels, GLintTextureInternalFormatStorage internalFormat, GLsizei width, GLsizei height);
+GL_APICALL void         GL_APIENTRY glTexStorage2DEXT (GLenumTextureTarget target, GLsizei levels, GLenumTextureInternalFormatStorage internalFormat, GLsizei width, GLsizei height);
 // Non-GL commands.
 GL_APICALL void         GL_APIENTRY glSwapBuffers (void);
 GL_APICALL GLuint       GL_APIENTRY glGetMaxValueInBufferCHROMIUM (GLidBuffer buffer_id, GLsizei count, GLenumGetMaxIndexType type, GLuint offset);
@@ -6022,7 +6022,7 @@ class GLGenerator(object):
     """Writes the GLES2 c lib implementation."""
     file = CHeaderWriter(
         filename,
-        "// These functions emluate GLES2 over command buffers.\n")
+        "// These functions emulate GLES2 over command buffers.\n")
 
     for func in self.original_functions:
       func.WriteGLES2CLibImplementation(file)
