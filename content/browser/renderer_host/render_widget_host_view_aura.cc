@@ -550,7 +550,7 @@ void RenderWidgetHostViewAura::InsertText(const string16& text) {
 }
 
 void RenderWidgetHostViewAura::InsertChar(char16 ch, int flags) {
-  if (popup_child_host_view_) {
+  if (popup_child_host_view_ && popup_child_host_view_->NeedsInputGrab()) {
     popup_child_host_view_->InsertChar(ch, flags);
     return;
   }
@@ -710,7 +710,8 @@ void RenderWidgetHostViewAura::OnBlur() {
 }
 
 bool RenderWidgetHostViewAura::OnKeyEvent(aura::KeyEvent* event) {
-  if (popup_child_host_view_ && popup_child_host_view_->OnKeyEvent(event))
+  if (popup_child_host_view_ && popup_child_host_view_->NeedsInputGrab() &&
+      popup_child_host_view_->OnKeyEvent(event))
     return true;
 
   // We need to handle the Escape key for Pepper Flash.
@@ -904,6 +905,10 @@ void RenderWidgetHostViewAura::SchedulePaintIfNotInClip(
   } else {
     window_->SchedulePaintInRect(rect);
   }
+}
+
+bool RenderWidgetHostViewAura::NeedsInputGrab() {
+  return popup_type_ == WebKit::WebPopupTypeSelect;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

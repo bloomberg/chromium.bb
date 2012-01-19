@@ -173,6 +173,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   void UpdateExternalTexture();
   ui::InputMethod* GetInputMethod() const;
 
+  // Returns whether the widget needs an input grab to work properly.
+  bool NeedsInputGrab();
+
   // Confirm existing composition text in the webpage and ask the input method
   // to cancel its ongoing composition session.
   void FinishImeCompositionSession();
