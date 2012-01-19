@@ -5570,6 +5570,18 @@
    fun:_ZN15StartupTimeBomb3ArmERKN4base9TimeDeltaE
    fun:_ZN22ChromeBrowserMainParts25PreMainMessageLoopRunImplEv
 }
+{
+   bug_110741
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN11ProfileImpl20CreateWebDataServiceEv
+   fun:_ZN11ProfileImpl17GetWebDataServiceEN7Profile17ServiceAccessTypeE
+   fun:_ZN12TokenService10InitializeEPKcP7Profile
+   fun:_ZN13SigninManager10InitializeEP7Profile
+   fun:_ZN18ProfileSyncService10InitializeEv
+   fun:_ZN11ProfileImpl15InitSyncServiceEv
+   fun:_ZN11ProfileImpl21GetProfileSyncServiceEv
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
