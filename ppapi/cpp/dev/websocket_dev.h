@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -176,6 +176,33 @@ class WebSocket_Dev : public Resource {
   /// @return Returns a <code>Var</code> of string type. If called before the
   /// connection is established, it contains the empty string.
   Var GetURL();
+
+  /// SetBinaryType() specifies the binary object type for receiving binary
+  /// frames representation. Receiving text frames are always mapped to
+  /// <PP_VARTYPE_STRING</code> var regardless of this attribute.
+  /// This function should be called before Connect() to ensure receiving all
+  /// incoming binary frames as the specified binary object type.
+  /// Default type is <code>PP_WEBSOCKETBINARYTYPE_BLOB_DEV</code>.
+  ///
+  /// Currently, Blob bindings is not supported in Pepper, so receiving binary
+  /// type is always ArrayBuffer. To ensure backward compatibility, you must
+  /// call this function with
+  /// <code>PP_WEBSOCKETBINARYTYPE_ARRAYBUFFER_DEV</code> to use binary frames.
+  ///
+  /// @param[in] binary_type Binary object type for receiving binary frames
+  /// representation.
+  ///
+  /// @return Returns <code>false</code> if the specified type is not
+  /// supported. Otherwise, returns <code>true</code>.
+  ///
+  bool SetBinaryType(PP_WebSocketBinaryType_Dev binary_type);
+
+  /// GetBinaryType() returns the currently specified binary object type for
+  /// receiving binary frames.
+  ///
+  /// @return Returns <code>PP_WebSocketBinaryType_Dev</code> represents the
+  /// current binary object type.
+  PP_WebSocketBinaryType_Dev GetBinaryType();
 };
 
 }  // namespace pp

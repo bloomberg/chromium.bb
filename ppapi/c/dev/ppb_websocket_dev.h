@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From dev/ppb_websocket_dev.idl modified Wed Jan 11 14:21:33 2012. */
+/* From dev/ppb_websocket_dev.idl modified Wed Jan 18 20:17:45 2012. */
 
 #ifndef PPAPI_C_DEV_PPB_WEBSOCKET_DEV_H_
 #define PPAPI_C_DEV_PPB_WEBSOCKET_DEV_H_
@@ -341,7 +341,7 @@ struct PPB_WebSocket_Dev_0_9 {
    * @param[in] web_socket A <code>PP_Resource</code> corresponding to a
    * WebSocket.
    *
-   * @param[in] binary_type Binary object type for receibing binary frames
+   * @param[in] binary_type Binary object type for receiving binary frames
    * representation.
    *
    * @return Returns <code>PP_FALSE</code> if the specified type is not
@@ -350,13 +350,13 @@ struct PPB_WebSocket_Dev_0_9 {
   PP_Bool (*SetBinaryType)(PP_Resource web_socket,
                            PP_WebSocketBinaryType_Dev binary_type);
   /**
-   * GetBinaryType() returns currently specified binary object type for
-   * receiving binary frames representation.
+   * GetBinaryType() returns the currently specified binary object type for
+   * receiving binary frames.
    *
    * @param[in] web_socket A <code>PP_Resource</code> corresponding to a
    * WebSocket.
    *
-   * @return Returns <code>PP_WebSocketBinaryType_Dev</code> represents
+   * @return Returns <code>PP_WebSocketBinaryType_Dev</code> represents the
    * current binary object type.
    */
   PP_WebSocketBinaryType_Dev (*GetBinaryType)(PP_Resource web_socket);

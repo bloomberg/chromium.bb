@@ -336,7 +336,7 @@ interface PPB_WebSocket_Dev {
    * @param[in] web_socket A <code>PP_Resource</code> corresponding to a
    * WebSocket.
    *
-   * @param[in] binary_type Binary object type for receibing binary frames
+   * @param[in] binary_type Binary object type for receiving binary frames
    * representation.
    *
    * @return Returns <code>PP_FALSE</code> if the specified type is not
@@ -347,13 +347,13 @@ interface PPB_WebSocket_Dev {
                         [in] PP_WebSocketBinaryType_Dev binary_type);
 
   /**
-   * GetBinaryType() returns currently specified binary object type for
-   * receiving binary frames representation.
+   * GetBinaryType() returns the currently specified binary object type for
+   * receiving binary frames.
    *
    * @param[in] web_socket A <code>PP_Resource</code> corresponding to a
    * WebSocket.
    *
-   * @return Returns <code>PP_WebSocketBinaryType_Dev</code> represents
+   * @return Returns <code>PP_WebSocketBinaryType_Dev</code> represents the
    * current binary object type.
    */
   [version=0.9]

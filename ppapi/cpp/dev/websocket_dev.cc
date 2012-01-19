@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -143,6 +143,19 @@ Var WebSocket_Dev::GetURL() {
 
   return Var(Var::PassRef(),
       get_interface<PPB_WebSocket_Dev>()->GetURL(pp_resource()));
+}
+
+bool WebSocket_Dev::SetBinaryType(PP_WebSocketBinaryType_Dev binary_type) {
+  if (!has_interface<PPB_WebSocket_Dev>())
+    return false;
+  return PP_ToBool(get_interface<PPB_WebSocket_Dev>()->SetBinaryType(
+      pp_resource(), binary_type));
+}
+
+PP_WebSocketBinaryType_Dev WebSocket_Dev::GetBinaryType() {
+  if (!has_interface<PPB_WebSocket_Dev>())
+    return PP_WEBSOCKETBINARYTYPE_INVALID;
+  return get_interface<PPB_WebSocket_Dev>()->GetBinaryType(pp_resource());
 }
 
 }  // namespace pp

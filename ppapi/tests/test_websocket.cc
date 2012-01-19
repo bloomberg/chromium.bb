@@ -197,6 +197,10 @@ std::string TestWebSocket::TestUninitializedPropertiesAccess() {
   ASSERT_TRUE(AreEqualWithString(url, ""));
   ReleaseVar(url);
 
+  PP_WebSocketBinaryType_Dev binary_type =
+      websocket_interface_->GetBinaryType(ws);
+  ASSERT_EQ(PP_WEBSOCKETBINARYTYPE_BLOB_DEV, binary_type);
+
   core_interface_->ReleaseResource(ws);
 
   PASS();
@@ -564,6 +568,7 @@ std::string TestWebSocket::TestCcInterfaces() {
   ASSERT_TRUE(AreEqualWithString(ws.GetURL().pp_var(), ""));
 
   // Check communication interfaces (connect, send, receive, and close).
+  ws.SetBinaryType(PP_WEBSOCKETBINARYTYPE_ARRAYBUFFER_DEV);
   TestCompletionCallback connect_callback(instance_->pp_instance());
   int32_t result = ws.Connect(pp::Var(std::string(kCloseServerURL)), NULL, 0U,
       connect_callback);
@@ -617,6 +622,7 @@ std::string TestWebSocket::TestCcInterfaces() {
   ASSERT_TRUE(AreEqualWithString(ws.GetProtocol().pp_var(), ""));
   ASSERT_EQ(PP_WEBSOCKETREADYSTATE_CLOSED_DEV, ws.GetReadyState());
   ASSERT_TRUE(AreEqualWithString(ws.GetURL().pp_var(), kCloseServerURL));
+  ASSERT_EQ(PP_WEBSOCKETBINARYTYPE_ARRAYBUFFER_DEV, ws.GetBinaryType());
 
   PASS();
 }

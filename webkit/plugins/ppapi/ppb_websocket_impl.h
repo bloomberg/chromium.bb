@@ -11,14 +11,12 @@
 #include "ppapi/shared_impl/resource.h"
 #include "ppapi/shared_impl/tracked_callback.h"
 #include "ppapi/thunk/ppb_websocket_api.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebSocket.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSocketClient.h"
 
 namespace ppapi {
 class StringVar;
-}
-
-namespace WebKit {
-class WebSocket;
+class Var;
 }
 
 namespace webkit {
@@ -64,7 +62,7 @@ class PPB_WebSocket_Impl : public ::ppapi::Resource,
   // WebSocketClient implementation.
   virtual void didConnect();
   virtual void didReceiveMessage(const WebKit::WebString& message);
-  virtual void didReceiveBinaryData(const WebKit::WebData& binaryData);
+  virtual void didReceiveArrayBuffer(const WebKit::WebArrayBuffer& binaryData);
   virtual void didReceiveMessageError();
   virtual void didUpdateBufferedAmount(unsigned long buffered_amount);
   virtual void didStartClosingHandshake();
@@ -77,7 +75,7 @@ class PPB_WebSocket_Impl : public ::ppapi::Resource,
 
   scoped_ptr<WebKit::WebSocket> websocket_;
   PP_WebSocketReadyState_Dev state_;
-  PP_WebSocketBinaryType_Dev binary_type_;
+  WebKit::WebSocket::BinaryType binary_type_;
   bool error_was_received_;
 
   scoped_refptr< ::ppapi::TrackedCallback> connect_callback_;
@@ -85,8 +83,7 @@ class PPB_WebSocket_Impl : public ::ppapi::Resource,
   scoped_refptr< ::ppapi::TrackedCallback> receive_callback_;
   PP_Var* receive_callback_var_;
   bool wait_for_receive_;
-  // TODO(toyoshim): Use std::queue<Var> when it supports binary.
-  std::queue<PP_Var> received_messages_;
+  std::queue< scoped_refptr< ::ppapi::Var> > received_messages_;
 
   scoped_refptr< ::ppapi::TrackedCallback> close_callback_;
   uint16_t close_code_;

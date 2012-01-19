@@ -18,13 +18,14 @@
 #include "ppapi/c/ppb_var.h"
 #include "ppapi/shared_impl/var.h"
 #include "ppapi/shared_impl/var_tracker.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebData.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebArrayBuffer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginContainer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSocket.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURL.h"
+#include "webkit/plugins/ppapi/host_array_buffer_var.h"
 #include "webkit/plugins/ppapi/host_globals.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/resource_helper.h"
@@ -34,8 +35,9 @@ using ppapi::PpapiGlobals;
 using ppapi::StringVar;
 using ppapi::thunk::PPB_WebSocket_API;
 using ppapi::TrackedCallback;
+using ppapi::Var;
 using ppapi::VarTracker;
-using WebKit::WebData;
+using WebKit::WebArrayBuffer;
 using WebKit::WebDocument;
 using WebKit::WebString;
 using WebKit::WebSocket;
@@ -75,12 +77,10 @@ bool InValidStateToReceive(PP_WebSocketReadyState_Dev state) {
 namespace webkit {
 namespace ppapi {
 
-// TODO(toyoshim): Default value of binary_type_ must be
-// PP_WEBSOCKETBINARYTYPE_BLOB_DEV after supporting Blob.
 PPB_WebSocket_Impl::PPB_WebSocket_Impl(PP_Instance instance)
     : Resource(instance),
       state_(PP_WEBSOCKETREADYSTATE_INVALID_DEV),
-      binary_type_(PP_WEBSOCKETBINARYTYPE_ARRAYBUFFER_DEV),
+      binary_type_(WebSocket::BinaryTypeBlob),
       error_was_received_(false),
       receive_callback_var_(NULL),
       wait_for_receive_(false),
@@ -94,14 +94,6 @@ PPB_WebSocket_Impl::PPB_WebSocket_Impl(PP_Instance instance)
 PPB_WebSocket_Impl::~PPB_WebSocket_Impl() {
   if (websocket_.get())
     websocket_->disconnect();
-
-  // Clean up received and unread messages
-  VarTracker* var_tracker = PpapiGlobals::Get()->GetVarTracker();
-  while (!received_messages_.empty()) {
-    PP_Var var = received_messages_.front();
-    received_messages_.pop();
-    var_tracker->ReleaseVar(var);
-  }
 }
 
 // static
@@ -202,6 +194,9 @@ int32_t PPB_WebSocket_Impl::Connect(PP_Var url,
   DCHECK(websocket_.get());
   if (!websocket_.get())
     return PP_ERROR_NOTSUPPORTED;
+
+  // Set receiving binary object type.
+  websocket_->setBinaryType(binary_type_);
 
   websocket_->connect(web_url, web_protocols);
   state_ = PP_WEBSOCKETREADYSTATE_CONNECTING_DEV;
@@ -357,17 +352,13 @@ int32_t PPB_WebSocket_Impl::SendMessage(PP_Var message) {
     if (!websocket_->sendText(web_message))
       return PP_ERROR_BADARGUMENT;
   } else if (message.type == PP_VARTYPE_ARRAY_BUFFER) {
-    // Convert message to WebData.
-    // TODO(toyoshim): Must add a WebKit interface which handles WebArrayBuffer
-    // directly.
-    scoped_refptr<ArrayBufferVar> message_array_buffer =
-        ArrayBufferVar::FromPPVar(message);
-    if (!message_array_buffer)
+    // Convert message to WebArrayBuffer.
+    scoped_refptr<HostArrayBufferVar> host_message =
+        static_cast<HostArrayBufferVar*>(ArrayBufferVar::FromPPVar(message));
+    if (!host_message)
       return PP_ERROR_BADARGUMENT;
-    WebData web_message = WebData(
-        static_cast<const char*>(message_array_buffer->Map()),
-        static_cast<size_t>(message_array_buffer->ByteLength()));
-    if (!websocket_->sendBinary(web_message))
+    WebArrayBuffer& web_message = host_message->webkit_buffer();
+    if (!websocket_->sendArrayBuffer(web_message))
       return PP_ERROR_BADARGUMENT;
   } else {
     // TODO(toyoshim): Support Blob.
@@ -424,12 +415,32 @@ PP_Var PPB_WebSocket_Impl::GetURL() {
 
 PP_Bool PPB_WebSocket_Impl::SetBinaryType(
     PP_WebSocketBinaryType_Dev binary_type) {
-  // TODO(toyoshim): Use WebKit new API to set the receiving binary type.
-  return PP_FALSE;
+  switch (binary_type) {
+    case PP_WEBSOCKETBINARYTYPE_BLOB_DEV:
+      binary_type_ = WebSocket::BinaryTypeBlob;
+      break;
+    case PP_WEBSOCKETBINARYTYPE_ARRAYBUFFER_DEV:
+      binary_type_ = WebSocket::BinaryTypeArrayBuffer;
+      break;
+    default:
+      return PP_FALSE;
+  }
+  if (!websocket_.get())
+    return PP_FALSE;
+  websocket_->setBinaryType(binary_type_);
+  return PP_TRUE;
 }
 
 PP_WebSocketBinaryType_Dev PPB_WebSocket_Impl::GetBinaryType() {
-  return binary_type_;
+  switch (binary_type_) {
+    case WebSocket::BinaryTypeBlob:
+      return PP_WEBSOCKETBINARYTYPE_BLOB_DEV;
+    case WebSocket::BinaryTypeArrayBuffer:
+      return PP_WEBSOCKETBINARYTYPE_ARRAYBUFFER_DEV;
+    default:
+      NOTREACHED();
+      return PP_WEBSOCKETBINARYTYPE_INVALID;
+  }
 }
 
 void PPB_WebSocket_Impl::didConnect() {
@@ -445,8 +456,7 @@ void PPB_WebSocket_Impl::didReceiveMessage(const WebString& message) {
 
   // Append received data to queue.
   std::string string = message.utf8();
-  PP_Var var = StringVar::StringToPPVar(string);
-  received_messages_.push(var);
+  received_messages_.push(scoped_refptr<Var>(new StringVar(string)));
 
   if (!wait_for_receive_)
     return;
@@ -454,18 +464,15 @@ void PPB_WebSocket_Impl::didReceiveMessage(const WebString& message) {
   TrackedCallback::ClearAndRun(&receive_callback_, DoReceive());
 }
 
-void PPB_WebSocket_Impl::didReceiveBinaryData(const WebData& binaryData) {
+void PPB_WebSocket_Impl::didReceiveArrayBuffer(
+    const WebArrayBuffer& binaryData) {
   // Dispose packets after receiving an error or in invalid state.
   if (error_was_received_ || !InValidStateToReceive(state_))
     return;
 
   // Append received data to queue.
-  PP_Var var = PpapiGlobals::Get()->GetVarTracker()->MakeArrayBufferPPVar(
-      binaryData.size());
-  scoped_refptr<ArrayBufferVar> arraybuffer = ArrayBufferVar::FromPPVar(var);
-  void* data = arraybuffer->Map();
-  memcpy(data, binaryData.data(), binaryData.size());
-  received_messages_.push(var);
+  received_messages_.push(
+      scoped_refptr<Var>(new HostArrayBufferVar(binaryData)));
 
   if (!wait_for_receive_)
     return;
@@ -548,7 +555,7 @@ int32_t PPB_WebSocket_Impl::DoReceive() {
   if (!receive_callback_var_)
     return PP_OK;
 
-  *receive_callback_var_ = received_messages_.front();
+  *receive_callback_var_ = received_messages_.front()->GetPPVar();
   received_messages_.pop();
   receive_callback_var_ = NULL;
   wait_for_receive_ = false;
