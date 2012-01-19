@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -161,6 +161,30 @@ TEST_F(NativeComboboxViewsTest, KeyTest) {
   EXPECT_EQ(combobox_->selected_item(), 2);
   SendKeyEvent(ui::VKEY_LEFT);
   EXPECT_EQ(combobox_->selected_item(), 2);
+}
+
+// Check that if a combobox is disabled before it has a native wrapper, then the
+// native wrapper inherits the disabled state when it gets created.
+TEST_F(NativeComboboxViewsTest, DisabilityTest) {
+  model_.reset(new TestComboboxModel());
+
+  ASSERT_FALSE(combobox_);
+  combobox_ = new TestCombobox(model_.get());
+  combobox_->SetEnabled(false);
+  ASSERT_FALSE(combobox_->GetNativeWrapperForTesting());
+
+  widget_ = new Widget;
+  Widget::InitParams params(Widget::InitParams::TYPE_POPUP);
+  params.bounds = gfx::Rect(100, 100, 100, 100);
+  widget_->Init(params);
+  View* container = new View();
+  widget_->SetContentsView(container);
+  container->AddChildView(combobox_);
+
+  combobox_view_ = static_cast<NativeComboboxViews*>(
+      combobox_->GetNativeWrapperForTesting());
+  ASSERT_TRUE(combobox_view_);
+  ASSERT_FALSE(combobox_view_->enabled());
 }
 
 }  // namespace views

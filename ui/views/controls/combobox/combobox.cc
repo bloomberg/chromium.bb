@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -132,6 +132,7 @@ void Combobox::ViewHierarchyChanged(bool is_add, View* parent, View* child) {
     // The native wrapper's lifetime will be managed by the view hierarchy after
     // we call AddChildView.
     native_wrapper_ = NativeComboboxWrapper::CreateWrapper(this);
+    native_wrapper_->UpdateEnabled();
     AddChildView(native_wrapper_->GetView());
   }
 }
