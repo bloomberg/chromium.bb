@@ -45,7 +45,7 @@ deps = {
     'src/third_party/ffmpeg':
         Var('git_url') + '/chromium/deps/ffmpeg/source.git@d2286fdc1508b30641368d247f2a5b842828db19',
     'src/third_party/flac':
-        Var('git_url') + '/chromium/deps/flac.git@1cde08e295604898d14367eda0414ade8121ec43',
+        Var('git_url') + '/chromium/deps/flac.git@5a6f3f5e326d72b197408ef5edd387ce4368bbe6',
     'src/third_party/hunspell':
         Var('git_url') + '/chromium/deps/hunspell.git@c5d90e7704cce3ef93eff6212e7a007b3f067906',
     'src/third_party/hunspell_dictionaries':
