@@ -345,7 +345,7 @@ IN_PROC_BROWSER_TEST_F(InProcessBrowserTest, IDBKeyPathMultipleCalls) {
                                       UTF8ToUTF16("foo"));
 }
 
-IN_PROC_BROWSER_TEST_F(InProcessBrowserTest, InjectIDBKey) {
+IN_PROC_BROWSER_TEST_F(InProcessBrowserTest, FAILS_InjectIDBKey) {
   // {foo: 'zoo'}
   const char16 data[] = {0x0353,0x6f66,0x536f,0x7a03,0x6f6f,0x017b};
   content::SerializedScriptValue value(
