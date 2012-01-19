@@ -185,6 +185,7 @@ cr.define('extensions', function() {
 
 var ExtensionSettings = extensions.ExtensionSettings;
 
-window.onload = function() {
+// 'load' seems to have a bad interaction with open_sans.woff.
+window.addEventListener('DOMContentLoaded', function(e) {
   ExtensionSettings.getInstance().initialize();
-};
+});
