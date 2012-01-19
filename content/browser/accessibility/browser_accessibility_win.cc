@@ -1,10 +1,8 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "content/browser/accessibility/browser_accessibility_win.h"
-
-#include <limits>
 
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
@@ -746,10 +744,9 @@ STDMETHODIMP BrowserAccessibilityWin::scrollTo(enum IA2ScrollType scroll_type) {
     root = root->parent();
 
   gfx::Rect r = location_;
-  gfx::Rect view(std::numeric_limits<int>::min(),
-                 std::numeric_limits<int>::min(),
-                 std::numeric_limits<int>::max(),
-                 std::numeric_limits<int>::max());
+  gfx::Rect view = manager_->GetViewBounds();
+  view.set_origin(gfx::Point(0, 0));
+
   switch(scroll_type) {
     case IA2_SCROLL_TYPE_TOP_LEFT:
       root->ScrollToMakeVisible(
