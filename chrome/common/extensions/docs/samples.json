@@ -1660,11 +1660,10 @@
       "protocols": [],
       "search_string": "OMNIBOX EXAMPLE TO USE, TYPE OMNIX PLUS A SEARCH TERM INTO THE OMNIBOX. BACKGROUND_PAGE CHROME.OMNIBOX.ONINPUTCHANGED CHROME.OMNIBOX.ONINPUTENTERED",
       "source_files": [
-        "background.html",
         "background.js",
         "manifest.json"
       ],
-      "source_hash": "b96919e9e650a40bc7ad46cccc02e197f943de18",
+      "source_hash": "9a925b29e8e9d9c3953d140f1bdee2bae3f0b3ac",
       "zip_path": "examples\/api\/omnibox\/simple-example.zip"
     },
     {
