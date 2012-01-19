@@ -171,12 +171,8 @@ show_menu(struct resizor *resizor, struct input *input, uint32_t time)
 	};
 
 	input_get_position(input, &x, &y);
-	resizor->menu = window_create_menu(resizor->display,
-					   input, time, resizor->window,
-					   x - 10, y - 10,
-					   menu_func, entries, 4);
-
-	window_schedule_redraw(resizor->menu);
+	window_show_menu(resizor->display, input, time, resizor->window,
+			 x - 10, y - 10, menu_func, entries, 4);
 }
 
 static void

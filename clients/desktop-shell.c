@@ -59,7 +59,6 @@ struct panel {
 	struct surface base;
 	struct window *window;
 	struct widget *widget;
-	struct window *menu;
 	struct wl_list launcher_list;
 };
 
@@ -141,11 +140,9 @@ show_menu(struct panel *panel, struct input *input, uint32_t time)
 	};
 
 	input_get_position(input, &x, &y);
-	panel->menu = window_create_menu(window_get_display(panel->window),
-					 input, time, panel->window,
-					 x - 10, y - 10, NULL, entries, 4);
-
-	window_schedule_redraw(panel->menu);
+	window_show_menu(window_get_display(panel->window),
+			 input, time, panel->window,
+			 x - 10, y - 10, NULL, entries, 4);
 }
 
 static void

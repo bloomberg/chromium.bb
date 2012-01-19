@@ -200,11 +200,11 @@ window_create_transient(struct display *display, struct window *parent,
 
 typedef void (*menu_func_t)(struct window *window, int index, void *data);
 
-struct window *
-window_create_menu(struct display *display,
-		   struct input *input, uint32_t time, struct window *parent,
-		   int32_t x, int32_t y,
-		   menu_func_t func, const char **entries, int count);
+void
+window_show_menu(struct display *display,
+		 struct input *input, uint32_t time, struct window *parent,
+		 int32_t x, int32_t y,
+		 menu_func_t func, const char **entries, int count);
 
 void
 window_destroy(struct window *window);
