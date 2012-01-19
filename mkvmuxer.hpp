@@ -35,6 +35,13 @@ class IMkvWriter {
   // Returns true if the writer is seekable.
   virtual bool Seekable() const = 0;
 
+  // Element start notification. Called whenever an element identifier is about
+  // to be written to the stream. |element_id| is the element identifier, and
+  // |position| is the location in the WebM stream where the first octet of the
+  // element identifier will be written.
+  // Note: the |MkvId| enumeration in webmids.hpp defines element values.
+  virtual void ElementStartNotify(uint64 element_id, int64 position) = 0;
+
  protected:
   IMkvWriter();
   virtual ~IMkvWriter();

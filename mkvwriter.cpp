@@ -88,4 +88,7 @@ bool MkvWriter::Seekable() const {
   return true;
 }
 
+void MkvWriter::ElementStartNotify(uint64, int64) {
+}
+
 }  // namespace mkvmuxer

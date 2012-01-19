@@ -26,6 +26,7 @@ class MkvWriter : public IMkvWriter {
   virtual int64 Position() const;
   virtual int32 Position(int64 position);
   virtual bool Seekable() const;
+  virtual void ElementStartNotify(uint64 element_id, int64 position);
   virtual int32 Write(const void* buffer, uint32 length);
 
   // Creates and opens a file for writing. |filename| is the name of the file
