@@ -1,4 +1,4 @@
-" Copyright (c) 2011 The Chromium Authors. All rights reserved.
+" Copyright (c) 2012 The Chromium Authors. All rights reserved.
 " Use of this source code is governed by a BSD-style license that can be
 " found in the LICENSE file.
 "
@@ -43,10 +43,13 @@ def guess_configuration():
   def is_release_15s_newer(test_path):
     try:
       debug_mtime = os.path.getmtime(os.path.join(root, 'Debug', test_path))
-      rel_mtime = os.path.getmtime(os.path.join(root, 'Release',  test_path))
-      return rel_mtime - debug_mtime >= 15
     except os.error:
-      return False
+      debug_mtime = 0
+    try:
+      rel_mtime = os.path.getmtime(os.path.join(root, 'Release',  test_path))
+    except os.error:
+      rel_mtime = 0
+    return rel_mtime - debug_mtime >= 15
   configuration = 'Debug'
   if is_release_15s_newer('build.ninja') or is_release_15s_newer('protoc'):
     configuration = 'Release'
