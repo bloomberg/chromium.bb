@@ -929,12 +929,12 @@ glibc-copy() {
   mkdir -p "${GLIBC_INSTALL_DIR}"
 
   # Files in: ${NACL64_TARGET}/lib[32]/
-  local LIBS_TO_COPY="libstdc++.a libstdc++.so* \
-                      libc.a libc_nonshared.a \
+  local LIBS_TO_COPY="libstdc++.so* \
+                      libc_nonshared.a \
                       libc-2.9.so libc.so libc.so.* \
-                      libm-2.9.so libm.a libm.so libm.so.* \
-                      libdl-2.9.so libdl.so.* libdl.so libdl.a \
-                      libpthread-2.9.so libpthread.a libpthread.so \
+                      libm-2.9.so libm.so libm.so.* \
+                      libdl-2.9.so libdl.so.* libdl.so \
+                      libpthread-2.9.so libpthread.so \
                       libpthread.so.* libpthread_nonshared.a \
                       runnable-ld.so \
                       ld-2.9.so"

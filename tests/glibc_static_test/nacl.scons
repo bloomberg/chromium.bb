@@ -5,6 +5,10 @@
 
 Import('env')
 
+# PNaCl does not support static GlibC executables.
+if env.Bit('bitcode'):
+  Return()
+
 # This is a simple smoke test for using nacl-glibc with static
 # linking.  It is also possible to run *all* the Scons-based tests
 # with static linking using the option nacl_static_link=1.
