@@ -564,6 +564,11 @@ void ThreadWatcherList::InitializeAndStartWatching(
   ThreadWatcherList* thread_watcher_list = new ThreadWatcherList();
   CHECK(thread_watcher_list);
 
+  BrowserThread::PostTask(
+      BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(&StartupTimeBomb::DisarmStartupTimeBomb));
+
   const base::TimeDelta kSleepTime =
       base::TimeDelta::FromSeconds(kSleepSeconds);
   const base::TimeDelta kUnresponsiveTime =
@@ -588,11 +593,6 @@ void ThreadWatcherList::InitializeAndStartWatching(
   StartWatching(BrowserThread::CACHE, "CACHE", kSleepTime, kUnresponsiveTime,
                 unresponsive_threshold, crash_on_hang_thread_names,
                 live_threads_threshold);
-
-  BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&StartupTimeBomb::DisarmStartupTimeBomb));
 }
 
 // static
@@ -844,7 +844,6 @@ StartupTimeBomb::~StartupTimeBomb() {
 
 void StartupTimeBomb::Arm(const base::TimeDelta& duration) {
   DCHECK_EQ(thread_id_, base::PlatformThread::CurrentId());
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!startup_watchdog_);
   startup_watchdog_ = new StartupWatchDogThread(duration);
   startup_watchdog_->Arm();
@@ -852,15 +851,28 @@ void StartupTimeBomb::Arm(const base::TimeDelta& duration) {
 
 void StartupTimeBomb::Disarm() {
   DCHECK_EQ(thread_id_, base::PlatformThread::CurrentId());
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (startup_watchdog_) {
     startup_watchdog_->Disarm();
+    startup_watchdog_->Cleanup();
+    DeleteStartupWatchdog();
+  }
+}
+
+void StartupTimeBomb::DeleteStartupWatchdog() {
+  DCHECK_EQ(thread_id_, base::PlatformThread::CurrentId());
+  if (startup_watchdog_->IsJoinable()) {
     // Allow the watchdog thread to shutdown on UI. Watchdog thread shutdowns
     // very fast.
     base::ThreadRestrictions::SetIOAllowed(true);
     delete startup_watchdog_;
     startup_watchdog_ = NULL;
+    return;
   }
+  MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&StartupTimeBomb::DeleteStartupWatchdog,
+                 base::Unretained(this)),
+      base::TimeDelta::FromSeconds(10).InMilliseconds());
 }
 
 // static
