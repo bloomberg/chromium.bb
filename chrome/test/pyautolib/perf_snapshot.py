@@ -852,8 +852,8 @@ class _MemoryCountThread(_RemoteInspectorBaseThread):
       reply_dict: A dictionary object representing the reply message received
                   from the remote Chrome instance.
     """
-    if 'result' in reply_dict and 'count' in reply_dict['result']:
-      dom_group_list = reply_dict['result']['count']
+    if 'result' in reply_dict and 'domGroups' in reply_dict['result']:
+      dom_group_list = reply_dict['result']['domGroups']
       for dom_group in dom_group_list:
         listener_array = dom_group['listenerCount']
         for listener in listener_array:
