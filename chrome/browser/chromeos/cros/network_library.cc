@@ -39,6 +39,7 @@
 #include "chrome/browser/chromeos/cros_settings.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/network_login_observer.h"
+#include "chrome/browser/net/browser_url_util.h"
 #include "chrome/common/time_format.h"
 #include "content/public/browser/browser_thread.h"
 #include "crypto/nss_util.h"  // crypto::GetTPMTokenInfo() for 802.1X and VPN.
@@ -121,6 +122,12 @@ const int kRecentPlanPaymentHours = 6;
 // retries count once cellular device with SIM card is initialized.
 // If cellular device doesn't have SIM card, then retries are never used.
 const int kDefaultSimUnlockRetriesCount = 999;
+
+// Redirect extension url for POST-ing url parameters to mobile account status
+// sites.
+const char kRedirectExtensionPage[] =
+    "chrome-extension://iadeocfgjdjdmpenejdbfeaocpbikmab/redirect.html?"
+    "autoPost=1";
 
 // List of cellular operators names that should have data roaming always enabled
 // to be able to connect to any network.
@@ -1199,6 +1206,20 @@ bool CellularNetwork::SupportsActivation() const {
 bool CellularNetwork::SupportsDataPlan() const {
   // TODO(nkostylev): Are there cases when only one of this is defined?
   return !usage_url().empty() || !payment_url().empty();
+}
+
+GURL CellularNetwork::GetAccountInfoUrl() const {
+  if (!post_data_.length())
+    return GURL(payment_url());
+
+  GURL base_url(kRedirectExtensionPage);
+  GURL temp_url = chrome_browser_net::AppendQueryParameter(base_url,
+                                                           "post_data",
+                                                           post_data_);
+  GURL redir_url = chrome_browser_net::AppendQueryParameter(temp_url,
+                                                            "formUrl",
+                                                            payment_url());
+  return redir_url;
 }
 
 std::string CellularNetwork::GetNetworkTechnologyString() const {

@@ -93,6 +93,7 @@ class InternetOptionsHandler
   void SetSimCardLockCallback(const base::ListValue* args);
   void ChangePinCallback(const base::ListValue* args);
   void ShareNetworkCallback(const base::ListValue* args);
+  void ShowMorePlanInfoCallback(const ListValue* args);
 
   // Populates the ui with the details of the given device path. This forces
   // an overlay to be displayed in the UI.

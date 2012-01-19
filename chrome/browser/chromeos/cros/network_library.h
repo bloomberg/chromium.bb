@@ -19,6 +19,7 @@
 #include "base/string16.h"
 #include "base/timer.h"
 #include "chrome/browser/chromeos/cros/network_ui_data.h"
+#include "googleurl/src/gurl.h"
 #include "third_party/cros/chromeos_network.h"
 
 namespace base {
@@ -1126,6 +1127,8 @@ class CellularNetwork : public WirelessNetwork {
   // Returns true if one of the usage_url_ / payment_url_ (or both) is defined.
   bool SupportsDataPlan() const;
 
+  // Return a URL for account info page.
+  GURL GetAccountInfoUrl() const;
   // Return a string representation of network technology.
   std::string GetNetworkTechnologyString() const;
   // Return a string representation of activation state.
