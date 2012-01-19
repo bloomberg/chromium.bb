@@ -569,6 +569,24 @@ WebKit::WebThread* WebKitPlatformSupportImpl::currentThread() {
   return thread;
 }
 
+WebKit::WebGraphicsContext3D*
+WebKitPlatformSupportImpl::createGraphicsContext3D() {
+  return WebKitPlatformSupport::createGraphicsContext3D();
+}
+
+WebKit::WebGraphicsContext3D*
+WebKitPlatformSupportImpl::createGraphicsContext3D(
+      WebKit::WebGraphicsContext3D::Attributes attributes,
+      WebKit::WebView* web_view,
+      bool render_to_web_view) {
+  scoped_ptr<WebKit::WebGraphicsContext3D> context(createGraphicsContext3D());
+  if (!context.get() ||
+      !context->initialize(attributes, web_view, render_to_web_view)) {
+    return NULL;
+  }
+  return context.release();
+}
+
 base::PlatformFile WebKitPlatformSupportImpl::databaseOpenFile(
     const WebKit::WebString& vfs_file_name, int desired_flags) {
   return base::kInvalidPlatformFileValue;
