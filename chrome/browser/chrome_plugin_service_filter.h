@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 
 #include <map>
 #include <vector>
+#include <set>
 
 #include "base/hash_tables.h"
 #include "base/file_path.h"
@@ -50,6 +51,14 @@ class ChromePluginServiceFilter : public content::PluginServiceFilter,
   // Lifts a restriction on a plug-in.
   void UnrestrictPlugin(const FilePath& plugin_path);
 
+  // Disable NPAPI plugins for the given render view.
+  void DisableNPAPIForRenderView(int render_process_id,
+                                 int render_view_id);
+
+  // Clear info about disabled NPAPI plugins for the given render view.
+  void ClearDisabledNPAPIForRenderView(int render_process_id,
+                                       int render_view_id);
+
   // PluginServiceFilter implementation:
   virtual bool ShouldUsePlugin(
       int render_process_id,
@@ -88,6 +97,10 @@ class ChromePluginServiceFilter : public content::PluginServiceFilter,
   ResourceContextMap resource_context_map_;
 
   std::vector<OverriddenPlugin> overridden_plugins_;
+
+  // RenderViewInfo is (render_process_id, render_view_id).
+  typedef std::pair<int, int> RenderViewInfo;
+  std::set<RenderViewInfo> npapi_disabled_render_views_;
 };
 
 #endif  // CHROME_BROWSER_CHROME_PLUGIN_SERVICE_FILTER_H_

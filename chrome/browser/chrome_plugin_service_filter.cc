@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -70,6 +70,20 @@ void ChromePluginServiceFilter::UnrestrictPlugin(
   restricted_plugins_.erase(plugin_path);
 }
 
+void ChromePluginServiceFilter::DisableNPAPIForRenderView(
+    int render_process_id,
+    int render_view_id) {
+  RenderViewInfo render_view(render_process_id, render_view_id);
+  npapi_disabled_render_views_.insert(render_view);
+}
+
+void ChromePluginServiceFilter::ClearDisabledNPAPIForRenderView(
+    int render_process_id,
+    int render_view_id) {
+  RenderViewInfo render_view(render_process_id, render_view_id);
+  npapi_disabled_render_views_.erase(render_view);
+}
+
 bool ChromePluginServiceFilter::ShouldUsePlugin(
     int render_process_id,
     int render_view_id,
@@ -117,6 +131,15 @@ bool ChromePluginServiceFilter::ShouldUsePlugin(
         (policy_url.scheme() != origin.scheme() ||
          policy_url.host() != origin.host() ||
          policy_url.port() != origin.port())) {
+      return false;
+    }
+  }
+
+  if (plugin->type == webkit::WebPluginInfo::PLUGIN_TYPE_NPAPI) {
+    // Check if the NPAPI plugin has been disabled for this render view.
+    RenderViewInfo render_view(render_process_id, render_view_id);
+    if (npapi_disabled_render_views_.find(render_view) !=
+        npapi_disabled_render_views_.end()) {
       return false;
     }
   }
