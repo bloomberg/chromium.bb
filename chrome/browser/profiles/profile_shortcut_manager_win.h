@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,6 +17,11 @@ class ProfileShortcutManagerWin : public ProfileInfoCacheObserver {
  public:
   ProfileShortcutManagerWin();
   virtual ~ProfileShortcutManagerWin();
+
+  // Create a profile shortcut for the profile with path |profile_path|, plus
+  // update the original profile shortcut if |profile_path| is the second
+  // profile created.
+  virtual void AddProfileShortcut(const FilePath& profile_path);
 
   // ProfileInfoCacheObserver:
   virtual void OnProfileAdded(const FilePath& profile_path) OVERRIDE;

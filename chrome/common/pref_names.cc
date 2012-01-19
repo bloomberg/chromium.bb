@@ -818,6 +818,10 @@ const char kDefaultZoomLevel[] = "profile.default_zoom_level";
 // be displayed at the default zoom level.
 const char kPerHostZoomLevels[] = "profile.per_host_zoom_levels";
 
+// Boolean that specifies whether or not a shortcut has been created for this
+// profile in multi-profiles mode.
+const char kProfileShortcutCreated[] = "profile.shortcut_created";
+
 // Boolean that is true if Autofill is enabled and allowed to save profile data.
 const char kAutofillEnabled[] = "autofill.enabled";
 

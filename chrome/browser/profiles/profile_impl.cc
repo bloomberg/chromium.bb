@@ -227,6 +227,9 @@ void ProfileImpl::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kClearSiteDataOnExit,
                              false,
                              PrefService::SYNCABLE_PREF);
+  prefs->RegisterBooleanPref(prefs::kProfileShortcutCreated,
+                             false,
+                             PrefService::UNSYNCABLE_PREF);
   prefs->RegisterIntegerPref(prefs::kProfileAvatarIndex,
                              -1,
                              PrefService::SYNCABLE_PREF);
@@ -327,7 +330,7 @@ void ProfileImpl::DoFinalInit() {
         base::Bind(&CreateDirectoryNoResult, base_cache_path_));
   }
 
-  // Now that the profile is hooked up to recieve pref change notifications to
+  // Now that the profile is hooked up to receive pref change notifications to
   // kGoogleServicesUsername, initialize components that depend on it to reflect
   // the current value.
   UpdateProfileUserNameCache();
