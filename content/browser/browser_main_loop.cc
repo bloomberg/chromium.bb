@@ -62,6 +62,10 @@
 #include "content/browser/zygote_host_linux.h"
 #endif
 
+#if defined(USE_X11)
+#include <X11/Xlib.h>
+#endif
+
 namespace {
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
@@ -212,6 +216,15 @@ void BrowserMainLoop::Init() {
 // BrowserMainLoop stages ==================================================
 
 void BrowserMainLoop::EarlyInitialization() {
+#if defined(USE_X11)
+  if (parsed_command_line_.HasSwitch(switches::kSingleProcess) ||
+      parsed_command_line_.HasSwitch(switches::kInProcessGPU)) {
+    if (!XInitThreads()) {
+      LOG(ERROR) << "Failed to put Xlib into threaded mode.";
+    }
+  }
+#endif
+
   if (parts_.get())
     parts_->PreEarlyInitialization();
 

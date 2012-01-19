@@ -32,6 +32,22 @@
 
 namespace {
 
+class ScopedDisplayLock {
+ public:
+  ScopedDisplayLock(Display* display): display_(display) {
+    XLockDisplay(display_);
+  }
+
+  ~ScopedDisplayLock() {
+    XUnlockDisplay(display_);
+  }
+
+ private:
+  Display* display_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedDisplayLock);
+};
+
 // The GL context associated with the surface must be current when
 // an instance is created or destroyed.
 class EGLAcceleratedSurface : public base::RefCounted<EGLAcceleratedSurface> {
@@ -433,8 +449,9 @@ GLXImageTransportSurface::~GLXImageTransportSurface() {
 bool GLXImageTransportSurface::Initialize() {
   // Create a dummy window to host the real window.
   Display* dpy = static_cast<Display*>(GetDisplay());
+  ScopedDisplayLock lock(dpy);
+
   XSetWindowAttributes swa;
-  swa.event_mask = StructureNotifyMask;
   swa.override_redirect = True;
   dummy_parent_ = XCreateWindow(
       dpy,
@@ -444,7 +461,7 @@ bool GLXImageTransportSurface::Initialize() {
       CopyFromParent,  // depth
       InputOutput,
       CopyFromParent,  // visual
-      CWEventMask | CWOverrideRedirect, &swa);
+      CWOverrideRedirect, &swa);
   XMapWindow(dpy, dummy_parent_);
 
   swa.event_mask = StructureNotifyMask;
@@ -460,10 +477,12 @@ bool GLXImageTransportSurface::Initialize() {
   XMapWindow(dpy, window_);
   while (1) {
     XEvent event;
-    XNextEvent(dpy, &event);
+    XWindowEvent(dpy, window_, StructureNotifyMask, &event);
     if (event.type == MapNotify && event.xmap.window == window_)
       break;
   }
+  XSelectInput(dpy, window_, NoEventMask);
+
   // Manual setting must be used to avoid unnecessary rendering by server.
   XCompositeRedirectWindow(dpy, window_, CompositeRedirectManual);
   OnResize(size_);
