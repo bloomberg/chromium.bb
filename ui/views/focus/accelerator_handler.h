@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,7 +29,11 @@ bool VIEWS_EXPORT DispatchXEvent(XEvent* xevent);
 
 // This class delegates the key messages to the associated FocusManager class
 // for the window that is receiving these messages for accelerator processing.
+#if defined(OS_MACOSX)
+class VIEWS_EXPORT AcceleratorHandler {
+#else
 class VIEWS_EXPORT AcceleratorHandler : public MessageLoop::Dispatcher {
+#endif  // defined(OS_MACOSX)
  public:
   AcceleratorHandler();
 
@@ -40,6 +44,8 @@ class VIEWS_EXPORT AcceleratorHandler : public MessageLoop::Dispatcher {
 #elif defined(USE_WAYLAND)
   virtual base::MessagePumpDispatcher::DispatchStatus Dispatch(
       base::wayland::WaylandEvent* ev) OVERRIDE;
+#elif defined(OS_MACOSX)
+  // TODO(dhollowa): Implement on Mac.  http://crbug.com/109946
 #elif defined(USE_AURA)
   virtual base::MessagePumpDispatcher::DispatchStatus Dispatch(
       XEvent* xev) OVERRIDE;

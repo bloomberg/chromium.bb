@@ -48,8 +48,14 @@
         'gestures/gesture_recognizer.h',
         'root_window_host.h',
         'root_window_host_linux.cc',
+        'root_window_host_mac.h',
+        'root_window_host_mac.mm',
         'root_window_host_win.cc',
         'root_window_host_win.h',
+        'root_window_mac.h',
+        'root_window_mac.mm',
+        'root_window_view_mac.h',
+        'root_window_view_mac.mm',
         'root_window.cc',
         'root_window.h',
         'event.cc',
@@ -159,7 +165,6 @@
         '<(SHARED_INTERMEDIATE_DIR)/ui/gfx/gfx_resources.rc',
         '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources.rc',
       ],
-      # osmesa GL implementation is used on linux.
       'conditions': [
         # osmesa GL implementation is used on linux.
         ['OS=="linux"', {

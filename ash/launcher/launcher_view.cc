@@ -412,6 +412,7 @@ void LauncherView::GetOverflowWindows(std::vector<aura::Window*>* names) {
 }
 
 void LauncherView::ShowOverflowMenu() {
+#if !defined(OS_MACOSX)
   std::vector<aura::Window*> windows;
   GetOverflowWindows(&windows);
   if (windows.empty())
@@ -442,6 +443,7 @@ void LauncherView::ShowOverflowMenu() {
   if (!delegate)
     return;
   delegate->LauncherItemClicked(*window_iter);
+#endif  // !defined(OS_MACOSX)
 }
 
 void LauncherView::CancelDrag(views::View* deleted_view) {

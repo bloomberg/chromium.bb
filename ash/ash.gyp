@@ -5,6 +5,7 @@
 {
   'variables': {
     'chromium_code': 1,
+    'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/chrome',
   },
 
   'targets': [
@@ -292,6 +293,29 @@
         '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources_standard/ui_resources_standard.rc',
         '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources.rc',
         '../ui/views/test/test_views_delegate.cc',
+      ],
+      'conditions': [
+        ['OS=="mac"', {
+          'product_name': 'AuraShell',
+          'mac_bundle': 1,
+          'sources/': [
+            ['exclude', 'shell/shell_main_parts.cc'],
+          ],
+          'mac_bundle_resources': [
+            'shell/cocoa/app.icns',
+            'shell/cocoa/app-Info.plist',
+            'shell/cocoa/nibs/MainMenu.xib',
+            'shell/cocoa/nibs/RootWindow.xib',
+            '<(SHARED_INTERMEDIATE_DIR)/repack/chrome.pak',
+            '<!@pymod_do_main(repack_locales -o -g <(grit_out_dir) -s <(SHARED_INTERMEDIATE_DIR) -x <(SHARED_INTERMEDIATE_DIR) <(locales))',
+          ],
+          'mac_bundle_resources!': [
+            'shell/cocoa/app-Info.plist',
+          ],
+          'xcode_settings': {
+            'INFOPLIST_FILE': 'shell/cocoa/app-Info.plist',
+          },
+        }],
       ],
     },
   ],

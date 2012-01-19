@@ -173,6 +173,12 @@ float GetTouchForce(const base::NativeEvent& native_event) {
   return 0.0;
 }
 
+bool GetScrollOffsets(const base::NativeEvent& native_event,
+                      float* x_offset,
+                      float* y_offset) {
+  return false;
+}
+
 base::NativeEvent CreateNoopEvent() {
   return [NSEvent otherEventWithType:NSApplicationDefined
                             location:NSZeroPoint

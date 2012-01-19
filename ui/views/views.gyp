@@ -408,6 +408,17 @@
             'widget/child_window_message_processor.cc',
             'widget/child_window_message_processor.h',
           ],
+          'conditions': [
+            ['OS=="mac"', {
+              'sources/': [
+                ['exclude', 'mouse_watcher.cc'],
+                ['exclude', 'controls/menu/*'],
+                ['exclude', 'controls/scrollbar/*'],
+                ['exclude', 'focus/accelerator_handler_aura.cc'],
+                ['exclude', 'widget/tooltip_manager_views.cc'],
+              ],
+            }],
+          ],
         }],
         ['toolkit_uses_gtk == 1', {
           'dependencies': [

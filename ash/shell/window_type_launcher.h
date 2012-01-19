@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,10 +21,15 @@ namespace shell {
 
 // The contents view/delegate of a window that shows some buttons that create
 // various window types.
+#if defined(OS_MACOSX)
+class WindowTypeLauncher : public views::WidgetDelegateView,
+                           public views::ButtonListener {
+#else
 class WindowTypeLauncher : public views::WidgetDelegateView,
                            public views::ButtonListener,
                            public views::MenuDelegate,
                            public views::ContextMenuController {
+#endif  // defined(OS_MACOSX)
  public:
   WindowTypeLauncher();
   virtual ~WindowTypeLauncher();
@@ -52,6 +57,7 @@ class WindowTypeLauncher : public views::WidgetDelegateView,
   virtual void ButtonPressed(views::Button* sender,
                              const views::Event& event) OVERRIDE;
 
+#if !defined(OS_MACOSX)
   // Overridden from views::MenuDelegate:
   virtual void ExecuteCommand(int id) OVERRIDE;
 
@@ -59,6 +65,7 @@ class WindowTypeLauncher : public views::WidgetDelegateView,
   virtual void ShowContextMenuForView(views::View* source,
                                       const gfx::Point& p,
                                       bool is_mouse_gesture) OVERRIDE;
+#endif  // !defined(OS_MACOSX)
 
   views::NativeTextButton* create_button_;
   views::NativeTextButton* create_nonresizable_button_;
@@ -69,7 +76,9 @@ class WindowTypeLauncher : public views::WidgetDelegateView,
   views::NativeTextButton* window_modal_button_;
   views::NativeTextButton* transient_button_;
   views::NativeTextButton* examples_button_;
+#if !defined(OS_MACOSX)
   scoped_ptr<views::MenuRunner> menu_runner_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(WindowTypeLauncher);
 };

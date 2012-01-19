@@ -138,7 +138,9 @@ class LauncherView : public views::WidgetDelegateView,
   // Index |drag_view_| was initially at.
   int start_drag_index_;
 
+#if !defined(OS_MACOSX)
   scoped_ptr<views::MenuRunner> overflow_menu_runner_;
+#endif
 
   // Used to handle cycling among windows.
   scoped_ptr<LauncherWindowCycler> cycler_;

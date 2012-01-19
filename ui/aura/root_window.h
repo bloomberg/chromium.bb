@@ -120,7 +120,9 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   // MessageLoopForUI::RunWithDispatcher() or
   // MessageLoopForUI::RunAllPendingWithDispatcher(), or used to dispatch
   // an event by |Dispatch(const NativeEvent&)| on it. It must never be stored.
+#if !defined(OS_MACOSX)
   MessageLoop::Dispatcher* GetDispatcher();
+#endif
 
   // Add/remove observer.
   void AddRootWindowObserver(RootWindowObserver* observer);

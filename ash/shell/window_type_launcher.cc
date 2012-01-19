@@ -149,7 +149,7 @@ void InitWindowTypeLauncher() {
                                             gfx::Rect(120, 150, 400, 400));
   widget->GetNativeView()->SetName("WindowTypeLauncher");
   ash::internal::SetShadowType(widget->GetNativeView(),
-                                      ash::internal::SHADOW_TYPE_NONE);
+                               ash::internal::SHADOW_TYPE_NONE);
   widget->Show();
 }
 
@@ -188,7 +188,9 @@ WindowTypeLauncher::WindowTypeLauncher()
   AddChildView(window_modal_button_);
   AddChildView(transient_button_);
   AddChildView(examples_button_);
+#if !defined(OS_MACOSX)
   set_context_menu_controller(this);
+#endif
 }
 
 WindowTypeLauncher::~WindowTypeLauncher() {
@@ -290,11 +292,15 @@ void WindowTypeLauncher::ButtonPressed(views::Button* sender,
                                  ui::MODAL_TYPE_WINDOW);
   } else if (sender == transient_button_) {
     NonModalTransient::OpenNonModalTransient(GetWidget()->GetNativeView());
-  } else if (sender == examples_button_) {
+  }
+#if !defined(OS_MACOSX)
+  else if (sender == examples_button_) {
     views::examples::ShowExamplesWindow(false);
   }
+#endif  // !defined(OS_MACOSX)
 }
 
+#if !defined(OS_MACOSX)
 void WindowTypeLauncher::ExecuteCommand(int id) {
   switch (id) {
     case COMMAND_NEW_WINDOW:
@@ -307,7 +313,9 @@ void WindowTypeLauncher::ExecuteCommand(int id) {
       break;
   }
 }
+#endif  // !defined(OS_MACOSX)
 
+#if !defined(OS_MACOSX)
 void WindowTypeLauncher::ShowContextMenuForView(views::View* source,
                                                 const gfx::Point& p,
                                                 bool is_mouse_gesture) {
@@ -325,6 +333,7 @@ void WindowTypeLauncher::ShowContextMenuForView(views::View* source,
         MenuRunner::HAS_MNEMONICS) == MenuRunner::MENU_DELETED)
     return;
 }
+#endif  // !defined(OS_MACOSX)
 
 }  // namespace shell
 }  // namespace ash

@@ -80,10 +80,13 @@ int DragDropController::StartDragAndDrop(const ui::OSExchangeData& data,
   dragged_window_ = NULL;
   drag_start_location_ = RootWindow::GetInstance()->last_mouse_location();
 
+#if !defined(OS_MACOSX)
   if (should_block_during_drag_drop_) {
     MessageLoopForUI::current()->RunWithDispatcher(
         RootWindow::GetInstance()->GetDispatcher());
   }
+#endif  // !defined(OS_MACOSX)
+
   return drag_operation_;
 }
 

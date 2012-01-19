@@ -90,6 +90,9 @@ class UI_EXPORT CanvasSkia : public Canvas {
   //   we don't do any fancy blurring.
   // On Linux, text with halo is created by stroking it with 2px |halo_color|
   //   then filling it with |text_color|.
+  // On Mac, NOTIMPLEMENTED.
+  //   TODO(dhollowa): Skia-native implementation is underway.  Cut over to
+  //   that when ready.  http::/crbug.com/109946
   void DrawStringWithHalo(const string16& text,
                           const gfx::Font& font,
                           const SkColor& text_color,

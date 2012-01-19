@@ -13,7 +13,6 @@
 #include "ui/gfx/compositor/compositor.h"
 #include "ui/gfx/compositor/layer.h"
 #include "ui/gfx/screen.h"
-#include "ui/views/controls/menu/menu_controller.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/focus/focus_manager_factory.h"
 #include "ui/views/focus/view_storage.h"
@@ -26,6 +25,10 @@
 #include "ui/views/widget/tooltip_manager.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/views/window/custom_frame_view.h"
+
+#if !defined(OS_MACOSX)
+#include "ui/views/controls/menu/menu_controller.h"
+#endif
 
 namespace {
 
@@ -885,10 +888,12 @@ void Widget::OnNativeWidgetActivationChanged(bool active) {
   if (!active) {
     SaveWindowPlacement();
 
+#if !defined(OS_MACOSX)
     // Close any open menus.
     MenuController* menu_controller = MenuController::GetActiveInstance();
     if (menu_controller)
       menu_controller->OnWidgetActivationChanged();
+#endif  // !defined(OS_MACOSX)
   }
 
   FOR_EACH_OBSERVER(Observer, observers_,

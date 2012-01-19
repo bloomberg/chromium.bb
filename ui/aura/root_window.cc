@@ -293,9 +293,11 @@ void RootWindow::WindowDestroying(Window* window) {
     gesture_handler_ = NULL;
 }
 
+#if !defined(OS_MACOSX)
 MessageLoop::Dispatcher* RootWindow::GetDispatcher() {
   return host_.get();
 }
+#endif  // !defined(OS_MACOSX)
 
 void RootWindow::AddRootWindowObserver(RootWindowObserver* observer) {
   observers_.AddObserver(observer);
@@ -310,7 +312,9 @@ bool RootWindow::IsMouseButtonDown() const {
 }
 
 void RootWindow::PostNativeEvent(const base::NativeEvent& native_event) {
+#if !defined(OS_MACOSX)
   host_->PostNativeEvent(native_event);
+#endif
 }
 
 void RootWindow::ConvertPointToNativeScreen(gfx::Point* point) const {
@@ -385,7 +389,6 @@ RootWindow::RootWindow()
       gesture_recognizer_(GestureRecognizer::GetInstance()) {
   SetName("RootWindow");
   gfx::Screen::SetInstance(screen_);
-  host_->SetRootWindow(this);
   last_mouse_location_ = host_->QueryMouseLocation();
 
   if (ui::Compositor::compositor_factory()) {
@@ -631,6 +634,7 @@ void RootWindow::Init() {
   SetBounds(gfx::Rect(host_->GetSize()));
   Show();
   compositor()->SetRootLayer(layer());
+  host_->SetRootWindow(this);
 }
 
 gfx::Rect RootWindow::GetInitialHostWindowBounds() const {

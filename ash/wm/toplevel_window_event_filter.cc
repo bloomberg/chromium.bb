@@ -238,8 +238,10 @@ void ToplevelWindowEventFilter::RunMoveLoop(aura::Window* source) {
   aura::Window::ConvertPointToWindow(
       aura::RootWindow::GetInstance(), source, &source_mouse_location);
   UpdateMouseDownLocation(source, source_mouse_location);
+#if !defined(OS_MACOSX)
   MessageLoopForUI::current()->RunWithDispatcher(
       aura::RootWindow::GetInstance()->GetDispatcher());
+#endif  // !defined(OS_MACOSX)
   in_move_loop_ = false;
 }
 

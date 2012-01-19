@@ -90,7 +90,9 @@ class WindowTypeLauncherItem : public ash::AppListItemModel {
         break;
       }
       case EXAMPLES_WINDOW: {
+#if !defined(OS_MACOSX)
         views::examples::ShowExamplesWindow(false);
+#endif
         break;
       }
       default:

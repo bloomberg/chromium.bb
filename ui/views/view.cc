@@ -2039,6 +2039,7 @@ void View::UpdateTooltip() {
 // Drag and drop ---------------------------------------------------------------
 
 void View::DoDrag(const MouseEvent& event, const gfx::Point& press_pt) {
+#if !defined(OS_MACOSX)
   int drag_operations = GetDragOperations(press_pt);
   if (drag_operations == ui::DragDropTypes::DRAG_NONE)
     return;
@@ -2049,6 +2050,7 @@ void View::DoDrag(const MouseEvent& event, const gfx::Point& press_pt) {
   // Message the RootView to do the drag and drop. That way if we're removed
   // the RootView can detect it and avoid calling us back.
   GetWidget()->RunShellDrag(this, data, drag_operations);
+#endif  // !defined(OS_MACOSX)
 }
 
 }  // namespace views

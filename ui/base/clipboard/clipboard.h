@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -58,6 +58,14 @@ class UI_EXPORT Clipboard {
     explicit FormatType(UINT native_format);
     UINT ToUINT() const { return data_; }
     UINT data_;
+#elif defined(OS_MACOSX)
+   public:
+    FormatType(const FormatType& other);
+    FormatType& operator=(const FormatType& other);
+   private:
+    explicit FormatType(NSString* native_format);
+    NSString* ToNSString() const { return data_; }
+    NSString* data_;
 #elif defined(USE_AURA)
     explicit FormatType(const std::string& native_format);
     const std::string& ToString() const { return data_; }
@@ -67,14 +75,6 @@ class UI_EXPORT Clipboard {
     explicit FormatType(const GdkAtom& native_format);
     const GdkAtom& ToGdkAtom() const { return data_; }
     GdkAtom data_;
-#elif defined(OS_MACOSX)
-   public:
-    FormatType(const FormatType& other);
-    FormatType& operator=(const FormatType& other);
-   private:
-    explicit FormatType(NSString* native_format);
-    NSString* ToNSString() const { return data_; }
-    NSString* data_;
 #else
 #error No FormatType definition.
 #endif
