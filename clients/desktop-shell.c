@@ -132,6 +132,12 @@ sigchild_handler(int s)
 }
 
 static void
+menu_func(struct window *window, int index, void *data)
+{
+	printf("Selected index %d from a panel menu.\n", index);
+}
+
+static void
 show_menu(struct panel *panel, struct input *input, uint32_t time)
 {
 	int32_t x, y;
@@ -142,7 +148,7 @@ show_menu(struct panel *panel, struct input *input, uint32_t time)
 	input_get_position(input, &x, &y);
 	window_show_menu(window_get_display(panel->window),
 			 input, time, panel->window,
-			 x - 10, y - 10, NULL, entries, 4);
+			 x - 10, y - 10, menu_func, entries, 4);
 }
 
 static void
