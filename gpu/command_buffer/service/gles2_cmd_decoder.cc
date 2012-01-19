@@ -540,7 +540,6 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   virtual void SetResizeCallback(
       const base::Callback<void(gfx::Size)>& callback);
 
-  virtual void SetSwapBuffersCallback(const base::Closure& callback);
   virtual void SetMsgCallback(const MsgCallback& callback);
 
   virtual void SetStreamTextureManager(StreamTextureManager* manager);
@@ -1449,7 +1448,6 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
 
   base::Callback<void(gfx::Size)> resize_callback_;
 
-  base::Closure swap_buffers_callback_;
   MsgCallback msg_callback_;
 
   StreamTextureManager* stream_texture_manager_;
@@ -2660,10 +2658,6 @@ void GLES2DecoderImpl::UpdateParentTextureInfo() {
 void GLES2DecoderImpl::SetResizeCallback(
     const base::Callback<void(gfx::Size)>& callback) {
   resize_callback_ = callback;
-}
-
-void GLES2DecoderImpl::SetSwapBuffersCallback(const base::Closure& callback) {
-  swap_buffers_callback_ = callback;
 }
 
 void GLES2DecoderImpl::SetMsgCallback(const MsgCallback& callback) {
@@ -7415,19 +7409,14 @@ error::Error GLES2DecoderImpl::HandleSwapBuffers(
     ScopedGLErrorSuppressor suppressor(this);
 
     if (IsOffscreenBufferMultisampled()) {
-      // For multisampled buffers, bind the resolved frame buffer so that
-      // callbacks can call ReadPixels or CopyTexImage2D.
+      // For multisampled buffers, resolve the frame buffer.
       ScopedResolvedFrameBufferBinder binder(this, true, false);
-      if (!swap_buffers_callback_.is_null()) {
-        swap_buffers_callback_.Run();
-      }
-
       return error::kNoError;
     } else {
-      ScopedFrameBufferBinder binder(this,
-                                     offscreen_target_frame_buffer_->id());
-
       if (surface_->IsOffscreen()) {
+        ScopedFrameBufferBinder binder(this,
+                                       offscreen_target_frame_buffer_->id());
+
         // Copy the target frame buffer to the saved offscreen texture.
         offscreen_saved_color_texture_->Copy(
             offscreen_saved_color_texture_->size(),
@@ -7439,13 +7428,6 @@ error::Error GLES2DecoderImpl::HandleSwapBuffers(
         if (!IsAngle())
           glFlush();
       }
-
-      // Run the callback with |binder| in scope, so that the callback can call
-      // ReadPixels or CopyTexImage2D.
-      if (!swap_buffers_callback_.is_null()) {
-        swap_buffers_callback_.Run();
-      }
-
       return error::kNoError;
     }
   } else {
@@ -7454,10 +7436,6 @@ error::Error GLES2DecoderImpl::HandleSwapBuffers(
       LOG(ERROR) << "Context lost because SwapBuffers failed.";
       return error::kLostContext;
     }
-  }
-
-  if (!swap_buffers_callback_.is_null()) {
-    swap_buffers_callback_.Run();
   }
 
   return error::kNoError;

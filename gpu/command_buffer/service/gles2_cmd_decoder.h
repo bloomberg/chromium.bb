@@ -119,9 +119,6 @@ class GLES2Decoder : public CommonDecoder {
   virtual void SetResizeCallback(
       const base::Callback<void(gfx::Size)>& callback) = 0;
 
-  // Sets a callback which is called when a SwapBuffers command is processed.
-  virtual void SetSwapBuffersCallback(const base::Closure& callback) = 0;
-
   virtual void SetStreamTextureManager(StreamTextureManager* manager) = 0;
 
   // Get the service texture ID corresponding to a client texture ID.

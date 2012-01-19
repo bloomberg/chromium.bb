@@ -139,10 +139,6 @@ class GLInProcessContext : public base::SupportsWeakPtr<GLInProcessContext> {
   // Deletes a texture in the parent's GLInProcessContext.
   void DeleteParentTexture(uint32 texture);
 
-  // Provides a callback that will be invoked when SwapBuffers has completed
-  // service side.
-  void SetSwapBuffersCallback(const base::Closure& callback);
-
   void SetContextLostCallback(const base::Closure& callback);
 
   // Set the current GLInProcessContext for the calling thread.
@@ -183,11 +179,9 @@ class GLInProcessContext : public base::SupportsWeakPtr<GLInProcessContext> {
                   gfx::GpuPreference gpu_preference);
   void Destroy();
 
-  void OnSwapBuffers();
   void OnContextLost();
 
   base::WeakPtr<GLInProcessContext> parent_;
-  base::Closure swap_buffers_callback_;
   base::Closure context_lost_callback_;
   uint32 parent_texture_id_;
   scoped_ptr<CommandBufferService> command_buffer_;
@@ -329,10 +323,6 @@ uint32 GLInProcessContext::CreateParentTexture(const gfx::Size& size) {
 
 void GLInProcessContext::DeleteParentTexture(uint32 texture) {
   gles2_implementation_->DeleteTextures(1, &texture);
-}
-
-void GLInProcessContext::SetSwapBuffersCallback(const base::Closure& callback) {
-  swap_buffers_callback_ = callback;
 }
 
 void GLInProcessContext::SetContextLostCallback(const base::Closure& callback) {
@@ -593,11 +583,6 @@ void GLInProcessContext::Destroy() {
   gles2_helper_.reset();
 
   command_buffer_.reset();
-}
-
-void GLInProcessContext::OnSwapBuffers() {
-  if (!swap_buffers_callback_.is_null())
-    swap_buffers_callback_.Run();
 }
 
 void GLInProcessContext::OnContextLost() {
