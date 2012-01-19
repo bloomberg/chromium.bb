@@ -53,7 +53,6 @@ void InputMethodBridge::OnBlur() {
 
 void InputMethodBridge::DispatchKeyEvent(const KeyEvent& key) {
   DCHECK(key.type() == ui::ET_KEY_PRESSED || key.type() == ui::ET_KEY_RELEASED);
-  DCHECK(widget_focused());
 
   // We can just dispatch the event here since the |key| is already processed by
   // the system-wide IME.

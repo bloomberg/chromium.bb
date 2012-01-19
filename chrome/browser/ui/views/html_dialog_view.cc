@@ -25,6 +25,11 @@
 #include "ui/views/widget/native_widget_gtk.h"
 #endif
 
+#if defined(USE_AURA)
+#include "ui/aura/event.h"
+#include "ui/views/widget/native_widget_aura.h"
+#endif
+
 class RenderWidgetHost;
 
 using content::WebContents;
@@ -222,7 +227,10 @@ void HtmlDialogView::MoveContents(WebContents* source, const gfx::Rect& pos) {
 // they're all browser-specific. (This may change in the future.)
 void HtmlDialogView::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
 #if defined(USE_AURA)
-  // TODO(saintlou): Need to provide some Aura handling.
+  aura::KeyEvent aura_event(event.os_event->native_event(), false);
+  views::NativeWidgetAura* aura_widget =
+      static_cast<views::NativeWidgetAura*>(GetWidget()->native_widget());
+  aura_widget->OnKeyEvent(&aura_event);
 #elif defined(OS_WIN)
   // Any unhandled keyboard/character messages should be defproced.
   // This allows stuff like F10, etc to work correctly.
