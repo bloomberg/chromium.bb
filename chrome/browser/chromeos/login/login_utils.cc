@@ -960,21 +960,22 @@ std::string LoginUtilsImpl::GetOffTheRecordCommandLine(
     const CommandLine& base_command_line,
     CommandLine* command_line) {
   static const char* kForwardSwitches[] = {
-      switches::kEnableLogging,
-      switches::kDisableAcceleratedPlugins,
-      switches::kUseGL,
-      switches::kUserDataDir,
-      switches::kScrollPixels,
-      switches::kEnableGView,
-      switches::kEnableSensors,
-      switches::kNoFirstRun,
-      switches::kLoginProfile,
       switches::kCompressSystemFeedback,
+      switches::kDisableAcceleratedPlugins,
       switches::kDisableSeccompSandbox,
+      switches::kEnableGView,
+      switches::kEnableLogging,
+      switches::kEnableSensors,
+      switches::kForceCompositingMode,
+      switches::kLoginProfile,
+      switches::kScrollPixels,
+      switches::kNoFirstRun,
       switches::kPpapiFlashInProcess,
       switches::kPpapiFlashPath,
       switches::kPpapiFlashVersion,
       switches::kTouchDevices,
+      switches::kUseGL,
+      switches::kUserDataDir,
 #if defined(USE_VIRTUAL_KEYBOARD)
       // The virtual keyboard extension (chrome://keyboard) highly relies on
       // experimental APIs.
