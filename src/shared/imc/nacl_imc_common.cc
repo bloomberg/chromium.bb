@@ -1,11 +1,19 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 
 // NaCl inter-module communication primitives.
+
+// Used for UINT32_MAX
+#if !NACL_WINDOWS
+# ifndef __STDC_LIMIT_MACROS
+#  define __STDC_LIMIT_MACROS
+# endif
+#include <stdint.h>
+#endif
 
 // TODO(robertm): stdio.h is included for NULL only - find a better way
 #include <stdio.h>
