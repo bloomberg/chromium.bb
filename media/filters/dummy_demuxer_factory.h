@@ -8,7 +8,7 @@
 #define MEDIA_FILTERS_DUMMY_DEMUXER_FACTORY_H_
 
 #include "base/compiler_specific.h"
-#include "media/base/filter_factories.h"
+#include "media/base/demuxer_factory.h"
 
 namespace media {
 

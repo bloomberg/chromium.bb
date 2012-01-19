@@ -26,7 +26,7 @@
 #include "media/filters/ffmpeg_audio_decoder.h"
 #include "media/filters/ffmpeg_demuxer_factory.h"
 #include "media/filters/ffmpeg_video_decoder.h"
-#include "media/filters/file_data_source_factory.h"
+#include "media/filters/file_data_source.h"
 #include "media/filters/null_audio_renderer.h"
 #include "media/filters/reference_audio_renderer.h"
 #include "media/filters/video_renderer_base.h"
@@ -109,13 +109,18 @@ bool InitPipeline(MessageLoop* message_loop,
     return false;
   }
 
+  // Open the file.
+  scoped_refptr<media::FileDataSource> data_source =
+      new media::FileDataSource();
+  if (data_source->Initialize(filename) != media::PIPELINE_OK) {
+    return false;
+  }
+
   // Create our filter factories.
   scoped_ptr<media::FilterCollection> collection(
       new media::FilterCollection());
-  collection->SetDemuxerFactory(
-      scoped_ptr<media::DemuxerFactory>(
-          new media::FFmpegDemuxerFactory(scoped_ptr<media::DataSourceFactory>(
-              new media::FileDataSourceFactory()), message_loop)));
+  collection->SetDemuxerFactory(scoped_ptr<media::DemuxerFactory>(
+      new media::FFmpegDemuxerFactory(data_source, message_loop)));
   collection->AddAudioDecoder(new media::FFmpegAudioDecoder(
       message_loop_factory->GetMessageLoop("AudioDecoderThread")));
   collection->AddVideoDecoder(new media::FFmpegVideoDecoder(

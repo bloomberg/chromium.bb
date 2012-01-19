@@ -15,7 +15,7 @@
 #include "media/filters/ffmpeg_audio_decoder.h"
 #include "media/filters/ffmpeg_demuxer_factory.h"
 #include "media/filters/ffmpeg_video_decoder.h"
-#include "media/filters/file_data_source_factory.h"
+#include "media/filters/file_data_source.h"
 #include "media/filters/null_audio_renderer.h"
 #include "media/filters/reference_audio_renderer.h"
 #include "media/filters/video_renderer_base.h"
@@ -23,7 +23,7 @@
 using media::FFmpegAudioDecoder;
 using media::FFmpegDemuxerFactory;
 using media::FFmpegVideoDecoder;
-using media::FileDataSourceFactory;
+using media::FileDataSource;
 using media::FilterCollection;
 using media::Pipeline;
 using media::ReferenceAudioRenderer;
@@ -70,12 +70,17 @@ bool Movie::Open(const wchar_t* url, VideoRendererBase* video_renderer) {
       message_loop_factory_->GetMessageLoop("PipelineThread");
   pipeline_ = new Pipeline(pipeline_loop, new media::MediaLog());
 
+  // Open the file.
+  std::string url_utf8 = WideToUTF8(string16(url));
+  scoped_refptr<FileDataSource> data_source = new FileDataSource();
+  if (data_source->Initialize(url_utf8) != PIPELINE_OK) {
+    return false;
+  }
+
   // Create filter collection.
   scoped_ptr<FilterCollection> collection(new FilterCollection());
-  collection->SetDemuxerFactory(
-      scoped_ptr<DemuxerFactory>(new FFmpegDemuxerFactory(
-          scoped_ptr<DataSourceFactory>(new FileDataSourceFactory()),
-          pipeline_loop)));
+  collection->SetDemuxerFactory(scoped_ptr<DemuxerFactory>(
+      new FFmpegDemuxerFactory(data_source, pipeline_loop)));
   collection->AddAudioDecoder(new FFmpegAudioDecoder(
       message_loop_factory_->GetMessageLoop("AudioDecoderThread")));
   collection->AddVideoDecoder(new FFmpegVideoDecoder(
@@ -91,8 +96,8 @@ bool Movie::Open(const wchar_t* url, VideoRendererBase* video_renderer) {
 
   // Create and start our pipeline.
   media::PipelineStatusNotification note;
-  pipeline_->Start(collection.Pass(), WideToUTF8(string16(url)),
-                   note.Callback());
+  pipeline_->Start(collection.Pass(), url_utf8, note.Callback());
+
   // Wait until the pipeline is fully initialized.
   note.Wait();
   if (note.status() != PIPELINE_OK)

@@ -38,6 +38,12 @@ class WebMediaPlayerProxy
  public:
   WebMediaPlayerProxy(MessageLoop* render_loop,
                       WebMediaPlayerImpl* webmediaplayer);
+  const scoped_refptr<WebDataSource>& data_source() {
+    return data_source_;
+  }
+  void set_data_source(const scoped_refptr<WebDataSource>& data_source) {
+    data_source_ = data_source;
+  }
 
   // TODO(scherkus): remove this once VideoRendererBase::PaintCB passes
   // ownership of the VideoFrame http://crbug.com/108435
@@ -48,7 +54,6 @@ class WebMediaPlayerProxy
   // Methods for Filter -> WebMediaPlayerImpl communication.
   void Repaint();
   void SetOpaque(bool opaque);
-  WebDataSourceBuildObserverHack GetBuildObserver();
 
   // Methods for WebMediaPlayerImpl -> Filter communication.
   void Paint(SkCanvas* canvas, const gfx::Rect& dest_rect);
@@ -56,7 +61,7 @@ class WebMediaPlayerProxy
   void GetCurrentFrame(scoped_refptr<media::VideoFrame>* frame_out);
   void PutCurrentFrame(scoped_refptr<media::VideoFrame> frame);
   bool HasSingleOrigin();
-  void AbortDataSources();
+  void AbortDataSource();
 
   // Methods for Pipeline -> WebMediaPlayerImpl communication.
   void PipelineInitializationCallback(media::PipelineStatus status);
@@ -85,9 +90,6 @@ class WebMediaPlayerProxy
   friend class base::RefCountedThreadSafe<WebMediaPlayerProxy>;
   virtual ~WebMediaPlayerProxy();
 
-  // Adds a data source to data_sources_.
-  void AddDataSource(WebDataSource* data_source);
-
   // Invoke |webmediaplayer_| to perform a repaint.
   void RepaintTask();
 
@@ -114,10 +116,7 @@ class WebMediaPlayerProxy
   MessageLoop* render_loop_;
   WebMediaPlayerImpl* webmediaplayer_;
 
-  base::Lock data_sources_lock_;
-  typedef std::list<scoped_refptr<WebDataSource> > DataSourceList;
-  DataSourceList data_sources_;
-
+  scoped_refptr<WebDataSource> data_source_;
   scoped_refptr<media::VideoRendererBase> frame_provider_;
   SkCanvasVideoRenderer video_renderer_;
 

@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
-#include "media/base/filter_factories.h"
+#include "media/base/demuxer_factory.h"
 
 namespace media {
 
@@ -16,23 +16,16 @@ class ChunkDemuxer;
 class ChunkDemuxerClient;
 
 // Factory for building ChunkDemuxers. The factory will only build a
-// ChunkDemuxer for build URLs that match the one passed into the constructor.
-// All other URLs are delegated to |delegate_factory_|. The url passed to
-// the constructor represents the "special" URL that indicates that the
-// ChunkDemuxer should be used for playback.
+// ChunkDemuxer with the given client.
 class MEDIA_EXPORT ChunkDemuxerFactory : public DemuxerFactory {
  public:
-  ChunkDemuxerFactory(const std::string& url,
-                      scoped_ptr<DemuxerFactory> delegate_factory,
-                      ChunkDemuxerClient* client);
+  ChunkDemuxerFactory(ChunkDemuxerClient* client);
   virtual ~ChunkDemuxerFactory();
 
   // DemuxerFactory methods.
   virtual void Build(const std::string& url, const BuildCallback& cb) OVERRIDE;
 
  private:
-  std::string url_;
-  scoped_ptr<DemuxerFactory> delegate_factory_;
   ChunkDemuxerClient* client_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(ChunkDemuxerFactory);

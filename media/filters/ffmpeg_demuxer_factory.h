@@ -9,7 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "media/base/filter_factories.h"
+#include "media/base/demuxer_factory.h"
 
 class MessageLoop;
 
@@ -17,7 +17,7 @@ namespace media {
 
 class MEDIA_EXPORT FFmpegDemuxerFactory : public DemuxerFactory {
  public:
-  FFmpegDemuxerFactory(scoped_ptr<DataSourceFactory> data_source_factory,
+  FFmpegDemuxerFactory(const scoped_refptr<DataSource>& data_source,
                        MessageLoop* loop);
   virtual ~FFmpegDemuxerFactory();
 
@@ -25,7 +25,7 @@ class MEDIA_EXPORT FFmpegDemuxerFactory : public DemuxerFactory {
   virtual void Build(const std::string& url, const BuildCallback& cb) OVERRIDE;
 
  private:
-  scoped_ptr<DataSourceFactory> data_source_factory_;
+  scoped_refptr<DataSource> data_source_;
   MessageLoop* loop_;  // Unowned.
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(FFmpegDemuxerFactory);

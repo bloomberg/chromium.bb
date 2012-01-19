@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,7 +15,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
-#include "media/base/filter_factories.h"
+#include "googleurl/src/gurl.h"
 #include "media/base/data_source.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLLoader.h"
@@ -36,13 +36,6 @@ class SimpleDataSource
     : public WebDataSource,
       public WebKit::WebURLLoaderClient {
  public:
-  // Creates a DataSourceFactory for building SimpleDataSource objects.
-  static media::DataSourceFactory* CreateFactory(
-      MessageLoop* render_loop,
-      WebKit::WebFrame* frame,
-      media::MediaLog* media_log,
-      const WebDataSourceBuildObserverHack& build_observer);
-
   SimpleDataSource(MessageLoop* render_loop, WebKit::WebFrame* frame);
   virtual ~SimpleDataSource();
 
@@ -92,9 +85,8 @@ class SimpleDataSource
       const WebKit::WebURLError&);
 
   // webkit_glue::WebDataSource implementation.
-  virtual void Initialize(const std::string& url,
+  virtual void Initialize(const GURL& url,
                           const media::PipelineStatusCB& callback) OVERRIDE;
-  virtual void CancelInitialize() OVERRIDE;
   virtual bool HasSingleOrigin() OVERRIDE;
   virtual void Abort() OVERRIDE;
 

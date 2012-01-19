@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "media/base/media_log.h"
 #include "net/base/net_errors.h"
-#include "webkit/media/web_data_source_factory.h"
 
 using WebKit::WebFrame;
 
@@ -21,22 +20,6 @@ static const int kInitialReadBufferSize = 32768;
 // Number of cache misses we allow for a single Read() before signalling an
 // error.
 static const int kNumCacheMissRetries = 3;
-
-static WebDataSource* NewBufferedDataSource(MessageLoop* render_loop,
-                                            WebKit::WebFrame* frame,
-                                            media::MediaLog* media_log) {
-  return new BufferedDataSource(render_loop, frame, media_log);
-}
-
-// static
-media::DataSourceFactory* BufferedDataSource::CreateFactory(
-    MessageLoop* render_loop,
-    WebKit::WebFrame* frame,
-    media::MediaLog* media_log,
-    const WebDataSourceBuildObserverHack& build_observer) {
-  return new WebDataSourceFactory(render_loop, frame, media_log,
-                                  &NewBufferedDataSource, build_observer);
-}
 
 BufferedDataSource::BufferedDataSource(
     MessageLoop* render_loop,
@@ -93,10 +76,9 @@ void BufferedDataSource::set_host(media::DataSourceHost* host) {
   }
 }
 
-void BufferedDataSource::Initialize(const std::string& url,
+void BufferedDataSource::Initialize(const GURL& url,
                                     const media::PipelineStatusCB& callback) {
-  // Saves the url.
-  url_ = GURL(url);
+  url_ = url;
 
   // This data source doesn't support data:// protocol so reject it.
   if (url_.SchemeIs(kDataScheme)) {
@@ -113,16 +95,6 @@ void BufferedDataSource::Initialize(const std::string& url,
   // Post a task to complete the initialization task.
   render_loop_->PostTask(FROM_HERE,
       base::Bind(&BufferedDataSource::InitializeTask, this));
-}
-
-void BufferedDataSource::CancelInitialize() {
-  base::AutoLock auto_lock(lock_);
-  DCHECK(!initialize_cb_.is_null());
-
-  initialize_cb_.Reset();
-
-  render_loop_->PostTask(
-      FROM_HERE, base::Bind(&BufferedDataSource::CleanupTask, this));
 }
 
 /////////////////////////////////////////////////////////////////////////////

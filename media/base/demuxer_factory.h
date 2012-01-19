@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_BASE_FILTER_FACTORIES_H_
-#define MEDIA_BASE_FILTER_FACTORIES_H_
+#ifndef MEDIA_BASE_DEMUXER_FACTORY_H_
+#define MEDIA_BASE_DEMUXER_FACTORY_H_
 
 #include <string>
 
@@ -12,20 +12,6 @@
 #include "media/base/pipeline_status.h"
 
 namespace media {
-
-class DataSource;
-
-// Asynchronous factory interface for building DataSource objects.
-class MEDIA_EXPORT DataSourceFactory {
- public:
-  // Ownership of the DataSource is transferred through this callback.
-  typedef base::Callback<void(PipelineStatus, DataSource*)> BuildCallback;
-
-  virtual ~DataSourceFactory();
-
-  // Builds a DataSource for |url| and returns it via |callback|.
-  virtual void Build(const std::string& url, const BuildCallback& callback) = 0;
-};
 
 class Demuxer;
 
@@ -43,4 +29,4 @@ class MEDIA_EXPORT DemuxerFactory {
 
 }  // namespace media
 
-#endif  // MEDIA_BASE_FILTER_FACTORIES_H_
+#endif  // MEDIA_BASE_DEMUXER_FACTORY_H_

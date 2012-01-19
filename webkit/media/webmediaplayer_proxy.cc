@@ -50,10 +50,6 @@ void WebMediaPlayerProxy::SetOpaque(bool opaque) {
       &WebMediaPlayerProxy::SetOpaqueTask, this, opaque));
 }
 
-WebDataSourceBuildObserverHack WebMediaPlayerProxy::GetBuildObserver() {
-  return base::Bind(&WebMediaPlayerProxy::AddDataSource, this);
-}
-
 void WebMediaPlayerProxy::Paint(SkCanvas* canvas, const gfx::Rect& dest_rect) {
   DCHECK(MessageLoop::current() == render_loop_);
   if (frame_provider_) {
@@ -66,38 +62,22 @@ void WebMediaPlayerProxy::Paint(SkCanvas* canvas, const gfx::Rect& dest_rect) {
 
 bool WebMediaPlayerProxy::HasSingleOrigin() {
   DCHECK(MessageLoop::current() == render_loop_);
-
-  base::AutoLock auto_lock(data_sources_lock_);
-
-  for (DataSourceList::iterator itr = data_sources_.begin();
-       itr != data_sources_.end();
-       itr++) {
-    if (!(*itr)->HasSingleOrigin())
-      return false;
-  }
+  if (data_source_)
+    return data_source_->HasSingleOrigin();
   return true;
 }
 
-void WebMediaPlayerProxy::AbortDataSources() {
+void WebMediaPlayerProxy::AbortDataSource() {
   DCHECK(MessageLoop::current() == render_loop_);
-  base::AutoLock auto_lock(data_sources_lock_);
-
-  for (DataSourceList::iterator itr = data_sources_.begin();
-       itr != data_sources_.end();
-       itr++) {
-    (*itr)->Abort();
-  }
+  if (data_source_)
+    data_source_->Abort();
 }
 
 void WebMediaPlayerProxy::Detach() {
   DCHECK(MessageLoop::current() == render_loop_);
   webmediaplayer_ = NULL;
+  data_source_ = NULL;
   frame_provider_ = NULL;
-
-  {
-    base::AutoLock auto_lock(data_sources_lock_);
-    data_sources_.clear();
-  }
 }
 
 void WebMediaPlayerProxy::PipelineInitializationCallback(
@@ -125,11 +105,6 @@ void WebMediaPlayerProxy::PipelineErrorCallback(PipelineStatus error) {
 void WebMediaPlayerProxy::NetworkEventCallback(NetworkEvent type) {
   render_loop_->PostTask(FROM_HERE, base::Bind(
       &WebMediaPlayerProxy::NetworkEventTask, this, type));
-}
-
-void WebMediaPlayerProxy::AddDataSource(WebDataSource* data_source) {
-  base::AutoLock auto_lock(data_sources_lock_);
-  data_sources_.push_back(make_scoped_refptr(data_source));
 }
 
 void WebMediaPlayerProxy::RepaintTask() {

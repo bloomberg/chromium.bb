@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,7 +16,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebKitPlatformSupport.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLLoaderOptions.h"
-#include "webkit/media/web_data_source_factory.h"
 
 using WebKit::WebString;
 using WebKit::WebURLLoaderOptions;
@@ -24,22 +23,6 @@ using WebKit::WebURLLoaderOptions;
 namespace webkit_media {
 
 static const char kDataScheme[] = "data";
-
-static WebDataSource* NewSimpleDataSource(MessageLoop* render_loop,
-                                          WebKit::WebFrame* frame,
-                                          media::MediaLog* media_log) {
-  return new SimpleDataSource(render_loop, frame);
-}
-
-// static
-media::DataSourceFactory* SimpleDataSource::CreateFactory(
-    MessageLoop* render_loop,
-    WebKit::WebFrame* frame,
-    media::MediaLog* media_log,
-    const WebDataSourceBuildObserverHack& build_observer) {
-  return new WebDataSourceFactory(render_loop, frame, media_log,
-                                  &NewSimpleDataSource, build_observer);
-}
 
 SimpleDataSource::SimpleDataSource(
     MessageLoop* render_loop,
@@ -79,7 +62,7 @@ void SimpleDataSource::Stop(const base::Closure& callback) {
 }
 
 void SimpleDataSource::Initialize(
-    const std::string& url,
+    const GURL& url,
     const media::PipelineStatusCB& callback) {
   // Reference to prevent destruction while inside the |initialize_cb_|
   // call. This is a temporary fix to prevent crashes caused by holding the
@@ -93,7 +76,7 @@ void SimpleDataSource::Initialize(
     initialize_cb_ = callback;
 
     // Validate the URL.
-    url_ = GURL(url);
+    url_ = url;
     if (!url_.is_valid()) {
       DoneInitialization_Locked(false);
       return;
@@ -103,17 +86,6 @@ void SimpleDataSource::Initialize(
     render_loop_->PostTask(FROM_HERE,
         base::Bind(&SimpleDataSource::StartTask, this));
   }
-}
-
-void SimpleDataSource::CancelInitialize() {
-  base::AutoLock auto_lock(lock_);
-  DCHECK(!initialize_cb_.is_null());
-  state_ = STOPPED;
-  initialize_cb_.Reset();
-
-  // Post a task to the render thread to cancel loading the resource.
-  render_loop_->PostTask(FROM_HERE,
-      base::Bind(&SimpleDataSource::CancelTask, this));
 }
 
 void SimpleDataSource::Read(int64 position,
@@ -263,6 +235,10 @@ bool SimpleDataSource::HasSingleOrigin() {
 
 void SimpleDataSource::Abort() {
   DCHECK(MessageLoop::current() == render_loop_);
+  base::AutoLock auto_lock(lock_);
+  state_ = STOPPED;
+  initialize_cb_.Reset();
+  CancelTask();
   frame_ = NULL;
 }
 

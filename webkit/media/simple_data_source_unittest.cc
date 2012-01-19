@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -80,7 +80,7 @@ class SimpleDataSourceTest : public testing::Test {
     data_source_->set_host(&host_);
     data_source_->SetURLLoaderForTest(url_loader_);
 
-    data_source_->Initialize(url, callback);
+    data_source_->Initialize(gurl_, callback);
     MessageLoop::current()->RunAllPending();
   }
 
@@ -197,7 +197,7 @@ TEST_F(SimpleDataSourceTest, InitializeData) {
   EXPECT_CALL(host_, SetTotalBytes(sizeof(kDataUrlDecoded)));
   EXPECT_CALL(host_, SetBufferedBytes(sizeof(kDataUrlDecoded)));
 
-  data_source_->Initialize(kDataUrl,
+  data_source_->Initialize(GURL(kDataUrl),
       media::NewExpectedStatusCB(media::PIPELINE_OK));
   MessageLoop::current()->RunAllPending();
 

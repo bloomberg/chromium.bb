@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -23,14 +23,14 @@
         'buffered_data_source.h',
         'buffered_resource_loader.cc',
         'buffered_resource_loader.h',
+        'filter_helpers.cc',
+        'filter_helpers.h',
         'media_stream_client.h',
         'simple_data_source.cc',
         'simple_data_source.h',
         'skcanvas_video_renderer.cc',
         'skcanvas_video_renderer.h',
         'web_data_source.cc',
-        'web_data_source_factory.cc',
-        'web_data_source_factory.h',
         'web_data_source.h',
         'webmediaplayer_delegate.h',
         'webmediaplayer_impl.cc',

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,7 +10,7 @@
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
-#include "media/base/filter_factories.h"
+#include "googleurl/src/gurl.h"
 #include "media/base/data_source.h"
 #include "webkit/media/buffered_resource_loader.h"
 
@@ -24,13 +24,6 @@ namespace webkit_media {
 // thread as well as media-specific threads.
 class BufferedDataSource : public WebDataSource {
  public:
-  // Creates a DataSourceFactory for building BufferedDataSource objects.
-  static media::DataSourceFactory* CreateFactory(
-      MessageLoop* render_loop,
-      WebKit::WebFrame* frame,
-      media::MediaLog* media_log,
-      const WebDataSourceBuildObserverHack& build_observer);
-
   BufferedDataSource(MessageLoop* render_loop,
                      WebKit::WebFrame* frame,
                      media::MediaLog* media_log);
@@ -54,9 +47,8 @@ class BufferedDataSource : public WebDataSource {
   virtual void SetBitrate(int bitrate) OVERRIDE;
 
   // webkit_glue::WebDataSource implementation.
-  virtual void Initialize(const std::string& url,
+  virtual void Initialize(const GURL& url,
                           const media::PipelineStatusCB& callback) OVERRIDE;
-  virtual void CancelInitialize() OVERRIDE;
   virtual bool HasSingleOrigin() OVERRIDE;
   virtual void Abort() OVERRIDE;
 

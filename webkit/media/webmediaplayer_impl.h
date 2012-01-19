@@ -52,6 +52,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
+#include "googleurl/src/gurl.h"
 #include "media/base/audio_renderer_sink.h"
 #include "media/base/filters.h"
 #include "media/base/message_loop_factory.h"
@@ -191,6 +192,12 @@ class WebMediaPlayerImpl
   void SetOpaque(bool);
 
  private:
+  // Called after asynchronous initialization of a data source completed.
+  void DataSourceInitialized(const GURL& gurl, media::PipelineStatus status);
+
+  // Finishes starting the pipeline due to a call to load().
+  void StartPipeline(const GURL& gurl);
+
   // Helpers that set the network/ready state and notifies the client if
   // they've changed.
   void SetNetworkState(WebKit::WebMediaPlayer::NetworkState state);
@@ -204,6 +211,8 @@ class WebMediaPlayerImpl
 
   // Lets V8 know that player uses extra resources not managed by V8.
   void IncrementExternallyAllocatedMemory();
+
+  WebKit::WebFrame* frame_;
 
   // TODO(hclam): get rid of these members and read from the pipeline directly.
   WebKit::WebMediaPlayer::NetworkState network_state_;
@@ -219,8 +228,13 @@ class WebMediaPlayerImpl
   // A collection of filters.
   scoped_ptr<media::FilterCollection> filter_collection_;
 
-  // The actual pipeline and the thread it runs on.
+  // The media pipeline and a bool tracking whether we have started it yet.
+  //
+  // TODO(scherkus): replace |started_| with a pointer check for |pipeline_| and
+  // have WebMediaPlayerImpl return the default values to WebKit instead of
+  // relying on Pipeline to take care of default values.
   scoped_refptr<media::Pipeline> pipeline_;
+  bool started_;
 
   scoped_ptr<media::MessageLoopFactory> message_loop_factory_;
 
