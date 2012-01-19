@@ -8,19 +8,6 @@ body {
   margin: 20px;
 }
 
-h1 {
-  -webkit-padding-start: 75px;
-  font-size: 156%;
-  font-weight: bold;
-  margin: 0;
-  padding-bottom: 20px;
-  padding-top: 20px;
-}
-
-html[dir=rtl] h1 {
-  background-position: right;
-}
-
 #countBanner {
   background-color: rgb(235, 239, 250);
   border: 1px solid rgb(187, 187, 187);

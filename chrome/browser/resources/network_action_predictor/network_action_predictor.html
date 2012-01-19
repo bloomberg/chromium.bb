@@ -9,10 +9,13 @@
   </script>
 </head>
 <body>
-  <header><h1>Network Action Predictor</h1></header>
   <div id="enabledMode" hidden>
+    <label>
+      <input id="filter" type="checkbox" disabled>
+      Filter zero confidences
+    </label>
     <h2 id="countBanner"></h2>
-    <!-- TODO(dominich): Filtering checkbox. Sorting. -->
+    <!-- TODO(dominich): Sorting. -->
     <table id="databaseTable">
       <thead>
         <tr>
