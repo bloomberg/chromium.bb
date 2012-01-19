@@ -263,8 +263,8 @@ void Window::RemoveChild(Window* child) {
   child->parent_ = NULL;
   if (root_window)
     root_window->WindowDetachedFromRootWindow(child);
-  // The child may have released its layer.
-  if (child->layer_.get())
+  // The either this window or |child| may have released its layer.
+  if (layer_.get() && child->layer_.get())
     layer_->Remove(child->layer_.get());
   children_.erase(i);
   child->OnParentChanged();
