@@ -130,6 +130,7 @@ struct window {
 	window_drop_handler_t drop_handler;
 	window_close_handler_t close_handler;
 
+	struct frame *frame;
 	struct widget *widget;
 	struct window *menu;
 
@@ -956,6 +957,8 @@ window_create_surface(struct window *window)
 	cairo_surface_destroy(surface);
 }
 
+static void frame_destroy(struct frame *frame);
+
 void
 window_destroy(struct window *window)
 {
@@ -976,6 +979,9 @@ window_destroy(struct window *window)
 		if (input->keyboard_focus == window)
 			input->keyboard_focus = NULL;
 	}
+
+	if (window->frame)
+		frame_destroy(window->frame);
 
 	if (window->shell_surface)
 		wl_shell_surface_destroy(window->shell_surface);
@@ -1411,7 +1417,17 @@ frame_create(struct window *window, void *data)
 	widget_set_motion_handler(frame->widget, frame_motion_handler);
 	widget_set_button_handler(frame->widget, frame_button_handler);
 
+	window->frame = frame;
+
 	return frame->child;
+}
+
+static void
+frame_destroy(struct frame *frame)
+{
+	/* frame->child must be destroyed by the application */
+	widget_destroy(frame->widget);
+	free(frame);
 }
 
 static void
