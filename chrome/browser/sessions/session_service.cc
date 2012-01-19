@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/memory/scoped_vector.h"
 #include "base/message_loop.h"
@@ -485,7 +486,8 @@ bool SessionService::RestoreIfNecessary(const std::vector<GURL>& urls_to_open,
       MoveCurrentSessionToLastSession();
       move_on_new_browser_ = false;
     }
-    SessionStartupPref pref = SessionStartupPref::GetStartupPref(profile());
+    SessionStartupPref pref = BrowserInit::GetSessionStartupPref(
+        *CommandLine::ForCurrentProcess(), profile());
     if (pref.type == SessionStartupPref::LAST) {
       SessionRestore::RestoreSession(
           profile(), browser,

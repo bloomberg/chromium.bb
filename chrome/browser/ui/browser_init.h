@@ -12,6 +12,7 @@
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/gtest_prod_util.h"
+#include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile.h"
 #include "googleurl/src/gurl.h"
 
@@ -86,6 +87,10 @@ class BrowserInit {
   // and resets it to false. Subsequent calls return the value which was read
   // the first time.
   static bool WasRestarted();
+
+  static SessionStartupPref GetSessionStartupPref(
+      const CommandLine& command_line,
+      Profile* profile);
 
   // LaunchWithProfile ---------------------------------------------------------
   //
@@ -247,6 +252,10 @@ class BrowserInit {
  private:
   friend class CloudPrintProxyPolicyTest;
   friend class CloudPrintProxyPolicyStartupTest;
+  FRIEND_TEST_ALL_PREFIXES(BrowserInitTest,
+                           ReadingWasRestartedAfterNormalStart);
+  FRIEND_TEST_ALL_PREFIXES(BrowserInitTest, ReadingWasRestartedAfterRestart);
+  FRIEND_TEST_ALL_PREFIXES(BrowserInitTest, UpdateWithTwoProfiles);
 
   // Returns the list of URLs to open from the command line. The returned
   // vector is empty if the user didn't specify any URLs on the command line.
@@ -272,6 +281,11 @@ class BrowserInit {
 
   // Additional tabs to open during first run.
   std::vector<GURL> first_run_tabs_;
+
+  // True if we have already read and reset the preference kWasRestarted. (A
+  // member variable instead of a static variable inside WasRestarted because
+  // of testing.)
+  static bool was_restarted_read_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserInit);
 };

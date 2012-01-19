@@ -13,12 +13,14 @@
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/sessions/session_restore.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_init.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/web_contents.h"
@@ -321,6 +323,7 @@ IN_PROC_BROWSER_TEST_F(BrowserInitTest, OpenAppShortcutPanel) {
 IN_PROC_BROWSER_TEST_F(BrowserInitTest, ReadingWasRestartedAfterRestart) {
   // Tests that BrowserInit::WasRestarted reads and resets the preference
   // kWasRestarted correctly.
+  BrowserInit::was_restarted_read_ = false;
   PrefService* pref_service = g_browser_process->local_state();
   pref_service->SetBoolean(prefs::kWasRestarted, true);
   EXPECT_TRUE(BrowserInit::WasRestarted());
@@ -331,6 +334,7 @@ IN_PROC_BROWSER_TEST_F(BrowserInitTest, ReadingWasRestartedAfterRestart) {
 IN_PROC_BROWSER_TEST_F(BrowserInitTest, ReadingWasRestartedAfterNormalStart) {
   // Tests that BrowserInit::WasRestarted reads and resets the preference
   // kWasRestarted correctly.
+  BrowserInit::was_restarted_read_ = false;
   PrefService* pref_service = g_browser_process->local_state();
   pref_service->SetBoolean(prefs::kWasRestarted, false);
   EXPECT_FALSE(BrowserInit::WasRestarted());
@@ -375,9 +379,11 @@ IN_PROC_BROWSER_TEST_F(BrowserInitTest, StartupURLsForTwoProfiles) {
 
   int return_code;
   BrowserInit browser_init;
-  std::vector<Profile*> other_profiles(1, other_profile);
+  std::vector<Profile*> last_opened_profiles;
+  last_opened_profiles.push_back(default_profile);
+  last_opened_profiles.push_back(other_profile);
   browser_init.Start(dummy, profile_manager->user_data_dir(), default_profile,
-                     other_profiles, &return_code);
+                     last_opened_profiles, &return_code);
 
   // urls1 were opened in a browser for default_profile, and urls2 were opened
   // in a browser for other_profile.
@@ -385,8 +391,7 @@ IN_PROC_BROWSER_TEST_F(BrowserInitTest, StartupURLsForTwoProfiles) {
   // |browser()| is still around at this point, even though we've closed it's
   // window. Thus the browser count for default_profile is 2.
   ASSERT_EQ(2u, BrowserList::GetBrowserCount(default_profile));
-  new_browser = FindOneOtherBrowserForProfile(default_profile,
-                                              browser());
+  new_browser = FindOneOtherBrowserForProfile(default_profile, browser());
   ASSERT_TRUE(new_browser);
   ASSERT_EQ(1, new_browser->tab_count());
   EXPECT_EQ(urls1[0], new_browser->GetWebContentsAt(0)->GetURL());
@@ -396,4 +401,75 @@ IN_PROC_BROWSER_TEST_F(BrowserInitTest, StartupURLsForTwoProfiles) {
   ASSERT_TRUE(new_browser);
   ASSERT_EQ(1, new_browser->tab_count());
   EXPECT_EQ(urls2[0], new_browser->GetWebContentsAt(0)->GetURL());
+}
+
+IN_PROC_BROWSER_TEST_F(BrowserInitTest, UpdateWithTwoProfiles) {
+  // Make BrowserInit::WasRestarted() return true.
+  BrowserInit::was_restarted_read_ = false;
+  PrefService* pref_service = g_browser_process->local_state();
+  pref_service->SetBoolean(prefs::kWasRestarted, true);
+
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+
+  // Create two profiles.
+  FilePath dest_path = profile_manager->user_data_dir();
+
+  Profile* profile1 = profile_manager->GetProfile(
+      dest_path.Append(FILE_PATH_LITERAL("New Profile 1")));
+  ASSERT_TRUE(profile1);
+
+  Profile* profile2 = profile_manager->GetProfile(
+      dest_path.Append(FILE_PATH_LITERAL("New Profile 2")));
+  ASSERT_TRUE(profile2);
+
+  // Use a couple arbitrary URLs.
+  std::vector<GURL> urls1;
+  urls1.push_back(ui_test_utils::GetTestUrl(
+      FilePath(FilePath::kCurrentDirectory),
+      FilePath(FILE_PATH_LITERAL("title1.html"))));
+  std::vector<GURL> urls2;
+  urls2.push_back(ui_test_utils::GetTestUrl(
+      FilePath(FilePath::kCurrentDirectory),
+      FilePath(FILE_PATH_LITERAL("title2.html"))));
+
+  // Set different startup preferences for the 2 profiles.
+  SessionStartupPref pref1(SessionStartupPref::URLS);
+  pref1.urls = urls1;
+  SessionStartupPref::SetStartupPref(profile1, pref1);
+  SessionStartupPref pref2(SessionStartupPref::URLS);
+  pref2.urls = urls2;
+  SessionStartupPref::SetStartupPref(profile2, pref2);
+
+  // Simulate a launch after a browser update.
+  CommandLine dummy(CommandLine::NO_PROGRAM);
+  int return_code;
+  BrowserInit browser_init;
+  std::vector<Profile*> last_opened_profiles;
+  last_opened_profiles.push_back(profile1);
+  last_opened_profiles.push_back(profile2);
+  browser_init.Start(dummy, profile_manager->user_data_dir(), profile1,
+                     last_opened_profiles, &return_code);
+
+  while (SessionRestore::IsRestoring())
+    MessageLoop::current()->RunAllPending();
+
+  // The startup URLs are ignored, and instead the last open sessions are
+  // restored.
+  EXPECT_TRUE(profile1->restored_last_session());
+  EXPECT_TRUE(profile2->restored_last_session());
+
+  Browser* new_browser = NULL;
+  ASSERT_EQ(1u, BrowserList::GetBrowserCount(profile1));
+  new_browser = FindOneOtherBrowserForProfile(profile1, NULL);
+  ASSERT_TRUE(new_browser);
+  ASSERT_EQ(1, new_browser->tab_count());
+  EXPECT_EQ(GURL(chrome::kChromeUINewTabURL),
+            new_browser->GetWebContentsAt(0)->GetURL());
+
+  ASSERT_EQ(1u, BrowserList::GetBrowserCount(profile2));
+  new_browser = FindOneOtherBrowserForProfile(profile2, NULL);
+  ASSERT_TRUE(new_browser);
+  ASSERT_EQ(1, new_browser->tab_count());
+  EXPECT_EQ(GURL(chrome::kChromeUINewTabURL),
+            new_browser->GetWebContentsAt(0)->GetURL());
 }

@@ -465,24 +465,6 @@ bool SessionCrashedInfoBarDelegate::Accept() {
 
 // Utility functions ----------------------------------------------------------
 
-SessionStartupPref GetSessionStartupPref(const CommandLine& command_line,
-                                         Profile* profile) {
-  SessionStartupPref pref = SessionStartupPref::GetStartupPref(profile);
-  if (command_line.HasSwitch(switches::kRestoreLastSession) ||
-      BrowserInit::WasRestarted()) {
-    pref.type = SessionStartupPref::LAST;
-  }
-  if (pref.type == SessionStartupPref::LAST &&
-      IncognitoModePrefs::ShouldLaunchIncognito(command_line,
-                                                profile->GetPrefs())) {
-    // We don't store session information when incognito. If the user has
-    // chosen to restore last session and launched incognito, fallback to
-    // default launch behavior.
-    pref.type = SessionStartupPref::DEFAULT;
-  }
-  return pref;
-}
-
 enum LaunchMode {
   LM_TO_BE_DECIDED = 0,       // Possibly direct launch or via a shortcut.
   LM_AS_WEBAPP,               // Launched as a installed web application.
@@ -641,6 +623,9 @@ BrowserInit::BrowserInit() {}
 
 BrowserInit::~BrowserInit() {}
 
+// static
+bool BrowserInit::was_restarted_read_ = false;
+
 void BrowserInit::AddFirstRunTab(const GURL& url) {
   first_run_tabs_.push_back(url);
 }
@@ -735,17 +720,35 @@ bool BrowserInit::WasRestarted() {
   // Stores the value of the preference kWasRestarted had when it was read.
   static bool was_restarted = false;
 
-  // True if we have already read and reset the preference kWasRestarted.
-  static bool was_restarted_read = false;
-
-  if (!was_restarted_read) {
+  if (!was_restarted_read_) {
     PrefService* pref_service = g_browser_process->local_state();
     was_restarted = pref_service->GetBoolean(prefs::kWasRestarted);
     pref_service->SetBoolean(prefs::kWasRestarted, false);
-    was_restarted_read = true;
+    was_restarted_read_ = true;
   }
   return was_restarted;
 }
+
+// static
+SessionStartupPref BrowserInit::GetSessionStartupPref(
+    const CommandLine& command_line,
+    Profile* profile) {
+  SessionStartupPref pref = SessionStartupPref::GetStartupPref(profile);
+  if (command_line.HasSwitch(switches::kRestoreLastSession) ||
+      BrowserInit::WasRestarted()) {
+    pref.type = SessionStartupPref::LAST;
+  }
+  if (pref.type == SessionStartupPref::LAST &&
+      IncognitoModePrefs::ShouldLaunchIncognito(command_line,
+                                                profile->GetPrefs())) {
+    // We don't store session information when incognito. If the user has
+    // chosen to restore last session and launched incognito, fallback to
+    // default launch behavior.
+    pref.type = SessionStartupPref::DEFAULT;
+  }
+  return pref;
+}
+
 
 // BrowserInit::LaunchWithProfile::Tab ----------------------------------------
 
@@ -1677,26 +1680,34 @@ bool BrowserInit::ProcessCmdLineImpl(
         IS_PROCESS_STARTUP : IS_NOT_PROCESS_STARTUP;
     IsFirstRun is_first_run = first_run::IsChromeFirstRun() ?
         IS_FIRST_RUN : IS_NOT_FIRST_RUN;
-    // Launch the last used profile with the full command line, and the other
-    // opened profiles without the URLs to launch.
-    CommandLine command_line_without_urls(command_line.GetProgram());
-    const CommandLine::SwitchMap& switches = command_line.GetSwitches();
-    for (CommandLine::SwitchMap::const_iterator switch_it = switches.begin();
-         switch_it != switches.end(); ++switch_it) {
-      command_line_without_urls.AppendSwitchNative(switch_it->first,
-                                                   switch_it->second);
-    }
-    if (!browser_init->LaunchBrowser(command_line, last_used_profile, cur_dir,
-        is_process_startup, is_first_run, return_code))
-      return false;
-    is_process_startup = BrowserInit::IS_NOT_PROCESS_STARTUP;
-
-    for (Profiles::const_iterator it = last_opened_profiles.begin();
-         it != last_opened_profiles.end(); ++it) {
-      if (*it != last_used_profile &&
-          !browser_init->LaunchBrowser(command_line_without_urls, *it,
-              cur_dir, is_process_startup, is_first_run, return_code))
+    // If this is the first launch, or the user has exited the browser by
+    // closing all windows for all profiles, there are no last used profiles. In
+    // that case, launch the |last_used_profile|. It will be the initial
+    // profile, or the profile which owned the last window, respectively.
+    if (last_opened_profiles.empty()) {
+      if (!browser_init->LaunchBrowser(command_line, last_used_profile, cur_dir,
+              is_process_startup, is_first_run, return_code))
         return false;
+    } else {
+      // Launch the last used profile with the full command line, and the other
+      // opened profiles without the URLs to launch.
+      CommandLine command_line_without_urls(command_line.GetProgram());
+      const CommandLine::SwitchMap& switches = command_line.GetSwitches();
+      for (CommandLine::SwitchMap::const_iterator switch_it = switches.begin();
+           switch_it != switches.end(); ++switch_it) {
+        command_line_without_urls.AppendSwitchNative(switch_it->first,
+                                                     switch_it->second);
+      }
+      // Launch the profiles in the order they became active.
+      for (Profiles::const_iterator it = last_opened_profiles.begin();
+           it != last_opened_profiles.end(); ++it) {
+        if (!browser_init->LaunchBrowser((*it == last_used_profile) ?
+            command_line : command_line_without_urls, *it, cur_dir,
+            is_process_startup, is_first_run, return_code))
+          return false;
+        // We've launched at least one browser.
+        is_process_startup = BrowserInit::IS_NOT_PROCESS_STARTUP;
+      }
     }
   }
   return true;
