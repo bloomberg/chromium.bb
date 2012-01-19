@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -42,6 +42,7 @@ WebPreferences::WebPreferences()
       web_security_enabled(true),
       javascript_can_open_windows_automatically(true),
       loads_images_automatically(true),
+      images_enabled(true),
       plugins_enabled(true),
       dom_paste_enabled(false),  // enables execCommand("paste")
       developer_extras_enabled(false),  // Requires extra work by embedder
@@ -190,6 +191,7 @@ void WebPreferences::Apply(WebView* web_view) const {
   settings->setJavaScriptCanOpenWindowsAutomatically(
       javascript_can_open_windows_automatically);
   settings->setLoadsImagesAutomatically(loads_images_automatically);
+  settings->setImagesEnabled(images_enabled);
   settings->setPluginsEnabled(plugins_enabled);
   settings->setDOMPasteAllowed(dom_paste_enabled);
   settings->setDeveloperExtrasEnabled(developer_extras_enabled);

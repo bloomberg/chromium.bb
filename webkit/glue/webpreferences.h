@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -49,6 +49,7 @@ struct WEBKIT_GLUE_EXPORT WebPreferences {
   bool web_security_enabled;
   bool javascript_can_open_windows_automatically;
   bool loads_images_automatically;
+  bool images_enabled;
   bool plugins_enabled;
   bool dom_paste_enabled;
   bool developer_extras_enabled;

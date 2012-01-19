@@ -35,6 +35,7 @@ const char* kPerTabPrefsToObserve[] = {
   prefs::kWebKitJavascriptEnabled,
   prefs::kWebKitJavascriptCanOpenWindowsAutomatically,
   prefs::kWebKitLoadsImagesAutomatically,
+  prefs::kWebKitImagesEnabled,
   prefs::kWebKitPluginsEnabled,
   prefs::kWebKitCursiveFontFamily,
   prefs::kWebKitFantasyFontFamily,
@@ -100,6 +101,9 @@ static void RegisterPerTabUserPrefs(PrefService* prefs) {
       PrefService::UNSYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kWebKitLoadsImagesAutomatically,
                              pref_defaults.loads_images_automatically,
+                             PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterBooleanPref(prefs::kWebKitImagesEnabled,
+                             pref_defaults.images_enabled,
                              PrefService::UNSYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kWebKitPluginsEnabled,
                              pref_defaults.plugins_enabled,
@@ -393,6 +397,8 @@ void PrefsTabHelper::InitPerTabUserPrefStore(
       prefs::kWebKitLoadsImagesAutomatically,
       prefs::kWebKitGlobalLoadsImagesAutomatically);
   pref_store->RegisterOverlayPref(
+      prefs::kWebKitImagesEnabled);
+  pref_store->RegisterOverlayPref(
       prefs::kWebKitPluginsEnabled,
       prefs::kWebKitGlobalPluginsEnabled);
   pref_store->RegisterOverlayPref(
@@ -611,6 +617,8 @@ void PrefsTabHelper::UpdateWebPreferences() {
           prefs::kWebKitJavascriptCanOpenWindowsAutomatically);
   prefs.loads_images_automatically =
       per_tab_prefs_->GetBoolean(prefs::kWebKitLoadsImagesAutomatically);
+  prefs.images_enabled =
+      per_tab_prefs_->GetBoolean(prefs::kWebKitImagesEnabled);
   prefs.plugins_enabled =
       per_tab_prefs_->GetBoolean(prefs::kWebKitPluginsEnabled);
   prefs.standard_font_family =
