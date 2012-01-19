@@ -36,6 +36,20 @@ class MetricsLog : public MetricsLogBase {
 
   static void RegisterPrefs(PrefService* prefs);
 
+  // Get the amount of uptime in seconds since this function was last called.
+  // This updates the cumulative uptime metric for uninstall as a side effect.
+  static int64 GetIncrementalUptime(PrefService* pref);
+
+  // Get the current version of the application as a string.
+  static std::string GetVersionString();
+
+  // Use |extension| in all uploaded appversions in addition to the standard
+  // version string.
+  static void set_version_extension(const std::string& extension);
+  static const std::string& version_extension();
+
+  virtual MetricsLog* AsMetricsLog() OVERRIDE;
+
   // Records the current operating environment.  Takes the list of installed
   // plugins as a parameter because that can't be obtained synchronously
   // from the UI thread.
@@ -56,27 +70,8 @@ class MetricsLog : public MetricsLogBase {
   // uma log upload, just as we send histogram data.
   void RecordIncrementalStabilityElements();
 
-  // Get the amount of uptime in seconds since this function was last called.
-  // This updates the cumulative uptime metric for uninstall as a side effect.
-  static int64 GetIncrementalUptime(PrefService* pref);
-
-  // Get the current version of the application as a string.
-  static std::string GetVersionString();
-
-  virtual MetricsLog* AsMetricsLog() OVERRIDE;
-
-  // Use |extension| in all uploaded appversions in addition to the standard
-  // version string.
-  static void set_version_extension(const std::string& extension);
-  static const std::string& version_extension();
-
  private:
   FRIEND_TEST_ALL_PREFIXES(MetricsLogTest, ChromeOSStabilityData);
-
-  // Returns the date at which the current metrics client ID was created as
-  // a string containing milliseconds since the epoch, or "0" if none was found.
-  std::string GetInstallDate() const;
-
 
   // Writes application stability metrics (as part of the profile log).
   // NOTE: Has the side-effect of clearing those counts.
