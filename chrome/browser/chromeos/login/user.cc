@@ -17,6 +17,15 @@ namespace {
 // Resource ID of the image to use as stub image.
 const int kStubImageResourceID = IDR_PROFILE_PICTURE_LOADING;
 
+// Returns account name portion of an email.
+std::string GetUserName(const std::string& email) {
+  std::string::size_type i = email.find('@');
+  if (i == 0 || i == std::string::npos) {
+    return email;
+  }
+  return email.substr(0, i);
+}
+
 }  // namespace
 
 User::User(const std::string& email, bool is_guest)
@@ -45,12 +54,12 @@ void User::SetStubImage(int image_index) {
   image_is_stub_ = true;
 }
 
+std::string User::GetAccountName() const {
+  return GetUserName(email_);
+}
+
 std::string User::GetDisplayName() const {
-  size_t i = display_email_.find('@');
-  if (i == 0 || i == std::string::npos) {
-    return display_email_;
-  }
-  return display_email_.substr(0, i);
+  return GetUserName(display_email_);
 }
 
 bool User::NeedsNameTooltip() const {

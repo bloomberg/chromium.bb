@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -1092,14 +1092,14 @@ void WifiConfigView::Init(WifiNetwork* wifi, bool show_8021x) {
     // Identity
     if (identity_textfield_->enabled()) {
       const std::string& eap_identity =
-          (wifi ? wifi->eap_identity() : std::string());
+          (wifi ? wifi->GetEapIdentity() : std::string());
       identity_textfield_->SetText(UTF8ToUTF16(eap_identity));
     }
 
     // Anonymous identity
     if (identity_anonymous_textfield_->enabled()) {
       const std::string& eap_anonymous_identity =
-          (wifi ? wifi->eap_anonymous_identity() : std::string());
+          (wifi ? wifi->GetEapAnonymousIdentity() : std::string());
       identity_anonymous_textfield_->SetText(
           UTF8ToUTF16(eap_anonymous_identity));
     }

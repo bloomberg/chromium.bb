@@ -415,7 +415,7 @@ std::string ToHtmlTableRow(const chromeos::Network* network) {
     str += WrapWithTH(vpn->server_hostname());
     str += WrapWithTH(vpn->GetProviderTypeString());
     str += WrapWithTD(std::string(vpn->psk_passphrase().length(), '*'));
-    str += WrapWithTH(vpn->username());
+    str += WrapWithTH(vpn->GetUserName());
     str += WrapWithTD(std::string(vpn->user_passphrase().length(), '*'));
   }
   str += WrapWithTD(network->failed() ? network->GetErrorString() : "");

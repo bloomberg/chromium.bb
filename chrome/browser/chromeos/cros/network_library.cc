@@ -34,8 +34,10 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/native_network_constants.h"
 #include "chrome/browser/chromeos/cros/native_network_parser.h"
+#include "chrome/browser/chromeos/cros/onc_constants.h"
 #include "chrome/browser/chromeos/cros/onc_network_parser.h"
 #include "chrome/browser/chromeos/cros_settings.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/network_login_observer.h"
 #include "chrome/common/time_format.h"
 #include "content/public/browser/browser_thread.h"
@@ -424,6 +426,26 @@ Network::~Network() {
   }
 }
 
+// static.
+std::string Network::GetUserExpandedValue(const std::string& value) {
+  // If running unit test, just return the original value.
+  if (!BrowserThread::IsMessageLoopValid(BrowserThread::UI))
+    return value;
+
+  if (!UserManager::Get()->user_is_logged_in())
+    return value;
+
+  std::string temp_value;
+  std::string final_value;
+  ReplaceChars(value, onc::substitutes::kLoginIDField,
+               UserManager::Get()->logged_in_user().GetAccountName(),
+               &temp_value);
+  ReplaceChars(temp_value, onc::substitutes::kEmailField,
+               UserManager::Get()->logged_in_user().email(),
+               &final_value);
+  return final_value;
+}
+
 void Network::SetNetworkParser(NetworkParser* parser) {
   network_parser_.reset(parser);
 }
@@ -719,6 +741,10 @@ VirtualNetwork::VirtualNetwork(const std::string& service_path)
 
 VirtualNetwork::~VirtualNetwork() {}
 
+std::string VirtualNetwork::GetUserName() const {
+  return GetUserExpandedValue(username_);
+}
+
 void VirtualNetwork::EraseCredentials() {
   WipeString(&ca_cert_nss_);
   WipeString(&psk_passphrase_);
@@ -739,7 +765,7 @@ void VirtualNetwork::CopyCredentialsFromRemembered(Network* remembered) {
   DCHECK_EQ(remembered->type(), TYPE_VPN);
   VirtualNetwork* remembered_vpn = static_cast<VirtualNetwork*>(remembered);
   VLOG(1) << "Copy VPN credentials: " << name()
-          << " username: " << remembered_vpn->username();
+          << " username: " << remembered_vpn->GetUserName();
   if (ca_cert_nss_.empty())
     ca_cert_nss_ = remembered_vpn->ca_cert_nss();
   if (psk_passphrase_.empty())
@@ -747,7 +773,7 @@ void VirtualNetwork::CopyCredentialsFromRemembered(Network* remembered) {
   if (client_cert_id_.empty())
     client_cert_id_ = remembered_vpn->client_cert_id();
   if (username_.empty())
-    username_ = remembered_vpn->username();
+    username_ = remembered_vpn->GetUserName();
   if (user_passphrase_.empty())
     user_passphrase_ = remembered_vpn->user_passphrase();
 }
@@ -1275,6 +1301,15 @@ WifiNetwork::WifiNetwork(const std::string& service_path)
 }
 
 WifiNetwork::~WifiNetwork() {}
+
+std::string WifiNetwork::GetEapIdentity() const {
+  return GetUserExpandedValue(eap_identity_);
+}
+
+std::string WifiNetwork::GetEapAnonymousIdentity() const {
+  return GetUserExpandedValue(eap_anonymous_identity_);
+}
+
 
 void WifiNetwork::CalculateUniqueId() {
   ConnectionSecurity encryption = encryption_;

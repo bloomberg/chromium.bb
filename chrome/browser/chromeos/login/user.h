@@ -41,6 +41,8 @@ class User {
 
   // Returns the name to display for this user.
   std::string GetDisplayName() const;
+  // Returns the account name part of the email.
+  std::string GetAccountName() const;
 
   // Tooltip contains user's display name and his email domain to distinguish
   // this user from the other one with the same display name.

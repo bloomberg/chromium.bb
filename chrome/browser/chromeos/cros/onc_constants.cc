@@ -96,6 +96,11 @@ const char kType[] = "Type";
 const char kWPAD[] = "WPAD";
 }  // namespace proxy
 
+namespace substitutes {
+const char kLoginIDField[] = "${LOGIN_ID}";
+const char kEmailField[] = "${LOGIN_EMAIL}";
+}  // namespace substitutes
+
 }  // namespace onc
 
 }  // namespace chromeos

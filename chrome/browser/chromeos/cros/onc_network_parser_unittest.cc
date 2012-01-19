@@ -11,6 +11,7 @@
 #include "base/json/json_value_serializer.h"
 #include "base/lazy_instance.h"
 #include "base/scoped_temp_dir.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
@@ -641,11 +642,11 @@ TEST_F(OncNetworkParserTest, TestCreateNetworkWifiEAP2) {
   EXPECT_EQ(wifi->auto_connect(), false);
   EXPECT_EQ(wifi->eap_method(), EAP_METHOD_LEAP);
   EXPECT_EQ(wifi->eap_use_system_cas(), true);
-  EXPECT_EQ(wifi->eap_identity(), "user");
+  EXPECT_EQ(wifi->GetEapIdentity(), "user");
   CheckStringProperty(wifi, PROPERTY_INDEX_EAP_IDENTITY, "user");
   EXPECT_EQ(wifi->eap_passphrase(), "pass");
   CheckStringProperty(wifi, PROPERTY_INDEX_EAP_PASSWORD, "pass");
-  EXPECT_EQ(wifi->eap_anonymous_identity(), "anon");
+  EXPECT_EQ(wifi->GetEapAnonymousIdentity(), "anon");
   CheckStringProperty(wifi, PROPERTY_INDEX_EAP_ANONYMOUS_IDENTITY, "anon");
 }
 

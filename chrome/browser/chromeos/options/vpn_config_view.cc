@@ -539,8 +539,8 @@ void VPNConfigView::Init(VirtualNetwork* vpn) {
   username_textfield_ = new views::Textfield(views::Textfield::STYLE_DEFAULT);
   username_textfield_->SetController(this);
   username_textfield_->SetEnabled(username_ui_data_.editable());
-  if (vpn && !vpn->username().empty())
-    username_textfield_->SetText(UTF8ToUTF16(vpn->username()));
+  if (vpn && !vpn->GetUserName().empty())
+    username_textfield_->SetText(UTF8ToUTF16(vpn->GetUserName()));
   layout->AddView(username_textfield_);
   layout->AddView(new ControlledSettingIndicatorView(username_ui_data_));
   layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
