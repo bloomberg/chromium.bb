@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,6 +24,7 @@ CaptureVideoDecoder::CaptureVideoDecoder(
       capability_(capability),
       natural_size_(capability.width, capability.height),
       state_(kUnInitialized),
+      got_first_frame_(false),
       video_stream_id_(video_stream_id),
       capture_engine_(NULL) {
   DCHECK(vc_manager);
@@ -234,6 +235,12 @@ void CaptureVideoDecoder::OnBufferReadyOnDecoderThread(
     host()->SetNaturalVideoSize(natural_size_);
   }
 
+  // Need to rebase timestamp with zero as starting point.
+  if (!got_first_frame_) {
+    start_time_ = buf->timestamp;
+    got_first_frame_ = true;
+  }
+
   // Always allocate a new frame.
   //
   // TODO(scherkus): migrate this to proper buffer recycling.
@@ -242,7 +249,7 @@ void CaptureVideoDecoder::OnBufferReadyOnDecoderThread(
                                      natural_size_.width(),
                                      natural_size_.height(),
                                      buf->timestamp - start_time_,
-                                     base::TimeDelta::FromMilliseconds(33));
+                                     base::TimeDelta::FromMilliseconds(0));
 
   uint8* buffer = buf->memory_pointer;
 

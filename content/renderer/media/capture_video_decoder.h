@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -99,6 +99,7 @@ class CONTENT_EXPORT CaptureVideoDecoder
   media::VideoCapture::VideoCaptureCapability capability_;
   gfx::Size natural_size_;
   DecoderState state_;
+  bool got_first_frame_;
   ReadCB read_cb_;
   base::Closure pending_stop_cb_;
   media::StatisticsCallback statistics_callback_;

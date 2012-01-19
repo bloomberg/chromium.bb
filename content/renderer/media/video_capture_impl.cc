@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -299,6 +299,7 @@ void VideoCaptureImpl::DoBufferReceived(int buffer_id, base::Time timestamp) {
   media::VideoCapture::VideoFrameBuffer* buffer;
   DCHECK(cached_dibs_.find(buffer_id) != cached_dibs_.end());
   buffer = cached_dibs_[buffer_id]->mapped_memory;
+  buffer->timestamp = timestamp;
 
   for (ClientInfo::iterator it = clients_.begin(); it != clients_.end(); it++) {
     it->first->OnBufferReady(this, buffer);
