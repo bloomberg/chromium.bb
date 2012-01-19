@@ -275,7 +275,7 @@ class LKGMManager(manifest_version.BuildSpecsManager):
       return version_to_use
 
     self.current_version = self._RunLambdaWithTimeout(
-        _AttemptToGetLatestCandidate)
+        _AttemptToGetLatestCandidate, use_long_timeout=True)
     if self.current_version:
       last_error = None
       for _ in range(0, retries + 1):

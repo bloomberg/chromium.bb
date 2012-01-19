@@ -248,7 +248,7 @@ class LKGMManagerTest(mox.MoxTestBase):
     lkgm_manager.LKGMManager._LoadSpecs(my_info)
 
     self.mox.ReplayAll()
-    self.manager.MAX_TIMEOUT_SECONDS = 1 # Only run once.
+    self.manager.LONG_MAX_TIMEOUT_SECONDS = 1 # Only run once.
     candidate = self.manager.GetLatestCandidate()
     self.assertEqual(candidate, None)
     self.mox.VerifyAll()
