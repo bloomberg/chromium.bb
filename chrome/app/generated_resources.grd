@@ -9781,6 +9781,9 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_FILE_BROWSER_CHROMEBOOK_DIRECTORY_LABEL" desc="Chromebook local directory label.">
         Chromebook
       </message>
+      <message name="IDS_FILE_BROWSER_CHROMEBOOK_DIRECTORY_BREADCRUMB_LABEL" desc="Chromebook local direcotry breadcrumb label.">
+        File shelf
+      </message>
       <message name="IDS_FILE_BROWSER_ADD_DRIVE" desc="Label to add a new drive.">
         Add a drive
       </message>

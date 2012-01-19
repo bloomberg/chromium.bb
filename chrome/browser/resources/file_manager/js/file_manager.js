@@ -2317,7 +2317,15 @@ FileManager.prototype = {
       var div = doc.createElement('div');
 
       div.className = 'breadcrumb-path';
-      div.textContent = i == 0 ? this.getRootLabel_(path) : pathName;
+      if (i == 0) {
+        // Need to say "File shelf" instead of "Chromebook" in the breadcrumb
+        // after select Chromebook in the left panel.
+        div.textContent = pathName == DirectoryModel.DOWNLOADS_DIRECTORY ?
+            str('CHROMEBOOK_DIRECTORY_BREADCRUMB_LABEL') :
+            this.getRootLabel_(path);
+      } else {
+        div.textContent = pathName;
+      }
 
       path = path + '/';
       div.path = path;
