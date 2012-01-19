@@ -781,7 +781,7 @@
         # run time dependencies
         '../ppapi/ppapi_internal.gyp:ppapi_tests',
         '../third_party/mesa/mesa.gyp:osmesa',
-        '../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:copy_TestNetscapePlugIn',
+        '../webkit/webkit.gyp:pull_in_copy_TestNetscapePlugIn',
       ],
       'include_dirs': [
         '..',
@@ -2471,7 +2471,7 @@
         '../webkit/webkit.gyp:test_shell_test_support',
         # Runtime dependencies
         '../third_party/mesa/mesa.gyp:osmesa',
-        '../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:copy_TestNetscapePlugIn',
+        '../webkit/webkit.gyp:pull_in_copy_TestNetscapePlugIn',
       ],
       'include_dirs': [
         '..',
@@ -3152,7 +3152,7 @@
         '../webkit/webkit.gyp:test_shell_test_support',
         # Runtime dependencies
         '../third_party/mesa/mesa.gyp:osmesa',
-        '../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:copy_TestNetscapePlugIn',
+        '../webkit/webkit.gyp:pull_in_copy_TestNetscapePlugIn',
       ],
       'include_dirs': [
         '..',

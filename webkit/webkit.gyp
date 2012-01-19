@@ -24,29 +24,43 @@
           ],
         },
         {
-          'target_name': 'pull_in_DumpRenderTree',
+          'target_name': 'pull_in_copy_TestNetscapePlugIn',
           'type': 'none',
           'dependencies': [
-            '../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:DumpRenderTree'
-          ],
-        }
-      ],
-    }, {
-      'targets': [
-        {
-          'target_name': 'pull_in_webkit_unit_tests',
-          'type': 'none',
-          'dependencies': [
-            '../third_party/WebKit/Source/WebKit/chromium/WebKitTest.gyp:webkit_unit_tests'
+            '../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:copy_TestNestcapePlugIn'
           ],
         },
         {
           'target_name': 'pull_in_DumpRenderTree',
           'type': 'none',
           'dependencies': [
-            '../third_party/WebKit/Tools/Tools.gyp:DumpRenderTree'
+            '../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:DumpRenderTree'
           ],
-        }
+        },
+      ],
+    }, {  # build_webkit_exes_from_webkit_gyp==0
+      'targets': [
+        {
+          'target_name': 'pull_in_webkit_unit_tests',
+          'type': 'none',
+          'dependencies': [
+            '../third_party/WebKit/Source/WebKit/chromium/WebKitUnitTests.gyp:webkit_unit_tests'
+          ],
+        },
+        {
+          'target_name': 'pull_in_copy_TestNetscapePlugIn',
+          'type': 'none',
+          'dependencies': [
+            '../third_party/WebKit/Tools/DumpRenderTree/DumpRenderTree.gyp/DumpRenderTree.gyp:copy_TestNetscapePlugIn'
+          ],
+        },
+        {
+          'target_name': 'pull_in_DumpRenderTree',
+          'type': 'none',
+          'dependencies': [
+            '../third_party/WebKit/Tools/DumpRenderTree/DumpRenderTree.gyp/DumpRenderTree.gyp:DumpRenderTree'
+          ],
+        },
       ],
     }]
   ], # targets

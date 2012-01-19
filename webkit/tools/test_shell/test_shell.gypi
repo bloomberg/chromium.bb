@@ -206,7 +206,7 @@
         '<(DEPTH)/net/net.gyp:net_test_support',
         '<(DEPTH)/skia/skia.gyp:skia',
         '<(DEPTH)/third_party/mesa/mesa.gyp:osmesa',
-        '<(DEPTH)/third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:copy_TestNetscapePlugIn',
+        'pull_in_copy_TestNetscapePlugIn',
         '<(DEPTH)/tools/imagediff/image_diff.gyp:image_diff',
       ],
       'defines': [
