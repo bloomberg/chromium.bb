@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -28,7 +28,7 @@ void PpbZoomRpcServer::PPB_Zoom_ZoomChanged(
 
   PPBZoomInterface()->ZoomChanged(instance, factor);
 
-  DebugPrintf("PPB_Zoom::ZoomChanged: instance=%"NACL_PRIu32"\n",
+  DebugPrintf("PPB_Zoom::ZoomChanged: instance=%"NACL_PRId32"\n",
               instance);
   rpc->result = NACL_SRPC_RESULT_OK;
 }
@@ -46,8 +46,7 @@ void PpbZoomRpcServer::PPB_Zoom_ZoomLimitsChanged(
                                         minimum_factor,
                                         maximum_factor);
 
-  DebugPrintf("PPB_Zoom::ZoomLimitsChanged: instance=%"NACL_PRIu32"\n",
+  DebugPrintf("PPB_Zoom::ZoomLimitsChanged: instance=%"NACL_PRId32"\n",
               instance);
   rpc->result = NACL_SRPC_RESULT_OK;
 }
-

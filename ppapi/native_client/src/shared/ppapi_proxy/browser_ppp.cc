@@ -58,7 +58,7 @@ void PPBGetInterfaces() {
 
 int32_t BrowserPpp::InitializeModule(PP_Module module_id,
                                      PPB_GetInterface get_browser_interface) {
-  DebugPrintf("PPP_InitializeModule: module=%"NACL_PRIu32"\n", module_id);
+  DebugPrintf("PPP_InitializeModule: module=%"NACL_PRId32"\n", module_id);
   // Ask the browser for an interface which provides missing functions
   const PPB_NaCl_Private* ppb_nacl = reinterpret_cast<const PPB_NaCl_Private*>(
       get_browser_interface(PPB_NACL_PRIVATE_INTERFACE));

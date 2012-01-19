@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,7 +23,7 @@ void ValueChanged(
     PP_Instance instance,
     PP_Resource resource,
     uint32_t value) {
-  DebugPrintf("PPP_Scrollbar_Dev::ValueChanged: instance=%"NACL_PRIu32"\n",
+  DebugPrintf("PPP_Scrollbar_Dev::ValueChanged: instance=%"NACL_PRId32"\n",
               instance);
 
   NaClSrpcError srpc_result = PppScrollbarRpcClient::PPP_Scrollbar_ValueChanged(
@@ -40,7 +40,7 @@ void OverlayChanged(
     PP_Instance instance,
     PP_Resource resource,
     PP_Bool type) {
-  DebugPrintf("PPP_Scrollbar_Dev::OverlayChanged: instance=%"NACL_PRIu32"\n",
+  DebugPrintf("PPP_Scrollbar_Dev::OverlayChanged: instance=%"NACL_PRId32"\n",
               instance);
 
   NaClSrpcError srpc_result =
@@ -65,4 +65,3 @@ const PPP_Scrollbar_Dev* BrowserScrollbar::GetInterface() {
 }
 
 }  // namespace ppapi_proxy
-

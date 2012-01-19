@@ -1,6 +1,6 @@
-// Copyright 2011 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can
-// be found in the LICENSE file.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_image_data.h"
 
@@ -51,7 +51,7 @@ PP_Bool IsImageDataFormatSupported(PP_ImageDataFormat format) {
   DebugPrintf("PPB_ImageData::IsImageDataFormatSupported: %s\n",
               NaClSrpcErrorString(srpc_result));
   if (srpc_result == NACL_SRPC_RESULT_OK) {
-    return (result ? PP_TRUE : PP_FALSE);
+    return PP_FromBool(result);
   } else {
     return PP_FALSE;
   }
@@ -61,7 +61,7 @@ PP_Resource Create(PP_Instance instance,
                    PP_ImageDataFormat format,
                    const struct PP_Size* size,
                    PP_Bool init_to_zero) {
-  DebugPrintf("PPB_ImageData::Create: instance=%"NACL_PRIu32"\n", instance);
+  DebugPrintf("PPB_ImageData::Create: instance=%"NACL_PRId32"\n", instance);
   PP_Resource resource;
   NaClSrpcError srpc_result =
       PpbImageDataRpcClient::PPB_ImageData_Create(
@@ -70,7 +70,7 @@ PP_Resource Create(PP_Instance instance,
           static_cast<int32_t>(format),
           static_cast<nacl_abi_size_t>(sizeof(struct PP_Size)),
           reinterpret_cast<char*>(const_cast<struct PP_Size*>(size)),
-          (init_to_zero == PP_TRUE),
+          PP_ToBool(init_to_zero),
           &resource);
   DebugPrintf("PPB_ImageData::Create: %s\n", NaClSrpcErrorString(srpc_result));
   if (srpc_result == NACL_SRPC_RESULT_OK) {
@@ -84,15 +84,14 @@ PP_Resource Create(PP_Instance instance,
 }
 
 PP_Bool IsImageData(PP_Resource resource) {
-  DebugPrintf("PPB_ImageData::IsImageData: resource=%"NACL_PRIu32"\n",
+  DebugPrintf("PPB_ImageData::IsImageData: resource=%"NACL_PRId32"\n",
               resource);
-  return PluginResource::GetAs<PluginImageData>(resource).get()
-      ? PP_TRUE : PP_FALSE;
+  return PP_FromBool(PluginResource::GetAs<PluginImageData>(resource).get());
 }
 
 PP_Bool Describe(PP_Resource resource,
                  struct PP_ImageDataDesc* desc) {
-  DebugPrintf("PPB_ImageData::Describe: resource=%"NACL_PRIu32"\n",
+  DebugPrintf("PPB_ImageData::Describe: resource=%"NACL_PRId32"\n",
               resource);
   scoped_refptr<PluginImageData> imagedata =
       PluginResource::GetAs<PluginImageData>(resource);
@@ -105,7 +104,7 @@ PP_Bool Describe(PP_Resource resource,
 }
 
 void* DoMap(PP_Resource resource) {
-  DebugPrintf("PPB_ImageData::DoMap: resource=%"NACL_PRIu32"\n", resource);
+  DebugPrintf("PPB_ImageData::DoMap: resource=%"NACL_PRId32"\n", resource);
   scoped_refptr<PluginImageData> imagedata =
       PluginResource::GetAs<PluginImageData>(resource);
 
@@ -113,7 +112,7 @@ void* DoMap(PP_Resource resource) {
 }
 
 void DoUnmap(PP_Resource resource) {
-  DebugPrintf("PPB_ImageData::DoUnmap: resource=%"NACL_PRIu32"\n", resource);
+  DebugPrintf("PPB_ImageData::DoUnmap: resource=%"NACL_PRId32"\n", resource);
   scoped_refptr<PluginImageData> imagedata =
       PluginResource::GetAs<PluginImageData>(resource);
   if (imagedata.get())

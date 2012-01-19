@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2011 The Chromium Authors. All rights reserved.
+  Copyright (c) 2012 The Chromium Authors. All rights reserved.
   Use of this source code is governed by a BSD-style license that can be
   found in the LICENSE file.
 */
@@ -18,7 +18,7 @@ namespace ppapi_proxy {
 int32_t StreamAsFile(PP_Instance instance,
                      const char* url,
                      struct PP_CompletionCallback callback) {
-  DebugPrintf("NaClFile::StreamAsFile: instance=%"NACL_PRIu32" url=%s\n",
+  DebugPrintf("NaClFile::StreamAsFile: instance=%"NACL_PRId32" url=%s\n",
               instance, url);
 
   int32_t callback_id =
@@ -37,7 +37,7 @@ int32_t StreamAsFile(PP_Instance instance,
 
 
 int GetFileDesc(PP_Instance instance, const char* url) {
-  DebugPrintf("NaClFile::GetFileDesc: instance=%"NACL_PRIu32" url=%s\n",
+  DebugPrintf("NaClFile::GetFileDesc: instance=%"NACL_PRId32" url=%s\n",
               instance, url);
 
   int file_desc;

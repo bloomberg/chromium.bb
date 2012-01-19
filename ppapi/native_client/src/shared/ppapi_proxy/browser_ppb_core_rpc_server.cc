@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -24,7 +24,7 @@ void PpbCoreRpcServer::PPB_Core_AddRefResource(NaClSrpcRpc* rpc,
                                                PP_Resource resource) {
   NaClSrpcClosureRunner runner(done);
   PPBCoreInterface()->AddRefResource(resource);
-  DebugPrintf("PPB_Core::AddRefResource: resource=%"NACL_PRIu32"\n", resource);
+  DebugPrintf("PPB_Core::AddRefResource: resource=%"NACL_PRId32"\n", resource);
   rpc->result = NACL_SRPC_RESULT_OK;
 }
 
@@ -33,7 +33,7 @@ void PpbCoreRpcServer::PPB_Core_ReleaseResource(NaClSrpcRpc* rpc,
                                                 PP_Resource resource) {
   NaClSrpcClosureRunner runner(done);
   PPBCoreInterface()->ReleaseResource(resource);
-  DebugPrintf("PPB_Core::ReleaseResource: resource=%"NACL_PRIu32"\n",
+  DebugPrintf("PPB_Core::ReleaseResource: resource=%"NACL_PRId32"\n",
               resource);
   rpc->result = NACL_SRPC_RESULT_OK;
 }

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -105,7 +105,7 @@ pp::Var Invoke(Plugin* plugin,
   uint32_t input_length = params.InputLength();
   int32_t output_length = params.OutputLength();
   PLUGIN_PRINTF(("ScriptableHandle::%s (initialized %"NACL_PRIu32" ins, %"
-                 NACL_PRIu32" outs)\n", caller, input_length, output_length));
+                 NACL_PRId32" outs)\n", caller, input_length, output_length));
 
   // Verify input/output parameter list length.
   if (args.size() != params.SignatureLength()) {

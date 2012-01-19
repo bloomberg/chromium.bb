@@ -31,7 +31,7 @@ bool IsDirectoryTraversal(const std::string& path) {
 
 PP_Resource Create(PP_Resource file_system,
                    const char* path) {
-  DebugPrintf("PPB_FileRef::Create: file_system=%"NACL_PRIu32", path=%s\n",
+  DebugPrintf("PPB_FileRef::Create: file_system=%"NACL_PRId32", path=%s\n",
               file_system, path);
 
   PP_Resource resource = kInvalidResourceId;
@@ -53,7 +53,7 @@ PP_Resource Create(PP_Resource file_system,
 }
 
 PP_Bool IsFileRef(PP_Resource file_ref) {
-  DebugPrintf("PPB_FileRef::IsFileRef: file_ref=%"NACL_PRIu32"\n", file_ref);
+  DebugPrintf("PPB_FileRef::IsFileRef: file_ref=%"NACL_PRId32"\n", file_ref);
 
   int32_t is_file_ref = 0;
   NaClSrpcError srpc_result = PpbFileRefRpcClient::PPB_FileRef_IsFileRef(
@@ -68,7 +68,7 @@ PP_Bool IsFileRef(PP_Resource file_ref) {
 }
 
 PP_FileSystemType GetFileSystemType(PP_Resource file_ref) {
-  DebugPrintf("PPB_FileRef::GetFileSystemType: file_ref=%"NACL_PRIu32"\n",
+  DebugPrintf("PPB_FileRef::GetFileSystemType: file_ref=%"NACL_PRId32"\n",
               file_ref);
 
   int32_t file_system_type = PP_FILESYSTEMTYPE_INVALID;
@@ -86,7 +86,7 @@ PP_FileSystemType GetFileSystemType(PP_Resource file_ref) {
 }
 
 PP_Var GetName(PP_Resource file_ref) {
-  DebugPrintf("PPB_FileRef::GetName: file_ref=%"NACL_PRIu32"\n", file_ref);
+  DebugPrintf("PPB_FileRef::GetName: file_ref=%"NACL_PRId32"\n", file_ref);
 
   PP_Var name = PP_MakeUndefined();
   nacl_abi_size_t length = kMaxReturnVarSize;
@@ -106,7 +106,7 @@ PP_Var GetName(PP_Resource file_ref) {
 }
 
 PP_Var GetPath(PP_Resource file_ref) {
-  DebugPrintf("PPB_FileRef::GetPath: file_ref=%"NACL_PRIu32"\n", file_ref);
+  DebugPrintf("PPB_FileRef::GetPath: file_ref=%"NACL_PRId32"\n", file_ref);
 
   PP_Var path = PP_MakeUndefined();
   nacl_abi_size_t length = kMaxReturnVarSize;
@@ -127,7 +127,7 @@ PP_Var GetPath(PP_Resource file_ref) {
 }
 
 PP_Resource GetParent(PP_Resource file_ref) {
-  DebugPrintf("PPB_FileRef::GetParent: file_ref=%"NACL_PRIu32"\n", file_ref);
+  DebugPrintf("PPB_FileRef::GetParent: file_ref=%"NACL_PRId32"\n", file_ref);
 
   PP_Resource parent = kInvalidResourceId;
   NaClSrpcError srpc_result = PpbFileRefRpcClient::PPB_FileRef_GetParent(
@@ -145,7 +145,7 @@ PP_Resource GetParent(PP_Resource file_ref) {
 int32_t MakeDirectory(PP_Resource directory_ref,
                       PP_Bool make_ancestors,
                       struct PP_CompletionCallback callback) {
-  DebugPrintf("PPB_FileRef::MakeDirectory: directory_ref=%"NACL_PRIu32", "
+  DebugPrintf("PPB_FileRef::MakeDirectory: directory_ref=%"NACL_PRId32", "
               "make_ancestors=%s\n", directory_ref,
               (make_ancestors ? "true" : "false"));
 
@@ -169,7 +169,7 @@ int32_t Touch(PP_Resource file_ref,
               PP_Time last_access_time,
               PP_Time last_modified_time,
               struct PP_CompletionCallback callback) {
-  DebugPrintf("PPB_FileRef::Touch: file_ref=%"NACL_PRIu32", "
+  DebugPrintf("PPB_FileRef::Touch: file_ref=%"NACL_PRId32", "
               "last_access_time=%lf, last_modified_time=%lf\n",
               file_ref, last_access_time, last_modified_time);
 
@@ -196,7 +196,7 @@ int32_t Touch(PP_Resource file_ref,
 
 int32_t Delete(PP_Resource file_ref,
                struct PP_CompletionCallback callback) {
-  DebugPrintf("PPB_FileRef::Delete: file_ref=%"NACL_PRIu32"\n", file_ref);
+  DebugPrintf("PPB_FileRef::Delete: file_ref=%"NACL_PRId32"\n", file_ref);
 
   int32_t callback_id = CompletionCallbackTable::Get()->AddCallback(callback);
   int32_t pp_error = PP_ERROR_FAILED;
@@ -215,8 +215,8 @@ int32_t Delete(PP_Resource file_ref,
 int32_t Rename(PP_Resource file_ref,
                PP_Resource new_file_ref,
                struct PP_CompletionCallback callback) {
-  DebugPrintf("PPB_FileRef::Rename: file_ref=%"NACL_PRIu32", "
-              "new_file_ref=%"NACL_PRIu32"\n", file_ref, new_file_ref);
+  DebugPrintf("PPB_FileRef::Rename: file_ref=%"NACL_PRId32", "
+              "new_file_ref=%"NACL_PRId32"\n", file_ref, new_file_ref);
 
   int32_t callback_id = CompletionCallbackTable::Get()->AddCallback(callback);
   int32_t pp_error = PP_ERROR_FAILED;

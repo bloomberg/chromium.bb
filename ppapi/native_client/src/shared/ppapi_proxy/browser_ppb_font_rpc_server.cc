@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -62,7 +62,7 @@ void PpbFontRpcServer::PPB_Font_Create(
   }
   *font = PPBFontInterface()->Create(instance, pp_description);
 
-  DebugPrintf("PPB_Font_Dev::Create: font=%"NACL_PRIu32"\n", *font);
+  DebugPrintf("PPB_Font_Dev::Create: font=%"NACL_PRId32"\n", *font);
   rpc->result = NACL_SRPC_RESULT_OK;
 }
 
@@ -75,7 +75,7 @@ void PpbFontRpcServer::PPB_Font_IsFont(
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
 
   PP_Bool pp_is_font = PPBFontInterface()->IsFont(resource);
-  *is_font = (pp_is_font == PP_TRUE);
+  *is_font = PP_ToBool(pp_is_font);
 
   DebugPrintf("PPB_Font_Dev::IsFont: is_font=%"NACL_PRId32"\n", *is_font);
   rpc->result = NACL_SRPC_RESULT_OK;
@@ -107,9 +107,9 @@ void PpbFontRpcServer::PPB_Font_Describe(
                                                     pp_metrics);
   if (!SerializeTo(&pp_description->face, face, face_size))
     return;
-  *success = (pp_success == PP_TRUE);
+  *success = PP_ToBool(pp_success);
 
-  DebugPrintf("PPB_Font_Dev::Describe: success=%"NACL_PRIu32"\n", *success);
+  DebugPrintf("PPB_Font_Dev::Describe: success=%"NACL_PRId32"\n", *success);
   rpc->result = NACL_SRPC_RESULT_OK;
 }
 
@@ -142,7 +142,7 @@ void PpbFontRpcServer::PPB_Font_DrawTextAt(
       reinterpret_cast<struct PP_Point*>(position);
   struct PP_Rect* pp_clip =
       reinterpret_cast<struct PP_Rect*>(clip);
-  PP_Bool pp_image_data_is_opaque = image_data_is_opaque ? PP_TRUE : PP_FALSE;
+  PP_Bool pp_image_data_is_opaque = PP_FromBool(image_data_is_opaque);
   PP_Bool pp_success = PPBFontInterface()->DrawTextAt(font,
                                                       image_data,
                                                       pp_text_run,
@@ -150,8 +150,8 @@ void PpbFontRpcServer::PPB_Font_DrawTextAt(
                                                       color,
                                                       pp_clip,
                                                       pp_image_data_is_opaque);
-  *success = (pp_success == PP_TRUE);
-  DebugPrintf("PPB_Font_Dev::DrawTextAt: success=%"NACL_PRIu32"\n", *success);
+  *success = PP_ToBool(pp_success);
+  DebugPrintf("PPB_Font_Dev::DrawTextAt: success=%"NACL_PRId32"\n", *success);
   rpc->result = NACL_SRPC_RESULT_OK;
 }
 
@@ -173,7 +173,7 @@ void PpbFontRpcServer::PPB_Font_MeasureText(
     return;
   *width = PPBFontInterface()->MeasureText(font, pp_text_run);
 
-  DebugPrintf("PPB_Font_Dev::MeasureText: width=%"NACL_PRIu32"\n", *width);
+  DebugPrintf("PPB_Font_Dev::MeasureText: width=%"NACL_PRId32"\n", *width);
   rpc->result = NACL_SRPC_RESULT_OK;
 }
 
@@ -227,4 +227,3 @@ void PpbFontRpcServer::PPB_Font_PixelOffsetForCharacter(
               "offset=%"NACL_PRId32"\n", *offset);
   rpc->result = NACL_SRPC_RESULT_OK;
 }
-

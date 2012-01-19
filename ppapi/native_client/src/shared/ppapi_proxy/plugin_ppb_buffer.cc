@@ -1,6 +1,6 @@
-// Copyright 2011 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can
-// be found in the LICENSE file.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_buffer.h"
 
@@ -23,8 +23,7 @@ PP_Resource Create(PP_Module module, uint32_t size_in_bytes) {
 }
 
 PP_Bool IsBuffer(PP_Resource resource) {
-  return PluginResource::GetAs<PluginBuffer>(resource).get()
-      ? PP_TRUE : PP_FALSE;
+  return PP_FromBool(PluginResource::GetAs<PluginBuffer>(resource).get());
 }
 
 PP_Bool Describe(PP_Resource resource, uint32_t* size_in_bytes) {

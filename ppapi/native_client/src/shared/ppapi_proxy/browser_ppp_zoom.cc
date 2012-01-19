@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,7 +22,7 @@ namespace {
 void Zoom(PP_Instance instance,
           double factor,
           PP_Bool text_only) {
-  DebugPrintf("PPP_Zoom::Zoom: instance=%"NACL_PRIu32"\n", instance);
+  DebugPrintf("PPP_Zoom::Zoom: instance=%"NACL_PRId32"\n", instance);
 
   NaClSrpcError srpc_result = PppZoomRpcClient::PPP_Zoom_Zoom(
       GetMainSrpcChannel(instance),
@@ -43,4 +43,3 @@ const PPP_Zoom_Dev* BrowserZoom::GetInterface() {
 }
 
 }  // namespace ppapi_proxy
-

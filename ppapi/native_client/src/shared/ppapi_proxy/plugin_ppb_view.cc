@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,7 +23,7 @@ namespace {
 class ViewGetter {
  public:
   ViewGetter(PP_Resource resource, const char* function_name) {
-    DebugPrintf("PPB_View::%s: resource=%"NACL_PRIu32"\n",
+    DebugPrintf("PPB_View::%s: resource=%"NACL_PRId32"\n",
                 function_name,
                 resource);
     view_ = PluginResource::GetAs<PluginView>(resource);
@@ -45,10 +45,9 @@ class ViewGetter {
   }
 
 PP_Bool IsView(PP_Resource resource) {
-  DebugPrintf("PPB_View::IsView: resource=%"NACL_PRIu32"\n",
+  DebugPrintf("PPB_View::IsView: resource=%"NACL_PRId32"\n",
               resource);
-  return PluginResource::GetAs<PluginView>(resource).get()
-      ? PP_TRUE : PP_FALSE;
+  return PP_FromBool(PluginResource::GetAs<PluginView>(resource).get());
 }
 
 PP_Bool GetRect(PP_Resource resource, PP_Rect* viewport) {

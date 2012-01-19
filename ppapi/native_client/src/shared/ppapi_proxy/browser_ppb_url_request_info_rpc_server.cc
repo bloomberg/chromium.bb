@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -27,7 +27,7 @@ void PpbURLRequestInfoRpcServer::PPB_URLRequestInfo_Create(
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
 
   *resource = PPBURLRequestInfoInterface()->Create(instance);
-  DebugPrintf("PPB_URLRequestInfo::Create: resource=%"NACL_PRIu32"\n",
+  DebugPrintf("PPB_URLRequestInfo::Create: resource=%"NACL_PRId32"\n",
               *resource);
 
   rpc->result = NACL_SRPC_RESULT_OK;
@@ -44,9 +44,8 @@ void PpbURLRequestInfoRpcServer::PPB_URLRequestInfo_IsURLRequestInfo(
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
 
   PP_Bool pp_success = PPBURLRequestInfoInterface()->IsURLRequestInfo(resource);
-  DebugPrintf("PPB_URLRequestInfo::IsURLRequestInfo: success=%d\n", pp_success);
-
-  *success = (pp_success == PP_TRUE);
+  *success = PP_ToBool(pp_success);
+  DebugPrintf("PPB_URLRequestInfo::IsURLRequestInfo: success=%d\n", *success);
   rpc->result = NACL_SRPC_RESULT_OK;
 }
 
@@ -68,9 +67,8 @@ void PpbURLRequestInfoRpcServer::PPB_URLRequestInfo_SetProperty(
 
   PP_Bool pp_success = PPBURLRequestInfoInterface()->SetProperty(
       request, static_cast<PP_URLRequestProperty>(property), value);
-  DebugPrintf("PPB_URLRequestInfo::SetProperty: pp_success=%d\n", pp_success);
-
-  *success = (pp_success == PP_TRUE);
+  *success = PP_ToBool(pp_success);
+  DebugPrintf("PPB_URLRequestInfo::SetProperty: success=%d\n", *success);
   rpc->result = NACL_SRPC_RESULT_OK;
 }
 
@@ -89,10 +87,9 @@ void PpbURLRequestInfoRpcServer::PPB_URLRequestInfo_AppendDataToBody(
       request,
       static_cast<const char*>(data_bytes),
       static_cast<uint32_t>(data_size));
-  DebugPrintf("PPB_URLRequestInfo::AppendDataToBody: pp_success=%d\n",
-              pp_success);
-
-  *success = (pp_success == PP_TRUE);
+  *success = PP_ToBool(pp_success);
+  DebugPrintf("PPB_URLRequestInfo::AppendDataToBody: success=%d\n",
+              *success);
   rpc->result = NACL_SRPC_RESULT_OK;
 }
 
@@ -116,9 +113,8 @@ void PpbURLRequestInfoRpcServer::PPB_URLRequestInfo_AppendFileToBody(
       start_offset,
       number_of_bytes,
       static_cast<PP_Time>(expected_last_modified_time));
+  *success = PP_ToBool(pp_success);
   DebugPrintf("PPB_URLRequestInfo::AppendFileToBody: pp_success=%d\n",
-              pp_success);
-
-  *success = (pp_success == PP_TRUE);
+              *success);
   rpc->result = NACL_SRPC_RESULT_OK;
 }

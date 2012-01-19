@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -41,7 +41,7 @@ void PpbCursorControlRpcServer::PPB_CursorControl_SetCursor(
       static_cast<PP_CursorType_Dev>(type),
       custom_image,
       pp_hot_spot);
-  *success = (pp_success == PP_TRUE);
+  *success = PP_ToBool(pp_success);
 
   DebugPrintf("PPB_CursorControl::SetCursor: success=%"NACL_PRId32"\n",
               *success);
@@ -57,7 +57,7 @@ void PpbCursorControlRpcServer::PPB_CursorControl_LockCursor(
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
 
   PP_Bool pp_success = PPBCursorControlInterface()->LockCursor(instance);
-  *success = (pp_success == PP_TRUE);
+  *success = PP_ToBool(pp_success);
 
   DebugPrintf("PPB_CursorControl::LockCursor: success=%"NACL_PRId32"\n",
               *success);
@@ -73,7 +73,7 @@ void PpbCursorControlRpcServer::PPB_CursorControl_UnlockCursor(
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
 
   PP_Bool pp_success = PPBCursorControlInterface()->UnlockCursor(instance);
-  *success = (pp_success == PP_TRUE);
+  *success = PP_ToBool(pp_success);
 
   DebugPrintf("PPB_CursorControl::UnlockCursor: success=%"NACL_PRId32"\n",
               *success);
@@ -89,7 +89,7 @@ void PpbCursorControlRpcServer::PPB_CursorControl_HasCursorLock(
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
 
   PP_Bool pp_success = PPBCursorControlInterface()->HasCursorLock(instance);
-  *success = (pp_success == PP_TRUE);
+  *success = PP_ToBool(pp_success);
 
   DebugPrintf("PPB_CursorControl::HasCursorLock: success=%"NACL_PRId32"\n",
               *success);
@@ -105,10 +105,9 @@ void PpbCursorControlRpcServer::PPB_CursorControl_CanLockCursor(
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
 
   PP_Bool pp_success = PPBCursorControlInterface()->CanLockCursor(instance);
-  *success = (pp_success == PP_TRUE);
+  *success = PP_ToBool(pp_success);
 
   DebugPrintf("PPB_CursorControl::CanLockCursor: success=%"NACL_PRId32"\n",
               *success);
   rpc->result = NACL_SRPC_RESULT_OK;
 }
-

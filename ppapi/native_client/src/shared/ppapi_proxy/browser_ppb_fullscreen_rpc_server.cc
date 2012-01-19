@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -28,10 +28,9 @@ void PpbFullscreenRpcServer::PPB_Fullscreen_SetFullscreen(
 
   PP_Bool pp_success = PPBFullscreenInterface()->SetFullscreen(
       instance,
-      (fullscreen ? PP_TRUE : PP_FALSE));
-  DebugPrintf("PPB_Fullscreen::SetFullscreen: pp_success=%d\n", pp_success);
-
-  *success = (pp_success == PP_TRUE);
+      PP_FromBool(fullscreen));
+  *success = PP_ToBool(pp_success);
+  DebugPrintf("PPB_Fullscreen::SetFullscreen: success=%d\n", *success);
   rpc->result = NACL_SRPC_RESULT_OK;
 }
 
@@ -53,8 +52,7 @@ void PpbFullscreenRpcServer::PPB_Fullscreen_GetScreenSize(
   PP_Bool pp_success = PPBFullscreenInterface()->GetScreenSize(
       instance,
       reinterpret_cast<struct PP_Size*>(size));
-  DebugPrintf("PPB_Fullscreen::GetScreenSize: pp_success=%d\n", pp_success);
-
-  *success = (pp_success == PP_TRUE);
+  *success = PP_ToBool(pp_success);
+  DebugPrintf("PPB_Fullscreen::GetScreenSize: success=%d\n", *success);
   rpc->result = NACL_SRPC_RESULT_OK;
 }

@@ -24,7 +24,7 @@ namespace {
 
 struct PP_Var GetSelectedText(PP_Instance instance, PP_Bool html) {
   DebugPrintf("PPP_Selection_Dev::GetSelectedText: "
-              "instance=%"NACL_PRIu32"\n", instance);
+              "instance=%"NACL_PRId32"\n", instance);
   NaClSrpcChannel* channel = GetMainSrpcChannel(instance);
   nacl_abi_size_t text_size = kMaxReturnVarSize;
   nacl::scoped_array<char> text_bytes(new char[text_size]);

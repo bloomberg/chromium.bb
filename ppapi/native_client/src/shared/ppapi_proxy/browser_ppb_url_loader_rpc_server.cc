@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -25,7 +25,7 @@ using ppapi_proxy::DeleteRemoteCallbackInfo;
 void PpbURLLoaderRpcServer::PPB_URLLoader_Create(
     NaClSrpcRpc* rpc,
     NaClSrpcClosure* done,
-    // inputsles
+    // inputs
     PP_Instance instance,
     // outputs
     PP_Resource* resource) {
@@ -33,7 +33,7 @@ void PpbURLLoaderRpcServer::PPB_URLLoader_Create(
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
 
   *resource = PPBURLLoaderInterface()->Create(instance);
-  DebugPrintf("PPB_URLLoader::Create: resource=%"NACL_PRIu32"\n", *resource);
+  DebugPrintf("PPB_URLLoader::Create: resource=%"NACL_PRId32"\n", *resource);
 
   rpc->result = NACL_SRPC_RESULT_OK;
 }
@@ -49,9 +49,8 @@ void PpbURLLoaderRpcServer::PPB_URLLoader_IsURLLoader(
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
 
   PP_Bool pp_success = PPBURLLoaderInterface()->IsURLLoader(resource);
-  DebugPrintf("PPB_URLLoader::IsURLLoader: pp_success=%d\n", pp_success);
-
-  *success = (pp_success == PP_TRUE);
+  *success = PP_ToBool(pp_success);
+  DebugPrintf("PPB_URLLoader::IsURLLoader: success=%d\n", *success);
   rpc->result = NACL_SRPC_RESULT_OK;
 }
 
@@ -119,9 +118,8 @@ void PpbURLLoaderRpcServer::PPB_URLLoader_GetUploadProgress(
 
   PP_Bool pp_success = PPBURLLoaderInterface()->GetUploadProgress(
       loader, bytes_sent, total_bytes_to_be_sent);
-  DebugPrintf("PPB_URLLoader::GetUploadProgress: pp_success=%d\n", pp_success);
-
-  *success = (pp_success == PP_TRUE);
+  *success = PP_ToBool(pp_success);
+  DebugPrintf("PPB_URLLoader::GetUploadProgress: success=%d\n", *success);
   rpc->result = NACL_SRPC_RESULT_OK;
 }
 
@@ -139,10 +137,8 @@ void PpbURLLoaderRpcServer::PPB_URLLoader_GetDownloadProgress(
 
   PP_Bool pp_success = PPBURLLoaderInterface()->GetDownloadProgress(
       loader, bytes_received, total_bytes_to_be_received);
-  DebugPrintf("PPB_URLLoader::GetDownloadProgress: pp_success=%d\n",
-              pp_success);
-
-  *success = (pp_success == PP_TRUE);
+  *success = PP_ToBool(pp_success);
+  DebugPrintf("PPB_URLLoader::GetDownloadProgress: success=%d\n", *success);
   rpc->result = NACL_SRPC_RESULT_OK;
 }
 
@@ -157,7 +153,7 @@ void PpbURLLoaderRpcServer::PPB_URLLoader_GetResponseInfo(
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
 
   *response = PPBURLLoaderInterface()->GetResponseInfo(loader);
-  DebugPrintf("PPB_URLLoader::GetResponseInfo: response=%"NACL_PRIu32"\n",
+  DebugPrintf("PPB_URLLoader::GetResponseInfo: response=%"NACL_PRId32"\n",
               *response);
 
   rpc->result = NACL_SRPC_RESULT_OK;

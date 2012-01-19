@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -34,7 +34,7 @@ void PpbUDPSocketPrivateRpcServer::PPB_UDPSocket_Private_Create(
   *resource = PPBUDPSocketPrivateInterface()->Create(instance_id);
 
   DebugPrintf("PPB_UDPSocket_Private::Create: "
-              "resource=%"NACL_PRIu32"\n", *resource);
+              "resource=%"NACL_PRId32"\n", *resource);
 }
 
 void PpbUDPSocketPrivateRpcServer::PPB_UDPSocket_Private_IsUDPSocket(
@@ -49,11 +49,9 @@ void PpbUDPSocketPrivateRpcServer::PPB_UDPSocket_Private_IsUDPSocket(
 
   PP_Bool pp_success =
       PPBUDPSocketPrivateInterface()->IsUDPSocket(resource_id);
-
+  *is_udp_socket = PP_ToBool(pp_success);
   DebugPrintf("PPB_UDPSocket_Private::IsUDPSocket: "
-              "pp_success=%d\n", pp_success);
-
-  *is_udp_socket = (pp_success == PP_TRUE);
+              "is_udp_socket=%d\n", *is_udp_socket);
 }
 
 void PpbUDPSocketPrivateRpcServer::PPB_UDPSocket_Private_Bind(
@@ -162,11 +160,9 @@ void PpbUDPSocketPrivateRpcServer::PPB_UDPSocket_Private_GetRecvFromAddress(
       PPBUDPSocketPrivateInterface()->GetRecvFromAddress(
           udp_socket,
           reinterpret_cast<PP_NetAddress_Private*>(addr));
-
+  *success = PP_ToBool(pp_success);
   DebugPrintf("PPB_UDPSocket_Private::GetRecvFromAddress: "
-              "pp_success=%d\n", pp_success);
-
-  *success = (pp_success == PP_TRUE);
+              "success=%d\n", *success);
   rpc->result = NACL_SRPC_RESULT_OK;
 }
 
@@ -220,7 +216,7 @@ void PpbUDPSocketPrivateRpcServer::PPB_UDPSocket_Private_Close(
   rpc->result = NACL_SRPC_RESULT_OK;
 
   DebugPrintf("PPB_UDPSocket_Private::Close: "
-              "udp_socket=%"NACL_PRIu32"\n", udp_socket);
+              "udp_socket=%"NACL_PRId32"\n", udp_socket);
 
   PPBUDPSocketPrivateInterface()->Close(udp_socket);
 }

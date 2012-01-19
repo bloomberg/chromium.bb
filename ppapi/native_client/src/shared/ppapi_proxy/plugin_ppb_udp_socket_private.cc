@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,7 +21,7 @@ namespace ppapi_proxy {
 namespace {
 
 PP_Resource Create(PP_Instance instance_id) {
-  DebugPrintf("PPB_UDPSocket_Private::Create: instance_id=%"NACL_PRIu32"\n",
+  DebugPrintf("PPB_UDPSocket_Private::Create: instance_id=%"NACL_PRId32"\n",
               instance_id);
 
   PP_Resource resource;
@@ -42,7 +42,7 @@ PP_Resource Create(PP_Instance instance_id) {
 
 PP_Bool IsUDPSocket(PP_Resource resource_id) {
   DebugPrintf("PPB_UDPSocket_Private::IsUDPSocket: "
-              "resource_id=%"NACL_PRIu32"\n", resource_id);
+              "resource_id=%"NACL_PRId32"\n", resource_id);
 
   int32_t is_udp_socket;
   NaClSrpcError srpc_result =
@@ -60,7 +60,7 @@ PP_Bool IsUDPSocket(PP_Resource resource_id) {
 int32_t Bind(PP_Resource udp_socket, const struct PP_NetAddress_Private* addr,
              struct PP_CompletionCallback callback) {
   DebugPrintf("PPB_UDPSocket_Private::Bind: "
-              "udp_socket=%"NACL_PRIu32"\n", udp_socket);
+              "udp_socket=%"NACL_PRId32"\n", udp_socket);
 
   int32_t callback_id = CompletionCallbackTable::Get()->AddCallback(callback);
   if (callback_id == 0)  // Just like Chrome, for now disallow blocking calls.
@@ -88,7 +88,7 @@ int32_t Bind(PP_Resource udp_socket, const struct PP_NetAddress_Private* addr,
 
 int32_t RecvFrom(PP_Resource udp_socket, char* buffer, int32_t num_bytes,
                  struct PP_CompletionCallback callback) {
-  DebugPrintf("PPB_UDPSocket_Private::RecvFrom: udp_socket=%"NACL_PRIu32", "
+  DebugPrintf("PPB_UDPSocket_Private::RecvFrom: udp_socket=%"NACL_PRId32", "
               "num_bytes=%"NACL_PRId32"\n", udp_socket, num_bytes);
 
   if (num_bytes < 0)
@@ -122,7 +122,7 @@ int32_t RecvFrom(PP_Resource udp_socket, char* buffer, int32_t num_bytes,
 PP_Bool GetRecvFromAddress(PP_Resource udp_socket,
                            struct PP_NetAddress_Private* addr) {
   DebugPrintf("PPB_UDPSocket_Private::GetRecvFromAddress: "
-              "udp_socket="NACL_PRIu32"\n", udp_socket);
+              "udp_socket="NACL_PRId32"\n", udp_socket);
 
   nacl_abi_size_t addr_bytes;
   int32_t success;
@@ -145,7 +145,7 @@ PP_Bool GetRecvFromAddress(PP_Resource udp_socket,
 int32_t SendTo(PP_Resource udp_socket, const char* buffer, int32_t num_bytes,
                const struct PP_NetAddress_Private* addr,
                struct PP_CompletionCallback callback) {
-  DebugPrintf("PPB_UDPSocket_Private::SendTo: udp_socket="NACL_PRIu32", "
+  DebugPrintf("PPB_UDPSocket_Private::SendTo: udp_socket="NACL_PRId32", "
               "num_bytes="NACL_PRId32"\n", udp_socket, num_bytes);
 
   if (num_bytes < 0)
@@ -183,7 +183,7 @@ int32_t SendTo(PP_Resource udp_socket, const char* buffer, int32_t num_bytes,
 
 void Close(PP_Resource udp_socket) {
   DebugPrintf("PPB_UDPSocket_Private::Close: "
-              "udp_socket="NACL_PRIu32"\n", udp_socket);
+              "udp_socket="NACL_PRId32"\n", udp_socket);
 
   NaClSrpcError srpc_result =
       PpbUDPSocketPrivateRpcClient::PPB_UDPSocket_Private_Close(

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -34,7 +34,7 @@ const nacl_abi_size_t kPPRectBytes =
 PP_Resource Create(PP_Instance instance,
                    const struct PP_Size* size,
                    PP_Bool is_always_opaque) {
-  DebugPrintf("PPB_Graphics2D::Create: instance=%"NACL_PRIu32"\n", instance);
+  DebugPrintf("PPB_Graphics2D::Create: instance=%"NACL_PRId32"\n", instance);
   char* size_as_char_ptr =
       reinterpret_cast<char*>(const_cast<struct PP_Size*>(size));
   int32_t is_always_opaque_as_int = static_cast<int32_t>(is_always_opaque);
@@ -59,16 +59,15 @@ PP_Resource Create(PP_Instance instance,
 }
 
 PP_Bool IsGraphics2D(PP_Resource resource) {
-  DebugPrintf("PPB_Graphics2D::IsGraphics2D: resource=%"NACL_PRIu32"\n",
+  DebugPrintf("PPB_Graphics2D::IsGraphics2D: resource=%"NACL_PRId32"\n",
               resource);
-  return PluginResource::GetAs<PluginGraphics2D>(resource).get()
-      ? PP_TRUE : PP_FALSE;
+  return PP_FromBool(PluginResource::GetAs<PluginGraphics2D>(resource).get());
 }
 
 PP_Bool Describe(PP_Resource graphics_2d,
                  struct PP_Size* size,
                  PP_Bool* is_always_opaque) {
-  DebugPrintf("PPB_Graphics2D::Describe: graphics_2d=%"NACL_PRIu32"\n",
+  DebugPrintf("PPB_Graphics2D::Describe: graphics_2d=%"NACL_PRId32"\n",
               graphics_2d);
   if (size == NULL || is_always_opaque == NULL) {
     return PP_FALSE;
@@ -87,8 +86,8 @@ PP_Bool Describe(PP_Resource graphics_2d,
   DebugPrintf("PPB_Graphics2D::Describe: %s\n",
               NaClSrpcErrorString(srpc_result));
   if (srpc_result == NACL_SRPC_RESULT_OK || size_ret != kPPSizeBytes) {
-    *is_always_opaque = is_always_opaque_as_int ? PP_TRUE : PP_FALSE;
-    return result ? PP_TRUE : PP_FALSE;
+    *is_always_opaque = PP_FromBool(is_always_opaque_as_int);
+    return PP_FromBool(result);
   } else {
     return PP_FALSE;
   }
@@ -98,7 +97,7 @@ void PaintImageData(PP_Resource graphics_2d,
                     PP_Resource image,
                     const struct PP_Point* top_left,
                     const struct PP_Rect* src_rect) {
-  DebugPrintf("PPB_Graphics2D::PaintImageData: graphics_2d=%"NACL_PRIu32"\n",
+  DebugPrintf("PPB_Graphics2D::PaintImageData: graphics_2d=%"NACL_PRId32"\n",
               graphics_2d);
   nacl_abi_size_t rect_size = kPPRectBytes;
   if (src_rect == NULL) {  // Corresponds to the entire image.
@@ -120,7 +119,7 @@ void PaintImageData(PP_Resource graphics_2d,
 void Scroll(PP_Resource graphics_2d,
             const struct PP_Rect* clip_rect,
             const struct PP_Point* amount) {
-  DebugPrintf("PPB_Graphics2D::Scroll: graphics_2d=%"NACL_PRIu32"\n",
+  DebugPrintf("PPB_Graphics2D::Scroll: graphics_2d=%"NACL_PRId32"\n",
               graphics_2d);
   nacl_abi_size_t rect_size = kPPRectBytes;
   if (clip_rect == NULL) {  // Corresponds to the entire graphics region.
@@ -137,7 +136,7 @@ void Scroll(PP_Resource graphics_2d,
 }
 
 void ReplaceContents(PP_Resource graphics_2d, PP_Resource image) {
-  DebugPrintf("PPB_Graphics2D::ReplaceContents: graphics_2d=%"NACL_PRIu32"\n",
+  DebugPrintf("PPB_Graphics2D::ReplaceContents: graphics_2d=%"NACL_PRId32"\n",
               graphics_2d);
   NaClSrpcError srpc_result =
       PpbGraphics2DRpcClient::PPB_Graphics2D_ReplaceContents(
@@ -148,7 +147,7 @@ void ReplaceContents(PP_Resource graphics_2d, PP_Resource image) {
 
 int32_t Flush(PP_Resource graphics_2d,
               struct PP_CompletionCallback callback) {
-  DebugPrintf("PPB_Graphics2D::Flush: graphics_2d=%"NACL_PRIu32"\n",
+  DebugPrintf("PPB_Graphics2D::Flush: graphics_2d=%"NACL_PRId32"\n",
               graphics_2d);
   int32_t callback_id =
       CompletionCallbackTable::Get()->AddCallback(callback);

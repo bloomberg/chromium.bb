@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,8 +20,8 @@ namespace ppapi_proxy {
 namespace {
 
 PP_Bool BindGraphics(PP_Instance instance, PP_Resource device) {
-  DebugPrintf("PPB_Instance::BindGraphics: instance=%"NACL_PRIu32
-              " device=%"NACL_PRIu32"\n", instance, device);
+  DebugPrintf("PPB_Instance::BindGraphics: instance=%"NACL_PRId32
+              " device=%"NACL_PRId32"\n", instance, device);
   int32_t success = 0;
 
   NaClSrpcError srpc_result =
@@ -39,7 +39,7 @@ PP_Bool BindGraphics(PP_Instance instance, PP_Resource device) {
 }
 
 PP_Bool IsFullFrame(PP_Instance instance) {
-  DebugPrintf("PPB_Instance::IsFullFrame: instance=%"NACL_PRIu32"\n",
+  DebugPrintf("PPB_Instance::IsFullFrame: instance=%"NACL_PRId32"\n",
               instance);
   int32_t is_full_frame = 0;
 

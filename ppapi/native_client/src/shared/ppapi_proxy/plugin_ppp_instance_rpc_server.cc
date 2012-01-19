@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -156,8 +156,7 @@ void PppInstanceRpcServer::PPP_Instance_DidChangeFocus(
     bool has_focus) {
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   NaClSrpcClosureRunner runner(done);
-  PPPInstanceInterface()->DidChangeFocus(instance,
-                                         static_cast<PP_Bool>(has_focus));
+  PPPInstanceInterface()->DidChangeFocus(instance, PP_FromBool(has_focus));
   DebugPrintf("PPP_Instance::DidChangeFocus\n");
   rpc->result = NACL_SRPC_RESULT_OK;
 }

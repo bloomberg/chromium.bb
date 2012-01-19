@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -23,7 +23,7 @@ void PpbInstanceRpcServer::PPB_Instance_BindGraphics(
       ppapi_proxy::PPBInstanceInterface()->BindGraphics(
         instance,
         graphics_device);
-  *success = (pp_success == PP_TRUE);
+  *success = PP_ToBool(pp_success);
 
   rpc->result = NACL_SRPC_RESULT_OK;
 }
@@ -40,7 +40,7 @@ void PpbInstanceRpcServer::PPB_Instance_IsFullFrame(
 
   PP_Bool pp_is_full_frame =
       ppapi_proxy::PPBInstanceInterface()->IsFullFrame(instance);
-  *is_full_frame = (pp_is_full_frame == PP_TRUE);
+  *is_full_frame = PP_ToBool(pp_is_full_frame);
 
   rpc->result = NACL_SRPC_RESULT_OK;
 }

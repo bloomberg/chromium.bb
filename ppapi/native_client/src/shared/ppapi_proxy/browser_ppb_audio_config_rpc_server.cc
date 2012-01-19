@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -39,7 +39,7 @@ void PpbAudioConfigRpcServer::PPB_AudioConfig_CreateStereo16Bit(
   *resource = audio->CreateStereo16Bit(
       instance, static_cast<PP_AudioSampleRate>(sample_rate),
       sample_frame_count);
-  DebugPrintf("PPB_AudioConfig::CreateStereo16Bit: resource=%"NACL_PRIu32"\n",
+  DebugPrintf("PPB_AudioConfig::CreateStereo16Bit: resource=%"NACL_PRId32"\n",
               *resource);
   rpc->result = NACL_SRPC_RESULT_OK;
 }
@@ -60,7 +60,7 @@ void PpbAudioConfigRpcServer::PPB_AudioConfig_RecommendSampleFrameCount(
       static_cast<PP_AudioSampleRate>(sample_rate),
       request_sample_frame_count);
   DebugPrintf("PPB_AudioConfig::RecommendSampleFrameCount: "
-              "sample_frame_count=%"NACL_PRIu32"\n", *sample_frame_count);
+              "sample_frame_count=%"NACL_PRId32"\n", *sample_frame_count);
   rpc->result = NACL_SRPC_RESULT_OK;
 }
 
@@ -76,8 +76,8 @@ void PpbAudioConfigRpcServer::PPB_AudioConfig_IsAudioConfig(
     return;
   }
   PP_Bool pp_success = audio->IsAudioConfig(resource);
-  DebugPrintf("PPB_AudioConfig::IsAudioConfig: pp_success=%d\n", pp_success);
-  *success = (pp_success == PP_TRUE);
+  *success = PP_ToBool(pp_success);
+  DebugPrintf("PPB_AudioConfig::IsAudioConfig: success=%d\n", *success);
   rpc->result = NACL_SRPC_RESULT_OK;
 }
 
@@ -99,7 +99,7 @@ void PpbAudioConfigRpcServer::PPB_AudioConfig_GetSampleRate(
     return;
   }
   *sample_rate = audio->GetSampleRate(resource);
-  DebugPrintf("PPB_AudioConfig::GetSampleRate: pp_success=%"NACL_PRIu32"\n",
+  DebugPrintf("PPB_AudioConfig::GetSampleRate: pp_success=%"NACL_PRId32"\n",
               *sample_rate);
   rpc->result = NACL_SRPC_RESULT_OK;
 }
@@ -123,6 +123,6 @@ void PpbAudioConfigRpcServer::PPB_AudioConfig_GetSampleFrameCount(
   }
   *sample_frame_count = audio->GetSampleFrameCount(resource);
   DebugPrintf("PPB_AudioConfig::GetSampleFrameCount: "
-              "sample_frame_count=%"NACL_PRIu32"\n", *sample_frame_count);
+              "sample_frame_count=%"NACL_PRId32"\n", *sample_frame_count);
   rpc->result = NACL_SRPC_RESULT_OK;
 }

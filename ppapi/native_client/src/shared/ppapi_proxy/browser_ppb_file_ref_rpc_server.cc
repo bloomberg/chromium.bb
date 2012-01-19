@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -121,7 +121,7 @@ void PpbFileRefRpcServer::PPB_FileRef_MakeDirectory(
 
   *pp_error = PPBFileRefInterface()->MakeDirectory(
       directory_ref,
-      make_ancestors ? PP_TRUE : PP_FALSE,
+      PP_FromBool(make_ancestors),
       remote_callback);
   DebugPrintf("PPB_FileRef::MakeDirectory: pp_error=%"NACL_PRId32"\n",
               *pp_error);

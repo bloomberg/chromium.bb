@@ -1,6 +1,6 @@
-// Copyright 2011 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can
-// be found in the LICENSE file.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 //
 // SRPC-abstraction wrappers around PPB_URLResponseInfo functions.
 
@@ -27,10 +27,9 @@ void PpbURLResponseInfoRpcServer::PPB_URLResponseInfo_IsURLResponseInfo(
 
   PP_Bool pp_success =
       PPBURLResponseInfoInterface()->IsURLResponseInfo(resource);
-  DebugPrintf("PPB_URLResponseInfo::IsURLResponseInfo: pp_success=%d\n",
-              pp_success);
-
-  *success = (pp_success == PP_TRUE);
+  *success = PP_ToBool(pp_success);
+  DebugPrintf("PPB_URLResponseInfo::IsURLResponseInfo: success=%d\n",
+              *success);
   rpc->result = NACL_SRPC_RESULT_OK;
 }
 
@@ -66,7 +65,7 @@ void PpbURLResponseInfoRpcServer::PPB_URLResponseInfo_GetBodyAsFileRef(
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
 
   *file_ref = PPBURLResponseInfoInterface()->GetBodyAsFileRef(response);
-  DebugPrintf("PPB_URLResponseInfo::GetBodyAsFileRef: file_ref="NACL_PRIu32"\n",
+  DebugPrintf("PPB_URLResponseInfo::GetBodyAsFileRef: file_ref="NACL_PRId32"\n",
               *file_ref);
 
   rpc->result = NACL_SRPC_RESULT_OK;

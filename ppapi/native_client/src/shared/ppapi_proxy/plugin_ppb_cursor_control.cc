@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,7 +25,7 @@ PP_Bool SetCursor(PP_Instance instance,
                   PP_Resource custom_image,
                   const struct PP_Point* hot_spot) {
   DebugPrintf("PPB_CursorControl::SetCursor: "
-              "instance=%"NACL_PRIu32"\n", instance);
+              "instance=%"NACL_PRId32"\n", instance);
 
   int32_t hot_spot_size = (hot_spot != NULL) ? kPPPointBytes : 0;
   int32_t success = 0;
@@ -48,7 +48,7 @@ PP_Bool SetCursor(PP_Instance instance,
 
 PP_Bool LockCursor(PP_Instance instance) {
   DebugPrintf("PPB_CursorControl::LockCursor: "
-              "instance=%"NACL_PRIu32"\n", instance);
+              "instance=%"NACL_PRId32"\n", instance);
 
   int32_t success = 0;
   NaClSrpcError srpc_result =
@@ -67,7 +67,7 @@ PP_Bool LockCursor(PP_Instance instance) {
 
 PP_Bool UnlockCursor(PP_Instance instance) {
   DebugPrintf("PPB_CursorControl::UnlockCursor: "
-              "instance=%"NACL_PRIu32"\n", instance);
+              "instance=%"NACL_PRId32"\n", instance);
 
   int32_t success = 0;
   NaClSrpcError srpc_result =
@@ -86,7 +86,7 @@ PP_Bool UnlockCursor(PP_Instance instance) {
 
 PP_Bool HasCursorLock(PP_Instance instance) {
   DebugPrintf("PPB_CursorControl::HasCursorLock: "
-              "instance=%"NACL_PRIu32"\n", instance);
+              "instance=%"NACL_PRId32"\n", instance);
 
   int32_t success = 0;
   NaClSrpcError srpc_result =
@@ -105,7 +105,7 @@ PP_Bool HasCursorLock(PP_Instance instance) {
 
 PP_Bool CanLockCursor(PP_Instance instance) {
   DebugPrintf("PPB_CursorControl::CanLockCursor: "
-              "instance=%"NACL_PRIu32"\n", instance);
+              "instance=%"NACL_PRId32"\n", instance);
 
   int32_t success = 0;
   NaClSrpcError srpc_result =
@@ -136,5 +136,3 @@ const PPB_CursorControl_Dev* PluginCursorControl::GetInterface() {
 }
 
 }  // namespace ppapi_proxy
-
-

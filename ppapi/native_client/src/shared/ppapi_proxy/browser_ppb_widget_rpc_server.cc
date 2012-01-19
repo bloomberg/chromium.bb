@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -28,9 +28,9 @@ void PpbWidgetRpcServer::PPB_Widget_IsWidget(
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
 
   PP_Bool pp_is_widget = PPBWidgetInterface()->IsWidget(resource);
-  *is_widget = (pp_is_widget == PP_TRUE);
+  *is_widget = PP_ToBool(pp_is_widget);
 
-  DebugPrintf("PPB_Widget::Widget: resource=%"NACL_PRIu32"\n",
+  DebugPrintf("PPB_Widget::Widget: resource=%"NACL_PRId32"\n",
               resource);
   rpc->result = NACL_SRPC_RESULT_OK;
 }
@@ -50,7 +50,7 @@ void PpbWidgetRpcServer::PPB_Widget_Paint(
   struct PP_Rect* pp_rect = reinterpret_cast<struct PP_Rect*>(rect);
   *success = PPBWidgetInterface()->Paint(widget, pp_rect, image);
 
-  DebugPrintf("PPB_Widget::Paint: widget=%"NACL_PRIu32"\n",
+  DebugPrintf("PPB_Widget::Paint: widget=%"NACL_PRId32"\n",
               widget);
   rpc->result = NACL_SRPC_RESULT_OK;
 }
@@ -66,7 +66,7 @@ void PpbWidgetRpcServer::PPB_Widget_HandleEvent(
 
   *handled = PPBWidgetInterface()->HandleEvent(widget, pp_event);
 
-  DebugPrintf("PPB_Widget::HandleEvent: widget=%"NACL_PRIu32"\n",
+  DebugPrintf("PPB_Widget::HandleEvent: widget=%"NACL_PRId32"\n",
               widget);
   rpc->result = NACL_SRPC_RESULT_OK;
 }
@@ -85,7 +85,7 @@ void PpbWidgetRpcServer::PPB_Widget_GetLocation(
   struct PP_Rect* pp_rect = reinterpret_cast<struct PP_Rect*>(rect);
   *visible = PPBWidgetInterface()->GetLocation(widget, pp_rect);
 
-  DebugPrintf("PPB_Widget::GetLocation: widget=%"NACL_PRIu32"\n",
+  DebugPrintf("PPB_Widget::GetLocation: widget=%"NACL_PRId32"\n",
               widget);
   rpc->result = NACL_SRPC_RESULT_OK;
 }
@@ -103,8 +103,7 @@ void PpbWidgetRpcServer::PPB_Widget_SetLocation(
   struct PP_Rect* pp_rect = reinterpret_cast<struct PP_Rect*>(rect);
   PPBWidgetInterface()->SetLocation(widget, pp_rect);
 
-  DebugPrintf("PPB_Widget::SetLocation: widget=%"NACL_PRIu32"\n",
+  DebugPrintf("PPB_Widget::SetLocation: widget=%"NACL_PRId32"\n",
               widget);
   rpc->result = NACL_SRPC_RESULT_OK;
 }
-

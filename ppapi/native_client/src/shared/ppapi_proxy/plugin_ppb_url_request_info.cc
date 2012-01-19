@@ -21,7 +21,7 @@ namespace ppapi_proxy {
 namespace {
 
 PP_Resource Create(PP_Instance instance) {
-  DebugPrintf("PPB_URLRequestInfo::Create: instance=%"NACL_PRIu32"\n",
+  DebugPrintf("PPB_URLRequestInfo::Create: instance=%"NACL_PRId32"\n",
               instance);
 
   PP_Resource resource;
@@ -37,7 +37,7 @@ PP_Resource Create(PP_Instance instance) {
 }
 
 PP_Bool IsURLRequestInfo(PP_Resource resource) {
-  DebugPrintf("PPB_URLRequestInfo::IsURLRequestInfo: resource=%"NACL_PRIu32"\n",
+  DebugPrintf("PPB_URLRequestInfo::IsURLRequestInfo: resource=%"NACL_PRId32"\n",
               resource);
 
   int32_t success;
@@ -55,7 +55,7 @@ PP_Bool IsURLRequestInfo(PP_Resource resource) {
 PP_Bool SetProperty(PP_Resource request,
                     PP_URLRequestProperty property,
                     struct PP_Var value) {
-  DebugPrintf("PPB_URLRequestInfo::SetProperty: request=%"NACL_PRIu32"\n",
+  DebugPrintf("PPB_URLRequestInfo::SetProperty: request=%"NACL_PRId32"\n",
               request);
 
   nacl_abi_size_t value_size = 0;
@@ -79,7 +79,7 @@ PP_Bool SetProperty(PP_Resource request,
 }
 
 PP_Bool AppendDataToBody(PP_Resource request, const void* data, uint32_t len) {
-  DebugPrintf("PPB_URLRequestInfo::AppendDataToBody: request=%"NACL_PRIu32"\n",
+  DebugPrintf("PPB_URLRequestInfo::AppendDataToBody: request=%"NACL_PRId32"\n",
               request);
 
   int32_t success;
@@ -103,7 +103,7 @@ PP_Bool AppendFileToBody(PP_Resource request,
                          int64_t start_offset,
                          int64_t number_of_bytes,
                          PP_Time expected_last_modified_time) {
-  DebugPrintf("PPB_URLRequestInfo::AppendFileToBody: request=%"NACL_PRIu32"\n",
+  DebugPrintf("PPB_URLRequestInfo::AppendFileToBody: request=%"NACL_PRId32"\n",
               request);
 
   int32_t success;

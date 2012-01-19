@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -28,7 +28,7 @@ void PppZoomRpcServer::PPP_Zoom_Zoom(
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   NaClSrpcClosureRunner runner(done);
 
-  PPPZoomInterface()->Zoom(instance, factor, text_only ? PP_TRUE : PP_FALSE);
+  PPPZoomInterface()->Zoom(instance, factor, PP_FromBool(text_only));
 
   DebugPrintf("PPP_Zoom::Zoom");
   rpc->result = NACL_SRPC_RESULT_OK;

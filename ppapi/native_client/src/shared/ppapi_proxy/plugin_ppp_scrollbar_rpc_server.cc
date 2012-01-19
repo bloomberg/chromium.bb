@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -45,7 +45,7 @@ void PppScrollbarRpcServer::PPP_Scrollbar_OverlayChanged(
   NaClSrpcClosureRunner runner(done);
 
   PPPScrollbarInterface()->OverlayChanged(
-      instance, resource, overlay ? PP_TRUE : PP_FALSE);
+      instance, resource, PP_FromBool(overlay));
 
   DebugPrintf("PPP_Scrollbar::OverlayChanged: value=%s\n",
               overlay ? "true" : "false");

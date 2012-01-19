@@ -98,7 +98,7 @@ void PppRpcServer::PPP_InitializeModule(
     int32_t* success) {
   NaClSrpcClosureRunner runner(done);
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
-  DebugPrintf("PPP_InitializeModule: module=%"NACL_PRIu32": %s\n",
+  DebugPrintf("PPP_InitializeModule: module=%"NACL_PRId32": %s\n",
               module, service_description);
   // Set up the service for calling back into the browser.
   if (!StartMainSrpcChannel(const_cast<const char*>(service_description),

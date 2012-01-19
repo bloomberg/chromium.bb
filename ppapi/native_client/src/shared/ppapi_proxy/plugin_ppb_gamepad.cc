@@ -15,7 +15,7 @@ namespace ppapi_proxy {
 namespace {
 
 void SampleGamepads(PP_Instance instance, struct PP_GamepadsData_Dev* pads) {
-  DebugPrintf("PPB_Gamepad::SampleGamepads: instance=%"NACL_PRIu32"\n",
+  DebugPrintf("PPB_Gamepad::SampleGamepads: instance=%"NACL_PRId32"\n",
               instance);
   if (pads == NULL)
     return;

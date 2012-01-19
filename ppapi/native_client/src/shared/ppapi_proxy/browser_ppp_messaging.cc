@@ -17,7 +17,7 @@ namespace ppapi_proxy {
 namespace {
 
 void HandleMessage(PP_Instance instance, struct PP_Var message) {
-  DebugPrintf("PPP_Messaging::HandleMessage: instance=%"NACL_PRIu32"\n",
+  DebugPrintf("PPP_Messaging::HandleMessage: instance=%"NACL_PRId32"\n",
               instance);
   uint32_t message_length = 0;
   nacl::scoped_array<char> message_bytes(Serialize(&message, 1,

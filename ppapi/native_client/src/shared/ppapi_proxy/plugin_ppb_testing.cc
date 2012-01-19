@@ -34,7 +34,7 @@ const nacl_abi_size_t kPPURLComponentsDevBytes =
 PP_Bool ReadImageData(PP_Resource device_context_2d,
                       PP_Resource image,
                       const struct PP_Point* top_left) {
-  DebugPrintf("PPB_Testing::ReadImageData: device_context_2d=%"NACL_PRIu32"\n",
+  DebugPrintf("PPB_Testing::ReadImageData: device_context_2d=%"NACL_PRId32"\n",
               device_context_2d);
 
   int32_t success = 0;
@@ -55,7 +55,7 @@ PP_Bool ReadImageData(PP_Resource device_context_2d,
 }
 
 void RunMessageLoop(PP_Instance instance) {
-  DebugPrintf("PPB_Testing::RunMessageLoop: instance=%"NACL_PRIu32"\n",
+  DebugPrintf("PPB_Testing::RunMessageLoop: instance=%"NACL_PRId32"\n",
               instance);
 
   NaClSrpcError srpc_result =
@@ -68,7 +68,7 @@ void RunMessageLoop(PP_Instance instance) {
 }
 
 void QuitMessageLoop(PP_Instance instance) {
-  DebugPrintf("PPB_Testing::QuitMessageLoop: instance=%"NACL_PRIu32"\n",
+  DebugPrintf("PPB_Testing::QuitMessageLoop: instance=%"NACL_PRId32"\n",
               instance);
 
   NaClSrpcError srpc_result =
@@ -82,7 +82,7 @@ void QuitMessageLoop(PP_Instance instance) {
 
 uint32_t GetLiveObjectsForInstance(PP_Instance instance) {
   DebugPrintf("PPB_Testing::GetLiveObjectsForInstance: "
-              "instance=%"NACL_PRIu32"\n", instance);
+              "instance=%"NACL_PRId32"\n", instance);
 
   int32_t live_object_count = 0;
   NaClSrpcError srpc_result =
@@ -120,7 +120,7 @@ void SimulateInputEvent(PP_Instance instance, PP_Resource input_event) {
 struct PP_Var GetDocumentURL(PP_Instance instance,
                              struct PP_URLComponents_Dev* components) {
   DebugPrintf("PPB_Testing::GetDocumentURL: "
-              "instance=%"NACL_PRIu32"\n", instance);
+              "instance=%"NACL_PRId32"\n", instance);
 
   NaClSrpcChannel* channel = GetMainSrpcChannel();
   nacl_abi_size_t components_size =

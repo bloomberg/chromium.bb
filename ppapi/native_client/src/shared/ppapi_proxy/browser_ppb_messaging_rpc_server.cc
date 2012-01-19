@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -36,9 +36,8 @@ void PpbMessagingRpcServer::PPB_Messaging_PostMessage(
   // count of 1. We must release the var, or it will stay in the browser's map.
   PPBVarInterface()->Release(message);
 
-  DebugPrintf("PPB_Messaging::PostMessage: instance=%"NACL_PRIu32"\n",
+  DebugPrintf("PPB_Messaging::PostMessage: instance=%"NACL_PRId32"\n",
               instance);
 
   rpc->result = NACL_SRPC_RESULT_OK;
 }
-

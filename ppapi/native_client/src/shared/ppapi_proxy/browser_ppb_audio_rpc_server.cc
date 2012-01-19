@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -104,7 +104,7 @@ void PpbAudioRpcServer::PPB_Audio_Create(
     PP_Instance instance,
     PP_Resource config,
     PP_Resource* resource) {
-  DebugPrintf("PPB_Audio::Create: instance=%"NACL_PRIu32" config=%"NACL_PRIu32
+  DebugPrintf("PPB_Audio::Create: instance=%"NACL_PRId32" config=%"NACL_PRId32
               "\n", instance, config);
   NaClSrpcClosureRunner runner(done);
   const PPB_AudioTrusted* audio = GetAudioTrustedInterface();
@@ -118,7 +118,7 @@ void PpbAudioRpcServer::PPB_Audio_Create(
     return;
   }
   *resource = audio->CreateTrusted(instance);
-  DebugPrintf("PPB_Audio::Create: resource=%"NACL_PRIu32"\n", *resource);
+  DebugPrintf("PPB_Audio::Create: resource=%"NACL_PRId32"\n", *resource);
   PP_Resource audio_id = *resource;
   if (ppapi_proxy::kInvalidResourceId == audio_id) {
     return;
@@ -126,7 +126,7 @@ void PpbAudioRpcServer::PPB_Audio_Create(
   data = new StreamCreatedCallbackData(instance, audio_id);
   callback = PP_MakeOptionalCompletionCallback(StreamCreatedCallback, data);
   int32_t pp_error = audio->Open(audio_id, config, callback);
-  DebugPrintf("PPB_Audio::Create: pp_error=%"NACL_PRIu32"\n", pp_error);
+  DebugPrintf("PPB_Audio::Create: pp_error=%"NACL_PRId32"\n", pp_error);
   // If the Open() call failed, pass failure code and explicitly
   // invoke the completion callback, giving it a chance to release data.
   if (pp_error != PP_OK_COMPLETIONPENDING) {
@@ -141,7 +141,7 @@ void PpbAudioRpcServer::PPB_Audio_StartPlayback(
     NaClSrpcClosure* done,
     PP_Resource resource,
     int32_t* success) {
-  DebugPrintf("PPB_Audio::StartPlayback: resource=%"NACL_PRIu32"\n", resource);
+  DebugPrintf("PPB_Audio::StartPlayback: resource=%"NACL_PRId32"\n", resource);
   NaClSrpcClosureRunner runner(done);
   const PPB_Audio* audio = GetAudioInterface();
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
@@ -150,8 +150,8 @@ void PpbAudioRpcServer::PPB_Audio_StartPlayback(
     return;
   }
   PP_Bool pp_success = audio->StartPlayback(resource);
-  DebugPrintf("PPB_Audio::StartPlayback: pp_success=%d\n", pp_success);
-  *success = (pp_success == PP_TRUE);
+  *success = PP_ToBool(pp_success);
+  DebugPrintf("PPB_Audio::StartPlayback: success=%"NACL_PRId32"\n", *success);
   rpc->result = NACL_SRPC_RESULT_OK;
 }
 
@@ -160,7 +160,7 @@ void PpbAudioRpcServer::PPB_Audio_StopPlayback(
     NaClSrpcClosure* done,
     PP_Resource resource,
     int32_t* success) {
-  DebugPrintf("PPB_Audio::StopPlayback: resource=%"NACL_PRIu32"\n", resource);
+  DebugPrintf("PPB_Audio::StopPlayback: resource=%"NACL_PRId32"\n", resource);
   NaClSrpcClosureRunner runner(done);
   const PPB_Audio* audio = GetAudioInterface();
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
@@ -169,8 +169,8 @@ void PpbAudioRpcServer::PPB_Audio_StopPlayback(
     return;
   }
   PP_Bool pp_success = audio->StopPlayback(resource);
-  DebugPrintf("PPB_Audio::StopPlayback: pp_success=%d\n", pp_success);
-  *success = (pp_success == PP_TRUE);
+  *success = PP_ToBool(pp_success);
+  DebugPrintf("PPB_Audio::StopPlayback: success=%"NACL_PRId32"\n", *success);
   rpc->result = NACL_SRPC_RESULT_OK;
 }
 
@@ -179,7 +179,7 @@ void PpbAudioRpcServer::PPB_Audio_IsAudio(
     NaClSrpcClosure* done,
     PP_Resource resource,
     int32_t* success) {
-  DebugPrintf("PPB_Audio::IsAudio: resource=%"NACL_PRIu32"\n", resource);
+  DebugPrintf("PPB_Audio::IsAudio: resource=%"NACL_PRId32"\n", resource);
   NaClSrpcClosureRunner runner(done);
   const PPB_Audio* audio = GetAudioInterface();
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
@@ -188,8 +188,8 @@ void PpbAudioRpcServer::PPB_Audio_IsAudio(
     return;
   }
   PP_Bool pp_success = audio->IsAudio(resource);
-  DebugPrintf("PPB_Audio::IsAudio: pp_success=%d\n", pp_success);
-  *success = (pp_success == PP_TRUE);
+  *success = PP_ToBool(pp_success);
+  DebugPrintf("PPB_Audio::IsAudio: success=%"NACL_PRId32"\n", *success);
   rpc->result = NACL_SRPC_RESULT_OK;
 }
 
@@ -198,7 +198,7 @@ void PpbAudioRpcServer::PPB_Audio_GetCurrentConfig(
     NaClSrpcClosure* done,
     PP_Resource resource,
     PP_Resource* config) {
-  DebugPrintf("PPB_Audio::GetCurrentConfig: resource=%"NACL_PRIu32"\n",
+  DebugPrintf("PPB_Audio::GetCurrentConfig: resource=%"NACL_PRId32"\n",
               resource);
   NaClSrpcClosureRunner runner(done);
   const PPB_Audio* audio = GetAudioInterface();
@@ -210,6 +210,6 @@ void PpbAudioRpcServer::PPB_Audio_GetCurrentConfig(
     return;
   }
   *config = audio->GetCurrentConfig(resource);
-  DebugPrintf("PPB_Audio::GetCurrentConfig: config=%"NACL_PRIu32"\n", *config);
+  DebugPrintf("PPB_Audio::GetCurrentConfig: config=%"NACL_PRId32"\n", *config);
   rpc->result = NACL_SRPC_RESULT_OK;
 }

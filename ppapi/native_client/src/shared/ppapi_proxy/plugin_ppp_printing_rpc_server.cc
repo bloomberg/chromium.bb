@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -88,7 +88,7 @@ void PppPrintingRpcServer::PPP_Printing_PrintPages(
                                                    pp_page_ranges,
                                                    page_range_count);
 
-  DebugPrintf("PPP_Printing::PrintPages: image_data=%"NACL_PRIu32"\n",
+  DebugPrintf("PPP_Printing::PrintPages: image_data=%"NACL_PRId32"\n",
               *image_data);
   rpc->result = NACL_SRPC_RESULT_OK;
 }
@@ -119,7 +119,7 @@ void PppPrintingRpcServer::PPP_Printing_IsScalingDisabled(
 
   PP_Bool pp_scaling_disabled =
       PPPPrintingInterface()->IsScalingDisabled(instance);
-  *scaling_disabled = pp_scaling_disabled == PP_TRUE;
+  *scaling_disabled = PP_ToBool(pp_scaling_disabled);
 
   DebugPrintf("PPP_Printing::IsScalingDisabled: scaling_disabled=%d\n",
               pp_scaling_disabled);

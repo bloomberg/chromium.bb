@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -27,7 +27,7 @@ void PpbInputEventRpcServer::PPB_InputEvent_RequestInputEvents(
   NaClSrpcClosureRunner runner(done);
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   *success = PP_ERROR_FAILED;
-  DebugPrintf("PPB_InputEvent::RequestInputEvents: instance=%"NACL_PRIu32", "
+  DebugPrintf("PPB_InputEvent::RequestInputEvents: instance=%"NACL_PRId32", "
               "event_classes=%"NACL_PRIu32", filtering=%"NACL_PRId32"\n",
               instance, static_cast<uint32_t>(event_classes), filtering);
   const PPB_InputEvent* input_event_if = ppapi_proxy::PPBInputEventInterface();
@@ -58,7 +58,7 @@ void PpbInputEventRpcServer::PPB_InputEvent_ClearInputEventRequest(
     int32_t event_classes)  {
   NaClSrpcClosureRunner runner(done);
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
-  DebugPrintf("PPB_InputEvent::ClearInputEventRequest: instance=%"NACL_PRIu32
+  DebugPrintf("PPB_InputEvent::ClearInputEventRequest: instance=%"NACL_PRId32
               ", event_classes=%"NACL_PRIu32"\n",
               instance, static_cast<uint32_t>(event_classes));
   const PPB_InputEvent* input_event_if = ppapi_proxy::PPBInputEventInterface();
@@ -178,10 +178,9 @@ void PpbInputEventRpcServer::PPB_InputEvent_CreateWheelInputEvent(
         static_cast<uint32_t>(modifiers),
         &wheel_delta,
         &wheel_ticks,
-        static_cast<PP_Bool>(scroll_by_page));
+        PP_FromBool(scroll_by_page));
   DebugPrintf("PPB_InputEvent::CreateWheelInputEvent: resource_id="
               "%"NACL_PRId32"\n",
               *resource_id);
   rpc->result = NACL_SRPC_RESULT_OK;
 }
-

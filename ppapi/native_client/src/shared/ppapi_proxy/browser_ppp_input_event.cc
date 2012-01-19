@@ -20,8 +20,8 @@ namespace ppapi_proxy {
 namespace {
 
 PP_Bool HandleInputEvent(PP_Instance instance, PP_Resource input_event) {
-  DebugPrintf("PPP_InputEvent::HandleInputEvent: instance=%"NACL_PRIu32", "
-              "input_event = %"NACL_PRIu32"\n",
+  DebugPrintf("PPP_InputEvent::HandleInputEvent: instance=%"NACL_PRId32", "
+              "input_event = %"NACL_PRId32"\n",
               instance, input_event);
 
   PP_Var character_text = PP_MakeUndefined();
@@ -109,7 +109,7 @@ PP_Bool HandleInputEvent(PP_Instance instance, PP_Resource input_event) {
   // or PP_TRUE. Otherwise, there's an error in the proxy.
   DCHECK((handled == static_cast<int32_t>(PP_FALSE) ||
          (handled == static_cast<int32_t>(PP_TRUE))));
-  PP_Bool handled_bool = static_cast<PP_Bool>(handled);
+  PP_Bool handled_bool = PP_FromBool(handled);
   return handled_bool;
 }
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,7 +26,7 @@ const nacl_abi_size_t kPPRectBytes =
 void Invalidate(PP_Instance instance,
                 PP_Resource widget,
                 const struct PP_Rect* dirty_rect) {
-  DebugPrintf("PPP_Widget_Dev::Invalidate: instance=%"NACL_PRIu32"\n",
+  DebugPrintf("PPP_Widget_Dev::Invalidate: instance=%"NACL_PRId32"\n",
               instance);
 
   NaClSrpcError srpc_result =
@@ -51,4 +51,3 @@ const PPP_Widget_Dev* BrowserWidget::GetInterface() {
 }
 
 }  // namespace ppapi_proxy
-

@@ -197,8 +197,7 @@ bool SerializePpVar(const PP_Var* vars,
         element_size = sizeof(SerializedFixed);
         break;
       case PP_VARTYPE_BOOL:
-        s->u.boolean_value = static_cast<bool>
-            (PP_TRUE == vars[i].value.as_bool);
+        s->u.boolean_value = PP_ToBool(vars[i].value.as_bool);
         element_size = sizeof(SerializedFixed);
         break;
       case PP_VARTYPE_INT32:
@@ -410,7 +409,7 @@ bool DeserializePpVar(char* bytes,
       case PP_VARTYPE_NULL:
         break;
       case PP_VARTYPE_BOOL:
-        vars[i].value.as_bool = static_cast<PP_Bool>(s->u.boolean_value);
+        vars[i].value.as_bool = PP_FromBool(s->u.boolean_value);
         break;
       case PP_VARTYPE_INT32:
         vars[i].value.as_int = s->u.int32_value;

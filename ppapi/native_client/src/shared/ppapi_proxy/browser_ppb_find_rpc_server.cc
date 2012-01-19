@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -31,10 +31,10 @@ void PpbFindRpcServer::PPB_Find_NumberOfFindResultsChanged(
   PPBFindInterface()->NumberOfFindResultsChanged(
       instance,
       total,
-      final_result ? PP_TRUE : PP_FALSE);
+      PP_FromBool(final_result));
 
   DebugPrintf("PPB_Find::NumberOfFindResultsChanged: "
-              "instance=%"NACL_PRIu32"\n", instance);
+              "instance=%"NACL_PRId32"\n", instance);
   rpc->result = NACL_SRPC_RESULT_OK;
 }
 
@@ -49,7 +49,6 @@ void PpbFindRpcServer::PPB_Find_SelectedFindResultChanged(
   PPBFindInterface()->SelectedFindResultChanged(instance, index);
 
   DebugPrintf("PPB_Find::SelectedFindResultChanged: "
-              "instance=%"NACL_PRIu32"\n", instance);
+              "instance=%"NACL_PRId32"\n", instance);
   rpc->result = NACL_SRPC_RESULT_OK;
 }
-

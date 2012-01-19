@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,7 +31,7 @@ void PpbFileIORpcServer::PPB_FileIO_Create(
   rpc->result = NACL_SRPC_RESULT_OK;
 
   *resource = PPBFileIOInterface()->Create(instance);
-  DebugPrintf("PPB_FileIO::Create: resource=%"NACL_PRIu32"\n", *resource);
+  DebugPrintf("PPB_FileIO::Create: resource=%"NACL_PRId32"\n", *resource);
 }
 
 // TODO(sanga): Use a caching resource tracker instead of going over the proxy
@@ -47,9 +47,8 @@ void PpbFileIORpcServer::PPB_FileIO_IsFileIO(
   rpc->result = NACL_SRPC_RESULT_OK;
 
   PP_Bool pp_success = PPBFileIOInterface()->IsFileIO(resource);
-  DebugPrintf("PPB_FileIO::IsFileIO: pp_success=%d\n", pp_success);
-
-  *success = (pp_success == PP_TRUE);
+  *success = PP_ToBool(pp_success);
+  DebugPrintf("PPB_FileIO::IsFileIO: success=%d\n", *success);
 }
 
 void PpbFileIORpcServer::PPB_FileIO_Open(
@@ -305,6 +304,6 @@ void PpbFileIORpcServer::PPB_FileIO_Close(
     PP_Resource file_io) {
   NaClSrpcClosureRunner runner(done);
   rpc->result = NACL_SRPC_RESULT_OK;
-  DebugPrintf("PPB_FileIO::Close: file_io=%"NACL_PRIu32"\n", file_io);
+  DebugPrintf("PPB_FileIO::Close: file_io=%"NACL_PRId32"\n", file_io);
   PPBFileIOInterface()->Close(file_io);
 }

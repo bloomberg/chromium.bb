@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,7 +24,7 @@ namespace {
 PP_Bool StartFind(PP_Instance instance,
                   const char* text,
                   PP_Bool case_sensitive) {
-  DebugPrintf("PPP_Find::StartFind: instance=%"NACL_PRIu32"\n", instance);
+  DebugPrintf("PPP_Find::StartFind: instance=%"NACL_PRId32"\n", instance);
 
   int32_t supports_find = 0;
   nacl_abi_size_t text_bytes = static_cast<nacl_abi_size_t>(strlen(text)) + 1;
@@ -36,13 +36,13 @@ PP_Bool StartFind(PP_Instance instance,
       &supports_find);
 
   DebugPrintf("PPP_Find::StartFind: %s\n", NaClSrpcErrorString(srpc_result));
-  return supports_find ? PP_TRUE : PP_FALSE;
+  return PP_FromBool(supports_find);
 }
 
 void SelectFindResult(PP_Instance instance,
                       PP_Bool forward) {
   DebugPrintf("PPP_Find::SelectFindResult: "
-              "instance=%"NACL_PRIu32"\n", instance);
+              "instance=%"NACL_PRId32"\n", instance);
 
   NaClSrpcError srpc_result = PppFindRpcClient::PPP_Find_SelectFindResult(
       GetMainSrpcChannel(instance),
@@ -54,7 +54,7 @@ void SelectFindResult(PP_Instance instance,
 }
 
 void StopFind(PP_Instance instance) {
-  DebugPrintf("PPP_Find::StopFind: instance=%"NACL_PRIu32"\n", instance);
+  DebugPrintf("PPP_Find::StopFind: instance=%"NACL_PRId32"\n", instance);
 
   NaClSrpcError srpc_result = PppFindRpcClient::PPP_Find_StopFind(
       GetMainSrpcChannel(instance),
@@ -75,4 +75,3 @@ const PPP_Find_Dev* BrowserFind::GetInterface() {
 }
 
 }  // namespace ppapi_proxy
-

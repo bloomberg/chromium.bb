@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -45,7 +45,7 @@ void PpbImageDataRpcServer::PPB_ImageData_IsImageDataFormatSupported(
   PP_Bool pp_success =
       ppapi_proxy::PPBImageDataInterface()->IsImageDataFormatSupported(
           static_cast<PP_ImageDataFormat>(format));
-  *success = (pp_success == PP_TRUE);
+  *success = PP_ToBool(pp_success);
   DebugPrintf("PPB_ImageData::IsImageDataFormatSupported: "
               "format=%"NACL_PRId32", success=%"NACL_PRId32"\n",
               format, *success);
@@ -70,11 +70,11 @@ void PpbImageDataRpcServer::PPB_ImageData_Create(
       instance,
       static_cast<PP_ImageDataFormat>(format),
       &pp_size,
-      (init_to_zero ? PP_TRUE : PP_FALSE));
+      PP_FromBool(init_to_zero));
   DebugPrintf("PPB_ImageData::Create: format=%"NACL_PRId32", "
               "size=(%"NACL_PRId32", %"NACL_PRId32"), "
               "init_to_zero=%"NACL_PRId32", "
-              "resource=%"NACL_PRIu32"\n",
+              "resource=%"NACL_PRId32"\n",
               format, pp_size.width, pp_size.height,
               init_to_zero, *resource);
   rpc->result = NACL_SRPC_RESULT_OK;
@@ -89,8 +89,8 @@ void PpbImageDataRpcServer::PPB_ImageData_IsImageData(
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   PP_Bool pp_success =
       ppapi_proxy::PPBImageDataInterface()->IsImageData(resource);
-  *success = (pp_success == PP_TRUE);
-  DebugPrintf("PPB_ImageData::IsImageData: resource=%"NACL_PRIu32", "
+  *success = PP_ToBool(pp_success);
+  DebugPrintf("PPB_ImageData::IsImageData: resource=%"NACL_PRId32", "
               "success=%"NACL_PRId32"\n", resource, *success);
   rpc->result = NACL_SRPC_RESULT_OK;
 }
@@ -161,7 +161,7 @@ void PpbImageDataRpcServer::PPB_ImageData_Describe(
 #endif
     }
   }
-  DebugPrintf("PPB_ImageData::Describe: resource=%"NACL_PRIu32", "
+  DebugPrintf("PPB_ImageData::Describe: resource=%"NACL_PRId32", "
               "success=%"NACL_PRId32"\n", resource, *success);
   rpc->result = NACL_SRPC_RESULT_OK;
 }

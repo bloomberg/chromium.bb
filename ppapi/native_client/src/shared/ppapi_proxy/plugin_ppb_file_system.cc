@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,7 +17,7 @@ namespace ppapi_proxy {
 namespace {
 
 PP_Resource Create(PP_Instance instance, PP_FileSystemType type) {
-  DebugPrintf("PPB_FileSystem::Create: instance=%"NACL_PRIu32" "
+  DebugPrintf("PPB_FileSystem::Create: instance=%"NACL_PRId32" "
               "type=%"NACL_PRIu32"\n",
               instance, type);
   PP_Resource pp_resource = kInvalidResourceId;
@@ -35,7 +35,7 @@ PP_Resource Create(PP_Instance instance, PP_FileSystemType type) {
 }
 
 PP_Bool IsFileSystem(PP_Resource resource) {
-  DebugPrintf("PPB_FileSystem::IsFileSystem: resource=%"NACL_PRIu32"\n",
+  DebugPrintf("PPB_FileSystem::IsFileSystem: resource=%"NACL_PRId32"\n",
               resource);
   int32_t is_file_system = 0;
   NaClSrpcError srpc_result =
@@ -54,7 +54,7 @@ PP_Bool IsFileSystem(PP_Resource resource) {
 int32_t Open(PP_Resource file_system,
              int64_t expected_size,
              struct PP_CompletionCallback callback) {
-  DebugPrintf("PPB_FileSystem::Open: file_system=%"NACL_PRIu32"\n",
+  DebugPrintf("PPB_FileSystem::Open: file_system=%"NACL_PRId32"\n",
               file_system);
   int32_t callback_id = CompletionCallbackTable::Get()->AddCallback(callback);
   if (callback_id == 0)  // Just like Chrome, for now disallow blocking calls.
@@ -76,7 +76,7 @@ int32_t Open(PP_Resource file_system,
 }
 
 PP_FileSystemType GetType(PP_Resource file_system) {
-  DebugPrintf("PPB_FileSystem::GetType: file_system=%"NACL_PRIu32"\n",
+  DebugPrintf("PPB_FileSystem::GetType: file_system=%"NACL_PRId32"\n",
               file_system);
   int32_t type = PP_FILESYSTEMTYPE_INVALID;
   NaClSrpcError srpc_result =

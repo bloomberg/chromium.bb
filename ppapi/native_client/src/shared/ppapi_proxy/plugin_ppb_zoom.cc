@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,7 +20,7 @@ namespace {
 void ZoomChanged(PP_Instance instance,
                     double factor) {
   DebugPrintf("PPB_Zoom::ZoomChanged: "
-              "instance=%"NACL_PRIu32"\n", instance);
+              "instance=%"NACL_PRId32"\n", instance);
 
   NaClSrpcError srpc_result =
       PpbZoomRpcClient::PPB_Zoom_ZoomChanged(
@@ -36,7 +36,7 @@ void ZoomLimitsChanged(PP_Instance instance,
                        double minimum_factor,
                        double maximum_factor) {
   DebugPrintf("PPB_Zoom::ZoomLimitsChanged: "
-              "instance=%"NACL_PRIu32"\n", instance);
+              "instance=%"NACL_PRId32"\n", instance);
 
   NaClSrpcError srpc_result =
       PpbZoomRpcClient::PPB_Zoom_ZoomLimitsChanged(
@@ -60,5 +60,3 @@ const PPB_Zoom_Dev* PluginZoom::GetInterface() {
 }
 
 }  // namespace ppapi_proxy
-
-

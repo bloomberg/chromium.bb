@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,7 +23,7 @@ const nacl_abi_size_t kPPRectBytes =
 
 PP_Resource Create(PP_Instance instance, PP_Bool vertical) {
   DebugPrintf("PPB_Scrollbar::Create: "
-              "instance=%"NACL_PRIu32"\n",
+              "instance=%"NACL_PRId32"\n",
               instance);
 
   PP_Resource scrollbar = kInvalidResourceId;
@@ -41,7 +41,7 @@ PP_Resource Create(PP_Instance instance, PP_Bool vertical) {
 
 PP_Bool IsScrollbar(PP_Resource resource) {
   DebugPrintf("PPB_Scrollbar::IsScrollbar: "
-              "resource=%"NACL_PRIu32"\n",
+              "resource=%"NACL_PRId32"\n",
               resource);
 
   int32_t is_scrollbar = 0;
@@ -77,7 +77,7 @@ uint32_t GetThickness(PP_Resource resource) {
 
 PP_Bool IsOverlay(PP_Resource resource) {
   DebugPrintf("PPB_Scrollbar::IsOverlay: "
-              "resource=%"NACL_PRIu32"\n",
+              "resource=%"NACL_PRId32"\n",
               resource);
 
   int32_t is_overlay = 0;
@@ -97,7 +97,7 @@ PP_Bool IsOverlay(PP_Resource resource) {
 
 uint32_t GetValue(PP_Resource scrollbar) {
   DebugPrintf("PPB_Scrollbar::GetValue: "
-              "scrollbar=%"NACL_PRIu32"\n",
+              "scrollbar=%"NACL_PRId32"\n",
               scrollbar);
 
   int32_t value = 0;
@@ -115,7 +115,7 @@ uint32_t GetValue(PP_Resource scrollbar) {
 
 void SetValue(PP_Resource scrollbar, uint32_t value) {
   DebugPrintf("PPB_Scrollbar::SetValue: "
-              "scrollbar=%"NACL_PRIu32"\n",
+              "scrollbar=%"NACL_PRId32"\n",
               scrollbar);
 
   NaClSrpcError srpc_result =
@@ -130,7 +130,7 @@ void SetValue(PP_Resource scrollbar, uint32_t value) {
 
 void SetDocumentSize(PP_Resource scrollbar, uint32_t size) {
   DebugPrintf("PPB_Scrollbar::SetDocumentSize: "
-              "scrollbar=%"NACL_PRIu32"\n", scrollbar);
+              "scrollbar=%"NACL_PRId32"\n", scrollbar);
 
   NaClSrpcError srpc_result =
       PpbScrollbarRpcClient::PPB_Scrollbar_SetDocumentSize(
@@ -146,7 +146,7 @@ void SetTickMarks(PP_Resource scrollbar,
                   const struct PP_Rect* tick_marks,
                   uint32_t count) {
   DebugPrintf("PPB_Scrollbar::SetTickMarks: "
-              "scrollbar=%"NACL_PRIu32"\n",
+              "scrollbar=%"NACL_PRId32"\n",
               scrollbar);
 
   nacl_abi_size_t tick_marks_bytes = kPPRectBytes * count;
@@ -166,7 +166,7 @@ void ScrollBy(PP_Resource scrollbar,
               PP_ScrollBy_Dev unit,
               int32_t multiplier) {
   DebugPrintf("PPB_Scrollbar::ScrollBy: "
-              "scrollbar=%"NACL_PRIu32"\n",
+              "scrollbar=%"NACL_PRId32"\n",
               scrollbar);
 
   NaClSrpcError srpc_result =
@@ -198,4 +198,3 @@ const PPB_Scrollbar_Dev* PluginScrollbar::GetInterface() {
 }
 
 }  // namespace ppapi_proxy
-

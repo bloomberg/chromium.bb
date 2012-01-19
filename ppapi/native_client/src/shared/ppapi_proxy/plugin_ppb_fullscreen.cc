@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,15 +15,15 @@ namespace ppapi_proxy {
 namespace {
 
 PP_Bool IsFullscreen(PP_Instance instance) {
-  DebugPrintf("PPB_Fullscreen::IsFullscreen: instance=%"NACL_PRIu32"\n",
+  DebugPrintf("PPB_Fullscreen::IsFullscreen: instance=%"NACL_PRId32"\n",
               instance);
-  return PluginInstanceData::IsFullscreen(instance) ? PP_TRUE : PP_FALSE;
+  return PP_FromBool(PluginInstanceData::IsFullscreen(instance));
 }
 
 
 PP_Bool SetFullscreen(PP_Instance instance, PP_Bool fullscreen) {
   DebugPrintf("PPB_Fullscreen::SetFullscreen: "
-              "instance=%"NACL_PRIu32" fullscreen=%d\n", instance, fullscreen);
+              "instance=%"NACL_PRId32" fullscreen=%d\n", instance, fullscreen);
 
   int32_t success;
   NaClSrpcError srpc_result =
@@ -42,7 +42,7 @@ PP_Bool SetFullscreen(PP_Instance instance, PP_Bool fullscreen) {
 
 
 PP_Bool GetScreenSize(PP_Instance instance, struct PP_Size* size) {
-  DebugPrintf("PPB_Fullscreen::GetScreenSize: instance=%"NACL_PRIu32"\n",
+  DebugPrintf("PPB_Fullscreen::GetScreenSize: instance=%"NACL_PRId32"\n",
               instance);
   if (size == NULL)
     return PP_FALSE;

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -32,10 +32,10 @@ void PppFindRpcServer::PPP_Find_StartFind(
   PP_Bool pp_supports_find = PPPFindInterface()->StartFind(
       instance,
       text,
-      case_sensitive ? PP_TRUE : PP_FALSE);
-  *supports_find = pp_supports_find == PP_TRUE;
+      PP_FromBool(case_sensitive));
+  *supports_find = PP_ToBool(pp_supports_find);
 
-  DebugPrintf("PPP_Find::StartFind: pp_supports_find=%d\n", pp_supports_find);
+  DebugPrintf("PPP_Find::StartFind: supports_find=%d\n", *supports_find);
   rpc->result = NACL_SRPC_RESULT_OK;
 }
 
@@ -48,7 +48,7 @@ void PppFindRpcServer::PPP_Find_SelectFindResult(
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   NaClSrpcClosureRunner runner(done);
 
-  PPPFindInterface()->SelectFindResult(instance, forward ? PP_TRUE : PP_FALSE);
+  PPPFindInterface()->SelectFindResult(instance, PP_FromBool(forward));
   DebugPrintf("PPP_Find::SelectFindResult\n");
   rpc->result = NACL_SRPC_RESULT_OK;
 }

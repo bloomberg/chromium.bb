@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,7 +23,7 @@ namespace ppapi_proxy {
 namespace {
 
 PP_Resource Create(PP_Instance instance) {
-  DebugPrintf("PPB_FileIO::Create: instance=%"NACL_PRIu32"\n", instance);
+  DebugPrintf("PPB_FileIO::Create: instance=%"NACL_PRId32"\n", instance);
   PP_Resource resource = kInvalidResourceId;
   NaClSrpcError srpc_result =
       PpbFileIORpcClient::PPB_FileIO_Create(
@@ -39,7 +39,7 @@ PP_Resource Create(PP_Instance instance) {
 }
 
 PP_Bool IsFileIO(PP_Resource resource) {
-  DebugPrintf("PPB_FileIO::IsFileIO: resource=%"NACL_PRIu32"\n", resource);
+  DebugPrintf("PPB_FileIO::IsFileIO: resource=%"NACL_PRId32"\n", resource);
 
   int32_t is_fileio = 0;
   NaClSrpcError srpc_result =
@@ -59,8 +59,8 @@ int32_t Open(PP_Resource file_io,
              PP_Resource file_ref,
              int32_t open_flags,
              struct PP_CompletionCallback callback) {
-  DebugPrintf("PPB_FileIO::Open: file_io=%"NACL_PRIu32", "
-              "file_ref=%"NACL_PRIu32", open_flags=%"NACL_PRId32"\n", file_io,
+  DebugPrintf("PPB_FileIO::Open: file_io=%"NACL_PRId32", "
+              "file_ref=%"NACL_PRId32", open_flags=%"NACL_PRId32"\n", file_io,
               file_ref, open_flags);
 
   int32_t callback_id =
@@ -88,7 +88,7 @@ int32_t Open(PP_Resource file_io,
 int32_t Query(PP_Resource file_io,
               PP_FileInfo* info,
               struct PP_CompletionCallback callback) {
-  DebugPrintf("PPB_FileIO::Query: file_io=%"NACL_PRIu32"\n", file_io);
+  DebugPrintf("PPB_FileIO::Query: file_io=%"NACL_PRId32"\n", file_io);
   if (callback.func == 0)  // Just like Chrome, for now disallow blocking calls.
     return PP_ERROR_BLOCKS_MAIN_THREAD;
 
@@ -118,7 +118,7 @@ int32_t Touch(PP_Resource file_io,
               PP_Time last_access_time,
               PP_Time last_modified_time,
               struct PP_CompletionCallback callback) {
-  DebugPrintf("PPB_FileIO::Touch: file_io=%"NACL_PRIu32", "
+  DebugPrintf("PPB_FileIO::Touch: file_io=%"NACL_PRId32", "
               "last_access_time=%ls, last_modified_time=%lf\n", file_io,
               last_access_time, last_modified_time);
 
@@ -154,7 +154,7 @@ int32_t Read(PP_Resource file_io,
              char* buffer,
              int32_t bytes_to_read,
              struct PP_CompletionCallback callback) {
-  DebugPrintf("PPB_FileIO::Read: file_io=%"NACL_PRIu32", "
+  DebugPrintf("PPB_FileIO::Read: file_io=%"NACL_PRId32", "
               "offset=%"NACL_PRId64", bytes_to_read=%"NACL_PRId32"\n", file_io,
               offset, bytes_to_read);
 
@@ -191,7 +191,7 @@ int32_t Write(PP_Resource file_io,
               const char* buffer,
               int32_t bytes_to_write,
               struct PP_CompletionCallback callback) {
-  DebugPrintf("PPB_FileIO::Write: file_io=%"NACL_PRIu32", offset="
+  DebugPrintf("PPB_FileIO::Write: file_io=%"NACL_PRId32", offset="
               "%"NACL_PRId64", bytes_to_write=%"NACL_PRId32"\n", file_io,
               offset, bytes_to_write);
 
@@ -225,7 +225,7 @@ int32_t Write(PP_Resource file_io,
 int32_t SetLength(PP_Resource file_io,
                   int64_t length,
                   struct PP_CompletionCallback callback) {
-  DebugPrintf("PPB_FileIO::SetLength: file_io=%"NACL_PRIu32", length="
+  DebugPrintf("PPB_FileIO::SetLength: file_io=%"NACL_PRId32", length="
               "%"NACL_PRId64"\n", file_io, length);
 
   int32_t callback_id =
@@ -251,7 +251,7 @@ int32_t SetLength(PP_Resource file_io,
 
 int32_t Flush(PP_Resource file_io,
               struct PP_CompletionCallback callback) {
-  DebugPrintf("PPB_FileIO::Flush: file_io=%"NACL_PRIu32"\n", file_io);
+  DebugPrintf("PPB_FileIO::Flush: file_io=%"NACL_PRId32"\n", file_io);
 
   int32_t callback_id =
       CompletionCallbackTable::Get()->AddCallback(callback);
@@ -273,7 +273,7 @@ int32_t Flush(PP_Resource file_io,
 }
 
 void Close(PP_Resource file_io) {
-  DebugPrintf("PPB_FileIO::Close: file_io=%"NACL_PRIu32"\n", file_io);
+  DebugPrintf("PPB_FileIO::Close: file_io=%"NACL_PRId32"\n", file_io);
 
   NaClSrpcError srpc_result = PpbFileIORpcClient::PPB_FileIO_Close(
       GetMainSrpcChannel(),

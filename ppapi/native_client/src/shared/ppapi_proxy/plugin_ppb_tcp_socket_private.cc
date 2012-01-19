@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,7 +21,7 @@ namespace ppapi_proxy {
 namespace {
 
 PP_Resource Create(PP_Instance instance) {
-  DebugPrintf("PPB_TCPSocket_Private::Create: instance=%"NACL_PRIu32"\n",
+  DebugPrintf("PPB_TCPSocket_Private::Create: instance=%"NACL_PRId32"\n",
               instance);
 
   PP_Resource resource;
@@ -40,7 +40,7 @@ PP_Resource Create(PP_Instance instance) {
 
 PP_Bool IsTCPSocket(PP_Resource resource) {
   DebugPrintf("PPB_TCPSocket_Private::IsTCPSocket: "
-              "resource=%"NACL_PRIu32"\n", resource);
+              "resource=%"NACL_PRId32"\n", resource);
 
   int32_t is_tcp_socket;
   NaClSrpcError srpc_result =
@@ -57,7 +57,7 @@ PP_Bool IsTCPSocket(PP_Resource resource) {
 
 int32_t Connect(PP_Resource tcp_socket, const char* host, uint16_t port,
                 struct PP_CompletionCallback callback) {
-  DebugPrintf("PPB_TCPSocket_Private::Connect: tcp_socket=%"NACL_PRIu32", "
+  DebugPrintf("PPB_TCPSocket_Private::Connect: tcp_socket=%"NACL_PRId32", "
               "host=%s, port=%"NACL_PRIu16"\n", tcp_socket, host, port);
 
   int32_t callback_id = CompletionCallbackTable::Get()->AddCallback(callback);
@@ -86,7 +86,7 @@ int32_t ConnectWithNetAddress(PP_Resource tcp_socket,
                               const struct PP_NetAddress_Private* addr,
                               struct PP_CompletionCallback callback) {
   DebugPrintf("PPB_TCPSocket_Private::ConnectWithNetAddress: "
-              "tcp_socket=%"NACL_PRIu32"\n", tcp_socket);
+              "tcp_socket=%"NACL_PRId32"\n", tcp_socket);
 
   int32_t callback_id = CompletionCallbackTable::Get()->AddCallback(callback);
   if (callback_id == 0) // Just like Chrome, for now disallow blocking calls.
@@ -115,7 +115,7 @@ int32_t ConnectWithNetAddress(PP_Resource tcp_socket,
 PP_Bool GetLocalAddress(PP_Resource tcp_socket,
                         struct PP_NetAddress_Private* local_addr) {
   DebugPrintf("PPB_TCPSocket_Private::GetLocalAddress: "
-              "tcp_socket=%"NACL_PRIu32"\n", tcp_socket);
+              "tcp_socket=%"NACL_PRId32"\n", tcp_socket);
 
   nacl_abi_size_t local_addr_bytes =
       static_cast<nacl_abi_size_t>(sizeof(PP_NetAddress_Private));
@@ -140,7 +140,7 @@ PP_Bool GetLocalAddress(PP_Resource tcp_socket,
 PP_Bool GetRemoteAddress(PP_Resource tcp_socket,
                          struct PP_NetAddress_Private* remote_addr) {
   DebugPrintf("PPB_TCPSocket_Private::GetRemoteAddress: "
-              "tcp_socket=%"NACL_PRIu32"\n", tcp_socket);
+              "tcp_socket=%"NACL_PRId32"\n", tcp_socket);
 
   nacl_abi_size_t remote_addr_bytes =
       static_cast<nacl_abi_size_t>(sizeof(PP_NetAddress_Private));
@@ -167,7 +167,7 @@ int32_t SSLHandshake(PP_Resource tcp_socket,
                      uint16_t server_port,
                      struct PP_CompletionCallback callback) {
   DebugPrintf("PPB_TCPSocket_Private::SSLHandshake: "
-              "tcp_socket=%"NACL_PRIu32", "
+              "tcp_socket=%"NACL_PRId32", "
               "server_name=%s, server_port=%"NACL_PRIu16"\n",
               tcp_socket, server_name, server_port);
 
@@ -197,7 +197,7 @@ int32_t Read(PP_Resource tcp_socket,
              char* buffer,
              int32_t bytes_to_read,
              struct PP_CompletionCallback callback) {
-  DebugPrintf("PPB_TCPSocket_Private::Read: tcp_socket=%"NACL_PRIu32", "
+  DebugPrintf("PPB_TCPSocket_Private::Read: tcp_socket=%"NACL_PRId32", "
               "bytes_to_read=%"NACL_PRId32"\n", tcp_socket, bytes_to_read);
 
   if (bytes_to_read < 0)
@@ -231,7 +231,7 @@ int32_t Write(PP_Resource tcp_socket,
               const char* buffer,
               int32_t bytes_to_write,
               struct PP_CompletionCallback callback) {
-  DebugPrintf("PPB_TCPSocket_Private::Write: tcp_socket=%"NACL_PRIu32", "
+  DebugPrintf("PPB_TCPSocket_Private::Write: tcp_socket=%"NACL_PRId32", "
               "bytes_to_write=%"NACL_PRId32"\n", tcp_socket, bytes_to_write);
 
   if (bytes_to_write < 0)
@@ -262,7 +262,7 @@ int32_t Write(PP_Resource tcp_socket,
 }
 
 void Disconnect(PP_Resource tcp_socket) {
-  DebugPrintf("PPB_TCPSocket_Private::Disconnect: tcp_socket="NACL_PRIu32"\n",
+  DebugPrintf("PPB_TCPSocket_Private::Disconnect: tcp_socket="NACL_PRId32"\n",
               tcp_socket);
 
   NaClSrpcError srpc_result =

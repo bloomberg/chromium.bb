@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -26,9 +26,9 @@ void PpbScrollbarRpcServer::PPB_Scrollbar_Create(
     PP_Resource* resource) {
   NaClSrpcClosureRunner runner(done);
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
-  PP_Bool pp_vertical = vertical ? PP_TRUE : PP_FALSE;
+  PP_Bool pp_vertical = PP_FromBool(vertical);
   *resource = PPBScrollbarInterface()->Create(instance, pp_vertical);
-  DebugPrintf("PPB_Scrollbar::Create: resource=%"NACL_PRIu32"\n", *resource);
+  DebugPrintf("PPB_Scrollbar::Create: resource=%"NACL_PRId32"\n", *resource);
   rpc->result = NACL_SRPC_RESULT_OK;
 }
 
@@ -41,7 +41,7 @@ void PpbScrollbarRpcServer::PPB_Scrollbar_IsScrollbar(
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
 
   PP_Bool result = PPBScrollbarInterface()->IsScrollbar(resource);
-  *is_scrollbar = (result == PP_TRUE);
+  *is_scrollbar = PP_ToBool(result);
 
   DebugPrintf(
       "PPB_Scrollbar::IsScrollbar: is_scrollbar=%"NACL_PRId32"\n",
@@ -73,7 +73,7 @@ void PpbScrollbarRpcServer::PPB_Scrollbar_IsOverlay(
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
 
   PP_Bool result = PPBScrollbarInterface()->IsOverlay(resource);
-  *is_overlay = (result == PP_TRUE);
+  *is_overlay = PP_ToBool(result);
 
   DebugPrintf(
       "PPB_Scrollbar::IsScrollbar: is_overlay=%"NACL_PRId32"\n",
@@ -158,4 +158,3 @@ void PpbScrollbarRpcServer::PPB_Scrollbar_ScrollBy(
   DebugPrintf("PPB_Scrollbar::ScrollBy\n");
   rpc->result = NACL_SRPC_RESULT_OK;
 }
-

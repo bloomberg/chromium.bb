@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,7 +26,7 @@ void PpbFileSystemRpcServer::PPB_FileSystem_Create(
   *resource = PPBFileSystemInterface()->Create(
       instance,
       static_cast<PP_FileSystemType>(file_system_type));
-  DebugPrintf("PPB_FileSystem::Create: resource=%"NACL_PRIu32"\n",
+  DebugPrintf("PPB_FileSystem::Create: resource=%"NACL_PRId32"\n",
               *resource);
 
   rpc->result = NACL_SRPC_RESULT_OK;
@@ -42,7 +42,7 @@ void PpbFileSystemRpcServer::PPB_FileSystem_IsFileSystem(
 
   *success = PPBFileSystemInterface()->IsFileSystem(resource);
 
-  DebugPrintf("PPB_FileSystem::IsFileSystem: resource=%"NACL_PRIu32"\n",
+  DebugPrintf("PPB_FileSystem::IsFileSystem: resource=%"NACL_PRId32"\n",
               resource);
   rpc->result = NACL_SRPC_RESULT_OK;
 }
@@ -57,7 +57,7 @@ void PpbFileSystemRpcServer::PPB_FileSystem_Open(
   NaClSrpcClosureRunner runner(done);
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
 
-  DebugPrintf("PPB_FileSystem::Open: file_system=%"NACL_PRIu32"\n",
+  DebugPrintf("PPB_FileSystem::Open: file_system=%"NACL_PRId32"\n",
               file_system);
 
   PP_CompletionCallback remote_callback = MakeRemoteCompletionCallback(
@@ -84,7 +84,7 @@ void PpbFileSystemRpcServer::PPB_FileSystem_GetType(
     int32_t* type) {
   NaClSrpcClosureRunner runner(done);
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
-  DebugPrintf("PPB_FileSystem::GetType: file_system=%"NACL_PRIu32"\n",
+  DebugPrintf("PPB_FileSystem::GetType: file_system=%"NACL_PRId32"\n",
               file_system);
 
   *type = PPBFileSystemInterface()->GetType(file_system);

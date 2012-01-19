@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -31,7 +31,7 @@ void PppSelectionRpcServer::PPP_Selection_GetSelectedText(
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   NaClSrpcClosureRunner runner(done);
 
-  PP_Bool pp_html = html ? PP_TRUE : PP_FALSE;
+  PP_Bool pp_html = PP_FromBool(html);
   PP_Var pp_selected_text =
       PPPSelectionInterface()->GetSelectedText(instance, pp_html);
   if (!SerializeTo(&pp_selected_text, selected_text, selected_text_bytes))

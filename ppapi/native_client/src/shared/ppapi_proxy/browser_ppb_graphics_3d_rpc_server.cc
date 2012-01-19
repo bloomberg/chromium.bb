@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -221,7 +221,7 @@ void PpbGraphics3DRpcServer::PPB_Graphics3DTrusted_CreateRaw(
     PP_Resource share_context,
     nacl_abi_size_t attrib_list_size, int32_t* attrib_list,
     PP_Resource* resource_id) {
-  DebugPrintf("PPB_Graphics3DTrusted_CreateRaw: instance: %"NACL_PRIu32"\n",
+  DebugPrintf("PPB_Graphics3DTrusted_CreateRaw: instance: %"NACL_PRId32"\n",
               instance);
   NaClSrpcClosureRunner runner(done);
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;

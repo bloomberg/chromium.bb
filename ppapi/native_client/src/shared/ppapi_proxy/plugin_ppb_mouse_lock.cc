@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,7 +19,7 @@ namespace {
 
 int32_t LockMouse(PP_Instance instance, PP_CompletionCallback callback) {
   DebugPrintf("PPB_MouseLock::LockMouse: "
-              "instance=%"NACL_PRIu32"\n", instance);
+              "instance=%"NACL_PRId32"\n", instance);
 
   int32_t callback_id =
       CompletionCallbackTable::Get()->AddCallback(callback);
@@ -44,7 +44,7 @@ int32_t LockMouse(PP_Instance instance, PP_CompletionCallback callback) {
 
 void UnlockMouse(PP_Instance instance) {
   DebugPrintf("PPB_MouseLock::UnlockMouse: "
-              "instance=%"NACL_PRIu32"\n", instance);
+              "instance=%"NACL_PRId32"\n", instance);
 
   NaClSrpcError srpc_result =
       PpbMouseLockRpcClient::PPB_MouseLock_UnlockMouse(
@@ -66,5 +66,3 @@ const PPB_MouseLock* PluginMouseLock::GetInterface() {
 }
 
 }  // namespace ppapi_proxy
-
-

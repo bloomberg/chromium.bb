@@ -1,6 +1,6 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can
-// be found in the LICENSE file.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_audio_config.h"
 
@@ -18,7 +18,7 @@ namespace ppapi_proxy {
 namespace {
 
 PP_AudioSampleRate GetSampleRate(PP_Resource config) {
-  DebugPrintf("PPB_AudioConfig::GetSampleRate: config=%"NACL_PRIu32"\n",
+  DebugPrintf("PPB_AudioConfig::GetSampleRate: config=%"NACL_PRId32"\n",
               config);
   int32_t sample_rate;
   NaClSrpcError srpc_result =
@@ -35,7 +35,7 @@ PP_AudioSampleRate GetSampleRate(PP_Resource config) {
 }
 
 uint32_t GetSampleFrameCount(PP_Resource config) {
-  DebugPrintf("PPB_AudioConfig::GetSampleFrameCount: config=%"NACL_PRIu32"\n",
+  DebugPrintf("PPB_AudioConfig::GetSampleFrameCount: config=%"NACL_PRId32"\n",
               config);
   int32_t sample_frame_count;
   NaClSrpcError srpc_result =
@@ -70,7 +70,7 @@ uint32_t RecommendSampleFrameCount(PP_AudioSampleRate sample_rate,
 }
 
 PP_Bool IsAudioConfig(PP_Resource resource) {
-  DebugPrintf("PPB_AudioConfig::IsAudioConfig: resource=%"NACL_PRIu32"\n",
+  DebugPrintf("PPB_AudioConfig::IsAudioConfig: resource=%"NACL_PRId32"\n",
               resource);
   int32_t success;
   NaClSrpcError srpc_result =
@@ -89,7 +89,7 @@ PP_Bool IsAudioConfig(PP_Resource resource) {
 PP_Resource CreateStereo16Bit(PP_Instance instance,
                               PP_AudioSampleRate sample_rate,
                               uint32_t sample_frame_count) {
-  DebugPrintf("PPB_AudioConfig::CreateStereo16Bit: instance=%"NACL_PRIu32"\n",
+  DebugPrintf("PPB_AudioConfig::CreateStereo16Bit: instance=%"NACL_PRId32"\n",
               instance);
   PP_Resource resource;
   NaClSrpcError srpc_result =

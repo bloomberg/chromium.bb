@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,7 +24,7 @@ const nacl_abi_size_t kPPRectBytes =
 
 PP_Bool IsWidget(PP_Resource resource) {
   DebugPrintf("PPB_Widget::IsWidget: "
-              "resource=%"NACL_PRIu32"\n", resource);
+              "resource=%"NACL_PRId32"\n", resource);
 
   int32_t is_widget = 0;
   NaClSrpcError srpc_result =
@@ -46,7 +46,7 @@ PP_Bool Paint(
     const struct PP_Rect* rect,
     PP_Resource image) {
   DebugPrintf("PPB_Widget::Paint: "
-              "widget=%"NACL_PRIu32"\n", widget);
+              "widget=%"NACL_PRId32"\n", widget);
 
   int32_t success = 0;
   NaClSrpcError srpc_result =
@@ -90,7 +90,7 @@ PP_Bool GetLocation(
     PP_Resource widget,
     struct PP_Rect* location) {
   DebugPrintf("PPB_Widget::GetLocation: "
-              "widget=%"NACL_PRIu32"\n", widget);
+              "widget=%"NACL_PRId32"\n", widget);
 
   int32_t visible = 0;
   nacl_abi_size_t location_size = kPPRectBytes;
@@ -115,7 +115,7 @@ void SetLocation(
     PP_Resource widget,
     const struct PP_Rect* location) {
   DebugPrintf("PPB_Widget::SetLocation: "
-              "widget=%"NACL_PRIu32"\n", widget);
+              "widget=%"NACL_PRId32"\n", widget);
 
   NaClSrpcError srpc_result =
       PpbWidgetRpcClient::PPB_Widget_SetLocation(
@@ -142,4 +142,3 @@ const PPB_Widget_Dev* PluginWidget::GetInterface() {
 }
 
 }  // namespace ppapi_proxy
-

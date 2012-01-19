@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,14 +21,14 @@ void NumberOfFindResultsChanged(PP_Instance instance,
                                 int32_t total,
                                 PP_Bool final_result) {
   DebugPrintf("PPB_Find::NumberOfFindResultsChanged: "
-              "instance=%"NACL_PRIu32"\n", instance);
+              "instance=%"NACL_PRId32"\n", instance);
 
   NaClSrpcError srpc_result =
       PpbFindRpcClient::PPB_Find_NumberOfFindResultsChanged(
           GetMainSrpcChannel(),
           instance,
           total,
-          final_result == PP_TRUE);
+          PP_ToBool(final_result));
 
   DebugPrintf("PPB_Find::NumberOfFindResultsChanged: %s\n",
               NaClSrpcErrorString(srpc_result));
@@ -37,7 +37,7 @@ void NumberOfFindResultsChanged(PP_Instance instance,
 void SelectedFindResultChanged(PP_Instance instance,
                                int32_t index) {
   DebugPrintf("PPB_Find::SelectedFindResultChanged: "
-              "instance=%"NACL_PRIu32"\n", instance);
+              "instance=%"NACL_PRId32"\n", instance);
 
   NaClSrpcError srpc_result =
       PpbFindRpcClient::PPB_Find_SelectedFindResultChanged(
@@ -60,5 +60,3 @@ const PPB_Find_Dev* PluginFind::GetInterface() {
 }
 
 }  // namespace ppapi_proxy
-
-

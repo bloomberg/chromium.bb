@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -45,8 +45,8 @@ void PpbGraphics2DRpcServer::PPB_Graphics2D_Create(NaClSrpcRpc* rpc,
       instance,
       const_cast<const struct PP_Size*>(
           reinterpret_cast<struct PP_Size*>(size)),
-      (is_always_opaque ? PP_TRUE : PP_FALSE));
-  DebugPrintf("PPB_Graphics2D::Create: resource=%"NACL_PRIu32"\n", *resource);
+      PP_FromBool(is_always_opaque));
+  DebugPrintf("PPB_Graphics2D::Create: resource=%"NACL_PRId32"\n", *resource);
   rpc->result = NACL_SRPC_RESULT_OK;
 }
 
@@ -58,8 +58,8 @@ void PpbGraphics2DRpcServer::PPB_Graphics2D_IsGraphics2D(NaClSrpcRpc* rpc,
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   *success = 0;
   PP_Bool pp_success = PPBGraphics2DInterface()->IsGraphics2D(resource);
-  *success = (pp_success == PP_TRUE);
-  DebugPrintf("PPB_Graphics2D::IsGraphics2D: pp_success=%d\n", pp_success);
+  *success = PP_ToBool(pp_success);
+  DebugPrintf("PPB_Graphics2D::IsGraphics2D: success=%d\n", *success);
   rpc->result = NACL_SRPC_RESULT_OK;
 }
 
@@ -80,9 +80,9 @@ void PpbGraphics2DRpcServer::PPB_Graphics2D_Describe(
   PP_Bool is_opaque;
   PP_Bool pp_success = PPBGraphics2DInterface()->Describe(
       graphics_2d, reinterpret_cast<struct PP_Size*>(size), &is_opaque);
-  *is_always_opaque = (is_opaque == PP_TRUE);
-  *success = (pp_success == PP_TRUE);
-  DebugPrintf("PPB_Graphics2D::Describe: pp_success=%d\n", pp_success);
+  *is_always_opaque = PP_ToBool(is_opaque);
+  *success = PP_ToBool(pp_success);
+  DebugPrintf("PPB_Graphics2D::Describe: success=%d\n", *success);
   rpc->result = NACL_SRPC_RESULT_OK;
 }
 

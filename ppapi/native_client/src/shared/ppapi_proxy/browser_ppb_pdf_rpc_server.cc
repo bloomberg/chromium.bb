@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -137,7 +137,7 @@ void PpbPdfRpcServer::PPB_PDF_SearchString(
       instance,
       reinterpret_cast<unsigned short*>(string),
       reinterpret_cast<unsigned short*>(term),
-      case_sensitive ? PP_TRUE : PP_FALSE,
+      PP_FromBool(case_sensitive),
       &pp_results,
       &pp_result_count);
   pp_result_count = std::min(pp_result_count, kMaxFindResults);
@@ -251,4 +251,3 @@ void PpbPdfRpcServer::PPB_PDF_SaveAs(
   DebugPrintf("PPB_PDF::SaveAs: instance=%"NACL_PRId32"\n", instance);
   rpc->result = NACL_SRPC_RESULT_OK;
 }
-

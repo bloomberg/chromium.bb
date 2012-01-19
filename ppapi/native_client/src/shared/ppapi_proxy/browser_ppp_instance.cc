@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -65,7 +65,7 @@ PP_Bool DidCreate(PP_Instance instance,
                   uint32_t argc,
                   const char* argn[],
                   const char* argv[]) {
-  DebugPrintf("PPP_Instance::DidCreate: instance=%"NACL_PRIu32"\n", instance);
+  DebugPrintf("PPP_Instance::DidCreate: instance=%"NACL_PRId32"\n", instance);
   uint32_t argn_size;
   scoped_array<char> argn_serial(ArgArraySerialize(argc, argn, &argn_size));
   if (argn_serial.get() == NULL) {
@@ -92,11 +92,11 @@ PP_Bool DidCreate(PP_Instance instance,
   if (srpc_result != NACL_SRPC_RESULT_OK) {
     return PP_FALSE;
   }
-  return static_cast<PP_Bool>(success != 0);
+  return PP_FromBool(success);
 }
 
 void DidDestroy(PP_Instance instance) {
-  DebugPrintf("PPP_Instance::DidDestroy: instance=%"NACL_PRIu32"\n", instance);
+  DebugPrintf("PPP_Instance::DidDestroy: instance=%"NACL_PRId32"\n", instance);
   NaClSrpcError srpc_result = PppInstanceRpcClient::PPP_Instance_DidDestroy(
       GetMainSrpcChannel(instance), instance);
   DebugPrintf("PPP_Instance::DidDestroy: %s\n",
@@ -104,7 +104,7 @@ void DidDestroy(PP_Instance instance) {
 }
 
 void DidChangeView(PP_Instance instance, PP_Resource view) {
-  DebugPrintf("PPP_Instance::DidChangeView: instance=%"NACL_PRIu32"\n",
+  DebugPrintf("PPP_Instance::DidChangeView: instance=%"NACL_PRId32"\n",
               instance);
   ViewData view_data;
 
@@ -125,19 +125,19 @@ void DidChangeView(PP_Instance instance, PP_Resource view) {
 }
 
 void DidChangeFocus(PP_Instance instance, PP_Bool has_focus) {
-  DebugPrintf("PPP_Instance::DidChangeFocus: instance=%"NACL_PRIu32", "
+  DebugPrintf("PPP_Instance::DidChangeFocus: instance=%"NACL_PRId32", "
               "has_focus = %d\n", instance, has_focus);
   NaClSrpcError srpc_result = PppInstanceRpcClient::PPP_Instance_DidChangeFocus(
       GetMainSrpcChannel(instance),
       instance,
-      static_cast<bool>(PP_TRUE == has_focus));
+      PP_ToBool(has_focus));
   DebugPrintf("PPP_Instance::DidChangeFocus: %s\n",
               NaClSrpcErrorString(srpc_result));
 }
 
 PP_Bool HandleDocumentLoad(PP_Instance instance, PP_Resource url_loader) {
-  DebugPrintf("PPP_Instance::HandleDocumentLoad: instance=%"NACL_PRIu32", "
-              "url_loader=%"NACL_PRIu32"\n", instance, url_loader);
+  DebugPrintf("PPP_Instance::HandleDocumentLoad: instance=%"NACL_PRId32", "
+              "url_loader=%"NACL_PRId32"\n", instance, url_loader);
 
   int32_t result = 0;
   NaClSrpcError srpc_result =

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Chromium Authors. All rights reserved.
+ * Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -43,7 +43,7 @@ int32_t GetNumAttribs(const int32_t* attrib_list) {
 int32_t GetAttribMaxValue(PP_Instance instance,
                           int32_t attrib,
                           int32_t* attrib_value) {
-  DebugPrintf("PPB_Graphics3D::GetAttribMaxValue: instance=%"NACL_PRIu32"\n",
+  DebugPrintf("PPB_Graphics3D::GetAttribMaxValue: instance=%"NACL_PRId32"\n",
               instance);
   int32_t pp_error;
   NaClSrpcError retval =
@@ -62,7 +62,7 @@ int32_t GetAttribMaxValue(PP_Instance instance,
 PP_Resource Create(PP_Instance instance,
                    PP_Resource share_context,
                    const int32_t* attrib_list) {
-  DebugPrintf("PPB_Graphics3D::Create: instance=%"NACL_PRIu32"\n", instance);
+  DebugPrintf("PPB_Graphics3D::Create: instance=%"NACL_PRId32"\n", instance);
   PP_Resource graphics3d_id = kInvalidResourceId;
   nacl_abi_size_t num_attribs = GetNumAttribs(attrib_list);
   NaClSrpcError retval =
@@ -84,10 +84,9 @@ PP_Resource Create(PP_Instance instance,
 }
 
 PP_Bool IsGraphics3D(PP_Resource resource) {
-  DebugPrintf("PPB_Graphics3D::IsGraphics3D: resource=%"NACL_PRIu32"\n",
+  DebugPrintf("PPB_Graphics3D::IsGraphics3D: resource=%"NACL_PRId32"\n",
               resource);
-  return PluginResource::GetAs<PluginGraphics3D>(resource).get()
-      ? PP_TRUE : PP_FALSE;
+  return PP_FromBool(PluginResource::GetAs<PluginGraphics3D>(resource).get());
 }
 
 int32_t GetAttribs(PP_Resource graphics3d_id,
@@ -124,7 +123,7 @@ int32_t SetAttribs(PP_Resource graphics3d_id,
 }
 
 int32_t GetError(PP_Resource graphics3d_id) {
-  DebugPrintf("PPB_Graphics3D::GetError: graphics3d_id=%"NACL_PRIu32"\n",
+  DebugPrintf("PPB_Graphics3D::GetError: graphics3d_id=%"NACL_PRId32"\n",
               graphics3d_id);
   int32_t pp_error;
   NaClSrpcError retval =
@@ -136,7 +135,7 @@ int32_t GetError(PP_Resource graphics3d_id) {
     DebugPrintf("PPB_Graphics3D::GetError: retval != NACL_SRPC_RESULT_OK\n");
     return PP_ERROR_BADARGUMENT;
   }
-  DebugPrintf("PPB_Graphics3D::GetError: pp_error=%"NACL_PRIu32"\n", pp_error);
+  DebugPrintf("PPB_Graphics3D::GetError: pp_error=%"NACL_PRId32"\n", pp_error);
   return pp_error;
 }
 
@@ -155,7 +154,7 @@ int32_t ResizeBuffers(PP_Resource graphics3d_id,
 
 int32_t SwapBuffs(PP_Resource graphics3d_id,
                   struct PP_CompletionCallback callback) {
-  DebugPrintf("PPB_Graphics3D::SwapBuffers: graphics3d_id=%"NACL_PRIu32"\n",
+  DebugPrintf("PPB_Graphics3D::SwapBuffers: graphics3d_id=%"NACL_PRId32"\n",
               graphics3d_id);
 
   scoped_refptr<PluginGraphics3D> graphics3d =
@@ -193,7 +192,7 @@ PluginGraphics3D::~PluginGraphics3D() {
 gpu::gles2::GLES2Implementation* PluginGraphics3D::implFromResourceSlow(
     PP_Resource graphics3d_id) {
   DebugPrintf("PluginGraphics3D::implFromResourceSlow: "
-              "resource=%"NACL_PRIu32"\n", graphics3d_id);
+              "resource=%"NACL_PRId32"\n", graphics3d_id);
 
   // For performance reasons, we don't error-check the context, but crash on
   // NULL instead.
@@ -207,7 +206,7 @@ gpu::gles2::GLES2Implementation* PluginGraphics3D::implFromResourceSlow(
 
 bool PluginGraphics3D::InitFromBrowserResource(PP_Resource res) {
   DebugPrintf("PluginGraphics3D::InitFromBrowserResource: "
-              "resource=%"NACL_PRIu32"\n", res);
+              "resource=%"NACL_PRId32"\n", res);
 
   // Create and initialize the objects required to issue GLES2 calls.
   command_buffer_.reset(new CommandBufferNacl(res, PluginCore::GetInterface()));
@@ -274,4 +273,3 @@ const PPB_Graphics3D* PluginGraphics3D::GetInterface() {
 }
 
 }  // namespace ppapi_proxy
-

@@ -35,7 +35,7 @@ PP_Var GetLocalizedString(
     PP_Instance instance,
     PP_ResourceString string_id) {
   DebugPrintf("PPB_PDF::GetLocalizedString: "
-              "instance=%"NACL_PRIu32"\n", instance);
+              "instance=%"NACL_PRId32"\n", instance);
 
   NaClSrpcChannel* channel = GetMainSrpcChannel();
   nacl_abi_size_t string_size = kMaxReturnVarSize;
@@ -60,7 +60,7 @@ PP_Var GetLocalizedString(
 PP_Resource GetResourceImage(PP_Instance instance,
                              PP_ResourceImage image_id) {
   DebugPrintf("PPB_PDF::GetResourceImage: "
-              "instance=%"NACL_PRIu32"\n", instance);
+              "instance=%"NACL_PRId32"\n", instance);
 
   PP_Resource image = kInvalidResourceId;
   NaClSrpcError srpc_result =
@@ -112,7 +112,7 @@ void SearchString(PP_Instance instance,
                   bool case_sensitive,
                   struct PP_PrivateFindResult** results,
                   int* count) {
-  DebugPrintf("PPB_PDF::SearchString: instance=%"NACL_PRIu32"\n", instance);
+  DebugPrintf("PPB_PDF::SearchString: instance=%"NACL_PRId32"\n", instance);
 
   CHECK(string != NULL);
   CHECK(term != NULL);
@@ -145,7 +145,7 @@ void SearchString(PP_Instance instance,
 }
 
 void DidStartLoading(PP_Instance instance) {
-  DebugPrintf("PPB_PDF::DidStartLoading: instance=%"NACL_PRIu32"\n",
+  DebugPrintf("PPB_PDF::DidStartLoading: instance=%"NACL_PRId32"\n",
               instance);
 
   NaClSrpcError srpc_result =
@@ -157,7 +157,7 @@ void DidStartLoading(PP_Instance instance) {
 }
 
 void DidStopLoading(PP_Instance instance) {
-  DebugPrintf("PPB_PDF::DidStopLoading: instance=%"NACL_PRIu32"\n",
+  DebugPrintf("PPB_PDF::DidStopLoading: instance=%"NACL_PRId32"\n",
               instance);
 
   NaClSrpcError srpc_result =
@@ -170,7 +170,7 @@ void DidStopLoading(PP_Instance instance) {
 
 void SetContentRestriction(PP_Instance instance,
                            int restrictions) {
-  DebugPrintf("PPB_PDF::SetContentRestriction: instance=%"NACL_PRIu32"\n",
+  DebugPrintf("PPB_PDF::SetContentRestriction: instance=%"NACL_PRId32"\n",
               instance);
 
   NaClSrpcError srpc_result =
@@ -209,7 +209,7 @@ void UserMetricsRecordAction(struct PP_Var action) {
 }
 
 void HasUnsupportedFeature(PP_Instance instance) {
-  DebugPrintf("PPB_PDF::HasUnsupportedFeature: instance=%"NACL_PRIu32"\n",
+  DebugPrintf("PPB_PDF::HasUnsupportedFeature: instance=%"NACL_PRId32"\n",
               instance);
 
   NaClSrpcError srpc_result =
@@ -221,7 +221,7 @@ void HasUnsupportedFeature(PP_Instance instance) {
 }
 
 void SaveAs(PP_Instance instance) {
-  DebugPrintf("PPB_PDF::SaveAs: instance=%"NACL_PRIu32"\n", instance);
+  DebugPrintf("PPB_PDF::SaveAs: instance=%"NACL_PRId32"\n", instance);
 
   NaClSrpcError srpc_result =
       PpbPdfRpcClient::PPB_PDF_SaveAs(GetMainSrpcChannel(),

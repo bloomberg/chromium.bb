@@ -39,7 +39,7 @@ void PpbTestingRpcServer::PPB_Testing_ReadImageData(
       PPBTestingInterface()->ReadImageData(device_context_2d,
                                            image,
                                            pp_top_left);
-  *success = (pp_success == PP_TRUE);
+  *success = PP_ToBool(pp_success);
 
   DebugPrintf("PPB_Testing_Dev::ReadImageData: "
               "success=%"NACL_PRId32"\n", *success);
@@ -55,7 +55,7 @@ void PpbTestingRpcServer::PPB_Testing_RunMessageLoop(
 
   PPBTestingInterface()->RunMessageLoop(instance);
 
-  DebugPrintf("PPB_Testing_Dev::RunMessageLoop: instance=%"NACL_PRIu32"\n",
+  DebugPrintf("PPB_Testing_Dev::RunMessageLoop: instance=%"NACL_PRId32"\n",
               instance);
   rpc->result = NACL_SRPC_RESULT_OK;
 }
@@ -69,7 +69,7 @@ void PpbTestingRpcServer::PPB_Testing_QuitMessageLoop(
 
   PPBTestingInterface()->QuitMessageLoop(instance);
 
-  DebugPrintf("PPB_Testing_Dev::QuitMessageLoop: instance=%"NACL_PRIu32"\n",
+  DebugPrintf("PPB_Testing_Dev::QuitMessageLoop: instance=%"NACL_PRId32"\n",
               instance);
   rpc->result = NACL_SRPC_RESULT_OK;
 }
@@ -87,7 +87,7 @@ void PpbTestingRpcServer::PPB_Testing_GetLiveObjectsForInstance(
   *live_objects = pp_live_objects;
 
   DebugPrintf("PPB_Testing_Dev::GetLiveObjectsForInstance: "
-              "live_objects=%"NACL_PRIu32"\n", *live_objects);
+              "live_objects=%"NACL_PRId32"\n", *live_objects);
   rpc->result = NACL_SRPC_RESULT_OK;
 }
 
@@ -101,7 +101,7 @@ void PpbTestingRpcServer::PPB_Testing_SimulateInputEvent(
 
   PPBTestingInterface()->SimulateInputEvent(instance, input_event);
 
-  DebugPrintf("PPB_Testing::SimulateInputEvent: instance=%"NACL_PRIu32"\n",
+  DebugPrintf("PPB_Testing::SimulateInputEvent: instance=%"NACL_PRId32"\n",
               instance);
   rpc->result = NACL_SRPC_RESULT_OK;
 }

@@ -21,7 +21,7 @@ namespace ppapi_proxy {
 namespace {
 
 PP_Bool IsURLResponseInfo(PP_Resource resource) {
-  DebugPrintf("PPB_URLResponseInfo::IsURLResponseInfo: resource=%"NACL_PRIu32
+  DebugPrintf("PPB_URLResponseInfo::IsURLResponseInfo: resource=%"NACL_PRId32
               "\n", resource);
 
   int32_t success;
@@ -37,7 +37,7 @@ PP_Bool IsURLResponseInfo(PP_Resource resource) {
 }
 
 PP_Var GetProperty(PP_Resource response, PP_URLResponseProperty property) {
-  DebugPrintf("PPB_URLResponseInfo::GetProperty: response=%"NACL_PRIu32"\n",
+  DebugPrintf("PPB_URLResponseInfo::GetProperty: response=%"NACL_PRId32"\n",
               response);
   NaClSrpcChannel* channel = GetMainSrpcChannel();
 
@@ -61,7 +61,7 @@ PP_Var GetProperty(PP_Resource response, PP_URLResponseProperty property) {
 }
 
 PP_Resource GetBodyAsFileRef(PP_Resource response) {
-  DebugPrintf("PPB_URLResponseInfo::GetBodyAsFileRef: response=%"NACL_PRIu32
+  DebugPrintf("PPB_URLResponseInfo::GetBodyAsFileRef: response=%"NACL_PRId32
               "\n", response);
 
   PP_Resource file_ref;

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,7 +15,7 @@ namespace ppapi_proxy {
 namespace {
 
 void MouseLockLost(PP_Instance instance) {
-  DebugPrintf("PPP_MouseLock::MouseLockLost: instance=%"NACL_PRIu32"\n",
+  DebugPrintf("PPP_MouseLock::MouseLockLost: instance=%"NACL_PRId32"\n",
               instance);
 
   NaClSrpcError srpc_result =
@@ -37,4 +37,3 @@ const PPP_MouseLock* BrowserMouseLock::GetInterface() {
 }
 
 }  // namespace ppapi_proxy
-
