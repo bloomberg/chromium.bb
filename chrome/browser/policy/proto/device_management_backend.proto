@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -250,6 +250,9 @@ message DeviceStatusReportRequest {
 
   // Device active times collection since last report rpc call.
   repeated TimePeriod active_time = 4;
+
+  // The browser version string as shown in the About dialog.
+  optional string browser_version = 5;
 }
 
 // Report session (a user on one device) level status.

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 #include "chrome/browser/policy/proto/device_management_backend.pb.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
+#include "chrome/common/chrome_version_info.h"
 
 using base::Time;
 using base::TimeDelta;
@@ -154,6 +155,8 @@ void DeviceStatusCollector::GetStatus(em::DeviceStatusReportRequest* request) {
   ListPrefUpdate update(local_state_, kPrefDeviceActivePeriods);
   update.Get()->Clear();
 
+  chrome::VersionInfo version_info;
+  request->set_browser_version(version_info.Version());
   request->set_os_version(os_version_);
   request->set_firmware_version(firmware_version_);
 }
