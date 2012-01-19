@@ -1083,7 +1083,7 @@ FileManager.prototype = {
         return (// Initialized to the point where we have a current directory
                 !readonly &&
                 // Rename not in progress.
-                !this.renameInput_.currentEntry &&
+                !this.isRenamingInProgress() &&
                 // Only one file selected.
                 this.selection &&
                 this.selection.totalCount == 1);
@@ -1092,7 +1092,7 @@ FileManager.prototype = {
         return (// Initialized to the point where we have a current directory
                 !readonly &&
                 // Rename not in progress.
-                !this.renameInput_.currentEntry &&
+                !this.isRenamingInProgress() &&
                 this.selection &&
                 this.selection.totalCount > 0);
 
@@ -1671,6 +1671,7 @@ FileManager.prototype = {
     // work of inplace renaming.
     var fileName = this.document_.createElement('div');
     fileName.className = 'filename-label';
+
     fileName.textContent = this.directoryModel_.currentEntry.name == '' ?
         this.getRootLabel_(entry.name) : entry.name;
     return fileName;
@@ -2345,6 +2346,10 @@ FileManager.prototype = {
     this.truncateBreadcrumbs_();
   };
 
+  FileManager.prototype.isRenamingInProgress = function() {
+    return !!this.renameInput_.currentEntry;
+  };
+
   /**
    * Updates breadcrumbs widths in order to truncate it properly.
    */
@@ -2783,7 +2788,7 @@ FileManager.prototype = {
    * @param {Event} event The click event.
    */
   FileManager.prototype.onDetailDoubleClick_ = function(event) {
-    if (this.renameInput_.currentEntry) {
+    if (this.isRenamingInProgress()) {
       // Don't pay attention to double clicks during a rename.
       return;
     }
@@ -2968,8 +2973,7 @@ FileManager.prototype = {
     var lastLabelClick = this.lastLabelClick_;
     this.lastLabelClick_ = {index: item.listIndex, date: now};
 
-    // Rename already in progress.
-    if (this.renameInput_.currentEntry)
+    if (this.isRenamingInProgress())
       return false;
 
     if (lastLabelClick && lastLabelClick.index == item.listIndex) {
@@ -2988,9 +2992,7 @@ FileManager.prototype = {
     var input = this.renameInput_;
 
     input.value = label.textContent;
-    input.style.top = label.offsetTop + 'px';
-    input.style.left = label.offsetLeft + 'px';
-    input.style.width = label.clientWidth + 'px';
+    label.parentNode.setAttribute('renaming', '');
     label.parentNode.appendChild(input);
     input.focus();
     var selectionEnd = input.value.lastIndexOf('.');
@@ -3007,7 +3009,7 @@ FileManager.prototype = {
   };
 
   FileManager.prototype.onRenameInputKeyDown_ = function(event) {
-    if (!this.renameInput_.currentEntry)
+    if (!this.isRenamingInProgress())
       return;
 
     switch (event.keyCode) {
@@ -3029,7 +3031,7 @@ FileManager.prototype = {
   };
 
   FileManager.prototype.onRenameInputBlur_ = function(event) {
-    if (this.renameInput_.currentEntry)
+    if (this.isRenamingInProgress())
       this.cancelRename_();
   };
 
@@ -3050,15 +3052,10 @@ FileManager.prototype = {
                            util.getFileErrorMnemonic(err.code)));
     }
 
-    this.renameInput_.currentEntry = null;
-    this.lastLabelClick_ = null;
-
-    if (this.renameInput_.parentNode)
-      this.renameInput_.parentNode.removeChild(this.renameInput_);
+    this.cancelRename_();
 
     this.directoryModel_.doesExist(newName, function(exists, isFile) {
       if (!exists) {
-        this.refocus();
         this.directoryModel_.renameEntry(entry, newName, onError.bind(this));
       } else {
         var message = isFile ? 'FILE_ALREADY_EXISTS' :
@@ -3068,12 +3065,15 @@ FileManager.prototype = {
     }.bind(this));
   };
 
-  FileManager.prototype.cancelRename_ = function(event) {
+  FileManager.prototype.cancelRename_ = function() {
     this.renameInput_.currentEntry = null;
+    this.lastLabelClick_ = null;
 
-    if (this.renameInput_.parentNode)
-      this.renameInput_.parentNode.removeChild(this.renameInput_);
-
+    var parent = this.renameInput_.parentNode;
+    if (parent) {
+      parent.removeAttribute('renaming');
+      parent.removeChild(this.renameInput_);
+    }
     this.refocus();
   };
 

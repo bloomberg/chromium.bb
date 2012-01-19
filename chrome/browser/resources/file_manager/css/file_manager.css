@@ -333,8 +333,6 @@ div.open-sidebar:hover {
   line-height: 20px;
   height: 20px;
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .breadcrumbs > [collapsed]:before {
@@ -482,23 +480,43 @@ div.img-container > img {
   position: absolute;
 }
 
-.thumbnail-item > div.filename-label {
+.table-row-cell .filename-label,
+.thumbnail-item .filename-label,
+/* Show ellipsis in cells. The name column has different structure and overrides
+   this rule. */
+.table-row-cell > div {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  display: block;
 }
 
 /* Text box used for renaming in the detail list. */
-.detail-table input.rename {
-  -webkit-margin-start: -5px;
-  margin-top: 1px;
-  position: absolute;
+.table-row-cell input.rename {
+  -webkit-margin-start: -3px;
+}
+
+input.rename {
+  font: inherit;
+  text-align: inherit;
+  height: 16px;
+}
+
+.table-row-cell .filename-label,
+.table-row-cell input.rename {
+  -webkit-box-flex: 1;
+}
+
+[renaming] > .filename-label {
+  display: none;
 }
 
 /* Text box used for renaming in the thumbnail list. */
 .thumbnail-grid input.rename {
-  -webkit-margin-start: -2px;
-  position: absolute;
+  -webkit-margin-start: -1px;
+  width: 114px;
+  height: 20px;
+  -webkit-box-sizing: border-box;
 }
 
 /* The cr.ui.Table representing the detailed file list. */
@@ -631,6 +649,9 @@ div.img-container > img {
   -webkit-box-align: center;
   -webkit-box-orient: horizontal;
   -webkit-box-flex: 1;
+}
+
+.table-row-cell > .detail-name {
   display: -webkit-box;
 }
 
@@ -828,10 +849,6 @@ li.table-row {
 .detail-name > * {
   display: -webkit-box;
   -webkit-box-align: center;
-}
-
-.detail-name > input[type=checkbox] {
-  margin: 0 2px;
 }
 
 .filename-input {
