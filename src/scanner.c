@@ -38,6 +38,11 @@ usage(int ret)
 
 #define XML_BUFFER_SIZE 4096
 
+struct description {
+	char *summary;
+	char *text;
+};
+
 struct protocol {
 	char *name;
 	char *uppercase_name;
@@ -45,11 +50,7 @@ struct protocol {
 	int type_index;
 	int null_run_length;
 	char *copyright;
-};
-
-struct description {
-	char *summary;
-	char *text;
+	struct description *description;
 };
 
 struct interface {
@@ -90,6 +91,7 @@ struct arg {
 	enum arg_type type;
 	char *interface_name;
 	struct wl_list link;
+	char *summary;
 };
 
 struct enumeration {
@@ -134,18 +136,10 @@ uppercase_dup(const char *src)
 	return u;
 }
 
-static char *
-desc_dup(char *src)
+static void
+desc_dump(char *src, int startcol)
 {
-	char *u;
-	int i, j = 0, col = 0, line = 0, len;
-
-	len = strlen(src) * 2;
-	u = malloc(len); /* enough room for newlines & comments */
-	if (!u)
-		return NULL;
-
-	memset(u, 0, len);
+	int i, j = 0, col = startcol, line = 0, len;
 
 	/* Strip leading space */
 	for (i = 0; isspace(src[i]); i++)
@@ -161,21 +155,20 @@ desc_dup(char *src)
 
 		if (col > 72 && isspace(src[i])) {
 			if (src[i+1]) {
-				u[j++] = '\n';
-				u[j++] = ' ';
-				u[j++] = '*';
-				u[j++] = ' ';
+				putchar('\n');
+				for (j = 0; j < startcol; j++)
+					putchar(' ');
+				putchar(' ');
+				putchar('*');
+				putchar(' ');
 			}
 			line++;
-			col = 0;
+			col = startcol;
 		} else {
-			u[j++] = src[i];
+			putchar(src[i]);
 			col++;
 		}
 	}
-	u[j++] = '\0';
-
-	return u;
 }
 
 static void
@@ -228,6 +221,7 @@ start_element(void *data, const char *element_name, const char **atts)
 
 		ctx->protocol->name = strdup(name);
 		ctx->protocol->uppercase_name = uppercase_dup(name);
+		ctx->protocol->description = NULL;
 	} else if (strcmp(element_name, "copyright") == 0) {
 		
 	} else if (strcmp(element_name, "interface") == 0) {
@@ -258,6 +252,7 @@ start_element(void *data, const char *element_name, const char **atts)
 		message->uppercase_name = uppercase_dup(name);
 		wl_list_init(&message->arg_list);
 		message->arg_count = 0;
+		message->description = NULL;
 
 		if (strcmp(element_name, "request") == 0)
 			wl_list_insert(ctx->interface->request_list.prev,
@@ -310,6 +305,10 @@ start_element(void *data, const char *element_name, const char **atts)
 			break;
 		}
 
+		arg->summary = NULL;
+		if (summary)
+			arg->summary = strdup(summary);
+
 		wl_list_insert(ctx->message->arg_list.prev, &arg->link);
 		ctx->message->arg_count++;
 	} else if (strcmp(element_name, "enum") == 0) {
@@ -357,8 +356,7 @@ start_element(void *data, const char *element_name, const char **atts)
 		else if (ctx->interface)
 			ctx->interface->description = description;
 		else
-			fprintf(stderr,
-				"<description> found in unsupported element\n");
+			ctx->protocol->description = description;
 		ctx->description = description;
 	}
 }
@@ -376,7 +374,7 @@ end_element(void *data, const XML_Char *name)
 		char *text = strndup(ctx->character_data,
 				     ctx->character_data_length);
 		if (text)
-			ctx->description->text = desc_dup(text);
+			ctx->description->text = strdup(text);
 		ctx->description = NULL;
 	} else if (strcmp(name, "request") == 0 ||
 		   strcmp(name, "event") == 0) {
@@ -605,7 +603,8 @@ emit_enumerations(struct interface *interface)
 			}
 			if (desc->text) {
 				printf(" *\n"
-				       " * %s\n", desc->text);
+				       " * ");
+				desc_dump(desc->text, 0);
 			}
 			printf(" */\n");
 		}
@@ -642,13 +641,28 @@ emit_structs(struct wl_list *message_list, struct interface *interface)
 			       "(none)");
 		}
 		printf(" *\n"
-		       " * %s\n"
-		       " */\n", desc->text);
+		       " * ");
+		desc_dump(desc->text, 0);
+		printf(" */\n");
 	}
 	printf("struct %s_%s {\n", interface->name,
 	       is_interface ? "interface" : "listener");
 
 	wl_list_for_each(m, message_list, link) {
+		struct description *mdesc = m->description;
+
+		printf("\t/**\n");
+		printf("\t * %s - %s\n", m->name, mdesc ? mdesc->summary :
+		       "(none)");
+		wl_list_for_each(a, &m->arg_list, link) {
+			printf("\t * @%s: %s\n", a->name, a->summary ?
+			       a->summary : "(none)");
+		}
+		if (mdesc) {
+			printf("\t * ");
+			desc_dump(mdesc->text, 8);
+		}
+		printf("\n\t */\n");
 		printf("\tvoid (*%s)(", m->name);
 
 		n = strlen(m->name) + 17;

@@ -34,8 +34,10 @@
     </description>
     <request name="bind">
       <description summary="bind an object to the display">
+	Binds a new, client created object to the server using @name as
+	the identifier.
       </description>
-      <arg name="name" type="uint"/>
+      <arg name="name" type="uint" summary="unique number id for object"/>
       <arg name="interface" type="string"/>
       <arg name="version" type="uint"/>
       <arg name="id" type="new_id" interface="wl_object"/>
