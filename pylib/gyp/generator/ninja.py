@@ -1107,12 +1107,12 @@ def GenerateOutput(target_list, target_dicts, data, params):
   if params['options'].generator_output:
     raise NotImplementedError, "--generator_output not implemented for ninja"
 
-  if params.get('generator_flags', {}).get('config', None):
-    print "WARNING: ninja now ignored the 'config' generator flag,"
-    print "instead always generating all configs."
-    print "remove the config generator flag from your command line."
-
-  config_names = target_dicts[target_list[0]]['configurations'].keys()
-  for config_name in config_names:
+  user_config = params.get('generator_flags', {}).get('config', None)
+  if user_config:
     GenerateOutputForConfig(target_list, target_dicts, data, params,
-                            config_name)
+                            user_config)
+  else:
+    config_names = target_dicts[target_list[0]]['configurations'].keys()
+    for config_name in config_names:
+      GenerateOutputForConfig(target_list, target_dicts, data, params,
+                              config_name)
