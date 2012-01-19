@@ -81,7 +81,7 @@ class IDLOutFile(object):
     outtext = ''.join(self.outlist)
     if not self.always_write:
       if os.path.isfile(filename):
-        intext = open(filename, 'r').read()
+        intext = open(filename, 'rb').read()
       else:
         intext = ''
 
@@ -106,7 +106,7 @@ class IDLOutFile(object):
         os.makedirs(basepath)
 
       if not GetOption('test'):
-        outfile = open(filename, 'w')
+        outfile = open(filename, 'wb')
         outfile.write(outtext)
         InfoOut.Log('Output %s written.' % self.filename)
       return True
