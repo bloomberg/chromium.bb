@@ -19,11 +19,6 @@ class FlashTest(pyauto.PyUITest):
     if (self.IsChromeOS() and
         self.GetBrowserInfo()['properties']['branding'] == 'Google Chrome'):
       self._flash_plugin_type = 'Pepper Plugin'
-    # Forcibly trigger all plugins to get registered.  crbug.com/94123
-    # Sometimes flash files loaded too quickly after firing browser
-    # ends up getting downloaded, which seems to indicate that the plugin
-    # hasn't been registered yet.
-    self.GetPluginsInfo()
 
   def _AssertFlashProcessPresent(self):
     child_processes = self.GetBrowserInfo()['child_processes']
