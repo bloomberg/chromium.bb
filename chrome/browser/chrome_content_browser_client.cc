@@ -668,7 +668,6 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       switches::kProfilingAtStart,
       switches::kProfilingFile,
       switches::kProfilingFlush,
-      switches::kRendererPrintPreview,
       switches::kSilentDumpOnDCHECK,
     };
 
