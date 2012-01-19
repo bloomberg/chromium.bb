@@ -52,7 +52,7 @@ int GetSanitizedArg(const std::string& switch_name) {
 // Returns the power of the next power-of-2 starting at |value|.
 int NextPowerOf2(int64 value) {
   for (int i = 0; i <= kMaximumPower; ++i) {
-    if ((1 << i) >= value)
+    if ((GG_INT64_C(1) << i) >= value)
       return i;
   }
   // No other value can be represented in an int64.
@@ -160,7 +160,7 @@ void AutoEnrollmentClient::SendRequest(int power) {
     uint64 byte = serial_number_hash_[31 - i] & 0xff;
     remainder = remainder | (byte << (8 * i));
   }
-  remainder = remainder & ((1ULL << power) - 1);
+  remainder = remainder & ((GG_UINT64_C(1) << power) - 1);
 
   request_job_.reset(
       device_management_service_->CreateJob(
@@ -169,7 +169,7 @@ void AutoEnrollmentClient::SendRequest(int power) {
   em::DeviceAutoEnrollmentRequest* request =
       request_job_->GetRequest()->mutable_auto_enrollment_request();
   request->set_remainder(remainder);
-  request->set_modulus((int64) 1 << power);
+  request->set_modulus(GG_INT64_C(1) << power);
   request_job_->Start(base::Bind(&AutoEnrollmentClient::OnRequestCompletion,
                                  base::Unretained(this)));
 }
@@ -188,9 +188,9 @@ void AutoEnrollmentClient::OnRequestCompletion(
   if (enrollment_response.has_expected_modulus()) {
     // Server is asking us to retry with a different modulus.
     int64 modulus = enrollment_response.expected_modulus();
-    int64 last_modulus_used = 1 << last_power_used_;
+    int64 last_modulus_used = GG_INT64_C(1) << last_power_used_;
     int power = NextPowerOf2(modulus);
-    if ((1 << power) != modulus) {
+    if ((GG_INT64_C(1) << power) != modulus) {
       LOG(WARNING) << "Auto enrollment: the server didn't ask for a power-of-2 "
                    << "modulus. Using the closest power-of-2 instead "
                    << "(" << modulus << " vs 2^" << power << ")";

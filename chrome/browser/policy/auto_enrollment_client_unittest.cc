@@ -211,7 +211,7 @@ TEST_F(AutoEnrollmentClientTest, NoBitsUploaded) {
 }
 
 TEST_F(AutoEnrollmentClientTest, ManyBitsUploaded) {
-  int64 bottom62 = GG_LONGLONG(0x14e437a1552b138a);
+  int64 bottom62 = GG_INT64_C(0x14e437a1552b138a);
   for (int i = 0; i <= 62; ++i) {
     completion_callback_count_ = 0;
     CreateClient(kSerial, i, i);
@@ -221,9 +221,19 @@ TEST_F(AutoEnrollmentClientTest, ManyBitsUploaded) {
     EXPECT_EQ(1, completion_callback_count_);
     EXPECT_TRUE(last_request_.has_remainder());
     EXPECT_TRUE(last_request_.has_modulus());
-    EXPECT_EQ((int64) 1 << i, last_request_.modulus());
-    EXPECT_EQ(bottom62 % ((int64) 1 << i), last_request_.remainder());
+    EXPECT_EQ(GG_INT64_C(1) << i, last_request_.modulus());
+    EXPECT_EQ(bottom62 % (GG_INT64_C(1) << i), last_request_.remainder());
   }
+}
+
+TEST_F(AutoEnrollmentClientTest, MoreThan32BitsUploaded) {
+  CreateClient(kSerial, 10, 37);
+  InSequence sequence;
+  ServerWillReply(GG_INT64_C(1) << 37, false, false);
+  ServerWillReply(-1, true, true);
+  client_->Start();
+  EXPECT_TRUE(client_->should_auto_enroll());
+  EXPECT_EQ(1, completion_callback_count_);
 }
 
 }  // namespace
