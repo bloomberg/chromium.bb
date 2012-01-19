@@ -437,7 +437,7 @@ popup_grab_focus(struct wl_grab *grab, uint32_t time,
 		container_of(grab, struct shell_surface, popup.grab);
 	struct wl_client *client = priv->surface->surface.resource.client;
 
-	if (surface->resource.client == client) {
+	if (surface && surface->resource.client == client) {
 		wl_input_device_set_pointer_focus(device, surface, time,
 						  device->x, device->y, x, y);
 		grab->focus = surface;
