@@ -1,9 +1,10 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "native_client/src/shared/ppapi_proxy/plugin_callback.h"
 #include <string.h>
+#include "native_client/src/shared/ppapi_proxy/object_serialize.h"
 #include "native_client/src/shared/ppapi_proxy/utility.h"
 #include "ppapi/c/pp_errors.h"
 #include "srpcgen/ppp_rpc.h"
@@ -27,26 +28,41 @@ pthread_mutex_t CompletionCallbackTable::mutex_ = PTHREAD_MUTEX_INITIALIZER;
 
 int32_t CompletionCallbackTable::AddCallback(
     const PP_CompletionCallback& callback,
-    void* read_buffer) {
+    void* read_buffer,
+    PP_Var* read_var) {
   CallbackTableCriticalSection guard;
+  DCHECK (!read_buffer || !read_var);
   if (callback.func == NULL) {
     DebugPrintf("CompletionCallbackTable attempted to add NULL func!!\n");
     return 0;
   }
   int32_t callback_id = next_id_;
   ++next_id_;
-  CallbackInfo info = { callback, read_buffer };
+  CallbackInfo info = { callback, read_buffer, read_var };
   table_.insert(std::pair<int32_t, CallbackInfo>(callback_id, info));
   return callback_id;
 }
 
 int32_t CompletionCallbackTable::AddCallback(
     const PP_CompletionCallback& callback) {
-  return AddCallback(callback, NULL);
+  return AddCallback(callback, NULL, NULL);
 }
 
+int32_t CompletionCallbackTable::AddCallback(
+    const PP_CompletionCallback& callback,
+    void* read_buffer) {
+  return AddCallback(callback, read_buffer, NULL);
+}
+
+int32_t CompletionCallbackTable::AddCallback(
+    const PP_CompletionCallback& callback,
+    PP_Var* read_var) {
+  return AddCallback(callback, NULL, read_var);
+}
+
+
 PP_CompletionCallback CompletionCallbackTable::RemoveCallback(
-    int32_t callback_id, void** read_buffer) {
+    int32_t callback_id, void** read_buffer, PP_Var** read_var) {
   CallbackTableCriticalSection guard;
   CallbackTable::iterator it = table_.find(callback_id);
   DebugPrintf("CompletionCallbackTable::RemoveCallback id: %"NACL_PRId32"\n",
@@ -56,6 +72,8 @@ PP_CompletionCallback CompletionCallbackTable::RemoveCallback(
     table_.erase(it);
     if (read_buffer != NULL)
       *read_buffer = info.read_buffer;
+    if (read_var != NULL)
+      *read_var = info.read_var;
     return info.callback;
   }
   *read_buffer = NULL;
@@ -77,9 +95,10 @@ void CompletionCallbackRpcServer::RunCompletionCallback(
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
 
   void* user_buffer;
+  PP_Var* user_var;
   PP_CompletionCallback callback =
       ppapi_proxy::CompletionCallbackTable::Get()->RemoveCallback(
-          callback_id, &user_buffer);
+          callback_id, &user_buffer, &user_var);
   if (callback.func == NULL) {
     ppapi_proxy::DebugPrintf(
         "CompletionCallbackRpcServer: id of %"NACL_PRId32" is NULL callback!\n",
@@ -89,6 +108,8 @@ void CompletionCallbackRpcServer::RunCompletionCallback(
 
   if (user_buffer != NULL && read_buffer_size > 0)
     memcpy(user_buffer, read_buffer, read_buffer_size);
+  else if (user_var != NULL && read_buffer_size > 0)
+    ppapi_proxy::DeserializeTo(read_buffer, read_buffer_size, 1, user_var);
   PP_RunCompletionCallback(&callback, result);
 
   rpc->result = NACL_SRPC_RESULT_OK;

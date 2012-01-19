@@ -13,6 +13,7 @@
 #include "ppapi/c/dev/ppb_scrollbar_dev.h"
 #include "ppapi/c/dev/ppb_testing_dev.h"
 #include "ppapi/c/dev/ppb_var_array_buffer_dev.h"
+#include "ppapi/c/dev/ppb_websocket_dev.h"
 #include "ppapi/c/dev/ppb_widget_dev.h"
 #include "ppapi/c/dev/ppb_zoom_dev.h"
 #include "ppapi/c/pp_instance.h"
@@ -132,6 +133,7 @@ const PPB_Var* PPBVarInterface();  // shared
 const PPB_VarArrayBuffer_Dev* PPBVarArrayBufferInterface();  // shared
 const PPB_View* PPBViewInterface();
 const PPB_WheelInputEvent* PPBWheelInputEventInterface();
+const PPB_WebSocket_Dev* PPBWebSocketInterface();
 const PPB_Widget_Dev* PPBWidgetInterface();
 const PPB_Zoom_Dev* PPBZoomInterface();
 

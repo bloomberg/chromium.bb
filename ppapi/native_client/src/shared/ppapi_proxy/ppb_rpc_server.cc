@@ -2555,6 +2555,240 @@ static void PPB_URLResponseInfo_GetBodyAsFileRefDispatcher(
   );
 }
 
+static void PPB_WebSocket_CreateDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbWebSocketRpcServer::PPB_WebSocket_Create(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      &(outputs[0]->u.ival)
+  );
+}
+
+static void PPB_WebSocket_IsWebSocketDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbWebSocketRpcServer::PPB_WebSocket_IsWebSocket(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      &(outputs[0]->u.ival)
+  );
+}
+
+static void PPB_WebSocket_ConnectDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbWebSocketRpcServer::PPB_WebSocket_Connect(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      inputs[1]->u.count, inputs[1]->arrays.carr,
+      inputs[2]->u.count, inputs[2]->arrays.carr,
+      inputs[3]->u.ival,
+      inputs[4]->u.ival,
+      &(outputs[0]->u.ival)
+  );
+}
+
+static void PPB_WebSocket_CloseDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbWebSocketRpcServer::PPB_WebSocket_Close(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      inputs[1]->u.ival,
+      inputs[2]->u.count, inputs[2]->arrays.carr,
+      inputs[3]->u.ival,
+      &(outputs[0]->u.ival)
+  );
+}
+
+static void PPB_WebSocket_ReceiveMessageDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbWebSocketRpcServer::PPB_WebSocket_ReceiveMessage(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      inputs[1]->u.ival,
+      &(outputs[0]->u.ival)
+  );
+}
+
+static void PPB_WebSocket_SendMessageDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbWebSocketRpcServer::PPB_WebSocket_SendMessage(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      inputs[1]->u.count, inputs[1]->arrays.carr,
+      &(outputs[0]->u.ival)
+  );
+}
+
+static void PPB_WebSocket_GetBufferedAmountDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbWebSocketRpcServer::PPB_WebSocket_GetBufferedAmount(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      &(outputs[0]->u.lval)
+  );
+}
+
+static void PPB_WebSocket_GetCloseCodeDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbWebSocketRpcServer::PPB_WebSocket_GetCloseCode(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      &(outputs[0]->u.ival)
+  );
+}
+
+static void PPB_WebSocket_GetCloseReasonDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbWebSocketRpcServer::PPB_WebSocket_GetCloseReason(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      &(outputs[0]->u.count), outputs[0]->arrays.carr
+  );
+}
+
+static void PPB_WebSocket_GetCloseWasCleanDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbWebSocketRpcServer::PPB_WebSocket_GetCloseWasClean(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      &(outputs[0]->u.ival)
+  );
+}
+
+static void PPB_WebSocket_GetExtensionsDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbWebSocketRpcServer::PPB_WebSocket_GetExtensions(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      &(outputs[0]->u.count), outputs[0]->arrays.carr
+  );
+}
+
+static void PPB_WebSocket_GetProtocolDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbWebSocketRpcServer::PPB_WebSocket_GetProtocol(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      &(outputs[0]->u.count), outputs[0]->arrays.carr
+  );
+}
+
+static void PPB_WebSocket_GetReadyStateDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbWebSocketRpcServer::PPB_WebSocket_GetReadyState(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      &(outputs[0]->u.ival)
+  );
+}
+
+static void PPB_WebSocket_GetURLDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbWebSocketRpcServer::PPB_WebSocket_GetURL(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      &(outputs[0]->u.count), outputs[0]->arrays.carr
+  );
+}
+
+static void PPB_WebSocket_SetBinaryTypeDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbWebSocketRpcServer::PPB_WebSocket_SetBinaryType(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      inputs[1]->u.ival,
+      &(outputs[0]->u.ival)
+  );
+}
+
+static void PPB_WebSocket_GetBinaryTypeDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbWebSocketRpcServer::PPB_WebSocket_GetBinaryType(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      &(outputs[0]->u.ival)
+  );
+}
+
 static void PPB_Widget_IsWidgetDispatcher(
     NaClSrpcRpc* rpc,
     NaClSrpcArg** inputs,
@@ -2830,6 +3064,22 @@ NaClSrpcHandlerDesc PpbRpcs::srpc_methods[] = {
   { "PPB_URLResponseInfo_IsURLResponseInfo:i:i", PPB_URLResponseInfo_IsURLResponseInfoDispatcher },
   { "PPB_URLResponseInfo_GetProperty:ii:C", PPB_URLResponseInfo_GetPropertyDispatcher },
   { "PPB_URLResponseInfo_GetBodyAsFileRef:i:i", PPB_URLResponseInfo_GetBodyAsFileRefDispatcher },
+  { "PPB_WebSocket_Create:i:i", PPB_WebSocket_CreateDispatcher },
+  { "PPB_WebSocket_IsWebSocket:i:i", PPB_WebSocket_IsWebSocketDispatcher },
+  { "PPB_WebSocket_Connect:iCCii:i", PPB_WebSocket_ConnectDispatcher },
+  { "PPB_WebSocket_Close:iiCi:i", PPB_WebSocket_CloseDispatcher },
+  { "PPB_WebSocket_ReceiveMessage:ii:i", PPB_WebSocket_ReceiveMessageDispatcher },
+  { "PPB_WebSocket_SendMessage:iC:i", PPB_WebSocket_SendMessageDispatcher },
+  { "PPB_WebSocket_GetBufferedAmount:i:l", PPB_WebSocket_GetBufferedAmountDispatcher },
+  { "PPB_WebSocket_GetCloseCode:i:i", PPB_WebSocket_GetCloseCodeDispatcher },
+  { "PPB_WebSocket_GetCloseReason:i:C", PPB_WebSocket_GetCloseReasonDispatcher },
+  { "PPB_WebSocket_GetCloseWasClean:i:i", PPB_WebSocket_GetCloseWasCleanDispatcher },
+  { "PPB_WebSocket_GetExtensions:i:C", PPB_WebSocket_GetExtensionsDispatcher },
+  { "PPB_WebSocket_GetProtocol:i:C", PPB_WebSocket_GetProtocolDispatcher },
+  { "PPB_WebSocket_GetReadyState:i:i", PPB_WebSocket_GetReadyStateDispatcher },
+  { "PPB_WebSocket_GetURL:i:C", PPB_WebSocket_GetURLDispatcher },
+  { "PPB_WebSocket_SetBinaryType:ii:i", PPB_WebSocket_SetBinaryTypeDispatcher },
+  { "PPB_WebSocket_GetBinaryType:i:i", PPB_WebSocket_GetBinaryTypeDispatcher },
   { "PPB_Widget_IsWidget:i:i", PPB_Widget_IsWidgetDispatcher },
   { "PPB_Widget_Paint:iCi:i", PPB_Widget_PaintDispatcher },
   { "PPB_Widget_HandleEvent:ii:i", PPB_Widget_HandleEventDispatcher },

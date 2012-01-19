@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 #include <map>
 #include "native_client/src/shared/ppapi_proxy/plugin_globals.h"
 #include "ppapi/c/pp_completion_callback.h"
+#include "ppapi/c/pp_var.h"
 
 namespace ppapi_proxy {
 
@@ -32,19 +33,26 @@ class CompletionCallbackTable {
   // If |callback| is NULL, then returns 0.
   int32_t AddCallback(const PP_CompletionCallback& callback);
   int32_t AddCallback(const PP_CompletionCallback& callback, void* read_buffer);
+  int32_t AddCallback(const PP_CompletionCallback& callback, PP_Var* read_var);
   // Removes and returns the callback and optionally the associated
   // |read_buffer| corresponding to the given |callback_id|.
   // If no callback is found, returns a NULL callback.
-  PP_CompletionCallback RemoveCallback(int32_t callback_id, void** read_buffer);
+  PP_CompletionCallback RemoveCallback(
+      int32_t callback_id, void** read_buffer, PP_Var** read_var);
 
  private:
   // Currently implemented as singleton, so use a private constructor.
   CompletionCallbackTable() : next_id_(1) { }
   ~CompletionCallbackTable() { }
 
+  int32_t AddCallback(const PP_CompletionCallback& callback,
+                      void* read_buffer,
+                      PP_Var* read_var);
+
   struct CallbackInfo {
     PP_CompletionCallback callback;
     void* read_buffer;  // To be used with callbacks invoked on byte reads.
+    PP_Var* read_var;  // To be used with callbacks invoked on PP_Var reads.
   };
 
   typedef std::map<int32_t, CallbackInfo> CallbackTable;

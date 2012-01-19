@@ -249,8 +249,12 @@ std::string TestWebSocket::TestProtocols() {
 
   PP_Resource ws = websocket_interface_->Create(instance_->pp_instance());
   ASSERT_TRUE(ws);
+  TestCompletionCallback callback(instance_->pp_instance(), force_async_);
   int32_t result = websocket_interface_->Connect(
-      ws, url, bad_protocols, 2U, PP_BlockUntilComplete());
+      ws, url, bad_protocols, 2U,
+      static_cast<pp::CompletionCallback>(callback).pp_completion_callback());
+  if (result == PP_OK_COMPLETIONPENDING)
+    result = callback.WaitForResult();
   ASSERT_EQ(PP_ERROR_BADARGUMENT, result);
   core_interface_->ReleaseResource(ws);
 

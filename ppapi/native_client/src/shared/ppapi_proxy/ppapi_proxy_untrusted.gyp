@@ -80,6 +80,7 @@
           'plugin_ppb_url_response_info.cc',
           'plugin_ppb_var.cc',
           'plugin_ppb_view.cc',
+          'plugin_ppb_websocket.cc',
           'plugin_ppb_widget.cc',
           'plugin_ppb_zoom.cc',
           'plugin_ppp_find_rpc_server.cc',

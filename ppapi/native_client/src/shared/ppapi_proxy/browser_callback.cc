@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,7 @@
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/ppapi_proxy/browser_globals.h"
 #include "native_client/src/shared/ppapi_proxy/browser_ppp.h"
+#include "native_client/src/shared/ppapi_proxy/object_serialize.h"
 #include "native_client/src/shared/ppapi_proxy/utility.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "ppapi/c/pp_completion_callback.h"
@@ -49,6 +50,7 @@ struct RemoteCallbackInfo {
   NaClSrpcChannel* srpc_channel;
   int32_t callback_id;
   char* read_buffer;
+  PP_Var read_var;
   CheckResultFunc check_result_func;
   GetReadSizeFunc get_size_read_func;
 };
@@ -83,6 +85,11 @@ void RunRemoteCallback(void* user_data, int32_t result) {
   GetReadSizeFunc get_size_read_func = remote_callback->get_size_read_func;
   if ((*check_result_func)(result) && remote_callback->read_buffer != NULL)
     read_buffer_size = (*get_size_read_func)(result);
+  if (remote_callback->read_var.type != PP_VARTYPE_NULL) {
+    read_buffer_size = kMaxReturnVarSize;
+    read_buffer.reset(
+        Serialize(&remote_callback->read_var, 1, &read_buffer_size));
+  }
 
   NaClSrpcError srpc_result =
       CompletionCallbackRpcClient::RunCompletionCallback(
@@ -106,14 +113,17 @@ struct PP_CompletionCallback MakeRemoteCompletionCallback(
     int32_t callback_id,
     int32_t bytes_to_read,
     char** buffer,
+    PP_Var** var,
     CheckResultFunc check_result_func,
     GetReadSizeFunc get_size_read_func) {
-  RemoteCallbackInfo* remote_callback = new(std::nothrow) RemoteCallbackInfo;
-  if (remote_callback == NULL)  // new failed.
+  nacl::scoped_ptr<RemoteCallbackInfo> remote_callback(
+      new(std::nothrow) RemoteCallbackInfo);
+  if (remote_callback.get() == NULL)  // new failed.
     return PP_BlockUntilComplete();
   remote_callback->srpc_channel = srpc_channel;
   remote_callback->callback_id = callback_id;
   remote_callback->read_buffer = NULL;
+  remote_callback->read_var = PP_MakeNull();
   remote_callback->check_result_func = check_result_func;
   remote_callback->get_size_read_func = get_size_read_func;
 
@@ -123,9 +133,23 @@ struct PP_CompletionCallback MakeRemoteCompletionCallback(
       return PP_BlockUntilComplete();
     remote_callback->read_buffer = *buffer;
   }
+  if (var)
+    *var = &remote_callback->read_var;
 
   return PP_MakeOptionalCompletionCallback(
-      RunRemoteCallback, remote_callback);
+      RunRemoteCallback, remote_callback.release());
+}
+
+struct PP_CompletionCallback MakeRemoteCompletionCallback(
+    NaClSrpcChannel* srpc_channel,
+    int32_t callback_id,
+    int32_t bytes_to_read,
+    char** buffer,
+    CheckResultFunc check_result_func,
+    GetReadSizeFunc get_size_read_func) {
+  return MakeRemoteCompletionCallback(srpc_channel, callback_id, bytes_to_read,
+                                      buffer, NULL, check_result_func,
+                                      get_size_read_func);
 }
 
 struct PP_CompletionCallback MakeRemoteCompletionCallback(
@@ -135,6 +159,14 @@ struct PP_CompletionCallback MakeRemoteCompletionCallback(
     char** buffer) {
   return MakeRemoteCompletionCallback(srpc_channel, callback_id, bytes_to_read,
                                       buffer, BytesWereRead, CastToNaClAbiSize);
+}
+
+struct PP_CompletionCallback MakeRemoteCompletionCallback(
+    NaClSrpcChannel* srpc_channel,
+    int32_t callback_id,
+    PP_Var** var) {
+  return MakeRemoteCompletionCallback(srpc_channel, callback_id, 0, NULL, var,
+                                      BytesWereRead, CastToNaClAbiSize);
 }
 
 struct PP_CompletionCallback MakeRemoteCompletionCallback(

@@ -313,6 +313,7 @@
       'tests/test_url_loader.cc',
       'tests/test_var.cc',
       'tests/test_view.cc',
+      'tests/test_websocket.cc',
     ],
     #
     # Sources used in trusted tests.

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 
 struct NaClSrpcChannel;
 struct PP_CompletionCallback;
+struct PP_Var;
 
 namespace ppapi_proxy {
 
@@ -38,6 +39,20 @@ struct PP_CompletionCallback MakeRemoteCompletionCallback(
      // For callbacks invoked on a byte read.
     int32_t bytes_to_read,
     char** buffer,
+    CheckResultFunc check_result,
+    GetReadSizeFunc get_size_read_func);
+struct PP_CompletionCallback MakeRemoteCompletionCallback(
+    NaClSrpcChannel* srpc_channel,
+    int32_t callback_id,
+    // For callbacks invoked on PP_Var read.
+    PP_Var** var);
+struct PP_CompletionCallback MakeRemoteCompletionCallback(
+    NaClSrpcChannel* srpc_channel,
+    int32_t callback_id,
+     // For callbacks invoked on a byte read.
+    int32_t bytes_to_read,
+    char** buffer,
+    PP_Var** var,
     CheckResultFunc check_result,
     GetReadSizeFunc get_size_read_func);
 

@@ -7,6 +7,7 @@
 
 #include "ppapi/c/dev/ppb_memory_dev.h"
 #include "ppapi/c/dev/ppb_var_array_buffer_dev.h"
+#include "ppapi/c/dev/ppb_websocket_dev.h"
 #include "ppapi/c/dev/ppp_find_dev.h"
 #include "ppapi/c/dev/ppp_printing_dev.h"
 #include "ppapi/c/dev/ppp_scrollbar_dev.h"
@@ -55,6 +56,7 @@ const PPB_Core* PPBCoreInterface();  // shared
 const PPB_Memory_Dev* PPBMemoryInterface();  // shared
 const PPB_Var* PPBVarInterface();  // shared
 const PPB_VarArrayBuffer_Dev* PPBVarArrayBufferInterface();  // shared
+const PPB_WebSocket_Dev* PPBWebSocketInterface();
 
 // Support for getting PPP_ plugin interfaces.
 // Safe version CHECK's for NULL.

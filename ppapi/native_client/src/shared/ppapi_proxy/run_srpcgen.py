@@ -85,6 +85,7 @@ all_units = [
          'ppb_url_loader.srpc',
          'ppb_url_request_info.srpc',
          'ppb_url_response_info.srpc',
+         'ppb_websocket.srpc',
          'ppb_widget.srpc',
          'ppb_zoom.srpc',
          ]},

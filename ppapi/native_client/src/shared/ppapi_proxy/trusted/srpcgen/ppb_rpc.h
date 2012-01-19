@@ -1281,6 +1281,105 @@ class PpbURLResponseInfoRpcServer {
   void operator=(const PpbURLResponseInfoRpcServer);
 };  // class PpbURLResponseInfoRpcServer
 
+class PpbWebSocketRpcServer {
+ public:
+  static void PPB_WebSocket_Create(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Instance instance,
+      PP_Resource* resource);
+  static void PPB_WebSocket_IsWebSocket(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Resource instance,
+      int32_t* is_websocket);
+  static void PPB_WebSocket_Connect(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Resource ws,
+      nacl_abi_size_t url_bytes, char* url,
+      nacl_abi_size_t protocols_bytes, char* protocols,
+      int32_t protocol_count,
+      int32_t callback_id,
+      int32_t* pp_error);
+  static void PPB_WebSocket_Close(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Resource ws,
+      int32_t code,
+      nacl_abi_size_t reason_bytes, char* reason,
+      int32_t callback_id,
+      int32_t* pp_error);
+  static void PPB_WebSocket_ReceiveMessage(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Resource ws,
+      int32_t callback_id,
+      int32_t* pp_error);
+  static void PPB_WebSocket_SendMessage(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Resource ws,
+      nacl_abi_size_t message_bytes, char* message,
+      int32_t* pp_error);
+  static void PPB_WebSocket_GetBufferedAmount(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Resource ws,
+      int64_t* buffered_amount);
+  static void PPB_WebSocket_GetCloseCode(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Resource ws,
+      int32_t* close_code);
+  static void PPB_WebSocket_GetCloseReason(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Resource ws,
+      nacl_abi_size_t* reason_bytes, char* reason);
+  static void PPB_WebSocket_GetCloseWasClean(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Resource ws,
+      int32_t* was_clean);
+  static void PPB_WebSocket_GetExtensions(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Resource ws,
+      nacl_abi_size_t* extensions_bytes, char* extensions);
+  static void PPB_WebSocket_GetProtocol(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Resource ws,
+      nacl_abi_size_t* protocol_bytes, char* protocol);
+  static void PPB_WebSocket_GetReadyState(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Resource ws,
+      int32_t* ready_state);
+  static void PPB_WebSocket_GetURL(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Resource ws,
+      nacl_abi_size_t* url_bytes, char* url);
+  static void PPB_WebSocket_SetBinaryType(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Resource ws,
+      int32_t binary_type,
+      int32_t* success);
+  static void PPB_WebSocket_GetBinaryType(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Resource ws,
+      int32_t* binary_type);
+
+ private:
+  PpbWebSocketRpcServer();
+  PpbWebSocketRpcServer(const PpbWebSocketRpcServer&);
+  void operator=(const PpbWebSocketRpcServer);
+};  // class PpbWebSocketRpcServer
+
 class PpbWidgetRpcServer {
  public:
   static void PPB_Widget_IsWidget(

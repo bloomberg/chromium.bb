@@ -42,6 +42,7 @@
         'browser_ppb_url_loader_rpc_server.cc',
         'browser_ppb_url_request_info_rpc_server.cc',
         'browser_ppb_url_response_info_rpc_server.cc',
+        'browser_ppb_websocket_rpc_server.cc',
         'browser_ppb_widget_rpc_server.cc',
         'browser_ppb_zoom_rpc_server.cc',
         'browser_ppp_find.cc',

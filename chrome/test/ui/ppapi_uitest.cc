@@ -134,7 +134,7 @@ class PPAPITestBase : public UITest {
 
     ui_test_utils::TestWebSocketServer server;
     ASSERT_TRUE(server.Start(websocket_root_dir));
-    RunTest(test_case);
+    RunTestViaHTTP(test_case);
   }
 
   std::string StripPrefixes(const std::string& test_name) {
@@ -304,19 +304,26 @@ class PPAPINaClTestDisallowedSockets : public PPAPITestBase {
 #if defined(DISABLE_NACL)
 #define TEST_PPAPI_NACL_VIA_HTTP(test_name)
 #define TEST_PPAPI_NACL_VIA_HTTP_DISALLOWED_SOCKETS(test_name)
+#define TEST_PPAPI_NACL_VIA_HTTP_WITH_WS(test_name)
 #else
 
 // NaCl based PPAPI tests
 #define TEST_PPAPI_NACL_VIA_HTTP(test_name) \
     TEST_F(PPAPINaClTest, test_name) { \
-  RunTestViaHTTP(STRIP_PREFIXES(test_name)); \
-}
+      RunTestViaHTTP(STRIP_PREFIXES(test_name)); \
+    }
 
 // NaCl based PPAPI tests with disallowed socket API
 #define TEST_PPAPI_NACL_VIA_HTTP_DISALLOWED_SOCKETS(test_name) \
     TEST_F(PPAPINaClTestDisallowedSockets, test_name) { \
-  RunTestViaHTTP(STRIP_PREFIXES(test_name)); \
-}
+      RunTestViaHTTP(STRIP_PREFIXES(test_name)); \
+    }
+
+// NaCl based PPAPI tests with WebSocket server
+#define TEST_PPAPI_NACL_VIA_HTTP_WITH_WS(test_name) \
+    TEST_F(PPAPINaClTest, test_name) { \
+      RunTestWithWebSocketServer(STRIP_PREFIXES(test_name)); \
+    }
 #endif
 
 
@@ -689,6 +696,19 @@ TEST_PPAPI_IN_PROCESS_WITH_WS(WebSocket_TextSendReceive)
 TEST_PPAPI_IN_PROCESS_WITH_WS(WebSocket_BinarySendReceive)
 TEST_PPAPI_IN_PROCESS_WITH_WS(WebSocket_BufferedAmount)
 TEST_PPAPI_IN_PROCESS_WITH_WS(WebSocket_CcInterfaces)
+TEST_PPAPI_NACL_VIA_HTTP(WebSocket_IsWebSocket)
+TEST_PPAPI_NACL_VIA_HTTP(WebSocket_UninitializedPropertiesAccess)
+TEST_PPAPI_NACL_VIA_HTTP(WebSocket_InvalidConnect)
+TEST_PPAPI_NACL_VIA_HTTP(WebSocket_Protocols)
+TEST_PPAPI_NACL_VIA_HTTP(WebSocket_GetURL)
+TEST_PPAPI_NACL_VIA_HTTP_WITH_WS(WebSocket_ValidConnect)
+TEST_PPAPI_NACL_VIA_HTTP_WITH_WS(WebSocket_InvalidClose)
+TEST_PPAPI_NACL_VIA_HTTP_WITH_WS(WebSocket_ValidClose)
+TEST_PPAPI_NACL_VIA_HTTP_WITH_WS(WebSocket_GetProtocol)
+TEST_PPAPI_NACL_VIA_HTTP_WITH_WS(WebSocket_TextSendReceive)
+TEST_PPAPI_NACL_VIA_HTTP_WITH_WS(WebSocket_BinarySendReceive)
+TEST_PPAPI_NACL_VIA_HTTP_WITH_WS(WebSocket_BufferedAmount)
+TEST_PPAPI_NACL_VIA_HTTP_WITH_WS(WebSocket_CcInterfaces)
 
 TEST_PPAPI_IN_PROCESS(AudioConfig_ValidConfigs)
 TEST_PPAPI_IN_PROCESS(AudioConfig_InvalidConfigs)

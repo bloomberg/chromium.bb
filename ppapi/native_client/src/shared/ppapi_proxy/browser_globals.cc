@@ -416,6 +416,13 @@ const PPB_View* PPBViewInterface() {
   return ppb;
 }
 
+const PPB_WebSocket_Dev* PPBWebSocketInterface() {
+  static const PPB_WebSocket_Dev* ppb =
+      static_cast<const PPB_WebSocket_Dev*>(
+          GetBrowserInterfaceSafe(PPB_WEBSOCKET_DEV_INTERFACE));
+  return ppb;
+}
+
 const PPB_Widget_Dev* PPBWidgetInterface() {
   static const PPB_Widget_Dev* ppb =
       static_cast<const PPB_Widget_Dev*>(
