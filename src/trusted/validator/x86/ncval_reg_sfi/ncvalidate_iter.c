@@ -372,7 +372,9 @@ void NaClValidatorInstMessage(int level,
   if (NACL_FLAGS_ncval_annotate) {
     va_list ap;
     va_start(ap, format);
-    NaClValidatorPcAddressMess(level, vstate, inst->vpc, format, ap);
+    NaClValidatorPcAddressMess(level, vstate,
+                               NaClInstStatePrintableAddress(inst),
+                               format, ap);
     va_end(ap);
   } else {
     level = NaClRecordIfValidatorError(vstate, level);
@@ -576,7 +578,8 @@ void NaClPrintConditions(NaClValidatorState *state) {
    * pre/post conditions.
    */
   if ((strlen(state->precond) > 0) || (strlen(state->postcond) > 0)) {
-    printf("%"NACL_PRIxNaClPcAddress": ", state->cur_inst_state->vpc);
+    printf("%"NACL_PRIxNaClPcAddress": ",
+           NaClInstStatePrintableAddress(state->cur_inst_state));
     if ('\0' != state->precond[0]) {
       printf("%s", state->precond);
     }

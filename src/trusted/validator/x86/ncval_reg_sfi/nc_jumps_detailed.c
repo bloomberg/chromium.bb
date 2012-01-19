@@ -49,12 +49,12 @@ static void NaClInstLayoutCheck(NaClValidatorState* vstate) {
         NaClInstStateInstPrint(NaClLogGetGio(), vstate->cur_inst_state));
 
   /* Check basic block boundaries. */
-  start = NaClInstStateVpc(vstate->cur_inst_state);
+  start = vstate->cur_inst_state->vpc;
 
   /* Check that if first instruction in a basic block, it isn't in the
    * middle of a pattern.
    */
-  if ((0 == (start % vstate->alignment)) &&
+  if ((0 == (start & vstate->alignment_mask)) &&
       NaClAddressSetContains(vstate->jump_sets.removed_targets,
                              start, vstate)) {
     NaClValidatorInstMessage(
@@ -65,7 +65,7 @@ static void NaClInstLayoutCheck(NaClValidatorState* vstate) {
   /* Check that instruction doesn't cross block boundaries. */
   end = (NaClPcAddress) (start + vstate->cur_inst_state->bytes.length);
   for (i = start + 1; i < end; ++i) {
-    if (0 == (i % vstate->alignment)) {
+    if (0 == (i & vstate->alignment_mask)) {
       NaClValidatorInstMessage(
           LOG_ERROR, vstate, vstate->cur_inst_state,
           "Instruction crosses basic block alignment\n");

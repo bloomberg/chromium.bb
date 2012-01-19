@@ -133,7 +133,7 @@ static NaClExp* NaClFatal(const char* message,
                           NaClInstState* state) {
   NaClLog(LOG_ERROR,
           "FATAL: At %"NACL_PRIxNaClPcAddress", unable to translate: %s\n",
-          NaClInstStateVpc(state), message);
+          NaClInstStatePrintableAddress(state), message);
   exit(1);
   /* NOT REACHED */
   return NULL;
@@ -1595,7 +1595,7 @@ void NaClBuildExpVector(struct NaClInstState* state) {
   DEBUG(NaClLog(LOG_INFO,
                 "building expression vector for pc = %"NACL_PRIxNaClPcAddress
                 ":\n",
-                NaClInstStateVpc(state)));
+                NaClInstStatePrintableAddress(state)));
   num_ops = NaClGetInstNumberOperandsInline(state->inst);
   for (i = 0; i < num_ops; i++) {
     NaClExp* n;

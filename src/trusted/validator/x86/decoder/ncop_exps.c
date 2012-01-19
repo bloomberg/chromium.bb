@@ -477,7 +477,8 @@ void NaClInstStateInstPrint(struct Gio* file, NaClInstState* state) {
   DEBUG_OR_ERASE(
       NaClInstPrint(file, state->decoder_tables, NaClInstStateInst(state)));
   DEBUG(NaClExpVectorPrint(file, NaClInstStateExpVector(state)));
-  gprintf(file, "%"NACL_PRIxNaClPcAddressAll": ", NaClInstStateVpc(state));
+  gprintf(file, "%"NACL_PRIxNaClPcAddressAll": ",
+          NaClInstStatePrintableAddress(state));
   for (i = 0; i < length; ++i) {
     gprintf(file, "%02"NACL_PRIx8" ", NaClInstStateByte(state, i));
   }
