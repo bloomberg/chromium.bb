@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -14,8 +14,8 @@
 // restarts). Until that happens, the signin manager can still be used to
 // refresh credentials, but changing the username is not permitted.
 
-#ifndef CHROME_BROWSER_SIGNIN_SIGNIN_MANAGER_H_
-#define CHROME_BROWSER_SIGNIN_SIGNIN_MANAGER_H_
+#ifndef CHROME_BROWSER_SYNC_SIGNIN_MANAGER_H_
+#define CHROME_BROWSER_SYNC_SIGNIN_MANAGER_H_
 #pragma once
 
 #include <string>
@@ -24,7 +24,6 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/net/gaia/gaia_oauth_fetcher.h"
-#include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/common/net/gaia/gaia_auth_consumer.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "content/public/browser/notification_observer.h"
@@ -48,11 +47,13 @@ struct GoogleServiceSigninSuccessDetails {
 
 class SigninManager : public GaiaAuthConsumer,
                       public GaiaOAuthConsumer,
-                      public content::NotificationObserver,
-                      public ProfileKeyedService {
+                      public content::NotificationObserver {
  public:
   SigninManager();
   virtual ~SigninManager();
+
+  // Call to register our prefs.
+  static void RegisterUserPrefs(PrefService* user_prefs);
 
   // If user was signed in, load tokens from DB if available.
   void Initialize(Profile* profile);
@@ -90,11 +91,7 @@ class SigninManager : public GaiaAuthConsumer,
 
   // Sign a user out, removing the preference, erasing all keys
   // associated with the user, and canceling all auth in progress.
-  virtual void SignOut();
-
-  // Returns the auth error associated with the last login attempt, or None if
-  // there have been no login failures.
-  virtual const GoogleServiceAuthError& GetLoginAuthError() const;
+  void SignOut();
 
   // GaiaAuthConsumer
   virtual void OnClientLoginSuccess(const ClientLoginResult& result) OVERRIDE;
@@ -127,7 +124,6 @@ class SigninManager : public GaiaAuthConsumer,
                        const content::NotificationDetails& details) OVERRIDE;
 
  private:
-  friend class FakeSigninManager;
   FRIEND_TEST_ALL_PREFIXES(SigninManagerTest, ClearTransientSigninData);
   FRIEND_TEST_ALL_PREFIXES(SigninManagerTest, ProvideSecondFactorSuccess);
   FRIEND_TEST_ALL_PREFIXES(SigninManagerTest, ProvideSecondFactorFailure);
@@ -164,13 +160,9 @@ class SigninManager : public GaiaAuthConsumer,
   // Register for notifications from the TokenService.
   content::NotificationRegistrar registrar_;
 
-  // The last error we received when logging in (used to retrieve details like
-  // captchas, etc).
-  GoogleServiceAuthError last_login_auth_error_;
-
   std::string authenticated_username_;
 
   DISALLOW_COPY_AND_ASSIGN(SigninManager);
 };
 
-#endif  // CHROME_BROWSER_SIGNIN_SIGNIN_MANAGER_H_
+#endif  // CHROME_BROWSER_SYNC_SIGNIN_MANAGER_H_

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,9 +15,9 @@
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_metrics.h"
-#include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/protocol/service_constants.h"
+#include "chrome/browser/sync/signin_manager.h"
 #include "chrome/browser/sync/sync_setup_flow.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/util/oauth.h"
@@ -659,9 +659,10 @@ bool SyncSetupHandler2::IsLoginAuthDataValid(const std::string& username,
 }
 
 void SyncSetupHandler2::ShowLoginErrorMessage(const string16& error_message) {
-  DCHECK(flow_);
   DictionaryValue args;
-  flow_->GetArgsForGaiaLogin(&args);
+  Profile* profile = Profile::FromWebUI(web_ui());
+  ProfileSyncService* service = profile->GetProfileSyncService();
+  SyncSetupFlow::GetArgsForGaiaLogin(service, &args);
   args.SetString("error_message", error_message);
   ShowGaiaLogin(args);
 }

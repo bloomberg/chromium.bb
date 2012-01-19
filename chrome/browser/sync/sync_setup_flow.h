@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -62,11 +62,13 @@ class SyncSetupFlow {
                             SyncSetupWizard::State start,
                             SyncSetupWizard::State end);
 
-  // Fills |args| with "user" and "error" arguments per our current state.
-  void GetArgsForGaiaLogin(DictionaryValue* args);
+  // Fills |args| with "user" and "error" arguments by querying |service|.
+  static void GetArgsForGaiaLogin(
+      const ProfileSyncService* service,
+      DictionaryValue* args);
 
   // Fills |args| for the configure screen (Choose Data Types/Encryption)
-  void GetArgsForConfigure(DictionaryValue* args);
+  void GetArgsForConfigure(ProfileSyncService* service, DictionaryValue* args);
 
   // Attaches the |handler| to this flow. Returns true if successful and false
   // if a handler has already been attached.
@@ -101,7 +103,6 @@ class SyncSetupFlow {
   void OnDialogClosed(const std::string& json_retval);
 
  private:
-  friend class ProfileSyncServiceForWizardTest;
   FRIEND_TEST_ALL_PREFIXES(SyncSetupWizardTest, InitialStepLogin);
   FRIEND_TEST_ALL_PREFIXES(SyncSetupWizardTest, ChooseDataTypesSetsPrefs);
   FRIEND_TEST_ALL_PREFIXES(SyncSetupWizardTest, DialogCancelled);
@@ -154,9 +155,9 @@ class SyncSetupFlow {
   // reflect this in the UI.
   bool user_tried_setting_passphrase_;
 
-  // Cache of the last name the client attempted to authenticate.
-  // TODO(atwilson): Move this out of here entirely and up into the UI layer.
-  std::string last_attempted_user_email_;
+  // We track the passphrase the user entered so we can set it when configuring
+  // the ProfileSyncService.
+  std::string cached_passphrase_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncSetupFlow);
 };

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,7 +21,6 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/speech/speech_input_extension_manager.h"
 
 class Profile;
@@ -49,7 +48,6 @@ void AssertFactoriesBuilt() {
     PluginPrefsFactory::GetInstance();
     prerender::PrerenderManagerFactory::GetInstance();
     SessionServiceFactory::GetInstance();
-    SigninManagerFactory::GetInstance();
     SpeechInputExtensionManager::InitializeFactory();
     TabRestoreServiceFactory::GetInstance();
     TemplateURLServiceFactory::GetInstance();
@@ -110,9 +108,10 @@ void ProfileDependencyManager::CreateProfileServices(Profile* profile,
   for (std::vector<ProfileKeyedServiceFactory*>::reverse_iterator rit =
            destruction_order_.rbegin(); rit != destruction_order_.rend();
        ++rit) {
-    if (!profile->IsOffTheRecord()) {
+    if (!profile->IsOffTheRecord() && !profile->AsTestingProfile()) {
       // We only register preferences on normal profiles because the incognito
-      // profile shares the pref service with the normal one.
+      // profile shares the pref service with the normal one and the testing
+      // profile will often just insert its own PrefService.
       (*rit)->RegisterUserPrefsOnProfile(profile);
     }
 

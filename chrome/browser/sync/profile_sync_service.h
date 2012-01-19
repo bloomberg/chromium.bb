@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -159,7 +159,7 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
 
   ProfileSyncService(ProfileSyncComponentsFactory* factory,
                      Profile* profile,
-                     SigninManager* signin,
+                     SigninManager* signin,  // Service takes ownership.
                      StartBehavior start_behavior);
   virtual ~ProfileSyncService();
 
@@ -234,6 +234,15 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
 
   void OnClearServerDataTimeout();
 
+  // Called when a user enters credentials through UI.
+  virtual void OnUserSubmittedAuth(const std::string& username,
+                                   const std::string& password,
+                                   const std::string& captcha,
+                                   const std::string& access_code);
+
+  // Called when a user enters credentials through UI.
+  virtual void OnUserSubmittedOAuth(const std::string& oauth1_request_token);
+
   // Update the last auth error and notify observers of error state.
   void UpdateAuthErrorState(const GoogleServiceAuthError& error);
 
@@ -304,14 +313,7 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
     return unrecoverable_error_location_;
   }
 
-  // Tracks whether the user is currently authenticating or not. This is used
-  // by the sync_ui_util helper routines to allow the UI to properly display
-  // an "authenticating..." status message instead of an auth error when we are
-  // in the process of trying to update credentials.
-  // TODO(atwilson): This state should reside up in the UI or in a profile-
-  // specific SyncUIUtil object rather than in ProfileSyncService.
   virtual bool UIShouldDepictAuthInProgress() const;
-  virtual void SetUIShouldDepictAuthInProgress(bool auth_in_progress);
 
   // Returns true if OnPassphraseRequired has been called for any reason.
   virtual bool IsPassphraseRequired() const;
@@ -326,6 +328,10 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
 
   // Returns a user-friendly string form of last synced time (in minutes).
   virtual string16 GetLastSyncedTimeString() const;
+
+  const std::string& last_attempted_user_email() const {
+    return last_attempted_user_email_;
+  }
 
   // The profile we are syncing for.
   Profile* profile() const { return profile_; }
@@ -471,7 +477,7 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
 
   const GURL& sync_service_url() const { return sync_service_url_; }
   bool auto_start_enabled() const { return auto_start_enabled_; }
-  SigninManager* signin() const { return signin_; }
+  SigninManager* signin() const { return signin_.get(); }
 
   // Stops the sync backend and sets the flag for suppressing sync startup.
   void StopAndSuppress();
@@ -525,6 +531,9 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // Our asynchronous backend to communicate with sync components living on
   // other threads.
   scoped_ptr<browser_sync::SyncBackendHost> backend_;
+
+  // Cache of the last name the client attempted to authenticate.
+  std::string last_attempted_user_email_;
 
   // Was the last SYNC_PASSPHRASE_REQUIRED notification sent because it
   // was required for encryption, decryption with a cached passphrase, or
@@ -622,9 +631,8 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
 
   SyncSetupWizard wizard_;
 
-  // Encapsulates user signin - used to set/get the user's authenticated
-  // email address.
-  SigninManager* signin_;
+  // Encapsulates user signin with TokenService.
+  scoped_ptr<SigninManager> signin_;
 
   // True if an unrecoverable error (e.g. violation of an assumed invariant)
   // occurred during syncer operation.  This value should be checked before

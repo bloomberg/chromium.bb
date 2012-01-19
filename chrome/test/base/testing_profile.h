@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -281,8 +281,8 @@ class TestingProfile : public Profile {
   // history service processes all pending requests.
   void BlockUntilHistoryProcessesPendingRequests();
 
-  virtual TokenService* GetTokenService() OVERRIDE;
   // Creates and initializes a profile sync service if the tests require one.
+  virtual TokenService* GetTokenService() OVERRIDE;
   virtual ProfileSyncService* GetProfileSyncService() OVERRIDE;
   virtual ChromeBlobStorageContext* GetBlobStorageContext() OVERRIDE;
   virtual ExtensionInfoMap* GetExtensionInfoMap() OVERRIDE;
