@@ -11,7 +11,6 @@
     'gles2_c_lib_source_files': [
       'command_buffer/client/gles2_c_lib.cc',
       'command_buffer/client/gles2_c_lib_autogen.h',
-      'command_buffer/client/gles2_c_lib_export.h',
       'command_buffer/client/gles2_lib.h',
       'command_buffer/client/gles2_lib.cc',
     ],
@@ -142,14 +141,10 @@
       # Stub to expose gles2_implemenation in C instead of C++.
       # so GLES2 C programs can work with no changes.
       'target_name': 'gles2_c_lib',
-      'type': '<(component)',
+      'type': 'static_library',
       'dependencies': [
         '../base/base.gyp:base',
-        '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         'gles2_implementation',
-      ],
-      'defines': [
-        'GLES2_C_LIB_IMPLEMENTATION',
       ],
       'sources': [
         '<@(gles2_c_lib_source_files)',
@@ -159,14 +154,11 @@
       # Same as gles2_c_lib except with no parameter checking. Required for
       # OpenGL ES 2.0 conformance tests.
       'target_name': 'gles2_c_lib_nocheck',
-      'type': '<(component)',
+      'type': 'static_library',
       'defines': [
-        'GLES2_C_LIB_IMPLEMENTATION',
         'GLES2_CONFORMANCE_TESTS=1',
       ],
       'dependencies': [
-        '../base/base.gyp:base',
-        '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         'gles2_implementation_client_side_arrays_no_check',
       ],
       'sources': [
@@ -296,9 +288,6 @@
         'gpu_unittest_utils',
         'gles2_implementation_client_side_arrays',
         'gles2_cmd_helper',
-      ],
-      'defines': [
-        'GLES2_C_LIB_IMPLEMENTATION',
       ],
       'sources': [
         '<@(gles2_c_lib_source_files)',

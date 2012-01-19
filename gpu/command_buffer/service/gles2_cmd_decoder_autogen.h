@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -2546,7 +2546,7 @@ error::Error GLES2DecoderImpl::HandleTexStorage2DEXT(
     uint32 immediate_data_size, const gles2::TexStorage2DEXT& c) {
   GLenum target = static_cast<GLenum>(c.target);
   GLsizei levels = static_cast<GLsizei>(c.levels);
-  GLenum internalFormat = static_cast<GLenum>(c.internalFormat);
+  GLint internalFormat = static_cast<GLint>(c.internalFormat);
   GLsizei width = static_cast<GLsizei>(c.width);
   GLsizei height = static_cast<GLsizei>(c.height);
   if (!validators_->texture_target.IsValid(target)) {
@@ -2559,7 +2559,8 @@ error::Error GLES2DecoderImpl::HandleTexStorage2DEXT(
   }
   if (!validators_->texture_internal_format_storage.IsValid(internalFormat)) {
     SetGLError(
-        GL_INVALID_ENUM, "glTexStorage2DEXT: internalFormat GL_INVALID_ENUM");
+        GL_INVALID_VALUE,
+        "glTexStorage2DEXT: internalFormat GL_INVALID_VALUE");
     return error::kNoError;
   }
   if (width < 0) {

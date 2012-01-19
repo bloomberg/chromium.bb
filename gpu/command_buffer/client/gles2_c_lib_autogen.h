@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,7 @@
 // gpu/command_buffer/build_gles2_cmd_buffer.py
 // DO NOT EDIT!
 
-// These functions emulate GLES2 over command buffers.
+// These functions emluate GLES2 over command buffers.
 #ifndef GPU_COMMAND_BUFFER_CLIENT_GLES2_C_LIB_AUTOGEN_H_
 #define GPU_COMMAND_BUFFER_CLIENT_GLES2_C_LIB_AUTOGEN_H_
 
@@ -515,7 +515,7 @@ void GLES2RenderbufferStorageMultisampleEXT(
       target, samples, internalformat, width, height);
 }
 void GLES2TexStorage2DEXT(
-    GLenum target, GLsizei levels, GLenum internalFormat, GLsizei width,
+    GLenum target, GLsizei levels, GLint internalFormat, GLsizei width,
     GLsizei height) {
   gles2::GetGLContext()->TexStorage2DEXT(
       target, levels, internalFormat, width, height);

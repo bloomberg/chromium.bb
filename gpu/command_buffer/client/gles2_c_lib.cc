@@ -1,16 +1,11 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// These functions emulate GLES2 over command buffers for C.
+// These functions emluate GLES2 over command buffers for C.
 
 #include <assert.h>
 #include "../client/gles2_lib.h"
-
-#ifndef GL_GLEXT_PROTOTYPES
-#define GL_GLEXT_PROTOTYPES
-#endif
-#include <GLES2/gl2ext.h>
 
 extern "C" {
 // Include the auto-generated part of this file. We split this because it means

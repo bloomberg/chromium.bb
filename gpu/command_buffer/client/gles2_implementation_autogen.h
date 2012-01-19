@@ -1390,10 +1390,10 @@ void RenderbufferStorageMultisampleEXT(
 }
 
 void TexStorage2DEXT(
-    GLenum target, GLsizei levels, GLenum internalFormat, GLsizei width,
+    GLenum target, GLsizei levels, GLint internalFormat, GLsizei width,
     GLsizei height) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
-  GPU_CLIENT_LOG("[" << this << "] glTexStorage2DEXT(" << GLES2Util::GetStringTextureTarget(target) << ", " << levels << ", " << GLES2Util::GetStringTextureInternalFormatStorage(internalFormat) << ", " << width << ", " << height << ")");  // NOLINT
+  GPU_CLIENT_LOG("[" << this << "] glTexStorage2DEXT(" << GLES2Util::GetStringTextureTarget(target) << ", " << levels << ", " << internalFormat << ", " << width << ", " << height << ")");  // NOLINT
   if (levels < 0) {
     SetGLError(GL_INVALID_VALUE, "glTexStorage2DEXT: levels < 0");
     return;
