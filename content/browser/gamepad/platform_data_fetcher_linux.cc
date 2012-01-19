@@ -28,6 +28,7 @@ using WebKit::WebGamepads;
 GamepadPlatformDataFetcherLinux::GamepadPlatformDataFetcherLinux() {
   for (size_t i = 0; i < arraysize(device_fds_); ++i)
     device_fds_[i] = -1;
+  memset(mappers_, 0, sizeof(mappers_));
 
   udev_ = udev_new();
 
