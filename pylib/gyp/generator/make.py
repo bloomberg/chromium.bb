@@ -909,7 +909,7 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
         assert ' ' not in output, (
             "Spaces in action output filenames not supported (%s)"  % output)
 
-      # See the comment in WriteActions about expanding env vars.
+      # See the comment in WriteCopies about expanding env vars.
       env = self.GetXcodeEnv()
       outputs = [gyp.xcode_emulation.ExpandEnvVars(o, env) for o in outputs]
       inputs = [gyp.xcode_emulation.ExpandEnvVars(i, env) for i in inputs]

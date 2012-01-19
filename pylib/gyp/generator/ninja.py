@@ -148,11 +148,13 @@ class Target:
 #   to the input file name as well as the output target name.
 
 class NinjaWriter:
-  def __init__(self, target_outputs, base_dir, build_dir, output_file, flavor):
+  def __init__(self, target_outputs, base_dir, build_dir, output_file, flavor,
+               abs_build_dir=None):
     """
     base_dir: path from source root to directory containing this gyp file,
               by gyp semantics, all input paths are relative to this
     build_dir: path from source root to build output
+    abs_build_dir: absolute path to the build directory
     """
 
     self.target_outputs = target_outputs
@@ -160,6 +162,7 @@ class NinjaWriter:
     self.build_dir = build_dir
     self.ninja = ninja_syntax.Writer(output_file)
     self.flavor = flavor
+    self.abs_build_dir = abs_build_dir
 
     # Relative path from build output dir to base dir.
     self.build_to_base = os.path.join(InvertRelativePath(build_dir), base_dir)
@@ -401,6 +404,7 @@ class NinjaWriter:
 
   def WriteActions(self, actions, extra_sources, prebuild,
                    extra_mac_bundle_resources):
+    # Actions cd into the base directory.
     env = self.GetXcodeEnv()
     all_outputs = []
     for action in actions:
@@ -728,12 +732,11 @@ class NinjaWriter:
 
   def GetXcodeEnv(self, additional_settings=None):
     """Returns the variables Xcode would set for build steps."""
-    # TODO(thakis): Investigate if $PWD can be used here to prevent writing
-    # a literal absolute path to disk.
-    abs_builddir = os.path.abspath(self.build_dir)
+    assert self.abs_build_dir
+    abs_build_dir = self.abs_build_dir
     return gyp.xcode_emulation.GetXcodeEnv(
-        self.xcode_settings, abs_builddir,
-        os.path.join(abs_builddir, self.build_to_base), self.config_name,
+        self.xcode_settings, abs_build_dir,
+        os.path.join(abs_build_dir, self.build_to_base), self.config_name,
         additional_settings)
 
   def ComputeExportEnvString(self, env):
@@ -930,22 +933,23 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
   flavor = gyp.common.GetFlavor(params)
   generator_flags = params.get('generator_flags', {})
 
-  # builddir: relative path from source root to our output files.
+  # build_dir: relative path from source root to our output files.
   # e.g. "out/Debug"
-  builddir = os.path.join(generator_flags.get('output_dir', 'out'), config_name)
+  build_dir = os.path.join(generator_flags.get('output_dir', 'out'),
+                           config_name)
 
   master_ninja = ninja_syntax.Writer(
-      OpenOutput(os.path.join(options.toplevel_dir, builddir, 'build.ninja')),
+      OpenOutput(os.path.join(options.toplevel_dir, build_dir, 'build.ninja')),
       width=120)
 
   # Put build-time support tools in out/{config_name}.
-  gyp.common.CopyTool(flavor, os.path.join(options.toplevel_dir, builddir))
+  gyp.common.CopyTool(flavor, os.path.join(options.toplevel_dir, build_dir))
 
   # Grab make settings for CC/CXX.
   cc, cxx = 'gcc', 'g++'
   build_file, _, _ = gyp.common.ParseQualifiedTarget(target_list[0])
   make_global_settings = data[build_file].get('make_global_settings', [])
-  build_to_root = InvertRelativePath(builddir)
+  build_to_root = InvertRelativePath(build_dir)
   for key, value in make_global_settings:
     if key == 'CC': cc = os.path.join(build_to_root, value)
     if key == 'CXX': cxx = os.path.join(build_to_root, value)
@@ -1086,11 +1090,12 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
       obj += '.' + toolset
     output_file = os.path.join(obj, base_path, name + '.ninja')
 
-    writer = NinjaWriter(target_outputs, base_path, builddir,
+    abs_build_dir=os.path.abspath(os.path.join(options.toplevel_dir, build_dir))
+    writer = NinjaWriter(target_outputs, base_path, build_dir,
                          OpenOutput(os.path.join(options.toplevel_dir,
-                                                 builddir,
+                                                 build_dir,
                                                  output_file)),
-                         flavor)
+                         flavor, abs_build_dir=abs_build_dir)
     master_ninja.subninja(output_file)
 
     target = writer.WriteSpec(spec, config_name)

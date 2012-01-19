@@ -9,6 +9,14 @@
       'dependencies': [
         '../dir1/dir1.gyp:dir1_target',
       ],
+      'actions': [
+        {
+          'inputs': [ ],
+          'outputs': [ '<(PRODUCT_DIR)/file.txt' ],
+          'action_name': 'Test action',
+          'action': ['cp', 'file.txt', '${BUILT_PRODUCTS_DIR}/file.txt' ],
+        },
+      ],
     },
   ],
 }
