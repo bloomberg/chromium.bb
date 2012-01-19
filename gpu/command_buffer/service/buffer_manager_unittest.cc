@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -219,6 +219,20 @@ TEST_F(BufferManagerTest, GetMaxValueForRangeUint32) {
   // Check out of range fails.
   EXPECT_FALSE(info->GetMaxValueForRange(0, 11, GL_UNSIGNED_INT, &max_value));
   EXPECT_FALSE(info->GetMaxValueForRange(40, 1, GL_UNSIGNED_INT, &max_value));
+}
+
+TEST_F(BufferManagerTest, UseDeletedBuffer) {
+  const GLuint kClientBufferId = 1;
+  const GLuint kServiceBufferId = 11;
+  const uint32 data[] = {10, 9, 8, 7, 6, 5, 4, 3, 2, 1};
+  manager_.CreateBufferInfo(kClientBufferId, kServiceBufferId);
+  BufferManager::BufferInfo::Ref info = manager_.GetBufferInfo(kClientBufferId);
+  ASSERT_TRUE(info != NULL);
+  manager_.SetTarget(info, GL_ARRAY_BUFFER);
+  // Remove buffer
+  manager_.RemoveBufferInfo(kClientBufferId);
+  // Use it after removing
+  manager_.SetInfo(info, sizeof(data), GL_STATIC_DRAW);
 }
 
 }  // namespace gles2

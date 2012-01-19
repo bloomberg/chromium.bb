@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,7 +25,6 @@ BufferManager::~BufferManager() {
 void BufferManager::Destroy(bool have_context) {
   while (!buffer_infos_.empty()) {
     BufferInfo* info = buffer_infos_.begin()->second;
-    mem_represented_ -= info->size();
     if (have_context) {
       if (!info->IsDeleted()) {
         GLuint service_id = info->service_id();
@@ -51,7 +50,7 @@ void BufferManager::CreateBufferInfo(GLuint client_id, GLuint service_id) {
   std::pair<BufferInfoMap::iterator, bool> result =
       buffer_infos_.insert(
           std::make_pair(client_id,
-                         BufferInfo::Ref(new BufferInfo(service_id))));
+                         BufferInfo::Ref(new BufferInfo(this, service_id))));
   DCHECK(result.second);
 }
 
@@ -66,21 +65,30 @@ void BufferManager::RemoveBufferInfo(GLuint client_id) {
   if (it != buffer_infos_.end()) {
     BufferInfo* buffer = it->second;
     buffer->MarkAsDeleted();
-    mem_represented_ -= buffer->size();
-    UpdateMemRepresented();
     buffer_infos_.erase(it);
   }
 }
 
-BufferManager::BufferInfo::BufferInfo(GLuint service_id)
-    : service_id_(service_id),
+void BufferManager::StopTracking(BufferManager::BufferInfo* buffer) {
+  mem_represented_ -= buffer->size();
+  UpdateMemRepresented();
+}
+
+BufferManager::BufferInfo::BufferInfo(BufferManager* manager, GLuint service_id)
+    : manager_(manager),
+      service_id_(service_id),
       target_(0),
       size_(0),
       usage_(GL_STATIC_DRAW),
       shadowed_(false) {
 }
 
-BufferManager::BufferInfo::~BufferInfo() { }
+BufferManager::BufferInfo::~BufferInfo() {
+  if (manager_) {
+    manager_->StopTracking(this);
+    manager_ = NULL;
+  }
+}
 
 void BufferManager::BufferInfo::SetInfo(
     GLsizeiptr size, GLenum usage, bool shadow) {

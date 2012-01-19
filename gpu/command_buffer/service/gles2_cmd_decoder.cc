@@ -1366,7 +1366,7 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   BufferManager::BufferInfo::Ref bound_element_array_buffer_;
 
   // Class that manages vertex attribs.
-  VertexAttribManager vertex_attrib_manager_;
+  scoped_ptr<VertexAttribManager> vertex_attrib_manager_;
 
   // The buffer we bind to attrib 0 since OpenGL requires it (ES does not).
   GLuint attrib_0_buffer_id_;
@@ -1972,7 +1972,8 @@ bool GLES2DecoderImpl::Initialize(
   CHECK_GL_ERROR();
   disallowed_features_ = disallowed_features;
 
-  vertex_attrib_manager_.Initialize(group_->max_vertex_attribs());
+  vertex_attrib_manager_.reset(new VertexAttribManager());
+  vertex_attrib_manager_->Initialize(group_->max_vertex_attribs());
 
   util_.set_num_compressed_texture_formats(
       validators_->compressed_texture_format.GetValues().size());
@@ -2320,7 +2321,7 @@ void GLES2DecoderImpl::DeleteBuffersHelper(
   for (GLsizei ii = 0; ii < n; ++ii) {
     BufferManager::BufferInfo* buffer = GetBufferInfo(client_ids[ii]);
     if (buffer && !buffer->IsDeleted()) {
-      vertex_attrib_manager_.Unbind(buffer);
+      vertex_attrib_manager_->Unbind(buffer);
       if (bound_array_buffer_ == buffer) {
         bound_array_buffer_ = NULL;
       }
@@ -2690,6 +2691,7 @@ void GLES2DecoderImpl::Destroy() {
   SetParent(NULL, 0);
 
   // Unbind everything.
+  vertex_attrib_manager_.reset();
   texture_units_.reset();
   bound_array_buffer_ = NULL;
   bound_element_array_buffer_ = NULL;
@@ -3332,7 +3334,7 @@ void GLES2DecoderImpl::DoBindTexture(GLenum target, GLuint client_id) {
 }
 
 void GLES2DecoderImpl::DoDisableVertexAttribArray(GLuint index) {
-  if (vertex_attrib_manager_.Enable(index, false)) {
+  if (vertex_attrib_manager_->Enable(index, false)) {
     if (index != 0 ||
         gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2) {
       glDisableVertexAttribArray(index);
@@ -3344,7 +3346,7 @@ void GLES2DecoderImpl::DoDisableVertexAttribArray(GLuint index) {
 }
 
 void GLES2DecoderImpl::DoEnableVertexAttribArray(GLuint index) {
-  if (vertex_attrib_manager_.Enable(index, true)) {
+  if (vertex_attrib_manager_->Enable(index, true)) {
     glEnableVertexAttribArray(index);
   } else {
     SetGLError(GL_INVALID_VALUE,
@@ -4830,7 +4832,7 @@ bool GLES2DecoderImpl::IsDrawValid(GLuint max_vertex_accessed) {
   // If they are not used by the current program check that they have a buffer
   // assigned.
   const VertexAttribManager::VertexAttribInfoList& infos =
-      vertex_attrib_manager_.GetEnabledVertexAttribInfos();
+      vertex_attrib_manager_->GetEnabledVertexAttribInfos();
   for (VertexAttribManager::VertexAttribInfoList::const_iterator it =
        infos.begin(); it != infos.end(); ++it) {
     const VertexAttribManager::VertexAttribInfo* info = *it;
@@ -4866,7 +4868,7 @@ bool GLES2DecoderImpl::SimulateAttrib0(
     return true;
 
   const VertexAttribManager::VertexAttribInfo* info =
-      vertex_attrib_manager_.GetVertexAttribInfo(0);
+      vertex_attrib_manager_->GetVertexAttribInfo(0);
   // If it's enabled or it's not used then we don't need to do anything.
   bool attrib_0_used = current_program_->GetAttribInfoByLocation(0) != NULL;
   if (info->enabled() && attrib_0_used) {
@@ -4922,7 +4924,7 @@ bool GLES2DecoderImpl::SimulateAttrib0(
 
 void GLES2DecoderImpl::RestoreStateForSimulatedAttrib0() {
   const VertexAttribManager::VertexAttribInfo* info =
-      vertex_attrib_manager_.GetVertexAttribInfo(0);
+      vertex_attrib_manager_->GetVertexAttribInfo(0);
   const void* ptr = reinterpret_cast<const void*>(info->offset());
   BufferManager::BufferInfo* buffer_info = info->buffer();
   glBindBuffer(GL_ARRAY_BUFFER, buffer_info ? buffer_info->service_id() : 0);
@@ -4940,7 +4942,7 @@ bool GLES2DecoderImpl::SimulateFixedAttribs(
   if (gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2)
     return true;
 
-  if (!vertex_attrib_manager_.HaveFixedAttribs()) {
+  if (!vertex_attrib_manager_->HaveFixedAttribs()) {
     return true;
   }
 
@@ -4959,7 +4961,7 @@ bool GLES2DecoderImpl::SimulateFixedAttribs(
 
   GLuint elements_needed = 0;
   const VertexAttribManager::VertexAttribInfoList& infos =
-      vertex_attrib_manager_.GetEnabledVertexAttribInfos();
+      vertex_attrib_manager_->GetEnabledVertexAttribInfos();
   for (VertexAttribManager::VertexAttribInfoList::const_iterator it =
        infos.begin(); it != infos.end(); ++it) {
     const VertexAttribManager::VertexAttribInfo* info = *it;
@@ -5485,7 +5487,7 @@ void GLES2DecoderImpl::DoValidateProgram(GLuint program_client_id) {
 void GLES2DecoderImpl::DoGetVertexAttribfv(
     GLuint index, GLenum pname, GLfloat* params) {
   VertexAttribManager::VertexAttribInfo* info =
-      vertex_attrib_manager_.GetVertexAttribInfo(index);
+      vertex_attrib_manager_->GetVertexAttribInfo(index);
   if (!info) {
     SetGLError(GL_INVALID_VALUE, "glGetVertexAttribfv: index out of range");
     return;
@@ -5530,7 +5532,7 @@ void GLES2DecoderImpl::DoGetVertexAttribfv(
 void GLES2DecoderImpl::DoGetVertexAttribiv(
     GLuint index, GLenum pname, GLint* params) {
   VertexAttribManager::VertexAttribInfo* info =
-      vertex_attrib_manager_.GetVertexAttribInfo(index);
+      vertex_attrib_manager_->GetVertexAttribInfo(index);
   if (!info) {
     SetGLError(GL_INVALID_VALUE, "glGetVertexAttribiv: index out of range");
     return;
@@ -5574,7 +5576,7 @@ void GLES2DecoderImpl::DoGetVertexAttribiv(
 
 void GLES2DecoderImpl::DoVertexAttrib1f(GLuint index, GLfloat v0) {
   VertexAttribManager::VertexAttribInfo* info =
-      vertex_attrib_manager_.GetVertexAttribInfo(index);
+      vertex_attrib_manager_->GetVertexAttribInfo(index);
   if (!info) {
     SetGLError(GL_INVALID_VALUE, "glVertexAttrib1f: index out of range");
     return;
@@ -5590,7 +5592,7 @@ void GLES2DecoderImpl::DoVertexAttrib1f(GLuint index, GLfloat v0) {
 
 void GLES2DecoderImpl::DoVertexAttrib2f(GLuint index, GLfloat v0, GLfloat v1) {
   VertexAttribManager::VertexAttribInfo* info =
-      vertex_attrib_manager_.GetVertexAttribInfo(index);
+      vertex_attrib_manager_->GetVertexAttribInfo(index);
   if (!info) {
     SetGLError(GL_INVALID_VALUE, "glVertexAttrib2f: index out of range");
     return;
@@ -5607,7 +5609,7 @@ void GLES2DecoderImpl::DoVertexAttrib2f(GLuint index, GLfloat v0, GLfloat v1) {
 void GLES2DecoderImpl::DoVertexAttrib3f(
     GLuint index, GLfloat v0, GLfloat v1, GLfloat v2) {
   VertexAttribManager::VertexAttribInfo* info =
-      vertex_attrib_manager_.GetVertexAttribInfo(index);
+      vertex_attrib_manager_->GetVertexAttribInfo(index);
   if (!info) {
     SetGLError(GL_INVALID_VALUE, "glVertexAttrib3f: index out of range");
     return;
@@ -5624,7 +5626,7 @@ void GLES2DecoderImpl::DoVertexAttrib3f(
 void GLES2DecoderImpl::DoVertexAttrib4f(
     GLuint index, GLfloat v0, GLfloat v1, GLfloat v2, GLfloat v3) {
   VertexAttribManager::VertexAttribInfo* info =
-      vertex_attrib_manager_.GetVertexAttribInfo(index);
+      vertex_attrib_manager_->GetVertexAttribInfo(index);
   if (!info) {
     SetGLError(GL_INVALID_VALUE, "glVertexAttrib4f: index out of range");
     return;
@@ -5640,7 +5642,7 @@ void GLES2DecoderImpl::DoVertexAttrib4f(
 
 void GLES2DecoderImpl::DoVertexAttrib1fv(GLuint index, const GLfloat* v) {
   VertexAttribManager::VertexAttribInfo* info =
-      vertex_attrib_manager_.GetVertexAttribInfo(index);
+      vertex_attrib_manager_->GetVertexAttribInfo(index);
   if (!info) {
     SetGLError(GL_INVALID_VALUE, "glVertexAttrib1fv: index out of range");
     return;
@@ -5656,7 +5658,7 @@ void GLES2DecoderImpl::DoVertexAttrib1fv(GLuint index, const GLfloat* v) {
 
 void GLES2DecoderImpl::DoVertexAttrib2fv(GLuint index, const GLfloat* v) {
   VertexAttribManager::VertexAttribInfo* info =
-      vertex_attrib_manager_.GetVertexAttribInfo(index);
+      vertex_attrib_manager_->GetVertexAttribInfo(index);
   if (!info) {
     SetGLError(GL_INVALID_VALUE, "glVertexAttrib2fv: index out of range");
     return;
@@ -5672,7 +5674,7 @@ void GLES2DecoderImpl::DoVertexAttrib2fv(GLuint index, const GLfloat* v) {
 
 void GLES2DecoderImpl::DoVertexAttrib3fv(GLuint index, const GLfloat* v) {
   VertexAttribManager::VertexAttribInfo* info =
-      vertex_attrib_manager_.GetVertexAttribInfo(index);
+      vertex_attrib_manager_->GetVertexAttribInfo(index);
   if (!info) {
     SetGLError(GL_INVALID_VALUE, "glVertexAttrib3fv: index out of range");
     return;
@@ -5688,7 +5690,7 @@ void GLES2DecoderImpl::DoVertexAttrib3fv(GLuint index, const GLfloat* v) {
 
 void GLES2DecoderImpl::DoVertexAttrib4fv(GLuint index, const GLfloat* v) {
   VertexAttribManager::VertexAttribInfo* info =
-      vertex_attrib_manager_.GetVertexAttribInfo(index);
+      vertex_attrib_manager_->GetVertexAttribInfo(index);
   if (!info) {
     SetGLError(GL_INVALID_VALUE, "glVertexAttrib4fv: index out of range");
     return;
@@ -5758,7 +5760,7 @@ error::Error GLES2DecoderImpl::HandleVertexAttribPointer(
                "glVertexAttribPointer: stride not valid for type");
     return error::kNoError;
   }
-  vertex_attrib_manager_.SetAttribInfo(
+  vertex_attrib_manager_->SetAttribInfo(
       indx,
       bound_array_buffer_,
       size,
@@ -7057,7 +7059,7 @@ error::Error GLES2DecoderImpl::HandleGetVertexAttribPointerv(
   }
   result->SetNumResults(1);
   *result->GetData() =
-      vertex_attrib_manager_.GetVertexAttribInfo(index)->offset();
+      vertex_attrib_manager_->GetVertexAttribInfo(index)->offset();
   return error::kNoError;
 }
 

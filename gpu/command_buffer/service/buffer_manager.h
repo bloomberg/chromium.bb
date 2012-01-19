@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -28,7 +28,7 @@ class BufferManager {
    public:
     typedef scoped_refptr<BufferInfo> Ref;
 
-    explicit BufferInfo(GLuint service_id);
+    BufferInfo(BufferManager* manager, GLuint service_id);
 
     GLuint service_id() const {
       return service_id_;
@@ -122,6 +122,9 @@ class BufferManager {
     // Clears any cache of index ranges.
     void ClearCache();
 
+    // The manager that owns this BufferInfo.
+    BufferManager* manager_;
+
     // Service side buffer id.
     GLuint service_id_;
 
@@ -178,6 +181,8 @@ class BufferManager {
 
  private:
   void UpdateMemRepresented();
+
+  void StopTracking(BufferInfo* info);
 
   // Info for each buffer in the system.
   typedef base::hash_map<GLuint, BufferInfo::Ref> BufferInfoMap;
