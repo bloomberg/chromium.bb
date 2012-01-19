@@ -4,6 +4,7 @@
 
 #import "chrome/browser/ui/cocoa/download/download_item_controller.h"
 
+#include "base/mac/bundle_locations.h"
 #include "base/mac/mac_util.h"
 #include "base/metrics/histogram.h"
 #include "base/string16.h"
@@ -103,7 +104,7 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
 - (id)initWithModel:(BaseDownloadItemModel*)downloadModel
               shelf:(DownloadShelfController*)shelf {
   if ((self = [super initWithNibName:@"DownloadItem"
-                              bundle:base::mac::MainAppBundle()])) {
+                              bundle:base::mac::FrameworkBundle()])) {
     // Must be called before [self view], so that bridge_ is set in awakeFromNib
     bridge_.reset(new DownloadItemMac(downloadModel, self));
     menuBridge_.reset(new DownloadShelfContextMenuMac(downloadModel));

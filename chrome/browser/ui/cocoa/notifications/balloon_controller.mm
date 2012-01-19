@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/cocoa/notifications/balloon_controller.h"
 
+#include "base/mac/bundle_locations.h"
 #import "base/mac/cocoa_protocols.h"
 #include "base/mac/mac_util.h"
 #import "base/memory/scoped_nsobject.h"
@@ -45,8 +46,8 @@ const int kRightMargin = 2;
 
 - (id)initWithBalloon:(Balloon*)balloon {
   NSString* nibpath =
-      [base::mac::MainAppBundle() pathForResource:@"Notification"
-                                          ofType:@"nib"];
+      [base::mac::FrameworkBundle() pathForResource:@"Notification"
+                                             ofType:@"nib"];
   if ((self = [super initWithWindowNibPath:nibpath owner:self])) {
     balloon_ = balloon;
     [self initializeHost];

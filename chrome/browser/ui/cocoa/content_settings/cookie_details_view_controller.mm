@@ -4,6 +4,7 @@
 
 #import "chrome/browser/ui/cocoa/content_settings/cookie_details_view_controller.h"
 
+#include "base/mac/bundle_locations.h"
 #import "base/mac/mac_util.h"
 #include "base/sys_string_conversions.h"
 #import "chrome/browser/ui/cocoa/content_settings/cookie_tree_node.h"
@@ -22,7 +23,7 @@ static const int kExtraMarginBelowWhenExpirationEditable = 5;
 
 - (id)init {
   return [super initWithNibName:@"CookieDetailsView"
-                         bundle:base::mac::MainAppBundle()];
+                         bundle:base::mac::FrameworkBundle()];
 }
 
 - (void)awakeFromNib {

@@ -8,6 +8,7 @@
 
 #include "base/auto_reset.h"
 #include "base/logging.h"
+#include "base/mac/bundle_locations.h"
 #include "base/mac/mac_util.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
@@ -169,7 +170,7 @@ class BookmarkEditorBaseControllerBridge : public BookmarkModelObserver {
                    profile:(Profile*)profile
                     parent:(const BookmarkNode*)parent
              configuration:(BookmarkEditor::Configuration)configuration {
-  NSString* nibpath = [base::mac::MainAppBundle()
+  NSString* nibpath = [base::mac::FrameworkBundle()
                         pathForResource:nibName
                                  ofType:@"nib"];
   if ((self = [super initWithWindowNibPath:nibpath owner:self])) {

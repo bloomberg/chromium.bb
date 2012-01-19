@@ -4,6 +4,7 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/mac/bundle_locations.h"
 #include "base/mac/mac_util.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/ui/cocoa/browser_window_controller.h"
@@ -60,7 +61,7 @@ const float kRightEdgeOffset = 25;
 
 - (id)init {
   if ((self = [super initWithNibName:@"FindBar"
-                              bundle:base::mac::MainAppBundle()])) {
+                              bundle:base::mac::FrameworkBundle()])) {
     [[NSNotificationCenter defaultCenter]
         addObserver:self
            selector:@selector(findPboardUpdated:)

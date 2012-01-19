@@ -7,6 +7,7 @@
 #import <AppKit/AppKit.h>
 
 #include "base/logging.h"
+#include "base/mac/bundle_locations.h"
 #include "base/mac/mac_util.h"
 
 // When C++ exceptions are disabled, the C++ library defines |try| and
@@ -38,7 +39,7 @@ NSImage* GetCachedImageWithName(NSString* name) {
     DVLOG_IF(1, [[name pathExtension] length] == 0) << "Suggest including the "
         "extension in the image name";
 
-    NSString* path = [base::mac::MainAppBundle() pathForImageResource:name];
+    NSString* path = [base::mac::FrameworkBundle() pathForImageResource:name];
     if (path) {
       @try {
         result = [[[NSImage alloc] initWithContentsOfFile:path] autorelease];

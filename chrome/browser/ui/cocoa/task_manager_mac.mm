@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <vector>
 
+#include "base/mac/bundle_locations.h"
 #include "base/mac/mac_util.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/browser_process.h"
@@ -107,7 +108,7 @@ class SortHelper {
 
 - (id)initWithTaskManagerObserver:(TaskManagerMac*)taskManagerObserver
      highlightBackgroundResources:(bool)highlightBackgroundResources {
-  NSString* nibpath = [base::mac::MainAppBundle()
+  NSString* nibpath = [base::mac::FrameworkBundle()
                         pathForResource:@"TaskManager"
                                  ofType:@"nib"];
   if ((self = [super initWithWindowNibPath:nibpath owner:self])) {

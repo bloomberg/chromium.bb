@@ -13,6 +13,7 @@
 
 #include "base/file_util.h"
 #include "base/logging.h"
+#include "base/mac/bundle_locations.h"
 #import "base/mac/cocoa_protocols.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
@@ -295,7 +296,7 @@ NSView* SelectFileDialogImpl::GetAccessoryView(const FileTypeInfo* file_types,
   DCHECK(file_types);
   scoped_nsobject<NSNib> nib (
       [[NSNib alloc] initWithNibNamed:@"SaveAccessoryView"
-                               bundle:base::mac::MainAppBundle()]);
+                               bundle:base::mac::FrameworkBundle()]);
   if (!nib)
     return nil;
 

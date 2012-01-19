@@ -11,6 +11,7 @@
 #include "base/base_paths.h"
 #include "base/file_util.h"
 #include "base/logging.h"
+#include "base/mac/bundle_locations.h"
 #include "base/mac/mac_util.h"
 #include "base/path_service.h"
 #include "base/string16.h"
@@ -106,8 +107,8 @@ void AfterInitialize(bool unit_test_mode) {
   // Load a data pack.
   g_resource_data_pack = new ui::DataPack;
   NSString* resource_path =
-      [base::mac::MainAppBundle() pathForResource:@"DumpRenderTree"
-                                          ofType:@"pak"];
+      [base::mac::FrameworkBundle() pathForResource:@"DumpRenderTree"
+                                             ofType:@"pak"];
   FilePath resources_pak_path([resource_path fileSystemRepresentation]);
   if (!g_resource_data_pack->Load(resources_pak_path)) {
     LOG(FATAL) << "failed to load DumpRenderTree.pak";

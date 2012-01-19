@@ -4,6 +4,7 @@
 
 #import "chrome/browser/ui/cocoa/browser/avatar_menu_bubble_controller.h"
 
+#include "base/mac/bundle_locations.h"
 #include "base/mac/mac_util.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/browser_process.h"
@@ -320,7 +321,7 @@ const CGFloat kLabelInset = 49.0;
 - (id)initWithModelIndex:(size_t)modelIndex
           menuController:(AvatarMenuBubbleController*)controller {
   if ((self = [super initWithNibName:@"AvatarMenuItem"
-                              bundle:base::mac::MainAppBundle()])) {
+                              bundle:base::mac::FrameworkBundle()])) {
     modelIndex_ = modelIndex;
     controller_ = controller;
     [self loadView];

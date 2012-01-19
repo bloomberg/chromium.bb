@@ -21,6 +21,7 @@
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/logging.h"
+#include "base/mac/bundle_locations.h"
 #import "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
@@ -435,7 +436,7 @@ bool MaybeInstallFromDiskImage() {
   }
 
   NSString* installer_path =
-      [base::mac::MainAppBundle() pathForResource:@"install" ofType:@"sh"];
+      [base::mac::FrameworkBundle() pathForResource:@"install" ofType:@"sh"];
   if (!installer_path) {
     VLOG(1) << "Could not locate install.sh";
     return false;

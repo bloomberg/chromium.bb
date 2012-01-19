@@ -5,6 +5,7 @@
 #import "chrome/browser/ui/cocoa/first_run_dialog.h"
 
 #include "base/bind.h"
+#include "base/mac/bundle_locations.h"
 #include "base/mac/mac_util.h"
 #include "base/memory/ref_counted.h"
 #import "base/memory/scoped_nsobject.h"
@@ -168,8 +169,8 @@ void ShowFirstRunDialog(Profile* profile,
 
 - (id)init {
   NSString* nibpath =
-      [base::mac::MainAppBundle() pathForResource:@"FirstRunDialog"
-                                          ofType:@"nib"];
+      [base::mac::FrameworkBundle() pathForResource:@"FirstRunDialog"
+                                             ofType:@"nib"];
   if ((self = [super initWithWindowNibPath:nibpath owner:self])) {
     // Bound to the dialog checkboxes.
     makeDefaultBrowser_ = ShellIntegration::CanSetAsDefaultBrowser();

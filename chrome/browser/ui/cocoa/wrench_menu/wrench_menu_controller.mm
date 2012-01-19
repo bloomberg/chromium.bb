@@ -5,6 +5,7 @@
 #import "chrome/browser/ui/cocoa/wrench_menu/wrench_menu_controller.h"
 
 #include "base/basictypes.h"
+#include "base/mac/bundle_locations.h"
 #include "base/mac/mac_util.h"
 #include "base/string16.h"
 #include "base/sys_string_conversions.h"
@@ -321,7 +322,7 @@ class ZoomLevelObserver : public content::NotificationObserver {
 
 - (id)initWithController:(WrenchMenuController*)controller {
   if ((self = [super initWithNibName:@"WrenchMenu"
-                              bundle:base::mac::MainAppBundle()])) {
+                              bundle:base::mac::FrameworkBundle()])) {
     controller_ = controller;
   }
   return self;

@@ -13,6 +13,7 @@
 #include "base/file_util.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/mac/bundle_locations.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/mac/scoped_nsexception_enabler.h"
@@ -414,9 +415,9 @@ NSString* const kVersionKey = @"KSVersion";
     return NO;
 
   // Load the KeystoneRegistration framework bundle if present.  It lives
-  // inside the framework, so use base::mac::MainAppBundle();
+  // inside the framework, so use base::mac::FrameworkBundle();
   NSString* ksrPath =
-      [[base::mac::MainAppBundle() privateFrameworksPath]
+      [[base::mac::FrameworkBundle() privateFrameworksPath]
           stringByAppendingPathComponent:@"KeystoneRegistration.framework"];
   NSBundle* ksrBundle = [NSBundle bundleWithPath:ksrPath];
   [ksrBundle load];
@@ -745,7 +746,7 @@ NSString* const kVersionKey = @"KSVersion";
   // to files and directories.
   NSFileManager* fileManager = [NSFileManager defaultManager];
   NSString* executablePath = [[NSBundle mainBundle] executablePath];
-  NSString* frameworkPath = [base::mac::MainAppBundle() bundlePath];
+  NSString* frameworkPath = [base::mac::FrameworkBundle() bundlePath];
   return ![fileManager isWritableFileAtPath:appPath_] ||
          ![fileManager isWritableFileAtPath:executablePath] ||
          ![fileManager isWritableFileAtPath:frameworkPath];
@@ -830,8 +831,9 @@ NSString* const kVersionKey = @"KSVersion";
   // However, preflight operation (and promotion) should only be asynchronous
   // if the synchronous parameter is NO.
   NSString* preflightPath =
-      [base::mac::MainAppBundle() pathForResource:@"keystone_promote_preflight"
-                                           ofType:@"sh"];
+      [base::mac::FrameworkBundle()
+          pathForResource:@"keystone_promote_preflight"
+                   ofType:@"sh"];
   const char* preflightPathC = [preflightPath fileSystemRepresentation];
   const char* userBrandFile = NULL;
   const char* systemBrandFile = NULL;
@@ -916,8 +918,9 @@ NSString* const kVersionKey = @"KSVersion";
 
   SEL selector = @selector(changePermissionsForPromotionWithTool:);
   NSString* toolPath =
-      [base::mac::MainAppBundle() pathForResource:@"keystone_promote_postflight"
-                                           ofType:@"sh"];
+      [base::mac::FrameworkBundle()
+          pathForResource:@"keystone_promote_postflight"
+                   ofType:@"sh"];
 
   PerformBridge::PostPerform(self, selector, toolPath);
 }

@@ -6,6 +6,7 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/mac/bundle_locations.h"
 #include "base/mac/mac_util.h"
 #include "base/process_util.h"
 #include "base/sys_string_conversions.h"
@@ -65,8 +66,8 @@ class WebContentsObserverBridge : public content::WebContentsObserver {
 @implementation HungRendererController
 
 - (id)initWithWindowNibName:(NSString*)nibName {
-  NSString* nibpath = [base::mac::MainAppBundle() pathForResource:nibName
-                                                          ofType:@"nib"];
+  NSString* nibpath = [base::mac::FrameworkBundle() pathForResource:nibName
+                                                             ofType:@"nib"];
   self = [super initWithWindowNibPath:nibpath owner:self];
   if (self) {
     [tableView_ setDataSource:self];

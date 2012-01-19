@@ -4,6 +4,7 @@
 
 #import "chrome/browser/ui/cocoa/extensions/extension_install_dialog_controller.h"
 
+#include "base/mac/bundle_locations.h"
 #include "base/mac/mac_util.h"
 #include "base/memory/scoped_nsobject.h"
 #include "base/string_util.h"
@@ -92,15 +93,15 @@ void AppendRatingStarsShim(const SkBitmap* skiaImage, void* data) {
   // warnings, that respectively show webstore ratings data and are a more
   // nicely laid out.
   if (prompt.type() == ExtensionInstallUI::INLINE_INSTALL_PROMPT) {
-    nibpath = [base::mac::MainAppBundle()
+    nibpath = [base::mac::FrameworkBundle()
                pathForResource:@"ExtensionInstallPromptInline"
                         ofType:@"nib"];
   } else if (prompt.GetPermissionCount() == 0) {
-    nibpath = [base::mac::MainAppBundle()
+    nibpath = [base::mac::FrameworkBundle()
                pathForResource:@"ExtensionInstallPromptNoWarnings"
                         ofType:@"nib"];
   } else {
-   nibpath = [base::mac::MainAppBundle()
+   nibpath = [base::mac::FrameworkBundle()
               pathForResource:@"ExtensionInstallPrompt"
                        ofType:@"nib"];
   }

@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/logging.h"
+#include "base/mac/bundle_locations.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "base/sys_info.h"
@@ -172,7 +173,7 @@ bool PathProvider(int key, FilePath* result) {
       break;
     case chrome::DIR_RESOURCES:
 #if defined(OS_MACOSX)
-      cur = base::mac::MainAppBundlePath();
+      cur = base::mac::FrameworkBundlePath();
       cur = cur.Append(FILE_PATH_LITERAL("Resources"));
 #else
       if (!PathService::Get(chrome::DIR_APP, &cur))
@@ -216,7 +217,7 @@ bool PathProvider(int key, FilePath* result) {
       break;
     case chrome::DIR_MEDIA_LIBS:
 #if defined(OS_MACOSX)
-      *result = base::mac::MainAppBundlePath();
+      *result = base::mac::FrameworkBundlePath();
       *result = result->Append("Libraries");
       return true;
 #else
@@ -281,7 +282,7 @@ bool PathProvider(int key, FilePath* result) {
     case chrome::FILE_RESOURCES_PACK:
 #if defined(OS_MACOSX)
       if (base::mac::AmIBundled()) {
-        cur = base::mac::MainAppBundlePath();
+        cur = base::mac::FrameworkBundlePath();
         cur = cur.Append(FILE_PATH_LITERAL("Resources"))
                  .Append(FILE_PATH_LITERAL("resources.pak"));
         break;
@@ -409,7 +410,7 @@ bool PathProvider(int key, FilePath* result) {
 
     case chrome::DIR_DEFAULT_APPS:
 #if defined(OS_MACOSX)
-      cur = base::mac::MainAppBundlePath();
+      cur = base::mac::FrameworkBundlePath();
       cur = cur.Append(FILE_PATH_LITERAL("Default Apps"));
 #else
       if (!PathService::Get(chrome::DIR_APP, &cur))

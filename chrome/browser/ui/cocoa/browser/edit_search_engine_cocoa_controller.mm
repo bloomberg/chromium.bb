@@ -5,6 +5,7 @@
 #import "chrome/browser/ui/cocoa/browser/edit_search_engine_cocoa_controller.h"
 
 #include "base/logging.h"
+#include "base/mac/bundle_locations.h"
 #import "base/mac/mac_util.h"
 #include "base/string16.h"
 #include "base/sys_string_conversions.h"
@@ -33,7 +34,7 @@ void ShiftOriginY(NSView* view, CGFloat amount) {
              delegate:(EditSearchEngineControllerDelegate*)delegate
           templateURL:(const TemplateURL*)url {
   DCHECK(profile);
-  NSString* nibpath = [base::mac::MainAppBundle()
+  NSString* nibpath = [base::mac::FrameworkBundle()
                         pathForResource:@"EditSearchEngine"
                                  ofType:@"nib"];
   if ((self = [super initWithWindowNibPath:nibpath owner:self])) {

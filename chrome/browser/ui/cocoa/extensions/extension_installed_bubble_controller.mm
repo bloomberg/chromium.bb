@@ -5,6 +5,7 @@
 #import "chrome/browser/ui/cocoa/extensions/extension_installed_bubble_controller.h"
 
 #include "base/i18n/rtl.h"
+#include "base/mac/bundle_locations.h"
 #include "base/mac/mac_util.h"
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
@@ -86,8 +87,8 @@ class ExtensionLoadedNotificationObserver
                    browser:(Browser*)browser
                       icon:(SkBitmap)icon {
   NSString* nibPath =
-      [base::mac::MainAppBundle() pathForResource:@"ExtensionInstalledBubble"
-                                          ofType:@"nib"];
+      [base::mac::FrameworkBundle() pathForResource:@"ExtensionInstalledBubble"
+                                             ofType:@"nib"];
   if ((self = [super initWithWindowNibPath:nibPath owner:self])) {
     DCHECK(parentWindow);
     parentWindow_ = parentWindow;

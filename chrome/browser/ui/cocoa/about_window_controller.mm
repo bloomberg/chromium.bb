@@ -5,6 +5,7 @@
 #import "chrome/browser/ui/cocoa/about_window_controller.h"
 
 #include "base/logging.h"
+#include "base/mac/bundle_locations.h"
 #include "base/mac/mac_util.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
@@ -105,8 +106,8 @@ void AttributedStringAppendHyperlink(NSMutableAttributedString* attr_str,
 @implementation AboutWindowController
 
 - (id)initWithProfile:(Profile*)profile {
-  NSString* nibPath = [base::mac::MainAppBundle() pathForResource:@"About"
-                                                          ofType:@"nib"];
+  NSString* nibPath = [base::mac::FrameworkBundle() pathForResource:@"About"
+                                                             ofType:@"nib"];
   if ((self = [super initWithWindowNibPath:nibPath owner:self])) {
     profile_ = profile;
     NSNotificationCenter* center = [NSNotificationCenter defaultCenter];

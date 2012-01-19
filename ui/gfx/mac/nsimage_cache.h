@@ -18,8 +18,8 @@ class NSString;
 
 namespace gfx {
 
-// Returns an autoreleased image from the main app bundle
-// (mac_util::MainAppBundle()) with the given name, and keeps it in memory so
+// Returns an autoreleased image from the framework bundle
+// (base::mac::FrameworkBundle()) with the given name, and keeps it in memory so
 // future fetches are fast.
 // NOTE:
 //   - This should only be called on the main thread.

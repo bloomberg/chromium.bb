@@ -8,6 +8,7 @@
 
 #include "base/basictypes.h"
 #include "base/file_path.h"
+#include "base/mac/bundle_locations.h"
 #include "base/mac/mac_util.h"
 #include "base/memory/scoped_nsobject.h"
 #include "base/synchronization/lock.h"
@@ -25,13 +26,13 @@ FilePath GetResourcesPakFilePath(NSString* name, NSString* mac_locale) {
   // as the already-running browser instead of using what NSBundle might pick
   // based on values at helper launch time.
   if ([mac_locale length]) {
-    resource_path = [base::mac::MainAppBundle() pathForResource:name
-                                                        ofType:@"pak"
-                                                   inDirectory:@""
-                                               forLocalization:mac_locale];
+    resource_path = [base::mac::FrameworkBundle() pathForResource:name
+                                                           ofType:@"pak"
+                                                      inDirectory:@""
+                                                  forLocalization:mac_locale];
   } else {
-    resource_path = [base::mac::MainAppBundle() pathForResource:name
-                                                        ofType:@"pak"];
+    resource_path = [base::mac::FrameworkBundle() pathForResource:name
+                                                           ofType:@"pak"];
   }
   if (!resource_path)
     return FilePath();

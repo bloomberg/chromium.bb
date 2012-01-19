@@ -4,6 +4,7 @@
 
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_folder_controller.h"
 
+#include "base/mac/bundle_locations.h"
 #include "base/mac/mac_util.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
@@ -230,8 +231,8 @@ struct LayoutMetrics {
           parentController:(BookmarkBarFolderController*)parentController
              barController:(BookmarkBarController*)barController {
   NSString* nibPath =
-      [base::mac::MainAppBundle() pathForResource:@"BookmarkBarFolderWindow"
-                                          ofType:@"nib"];
+      [base::mac::FrameworkBundle() pathForResource:@"BookmarkBarFolderWindow"
+                                             ofType:@"nib"];
   if ((self = [super initWithWindowNibPath:nibPath owner:self])) {
     parentButton_.reset([button retain]);
     selectedIndex_ = -1;

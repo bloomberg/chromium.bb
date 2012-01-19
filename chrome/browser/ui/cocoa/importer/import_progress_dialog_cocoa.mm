@@ -5,6 +5,7 @@
 #import "chrome/browser/ui/cocoa/importer/import_progress_dialog_cocoa.h"
 
 #include "base/logging.h"
+#include "base/mac/bundle_locations.h"
 #include "base/mac/mac_util.h"
 #include "base/message_loop.h"
 #import "base/memory/scoped_nsobject.h"
@@ -59,8 +60,8 @@ NSString* keyForImportItem(importer::ImportItem item) {
                   observer:(ImporterObserver*)observer
               itemsEnabled:(int16)items {
   NSString* nib_path =
-      [base::mac::MainAppBundle() pathForResource:@"ImportProgressDialog"
-                                          ofType:@"nib"];
+      [base::mac::FrameworkBundle() pathForResource:@"ImportProgressDialog"
+                                             ofType:@"nib"];
   self = [super initWithWindowNibPath:nib_path owner:self];
   if (self != nil) {
     importer_host_ = host;

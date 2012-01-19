@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/logging.h"
+#include "base/mac/bundle_locations.h"
 #include "base/mac/mac_util.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
@@ -86,8 +87,8 @@ AboutIPCController* gSharedController = nil;
 }
 
 - (id)init {
-  NSString* nibpath = [base::mac::MainAppBundle() pathForResource:@"AboutIPC"
-                                                          ofType:@"nib"];
+  NSString* nibpath = [base::mac::FrameworkBundle() pathForResource:@"AboutIPC"
+                                                             ofType:@"nib"];
   if ((self = [super initWithWindowNibPath:nibpath owner:self])) {
     // Default to all on
     appCache_ = view_ = utilityHost_ = viewHost_ = plugin_ =

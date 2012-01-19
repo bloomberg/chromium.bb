@@ -5,6 +5,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/logging.h"  // for NOTREACHED()
+#include "base/mac/bundle_locations.h"
 #include "base/mac/mac_util.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
@@ -53,7 +54,7 @@ const float kAnimateCloseDuration = 0.12;
                  owner:(InfoBarTabHelper*)owner {
   DCHECK(delegate);
   if ((self = [super initWithNibName:@"InfoBar"
-                              bundle:base::mac::MainAppBundle()])) {
+                              bundle:base::mac::FrameworkBundle()])) {
     delegate_ = delegate;
     owner_ = owner;
   }

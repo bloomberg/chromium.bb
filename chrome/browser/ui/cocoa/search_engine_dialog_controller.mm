@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/bind.h"
+#include "base/mac/bundle_locations.h"
 #include "base/mac/mac_util.h"
 #include "base/message_loop.h"
 #include "base/sys_string_conversions.h"
@@ -72,8 +73,8 @@ void SearchEngineDialogControllerBridge::OnTemplateURLServiceChanged() {
 
 - (id)init {
   NSString* nibpath =
-      [base::mac::MainAppBundle() pathForResource:@"SearchEngineDialog"
-                                          ofType:@"nib"];
+      [base::mac::FrameworkBundle() pathForResource:@"SearchEngineDialog"
+                                             ofType:@"nib"];
   self = [super initWithWindowNibPath:nibpath owner:self];
   if (self != nil) {
     bridge_ = new SearchEngineDialogControllerBridge(self);

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/shell_integration.h"
 
+#include "base/mac/bundle_locations.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/foundation_util.h"
 #include "chrome/common/chrome_version_info.h"
@@ -21,7 +22,7 @@ bool ShellIntegration::SetAsDefaultBrowser() {
   if (!CanSetAsDefaultBrowser())
     return false;
 
-  // We really do want the main bundle here, not base::mac::MainAppBundle(),
+  // We really do want the main bundle here, not base::mac::FrameworkBundle(),
   // which is the bundle for the framework.
   NSString* identifier = [[NSBundle mainBundle] bundleIdentifier];
   if (!identifier)
@@ -41,7 +42,7 @@ bool ShellIntegration::SetAsDefaultProtocolClient(const std::string& protocol) {
   if (!CanSetAsDefaultProtocolClient())
     return false;
 
-  // We really do want the main bundle here, not base::mac::MainAppBundle(),
+  // We really do want the main bundle here, not base::mac::FrameworkBundle(),
   // which is the bundle for the framework.
   NSString* identifier = [[NSBundle mainBundle] bundleIdentifier];
   if (!identifier)
@@ -95,7 +96,7 @@ bool IsIdentifierDefaultProtocolClient(NSString* identifier,
 // protocols; we don't want to report "no" here if the user has simply chosen
 // to open HTML files in a text editor and FTP links with an FTP client.)
 ShellIntegration::DefaultWebClientState ShellIntegration::IsDefaultBrowser() {
-  // We really do want the main bundle here, not base::mac::MainAppBundle(),
+  // We really do want the main bundle here, not base::mac::FrameworkBundle(),
   // which is the bundle for the framework.
   NSString* my_identifier = [[NSBundle mainBundle] bundleIdentifier];
   if (!my_identifier)
@@ -117,7 +118,7 @@ ShellIntegration::DefaultWebClientState
   if (protocol.empty())
     return UNKNOWN_DEFAULT_WEB_CLIENT;
 
-  // We really do want the main bundle here, not base::mac::MainAppBundle(),
+  // We really do want the main bundle here, not base::mac::FrameworkBundle(),
   // which is the bundle for the framework.
   NSString* my_identifier = [[NSBundle mainBundle] bundleIdentifier];
   if (!my_identifier)

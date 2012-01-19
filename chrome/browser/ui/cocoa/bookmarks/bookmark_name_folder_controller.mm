@@ -4,6 +4,7 @@
 
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_name_folder_controller.h"
 
+#include "base/mac/bundle_locations.h"
 #include "base/mac/mac_util.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
@@ -21,7 +22,7 @@
                       node:(const BookmarkNode*)node
                     parent:(const BookmarkNode*)parent
                   newIndex:(int)newIndex {
-  NSString* nibpath = [base::mac::MainAppBundle()
+  NSString* nibpath = [base::mac::FrameworkBundle()
                         pathForResource:@"BookmarkNameFolder"
                         ofType:@"nib"];
   if ((self = [super initWithWindowNibPath:nibpath owner:self])) {

@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/mac/bundle_locations.h"
 #include "base/mac/mac_util.h"
 #include "base/memory/singleton.h"
 #include "base/string_util.h"
@@ -150,7 +151,7 @@ class NotificationBridge : public content::NotificationObserver {
        nibFileNamed:(NSString*)nibName {
   DCHECK(model && commands && profile && [nibName length]);
   if ((self = [super initWithNibName:nibName
-                              bundle:base::mac::MainAppBundle()])) {
+                              bundle:base::mac::FrameworkBundle()])) {
     toolbarModel_ = model;
     commands_ = commands;
     profile_ = profile;

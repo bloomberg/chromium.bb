@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/cocoa/tab_contents/sad_tab_controller.h"
 
+#include "base/mac/bundle_locations.h"
 #include "base/mac/mac_util.h"
 #import "chrome/browser/ui/cocoa/tab_contents/sad_tab_view.h"
 
@@ -25,7 +26,7 @@ gfx::NativeView GetViewOfSadTabController(SadTabController* sad_tab) {
 
 - (id)initWithWebContents:(WebContents*)webContents {
   if ((self = [super initWithNibName:@"SadTab"
-                              bundle:base::mac::MainAppBundle()])) {
+                              bundle:base::mac::FrameworkBundle()])) {
     webContents_ = webContents;
   }
 

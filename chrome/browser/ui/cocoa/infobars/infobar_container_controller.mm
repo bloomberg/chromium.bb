@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/logging.h"
+#include "base/mac/bundle_locations.h"
 #include "base/mac/mac_util.h"
 #include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
@@ -85,7 +86,7 @@ class InfoBarNotificationObserver : public content::NotificationObserver {
 - (id)initWithResizeDelegate:(id<ViewResizer>)resizeDelegate {
   DCHECK(resizeDelegate);
   if ((self = [super initWithNibName:@"InfoBarContainer"
-                              bundle:base::mac::MainAppBundle()])) {
+                              bundle:base::mac::FrameworkBundle()])) {
     resizeDelegate_ = resizeDelegate;
     infoBarObserver_.reset(new InfoBarNotificationObserver(self));
 

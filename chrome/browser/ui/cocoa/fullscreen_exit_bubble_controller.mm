@@ -5,6 +5,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/logging.h"  // for NOTREACHED()
+#include "base/mac/bundle_locations.h"
 #include "base/mac/mac_util.h"
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
@@ -68,8 +69,8 @@ const float kHideDuration = 0.7;
                 url:(const GURL&)url
          bubbleType:(FullscreenExitBubbleType)bubbleType {
   NSString* nibPath =
-      [base::mac::MainAppBundle() pathForResource:@"FullscreenExitBubble"
-                                          ofType:@"nib"];
+      [base::mac::FrameworkBundle() pathForResource:@"FullscreenExitBubble"
+                                             ofType:@"nib"];
   if ((self = [super initWithWindowNibPath:nibPath owner:self])) {
     browser_ = browser;
     owner_ = owner;

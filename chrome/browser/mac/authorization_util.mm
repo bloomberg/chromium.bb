@@ -12,6 +12,7 @@
 #include "base/basictypes.h"
 #include "base/eintr_wrapper.h"
 #include "base/logging.h"
+#include "base/mac/bundle_locations.h"
 #import "base/mac/mac_util.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
@@ -41,8 +42,8 @@ AuthorizationRef AuthorizationCreateToRunAsRoot(CFStringRef prompt) {
   // product_logo_32.png is used instead of app.icns because Authorization
   // Services can't deal with .icns files.
   NSString* icon_path =
-      [base::mac::MainAppBundle() pathForResource:@"product_logo_32"
-                                          ofType:@"png"];
+      [base::mac::FrameworkBundle() pathForResource:@"product_logo_32"
+                                             ofType:@"png"];
   const char* icon_path_c = [icon_path fileSystemRepresentation];
   size_t icon_path_length = icon_path_c ? strlen(icon_path_c) : 0;
 

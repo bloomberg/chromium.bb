@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/login/login_prompt.h"
 #import "chrome/browser/ui/login/login_prompt_mac.h"
 
+#include "base/mac/bundle_locations.h"
 #include "base/mac/mac_util.h"
 #include "base/string16.h"
 #include "base/string_util.h"
@@ -135,8 +136,8 @@ LoginHandler* LoginHandler::Create(net::AuthChallengeInfo* auth_info,
 
 - (id)initWithLoginHandler:(LoginHandlerMac*)handler {
   NSString* nibPath =
-      [base::mac::MainAppBundle() pathForResource:@"HttpAuthLoginSheet"
-                                          ofType:@"nib"];
+      [base::mac::FrameworkBundle() pathForResource:@"HttpAuthLoginSheet"
+                                             ofType:@"nib"];
   if ((self = [super initWithWindowNibPath:nibPath
                                      owner:self])) {
     handler_ = handler;

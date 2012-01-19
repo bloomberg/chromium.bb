@@ -4,6 +4,7 @@
 
 #import "chrome/browser/ui/cocoa/download/download_shelf_controller.h"
 
+#include "base/mac/bundle_locations.h"
 #include "base/mac/mac_util.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
@@ -90,7 +91,7 @@ const NSSize kHoverCloseButtonDefaultSize = { 16, 16 };
 - (id)initWithBrowser:(Browser*)browser
        resizeDelegate:(id<ViewResizer>)resizeDelegate {
   if ((self = [super initWithNibName:@"DownloadShelf"
-                              bundle:base::mac::MainAppBundle()])) {
+                              bundle:base::mac::FrameworkBundle()])) {
     resizeDelegate_ = resizeDelegate;
     maxShelfHeight_ = NSHeight([[self view] bounds]);
     currentShelfHeight_ = maxShelfHeight_;

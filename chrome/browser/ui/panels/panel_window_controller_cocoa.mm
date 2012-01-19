@@ -7,6 +7,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/logging.h"
+#include "base/mac/bundle_locations.h"
 #include "base/mac/mac_util.h"
 #include "base/sys_string_conversions.h"
 #include "base/time.h"
@@ -73,7 +74,7 @@ enum {
 
 - (id)initWithBrowserWindow:(PanelBrowserWindowCocoa*)window {
   NSString* nibpath =
-      [base::mac::MainAppBundle() pathForResource:@"Panel" ofType:@"nib"];
+      [base::mac::FrameworkBundle() pathForResource:@"Panel" ofType:@"nib"];
   if ((self = [super initWithWindowNibPath:nibpath owner:self])) {
     windowShim_.reset(window);
     animateOnBoundsChange_ = YES;

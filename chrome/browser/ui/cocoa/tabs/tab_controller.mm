@@ -6,6 +6,7 @@
 
 #include <cmath>
 
+#include "base/mac/bundle_locations.h"
 #include "base/mac/mac_util.h"
 #import "chrome/browser/themes/theme_service.h"
 #import "chrome/browser/ui/cocoa/menu_controller.h"
@@ -79,7 +80,7 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
 }
 
 - (id)init {
-  self = [super initWithNibName:@"TabView" bundle:base::mac::MainAppBundle()];
+  self = [super initWithNibName:@"TabView" bundle:base::mac::FrameworkBundle()];
   if (self != nil) {
     isIconShowing_ = YES;
     NSNotificationCenter* defaultCenter = [NSNotificationCenter defaultCenter];

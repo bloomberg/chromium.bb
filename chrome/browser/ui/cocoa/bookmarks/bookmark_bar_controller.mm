@@ -4,6 +4,7 @@
 
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_controller.h"
 
+#include "base/mac/bundle_locations.h"
 #include "base/mac/mac_util.h"
 #include "base/metrics/histogram.h"
 #include "base/sys_string_conversions.h"
@@ -233,7 +234,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
              delegate:(id<BookmarkBarControllerDelegate>)delegate
        resizeDelegate:(id<ViewResizer>)resizeDelegate {
   if ((self = [super initWithNibName:@"BookmarkBar"
-                              bundle:base::mac::MainAppBundle()])) {
+                              bundle:base::mac::FrameworkBundle()])) {
     // Initialize to an invalid state.
     visualState_ = bookmarks::kInvalidState;
     lastVisualState_ = bookmarks::kInvalidState;

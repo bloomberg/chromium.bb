@@ -12,6 +12,7 @@
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/mac/bundle_locations.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
@@ -36,7 +37,7 @@ namespace {
 
 CFStringRef CopyServiceProcessLaunchDName() {
   base::mac::ScopedNSAutoreleasePool pool;
-  NSBundle* bundle = base::mac::MainAppBundle();
+  NSBundle* bundle = base::mac::FrameworkBundle();
   return CFStringCreateCopy(kCFAllocatorDefault,
                             base::mac::NSToCFCast([bundle bundleIdentifier]));
 }
