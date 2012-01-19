@@ -15,6 +15,11 @@
 #include "base/scoped_temp_dir.h"
 #include "base/stl_util.h"
 #include "base/time.h"
+#include "chrome/browser/sessions/session_service.h"
+#include "chrome/browser/sessions/session_service_factory.h"
+#include "chrome/browser/sessions/session_service_test_helper.h"
+#include "chrome/browser/signin/signin_manager.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/abstract_profile_sync_service_test.h"
 #include "chrome/browser/sync/glue/session_change_processor.h"
 #include "chrome/browser/sync/glue/session_data_type_controller.h"
@@ -163,12 +168,20 @@ class ProfileSyncServiceSessionTest
   TestIdFactory* ids() { return sync_service_->id_factory(); }
 
  protected:
+  SessionService* service() { return helper_.service(); }
+
   virtual void SetUp() {
     // BrowserWithTestWindowTest implementation.
     BrowserWithTestWindowTest::SetUp();
     io_thread_.StartIOThread();
     profile()->CreateRequestContext();
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+    SessionService* session_service = new SessionService(temp_dir_.path());
+    helper_.set_service(session_service);
+    service()->SetWindowType(window_id_, Browser::TYPE_TABBED);
+    service()->SetWindowBounds(window_id_,
+                               window_bounds_,
+                               ui::SHOW_STATE_NORMAL);
     registrar_.Add(this, chrome::NOTIFICATION_FOREIGN_SESSION_UPDATED,
         content::NotificationService::AllSources());
   }
@@ -187,6 +200,11 @@ class ProfileSyncServiceSessionTest
   }
 
   virtual void TearDown() {
+    if (SessionServiceFactory::GetForProfileIfExisting(profile()) == service())
+      helper_.ReleaseService(); // we transferred ownership to profile
+    else
+      helper_.set_service(NULL);
+    SessionServiceFactory::SetForTestProfile(profile(), NULL);
     sync_service_.reset();
     profile()->ResetRequestContext();
 
@@ -217,6 +235,7 @@ class ProfileSyncServiceSessionTest
         ProfileSyncService::AUTO_START,
         false,
         callback));
+    SessionServiceFactory::SetForTestProfile(profile(), helper_.service());
 
     // Register the session data type.
     model_associator_ =
@@ -244,6 +263,7 @@ class ProfileSyncServiceSessionTest
   content::TestBrowserThread io_thread_;
   // Path used in testing.
   ScopedTempDir temp_dir_;
+  SessionServiceTestHelper helper_;
   SessionModelAssociator* model_associator_;
   SessionChangeProcessor* change_processor_;
   SessionID window_id_;
@@ -283,6 +303,7 @@ TEST_F(ProfileSyncServiceSessionTest, WriteSessionToNode) {
   CreateRootHelper create_root(this);
   ASSERT_TRUE(StartSyncService(create_root.callback(), false));
   ASSERT_TRUE(create_root.success());
+  ASSERT_EQ(model_associator_->GetSessionService(), helper_.service());
 
   // Check that the DataTypeController associated the models.
   bool has_nodes;

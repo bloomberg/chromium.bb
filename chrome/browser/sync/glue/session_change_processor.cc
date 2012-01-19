@@ -4,10 +4,12 @@
 
 #include "chrome/browser/sync/glue/session_change_processor.h"
 
+#include <sstream>
 #include <string>
 #include <vector>
 
 #include "base/logging.h"
+#include "base/memory/scoped_vector.h"
 #include "chrome/browser/extensions/extension_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/api/sync_error.h"
@@ -15,7 +17,6 @@
 #include "chrome/browser/sync/internal_api/change_record.h"
 #include "chrome/browser/sync/internal_api/read_node.h"
 #include "chrome/browser/sync/profile_sync_service.h"
-#include "chrome/browser/sync/protocol/session_specifics.pb.h"
 #include "chrome/browser/ui/sync/tab_contents_wrapper_synced_tab_delegate.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_notification_types.h"

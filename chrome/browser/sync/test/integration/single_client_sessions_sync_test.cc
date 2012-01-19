@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -39,7 +39,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, MAYBE_Sanity) {
 
   ScopedWindowMap old_windows;
   ASSERT_TRUE(OpenTabAndGetLocalWindows(0,
-                                        GURL("http://127.0.0.1/bubba"),
+                                        GURL("about:bubba"),
                                         old_windows.GetMutable()));
 
   ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion(
