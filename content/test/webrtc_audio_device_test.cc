@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -277,7 +277,8 @@ bool WebRTCAudioDeviceTest::OnMessageReceived(const IPC::Message& message) {
 
 // Posts a final task to the IO message loop and waits for completion.
 void WebRTCAudioDeviceTest::WaitForIOThreadCompletion() {
-  WaitForMessageLoopCompletion(ChildProcess::current()->io_message_loop());
+  WaitForMessageLoopCompletion(
+      ChildProcess::current()->io_message_loop()->message_loop_proxy());
 }
 
 void WebRTCAudioDeviceTest::WaitForAudioManagerCompletion() {
@@ -285,7 +286,8 @@ void WebRTCAudioDeviceTest::WaitForAudioManagerCompletion() {
     WaitForMessageLoopCompletion(audio_manager_->GetMessageLoop());
 }
 
-void WebRTCAudioDeviceTest::WaitForMessageLoopCompletion(MessageLoop* loop) {
+void WebRTCAudioDeviceTest::WaitForMessageLoopCompletion(
+    base::MessageLoopProxy* loop) {
   base::WaitableEvent* event = new base::WaitableEvent(false, false);
   loop->PostTask(FROM_HERE, base::Bind(&base::WaitableEvent::Signal,
                  base::Unretained(event)));

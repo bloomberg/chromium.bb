@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -144,7 +144,7 @@ class WebRTCAudioDeviceTest
   // Posts a final task to the IO message loop and waits for completion.
   void WaitForIOThreadCompletion();
   void WaitForAudioManagerCompletion();
-  void WaitForMessageLoopCompletion(MessageLoop* loop);
+  void WaitForMessageLoopCompletion(base::MessageLoopProxy* loop);
 
   // Convenience getter for gmock.
   MockMediaObserver& media_observer() const {
