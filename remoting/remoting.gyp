@@ -220,6 +220,8 @@
             'host/host_event_logger.cc',
             'host/host_event_logger.h',
             'host/remoting_me2me_host.cc',
+            'host/system_event_logger_linux.cc',
+            'host/system_event_logger.h',
           ],
         },  # end of target 'remoting_me2me_host'
 

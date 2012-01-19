@@ -13,6 +13,7 @@
 #endif  // defined(OS_LINUX)
 
 #include "remoting/host/chromoting_host.h"
+#include "remoting/host/system_event_logger.h"
 
 namespace {
 
@@ -27,8 +28,10 @@ void Log(const std::string& message) {
 
 namespace remoting {
 
-HostEventLogger::HostEventLogger(ChromotingHost* host)
-    : host_(host) {
+HostEventLogger::HostEventLogger(ChromotingHost* host,
+                                 const std::string& application_name)
+    : host_(host),
+      system_event_logger_(SystemEventLogger::Create(application_name)) {
 #if defined(OS_LINUX)
   openlog("chromoting_host", 0, LOG_USER);
 #endif
@@ -54,6 +57,10 @@ void HostEventLogger::OnAccessDenied(const std::string& jid) {
 }
 
 void HostEventLogger::OnShutdown() {
+}
+
+void HostEventLogger::Log(const std::string& message) {
+  system_event_logger_->Log(message);
 }
 
 }  // namespace remoting

@@ -40,6 +40,9 @@
 
 namespace {
 
+// This is used for tagging system event logs.
+const char kApplicationName[] = "remoting_me2me_host";
+
 // These are used for parsing the config-file locations from the command line,
 // and for defining the default locations if the switches are not present.
 const char kAuthConfigSwitchName[] = "auth-config";
@@ -174,7 +177,7 @@ class HostProcess {
         new HeartbeatSender(host_id_, signal_strategy_.get(), &key_pair_));
 
     log_to_server_.reset(new LogToServer(host_, signal_strategy_.get()));
-    host_event_logger_.reset(new HostEventLogger(host_));
+    host_event_logger_.reset(new HostEventLogger(host_, kApplicationName));
 
     host_->Start();
 
