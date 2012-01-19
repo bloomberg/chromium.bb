@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,6 +25,9 @@ const wchar_t kAll[] = L"*";
 
 // A comma-separated list of brand codes that are associated with Skype.
 const wchar_t kSkype[] = L"SKPC,SKPG,SKPH,SKPI,SKPL,SKPM,SKPN";
+
+// The brand code for enterprise installations.
+const wchar_t kEnterprise[] = L"GGRV";
 
 // Constants for the "infobar plugins" experiment. These strings become
 // the registry omaha |client| value. The last one is considered to be

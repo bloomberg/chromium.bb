@@ -616,9 +616,11 @@ bool GoogleChromeDistribution::GetExperimentDetails(
     locale = ASCIIToWide("en-US");
   if (!GoogleUpdateSettings::GetBrand(&brand))
     brand = ASCIIToWide("");  // Could still be viable for catch-all rules.
+  if (brand == kEnterprise)
+    return false;
 
   for (int i = 0; i < arraysize(kExperimentFlavors); ++i) {
-    // A maximum of four flavors is supported at the moment.
+    // A maximum of four flavors are supported at the moment.
     DCHECK_LE(kExperimentFlavors[i].flavors, kMax);
     DCHECK_GT(kExperimentFlavors[i].flavors, 0);
     // Make sure each experiment has valid headings.
@@ -634,7 +636,7 @@ bool GoogleChromeDistribution::GetExperimentDetails(
            kExperimentFlavors[i].flavors - 1 <= 'Z');
 
     if (kExperimentFlavors[i].locale != locale &&
-        kExperimentFlavors[i].locale != L"*")
+        kExperimentFlavors[i].locale != ASCIIToWide("*"))
       continue;
 
     std::vector<std::wstring> brand_codes;
