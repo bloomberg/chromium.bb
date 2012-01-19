@@ -205,25 +205,11 @@ const int MouseWheelEvent::kWheelDelta = 53;
 ////////////////////////////////////////////////////////////////////////////////
 // GestureEvent, public:
 
-GestureEvent::GestureEvent(ui::EventType type,
-                           int x,
-                           int y,
-                           int flags,
-                           base::Time time_stamp,
-                           float delta_x,
-                           float delta_y)
-    : LocatedEvent(type, gfx::Point(x, y), flags),
-      delta_x_(delta_x),
-      delta_y_(delta_y) {
-  set_time_stamp(time_stamp);
-}
-
 GestureEvent::GestureEvent(const GestureEvent& model, View* source,
                            View* target)
     : LocatedEvent(model, source, target),
       delta_x_(model.delta_x_),
       delta_y_(model.delta_y_) {
-  set_time_stamp(model.time_stamp());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -233,7 +219,19 @@ GestureEvent::GestureEvent(const GestureEvent& model, View* root)
     : LocatedEvent(model, root),
       delta_x_(model.delta_x_),
       delta_y_(model.delta_y_) {
-  set_time_stamp(model.time_stamp());
+}
+
+GestureEvent::GestureEvent(ui::EventType type, int x, int y, int flags)
+    : LocatedEvent(type, gfx::Point(x, y), flags),
+      delta_x_(0),
+      delta_y_(0) {
+}
+
+GestureEventForTest::GestureEventForTest(ui::EventType type,
+                                         int x,
+                                         int y,
+                                         int flags)
+    : GestureEvent(type, x, y, flags) {
 }
 
 }  // namespace views

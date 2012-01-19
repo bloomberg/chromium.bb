@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_VIEWS_TOUCHUI_GESTURE_RECOGNIZER_H_
-#define UI_VIEWS_TOUCHUI_GESTURE_RECOGNIZER_H_
+#ifndef UI_AURA_GESTURES_GESTURE_RECOGNIZER_H_
+#define UI_AURA_GESTURES_GESTURE_RECOGNIZER_H_
 #pragma once
 
 #include <map>
@@ -11,17 +11,16 @@
 
 #include "base/memory/linked_ptr.h"
 #include "base/memory/singleton.h"
+#include "ui/aura/aura_export.h"
 #include "ui/base/events.h"
 #include "ui/gfx/point.h"
-#include "ui/views/views_export.h"
 
-namespace views {
-class GestureManager;
+namespace aura {
 class TouchEvent;
 class GestureEvent;
 
 // A GestureRecognizer recognizes gestures from touch sequences.
-class VIEWS_EXPORT GestureRecognizer {
+class AURA_EXPORT GestureRecognizer {
  public:
   // Gesture state.
   enum GestureState {
@@ -172,6 +171,6 @@ class VIEWS_EXPORT GestureRecognizer {
   DISALLOW_COPY_AND_ASSIGN(GestureRecognizer);
 };
 
-}  // namespace views
+}  // namespace aura
 
-#endif  // UI_VIEWS_TOUCHUI_GESTURE_RECOGNIZER_H_
+#endif  // UI_AURA_GESTURES_GESTURE_RECOGNIZER_H_

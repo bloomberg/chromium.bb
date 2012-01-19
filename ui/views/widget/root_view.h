@@ -20,8 +20,6 @@ enum TouchStatus;
 namespace views {
 
 class Widget;
-class GestureManager;
-class GestureRecognizer;
 
 // This is a views-internal API and should not be used externally.
 // Widget exposes this object as a View*.
@@ -69,12 +67,6 @@ class VIEWS_EXPORT RootView : public View, public FocusTraversable {
   // path, and finally to the default keyboard handler, until someone consumes
   // it. Returns whether anyone consumed the event.
   bool OnKeyEvent(const KeyEvent& event);
-
-  // Provided only for testing:
-  void SetGestureManagerForTesting(GestureManager* g) { gesture_manager_ = g; }
-  void SetGestureRecognizerForTesting(GestureRecognizer* gr) {
-    gesture_recognizer_ = gr;
-  }
 
   // Focus ---------------------------------------------------------------------
 
@@ -132,10 +124,6 @@ class VIEWS_EXPORT RootView : public View, public FocusTraversable {
   friend class View;
   friend class Widget;
 
-  // Required so the GestureManager can call the Process* entry points
-  // with synthetic events as necessary.
-  friend class GestureManager;
-
   // Input ---------------------------------------------------------------------
 
   // Update the cursor given a mouse event. This is called by non mouse_move
@@ -149,10 +137,6 @@ class VIEWS_EXPORT RootView : public View, public FocusTraversable {
   // in the current coordinate system (i.e. any necessary transformation should
   // be applied to the point prior to calling this).
   void SetMouseLocationAndFlags(const MouseEvent& event);
-
-  // Feeds touch event to GestureRecognizer.
-  // Returns true if the event resulted in firing a synthetic event.
-  bool DoGestureProcessing(const TouchEvent& event, ui::TouchStatus status);
 
   //////////////////////////////////////////////////////////////////////////////
 
@@ -182,14 +166,8 @@ class VIEWS_EXPORT RootView : public View, public FocusTraversable {
   int last_mouse_event_x_;
   int last_mouse_event_y_;
 
-  // The gesture_manager_ for this.
-  GestureManager* gesture_manager_;
-
   // The view currently handling touch events.
   View* touch_pressed_handler_;
-
-  // The gesture_recognizer_ for this.
-  GestureRecognizer* gesture_recognizer_;
 
   // The view currently handling gesture events.
   View* gesture_handling_view_;

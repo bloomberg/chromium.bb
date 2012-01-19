@@ -20,6 +20,7 @@
 #include "ui/aura/event.h"
 #include "ui/aura/event_filter.h"
 #include "ui/aura/focus_manager.h"
+#include "ui/aura/gestures/gesture_recognizer.h"
 #include "ui/aura/screen_aura.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
@@ -207,9 +208,11 @@ bool RootWindow::DispatchTouchEvent(TouchEvent* event) {
       touch_event_handler_ ? touch_event_handler_ : capture_window_;
   if (!target)
     target = GetEventHandlerForPoint(event->location());
+
+  ui::TouchStatus status = ui::TOUCH_STATUS_UNKNOWN;
   if (target) {
     TouchEvent translated_event(*event, this, target);
-    ui::TouchStatus status = ProcessTouchEvent(target, &translated_event);
+    status = ProcessTouchEvent(target, &translated_event);
     if (status == ui::TOUCH_STATUS_START)
       touch_event_handler_ = target;
     else if (status == ui::TOUCH_STATUS_END ||
@@ -218,15 +221,32 @@ bool RootWindow::DispatchTouchEvent(TouchEvent* event) {
     handled = status != ui::TOUCH_STATUS_UNKNOWN;
   }
 
-  if (!handled) {
-    // TODO(sad): Send the touch to the gesture recognizer.
+  // Get the list of GestureEvents from GestureRecognizer.
+  scoped_ptr<GestureRecognizer::Gestures> gestures;
+  gestures.reset(gesture_recognizer_->ProcessTouchEventForGesture(*event,
+        status));
+  if (gestures.get()) {
+    for (unsigned int i = 0; i < gestures->size(); i++) {
+      GestureEvent* gesture = gestures->at(i).get();
+      if (DispatchGestureEvent(gesture) != ui::GESTURE_STATUS_UNKNOWN)
+        handled = true;
+    }
   }
 
   return handled;
 }
 
 bool RootWindow::DispatchGestureEvent(GestureEvent* event) {
-  // TODO(sad):
+  event->UpdateForTransform(layer()->transform());
+  Window* target = gesture_handler_ ? gesture_handler_ : capture_window_;
+  if (!target)
+    target = GetEventHandlerForPoint(event->location());
+  if (target) {
+    GestureEvent translated_event(*event, this, target);
+    ui::GestureStatus status = ProcessGestureEvent(target, &translated_event);
+    return status != ui::GESTURE_STATUS_UNKNOWN;
+  }
+
   return false;
 }
 
@@ -269,6 +289,8 @@ void RootWindow::WindowDestroying(Window* window) {
     capture_window_ = NULL;
   if (touch_event_handler_ == window)
     touch_event_handler_ = NULL;
+  if (gesture_handler_ == window)
+    gesture_handler_ = NULL;
 }
 
 MessageLoop::Dispatcher* RootWindow::GetDispatcher() {
@@ -312,10 +334,13 @@ void RootWindow::SetCapture(Window* window) {
       touch_event_handler_ = capture_window_;
     if (mouse_moved_handler_ || mouse_button_flags_ != 0)
       mouse_moved_handler_ = capture_window_;
+    if (gesture_handler_)
+      gesture_handler_ = capture_window_;
   } else {
     // When capture is lost, we must reset the event handlers.
     touch_event_handler_ = NULL;
     mouse_moved_handler_ = NULL;
+    gesture_handler_ = NULL;
   }
   mouse_pressed_handler_ = NULL;
 }
@@ -355,7 +380,9 @@ RootWindow::RootWindow()
       mouse_pressed_handler_(NULL),
       mouse_moved_handler_(NULL),
       focused_window_(NULL),
-      touch_event_handler_(NULL) {
+      touch_event_handler_(NULL),
+      gesture_handler_(NULL),
+      gesture_recognizer_(GestureRecognizer::GetInstance()) {
   SetName("RootWindow");
   gfx::Screen::SetInstance(screen_);
   host_->SetRootWindow(this);
@@ -371,6 +398,8 @@ RootWindow::RootWindow()
                                          host_->GetSize());
   }
   DCHECK(compositor_.get());
+
+  gesture_recognizer_->Reset();
 }
 
 RootWindow::~RootWindow() {
@@ -460,14 +489,49 @@ ui::GestureStatus RootWindow::ProcessGestureEvent(Window* target,
 
   EventFilters filters;
   GetEventFiltersToNotify(target, &filters);
+  ui::GestureStatus status = ui::GESTURE_STATUS_UNKNOWN;
   for (EventFilters::const_reverse_iterator it = filters.rbegin();
        it != filters.rend(); ++it) {
-    ui::GestureStatus status = (*it)->PreHandleGestureEvent(target, event);
+    status = (*it)->PreHandleGestureEvent(target, event);
     if (status != ui::GESTURE_STATUS_UNKNOWN)
       return status;
   }
 
-  return target->delegate()->OnGestureEvent(event);
+  status = target->delegate()->OnGestureEvent(event);
+  if (status == ui::GESTURE_STATUS_UNKNOWN) {
+    // The gesture was unprocessed. Generate corresponding mouse events here
+    // (e.g. tap to click).
+    switch (event->type()) {
+      case ui::ET_GESTURE_TAP: {
+        // Tap should be processed as a click. So generate the following
+        // sequence of mouse events: MOUSE_ENTERED, MOUSE_PRESSED,
+        // MOUSE_RELEASED and MOUSE_EXITED.
+        ui::EventType types[] = { ui::ET_MOUSE_ENTERED,
+                                  ui::ET_MOUSE_PRESSED,
+                                  ui::ET_MOUSE_RELEASED,
+                                  ui::ET_MOUSE_EXITED,
+                                  ui::ET_UNKNOWN
+                                };
+        gesture_handler_ = target;
+        for (ui::EventType* type = types; *type != ui::ET_UNKNOWN; ++type) {
+          MouseEvent synth(*type, event->location(), event->flags());
+          if (gesture_handler_->delegate()->OnMouseEvent(&synth))
+            status = ui::GESTURE_STATUS_SYNTH_MOUSE;
+          // The window that was receiving the gestures may have closed/hidden
+          // itself in response to one of the synthetic events. Stop sending
+          // subsequent synthetic events if that happens.
+          if (!gesture_handler_)
+            break;
+        }
+        gesture_handler_ = NULL;
+        break;
+      }
+      default:
+        break;
+    }
+  }
+
+  return status;
 }
 
 void RootWindow::ScheduleDraw() {

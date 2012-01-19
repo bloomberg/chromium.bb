@@ -13,6 +13,7 @@
       'dependencies': [
         '../../base/base.gyp:base',
         '../../base/base.gyp:base_i18n',
+        '../../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '../../skia/skia.gyp:skia',
         '../gfx/compositor/compositor.gyp:compositor',
         '../ui.gyp:gfx_resources',
@@ -43,6 +44,8 @@
         'client/window_move_client.h',
         'client/window_types.h',
         'cursor.h',
+        'gestures/gesture_recognizer.cc',
+        'gestures/gesture_recognizer.h',
         'root_window_host.h',
         'root_window_host_linux.cc',
         'root_window_host_win.cc',
@@ -145,6 +148,7 @@
         '..',
       ],
       'sources': [
+        'gestures/gesture_recognizer_unittest.cc',
         'test/run_all_unittests.cc',
         'test/test_suite.cc',
         'test/test_suite.h',

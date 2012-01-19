@@ -15,8 +15,6 @@
 #include "ui/gfx/compositor/layer.h"
 #include "ui/views/focus/view_storage.h"
 #include "ui/views/layout/fill_layout.h"
-#include "ui/views/touchui/gesture_manager.h"
-#include "ui/views/touchui/gesture_recognizer.h"
 #include "ui/views/widget/widget.h"
 
 namespace views {
@@ -39,9 +37,7 @@ RootView::RootView(Widget* widget)
       last_mouse_event_flags_(0),
       last_mouse_event_x_(-1),
       last_mouse_event_y_(-1),
-      gesture_manager_(GestureManager::GetInstance()),
       touch_pressed_handler_(NULL),
-      gesture_recognizer_(GestureRecognizer::GetInstance()),
       gesture_handling_view_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(focus_search_(this, false, false)),
       focus_traversable_parent_(NULL),
@@ -340,8 +336,6 @@ ui::TouchStatus RootView::OnTouchEvent(const TouchEvent& event) {
   if (touch_pressed_handler_) {
     TouchEvent touch_event(e, this, touch_pressed_handler_);
     status = touch_pressed_handler_->ProcessTouchEvent(touch_event);
-    if (DoGestureProcessing(e, status))
-      status = ui::TOUCH_STATUS_SYNTH_MOUSE;
     if (status == ui::TOUCH_STATUS_END)
       touch_pressed_handler_ = NULL;
     return status;
@@ -352,8 +346,7 @@ ui::TouchStatus RootView::OnTouchEvent(const TouchEvent& event) {
        touch_pressed_handler_ && (touch_pressed_handler_ != this);
        touch_pressed_handler_ = touch_pressed_handler_->parent()) {
     if (!touch_pressed_handler_->enabled()) {
-      // Disabled views eat events but are treated as not handled by the
-      // the GestureManager.
+      // Disabled views eat events but are treated as not handled.
       status = ui::TOUCH_STATUS_UNKNOWN;
       break;
     }
@@ -379,17 +372,12 @@ ui::TouchStatus RootView::OnTouchEvent(const TouchEvent& event) {
     if (status != ui::TOUCH_STATUS_START)
       touch_pressed_handler_ = NULL;
 
-    if (DoGestureProcessing(e, status))
-      status = ui::TOUCH_STATUS_SYNTH_MOUSE;
     return status;
   }
 
   // Reset touch_pressed_handler_ to indicate that no processing is occurring.
   touch_pressed_handler_ = NULL;
 
-  // Give the touch event to the gesture manager.
-  if (gesture_manager_->ProcessTouchEventForGesture(e, this, status))
-    status = ui::TOUCH_STATUS_SYNTH_MOUSE;
   return status;
 }
 
@@ -402,8 +390,7 @@ ui::GestureStatus RootView::OnGestureEvent(const GestureEvent& event) {
       gesture_handling_view_ && (gesture_handling_view_ != this);
       gesture_handling_view_ = gesture_handling_view_->parent()) {
     if (!gesture_handling_view_->enabled()) {
-      // Disabled views eat events but are treated as not handled by the
-      // the GestureManager.
+      // Disabled views eat events but are treated as not handled.
       return ui::GESTURE_STATUS_UNKNOWN;
     }
 
@@ -496,36 +483,6 @@ void RootView::SetMouseLocationAndFlags(const MouseEvent& event) {
   last_mouse_event_flags_ = event.flags();
   last_mouse_event_x_ = event.x();
   last_mouse_event_y_ = event.y();
-}
-
-bool RootView::DoGestureProcessing(const TouchEvent& event,
-                                   ui::TouchStatus status) {
-  if (status != ui::TOUCH_STATUS_UNKNOWN)
-    return false;  // The event was consumed by a touch sequence.
-
-  // Get the GestureEvent list processed from GestureRecognizer.
-  scoped_ptr<GestureRecognizer::Gestures> gestures;
-  gestures.reset(gesture_recognizer_->ProcessTouchEventForGesture(event,
-      status));
-  bool synthetic = true;
-  for (unsigned int i = 0; i < gestures->size(); i++) {
-    GestureEvent* event = gestures->at(i).get();
-    GestureEvent e(*event, this);
-    if (OnGestureEvent(e) == ui::GESTURE_STATUS_CONSUMED) {
-      // All gesture events should be consumed.
-      synthetic = false;
-    } else {
-      synthetic = true;
-      break;
-    }
-  }
-  if (synthetic) {
-    // TODO(Gajen): This should be removed in future once all views are capable
-    // of handling OnGestureEvent.
-    return gesture_manager_->ProcessTouchEventForGesture(event, this,
-        status);
-  }
-  return synthetic;
 }
 
 }  // namespace internal

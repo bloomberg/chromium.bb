@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/views/touchui/gesture_recognizer.h"
+#include "ui/aura/gestures/gesture_recognizer.h"
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "ui/views/events/event.h"
+#include "base/time.h"
+#include "ui/aura/event.h"
+#include "ui/base/events.h"
 
 namespace {
 // TODO(Gajen): Make these configurable in sync with this CL http://code.google.
@@ -19,7 +21,7 @@ const float kMinFlickSpeedSquared = 550.f * 550.f;
 
 }  // namespace
 
-namespace views {
+namespace aura {
 
 ////////////////////////////////////////////////////////////////////////////////
 // GestureRecognizer Public:
@@ -49,7 +51,7 @@ GestureRecognizer::Gestures* GestureRecognizer::ProcessTouchEventForGesture(
 
   scoped_ptr<Gestures> gestures(new Gestures());
   UpdateValues(event);
-  switch (Signature(state_, event.identity(), event.type(), false)) {
+  switch (Signature(state_, event.touch_id(), event.type(), false)) {
     case GST_NO_GESTURE_FIRST_PRESSED:
       TouchDown(event, gestures.get());
       break;
@@ -214,11 +216,11 @@ void GestureRecognizer:: AppendScrollGestureUpdate(const TouchEvent& event,
 
 void GestureRecognizer::UpdateValues(const TouchEvent& event) {
   if (state_ != GS_NO_GESTURE && event.type() == ui::ET_TOUCH_MOVED) {
-    double interval(event.time_stamp().ToDoubleT() - last_touch_time_);
+    double interval(event.time_stamp().InSecondsF() - last_touch_time_);
     x_velocity_ = (event.x() - last_touch_position_.x()) / interval;
     y_velocity_ = (event.y() - last_touch_position_.y()) / interval;
   }
-  last_touch_time_ = event.time_stamp().ToDoubleT();
+  last_touch_time_ = event.time_stamp().InSecondsF();
   last_touch_position_ = event.location();
   if (state_ == GS_NO_GESTURE) {
     first_touch_time_ = last_touch_time_;
@@ -284,4 +286,4 @@ bool GestureRecognizer::ScrollEnd(const TouchEvent& event, Gestures* gestures) {
   return false;
 }
 
-}  // namespace views
+}  // namespace aura

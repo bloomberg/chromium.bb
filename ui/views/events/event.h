@@ -429,13 +429,7 @@ class VIEWS_EXPORT ScrollEvent : public MouseEvent {
 ////////////////////////////////////////////////////////////////////////////////
 class VIEWS_EXPORT GestureEvent : public LocatedEvent {
  public:
-  GestureEvent(ui::EventType type,
-               int x,
-               int y,
-               int flags,
-               base::Time time_stamp,
-               float delta_x,
-               float delta_y);
+  explicit GestureEvent(const NativeEvent& native_event);
 
   // Create a new GestureEvent which is identical to the provided model.
   // If source / target views are provided, the model location will be converted
@@ -444,6 +438,9 @@ class VIEWS_EXPORT GestureEvent : public LocatedEvent {
 
   float delta_x() const { return delta_x_; }
   float delta_y() const { return delta_y_; }
+
+ protected:
+  GestureEvent(ui::EventType type, int x, int y, int flags);
 
  private:
   friend class internal::RootView;
@@ -454,6 +451,14 @@ class VIEWS_EXPORT GestureEvent : public LocatedEvent {
   float delta_y_;
 
   DISALLOW_COPY_AND_ASSIGN(GestureEvent);
+};
+
+class VIEWS_EXPORT GestureEventForTest : public GestureEvent {
+ public:
+  GestureEventForTest(ui::EventType type, int x, int y, int flags);
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(GestureEventForTest);
 };
 
 }  // namespace views

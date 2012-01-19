@@ -582,7 +582,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // does nothing. Override as needed.
   virtual ui::TouchStatus OnTouchEvent(const TouchEvent& event);
 
-  // This method is invoked for each GestureEvent recognized from GestureManager
+  // This method is invoked for each GestureEvent created by GestureRecognizer.
   // Default implementation does nothing. Override as needed.
   virtual ui::GestureStatus OnGestureEvent(const GestureEvent& event);
 
@@ -1257,12 +1257,12 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   bool ProcessMouseDragged(const MouseEvent& event, DragInfo* drop_info);
   void ProcessMouseReleased(const MouseEvent& event);
 
-  // RootView will invoke this with incoming TouchEvents. Returns the
-  // the result of OnTouchEvent.
+  // RootView will invoke this with incoming TouchEvents. Returns the result
+  // of OnTouchEvent.
   ui::TouchStatus ProcessTouchEvent(const TouchEvent& event);
 
-  // GestureManager will invoke this with incoming GestureEvents. Returns the
-  // the result of OnGestureEvent.
+  // RootView will invoke this with incoming GestureEvents. Returns the result
+  // of OnGestureEvent.
   ui::GestureStatus ProcessGestureEvent(const GestureEvent& event);
 
   // Accelerators --------------------------------------------------------------

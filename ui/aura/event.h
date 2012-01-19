@@ -66,6 +66,7 @@ class AURA_EXPORT Event {
   void set_delete_native_event(bool delete_native_event) {
     delete_native_event_ = delete_native_event;
   }
+  void set_time_stamp(base::TimeDelta time_stamp) { time_stamp_ = time_stamp; }
 
  private:
   void operator=(const Event&);
@@ -137,7 +138,7 @@ class AURA_EXPORT MouseEvent : public LocatedEvent {
              ui::EventType type,
              int flags);
 
-  // Used for synthetic events in testing.
+  // Used for synthetic events in testing and by the gesture recognizer.
   MouseEvent(ui::EventType type, const gfx::Point& location, int flags);
 
   // Compares two mouse down events and returns true if the second one should
@@ -288,6 +289,28 @@ class AURA_EXPORT ScrollEvent : public MouseEvent {
 };
 
 class AURA_EXPORT GestureEvent : public LocatedEvent {
+ public:
+  GestureEvent(ui::EventType type,
+               int x,
+               int y,
+               int flags,
+               base::Time time_stamp,
+               float delta_x,
+               float delta_y);
+
+  // Create a new TouchEvent which is identical to the provided model.
+  // If source / target windows are provided, the model location will be
+  // converted from |source| coordinate system to |target| coordinate system.
+  GestureEvent(const GestureEvent& model, Window* source, Window* target);
+
+  float delta_x() const { return delta_x_; }
+  float delta_y() const { return delta_y_; }
+
+ private:
+  float delta_x_;
+  float delta_y_;
+
+  DISALLOW_COPY_AND_ASSIGN(GestureEvent);
 };
 
 }  // namespace aura

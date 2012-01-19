@@ -352,4 +352,26 @@ ScrollEvent::ScrollEvent(const base::NativeEvent& native_event)
   ui::GetScrollOffsets(native_event, &x_offset_, &y_offset_);
 }
 
+GestureEvent::GestureEvent(ui::EventType type,
+                           int x,
+                           int y,
+                           int flags,
+                           base::Time time_stamp,
+                           float delta_x,
+                           float delta_y)
+    : LocatedEvent(type, gfx::Point(x, y), flags),
+      delta_x_(delta_x),
+      delta_y_(delta_y) {
+  // XXX: Why is aura::Event::time_stamp_ a TimeDelta instead of a Time?
+  set_time_stamp(base::TimeDelta::FromSeconds(time_stamp.ToDoubleT()));
+}
+
+GestureEvent::GestureEvent(const GestureEvent& model,
+                           Window* source,
+                           Window* target)
+    : LocatedEvent(model, source, target),
+      delta_x_(model.delta_x_),
+      delta_y_(model.delta_y_) {
+}
+
 }  // namespace aura

@@ -40,6 +40,7 @@ class StackingClient;
 class ScrollEvent;
 class TouchEvent;
 class GestureEvent;
+class GestureRecognizer;
 
 // RootWindow is responsible for hosting a set of windows.
 class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
@@ -151,6 +152,11 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   void ToggleFullScreen();
 #endif
 
+  // Provided only for testing:
+  void SetGestureRecognizerForTesting(GestureRecognizer* gr) {
+    gesture_recognizer_ = gr;
+  }
+
   // Overridden from ui::CompositorDelegate:
   virtual void ScheduleDraw() OVERRIDE;
 
@@ -229,6 +235,10 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   Window* mouse_moved_handler_;
   Window* focused_window_;
   Window* touch_event_handler_;
+  Window* gesture_handler_;
+
+  // The gesture_recognizer_ for this.
+  GestureRecognizer* gesture_recognizer_;
 
   DISALLOW_COPY_AND_ASSIGN(RootWindow);
 };

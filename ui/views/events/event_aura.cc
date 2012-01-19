@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -59,10 +59,22 @@ MouseWheelEvent::MouseWheelEvent(const NativeEvent& native_event)
       offset_(ui::GetMouseWheelOffset(native_event->native_event())) {
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// ScrollEvent, public:
+
 ScrollEvent::ScrollEvent(const NativeEvent& native_event)
     : MouseEvent(native_event) {
   CHECK(ui::GetScrollOffsets(
       native_event->native_event(), &x_offset_, &y_offset_));
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// GestureEvent, public:
+
+GestureEvent::GestureEvent(const NativeEvent& event)
+    : LocatedEvent(event),
+      delta_x_(static_cast<aura::GestureEvent*>(event)->delta_x()),
+      delta_y_(static_cast<aura::GestureEvent*>(event)->delta_y()) {
 }
 
 }  // namespace views
