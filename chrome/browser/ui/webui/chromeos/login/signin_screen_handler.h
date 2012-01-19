@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -160,8 +160,9 @@ class SigninScreenHandler : public BaseScreenHandler,
   // Tells webui to load authentication extension. |force| is used to force the
   // extension reloading, if it has already been loaded. |silent_load| is true
   // for cases when extension should be loaded in the background and it
-  // shouldn't grab the focus.
-  void LoadAuthExtension(bool force, bool silent_load);
+  // shouldn't grab the focus. |offline| is true when offline version of the
+  // extension should be used.
+  void LoadAuthExtension(bool force, bool silent_load, bool offline);
 
   // Updates authentication extension. Called when device settings that affect
   // sign-in (allow BWSI and allow whitelist) are changed.
@@ -183,6 +184,9 @@ class SigninScreenHandler : public BaseScreenHandler,
   // Handles fix captive portal request (starts guest session with specific
   // start URL).
   void HandleFixCaptivePortal(const base::ListValue* args);
+
+  // Handles offline login request.
+  void HandleOfflineLogin(const base::ListValue* args);
 
   // Handles system shutdown request.
   void HandleShutdownSystem(const base::ListValue* args);

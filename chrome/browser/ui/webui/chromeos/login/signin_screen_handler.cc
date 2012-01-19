@@ -48,6 +48,9 @@ const char kGaiaSigninScreen[] = "gaia-signin";
 // Start page of GAIA authentication extension.
 const char kGaiaExtStartPage[] =
     "chrome-extension://mfffpogegjflfpflabcdkioaeobkgjik/main.html";
+// Same as above but offline version.
+const char kGaiaExtStartPageOffline[] =
+    "chrome-extension://mfffpogegjflfpflabcdkioaeobkgjik/offline.html";
 
 // User dictionary keys.
 const char kKeyUsername[] = "username";
@@ -311,6 +314,8 @@ void SigninScreenHandler::GetLocalizedStrings(
       l10n_util::GetStringUTF16(IDS_CREATE_ACCOUNT_HTML));
   localized_strings->SetString("guestSignin",
       l10n_util::GetStringUTF16(IDS_BROWSE_WITHOUT_SIGNING_IN_HTML));
+  localized_strings->SetString("offlineLogin",
+      l10n_util::GetStringUTF16(IDS_OFFLINE_LOGIN_HTML));
   localized_strings->SetString("removeUser",
       l10n_util::GetStringUTF16(IDS_LOGIN_REMOVE));
 }
@@ -383,6 +388,9 @@ void SigninScreenHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("fixCaptivePortal",
       base::Bind(&SigninScreenHandler::HandleFixCaptivePortal,
                  base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("offlineLogin",
+      base::Bind(&SigninScreenHandler::HandleOfflineLogin,
+                 base::Unretained(this)));
   web_ui()->RegisterMessageCallback("showAddUser",
       base::Bind(&SigninScreenHandler::HandleShowAddUser,
                  base::Unretained(this)));
@@ -426,7 +434,8 @@ void SigninScreenHandler::HandleGetUsers(const base::ListValue* args) {
 }
 
 void SigninScreenHandler::ClearAndEnablePassword() {
-  web_ui()->CallJavascriptFunction("cr.ui.Oobe.resetSigninUI");
+  base::FundamentalValue force_online(false);
+  web_ui()->CallJavascriptFunction("cr.ui.Oobe.resetSigninUI", force_online);
 }
 
 void SigninScreenHandler::OnLoginSuccess(const std::string& username) {
@@ -501,7 +510,7 @@ void SigninScreenHandler::ShowSigninScreenIfReady() {
   if (!dns_cleared_ || !cookies_cleared_)
     return;
 
-  LoadAuthExtension(!is_first_attempt_, false);
+  LoadAuthExtension(!is_first_attempt_, false, false);
   ShowScreen(kGaiaSigninScreen, NULL);
 
   if (is_first_attempt_) {
@@ -511,20 +520,38 @@ void SigninScreenHandler::ShowSigninScreenIfReady() {
   }
 }
 
-void SigninScreenHandler::LoadAuthExtension(bool force, bool silent_load) {
+void SigninScreenHandler::LoadAuthExtension(
+    bool force, bool silent_load, bool offline) {
   DictionaryValue params;
 
   params.SetBoolean("forceReload", force);
   params.SetBoolean("silentLoad", silent_load);
-  params.SetString("startUrl", kGaiaExtStartPage);
+  params.SetBoolean("isLocal", offline);
+  if (delegate_)
+    params.SetBoolean("isShowUsers", delegate_->IsShowUsers());
+  params.SetString("startUrl",
+                   offline ? kGaiaExtStartPageOffline : kGaiaExtStartPage);
   params.SetString("email", email_);
   email_.clear();
 
   UpdateAuthParamsFromSettings(&params, CrosSettings::Get());
 
-  const std::string app_locale = g_browser_process->GetApplicationLocale();
-  if (!app_locale.empty())
-    params.SetString("hl", app_locale);
+  if (!offline) {
+    const std::string app_locale = g_browser_process->GetApplicationLocale();
+    if (!app_locale.empty())
+      params.SetString("hl", app_locale);
+  } else {
+    base::DictionaryValue *localized_strings = new base::DictionaryValue();
+    localized_strings->SetString("stringEmail",
+        l10n_util::GetStringUTF16(IDS_LOGIN_OFFLINE_EMAIL));
+    localized_strings->SetString("stringPassword",
+        l10n_util::GetStringUTF16(IDS_LOGIN_OFFLINE_PASSWORD));
+    localized_strings->SetString("stringSignIn",
+        l10n_util::GetStringUTF16(IDS_LOGIN_OFFLINE_SIGNIN));
+    localized_strings->SetString("stringError",
+        l10n_util::GetStringUTF16(IDS_LOGIN_OFFLINE_ERROR));
+    params.Set("localizedStrings", localized_strings);
+  }
 
   params.SetString("gaiaOrigin", GaiaUrls::GetInstance()->gaia_origin_url());
 
@@ -604,6 +631,20 @@ void SigninScreenHandler::HandleFixCaptivePortal(const base::ListValue* args) {
   if (!delegate_)
     return;
   delegate_->FixCaptivePortal();
+}
+
+void SigninScreenHandler::HandleOfflineLogin(const base::ListValue* args) {
+  if (!delegate_ || delegate_->IsShowUsers()) {
+    NOTREACHED();
+    return;
+  }
+  if (!args->GetString(0, &email_))
+    email_.clear();
+
+  // Load auth extension. Parameters are: force reload, do not load extension in
+  // background, use offline version.
+  LoadAuthExtension(true, false, true);
+  ShowScreen(kGaiaSigninScreen, NULL);
 }
 
 void SigninScreenHandler::HandleShutdownSystem(const base::ListValue* args) {
@@ -731,7 +772,7 @@ void SigninScreenHandler::HandleAccountPickerReady(
       is_first_attempt_ &&
       !cookie_remover_ &&
       !dns_clear_task_running_)
-    LoadAuthExtension(true, true);
+    LoadAuthExtension(true, true, false);
 
   if (ScreenLocker::default_screen_locker()) {
     content::NotificationService::current()->Notify(

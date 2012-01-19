@@ -1,4 +1,4 @@
- // Copyright (c) 2011 The Chromium Authors. All rights reserved.
+ // Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -90,7 +90,6 @@ cr.define('login', function() {
         currentScreen.doReload();
       };
 
-      // TODO(altimofeev): Support offline sign-in as well.
       $('error-guest-signin').innerHTML = localStrings.getStringF(
           'guestSignin',
           '<a id="error-guest-signin-link" class="signin-link" href="#">',
@@ -98,13 +97,25 @@ cr.define('login', function() {
       $('error-guest-signin-link').onclick = function() {
         chrome.send('launchIncognito');
       };
+
+      $('error-offline-login').innerHTML = localStrings.getStringF(
+          'offlineLogin',
+          '<a id="error-offline-login-link" class="signin-link" href="#">',
+          '</a>');
+      $('error-offline-login-link').onclick = function() {
+        chrome.send('offlineLogin', []);
+      };
     },
 
     onBeforeShow: function(lastNetworkType) {
+      var currentScreen = Oobe.getInstance().currentScreen;
+
       cr.ui.DropDown.show('offline-networks-list', false, lastNetworkType);
 
       $('error-guest-signin').hidden = $('guestSignin').hidden ||
           !$('add-user-header-bar-item').hidden;
+
+      $('error-offline-login').hidden = !currentScreen.isOfflineAllowed;
     },
 
     onBeforeHide: function() {
@@ -131,7 +142,8 @@ cr.define('login', function() {
       var isUnderCaptivePortal = (state == NET_STATE.PORTAL);
       var isProxyError = reason == ERROR_REASONS.PROXY_AUTH_CANCELLED ||
           reason == ERROR_REASONS.PROXY_CONNECTION_FAILED;
-      var shouldOverlay = MANAGED_SCREENS.indexOf(currentScreen.id) != -1;
+      var shouldOverlay = MANAGED_SCREENS.indexOf(currentScreen.id) != -1 &&
+          !currentScreen.isLocal;
 
       if (reason == 'proxy changed' && shouldOverlay &&
           !offlineMessage.classList.contains('hidden') &&
@@ -142,7 +154,7 @@ cr.define('login', function() {
       }
 
       if (!isOnline && shouldOverlay) {
-        console.log('Show offline message, state=' + state +
+        console.log('Show offline message: state=' + state +
                     ', network=' + network +
                     ', isUnderCaptivePortal=' + isUnderCaptivePortal);
         offlineMessage.onBeforeShow(lastNetworkType);

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -48,7 +48,7 @@ cr.define('cr.ui.login', function() {
 
     /**
      * Hides/shows header (Shutdown/Add User/Cancel buttons).
-     * @param {bool} hidden Whether header is hidden.
+     * @param {boolean} hidden Whether header is hidden.
      */
     set headerHidden(hidden) {
       $('login-header-bar').hidden = hidden;
@@ -78,7 +78,7 @@ cr.define('cr.ui.login', function() {
      * Appends buttons to the button strip.
      * @param {Array} buttons Array with the buttons to append.
      */
-    appendButtons_ : function(buttons) {
+    appendButtons_: function(buttons) {
       if (buttons) {
         var buttonStrip = $('button-strip');
         for (var i = 0; i < buttons.length; ++i) {
@@ -97,7 +97,7 @@ cr.define('cr.ui.login', function() {
       var stepId = this.screens_[stepIndex];
       var step = $(stepId);
       var header = $('header-' + stepId);
-      var states = [ 'left', 'right', 'current' ];
+      var states = ['left', 'right', 'current'];
       for (var i = 0; i < states.length; ++i) {
         if (states[i] != state) {
           step.classList.remove(states[i]);
@@ -168,14 +168,17 @@ cr.define('cr.ui.login', function() {
     /**
      * Show screen of given screen id.
      * @param {Object} screen Screen params dict,
-     *                        e.g. {id: screenId, data: data}
+     *     e.g. {id: screenId, data: data}.
      */
     showScreen: function(screen) {
       var screenId = screen.id;
 
       // Show sign-in screen instead of account picker if pod row is empty.
       if (screenId == SCREEN_ACCOUNT_PICKER && $('pod-row').pods.length == 0) {
-        Oobe.showSigninUI();
+        // Manually hide 'add-user' header bar, because of the case when
+        // 'Cancel' button is used on the offline login page.
+        $('add-user-header-bar-item').hidden = true;
+        Oobe.showSigninUI(true);
         return;
       }
 
@@ -248,7 +251,7 @@ cr.define('cr.ui.login', function() {
     /**
      * Prepares screens to use in login display.
      */
-    prepareForLoginDisplay_ : function() {
+    prepareForLoginDisplay_: function() {
       for (var i = 0, screenId; screenId = this.screens_[i]; ++i) {
         var screen = $(screenId);
         screen.classList.add('faded');
@@ -267,13 +270,13 @@ cr.define('cr.ui.login', function() {
 
   /**
    * Returns offset (top, left) of the element.
-   * @param {!Element} element HTML element
+   * @param {!Element} element HTML element.
    * @return {!Object} The offset (top, left).
    */
   DisplayManager.getOffset = function(element) {
     var x = 0;
     var y = 0;
-    while(element && !isNaN(element.offsetLeft) && !isNaN(element.offsetTop)) {
+    while (element && !isNaN(element.offsetLeft) && !isNaN(element.offsetTop)) {
       x += element.offsetLeft - element.scrollLeft;
       y += element.offsetTop - element.scrollTop;
       element = element.offsetParent;
@@ -301,11 +304,14 @@ cr.define('cr.ui.login', function() {
 
   /**
    * Resets sign-in input fields.
+   * @param {boolean} forceOnline Whether online sign-in should be forced.
+   *     If |forceOnline| is false previously used sign-in type will be used.
    */
-  DisplayManager.resetSigninUI = function() {
+  DisplayManager.resetSigninUI = function(forceOnline) {
     var currentScreenId = Oobe.getInstance().currentScreen.id;
 
-    $(SCREEN_GAIA_SIGNIN).reset(currentScreenId == SCREEN_GAIA_SIGNIN);
+    $(SCREEN_GAIA_SIGNIN).reset(
+        currentScreenId == SCREEN_GAIA_SIGNIN, forceOnline);
     $('login-header-bar').disabled = false;
     $('pod-row').reset(currentScreenId == SCREEN_ACCOUNT_PICKER);
   };
@@ -328,6 +334,14 @@ cr.define('cr.ui.login', function() {
       // Show email field so that bubble shows up at the right location.
       $(SCREEN_SIGNIN).reset(true);
     } else if (currentScreenId == SCREEN_GAIA_SIGNIN) {
+      if ($(SCREEN_GAIA_SIGNIN).isLocal) {
+        $('add-user-button').hidden = true;
+        $('cancel-add-user-button').hidden = false;
+        // Reload offline version of the sign-in extension, which will show
+        // error itself.
+        chrome.send('offlineLogin', [$(SCREEN_GAIA_SIGNIN).email]);
+        return;
+      }
       // Use anchorPos since we won't be able to get the input fields of Gaia.
       anchorPos = DisplayManager.getOffset(Oobe.getInstance().currentScreen);
 

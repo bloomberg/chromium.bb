@@ -222,6 +222,7 @@ html[dir=rtl]  .step.left {
 .menu-control {
   font-family: inherit;
   line-height: 20px;
+  position: relative;
   width: 250px;
 }
 

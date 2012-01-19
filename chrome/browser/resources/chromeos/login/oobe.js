@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -104,7 +104,7 @@ cr.define('cr.ui', function() {
 
   /**
    * Enables/disables continue button.
-   * @param {bool} enable Should the button be enabled?
+   * @param {boolean} enable Should the button be enabled?
    */
   Oobe.enableContinueButton = function(enable) {
     $('continue-button').disabled = !enable;
@@ -112,7 +112,7 @@ cr.define('cr.ui', function() {
 
   /**
    * Sets usage statistics checkbox.
-   * @param {bool} checked Is the checkbox checked?
+   * @param {boolean} checked Is the checkbox checked?
    */
   Oobe.setUsageStats = function(checked) {
     $('usage-stats').checked = checked;
@@ -149,7 +149,7 @@ cr.define('cr.ui', function() {
 
   /**
    * Shows or hides update curtain.
-   * @param {bool} enable Are curtains shown?
+   * @param {boolean} enable Are curtains shown?
    */
   Oobe.showUpdateCurtain = function(enable) {
     $('update-screen-curtain').hidden = !enable;
@@ -225,9 +225,11 @@ cr.define('cr.ui', function() {
 
   /**
    * Resets sign-in input fields.
+   * @param {boolean} forceOnline Whether online sign-in should be forced.
+   * If |forceOnline| is false previously used sign-in type will be used.
    */
-  Oobe.resetSigninUI = function() {
-    DisplayManager.resetSigninUI();
+  Oobe.resetSigninUI = function(forceOnline) {
+    DisplayManager.resetSigninUI(forceOnline);
   };
 
   /**

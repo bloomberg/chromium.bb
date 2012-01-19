@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -39,7 +39,7 @@ cr.define('login', function() {
         this.hidden = true;
         $('add-user-button').hidden = false;
         Oobe.showScreen({id: SCREEN_ACCOUNT_PICKER});
-        Oobe.resetSigninUI();
+        Oobe.resetSigninUI(true);
       });
       $('sign-out-user-button').addEventListener('click', function(e) {
         chrome.send('signOutUser');

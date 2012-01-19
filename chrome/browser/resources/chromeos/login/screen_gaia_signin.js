@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -46,6 +46,18 @@ cr.define('login', function() {
 
     // Timer id of pending retry.
     retryTimer_: undefined,
+
+    // Whether local version of Gaia page is used.
+    // @type {boolean}
+    isLocal: false,
+
+    // Whether offline login is allowed.
+    // @type {boolean}
+    isOfflineAllowed: false,
+
+    // Email of the user, which is logging in using offline mode.
+    // @type {string}
+    email: "",
 
     /** @inheritDoc */
     decorate: function() {
@@ -148,6 +160,13 @@ cr.define('login', function() {
      */
     loadAuthExtension_: function(data) {
       this.silentLoad_ = data.silentLoad;
+      this.isLocal = data.isLocal;
+      this.email = "";
+
+      // Offline sign-in is only allowed for the case when users aren't shown
+      // because there is no other way for an user to enter when device is
+      // offline.
+      this.isOfflineAllowed = !data.isShowUsers;
 
       this.updateAuthExtension_(data);
 
@@ -156,6 +175,12 @@ cr.define('login', function() {
         params.push('gaiaOrigin=' + encodeURIComponent(data.gaiaOrigin));
       if (data.hl)
         params.push('hl=' + encodeURIComponent(data.hl));
+      if (data.localizedStrings) {
+        var strings = data.localizedStrings;
+        for (var name in strings) {
+          params.push(name + '=' + encodeURIComponent(strings[name]));
+        }
+      }
       if (data.email)
         params.push('email=' + encodeURIComponent(data.email));
       if (data.test_email)
@@ -206,7 +231,7 @@ cr.define('login', function() {
     /**
      * Checks if message comes from the loaded authentication extension.
      * @param e {object} Payload of the received HTML5 message.
-     * @type {bool}
+     * @type {boolean}
      */
     isAuthExtMessage_: function(e) {
       return this.extensionUrl_ != null &&
@@ -237,17 +262,35 @@ cr.define('login', function() {
         this.loading = false;
         this.clearRetry_();
         chrome.send('loginWebuiReady');
+      } else if (msg.method =='offlineLogin' && this.isAuthExtMessage_(e)) {
+        this.email = msg.email;
+        chrome.send('authenticateUser', [msg.email, msg.password]);
+        this.loading = true;
+        Oobe.getInstance().headerHidden = true;
       }
     },
 
     /**
      * Clears input fields and switches to input mode.
      * @param {boolean} takeFocus True to take focus.
+     * @param {boolean} forceOnline Whether online sign-in should be forced.
+     * If |forceOnline| is false previously used sign-in type will be used.
      */
-    reset: function(takeFocus) {
+    reset: function(takeFocus, forceOnline) {
       // Reload and show the sign-in UI if needed.
-      if (takeFocus)
-        Oobe.showSigninUI();
+      if (takeFocus) {
+        if (!forceOnline && this.isLocal) {
+          // Show 'Cancel' button to allow user to return to the main screen
+          // (e.g. this makes sense when connection is back).
+          Oobe.getInstance().headerHidden = false;
+          $('add-user-header-bar-item').hidden = false;
+          $('add-user-button').hidden = true;
+          $('cancel-add-user-button').hidden = false;
+          // Do nothing, since offline version is reloaded after an error comes.
+        } else {
+          Oobe.showSigninUI();
+        }
+      }
     },
 
     /**
