@@ -260,12 +260,16 @@ void CloudPrintDataSender::SendPrintDataFile() {
 CloudPrintFlowHandler::CloudPrintFlowHandler(const FilePath& path_to_file,
                                              const string16& print_job_title,
                                              const string16& print_ticket,
-                                             const std::string& file_type)
+                                             const std::string& file_type,
+                                             bool close_after_signin,
+                                             const base::Closure& callback)
     : dialog_delegate_(NULL),
       path_to_file_(path_to_file),
       print_job_title_(print_job_title),
       print_ticket_(print_ticket),
-      file_type_(file_type) {
+      file_type_(file_type),
+      close_after_signin_(close_after_signin),
+      callback_(callback) {
 }
 
 CloudPrintFlowHandler::~CloudPrintFlowHandler() {
@@ -315,11 +319,20 @@ void CloudPrintFlowHandler::RegisterMessages() {
   NavigationEntry* pending_entry = controller->GetPendingEntry();
   if (pending_entry) {
     Profile* profile = Profile::FromWebUI(web_ui());
-    pending_entry->SetURL(
-        CloudPrintURL(profile).GetCloudPrintServiceDialogURL());
+    if (close_after_signin_) {
+      pending_entry->SetURL(
+          CloudPrintURL(profile).GetCloudPrintSigninURL());
+    } else {
+      pending_entry->SetURL(
+          CloudPrintURL(profile).GetCloudPrintServiceDialogURL());
+    }
   }
   registrar_.Add(this, content::NOTIFICATION_LOAD_STOP,
                  content::Source<NavigationController>(controller));
+  if (close_after_signin_) {
+    registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
+                   content::Source<NavigationController>(controller));
+  }
 }
 
 void CloudPrintFlowHandler::Observe(
@@ -352,6 +365,20 @@ void CloudPrintFlowHandler::Observe(
     // console and watch things happen with:
     // HandleShowDebugger(NULL);
     HandleSendPrintData(NULL);
+  }
+  if (close_after_signin_ &&
+      type == content::NOTIFICATION_NAV_ENTRY_COMMITTED) {
+    GURL url = web_ui()->GetWebContents()->GetURL();
+    GURL dialog_url = CloudPrintURL(
+        Profile::FromWebUI(web_ui())).GetCloudPrintServiceURL();
+
+    if (url.host() == dialog_url.host() &&
+        url.path() == dialog_url.path() &&
+        url.scheme() == dialog_url.scheme()) {
+      StoreDialogClientSize();
+      web_ui()->GetWebContents()->GetRenderViewHost()->ClosePage();
+      callback_.Run();
+    }
   }
 }
 
@@ -460,12 +487,16 @@ CloudPrintHtmlDialogDelegate::CloudPrintHtmlDialogDelegate(
     const string16& print_ticket,
     const std::string& file_type,
     bool modal,
-    bool delete_on_close)
+    bool delete_on_close,
+    bool close_after_signin,
+    const base::Closure& callback)
     : delete_on_close_(delete_on_close),
       flow_handler_(new CloudPrintFlowHandler(path_to_file,
                                               print_job_title,
                                               print_ticket,
-                                              file_type)),
+                                              file_type,
+                                              close_after_signin,
+                                              callback)),
       modal_(modal),
       owns_flow_handler_(true),
       path_to_file_(path_to_file) {
@@ -604,7 +635,9 @@ void CreateDialogImpl(const FilePath& path_to_file,
                       const string16& print_ticket,
                       const std::string& file_type,
                       bool modal,
-                      bool delete_on_close) {
+                      bool delete_on_close,
+                      bool close_after_signin,
+                      const base::Closure& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   Browser* browser = BrowserList::GetLastActive();
 
@@ -646,7 +679,8 @@ void CreateDialogImpl(const FilePath& path_to_file,
   HtmlDialogUIDelegate* dialog_delegate =
       new internal_cloud_print_helpers::CloudPrintHtmlDialogDelegate(
           path_to_file, width, height, std::string(), job_title, print_ticket,
-          file_type, modal, delete_on_close);
+          file_type, modal, delete_on_close, close_after_signin,
+          callback);
   if (modal) {
     DCHECK(browser);
 #if defined(USE_AURA)
@@ -667,6 +701,23 @@ void CreateDialogImpl(const FilePath& path_to_file,
                             STYLE_GENERIC);
   }
 }
+
+void CreateDialogSigninImpl(const base::Closure& callback) {
+  CreateDialogImpl(FilePath(), string16(), string16(), std::string(),
+                   true, false, true, callback);
+}
+
+void CreateDialogFullImpl(const FilePath& path_to_file,
+                      const string16& print_job_title,
+                      const string16& print_ticket,
+                      const std::string& file_type,
+                      bool modal,
+                      bool delete_on_close) {
+  CreateDialogImpl(path_to_file, print_job_title, print_ticket, file_type,
+                   modal, delete_on_close, false, base::Closure());
+}
+
+
 
 // Provides a runnable function to delete a file.
 void Delete(const FilePath& file_path) {
@@ -694,9 +745,18 @@ void CreatePrintDialogForFile(const FilePath& path_to_file,
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&internal_cloud_print_helpers::CreateDialogImpl, path_to_file,
-                 print_job_title, print_ticket, file_type, modal,
+      base::Bind(&internal_cloud_print_helpers::CreateDialogFullImpl,
+                 path_to_file, print_job_title, print_ticket, file_type, modal,
                  delete_on_close));
+}
+
+void CreateCloudPrintSigninDialog(const base::Closure& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&internal_cloud_print_helpers::CreateDialogSigninImpl,
+                 callback));
 }
 
 void CreatePrintDialogForBytes(scoped_refptr<RefCountedBytes> data,

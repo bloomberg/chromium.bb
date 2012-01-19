@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/memory/weak_ptr.h"
@@ -91,9 +92,12 @@ class MockCloudPrintFlowHandler
   MockCloudPrintFlowHandler(const FilePath& path,
                             const string16& title,
                             const string16& print_ticket,
-                            const std::string& file_type
+                            const std::string& file_type,
+                            bool close_after_signin,
+                            const base::Closure& callback
                             )
-      : CloudPrintFlowHandler(path, title, print_ticket, file_type) {}
+      : CloudPrintFlowHandler(path, title, print_ticket, file_type,
+                              close_after_signin, callback) {}
   MOCK_METHOD0(DestructorCalled, void());
   MOCK_METHOD0(RegisterMessages, void());
   MOCK_METHOD3(Observe,
@@ -307,7 +311,8 @@ class CloudPrintHtmlDialogDelegateTest : public testing::Test {
     std::string mock_file_type;
     MockCloudPrintFlowHandler* handler =
         new MockCloudPrintFlowHandler(mock_path, mock_print_ticket,
-                                      mock_title, mock_file_type);
+                                      mock_title, mock_file_type,
+                                      false, base::Closure());
     mock_flow_handler_ = handler->AsWeakPtr();
     EXPECT_CALL(*mock_flow_handler_.get(), SetDialogDelegate(_));
     EXPECT_CALL(*mock_flow_handler_.get(), SetDialogDelegate(NULL));

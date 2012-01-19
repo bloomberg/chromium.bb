@@ -35,7 +35,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
-#include "chrome/browser/ui/webui/cloud_print_signin_dialog.h"
 #include "chrome/browser/ui/webui/print_preview/print_preview_ui.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
@@ -526,8 +525,20 @@ void PrintPreviewHandler::HandleGetPrinterCapabilities(const ListValue* args) {
                  printer_name));
 }
 
+// static
+void PrintPreviewHandler::OnSigninComplete(
+    const base::WeakPtr<PrintPreviewHandler>& handler) {
+  if (handler.get()) {
+    PrintPreviewUI* print_preview_ui =
+        static_cast<PrintPreviewUI*>(handler->web_ui()->GetController());
+    if (print_preview_ui)
+      print_preview_ui->OnReloadPrintersList();
+  }
+}
+
 void PrintPreviewHandler::HandleSignin(const ListValue* /*args*/) {
-  cloud_print_signin_dialog::CreateCloudPrintSigninDialog(preview_tab());
+  print_dialog_cloud::CreateCloudPrintSigninDialog(
+      base::Bind(&PrintPreviewHandler::OnSigninComplete, AsWeakPtr()));
 }
 
 void PrintPreviewHandler::HandlePrintWithCloudPrint() {

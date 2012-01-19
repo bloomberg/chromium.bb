@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
@@ -107,7 +108,9 @@ class CloudPrintFlowHandler : public content::WebUIMessageHandler,
   CloudPrintFlowHandler(const FilePath& path_to_file,
                         const string16& print_job_title,
                         const string16& print_ticket,
-                        const std::string& file_type);
+                        const std::string& file_type,
+                        bool close_after_signin,
+                        const base::Closure& callback);
   virtual ~CloudPrintFlowHandler();
 
   // WebUIMessageHandler implementation.
@@ -144,6 +147,8 @@ class CloudPrintFlowHandler : public content::WebUIMessageHandler,
   std::string file_type_;
   scoped_refptr<CloudPrintDataSender> print_data_sender_;
   scoped_ptr<CloudPrintDataSenderHelper> print_data_helper_;
+  bool close_after_signin_;
+  base::Closure callback_;
 
   DISALLOW_COPY_AND_ASSIGN(CloudPrintFlowHandler);
 };
@@ -160,7 +165,9 @@ class CloudPrintHtmlDialogDelegate : public HtmlDialogUIDelegate {
                                const string16& print_ticket,
                                const std::string& file_type,
                                bool modal,
-                               bool delete_on_close);
+                               bool delete_on_close,
+                               bool close_after_signin,
+                               const base::Closure& callback);
   virtual ~CloudPrintHtmlDialogDelegate();
 
   // HTMLDialogUIDelegate implementation:
@@ -200,12 +207,13 @@ class CloudPrintHtmlDialogDelegate : public HtmlDialogUIDelegate {
   DISALLOW_COPY_AND_ASSIGN(CloudPrintHtmlDialogDelegate);
 };
 
-void CreateDialogImpl(const FilePath& path_to_file,
-                      const string16& print_job_title,
-                      const string16& print_ticket,
-                      const std::string& file_type,
-                      bool modal,
-                      bool delete_on_close);
+void CreateDialogFullImpl(const FilePath& path_to_file,
+                          const string16& print_job_title,
+                          const string16& print_ticket,
+                          const std::string& file_type,
+                          bool modal,
+                          bool delete_on_close);
+void CreateDialogSigninImpl(const base::Closure& callback);
 
 void Delete(const FilePath& path_to_file);
 

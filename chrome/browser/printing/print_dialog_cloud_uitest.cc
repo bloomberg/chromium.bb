@@ -204,9 +204,9 @@ class PrintDialogCloudTest : public InProcessBrowserTest {
         test_data_directory_.AppendASCII("printing/cloud_print_uitest.pdf");
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(&internal_cloud_print_helpers::CreateDialogImpl, path_to_pdf,
-                   string16(), string16(), std::string("application/pdf"), true,
-                   false));
+        base::Bind(&internal_cloud_print_helpers::CreateDialogFullImpl,
+                   path_to_pdf, string16(), string16(),
+                   std::string("application/pdf"), true, false));
   }
 
   bool handler_added_;
@@ -254,26 +254,3 @@ IN_PROC_BROWSER_TEST_F(PrintDialogCloudTest, MAYBE_HandlersRegistered) {
   signal.Wait();
 }
 
-#if defined(OS_CHROMEOS)
-// Disabled until the extern URL is live so that the Print menu item
-// can be enabled for Chromium OS.
-IN_PROC_BROWSER_TEST_F(PrintDialogCloudTest, DISABLED_DialogGrabbed) {
-  BrowserList::SetLastActive(browser());
-  ASSERT_TRUE(BrowserList::GetLastActive());
-
-  AddTestHandlers();
-
-  // This goes back one step further for the Chrome OS case, to making
-  // sure 'window.print()' gets to the right place.
-  ASSERT_TRUE(browser()->GetSelectedWebContents());
-  ASSERT_TRUE(browser()->GetSelectedWebContents()->GetRenderViewHost());
-
-  string16 window_print = ASCIIToUTF16("window.print()");
-  browser()->GetSelectedWebContents()->GetRenderViewHost()->
-      ExecuteJavascriptInWebFrame(string16(), window_print);
-
-  ui_test_utils::RunMessageLoop();
-
-  ASSERT_TRUE(TestController::GetInstance()->result());
-}
-#endif

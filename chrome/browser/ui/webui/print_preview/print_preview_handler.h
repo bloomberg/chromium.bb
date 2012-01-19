@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -116,6 +116,10 @@ class PrintPreviewHandler : public content::WebUIMessageHandler,
   // Asks the initiator renderer to show the native print system dialog. |args|
   // is unused.
   void HandleShowSystemDialog(const base::ListValue* args);
+
+  // Callback for the signin dialog to call once signin is complete.
+  static void OnSigninComplete(
+      const base::WeakPtr<PrintPreviewHandler>& handler);
 
   // Brings up a dialog to allow the user to sign into cloud print.
   // |args| is unused.
