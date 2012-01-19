@@ -9,12 +9,6 @@
 #include "chrome/common/extensions/extension.h"
 #include "ui/views/widget/widget.h"
 
-#if defined(OS_WIN)
-#include "chrome/browser/shell_integration.h"
-#include "chrome/browser/web_applications/web_app.h"
-#include "ui/base/win/shell.h"
-#endif // OS_WIN
-
 ShellWindowViews::ShellWindowViews(ExtensionHost* host)
     : ShellWindow(host) {
   host_->view()->SetContainer(this);
@@ -24,14 +18,6 @@ ShellWindowViews::ShellWindowViews(ExtensionHost* host)
   gfx::Rect bounds(0, 0, 512, 384);
   params.bounds = bounds;
   window_->Init(params);
-#if defined(OS_WIN)
-  std::string app_name = web_app::GenerateApplicationNameFromExtensionId(
-      host_->extension()->id());
-  ui::win::SetAppIdForWindow(
-      ShellIntegration::GetAppId(UTF8ToWide(app_name),
-      host_->profile()->GetPath()),
-      GetWidget()->GetTopLevelWidget()->GetNativeWindow());
-#endif // OS_WIN
   window_->Show();
 }
 
