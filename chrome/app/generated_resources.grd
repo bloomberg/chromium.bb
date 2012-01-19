@@ -4036,9 +4036,6 @@ Update checks have repeatedly failed for the extension "<ph name="EXTENSION_NAME
       <message name="IDS_EXTENSION_PROMPT_WARNING_CONTENT_SETTINGS" desc="Permission string for access to content settings.">
         Settings that specify whether websites can use features such as cookies, JavaScript, and plug-ins
       </message>
-      <message name="IDS_EXTENSION_PROMPT_WARNING_IME" desc="Permission string for access to ime.">
-        Anything you type.
-      </message>
 
       <!-- Extension/App error messages -->
       <message name="IDS_EXTENSION_CANT_GET_ABSOLUTE_PATH" desc="Warning displayed in pack dialog when the absolute path to the extension directory can not be found.">

@@ -652,8 +652,9 @@ TEST(ExtensionPermissionSetTest, PermissionMessages) {
   // permissions.
   skip.insert(ExtensionAPIPermission::kCookie);
 
-  // The proxy, and webRequest permissions are warned as part of host
+  // The ime, proxy, and webRequest permissions are warned as part of host
   // permission checks.
+  skip.insert(ExtensionAPIPermission::kIme);
   skip.insert(ExtensionAPIPermission::kProxy);
   skip.insert(ExtensionAPIPermission::kWebRequest);
   skip.insert(ExtensionAPIPermission::kWebRequestBlocking);

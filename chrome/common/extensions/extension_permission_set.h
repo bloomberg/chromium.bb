@@ -48,7 +48,6 @@ class ExtensionPermissionMessage {
     kTtsEngine,
     kContentSettings,
     kAllPageContent,
-    kIme,
     kEnumBoundary
   };
 
