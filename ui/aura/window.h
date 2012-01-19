@@ -72,6 +72,16 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   ui::Layer* layer() { return layer_.get(); }
   const ui::Layer* layer() const { return layer_.get(); }
 
+  // Releases the Window's reference to its layer, and returns it.
+  // This is used when you need to animate the presentation of the Window just
+  // prior to destroying it. The window can be destroyed soon after calling this
+  // function, and the caller is then responsible for disposing of the layer
+  // once any animation completes.
+  // Note that Window methods generally don't expect a NULL layer, and so this
+  // function should only be called right before destroying the Window,
+  // otherwise you will crash.
+  ui::Layer* AcquireLayer();
+
   WindowDelegate* delegate() { return delegate_; }
 
   const gfx::Rect& bounds() const;

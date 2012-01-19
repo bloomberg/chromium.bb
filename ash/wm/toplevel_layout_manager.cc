@@ -5,6 +5,7 @@
 #include "ash/wm/toplevel_layout_manager.h"
 
 #include "ash/wm/shelf_layout_manager.h"
+#include "ash/wm/window_animations.h"
 #include "ash/wm/window_util.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
@@ -59,6 +60,16 @@ void ToplevelLayoutManager::OnWillRemoveWindowFromLayout(aura::Window* child) {
 void ToplevelLayoutManager::OnChildWindowVisibilityChanged(aura::Window* child,
                                                            bool visible) {
   BaseLayoutManager::OnChildWindowVisibilityChanged(child, visible);
+  if (child->type() == aura::client::WINDOW_TYPE_NORMAL ||
+      child->type() == aura::client::WINDOW_TYPE_POPUP) {
+    if (visible) {
+      AnimateShowWindow(child);
+    } else {
+      // Don't start hiding the window again if it's already being hidden.
+      if (child->layer()->GetTargetOpacity() != 0.0f)
+        AnimateHideWindow(child);
+    }
+  }
   UpdateShelfVisibility();
 }
 

@@ -409,7 +409,8 @@ void Layer::paintContents(WebKit::WebCanvas* web_canvas,
   TRACE_EVENT0("ui", "Layer::paintContents");
 #if defined(USE_WEBKIT_COMPOSITOR)
   gfx::CanvasSkia canvas(web_canvas);
-  delegate_->OnPaintLayer(&canvas);
+  if (delegate_)
+    delegate_->OnPaintLayer(&canvas);
 #else
   NOTREACHED();
 #endif
@@ -444,7 +445,8 @@ void Layer::UpdateLayerCanvas() {
   scoped_ptr<gfx::Canvas> canvas(gfx::Canvas::CreateCanvas(draw_rect.size(),
                                                            false));
   canvas->Translate(gfx::Point().Subtract(draw_rect.origin()));
-  delegate_->OnPaintLayer(canvas.get());
+  if (delegate_)
+    delegate_->OnPaintLayer(canvas.get());
   SetCanvas(*canvas->GetSkCanvas(), draw_rect.origin());
 #endif
 }
