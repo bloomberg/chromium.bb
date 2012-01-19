@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -43,7 +43,7 @@ cr.define('print_preview', function() {
         this.disableCancelButton();
         closePrintPreviewTab();
       }.bind(this);
-      this.printButton_.onclick = this.onPrintButtonClicked_.bind(this);
+      this.printButton_.onclick = this.onPrintRequested.bind(this);
       document.addEventListener(customEvents.UPDATE_SUMMARY,
                                 this.updateSummary_.bind(this));
       document.addEventListener(customEvents.UPDATE_PRINT_BUTTON,
@@ -77,10 +77,10 @@ cr.define('print_preview', function() {
     },
 
     /**
-     * Listener executing whenever |this.printButton_| is clicked.
-     * @private
+     * Listener executing whenever the print button is clicked or user presses
+     * the enter button while focus is in the pages field.
      */
-    onPrintButtonClicked_: function() {
+    onPrintRequested: function() {
       var printToPDF = getSelectedPrinterName() == PRINT_TO_PDF;
       if (!printToPDF) {
         this.printButton_.classList.add('loading');

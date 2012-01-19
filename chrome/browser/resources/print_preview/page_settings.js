@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -342,6 +342,16 @@ cr.define('print_preview', function() {
     },
 
     /**
+     * Listener executing whenever a keyup events occurs in the pages textfield.
+     * @param {!KeyboardEvent} e The event that triggered this listener.
+     * @private
+     */
+    onKeyUp_: function(e) {
+      if (e.keyIdentifier == 'Enter')
+        printHeader.onPrintRequested();
+    },
+
+    /**
      * Adding listeners to all pages related controls. The listeners take care
      * of altering their behavior depending on |hasPendingPreviewRequest|.
      * @private
@@ -357,6 +367,7 @@ cr.define('print_preview', function() {
           this.addTimerToSelectedPagesTextfield_.bind(this);
       this.selectedPagesTextfield.onblur =
           this.onSelectedPagesTextfieldBlur_.bind(this);
+      this.selectedPagesTextfield.onkeyup = this.onKeyUp_.bind(this);
     }
   };
 

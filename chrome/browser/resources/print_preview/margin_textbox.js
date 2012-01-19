@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,8 +31,6 @@ cr.define('print_preview', function() {
   MarginTextbox.CSS_CLASS_MARGIN_TEXTBOX = 'margin-box';
   // Keycode for the "Escape" key.
   MarginTextbox.ESCAPE_KEYCODE = 27;
-  // Keycode for the "Enter" key.
-  MarginTextbox.ENTER_KEYCODE = 13;
 
   MarginTextbox.prototype = {
     __proto__: HTMLInputElement.prototype,
@@ -165,7 +163,7 @@ cr.define('print_preview', function() {
      * @private
      */
     onKeyPressed_: function(e) {
-      if (e.keyCode == MarginTextbox.ENTER_KEYCODE)
+      if (e.keyIdentifier == 'Enter')
         this.blur();
     },
 
