@@ -23,6 +23,29 @@ const float kMinFlickSpeedSquared = 550.f * 550.f;
 
 namespace aura {
 
+namespace {
+
+// Get equivalent TouchState from EventType |type|.
+GestureRecognizer::TouchState TouchEventTypeToTouchState(ui::EventType type) {
+  switch (type) {
+    case ui::ET_TOUCH_RELEASED:
+      return GestureRecognizer::TS_RELEASED;
+    case ui::ET_TOUCH_PRESSED:
+      return GestureRecognizer::TS_PRESSED;
+    case ui::ET_TOUCH_MOVED:
+      return GestureRecognizer::TS_MOVED;
+    case ui::ET_TOUCH_STATIONARY:
+      return GestureRecognizer::TS_STATIONARY;
+    case ui::ET_TOUCH_CANCELLED:
+      return GestureRecognizer::TS_CANCELLED;
+    default:
+      VLOG(1) << "Unknown Touch Event type";
+  }
+  return GestureRecognizer::TS_UNKNOWN;
+}
+
+}  // namespace
+
 ////////////////////////////////////////////////////////////////////////////////
 // GestureRecognizer Public:
 
@@ -37,10 +60,6 @@ GestureRecognizer::GestureRecognizer()
 }
 
 GestureRecognizer::~GestureRecognizer() {
-}
-
-GestureRecognizer* GestureRecognizer::GetInstance() {
-  return Singleton<GestureRecognizer>::get();
 }
 
 GestureRecognizer::Gestures* GestureRecognizer::ProcessTouchEventForGesture(
@@ -87,21 +106,6 @@ void GestureRecognizer::Reset() {
 
 ////////////////////////////////////////////////////////////////////////////////
 // GestureRecognizer Private:
-
-// static
-GestureRecognizer::TouchState GestureRecognizer::TouchEventTypeToTouchState(
-    ui::EventType type) {
-  switch (type) {
-    case ui::ET_TOUCH_RELEASED: return TS_RELEASED;
-    case ui::ET_TOUCH_PRESSED: return TS_PRESSED;
-    case ui::ET_TOUCH_MOVED: return TS_MOVED;
-    case ui::ET_TOUCH_STATIONARY: return TS_STATIONARY;
-    case ui::ET_TOUCH_CANCELLED: return TS_CANCELLED;
-    default:
-      VLOG(1) << "Unknown Touch Event type";
-  }
-  return TS_UNKNOWN;
-}
 
 unsigned int GestureRecognizer::Signature(GestureState gesture_state,
                                 unsigned int touch_id, ui::EventType type,

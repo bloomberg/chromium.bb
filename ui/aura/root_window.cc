@@ -370,6 +370,10 @@ void RootWindow::ToggleFullScreen() {
 }
 #endif
 
+void RootWindow::SetGestureRecognizerForTesting(GestureRecognizer* gr) {
+  gesture_recognizer_.reset(gr);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // RootWindow, private:
 
@@ -386,7 +390,7 @@ RootWindow::RootWindow()
       focused_window_(NULL),
       touch_event_handler_(NULL),
       gesture_handler_(NULL),
-      gesture_recognizer_(GestureRecognizer::GetInstance()) {
+      gesture_recognizer_(new GestureRecognizer()) {
   SetName("RootWindow");
   gfx::Screen::SetInstance(screen_);
   last_mouse_location_ = host_->QueryMouseLocation();
@@ -401,8 +405,6 @@ RootWindow::RootWindow()
                                          host_->GetSize());
   }
   DCHECK(compositor_.get());
-
-  gesture_recognizer_->Reset();
 }
 
 RootWindow::~RootWindow() {

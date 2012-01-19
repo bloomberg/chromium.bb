@@ -155,9 +155,7 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
 #endif
 
   // Provided only for testing:
-  void SetGestureRecognizerForTesting(GestureRecognizer* gr) {
-    gesture_recognizer_ = gr;
-  }
+  void SetGestureRecognizerForTesting(GestureRecognizer* gr);
 
   // Overridden from ui::CompositorDelegate:
   virtual void ScheduleDraw() OVERRIDE;
@@ -240,7 +238,7 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   Window* gesture_handler_;
 
   // The gesture_recognizer_ for this.
-  GestureRecognizer* gesture_recognizer_;
+  scoped_ptr<GestureRecognizer> gesture_recognizer_;
 
   DISALLOW_COPY_AND_ASSIGN(RootWindow);
 };

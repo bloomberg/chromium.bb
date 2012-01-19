@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/memory/linked_ptr.h"
-#include "base/memory/singleton.h"
 #include "ui/aura/aura_export.h"
 #include "ui/base/events.h"
 #include "ui/gfx/point.h"
@@ -46,8 +45,6 @@ class AURA_EXPORT GestureRecognizer {
   GestureRecognizer();
   virtual ~GestureRecognizer();
 
-  static GestureRecognizer* GetInstance();
-
   // Invoked for each touch event that could contribute to the current gesture.
   // Returns list of  zero or more GestureEvents identified after processing
   // TouchEvent.
@@ -62,8 +59,6 @@ class AURA_EXPORT GestureRecognizer {
   GestureState GetState() const { return state_; }
 
  private:
-  friend struct DefaultSingletonTraits<GestureRecognizer>;
-
   // Gesture signature types for different values of combination (GestureState,
   // touch_id, ui::EventType, touch_handled), see GestureRecognizer::Signature()
   // for more info.
@@ -94,9 +89,6 @@ class AURA_EXPORT GestureRecognizer {
     // (GS_SCROLL, 0, ui::ET_TOUCH_CANCELLED, false).
     GST_SCROLL_FIRST_CANCELLED = 0x00040009,
   };
-
-  // Get equivalent TouchState from EventType |type|.
-  static TouchState TouchEventTypeToTouchState(ui::EventType type);
 
   // Builds a signature. Signatures are assembled by joining together
   // multiple bits.
