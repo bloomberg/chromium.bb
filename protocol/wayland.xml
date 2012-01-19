@@ -27,12 +27,10 @@
     THIS SOFTWARE.
   </copyright>
 
-  <!-- The core global object. This is a special singleton object.
-       It is used for internal wayland protocol features. -->
   <interface name="wl_display" version="1">
     <description summary="core global object">
-      The core global object. This is a special singleton object.
-      It is used for internal wayland protocol features.
+      The core global object.  This is a special singleton object.  It
+      is used for internal wayland protocol features.
     </description>
     <request name="bind">
       <description summary="bind an object to the display">
@@ -43,17 +41,21 @@
       <arg name="id" type="new_id" interface="wl_object"/>
     </request>
 
-    <!-- sync is an just an echo, which will reply with a key event.
-         Since requests are handled in-order, this can be used as a
-         barrier to ensure all previous requests have been handled.
-         The key argument can be used to correlate between multiple
-         sync invocations. -->
     <request name="sync">
+      <description summary="asynchronous roundtrip">
+	The sync request asks the server to invoke the 'done' request
+	on the provided wl_callback object.  Since requests are
+	handled in-order, this can be used as a barrier to ensure all
+	previous requests have been handled.
+      </description>
       <arg name="callback" type="new_id" interface="wl_callback"/>
     </request>
 
-    <!-- A fatal error has occurred. -->
     <event name="error">
+      <description summary="fatal error event">
+	The error event is sent out when a fatal (non-recoverable)
+	error has occurred.
+      </description>
       <arg name="object_id" type="object" interface="wl_object"/>
       <arg name="code" type="uint"/>
       <arg name="message" type="string"/>
@@ -72,25 +74,33 @@
 	     summary="server is out of memory"/>
     </enum>
 
-    <!-- Notify the client of global objects. These are objects that
-         are created by the server. Globals are published on the
-         initial client connection sequence, upon device hotplugs,
-         device disconnects, reconfiguration or other events.  The
-         server will always announce an object before the object sends
-         out events. -->
     <event name="global">
+      <description summary="announce global object">
+	Notify the client of global objects.  These are objects that
+	are created by the server.  Globals are published on the
+	initial client connection sequence, upon device hotplugs,
+	device disconnects, reconfiguration or other events.  A client
+	can 'bind' to a global object by using the bind request.  This
+	creates a client side handle that lets the object emit events
+	to the client and lets the client invoke requests on the
+	object.
+      </description>
       <arg name="name" type="uint"/>
       <arg name="interface" type="string"/>
       <arg name="version" type="uint"/>
     </event>
 
-    <!-- Notify the client of removed global objects. -->
     <event name="global_remove">
-      <arg name="name" type="uint" />
+      <description summary="announce removal of global object">
+	Notify the client of removed global objects.
+      </description>
+      <arg name="name" type="uint"/>
     </event>
 
-    <!-- Server has deleted the id and client can now reuse it. -->
     <event name="delete_id">
+      <description summary="acknowledge object id deletion">
+	Server has deleted the id and client can now reuse it.
+      </description>
       <arg name="id" type="uint" />
     </event>
   </interface>
@@ -101,19 +111,26 @@
     </event>
   </interface>
 
-  <!-- A compositor. This object is a global.  The compositor is in
-       charge of combining the contents of multiple surfaces into one
-       displayable output. -->
   <interface name="wl_compositor" version="1">
-    <!-- Factory request for a surface objects. A surface is akin to a
-         window. -->
+    <description summary="the compositor singleton">
+      A compositor.  This object is a singleton global.  The
+      compositor is in charge of combining the contents of multiple
+      surfaces into one displayable output.
+    </description>
+
     <request name="create_surface">
+      <description summary="create new surface">
+	Ask the compositor to create a new surface.
+      </description>
       <arg name="id" type="new_id" interface="wl_surface"/>
     </request>
   </interface>
 
-  <!-- Shared memory support -->
   <interface name="wl_shm" version="1">
+    <description summary="shared memory support">
+      Support for shared memory buffers.
+    </description>
+
     <enum name="error">
       <entry name="invalid_format" value="0"/>
       <entry name="invalid_stride" value="1"/>
@@ -125,13 +142,16 @@
       <entry name="xrgb8888" value="1"/>
     </enum>
 
-    <!-- Transfer a shm buffer to the server.  The allocated buffer
-         would include at least stride * height bytes starting at the
-         beginning of fd.  The file descriptor is transferred over the
-         socket using AF_UNIX magical features. width, height, stride
-         and format describe the respective properties of the pixel
-         data contained in the buffer. -->
     <request name="create_buffer">
+      <description summary="create a wl_buffer">
+	Transfer a shm buffer to the server.  The allocated buffer
+	would include at least stride * height bytes starting at the
+	beginning of fd.  The file descriptor is transferred over the
+	socket using AF_UNIX magical features. width, height, stride
+	and format describe the respective properties of the pixel
+	data contained in the buffer.
+      </description>
+
       <arg name="id" type="new_id" interface="wl_buffer"/>
       <arg name="fd" type="fd"/>
       <arg name="width" type="int"/>
@@ -145,36 +165,50 @@
     </event>
   </interface>
 
-
-  <!-- A pixel buffer. Created using the drm, shm or similar objects.
-       It has a size, visual and contents, but not a location on the
-       screen. -->
   <interface name="wl_buffer" version="1">
-    <!-- Notify the server that the specified area of the buffers
-         contents have changed.  To describe a more complicated area
-         of damage, break down the region into rectangles and use this
-         request several times.
-    -->
+    <description summary="content for a wl_surface">
+      A buffer provides the content for a wl_surface.  Buffers are
+      created through factory interfaces such as wl_drm, wl_shm or
+      similar.  It has a width and a height and can be attached to a
+      wl_surface, but the mechnism by which a client provides and
+      updates the contents is defined by the buffer factory interface
+    </description>
+
     <request name="damage">
+      <description summary="mark part of the buffer damaged">
+	Notify the server that the specified area of the buffers
+	contents have changed.  To describe a more complicated area of
+	damage, break down the region into rectangles and use this
+	request several times.
+      </description>
+
       <arg name="x" type="int"/>
       <arg name="y" type="int"/>
       <arg name="width" type="int"/>
       <arg name="height" type="int"/>
     </request>
 
-    <!-- Destroy a buffer.  This will invalidate the object id. -->
-    <request name="destroy" type="destructor"/>
+    <request name="destroy" type="destructor">
+      <description summary="destroy a buffer">
+	Destroy a buffer.  This will invalidate the object id.
+      </description>
+    </request>
 
-    <!-- Sent when an attached buffer is no longer used by the compositor. -->
-    <event name="release"/>
+    <event name="release">
+      <description summary="compositor releses buffer">
+	Sent when an attached buffer is no longer used by the compositor.
+      </description>
+    </event>
   </interface>
 
 
   <interface name="wl_data_offer" version="1">
-    <!-- Indicate that the client can accept the given mime-type, or
-         NULL for not accepted.  Use for feedback during drag and
-         drop. -->
     <request name="accept">
+      <description summary="accept one of the offered mime-types">
+	Indicate that the client can accept the given mime-type, or
+	NULL for not accepted.  Use for feedback during drag and drop.
+      </description>
+
       <arg name="time" type="uint"/>
       <arg name="type" type="string"/>
     </request>
@@ -186,39 +220,57 @@
 
     <request name="destroy" type="destructor"/>
 
-    <!-- Sent immediately after creating the wl_data_offer object.  One
-         event per offered mime type. -->
     <event name="offer">
+      <description summary="advertise offered mime-type">
+	Sent immediately after creating the wl_data_offer object.  One
+	event per offered mime type.
+      </description>
+
       <arg name="type" type="string"/>
     </event>
   </interface>
 
   <interface name="wl_data_source" version="1">
-    <!-- Add an offered mime type.  Can be called several times to
-         offer multiple types. -->
     <request name="offer">
+      <description summary="add an offered mime type">
+	This request adds a mime-type to the set of mime-types
+	advertised to targets.  Can be called several times to offer
+	multiple types.
+      </description>
       <arg name="type" type="string"/>
     </request>
 
-    <!-- Destroy the selection. -->
-    <request name="destroy" type="destructor"/>
+    <request name="destroy" type="destructor">
+      <description summary="destroy the data source">
+	Destroy the data source.
+      </description>
+    </request>
 
-    <!-- Sent when a target accepts pointer_focus or motion events.
-         If a target does not accept any of the offered types, type is
-         NULL -->
     <event name="target">
+      <description summary="a target accepts an offered mime-type">
+	Sent when a target accepts pointer_focus or motion events.  If
+	a target does not accept any of the offered types, type is NULL.
+      </description>
+
       <arg name="mime_type" type="string"/>
     </event>
 
-    <!-- Request for data from another client.  Send the data in the
-         specified mime-type over the passed fd, the close it. -->
     <event name="send">
+      <description summary="send the data">
+	Request for data from another client.  Send the data as the
+	specified mime-type over the passed fd, then close the fd.
+      </description>
+
       <arg name="mime_type" type="string"/>
       <arg name="fd" type="fd"/>
     </event>
 
-    <!-- Another selection became active. -->
-    <event name="cancelled"/>
+    <event name="cancelled">
+      <description summary="selection was cancelled">
+	Another selection became active.
+      </description>
+    </event>
+
   </interface>
 
   <interface name="wl_data_device" version="1">
@@ -240,14 +292,17 @@
       <arg name="time" type="uint"/>
     </request>
 
-    <!-- The data_offer event introduces a new wl_data_offer object,
-         which will subsequently be used in either the
-         data_device.enter event (for drag and drop) or the
-         data_device.selection event (for selections).  Immediately
-         following the data_device_data_offer event, the new
-         data_offer object will send out data_offer.offer events to
-         describe the mime-types it offers. -->
     <event name="data_offer">
+      <description summary="introduce a new wl_data_offer">
+	The data_offer event introduces a new wl_data_offer object,
+	which will subsequently be used in either the
+	data_device.enter event (for drag and drop) or the
+	data_device.selection event (for selections).  Immediately
+	following the data_device_data_offer event, the new data_offer
+	object will send out data_offer.offer events to describe the
+	mime-types it offers.
+      </description>
+
       <arg name="id" type="new_id" interface="wl_data_offer"/>
     </event>
 
@@ -269,16 +324,18 @@
 
     <event name="drop"/>
 
-    <!-- The selection event is sent out to notify the client of a new
-         wl_data_offer for the selection for this device.  The
-         data_device.data_offer and the data_offer.offer events are
-         sent out immediately before this event to introduce the data
-         offer object.  The selection event is sent to a client
-         immediately before receiving keyboard focus and when a new
-         selection is set while the client has keyboard focus.  The
-         data_offer is valid until a new data_offer or NULL is
-         received or until the client loses keyboard focus. -->
     <event name="selection">
+      <description summary="advertise new selection">
+	The selection event is sent out to notify the client of a new
+	wl_data_offer for the selection for this device.  The
+	data_device.data_offer and the data_offer.offer events are
+	sent out immediately before this event to introduce the data
+	offer object.  The selection event is sent to a client
+	immediately before receiving keyboard focus and when a new
+	selection is set while the client has keyboard focus.  The
+	data_offer is valid until a new data_offer or NULL is received
+	or until the client loses keyboard focus.
+      </description>
       <arg name="id" type="object" interface="wl_data_offer"/>
     </event>
   </interface>
@@ -301,12 +358,15 @@
     </request>
   </interface>
 
-  <!-- A wrapper interface for shell related actions on a wl_surface.
-       On server side the object is automatically destroyed when the
-       related wl_surface is destroyed.
-       On client side, wl_shell_surface_destroy() must be called
-       before destroying the wl_surface object. -->
   <interface name="wl_shell_surface" version="1">
+
+    <description summary="desktop style meta data interface">
+      An interface implemented by a wl_surface.  On server side the
+      object is automatically destroyed when the related wl_surface is
+      destroyed.  On client side, wl_shell_surface_destroy() must be
+      called before destroying the wl_surface object.
+    </description>
+
     <request name="move">
       <arg name="input_device" type="object" interface="wl_input_device"/>
       <arg name="time" type="uint"/>
@@ -327,51 +387,60 @@
     <request name="resize">
       <arg name="input_device" type="object" interface="wl_input_device"/>
       <arg name="time" type="uint"/>
-      <!-- edges is an enum, need to get the values in here -->
       <arg name="edges" type="uint"/>
     </request>
 
-    <!-- Make the surface visible as a toplevel window. -->
-    <request name="set_toplevel"/>
+    <request name="set_toplevel">
+      <description summary="make the surface a top level surface">
+	Make the surface a toplevel window.
+      </description>
+    </request>
 
-    <!-- Map the surface relative to an existing surface. The x and y
-         arguments specify the locations of the upper left corner of
-         the surface relative to the upper left corner of the parent
-         surface.  The flags argument controls overflow/clipping
-         behaviour when the surface would intersect a screen edge,
-         panel or such.  And possibly whether the offset only
-         determines the initial position or if the surface is locked
-         to that relative position during moves. -->
     <request name="set_transient">
+      <description summary="make the surface a transient surface">
+	Map the surface relative to an existing surface. The x and y
+	arguments specify the locations of the upper left corner of
+	the surface relative to the upper left corner of the parent
+	surface.  The flags argument controls overflow/clipping
+	behaviour when the surface would intersect a screen edge,
+	panel or such.  And possibly whether the offset only
+	determines the initial position or if the surface is locked to
+	that relative position during moves.
+      </description>
+
       <arg name="parent" type="object" interface="wl_shell_surface"/>
       <arg name="x" type="int"/>
       <arg name="y" type="int"/>
       <arg name="flags" type="uint"/>
     </request>
 
-    <!-- Map the surface as a fullscreen surface.  There are a number
-         of options here: on which output? if the surface size doesn't
-         match the output size, do we scale, change resolution, or add
-         black borders? is that something the client controls?  what
-         about transient surfaces, do they float on top of the
-         fullscreen? what if there's already a fullscreen surface on
-         the output, maybe you can only go fullscreen if you're
-         active?  -->
-    <request name="set_fullscreen"/>
+    <request name="set_fullscreen">
+      <description summary="make the surface a fullscreen surface">
+	Map the surface as a fullscreen surface.  There are a number
+	of options here: on which output? if the surface size doesn't
+	match the output size, do we scale, change resolution, or add
+	black borders? is that something the client controls?  what
+	about transient surfaces, do they float on top of the
+	fullscreen? what if there's already a fullscreen surface on
+	the output, maybe you can only go fullscreen if you're active?
+      </description>
+    </request>
 
-    <!-- Popup surfaces.  Will switch an implicit grab into
-         owner-events mode, and grab will continue after the implicit
-         grab ends (button released).  Once the implicit grab is over,
-         the popup grab continues until the window is destroyed or a
-         mouse button is pressed in any other clients window.  A click
-         in any of the clients surfaces is reported as normal,
-         however, clicks in other clients surfaces will be discarded
-         and trigger the callback. 
-
-	 TODO: Grab keyboard too, maybe just terminate on any click
-	 inside or outside the surface?
-    -->
     <request name="set_popup">
+      <description summary="make the surface a popup surface">
+	Popup surfaces.  Will switch an implicit grab into
+	owner-events mode, and grab will continue after the implicit
+	grab ends (button released).  Once the implicit grab is over,
+	the popup grab continues until the window is destroyed or a
+	mouse button is pressed in any other clients window.  A click
+	in any of the clients surfaces is reported as normal, however,
+	clicks in other clients surfaces will be discarded and trigger
+	the callback.
+
+	TODO: Grab keyboard too, maybe just terminate on any click
+	inside or outside the surface?
+      </description>
+
       <arg name="input_device" type="object" interface="wl_input_device"/>
       <arg name="time" type="uint"/>
       <arg name="parent" type="object" interface="wl_shell_surface"/>
@@ -380,83 +449,111 @@
       <arg name="flags" type="uint"/>
     </request>
 
-    <!-- The configure event asks the client to resize its surface.
-         The size is a hint, in the sense that the client is free to
-         ignore it if it doesn't resize, pick a smaller size (to
-         satisfy aspect ration or resize in steps of NxM pixels).  The
-         client is free to dismiss all but the last configure event it
-         received. -->
     <event name="configure">
+      <description summary="suggest resize">
+	The configure event asks the client to resize its surface.
+	The size is a hint, in the sense that the client is free to
+	ignore it if it doesn't resize, pick a smaller size (to
+	satisfy aspect ration or resize in steps of NxM pixels).  The
+	client is free to dismiss all but the last configure event it
+	received.
+      </description>
+
       <arg name="time" type="uint"/>
       <arg name="edges" type="uint"/>
       <arg name="width" type="int"/>
       <arg name="height" type="int"/>
     </event>
 
-    <!-- The popup_done event is sent out when a popup grab is broken,
-         that is, when the users clicks a surface that doesn't belong
-         to the client owning the popup surface. -->
-    <event name="popup_done"/>
+    <event name="popup_done">
+      <description summary="popup interaction is done">
+	The popup_done event is sent out when a popup grab is broken,
+	that is, when the users clicks a surface that doesn't belong
+	to the client owning the popup surface.
+      </description>
+    </event>
   </interface>
 
-
-  <!-- A surface. This is an image that is displayed on the screen.
-       It has a location, size and pixel contents. Similar to a window. -->
   <interface name="wl_surface" version="1">
-    <!-- Deletes the surface and invalidates its object id. -->
-    <request name="destroy" type="destructor"/>
+    <description summary="an onscreen surface">
+      A surface.  This is an image that is displayed on the screen.
+      It has a location, size and pixel contents.
+    </description>
 
-    <!-- Copy the contents of a buffer into this surface. The x and y
-         arguments specify the location of the new buffers upper left
-         corner, relative to the old buffers upper left corner. -->
+    <request name="destroy" type="destructor">
+      <description summary="delete surface">
+	Deletes the surface and invalidates its object id.
+      </description>
+    </request>
+
     <request name="attach">
+      <description summary="set the surface contents">
+	Copy the contents of a buffer into this surface. The x and y
+	arguments specify the location of the new buffers upper left
+	corner, relative to the old buffers upper left corner.
+      </description>
+
       <arg name="buffer" type="object" interface="wl_buffer"/>
       <arg name="x" type="int"/>
       <arg name="y" type="int"/>
     </request>
 
-    <!-- After attaching a new buffer, this request is used to
-         describe the regions where the new buffer is different from
-         the previous buffer and needs to be repainted.  Coordinates
-         are relative to the new buffer. -->
     <request name="damage">
+      <description summary="mark part of the surface damaged">
+	After attaching a new buffer, this request is used to describe
+	the regions where the new buffer is different from the
+	previous buffer and needs to be repainted.  Coordinates are
+	relative to the new buffer.
+      </description>
+
       <arg name="x" type="int"/>
       <arg name="y" type="int"/>
       <arg name="width" type="int"/>
       <arg name="height" type="int"/>
     </request>
 
-    <!-- Request notification when the next frame is displayed.
-         Useful for throttling redrawing operations, and driving
-         animations.  The notification will only be posted for one
-         frame unless requested again. -->
     <request name="frame">
+      <description summary="request repaint feedback">
+	Request notification when the next frame is displayed.  Useful
+	for throttling redrawing operations, and driving animations.
+	The notification will only be posted for one frame unless
+	requested again.
+      </description>
+
       <arg name="callback" type="new_id" interface="wl_callback"/>
     </request>
 
   </interface>
 
-
-  <!-- A group of keyboards and pointer devices (mice, for
-       example). This object is published as a global during start up,
-       or when such a device is hot plugged.  A input_device group
-       typically has a pointer and maintains a keyboard_focus and a
-       pointer_focus.  -->
   <interface name="wl_input_device" version="1">
-    <!-- Set the pointer's image.  This request only takes effect if
-         the pointer focus for this device is one of the requesting
-         clients surfaces.  -->
+    <description summary="input device group">
+      A group of keyboards and pointer devices (mice, for
+      example). This object is published as a global during start up,
+      or when such a device is hot plugged.  A input_device group
+      typically has a pointer and maintains a keyboard_focus and a
+      pointer_focus.
+    </description>
+
     <request name="attach">
+      <description summary="set the pointer image">
+	Set the pointer's image.  This request only takes effect if
+	the pointer focus for this device is one of the requesting
+	clients surfaces.
+      </description>
+
       <arg name="time" type="uint"/>
       <arg name="buffer" type="object" interface="wl_buffer"/>
       <arg name="hotspot_x" type="int"/>
       <arg name="hotspot_y" type="int"/>
     </request>
 
-    <!-- Notification of pointer location change.
-         x,y are the absolute location on the screen.
-         surface_[xy] are the location relative to the focused surface. -->
     <event name="motion">
+      <description summary="pointer motion event">
+	Notification of pointer location change.  x,y are the absolute
+	location on the screen.  surface_[xy] are the location
+	relative to the focused surface.
+      </description>
+
       <arg name="time" type="uint"/>
       <arg name="x" type="int"/>
       <arg name="y" type="int"/>
@@ -464,27 +561,35 @@
       <arg name="surface_y" type="int"/>
     </event>
 
-    <!-- Mouse button click and release notifications.  The location
-         of the click is given by the last motion or pointer_focus
-         event. -->
     <event name="button">
+      <description summary="pointer button event">
+	Mouse button click and release notifications.  The location
+	of the click is given by the last motion or pointer_focus event.
+      </description>
+
       <arg name="time" type="uint"/>
       <arg name="button" type="uint"/>
       <arg name="state" type="uint"/>
     </event>
 
-    <!-- Keyboard press. -->
     <event name="key">
+      <description summary="key event">
+	A key was pressed or released.
+      </description>
+
       <arg name="time" type="uint"/>
       <arg name="key" type="uint"/>
       <arg name="state" type="uint"/>
     </event>
 
-    <!-- Notification that this input device's pointer is focused on
-         certain surface. When an input_device enters a surface, the
-         pointer image is undefined and a client should respond to
-         this event by setting an apropriate pointer image. -->
     <event name="pointer_focus">
+      <description summary="pointer focus change event">
+	Notification that this input device's pointer is focused on
+	certain surface. When an input_device enters a surface, the
+	pointer image is undefined and a client should respond to this
+	event by setting an apropriate pointer image.
+      </description>
+
       <arg name="time" type="uint"/>
       <arg name="surface" type="object" interface="wl_surface"/>
       <arg name="x" type="int"/>
@@ -519,24 +624,31 @@
       <arg name="y" type="int" />
     </event>
 
-    <!-- Indicates the end of a contact point list. -->
-    <event name="touch_frame"/>
+    <event name="touch_frame">
+      <description summary="end of touch frame event">
+	Indicates the end of a contact point list.
+      </description>
+    </event>
 
-    <!-- Sent if the compositor decides the touch stream is a global
-         gesture. No further events are sent to the clients from that
-         particular gesture. -->
-    <event name="touch_cancel"/>
+    <event name="touch_cancel">
+      <description summary="touch session cancelled">
+	Sent if the compositor decides the touch stream is a global
+	gesture. No further events are sent to the clients from that
+	particular gesture.
+      </description>
+    </event>
   </interface>
 
 
-  <!-- An output describes part of the compositor geometry.  The
-       compositor work in the 'compositor coordinate system' and an
-       output corresponds to rectangular area in that space that is
-       actually visible.  This typically corresponds to a monitor that
-       displays part of the compositor space.  This object is
-       published as global during start up, or when a screen is hot
-       plugged.  -->
   <interface name="wl_output" version="1">
+    <description summary="composior output region">
+      An output describes part of the compositor geometry.  The
+      compositor work in the 'compositor coordinate system' and an
+      output corresponds to rectangular area in that space that is
+      actually visible.  This typically corresponds to a monitor that
+      displays part of the compositor space.  This object is published
+      as global during start up, or when a screen is hot plugged.
+    </description>
 
     <enum name="subpixel">
       <entry name="unknown" value="0"/>
@@ -557,8 +669,8 @@
       <arg name="model" type="string"/>
     </event>
 
-    <!-- Values for the flags bitfield of the mode event. -->
     <enum name="mode">
+      <description summary="values for the flags bitfield in the mode event"/>
       <entry name="current" value="0x1"/>
       <entry name="preferred" value="0x2"/>
     </enum>
