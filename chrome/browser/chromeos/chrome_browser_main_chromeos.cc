@@ -64,6 +64,7 @@
 #include "chrome/browser/chromeos/legacy_window_manager/initial_browser_window_observer.h"
 #include "chrome/browser/chromeos/power/power_button_controller_delegate_chromeos.h"
 #include "chrome/browser/chromeos/power/power_button_observer.h"
+#include "chrome/browser/chromeos/power/video_property_writer.h"
 #endif
 
 class MessageLoopObserver : public MessageLoopForUI::Observer {
@@ -457,11 +458,13 @@ void ChromeBrowserMainPartsChromeos::PostBrowserStart() {
   }
 
 #if defined(USE_AURA)
-  // This is dependent on the ash::Shell singleton already having been
+  // These are dependent on the ash::Shell singleton already having been
   // initialized.
   power_button_observer_.reset(new chromeos::PowerButtonObserver);
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(
       power_button_observer_.get());
+
+  video_property_writer_.reset(new chromeos::VideoPropertyWriter);
 #endif
 
   ChromeBrowserMainPartsLinux::PostBrowserStart();
@@ -512,6 +515,12 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   chromeos::AudioHandler::Shutdown();
 
   chromeos::WebSocketProxyController::Shutdown();
+
+#if defined(USE_AURA)
+  // Let VideoPropertyWriter unregister itself as an observer of the ash::Shell
+  // singleton before the shell is destroyed.
+  video_property_writer_.reset();
+#endif
 
   ChromeBrowserMainPartsLinux::PostMainMessageLoopRun();
 }

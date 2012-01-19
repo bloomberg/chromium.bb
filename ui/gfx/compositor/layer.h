@@ -163,8 +163,8 @@ class COMPOSITOR_EXPORT Layer :
 
   const ui::Texture* texture() const { return texture_.get(); }
 
-  // |texture| cannot be NULL, and this function cannot be called more than
-  // once.
+  // Assigns a new external texture.  |texture| can be NULL to disable external
+  // updates.
   // TODO(beng): This can be removed from the API when we are in a
   //             single-compositor world.
   void SetExternalTexture(ui::Texture* texture);
