@@ -315,7 +315,7 @@ gears_create(struct display *display)
 	gears->d = display;
 	gears->window = window_create(display, width, height);
 	gears->widget = frame_create(gears->window, gears);
-	window_set_transparent(gears->window, 0);
+	window_set_transparent(gears->window, 1);
 	window_set_title(gears->window, "Wayland Gears");
 
 	gears->display = display_get_egl_display(gears->d);
@@ -324,7 +324,7 @@ gears_create(struct display *display)
 
 	eglBindAPI(EGL_OPENGL_API);
 
-	gears->config = display_get_rgb_egl_config(gears->d);
+	gears->config = display_get_argb_egl_config(gears->d);
 
 	gears->context = eglCreateContext(gears->display, gears->config,
 					  EGL_NO_CONTEXT, NULL);
