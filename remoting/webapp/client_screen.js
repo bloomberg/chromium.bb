@@ -290,6 +290,7 @@ function startSession_() {
           remoting.hostJid, remoting.hostPublicKey,
           remoting.accessCode,
           /** @type {string} */ (remoting.oauth2.getCachedEmail()),
+          remoting.ClientSession.Mode.IT2ME,
           onClientStateChange_);
   /** @param {string} token The auth token. */
   var createPluginAndConnect = function(token) {
@@ -462,7 +463,7 @@ function connectMe2MeWithAccessToken_(token) {
         new remoting.ClientSession(
             remoting.hostJid, remoting.hostPublicKey,
             pin, /** @type {string} */ (remoting.oauth2.getCachedEmail()),
-            onClientStateChange_);
+            remoting.ClientSession.Mode.ME2ME, onClientStateChange_);
     remoting.clientSession.createPluginAndConnect(
         document.getElementById('session-mode'),
         token);

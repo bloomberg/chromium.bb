@@ -47,10 +47,11 @@ remoting.LogToServer.CONNECTION_STATS_ACCUMULATE_TIME = 60 * 1000;
  *
  * @param {remoting.ClientSession.State} state
  * @param {remoting.ClientSession.ConnectionError} connectionError
+ * @param {remoting.ClientSession.Mode} mode
  */
 remoting.LogToServer.prototype.logClientSessionStateChange =
-    function(state, connectionError) {
-  this.maybeExpireSessionId();
+    function(state, connectionError, mode) {
+  this.maybeExpireSessionId(mode);
   // Maybe set the session ID and start time.
   if (remoting.LogToServer.isStartOfSession(state)) {
     if (this.sessionId == '') {
@@ -62,7 +63,7 @@ remoting.LogToServer.prototype.logClientSessionStateChange =
   }
   // Log the session state change.
   var entry = remoting.ServerLogEntry.makeClientSessionStateChange(
-      state, connectionError);
+      state, connectionError, mode);
   entry.addHostFields();
   entry.addChromeVersionField();
   entry.addWebappVersionField();
@@ -76,7 +77,7 @@ remoting.LogToServer.prototype.logClientSessionStateChange =
   }
   this.log(entry);
   // Don't accumulate connection statistics across state changes.
-  this.logAccumulatedStatistics();
+  this.logAccumulatedStatistics(mode);
   this.statsAccumulator.empty();
   // Maybe clear the session ID.
   if (remoting.LogToServer.isEndOfSession(state)) {
@@ -114,16 +115,17 @@ remoting.LogToServer.isEndOfSession = function(state) {
 /**
  * Logs connection statistics.
  * @param {Object.<string, number>} stats the connection statistics
+ * @param {remoting.ClientSession.Mode} mode
  */
-remoting.LogToServer.prototype.logStatistics = function(stats) {
-  this.maybeExpireSessionId();
+remoting.LogToServer.prototype.logStatistics = function(stats, mode) {
+  this.maybeExpireSessionId(mode);
   // Store the statistics.
   this.statsAccumulator.add(stats);
   // Send statistics to the server if they've been accumulating for at least
   // 60 seconds.
   if (this.statsAccumulator.getTimeSinceFirstValue() >=
       remoting.LogToServer.CONNECTION_STATS_ACCUMULATE_TIME) {
-    this.logAccumulatedStatistics();
+    this.logAccumulatedStatistics(mode);
   }
 };
 
@@ -134,9 +136,10 @@ remoting.LogToServer.prototype.logStatistics = function(stats) {
  * but the statistics are not sent to the log server.
  *
  * @private
+ * @param {remoting.ClientSession.Mode} mode
  */
-remoting.LogToServer.prototype.logAccumulatedStatistics = function() {
-  var entry = remoting.ServerLogEntry.makeStats(this.statsAccumulator);
+remoting.LogToServer.prototype.logAccumulatedStatistics = function(mode) {
+  var entry = remoting.ServerLogEntry.makeStats(this.statsAccumulator, mode);
   if (entry) {
     entry.addHostFields();
     entry.addChromeVersionField();
@@ -203,18 +206,19 @@ remoting.LogToServer.prototype.clearSessionId = function() {
  * log entries.
  *
  * @private
+ * @param {remoting.ClientSession.Mode} mode
  */
-remoting.LogToServer.prototype.maybeExpireSessionId = function() {
+remoting.LogToServer.prototype.maybeExpireSessionId = function(mode) {
   if ((this.sessionId != '') &&
       (new Date().getTime() - this.sessionIdGenerationTime >=
       remoting.LogToServer.MAX_SESSION_ID_AGE)) {
     // Log the old session ID.
-    var entry = remoting.ServerLogEntry.makeSessionIdOld(this.sessionId);
+    var entry = remoting.ServerLogEntry.makeSessionIdOld(this.sessionId, mode);
     this.log(entry);
     // Generate a new session ID.
     this.setSessionId();
     // Log the new session ID.
-    entry = remoting.ServerLogEntry.makeSessionIdNew(this.sessionId);
+    entry = remoting.ServerLogEntry.makeSessionIdNew(this.sessionId, mode);
     this.log(entry);
   }
 };

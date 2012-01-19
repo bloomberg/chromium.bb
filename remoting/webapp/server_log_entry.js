@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -141,6 +141,15 @@ remoting.ServerLogEntry.VALUE_EVENT_NAME_SESSION_ID_OLD_ = 'session-id-old';
 /** @private */
 remoting.ServerLogEntry.VALUE_EVENT_NAME_SESSION_ID_NEW_ = 'session-id-new';
 
+/** @private */
+remoting.ServerLogEntry.KEY_MODE_ = 'mode';
+/** @private */
+remoting.ServerLogEntry.VALUE_MODE_IT2ME_ = 'it2me';
+/** @private */
+remoting.ServerLogEntry.VALUE_MODE_ME2ME_ = 'me2me';
+/** @private */
+remoting.ServerLogEntry.VALUE_MODE_UNKNOWN_ = 'unknown';
+
 /**
  * Sets one field in this log entry.
  *
@@ -184,10 +193,11 @@ remoting.ServerLogEntry.prototype.toDebugLog = function(indentLevel) {
  *
  * @param {remoting.ClientSession.State} state
  * @param {remoting.ClientSession.ConnectionError} connectionError
+ * @param {remoting.ClientSession.Mode} mode
  * @return {remoting.ServerLogEntry}
  */
 remoting.ServerLogEntry.makeClientSessionStateChange = function(state,
-    connectionError) {
+    connectionError, mode) {
   var entry = new remoting.ServerLogEntry();
   entry.set(remoting.ServerLogEntry.KEY_ROLE_,
             remoting.ServerLogEntry.VALUE_ROLE_CLIENT_);
@@ -200,6 +210,7 @@ remoting.ServerLogEntry.makeClientSessionStateChange = function(state,
               remoting.ServerLogEntry.getValueForConnectionError(
                   connectionError));
   }
+  entry.addModeField(mode);
   return entry;
 };
 
@@ -219,14 +230,16 @@ remoting.ServerLogEntry.prototype.addSessionDurationField = function(
  * Returns null if all the statistics were zero.
  *
  * @param {remoting.StatsAccumulator} statsAccumulator
+ * @param {remoting.ClientSession.Mode} mode
  * @return {?remoting.ServerLogEntry}
  */
-remoting.ServerLogEntry.makeStats = function(statsAccumulator) {
+remoting.ServerLogEntry.makeStats = function(statsAccumulator, mode) {
   var entry = new remoting.ServerLogEntry();
   entry.set(remoting.ServerLogEntry.KEY_ROLE_,
             remoting.ServerLogEntry.VALUE_ROLE_CLIENT_);
   entry.set(remoting.ServerLogEntry.KEY_EVENT_NAME_,
             remoting.ServerLogEntry.VALUE_EVENT_NAME_CONNECTION_STATISTICS_);
+  entry.addModeField(mode);
   var nonZero = false;
   nonZero |= entry.addStatsField(
       remoting.ServerLogEntry.KEY_VIDEO_BANDWIDTH_,
@@ -272,15 +285,17 @@ remoting.ServerLogEntry.prototype.addStatsField = function(
  * Makes a log entry for a "this session ID is old" event.
  *
  * @param {string} sessionId
+ * @param {remoting.ClientSession.Mode} mode
  * @return {remoting.ServerLogEntry}
  */
-remoting.ServerLogEntry.makeSessionIdOld = function(sessionId) {
+remoting.ServerLogEntry.makeSessionIdOld = function(sessionId, mode) {
   var entry = new remoting.ServerLogEntry();
   entry.set(remoting.ServerLogEntry.KEY_ROLE_,
             remoting.ServerLogEntry.VALUE_ROLE_CLIENT_);
   entry.set(remoting.ServerLogEntry.KEY_EVENT_NAME_,
             remoting.ServerLogEntry.VALUE_EVENT_NAME_SESSION_ID_OLD_);
   entry.addSessionIdField(sessionId);
+  entry.addModeField(mode);
   return entry;
 };
 
@@ -288,15 +303,17 @@ remoting.ServerLogEntry.makeSessionIdOld = function(sessionId) {
  * Makes a log entry for a "this session ID is new" event.
  *
  * @param {string} sessionId
+ * @param {remoting.ClientSession.Mode} mode
  * @return {remoting.ServerLogEntry}
  */
-remoting.ServerLogEntry.makeSessionIdNew = function(sessionId) {
+remoting.ServerLogEntry.makeSessionIdNew = function(sessionId, mode) {
   var entry = new remoting.ServerLogEntry();
   entry.set(remoting.ServerLogEntry.KEY_ROLE_,
             remoting.ServerLogEntry.VALUE_ROLE_CLIENT_);
   entry.set(remoting.ServerLogEntry.KEY_EVENT_NAME_,
             remoting.ServerLogEntry.VALUE_EVENT_NAME_SESSION_ID_NEW_);
   entry.addSessionIdField(sessionId);
+  entry.addModeField(mode);
   return entry;
 };
 
@@ -430,4 +447,32 @@ remoting.ServerLogEntry.extractChromeVersionFrom = function(s) {
 remoting.ServerLogEntry.prototype.addWebappVersionField = function() {
   this.set(remoting.ServerLogEntry.KEY_WEBAPP_VERSION_,
       chrome.app.getDetails().version);
+};
+
+/**
+ * Adds a field specifying the mode to this log entry.
+ *
+ * @param {remoting.ClientSession.Mode} mode
+ */
+remoting.ServerLogEntry.prototype.addModeField = function(mode) {
+  this.set(remoting.ServerLogEntry.KEY_MODE_,
+      remoting.ServerLogEntry.getModeField(mode));
+};
+
+/**
+ * Gets the value of the mode field to be put in a log entry.
+ *
+ * @private
+ * @param {remoting.ClientSession.Mode} mode
+ * @return {string}
+ */
+remoting.ServerLogEntry.getModeField = function(mode) {
+  switch(mode) {
+    case remoting.ClientSession.Mode.IT2ME:
+      return remoting.ServerLogEntry.VALUE_MODE_IT2ME_;
+    case remoting.ClientSession.Mode.ME2ME:
+      return remoting.ServerLogEntry.VALUE_MODE_ME2ME_;
+    default:
+      return remoting.ServerLogEntry.VALUE_MODE_UNKNOWN_;
+  }
 };

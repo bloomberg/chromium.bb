@@ -23,19 +23,21 @@ var remoting = remoting || {};
  * @param {string} authenticationCode The access code for IT2Me or the
  *     PIN for Me2Me.
  * @param {string} email The username for the talk network.
+ * @param {remoting.ClientSession.Mode} mode The mode of this connection.
  * @param {function(remoting.ClientSession.State,
                     remoting.ClientSession.State):void} onStateChange
  *     The callback to invoke when the session changes state.
  * @constructor
  */
 remoting.ClientSession = function(hostJid, hostPublicKey, authenticationCode,
-                                  email, onStateChange) {
+                                  email, mode, onStateChange) {
   this.state = remoting.ClientSession.State.CREATED;
 
   this.hostJid = hostJid;
   this.hostPublicKey = hostPublicKey;
   this.authenticationCode = authenticationCode;
   this.email = email;
+  this.mode = mode;
   this.clientJid = '';
   this.sessionId = '';
   /** @type {remoting.ViewerPlugin} */
@@ -73,6 +75,13 @@ remoting.ClientSession.ConnectionError = {
   SESSION_REJECTED: 2,
   INCOMPATIBLE_PROTOCOL: 3,
   NETWORK_FAILURE: 4
+};
+
+// The mode of this session.
+/** @enum {number} */
+remoting.ClientSession.Mode = {
+  IT2ME: 0,
+  ME2ME: 1
 };
 
 // Keys for connection statistics.
@@ -220,7 +229,7 @@ remoting.ClientSession.prototype.disconnect = function() {
   // the fact that the connection has closed.
   this.logToServer.logClientSessionStateChange(
       remoting.ClientSession.State.CLOSED,
-      remoting.ClientSession.ConnectionError.NONE);
+      remoting.ClientSession.ConnectionError.NONE, this.mode);
   if (remoting.wcs) {
     remoting.wcs.setOnIq(function(stanza) {});
     this.sendIq_(
@@ -371,7 +380,8 @@ remoting.ClientSession.prototype.setState_ = function(newState) {
   if (this.onStateChange) {
     this.onStateChange(oldState, newState);
   }
-  this.logToServer.logClientSessionStateChange(this.state, this.error);
+  this.logToServer.logClientSessionStateChange(this.state, this.error,
+      this.mode);
 };
 
 /**
@@ -471,5 +481,5 @@ remoting.ClientSession.prototype.stats = function() {
  * @param {Object.<string, number>} stats
  */
 remoting.ClientSession.prototype.logStatistics = function(stats) {
-  this.logToServer.logStatistics(stats);
+  this.logToServer.logStatistics(stats, this.mode);
 };
