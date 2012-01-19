@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,9 +14,7 @@
 #include "base/compiler_specific.h"
 #include "base/format_macros.h"
 #include "base/gtest_prod_util.h"
-#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
-#include "base/observer_list.h"
 #include "base/stringprintf.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/time.h"
@@ -28,9 +26,7 @@
 #include "chrome/browser/sync/glue/synced_session_tracker.h"
 #include "chrome/browser/sync/glue/synced_tab_delegate.h"
 #include "chrome/browser/sync/glue/synced_window_delegate.h"
-#include "chrome/browser/sync/protocol/session_specifics.pb.h"
 #include "chrome/browser/sync/syncable/model_type.h"
-#include "chrome/browser/sync/util/weak_handle.h"
 
 class Profile;
 class ProfileSyncService;
@@ -42,7 +38,11 @@ class WriteTransaction;
 }  // namespace sync_api
 
 namespace sync_pb {
+class SessionHeader;
 class SessionSpecifics;
+class SessionTab;
+class SessionWindow;
+class TabNavigation;
 }  // namespace sync_pb
 
 namespace browser_sync {
@@ -188,9 +188,9 @@ class SessionModelAssociator
   void DeleteForeignSession(const std::string& tag);
 
   // Control which local tabs we're interested in syncing.
-  // Ensures the profile matches sync's profile and that the tab has at least
-  // one navigation entry and is not an empty tab.
-  bool IsValidTab(const SyncedTabDelegate& tab) const;
+  // Ensures the profile matches sync's profile and that the tab has valid
+  // entries.
+  bool ShouldSyncTab(const SyncedTabDelegate& tab) const;
 
   // Returns the syncable model type.
   static syncable::ModelType model_type() { return syncable::SESSIONS; }
@@ -211,6 +211,8 @@ class SessionModelAssociator
                            WriteForeignSessionToNode);
   FRIEND_TEST_ALL_PREFIXES(ProfileSyncServiceSessionTest, TabNodePoolEmpty);
   FRIEND_TEST_ALL_PREFIXES(ProfileSyncServiceSessionTest, TabNodePoolNonEmpty);
+  FRIEND_TEST_ALL_PREFIXES(ProfileSyncServiceSessionTest,
+                           ValidTabs);
   FRIEND_TEST_ALL_PREFIXES(SessionModelAssociatorTest, PopulateSessionHeader);
   FRIEND_TEST_ALL_PREFIXES(SessionModelAssociatorTest, PopulateSessionWindow);
   FRIEND_TEST_ALL_PREFIXES(SessionModelAssociatorTest, PopulateSessionTab);
@@ -398,35 +400,15 @@ class SessionModelAssociator
      const TabNavigation* navigation,
      sync_pb::TabNavigation* tab_navigation);
 
-  // Returns the session service from |sync_service_|.
-  SessionService* GetSessionService();
+  // Returns true if this tab belongs to this profile and belongs to a window,
+  // false otherwise.
+  bool IsValidTab(const SyncedTabDelegate& tab) const;
 
-  // Internal method used in the callback to obtain the current session.
-  // We don't own |windows|.
-  void OnGotSession(int handle, std::vector<SessionWindow*>* windows);
-
-  // Populate a session specifics header from a list of SessionWindows
-  void PopulateSessionSpecificsHeader(
-      const std::vector<SessionWindow*>& windows,
-      sync_pb::SessionHeader* header_s);
-
-  // Populates the window portion of the session specifics.
-  void PopulateSessionSpecificsWindow(const SessionWindow& window,
-                                      sync_pb::SessionWindow* session_window);
-
-  // Syncs all the tabs in |window| with the local sync db. Will allocate tab
-  // nodes if needed.
-  bool SyncLocalWindowToSyncModel(const SessionWindow& window);
-
-  // Fills a tab sync node with data from a SessionTab object.
-  // (from ReadCurrentSessions)
-  bool WriteSessionTabToSyncModel(const SessionTab& tab,
-                                  const int64 sync_id,
-                                  sync_api::WriteTransaction* trans);
-
-  // Populates the tab portion of the session specifics.
-  void PopulateSessionSpecificsTab(const SessionTab& tab,
-                                   sync_pb::SessionTab* session_tab);
+  // Having a valid entry is defined as the url being valid and and having a
+  // syncable scheme (non chrome:// and file:// url's). In other words, we don't
+  // want to sync a tab that is nothing but chrome:// and file:// navigations or
+  // invalid url's.
+  bool TabHasValidEntry(const SyncedTabDelegate& tab) const;
 
   // For testing only.
   void QuitLoopForSubtleTesting();
