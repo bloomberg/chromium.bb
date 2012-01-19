@@ -212,17 +212,6 @@ void PluginProxyTestHarness::PluginDelegateMock::Unregister(
     uint32 plugin_dispatcher_id) {
 }
 
-ppapi::WebKitForwarding*
-PluginProxyTestHarness::PluginDelegateMock::GetWebKitForwarding() {
-  NOTREACHED();
-  return NULL;
-}
-
-void PluginProxyTestHarness::PluginDelegateMock::PostToWebKitThread(
-    const tracked_objects::Location& from_here, const base::Closure& task) {
-  NOTREACHED();
-}
-
 bool PluginProxyTestHarness::PluginDelegateMock::SendToBrowser(
     IPC::Message* msg) {
   NOTREACHED();

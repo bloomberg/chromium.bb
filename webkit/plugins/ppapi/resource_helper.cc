@@ -17,7 +17,12 @@ namespace ppapi {
 // static
 PluginInstance* ResourceHelper::GetPluginInstance(
     const ::ppapi::Resource* resource) {
-  return HostGlobals::Get()->GetInstance(resource->pp_instance());
+  return PPInstanceToPluginInstance(resource->pp_instance());
+}
+
+PluginInstance* ResourceHelper::PPInstanceToPluginInstance(
+    PP_Instance instance) {
+  return HostGlobals::Get()->GetInstance(instance);
 }
 
 PluginModule* ResourceHelper::GetPluginModule(

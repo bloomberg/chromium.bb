@@ -12,16 +12,6 @@ class PPAPI_PROXY_EXPORT PluginProxyDelegate {
  public:
   virtual ~PluginProxyDelegate() {}
 
-  // Returns the WebKit forwarding object used to make calls into WebKit.
-  // Necessary only on the plugin side.
-  virtual WebKitForwarding* GetWebKitForwarding() = 0;
-
-  // Posts the given task to the WebKit thread associated with this plugin
-  // process. The WebKit thread should be lazily created if it does not
-  // exist yet.
-  virtual void PostToWebKitThread(const tracked_objects::Location& from_here,
-                                  const base::Closure& task) = 0;
-
   // Sends the given message to the browser. Identical semantics to
   // IPC::Message::Sender interface.
   virtual bool SendToBrowser(IPC::Message* msg) = 0;

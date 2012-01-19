@@ -51,8 +51,7 @@ class ImageData : public ppapi::Resource,
   virtual void* Map() OVERRIDE;
   virtual void Unmap() OVERRIDE;
   virtual int32_t GetSharedMemory(int* handle, uint32_t* byte_count) OVERRIDE;
-
-  skia::PlatformCanvas* mapped_canvas() const { return mapped_canvas_.get(); }
+  virtual skia::PlatformCanvas* GetPlatformCanvas() OVERRIDE;
 
   const PP_ImageDataDesc& desc() const { return desc_; }
 

@@ -178,7 +178,7 @@ PP_Resource GetResourceImage(PP_Instance instance_id,
   if (!mapper.is_valid())
     return 0;
 
-  skia::PlatformCanvas* canvas = image_data->mapped_canvas();
+  skia::PlatformCanvas* canvas = image_data->GetPlatformCanvas();
   // Note: Do not skBitmap::copyTo the canvas bitmap directly because it will
   // ignore the allocated pixels in shared memory and re-allocate a new buffer.
   canvas->writePixels(*res_bitmap, 0, 0);
