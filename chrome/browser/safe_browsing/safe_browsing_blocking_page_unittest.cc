@@ -89,6 +89,7 @@ class SafeBrowsingBlockingPageTest : public ChromeRenderViewHostTestHarness {
   virtual void SetUp() {
     ChromeRenderViewHostTestHarness::SetUp();
     SafeBrowsingBlockingPage::RegisterFactory(&factory_);
+    MalwareDetails::RegisterFactory(NULL);  // Create it fresh each time.
     ResetUserResponse();
   }
 

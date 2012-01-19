@@ -408,12 +408,10 @@ class ResourceDispatcherHostTest : public testing::Test,
   void CompleteStartRequest(int request_id);
 
   void EnsureTestSchemeIsAllowed() {
-    static bool have_white_listed_test_scheme = false;
-
-    if (!have_white_listed_test_scheme) {
-      ChildProcessSecurityPolicy::GetInstance()->RegisterWebSafeScheme("test");
-      have_white_listed_test_scheme = true;
-    }
+    ChildProcessSecurityPolicy* policy =
+        ChildProcessSecurityPolicy::GetInstance();
+    if (!policy->IsWebSafeScheme("test"))
+      policy->RegisterWebSafeScheme("test");
   }
 
   // Sets a particular response for any request from now on. To switch back to

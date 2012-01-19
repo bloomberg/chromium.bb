@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,39 +24,6 @@
 #include "chrome/browser/speech/speech_input_extension_manager.h"
 
 class Profile;
-
-namespace {
-
-bool g_initialized = false;
-
-// This method gets the instance of each ServiceFactory. We do this so that
-// each ServiceFactory initializes iteslf and registers its dependencies with
-// the global PreferenceDependencyManager. We need to have a complete
-// dependency graph when we create a profile so we can dispatch the profile
-// creation message to the services that want to create their services at
-// profile creation time.
-//
-// TODO(erg): This needs to be something else. I don't think putting every
-// FooServiceFactory here will scale or is desireable long term.
-void AssertFactoriesBuilt() {
-  if (!g_initialized) {
-    BackgroundContentsServiceFactory::GetInstance();
-    CloudPrintProxyServiceFactory::GetInstance();
-    CookieSettings::Factory::GetInstance();
-    NetworkActionPredictorFactory::GetInstance();
-    PersonalDataManagerFactory::GetInstance();
-    PluginPrefsFactory::GetInstance();
-    prerender::PrerenderManagerFactory::GetInstance();
-    SessionServiceFactory::GetInstance();
-    SpeechInputExtensionManager::InitializeFactory();
-    TabRestoreServiceFactory::GetInstance();
-    TemplateURLServiceFactory::GetInstance();
-
-    g_initialized = true;
-  }
-}
-
-}  // namespace
 
 void ProfileDependencyManager::AddComponent(
     ProfileKeyedServiceFactory* component) {
@@ -160,9 +127,39 @@ ProfileDependencyManager* ProfileDependencyManager::GetInstance() {
   return Singleton<ProfileDependencyManager>::get();
 }
 
-ProfileDependencyManager::ProfileDependencyManager() {}
+ProfileDependencyManager::ProfileDependencyManager()
+    : built_factories_(false) {
+}
 
 ProfileDependencyManager::~ProfileDependencyManager() {}
+
+// This method gets the instance of each ServiceFactory. We do this so that
+// each ServiceFactory initializes iteslf and registers its dependencies with
+// the global PreferenceDependencyManager. We need to have a complete
+// dependency graph when we create a profile so we can dispatch the profile
+// creation message to the services that want to create their services at
+// profile creation time.
+//
+// TODO(erg): This needs to be something else. I don't think putting every
+// FooServiceFactory here will scale or is desireable long term.
+void ProfileDependencyManager::AssertFactoriesBuilt() {
+  if (built_factories_)
+    return;
+
+  BackgroundContentsServiceFactory::GetInstance();
+  CloudPrintProxyServiceFactory::GetInstance();
+  CookieSettings::Factory::GetInstance();
+  NetworkActionPredictorFactory::GetInstance();
+  PersonalDataManagerFactory::GetInstance();
+  PluginPrefsFactory::GetInstance();
+  prerender::PrerenderManagerFactory::GetInstance();
+  SessionServiceFactory::GetInstance();
+  SpeechInputExtensionManager::InitializeFactory();
+  TabRestoreServiceFactory::GetInstance();
+  TemplateURLServiceFactory::GetInstance();
+
+  built_factories_ = true;
+}
 
 void ProfileDependencyManager::BuildDestructionOrder() {
   // Step 1: Build a set of nodes with no incoming edges.
