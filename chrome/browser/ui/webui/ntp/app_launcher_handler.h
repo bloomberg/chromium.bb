@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -122,6 +122,9 @@ class AppLauncherHandler : public content::WebUIMessageHandler,
     GURL app_url;
     StringOrdinal page_ordinal;
   };
+
+  // Reset some instance flags we use to track the currently uninstalling app.
+  void CleanupAfterUninstall();
 
   // Records a web store launch in the appropriate histograms. |promo_active|
   // specifies if the web store promotion was active.

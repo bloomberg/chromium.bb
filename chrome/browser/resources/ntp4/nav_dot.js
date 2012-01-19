@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -92,10 +92,15 @@ cr.define('ntp4', function() {
     },
 
     /**
-     * Removes the dot from the page after transitioning to 0 width.
+     * Removes the dot from the page. If |opt_animate| is truthy, we first
+     * transition the element to 0 width.
+     * @param {boolean=} opt_animate Whether to animate the removal or not.
      */
-    animateRemove: function() {
-      this.classList.add('small');
+    remove: function(opt_animate) {
+      if (opt_animate)
+        this.classList.add('small');
+      else
+        this.parentNode.removeChild(this);
     },
 
     /**

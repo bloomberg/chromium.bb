@@ -305,8 +305,10 @@ void AppLauncherHandler::Observe(int type,
               content::Details<UnloadedExtensionInfo>(details)->reason ==
               extension_misc::UNLOAD_REASON_UNINSTALL));
       if (app_info.get()) {
+        scoped_ptr<base::FundamentalValue> from_page(
+            Value::CreateBooleanValue(!extension_id_prompting_.empty()));
         web_ui()->CallJavascriptFunction(
-            "ntp4.appRemoved", *app_info, *uninstall_value);
+            "ntp4.appRemoved", *app_info, *uninstall_value, *from_page);
       }
       break;
     }
@@ -314,7 +316,7 @@ void AppLauncherHandler::Observe(int type,
     // The promo may not load until a couple seconds after the first NTP view,
     // so we listen for the load notification and notify the NTP when ready.
     case chrome::NOTIFICATION_WEB_STORE_PROMO_LOADED:
-      // TODO(estade): try to get rid of this inefficient operation.
+      // TODO(estade): Try to get rid of this inefficient operation.
       HandleGetApps(NULL);
       break;
     case chrome::NOTIFICATION_PREF_CHANGED: {
@@ -329,7 +331,7 @@ void AppLauncherHandler::Observe(int type,
               crx_installer->profile())) {
         return;
       }
-      // Fall Through.
+      // Fall through.
     }
     case chrome::NOTIFICATION_EXTENSION_LOAD_ERROR: {
       attempted_bookmark_app_install_ = false;
@@ -842,6 +844,10 @@ void AppLauncherHandler::RegisterUserPrefs(PrefService* pref_service) {
                                  PrefService::UNSYNCABLE_PREF);
 }
 
+void AppLauncherHandler::CleanupAfterUninstall() {
+  extension_id_prompting_.clear();
+}
+
 // static
 void AppLauncherHandler::RecordWebStoreLaunch(bool promo_active) {
   UMA_HISTOGRAM_ENUMERATION(extension_misc::kAppLaunchHistogram,
@@ -927,12 +933,11 @@ void AppLauncherHandler::ExtensionUninstallAccepted() {
 
   extension_service_->UninstallExtension(extension_id_prompting_,
                                          false /* external_uninstall */, NULL);
-
-  extension_id_prompting_ = "";
+  CleanupAfterUninstall();
 }
 
 void AppLauncherHandler::ExtensionUninstallCanceled() {
-  extension_id_prompting_ = "";
+  CleanupAfterUninstall();
 }
 
 void AppLauncherHandler::InstallUIProceed() {
@@ -969,7 +974,7 @@ void AppLauncherHandler::InstallUIAbort(bool user_initiated) {
   ExtensionService::RecordPermissionMessagesHistogram(
       extension, histogram_name.c_str());
 
-  ExtensionUninstallCanceled();
+  CleanupAfterUninstall();
 }
 
 ExtensionUninstallDialog* AppLauncherHandler::GetExtensionUninstallDialog() {

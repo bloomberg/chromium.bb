@@ -167,10 +167,13 @@ cr.define('ntp4', function() {
           this.sliderFrame.offsetWidth);
       this.cardSlider.initialize();
 
-      // Handle the page being changed
-      this.pageList.addEventListener(
-          cr.ui.CardSlider.EventType.CARD_CHANGED,
-          this.cardChangedHandler_.bind(this));
+      // Handle events from the card slider.
+      this.pageList.addEventListener('cardSlider:card_changed',
+                                     this.onCardChanged_.bind(this));
+      this.pageList.addEventListener('cardSlider:card_added',
+                                     this.onCardAdded_.bind(this));
+      this.pageList.addEventListener('cardSlider:card_removed',
+                                     this.onCardRemoved_.bind(this));
 
       // Ensure the slider is resized appropriately with the window
       window.addEventListener('resize', this.onWindowResize_.bind(this));
@@ -194,8 +197,12 @@ cr.define('ntp4', function() {
      * the page list.
      */
     appendTilePage: function(page, title, titleIsEditable, opt_refNode) {
-      // When opt_refNode is falsey, insertBefore acts just like appendChild.
-      this.pageList.insertBefore(page, opt_refNode);
+      if (opt_refNode) {
+        var refIndex = this.getTilePageIndex(opt_refNode);
+        this.cardSlider.insertCardAtIndex(page, refIndex);
+      } else {
+        this.cardSlider.appendCard(page);
+      }
 
       // Remember special MostVisitedPage.
       if (typeof ntp4.MostVisitedPage != 'undefined' &&
@@ -227,15 +234,24 @@ cr.define('ntp4', function() {
      *     the app.
      * @param {boolean} isUninstall True if the app is being uninstalled;
      *     false if the app is being disabled.
+     * @param {boolean} fromPage True if the removal was from the current page.
      */
-    appRemoved: function(appData, isUninstall) {
+    appRemoved: function(appData, isUninstall, fromPage) {
       var app = $(appData.id);
       assert(app, 'trying to remove an app that doesn\'t exist');
 
       if (!isUninstall)
         app.replaceAppData(appData);
       else
-        app.remove();
+        app.remove(!!fromPage);
+    },
+
+    /**
+     * @return {boolean} If the page is still starting up.
+     * @private
+     */
+    isStartingUp_: function() {
+      return document.documentElement.classList.contains('starting-up');
     },
 
     /**
@@ -250,20 +266,22 @@ cr.define('ntp4', function() {
     getAppsCallback: function(data) {
       var startTime = Date.now();
 
+      // Remember this to select the correct card when done rebuilding.
+      var prevCurrentCard = this.cardSlider.currentCard;
+
+      // Make removal of pages and dots as quick as possible with less DOM
+      // operations, reflows, or repaints. We set currentCard = 0 and remove
+      // from the end to not encounter any auto-magic card selections in the
+      // process and we hide the card slider throughout.
+      this.cardSlider.currentCard = 0;
+
       // Clear any existing apps pages and dots.
       // TODO(rbyers): It might be nice to preserve animation of dots after an
       // uninstall. Could we re-use the existing page and dot elements?  It
       // seems unfortunate to have Chrome send us the entire apps list after an
       // uninstall.
-      while (this.appsPages.length > 0) {
-        var page = this.appsPages[0];
-        var dot = page.navigationDot;
-
-        this.eventTracker.remove(page);
-        page.tearDown();
-        page.parentNode.removeChild(page);
-        dot.parentNode.removeChild(dot);
-      }
+      while (this.appsPages.length > 0)
+        this.removeTilePageAndDot_(this.appsPages[this.appsPages.length - 1]);
 
       // Get the array of apps and add any special synthesized entries
       var apps = data.apps;
@@ -312,6 +330,8 @@ cr.define('ntp4', function() {
       }
 
       ntp4.AppsPage.setPromo(data.showPromo ? data : null);
+
+      this.cardSlider.currentCard = prevCurrentCard;
 
       // Tell the slider about the pages.
       this.updateSliderCards();
@@ -380,10 +400,10 @@ cr.define('ntp4', function() {
      * the Slider knows about the new elements.
      */
     updateSliderCards: function() {
-      var pageNo = Math.min(this.cardSlider.currentCard,
-                            this.tilePages.length - 1);
+      var pageNo = Math.max(0, Math.min(this.cardSlider.currentCard,
+                                        this.tilePages.length - 1));
       this.cardSlider.setCards(Array.prototype.slice.call(this.tilePages),
-                                                          pageNo);
+                               pageNo);
       switch (this.shownPage) {
         case templateData['apps_page_id']:
           this.cardSlider.selectCardByValue(
@@ -404,13 +424,8 @@ cr.define('ntp4', function() {
     enterRearrangeMode: function() {
       var tempPage = new ntp4.AppsPage();
       tempPage.classList.add('temporary');
-      this.appendTilePage(tempPage,
-                          localStrings.getString('appDefaultPageName'),
-                          true);
-      var tempIndex = Array.prototype.indexOf.call(this.tilePages, tempPage);
-      if (this.cardSlider.currentCard >= tempIndex)
-        this.cardSlider.currentCard += 1;
-      this.updateSliderCards();
+      var pageName = localStrings.getString('appDefaultPageName');
+      this.appendTilePage(tempPage, pageName, true);
 
       if (ntp4.getCurrentlyDraggingTile().firstChild.canBeRemoved())
         $('footer').classList.add('showing-trash-mode');
@@ -423,12 +438,7 @@ cr.define('ntp4', function() {
       var tempPage = document.querySelector('.tile-page.temporary');
       var dot = tempPage.navigationDot;
       if (!tempPage.tileCount && tempPage != this.cardSlider.currentCardValue) {
-        dot.animateRemove();
-        var tempIndex = Array.prototype.indexOf.call(this.tilePages, tempPage);
-        if (this.cardSlider.currentCard > tempIndex)
-          this.cardSlider.currentCard -= 1;
-        tempPage.parentNode.removeChild(tempPage);
-        this.updateSliderCards();
+        this.removeTilePageAndDot_(tempPage, true);
       } else {
         tempPage.classList.remove('temporary');
         this.saveAppPageName(tempPage,
@@ -499,16 +509,16 @@ cr.define('ntp4', function() {
     },
 
     /**
-     * Handler for CARD_CHANGED on cardSlider.
-     * @param {Event} e The CARD_CHANGED event.
+     * Handler for cardSlider:card_changed events from this.cardSlider.
+     * @param {Event} e The cardSlider:card_changed event.
      * @private
      */
-    cardChangedHandler_: function(e) {
+    onCardChanged_: function(e) {
       var page = e.cardSlider.currentCardValue;
 
       // Don't change shownPage until startup is done (and page changes actually
       // reflect user actions).
-      if (!document.documentElement.classList.contains('starting-up')) {
+      if (!this.isStartingUp_()) {
         if (page.classList.contains('apps-page')) {
           this.shownPage = templateData.apps_page_id;
           this.shownPageIndex = this.getAppsPageIndex(page);
@@ -529,10 +539,34 @@ cr.define('ntp4', function() {
       this.updatePageSwitchers();
     },
 
-    /*
-     * Save the name of an app page.
-     * Store the app page name into the preferences store.
-     * @param {AppsPage} appPage The app page for which we wish to save.
+    /**
+     * Listen for card additions to update the page switchers or the current
+     * card accordingly.
+     * @param {Event} e A card removed or added event.
+     */
+    onCardAdded_: function(e) {
+      // When the second arg passed to insertBefore is falsey, it acts just like
+      // appendChild.
+      this.pageList.insertBefore(e.addedCard, this.tilePages[e.addedIndex]);
+      if (!this.isStartingUp_())
+        this.updatePageSwitchers();
+    },
+
+    /**
+     * Listen for card removals to update the page switchers or the current card
+     * accordingly.
+     * @param {Event} e A card removed or added event.
+     */
+    onCardRemoved_: function(e) {
+      e.removedCard.parentNode.removeChild(e.removedCard);
+      if (!this.isStartingUp_())
+        this.updatePageSwitchers();
+    },
+
+    /**
+     * Save the name of an apps page.
+     * Store the apps page name into the preferences store.
+     * @param {AppsPage} appsPage The app page for which we wish to save.
      * @param {string} name The name of the page.
      */
     saveAppPageName: function(appPage, name) {
@@ -589,7 +623,28 @@ cr.define('ntp4', function() {
       this.cardSlider.selectCard(cardIndex, true);
 
       e.stopPropagation();
-    }
+    },
+
+    /**
+     * Returns the index of a given tile page.
+     * @param {TilePage} page The TilePage we wish to find.
+     * @return {number} The index of |page| or -1 if it is not in the
+     *    collection.
+     */
+    getTilePageIndex: function(page) {
+      return Array.prototype.indexOf.call(this.tilePages, page);
+    },
+
+    /**
+     * Removes a page and navigation dot (if the navdot exists).
+     * @param {TilePage} page The page to be removed.
+     * @param {boolean=} opt_animate If the removal should be animated.
+     */
+    removeTilePageAndDot_: function(page, opt_animate) {
+      if (page.navigationDot)
+        page.navigationDot.remove(opt_animate);
+      this.cardSlider.removeCard(page);
+    },
   };
 
   return {

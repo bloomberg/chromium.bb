@@ -200,7 +200,8 @@ cr.define('ntp4', function() {
           // previous class (currently: .placing) sets up a transition.
           // http://dev.w3.org/csswg/css3-transitions/#starting
           window.setTimeout(function() {
-            this.dragClone.classList.add('dropped-on-other-page');
+            if (this.dragClone)
+              this.dragClone.classList.add('dropped-on-other-page');
           }.bind(this), 0);
         }
       }
@@ -291,9 +292,13 @@ cr.define('ntp4', function() {
 
     /**
      * Called when an app is removed from Chrome. Animates its disappearance.
+     * @param {boolean=} opt_animate Whether the animation should be animated.
      */
-    doRemove: function() {
-      this.firstChild.classList.add('removing-tile-contents');
+    doRemove: function(opt_animate) {
+      if (opt_animate)
+        this.firstChild.classList.add('removing-tile-contents');
+      else
+        this.parentNode.removeChild(this);
     },
 
     /**
@@ -498,10 +503,25 @@ cr.define('ntp4', function() {
     },
 
     /**
+     * Removes the tilePage from the DOM and cleans up event handlers.
+     */
+    remove: function() {
+      // This checks arguments.length as most remove functions have a boolean
+      // |opt_animate| argument, but that's not necesarilly applicable to
+      // removing a tilePage. Selecting a different card in an animated way and
+      // deleting the card afterward is probably a better choice.
+      assert(typeof arguments[0] != 'boolean',
+             'This function takes no |opt_animate| argument.');
+      this.tearDown_();
+      this.parentNode.removeChild(this);
+    },
+
+    /**
      * Cleans up resources that are no longer needed after this TilePage
      * instance is removed from the DOM.
+     * @private
      */
-    tearDown: function() {
+    tearDown_: function() {
       this.eventTracker.removeAll();
     },
 
@@ -519,40 +539,78 @@ cr.define('ntp4', function() {
      * Adds the given element to the tile grid.
      * @param {Node} tileElement The tile object/node to insert.
      * @param {number} index The location in the tile grid to insert it at.
-     * @param {?boolean} animate If true, the tile in question will be animated
-     *     (other tiles, if they must reposition, do not animate).
+     * @param {boolean=} opt_animate If true, the tile in question will be
+     *     animated (other tiles, if they must reposition, do not animate).
      * @protected
      */
-    addTileAt: function(tileElement, index, animate) {
+    addTileAt: function(tileElement, index, opt_animate) {
       this.classList.remove('animating-tile-page');
-      if (animate)
+      if (opt_animate)
         tileElement.classList.add('new-tile-contents');
+
+      // Make sure the index is positive and either in the the bounds of
+      // this.tileElements_ or at the end (meaning append).
+      assert(index >= 0 && index <= this.tileElements_.length);
+
       var wrapperDiv = new Tile(tileElement);
-      if (index == this.tileElements_.length) {
-        this.tileGrid_.appendChild(wrapperDiv);
-      } else {
-        this.tileGrid_.insertBefore(wrapperDiv,
-                                    this.tileElements_[index]);
-      }
+      // If is out of the bounds of the tile element list, .insertBefore() will
+      // act just like appendChild().
+      this.tileGrid_.insertBefore(wrapperDiv, this.tileElements_[index]);
       this.calculateLayoutValues_();
       this.heightChanged_();
 
       this.positionTile_(index);
+      this.fireAddedEvent(wrapperDiv, index, !!opt_animate);
     },
 
     /**
-     * Removes the given tile and animates the respositioning of the other
-     * tiles.
-     * @param {HTMLElement} tile The tile to remove from |tileGrid_|.
-     * @param {?boolean} animate If true, remaining tiles will animate.
+     * Notify interested subscribers that a tile has been removed from this
+     * page.
+     * @param {Tile} tile The newly added tile.
+     * @param {number} index The index of the tile that was added.
+     * @param {boolean} wasAnimated Whether the removal was animated.
      */
-    removeTile: function(tile, animate) {
-      if (animate)
+    fireAddedEvent: function(tile, index, wasAnimated) {
+      var e = document.createEvent('Event');
+      e.initEvent('tilePage:tile_added', true, true);
+      e.addedIndex = index;
+      e.addedTile = tile;
+      e.wasAnimated = wasAnimated;
+      this.dispatchEvent(e);
+    },
+
+    /**
+     * Removes the given tile and animates the repositioning of the other tiles.
+     * @param {boolean=} opt_animate Whether the removal should be animated.
+     * @param {boolean=} opt_dontNotify Whether a page should be removed if the
+     *     last tile is removed from it.
+     */
+    removeTile: function(tile, opt_animate, opt_dontNotify) {
+      if (opt_animate)
         this.classList.add('animating-tile-page');
       var index = tile.index;
       tile.parentNode.removeChild(tile);
       this.calculateLayoutValues_();
       this.cleanupDrag();
+
+      if (!opt_dontNotify)
+        this.fireRemovedEvent(tile, index, !!opt_animate);
+    },
+
+    /**
+     * Notify interested subscribers that a tile has been removed from this
+     * page.
+     * @param {Tile} tile The tile that was removed.
+     * @param {number} oldIndex Where the tile was positioned before removal.
+     * @param {boolean} wasAnimated Whether the removal was animated.
+     */
+    fireRemovedEvent: function(tile, oldIndex, wasAnimated) {
+      var e = document.createEvent('Event');
+      e.initEvent('tilePage:tile_removed', true, true);
+      e.removedIndex = oldIndex;
+      e.removedTile = tile;
+      e.wasAnimated = wasAnimated;
+      this.dispatchEvent(e);
     },
 
     /**
@@ -1142,7 +1200,8 @@ cr.define('ntp4', function() {
         return;
 
       this.addDragData(null, this.tileElements_.length);
-      originalPage.cleanupDrag();
+      if (originalPage)
+        originalPage.cleanupDrag();
     },
 
     /**

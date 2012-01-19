@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -58,7 +58,7 @@ cr.define('cr.ui', function() {
      * @type {number}
      * @private
      */
-    this.currentCard_ = 0;
+    this.currentCard_ = -1;
 
     /**
      * @type {number}
@@ -72,15 +72,6 @@ cr.define('cr.ui', function() {
      */
     this.touchHandler_ = new cr.ui.TouchHandler(this.container_);
   }
-
-  /**
-   * Events fired by the slider.
-   * Events are fired at the container.
-   */
-  CardSlider.EventType = {
-    // Fired when the user slides to another card.
-    CARD_CHANGED: 'cardSlider:card_changed'
-  };
 
 
   /**
@@ -132,7 +123,7 @@ cr.define('cr.ui', function() {
       this.frame_.addEventListener('mousewheel',
                                    this.onMouseWheel_.bind(this));
       this.container_.addEventListener(
-          'webkitTransitionEnd', this.onAnimationTransitioned_.bind(this));
+          'webkitTransitionEnd', this.onWebkitTransitionEnd_.bind(this));
 
       // Also support touch events in case a touch screen happens to be
       // available.  Ideally we would support touch events whenever they
@@ -299,14 +290,134 @@ cr.define('cr.ui', function() {
     },
 
     /**
-     * A handler for the animations ending their transition.
+     * Handles the ends of -webkit-transitions on -webkit-transform (animated
+     * card switches).
+     * @param {Event} e The webkitTransitionEnd event.
      * @private
      */
-    onAnimationTransitioned_: function(event) {
-      if (event.target.id == 'page-list') {
-        cr.dispatchSimpleEvent(this.currentCardValue, 'cardSelectionCompleted',
-                               true, true);
+    onWebkitTransitionEnd_: function(e) {
+      // Ignore irrelevant transitions that might bubble up.
+      if (e.target !== this.container_ ||
+          e.propertyName != '-webkit-transform') {
+        return;
       }
+      this.fireChangeEndedEvent_(true);
+    },
+
+    /**
+     * Dispatches a simple event to tell subscribers we're done moving to the
+     * newly selected card.
+     * @param {boolean} wasAnimated whether or not the change was animated.
+     * @private
+     */
+    fireChangeEndedEvent_: function(wasAnimated) {
+      var e = document.createEvent('Event');
+      e.initEvent('cardSlider:card_change_ended', true, true);
+      e.cardSlider = this;
+      e.changedTo = this.currentCard_;
+      e.wasAnimated = wasAnimated;
+      this.container_.dispatchEvent(e);
+    },
+
+    /**
+     * Add a card to the card slider at a particular index. If the card being
+     * added is inserted in front of the current card, cardSlider.currentCard
+     * will be adjusted accordingly (to current card + 1).
+     * @param {!Node} card A card that will be added to the card slider.
+     * @param {number} index An index at which the given |card| should be
+     *     inserted. Must be positive and less than the number of cards.
+     */
+    addCardAtIndex: function(card, index) {
+      assert(card instanceof Node, '|card| isn\'t a Node');
+      this.assertValidIndex_(index);
+      this.cards_ = Array.prototype.concat.call(
+          this.cards_.slice(0, index), card, this.cards_.slice(index));
+
+      if (this.currentCard_ == -1)
+        this.currentCard_ = 0;
+      else if (index <= this.currentCard_)
+        this.selectCard(this.currentCard_ + 1, false, true);
+
+      this.fireAddedEvent_(card, index);
+    },
+
+    /**
+     * Append a card to the end of the list.
+     * @param {!Node} card A card to add at the end of the card slider.
+     */
+    appendCard: function(card) {
+      assert(card instanceof Node, '|card| isn\'t a Node');
+      this.cards_.push(card);
+      this.fireAddedEvent_(card, this.cards_.length - 1);
+    },
+
+    /**
+     * Dispatches a simple event to tell interested subscribers that a card was
+     * added to this card slider.
+     * @param {Node} card The recently added card.
+     * @param {number} index The position of the newly added card.
+     * @private
+     */
+    fireAddedEvent_: function(card, index) {
+      this.assertValidIndex_(index);
+      var e = document.createEvent('Event');
+      e.initEvent('cardSlider:card_added', true, true);
+      e.addedIndex = index;
+      e.addedCard = card;
+      this.container_.dispatchEvent(e);
+    },
+
+    /**
+     * Removes a card by index from the card slider. If the card to be removed
+     * is the current card or in front of the current card, the current card
+     * will be updated (to current card - 1).
+     * @param {!Node} card A card to be removed.
+     */
+    removeCard: function(card) {
+      assert(card instanceof Node, '|card| isn\'t a Node');
+      this.removeCardAtIndex(this.cards_.indexOf(card));
+    },
+
+    /**
+     * Removes a card by index from the card slider. If the card to be removed
+     * is the current card or in front of the current card, the current card
+     * will be updated (to current card - 1).
+     * @param {number} index The index of the tile that should be removed.
+     */
+    removeCardAtIndex: function(index) {
+      this.assertValidIndex_(index);
+      var removed = this.cards_.splice(index, 1).pop();
+
+      if (this.cards_.length == 0)
+        this.currentCard_ = -1;
+      else if (index < this.currentCard_)
+        this.selectCard(this.currentCard_ - 1, false, true);
+
+      this.fireRemovedEvent_(removed, index);
+    },
+
+    /**
+     * Dispatches a cardSlider:card_removed event so interested subscribers know
+     * when a card was removed from this card slider.
+     * @param {Node} card The recently removed card.
+     * @param {number} index The index of the card before it was removed.
+     * @private
+     */
+    fireRemovedEvent_: function(card, index) {
+      var e = document.createEvent('Event');
+      e.initEvent('cardSlider:card_removed', true, true);
+      e.removedCard = card;
+      e.removedIndex = index;
+      this.container_.dispatchEvent(e);
+    },
+
+    /**
+     * Checks the the given |index| exists in this.cards_.
+     * @param {number} index An index to check.
+     * @private
+     */
+    assertValidIndex_: function(index) {
+      assert(index >= 0 && index < this.cards_.length);
     },
 
     /**
@@ -315,27 +426,30 @@ cr.define('cr.ui', function() {
      * @param {number} newCardIndex Index of card to show.
      * @param {boolean=} opt_animate If true will animate transition from
      *     current position to new position.
+     * @param {boolean=} opt_dontNotify If true, don't tell subscribers that
+     *     we've changed cards.
      */
-    selectCard: function(newCardIndex, opt_animate) {
-      var previousCard = this.currentCardValue;
+    selectCard: function(newCardIndex, opt_animate, opt_dontNotify) {
+      this.assertValidIndex_(newCardIndex);
 
+      var previousCard = this.currentCardValue;
       var isChangingCard =
           !this.cards_[newCardIndex].classList.contains('selected-card');
 
       if (isChangingCard) {
-        previousCard.classList.remove('selected-card');
-        // If we have a new card index and it is valid then update the left
-        // position and current card index.
+        if (previousCard)
+          previousCard.classList.remove('selected-card');
         this.currentCard_ = newCardIndex;
         this.currentCardValue.classList.add('selected-card');
       }
 
-      this.transformToCurrentCard_(opt_animate);
+      var willTransitionHappen = this.transformToCurrentCard_(opt_animate);
 
-      if (isChangingCard) {
+      if (isChangingCard && !opt_dontNotify) {
         var event = document.createEvent('Event');
-        event.initEvent(CardSlider.EventType.CARD_CHANGED, true, true);
+        event.initEvent('cardSlider:card_changed', true, true);
         event.cardSlider = this;
+        event.wasAnimated = !!opt_animate;
         this.container_.dispatchEvent(event);
 
         // We also dispatch an event on the cards themselves.
@@ -345,6 +459,13 @@ cr.define('cr.ui', function() {
         }
         cr.dispatchSimpleEvent(this.currentCardValue, 'cardselected',
                                true, true);
+      }
+
+      // If we're not changing, animated, or transitioning, fire a
+      // cardSlider:card_change_ended event right away.
+      if ((!isChangingCard || !opt_animate || !willTransitionHappen) &&
+          !opt_dontNotify) {
+        this.fireChangeEndedEvent_(false);
       }
     },
 
@@ -364,12 +485,19 @@ cr.define('cr.ui', function() {
      * animate to that card or snap to it.
      * @param {boolean=} opt_animate If true will animate transition from
      *     current position to new position.
+     * @return {boolean} Whether or not a transformation was necessary.
      * @private
      */
     transformToCurrentCard_: function(opt_animate) {
+      var prevLeft = this.currentLeft_;
       this.currentLeft_ = -this.cardWidth_ *
           (isRTL() ? this.cards_.length - this.currentCard - 1 :
                      this.currentCard);
+
+      // If there's no change, return something to let the caller know there
+      // won't be a transition occuring.
+      if (prevLeft == this.currentLeft_)
+        return false;
 
       // Animate to the current card, which will either transition if the
       // current card is new, or reset the existing card if we didn't drag
@@ -381,6 +509,8 @@ cr.define('cr.ui', function() {
       }
       this.container_.style.WebkitTransition = transition;
       this.translateTo_(this.currentLeft_);
+
+      return true;
     },
 
     /**

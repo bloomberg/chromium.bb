@@ -277,11 +277,11 @@ cr.define('ntp4', function() {
      * Removes the app tile from the page. Should be called after the app has
      * been uninstalled.
      */
-    remove: function() {
+    remove: function(opt_animate) {
       // Unset the ID immediately, because the app is already gone. But leave
       // the tile on the page as it animates out.
       this.id = '';
-      this.tile.doRemove();
+      this.tile.doRemove(opt_animate);
     },
 
     /**
@@ -650,8 +650,10 @@ cr.define('ntp4', function() {
       // the app notification bubbles when the app card slides in and out of
       // view.
       this.addEventListener('carddeselected', this.onCardDeselected_);
-      this.addEventListener('cardSelectionCompleted',
-                            this.onCardSelectionCompleted_);
+      this.addEventListener('cardSlider:card_change_ended',
+                            this.onCardChangeEnded_);
+
+      this.addEventListener('tilePage:tile_added', this.onTileAdded_);
 
       this.content_.addEventListener('scroll', this.onScroll_.bind(this));
     },
@@ -669,10 +671,7 @@ cr.define('ntp4', function() {
         ntp4.getCardSlider().selectCardByValue(this);
         this.content_.scrollTop = this.content_.scrollHeight;
       }
-      var app = new App(appData);
-      if (this.classList.contains('selected-card'))
-        app.loadIcon();
-      this.appendTile(app, animate);
+      this.appendTile(new App(appData), animate);
     },
 
     /**
@@ -690,11 +689,23 @@ cr.define('ntp4', function() {
     },
 
     /**
-     * Handler for the 'cardSelectionCompleted' event, fired when the app card
-     * is done transitioning into view (and all the apps have repositioned).
+     * Handler for tile additions to this page.
+     * @param {Event} e The tilePage:tile_added event.
+     */
+    onTileAdded_: function(e) {
+      assert(e.currentTarget == this);
+      assert(e.addedTile.firstChild instanceof App);
+      if (this.classList.contains('selected-card'))
+        e.addedTile.firstChild.loadIcon();
+    },
+
+    /**
+     * Handler for the when this.cardSlider ends change its card. If animated,
+     * this happens when the -webkit-transition is done, otherwise happens
+     * immediately (but after cardSlider:card_changed).
      * @private
      */
-    onCardSelectionCompleted_: function(e) {
+    onCardChangeEnded_: function(e) {
       for (var i = 0; i < this.tileElements_.length; i++) {
         var app = this.tileElements_[i].firstChild;
         assert(app instanceof App);
@@ -758,12 +769,17 @@ cr.define('ntp4', function() {
       if (currentlyDraggingTile) {
         var tileContents = currentlyDraggingTile.firstChild;
         if (tileContents.classList.contains('app')) {
-          sourceId = currentlyDraggingTile.tilePage == this ?
-              DRAG_SOURCE.SAME_APPS_PANE : DRAG_SOURCE.OTHER_APPS_PANE;
-          this.tileGrid_.insertBefore(
-              currentlyDraggingTile,
-              this.tileElements_[index]);
+          var originalPage = currentlyDraggingTile.tilePage;
+          var samePageDrag = originalPage == this;
+          sourceId = samePageDrag ? DRAG_SOURCE.SAME_APPS_PANE :
+                                    DRAG_SOURCE.OTHER_APPS_PANE;
+          this.tileGrid_.insertBefore(currentlyDraggingTile,
+                                      this.tileElements_[index]);
           this.tileMoved(currentlyDraggingTile);
+          if (!samePageDrag) {
+            originalPage.fireRemovedEvent(currentlyDraggingTile, index, true);
+            this.fireAddedEvent(currentlyDraggingTile, index, true);
+          }
         } else if (currentlyDraggingTile.querySelector('.most-visited')) {
           this.generateAppForLink(tileContents.data);
           sourceId = DRAG_SOURCE.MOST_VISITED_PANE;
