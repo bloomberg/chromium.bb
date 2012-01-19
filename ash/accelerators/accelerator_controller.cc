@@ -162,8 +162,8 @@ bool AcceleratorController::Process(const ui::Accelerator& accelerator) {
 }
 
 void AcceleratorController::SetScreenshotDelegate(
-    ScreenshotDelegate* screenshot_delegate) {
-  screenshot_delegate_.reset(screenshot_delegate);
+    scoped_ptr<ScreenshotDelegate> screenshot_delegate) {
+  screenshot_delegate_.swap(screenshot_delegate);
 }
 
 void AcceleratorController::SetCapsLockDelegate(

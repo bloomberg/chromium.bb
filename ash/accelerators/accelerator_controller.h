@@ -56,7 +56,8 @@ class ASH_EXPORT AcceleratorController : public ui::AcceleratorTarget {
   virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;
   virtual bool CanHandleAccelerators() const OVERRIDE;
 
-  void SetScreenshotDelegate(ScreenshotDelegate* screenshot_delegate);
+  void SetScreenshotDelegate(
+      scoped_ptr<ScreenshotDelegate> screenshot_delegate);
   void SetCapsLockDelegate(scoped_ptr<CapsLockDelegate> caps_lock_delegate);
 
  private:

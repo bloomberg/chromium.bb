@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -43,8 +43,8 @@ void ChromeBrowserMainExtraPartsAura::PreProfileInit() {
 
   // Shell takes ownership of ChromeShellDelegate.
   ash::Shell* shell = ash::Shell::CreateInstance(new ChromeShellDelegate);
-  // AcceleratorController takes ownership of ScreenshotDelegate.
-  shell->accelerator_controller()->SetScreenshotDelegate(new ScreenshotTaker);
+  shell->accelerator_controller()->SetScreenshotDelegate(
+      scoped_ptr<ash::ScreenshotDelegate>(new ScreenshotTaker).Pass());
 
   // Make sure the singleton ScreenOrientationListener object is created.
   ScreenOrientationListener::GetInstance();

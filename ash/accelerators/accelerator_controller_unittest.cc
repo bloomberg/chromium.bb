@@ -279,7 +279,8 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
     EXPECT_TRUE(GetController()->Process(
         ui::Accelerator(ui::VKEY_PRINT, false, false, false)));
     DummyScreenshotDelegate* delegate = new DummyScreenshotDelegate;
-    GetController()->SetScreenshotDelegate(delegate);
+    GetController()->SetScreenshotDelegate(
+        scoped_ptr<ScreenshotDelegate>(delegate).Pass());
     EXPECT_EQ(0, delegate->handle_take_screenshot_count());
     EXPECT_TRUE(GetController()->Process(
         ui::Accelerator(ui::VKEY_F5, false, true, false)));
