@@ -296,6 +296,8 @@ class RootWindowHostLinux : public RootWindowHost,
   virtual void SetCursor(gfx::NativeCursor cursor_type) OVERRIDE;
   virtual void ShowCursor(bool show) OVERRIDE;
   virtual gfx::Point QueryMouseLocation() OVERRIDE;
+  virtual bool ConfineCursorToRootWindow() OVERRIDE;
+  virtual void UnConfineCursor() OVERRIDE;
   virtual void MoveCursorTo(const gfx::Point& location) OVERRIDE;
   virtual void PostNativeEvent(const base::NativeEvent& event) OVERRIDE;
 
@@ -630,6 +632,22 @@ gfx::Point RootWindowHostLinux::QueryMouseLocation() {
                 &mask_return);
   return gfx::Point(max(0, min(bounds_.width(), win_x_return)),
                     max(0, min(bounds_.height(), win_y_return)));
+}
+
+bool RootWindowHostLinux::ConfineCursorToRootWindow() {
+  return XGrabPointer(xdisplay_,
+                      xwindow_,  // grab_window
+                      False,  // owner_events
+                      ButtonPressMask | ButtonReleaseMask | PointerMotionMask,
+                      GrabModeAsync,
+                      GrabModeAsync,
+                      xwindow_,  // confine_to
+                      None,  // cursor
+                      CurrentTime) == GrabSuccess;
+}
+
+void RootWindowHostLinux::UnConfineCursor() {
+  XUngrabPointer(xdisplay_, CurrentTime);
 }
 
 void RootWindowHostLinux::MoveCursorTo(const gfx::Point& location) {

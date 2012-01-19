@@ -120,6 +120,14 @@ void RootWindow::MoveCursorTo(const gfx::Point& location) {
   host_->MoveCursorTo(location);
 }
 
+bool RootWindow::ConfineCursorToWindow() {
+  // We would like to be able to confine the cursor to that window. However,
+  // currently, we do not have such functionality in X. So we just confine
+  // to the root window. This is ok because this option is currently only
+  // being used in fullscreen mode, so root_window bounds = window bounds.
+  return host_->ConfineCursorToRootWindow();
+}
+
 void RootWindow::Run() {
   ShowRootWindow();
   MessageLoopForUI::current()->Run();
@@ -345,6 +353,8 @@ void RootWindow::SetCapture(Window* window) {
     touch_event_handler_ = NULL;
     mouse_moved_handler_ = NULL;
     gesture_handler_ = NULL;
+
+    host_->UnConfineCursor();
   }
   mouse_pressed_handler_ = NULL;
 }

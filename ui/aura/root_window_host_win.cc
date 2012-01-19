@@ -236,6 +236,16 @@ gfx::Point RootWindowHostWin::QueryMouseLocation() {
                     max(0, min(size.height(), static_cast<int>(pt.y))));
 }
 
+bool RootWindowHostWin::ConfineCursorToRootWindow() {
+  RECT window_rect;
+  GetWindowRect(hwnd(), &window_rect);
+  return ClipCursor(&window_rect) != 0;
+}
+
+void RootWindowHostWin::UnConfineCursor() {
+  ClipCursor(NULL);
+}
+
 void RootWindowHostWin::MoveCursorTo(const gfx::Point& location) {
   POINT pt;
   ClientToScreen(hwnd(), &pt);

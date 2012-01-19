@@ -81,6 +81,11 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   // Moves the cursor to the specified location relative to the root window.
   void MoveCursorTo(const gfx::Point& location);
 
+  // Clips the cursor movement to |capture_window_|. Should be invoked only
+  // after SetCapture(). ReleaseCapture() implicitly removes any confines set
+  // using this function. Returns true if successful.
+  bool ConfineCursorToWindow();
+
   // Shows the root window host and runs an event loop for it.
   void Run();
 

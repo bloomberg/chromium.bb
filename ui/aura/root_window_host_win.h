@@ -31,6 +31,8 @@ class RootWindowHostWin : public RootWindowHost, public ui::WindowImpl {
   virtual void SetCursor(gfx::NativeCursor cursor) OVERRIDE;
   virtual void ShowCursor(bool show) OVERRIDE;
   virtual gfx::Point QueryMouseLocation() OVERRIDE;
+  virtual bool ConfineCursorToRootWindow() OVERRIDE;
+  virtual void UnConfineCursor() OVERRIDE;
   virtual void MoveCursorTo(const gfx::Point& location) OVERRIDE;
   virtual void PostNativeEvent(const base::NativeEvent& native_event) OVERRIDE;
 

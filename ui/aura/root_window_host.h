@@ -72,6 +72,10 @@ class RootWindowHost : public MessageLoop::Dispatcher {
   // method can be expensive.
   virtual gfx::Point QueryMouseLocation() = 0;
 
+  // Clips the cursor to the bounds of the root window until UnConfineCursor().
+  virtual bool ConfineCursorToRootWindow() = 0;
+  virtual void UnConfineCursor() = 0;
+
   // Moves the cursor to the specified location relative to the root window.
   virtual void MoveCursorTo(const gfx::Point& location) = 0;
 
