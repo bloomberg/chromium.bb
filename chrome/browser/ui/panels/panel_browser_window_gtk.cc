@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/gtk/browser_titlebar.h"
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_bounds_animation.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
@@ -485,6 +486,8 @@ void PanelBrowserWindowGtk::DidProcessEvent(GdkEvent* event) {
 }
 
 void PanelBrowserWindowGtk::AnimationEnded(const ui::Animation* animation) {
+  titlebar()->SendEnterNotifyToCloseButtonIfUnderMouse();
+
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_PANEL_BOUNDS_ANIMATIONS_FINISHED,
       content::Source<Panel>(panel_.get()),

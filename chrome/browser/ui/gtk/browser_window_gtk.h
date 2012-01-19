@@ -229,6 +229,8 @@ class BrowserWindowGtk : public BrowserWindow,
 
   GtkWindow* window() const { return window_; }
 
+  BrowserTitlebar* titlebar() const { return titlebar_.get(); }
+
   GtkWidget* titlebar_widget() const;
 
   BrowserToolbarGtk* GetToolbar() { return toolbar_.get(); }

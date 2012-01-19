@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -172,8 +172,8 @@ class CustomDrawButton : public content::NotificationObserver {
 
   GtkWidget* widget() const { return widget_.get(); }
 
-  // Returns the width of the widget's allocation.
-  int WidgetWidth() const;
+  // Returns the widget's allocation.
+  GtkAllocation WidgetAllocation() const;
 
   // Returns the dimensions of the first surface.
   int SurfaceWidth() const;

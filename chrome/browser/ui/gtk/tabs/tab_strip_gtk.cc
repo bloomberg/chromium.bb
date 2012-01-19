@@ -1463,7 +1463,7 @@ void TabStripGtk::LayoutNewTabButton(double last_tab_right,
     // We're shrinking tabs, so we need to anchor the New Tab button to the
     // right edge of the TabStrip's bounds, rather than the right edge of the
     // right-most Tab, otherwise it'll bounce when animating.
-    bounds.set_x(bounds_.width() - newtab_button_->WidgetWidth());
+    bounds.set_x(bounds_.width() - newtab_button_->WidgetAllocation().width);
   } else {
     bounds.set_x(Round(last_tab_right - kTabHOffset) + kNewTabButtonHOffset);
   }
@@ -1500,7 +1500,7 @@ void TabStripGtk::GetDesiredTabWidths(int tab_count,
   if (available_width_for_tabs_ < 0) {
     available_width = bounds_.width();
     available_width -=
-        (kNewTabButtonHOffset + newtab_button_->WidgetWidth());
+        (kNewTabButtonHOffset + newtab_button_->WidgetAllocation().width);
   } else {
     // Interesting corner case: if |available_width_for_tabs_| > the result
     // of the calculation in the conditional arm above, the strip is in

@@ -302,10 +302,10 @@ void CustomDrawButton::Observe(int type,
   SetBrowserTheme();
 }
 
-int CustomDrawButton::WidgetWidth() const {
+GtkAllocation CustomDrawButton::WidgetAllocation() const {
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget_.get(), &allocation);
-  return allocation.width;
+  return allocation;
 }
 
 int CustomDrawButton::SurfaceWidth() const {

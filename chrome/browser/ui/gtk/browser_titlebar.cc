@@ -970,6 +970,43 @@ void BrowserTitlebar::ShowContextMenu(GdkEventButton* event) {
                                 event->time);
 }
 
+void BrowserTitlebar::SendEnterNotifyToCloseButtonIfUnderMouse() {
+  gint x;
+  gint y;
+  GtkAllocation widget_allocation = close_button_->WidgetAllocation();
+  gtk_widget_get_pointer(GTK_WIDGET(close_button_->widget()), &x, &y);
+
+  gfx::Rect button_rect(0, 0, widget_allocation.width,
+                        widget_allocation.height);
+  if (!button_rect.Contains(x, y)) {
+    // Mouse is not over the close button.
+    return;
+  }
+
+  // Create and emit an enter-notify-event on close button.
+  GValue return_value;
+  return_value.g_type = G_TYPE_BOOLEAN;
+  g_value_set_boolean(&return_value, false);
+
+  GdkEvent* event = gdk_event_new(GDK_ENTER_NOTIFY);
+  event->crossing.window = GTK_BUTTON(close_button_->widget())->event_window;
+  event->crossing.send_event = FALSE;
+  event->crossing.subwindow = close_button_->widget()->window;
+  event->crossing.time = gtk_util::XTimeNow();
+  event->crossing.x = x;
+  event->crossing.y = y;
+  event->crossing.x_root = widget_allocation.x;
+  event->crossing.y_root = widget_allocation.y;
+  event->crossing.mode = GDK_CROSSING_NORMAL;
+  event->crossing.detail = GDK_NOTIFY_ANCESTOR;
+  event->crossing.focus = true;
+  event->crossing.state = 0;
+
+  g_signal_emit_by_name(GTK_OBJECT(close_button_->widget()),
+                        "enter-notify-event", event,
+                        &return_value);
+}
+
 bool BrowserTitlebar::IsCommandIdEnabled(int command_id) const {
   if (command_id == kShowWindowDecorationsCommand)
     return true;
