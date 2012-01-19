@@ -14,6 +14,7 @@
 #include <stdio.h>
 #include <assert.h>
 
+#include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/validator/x86/decoder/nc_inst_state.h"
 #include "native_client/src/trusted/validator/x86/decoder/nc_inst_state_internal.h"
@@ -703,8 +704,8 @@ static INLINE void NaClInitializeDisplacement(
 }
 
 /* Extract the binary value from the specified bytes of the instruction. */
-uint64_t NaClExtractUnsignedBinaryValue(NaClInstState* state,
-                                        int start_byte, int num_bytes) {
+static uint64_t NaClExtractUnsignedBinaryValue(NaClInstState* state,
+                                               int start_byte, int num_bytes) {
   int i;
   uint64_t value = 0;
   for (i = 0; i < num_bytes; ++i) {
@@ -714,15 +715,21 @@ uint64_t NaClExtractUnsignedBinaryValue(NaClInstState* state,
   return value;
 }
 
-int64_t NaClExtractSignedBinaryValue(NaClInstState* state,
-                                     int start_byte, int num_bytes) {
-  int i;
-  int64_t value = 0;
-  for (i = 0; i < num_bytes; ++i) {
-    uint8_t byte = state->bytes.byte[start_byte + i];
-    value |= (((uint64_t) byte) << (i * 8));
+static int64_t NaClExtractSignedBinaryValue(NaClInstState* state,
+                                            int start_byte, int num_bytes) {
+  /* Assumes little endian. */
+  uint8_t* address = &state->bytes.byte[start_byte];
+  switch (num_bytes) {
+    case 1:
+      return *(int8_t*) address;
+    case 2:
+      return *(int16_t*) address;
+    case 4:
+      return *(int32_t*) address;
+    default:
+      CHECK(0);
+      return -1;
   }
-  return value;
 }
 
 /* Given the number of bytes for a literal constant, return the corresponding
@@ -909,28 +916,16 @@ static NaClExp* NaClAppendMemoryOffsetImmed(NaClInstState* state) {
  * between the PC and the immedaite value of the instruction.
  */
 static NaClExp* NaClAppendRelativeImmed(NaClInstState* state) {
-  NaClPcNumber next_pc = (NaClPcNumber) state->vpc + state->bytes.length;
-  NaClPcNumber val = (NaClPcNumber) NaClExtractSignedImmediate(state);
+  /* The types have been carefully chosen so the 32-bit version of ncdis
+   * behaves correctly.  The address must be unsigned, the offset signed, and
+   * both must match the size of the address space being validated.
+   */
+  NaClPcAddress next_pc = state->vpc + state->bytes.length;
+  NaClPcNumber jump_offset = (NaClPcNumber) NaClExtractSignedImmediate(state);
 
   DEBUG(NaClLog(LOG_INFO, "append relative immediate\n"));
 
-  /* Sign extend value */
-  switch (state->num_imm_bytes) {
-    case 1:
-      val = next_pc + (int8_t) val;
-      break;
-    case 2:
-      val = next_pc + (int16_t) val;
-      break;
-    case 4:
-      val = next_pc + (int32_t) val;
-      break;
-    default:
-      assert(0);
-      break;
-  }
-
-  return NaClAppendConst(val,
+  return NaClAppendConst(next_pc + jump_offset,
                          NACL_EFLAG(ExprUnsignedHex) |
                          NACL_EFLAG(ExprJumpTarget),
                          &state->nodes);

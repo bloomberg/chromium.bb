@@ -1,9 +1,9 @@
 80000000: 55                                           push %ebp
 80000001: 89 e5                                        mov %ebp, %esp
 80000003: 83 ec 08                                     sub %esp, 0x8
-80000006: e8 81 00 00 00                               call 0xffffffff8000008c
-8000000b: e8 d3 00 00 00                               call 0xffffffff800000e3
-80000010: e8 f3 04 00 00                               call 0xffffffff80000508
+80000006: e8 81 00 00 00                               call 0x8000008c
+8000000b: e8 d3 00 00 00                               call 0x800000e3
+80000010: e8 f3 04 00 00                               call 0x80000508
 80000015: c9                                           leave
 80000016: c3                                           ret
 80000017: 00 00                                        add %ds:[%eax], %al
