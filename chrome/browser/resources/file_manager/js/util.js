@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -345,7 +345,7 @@ var util = {
       var rounded = Math.round(bytes / s * 10) / 10;
       // TODO(rginda): Switch to v8Locale's number formatter when it's
       // available.
-      return rounded.toLocaleString() + u;
+      return rounded.toLocaleString() + ' ' + u;
     }
 
     // This loop index is used outside the loop if it turns out |bytes|

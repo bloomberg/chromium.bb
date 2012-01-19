@@ -474,20 +474,24 @@ DirectoryModel.prototype = {
 
     function onLeafError(baseDirEntry, err) {
       callBack();
-      if (err = FileError.NOT_FOUND_ERR) {
-        // Leaf does not exist, it's just a suggested file name.
-        this.changeDirectoryEntry_(baseDirEntry, autoSelect);
-      } else {
+      // Usually, leaf does not exist, because it's just a suggested file name.
+      if (err != FileError.NOT_FOUND_ERR)
         console.log('Unexpected error resolving default leaf: ' + err);
-        this.changeDirectoryEntry_(this.root_, autoSelect, true);
-      }
+      this.changeDirectoryEntry_(baseDirEntry, autoSelect, true);
     }
 
     var onBaseError = function(err) {
       callBack();
       console.log('Unexpected error resolving default base "' +
                   baseName + '": ' + err);
-      this.changeDirectory('/', undefined, true);
+      if (path != '/' + DirectoryModel.DOWNLOADS_DIRECTORY) {
+        // Can't find the provided path, let's go to default one instead.
+        this.setupDefaultPath();
+      } else {
+        // Well, we can't find the downloads dir. Let's just show something,
+        // or we will get an infinite recursion.
+        this.changeDirectory('/', undefined, true);
+      }
     }.bind(this);
 
     var onBaseFound = function(baseDirEntry) {
@@ -713,3 +717,8 @@ DirectoryModel.getRootType = function(path) {
   return '';
 };
 
+DirectoryModel.isRootPath = function(path) {
+  if (path[path.length - 1] == '/')
+    path = path.substring(0, path.length - 1);
+  return DirectoryModel.getRootPath(path) == path;
+};

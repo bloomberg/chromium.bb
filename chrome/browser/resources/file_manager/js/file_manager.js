@@ -440,6 +440,13 @@ FileManager.prototype = {
     FULL_PAGE: 'full-page'
   };
 
+  FileManager.DialogType.isModal = function(type) {
+    return type == FileManager.DialogType.SELECT_FOLDER ||
+        type == FileManager.DialogType.SELECT_SAVEAS_FILE ||
+        type == FileManager.DialogType.SELECT_OPEN_FILE ||
+        type == FileManager.DialogType.SELECT_OPEN_MULTI_FILE;
+  };
+
   FileManager.ListType = {
     DETAIL: 'detail',
     THUMBNAIL: 'thumb'
@@ -731,12 +738,15 @@ FileManager.prototype = {
     this.directoryModel_.cacheEntryIconType =
         this.cacheEntryIconType.bind(this);
 
-
     this.initTable_();
     this.initGrid_();
     this.initRootsList_();
 
-    this.setListType(FileManager.ListType.DETAIL);
+    var listType = FileManager.ListType.DETAIL;
+    if (FileManager.DialogType.isModal(this.dialogType_))
+      listType = window.localStorage['listType-' + this.dialogType_] ||
+          FileManager.ListType.DETAIL;
+    this.setListType(listType);
 
     this.textSearchState_ = {text: '', date: new Date()};
   };
@@ -1101,6 +1111,9 @@ FileManager.prototype = {
   FileManager.prototype.setListType = function(type) {
     if (type && type == this.listType_)
       return;
+
+    if (FileManager.DialogType.isModal(this.dialogType_))
+      window.localStorage['listType-' + this.dialogType_] = type;
 
     this.table_.list.startBatchUpdates();
     this.grid_.startBatchUpdates();
@@ -2594,9 +2607,9 @@ FileManager.prototype = {
     if (selection.totalCount == 0) {
       text = str('NOTHING_SELECTED');
     } else if (selection.fileCount == 1 && selection.directoryCount == 0) {
-      text = strf('ONE_FILE_SELECTED', bytes);
+      text = selection.entries[0].name + ', ' + bytes;
     } else if (selection.fileCount == 0 && selection.directoryCount == 1) {
-      text = str('ONE_DIRECTORY_SELECTED');
+      text = selection.entries[0].name;
     } else if (selection.directoryCount == 0) {
       text = strf('MANY_FILES_SELECTED', selection.fileCount, bytes);
     } else if (selection.fileCount == 0) {
@@ -3193,15 +3206,13 @@ FileManager.prototype = {
       return;
     }
 
-    //console.log(event.keyCode);
-
     switch (event.keyCode) {
       case 8:  // Backspace => Up one directory.
         event.preventDefault();
         var path = this.getCurrentDirectory();
-        if (path && path != '/') {
+        if (path && !DirectoryModel.isRootPath(path)) {
           var path = path.replace(/\/[^\/]+$/, '');
-          this.directoryModel_.changeDirectory(path || '/');
+          this.directoryModel_.changeDirectory(path);
         }
         break;
 
