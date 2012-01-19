@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -172,7 +172,9 @@ bool IsOrganic(const std::string& brand) {
       "CHMG", "CHMH", "CHMI", "CHMQ", "CHMV", "CHNB", "CHNC", "CHNG",
       "CHNH", "CHNI", "CHOA", "CHOB", "CHOC", "CHON", "CHOO", "CHOP",
       "CHOQ", "CHOR", "CHOS", "CHOT", "CHOU", "CHOX", "CHOY", "CHOZ",
-      "CHPD", "CHPE", "CHPF", "CHPG", "EUBB", "EUBC", "GGLA", "GGLS"
+      "CHPD", "CHPE", "CHPF", "CHPG", "ECBA", "ECBB", "ECDA", "ECDB",
+      "ECSA", "ECSB", "ECVA", "ECVB", "ECWA", "ECWB", "ECWC", "ECWD",
+      "ECWE", "ECWF", "EUBB", "EUBC", "GGLA", "GGLS"
   };
   const char* const* end = &kBrands[arraysize(kBrands)];
   const char* const* found = std::find(&kBrands[0], end, brand);
