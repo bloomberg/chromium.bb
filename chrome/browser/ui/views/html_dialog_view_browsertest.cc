@@ -32,8 +32,10 @@ const int kInitialHeight = 40;
 
 class TestHtmlDialogView: public HtmlDialogView {
  public:
-  TestHtmlDialogView(Profile* profile, HtmlDialogUIDelegate* delegate)
-      : HtmlDialogView(profile, delegate),
+  TestHtmlDialogView(Profile* profile,
+                     Browser* browser,
+                     HtmlDialogUIDelegate* delegate)
+      : HtmlDialogView(profile, browser, delegate),
         painted_(false),
         should_quit_on_size_change_(false) {
     delegate->GetDialogSize(&last_size_);
@@ -107,7 +109,7 @@ IN_PROC_BROWSER_TEST_F(HtmlDialogBrowserTest, MAYBE_SizeWindow) {
   delegate->set_size(kInitialWidth, kInitialHeight);
 
   TestHtmlDialogView* html_view =
-      new TestHtmlDialogView(browser()->profile(), delegate);
+      new TestHtmlDialogView(browser()->profile(), browser(), delegate);
   WebContents* web_contents = browser()->GetSelectedWebContents();
   ASSERT_TRUE(web_contents != NULL);
   views::Widget::CreateWindowWithParent(
@@ -188,7 +190,7 @@ IN_PROC_BROWSER_TEST_F(HtmlDialogBrowserTest, DISABLED_WebContentRendered) {
       GURL(chrome::kChromeUIChromeURLsURL));
 
   TestHtmlDialogView* html_view =
-      new TestHtmlDialogView(browser()->profile(), delegate);
+      new TestHtmlDialogView(browser()->profile(), browser(), delegate);
   WebContents* web_contents = browser()->GetSelectedWebContents();
   ASSERT_TRUE(web_contents != NULL);
   views::Widget::CreateWindowWithParent(

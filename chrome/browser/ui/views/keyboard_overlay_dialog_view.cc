@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -37,7 +37,7 @@ KeyboardOverlayDialogView::KeyboardOverlayDialogView(
     Profile* profile,
     HtmlDialogUIDelegate* delegate,
     BrowserView* parent_view)
-    : HtmlDialogView(profile, delegate),
+    : HtmlDialogView(profile, NULL, delegate),
       parent_view_(parent_view) {
 }
 

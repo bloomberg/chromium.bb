@@ -9,11 +9,13 @@
 #include "base/property_bag.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser.h"
 #import "chrome/browser/ui/browser_dialogs.h"
 #import "chrome/browser/ui/cocoa/browser_command_executor.h"
 #import "chrome/browser/ui/cocoa/chrome_event_processing_window.h"
 #include "chrome/browser/ui/dialog_style.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/webui/html_dialog_controller.h"
 #include "chrome/browser/ui/webui/html_dialog_tab_contents_delegate.h"
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
 #include "content/public/browser/native_web_keyboard_event.h"
@@ -33,6 +35,7 @@ public:
   // All parameters must be non-NULL/non-nil.
   HtmlDialogWindowDelegateBridge(HtmlDialogWindowController* controller,
                                  Profile* profile,
+                                 Browser* browser,
                                  HtmlDialogUIDelegate* delegate);
 
   virtual ~HtmlDialogWindowDelegateBridge();
@@ -62,6 +65,7 @@ public:
 private:
   HtmlDialogWindowController* controller_;  // weak
   HtmlDialogUIDelegate* delegate_;  // weak, owned by controller_
+  HtmlDialogController* dialog_controller_;
 
   // Calls delegate_'s OnDialogClosed() exactly once, nulling it out
   // afterwards so that no other HtmlDialogUIDelegate calls are sent
@@ -85,28 +89,25 @@ namespace browser {
 
 gfx::NativeWindow ShowHtmlDialog(gfx::NativeWindow parent,
                                  Profile* profile,
+                                 Browser* browser,
                                  HtmlDialogUIDelegate* delegate,
                                  DialogStyle style) {
-  // It's not always safe to display an html dialog with an off the record
-  // profile.  If the last browser with that profile is closed it will go
-  // away.
-  // On most platforms we insist on the dialog being modal if we're off the
-  // record to prevent that.  That wont work on the Mac since we don't have
-  // modal dialogs.
-  // Fall back to the old (incorrect) behavior of grabbing the original
-  // profile.
-  // NOTE: Use the parent parameter once we implement modal dialogs.
   return [HtmlDialogWindowController showHtmlDialog:delegate
-      profile:profile->GetOriginalProfile()];
+      profile:profile
+      browser:browser];
 }
 
 }  // namespace html_dialog_window_controller
 
 HtmlDialogWindowDelegateBridge::HtmlDialogWindowDelegateBridge(
-    HtmlDialogWindowController* controller, Profile* profile,
+    HtmlDialogWindowController* controller,
+    Profile* profile,
+    Browser* browser,
     HtmlDialogUIDelegate* delegate)
     : HtmlDialogTabContentsDelegate(profile),
-      controller_(controller), delegate_(delegate) {
+      controller_(controller),
+      delegate_(delegate),
+      dialog_controller_(new HtmlDialogController(this, profile, browser)) {
   DCHECK(controller_);
   DCHECK(delegate_);
 }
@@ -115,6 +116,7 @@ HtmlDialogWindowDelegateBridge::~HtmlDialogWindowDelegateBridge() {}
 
 void HtmlDialogWindowDelegateBridge::WindowControllerClosed() {
   Detach();
+  delete dialog_controller_;
   controller_ = nil;
   DelegateOnDialogClosed("");
 }
@@ -250,17 +252,20 @@ void HtmlDialogWindowDelegateBridge::HandleKeyboardEvent(
 // in once we implement modal dialogs.
 
 + (NSWindow*)showHtmlDialog:(HtmlDialogUIDelegate*)delegate
-                    profile:(Profile*)profile {
+                    profile:(Profile*)profile
+                    browser:(Browser*)browser {
   HtmlDialogWindowController* htmlDialogWindowController =
     [[HtmlDialogWindowController alloc] initWithDelegate:delegate
-                                                 profile:profile];
+                                                 profile:profile
+                                                 browser:browser];
   [htmlDialogWindowController loadDialogContents];
   [htmlDialogWindowController showWindow:nil];
   return [htmlDialogWindowController window];
 }
 
 - (id)initWithDelegate:(HtmlDialogUIDelegate*)delegate
-               profile:(Profile*)profile {
+               profile:(Profile*)profile
+               browser:(Browser*)browser {
   DCHECK(delegate);
   DCHECK(profile);
 
@@ -287,7 +292,8 @@ void HtmlDialogWindowDelegateBridge::HandleKeyboardEvent(
   [window setTitle:base::SysUTF16ToNSString(delegate->GetDialogTitle())];
   [window setMinSize:dialogRect.size];
   [window center];
-  delegate_.reset(new HtmlDialogWindowDelegateBridge(self, profile, delegate));
+  delegate_.reset(
+      new HtmlDialogWindowDelegateBridge(self, profile, browser, delegate));
   return self;
 }
 

@@ -624,6 +624,7 @@ void CreateDialogImpl(const FilePath& path_to_file,
         g_browser_process->profile_manager()->GetLoadedProfiles();
     DCHECK_GT(loaded_profiles.size(), 0U);
     profile = loaded_profiles[0];
+    browser = BrowserList::GetLastActiveWithProfile(profile);
   }
   DCHECK(profile);
   PrefService* pref_service = profile->GetPrefs();
@@ -650,7 +651,7 @@ void CreateDialogImpl(const FilePath& path_to_file,
     DCHECK(browser);
 #if defined(USE_AURA)
     HtmlDialogView* html_view =
-        new HtmlDialogView(profile, dialog_delegate);
+        new HtmlDialogView(profile, browser, dialog_delegate);
     views::Widget::CreateWindowWithParent(html_view,
         browser->window()->GetNativeHandle());
     html_view->InitDialog();
@@ -659,7 +660,11 @@ void CreateDialogImpl(const FilePath& path_to_file,
     browser->BrowserShowHtmlDialog(dialog_delegate, NULL, STYLE_GENERIC);
 #endif
   } else {
-    browser::ShowHtmlDialog(NULL, profile, dialog_delegate, STYLE_GENERIC);
+    browser::ShowHtmlDialog(NULL,
+                            profile,
+                            browser,
+                            dialog_delegate,
+                            STYLE_GENERIC);
   }
 }
 

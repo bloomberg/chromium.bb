@@ -11,6 +11,7 @@
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -168,7 +169,12 @@ void TaskManagerDialogImpl::OnCloseDialog() {
 
 void TaskManagerDialogImpl::OpenHtmlDialog() {
   Browser* browser = BrowserList::GetLastActive();
-  window_ = browser->BrowserShowHtmlDialog(this, NULL, STYLE_GENERIC);
+  DCHECK(browser);
+  window_ = browser::ShowHtmlDialog(NULL,
+                                    browser->profile()->GetOriginalProfile(),
+                                    NULL,
+                                    this,
+                                    STYLE_GENERIC);
 }
 
 // ****************************************************

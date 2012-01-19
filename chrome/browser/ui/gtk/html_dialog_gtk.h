@@ -19,6 +19,8 @@
 
 typedef struct _GtkWidget GtkWidget;
 
+class Browser;
+class HtmlDialogController;
 class Profile;
 class TabContents;
 class TabContentsContainerGtk;
@@ -27,7 +29,9 @@ class TabContentsWrapper;
 class HtmlDialogGtk : public HtmlDialogTabContentsDelegate,
                       public HtmlDialogUIDelegate {
  public:
-  HtmlDialogGtk(Profile* profile, HtmlDialogUIDelegate* delegate,
+  HtmlDialogGtk(Profile* profile,
+                Browser* browser,
+                HtmlDialogUIDelegate* delegate,
                 gfx::NativeWindow parent_window);
   virtual ~HtmlDialogGtk();
 
@@ -65,6 +69,7 @@ class HtmlDialogGtk : public HtmlDialogTabContentsDelegate,
 
   GtkWidget* dialog_;
 
+  scoped_ptr<HtmlDialogController> dialog_controller_;
   scoped_ptr<TabContentsWrapper> tab_;
   scoped_ptr<TabContentsContainerGtk> tab_contents_container_;
 

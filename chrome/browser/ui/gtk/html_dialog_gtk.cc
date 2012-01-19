@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/tab_contents_container_gtk.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/webui/html_dialog_controller.h"
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/native_web_keyboard_event.h"
@@ -24,19 +25,16 @@ using content::WebUIMessageHandler;
 
 namespace browser {
 
-gfx::NativeWindow ShowHtmlDialog(gfx::NativeWindow parent, Profile* profile,
+gfx::NativeWindow ShowHtmlDialog(gfx::NativeWindow parent,
+                                 Profile* profile,
+                                 Browser* browser,
                                  HtmlDialogUIDelegate* delegate,
                                  DialogStyle style) {
-  // It's not always safe to display an html dialog with an off the record
-  // profile.  If the last browser with that profile is closed it will go
-  // away.
   // Ignore style for now. The style parameter only used in the implementation
   // in html_dialog_view.cc file.
   // TODO (bshe): Add style parameter to HtmlDialogGtk.
-  DCHECK(!profile->IsOffTheRecord() ||
-         delegate->GetDialogModalType() != ui::MODAL_TYPE_NONE);
   HtmlDialogGtk* html_dialog =
-      new HtmlDialogGtk(profile, delegate, parent);
+      new HtmlDialogGtk(profile, browser, delegate, parent);
   return html_dialog->InitDialog();
 }
 
@@ -66,12 +64,14 @@ void SetDialogStyle() {
 // HtmlDialogGtk, public:
 
 HtmlDialogGtk::HtmlDialogGtk(Profile* profile,
+                             Browser* browser,
                              HtmlDialogUIDelegate* delegate,
                              gfx::NativeWindow parent_window)
     : HtmlDialogTabContentsDelegate(profile),
       delegate_(delegate),
       parent_window_(parent_window),
-      dialog_(NULL) {
+      dialog_(NULL),
+      dialog_controller_(new HtmlDialogController(this, profile, browser)) {
 }
 
 HtmlDialogGtk::~HtmlDialogGtk() {

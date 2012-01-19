@@ -1277,7 +1277,11 @@ gfx::NativeWindow Browser::BrowserShowHtmlDialog(
   if (!parent_window)
     parent_window = window_->GetNativeHandle();
 
-  return browser::ShowHtmlDialog(parent_window, profile_, delegate, style);
+  return browser::ShowHtmlDialog(parent_window,
+                                 profile_,
+                                 this,
+                                 delegate,
+                                 style);
 }
 
 void Browser::BrowserRenderWidgetShowing() {

@@ -62,6 +62,7 @@ CloudPrintSetupFlow* CloudPrintSetupFlow::OpenDialog(
     const base::WeakPtr<Delegate>& delegate,
     gfx::NativeWindow parent_window) {
   DCHECK(profile);
+  Browser* browser = BrowserList::GetLastActiveWithProfile(profile);
   // Set the arguments for showing the gaia login page.
   DictionaryValue args;
   args.SetString("user", "");
@@ -83,12 +84,9 @@ CloudPrintSetupFlow* CloudPrintSetupFlow::OpenDialog(
   // invoked in the context of a "token expired" notfication. If we don't have
   // a brower, use the underlying dialog system to show the dialog without
   // using a browser.
-  if (!parent_window) {
-    Browser* browser = BrowserList::GetLastActive();
-    if (browser && browser->window())
-      parent_window = browser->window()->GetNativeHandle();
-  }
-  browser::ShowHtmlDialog(parent_window, profile, flow, STYLE_GENERIC);
+  if (!parent_window && browser && browser->window())
+    parent_window = browser->window()->GetNativeHandle();
+  browser::ShowHtmlDialog(parent_window, profile, browser, flow, STYLE_GENERIC);
   return flow;
 }
 

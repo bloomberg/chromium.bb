@@ -90,7 +90,8 @@ TEST_F(HtmlDialogWindowControllerTest, showDialog) {
 
   HtmlDialogWindowController* html_dialog_window_controller =
     [[HtmlDialogWindowController alloc] initWithDelegate:&delegate_
-                                                 profile:profile()];
+                                                 profile:profile()
+                                                 browser:browser()];
 
   [html_dialog_window_controller loadDialogContents];
   [html_dialog_window_controller showWindow:nil];

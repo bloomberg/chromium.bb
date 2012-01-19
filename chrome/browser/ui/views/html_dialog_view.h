@@ -19,6 +19,8 @@
 #include "ui/views/widget/widget_delegate.h"
 
 class Browser;
+class HtmlDialogController;
+class Profile;
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -40,7 +42,9 @@ class HtmlDialogView
       public views::WidgetDelegate,
       public TabFirstRenderWatcher::Delegate {
  public:
-  HtmlDialogView(Profile* profile, HtmlDialogUIDelegate* delegate);
+  HtmlDialogView(Profile* profile,
+                 Browser* browser,
+                 HtmlDialogUIDelegate* delegate);
   virtual ~HtmlDialogView();
 
   // Initializes the contents of the dialog (the DOMView and the callbacks).
@@ -110,6 +114,9 @@ class HtmlDialogView
   // closing) we delegate to the creator of this view, which we keep track of
   // using this variable.
   HtmlDialogUIDelegate* delegate_;
+
+  // Controls lifetime of dialog.
+  scoped_ptr<HtmlDialogController> dialog_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(HtmlDialogView);
 };

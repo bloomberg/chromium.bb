@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,6 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
 
+class Browser;
 class HtmlDialogWindowDelegateBridge;
 class Profile;
 class TabContentsWrapper;
@@ -28,13 +29,15 @@ class TabContentsWrapper;
 }
 
 // Creates and shows an HtmlDialogWindowController with the given
-// delegate and profile.  The window is automatically destroyed when
-// it is closed.  Returns the created window.
+// delegate and profile whose lifetime is controlled by the given
+// browser.  The window is automatically destroyed when it, or its
+// controlling browser is closed.  Returns the created window.
 //
 // Make sure to use the returned window only when you know it is safe
 // to do so, i.e. before OnDialogClosed() is called on the delegate.
 + (NSWindow*)showHtmlDialog:(HtmlDialogUIDelegate*)delegate
-                    profile:(Profile*)profile;
+                    profile:(Profile*)profile
+                    browser:(Browser*)browser;
 
 @end
 
@@ -43,7 +46,8 @@ class TabContentsWrapper;
 // This is the designated initializer.  However, this is exposed only
 // for testing; use showHtmlDialog instead.
 - (id)initWithDelegate:(HtmlDialogUIDelegate*)delegate
-               profile:(Profile*)profile;
+               profile:(Profile*)profile
+               browser:(Browser*)browser;
 
 // Loads the HTML content from the delegate; this is not a lightweight
 // process which is why it is not part of the constructor.  Must be

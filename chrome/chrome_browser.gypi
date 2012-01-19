@@ -3830,6 +3830,8 @@
         'browser/ui/webui/input_window_dialog_ui.h',
         'browser/ui/webui/input_window_dialog_webui.cc',
         'browser/ui/webui/input_window_dialog_webui.h',
+        'browser/ui/webui/html_dialog_controller.cc',
+        'browser/ui/webui/html_dialog_controller.h',
         'browser/ui/webui/html_dialog_tab_contents_delegate.cc',
         'browser/ui/webui/html_dialog_tab_contents_delegate.h',
         'browser/ui/webui/html_dialog_ui.cc',

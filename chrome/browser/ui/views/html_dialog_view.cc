@@ -10,6 +10,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/window.h"
+#include "chrome/browser/ui/webui/html_dialog_controller.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
@@ -34,14 +35,10 @@ namespace browser {
 // Declared in browser_dialogs.h so that others don't need to depend on our .h.
 gfx::NativeWindow ShowHtmlDialog(gfx::NativeWindow parent,
                                  Profile* profile,
+                                 Browser* browser,
                                  HtmlDialogUIDelegate* delegate,
                                  DialogStyle style) {
-  // It's not always safe to display an html dialog with an off the record
-  // profile.  If the last browser with that profile is closed it will go
-  // away.
-  DCHECK(!profile->IsOffTheRecord() ||
-         delegate->GetDialogModalType() != ui::MODAL_TYPE_NONE);
-  HtmlDialogView* html_view = new HtmlDialogView(profile, delegate);
+  HtmlDialogView* html_view = new HtmlDialogView(profile, browser, delegate);
   browser::CreateViewsWindow(parent, html_view, style);
   html_view->InitDialog();
   html_view->GetWidget()->Show();
@@ -54,11 +51,13 @@ gfx::NativeWindow ShowHtmlDialog(gfx::NativeWindow parent,
 // HtmlDialogView, public:
 
 HtmlDialogView::HtmlDialogView(Profile* profile,
+                               Browser* browser,
                                HtmlDialogUIDelegate* delegate)
     : DOMView(),
       HtmlDialogTabContentsDelegate(profile),
       initialized_(false),
-      delegate_(delegate) {
+      delegate_(delegate),
+      dialog_controller_(new HtmlDialogController(this, profile, browser)) {
 }
 
 HtmlDialogView::~HtmlDialogView() {

@@ -59,7 +59,7 @@ LoginHtmlDialog::~LoginHtmlDialog() {
 
 void LoginHtmlDialog::Show() {
   HtmlDialogView* html_view =
-      new HtmlDialogView(ProfileManager::GetDefaultProfile(), this);
+      new HtmlDialogView(ProfileManager::GetDefaultProfile(), NULL, this);
 #if defined(USE_AURA)
   // TODO(saintlou): Until the new Bubble have been landed.
   views::Widget::CreateWindowWithParent(html_view, parent_window_);

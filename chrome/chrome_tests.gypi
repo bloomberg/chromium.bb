@@ -2734,6 +2734,7 @@
         'browser/ui/webui/test_chrome_web_ui_factory_browsertest.cc',
         'browser/ui/webui/bidi_checker_web_ui_test.cc',
         'browser/ui/webui/bidi_checker_web_ui_test.h',
+        'browser/ui/webui/html_dialog_controller_browsertest.cc',
         'browser/ui/webui/net_internals/net_internals_ui_browsertest.cc',
         'browser/ui/webui/net_internals/net_internals_ui_browsertest.h',
         'browser/ui/webui/ntp/new_tab_ui_browsertest.cc',
