@@ -25,10 +25,10 @@ from chromite.lib import cros_build_lib as cros_lib
 
 # pylint: disable=W0212,R0904
 FAKE_VERSION = """
-CHROMEOS_BUILD=1
-CHROMEOS_BRANCH=2
-CHROMEOS_PATCH=3
-CHROME_BRANCH=13
+CHROMEOS_BUILD=%(build_number)s
+CHROMEOS_BRANCH=%(branch_build_number)s
+CHROMEOS_PATCH=%(patch_number)s
+CHROME_BRANCH=%(chrome_branch)s
 """
 
 FAKE_VERSION_STRING = '1.2.3'
@@ -137,10 +137,11 @@ class VersionInfoTest(mox.MoxTestBase):
     self.tmpdir = tempfile.mkdtemp()
 
   @classmethod
-  def CreateFakeVersionFile(cls, tmpdir):
-    """Helper method to create a version file from FAKE_VERSION."""
+  def CreateFakeVersionFile(cls, tmpdir, version=FAKE_VERSION_STRING):
+    """Helper method to create a version file from specified version number."""
     (version_file_fh, version_file) = tempfile.mkstemp(dir=tmpdir)
-    os.write(version_file_fh, FAKE_VERSION)
+    info = manifest_version.VersionInfo(version, CHROME_BRANCH)
+    os.write(version_file_fh, FAKE_VERSION % info.__dict__)
     os.close(version_file_fh)
     return version_file
 
@@ -155,7 +156,7 @@ class VersionInfoTest(mox.MoxTestBase):
     info = manifest_version.VersionInfo(FAKE_VERSION_STRING, CHROME_BRANCH)
     self.assertEqual(info.VersionString(), FAKE_VERSION_STRING)
 
-  def CommonTestIncrementVersion(self, incr_type):
+  def CommonTestIncrementVersion(self, incr_type, version):
     """Common test increment.  Returns path to new incremented file."""
     message = 'Incrementing cuz I sed so'
     self.mox.StubOutWithMock(manifest_version, 'PrepForChanges')
@@ -163,7 +164,7 @@ class VersionInfoTest(mox.MoxTestBase):
 
     manifest_version.PrepForChanges(self.tmpdir, False)
 
-    version_file = self.CreateFakeVersionFile(self.tmpdir)
+    version_file = self.CreateFakeVersionFile(self.tmpdir, version)
 
     manifest_version._PushGitChanges(self.tmpdir, message, dry_run=False)
 
@@ -176,21 +177,21 @@ class VersionInfoTest(mox.MoxTestBase):
 
   def testIncrementVersionPatch(self):
     """Tests whether we can increment a version file by patch number."""
-    version_file = self.CommonTestIncrementVersion('patch')
+    version_file = self.CommonTestIncrementVersion('branch', '1.2.3')
     new_info = manifest_version.VersionInfo(version_file=version_file,
-                                            incr_type='patch')
-    self.assertEqual(new_info.VersionString(), FAKE_VERSION_STRING_NEXT)
+                                            incr_type='branch')
+    self.assertEqual(new_info.VersionString(), '1.2.4')
 
   def testIncrementVersionBranch(self):
     """Tests whether we can increment a version file by branch number."""
-    version_file = self.CommonTestIncrementVersion('branch')
+    version_file = self.CommonTestIncrementVersion('branch', '1.2.0')
     new_info = manifest_version.VersionInfo(version_file=version_file,
                                             incr_type='branch')
     self.assertEqual(new_info.VersionString(), '1.3.0')
 
   def testIncrementVersionBuild(self):
     """Tests whether we can increment a version file by build number."""
-    version_file = self.CommonTestIncrementVersion('build')
+    version_file = self.CommonTestIncrementVersion('build', '1.0.0')
     new_info = manifest_version.VersionInfo(version_file=version_file,
                                             incr_type='build')
     self.assertEqual(new_info.VersionString(), '2.0.0')
@@ -212,7 +213,7 @@ class BuildSpecsManagerTest(mox.MoxTestBase):
     self.version_file = 'version-file.sh'
     self.branch = 'master'
     self.build_name = 'x86-generic'
-    self.incr_type = 'patch'
+    self.incr_type = 'branch'
 
     # Change default to something we clean up.
     self.tmpmandir = tempfile.mkdtemp()
@@ -228,7 +229,7 @@ class BuildSpecsManagerTest(mox.MoxTestBase):
     self.mox.StubOutWithMock(manifest_version, '_RemoveDirs')
     self.mox.StubOutWithMock(repository, 'CloneGitRepo')
     info = manifest_version.VersionInfo(
-        FAKE_VERSION_STRING, CHROME_BRANCH, incr_type='patch')
+        FAKE_VERSION_STRING, CHROME_BRANCH, incr_type='branch')
     m1 = os.path.join(self.manager._TMP_MANIFEST_DIR, 'buildspecs',
                       CHROME_BRANCH, '1.2.2.xml')
     m2 = os.path.join(self.manager._TMP_MANIFEST_DIR, 'buildspecs',
@@ -285,8 +286,8 @@ class BuildSpecsManagerTest(mox.MoxTestBase):
     self.mox.ReplayAll()
     spec = self.manager._LatestSpecFromDir(info, specs_dir)
     self.mox.VerifyAll()
-    # Should be the latest on the 99.1 branch
-    self.assertEqual(spec, '99.3.3')
+    # Should be the latest on the 99.1 branch.
+    self.assertEqual(spec, '99.1.10')
 
   def testGetNextVersionNoIncrement(self):
     """Tests whether we can get the next version to be built correctly.
@@ -294,7 +295,7 @@ class BuildSpecsManagerTest(mox.MoxTestBase):
     Tests without pre-existing version in manifest dir.
     """
     info = manifest_version.VersionInfo(
-        FAKE_VERSION_STRING, CHROME_BRANCH, incr_type='patch')
+        FAKE_VERSION_STRING, CHROME_BRANCH, incr_type='branch')
 
     self.manager.latest = None
     self.mox.ReplayAll()
@@ -307,7 +308,7 @@ class BuildSpecsManagerTest(mox.MoxTestBase):
     self.mox.StubOutWithMock(manifest_version.VersionInfo, 'IncrementVersion')
     version_file = VersionInfoTest.CreateFakeVersionFile(self.tmpdir)
     info = manifest_version.VersionInfo(version_file=version_file,
-                                         incr_type='patch')
+                                        incr_type='branch')
     info.IncrementVersion(
         'Automatic: %s - Updating to a new version number from %s' % (
             self.build_name, FAKE_VERSION_STRING),

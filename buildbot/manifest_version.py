@@ -284,7 +284,7 @@ class VersionInfo(object):
     if not self.version_file:
       raise VersionUpdateException('Cannot call IncrementVersion without '
                                    'an associated version_file')
-    if not self.incr_type:
+    if not self.incr_type or self.incr_type not in ('build', 'branch'):
       raise VersionUpdateException('Need to specify the part of the version to'
                                    ' increment')
 
@@ -292,12 +292,9 @@ class VersionInfo(object):
       self.build_number = str(int(self.build_number) + 1)
       self.branch_build_number = '0'
       self.patch_number = '0'
-
-    if self.incr_type == 'branch':
+    elif self.patch_number == '0':
       self.branch_build_number = str(int(self.branch_build_number) + 1)
-      self.patch_number = '0'
-
-    if self.incr_type == 'patch':
+    else:
       self.patch_number = str(int(self.patch_number) + 1)
 
     temp_file = tempfile.mkstemp(suffix='mvp', prefix='tmp', dir=None,
@@ -348,12 +345,11 @@ class VersionInfo(object):
 
   def BuildPrefix(self):
     """Returns the build prefix to match the buildspecs in  manifest-versions"""
-    if self.incr_type == 'patch':
-      return '%s.%s' % (self.build_number, self.branch_build_number)
-
     if self.incr_type == 'branch':
-      return self.build_number
-
+      if self.patch_number == '0':
+        return self.build_number
+      else:
+        return '%s.%s' % (self.build_number, self.branch_build_number)
     # Default to build incr_type.
     return ''
 

@@ -131,7 +131,7 @@ class ManifestVersionedSyncStageTest(AbstractStageTest):
     self.manifest_version_url = 'fake manifest url'
     self.branch = 'master'
     self.build_name = 'x86-generic'
-    self.incr_type = 'patch'
+    self.incr_type = 'branch'
 
     self.build_config['manifest_version'] = self.manifest_version_url
     self.next_version = 'next_version'

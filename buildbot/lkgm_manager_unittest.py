@@ -100,7 +100,7 @@ class LKGMManagerTest(mox.MoxTestBase):
     self.version_file = 'version-file.sh'
     self.branch = 'master'
     self.build_name = 'x86-generic'
-    self.incr_type = 'patch'
+    self.incr_type = 'branch'
 
     # Change default to something we clean up.
     self.tmpmandir = tempfile.mkdtemp()

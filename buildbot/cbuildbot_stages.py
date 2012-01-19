@@ -232,11 +232,7 @@ class ManifestVersionedSyncStage(SyncStage):
 
   def Initialize(self):
     """Initializes a manager that manages manifests for associated stages."""
-    # On the master branch, increment the build number. On the stabilize
-    # branch, increment the patch number. For other branches, increment
-    # the branch build number.
-    _BRANCH_INCREMENT_TYPE = {'master': 'build', 'stabilize': 'patch'}
-    increment = _BRANCH_INCREMENT_TYPE.get(self._tracking_branch, 'branch')
+    increment = 'build' if self._tracking_branch == 'master' else 'branch'
 
     dry_run = self._options.debug
 
