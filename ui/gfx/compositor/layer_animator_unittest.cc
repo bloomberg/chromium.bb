@@ -65,7 +65,6 @@ TEST(LayerAnimatorTest, NoImplicitAnimation) {
   animator->set_disable_timer_for_test(true);
   TestLayerAnimationDelegate delegate;
   animator->SetDelegate(&delegate);
-  base::TimeTicks now = base::TimeTicks::Now();
   animator->SetOpacity(0.5);
   EXPECT_FALSE(animator->is_animating());
   EXPECT_FLOAT_EQ(delegate.GetOpacityForAnimation(), 0.5);
@@ -78,7 +77,6 @@ TEST(LayerAnimatorTest, StopAnimatingProperty) {
   animator->set_disable_timer_for_test(true);
   TestLayerAnimationDelegate delegate;
   animator->SetDelegate(&delegate);
-  base::TimeTicks now = base::TimeTicks::Now();
   double target_opacity(0.5);
   gfx::Rect target_bounds(0, 0, 50, 50);
   animator->SetOpacity(target_opacity);
@@ -98,7 +96,6 @@ TEST(LayerAnimatorTest, StopAnimating) {
   animator->set_disable_timer_for_test(true);
   TestLayerAnimationDelegate delegate;
   animator->SetDelegate(&delegate);
-  base::TimeTicks now = base::TimeTicks::Now();
   double target_opacity(0.5);
   gfx::Rect target_bounds(0, 0, 50, 50);
   animator->SetOpacity(target_opacity);

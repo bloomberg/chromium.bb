@@ -11,6 +11,7 @@
 #import <Foundation/NSAutoreleasePool.h>
 
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_nsobject.h"
 #include "ui/gfx/compositor/compositor.h"
 #include "ui/gfx/rect.h"
 
@@ -105,6 +106,11 @@ TestCompositorHostMac::TestCompositorHostMac(const gfx::Rect& bounds)
 }
 
 TestCompositorHostMac::~TestCompositorHostMac() {
+  // Release reference to |compositor_|.  Important because the |compositor_|
+  // holds |this| as its delegate, so that reference must be removed here.
+  [[window_ contentView] setCompositor:NULL];
+  [window_ setContentView:nil];
+
   [window_ orderOut:nil];
   [window_ close];
 }
@@ -119,7 +125,7 @@ void TestCompositorHostMac::Show() {
                           styleMask:NSBorderlessWindowMask
                             backing:NSBackingStoreBuffered
                               defer:NO];
-  AcceleratedTestView* view = [[[AcceleratedTestView alloc] init] autorelease];
+  scoped_nsobject<AcceleratedTestView> view([[AcceleratedTestView alloc] init]);
   compositor_ = ui::Compositor::Create(this, view, bounds_.size());
   [view setCompositor:compositor_];
   [window_ setContentView:view];
