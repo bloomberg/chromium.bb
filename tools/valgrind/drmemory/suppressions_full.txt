@@ -156,6 +156,7 @@ WINSPOOL.DRV!*
 UNINITIALIZED READ
 name=http://code.google.com/p/drmemory/issues/detail?id=48 a
 system call NtContinue
+...
 *!*SetThreadName
 
 UNINITIALIZED READ
@@ -742,15 +743,6 @@ UNINITIALIZED READ
 name=http://code.google.com/p/drmemory/issues/detail?id=493
 USP10.dll!ScriptPositionSingleGlyph
 
-# Requires investigation, looks like syscall false pos.
-UNINITIALIZED READ
-name=http://code.google.com/p/drmemory/issues/detail?id=758
-system call NtContinue
-ntdll.dll!KiUserExceptionDispatcher
-KERNEL*.dll!*
-KERNEL*.dll!RaiseException
-*!talk_base::SetThreadName
-
 ###############################################################
 # Benign issues in Chromium
 
@@ -930,27 +922,3 @@ name=http://crbug.com/110049
 *!media::DoCrossfade<*>
 *!media::Crossfade
 *!media::AudioRendererAlgorithmBase::FillBuffer
-
-# Possible real Chromium issue in JingleSessionTest.TestMultistepAuthTcpChannel.
-# Need to make sure talk_base::FifoBuffer ctor is getting called.  Doesn't look
-# like DrMemory unhandled syscall.
-UNINITIALIZED READ
-name=http://crbug.com/110729 a
-...
-*!jingle_glue::PseudoTcpAdapter::Write
-
-UNINITIALIZED READ
-name=http://crbug.com/110729 b
-...
-*!jingle_glue::PseudoTcpAdapter::Read
-
-UNINITIALIZED READ
-name=http://crbug.com/110729 c
-...
-*!jingle_glue::PseudoTcpAdapter::Core::HandleTcpClock
-
-# Not clear how this test is calling memcmp directly; bad stack?
-UNINITIALIZED READ
-name=http://crbug.com/110729 d
-drmemorylib.dll!replace_memcmp
-*!remoting::protocol::JingleSessionTest_TestMultistepAuthTcpChannel_Test::TestBody

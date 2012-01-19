@@ -3,6 +3,7 @@
 JingleSessionTest.Connect
 JingleSessionTest.TestUdpChannel
 JingleSessionTest.TestTcpChannel
+JingleSessionTest.TestMultistepAuthTcpChannel
 JingleSessionTest.TestSpeed
 
 # This test fails on an assertion, see http://crbug.com/57266
