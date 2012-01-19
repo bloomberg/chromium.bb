@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,7 +12,7 @@
 #include "ui/gfx/gfx_paths.h"
 
 #if defined(OS_MACOSX)
-#include "base/mac/foundation_util.h"
+#include "base/mac/bundle_locations.h"
 #endif
 
 GfxTestSuite::GfxTestSuite(int argc, char** argv) : TestSuite(argc, argv) {}
@@ -37,7 +37,7 @@ void GfxTestSuite::Initialize() {
 #else
 #error Unknown branding
 #endif
-  base::mac::SetOverrideAppBundlePath(path);
+  base::mac::SetOverrideFrameworkBundlePath(path);
 #elif defined(OS_POSIX)
   FilePath pak_dir;
   PathService::Get(base::DIR_MODULE, &pak_dir);
@@ -56,7 +56,7 @@ void GfxTestSuite::Shutdown() {
   ui::ResourceBundle::CleanupSharedInstance();
 
 #if defined(OS_MACOSX)
-  base::mac::SetOverrideAppBundle(NULL);
+  base::mac::SetOverrideFrameworkBundle(NULL);
 #endif
   base::TestSuite::Shutdown();
 }

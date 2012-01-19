@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -28,6 +28,7 @@
 #include "ui/base/ui_base_paths.h"
 
 #if defined(OS_MACOSX)
+#include "base/mac/bundle_locations.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "chrome/browser/chrome_browser_application_mac.h"
@@ -185,7 +186,7 @@ void ChromeTestSuite::Initialize() {
   FilePath path;
   PathService::Get(base::DIR_EXE, &path);
   path = path.Append(chrome::kFrameworkName);
-  base::mac::SetOverrideAppBundlePath(path);
+  base::mac::SetOverrideFrameworkBundlePath(path);
 #endif
 
   // Force unittests to run using en-US so if we test against string
@@ -219,7 +220,7 @@ void ChromeTestSuite::Shutdown() {
   ResourceBundle::CleanupSharedInstance();
 
 #if defined(OS_MACOSX)
-  base::mac::SetOverrideAppBundle(NULL);
+  base::mac::SetOverrideFrameworkBundle(NULL);
 #endif
 
   base::StatsTable::set_current(NULL);
