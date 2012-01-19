@@ -603,7 +603,7 @@ void RegisterComponentsForUpdate(const CommandLine& command_line) {
 
   // CRLSetFetcher attempts to load a CRL set from either the local disk or
   // network.
-  if (command_line.HasSwitch(switches::kEnableCRLSets))
+  if (!command_line.HasSwitch(switches::kDisableCRLSets))
     g_browser_process->crl_set_fetcher()->StartInitialLoad(cus);
 
   // This developer version of Pnacl should only be installed for developers.

@@ -266,6 +266,10 @@ const char kDisableClientSidePhishingDetection[] =
 // exceeded.
 const char kDisableConnectBackupJobs[]      = "disable-connect-backup-jobs";
 
+// Disables establishing certificate revocation information by downloading a
+// set of CRLs rather than performing on-line checks.
+const char kDisableCRLSets[]                 = "disable-crl-sets";
+
 // Disables the custom JumpList on Windows 7.
 const char kDisableCustomJumpList[]         = "disable-custom-jumplist";
 
@@ -487,10 +491,6 @@ const char kEnableCompositeToTexture[]      = "enable-composite-to-texture";
 // Enables establishing a backup TCP connection if a specified timeout is
 // exceeded.
 const char kEnableConnectBackupJobs[]       = "enable-connect-backup-jobs";
-
-// Enables establishing certificate revocation information by downloading a set
-// of CRLs rather than performing on-line checks.
-const char kEnableCRLSets[]                 = "enable-crl-sets";
 
 // Enables web developers to create apps for Chrome without using crx packages.
 const char kEnableCrxlessWebApps[]          = "enable-crxless-web-apps";
