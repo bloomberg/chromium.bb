@@ -11,7 +11,7 @@
 #include "base/synchronization/lock.h"
 #include "media/base/pipeline.h"
 #include "media/filters/chunk_demuxer_client.h"
-#include "webkit/media/video_renderer_impl.h"
+#include "webkit/media/skcanvas_video_renderer.h"
 #include "webkit/media/web_data_source.h"
 
 class MessageLoop;
@@ -119,7 +119,7 @@ class WebMediaPlayerProxy
   DataSourceList data_sources_;
 
   scoped_refptr<media::VideoRendererBase> frame_provider_;
-  VideoRendererImpl video_renderer_;
+  SkCanvasVideoRenderer video_renderer_;
 
   base::Lock lock_;
   int outstanding_repaints_;

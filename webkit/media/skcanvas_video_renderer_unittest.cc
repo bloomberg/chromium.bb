@@ -7,7 +7,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkDevice.h"
-#include "webkit/media/video_renderer_impl.h"
+#include "webkit/media/skcanvas_video_renderer.h"
 
 using media::VideoFrame;
 
@@ -34,15 +34,15 @@ SkColor GetColor(SkCanvas* canvas) {
   return c;
 }
 
-class VideoRendererImplTest : public testing::Test {
+class SkCanvasVideoRendererTest : public testing::Test {
  public:
   enum Color {
     kRed,
     kBlue,
   };
 
-  VideoRendererImplTest();
-  virtual ~VideoRendererImplTest();
+  SkCanvasVideoRendererTest();
+  virtual ~SkCanvasVideoRendererTest();
 
   // Paints to |canvas| using |renderer_| without any frame data.
   void PaintWithoutFrame(SkCanvas* canvas);
@@ -61,7 +61,7 @@ class VideoRendererImplTest : public testing::Test {
   SkCanvas* slow_path_canvas() { return &slow_path_canvas_; }
 
  private:
-  VideoRendererImpl renderer_;
+  SkCanvasVideoRenderer renderer_;
 
   scoped_refptr<VideoFrame> natural_frame_;
   scoped_refptr<VideoFrame> larger_frame_;
@@ -72,10 +72,10 @@ class VideoRendererImplTest : public testing::Test {
   SkDevice slow_path_device_;
   SkCanvas slow_path_canvas_;
 
-  DISALLOW_COPY_AND_ASSIGN(VideoRendererImplTest);
+  DISALLOW_COPY_AND_ASSIGN(SkCanvasVideoRendererTest);
 };
 
-VideoRendererImplTest::VideoRendererImplTest()
+SkCanvasVideoRendererTest::SkCanvasVideoRendererTest()
     : natural_frame_(VideoFrame::CreateBlackFrame(kWidth, kHeight)),
       larger_frame_(VideoFrame::CreateBlackFrame(kWidth * 2, kHeight * 2)),
       smaller_frame_(VideoFrame::CreateBlackFrame(kWidth / 2, kHeight / 2)),
@@ -89,15 +89,15 @@ VideoRendererImplTest::VideoRendererImplTest()
   smaller_frame_->SetTimestamp(base::TimeDelta::FromMilliseconds(3));
 }
 
-VideoRendererImplTest::~VideoRendererImplTest() {}
+SkCanvasVideoRendererTest::~SkCanvasVideoRendererTest() {}
 
-void VideoRendererImplTest::PaintWithoutFrame(SkCanvas* canvas) {
+void SkCanvasVideoRendererTest::PaintWithoutFrame(SkCanvas* canvas) {
   renderer_.Paint(NULL, canvas, kNaturalRect);
 }
 
-void VideoRendererImplTest::Paint(VideoFrame* video_frame,
-                                  SkCanvas* canvas,
-                                  Color color) {
+void SkCanvasVideoRendererTest::Paint(VideoFrame* video_frame,
+                                      SkCanvas* canvas,
+                                      Color color) {
   switch (color) {
     case kRed:
       media::FillYUV(video_frame, 76, 84, 255);
@@ -109,31 +109,31 @@ void VideoRendererImplTest::Paint(VideoFrame* video_frame,
   renderer_.Paint(video_frame, canvas, kNaturalRect);
 }
 
-TEST_F(VideoRendererImplTest, FastPaint_NoFrame) {
+TEST_F(SkCanvasVideoRendererTest, FastPaint_NoFrame) {
   // Test that black gets painted over canvas.
   FillCanvas(fast_path_canvas(), SK_ColorRED);
   PaintWithoutFrame(fast_path_canvas());
   EXPECT_EQ(SK_ColorBLACK, GetColor(fast_path_canvas()));
 }
 
-TEST_F(VideoRendererImplTest, SlowPaint_NoFrame) {
+TEST_F(SkCanvasVideoRendererTest, SlowPaint_NoFrame) {
   // Test that black gets painted over canvas.
   FillCanvas(slow_path_canvas(), SK_ColorRED);
   PaintWithoutFrame(slow_path_canvas());
   EXPECT_EQ(SK_ColorBLACK, GetColor(slow_path_canvas()));
 }
 
-TEST_F(VideoRendererImplTest, FastPaint_Natural) {
+TEST_F(SkCanvasVideoRendererTest, FastPaint_Natural) {
   Paint(natural_frame(), fast_path_canvas(), kRed);
   EXPECT_EQ(SK_ColorRED, GetColor(fast_path_canvas()));
 }
 
-TEST_F(VideoRendererImplTest, SlowPaint_Natural) {
+TEST_F(SkCanvasVideoRendererTest, SlowPaint_Natural) {
   Paint(natural_frame(), slow_path_canvas(), kRed);
   EXPECT_EQ(SK_ColorRED, GetColor(slow_path_canvas()));
 }
 
-TEST_F(VideoRendererImplTest, FastPaint_Larger) {
+TEST_F(SkCanvasVideoRendererTest, FastPaint_Larger) {
   Paint(natural_frame(), fast_path_canvas(), kRed);
   EXPECT_EQ(SK_ColorRED, GetColor(fast_path_canvas()));
 
@@ -141,7 +141,7 @@ TEST_F(VideoRendererImplTest, FastPaint_Larger) {
   EXPECT_EQ(SK_ColorBLUE, GetColor(fast_path_canvas()));
 }
 
-TEST_F(VideoRendererImplTest, SlowPaint_Larger) {
+TEST_F(SkCanvasVideoRendererTest, SlowPaint_Larger) {
   Paint(natural_frame(), slow_path_canvas(), kRed);
   EXPECT_EQ(SK_ColorRED, GetColor(slow_path_canvas()));
 
@@ -149,7 +149,7 @@ TEST_F(VideoRendererImplTest, SlowPaint_Larger) {
   EXPECT_EQ(SK_ColorBLUE, GetColor(slow_path_canvas()));
 }
 
-TEST_F(VideoRendererImplTest, FastPaint_Smaller) {
+TEST_F(SkCanvasVideoRendererTest, FastPaint_Smaller) {
   Paint(natural_frame(), fast_path_canvas(), kRed);
   EXPECT_EQ(SK_ColorRED, GetColor(fast_path_canvas()));
 
@@ -157,7 +157,7 @@ TEST_F(VideoRendererImplTest, FastPaint_Smaller) {
   EXPECT_EQ(SK_ColorBLUE, GetColor(fast_path_canvas()));
 }
 
-TEST_F(VideoRendererImplTest, SlowPaint_Smaller) {
+TEST_F(SkCanvasVideoRendererTest, SlowPaint_Smaller) {
   Paint(natural_frame(), slow_path_canvas(), kRed);
   EXPECT_EQ(SK_ColorRED, GetColor(slow_path_canvas()));
 
@@ -165,21 +165,21 @@ TEST_F(VideoRendererImplTest, SlowPaint_Smaller) {
   EXPECT_EQ(SK_ColorBLUE, GetColor(slow_path_canvas()));
 }
 
-TEST_F(VideoRendererImplTest, FastPaint_NoTimestamp) {
+TEST_F(SkCanvasVideoRendererTest, FastPaint_NoTimestamp) {
   VideoFrame* video_frame = natural_frame();
   video_frame->SetTimestamp(media::kNoTimestamp());
   Paint(video_frame, fast_path_canvas(), kRed);
   EXPECT_EQ(SK_ColorRED, GetColor(fast_path_canvas()));
 }
 
-TEST_F(VideoRendererImplTest, SlowPaint_NoTimestamp) {
+TEST_F(SkCanvasVideoRendererTest, SlowPaint_NoTimestamp) {
   VideoFrame* video_frame = natural_frame();
   video_frame->SetTimestamp(media::kNoTimestamp());
   Paint(video_frame, slow_path_canvas(), kRed);
   EXPECT_EQ(SK_ColorRED, GetColor(slow_path_canvas()));
 }
 
-TEST_F(VideoRendererImplTest, FastPaint_SameVideoFrame) {
+TEST_F(SkCanvasVideoRendererTest, FastPaint_SameVideoFrame) {
   Paint(natural_frame(), fast_path_canvas(), kRed);
   EXPECT_EQ(SK_ColorRED, GetColor(fast_path_canvas()));
 
@@ -188,7 +188,7 @@ TEST_F(VideoRendererImplTest, FastPaint_SameVideoFrame) {
   EXPECT_EQ(SK_ColorBLUE, GetColor(fast_path_canvas()));
 }
 
-TEST_F(VideoRendererImplTest, SlowPaint_SameVideoFrame) {
+TEST_F(SkCanvasVideoRendererTest, SlowPaint_SameVideoFrame) {
   Paint(natural_frame(), slow_path_canvas(), kRed);
   EXPECT_EQ(SK_ColorRED, GetColor(slow_path_canvas()));
 

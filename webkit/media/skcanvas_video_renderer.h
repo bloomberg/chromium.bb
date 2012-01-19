@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_MEDIA_VIDEO_RENDERER_IMPL_H_
-#define WEBKIT_MEDIA_VIDEO_RENDERER_IMPL_H_
+#ifndef WEBKIT_MEDIA_SKCANVAS_VIDEO_RENDERER_H_
+#define WEBKIT_MEDIA_SKCANVAS_VIDEO_RENDERER_H_
 
 #include "base/time.h"
 #include "ui/gfx/rect.h"
@@ -19,10 +19,10 @@ namespace webkit_media {
 
 // Handles rendering of VideoFrames to SkCanvases, doing any necessary YUV
 // conversion and caching of resulting RGB bitmaps.
-class VideoRendererImpl {
+class SkCanvasVideoRenderer {
  public:
-  VideoRendererImpl();
-  ~VideoRendererImpl();
+  SkCanvasVideoRenderer();
+  ~SkCanvasVideoRenderer();
 
   // Paints |video_frame| on |canvas|, scaling the result to fit dimensions
   // specified by |dest_rect|.
@@ -38,9 +38,9 @@ class VideoRendererImpl {
   SkBitmap last_frame_;
   base::TimeDelta last_frame_timestamp_;
 
-  DISALLOW_COPY_AND_ASSIGN(VideoRendererImpl);
+  DISALLOW_COPY_AND_ASSIGN(SkCanvasVideoRenderer);
 };
 
 }  // namespace webkit_media
 
-#endif  // WEBKIT_MEDIA_VIDEO_RENDERER_IMPL_H_
+#endif  // WEBKIT_MEDIA_SKCANVAS_VIDEO_RENDERER_H_

@@ -65,7 +65,6 @@
 #include "webkit/glue/webpreferences.h"
 #include "webkit/glue/weburlrequest_extradata_impl.h"
 #include "webkit/glue/window_open_disposition.h"
-#include "webkit/media/video_renderer_impl.h"
 #include "webkit/media/webmediaplayer_impl.h"
 #include "webkit/plugins/npapi/webplugin_impl.h"
 #include "webkit/plugins/npapi/plugin_list.h"

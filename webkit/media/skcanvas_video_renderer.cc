@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/media/video_renderer_impl.h"
+#include "webkit/media/skcanvas_video_renderer.h"
 
 #include "base/logging.h"
 #include "media/base/video_frame.h"
@@ -229,15 +229,15 @@ static void ConvertVideoFrameToBitmap(
   bitmap->unlockPixels();
 }
 
-VideoRendererImpl::VideoRendererImpl()
+SkCanvasVideoRenderer::SkCanvasVideoRenderer()
     : last_frame_timestamp_(media::kNoTimestamp()) {
 }
 
-VideoRendererImpl::~VideoRendererImpl() {}
+SkCanvasVideoRenderer::~SkCanvasVideoRenderer() {}
 
-void VideoRendererImpl::Paint(media::VideoFrame* video_frame,
-                              SkCanvas* canvas,
-                              const gfx::Rect& dest_rect) {
+void SkCanvasVideoRenderer::Paint(media::VideoFrame* video_frame,
+                                  SkCanvas* canvas,
+                                  const gfx::Rect& dest_rect) {
   // Paint black rectangle if there isn't a frame available.
   if (!video_frame) {
     SkPaint paint;
