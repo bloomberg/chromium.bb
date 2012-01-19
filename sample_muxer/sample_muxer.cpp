@@ -6,8 +6,9 @@
 // in the file PATENTS.  All contributing project authors may
 // be found in the AUTHORS file in the root of the source tree.
 
-#include <stdio.h>
-#include <string.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 
 // libwebm parser includes
 #include "mkvreader.hpp"
@@ -83,7 +84,7 @@ int main(int argc, char* argv[]) {
 
     if (!strcmp("-h", argv[i]) || !strcmp("-?", argv[i])) {
       Usage();
-      return 0;
+      return EXIT_SUCCESS;
     } else if (!strcmp("-i", argv[i])) {
       input = argv[++i];
     } else if (!strcmp("-o", argv[i])) {
@@ -129,7 +130,7 @@ int main(int argc, char* argv[]) {
 
   if (input == NULL || output == NULL) {
     Usage();
-    return 0;
+    return EXIT_FAILURE;
   }
 
   // Get parser header info
@@ -137,7 +138,7 @@ int main(int argc, char* argv[]) {
 
   if (reader.Open(input)) {
     printf("\n Filename is invalid or error while opening.\n");
-    return -1;
+    return EXIT_FAILURE;
   }
 
   long long pos = 0;
@@ -150,13 +151,13 @@ int main(int argc, char* argv[]) {
                                                      parser_segment);
   if (ret) {
     printf("\n Segment::CreateInstance() failed.");
-    return -1;
+    return EXIT_FAILURE;
   }
 
   ret = parser_segment->Load();
   if (ret < 0) {
     printf("\n Segment::Load() failed.");
-    return -1;
+    return EXIT_FAILURE;
   }
 
   const mkvparser::SegmentInfo* const segment_info = parser_segment->GetInfo();
@@ -167,7 +168,7 @@ int main(int argc, char* argv[]) {
 
   if (!writer.Open(output)) {
     printf("\n Filename is invalid or error while opening.\n");
-    return -1;
+    return EXIT_FAILURE;
   }
 
   // Set Segment element attributes
@@ -175,7 +176,7 @@ int main(int argc, char* argv[]) {
 
   if (!muxer_segment.Init(&writer)) {
     printf("\n Could not initialize muxer segment!\n");
-    return -1;
+    return EXIT_FAILURE;
   }
 
   if (live_mode)
@@ -233,7 +234,7 @@ int main(int argc, char* argv[]) {
                                               video_track_number);
       if (!vid_track) {
         printf("\n Could not add video track.\n");
-        return -1;
+        return EXIT_FAILURE;
       }
 
       mkvmuxer::VideoTrack* const video =
@@ -241,7 +242,7 @@ int main(int argc, char* argv[]) {
               muxer_segment.GetTrackByNumber(vid_track));
       if (!video) {
         printf("\n Could not get video track.\n");
-        return -1;
+        return EXIT_FAILURE;
       }
 
       if (track_name)
@@ -271,7 +272,7 @@ int main(int argc, char* argv[]) {
                                               audio_track_number);
       if (!aud_track) {
         printf("\n Could not add audio track.\n");
-        return -1;
+        return EXIT_FAILURE;
       }
 
       mkvmuxer::AudioTrack* const audio =
@@ -279,7 +280,7 @@ int main(int argc, char* argv[]) {
               muxer_segment.GetTrackByNumber(aud_track));
       if (!audio) {
         printf("\n Could not get audio track.\n");
-        return -1;
+        return EXIT_FAILURE;
       }
 
       if (track_name)
@@ -291,7 +292,7 @@ int main(int argc, char* argv[]) {
       if (private_size > 0) {
         if (!audio->SetCodecPrivate(private_data, private_size)) {
           printf("\n Could not add audio private data.\n");
-          return -1;
+          return EXIT_FAILURE;
         }
       }
 
@@ -339,12 +340,12 @@ int main(int argc, char* argv[]) {
             delete [] data;
             data = new unsigned char[frame.len];
             if (!data)
-              return -1;
+              return EXIT_FAILURE;
             data_len = frame.len;
           }
 
           if (frame.Read(&reader, data))
-            return -1;
+            return EXIT_FAILURE;
 
           uint64 track_num = vid_track;
           if (track_type == kAudioTrack)
@@ -356,7 +357,7 @@ int main(int argc, char* argv[]) {
                                       time_ns,
                                       is_key)) {
             printf("\n Could not add frame.\n");
-            return -1;
+            return EXIT_FAILURE;
           }
         }
       }
@@ -375,7 +376,7 @@ int main(int argc, char* argv[]) {
   writer.Close();
   reader.Close();
 
-  return 0;
+  return EXIT_SUCCESS;
 }
 
 
