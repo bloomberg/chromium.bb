@@ -20,16 +20,10 @@
 
 static int g_SigFound;
 
-static enum NaClSignalResult signal_catch(int signal,
-                                          void *ctx) {
-  struct NaClSignalContext sigCtx;
-  int in_untrusted_code;
+static enum NaClSignalResult signal_catch(int signal, void *ctx) {
+  UNREFERENCED_PARAMETER(ctx);
 
-  NaClSignalContextFromHandler(&sigCtx, ctx);
-  in_untrusted_code = NaClSignalContextIsUntrusted(&sigCtx);
-
-  /* Should be a trusted segfault */
-  if (!in_untrusted_code && 11 == signal) {
+  if (11 == signal) {
     g_SigFound = signal;
     return NACL_SIGNAL_SKIP;
   }
