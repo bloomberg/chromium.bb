@@ -25,6 +25,8 @@ class CONTENT_EXPORT BrowserThreadImpl
   BrowserThreadImpl(BrowserThread::ID identifier, MessageLoop* message_loop);
   virtual ~BrowserThreadImpl();
 
+  static void ShutdownThreadPool();
+
  protected:
   virtual void Init() OVERRIDE;
   virtual void CleanUp() OVERRIDE;

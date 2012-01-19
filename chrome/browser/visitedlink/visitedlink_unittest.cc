@@ -116,6 +116,9 @@ class VisitedLinkTest : public testing::Test {
       // our destroy task.
       MessageLoop::current()->Run();
     }
+
+    // Wait for all pending file I/O to be completed.
+    BrowserThread::GetBlockingPool()->FlushForTesting();
   }
 
   // Loads the database from disk and makes sure that the same URLs are present
