@@ -66,8 +66,6 @@
 #include "chrome/browser/chromeos/dbus/power_manager_client.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/options/take_photo_dialog.h"
-#include "chrome/browser/chromeos/system/input_device_settings.h"
-#include "chrome/browser/chromeos/xinput_hierarchy_changed_event_listener.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/views/window.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -83,20 +81,6 @@
 
 using content::BrowserThread;
 using content::UserMetricsAction;
-
-namespace {
-
-#if defined(OS_CHROMEOS)
-void TouchpadExistsFileThread(bool* exists) {
-  *exists = chromeos::system::touchpad_settings::TouchpadExists();
-}
-
-void MouseExistsFileThread(bool* exists) {
-  *exists = chromeos::system::mouse_settings::MouseExists();
-}
-#endif  // defined(OS_CHROMEOS)
-
-}  // namespace
 
 namespace options2 {
 
@@ -120,11 +104,6 @@ BrowserOptionsHandler::~BrowserOptionsHandler() {
     default_browser_worker_->ObserverDestroyed();
   if (template_url_service_)
     template_url_service_->RemoveObserver(this);
-
-#if defined(OS_CHROMEOS)
-  chromeos::XInputHierarchyChangedEventListener::GetInstance()
-      ->RemoveObserver(this);
-#endif
 }
 
 void BrowserOptionsHandler::GetLocalizedValues(
@@ -132,15 +111,11 @@ void BrowserOptionsHandler::GetLocalizedValues(
   DCHECK(localized_strings);
 
   static OptionsStringResource resources[] = {
-    { "appearance", IDS_APPEARANCE_GROUP_NAME },
-    { "advancedGroupName", IDS_OPTIONS_ADVANCED_TAB_LABEL },
     { "advancedOptionsButtonTitle", IDS_OPTIONS_ADVANCED_BUTTON_TITLE },
     { "autologinEnabled", IDS_OPTIONS_PASSWORDS_AUTOLOGIN },
     { "browsingData", IDS_OPTIONS_BROWSING_DATA_GROUP_NAME },  // needed?
     { "changeHomePage", IDS_OPTIONS_CHANGE_HOME_PAGE },
-    { "customizeSync", IDS_SYNC_CUSTOMIZE_BUTTON_LABEL },
-    { "defaultBrowserGroupName", IDS_OPTIONS_DEFAULTBROWSER_GROUP_NAME },
-    { "defaultSearchGroupName", IDS_OPTIONS_DEFAULTSEARCH_GROUP_NAME },
+    { "customizeSync", IDS_OPTIONS2_CUSTOMIZE_SYNC_BUTTON_LABEL },
     { "defaultSearchManageEngines", IDS_OPTIONS_DEFAULTSEARCH_MANAGE_ENGINES },
     { "homePageTitle", IDS_OPTIONS2_HOMEPAGE_TITLE },
     { "homepageUseNewTab", IDS_OPTIONS_HOMEPAGE_USE_NEWTAB },
@@ -149,19 +124,23 @@ void BrowserOptionsHandler::GetLocalizedValues(
     { "instantConfirmTitle", IDS_INSTANT_OPT_IN_TITLE },
     { "importData", IDS_OPTIONS_IMPORT_DATA_BUTTON },
     { "manageDataDescription", IDS_OPTIONS_MANAGE_DATA_DESCRIPTION },
-    { "profiles", IDS_PROFILES_OPTIONS_GROUP_NAME },
     { "profilesCreate", IDS_PROFILES_CREATE_BUTTON_LABEL },
     { "profilesDelete", IDS_PROFILES_DELETE_BUTTON_LABEL },
     { "profilesDeleteSingle", IDS_PROFILES_DELETE_SINGLE_BUTTON_LABEL },
     { "profilesListItemCurrent", IDS_PROFILES_LIST_ITEM_CURRENT },
     { "profilesManage", IDS_PROFILES_MANAGE_BUTTON_LABEL },
-    { "startupGroupName", IDS_OPTIONS_STARTUP_GROUP_NAME },
+    { "sectionTitleAdvanced", IDS_OPTIONS_ADVANCED_TAB_LABEL },
+    { "sectionTitleAppearance", IDS_APPEARANCE_GROUP_NAME },
+    { "sectionTitleDefaultBrowser", IDS_OPTIONS_DEFAULTBROWSER_GROUP_NAME },
+    { "sectionTitleUsers", IDS_PROFILES_OPTIONS_GROUP_NAME },
+    { "sectionTitleSearch", IDS_OPTIONS_DEFAULTSEARCH_GROUP_NAME },
+    { "sectionTitleStartup", IDS_OPTIONS_STARTUP_GROUP_NAME },
+    { "sectionTitleSync", IDS_SYNC_OPTIONS_GROUP_NAME },
     { "startupSetPages", IDS_OPTIONS2_STARTUP_SET_PAGES },
     { "startupShowDefaultAndNewTab",
       IDS_OPTIONS_STARTUP_SHOW_DEFAULT_AND_NEWTAB},
     { "startupShowLastSession", IDS_OPTIONS_STARTUP_SHOW_LAST_SESSION },
     { "startupShowPages", IDS_OPTIONS2_STARTUP_SHOW_PAGES },
-    { "syncSection", IDS_SYNC_OPTIONS_GROUP_NAME },
     { "themesGallery", IDS_THEMES_GALLERY_BUTTON },
     { "themesGalleryURL", IDS_THEMES_GALLERY_URL },
     { "toolbarGroupName", IDS_OPTIONS2_TOOLBAR_GROUP_NAME },
@@ -182,18 +161,19 @@ void BrowserOptionsHandler::GetLocalizedValues(
     { "deviceGroupBrightness", IDS_OPTIONS_SETTINGS_BRIGHTNESS_DESCRIPTION },
     { "deviceGroupKeyboard", IDS_OPTIONS_DEVICE_GROUP_KEYBOARD_SECTION },
     { "deviceGroupPointer", IDS_OPTIONS_DEVICE_GROUP_POINTER_SECTION },
-    { "deviceGroupName", IDS_OPTIONS_DEVICE_GROUP_NAME },
     { "enableScreenlock", IDS_OPTIONS_ENABLE_SCREENLOCKER_CHECKBOX },
     { "internetOptionsButtonTitle", IDS_OPTIONS_INTERNET_OPTIONS_BUTTON_TITLE },
-    { "internetOptionsGroupName", IDS_OPTIONS_INTERNET_OPTIONS_GROUP_LABEL },
     { "keyboardSettingsButtonTitle",
       IDS_OPTIONS_DEVICE_GROUP_KEYBOARD_SETTINGS_BUTTON_TITLE },
+    { "manageAccountsButtonTitle", IDS_OPTIONS_ACCOUNTS_BUTTON_TITLE },
     { "pointerSensitivityLess",
       IDS_OPTIONS_SETTINGS_SENSITIVITY_LESS_DESCRIPTION },
     { "pointerSensitivityMore",
       IDS_OPTIONS_SETTINGS_SENSITIVITY_MORE_DESCRIPTION },
     { "pointerSettingsButtonTitle",
       IDS_OPTIONS_DEVICE_GROUP_POINTER_SETTINGS_BUTTON_TITLE },
+    { "sectionTitleDevice", IDS_OPTIONS_DEVICE_GROUP_NAME },
+    { "sectionTitleInternet", IDS_OPTIONS_INTERNET_OPTIONS_GROUP_LABEL },
 #endif
   };
 
@@ -440,46 +420,7 @@ void BrowserOptionsHandler::Initialize() {
                  weak_ptr_factory_for_file_.GetWeakPtr()));
   weak_ptr_factory_for_ui_.DetachFromThread();
 #endif
-
-#if defined(OS_CHROMEOS)
-  chromeos::XInputHierarchyChangedEventListener::GetInstance()
-      ->AddObserver(this);
-  DeviceHierarchyChanged();
-#endif
 }
-
-#if defined(OS_CHROMEOS)
-void BrowserOptionsHandler::CheckTouchpadExists() {
-  bool* exists = new bool;
-  BrowserThread::PostTaskAndReply(BrowserThread::FILE, FROM_HERE,
-      base::Bind(&TouchpadExistsFileThread, exists),
-      base::Bind(&BrowserOptionsHandler::TouchpadExists, AsWeakPtr(), exists));
-}
-
-void BrowserOptionsHandler::CheckMouseExists() {
-  bool* exists = new bool;
-  BrowserThread::PostTaskAndReply(BrowserThread::FILE, FROM_HERE,
-      base::Bind(&MouseExistsFileThread, exists),
-      base::Bind(&BrowserOptionsHandler::MouseExists, AsWeakPtr(), exists));
-}
-
-void BrowserOptionsHandler::TouchpadExists(bool* exists) {
-  base::FundamentalValue val(*exists);
-  web_ui()->CallJavascriptFunction("BrowserOptions.showTouchpadControls", val);
-  delete exists;
-}
-
-void BrowserOptionsHandler::MouseExists(bool* exists) {
-  base::FundamentalValue val(*exists);
-  web_ui()->CallJavascriptFunction("BrowserOptions.showMouseControls", val);
-  delete exists;
-}
-
-void BrowserOptionsHandler::DeviceHierarchyChanged() {
-  CheckMouseExists();
-  CheckTouchpadExists();
-}
-#endif
 
 void BrowserOptionsHandler::CheckAutoLaunch(
     base::WeakPtr<BrowserOptionsHandler> weak_this) {

@@ -117,9 +117,6 @@
               allow search results to display in the desired order. -->
          <include src="search_page.html">
          <include src="browser_options.html">
-         <if expr="pp_ifdef('chromeos')">
-           <include src="chromeos/accounts_options.html">
-         </if>
        </div>
        <div id="subpage-sheet-container-1"
            class="subpage-sheet-container transparent" hidden>
@@ -129,6 +126,8 @@
              <include src="search_engine_manager.html">
              <include src="advanced_options.html">
              <if expr="pp_ifdef('chromeos')">
+               <include src="chromeos/accounts_options.html">
+               <include src="chromeos/change_picture_options.html">
                <include src="chromeos/internet_options.html">
              </if>
            </div>
@@ -139,18 +138,17 @@
          <div id="subpage-sheet-2" class="subpage-sheet">
            <button class="raw-button close-subpage custom-appearance"></button>
            <div class="subpage-sheet-contents">
-             <if expr="pp_ifdef('chromeos')">
-               <include src="chromeos/change_picture_options.html">
-               <include src="chromeos/proxy.html">
-             </if>
-             <if expr="not pp_ifdef('win32') and not pp_ifdef('darwin')">
-               <include src="certificate_manager.html">
-             </if>
              <include src="autofill_options.html">
              <include src="content_settings.html">
              <include src="font_settings.html">
              <include src="language_options.html">
              <include src="password_manager.html">
+             <if expr="pp_ifdef('chromeos')">
+               <include src="chromeos/proxy.html">
+             </if>
+             <if expr="not pp_ifdef('win32') and not pp_ifdef('darwin')">
+               <include src="certificate_manager.html">
+             </if>
            </div>
          </div>
        </div>

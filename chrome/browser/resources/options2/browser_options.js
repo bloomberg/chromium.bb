@@ -5,7 +5,7 @@
 cr.define('options', function() {
   const OptionsPage = options.OptionsPage;
   const ArrayDataModel = cr.ui.ArrayDataModel;
-  var RepeatingButton = cr.ui.RepeatingButton;
+  const RepeatingButton = cr.ui.RepeatingButton;
 
   //
   // BrowserOptions class
@@ -48,52 +48,52 @@ cr.define('options', function() {
       var self = this;
 
       // Sync (Sign in) section.
-      $('sync-action-link').onclick = function(event) {
+      $('sync-action-link').addEventListener('click', function(event) {
         SyncSetupOverlay.showErrorUI();
-      };
-      $('start-stop-sync').onclick = function(event) {
+      });
+      $('start-stop-sync').addEventListener('click', function(event) {
         if (self.syncSetupCompleted)
           SyncSetupOverlay.showStopSyncingUI();
         else
           SyncSetupOverlay.showSetupUI();
-      };
-      $('customize-sync').onclick = function(event) {
+      });
+      $('customize-sync').addEventListener('click', function(event) {
         SyncSetupOverlay.showSetupUI();
-      };
+      });
 
       // Internet connection section (ChromeOS only).
       if (cr.isChromeOS) {
-        $('internet-options-button').onclick = function(event) {
+        $('internet-options-button').addEventListener('click', function(event) {
           OptionsPage.navigateToPage('internet');
           chrome.send('coreOptionsUserMetricsAction',
               ['Options_InternetOptions']);
-        };
+        });
       }
 
       // On Startup section.
-      $('startupSetPages').onclick = function() {
+      $('startupSetPages').addEventListener('click', function() {
         OptionsPage.navigateToPage('startup');
-      };
+      });
 
       // Appearance section.
-      $('change-home-page').onclick = function(event) {
+      $('change-home-page').addEventListener('click', function(event) {
         OptionsPage.navigateToPage('homePageOverlay');
-      };
-      $('themes-gallery').onclick = function(event) {
+      });
+      $('themes-gallery').addEventListener('click', function(event) {
         window.open(localStrings.getString('themesGalleryURL'));
-      };
-      $('themes-reset').onclick = function(event) {
+      });
+      $('themes-reset').addEventListener('click', function(event) {
         chrome.send('themesReset');
-      };
+      });
 
       // Device section (ChromeOS only).
       if (cr.isChromeOS) {
-        $('keyboard-settings-button').onclick = function(event) {
+        $('keyboard-settings-button').addEventListener('click', function(evt) {
           OptionsPage.navigateToPage('keyboard-overlay');
-        };
-        $('pointer-settings-button').onclick = function(event) {
+        });
+        $('pointer-settings-button').addEventListener('click', function(evt) {
           OptionsPage.navigateToPage('pointer-overlay');
-        };
+        });
         this.initBrightnessButton_('brightness-decrease-button',
             'decreaseScreenBrightness');
         this.initBrightnessButton_('brightness-increase-button',
@@ -101,12 +101,14 @@ cr.define('options', function() {
       }
 
       // Search section.
-      $('defaultSearchManageEnginesButton').onclick = function(event) {
-        OptionsPage.navigateToPage('searchEngines');
-        chrome.send('coreOptionsUserMetricsAction',
-            ['Options_ManageSearchEngines']);
-      };
-      $('defaultSearchEngine').onchange = this.setDefaultSearchEngine_;
+      $('defaultSearchManageEnginesButton').addEventListener('click',
+          function(event) {
+            OptionsPage.navigateToPage('searchEngines');
+            chrome.send('coreOptionsUserMetricsAction',
+                ['Options_ManageSearchEngines']);
+          });
+      $('defaultSearchEngine').addEventListener('change',
+          this.setDefaultSearchEngine_);
       $('instantEnabledCheckbox').customChangeHandler = function(event) {
         if (this.checked) {
           if (self.instantConfirmDialogShown_)
@@ -118,11 +120,10 @@ cr.define('options', function() {
         }
         return true;
       };
-      $('instantFieldTrialCheckbox').addEventListener('change',
-          function(event) {
-            this.checked = true;
-            chrome.send('disableInstant');
-          });
+      $('instantFieldTrialCheckbox').addEventListener('change', function(evt) {
+        this.checked = true;
+        chrome.send('disableInstant');
+      });
       Preferences.getInstance().addEventListener('instant.confirm_dialog_shown',
           this.onInstantConfirmDialogShownChanged_.bind(this));
       Preferences.getInstance().addEventListener('instant.enabled',
@@ -151,29 +152,30 @@ cr.define('options', function() {
       options.browser_options.ProfileList.decorate(profilesList);
       profilesList.autoExpands = true;
 
-      profilesList.onchange = self.setProfileViewButtonsStatus_;
-      $('profiles-create').onclick = function(event) {
+      profilesList.addEventListener('change',
+          self.setProfileViewButtonsStatus_);
+      $('profiles-create').addEventListener('click', function(event) {
         chrome.send('createProfile');
-      };
-      $('profiles-manage').onclick = function(event) {
+      });
+      $('profiles-manage').addEventListener('click', function(event) {
         var selectedProfile = self.getSelectedProfileItem_();
         if (selectedProfile)
           ManageProfileOverlay.showManageDialog(selectedProfile);
-      };
-      $('profiles-delete').onclick = function(event) {
+      });
+      $('profiles-delete').addEventListener('click', function(event) {
         var selectedProfile = self.getSelectedProfileItem_();
         if (selectedProfile)
           ManageProfileOverlay.showDeleteDialog(selectedProfile);
-      };
+      });
 
       if (cr.isChromeOS) {
         // Username (canonical email) of the currently logged in user or
         // |kGuestUser| if a guest session is active.
         this.username_ = localStrings.getString('username');
 
-        $('change-picture-button').onclick = function(event) {
+        $('change-picture-button').addEventListener('click', function(event) {
           OptionsPage.navigateToPage('changePicture');
-        };
+        });
         this.updateAccountPicture_();
 
         if (cr.commandLine && cr.commandLine.options['--bwsi']) {
@@ -182,36 +184,43 @@ cr.define('options', function() {
           $('enable-screen-lock').disabled = true;
           $('change-picture-button').disabled = true;
         }
+
+        $('manage-accounts-button').addEventListener('click', function(event) {
+          OptionsPage.navigateToPage('accounts');
+          chrome.send('coreOptionsUserMetricsAction',
+              ['Options_ManageAccounts']);
+        });
       } else {
-        $('import-data').onclick = function(event) {
+        $('import-data').addEventListener('click', function(event) {
           // Make sure that any previous import success message is hidden, and
           // we're showing the UI to import further data.
           $('import-data-configure').hidden = false;
           $('import-data-success').hidden = true;
           OptionsPage.navigateToPage('importData');
           chrome.send('coreOptionsUserMetricsAction', ['Import_ShowDlg']);
-        };
+        });
 
         if ($('themes-GTK-button')) {
-          $('themes-GTK-button').onclick = function(event) {
+          $('themes-GTK-button').addEventListener('click', function(event) {
             chrome.send('themesSetGTK');
-          };
+          });
         }
       }
 
       // Default browser section.
       if (!cr.isChromeOS) {
-        $('defaultBrowserUseAsDefaultButton').onclick = function(event) {
-          chrome.send('becomeDefaultBrowser');
-        };
+        $('defaultBrowserUseAsDefaultButton').addEventListener('click',
+            function(event) {
+              chrome.send('becomeDefaultBrowser');
+            });
       }
 
       // Under the hood section.
-      $('advancedOptionsButton').onclick = function(event) {
+      $('advancedOptionsButton').addEventListener('click', function(event) {
         OptionsPage.navigateToPage('advanced');
         chrome.send('coreOptionsUserMetricsAction',
             ['Options_OpenUnderTheHood']);
-      };
+      });
     },
 
     /**
@@ -549,29 +558,11 @@ cr.define('options', function() {
      * (Re)loads IMG element with current user account picture.
      */
     updateAccountPicture_: function() {
-      $('account-picture').src =
-          'chrome://userimage/' + this.username_ +
-          '?id=' + (new Date()).getTime();
-    },
-
-    /**
-     * Displays the touchpad controls section when we detect a touchpad, hides
-     * it otherwise.
-     * @param {boolean} show Whether or not to show the controls.
-     * @private
-     */
-    showTouchpadControls_: function() {
-      $('touchpad-controls').hidden = !show;
-    },
-
-    /**
-     * Displays the mouse controls section when we detect a mouse, hides it
-     * otherwise.
-     * @param {boolean} show Whether or not to show the controls.
-     * @private
-     */
-    showMouseControls_: function(show) {
-      $('mouse-controls').hidden = !show;
+      var picture = $('account-picture');
+      if (picture) {
+        picture.src = 'chrome://userimage/' + this.username_ + '?id=' +
+            Date.now();
+      }
     },
   };
 
@@ -600,8 +591,6 @@ cr.define('options', function() {
     'updateHomePageLabel',
     'updateSearchEngines',
     'updateStartupPages',
-    'showTouchpadControls',
-    'showMouseControls',
   ].forEach(function(name) {
     BrowserOptions[name] = function(value) {
       return BrowserOptions.getInstance()[name + '_'](value);

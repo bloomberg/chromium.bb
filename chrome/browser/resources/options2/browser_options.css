@@ -81,11 +81,6 @@
   display: inline;
 }
 
-#start-stop-sync {
-  margin-left: 0;
-  margin-right: 5px;
-}
-
 #profiles-list {
   min-height: 0;
   margin-bottom: 10px;

@@ -6,8 +6,9 @@
         incremental>
   </span>
   <h1 i18n-content="browserPage"></h1>
+<if expr="not pp_ifdef('chromeos')">
   <section id="sync-section">
-    <h3 i18n-content="syncSection"></h3>
+    <h3 i18n-content="sectionTitleSync"></h3>
     <div id="sync-overview" class="section-description" hidden>
       <p i18n-content="syncOverview"></p>
       <a i18n-values="href:syncLearnMoreURL" i18n-content="learnMore"></a>
@@ -29,9 +30,10 @@
       </div>
     </div>
   </section>
+</if>
 <if expr="pp_ifdef('chromeos')">
   <section>
-    <h3 i18n-content="internetOptionsGroupName"></h3>
+    <h3 i18n-content="sectionTitleInternet"></h3>
     <div>
       <button id="internet-options-button"
           i18n-content="internetOptionsButtonTitle"></button>
@@ -41,7 +43,7 @@
 <if expr="not pp_ifdef('chromeos')">
   <!-- This section is temporarily duplicated down below for ChromeOS. -->
   <section id="startupSection">
-    <h3 i18n-content="startupGroupName"></h3>
+    <h3 i18n-content="sectionTitleStartup"></h3>
     <div>
       <div class="radio">
         <label>
@@ -76,7 +78,7 @@
   </section>
 </if>
   <section>
-    <h3 i18n-content="appearance"></h3>
+    <h3 i18n-content="sectionTitleAppearance"></h3>
 <if expr="not pp_ifdef('toolkit_views') and is_posix and not is_macosx">
     <div>
       <div>
@@ -126,7 +128,7 @@
   </section>
 <if expr="pp_ifdef('chromeos')">
   <section>
-    <h3 i18n-content="deviceGroupName"></h3>
+    <h3 i18n-content="sectionTitleDevice"></h3>
     <div class="option-control-table">
       <span class="option-name" i18n-content="deviceGroupPointer"></span>
       <div id="pointer-value">
@@ -158,7 +160,7 @@
   </section>
 </if>
   <section>
-    <h3 i18n-content="defaultSearchGroupName"></h3>
+    <h3 i18n-content="sectionTitleSearch"></h3>
       <div id="defaultSearchEngineGroup">
         <div id="defaultSearchGroupLabel"
              i18n-values=".innerHTML:defaultSearchGroupLabel"></div>
@@ -179,24 +181,44 @@
         </div>
       </div>
   </section>
-  <section id="profiles-section" hidden>
-    <h3 i18n-content="profiles"></h3>
+  <section>
+    <h3 i18n-content="sectionTitleUsers"></h3>
 <if expr="pp_ifdef('chromeos')">
-    <div>
-      <span id="account-picture-wrapper">
-        <img id="account-picture"
-            src="chrome://theme/IDR_PROFILE_PICTURE_LOADING">
-      </span>
-      <label>
-        <input id="enable-screen-lock" type="checkbox"
-            pref="settings.enable_screen_lock">
-        <span i18n-content="enableScreenlock"></span>
-      </label>
-      <br>
-      <button id="change-picture-button" i18n-content="changePicture"></button>
+    <div id="sync-section">
+      <div id="sync-overview" class="section-description" hidden>
+        <p i18n-content="syncOverview"></p>
+        <a i18n-values="href:syncLearnMoreURL" i18n-content="learnMore"></a>
+      </div>
+      <div id="sync-status" hidden>
+        <span id="sync-status-text"></span>
+        <button id="sync-action-link" class="link-button"></button>
+      </div>
+      <div id="sync-buttons">
+        <div id="enable-auto-login-checkbox" class="checkbox" hidden>
+          <label>
+            <input id="enable-auto-login" pref="autologin.enabled"
+                metric="Options_Autologin" type="checkbox">
+            <span i18n-content="autologinEnabled"></span>
+          </label>
+        </div>
+        <div class="checkbox">
+          <label>
+            <input id="enable-screen-lock" type="checkbox"
+                pref="settings.enable_screen_lock">
+            <span i18n-content="enableScreenlock"></span>
+          </label>
+        </div>
+        <button id="change-picture-button" i18n-content="changePicture">
+        </button>
+        <button id="start-stop-sync" hidden></button>
+        <button id="customize-sync" i18n-content="customizeSync" hidden>
+        <button id="manage-accounts-button"
+            i18n-content="manageAccountsButtonTitle"></button>
+        </button>
+      </div>
     </div>
 </if>
-    <div>
+    <div id="profiles-section" hidden>
       <list id="profiles-list" class="settings-list" hidden></list>
       <div id="profiles-single-message" i18n-content="profilesSingleUser">
       </div>
@@ -219,7 +241,7 @@
   </section>
 <if expr="not pp_ifdef('chromeos')">
   <section>
-    <h3 i18n-content="defaultBrowserGroupName"></h3>
+    <h3 i18n-content="sectionTitleDefaultBrowser"></h3>
     <div>
       <button id="defaultBrowserUseAsDefaultButton"
           i18n-content="defaultBrowserUseAsDefault"></button>
@@ -233,7 +255,7 @@
   <!-- TODO(csilv): Move to 'Under the Hood' for ChromeOS only. -->
   <!-- http://crbug.com/110527 -->
   <section id="startupSection">
-    <h3 i18n-content="startupGroupName"></h3>
+    <h3 i18n-content="sectionTitleStartup"></h3>
     <div>
       <div class="radio">
         <label>
@@ -268,7 +290,7 @@
   </section>
 </if>
   <section>
-    <h3 i18n-content="advancedGroupName"></h3>
+    <h3 i18n-content="sectionTitleAdvanced"></h3>
     <div>
       <div i18n-content="advancedGroupDescription"></div>
       <button id="advancedOptionsButton"

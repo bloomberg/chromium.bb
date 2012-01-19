@@ -18,10 +18,6 @@
 #include "chrome/browser/ui/webui/options2/options_ui2.h"
 #include "ui/base/models/table_model_observer.h"
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/device_hierarchy_observer.h"
-#endif
-
 class AutocompleteController;
 class CustomHomePagesTableModel;
 class TemplateURLService;
@@ -34,11 +30,7 @@ class BrowserOptionsHandler
       public ProfileSyncServiceObserver,
       public AutocompleteControllerDelegate,
       public ShellIntegration::DefaultWebClientObserver,
-      public TemplateURLServiceObserver,
-#if defined(OS_CHROMEOS)
-      public chromeos::DeviceHierarchyObserver,
-#endif
-      public base::SupportsWeakPtr<BrowserOptionsHandler> {
+      public TemplateURLServiceObserver {
  public:
   BrowserOptionsHandler();
   virtual ~BrowserOptionsHandler();
@@ -61,11 +53,6 @@ class BrowserOptionsHandler
 
   // TemplateURLServiceObserver implementation.
   virtual void OnTemplateURLServiceChanged() OVERRIDE;
-
-#if defined(OS_CHROMEOS)
-  // DeviceHierarchyObserver implementation.
-  virtual void DeviceHierarchyChanged() OVERRIDE;
-#endif
 
  private:
   // content::NotificationObserver implementation.
@@ -143,14 +130,6 @@ class BrowserOptionsHandler
 #endif
 
 #if defined(OS_CHROMEOS)
-  // Check for input devices.
-  void CheckTouchpadExists();
-  void CheckMouseExists();
-
-  // Callback for input device checks.
-  void TouchpadExists(bool* exists);
-  void MouseExists(bool* exists);
-
   // Called when the System configuration screen is used to adjust
   // the screen brightness.
   // |args| will be an empty list.

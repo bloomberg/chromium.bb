@@ -7910,6 +7910,9 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
         <message name="IDS_OPTIONS_ACCOUNTS_TAB_LABEL" desc="The title of the Accounts tab">
           Users
         </message>
+        <message name="IDS_OPTIONS_ACCOUNTS_BUTTON_TITLE" desc="The title of the Manage Accounts button">
+          Manage other users...
+        </message>
         <message name="IDS_OPTIONS_PROXY_TAB_LABEL" desc="The title of the proxy subtab">
           Proxy
         </message>
@@ -10469,6 +10472,16 @@ Some features may be unavailable.  Please check that the profile exists and you 
         Advanced...
       </message>
       <if expr="not pp_ifdef('use_titlecase')">
+        <message name="IDS_OPTIONS2_CUSTOMIZE_SYNC_BUTTON_LABEL" desc="The text to display on the button to customize which data types the user is syncing.">
+          Advanced sync settings...
+        </message>
+      </if>
+      <if expr="pp_ifdef('use_titlecase')">
+        <message name="IDS_OPTIONS2_CUSTOMIZE_SYNC_BUTTON_LABEL" desc="The text to display on the button to customize which data types the user is syncing.">
+          Advanced Sync Settings...
+        </message>
+      </if>
+      <if expr="not pp_ifdef('use_titlecase')">
         <message name="IDS_SYNC_STOP_SYNCING_BUTTON_LABEL" desc="The text to display on the button to indicate stop syncing functionality.">
           Disconnect your Google Account...
         </message>
@@ -10596,12 +10609,12 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <!-- Customize Sync dialog -->
       <if expr="not pp_ifdef('use_titlecase')">
         <message name="IDS_SYNC_SETUP_CONFIGURE_TITLE" desc="In title case: the title of the Customize page of the sync setup dialog.">
-          Advanced sync preferences
+          Advanced sync settings
         </message>
       </if>
       <if expr="pp_ifdef('use_titlecase')">
         <message name="IDS_SYNC_SETUP_CONFIGURE_TITLE" desc="The title of the Customize page of the sync setup dialog.">
-          Advanced Sync Preferences
+          Advanced Sync Settings
         </message>
       </if>
       <message name="IDS_SYNC_CONFIRM_SYNC_PREFERENCES" desc="In title case: The title of the 'Confirm Sync Preferences' page of the customize sync dialog.">
@@ -12240,8 +12253,8 @@ changed since last sign in
       <message name="IDS_OPTIONS_ENABLE_SCREENLOCKER_CHECKBOX" desc="In the Personal Stuff settings tab, the text on the checkbox to enable screenlocker for current user.">
         Require password to wake from sleep
       </message>
-      <message name="IDS_OPTIONS_CHANGE_PICTURE" desc="In the Personal Stuff settings tab, the text on the button to change picture for the current user.">
-        Change picture
+      <message name="IDS_OPTIONS_CHANGE_PICTURE" desc="In the settings tab, the text on the button to change picture for the current user.">
+        Change picture...
       </message>
       <message name="IDS_OPTIONS_CHANGE_PICTURE_DIALOG_TITLE" desc="Title of the dialog shown when user wants to change his/her picture.">
         Change picture

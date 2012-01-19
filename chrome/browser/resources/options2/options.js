@@ -63,8 +63,8 @@ function load() {
   localStrings = new LocalStrings();
 
   OptionsPage.register(SearchPage.getInstance());
-
   OptionsPage.register(BrowserOptions.getInstance());
+
   OptionsPage.registerSubPage(SearchEngineManager.getInstance(),
                               BrowserOptions.getInstance(),
                               [$('defaultSearchManageEnginesButton')]);
@@ -72,6 +72,9 @@ function load() {
                               BrowserOptions.getInstance(),
                               [$('advancedOptionsButton')]);
   if (cr.isChromeOS) {
+    OptionsPage.registerSubPage(AccountsOptions.getInstance(),
+                                BrowserOptions.getInstance(),
+                                [$('manage-accounts-button')]);
     OptionsPage.registerSubPage(InternetOptions.getInstance(),
                                 BrowserOptions.getInstance(),
                                 [$('internet-options-button')]);
@@ -135,11 +138,6 @@ function load() {
   OptionsPage.registerSubPage(FontSettings.getInstance(),
                               AdvancedOptions.getInstance(),
                               [$('fontSettingsCustomizeFontsButton')]);
-  if (!cr.isChromeOS) {
-    OptionsPage.registerSubPage(LanguageOptions.getInstance(),
-                                AdvancedOptions.getInstance(),
-                                [$('language-button')]);
-  }
   if (!cr.isWindows && !cr.isMac) {
     OptionsPage.registerSubPage(CertificateManager.getInstance(),
                                 AdvancedOptions.getInstance(),
@@ -178,7 +176,6 @@ function load() {
                               BrowserOptions.getInstance());
 
   if (cr.isChromeOS) {
-    OptionsPage.register(AccountsOptions.getInstance());
     OptionsPage.registerSubPage(ProxyOptions.getInstance(),
                                 InternetOptions.getInstance());
     OptionsPage.registerSubPage(ChangePictureOptions.getInstance(),
