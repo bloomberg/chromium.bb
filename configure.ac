@@ -31,6 +31,11 @@ AC_CHECK_PROG(RSVG_CONVERT, rsvg-convert, rsvg-convert)
 AM_CONDITIONAL(HAVE_RSVG_CONVERT, test -n "$RSVG_CONVERT")
 
 
+AC_ARG_ENABLE(setuid-install, [  --enable-setuid-install],,
+	      enable_setuid_install=yes)
+AM_CONDITIONAL(ENABLE_SETUID_INSTALL, test x$enable_setuid_install == xyes)
+
+
 AC_ARG_ENABLE(xserver-launcher, [  --enable-xserver-launcher],,
 	      enable_xserver_launcher=yes)
 AM_CONDITIONAL(ENABLE_XSERVER_LAUNCHER, test x$enable_xserver_launcher == xyes)
@@ -157,3 +162,13 @@ AC_CONFIG_FILES([Makefile
 		 data/Makefile
 		 protocol/Makefile])
 AC_OUTPUT
+
+if test "x$enable_setuid_install" == xyes; then
+AC_MSG_WARN([
+
+ *** You've enabled the setuid install hook.  Weston is still a 
+ *** pre-alpha project and may have bugs and issues that make a
+ *** setuid install unsafe. Proceed at your own risk.
+])
+fi
+

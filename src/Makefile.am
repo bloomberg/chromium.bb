@@ -22,6 +22,12 @@ weston_SOURCES =			\
 	util.c					\
 	$(xserver_launcher_sources)
 
+if ENABLE_SETUID_INSTALL
+install-exec-hook:
+	chown root $(bindir)/weston
+	chmod u+s $(bindir)/weston
+endif
+
 if ENABLE_XSERVER_LAUNCHER
 xserver_launcher_sources =			\
 	xserver-launcher.c			\
