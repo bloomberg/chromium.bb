@@ -141,7 +141,7 @@ TEST(ElfCoreDumpTest, ValidCoreFile) {
   // TODO(benchan): Revert to use ASSERT_TRUE once the flakiness in
   // CrashGenerator is identified and fixed.
   if (!crash_generator.CreateChildCrash(kNumOfThreads, kCrashThread,
-                                        kCrashSignal)) {
+                                        kCrashSignal, NULL)) {
     fprintf(stderr, "ElfCoreDumpTest.ValidCoreFile test is skipped "
             "due to no core dump generated");
     return;

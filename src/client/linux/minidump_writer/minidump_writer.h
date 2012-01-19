@@ -62,6 +62,12 @@ bool WriteMinidump(const char* filename, pid_t crashing_process,
                    const void* blob, size_t blob_size,
                    const MappingList& mappings);
 
+// Write a minidump to the filesystem.  Same as above, but uses the given
+// core file and procfs directory to generate the minidump post mortem.
+bool WriteMinidumpFromCore(const char* filename,
+                           const char* core_path,
+                           const char* procfs_override);
+
 }  // namespace google_breakpad
 
 #endif  // CLIENT_LINUX_MINIDUMP_WRITER_MINIDUMP_WRITER_H_

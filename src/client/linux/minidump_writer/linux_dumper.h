@@ -27,6 +27,14 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+// linux_dumper.h: Define the google_breakpad::LinuxDumper class, which
+// is a base class for extracting information of a crashed process. It
+// was originally a complete implementation using the ptrace API, but
+// has been refactored to allow derived implementations supporting both
+// ptrace and core dump. A portion of the original implementation is now
+// in google_breakpad::LinuxPtraceDumper (see linux_ptrace_dumper.h for
+// details).
+
 #ifndef CLIENT_LINUX_MINIDUMP_WRITER_LINUX_DUMPER_H_
 #define CLIENT_LINUX_MINIDUMP_WRITER_LINUX_DUMPER_H_
 
@@ -121,15 +129,18 @@ class LinuxDumper {
   virtual ~LinuxDumper();
 
   // Parse the data for |threads| and |mappings|.
-  bool Init();
+  virtual bool Init();
+
+  // Return true if the dumper performs a post-mortem dump.
+  virtual bool IsPostMortem() const = 0;
 
   // Suspend/resume all threads in the given process.
-  bool ThreadsSuspend();
-  bool ThreadsResume();
+  virtual bool ThreadsSuspend() = 0;
+  virtual bool ThreadsResume() = 0;
 
   // Read information about the |index|-th thread of |threads_|.
   // Returns true on success. One must have called |ThreadsSuspend| first.
-  virtual bool GetThreadInfoByIndex(size_t index, ThreadInfo* info);
+  virtual bool GetThreadInfoByIndex(size_t index, ThreadInfo* info) = 0;
 
   // These are only valid after a call to |Init|.
   const wasteful_vector<pid_t> &threads() { return threads_; }
@@ -146,13 +157,14 @@ class LinuxDumper {
 
   // Copy content of |length| bytes from a given process |child|,
   // starting from |src|, into |dest|.
-  void CopyFromProcess(void* dest, pid_t child, const void* src,
-                       size_t length);
+  virtual void CopyFromProcess(void* dest, pid_t child, const void* src,
+                               size_t length) = 0;
 
-  // Builds a proc path for a certain pid for a node.  path is a
-  // character array that is overwritten, and node is the final node
-  // without any slashes.
-  void BuildProcPath(char* path, pid_t pid, const char* node) const;
+  // Builds a proc path for a certain pid for a node (/proc/<pid>/<node>).
+  // |path| is a character array of at least NAME_MAX bytes to return the
+  // result.|node| is the final node without any slashes. Returns true on
+  // success.
+  virtual bool BuildProcPath(char* path, pid_t pid, const char* node) const = 0;
 
   // Generate a File ID from the .text section of a mapped entry.
   // If not a member, mapping_id is ignored.
@@ -179,9 +191,10 @@ class LinuxDumper {
   pid_t crash_thread() const { return crash_thread_; }
   void set_crash_thread(pid_t crash_thread) { crash_thread_ = crash_thread; }
 
- private:
-  bool EnumerateMappings();
-  bool EnumerateThreads();
+ protected:
+  virtual bool EnumerateMappings();
+
+  virtual bool EnumerateThreads() = 0;
 
   // For the case where a running program has been deleted, it'll show up in
   // /proc/pid/maps as "/path/to/program (deleted)". If this is the case, then
@@ -208,9 +221,11 @@ class LinuxDumper {
 
   mutable PageAllocator allocator_;
 
-  bool threads_suspended_;
-  wasteful_vector<pid_t> threads_;  // the ids of all the threads
-  wasteful_vector<MappingInfo*> mappings_;  // info from /proc/<pid>/maps
+  // IDs of all the threads.
+  wasteful_vector<pid_t> threads_;
+
+  // Info from /proc/<pid>/maps.
+  wasteful_vector<MappingInfo*> mappings_;
 };
 
 }  // namespace google_breakpad

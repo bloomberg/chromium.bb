@@ -70,7 +70,7 @@ class CrashGenerator {
   // a signal with number |crash_signal| to the |crash_thread|-th thread.
   // Returns true on success.
   bool CreateChildCrash(unsigned num_threads, unsigned crash_thread,
-                        int crash_signal);
+                        int crash_signal, pid_t* child_pid);
 
   // Creates |num_threads| threads in the child process.
   void CreateThreadsInChildProcess(unsigned num_threads);

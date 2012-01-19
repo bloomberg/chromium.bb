@@ -66,6 +66,8 @@ src_client_linux_libbreakpad_client_a_SOURCES = \
 	src/client/linux/crash_generation/crash_generation_client.cc \
 	src/client/linux/handler/exception_handler.cc \
 	src/client/linux/minidump_writer/linux_dumper.cc \
+	src/client/linux/minidump_writer/linux_core_dumper.cc \
+	src/client/linux/minidump_writer/linux_ptrace_dumper.cc \
 	src/client/linux/minidump_writer/minidump_writer.cc \
 	src/client/minidump_file_writer.cc \
 	src/common/convert_UTF.c \
@@ -214,6 +216,7 @@ bin_PROGRAMS += \
 
 if !DISABLE_TOOLS
 bin_PROGRAMS += \
+	src/tools/linux/core2md/core2md \
 	src/tools/linux/dump_syms/dump_syms \
 	src/tools/linux/md2core/minidump-2-core \
 	src/tools/linux/symupload/minidump_upload \
@@ -289,10 +292,13 @@ src_client_linux_linux_client_unittest_SOURCES = \
 	src/client/linux/handler/exception_handler_unittest.cc \
 	src/client/linux/minidump_writer/directory_reader_unittest.cc \
 	src/client/linux/minidump_writer/line_reader_unittest.cc \
-	src/client/linux/minidump_writer/linux_dumper_unittest.cc \
+	src/client/linux/minidump_writer/linux_core_dumper_unittest.cc \
+	src/client/linux/minidump_writer/linux_ptrace_dumper_unittest.cc \
 	src/client/linux/minidump_writer/minidump_writer_unittest.cc \
 	src/common/linux/linux_libc_support_unittest.cc \
+	src/common/linux/tests/crash_generator.cc \
 	src/common/memory_unittest.cc \
+	src/common/tests/file_utils.cc \
 	src/testing/gtest/src/gtest-all.cc \
 	src/testing/gtest/src/gtest_main.cc \
 	src/testing/src/gmock-all.cc \
@@ -311,6 +317,8 @@ src_client_linux_linux_client_unittest_LDADD = \
 	src/client/linux/handler/exception_handler.o \
 	src/client/linux/crash_generation/crash_generation_client.o \
 	src/client/linux/minidump_writer/linux_dumper.o \
+	src/client/linux/minidump_writer/linux_core_dumper.o \
+	src/client/linux/minidump_writer/linux_ptrace_dumper.o \
 	src/client/linux/minidump_writer/minidump_writer.o \
 	src/client/minidump_file_writer.o \
 	src/common/convert_UTF.o \
@@ -320,11 +328,20 @@ src_client_linux_linux_client_unittest_LDADD = \
 	src/common/linux/guid_creator.o \
 	src/common/linux/memory_mapped_file.o \
 	src/common/linux/safe_readlink.o \
-	src/common/string_conversion.o
+	src/common/string_conversion.o \
+	$(PTHREAD_CFLAGS) $(PTHREAD_LIBS)
 
-src_client_linux_linux_client_unittest_DEPENDENCIES = src/client/linux/linux_dumper_unittest_helper src/client/linux/libbreakpad_client.a src/libbreakpad.a
+src_client_linux_linux_client_unittest_DEPENDENCIES = \
+	src/client/linux/linux_dumper_unittest_helper \
+	src/client/linux/libbreakpad_client.a \
+	src/libbreakpad.a
 
 if !DISABLE_TOOLS
+src_tools_linux_core2md_core2md_SOURCES = \
+	src/tools/linux/core2md/core2md.cc
+src_tools_linux_core2md_core2md_LDADD = \
+	src/client/linux/libbreakpad_client.a
+
 src_tools_linux_dump_syms_dump_syms_SOURCES = \
 	src/common/dwarf_cfi_to_module.cc \
 	src/common/dwarf_cu_to_module.cc \
@@ -534,25 +551,25 @@ src_processor_disassembler_x86_unittest_LDADD = \
 	src/third_party/libdisasm/libdisasm.a
 
 src_processor_fast_source_line_resolver_unittest_SOURCES = \
-  src/processor/fast_source_line_resolver_unittest.cc \
-  src/testing/gtest/src/gtest-all.cc \
-  src/testing/src/gmock-all.cc
+	src/processor/fast_source_line_resolver_unittest.cc \
+	src/testing/gtest/src/gtest-all.cc \
+	src/testing/src/gmock-all.cc
 src_processor_fast_source_line_resolver_unittest_CPPFLAGS = \
-  -I$(top_srcdir)/src \
-  -I$(top_srcdir)/src/testing/include \
-  -I$(top_srcdir)/src/testing/gtest/include \
-  -I$(top_srcdir)/src/testing/gtest \
-  -I$(top_srcdir)/src/testing
+	-I$(top_srcdir)/src \
+	-I$(top_srcdir)/src/testing/include \
+	-I$(top_srcdir)/src/testing/gtest/include \
+	-I$(top_srcdir)/src/testing/gtest \
+	-I$(top_srcdir)/src/testing
 src_processor_fast_source_line_resolver_unittest_LDADD = \
-  src/processor/fast_source_line_resolver.o \
-  src/processor/basic_source_line_resolver.o \
-  src/processor/cfi_frame_info.o \
-  src/processor/module_comparer.o \
-  src/processor/module_serializer.o \
-  src/processor/pathname_stripper.o \
-  src/processor/logging.o \
-  src/processor/source_line_resolver_base.o \
-  src/processor/tokenize.o
+	src/processor/fast_source_line_resolver.o \
+	src/processor/basic_source_line_resolver.o \
+	src/processor/cfi_frame_info.o \
+	src/processor/module_comparer.o \
+	src/processor/module_serializer.o \
+	src/processor/pathname_stripper.o \
+	src/processor/logging.o \
+	src/processor/source_line_resolver_base.o \
+	src/processor/tokenize.o
 
 src_processor_map_serializers_unittest_SOURCES = \
 	src/processor/map_serializers_unittest.cc \

@@ -74,6 +74,8 @@
 #include "client/linux/handler/exception_handler.h"
 #include "client/linux/minidump_writer/line_reader.h"
 #include "client/linux/minidump_writer/linux_dumper.h"
+#include "client/linux/minidump_writer/linux_core_dumper.h"
+#include "client/linux/minidump_writer/linux_ptrace_dumper.h"
 #include "client/linux/minidump_writer/minidump_extension_linux.h"
 #include "common/linux/linux_libc_support.h"
 #include "third_party/lss/linux_syscall_support.h"
@@ -372,9 +374,9 @@ class MinidumpWriter {
                  const MappingList& mappings,
                  LinuxDumper* dumper)
       : filename_(filename),
-        ucontext_(&context->context),
+        ucontext_(context ? &context->context : NULL),
 #if !defined(__ARM_EABI__)
-        float_state_(&context->float_state),
+        float_state_(context ? &context->float_state : NULL),
 #else
         // TODO: fix this after fixing ExceptionHandler
         float_state_(NULL),
@@ -401,18 +403,25 @@ class MinidumpWriter {
     struct r_debug* r_debug = NULL;
     uint32_t dynamic_length = 0;
 #if !defined(__ANDROID__)
-    // The Android NDK is missing structure definitions for most of this.
-    // For now, it's simpler just to skip it.
-    for (int i = 0;;) {
-      ElfW(Dyn) dyn;
-      dynamic_length += sizeof(dyn);
-      dumper_->CopyFromProcess(&dyn, GetCrashThread(), _DYNAMIC+i++,
-                               sizeof(dyn));
-      if (dyn.d_tag == DT_DEBUG) {
-        r_debug = (struct r_debug*)dyn.d_un.d_ptr;
-        continue;
-      } else if (dyn.d_tag == DT_NULL) {
-        break;
+    // This code assumes the crashing process is the same as this process and
+    // may hang or take a long time to complete if not so.
+    // Thus, we skip this code for a post-mortem based dump.
+    if (!dumper_->IsPostMortem()) {
+      // The Android NDK is missing structure definitions for most of this.
+      // For now, it's simpler just to skip it.
+      for (int i = 0;;) {
+        ElfW(Dyn) dyn;
+        dynamic_length += sizeof(dyn);
+        // NOTE: Use of _DYNAMIC assumes this is the same process as the
+        // crashing process. This loop will go forever if it's out of bounds.
+        dumper_->CopyFromProcess(&dyn, GetCrashThread(), _DYNAMIC+i++,
+                                 sizeof(dyn));
+        if (dyn.d_tag == DT_DEBUG) {
+          r_debug = (struct r_debug*)dyn.d_un.d_ptr;
+          continue;
+        } else if (dyn.d_tag == DT_NULL) {
+          break;
+        }
       }
     }
 #endif
@@ -647,7 +656,8 @@ class MinidumpWriter {
       // we used the actual state of the thread we would find it running in the
       // signal handler with the alternative stack, which would be deeply
       // unhelpful.
-      if ((pid_t)thread.thread_id == GetCrashThread()) {
+      if (static_cast<pid_t>(thread.thread_id) == GetCrashThread() &&
+          !dumper_->IsPostMortem()) {
         const void* stack;
         size_t stack_len;
         if (!dumper_->GetStackInfo(&stack, &stack_len, GetStackPointer()))
@@ -736,6 +746,10 @@ class MinidumpWriter {
         CPUFillFromThreadInfo(cpu.get(), info);
         PopSeccompStackFrame(cpu.get(), thread, stack_copy);
         thread.thread_context = cpu.location();
+        if (dumper_->threads()[i] == GetCrashThread()) {
+          assert(dumper_->IsPostMortem());
+          crashing_thread_context_ = cpu.location();
+        }
       }
 
       list.CopyIndexAfterObject(i, &thread, sizeof(thread));
@@ -1281,7 +1295,8 @@ class MinidumpWriter {
   bool WriteProcFile(MDLocationDescriptor* result, pid_t pid,
                      const char* filename) {
     char buf[NAME_MAX];
-    dumper_->BuildProcPath(buf, pid, filename);
+    if (!dumper_->BuildProcPath(buf, pid, filename))
+      return false;
     return WriteFile(result, buf);
   }
 
@@ -1312,12 +1327,23 @@ bool WriteMinidump(const char* filename, pid_t crashing_process,
     return false;
   const ExceptionHandler::CrashContext* context =
       reinterpret_cast<const ExceptionHandler::CrashContext*>(blob);
-  LinuxDumper dumper(crashing_process);
+  LinuxPtraceDumper dumper(crashing_process);
   dumper.set_crash_address(
       reinterpret_cast<uintptr_t>(context->siginfo.si_addr));
   dumper.set_crash_signal(context->siginfo.si_signo);
   dumper.set_crash_thread(context->tid);
   MinidumpWriter writer(filename, context, mappings, &dumper);
+  if (!writer.Init())
+    return false;
+  return writer.Dump();
+}
+
+bool WriteMinidumpFromCore(const char* filename,
+                           const char* core_path,
+                           const char* procfs_override) {
+  MappingList mappings;
+  LinuxCoreDumper dumper(0, core_path, procfs_override);
+  MinidumpWriter writer(filename, NULL, mappings, &dumper);
   if (!writer.Init())
     return false;
   return writer.Dump();

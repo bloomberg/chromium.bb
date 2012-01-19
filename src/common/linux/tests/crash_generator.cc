@@ -144,7 +144,8 @@ bool CrashGenerator::SetCoreFileSizeLimit(rlim_t limit) const {
 }
 
 bool CrashGenerator::CreateChildCrash(
-    unsigned num_threads, unsigned crash_thread, int crash_signal) {
+    unsigned num_threads, unsigned crash_thread, int crash_signal,
+    pid_t* child_pid) {
   if (num_threads == 0 || crash_thread >= num_threads)
     return false;
 
@@ -178,6 +179,9 @@ bool CrashGenerator::CreateChildCrash(
     perror("CrashGenerator: Child process not killed by the expected signal");
     return false;
   }
+
+  if (child_pid)
+    *child_pid = pid;
   return true;
 }
 

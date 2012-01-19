@@ -27,7 +27,11 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <string>
+// linux_ptrace_dumper_unittest.cc:
+// Unit tests for google_breakpad::LinuxPtraceDumoer.
+//
+// This file was renamed from linux_dumper_unittest.cc and modified due
+// to LinuxDumper being splitted into two classes.
 
 #include <fcntl.h>
 #include <limits.h>
@@ -39,8 +43,10 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
+#include <string>
+
 #include "breakpad_googletest_includes.h"
-#include "client/linux/minidump_writer/linux_dumper.h"
+#include "client/linux/minidump_writer/linux_ptrace_dumper.h"
 #include "common/linux/eintr_wrapper.h"
 #include "common/linux/file_id.h"
 #include "common/linux/safe_readlink.h"
@@ -50,7 +56,8 @@ using std::string;
 using namespace google_breakpad;
 
 namespace {
-typedef testing::Test LinuxDumperTest;
+
+typedef testing::Test LinuxPtraceDumperTest;
 
 string GetHelperBinary() {
   // Locate helper binary next to the current binary.
@@ -69,14 +76,14 @@ string GetHelperBinary() {
   return helper_path;
 }
 
+}  // namespace
+
+TEST(LinuxPtraceDumperTest, Setup) {
+  LinuxPtraceDumper dumper(getpid());
 }
 
-TEST(LinuxDumperTest, Setup) {
-  LinuxDumper dumper(getpid());
-}
-
-TEST(LinuxDumperTest, FindMappings) {
-  LinuxDumper dumper(getpid());
+TEST(LinuxPtraceDumperTest, FindMappings) {
+  LinuxPtraceDumper dumper(getpid());
   ASSERT_TRUE(dumper.Init());
 
   ASSERT_TRUE(dumper.FindMapping(reinterpret_cast<void*>(getpid)));
@@ -84,8 +91,8 @@ TEST(LinuxDumperTest, FindMappings) {
   ASSERT_FALSE(dumper.FindMapping(NULL));
 }
 
-TEST(LinuxDumperTest, ThreadList) {
-  LinuxDumper dumper(getpid());
+TEST(LinuxPtraceDumperTest, ThreadList) {
+  LinuxPtraceDumper dumper(getpid());
   ASSERT_TRUE(dumper.Init());
 
   ASSERT_GE(dumper.threads().size(), (size_t)1);
@@ -101,7 +108,7 @@ TEST(LinuxDumperTest, ThreadList) {
 // Helper stack class to close a file descriptor and unmap
 // a mmap'ed mapping.
 class StackHelper {
-public:
+ public:
   StackHelper(int fd, char* mapping, size_t size)
     : fd_(fd), mapping_(mapping), size_(size) {}
   ~StackHelper() {
@@ -109,13 +116,13 @@ public:
     close(fd_);
   }
 
-private:
+ private:
   int fd_;
   char* mapping_;
   size_t size_;
 };
 
-TEST(LinuxDumperTest, MergedMappings) {
+TEST(LinuxPtraceDumperTest, MergedMappings) {
   string helper_path(GetHelperBinary());
   if (helper_path.empty()) {
     FAIL() << "Couldn't find helper binary";
@@ -143,18 +150,19 @@ TEST(LinuxDumperTest, MergedMappings) {
   StackHelper helper(fd, mapping, kMappingSize);
 
   // Carve a page out of the first mapping with different permissions.
-  char* inside_mapping =  reinterpret_cast<char*>(mmap(mapping + 2 *kPageSize,
-                                 kPageSize,
-                                 PROT_NONE,
-                                 MAP_SHARED | MAP_FIXED,
-                                 fd,
-                                 // Map a different offset just to
-                                 // better test real-world conditions.
-                                 kPageSize));
+  char* inside_mapping =  reinterpret_cast<char*>(
+      mmap(mapping + 2 *kPageSize,
+           kPageSize,
+           PROT_NONE,
+           MAP_SHARED | MAP_FIXED,
+           fd,
+           // Map a different offset just to
+           // better test real-world conditions.
+           kPageSize));
   ASSERT_TRUE(inside_mapping);
 
-  // Now check that LinuxDumper interpreted the mappings properly.
-  LinuxDumper dumper(getpid());
+  // Now check that LinuxPtraceDumper interpreted the mappings properly.
+  LinuxPtraceDumper dumper(getpid());
   ASSERT_TRUE(dumper.Init());
   int mapping_count = 0;
   for (unsigned i = 0; i < dumper.mappings().size(); ++i) {
@@ -171,7 +179,7 @@ TEST(LinuxDumperTest, MergedMappings) {
   EXPECT_EQ(1, mapping_count);
 }
 
-TEST(LinuxDumperTest, VerifyStackReadWithMultipleThreads) {
+TEST(LinuxPtraceDumperTest, VerifyStackReadWithMultipleThreads) {
   static const int kNumberOfThreadsInHelperProgram = 5;
   char kNumberOfThreadsArgument[2];
   sprintf(kNumberOfThreadsArgument, "%d", kNumberOfThreadsInHelperProgram);
@@ -218,13 +226,13 @@ TEST(LinuxDumperTest, VerifyStackReadWithMultipleThreads) {
   close(fds[0]);
 
   // Child is ready now.
-  LinuxDumper dumper(child_pid);
+  LinuxPtraceDumper dumper(child_pid);
   ASSERT_TRUE(dumper.Init());
   EXPECT_EQ((size_t)kNumberOfThreadsInHelperProgram, dumper.threads().size());
   EXPECT_TRUE(dumper.ThreadsSuspend());
 
   ThreadInfo one_thread;
-  for(size_t i = 0; i < dumper.threads().size(); ++i) {
+  for (size_t i = 0; i < dumper.threads().size(); ++i) {
     EXPECT_TRUE(dumper.GetThreadInfoByIndex(i, &one_thread));
     // In the helper program, we stored a pointer to the thread id in a
     // specific register. Check that we can recover its value.
@@ -247,39 +255,33 @@ TEST(LinuxDumperTest, VerifyStackReadWithMultipleThreads) {
   kill(child_pid, SIGKILL);
 }
 
-TEST(LinuxDumperTest, BuildProcPath) {
+TEST(LinuxPtraceDumperTest, BuildProcPath) {
   const pid_t pid = getpid();
-  LinuxDumper dumper(pid);
+  LinuxPtraceDumper dumper(pid);
 
-  char maps_path[256] = "dummymappath";
-  char maps_path_expected[256];
+  char maps_path[NAME_MAX] = "";
+  char maps_path_expected[NAME_MAX];
   snprintf(maps_path_expected, sizeof(maps_path_expected),
            "/proc/%d/maps", pid);
-  dumper.BuildProcPath(maps_path, pid, "maps");
-  ASSERT_STREQ(maps_path, maps_path_expected);
+  EXPECT_TRUE(dumper.BuildProcPath(maps_path, pid, "maps"));
+  EXPECT_STREQ(maps_path_expected, maps_path);
 
-  // In release mode, we expect BuildProcPath to handle the invalid
-  // parameters correctly and fill map_path with an empty
-  // NULL-terminated string.
-#ifdef NDEBUG
-  snprintf(maps_path, sizeof(maps_path), "dummymappath");
-  dumper.BuildProcPath(maps_path, 0, "maps");
-  EXPECT_STREQ(maps_path, "");
+  EXPECT_FALSE(dumper.BuildProcPath(NULL, pid, "maps"));
+  EXPECT_FALSE(dumper.BuildProcPath(maps_path, 0, "maps"));
+  EXPECT_FALSE(dumper.BuildProcPath(maps_path, pid, ""));
+  EXPECT_FALSE(dumper.BuildProcPath(maps_path, pid, NULL));
 
-  snprintf(maps_path, sizeof(maps_path), "dummymappath");
-  dumper.BuildProcPath(maps_path, getpid(), "");
-  EXPECT_STREQ(maps_path, "");
-
-  snprintf(maps_path, sizeof(maps_path), "dummymappath");
-  dumper.BuildProcPath(maps_path, getpid(), NULL);
-  EXPECT_STREQ(maps_path, "");
-#endif
+  char long_node[NAME_MAX];
+  size_t long_node_len = NAME_MAX - strlen("/proc/123") - 1;
+  memset(long_node, 'a', long_node_len);
+  long_node[long_node_len] = '\0';
+  EXPECT_FALSE(dumper.BuildProcPath(maps_path, 123, long_node));
 }
 
 #if !defined(__ARM_EABI__)
 // Ensure that the linux-gate VDSO is included in the mapping list.
-TEST(LinuxDumperTest, MappingsIncludeLinuxGate) {
-  LinuxDumper dumper(getpid());
+TEST(LinuxPtraceDumperTest, MappingsIncludeLinuxGate) {
+  LinuxPtraceDumper dumper(getpid());
   ASSERT_TRUE(dumper.Init());
 
   void* linux_gate_loc = dumper.FindBeginningOfLinuxGateSharedLibrary(getpid());
@@ -301,8 +303,8 @@ TEST(LinuxDumperTest, MappingsIncludeLinuxGate) {
 }
 
 // Ensure that the linux-gate VDSO can generate a non-zeroed File ID.
-TEST(LinuxDumperTest, LinuxGateMappingID) {
-  LinuxDumper dumper(getpid());
+TEST(LinuxPtraceDumperTest, LinuxGateMappingID) {
+  LinuxPtraceDumper dumper(getpid());
   ASSERT_TRUE(dumper.Init());
 
   bool found_linux_gate = false;
@@ -329,7 +331,7 @@ TEST(LinuxDumperTest, LinuxGateMappingID) {
 
 // Ensure that the linux-gate VDSO can generate a non-zeroed File ID
 // from a child process.
-TEST(LinuxDumperTest, LinuxGateMappingIDChild) {
+TEST(LinuxPtraceDumperTest, LinuxGateMappingIDChild) {
   int fds[2];
   ASSERT_NE(-1, pipe(fds));
 
@@ -345,7 +347,7 @@ TEST(LinuxDumperTest, LinuxGateMappingIDChild) {
   }
   close(fds[0]);
 
-  LinuxDumper dumper(child);
+  LinuxPtraceDumper dumper(child);
   ASSERT_TRUE(dumper.Init());
 
   bool found_linux_gate = false;
@@ -375,7 +377,7 @@ TEST(LinuxDumperTest, LinuxGateMappingIDChild) {
 }
 #endif
 
-TEST(LinuxDumperTest, FileIDsMatch) {
+TEST(LinuxPtraceDumperTest, FileIDsMatch) {
   // Calculate the File ID of our binary using both
   // FileID::ElfFileIdentifier and LinuxDumper::ElfFileIdentifierForMapping
   // and ensure that we get the same result from both.
@@ -397,7 +399,7 @@ TEST(LinuxDumperTest, FileIDsMatch) {
   }
   close(fds[0]);
 
-  LinuxDumper dumper(child);
+  LinuxPtraceDumper dumper(child);
   ASSERT_TRUE(dumper.Init());
   const wasteful_vector<MappingInfo*> mappings = dumper.mappings();
   bool found_exe = false;
