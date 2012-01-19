@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "base/stringprintf.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -15,6 +17,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/web_contents.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/models/menu_model.h"
 #include "webkit/glue/context_menu.h"
@@ -171,4 +174,28 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MAYBE_AppWithContextMenu) {
       params);
   menu->Init();
   ASSERT_EQ(1, menu->menu_model().GetItemCount());
+}
+
+// Disabled until shell windows are implemented for non-GTK, non-Views toolkits.
+#if defined(TOOLKIT_GTK) || defined(TOOLKIT_VIEWS)
+#define MAYBE_DisallowNavigation DisallowNavigation
+#else
+#define MAYBE_DisallowNavigation DISABLED_DisallowNavigation
+#endif
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MAYBE_DisallowNavigation) {
+   ASSERT_TRUE(test_server()->Start());
+
+  LoadAndLaunchPlatformApp("navigation");
+  WebContents* web_contents = GetFirstPlatformAppWebContents();
+
+  GURL remote_url = test_server()->GetURL(
+      "files/extensions/platform_apps/navigation/nav-target.html");
+
+  std::string script = StringPrintf(
+      "runTests(\"%s\")", remote_url.spec().c_str());
+  bool result = false;
+  ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+      web_contents->GetRenderViewHost(), L"",
+      UTF8ToWide(script), &result));
+  EXPECT_TRUE(result);
 }

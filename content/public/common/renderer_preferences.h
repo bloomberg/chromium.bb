@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -69,8 +69,11 @@ struct CONTENT_EXPORT RendererPreferences {
   SkColor inactive_selection_bg_color;
   SkColor inactive_selection_fg_color;
 
-  // Browser wants a look at all top level requests
+  // Browser wants a look at all non-local top level navigation requests.
   bool browser_handles_top_level_requests;
+
+  // Browser wants a look at all navigation requests.
+  bool browser_handles_all_requests;
 
   // Cursor blink rate in seconds.
   // Currently only changed from default on Linux.  Uses |gtk-cursor-blink|

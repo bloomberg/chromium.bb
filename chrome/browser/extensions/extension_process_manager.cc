@@ -28,6 +28,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host_delegate.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/renderer_preferences.h"
 
 using content::BrowserThread;
 using content::OpenURLParams;
@@ -125,6 +126,9 @@ ExtensionHost* ExtensionProcessManager::CreateShellHost(
                                           url,
                                           chrome::VIEW_TYPE_APP_SHELL);
   host->CreateViewWithoutBrowser();
+  content::WebContents* host_contents = host->host_contents();
+  host_contents->GetMutableRendererPrefs()->browser_handles_all_requests = true;
+  host_contents->GetRenderViewHost()->SyncRendererPrefs();
   OnExtensionHostCreated(host, false /* not a background host */);
   return host;
 }

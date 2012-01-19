@@ -2086,18 +2086,22 @@ WebNavigationPolicy RenderViewImpl::decidePolicyForNavigation(
 
   // If the browser is interested, then give it a chance to look at top level
   // navigations.
-  if (is_content_initiated &&
-      renderer_preferences_.browser_handles_top_level_requests &&
-      IsNonLocalTopLevelNavigation(url, frame, type)) {
-    Referrer referrer(
-        GURL(request.httpHeaderField(WebString::fromUTF8("Referer"))),
-        getReferrerPolicyFromRequest(request));
-    // Reset these counters as the RenderView could be reused for the next
-    // navigation.
-    page_id_ = -1;
-    last_page_id_sent_to_browser_ = -1;
-    OpenURL(frame, url, referrer, default_policy);
-    return WebKit::WebNavigationPolicyIgnore;  // Suppress the load here.
+  if (is_content_initiated) {
+    bool browser_handles_top_level_requests =
+        renderer_preferences_.browser_handles_top_level_requests &&
+        IsNonLocalTopLevelNavigation(url, frame, type);
+    if (browser_handles_top_level_requests ||
+        renderer_preferences_.browser_handles_all_requests) {
+      Referrer referrer(
+          GURL(request.httpHeaderField(WebString::fromUTF8("Referer"))),
+          getReferrerPolicyFromRequest(request));
+      // Reset these counters as the RenderView could be reused for the next
+      // navigation.
+      page_id_ = -1;
+      last_page_id_sent_to_browser_ = -1;
+      OpenURL(frame, url, referrer, default_policy);
+      return WebKit::WebNavigationPolicyIgnore;  // Suppress the load here.
+    }
   }
 
   // Detect when we're crossing a permission-based boundary (e.g. into or out of

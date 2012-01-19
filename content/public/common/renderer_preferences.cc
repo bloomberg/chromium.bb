@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,6 +21,7 @@ RendererPreferences::RendererPreferences()
       inactive_selection_bg_color(0),
       inactive_selection_fg_color(0),
       browser_handles_top_level_requests(false),
+      browser_handles_all_requests(false),
       caret_blink_interval(0),
       enable_referrers(true),
       default_zoom_level(0) {
