@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -63,8 +63,6 @@ ChromeWebUIDataSource* CreateTaskManagerUIHTMLSource() {
   source->AddLocalizedString("inspect", IDS_TASK_MANAGER_INSPECT);
   source->AddLocalizedString("activate", IDS_TASK_MANAGER_ACTIVATE);
   source->set_json_path("strings.js");
-  source->add_resource_path("main.js", IDR_TASK_MANAGER_JS);
-  source->add_resource_path("includes.js", IDR_TASK_MANAGER_INCLUDES_JS);
   source->set_default_resource(IDR_TASK_MANAGER_HTML);
 
   return source;

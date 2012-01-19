@@ -115,9 +115,7 @@
       <include name="IDR_SYNC_SETTING_UP_HTML" file="sync\resources\setting_up.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_SYNC_SETUP_DONE_HTML" file="sync\resources\setup_done.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_SYNC_SETUP_FLOW_HTML" file="sync\resources\setup_flow.html" flattenhtml="true" type="BINDATA" />
-      <include name="IDR_TASK_MANAGER_HTML" file="resources\task_manager\main.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
-      <include name="IDR_TASK_MANAGER_INCLUDES_JS" file="resources\task_manager\includes.js" type="BINDATA" />
-      <include name="IDR_TASK_MANAGER_JS" file="resources\task_manager\main.js" type="BINDATA" />
+      <include name="IDR_TASK_MANAGER_HTML" file="resources\task_manager\main.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_TRACING_HTML" file="resources\tracing.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
       <include name="IDR_TRACING_JS" file="resources\tracing.js" flattenhtml="true" type="BINDATA" />
       <include name="IDR_TRANSLATE_JS" file="resources\translate.js" type="BINDATA" />

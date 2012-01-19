@@ -37,7 +37,6 @@ var localStrings = new LocalStrings();
 TaskManager.prototype = {
   /**
    * Handle window close.
-   * @public
    */
   onClose: function () {
     if (!this.disabled_) {
@@ -50,7 +49,6 @@ TaskManager.prototype = {
    * Handle selection change.
    * This is also called when data of tasks are refleshed, even if selection
    * has not been changed.
-   * @public
    */
   onSelectionChange: function () {
     var sm = this.selectionModel_;
@@ -78,7 +76,6 @@ TaskManager.prototype = {
   /**
    * Closes taskmanager dialog.
    * After this function is called, onClose() will be called.
-   * @public
    */
   close: function () {
     window.close();
@@ -86,7 +83,6 @@ TaskManager.prototype = {
 
   /**
    * Sends commands to kill selected processes.
-   * @public
    */
   killSelectedProcesses: function () {
     var selectedIndexes = this.selectionModel_.selectedIndexes;
@@ -103,7 +99,6 @@ TaskManager.prototype = {
 
   /**
    * Sends command to initiate resource inspection.
-   * @public
    */
   inspect: function (uniqueId) {
     chrome.send('inspect', [uniqueId]);
@@ -111,7 +106,6 @@ TaskManager.prototype = {
 
   /**
    * Sends command to kill a process.
-   * @public
    */
   openAboutMemory: function () {
     chrome.send('openAboutMemory');
@@ -119,7 +113,6 @@ TaskManager.prototype = {
 
   /**
    * Sends command to disable taskmanager model.
-   * @public
    */
   disableTaskManager: function () {
     chrome.send('disableTaskManager');
@@ -127,7 +120,6 @@ TaskManager.prototype = {
 
   /**
    * Sends command to enable taskmanager model.
-   * @public
    */
   enableTaskManager: function () {
     chrome.send('enableTaskManager');
@@ -135,7 +127,6 @@ TaskManager.prototype = {
 
   /**
    * Sends command to activate a page.
-   * @public
    */
   activatePage: function (uniqueId) {
     chrome.send('activatePage', [uniqueId]);
@@ -143,13 +134,14 @@ TaskManager.prototype = {
 
   /**
    * Initializes taskmanager.
-   * @public
    */
   initialize: function (dialogDom, opt) {
     if (!dialogDom) {
       console.log('ERROR: dialogDom is not defined.');
       return;
     }
+
+    measureTime.startInterval('Load.DOM');
 
     this.opt_ = opt;
 
@@ -158,12 +150,6 @@ TaskManager.prototype = {
 
     this.dialogDom_ = dialogDom;
     this.document_ = dialogDom.ownerDocument;
-
-    $('close-window').addEventListener('click', this.close.bind(this));
-    $('kill-process').addEventListener('click',
-                                       this.killSelectedProcesses.bind(this));
-    $('about-memory-link').addEventListener('click',
-                                            this.openAboutMemory.bind(this));
 
     this.pendingTaskUpdates_ = [];
     this.is_column_shown_ = [];
@@ -182,6 +168,7 @@ TaskManager.prototype = {
       this.localized_column_[i] = localized_label;
     }
 
+    this.initElements_();
     this.initColumnModel_();
     this.selectionModel_ = new cr.ui.ListSelectionModel();
     this.dataModel_ = new cr.ui.ArrayDataModel([]);
@@ -213,16 +200,68 @@ TaskManager.prototype = {
       dm.setCompareFunction(column_id, compare_func);
     }
 
-    var ary = this.dialogDom_.querySelectorAll('[visibleif]');
-    for (var i = 0; i < ary.length; i++) {
-      var expr = ary[i].getAttribute('visibleif');
-      if (!eval(expr))
-        ary[i].hidden = true;
-    }
-
     this.initTable_();
+
+    // Populate the static localized strings.
+    i18nTemplate.process(this.document_, templateData);
+
+    measureTime.recordInterval('Load.DOM');
+    measureTime.recordInterval('Load.Total');
+
+    loadDelayedIncludes(this);
+  },
+
+  /**
+   * Initializes the visibilities and handlers of the elements.
+   * This method is called by initialize().
+   * @private
+   */
+  initElements_: function() {
+    // <if expr="pp_ifdef('chromeos')">
+    // The elements 'dialog-title' and 'close-window' exist only on ChromeOS.
+    // This <if ... /if> section is removed while flattening HTML if chrome is
+    // built as Desktop Chrome.
+    if (!this.opt_['isShowTitle'])
+      $('dialog-title').style.display = 'none';
+    if (!this.opt_['isShowCloseButton'])
+      $('close-window').style.display = 'none';
+    $('close-window').addEventListener('click', this.close.bind(this));
+    // </if>
+
+    $('kill-process').addEventListener('click',
+                                       this.killSelectedProcesses.bind(this));
+    $('about-memory-link').addEventListener('click',
+                                            this.openAboutMemory.bind(this));
+  },
+
+  /**
+   * Additional initialization of taskmanager. This function is called when
+   * the loading of delayed scripts finished.
+   */
+  delayedInitialize: function() {
     this.initColumnMenu_();
     this.initTableMenu_();
+
+    var dm = this.dataModel_;
+    for (var i = 0; i < dm.length; i++) {
+      for (var j = 0; j < DEFAULT_COLUMNS.length; j++) {
+        var columnId = DEFAULT_COLUMNS[j][0];
+        var row = dm.item(i)[columnId];
+        for (var k = 0; k < row.length; k++) {
+          var processId = dm.item(i)['processId'][0];
+          var labelId = 'detail-' + columnId + '-pid' + processId + '-' + k;
+          var label = $(labelId);
+
+          // Initialize a context-menu, if the label exists and its context-
+          // menu is not initialized yet.
+          if (label && !label.contextMenu)
+            cr.ui.contextMenuHandler.setContextMenu(label,
+                                                    this.tableContextMenu_);
+        }
+      }
+    }
+
+    this.isFinishedInitDelayed_ = true;
     this.table_.redraw();
   },
 
@@ -275,16 +314,14 @@ TaskManager.prototype = {
     this.document_.body.appendChild(this.columnSelectContextMenu_);
     cr.ui.Menu.decorate(this.columnSelectContextMenu_);
 
-    cr.ui.contextMenuHandler.addContextMenuProperty(this.table_.header);
-    this.table_.header.contextMenu = this.columnSelectContextMenu_;
-
-    cr.ui.contextMenuHandler.addContextMenuProperty(this.table_.list);
-    this.table_.list.contextMenu = this.columnSelectContextMenu_;
+    cr.ui.contextMenuHandler.setContextMenu(this.table_.header,
+                                            this.columnSelectContextMenu_);
+    cr.ui.contextMenuHandler.setContextMenu(this.table_.list,
+                                            this.columnSelectContextMenu_);
 
     this.document_.addEventListener('command', this.onCommand_.bind(this));
     this.document_.addEventListener('canExecute',
                                     this.onCommandCanExecute_.bind(this));
-
   },
 
   initTableMenu_: function () {
@@ -361,6 +398,7 @@ TaskManager.prototype = {
     return listItem;
   },
 
+
   renderColumn_: function(entry, columnId, table) {
     var container = this.document_.createElement('div');
     container.className = 'detail-container-' + columnId;
@@ -380,8 +418,14 @@ TaskManager.prototype = {
           text.textContent = entry['title'][i];
           label.appendChild(text);
 
-          cr.ui.contextMenuHandler.addContextMenuProperty(label);
-          label.contextMenu = this.tableContextMenu_;
+          // Chech if the delayed scripts (included in includes.js) have been
+          // loaded or not. If the delayed scripts ware not loaded yet, a
+          // context menu could not be initialized. In such case, it will be
+          // initialized at delayedInitialize() just after loading of delayed
+          // scripts instead of here.
+          if (this.isFinishedInitDelayed_)
+            cr.ui.contextMenuHandler.setContextMenu(label,
+                                                    this.tableContextMenu_);
 
           label.addEventListener('dblclick', (function(uniqueId) {
               this.activatePage(uniqueId);
@@ -510,6 +554,9 @@ TaskManager.prototype = {
    * will be replaced when it is refleshed.
    */
   onTableContextMenuOpened_: function (e) {
+    if (!this.isFinishedInitDelayed_)
+      return;
+
     var mc = this.table_menu_commands_;
     var inspect_menuitem =
         mc[COMMAND_CONTEXTMENU_TABLE_PREFIX + '-inspect'].menuitem;
@@ -617,4 +664,3 @@ function taskRemoved(start, length) {
     return;
   taskmanager.onTaskRemove(start, length);
 }
-

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -39,13 +39,17 @@ var script = [
   'cr/ui/table.js',
 
   'cr/ui/grid.js',
+];
 
+var scriptDelayed = [
   'cr/ui/command.js',
   'cr/ui/position_util.js',
   'cr/ui/menu_item.js',
   'cr/ui/menu.js',
   'cr/ui/context_menu_handler.js',
 ];
+
+var loadDelayedIncludes;
 
 (function() {
   // Switch to 'test harness' mode when loading from a file url.
@@ -54,13 +58,33 @@ var script = [
   // In test harness mode we load resources from relative dirs.
   var prefix = isHarness ? './shared/' : 'chrome://resources/';
 
-  for (var i = 0; i < css.length; ++i) {
+  for (var i = 0; i < css.length; i++) {
     document.write('<link href="' + prefix + 'css/' + css[i] +
                    '" rel="stylesheet"></link>');
   }
 
-  for (var i = 0; i < script.length; ++i) {
+  for (var i = 0; i < script.length; i++) {
     document.write('<script src="' + prefix + 'js/' + script[i] +
                    '"><\/script>');
   }
+
+  /**
+   * Loads delayed scripts.
+   * This function is called by TaskManager::initalize() in main.js.
+   */
+  loadDelayedIncludes = function(taskmanager) {
+    // Number of remaining scripts to load.
+    var remain = scriptDelayed.length;
+
+    // Waits for initialization of task manager.
+    for (var i = 0; i < scriptDelayed.length; i++) {
+      var s = document.createElement('script');
+      s.onload = function(e) {
+        if (!--remain)
+          taskmanager.delayedInitialize();
+      };
+      s.src = prefix + 'js/' + scriptDelayed[i];
+      document.head.appendChild(s);
+    }
+  };
 })();

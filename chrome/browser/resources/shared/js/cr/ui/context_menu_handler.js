@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -211,6 +211,18 @@ cr.define('cr.ui', function() {
           return this.getBoundingClientRect();
         };
       }
+    },
+
+    /**
+     * Sets the given contextMenu to the given element. A contextMenu property
+     * would be added if necessary.
+     * @param {!Element} element The element or class to set the contextMenu to.
+     * @param {!cr.ui.Menu} contextMenu The contextMenu property to be set.
+     */
+    setContextMenu: function(element, contextMenu) {
+      if (!element.contextMenu)
+        this.addContextMenuProperty(element);
+      element.contextMenu = contextMenu;
     }
   };
 
