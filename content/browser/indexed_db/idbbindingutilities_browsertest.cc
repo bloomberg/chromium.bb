@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -345,28 +345,40 @@ IN_PROC_BROWSER_TEST_F(InProcessBrowserTest, IDBKeyPathMultipleCalls) {
                                       UTF8ToUTF16("foo"));
 }
 
-IN_PROC_BROWSER_TEST_F(InProcessBrowserTest, FAILS_InjectIDBKey) {
+IN_PROC_BROWSER_TEST_F(InProcessBrowserTest, InjectIDBKey) {
   // {foo: 'zoo'}
-  const char16 data[] = {0x0353,0x6f66,0x536f,0x7a03,0x6f6f,0x017b};
+  const char16 initial_data[] = {0x0353,0x6f66,0x536f,0x7a03,0x6f6f,0x017b};
   content::SerializedScriptValue value(
-      false, false, string16(data, arraysize(data)));
+      false, false, string16(initial_data, arraysize(initial_data)));
   IndexedDBKey key;
   key.SetString(UTF8ToUTF16("myNewKey"));
 
+  ScopedIDBKeyPathHelper scoped_helper;
+
   // {foo: 'zoo', bar: 'myNewKey'}
-  const char16 expected_data[] = {0x353, 0x6f66, 0x536f, 0x7a03, 0x6f6f, 0x353,
-                                  0x6162, 0x5372, 0x6d08, 0x4e79, 0x7765,
-                                  0x654b, 0x7b79, 0x2};
+  const char16 expected_data[] = {0x01ff, 0x003f, 0x3f6f, 0x5301, 0x6603,
+                                  0x6f6f, 0x013f, 0x0353, 0x6f7a, 0x3f6f,
+                                  0x5301, 0x6203, 0x7261, 0x013f, 0x0853,
+                                  0x796d, 0x654e, 0x4b77, 0x7965, 0x027b};
   content::SerializedScriptValue expected_value(
       false, false, string16(expected_data, arraysize(expected_data)));
-
-  ScopedIDBKeyPathHelper scoped_helper;
   scoped_helper.SetExpectedValue(expected_value);
-  // TODO(lukezarko@gmail.com): re-enable this after the changes described at
-  //     https://bugs.webkit.org/show_bug.cgi?id=63481 land.
-  // scoped_helper.CheckInjectValue(key, value, UTF8ToUTF16("bar"));
+  scoped_helper.CheckInjectValue(key, value, UTF8ToUTF16("bar"));
 
-  // Expect null.
-  scoped_helper.SetExpectedValue(content::SerializedScriptValue());
-  scoped_helper.CheckInjectValue(key, value, UTF8ToUTF16("bad.key.path"));
+  // Should fail - can't apply properties to string value of key foo
+  const content::SerializedScriptValue failure_value;
+  scoped_helper.SetExpectedValue(failure_value);
+  scoped_helper.CheckInjectValue(key, value, UTF8ToUTF16("foo.bad.path"));
+
+  // {foo: 'zoo', bar: {baz: 'myNewKey'}}
+  const char16 expected_data2[] = {0x01ff, 0x003f, 0x3f6f, 0x5301, 0x6603,
+                                   0x6f6f, 0x013f, 0x0353, 0x6f7a, 0x3f6f,
+                                   0x5301, 0x6203, 0x7261, 0x013f, 0x3f6f,
+                                   0x5302, 0x6203, 0x7a61, 0x023f, 0x0853,
+                                   0x796d, 0x654e, 0x4b77, 0x7965, 0x017b,
+                                   0x027b};
+  content::SerializedScriptValue expected_value2(
+      false, false, string16(expected_data2, arraysize(expected_data2)));
+  scoped_helper.SetExpectedValue(expected_value2);
+  scoped_helper.CheckInjectValue(key, value, UTF8ToUTF16("bar.baz"));
 }
