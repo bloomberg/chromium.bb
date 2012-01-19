@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -276,10 +276,5 @@ void CanvasSkia::DrawGdkPixbuf(GdkPixbuf* pixbuf, int x, int y) {
   cairo_paint(cr);
 }
 #endif  // defined(TOOLKIT_USES_GTK)
-
-ui::TextureID CanvasSkia::GetTextureID() {
-  // TODO(wjmaclean)
-  return 0;
-}
 
 }  // namespace gfx

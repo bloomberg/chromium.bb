@@ -19,7 +19,6 @@ class SkCanvas;
 
 namespace ui {
 class Transform;
-typedef unsigned int TextureID;
 }
 
 namespace gfx {
@@ -214,9 +213,6 @@ class UI_EXPORT Canvas {
 
   // Apply transformation on the canvas.
   virtual void Transform(const ui::Transform& transform) = 0;
-
-  // Create a texture ID that can be used for accelerated drawing.
-  virtual ui::TextureID GetTextureID() = 0;
 
   // TODO(beng): remove this once we don't need to use any skia-specific methods
   //             through this interface.

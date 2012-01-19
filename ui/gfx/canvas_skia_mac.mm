@@ -76,8 +76,4 @@ void CanvasSkia::DrawStringWithHalo(const string16& text,
                                     int flags) {
 }
 
-ui::TextureID CanvasSkia::GetTextureID() {
-  return 0;
-}
-
 }  // namespace gfx

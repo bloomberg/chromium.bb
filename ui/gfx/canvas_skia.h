@@ -171,7 +171,6 @@ class UI_EXPORT CanvasSkia : public Canvas {
   virtual gfx::NativeDrawingContext BeginPlatformPaint() OVERRIDE;
   virtual void EndPlatformPaint() OVERRIDE;
   virtual void Transform(const ui::Transform& transform) OVERRIDE;
-  virtual ui::TextureID GetTextureID() OVERRIDE;
   virtual CanvasSkia* AsCanvasSkia() OVERRIDE;
   virtual const CanvasSkia* AsCanvasSkia() const OVERRIDE;
   virtual SkCanvas* GetSkCanvas() OVERRIDE;

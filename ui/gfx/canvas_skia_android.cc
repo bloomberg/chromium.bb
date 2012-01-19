@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,11 +22,6 @@ void CanvasSkia::DrawStringInt(const string16& text,
                                int x, int y, int w, int h,
                                int flags) {
   NOTIMPLEMENTED();
-}
-
-ui::TextureID CanvasSkia::GetTextureID() {
-  NOTIMPLEMENTED();
-  return 0;
 }
 
 }  // namespace gfx
