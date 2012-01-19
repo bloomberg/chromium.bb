@@ -287,6 +287,21 @@ weston_surface_damage_below(struct weston_surface *surface)
 	weston_compositor_schedule_repaint(surface->compositor);
 }
 
+static void
+weston_surface_flush_damage(struct weston_surface *surface)
+{
+	struct weston_surface *below;
+
+	if (surface->output &&
+	    surface->link.next != &surface->compositor->surface_list) {
+		below = container_of(surface->link.next,
+				     struct weston_surface, link);
+
+		pixman_region32_union(&below->damage,
+				      &below->damage, &surface->damage);
+	}
+}
+
 WL_EXPORT void
 weston_surface_configure(struct weston_surface *surface,
 			 int x, int y, int width, int height)
@@ -376,6 +391,7 @@ destroy_surface(struct wl_resource *resource)
 	struct weston_compositor *compositor = surface->compositor;
 
 	weston_surface_damage_below(surface);
+	weston_surface_flush_damage(surface);
 
 	wl_list_remove(&surface->link);
 	weston_compositor_repick(compositor);
