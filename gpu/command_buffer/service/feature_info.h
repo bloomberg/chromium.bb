@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,15 +6,18 @@
 #define GPU_COMMAND_BUFFER_SERVICE_FEATURE_INFO_H_
 
 #include <string>
+#include "base/memory/ref_counted.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/gles2_cmd_validation.h"
 
 namespace gpu {
 namespace gles2 {
 
-// FeatureInfo records the features that are available for a particular context.
-class FeatureInfo {
+// FeatureInfo records the features that are available for a ContextGroup.
+class FeatureInfo : public base::RefCounted<FeatureInfo> {
  public:
+  typedef scoped_refptr<FeatureInfo> Ref;
+
   struct FeatureFlags {
     FeatureFlags()
         : chromium_framebuffer_multisample(false),

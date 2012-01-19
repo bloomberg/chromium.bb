@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,7 +29,8 @@ ContextGroup::ContextGroup(bool bind_generates_resource)
       max_vertex_texture_image_units_(0u),
       max_fragment_uniform_vectors_(0u),
       max_varying_vectors_(0u),
-      max_vertex_uniform_vectors_(0u) {
+      max_vertex_uniform_vectors_(0u),
+      feature_info_(new FeatureInfo()) {
   id_namespaces_[id_namespaces::kBuffers].reset(new IdAllocator);
   id_namespaces_[id_namespaces::kFramebuffers].reset(new IdAllocator);
   id_namespaces_[id_namespaces::kProgramsAndShaders].reset(
@@ -55,7 +56,7 @@ bool ContextGroup::Initialize(const DisallowedFeatures& disallowed_features,
     return true;
   }
 
-  if (!feature_info_.Initialize(disallowed_features, allowed_features)) {
+  if (!feature_info_->Initialize(disallowed_features, allowed_features)) {
     LOG(ERROR) << "ContextGroup::Initialize failed because FeatureInfo "
                << "initialization failed.";
     return false;
@@ -64,7 +65,7 @@ bool ContextGroup::Initialize(const DisallowedFeatures& disallowed_features,
   GLint max_renderbuffer_size = 0;
   glGetIntegerv(GL_MAX_RENDERBUFFER_SIZE, &max_renderbuffer_size);
   GLint max_samples = 0;
-  if (feature_info_.feature_flags().chromium_framebuffer_multisample) {
+  if (feature_info_->feature_flags().chromium_framebuffer_multisample) {
     glGetIntegerv(GL_MAX_SAMPLES, &max_samples);
   }
 
@@ -113,7 +114,8 @@ bool ContextGroup::Initialize(const DisallowedFeatures& disallowed_features,
   }
 #endif
 
-  texture_manager_.reset(new TextureManager(max_texture_size,
+  texture_manager_.reset(new TextureManager(feature_info_.get(),
+                                            max_texture_size,
                                             max_cube_map_texture_size));
 
   GetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &max_texture_image_units_);
@@ -135,7 +137,7 @@ bool ContextGroup::Initialize(const DisallowedFeatures& disallowed_features,
     max_vertex_uniform_vectors_ /= 4;
   }
 
-  if (!texture_manager_->Initialize(feature_info())) {
+  if (!texture_manager_->Initialize()) {
     LOG(ERROR) << "Context::Group::Initialize failed because texture manager "
                << "failed to initialize.";
     return false;
