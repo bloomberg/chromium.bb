@@ -10,7 +10,7 @@
 #include "content/renderer/p2p/ipc_socket_factory.h"
 #include "content/renderer/p2p/port_allocator.h"
 #include "jingle/glue/thread_wrapper.h"
-#include "third_party/libjingle/source/talk/app/webrtc/peerconnection.h"
+#include "third_party/libjingle/source/talk/app/webrtcv1/peerconnection.h"
 #include "third_party/libjingle/source/talk/session/phone/dummydevicemanager.h"
 #include "third_party/libjingle/source/talk/session/phone/webrtcmediaengine.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
