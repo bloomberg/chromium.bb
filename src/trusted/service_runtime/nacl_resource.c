@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -168,8 +168,17 @@ static struct NaClDesc *NaClResourceNaClAppDevOpen(
     UNREFERENCED_PARAMETER(mode);  /* ignored; O_CREAT doesn't create. */
 
     ndpm = malloc(sizeof *ndpm);
-    CHECK(NULL != ndpm);
-    CHECK(NaClDescPostMessageCtor(ndpm, self->nap));
+    if (NULL != ndpm) {
+      if (!NaClDescPostMessageCtor(ndpm, self->nap)) {
+        free(ndpm);
+        ndpm = NULL;
+      }
+    }
+    if (NULL == ndpm) {
+      NaClLog(LOG_ERROR,
+              "NaClResourceNaClAppDevOpen(%s) failed\n",
+              resource_locator);
+    }
   }
   return (struct NaClDesc *) ndpm;
 }
