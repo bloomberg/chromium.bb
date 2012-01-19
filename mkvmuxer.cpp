@@ -8,11 +8,10 @@
 
 #include "mkvmuxer.hpp"
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <time.h>
-
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <ctime>
 #include <new>
 
 #include "mkvmuxerutil.hpp"
@@ -43,7 +42,6 @@ bool WriteEbmlHeader(IMkvWriter* writer) {
 
   if (!WriteEbmlMasterElement(writer, kMkvEBML, size))
     return false;
-
   if (!WriteEbmlElement(writer, kMkvEBMLVersion, 1ULL))
     return false;
   if (!WriteEbmlElement(writer, kMkvEBMLReadVersion, 1ULL))

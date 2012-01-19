@@ -609,7 +609,7 @@ class Segment {
   const static uint64 kDefaultMaxClusterDuration = 30000000000ULL;
 
   Segment();
-  virtual ~Segment();
+  ~Segment();
 
   // Initializes |SegmentInfo| and returns result. Always returns false when
   // |ptr_writer| is NULL.
