@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -37,6 +37,10 @@ chrome.experimental.bookmarkManager.getStrings(function(data) {
 
   recentTreeItem.label = localStrings.getString('recent');
   searchTreeItem.label = localStrings.getString('search');
+  if (!isRTL())
+    searchTreeItem.icon = 'images/bookmark_manager_search.png'
+  else
+    searchTreeItem.icon = 'images/bookmark_manager_search_rtl.png'
 });
 
 /**
@@ -58,7 +62,6 @@ splitter.addEventListener('resize', function(e) {
 BookmarkList.decorate(list);
 
 var searchTreeItem = new TreeItem({
-  icon: 'images/bookmark_manager_search.png',
   bookmarkId: 'q='
 });
 bmm.treeLookup[searchTreeItem.bookmarkId] = searchTreeItem;
