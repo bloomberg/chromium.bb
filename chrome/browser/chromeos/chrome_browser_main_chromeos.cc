@@ -328,9 +328,6 @@ void ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
     chromeos::SystemKeyEventListener::Initialize();
   }
 
-  // Listen for XI_HierarchyChanged events.
-  chromeos::XInputHierarchyChangedEventListener::GetInstance();
-
   ChromeBrowserMainPartsLinux::PreMainMessageLoopRun();
 }
 
@@ -425,6 +422,11 @@ void ChromeBrowserMainPartsChromeos::PreBrowserStart() {
   // -- just before MetricsService::LogNeedForCleanShutdown().
 
   g_browser_process->metrics_service()->StartExternalMetrics();
+
+  // Listen for XI_HierarchyChanged events. Note: if this is moved to
+  // PreMainMessageLoopRun() then desktopui_PageCyclerTests fail for unknown
+  // reasons, see http://crosbug.com/24833.
+  chromeos::XInputHierarchyChangedEventListener::GetInstance();
 
   // -- This used to be in ChromeBrowserMainParts::PreMainMessageLoopRun()
   // -- immediately after ChildProcess::WaitForDebugger().

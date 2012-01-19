@@ -71,7 +71,7 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
   virtual void PostDestroyThreads() OVERRIDE;
 
   // Additional stages for ChromeBrowserMainExtraParts. These stages are called
-  // in order from PreMainMessageLoopRun(). See implementation for details.
+  // in order from PreMainMessageLoopStart(). See implementation for details.
   virtual void PreProfileInit();
   virtual void PostProfileInit();
   virtual void PreBrowserStart();
