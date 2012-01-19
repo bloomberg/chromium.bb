@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,7 +32,6 @@ const bool kSizeTabButtonToTopOfTabStrip = true;
 const bool kSyncAutoStarts = true;
 const bool kShowOtherBrowsersInAboutMemory = false;
 const bool kAlwaysOpenIncognitoWindow = true;
-const bool kShowCancelButtonInTaskManager = true;
 
 #elif defined(TOOLKIT_USES_GTK)
 
@@ -44,12 +43,16 @@ const int kAutocompleteEditFontPixelSize = 14;
 const int kAutocompleteEditFontPixelSizeInPopup =
     kAutocompleteEditFontPixelSize * 5.0 / 6.0;
 
+const bool kShowCancelButtonInTaskManager = true;
+
 #if defined(TOOLKIT_VIEWS)
 const bool kCanToggleSystemTitleBar = false;
 #else
 const bool kCanToggleSystemTitleBar = true;
 #endif
 
+#else
+const bool kShowCancelButtonInTaskManager = false;
 #endif
 
 #if !defined(OS_CHROMEOS)
@@ -69,7 +72,6 @@ const bool kSizeTabButtonToTopOfTabStrip = false;
 const bool kSyncAutoStarts = false;
 const bool kShowOtherBrowsersInAboutMemory = true;
 const bool kAlwaysOpenIncognitoWindow = false;
-const bool kShowCancelButtonInTaskManager = false;
 #endif
 
 #if defined(OS_MACOSX)
