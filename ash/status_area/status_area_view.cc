@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,12 +35,13 @@ void StatusAreaView::OnPaint(gfx::Canvas* canvas) {
 ASH_EXPORT views::Widget* CreateStatusArea() {
   StatusAreaView* status_area_view = new StatusAreaView;
   views::Widget* widget = new views::Widget;
-  views::Widget::InitParams params(views::Widget::InitParams::TYPE_CONTROL);
+  views::Widget::InitParams params(
+      views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   gfx::Size ps = status_area_view->GetPreferredSize();
   params.bounds = gfx::Rect(0, 0, ps.width(), ps.height());
+  params.delegate = status_area_view;
   params.parent = Shell::GetInstance()->GetContainer(
       ash::internal::kShellWindowId_StatusContainer);
-  params.delegate = status_area_view;
   params.transparent = true;
   widget->Init(params);
   widget->SetContentsView(status_area_view);

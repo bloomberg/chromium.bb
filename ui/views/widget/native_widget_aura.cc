@@ -180,11 +180,13 @@ void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
     // Set up the transient child before the window is added. This way the
     // LayoutManager knows the window has a transient parent.
     gfx::NativeView parent = params.GetParent();
-    if (parent)
+    if (parent && parent->type() != aura::client::WINDOW_TYPE_UNKNOWN) {
       parent->AddTransientChild(window_);
+      parent = NULL;
+    }
     // SetAlwaysOnTop before SetParent so that always-on-top container is used.
     SetAlwaysOnTop(params.keep_on_top);
-    window_->SetParent(NULL);
+    window_->SetParent(parent);
   }
   window_->set_ignore_events(!params.accept_events);
   // TODO(beng): do this some other way.

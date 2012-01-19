@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -389,13 +389,6 @@ bool WebUILoginView::IsPopupOrPanel(const WebContents* source) const {
 }
 
 bool WebUILoginView::TakeFocus(bool reverse) {
-#if defined(USE_AURA)
-  // With Aura StatusArea widget is TYPE_CONTROL thus not considered top level
-  // and doesn't have focus manager (see Widget::is_top_level() comment).
-  // TODO(nkostylev): Make status area accessible on Aura.
-  // http://crbug.com/108166
-  ReturnFocus(reverse);
-#else
   if (status_area_ && status_area_->visible()) {
     // Forward the focus to the status area.
     base::Callback<void(bool)> return_focus_cb =
@@ -403,7 +396,6 @@ bool WebUILoginView::TakeFocus(bool reverse) {
     status_area_->TakeFocus(reverse, return_focus_cb);
     status_area_->GetWidget()->Activate();
   }
-#endif
   return true;
 }
 

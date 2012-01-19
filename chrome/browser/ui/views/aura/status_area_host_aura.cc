@@ -92,7 +92,8 @@ views::Widget* StatusAreaHostAura::CreateStatusArea() {
 
   // Create widget to hold status area view.
   status_area_widget_ = new views::Widget;
-  views::Widget::InitParams params(views::Widget::InitParams::TYPE_CONTROL);
+  views::Widget::InitParams params(
+      views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   gfx::Size ps = status_area_view_->GetPreferredSize();
   params.bounds = gfx::Rect(0, 0, ps.width(), ps.height());
   params.parent = status_window;
