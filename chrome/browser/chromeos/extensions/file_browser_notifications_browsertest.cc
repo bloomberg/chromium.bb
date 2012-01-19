@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -106,14 +106,7 @@ class FileBrowserNotificationsTest : public InProcessBrowserTest {
   scoped_ptr<MockFileBrowserNotifications> notifications_;
 };
 
-#if defined(USE_AURA)
-// TODO(jamescook): Fails on linux_chromeos_aura because we haven't implemented
-// chromeos::SystemNotification yet.  http://crbug.com/104471
-#define MAYBE_TestBasic DISABLED_TestBasic
-#else
-#define MAYBE_TestBasic TestBasic
-#endif
-IN_PROC_BROWSER_TEST_F(FileBrowserNotificationsTest, MAYBE_TestBasic) {
+IN_PROC_BROWSER_TEST_F(FileBrowserNotificationsTest, TestBasic) {
   InitNotifications();
   // We start with no balloons.
   EXPECT_EQ(0u, collection_->GetActiveBalloons().size());
@@ -161,19 +154,13 @@ IN_PROC_BROWSER_TEST_F(FileBrowserNotificationsTest, MAYBE_TestBasic) {
   EXPECT_TRUE(FindBalloon("Dpath"));
 };
 
-#if defined(USE_AURA)
-// TODO(jamescook): Fails on linux_chromeos_aura because we haven't implemented
-// chromeos::SystemNotification yet.  http://crbug.com/104471
-#define MAYBE_ShowDelayedTest DISABLED_ShowDelayedTest
-#else
 // TODO(jamescook): This test is flaky on linux_chromeos, occasionally causing
 // this assertion failure inside Gtk:
 //   "murrine_style_draw_box: assertion `height >= -1' failed"
 // There may be an underlying bug in the ChromeOS notification code.
 // I'm not marking it as FLAKY because this doesn't happen on the bots.
 #define MAYBE_ShowDelayedTest ShowDelayedTest
-#endif
-IN_PROC_BROWSER_TEST_F(FileBrowserNotificationsTest, MAYBE_ShowDelayedTest) {
+IN_PROC_BROWSER_TEST_F(FileBrowserNotificationsTest, ShowDelayedTest) {
   InitNotifications();
   // Adding a delayed notification does not show a balloon.
   notifications_->ShowNotificationDelayed(FileBrowserNotifications::DEVICE,
@@ -225,14 +212,7 @@ IN_PROC_BROWSER_TEST_F(FileBrowserNotificationsTest, MAYBE_ShowDelayedTest) {
   EXPECT_FALSE(FindBalloon("Fpath"));
 }
 
-#if defined(USE_AURA)
-// TODO(jamescook): Fails on linux_chromeos_aura because we haven't implemented
-// chromeos::SystemNotification yet.  http://crbug.com/104471
-#define MAYBE_HideDelayedTest DISABLED_HideDelayedTest
-#else
-#define MAYBE_HideDelayedTest HideDelayedTest
-#endif
-IN_PROC_BROWSER_TEST_F(FileBrowserNotificationsTest, MAYBE_HideDelayedTest) {
+IN_PROC_BROWSER_TEST_F(FileBrowserNotificationsTest, HideDelayedTest) {
   InitNotifications();
   // Showing now, and scheduling a hide for later, results in one balloon.
   notifications_->ShowNotification(FileBrowserNotifications::DEVICE, "path");
