@@ -653,7 +653,7 @@ Browser* ExtensionFunctionDispatcher::GetCurrentBrowser(
   // |include_incognito|.
   Profile* profile = Profile::FromBrowserContext(
       render_view_host->process()->GetBrowserContext());
-  browser = BrowserList::FindTabbedBrowser(profile, include_incognito);
+  browser = BrowserList::FindAnyBrowser(profile, include_incognito);
 
   // NOTE(rafaelw): This can return NULL in some circumstances. In particular,
   // a background_page onload chrome.tabs api call can make it into here

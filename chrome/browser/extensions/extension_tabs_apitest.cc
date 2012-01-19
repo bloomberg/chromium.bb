@@ -89,6 +89,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabCrashBrowser) {
   ASSERT_TRUE(RunExtensionSubtest("tabs/basics", "crash.html")) << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabCurrentWindow) {
+  ASSERT_TRUE(RunExtensionTest("tabs/current_window")) << message_;
+}
+
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabGetCurrent) {
   ASSERT_TRUE(RunExtensionTest("tabs/get_current")) << message_;
 }
