@@ -126,6 +126,9 @@ void Shell::PlatformSetAddressBarURL(const GURL& url) {
   [url_edit_view_ setStringValue:url_string];
 }
 
+void Shell::PlatformSetIsLoading(bool loading) {
+}
+
 void Shell::PlatformCreateWindow(int width, int height) {
   NSRect initial_window_bounds = NSMakeRect(0, 0, width, height);
   window_ = [[NSWindow alloc] initWithContentRect:initial_window_bounds
@@ -180,7 +183,7 @@ void Shell::PlatformCreateWindow(int width, int height) {
 }
 
 void Shell::PlatformSetContents() {
-  // TODO(erg): I don't know what goes here.
+  // TODO(avi): I don't know what goes here.
 }
 
 void Shell::PlatformSizeTo(int width, int height) {

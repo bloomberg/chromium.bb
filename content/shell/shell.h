@@ -16,6 +16,7 @@
 #include "ui/gfx/native_widget_types.h"
 
 #if defined(OS_LINUX)
+#include <gtk/gtk.h>
 #include "ui/base/gtk/gtk_signal.h"
 
 typedef struct _GtkToolItem GtkToolItem;
@@ -92,6 +93,8 @@ class Shell : public WebContentsDelegate {
   void PlatformEnableUIControl(UIControl control, bool is_enabled);
   // Updates the url in the url bar.
   void PlatformSetAddressBarURL(const GURL& url);
+  // Sets whether the spinner is spinning.
+  void PlatformSetIsLoading(bool loading);
 
   gfx::NativeView GetContentView();
 
@@ -115,6 +118,12 @@ class Shell : public WebContentsDelegate {
   CHROMEGTK_CALLBACK_0(Shell, void, OnReloadButtonClicked);
   CHROMEGTK_CALLBACK_0(Shell, void, OnStopButtonClicked);
   CHROMEGTK_CALLBACK_0(Shell, void, OnURLEntryActivate);
+  CHROMEGTK_CALLBACK_0(Shell, gboolean, OnWindowDestroyed);
+
+  CHROMEG_CALLBACK_3(Shell, gboolean, OnCloseWindowKeyPressed, GtkAccelGroup*,
+                     GObject*, guint, GdkModifierType);
+  CHROMEG_CALLBACK_3(Shell, gboolean, OnHighlightURLView, GtkAccelGroup*,
+                     GObject*, guint, GdkModifierType);
 #endif
 
   scoped_ptr<TabContents> tab_contents_;
@@ -132,6 +141,9 @@ class Shell : public WebContentsDelegate {
   GtkToolItem* forward_button_;
   GtkToolItem* reload_button_;
   GtkToolItem* stop_button_;
+
+  GtkWidget* spinner_;
+  GtkToolItem* spinner_item_;
 
   int content_width_;
   int content_height_;

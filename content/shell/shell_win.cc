@@ -95,6 +95,9 @@ void Shell::PlatformSetAddressBarURL(const GURL& url) {
               reinterpret_cast<LPARAM>(url_string.c_str()));
 }
 
+void Shell::PlatformSetIsLoading(bool loading) {
+}
+
 void Shell::PlatformCreateWindow(int width, int height) {
   window_ = CreateWindow(kWindowClass, kWindowTitle,
                          WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN,

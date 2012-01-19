@@ -4,28 +4,17 @@
 
 #include "content/shell/shell.h"
 
+#include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
 
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/string_piece.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/native_web_keyboard_event.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view_gtk.h"
 #include "third_party/skia/include/core/SkColor.h"
-
-namespace {
-
-// Callback for when the main window is destroyed.
-gboolean MainWindowDestroyed(GtkWindow* window) {
-  // TODO(erg): Only shut down when there are multiple windows.
-  MessageLoop::current()->PostTask(FROM_HERE,
-                                   MessageLoop::QuitClosure());
-
-  return FALSE;  // Don't stop this message.
-}
-
-}  // namespace
 
 namespace content {
 
@@ -39,7 +28,7 @@ base::StringPiece Shell::PlatformResourceProvider(int key) {
 }
 
 void Shell::PlatformCleanUp() {
-  NOTIMPLEMENTED();
+  // Nothing to clean up; GTK will clean up the widgets shortly after.
 }
 
 void Shell::PlatformEnableUIControl(UIControl control, bool is_enabled) {
@@ -62,23 +51,34 @@ void Shell::PlatformEnableUIControl(UIControl control, bool is_enabled) {
 }
 
 void Shell::PlatformSetAddressBarURL(const GURL& url) {
+  gtk_entry_set_text(GTK_ENTRY(url_edit_view_), url.spec().c_str());
+}
+
+void Shell::PlatformSetIsLoading(bool loading) {
+  if (loading)
+    gtk_spinner_start(GTK_SPINNER(spinner_));
+  else
+    gtk_spinner_stop(GTK_SPINNER(spinner_));
 }
 
 void Shell::PlatformCreateWindow(int width, int height) {
   window_ = GTK_WINDOW(gtk_window_new(GTK_WINDOW_TOPLEVEL));
   gtk_window_set_title(window_, "Content Shell");
-  // Null out window_ when it is destroyed so we don't destroy it twice.
   g_signal_connect(G_OBJECT(window_), "destroy",
-                   G_CALLBACK(gtk_widget_destroyed), &window_);
-  g_signal_connect(G_OBJECT(window_), "destroy",
-                   G_CALLBACK(MainWindowDestroyed), this);
-
-  // TODO(erg): The test shell closes popup windows when the main window goes
-  // out.
-  // g_signal_connect(G_OBJECT(window_), "focus-out-event",
-  //                  G_CALLBACK(MainWindowLostFocus), this);
+                   G_CALLBACK(OnWindowDestroyedThunk), this);
 
   vbox_ = gtk_vbox_new(FALSE, 0);
+
+  // Create the object that mediates accelerators.
+  GtkAccelGroup* accel_group = gtk_accel_group_new();
+  gtk_window_add_accel_group(GTK_WINDOW(window_), accel_group);
+
+  // Set global window handling accelerators:
+  gtk_accel_group_connect(
+      accel_group, GDK_w, GDK_CONTROL_MASK,
+      GTK_ACCEL_VISIBLE,
+      g_cclosure_new(G_CALLBACK(OnCloseWindowKeyPressedThunk),
+                     this, NULL));
 
   GtkWidget* toolbar = gtk_toolbar_new();
   // Turn off the labels on the toolbar buttons.
@@ -88,16 +88,24 @@ void Shell::PlatformCreateWindow(int width, int height) {
   g_signal_connect(back_button_, "clicked",
                    G_CALLBACK(&OnBackButtonClickedThunk), this);
   gtk_toolbar_insert(GTK_TOOLBAR(toolbar), back_button_, -1 /* append */);
+  gtk_widget_add_accelerator(GTK_WIDGET(back_button_), "clicked", accel_group,
+                             GDK_Left, GDK_MOD1_MASK, GTK_ACCEL_VISIBLE);
 
   forward_button_ = gtk_tool_button_new_from_stock(GTK_STOCK_GO_FORWARD);
   g_signal_connect(forward_button_, "clicked",
                    G_CALLBACK(&OnForwardButtonClickedThunk), this);
   gtk_toolbar_insert(GTK_TOOLBAR(toolbar), forward_button_, -1 /* append */);
+  gtk_widget_add_accelerator(GTK_WIDGET(forward_button_), "clicked",
+                             accel_group,
+                             GDK_Right, GDK_MOD1_MASK, GTK_ACCEL_VISIBLE);
 
   reload_button_ = gtk_tool_button_new_from_stock(GTK_STOCK_REFRESH);
   g_signal_connect(reload_button_, "clicked",
                    G_CALLBACK(&OnReloadButtonClickedThunk), this);
   gtk_toolbar_insert(GTK_TOOLBAR(toolbar), reload_button_, -1 /* append */);
+  gtk_widget_add_accelerator(GTK_WIDGET(reload_button_), "clicked",
+                             accel_group,
+                             GDK_r, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
 
   stop_button_ = gtk_tool_button_new_from_stock(GTK_STOCK_STOP);
   g_signal_connect(stop_button_, "clicked",
@@ -107,12 +115,28 @@ void Shell::PlatformCreateWindow(int width, int height) {
   url_edit_view_ = gtk_entry_new();
   g_signal_connect(G_OBJECT(url_edit_view_), "activate",
                    G_CALLBACK(&OnURLEntryActivateThunk), this);
-  // gtk_entry_set_text(GTK_ENTRY(url_edit_view_), starting_url.spec().c_str());
+
+  gtk_accel_group_connect(
+      accel_group, GDK_l, GDK_CONTROL_MASK,
+      GTK_ACCEL_VISIBLE,
+      g_cclosure_new(G_CALLBACK(OnHighlightURLViewThunk),
+                     this, NULL));
 
   GtkToolItem* tool_item = gtk_tool_item_new();
   gtk_container_add(GTK_CONTAINER(tool_item), url_edit_view_);
   gtk_tool_item_set_expand(tool_item, TRUE);
   gtk_toolbar_insert(GTK_TOOLBAR(toolbar), tool_item, -1 /* append */);
+
+  // Center a 20x20 spinner in a 26x24 area.
+  GtkWidget* spinner_alignment = gtk_alignment_new(0.5, 0.5, 0, 0);
+  gtk_alignment_set_padding(GTK_ALIGNMENT(spinner_alignment), 2, 2, 4, 4);
+  spinner_ = gtk_spinner_new();
+  gtk_widget_set_size_request(spinner_, 20, 20);
+  gtk_container_add(GTK_CONTAINER(spinner_alignment), spinner_);
+
+  spinner_item_ = gtk_tool_item_new();
+  gtk_container_add(GTK_CONTAINER(spinner_item_), spinner_alignment);
+  gtk_toolbar_insert(GTK_TOOLBAR(toolbar), spinner_item_, -1 /* append */);
 
   gtk_box_pack_start(GTK_BOX(vbox_), toolbar, FALSE, FALSE, 0);
 
@@ -171,8 +195,39 @@ void Shell::OnStopButtonClicked(GtkWidget* widget) {
 }
 
 void Shell::OnURLEntryActivate(GtkWidget* entry) {
-  const gchar* url = gtk_entry_get_text(GTK_ENTRY(entry));
+  const gchar* str = gtk_entry_get_text(GTK_ENTRY(entry));
+  GURL url(str);
+  if (!url.has_scheme())
+    url = GURL(std::string("http://") + std::string(str));
   LoadURL(GURL(url));
+}
+
+// Callback for when the main window is destroyed.
+gboolean Shell::OnWindowDestroyed(GtkWidget* window) {
+  delete this;
+
+  if (windows_.empty()) {
+    MessageLoop::current()->PostTask(FROM_HERE,
+                                     MessageLoop::QuitClosure());
+  }
+
+  return FALSE;  // Don't stop this message.
+}
+
+gboolean Shell::OnCloseWindowKeyPressed(GtkAccelGroup* accel_group,
+                                        GObject* acceleratable,
+                                        guint keyval,
+                                        GdkModifierType modifier) {
+  gtk_widget_destroy(GTK_WIDGET(window_));
+  return TRUE;
+}
+
+gboolean Shell::OnHighlightURLView(GtkAccelGroup* accel_group,
+                                   GObject* acceleratable,
+                                   guint keyval,
+                                   GdkModifierType modifier) {
+  gtk_widget_grab_focus(GTK_WIDGET(url_edit_view_));
+  return TRUE;
 }
 
 }  // namespace content

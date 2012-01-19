@@ -111,6 +111,7 @@ gfx::NativeView Shell::GetContentView() {
 
 void Shell::LoadingStateChanged(WebContents* source) {
   UpdateNavigationControls();
+  PlatformSetIsLoading(source->IsLoading());
 }
 
 void Shell::WebContentsCreated(WebContents* source_contents,
