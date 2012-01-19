@@ -12,7 +12,6 @@
 #include <share.h> // for _SH_DENYWR
 #endif
 
-#include <cassert>
 #include <new>
 
 namespace mkvmuxer {
@@ -25,7 +24,8 @@ MkvWriter::~MkvWriter() {
 }
 
 int32 MkvWriter::Write(const void* buffer, uint32 length) {
-  assert(file_);
+  if (!file_)
+    return -1;
 
   if (length == 0)
     return 0;
@@ -74,7 +74,9 @@ int64 MkvWriter::Position() const {
 }
 
 int32 MkvWriter::Position(int64 position) {
-  assert(file_);
+  if (!file_)
+    return -1;
+
 #ifdef _MSC_VER
     return _fseeki64(file_, position, SEEK_SET);
 #else

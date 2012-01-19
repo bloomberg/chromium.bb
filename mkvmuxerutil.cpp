@@ -14,7 +14,6 @@
 #include <string.h>
 #include <time.h>
 
-#include <cassert>
 #include <new>
 
 #include "mkvwriter.hpp"
@@ -89,7 +88,8 @@ uint64 EbmlElementSize(uint64 type, float value, bool master) {
 }
 
 uint64 EbmlElementSize(uint64 type, const char* value, bool master) {
-  assert(value != NULL);
+  if (!value)
+    return 0;
 
   // Size of EBML ID
   uint64 ebml_size = GetUIntSize(type);
@@ -108,7 +108,8 @@ uint64 EbmlElementSize(uint64 type,
                        const uint8* value,
                        uint64 size,
                        bool master) {
-  assert(value != NULL);
+  if (!value)
+    return 0;
 
   // Size of EBML ID
   uint64 ebml_size = GetUIntSize(type);
@@ -123,13 +124,9 @@ uint64 EbmlElementSize(uint64 type,
   return ebml_size;
 }
 
-int32 SerializeInt(
-    IMkvWriter* writer,
-    int64 value,
-    int32 size) {
-  assert(writer);
-  assert(size >= 0);
-  assert(size <= 8);
+int32 SerializeInt(IMkvWriter* writer, int64 value, int32 size) {
+  if (!writer || size < 1 || size > 8)
+    return -1;
 
   for (int32 i = 1; i <= size; ++i) {
     const int32 byte_count = size - i;
@@ -148,7 +145,9 @@ int32 SerializeInt(
 }
 
 int32 SerializeFloat(IMkvWriter* writer, float f) {
-  assert(writer);
+  if (!writer)
+    return -1;
+
   const uint32& val = reinterpret_cast<const uint32&>(f);
 
   for (int32 i = 1; i <= 4; ++i) {
@@ -168,21 +167,23 @@ int32 SerializeFloat(IMkvWriter* writer, float f) {
 }
 
 int32 WriteUInt(IMkvWriter* writer, uint64 value) {
-  assert(writer);
+  if (!writer)
+    return -1;
+
   int32 size = GetCodedUIntSize(value);
 
   return WriteUIntSize(writer, value, size);
 }
 
 int32 WriteUIntSize(IMkvWriter* writer, uint64 value, int32 size) {
-  assert(writer);
-  assert(size >= 0);
+  if (!writer || size < 0 || size > 8)
+    return -1;
 
   if (size > 0) {
-    assert(size <= 8);
-
     const uint64 bit = 1LL << (size * 7);
-    assert(value <= (bit - 2));
+
+    if (value > (bit - 2))
+      return -1;
 
     value |= bit;
   } else {
@@ -199,7 +200,9 @@ int32 WriteUIntSize(IMkvWriter* writer, uint64 value, int32 size) {
       ++size;
     }
 
-    assert(size <= 8);
+    if (size > 8)
+      return false;
+
     value |= bit;
   }
 
@@ -207,14 +210,17 @@ int32 WriteUIntSize(IMkvWriter* writer, uint64 value, int32 size) {
 }
 
 int32 WriteID(IMkvWriter* writer, uint64 type) {
-  assert(writer);
+  if (!writer)
+    return -1;
+
   const int32 size = GetUIntSize(type);
 
   return SerializeInt(writer, type, size);
 }
 
 bool WriteEbmlMasterElement(IMkvWriter* writer, uint64 type, uint64 size) {
-  assert(writer);
+  if (!writer)
+    return false;
 
   if (WriteID(writer, type))
     return false;
@@ -226,7 +232,8 @@ bool WriteEbmlMasterElement(IMkvWriter* writer, uint64 type, uint64 size) {
 }
 
 bool WriteEbmlElement(IMkvWriter* writer, uint64 type, uint64 value) {
-  assert(writer);
+  if (!writer)
+    return false;
 
   if (WriteID(writer, type))
     return false;
@@ -242,7 +249,8 @@ bool WriteEbmlElement(IMkvWriter* writer, uint64 type, uint64 value) {
 }
 
 bool WriteEbmlElement(IMkvWriter* writer, uint64 type, float value) {
-  assert(writer);
+  if (!writer)
+    return false;
 
   if (WriteID(writer, type))
     return false;
@@ -257,8 +265,8 @@ bool WriteEbmlElement(IMkvWriter* writer, uint64 type, float value) {
 }
 
 bool WriteEbmlElement(IMkvWriter* writer, uint64 type, const char* value) {
-  assert(writer);
-  assert(value != NULL);
+  if (!writer || !value)
+    return false;
 
   if (WriteID(writer, type))
     return false;
@@ -277,9 +285,8 @@ bool WriteEbmlElement(IMkvWriter* writer,
                       uint64 type,
                       const uint8* value,
                       uint64 size) {
-  assert(writer);
-  assert(value != NULL);
-  assert(size > 0);
+  if (!writer || !value || size < 1)
+    return false;
 
   if (WriteID(writer, type))
     return false;
@@ -299,11 +306,9 @@ uint64 WriteSimpleBlock(IMkvWriter* writer,
                         char track_number,
                         short timecode,
                         bool is_key) {
-  assert(writer);
-  assert(data != NULL);
-  assert(length > 0);
-  assert(track_number > 0);
-  assert(timecode >= 0);
+
+  if (!writer || !data || length < 1 || track_number < 1 || timecode < 0)
+    return false;
 
   if (WriteID(writer, kMkvSimpleBlock))
     return 0;
@@ -335,11 +340,16 @@ uint64 WriteSimpleBlock(IMkvWriter* writer,
 }
 
 uint64 WriteVoidElement(IMkvWriter* writer, uint64 size) {
+  if (!writer)
+    return false;
+
   // Subtract one for the void ID and the coded size.
   uint64 void_entry_size = size - 1 - GetCodedUIntSize(size-1);
   uint64 void_size = EbmlElementSize(kMkvVoid, void_entry_size, true) +
                      void_entry_size;
-  assert(void_size == size);
+
+  if (void_size != size)
+    return 0;
 
   const int64 payload_position = writer->Position();
   if (payload_position < 0)
@@ -358,9 +368,9 @@ uint64 WriteVoidElement(IMkvWriter* writer, uint64 size) {
   }
 
   const int64 stop_position = writer->Position();
-  if (stop_position < 0)
+  if (stop_position < 0 ||
+      stop_position - payload_position != static_cast<int64>(void_size))
     return 0;
-  assert(stop_position - payload_position == static_cast<int64>(void_size));
 
   return void_size;
 }
