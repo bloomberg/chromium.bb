@@ -112,7 +112,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 116
+#   For your editing convenience: highest ID currently used: 117
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -2257,6 +2257,18 @@
       'desc': '''Allows pages to access JavaScript memory usage statistics.
 
       This settings makes the memory statistics from the Developer Tools Profiles panel available to the web page itself.''',
+    },
+    {
+      'name': 'DisablePrintPreview',
+      'type': 'main',
+      'supported_on': ['chrome.*:18-'],
+      'features': {'dynamic_refresh': False},
+      'example_value': False,
+      'id': 117,
+      'caption': '''Disable Print Preview''',
+      'desc': '''Disable print preview.
+
+      This setting is used to force the use of the system print dialog instead of print preview.''',
     },
   ],
   'messages': {

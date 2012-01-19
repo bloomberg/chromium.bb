@@ -18,6 +18,7 @@
   "DeveloperToolsDisabled": false,
   "Disable3DAPIs": true,
   "DisableAuthNegotiateCnameLookup": true,
+  "DisablePrintPreview": false,
   "DisableSpdy": false,
   "DnsPrefetchingEnabled": false,
   "EditBookmarksEnabled":false,

@@ -199,6 +199,7 @@ class PolicyPrefsUITest(policy_base.PolicyTestBase):
     'EnterpriseWebStoreURL': ('', []),
     'EnterpriseWebStoreName': ('', []),
     'EnableMemoryInfo': (True, []),
+    'DisablePrintPreview': (True, []),
 
     # ChromeOS-only policies:
     'ChromeOsLockOnIdleSuspend': (True, [ PERSONAL ], [ 'chromeos' ]),

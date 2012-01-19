@@ -31,6 +31,7 @@
   "DeveloperToolsDisabled": true,
   "Disable3DAPIs": false,
   "DisableAuthNegotiateCnameLookup": false,
+  "DisablePrintPreview": true,
   "DisableSpdy": true,
   "DisabledPlugins": ["Shockwave Flash", "Chrome PDF Viewer"],
   "DisabledPluginsExceptions": ["Chrome PDF Viewer"],
