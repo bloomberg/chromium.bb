@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,11 +18,11 @@ class RenderViewHost;
 struct NPObject;
 
 // This class handles injecting Java objects into all of the RenderViews
-// associated with a TabContents. It manages a set of JavaBridgeDispatcherHost
+// associated with a WebContents. It manages a set of JavaBridgeDispatcherHost
 // objects, one per RenderViewHost.
 class JavaBridgeDispatcherHostManager : public content::WebContentsObserver {
  public:
-  JavaBridgeDispatcherHostManager(TabContents* tab_contents);
+  JavaBridgeDispatcherHostManager(content::WebContents* web_contents);
   virtual ~JavaBridgeDispatcherHostManager();
 
   // These methods add or remove the object to each JavaBridgeDispatcherHost.
@@ -35,7 +35,7 @@ class JavaBridgeDispatcherHostManager : public content::WebContentsObserver {
   virtual void RenderViewCreated(RenderViewHost* render_view_host) OVERRIDE;
   virtual void RenderViewDeleted(RenderViewHost* render_view_host) OVERRIDE;
   virtual void WebContentsDestroyed(
-      content::WebContents* tab_contents) OVERRIDE;
+      content::WebContents* web_contents) OVERRIDE;
 
  private:
   typedef std::map<RenderViewHost*, scoped_refptr<JavaBridgeDispatcherHost> >

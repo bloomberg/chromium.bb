@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,12 +6,11 @@
 
 #include "base/utf_string_conversions.h"
 #include "content/browser/renderer_host/java/java_bridge_dispatcher_host.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
 
 JavaBridgeDispatcherHostManager::JavaBridgeDispatcherHostManager(
-    TabContents* tab_contents)
-    : content::WebContentsObserver(tab_contents) {
+    content::WebContents* web_contents)
+    : content::WebContentsObserver(web_contents) {
 }
 
 JavaBridgeDispatcherHostManager::~JavaBridgeDispatcherHostManager() {
@@ -70,7 +69,7 @@ void JavaBridgeDispatcherHostManager::RenderViewDeleted(
 
 void JavaBridgeDispatcherHostManager::WebContentsDestroyed(
     content::WebContents* web_contents) {
-  // When the tab is shutting down, the TabContents clears its observers before
+  // When the tab is shutting down, the WebContents clears its observers before
   // it kills all of its RenderViewHosts, so we won't get a call to
   // RenderViewDeleted() for all RenderViewHosts.
   instances_.clear();
