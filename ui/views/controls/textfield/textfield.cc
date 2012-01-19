@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -327,8 +327,15 @@ gfx::Size Textfield::GetPreferredSize() {
   gfx::Insets insets;
   if (draw_border_ && native_wrapper_)
     insets = native_wrapper_->CalculateInsets();
+  // For NativeTextfieldViews, we might use a pre-defined font list (defined in
+  // IDS_UI_FONT_FAMILY_CROS) as the fonts to render text. The fonts in the
+  // list might be different (in name or in size) from |font_|, so we need to
+  // use GetFontHeight() to get the height of the first font in the list to
+  // guide textfield's height.
+  const int font_height = native_wrapper_ ? native_wrapper_->GetFontHeight() :
+                                            font_.GetHeight();
   return gfx::Size(font_.GetExpectedTextWidth(default_width_in_chars_) +
-                       insets.width(), font_.GetHeight() + insets.height());
+                       insets.width(), font_height + insets.height());
 }
 
 void Textfield::AboutToRequestFocusFromTabTraversal(bool reverse) {

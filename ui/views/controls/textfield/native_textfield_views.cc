@@ -534,6 +534,10 @@ void NativeTextfieldViews::ClearEditHistory() {
   model_->ClearEditHistory();
 }
 
+int NativeTextfieldViews::GetFontHeight() {
+  return GetRenderText()->GetFont().GetHeight();
+}
+
 /////////////////////////////////////////////////////////////////
 // NativeTextfieldViews, ui::SimpleMenuModel::Delegate overrides:
 
