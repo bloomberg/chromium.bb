@@ -61,6 +61,7 @@ struct Restrictions {
     map[keys::kConvertedFromUserScript] = all_but_themes;
     map[keys::kNaClModules] = all_but_themes;
     map[keys::kWebAccessibleResources] = all_but_themes;
+    map[keys::kIntents] = all_but_themes;
 
     // Everything except themes and platform apps.
     map[keys::kPlugins] = all_but_themes - Manifest::kTypePlatformApp;
@@ -81,7 +82,6 @@ struct Restrictions {
     int local_apps_and_ext = ext_and_packaged | Manifest::kTypePlatformApp;
     map[keys::kContentSecurityPolicy] = local_apps_and_ext;
     map[keys::kIncognito] = local_apps_and_ext;
-    map[keys::kIntents] = local_apps_and_ext;
   }
 
   // Returns true if the |key| is recognized.

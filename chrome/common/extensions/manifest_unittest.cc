@@ -73,8 +73,7 @@ const char* kNotHostedAppKeys[] = {
   keys::kFileBrowserHandlers,
   keys::kIncognito,
   keys::kInputComponents,
-  keys::kTtsEngine,
-  keys::kIntents
+  keys::kTtsEngine
 };
 
 // Keys not accessible by packaged aps.
