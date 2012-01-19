@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -81,7 +81,8 @@ void WebURLLoaderMockFactory::ServeAsynchronousRequests() {
     }
     if (!loader->isDeferred())
       loader->ServeAsynchronousRequest(response, data, error);
-    pending_loaders_.erase(iter);
+    // If the load has been canceled, the loader may not be in the map.
+    pending_loaders_.erase(loader);
   }
 }
 
