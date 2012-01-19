@@ -533,6 +533,12 @@ def main():
 
   desktop = Desktop(width, height)
 
+  # Remember the time when the last session was launched, in order to enforce
+  # a minimum time between launches.  This avoids spinning in case of a
+  # misconfigured system, or other error that prevents a session from starting
+  # properly.
+  last_launch_time = 0
+
   while True:
     # If the session process stops running (e.g. because the user logged out),
     # the X server should be reset and the session restarted, to provide a
@@ -549,8 +555,15 @@ def main():
         logging.info("Terminating X session")
         desktop.session_proc.terminate()
       else:
-        # Neither X server nor X session are running, so launch them both.
+        # Neither X server nor X session are running.
+        elapsed = time.time() - last_launch_time
+        if elapsed < 60:
+          logging.error("The session lasted less than 1 minute.  Waiting " +
+                        "before starting new session.")
+          time.sleep(60 - elapsed)
+
         logging.info("Launching X server and X session")
+        last_launch_time = time.time()
         desktop.launch_x_server(args)
         desktop.launch_x_session()
 
