@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -128,6 +128,27 @@ TEST_F(RenderbufferManagerTest, RenderbufferInfo) {
   EXPECT_TRUE(manager_.HaveUnclearedRenderbuffers());
 
   manager_.RemoveRenderbufferInfo(kClient1Id);
+  EXPECT_FALSE(manager_.HaveUnclearedRenderbuffers());
+}
+
+TEST_F(RenderbufferManagerTest, UseDeletedRenderbufferInfo) {
+  const GLuint kClient1Id = 1;
+  const GLuint kService1Id = 11;
+  manager_.CreateRenderbufferInfo(kClient1Id, kService1Id);
+  RenderbufferManager::RenderbufferInfo::Ref info1(
+      manager_.GetRenderbufferInfo(kClient1Id));
+  ASSERT_TRUE(info1 != NULL);
+  // Remove it.
+  manager_.RemoveRenderbufferInfo(kClient1Id);
+  // Use after removing.
+  const GLsizei kSamples = 4;
+  const GLenum kFormat = GL_RGBA4;
+  const GLsizei kWidth = 128;
+  const GLsizei kHeight = 64;
+  manager_.SetInfo(info1, kSamples, kFormat, kWidth, kHeight);
+  // See that it still affects manager.
+  EXPECT_TRUE(manager_.HaveUnclearedRenderbuffers());
+  manager_.SetCleared(info1);
   EXPECT_FALSE(manager_.HaveUnclearedRenderbuffers());
 }
 

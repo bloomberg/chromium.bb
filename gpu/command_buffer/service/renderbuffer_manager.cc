@@ -29,6 +29,13 @@ size_t RenderbufferManager::RenderbufferInfo::EstimatedSize() {
          GLES2Util::RenderbufferBytesPerPixel(internal_format_);
 }
 
+RenderbufferManager::RenderbufferInfo::~RenderbufferInfo() {
+  if (manager_) {
+    manager_->StopTracking(this);
+    manager_ = NULL;
+  }
+}
+
 void RenderbufferManager::UpdateMemRepresented() {
   TRACE_COUNTER_ID1(
       "RenderbufferManager", "RenderbufferMemory", this, mem_represented_);
@@ -37,7 +44,6 @@ void RenderbufferManager::UpdateMemRepresented() {
 void RenderbufferManager::Destroy(bool have_context) {
   while (!renderbuffer_infos_.empty()) {
     RenderbufferInfo* info = renderbuffer_infos_.begin()->second;
-    mem_represented_ -= info->EstimatedSize();
     if (have_context) {
       if (!info->IsDeleted()) {
         GLuint service_id = info->service_id();
@@ -51,9 +57,16 @@ void RenderbufferManager::Destroy(bool have_context) {
   UpdateMemRepresented();
 }
 
+void RenderbufferManager::StopTracking(RenderbufferInfo* renderbuffer) {
+  if (!renderbuffer->cleared()) {
+    --num_uncleared_renderbuffers_;
+  }
+  mem_represented_ -= renderbuffer->EstimatedSize();
+}
+
 void RenderbufferManager::SetInfo(
-  RenderbufferInfo* renderbuffer,
-  GLsizei samples, GLenum internalformat, GLsizei width, GLsizei height) {
+    RenderbufferInfo* renderbuffer,
+    GLsizei samples, GLenum internalformat, GLsizei width, GLsizei height) {
   DCHECK(renderbuffer);
   if (!renderbuffer->cleared()) {
     --num_uncleared_renderbuffers_;
@@ -80,7 +93,7 @@ void RenderbufferManager::SetCleared(RenderbufferInfo* renderbuffer) {
 
 void RenderbufferManager::CreateRenderbufferInfo(
     GLuint client_id, GLuint service_id) {
-  RenderbufferInfo::Ref info(new RenderbufferInfo(service_id));
+  RenderbufferInfo::Ref info(new RenderbufferInfo(this, service_id));
   std::pair<RenderbufferInfoMap::iterator, bool> result =
       renderbuffer_infos_.insert(std::make_pair(client_id, info));
   DCHECK(result.second);
@@ -99,11 +112,6 @@ void RenderbufferManager::RemoveRenderbufferInfo(GLuint client_id) {
   RenderbufferInfoMap::iterator it = renderbuffer_infos_.find(client_id);
   if (it != renderbuffer_infos_.end()) {
     RenderbufferInfo* info = it->second;
-    if (!info->cleared()) {
-      --num_uncleared_renderbuffers_;
-    }
-    mem_represented_ -= info->EstimatedSize();
-    UpdateMemRepresented();
     info->MarkAsDeleted();
     renderbuffer_infos_.erase(it);
   }

@@ -23,8 +23,9 @@ class RenderbufferManager {
    public:
     typedef scoped_refptr<RenderbufferInfo> Ref;
 
-    explicit RenderbufferInfo(GLuint service_id)
-        : service_id_(service_id),
+    RenderbufferInfo(RenderbufferManager* manager, GLuint service_id)
+        : manager_(manager),
+          service_id_(service_id),
           cleared_(true),
           has_been_bound_(false),
           samples_(0),
@@ -75,7 +76,7 @@ class RenderbufferManager {
     friend class RenderbufferManager;
     friend class base::RefCounted<RenderbufferInfo>;
 
-    ~RenderbufferInfo() { }
+    ~RenderbufferInfo();
 
     void set_cleared() {
       cleared_ = true;
@@ -93,6 +94,9 @@ class RenderbufferManager {
     void MarkAsDeleted() {
       service_id_ = 0;
     }
+
+    // RenderbufferManager that owns this RenderbufferInfo.
+    RenderbufferManager* manager_;
 
     // Service side renderbuffer id.
     GLuint service_id_;
@@ -152,6 +156,8 @@ class RenderbufferManager {
 
  private:
   void UpdateMemRepresented();
+
+  void StopTracking(RenderbufferInfo* renderbuffer);
 
   GLint max_renderbuffer_size_;
   GLint max_samples_;
