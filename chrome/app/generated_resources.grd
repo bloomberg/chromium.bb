@@ -496,12 +496,6 @@ are declared in build/common.gypi.
         <message name="IDS_CONTENT_CONTEXT_SPELLING_ASK_GOOGLE" desc="The context-menu item that asks whether to integrate the spelling service of Google to Chrome. This text is also used as the title of a bubble which confirms it.">
           Ask Google for suggestions
         </message>
-        <message name="IDS_CONTENT_CONTEXT_SPELLING_BUBBLE_TEXT" desc="The text of a bubble that confirms users allows integrating the spelling service of Google to Chrome.">
-          Google Chrome can provide smarter spell-checking by sending what you type in the browser to Google servers, allowing you to use the same spell-checking technology used by Google search.
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_SPELLING_BUBBLE_LINK" desc="The link text of a bubble. This link opens the 'Exploring Chrome's privacy features' page.">
-          Learn More
-        </message>
         <message name="IDS_CONTENT_CONTEXT_SPELLING_BUBBLE_ENABLE" desc="The button text that allows integrating the spelling service of Google.">
           Enable
         </message>
@@ -708,20 +702,14 @@ are declared in build/common.gypi.
         <message name="IDS_CONTENT_CONTEXT_NO_SPELLING_SUGGESTIONS" desc="In Title Case: The name of the No Spelling Suggestions display in the content area context menu">
           &amp;No Spelling Suggestions
         </message>
-        <message name="IDS_CONTENT_CONTEXT_SPELLING_ASK_GOOGLE" desc="The context-menu item that asks whether to integrate the spelling service of Google to Chrome. This text is also used as the title of a bubble which confirms it.">
-          Ask Google for suggestions
+        <message name="IDS_CONTENT_CONTEXT_SPELLING_ASK_GOOGLE" desc="In Title Case: The context-menu item that asks whether to integrate the spelling service of Google to Chrome. This text is also used as the title of a bubble which confirms it.">
+          Ask Google for Suggestions
         </message>
-        <message name="IDS_CONTENT_CONTEXT_SPELLING_BUBBLE_TEXT" desc="The text of a bubble that confirms users allows integrating the spelling service of Google to Chrome.">
-          Google Chrome can provide smarter spell-checking by sending what you type in the browser to Google servers, allowing you to use the same spell-checking technology used by Google search.
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_SPELLING_BUBBLE_LINK" desc="The link text of a bubble. This link opens the 'Google Chrome Privacy Notice' page.">
-          Learn More
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_SPELLING_BUBBLE_ENABLE" desc="The button text that allows integrating the spelling service of Google.">
+        <message name="IDS_CONTENT_CONTEXT_SPELLING_BUBBLE_ENABLE" desc="In Title Case: The button text that allows integrating the spelling service of Google.">
           Enable
         </message>
-        <message name="IDS_CONTENT_CONTEXT_SPELLING_BUBBLE_DISABLE" desc="The button text that disallows integrating the spelling service of Google.">
-          No thanks
+        <message name="IDS_CONTENT_CONTEXT_SPELLING_BUBBLE_DISABLE" desc="In Title Case: The button text that disallows integrating the spelling service of Google.">
+          No Thanks
         </message>
         <message name="IDS_CONTENT_CONTEXT_SPELLING_STOP_ASKING_GOOGLE" desc="The context-menu item that stops integrating the spelling service.">
           Stop asking Google for suggestions
@@ -781,6 +769,9 @@ are declared in build/common.gypi.
           About Voice Recognition
         </message>
       </if>
+      <message name="IDS_CONTENT_CONTEXT_SPELLING_BUBBLE_TEXT" desc="The text of a bubble that confirms users allows integrating the spelling service of Google to Chrome.">
+        Google Chrome can provide smarter spell-checking by sending what you type in the browser to Google servers, allowing you to use the same spell-checking technology used by Google search.
+      </message>
 
       <!-- Spelling submenu -->
       <if expr="is_macosx">
@@ -2363,9 +2354,16 @@ are declared in build/common.gypi.
                desc="In the download view, 'Pause' link text">
         Pause
       </message>
-      <message name="IDS_DOWNLOAD_SEARCH_BUTTON" desc="Title of the button in the download page that triggers a search">
-        Search downloads
-      </message>
+      <if expr="pp_ifdef('use_titlecase')">
+        <message name="IDS_DOWNLOAD_SEARCH_BUTTON" desc="In Title Case: Title of the button in the download page that triggers a search">
+          Search Downloads
+        </message>
+      </if>
+      <if expr="not pp_ifdef('use_titlecase')">
+        <message name="IDS_DOWNLOAD_SEARCH_BUTTON" desc="Title of the button in the download page that triggers a search">
+          Search downloads
+        </message>
+      </if>
       <message name="IDS_DOWNLOAD_SEARCHRESULTSFOR" desc="Format string for search results">
         Search results for '<ph name="SEARCH_STRING">$1</ph>'
       </message>

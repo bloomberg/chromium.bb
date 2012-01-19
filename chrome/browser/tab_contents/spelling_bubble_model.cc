@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -57,7 +57,7 @@ void SpellingBubbleModel::Cancel() {
 }
 
 string16 SpellingBubbleModel::GetLinkText() const {
-  return l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_SPELLING_BUBBLE_LINK);
+  return l10n_util::GetStringUTF16(IDS_LEARN_MORE);
 }
 
 void SpellingBubbleModel::LinkClicked() {
