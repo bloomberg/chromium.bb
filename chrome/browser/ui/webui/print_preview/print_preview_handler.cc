@@ -15,7 +15,7 @@
 #include "base/i18n/file_util_icu.h"
 #include "base/i18n/number_formatting.h"
 #include "base/json/json_reader.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/ref_counted_memory.h"
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "base/threading/thread.h"
@@ -393,27 +393,32 @@ void PrintPreviewHandler::HandlePrint(const ListValue* args) {
     }
   }
 
+  // Never try to add headers/footers here. It's already in the generated PDF.
+  settings->SetBoolean(printing::kSettingHeaderFooterEnabled, false);
+
   bool print_to_pdf = false;
-  settings->GetBoolean(printing::kSettingPrintToPDF, &print_to_pdf);
+  bool is_cloud_printer = false;
+  bool is_cloud_dialog = false;
 
   bool open_pdf_in_preview = false;
 #if defined(OS_MACOSX)
   open_pdf_in_preview = settings->HasKey(printing::kSettingOpenPDFInPreview);
 #endif
 
-  settings->SetBoolean(printing::kSettingHeaderFooterEnabled, false);
+  if (!open_pdf_in_preview) {
+    settings->GetBoolean(printing::kSettingPrintToPDF, &print_to_pdf);
+    settings->GetBoolean(printing::kSettingCloudPrintDialog, &is_cloud_dialog);
+    is_cloud_printer = settings->HasKey(printing::kSettingCloudPrintId);
+  }
 
-  bool is_cloud_printer = settings->HasKey(printing::kSettingCloudPrintId);
-  bool is_cloud_dialog = false;
-  settings->GetBoolean(printing::kSettingCloudPrintDialog, &is_cloud_dialog);
-  if (is_cloud_printer && !open_pdf_in_preview) {
+  if (is_cloud_printer) {
     std::string print_ticket;
     bool res = args->GetString(1, &print_ticket);
     DCHECK(res);
     SendCloudPrintJob(*settings, print_ticket);
-  } else if (print_to_pdf && !open_pdf_in_preview) {
+  } else if (print_to_pdf) {
     HandlePrintToPdf(*settings);
-  } else if (is_cloud_dialog && !open_pdf_in_preview) {
+  } else if (is_cloud_dialog) {
     HandlePrintWithCloudPrint();
   } else {
     ReportPrintSettingsStats(*settings);
@@ -442,9 +447,14 @@ void PrintPreviewHandler::HandlePrint(const ListValue* args) {
 
 void PrintPreviewHandler::HandlePrintToPdf(
     const base::DictionaryValue& settings) {
+  PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(
+      web_ui()->GetController());
   if (print_to_pdf_path_.get()) {
     // User has already selected a path, no need to show the dialog again.
-    PostPrintToPdfTask();
+    scoped_refptr<RefCountedBytes> data;
+    print_preview_ui->GetPrintPreviewDataForIndex(
+        printing::COMPLETE_PREVIEW_DOCUMENT_INDEX, &data);
+    PostPrintToPdfTask(data);
   } else if (!select_file_dialog_.get() || !select_file_dialog_->IsRunning(
         platform_util::GetTopLevel(preview_tab()->GetNativeView()))) {
     ReportUserActionHistogram(PRINT_TO_PDF);
@@ -452,8 +462,6 @@ void PrintPreviewHandler::HandlePrintToPdf(
                          GetPageCountFromSettingsDictionary(settings));
 
     // Pre-populating select file dialog with print job title.
-    PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(
-        web_ui()->GetController());
     string16 print_job_title_utf16 = print_preview_ui->initiator_tab_title();
 
 #if defined(OS_WIN)
@@ -730,7 +738,6 @@ void PrintPreviewHandler::SendCloudPrintJob(const DictionaryValue& settings,
       web_ui()->GetController());
   print_preview_ui->GetPrintPreviewDataForIndex(
       printing::COMPLETE_PREVIEW_DOCUMENT_INDEX, &data);
-  CHECK(data.get());
   DCHECK_GT(data->size(), 0U);
 
   string16 print_job_title_utf16 =
@@ -844,7 +851,7 @@ void PrintPreviewHandler::ShowSystemDialog() {
 
 void PrintPreviewHandler::FileSelected(const FilePath& path,
                                        int index, void* params) {
-  // Updating last_saved_path_ to the newly selected folder.
+  // Updating |last_saved_path_| to the newly selected folder.
   *last_saved_path_ = path.DirName();
 
   PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(
@@ -855,16 +862,11 @@ void PrintPreviewHandler::FileSelected(const FilePath& path,
       printing::COMPLETE_PREVIEW_DOCUMENT_INDEX, &data);
   print_to_pdf_path_.reset(new FilePath(path));
   if (data.get())
-    PostPrintToPdfTask();
+    PostPrintToPdfTask(data);
 }
 
-void PrintPreviewHandler::PostPrintToPdfTask() {
-  PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(
-      web_ui()->GetController());
-  scoped_refptr<RefCountedBytes> data;
-  print_preview_ui->GetPrintPreviewDataForIndex(
-      printing::COMPLETE_PREVIEW_DOCUMENT_INDEX, &data);
-  DCHECK(data.get());
+void PrintPreviewHandler::PostPrintToPdfTask(
+    scoped_refptr<RefCountedBytes> data) {
   printing::PreviewMetafile* metafile = new printing::PreviewMetafile;
   metafile->InitFromData(static_cast<const void*>(data->front()), data->size());
   // PrintToPdfCallback takes ownership of |metafile|.

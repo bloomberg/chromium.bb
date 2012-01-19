@@ -679,12 +679,7 @@ void PrintWebViewHelper::PrintPage(WebKit::WebFrame* frame) {
   if (is_preview_enabled_) {
     print_preview_context_.InitWithFrame(frame);
 
-    old_print_pages_params_.reset();  // Same as in RequestPrintPreview().
-    IPC::SyncMessage* msg = new PrintHostMsg_ScriptedPrintPreview(
-        routing_id(),
-        print_preview_context_.IsModifiable());
-    msg->EnableMessagePumping();
-    Send(msg);
+    RequestPrintPreview(true);
   } else {
     Print(frame, WebNode());
   }
@@ -979,7 +974,7 @@ void PrintWebViewHelper::OnInitiatePrintPreview() {
   WebFrame* frame;
   if (GetPrintFrame(&frame)) {
     print_preview_context_.InitWithFrame(frame);
-    RequestPrintPreview();
+    RequestPrintPreview(false);
   }
 }
 
@@ -993,7 +988,7 @@ void PrintWebViewHelper::PrintNode(const WebNode& node) {
   // its |context_menu_node_|.
   if (is_preview_enabled_) {
     print_preview_context_.InitWithNode(node);
-    RequestPrintPreview();
+    RequestPrintPreview(false);
   } else {
     WebNode duplicate_node(node);
     Print(duplicate_node.document().frame(), duplicate_node);
@@ -1471,10 +1466,17 @@ void PrintWebViewHelper::DisplayPrintJobError() {
       l10n_util::GetStringUTF16(IDS_PRINT_SPOOL_FAILED_ERROR_TEXT));
 }
 
-void PrintWebViewHelper::RequestPrintPreview() {
+void PrintWebViewHelper::RequestPrintPreview(bool is_script_initiated) {
+  const bool is_modifiable = print_preview_context_.IsModifiable();
   old_print_pages_params_.reset();
-  Send(new PrintHostMsg_RequestPrintPreview(
-      routing_id(), print_preview_context_.IsModifiable()));
+  if (is_script_initiated) {
+    IPC::SyncMessage* msg = new PrintHostMsg_ScriptedPrintPreview(
+        routing_id(), is_modifiable);
+    msg->EnableMessagePumping();
+    Send(msg);
+  } else {
+    Send(new PrintHostMsg_RequestPrintPreview(routing_id(), is_modifiable));
+  }
 }
 
 bool PrintWebViewHelper::CheckForCancel() {

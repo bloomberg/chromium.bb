@@ -20,6 +20,7 @@
 
 class FilePath;
 class PrintSystemTaskProxy;
+class RefCountedBytes;
 class TabContentsWrapper;
 
 namespace base {
@@ -174,8 +175,8 @@ class PrintPreviewHandler : public content::WebUIMessageHandler,
   // Clears initiator tab details for this preview tab.
   void ClearInitiatorTabDetails();
 
-  // Posts a task to save to pdf at |print_to_pdf_path_|.
-  void PostPrintToPdfTask();
+  // Posts a task to save |data| to pdf at |print_to_pdf_path_|.
+  void PostPrintToPdfTask(scoped_refptr<RefCountedBytes> data);
 
   // Populates |settings| according to the current locale.
   void GetNumberFormatAndMeasurementSystem(base::DictionaryValue* settings);
