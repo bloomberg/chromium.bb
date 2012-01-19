@@ -212,9 +212,6 @@ const char kEnableGamepad[]                 = "enable-gamepad";
 // Enable the GPU plugin and Pepper 3D rendering.
 const char kEnableGPUPlugin[]               = "enable-gpu-plugin";
 
-// Allow web workers to access the Indexed Database API.
-const char kEnableIndexedDBForWorkers[]     = "enable-indexeddb-for-workers";
-
 // Force logging to be enabled.  Logging is disabled by default in release
 // builds.
 const char kEnableLogging[]                 = "enable-logging";

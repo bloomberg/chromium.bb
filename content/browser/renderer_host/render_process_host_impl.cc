@@ -660,7 +660,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnableGamepad,
     switches::kEnableGPUServiceLogging,
     switches::kEnableGPUClientLogging,
-    switches::kEnableIndexedDBForWorkers,
     switches::kEnableLogging,
     switches::kEnableMediaSource,
     switches::kEnableMediaStream,
