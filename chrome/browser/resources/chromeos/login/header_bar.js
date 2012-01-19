@@ -42,8 +42,8 @@ cr.define('login', function() {
         Oobe.resetSigninUI(true);
       });
       $('sign-out-user-button').addEventListener('click', function(e) {
-        chrome.send('signOutUser');
         this.disabled = true;
+        chrome.send('signOutUser');
       });
     },
 

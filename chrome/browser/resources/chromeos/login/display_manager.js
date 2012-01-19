@@ -15,6 +15,7 @@ const SCREEN_ACCOUNT_PICKER = 'account-picker';
 const ACCELERATOR_ACCESSIBILITY = 'accessibility';
 const ACCELERATOR_CANCEL = 'cancel';
 const ACCELERATOR_ENROLLMENT = 'enrollment';
+const ACCELERATOR_EXIT = 'exit';
 
 cr.define('cr.ui.login', function() {
   /**
@@ -70,6 +71,10 @@ cr.define('cr.ui.login', function() {
         if (currentStepId == SCREEN_SIGNIN ||
             currentStepId == SCREEN_GAIA_SIGNIN) {
           chrome.send('toggleEnrollmentScreen', []);
+        }
+      } else if (name == ACCELERATOR_EXIT) {
+        if (this.currentScreen.exit) {
+          this.currentScreen.exit();
         }
       }
     },

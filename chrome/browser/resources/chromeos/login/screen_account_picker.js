@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,6 +33,20 @@ cr.define('login', function() {
 
     // Whether this screen is shown for the first time.
     firstShown_ : true,
+
+    /**
+     * When the account picker is being used to lock the screen, pressing the
+     * exit accelerator key will sign out the active user as it would when
+     * they are signed in.
+     */
+    exit: function() {
+      // Check and disable the sign out button so that we can never have two
+      // sign out requests generated in a row.
+      if ($('pod-row').lockedPod && !$('sign-out-user-button').disabled) {
+        $('sign-out-user-button').disabled = true;
+        chrome.send('signOutUser');
+      }
+    },
 
     /**
      * Event handler that is invoked just before the frame is shown.
