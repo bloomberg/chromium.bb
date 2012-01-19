@@ -109,6 +109,7 @@ class AudioUtilInterface {
   virtual ~AudioUtilInterface() {}
   virtual double GetAudioHardwareSampleRate() = 0;
   virtual double GetAudioInputHardwareSampleRate() = 0;
+  virtual uint32 GetAudioInputHardwareChannelCount() = 0;
 };
 
 // Implemented and defined in the cc file.
@@ -137,6 +138,7 @@ class WebRTCAudioDeviceTest
 
   void OnGetHardwareSampleRate(double* sample_rate);
   void OnGetHardwareInputSampleRate(double* sample_rate);
+  void OnGetHardwareInputChannelCount(uint32* channels);
 
   // IPC::Channel::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;

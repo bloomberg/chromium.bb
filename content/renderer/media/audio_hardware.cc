@@ -11,6 +11,7 @@
 static double output_sample_rate = 0.0;
 static double input_sample_rate = 0.0;
 static size_t output_buffer_size = 0;
+static uint32 input_channel_count = 0;
 
 namespace audio_hardware {
 
@@ -47,12 +48,26 @@ size_t GetOutputBufferSize() {
   return output_buffer_size;
 }
 
+uint32 GetInputChannelCount() {
+  DCHECK(RenderThreadImpl::current() != NULL);
+
+  if (!input_channel_count) {
+    uint32 channels = 0;
+    RenderThreadImpl::current()->Send(
+        new ViewHostMsg_GetHardwareInputChannelCount(&channels));
+    input_channel_count = channels;
+  }
+
+  return input_channel_count;
+}
+
 void ResetCache() {
   DCHECK(RenderThreadImpl::current() != NULL);
 
   output_sample_rate = 0.0;
   input_sample_rate = 0.0;
   output_buffer_size = 0;
+  input_channel_count = 0;
 }
 
 }  // namespace audio_hardware

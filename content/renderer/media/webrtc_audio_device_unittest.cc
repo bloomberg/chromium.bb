@@ -38,14 +38,20 @@ class AudioUtil : public AudioUtilInterface {
   virtual double GetAudioInputHardwareSampleRate() OVERRIDE {
     return media::GetAudioInputHardwareSampleRate();
   }
+  virtual uint32 GetAudioInputHardwareChannelCount() OVERRIDE {
+    return media::GetAudioInputHardwareChannelCount();
+  }
  private:
   DISALLOW_COPY_AND_ASSIGN(AudioUtil);
 };
 
 class AudioUtilNoHardware : public AudioUtilInterface {
  public:
-  AudioUtilNoHardware(double output_rate, double input_rate)
-    : output_rate_(output_rate), input_rate_(input_rate) {
+  AudioUtilNoHardware(double output_rate, double input_rate,
+                      uint32 input_channels)
+      : output_rate_(output_rate),
+        input_rate_(input_rate),
+        input_channels_(input_channels) {
   }
 
   virtual double GetAudioHardwareSampleRate() OVERRIDE {
@@ -54,10 +60,14 @@ class AudioUtilNoHardware : public AudioUtilInterface {
   virtual double GetAudioInputHardwareSampleRate() OVERRIDE {
     return input_rate_;
   }
+  virtual uint32 GetAudioInputHardwareChannelCount() OVERRIDE {
+    return input_channels_;
+  }
 
  private:
   double output_rate_;
   double input_rate_;
+  uint32 input_channels_;
   DISALLOW_COPY_AND_ASSIGN(AudioUtilNoHardware);
 };
 
@@ -82,7 +92,8 @@ bool HardwareSampleRatesAreValid() {
       static_cast<int>(audio_hardware::GetInputSampleRate());
   bool rates_are_valid =
       ((output_sample_rate == 44100 || output_sample_rate == 48000) &&
-       (input_sample_rate == 44100 || input_sample_rate == 48000));
+       (input_sample_rate == 44100 || input_sample_rate == 48000 ||
+        input_sample_rate == 16000 || input_sample_rate == 32000));
   DLOG_IF(WARNING, !rates_are_valid) << "Non-supported sample rate detected.";
   return rates_are_valid;
 }
@@ -160,10 +171,11 @@ class WebRTCMediaProcessImpl : public webrtc::VoEMediaProcess {
 // Basic test that instantiates and initializes an instance of
 // WebRtcAudioDeviceImpl.
 TEST_F(WebRTCAudioDeviceTest, Construct) {
-  AudioUtilNoHardware audio_util(48000.0, 48000.0);
+  AudioUtilNoHardware audio_util(48000.0, 48000.0, 1);
   SetAudioUtilCallback(&audio_util);
   scoped_refptr<WebRtcAudioDeviceImpl> audio_device(
       new WebRtcAudioDeviceImpl());
+
   audio_device->SetSessionId(1);
 
   WebRTCAutoDelete<webrtc::VoiceEngine> engine(webrtc::VoiceEngine::Create());

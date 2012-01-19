@@ -380,6 +380,8 @@ bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message,
                         OnGetHardwareInputSampleRate)
     IPC_MESSAGE_HANDLER(ViewHostMsg_GetHardwareSampleRate,
                         OnGetHardwareSampleRate)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_GetHardwareInputChannelCount,
+                        OnGetHardwareInputChannelCount)
     IPC_MESSAGE_HANDLER(ViewHostMsg_MediaLogEvent, OnMediaLogEvent)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
@@ -671,6 +673,10 @@ void RenderMessageFilter::OnGetHardwareInputSampleRate(double* sample_rate) {
 
 void RenderMessageFilter::OnGetHardwareSampleRate(double* sample_rate) {
   *sample_rate = media::GetAudioHardwareSampleRate();
+}
+
+void RenderMessageFilter::OnGetHardwareInputChannelCount(uint32* channels) {
+  *channels = static_cast<uint32>(media::GetAudioInputHardwareChannelCount());
 }
 
 void RenderMessageFilter::OnDownloadUrl(const IPC::Message& message,

@@ -175,6 +175,7 @@ class RenderMessageFilter : public content::BrowserMessageFilter {
   void OnGetHardwareBufferSize(uint32* buffer_size);
   void OnGetHardwareInputSampleRate(double* sample_rate);
   void OnGetHardwareSampleRate(double* sample_rate);
+  void OnGetHardwareInputChannelCount(uint32* channels);
 
   // Used to ask the browser to allocate a block of shared memory for the
   // renderer to send back data in, since shared memory can't be created

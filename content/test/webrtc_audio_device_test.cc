@@ -235,6 +235,12 @@ void WebRTCAudioDeviceTest::OnGetHardwareInputSampleRate(double* sample_rate) {
       audio_util_callback_->GetAudioInputHardwareSampleRate() : 0.0;
 }
 
+void WebRTCAudioDeviceTest::OnGetHardwareInputChannelCount(uint32* channels) {
+  EXPECT_TRUE(audio_util_callback_);
+  *channels = audio_util_callback_ ?
+      audio_util_callback_->GetAudioInputHardwareChannelCount() : 0;
+}
+
 // IPC::Channel::Listener implementation.
 bool WebRTCAudioDeviceTest::OnMessageReceived(const IPC::Message& message) {
   if (render_thread_) {
@@ -267,6 +273,8 @@ bool WebRTCAudioDeviceTest::OnMessageReceived(const IPC::Message& message) {
                         OnGetHardwareSampleRate)
     IPC_MESSAGE_HANDLER(ViewHostMsg_GetHardwareInputSampleRate,
                         OnGetHardwareInputSampleRate)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_GetHardwareInputChannelCount,
+                        OnGetHardwareInputChannelCount)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
 

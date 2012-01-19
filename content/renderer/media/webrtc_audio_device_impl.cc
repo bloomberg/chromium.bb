@@ -300,7 +300,11 @@ int32_t WebRtcAudioDeviceImpl::Init() {
       static_cast<int>(audio_hardware::GetInputSampleRate());
   DVLOG(1) << "Audio input hardware sample rate: " << input_sample_rate;
 
-  int input_channels = 0;
+  // Ask the browser for the default number of audio input channels.
+  // This request is based on a synchronous IPC message.
+  int input_channels = audio_hardware::GetInputChannelCount();
+  DVLOG(1) << "Audio input hardware channels: " << input_channels;
+
   int output_channels = 0;
 
   size_t input_buffer_size = 0;
@@ -308,21 +312,17 @@ int32_t WebRtcAudioDeviceImpl::Init() {
 
 // Windows
 #if defined(OS_WIN)
-  if (input_sample_rate != 48000 && input_sample_rate != 44100) {
-    DLOG(ERROR) << "Only 48 and 44.1kHz input rates are supported on Windows.";
+  if (input_sample_rate != 48000 && input_sample_rate != 44100 &&
+      input_sample_rate != 32000 && input_sample_rate != 16000) {
+    DLOG(ERROR) << "Only 48, 44.1, 32 and 16kHz input rates are supported.";
     return -1;
   }
   if (output_sample_rate != 48000 && output_sample_rate != 44100) {
-    DLOG(ERROR) << "Only 48 and 44.1kHz output rates are supported on Windows.";
+    DLOG(ERROR) << "Only 48 and 44.1kHz output rates are supported.";
     return -1;
   }
 
-  // Use stereo recording on Windows since low-latency Core Audio (WASAPI)
-  // does not support mono.
-  input_channels = 2;
-
-  // Use stereo rendering on Windows to make input and output sides
-  // symmetric. WASAPI supports both stereo and mono.
+  // Always use stereo rendering on Windows.
   output_channels = 2;
 
   // Capture side: AUDIO_PCM_LOW_LATENCY is based on the Core Audio (WASAPI)
@@ -331,12 +331,12 @@ int32_t WebRtcAudioDeviceImpl::Init() {
   // size of 10ms works well for both these implementations.
 
   // Use different buffer sizes depending on the current hardware sample rate.
-  if (input_sample_rate == 48000) {
-    input_buffer_size = 480;
-  } else {
+  if (input_sample_rate == 44100) {
     // We do run at 44.1kHz at the actual audio layer, but ask for frames
     // at 44.0kHz to ensure that we can feed them to the webrtc::VoiceEngine.
     input_buffer_size = 440;
+  } else {
+    input_buffer_size = (input_sample_rate / 100);
   }
 
   // Render side: AUDIO_PCM_LOW_LATENCY is based on the Core Audio (WASAPI)
@@ -357,7 +357,7 @@ int32_t WebRtcAudioDeviceImpl::Init() {
 
   // Windows XP and lower can't cope with 10 ms output buffer size.
   // It must be extended to 30 ms (60 ms will be used internally by WaveOut).
-  if (base::win::GetVersion() <= base::win::VERSION_XP) {
+  if (!media::IsWASAPISupported()) {
     output_buffer_size = 3 * output_buffer_size;
     DLOG(WARNING) << "Extending the output buffer size by a factor of three "
                   << "since Windows XP has been detected.";
@@ -365,8 +365,9 @@ int32_t WebRtcAudioDeviceImpl::Init() {
 
 // Mac OS X
 #elif defined(OS_MACOSX)
-  if (input_sample_rate != 48000 && input_sample_rate != 44100) {
-    DLOG(ERROR) << "Only 48 and 44.1kHz input rates are supported on Mac OSX.";
+  if (input_sample_rate != 48000 && input_sample_rate != 44100 &&
+      input_sample_rate != 32000 && input_sample_rate != 16000) {
+    DLOG(ERROR) << "Only 48, 44.1, 32 and 16kHz input rates are supported.";
     return -1;
   }
   if (output_sample_rate != 48000 && output_sample_rate != 44100) {
@@ -374,7 +375,6 @@ int32_t WebRtcAudioDeviceImpl::Init() {
     return -1;
   }
 
-  input_channels = 1;
   output_channels = 1;
 
   // Capture side: AUDIO_PCM_LOW_LATENCY on Mac OS X is based on a callback-
@@ -382,12 +382,12 @@ int32_t WebRtcAudioDeviceImpl::Init() {
   // frame size to use, both for 48kHz and 44.1kHz.
 
   // Use different buffer sizes depending on the current hardware sample rate.
-  if (input_sample_rate == 48000) {
-    input_buffer_size = 480;
-  } else {
+  if (input_sample_rate == 44100) {
     // We do run at 44.1kHz at the actual audio layer, but ask for frames
     // at 44.0kHz to ensure that we can feed them to the webrtc::VoiceEngine.
     input_buffer_size = 440;
+  } else {
+    input_buffer_size = (input_sample_rate / 100);
   }
 
   // Render side: AUDIO_PCM_LOW_LATENCY on Mac OS X is based on a callback-
@@ -618,9 +618,6 @@ bool WebRtcAudioDeviceImpl::Playing() const {
 
 int32_t WebRtcAudioDeviceImpl::StartRecording() {
   DVLOG(1) << "StartRecording()";
-#if defined(OS_MACOSX)
-  DLOG(WARNING) << "Real-time recording is not yet fully supported on Mac OS X";
-#endif
   LOG_IF(ERROR, !audio_transport_callback_) << "Audio transport is missing";
   if (!audio_transport_callback_) {
     LOG(ERROR) << "Audio transport is missing";

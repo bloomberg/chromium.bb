@@ -26,6 +26,10 @@ CONTENT_EXPORT double GetInputSampleRate();
 // Must be called from RenderThreadImpl::current().
 CONTENT_EXPORT size_t GetOutputBufferSize();
 
+// Fetch the number of audio channels for the default input device.
+// Must be called from RenderThreadImpl::current().
+CONTENT_EXPORT uint32 GetInputChannelCount();
+
 // Forces the next call to any of the Get functions to query the hardware
 // and repopulate the cache.
 CONTENT_EXPORT void ResetCache();
