@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -51,11 +51,7 @@ class DownloadFileTest : public testing::Test {
   }
 
   virtual void SetUp() {
-    download_manager_delegate_.reset(new MockDownloadManagerDelegate());
-    download_manager_ = new MockDownloadManager(
-        download_manager_delegate_.get(),
-        id_factory_,
-        &download_status_updater_);
+    download_manager_ = new MockDownloadManager;
   }
 
   virtual void TearDown() {
@@ -108,8 +104,6 @@ class DownloadFileTest : public testing::Test {
   }
 
  protected:
-  DownloadStatusUpdater download_status_updater_;
-  scoped_ptr<MockDownloadManagerDelegate> download_manager_delegate_;
   scoped_refptr<DownloadManager> download_manager_;
 
   linked_ptr<net::FileStream> file_stream_;
