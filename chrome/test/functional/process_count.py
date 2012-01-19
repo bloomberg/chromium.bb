@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -52,6 +52,12 @@ class ProcessCountTest(pyauto.PyUITest):
       self.chrome_proc_name = self.CHROME_PROCESS_NAME['linux']
 
     pyauto.PyUITest.setUp(self)
+
+    # Forcibly trigger all plugins to get registered.  crbug.com/94123
+    # Sometimes flash files loaded too quickly after firing browser
+    # ends up getting downloaded, which seems to indicate that the plugin
+    # hasn't been registered yet.
+    self.GetPluginsInfo()
 
   def _VerifyProcessCount(self, num_expected):
     """Verifies the number of Chrome-related processes is as expected.
