@@ -62,10 +62,6 @@ class BufferedDataSource : public WebDataSource {
  private:
   friend class BufferedDataSourceTest;
 
-  // Posted to perform initialization on render thread and start resource
-  // loading.
-  void InitializeTask();
-
   // Task posted to perform actual reading on the render thread.
   void ReadTask(int64 position, int read_size, uint8* read_buffer);
 

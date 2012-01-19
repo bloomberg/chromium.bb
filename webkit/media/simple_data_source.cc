@@ -64,6 +64,9 @@ void SimpleDataSource::Stop(const base::Closure& callback) {
 void SimpleDataSource::Initialize(
     const GURL& url,
     const media::PipelineStatusCB& callback) {
+  DCHECK(MessageLoop::current() == render_loop_);
+  DCHECK(!callback.is_null());
+
   // Reference to prevent destruction while inside the |initialize_cb_|
   // call. This is a temporary fix to prevent crashes caused by holding the
   // lock and running the destructor.
@@ -71,7 +74,6 @@ void SimpleDataSource::Initialize(
   {
     base::AutoLock auto_lock(lock_);
     DCHECK_EQ(state_, UNINITIALIZED);
-    DCHECK(!callback.is_null());
     state_ = INITIALIZING;
     initialize_cb_ = callback;
 
@@ -82,9 +84,39 @@ void SimpleDataSource::Initialize(
       return;
     }
 
-    // Post a task to the render thread to start loading the resource.
-    render_loop_->PostTask(FROM_HERE,
-        base::Bind(&SimpleDataSource::StartTask, this));
+    // If |url_| contains a data:// scheme we can decode it immediately.
+    if (url_.SchemeIs(kDataScheme)) {
+      std::string mime_type, charset;
+      bool success = net::DataURL::Parse(url_, &mime_type, &charset, &data_);
+
+      // Don't care about the mime-type just proceed if decoding was successful.
+      size_ = data_.length();
+      DoneInitialization_Locked(success);
+      return;
+    }
+
+    // For all other schemes issue a request for the full resource.
+    WebKit::WebURLRequest request(url_);
+    request.setTargetType(WebKit::WebURLRequest::TargetIsMedia);
+
+    frame_->setReferrerForRequest(request, WebKit::WebURL());
+
+    // Disable compression, compression for audio/video doesn't make sense.
+    request.setHTTPHeaderField(
+        WebString::fromUTF8(net::HttpRequestHeaders::kAcceptEncoding),
+        WebString::fromUTF8("identity;q=1, *;q=0"));
+
+    // This flag is for unittests as we don't want to reset |url_loader|
+    if (!keep_test_loader_) {
+      WebURLLoaderOptions options;
+      options.allowCredentials = true;
+      options.crossOriginRequestPolicy =
+          WebURLLoaderOptions::CrossOriginRequestPolicyAllow;
+      url_loader_.reset(frame_->createAssociatedURLLoader(options));
+    }
+
+    // Start the resource loading.
+    url_loader_->loadAsynchronously(request, this);
   }
 }
 
@@ -240,58 +272,6 @@ void SimpleDataSource::Abort() {
   initialize_cb_.Reset();
   CancelTask();
   frame_ = NULL;
-}
-
-void SimpleDataSource::StartTask() {
-  DCHECK(MessageLoop::current() == render_loop_);
-  // Reference to prevent destruction while inside the |initialize_cb_|
-  // call. This is a temporary fix to prevent crashes caused by holding the
-  // lock and running the destructor.
-  scoped_refptr<SimpleDataSource> destruction_guard(this);
-  {
-    base::AutoLock auto_lock(lock_);
-
-    // We may have stopped.
-    if (state_ == STOPPED)
-      return;
-
-    CHECK(frame_);
-
-    DCHECK_EQ(state_, INITIALIZING);
-
-    if (url_.SchemeIs(kDataScheme)) {
-      // If this using data protocol, we just need to decode it.
-      std::string mime_type, charset;
-      bool success = net::DataURL::Parse(url_, &mime_type, &charset, &data_);
-
-      // Don't care about the mime-type just proceed if decoding was successful.
-      size_ = data_.length();
-      DoneInitialization_Locked(success);
-    } else {
-      // Prepare the request.
-      WebKit::WebURLRequest request(url_);
-      request.setTargetType(WebKit::WebURLRequest::TargetIsMedia);
-
-      frame_->setReferrerForRequest(request, WebKit::WebURL());
-
-      // Disable compression, compression for audio/video doesn't make sense...
-      request.setHTTPHeaderField(
-          WebString::fromUTF8(net::HttpRequestHeaders::kAcceptEncoding),
-          WebString::fromUTF8("identity;q=1, *;q=0"));
-
-      // This flag is for unittests as we don't want to reset |url_loader|
-      if (!keep_test_loader_) {
-        WebURLLoaderOptions options;
-        options.allowCredentials = true;
-        options.crossOriginRequestPolicy =
-            WebURLLoaderOptions::CrossOriginRequestPolicyAllow;
-        url_loader_.reset(frame_->createAssociatedURLLoader(options));
-      }
-
-      // Start the resource loading.
-      url_loader_->loadAsynchronously(request, this);
-    }
-  }
 }
 
 void SimpleDataSource::CancelTask() {

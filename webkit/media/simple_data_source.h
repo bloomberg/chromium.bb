@@ -91,9 +91,6 @@ class SimpleDataSource
   virtual void Abort() OVERRIDE;
 
  private:
-  // Creates and starts the resource loading on the render thread.
-  void StartTask();
-
   // Cancels and deletes the resource loading on the render thread.
   void CancelTask();
 

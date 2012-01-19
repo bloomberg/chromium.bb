@@ -22,6 +22,8 @@ class WebDataSource : public media::DataSource {
 
   // Initialize this object using |url|. This object calls |callback| when
   // initialization has completed.
+  //
+  // Method called on the render thread.
   virtual void Initialize(const GURL& url,
                           const media::PipelineStatusCB& callback) = 0;
 

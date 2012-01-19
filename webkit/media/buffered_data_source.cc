@@ -78,6 +78,9 @@ void BufferedDataSource::set_host(media::DataSourceHost* host) {
 
 void BufferedDataSource::Initialize(const GURL& url,
                                     const media::PipelineStatusCB& callback) {
+  DCHECK(MessageLoop::current() == render_loop_);
+  DCHECK(!callback.is_null());
+  DCHECK(!loader_.get());
   url_ = url;
 
   // This data source doesn't support data:// protocol so reject it.
@@ -86,15 +89,28 @@ void BufferedDataSource::Initialize(const GURL& url,
     return;
   }
 
-  DCHECK(!callback.is_null());
-  {
-    base::AutoLock auto_lock(lock_);
-    initialize_cb_ = callback;
+  initialize_cb_ = callback;
+
+  if (url_.SchemeIs(kHttpScheme) || url_.SchemeIs(kHttpsScheme)) {
+    // Do an unbounded range request starting at the beginning.  If the server
+    // responds with 200 instead of 206 we'll fall back into a streaming mode.
+    loader_.reset(CreateResourceLoader(0, kPositionNotSpecified));
+    loader_->Start(
+        base::Bind(&BufferedDataSource::HttpInitialStartCallback, this),
+        base::Bind(&BufferedDataSource::NetworkEventCallback, this),
+        frame_);
+    return;
   }
 
-  // Post a task to complete the initialization task.
-  render_loop_->PostTask(FROM_HERE,
-      base::Bind(&BufferedDataSource::InitializeTask, this));
+  // For all other protocols, assume they support range request. We fetch
+  // the full range of the resource to obtain the instance size because
+  // we won't be served HTTP headers.
+  loader_.reset(CreateResourceLoader(kPositionNotSpecified,
+                                     kPositionNotSpecified));
+  loader_->Start(
+      base::Bind(&BufferedDataSource::NonHttpInitialStartCallback, this),
+      base::Bind(&BufferedDataSource::NetworkEventCallback, this),
+      frame_);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -178,39 +194,6 @@ void BufferedDataSource::Abort() {
 
 /////////////////////////////////////////////////////////////////////////////
 // Render thread tasks.
-void BufferedDataSource::InitializeTask() {
-  DCHECK(MessageLoop::current() == render_loop_);
-  DCHECK(!loader_.get());
-
-  {
-    base::AutoLock auto_lock(lock_);
-    if (stopped_on_render_loop_ || initialize_cb_.is_null() ||
-        stop_signal_received_) {
-      return;
-    }
-  }
-
-  if (url_.SchemeIs(kHttpScheme) || url_.SchemeIs(kHttpsScheme)) {
-    // Do an unbounded range request starting at the beginning.  If the server
-    // responds with 200 instead of 206 we'll fall back into a streaming mode.
-    loader_.reset(CreateResourceLoader(0, kPositionNotSpecified));
-    loader_->Start(
-        base::Bind(&BufferedDataSource::HttpInitialStartCallback, this),
-        base::Bind(&BufferedDataSource::NetworkEventCallback, this),
-        frame_);
-  } else {
-    // For all other protocols, assume they support range request. We fetch
-    // the full range of the resource to obtain the instance size because
-    // we won't be served HTTP headers.
-    loader_.reset(CreateResourceLoader(kPositionNotSpecified,
-                                       kPositionNotSpecified));
-    loader_->Start(
-        base::Bind(&BufferedDataSource::NonHttpInitialStartCallback, this),
-        base::Bind(&BufferedDataSource::NetworkEventCallback, this),
-        frame_);
-  }
-}
-
 void BufferedDataSource::ReadTask(
     int64 position,
     int read_size,
