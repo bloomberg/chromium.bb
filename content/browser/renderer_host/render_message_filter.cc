@@ -687,11 +687,11 @@ void RenderMessageFilter::OnDownloadUrl(const IPC::Message& message,
   bool prompt_for_save_location = false;
   DownloadSaveInfo save_info;
   save_info.suggested_name = suggested_name;
-  net::URLRequest* request = new net::URLRequest(
-      url, resource_dispatcher_host_);
+  scoped_ptr<net::URLRequest> request(
+      new net::URLRequest(url, resource_dispatcher_host_));
   request->set_referrer(referrer.spec());
   resource_dispatcher_host_->BeginDownload(
-      request,
+      request.Pass(),
       save_info,
       prompt_for_save_location,
       DownloadResourceHandler::OnStartedCallback(),

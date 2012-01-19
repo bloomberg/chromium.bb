@@ -73,11 +73,11 @@ void BeginDownload(const URLParams& url_params,
                    ResourceDispatcherHost* resource_dispatcher_host,
                    const RenderParams& render_params,
                    const content::ResourceContext* context) {
-  net::URLRequest* request = new net::URLRequest(url_params.url_,
-                                                 resource_dispatcher_host);
+  scoped_ptr<net::URLRequest> request(
+      new net::URLRequest(url_params.url_, resource_dispatcher_host));
   request->set_referrer(url_params.referrer_.spec());
   resource_dispatcher_host->BeginDownload(
-      request, save_info, true,
+      request.Pass(), save_info, true,
       DownloadResourceHandler::OnStartedCallback(),
       render_params.render_process_id_,
       render_params.render_view_id_,

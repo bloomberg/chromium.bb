@@ -878,14 +878,13 @@ void ResourceDispatcherHost::OnDidLoadResourceFromMemoryCache(
 
 // We are explicitly forcing the download of 'url'.
 void ResourceDispatcherHost::BeginDownload(
-    net::URLRequest* request,
+    scoped_ptr<net::URLRequest> request,
     const DownloadSaveInfo& save_info,
     bool prompt_for_save_location,
     const DownloadResourceHandler::OnStartedCallback& started_cb,
     int child_id,
     int route_id,
     const content::ResourceContext& context) {
-  scoped_ptr<net::URLRequest> delete_request(request);
   // If DownloadResourceHandler is not begun, then started_cb must be called
   // here in order to satisfy its semantics.
   if (is_shutdown_) {
@@ -923,14 +922,15 @@ void ResourceDispatcherHost::BeginDownload(
                                   url,
                                   dl_id,
                                   download_file_manager_.get(),
-                                  request,
+                                  request.get(),
                                   prompt_for_save_location,
                                   started_cb,
                                   save_info));
 
   if (delegate_) {
     handler = delegate_->DownloadStarting(
-        handler, context, request, child_id, route_id, request_id_, true);
+        handler, context, request.get(),
+        child_id, route_id, request_id_, true);
   }
 
   if (!request_context->job_factory()->IsHandledURL(url)) {
@@ -943,9 +943,9 @@ void ResourceDispatcherHost::BeginDownload(
 
   ResourceDispatcherHostRequestInfo* extra_info =
       CreateRequestInfo(handler, child_id, route_id, true, context);
-  SetRequestInfo(request, extra_info);  // Request takes ownership.
+  SetRequestInfo(request.get(), extra_info);  // Request takes ownership.
 
-  BeginRequestInternal(delete_request.release());
+  BeginRequestInternal(request.release());
 }
 
 // This function is only used for saving feature.
@@ -1009,14 +1009,14 @@ void ResourceDispatcherHost::FollowDeferredRedirect(
   i->second->FollowDeferredRedirect();
 }
 
-void ResourceDispatcherHost::StartDeferredRequest(int process_unique_id,
+void ResourceDispatcherHost::StartDeferredRequest(int child_id,
                                                   int request_id) {
-  GlobalRequestID global_id(process_unique_id, request_id);
+  GlobalRequestID global_id(child_id, request_id);
   PendingRequestList::iterator i = pending_requests_.find(global_id);
   if (i == pending_requests_.end()) {
     // The request may have been destroyed
     LOG(WARNING) << "Trying to resume a non-existent request ("
-                 << process_unique_id << ", " << request_id << ")";
+                 << child_id << ", " << request_id << ")";
     return;
   }
 

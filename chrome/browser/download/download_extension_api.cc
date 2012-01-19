@@ -276,7 +276,8 @@ void DownloadsDownloadFunction::BeginDownloadOnIOThread() {
   // TODO(benjhayden) Ensure that this filename is interpreted as a path
   // relative to the default downloads directory without allowing '..'.
   save_info.suggested_name = iodata_->filename;
-  net::URLRequest* request = new net::URLRequest(iodata_->url, iodata_->rdh);
+  scoped_ptr<net::URLRequest> request(
+      new net::URLRequest(iodata_->url, iodata_->rdh));
   request->set_method(iodata_->method);
   if (iodata_->extra_headers != NULL) {
     for (size_t index = 0; index < iodata_->extra_headers->GetSize(); ++index) {
@@ -293,7 +294,7 @@ void DownloadsDownloadFunction::BeginDownloadOnIOThread() {
                                  iodata_->post_body.size());
   }
   iodata_->rdh->BeginDownload(
-      request,
+      request.Pass(),
       save_info,
       iodata_->save_as,
       base::Bind(&DownloadsDownloadFunction::OnStarted, this),
