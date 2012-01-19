@@ -14,7 +14,18 @@ if not env.Bit('bitcode'):
   Return()
 
 # The PNaCl coordinator cannot yet handle GLibC-based pexe.
-is_broken = env.Bit('nacl_glibc')
+# The driver cannot build the pexe on x86-64 for now.
+# The bitcode link arbitrarily picks x86-32 as the ARCH, but the
+# glibc bitcode link line uses native x86-64 libs instead of bitcode
+# stubs, so there is a mismatch:
+# http://code.google.com/p/nativeclient/issues/detail?id=2451
+# Luckily, it can build the x86-32 pexe, so at least allow building that
+# for local testing purposes.
+if env.Bit('nacl_glibc') and env.Bit('target_x86_64'):
+  Return()
+else:
+  is_broken = env.Bit('nacl_glibc')
+
 
 #----------------------------------------------------------------------
 # Test pexe translation.
