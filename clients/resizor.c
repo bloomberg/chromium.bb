@@ -235,6 +235,7 @@ resizor_destroy(struct resizor *resizor)
 	if (resizor->frame_callback)
 		wl_callback_destroy(resizor->frame_callback);
 
+	widget_destroy(resizor->widget);
 	window_destroy(resizor->window);
 	free(resizor);
 }
