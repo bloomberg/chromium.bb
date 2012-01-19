@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -3303,7 +3303,7 @@ TEST_F(GLES2FormatTest, TexStorage2DEXT) {
       &cmd,
       static_cast<GLenum>(11),
       static_cast<GLsizei>(12),
-      static_cast<GLint>(13),
+      static_cast<GLenum>(13),
       static_cast<GLsizei>(14),
       static_cast<GLsizei>(15));
   EXPECT_EQ(static_cast<uint32>(TexStorage2DEXT::kCmdId),
@@ -3311,7 +3311,7 @@ TEST_F(GLES2FormatTest, TexStorage2DEXT) {
   EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
   EXPECT_EQ(static_cast<GLenum>(11), cmd.target);
   EXPECT_EQ(static_cast<GLsizei>(12), cmd.levels);
-  EXPECT_EQ(static_cast<GLint>(13), cmd.internalFormat);
+  EXPECT_EQ(static_cast<GLenum>(13), cmd.internalFormat);
   EXPECT_EQ(static_cast<GLsizei>(14), cmd.width);
   EXPECT_EQ(static_cast<GLsizei>(15), cmd.height);
   CheckBytesWrittenMatchesExpectedSize(

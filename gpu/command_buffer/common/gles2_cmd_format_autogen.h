@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8482,7 +8482,7 @@ struct TexStorage2DEXT {
   }
 
   void Init(
-      GLenum _target, GLsizei _levels, GLint _internalFormat, GLsizei _width,
+      GLenum _target, GLsizei _levels, GLenum _internalFormat, GLsizei _width,
       GLsizei _height) {
     SetHeader();
     target = _target;
@@ -8493,7 +8493,7 @@ struct TexStorage2DEXT {
   }
 
   void* Set(
-      void* cmd, GLenum _target, GLsizei _levels, GLint _internalFormat,
+      void* cmd, GLenum _target, GLsizei _levels, GLenum _internalFormat,
       GLsizei _width, GLsizei _height) {
     static_cast<ValueType*>(
         cmd)->Init(_target, _levels, _internalFormat, _width, _height);
@@ -8503,7 +8503,7 @@ struct TexStorage2DEXT {
   gpu::CommandHeader header;
   uint32 target;
   int32 levels;
-  int32 internalFormat;
+  uint32 internalFormat;
   int32 width;
   int32 height;
 };

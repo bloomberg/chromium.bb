@@ -1516,7 +1516,7 @@
   }
 
   void TexStorage2DEXT(
-      GLenum target, GLsizei levels, GLint internalFormat, GLsizei width,
+      GLenum target, GLsizei levels, GLenum internalFormat, GLsizei width,
       GLsizei height) {
     gles2::TexStorage2DEXT* c = GetCmdSpace<gles2::TexStorage2DEXT>();
     if (c) {

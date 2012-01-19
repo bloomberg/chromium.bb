@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -41,6 +41,7 @@
         'gpu_demo_framework',
         '../gpu.gyp:command_buffer_client',
         '../gpu.gyp:command_buffer_service',
+        '../gpu.gyp:gles2_implementation',
         '../../base/base.gyp:base',
         '../../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '../../ui/ui.gyp:ui',
