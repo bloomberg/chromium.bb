@@ -12105,6 +12105,9 @@ changed since last sign in
       <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_SCANNING">
         Searching for devices...
       </message>
+      <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_NO_DEVICES">
+        No devices
+      </message>
       <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_NO_DEVICES_FOUND">
         No devices found
       </message>

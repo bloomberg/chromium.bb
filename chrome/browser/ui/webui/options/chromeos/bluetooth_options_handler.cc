@@ -73,6 +73,9 @@ void BluetoothOptionsHandler::GetLocalizedValues(
       IDS_OPTIONS_SETTINGS_BLUETOOTH_ADD_DEVICE_TITLE));
   localized_strings->SetString("findBluetoothDevices",
       l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_FIND_BLUETOOTH_DEVICES));
+  localized_strings->SetString("bluetoothNoDevices",
+      l10n_util::GetStringUTF16(
+      IDS_OPTIONS_SETTINGS_BLUETOOTH_NO_DEVICES));
   localized_strings->SetString("bluetoothNoDevicesFound",
       l10n_util::GetStringUTF16(
       IDS_OPTIONS_SETTINGS_BLUETOOTH_NO_DEVICES_FOUND));
