@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 #include "base/path_service.h"
 #include "base/process_util.h"
 #include "base/string_number_conversions.h"
+#include "chrome/common/chrome_paths.h"
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
@@ -64,13 +65,8 @@ bool LayoutTestHttpServer::Start() {
   cmd_line.AppendArg("--port=" + base::IntToString(port_));
 
   FilePath layout_tests_dir;
-  if (!PathService::Get(base::DIR_SOURCE_ROOT, &layout_tests_dir))
+  if (!PathService::Get(chrome::DIR_LAYOUT_TESTS, &layout_tests_dir))
     return false;
-  layout_tests_dir = layout_tests_dir.AppendASCII("chrome")
-                                     .AppendASCII("test")
-                                     .AppendASCII("data")
-                                     .AppendASCII("layout_tests")
-                                     .AppendASCII("LayoutTests");
   cmd_line.AppendArgNative(FILE_PATH_LITERAL("--layout_tests_dir=") +
                            layout_tests_dir.value());
 
