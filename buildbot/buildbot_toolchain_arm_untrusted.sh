@@ -165,11 +165,11 @@ echo @@@BUILD_STEP adhoc_sdk@@@
 ${PNACL_BUILD} sdk newlib
 ${PNACL_BUILD} ppapi-headers
 ${PNACL_BUILD} tarball pnacl-toolchain-adhoc-sdk.tgz
-chmod a+r pnacl-toolchain-adhoc-sdk.tgz
+chmod a+r pnacl/pnacl-toolchain-adhoc-sdk.tgz
 if [[ "${BUILDBOT_SLAVE_TYPE:-Trybot}" != "Trybot" ]]; then
   echo @@@BUILD_STEP archive_build_adhoc_sdk@@@
   ${UP_DOWN_LOAD} UploadArmUntrustedToolchains ${BUILDBOT_GOT_REVISION} \
-    ${TOOLCHAIN_LABEL}_adhoc_sdk pnacl-toolchain-adhoc-sdk.tgz
+    ${TOOLCHAIN_LABEL}_adhoc_sdk pnacl/pnacl-toolchain-adhoc-sdk.tgz
 fi
 
 if [[ ${RETCODE} != 0 ]]; then
