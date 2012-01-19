@@ -56,6 +56,7 @@ class ScalingFilterInterpreter : public Interpreter {
  private:
   void ScaleHardwareState(HardwareState* hwstate);
   void ScaleGesture(Gesture* gs);
+  void FilterLowPressure(HardwareState* hwstate);
 
   scoped_ptr<Interpreter> next_;
 
@@ -68,6 +69,7 @@ class ScalingFilterInterpreter : public Interpreter {
   // input pressure * pressure_scale_ + pressure_translate_;
   DoubleProperty pressure_scale_;
   DoubleProperty pressure_translate_;
+  DoubleProperty pressure_threshold_;
 };
 
 }  // namespace gestures
