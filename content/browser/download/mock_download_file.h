@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,35 +16,103 @@
 #include "content/public/browser/download_file.h"
 #include "content/public/browser/download_manager.h"
 #include "net/base/net_errors.h"
-#include "testing/gmock/include/gmock/gmock.h"
-#include "testing/gtest/include/gtest/gtest.h"
 
 struct DownloadCreateInfo;
 
 class MockDownloadFile : virtual public content::DownloadFile {
  public:
-  MockDownloadFile();
+  // Class to extract statistics from the usage of |MockDownloadFile|.
+  class StatisticsRecorder {
+   public:
+    enum StatisticsIndex {
+      STAT_INITIALIZE,
+      STAT_APPEND,
+      STAT_RENAME,
+      STAT_DETACH,
+      STAT_CANCEL,
+      STAT_FINISH,
+      STAT_BYTES
+    };
+
+    StatisticsRecorder();
+    ~StatisticsRecorder();
+
+    // Records the statistic.
+    // |index| indicates what statistic to use.
+    void Record(StatisticsIndex index);
+
+    // Adds to the statistic.
+    // |index| indicates what statistic to use.
+    void Add(StatisticsIndex index, int count);
+
+    // Returns the statistic value.
+    // |index| indicates what statistic to use.
+    int Count(StatisticsIndex index);
+
+   private:
+    typedef std::map<StatisticsIndex, int> StatisticsMap;
+
+    StatisticsMap map_;
+  };
+
+  MockDownloadFile(const DownloadCreateInfo* info,
+                   const DownloadRequestHandle& request_handle,
+                   content::DownloadManager* download_manager,
+                   StatisticsRecorder* recorder);
   virtual ~MockDownloadFile();
 
   // DownloadFile functions.
-  MOCK_METHOD0(Initialize, net::Error());
-  MOCK_METHOD2(AppendDataToFile, net::Error(const char* data, size_t data_len));
-  MOCK_METHOD1(Rename, net::Error(const FilePath& full_path));
-  MOCK_METHOD0(Detach, void());
-  MOCK_METHOD0(Cancel, void());
-  MOCK_METHOD0(Finish, void());
-  MOCK_METHOD0(AnnotateWithSourceInformation, void());
-  MOCK_CONST_METHOD0(FullPath, FilePath());
-  MOCK_CONST_METHOD0(InProgress, bool());
-  MOCK_CONST_METHOD0(BytesSoFar, int64());
-  MOCK_CONST_METHOD0(CurrentSpeed, int64());
-  MOCK_METHOD1(GetHash, bool(std::string* hash));
-  MOCK_METHOD0(GetHashState, std::string());
-  MOCK_METHOD0(CancelDownloadRequest, void());
-  MOCK_CONST_METHOD0(Id, int());
-  MOCK_METHOD0(GetDownloadManager, content::DownloadManager*());
-  MOCK_CONST_METHOD0(GlobalId, const DownloadId&());
-  MOCK_CONST_METHOD0(DebugString, std::string());
+  virtual net::Error Initialize() OVERRIDE;
+  virtual net::Error AppendDataToFile(const char* data,
+                                      size_t data_len) OVERRIDE;
+  virtual net::Error Rename(const FilePath& full_path) OVERRIDE;
+  virtual void Detach() OVERRIDE;
+  virtual void Cancel() OVERRIDE;
+  virtual void Finish() OVERRIDE;
+  virtual void AnnotateWithSourceInformation() OVERRIDE;
+  virtual FilePath FullPath() const OVERRIDE;
+  virtual bool InProgress() const OVERRIDE;
+  virtual int64 BytesSoFar() const OVERRIDE;
+  virtual int64 CurrentSpeed() const OVERRIDE;
+  virtual bool GetHash(std::string* hash) OVERRIDE;
+  virtual std::string GetHashState() OVERRIDE;
+  virtual void CancelDownloadRequest() OVERRIDE;
+  virtual int Id() const OVERRIDE;
+  virtual content::DownloadManager* GetDownloadManager() OVERRIDE;
+  virtual const DownloadId& GlobalId() const OVERRIDE;
+  virtual std::string DebugString() const OVERRIDE;
+
+  // Functions relating to setting and checking expectations.
+  size_t rename_count() const { return rename_count_; }
+  void SetExpectedPath(size_t index, const FilePath& path);
+
+ private:
+  // The unique identifier for this download, assigned at creation by
+  // the DownloadFileManager for its internal record keeping.
+  DownloadId id_;
+
+  // The handle to the request information.  Used for operations outside the
+  // download system, specifically canceling a download.
+  DownloadRequestHandle request_handle_;
+
+  // DownloadManager this download belongs to.
+  scoped_refptr<content::DownloadManager> download_manager_;
+
+  // Records usage statistics.  Not owned by this class (survives destruction).
+  StatisticsRecorder* recorder_;
+
+  // The number of times |Rename()| has been called.
+  // Used instead of checking |recorder_| because the latter can be NULL.
+  size_t rename_count_;
+
+  // A vector of paths that we expect to call |Rename()| with.
+  std::vector<FilePath> expected_rename_path_list_;
+
+  // A buffer to hold the data we write.
+  std::string data_;
+
+  // Dummy in-progress flag.
+  bool in_progress_;
 };
 
 #endif  // CONTENT_BROWSER_DOWNLOAD_MOCK_DOWNLOAD_FILE_H_
