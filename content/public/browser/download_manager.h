@@ -153,13 +153,13 @@ class CONTENT_EXPORT DownloadManager
   // Remove downloads after remove_begin (inclusive) and before remove_end
   // (exclusive). You may pass in null Time values to do an unbounded delete
   // in either direction.
-  virtual int RemoveDownloadsBetween(const base::Time remove_begin,
-                                     const base::Time remove_end) = 0;
+  virtual int RemoveDownloadsBetween(base::Time remove_begin,
+                                     base::Time remove_end) = 0;
 
   // Remove downloads will delete all downloads that have a timestamp that is
   // the same or more recent than |remove_begin|. The number of downloads
   // deleted is returned back to the caller.
-  virtual int RemoveDownloads(const base::Time remove_begin) = 0;
+  virtual int RemoveDownloads(base::Time remove_begin) = 0;
 
   // Remove all downloads will delete all downloads. The number of downloads
   // deleted is returned back to the caller.
@@ -243,6 +243,8 @@ class CONTENT_EXPORT DownloadManager
   // Get the download item from the active map.  Useful when the item is not
   // yet in the history map.
   virtual DownloadItem* GetActiveDownloadItem(int id) = 0;
+
+  virtual bool GenerateFileHash() = 0;
 
   virtual content::DownloadManagerDelegate* delegate() const = 0;
 

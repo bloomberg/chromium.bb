@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -60,6 +60,8 @@ using content::BrowserThread;
 using content::DownloadFile;
 using content::DownloadItem;
 using content::DownloadManager;
+using ::testing::ReturnRef;
+using ::testing::Return;
 using content::WebContents;
 
 namespace {
@@ -191,6 +193,12 @@ class DownloadManagerTest : public testing::Test {
   void AddDownloadToFileManager(int id, DownloadFile* download_file) {
     file_manager()->downloads_[DownloadId(kValidIdDomain, id)] =
       download_file;
+  }
+
+  void AddMockDownloadToFileManager(int id, MockDownloadFile* download_file) {
+    AddDownloadToFileManager(id, download_file);
+    ON_CALL(*download_file, GetDownloadManager())
+        .WillByDefault(Return(download_manager_));
   }
 
   void OnResponseCompleted(int32 download_id, int64 size,
@@ -485,7 +493,8 @@ TEST_F(DownloadManagerTest, MAYBE_StartDownload) {
     // responsible for deleting it.  In these unit tests, however, we
     // don't call the function that deletes it, so we do so ourselves.
     scoped_ptr<DownloadCreateInfo> info(new DownloadCreateInfo);
-    info->download_id = DownloadId(kValidIdDomain, static_cast<int>(i));
+    const DownloadId id = DownloadId(kValidIdDomain, static_cast<int>(i));
+    info->download_id = id;
     info->prompt_user_for_save_location = kStartDownloadCases[i].save_as;
     info->url_chain.push_back(GURL(kStartDownloadCases[i].url));
     info->mime_type = kStartDownloadCases[i].mime_type;
@@ -504,6 +513,8 @@ TEST_F(DownloadManagerTest, MAYBE_StartDownload) {
     // Note that DownloadManager::FileSelectionCanceled() is never called.
     EXPECT_EQ(kStartDownloadCases[i].expected_save_as,
               observer.ShowedFileDialogForId(i));
+
+    file_manager()->CancelDownload(id);
   }
 }
 
@@ -760,9 +771,7 @@ TEST_F(DownloadManagerTest, DownloadFilenameTest) {
     info->download_id = DownloadId(kValidIdDomain, i);
     info->url_chain.push_back(GURL());
 
-    MockDownloadFile::StatisticsRecorder recorder;
-    MockDownloadFile* download_file(new MockDownloadFile(
-        info.get(), DownloadRequestHandle(), download_manager_, &recorder));
+    MockDownloadFile* download_file(new MockDownloadFile());
     FilePath suggested_path(ExpandFilenameTestPath(
         kDownloadFilenameTestCases[i].suggested_path,
         downloads_dir, alternate_dir));
@@ -775,15 +784,18 @@ TEST_F(DownloadManagerTest, DownloadFilenameTest) {
     FilePath final_path(ExpandFilenameTestPath(
         kDownloadFilenameTestCases[i].final_path,
         downloads_dir, alternate_dir));
-    // If |final_path| is empty, its a signal that the download doesn't
-    // complete.  Therefore it will only go through a single rename.
-    int expected_rename_count = (final_path.empty() ? 1 : 2);
 
-    AddDownloadToFileManager(info->download_id.local(), download_file);
+    AddMockDownloadToFileManager(info->download_id.local(), download_file);
 
-    download_file->SetExpectedPath(0, intermediate_path);
-    if (!final_path.empty())
-      download_file->SetExpectedPath(1, final_path);
+    EXPECT_CALL(*download_file, Rename(intermediate_path))
+        .WillOnce(Return(net::OK));
+
+    if (!final_path.empty()) {
+      // If |final_path| is empty, its a signal that the download doesn't
+      // complete.  Therefore it will only go through a single rename.
+      EXPECT_CALL(*download_file, Rename(final_path))
+          .WillOnce(Return(net::OK));
+    }
 
     download_manager_->CreateDownloadItem(info.get(), DownloadRequestHandle());
     DownloadItem* download = GetActiveDownloadItem(i);
@@ -818,11 +830,6 @@ TEST_F(DownloadManagerTest, DownloadFilenameTest) {
       message_loop_.RunAllPending();
       // |download| might be deleted when we get here.
     }
-
-    EXPECT_EQ(
-        expected_rename_count,
-        recorder.Count(MockDownloadFile::StatisticsRecorder::STAT_RENAME))
-        << "For test run " << i;
   }
 }
 
@@ -842,22 +849,27 @@ TEST_F(DownloadManagerTest, DownloadRenameTest) {
     info->url_chain.push_back(GURL());
     const FilePath new_path(kDownloadRenameCases[i].suggested_path);
 
-    MockDownloadFile::StatisticsRecorder recorder;
-    MockDownloadFile* download_file(
-        new MockDownloadFile(info.get(),
-                             DownloadRequestHandle(),
-                             download_manager_,
-                             &recorder));
-    AddDownloadToFileManager(info->download_id.local(), download_file);
+    MockDownloadFile* download_file(new MockDownloadFile());
+    const DownloadId id = info->download_id;
+    ON_CALL(*download_file, GlobalId())
+        .WillByDefault(ReturnRef(id));
+
+    AddMockDownloadToFileManager(info->download_id.local(), download_file);
 
     // |download_file| is owned by DownloadFileManager.
     if (kDownloadRenameCases[i].expected_rename_count == 1) {
-      download_file->SetExpectedPath(0, new_path);
+      EXPECT_CALL(*download_file, Rename(new_path))
+          .Times(1)
+          .WillOnce(Return(net::OK));
     } else {
       ASSERT_EQ(2, kDownloadRenameCases[i].expected_rename_count);
       FilePath crdownload(download_util::GetCrDownloadPath(new_path));
-      download_file->SetExpectedPath(0, crdownload);
-      download_file->SetExpectedPath(1, new_path);
+      EXPECT_CALL(*download_file, Rename(crdownload))
+          .Times(1)
+          .WillOnce(Return(net::OK));
+      EXPECT_CALL(*download_file, Rename(new_path))
+          .Times(1)
+          .WillOnce(Return(net::OK));
     }
     download_manager_->CreateDownloadItem(info.get(), DownloadRequestHandle());
     DownloadItem* download = GetActiveDownloadItem(i);
@@ -877,10 +889,10 @@ TEST_F(DownloadManagerTest, DownloadRenameTest) {
       message_loop_.RunAllPending();
       OnResponseCompleted(i, 1024, std::string("fake_hash"));
     }
+    // Validating the download item, so it will complete.
+    if (state.danger == DownloadStateInfo::DANGEROUS_FILE)
+      download->DangerousDownloadValidated();
     message_loop_.RunAllPending();
-    EXPECT_EQ(
-        kDownloadRenameCases[i].expected_rename_count,
-        recorder.Count(MockDownloadFile::StatisticsRecorder::STAT_RENAME));
   }
 }
 
@@ -901,16 +913,16 @@ TEST_F(DownloadManagerTest, DownloadInterruptTest) {
   const FilePath new_path(FILE_PATH_LITERAL("foo.zip"));
   const FilePath cr_path(download_util::GetCrDownloadPath(new_path));
 
-  MockDownloadFile::StatisticsRecorder recorder;
-  MockDownloadFile* download_file(
-      new MockDownloadFile(info.get(),
-                           DownloadRequestHandle(),
-                           download_manager_,
-                           &recorder));
-  AddDownloadToFileManager(info->download_id.local(), download_file);
+  MockDownloadFile* download_file(new MockDownloadFile());
+  ON_CALL(*download_file, AppendDataToFile(_, _))
+      .WillByDefault(Return(net::OK));
 
   // |download_file| is owned by DownloadFileManager.
-  download_file->SetExpectedPath(0, cr_path);
+  AddMockDownloadToFileManager(info->download_id.local(), download_file);
+
+  EXPECT_CALL(*download_file, Rename(cr_path))
+      .Times(1)
+      .WillOnce(Return(net::OK));
 
   download_manager_->CreateDownloadItem(info.get(), DownloadRequestHandle());
 
@@ -926,8 +938,6 @@ TEST_F(DownloadManagerTest, DownloadInterruptTest) {
 
   ContinueDownloadWithPath(download, new_path);
   message_loop_.RunAllPending();
-  EXPECT_EQ(1,
-            recorder.Count(MockDownloadFile::StatisticsRecorder::STAT_RENAME));
   EXPECT_TRUE(GetActiveDownloadItem(0) != NULL);
 
   int64 error_size = 3;
@@ -1068,21 +1078,22 @@ TEST_F(DownloadManagerTest, DownloadCancelTest) {
   // responsible for deleting it.  In these unit tests, however, we
   // don't call the function that deletes it, so we do so ourselves.
   scoped_ptr<DownloadCreateInfo> info(new DownloadCreateInfo);
-  info->download_id = DownloadId(kValidIdDomain, 0);
+  DownloadId id = DownloadId(kValidIdDomain, 0);
+  info->download_id = id;
   info->prompt_user_for_save_location = false;
   info->url_chain.push_back(GURL());
   const FilePath new_path(FILE_PATH_LITERAL("foo.zip"));
   const FilePath cr_path(download_util::GetCrDownloadPath(new_path));
 
-  MockDownloadFile* download_file(
-      new MockDownloadFile(info.get(),
-                           DownloadRequestHandle(),
-                           download_manager_,
-                           NULL));
-  AddDownloadToFileManager(info->download_id.local(), download_file);
+  MockDownloadFile* download_file(new MockDownloadFile());
+  ON_CALL(*download_file, AppendDataToFile(_, _))
+      .WillByDefault(Return(net::OK));
+  AddMockDownloadToFileManager(info->download_id.local(), download_file);
 
   // |download_file| is owned by DownloadFileManager.
-  download_file->SetExpectedPath(0, cr_path);
+  EXPECT_CALL(*download_file, Rename(cr_path))
+      .Times(1)
+      .WillOnce(Return(net::OK));
 
   download_manager_->CreateDownloadItem(info.get(), DownloadRequestHandle());
 
@@ -1115,6 +1126,8 @@ TEST_F(DownloadManagerTest, DownloadCancelTest) {
   EXPECT_EQ(DownloadItem::CANCELLED, download->GetState());
   EXPECT_EQ(download_item_model->GetStatusText(),
             l10n_util::GetStringUTF16(IDS_DOWNLOAD_STATUS_CANCELED));
+
+  file_manager()->CancelDownload(id);
 
   EXPECT_FALSE(file_util::PathExists(new_path));
   EXPECT_FALSE(file_util::PathExists(cr_path));
