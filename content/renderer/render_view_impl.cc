@@ -3268,8 +3268,12 @@ WebKit::WebPlugin* RenderViewImpl::CreatePlugin(
         pepper_module.get(), params, pepper_delegate_.AsWeakPtr());
   }
 
+#if defined(USE_AURA)
+  return NULL;
+#else
   return new webkit::npapi::WebPluginImpl(
       frame, params, info.path, AsWeakPtr());
+#endif
 }
 
 void RenderViewImpl::EvaluateScript(const string16& frame_xpath,
