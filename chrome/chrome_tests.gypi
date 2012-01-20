@@ -1768,6 +1768,8 @@
         'browser/tabs/pinned_tab_test_utils.cc',
         'browser/tabs/tab_strip_model_unittest.cc',
         'browser/tabs/tab_strip_selection_model_unittest.cc',
+        'browser/tabs/test_tab_strip_model_delegate.cc',
+        'browser/tabs/test_tab_strip_model_delegate.h',
         'browser/task_manager/task_manager_unittest.cc',
         'browser/themes/browser_theme_pack_unittest.cc',
         'browser/themes/theme_service_unittest.cc',

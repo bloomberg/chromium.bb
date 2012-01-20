@@ -22,6 +22,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tabs/tab_strip_model_delegate.h"
 #include "chrome/browser/tabs/tab_strip_model_order_controller.h"
+#include "chrome/browser/tabs/test_tab_strip_model_delegate.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
@@ -78,62 +79,38 @@ class DeleteTabContentsOnDestroyedObserver
 
 }  // namespace
 
-class TabStripDummyDelegate : public TabStripModelDelegate {
+class TabStripDummyDelegate : public TestTabStripModelDelegate {
  public:
   explicit TabStripDummyDelegate(TabContentsWrapper* dummy)
-      : dummy_contents_(dummy), can_close_(true), run_unload_(false) {}
+      : dummy_contents_(dummy),
+        can_close_(true),
+        run_unload_(false) {}
   virtual ~TabStripDummyDelegate() {}
 
   void set_can_close(bool value) { can_close_ = value; }
   void set_run_unload_listener(bool value) { run_unload_ = value; }
 
   // Overridden from TabStripModelDelegate:
-  virtual TabContentsWrapper* AddBlankTab(bool foreground) {
-    return NULL;
-  }
-  virtual TabContentsWrapper* AddBlankTabAt(int index, bool foreground) {
-    return NULL;
-  }
-  virtual Browser* CreateNewStripWithContents(TabContentsWrapper* contents,
-                                              const gfx::Rect& window_bounds,
-                                              const DockInfo& dock_info,
-                                              bool maximize) {
-    return NULL;
-  }
-  virtual void ContinueDraggingDetachedTab(TabContentsWrapper* contents,
-                                           const gfx::Rect& window_bounds,
-                                           const gfx::Rect& tab_bounds) {
-  }
-  virtual int GetDragActions() const { return 0; }
   virtual TabContentsWrapper* CreateTabContentsForURL(
       const GURL& url,
       const content::Referrer& referrer,
       Profile* profile,
       content::PageTransition transition,
       bool defer_load,
-      SiteInstance* instance) const {
+      SiteInstance* instance) const OVERRIDE {
     if (url == GURL(chrome::kChromeUINewTabURL))
       return dummy_contents_;
     return NULL;
   }
-  virtual bool CanDuplicateContentsAt(int index) { return false; }
-  virtual void DuplicateContentsAt(int index) {}
-  virtual void CloseFrameAfterDragSession() {}
-  virtual void CreateHistoricalTab(TabContentsWrapper* contents) {}
-  virtual bool RunUnloadListenerBeforeClosing(TabContentsWrapper* contents) {
+  virtual bool RunUnloadListenerBeforeClosing(
+      TabContentsWrapper* contents) OVERRIDE {
     return run_unload_;
   }
-  virtual bool CanRestoreTab() { return false; }
-  virtual void RestoreTab() {}
-  virtual bool CanCloseContents(std::vector<int>* indices) {
+  virtual bool CanCloseContents(std::vector<int>* indices) OVERRIDE {
     if (!can_close_)
       indices->clear();
     return can_close_;
   }
-  virtual bool CanBookmarkAllTabs() const { return false; }
-  virtual void BookmarkAllTabs() {}
-  virtual bool CanCloseTab() const { return true; }
-  virtual bool LargeIconsPermitted() const { return true; }
 
  private:
   // A dummy TabContents we give to callers that expect us to actually build a
