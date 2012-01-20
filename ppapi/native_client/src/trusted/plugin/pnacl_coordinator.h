@@ -263,8 +263,16 @@ class PnaclCoordinator {
   nacl::scoped_ptr<NaClThread> translate_thread_;
   // Translation creates local temporary files.
   nacl::scoped_ptr<pp::FileSystem> file_system_;
-  // The manifest used by the reverse service to look up objects and libraries.
-  const Manifest* manifest_;
+  // The manifest used by resource loading and llc's reverse service to look up
+  // objects and libraries.
+  nacl::scoped_ptr<const Manifest> manifest_;
+  // TEMPORARY: ld needs to look up dynamic libraries in the nexe's manifest
+  // until metadata is complete in pexes.  This manifest lookup allows looking
+  // for whether a resource requested by ld is in the nexe manifest first, and
+  // if not, then consults the extension manifest.
+  // TODO(sehr,jvoung,pdox): remove this when metadata is correct.
+  // The manifest used by ld's reverse service to look up objects and libraries.
+  nacl::scoped_ptr<const Manifest> ld_manifest_;
   // An auxiliary class that manages downloaded resources (llc and ld nexes).
   nacl::scoped_ptr<PnaclResources> resources_;
 

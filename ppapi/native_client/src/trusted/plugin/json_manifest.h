@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Chromium Authors. All rights reserved.
+ * Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -32,7 +32,10 @@ class JsonManifest : public Manifest {
            const nacl::string& manifest_base_url,
            const nacl::string& sandbox_isa,
            bool prefer_portable)
-      : Manifest(url_util, manifest_base_url, sandbox_isa, prefer_portable),
+      : url_util_(url_util),
+        manifest_base_url_(manifest_base_url),
+        sandbox_isa_(sandbox_isa),
+        prefer_portable_(prefer_portable),
         dictionary_(Json::nullValue) { }
   virtual ~JsonManifest() { }
 
@@ -45,11 +48,12 @@ class JsonManifest : public Manifest {
   // portable bitcode.
   virtual bool GetProgramURL(nacl::string* full_url,
                              ErrorInfo* error_info,
-                             bool* is_portable);
+                             bool* is_portable) const;
 
   // Resolves a URL relative to the manifest base URL
   virtual bool ResolveURL(const nacl::string& relative_url,
                           nacl::string* full_url,
+                          bool* permit_extension_url,
                           ErrorInfo* error_info) const;
 
   // Gets the file names from the "files" section of the manifest.  No
@@ -66,11 +70,9 @@ class JsonManifest : public Manifest {
   // representation or an ISA-specific version of the file.
   virtual bool ResolveKey(const nacl::string& key,
                           nacl::string* full_url,
+                          bool* permit_extension_url,
                           ErrorInfo* error_info,
                           bool* is_portable) const;
-
-  // A JSON manifest does not allow access to extension URLs.
-  virtual bool PermitsExtensionUrls() const { return false; }
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(JsonManifest);
@@ -79,6 +81,13 @@ class JsonManifest : public Manifest {
   // Returns true on success, and sets |error_info| to a detailed message
   // if not.
   bool MatchesSchema(ErrorInfo* error_info);
+
+  const pp::URLUtil_Dev* url_util_;
+  nacl::string manifest_base_url_;
+  nacl::string sandbox_isa_;
+  // Determines whether portable programs are chosen in manifest files over
+  // native programs.
+  bool prefer_portable_;
 
   Json::Value dictionary_;
 };

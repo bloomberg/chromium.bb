@@ -45,8 +45,10 @@ void PnaclResources::StartDownloads() {
   CHECK(resource_urls_.size() > 0);
   for (size_t i = 0; i < resource_urls_.size(); ++i) {
     nacl::string full_url;
+    bool permit_extension_url = false;
     ErrorInfo error_info;
-    if (!manifest_->ResolveURL(resource_urls_[i], &full_url, &error_info)) {
+    if (!manifest_->ResolveURL(resource_urls_[i], &full_url,
+                               &permit_extension_url, &error_info)) {
       coordinator_->ReportNonPpapiError(nacl::string("failed to resolve ") +
                                         resource_urls_[i] + ": " +
                                         error_info.message() + ".");
@@ -57,7 +59,7 @@ void PnaclResources::StartDownloads() {
                                       resource_urls_[i],
                                       full_url);
     if (!plugin_->StreamAsFile(full_url,
-                               manifest_->PermitsExtensionUrls(),
+                               permit_extension_url,
                                ready_callback.pp_completion_callback())) {
       coordinator_->ReportNonPpapiError(nacl::string("failed to download ") +
                                         resource_urls_[i] + ".");

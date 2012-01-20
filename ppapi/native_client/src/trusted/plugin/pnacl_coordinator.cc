@@ -176,21 +176,21 @@ void PnaclFileDescPair::ReadFileDidOpen(int32_t pp_error) {
 //////////////////////////////////////////////////////////////////////
 //  Pnacl-specific manifest support.
 //////////////////////////////////////////////////////////////////////
-class PnaclManifest : public Manifest {
+class ExtensionManifest : public Manifest {
  public:
-  explicit PnaclManifest(const pp::URLUtil_Dev* url_util)
-      : Manifest(url_util, ExtensionUrl(), GetSandboxISA(), false) {
-  }
-  virtual ~PnaclManifest() { }
+  explicit ExtensionManifest(const pp::URLUtil_Dev* url_util)
+      : url_util_(url_util),
+        manifest_base_url_(ExtensionUrl()) { }
+  virtual ~ExtensionManifest() { }
 
   virtual bool GetProgramURL(nacl::string* full_url,
                              ErrorInfo* error_info,
-                             bool* is_portable) {
+                             bool* is_portable) const {
     // Does not contain program urls.
     UNREFERENCED_PARAMETER(full_url);
     UNREFERENCED_PARAMETER(error_info);
     UNREFERENCED_PARAMETER(is_portable);
-    PLUGIN_PRINTF(("PnaclManifest does not contain a program\n"));
+    PLUGIN_PRINTF(("ExtensionManifest does not contain a program\n"));
     error_info->SetReport(ERROR_MANIFEST_GET_NEXE_URL,
                           "pnacl manifest does not contain a program.");
     return false;
@@ -198,23 +198,29 @@ class PnaclManifest : public Manifest {
 
   virtual bool ResolveURL(const nacl::string& relative_url,
                           nacl::string* full_url,
+                          bool* permit_extension_url,
                           ErrorInfo* error_info) const {
     // Does not do general URL resolution, simply appends relative_url to
     // the end of manifest_base_url_.
     UNREFERENCED_PARAMETER(error_info);
     *full_url = manifest_base_url_ + relative_url;
+    // Since the pnacl coordinator manifest provides access to resources
+    // in the chrome extension, lookups will need to access resources in their
+    // extension origin rather than the plugin's origin.
+    *permit_extension_url = true;
     return true;
   }
 
   virtual bool GetFileKeys(std::set<nacl::string>* keys) const {
     // Does not support enumeration.
-    PLUGIN_PRINTF(("PnaclManifest does not support key enumeration\n"));
+    PLUGIN_PRINTF(("ExtensionManifest does not support key enumeration\n"));
     UNREFERENCED_PARAMETER(keys);
     return false;
   }
 
   virtual bool ResolveKey(const nacl::string& key,
                           nacl::string* full_url,
+                          bool* permit_extension_url,
                           ErrorInfo* error_info,
                           bool* is_portable) const {
     *is_portable = false;
@@ -228,15 +234,79 @@ class PnaclManifest : public Manifest {
     }
     // Append what follows files to the pnacl URL prefix.
     nacl::string key_basename = key.substr(kFilesPrefix.length());
-    return ResolveURL(key_basename, full_url, error_info);
+    return ResolveURL(key_basename, full_url, permit_extension_url, error_info);
   }
 
-  // Since the pnacl coordinator manifest provides access to resources
-  // in the chrome extension, lookups will need to access resources in their
-  // extension origin rather than the plugin's origin.
-  virtual bool PermitsExtensionUrls() const {
-    return true;
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(ExtensionManifest);
+
+  const pp::URLUtil_Dev* url_util_;
+  nacl::string manifest_base_url_;
+};
+
+// TEMPORARY: ld needs to look up dynamic libraries in the nexe's manifest
+// until metadata is complete in pexes.  This manifest lookup allows looking
+// for whether a resource requested by ld is in the nexe manifest first, and
+// if not, then consults the extension manifest.
+// TODO(sehr,jvoung,pdox): remove this when metadata is correct.
+class PnaclLDManifest : public Manifest {
+ public:
+  PnaclLDManifest(const Manifest* nexe_manifest,
+                  const Manifest* extension_manifest)
+      : nexe_manifest_(nexe_manifest),
+        extension_manifest_(extension_manifest) {
+    CHECK(nexe_manifest != NULL);
+    CHECK(extension_manifest != NULL);
   }
+  virtual ~PnaclLDManifest() { }
+
+  virtual bool GetProgramURL(nacl::string* full_url,
+                             ErrorInfo* error_info,
+                             bool* is_portable) const {
+    if (nexe_manifest_->GetProgramURL(full_url, error_info, is_portable)) {
+      return true;
+    }
+    return extension_manifest_->GetProgramURL(full_url, error_info,
+                                              is_portable);
+  }
+
+  virtual bool ResolveURL(const nacl::string& relative_url,
+                          nacl::string* full_url,
+                          bool* permit_extension_url,
+                          ErrorInfo* error_info) const {
+    if (nexe_manifest_->ResolveURL(relative_url, full_url,
+                                   permit_extension_url, error_info)) {
+      return true;
+    }
+    return extension_manifest_->ResolveURL(relative_url, full_url,
+                                           permit_extension_url, error_info);
+  }
+
+  virtual bool GetFileKeys(std::set<nacl::string>* keys) const {
+    if (nexe_manifest_->GetFileKeys(keys)) {
+      return true;
+    }
+    return extension_manifest_->GetFileKeys(keys);
+  }
+
+  virtual bool ResolveKey(const nacl::string& key,
+                          nacl::string* full_url,
+                          bool* permit_extension_url,
+                          ErrorInfo* error_info,
+                          bool* is_portable) const {
+    if (nexe_manifest_->ResolveKey(key, full_url, permit_extension_url,
+                                   error_info, is_portable)) {
+      return true;
+    }
+    return extension_manifest_->ResolveKey(key, full_url, permit_extension_url,
+                                           error_info, is_portable);
+  }
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(PnaclLDManifest);
+
+  const Manifest* nexe_manifest_;
+  const Manifest* extension_manifest_;
 };
 
 //////////////////////////////////////////////////////////////////////
@@ -251,7 +321,7 @@ PnaclCoordinator* PnaclCoordinator::BitcodeToNative(
   PnaclCoordinator* coordinator =
       new PnaclCoordinator(plugin, pexe_url, translate_notify_callback);
   PLUGIN_PRINTF(("PnaclCoordinator::BitcodeToNative (manifest=%p)\n",
-                 reinterpret_cast<const void*>(coordinator->manifest_)));
+                 reinterpret_cast<const void*>(coordinator->manifest_.get())));
   // Load llc and ld.
   std::vector<nacl::string> resource_urls;
   resource_urls.push_back(kLlcUrl);
@@ -262,7 +332,7 @@ PnaclCoordinator* PnaclCoordinator::BitcodeToNative(
   coordinator->resources_.reset(
       new PnaclResources(plugin,
                          coordinator,
-                         coordinator->manifest_,
+                         coordinator->manifest_.get(),
                          resource_urls,
                          resources_cb));
   CHECK(coordinator->resources_ != NULL);
@@ -306,13 +376,14 @@ PnaclCoordinator::PnaclCoordinator(
     ld_subprocess_(NULL),
     subprocesses_should_die_(false),
     file_system_(new pp::FileSystem(plugin, PP_FILESYSTEMTYPE_LOCALTEMPORARY)),
-    manifest_(new PnaclManifest(plugin->url_util())),
+    manifest_(new ExtensionManifest(plugin->url_util())),
     pexe_url_(pexe_url),
     error_already_reported_(false) {
   PLUGIN_PRINTF(("PnaclCoordinator::PnaclCoordinator (this=%p, plugin=%p)\n",
                  static_cast<void*>(this), static_cast<void*>(plugin)));
   callback_factory_.Initialize(this);
   NaClXMutexCtor(&subprocess_mu_);
+  ld_manifest_.reset(new PnaclLDManifest(plugin_->manifest(), manifest_.get()));
 }
 
 PnaclCoordinator::~PnaclCoordinator() {
@@ -441,9 +512,8 @@ void PnaclCoordinator::NexePairDidOpen(int32_t pp_error) {
   pp::CompletionCallback cb =
       callback_factory_.NewCallback(&PnaclCoordinator::RunTranslate);
 
-  if (!plugin_->StreamAsFile(pexe_url_,
-                             manifest_->PermitsExtensionUrls(),
-                             cb.pp_completion_callback())) {
+  // "false" here indicates the pexe must be in user's manifest file origin.
+  if (!plugin_->StreamAsFile(pexe_url_, false, cb.pp_completion_callback())) {
     ReportNonPpapiError(nacl::string("failed to download ") + pexe_url_ + ".");
   }
 }
@@ -459,12 +529,12 @@ void PnaclCoordinator::RunTranslate(int32_t pp_error) {
   // It would really be nice if we could create subprocesses from other than
   // the main thread.  Until we can, we create them both up front.
   // TODO(sehr): allow creation of subrpocesses from other threads.
-  llc_subprocess_ = StartSubprocess(kLlcUrl, manifest_);
+  llc_subprocess_ = StartSubprocess(kLlcUrl, manifest_.get());
   if (llc_subprocess_ == NULL) {
     ReportPpapiError(PP_ERROR_FAILED);
     return;
   }
-  ld_subprocess_ = StartSubprocess(kLdUrl, manifest_);
+  ld_subprocess_ = StartSubprocess(kLdUrl, ld_manifest_.get());
   if (ld_subprocess_ == NULL) {
     ReportPpapiError(PP_ERROR_FAILED);
     return;
