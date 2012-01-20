@@ -249,17 +249,8 @@ cleanup:
   return retval;
 }
 
-int32_t NaClSysExit(struct NaClAppThread *natp,
-                    int                  status) {
-  return NaClCommonSysExit(natp, status);
-}
-
 int32_t NaClSysGetpid(struct NaClAppThread  *natp) {
   return _getpid();  /* TODO(bsy): obfuscate? */
-}
-
-int32_t NaClSysThread_Exit(struct NaClAppThread  *natp, int32_t *stack_flag) {
-  return NaClCommonSysThreadExit(natp, stack_flag);
 }
 
 int32_t NaClSysGetTimeOfDay(struct NaClAppThread      *natp,
