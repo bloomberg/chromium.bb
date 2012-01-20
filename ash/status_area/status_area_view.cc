@@ -44,6 +44,7 @@ ASH_EXPORT views::Widget* CreateStatusArea() {
       ash::internal::kShellWindowId_StatusContainer);
   params.transparent = true;
   widget->Init(params);
+  widget->set_focus_on_creation(false);
   widget->SetContentsView(status_area_view);
   widget->Show();
   widget->GetNativeView()->SetName("StatusAreaView");
