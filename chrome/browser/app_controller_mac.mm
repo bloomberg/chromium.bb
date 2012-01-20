@@ -317,8 +317,13 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
 
   // Initiate a shutdown (via BrowserList::CloseAllBrowsers()) if we aren't
   // already shutting down.
-  if (!browser_shutdown::IsTryingToQuit())
+  if (!browser_shutdown::IsTryingToQuit()) {
+    content::NotificationService::current()->Notify(
+        content::NOTIFICATION_APP_EXITING,
+        content::NotificationService::AllSources(),
+        content::NotificationService::NoDetails());
     BrowserList::CloseAllBrowsers();
+  }
 
   return num_browsers == 0 ? YES : NO;
 }
