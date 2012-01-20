@@ -7997,9 +7997,6 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
       <message name="IDS_OPTIONS2_STARTUP_SET_PAGES" desc="The link that is clicked to choose the set of pages that will be shown at startup">
         Set pages
       </message>
-      <message name="IDS_OPTIONS2_STARTUP_PAGES_DIALOG_TITLE" desc="The title of the dialog where the user chooses the set of pages that will be shown at startup">
-        Set startup pages
-      </message>
       <message name="IDS_OPTIONS_STARTUP_PAGE_TOOLTIP" desc="A tooltip to display for a page in the list of pages to open on startup">
         <ph name="PAGE_TITLE">$1<ex>Google</ex></ph> - <ph name="PAGE_URL">$2<ex>http://www.google.com/</ex></ph>
       </message>
@@ -8009,8 +8006,14 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
       <message name="IDS_OPTIONS_STARTUP_ADD_LABEL" desc="The text labelling the add row in the custom startup urls list">
         Add a new page
       </message>
+      <message name="IDS_OPTIONS_STARTUP_PAGES_PLACEHOLDER" desc="The placeholder text in the custom startup urls dialog">
+        Enter URL...
+      </message>
 
       <if expr="pp_ifdef('use_titlecase')">
+        <message name="IDS_OPTIONS2_STARTUP_PAGES_DIALOG_TITLE" desc="In Title Case: The title of the dialog where the user chooses the set of pages that will be shown at startup">
+          Set Startup Pages
+        </message>
         <message name="IDS_OPTIONS_STARTUP_USE_CURRENT" desc="In Title Case: The label of the 'Use Current' button for the custom startup urls list">
           Use Current Pages
         </message>
@@ -8019,6 +8022,9 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
         </message>
       </if>
       <if expr="not pp_ifdef('use_titlecase')">
+        <message name="IDS_OPTIONS2_STARTUP_PAGES_DIALOG_TITLE" desc="In sentence case: The title of the dialog where the user chooses the set of pages that will be shown at startup">
+          Set startup pages
+        </message>
         <message name="IDS_OPTIONS_STARTUP_USE_CURRENT" desc="In sentence case: The label of the 'Use Current' button for the custom startup urls list">
           Use current pages
         </message>

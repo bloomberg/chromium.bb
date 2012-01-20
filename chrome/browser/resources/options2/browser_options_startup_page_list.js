@@ -72,6 +72,7 @@ cr.define('options.browser_options', function() {
       var urlField = urlEl.querySelector('input')
       urlField.required = true;
       urlField.className = 'weakrtl';
+      urlField.placeholder = localStrings.getString('startupPagesPlaceholder');
       this.urlField_ = urlField;
 
       this.addEventListener('commitedit', this.onEditCommitted_);

@@ -39,6 +39,7 @@ void StartupPagesHandler::GetLocalizedValues(
     { "startupAddLabel", IDS_OPTIONS_STARTUP_ADD_LABEL },
     { "startupPagesDialogTitle", IDS_OPTIONS2_STARTUP_PAGES_DIALOG_TITLE },
     { "startupUseCurrent", IDS_OPTIONS_STARTUP_USE_CURRENT },
+    { "startupPagesPlaceholder", IDS_OPTIONS_STARTUP_PAGES_PLACEHOLDER },
   };
 
   RegisterStrings(localized_strings, resources, arraysize(resources));
