@@ -85,7 +85,7 @@ uint64 WebClipboardImpl::sequenceNumber(Buffer buffer) {
 }
 
 bool WebClipboardImpl::isFormatAvailable(Format format, Buffer buffer) {
-  ui::Clipboard::Buffer buffer_type;
+  ui::Clipboard::Buffer buffer_type = ui::Clipboard::BUFFER_STANDARD;
 
   if (!ConvertBufferType(buffer, &buffer_type))
     return false;
