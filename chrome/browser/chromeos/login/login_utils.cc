@@ -73,6 +73,10 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "ui/gfx/gl/gl_switches.h"
 
+#if defined(USE_AURA)
+#include "ui/gfx/compositor/compositor_switches.h"
+#endif
+
 using content::BrowserThread;
 
 namespace chromeos {
@@ -965,6 +969,7 @@ std::string LoginUtilsImpl::GetOffTheRecordCommandLine(
       switches::kDisableSeccompSandbox,
       switches::kEnableGView,
       switches::kEnableLogging,
+      switches::kEnablePartialSwap,
       switches::kEnableSensors,
       switches::kForceCompositingMode,
       switches::kLoginProfile,
@@ -974,6 +979,9 @@ std::string LoginUtilsImpl::GetOffTheRecordCommandLine(
       switches::kPpapiFlashPath,
       switches::kPpapiFlashVersion,
       switches::kTouchDevices,
+#if defined(USE_AURA)
+      switches::kUIEnablePartialSwap,
+#endif
       switches::kUseGL,
       switches::kUserDataDir,
 #if defined(USE_VIRTUAL_KEYBOARD)
