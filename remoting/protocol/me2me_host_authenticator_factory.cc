@@ -28,13 +28,13 @@ Me2MeHostAuthenticatorFactory::Me2MeHostAuthenticatorFactory(
 Me2MeHostAuthenticatorFactory::~Me2MeHostAuthenticatorFactory() {
 }
 
-Authenticator* Me2MeHostAuthenticatorFactory::CreateAuthenticator(
+scoped_ptr<Authenticator> Me2MeHostAuthenticatorFactory::CreateAuthenticator(
     const std::string& remote_jid,
     const buzz::XmlElement* first_message) {
   // Reject incoming connection if the client's jid is not an ASCII string.
   if (!IsStringASCII(remote_jid)) {
     LOG(ERROR) << "Rejecting incoming connection from " << remote_jid;
-    return NULL;
+    return scoped_ptr<Authenticator>(NULL);
   }
 
   // Check that the client has the same bare jid as the host, i.e.
@@ -42,7 +42,7 @@ Authenticator* Me2MeHostAuthenticatorFactory::CreateAuthenticator(
   // insensitive.
   if (!StartsWithASCII(remote_jid, local_jid_prefix_, false)) {
     LOG(ERROR) << "Rejecting incoming connection from " << remote_jid;
-    return NULL;
+    return scoped_ptr<Authenticator>(NULL);
   }
 
   // TODO(sergeyu): V2 authenticator is not finished yet. Enable it
@@ -55,8 +55,9 @@ Authenticator* Me2MeHostAuthenticatorFactory::CreateAuthenticator(
 
   // TODO(sergeyu): Old clients still use V1 auth protocol. Remove
   // this once we are done migrating to V2.
-  return new V1HostAuthenticator(local_cert_, *local_private_key_,
-                                 shared_secret_, remote_jid);
+  return scoped_ptr<Authenticator>(new V1HostAuthenticator(
+      local_cert_, *local_private_key_,
+      shared_secret_, remote_jid));
 }
 
 }  // namespace protocol

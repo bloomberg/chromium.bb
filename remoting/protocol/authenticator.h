@@ -7,6 +7,8 @@
 
 #include <string>
 
+#include "base/memory/scoped_ptr.h"
+
 namespace buzz {
 class XmlElement;
 }  // namespace buzz
@@ -57,7 +59,7 @@ class Authenticator {
   static bool IsAuthenticatorMessage(const buzz::XmlElement* message);
 
   // Creates an empty Authenticator message, owned by the caller.
-  static buzz::XmlElement* CreateEmptyAuthenticatorMessage();
+  static scoped_ptr<buzz::XmlElement> CreateEmptyAuthenticatorMessage();
 
   // Finds Authenticator message among child elements of |message|, or
   // returns NULL otherwise.
@@ -77,12 +79,12 @@ class Authenticator {
 
   // Must be called when in MESSAGE_READY state. Returns next
   // authentication message that needs to be sent to the peer.
-  virtual buzz::XmlElement* GetNextMessage() = 0;
+  virtual scoped_ptr<buzz::XmlElement> GetNextMessage() = 0;
 
-  // Creates new authenticator for a channel. Caller must take
-  // ownership of the result. Can be called only in the ACCEPTED
-  // state.
-  virtual ChannelAuthenticator* CreateChannelAuthenticator() const = 0;
+  // Creates new authenticator for a channel. Can be called only in
+  // the ACCEPTED state.
+  virtual scoped_ptr<ChannelAuthenticator>
+      CreateChannelAuthenticator() const = 0;
 };
 
 // Factory for Authenticator instances.
@@ -99,7 +101,7 @@ class AuthenticatorFactory {
   // if the |first_message| is invalid and the session should be
   // rejected. ProcessMessage() should be called with |first_message|
   // for the result of this method.
-  virtual Authenticator* CreateAuthenticator(
+  virtual scoped_ptr<Authenticator> CreateAuthenticator(
       const std::string& remote_jid,
       const buzz::XmlElement* first_message) = 0;
 };

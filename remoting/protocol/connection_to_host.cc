@@ -124,14 +124,14 @@ void ConnectionToHost::OnSessionManagerReady() {
   DCHECK(message_loop_->BelongsToCurrentThread());
 
   // After SessionManager is initialized we can try to connect to the host.
-  CandidateSessionConfig* candidate_config =
+  scoped_ptr<CandidateSessionConfig> candidate_config =
       CandidateSessionConfig::CreateDefault();
-  V1ClientAuthenticator* authenticator =
-      new V1ClientAuthenticator(signal_strategy_->GetLocalJid(), access_code_);
-  session_.reset(session_manager_->Connect(
-      host_jid_, authenticator, candidate_config,
+  scoped_ptr<Authenticator> authenticator(
+      new V1ClientAuthenticator(signal_strategy_->GetLocalJid(), access_code_));
+  session_ = session_manager_->Connect(
+      host_jid_, authenticator.Pass(), candidate_config.Pass(),
       base::Bind(&ConnectionToHost::OnSessionStateChange,
-                 base::Unretained(this))));
+                 base::Unretained(this)));
 }
 
 void ConnectionToHost::OnIncomingSession(

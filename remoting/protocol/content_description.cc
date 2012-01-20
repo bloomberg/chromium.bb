@@ -146,10 +146,10 @@ bool ParseChannelConfig(const XmlElement* element, bool codec_required,
 }  // namespace
 
 ContentDescription::ContentDescription(
-    const CandidateSessionConfig* candidate_config,
-    const buzz::XmlElement* authenticator_message)
-    : candidate_config_(candidate_config),
-      authenticator_message_(authenticator_message) {
+    scoped_ptr<CandidateSessionConfig> config,
+    scoped_ptr<buzz::XmlElement> authenticator_message)
+    : candidate_config_(config.Pass()),
+      authenticator_message_(authenticator_message.Pass()) {
 }
 
 ContentDescription::~ContentDescription() { }
@@ -247,8 +247,7 @@ ContentDescription* ContentDescription::ParseXml(
     if (child)
       authenticator_message.reset(new XmlElement(*child));
 
-    return new ContentDescription(
-        config.release(), authenticator_message.release());
+    return new ContentDescription(config.Pass(), authenticator_message.Pass());
   }
   LOG(ERROR) << "Invalid description: " << element->Str();
   return NULL;

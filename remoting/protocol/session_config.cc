@@ -126,28 +126,28 @@ bool CandidateSessionConfig::IsChannelConfigSupported(
   return std::find(vector.begin(), vector.end(), value) != vector.end();
 }
 
-CandidateSessionConfig* CandidateSessionConfig::Clone() const {
-  return new CandidateSessionConfig(*this);
+scoped_ptr<CandidateSessionConfig> CandidateSessionConfig::Clone() const {
+  return scoped_ptr<CandidateSessionConfig>(new CandidateSessionConfig(*this));
 }
 
 // static
-CandidateSessionConfig* CandidateSessionConfig::CreateEmpty() {
-  return new CandidateSessionConfig();
+scoped_ptr<CandidateSessionConfig> CandidateSessionConfig::CreateEmpty() {
+  return scoped_ptr<CandidateSessionConfig>(new CandidateSessionConfig());
 }
 
 // static
-CandidateSessionConfig* CandidateSessionConfig::CreateFrom(
+scoped_ptr<CandidateSessionConfig> CandidateSessionConfig::CreateFrom(
     const SessionConfig& config) {
-  CandidateSessionConfig* result = CreateEmpty();
+  scoped_ptr<CandidateSessionConfig> result = CreateEmpty();
   result->mutable_control_configs()->push_back(config.control_config());
   result->mutable_event_configs()->push_back(config.event_config());
   result->mutable_video_configs()->push_back(config.video_config());
-  return result;
+  return result.Pass();
 }
 
 // static
-CandidateSessionConfig* CandidateSessionConfig::CreateDefault() {
-  CandidateSessionConfig* result = CreateEmpty();
+scoped_ptr<CandidateSessionConfig> CandidateSessionConfig::CreateDefault() {
+  scoped_ptr<CandidateSessionConfig> result = CreateEmpty();
   result->mutable_control_configs()->push_back(
       ChannelConfig(ChannelConfig::TRANSPORT_STREAM,
                     kDefaultStreamVersion,
@@ -160,7 +160,7 @@ CandidateSessionConfig* CandidateSessionConfig::CreateDefault() {
       ChannelConfig(ChannelConfig::TRANSPORT_STREAM,
                     kDefaultStreamVersion,
                     ChannelConfig::CODEC_VP8));
-  return result;
+  return result.Pass();
 }
 
 }  // namespace protocol

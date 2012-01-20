@@ -54,12 +54,13 @@ PepperStreamChannel::~PepperStreamChannel() {
   DCHECK(!connected_ || channel_ == NULL);
 }
 
-void PepperStreamChannel::Connect(pp::Instance* pp_instance,
-                                  const TransportConfig& transport_config,
-                                  ChannelAuthenticator* authenticator) {
+void PepperStreamChannel::Connect(
+    pp::Instance* pp_instance,
+    const TransportConfig& transport_config,
+    scoped_ptr<ChannelAuthenticator> authenticator) {
   DCHECK(CalledOnValidThread());
 
-  authenticator_.reset(authenticator);
+  authenticator_ = authenticator.Pass();
 
   pp::Transport_Dev* transport =
       new pp::Transport_Dev(pp_instance, name_.c_str(),

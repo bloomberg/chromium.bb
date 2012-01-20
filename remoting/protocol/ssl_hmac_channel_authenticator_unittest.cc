@@ -117,10 +117,10 @@ class SslHmacChannelAuthenticatorTest : public testing::Test {
 
 // Verify that a channel can be connected using a valid shared secret.
 TEST_F(SslHmacChannelAuthenticatorTest, SuccessfulAuth) {
-  client_auth_.reset(SslHmacChannelAuthenticator::CreateForClient(
-      host_cert_, kTestSharedSecret));
-  host_auth_.reset(SslHmacChannelAuthenticator::CreateForHost(
-      host_cert_, private_key_.get(), kTestSharedSecret));
+  client_auth_ = SslHmacChannelAuthenticator::CreateForClient(
+      host_cert_, kTestSharedSecret);
+  host_auth_ = SslHmacChannelAuthenticator::CreateForHost(
+      host_cert_, private_key_.get(), kTestSharedSecret);
 
   RunChannelAuth(false);
 
@@ -137,10 +137,10 @@ TEST_F(SslHmacChannelAuthenticatorTest, SuccessfulAuth) {
 
 // Verify that channels cannot be using invalid shared secret.
 TEST_F(SslHmacChannelAuthenticatorTest, InvalidChannelSecret) {
-  client_auth_.reset(SslHmacChannelAuthenticator::CreateForClient(
-      host_cert_, kTestSharedSecretBad));
-  host_auth_.reset(SslHmacChannelAuthenticator::CreateForHost(
-      host_cert_, private_key_.get(), kTestSharedSecret));
+  client_auth_ = SslHmacChannelAuthenticator::CreateForClient(
+      host_cert_, kTestSharedSecretBad);
+  host_auth_ = SslHmacChannelAuthenticator::CreateForHost(
+      host_cert_, private_key_.get(), kTestSharedSecret);
 
   RunChannelAuth(true);
 

@@ -178,14 +178,14 @@ class PepperSessionTest : public testing::Test {
       }
     }
 
-    Authenticator* authenticator = new FakeAuthenticator(
-        FakeAuthenticator::CLIENT, auth_round_trips, auth_action, true);
+    scoped_ptr<Authenticator> authenticator(new FakeAuthenticator(
+        FakeAuthenticator::CLIENT, auth_round_trips, auth_action, true));
 
-    client_session_.reset(client_server_->Connect(
-        kHostJid, authenticator,
+    client_session_ = client_server_->Connect(
+        kHostJid, authenticator.Pass(),
         CandidateSessionConfig::CreateDefault(),
         base::Bind(&MockSessionCallback::OnStateChange,
-                   base::Unretained(&client_connection_callback_))));
+                   base::Unretained(&client_connection_callback_)));
 
     message_loop_.RunAllPending();
   }
@@ -233,13 +233,12 @@ TEST_F(PepperSessionTest, RejectConnection) {
         .Times(1);
   }
 
-  Authenticator* authenticator = new FakeAuthenticator(
-      FakeAuthenticator::CLIENT, 1, FakeAuthenticator::ACCEPT, true);
-  client_session_.reset(client_server_->Connect(
-      kHostJid, authenticator,
-      CandidateSessionConfig::CreateDefault(),
+  scoped_ptr<Authenticator> authenticator(new FakeAuthenticator(
+      FakeAuthenticator::CLIENT, 1, FakeAuthenticator::ACCEPT, true));
+  client_session_ = client_server_->Connect(
+      kHostJid, authenticator.Pass(), CandidateSessionConfig::CreateDefault(),
       base::Bind(&MockSessionCallback::OnStateChange,
-                 base::Unretained(&client_connection_callback_))));
+                 base::Unretained(&client_connection_callback_)));
 
   message_loop_.RunAllPending();
 }

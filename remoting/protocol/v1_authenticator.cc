@@ -59,10 +59,10 @@ void V1ClientAuthenticator::ProcessMessage(const XmlElement* message) {
   }
 }
 
-XmlElement* V1ClientAuthenticator::GetNextMessage() {
+scoped_ptr<XmlElement> V1ClientAuthenticator::GetNextMessage() {
   DCHECK_EQ(state_, MESSAGE_READY);
 
-  XmlElement* message = CreateEmptyAuthenticatorMessage();
+  scoped_ptr<XmlElement> message = CreateEmptyAuthenticatorMessage();
   std::string token =
       protocol::GenerateSupportAuthToken(local_jid_, shared_secret_);
   XmlElement* auth_token_tag = new XmlElement(
@@ -71,17 +71,17 @@ XmlElement* V1ClientAuthenticator::GetNextMessage() {
   message->AddElement(auth_token_tag);
 
   state_ = WAITING_MESSAGE;
-  return message;
+  return message.Pass();
 }
 
-ChannelAuthenticator*
+scoped_ptr<ChannelAuthenticator>
 V1ClientAuthenticator::CreateChannelAuthenticator() const {
   DCHECK_EQ(state_, ACCEPTED);
-  SslHmacChannelAuthenticator* result =
+  scoped_ptr<SslHmacChannelAuthenticator> result =
       SslHmacChannelAuthenticator::CreateForClient(
           remote_cert_, shared_secret_);
   result->SetLegacyOneWayMode(SslHmacChannelAuthenticator::SEND_ONLY);
-  return result;
+  return scoped_ptr<ChannelAuthenticator>(result.Pass());
 };
 
 V1HostAuthenticator::V1HostAuthenticator(
@@ -117,10 +117,10 @@ void V1HostAuthenticator::ProcessMessage(const XmlElement* message) {
   }
 }
 
-XmlElement* V1HostAuthenticator::GetNextMessage() {
+scoped_ptr<XmlElement> V1HostAuthenticator::GetNextMessage() {
   DCHECK_EQ(state_, MESSAGE_READY);
 
-  XmlElement* message = CreateEmptyAuthenticatorMessage();
+  scoped_ptr<XmlElement> message = CreateEmptyAuthenticatorMessage();
   buzz::XmlElement* certificate_tag = new XmlElement(
       buzz::QName(kChromotingXmlNamespace, kCertificateTag));
   std::string base64_cert;
@@ -131,17 +131,17 @@ XmlElement* V1HostAuthenticator::GetNextMessage() {
   message->AddElement(certificate_tag);
 
   state_ = ACCEPTED;
-  return message;
+  return message.Pass();
 }
 
-ChannelAuthenticator*
+scoped_ptr<ChannelAuthenticator>
 V1HostAuthenticator::CreateChannelAuthenticator() const {
   DCHECK_EQ(state_, ACCEPTED);
-  SslHmacChannelAuthenticator* result =
+  scoped_ptr<SslHmacChannelAuthenticator> result =
       SslHmacChannelAuthenticator::CreateForHost(
           local_cert_, local_private_key_.get(), shared_secret_);
   result->SetLegacyOneWayMode(SslHmacChannelAuthenticator::RECEIVE_ONLY);
-  return result;
+  return scoped_ptr<ChannelAuthenticator>(result.Pass());
 };
 
 }  // namespace remoting

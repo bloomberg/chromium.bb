@@ -28,9 +28,8 @@ class ContentDescription : public cricket::ContentDescription {
  public:
   static const char kChromotingContentName[];
 
-  // Takes ownership of |config| and |authenticator_message|.
-  ContentDescription(const CandidateSessionConfig* config,
-                     const buzz::XmlElement* authenticator_message);
+  ContentDescription(scoped_ptr<CandidateSessionConfig> config,
+                     scoped_ptr<buzz::XmlElement> authenticator_message);
   virtual ~ContentDescription();
 
   const CandidateSessionConfig* config() const {

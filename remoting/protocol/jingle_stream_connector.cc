@@ -47,12 +47,13 @@ JingleStreamConnector::JingleStreamConnector(
 JingleStreamConnector::~JingleStreamConnector() {
 }
 
-void JingleStreamConnector::Connect(ChannelAuthenticator* authenticator,
-                                    cricket::TransportChannel* raw_channel) {
+void JingleStreamConnector::Connect(
+    scoped_ptr<ChannelAuthenticator> authenticator,
+    cricket::TransportChannel* raw_channel) {
   DCHECK(CalledOnValidThread());
   DCHECK(!raw_channel_);
 
-  authenticator_.reset(authenticator);
+  authenticator_ = authenticator.Pass();
   raw_channel_ = raw_channel;
 
   net::Socket* socket =

@@ -54,8 +54,9 @@ class FakeAuthenticator : public Authenticator {
   // Authenticator interface.
   virtual State state() const OVERRIDE;
   virtual void ProcessMessage(const buzz::XmlElement* message) OVERRIDE;
-  virtual buzz::XmlElement* GetNextMessage() OVERRIDE;
-  virtual ChannelAuthenticator* CreateChannelAuthenticator() const OVERRIDE;
+  virtual scoped_ptr<buzz::XmlElement> GetNextMessage() OVERRIDE;
+  virtual scoped_ptr<ChannelAuthenticator>
+      CreateChannelAuthenticator() const OVERRIDE;
 
  protected:
   Type type_;
@@ -76,7 +77,7 @@ class FakeHostAuthenticatorFactory : public AuthenticatorFactory {
   virtual ~FakeHostAuthenticatorFactory();
 
   // AuthenticatorFactory interface.
-  virtual Authenticator* CreateAuthenticator(
+  virtual scoped_ptr<Authenticator> CreateAuthenticator(
       const std::string& remote_jid,
       const buzz::XmlElement* first_message) OVERRIDE;
 

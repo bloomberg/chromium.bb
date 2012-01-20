@@ -97,24 +97,25 @@ void FakeAuthenticator::ProcessMessage(const buzz::XmlElement* message) {
   ++messages_;
 }
 
-buzz::XmlElement* FakeAuthenticator::GetNextMessage() {
+scoped_ptr<buzz::XmlElement> FakeAuthenticator::GetNextMessage() {
   EXPECT_EQ(MESSAGE_READY, state());
 
-  buzz::XmlElement* result = new buzz::XmlElement(
-      buzz::QName(kChromotingXmlNamespace, "authentication"));
+  scoped_ptr<buzz::XmlElement> result(new buzz::XmlElement(
+      buzz::QName(kChromotingXmlNamespace, "authentication")));
   buzz::XmlElement* id = new buzz::XmlElement(
       buzz::QName(kChromotingXmlNamespace, "id"));
   id->AddText(base::IntToString(messages_));
   result->AddElement(id);
 
   ++messages_;
-  return result;
+  return result.Pass();
 }
 
-ChannelAuthenticator*
+scoped_ptr<ChannelAuthenticator>
 FakeAuthenticator::CreateChannelAuthenticator() const {
   EXPECT_EQ(ACCEPTED, state());
-  return new FakeChannelAuthenticator(action_ != REJECT_CHANNEL, async_);
+  return scoped_ptr<ChannelAuthenticator>(
+      new FakeChannelAuthenticator(action_ != REJECT_CHANNEL, async_));
 }
 
 FakeHostAuthenticatorFactory::FakeHostAuthenticatorFactory(
@@ -126,11 +127,11 @@ FakeHostAuthenticatorFactory::FakeHostAuthenticatorFactory(
 FakeHostAuthenticatorFactory::~FakeHostAuthenticatorFactory() {
 }
 
-Authenticator* FakeHostAuthenticatorFactory::CreateAuthenticator(
+scoped_ptr<Authenticator> FakeHostAuthenticatorFactory::CreateAuthenticator(
     const std::string& remote_jid,
     const buzz::XmlElement* first_message) {
-  return new FakeAuthenticator(FakeAuthenticator::HOST, round_trips_,
-                               action_, async_);
+  return scoped_ptr<Authenticator>(new FakeAuthenticator(
+      FakeAuthenticator::HOST, round_trips_, action_, async_));
 }
 
 }  // namespace protocol

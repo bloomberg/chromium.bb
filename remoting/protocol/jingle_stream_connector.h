@@ -42,7 +42,7 @@ class JingleStreamConnector : public JingleChannelConnector {
   virtual ~JingleStreamConnector();
 
   // JingleChannelConnector implementation.
-  virtual void Connect(ChannelAuthenticator* authenticator,
+  virtual void Connect(scoped_ptr<ChannelAuthenticator> authenticator,
                        cricket::TransportChannel* raw_channel) OVERRIDE;
 
  private:

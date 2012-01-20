@@ -51,10 +51,10 @@ class PepperSessionManager : public SessionManager,
   virtual void Init(SignalStrategy* signal_strategy,
                     SessionManager::Listener* listener,
                     const NetworkSettings& network_settings) OVERRIDE;
-  virtual Session* Connect(
+  virtual scoped_ptr<Session> Connect(
       const std::string& host_jid,
-      Authenticator* authenticator,
-      CandidateSessionConfig* config,
+      scoped_ptr<Authenticator> authenticator,
+      scoped_ptr<CandidateSessionConfig> config,
       const Session::StateChangeCallback& state_change_callback) OVERRIDE;
   virtual void Close() OVERRIDE;
   virtual void set_authenticator_factory(

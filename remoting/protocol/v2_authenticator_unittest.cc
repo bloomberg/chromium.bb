@@ -75,9 +75,9 @@ class V2AuthenticatorTest : public testing::Test {
 
   void InitAuthenticators(const std::string& client_secret,
                           const std::string& host_secret) {
-    host_.reset(V2Authenticator::CreateForHost(
-        host_cert_, *private_key_, host_secret));
-    client_.reset(V2Authenticator::CreateForClient(client_secret));
+    host_ = V2Authenticator::CreateForHost(
+        host_cert_, *private_key_, host_secret);
+    client_ = V2Authenticator::CreateForClient(client_secret);
   }
 
   void RunAuthExchange() {
@@ -86,7 +86,7 @@ class V2AuthenticatorTest : public testing::Test {
 
       // Pass message from client to host.
       ASSERT_EQ(Authenticator::MESSAGE_READY, client_->state());
-      message.reset(client_->GetNextMessage());
+      message = client_->GetNextMessage();
       ASSERT_TRUE(message.get());
       ASSERT_NE(Authenticator::MESSAGE_READY, client_->state());
 
@@ -102,7 +102,7 @@ class V2AuthenticatorTest : public testing::Test {
 
       // Pass message from host to client.
       ASSERT_EQ(Authenticator::MESSAGE_READY, host_->state());
-      message.reset(host_->GetNextMessage());
+      message = host_->GetNextMessage();
       ASSERT_TRUE(message.get());
       ASSERT_NE(Authenticator::MESSAGE_READY, host_->state());
 
@@ -150,8 +150,8 @@ class V2AuthenticatorTest : public testing::Test {
 
   scoped_ptr<crypto::RSAPrivateKey> private_key_;
   std::string host_cert_;
-  scoped_ptr<V2Authenticator> host_;
-  scoped_ptr<V2Authenticator> client_;
+  scoped_ptr<Authenticator> host_;
+  scoped_ptr<Authenticator> client_;
   scoped_ptr<FakeSocket> client_fake_socket_;
   scoped_ptr<FakeSocket> host_fake_socket_;
   scoped_ptr<ChannelAuthenticator> client_auth_;
@@ -172,8 +172,8 @@ TEST_F(V2AuthenticatorTest, SuccessfulAuth) {
   ASSERT_EQ(Authenticator::ACCEPTED, host_->state());
   ASSERT_EQ(Authenticator::ACCEPTED, client_->state());
 
-  client_auth_.reset(client_->CreateChannelAuthenticator());
-  host_auth_.reset(host_->CreateChannelAuthenticator());
+  client_auth_ = client_->CreateChannelAuthenticator();
+  host_auth_ = host_->CreateChannelAuthenticator();
   RunChannelAuth(false);
 
   EXPECT_TRUE(client_socket_.get() != NULL);
@@ -195,8 +195,9 @@ TEST_F(V2AuthenticatorTest, InvalidSecret) {
 
   ASSERT_EQ(Authenticator::REJECTED, client_->state());
 
-  // Change |client_| so that we can get the laste message.
-  client_->state_ = Authenticator::MESSAGE_READY;
+  // Change |client_| so that we can get the last message.
+  reinterpret_cast<V2Authenticator*>(client_.get())->state_ =
+      Authenticator::MESSAGE_READY;
 
   scoped_ptr<buzz::XmlElement> message(client_->GetNextMessage());
   ASSERT_TRUE(message.get());

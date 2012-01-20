@@ -27,7 +27,7 @@ class JingleDatagramConnector : public JingleChannelConnector {
   // TODO(sergeyu): In the current implementation ChannelAuthenticator
   // cannot be used for datagram channels, so needs to be either
   // extended or replaced with something else here.
-  virtual void Connect(ChannelAuthenticator* authenticator,
+  virtual void Connect(scoped_ptr<ChannelAuthenticator> authenticator,
                        cricket::TransportChannel* raw_channel) OVERRIDE;
 
  private:

@@ -24,11 +24,11 @@ JingleDatagramConnector::~JingleDatagramConnector() {
 }
 
 void JingleDatagramConnector::Connect(
-    ChannelAuthenticator* authenticator,
+    scoped_ptr<ChannelAuthenticator> authenticator,
     cricket::TransportChannel* raw_channel) {
   DCHECK(CalledOnValidThread());
 
-  authenticator_.reset(authenticator);
+  authenticator_ = authenticator.Pass();
 
   net::Socket* socket =
       new jingle_glue::TransportChannelSocketAdapter(raw_channel);

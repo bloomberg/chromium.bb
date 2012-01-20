@@ -25,6 +25,8 @@ class JingleSessionManager;
 class JingleSession : public protocol::Session,
                       public sigslot::has_slots<> {
  public:
+  virtual ~JingleSession();
+
   // Session interface.
   virtual void SetStateChangeCallback(
       const StateChangeCallback& callback) OVERRIDE;
@@ -49,14 +51,13 @@ class JingleSession : public protocol::Session,
 
   typedef std::map<std::string, JingleChannelConnector*> ChannelConnectorsMap;
 
-  // Takes ownership of |authenticator|.
   JingleSession(JingleSessionManager* jingle_session_manager,
                 cricket::Session* cricket_session,
-                Authenticator* authenticator);
-  virtual ~JingleSession();
+                scoped_ptr<Authenticator> authenticator);
 
   // Called by JingleSessionManager.
-  void set_candidate_config(const CandidateSessionConfig* candidate_config);
+  void set_candidate_config(
+      scoped_ptr<CandidateSessionConfig> candidate_config);
 
   // Sends session-initiate for new session.
   void SendSessionInitiate();
@@ -107,9 +108,9 @@ class JingleSession : public protocol::Session,
 
   void SetState(State new_state);
 
-  static cricket::SessionDescription* CreateSessionDescription(
-      const CandidateSessionConfig* candidate_config,
-      const buzz::XmlElement* authenticator_message);
+  static scoped_ptr<cricket::SessionDescription> CreateSessionDescription(
+      scoped_ptr<CandidateSessionConfig> candidate_config,
+      scoped_ptr<buzz::XmlElement> authenticator_message);
 
   // JingleSessionManager that created this session. Guaranteed to
   // exist throughout the lifetime of the session.

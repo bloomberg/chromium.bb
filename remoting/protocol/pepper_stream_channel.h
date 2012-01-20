@@ -37,7 +37,7 @@ class PepperStreamChannel : public PepperChannel,
   // PepperChannel implementation.
   virtual void Connect(pp::Instance* pp_instance,
                        const TransportConfig& transport_config,
-                       ChannelAuthenticator* authenticator) OVERRIDE;
+                       scoped_ptr<ChannelAuthenticator> authenticator) OVERRIDE;
   virtual void AddRemoveCandidate(const cricket::Candidate& candidate) OVERRIDE;
   virtual const std::string& name() const OVERRIDE;
   virtual bool is_connected() const OVERRIDE;

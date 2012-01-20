@@ -28,9 +28,8 @@ class JingleChannelConnector : public base::NonThreadSafe {
   JingleChannelConnector() { }
   virtual ~JingleChannelConnector() { }
 
-  // Starts the connection process for the channel. Takes ownership of
-  // |authenticator|.
-  virtual void Connect(ChannelAuthenticator* authenticator,
+  // Starts the connection process for the channel.
+  virtual void Connect(scoped_ptr<ChannelAuthenticator> authenticator,
                        cricket::TransportChannel* raw_channel) = 0;
 
  protected:

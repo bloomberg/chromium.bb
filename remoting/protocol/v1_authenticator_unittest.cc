@@ -87,7 +87,7 @@ class V1AuthenticatorTest : public testing::Test {
 
       // Pass message from client to host.
       ASSERT_EQ(Authenticator::MESSAGE_READY, client_->state());
-      message.reset(client_->GetNextMessage());
+      message = client_->GetNextMessage();
       ASSERT_TRUE(message.get());
       ASSERT_NE(Authenticator::MESSAGE_READY, client_->state());
 
@@ -103,7 +103,7 @@ class V1AuthenticatorTest : public testing::Test {
 
       // Pass message from host to client.
       ASSERT_EQ(Authenticator::MESSAGE_READY, host_->state());
-      message.reset(host_->GetNextMessage());
+      message = host_->GetNextMessage();
       ASSERT_TRUE(message.get());
       ASSERT_NE(Authenticator::MESSAGE_READY, host_->state());
 
@@ -177,8 +177,8 @@ TEST_F(V1AuthenticatorTest, SuccessfulAuth) {
   ASSERT_EQ(Authenticator::ACCEPTED, host_->state());
   ASSERT_EQ(Authenticator::ACCEPTED, client_->state());
 
-  client_auth_.reset(client_->CreateChannelAuthenticator());
-  host_auth_.reset(host_->CreateChannelAuthenticator());
+  client_auth_ = client_->CreateChannelAuthenticator();
+  host_auth_ = host_->CreateChannelAuthenticator();
   RunChannelAuth(false);
 
   EXPECT_TRUE(client_socket_.get() != NULL);

@@ -56,16 +56,16 @@ Session::Error PepperSession::error() {
 
 void PepperSession::StartConnection(
     const std::string& peer_jid,
-    Authenticator* authenticator,
-    CandidateSessionConfig* config,
+    scoped_ptr<Authenticator> authenticator,
+    scoped_ptr<CandidateSessionConfig> config,
     const StateChangeCallback& state_change_callback) {
   DCHECK(CalledOnValidThread());
-  DCHECK(authenticator);
+  DCHECK(authenticator.get());
   DCHECK_EQ(authenticator->state(), Authenticator::MESSAGE_READY);
 
   peer_jid_ = peer_jid;
-  authenticator_.reset(authenticator);
-  candidate_config_.reset(config);
+  authenticator_ = authenticator.Pass();
+  candidate_config_ = config.Pass();
   state_change_callback_ = state_change_callback;
 
   // Generate random session ID. There are usually not more than 1
@@ -113,14 +113,14 @@ void PepperSession::CreateStreamChannel(
       const StreamChannelCallback& callback) {
   DCHECK(!channels_[name]);
 
-  ChannelAuthenticator* channel_authenticator =
+  scoped_ptr<ChannelAuthenticator> channel_authenticator =
       authenticator_->CreateChannelAuthenticator();
   PepperStreamChannel* channel = new PepperStreamChannel(
       this, name, callback);
   channels_[name] = channel;
   channel->Connect(session_manager_->pp_instance_,
                    session_manager_->transport_config_,
-                   channel_authenticator);
+                   channel_authenticator.Pass());
 }
 
 void PepperSession::CreateDatagramChannel(
@@ -334,7 +334,7 @@ void PepperSession::ProcessAuthenticationStep() {
 
   if (authenticator_->state() == Authenticator::MESSAGE_READY) {
     JingleMessage message(peer_jid_, JingleMessage::SESSION_INFO, session_id_);
-    message.info.reset(authenticator_->GetNextMessage());
+    message.info = authenticator_->GetNextMessage();
     DCHECK(message.info.get());
 
     session_info_request_.reset(session_manager_->iq_sender()->SendIq(

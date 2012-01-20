@@ -29,7 +29,7 @@ class Me2MeHostAuthenticatorFactory : public AuthenticatorFactory {
   virtual ~Me2MeHostAuthenticatorFactory();
 
   // AuthenticatorFactory interface.
-  virtual Authenticator* CreateAuthenticator(
+  virtual scoped_ptr<Authenticator> CreateAuthenticator(
       const std::string& remote_jid,
       const buzz::XmlElement* first_message) OVERRIDE;
 

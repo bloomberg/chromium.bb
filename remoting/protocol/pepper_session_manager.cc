@@ -70,16 +70,16 @@ void PepperSessionManager::OnJingleInfo(
   }
 }
 
-Session* PepperSessionManager::Connect(
+scoped_ptr<Session> PepperSessionManager::Connect(
     const std::string& host_jid,
-    Authenticator* authenticator,
-    CandidateSessionConfig* config,
+    scoped_ptr<Authenticator> authenticator,
+    scoped_ptr<CandidateSessionConfig> config,
     const Session::StateChangeCallback& state_change_callback) {
-  PepperSession* session = new PepperSession(this);
-  session->StartConnection(host_jid, authenticator, config,
+  scoped_ptr<PepperSession> session(new PepperSession(this));
+  session->StartConnection(host_jid, authenticator.Pass(), config.Pass(),
                            state_change_callback);
-  sessions_[session->session_id_] = session;
-  return session;
+  sessions_[session->session_id_] = session.get();
+  return scoped_ptr<Session>(session.Pass());
 }
 
 void PepperSessionManager::Close() {

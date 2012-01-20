@@ -25,10 +25,10 @@ class V2Authenticator : public Authenticator {
  public:
   static bool IsEkeMessage(const buzz::XmlElement* message);
 
-  static V2Authenticator* CreateForClient(
+  static scoped_ptr<Authenticator> CreateForClient(
       const std::string& shared_secret);
 
-  static V2Authenticator* CreateForHost(
+  static scoped_ptr<Authenticator> CreateForHost(
       const std::string& local_cert,
       const crypto::RSAPrivateKey& local_private_key,
       const std::string& shared_secret);
@@ -38,8 +38,9 @@ class V2Authenticator : public Authenticator {
   // Authenticator interface.
   virtual State state() const OVERRIDE;
   virtual void ProcessMessage(const buzz::XmlElement* message) OVERRIDE;
-  virtual buzz::XmlElement* GetNextMessage() OVERRIDE;
-  virtual ChannelAuthenticator* CreateChannelAuthenticator() const OVERRIDE;
+  virtual scoped_ptr<buzz::XmlElement> GetNextMessage() OVERRIDE;
+  virtual scoped_ptr<ChannelAuthenticator>
+      CreateChannelAuthenticator() const OVERRIDE;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(V2AuthenticatorTest, InvalidSecret);

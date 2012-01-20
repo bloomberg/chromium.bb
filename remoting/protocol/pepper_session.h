@@ -66,8 +66,8 @@ class PepperSession : public Session {
 
   // Start cs connection by sending session-initiate message.
   void StartConnection(const std::string& peer_jid,
-                       Authenticator* authenticator,
-                       CandidateSessionConfig* config,
+                       scoped_ptr<Authenticator> authenticator,
+                       scoped_ptr<CandidateSessionConfig> config,
                        const StateChangeCallback& state_change_callback);
 
   // Handler for session-initiate response.

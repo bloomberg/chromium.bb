@@ -122,10 +122,10 @@ void JingleSessionManager::set_authenticator_factory(
   authenticator_factory_ = authenticator_factory.Pass();
 }
 
-Session* JingleSessionManager::Connect(
+scoped_ptr<Session> JingleSessionManager::Connect(
     const std::string& host_jid,
-    Authenticator* authenticator,
-    CandidateSessionConfig* candidate_config,
+    scoped_ptr<Authenticator> authenticator,
+    scoped_ptr<CandidateSessionConfig> config,
     const Session::StateChangeCallback& state_change_callback) {
   DCHECK(CalledOnValidThread());
 
@@ -133,15 +133,15 @@ Session* JingleSessionManager::Connect(
       signal_strategy_->GetLocalJid(), kChromotingXmlNamespace);
   cricket_session->set_remote_name(host_jid);
 
-  JingleSession* jingle_session =
-      new JingleSession(this, cricket_session, authenticator);
-  jingle_session->set_candidate_config(candidate_config);
+  scoped_ptr<JingleSession> jingle_session(
+      new JingleSession(this, cricket_session, authenticator.Pass()));
+  jingle_session->set_candidate_config(config.Pass());
   jingle_session->SetStateChangeCallback(state_change_callback);
-  sessions_.push_back(jingle_session);
+  sessions_.push_back(jingle_session.get());
 
   jingle_session->SendSessionInitiate();
 
-  return jingle_session;
+  return scoped_ptr<Session>(jingle_session.Pass());
 }
 
 void JingleSessionManager::OnSessionCreate(
@@ -153,7 +153,7 @@ void JingleSessionManager::OnSessionCreate(
 
   if (incoming) {
     JingleSession* jingle_session =
-        new JingleSession(this, cricket_session, NULL);
+        new JingleSession(this, cricket_session, scoped_ptr<Authenticator>());
     sessions_.push_back(jingle_session);
   }
 }
@@ -198,12 +198,12 @@ SessionManager::IncomingSessionResponse JingleSessionManager::AcceptConnection(
   return response;
 }
 
-Authenticator* JingleSessionManager::CreateAuthenticator(
+scoped_ptr<Authenticator> JingleSessionManager::CreateAuthenticator(
     const std::string& jid, const buzz::XmlElement* auth_message) {
   DCHECK(CalledOnValidThread());
 
   if (!authenticator_factory_.get())
-    return NULL;
+    return scoped_ptr<Authenticator>(NULL);
   return authenticator_factory_->CreateAuthenticator(jid, auth_message);
 }
 

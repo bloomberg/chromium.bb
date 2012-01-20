@@ -24,7 +24,7 @@ It2MeHostAuthenticatorFactory::It2MeHostAuthenticatorFactory(
 It2MeHostAuthenticatorFactory::~It2MeHostAuthenticatorFactory() {
 }
 
-Authenticator* It2MeHostAuthenticatorFactory::CreateAuthenticator(
+scoped_ptr<Authenticator> It2MeHostAuthenticatorFactory::CreateAuthenticator(
     const std::string& remote_jid,
     const buzz::XmlElement* first_message) {
   // TODO(sergeyu): V2 authenticator is not finished yet. Enable it
@@ -35,8 +35,8 @@ Authenticator* It2MeHostAuthenticatorFactory::CreateAuthenticator(
   //       local_cert_, *local_private_key_, shared_secret_);
   // }
 
-  return new V1HostAuthenticator(local_cert_, *local_private_key_,
-                                 shared_secret_, remote_jid);
+  return scoped_ptr<Authenticator>(new V1HostAuthenticator(
+      local_cert_, *local_private_key_, shared_secret_, remote_jid));
 }
 
 }  // namespace protocol

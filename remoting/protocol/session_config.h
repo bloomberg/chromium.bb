@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 
 namespace remoting {
 namespace protocol {
@@ -119,11 +120,12 @@ class CandidateSessionConfig {
   // or undefined (e.g. no configurations for a channel) then NULL is returned.
   bool GetFinalConfig(SessionConfig* result) const;
 
-  CandidateSessionConfig* Clone() const;
+  scoped_ptr<CandidateSessionConfig> Clone() const;
 
-  static CandidateSessionConfig* CreateEmpty();
-  static CandidateSessionConfig* CreateFrom(const SessionConfig& config);
-  static CandidateSessionConfig* CreateDefault();
+  static scoped_ptr<CandidateSessionConfig> CreateEmpty();
+  static scoped_ptr<CandidateSessionConfig> CreateFrom(
+      const SessionConfig& config);
+  static scoped_ptr<CandidateSessionConfig> CreateDefault();
 
  private:
   CandidateSessionConfig();

@@ -45,11 +45,11 @@ class SslHmacChannelAuthenticator : public ChannelAuthenticator,
   // |auth_key| is set to access code. For EKE-based authentication
   // |auth_key| is the key established using EKE over the signaling
   // channel.
-  static SslHmacChannelAuthenticator* CreateForClient(
+  static scoped_ptr<SslHmacChannelAuthenticator> CreateForClient(
       const std::string& remote_cert,
       const std::string& auth_key);
 
-  static SslHmacChannelAuthenticator* CreateForHost(
+  static scoped_ptr<SslHmacChannelAuthenticator> CreateForHost(
       const std::string& local_cert,
       crypto::RSAPrivateKey* local_private_key,
       const std::string& auth_key);

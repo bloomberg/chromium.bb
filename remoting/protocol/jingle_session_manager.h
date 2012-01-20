@@ -44,10 +44,10 @@ class JingleSessionManager : public SessionManager,
   virtual void Init(SignalStrategy* signal_strategy,
                     SessionManager::Listener* listener,
                     const NetworkSettings& network_settings) OVERRIDE;
-  virtual Session* Connect(
+  virtual scoped_ptr<Session> Connect(
       const std::string& host_jid,
-      Authenticator* authenticator,
-      CandidateSessionConfig* config,
+      scoped_ptr<Authenticator> authenticator,
+      scoped_ptr<CandidateSessionConfig> config,
       const Session::StateChangeCallback& state_change_callback) OVERRIDE;
   virtual void Close() OVERRIDE;
   virtual void set_authenticator_factory(
@@ -80,10 +80,10 @@ class JingleSessionManager : public SessionManager,
 
   // Creates authenticator for incoming session. Returns NULL if
   // authenticator cannot be created, e.g. if |auth_message| is
-  // invalid. Caller reatins ownership of |auth_message| and must
-  // accept ownership of the result.
-  Authenticator* CreateAuthenticator(const std::string& jid,
-                                     const buzz::XmlElement* auth_message);
+  // invalid.
+  scoped_ptr<Authenticator> CreateAuthenticator(
+      const std::string& jid,
+      const buzz::XmlElement* auth_message);
 
   // Called by JingleSession when it is being destroyed.
   void SessionDestroyed(JingleSession* jingle_session);

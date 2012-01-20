@@ -35,14 +35,14 @@ bool V2Authenticator::IsEkeMessage(const buzz::XmlElement* message) {
 }
 
 // static
-V2Authenticator* V2Authenticator::CreateForClient(
+scoped_ptr<Authenticator> V2Authenticator::CreateForClient(
       const std::string& shared_secret) {
-  return new V2Authenticator(
-      P224EncryptedKeyExchange::kPeerTypeClient, shared_secret);
+  return scoped_ptr<Authenticator>(new V2Authenticator(
+      P224EncryptedKeyExchange::kPeerTypeClient, shared_secret));
 }
 
 // static
-V2Authenticator* V2Authenticator::CreateForHost(
+scoped_ptr<Authenticator> V2Authenticator::CreateForHost(
     const std::string& local_cert,
     const crypto::RSAPrivateKey& local_private_key,
     const std::string& shared_secret) {
@@ -51,7 +51,7 @@ V2Authenticator* V2Authenticator::CreateForHost(
   result->local_cert_ = local_cert;
   result->local_private_key_.reset(local_private_key.Copy());
   result->state_ = WAITING_MESSAGE;
-  return result;
+  return scoped_ptr<Authenticator>(result);
 }
 
 V2Authenticator::V2Authenticator(
@@ -129,10 +129,10 @@ void V2Authenticator::ProcessMessage(const buzz::XmlElement* message) {
   state_ = MESSAGE_READY;
 }
 
-buzz::XmlElement* V2Authenticator::GetNextMessage() {
+scoped_ptr<buzz::XmlElement> V2Authenticator::GetNextMessage() {
   DCHECK_EQ(state(), MESSAGE_READY);
 
-  buzz::XmlElement* message = CreateEmptyAuthenticatorMessage();
+  scoped_ptr<buzz::XmlElement> message = CreateEmptyAuthenticatorMessage();
 
   DCHECK(!pending_messages_.empty());
   while (!pending_messages_.empty()) {
@@ -163,19 +163,22 @@ buzz::XmlElement* V2Authenticator::GetNextMessage() {
   if (state_ != ACCEPTED) {
     state_ = WAITING_MESSAGE;
   }
-  return message;
+  return message.Pass();
 }
 
-ChannelAuthenticator* V2Authenticator::CreateChannelAuthenticator() const {
+scoped_ptr<ChannelAuthenticator>
+V2Authenticator::CreateChannelAuthenticator() const {
   DCHECK_EQ(state(), ACCEPTED);
   CHECK(!auth_key_.empty());
 
   if (is_host_side()) {
-    return SslHmacChannelAuthenticator::CreateForHost(
-        local_cert_, local_private_key_.get(), auth_key_);
+    return scoped_ptr<ChannelAuthenticator>(
+        SslHmacChannelAuthenticator::CreateForHost(
+            local_cert_, local_private_key_.get(), auth_key_).Pass());
   } else {
-    return SslHmacChannelAuthenticator::CreateForClient(
-        remote_cert_, auth_key_);
+    return scoped_ptr<ChannelAuthenticator>(
+        SslHmacChannelAuthenticator::CreateForClient(
+            remote_cert_, auth_key_).Pass());
   }
 }
 

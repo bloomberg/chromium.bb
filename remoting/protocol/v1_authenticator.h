@@ -26,8 +26,9 @@ class V1ClientAuthenticator : public Authenticator {
   // Authenticator interface.
   virtual State state() const OVERRIDE;
   virtual void ProcessMessage(const buzz::XmlElement* message) OVERRIDE;
-  virtual buzz::XmlElement* GetNextMessage() OVERRIDE;
-  virtual ChannelAuthenticator* CreateChannelAuthenticator() const OVERRIDE;
+  virtual scoped_ptr<buzz::XmlElement> GetNextMessage() OVERRIDE;
+  virtual scoped_ptr<ChannelAuthenticator>
+      CreateChannelAuthenticator() const OVERRIDE;
 
  private:
   std::string local_jid_;
@@ -50,8 +51,9 @@ class V1HostAuthenticator : public Authenticator {
   // Authenticator interface.
   virtual State state() const OVERRIDE;
   virtual void ProcessMessage(const buzz::XmlElement* message) OVERRIDE;
-  virtual buzz::XmlElement* GetNextMessage() OVERRIDE;
-  virtual ChannelAuthenticator* CreateChannelAuthenticator() const OVERRIDE;
+  virtual scoped_ptr<buzz::XmlElement> GetNextMessage() OVERRIDE;
+  virtual scoped_ptr<ChannelAuthenticator>
+      CreateChannelAuthenticator() const OVERRIDE;
 
  private:
   std::string local_cert_;

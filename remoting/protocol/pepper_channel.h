@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
 
 namespace pp {
@@ -31,11 +32,10 @@ class PepperChannel : public base::NonThreadSafe {
   virtual ~PepperChannel() { }
 
   // Connect the channel using specified |config|. The specified
-  // |authenticator| is used to authenticate the channel. Takes
-  // ownership of |authenticator|.
+  // |authenticator| is used to authenticate the channel.
   virtual void Connect(pp::Instance* pp_instance,
                        const TransportConfig& config,
-                       ChannelAuthenticator* authenticator) = 0;
+                       scoped_ptr<ChannelAuthenticator> authenticator) = 0;
 
   // Adds |candidate| received from the peer.
   virtual void AddRemoveCandidate(const cricket::Candidate& candidate) = 0;

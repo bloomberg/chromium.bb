@@ -22,24 +22,26 @@ namespace remoting {
 namespace protocol {
 
 // static
-SslHmacChannelAuthenticator* SslHmacChannelAuthenticator::CreateForClient(
+scoped_ptr<SslHmacChannelAuthenticator>
+SslHmacChannelAuthenticator::CreateForClient(
       const std::string& remote_cert,
       const std::string& auth_key) {
-  SslHmacChannelAuthenticator* result =
-      new SslHmacChannelAuthenticator(auth_key);
+  scoped_ptr<SslHmacChannelAuthenticator> result(
+      new SslHmacChannelAuthenticator(auth_key));
   result->remote_cert_ = remote_cert;
-  return result;
+  return result.Pass();
 }
 
-SslHmacChannelAuthenticator* SslHmacChannelAuthenticator::CreateForHost(
+scoped_ptr<SslHmacChannelAuthenticator>
+SslHmacChannelAuthenticator::CreateForHost(
     const std::string& local_cert,
     crypto::RSAPrivateKey* local_private_key,
     const std::string& auth_key) {
-  SslHmacChannelAuthenticator* result =
-      new SslHmacChannelAuthenticator(auth_key);
+  scoped_ptr<SslHmacChannelAuthenticator> result(
+      new SslHmacChannelAuthenticator(auth_key));
   result->local_cert_ = local_cert;
   result->local_private_key_ = local_private_key;
-  return result;
+  return result.Pass();
 }
 
 SslHmacChannelAuthenticator::SslHmacChannelAuthenticator(

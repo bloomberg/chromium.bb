@@ -128,15 +128,7 @@ class SessionManager : public base::NonThreadSafe {
   };
 
   // Initializes the session client. Caller retains ownership of the
-  // |signal_strategy| and |listener|. |allow_nat_traversal| must be
-  // set to true to enable NAT traversal. STUN/Relay servers are not
-  // used when NAT traversal is disabled, so P2P connection will work
-  // only when both peers are on the same network. If this object is
-  // used in server mode, then |private_key| and |certificate| are
-  // used to establish a secured communication with the client. It
-  // will also take ownership of these objects. On the client side
-  // pass in NULL for |private_key| and empty string for
-  // |certificate|.
+  // |signal_strategy| and |listener|.
   virtual void Init(SignalStrategy* signal_strategy,
                     Listener* listener,
                     const NetworkSettings& network_settings) = 0;
@@ -146,16 +138,13 @@ class SessionManager : public base::NonThreadSafe {
   // Listener::OnInitialized() has been called.
   //
   // |host_jid| is the full jid of the host to connect to.
-  // |host_public_key| is used to for authentication.
   // |authenticator| is a client authenticator for the session.
   // |config| contains the session configurations that the client supports.
   // |state_change_callback| is called when the connection state changes.
-  //
-  // Ownership of the |config| is passed to the new session.
-  virtual Session* Connect(
+  virtual scoped_ptr<Session> Connect(
       const std::string& host_jid,
-      Authenticator* authenticator,
-      CandidateSessionConfig* config,
+      scoped_ptr<Authenticator> authenticator,
+      scoped_ptr<CandidateSessionConfig> config,
       const Session::StateChangeCallback& state_change_callback) = 0;
 
   // Close session manager. Can be called only after all corresponding

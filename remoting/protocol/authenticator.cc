@@ -21,8 +21,9 @@ bool Authenticator::IsAuthenticatorMessage(const buzz::XmlElement* message) {
 }
 
 // static
-buzz::XmlElement* Authenticator::CreateEmptyAuthenticatorMessage() {
-  return new buzz::XmlElement(kAuthenticationQName);
+scoped_ptr<buzz::XmlElement> Authenticator::CreateEmptyAuthenticatorMessage() {
+  return scoped_ptr<buzz::XmlElement>(
+      new buzz::XmlElement(kAuthenticationQName));
 }
 
 // static
