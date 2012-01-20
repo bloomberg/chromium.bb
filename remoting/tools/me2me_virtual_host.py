@@ -263,7 +263,9 @@ class Desktop:
     # terminal, any reading from stdin causes the job to be suspended.
     # Daemonization would solve this problem by separating the process from the
     # controlling terminal.
-    self.session_proc = subprocess.Popen("/etc/X11/Xsession",
+    #
+    # This assumes that GDM is installed and configured on the system.
+    self.session_proc = subprocess.Popen("/etc/gdm/Xsession",
                                          stdin=open(os.devnull, "r"),
                                          cwd=HOME_DIR,
                                          env=self.child_env)
