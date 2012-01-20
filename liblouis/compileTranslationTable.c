@@ -1992,8 +1992,8 @@ passGetAttributes ()
 static int
 passGetEmphasis ()
 {
-  passLinepos++;
   int more = 1;
+  passLinepos++;
   passEmphasis = 0;
   while (more)
     {
