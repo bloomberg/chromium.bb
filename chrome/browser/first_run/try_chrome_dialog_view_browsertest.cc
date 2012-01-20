@@ -6,6 +6,15 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 
+// Unfortunately, this needs to be Windows only for now. Even though this test
+// is meant to exercise code that is for Windows only, it is a good general
+// canary in the coal mine for problems related to early shutdown (aborted
+// startup). Sadly, it times out on platforms other than Windows, so I can't
+// enable it for those platforms at the moment. I hope one day our test harness
+// will be improved to support this so we can get coverage on other platforms.
+// See http://crbug.com/45115 for details.
+#if defined(OS_WIN)
+
 // By passing kTryChromeAgain with a magic value > 10000 we cause Chrome
 // to exit fairly early.
 // Quickly exiting Chrome (regardless of this particular flag -- it
@@ -22,3 +31,5 @@ protected:
   }
 };
 IN_PROC_BROWSER_TEST_F(TryChromeDialogBrowserTest, ToastCrasher) {}
+
+#endif  // defined(OS_WIN)
