@@ -545,7 +545,7 @@ class RenderViewImpl : public RenderWidget,
       WebKit::WebFrame* frame,
       const WebKit::WebIntentServiceInfo& service);
   virtual void dispatchIntent(WebKit::WebFrame* frame,
-                              const WebKit::WebIntent& intent);
+                              const WebKit::WebIntentRequest& request);
 
   // WebKit::WebPageSerializerClient implementation ----------------------------
 

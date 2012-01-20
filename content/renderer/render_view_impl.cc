@@ -103,6 +103,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIntent.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebIntentRequest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIntentServiceInfo.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaPlayerAction.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNodeList.h"
@@ -3172,7 +3173,8 @@ void RenderViewImpl::registerIntentService(
 }
 
 void RenderViewImpl::dispatchIntent(WebKit::WebFrame* frame,
-                                    const WebKit::WebIntent& intent) {
+                                    const WebKit::WebIntentRequest& request) {
+  WebKit::WebIntent intent(request.intent());
   webkit_glue::WebIntentData intent_data(intent);
   Send(new IntentsHostMsg_WebIntentDispatch(
       routing_id_, intent_data, intent.identifier()));
