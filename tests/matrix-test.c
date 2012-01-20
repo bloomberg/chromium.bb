@@ -30,6 +30,11 @@
 
 #include "matrix.h"
 
+struct inverse_matrix {
+	double LU[16];		/* column-major */
+	unsigned perm[4];	/* permutation */
+};
+
 static struct timespec begin_time;
 
 static void
@@ -81,9 +86,9 @@ determinant(const struct weston_matrix *m)
 }
 
 static void
-print_permutation_matrix(const struct weston_inverse_matrix *m)
+print_permutation_matrix(const struct inverse_matrix *m)
 {
-	const unsigned *p = m->p;
+	const unsigned *p = m->perm;
 	const char *row[4] = {
 		"1 0 0 0\n",
 		"0 1 0 0\n",
@@ -95,7 +100,7 @@ print_permutation_matrix(const struct weston_inverse_matrix *m)
 }
 
 static void
-print_LU_decomposition(const struct weston_inverse_matrix *m)
+print_LU_decomposition(const struct inverse_matrix *m)
 {
 	unsigned r, c;
 
@@ -128,7 +133,7 @@ print_LU_decomposition(const struct weston_inverse_matrix *m)
 }
 
 static void
-print_inverse_data_matrix(const struct weston_inverse_matrix *m)
+print_inverse_data_matrix(const struct inverse_matrix *m)
 {
 	unsigned r, c;
 
@@ -140,7 +145,7 @@ print_inverse_data_matrix(const struct weston_inverse_matrix *m)
 
 	printf("permutation: ");
 	for (r = 0; r < 4; ++r)
-		printf(" %u", m->p[r]);
+		printf(" %u", m->perm[r]);
 	printf("\n");
 }
 
@@ -175,22 +180,6 @@ randomize_matrix(struct weston_matrix *m)
 #endif
 }
 
-static void
-invert_matrix(struct weston_matrix *m)
-{
-	struct weston_inverse_matrix q;
-	unsigned i;
-
-	if (weston_matrix_invert(&q, m) != 0) {
-		m->d[0] = NAN;
-		return;
-	}
-
-	for (i = 0; i < 4; ++i)
-		weston_matrix_inverse_transform(&q,
-			(struct weston_vector *)&m->d[i * 4]);
-}
-
 /* Take a matrix, compute inverse, multiply together
  * and subtract the identity matrix to get the error matrix.
  * Return the largest absolute value from the error matrix.
@@ -199,15 +188,14 @@ static double
 test_inverse(struct weston_matrix *m)
 {
 	unsigned i;
-	struct weston_inverse_matrix q;
+	struct inverse_matrix q;
 	double errsup = 0.0;
 
-	if (weston_matrix_invert(&q, m) != 0)
+	if (matrix_invert(q.LU, q.perm, m) != 0)
 		return INFINITY;
 
 	for (i = 0; i < 4; ++i)
-		weston_matrix_inverse_transform(&q,
-			(struct weston_vector *)&m->d[i * 4]);
+		inverse_transform(q.LU, q.perm, &m->d[i * 4]);
 
 	m->d[0] -= 1.0f;
 	m->d[5] -= 1.0f;
@@ -309,21 +297,21 @@ static void __attribute__((noinline))
 test_loop_speed_inversetransform(void)
 {
 	struct weston_matrix m;
-	struct weston_inverse_matrix inv;
+	struct inverse_matrix inv;
 	struct weston_vector v = { { 0.5, 0.5, 0.5, 1.0 } };
 	unsigned long count = 0;
 	double t;
 
-	printf("\nRunning 3 s test on weston_matrix_inverse_transform()...\n");
+	printf("\nRunning 3 s test on inverse_transform()...\n");
 
 	weston_matrix_init(&m);
-	weston_matrix_invert(&inv, &m);
+	matrix_invert(inv.LU, inv.perm, &m);
 
 	running = 1;
 	alarm(3);
 	reset_timer();
 	while (running) {
-		weston_matrix_inverse_transform(&inv, &v);
+		inverse_transform(inv.LU, inv.perm, v.f);
 		count++;
 	}
 	t = read_timer();
@@ -336,11 +324,11 @@ static void __attribute__((noinline))
 test_loop_speed_invert(void)
 {
 	struct weston_matrix m;
-	struct weston_inverse_matrix inv;
+	struct inverse_matrix inv;
 	unsigned long count = 0;
 	double t;
 
-	printf("\nRunning 3 s test on weston_matrix_invert()...\n");
+	printf("\nRunning 3 s test on matrix_invert()...\n");
 
 	weston_matrix_init(&m);
 
@@ -348,7 +336,7 @@ test_loop_speed_invert(void)
 	alarm(3);
 	reset_timer();
 	while (running) {
-		weston_matrix_invert(&inv, &m);
+		matrix_invert(inv.LU, inv.perm, &m);
 		count++;
 	}
 	t = read_timer();
@@ -364,7 +352,7 @@ test_loop_speed_invert_explicit(void)
 	unsigned long count = 0;
 	double t;
 
-	printf("\nRunning 3 s test on computing the explicit inverse matrix...\n");
+	printf("\nRunning 3 s test on weston_matrix_invert()...\n");
 
 	weston_matrix_init(&m);
 
@@ -372,7 +360,7 @@ test_loop_speed_invert_explicit(void)
 	alarm(3);
 	reset_timer();
 	while (running) {
-		invert_matrix(&m);
+		weston_matrix_invert(&m, &m);
 		count++;
 	}
 	t = read_timer();
@@ -385,7 +373,7 @@ int main(void)
 {
 	struct sigaction ding;
 	struct weston_matrix M;
-	struct weston_inverse_matrix Q;
+	struct inverse_matrix Q;
 	int ret;
 	double errsup;
 	double det;
@@ -402,7 +390,7 @@ int main(void)
 	M.d[2] = 6.0;	M.d[6] = 18.0;	M.d[10] = -12;	M.d[14] = 0.0;
 	M.d[3] = 0.0;	M.d[7] = 0.0;	M.d[11] = 0.0;	M.d[15] = 1.0;
 
-	ret = weston_matrix_invert(&Q, &M);
+	ret = matrix_invert(Q.LU, Q.perm, &M);
 	printf("ret = %d\n", ret);
 	printf("det = %g\n\n", determinant(&M));
 

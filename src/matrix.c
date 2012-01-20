@@ -29,6 +29,7 @@
 
 #include "matrix.h"
 
+
 /*
  * Matrices are stored in column-major order, that is the array indices are:
  *  0  4  8 12
@@ -116,6 +117,16 @@ swap_rows(double *a, double *b)
 	}
 }
 
+static inline void
+swap_unsigned(unsigned *a, unsigned *b)
+{
+	unsigned tmp;
+
+	tmp = *a;
+	*a = *b;
+	*b = tmp;
+}
+
 static inline unsigned
 find_pivot(double *column, unsigned k)
 {
@@ -133,16 +144,15 @@ find_pivot(double *column, unsigned k)
  * LU decomposition, forward and back substitution: Chapter 3.
  */
 
-WL_EXPORT int
-weston_matrix_invert(struct weston_inverse_matrix *inverse,
-		     const struct weston_matrix *matrix)
+MATRIX_TEST_EXPORT inline int
+matrix_invert(double *A, unsigned *p, const struct weston_matrix *matrix)
 {
-	double A[16];
-	unsigned p[4] = { 0, 1, 2, 3 };
 	unsigned i, j, k;
 	unsigned pivot;
 	double pv;
 
+	for (i = 0; i < 4; ++i)
+		p[i] = i;
 	for (i = 16; i--; )
 		A[i] = matrix->d[i];
 
@@ -150,9 +160,7 @@ weston_matrix_invert(struct weston_inverse_matrix *inverse,
 	for (k = 0; k < 4; ++k) {
 		pivot = find_pivot(&A[k * 4], k);
 		if (pivot != k) {
-			unsigned tmp = p[k];
-			p[k] = p[pivot];
-			p[pivot] = tmp;
+			swap_unsigned(&p[k], &p[pivot]);
 			swap_rows(&A[k], &A[pivot]);
 		}
 
@@ -168,30 +176,25 @@ weston_matrix_invert(struct weston_inverse_matrix *inverse,
 		}
 	}
 
-	memcpy(inverse->LU, A, sizeof(A));
-	memcpy(inverse->p, p, sizeof(p));
 	return 0;
 }
 
-WL_EXPORT void
-weston_matrix_inverse_transform(struct weston_inverse_matrix *inverse,
-				struct weston_vector *v)
+MATRIX_TEST_EXPORT inline void
+inverse_transform(const double *LU, const unsigned *p, GLfloat *v)
 {
 	/* Solve A * x = v, when we have P * A = L * U.
 	 * P * A * x = P * v  =>  L * U * x = P * v
 	 * Let U * x = b, then L * b = P * v.
 	 */
-	unsigned *p = inverse->p;
-	double *LU = inverse->LU;
 	double b[4];
 	unsigned j;
 
 	/* Forward substitution, column version, solves L * b = P * v */
 	/* The diagonal of L is all ones, and not explicitly stored. */
-	b[0] = v->f[p[0]];
-	b[1] = (double)v->f[p[1]] - b[0] * LU[1 + 0 * 4];
-	b[2] = (double)v->f[p[2]] - b[0] * LU[2 + 0 * 4];
-	b[3] = (double)v->f[p[3]] - b[0] * LU[3 + 0 * 4];
+	b[0] = v[p[0]];
+	b[1] = (double)v[p[1]] - b[0] * LU[1 + 0 * 4];
+	b[2] = (double)v[p[2]] - b[0] * LU[2 + 0 * 4];
+	b[3] = (double)v[p[3]] - b[0] * LU[3 + 0 * 4];
 	b[2] -= b[1] * LU[2 + 1 * 4];
 	b[3] -= b[1] * LU[3 + 1 * 4];
 	b[3] -= b[2] * LU[3 + 2 * 4];
@@ -225,5 +228,23 @@ weston_matrix_inverse_transform(struct weston_inverse_matrix *inverse,
 
 	/* the result */
 	for (j = 0; j < 4; ++j)
-		v->f[j] = b[j];
+		v[j] = b[j];
+}
+
+WL_EXPORT int
+weston_matrix_invert(struct weston_matrix *inverse,
+		     const struct weston_matrix *matrix)
+{
+	double LU[16];		/* column-major */
+	unsigned perm[4];	/* permutation */
+	unsigned c;
+
+	if (matrix_invert(LU, perm, matrix) < 0)
+		return -1;
+
+	weston_matrix_init(inverse);
+	for (c = 0; c < 4; ++c)
+		inverse_transform(LU, perm, &inverse->d[c * 4]);
+
+	return 0;
 }

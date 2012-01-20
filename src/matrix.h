@@ -28,11 +28,6 @@ struct weston_matrix {
 	GLfloat d[16];
 };
 
-struct weston_inverse_matrix {
-	double LU[16];	/* column-major */
-	unsigned p[4];	/* permutation */
-};
-
 struct weston_vector {
 	GLfloat f[4];
 };
@@ -50,10 +45,20 @@ void
 weston_matrix_transform(struct weston_matrix *matrix, struct weston_vector *v);
 
 int
-weston_matrix_invert(struct weston_inverse_matrix *inverse,
+weston_matrix_invert(struct weston_matrix *inverse,
 		     const struct weston_matrix *matrix);
+
+#ifdef UNIT_TEST
+#  define MATRIX_TEST_EXPORT WL_EXPORT
+
+int
+matrix_invert(double *A, unsigned *p, const struct weston_matrix *matrix);
+
 void
-weston_matrix_inverse_transform(struct weston_inverse_matrix *inverse,
-				struct weston_vector *v);
+inverse_transform(const double *LU, const unsigned *p, GLfloat *v);
+
+#else
+#  define MATRIX_TEST_EXPORT static
+#endif
 
 #endif /* WESTON_MATRIX_H */

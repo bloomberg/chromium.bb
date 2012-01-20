@@ -545,7 +545,7 @@ static void
 weston_surface_update_transform(struct weston_surface *surface)
 {
 	struct weston_matrix *matrix = &surface->transform.matrix;
-	struct weston_inverse_matrix *inverse = &surface->transform.inverse;
+	struct weston_matrix *inverse = &surface->transform.inverse;
 	struct weston_transform *tform;
 
 	if (!surface->transform.dirty)
