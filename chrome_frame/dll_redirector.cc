@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -271,24 +271,30 @@ HMODULE DllRedirector::GetFirstModule() {
 HMODULE DllRedirector::LoadVersionedModule(Version* version) {
   DCHECK(version);
 
-  FilePath module_path;
-  PathService::Get(base::FILE_MODULE, &module_path);
-  DCHECK(!module_path.empty());
+  HMODULE hmodule = NULL;
+  wchar_t system_buffer[MAX_PATH];
+  HMODULE this_module = reinterpret_cast<HMODULE>(&__ImageBase);
+  system_buffer[0] = 0;
+  if (GetModuleFileName(this_module, system_buffer,
+                        arraysize(system_buffer)) != 0) {
+    FilePath module_path(system_buffer);
 
-  // For a module located in
-  // Foo\XXXXXXXXX\<module>.dll, load
-  // Foo\<version>\<module>.dll:
-  FilePath module_name = module_path.BaseName();
-  module_path = module_path.DirName()
-                           .DirName()
-                           .Append(ASCIIToWide(version->GetString()))
-                           .Append(module_name);
+    // For a module located in
+    // Foo\XXXXXXXXX\<module>.dll, load
+    // Foo\<version>\<module>.dll:
+    FilePath module_name = module_path.BaseName();
+    module_path = module_path.DirName()
+                             .DirName()
+                             .Append(ASCIIToWide(version->GetString()))
+                             .Append(module_name);
 
-  HMODULE hmodule = LoadLibrary(module_path.value().c_str());
-  if (hmodule == NULL) {
-    DPLOG(ERROR) << "Could not load reported module version "
-                 << version->GetString();
+    hmodule = LoadLibrary(module_path.value().c_str());
+    if (hmodule == NULL) {
+      DPLOG(ERROR) << "Could not load reported module version "
+                   << version->GetString();
+    }
+  } else {
+    DPLOG(FATAL) << "Failed to get module file name";
   }
-
   return hmodule;
 }

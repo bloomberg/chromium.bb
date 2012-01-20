@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -1475,18 +1475,20 @@ bool CanNavigate(const GURL& url,
 void PinModule() {
   static bool s_pinned = false;
   if (!s_pinned && !IsUnpinnedMode()) {
-    FilePath module_path;
-    if (PathService::Get(base::FILE_MODULE, &module_path)) {
+    wchar_t system_buffer[MAX_PATH];
+    HMODULE this_module = reinterpret_cast<HMODULE>(&__ImageBase);
+    system_buffer[0] = 0;
+    if (GetModuleFileName(this_module, system_buffer,
+                          arraysize(system_buffer)) != 0) {
       HMODULE unused;
-      if (!GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_PIN,
-                             module_path.value().c_str(), &unused)) {
-        NOTREACHED() << "Failed to pin module " << module_path.value().c_str()
-                     << " , last error: " << GetLastError();
+      if (!GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_PIN, system_buffer,
+                             &unused)) {
+        DPLOG(FATAL) << "Failed to pin module " << system_buffer;
       } else {
         s_pinned = true;
       }
     } else {
-      NOTREACHED() << "Could not get module path.";
+      DPLOG(FATAL) << "Could not get module path.";
     }
   }
 }
@@ -1643,4 +1645,3 @@ bool IncreaseWinInetConnections(DWORD connections) {
   wininet_connection_count_updated = true;
   return true;
 }
-
