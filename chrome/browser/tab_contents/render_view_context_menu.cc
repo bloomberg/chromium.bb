@@ -23,6 +23,7 @@
 #include "chrome/browser/debugger/devtools_window.h"
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
+#include "chrome/browser/download/download_util.h"
 #include "chrome/browser/extensions/extension_event_router.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -61,7 +62,6 @@
 #include "chrome/common/url_constants.h"
 #include "content/browser/child_process_security_policy.h"
 #include "content/browser/download/download_stats.h"
-#include "content/browser/download/save_package.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/browser/speech/speech_input_preferences.h"
@@ -1237,7 +1237,7 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
       // different (like having "view-source:" on the front).
       NavigationEntry* active_entry =
           source_web_contents_->GetController().GetActiveEntry();
-      return SavePackage::IsSavableURL(
+      return download_util::IsSavableURL(
           (active_entry) ? active_entry->GetURL() : GURL());
     }
 

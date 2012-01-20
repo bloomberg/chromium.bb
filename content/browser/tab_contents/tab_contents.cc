@@ -16,6 +16,7 @@
 #include "content/browser/child_process_security_policy.h"
 #include "content/browser/debugger/devtools_manager_impl.h"
 #include "content/browser/download/download_stats.h"
+#include "content/browser/download/save_package.h"
 #include "content/browser/host_zoom_map.h"
 #include "content/browser/in_process_webkit/session_storage_namespace.h"
 #include "content/browser/intents/web_intents_dispatcher_impl.h"
@@ -50,6 +51,7 @@
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_restriction.h"
 #include "content/public/common/url_constants.h"
+#include "net/base/mime_util.h"
 #include "net/base/net_util.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
@@ -915,9 +917,20 @@ InterstitialPage* TabContents::GetInterstitialPage() const {
   return render_manager_.interstitial_page();
 }
 
+bool TabContents::IsSavable() {
+  // WebKit creates Document object when MIME type is application/xhtml+xml,
+  // so we also support this MIME type.
+  return contents_mime_type_ == "text/html" ||
+         contents_mime_type_ == "text/xml" ||
+         contents_mime_type_ == "application/xhtml+xml" ||
+         contents_mime_type_ == "text/plain" ||
+         contents_mime_type_ == "text/css" ||
+         net::IsSupportedJavascriptMimeType(contents_mime_type_.c_str());
+}
+
 void TabContents::OnSavePage() {
   // If we can not save the page, try to download it.
-  if (!SavePackage::IsSavableContents(GetContentsMimeType())) {
+  if (!IsSavable()) {
     DownloadManager* dlm = GetBrowserContext()->GetDownloadManager();
     const GURL& current_page_url = GetURL();
     if (dlm && current_page_url.is_valid()) {
@@ -941,7 +954,7 @@ void TabContents::OnSavePage() {
 // Instead, the names and paths are hard coded rather than running them through
 // file name sanitation and extension / mime checking.
 bool TabContents::SavePage(const FilePath& main_file, const FilePath& dir_path,
-                           SavePackage::SavePackageType save_type) {
+                           content::SavePageType save_type) {
   // Stop the page from navigating.
   Stop();
 

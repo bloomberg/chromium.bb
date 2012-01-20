@@ -116,7 +116,7 @@ const FilePath::CharType SavePackage::kDefaultHtmlExtension[] =
 #endif
 
 SavePackage::SavePackage(WebContents* web_contents,
-                         SavePackageType save_type,
+                         content::SavePageType save_type,
                          const FilePath& file_full_path,
                          const FilePath& directory_full_path)
     : content::WebContentsObserver(web_contents),
@@ -137,8 +137,8 @@ SavePackage::SavePackage(WebContents* web_contents,
       tab_id_(web_contents->GetRenderProcessHost()->GetID()),
       unique_id_(g_save_package_id++) {
   DCHECK(page_url_.is_valid());
-  DCHECK(save_type_ == SAVE_AS_ONLY_HTML ||
-         save_type_ == SAVE_AS_COMPLETE_HTML);
+  DCHECK(save_type_ == content::SAVE_PAGE_TYPE_AS_ONLY_HTML ||
+         save_type_ == content::SAVE_PAGE_TYPE_AS_COMPLETE_HTML);
   DCHECK(!saved_main_file_path_.empty() &&
          saved_main_file_path_.value().length() <= kMaxFilePathLength);
   DCHECK(!saved_main_directory_path_.empty() &&
@@ -157,7 +157,7 @@ SavePackage::SavePackage(TabContents* tab_contents)
       finished_(false),
       user_canceled_(false),
       disk_error_occurred_(false),
-      save_type_(SAVE_TYPE_UNKNOWN),
+      save_type_(content::SAVE_PAGE_TYPE_UNKNOWN),
       all_save_items_count_(0),
       wait_state_(INITIALIZE),
       tab_id_(tab_contents->GetRenderProcessHost()->GetID()),
@@ -182,7 +182,7 @@ SavePackage::SavePackage(TabContents* tab_contents,
       finished_(true),
       user_canceled_(false),
       disk_error_occurred_(false),
-      save_type_(SAVE_TYPE_UNKNOWN),
+      save_type_(content::SAVE_PAGE_TYPE_UNKNOWN),
       all_save_items_count_(0),
       wait_state_(INITIALIZE),
       tab_id_(0),
@@ -275,7 +275,7 @@ bool SavePackage::Init() {
       browser_context->IsOffTheRecord(), this);
 
   // Check save type and process the save page job.
-  if (save_type_ == SAVE_AS_COMPLETE_HTML) {
+  if (save_type_ == content::SAVE_PAGE_TYPE_AS_COMPLETE_HTML) {
     // Get directory
     DCHECK(!saved_main_directory_path_.empty());
     GetAllSavableResourceLinksForCurrentPage();
@@ -492,7 +492,7 @@ void SavePackage::StartSave(const SaveFileCreateInfo* info) {
 
     // When saving page as only-HTML, we only have a SaveItem whose url
     // must be page_url_.
-    DCHECK(save_type_ == SAVE_AS_COMPLETE_HTML);
+    DCHECK(save_type_ == content::SAVE_PAGE_TYPE_AS_COMPLETE_HTML);
     DCHECK(!saved_main_directory_path_.empty());
 
     // Now we get final name retrieved from GenerateFileName, we will use it
@@ -518,7 +518,8 @@ void SavePackage::StartSave(const SaveFileCreateInfo* info) {
   }
 
   // Check whether we begin to require serialized HTML data.
-  if (save_type_ == SAVE_AS_COMPLETE_HTML && wait_state_ == HTML_DATA) {
+  if (save_type_ == content::SAVE_PAGE_TYPE_AS_COMPLETE_HTML &&
+      wait_state_ == HTML_DATA) {
     // Inform backend to serialize the all frames' DOM and send serialized
     // HTML data back.
     GetSerializedHtmlDataForCurrentPageWithLocalLinks();
@@ -632,7 +633,7 @@ void SavePackage::CheckFinish() {
   if (in_process_count() || finished_)
     return;
 
-  FilePath dir = (save_type_ == SAVE_AS_COMPLETE_HTML &&
+  FilePath dir = (save_type_ == content::SAVE_PAGE_TYPE_AS_COMPLETE_HTML &&
                   saved_success_items_.size() > 1) ?
                   saved_main_directory_path_ : FilePath();
 
@@ -748,7 +749,7 @@ void SavePackage::SaveFailed(const GURL& save_url) {
   if (download_)
     download_->UpdateProgress(completed_count(), CurrentSpeed(), "");
 
-  if (save_type_ == SAVE_AS_ONLY_HTML ||
+  if (save_type_ == content::SAVE_PAGE_TYPE_AS_ONLY_HTML ||
       save_item->save_source() == SaveFileCreateInfo::SAVE_FILE_FROM_DOM) {
     // We got error when saving page. Treat it as disk error.
     Cancel(true);
@@ -828,7 +829,7 @@ int64 SavePackage::CurrentSpeed() const {
 // Continue processing the save page job after one SaveItem has been
 // finished.
 void SavePackage::DoSavingProcess() {
-  if (save_type_ == SAVE_AS_COMPLETE_HTML) {
+  if (save_type_ == content::SAVE_PAGE_TYPE_AS_COMPLETE_HTML) {
     // We guarantee that images and JavaScripts must be downloaded first.
     // So when finishing all those sub-resources, we will know which
     // sub-resource's link can be replaced with local file path, which
@@ -857,7 +858,7 @@ void SavePackage::DoSavingProcess() {
   } else {
     // Save as HTML only.
     DCHECK(wait_state_ == NET_FILES);
-    DCHECK(save_type_ == SAVE_AS_ONLY_HTML);
+    DCHECK(save_type_ == content::SAVE_PAGE_TYPE_AS_ONLY_HTML);
     if (waiting_item_queue_.size()) {
       DCHECK(all_save_items_count_ == waiting_item_queue_.size());
       SaveNextFile(false);
@@ -1116,8 +1117,7 @@ FilePath SavePackage::EnsureMimeExtension(const FilePath& name,
       ExtensionForMimeType(contents_mime_type);
   std::string mime_type;
   if (!suggested_extension.empty() &&
-      (!net::GetMimeTypeFromExtension(ext, &mime_type) ||
-      !IsSavableContents(mime_type))) {
+      !net::GetMimeTypeFromExtension(ext, &mime_type)) {
     // Extension is absent or needs to be updated.
     return FilePath(name.value() + FILE_PATH_LITERAL(".") +
                     suggested_extension);
@@ -1229,13 +1229,17 @@ void SavePackage::ContinueGetSaveInfo(const FilePath& suggested_path,
   if (!web_contents())
     return;
 
+  FilePath::StringType default_extension;
+  if (can_save_as_complete)
+    default_extension = kDefaultHtmlExtension;
+
   download_manager_->delegate()->ChooseSavePath(
-      AsWeakPtr(), suggested_path, can_save_as_complete);
+      web_contents(), suggested_path, default_extension, can_save_as_complete,
+      base::Bind(&SavePackage::OnPathPicked, AsWeakPtr()));
 }
 
-// Called after the save file dialog box returns.
 void SavePackage::OnPathPicked(const FilePath& final_name,
-                               SavePackageType type) {
+                               content::SavePageType type) {
   // Ensure the filename is safe.
   saved_main_file_path_ = final_name;
   // TODO(asanka): This call may block on IO and shouldn't be made
@@ -1245,7 +1249,7 @@ void SavePackage::OnPathPicked(const FilePath& final_name,
 
   saved_main_directory_path_ = saved_main_file_path_.DirName();
   save_type_ = type;
-  if (save_type_ == SavePackage::SAVE_AS_COMPLETE_HTML) {
+  if (save_type_ == content::SAVE_PAGE_TYPE_AS_COMPLETE_HTML) {
     // Make new directory for saving complete file.
     saved_main_directory_path_ = saved_main_directory_path_.Append(
         saved_main_file_path_.RemoveExtension().BaseName().value() +
@@ -1253,28 +1257,6 @@ void SavePackage::OnPathPicked(const FilePath& final_name,
   }
 
   Init();
-}
-
-// Static
-bool SavePackage::IsSavableURL(const GURL& url) {
-  for (int i = 0; chrome::GetSavableSchemes()[i] != NULL; ++i) {
-    if (url.SchemeIs(chrome::GetSavableSchemes()[i])) {
-      return true;
-    }
-  }
-  return false;
-}
-
-// Static
-bool SavePackage::IsSavableContents(const std::string& contents_mime_type) {
-  // WebKit creates Document object when MIME type is application/xhtml+xml,
-  // so we also support this MIME type.
-  return contents_mime_type == "text/html" ||
-         contents_mime_type == "text/xml" ||
-         contents_mime_type == "application/xhtml+xml" ||
-         contents_mime_type == "text/plain" ||
-         contents_mime_type == "text/css" ||
-         net::IsSupportedJavascriptMimeType(contents_mime_type.c_str());
 }
 
 void SavePackage::StopObservation() {

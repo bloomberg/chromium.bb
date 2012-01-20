@@ -9,9 +9,9 @@
 #include "base/basictypes.h"
 #include "base/process_util.h"
 #include "base/string16.h"
-#include "content/browser/download/save_package.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/page_navigator.h"
+#include "content/public/browser/save_page_type.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/view_type.h"
 #include "ui/gfx/native_widget_types.h"
@@ -262,6 +262,10 @@ class WebContents : public PageNavigator {
 
   // Misc state & callbacks ----------------------------------------------------
 
+  // Check whether we can do the saving page operation this page given its MIME
+  // type.
+  virtual bool IsSavable() = 0;
+
   // Prepare for saving the current web page to disk.
   virtual void OnSavePage() = 0;
 
@@ -270,7 +274,7 @@ class WebContents : public PageNavigator {
   // saving process has been initiated successfully.
   virtual bool SavePage(const FilePath& main_file,
                         const FilePath& dir_path,
-                        SavePackage::SavePackageType save_type) = 0;
+                        SavePageType save_type) = 0;
 
   // Returns true if the active NavigationEntry's page_id equals page_id.
   virtual bool IsActiveEntry(int32 page_id) = 0;

@@ -79,6 +79,7 @@
     'public/browser/resource_dispatcher_host_delegate.cc',
     'public/browser/resource_dispatcher_host_delegate.h',
     'public/browser/resource_dispatcher_host_login_delegate.h',
+    'public/browser/save_page_type.h',
     'public/browser/sensors.h',
     'public/browser/sensors_listener.h',
     'public/browser/ssl_status.cc',

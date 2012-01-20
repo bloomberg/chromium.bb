@@ -14,7 +14,7 @@ namespace chrome {
 
 // Null terminated list of schemes that are savable. This function can be
 // invoked on any thread.
-const char** GetSavableSchemes();
+CONTENT_EXPORT const char** GetSavableSchemes();
 
 // Canonical schemes you can use as input to GURL.SchemeIs().
 // TODO(jam): some of these don't below in the content layer, but are accessed

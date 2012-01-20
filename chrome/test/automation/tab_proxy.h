@@ -22,13 +22,14 @@
 #include "chrome/test/automation/automation_handle_tracker.h"
 #include "chrome/test/automation/dom_element_proxy.h"
 #include "chrome/test/automation/javascript_execution_controller.h"
-#include "content/browser/download/save_package.h"
+#include "content/public/browser/save_page_type.h"
 #include "content/public/common/page_type.h"
 #include "content/public/common/security_style.h"
 #include "net/base/cert_status_flags.h"
 #include "webkit/glue/window_open_disposition.h"
 
 class BrowserProxy;
+class FilePath;
 class GURL;
 namespace IPC {
 class Message;
@@ -305,7 +306,7 @@ class TabProxy : public AutomationResourceProxy,
   // |dir_path| is the directory for saving resource files. |type| indicates
   // which type we're saving as: HTML only or the complete web page.
   bool SavePage(const FilePath& file_name, const FilePath& dir_path,
-                SavePackage::SavePackageType type) WARN_UNUSED_RESULT;
+                content::SavePageType type) WARN_UNUSED_RESULT;
 
   // Retrieves the number of info-bars currently showing in |count|.
   bool GetInfoBarCount(size_t* count) WARN_UNUSED_RESULT;

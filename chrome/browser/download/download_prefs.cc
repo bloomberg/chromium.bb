@@ -20,9 +20,9 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
-#include "content/browser/download/save_package.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_manager.h"
+#include "content/public/browser/save_page_type.h"
 
 using content::BrowserThread;
 using content::DownloadManager;
@@ -67,7 +67,7 @@ void DownloadPrefs::RegisterUserPrefs(PrefService* prefs) {
                              false,
                              PrefService::UNSYNCABLE_PREF);
   prefs->RegisterIntegerPref(prefs::kSaveFileType,
-                             SavePackage::SAVE_AS_COMPLETE_HTML,
+                             content::SAVE_PAGE_TYPE_AS_COMPLETE_HTML,
                              PrefService::UNSYNCABLE_PREF);
 
   // The default download path is userprofile\download.

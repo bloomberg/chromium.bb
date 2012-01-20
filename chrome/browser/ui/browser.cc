@@ -46,6 +46,7 @@
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/download/download_started_animation.h"
+#include "chrome/browser/download/download_util.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/default_apps_trial.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
@@ -145,7 +146,6 @@
 #include "chrome/common/web_apps.h"
 #include "content/browser/browser_url_handler.h"
 #include "content/browser/child_process_security_policy.h"
-#include "content/browser/download/save_package.h"
 #include "content/browser/host_zoom_map.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/site_instance.h"
@@ -4732,8 +4732,7 @@ void Browser::UpdateCommandsForTabState() {
   bool is_chrome_internal = HasInternalURL(nc.GetActiveEntry()) ||
       current_tab->ShowingInterstitialPage();
   command_updater_.UpdateCommandEnabled(IDC_ENCODING_MENU,
-      !is_chrome_internal && SavePackage::IsSavableContents(
-          current_tab->GetContentsMimeType()));
+      !is_chrome_internal && current_tab->IsSavable());
 
   // Show various bits of UI
   // TODO(pinkerton): Disable app-mode in the model until we implement it
@@ -5405,7 +5404,7 @@ int Browser::GetContentRestrictionsForSelectedTab() {
     NavigationEntry* active_entry =
         current_tab->GetController().GetActiveEntry();
     // See comment in UpdateCommandsForTabState about why we call url().
-    if (!SavePackage::IsSavableURL(
+    if (!download_util::IsSavableURL(
             active_entry ? active_entry->GetURL() : GURL())
         || current_tab->ShowingInterstitialPage())
       content_restrictions |= content::CONTENT_RESTRICTION_SAVE;

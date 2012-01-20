@@ -40,6 +40,7 @@
 #include "content/public/browser/download_file.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
+#include "content/public/common/url_constants.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
@@ -597,6 +598,15 @@ int GetUniquePathNumberWithCrDownload(const FilePath& path) {
 FilePath GetCrDownloadPath(const FilePath& suggested_path) {
   return DownloadFile::AppendSuffixToPath(
       suggested_path, FILE_PATH_LITERAL(".crdownload"));
+}
+
+bool IsSavableURL(const GURL& url) {
+  for (int i = 0; chrome::GetSavableSchemes()[i] != NULL; ++i) {
+    if (url.SchemeIs(chrome::GetSavableSchemes()[i])) {
+      return true;
+    }
+  }
+  return false;
 }
 
 }  // namespace download_util

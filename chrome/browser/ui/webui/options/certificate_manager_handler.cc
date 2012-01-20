@@ -20,6 +20,7 @@
 #include "content/public/browser/web_contents_view.h"
 #include "grit/generated_resources.h"
 #include "net/base/crypto_module.h"
+#include "net/base/net_errors.h"
 #include "net/base/x509_certificate.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_collator.h"

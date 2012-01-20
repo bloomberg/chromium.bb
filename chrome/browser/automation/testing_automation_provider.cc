@@ -1733,10 +1733,10 @@ void TestingAutomationProvider::SavePage(int tab_handle,
                                          const FilePath& dir_path,
                                          int type,
                                          bool* success) {
-  SavePackage::SavePackageType save_type =
-      static_cast<SavePackage::SavePackageType>(type);
-  if (save_type < SavePackage::SAVE_AS_ONLY_HTML ||
-      save_type > SavePackage::SAVE_AS_COMPLETE_HTML) {
+  content::SavePageType save_type =
+      static_cast<content::SavePageType>(type);
+  if (save_type < content::SAVE_PAGE_TYPE_AS_ONLY_HTML ||
+      save_type > content::SAVE_PAGE_TYPE_AS_COMPLETE_HTML) {
     *success = false;
     return;
   }
@@ -3753,7 +3753,7 @@ void TestingAutomationProvider::SaveTabContents(
   if (!web_contents->SavePage(
           FilePath(filename),
           FilePath(parent_directory),
-          SavePackage::SAVE_AS_ONLY_HTML)) {
+          content::SAVE_PAGE_TYPE_AS_ONLY_HTML)) {
     AutomationJSONReply(this, reply_message).SendError(
         "Could not initiate SavePage");
     return;

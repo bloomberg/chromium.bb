@@ -74,7 +74,6 @@
 #include "chrome/common/chrome_view_type.h"
 #include "chrome/common/content_settings_types.h"
 #include "chrome/common/extensions/extension.h"
-#include "content/browser/download/save_package.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_service.h"

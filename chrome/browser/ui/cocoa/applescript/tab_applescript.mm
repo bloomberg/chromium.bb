@@ -18,10 +18,10 @@
 #include "chrome/browser/ui/cocoa/applescript/error_applescript.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/download/save_package.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/save_page_type.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "googleurl/src/gurl.h"
@@ -369,22 +369,19 @@ static NSAppleEventDescriptor* valueToDescriptor(Value* value) {
 
   NSString* saveType = [dictionary objectForKey:@"FileType"];
 
-  SavePackage::SavePackageType savePackageType =
-      SavePackage::SAVE_AS_COMPLETE_HTML;
+  content::SavePageType savePageType = content::SAVE_PAGE_TYPE_AS_COMPLETE_HTML;
   if (saveType) {
     if ([saveType isEqualToString:@"only html"]) {
-      savePackageType = SavePackage::SAVE_AS_ONLY_HTML;
+      savePageType = content::SAVE_PAGE_TYPE_AS_ONLY_HTML;
     } else if ([saveType isEqualToString:@"complete html"]) {
-      savePackageType = SavePackage::SAVE_AS_COMPLETE_HTML;
+      savePageType = content::SAVE_PAGE_TYPE_AS_COMPLETE_HTML;
     } else {
       AppleScript::SetError(AppleScript::errInvalidSaveType);
       return;
     }
   }
 
-  tabContents_->web_contents()->SavePage(mainFile,
-                                         directoryPath,
-                                         savePackageType);
+  tabContents_->web_contents()->SavePage(mainFile, directoryPath, savePageType);
 }
 
 - (void)handlesCloseScriptCommand:(NSScriptCommand*)command {

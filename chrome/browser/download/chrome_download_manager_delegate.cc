@@ -303,13 +303,15 @@ void ChromeDownloadManagerDelegate::GetSaveDir(WebContents* web_contents,
 }
 
 void ChromeDownloadManagerDelegate::ChooseSavePath(
-    const base::WeakPtr<SavePackage>& save_package,
+    WebContents* web_contents,
     const FilePath& suggested_path,
-    bool can_save_as_complete) {
+    const FilePath::StringType& default_extension,
+    bool can_save_as_complete,
+    content::SaveFilePathPickedCallback callback) {
   // Deletes itself.
   new SavePackageFilePicker(
-      save_package, suggested_path, can_save_as_complete,
-      download_prefs_.get());
+      web_contents, suggested_path, default_extension, can_save_as_complete,
+      download_prefs_.get(), callback);
 }
 
 void ChromeDownloadManagerDelegate::DownloadProgressUpdated() {

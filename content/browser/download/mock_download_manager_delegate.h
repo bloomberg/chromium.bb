@@ -51,10 +51,12 @@ class MockDownloadManagerDelegate : public content::DownloadManagerDelegate {
   MOCK_METHOD3(GetSaveDir, void(content::WebContents* web_contents,
                                 FilePath* website_save_dir,
                                 FilePath* download_save_dir));
-  MOCK_METHOD3(ChooseSavePath, void(
-      const base::WeakPtr<SavePackage>& save_package,
+  MOCK_METHOD5(ChooseSavePath, void(
+      content::WebContents* web_contents,
       const FilePath& suggested_path,
-      bool can_save_as_complete));
+      const FilePath::StringType& default_extension,
+      bool can_save_as_complete,
+      content::SaveFilePathPickedCallback callback));
   MOCK_METHOD0(DownloadProgressUpdated, void());
 };
 

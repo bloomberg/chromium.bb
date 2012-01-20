@@ -81,9 +81,12 @@ class ChromeDownloadManagerDelegate
   virtual void GetSaveDir(content::WebContents* web_contents,
                           FilePath* website_save_dir,
                           FilePath* download_save_dir) OVERRIDE;
-  virtual void ChooseSavePath(const base::WeakPtr<SavePackage>& save_package,
-                              const FilePath& suggested_path,
-                              bool can_save_as_complete) OVERRIDE;
+  virtual void ChooseSavePath(
+      content::WebContents* web_contents,
+      const FilePath& suggested_path,
+      const FilePath::StringType& default_extension,
+      bool can_save_as_complete,
+      content::SaveFilePathPickedCallback callback) OVERRIDE;
   virtual void DownloadProgressUpdated() OVERRIDE;
 
   DownloadPrefs* download_prefs() { return download_prefs_.get(); }

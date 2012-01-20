@@ -630,7 +630,7 @@ bool TabProxy::PrintAsync() {
 
 bool TabProxy::SavePage(const FilePath& file_name,
                         const FilePath& dir_path,
-                        SavePackage::SavePackageType type) {
+                        content::SavePageType type) {
   if (!is_valid())
     return false;
 

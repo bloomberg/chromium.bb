@@ -19,6 +19,7 @@
 #include "base/time.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/download_item.h"
+#include "content/public/browser/save_page_type.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "googleurl/src/gurl.h"
 
@@ -51,15 +52,6 @@ class CONTENT_EXPORT SavePackage
       public content::DownloadItem::Observer,
       public base::SupportsWeakPtr<SavePackage> {
  public:
-  enum SavePackageType {
-    // The value of the save type before its set by the user.
-    SAVE_TYPE_UNKNOWN = -1,
-    // User chose to save only the HTML of the page.
-    SAVE_AS_ONLY_HTML = 0,
-    // User chose to save complete-html page.
-    SAVE_AS_COMPLETE_HTML = 1
-  };
-
   enum WaitState {
     // State when created but not initialized.
     INITIALIZE = 0,
@@ -88,7 +80,7 @@ class CONTENT_EXPORT SavePackage
   // directory name generation / sanitization by providing well known paths
   // better suited for tests.
   SavePackage(content::WebContents* web_contents,
-              SavePackageType save_type,
+              content::SavePageType save_type,
               const FilePath& file_full_path,
               const FilePath& directory_full_path);
 
@@ -114,27 +106,15 @@ class CONTENT_EXPORT SavePackage
   // total size).
   int PercentComplete();
 
-  // Called by the embedder once a path is chosen by the user.
-  void OnPathPicked(const FilePath& final_name, SavePackageType type);
-
   bool canceled() const { return user_canceled_ || disk_error_occurred_; }
   bool finished() const { return finished_; }
-  SavePackageType save_type() const { return save_type_; }
+  content::SavePageType save_type() const { return save_type_; }
   int tab_id() const { return tab_id_; }
   int id() const { return unique_id_; }
   TabContents* tab_contents() const;
   content::WebContents* web_contents() const;
 
   void GetSaveInfo();
-
-  // Statics -------------------------------------------------------------------
-
-  // Check whether we can do the saving page operation for the specified URL.
-  static bool IsSavableURL(const GURL& url);
-
-  // Check whether we can do the saving page operation for the contents which
-  // have the specified MIME type.
-  static bool IsSavableContents(const std::string& contents_mime_type);
 
  private:
   friend class base::RefCountedThreadSafe<SavePackage>;
@@ -206,7 +186,7 @@ class CONTENT_EXPORT SavePackage
                                    const std::string& accept_langs);
   void ContinueGetSaveInfo(const FilePath& suggested_path,
                            bool can_save_as_complete);
-
+  void OnPathPicked(const FilePath& final_name, content::SavePageType type);
   void OnReceivedSavableResourceLinksForCurrentPage(
       const std::vector<GURL>& resources_list,
       const std::vector<GURL>& referrers_list,
@@ -298,7 +278,7 @@ class CONTENT_EXPORT SavePackage
   bool disk_error_occurred_;
 
   // Type about saving page as only-html or complete-html.
-  SavePackageType save_type_;
+  content::SavePageType save_type_;
 
   // Number of all need to be saved resources.
   size_t all_save_items_count_;

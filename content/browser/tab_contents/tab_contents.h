@@ -33,6 +33,7 @@
 
 class LoadNotificationDetails;
 class RenderViewHost;
+class SavePackage;
 class SessionStorageNamespace;
 class SiteInstance;
 struct ViewHostMsg_DidFailProvisionalLoadWithError_Params;
@@ -179,10 +180,11 @@ class CONTENT_EXPORT TabContents
   virtual void FocusThroughTabTraversal(bool reverse) OVERRIDE;
   virtual bool ShowingInterstitialPage() const OVERRIDE;
   virtual InterstitialPage* GetInterstitialPage() const OVERRIDE;
+  virtual bool IsSavable() OVERRIDE;
   virtual void OnSavePage() OVERRIDE;
   virtual bool SavePage(const FilePath& main_file,
                         const FilePath& dir_path,
-                        SavePackage::SavePackageType save_type) OVERRIDE;
+                        content::SavePageType save_type) OVERRIDE;
   virtual bool IsActiveEntry(int32 page_id) OVERRIDE;
 
   virtual const std::string& GetContentsMimeType() const OVERRIDE;

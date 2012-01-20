@@ -61,7 +61,6 @@ include_rules = [
   "+content/browser/download/mock_download_file.h",
   "+content/browser/download/mock_download_item.h",
   "+content/browser/download/mock_download_manager.h",
-  "+content/browser/download/save_package.h",
   "+content/browser/file_system/browser_file_system_helper.h",
   "+content/browser/find_pasteboard.h",
   "+content/browser/font_list_async.h",

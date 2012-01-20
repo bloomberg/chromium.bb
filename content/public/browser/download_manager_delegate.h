@@ -7,16 +7,18 @@
 #pragma once
 
 #include "base/basictypes.h"
-#include "base/memory/weak_ptr.h"
+#include "base/callback.h"
+#include "base/file_path.h"
 #include "base/time.h"
-
-class FilePath;
-class SavePackage;
+#include "content/public/browser/save_page_type.h"
 
 namespace content {
 
 class DownloadItem;
 class WebContents;
+
+typedef base::Callback<void(const FilePath&, content::SavePageType)>
+    SaveFilePathPickedCallback;
 
 // Browser's download manager: manages all downloads and destination view.
 class DownloadManagerDelegate {
@@ -106,11 +108,13 @@ class DownloadManagerDelegate {
                           FilePath* website_save_dir,
                           FilePath* download_save_dir) = 0;
 
-  // Asks the user for the path to save a page. The delegate calls
-  // SavePackage::OnPathPicked to give the answer.
-  virtual void ChooseSavePath(const base::WeakPtr<SavePackage>& save_package,
+  // Asks the user for the path to save a page. The delegate calls the callback
+  // to give the answer.
+  virtual void ChooseSavePath(WebContents* web_contents,
                               const FilePath& suggested_path,
-                              bool can_save_as_complete) = 0;
+                              const FilePath::StringType& default_extension,
+                              bool can_save_as_complete,
+                              SaveFilePathPickedCallback callback) = 0;
 
   // Informs the delegate that the progress of downloads has changed.
   virtual void DownloadProgressUpdated() = 0;

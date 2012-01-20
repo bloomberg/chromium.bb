@@ -196,9 +196,11 @@ void ShellDownloadManagerDelegate::GetSaveDir(
 }
 
 void ShellDownloadManagerDelegate::ChooseSavePath(
-    const base::WeakPtr<SavePackage>& save_package,
+    WebContents* web_contents,
     const FilePath& suggested_path,
-    bool can_save_as_complete) {
+    const FilePath::StringType& default_extension,
+    bool can_save_as_complete,
+    SaveFilePathPickedCallback callback) {
 }
 
 void ShellDownloadManagerDelegate::DownloadProgressUpdated() {

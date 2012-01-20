@@ -7,6 +7,7 @@
 #include "base/sys_string_conversions.h"
 #import "chrome/browser/bookmarks/bookmark_pasteboard_helper_mac.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
+#include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"

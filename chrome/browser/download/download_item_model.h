@@ -56,25 +56,4 @@ class DownloadItemModel : public BaseDownloadItemModel {
   DISALLOW_COPY_AND_ASSIGN(DownloadItemModel);
 };
 
-// This class is a model class for DownloadItemView. It provides cancel
-// functionality for saving page, and also the text for displaying saving
-// status.
-class SavePageModel : public BaseDownloadItemModel {
- public:
-  SavePageModel(SavePackage* save, content::DownloadItem* download);
-  virtual ~SavePageModel() { }
-
-  // Cancel the page saving.
-  virtual void CancelTask() OVERRIDE;
-
-  // Get page saving status text.
-  virtual string16 GetStatusText() OVERRIDE;
-
- private:
-  // Saving page management.
-  SavePackage* save_;
-
-  DISALLOW_COPY_AND_ASSIGN(SavePageModel);
-};
-
 #endif  // CHROME_BROWSER_DOWNLOAD_DOWNLOAD_ITEM_MODEL_H_

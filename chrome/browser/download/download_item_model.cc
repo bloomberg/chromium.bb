@@ -10,7 +10,6 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/common/time_format.h"
-#include "content/browser/download/save_package.h"
 #include "content/public/browser/download_item.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -103,51 +102,6 @@ string16 DownloadItemModel::GetStatusText() {
       status_text = l10n_util::GetStringFUTF16(IDS_DOWNLOAD_STATUS_INTERRUPTED,
                                                simple_size,
                                                simple_total);
-      break;
-    default:
-      NOTREACHED();
-  }
-
-  return status_text;
-}
-
-// -----------------------------------------------------------------------------
-// SavePageModel
-
-SavePageModel::SavePageModel(SavePackage* save, DownloadItem* download)
-    : BaseDownloadItemModel(download),
-      save_(save) {
-}
-
-void SavePageModel::CancelTask() {
-  save_->Cancel(true);
-}
-
-string16 SavePageModel::GetStatusText() {
-  int64 size = download_->GetReceivedBytes();
-  int64 total_size = download_->GetTotalBytes();
-
-  string16 status_text;
-  switch (download_->GetState()) {
-    case DownloadItem::IN_PROGRESS:
-      status_text = l10n_util::GetStringFUTF16(
-          IDS_SAVE_PAGE_PROGRESS,
-          base::FormatNumber(size),
-          base::FormatNumber(total_size));
-      break;
-    case DownloadItem::COMPLETE:
-      status_text = l10n_util::GetStringUTF16(IDS_SAVE_PAGE_STATUS_COMPLETED);
-      break;
-    case DownloadItem::CANCELLED:
-      status_text = l10n_util::GetStringUTF16(IDS_SAVE_PAGE_STATUS_CANCELED);
-      break;
-    case DownloadItem::REMOVING:
-      break;
-    case DownloadItem::INTERRUPTED:
-      status_text = l10n_util::GetStringFUTF16(
-          IDS_SAVE_PAGE_STATUS_INTERRUPTED,
-          base::FormatNumber(size),
-          base::FormatNumber(total_size));
       break;
     default:
       NOTREACHED();

@@ -20,6 +20,8 @@
 #include "ui/views/view.h"
 #endif
 
+class GURL;
+
 namespace base {
 class DictionaryValue;
 }
@@ -160,6 +162,9 @@ int GetUniquePathNumberWithCrDownload(const FilePath& path);
 
 // Returns a .crdownload intermediate path for the |suggested_path|.
 FilePath GetCrDownloadPath(const FilePath& suggested_path);
+
+// Check whether we can do the saving page operation for the specified URL.
+bool IsSavableURL(const GURL& url);
 
 }  // namespace download_util
 

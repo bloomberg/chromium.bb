@@ -11,12 +11,15 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
-#include "content/browser/download/save_package.h"
 #include "content/public/browser/download_manager.h"
+#include "content/public/browser/render_process_host.h"
+#include "content/public/browser/save_page_type.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
+using content::RenderProcessHost;
+using content::SavePageType;
 using content::WebContents;
 
 namespace {
@@ -25,14 +28,14 @@ namespace {
 // exists only for testing.
 bool g_should_prompt_for_filename = true;
 
-// Used for mapping between SavePackageType constants and the indexes above.
-const SavePackage::SavePackageType kIndexToSaveType[] = {
-  SavePackage::SAVE_TYPE_UNKNOWN,
-  SavePackage::SAVE_AS_ONLY_HTML,
-  SavePackage::SAVE_AS_COMPLETE_HTML,
+// Used for mapping between SavePageType constants and the indexes above.
+const SavePageType kIndexToSaveType[] = {
+  content::SAVE_PAGE_TYPE_UNKNOWN,
+  content::SAVE_PAGE_TYPE_AS_ONLY_HTML,
+  content::SAVE_PAGE_TYPE_AS_COMPLETE_HTML,
 };
 
-int SavePackageTypeToIndex(SavePackage::SavePackageType type) {
+int SavePackageTypeToIndex(SavePageType type) {
   for (size_t i = 0; i < arraysize(kIndexToSaveType); ++i) {
     if (kIndexToSaveType[i] == type)
       return i;
@@ -54,18 +57,18 @@ const int kIndexToIDS[] = {
 }
 
 SavePackageFilePicker::SavePackageFilePicker(
-    const base::WeakPtr<SavePackage>& save_package,
+    content::WebContents* web_contents,
     const FilePath& suggested_path,
+    const FilePath::StringType& default_extension,
     bool can_save_as_complete,
-    DownloadPrefs* download_prefs)
-    : save_package_(save_package) {
+    DownloadPrefs* download_prefs,
+    content::SaveFilePathPickedCallback callback)
+    : render_process_id_(web_contents->GetRenderProcessHost()->GetID()) {
   int file_type_index = SavePackageTypeToIndex(
-      static_cast<SavePackage::SavePackageType>(
-          download_prefs->save_file_type()));
+      static_cast<SavePageType>(download_prefs->save_file_type()));
   DCHECK_NE(-1, file_type_index);
 
   SelectFileDialog::FileTypeInfo file_type_info;
-  FilePath::StringType default_extension;
 
   // If the contents can not be saved as complete-HTML, do not show the
   // file filters.
@@ -105,7 +108,6 @@ SavePackageFilePicker::SavePackageFilePicker(
     file_type_info.extension_description_overrides.push_back(
         l10n_util::GetStringUTF16(kIndexToIDS[kSelectFileCompleteIndex]));
     file_type_info.include_all_files = false;
-    default_extension = SavePackage::kDefaultHtmlExtension;
   } else {
     file_type_info.extensions.resize(1);
     file_type_info.extensions[kSelectFileHtmlOnlyIndex - 1].push_back(
@@ -122,7 +124,6 @@ SavePackageFilePicker::SavePackageFilePicker(
 
   if (g_should_prompt_for_filename) {
     select_file_dialog_ = SelectFileDialog::Create(this);
-    WebContents* web_contents = save_package_->web_contents();
     select_file_dialog_->SelectFile(SelectFileDialog::SELECT_SAVEAS_FILE,
                                     string16(),
                                     suggested_path,
@@ -135,8 +136,7 @@ SavePackageFilePicker::SavePackageFilePicker(
                                     NULL);
   } else {
     // Just use 'suggested_path' instead of opening the dialog prompt.
-    save_package_->OnPathPicked(
-        suggested_path, kIndexToSaveType[file_type_index]);
+    callback.Run(suggested_path, kIndexToSaveType[file_type_index]);
   }
 }
 
@@ -154,11 +154,11 @@ void SavePackageFilePicker::FileSelected(const FilePath& path,
   DCHECK(index >= kSelectFileHtmlOnlyIndex &&
          index <= kSelectFileCompleteIndex);
 
-  if (save_package_) {
-    WebContents* web_contents = save_package_->web_contents();
-    SavePackage::SavePackageType save_type = kIndexToSaveType[index];
+  RenderProcessHost* process = RenderProcessHost::FromID(render_process_id_);
+  if (process) {    
+    SavePageType save_type = kIndexToSaveType[index];
     Profile* profile =
-        Profile::FromBrowserContext(web_contents->GetBrowserContext());
+        Profile::FromBrowserContext(process->GetBrowserContext());
     PrefService* prefs = profile->GetPrefs();
     if (select_file_dialog_ &&
         select_file_dialog_->HasMultipleFileTypeChoices())
@@ -173,12 +173,12 @@ void SavePackageFilePicker::FileSelected(const FilePath& path,
 #endif
     // If user change the default saving directory, we will remember it just
     // like IE and FireFox.
-    if (!web_contents->GetBrowserContext()->IsOffTheRecord() &&
+    if (!process->GetBrowserContext()->IsOffTheRecord() &&
         save_file_path.GetValue() != path_string) {
       save_file_path.SetValue(path_string);
     }
 
-    save_package_->OnPathPicked(path, save_type);
+    callback_.Run(path, save_type);
   }
 
   delete this;
