@@ -297,9 +297,11 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   DoubleProperty change_timeout_;
   // Time [s] to wait before locking on to a gesture
   DoubleProperty evaluation_timeout_;
-  // If two fingers have a pressure difference greater than this, we assume
-  // one is a thumb.
+  // If two fingers have a pressure difference greater than diff thresh and
+  // the larger is more than diff factor times the smaller, we assume the
+  // larger is a thumb.
   DoubleProperty two_finger_pressure_diff_thresh_;
+  DoubleProperty two_finger_pressure_diff_factor_;
   // If a large contact moves more than this much times the lowest-pressure
   // contact, consider it not to be a thumb.
   DoubleProperty thumb_movement_factor_;

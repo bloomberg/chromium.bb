@@ -145,6 +145,9 @@ ImmediateInterpreter::ImmediateInterpreter(PropRegistry* prop_reg)
       two_finger_pressure_diff_thresh_(prop_reg,
                                        "Two Finger Pressure Diff Thresh",
                                        32.0),
+      two_finger_pressure_diff_factor_(prop_reg,
+                                       "Two Finger Pressure Diff Factor",
+                                       1.65),
       thumb_movement_factor_(prop_reg, "Thumb Movement Factor", 0.5),
       thumb_eval_timeout_(prop_reg, "Thumb Evaluation Timeout", 0.06),
       two_finger_close_distance_thresh_(prop_reg,
@@ -414,7 +417,8 @@ void ImmediateInterpreter::UpdateThumbState(const HardwareState& hwstate) {
     const FingerState& fs = hwstate.fingers[i];
     if (SetContainsValue(palm_, fs.tracking_id))
       continue;
-    if (fs.pressure > (min_pressure + two_finger_pressure_diff_thresh_.val_)) {
+    if (fs.pressure > min_pressure + two_finger_pressure_diff_thresh_.val_ &&
+        fs.pressure > min_pressure * two_finger_pressure_diff_factor_.val_) {
       float dist_sq = DistanceTravelledSq(fs);
       if (dist_sq < thumb_dist_sq_thresh &&
           !MapContainsKey(thumb_, fs.tracking_id))

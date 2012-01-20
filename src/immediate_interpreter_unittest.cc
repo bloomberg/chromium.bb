@@ -145,7 +145,7 @@ TEST(ImmediateInterpreterTest, MoveUpWithRestingThumbTest) {
             ii.SyncInterpret(&hardware_states[4], NULL));
 }
 
-TEST(ImmediateInterpreterTest, ScrollUpTest) {
+void ScrollUpTest(float pressure_a, float pressure_b) {
   ImmediateInterpreter ii(NULL);
   HardwareProperties hwprops = {
     0,  // left edge
@@ -163,16 +163,19 @@ TEST(ImmediateInterpreterTest, ScrollUpTest) {
     1  // is button pad
   };
 
+  float p_a = pressure_a;
+  float p_b = pressure_b;
+
   FingerState finger_states[] = {
     // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID
-    {0, 0, 0, 0, 24, 0, 400, 900, 1},
-    {0, 0, 0, 0, 92, 0, 405, 900, 2},
+    {0, 0, 0, 0, p_a, 0, 400, 900, 1},
+    {0, 0, 0, 0, p_b, 0, 405, 900, 2},
 
-    {0, 0, 0, 0, 24, 0, 400, 800, 1},
-    {0, 0, 0, 0, 92, 0, 405, 800, 2},
+    {0, 0, 0, 0, p_a, 0, 400, 800, 1},
+    {0, 0, 0, 0, p_b, 0, 405, 800, 2},
 
-    {0, 0, 0, 0, 24, 0, 400, 700, 1},
-    {0, 0, 0, 0, 92, 0, 405, 700, 2},
+    {0, 0, 0, 0, p_a, 0, 400, 700, 1},
+    {0, 0, 0, 0, p_b, 0, 405, 700, 2},
   };
   HardwareState hardware_states[] = {
     // time, buttons, finger count, touch count, finger states pointer
@@ -200,6 +203,14 @@ TEST(ImmediateInterpreterTest, ScrollUpTest) {
   EXPECT_FLOAT_EQ(-100, gs->details.move.dy);
   EXPECT_DOUBLE_EQ(0.250000, gs->start_time);
   EXPECT_DOUBLE_EQ(0.300000, gs->end_time);
+}
+
+TEST(ImmediateInterpreterTest, ScrollUpTest) {
+  ScrollUpTest(24, 92);
+}
+
+TEST(ImmediateInterpreterTest, FatFingerScrollUpTest) {
+  ScrollUpTest(125, 185);
 }
 
 TEST(ImmediateInterpreterTest, ThumbRetainTest) {
