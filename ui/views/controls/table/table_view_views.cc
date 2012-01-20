@@ -250,18 +250,20 @@ void TableView::OnPaint(gfx::Canvas* canvas) {
     if (table_type_ == ICON_AND_TEXT) {
       SkBitmap image = model_->GetIcon(i);
       if (!image.isNull()) {
+        int image_x = GetMirroredXWithWidthInView(text_x, image.width());
         canvas->DrawBitmapInt(
             image, 0, 0, image.width(), image.height(),
-            text_x, row_bounds.y() + (row_bounds.height() - kImageSize) / 2,
+            image_x, row_bounds.y() + (row_bounds.height() - kImageSize) / 2,
             kImageSize, kImageSize, true);
       }
       text_x += kImageSize + kImageToTextPadding;
     }
-    canvas->DrawStringInt(model_->GetText(i, 0), font_, kTextColor,
-                          text_x,
-                          row_bounds.y() + kTextVerticalPadding,
-                          row_bounds.width() - text_x,
-                          row_bounds.height() - kTextVerticalPadding * 2);
+    canvas->DrawStringInt(
+        model_->GetText(i, 0), font_, kTextColor,
+        GetMirroredXWithWidthInView(text_x, row_bounds.width() - text_x),
+        row_bounds.y() + kTextVerticalPadding,
+        row_bounds.width() - text_x,
+        row_bounds.height() - kTextVerticalPadding * 2);
   }
 }
 

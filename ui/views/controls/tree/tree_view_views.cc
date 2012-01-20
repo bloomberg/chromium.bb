@@ -308,6 +308,8 @@ bool TreeView::OnMousePressed(const MouseEvent& event) {
     gfx::Rect bounds(GetBoundsForNodeImpl(node, row, depth));
     if (bounds.Contains(event.location())) {
       int relative_x = event.x() - bounds.x();
+      if (base::i18n::IsRTL())
+        relative_x = bounds.width() - relative_x;
       if (relative_x < kArrowRegionSize &&
           model_->GetChildCount(node->model_node())) {
         if (node->is_expanded())
@@ -587,6 +589,8 @@ void TreeView::LayoutEditor() {
   DCHECK(selected_node_);
   // Position the editor so that its text aligns with the text we drew.
   gfx::Rect row_bounds = GetBoundsForNode(selected_node_);
+  row_bounds.set_x(
+      GetMirroredXWithWidthInView(row_bounds.x(), row_bounds.width()));
   row_bounds.set_x(row_bounds.x() + text_offset_);
   row_bounds.set_width(row_bounds.width() - text_offset_);
   row_bounds.Inset(kTextHorizontalPadding, kTextVerticalPadding);
@@ -641,14 +645,21 @@ void TreeView::PaintRow(gfx::Canvas* canvas,
     icon = open_icon_;
   else
     icon = closed_icon_;
+  int icon_x = kArrowRegionSize + kImagePadding +
+               (open_icon_.width() - icon.width()) / 2;
+  if (base::i18n::IsRTL())
+    icon_x = bounds.right() - icon_x - open_icon_.width();
+  else
+    icon_x += bounds.x();
   canvas->DrawBitmapInt(
-      icon, bounds.x() + kArrowRegionSize + kImagePadding +
-      (open_icon_.width() - icon.width()) / 2,
+      icon, icon_x,
       bounds.y() + (bounds.height() - icon.height()) / 2);
 
   if (!editor_ || node != selected_node_) {
     gfx::Rect text_bounds(bounds.x() + text_offset_, bounds.y(),
                           bounds.width() - text_offset_, bounds.height());
+    if (base::i18n::IsRTL())
+      text_bounds.set_x(bounds.x());
     if (node == selected_node_) {
       canvas->FillRect(kSelectedBackgroundColor, text_bounds);
       if (HasFocus())
@@ -665,14 +676,21 @@ void TreeView::PaintRow(gfx::Canvas* canvas,
 void TreeView::PaintExpandControl(gfx::Canvas* canvas,
                                   const gfx::Rect& node_bounds,
                                   bool expanded) {
-  int center_x = node_bounds.x() + (kArrowRegionSize - 4) / 2;
+  int center_x;
+  if (base::i18n::IsRTL()) {
+    center_x = node_bounds.right() - kArrowRegionSize +
+               (kArrowRegionSize - 4) / 2;
+  } else {
+    center_x = node_bounds.x() + (kArrowRegionSize - 4) / 2;
+  }
   int center_y = node_bounds.y() + node_bounds.height() / 2;
   // TODO: this should come from an image.
   if (!expanded) {
+    int delta = base::i18n::IsRTL() ? 1 : -1;
     for (int i = 0; i < 4; ++i) {
       canvas->FillRect(kArrowColor,
-                       gfx::Rect(center_x - (2 - i), center_y - (3 - i), 1,
-                                 (3 - i) * 2 + 1));
+                       gfx::Rect(center_x + delta * (2 - i),
+                                 center_y - (3 - i), 1, (3 - i) * 2 + 1));
     }
   } else {
     center_y -= 2;
@@ -711,11 +729,13 @@ gfx::Rect TreeView::GetBoundsForNode(InternalNode* node) {
 gfx::Rect TreeView::GetBoundsForNodeImpl(InternalNode* node,
                                          int row,
                                          int depth) {
-  return gfx::Rect(depth * kIndent + kHorizontalInset,
-                   row * row_height_ + kVerticalInset,
-                   text_offset_ + node->text_width() +
-                   kTextHorizontalPadding * 2,
-                   row_height_);
+  gfx::Rect rect(depth * kIndent + kHorizontalInset,
+                 row * row_height_ + kVerticalInset,
+                 text_offset_ + node->text_width() +
+                 kTextHorizontalPadding * 2,
+                 row_height_);
+  rect.set_x(GetMirroredXWithWidthInView(rect.x(), rect.width()));
+  return rect;
 }
 
 int TreeView::GetRowCount() {
