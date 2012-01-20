@@ -5,7 +5,6 @@
 #include "base/command_line.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/extensions/api/socket/socket_api.h"
-#include "chrome/browser/extensions/api/socket/test_echo_server_udp.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
@@ -13,6 +12,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "net/test/test_server.h"
 
 using namespace extension_function_test_utils;
 
@@ -61,23 +61,22 @@ IN_PROC_BROWSER_TEST_F(SocketApiTest, SocketCreateBad) {
 }
 
 IN_PROC_BROWSER_TEST_F(SocketApiTest, SocketExtension) {
-  scoped_refptr<extensions::TestEchoServerUDP> server =
-      new extensions::TestEchoServerUDP();
+  scoped_ptr<net::TestServer> test_server(
+      new net::TestServer(net::TestServer::TYPE_UDP_ECHO,
+                          FilePath(FILE_PATH_LITERAL("net/data"))));
+  EXPECT_TRUE(test_server->Start());
+
+  int port = test_server->host_port_pair().port();
+  ASSERT_TRUE(port > 0);
 
   ResultCatcher catcher;
   catcher.RestrictToProfile(browser()->profile());
 
-  ASSERT_TRUE(StartTestServer());
   ExtensionTestMessageListener listener("port_please", true);
-
-  int port = server->Start();
-  ASSERT_TRUE(port > 0);
 
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("socket/api")));
   EXPECT_TRUE(listener.WaitUntilSatisfied());
   listener.Reply(port);
 
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
-
-  EXPECT_TRUE(server->WaitUntilFinished());
 }
