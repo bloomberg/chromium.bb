@@ -2477,11 +2477,11 @@ void GLES2DecoderImpl::RestoreCurrentRenderbufferBindings() {
 static void RebindCurrentFramebuffer(
     GLenum target,
     FramebufferManager::FramebufferInfo* info,
-    FrameBuffer* offscreen_frame_buffer) {
+    GLuint back_buffer_service_id) {
   GLuint framebuffer_id = info ? info->service_id() : 0;
 
-  if (framebuffer_id == 0 && offscreen_frame_buffer) {
-    framebuffer_id = offscreen_frame_buffer->id();
+  if (framebuffer_id == 0) {
+    framebuffer_id = back_buffer_service_id;
   }
 
   glBindFramebufferEXT(target, framebuffer_id);
@@ -2494,16 +2494,16 @@ void GLES2DecoderImpl::RestoreCurrentFramebufferBindings() {
     RebindCurrentFramebuffer(
         GL_FRAMEBUFFER,
         bound_draw_framebuffer_.get(),
-        offscreen_target_frame_buffer_.get());
+        GetBackbufferServiceId());
   } else {
     RebindCurrentFramebuffer(
         GL_READ_FRAMEBUFFER_EXT,
         bound_read_framebuffer_.get(),
-        offscreen_target_frame_buffer_.get());
+        GetBackbufferServiceId());
     RebindCurrentFramebuffer(
         GL_DRAW_FRAMEBUFFER_EXT,
         bound_draw_framebuffer_.get(),
-        offscreen_target_frame_buffer_.get());
+        GetBackbufferServiceId());
   }
 }
 
