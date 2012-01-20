@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,6 +14,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/mac/bundle_locations.h"
+#include "base/mac/foundation_util.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/mac/scoped_nsexception_enabler.h"
@@ -966,20 +967,33 @@ NSString* const kVersionKey = @"KSVersion";
 
 @end  // @implementation KeystoneGlue
 
-namespace keystone_glue {
+namespace {
 
-std::string BrandCode() {
-  KeystoneGlue* keystoneGlue = [KeystoneGlue defaultKeystoneGlue];
-  NSString* brand_path = [keystoneGlue brandFilePath];
+std::string BrandCodeInternal() {
+  KeystoneGlue* keystone_glue = [KeystoneGlue defaultKeystoneGlue];
+  NSString* brand_path = [keystone_glue brandFilePath];
 
   if (![brand_path length])
     return std::string();
 
-  std::string brand_code;
-  file_util::ReadFileToString(FilePath([brand_path fileSystemRepresentation]),
-                              &brand_code);
+  NSDictionary* dict =
+      [NSDictionary dictionaryWithContentsOfFile:brand_path];
+  NSString* brand_code =
+      base::mac::ObjCCast<NSString>([dict objectForKey:kBrandKey]);
+  if (brand_code)
+    return [brand_code UTF8String];
 
-  return brand_code;
+  return std::string();
+}
+
+}  // namespace
+
+namespace keystone_glue {
+
+std::string BrandCode() {
+  // |s_brand_code| is leaked.
+  static std::string* s_brand_code = new std::string(BrandCodeInternal());
+  return *s_brand_code;
 }
 
 bool KeystoneEnabled() {
