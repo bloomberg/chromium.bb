@@ -46,7 +46,7 @@ struct ChannelHandle;
 // have a process.  After that, most of the communication is directly between
 // the renderer and plugin processes.
 class CONTENT_EXPORT PluginProcessHost
-    : public NON_EXPORTED_BASE(content::BrowserChildProcessHostDelegate),
+    : public content::BrowserChildProcessHostDelegate,
       public IPC::Message::Sender {
  public:
   class Client {

@@ -27,7 +27,7 @@ class BrowserChildProcessHost;
 // use StartBatchMode(), then multiple calls to StartFooBar(p),
 // then finish with EndBatchMode().
 class CONTENT_EXPORT UtilityProcessHost
-    : public NON_EXPORTED_BASE(content::BrowserChildProcessHostDelegate),
+    : public content::BrowserChildProcessHostDelegate,
       public IPC::Message::Sender {
  public:
   // An interface to be implemented by consumers of the utility process to

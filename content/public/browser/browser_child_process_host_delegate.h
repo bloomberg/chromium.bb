@@ -12,7 +12,8 @@
 namespace content {
 
 // Interface that all users of BrowserChildProcessHost need to provide.
-class BrowserChildProcessHostDelegate : public IPC::Channel::Listener {
+class CONTENT_EXPORT BrowserChildProcessHostDelegate
+    : public IPC::Channel::Listener {
  public:
   virtual ~BrowserChildProcessHostDelegate() {}
 
@@ -20,7 +21,7 @@ class BrowserChildProcessHostDelegate : public IPC::Channel::Listener {
   // the default return value). The exception is if the host is in the middle of
   // sending a request to the process, in which case the other side might think
   // it's ok to shutdown, when really it's not.
-  CONTENT_EXPORT virtual bool CanShutdown();
+  virtual bool CanShutdown();
 
   // Called when the process has been started.
   virtual void OnProcessLaunched() {}
