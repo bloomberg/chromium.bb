@@ -110,7 +110,7 @@ function setup(gl) {
   var stride = 3 * Float32Array.BYTES_PER_ELEMENT;
   gl.vertexAttribPointer(posAttr, 3, gl.FLOAT, false, stride, 0);
   gl.clearColor(0.0, 0.0, 0.0, 0.0);
-  gl.viewport(0, 0, 400, 400);
+  gl.viewport(0, 0, 200, 200);
   gl.disable(gl.DEPTH_TEST);
   if (gl.getError() != gl.NO_ERROR)
     return false;
@@ -124,9 +124,9 @@ function draw(gl) {
 </script>
 </head>
 <body onload="main()">
-<div style="position:relative; width:400px; height:520px; background-color:black"></div>
+<div style="position:relative; width:200px; height:200px; background-color:black"></div>
 <div style="position:absolute; top:0px; left:0px">
-<canvas id="c" width="400" height="400" class="nomargin"></canvas>
+<canvas id="c" width="200" height="200" class="nomargin"></canvas>
 </div>
 </body>
 </html>
