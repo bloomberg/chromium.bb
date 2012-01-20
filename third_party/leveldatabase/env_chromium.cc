@@ -443,7 +443,7 @@ class ChromiumEnv : public Env {
   }
 
   virtual uint64_t NowMicros() {
-    return ::base::TimeTicks::HighResNow().ToInternalValue();
+    return ::base::TimeTicks::Now().ToInternalValue();
   }
 
   virtual void SleepForMicroseconds(int micros) {
