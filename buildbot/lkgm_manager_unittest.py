@@ -126,138 +126,126 @@ class LKGMManagerTest(mox.MoxTestBase):
     """Tests that we can create a new candidate and uprev an old rc."""
     # Let's stub out other LKGMManager calls cause they're already
     # unit tested.
-    self.mox.StubOutWithMock(lkgm_manager.LKGMManager, 'GetCurrentVersionInfo')
-    self.mox.StubOutWithMock(lkgm_manager.LKGMManager, 'CheckoutSourceCode')
-    self.mox.StubOutWithMock(lkgm_manager.LKGMManager,
-                             'RefreshManifestCheckout')
-    self.mox.StubOutWithMock(lkgm_manager.LKGMManager,
-                             'InitializeManifestVariables')
-    self.mox.StubOutWithMock(lkgm_manager.LKGMManager,
-                             'HasCheckoutBeenBuilt')
-    self.mox.StubOutWithMock(lkgm_manager.LKGMManager, 'CreateManifest')
-    self.mox.StubOutWithMock(lkgm_manager.LKGMManager, 'PrepSpecChanges')
-    self.mox.StubOutWithMock(lkgm_manager.LKGMManager, 'PublishManifest')
+    self.mox.StubOutWithMock(lkgm_manager.LKGMManager, '_GetCurrentVersionInfo')
+    self.mox.StubOutWithMock(lkgm_manager.LKGMManager, '_LoadSpecs')
+    self.mox.StubOutWithMock(lkgm_manager.LKGMManager, '_CreateNewBuildSpec')
+    self.mox.StubOutWithMock(lkgm_manager.LKGMManager, '_SetInFlight')
+    self.mox.StubOutWithMock(lkgm_manager.LKGMManager, '_PrepSpecChanges')
+    self.mox.StubOutWithMock(lkgm_manager.LKGMManager, '_PushSpecChanges')
 
     my_info = lkgm_manager._LKGMCandidateInfo('1.2.3')
     most_recent_candidate = lkgm_manager._LKGMCandidateInfo('1.2.3-rc12')
-    self.manager.latest = most_recent_candidate.VersionString()
-
     new_candidate = lkgm_manager._LKGMCandidateInfo('1.2.3-rc13')
-    new_manifest = 'some_manifest'
 
-    lkgm_manager.LKGMManager.CheckoutSourceCode()
-    lkgm_manager.LKGMManager.CreateManifest().AndReturn(new_manifest)
-    lkgm_manager.LKGMManager.HasCheckoutBeenBuilt().AndReturn(False)
+    def IsMostRecentCandidate(obj):
+      return obj.VersionString() == most_recent_candidate.VersionString()
 
-    # Do manifest refresh work.
-    lkgm_manager.LKGMManager.RefreshManifestCheckout()
-    lkgm_manager.LKGMManager.PrepSpecChanges()
-    lkgm_manager.LKGMManager.GetCurrentVersionInfo().AndReturn(my_info)
-    lkgm_manager.LKGMManager.InitializeManifestVariables(my_info)
-
-    # Publish new candidate.
-    lkgm_manager.LKGMManager.PublishManifest(new_manifest,
-                                             new_candidate.VersionString())
+    lkgm_manager.LKGMManager._GetCurrentVersionInfo().AndReturn(my_info)
+    lkgm_manager.LKGMManager._LoadSpecs(my_info)
+    lkgm_manager.LKGMManager._PrepSpecChanges()
+    lkgm_manager.LKGMManager._CreateNewBuildSpec(mox.Func(
+        IsMostRecentCandidate)).AndReturn(new_candidate.VersionString())
+    lkgm_manager.LKGMManager._SetInFlight()
+    lkgm_manager.LKGMManager._PushSpecChanges(
+        mox.StrContains(new_candidate.VersionString()))
 
     self.mox.ReplayAll()
+    self.manager.latest = most_recent_candidate.VersionString()
     candidate_path = self.manager.CreateNewCandidate()
     self.assertEqual(candidate_path, self._GetPathToManifest(new_candidate))
     self.mox.VerifyAll()
 
   def testCreateNewCandidateReturnNoneIfNoWorkToDo(self):
     """Tests that we return nothing if there is nothing to create."""
-    self.mox.StubOutWithMock(lkgm_manager.LKGMManager, 'CheckoutSourceCode')
-    self.mox.StubOutWithMock(lkgm_manager.LKGMManager, 'HasCheckoutBeenBuilt')
-    self.mox.StubOutWithMock(lkgm_manager.LKGMManager, 'CreateManifest')
+    # Let's stub out other LKGMManager calls cause they're already
+    # unit tested.
+    self.mox.StubOutWithMock(lkgm_manager.LKGMManager, '_GetCurrentVersionInfo')
+    self.mox.StubOutWithMock(lkgm_manager.LKGMManager, '_LoadSpecs')
+    self.mox.StubOutWithMock(lkgm_manager.LKGMManager, '_CreateNewBuildSpec')
+    self.mox.StubOutWithMock(lkgm_manager.LKGMManager, '_SetInFlight')
+    self.mox.StubOutWithMock(lkgm_manager.LKGMManager, '_PrepSpecChanges')
 
-    new_manifest = 'some_manifest'
-    lkgm_manager.LKGMManager.CheckoutSourceCode()
-    lkgm_manager.LKGMManager.CreateManifest().AndReturn(new_manifest)
-    lkgm_manager.LKGMManager.HasCheckoutBeenBuilt().AndReturn(True)
+    my_info = lkgm_manager._LKGMCandidateInfo('1.2.3')
+    most_recent_candidate = lkgm_manager._LKGMCandidateInfo('1.2.3-rc12')
+
+    def IsMostRecentCandidate(obj):
+      return obj.VersionString() == most_recent_candidate.VersionString()
+
+    lkgm_manager.LKGMManager._GetCurrentVersionInfo().AndReturn(my_info)
+    lkgm_manager.LKGMManager._LoadSpecs(my_info)
+    lkgm_manager.LKGMManager._PrepSpecChanges()
+    lkgm_manager.LKGMManager._CreateNewBuildSpec(mox.Func(
+        IsMostRecentCandidate)).AndReturn(None)
 
     self.mox.ReplayAll()
+    self.manager.latest = most_recent_candidate.VersionString()
     candidate = self.manager.CreateNewCandidate()
     self.assertEqual(candidate, None)
     self.mox.VerifyAll()
 
   def testGetLatestCandidate(self):
     """Makes sure we can get the latest created candidate manifest."""
-    self.mox.StubOutWithMock(lkgm_manager.LKGMManager, 'GetCurrentVersionInfo')
-    self.mox.StubOutWithMock(lkgm_manager.LKGMManager,
-                             'RefreshManifestCheckout')
-    self.mox.StubOutWithMock(lkgm_manager.LKGMManager,
-                             'InitializeManifestVariables')
-    self.mox.StubOutWithMock(lkgm_manager.LKGMManager, 'PrepSpecChanges')
-    self.mox.StubOutWithMock(lkgm_manager.LKGMManager, 'PushSpecChanges')
-    self.mox.StubOutWithMock(lkgm_manager.LKGMManager, 'SetInFlight')
+    self.mox.StubOutWithMock(lkgm_manager.LKGMManager, '_GetCurrentVersionInfo')
+    self.mox.StubOutWithMock(lkgm_manager.LKGMManager, '_LoadSpecs')
+    self.mox.StubOutWithMock(lkgm_manager.LKGMManager, '_SetInFlight')
+    self.mox.StubOutWithMock(lkgm_manager.LKGMManager, '_PrepSpecChanges')
+    self.mox.StubOutWithMock(lkgm_manager.LKGMManager, '_PushSpecChanges')
 
     my_info = lkgm_manager._LKGMCandidateInfo('1.2.3')
     most_recent_candidate = lkgm_manager._LKGMCandidateInfo('1.2.3-rc12')
 
-    # Do manifest refresh work.
-    lkgm_manager.LKGMManager.RefreshManifestCheckout()
-    lkgm_manager.LKGMManager.GetCurrentVersionInfo().AndReturn(my_info)
-    lkgm_manager.LKGMManager.InitializeManifestVariables(my_info)
-
-    lkgm_manager.LKGMManager.PrepSpecChanges()
-    lkgm_manager.LKGMManager.SetInFlight(most_recent_candidate.VersionString())
-    lkgm_manager.LKGMManager.PushSpecChanges(
+    lkgm_manager.LKGMManager._GetCurrentVersionInfo().AndReturn(my_info)
+    lkgm_manager.LKGMManager._LoadSpecs(my_info)
+    lkgm_manager.LKGMManager._PrepSpecChanges()
+    lkgm_manager.LKGMManager._SetInFlight()
+    lkgm_manager.LKGMManager._PushSpecChanges(
         mox.StrContains(most_recent_candidate.VersionString()))
 
-    self.manager.latest_unprocessed = '1.2.3-rc12'
     self.mox.ReplayAll()
+    self.manager.latest_unprocessed = '1.2.3-rc12'
     candidate = self.manager.GetLatestCandidate()
     self.assertEqual(candidate, self._GetPathToManifest(most_recent_candidate))
     self.mox.VerifyAll()
 
   def testGetLatestCandidateOneRetry(self):
     """Makes sure we can get the latest candidate even on retry."""
-    self.mox.StubOutWithMock(lkgm_manager.LKGMManager, 'GetCurrentVersionInfo')
-    self.mox.StubOutWithMock(lkgm_manager.LKGMManager,
-                             'RefreshManifestCheckout')
-    self.mox.StubOutWithMock(lkgm_manager.LKGMManager,
-                             'InitializeManifestVariables')
-    self.mox.StubOutWithMock(lkgm_manager.LKGMManager, 'PrepSpecChanges')
-    self.mox.StubOutWithMock(lkgm_manager.LKGMManager, 'PushSpecChanges')
-    self.mox.StubOutWithMock(lkgm_manager.LKGMManager, 'SetInFlight')
+    self.mox.StubOutWithMock(lkgm_manager.LKGMManager, '_GetCurrentVersionInfo')
+    self.mox.StubOutWithMock(lkgm_manager.LKGMManager, '_LoadSpecs')
+    self.mox.StubOutWithMock(lkgm_manager.LKGMManager, '_SetInFlight')
+    self.mox.StubOutWithMock(lkgm_manager.LKGMManager, '_PrepSpecChanges')
+    self.mox.StubOutWithMock(lkgm_manager.LKGMManager, '_PushSpecChanges')
 
     my_info = lkgm_manager._LKGMCandidateInfo('1.2.4')
     most_recent_candidate = lkgm_manager._LKGMCandidateInfo('1.2.4-rc12',
                                                             CHROME_BRANCH)
 
-    lkgm_manager.LKGMManager.RefreshManifestCheckout()
-    lkgm_manager.LKGMManager.GetCurrentVersionInfo().AndReturn(my_info)
-    lkgm_manager.LKGMManager.InitializeManifestVariables(my_info)
-
-    lkgm_manager.LKGMManager.PrepSpecChanges()
-    lkgm_manager.LKGMManager.SetInFlight(most_recent_candidate.VersionString())
-    lkgm_manager.LKGMManager.PushSpecChanges(
+    lkgm_manager.LKGMManager._GetCurrentVersionInfo().AndReturn(my_info)
+    lkgm_manager.LKGMManager._LoadSpecs(my_info)
+    lkgm_manager.LKGMManager._PrepSpecChanges()
+    lkgm_manager.LKGMManager._SetInFlight()
+    lkgm_manager.LKGMManager._PushSpecChanges(
         mox.StrContains(most_recent_candidate.VersionString())).AndRaise(
             manifest_version.GitCommandException('Push failed'))
 
-    lkgm_manager.LKGMManager.PrepSpecChanges()
-    lkgm_manager.LKGMManager.SetInFlight(most_recent_candidate.VersionString())
-    lkgm_manager.LKGMManager.PushSpecChanges(
+    lkgm_manager.LKGMManager._PrepSpecChanges()
+    lkgm_manager.LKGMManager._SetInFlight()
+    lkgm_manager.LKGMManager._PushSpecChanges(
         mox.StrContains(most_recent_candidate.VersionString()))
 
-    self.manager.latest_unprocessed = '1.2.4-rc12'
     self.mox.ReplayAll()
+    self.manager.latest_unprocessed = '1.2.4-rc12'
     candidate = self.manager.GetLatestCandidate()
     self.assertEqual(candidate, self._GetPathToManifest(most_recent_candidate))
     self.mox.VerifyAll()
 
   def testGetLatestCandidateNone(self):
     """Makes sure we get nothing if there is no work to be done."""
-    self.mox.StubOutWithMock(lkgm_manager.LKGMManager, 'GetCurrentVersionInfo')
-    self.mox.StubOutWithMock(lkgm_manager.LKGMManager,
-                             'RefreshManifestCheckout')
-    self.mox.StubOutWithMock(lkgm_manager.LKGMManager,
-                             'InitializeManifestVariables')
+    self.mox.StubOutWithMock(lkgm_manager.LKGMManager, '_GetCurrentVersionInfo')
+    self.mox.StubOutWithMock(lkgm_manager.LKGMManager, '_LoadSpecs')
 
-    my_info = lkgm_manager._LKGMCandidateInfo('1.2.4')
-    lkgm_manager.LKGMManager.RefreshManifestCheckout()
-    lkgm_manager.LKGMManager.GetCurrentVersionInfo().AndReturn(my_info)
-    lkgm_manager.LKGMManager.InitializeManifestVariables(my_info)
+    my_info = lkgm_manager._LKGMCandidateInfo('1.2.3')
+    lkgm_manager.LKGMManager._GetCurrentVersionInfo().AndReturn(my_info)
+    lkgm_manager.LKGMManager._LoadSpecs(my_info)
 
     self.mox.ReplayAll()
     self.manager.LONG_MAX_TIMEOUT_SECONDS = 1 # Only run once.
@@ -424,7 +412,7 @@ class LKGMManagerTest(mox.MoxTestBase):
       gerrit_patch.project = 'chromite/tacos'
       gerrit_patch.id = '1234567890'
       gerrit_patch.commit = '0987654321'
-      self.manager._AddPatchesToManifest(tmp_manifest, [gerrit_patch])
+      self.manager.AddPatchesToManifest(tmp_manifest, [gerrit_patch])
 
       new_doc = minidom.parse(tmp_manifest)
       element = new_doc.getElementsByTagName(
@@ -437,6 +425,7 @@ class LKGMManagerTest(mox.MoxTestBase):
                        'chromite/tacos')
     finally:
       os.remove(tmp_manifest)
+
 
   def tearDown(self):
     if os.path.exists(self.tmpdir): shutil.rmtree(self.tmpdir)

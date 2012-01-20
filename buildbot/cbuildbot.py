@@ -13,6 +13,8 @@ full and pre-flight-queue builds.
 import constants
 import distutils.version
 import glob
+import multiprocessing
+import Queue
 import optparse
 import os
 import pprint
@@ -24,6 +26,7 @@ if __name__ == '__main__':
 
 from chromite.buildbot import builderstage as bs
 from chromite.buildbot import cbuildbot_background as background
+from chromite.buildbot import cbuildbot_commands as commands
 from chromite.buildbot import cbuildbot_config
 from chromite.buildbot import cbuildbot_stages as stages
 from chromite.buildbot import cbuildbot_results as results_lib
@@ -784,6 +787,12 @@ def _CreateParser():
                     default=False,
                     help='Dump out build config options, and exit.')
   parser.add_option_group(group)
+
+  # These options are not used anymore and are being phased out
+  parser.add_option('-f', '--revisionfile',
+                    help=optparse.SUPPRESS_HELP)
+  parser.add_option('-t', '--tracking-branch', dest='tracking_branch_old',
+                    default='cros/master', help=optparse.SUPPRESS_HELP)
   return parser
 
 

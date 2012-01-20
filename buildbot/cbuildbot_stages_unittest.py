@@ -150,15 +150,18 @@ class ManifestVersionedSyncStageTest(AbstractStageTest):
   def testManifestVersionedSyncOnePartBranch(self):
     """Tests basic ManifestVersionedSyncStage with branch ooga_booga"""
     self.mox.StubOutWithMock(stages.ManifestVersionedSyncStage,
-                             'Initialize')
+                             'InitializeManifestManager')
     self.mox.StubOutWithMock(manifest_version.BuildSpecsManager,
                              'GetNextBuildSpec')
-    self.mox.StubOutWithMock(stages.SyncStage, 'ManifestCheckout')
+    self.mox.StubOutWithMock(commands, 'ManifestCheckout')
 
-    stages.ManifestVersionedSyncStage.Initialize()
+    stages.ManifestVersionedSyncStage.InitializeManifestManager()
     self.manager.GetNextBuildSpec().AndReturn(self.next_version)
 
-    stages.SyncStage.ManifestCheckout(self.next_version)
+    commands.ManifestCheckout(self.build_root,
+                              self.TRACKING_BRANCH,
+                              self.next_version,
+                              self.url)
 
     self.mox.ReplayAll()
     stage = stages.ManifestVersionedSyncStage(self.bot_id,

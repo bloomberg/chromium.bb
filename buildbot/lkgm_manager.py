@@ -179,14 +179,17 @@ class LKGMManager(manifest_version.BuildSpecsManager):
 
     return function_success
 
-  def GetCurrentVersionInfo(self):
-    """Returns the lkgm version info from the version file."""
-    version_info = super(LKGMManager, self).GetCurrentVersionInfo()
+  def _GetCurrentVersionInfo(self, sync=True):
+    """Returns the current version info from the version file.
+    Args:
+      sync: Whether to sync the tree.
+    """
+    version_info = super(LKGMManager, self)._GetCurrentVersionInfo(sync)
     return _LKGMCandidateInfo(version_info.VersionString(),
                               chrome_branch=version_info.chrome_branch,
                               incr_type=self.incr_type)
 
-  def _AddPatchesToManifest(self, manifest, patches):
+  def AddPatchesToManifest(self, manifest, patches):
     """Adds list of patches to given manifest specified by manifest_path."""
     manifest_dom = minidom.parse(manifest)
     for patch in patches:
@@ -199,37 +202,23 @@ class LKGMManager(manifest_version.BuildSpecsManager):
     with open(manifest, 'w+') as manifest_file:
       manifest_dom.writexml(manifest_file)
 
-  def CreateNewCandidate(self, validation_pool=None, retries=3):
-    """Returns a path to the next manifest to build.
-
+  def CreateNewCandidate(self, patches=None, retries=3):
+    """Gets the version number of the next build spec to build.
       Args:
-        validation_pool: Validation pool to apply to the manifest before
-          publishing.
+        patches: An array of GerritPatches that should be built with this
+          manifest as part of a Commit Queue run.
         retries: Number of retries for updating the status.
+      Returns:
+        next_build: a string of the next build number for the builder to consume
+                    or None in case of no need to build.
       Raises:
         GenerateBuildSpecException in case of failure to generate a buildspec
     """
-    self.CheckoutSourceCode()
-    new_manifest = self.CreateManifest()
-    # Handle logic about the manifest we know as soon as we sync.
-    if not validation_pool:
-      # This isn't a commit queue, so we care only that the manifest is new.
-      if self.HasCheckoutBeenBuilt():
-        return None
-    else:
-      if not validation_pool.ApplyPoolIntoRepo(self.cros_source.directory):
-        return None
-
-      self._AddPatchesToManifest(new_manifest, validation_pool.changes)
-
     last_error = None
-    version_info = self.GetCurrentVersionInfo()
     for _ in range(0, retries + 1):
       try:
-        # Refresh manifest logic from manifest_versions repository.
-        self.RefreshManifestCheckout()
-        self.PrepSpecChanges()
-        self.InitializeManifestVariables(version_info)
+        version_info = self._GetCurrentVersionInfo()
+        self._LoadSpecs(version_info)
 
         # Check whether the latest spec available in manifest-versions is
         # newer than our current version number. If so, use it as the base
@@ -237,14 +226,23 @@ class LKGMManager(manifest_version.BuildSpecsManager):
         if self.latest:
           latest = max(self.latest, version_info.VersionString(),
                        key=self.compare_versions_fn)
-          version_info = _LKGMCandidateInfo(
-              latest, chrome_branch=version_info.chrome_branch,
+          version_info = _LKGMCandidateInfo(latest,
+              chrome_branch=version_info.chrome_branch,
               incr_type=self.incr_type)
 
-        version = self.GetNextVersion(version_info)
-        self.PublishManifest(new_manifest, version)
-        self.current_version = version
-        return self.GetLocalManifest(version)
+        self._PrepSpecChanges()
+        self.current_version = self._CreateNewBuildSpec(version_info)
+        path_to_new_build_spec = self.GetLocalManifest(self.current_version)
+        if patches: self.AddPatchesToManifest(path_to_new_build_spec, patches)
+        if self.current_version:
+          logging.debug('Using build spec: %s', self.current_version)
+          commit_message = 'Automatic: Start %s %s' % (self.build_name,
+                                                       self.current_version)
+          self._SetInFlight()
+          self._PushSpecChanges(commit_message)
+
+        return path_to_new_build_spec
+
       except (cros_lib.RunCommandError,
               manifest_version.GitCommandException) as e:
         err_msg = 'Failed to generate LKGM Candidate. error: %s' % e
@@ -264,30 +262,31 @@ class LKGMManager(manifest_version.BuildSpecsManager):
     """
     def _AttemptToGetLatestCandidate():
       """Attempts to acquire latest candidate using manifest repo."""
-      self.RefreshManifestCheckout()
-      self.InitializeManifestVariables(self.GetCurrentVersionInfo())
+      version_info = self._GetCurrentVersionInfo()
+      self._LoadSpecs(version_info)
+      version_to_use = None
       if self.latest_unprocessed:
-        return self.latest_unprocessed
+        version_to_use = self.latest_unprocessed
       else:
         logging.info('Found nothing new to build, trying again later.')
         logging.info('If this is a PFQ, then you should have forced the master'
                      ', which runs cbuildbot_master')
-        return None
 
-    version_to_build = self._RunLambdaWithTimeout(_AttemptToGetLatestCandidate,
-                                                  use_long_timeout=True)
-    if version_to_build:
+      return version_to_use
+
+    self.current_version = self._RunLambdaWithTimeout(
+        _AttemptToGetLatestCandidate, use_long_timeout=True)
+    if self.current_version:
       last_error = None
       for _ in range(0, retries + 1):
         try:
-          logging.info('Starting build spec: %s', version_to_build)
+          logging.debug('Using build spec: %s', self.current_version)
           commit_message = 'Automatic: Start %s %s' % (self.build_name,
-                                                       version_to_build)
-          self.PrepSpecChanges()
-          self.SetInFlight(version_to_build)
-          self.PushSpecChanges(commit_message)
-          self.current_version = version_to_build
-          return self.GetLocalManifest(version_to_build)
+                                                       self.current_version)
+          self._PrepSpecChanges()
+          self._SetInFlight()
+          self._PushSpecChanges(commit_message)
+          break
         except (cros_lib.RunCommandError,
                 manifest_version.GitCommandException) as e:
           err_msg = 'Failed to set LKGM Candidate inflight. error: %s' % e
@@ -295,8 +294,8 @@ class LKGMManager(manifest_version.BuildSpecsManager):
           last_error = err_msg
       else:
         raise manifest_version.GenerateBuildSpecException(last_error)
-    else:
-      return None
+
+    return self.GetLocalManifest(self.current_version)
 
   def GetBuildersStatus(self, builders_array, version_file):
     """Returns a build-names->status dictionary of build statuses."""
@@ -310,7 +309,7 @@ class LKGMManager(manifest_version.BuildSpecsManager):
                                         incr_type=self.incr_type)
       for builder in builders_array:
         if builder_statuses.get(builder) not in LKGMManager.STATUS_COMPLETED:
-          logging.debug("Checking for builder %s's status", builder)
+          logging.debug("Checking for builder %s's status" % builder)
           builder_statuses[builder] = self.GetBuildStatus(builder, version_info)
           if builder_statuses[builder] == LKGMManager.STATUS_PASSED:
             num_complete += 1
@@ -319,7 +318,7 @@ class LKGMManager(manifest_version.BuildSpecsManager):
             num_complete += 1
             logging.info('Builder %s completed with status failed', builder)
           elif not builder_statuses[builder]:
-            logging.debug('No status found for builder %s.', builder)
+            logging.debug('No status found for builder %s.' % builder)
         else:
           num_complete += 1
 
@@ -349,11 +348,11 @@ class LKGMManager(manifest_version.BuildSpecsManager):
     # This may potentially fail for not being at TOT while pushing.
     for index in range(0, retries + 1):
       try:
-        self.PrepSpecChanges()
+        self._PrepSpecChanges()
         manifest_version.CreateSymlink(path_to_candidate, path_to_lkgm)
         cros_lib.RunCommand(['git', 'add', self.LKGM_PATH],
                             cwd=self._TMP_MANIFEST_DIR)
-        self.PushSpecChanges(
+        self._PushSpecChanges(
             'Automatic: %s promoting %s to LKGM' % (self.build_name,
                                                     self.current_version))
         return
@@ -361,8 +360,8 @@ class LKGMManager(manifest_version.BuildSpecsManager):
               cros_lib.RunCommandError) as e:
         last_error = 'Failed to promote manifest. error: %s' % e
         logging.error(last_error)
-        logging.error('Retrying to promote manifest:  Retry %d/%d', index + 1,
-                      retries)
+        logging.error('Retrying to promote manifest:  Retry %d/%d' %
+                      (index + 1, retries))
 
     else:
       raise PromoteCandidateException(last_error)

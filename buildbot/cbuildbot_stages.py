@@ -98,6 +98,17 @@ class CleanUpStage(bs.BuilderStage):
       background.RunParallelSteps(tasks)
 
 
+class SyncStage(bs.BuilderStage):
+  """Stage that performs syncing for the builder."""
+
+  option_name = 'sync'
+
+  def _PerformStage(self):
+    commands.ManifestCheckout(self._build_root, self._tracking_branch,
+                              repository.RepoRepository.DEFAULT_MANIFEST,
+                              self._build_config['git_url'])
+
+
 class PatchChangesStage(bs.BuilderStage):
   """Stage that patches a set of Gerrit changes to the buildroot source tree."""
   def __init__(self, bot_id, options, build_config, gerrit_patches,
@@ -124,82 +135,28 @@ class PatchChangesStage(bs.BuilderStage):
       cros_patch.RemovePatchRoot(patch_root)
 
 
-class SyncStage(bs.BuilderStage):
-  """Stage that performs syncing for the builder."""
-
-  option_name = 'sync'
-
-  def __init__(self, bot_id, options, build_config):
-    super(SyncStage, self).__init__(bot_id, options, build_config)
-    self.repo = None
-    self.skip_sync = False
-    self.internal = cbuildbot_config.IsInternalBuild(self._build_config)
-
-  def _GetManifestVersionsRepoUrl(self, read_only=False):
-    return cbuildbot_config.GetManifestVersionsRepoUrl(
-        self.internal,
-        read_only=read_only)
-
-  def Initialize(self):
-    self.repo = repository.RepoRepository(
-        self._build_config['git_url'], self._build_root,
-        branch=self._tracking_branch)
-
-  def GetNextManifest(self):
-    """Returns the manifest to use."""
-    return repository.RepoRepository.DEFAULT_MANIFEST
-
-  def ManifestCheckout(self, next_manifest):
-    """Checks out the repository to the given manifest."""
-    print 'BUILDROOT: %s' % self.repo.directory
-    print 'TRACKING BRANCH: %s' % self.repo.branch
-    print 'NEXT MANIFEST: %s' % next_manifest
-
-    if not self.skip_sync: self.repo.Sync(next_manifest)
-    self.repo.ExportManifest('/dev/stderr')
-
-  def _PerformStage(self):
-    self.Initialize()
-    self.ManifestCheckout(self.GetNextManifest())
-
-
-class LKGMSyncStage(SyncStage):
-  """Stage that syncs to the last known good manifest blessed by builders."""
-
-  def GetNextManifest(self):
-    """Override: Gets the LKGM."""
-    manifests_dir = lkgm_manager.LKGMManager.GetManifestDir()
-    if os.path.exists(manifests_dir):
-      shutil.rmtree(manifests_dir)
-
-    repository.CloneGitRepo(manifests_dir,
-                            self._GetManifestVersionsRepoUrl(read_only=True))
-    return lkgm_manager.LKGMManager.GetAbsolutePathToLKGM()
-
-
 class ManifestVersionedSyncStage(SyncStage):
   """Stage that generates a unique manifest file, and sync's to it."""
 
   manifest_manager = None
 
-  def __init__(self, bot_id, options, build_config):
-    # Perform the sync at the end of the stage to the given manifest.
-    super(ManifestVersionedSyncStage, self).__init__(bot_id, options,
-                                                     build_config)
-    self.repo = None
+  def _GetManifestVersionsRepoUrl(self, read_only=False):
+    return cbuildbot_config.GetManifestVersionsRepoUrl(
+        cbuildbot_config.IsInternalBuild(self._build_config),
+        read_only=read_only)
 
   def HandleSkip(self):
     """Initializes a manifest manager to the specified version if skipped."""
     if self._options.force_version:
-      self.Initialize()
       self._ForceVersion(self._options.force_version)
 
   def _ForceVersion(self, version):
     """Creates a manifest manager from given version and returns manifest."""
+    self.InitializeManifestManager()
     return ManifestVersionedSyncStage.manifest_manager.BootstrapFromVersion(
         version)
 
-  def Initialize(self):
+  def InitializeManifestManager(self):
     """Initializes a manager that manages manifests for associated stages."""
     # On the master branch, increment the build number. On the stabilize
     # branch, increment the patch number. For other branches, increment
@@ -208,12 +165,12 @@ class ManifestVersionedSyncStage(SyncStage):
     increment = _BRANCH_INCREMENT_TYPE.get(self._tracking_branch, 'branch')
 
     dry_run = self._options.debug
-    self.repo = repository.RepoRepository(
+    source_repo = repository.RepoRepository(
         self._build_config['git_url'], self._build_root,
         branch=self._tracking_branch, stable_sync=True)
     ManifestVersionedSyncStage.manifest_manager = \
         manifest_version.BuildSpecsManager(
-            source_repo=self.repo,
+            source_repo=source_repo,
             manifest_repo=self._GetManifestVersionsRepoUrl(read_only=dry_run),
             build_name=self._bot_id,
             incr_type=increment,
@@ -226,10 +183,10 @@ class ManifestVersionedSyncStage(SyncStage):
     return self.manifest_manager.GetNextBuildSpec()
 
   def _PerformStage(self):
-    self.Initialize()
     if self._options.force_version:
       next_manifest = self._ForceVersion(self._options.force_version)
     else:
+      self.InitializeManifestManager()
       next_manifest = self.GetNextManifest()
 
     if not next_manifest:
@@ -241,24 +198,29 @@ class ManifestVersionedSyncStage(SyncStage):
 
     # Log this early on for the release team to grep out before we finish.
     if ManifestVersionedSyncStage.manifest_manager:
-      print '\nRELEASETAG: %s\n' % (
+      print
+      print 'RELEASETAG: %s' % (
           ManifestVersionedSyncStage.manifest_manager.current_version)
+      print
 
-    self.ManifestCheckout(next_manifest)
+    commands.ManifestCheckout(self._build_root,
+                              self._tracking_branch,
+                              next_manifest,
+                              self._build_config['git_url'])
 
 
 class LKGMCandidateSyncStage(ManifestVersionedSyncStage):
   """Stage that generates a unique manifest file candidate, and sync's to it."""
 
-  def Initialize(self):
+  def InitializeManifestManager(self):
     """Override: Creates an LKGMManager rather than a ManifestManager."""
     dry_run = self._options.debug
-    self.repo = repository.RepoRepository(
+    source_repo = repository.RepoRepository(
         self._build_config['git_url'], self._build_root,
         branch=self._tracking_branch)
     increment = 'build' if self._tracking_branch == 'master' else 'branch'
     ManifestVersionedSyncStage.manifest_manager = lkgm_manager.LKGMManager(
-        source_repo=self.repo,
+        source_repo=source_repo,
         manifest_repo=self._GetManifestVersionsRepoUrl(read_only=dry_run),
         build_name=self._bot_id,
         build_type=self._build_config['build_type'],
@@ -268,7 +230,7 @@ class LKGMCandidateSyncStage(ManifestVersionedSyncStage):
   def GetNextManifest(self):
     """Gets the next manifest using LKGM logic."""
     assert self.manifest_manager, \
-        'Must run Initialize before we can get a manifest.'
+        'Must run InitializeManifestManager before we can get a manifest.'
     assert isinstance(self.manifest_manager, lkgm_manager.LKGMManager), \
         'Manifest manager instantiated with wrong class.'
 
@@ -299,9 +261,6 @@ class CommitQueueSyncStage(LKGMCandidateSyncStage):
     # Figure out the builder's name from the buildbot waterfall.
     builder_name = build_config.get('paladin_builder_name')
     self.builder_name = builder_name if builder_name else bot_id
-    # We deal with syncing ourselves in this class and don't rely on manifest
-    # checkout.
-    self.skip_sync = True
 
   def HandleSkip(self):
     """Handles skip and initializes validation pool from manifest."""
@@ -310,27 +269,31 @@ class CommitQueueSyncStage(LKGMCandidateSyncStage):
 
   def SetPoolFromManifest(self, manifest):
     """Sets validation pool based on manifest path passed in."""
+    internal = cbuildbot_config.IsInternalBuild(self._build_config)
     CommitQueueSyncStage.pool = \
         validation_pool.ValidationPool.AcquirePoolFromManifest(
-            manifest, self.internal, self._options.buildnumber,
+            manifest, internal, self._options.buildnumber,
             self.builder_name, self._build_config['master'],
             self._options.debug)
 
   def GetNextManifest(self):
     """Gets the next manifest using LKGM logic."""
     assert self.manifest_manager, \
-        'Must run Initialize before we can get a manifest.'
+        'Must run InitializeManifestManager before we can get a manifest.'
     assert isinstance(self.manifest_manager, lkgm_manager.LKGMManager), \
         'Manifest manager instantiated with wrong class.'
 
     if self._build_config['master']:
       try:
         # In order to acquire a pool, we need an initialized buildroot.
-        if not repository.InARepoRepository(self.repo.directory):
-          self.repo.Initialize()
+        if not repository.InARepoRepository(self._build_root):
+          repository.RepoRepository(
+              self._build_config['git_url'], self._build_root,
+              self._tracking_branch).Initialize()
 
+        internal = cbuildbot_config.IsInternalBuild(self._build_config)
         pool = validation_pool.ValidationPool.AcquirePool(
-            self.internal, self._build_root, self._options.buildnumber,
+            internal, self._build_root, self._options.buildnumber,
             self.builder_name, self._options.debug)
 
         # We only have work to do if there are changes to try.
@@ -342,31 +305,53 @@ class CommitQueueSyncStage(LKGMCandidateSyncStage):
           cros_lib.Warning(str(e))
           pass
 
-        CommitQueueSyncStage.pool = pool
+        if pool.changes:
+          CommitQueueSyncStage.pool = pool
+        else:
+          return None
 
       except validation_pool.TreeIsClosedException as e:
         cros_lib.Warning(str(e))
         return None
 
-      return self.manifest_manager.CreateNewCandidate(validation_pool=pool)
+      return self.manifest_manager.CreateNewCandidate(patches=self.pool.changes)
     else:
       manifest = self.manifest_manager.GetLatestCandidate()
       if manifest:
         self.SetPoolFromManifest(manifest)
-        self.repo.Sync(manifest)
-        self.pool.ApplyPoolIntoRepo(self._build_root)
 
       return manifest
 
-  # Accessing a protected member.  TODO(sosa): Refactor PerformStage to not be
-  # a protected member as children override it.
-  # pylint: disable=W0212
+  # Disable pylint that disallows me from calling my parent's parent.
+  # pylint: disable=E1003
   def _PerformStage(self):
     """Performs normal stage and prints blamelist at end."""
     if self._options.force_version:
       self.HandleSkip()
     else:
-      ManifestVersionedSyncStage._PerformStage(self)
+      super(LKGMCandidateSyncStage, self)._PerformStage()
+
+    if not self.pool.ApplyPoolIntoRepo(self._build_root):
+      print 'No patches applied cleanly.  Found no work to do.'
+      sys.exit(0)
+
+
+class LKGMSyncStage(ManifestVersionedSyncStage):
+  """Stage that syncs to the last known good manifest blessed by builders."""
+
+  def InitializeManifestManager(self):
+    """Override: don't do anything."""
+    pass
+
+  def GetNextManifest(self):
+    """Override: Gets the LKGM."""
+    manifests_dir = lkgm_manager.LKGMManager.GetManifestDir()
+    if os.path.exists(manifests_dir):
+      shutil.rmtree(manifests_dir)
+
+    repository.CloneGitRepo(manifests_dir,
+                            self._GetManifestVersionsRepoUrl(read_only=True))
+    return lkgm_manager.LKGMManager.GetAbsolutePathToLKGM()
 
 
 class ManifestVersionedSyncCompletionStage(ForgivingBuilderStage):

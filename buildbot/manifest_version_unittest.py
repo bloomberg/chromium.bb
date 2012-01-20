@@ -20,7 +20,6 @@ if __name__ == '__main__':
 from chromite.buildbot import cbuildbot_config
 from chromite.buildbot import configure_repo
 from chromite.buildbot import manifest_version
-from chromite.buildbot import repository
 from chromite.lib import cros_build_lib as cros_lib
 
 # pylint: disable=W0212,R0904
@@ -88,6 +87,7 @@ class HelperMethodsTest(unittest.TestCase):
                          'config',
                          'url.%s.insteadof' % constants.GERRIT_SSH_URL,
                          constants.GIT_HTTP_URL], cwd=git_dir)
+
     manifest_version.PrepForChanges(git_dir, dry_run=True)
 
     # Change something.
@@ -264,8 +264,7 @@ class BuildSpecsManagerTest(mox.MoxTestBase):
     self.mox.StubOutWithMock(self.manager, '_GetSpecAge')
     self.manager._GetSpecAge('1.2.5').AndReturn(100)
     self.mox.ReplayAll()
-    self.manager.RefreshManifestCheckout()
-    self.manager.InitializeManifestVariables(info)
+    self.manager._LoadSpecs(info)
     self.mox.VerifyAll()
     self.assertEqual(self.manager.latest_unprocessed, '1.2.5')
 
@@ -295,34 +294,53 @@ class BuildSpecsManagerTest(mox.MoxTestBase):
     # Should be the latest on the 99.1 branch
     self.assertEqual(spec, '99.3.3')
 
-  def testGetNextVersionNoIncrement(self):
-    """Tests whether we can get the next version to be built correctly.
+  def testCreateNewBuildSpecNoCopy(self):
+    """Tests whether we can create a new build spec correctly.
 
-    Tests without pre-existing version in manifest dir.
+    Tests without pre-existing version file in manifest dir.
     """
+    self.mox.StubOutWithMock(repository.RepoRepository, 'ExportManifest')
+    self.mox.StubOutWithMock(manifest_version, 'PrepForChanges')
+    self.mox.StubOutWithMock(manifest_version, '_PushGitChanges')
     info = manifest_version.VersionInfo(
         FAKE_VERSION_STRING, CHROME_BRANCH, incr_type='patch')
 
-    self.manager.latest = None
+    self.manager.all_specs_dir = os.path.join(self.manager._TMP_MANIFEST_DIR,
+                                              'buildspecs', '1.2')
+
+    repository.RepoRepository.ExportManifest(mox.IgnoreArg())
+
     self.mox.ReplayAll()
-    version = self.manager.GetNextVersion(info)
+    version = self.manager._CreateNewBuildSpec(info)
     self.mox.VerifyAll()
     self.assertEqual(FAKE_VERSION_STRING, version)
 
-  def testGetNextVersionIncrement(self):
+  def testCreateNewBuildIncrement(self):
     """Tests that we create a new version if a previous one exists."""
     self.mox.StubOutWithMock(manifest_version.VersionInfo, 'IncrementVersion')
+    self.mox.StubOutWithMock(repository.RepoRepository, 'ExportManifest')
+    self.mox.StubOutWithMock(repository.RepoRepository, 'Sync')
+    self.mox.StubOutWithMock(repository.RepoRepository, 'IsManifestDifferent')
+
     version_file = VersionInfoTest.CreateFakeVersionFile(self.tmpdir)
     info = manifest_version.VersionInfo(version_file=version_file,
                                          incr_type='patch')
+    self.manager.all_specs_dir = os.path.join(self.manager._TMP_MANIFEST_DIR,
+                                              'buildspecs', '1.2')
     info.IncrementVersion(
         'Automatic: %s - Updating to a new version number from %s' % (
             self.build_name, FAKE_VERSION_STRING),
         dry_run=True).AndReturn(FAKE_VERSION_STRING_NEXT)
 
-    self.manager.latest = FAKE_VERSION_STRING
+    # TODO(ferringb): Gut the cleanup=False added for 24709.
+    repository.RepoRepository.Sync('default', cleanup=False)
+    repository.RepoRepository.ExportManifest(mox.IgnoreArg())
+    repository.RepoRepository.IsManifestDifferent(mox.IgnoreArg()
+       ).AndReturn(True)
+
     self.mox.ReplayAll()
-    version = self.manager.GetNextVersion(info)
+    self.manager.latest = FAKE_VERSION_STRING
+    version = self.manager._CreateNewBuildSpec(info)
     self.mox.VerifyAll()
     self.assertEqual(FAKE_VERSION_STRING_NEXT, version)
 
