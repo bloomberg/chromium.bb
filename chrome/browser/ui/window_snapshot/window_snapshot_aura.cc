@@ -1,9 +1,10 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/window_snapshot/window_snapshot.h"
 
+#include "ash/shell.h"
 #include "base/logging.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/aura/window.h"
@@ -25,8 +26,13 @@ bool GrabWindowSnapshot(gfx::NativeWindow window,
   DCHECK_LE(desktop_snapshot_bounds.right() , compositor->size().width());
   DCHECK_LE(desktop_snapshot_bounds.bottom(), compositor->size().height());
 
+  // When in compact mode, only take the snapshot for one window.
+  bool is_compact = ash::Shell::GetInstance()->IsWindowModeCompact();
+
   SkBitmap bitmap;
-  if (!compositor->ReadPixels(&bitmap, desktop_snapshot_bounds))
+  if (!compositor->ReadPixels(
+          &bitmap,
+          is_compact ?  snapshot_bounds : desktop_snapshot_bounds))
     return false;
 
   unsigned char* pixels = reinterpret_cast<unsigned char*>(bitmap.getPixels());

@@ -36,20 +36,34 @@ class ASH_EXPORT CompactLayoutManager : public BaseLayoutManager {
   virtual void OnWillRemoveWindowFromLayout(aura::Window* child) OVERRIDE;
   virtual void OnChildWindowVisibilityChanged(aura::Window* child,
                                               bool visibile) OVERRIDE;
+  virtual void SetChildBounds(aura::Window* child,
+                              const gfx::Rect& requested_bounds) OVERRIDE;
 
   // WindowObserver overrides:
   virtual void OnWindowPropertyChanged(aura::Window* window,
                                        const char* name,
                                        void* old) OVERRIDE;
+  virtual void OnWindowStackingChanged(aura::Window* window) OVERRIDE;
 
  private:
   // Hides the status area if we are managing it and full screen windows are
   // visible.
   void UpdateStatusAreaVisibility();
 
+  // Start a slide in / out animation sequence for the layer.
+  // The underlying layer is translated to -|offset_x| position.
+  void AnimateSlideTo(int offset_x);
+
+  // Layout all browser windows currently in the window cycle list.
+  // skip |skip_this_window| if we do not want the window to be laid out.
+  void LayoutWindows(aura::Window* skip_this_window);
+
   // Status area with clock, network, battery, etc. icons. May be NULL if the
   // shelf is managing the status area.
   views::Widget* status_area_widget_;
+
+  // The browser window currently in the viewport.
+  aura::Window* current_window_;
 
   DISALLOW_COPY_AND_ASSIGN(CompactLayoutManager);
 };

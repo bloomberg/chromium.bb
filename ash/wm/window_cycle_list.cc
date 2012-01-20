@@ -37,6 +37,10 @@ void WindowCycleList::Step(Direction direction) {
   if (windows_.empty())
     return;
 
+  // Don't cycle through a list of one.
+  if (windows_.size() == 1)
+    return;
+
   if (current_index_ == -1) {
     // We weren't able to find our active window in the shell delegate's
     // provided window list.  Just switch to the first (or last) one.

@@ -319,7 +319,12 @@ InputMethod* NativeWidgetAura::CreateInputMethod() {
 }
 
 void NativeWidgetAura::CenterWindow(const gfx::Size& size) {
-  const gfx::Rect parent_bounds = window_->parent()->bounds();
+  gfx::Rect parent_bounds(window_->parent()->bounds());
+  // When centering window, we take the intersection of the host and
+  // the parent. We assume the root window represents the visible
+  // rect of a single screen.
+  parent_bounds = parent_bounds.Intersect(
+      aura::RootWindow::GetInstance()->bounds());
   window_->SetBounds(gfx::Rect((parent_bounds.width() - size.width())/2,
                                (parent_bounds.height() - size.height())/2,
                                size.width(),
