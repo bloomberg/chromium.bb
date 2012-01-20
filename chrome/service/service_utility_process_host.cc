@@ -152,6 +152,10 @@ FilePath ServiceUtilityProcessHost::GetUtilityProcessCmd() {
   return ChildProcessHost::GetChildPath(flags);
 }
 
+bool ServiceUtilityProcessHost::CanShutdown() {
+  return true;
+}
+
 void ServiceUtilityProcessHost::OnChildDisconnected() {
   if (waiting_for_reply_) {
     // If we are yet to receive a reply then notify the client that the
@@ -160,6 +164,9 @@ void ServiceUtilityProcessHost::OnChildDisconnected() {
         FROM_HERE, base::Bind(&Client::OnChildDied, client_.get()));
   }
   delete this;
+}
+
+void ServiceUtilityProcessHost::ShutdownStarted() {
 }
 
 bool ServiceUtilityProcessHost::OnMessageReceived(const IPC::Message& message) {

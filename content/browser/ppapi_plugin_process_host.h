@@ -12,12 +12,8 @@
 #include "base/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/ref_counted.h"
+#include "content/browser/browser_child_process_host.h"
 #include "content/browser/renderer_host/pepper_message_filter.h"
-#include "content/public/browser/browser_child_process_host_delegate.h"
-#include "content/public/browser/browser_child_process_host_iterator.h"
-#include "ipc/ipc_message.h"
-
-class BrowserChildProcessHost;
 
 namespace content {
 struct PepperPluginInfo;
@@ -30,8 +26,8 @@ class HostResolver;
 
 // Process host for PPAPI plugin and broker processes.
 // When used for the broker, interpret all references to "plugin" with "broker".
-class PpapiPluginProcessHost : public content::BrowserChildProcessHostDelegate,
-                               public IPC::Message::Sender {
+class PpapiPluginProcessHost
+    : public BrowserChildProcessHost {
  public:
   class Client {
    public:
@@ -63,9 +59,6 @@ class PpapiPluginProcessHost : public content::BrowserChildProcessHostDelegate,
       net::HostResolver* host_resolver);
   static PpapiPluginProcessHost* CreateBrokerHost(
       const content::PepperPluginInfo& info);
-
-  // IPC::Message::Sender implementation:
-  virtual bool Send(IPC::Message* message) OVERRIDE;
 
   // Opens a new channel to the plugin. The client will be notified when the
   // channel is ready or if there's an error.
@@ -122,27 +115,7 @@ class PpapiPluginProcessHost : public content::BrowserChildProcessHostDelegate,
   // The unique id created for the process.
   int process_id_;
 
-  scoped_ptr<BrowserChildProcessHost> process_;
-
   DISALLOW_COPY_AND_ASSIGN(PpapiPluginProcessHost);
-};
-
-class PpapiPluginProcessHostIterator
-    : public content::BrowserChildProcessHostTypeIterator<
-          PpapiPluginProcessHost> {
- public:
-  PpapiPluginProcessHostIterator()
-      : content::BrowserChildProcessHostTypeIterator<
-          PpapiPluginProcessHost>(content::PROCESS_TYPE_PPAPI_PLUGIN) {}
-};
-
-class PpapiBrokerProcessHostIterator
-    : public content::BrowserChildProcessHostTypeIterator<
-          PpapiPluginProcessHost> {
- public:
-  PpapiBrokerProcessHostIterator()
-      : content::BrowserChildProcessHostTypeIterator<
-          PpapiPluginProcessHost>(content::PROCESS_TYPE_PPAPI_BROKER) {}
 };
 
 #endif  // CONTENT_BROWSER_PPAPI_PLUGIN_PROCESS_HOST_H_

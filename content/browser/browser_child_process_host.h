@@ -14,52 +14,116 @@
 #include "base/process.h"
 #include "base/synchronization/waitable_event_watcher.h"
 #include "content/browser/child_process_launcher.h"
-#include "content/public/browser/browser_child_process_host.h"
+#include "content/common/content_export.h"
 #include "content/public/browser/child_process_data.h"
 #include "content/public/common/child_process_host_delegate.h"
+#include "ipc/ipc_message.h"
 
-namespace content {
-class BrowserChildProcessHostIterator;
+namespace base {
+class WaitableEvent;
 }
 
-// Plugins/workers and other child processes that live on the IO thread use this
-// class. RenderProcessHostImpl is the main exception that doesn't use this
-/// class because it lives on the UI thread.
+namespace content {
+class ChildProcessHost;
+}
+
+// Plugins/workers and other child processes that live on the IO thread should
+// derive from this class.
+//
+// [Browser]RenderProcessHost is the main exception that doesn't derive from
+// this class. That project lives on the UI thread.
 class CONTENT_EXPORT BrowserChildProcessHost :
-    public NON_EXPORTED_BASE(content::BrowserChildProcessHost),
     public NON_EXPORTED_BASE(content::ChildProcessHostDelegate),
     public ChildProcessLauncher::Client,
-    public base::WaitableEventWatcher::Delegate {
+    public base::WaitableEventWatcher::Delegate,
+    public IPC::Message::Sender {
  public:
-  BrowserChildProcessHost(content::ProcessType type,
-                          content::BrowserChildProcessHostDelegate* delegate);
   virtual ~BrowserChildProcessHost();
+
+  virtual void OnWaitableEventSignaled(
+      base::WaitableEvent* waitable_event) OVERRIDE;
 
   // Terminates all child processes and deletes each BrowserChildProcessHost
   // instance.
   static void TerminateAll();
 
-  // BrowserChildProcessHost implementation:
+  // The Iterator class allows iteration through either all child processes, or
+  // ones of a specific type, depending on which constructor is used.  Note that
+  // this should be done from the IO thread and that the iterator should not be
+  // kept around as it may be invalidated on subsequent event processing in the
+  // event loop.
+  class CONTENT_EXPORT Iterator {
+   public:
+    Iterator();
+    explicit Iterator(content::ProcessType type);
+    BrowserChildProcessHost* operator->() { return *iterator_; }
+    BrowserChildProcessHost* operator*() { return *iterator_; }
+    BrowserChildProcessHost* operator++();
+    bool Done();
+
+   private:
+    bool all_;
+    content::ProcessType type_;
+    std::list<BrowserChildProcessHost*>::iterator iterator_;
+  };
+
+  // IPC::Message::Sender override
   virtual bool Send(IPC::Message* message) OVERRIDE;
-  virtual void Launch(
+
+  const content::ChildProcessData& data() const { return data_; }
+  bool disconnect_was_alive() const { return disconnect_was_alive_; }
+
+ protected:
+  explicit BrowserChildProcessHost(content::ProcessType type);
+
+  // Derived classes call this to launch the child process asynchronously.
+  void Launch(
 #if defined(OS_WIN)
       const FilePath& exposed_dir,
 #elif defined(OS_POSIX)
       bool use_zygote,
       const base::environment_vector& environ,
 #endif
-      CommandLine* cmd_line) OVERRIDE;
-  virtual const content::ChildProcessData& GetData() const OVERRIDE;
-  virtual content::ChildProcessHost* GetHost() const OVERRIDE;
-  virtual base::TerminationStatus GetTerminationStatus(int* exit_code) OVERRIDE;
-  virtual void SetName(const string16& name) OVERRIDE;
-  virtual void SetHandle(base::ProcessHandle handle) OVERRIDE;
+      CommandLine* cmd_line);
 
-  bool disconnect_was_alive() const { return disconnect_was_alive_; }
+  // TODO(jam): below is what will be in the BrowserChildProcessHostDelegate
+  // interface.
+
+  // ChildProcessLauncher::Client implementation.
+  virtual void OnProcessLaunched() OVERRIDE {}
+
+  // Derived classes can override this to know if the process crashed.
+  // |exit_code| is the status returned when the process crashed (for
+  // posix, as returned from waitpid(), for Windows, as returned from
+  // GetExitCodeProcess()).
+  virtual void OnProcessCrashed(int exit_code) {}
+
+  // Overrides from ChildProcessHostDelegate
+  virtual bool CanShutdown() OVERRIDE;
+  virtual void OnChildDisconnected() OVERRIDE;
+  virtual void ShutdownStarted() OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
+
+  // Returns the termination status of a child.  |exit_code| is the
+  // status returned when the process exited (for posix, as returned
+  // from waitpid(), for Windows, as returned from
+  // GetExitCodeProcess()).  |exit_code| may be NULL.
+  base::TerminationStatus GetChildTerminationStatus(int* exit_code);
 
   // Returns the handle of the child process. This can be called only after
   // OnProcessLaunched is called or it will be invalid and may crash.
-  base::ProcessHandle GetHandle() const;
+  base::ProcessHandle GetChildProcessHandle() const;
+
+  // Sets the user-visible name of the process.
+  void SetName(const string16& name);
+
+  // Set the handle of the process. BrowserChildProcessHost will do this when
+  // the Launch method is used to start the process. However if the owner
+  // of this object doesn't call Launch and starts the process in another way,
+  // they need to call this method so that the process handle is associated with
+  // this object.
+  void SetHandle(base::ProcessHandle handle);
 
   // Removes this host from the host list. Calls ChildProcessHost::ForceShutdown
   void ForceShutdown();
@@ -71,35 +135,26 @@ class CONTENT_EXPORT BrowserChildProcessHost :
   // Sends the given notification on the UI thread.
   void Notify(int type);
 
-  content::BrowserChildProcessHostDelegate* delegate() const {
-    return delegate_;
+  content::ChildProcessHost* child_process_host() const {
+    return child_process_host_.get();
   }
 
-  typedef std::list<BrowserChildProcessHost*> BrowserChildProcessList;
  private:
-  friend class content::BrowserChildProcessHostIterator;
-
-  static BrowserChildProcessList* GetIterator();
-
-  // ChildProcessHostDelegate implementation:
-  virtual bool CanShutdown() OVERRIDE;
-  virtual void OnChildDisconnected() OVERRIDE;
-  virtual void ShutdownStarted() OVERRIDE;
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-  virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
-  virtual void OnChannelError() OVERRIDE;
-
-  // ChildProcessLauncher::Client implementation.
-  virtual void OnProcessLaunched() OVERRIDE;
-
-  // public base::WaitableEventWatcher::Delegate implementation:
-  virtual void OnWaitableEventSignaled(
-      base::WaitableEvent* waitable_event) OVERRIDE;
+  // By using an internal class as the ChildProcessLauncher::Client, we can
+  // intercept OnProcessLaunched and do our own processing before
+  // calling the subclass' implementation.
+  class ClientHook : public ChildProcessLauncher::Client {
+   public:
+    explicit ClientHook(BrowserChildProcessHost* host);
+    virtual void OnProcessLaunched() OVERRIDE;
+   private:
+    BrowserChildProcessHost* host_;
+  };
 
   content::ChildProcessData data_;
-  content::BrowserChildProcessHostDelegate* delegate_;
   scoped_ptr<content::ChildProcessHost> child_process_host_;
 
+  ClientHook client_;
   scoped_ptr<ChildProcessLauncher> child_process_;
 #if defined(OS_WIN)
   base::WaitableEventWatcher child_watcher_;

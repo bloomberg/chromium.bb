@@ -7,15 +7,9 @@
 #pragma once
 
 #include "base/basictypes.h"
-#include "base/memory/scoped_ptr.h"
-#include "base/process.h"
-#include "content/public/browser/browser_child_process_host_delegate.h"
+#include "content/browser/browser_child_process_host.h"
 
-namespace content {
-class BrowserChildProcessHost;
-}
-
-class NaClBrokerHost : public content::BrowserChildProcessHostDelegate {
+class NaClBrokerHost : public BrowserChildProcessHost {
  public:
   NaClBrokerHost();
   ~NaClBrokerHost();
@@ -36,12 +30,10 @@ class NaClBrokerHost : public content::BrowserChildProcessHostDelegate {
   void OnLoaderLaunched(const std::wstring& loader_channel_id,
                         base::ProcessHandle handle);
 
-  // BrowserChildProcessHostDelegate implementation:
+  // BrowserChildProcessHost implementation:
   virtual bool OnMessageReceived(const IPC::Message& msg);
 
   bool stopping_;
-
-  scoped_ptr<content::BrowserChildProcessHost> process_;
 
   DISALLOW_COPY_AND_ASSIGN(NaClBrokerHost);
 };

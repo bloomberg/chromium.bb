@@ -21,7 +21,6 @@
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "content/browser/browser_child_process_host.h"
 #include "content/browser/plugin_service_impl.h"
 #include "content/common/child_process_host_impl.h"
 #include "content/common/plugin_messages.h"
@@ -37,7 +36,6 @@
 #include "ui/gfx/native_widget_types.h"
 
 using content::BrowserThread;
-using content::ChildProcessData;
 using content::ChildProcessHost;
 
 #if defined(USE_X11)
@@ -93,7 +91,7 @@ void PluginProcessHost::OnReparentPluginWindow(HWND window, HWND parent) {
   // Reparent only from the plugin process to our process.
   DWORD process_id = 0;
   ::GetWindowThreadProcessId(window, &process_id);
-  if (process_id != ::GetProcessId(process_->GetHandle()))
+  if (process_id != ::GetProcessId(GetChildProcessHandle()))
     return;
   ::GetWindowThreadProcessId(parent, &process_id);
   if (process_id != ::GetCurrentProcessId())
@@ -116,12 +114,11 @@ void PluginProcessHost::OnMapNativeViewId(gfx::NativeViewId id,
 #endif  // defined(TOOLKIT_USES_GTK)
 
 PluginProcessHost::PluginProcessHost()
+    : BrowserChildProcessHost(content::PROCESS_TYPE_PLUGIN)
 #if defined(OS_MACOSX)
-    : plugin_cursor_visible_(true)
+      , plugin_cursor_visible_(true)
 #endif
 {
-  process_.reset(new BrowserChildProcessHost(
-      content::PROCESS_TYPE_PLUGIN, this));
 }
 
 PluginProcessHost::~PluginProcessHost() {
@@ -167,15 +164,11 @@ PluginProcessHost::~PluginProcessHost() {
   CancelRequests();
 }
 
-bool PluginProcessHost::Send(IPC::Message* message) {
-  return process_->Send(message);
-}
-
 bool PluginProcessHost::Init(const webkit::WebPluginInfo& info) {
   info_ = info;
-  process_->SetName(info_.name);
+  SetName(info_.name);
 
-  std::string channel_id = process_->GetHost()->CreateChannel();
+  std::string channel_id = child_process_host()->CreateChannel();
   if (channel_id.empty())
     return false;
 
@@ -265,7 +258,7 @@ bool PluginProcessHost::Init(const webkit::WebPluginInfo& info) {
 #endif
 #endif
 
-  process_->Launch(
+  Launch(
 #if defined(OS_WIN)
       FilePath(),
 #elif defined(OS_POSIX)
@@ -278,7 +271,7 @@ bool PluginProcessHost::Init(const webkit::WebPluginInfo& info) {
   // called on the plugin. The plugin process exits when it receives the
   // OnChannelError notification indicating that the browser plugin channel has
   // been destroyed.
-  process_->SetTerminateChildOnShutdown(false);
+  SetTerminateChildOnShutdown(false);
 
   content::GetContentClient()->browser()->PluginProcessHostCreated(this);
 
@@ -288,11 +281,11 @@ bool PluginProcessHost::Init(const webkit::WebPluginInfo& info) {
 void PluginProcessHost::ForceShutdown() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   Send(new PluginProcessMsg_NotifyRenderersOfPendingShutdown());
-  process_->ForceShutdown();
+  BrowserChildProcessHost::ForceShutdown();
 }
 
 void PluginProcessHost::AddFilter(IPC::ChannelProxy::MessageFilter* filter) {
-  process_->GetHost()->AddFilter(filter);
+  child_process_host()->AddFilter(filter);
 }
 
 bool PluginProcessHost::OnMessageReceived(const IPC::Message& msg) {
@@ -327,6 +320,7 @@ bool PluginProcessHost::OnMessageReceived(const IPC::Message& msg) {
 }
 
 void PluginProcessHost::OnChannelConnected(int32 peer_pid) {
+  BrowserChildProcessHost::OnChannelConnected(peer_pid);
   for (size_t i = 0; i < pending_requests_.size(); ++i) {
     RequestPluginChannel(pending_requests_[i]);
   }
@@ -358,8 +352,9 @@ void PluginProcessHost::CancelRequests() {
 // static
 void PluginProcessHost::CancelPendingRequestsForResourceContext(
     const content::ResourceContext* context) {
-  for (PluginProcessHostIterator host_it; !host_it.Done(); ++host_it) {
-    PluginProcessHost* host = *host_it;
+  for (BrowserChildProcessHost::Iterator host_it(content::PROCESS_TYPE_PLUGIN);
+       !host_it.Done(); ++host_it) {
+    PluginProcessHost* host = static_cast<PluginProcessHost*>(*host_it);
     for (size_t i = 0; i < host->pending_requests_.size(); ++i) {
       if (&host->pending_requests_[i]->GetResourceContext() == context) {
         host->pending_requests_[i]->OnError();
@@ -371,9 +366,9 @@ void PluginProcessHost::CancelPendingRequestsForResourceContext(
 }
 
 void PluginProcessHost::OpenChannelToPlugin(Client* client) {
-  process_->Notify(content::NOTIFICATION_CHILD_INSTANCE_CREATED);
+  Notify(content::NOTIFICATION_CHILD_INSTANCE_CREATED);
   client->SetPluginInfo(info_);
-  if (process_->GetHost()->IsChannelOpening()) {
+  if (child_process_host()->IsChannelOpening()) {
     // The channel is already in the process of being opened.  Put
     // this "open channel" request into a queue of requests that will
     // be run once the channel is open.

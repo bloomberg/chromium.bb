@@ -11,6 +11,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/debugger/devtools_window.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "content/browser/browser_child_process_host.h"
 #include "content/browser/worker_host/worker_process_host.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_data.h"
@@ -217,7 +218,7 @@ void TaskManagerWorkerResourceProvider::WorkerCreated(
       WorkerProcessHost* process,
       const WorkerProcessHost::WorkerInstance& instance) {
   TaskManagerSharedWorkerResource* resource =
-      new TaskManagerSharedWorkerResource(process->GetData(),
+      new TaskManagerSharedWorkerResource(process->data(),
                                           instance.worker_route_id(),
                                           instance.url(), instance.name());
   BrowserThread::PostTask(
@@ -232,7 +233,7 @@ void TaskManagerWorkerResourceProvider::WorkerDestroyed(
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE, base::Bind(
           &TaskManagerWorkerResourceProvider::NotifyWorkerDestroyed,
-          this, process->GetData().id, worker_route_id));
+          this, process->data().id, worker_route_id));
 }
 
 void TaskManagerWorkerResourceProvider::Observe(
@@ -303,12 +304,14 @@ void TaskManagerWorkerResourceProvider::StartObservingWorkers() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   scoped_ptr<WorkerResourceListHolder> holder(new WorkerResourceListHolder);
-  for (WorkerProcessHostIterator iter; !iter.Done(); ++iter) {
-    const WorkerProcessHost::Instances& instances = (*iter)->instances();
+  BrowserChildProcessHost::Iterator iter(content::PROCESS_TYPE_WORKER);
+  for (; !iter.Done(); ++iter) {
+    WorkerProcessHost* worker = static_cast<WorkerProcessHost*>(*iter);
+    const WorkerProcessHost::Instances& instances = worker->instances();
     for (WorkerProcessHost::Instances::const_iterator i = instances.begin();
          i != instances.end(); ++i) {
        holder->resources()->push_back(new TaskManagerSharedWorkerResource(
-           iter.GetData(), i->worker_route_id(), i->url(), i->name()));
+           (*iter)->data(), i->worker_route_id(), i->url(), i->name()));
     }
   }
 

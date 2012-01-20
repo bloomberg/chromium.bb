@@ -9,7 +9,6 @@
 #include "content/browser/renderer_host/gpu_message_filter.h"
 
 #include "base/bind.h"
-#include "base/process_util.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/gpu/gpu_surface_tracker.h"
 #include "content/browser/renderer_host/render_widget_helper.h"

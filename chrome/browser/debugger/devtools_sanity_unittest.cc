@@ -25,8 +25,6 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/worker_host/worker_process_host.h"
-#include "content/public/browser/browser_child_process_host_iterator.h"
-#include "content/public/browser/child_process_data.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/devtools_agent_host_registry.h"
 #include "content/public/browser/devtools_client_host.h"
@@ -294,7 +292,7 @@ class WorkerDevToolsSanityTest : public InProcessBrowserTest {
     virtual void WorkerCreated (
         WorkerProcessHost* process,
         const WorkerProcessHost::WorkerInstance& instance) OVERRIDE {
-      worker_data_->worker_process_id = process->GetData().id;
+      worker_data_->worker_process_id = process->data().id;
       worker_data_->worker_route_id = instance.worker_route_id();
       WorkerService::GetInstance()->RemoveObserver(this);
       BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
@@ -325,7 +323,7 @@ class WorkerDevToolsSanityTest : public InProcessBrowserTest {
     virtual void WorkerDestroyed(
         WorkerProcessHost* process,
         int worker_route_id) OVERRIDE {
-      ASSERT_EQ(worker_data_->worker_process_id, process->GetData().id);
+      ASSERT_EQ(worker_data_->worker_process_id, process->data().id);
       ASSERT_EQ(worker_data_->worker_route_id, worker_route_id);
       WorkerService::GetInstance()->RemoveObserver(this);
       BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
@@ -351,9 +349,11 @@ class WorkerDevToolsSanityTest : public InProcessBrowserTest {
 
   static void TerminateWorkerOnIOThread(
       scoped_refptr<WorkerData> worker_data) {
-    for (WorkerProcessHostIterator iter; !iter.Done(); ++iter) {
-      if (iter.GetData().id == worker_data->worker_process_id) {
-        iter->TerminateWorker(worker_data->worker_route_id);
+    for (BrowserChildProcessHost::Iterator iter(content::PROCESS_TYPE_WORKER);
+         !iter.Done(); ++iter) {
+      if (iter->data().id == worker_data->worker_process_id) {
+        WorkerProcessHost* host = static_cast<WorkerProcessHost*>(*iter);
+        host->TerminateWorker(worker_data->worker_route_id);
         WorkerService::GetInstance()->AddObserver(
             new WorkerTerminationObserver(worker_data));
         return;
@@ -371,12 +371,14 @@ class WorkerDevToolsSanityTest : public InProcessBrowserTest {
 
   static void WaitForFirstSharedWorkerOnIOThread(
       scoped_refptr<WorkerData> worker_data) {
-    for (WorkerProcessHostIterator iter; !iter.Done(); ++iter) {
-      const WorkerProcessHost::Instances& instances = iter->instances();
+    BrowserChildProcessHost::Iterator iter(content::PROCESS_TYPE_WORKER);
+    for (; !iter.Done(); ++iter) {
+      WorkerProcessHost* worker = static_cast<WorkerProcessHost*>(*iter);
+      const WorkerProcessHost::Instances& instances = worker->instances();
       for (WorkerProcessHost::Instances::const_iterator i = instances.begin();
            i != instances.end(); ++i) {
 
-        worker_data->worker_process_id = iter.GetData().id;
+        worker_data->worker_process_id = worker->data().id;
         worker_data->worker_route_id = i->worker_route_id();
         BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
             MessageLoop::QuitClosure());

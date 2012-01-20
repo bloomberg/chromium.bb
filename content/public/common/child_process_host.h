@@ -16,9 +16,7 @@ namespace content {
 
 class ChildProcessHostDelegate;
 
-// This represents a non-browser process. This can include traditional child
-// processes like plugins, or an embedder could even use this for long lived
-// processes that run independent of the browser process.
+// Interface that all users of ChildProcessHost need to provide.
 class CONTENT_EXPORT ChildProcessHost : public IPC::Message::Sender {
  public:
   virtual ~ChildProcessHost() {}

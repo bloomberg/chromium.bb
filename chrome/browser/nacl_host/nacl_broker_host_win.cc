@@ -14,13 +14,11 @@
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/nacl_cmd_line.h"
 #include "chrome/common/nacl_messages.h"
-#include "content/public/browser/browser_child_process_host.h"
 #include "content/public/common/child_process_host.h"
 
 NaClBrokerHost::NaClBrokerHost()
-    : stopping_(false) {
-  process_.reset(content::BrowserChildProcessHost::Create(
-      content::PROCESS_TYPE_NACL_BROKER, this));
+    : BrowserChildProcessHost(content::PROCESS_TYPE_NACL_BROKER),
+      stopping_(false) {
 }
 
 NaClBrokerHost::~NaClBrokerHost() {
@@ -28,7 +26,7 @@ NaClBrokerHost::~NaClBrokerHost() {
 
 bool NaClBrokerHost::Init() {
   // Create the channel that will be used for communicating with the broker.
-  std::string channel_id = process_->GetHost()->CreateChannel();
+  std::string channel_id = child_process_host()->CreateChannel();
   if (channel_id.empty())
     return false;
 
@@ -47,7 +45,7 @@ bool NaClBrokerHost::Init() {
   if (logging::DialogsAreSuppressed())
     cmd_line->AppendSwitch(switches::kNoErrorDialogs);
 
-  process_->Launch(FilePath(), cmd_line);
+  BrowserChildProcessHost::Launch(FilePath(), cmd_line);
   return true;
 }
 
@@ -62,8 +60,7 @@ bool NaClBrokerHost::OnMessageReceived(const IPC::Message& msg) {
 
 bool NaClBrokerHost::LaunchLoader(
     const std::wstring& loader_channel_id) {
-  return process_->Send(
-      new NaClProcessMsg_LaunchLoaderThroughBroker(loader_channel_id));
+  return Send(new NaClProcessMsg_LaunchLoaderThroughBroker(loader_channel_id));
 }
 
 void NaClBrokerHost::OnLoaderLaunched(const std::wstring& loader_channel_id,
@@ -73,5 +70,5 @@ void NaClBrokerHost::OnLoaderLaunched(const std::wstring& loader_channel_id,
 
 void NaClBrokerHost::StopBroker() {
   stopping_ = true;
-  process_->Send(new NaClProcessMsg_StopBroker());
+  Send(new NaClProcessMsg_StopBroker());
 }

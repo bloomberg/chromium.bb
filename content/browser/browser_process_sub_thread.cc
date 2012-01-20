@@ -69,7 +69,7 @@ void BrowserProcessSubThread::IOThreadPreCleanUp() {
   // If any child processes are still running, terminate them and
   // and delete the BrowserChildProcessHost instances to release whatever
   // IO thread only resources they are referencing.
-  ::BrowserChildProcessHost::TerminateAll();
+  BrowserChildProcessHost::TerminateAll();
 }
 
 void BrowserProcessSubThread::IOThreadPostCleanUp() {

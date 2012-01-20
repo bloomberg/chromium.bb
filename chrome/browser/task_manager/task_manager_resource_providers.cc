@@ -41,10 +41,9 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
+#include "content/browser/browser_child_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/public/browser/browser_child_process_host_iterator.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/child_process_data.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
@@ -65,7 +64,6 @@
 #include "ui/gfx/icon_util.h"
 #endif  // defined(OS_WIN)
 
-using content::BrowserChildProcessHostIterator;
 using content::BrowserThread;
 using content::WebContents;
 
@@ -1070,11 +1068,11 @@ void TaskManagerChildProcessResourceProvider::AddToTaskManager(
 // The ChildProcessData::Iterator has to be used from the IO thread.
 void TaskManagerChildProcessResourceProvider::RetrieveChildProcessData() {
   std::vector<content::ChildProcessData> child_processes;
-  for (BrowserChildProcessHostIterator iter; !iter.Done(); ++iter) {
+  for (BrowserChildProcessHost::Iterator iter; !iter.Done(); ++iter) {
     // Only add processes which are already started, since we need their handle.
-    if (iter.GetData().handle == base::kNullProcessHandle)
+    if ((*iter)->data().handle == base::kNullProcessHandle)
       continue;
-    child_processes.push_back(iter.GetData());
+    child_processes.push_back((*iter)->data());
   }
   // Now notify the UI thread that we have retrieved information about child
   // processes.

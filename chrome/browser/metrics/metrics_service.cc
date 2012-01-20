@@ -177,7 +177,6 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "content/browser/load_notification_details.h"
-#include "content/public/browser/child_process_data.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/render_process_host.h"
@@ -197,7 +196,6 @@
 
 using base::Time;
 using content::BrowserThread;
-using content::ChildProcessData;
 using content::PluginService;
 
 // Check to see that we're being called on only one thread.
@@ -1337,7 +1335,7 @@ void MetricsService::LogChildProcessChange(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  content::Details<ChildProcessData> child_details(details);
+  content::Details<content::ChildProcessData> child_details(details);
   const string16& child_name = child_details->name;
 
   if (child_process_stats_buffer_.find(child_name) ==

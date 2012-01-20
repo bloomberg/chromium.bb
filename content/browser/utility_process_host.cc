@@ -9,7 +9,6 @@
 #include "base/command_line.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
-#include "content/browser/browser_child_process_host.h"
 #include "content/common/child_process_host_impl.h"
 #include "content/common/utility_messages.h"
 #include "content/public/browser/content_browser_client.h"
@@ -37,7 +36,8 @@ bool UtilityProcessHost::Client::OnMessageReceived(
 
 UtilityProcessHost::UtilityProcessHost(Client* client,
                                        BrowserThread::ID client_thread_id)
-    : client_(client),
+    : BrowserChildProcessHost(content::PROCESS_TYPE_UTILITY),
+      client_(client),
       client_thread_id_(client_thread_id),
       is_batch_mode_(false),
       no_sandbox_(false),
@@ -48,8 +48,6 @@ UtilityProcessHost::UtilityProcessHost(Client* client,
 #endif
       use_linux_zygote_(false),
       started_(false) {
-  process_.reset(new BrowserChildProcessHost(
-      content::PROCESS_TYPE_UTILITY, this));
 }
 
 UtilityProcessHost::~UtilityProcessHost() {
@@ -60,7 +58,7 @@ bool UtilityProcessHost::Send(IPC::Message* message) {
   if (!StartProcess())
     return false;
 
-  return process_->Send(message);
+  return BrowserChildProcessHost::Send(message);
 }
 
 bool UtilityProcessHost::StartBatchMode()  {
@@ -89,9 +87,9 @@ bool UtilityProcessHost::StartProcess() {
     return true;
   // Name must be set or metrics_service will crash in any test which
   // launches a UtilityProcessHost.
-  process_->SetName(ASCIIToUTF16("utility process"));
+  SetName(ASCIIToUTF16("utility process"));
 
-  std::string channel_id = process_->GetHost()->CreateChannel();
+  std::string channel_id = child_process_host()->CreateChannel();
   if (channel_id.empty())
     return false;
 
@@ -138,7 +136,7 @@ bool UtilityProcessHost::StartProcess() {
   use_zygote = !no_sandbox_ && use_linux_zygote_;
 #endif
 
-  process_->Launch(
+  Launch(
 #if defined(OS_WIN)
       exposed_dir_,
 #elif defined(OS_POSIX)

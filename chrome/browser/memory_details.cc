@@ -16,8 +16,7 @@
 #include "chrome/common/chrome_view_type.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/url_constants.h"
-#include "content/public/browser/browser_child_process_host_iterator.h"
-#include "content/public/browser/child_process_data.h"
+#include "content/browser/browser_child_process_host.h"
 #include "content/browser/renderer_host/backing_store_manager.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/public/browser/browser_thread.h"
@@ -36,7 +35,6 @@
 #include "content/browser/zygote_host_linux.h"
 #endif
 
-using content::BrowserChildProcessHostIterator;
 using content::BrowserThread;
 using content::NavigationEntry;
 using content::WebContents;
@@ -134,15 +132,15 @@ void MemoryDetails::CollectChildInfoOnIOThread() {
   std::vector<ProcessMemoryInformation> child_info;
 
   // Collect the list of child processes.
-  for (BrowserChildProcessHostIterator iter; !iter.Done(); ++iter) {
+  for (BrowserChildProcessHost::Iterator iter; !iter.Done(); ++iter) {
     ProcessMemoryInformation info;
-    info.pid = base::GetProcId(iter.GetData().handle);
+    info.pid = base::GetProcId(iter->data().handle);
     if (!info.pid)
       continue;
 
-    info.type = iter.GetData().type;
+    info.type = iter->data().type;
     info.renderer_type = ProcessMemoryInformation::RENDERER_UNKNOWN;
-    info.titles.push_back(iter.GetData().name);
+    info.titles.push_back(iter->data().name);
     child_info.push_back(info);
   }
 

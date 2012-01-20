@@ -117,8 +117,6 @@
 #include "chrome/common/url_constants.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/interstitial_page.h"
-#include "content/public/browser/browser_child_process_host_iterator.h"
-#include "content/public/browser/child_process_data.h"
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
@@ -153,7 +151,6 @@
 using automation::Error;
 using automation::ErrorCode;
 using automation_util::SendErrorIfModalDialogActive;
-using content::BrowserChildProcessHostIterator;
 using content::BrowserThread;
 using content::ChildProcessHost;
 using content::DownloadItem;
@@ -2776,18 +2773,20 @@ void TestingAutomationProvider::PerformActionOnInfobar(
 namespace {
 
 // Gets info about BrowserChildProcessHost. Must run on IO thread to
-// honor the semantics of BrowserChildProcessHostIterator.
+// honor the semantics of BrowserChildProcessHost.
 // Used by AutomationProvider::GetBrowserInfo().
 void GetChildProcessHostInfo(ListValue* child_processes) {
-  for (BrowserChildProcessHostIterator iter; !iter.Done(); ++iter) {
-    // Only add processes which are already started, since we need their handle.
-    if (iter.GetData().handle == base::kNullProcessHandle)
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  for (BrowserChildProcessHost::Iterator iter; !iter.Done(); ++iter) {
+    // Only add processes which are already started,
+    // since we need their handle.
+    if ((*iter)->data().handle == base::kNullProcessHandle)
       continue;
     DictionaryValue* item = new DictionaryValue;
-    item->SetString("name", iter.GetData().name);
+    item->SetString("name", iter->data().name);
     item->SetString("type",
-                    content::GetProcessTypeNameInEnglish(iter.GetData().type));
-    item->SetInteger("pid", base::GetProcId(iter.GetData().handle));
+                    content::GetProcessTypeNameInEnglish(iter->data().type));
+    item->SetInteger("pid", base::GetProcId(iter->data().handle));
     child_processes->Append(item);
   }
 }

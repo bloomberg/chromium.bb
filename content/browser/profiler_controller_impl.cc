@@ -6,15 +6,13 @@
 
 #include "base/bind.h"
 #include "base/values.h"
+#include "content/browser/browser_child_process_host.h"
 #include "content/common/child_process_messages.h"
-#include "content/public/browser/browser_child_process_host_iterator.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/child_process_data.h"
 #include "content/public/browser/profiler_subscriber.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/process_type.h"
 
-using content::BrowserChildProcessHostIterator;
 using content::BrowserThread;
 
 namespace content {
@@ -75,12 +73,13 @@ void ProfilerControllerImpl::GetProfilerDataFromChildProcesses(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   int pending_processes = 0;
-  for (BrowserChildProcessHostIterator iter; !iter.Done(); ++iter) {
+  for (BrowserChildProcessHost::Iterator child_process_host;
+       !child_process_host.Done(); ++child_process_host) {
     const std::string process_type =
-        content::GetProcessTypeNameInEnglish(iter.GetData().type);
+      content::GetProcessTypeNameInEnglish(child_process_host->data().type);
     ++pending_processes;
-    if (!iter.Send(new ChildProcessMsg_GetChildProfilerData(
-            sequence_number, process_type))) {
+    if (!child_process_host->Send(new ChildProcessMsg_GetChildProfilerData(
+        sequence_number, process_type))) {
       --pending_processes;
     }
   }
@@ -124,8 +123,10 @@ void ProfilerControllerImpl::GetProfilerData(int sequence_number) {
 void ProfilerControllerImpl::SetProfilerStatusInChildProcesses(bool enable) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  for (BrowserChildProcessHostIterator iter; !iter.Done(); ++iter)
-    iter.Send(new ChildProcessMsg_SetProfilerStatus(enable));
+  for (BrowserChildProcessHost::Iterator child_process_host;
+       !child_process_host.Done(); ++child_process_host) {
+    child_process_host->Send(new ChildProcessMsg_SetProfilerStatus(enable));
+  }
 }
 
 void ProfilerControllerImpl::SetProfilerStatus(bool enable) {
