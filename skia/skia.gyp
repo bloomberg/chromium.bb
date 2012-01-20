@@ -344,7 +344,9 @@
 
         '../third_party/skia/src/gpu/GrAAHairLinePathRenderer.cpp',
         '../third_party/skia/src/gpu/GrAAHairLinePathRenderer.h',
-        '../third_party/skia/src/gpu/GrAddPathRenderers_aahairline.cpp',
+        '../third_party/skia/src/gpu/GrAAConvexPathRenderer.cpp',
+        '../third_party/skia/src/gpu/GrAAConvexPathRenderer.h',
+        '../third_party/skia/src/gpu/GrAddPathRenderers_default.cpp',
         '../third_party/skia/src/gpu/GrAllocator.h',
         '../third_party/skia/src/gpu/GrAllocPool.h',
         '../third_party/skia/src/gpu/GrAllocPool.cpp',
