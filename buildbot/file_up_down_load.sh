@@ -38,8 +38,11 @@ SanityCheck() {
 
 readonly GS_UTIL=${GS_UTIL:-buildbot/gsutil.sh}
 
-readonly URL_PREFIX=https://commondatastorage.googleapis.com
-
+# raw data store url
+readonly URL_PREFIX_RAW=https://commondatastorage.googleapis.com
+# appengine app that constructs a synthetic directory listing
+# for the data store
+readonly URL_PREFIX_UI=http://gsdview.appspot.com
 readonly BASE_ARM_TOOLCHAIN=nativeclient-archive2/toolchain
 
 readonly BASE_BETWEEN_BOTS_TRY=nativeclient-trybot/between_builders
@@ -51,7 +54,8 @@ readonly BASE_BETWEEN_BOTS=nativeclient-archive2/between_builders
 ######################################################################
 Upload() {
   echo  "uploading: $2"
-  ${GS_UTIL} -h Cache-Control:no-cache cp -a public-read $1 $2
+  echo  @@@STEP_LINK@download@${URL_PREFIX_UI}/$2@@@
+  ${GS_UTIL} -h Cache-Control:no-cache cp -a public-read $1 gs://$2
 }
 
 
@@ -60,7 +64,7 @@ UploadArmToolchain() {
   name=$2
   tarball=$3
 
-  Upload ${tarball} gs://${BASE_ARM_TOOLCHAIN}/${rev}/${name}
+  Upload ${tarball} ${BASE_ARM_TOOLCHAIN}/${rev}/${name}
 }
 
 ######################################################################
@@ -78,7 +82,7 @@ DownloadArmTrustedToolchain() {
   local rev=$1
   local tarball=$2
   curl -L \
-     ${URL_PREFIX}/${BASE_ARM_TOOLCHAIN}/${rev}/naclsdk_linux_arm-trusted.tgz
+     ${URL_PREFIX_RAW}/${BASE_ARM_TOOLCHAIN}/${rev}/naclsdk_linux_arm-trusted.tgz
      -o $2
 }
 
@@ -140,7 +144,7 @@ ShowRecentArmUntrustedToolchains() {
 UploadArmBinariesForHWBots() {
   name=$1
   tarball=$2
-  Upload ${tarball} gs://${BASE_BETWEEN_BOTS}/${name}/build.tgz
+  Upload ${tarball} ${BASE_BETWEEN_BOTS}/${name}/build.tgz
 }
 
 
@@ -148,7 +152,7 @@ DownloadArmBinariesForHWBots() {
   name=$1
   tarball=$2
   curl -L \
-     ${URL_PREFIX}/${BASE_BETWEEN_BOTS}/${name}/build.tgz \
+     ${URL_PREFIX_RAW}/${BASE_BETWEEN_BOTS}/${name}/build.tgz \
      -o ${tarball}
 }
 
@@ -159,7 +163,7 @@ DownloadArmBinariesForHWBots() {
 UploadArmBinariesForHWBotsTry() {
   name=$1
   tarball=$2
-  Upload ${tarball} gs://${BASE_BETWEEN_BOTS_TRY}/${name}/build.tgz
+  Upload ${tarball} ${BASE_BETWEEN_BOTS_TRY}/${name}/build.tgz
 }
 
 
@@ -167,7 +171,7 @@ DownloadArmBinariesForHWBotsTry() {
   name=$1
   tarball=$2
   curl -L \
-     ${URL_PREFIX}/${BASE_BETWEEN_BOTS_TRY}/${name}/build.tgz \
+     ${URL_PREFIX_RAW}/${BASE_BETWEEN_BOTS_TRY}/${name}/build.tgz \
      -o ${tarball}
 }
 
