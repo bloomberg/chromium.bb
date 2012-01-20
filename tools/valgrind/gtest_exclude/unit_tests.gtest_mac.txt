@@ -17,6 +17,7 @@ NSMenuItemAdditionsTest.TestMOnDifferentLayouts
 # BookmarkBarControllerTest hangs on (1) but not on (2).
 # See http://crbug.com/75733
 BookmarkBarControllerTest.*
+BookmarkBarControllerOpenAllTest.*
 
 # Crashes, see http://crbug.com/86656
 MacSandboxTest.FileAccess
