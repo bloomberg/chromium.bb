@@ -7,7 +7,6 @@
 
 #include "ppapi/c/dev/ppb_font_dev.h"
 #include "ppapi/shared_impl/api_id.h"
-#include "ppapi/thunk/ppapi_thunk_export.h"
 
 namespace ppapi {
 namespace thunk {
@@ -23,7 +22,7 @@ class PPB_Font_FunctionAPI {
 };
 
 // API for font resources.
-class PPAPI_THUNK_EXPORT PPB_Font_API {
+class PPB_Font_API {
  public:
   virtual ~PPB_Font_API() {}
 

@@ -141,6 +141,9 @@ class WEBKIT_PLUGINS_EXPORT PluginModule :
   void SetBroker(PluginDelegate::PpapiBroker* broker);
   PluginDelegate::PpapiBroker* GetBroker();
 
+  // Retrieves the forwarding interface used for talking to WebKit.
+  ::ppapi::WebKitForwarding* GetWebKitForwarding();
+
  private:
   // Calls the InitializeModule entrypoint. The entrypoint must have been
   // set and the plugin must not be out of process (we don't maintain
@@ -192,6 +195,9 @@ class WEBKIT_PLUGINS_EXPORT PluginModule :
   PluginInstanceSet instances_;
 
   PP_Bool (*reserve_instance_id_)(PP_Module, PP_Instance);
+
+  // Lazily created by GetWebKitForwarding.
+  scoped_ptr< ::ppapi::WebKitForwarding> webkit_forwarding_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginModule);
 };

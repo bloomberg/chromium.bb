@@ -33,10 +33,10 @@
 #include "ppapi/shared_impl/function_group_base.h"
 #include "ppapi/shared_impl/host_resource.h"
 #include "ppapi/shared_impl/ppb_audio_config_shared.h"
+#include "ppapi/shared_impl/ppb_font_shared.h"
 #include "ppapi/shared_impl/ppb_input_event_shared.h"
 #include "ppapi/shared_impl/ppb_resource_array_shared.h"
 #include "ppapi/shared_impl/ppb_url_request_info_shared.h"
-#include "ppapi/shared_impl/private/ppb_font_shared.h"
 #include "ppapi/shared_impl/var.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_image_data_api.h"
@@ -152,12 +152,10 @@ PP_Resource ResourceCreationProxy::CreateFlashNetConnector(
 PP_Resource ResourceCreationProxy::CreateFontObject(
     PP_Instance instance,
     const PP_FontDescription_Dev* description) {
-  PluginDispatcher* dispatcher =
-      PluginDispatcher::GetForInstance(instance);
-  if (!dispatcher)
+  if (!PPB_Font_Shared::IsPPFontDescriptionValid(*description))
     return 0;
-  return PPB_Font_Shared::CreateAsProxy(instance, *description,
-                                        dispatcher->preferences());
+  return (new Font(HostResource::MakeInstanceOnly(instance), *description))->
+      GetReference();
 }
 
 PP_Resource ResourceCreationProxy::CreateGraphics2D(PP_Instance instance,

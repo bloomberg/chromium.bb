@@ -6,7 +6,6 @@
 #define WEBKIT_PLUGINS_PPAPI_RESOURCE_HELPER_H_
 
 #include "base/basictypes.h"
-#include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
 #include "webkit/plugins/webkit_plugins_export.h"
 
@@ -40,9 +39,6 @@ class ResourceHelper {
   // Returns the plugin delegate for the given resource, or NULL if the
   // resource has outlived its instance.
   static PluginDelegate* GetPluginDelegate(const ::ppapi::Resource* resource);
-
-  // Returns the instance implementation object for the pp_instance.
-  static PluginInstance* PPInstanceToPluginInstance(PP_Instance instance);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(ResourceHelper);

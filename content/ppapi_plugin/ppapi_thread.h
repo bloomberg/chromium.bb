@@ -22,7 +22,7 @@
 #include "ppapi/proxy/plugin_proxy_delegate.h"
 
 class FilePath;
-class PpapiWebKitPlatformSupportImpl;
+class PpapiWebKitThread;
 
 namespace IPC {
 struct ChannelHandle;
@@ -48,6 +48,9 @@ class PpapiThread : public ChildThread,
   virtual void Unregister(uint32 plugin_dispatcher_id) OVERRIDE;
 
   // PluginProxyDelegate.
+  virtual ppapi::WebKitForwarding* GetWebKitForwarding() OVERRIDE;
+  virtual void PostToWebKitThread(const tracked_objects::Location& from_here,
+                                  const base::Closure& task) OVERRIDE;
   virtual bool SendToBrowser(IPC::Message* msg) OVERRIDE;
   virtual void PreCacheFont(const void* logfontw) OVERRIDE;
 
@@ -89,12 +92,14 @@ class PpapiThread : public ChildThread,
   // See Dispatcher::Delegate::GetGloballySeenInstanceIDSet.
   std::set<PP_Instance> globally_seen_instance_ids_;
 
+  // Lazily created by GetWebKitForwarding.
+  scoped_ptr<ppapi::WebKitForwarding> webkit_forwarding_;
+
+  scoped_ptr<PpapiWebKitThread> webkit_thread_;
+
   // The PluginDispatcher instances contained in the map are not owned by it.
   std::map<uint32, ppapi::proxy::PluginDispatcher*> plugin_dispatchers_;
   uint32 next_plugin_dispatcher_id_;
-
-  // The WebKitPlatformSupport implementation.
-  scoped_ptr<PpapiWebKitPlatformSupportImpl> webkit_platform_support_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(PpapiThread);
 };

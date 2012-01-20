@@ -24,6 +24,7 @@ namespace ppapi {
 
 struct Preferences;
 class Resource;
+class WebKitForwarding;
 
 namespace proxy {
 

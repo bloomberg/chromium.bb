@@ -89,7 +89,7 @@ PP_Bool DrawGlyphs(PP_Instance,
   SkAutoUnref aur(typeface);
 
   // Set up the canvas.
-  SkCanvas* canvas = image_resource->GetPlatformCanvas();
+  SkCanvas* canvas = image_resource->mapped_canvas();
   SkAutoCanvasRestore acr(canvas, true);
 
   // Clip is applied in pixels before the transform.

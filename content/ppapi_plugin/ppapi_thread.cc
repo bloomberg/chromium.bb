@@ -14,7 +14,7 @@
 #include "content/common/child_process_messages.h"
 #include "content/ppapi_plugin/broker_process_dispatcher.h"
 #include "content/ppapi_plugin/plugin_process_dispatcher.h"
-#include "content/ppapi_plugin/ppapi_webkitplatformsupport_impl.h"
+#include "content/ppapi_plugin/ppapi_webkit_thread.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/sandbox_init.h"
 #include "ipc/ipc_channel_handle.h"
@@ -25,7 +25,7 @@
 #include "ppapi/proxy/plugin_globals.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/interface_list.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
+#include "webkit/plugins/ppapi/webkit_forwarding_impl.h"
 
 #if defined(OS_WIN)
 #include "sandbox/src/sandbox.h"
@@ -50,8 +50,6 @@ PpapiThread::PpapiThread(bool is_broker)
           base::RandInt(0, std::numeric_limits<PP_Module>::max())),
       next_plugin_dispatcher_id_(1) {
   ppapi::proxy::PluginGlobals::Get()->set_plugin_proxy_delegate(this);
-  webkit_platform_support_.reset(new PpapiWebKitPlatformSupportImpl);
-  WebKit::initialize(webkit_platform_support_.get());
 }
 
 PpapiThread::~PpapiThread() {
@@ -69,7 +67,6 @@ PpapiThread::~PpapiThread() {
           library_.GetFunctionPointer("PPP_ShutdownModule"));
   if (shutdown_function)
     shutdown_function();
-  WebKit::shutdown();
 }
 
 // The "regular" ChildThread implements this function and does some standard
@@ -112,6 +109,19 @@ base::WaitableEvent* PpapiThread::GetShutdownEvent() {
 
 std::set<PP_Instance>* PpapiThread::GetGloballySeenInstanceIDSet() {
   return &globally_seen_instance_ids_;
+}
+
+ppapi::WebKitForwarding* PpapiThread::GetWebKitForwarding() {
+  if (!webkit_forwarding_.get())
+    webkit_forwarding_.reset(new webkit::ppapi::WebKitForwardingImpl);
+  return webkit_forwarding_.get();
+}
+
+void PpapiThread::PostToWebKitThread(const tracked_objects::Location& from_here,
+                                     const base::Closure& task) {
+  if (!webkit_thread_.get())
+    webkit_thread_.reset(new PpapiWebKitThread);
+  webkit_thread_->PostTask(from_here, task);
 }
 
 bool PpapiThread::SendToBrowser(IPC::Message* msg) {

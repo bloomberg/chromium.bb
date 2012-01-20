@@ -111,10 +111,6 @@ int32_t PPB_ImageData_Impl::GetSharedMemory(int* handle,
   return PP_OK;
 }
 
-skia::PlatformCanvas* PPB_ImageData_Impl::GetPlatformCanvas() {
-  return mapped_canvas_.get();
-}
-
 const SkBitmap* PPB_ImageData_Impl::GetMappedBitmap() const {
   if (!mapped_canvas_.get())
     return NULL;

@@ -16,6 +16,8 @@
     'ppapi_plugin/ppapi_plugin_main.cc',
     'ppapi_plugin/ppapi_thread.cc',
     'ppapi_plugin/ppapi_thread.h',
+    'ppapi_plugin/ppapi_webkit_thread.cc',
+    'ppapi_plugin/ppapi_webkit_thread.h',
     'ppapi_plugin/ppapi_webkitplatformsupport_impl.cc',
     'ppapi_plugin/ppapi_webkitplatformsupport_impl.h',
   ],

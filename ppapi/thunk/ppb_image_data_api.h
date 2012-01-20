@@ -8,10 +8,6 @@
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/ppb_image_data.h"
 
-namespace skia {
-class PlatformCanvas;
-}
-
 namespace ppapi {
 namespace thunk {
 
@@ -25,9 +21,6 @@ class PPB_ImageData_API {
 
   // Trusted inteface.
   virtual int32_t GetSharedMemory(int* handle, uint32_t* byte_count) = 0;
-
-  // The canvas will be NULL if the image is not mapped.
-  virtual skia::PlatformCanvas* GetPlatformCanvas() = 0;
 };
 
 }  // namespace thunk

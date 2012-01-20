@@ -116,6 +116,7 @@
 #include "webkit/plugins/ppapi/ppb_video_capture_impl.h"
 #include "webkit/plugins/ppapi/ppb_video_decoder_impl.h"
 #include "webkit/plugins/ppapi/ppb_video_layer_impl.h"
+#include "webkit/plugins/ppapi/webkit_forwarding_impl.h"
 
 using ppapi::InputEventData;
 using ppapi::PpapiGlobals;
@@ -588,6 +589,12 @@ void PluginModule::SetBroker(PluginDelegate::PpapiBroker* broker) {
 
 PluginDelegate::PpapiBroker* PluginModule::GetBroker() {
   return broker_;
+}
+
+::ppapi::WebKitForwarding* PluginModule::GetWebKitForwarding() {
+  if (!webkit_forwarding_.get())
+    webkit_forwarding_.reset(new WebKitForwardingImpl);
+  return webkit_forwarding_.get();
 }
 
 bool PluginModule::InitializeModule(const EntryPoints& entry_points) {

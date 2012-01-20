@@ -336,6 +336,8 @@
         '../plugins/ppapi/resource_helper.h',
         '../plugins/ppapi/string.cc',
         '../plugins/ppapi/string.h',
+        '../plugins/ppapi/webkit_forwarding_impl.cc',
+        '../plugins/ppapi/webkit_forwarding_impl.h',
         '../plugins/sad_plugin.cc',
         '../plugins/sad_plugin.h',
         '../plugins/webkit_plugins_export.h',

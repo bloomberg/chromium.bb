@@ -134,7 +134,7 @@ void PPB_Scrollbar_Impl::ScrollBy(PP_ScrollBy_Dev unit, int32_t multiplier) {
 PP_Bool PPB_Scrollbar_Impl::PaintInternal(const gfx::Rect& rect,
                                           PPB_ImageData_Impl* image) {
   ImageDataAutoMapper mapper(image);
-  skia::PlatformCanvas* canvas = image->GetPlatformCanvas();
+  skia::PlatformCanvas* canvas = image->mapped_canvas();
   if (!canvas || !scrollbar_.get())
     return PP_FALSE;
   scrollbar_->paint(webkit_glue::ToWebCanvas(canvas), rect);

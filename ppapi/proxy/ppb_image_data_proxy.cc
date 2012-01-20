@@ -77,10 +77,6 @@ int32_t ImageData::GetSharedMemory(int* /* handle */,
   return PP_ERROR_NOACCESS;
 }
 
-skia::PlatformCanvas* ImageData::GetPlatformCanvas() {
-  return mapped_canvas_.get();
-}
-
 #if defined(OS_WIN)
 const ImageHandle ImageData::NullHandle = NULL;
 #elif defined(OS_MACOSX)

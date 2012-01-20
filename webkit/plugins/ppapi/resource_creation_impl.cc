@@ -6,7 +6,6 @@
 
 #include "ppapi/c/pp_size.h"
 #include "ppapi/shared_impl/ppb_audio_config_shared.h"
-#include "ppapi/shared_impl/private/ppb_font_shared.h"
 #include "ppapi/shared_impl/ppb_input_event_shared.h"
 #include "ppapi/shared_impl/ppb_resource_array_shared.h"
 #include "ppapi/shared_impl/var.h"
@@ -22,6 +21,7 @@
 #include "webkit/plugins/ppapi/ppb_file_system_impl.h"
 #include "webkit/plugins/ppapi/ppb_flash_menu_impl.h"
 #include "webkit/plugins/ppapi/ppb_flash_net_connector_impl.h"
+#include "webkit/plugins/ppapi/ppb_font_impl.h"
 #include "webkit/plugins/ppapi/ppb_graphics_2d_impl.h"
 #include "webkit/plugins/ppapi/ppb_graphics_3d_impl.h"
 #include "webkit/plugins/ppapi/ppb_image_data_impl.h"
@@ -35,7 +35,6 @@
 #include "webkit/plugins/ppapi/ppb_video_decoder_impl.h"
 #include "webkit/plugins/ppapi/ppb_video_layer_impl.h"
 #include "webkit/plugins/ppapi/ppb_websocket_impl.h"
-#include "webkit/plugins/ppapi/resource_helper.h"
 
 using ppapi::InputEventData;
 using ppapi::PPB_InputEvent_Shared;
@@ -143,12 +142,7 @@ PP_Resource ResourceCreationImpl::CreateFlashNetConnector(
 PP_Resource ResourceCreationImpl::CreateFontObject(
     PP_Instance instance,
     const PP_FontDescription_Dev* description) {
-  PluginInstance* plugin_instance =
-      ResourceHelper::PPInstanceToPluginInstance(instance);
-  if (!plugin_instance)
-    return 0;
-  return ::ppapi::PPB_Font_Shared::CreateAsImpl(
-      instance, *description, plugin_instance->delegate()->GetPreferences());
+  return PPB_Font_Impl::Create(instance, *description);
 }
 
 PP_Resource ResourceCreationImpl::CreateGraphics2D(
