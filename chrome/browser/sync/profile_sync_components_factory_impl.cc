@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,6 @@
 #include "chrome/browser/extensions/app_notification_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/settings/settings_backend.h"
-#include "chrome/browser/defaults.h"
 #include "chrome/browser/prefs/pref_model_associator.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service.h"
@@ -87,28 +86,6 @@ ProfileSyncComponentsFactoryImpl::ProfileSyncComponentsFactoryImpl(
     Profile* profile, CommandLine* command_line)
     : profile_(profile),
       command_line_(command_line) {
-}
-
-ProfileSyncService*
-    ProfileSyncComponentsFactoryImpl::CreateProfileSyncService() {
-  ProfileSyncService::StartBehavior behavior =
-      browser_defaults::kSyncAutoStarts ? ProfileSyncService::AUTO_START
-                                        : ProfileSyncService::MANUAL_START;
-
-  PrefService* prefs = profile_->GetPrefs();
-  SigninManager* signin = new SigninManager();
-  signin->SetAuthenticatedUsername(prefs->GetString(
-      prefs::kGoogleServicesUsername));
-
-  // TODO(tim): Currently, AUTO/MANUAL settings refer to the *first* time sync
-  // is set up and *not* a browser restart for a manual-start platform (where
-  // sync has already been set up, and should be able to start without user
-  // intervention). We can get rid of the browser_default eventually, but
-  // need to take care that ProfileSyncService doesn't get tripped up between
-  // those two cases. Bug 88109.
-  ProfileSyncService* pss = new ProfileSyncService(
-      this, profile_, signin, behavior);
-  return pss;
 }
 
 void ProfileSyncComponentsFactoryImpl::RegisterDataTypes(

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -226,8 +226,10 @@ class ProfileSyncServiceSessionTest
       return false;
     SigninManager* signin = new SigninManager();
     signin->SetAuthenticatedUsername("test_user");
+    ProfileSyncComponentsFactoryMock* factory =
+        new ProfileSyncComponentsFactoryMock();
     sync_service_.reset(new TestProfileSyncService(
-        &factory_,
+        factory,
         profile(),
         signin,
         ProfileSyncService::AUTO_START,
@@ -242,13 +244,13 @@ class ProfileSyncServiceSessionTest
     change_processor_ = new SessionChangeProcessor(
         sync_service_.get(), model_associator_,
         true /* setup_for_test */);
-    EXPECT_CALL(factory_, CreateSessionSyncComponents(_, _)).
+    EXPECT_CALL(*factory, CreateSessionSyncComponents(_, _)).
         WillOnce(Return(ProfileSyncComponentsFactory::SyncComponents(
             model_associator_, change_processor_)));
-    EXPECT_CALL(factory_, CreateDataTypeManager(_, _)).
+    EXPECT_CALL(*factory, CreateDataTypeManager(_, _)).
         WillOnce(ReturnNewDataTypeManager());
     sync_service_->RegisterDataTypeController(
-        new SessionDataTypeController(&factory_,
+        new SessionDataTypeController(factory,
                                       profile(),
                                       sync_service_.get()));
     profile()->GetTokenService()->IssueAuthTokenForTest(
@@ -265,7 +267,6 @@ class ProfileSyncServiceSessionTest
   SessionModelAssociator* model_associator_;
   SessionChangeProcessor* change_processor_;
   SessionID window_id_;
-  ProfileSyncComponentsFactoryMock factory_;
   scoped_ptr<TestProfileSyncService> sync_service_;
   const gfx::Rect window_bounds_;
   bool notified_of_update_;

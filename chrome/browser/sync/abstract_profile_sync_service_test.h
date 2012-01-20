@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -65,7 +65,6 @@ class AbstractProfileSyncServiceTest : public testing::Test {
   content::TestBrowserThread db_thread_;
   content::TestBrowserThread file_thread_;
   content::TestBrowserThread io_thread_;
-  ProfileSyncComponentsFactoryMock factory_;
   scoped_ptr<TokenService> token_service_;
   scoped_ptr<TestProfileSyncService> service_;
 };

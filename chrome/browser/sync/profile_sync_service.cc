@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -38,7 +38,7 @@
 #include "chrome/browser/sync/internal_api/sync_manager.h"
 #include "chrome/browser/sync/js/js_arg_list.h"
 #include "chrome/browser/sync/js/js_event_details.h"
-#include "chrome/browser/sync/profile_sync_components_factory.h"
+#include "chrome/browser/sync/profile_sync_components_factory_impl.h"
 #include "chrome/browser/sync/signin_manager.h"
 #include "chrome/browser/sync/sync_global_error.h"
 #include "chrome/browser/sync/util/cryptographer.h"
@@ -139,12 +139,11 @@ ProfileSyncService::ProfileSyncService(ProfileSyncComponentsFactory* factory,
       channel == chrome::VersionInfo::CHANNEL_BETA) {
     sync_service_url_ = GURL(kSyncServerUrl);
   }
-
 }
 
 ProfileSyncService::~ProfileSyncService() {
   sync_prefs_.RemoveSyncPrefObserver(this);
-  Shutdown(false);
+  Shutdown();
 }
 
 bool ProfileSyncService::AreCredentialsAvailable() {
@@ -377,7 +376,11 @@ void ProfileSyncService::StartUp() {
   }
 }
 
-void ProfileSyncService::Shutdown(bool sync_disabled) {
+void ProfileSyncService::Shutdown() {
+  ShutdownImpl(false);
+}
+
+void ProfileSyncService::ShutdownImpl(bool sync_disabled) {
   // First, we spin down the backend and wait for it to stop syncing completely
   // before we Stop the data type manager.  This is to avoid a late sync cycle
   // applying changes to the sync db that wouldn't get applied via
@@ -461,7 +464,7 @@ void ProfileSyncService::DisableForUser() {
   // PSS clients don't think we're set up while we're shutting down.
   sync_prefs_.ClearPreferences();
   ClearUnrecoverableError();
-  Shutdown(true);
+  ShutdownImpl(true);
 
   signin_->SignOut();
 
@@ -519,15 +522,14 @@ void ProfileSyncService::RegisterNewDataType(syncable::ModelType data_type) {
   switch (data_type) {
     case syncable::SESSIONS:
       RegisterDataTypeController(
-          new browser_sync::SessionDataTypeController(factory_,
+          new browser_sync::SessionDataTypeController(factory_.get(),
                                                       profile_,
                                                       this));
       return;
     case syncable::TYPED_URLS:
-      RegisterDataTypeController(
-          new browser_sync::TypedUrlDataTypeController(factory_,
+          new browser_sync::TypedUrlDataTypeController(factory_.get(),
                                                        profile_,
-                                                       this));
+                                                       this);
       return;
     default:
       break;
@@ -556,7 +558,7 @@ void ProfileSyncService::OnUnrecoverableError(
 
   // Shut all data types down.
   MessageLoop::current()->PostTask(FROM_HERE,
-      base::Bind(&ProfileSyncService::Shutdown, weak_factory_.GetWeakPtr(),
+      base::Bind(&ProfileSyncService::ShutdownImpl, weak_factory_.GetWeakPtr(),
                  true));
 }
 
@@ -1532,7 +1534,7 @@ bool ProfileSyncService::ShouldPushChanges() {
 
 void ProfileSyncService::StopAndSuppress() {
   sync_prefs_.SetStartSuppressed(true);
-  Shutdown(false);
+  ShutdownImpl(false);
 }
 
 void ProfileSyncService::UnsuppressAndStart() {

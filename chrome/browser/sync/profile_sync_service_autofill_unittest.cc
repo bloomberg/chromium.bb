@@ -401,8 +401,10 @@ class ProfileSyncServiceAutofillTest : public AbstractProfileSyncServiceTest {
     AbstractAutofillFactory* factory = GetFactory(type);
     SigninManager* signin = new SigninManager();
     signin->SetAuthenticatedUsername("test_user");
+    ProfileSyncComponentsFactoryMock* components_factory =
+        new ProfileSyncComponentsFactoryMock();
     service_.reset(
-        new TestProfileSyncService(&factory_,
+        new TestProfileSyncService(components_factory,
                                    &profile_,
                                    signin,
                                    ProfileSyncService::AUTO_START,
@@ -411,18 +413,18 @@ class ProfileSyncServiceAutofillTest : public AbstractProfileSyncServiceTest {
     EXPECT_CALL(profile_, GetProfileSyncService()).WillRepeatedly(
         Return(service_.get()));
     DataTypeController* data_type_controller =
-        factory->CreateDataTypeController(&factory_,
+        factory->CreateDataTypeController(components_factory,
             &profile_,
             service_.get());
     SyncBackendHostForProfileSyncTest::
         SetDefaultExpectationsForWorkerCreation(&profile_);
 
-    factory->SetExpectation(&factory_,
+    factory->SetExpectation(components_factory,
                             service_.get(),
                             web_data_service_.get(),
                             data_type_controller);
 
-    EXPECT_CALL(factory_, CreateDataTypeManager(_, _)).
+    EXPECT_CALL(*components_factory, CreateDataTypeManager(_, _)).
         WillOnce(ReturnNewDataTypeManager());
 
     EXPECT_CALL(*personal_data_manager_, IsDataLoaded()).

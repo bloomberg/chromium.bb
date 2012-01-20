@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -182,8 +182,10 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
     if (!service_.get()) {
       SigninManager* signin = new SigninManager();
       signin->SetAuthenticatedUsername("test");
+      ProfileSyncComponentsFactoryMock* factory =
+          new ProfileSyncComponentsFactoryMock();
       service_.reset(
-          new TestProfileSyncService(&factory_,
+          new TestProfileSyncService(factory,
                                      &profile_,
                                      signin,
                                      ProfileSyncService::AUTO_START,
@@ -192,16 +194,16 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
       EXPECT_CALL(profile_, GetProfileSyncService()).WillRepeatedly(
           Return(service_.get()));
       TypedUrlDataTypeController* data_type_controller =
-          new TypedUrlDataTypeController(&factory_,
+          new TypedUrlDataTypeController(factory,
                                          &profile_,
                                          service_.get());
 
-      EXPECT_CALL(factory_, CreateTypedUrlSyncComponents(_, _, _)).
+      EXPECT_CALL(*factory, CreateTypedUrlSyncComponents(_, _, _)).
           WillOnce(MakeTypedUrlSyncComponents(&profile_,
                                               service_.get(),
                                               history_backend_.get(),
                                               data_type_controller));
-      EXPECT_CALL(factory_, CreateDataTypeManager(_, _)).
+      EXPECT_CALL(*factory, CreateDataTypeManager(_, _)).
           WillOnce(ReturnNewDataTypeManager());
 
       EXPECT_CALL(profile_, GetHistoryServiceWithoutCreating()).
@@ -298,7 +300,6 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
   scoped_refptr<ThreadNotificationService> notification_service_;
 
   ProfileMock profile_;
-  ProfileSyncComponentsFactoryMock factory_;
   scoped_refptr<HistoryBackendMock> history_backend_;
   scoped_refptr<HistoryServiceMock> history_service_;
 };

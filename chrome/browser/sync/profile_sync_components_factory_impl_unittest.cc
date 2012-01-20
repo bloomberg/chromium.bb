@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -28,9 +28,6 @@ class ProfileSyncComponentsFactoryImplTest : public testing::Test {
     profile_.reset(new TestingProfile());
     FilePath program_path(FILE_PATH_LITERAL("chrome.exe"));
     command_line_.reset(new CommandLine(program_path));
-    profile_sync_service_factory_.reset(
-        new ProfileSyncComponentsFactoryImpl(profile_.get(),
-                                             command_line_.get()));
   }
 
   // Returns the collection of default datatypes.
@@ -79,8 +76,13 @@ class ProfileSyncComponentsFactoryImplTest : public testing::Test {
                               syncable::ModelType type) {
     command_line_->AppendSwitch(cmd_switch);
     scoped_ptr<ProfileSyncService> pss(
-        profile_sync_service_factory_->CreateProfileSyncService());
-    profile_sync_service_factory_->RegisterDataTypes(pss.get());
+        new ProfileSyncService(
+            new ProfileSyncComponentsFactoryImpl(profile_.get(),
+                                                 command_line_.get()),
+            profile_.get(),
+            NULL,
+            ProfileSyncService::MANUAL_START));
+    pss->factory()->RegisterDataTypes(pss.get());
     DataTypeController::StateMap controller_states;
     pss->GetDataTypeControllerStates(&controller_states);
     EXPECT_EQ(DefaultDatatypesCount() - 1, controller_states.size());
@@ -91,13 +93,17 @@ class ProfileSyncComponentsFactoryImplTest : public testing::Test {
   content::TestBrowserThread ui_thread_;
   scoped_ptr<Profile> profile_;
   scoped_ptr<CommandLine> command_line_;
-  scoped_ptr<ProfileSyncComponentsFactoryImpl> profile_sync_service_factory_;
 };
 
 TEST_F(ProfileSyncComponentsFactoryImplTest, CreatePSSDefault) {
   scoped_ptr<ProfileSyncService> pss(
-      profile_sync_service_factory_->CreateProfileSyncService());
-  profile_sync_service_factory_->RegisterDataTypes(pss.get());
+      new ProfileSyncService(
+          new ProfileSyncComponentsFactoryImpl(profile_.get(),
+                                               command_line_.get()),
+      profile_.get(),
+      NULL,
+      ProfileSyncService::MANUAL_START));
+  pss->factory()->RegisterDataTypes(pss.get());
   DataTypeController::StateMap controller_states;
   pss->GetDataTypeControllerStates(&controller_states);
   EXPECT_EQ(DefaultDatatypesCount(), controller_states.size());

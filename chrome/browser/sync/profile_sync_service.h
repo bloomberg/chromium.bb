@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,6 +19,7 @@
 #include "base/string16.h"
 #include "base/time.h"
 #include "base/timer.h"
+#include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/sync/backend_unrecoverable_error_handler.h"
 #include "chrome/browser/sync/engine/model_safe_worker.h"
 #include "chrome/browser/sync/failed_datatypes_handler.h"
@@ -107,6 +108,7 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
                            public browser_sync::SyncPrefObserver,
                            public browser_sync::UnrecoverableErrorHandler,
                            public content::NotificationObserver,
+                           public ProfileKeyedService,
                            // TODO(lipalani): crbug.com/100829. Instead of
                            // doing this vend weak pointers from a factory.
                            public base::SupportsWeakPtr<ProfileSyncService> {
@@ -157,9 +159,10 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // Sync server URL for dev channel users
   static const char* kDevServerUrl;
 
+  // Takes ownership of |factory|.
   ProfileSyncService(ProfileSyncComponentsFactory* factory,
                      Profile* profile,
-                     SigninManager* signin,  // Service takes ownership.
+                     SigninManager* signin,
                      StartBehavior start_behavior);
   virtual ~ProfileSyncService();
 
@@ -333,6 +336,8 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
     return last_attempted_user_email_;
   }
 
+  ProfileSyncComponentsFactory* factory() { return factory_.get(); }
+
   // The profile we are syncing for.
   Profile* profile() const { return profile_; }
 
@@ -493,6 +498,9 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
 
   virtual const FailedDatatypesHandler& failed_datatypes_handler();
 
+  // ProfileKeyedService implementation.
+  virtual void Shutdown() OVERRIDE;
+
  protected:
   // Used by test classes that derive from ProfileSyncService.
   virtual browser_sync::SyncBackendHost* GetBackendForTest();
@@ -504,7 +512,7 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   void StartUp();
   // Shuts down the backend sync components.
   // |sync_disabled| indicates if syncing is being disabled or not.
-  void Shutdown(bool sync_disabled);
+  void ShutdownImpl(bool sync_disabled);
 
   // Return SyncCredentials from the TokenService.
   sync_api::SyncCredentials GetCredentials();
@@ -600,7 +608,7 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   base::TimeTicks auth_error_time_;
 
   // Factory used to create various dependent objects.
-  ProfileSyncComponentsFactory* factory_;
+  scoped_ptr<ProfileSyncComponentsFactory> factory_;
 
   // The profile whose data we are synchronizing.
   Profile* profile_;

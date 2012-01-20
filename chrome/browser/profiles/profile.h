@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -382,7 +382,8 @@ class Profile : public content::BrowserContext {
   virtual FindBarState* GetFindBarState() = 0;
 
   // Returns true if this profile has a profile sync service.
-  virtual bool HasProfileSyncService() const = 0;
+  // TODO(tim): Bug 93922 - remove this.
+  virtual bool HasProfileSyncService() = 0;
 
   // Returns true if the last time this profile was open it was exited cleanly.
   virtual bool DidLastSessionExitCleanly() = 0;
@@ -397,6 +398,7 @@ class Profile : public content::BrowserContext {
   virtual TokenService* GetTokenService() = 0;
 
   // Returns the ProfileSyncService, creating if not yet created.
+  // TODO(tim): Bug 93922 - remove this.
   virtual ProfileSyncService* GetProfileSyncService() = 0;
 
   // Return whether 2 profiles are the same. 2 profiles are the same if they

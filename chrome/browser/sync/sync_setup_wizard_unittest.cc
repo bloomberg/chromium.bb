@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -60,10 +60,9 @@ class MockSyncSetupHandler : public OptionsSyncSetupHandler {
 // A PSS subtype to inject.
 class ProfileSyncServiceForWizardTest : public ProfileSyncService {
  public:
-  ProfileSyncServiceForWizardTest(ProfileSyncComponentsFactory* factory,
-                                  Profile* profile,
+  ProfileSyncServiceForWizardTest(Profile* profile,
                                   ProfileSyncService::StartBehavior behavior)
-      : ProfileSyncService(factory, profile, new SigninManager(), behavior),
+      : ProfileSyncService(NULL, profile, new SigninManager(), behavior),
         user_cancelled_dialog_(false),
         is_using_secondary_passphrase_(false),
         encrypt_everything_(false) {
@@ -177,7 +176,7 @@ class TestingProfileWithSyncService : public TestingProfile {
   explicit TestingProfileWithSyncService(
       ProfileSyncService::StartBehavior behavior) {
     sync_service_.reset(new ProfileSyncServiceForWizardTest(
-        &factory_, this, behavior));
+        this, behavior));
   }
 
   virtual ProfileSyncService* GetProfileSyncService() {

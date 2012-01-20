@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -121,8 +121,10 @@ class ProfileSyncServicePreferenceTest
 
     SigninManager* signin = new SigninManager();
     signin->SetAuthenticatedUsername("test");
+    ProfileSyncComponentsFactoryMock* factory =
+        new ProfileSyncComponentsFactoryMock();
     service_.reset(new TestProfileSyncService(
-        &factory_,
+        factory,
         profile_.get(),
         signin,
         ProfileSyncService::AUTO_START,
@@ -132,16 +134,16 @@ class ProfileSyncServicePreferenceTest
         prefs_->GetSyncableService());
     if (!pref_sync_service_)
       return false;
-    EXPECT_CALL(factory_, CreatePreferenceSyncComponents(_, _)).
+    EXPECT_CALL(*factory, CreatePreferenceSyncComponents(_, _)).
         WillOnce(BuildPrefSyncComponents(service_.get(),
                                          pref_sync_service_,
                                          &model_associator_,
                                          &change_processor_));
 
-    EXPECT_CALL(factory_, CreateDataTypeManager(_, _)).
+    EXPECT_CALL(*factory, CreateDataTypeManager(_, _)).
         WillOnce(ReturnNewDataTypeManager());
 
-    dtc_ = new PreferenceDataTypeController(&factory_,
+    dtc_ = new PreferenceDataTypeController(factory,
                                             profile_.get(),
                                             service_.get());
     service_->RegisterDataTypeController(dtc_);

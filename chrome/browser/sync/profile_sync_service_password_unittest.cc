@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -217,8 +217,10 @@ class ProfileSyncServicePasswordTest : public AbstractProfileSyncServiceTest {
     if (!service_.get()) {
       SigninManager* signin = new SigninManager();
       signin->SetAuthenticatedUsername("test_user");
+      ProfileSyncComponentsFactoryMock* factory =
+          new ProfileSyncComponentsFactoryMock();
       service_.reset(new PasswordTestProfileSyncService(
-          &factory_, &profile_, signin, false,
+          factory, &profile_, signin, false,
           root_callback, node_callback));
       syncable::ModelTypeSet preferred_types =
           service_->GetPreferredDataTypes();
@@ -227,16 +229,16 @@ class ProfileSyncServicePasswordTest : public AbstractProfileSyncServiceTest {
       EXPECT_CALL(profile_, GetProfileSyncService()).WillRepeatedly(
           Return(service_.get()));
       PasswordDataTypeController* data_type_controller =
-          new PasswordDataTypeController(&factory_,
+          new PasswordDataTypeController(factory,
                                          &profile_,
                                          service_.get());
 
-      EXPECT_CALL(factory_, CreatePasswordSyncComponents(_, _, _)).
+      EXPECT_CALL(*factory, CreatePasswordSyncComponents(_, _, _)).
           Times(AtLeast(1)).  // Can be more if we hit NEEDS_CRYPTO.
           WillRepeatedly(MakePasswordSyncComponents(service_.get(),
                                                     password_store_.get(),
                                                     data_type_controller));
-      EXPECT_CALL(factory_, CreateDataTypeManager(_, _)).
+      EXPECT_CALL(*factory, CreateDataTypeManager(_, _)).
           WillOnce(ReturnNewDataTypeManager());
 
       // We need tokens to get the tests going

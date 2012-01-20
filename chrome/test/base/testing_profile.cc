@@ -719,7 +719,7 @@ HostZoomMap* TestingProfile::GetHostZoomMap() {
   return NULL;
 }
 
-bool TestingProfile::HasProfileSyncService() const {
+bool TestingProfile::HasProfileSyncService() {
   return (profile_sync_service_.get() != NULL);
 }
 

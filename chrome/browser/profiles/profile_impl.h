@@ -25,7 +25,7 @@ class ExtensionPrefs;
 class ExtensionPrefValueMap;
 class NetPrefObserver;
 class PrefService;
-class ProfileSyncComponentsFactory;
+class ProfileSyncService;
 class PromoResourceService;
 class SpeechInputPreferences;
 class SpellCheckProfile;
@@ -111,7 +111,7 @@ class ProfileImpl : public Profile,
   virtual HostContentSettingsMap* GetHostContentSettingsMap() OVERRIDE;
   virtual UserStyleSheetWatcher* GetUserStyleSheetWatcher() OVERRIDE;
   virtual FindBarState* GetFindBarState() OVERRIDE;
-  virtual bool HasProfileSyncService() const OVERRIDE;
+  virtual bool HasProfileSyncService() OVERRIDE;
   virtual bool DidLastSessionExitCleanly() OVERRIDE;
   virtual BookmarkModel* GetBookmarkModel() OVERRIDE;
   virtual ProtocolHandlerRegistry* GetProtocolHandlerRegistry() OVERRIDE;
@@ -127,7 +127,6 @@ class ProfileImpl : public Profile,
   virtual void set_last_selected_directory(const FilePath& path) OVERRIDE;
   virtual ProfileSyncService* GetProfileSyncService() OVERRIDE;
   virtual TokenService* GetTokenService() OVERRIDE;
-  void InitSyncService();
   virtual ExtensionInfoMap* GetExtensionInfoMap() OVERRIDE;
   virtual PromoCounter* GetInstantPromoCounter() OVERRIDE;
   virtual ChromeURLDataManager* GetChromeURLDataManager() OVERRIDE;
@@ -246,8 +245,6 @@ class ProfileImpl : public Profile,
   scoped_refptr<ProtocolHandlerRegistry> protocol_handler_registry_;
 
   scoped_ptr<TokenService> token_service_;
-  scoped_ptr<ProfileSyncComponentsFactory> profile_sync_factory_;
-  scoped_ptr<ProfileSyncService> sync_service_;
 
   scoped_ptr<SSLConfigServiceManager> ssl_config_service_manager_;
 
@@ -268,7 +265,6 @@ class ProfileImpl : public Profile,
   scoped_refptr<WebKitContext> webkit_context_;
   scoped_refptr<fileapi::FileSystemContext> file_system_context_;
   scoped_refptr<quota::QuotaManager> quota_manager_;
-  bool profile_sync_service_created_;
   bool history_service_created_;
   bool favicon_service_created_;
   bool created_web_data_service_;

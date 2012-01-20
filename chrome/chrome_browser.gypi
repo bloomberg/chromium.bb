@@ -2331,6 +2331,8 @@
         'browser/sync/profile_sync_components_factory.h',
         'browser/sync/profile_sync_components_factory_impl.cc',
         'browser/sync/profile_sync_components_factory_impl.h',
+        'browser/sync/profile_sync_service_factory.cc',
+        'browser/sync/profile_sync_service_factory.h',
         'browser/sync/profile_sync_service.cc',
         'browser/sync/profile_sync_service.h',
         'browser/sync/profile_sync_service_harness.cc',

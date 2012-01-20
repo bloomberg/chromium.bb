@@ -22,6 +22,7 @@
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/speech/speech_input_extension_manager.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 
 class Profile;
 
@@ -153,6 +154,7 @@ void ProfileDependencyManager::AssertFactoriesBuilt() {
   PersonalDataManagerFactory::GetInstance();
   PluginPrefsFactory::GetInstance();
   prerender::PrerenderManagerFactory::GetInstance();
+  ProfileSyncServiceFactory::GetInstance();
   SessionServiceFactory::GetInstance();
   SpeechInputExtensionManager::InitializeFactory();
   TabRestoreServiceFactory::GetInstance();

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -93,12 +93,15 @@ class ProfileSyncServiceTest : public testing::Test {
     if (!service_.get()) {
       SigninManager* signin = new SigninManager();
       signin->SetAuthenticatedUsername("test");
-      service_.reset(new TestProfileSyncService(&factory_,
-                                                profile_.get(),
-                                                signin,
-                                                ProfileSyncService::AUTO_START,
-                                                true,
-                                                base::Closure()));
+      ProfileSyncComponentsFactoryMock* factory =
+          new ProfileSyncComponentsFactoryMock();
+      service_.reset(new TestProfileSyncService(
+          factory,
+          profile_.get(),
+          signin,
+          ProfileSyncService::AUTO_START,
+          true,
+          base::Closure()));
       if (!set_initial_sync_ended)
         service_->dont_set_initial_sync_ended_on_init();
       if (synchronous_sync_configuration)
@@ -108,10 +111,11 @@ class ProfileSyncServiceTest : public testing::Test {
 
       if (expect_create_dtm) {
         // Register the bookmark data type.
-        EXPECT_CALL(factory_, CreateDataTypeManager(_, _)).
+        EXPECT_CALL(*factory, CreateDataTypeManager(_, _)).
             WillOnce(ReturnNewDataTypeManager());
       } else {
-        EXPECT_CALL(factory_, CreateDataTypeManager(_, _)).Times(0);
+        EXPECT_CALL(*factory, CreateDataTypeManager(_, _)).
+            Times(0);
       }
 
       if (issue_auth_token) {
@@ -138,16 +142,16 @@ class ProfileSyncServiceTest : public testing::Test {
 
   scoped_ptr<TestProfileSyncService> service_;
   scoped_ptr<TestingProfile> profile_;
-  ProfileSyncComponentsFactoryMock factory_;
 };
 
 TEST_F(ProfileSyncServiceTest, InitialState) {
-  service_.reset(new TestProfileSyncService(&factory_,
-                                            profile_.get(),
-                                            new SigninManager(),
-                                            ProfileSyncService::MANUAL_START,
-                                            true,
-                                            base::Closure()));
+  service_.reset(new TestProfileSyncService(
+      new ProfileSyncComponentsFactoryMock(),
+      profile_.get(),
+      new SigninManager(),
+      ProfileSyncService::MANUAL_START,
+      true,
+      base::Closure()));
   EXPECT_TRUE(
       service_->sync_service_url().spec() ==
         ProfileSyncService::kSyncServerUrl ||
@@ -159,12 +163,13 @@ TEST_F(ProfileSyncServiceTest, DisabledByPolicy) {
   profile_->GetTestingPrefService()->SetManagedPref(
       prefs::kSyncManaged,
       Value::CreateBooleanValue(true));
-  service_.reset(new TestProfileSyncService(&factory_,
-                                            profile_.get(),
-                                            new SigninManager(),
-                                            ProfileSyncService::MANUAL_START,
-                                            true,
-                                            base::Closure()));
+  service_.reset(new TestProfileSyncService(
+      new ProfileSyncComponentsFactoryMock(),
+      profile_.get(),
+      new SigninManager(),
+      ProfileSyncService::MANUAL_START,
+      true,
+      base::Closure()));
   service_->Initialize();
   EXPECT_TRUE(service_->IsManaged());
 }
@@ -172,16 +177,20 @@ TEST_F(ProfileSyncServiceTest, DisabledByPolicy) {
 TEST_F(ProfileSyncServiceTest, AbortedByShutdown) {
   SigninManager* signin = new SigninManager();
   signin->SetAuthenticatedUsername("test");
-  service_.reset(new TestProfileSyncService(&factory_,
-                                            profile_.get(),
-                                            signin,
-                                            ProfileSyncService::AUTO_START,
-                                            true,
-                                            base::Closure()));
-  EXPECT_CALL(factory_, CreateDataTypeManager(_, _)).Times(0);
-  EXPECT_CALL(factory_, CreateBookmarkSyncComponents(_, _)).Times(0);
+  ProfileSyncComponentsFactoryMock* factory =
+      new ProfileSyncComponentsFactoryMock();
+  service_.reset(new TestProfileSyncService(
+      factory,
+      profile_.get(),
+      signin,
+      ProfileSyncService::AUTO_START,
+      true,
+      base::Closure()));
+  EXPECT_CALL(*factory, CreateDataTypeManager(_, _)).Times(0);
+  EXPECT_CALL(*factory, CreateBookmarkSyncComponents(_, _)).
+      Times(0);
   service_->RegisterDataTypeController(
-      new BookmarkDataTypeController(&factory_,
+      new BookmarkDataTypeController(service_->factory(),
                                      profile_.get(),
                                      service_.get()));
 
@@ -192,14 +201,17 @@ TEST_F(ProfileSyncServiceTest, AbortedByShutdown) {
 TEST_F(ProfileSyncServiceTest, DisableAndEnableSyncTemporarily) {
   SigninManager* signin = new SigninManager();
   signin->SetAuthenticatedUsername("test");
-  service_.reset(new TestProfileSyncService(&factory_,
-                                            profile_.get(),
-                                            signin,
-                                            ProfileSyncService::AUTO_START,
-                                            true,
-                                            base::Closure()));
+  ProfileSyncComponentsFactoryMock* factory =
+      new ProfileSyncComponentsFactoryMock();
+  service_.reset(new TestProfileSyncService(
+      factory,
+      profile_.get(),
+      signin,
+      ProfileSyncService::AUTO_START,
+      true,
+      base::Closure()));
   // Register the bookmark data type.
-  EXPECT_CALL(factory_, CreateDataTypeManager(_, _)).
+  EXPECT_CALL(*factory, CreateDataTypeManager(_, _)).
       WillRepeatedly(ReturnNewDataTypeManager());
 
   IssueTestTokens();

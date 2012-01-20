@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -56,12 +56,6 @@ class ProfileSyncComponentsFactory {
   };
 
   virtual ~ProfileSyncComponentsFactory() {}
-
-  // Instantiates a new ProfileSyncService. The return pointer is owned by the
-  // caller.
-  // TODO(tim): Bug 93922. Remove this method in favor of a
-  // ProfileSyncServiceFactory singleton.
-  virtual ProfileSyncService* CreateProfileSyncService() = 0;
 
   // Creates and registers enabled datatypes with the provided
   // ProfileSyncService.

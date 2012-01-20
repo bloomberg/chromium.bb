@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -69,19 +69,24 @@ class ProfileSyncServiceStartupTest : public testing::Test {
  protected:
   // Overridden below by ProfileSyncServiceStartupCrosTest.
   virtual void CreateSyncService() {
-    service_.reset(new TestProfileSyncService(&factory_,
-                                              profile_.get(),
-                                              new FakeSigninManager(),
-                                              ProfileSyncService::MANUAL_START,
-                                              true,
-                                              base::Closure()));
+    service_.reset(new TestProfileSyncService(
+        new ProfileSyncComponentsFactoryMock(),
+        profile_.get(),
+        new FakeSigninManager(),
+        ProfileSyncService::MANUAL_START,
+        true,
+        base::Closure()));
   }
 
   DataTypeManagerMock* SetUpDataTypeManager() {
     DataTypeManagerMock* data_type_manager = new DataTypeManagerMock();
-    EXPECT_CALL(factory_, CreateDataTypeManager(_, _)).
+    EXPECT_CALL(*factory_mock(), CreateDataTypeManager(_, _)).
         WillOnce(Return(data_type_manager));
     return data_type_manager;
+  }
+
+  ProfileSyncComponentsFactoryMock* factory_mock() {
+   return static_cast<ProfileSyncComponentsFactoryMock*>(service_->factory());
   }
 
   MessageLoop ui_loop_;
@@ -89,7 +94,6 @@ class ProfileSyncServiceStartupTest : public testing::Test {
   content::TestBrowserThread file_thread_;
   content::TestBrowserThread io_thread_;
   scoped_ptr<TestingProfile> profile_;
-  ProfileSyncComponentsFactoryMock factory_;
   scoped_ptr<TestProfileSyncService> service_;
   ProfileSyncServiceObserverMock observer_;
 };
@@ -99,12 +103,13 @@ class ProfileSyncServiceStartupCrosTest : public ProfileSyncServiceStartupTest {
   virtual void CreateSyncService() {
     SigninManager* signin = new SigninManager();
     signin->SetAuthenticatedUsername("test_user");
-    service_.reset(new TestProfileSyncService(&factory_,
-                                              profile_.get(),
-                                              signin,
-                                              ProfileSyncService::AUTO_START,
-                                              true,
-                                              base::Closure()));
+    service_.reset(new TestProfileSyncService(
+        new ProfileSyncComponentsFactoryMock(),
+        profile_.get(),
+        signin,
+        ProfileSyncService::AUTO_START,
+        true,
+        base::Closure()));
   }
 };
 
@@ -181,7 +186,7 @@ TEST_F(ProfileSyncServiceStartupTest, ManagedStartup) {
   // Disable sync through policy.
   profile_->GetPrefs()->SetBoolean(prefs::kSyncManaged, true);
 
-  EXPECT_CALL(factory_, CreateDataTypeManager(_, _)).Times(0);
+  EXPECT_CALL(*factory_mock(), CreateDataTypeManager(_, _)).Times(0);
   EXPECT_CALL(observer_, OnStateChanged()).Times(AnyNumber());
 
   // Service should not be started by Initialize() since it's managed.
@@ -212,7 +217,7 @@ TEST_F(ProfileSyncServiceStartupTest, SwitchManaged) {
   // When switching back to unmanaged, the state should change, but the service
   // should not start up automatically (kSyncSetupCompleted will be false).
   Mock::VerifyAndClearExpectations(data_type_manager);
-  EXPECT_CALL(factory_, CreateDataTypeManager(_, _)).Times(0);
+  EXPECT_CALL(*factory_mock(), CreateDataTypeManager(_, _)).Times(0);
   EXPECT_CALL(observer_, OnStateChanged()).Times(AnyNumber());
   profile_->GetPrefs()->ClearPref(prefs::kSyncManaged);
 }

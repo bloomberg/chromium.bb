@@ -74,8 +74,7 @@
 #include "chrome/browser/speech/chrome_speech_input_manager.h"
 #include "chrome/browser/speech/chrome_speech_input_preferences.h"
 #include "chrome/browser/spellchecker/spellcheck_profile.h"
-#include "chrome/browser/sync/profile_sync_components_factory_impl.h"
-#include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/tabs/pinned_tab_service_factory.h"
 #include "chrome/browser/transport_security_persister.h"
 #include "chrome/browser/ui/browser_init.h"
@@ -255,7 +254,6 @@ ProfileImpl::ProfileImpl(const FilePath& path,
       extension_devtools_manager_(NULL),
       host_content_settings_map_(NULL),
       host_zoom_map_(NULL),
-      profile_sync_service_created_(false),
       history_service_created_(false),
       favicon_service_created_(false),
       created_web_data_service_(false),
@@ -573,11 +571,6 @@ ProfileImpl::~ProfileImpl() {
 
   // Remove pref observers
   pref_change_registrar_.RemoveAll();
-
-  // The sync service needs to be deleted before the services it calls.
-  // TODO(stevet): Make ProfileSyncService into a PKS and let the PDM take care
-  // of the cleanup below.
-  sync_service_.reset();
 
   ChromePluginServiceFilter::GetInstance()->UnregisterResourceContext(
       &io_data_.GetResourceContextNoInit());
@@ -1173,8 +1166,8 @@ quota::QuotaManager* ProfileImpl::GetQuotaManager() {
   return quota_manager_.get();
 }
 
-bool ProfileImpl::HasProfileSyncService() const {
-  return (sync_service_.get() != NULL);
+bool ProfileImpl::HasProfileSyncService() {
+  return ProfileSyncServiceFactory::GetInstance()->HasProfileSyncService(this);
 }
 
 bool ProfileImpl::DidLastSessionExitCleanly() {
@@ -1411,22 +1404,7 @@ TokenService* ProfileImpl::GetTokenService() {
 }
 
 ProfileSyncService* ProfileImpl::GetProfileSyncService() {
-  if (!ProfileSyncService::IsSyncEnabled())
-    return NULL;
-  if (!profile_sync_service_created_) {
-    profile_sync_service_created_ = true;
-    InitSyncService();
-  }
-  return sync_service_.get();
-}
-
-void ProfileImpl::InitSyncService() {
-  profile_sync_factory_.reset(
-      new ProfileSyncComponentsFactoryImpl(this,
-                                           CommandLine::ForCurrentProcess()));
-  sync_service_.reset(profile_sync_factory_->CreateProfileSyncService());
-  profile_sync_factory_->RegisterDataTypes(sync_service_.get());
-  sync_service_->Initialize();
+  return ProfileSyncServiceFactory::GetInstance()->GetForProfile(this);
 }
 
 ChromeBlobStorageContext* ProfileImpl::GetBlobStorageContext() {

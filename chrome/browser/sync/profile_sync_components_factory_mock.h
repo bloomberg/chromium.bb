@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,8 +24,6 @@ class ProfileSyncComponentsFactoryMock : public ProfileSyncComponentsFactory {
       browser_sync::ChangeProcessor* change_processor);
   virtual ~ProfileSyncComponentsFactoryMock();
 
-  MOCK_METHOD0(CreateProfileSyncService,
-               ProfileSyncService*());
   MOCK_METHOD1(RegisterDataTypes, void(ProfileSyncService*));
   MOCK_METHOD2(CreateDataTypeManager,
                browser_sync::DataTypeManager*(
