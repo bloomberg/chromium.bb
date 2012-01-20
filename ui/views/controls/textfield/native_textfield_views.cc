@@ -562,8 +562,7 @@ bool NativeTextfieldViews::IsCommandIdEnabled(int command_id) const {
     case IDS_APP_SELECT_ALL:
       return true;
     default:
-      NOTREACHED();
-      return false;
+      return textfield_->GetController()->IsCommandIdEnabled(command_id);
   }
 }
 
@@ -596,7 +595,7 @@ void NativeTextfieldViews::ExecuteCommand(int command_id) {
       SelectAll();
       break;
     default:
-      NOTREACHED() << "unknown command: " << command_id;
+      textfield_->GetController()->ExecuteCommand(command_id);
       break;
   }
 
@@ -990,6 +989,8 @@ void NativeTextfieldViews::UpdateContextMenu() {
     context_menu_contents_->AddSeparator();
     context_menu_contents_->AddItemWithStringId(IDS_APP_SELECT_ALL,
                                                 IDS_APP_SELECT_ALL);
+    textfield_->GetController()->UpdateContextMenu(
+        context_menu_contents_.get());
 
     context_menu_delegate_.reset(
         new views::MenuModelAdapter(context_menu_contents_.get()));

@@ -30,6 +30,7 @@
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/models/simple_menu_model.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/render_text.h"
@@ -713,6 +714,22 @@ void OmniboxViewViews::OnWriteDragData(ui::OSExchangeData* data) {
   data->SetString(selected_text);
   if (write_url)
     data->SetURL(url, selected_text);
+}
+
+void OmniboxViewViews::UpdateContextMenu(ui::SimpleMenuModel* menu_contents) {
+  // Minor note: We use IDC_ for command id here while the underlying textfield
+  // is using IDS_ for all its command ids. This is because views cannot depend
+  // on IDC_ for now.
+  menu_contents->AddItemWithStringId(IDC_EDIT_SEARCH_ENGINES,
+      IDS_EDIT_SEARCH_ENGINES);
+}
+
+bool OmniboxViewViews::IsCommandIdEnabled(int command_id) const {
+  return command_updater_->IsCommandEnabled(command_id);
+}
+
+void OmniboxViewViews::ExecuteCommand(int command_id) {
+  command_updater_->ExecuteCommand(command_id);
 }
 
 #if defined(OS_CHROMEOS)

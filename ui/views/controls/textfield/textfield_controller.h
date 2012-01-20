@@ -11,6 +11,7 @@
 
 namespace ui {
 class OSExchangeData;
+class SimpleMenuModel;
 }  // namespace ui
 
 namespace views {
@@ -48,6 +49,15 @@ class VIEWS_EXPORT TextfieldController {
   // Called after the textfield has written drag data to give the controller a
   // chance to modify the drag data.
   virtual void OnWriteDragData(ui::OSExchangeData* data) {}
+
+  // Gives the controller a chance to modify the context menu contents.
+  virtual void UpdateContextMenu(ui::SimpleMenuModel* menu_contents) {}
+
+  // Returns true if the |command_id| should be enabled in the context menu.
+  virtual bool IsCommandIdEnabled(int command_id) const { return false; }
+
+  // Execute context menu command specified by |command_id|.
+  virtual void ExecuteCommand(int command_id) {}
 
  protected:
   virtual ~TextfieldController() {}
