@@ -2659,6 +2659,7 @@
         'browser/extensions/webstore_inline_install_browsertest.cc',
         'browser/extensions/window_open_apitest.cc',
         'browser/first_run/first_run_browsertest.cc',
+        'browser/first_run/try_chrome_dialog_view_browsertest.cc',
         'browser/geolocation/access_token_store_browsertest.cc',
         'browser/geolocation/geolocation_browsertest.cc',
         'browser/history/history_browsertest.cc',
