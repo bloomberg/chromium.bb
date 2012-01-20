@@ -65,8 +65,6 @@ struct SyncerStatus {
 
   // True when we get such an INVALID_STORE error from the server.
   bool invalid_store;
-  // True iff we're stuck.
-  bool syncer_stuck;
   int num_successful_commits;
   // This is needed for monitoring extensions activity.
   int num_successful_bookmark_commits;
@@ -200,17 +198,8 @@ class ConflictProgress {
   std::map<syncable::Id, ConflictSet*> id_to_conflict_set_;
   std::set<ConflictSet*> conflict_sets_;
 
-  // Nonblocking conflicts are those which should not block forward progress
-  // (they will not result in the syncer being stuck). This currently only
-  // includes entries we cannot yet decrypt because the passphrase has not
-  // arrived.
-  // With nonblocking conflicts, we want to go to the syncer's
-  // APPLY_UPDATES_TO_RESOLVE_CONFLICTS step, but we want to ignore them after.
-  // Because they are not passed to the conflict resolver, they do not trigger
-  // syncer_stuck.
-  // TODO(zea): at some point we may have nonblocking conflicts that should be
-  // resolved in the conflict resolver. We'll need to change this then.
-  // See http://crbug.com/76596.
+  // Nonblocking conflicts are not processed by the conflict resolver, but
+  // they will be processed in the APPLY_UDPATES_TO_RESOLVE_CONFLICTS step.
   std::set<syncable::Id> nonblocking_conflicting_item_ids_;
 
   // Whether a conflicting item was added or removed since

@@ -158,11 +158,6 @@ void StatusController::set_invalid_store(bool invalid_store) {
     shared_.syncer_status.mutate()->invalid_store = invalid_store;
 }
 
-void StatusController::set_syncer_stuck(bool syncer_stuck) {
-  if (shared_.syncer_status.value().syncer_stuck != syncer_stuck)
-    shared_.syncer_status.mutate()->syncer_stuck = syncer_stuck;
-}
-
 void StatusController::UpdateStartTime() {
   sync_start_time_ = base::Time::Now();
 }

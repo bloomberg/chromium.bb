@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -21,7 +21,6 @@
 namespace browser_sync {
 
 class ScopedStatusLock;
-struct AuthWatcherEvent;
 struct ServerConnectionEvent;
 
 // TODO(rlarocque):
@@ -42,8 +41,6 @@ class AllStatus : public SyncEngineEventListener {
   virtual ~AllStatus();
 
   void HandleServerConnectionEvent(const ServerConnectionEvent& event);
-
-  void HandleAuthWatcherEvent(const AuthWatcherEvent& event);
 
   virtual void OnSyncEngineEvent(const SyncEngineEvent& event) OVERRIDE;
 

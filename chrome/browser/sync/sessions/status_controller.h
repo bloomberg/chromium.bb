@@ -217,7 +217,6 @@ class StatusController {
   void increment_num_consecutive_errors_by(int value);
   void set_num_server_changes_remaining(int64 changes_remaining);
   void set_invalid_store(bool invalid_store);
-  void set_syncer_stuck(bool syncer_stuck);
   void set_num_successful_bookmark_commits(int value);
   void increment_num_successful_commits();
   void increment_num_successful_bookmark_commits();

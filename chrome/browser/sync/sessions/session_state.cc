@@ -46,7 +46,6 @@ DictionaryValue* SyncSourceInfo::ToValue() const {
 
 SyncerStatus::SyncerStatus()
     : invalid_store(false),
-      syncer_stuck(false),
       num_successful_commits(0),
       num_successful_bookmark_commits(0),
       num_updates_downloaded_total(0),
@@ -61,7 +60,6 @@ SyncerStatus::~SyncerStatus() {
 DictionaryValue* SyncerStatus::ToValue() const {
   DictionaryValue* value = new DictionaryValue();
   value->SetBoolean("invalidStore", invalid_store);
-  value->SetBoolean("syncerStuck", syncer_stuck);
   value->SetInteger("numSuccessfulCommits", num_successful_commits);
   value->SetInteger("numSuccessfulBookmarkCommits",
                 num_successful_bookmark_commits);

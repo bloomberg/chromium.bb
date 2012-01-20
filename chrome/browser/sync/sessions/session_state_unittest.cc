@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -45,7 +45,6 @@ TEST_F(SessionStateTest, SyncSourceInfoToValue) {
 TEST_F(SessionStateTest, SyncerStatusToValue) {
   SyncerStatus status;
   status.invalid_store = true;
-  status.syncer_stuck = false;
   status.num_successful_commits = 5;
   status.num_successful_bookmark_commits = 10;
   status.num_updates_downloaded_total = 100;
@@ -54,9 +53,8 @@ TEST_F(SessionStateTest, SyncerStatusToValue) {
   status.num_server_overwrites = 18;
 
   scoped_ptr<DictionaryValue> value(status.ToValue());
-  EXPECT_EQ(8u, value->size());
+  EXPECT_EQ(7u, value->size());
   ExpectDictBooleanValue(status.invalid_store, *value, "invalidStore");
-  ExpectDictBooleanValue(status.syncer_stuck, *value, "syncerStuck");
   ExpectDictIntegerValue(status.num_successful_commits,
                          *value, "numSuccessfulCommits");
   ExpectDictIntegerValue(status.num_successful_bookmark_commits,

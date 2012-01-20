@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -14,7 +14,7 @@ package sync_pb;
 // The additional info here is from SyncerStatus. They get sent when the event
 // SYNC_CYCLE_COMPLETED  is sent.
 message SyncCycleCompletedEventInfo {
-  optional bool syncer_stuck = 1;
+  // optional bool syncer_stuck = 1; // Was always false, now obsolete.
   optional int32 num_blocking_conflicts = 2;
   optional int32 num_non_blocking_conflicts = 3;
 }

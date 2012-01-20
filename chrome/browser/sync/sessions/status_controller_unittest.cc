@@ -55,11 +55,6 @@ TEST_F(StatusControllerTest, GetsDirty) {
   status.set_invalid_store(false);
   EXPECT_TRUE(status.TestAndClearIsDirty());
 
-  status.set_syncer_stuck(true);
-  EXPECT_TRUE(status.TestAndClearIsDirty());
-  status.set_syncer_stuck(false);
-  EXPECT_TRUE(status.TestAndClearIsDirty());
-
   status.increment_num_successful_commits();
   EXPECT_TRUE(status.TestAndClearIsDirty());
   status.increment_num_successful_commits();
@@ -125,10 +120,6 @@ TEST_F(StatusControllerTest, ReadYourWrites) {
   EXPECT_FALSE(status.syncer_status().invalid_store);
   status.set_invalid_store(true);
   EXPECT_TRUE(status.syncer_status().invalid_store);
-
-  EXPECT_FALSE(status.syncer_status().syncer_stuck);
-  status.set_syncer_stuck(true);
-  EXPECT_TRUE(status.syncer_status().syncer_stuck);
 
   EXPECT_FALSE(status.conflicts_resolved());
   status.update_conflicts_resolved(true);

@@ -1014,7 +1014,7 @@ bool ProfileSyncService::SetupInProgress() const {
 std::string ProfileSyncService::BuildSyncStatusSummaryText(
     const sync_api::SyncManager::Status::Summary& summary) {
   const char* strings[] = {"INVALID", "OFFLINE", "OFFLINE_UNSYNCED", "SYNCING",
-      "READY", "CONFLICT", "OFFLINE_UNUSABLE"};
+      "READY", "OFFLINE_UNUSABLE"};
   COMPILE_ASSERT(arraysize(strings) ==
                  sync_api::SyncManager::Status::SUMMARY_STATUS_COUNT,
                  enum_indexed_array);

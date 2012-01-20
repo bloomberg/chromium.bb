@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -537,9 +537,6 @@ void ConstructAboutInformation(ProfileSyncService* service,
                                     "Server Reachable",
                                     full_status.server_reachable);
     sync_ui_util::AddBoolSyncDetail(details,
-                                    "Server Broken",
-                                    full_status.server_broken);
-    sync_ui_util::AddBoolSyncDetail(details,
                                     "Notifications Enabled",
                                     full_status.notifications_enabled);
     sync_ui_util::AddIntSyncDetail(details,
@@ -564,9 +561,6 @@ void ConstructAboutInformation(ProfileSyncService* service,
     sync_ui_util::AddBoolSyncDetail(details,
                                     "Initial Sync Ended",
                                     full_status.initial_sync_ended);
-    sync_ui_util::AddBoolSyncDetail(details,
-                                    "Syncer Stuck",
-                                    full_status.syncer_stuck);
     sync_ui_util::AddIntSyncDetail(details,
                                    "Updates Available",
                                    full_status.updates_available);
@@ -576,9 +570,6 @@ void ConstructAboutInformation(ProfileSyncService* service,
     sync_ui_util::AddIntSyncDetail(details,
                                    "Updates Downloaded (Tombstones)",
                                    full_status.tombstone_updates_received);
-    sync_ui_util::AddBoolSyncDetail(details,
-                                    "Disk Full",
-                                    full_status.disk_full);
     sync_ui_util::AddIntSyncDetail(details,
                                    "Max Consecutive Errors",
                                    full_status.max_consecutive_errors);

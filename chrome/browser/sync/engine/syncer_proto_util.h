@@ -40,9 +40,8 @@ class CommitResponse_EntryResponse;
 class SyncerProtoUtil {
  public:
   // Posts the given message and fills the buffer with the returned value.
-  // Returns true on success.  Also handles store birthday verification:
-  // session->status()->syncer_stuck_ is set true if the birthday is
-  // incorrect.  A false value will always be returned if birthday is bad.
+  // Returns true on success.  Also handles store birthday verification: will
+  // produce a SyncError if the birthday is incorrect.
   static SyncerError PostClientToServerMessage(
       const ClientToServerMessage& msg,
       sync_pb::ClientToServerResponse* response,

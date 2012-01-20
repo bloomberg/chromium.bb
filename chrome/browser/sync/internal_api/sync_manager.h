@@ -104,8 +104,6 @@ class SyncManager {
       SYNCING,
       // Connected, no pending changes.
       READY,
-      // Internal sync error.
-      CONFLICT,
       // Can't connect to server, and we haven't completed the initial
       // sync yet.  So there's nothing we can do but wait for the server.
       OFFLINE_UNUSABLE,
@@ -121,8 +119,6 @@ class SyncManager {
     bool server_up;          // True if we have received at least one good
                              // reply from the server.
     bool server_reachable;   // True if we received any reply from the server.
-    bool server_broken;      // True of the syncer is stopped because of server
-                             // issues.
     bool notifications_enabled;  // True only if subscribed for notifications.
 
     // Notifications counters updated by the actions in synapi.
@@ -134,14 +130,15 @@ class SyncManager {
 
     browser_sync::SyncProtocolError sync_protocol_error;
 
+    // Number of unsynced items counted at the start of most recent sync cycle.
     int unsynced_count;
 
+    // Number of conflicting items counted during most recent sync cycle.
     int conflicting_count;
+
     bool syncing;
     // True after a client has done a first sync.
     bool initial_sync_ended;
-    // True if any syncer is stuck.
-    bool syncer_stuck;
 
     // Total updates available.  If zero, nothing left to download.
     int64 updates_available;
@@ -150,7 +147,6 @@ class SyncManager {
 
     // Of updates_received, how many were tombstones.
     int tombstone_updates_received;
-    bool disk_full;
 
     // Total number of overwrites due to conflict resolver since browser start.
     int num_local_overwrites_total;

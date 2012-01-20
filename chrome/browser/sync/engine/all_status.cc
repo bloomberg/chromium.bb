@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,9 +35,7 @@ sync_api::SyncManager::Status AllStatus::CreateBlankStatus() const {
   status.unsynced_count = 0;
   status.conflicting_count = 0;
   status.initial_sync_ended = false;
-  status.syncer_stuck = false;
   status.max_consecutive_errors = 0;
-  status.server_broken = false;
   status.updates_available = 0;
   return status;
 }
@@ -59,18 +57,12 @@ sync_api::SyncManager::Status AllStatus::CalcSyncing(
   }
 
   status.initial_sync_ended |= snapshot->is_share_usable;
-  status.syncer_stuck |= snapshot->syncer_status.syncer_stuck;
 
   const sessions::ErrorCounters& errors(snapshot->errors);
   if (errors.consecutive_errors > status.max_consecutive_errors)
     status.max_consecutive_errors = errors.consecutive_errors;
 
-  // 100 is an arbitrary limit.
-  if (errors.consecutive_transient_error_commits > 100)
-    status.server_broken = true;
-
   status.updates_available += snapshot->num_server_changes_remaining;
-
   status.sync_protocol_error = snapshot->errors.sync_protocol_error;
 
   // Accumulate update count only once per session to avoid double-counting.
@@ -103,11 +95,9 @@ sync_api::SyncManager::Status AllStatus::CalcSyncing(
 void AllStatus::CalcStatusChanges() {
   const bool unsynced_changes = status_.unsynced_count > 0;
   const bool online = status_.authenticated &&
-    status_.server_reachable && status_.server_up && !status_.server_broken;
+    status_.server_reachable && status_.server_up;
   if (online) {
-    if (status_.syncer_stuck)
-      status_.summary = sync_api::SyncManager::Status::CONFLICT;
-    else if (status_.syncing)
+    if (status_.syncing)
       status_.summary = sync_api::SyncManager::Status::SYNCING;
     else
       status_.summary = sync_api::SyncManager::Status::READY;

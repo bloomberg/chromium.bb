@@ -23,8 +23,6 @@ void DebugInfoEventListener::OnSyncCycleCompleted(
   sync_pb::SyncCycleCompletedEventInfo* sync_completed_event_info =
       event_info.mutable_sync_cycle_completed_event_info();
 
-  sync_completed_event_info->set_syncer_stuck(
-      snapshot->syncer_status.syncer_stuck);
   sync_completed_event_info->set_num_blocking_conflicts(
       snapshot->num_conflicting_updates);
   sync_completed_event_info->set_num_non_blocking_conflicts(
