@@ -340,6 +340,8 @@ evdev_input_device_data(int fd, uint32_t mask, void *data)
 		return 1;
 	}
 
+	device->type = 0;
+
 	e = ev;
 	end = (void *) ev + len;
 	for (e = ev; e < end; e++) {
