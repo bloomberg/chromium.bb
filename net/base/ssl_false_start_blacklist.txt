@@ -20,7 +20,6 @@ abcirclenow.com
 abrocketpowertrainer.com
 abtserver.com
 abtwebxpress.com
-ac-caen.fr
 ac-lyon.fr
 ac-nice.fr
 ac-orleans-tours.fr
@@ -264,7 +263,6 @@ chapmantripp.com
 checkoutblog.com
 chester.ac.uk
 chevrolet-leadengine.de
-chexxinc.com
 chinookhosting.com
 chinooknetworks.com
 chl-peq.co.uk
@@ -300,7 +298,6 @@ compellent.com
 comprabuxton.com
 comprariddexpulse.com
 compupaypartner.com
-comserving.com
 conduxio.com
 connect.bangor.ac.uk
 connect.plan-b-gmbh.com
@@ -315,7 +312,6 @@ correo.orizonia.com
 correo.psl.com.co
 correo.tec.ac.cr
 cortesoft.com
-countinghouseltd.com
 covlecremote.org
 covnet.covenantretirement.org
 coyoteportal.wc.edu
@@ -348,7 +344,6 @@ dbpn.com
 dc110.4shared.com
 dcvpn.cov.com
 de-mail.de
-deepcovelabs.com
 deloitte.com
 deloitteresources.com
 deltek.forceprotection.net
@@ -463,7 +458,6 @@ exchange.khlim.be
 exchange.raakict.nl
 exchange.uetcl.com
 exchange4u.cz
-exeter.ac.uk
 ext01.lifesouth.org
 extra.chrysler.de
 extranet.cec.org
@@ -566,7 +560,6 @@ getworldatwar.com
 getworldofreading.com
 getyourpajamajeans.com
 getzerogerm.com
-gfk.com
 gfkdaphne.com
 ggusd.us
 ggy.com
@@ -788,7 +781,6 @@ legalease.jmls.edu
 lendingtreeautos.com
 leopards-den.us
 lexor.lsp.at
-lgelements.com
 library.failteireland.ie
 lifeaction.net
 lifenetems.org
@@ -979,7 +971,6 @@ mayvillestate.edu
 mbanking.ncrwebhost.mobi
 mbdvd.com
 mc4me.mccd.edu
-mcdonaldsedc.co.uk
 mchvpn01.midcoasthealth.com
 md-whistleblower.com
 meagpower.org
@@ -1047,7 +1038,6 @@ mws.acculynk.net
 mx.twfp.com
 mxs.deff.ru
 my-aime.net
-my-hammer.at
 my-hammer.de
 my.comprehensivesleep.com
 my.ecwid.com
@@ -1059,10 +1049,6 @@ mybffnow.com
 mychart.carilionclinic.org
 myclinicallogic.com
 myevolver.com
-myflcourtaccess.com
-myfloridacounty.com
-myhammer.co.uk
-myhammer.com
 myhdwraparoundstv.com
 mymail.warnerconnect.com
 mymcso.com
@@ -1116,8 +1102,6 @@ nuungolf.com
 nuwaveoven.com
 nuwaveovennow.com
 nzmail.deloitte.co.nz
-nzzdomizil.ch
-nzzexecutive.ch
 oasiswebvpn.net
 obdp.org
 odlmarkets.com
@@ -1364,11 +1348,7 @@ research.majesticsteel.com
 researcharchive.wintec.ac.nz
 reservation.tokyodisneyresort.co.jp
 resource-ctr.com
-rewardgateway.co.nz
 rewardgateway.co.uk
-rewardgateway.com.au
-rewardgateway.ie
-rfihub.com
 rgdata.com.ua
 riddexpulsenow.com
 rightathomehomestay.com
@@ -1384,7 +1364,6 @@ rk.sjdc.co.jp
 rms.unlv.edu
 rocmondriaan.net
 rodino.ro
-rogers.com
 rome.faber.co.uk
 ross.fs.fed.us
 routercenter.be
@@ -1428,7 +1407,6 @@ secep.net
 secure.aceinsurance.com.au
 secure.anzmoneymanager.com
 secure.atriacom.com
-secure.cloud2ivr.com
 secure.court.gov.il
 secure.cst.org
 secure.cygnusresources.com
@@ -1443,17 +1421,13 @@ secure.mdrc.org
 secure.merchantcart.net
 secure.mybybox.com
 secure.mycashnow.com
-secure.myphoneassistant.com
 secure.nicoga.jp
 secure.passport.mnginteractive.com
 secure.pompvanhetvolk.be
 secure.reboot.ca
 secure.sbmonline.com
-secure.serviceevaluation.com
 secure.sjpharmacal.com
 secure.snowmobile.com
-secure.successplanninggroupphones.com
-secure.truckpartsolutions.com
 secure.www.contracostatimes.com
 secure.www.dailybreeze.com
 secure.www.montereyherald.com
@@ -1579,7 +1553,6 @@ support.goshen.bluestarpro.com
 support.landsteinar.nl
 support.rosebudtech.com
 supportlink.net
-surveys.com
 svelvik.skole.d-ikt.no
 sw.quirinale.it
 sw4men.com
@@ -1683,7 +1656,6 @@ twyford.ealing.sch.uk
 twynhamschool.com
 tylerisd.org
 u-tokyo.ac.jp
-uab.edu
 ube-ind.co.jp
 ubi.pt
 ucar.edu
