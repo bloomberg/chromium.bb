@@ -1,4 +1,4 @@
-/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -74,13 +74,13 @@
 }
 
 .expandable-bubble-close {
-  background-image: url('chrome://theme/IDR_CLOSE_BAR');
+  background-image: url('../../../../../ui/resources/close_bar.png');
 }
 
 .expandable-bubble-close:hover {
-  background-image: url('chrome://theme/IDR_CLOSE_BAR_H');
+  background-image: url('../../../../../ui/resources/close_bar_h.png');
 }
 
 .expandable-bubble-close:active {
-  background-image: url('chrome://theme/IDR_CLOSE_BAR_P');
+  background-image: url('../../../../../ui/resources/close_bar_p.png');
 }

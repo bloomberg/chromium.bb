@@ -38,13 +38,13 @@
 }
 
 .remove-user-button {
-  background-image: url(chrome://theme/IDR_CLOSE_BAR);
+  background-image: url('../../../../../ui/resources/close_bar.png');
   width: 16px;
   height: 16px;
 }
 
 .remove-user-button:hover {
-  background-image: url(chrome://theme/IDR_CLOSE_BAR_H);
+  background-image: url('../../../../../ui/resources/close_bar_h.png');
 }
 
 #userList {
