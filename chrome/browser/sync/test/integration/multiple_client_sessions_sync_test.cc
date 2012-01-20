@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -46,7 +46,7 @@ IN_PROC_BROWSER_TEST_F(MultipleClientSessionsSyncTest, MAYBE_AllChanged) {
   for (int i = 0; i < num_clients(); ++i) {
     SessionWindowMap windows;
     ASSERT_TRUE(OpenTabAndGetLocalWindows(
-        i, GURL(StringPrintf("about:bubba%i", i)), &windows));
+        i, GURL(StringPrintf("http://127.0.0.1/bubba%i", i)), &windows));
     client_windows[i].Reset(&windows);
   }
 
@@ -82,7 +82,7 @@ IN_PROC_BROWSER_TEST_F(MultipleClientSessionsSyncTest,
   for (int i = 0; i < num_clients(); ++i) {
     SessionWindowMap windows;
     ASSERT_TRUE(OpenTabAndGetLocalWindows(
-        i, GURL(StringPrintf("about:bubba%i", i)), &windows));
+        i, GURL(StringPrintf("http://127.0.0.1/bubba%i", i)), &windows));
     client_windows[i].Reset(&windows);
   }
 

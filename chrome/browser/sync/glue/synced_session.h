@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -56,9 +56,9 @@ struct SyncedSession {
 };
 
 // Control which foreign tabs we're interested in syncing/displaying. Checks
-// that the tab has navigations and is not a new tab (url == NTP).
-// Note: A new tab page with back/forward history is valid.
-bool IsValidSessionTab(const SessionTab& tab);
+// that the tab has navigations and contains at least one valid url.
+// Note: chrome:// and file:// are not considered valid urls (for syncing).
+bool ShouldSyncSessionTab(const SessionTab& tab);
 
 // Checks whether the window has tabs to sync. If no tabs to sync, it returns
 // true, false otherwise.

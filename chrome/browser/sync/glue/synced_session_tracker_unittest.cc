@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -63,9 +63,8 @@ TEST_F(SyncedSessionTrackerTest, LookupAllForeignSessions) {
   SessionTab* tab = tracker.GetTab("tag1", 15);
   ASSERT_TRUE(tab);
   tab->navigations.push_back(TabNavigation(
-      0, GURL("valid_url"),
-      content::Referrer(GURL("referrer"), WebKit::WebReferrerPolicyDefault),
-      string16(ASCIIToUTF16("title")),
+      0, GURL("bla://valid_url"), content::Referrer(GURL("bla://referrer"),
+      WebKit::WebReferrerPolicyDefault), string16(ASCIIToUTF16("title")),
       std::string("state"), content::PageTransitionFromInt(0)));
   ASSERT_TRUE(tracker.LookupAllForeignSessions(&sessions));
   // Only the session with a valid window and tab gets returned.

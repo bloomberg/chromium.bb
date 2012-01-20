@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,24 +18,20 @@ SyncedSession::~SyncedSession() {
   STLDeleteContainerPairSecondPointers(windows.begin(), windows.end());
 }
 
-// Note: if you modify this, make sure you modify IsValidTab in
-// SessionModelAssociator.
-bool IsValidSessionTab(const SessionTab& tab) {
+// Note: if you modify this, make sure you modify
+// SessionModelAssociator::ShouldSyncTab to ensure the logic matches.
+bool ShouldSyncSessionTab(const SessionTab& tab) {
   if (tab.navigations.empty())
     return false;
-  int selected_index = tab.current_navigation_index;
-  selected_index = std::max(
-      0,
-      std::min(selected_index,
-          static_cast<int>(tab.navigations.size() - 1)));
-  if (selected_index == 0 &&
-      tab.navigations.size() == 1 &&
-      tab.navigations.at(selected_index).virtual_url().GetOrigin() ==
-          GURL(chrome::kChromeUINewTabURL)) {
-    // This is a new tab with no further history, skip.
-    return false;
+  bool found_valid_url = false;
+  for (size_t i = 0; i < tab.navigations.size(); ++i) {
+    if (tab.navigations.at(i).virtual_url().is_valid() &&
+        !tab.navigations.at(i).virtual_url().SchemeIs("chrome") &&
+        !tab.navigations.at(i).virtual_url().SchemeIsFile()) {
+      found_valid_url = true;
+    }
   }
-  return true;
+  return found_valid_url;
 }
 
 bool SessionWindowHasNoTabsToSync(const SessionWindow& window) {
@@ -43,7 +39,7 @@ bool SessionWindowHasNoTabsToSync(const SessionWindow& window) {
   for (std::vector<SessionTab*>::const_iterator i = window.tabs.begin();
       i != window.tabs.end(); ++i) {
     const SessionTab* tab = *i;
-    if (IsValidSessionTab(*tab))
+    if (ShouldSyncSessionTab(*tab))
       num_populated++;
   }
   return (num_populated == 0);
