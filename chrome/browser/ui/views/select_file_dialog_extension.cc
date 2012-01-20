@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -244,7 +244,8 @@ void SelectFileDialogExtension::SelectFileImpl(
 
   ExtensionDialog* dialog = ExtensionDialog::Show(file_browser_url,
       owner_browser, tab->web_contents(),
-      kFileManagerWidth, kFileManagerHeight, string16(),
+      kFileManagerWidth, kFileManagerHeight,
+      file_manager_util::GetTitleFromType(type),
       this /* ExtensionDialog::Observer */);
   if (!dialog) {
     LOG(ERROR) << "Unable to create extension dialog";

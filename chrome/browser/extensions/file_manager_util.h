@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -44,6 +44,9 @@ GURL GetFileBrowserUrlWithParams(
     const SelectFileDialog::FileTypeInfo* file_types,
     int file_type_index,
     const FilePath::StringType& default_extension);
+
+// Get file dialog title string from its type.
+string16 GetTitleFromType(SelectFileDialog::Type type);
 
 // Opens file browser UI in its own tab on file system location defined with
 // |dir|.

@@ -267,6 +267,40 @@ GURL GetFileBrowserUrlWithParams(
   return GURL(url);
 }
 
+string16 GetTitleFromType(SelectFileDialog::Type dialog_type) {
+  string16 title;
+  switch (dialog_type) {
+    case SelectFileDialog::SELECT_NONE:
+      // Full page file manager doesn't need a title.
+      break;
+
+    case SelectFileDialog::SELECT_FOLDER:
+      title = l10n_util::GetStringUTF16(
+          IDS_FILE_BROWSER_SELECT_FOLDER_TITLE);
+      break;
+
+    case SelectFileDialog::SELECT_SAVEAS_FILE:
+      title = l10n_util::GetStringUTF16(
+          IDS_FILE_BROWSER_SELECT_SAVEAS_FILE_TITLE);
+      break;
+
+    case SelectFileDialog::SELECT_OPEN_FILE:
+      title = l10n_util::GetStringUTF16(
+          IDS_FILE_BROWSER_SELECT_OPEN_FILE_TITLE);
+      break;
+
+    case SelectFileDialog::SELECT_OPEN_MULTI_FILE:
+      title = l10n_util::GetStringUTF16(
+          IDS_FILE_BROWSER_SELECT_OPEN_MULTI_FILE_TITLE);
+      break;
+
+    default:
+      NOTREACHED();
+  }
+
+  return title;
+}
+
 void ViewFolder(const FilePath& dir) {
   Browser* browser = BrowserList::GetLastActive();
   if (!browser)
