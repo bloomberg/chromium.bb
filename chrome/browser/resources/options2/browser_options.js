@@ -105,7 +105,7 @@ cr.define('options', function() {
           function(event) {
             OptionsPage.navigateToPage('searchEngines');
             chrome.send('coreOptionsUserMetricsAction',
-                ['Options_ManageSearchEngines']);
+                        ['Options_ManageSearchEngines']);
           });
       $('defaultSearchEngine').addEventListener('change',
           this.setDefaultSearchEngine_);

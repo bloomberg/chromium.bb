@@ -36,6 +36,7 @@ cr.define('options', function() {
    */
   PointerOverlay.showTouchpadControls = function(show) {
     $('pointer-section-touchpad').hidden = !show;
+    if (show) $('pointer-settings-button').hidden = false;
   };
 
   /**
@@ -43,6 +44,7 @@ cr.define('options', function() {
    */
   PointerOverlay.showMouseControls = function(show) {
     $('pointer-section-mouse').hidden = !show;
+    if (show) $('pointer-settings-button').hidden = false;
   };
 
   // Export

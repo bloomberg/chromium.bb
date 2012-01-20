@@ -12139,7 +12139,7 @@ changed since last sign in
         Fast
       </message>
       <message name="IDS_OPTIONS_SETTINGS_PRIMARY_MOUSE_RIGHT_DESCRIPTION" desc="In the settings tab, the text next to the checkbox to set the primary mouse button to the right button.">
-        Enable left-handed mode
+        Swap primary mouse button
       </message>
       <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_DISABLE">
         Disable bluetooth
