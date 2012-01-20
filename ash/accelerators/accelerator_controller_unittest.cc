@@ -319,6 +319,10 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
   EXPECT_TRUE(GetController()->Process(
       ui::Accelerator(ui::VKEY_F11, false, true, false)));
 #endif
+
+  // Exit
+  EXPECT_TRUE(GetController()->Process(
+      ui::Accelerator(ui::VKEY_Q, true, true ,false)));
 #endif
 }
 

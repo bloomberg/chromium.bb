@@ -27,6 +27,9 @@ views::Widget* TestShellDelegate::CreateStatusArea() {
   return NULL;
 }
 
+void TestShellDelegate::Exit() {
+}
+
 void TestShellDelegate::BuildAppListModel(AppListModel* model) {
 }
 
