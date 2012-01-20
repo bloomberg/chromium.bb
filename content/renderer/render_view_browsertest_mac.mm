@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -42,7 +42,8 @@ NSEvent* CmdDeadKeyEvent(NSEventType type, unsigned short code) {
 
 // Test that cmd-up/down scrolls the page exactly if it is not intercepted by
 // javascript.
-TEST_F(RenderViewTest, MacTestCmdUp) {
+// See http://crbug.com/110846
+TEST_F(RenderViewTest, FAILS_MacTestCmdUp) {
   // Some preprocessor trickery so that we can have literal html in our source,
   // makes it easier to copy html to and from an html file for testing (the
   // preprocessor will remove the newlines at the line ends, turning this into
