@@ -6,7 +6,7 @@
 
 namespace views {
 
-TextfieldController::IsCommandIdEnabled(int command_id) const {
+bool TextfieldController::IsCommandIdEnabled(int command_id) const {
   return false;
 }
 
