@@ -645,7 +645,7 @@ static size_t memoryUsageMBMac() {
       ProcessMetrics::CreateProcessMetrics(base::GetCurrentProcessHandle(),
                                            NULL);
   DCHECK(process_metrics);
-  return process_metrics->GetPagefileUsage() >> 20;
+  return process_metrics->GetWorkingSetSize() >> 20;
 }
 #endif
 
