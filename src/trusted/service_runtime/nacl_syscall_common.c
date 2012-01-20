@@ -2310,6 +2310,16 @@ int32_t NaClCommonSysTlsGet(struct NaClAppThread *natp) {
   return user_tls;
 }
 
+int32_t NaClSysSecond_Tls_Set(struct NaClAppThread *natp,
+                              uint32_t             new_value) {
+  natp->tls2 = new_value;
+  return 0;
+}
+
+int32_t NaClSysSecond_Tls_Get(struct NaClAppThread *natp) {
+  return natp->tls2;
+}
+
 int NaClCommonSysThread_Nice(struct NaClAppThread *natp,
                              const int            nice) {
   /* Note: implementation of nacl_thread_nice is OS dependent. */

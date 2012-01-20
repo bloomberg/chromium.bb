@@ -416,19 +416,3 @@ int32_t NaClSysDyncode_Delete(struct NaClAppThread *natp,
                             uint32_t             size) {
   return NaClTextSysDyncode_Delete(natp, dest, size);
 }
-
-/*
- * Note that this is duplicated in win/nacl_syscall_impl.c but is
- * too trivial to share.
- * TODO(mseaborn): We could reduce the duplication if
- * nacl_syscall_handlers_gen.py did not scrape the OS-specific files.
- */
-int32_t NaClSysSecond_Tls_Set(struct NaClAppThread *natp,
-                              uint32_t             new_value) {
-  natp->tls2 = new_value;
-  return 0;
-}
-
-int32_t NaClSysSecond_Tls_Get(struct NaClAppThread *natp) {
-  return natp->tls2;
-}
