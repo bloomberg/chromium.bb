@@ -4,8 +4,10 @@
 
 #include "ash/wm/power_button_controller.h"
 
+#include "ash/ash_switches.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/time.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -320,7 +322,10 @@ PowerButtonController::PowerButtonController()
       locked_(false),
       power_button_down_(false),
       lock_button_down_(false),
-      shutting_down_(false) {
+      shutting_down_(false),
+      has_legacy_power_button_(
+          CommandLine::ForCurrentProcess()->HasSwitch(
+              switches::kAuraLegacyPowerButton)) {
 }
 
 PowerButtonController::~PowerButtonController() {
@@ -340,15 +345,13 @@ void PowerButtonController::OnLockStateChange(bool locked) {
     lock_timer_.Stop();
     lock_fail_timer_.Stop();
 
-#if !defined(CHROMEOS_LEGACY_POWER_BUTTON)
-    if (power_button_down_) {
+    if (!has_legacy_power_button_ && power_button_down_) {
       lock_to_shutdown_timer_.Stop();
       lock_to_shutdown_timer_.Start(
           FROM_HERE,
           base::TimeDelta::FromMilliseconds(kLockToShutdownTimeoutMs),
           this, &PowerButtonController::OnLockToShutdownTimeout);
     }
-#endif
   } else {
     StartAnimation(ALL_BUT_SCREEN_LOCKER_AND_RELATED_CONTAINERS,
                    ANIMATION_RESTORE);
@@ -374,51 +377,51 @@ void PowerButtonController::OnPowerButtonEvent(
   if (shutting_down_)
     return;
 
-#if defined(CHROMEOS_LEGACY_POWER_BUTTON)
-  // If power button releases won't get reported correctly because we're not
-  // running on official hardware, just lock the screen or shut down
-  // immediately.
-  if (down) {
-    ShowBackgroundLayer();
-    if (logged_in_as_non_guest_ && !locked_) {
-      StartAnimation(ALL_BUT_SCREEN_LOCKER_AND_RELATED_CONTAINERS,
-                     ANIMATION_SLOW_CLOSE);
-      OnLockTimeout();
-    } else {
-      OnShutdownTimeout();
+  if (has_legacy_power_button_) {
+    // If power button releases won't get reported correctly because we're not
+    // running on official hardware, just lock the screen or shut down
+    // immediately.
+    if (down) {
+      ShowBackgroundLayer();
+      if (logged_in_as_non_guest_ && !locked_) {
+        StartAnimation(ALL_BUT_SCREEN_LOCKER_AND_RELATED_CONTAINERS,
+                       ANIMATION_SLOW_CLOSE);
+        OnLockTimeout();
+      } else {
+        OnShutdownTimeout();
+      }
+    }
+  } else {  // !has_legacy_power_button_
+    if (down) {
+      // If we already have a pending request to lock the screen, wait.
+      if (lock_fail_timer_.IsRunning())
+        return;
+
+      if (logged_in_as_non_guest_ && !locked_)
+        StartLockTimer();
+      else
+        StartShutdownTimer();
+    } else {  // Button is up.
+      if (lock_timer_.IsRunning() || shutdown_timer_.IsRunning())
+        StartAnimation(
+            locked_ ? SCREEN_LOCKER_AND_RELATED_CONTAINERS : ALL_CONTAINERS,
+            ANIMATION_UNDO_SLOW_CLOSE);
+
+      // Drop the background layer after the undo animation finishes.
+      if (lock_timer_.IsRunning() ||
+          (shutdown_timer_.IsRunning() && !logged_in_as_non_guest_)) {
+        hide_background_layer_timer_.Stop();
+        hide_background_layer_timer_.Start(
+            FROM_HERE,
+            base::TimeDelta::FromMilliseconds(kUndoSlowCloseAnimMs),
+            this, &PowerButtonController::HideBackgroundLayer);
+      }
+
+      lock_timer_.Stop();
+      shutdown_timer_.Stop();
+      lock_to_shutdown_timer_.Stop();
     }
   }
-#else
-  if (down) {
-    // If we already have a pending request to lock the screen, wait.
-    if (lock_fail_timer_.IsRunning())
-      return;
-
-    if (logged_in_as_non_guest_ && !locked_)
-      StartLockTimer();
-    else
-      StartShutdownTimer();
-  } else {  // Button is up.
-    if (lock_timer_.IsRunning() || shutdown_timer_.IsRunning())
-      StartAnimation(
-          locked_ ? SCREEN_LOCKER_AND_RELATED_CONTAINERS : ALL_CONTAINERS,
-          ANIMATION_UNDO_SLOW_CLOSE);
-
-    // Drop the background layer after the undo animation finishes.
-    if (lock_timer_.IsRunning() ||
-        (shutdown_timer_.IsRunning() && !logged_in_as_non_guest_)) {
-      hide_background_layer_timer_.Stop();
-      hide_background_layer_timer_.Start(
-          FROM_HERE,
-          base::TimeDelta::FromMilliseconds(kUndoSlowCloseAnimMs),
-          this, &PowerButtonController::HideBackgroundLayer);
-    }
-
-    lock_timer_.Stop();
-    shutdown_timer_.Stop();
-    lock_to_shutdown_timer_.Stop();
-  }
-#endif
 }
 
 void PowerButtonController::OnLockButtonEvent(

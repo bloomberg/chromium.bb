@@ -273,6 +273,9 @@ void Shell::Init() {
 
 Shell::WindowMode Shell::ComputeWindowMode(const gfx::Size& monitor_size,
                                            CommandLine* command_line) const {
+  if (command_line->HasSwitch(switches::kAuraForceCompactWindowMode))
+    return COMPACT_MODE;
+
   // If user set the flag, use their desired behavior.
   if (command_line->HasSwitch(switches::kAuraWindowMode)) {
     std::string mode =

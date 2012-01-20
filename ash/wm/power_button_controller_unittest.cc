@@ -61,12 +61,12 @@ class PowerButtonControllerTest : public AuraShellTestBase {
   DISALLOW_COPY_AND_ASSIGN(PowerButtonControllerTest);
 };
 
-#if defined(CHROMEOS_LEGACY_POWER_BUTTON)
 // Test the lock-to-shutdown flow for non-Chrome-OS hardware that doesn't
 // correctly report power button releases.  We should lock immediately the first
 // time the button is pressed and shut down when it's pressed from the locked
 // state.
 TEST_F(PowerButtonControllerTest, LegacyLockAndShutDown) {
+  controller_->set_has_legacy_power_button_for_test(true);
   controller_->OnLoginStateChange(true /*logged_in*/, false /*is_guest*/);
   controller_->OnLockStateChange(false);
 
@@ -120,6 +120,7 @@ TEST_F(PowerButtonControllerTest, LegacyLockAndShutDown) {
 // Test that we start shutting down immediately if the power button is pressed
 // while we're not logged in on an unofficial system.
 TEST_F(PowerButtonControllerTest, LegacyNotLoggedIn) {
+  controller_->set_has_legacy_power_button_for_test(true);
   controller_->OnLoginStateChange(false /*logged_in*/, false /*is_guest*/);
   controller_->OnLockStateChange(false);
   controller_->OnPowerButtonEvent(true, base::TimeTicks::Now());
@@ -129,15 +130,17 @@ TEST_F(PowerButtonControllerTest, LegacyNotLoggedIn) {
 // Test that we start shutting down immediately if the power button is pressed
 // while we're logged in as a guest on an unofficial system.
 TEST_F(PowerButtonControllerTest, LegacyGuest) {
+  controller_->set_has_legacy_power_button_for_test(true);
   controller_->OnLoginStateChange(true /*logged_in*/, true /*is_guest*/);
   controller_->OnLockStateChange(false);
   controller_->OnPowerButtonEvent(true, base::TimeTicks::Now());
   EXPECT_TRUE(test_api_->real_shutdown_timer_is_running());
 }
-#else
+
 // When we hold the power button while the user isn't logged in, we should shut
 // down the machine directly.
 TEST_F(PowerButtonControllerTest, ShutdownWhenNotLoggedIn) {
+  controller_->set_has_legacy_power_button_for_test(false);
   controller_->OnLoginStateChange(false /*logged_in*/, false /*is_guest*/);
   controller_->OnLockStateChange(false);
   EXPECT_FALSE(test_api_->BackgroundLayerIsVisible());
@@ -186,6 +189,7 @@ TEST_F(PowerButtonControllerTest, ShutdownWhenNotLoggedIn) {
 
 // Test that we lock the screen and deal with unlocking correctly.
 TEST_F(PowerButtonControllerTest, LockAndUnlock) {
+  controller_->set_has_legacy_power_button_for_test(false);
   controller_->OnLoginStateChange(true /*logged_in*/, false /*is_guest*/);
   controller_->OnLockStateChange(false);
   EXPECT_FALSE(test_api_->BackgroundLayerIsVisible());
@@ -270,6 +274,7 @@ TEST_F(PowerButtonControllerTest, LockAndUnlock) {
 
 // Hold the power button down from the unlocked state to eventual shutdown.
 TEST_F(PowerButtonControllerTest, LockToShutdown) {
+  controller_->set_has_legacy_power_button_for_test(false);
   controller_->OnLoginStateChange(true /*logged_in*/, false /*is_guest*/);
   controller_->OnLockStateChange(false);
 
@@ -302,6 +307,7 @@ TEST_F(PowerButtonControllerTest, LockToShutdown) {
 
 // Test that we handle the case where lock requests are ignored.
 TEST_F(PowerButtonControllerTest, LockFail) {
+  controller_->set_has_legacy_power_button_for_test(false);
   controller_->OnLoginStateChange(true /*logged_in*/, false /*is_guest*/);
   controller_->OnLockStateChange(false);
 
@@ -334,6 +340,7 @@ TEST_F(PowerButtonControllerTest, LockFail) {
 // button is released, but that we cancel the timer if the button is pressed
 // again before the timer has fired.
 TEST_F(PowerButtonControllerTest, CancelHideBackground) {
+  controller_->set_has_legacy_power_button_for_test(false);
   controller_->OnLoginStateChange(false /*logged_in*/, false /*is_guest*/);
   controller_->OnLockStateChange(false);
 
@@ -348,6 +355,7 @@ TEST_F(PowerButtonControllerTest, CancelHideBackground) {
 
 // Test the basic operation of the lock button.
 TEST_F(PowerButtonControllerTest, LockButtonBasic) {
+  controller_->set_has_legacy_power_button_for_test(false);
   // The lock button shouldn't do anything if we aren't logged in.
   controller_->OnLoginStateChange(false /*logged_in*/, false /*is_guest*/);
   controller_->OnLockStateChange(false);
@@ -411,6 +419,7 @@ TEST_F(PowerButtonControllerTest, LockButtonBasic) {
 
 // Test that the power button takes priority over the lock button.
 TEST_F(PowerButtonControllerTest, PowerButtonPreemptsLockButton) {
+  controller_->set_has_legacy_power_button_for_test(false);
   controller_->OnLoginStateChange(true /*logged_in*/, false /*is_guest*/);
   controller_->OnLockStateChange(false);
 
@@ -438,7 +447,6 @@ TEST_F(PowerButtonControllerTest, PowerButtonPreemptsLockButton) {
   controller_->OnLockButtonEvent(false, base::TimeTicks::Now());
   EXPECT_FALSE(test_api_->lock_timer_is_running());
 }
-#endif
 
 }  // namespace test
 }  // namespace ash

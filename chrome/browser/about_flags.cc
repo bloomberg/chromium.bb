@@ -480,15 +480,6 @@ const Experiment kExperiments[] = {
     kOsWin | kOsLinux | kOsCrOS,
     SINGLE_VALUE_TYPE(ash::switches::kAuraGoogleDialogFrames)
   },
-#endif  // defined(USE_AURA)
-  {
-    "enable-gamepad",
-    IDS_FLAGS_ENABLE_GAMEPAD_NAME,
-    IDS_FLAGS_ENABLE_GAMEPAD_DESCRIPTION,
-    kOsAll,
-    SINGLE_VALUE_TYPE(switches::kEnableGamepad)
-  },
-#if defined(AURA_SHOW_ABOUT_FLAG_WINDOW_MODE)
   // TODO(jamescook): Enable this for all ChromeOS builds when we're sure
   // Aura laptop mode performance and feature set match traditional non-Aura
   // builds.
@@ -499,7 +490,14 @@ const Experiment kExperiments[] = {
     kOsWin | kOsLinux | kOsCrOS,
     MULTI_VALUE_TYPE(kAuraWindowModeChoices)
   },
-#endif
+#endif  // defined(USE_AURA)
+  {
+    "enable-gamepad",
+    IDS_FLAGS_ENABLE_GAMEPAD_NAME,
+    IDS_FLAGS_ENABLE_GAMEPAD_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kEnableGamepad)
+  },
   {
     "per-tile-painting",
     IDS_FLAGS_PER_TILE_PAINTING_NAME,

@@ -132,6 +132,10 @@ class ASH_EXPORT PowerButtonController : public aura::RootWindowObserver {
     delegate_.reset(delegate);
   }
 
+  void set_has_legacy_power_button_for_test(bool legacy) {
+    has_legacy_power_button_ = legacy;
+  }
+
   // Called when the user logs in.
   void OnLoginStateChange(bool logged_in, bool is_guest);
 
@@ -194,6 +198,10 @@ class ASH_EXPORT PowerButtonController : public aura::RootWindowObserver {
   // Should we start |shutdown_timer_| when we receive notification that the
   // screen has been locked?
   bool should_start_shutdown_timer_after_lock_;
+
+  // Was a command-line switch set telling us that we're running on hardware
+  // that misreports power button releases?
+  bool has_legacy_power_button_;
 
   // Responsible for painting |background_layer_|.
   scoped_ptr<BackgroundLayerDelegate> background_layer_delegate_;
