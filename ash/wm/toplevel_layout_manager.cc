@@ -53,6 +53,8 @@ void ToplevelLayoutManager::OnWindowAddedToLayout(aura::Window* child) {
 }
 
 void ToplevelLayoutManager::OnWillRemoveWindowFromLayout(aura::Window* child) {
+  DCHECK(child->type() == aura::client::WINDOW_TYPE_NORMAL ||
+         child->type() == aura::client::WINDOW_TYPE_POPUP);
   BaseLayoutManager::OnWillRemoveWindowFromLayout(child);
   UpdateShelfVisibility();
 }
@@ -60,15 +62,12 @@ void ToplevelLayoutManager::OnWillRemoveWindowFromLayout(aura::Window* child) {
 void ToplevelLayoutManager::OnChildWindowVisibilityChanged(aura::Window* child,
                                                            bool visible) {
   BaseLayoutManager::OnChildWindowVisibilityChanged(child, visible);
-  if (child->type() == aura::client::WINDOW_TYPE_NORMAL ||
-      child->type() == aura::client::WINDOW_TYPE_POPUP) {
-    if (visible) {
-      AnimateShowWindow(child);
-    } else {
-      // Don't start hiding the window again if it's already being hidden.
-      if (child->layer()->GetTargetOpacity() != 0.0f)
-        AnimateHideWindow(child);
-    }
+  if (visible) {
+    AnimateShowWindow(child);
+  } else {
+    // Don't start hiding the window again if it's already being hidden.
+    if (child->layer()->GetTargetOpacity() != 0.0f)
+      AnimateHideWindow(child);
   }
   UpdateShelfVisibility();
 }

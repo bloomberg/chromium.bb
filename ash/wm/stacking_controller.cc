@@ -48,11 +48,6 @@ aura::Window* StackingController::GetDefaultParent(aura::Window* window) {
   switch (window->type()) {
     case aura::client::WINDOW_TYPE_NORMAL:
     case aura::client::WINDOW_TYPE_POPUP:
-    // TODO(beng): control windows with NULL parents should be parented to a
-    //             unique, probably hidden, container. Adding here now for
-    //             compatibility, since these windows were WINDOW_TYPE_POPUP
-    //             until now.
-    case aura::client::WINDOW_TYPE_CONTROL:
       if (IsSystemModal(window))
         return GetSystemModalContainer(window);
       return always_on_top_controller_->GetContainer(window);
@@ -61,6 +56,8 @@ aura::Window* StackingController::GetDefaultParent(aura::Window* window) {
     case aura::client::WINDOW_TYPE_MENU:
     case aura::client::WINDOW_TYPE_TOOLTIP:
       return GetContainer(internal::kShellWindowId_MenuAndTooltipContainer);
+    case aura::client::WINDOW_TYPE_CONTROL:
+      return GetContainer(internal::kShellWindowId_UnparentedControlContainer);
     default:
       NOTREACHED() << "Window " << window->id()
                    << " has unhandled type " << window->type();

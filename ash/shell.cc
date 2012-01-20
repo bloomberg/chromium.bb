@@ -67,6 +67,11 @@ const int kCompactWindowModeWidthThreshold = 1366;
 // the z-index.
 void CreateSpecialContainers(aura::Window::Windows* containers,
                              bool is_window_mode_compact) {
+  aura::Window* unparented_control_container = new aura::Window(NULL);
+  unparented_control_container->set_id(
+      internal::kShellWindowId_UnparentedControlContainer);
+  containers->push_back(unparented_control_container);
+
   aura::Window* background_container = new aura::Window(NULL);
   background_container->set_id(
       internal::kShellWindowId_DesktopBackgroundContainer);
@@ -242,7 +247,8 @@ void Shell::Init() {
   for (i = containers.begin(); i != containers.end(); ++i) {
     (*i)->Init(ui::Layer::LAYER_HAS_NO_TEXTURE);
     root_window->AddChild(*i);
-    (*i)->Show();
+    if ((*i)->id() != internal::kShellWindowId_UnparentedControlContainer)
+      (*i)->Show();
   }
 
   stacking_controller_.reset(new internal::StackingController);
