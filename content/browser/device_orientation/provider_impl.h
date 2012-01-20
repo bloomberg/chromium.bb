@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time.h"
 #include "content/browser/device_orientation/data_fetcher.h"
 #include "content/browser/device_orientation/orientation.h"
 #include "content/browser/device_orientation/provider.h"
@@ -61,7 +62,7 @@ class ProviderImpl : public Provider {
                                      const Orientation& orientation2);
 
   enum { kDesiredSamplingIntervalMs = 100 };
-  int SamplingIntervalMs() const;
+  base::TimeDelta SamplingInterval() const;
 
   // The Message Loop on which this object was created.
   // Typically the I/O loop, but may be something else during testing.
