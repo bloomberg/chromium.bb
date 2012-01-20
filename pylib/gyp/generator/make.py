@@ -1399,28 +1399,7 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
                          order_only = True,
                          multiple_output_trick = False)
 
-    if self.flavor == 'mac':
-      # Write an envvar for postbuilds.
-      # CHROMIUM_STRIP_SAVE_FILE is a chromium-specific hack.
-      # TODO(thakis): It would be nice to have some general mechanism instead.
-      # This variable may be referenced by TARGET_POSTBUILDS_$(BUILDTYPE),
-      # so we must output its definition first, since we declare variables
-      # using ":=".
-      # TODO(thakis): Write this only for targets that actually have
-      # postbuilds.
-      strip_save_file = self.xcode_settings.GetPerTargetSetting(
-          'CHROMIUM_STRIP_SAVE_FILE')
-      if strip_save_file:
-        strip_save_file = self.Absolutify(strip_save_file)
-      else:
-        # Explicitly clear this out, else a postbuild might pick up an export
-        # from an earlier target.
-        strip_save_file = ''
-      self.WriteXcodeEnv(
-          self.output,
-          additional_settings={'CHROMIUM_STRIP_SAVE_FILE': strip_save_file})
-
-    has_target_postbuilds = False
+    target_postbuilds = {}
     if self.type != 'none':
       for configname in sorted(configs.keys()):
         config = configs[configname]
@@ -1429,16 +1408,12 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
               generator_default_variables['PRODUCT_DIR'], self.Absolutify)
 
           # TARGET_POSTBUILDS_$(BUILDTYPE) is added to postbuilds later on.
-          target_postbuilds = self.xcode_settings.GetTargetPostbuilds(
+          target_postbuild = self.xcode_settings.GetTargetPostbuilds(
               configname,
               QuoteSpaces(self.output),
               QuoteSpaces(self.output_binary))
-          if target_postbuilds:
-            has_target_postbuilds = True
-            self.WriteLn('%s: TARGET_POSTBUILDS_%s := %s' %
-                (QuoteSpaces(self.output),
-                 configname,
-                 gyp.common.EncodePOSIXShellList(target_postbuilds)))
+          if target_postbuild:
+            target_postbuilds[configname] = target_postbuild
         else:
           ldflags = config.get('ldflags', [])
           # Compute an rpath for this output if needed.
@@ -1462,7 +1437,7 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
 
     postbuilds = []
     if self.flavor == 'mac':
-      if has_target_postbuilds:
+      if target_postbuilds:
         postbuilds.append('$(TARGET_POSTBUILDS_$(BUILDTYPE))')
       # Postbuild actions. Like actions, but implicitly depend on the target's
       # output.
@@ -1482,6 +1457,30 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
         postbuilds.append(gyp.common.EncodePOSIXShellList(shell_list))
 
     if postbuilds:
+      # Write an envvar for postbuilds.
+      # CHROMIUM_STRIP_SAVE_FILE is a chromium-specific hack.
+      # TODO(thakis): It would be nice to have some general mechanism instead.
+      # This variable may be referenced by TARGET_POSTBUILDS_$(BUILDTYPE),
+      # so we must output its definition first, since we declare variables
+      # using ":=".
+      strip_save_file = self.xcode_settings.GetPerTargetSetting(
+          'CHROMIUM_STRIP_SAVE_FILE')
+      if strip_save_file:
+        strip_save_file = self.Absolutify(strip_save_file)
+      else:
+        # Explicitly clear this out, else a postbuild might pick up an export
+        # from an earlier target.
+        strip_save_file = ''
+      self.WriteXcodeEnv(
+          self.output,
+          additional_settings={'CHROMIUM_STRIP_SAVE_FILE': strip_save_file})
+
+      for configname in target_postbuilds:
+        self.WriteLn('%s: TARGET_POSTBUILDS_%s := %s' %
+            (QuoteSpaces(self.output),
+             configname,
+             gyp.common.EncodePOSIXShellList(target_postbuilds[configname])))
+
       for i in xrange(len(postbuilds)):
         if not postbuilds[i].startswith('$'):
           postbuilds[i] = EscapeShellArgument(postbuilds[i])
