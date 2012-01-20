@@ -29,7 +29,7 @@ class ASH_EXPORT WindowCycleList : public aura::WindowObserver {
   explicit WindowCycleList(const WindowList& windows);
   virtual ~WindowCycleList();
 
-  const bool empty() const { return windows_.empty(); }
+  bool empty() const { return windows_.empty(); }
 
   // Cycles to the next or previous window based on |direction|.
   void Step(Direction direction);
