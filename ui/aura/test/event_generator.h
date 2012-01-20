@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -94,12 +94,14 @@ class EventGenerator {
   void PressMoveAndReleaseTouchToCenterOf(Window* window);
 
   // Generates a key press event. On platforms except Windows and X11, a key
-  // event without native_event() is generated.
+  // event without native_event() is generated. Note that ui::EF_ flags should
+  // be passed as |flags|, not the native ones like 'ShiftMask' in <X11/X.h>.
   // TODO(yusukes): Support native_event() on all platforms.
   void PressKey(ui::KeyboardCode key_code, int flags);
 
   // Generates a key release event. On platforms except Windows and X11, a key
-  // event without native_event() is generated.
+  // event without native_event() is generated. Note that ui::EF_ flags should
+  // be passed as |flags|, not the native ones like 'ShiftMask' in <X11/X.h>.
   // TODO(yusukes): Support native_event() on all platforms.
   void ReleaseKey(ui::KeyboardCode key_code, int flags);
 

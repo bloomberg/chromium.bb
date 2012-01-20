@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,6 +14,14 @@
 #endif
 
 namespace {
+
+class TestKeyEvent : public aura::KeyEvent {
+ public:
+  TestKeyEvent(const base::NativeEvent& native_event, int flags)
+      : KeyEvent(native_event, false /* is_char */) {
+    set_flags(flags);
+  }
+};
 
 gfx::Point CenterOfWindowInRootWindowCoordinate(aura::Window* window) {
   gfx::Point center = window->bounds().CenterPoint();
@@ -169,14 +177,14 @@ void EventGenerator::DispatchKeyEvent(bool is_press,
                                       int flags) {
 #if defined(OS_WIN)
   MSG native_event =
-      { NULL, (is_press ? WM_KEYDOWN : WM_KEYUP), key_code, flags };
-  KeyEvent keyev(native_event, false /* is_char */);
+      { NULL, (is_press ? WM_KEYDOWN : WM_KEYUP), key_code, 0 };
+  TestKeyEvent keyev(native_event, flags);
 #else
   ui::EventType type = is_press ? ui::ET_KEY_PRESSED : ui::ET_KEY_RELEASED;
 #if defined(USE_X11)
   scoped_ptr<XEvent> native_event(new XEvent);
   ui::InitXKeyEventForTesting(type, key_code, flags, native_event.get());
-  KeyEvent keyev(native_event.get(), false);
+  TestKeyEvent keyev(native_event.get(), flags);
 #else
   KeyEvent keyev(type, key_code, flags);
 #endif  // USE_X11
