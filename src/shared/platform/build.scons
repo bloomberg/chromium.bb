@@ -41,7 +41,7 @@ if env.Bit('windows'):
     'win/time_win.cc',
     'win/xlate_system_error.c',
   ]
-  time_slop_args += [ '-S', '10' ]
+  time_slop_args += [ '-s', '10' ]
   # Needed for rand_s().
   env.Append(
         CCFLAGS = ['/D_CRT_RAND_S',
@@ -81,7 +81,7 @@ elif env.Bit('mac'):
     'linux/condition_variable.c',
     'linux/lock.c',
     ]
-  time_slop_args += [ '-S', '10' ]
+  time_slop_args += [ '-s', '10' ]
 
 platform_inputs += [
     'nacl_check.c',
