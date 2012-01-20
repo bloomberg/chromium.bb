@@ -986,7 +986,7 @@ bool Tracks::Write(IMkvWriter* writer) const {
 //
 // Cluster Class
 
-Cluster::Cluster(uint64 timecode, IMkvWriter* writer, int64 cues_pos)
+Cluster::Cluster(uint64 timecode, int64 cues_pos)
     : blocks_added_(0),
       finalized_(false),
       header_written_(false),
@@ -994,11 +994,18 @@ Cluster::Cluster(uint64 timecode, IMkvWriter* writer, int64 cues_pos)
       position_for_cues_(cues_pos),
       size_position_(-1),
       timecode_(timecode),
-      writer_(writer) {
-  assert(writer_);
+      writer_(NULL) {
 }
 
 Cluster::~Cluster() {
+}
+
+bool Cluster::Init(IMkvWriter* ptr_writer) {
+  if (!ptr_writer) {
+    return false;
+  }
+  writer_ = ptr_writer;
+  return true;
 }
 
 bool Cluster::AddFrame(const uint8* frame,
@@ -1352,7 +1359,7 @@ void SegmentInfo::set_writing_app(const char* app) {
 //
 // Segment Class
 
-Segment::Segment(IMkvWriter* writer)
+Segment::Segment()
     : chunk_count_(0),
       chunk_name_(NULL),
       chunk_writer_cluster_(NULL),
@@ -1378,13 +1385,9 @@ Segment::Segment(IMkvWriter* writer)
       output_cues_(true),
       payload_pos_(0),
       size_position_(0),
-      writer_cluster_(writer),
-      writer_cues_(writer),
-      writer_header_(writer) {
-  assert(writer_cluster_);
-
-  // TODO(fgalligan): Create an Init function for Segment.
-  segment_info_.Init();
+      writer_cluster_(NULL),
+      writer_cues_(NULL),
+      writer_header_(NULL) {
 }
 
 Segment::~Segment() {
@@ -1419,6 +1422,16 @@ Segment::~Segment() {
     chunk_writer_header_->Close();
     delete chunk_writer_header_;
   }
+}
+
+bool Segment::Init(IMkvWriter* ptr_writer) {
+  if (!ptr_writer) {
+    return false;
+  }
+  writer_cluster_ = ptr_writer;
+  writer_cues_ = ptr_writer;
+  writer_header_ = ptr_writer;
+  return segment_info_.Init();
 }
 
 bool Segment::Finalize() {
@@ -1650,11 +1663,17 @@ bool Segment::AddFrame(const uint8* frame,
     // are valid.
 
     cluster_list_[cluster_list_size_] =
-        new (std::nothrow) Cluster(timecode,
-                                   writer_cluster_,
-                                   MaxOffset());
+        new (std::nothrow) Cluster(timecode, MaxOffset());
+
     if (!cluster_list_[cluster_list_size_])
       return false;
+
+    const bool cluster_init_ok =
+        cluster_list_[cluster_list_size_]->Init(writer_cluster_);
+
+    if (!cluster_init_ok)
+      return false;
+
     cluster_list_size_ = new_size;
     new_cluster_ = false;
   }

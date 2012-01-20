@@ -171,7 +171,13 @@ int main(int argc, char* argv[]) {
   }
 
   // Set Segment element attributes
-  mkvmuxer::Segment muxer_segment(&writer);
+  mkvmuxer::Segment muxer_segment;
+
+  if (!muxer_segment.Init(&writer)) {
+    printf("\n Could not initialize muxer segment!\n");
+    return -1;
+  }
+
   if (live_mode)
     muxer_segment.set_mode(mkvmuxer::Segment::kLive);
   else
