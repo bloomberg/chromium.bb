@@ -15,7 +15,7 @@ readonly PNACL_BUILD=pnacl/build.sh
 readonly TORTURE_TEST=tools/toolchain_tester/torture_test.sh
 readonly LLVM_TESTSUITE=pnacl/scripts/llvm-test-suite.sh
 # build.sh, llvm test suite and torture tests all use this value
-export PNACL_CONCURRENCY=${PNACL_CONCURRENCY:-8}
+export PNACL_CONCURRENCY=${PNACL_CONCURRENCY:-4}
 
 export PNACL_BUILDBOT=true
 
@@ -51,10 +51,6 @@ tc-test-bot() {
   done
 
   for arch in x86-64 x86-32 arm; do
-    if [ $arch = "arm" ]; then
-      # Hopefully this will reduce QEMU flakiness
-      PNACL_CONCURRENCY=1
-    fi
     echo "@@@BUILD_STEP llvm-test-suite $arch @@@"
     ${LLVM_TESTSUITE} testsuite-prereq ${arch}
     ${LLVM_TESTSUITE} testsuite-clean
