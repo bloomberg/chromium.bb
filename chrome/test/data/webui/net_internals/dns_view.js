@@ -22,6 +22,10 @@ function checkDisplay(hostResolverInfo) {
 
   expectEquals(hostResolverInfo.cache.capacity,
                parseInt($(DnsView.CAPACITY_SPAN_ID).innerText));
+  expectEquals(hostResolverInfo.cache.ttl_success_ms,
+               parseInt($(DnsView.TTL_SUCCESS_SPAN_ID).innerText));
+  expectEquals(hostResolverInfo.cache.ttl_failure_ms,
+               parseInt($(DnsView.TTL_FAILURE_SPAN_ID).innerText));
 
   var entries = hostResolverInfo.cache.entries;
 

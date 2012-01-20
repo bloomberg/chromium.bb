@@ -52,7 +52,8 @@ void AddCacheEntryOnIOThread(net::URLRequestContextGetter* context_getter,
   ASSERT_TRUE(cache);
 
   net::HostCache::Key key(hostname, net::ADDRESS_FAMILY_UNSPECIFIED, 0);
-  base::TimeDelta ttl = base::TimeDelta::FromDays(expire_days_from_now);
+  base::TimeTicks expires =
+      base::TimeTicks::Now() + base::TimeDelta::FromDays(expire_days_from_now);
 
   net::AddressList address_list;
   if (net_error == net::OK) {
@@ -72,8 +73,7 @@ void AddCacheEntryOnIOThread(net::URLRequestContextGetter* context_getter,
   cache->Set(net::HostCache::Key(hostname, net::ADDRESS_FAMILY_UNSPECIFIED, 0),
              net_error,
              address_list,
-             base::TimeTicks::Now(),
-             ttl);
+             expires);
 }
 
 // Called on IO thread.  Adds an entry to the list of known HTTP pipelining
