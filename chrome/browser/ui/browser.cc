@@ -4533,7 +4533,10 @@ void Browser::InitCommandState() {
   command_updater_.UpdateCommandEnabled(IDC_BOOKMARKS_MENU, true);
 
 #if defined(OS_CHROMEOS)
-  command_updater_.UpdateCommandEnabled(IDC_LOCK_SCREEN, true);
+  // Don't allow screen lock for guest sessions.
+  command_updater_.UpdateCommandEnabled(
+      IDC_LOCK_SCREEN,
+      !CommandLine::ForCurrentProcess()->HasSwitch(switches::kGuestSession));
   command_updater_.UpdateCommandEnabled(IDC_SHUTDOWN, true);
   command_updater_.UpdateCommandEnabled(IDC_FILE_MANAGER, true);
   command_updater_.UpdateCommandEnabled(IDC_SEARCH, true);
