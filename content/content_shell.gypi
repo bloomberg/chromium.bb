@@ -188,6 +188,11 @@
             '../sandbox/sandbox.gyp:sandbox',
           ],
         }],
+        ['toolkit_uses_gtk == 1', {
+          'dependencies': [
+            '<(DEPTH)/build/linux/system.gyp:gtk',
+          ],
+        }],
       ],
     },
   ],

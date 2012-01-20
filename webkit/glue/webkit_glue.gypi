@@ -106,7 +106,7 @@
     },
     {
       'target_name': 'glue',
-      'type': 'static_library',
+      'type': '<(component)',
       'variables': { 'enable_wexit_time_destructors': 1, },
       'defines': [
         'WEBKIT_EXTENSIONS_IMPLEMENTATION',
