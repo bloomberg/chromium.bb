@@ -8,8 +8,10 @@
 #include <keyhi.h>
 #include <pk11pub.h>
 
+#include "base/file_util.h"
 #include "base/json/json_value_serializer.h"
 #include "base/lazy_instance.h"
+#include "base/path_service.h"
 #include "base/scoped_temp_dir.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/stringprintf.h"
@@ -19,6 +21,7 @@
 #include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
 #include "chrome/browser/chromeos/system/runtime_environment.h"
 #include "chrome/browser/net/pref_proxy_config_tracker_impl.h"
+#include "chrome/common/chrome_paths.h"
 #include "crypto/nss_util.h"
 #include "net/base/cert_database.h"
 #include "net/base/cert_type.h"
@@ -33,312 +36,6 @@ namespace msm = mozilla_security_manager;
 namespace chromeos {
 
 namespace {
-const char kNetworkConfigurationOpenVPN[] =
-    "    {"
-    "      \"GUID\": \"{408290ea-9299-4757-ab04-8957d55f0f13}\","
-    "      \"Type\": \"VPN\","
-    "      \"Name\": \"MyVPN\","
-    "      \"VPN\": {"
-    "        \"Host\": \"vpn.acme.org\","
-    "        \"Type\": \"OpenVPN\","
-    "        \"OpenVPN\": {"
-    "          \"AuthRetry\": \"interact\","
-    "          \"CompLZO\": \"true\","
-    "          \"KeyDirection\": \"1\","
-    "          \"Port\": 443,"
-    "          \"Proto\": \"udp\","
-    "          \"PushPeerInfo\": true,"
-    "          \"RemoteCertEKU\": \"TLS Web Server Authentication\","
-    "          \"RemoteCertKU\": ["
-    "            \"eo\""
-    "          ],"
-    "          \"RemoteCertTLS\": \"server\","
-    "          \"RenegSec\": 0,"
-    "          \"ServerPollTimeout\": 10,"
-    "          \"StaticChallenge\": \"My static challenge\","
-    "          \"TLSAuthContents\": \""
-    "-----BEGIN OpenVPN Static key V1-----\n"
-    "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n"
-    "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n"
-    "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n"
-    "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n"
-    "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n"
-    "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n"
-    "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n"
-    "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n"
-    "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n"
-    "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n"
-    "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n"
-    "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n"
-    "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n"
-    "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n"
-    "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n"
-    "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n"
-    "END OpenVPN Static key V1-----\n\","
-    "          \"TLSRemote\": \"MyOpenVPNServer\","
-    "          \"SaveCredentials\": false,"
-    "          \"ServerCARef\": \"{55ca78f6-0842-4e1b-96a3-09a9e1a26ef5}\","
-    "          \"ClientCertType\": \"Pattern\","
-    "          \"ClientCertPattern\": {"
-    "            \"IssuerRef\": \"{68a2ed90-13a1-4120-a1fe-282508320e18}\","
-    "            \"EnrollmentURI\": ["
-    "              \"chrome-extension://abc/keygen-cert.html\""
-    "            ]"
-    "          },"
-    "        }"
-    "      }"
-    "    }";
-
-const char kCertificateWebAuthority[] =
-    "        {"
-    "            \"GUID\": \"{f998f760-272b-6939-4c2beffe428697ab}\","
-    "            \"Type\": \"Authority\","
-    "            \"Trust\": [\"Web\"],"
-    "            \"X509\": \"MIIDojCCAwugAwIBAgIJAKGvi5ZgEWDVMA0GCSqGSIb3D"
-    "QEBBAUAMIGTMRUwEwYDVQQKEwxHb29nbGUsIEluYy4xETAPBgNVBAsTCENocm9tZU9TMS"
-    "IwIAYJKoZIhvcNAQkBFhNnc3BlbmNlckBnb29nbGUuY29tMRowGAYDVQQHExFNb3VudGF"
-    "pbiBWaWV3LCBDQTELMAkGA1UECBMCQ0ExCzAJBgNVBAYTAlVTMQ0wCwYDVQQDEwRsbWFv"
-    "MB4XDTExMDMxNjIzNDcxMFoXDTEyMDMxNTIzNDcxMFowgZMxFTATBgNVBAoTDEdvb2dsZ"
-    "SwgSW5jLjERMA8GA1UECxMIQ2hyb21lT1MxIjAgBgkqhkiG9w0BCQEWE2dzcGVuY2VyQG"
-    "dvb2dsZS5jb20xGjAYBgNVBAcTEU1vdW50YWluIFZpZXcsIENBMQswCQYDVQQIEwJDQTE"
-    "LMAkGA1UEBhMCVVMxDTALBgNVBAMTBGxtYW8wgZ8wDQYJKoZIhvcNAQEBBQADgY0AMIGJ"
-    "AoGBAMDX6BQz2JUzIAVjetiXxDznd2wdqVqVHfNkbSRW+xBywgqUaIXmFEGUol7VzPfme"
-    "FV8o8ok/eFlQB0h6ycqgwwMd0KjtJs2ys/k0F5GuN0G7fsgr+NRnhVgxj21yF6gYTN/8a"
-    "9kscla/svdmp8ekexbALFnghbLBx3CgcqUxT+tAgMBAAGjgfswgfgwDAYDVR0TBAUwAwE"
-    "B/zAdBgNVHQ4EFgQUbYygbSkl4kpjCNuxoezFGupA97UwgcgGA1UdIwSBwDCBvYAUbYyg"
-    "bSkl4kpjCNuxoezFGupA97WhgZmkgZYwgZMxFTATBgNVBAoTDEdvb2dsZSwgSW5jLjERM"
-    "A8GA1UECxMIQ2hyb21lT1MxIjAgBgkqhkiG9w0BCQEWE2dzcGVuY2VyQGdvb2dsZS5jb2"
-    "0xGjAYBgNVBAcTEU1vdW50YWluIFZpZXcsIENBMQswCQYDVQQIEwJDQTELMAkGA1UEBhM"
-    "CVVMxDTALBgNVBAMTBGxtYW+CCQChr4uWYBFg1TANBgkqhkiG9w0BAQQFAAOBgQCDq9wi"
-    "Q4uVuf1CQU3sXfXCy1yqi5m8AsO9FxHvah5/SVFNwKllqTfedpCaWEswJ55YAojW9e+pY"
-    "2Fh3Fo/Y9YkF88KCtLuBjjqDKCRLxF4LycjHODKyQQ7mN/t5AtP9yKOsNvWF+M4IfReg5"
-    "1kohau6FauQx87by5NIRPdkNPvkQ==\""
-    "        }";
-
-const char kCertificateWebAuthorityAlternate[] =
-    "    {"
-    "      \"Trust\": [\"Web\"],"
-    "      \"GUID\": \"{f998f760-272b-6939-4c2beffe428697ab}\","
-    "      \"Type\": \"Authority\","
-    "      \"X509\": \"MIIDyDCCAzGgAwIBAgIJAJ0FxY4vamdaMA0GCSqGSIb3DQEBBQU"
-    "AMIGfMQswCQYDVQQGEwJVUzETMBEGA1UECBMKQ2FsaWZvcm5pYTEWMBQGA1UEBxMNTW91"
-    "bnRhaW4gVmlldzEVMBMGA1UEChMMR29vZ2xlLCBJbmMuMREwDwYDVQQLEwhDaHJvbWVPU"
-    "zEVMBMGA1UEAxMMR3JlZyBTcGVuY2VyMSIwIAYJKoZIhvcNAQkBFhNnc3BlbmNlckBnb2"
-    "9nbGUuY29tMB4XDTExMDkyMjE1NTYyNFoXDTEyMDkyMTE1NTYyNFowgZ8xCzAJBgNVBAY"
-    "TAlVTMRMwEQYDVQQIEwpDYWxpZm9ybmlhMRYwFAYDVQQHEw1Nb3VudGFpbiBWaWV3MRUw"
-    "EwYDVQQKEwxHb29nbGUsIEluYy4xETAPBgNVBAsTCENocm9tZU9TMRUwEwYDVQQDEwxHc"
-    "mVnIFNwZW5jZXIxIjAgBgkqhkiG9w0BCQEWE2dzcGVuY2VyQGdvb2dsZS5jb20wgZ8wDQ"
-    "YJKoZIhvcNAQEBBQADgY0AMIGJAoGBANsX+zqngnujuSgcbRKboGwIk7Q65YYibHOTLsn"
-    "DOFC2drgpKR4wqrFVD+SczVpD1ecG2VLmjdv9KZfWM0J1chqUrH0dF4dzDAGoxWSO153t"
-    "7Q3xkbLtAUz+I4Tfmjirner9qXu1ov64csjOUc5NMMczfc5XHb4VNLskwuESyGm1AgMBA"
-    "AGjggEIMIIBBDAdBgNVHQ4EFgQUbncQaaTUwuIXUvgmVAxLyTYEPc8wgdQGA1UdIwSBzD"
-    "CByYAUbncQaaTUwuIXUvgmVAxLyTYEPc+hgaWkgaIwgZ8xCzAJBgNVBAYTAlVTMRMwEQY"
-    "DVQQIEwpDYWxpZm9ybmlhMRYwFAYDVQQHEw1Nb3VudGFpbiBWaWV3MRUwEwYDVQQKEwxH"
-    "b29nbGUsIEluYy4xETAPBgNVBAsTCENocm9tZU9TMRUwEwYDVQQDEwxHcmVnIFNwZW5jZ"
-    "XIxIjAgBgkqhkiG9w0BCQEWE2dzcGVuY2VyQGdvb2dsZS5jb22CCQCdBcWOL2pnWjAMBg"
-    "NVHRMEBTADAQH/MA0GCSqGSIb3DQEBBQUAA4GBAHeqgc0f5didWwAmMQ9HwSdxIt4QWam"
-    "L2zGYeRVBbYTQTMhzvpEudl/m5hF9r7qcr/76mSNN8+joJHH2HR2uTRonGety+3lSY1oo"
-    "uiTp2PeYpeEPBZS4VzEi0loa4l3gEJZ9HYAf85QvQNlVvYInRGV07N/8PaRnwfIpQjyVZ"
-    "OKs\""
-    "    }";
-
-
-const char kCertificateServer[] =
-    "        {"
-    "            \"Trust\": [\"Web\"],"
-    "            \"GUID\": \"{f998f760-272b-6939-4c2beffe428697aa}\","
-    "            \"Type\": \"Server\","
-    "            \"X509\": \"MIICWDCCAcECAxAAATANBgkqhkiG9w0BAQQFADCBkzEVM"
-    "BMGA1UEChMMR29vZ2xlLCBJbmMuMREwDwYDVQQLEwhDaHJvbWVPUzEiMCAGCSqGSIb3DQ"
-    "EJARYTZ3NwZW5jZXJAZ29vZ2xlLmNvbTEaMBgGA1UEBxMRTW91bnRhaW4gVmlldywgQ0E"
-    "xCzAJBgNVBAgTAkNBMQswCQYDVQQGEwJVUzENMAsGA1UEAxMEbG1hbzAeFw0xMTAzMTYy"
-    "MzQ5MzhaFw0xMjAzMTUyMzQ5MzhaMFMxCzAJBgNVBAYTAlVTMQswCQYDVQQIEwJDQTEVM"
-    "BMGA1UEChMMR29vZ2xlLCBJbmMuMREwDwYDVQQLEwhDaHJvbWVPUzENMAsGA1UEAxMEbG"
-    "1hbzCBnzANBgkqhkiG9w0BAQEFAAOBjQAwgYkCgYEA31WiJ9LvprrhKtDlW0RdLFAO7Qj"
-    "kvs+sG6j2Vp2aBSrlhALG/0BVHUhWi4F/HHJho+ncLHAg5AGO0sdAjYUdQG6tfPqjLsIA"
-    "LtoKEZZdFe/JhmqOEaxWsSdu2S2RdPgCQOsP79EH58gXwu2gejCkJDmU22WL4YLuqOc17"
-    "nxbDC8CAwEAATANBgkqhkiG9w0BAQQFAAOBgQCv4vMD+PMlfnftu4/6Yf/oMLE8yCOqZT"
-    "Q/dWCxB9PiJnOefiBeSzSZE6Uv3G7qnblZPVZaFeJMd+ostt0viCyPucFsFgLMyyoV1dM"
-    "VPVwJT5Iq1AHehWXnTBbxUK9wioA5jOEKdroKjuSSsg/Q8Wx6cpJmttQz5olGPgstmACR"
-    "WA==\""
-    "        }";
-
-const char kCertificateServerAlternate[] =
-    "        {"
-    "          \"Trust\": [\"Web\"],"
-    "          \"GUID\": \"{f998f760-272b-6939-4c2beffe428697aa}\","
-    "          \"Type\": \"Server\","
-    "          \"X509\": \"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"
-    "AFjRGPNI8OOx+tWLTiskKzENKs=\""
-    "        }";
-
-const char kCertificateClient[] =
-    "        {"
-    "            \"GUID\": \"{f998f760-272b-6939-4c2beffe428697ac}\","
-    "            \"Type\": \"Client\","
-    "            \"PKCS12\": \"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\""
-    "        }";
-
-const char kCertificateClientAlternate[] =
-    "        {"
-    "            \"GUID\": \"{f998f760-272b-6939-4c2beffe428697ac}\","
-    "            \"Type\": \"Client\","
-    "          \"PKCS12\": \"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\""
-    "        }";
-
-const char kNetworkConfigurationWifiWepPskBegin[] =
-  "{"
-  "  \"NetworkConfigurations\": [{"
-  "    \"GUID\": \"{485d6076-dd44-6b6d-69787465725f5045}\","
-  "    \"Type\": \"WiFi\","
-  "    \"WiFi\": {"
-  "      \"Security\": \"WEP-PSK\","
-  "      \"SSID\": \"ssid\","
-  "      \"Passphrase\": \"pass\",";
-
-const char kNetworkConfigurationWifiWepPskEnd[] =
-  "    }"
-  "  }]"
-  "}";
 
 const char g_token_name[] = "OncNetworkParserTest token";
 
@@ -386,6 +83,18 @@ class OncNetworkParserTest : public testing::Test {
   virtual void TearDown() {
     EXPECT_TRUE(CleanupSlotContents(slot_->os_module_handle()));
     EXPECT_EQ(0U, ListCertsInSlot(slot_->os_module_handle()).size());
+  }
+
+  virtual void GetTestData(const std::string& filename, std::string* contents) {
+      FilePath path;
+      std::string error;
+      PathService::Get(chrome::DIR_TEST_DATA, &path);
+      path = path.AppendASCII("chromeos").AppendASCII("cros").Append(filename);
+      ASSERT_TRUE(contents != NULL);
+      ASSERT_TRUE(file_util::PathExists(path))
+        << "Couldn't find test data file " << path.value();
+      ASSERT_TRUE(file_util::ReadFileToString(path, contents))
+        << "Unable to read test data file " << path.value();
   }
 
   const base::Value* GetExpectedProperty(const Network* network,
@@ -478,16 +187,8 @@ void OncNetworkParserTest::CheckBooleanProperty(const Network* network,
   EXPECT_EQ(expected, bool_value);
 }
 
-void OncNetworkParserTest::TestProxySettings(
-    const std::string proxy_settings_blob,
-    net::ProxyConfig* net_config) {
-  std::string test_blob(
-    std::string(kNetworkConfigurationWifiWepPskBegin) +
-    "    }," +
-    "    \"ProxySettings\": {" +
-    proxy_settings_blob +
-    std::string(kNetworkConfigurationWifiWepPskEnd));
-
+void OncNetworkParserTest::TestProxySettings(const std::string test_blob,
+                                             net::ProxyConfig* net_config) {
   // Parse Network Configuration including ProxySettings dictionary.
   OncNetworkParser parser(test_blob, "", NetworkUIData::ONC_SOURCE_USER_IMPORT);
   scoped_ptr<Network> network(parser.ParseNetwork(0));
@@ -498,7 +199,8 @@ void OncNetworkParserTest::TestProxySettings(
   // ProxyConfigDictionary and decode into net::ProxyConfig.
   JSONStringValueSerializer serializer(network->proxy_config());
   scoped_ptr<Value> value(serializer.Deserialize(NULL, NULL));
-  EXPECT_TRUE(value.get() && value->GetType() == Value::TYPE_DICTIONARY);
+  ASSERT_TRUE(value.get());
+  EXPECT_TRUE(value->GetType() == Value::TYPE_DICTIONARY);
   DictionaryValue* dict = static_cast<DictionaryValue*>(value.get());
   ProxyConfigDictionary proxy_dict(dict);
   EXPECT_TRUE(PrefProxyConfigTrackerImpl::PrefConfigToNetConfig(proxy_dict,
@@ -509,11 +211,9 @@ void OncNetworkParserTest::TestProxySettings(
 base::LazyInstance<ScopedTempDir> OncNetworkParserTest::temp_db_dir_ =
     LAZY_INSTANCE_INITIALIZER;
 
-TEST_F(OncNetworkParserTest, TestCreateNetworkWifi1) {
-  std::string test_blob(
-    std::string(kNetworkConfigurationWifiWepPskBegin) +
-    std::string(kNetworkConfigurationWifiWepPskEnd));
-
+TEST_F(OncNetworkParserTest, TestCreateNetworkWifi) {
+  std::string test_blob;
+  GetTestData("network-wifi.onc", &test_blob);
   OncNetworkParser parser(test_blob, "", NetworkUIData::ONC_SOURCE_USER_IMPORT);
 
   EXPECT_EQ(1, parser.GetNetworkConfigsSize());
@@ -528,32 +228,13 @@ TEST_F(OncNetworkParserTest, TestCreateNetworkWifi1) {
   EXPECT_EQ(wifi->name(), "ssid");
   CheckStringProperty(wifi, PROPERTY_INDEX_SSID, "ssid");
   EXPECT_EQ(wifi->auto_connect(), false);
-  EXPECT_EQ(wifi->passphrase(), "pass");
-  CheckStringProperty(wifi, PROPERTY_INDEX_PASSPHRASE, "pass");
+  EXPECT_EQ(wifi->passphrase(), "z123456789012");
+  CheckStringProperty(wifi, PROPERTY_INDEX_PASSPHRASE, "z123456789012");
 }
 
 TEST_F(OncNetworkParserTest, TestLoadEncryptedOnc) {
-  std::string test_blob(
-      "{"
-      "  \"Cipher\": \"AES256\","
-      "  \"Ciphertext\": \"eQ9/r6v29/83M745aa0JllEj4lklt3Nfy4kPPvXgjBt1eTBy"
-      "xXB+FnsdvL6Uca5JBU5aROxfiol2+ZZOkxPmUNNIFZj70pkdqOGVe09ncf0aVBDsAa27"
-      "veGIG8rG/VQTTbAo7d8QaxdNNbZvwQVkdsAXawzPCu7zSh4NF/hDnDbYjbN/JEm1NzvW"
-      "gEjeOfqnnw3PnGUYCArIaRsKq9uD0a1NccU+16ZSzyDhX724JNrJjsuxohotk5YXsCK0"
-      "lP7ZXuXj+nSR0aRIETSQ+eqGhrew2octLXq8cXK05s6ZuVAc0mFKPkntSI/fzBACuPi4"
-      "ZaGd3YEYiKzNOgKJ+qEwgoE39xp0EXMZOZyjMOAtA6e1ZZDQGWG7vKdTLmLKNztHGrXv"
-      "lZkyEf1RDs10YgkwwLgUhm0yBJ+eqbxO/RiBXz7O2/UVOkkkVcmeI6yh3BdL6HIYsMMy"
-      "gnZa5WRkd/2/EudoqEnjcqUyGsL+YUqV6KRTC0PH+z7zSwvFs2KygrSM7SIAZM2yiQHT"
-      "QACkA/YCJDwACkkQOBFnRWTWiX0xmN55WMbgrs/wqJ4zGC9LgdAInOBlc3P+76+i7QLa"
-      "NjMovQ==\","
-      "  \"HMAC\": \"3ylRy5InlhVzFGakJ/9lvGSyVH0=\","
-      "  \"HMACMethod\": \"SHA1\","
-      "  \"IV\": \"hcm6OENfqG6C/TVO6p5a8g==\","
-      "  \"Iterations\": 20000,"
-      "  \"Salt\": \"/3O73QadCzA=\","
-      "  \"Stretch\": \"PBKDF2\","
-      "  \"Type\": \"EncryptedConfiguration\""
-      "}");
+  std::string test_blob;
+  GetTestData("encrypted.onc", &test_blob);
   OncNetworkParser parser(test_blob,
                           "test0000",
                           NetworkUIData::ONC_SOURCE_USER_IMPORT);
@@ -573,22 +254,8 @@ TEST_F(OncNetworkParserTest, TestLoadEncryptedOnc) {
 
 
 TEST_F(OncNetworkParserTest, TestCreateNetworkWifiEAP1) {
-  std::string test_blob(
-      "{"
-      "  \"NetworkConfigurations\": [{"
-      "    \"GUID\": \"{485d6076-dd44-6b6d-69787465725f5045}\","
-      "    \"Type\": \"WiFi\","
-      "    \"WiFi\": {"
-      "      \"Security\": \"WPA-EAP\","
-      "      \"SSID\": \"ssid\","
-      "      \"AutoConnect\": true,"
-      "      \"EAP\": {"
-      "        \"Outer\": \"PEAP\","
-      "        \"UseSystemCAs\": false,"
-      "      }"
-      "    }"
-      "  }]"
-      "}");
+  std::string test_blob;
+  GetTestData("network-wifi-eap1.onc", &test_blob);
   OncNetworkParser parser(test_blob, "", NetworkUIData::ONC_SOURCE_USER_IMPORT);
 
   EXPECT_EQ(1, parser.GetNetworkConfigsSize());
@@ -610,24 +277,9 @@ TEST_F(OncNetworkParserTest, TestCreateNetworkWifiEAP1) {
 }
 
 TEST_F(OncNetworkParserTest, TestCreateNetworkWifiEAP2) {
-  std::string test_blob(
-      "{"
-      "  \"NetworkConfigurations\": [{"
-      "    \"GUID\": \"{485d6076-dd44-6b6d-69787465725f5045}\","
-      "    \"Type\": \"WiFi\","
-      "    \"WiFi\": {"
-      "      \"Security\": \"WPA-EAP\","
-      "      \"SSID\": \"ssid\","
-      "      \"AutoConnect\": false,"
-      "      \"EAP\": {"
-      "        \"Outer\": \"LEAP\","
-      "        \"Identity\": \"user\","
-      "        \"Password\": \"pass\","
-      "        \"AnonymousIdentity\": \"anon\","
-      "      }"
-      "    }"
-      "  }]"
-      "}");
+  std::string test_blob;
+  GetTestData("network-wifi-eap2.onc", &test_blob);
+
   OncNetworkParser parser(test_blob, "", NetworkUIData::ONC_SOURCE_USER_IMPORT);
 
   EXPECT_EQ(1, parser.GetNetworkConfigsSize());
@@ -651,22 +303,9 @@ TEST_F(OncNetworkParserTest, TestCreateNetworkWifiEAP2) {
 }
 
 TEST_F(OncNetworkParserTest, TestCreateNetworkUnknownFields) {
-  std::string test_blob(
-      "{"
-      "  \"NetworkConfigurations\": [{"
-      "    \"GUID\": \"{485d6076-dd44-6b6d-69787465725f5045}\","
-      "    \"Type\": \"WiFi\","
-      "    \"WiFi\": {"
-      "      \"Security\": \"WEP-PSK\","
-      "      \"SSID\": \"ssid\","
-      "      \"Passphrase\": \"pass\","
-      "    },"
-      "    \"UnknownField1\": \"Value1\","
-      "    \"UnknownField2\": {"
-      "      \"UnknownSubField\": \"Value2\""
-      "    },"
-      "  }]"
-      "}");
+  std::string test_blob;
+  GetTestData("network-unknown-fields.onc", &test_blob);
+
   OncNetworkParser parser(test_blob, "", NetworkUIData::ONC_SOURCE_USER_IMPORT);
   scoped_ptr<Network> network(parser.ParseNetwork(0));
   ASSERT_TRUE(network.get());
@@ -675,19 +314,17 @@ TEST_F(OncNetworkParserTest, TestCreateNetworkUnknownFields) {
   WifiNetwork* wifi = static_cast<WifiNetwork*>(network.get());
   EXPECT_EQ(wifi->encryption(), chromeos::SECURITY_WEP);
   EXPECT_EQ(wifi->name(), "ssid");
-  EXPECT_EQ(wifi->passphrase(), "pass");
+  EXPECT_EQ(wifi->passphrase(), "z123456789012");
 }
 
 TEST_F(OncNetworkParserTest, TestCreateNetworkOpenVPN) {
-  std::string test_blob(std::string(
-      "{"
-      "  \"NetworkConfigurations\": [") +
-      std::string(kNetworkConfigurationOpenVPN) + std::string(
-      "  ]}"));
+  std::string test_blob;
+  GetTestData("network-openvpn.onc", &test_blob);
+
   OncNetworkParser parser(test_blob, "", NetworkUIData::ONC_SOURCE_USER_IMPORT);
 
   EXPECT_EQ(1, parser.GetNetworkConfigsSize());
-  EXPECT_EQ(0, parser.GetCertificatesSize());
+  EXPECT_EQ(1, parser.GetCertificatesSize());
   scoped_ptr<Network> network(parser.ParseNetwork(0));
   ASSERT_TRUE(network.get() != NULL);
 
@@ -740,29 +377,9 @@ TEST_F(OncNetworkParserTest, TestCreateNetworkOpenVPN) {
 }
 
 TEST_F(OncNetworkParserTest, TestCreateNetworkL2TPIPsec) {
-  std::string test_blob(
-      "{"
-      "  \"NetworkConfigurations\": ["
-      "    {"
-      "      \"GUID\": \"{926b84e4-f2c5-0972-b9bbb8f44c4316f5}\","
-      "      \"Name\": \"MyL2TPVPN\","
-      "      \"Type\": \"VPN\","
-      "      \"VPN\": {"
-      "        \"Host\": \"l2tp.acme.org\","
-      "        \"Type\": \"L2TP-IPsec\","
-      "        \"IPsec\": {"
-      "          \"IKEVersion\": 1,"
-      "          \"AuthenticationType\": \"PSK\","
-      "          \"PSK\": \"passphrase\""
-      "        },"
-      "        \"L2TP\": {"
-      "          \"SaveCredentials\": false"
-      "        }"
-      "      }"
-      "    }"
-      "  ],"
-      "  \"Certificates\": []"
-      "}");
+  std::string test_blob;
+  GetTestData("network-l2tp-ipsec.onc", &test_blob);
+
   OncNetworkParser parser(test_blob, "", NetworkUIData::ONC_SOURCE_USER_IMPORT);
 
   EXPECT_EQ(1, parser.GetNetworkConfigsSize());
@@ -787,12 +404,9 @@ TEST_F(OncNetworkParserTest, TestCreateNetworkL2TPIPsec) {
 }
 
 TEST_F(OncNetworkParserTest, TestAddClientCertificate) {
-  std::string certificate_json(
-      "{"
-      "    \"Certificates\": ["
-      + std::string(kCertificateClient) +
-      "    ],"
-      "}");
+  std::string certificate_json;
+  GetTestData("certificate-client.onc", &certificate_json);
+
   std::string test_guid("{f998f760-272b-6939-4c2beffe428697ac}");
   OncNetworkParser parser(certificate_json, "",
                           NetworkUIData::ONC_SOURCE_USER_IMPORT);
@@ -841,20 +455,11 @@ TEST_F(OncNetworkParserTest, TestAddClientCertificate) {
   }
 }
 
-TEST_F(OncNetworkParserTest, TestReplaceClientCertificate) {
-  std::string certificate_json(
-      "{"
-      "    \"Certificates\": ["
-      + std::string(kCertificateClient) +
-      "    ],"
-      "}");
-
-  std::string certificate_alternate_json(
-      "{"
-      "    \"Certificates\": ["
-      + std::string(kCertificateClientAlternate) +
-      "    ],"
-      "}");
+TEST_F(OncNetworkParserTest, TestUpdateClientCertificate) {
+  std::string certificate_json;
+  GetTestData("certificate-client.onc", &certificate_json);
+  std::string certificate_update_json;
+  GetTestData("certificate-client-update.onc", &certificate_update_json);
 
   std::string test_guid("{f998f760-272b-6939-4c2beffe428697ac}");
   {
@@ -878,7 +483,7 @@ TEST_F(OncNetworkParserTest, TestReplaceClientCertificate) {
   {
     // Now we import a new certificate with the same GUID as the
     // first.  It should replace the old one.
-    OncNetworkParser parser(certificate_alternate_json, "",
+    OncNetworkParser parser(certificate_update_json, "",
                             NetworkUIData::ONC_SOURCE_USER_IMPORT);
     ASSERT_EQ(1, parser.GetCertificatesSize());
     scoped_refptr<net::X509Certificate> cert = parser.ParseCertificate(0).get();
@@ -893,12 +498,9 @@ TEST_F(OncNetworkParserTest, TestReplaceClientCertificate) {
   }}
 
 TEST_F(OncNetworkParserTest, TestAddServerCertificate) {
-  std::string test_blob(
-      "{"
-      "    \"Certificates\": ["
-      + std::string(kCertificateServer) +
-      "    ],"
-      "}");
+  std::string test_blob;
+  GetTestData("certificate-server.onc", &test_blob);
+
   std::string test_guid("{f998f760-272b-6939-4c2beffe428697aa}");
   OncNetworkParser parser(test_blob, "", NetworkUIData::ONC_SOURCE_USER_IMPORT);
   ASSERT_EQ(1, parser.GetCertificatesSize());
@@ -924,20 +526,12 @@ TEST_F(OncNetworkParserTest, TestAddServerCertificate) {
 
 }
 
-TEST_F(OncNetworkParserTest, TestReplaceServerCertificate) {
-  std::string certificate_json(
-      "{"
-      "    \"Certificates\": ["
-      + std::string(kCertificateServer) +
-      "    ],"
-      "}");
+TEST_F(OncNetworkParserTest, TestUpdateServerCertificate) {
+  std::string certificate_json;
+  GetTestData("certificate-server.onc", &certificate_json);
+  std::string certificate_update_json;
+  GetTestData("certificate-server-update.onc", &certificate_update_json);
 
-  std::string certificate_alternate_json(
-      "{"
-      "    \"Certificates\": ["
-      + std::string(kCertificateServerAlternate) +
-      "    ],"
-      "}");
   std::string test_guid("{f998f760-272b-6939-4c2beffe428697aa}");
   {
     // First we import a certificate.
@@ -960,7 +554,7 @@ TEST_F(OncNetworkParserTest, TestReplaceServerCertificate) {
   {
     // Now we import a new certificate with the same GUID as the
     // first.  It should replace the old one.
-    OncNetworkParser parser(certificate_alternate_json, "",
+    OncNetworkParser parser(certificate_update_json, "",
                             NetworkUIData::ONC_SOURCE_USER_IMPORT);
     ASSERT_EQ(1, parser.GetCertificatesSize());
     scoped_refptr<net::X509Certificate> cert = parser.ParseCertificate(0).get();
@@ -976,12 +570,10 @@ TEST_F(OncNetworkParserTest, TestReplaceServerCertificate) {
 }
 
 
-TEST_F(OncNetworkParserTest, TestAddAuthorityCertificate) {
-  const std::string test_blob("{"
-      "    \"Certificates\": [" +
-      std::string(kCertificateWebAuthority) +
-      "    ],"
-      "}");
+TEST_F(OncNetworkParserTest, TestAddWebAuthorityCertificate) {
+  std::string test_blob;
+  GetTestData("certificate-web-authority.onc", &test_blob);
+
   std::string test_guid("{f998f760-272b-6939-4c2beffe428697ab}");
   OncNetworkParser parser(test_blob, "", NetworkUIData::ONC_SOURCE_USER_IMPORT);
   ASSERT_EQ(1, parser.GetCertificatesSize());
@@ -1007,18 +599,13 @@ TEST_F(OncNetworkParserTest, TestAddAuthorityCertificate) {
 }
 
 
-TEST_F(OncNetworkParserTest, TestReplaceAuthorityCertificate) {
-  const std::string authority_json("{"
-      "    \"Certificates\": [" +
-      std::string(kCertificateWebAuthority) +
-      "    ],"
-      "}");
-  std::string authority_alternate_json(
-      "{"
-      "  \"Certificates\": [" +
-      std::string(kCertificateWebAuthorityAlternate) +
-      "  ]"
-      "}");
+TEST_F(OncNetworkParserTest, TestUpdateWebAuthorityCertificate) {
+  std::string authority_json;
+  GetTestData("certificate-web-authority.onc", &authority_json);
+  std::string authority_update_json;
+  GetTestData("certificate-web-authority-update.onc",
+              &authority_update_json);
+
   std::string test_guid("{f998f760-272b-6939-4c2beffe428697ab}");
 
   {
@@ -1042,7 +629,7 @@ TEST_F(OncNetworkParserTest, TestReplaceAuthorityCertificate) {
   {
     // Now we import a new authority certificate with the same GUID as the
     // first.  It should replace the old one.
-    OncNetworkParser parser(authority_alternate_json, "",
+    OncNetworkParser parser(authority_update_json, "",
                             NetworkUIData::ONC_SOURCE_USER_IMPORT);
     ASSERT_EQ(1, parser.GetCertificatesSize());
     scoped_refptr<net::X509Certificate> cert = parser.ParseCertificate(0).get();
@@ -1058,15 +645,9 @@ TEST_F(OncNetworkParserTest, TestReplaceAuthorityCertificate) {
 }
 
 TEST_F(OncNetworkParserTest, TestNetworkAndCertificate) {
-  std::string test_blob(
-      "{"
-      "  \"NetworkConfigurations\": [" +
-      std::string(kNetworkConfigurationOpenVPN) +
-      "  ],"
-      "  \"Certificates\": [" +
-      std::string(kCertificateWebAuthority) +
-      "  ],"
-      "}");
+  std::string test_blob;
+  GetTestData("network-openvpn.onc", &test_blob);
+
   OncNetworkParser parser(test_blob, "",
                           NetworkUIData::ONC_SOURCE_USER_IMPORT);
 
@@ -1082,8 +663,8 @@ TEST_F(OncNetworkParserTest, TestNetworkAndCertificate) {
 }
 
 TEST_F(OncNetworkParserTest, TestProxySettingsDirect) {
-  std::string proxy_settings_blob(
-    "      \"Type\": \"Direct\"");
+  std::string proxy_settings_blob;
+  GetTestData("network-wifi-proxy-direct.onc", &proxy_settings_blob);
 
   net::ProxyConfig net_config;
   TestProxySettings(proxy_settings_blob, &net_config);
@@ -1093,8 +674,8 @@ TEST_F(OncNetworkParserTest, TestProxySettingsDirect) {
 }
 
 TEST_F(OncNetworkParserTest, TestProxySettingsWpad) {
-  std::string proxy_settings_blob(
-    "      \"Type\": \"WPAD\"");
+  std::string proxy_settings_blob;
+  GetTestData("network-wifi-proxy-wpad.onc", &proxy_settings_blob);
 
   net::ProxyConfig net_config;
   TestProxySettings(proxy_settings_blob, &net_config);
@@ -1106,10 +687,9 @@ TEST_F(OncNetworkParserTest, TestProxySettingsWpad) {
 }
 
 TEST_F(OncNetworkParserTest, TestProxySettingsPac) {
-  std::string pac_url("http://proxyconfig.corp.google.com/wpad.dat");
-  std::string proxy_settings_blob(
-    "      \"Type\": \"PAC\","
-    "      \"PAC\": \"" + pac_url + std::string("\""));
+  const std::string kPacUrl("http://proxyconfig.corp.google.com/wpad.dat");
+  std::string proxy_settings_blob;
+  GetTestData("network-wifi-proxy-pac.onc", &proxy_settings_blob);
 
   net::ProxyConfig net_config;
   TestProxySettings(proxy_settings_blob, &net_config);
@@ -1118,47 +698,25 @@ TEST_F(OncNetworkParserTest, TestProxySettingsPac) {
   EXPECT_TRUE(net_config.HasAutomaticSettings());
   EXPECT_FALSE(net_config.auto_detect());
   EXPECT_TRUE(net_config.has_pac_url());
-  EXPECT_EQ(GURL(pac_url), net_config.pac_url());
+  EXPECT_EQ(GURL(kPacUrl), net_config.pac_url());
 }
 
 TEST_F(OncNetworkParserTest, TestProxySettingsManual) {
-  std::string http_host("http.abc.com");
-  std::string https_host("https.abc.com");
-  std::string ftp_host("ftp.abc.com");
-  std::string socks_host("socks5://socks.abc.com");
-  uint16 http_port = 1234;
-  uint16 https_port = 3456;
-  uint16 ftp_port = 5678;
-  uint16 socks_port = 7890;
-  std::string proxy_settings_blob(
-    "      \"Type\": \"Manual\","
-    "      \"Manual\": {"
-    "        \"HTTPProxy\" : {"
-    "          \"Host\" : \"" + http_host + "\","
-    "          \"Port\" : %d"
-    "        },"
-    "        \"SecureHTTPProxy\" : {"
-    "          \"Host\" : \"" + https_host + "\","
-    "          \"Port\" : %d"
-    "        },"
-    "        \"FTPProxy\" : {"
-    "          \"Host\" : \"" + ftp_host + "\","
-    "          \"Port\" : %d"
-    "        },"
-    "        \"SOCKS\" : {"
-    "          \"Host\" : \"" + socks_host + "\","
-    "          \"Port\" : %d"
-    "        }"
-    "      },"
-    "      \"ExcludeDomains\": ["
-    "        \"google.com\","
-    "        \"<local>\""
-    "      ]");
+  const std::string kHttpHost("http.example.com");
+  const std::string kHttpsHost("https.example.com");
+  const std::string kFtpHost("ftp.example.com");
+  const std::string socks_host("socks5://socks.example.com");
+  const uint16 kHttpPort = 1234;
+  const uint16 kHttpsPort = 3456;
+  const uint16 kFtpPort = 5678;
+  const uint16 kSocksPort = 7890;
+  std::string proxy_settings_blob;
+  GetTestData("network-wifi-proxy-manual.onc", &proxy_settings_blob);
 
   net::ProxyConfig net_config;
   TestProxySettings(
       base::StringPrintf(proxy_settings_blob.data(),
-                         http_port, https_port, ftp_port, socks_port),
+                         kHttpPort, kHttpsPort, kFtpPort, kSocksPort),
       &net_config);
   const net::ProxyConfig::ProxyRules& rules = net_config.proxy_rules();
   EXPECT_EQ(net::ProxyConfig::ProxyRules::TYPE_PROXY_PER_SCHEME, rules.type);
@@ -1166,22 +724,22 @@ TEST_F(OncNetworkParserTest, TestProxySettingsManual) {
   EXPECT_TRUE(rules.proxy_for_http.is_valid());
   EXPECT_EQ(rules.proxy_for_http,
             net::ProxyServer(net::ProxyServer::SCHEME_HTTP,
-                             net::HostPortPair(http_host, http_port)));
+                             net::HostPortPair(kHttpHost, kHttpPort)));
   // Verify https proxy server.
   EXPECT_TRUE(rules.proxy_for_https.is_valid());
   EXPECT_EQ(rules.proxy_for_https,
             net::ProxyServer(net::ProxyServer::SCHEME_HTTP,
-                             net::HostPortPair(https_host, https_port)));
+                             net::HostPortPair(kHttpsHost, kHttpsPort)));
   // Verify ftp proxy server.
   EXPECT_TRUE(rules.proxy_for_ftp.is_valid());
   EXPECT_EQ(rules.proxy_for_ftp,
             net::ProxyServer(net::ProxyServer::SCHEME_HTTP,
-                             net::HostPortPair(ftp_host, ftp_port)));
+                             net::HostPortPair(kFtpHost, kFtpPort)));
   // Verify socks server.
   EXPECT_TRUE(rules.fallback_proxy.is_valid());
   EXPECT_EQ(rules.fallback_proxy,
             net::ProxyServer(net::ProxyServer::SCHEME_SOCKS5,
-                             net::HostPortPair(socks_host, socks_port)));
+                             net::HostPortPair(socks_host, kSocksPort)));
   // Verify bypass rules.
   net::ProxyBypassRules expected_bypass_rules;
   expected_bypass_rules.AddRuleFromString("google.com");

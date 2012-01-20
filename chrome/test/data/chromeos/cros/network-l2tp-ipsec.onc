@@ -1,0 +1,23 @@
+{
+  "Certificates": [],
+  "NetworkConfigurations": [
+    {
+      "GUID": "{926b84e4-f2c5-0972-b9bbb8f44c4316f5}",
+      "Name": "MyL2TPVPN",
+      "Type": "VPN",
+      "VPN": {
+        "Host": "l2tp.acme.org",
+        "IPsec": {
+          "AuthenticationType": "PSK",
+          "IKEVersion": 1,
+          "PSK": "passphrase"
+        },
+        "L2TP": {
+          "SaveCredentials": false
+        },
+        "Type": "L2TP-IPsec"
+      }
+    }
+  ],
+  "Type": "UnencryptedConfiguration"
+}
