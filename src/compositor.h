@@ -251,6 +251,9 @@ struct weston_surface {
 };
 
 void
+weston_surface_update_transform(struct weston_surface *surface);
+
+void
 weston_device_repick(struct wl_input_device *device, uint32_t time);
 
 void

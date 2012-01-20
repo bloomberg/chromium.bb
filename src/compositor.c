@@ -227,7 +227,7 @@ weston_surface_set_color(struct weston_surface *surface,
 	surface->shader = &surface->compositor->solid_shader;
 }
 
-static void
+WL_EXPORT void
 weston_surface_update_transform(struct weston_surface *surface)
 {
 	struct weston_matrix *matrix = &surface->transform.matrix;

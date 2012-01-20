@@ -29,6 +29,7 @@
 #include <linux/input.h>
 #include <assert.h>
 #include <signal.h>
+#include <math.h>
 
 #include <wayland-server.h>
 #include "compositor.h"
@@ -94,6 +95,10 @@ struct shell_surface {
 	int32_t saved_x, saved_y;
 
 	struct {
+		struct weston_transform transform;
+	} rotation;
+
+	struct {
 		struct wl_grab grab;
 		uint32_t time;
 		int32_t x, y;
@@ -108,6 +113,15 @@ struct weston_move_grab {
 	struct wl_grab grab;
 	struct weston_surface *surface;
 	int32_t dx, dy;
+};
+
+struct rotate_grab {
+	struct wl_grab grab;
+	struct shell_surface *surface;
+	struct {
+		int32_t x;
+		int32_t y;
+	} center;
 };
 
 static void
@@ -621,6 +635,9 @@ shell_get_shell_surface(struct wl_client *client,
 	/* init link so its safe to always remove it in destroy_shell_surface */
 	wl_list_init(&shsurf->link);
 
+	/* empty when not in use */
+	wl_list_init(&shsurf->rotation.transform.link);
+
 	shsurf->type = SHELL_SURFACE_NONE;
 
 	wl_client_add_resource(client, &shsurf->resource);
@@ -944,6 +961,118 @@ terminate_binding(struct wl_input_device *device, uint32_t time,
 
 	if (state)
 		wl_display_terminate(compositor->wl_display);
+}
+
+static void
+rotate_grab_motion(struct wl_grab *grab,
+		 uint32_t time, int32_t x, int32_t y)
+{
+	struct rotate_grab *rotate =
+		container_of(grab, struct rotate_grab, grab);
+	struct wl_input_device *device = grab->input_device;
+	struct shell_surface *surface = rotate->surface;
+	GLfloat dx, dy;
+	GLfloat r;
+
+	dx = device->x - rotate->center.x;
+	dy = device->y - rotate->center.y;
+	r = sqrtf(dx * dx + dy * dy);
+
+	wl_list_remove(&surface->rotation.transform.link);
+	surface->surface->transform.dirty = 1;
+
+	if (r > 20.0f) {
+		struct weston_matrix roto;
+		struct weston_matrix *matrix =
+			&surface->rotation.transform.matrix;
+
+		weston_matrix_init(&roto);
+		roto.d[0] = dx / r;
+		roto.d[4] = -dy / r;
+		roto.d[1] = -roto.d[4];
+		roto.d[5] = roto.d[0];
+
+		weston_matrix_init(matrix);
+		weston_matrix_translate(matrix, -rotate->center.x,
+					-rotate->center.y, 0.0f);
+		weston_matrix_multiply(matrix, &roto);
+		weston_matrix_translate(matrix, rotate->center.x,
+					rotate->center.y, 0.0f);
+
+		wl_list_insert(surface->surface->transform.list.prev,
+			       &surface->rotation.transform.link);
+	} else {
+		wl_list_init(&surface->rotation.transform.link);
+	}
+
+	weston_compositor_damage_all(surface->surface->compositor);
+}
+
+static void
+rotate_grab_button(struct wl_grab *grab,
+		 uint32_t time, int32_t button, int32_t state)
+{
+	struct rotate_grab *rotate =
+		container_of(grab, struct rotate_grab, grab);
+	struct wl_input_device *device = grab->input_device;
+
+	if (device->button_count == 0 && state == 0) {
+		wl_input_device_end_grab(device, time);
+		free(rotate);
+	}
+}
+
+static const struct wl_grab_interface rotate_grab_interface = {
+	noop_grab_focus,
+	rotate_grab_motion,
+	rotate_grab_button,
+};
+
+static void
+rotate_binding(struct wl_input_device *device, uint32_t time,
+	       uint32_t key, uint32_t button, uint32_t state, void *data)
+{
+	struct weston_surface *base_surface =
+		(struct weston_surface *) device->pointer_focus;
+	struct shell_surface *surface;
+	struct rotate_grab *rotate;
+	struct weston_vector center = { { 0.0f, 0.0f, 0.0f, 1.0f } };
+
+	if (base_surface == NULL)
+		return;
+
+	surface = get_shell_surface(base_surface);
+	if (!surface)
+		return;
+
+	switch (surface->type) {
+		case SHELL_SURFACE_PANEL:
+		case SHELL_SURFACE_BACKGROUND:
+		case SHELL_SURFACE_FULLSCREEN:
+		case SHELL_SURFACE_SCREENSAVER:
+			return;
+		default:
+			break;
+	}
+
+	center.f[0] = 0.5f * surface->surface->width;
+	center.f[1] = 0.5f * surface->surface->height;
+	weston_surface_update_transform(surface->surface);
+	weston_matrix_transform(&surface->surface->transform.matrix, &center);
+	if (fabsf(center.f[3]) < 1e-6)
+		return;
+
+	rotate = malloc(sizeof *rotate);
+	if (!rotate)
+		return;
+
+	rotate->grab.interface = &rotate_grab_interface;
+	rotate->surface = surface;
+	rotate->center.x = center.f[0] / center.f[3];
+	rotate->center.y = center.f[1] / center.f[3];
+
+	wl_input_device_start_grab(device, &rotate->grab, time);
+	wl_input_device_set_pointer_focus(device, NULL, time, 0, 0, 0, 0);
 }
 
 static void
@@ -1474,6 +1603,9 @@ shell_init(struct weston_compositor *ec)
 				    terminate_binding, ec);
 	weston_compositor_add_binding(ec, 0, BTN_LEFT, 0,
 				    click_to_activate_binding, ec);
+	weston_compositor_add_binding(ec, 0, BTN_LEFT,
+				      MODIFIER_SUPER | MODIFIER_ALT,
+				      rotate_binding, NULL);
 
 	ec->shell = &shell->shell;
 
