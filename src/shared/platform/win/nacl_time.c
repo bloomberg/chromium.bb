@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -63,7 +63,7 @@
  * calibration function.
  */
 
-static struct NaClTimeState gNaClTimeState;
+struct NaClTimeState g_NaCl_time_state;
 
 static uint32_t const kMaxMillsecondDriftBeforeRecalibration = 60;
 static uint32_t const kMaxCalibrationDiff = 4;
@@ -225,7 +225,7 @@ static void NaClCalibrateWindowsClockMu(struct NaClTimeState *ntsp) {
 }
 
 void NaClAllowLowResolutionTimeOfDay() {
-  gNaClTimeState.allow_low_resolution = 1;
+  g_NaCl_time_state.allow_low_resolution = 1;
 }
 
 void NaClTimeInternalInit(struct NaClTimeState *ntsp) {
@@ -245,7 +245,7 @@ void NaClTimeInternalInit(struct NaClTimeState *ntsp) {
   } else {
     ntsp->wPeriodMin = tc.wPeriodMin;
     timeBeginPeriod(ntsp->wPeriodMin);
-    NaClLog(0, "NaClTimeInternalInit: timeBeginPeriod(%u)\n", ntsp->wPeriodMin);
+    NaClLog(1, "NaClTimeInternalInit: timeBeginPeriod(%u)\n", ntsp->wPeriodMin);
   }
   ntsp->time_resolution_ns = ntsp->wPeriodMin * NACL_NANOS_PER_MILLI;
 
@@ -262,7 +262,7 @@ void NaClTimeInternalInit(struct NaClTimeState *ntsp) {
   SystemTimeToFileTime(&st, &ft);
   ntsp->epoch_start_ms = NaClFileTimeToMs(&ft);
   ntsp->last_reported_time_ms = 0;
-  NaClLog(0, "Unix epoch start is  %"NACL_PRIu64"ms in Windows epoch time\n",
+  NaClLog(1, "Unix epoch start is  %"NACL_PRIu64"ms in Windows epoch time\n",
           ntsp->epoch_start_ms);
 
   NaClMutexCtor(&ntsp->mu);
@@ -307,15 +307,15 @@ void NaClTimeInternalFini(struct NaClTimeState *ntsp) {
 }
 
 void NaClTimeInit(void) {
-  NaClTimeInternalInit(&gNaClTimeState);
+  NaClTimeInternalInit(&g_NaCl_time_state);
 }
 
 void NaClTimeFini(void) {
-  NaClTimeInternalFini(&gNaClTimeState);
+  NaClTimeInternalFini(&g_NaCl_time_state);
 }
 
 uint64_t NaClTimerResolutionNanoseconds(void) {
-  return NaClTimerResolutionNsInternal(&gNaClTimeState);
+  return NaClTimerResolutionNsInternal(&g_NaCl_time_state);
 }
 
 int NaClGetTimeOfDayInternQpc(struct nacl_abi_timeval *tv,
@@ -461,7 +461,7 @@ int NaClGetTimeOfDayIntern(struct nacl_abi_timeval *tv,
 }
 
 int NaClGetTimeOfDay(struct nacl_abi_timeval *tv) {
-  return NaClGetTimeOfDayIntern(tv, &gNaClTimeState);
+  return NaClGetTimeOfDayIntern(tv, &g_NaCl_time_state);
 }
 
 int NaClNanosleep(struct nacl_abi_timespec const *req,

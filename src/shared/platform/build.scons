@@ -15,10 +15,16 @@ Import('env')
 
 platform_inputs = [];
 
+# On OSX and Windows, we have observed sleep returning early.  The
+# time_slop_args is used in nacl_clock_test to permit some extra slop
+# in the elapsed time (in ms).
+time_slop_args = []
+
 if env.Bit('windows'):
   platform_inputs += [
     'win/condition_variable.cc',
     'win/lock.cc',
+    'win/nacl_clock.c',
     'win/nacl_exit.c',
     'win/nacl_find_addrsp.c',
     'win/nacl_host_desc.c',
@@ -35,6 +41,7 @@ if env.Bit('windows'):
     'win/time_win.cc',
     'win/xlate_system_error.c',
   ]
+  time_slop_args += [ '-S', '10' ]
   # Needed for rand_s().
   env.Append(
         CCFLAGS = ['/D_CRT_RAND_S',
@@ -43,6 +50,7 @@ if env.Bit('windows'):
   )
 elif env.Bit('linux'):
   platform_inputs += [
+    'linux/nacl_clock.c',
     'linux/nacl_exit.c',
     'linux/nacl_find_addrsp.c',
     'linux/nacl_host_desc.c',
@@ -58,6 +66,7 @@ elif env.Bit('linux'):
     ]
 elif env.Bit('mac'):
   platform_inputs += [
+    'osx/nacl_clock.c',
     'linux/nacl_exit.c',
     'linux/nacl_find_addrsp.c',
     'linux/nacl_host_desc.c',
@@ -72,6 +81,7 @@ elif env.Bit('mac'):
     'linux/condition_variable.c',
     'linux/lock.c',
     ]
+  time_slop_args += [ '-S', '10' ]
 
 platform_inputs += [
     'nacl_check.c',
@@ -159,5 +169,16 @@ node = env.CommandTest('nacl_host_dir_test.out',
                         '-d',
                         tmpdir])
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_nacl_host_dir_test')
+
+
+nacl_clock_test_exe = env.ComponentProgram('nacl_clock_test',
+                                           ['nacl_clock_test.c'],
+                                           EXTRA_LIBS=['platform'])
+
+node = env.CommandTest('nacl_clock_test.out',
+                       [nacl_clock_test_exe] + time_slop_args)
+
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_nacl_clock_test')
+
 
 env.EnsureRequiredBuildWarnings()

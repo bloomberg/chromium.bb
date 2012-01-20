@@ -40,6 +40,7 @@
         'platform_sources': [
           'linux/condition_variable.c',
           'linux/lock.c',
+          'linux/nacl_clock.c',
           'linux/nacl_exit.c',
           'linux/nacl_find_addrsp.c',
           'linux/nacl_host_desc.c',
@@ -64,6 +65,7 @@
           'linux/nacl_threads.c',
           'linux/nacl_time.c',
           'linux/nacl_timestamp.c',
+          'osx/nacl_clock.c',
           'osx/nacl_host_dir.c',
           'osx/nacl_semaphore.c',
           'osx/strnlen_osx.c',
@@ -73,6 +75,7 @@
         'platform_sources': [
           'win/condition_variable.cc',
           'win/lock.cc',
+          'win/nacl_clock.c',
           'win/nacl_exit.c',
           'win/nacl_find_addrsp.c',
           'win/nacl_host_desc.c',

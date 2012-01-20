@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -236,6 +236,7 @@ static inline void *NaClArrayCheckHelper(void *arg) {
 #define NACL_100_NANOS_PER_MILLI      (10 * 1000)
 #define NACL_NANOS_PER_MILLI          (1000 * 1000)
 #define NACL_MICROS_PER_MILLI         (1000)
+#define NACL_NANOS_PER_UNIT           (1000 * 1000 * 1000)
 #define NACL_MICROS_PER_UNIT          (1000 * 1000)
 #define NACL_MILLIS_PER_UNIT          (1000)
 #define NACL_UNIT_CONVERT_ROUND(v, m) (((v) + (m) - 1)/(m))
