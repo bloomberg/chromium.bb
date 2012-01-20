@@ -349,7 +349,7 @@ class GpuPixelBrowserTest : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(GpuPixelBrowserTest, MAYBE_WebGLGreenTriangle) {
   // If test baseline needs to be updated after a given revision, update the
   // following number. If no revision requirement, then 0.
-  const int64 ref_img_revision_update = 118166;
+  const int64 ref_img_revision_update = 118395;
 
   gfx::Size container_size(250, 250);
   FilePath url =
@@ -365,7 +365,7 @@ IN_PROC_BROWSER_TEST_F(GpuPixelBrowserTest, MAYBE_WebGLGreenTriangle) {
 IN_PROC_BROWSER_TEST_F(GpuPixelBrowserTest, MAYBE_CSS3DBlueBox) {
   // If test baseline needs to be updated after a given revision, update the
   // following number. If no revision requirement, then 0.
-  const int64 ref_img_revision_update = 0;
+  const int64 ref_img_revision_update = 118395;
 
   gfx::Size container_size(250, 250);
   FilePath url =
@@ -389,7 +389,7 @@ class Canvas2DPixelTestHD : public GpuPixelBrowserTest {
 IN_PROC_BROWSER_TEST_F(Canvas2DPixelTestHD, MAYBE_Canvas2DRedBoxHD) {
   // If test baseline needs to be updated after a given revision, update the
   // following number. If no revision requirement, then 0.
-  const int64 ref_img_revision_update = 118166;
+  const int64 ref_img_revision_update = 118395;
 
   gfx::Size container_size(250, 250);
   FilePath url =
@@ -413,7 +413,7 @@ class Canvas2DPixelTestSD : public GpuPixelBrowserTest {
 IN_PROC_BROWSER_TEST_F(Canvas2DPixelTestSD, MAYBE_Canvas2DRedBoxSD) {
   // If test baseline needs to be updated after a given revision, update the
   // following number. If no revision requirement, then 0.
-  const int64 ref_img_revision_update = 118166;
+  const int64 ref_img_revision_update = 118395;
 
   gfx::Size container_size(250, 250);
   FilePath url =
