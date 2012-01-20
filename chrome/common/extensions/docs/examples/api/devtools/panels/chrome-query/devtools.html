@@ -13,14 +13,14 @@ var page_getProperties = function() {
   return copy;
 }
 
-chrome.experimental.devtools.panels.elements.createSidebarPane(
+chrome.devtools.panels.elements.createSidebarPane(
     "jQuery Properties",
     function(sidebar) {
   function updateElementProperties() {
     sidebar.setExpression("(" + page_getProperties.toString() + ")()");
   }
   updateElementProperties();
-  chrome.experimental.devtools.panels.elements.onSelectionChanged.addListener(
+  chrome.devtools.panels.elements.onSelectionChanged.addListener(
       updateElementProperties);
 });
 </script>

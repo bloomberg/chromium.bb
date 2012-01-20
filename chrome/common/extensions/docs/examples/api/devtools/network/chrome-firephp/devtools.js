@@ -19,7 +19,7 @@ Console.Type = {
 Console.addMessage = function(type, format, args) {
   chrome.extension.sendRequest({
       command: "sendToConsole",
-      tabId: chrome.experimental.devtools.tabId,
+      tabId: chrome.devtools.tabId,
       args: escape(JSON.stringify(Array.prototype.slice.call(arguments, 0)))
   });
 };
@@ -167,11 +167,11 @@ ChromeFirePHP._checkProtoVersion = function(proto_header) {
   return true;
 };
 
-chrome.experimental.devtools.network.addRequestHeaders({
+chrome.devtools.network.addRequestHeaders({
     "X-FirePHP-Version": "0.0.6"
 });
 
-chrome.experimental.devtools.network.getHAR(function(result) {
+chrome.devtools.network.getHAR(function(result) {
   var entries = result.entries;
   if (!entries.length) {
     Console.warn("ChromeFirePHP suggests that you reload the page to track" +
@@ -180,6 +180,6 @@ chrome.experimental.devtools.network.getHAR(function(result) {
   for (var i = 0; i < entries.length; ++i)
     ChromeFirePHP.handleFirePhp_headers(entries[i]);
 
-  chrome.experimental.devtools.network.onRequestFinished.addListener(
+  chrome.devtools.network.onRequestFinished.addListener(
       ChromeFirePHP.handleFirePhpHeaders.bind(ChromeFirePHP));
 });

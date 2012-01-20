@@ -78,7 +78,7 @@ var MODULE_SCHEMAS = [
 ]
 var DEVTOOLS_SCHEMA = '../api/devtools_api.json';
 var USE_DEVTOOLS_SCHEMA =
-  /\.devtools[^/]*\.html/.test(location.pathname);
+  /devtools[^/]*\.html/.test(location.pathname);
 var API_MODULE_PREFIX = 'chrome.';
 var SAMPLES = 'samples.json';
 var REQUEST_TIMEOUT = 2000;
@@ -416,7 +416,7 @@ function experimentalAPIs() {
 
 function devtoolsAPIs() {
   return schema.filter(function(module) {
-    return !module.nodoc && module.namespace.indexOf('devtools.') !== 0;
+    return !module.nodoc && module.namespace.indexOf('devtools.') === 0;
   }).map(function(module) {
     return module.namespace;
   }).sort();

@@ -41,6 +41,16 @@
     "chrome.debugger.onDetach": "debugger.html#event-onDetach",
     "chrome.debugger.onEvent": "debugger.html#event-onEvent",
     "chrome.debugger.sendCommand": "debugger.html#method-sendCommand",
+    "chrome.devtools.inspectedWindow.eval": "devtools.inspectedWindow.html#method-eval",
+    "chrome.devtools.inspectedWindow.getResources": "devtools.inspectedWindow.html#method-getResources",
+    "chrome.devtools.inspectedWindow.onResourceAdded": "devtools.inspectedWindow.html#event-onResourceAdded",
+    "chrome.devtools.inspectedWindow.onResourceContentCommitted": "devtools.inspectedWindow.html#event-onResourceContentCommitted",
+    "chrome.devtools.inspectedWindow.reload": "devtools.inspectedWindow.html#method-reload",
+    "chrome.devtools.network.getHAR": "devtools.network.html#method-getHAR",
+    "chrome.devtools.network.onNavigated": "devtools.network.html#event-onNavigated",
+    "chrome.devtools.network.onRequestFinished": "devtools.network.html#event-onRequestFinished",
+    "chrome.devtools.panels.create": "devtools.panels.html#method-create",
+    "chrome.devtools.panels.setOpenResourceHandler": "devtools.panels.html#method-setOpenResourceHandler",
     "chrome.experimental.app.clearAllNotifications": "experimental.app.html#method-clearAllNotifications",
     "chrome.experimental.app.notify": "experimental.app.html#method-notify",
     "chrome.experimental.app.resetLaunchIcon": "experimental.app.html#method-resetLaunchIcon",
@@ -62,16 +72,6 @@
     "chrome.experimental.devtools.console.addMessage": "experimental.devtools.console.html#method-addMessage",
     "chrome.experimental.devtools.console.getMessages": "experimental.devtools.console.html#method-getMessages",
     "chrome.experimental.devtools.console.onMessageAdded": "experimental.devtools.console.html#event-onMessageAdded",
-    "chrome.experimental.devtools.inspectedWindow.eval": "experimental.devtools.inspectedWindow.html#method-eval",
-    "chrome.experimental.devtools.inspectedWindow.getResources": "experimental.devtools.inspectedWindow.html#method-getResources",
-    "chrome.experimental.devtools.inspectedWindow.onResourceAdded": "experimental.devtools.inspectedWindow.html#event-onResourceAdded",
-    "chrome.experimental.devtools.inspectedWindow.onResourceContentCommitted": "experimental.devtools.inspectedWindow.html#event-onResourceContentCommitted",
-    "chrome.experimental.devtools.inspectedWindow.reload": "experimental.devtools.inspectedWindow.html#method-reload",
-    "chrome.experimental.devtools.network.getHAR": "experimental.devtools.network.html#method-getHAR",
-    "chrome.experimental.devtools.network.onNavigated": "experimental.devtools.network.html#event-onNavigated",
-    "chrome.experimental.devtools.network.onRequestFinished": "experimental.devtools.network.html#event-onRequestFinished",
-    "chrome.experimental.devtools.panels.create": "experimental.devtools.panels.html#method-create",
-    "chrome.experimental.devtools.panels.setOpenResourceHandler": "experimental.devtools.panels.html#method-setOpenResourceHandler",
     "chrome.experimental.infobars.show": "experimental.infobars.html#method-show",
     "chrome.experimental.speechInput.isRecording": "experimental.speechInput.html#method-isRecording",
     "chrome.experimental.speechInput.onError": "experimental.speechInput.html#event-onError",
@@ -523,8 +523,7 @@
       "crx_path": null,
       "description": "Extends the Developer Tools, adding a sidebar that displays the jQuery data associated with the selected DOM element.",
       "features": [
-        "devtools_page",
-        "experimental"
+        "devtools_page"
       ],
       "icon": null,
       "id": "924f75a201bb0ec8d6c0b1c9c88c679ea211c93d",
@@ -532,12 +531,12 @@
       "packaged_app": false,
       "path": "examples\/api\/devtools\/panels\/chrome-query\/",
       "protocols": [],
-      "search_string": "CHROME QUERY EXTENDS THE DEVELOPER TOOLS, ADDING A SIDEBAR THAT DISPLAYS THE JQUERY DATA ASSOCIATED WITH THE SELECTED DOM ELEMENT. DEVTOOLS_PAGE EXPERIMENTAL",
+      "search_string": "CHROME QUERY EXTENDS THE DEVELOPER TOOLS, ADDING A SIDEBAR THAT DISPLAYS THE JQUERY DATA ASSOCIATED WITH THE SELECTED DOM ELEMENT. DEVTOOLS_PAGE",
       "source_files": [
         "devtools.html",
         "manifest.json"
       ],
-      "source_hash": "c3e461cd3e269c1ac13e390b418e2d431eccaaa2",
+      "source_hash": "4c71a5bb5bde6571148baf32e6aa63945641d83a",
       "zip_path": "examples\/api\/devtools\/panels\/chrome-query.zip"
     },
     {
@@ -884,8 +883,8 @@
     },
     {
       "api_calls": [
-        "chrome.experimental.devtools.network.getHAR",
-        "chrome.experimental.devtools.network.onRequestFinished",
+        "chrome.devtools.network.getHAR",
+        "chrome.devtools.network.onRequestFinished",
         "chrome.extension.onRequest",
         "chrome.extension.sendRequest",
         "chrome.tabs.executeScript"
@@ -895,7 +894,6 @@
       "features": [
         "background_page",
         "devtools_page",
-        "experimental",
         "tabs"
       ],
       "icon": null,
@@ -907,14 +905,14 @@
         "http:\/\/",
         "https:\/\/"
       ],
-      "search_string": "FIREPHP FOR CHROME EXTENDS THE DEVELOPER TOOLS, ADDING SUPPORT FOR PARSING FIREPHP MESSAGES FROM SERVER BACKGROUND_PAGE DEVTOOLS_PAGE EXPERIMENTAL TABS CHROME.EXPERIMENTAL.DEVTOOLS.NETWORK.GETHAR CHROME.EXPERIMENTAL.DEVTOOLS.NETWORK.ONREQUESTFINISHED CHROME.EXTENSION.ONREQUEST CHROME.EXTENSION.SENDREQUEST CHROME.TABS.EXECUTESCRIPT",
+      "search_string": "FIREPHP FOR CHROME EXTENDS THE DEVELOPER TOOLS, ADDING SUPPORT FOR PARSING FIREPHP MESSAGES FROM SERVER BACKGROUND_PAGE DEVTOOLS_PAGE TABS CHROME.DEVTOOLS.NETWORK.GETHAR CHROME.DEVTOOLS.NETWORK.ONREQUESTFINISHED CHROME.EXTENSION.ONREQUEST CHROME.EXTENSION.SENDREQUEST CHROME.TABS.EXECUTESCRIPT",
       "source_files": [
         "background.js",
         "devtools.html",
         "devtools.js",
         "manifest.json"
       ],
-      "source_hash": "6b2fe7e432d107b912c6cee76b4bc865b3fafccf",
+      "source_hash": "9f3e6b8d3f324da6db156b4906cb01a5d7963ac9",
       "zip_path": "examples\/api\/devtools\/network\/chrome-firephp.zip"
     },
     {

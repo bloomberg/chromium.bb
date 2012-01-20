@@ -1,6 +1,6 @@
 [
   {
-    "namespace": "experimental.devtools.inspectedWindow",
+    "namespace": "devtools.inspectedWindow",
     "types": [
       {
         "id": "Resource",
@@ -176,13 +176,18 @@
           {
             "name": "resource",
             "$ref": "Resource"
+          },
+          {
+            "name": "content",
+            "type": "string",
+            "description": "New content of the resource."
           }
         ]
       }
     ]
   },
   {
-    "namespace": "experimental.devtools.panels",
+    "namespace": "devtools.panels",
     "types": [
       {
         "id": "ElementsPanel",
@@ -481,7 +486,7 @@
               {
                 "name": "Resource",
                 "type": "object",
-                "description": "A <a href=\"experimental.devtools.inspectedWindow.html#type-Resource\">Resource</a> object for the resource that was clicked."
+                "description": "A <a href=\"devtools.inspectedWindow.html#type-Resource\">Resource</a> object for the resource that was clicked."
               }
             ]
           }
@@ -490,7 +495,7 @@
     ]
   },
   {
-    "namespace": "experimental.devtools.network",
+    "namespace": "devtools.network",
     "types": [
       {
         "id": "Request",

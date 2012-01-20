@@ -15,7 +15,12 @@
     </script>
     <script type="text/javascript" src="js/api_page_generator.js"></script>
     <script type="text/javascript" src="js/bootstrap.js"></script>
-  <title>chrome.devtools - Google Chrome Extensions - Google Code</title></head><body>  <div id="gc-container" class="labs">
+    <script type="text/javascript" src="js/sidebar.js"></script>
+  <title>chrome.devtools.* APIs - Google Chrome Extensions - Google Code</title></head>
+  <body>  <div id="gc-container" class="labs">
+      <div id="devModeWarning">
+        You are viewing extension docs in chrome via the 'file:' scheme: are you expecting to see local changes when you refresh? You'll need run chrome with --allow-file-access-from-files.
+      </div>
       <!-- SUBTEMPLATES: DO NOT MOVE FROM THIS LOCATION -->
       <!-- In particular, sub-templates that recurse, must be used by allowing
            jstemplate to make a copy of the template in this section which
@@ -32,6 +37,7 @@
                 <div style="display:inline">
                   (
                     <span class="optional">optional</span>
+                    <span class="enum">enumerated</span>
                     <span id="typeTemplate">
                       <span>
                         <a> Type</a>
@@ -41,6 +47,7 @@
                           array of <span><span></span></span>
                         </span>
                         <span>paramType</span>
+                        <span></span>
                       </span>
                     </span>
                   )
@@ -54,6 +61,15 @@
           <dd>
             Description of this parameter from the json schema.
           </dd>
+          <dd>
+            This parameter was added in version
+            <b><span></span></b>.
+            You must omit this parameter in earlier versions,
+            and you may omit it in any version.  If you require this
+            parameter, the manifest key
+            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
+            can ensure that your extension won't be run in an earlier browser version.
+          </dd>
 
           <!-- OBJECT PROPERTIES -->
           <dd>
@@ -64,8 +80,73 @@
               </div>
             </dl>
           </dd>
+
+          <!-- OBJECT METHODS -->
+          <dd>
+            <div></div>
+          </dd>
+
+          <!-- OBJECT EVENT FIELDS -->
+          <dd>
+            <div></div>
+          </dd>
+
+          <!-- FUNCTION PARAMETERS -->
+          <dd>
+            <div></div>
+          </dd>
+
         </div> <!-- /VALUE -->
 
+        <div id="functionParametersTemplate">
+          <h5>Parameters</h5>
+          <dl>
+            <div>
+              <div>
+              </div>
+            </div>
+          </dl>
+        </div>
+
+        <!-- Individual subsections from the table of contents -->
+        <ol>
+          <li id="propertiesTocTemplate">
+            <a href="#properties">Properties</a>
+            <ol>
+              <li>
+                <a href="#property-anchor">propertyName</a>
+              </li>
+            </ol>
+          </li>
+          <li id="methodsTocTemplate">
+            <a>Methods</a>
+            <ol>
+              <li>
+                <a href="#method-anchor">methodName</a>
+              </li>
+            </ol>
+          </li>
+          <li id="eventsTocTemplate">
+            <a>Events</a>
+            <ol>
+              <li>
+                <a href="#event-anchor">eventName</a>
+              </li>
+            </ol>
+          </li>
+          <li id="typesTocTemplate">
+            <a href="#types">Types</a>
+            <ol>
+              <li>
+                <a href="#id-anchor">id</a>
+                <ol>
+                  <div></div>
+                  <div></div>
+                </ol>
+              </li>
+            </ol>
+          </li>
+        </ol>
       </div> <!-- /SUBTEMPLATES -->
 
   <a id="top"></a>
@@ -89,10 +170,10 @@
             </div>
           </form>
 
-          <script type="text/javascript" src="http://www.google.com/jsapi"></script>
+          <script type="text/javascript" src="https://www.google.com/jsapi"></script>
           <script type="text/javascript">google.load("elements", "1", {packages: "transliteration"});</script>
-          <script type="text/javascript" src="http://www.google.com/coop/cse/t13n?form=cse&amp;t13n_langs=en"></script>
-          <script type="text/javascript" src="http://www.google.com/coop/cse/brand?form=cse&amp;lang=en"></script>
+          <script type="text/javascript" src="https://www.google.com/coop/cse/t13n?form=cse&amp;t13n_langs=en"></script>
+          <script type="text/javascript" src="https://www.google.com/coop/cse/brand?form=cse&amp;lang=en"></script>
         </td>
       </tr>
     </tbody></table>
@@ -116,7 +197,10 @@
             <a href="samples.html" title="Sample extensions (with source code)">Samples</a>
           </li>
           <li id="group_link">
-            <a href="http://groups.google.com/group/chromium-extensions" title="Google Chrome Extensions developer forum">Group</a>
+            <a href="http://groups.google.com/a/chromium.org/group/chromium-extensions" title="Google Chrome Extensions developer forum">Group</a>
+          </li>
+          <li id="so_link">
+            <a href="http://stackoverflow.com/questions/tagged/google-chrome-extension" title="[google-chrome-extension] tag on Stack Overflow">Questions?</a>
           </li>
         </ul>
       </div> <!-- end gc-topnav -->
@@ -127,47 +211,58 @@
         <ul>
           <li><a href="getstarted.html">Getting Started</a></li>
           <li><a href="overview.html">Overview</a></li>
+          <li><a href="whats_new.html">What's New?</a></li>
           <li><h2><a href="devguide.html">Developer's Guide</a></h2>
             <ul>
               <li>Browser UI
                 <ul>
                   <li><a href="browserAction.html">Browser Actions</a></li>
+                  <li><a href="contextMenus.html">Context Menus</a></li>
+                  <li><a href="notifications.html">Desktop Notifications</a></li>
+                  <li><a href="omnibox.html">Omnibox</a></li>
                   <li><a href="options.html">Options Pages</a></li>
                   <li><a href="override.html">Override Pages</a></li>
                   <li><a href="pageAction.html">Page Actions</a></li>
-                  <li><a href="themes.html">Themes</a></li>
                 </ul>
               </li>
               <li>Browser Interaction
                 <ul>
                   <li><a href="bookmarks.html">Bookmarks</a></li>
+                  <li><a href="cookies.html">Cookies</a></li>
+                  <li class="leftNavSelected">Developer Tools</li>
                   <li><a href="events.html">Events</a></li>
+                  <li><a href="history.html">History</a></li>
+                  <li><a href="management.html">Management</a></li>
                   <li><a href="tabs.html">Tabs</a></li>
                   <li><a href="windows.html">Windows</a></li>
                 </ul>
               </li>
               <li>Implementation
                 <ul>
+                  <li><a href="a11y.html">Accessibility</a></li>
                   <li><a href="background_pages.html">Background Pages</a></li>
                   <li><a href="content_scripts.html">Content Scripts</a></li>
                   <li><a href="xhr.html">Cross-Origin XHR</a></li>
                   <li><a href="i18n.html">Internationalization</a></li>
                   <li><a href="messaging.html">Message Passing</a></li>
+                  <li><a href="permissions.html">Optional Permissions</a></li>
                   <li><a href="npapi.html">NPAPI Plugins</a></li>
                 </ul>
               </li>
               <li>Finishing
                 <ul>
-                  <li><a href="autoupdate.html">Autoupdating</a></li>
-                  <li><a href="packaging.html">Packaging</a></li>
-                 <li><a href="external_extensions.html">External Extensions</a></li>
+                  <li><a href="hosting.html">Hosting</a></li>
+                  <li><a href="external_extensions.html">Other Deployment Options</a></li>
                 </ul>
               </li>
             </ul>
           </li>
+          <li><h2><a href="apps.html">Packaged Apps</a></h2></li>
           <li><h2><a href="tutorials.html">Tutorials</a></h2>
             <ul>
               <li><a href="tut_debugging.html">Debugging</a></li>
+              <li><a href="tut_analytics.html">Google Analytics</a></li>
+              <li><a href="tut_oauth.html">OAuth</a></li>
             </ul>
           </li>
           <li><h2>Reference</h2>
@@ -176,26 +271,37 @@
                 <ul>
                   <li><a href="manifest.html">Manifest Files</a></li>
                   <li><a href="match_patterns.html">Match Patterns</a></li>
-                  <!-- <li>Packages (.crx)</li> -->
                 </ul>
               </li>
+              <li><a href="permission_warnings.html">Permission Warnings</a></li>
               <li><a href="api_index.html">chrome.* APIs</a></li>
               <li><a href="api_other.html">Other APIs</a></li>
             </ul>
           </li>
-         <li><h2><a href="samples.html">Samples</a></h2></li>
+          <li><h2><a href="samples.html">Samples</a></h2></li>
+          <div class="line"> </div>
+          <li><h2>More</h2>
+            <ul>
+              <li><a href="http://code.google.com/chrome/webstore/docs/index.html">Chrome Web Store</a></li>
+              <li><a href="http://code.google.com/chrome/apps/docs/developers_guide.html">Hosted Apps</a></li>
+              <li><a href="themes.html">Themes</a></li>
+            </ul>
+          </li>
         </ul>
       </div>
+      <script>
+        initToggles();
+      </script>
 
     <div class="g-unit" id="gc-pagecontent">
       <div id="pageTitle">
-        <h1 class="page_title">chrome.devtools</h1>
+        <h1 class="page_title">chrome.devtools.* APIs</h1>
       </div>
         <!-- TABLE OF CONTENTS -->
-        <div id="toc">
+        <div id="toc" style="display: none; ">
           <h2>Contents</h2>
           <ol>
-            <li style="display: none; ">
+            <li>
               <a>h2Name</a>
               <ol>
                 <li>
@@ -204,56 +310,107 @@
               </ol>
             </li>
               <li>
-                <a href="#apiReference">API reference: chrome.devtools</a>
+                <a href="#apiReference">API reference</a>
                 <ol>
-                  <li style="display: none; ">
-                    <a href="#properties">Properties</a>
-                    <ol>
-                      <li>
-                        <a href="#property-anchor">propertyName</a>
-                      </li>
-                    </ol>
-                  </li>
-                  <li>
-                    <a href="#methods">Methods</a>
-                    <ol>
-                      <li style="display: none; ">
-                        <a href="#method-anchor">methodName</a>
-                      </li>
-                    </ol>
-                  </li>
-                  <li style="display: none; ">
-                    <a href="#events">Events</a>
-                    <ol>
-                      <li>
-                        <a href="#event-anchor">eventName</a>
-                      </li>
-                    </ol>
-                  </li>
-                  <li style="display: none; ">
-                    <a href="#types">Types</a>
-                    <ol>
-                      <li>
-                        <a href="#id-anchor">id</a>
-                      </li>
-                    </ol>
-                  </li>
+                  <div></div>
+                  <div></div>
+                  <div></div>
+                  <div></div>
                 </ol>
               </li>
           </ol>
         </div>
         <!-- /TABLE OF CONTENTS -->
 
+        <!-- Standard content lead-in for experimental API pages -->
+        <p id="classSummary" style="display: none; ">
+          For information on how to use experimental APIs, see the <a href="experimental.html">chrome.experimental.* APIs</a> page.
+        </p>
+
         <!-- STATIC CONTENT PLACEHOLDER -->
-        <div id="static"></div>
+        <div id="static"><div id="pageData-name" class="pageData">chrome.devtools.* APIs</div>
+
+<p>
+The following API modules provide support for extending
+Chrome Developer Tools:
+</p>
+
+<a name="api-list"></a>
+<ul>
+  <li>
+  <a href="devtools.inspectedWindow.html">devtools.inspectedWindow</a></li><li>
+  <a href="devtools.network.html">devtools.network</a></li><li>
+  <a href="devtools.panels.html">devtools.panels</a></li>
+</ul>
+
+<h2 id="using">How to use DevTools APIs</h2>
+
+<ol>
+  <li>
+    Specify the "devtools_page" field in your extension's manifest:
+<pre>{
+  "name": ...
+  "version": "1.0",
+  "minimum_chrome_version": "10.0",
+  <b>"devtools_page": "devtools.html"</b>,
+  ...
+}
+</pre>
+  </li>
+  <li>
+    An instance of the devtools_page specified in your extension's manifest
+    will be created for every Developer Tools window opened. The page may add
+    other extension pages as panels and sidebars to the Developer Tools window
+    using <a href="devtools.panels.html">devtools.panels</a>
+    API.
+  </li>
+  <li>
+    The chrome.devtools.* API modules are available only to the
+    pages loaded within the Developer Tools window. Content scripts and other
+    extension pages do not have these APIs. Thus, the APIs are available only
+    through the lifetime of the Developer Tools window.
+  </li>
+  <li>The APIs available to extension pages within the Developer Tools
+    window include all <a href="#api-list">devtools modules
+    listed above</a> and <a href="extension.html">chrome.extension</a> API.
+    Other extension APIs are not available to the Developer Tools pages, but
+    you may invoke them by sending a request to the background page of your
+    extension, similarly to how it's done in the
+    <a href="overview.html#contentScripts">content scripts</a>.
+  </li><li>
+    There are also some Developer Tools APIs that are still experimental.
+    Please refer to <a href="experimental.html">chrome.experimental.* APIs</a>
+    for the list of experimental APIs and guidelines on how to use them.
+  </li>
+  <li>
+    <a href="http://groups.google.com/group/google-chrome-developer-tools/topics">Give us feedback!</a>
+    Your comments and suggestions help us improve the APIs.
+  </li>
+</ol>
+
+<h2 id="other">More information</h2>
+
+<p>
+For information on the standard APIs that extensions can use, see
+<a href="api_index.html">chrome.* APIs</a> and
+<a href="api_other.html">Other APIs</a>.
+</p>
+
+<h2 id="examples">Examples</h2>
+
+<p>
+You can find examples that use Developer Tools APIs in
+<a href="samples.html#devtools">Samples</a>.
+</p>
+</div>
 
         <!-- API PAGE -->
-        <div class="apiPage">
+        <div class="apiPage" style="display: none; ">
         <a name="apiReference"></a>
-        <h2>API reference: chrome.devtools</h2>
+        <h2>API reference: chrome.apiname </h2>
 
           <!-- PROPERTIES -->
-          <div class="apiGroup" style="display: none; ">
+          <div class="apiGroup">
             <a name="properties"></a>
             <h3 id="properties">Properties</h3>
 
@@ -271,12 +428,12 @@
           </div> <!-- /apiGroup -->
 
           <!-- METHODS -->
-          <div class="apiGroup" id="methods">
-            <a name="methods"></a>
+          <div id="methodsTemplate" class="apiGroup">
+            <a></a>
             <h3>Methods</h3>
 
             <!-- iterates over all functions -->
-            <div class="apiItem" style="display: none; ">
+            <div class="apiItem">
               <a></a> <!-- method-anchor -->
               <h4>method name</h4>
 
@@ -323,7 +480,7 @@
                   </p>
 
                   <!-- Note: intentionally longer 80 columns -->
-                  <pre>function(<span>Type param1, Type param2</span>) <span class="subdued">{...}</span>);</pre>
+                  <pre>function(<span>Type param1, Type param2</span>) <span class="subdued">{...}</span>;</pre>
                   <dl>
                     <div>
                       <div>
@@ -333,6 +490,13 @@
                   </div>
                 </div>
 
+                <!-- MIN_VERSION -->
+                <p>
+                  This function was added in version <b><span></span></b>.
+                  If you require this function, the manifest key
+                  <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
+                  can ensure that your extension won't be run in an earlier browser version.
+                </p>
               </div> <!-- /description -->
 
             </div>  <!-- /apiItem -->
@@ -340,10 +504,9 @@
           </div>  <!-- /apiGroup -->
 
           <!-- EVENTS -->
-          <div class="apiGroup" style="display: none; ">
-            <a name="events"></a>
-            <h3 id="events">Events</h3>
-
+          <div id="eventsTemplate" class="apiGroup">
+            <a></a>
+            <h3>Events</h3>
             <!-- iterates over all events -->
             <div class="apiItem">
               <a></a>
@@ -351,7 +514,7 @@
 
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.bookmarks</span><span>onEvent</span><span class="subdued">.addListener</span>(function(<span>Type param1, Type param2</span>) <span class="subdued">{...}</span>);
+                <span class="subdued">chrome.bookmarks</span><span>onEvent</span><span class="subdued">.addListener</span>(function(<span>Type param1, Type param2</span>) <span class="subdued">{...}</span><span>, Type opt_param1, Type opt_param2</span>);
               </div>
 
               <div class="description">
@@ -360,8 +523,30 @@
                   A description from the json schema def of the event goes here.
                 </p>
 
-                <!-- PARAMETERS -->
-                <h4>Parameters</h4>
+                <!-- LISTENER PARAMETERS -->
+                <div>
+                  <h4>Listener parameters</h4>
+                  <dl>
+                    <div>
+                      <div>
+                      </div>
+                    </div>
+                  </dl>
+                </div>
+
+                <!-- EXTRA PARAMETERS -->
+                <div>
+                  <h4>Extra parameters to addListener</h4>
+                  <dl>
+                    <div>
+                      <div>
+                      </div>
+                    </div>
+                  </dl>
+                </div>
+
+                <!-- LISTENER RETURN VALUE -->
+                <h4>Listener returns</h4>
                 <dl>
                   <div>
                     <div>
@@ -369,15 +554,14 @@
                   </div>
                 </dl>
 
-              </div> <!-- /decription -->
-
+              </div> <!-- /description -->
             </div> <!-- /apiItem -->
 
           </div> <!-- /apiGroup -->
 
           <!-- TYPES -->
-          <div class="apiGroup" style="display: none; ">
-            <a name="types.sort(sortByName)"></a>
+          <div class="apiGroup">
+            <a name="types"></a>
             <h3 id="types">Types</h3>
 
             <!-- iterates over all types -->
@@ -405,12 +589,12 @@
   <a rel="license" href="http://code.google.com/google_bsd_license.html">BSD License</a>.
   </p>
   <p>
-  ©2009 Google
+  ©2011 Google
   </p>
 
 <!-- begin analytics -->
-<script src="http://www.google-analytics.com/urchin.js" type="text/javascript"></script>
-<script src="http://www.google-analytics.com/ga.js" type="text/javascript"></script>
+<script src="https://www.google-analytics.com/urchin.js" type="text/javascript"></script>
+<script src="https://www.google-analytics.com/ga.js" type="text/javascript"></script>
 
 <script type="text/javascript">
   // chrome doc tracking
