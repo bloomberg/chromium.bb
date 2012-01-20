@@ -845,7 +845,6 @@ begword ultra =
 begword electro =
 begword neuro =
 begword psycho 1234-234-13456-16-135
-endword s' 234-3
 endword in' =
 endword 'd 3-145 back-translation: = doesn't work
 endword 'm 3-134
