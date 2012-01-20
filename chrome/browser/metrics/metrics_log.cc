@@ -122,10 +122,6 @@ const std::string& MetricsLog::version_extension() {
   return g_version_extension.Get();
 }
 
-MetricsLog* MetricsLog::AsMetricsLog() {
-  return this;
-}
-
 void MetricsLog::RecordIncrementalStabilityElements() {
   DCHECK(!locked_);
 

@@ -555,7 +555,8 @@ void MetricsService::Observe(int type,
       break;
 
     case chrome::NOTIFICATION_OMNIBOX_OPENED_URL: {
-      MetricsLog* current_log = log_manager_.current_log()->AsMetricsLog();
+      MetricsLog* current_log =
+          static_cast<MetricsLog*>(log_manager_.current_log());
       DCHECK(current_log);
       current_log->RecordOmniboxOpenedURL(
           *content::Details<AutocompleteLog>(details).ptr());
@@ -831,7 +832,8 @@ void MetricsService::StopRecording() {
   // end of all log transmissions (initial log handles this separately).
   // RecordIncrementalStabilityElements only exists on the derived
   // MetricsLog class.
-  MetricsLog* current_log = log_manager_.current_log()->AsMetricsLog();
+  MetricsLog* current_log =
+      static_cast<MetricsLog*>(log_manager_.current_log());
   DCHECK(current_log);
   current_log->RecordIncrementalStabilityElements();
   RecordCurrentHistograms();

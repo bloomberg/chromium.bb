@@ -20,7 +20,6 @@
 #include "content/public/common/page_transition_types.h"
 
 class GURL;
-class MetricsLog;
 
 // This class provides base functionality for logging metrics data.
 class MetricsLogBase {
@@ -93,8 +92,6 @@ class MetricsLogBase {
   // The value is used to identify when a new build is run, so that previous
   // reliability stats, from other builds, can be abandoned.
   static int64 GetBuildTime();
-
-  virtual MetricsLog* AsMetricsLog();
 
  protected:
   class XmlWrapper;

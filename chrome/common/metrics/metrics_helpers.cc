@@ -377,10 +377,6 @@ int64 MetricsLogBase::GetBuildTime() {
   return integral_build_time;
 }
 
-MetricsLog* MetricsLogBase::AsMetricsLog() {
-  return NULL;
-}
-
 // TODO(JAR): A The following should really be part of the histogram class.
 // Internal state is being needlessly exposed, and it would be hard to reuse
 // this code. If we moved this into the Histogram class, then we could use

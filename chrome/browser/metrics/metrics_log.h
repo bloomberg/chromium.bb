@@ -48,8 +48,6 @@ class MetricsLog : public MetricsLogBase {
   static void set_version_extension(const std::string& extension);
   static const std::string& version_extension();
 
-  virtual MetricsLog* AsMetricsLog() OVERRIDE;
-
   // Records the current operating environment.  Takes the list of installed
   // plugins as a parameter because that can't be obtained synchronously
   // from the UI thread.
