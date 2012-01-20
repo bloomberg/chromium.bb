@@ -320,7 +320,7 @@ void Preferences::NotifyPrefChanged(const std::string* pref_name) {
   }
   if (!pref_name || *pref_name == prefs::kTouchpadSensitivity) {
     int sensitivity = sensitivity_.GetValue();
-    system::touchpad_settings::SetSensitivity(sensitivity);
+    system::pointer_settings::SetSensitivity(sensitivity);
     if (pref_name) {
       UMA_HISTOGRAM_CUSTOM_COUNTS(
           "Touchpad.Sensitivity.Changed", sensitivity, 1, 5, 5);
@@ -333,9 +333,9 @@ void Preferences::NotifyPrefChanged(const std::string* pref_name) {
     const bool right = primary_mouse_button_right_.GetValue();
     system::mouse_settings::SetPrimaryButtonRight(right);
     if (pref_name)
-      UMA_HISTOGRAM_BOOLEAN("Mouse.PrimaryButtonLeft.Changed", right);
+      UMA_HISTOGRAM_BOOLEAN("Mouse.PrimaryButtonRight.Changed", right);
     else
-      UMA_HISTOGRAM_BOOLEAN("Mouse.PrimaryButtonLeft.Started", right);
+      UMA_HISTOGRAM_BOOLEAN("Mouse.PrimaryButtonRight.Started", right);
   }
 
   // We don't handle prefs::kLanguageCurrentInputMethod and PreviousInputMethod

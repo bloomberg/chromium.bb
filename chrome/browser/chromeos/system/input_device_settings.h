@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,12 +9,16 @@
 namespace chromeos {
 namespace system {
 
+namespace pointer_settings {
+
+// Sets the pointer sensitivity in the range [1, 5].
+void SetSensitivity(int value);
+
+}  // namespace pointer_settings
+
 namespace touchpad_settings {
 
 bool TouchpadExists();
-
-// Sets the touchpad sensitivity in range from 1 to 5.
-void SetSensitivity(int value);
 
 // Turns tap to click on / off.
 void SetTapToClick(bool enabled);
