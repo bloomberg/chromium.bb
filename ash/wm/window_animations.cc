@@ -14,12 +14,31 @@
 
 namespace ash {
 namespace internal {
+const char kWindowVisibilityAnimationTypeKey[] =
+    "WindowVisibilityAnimationType";
+}  // namespace internal
+
+void SetWindowVisibilityAnimationType(aura::Window* window,
+                                      WindowVisibilityAnimationType type) {
+  window->SetIntProperty(internal::kWindowVisibilityAnimationTypeKey, type);
+}
+
+namespace internal {
 namespace {
 
-const float kWindowAnimation_HideOpacity = 0.0f;
-const float kWindowAnimation_ShowOpacity = 1.0f;
+const float kWindowAnimation_HideOpacity = 0.f;
+const float kWindowAnimation_ShowOpacity = 1.f;
 const float kWindowAnimation_TranslateFactor = -0.025f;
 const float kWindowAnimation_ScaleFactor = 1.05f;
+
+const float kWindowAnimation_Vertical_TranslateY = 15.f;
+
+// Gets/sets the WindowVisibilityAnimationType associated with a window.
+WindowVisibilityAnimationType GetWindowVisibilityAnimationType(
+    aura::Window* window) {
+  return static_cast<WindowVisibilityAnimationType>(
+      window->GetIntProperty(kWindowVisibilityAnimationTypeKey));
+}
 
 // Observes a hide animation.
 // A window can be hidden for a variety of reasons. Sometimes, Hide() will be
@@ -70,31 +89,26 @@ class HidingWindowAnimationObserver : public ui::ImplicitAnimationObserver,
   DISALLOW_COPY_AND_ASSIGN(HidingWindowAnimationObserver);
 };
 
-}  // namespace
-
-////////////////////////////////////////////////////////////////////////////////
-// WindowAnimation, public:
-
-void AnimateShowWindow(aura::Window* window) {
-  // Set the start state pre-animation.
+// Shows a window using an animation, animating its opacity from 0.f to 1.f, and
+// its transform from |start_transform| to |end_transform|.
+void AnimateShowWindowCommon(aura::Window* window,
+                             const ui::Transform& start_transform,
+                             const ui::Transform& end_transform) {
   window->layer()->SetOpacity(kWindowAnimation_HideOpacity);
-  ui::Transform transform;
-  transform.ConcatScale(kWindowAnimation_ScaleFactor,
-                        kWindowAnimation_ScaleFactor);
-  transform.ConcatTranslate(
-      kWindowAnimation_TranslateFactor * window->bounds().width(),
-      kWindowAnimation_TranslateFactor * window->bounds().height());
-  window->layer()->SetTransform(transform);
+  window->layer()->SetTransform(start_transform);
 
   {
     // Property sets within this scope will be implicitly animated.
     ui::ScopedLayerAnimationSettings settings(window->layer()->GetAnimator());
-    window->layer()->SetTransform(ui::Transform());
+    window->layer()->SetTransform(end_transform);
     window->layer()->SetOpacity(kWindowAnimation_ShowOpacity);
   }
 }
 
-void AnimateHideWindow(aura::Window* window) {
+// Hides a window using an animation, animating its opacity from 1.f to 0.f, and
+// its transform to |end_transform|.
+void AnimateHideWindowCommon(aura::Window* window,
+                             const ui::Transform& end_transform) {
   // The window's layer was just hidden, but we need it to draw until it's fully
   // transparent, so we show it again. This is undone once the animation is
   // complete.
@@ -105,14 +119,68 @@ void AnimateHideWindow(aura::Window* window) {
     settings.AddImplicitObserver(new HidingWindowAnimationObserver(window));
 
     window->layer()->SetOpacity(kWindowAnimation_HideOpacity);
+    window->layer()->SetTransform(end_transform);
+  }
+}
 
-    ui::Transform transform;
-    transform.ConcatScale(kWindowAnimation_ScaleFactor,
-                          kWindowAnimation_ScaleFactor);
-    transform.ConcatTranslate(
-        kWindowAnimation_TranslateFactor * window->bounds().width(),
-        kWindowAnimation_TranslateFactor * window->bounds().height());
-    window->layer()->SetTransform(transform);
+// Show/Hide windows using a shrink animation.
+void AnimateShowWindow_Drop(aura::Window* window) {
+  ui::Transform transform;
+  transform.ConcatScale(kWindowAnimation_ScaleFactor,
+                        kWindowAnimation_ScaleFactor);
+  transform.ConcatTranslate(
+      kWindowAnimation_TranslateFactor * window->bounds().width(),
+      kWindowAnimation_TranslateFactor * window->bounds().height());
+  AnimateShowWindowCommon(window, transform, ui::Transform());
+}
+
+void AnimateHideWindow_Drop(aura::Window* window) {
+  ui::Transform transform;
+  transform.ConcatScale(kWindowAnimation_ScaleFactor,
+                        kWindowAnimation_ScaleFactor);
+  transform.ConcatTranslate(
+      kWindowAnimation_TranslateFactor * window->bounds().width(),
+      kWindowAnimation_TranslateFactor * window->bounds().height());
+  AnimateHideWindowCommon(window, transform);
+}
+
+// Show/Hide windows using a vertical Glenimation.
+void AnimateShowWindow_Vertical(aura::Window* window) {
+  ui::Transform transform;
+  transform.ConcatTranslate(0, kWindowAnimation_Vertical_TranslateY);
+  AnimateShowWindowCommon(window, transform, ui::Transform());
+}
+
+void AnimateHideWindow_Vertical(aura::Window* window) {
+  ui::Transform transform;
+  transform.ConcatTranslate(0, kWindowAnimation_Vertical_TranslateY);
+  AnimateHideWindowCommon(window, transform);
+}
+
+}  // namespace
+
+////////////////////////////////////////////////////////////////////////////////
+// WindowAnimation, public:
+
+void AnimateShowWindow(aura::Window* window) {
+  switch (GetWindowVisibilityAnimationType(window)) {
+    case WINDOW_VISIBILITY_ANIMATION_TYPE_DROP:
+      AnimateShowWindow_Drop(window);
+      break;
+    case WINDOW_VISIBILITY_ANIMATION_TYPE_VERTICAL:
+      AnimateShowWindow_Vertical(window);
+      break;
+  }
+}
+
+void AnimateHideWindow(aura::Window* window) {
+  switch (GetWindowVisibilityAnimationType(window)) {
+    case WINDOW_VISIBILITY_ANIMATION_TYPE_DROP:
+      AnimateHideWindow_Drop(window);
+      break;
+    case WINDOW_VISIBILITY_ANIMATION_TYPE_VERTICAL:
+      AnimateHideWindow_Vertical(window);
+      break;
   }
 }
 

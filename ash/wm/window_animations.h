@@ -6,14 +6,25 @@
 #define ASH_WM_WINDOW_ANIMATIONS_H_
 #pragma once
 
+#include "ash/ash_export.h"
+
 namespace aura {
 class Window;
 }
 
 namespace ash {
-namespace internal {
 
-// Implements a variety of canned animations for window transitions.
+// A variety of canned animations for window transitions.
+enum WindowVisibilityAnimationType {
+  WINDOW_VISIBILITY_ANIMATION_TYPE_DROP = 0,  // Default. Window shrinks in.
+  WINDOW_VISIBILITY_ANIMATION_TYPE_VERTICAL   // Vertical Glenimation.
+};
+
+void ASH_EXPORT SetWindowVisibilityAnimationType(
+    aura::Window* window,
+    WindowVisibilityAnimationType type);
+
+namespace internal {
 
 void AnimateShowWindow(aura::Window* window);
 void AnimateHideWindow(aura::Window* window);

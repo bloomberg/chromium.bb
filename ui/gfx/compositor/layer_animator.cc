@@ -21,7 +21,7 @@ class LayerAnimator;
 namespace {
 
 static const base::TimeDelta kDefaultTransitionDuration =
-    base::TimeDelta::FromMilliseconds(200);
+    base::TimeDelta::FromMilliseconds(120);
 
 static const base::TimeDelta kTimerInterval =
     base::TimeDelta::FromMilliseconds(10);

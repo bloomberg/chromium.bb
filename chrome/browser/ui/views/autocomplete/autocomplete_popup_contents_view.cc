@@ -44,6 +44,9 @@
 #include "ui/views/widget/native_widget_win.h"
 #endif
 #endif
+#if defined(USE_AURA)
+#include "ash/wm/window_animations.h"
+#endif
 
 namespace {
 
@@ -346,6 +349,12 @@ void AutocompletePopupContentsView::UpdatePopupAppearance() {
     params.parent_widget = location_bar_->GetWidget();
     params.bounds = GetPopupBounds();
     popup_->Init(params);
+#if defined(USE_AURA)
+    // TODO(beng): This should be if defined(USE_ASH)
+    ash::SetWindowVisibilityAnimationType(
+        popup_->GetNativeView(),
+        ash::WINDOW_VISIBILITY_ANIMATION_TYPE_VERTICAL);
+#endif
     popup_->SetContentsView(this);
     popup_->StackAbove(omnibox_view_->GetRelativeWindowForPopup());
     if (!popup_.get()) {
