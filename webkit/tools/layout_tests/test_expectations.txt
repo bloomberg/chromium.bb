@@ -13,7 +13,4 @@ BUGCR110493 CPU : svg/transforms/animated-path-inside-transformed-html.xhtml = I
 BUGCR110493 CPU : fast/borders/border-image-rotate-transform.html = IMAGE
 BUGCR110493 CPU : svg/custom/focus-ring.svg = IMAGE
 
-// EPOGER: To be rebaselined after Skia rev. 3071 propagates to webkit.
-BUGWK71820 : svg/custom/path-moveto-only-rendering.svg = PASS IMAGE+TEXT
-BUGWK71820 : svg/custom/subpaths-moveto-only-rendering.svg = PASS TEXT
-BUGWK64675 : svg/custom/zero-path-square-cap-rendering.svg = PASS IMAGE+TEXT
+
