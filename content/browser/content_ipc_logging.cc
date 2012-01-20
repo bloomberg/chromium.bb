@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "content/browser/browser_child_process_host.h"
 #include "content/common/child_process_messages.h"
+#include "content/public/browser/browser_child_process_host_iterator.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "ipc/ipc_logging.h"
@@ -18,9 +19,9 @@ namespace content {
 void EnableIPCLoggingForChildProcesses(bool enabled) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  BrowserChildProcessHost::Iterator i;  // default constr references a singleton
+  BrowserChildProcessHostIterator i;  // default constr references a singleton
   while (!i.Done()) {
-    i->Send(new ChildProcessMsg_SetIPCLoggingEnabled(enabled));
+    i.Send(new ChildProcessMsg_SetIPCLoggingEnabled(enabled));
     ++i;
   }
 }

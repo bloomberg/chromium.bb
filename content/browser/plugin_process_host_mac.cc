@@ -11,9 +11,12 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
+#include "base/process_util.h"
+#include "content/browser/browser_child_process_host.h"
 #include "content/browser/plugin_process_host.h"
 #include "content/common/plugin_messages.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/child_process_data.h"
 #include "ui/gfx/rect.h"
 
 using content::BrowserThread;
@@ -75,7 +78,8 @@ void PluginProcessHost::OnPluginHideWindow(uint32 window_id,
   if (plugin_fullscreen_windows_set_.find(window_id) !=
       plugin_fullscreen_windows_set_.end()) {
     plugin_fullscreen_windows_set_.erase(window_id);
-    pid_t plugin_pid = browser_needs_activation ? -1 : data().handle;
+    pid_t plugin_pid =
+        browser_needs_activation ? -1 : process_->GetData().handle;
     browser_needs_activation = false;
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                             base::Bind(ReleasePluginFullScreen, plugin_pid));
@@ -96,7 +100,7 @@ void PluginProcessHost::OnAppActivation() {
   if (!plugin_modal_windows_set_.empty()) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(base::mac::ActivateProcess, data().handle));
+        base::Bind(base::mac::ActivateProcess, process_->GetData().handle));
   }
 }
 

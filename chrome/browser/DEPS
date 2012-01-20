@@ -34,7 +34,6 @@ include_rules = [
   "+content/browser/accessibility/browser_accessibility_manager.h",
   "+content/browser/accessibility/browser_accessibility_state.h",
   "+content/browser/appcache/chrome_appcache_service.h",
-  "+content/browser/browser_child_process_host.h",
   "+content/browser/browser_thread_impl.h",
   "+content/browser/browser_url_handler.h",
   "+content/browser/cert_store.h",

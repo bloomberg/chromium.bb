@@ -66,7 +66,6 @@
 #include "chrome/common/switch_utils.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/installer/util/google_update_constants.h"
-#include "content/browser/browser_child_process_host.h"
 #include "content/browser/child_process_security_policy.h"
 #include "content/browser/download/download_status_updater.h"
 #include "content/browser/download/mhtml_generation_manager.h"

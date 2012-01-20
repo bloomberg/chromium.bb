@@ -9,6 +9,7 @@
 #include "base/file_path.h"
 #include "base/process_util.h"
 #include "base/utf_string_conversions.h"
+#include "content/browser/browser_child_process_host.h"
 #include "content/browser/plugin_service_impl.h"
 #include "content/browser/renderer_host/render_message_filter.h"
 #include "content/common/child_process_host_impl.h"
@@ -87,8 +88,12 @@ PpapiPluginProcessHost* PpapiPluginProcessHost::CreateBrokerHost(
   return NULL;
 }
 
+bool PpapiPluginProcessHost::Send(IPC::Message* message) {
+  return process_->Send(message);
+}
+
 void PpapiPluginProcessHost::OpenChannelToPlugin(Client* client) {
-  if (child_process_host()->IsChannelOpening()) {
+  if (process_->GetHost()->IsChannelOpening()) {
     // The channel is already in the process of being opened.  Put
     // this "open channel" request into a queue of requests that will
     // be run once the channel is open.
@@ -101,29 +106,31 @@ void PpapiPluginProcessHost::OpenChannelToPlugin(Client* client) {
 }
 
 PpapiPluginProcessHost::PpapiPluginProcessHost(net::HostResolver* host_resolver)
-    : BrowserChildProcessHost(content::PROCESS_TYPE_PPAPI_PLUGIN),
-      filter_(new PepperMessageFilter(host_resolver)),
+    : filter_(new PepperMessageFilter(host_resolver)),
       network_observer_(new PluginNetworkObserver(this)),
       is_broker_(false),
       process_id_(ChildProcessHostImpl::GenerateChildProcessUniqueId()) {
-  child_process_host()->AddFilter(filter_.get());
+  process_.reset(new BrowserChildProcessHost(
+      content::PROCESS_TYPE_PPAPI_PLUGIN, this));
+  process_->GetHost()->AddFilter(filter_.get());
 }
 
 PpapiPluginProcessHost::PpapiPluginProcessHost()
-    : BrowserChildProcessHost(content::PROCESS_TYPE_PPAPI_BROKER),
-      is_broker_(true),
+    : is_broker_(true),
       process_id_(ChildProcessHostImpl::GenerateChildProcessUniqueId()) {
+  process_.reset(new BrowserChildProcessHost(
+      content::PROCESS_TYPE_PPAPI_BROKER, this));
 }
 
 bool PpapiPluginProcessHost::Init(const content::PepperPluginInfo& info) {
   plugin_path_ = info.path;
   if (info.name.empty()) {
-    SetName(plugin_path_.BaseName().LossyDisplayName());
+    process_->SetName(plugin_path_.BaseName().LossyDisplayName());
   } else {
-    SetName(UTF8ToUTF16(info.name));
+    process_->SetName(UTF8ToUTF16(info.name));
   }
 
-  std::string channel_id = child_process_host()->CreateChannel();
+  std::string channel_id = process_->GetHost()->CreateChannel();
   if (channel_id.empty())
     return false;
 
@@ -176,7 +183,7 @@ bool PpapiPluginProcessHost::Init(const content::PepperPluginInfo& info) {
 #if defined(OS_POSIX)
   bool use_zygote = !is_broker_ && plugin_launcher.empty() && info.is_sandboxed;
 #endif  // OS_POSIX
-  Launch(
+  process_->Launch(
 #if defined(OS_WIN)
       FilePath(),
 #elif defined(OS_POSIX)
@@ -219,7 +226,6 @@ bool PpapiPluginProcessHost::OnMessageReceived(const IPC::Message& msg) {
 
 // Called when the browser <--> plugin channel has been established.
 void PpapiPluginProcessHost::OnChannelConnected(int32 peer_pid) {
-  BrowserChildProcessHost::OnChannelConnected(peer_pid);
   // This will actually load the plugin. Errors will actually not be reported
   // back at this point. Instead, the plugin will fail to establish the
   // connections when we request them on behalf of the renderer(s).
@@ -271,7 +277,7 @@ void PpapiPluginProcessHost::OnRendererPluginChannelCreated(
   sent_requests_.pop();
 
   // Prepare the handle to send to the renderer.
-  base::ProcessHandle plugin_process = GetChildProcessHandle();
+  base::ProcessHandle plugin_process = process_->GetHandle();
 #if defined(OS_WIN)
   base::ProcessHandle renderer_process;
   int renderer_id;

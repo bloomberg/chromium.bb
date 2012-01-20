@@ -1,4 +1,5 @@
 include_rules = [
+  "+content/browser/browser_child_process_host.h",
   "+content/browser/notification_service_impl.h",
   "+content/browser/renderer_host/render_view_host.h",
 

@@ -15,6 +15,7 @@
 #include "base/process_util.h"
 #include "base/string_piece.h"
 #include "base/threading/thread.h"
+#include "content/browser/browser_child_process_host.h"
 #include "content/browser/gpu/gpu_data_manager.h"
 #include "content/browser/gpu/gpu_process_host_ui_shim.h"
 #include "content/browser/renderer_host/render_widget_host.h"
@@ -160,12 +161,13 @@ class GpuMainThread : public base::Thread {
   DISALLOW_COPY_AND_ASSIGN(GpuMainThread);
 };
 
-static bool HostIsValid(GpuProcessHost* host) {
+// static
+bool GpuProcessHost::HostIsValid(GpuProcessHost* host) {
   if (!host)
     return false;
 
   // Check if the GPU process has died and the host is about to be destroyed.
-  if (host->disconnect_was_alive())
+  if (host->process_->disconnect_was_alive())
     return false;
 
   // The Gpu process is invalid if it's not using software, the card is
@@ -245,8 +247,7 @@ GpuProcessHost* GpuProcessHost::FromID(int host_id) {
 }
 
 GpuProcessHost::GpuProcessHost(int host_id)
-    : BrowserChildProcessHost(content::PROCESS_TYPE_GPU),
-      host_id_(host_id),
+    : host_id_(host_id),
       gpu_process_(base::kNullProcessHandle),
       in_process_(false),
       software_rendering_(false) {
@@ -269,6 +270,8 @@ GpuProcessHost::GpuProcessHost(int host_id)
       BrowserThread::UI,
       FROM_HERE,
       base::Bind(base::IgnoreResult(&GpuProcessHostUIShim::Create), host_id));
+
+  process_.reset(new BrowserChildProcessHost(content::PROCESS_TYPE_GPU, this));
 }
 
 GpuProcessHost::~GpuProcessHost() {
@@ -280,7 +283,7 @@ GpuProcessHost::~GpuProcessHost() {
                             GPU_PROCESS_LIFETIME_EVENT_MAX);
 
   int exit_code;
-  base::TerminationStatus status = GetChildTerminationStatus(&exit_code);
+  base::TerminationStatus status = process_->GetTerminationStatus(&exit_code);
   UMA_HISTOGRAM_ENUMERATION("GPU.GPUProcessTerminationStatus",
                             status,
                             base::TERMINATION_STATUS_MAX_ENUM);
@@ -311,7 +314,7 @@ GpuProcessHost::~GpuProcessHost() {
 }
 
 bool GpuProcessHost::Init() {
-  std::string channel_id = child_process_host()->CreateChannel();
+  std::string channel_id = process_->GetHost()->CreateChannel();
   if (channel_id.empty())
     return false;
 
@@ -350,12 +353,12 @@ void GpuProcessHost::RouteOnUIThread(const IPC::Message& message) {
 
 bool GpuProcessHost::Send(IPC::Message* msg) {
   DCHECK(CalledOnValidThread());
-  if (child_process_host()->IsChannelOpening()) {
+  if (process_->GetHost()->IsChannelOpening()) {
     queued_messages_.push(msg);
     return true;
   }
 
-  return BrowserChildProcessHost::Send(msg);
+  return process_->Send(msg);
 }
 
 bool GpuProcessHost::OnMessageReceived(const IPC::Message& message) {
@@ -371,7 +374,6 @@ bool GpuProcessHost::OnMessageReceived(const IPC::Message& message) {
 }
 
 void GpuProcessHost::OnChannelConnected(int32 peer_pid) {
-  BrowserChildProcessHost::OnChannelConnected(peer_pid);
   while (!queued_messages_.empty()) {
     Send(queued_messages_.front());
     queued_messages_.pop();
@@ -489,7 +491,7 @@ void GpuProcessHost::OnProcessLaunched() {
   // to such requests require that the GPU process handle be known.
 
   base::ProcessHandle child_handle = in_process_ ?
-      base::GetCurrentProcessHandle() : data().handle;
+      base::GetCurrentProcessHandle() : process_->GetData().handle;
 
 #if defined(OS_WIN)
   DuplicateHandle(base::GetCurrentProcessHandle(),
@@ -510,7 +512,6 @@ void GpuProcessHost::OnProcessCrashed(int exit_code) {
     // The gpu process is too unstable to use. Disable it for current session.
     gpu_enabled_ = false;
   }
-  BrowserChildProcessHost::OnProcessCrashed(exit_code);
 }
 
 bool GpuProcessHost::software_rendering() {
@@ -519,7 +520,7 @@ bool GpuProcessHost::software_rendering() {
 
 void GpuProcessHost::ForceShutdown() {
   g_hosts_by_id.Pointer()->Remove(host_id_);
-  BrowserChildProcessHost::ForceShutdown();
+  process_->ForceShutdown();
 }
 
 bool GpuProcessHost::LaunchGpuProcess(const std::string& channel_id) {
@@ -589,7 +590,7 @@ bool GpuProcessHost::LaunchGpuProcess(const std::string& channel_id) {
   if (!gpu_launcher.empty())
     cmd_line->PrependWrapper(gpu_launcher);
 
-  Launch(
+  process_->Launch(
 #if defined(OS_WIN)
       FilePath(),
 #elif defined(OS_POSIX)

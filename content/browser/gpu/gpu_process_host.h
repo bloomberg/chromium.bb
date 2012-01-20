@@ -11,22 +11,22 @@
 
 #include "base/callback.h"
 #include "base/memory/linked_ptr.h"
+#include "base/process.h"
 #include "base/threading/non_thread_safe.h"
-#include "content/browser/browser_child_process_host.h"
 #include "content/common/content_export.h"
 #include "content/common/gpu/gpu_process_launch_causes.h"
+#include "content/public/browser/browser_child_process_host_delegate.h"
 #include "content/public/common/gpu_info.h"
+#include "ipc/ipc_message.h"
 #include "ui/gfx/native_widget_types.h"
 
+class GpuMainThread;
 struct GPUCreateCommandBufferConfig;
 
-namespace IPC {
-class Message;
-}
+class BrowserChildProcessHost;
 
-class GpuMainThread;
-
-class GpuProcessHost : public BrowserChildProcessHost,
+class GpuProcessHost : public content::BrowserChildProcessHostDelegate,
+                       public IPC::Message::Sender,
                        public base::NonThreadSafe {
  public:
   static bool gpu_enabled() { return gpu_enabled_; }
@@ -52,11 +52,8 @@ class GpuProcessHost : public BrowserChildProcessHost,
   static GpuProcessHost* FromID(int host_id);
   int host_id() const { return host_id_; }
 
+  // IPC::Message::Sender implementation:
   virtual bool Send(IPC::Message* msg) OVERRIDE;
-
-  // ChildProcessHost implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-  virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
 
   typedef base::Callback<void(const IPC::ChannelHandle&,
                               base::ProcessHandle,
@@ -86,6 +83,8 @@ class GpuProcessHost : public BrowserChildProcessHost,
   void ForceShutdown();
 
  private:
+  static bool HostIsValid(GpuProcessHost* host);
+
   GpuProcessHost(int host_id);
   virtual ~GpuProcessHost();
 
@@ -94,6 +93,9 @@ class GpuProcessHost : public BrowserChildProcessHost,
   // Post an IPC message to the UI shim's message handler on the UI thread.
   void RouteOnUIThread(const IPC::Message& message);
 
+  // BrowserChildProcessHostDelegate implementation.
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
   virtual void OnProcessLaunched() OVERRIDE;
   virtual void OnProcessCrashed(int exit_code) OVERRIDE;
 
@@ -154,6 +156,8 @@ class GpuProcessHost : public BrowserChildProcessHost,
   // browser session. It does not change the acceleration settings for
   // existing tabs, just the future ones.
   CONTENT_EXPORT static bool gpu_enabled_;
+
+  scoped_ptr<BrowserChildProcessHost> process_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuProcessHost);
 };

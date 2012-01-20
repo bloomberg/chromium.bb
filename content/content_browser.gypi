@@ -27,6 +27,11 @@
   'sources': [
     'public/browser/access_token_store.cc',
     'public/browser/access_token_store.h',
+    'public/browser/browser_child_process_host.h',
+    'public/browser/browser_child_process_host_delegate.cc',
+    'public/browser/browser_child_process_host_delegate.h',
+    'public/browser/browser_child_process_host_iterator.cc',
+    'public/browser/browser_child_process_host_iterator.h',
     'public/browser/browser_context.h',
     'public/browser/browser_main_parts.h',
     'public/browser/browser_message_filter.cc',
