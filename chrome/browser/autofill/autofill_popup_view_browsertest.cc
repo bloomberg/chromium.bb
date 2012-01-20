@@ -27,11 +27,7 @@ class TestAutofillPopupView : public AutofillPopupView {
 
   MOCK_METHOD0(Hide, void());
 
-  virtual void Show(const std::vector<string16>& autofill_values,
-                    const std::vector<string16>& autofill_labels,
-                    const std::vector<string16>& autofill_icons,
-                    const std::vector<int>& autofill_unique_ids,
-                    int separator_index) OVERRIDE {}
+  virtual void ShowInternal() OVERRIDE {}
 };
 
 class AutofillPopupViewBrowserTest : public InProcessBrowserTest {

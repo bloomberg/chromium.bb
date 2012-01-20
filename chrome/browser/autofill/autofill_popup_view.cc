@@ -23,6 +23,21 @@ AutofillPopupView::AutofillPopupView(content::WebContents* web_contents) {
 
 AutofillPopupView::~AutofillPopupView() {}
 
+void AutofillPopupView::Show(const std::vector<string16>& autofill_values,
+                             const std::vector<string16>& autofill_labels,
+                             const std::vector<string16>& autofill_icons,
+                             const std::vector<int>& autofill_unique_ids,
+                             int separator_index) {
+  autofill_values_ = autofill_values;
+  autofill_labels_ = autofill_labels;
+  autofill_icons_ = autofill_icons;
+  autofill_unique_ids_ = autofill_unique_ids;
+
+  separator_index_ = separator_index;
+
+  ShowInternal();
+}
+
 void AutofillPopupView::Observe(int type,
                                 const content::NotificationSource& source,
                                 const content::NotificationDetails& details) {

@@ -764,6 +764,18 @@ void DrawTextEntryBackground(GtkWidget* offscreen_entry,
   g_object_unref(our_style);
 }
 
+void SetLayoutText(PangoLayout* layout, const string16& text) {
+  // Pango is really easy to overflow and send into a computational death
+  // spiral that can corrupt the screen. Assume that we'll never have more than
+  // 2000 characters, which should be a safe assumption until we all get robot
+  // eyes. http://crbug.com/66576
+  std::string text_utf8 = UTF16ToUTF8(text);
+  if (text_utf8.length() > 2000)
+    text_utf8 = text_utf8.substr(0, 2000);
+
+  pango_layout_set_text(layout, text_utf8.data(), text_utf8.length());
+}
+
 void DrawThemedToolbarBackground(GtkWidget* widget,
                                  cairo_t* cr,
                                  GdkEventExpose* event,

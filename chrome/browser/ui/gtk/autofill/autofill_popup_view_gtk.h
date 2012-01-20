@@ -6,13 +6,20 @@
 #define CHROME_BROWSER_UI_GTK_AUTOFILL_AUTOFILL_POPUP_VIEW_GTK_H_
 #pragma once
 
-#include <gtk/gtk.h>
+#include <pango/pango.h>
 
-#include "base/string16.h"
 #include "chrome/browser/autofill/autofill_popup_view.h"
+#include "ui/base/glib/glib_integers.h"
 #include "ui/base/gtk/gtk_signal.h"
+#include "ui/gfx/font.h"
 
-#include <vector>
+namespace gfx {
+class Rect;
+}
+
+typedef struct _GdkEventExpose GdkEventExpose;
+typedef struct _GdkColor GdkColor;
+typedef struct _GtkWidget GtkWidget;
 
 class AutofillPopupViewGtk : public AutofillPopupView {
  public:
@@ -21,18 +28,22 @@ class AutofillPopupViewGtk : public AutofillPopupView {
 
   // AutofillPopupView implementations.
   virtual void Hide() OVERRIDE;
-  virtual void Show(const std::vector<string16>& autofill_values,
-                    const std::vector<string16>& autofill_labels,
-                    const std::vector<string16>& autofill_icons,
-                    const std::vector<int>& autofill_unique_ids,
-                    int separator_index) OVERRIDE;
+  virtual void ShowInternal() OVERRIDE;
 
  private:
   CHROMEGTK_CALLBACK_1(AutofillPopupViewGtk, gboolean, HandleExpose,
                        GdkEventExpose*);
 
+  // Setup the pango layout to display the autofill results.
+  void SetupLayout(const gfx::Rect& window_rect, const GdkColor& text_color);
+
   GtkWidget* parent_;  // Weak reference.
-  GtkWidget* window_;  // Strong refence.
+  GtkWidget* window_;  // Strong reference.
+  PangoLayout* layout_;  // Strong reference
+  gfx::Font font_;
+
+  // The height of each individual Autofill popup row.
+  int row_height_;
 };
 
 #endif  // CHROME_BROWSER_UI_GTK_AUTOFILL_AUTOFILL_POPUP_VIEW_GTK_H_
