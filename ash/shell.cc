@@ -218,6 +218,12 @@ void Shell::DeleteInstance() {
 }
 
 void Shell::Init() {
+  // InputMethodEventFilter must be added first since it has the highest
+  // priority.
+  DCHECK(!GetRootWindowEventFilterCount());
+  input_method_filter_.reset(new internal::InputMethodEventFilter);
+  AddRootWindowEventFilter(input_method_filter_.get());
+
   // On small screens we automatically enable --aura-window-mode=compact if the
   // user has not explicitly set a window mode flag. This must happen before
   // we create containers or layout managers.
@@ -248,12 +254,6 @@ void Shell::Init() {
 
   // Force a layout.
   root_window->layout_manager()->OnWindowResized();
-
-  // InputMethodEventFilter must be added first since it has the highest
-  // priority.
-  DCHECK(!GetRootWindowEventFilterCount());
-  input_method_filter_.reset(new internal::InputMethodEventFilter);
-  AddRootWindowEventFilter(input_method_filter_.get());
 
   window_modality_controller_.reset(new internal::WindowModalityController);
   AddRootWindowEventFilter(window_modality_controller_.get());
