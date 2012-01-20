@@ -227,6 +227,32 @@ weston_surface_set_color(struct weston_surface *surface,
 	surface->shader = &surface->compositor->solid_shader;
 }
 
+static void
+weston_surface_update_transform(struct weston_surface *surface)
+{
+	struct weston_matrix *matrix = &surface->transform.matrix;
+	struct weston_matrix *inverse = &surface->transform.inverse;
+	struct weston_transform *tform;
+
+	if (!surface->transform.dirty)
+		return;
+
+	surface->transform.dirty = 0;
+
+	if (wl_list_empty(&surface->transform.list)) {
+		surface->transform.enabled = 0;
+		return;
+	}
+
+	surface->transform.enabled = 1;
+
+	weston_matrix_init(matrix);
+	wl_list_for_each(tform, &surface->transform.list, link)
+		weston_matrix_multiply(matrix, &tform->matrix);
+
+	weston_matrix_invert(inverse, matrix);
+}
+
 WL_EXPORT void
 weston_surface_damage_rectangle(struct weston_surface *surface,
 			      int32_t x, int32_t y,
@@ -310,6 +336,15 @@ static void
 weston_surface_transform(struct weston_surface *surface,
 		       int32_t x, int32_t y, int32_t *sx, int32_t *sy)
 {
+	weston_surface_update_transform(surface);
+
+	if (surface->transform.enabled) {
+		struct weston_vector v = { { x, y, 0.0f, 1.0f } };
+		weston_matrix_transform(&surface->transform.inverse, &v);
+		x = floorf(v.f[0] / v.f[3]);
+		y = floorf(v.f[1] / v.f[3]);
+	}
+
 	*sx = x - surface->x;
 	*sy = y - surface->y;
 }
@@ -539,32 +574,6 @@ texture_transformed_surface(struct weston_surface *es)
 	p[5] = 3;
 
 	return 1;
-}
-
-static void
-weston_surface_update_transform(struct weston_surface *surface)
-{
-	struct weston_matrix *matrix = &surface->transform.matrix;
-	struct weston_matrix *inverse = &surface->transform.inverse;
-	struct weston_transform *tform;
-
-	if (!surface->transform.dirty)
-		return;
-
-	surface->transform.dirty = 0;
-
-	if (wl_list_empty(&surface->transform.list)) {
-		surface->transform.enabled = 0;
-		return;
-	}
-
-	surface->transform.enabled = 1;
-
-	weston_matrix_init(matrix);
-	wl_list_for_each(tform, &surface->transform.list, link)
-		weston_matrix_multiply(matrix, &tform->matrix);
-
-	weston_matrix_invert(inverse, matrix);
 }
 
 WL_EXPORT void
