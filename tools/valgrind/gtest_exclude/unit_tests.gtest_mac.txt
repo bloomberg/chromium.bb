@@ -20,6 +20,9 @@ BookmarkBarControllerTest.*
 BookmarkBarControllerOpenAllTest.*
 BookmarkBarControllerDragDropTest.*
 BookmarkBarControllerNotificationTest.*
+BookmarkBarFolderControllerTest.*
+BookmarkBarFolderControllerClosingTest.*
+BookmarkBarFolderControllerMenuTest.*
 
 # Crashes, see http://crbug.com/86656
 MacSandboxTest.FileAccess
