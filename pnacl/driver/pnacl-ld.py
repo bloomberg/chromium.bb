@@ -60,9 +60,6 @@ EXTRA_ENV = {
   'GOLD_PLUGIN_ARGS': '-plugin=${GOLD_PLUGIN_SO} ' +
                       '-plugin-opt=emit-llvm',
 
-   # Symbols to wrap
-  'WRAP_SYMBOLS': '',
-
   'LD_FLAGS'       : '-nostdlib ${@AddPrefix:-L:SEARCH_DIRS} ' +
                      '${SHARED ? -shared} ${STATIC ? -static} ' +
                      '${RELOCATABLE ? -relocatable} ' +
@@ -187,8 +184,8 @@ LDPatterns = [
   ( '-marmelf_nacl',       "env.set('ARCH', 'ARM')"),
   ( ('-m','armelf_nacl'),  "env.set('ARCH', 'ARM')"),
 
-  ( ('-?-wrap', '(.+)'),    "env.append('WRAP_SYMBOLS', $0)"),
-  ( ('-?-wrap=(.+)'),       "env.append('WRAP_SYMBOLS', $0)"),
+  ( ('(-?-wrap)', '(.+)'), AddToBCLinkFlags),
+  ( ('(-?-wrap=.+)'),      AddToBCLinkFlags),
 
   # NOTE: For scons tests, the code generation fPIC flag is used with pnacl-ld.
   ( '-fPIC',               "env.set('PIC', '1')"),
@@ -312,10 +309,6 @@ def main(argv):
   if HasBitcodeInputs(inputs):
     chain = DriverChain(inputs, output, tng)
     chain.add(LinkBC, 'pre_opt.' + bitcode_type)
-    if NeedsWrap():
-      chain.add(WrapDIS, 'before_wrap.ll')
-      chain.add(WrapLL, 'after_wrap.ll')
-      chain.add(WrapAS, 'after_wrap.' + bitcode_type)
     if env.getone('OPT_LEVEL') != '0':
       chain.add(DoOPT, 'opt.' + bitcode_type)
     elif env.getone('STRIP_MODE') != 'none':
@@ -416,65 +409,6 @@ def LinkBC(inputs, output):
   RunWithEnv('${RUN_BCLD}',
              inputs=inputs,
              output=output)
-
-######################################################################
-# Bitcode Link Wrap Symbols Hack
-######################################################################
-
-def NeedsWrap():
-  return len(env.get('WRAP_SYMBOLS')) > 0
-
-def WrapDIS(infile, outfile):
-  RunDriver('pnacl-dis', [infile, '-o', outfile], suppress_arch = True)
-
-def WrapLL(infile, outfile):
-  assert(FileType(infile) == 'll')
-  symbols = env.get('WRAP_SYMBOLS')
-  Log.Info('Wrapping symbols: ' + ' '.join(symbols))
-
-  fpin = DriverOpen(infile, 'r')
-  fpout = DriverOpen(outfile, 'w')
-  while True:
-    line = fpin.readline()
-    if not line:
-      break
-
-    for s in symbols:
-      # Relabel the real function
-      if line.startswith('define'):
-        line = line.replace('@' + s + '(', '@__real_' + s + '(')
-
-      # Remove declarations of __real_xyz symbol.
-      # Because we are actually defining it now, leaving the declaration around
-      # would cause an error. (bitcode should have either a define or declare,
-      # not both).
-      if line.startswith('declare') and '__real_' in line:
-        line = ''
-
-      # Relabel the wrapper to the original name.
-      line = line.replace('@__wrap_' + s + '(', '@' + s + '(')
-      # Do the same renaming when the function appears in debug metadata.
-      # Case: !123 = metadata !{i32 456, ... metadata !"__wrap_FOO", ..., \
-      #              i32 (i32)* @__wrap_FOO} ; [ DW_TAG_subprogram ]
-      line = line.replace('@__wrap_' + s + '}',
-                          '@' + s + '}')
-      line = line.replace('metadata !"__wrap_' + s + '"',
-                          'metadata !"' + s + '"')
-      # Case: !llvm.dbg.lv.__wrap_FOO = !{!789}
-      line = line.replace('llvm.dbg.lv.__wrap_' + s + ' ',
-                          'llvm.dbg.lv.' + s + ' ')
-
-    fpout.write(line)
-  fpin.close()
-  fpout.close()
-
-
-def WrapAS(infile, outfile):
-  RunDriver('pnacl-as', [infile, '-o', outfile], suppress_arch = True)
-
-######################################################################
-# END Bitcode Link Wrap Symbols Hack
-######################################################################
 
 if __name__ == "__main__":
   DriverMain(main)
