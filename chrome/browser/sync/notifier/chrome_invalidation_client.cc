@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,7 +14,9 @@
 #include "chrome/browser/sync/notifier/invalidation_util.h"
 #include "chrome/browser/sync/notifier/registration_manager.h"
 #include "chrome/browser/sync/syncable/model_type.h"
-#include "google/cacheinvalidation/v2/invalidation-client-impl.h"
+#include "google/cacheinvalidation/v2/invalidation-client.h"
+#include "google/cacheinvalidation/v2/invalidation-client-factory.h"
+#include "google/cacheinvalidation/v2/types.pb.h"
 
 namespace {
 
@@ -84,12 +86,9 @@ void ChromeInvalidationClient::Start(
   state_writer_ = state_writer;
 
   int client_type = ipc::invalidation::ClientType::CHROME_SYNC;
-  // TODO(akalin): Use InvalidationClient::Create() once it supports
-  // taking a ClientConfig.
-  invalidation::InvalidationClientImpl::Config client_config;
   invalidation_client_.reset(
-      new invalidation::InvalidationClientImpl(
-          &chrome_system_resources_, client_type, client_id, client_config,
+      invalidation::CreateInvalidationClient(
+          &chrome_system_resources_, client_type, client_id,
           kApplicationName, this));
   ChangeBaseTask(base_task);
   invalidation_client_->Start();

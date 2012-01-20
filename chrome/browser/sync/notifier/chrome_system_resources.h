@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -35,6 +35,9 @@ class ChromeLogger : public invalidation::Logger {
   // invalidation::Logger implementation.
   virtual void Log(LogLevel level, const char* file, int line,
                    const char* format, ...) OVERRIDE;
+
+  virtual void SetSystemResources(
+      invalidation::SystemResources* resources) OVERRIDE;
 };
 
 class ChromeScheduler : public invalidation::Scheduler {
@@ -54,6 +57,9 @@ class ChromeScheduler : public invalidation::Scheduler {
   virtual bool IsRunningOnThread() const OVERRIDE;
 
   virtual invalidation::Time GetCurrentTime() const OVERRIDE;
+
+  virtual void SetSystemResources(
+      invalidation::SystemResources* resources) OVERRIDE;
 
  private:
   base::WeakPtrFactory<ChromeScheduler> weak_factory_;
@@ -91,6 +97,9 @@ class ChromeStorage : public invalidation::Storage {
   virtual void ReadAllKeys(
       invalidation::ReadAllKeysCallback* key_callback) OVERRIDE;
 
+  virtual void SetSystemResources(
+      invalidation::SystemResources* resources) OVERRIDE;
+
  private:
   // Runs the given storage callback with SUCCESS status and deletes it.
   void RunAndDeleteWriteKeyCallback(
@@ -121,6 +130,9 @@ class ChromeNetwork : public invalidation::NetworkChannel {
 
   virtual void AddNetworkStatusReceiver(
       invalidation::NetworkStatusCallback* network_status_receiver) OVERRIDE;
+
+  virtual void SetSystemResources(
+      invalidation::SystemResources* resources) OVERRIDE;
 
  private:
   void HandleInboundMessage(const std::string& incoming_message);

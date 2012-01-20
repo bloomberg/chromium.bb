@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,8 +10,8 @@
 #include <string>
 
 #include "base/sha1.h"
-#include "google/cacheinvalidation/stl-namespace.h"
 #include "google/cacheinvalidation/v2/digest-function.h"
+#include "google/cacheinvalidation/v2/stl-namespace.h"
 
 namespace invalidation {
 

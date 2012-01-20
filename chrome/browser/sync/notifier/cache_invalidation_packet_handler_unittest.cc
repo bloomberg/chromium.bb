@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,7 +7,7 @@
 #include "base/base64.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
-#include "google/cacheinvalidation/callback.h"
+#include "google/cacheinvalidation/v2/callback.h"
 #include "google/cacheinvalidation/v2/system-resources.h"
 #include "jingle/notifier/base/fake_base_task.h"
 #include "testing/gmock/include/gmock/gmock.h"

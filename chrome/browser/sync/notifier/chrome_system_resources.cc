@@ -55,6 +55,11 @@ void ChromeLogger::Log(LogLevel level, const char* file, int line,
   }
 }
 
+void ChromeLogger::SetSystemResources(
+    invalidation::SystemResources* resources) {
+  // Do nothing.
+}
+
 ChromeScheduler::ChromeScheduler()
     : ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
       created_on_loop_(MessageLoop::current()),
@@ -111,6 +116,11 @@ invalidation::Time ChromeScheduler::GetCurrentTime() const {
   return base::Time::Now();
 }
 
+void ChromeScheduler::SetSystemResources(
+    invalidation::SystemResources* resources) {
+  // Do nothing.
+}
+
 void ChromeScheduler::RunPostedTask(invalidation::Closure* task) {
   CHECK_EQ(created_on_loop_, MessageLoop::current());
   RunAndDeleteClosure(task);
@@ -163,6 +173,11 @@ void ChromeStorage::ReadAllKeys(invalidation::ReadAllKeysCallback* done) {
   LOG(WARNING) << "ignoring call to ReadAllKeys(callback)";
 }
 
+void ChromeStorage::SetSystemResources(
+    invalidation::SystemResources* resources) {
+  // Do nothing.
+}
+
 void ChromeStorage::RunAndDeleteWriteKeyCallback(
     invalidation::WriteKeyCallback* callback) {
   callback->Run(invalidation::Status(invalidation::Status::SUCCESS, ""));
@@ -201,6 +216,11 @@ void ChromeNetwork::AddNetworkStatusReceiver(
   network_status_receivers_.push_back(network_status_receiver);
 }
 
+void ChromeNetwork::SetSystemResources(
+    invalidation::SystemResources* resources) {
+  // Do nothing.
+}
+
 void ChromeNetwork::UpdatePacketHandler(
     CacheInvalidationPacketHandler* packet_handler) {
   packet_handler_ = packet_handler;
@@ -234,6 +254,7 @@ ChromeSystemResources::~ChromeSystemResources() {
 void ChromeSystemResources::Start() {
   internal_scheduler_->Start();
   listener_scheduler_->Start();
+  is_started_ = true;
 }
 
 void ChromeSystemResources::Stop() {
