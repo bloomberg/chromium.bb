@@ -26,11 +26,13 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_error_utils.h"
+#include "content/browser/renderer_host/render_view_host.h"
 #include "content/public/browser/devtools_agent_host_registry.h"
 #include "content/public/browser/devtools_client_host.h"
 #include "content/public/browser/devtools_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/browser/render_view_host_delegate.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #include "webkit/glue/webkit_glue.h"
@@ -138,18 +140,20 @@ class AttachedClientHosts {
     client_hosts_.erase(client_host);
   }
 
-  ExtensionDevToolsClientHost* Lookup(RenderViewHost* rvh) {
-    if (!DevToolsAgentHostRegistry::HasDevToolsAgentHost(rvh))
-      return NULL;
-    DevToolsAgentHost* agent =
-        DevToolsAgentHostRegistry::GetDevToolsAgentHost(rvh);
-    DevToolsClientHost* client_host =
-        DevToolsManager::GetInstance()->GetDevToolsClientHostFor(agent);
-    std::set<DevToolsClientHost*>::iterator it =
-        client_hosts_.find(client_host);
-    if (it == client_hosts_.end())
-      return NULL;
-    return static_cast<ExtensionDevToolsClientHost*>(client_host);
+  ExtensionDevToolsClientHost* Lookup(WebContents* contents) {
+    for (std::set<DevToolsClientHost*>::iterator it = client_hosts_.begin();
+         it != client_hosts_.end(); ++it) {
+      DevToolsAgentHost* agent_host =
+          DevToolsManager::GetInstance()->GetDevToolsAgentHostFor(*it);
+      if (!agent_host)
+        continue;
+      RenderViewHost* rvh =
+          DevToolsAgentHostRegistry::GetRenderViewHost(agent_host);
+      if (rvh && rvh->delegate() &&
+          rvh->delegate()->GetAsWebContents() == contents)
+        return static_cast<ExtensionDevToolsClientHost*>(*it);
+    }
+    return NULL;
   }
 
  private:
@@ -194,7 +198,7 @@ ExtensionDevToolsClientHost::~ExtensionDevToolsClientHost() {
     TabContentsWrapper* wrapper =
         TabContentsWrapper::GetCurrentWrapperForContents(web_contents_);
     InfoBarTabHelper* helper = wrapper->infobar_tab_helper();
-    if(helper)
+    if (helper)
       helper->RemoveInfoBar(infobar_delegate_);
   }
   AttachedClientHosts::GetInstance()->Remove(this);
@@ -387,8 +391,8 @@ bool DebuggerFunction::InitClientHost() {
   if (!InitTabContents())
     return false;
 
-  RenderViewHost* rvh = contents_->GetRenderViewHost();
-  client_host_ = AttachedClientHosts::GetInstance()->Lookup(rvh);
+  // Don't fetch rvh from the contents since it'll be wrong upon navigation.
+  client_host_ = AttachedClientHosts::GetInstance()->Lookup(contents_);
 
   if (!client_host_ ||
       !client_host_->MatchesContentsAndExtensionId(contents_,

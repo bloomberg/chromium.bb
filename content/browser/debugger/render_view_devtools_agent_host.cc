@@ -28,7 +28,6 @@ base::LazyInstance<Instances,
     g_instances = LAZY_INSTANCE_INITIALIZER;
 }  // namespace
 
-
 // static
 DevToolsAgentHost* DevToolsAgentHostRegistry::GetDevToolsAgentHost(
     RenderViewHost* rvh) {
@@ -36,6 +35,17 @@ DevToolsAgentHost* DevToolsAgentHostRegistry::GetDevToolsAgentHost(
   if (it != g_instances.Get().end())
     return it->second;
   return new RenderViewDevToolsAgentHost(rvh);
+}
+
+// static
+RenderViewHost* DevToolsAgentHostRegistry::GetRenderViewHost(
+     DevToolsAgentHost* agent_host) {
+  for (Instances::iterator it = g_instances.Get().begin();
+       it != g_instances.Get().end(); ++it) {
+    if (agent_host == it->second)
+      return it->first;
+  }
+  return NULL;
 }
 
 // static

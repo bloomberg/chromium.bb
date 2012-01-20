@@ -50,6 +50,14 @@ DevToolsClientHost* DevToolsManagerImpl::GetDevToolsClientHostFor(
   return NULL;
 }
 
+DevToolsAgentHost* DevToolsManagerImpl::GetDevToolsAgentHostFor(
+    DevToolsClientHost* client_host) {
+  ClientToAgentHostMap::iterator it = client_to_agent_host_.find(client_host);
+  if (it != client_to_agent_host_.end())
+    return it->second;
+  return NULL;
+}
+
 void DevToolsManagerImpl::RegisterDevToolsClientHostFor(
     DevToolsAgentHost* agent_host,
     DevToolsClientHost* client_host) {
@@ -60,7 +68,7 @@ void DevToolsManagerImpl::RegisterDevToolsClientHostFor(
 bool DevToolsManagerImpl::DispatchOnInspectorBackend(
     DevToolsClientHost* from,
     const std::string& message) {
-  DevToolsAgentHost* agent_host = GetAgentHost(from);
+  DevToolsAgentHost* agent_host = GetDevToolsAgentHostFor(from);
   if (!agent_host)
     return false;
 
@@ -91,7 +99,7 @@ void DevToolsManagerImpl::InspectElement(DevToolsAgentHost* agent_host,
 }
 
 void DevToolsManagerImpl::ClientHostClosing(DevToolsClientHost* client_host) {
-  DevToolsAgentHost* agent_host = GetAgentHost(client_host);
+  DevToolsAgentHost* agent_host = GetDevToolsAgentHostFor(client_host);
   if (!agent_host) {
     // It might be in the list of orphan client hosts, remove it from there.
     for (OrphanClientHosts::iterator it = orphan_client_hosts_.begin();
@@ -111,15 +119,6 @@ void DevToolsManagerImpl::ClientHostClosing(DevToolsClientHost* client_host) {
 
 void DevToolsManagerImpl::AgentHostClosing(DevToolsAgentHost* agent_host) {
   UnregisterDevToolsClientHostFor(agent_host);
-}
-
-DevToolsAgentHost* DevToolsManagerImpl::GetAgentHost(
-    DevToolsClientHost* client_host) {
-  ClientHostToInspectedRvhMap::iterator it =
-      client_to_agent_host_.find(client_host);
-  if (it != client_to_agent_host_.end())
-    return it->second;
-  return NULL;
 }
 
 void DevToolsManagerImpl::UnregisterDevToolsClientHostFor(

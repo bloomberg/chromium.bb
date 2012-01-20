@@ -72,6 +72,8 @@ class CONTENT_EXPORT DevToolsManagerImpl
                                 DevToolsAgentHost* to_agent) OVERRIDE;
   virtual DevToolsClientHost* GetDevToolsClientHostFor(
       DevToolsAgentHost* agent_host) OVERRIDE;
+  virtual DevToolsAgentHost* GetDevToolsAgentHostFor(
+      DevToolsClientHost* client_host) OVERRIDE;
   virtual void RegisterDevToolsClientHostFor(
       DevToolsAgentHost* agent_host,
       DevToolsClientHost* client_host) OVERRIDE;
@@ -93,9 +95,6 @@ class CONTENT_EXPORT DevToolsManagerImpl
 
   // DevToolsAgentHost::CloseListener implementation.
   virtual void AgentHostClosing(DevToolsAgentHost* host) OVERRIDE;
-
-  // Returns DevToolsAgentHost inspected by the DevToolsClientHost.
-  DevToolsAgentHost* GetAgentHost(DevToolsClientHost* client_host);
 
   void BindClientHost(DevToolsAgentHost* agent_host,
                       DevToolsClientHost* client_host);
@@ -121,8 +120,8 @@ class CONTENT_EXPORT DevToolsManagerImpl
   AgentToClientHostMap agent_to_client_host_;
 
   typedef std::map<DevToolsClientHost*, DevToolsAgentHost*>
-      ClientHostToInspectedRvhMap;
-  ClientHostToInspectedRvhMap client_to_agent_host_;
+      ClientToAgentHostMap;
+  ClientToAgentHostMap client_to_agent_host_;
 
   typedef std::map<DevToolsAgentHost*, std::string> AgentRuntimeStates;
   AgentRuntimeStates agent_runtime_states_;

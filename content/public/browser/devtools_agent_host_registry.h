@@ -21,6 +21,9 @@ class CONTENT_EXPORT DevToolsAgentHostRegistry {
   // New DevToolsAgentHost will be created if it does not exist.
   static DevToolsAgentHost* GetDevToolsAgentHost(RenderViewHost* rvh);
 
+  // Returns render view host instance for given |agent_host|.
+  static RenderViewHost* GetRenderViewHost(DevToolsAgentHost* agent_host);
+
   // Returns true iff an instance of DevToolsAgentHost for the |rvh|
   // does exist.
   static bool HasDevToolsAgentHost(RenderViewHost* rvh);
