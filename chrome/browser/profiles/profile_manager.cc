@@ -451,15 +451,23 @@ void ProfileManager::Observe(
     const content::NotificationDetails& details) {
 #if defined(OS_CHROMEOS)
   if (type == chrome::NOTIFICATION_LOGIN_USER_CHANGED) {
+    logged_in_ = true;
+
     const CommandLine& command_line = *CommandLine::ForCurrentProcess();
     if (!command_line.HasSwitch(switches::kTestType)) {
       // If we don't have a mounted profile directory we're in trouble.
       // TODO(davemoore) Once we have better api this check should ensure that
       // our profile directory is the one that's mounted, and that it's mounted
       // as the current user.
-      CHECK(chromeos::CrosLibrary::Get()->GetCryptohomeLibrary()->IsMounted());
+      CHECK(chromeos::CrosLibrary::Get()->GetCryptohomeLibrary()->IsMounted())
+          << "The cryptohome was not mounted at login.";
+
+      // Confirm that we hadn't loaded the new profile previously.
+      FilePath default_profile_dir =
+          user_data_dir_.Append(GetInitialProfileDir());
+      CHECK(!GetProfileByPath(default_profile_dir))
+          << "The default profile was loaded before we mounted the cryptohome.";
     }
-    logged_in_ = true;
     return;
   }
 #endif
