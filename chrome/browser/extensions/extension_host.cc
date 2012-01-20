@@ -236,10 +236,6 @@ Browser* ExtensionHost::GetBrowser() {
   return view() ? view()->browser() : NULL;
 }
 
-gfx::NativeView ExtensionHost::GetNativeViewOfHost() {
-  return view() ? view()->native_view() : NULL;
-}
-
 const GURL& ExtensionHost::GetURL() const {
   return host_contents()->GetURL();
 }

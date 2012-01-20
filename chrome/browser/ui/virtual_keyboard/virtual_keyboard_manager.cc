@@ -121,7 +121,6 @@ class KeyboardWidget
 
   // Overridden from ExtensionFunctionDispatcher::Delegate.
   virtual Browser* GetBrowser() OVERRIDE;
-  virtual gfx::NativeView GetNativeViewOfHost() OVERRIDE;
   virtual content::WebContents* GetAssociatedWebContents() const OVERRIDE;
 
 #if defined(OS_CHROMEOS)
@@ -422,10 +421,6 @@ Browser* KeyboardWidget::GetBrowser() {
   // SendKeyboardEventInputFunction::GetTopLevelWidget to somehow interact with
   // the WM to find the top level widget?
   return BrowserList::GetLastActive();
-}
-
-gfx::NativeView KeyboardWidget::GetNativeViewOfHost() {
-  return dom_view_->native_view();
 }
 
 content::WebContents* KeyboardWidget::GetAssociatedWebContents() const {

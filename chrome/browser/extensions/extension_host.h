@@ -165,7 +165,6 @@ class ExtensionHost : public content::WebContentsDelegate,
 
   // ExtensionFunctionDispatcher::Delegate
   virtual Browser* GetBrowser() OVERRIDE;
-  virtual gfx::NativeView GetNativeViewOfHost() OVERRIDE;
 
   // Message handlers.
   void OnRequest(const ExtensionHostMsg_Request_Params& params);

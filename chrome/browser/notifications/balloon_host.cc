@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -46,11 +46,6 @@ void BalloonHost::Shutdown() {
 
 Browser* BalloonHost::GetBrowser() {
   // Notifications aren't associated with a particular browser.
-  return NULL;
-}
-
-gfx::NativeView BalloonHost::GetNativeViewOfHost() {
-  // TODO(aa): Should this return the native view of the BalloonView*?
   return NULL;
 }
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,7 +13,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "ipc/ipc_message.h"
 #include "googleurl/src/gurl.h"
-#include "ui/gfx/native_widget_types.h"
 
 class Browser;
 class ChromeRenderMessageFilter;
@@ -55,10 +54,6 @@ class ExtensionFunctionDispatcher
     // Returns the browser that this delegate is associated with, if any.
     // Returns NULL otherwise.
     virtual Browser* GetBrowser() = 0;
-
-    // Returns the native view for this extension view, if any. This may be NULL
-    // if the view is not visible.
-    virtual gfx::NativeView GetNativeViewOfHost() = 0;
 
     // Asks the delegate for any relevant WebbContents associated with this
     // context. For example, the WebbContents in which an infobar or

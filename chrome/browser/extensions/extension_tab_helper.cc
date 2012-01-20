@@ -285,8 +285,3 @@ void ExtensionTabHelper::OnInlineInstallFailure(int install_id,
 WebContents* ExtensionTabHelper::GetAssociatedWebContents() const {
   return web_contents();
 }
-
-gfx::NativeView ExtensionTabHelper::GetNativeViewOfHost() {
-  RenderWidgetHostView* rwhv = web_contents()->GetRenderWidgetHostView();
-  return rwhv ? rwhv->GetNativeView() : NULL;
-}
