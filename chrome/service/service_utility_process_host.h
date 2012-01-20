@@ -108,9 +108,7 @@ class ServiceUtilityProcessHost : public content::ChildProcessHostDelegate {
   virtual FilePath GetUtilityProcessCmd();
 
   // ChildProcessHostDelegate implementation:
-  virtual bool CanShutdown() OVERRIDE;
   virtual void OnChildDisconnected() OVERRIDE;
-  virtual void ShutdownStarted() OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
  private:

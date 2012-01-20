@@ -5,6 +5,9 @@
 #include "chrome/browser/nacl_host/nacl_broker_service_win.h"
 
 #include "chrome/browser/nacl_host/nacl_process_host.h"
+#include "content/public/browser/browser_child_process_host_iterator.h"
+
+using content::BrowserChildProcessHostIterator;
 
 NaClBrokerService* NaClBrokerService::GetInstance() {
   return Singleton<NaClBrokerService>::get();
@@ -62,9 +65,8 @@ void NaClBrokerService::OnLoaderDied() {
 }
 
 NaClBrokerHost* NaClBrokerService::GetBrokerHost() {
-  BrowserChildProcessHost::Iterator iter(content::PROCESS_TYPE_NACL_BROKER);
+  BrowserChildProcessHostIterator iter(content::PROCESS_TYPE_NACL_BROKER);
   if (iter.Done())
     return NULL;
-  NaClBrokerHost* broker_host = static_cast<NaClBrokerHost*>(*iter);
-  return broker_host;
+  return static_cast<NaClBrokerHost*>(iter.GetDelegate());
 }

@@ -12,9 +12,12 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/process_util.h"
-#include "content/browser/browser_child_process_host.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/browser_child_process_host_delegate.h"
 #include "content/public/browser/browser_thread.h"
+#include "ipc/ipc_message.h"
+
+class BrowserChildProcessHost;
 
 // This class acts as the browser-side host to a utility child process.  A
 // utility process is a short-lived sandboxed process that is created to run
@@ -23,7 +26,9 @@
 // If you need multiple batches of work to be done in the sandboxed process,
 // use StartBatchMode(), then multiple calls to StartFooBar(p),
 // then finish with EndBatchMode().
-class CONTENT_EXPORT UtilityProcessHost : public BrowserChildProcessHost {
+class CONTENT_EXPORT UtilityProcessHost
+    : public content::BrowserChildProcessHostDelegate,
+      public IPC::Message::Sender {
  public:
   // An interface to be implemented by consumers of the utility process to
   // get results back.  All functions are called on the thread passed along
@@ -53,7 +58,7 @@ class CONTENT_EXPORT UtilityProcessHost : public BrowserChildProcessHost {
                      content::BrowserThread::ID client_thread_id);
   virtual ~UtilityProcessHost();
 
-  // BrowserChildProcessHost override
+  // IPC::Message::Sender implementation:
   virtual bool Send(IPC::Message* message) OVERRIDE;
 
   // Starts utility process in batch mode. Caller must call EndBatchMode()
@@ -80,10 +85,8 @@ class CONTENT_EXPORT UtilityProcessHost : public BrowserChildProcessHost {
   // has already been started via StartBatchMode().
   bool StartProcess();
 
-  // IPC messages:
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-
   // BrowserChildProcessHost:
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void OnProcessCrashed(int exit_code) OVERRIDE;
 
   // A pointer to our client interface, who will be informed of progress.
@@ -111,6 +114,8 @@ class CONTENT_EXPORT UtilityProcessHost : public BrowserChildProcessHost {
   base::environment_vector env_;
 
   bool started_;
+
+  scoped_ptr<BrowserChildProcessHost> process_;
 
   DISALLOW_COPY_AND_ASSIGN(UtilityProcessHost);
 };

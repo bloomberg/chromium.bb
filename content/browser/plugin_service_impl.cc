@@ -82,12 +82,8 @@ void WillLoadPluginsCallback() {
 static void NotifyPluginsOfActivation() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  for (BrowserChildProcessHost::Iterator iter(
-           content::PROCESS_TYPE_PLUGIN);
-       !iter.Done(); ++iter) {
-    PluginProcessHost* plugin = static_cast<PluginProcessHost*>(*iter);
-    plugin->OnAppActivation();
-  }
+  for (PluginProcessHostIterator iter; !iter.Done(); ++iter)
+    iter->OnAppActivation();
 }
 #endif
 #if defined(OS_POSIX) && !defined(OS_OPENBSD)
@@ -231,13 +227,9 @@ void PluginServiceImpl::StartWatchingPlugins() {
 
 PluginProcessHost* PluginServiceImpl::FindNpapiPluginProcess(
     const FilePath& plugin_path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-
-  for (BrowserChildProcessHost::Iterator iter(content::PROCESS_TYPE_PLUGIN);
-       !iter.Done(); ++iter) {
-    PluginProcessHost* plugin = static_cast<PluginProcessHost*>(*iter);
-    if (plugin->info().path == plugin_path)
-      return plugin;
+  for (PluginProcessHostIterator iter; !iter.Done(); ++iter) {
+    if (iter->info().path == plugin_path)
+      return *iter;
   }
 
   return NULL;
@@ -245,15 +237,9 @@ PluginProcessHost* PluginServiceImpl::FindNpapiPluginProcess(
 
 PpapiPluginProcessHost* PluginServiceImpl::FindPpapiPluginProcess(
     const FilePath& plugin_path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-
-  for (BrowserChildProcessHost::Iterator iter(
-           content::PROCESS_TYPE_PPAPI_PLUGIN);
-       !iter.Done(); ++iter) {
-    PpapiPluginProcessHost* plugin =
-        static_cast<PpapiPluginProcessHost*>(*iter);
-    if (plugin->plugin_path() == plugin_path)
-      return plugin;
+  for (PpapiPluginProcessHostIterator iter; !iter.Done(); ++iter) {
+    if (iter->plugin_path() == plugin_path)
+      return *iter;
   }
 
   return NULL;
@@ -261,15 +247,9 @@ PpapiPluginProcessHost* PluginServiceImpl::FindPpapiPluginProcess(
 
 PpapiPluginProcessHost* PluginServiceImpl::FindPpapiBrokerProcess(
     const FilePath& broker_path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-
-  for (BrowserChildProcessHost::Iterator iter(
-           content::PROCESS_TYPE_PPAPI_BROKER);
-       !iter.Done(); ++iter) {
-    PpapiPluginProcessHost* broker =
-        static_cast<PpapiPluginProcessHost*>(*iter);
-    if (broker->plugin_path() == broker_path)
-      return broker;
+  for (PpapiBrokerProcessHostIterator iter; !iter.Done(); ++iter) {
+    if (iter->plugin_path() == broker_path)
+      return *iter;
   }
 
   return NULL;

@@ -15,6 +15,7 @@
 #include "content/browser/worker_host/worker_process_host.h"
 #include "content/common/view_messages.h"
 #include "content/common/worker_messages.h"
+#include "content/public/browser/child_process_data.h"
 #include "content/public/browser/worker_service_observer.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/process_type.h"
@@ -45,10 +46,8 @@ WorkerServiceImpl::~WorkerServiceImpl() {
 
 void WorkerServiceImpl::OnWorkerMessageFilterClosing(
     WorkerMessageFilter* filter) {
-  for (BrowserChildProcessHost::Iterator iter(content::PROCESS_TYPE_WORKER);
-     !iter.Done(); ++iter) {
-    WorkerProcessHost* worker = static_cast<WorkerProcessHost*>(*iter);
-    worker->FilterShutdown(filter);
+  for (WorkerProcessHostIterator iter; !iter.Done(); ++iter) {
+    iter->FilterShutdown(filter);
   }
 
   // See if that process had any queued workers.
@@ -156,10 +155,8 @@ void WorkerServiceImpl::CancelCreateDedicatedWorker(
 
 void WorkerServiceImpl::ForwardToWorker(const IPC::Message& message,
                                         WorkerMessageFilter* filter) {
-  for (BrowserChildProcessHost::Iterator iter(content::PROCESS_TYPE_WORKER);
-       !iter.Done(); ++iter) {
-    WorkerProcessHost* worker = static_cast<WorkerProcessHost*>(*iter);
-    if (worker->FilterMessage(message, filter))
+  for (WorkerProcessHostIterator iter; !iter.Done(); ++iter) {
+    if (iter->FilterMessage(message, filter))
       return;
   }
 
@@ -169,11 +166,8 @@ void WorkerServiceImpl::ForwardToWorker(const IPC::Message& message,
 void WorkerServiceImpl::DocumentDetached(unsigned long long document_id,
                                          WorkerMessageFilter* filter) {
   // Any associated shared workers can be shut down.
-  for (BrowserChildProcessHost::Iterator iter(content::PROCESS_TYPE_WORKER);
-       !iter.Done(); ++iter) {
-    WorkerProcessHost* worker = static_cast<WorkerProcessHost*>(*iter);
-    worker->DocumentDetached(filter, document_id);
-  }
+  for (WorkerProcessHostIterator iter; !iter.Done(); ++iter)
+    iter->DocumentDetached(filter, document_id);
 
   // Remove any queued shared workers for this document.
   for (WorkerProcessHost::Instances::iterator iter = queued_workers_.begin();
@@ -309,16 +303,14 @@ WorkerProcessHost* WorkerServiceImpl::GetProcessForDomain(const GURL& url) {
   int num_processes = 0;
   std::string domain =
       net::RegistryControlledDomainService::GetDomainAndRegistry(url);
-  for (BrowserChildProcessHost::Iterator iter(content::PROCESS_TYPE_WORKER);
-       !iter.Done(); ++iter) {
+  for (WorkerProcessHostIterator iter; !iter.Done(); ++iter) {
     num_processes++;
-    WorkerProcessHost* worker = static_cast<WorkerProcessHost*>(*iter);
     for (WorkerProcessHost::Instances::const_iterator instance =
-             worker->instances().begin();
-         instance != worker->instances().end(); ++instance) {
+             iter->instances().begin();
+         instance != iter->instances().end(); ++instance) {
       if (net::RegistryControlledDomainService::GetDomainAndRegistry(
               instance->url()) == domain) {
-        return worker;
+        return *iter;
       }
     }
   }
@@ -331,8 +323,7 @@ WorkerProcessHost* WorkerServiceImpl::GetProcessForDomain(const GURL& url) {
 
 WorkerProcessHost* WorkerServiceImpl::GetProcessToFillUpCores() {
   int num_processes = 0;
-  BrowserChildProcessHost::Iterator iter(content::PROCESS_TYPE_WORKER);
-  for (; !iter.Done(); ++iter)
+  for (WorkerProcessHostIterator iter; !iter.Done(); ++iter)
     num_processes++;
 
   if (num_processes >= base::SysInfo::NumberOfProcessors())
@@ -343,11 +334,9 @@ WorkerProcessHost* WorkerServiceImpl::GetProcessToFillUpCores() {
 
 WorkerProcessHost* WorkerServiceImpl::GetLeastLoadedWorker() {
   WorkerProcessHost* smallest = NULL;
-  for (BrowserChildProcessHost::Iterator iter(content::PROCESS_TYPE_WORKER);
-       !iter.Done(); ++iter) {
-    WorkerProcessHost* worker = static_cast<WorkerProcessHost*>(*iter);
-    if (!smallest || worker->instances().size() < smallest->instances().size())
-      smallest = worker;
+  for (WorkerProcessHostIterator iter; !iter.Done(); ++iter) {
+    if (!smallest || iter->instances().size() < smallest->instances().size())
+      smallest = *iter;
   }
 
   return smallest;
@@ -385,12 +374,10 @@ bool WorkerServiceImpl::TabCanCreateWorkerProcess(
   int total_workers = 0;
   int workers_per_tab = 0;
   *hit_total_worker_limit = false;
-  for (BrowserChildProcessHost::Iterator iter(content::PROCESS_TYPE_WORKER);
-       !iter.Done(); ++iter) {
-    WorkerProcessHost* worker = static_cast<WorkerProcessHost*>(*iter);
+  for (WorkerProcessHostIterator iter; !iter.Done(); ++iter) {
     for (WorkerProcessHost::Instances::const_iterator cur_instance =
-             worker->instances().begin();
-         cur_instance != worker->instances().end(); ++cur_instance) {
+             iter->instances().begin();
+         cur_instance != iter->instances().end(); ++cur_instance) {
       total_workers++;
       if (total_workers >= kMaxWorkersWhenSeparate) {
         *hit_total_worker_limit = true;
@@ -433,16 +420,14 @@ void WorkerServiceImpl::TryStartingQueuedWorker() {
 bool WorkerServiceImpl::GetRendererForWorker(int worker_process_id,
                                              int* render_process_id,
                                              int* render_view_id) const {
-  for (BrowserChildProcessHost::Iterator iter(content::PROCESS_TYPE_WORKER);
-       !iter.Done(); ++iter) {
-    if (iter->data().id != worker_process_id)
+  for (WorkerProcessHostIterator iter; !iter.Done(); ++iter) {
+    if (iter.GetData().id != worker_process_id)
         continue;
 
     // This code assumes one worker per process, see function comment in header!
-    WorkerProcessHost* worker = static_cast<WorkerProcessHost*>(*iter);
     WorkerProcessHost::Instances::const_iterator first_instance =
-        worker->instances().begin();
-    if (first_instance == worker->instances().end())
+        iter->instances().begin();
+    if (first_instance == iter->instances().end())
       return false;
 
     WorkerDocumentSet::DocumentInfoSet::const_iterator info =
@@ -456,15 +441,13 @@ bool WorkerServiceImpl::GetRendererForWorker(int worker_process_id,
 
 const WorkerProcessHost::WorkerInstance* WorkerServiceImpl::FindWorkerInstance(
       int worker_process_id) {
-  for (BrowserChildProcessHost::Iterator iter(content::PROCESS_TYPE_WORKER);
-       !iter.Done(); ++iter) {
-    if (iter->data().id != worker_process_id)
+  for (WorkerProcessHostIterator iter; !iter.Done(); ++iter) {
+    if (iter.GetData().id != worker_process_id)
         continue;
 
-    WorkerProcessHost* worker = static_cast<WorkerProcessHost*>(*iter);
     WorkerProcessHost::Instances::const_iterator instance =
-        worker->instances().begin();
-    return instance == worker->instances().end() ? NULL : &*instance;
+        iter->instances().begin();
+    return instance == iter->instances().end() ? NULL : &*instance;
   }
   return NULL;
 }
@@ -496,12 +479,10 @@ WorkerProcessHost::WorkerInstance* WorkerServiceImpl::FindSharedWorkerInstance(
     const GURL& url,
     const string16& name,
     const content::ResourceContext* resource_context) {
-  for (BrowserChildProcessHost::Iterator iter(content::PROCESS_TYPE_WORKER);
-       !iter.Done(); ++iter) {
-    WorkerProcessHost* worker = static_cast<WorkerProcessHost*>(*iter);
+  for (WorkerProcessHostIterator iter; !iter.Done(); ++iter) {
     for (WorkerProcessHost::Instances::iterator instance_iter =
-             worker->mutable_instances().begin();
-         instance_iter != worker->mutable_instances().end();
+             iter->mutable_instances().begin();
+         instance_iter != iter->mutable_instances().end();
          ++instance_iter) {
       if (instance_iter->Matches(url, name, resource_context))
         return &(*instance_iter);

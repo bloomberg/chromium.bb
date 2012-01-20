@@ -24,6 +24,8 @@
 #include "chrome/common/nacl_messages.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/browser/renderer_host/chrome_render_message_filter.h"
+#include "content/public/browser/browser_child_process_host.h"
+#include "content/public/browser/child_process_data.h"
 #include "content/public/common/child_process_host.h"
 #include "ipc/ipc_switches.h"
 #include "native_client/src/shared/imc/nacl_imc.h"
@@ -35,6 +37,7 @@
 #endif
 
 using content::BrowserThread;
+using content::ChildProcessData;
 using content::ChildProcessHost;
 
 namespace {
@@ -109,16 +112,17 @@ static bool RunningOnWOW64() {
 #endif
 
 NaClProcessHost::NaClProcessHost(const std::wstring& url)
-    : BrowserChildProcessHost(content::PROCESS_TYPE_NACL_LOADER),
-      reply_msg_(NULL),
+    : reply_msg_(NULL),
       internal_(new NaClInternal()),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
-  SetName(WideToUTF16Hack(url));
+  process_.reset(content::BrowserChildProcessHost::Create(
+      content::PROCESS_TYPE_NACL_LOADER, this));
+  process_->SetName(WideToUTF16Hack(url));
 }
 
 NaClProcessHost::~NaClProcessHost() {
   int exit_code;
-  GetChildTerminationStatus(&exit_code);
+  process_->GetTerminationStatus(&exit_code);
   std::string message =
       base::StringPrintf("NaCl process exited with status %i (0x%x)",
                          exit_code, exit_code);
@@ -234,7 +238,7 @@ bool NaClProcessHost::Launch(
 }
 
 bool NaClProcessHost::LaunchSelLdr() {
-  std::string channel_id = child_process_host()->CreateChannel();
+  std::string channel_id = process_->GetHost()->CreateChannel();
   if (channel_id.empty())
     return false;
 
@@ -283,19 +287,19 @@ bool NaClProcessHost::LaunchSelLdr() {
     return NaClBrokerService::GetInstance()->LaunchLoader(
         this, ASCIIToWide(channel_id));
   } else {
-    BrowserChildProcessHost::Launch(FilePath(), cmd_line);
+    process_->Launch(FilePath(), cmd_line);
   }
 #elif defined(OS_POSIX)
-  BrowserChildProcessHost::Launch(nacl_loader_prefix.empty(),  // use_zygote
-                                  base::environment_vector(),
-                                  cmd_line);
+  process_->Launch(nacl_loader_prefix.empty(),  // use_zygote
+                   base::environment_vector(),
+                   cmd_line);
 #endif
 
   return true;
 }
 
 void NaClProcessHost::OnProcessLaunchedByBroker(base::ProcessHandle handle) {
-  SetHandle(handle);
+  process_->SetHandle(handle);
   OnProcessLaunched();
 }
 
@@ -469,10 +473,11 @@ void NaClProcessHost::SendStart(base::PlatformFile irt_file) {
 #endif
   }
 
+  const ChildProcessData& data = process_->GetData();
 #if defined(OS_WIN)
   // Copy the process handle into the renderer process.
   if (!DuplicateHandle(base::GetCurrentProcessHandle(),
-                       data().handle,
+                       data.handle,
                        chrome_render_message_filter_->peer_handle(),
                        &nacl_process_handle,
                        PROCESS_DUP_HANDLE,
@@ -484,11 +489,11 @@ void NaClProcessHost::SendStart(base::PlatformFile irt_file) {
   }
 #else
   // We use pid as process handle on Posix
-  nacl_process_handle = data().handle;
+  nacl_process_handle = data.handle;
 #endif
 
   // Get the pid of the NaCl process
-  base::ProcessId nacl_process_id = base::GetProcId(data().handle);
+  base::ProcessId nacl_process_id = base::GetProcId(data.handle);
 
   ChromeViewHostMsg_LaunchNaCl::WriteReplyParams(
       reply_msg_, handles_for_renderer, nacl_process_handle, nacl_process_id);
@@ -499,7 +504,7 @@ void NaClProcessHost::SendStart(base::PlatformFile irt_file) {
 
   std::vector<nacl::FileDescriptor> handles_for_sel_ldr;
   for (size_t i = 0; i < internal_->sockets_for_sel_ldr.size(); i++) {
-    if (!SendHandleToSelLdr(data().handle,
+    if (!SendHandleToSelLdr(data.handle,
                             internal_->sockets_for_sel_ldr[i], true,
                             &handles_for_sel_ldr)) {
       delete this;
@@ -508,8 +513,7 @@ void NaClProcessHost::SendStart(base::PlatformFile irt_file) {
   }
 
   // Send over the IRT file handle.  We don't close our own copy!
-  if (!SendHandleToSelLdr(
-          data().handle, irt_file, false, &handles_for_sel_ldr)) {
+  if (!SendHandleToSelLdr(data.handle, irt_file, false, &handles_for_sel_ldr)) {
     delete this;
     return;
   }
@@ -539,7 +543,7 @@ void NaClProcessHost::SendStart(base::PlatformFile irt_file) {
   handles_for_sel_ldr.push_back(memory_fd);
 #endif
 
-  Send(new NaClProcessMsg_Start(handles_for_sel_ldr));
+  process_->Send(new NaClProcessMsg_Start(handles_for_sel_ldr));
   internal_->sockets_for_sel_ldr.clear();
 }
 

@@ -32,6 +32,7 @@
 #include "content/common/plugin_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/child_process_data.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/notification_service.h"
@@ -128,15 +129,13 @@ void NotifyPluginProcessHostHelper(HWND window, HWND parent, int tries) {
   DWORD plugin_process_id;
   bool found_starting_plugin_process = false;
   GetWindowThreadProcessId(window, &plugin_process_id);
-  for (BrowserChildProcessHost::Iterator iter(content::PROCESS_TYPE_PLUGIN);
-       !iter.Done(); ++iter) {
-    PluginProcessHost* plugin = static_cast<PluginProcessHost*>(*iter);
-    if (!plugin->data().handle) {
+  for (PluginProcessHostIterator iter; !iter.Done(); ++iter) {
+    if (!iter.GetData().handle) {
       found_starting_plugin_process = true;
       continue;
     }
-    if (base::GetProcId(plugin->data().handle) == plugin_process_id) {
-      plugin->AddWindow(parent);
+    if (base::GetProcId(iter.GetData().handle) == plugin_process_id) {
+      iter->AddWindow(parent);
       return;
     }
   }

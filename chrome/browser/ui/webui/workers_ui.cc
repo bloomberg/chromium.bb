@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/worker_host/worker_process_host.h"
+#include "content/public/browser/child_process_data.h"
 #include "content/public/browser/devtools_agent_host_registry.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
@@ -30,6 +31,7 @@
 #include "ui/base/resource/resource_bundle.h"
 
 using content::BrowserThread;
+using content::ChildProcessData;
 using content::DevToolsAgentHost;
 using content::DevToolsAgentHostRegistry;
 using content::WebContents;
@@ -51,15 +53,14 @@ static const char kPidField[]  = "pid";
 namespace {
 
 
-DictionaryValue* BuildWorkerData(
-    WorkerProcessHost* process,
+DictionaryValue* BuildWorkerData(const ChildProcessData& data,
     const WorkerProcessHost::WorkerInstance& instance) {
   DictionaryValue* worker_data = new DictionaryValue();
-  worker_data->SetInteger(kWorkerProcessHostIdField, process->data().id);
+  worker_data->SetInteger(kWorkerProcessHostIdField, data.id);
   worker_data->SetInteger(kWorkerRouteIdField, instance.worker_route_id());
   worker_data->SetString(kUrlField, instance.url().spec());
   worker_data->SetString(kNameField, instance.name());
-  worker_data->SetInteger(kPidField, base::GetProcId(process->data().handle));
+  worker_data->SetInteger(kPidField, base::GetProcId(data.handle));
   return worker_data;
 }
 
@@ -94,13 +95,11 @@ void WorkersUIHTMLSource::StartDataRequest(const std::string& path,
 
 void WorkersUIHTMLSource::SendSharedWorkersData(int request_id) {
     ListValue workers_list;
-    BrowserChildProcessHost::Iterator iter(content::PROCESS_TYPE_WORKER);
-    for (; !iter.Done(); ++iter) {
-      WorkerProcessHost* worker = static_cast<WorkerProcessHost*>(*iter);
-      const WorkerProcessHost::Instances& instances = worker->instances();
+    for (WorkerProcessHostIterator iter; !iter.Done(); ++iter) {
+      const WorkerProcessHost::Instances& instances = iter->instances();
       for (WorkerProcessHost::Instances::const_iterator i = instances.begin();
            i != instances.end(); ++i) {
-         workers_list.Append(BuildWorkerData(worker, *i));
+         workers_list.Append(BuildWorkerData(iter.GetData(), *i));
       }
     }
 
@@ -158,11 +157,9 @@ void WorkersDOMHandler::HandleOpenDevTools(const ListValue* args) {
 }
 
 static void TerminateWorker(int worker_process_id, int worker_route_id) {
-  for (BrowserChildProcessHost::Iterator iter(content::PROCESS_TYPE_WORKER);
-       !iter.Done(); ++iter) {
-    if (iter->data().id == worker_process_id) {
-      WorkerProcessHost* worker = static_cast<WorkerProcessHost*>(*iter);
-      worker->TerminateWorker(worker_route_id);
+  for (WorkerProcessHostIterator iter; !iter.Done(); ++iter) {
+      if (iter.GetData().id == worker_process_id) {
+      iter->TerminateWorker(worker_route_id);
       return;
     }
   }
@@ -216,14 +213,15 @@ class WorkersUI::WorkerCreationDestructionListener
       const WorkerProcessHost::WorkerInstance& instance) OVERRIDE {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(&WorkerCreationDestructionListener::NotifyWorkerCreated,
-                   this, base::Owned(BuildWorkerData(process, instance))));
+        base::Bind(
+            &WorkerCreationDestructionListener::NotifyWorkerCreated,
+            this, base::Owned(BuildWorkerData(process->GetData(), instance))));
   }
   virtual void WorkerDestroyed(
       WorkerProcessHost* process,
       int worker_route_id) OVERRIDE {
     DictionaryValue* worker_data = new DictionaryValue();
-    worker_data->SetInteger(kWorkerProcessHostIdField, process->data().id);
+    worker_data->SetInteger(kWorkerProcessHostIdField, process->GetData().id);
     worker_data->SetInteger(kWorkerRouteIdField, worker_route_id);
 
     BrowserThread::PostTask(

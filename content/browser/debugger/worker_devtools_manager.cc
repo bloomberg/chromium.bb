@@ -15,6 +15,7 @@
 #include "content/browser/worker_host/worker_service_impl.h"
 #include "content/common/devtools_messages.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/child_process_data.h"
 #include "content/public/browser/devtools_agent_host_registry.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -292,8 +293,7 @@ void WorkerDevToolsManager::WorkerCreated(
                          instance.resource_context())) {
       worker->Send(new DevToolsAgentMsg_PauseWorkerContextOnStart(
           instance.worker_route_id()));
-      WorkerId new_worker_id(
-        worker->data().id, instance.worker_route_id());
+      WorkerId new_worker_id(worker->GetData().id, instance.worker_route_id());
       paused_workers_[new_worker_id] = it->old_worker_id;
       terminated_workers_.erase(it);
       return;
@@ -305,12 +305,12 @@ void WorkerDevToolsManager::WorkerDestroyed(
     WorkerProcessHost* worker,
     int worker_route_id) {
   InspectedWorkersList::iterator it = FindInspectedWorker(
-      worker->data().id,
+      worker->GetData().id,
       worker_route_id);
   if (it == inspected_workers_.end())
     return;
 
-  WorkerId worker_id(worker->data().id, worker_route_id);
+  WorkerId worker_id(worker->GetData().id, worker_route_id);
   terminated_workers_.push_back(TerminatedInspectedWorker(
       worker_id,
       it->worker_url,
@@ -323,7 +323,7 @@ void WorkerDevToolsManager::WorkerDestroyed(
 
 void WorkerDevToolsManager::WorkerContextStarted(WorkerProcessHost* process,
                                                  int worker_route_id) {
-  WorkerId new_worker_id(process->data().id, worker_route_id);
+  WorkerId new_worker_id(process->GetData().id, worker_route_id);
   PausedWorkers::iterator it = paused_workers_.find(new_worker_id);
   if (it == paused_workers_.end())
     return;
@@ -362,7 +362,7 @@ WorkerDevToolsManager::FindInspectedWorker(
     int host_id, int route_id) {
   InspectedWorkersList::iterator it = inspected_workers_.begin();
   while (it != inspected_workers_.end()) {
-    if (it->host->data().id == host_id && it->route_id == route_id)
+    if (it->host->GetData().id == host_id && it->route_id == route_id)
       break;
     ++it;
   }
@@ -370,10 +370,9 @@ WorkerDevToolsManager::FindInspectedWorker(
 }
 
 static WorkerProcessHost* FindWorkerProcess(int worker_process_id) {
-  BrowserChildProcessHost::Iterator iter(content::PROCESS_TYPE_WORKER);
-  for (; !iter.Done(); ++iter) {
-    if (iter->data().id == worker_process_id)
-      return static_cast<WorkerProcessHost*>(*iter);
+  for (WorkerProcessHostIterator iter; !iter.Done(); ++iter) {
+    if (iter.GetData().id == worker_process_id)
+      return *iter;
   }
   return NULL;
 }

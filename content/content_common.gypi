@@ -30,6 +30,7 @@
   'sources': [
     'public/common/bindings_policy.h',
     'public/common/child_process_host.h',
+    'public/common/child_process_host_delegate.cc',
     'public/common/child_process_host_delegate.h',
     'public/common/child_process_sandbox_support_linux.h',
     'public/common/content_constants.cc',
