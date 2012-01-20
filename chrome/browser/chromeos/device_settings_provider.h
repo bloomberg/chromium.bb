@@ -79,6 +79,12 @@ class DeviceSettingsProvider : public CrosSettingsProvider,
   // subsystms.
   void ApplySideEffects() const;
 
+  // In case of missing policy blob we should verify if this is upgrade of
+  // machine owned from pre version 12 OS and the user never touched the device
+  // settings. In this case revert to defaults and let people in until the owner
+  // comes and changes that.
+  bool MitigateMissingPolicy();
+
   // Called right before boolean property is changed.
   void OnBooleanPropertyChange(const std::string& path, bool new_value);
 

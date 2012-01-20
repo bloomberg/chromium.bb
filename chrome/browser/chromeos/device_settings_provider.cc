@@ -7,8 +7,10 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/file_util.h"
 #include "base/logging.h"
 #include "base/string_util.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
@@ -54,6 +56,9 @@ const char* kListSettings[] = {
 
 // Upper bound for number of retries to fetch a signed setting.
 static const int kNumRetriesLimit = 9;
+
+// Legacy policy file location. Used to detect migration from pre v12 ChormeOS.
+const char kLegacyPolicyFile[] = "/var/lib/whitelist/preferences";
 
 bool IsControlledBooleanSetting(const std::string& pref_path) {
   const char** end = kBooleanSettings + arraysize(kBooleanSettings);
@@ -472,6 +477,43 @@ void DeviceSettingsProvider::ApplySideEffects() const {
       pol.data_roaming_enabled().data_roaming_enabled() : false);
 }
 
+bool DeviceSettingsProvider::MitigateMissingPolicy() {
+  // As this code runs only in exceptional cases it's fine to allow I/O here.
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
+  FilePath legacy_policy_file(kLegacyPolicyFile);
+  // Check if legacy file exists but is not writable to avoid possible
+  // attack of creating this file through chronos (although this should be
+  // not possible in root owned location), but better be safe than sorry.
+  // TODO(pastarmovj): Remove this workaround once we have proper checking
+  // for policy corruption or when Cr48 is phased out the very latest.
+  // See: http://crosbug.com/24916.
+  if (file_util::PathExists(legacy_policy_file) &&
+      !file_util::PathIsWritable(legacy_policy_file)) {
+    // We are in pre 11 dev upgrading to post 17 version mode.
+    LOG(ERROR) << "Detected system upgraded from ChromeOS 11 or older with "
+               << "missing policies. Switching to migration policy mode "
+               << "until the owner logs in to regenerate the policy data.";
+    // In this situation we should pretend we have policy even though we
+    // don't until the owner logs in and restores the policy blob.
+    values_cache_.SetBoolean(kAccountsPrefAllowNewUser, true);
+    values_cache_.SetBoolean(kAccountsPrefAllowGuest, true);
+    trusted_ = true;
+    // Make sure we will recreate the policy once the owner logs in.
+    // Any value not in this list will be left to the default which is fine as
+    // we repopulate the whitelist with the owner and any other possible every
+    // time the user enables whitelist filtering on the UI.
+    migration_helper_->AddMigrationValue(
+        kAccountsPrefAllowNewUser, base::Value::CreateBooleanValue(true));
+    migration_helper_->MigrateValues();
+    // The last step is to pretend we loaded policy correctly and call everyone.
+    for (size_t i = 0; i < callbacks_.size(); ++i)
+      callbacks_[i].Run();
+    callbacks_.clear();
+    return true;
+  }
+  return false;
+}
+
 const base::Value* DeviceSettingsProvider::Get(const std::string& path) const {
   if (IsControlledSetting(path)) {
     const base::Value* value;
@@ -529,6 +571,8 @@ void DeviceSettingsProvider::OnStorePolicyCompleted(
 void DeviceSettingsProvider::OnRetrievePolicyCompleted(
     SignedSettings::ReturnCode code,
     const em::PolicyFetchResponse& policy_data) {
+  VLOG(1) << "OnRetrievePolicyCompleted. Error code: " << code
+          << ", trusted : " << trusted_ << ", status : " << ownership_status_;
   switch (code) {
     case SignedSettings::SUCCESS: {
       DCHECK(policy_data.has_policy_data());
@@ -546,6 +590,10 @@ void DeviceSettingsProvider::OnRetrievePolicyCompleted(
       break;
     }
     case SignedSettings::NOT_FOUND:
+      // Verify if we don't have to mitigate pre Chrome 12 machine here and if
+      // needed do the magic.
+      if (MitigateMissingPolicy())
+        break;
     case SignedSettings::KEY_UNAVAILABLE: {
       if (ownership_status_ != OwnershipService::OWNERSHIP_TAKEN)
         NOTREACHED() << "No policies present yet, will use the temp storage.";
