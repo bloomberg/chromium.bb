@@ -21,6 +21,7 @@
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
+#include "base/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/synchronization/lock.h"
 #include "content/common/child_process.h"
@@ -1134,8 +1135,12 @@ void WebGraphicsContext3DCommandBufferImpl::OnSwapBuffersComplete() {
   // This may be called after tear-down of the RenderView.
   RenderViewImpl* renderview =
       web_view_ ? RenderViewImpl::FromWebView(web_view_) : NULL;
-  if (renderview)
-    renderview->OnViewContextSwapBuffersComplete();
+  if (renderview) {
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&RenderViewImpl::OnViewContextSwapBuffersComplete,
+                   renderview));
+  }
 
   if (swapbuffers_complete_callback_)
     swapbuffers_complete_callback_->onSwapBuffersComplete();
