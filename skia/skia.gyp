@@ -344,7 +344,9 @@
 
         '../third_party/skia/src/gpu/GrAAHairLinePathRenderer.cpp',
         '../third_party/skia/src/gpu/GrAAHairLinePathRenderer.h',
-        '../third_party/skia/src/gpu/GrAddPathRenderers_aahairline.cpp',
+        '../third_party/skia/src/gpu/GrAAConvexPathRenderer.cpp',
+        '../third_party/skia/src/gpu/GrAAConvexPathRenderer.h',
+        '../third_party/skia/src/gpu/GrAddPathRenderers_default.cpp',
         '../third_party/skia/src/gpu/GrAllocator.h',
         '../third_party/skia/src/gpu/GrAllocPool.h',
         '../third_party/skia/src/gpu/GrAllocPool.cpp',
@@ -733,7 +735,6 @@
         'GR_STATIC_RECT_VB=1',
         'GR_AGGRESSIVE_SHADER_OPTS=1',
         'SK_DISABLE_FAST_AA_STROKE_RECT',
-        'SK_OLD_EMPTY_PATH_BEHAVIOR=1',
         'SK_DEFAULT_FONT_CACHE_LIMIT=(20*1024*1024)',
 
         # skia uses static initializers to initialize the serialization logic
