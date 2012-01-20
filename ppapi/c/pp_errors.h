@@ -1,9 +1,9 @@
-/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
 
-/* From pp_errors.idl modified Wed Sep 14 08:34:03 2011. */
+/* From pp_errors.idl modified Thu Jan  5 10:52:49 2012. */
 
 #ifndef PPAPI_C_PP_ERRORS_H_
 #define PPAPI_C_PP_ERRORS_H_
@@ -114,7 +114,18 @@ enum {
    * This value indicates that the graphics context was lost due to a
    * power management event.
    */
-  PP_ERROR_CONTEXT_LOST = -50
+  PP_ERROR_CONTEXT_LOST = -50,
+  /**
+   * Indicates an attempt to make a PPAPI call on a thread without previously
+   * registering a message loop via PPB_MessageLoop.AttachToCurrentThread.
+   * Without this registration step, no PPAPI calls are supported.
+   */
+  PP_ERROR_NO_MESSAGE_LOOP = -51,
+  /**
+   * Indicates that the requested operation is not permitted on the current
+   * thread.
+   */
+  PP_ERROR_WRONG_THREAD = -52
 };
 /**
  * @}

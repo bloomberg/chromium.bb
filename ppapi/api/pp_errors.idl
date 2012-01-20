@@ -114,6 +114,17 @@
    * This value indicates that the graphics context was lost due to a
    * power management event.
    */
-  PP_ERROR_CONTEXT_LOST = -50
+  PP_ERROR_CONTEXT_LOST   = -50,
+  /**
+   * Indicates an attempt to make a PPAPI call on a thread without previously
+   * registering a message loop via PPB_MessageLoop.AttachToCurrentThread.
+   * Without this registration step, no PPAPI calls are supported.
+   */
+  PP_ERROR_NO_MESSAGE_LOOP = -51,
+  /**
+   * Indicates that the requested operation is not permitted on the current
+   * thread.
+   */
+  PP_ERROR_WRONG_THREAD   = -52
 };
 
