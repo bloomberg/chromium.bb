@@ -122,6 +122,7 @@ void DragDropController::DragUpdate(aura::Window* target,
 
 void DragDropController::Drop(aura::Window* target,
                               const aura::MouseEvent& event) {
+  RootWindow::GetInstance()->SetCursor(aura::kCursorPointer);
   aura::client::DragDropDelegate* delegate = NULL;
   DCHECK(target == dragged_window_);
   if ((delegate = aura::client::GetDragDropDelegate(dragged_window_))) {
@@ -141,6 +142,7 @@ void DragDropController::Drop(aura::Window* target,
 }
 
 void DragDropController::DragCancel() {
+  RootWindow::GetInstance()->SetCursor(aura::kCursorPointer);
   Cleanup();
   drag_operation_ = 0;
   StartCanceledAnimation();
@@ -172,7 +174,8 @@ bool DragDropController::PreHandleMouseEvent(aura::Window* target,
       DragCancel();
       break;
     default:
-      NOTREACHED();
+      // We could reach here if the user drops outside the root window.
+      DragCancel();
       break;
   }
   return true;
