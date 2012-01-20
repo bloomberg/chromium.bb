@@ -19,3 +19,7 @@ ClientSocketPoolBaseTest.DisableCleanupTimer
 
 # Flaky, see http://crbug.com/108422
 SSLClientSocketTest.ConnectMismatched
+
+# Hits DCHECK failure due to 100ms delayed task in socket_test_util.cc, see
+# http://crbug.com/110793 and http://crbug.com/95007
+SpdyHttpStreamTest.*
