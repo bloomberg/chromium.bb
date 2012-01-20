@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_PERMISSIONS_API_H__
-#define CHROME_BROWSER_EXTENSIONS_EXTENSION_PERMISSIONS_API_H__
+#ifndef CHROME_BROWSER_EXTENSIONS_API_PERMISSIONS_PERMISSIONS_API_H_
+#define CHROME_BROWSER_EXTENSIONS_API_PERMISSIONS_PERMISSIONS_API_H_
 #pragma once
 
 #include <string>
@@ -62,4 +62,4 @@ class RequestPermissionsFunction : public AsyncExtensionFunction,
   DECLARE_EXTENSION_FUNCTION_NAME("permissions.request")
 };
 
-#endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_PERMISSIONS_API_H__
+#endif  // CHROME_BROWSER_EXTENSIONS_API_PERMISSIONS_PERMISSIONS_API_H_

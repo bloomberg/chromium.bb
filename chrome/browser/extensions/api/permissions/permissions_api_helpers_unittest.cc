@@ -4,7 +4,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/extension_permissions_api_helpers.h"
+#include "chrome/browser/extensions/api/permissions/permissions_api_helpers.h"
 #include "chrome/common/extensions/extension_permission_set.h"
 #include "chrome/common/extensions/url_pattern_set.h"
 #include "googleurl/src/gurl.h"
