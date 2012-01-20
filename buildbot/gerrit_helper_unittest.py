@@ -13,6 +13,7 @@ import unittest
 import constants
 sys.path.append(constants.SOURCE_ROOT)
 from chromite.buildbot import gerrit_helper
+from chromite.buildbot import validation_pool
 from chromite.lib import cros_build_lib as cros_lib
 
 
@@ -151,8 +152,10 @@ class GerritHelperTest(mox.MoxTestBase):
     self.mox.ReplayAll()
     helper = gerrit_helper.GerritHelper(False)
     changes = helper.GrabChangesReadyForCommit()
-    new_changes = helper.FilterNonCrosProjects(changes, constants.SOURCE_ROOT)
-    self.assertEqual(len(new_changes), 2)
+    new_changes, nom = validation_pool.ValidationPool._FilterNonCrosProjects(
+        changes, constants.SOURCE_ROOT)
+    self.assertEqual(len(new_changes), 1)
+    self.assertEqual(len(nom), 1)
     self.assertFalse(new_changes[0].project == 'tacos/chromite')
 
   def testFilterWithOwnManifest(self):
@@ -161,7 +164,8 @@ class GerritHelperTest(mox.MoxTestBase):
     changes = helper.GrabChangesReadyForCommit()
     print 'Changes BEFORE filtering ***'
     self._PrintChanges(changes)
-    new_changes = helper.FilterNonCrosProjects(changes, constants.SOURCE_ROOT)
+    new_changes, _ = validation_pool.ValidationPool._FilterNonCrosProjects(
+        changes, constants.SOURCE_ROOT)
     print 'Changes AFTER filtering ***'
     self._PrintChanges(new_changes)
 

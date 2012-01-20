@@ -65,7 +65,8 @@ def PrepForChanges(git_repo, dry_run):
   Args:
     git_repo: git repo to push
     dry_run: Run but we are not planning on pushing changes for real.
-  raises: GitCommandException
+  Raises:
+    cros_lib.GitCommandException
   """
   _GitCleanDirectory(git_repo)
   try:
@@ -90,7 +91,7 @@ def PrepForChanges(git_repo, dry_run):
         if not dry_run:
           cros_lib.RunCommand(['git', 'branch', '-D', PUSH_BRANCH],
                               cwd=git_repo)
-      except:
+      except cros_lib.RunCommandError:
         pass
 
       remote, branch = cros_lib.GetPushBranch('master', cwd=git_repo)
@@ -143,6 +144,7 @@ def _PushGitChanges(git_repo, message, dry_run=True):
       # local commit behind in tree.
       cros_lib.RunCommand(['repo', 'abandon', PUSH_BRANCH], cwd=git_repo,
                           error_ok=True)
+      cros_lib.RunCommand(['repo', 'sync', '.'], cwd=git_repo, error_ok=True)
 
 
 def _RemoveDirs(dir_name):
@@ -436,12 +438,16 @@ class BuildSpecsManager(object):
                                  redirect_stdout=True)
     return time.time() - int(result.output.strip())
 
-  def _LoadSpecs(self, version_info, version=None):
-    """Loads the specifications from the working directory.
+  def RefreshManifestCheckout(self):
+    """Checks out manifest versions into the manifest directory."""
+    _RemoveDirs(self._TMP_MANIFEST_DIR)
+    repository.CloneGitRepo(self._TMP_MANIFEST_DIR, self.manifest_repo)
+
+  def InitializeManifestVariables(self, version_info):
+    """Initializes manifest-related instance variables.
+
     Args:
       version_info: Info class for version information of cros.
-      version: Checks to see if versioned manifest exists, if it does, does
-        not re-check out repository.
     """
     working_dir = os.path.join(self._TMP_MANIFEST_DIR, self.rel_working_dir)
     dir_pfx = version_info.DirPrefix()
@@ -456,19 +462,11 @@ class BuildSpecsManager(object):
     self.inflight_dir = os.path.join(specs_for_build,
                                      BuildSpecsManager.STATUS_INFLIGHT, dir_pfx)
 
-    # Conservatively grab the latest manifest versions repository.
-    # Note:  This is key to some of the Git push logic for non-repos for
-    # local developers.  Also note that we don't need to do this if we already
-    # have the version checked out that we are being forced to use.
-    if not version or not os.path.exists(self.GetLocalManifest(version)):
-      _RemoveDirs(self._TMP_MANIFEST_DIR)
-      repository.CloneGitRepo(self._TMP_MANIFEST_DIR, self.manifest_repo)
-
     # Calculate latest spec that passed.
     self.latest_passed = self._LatestSpecFromDir(version_info, self.pass_dir)
 
     # Calculate latest processed spec.
-    dirs = (self.pass_dir, self.fail_dir,  self.inflight_dir)
+    dirs = (self.pass_dir, self.fail_dir, self.inflight_dir)
     self.latest_processed = self._LatestSpecFromList(
         filter(None, [self._LatestSpecFromDir(version_info, d) for d in dirs]))
 
@@ -480,55 +478,57 @@ class BuildSpecsManager(object):
         self._GetSpecAge(self.latest) < self.LONG_MAX_TIMEOUT_SECONDS):
       self.latest_unprocessed = self.latest
 
-  def _GetCurrentVersionInfo(self, sync=True):
-    """Returns the current version info from the version file.
-    Args:
-      sync: Whether to sync the tree.
-    """
-    # TODO(ferringb): Gut cleanup=False hack- see http://crosbug.com/24709.
-    if sync: self.cros_source.Sync(repository.RepoRepository.DEFAULT_MANIFEST,
-                                   cleanup=False)
+  def GetCurrentVersionInfo(self):
+    """Returns the current version info from the version file."""
     version_file_path = self.cros_source.GetRelativePath(constants.VERSION_FILE)
-    return VersionInfo(version_file=version_file_path,
-                       incr_type=self.incr_type)
+    return VersionInfo(version_file=version_file_path, incr_type=self.incr_type)
 
-  def _CreateNewBuildSpec(self, version_info):
-    """Generates a new buildspec for the builders to consume.
-
-    Checks to see, if there are new changes that need to be built from the
-    last time another buildspec was created. Updates the version number in
-    version number file. If there are no new changes returns None.  Otherwise
-    returns the version string for the new spec.
-
-    Args:
-      version_info: Info class for version information of cros.
-    Returns:
-      next build number: on new changes or
-      None: on no new changes
+  def HasCheckoutBeenBuilt(self):
+    """Checks to see if we've previously created a manifest with this checkout.
     """
     if self.latest:
-      latest_spec_file = '%s.xml' % os.path.join(self.all_specs_dir,
-                                                 self.latest)
-      if not self.cros_source.IsManifestDifferent(latest_spec_file):
-        return None
+      latest_spec_file = '%s.xml' % os.path.join(
+          self.all_specs_dir, self.latest)
+      # We've built this checkout before if the manifest isn't different than
+      # the last one we've built.
+      return not self.cros_source.IsManifestDifferent(latest_spec_file)
+    else:
+      # We've never built something before so this checkout is always new.
+      return False
 
+  def CreateManifest(self):
+    """Returns the path to a new manifest based on the current source checkout.
+    """
+    new_manifest = tempfile.mkstemp('manifest_versions.manifest')[1]
+    self.cros_source.ExportManifest(new_manifest)
+    return new_manifest
+
+  def GetNextVersion(self, version_info):
+    """Returns the next version string that should be built."""
     version = version_info.VersionString()
     if self.latest == version:
       message = ('Automatic: %s - Updating to a new version number from %s' % (
                  self.build_name, version))
       version = version_info.IncrementVersion(message, dry_run=self.dry_run)
       logging.debug('Incremented version number to  %s', version)
-      # TODO(ferringb): Gut cleanup=False hack- see http://crosbug.com/24709.
-      self.cros_source.Sync(repository.RepoRepository.DEFAULT_MANIFEST,
-                            cleanup=False)
 
+    return version
+
+  def PublishManifest(self, manifest, version):
+    """Publishes the manifest as the manifest for the version to others."""
+    logging.info('Publishing build spec for: %s', version)
+    commit_message = 'Automatic: Start %s %s' % (self.build_name, version)
+
+    # Copy the manifest into the manifest repository.
     spec_file = '%s.xml' % os.path.join(self.all_specs_dir, version)
     if not os.path.exists(os.path.dirname(spec_file)):
       os.makedirs(os.path.dirname(spec_file))
 
-    self.cros_source.ExportManifest(spec_file)
-    logging.debug('Created New Build Spec %s', version)
-    return version
+    shutil.copyfile(manifest, spec_file)
+
+    # Actually push the manifest.
+    self.SetInFlight(version)
+    self.PushSpecChanges(commit_message)
 
   def DidLastBuildSucceed(self):
     """Returns True if this is our first build or the last build succeeded."""
@@ -571,54 +571,74 @@ class BuildSpecsManager(object):
   def BootstrapFromVersion(self, version):
     """Initializes spec data from release version and returns path to manifest.
     """
-    version_info = self._GetCurrentVersionInfo(sync=False)
-    self._LoadSpecs(version_info, version=version)
+    version_info = self.GetCurrentVersionInfo()
+    should_initialize_manifest_repo = True
+    if version:
+      # We need to first set up some variables. This is harmless even if we
+      # don't have the manifests checked out yet.
+      self.InitializeManifestVariables(version_info)
+      # We don't need to reload the manifests repository if we already have the
+      # manifest.
+      if os.path.exists(self.GetLocalManifest(version)):
+        should_initialize_manifest_repo = False
+
+    if should_initialize_manifest_repo:
+      self.RefreshManifestCheckout()
+      self.InitializeManifestVariables(version_info)
+
     self.current_version = version
     return self.GetLocalManifest(self.current_version)
 
+  def CheckoutSourceCode(self):
+    """Syncs the cros source to the latest git hashes for the branch."""
+    self.cros_source.Sync(repository.RepoRepository.DEFAULT_MANIFEST,
+                          cleanup=False)
+
   def GetNextBuildSpec(self, retries=5):
-    """Gets the version number of the next build spec to build.
+    """Returns a path to the next manifest to build.
+
       Args:
-        retries: Number of retries for updating the status
-      Returns:
-        Local path to manifest to build or None in case of no need to build.
+        retries: Number of retries for updating the status.
       Raises:
         GenerateBuildSpecException in case of failure to generate a buildspec
     """
     last_error = None
     for index in range(0, retries + 1):
       try:
-        version_info = self._GetCurrentVersionInfo()
-        logging.debug('Using version %s' % version_info.VersionString())
-        self._LoadSpecs(version_info)
-        self._PrepSpecChanges()
-        if not self.latest_unprocessed:
-          self.current_version = self._CreateNewBuildSpec(version_info)
-        else:
-          self.current_version = self.latest_unprocessed
-
-        if self.current_version:
-          logging.debug('Using build spec: %s', self.current_version)
-          commit_message = 'Automatic: Start %s %s' % (self.build_name,
-                                                       self.current_version)
-          self._SetInFlight()
-          self._PushSpecChanges(commit_message)
-          return self.GetLocalManifest(self.current_version)
-        else:
+        self.CheckoutSourceCode()
+        if self.HasCheckoutBeenBuilt():
           return None
 
+        # Refresh the manifest checkout and prepare it for writing.
+        self.RefreshManifestCheckout()
+        self.PrepSpecChanges()
+
+        version_info = self.GetCurrentVersionInfo()
+        self.InitializeManifestVariables(version_info)
+        if not self.latest_unprocessed:
+          new_manifest = self.CreateManifest()
+          version = self.GetNextVersion(version_info)
+          self.PublishManifest(new_manifest, version)
+        else:
+          version = self.latest_unprocessed
+          self.SetInFlight(version)
+          self.PushSpecChanges('Automatic: Start %s %s' % (self.build_name,
+                                                           version))
+
+        self.current_version = version
+        return self.GetLocalManifest(version)
       except (GitCommandException, cros_lib.RunCommandError) as e:
         last_error = 'Failed to generate buildspec. error: %s' % e
         logging.error(last_error)
-        logging.error('Retrying to generate buildspec:  Retry %d/%d' %
-                      (index + 1, retries))
+        logging.error('Retrying to generate buildspec:  Retry %d/%d', index + 1,
+                      retries)
     else:
       raise GenerateBuildSpecException(last_error)
 
-  def _SetInFlight(self):
+  def SetInFlight(self, version):
     """Marks the buildspec as inflight by creating a symlink in inflight dir."""
-    dest_file = '%s.xml' % os.path.join(self.inflight_dir, self.current_version)
-    src_file = '%s.xml' % os.path.join(self.all_specs_dir, self.current_version)
+    dest_file = '%s.xml' % os.path.join(self.inflight_dir, version)
+    src_file = '%s.xml' % os.path.join(self.all_specs_dir, version)
     logging.debug('Setting build in flight  %s: %s', src_file, dest_file)
     CreateSymlink(src_file, dest_file)
 
@@ -640,10 +660,12 @@ class BuildSpecsManager(object):
     logging.debug('Setting build to passed  %s: %s', src_file, dest_file)
     CreateSymlink(src_file, dest_file, remove_file)
 
-  def _PrepSpecChanges(self):
+  def PrepSpecChanges(self):
+    """Prepare the manifest repository for changes."""
     PrepForChanges(self._TMP_MANIFEST_DIR, self.dry_run)
 
-  def _PushSpecChanges(self, commit_message):
+  def PushSpecChanges(self, commit_message):
+    """Pushes any changes you have in the manifest directory."""
     _PushGitChanges(self._TMP_MANIFEST_DIR, commit_message,
                     dry_run=self.dry_run)
 
@@ -656,7 +678,7 @@ class BuildSpecsManager(object):
     last_error = None
     for index in range(0, retries + 1):
       try:
-        self._PrepSpecChanges()
+        self.PrepSpecChanges()
         status = self.STATUS_PASSED if success else self.STATUS_FAILED
         commit_message = ('Automatic checkin: status=%s build_version %s for '
                           '%s' % (status,
@@ -667,14 +689,14 @@ class BuildSpecsManager(object):
         else:
           self._SetFailed()
 
-        self._PushSpecChanges(commit_message)
+        self.PushSpecChanges(commit_message)
       except (GitCommandException, cros_lib.RunCommandError) as e:
         last_error = ('Failed to update the status for %s with the '
                       'following error %s' % (self.build_name,
                                               e.message))
         logging.error(last_error)
-        logging.error('Retrying to generate buildspec:  Retry %d/%d' %
-                      (index + 1, retries))
+        logging.error('Retrying to generate buildspec:  Retry %d/%d', index + 1,
+                      retries)
       else:
         return
     else:

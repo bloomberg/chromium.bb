@@ -16,9 +16,10 @@ import unittest
 import constants
 sys.path.append(constants.SOURCE_ROOT)
 import chromite.buildbot.cbuildbot_commands as commands
+import chromite.buildbot.configure_repo as configure_repo
 import chromite.lib.cros_build_lib as cros_lib
-import chromite.buildbot.repository as repository
 from chromite.lib import cros_test_lib
+
 
 # pylint: disable=W0212,R0904
 class CBuildBotTest(mox.MoxTestBase):
@@ -27,7 +28,7 @@ class CBuildBotTest(mox.MoxTestBase):
     mox.MoxTestBase.setUp(self)
     # Always stub RunCommmand out as we use it in every method.
     self.mox.StubOutWithMock(cros_lib, 'RunCommand')
-    self.mox.StubOutWithMock(repository, 'FixExternalRepoPushUrls')
+    self.mox.StubOutWithMock(configure_repo, 'FixExternalRepoPushUrls')
     self._test_repos = [['kernel', 'third_party/kernel/files'],
                         ['login_manager', 'platform/login_manager']
                        ]
