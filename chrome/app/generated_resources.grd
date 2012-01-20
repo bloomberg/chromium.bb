@@ -876,9 +876,6 @@ are declared in build/common.gypi.
         <message name="IDS_ZOOM_PLUS2" desc="The text label of the Make Text Larger menu item in the merged menu">
           +
         </message>
-        <message name="IDS_ACCNAME_ZOOM_PLUS2" desc="The accessible description of the Make Text Larger menu item in the merged menu">
-          Make Text Larger
-        </message>
         <message name="IDS_ZOOM_NORMAL" desc="The text label of the Make Text Normal Size menu item">
           &amp;Normal
         </message>
@@ -887,9 +884,6 @@ are declared in build/common.gypi.
         </message>
         <message name="IDS_ZOOM_MINUS2" desc="The text label of the Make Text Smaller menu item in the merged menu">
           &#8722;
-        </message>
-        <message name="IDS_ACCNAME_ZOOM_MINUS2" desc="The accessible description of the Make Text Smaller menu item in the merged menu">
-          Make Text Smaller
         </message>
         <message name="IDS_ZOOM_PERCENT" desc="Current pages zoom factor; shown in merged menu">
         <ph name="VALUE">$1<ex>100</ex></ph>%
@@ -901,6 +895,12 @@ are declared in build/common.gypi.
           Auto detect
         </message>
       </if>
+      <message name="IDS_ACCNAME_ZOOM_PLUS2" desc="The accessible description of the Make Text Larger menu item in the merged menu">
+        Make Text Larger
+      </message>
+      <message name="IDS_ACCNAME_ZOOM_MINUS2" desc="The accessible description of the Make Text Smaller menu item in the merged menu">
+        Make Text Smaller
+      </message>
       <if expr="pp_ifdef('use_titlecase')">
         <message name="IDS_NEW_TAB" desc="In Title Case: The text label of the New Tab menu item">
           New &amp;Tab
@@ -9368,7 +9368,7 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
       </if>
       <if expr="not pp_ifdef('use_titlecase')">
         <message name="IDS_PROFILES_NOT_SIGNED_IN_MENU" desc="The text to display on the browser frame when the user is not using a personalized profile.">
-          not signed in
+          Not signed in
         </message>
       </if>
       <message name="IDS_PROFILES_DEFAULT_NAME" desc="The name to display for a profile when the user is not signed in.">
@@ -10794,7 +10794,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
       </if>
       <if expr="pp_ifdef('use_titlecase')">
         <message name="IDS_SYNC_SETUP_TITLE" desc="In title case: The title of the Sync Setup overlay.">
-          Sign in With Your Google Account
+          Sign In With Your Google Account
         </message>
       </if>
       <message name="IDS_SYNC_LOGIN_SIGNIN_PREFIX" desc="The first part of the sentence that is displayed after the login info">
