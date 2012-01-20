@@ -36,3 +36,6 @@ GeolocationWifiDataProviderCommonTest.*
 FileSystemDirURLRequestJobTest.*
 FileSystemURLRequestJobTest.*
 FileSystemOperationWriteTest.*
+
+# http://crbug.com/110867
+InProcessBrowserTest.Empty
