@@ -1575,6 +1575,10 @@ bool Segment::AddFrame(const uint8* frame,
   if (!CheckHeaderInfo())
     return false;
 
+  // Check for non-monotonically increasing timestamps.
+  if (timestamp < last_timestamp_)
+    return false;
+
   // If the segment has a video track hold onto audio frames to make sure the
   // audio that is associated with the start time of a video key-frame is
   // muxed into the same cluster.
