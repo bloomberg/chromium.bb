@@ -698,7 +698,11 @@ void NativeWidgetAura::OnCaptureLost() {
 }
 
 void NativeWidgetAura::OnPaint(gfx::Canvas* canvas) {
-  delegate_->OnNativeWidgetPaint(canvas);
+  // Because we may animate closed it's entirely possible to be asked to paint
+  // while closing. We ignore paints during this time as most likely the data
+  // associated with views is in a weird state.
+  if (!close_widget_factory_.HasWeakPtrs())
+    delegate_->OnNativeWidgetPaint(canvas);
 }
 
 void NativeWidgetAura::OnWindowDestroying() {
