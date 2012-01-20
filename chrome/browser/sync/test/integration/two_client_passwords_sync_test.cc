@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -272,7 +272,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest,
   ASSERT_FALSE(GetClient(1)->SetupSync());
   SetPassphrase(1, kAnotherValidPassphrase);
   ASSERT_TRUE(GetClient(1)->AwaitPassphraseRequired());
-  ASSERT_FALSE(GetClient(1)->AwaitFullSyncCompletion("Initial sync."));
 
   // Add a password on 0 while clients have different passphrases.
   PasswordForm form0 = CreateTestPasswordForm(0);

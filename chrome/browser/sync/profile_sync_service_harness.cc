@@ -272,13 +272,6 @@ bool ProfileSyncServiceHarness::RunStateChangeMachine() {
         SignalStateCompleteWithNextState(FULLY_SYNCED);
         break;
       }
-      if (service()->passphrase_required_reason() ==
-              sync_api::REASON_SET_PASSPHRASE_FAILED) {
-        // A passphrase is required for decryption and we don't have it. Do not
-        // wait any more.
-        SignalStateCompleteWithNextState(SET_PASSPHRASE_FAILED);
-        break;
-      }
       if (!GetStatus().server_reachable) {
         // The client cannot reach the sync server because the network is
         // disabled. There is no need to wait anymore.
@@ -771,9 +764,7 @@ bool ProfileSyncServiceHarness::IsDataSyncedImpl(
       GetStatus().notifications_enabled &&
       !service()->HasUnsyncedItems() &&
       !snap->has_more_to_sync &&
-      !HasPendingBackendMigration() &&
-      service()->passphrase_required_reason() !=
-        sync_api::REASON_SET_PASSPHRASE_FAILED;
+      !HasPendingBackendMigration();
 }
 
 bool ProfileSyncServiceHarness::IsDataSynced() {
