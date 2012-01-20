@@ -1039,22 +1039,11 @@ bool OncNetworkParser::ProcessProxySettings(OncNetworkParser* parser,
   scoped_ptr<StringValue> val(Value::CreateStringValue(proxy_dict_str));
   network->UpdatePropertyMap(PROPERTY_INDEX_PROXY_CONFIG, *val.get());
 
-  // TODO(kuan): NetworkLibraryImplCros::CallConfigureService does not fire any
-  // notification when updating service properties, so chromeos::
-  // ProxyConfigServiceImpl does not get notified of changes in ProxyConfig
-  // property.  This doesn't matter for other properties, but the new
-  // ProxyConfig property needs to be processed by ProxyConfigServiceImpl via
-  // OnNetworkChanged notification so that it can be reflected in UI and, more
-  // importantly, activated on the network stack.
-  // However, calling SetProxyConfig here to set the property and trigger
-  /// flimflam to trigger firing of OnNetworkChanged notification will fail
-  // because |network| does not a service_path until flimflam resolves guid with
-  // service_path in CallConfigureService.
-  // So for now, just set the new proxy setting into proxy_config_ data member
-  // of |network| first.
-  // Note that NetworkLibrary has not migrated to using GUID yet and is still
-  // using service_path, so there's no way to identify which service this
-  // Network object is referencing.
+  // If |network| is currently being connected to or it exists in memory,
+  // flimflam will fire PropertyChanged notification in ConfigureService,
+  // chromeos::ProxyConfigServiceImpl will get OnNetworkChanged notification
+  // and, if necessary, activate |proxy_dict_str| on network stack and reflect
+  // it in UI via "Change proxy settings" button.
   network->set_proxy_config(proxy_dict_str);
   VLOG(1) << "Parsed ProxyConfig: " << network->proxy_config();
 
