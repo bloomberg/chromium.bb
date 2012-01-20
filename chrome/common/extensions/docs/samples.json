@@ -55,8 +55,8 @@
     "chrome.experimental.clear.history": "experimental.clear.html#method-history",
     "chrome.experimental.clear.indexedDB": "experimental.clear.html#method-indexedDB",
     "chrome.experimental.clear.localStorage": "experimental.clear.html#method-localStorage",
-    "chrome.experimental.clear.lsoData": "experimental.clear.html#method-lsoData",
     "chrome.experimental.clear.passwords": "experimental.clear.html#method-passwords",
+    "chrome.experimental.clear.pluginData": "experimental.clear.html#method-pluginData",
     "chrome.experimental.clear.webSQL": "experimental.clear.html#method-webSQL",
     "chrome.experimental.devtools.audits.addCategory": "experimental.devtools.audits.html#method-addCategory",
     "chrome.experimental.devtools.console.addMessage": "experimental.devtools.console.html#method-addMessage",
@@ -683,6 +683,34 @@
       ],
       "source_hash": "1d6e16eedea418d21ccee0d76bb5206079712cbe",
       "zip_path": "examples\/api\/i18n\/cld.zip"
+    },
+    {
+      "api_calls": [
+        "chrome.experimental.clear.browsingData"
+      ],
+      "crx_path": null,
+      "description": "A trivial usage example.",
+      "features": [
+        "browser_action",
+        "clear",
+        "experimental",
+        "popup"
+      ],
+      "icon": null,
+      "id": "b745d48df80e88222d7344efe7c19e03fd8202f4",
+      "name": "Clear API: Basics",
+      "packaged_app": false,
+      "path": "examples\/api\/clear\/basic\/",
+      "protocols": [],
+      "search_string": "CLEAR API: BASICS A TRIVIAL USAGE EXAMPLE. BROWSER_ACTION CLEAR EXPERIMENTAL POPUP CHROME.EXPERIMENTAL.CLEAR.BROWSINGDATA",
+      "source_files": [
+        "manifest.json",
+        "popup.css",
+        "popup.html",
+        "popup.js"
+      ],
+      "source_hash": "d2edfcb8636c176c4c8508bcbc5f45f56b574464",
+      "zip_path": "examples\/api\/clear\/basic.zip"
     },
     {
       "api_calls": [],

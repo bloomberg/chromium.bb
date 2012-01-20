@@ -16,7 +16,7 @@
     <script type="text/javascript" src="js/api_page_generator.js"></script>
     <script type="text/javascript" src="js/bootstrap.js"></script>
     <script type="text/javascript" src="js/sidebar.js"></script>
-  <meta name="description" content="Documentation for the chrome.experimental.clear module, which is part of the Google Chrome  extension APIs."><title>chrome.experimental.clear - Google Chrome Extensions - Google Code</title></head>
+  <meta name="description" content="Documentation for the chrome.experimental.clear module, which is part of the Google Chrome  extension APIs."><title>Clear API - Google Chrome Extensions - Google Code</title></head>
   <body>  <div id="gc-container" class="labs">
       <div id="devModeWarning">
         You are viewing extension docs in chrome via the 'file:' scheme: are you expecting to see local changes when you refresh? You'll need run chrome with --allow-file-access-from-files.
@@ -294,16 +294,30 @@
 
     <div class="g-unit" id="gc-pagecontent">
       <div id="pageTitle">
-        <h1 class="page_title">chrome.experimental.clear</h1>
+        <h1 class="page_title">Clear API</h1>
       </div>
         <!-- TABLE OF CONTENTS -->
         <div id="toc">
           <h2>Contents</h2>
           <ol>
-            <li style="display: none; ">
-              <a>h2Name</a>
+            <li>
+              <a href="#manifest">Manifest</a>
               <ol>
-                <li>
+                <li style="display: none; ">
+                  <a>h3Name</a>
+                </li>
+              </ol>
+            </li><li>
+              <a href="#usage">Usage</a>
+              <ol>
+                <li style="display: none; ">
+                  <a>h3Name</a>
+                </li>
+              </ol>
+            </li><li>
+              <a href="#samples">Examples</a>
+              <ol>
+                <li style="display: none; ">
                   <a>h3Name</a>
                 </li>
               </ol>
@@ -343,9 +357,9 @@
               </li><li>
                 <a href="#method-localStorage">localStorage</a>
               </li><li>
-                <a href="#method-lsoData">lsoData</a>
-              </li><li>
                 <a href="#method-passwords">passwords</a>
+              </li><li>
+                <a href="#method-pluginData">pluginData</a>
               </li><li>
                 <a href="#method-webSQL">webSQL</a>
               </li>
@@ -392,12 +406,107 @@
         <!-- /TABLE OF CONTENTS -->
 
         <!-- Standard content lead-in for experimental API pages -->
-        <p id="classSummary">
+        <p id="classSummary" style="display: none; ">
           For information on how to use experimental APIs, see the <a href="experimental.html">chrome.experimental.* APIs</a> page.
         </p>
 
         <!-- STATIC CONTENT PLACEHOLDER -->
-        <div id="static"></div>
+        <div id="static"><div id="pageData-name" class="pageData">Clear API</div>
+
+<!-- BEGIN AUTHORED CONTENT -->
+<p id="classSummary">
+  Use the <code>chrome.experimental.clear</code> module to remove browsing data
+  from a user's local profile. This module is still experimental. For more
+  information regarding the usage of experimental APIs, see the
+  <a href="experimental.html">chrome.experimental.* APIs</a> page.
+</p>
+
+<h2 id="manifest">Manifest</h2>
+
+<p>
+  You must declare the "clear" permission in the
+  <a href="manifest.html">extension manifest</a> to use this API. As the API is
+  still experimental, you must declare the "experimental" permisson as well.
+</p>
+
+<pre>{
+  "name": "My extension",
+  ...
+  <b>"permissions": [
+    "clear",
+    "experimental"
+  ]</b>,
+  ...
+}</pre>
+
+<h2 id="usage">Usage</h2>
+
+<p>
+  This API provides a time-based mechanism for clearing a user's browsing data.
+  Your code should provide a timestamp which indicates the historical date after
+  which the user's browsing data should be removed. This timestamp is formatted
+  as the number of milliseconds since the Unix epoch (which can be retrieved
+  from a JavaScript <code>Date</code> object via the <code>getTime</code>
+  method).
+</p>
+
+<p>
+  For example, to clear all of a user's browsing data from the last week, you
+  might write code as follows:
+</p>
+
+<pre>var callback = function () {
+  // Do something clever here once data has been removed.
+};
+
+var millisecondsPerWeek = 1000 * 60 * 60 * 24 * 7;
+var oneWeekAgo = (new Date()).getTime() - millisecondsPerWeek;
+chrome.experimental.clear.browsingData(oneWeekAgo, {
+  "appcache": true,
+  "cache": true,
+  "cookies": true,
+  "downloads": true,
+  "fileSystems": true,
+  "formData": true,
+  "history": true,
+  "indexedDB": true,
+  "localStorage": true,
+  "pluginData": true,
+  "passwords": true,
+  "webSQL": true
+}, callback);</pre>
+
+<p>
+  The <code>chrome.experimental.clear.browsingData</code> method allows you to
+  remove various types of browsing data with a single call, and will be much
+  faster than calling multiple more specific methods. If, however, you only
+  want to clear one specific type of browsing data (cookies, for example), the
+  more granular methods offer a readable alternative to a call filled with JSON.
+</p>
+
+<pre>var callback = function () {
+  // Do something clever here once data has been removed.
+};
+
+var millisecondsPerWeek = 1000 * 60 * 60 * 24 * 7;
+var oneWeekAgo = (new Date()).getTime() - millisecondsPerWeek;
+chrome.experimental.clear.cookies(oneWeekAgo, callback);</pre>
+
+<p class="caution">
+  <strong>Important</strong>: Removing browsing data involves a good deal of
+  heavy lifting in the background, and can take <em>tens of seconds</em> to
+  complete, depending on a user's profile. You should use the callback mechanism
+  to keep your users up to date on the removal's status.
+</p>
+
+<h2 id="samples">Examples</h2>
+<p>
+  Samples for the <code>clear</code> API are available
+  <a href="http://code.google.com/chrome/extensions/trunk/samples.html#chrome.experimental.clear">on the samples page</a>.
+</p>
+
+<!-- END AUTHORED CONTENT -->
+</div>
 
         <!-- API PAGE -->
         <div class="apiPage">
@@ -641,7 +750,7 @@
 
               <div class="description">
                 <p class="todo" style="display: none; ">Undocumented.</p>
-                <p>Clears data generated by browsing within a particular timeframe.</p>
+                <p>Clears various types of browsing data stored in a user's profile.</p>
 
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
@@ -860,7 +969,7 @@
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>Should the browser cache be cleared?</dd>
+          <dd>Should the browser's cache be cleared? Note: this clears the <em>entire</em> cache: it is not limited to the range you specify.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -1132,7 +1241,7 @@
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>Should stored form data be cleared?</dd>
+          <dd>Should the browser's stored form data be cleared?</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -1922,7 +2031,7 @@
 
               <div class="description">
                 <p class="todo" style="display: none; ">Undocumented.</p>
-                <p>Clears the browser's cookies.</p>
+                <p>Clears the browser's cookies modified within a particular timeframe.</p>
 
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
@@ -3311,206 +3420,6 @@
               </div> <!-- /description -->
 
             </div><div class="apiItem">
-              <a name="method-lsoData"></a> <!-- method-anchor -->
-              <h4>lsoData</h4>
-
-              <div class="summary"><span style="display: none; ">void</span>
-                  <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.experimental.clear.lsoData</span>(<span class="null"><span style="display: none; ">, </span><span>RemovalRange</span>
-                      <var><span>since</span></var></span><span class="optional"><span>, </span><span>function</span>
-                      <var><span>callback</span></var></span>)</div>
-
-              <div class="description">
-                <p class="todo" style="display: none; ">Undocumented.</p>
-                <p>Clears plugins' Local Storage Object data.</p>
-
-                <!-- PARAMETERS -->
-                <h4>Parameters</h4>
-                <dl>
-                  <div>
-                    <div>
-          <dt>
-            <var>since</var>
-              <em>
-
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
-                    <span id="typeTemplate">
-                      <span>
-                        <a href="experimental.clear.html#type-RemovalRange">RemovalRange</a>
-                      </span>
-                      <span style="display: none; ">
-                        <span>
-                          array of <span><span></span></span>
-                        </span>
-                        <span>paramType</span>
-                        <span></span>
-                      </span>
-                    </span>
-                  )
-                </div>
-
-              </em>
-          </dt>
-          <dd class="todo">
-            Undocumented.
-          </dd>
-          <dd style="display: none; ">
-            Description of this parameter from the json schema.
-          </dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
-          <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
-          <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
-          <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
-          <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
-        </div>
-                  </div><div>
-                    <div>
-          <dt>
-            <var>callback</var>
-              <em>
-
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
-                    <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
-                      <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
-                        <span>function</span>
-                        <span style="display: none; "></span>
-                      </span>
-                    </span>
-                  )
-                </div>
-
-              </em>
-          </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
-          <dd>Called when plugins' Local Storage Data has been cleared.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
-          <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
-          <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
-          <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
-          <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
-        </div>
-                  </div>
-                </dl>
-
-                <!-- RETURNS -->
-                <h4 style="display: none; ">Returns</h4>
-                <dl>
-                  <div style="display: none; ">
-                    <div>
-                    </div>
-                  </div>
-                </dl>
-
-                <!-- CALLBACK -->
-                <div>
-                  <div>
-                  <h4>Callback function</h4>
-                  <p style="display: none; ">
-                    The callback <em>parameter</em> should specify a function
-                    that looks like this:
-                  </p>
-                  <p>
-                    If you specify the <em>callback</em> parameter, it should
-                    specify a function that looks like this:
-                  </p>
-
-                  <!-- Note: intentionally longer 80 columns -->
-                  <pre>function(<span></span>) <span class="subdued">{...}</span>;</pre>
-                  <dl>
-                    <div style="display: none; ">
-                      <div>
-                      </div>
-                    </div>
-                  </dl>
-                  </div>
-                </div>
-
-                <!-- MIN_VERSION -->
-                <p style="display: none; ">
-                  This function was added in version <b><span></span></b>.
-                  If you require this function, the manifest key
-                  <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-                  can ensure that your extension won't be run in an earlier browser version.
-                </p>
-              </div> <!-- /description -->
-
-            </div><div class="apiItem">
               <a name="method-passwords"></a> <!-- method-anchor -->
               <h4>passwords</h4>
 
@@ -3629,6 +3538,206 @@
             Undocumented.
           </dd>
           <dd>Called when the browser's passwords have been cleared.</dd>
+          <dd style="display: none; ">
+            This parameter was added in version
+            <b><span></span></b>.
+            You must omit this parameter in earlier versions,
+            and you may omit it in any version.  If you require this
+            parameter, the manifest key
+            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
+            can ensure that your extension won't be run in an earlier browser version.
+          </dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd style="display: none; ">
+            <dl>
+              <div>
+                <div>
+                </div>
+              </div>
+            </dl>
+          </dd>
+
+          <!-- OBJECT METHODS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+          <!-- OBJECT EVENT FIELDS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+          <!-- FUNCTION PARAMETERS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+        </div>
+                  </div>
+                </dl>
+
+                <!-- RETURNS -->
+                <h4 style="display: none; ">Returns</h4>
+                <dl>
+                  <div style="display: none; ">
+                    <div>
+                    </div>
+                  </div>
+                </dl>
+
+                <!-- CALLBACK -->
+                <div>
+                  <div>
+                  <h4>Callback function</h4>
+                  <p style="display: none; ">
+                    The callback <em>parameter</em> should specify a function
+                    that looks like this:
+                  </p>
+                  <p>
+                    If you specify the <em>callback</em> parameter, it should
+                    specify a function that looks like this:
+                  </p>
+
+                  <!-- Note: intentionally longer 80 columns -->
+                  <pre>function(<span></span>) <span class="subdued">{...}</span>;</pre>
+                  <dl>
+                    <div style="display: none; ">
+                      <div>
+                      </div>
+                    </div>
+                  </dl>
+                  </div>
+                </div>
+
+                <!-- MIN_VERSION -->
+                <p style="display: none; ">
+                  This function was added in version <b><span></span></b>.
+                  If you require this function, the manifest key
+                  <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
+                  can ensure that your extension won't be run in an earlier browser version.
+                </p>
+              </div> <!-- /description -->
+
+            </div><div class="apiItem">
+              <a name="method-pluginData"></a> <!-- method-anchor -->
+              <h4>pluginData</h4>
+
+              <div class="summary"><span style="display: none; ">void</span>
+                  <!-- Note: intentionally longer 80 columns -->
+                  <span>chrome.experimental.clear.pluginData</span>(<span class="null"><span style="display: none; ">, </span><span>RemovalRange</span>
+                      <var><span>since</span></var></span><span class="optional"><span>, </span><span>function</span>
+                      <var><span>callback</span></var></span>)</div>
+
+              <div class="description">
+                <p class="todo" style="display: none; ">Undocumented.</p>
+                <p>Clears plugins' data.</p>
+
+                <!-- PARAMETERS -->
+                <h4>Parameters</h4>
+                <dl>
+                  <div>
+                    <div>
+          <dt>
+            <var>since</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional" style="display: none; ">optional</span>
+                    <span class="enum" style="display: none; ">enumerated</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <a href="experimental.clear.html#type-RemovalRange">RemovalRange</a>
+                      </span>
+                      <span style="display: none; ">
+                        <span>
+                          array of <span><span></span></span>
+                        </span>
+                        <span>paramType</span>
+                        <span></span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <dd style="display: none; ">
+            Description of this parameter from the json schema.
+          </dd>
+          <dd style="display: none; ">
+            This parameter was added in version
+            <b><span></span></b>.
+            You must omit this parameter in earlier versions,
+            and you may omit it in any version.  If you require this
+            parameter, the manifest key
+            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
+            can ensure that your extension won't be run in an earlier browser version.
+          </dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd style="display: none; ">
+            <dl>
+              <div>
+                <div>
+                </div>
+              </div>
+            </dl>
+          </dd>
+
+          <!-- OBJECT METHODS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+          <!-- OBJECT EVENT FIELDS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+          <!-- FUNCTION PARAMETERS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+        </div>
+                  </div><div>
+                    <div>
+          <dt>
+            <var>callback</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span class="enum" style="display: none; ">enumerated</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
+                          array of <span><span></span></span>
+                        </span>
+                        <span>function</span>
+                        <span style="display: none; "></span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo" style="display: none; ">
+            Undocumented.
+          </dd>
+          <dd>Called when plugins' data has been cleared.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
