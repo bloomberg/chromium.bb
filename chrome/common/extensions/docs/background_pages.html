@@ -373,14 +373,43 @@ the background page tells the views to update.
 
 <p>
 Register your background page in the
-<a href="manifest.html">extension manifest</a>
+<a href="manifest.html">extension manifest</a>.
+In the common case, a background page
+does not require any HTML markup.
+These kind of background pages can be
+implemented using JavaScript files alone,
 like this:
 </p>
 
 <pre>{
   "name": "My extension",
   ...
-  <b>"background_page": "background.html"</b>,
+  <b>"background": {
+    "scripts": ["background.js"]
+  }</b>,
+  ...
+}</pre>
+
+<p>
+A background page will be generated
+by the extension system
+that includes each of the files listed
+in the <code>scripts</code> property.
+</p>
+
+<p>
+If you need to specify HTML
+in your background page, you can
+do that using the <code>page</code>
+property instead:
+</p>
+
+<pre>{
+  "name": "My extension",
+  ...
+  <b>"background": {
+    "page": ["background.html"]
+  }</b>,
   ...
 }</pre>
 
@@ -426,31 +455,27 @@ from a file named <code>image.html</code>.
 <!-- [PENDING: Once we have our set of samples, we should point to the example this is from and to other relevant examples.  This is currently untested code derived from the screenshot sample.] -->
 </p>
 
-<pre><em>//In the background page:</em>
-&lt;html&gt;
-  &lt;script&gt;
-    //React when a browser action's icon is clicked.
-    chrome.browserAction.onClicked.addListener(function(tab) {
-      var viewTabUrl = chrome.extension.getURL('image.html');
-      var imageUrl = <em>/* an image's URL */</em>;
+<pre><em>//In background.js:</em>
+// React when a browser action's icon is clicked.
+chrome.browserAction.onClicked.addListener(function(tab) {
+  var viewTabUrl = chrome.extension.getURL('image.html');
+  var imageUrl = <em>/* an image's URL */</em>;
 
-      //Look through all the pages in this extension to find one we can use.
-      var views = chrome.extension.getViews();
-      for (var i = 0; i &lt; views.length; i++) {
-        var view = views[i];
+  // Look through all the pages in this extension to find one we can use.
+  var views = chrome.extension.getViews();
+  for (var i = 0; i &lt; views.length; i++) {
+    var view = views[i];
 
-        //If this view has the right URL and hasn't been used yet...
-        if (view.location.href == viewTabUrl &amp;&amp; !view.imageAlreadySet) {
+    // If this view has the right URL and hasn't been used yet...
+    if (view.location.href == viewTabUrl &amp;&amp; !view.imageAlreadySet) {
 
-          //...call one of its functions and set a property.
-          view.setImageUrl(imageUrl);
-          view.imageAlreadySet = true;
-          break; //we're done
-        }
-      }
-    });
-  &lt;/script&gt;
-&lt;/html&gt;
+      // ...call one of its functions and set a property.
+      view.setImageUrl(imageUrl);
+      view.imageAlreadySet = true;
+      break; // we're done
+    }
+  }
+});
 
 <em>//In image.html:</em>
 &lt;html&gt;
@@ -470,7 +495,6 @@ from a file named <code>image.html</code>.
   &lt;/body&gt;
 &lt;/html&gt;
 </pre>
-
 </div>
 
         <!-- API PAGE -->

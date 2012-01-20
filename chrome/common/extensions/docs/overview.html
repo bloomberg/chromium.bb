@@ -601,7 +601,9 @@ that uses information from google.com:
   "version": "2.1",
   "description": "Gets information from Google.",
   "icons": { "128": "icon_128.png" },
-  "background_page": "bg.html",
+  "background": {
+    "scripts": ["bg.js"]
+  },
   "permissions": ["http://*.google.com/", "https://*.google.com/"],
   "browser_action": {
     "default_title": "",
@@ -637,7 +639,7 @@ that has at least two extensions installed:
 a browser action (yellow icon)
 and a page action (blue icon).
 Both the browser action and the page action
-have background pages defined by HTML files.
+have background pages.
 This figure shows the browser action's background page,
 which is defined by <code>background.html</code>
 and has JavaScript code that controls
@@ -668,14 +670,13 @@ Here are some examples of extensions that usually
     presents its UI solely through a popup
     (and perhaps an options page).
   </li>
-  <li> 
+  <li>
     An extension that provides an <em>override page</em>—a
     page that replaces a standard Chrome page.
   </li>
   <li>
     An extension with a content script
-    that doesn't use cross-origin XMLHttpRequests or localStorage,
-    and that doesn't need to use
+    that doesn't use localStorage or
     <a href="#apis">extension APIs</a>.
   </li>
   <li>
