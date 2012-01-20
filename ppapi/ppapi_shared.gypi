@@ -17,6 +17,8 @@
         '../net/net.gyp:net',
         '../skia/skia.gyp:skia',
         '../third_party/icu/icu.gyp:icuuc',
+        # TODO(ananta) : The WebKit dependency needs to move to a new target for NACL.
+        '../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
         '../ui/gfx/surface/surface.gyp:surface',
       ],
       'defines': [
@@ -28,6 +30,16 @@
       ],
       'export_dependent_settings': [
         '../base/base.gyp:base',
+        '../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',        
+      ],
+      'conditions': [
+        ['OS=="mac"', {
+          'link_settings': {
+            'libraries': [
+              '$(SDKROOT)/System/Library/Frameworks/QuartzCore.framework',
+            ],
+          },
+        }],
       ],
       'sources': [
         'shared_impl/callback_tracker.cc',
@@ -58,8 +70,6 @@
         'shared_impl/ppb_file_io_shared.h',
         'shared_impl/ppb_file_ref_shared.cc',
         'shared_impl/ppb_file_ref_shared.h',
-        'shared_impl/ppb_font_shared.cc',
-        'shared_impl/ppb_font_shared.h',
         'shared_impl/ppb_graphics_3d_shared.cc',
         'shared_impl/ppb_graphics_3d_shared.h',
         'shared_impl/ppb_image_data_shared.cc',
@@ -106,6 +116,9 @@
         # TODO(viettrungluu): Split these out; it won't be used in NaCl.
         'shared_impl/private/net_address_private_impl.cc',
         'shared_impl/private/net_address_private_impl.h',
+
+        'shared_impl/private/ppb_font_shared.cc',
+        'shared_impl/private/ppb_font_shared.h',
 
         'shared_impl/private/tcp_socket_private_impl.cc',
         'shared_impl/private/tcp_socket_private_impl.h',

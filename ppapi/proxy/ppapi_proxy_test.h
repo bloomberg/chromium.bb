@@ -121,9 +121,6 @@ class PluginProxyTestHarness : public ProxyTestHarnessBase {
     virtual void Unregister(uint32 plugin_dispatcher_id) OVERRIDE;
 
     // PluginPepperDelegate implementation.
-    virtual ppapi::WebKitForwarding* GetWebKitForwarding() OVERRIDE;
-    virtual void PostToWebKitThread(const tracked_objects::Location& from_here,
-                                    const base::Closure& task) OVERRIDE;
     virtual bool SendToBrowser(IPC::Message* msg) OVERRIDE;
     virtual void PreCacheFont(const void* logfontw) OVERRIDE;
 

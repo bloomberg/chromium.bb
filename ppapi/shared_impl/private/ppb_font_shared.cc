@@ -2,43 +2,58 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/plugins/ppapi/webkit_forwarding_impl.h"
-
-#include <string>
+#include "ppapi/shared_impl/private/ppb_font_shared.h"
 
 #include "base/debug/trace_event.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/string_util.h"
-#include "base/synchronization/waitable_event.h"
 #include "base/utf_string_conversions.h"
 #include "ppapi/c/dev/ppb_font_dev.h"
-#include "ppapi/c/pp_point.h"
-#include "ppapi/c/pp_rect.h"
 #include "ppapi/shared_impl/ppapi_preferences.h"
+#include "ppapi/shared_impl/var.h"
+#include "ppapi/thunk/enter.h"
+#include "ppapi/thunk/ppb_image_data_api.h"
+#include "ppapi/thunk/thunk.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/skia/include/core/SkRect.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebCanvas.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebFont.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebFontDescription.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebRect.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebFloatPoint.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebFloatRect.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebRect.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebFont.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebFontDescription.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebTextRun.h"
-#include "webkit/glue/webkit_glue.h"
 
-using ::ppapi::WebKitForwarding;
-using WebKit::WebCanvas;
+using ppapi::StringVar;
+using ppapi::thunk::EnterResource;
+using ppapi::thunk::EnterResourceNoLock;
+using ppapi::thunk::PPB_ImageData_API;
+using ppapi::WebKitForwarding;
 using WebKit::WebFloatPoint;
 using WebKit::WebFloatRect;
 using WebKit::WebFont;
 using WebKit::WebFontDescription;
 using WebKit::WebRect;
 using WebKit::WebTextRun;
+using WebKit::WebCanvas;
 
-namespace webkit {
 namespace ppapi {
 
 namespace {
+
+// Converts the given PP_TextRun to a TextRun, returning true on success.
+// False means the input was invalid.
+bool PPTextRunToTextRun(const PP_TextRun_Dev* run,
+                        WebKitForwarding::Font::TextRun* output) {
+  StringVar* text_string = StringVar::FromPPVar(run->text);
+  if (!text_string)
+    return false;
+
+  output->text = text_string->value();
+  output->rtl = run->rtl == PP_TRUE ? true : false;
+  output->override_direction =
+      run->override_direction == PP_TRUE ? true : false;
+  return true;
+}
 
 // The PP_* version lacks "None", so is just one value shifted from the
 // WebFontDescription version. These values are checked in
@@ -136,22 +151,17 @@ class FontImpl : public WebKitForwarding::Font {
            const ::ppapi::Preferences& prefs);
   virtual ~FontImpl();
 
-  virtual void Describe(base::WaitableEvent* event,
-                        PP_FontDescription_Dev* description,
+  virtual void Describe(PP_FontDescription_Dev* description,
                         std::string* face,
                         PP_FontMetrics_Dev* metrics,
                         PP_Bool* result) OVERRIDE;
-  virtual void DrawTextAt(base::WaitableEvent* event,
-                          const DrawTextParams& params) OVERRIDE;
-  virtual void MeasureText(base::WaitableEvent* event,
-                           const TextRun& text,
+  virtual void DrawTextAt(const DrawTextParams& params) OVERRIDE;
+  virtual void MeasureText(const TextRun& text,
                            int32_t* result) OVERRIDE;
-  virtual void CharacterOffsetForPixel(base::WaitableEvent* event,
-                                       const TextRun& text,
+  virtual void CharacterOffsetForPixel(const TextRun& text,
                                        int32_t pixel_position,
                                        uint32_t* result) OVERRIDE;
-  virtual void PixelOffsetForCharacter(base::WaitableEvent* event,
-                                       const TextRun& text,
+  virtual void PixelOffsetForCharacter(const TextRun& text,
                                        uint32_t char_offset,
                                        int32_t* result) OVERRIDE;
 
@@ -172,8 +182,7 @@ FontImpl::FontImpl(const PP_FontDescription_Dev& desc,
 FontImpl::~FontImpl() {
 }
 
-void FontImpl::Describe(base::WaitableEvent* event,
-                        PP_FontDescription_Dev* description,
+void FontImpl::Describe(PP_FontDescription_Dev* description,
                         std::string* face,
                         PP_FontMetrics_Dev* metrics,
                         PP_Bool* result) {
@@ -205,12 +214,9 @@ void FontImpl::Describe(base::WaitableEvent* event,
 
     *result = PP_TRUE;
   }
-  if (event)
-    event->Signal();
 }
 
-void FontImpl::DrawTextAt(base::WaitableEvent* event,
-                          const DrawTextParams& params) {
+void FontImpl::DrawTextAt(const DrawTextParams& params) {
   TRACE_EVENT0("ppapi WebKit thread", "FontImpl::DrawTextAt");
   WebTextRun run = TextRunToWebTextRun(params.text);
 
@@ -230,34 +236,32 @@ void FontImpl::DrawTextAt(base::WaitableEvent* event,
                        params.clip->size.width, params.clip->size.height);
   }
 
-  font_->drawText(webkit_glue::ToWebCanvas(params.destination), run,
-                  web_position, params.color, web_clip,
+#if WEBKIT_USING_SKIA
+  WebCanvas* canvas = params.destination;
+#elif WEBKIT_USING_CG
+  WebCanvas* canvas = skia::GetBitmapContext(skia::GetTopDevice(*destination));
+#else
+  NOTIMPLEMENTED();
+  return;
+#endif
+  font_->drawText(canvas, run, web_position, params.color, web_clip,
                   params.image_data_is_opaque == PP_TRUE);
-  if (event)
-    event->Signal();
 }
 
-void FontImpl::MeasureText(base::WaitableEvent* event,
-                           const TextRun& text, int32_t* result) {
+void FontImpl::MeasureText(const TextRun& text, int32_t* result) {
   TRACE_EVENT0("ppapi WebKit thread", "FontImpl::MeasureText");
   *result = font_->calculateWidth(TextRunToWebTextRun(text));
-  if (event)
-    event->Signal();
 }
 
-void FontImpl::CharacterOffsetForPixel(base::WaitableEvent* event,
-                                       const TextRun& text,
+void FontImpl::CharacterOffsetForPixel(const TextRun& text,
                                        int32_t pixel_position,
                                        uint32_t* result) {
   TRACE_EVENT0("ppapi WebKit thread", "FontImpl::CharacterOffsetForPixel");
   *result = static_cast<uint32_t>(font_->offsetForPosition(
       TextRunToWebTextRun(text), static_cast<float>(pixel_position)));
-  if (event)
-    event->Signal();
 }
 
-void FontImpl::PixelOffsetForCharacter(base::WaitableEvent* event,
-                                       const TextRun& text,
+void FontImpl::PixelOffsetForCharacter(const TextRun& text,
                                        uint32_t char_offset,
                                        int32_t* result) {
   TRACE_EVENT0("ppapi WebKit thread", "FontImpl::PixelOffsetForCharacter");
@@ -269,32 +273,147 @@ void FontImpl::PixelOffsetForCharacter(base::WaitableEvent* event,
         run, WebFloatPoint(0.0f, 0.0f), font_->height(), 0, char_offset);
     *result = static_cast<int>(rect.width);
   }
-  if (event)
-    event->Signal();
 }
 
 }  // namespace
 
-// WebKitForwardingImpl --------------------------------------------------------
+// static
+bool PPB_Font_Shared::IsPPFontDescriptionValid(
+    const PP_FontDescription_Dev& desc) {
+  // Check validity of string. We can't check the actual text since we could
+  // be on the wrong thread and don't know if we're in the plugin or the host.
+  if (desc.face.type != PP_VARTYPE_STRING &&
+      desc.face.type != PP_VARTYPE_UNDEFINED)
+    return false;
 
-WebKitForwardingImpl::WebKitForwardingImpl() {
+  // Check enum ranges.
+  if (static_cast<int>(desc.family) < PP_FONTFAMILY_DEFAULT ||
+      static_cast<int>(desc.family) > PP_FONTFAMILY_MONOSPACE)
+    return false;
+  if (static_cast<int>(desc.weight) < PP_FONTWEIGHT_100 ||
+      static_cast<int>(desc.weight) > PP_FONTWEIGHT_900)
+    return false;
+
+  // Check for excessive sizes which may cause layout to get confused.
+  if (desc.size > 200)
+    return false;
+
+  return true;
 }
 
-WebKitForwardingImpl::~WebKitForwardingImpl() {
+// static
+PP_Resource PPB_Font_Shared::CreateAsImpl(
+    PP_Instance instance,
+    const PP_FontDescription_Dev& description,
+    const ::ppapi::Preferences& prefs) {
+  if (!::ppapi::PPB_Font_Shared::IsPPFontDescriptionValid(description))
+    return 0;
+  return (new PPB_Font_Shared(instance, description, prefs))->GetReference();
 }
 
-void WebKitForwardingImpl::CreateFontForwarding(
-    base::WaitableEvent* event,
-    const PP_FontDescription_Dev& desc,
-    const std::string& desc_face,
-    const ::ppapi::Preferences& prefs,
-    Font** result) {
-  TRACE_EVENT0("ppapi WebKit thread",
-               "WebKitForwardingImpl::CreateFontForwarding");
-  *result = new FontImpl(desc, desc_face, prefs);
-  if (event)
-    event->Signal();
+// static
+PP_Resource PPB_Font_Shared::CreateAsProxy(
+    PP_Instance instance,
+    const PP_FontDescription_Dev& description,
+    const ::ppapi::Preferences& prefs) {
+  return CreateAsImpl(instance, description, prefs);
+}
+
+PPB_Font_Shared::PPB_Font_Shared(PP_Instance pp_instance,
+                                 const PP_FontDescription_Dev& desc,
+                                 const ::ppapi::Preferences& prefs)
+    : Resource(pp_instance) {
+  StringVar* face_name = StringVar::FromPPVar(desc.face);
+
+  font_impl_.reset(new FontImpl(
+      desc, face_name ? face_name->value() : std::string(), prefs));
+}
+
+PPB_Font_Shared::~PPB_Font_Shared() {
+}
+
+::ppapi::thunk::PPB_Font_API* PPB_Font_Shared::AsPPB_Font_API() {
+  return this;
+}
+
+PP_Bool PPB_Font_Shared::Describe(PP_FontDescription_Dev* description,
+                                  PP_FontMetrics_Dev* metrics) {
+  std::string face;
+  PP_Bool result = PP_FALSE;
+  font_impl_->Describe(description, &face, metrics, &result);
+  if (!result)
+    return PP_FALSE;
+
+  // Convert the string.
+  description->face = StringVar::StringToPPVar(face);
+  return PP_TRUE;
+}
+
+PP_Bool PPB_Font_Shared::DrawTextAt(PP_Resource image_data,
+                                    const PP_TextRun_Dev* text,
+                                    const PP_Point* position,
+                                    uint32_t color,
+                                    const PP_Rect* clip,
+                                    PP_Bool image_data_is_opaque) {
+  PP_Bool result = PP_FALSE;
+  // Get and map the image data we're painting to.
+  EnterResource<PPB_ImageData_API> enter(image_data, true);
+  if (enter.failed())
+    return result;
+
+  // TODO(ananta)
+  // We need to remove dependency on skia from this layer.
+  PPB_ImageData_API* image = static_cast<PPB_ImageData_API*>(
+      enter.object());
+  skia::PlatformCanvas* canvas = image->GetPlatformCanvas();
+  bool needs_unmapping = false;
+  if (!canvas) {
+    needs_unmapping = true;
+    image->Map();
+    canvas = image->GetPlatformCanvas();
+    if (!canvas)
+      return result;  // Failure mapping.
+  }
+
+  WebKitForwarding::Font::TextRun run;
+  if (PPTextRunToTextRun(text, &run)) {
+    font_impl_->DrawTextAt(WebKitForwarding::Font::DrawTextParams(
+        canvas, run, position, color, clip, image_data_is_opaque));
+    result = PP_TRUE;
+  }
+
+  if (needs_unmapping)
+    image->Unmap();
+  return result;
+}
+
+int32_t PPB_Font_Shared::MeasureText(const PP_TextRun_Dev* text) {
+  int32_t result = -1;
+  WebKitForwarding::Font::TextRun run;
+  if (PPTextRunToTextRun(text, &run))
+    font_impl_->MeasureText(run, &result);
+  return result;
+}
+
+uint32_t PPB_Font_Shared::CharacterOffsetForPixel(const PP_TextRun_Dev* text,
+                                                  int32_t pixel_position) {
+  uint32_t result = -1;
+  WebKitForwarding::Font::TextRun run;
+  if (PPTextRunToTextRun(text, &run)) {
+    font_impl_->CharacterOffsetForPixel(run, pixel_position, &result);
+  }
+  return result;
+}
+
+int32_t PPB_Font_Shared::PixelOffsetForCharacter(const PP_TextRun_Dev* text,
+                                                uint32_t char_offset) {
+  int32_t result = -1;
+  WebKitForwarding::Font::TextRun run;
+  if (PPTextRunToTextRun(text, &run)) {
+    font_impl_->PixelOffsetForCharacter(run, char_offset, &result);
+  }
+  return result;
 }
 
 }  // namespace ppapi
-}  // namespace webkit
+

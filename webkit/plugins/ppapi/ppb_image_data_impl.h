@@ -63,9 +63,8 @@ class PPB_ImageData_Impl : public ::ppapi::Resource,
   virtual void* Map() OVERRIDE;
   virtual void Unmap() OVERRIDE;
   virtual int32_t GetSharedMemory(int* handle, uint32_t* byte_count) OVERRIDE;
+  virtual skia::PlatformCanvas* GetPlatformCanvas() OVERRIDE;
 
-  // The mapped bitmap and canvas will be NULL if the image is not mapped.
-  skia::PlatformCanvas* mapped_canvas() const { return mapped_canvas_.get(); }
   const SkBitmap* GetMappedBitmap() const;
 
   // Swaps the guts of this image data with another.

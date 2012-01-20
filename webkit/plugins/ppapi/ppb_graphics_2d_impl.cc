@@ -398,7 +398,7 @@ bool PPB_Graphics2D_Impl::ReadImageData(PP_Resource image,
     // Convert the image data if the format does not match.
     ConvertImageData(image_data_, src_irect, image_resource, dest_rect);
   } else {
-    skia::PlatformCanvas* dest_canvas = image_resource->mapped_canvas();
+    skia::PlatformCanvas* dest_canvas = image_resource->GetPlatformCanvas();
 
     // We want to replace the contents of the bitmap rather than blend.
     SkPaint paint;
@@ -583,7 +583,7 @@ void PPB_Graphics2D_Impl::ExecutePaintImageData(PPB_ImageData_Impl* image,
     ConvertImageData(image, src_irect, image_data_, dest_rect);
   } else {
     // We're guaranteed to have a mapped canvas since we mapped it in Init().
-    skia::PlatformCanvas* backing_canvas = image_data_->mapped_canvas();
+    skia::PlatformCanvas* backing_canvas = image_data_->GetPlatformCanvas();
 
     // We want to replace the contents of the bitmap rather than blend.
     SkPaint paint;
@@ -596,7 +596,7 @@ void PPB_Graphics2D_Impl::ExecutePaintImageData(PPB_ImageData_Impl* image,
 void PPB_Graphics2D_Impl::ExecuteScroll(const gfx::Rect& clip,
                                         int dx, int dy,
                                         gfx::Rect* invalidated_rect) {
-  gfx::ScrollCanvas(image_data_->mapped_canvas(),
+  gfx::ScrollCanvas(image_data_->GetPlatformCanvas(),
                     clip, gfx::Point(dx, dy));
   *invalidated_rect = clip;
 }
