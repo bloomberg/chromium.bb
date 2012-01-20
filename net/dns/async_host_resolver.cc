@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -349,8 +349,9 @@ void AsyncHostResolver::OnDnsRequestComplete(
   RequestList& requests = rit->second;
   int port = requests.empty() ? 80 : requests.front()->info().port();
 
-  // Extract AddressList out of DnsResponse.
+  // Extract AddressList and TTL out of DnsResponse.
   AddressList addr_list;
+  uint32 ttl = kuint32max;
   if (result == OK) {
     IPAddressList ip_addresses;
     DnsRecordParser parser = response->Parser();
@@ -362,6 +363,7 @@ void AsyncHostResolver::OnDnsRequestComplete(
            record.rdata.size() == kIPv6AddressSize)) {
         ip_addresses.push_back(IPAddressNumber(record.rdata.begin(),
                                                record.rdata.end()));
+        ttl = std::min(ttl, record.ttl);
       }
     }
     if (!ip_addresses.empty())
@@ -380,16 +382,21 @@ void AsyncHostResolver::OnDnsRequestComplete(
   // case |requests| would be empty.  We are knowingly throwing away the
   // result of a DNS resolution in that case, because (a) if there are no
   // requests, we do not have info to obtain a key from, (b) DnsTransaction
-  // does not have info(), adding one into it just temporarily doesn't make
-  // sense, since HostCache will be replaced with RR cache soon.
-  // Also, we only cache positive results.  All of this will change when RR
-  // cache is added.
-  if (result == OK && cache_.get() && !requests.empty()) {
+  // does not have info().
+  // TODO(szym): Should DnsTransaction ignore HostResolverFlags or use defaults?
+  if ((result == OK || result == ERR_NAME_NOT_RESOLVED) && cache_.get() &&
+      !requests.empty()) {
     Request* request = requests.front();
     HostResolver::RequestInfo info = request->info();
     HostCache::Key key(
         info.hostname(), info.address_family(), info.host_resolver_flags());
-    cache_->Set(key, result, addr_list, base::TimeTicks::Now());
+    // Store negative results with TTL 0 to flush out the old entry.
+    cache_->Set(key,
+                result,
+                addr_list,
+                base::TimeTicks::Now(),
+                (result == OK) ? base::TimeDelta::FromSeconds(ttl)
+                               : base::TimeDelta());
   }
 
   // Cleanup requests.

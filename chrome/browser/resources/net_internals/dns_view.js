@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -71,8 +71,6 @@ var DnsView = (function() {
       // Clear the existing values.
       $(DnsView.DEFAULT_FAMILY_SPAN_ID).innerHTML = '';
       $(DnsView.CAPACITY_SPAN_ID).innerHTML = '';
-      $(DnsView.TTL_SUCCESS_SPAN_ID).innerHTML = '';
-      $(DnsView.TTL_FAILURE_SPAN_ID).innerHTML = '';
       $(DnsView.CACHE_TBODY_ID).innerHTML = '';
       $(DnsView.ACTIVE_SPAN_ID).innerHTML = '0';
       $(DnsView.EXPIRED_SPAN_ID).innerHTML = '0';
@@ -91,10 +89,6 @@ var DnsView = (function() {
       // Fill in the basic cache information.
       var hostResolverCache = hostResolverInfo.cache;
       $(DnsView.CAPACITY_SPAN_ID).innerText = hostResolverCache.capacity;
-      $(DnsView.TTL_SUCCESS_SPAN_ID).innerText =
-          hostResolverCache.ttl_success_ms;
-      $(DnsView.TTL_FAILURE_SPAN_ID).innerText =
-          hostResolverCache.ttl_failure_ms;
 
       var expiredEntries = 0;
       // Date the cache was logged.  This will be either now, when actively

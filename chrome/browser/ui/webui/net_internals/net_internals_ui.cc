@@ -923,12 +923,6 @@ void NetInternalsMessageHandler::IOThreadImpl::OnGetHostResolverInfo(
   cache_info_dict->SetInteger(
       "capacity",
       static_cast<int>(cache->max_entries()));
-  cache_info_dict->SetInteger(
-      "ttl_success_ms",
-      static_cast<int>(cache->success_entry_ttl().InMilliseconds()));
-  cache_info_dict->SetInteger(
-      "ttl_failure_ms",
-      static_cast<int>(cache->failure_entry_ttl().InMilliseconds()));
 
   ListValue* entry_list = new ListValue();
 
