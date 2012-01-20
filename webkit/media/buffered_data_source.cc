@@ -552,11 +552,10 @@ void BufferedDataSource::ReadCallback(int error) {
     // before. Update the total size so Read()s past the end of the file will
     // fail like they would if we had known the file size at the beginning.
     total_bytes_ = loader_->instance_size();
+    if (total_bytes_ != kPositionNotSpecified)
+      buffered_bytes_ = total_bytes_;
 
-    if (host() && total_bytes_ != kPositionNotSpecified) {
-      host()->SetTotalBytes(total_bytes_);
-      host()->SetBufferedBytes(total_bytes_);
-    }
+    UpdateHostState_Locked();
   }
   DoneRead_Locked(error);
 }
@@ -589,15 +588,10 @@ void BufferedDataSource::NetworkEventCallback() {
   if (stop_signal_received_)
     return;
 
-  if (is_downloading_data != is_downloading_data_) {
-    is_downloading_data_ = is_downloading_data;
-    if (host())
-      host()->SetNetworkActivity(is_downloading_data);
-  }
-
+  is_downloading_data_ = is_downloading_data;
   buffered_bytes_ = buffered_position + 1;
-  if (host())
-    host()->SetBufferedBytes(buffered_bytes_);
+
+  UpdateHostState_Locked();
 }
 
 void BufferedDataSource::UpdateHostState_Locked() {
@@ -609,6 +603,7 @@ void BufferedDataSource::UpdateHostState_Locked() {
 
   if (total_bytes_ != kPositionNotSpecified)
     host()->SetTotalBytes(total_bytes_);
+  host()->SetNetworkActivity(is_downloading_data_);
   host()->SetBufferedBytes(buffered_bytes_);
 }
 

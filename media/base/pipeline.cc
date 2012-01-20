@@ -1020,11 +1020,8 @@ void Pipeline::FilterStateTransitionTask() {
 
     // Start monitoring rate of downloading.
     int bitrate = 0;
-    if (demuxer_.get()) {
+    if (demuxer_.get())
       bitrate = demuxer_->GetBitrate();
-      local_source_ = demuxer_->IsLocalSource();
-      streaming_ = !demuxer_->IsSeekable();
-    }
     // Needs to be locked because most other calls to |download_rate_monitor_|
     // occur on the renderer thread.
     download_rate_monitor_.Start(
@@ -1139,6 +1136,9 @@ void Pipeline::OnDemuxerBuilt(PipelineStatus status, Demuxer* demuxer) {
   }
 
   demuxer_ = demuxer;
+  // Set fields obtained from demuxer.
+  local_source_ = demuxer_->IsLocalSource();
+  streaming_ = !demuxer_->IsSeekable();
   demuxer_->set_host(this);
 
   {

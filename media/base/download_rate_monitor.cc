@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -91,8 +91,6 @@ void DownloadRateMonitor::SetBufferedBytes(
   if (stopped_)
     return;
 
-  is_downloading_data_ = true;
-
   // Check monotonically nondecreasing constraint.
   base::Time previous_time;
   if (!current_sample_.is_null())
@@ -120,12 +118,11 @@ void DownloadRateMonitor::SetBufferedBytes(
 }
 
 void DownloadRateMonitor::SetNetworkActivity(bool is_downloading_data) {
-  if (is_downloading_data == is_downloading_data_)
-    return;
-  // Invalidate the current sample if downloading is going from start to stopped
-  // or vice versa.
-  current_sample_.Reset();
-  is_downloading_data_ = is_downloading_data;
+  // Record when download defers for the first time.
+  if (!is_downloading_data && !has_deferred_) {
+    has_deferred_ = true;
+    NotifyCanPlayThroughIfNeeded();
+  }
 }
 
 void DownloadRateMonitor::Stop() {
@@ -139,13 +136,13 @@ void DownloadRateMonitor::Reset() {
   has_notified_can_play_through_ = false;
   current_sample_.Reset();
   sample_window_.clear();
-  is_downloading_data_ = false;
   total_bytes_ = -1;
   buffered_bytes_ = 0;
   local_source_ = false;
   bitrate_ = 0;
   stopped_ = true;
   streaming_ = false;
+  has_deferred_ = false;
 }
 
 DownloadRateMonitor::~DownloadRateMonitor() { }
@@ -210,8 +207,9 @@ bool DownloadRateMonitor::ShouldNotifyCanPlayThrough() {
   if (local_source_ || streaming_)
     return true;
 
-  // If all bytes are buffered, fire CanPlayThrough.
-  if (buffered_bytes_ == total_bytes_)
+  // If all bytes are buffered or if enough bytes were buffered such that
+  // downloading has deferred, fire CanPlayThrough.
+  if (buffered_bytes_ == total_bytes_ || has_deferred_)
     return true;
 
   // If bitrate is unknown, optimistically fire CanPlayThrough immediately.
@@ -228,12 +226,9 @@ bool DownloadRateMonitor::ShouldNotifyCanPlayThrough() {
   if (download_rate > 0)
     return download_rate >= bytes_needed_per_second;
 
-  // If download rate is unknown, it may be because the media is being
-  // downloaded so fast that it cannot collect an adequate number of samples
-  // before the download gets deferred.
-  //
-  // To catch this case, we also look at how much data is being downloaded
-  // immediately after the download begins.
+  // With very fast connections, we may want to fire CanPlayThrough before
+  // waiting for the sample window size to reach |kNumberOfSamples|. Check for
+  // this scenario.
   if (sample_window_.size() < kNumberOfSamples) {
     int64 bytes_downloaded_since_start =
         bytes_downloaded_in_window() + current_sample_.bytes_downloaded();

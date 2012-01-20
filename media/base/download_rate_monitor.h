@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -126,9 +126,6 @@ class MEDIA_EXPORT DownloadRateMonitor {
   Sample current_sample_;
   std::deque<Sample> sample_window_;
 
-  // True if actively downloading bytes, false otherwise.
-  bool is_downloading_data_;
-
   // Total number of bytes in the media file, 0 if unknown or undefined.
   int64 total_bytes_;
 
@@ -148,6 +145,9 @@ class MEDIA_EXPORT DownloadRateMonitor {
 
   // True if the data source is a streaming source, false otherwise.
   bool streaming_;
+
+  // True if downloading has been deferred at least once, false otherwise.
+  bool has_deferred_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadRateMonitor);
 };
