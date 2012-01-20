@@ -10,6 +10,7 @@
 #include "content/common/gpu/gpu_messages.h"
 
 #include <map>
+#include <vector>
 #include <X11/Xlib.h>
 #include <X11/extensions/Xcomposite.h>
 
@@ -23,6 +24,7 @@
 #include "third_party/angle/include/EGL/egl.h"
 #include "third_party/angle/include/EGL/eglext.h"
 #include "third_party/mesa/MesaLib/include/GL/osmesa.h"
+#include "ui/gfx/rect.h"
 #include "ui/gfx/gl/gl_context.h"
 #include "ui/gfx/gl/gl_bindings.h"
 #include "ui/gfx/gl/gl_implementation.h"
@@ -104,11 +106,15 @@ class EGLImageTransportSurface
   virtual ~EGLImageTransportSurface() OVERRIDE;
   void ReleaseSurface(scoped_refptr<EGLAcceleratedSurface>* surface);
   void SendBuffersSwapped();
+  void SendPostSubBuffer(int x, int y, int width, int height);
+  void GetRegionsToCopy(const gfx::Rect& new_damage_rect,
+                        std::vector<gfx::Rect>* regions);
 
   uint32 fbo_id_;
 
   scoped_refptr<EGLAcceleratedSurface> back_surface_;
   scoped_refptr<EGLAcceleratedSurface> front_surface_;
+  gfx::Rect previous_damage_rect_;
 
   // Whether or not we've successfully made the surface current once.
   bool made_current_;
@@ -382,6 +388,7 @@ bool EGLImageTransportSurface::SwapBuffers() {
                               back_surface_->texture(),
                               0);
   }
+  previous_damage_rect_ = gfx::Rect(front_surface_->size());
   return true;
 }
 
@@ -394,14 +401,107 @@ void EGLImageTransportSurface::SendBuffersSwapped() {
 
 bool EGLImageTransportSurface::PostSubBuffer(
     int x, int y, int width, int height) {
-  NOTREACHED();
-  return false;
+
+  DCHECK_NE(back_surface_.get(), static_cast<EGLAcceleratedSurface*>(NULL));
+  gfx::Size expected_size = back_surface_->size();
+  bool surfaces_same_size = front_surface_.get() &&
+      front_surface_->size() == expected_size;
+
+  const gfx::Rect new_damage_rect = gfx::Rect(x, y, width, height);
+  if (surfaces_same_size) {
+    std::vector<gfx::Rect> regions_to_copy;
+    GetRegionsToCopy(new_damage_rect, &regions_to_copy);
+
+    GLint previous_texture_id = 0;
+    glGetIntegerv(GL_ACTIVE_TEXTURE, &previous_texture_id);
+    glFramebufferTexture2DEXT(GL_FRAMEBUFFER,
+                              GL_COLOR_ATTACHMENT0,
+                              GL_TEXTURE_2D,
+                              front_surface_->texture(),
+                              0);
+    glBindTexture(GL_TEXTURE_2D, back_surface_->texture());
+
+    for (size_t i = 0; i < regions_to_copy.size(); ++i) {
+      const gfx::Rect& region_to_copy = regions_to_copy[i];
+      if (!region_to_copy.IsEmpty()) {
+        glCopyTexSubImage2D(GL_TEXTURE_2D, 0, region_to_copy.x(),
+            region_to_copy.y(), region_to_copy.x(), region_to_copy.y(),
+            region_to_copy.width(), region_to_copy.height());
+      }
+    }
+    glBindTexture(GL_TEXTURE_2D, previous_texture_id);
+  }
+
+  front_surface_.swap(back_surface_);
+
+  if (!surfaces_same_size) {
+    DCHECK(new_damage_rect == gfx::Rect(expected_size));
+    OnResize(expected_size);
+  }
+
+  helper_->DeferToFence(base::Bind(
+      &EGLImageTransportSurface::SendPostSubBuffer,
+      AsWeakPtr(), x, y, width, height));
+
+  previous_damage_rect_ = new_damage_rect;
+
+  return true;
+}
+
+void EGLImageTransportSurface::SendPostSubBuffer(
+    int x, int y, int width, int height) {
+  GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params params;
+  params.surface_id = front_surface_->pixmap();
+  params.x = x;
+  params.y = y;
+  params.width = width;
+  params.height = height;
+
+  helper_->SendAcceleratedSurfacePostSubBuffer(params);
+  helper_->SetScheduled(false);
+}
+
+void EGLImageTransportSurface::GetRegionsToCopy(
+    const gfx::Rect& new_damage_rect,
+    std::vector<gfx::Rect>* regions) {
+  DCHECK(front_surface_->size() == back_surface_->size());
+  gfx::Rect intersection = previous_damage_rect_.Intersect(new_damage_rect);
+
+  if (intersection.IsEmpty()) {
+    regions->push_back(previous_damage_rect_);
+    return;
+  }
+
+  // Top (above the intersection).
+  regions->push_back(gfx::Rect(previous_damage_rect_.x(),
+      previous_damage_rect_.y(),
+      previous_damage_rect_.width(),
+      intersection.y() - previous_damage_rect_.y()));
+
+  // Left (of the intersection).
+  regions->push_back(gfx::Rect(previous_damage_rect_.x(),
+      intersection.y(),
+      intersection.x() - previous_damage_rect_.x(),
+      intersection.height()));
+
+  // Right (of the intersection).
+  regions->push_back(gfx::Rect(intersection.right(),
+      intersection.y(),
+      previous_damage_rect_.right() - intersection.right(),
+      intersection.height()));
+
+  // Bottom (below the intersection).
+  regions->push_back(gfx::Rect(previous_damage_rect_.x(),
+      intersection.bottom(),
+      previous_damage_rect_.width(),
+      previous_damage_rect_.bottom() - intersection.bottom()));
 }
 
 std::string EGLImageTransportSurface::GetExtensions() {
   std::string extensions = gfx::GLSurface::GetExtensions();
   extensions += extensions.empty() ? "" : " ";
-  extensions += "GL_CHROMIUM_front_buffer_cached";
+  extensions += "GL_CHROMIUM_front_buffer_cached ";
+  extensions += "GL_CHROMIUM_post_sub_buffer";
   return extensions;
 }
 
@@ -420,7 +520,7 @@ void EGLImageTransportSurface::OnBuffersSwappedACK() {
 }
 
 void EGLImageTransportSurface::OnPostSubBufferACK() {
-  NOTREACHED();
+  helper_->SetScheduled(true);
 }
 
 void EGLImageTransportSurface::OnResizeViewACK() {
