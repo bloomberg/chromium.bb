@@ -268,6 +268,8 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   BoolProperty tap_enable_;
   // General time limit [s] for tap gestures
   DoubleProperty tap_timeout_;
+  // General time limit [s] for time between taps.
+  DoubleProperty inter_tap_timeout_;
   // Time [s] it takes to stop dragging when you let go of the touchpad
   DoubleProperty tap_drag_timeout_;
   // True if drag lock is enabled

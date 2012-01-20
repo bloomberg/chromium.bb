@@ -127,7 +127,8 @@ ImmediateInterpreter::ImmediateInterpreter(PropRegistry* prop_reg)
       button_down_timeout_(0.0),
       tap_to_click_state_(kTtcIdle),
       tap_enable_(prop_reg, "Tap Enable", false),
-      tap_timeout_(prop_reg, "Tap Timeout", 0.1),
+      tap_timeout_(prop_reg, "Tap Timeout", 0.2),
+      inter_tap_timeout_(prop_reg, "Inter-Tap Timeout", 0.1),
       tap_drag_timeout_(prop_reg, "Tap Drag Timeout", 0.7),
       drag_lock_enable_(prop_reg, "Tap Drag Lock Enable", 0),
       tap_move_dist_(prop_reg, "Tap Move Distance", 2.0),
@@ -602,7 +603,7 @@ stime_t ImmediateInterpreter::TimeoutForTtcState(TapToClickState state) {
   switch (state) {
     case kTtcIdle: return tap_timeout_.val_;
     case kTtcFirstTapBegan: return tap_timeout_.val_;
-    case kTtcTapComplete: return tap_timeout_.val_;
+    case kTtcTapComplete: return inter_tap_timeout_.val_;
     case kTtcSubsequentTapBegan: return tap_timeout_.val_;
     case kTtcDrag: return tap_timeout_.val_;
     case kTtcDragRelease: return tap_drag_timeout_.val_;
