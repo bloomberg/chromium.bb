@@ -4362,12 +4362,9 @@
    fun:_ZNSt6vectorIN6webkit13WebPluginInfoESaIS1*
 }
 {
-   bug_101125
+   bug_101125a
    Memcheck:Uninitialized
-   fun:_ZN6SkRect3setEPK7SkPointi
-   fun:_ZL17compute_pt_boundsP6SkRectRK9SkTDArrayI7SkPointE
-   fun:_ZNK6SkPath13computeBoundsEv
-   fun:_ZNK6SkPath9getBoundsEv
+   ...
    fun:_ZN6SkScan12AntiFillPathERK6SkPathRK8SkRegionP9SkBlitterb
    fun:_ZN6SkScan12AntiFillPathERK6SkPathRK12SkRasterClipP9SkBlitter
    fun:_ZNK6SkDraw8drawPathERK6SkPathRK7SkPaintPK8SkMatrixb
@@ -4377,11 +4374,33 @@
    fun:_ZN8SkCanvas14drawTextOnPathEPKvmRK6SkPathPK8SkMatrixRK7SkPaint
    fun:_ZNK7WebCore4Font10drawGlyphsEPNS_15GraphicsContextEPKNS_14SimpleFontDataERKNS_11GlyphBufferEiiRKNS_10FloatPointE
    fun:_ZNK7WebCore4Font15drawGlyphBufferEPNS_15GraphicsContextERKNS_7TextRunERKNS_11GlyphBufferERKNS_10FloatPointE
-   fun:_ZNK7WebCore4Font17drawEmphasisMarksEPNS_15GraphicsContextERKNS_7TextRunERKNS_11GlyphBufferERKN3WTF12AtomicStringERKNS_10FloatPointE
-   fun:_ZNK7WebCore4Font30drawEmphasisMarksForSimpleTextEPNS_15GraphicsContextERKNS_7TextRunERKN3WTF12AtomicStringERKNS_10FloatPointEii
-   fun:_ZNK7WebCore4Font17drawEmphasisMarksEPNS_15GraphicsContextERKNS_7TextRunERKN3WTF12AtomicStringERKNS_10FloatPointEii
-   fun:_ZN7WebCore15GraphicsContext17drawEmphasisMarksERKNS_4FontERKNS_7TextRunERKN3WTF12AtomicStringERKNS_10FloatPointEii
-   fun:_ZN7WebCoreL20paintTextWithShadowsEPNS_15GraphicsContextERKNS_4FontERKNS_7TextRunERKN3WTF12AtomicStringEiiiiRKNS_10FloatPointERKNS_9FloatRectEPKNS_10ShadowDataEbb
+}
+{
+   bug_101125b
+   Memcheck:Uninitialized
+   ...
+   fun:_ZN6SkScan12AntiFillRectERK6SkRectPK8SkRegionP9SkBlitter
+   fun:_ZN6SkScan12AntiFillRectERK6SkRectRK12SkRasterClipP9SkBlitter
+   fun:_ZNK6SkDraw8drawRectERK6SkRectRK7SkPaint
+   fun:_ZN8SkDevice8drawRectERK6SkDrawRK6SkRectRK7SkPaint
+   fun:_ZN8SkCanvas8drawRectERK6SkRectRK7SkPaint
+   fun:_ZN7WebCore15GraphicsContext8fillRectERKNS_9FloatRectERKNS_5ColorENS_10ColorSpaceE
+   fun:_ZN7WebCore15GraphicsContext20drawHighlightForTextERKNS_4FontERKNS_7TextRunERKNS_10FloatPointEiRKNS_5ColorENS_10ColorSpaceEii
+}
+{
+   bug_101125c
+   Memcheck:Uninitialized
+   ...
+   fun:_ZL11morphpointsP7SkPointPKS_iR13SkPathMeasureRK8SkMatrix
+   fun:_ZL9morphpathP6SkPathRKS_R13SkPathMeasureRK8SkMatrix
+   fun:_ZNK6SkDraw14drawTextOnPathEPKcmRK6SkPathPK8SkMatrixRK7SkPaint
+   fun:_ZN8SkDevice14drawTextOnPathERK6SkDrawPKvmRK6SkPathPK8SkMatrixRK7SkPaint
+   fun:_ZN8SkCanvas14drawTextOnPathEPKvmRK6SkPathPK8SkMatrixRK7SkPaint
+   fun:_ZNK7WebCore4Font10drawGlyphsEPNS_15GraphicsContextEPKNS_14SimpleFontDataERKNS_11GlyphBufferEiiRKNS_10FloatPointE
+   fun:_ZNK7WebCore4Font15drawGlyphBufferEPNS_15GraphicsContextERKNS_7TextRunERKNS_11GlyphBufferERKNS_10FloatPointE
+   fun:_ZNK7WebCore4Font14drawSimpleTextEPNS_15GraphicsContextERKNS_7TextRunERKNS_10FloatPointEii
+   fun:_ZNK7WebCore4Font8drawTextEPNS_15GraphicsContextERKNS_7TextRunERKNS_10FloatPointEii
+   fun:_ZN7WebCore15GraphicsContext8drawTextERKNS_4FontERKNS_7TextRunERKNS_10FloatPointEii
 }
 {
    bug_100133
@@ -4990,11 +5009,6 @@
    fun:_ZN7WebCore9RenderBox14styleDidChangeENS_15StyleDifferenceEPKNS_11RenderStyleE
    fun:_ZN7WebCore11RenderBlock14styleDidChangeENS_15StyleDifferenceEPKNS_11RenderStyleE
    fun:_ZN7WebCore12RenderObject8setStyleEN3WTF10PassRefPtrINS_11RenderStyleEEE
-   fun:_ZN7WebCore12RenderObject18setAnimatableStyleEN3WTF10PassRefPtrINS_11RenderStyleEEE
-   fun:_ZN7WebCore19NodeRendererFactory14createRendererEv
-   fun:_ZN7WebCore19NodeRendererFactory22createRendererIfNeededEv
-   fun:_ZN7WebCore4Node22createRendererIfNeededEv
-   fun:_ZN7WebCore7Element6attachEv
 }
 {
    bug_106183b
@@ -5248,6 +5262,15 @@
    fun:_ZN7WebCore23V8AbstractEventListener18invokeEventHandlerEPNS_22ScriptExecutionContextEPNS_5EventEN2v86HandleINS5_5ValueEEE
    fun:_ZN7WebCore28V8WorkerContextEventListener11handleEventEPNS_22ScriptExecutionContextEPNS_5EventE
    fun:_ZN7WebCore11EventTarget18fireEventListenersEPNS_5EventEPNS_15EventTargetDataERN3WTF6VectorINS_23RegisteredEventListenerELm1EEE
+}
+{
+   bug_108624a
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN7WebCore23v8StringToWebCoreStringIN3WTF6StringEEET_N2v86HandleINS4_6StringEEENS_12ExternalModeE
+   fun:_ZN7WebCore15V8ParameterBase8toStringIN3WTF6StringEEET_v
+   fun:_ZN7WebCore15V8ParameterBasecvN3WTF6StringEEv
+   fun:_ZN7WebCore25WebKitBlobBuilderInternal*
 }
 {
    bug_108627
