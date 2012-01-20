@@ -1638,7 +1638,7 @@ FileManager.prototype = {
    */
   FileManager.prototype.onEjectClick_ = function(entry, event) {
     this.unmountRequests_.push(entry.toURL());
-    chrome.fileBrowserPrivate.removeMount(entry.fullPath);
+    chrome.fileBrowserPrivate.removeMount(entry.toURL());
   };
 
   /**
