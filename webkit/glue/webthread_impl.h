@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 #ifndef WEBKIT_GLUE_WEBTHREAD_IMPL_H_
@@ -37,8 +37,11 @@ class WebThreadImpl : public WebThreadBase {
   WEBKIT_GLUE_EXPORT explicit WebThreadImpl(const char* name);
   WEBKIT_GLUE_EXPORT virtual ~WebThreadImpl();
 
-  virtual void postTask(Task* task) OVERRIDE;
-  virtual void postDelayedTask(Task* task, long long delay_ms) OVERRIDE;
+  virtual void postTask(Task* task);
+  virtual void postDelayedTask(Task* task, long long delay_ms);
+
+  virtual void enterRunLoop();
+  virtual void exitRunLoop();
 
   MessageLoop* message_loop() const { return thread_->message_loop(); }
 
@@ -52,8 +55,11 @@ class WebThreadImplForMessageLoop : public WebThreadBase {
   explicit WebThreadImplForMessageLoop(base::MessageLoopProxy* message_loop);
   virtual ~WebThreadImplForMessageLoop();
 
-  virtual void postTask(Task* task) OVERRIDE;
-  virtual void postDelayedTask(Task* task, long long delay_ms) OVERRIDE;
+  virtual void postTask(Task* task);
+  virtual void postDelayedTask(Task* task, long long delay_ms);
+
+  virtual void enterRunLoop();
+  virtual void exitRunLoop();
 
  private:
   virtual bool IsCurrentThread() const OVERRIDE;

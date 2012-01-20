@@ -70,6 +70,18 @@ void WebThreadImpl::postDelayedTask(
       base::TimeDelta::FromMilliseconds(delay_ms));
 }
 
+void WebThreadImpl::enterRunLoop() {
+  CHECK(IsCurrentThread());
+  CHECK(!thread_->message_loop()->is_running()); // We don't support nesting.
+  thread_->message_loop()->Run();
+}
+
+void WebThreadImpl::exitRunLoop() {
+  CHECK(IsCurrentThread());
+  CHECK(thread_->message_loop()->is_running());
+  thread_->message_loop()->Quit();
+}
+
 bool WebThreadImpl::IsCurrentThread() const {
   return thread_->thread_id() == base::PlatformThread::CurrentId();
 }
@@ -94,6 +106,18 @@ void WebThreadImplForMessageLoop::postDelayedTask(
       FROM_HERE,
       base::Bind(&WebKit::WebThread::Task::run, base::Owned(task)),
       delay_ms);
+}
+
+void WebThreadImplForMessageLoop::enterRunLoop() {
+  CHECK(IsCurrentThread());
+  CHECK(!MessageLoop::current()->is_running()); // We don't support nesting.
+  MessageLoop::current()->Run();
+}
+
+void WebThreadImplForMessageLoop::exitRunLoop() {
+  CHECK(IsCurrentThread());
+  CHECK(MessageLoop::current()->is_running());
+  MessageLoop::current()->Quit();
 }
 
 bool WebThreadImplForMessageLoop::IsCurrentThread() const {
