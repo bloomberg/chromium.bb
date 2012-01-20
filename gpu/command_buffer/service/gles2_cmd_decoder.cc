@@ -412,6 +412,7 @@ class ContextCreationAttribParser {
   int32 stencil_size_;
   int32 samples_;
   int32 sample_buffers_;
+  bool buffer_preserved_;
 };
 
 ContextCreationAttribParser::ContextCreationAttribParser()
@@ -422,7 +423,8 @@ ContextCreationAttribParser::ContextCreationAttribParser()
     depth_size_(-1),
     stencil_size_(-1),
     samples_(-1),
-    sample_buffers_(-1) {
+    sample_buffers_(-1),
+    buffer_preserved_(true) {
 }
 
 bool ContextCreationAttribParser::Parse(const std::vector<int32>& attribs) {
@@ -436,6 +438,8 @@ bool ContextCreationAttribParser::Parse(const std::vector<int32>& attribs) {
   const int32 EGL_SAMPLES = 0x3031;
   const int32 EGL_SAMPLE_BUFFERS = 0x3032;
   const int32 EGL_NONE = 0x3038;
+  const int32 EGL_SWAP_BEHAVIOR = 0x3093;
+  const int32 EGL_BUFFER_PRESERVED = 0x3094;
 
   for (size_t i = 0; i < attribs.size(); i += 2) {
     const int32 attrib = attribs[i];
@@ -473,6 +477,9 @@ bool ContextCreationAttribParser::Parse(const std::vector<int32>& attribs) {
         break;
       case EGL_SAMPLE_BUFFERS:
         sample_buffers_ = value;
+        break;
+      case EGL_SWAP_BEHAVIOR:
+        buffer_preserved_ = value == EGL_BUFFER_PRESERVED;
         break;
       case EGL_NONE:
         // Terminate list, even if more attributes.
@@ -1436,10 +1443,12 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   GLenum offscreen_target_depth_format_;
   GLenum offscreen_target_stencil_format_;
   GLsizei offscreen_target_samples_;
+  GLboolean offscreen_target_buffer_preserved_;
 
   // The copy that is saved when SwapBuffers is called.
   scoped_ptr<FrameBuffer> offscreen_saved_frame_buffer_;
   scoped_ptr<Texture> offscreen_saved_color_texture_;
+  TextureManager::TextureInfo::Ref offscreen_saved_color_texture_info_;
 
   // The copy that is used as the destination for multi-sample resolves.
   scoped_ptr<FrameBuffer> offscreen_resolved_frame_buffer_;
@@ -1872,6 +1881,7 @@ GLES2DecoderImpl::GLES2DecoderImpl(ContextGroup* group)
       offscreen_target_depth_format_(0),
       offscreen_target_stencil_format_(0),
       offscreen_target_samples_(0),
+      offscreen_target_buffer_preserved_(true),
       offscreen_saved_color_format_(0),
       stream_texture_manager_(NULL),
       back_buffer_color_format_(0),
@@ -2050,6 +2060,7 @@ bool GLES2DecoderImpl::Initialize(
     } else {
       offscreen_target_samples_ = 1;
     }
+    offscreen_target_buffer_preserved_ = attrib_parser.buffer_preserved_;
 
     if (gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2) {
       const bool rgb8_supported =
@@ -2617,15 +2628,9 @@ void GLES2DecoderImpl::UpdateParentTextureInfo() {
     // Update the info about the offscreen saved color texture in the parent.
     // The reference to the parent is a weak pointer and will become null if the
     // parent is later destroyed.
-    GLuint service_id = offscreen_saved_color_texture_->id();
-    GLuint client_id;
     TextureManager* parent_texture_manager = parent_->texture_manager();
-    CHECK(parent_texture_manager->GetClientId(service_id, &client_id));
-    TextureManager::TextureInfo* info = parent_->GetTextureInfo(client_id);
-    DCHECK(info);
-
     parent_texture_manager->SetLevelInfo(
-        info,
+        offscreen_saved_color_texture_info_,
         GL_TEXTURE_2D,
         0,  // level
         GL_RGBA,
@@ -2637,21 +2642,23 @@ void GLES2DecoderImpl::UpdateParentTextureInfo() {
         GL_UNSIGNED_BYTE,
         true);
     parent_texture_manager->SetParameter(
-        info,
+        offscreen_saved_color_texture_info_,
         GL_TEXTURE_MAG_FILTER,
         GL_NEAREST);
     parent_texture_manager->SetParameter(
-        info,
+        offscreen_saved_color_texture_info_,
         GL_TEXTURE_MIN_FILTER,
         GL_NEAREST);
     parent_texture_manager->SetParameter(
-        info,
+        offscreen_saved_color_texture_info_,
         GL_TEXTURE_WRAP_S,
         GL_CLAMP_TO_EDGE);
     parent_texture_manager->SetParameter(
-        info,
+        offscreen_saved_color_texture_info_,
         GL_TEXTURE_WRAP_T,
         GL_CLAMP_TO_EDGE);
+  } else {
+    offscreen_saved_color_texture_info_ = NULL;
   }
 }
 
@@ -2806,16 +2813,18 @@ bool GLES2DecoderImpl::SetParent(GLES2Decoder* new_parent,
       new_parent_impl->texture_manager()->RemoveTextureInfo(
           new_parent_texture_id);
 
-    TextureManager::TextureInfo* info =
+    offscreen_saved_color_texture_info_ =
         new_parent_impl->CreateTextureInfo(new_parent_texture_id, service_id);
-    info->SetNotOwned();
-    new_parent_impl->texture_manager()->SetInfoTarget(info, GL_TEXTURE_2D);
+    offscreen_saved_color_texture_info_->SetNotOwned();
+    new_parent_impl->texture_manager()->
+       SetInfoTarget(offscreen_saved_color_texture_info_, GL_TEXTURE_2D);
 
     parent_ = new_parent_impl->AsWeakPtr();
 
     UpdateParentTextureInfo();
   } else {
     parent_.reset();
+    offscreen_saved_color_texture_info_ = NULL;
   }
 
   return true;
@@ -7417,10 +7426,21 @@ error::Error GLES2DecoderImpl::HandleSwapBuffers(
         ScopedFrameBufferBinder binder(this,
                                        offscreen_target_frame_buffer_->id());
 
-        // Copy the target frame buffer to the saved offscreen texture.
-        offscreen_saved_color_texture_->Copy(
-            offscreen_saved_color_texture_->size(),
-            offscreen_saved_color_format_);
+        if (offscreen_target_buffer_preserved_) {
+          // Copy the target frame buffer to the saved offscreen texture.
+          offscreen_saved_color_texture_->Copy(
+              offscreen_saved_color_texture_->size(),
+              offscreen_saved_color_format_);
+        } else {
+          // Flip the textures in the parent context via the texture manager.
+          if (!!offscreen_saved_color_texture_info_.get())
+            offscreen_saved_color_texture_info_->
+                SetServiceId(offscreen_target_color_texture_->id());
+
+          offscreen_saved_color_texture_.swap(offscreen_target_color_texture_);
+          offscreen_target_frame_buffer_->AttachRenderTexture(
+              offscreen_target_color_texture_.get());
+        }
 
         // Ensure the side effects of the copy are visible to the parent
         // context. There is no need to do this for ANGLE because it uses a

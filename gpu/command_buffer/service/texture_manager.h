@@ -99,6 +99,10 @@ class TextureManager {
       return service_id_;
     }
 
+    void SetServiceId(GLuint service_id) {
+      service_id_ = service_id;
+    }
+
     // Returns the target this texure was first bound to or 0 if it has not
     // been bound. Once a texture is bound to a specific target it can never be
     // bound to a different target.
