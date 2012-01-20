@@ -231,6 +231,7 @@
         'controls/textfield/native_textfield_wrapper.h',
         'controls/textfield/textfield.cc',
         'controls/textfield/textfield.h',
+        'controls/textfield/textfield_controller.cc',
         'controls/textfield/textfield_controller.h',
         'controls/textfield/textfield_views_model.cc',
         'controls/textfield/textfield_views_model.h',

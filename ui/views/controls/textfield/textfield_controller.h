@@ -54,7 +54,7 @@ class VIEWS_EXPORT TextfieldController {
   virtual void UpdateContextMenu(ui::SimpleMenuModel* menu_contents) {}
 
   // Returns true if the |command_id| should be enabled in the context menu.
-  virtual bool IsCommandIdEnabled(int command_id) const { return false; }
+  virtual bool IsCommandIdEnabled(int command_id) const;
 
   // Execute context menu command specified by |command_id|.
   virtual void ExecuteCommand(int command_id) {}
