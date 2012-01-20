@@ -11,6 +11,7 @@
 #include "base/string16.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDevToolsAgentClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebFileSystem.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebGraphicsContext3D.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 
 namespace WebKit {
@@ -97,6 +98,11 @@ enum GraphicsContext3DImplementation {
 // Registers which GraphicsContext3D Implementation to use.
 void SetGraphicsContext3DImplementation(GraphicsContext3DImplementation);
 GraphicsContext3DImplementation GetGraphicsContext3DImplementation();
+
+WebKit::WebGraphicsContext3D* CreateGraphicsContext3D(
+    WebKit::WebGraphicsContext3D::Attributes attributes,
+    WebKit::WebView* web_view,
+    bool direct);
 
 // ------- URL load mocking.
 // Registers the file at |file_path| to be served when |url| is requested.

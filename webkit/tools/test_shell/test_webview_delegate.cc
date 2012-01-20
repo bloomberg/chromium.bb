@@ -65,6 +65,7 @@
 #include "webkit/glue/webpreferences.h"
 #include "webkit/glue/weburlrequest_extradata_impl.h"
 #include "webkit/glue/window_open_disposition.h"
+#include "webkit/gpu/webgraphicscontext3d_in_process_impl.h"
 #include "webkit/media/webmediaplayer_impl.h"
 #include "webkit/plugins/npapi/webplugin_impl.h"
 #include "webkit/plugins/npapi/plugin_list.h"
@@ -97,6 +98,7 @@ using WebKit::WebFileSystem;
 using WebKit::WebFileSystemCallbacks;
 using WebKit::WebFormElement;
 using WebKit::WebFrame;
+using WebKit::WebGraphicsContext3D;
 using WebKit::WebHistoryItem;
 using WebKit::WebImage;
 using WebKit::WebMediaPlayer;
@@ -334,6 +336,19 @@ WebStorageNamespace* TestWebViewDelegate::createSessionStorageNamespace(
   // Enforce quota, ignoring the parameter from WebCore as in Chrome.
   return WebKit::WebStorageNamespace::createSessionStorageNamespace(
       WebStorageNamespace::m_sessionStorageQuota);
+}
+
+WebGraphicsContext3D* TestWebViewDelegate::createGraphicsContext3D(
+    WebGraphicsContext3D::Attributes attributes,
+    bool direct) {
+  if (!shell_->webView())
+    return NULL;
+  scoped_ptr<WebGraphicsContext3D> context(
+      new webkit::gpu::WebGraphicsContext3DInProcessImpl(
+          gfx::kNullPluginWindow, NULL));
+  if (!context->initialize(attributes, shell_->webView(), direct))
+    return NULL;
+  return context.release();
 }
 
 void TestWebViewDelegate::didAddMessageToConsole(

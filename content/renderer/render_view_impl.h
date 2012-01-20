@@ -44,6 +44,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebTextDirection.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebViewClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNavigationType.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebGraphicsContext3D.h"
 #include "ui/base/javascript_message_type.h"
 #include "ui/gfx/surface/transport_dib.h"
 #include "webkit/glue/webpreferences.h"
@@ -332,6 +333,9 @@ class RenderViewImpl : public RenderWidget,
       WebKit::WebExternalPopupMenuClient* popup_menu_client);
   virtual WebKit::WebStorageNamespace* createSessionStorageNamespace(
       unsigned quota);
+  virtual WebKit::WebGraphicsContext3D* createGraphicsContext3D(
+      WebKit::WebGraphicsContext3D::Attributes attributes,
+      bool direct);
   virtual void didAddMessageToConsole(
       const WebKit::WebConsoleMessage& message,
       const WebKit::WebString& source_name,

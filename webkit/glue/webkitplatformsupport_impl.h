@@ -9,7 +9,6 @@
 #include "base/platform_file.h"
 #include "base/threading/thread_local_storage.h"
 #include "base/timer.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebGraphicsContext3D.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebKitPlatformSupport.h"
 #include "webkit/glue/resource_loader_bridge.h"
 #include "webkit/glue/webkit_glue_export.h"
@@ -98,11 +97,6 @@ class WEBKIT_GLUE_EXPORT WebKitPlatformSupportImpl :
   virtual void callOnMainThread(void (*func)(void*), void* context);
   virtual WebKit::WebThread* createThread(const char* name);
   virtual WebKit::WebThread* currentThread();
-  virtual WebKit::WebGraphicsContext3D* createGraphicsContext3D();
-  virtual WebKit::WebGraphicsContext3D* createGraphicsContext3D(
-      WebKit::WebGraphicsContext3D::Attributes attributes,
-      WebKit::WebView* web_view,
-      bool render_to_web_view);
 
 
   // Embedder functions. The following are not implemented by the glue layer and

@@ -157,6 +157,7 @@
 #include "webkit/glue/webkit_constants.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/weburlloader_impl.h"
+#include "webkit/gpu/webgraphicscontext3d_in_process_impl.h"
 #include "webkit/media/webmediaplayer_impl.h"
 #include "webkit/plugins/npapi/plugin_list.h"
 #include "webkit/plugins/npapi/webplugin_delegate.h"
@@ -202,6 +203,7 @@ using WebKit::WebFindOptions;
 using WebKit::WebFormControlElement;
 using WebKit::WebFormElement;
 using WebKit::WebFrame;
+using WebKit::WebGraphicsContext3D;
 using WebKit::WebHistoryItem;
 using WebKit::WebIconURL;
 using WebKit::WebImage;
@@ -1430,6 +1432,30 @@ WebStorageNamespace* RenderViewImpl::createSessionStorageNamespace(
   CHECK(session_storage_namespace_id_ != kInvalidSessionStorageNamespaceId);
   return new RendererWebStorageNamespaceImpl(DOM_STORAGE_SESSION,
                                              session_storage_namespace_id_);
+}
+
+WebGraphicsContext3D* RenderViewImpl::createGraphicsContext3D(
+    WebGraphicsContext3D::Attributes attributes,
+    bool direct) {
+  if (!webview())
+    return NULL;
+  // The WebGraphicsContext3DInProcessImpl code path is used for
+  // layout tests (though not through this code) as well as for
+  // debugging and bringing up new ports.
+  scoped_ptr<WebGraphicsContext3D> context;
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kInProcessWebGL)) {
+    context.reset(new webkit::gpu::WebGraphicsContext3DInProcessImpl(
+        gfx::kNullPluginWindow, NULL));
+  } else {
+#if defined(ENABLE_GPU)
+    context.reset(new WebGraphicsContext3DCommandBufferImpl());
+#else
+    return NULL;
+#endif
+  }
+  if (!context->initialize(attributes, webview(), direct))
+    return NULL;
+  return context.release();
 }
 
 void RenderViewImpl::didAddMessageToConsole(

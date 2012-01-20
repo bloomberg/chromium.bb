@@ -25,6 +25,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebRect.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPopupType.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebViewClient.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebGraphicsContext3D.h"
 #include "webkit/glue/webcursor.h"
 #include "webkit/plugins/npapi/webplugin_page_delegate.h"
 #include "webkit/tools/test_shell/mock_spellcheck.h"
@@ -89,6 +90,9 @@ class TestWebViewDelegate : public WebKit::WebViewClient,
       const WebKit::WebPopupMenuInfo& info);
   virtual WebKit::WebStorageNamespace* createSessionStorageNamespace(
       unsigned quota);
+  virtual WebKit::WebGraphicsContext3D* createGraphicsContext3D(
+      WebKit::WebGraphicsContext3D::Attributes attributes,
+      bool direct);
   virtual void didAddMessageToConsole(
       const WebKit::WebConsoleMessage& message,
       const WebKit::WebString& source_name, unsigned source_line);

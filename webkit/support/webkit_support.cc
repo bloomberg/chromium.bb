@@ -50,6 +50,8 @@
 #include "webkit/glue/webkit_constants.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webkitplatformsupport_impl.h"
+#include "webkit/gpu/webgraphicscontext3d_in_process_impl.h"
+#include "webkit/gpu/webgraphicscontext3d_in_process_command_buffer_impl.h"
 #include "webkit/media/webmediaplayer_impl.h"
 #include "webkit/plugins/npapi/plugin_list.h"
 #include "webkit/plugins/npapi/webplugin_impl.h"
@@ -364,6 +366,26 @@ void SetGraphicsContext3DImplementation(GraphicsContext3DImplementation impl) {
 
 GraphicsContext3DImplementation GetGraphicsContext3DImplementation() {
   return g_graphics_context_3d_implementation;
+}
+
+WebKit::WebGraphicsContext3D* CreateGraphicsContext3D(
+    WebKit::WebGraphicsContext3D::Attributes attributes,
+    WebKit::WebView* web_view,
+    bool direct) {
+  scoped_ptr<WebKit::WebGraphicsContext3D> context;
+  switch (webkit_support::GetGraphicsContext3DImplementation()) {
+    case webkit_support::IN_PROCESS:
+      context.reset(new webkit::gpu::WebGraphicsContext3DInProcessImpl(
+          gfx::kNullPluginWindow, NULL));
+      break;
+    case webkit_support::IN_PROCESS_COMMAND_BUFFER:
+      context.reset(
+          new webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl());
+      break;
+  }
+  if (!context->initialize(attributes, web_view, direct))
+    return NULL;
+  return context.release();
 }
 
 void RegisterMockedURL(const WebKit::WebURL& url,
