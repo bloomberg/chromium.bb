@@ -10953,8 +10953,17 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_SYNC_PROMO_TITLE" desc="The title at the top of the sync promo">
         Welcome to <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>
       </message>
+      <message name="IDS_SYNC_PROMO_TITLE_SHORT" desc="The title at the top of the sync promo with a short product name.">
+        Welcome to <ph name="SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph>
+      </message>
+      <message name="IDS_SYNC_PROMO_TITLE_EXISTING_USER" desc="The title at the top of the sync promo shown to existing users.">
+        Sign in to <ph name="SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph>
+      </message>
       <message name="IDS_SYNC_PROMO_MESSAGE_TITLE" desc="The first part of the sync promo message.">
         Set up <ph name="SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> with your Google Account
+      </message>
+      <message name="IDS_SYNC_PROMO_MESSAGE_TITLE_SHORT" desc="A short sync promo message displayed under the title.">
+        Sign in to get your bookmarks, history, and settings on all your devices.
       </message>
       <message name="IDS_SYNC_PROMO_MESSAGE_BODY_A" desc="The body of the sync promo message. This is experiment choice 0, and the control/default message.">
         Get your bookmarks, history, and settings on all your devices.
@@ -10970,12 +10979,12 @@ Some features may be unavailable.  Please check that the profile exists and you 
       </message>
       <if expr="pp_ifdef('use_titlecase')">
         <message name="IDS_SYNC_PROMO_SKIP_BUTTON" desc="In Title Case: The button at the bottom to let the user skip the sync promo.">
-          No Thanks
+          Skip for Now
         </message>
       </if>
       <if expr="not pp_ifdef('use_titlecase')">
         <message name="IDS_SYNC_PROMO_SKIP_BUTTON" desc="The button at the bottom to let the user skip the sync promo.">
-          No thanks
+          Skip for now
         </message>
       </if>
       <message name="IDS_SYNC_PROMO_ADVANCED" desc="The link button at the bottom to let the user customize the sync settings.">
@@ -11005,6 +11014,29 @@ Some features may be unavailable.  Please check that the profile exists and you 
       </message>
       <message name="IDS_SYNC_PROMO_NOT_SIGNED_IN_STATUS_LINK" desc="The linkified portion of the sync sign in promo on the NTP. Clicking this text allows the user to sign in to sync.">
         sign in
+      </message>
+      <message name="IDS_SYNC_PROMO_V_CREATE_ACCOUNT" desc="Verbose sync promo. A link at the top of the sync promo to create a new account.">
+        Sign up for a new Google Account
+      </message>
+      <message name="IDS_SYNC_PROMO_V_MESSAGE_BODY" desc="Verbose sync promo. The message body.">
+        Sign in to <ph name="SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> with your Google Account to get your bookmarks, history, and settings on all your devices. You'll also be automatically signed in to all your favorite Google services.
+      </message>
+      <message name="IDS_SYNC_PROMO_V_SYNC_TITLE" desc="Verbose sync promo. Title of the sync message.">
+        Sync
+      </message>
+      <message name="IDS_SYNC_PROMO_V_SYNC_BODY" desc="Verbose sync promo. Body of the sync message.">
+        Add a bookmark on one device and it's instantly added on all your devices.
+      </message>
+      <message name="IDS_SYNC_PROMO_V_BACKUP_TITLE" desc="Verbose sync promo. Title of the backup message.">
+        Backup </message>
+      <message name="IDS_SYNC_PROMO_V_BACKUP_BODY" desc="Verbose sync promo. Body of the backup message.">
+        All your <ph name="SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> settings are safe in case anything happens to your computer.
+      </message>
+      <message name="IDS_SYNC_PROMO_V_SERVICES_TITLE" desc="Verbose sync promo. Title of the Google Services message.">
+        Google Services
+      </message>
+      <message name="IDS_SYNC_PROMO_V_SERVICES_BODY" desc="Verbose sync promo. Body of the Google Services message.">
+        Automatically sign in to all your favorite Google services, like Gmail.
       </message>
 
       <!-- Translate Info Bar -->
