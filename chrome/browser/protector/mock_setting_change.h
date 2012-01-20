@@ -17,9 +17,9 @@ class MockSettingChange : public BaseSettingChange {
   MockSettingChange();
   virtual ~MockSettingChange();
 
-  virtual bool Init(Protector* protector) OVERRIDE;
+  virtual bool Init(Profile* profile) OVERRIDE;
 
-  MOCK_METHOD1(MockInit, bool(Protector* protector));
+  MOCK_METHOD1(MockInit, bool(Profile* profile));
   MOCK_METHOD0(Apply, void());
   MOCK_METHOD0(Discard, void());
   MOCK_METHOD0(Timeout, void());

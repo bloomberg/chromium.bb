@@ -5,7 +5,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/protector/mock_protector.h"
+#include "chrome/browser/protector/mock_protector_service.h"
+#include "chrome/browser/protector/protector_service_factory.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_prepopulate_data.h"
 #include "chrome/browser/search_engines/template_url_service.h"
@@ -41,8 +42,9 @@ const std::string http_example_net = "http://example.net/%s";
 
 class DefaultSearchProviderChangeTest : public InProcessBrowserTest {
  public:
-  virtual void SetUpOnMainThread() {
-    mock_protector_.reset(new MockProtector(browser()->profile()));
+  virtual void SetUpOnMainThread() OVERRIDE {
+    mock_protector_service_ =
+        MockProtectorService::BuildForProfile(browser()->profile());
 
     // Ensure that TemplateURLService is loaded.
     turl_service_ =
@@ -51,6 +53,10 @@ class DefaultSearchProviderChangeTest : public InProcessBrowserTest {
 
     prepopulated_url_.reset(
         TemplateURLPrepopulateData::GetPrepopulatedDefaultSearch(NULL));
+  }
+
+  virtual void CleanUpOnMainThread() OVERRIDE {
+    EXPECT_CALL(*mock_protector_service_, Shutdown());
   }
 
   TemplateURL* MakeTemplateURL(const string16& short_name,
@@ -83,9 +89,9 @@ class DefaultSearchProviderChangeTest : public InProcessBrowserTest {
     turl_service_->Add(turl_copy);
   }
 
-  void AddAndSetDefault(TemplateURL* t_url) {
-    turl_service_->Add(t_url);
-    turl_service_->SetDefaultSearchProvider(t_url);
+  void AddAndSetDefault(TemplateURL* turl) {
+    turl_service_->Add(turl);
+    turl_service_->SetDefaultSearchProvider(turl);
   }
 
   string16 GetBubbleMessage(const string16& short_name = string16()) {
@@ -113,11 +119,11 @@ class DefaultSearchProviderChangeTest : public InProcessBrowserTest {
 
   void ExpectSettingsOpened(const std::string& subpage) {
     GURL settings_url(chrome::kChromeUISettingsURL + subpage);
-    EXPECT_CALL(*mock_protector_.get(), OpenTab(settings_url));
+    EXPECT_CALL(*mock_protector_service_, OpenTab(settings_url));
   }
 
  protected:
-  scoped_ptr<MockProtector> mock_protector_;
+  MockProtectorService* mock_protector_service_;
   TemplateURLService* turl_service_;
   scoped_ptr<TemplateURL> prepopulated_url_;
 };
@@ -142,7 +148,7 @@ IN_PROC_BROWSER_TEST_F(DefaultSearchProviderChangeTest, BackupValid) {
   scoped_ptr<BaseSettingChange> change(
       CreateDefaultSearchProviderChange(current_url, backup_url));
   ASSERT_TRUE(change.get());
-  ASSERT_TRUE(change->Init(mock_protector_.get()));
+  ASSERT_TRUE(change->Init(browser()->profile()));
 
   // Verify that backup is active.
   EXPECT_EQ(FindTemplateURL(http_example_info),
@@ -185,7 +191,7 @@ IN_PROC_BROWSER_TEST_F(DefaultSearchProviderChangeTest, BackupValidLongNames) {
     scoped_ptr<BaseSettingChange> change(
         CreateDefaultSearchProviderChange(current_url, backup_url_long));
     ASSERT_TRUE(change.get());
-    ASSERT_TRUE(change->Init(mock_protector_.get()));
+    ASSERT_TRUE(change->Init(browser()->profile()));
 
     // Verify text messages.
     EXPECT_EQ(GetBubbleMessage(), change->GetBubbleMessage());
@@ -202,7 +208,7 @@ IN_PROC_BROWSER_TEST_F(DefaultSearchProviderChangeTest, BackupValidLongNames) {
     scoped_ptr<BaseSettingChange> change(
         CreateDefaultSearchProviderChange(current_url_long, backup_url));
     ASSERT_TRUE(change.get());
-    ASSERT_TRUE(change->Init(mock_protector_.get()));
+    ASSERT_TRUE(change->Init(browser()->profile()));
 
     // Verify text messages.
     EXPECT_EQ(GetBubbleMessage(), change->GetBubbleMessage());
@@ -226,7 +232,7 @@ IN_PROC_BROWSER_TEST_F(DefaultSearchProviderChangeTest, BackupInvalid) {
   scoped_ptr<BaseSettingChange> change(
       CreateDefaultSearchProviderChange(current_url, NULL));
   ASSERT_TRUE(change.get());
-  ASSERT_TRUE(change->Init(mock_protector_.get()));
+  ASSERT_TRUE(change->Init(browser()->profile()));
 
   // Verify that the prepopulated default search is active.
   EXPECT_EQ(FindTemplateURL(prepopulated_url_->url()->url()),
@@ -270,7 +276,7 @@ IN_PROC_BROWSER_TEST_F(DefaultSearchProviderChangeTest,
   scoped_ptr<BaseSettingChange> change(
       CreateDefaultSearchProviderChange(current_url, NULL));
   ASSERT_TRUE(change.get());
-  ASSERT_TRUE(change->Init(mock_protector_.get()));
+  ASSERT_TRUE(change->Init(browser()->profile()));
 
   // Verify that the prepopulated default search is active.
   EXPECT_EQ(FindTemplateURL(prepopulated_url_->url()->url()),
@@ -307,7 +313,7 @@ IN_PROC_BROWSER_TEST_F(DefaultSearchProviderChangeTest,
   scoped_ptr<BaseSettingChange> change(
       CreateDefaultSearchProviderChange(NULL, backup_url));
   ASSERT_TRUE(change.get());
-  ASSERT_TRUE(change->Init(mock_protector_.get()));
+  ASSERT_TRUE(change->Init(browser()->profile()));
 
   // Verify that backup is active.
   EXPECT_EQ(FindTemplateURL(http_example_info),
@@ -340,7 +346,7 @@ IN_PROC_BROWSER_TEST_F(DefaultSearchProviderChangeTest,
   scoped_ptr<BaseSettingChange> change(
       CreateDefaultSearchProviderChange(NULL, NULL));
   ASSERT_TRUE(change.get());
-  ASSERT_TRUE(change->Init(mock_protector_.get()));
+  ASSERT_TRUE(change->Init(browser()->profile()));
 
   // Verify that the prepopulated default search is active.
   EXPECT_EQ(FindTemplateURL(prepopulated_url_->url()->url()),
@@ -372,7 +378,7 @@ IN_PROC_BROWSER_TEST_F(DefaultSearchProviderChangeTest,
   scoped_ptr<BaseSettingChange> change(
       CreateDefaultSearchProviderChange(current_url, NULL));
   ASSERT_TRUE(change.get());
-  ASSERT_TRUE(change->Init(mock_protector_.get()));
+  ASSERT_TRUE(change->Init(browser()->profile()));
 
   // Verify that the default search has not changed.
   EXPECT_EQ(current_url, turl_service_->GetDefaultSearchProvider());
@@ -407,14 +413,14 @@ IN_PROC_BROWSER_TEST_F(DefaultSearchProviderChangeTest,
   scoped_ptr<BaseSettingChange> change(
       CreateDefaultSearchProviderChange(current_url, backup_url));
   ASSERT_TRUE(change.get());
-  ASSERT_TRUE(change->Init(mock_protector_.get()));
+  ASSERT_TRUE(change->Init(browser()->profile()));
 
   // Verify that backup is active.
   EXPECT_EQ(FindTemplateURL(http_example_info),
             turl_service_->GetDefaultSearchProvider());
 
   // Verify that changing search provider externally dismissed the change.
-  EXPECT_CALL(*mock_protector_.get(), DismissChange());
+  EXPECT_CALL(*mock_protector_service_, DismissChange());
   AddAndSetDefault(new_url);
 }
 
@@ -433,7 +439,7 @@ IN_PROC_BROWSER_TEST_F(DefaultSearchProviderChangeTest,
   scoped_ptr<BaseSettingChange> change(
       CreateDefaultSearchProviderChange(current_url, backup_url));
   ASSERT_TRUE(change.get());
-  ASSERT_TRUE(change->Init(mock_protector_.get()));
+  ASSERT_TRUE(change->Init(browser()->profile()));
 
   // Verify that backup is active.
   EXPECT_EQ(FindTemplateURL(http_example_info),

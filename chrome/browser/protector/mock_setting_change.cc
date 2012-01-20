@@ -30,10 +30,10 @@ MockSettingChange::MockSettingChange() {
 MockSettingChange::~MockSettingChange() {
 }
 
-bool MockSettingChange::Init(Protector* protector) {
-  if (!BaseSettingChange::Init(protector))
+bool MockSettingChange::Init(Profile* profile) {
+  if (!BaseSettingChange::Init(profile))
     return false;
-  return MockInit(protector);
+  return MockInit(profile);
 }
 
 }  // namespace protector

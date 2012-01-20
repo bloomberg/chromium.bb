@@ -2,14 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PROTECTOR_PROTECTOR_H_
-#define CHROME_BROWSER_PROTECTOR_PROTECTOR_H_
+#ifndef CHROME_BROWSER_PROTECTOR_PROTECTOR_SERVICE_H_
+#define CHROME_BROWSER_PROTECTOR_PROTECTOR_SERVICE_H_
 #pragma once
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop_helpers.h"
+#include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/protector/base_setting_change.h"
 #include "chrome/browser/protector/settings_change_global_error_delegate.h"
 
@@ -23,17 +24,29 @@ namespace protector {
 class SettingsChangeGlobalError;
 
 // Presents a SettingChange to user and handles possible user actions.
-// Deletes itself after a user action is taken or timeout expires.
-class Protector : public SettingsChangeGlobalErrorDelegate {
+class ProtectorService : public ProfileKeyedService,
+                         public SettingsChangeGlobalErrorDelegate {
  public:
-  explicit Protector(Profile* profile);
+  explicit ProtectorService(Profile* profile);
+  virtual ~ProtectorService();
 
   // Shows global error about the specified change. Owns |change|.
+  // TODO(ivankr): handle multiple subsequent changes.
   virtual void ShowChange(BaseSettingChange* change);
 
-  // Silently discards any change previously shown (without calling Discard),
-  // removes global error and deletes itself.
+  // Returns |true| if a change is currently active (shown by a ShowChange call
+  // and not yet applied or discarded).
+  virtual bool IsShowingChange() const;
+
+  // Removes global error (including the bubbble if one is shown) and deletes
+  // the change instance (without calling Apply or Discard on it).
   virtual void DismissChange();
+
+  // Persists the change that is currently active and removes global error.
+  virtual void ApplyChange();
+
+  // Discards the change that is currently active and removes global error.
+  virtual void DiscardChange();
 
   // Opens a tab with specified URL in the browser window we've shown error
   // bubble for.
@@ -42,19 +55,17 @@ class Protector : public SettingsChangeGlobalErrorDelegate {
   // Returns the Profile instance we've shown error bubble for.
   Profile* profile() { return profile_; }
 
+ private:
+  friend class ProtectorServiceTest;
+
+  // ProfileKeyedService implementation.
+  virtual void Shutdown() OVERRIDE;
+
   // SettingsChangeGlobalErrorDelegate implementation.
   virtual void OnApplyChange() OVERRIDE;
   virtual void OnDiscardChange() OVERRIDE;
   virtual void OnDecisionTimeout() OVERRIDE;
   virtual void OnRemovedFromProfile() OVERRIDE;
-
- private:
-  friend class base::DeleteHelper<Protector>;
-  friend class MockProtector;
-  friend class ProtectorTest;
-
-  // The object can only be allocated and destroyed on heap.
-  virtual ~Protector();
 
   // Pointer to error bubble controller. Indicates if we're showing change
   // notification to user.
@@ -66,7 +77,7 @@ class Protector : public SettingsChangeGlobalErrorDelegate {
   // Profile which settings we are protecting.
   Profile* profile_;
 
-  DISALLOW_COPY_AND_ASSIGN(Protector);
+  DISALLOW_COPY_AND_ASSIGN(ProtectorService);
 };
 
 // Signs string value with protector's key.
@@ -83,4 +94,4 @@ bool IsEnabled();
 
 }  // namespace protector
 
-#endif  // CHROME_BROWSER_PROTECTOR_PROTECTOR_H_
+#endif  // CHROME_BROWSER_PROTECTOR_PROTECTOR_SERVICE_H_

@@ -2,9 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/protector/protector.h"
+#include "chrome/browser/protector/protector_service.h"
 
-#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "chrome/browser/browser_process.h"
@@ -15,22 +14,55 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_source.h"
 #include "crypto/hmac.h"
 
-using content::BrowserThread;
-
 namespace protector {
 
-Protector::Protector(Profile* profile)
+ProtectorService::ProtectorService(Profile* profile)
     : profile_(profile) {
 }
 
-Protector::~Protector() {
+ProtectorService::~ProtectorService() {
+  DCHECK(!IsShowingChange());  // Should have been dismissed by Shutdown.
 }
 
-void Protector::OpenTab(const GURL& url) {
+void ProtectorService::ShowChange(BaseSettingChange* change) {
+  DCHECK(change);
+  change_.reset(change);
+  DVLOG(1) << "Init change";
+  if (!change->Init(profile_)) {
+    LOG(WARNING) << "Error while initializing, dismissing change";
+    change_.reset();
+    return;
+  }
+  error_.reset(new SettingsChangeGlobalError(change, this));
+  error_->ShowForProfile(profile_);
+}
+
+bool ProtectorService::IsShowingChange() const {
+  return change_.get() != NULL;
+}
+
+void ProtectorService::ApplyChange() {
+  DCHECK(IsShowingChange());
+  change_->Apply();
+  DismissChange();
+}
+
+void ProtectorService::DiscardChange() {
+  DCHECK(IsShowingChange());
+  change_->Discard();
+  DismissChange();
+}
+
+void ProtectorService::DismissChange() {
+  DCHECK(IsShowingChange());
+  error_->RemoveFromProfile();
+  DCHECK(!IsShowingChange());
+}
+
+void ProtectorService::OpenTab(const GURL& url) {
   if (!error_.get() || !error_->browser()) {
     LOG(WARNING) << "Don't have browser to show tab in.";
     return;
@@ -38,41 +70,33 @@ void Protector::OpenTab(const GURL& url) {
   error_->browser()->ShowSingletonTab(url);
 }
 
-void Protector::ShowChange(BaseSettingChange* change) {
-  DCHECK(change);
-  change_.reset(change);
-  DVLOG(1) << "Init change";
-  if (!change->Init(this)) {
-    LOG(WARNING) << "Error while initializing, removing ourselves";
-    BrowserThread::DeleteSoon(BrowserThread::UI, FROM_HERE, this);
-    return;
-  }
-  error_.reset(new SettingsChangeGlobalError(change, this));
-  error_->ShowForProfile(profile_);
+void ProtectorService::Shutdown() {
+  if (IsShowingChange())
+    DismissChange();
 }
 
-void Protector::DismissChange() {
-  DCHECK(error_.get());
-  error_->RemoveFromProfile();
-}
-
-void Protector::OnApplyChange() {
+void ProtectorService::OnApplyChange() {
   DVLOG(1) << "Apply change";
+  DCHECK(IsShowingChange());
   change_->Apply();
 }
 
-void Protector::OnDiscardChange() {
+void ProtectorService::OnDiscardChange() {
   DVLOG(1) << "Discard change";
+  DCHECK(IsShowingChange());
   change_->Discard();
 }
 
-void Protector::OnDecisionTimeout() {
+void ProtectorService::OnDecisionTimeout() {
   DVLOG(1) << "Timeout";
+  DCHECK(IsShowingChange());
   change_->Timeout();
 }
 
-void Protector::OnRemovedFromProfile() {
-  BrowserThread::DeleteSoon(BrowserThread::UI, FROM_HERE, this);
+void ProtectorService::OnRemovedFromProfile() {
+  DCHECK(IsShowingChange());
+  error_.reset();
+  change_.reset();
 }
 
 

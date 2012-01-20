@@ -12,7 +12,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/protector/base_setting_change.h"
 #include "chrome/browser/protector/histograms.h"
-#include "chrome/browser/protector/protector.h"
+#include "chrome/browser/protector/protector_service.h"
+#include "chrome/browser/protector/protector_service_factory.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_prepopulate_data.h"
 #include "chrome/browser/search_engines/template_url_service.h"
@@ -87,7 +88,7 @@ class DefaultSearchProviderChange : public BaseSettingChange,
                               TemplateURL* backup_search_provider);
 
   // BaseSettingChange overrides:
-  virtual bool Init(Protector* protector) OVERRIDE;
+  virtual bool Init(Profile* profile) OVERRIDE;
   virtual void Apply() OVERRIDE;
   virtual void Discard() OVERRIDE;
   virtual void Timeout() OVERRIDE;
@@ -168,8 +169,8 @@ DefaultSearchProviderChange::~DefaultSearchProviderChange() {
   GetTemplateURLService()->RemoveObserver(this);
 }
 
-bool DefaultSearchProviderChange::Init(Protector* protector) {
-  if (!BaseSettingChange::Init(protector))
+bool DefaultSearchProviderChange::Init(Profile* profile) {
+  if (!BaseSettingChange::Init(profile))
     return false;
 
   if (backup_search_provider_.get()) {
@@ -222,7 +223,7 @@ bool DefaultSearchProviderChange::Init(Protector* protector) {
     new_id_ = new_search_provider_->id();
     registrar_.Add(
         this, chrome::NOTIFICATION_TEMPLATE_URL_REMOVED,
-        content::Source<Profile>(profile()->GetOriginalProfile()));
+        content::Source<Profile>(profile->GetOriginalProfile()));
   }
 
   return true;
@@ -330,8 +331,8 @@ void DefaultSearchProviderChange::OnTemplateURLServiceChanged() {
     VLOG(1) << "Default search provider has been changed by user";
     default_search_provider_ = NULL;
     url_service->RemoveObserver(this);
-    // This will delete the Protector instance and |this|.
-    protector()->DismissChange();
+    // Will delete this DefaultSearchProviderChange instance.
+    ProtectorServiceFactory::GetForProfile(profile())->DismissChange();
   }
 }
 
@@ -382,7 +383,7 @@ const TemplateURL* DefaultSearchProviderChange::SetDefaultSearchProvider(
 }
 
 void DefaultSearchProviderChange::OpenSearchEngineSettings() {
-  protector()->OpenTab(
+  ProtectorServiceFactory::GetForProfile(profile())->OpenTab(
       GURL(std::string(chrome::kChromeUISettingsURL) +
            chrome::kSearchEnginesSubPage));
 }

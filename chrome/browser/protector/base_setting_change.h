@@ -17,8 +17,6 @@ class TemplateURL;
 
 namespace protector {
 
-class Protector;
-
 // Base class for setting change tracked by Protector.
 class BaseSettingChange {
  public:
@@ -28,9 +26,9 @@ class BaseSettingChange {
   // Applies initial actions to the setting if needed. Must be called before
   // any other calls are made, including text getters.
   // Returns true if initialization was successful.
-  // Associates this change with |protector_| instance so overrides must
-  // call the base method.
-  virtual bool Init(Protector* protector);
+  // Associates this change with |profile| instance so overrides must call the
+  // base method.
+  virtual bool Init(Profile* profile);
 
   // Persists new setting if needed.
   virtual void Apply();
@@ -63,15 +61,12 @@ class BaseSettingChange {
   // Returns text for the button to discard the change with |Discard|.
   virtual string16 GetDiscardButtonText() const = 0;
 
+ protected:
   // Profile instance we've been associated with by an |Init| call.
   Profile* profile() { return profile_; }
 
-  // Protector instance we've been associated with by an |Init| call.
-  Protector* protector() { return protector_; }
-
  private:
   Profile* profile_;
-  Protector* protector_;
 
   DISALLOW_COPY_AND_ASSIGN(BaseSettingChange);
 };
