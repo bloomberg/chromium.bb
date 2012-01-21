@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,10 +32,7 @@ void TestingAutomationProvider::IsWindowMaximized(int handle,
 }
 
 void TestingAutomationProvider::TerminateSession(int handle, bool* success) {
-  // TODO(benrg): what should this do in aura? It's
-  // currently unimplemented in most other providers.
   *success = false;
-  NOTIMPLEMENTED();
 }
 
 void TestingAutomationProvider::GetWindowBounds(int handle,
@@ -83,4 +80,3 @@ void TestingAutomationProvider::GetWindowTitle(int handle, string16* text) {
   DCHECK(window);
   *text = window->title();
 }
-

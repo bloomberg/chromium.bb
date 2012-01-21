@@ -298,7 +298,7 @@ void ProxyLauncher::TerminateBrowser() {
   base::TimeTicks quit_start = base::TimeTicks::Now();
 
   EXPECT_TRUE(automation()->SetFilteredInet(false));
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser.get());
   ASSERT_TRUE(browser->TerminateSession());
