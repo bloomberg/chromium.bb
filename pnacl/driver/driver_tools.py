@@ -407,9 +407,8 @@ def DecodeLE(bytes):
 def GetBitcodeMetadata(filename):
   assert(IsBitcode(filename))
 
-  # TODO(pdox): Make this work with sandboxed translator
-  llc = env.getone('LLVM_LLC')
-  args = [ llc, '-only-dump-metadata', '-dump-metadata=-', filename ]
+  llvm_dis = env.getone('LLVM_DIS')
+  args = [ llvm_dis, '-dump-metadata', filename ]
   _, stdout_contents, _ = Run(args, echo_stdout = False, return_stdout = True)
 
   metadata = { 'OutputFormat': '',
