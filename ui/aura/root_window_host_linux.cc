@@ -593,6 +593,12 @@ gfx::Point RootWindowHostLinux::GetLocationOnNativeScreen() const {
 }
 
 void RootWindowHostLinux::SetCursor(gfx::NativeCursor cursor) {
+  if (cursor == kCursorNone && is_cursor_visible_) {
+    current_cursor_ = cursor;
+    ShowCursor(false);
+    return;
+  }
+
   if (current_cursor_ == cursor)
     return;
   current_cursor_ = cursor;

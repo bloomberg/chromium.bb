@@ -38,6 +38,15 @@ using WebKit::WebTouchEvent;
 
 namespace {
 
+// In mouse lock mode, we need to prevent the (invisible) cursor from hitting
+// the border of the view, in order to get valid movement information. However,
+// forcing the cursor back to the center of the view after each mouse move
+// doesn't work well. It reduces the frequency of useful mouse move messages
+// significantly. Therefore, we move the cursor to the center of the view only
+// if it approaches the border. |kMouseLockBorderPercentage| specifies the width
+// of the border area, in percentage of the corresponding dimension.
+const int kMouseLockBorderPercentage = 15;
+
 ui::TouchStatus DecideTouchStatus(const WebKit::WebTouchEvent& event,
                                   WebKit::WebTouchPoint* point) {
   if (event.type == WebKit::WebInputEvent::TouchStart &&
@@ -105,13 +114,15 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host)
 #if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
       current_surface_(gfx::kNullPluginWindow),
 #endif
-      paint_canvas_(NULL) {
+      paint_canvas_(NULL),
+      synthetic_move_sent_(false) {
   host_->SetView(this);
   aura::client::SetTooltipText(window_, &tooltip_);
   aura::client::SetActivationDelegate(window_, this);
 }
 
 RenderWidgetHostViewAura::~RenderWidgetHostViewAura() {
+  UnlockMouse();
   if (popup_type_ != WebKit::WebPopupTypeNone) {
     DCHECK(popup_parent_host_view_);
     popup_parent_host_view_->popup_child_host_view_ = NULL;
@@ -491,14 +502,40 @@ gfx::PluginWindowHandle RenderWidgetHostViewAura::GetCompositingSurface() {
 #endif
 
 bool RenderWidgetHostViewAura::LockMouse() {
-  // http://crbug.com/102563
-  NOTIMPLEMENTED();
-  return false;
+  if (mouse_locked_)
+    return true;
+
+  mouse_locked_ = true;
+
+  aura::RootWindow* root_window = aura::RootWindow::GetInstance();
+  root_window->SetCapture(window_);
+  if (root_window->ConfineCursorToWindow()) {
+    root_window->ShowCursor(false);
+    synthetic_move_sent_ = true;
+    root_window->MoveCursorTo(window_->bounds().CenterPoint());
+    if (aura::client::GetTooltipClient())
+      aura::client::GetTooltipClient()->SetTooltipsEnabled(false);
+    return true;
+  } else {
+    mouse_locked_ = false;
+    root_window->ReleaseCapture(window_);
+    return false;
+  }
 }
 
 void RenderWidgetHostViewAura::UnlockMouse() {
-  // http://crbug.com/102563
-  NOTIMPLEMENTED();
+  if (!mouse_locked_)
+    return;
+
+  mouse_locked_ = false;
+
+  aura::RootWindow* root_window = aura::RootWindow::GetInstance();
+  root_window->ReleaseCapture(window_);
+  root_window->MoveCursorTo(unlocked_global_mouse_position_);
+  root_window->ShowCursor(true);
+  if (aura::client::GetTooltipClient())
+    aura::client::GetTooltipClient()->SetTooltipsEnabled(true);
+
   host_->LostMouseLock();
 }
 
@@ -736,6 +773,8 @@ bool RenderWidgetHostViewAura::OnKeyEvent(aura::KeyEvent* event) {
 }
 
 gfx::NativeCursor RenderWidgetHostViewAura::GetCursor(const gfx::Point& point) {
+  if (mouse_locked_)
+    return aura::kCursorNone;
   return current_cursor_.GetNativeCursor();
 }
 
@@ -745,6 +784,34 @@ int RenderWidgetHostViewAura::GetNonClientComponent(
 }
 
 bool RenderWidgetHostViewAura::OnMouseEvent(aura::MouseEvent* event) {
+  if (mouse_locked_) {
+    WebKit::WebMouseEvent mouse_event = content::MakeWebMouseEvent(event);
+    gfx::Point center = window_->bounds().CenterPoint();
+
+    bool is_move_to_center_event = (event->type() == ui::ET_MOUSE_MOVED ||
+        event->type() == ui::ET_MOUSE_DRAGGED) &&
+        mouse_event.globalX == center.x() && mouse_event.globalY == center.y();
+
+    ModifyEventMovementAndCoords(&mouse_event);
+
+    bool should_not_forward = is_move_to_center_event && synthetic_move_sent_;
+    if (should_not_forward) {
+      synthetic_move_sent_ = false;
+    } else {
+      // Check if the mouse has reached the border and needs to be centered.
+      if (ShouldMoveToCenter()) {
+        synthetic_move_sent_ = true;
+        aura::RootWindow::GetInstance()->MoveCursorTo(center);
+      }
+
+      // Forward event to renderer.
+      if (CanRendererHandleEvent(event->native_event()))
+        host_->ForwardMouseEvent(mouse_event);
+    }
+
+    return false;
+  }
+
   if (event->type() == ui::ET_MOUSEWHEEL) {
     WebKit::WebMouseWheelEvent mouse_wheel_event =
         content::MakeWebMouseWheelEvent(event);
@@ -756,7 +823,9 @@ bool RenderWidgetHostViewAura::OnMouseEvent(aura::MouseEvent* event) {
     if (mouse_wheel_event.deltaX != 0 || mouse_wheel_event.deltaY != 0)
       host_->ForwardWheelEvent(mouse_wheel_event);
   } else if (CanRendererHandleEvent(event->native_event())) {
-    host_->ForwardMouseEvent(content::MakeWebMouseEvent(event));
+    WebKit::WebMouseEvent mouse_event = content::MakeWebMouseEvent(event);
+    ModifyEventMovementAndCoords(&mouse_event);
+    host_->ForwardMouseEvent(mouse_event);
   }
 
   switch (event->type()) {
@@ -895,6 +964,40 @@ void RenderWidgetHostViewAura::FinishImeCompositionSession() {
   ImeCancelComposition();
 }
 
+void RenderWidgetHostViewAura::ModifyEventMovementAndCoords(
+    WebKit::WebMouseEvent* event) {
+  // If the mouse has just entered, we must report zero movementX/Y. Hence we
+  // reset any global_mouse_position set previously.
+  if (event->type == WebKit::WebInputEvent::MouseEnter ||
+      event->type == WebKit::WebInputEvent::MouseLeave)
+    global_mouse_position_.SetPoint(event->globalX, event->globalY);
+
+  // Movement is computed by taking the difference of the new cursor position
+  // and the previous. Under mouse lock the cursor will be warped back to the
+  // center so that we are not limited by clipping boundaries.
+  // We do not measure movement as the delta from cursor to center because
+  // we may receive more mouse movement events before our warp has taken
+  // effect.
+  event->movementX = event->globalX - global_mouse_position_.x();
+  event->movementY = event->globalY - global_mouse_position_.y();
+
+  global_mouse_position_.SetPoint(event->globalX, event->globalY);
+
+  // Under mouse lock, coordinates of mouse are locked to what they were when
+  // mouse lock was entered.
+  if (mouse_locked_) {
+    event->x = unlocked_mouse_position_.x();
+    event->y = unlocked_mouse_position_.y();
+    event->windowX = unlocked_mouse_position_.x();
+    event->windowY = unlocked_mouse_position_.y();
+    event->globalX = unlocked_global_mouse_position_.x();
+    event->globalY = unlocked_global_mouse_position_.y();
+  } else {
+    unlocked_mouse_position_.SetPoint(event->windowX, event->windowY);
+    unlocked_global_mouse_position_.SetPoint(event->globalX, event->globalY);
+  }
+}
+
 void RenderWidgetHostViewAura::SchedulePaintIfNotInClip(
     const gfx::Rect& rect,
     const gfx::Rect& clip) {
@@ -905,6 +1008,17 @@ void RenderWidgetHostViewAura::SchedulePaintIfNotInClip(
   } else {
     window_->SchedulePaintInRect(rect);
   }
+}
+
+bool RenderWidgetHostViewAura::ShouldMoveToCenter() {
+  gfx::Rect rect = window_->bounds();
+  int border_x = rect.width() * kMouseLockBorderPercentage / 100;
+  int border_y = rect.height() * kMouseLockBorderPercentage / 100;
+
+  return global_mouse_position_.x() < rect.x() + border_x ||
+      global_mouse_position_.x() > rect.right() - border_x ||
+      global_mouse_position_.y() < rect.y() + border_y ||
+      global_mouse_position_.y() > rect.bottom() - border_y;
 }
 
 bool RenderWidgetHostViewAura::NeedsInputGrab() {

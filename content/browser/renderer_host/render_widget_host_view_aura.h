@@ -180,9 +180,17 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   // to cancel its ongoing composition session.
   void FinishImeCompositionSession();
 
+  // This method computes movementX/Y and keeps track of mouse location for
+  // mouse lock on all mouse move events.
+  void ModifyEventMovementAndCoords(WebKit::WebMouseEvent* event);
+
   // If |clip| is non-empty and and doesn't contain |rect| or |clip| is empty
   // SchedulePaint() is invoked for |rect|.
   void SchedulePaintIfNotInClip(const gfx::Rect& rect, const gfx::Rect& clip);
+
+  // Helper method to determine if, in mouse locked mode, the cursor should be
+  // moved to center.
+  bool ShouldMoveToCenter();
 
   // The model object.
   RenderWidgetHost* host_;
@@ -234,6 +242,21 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
 
   // If non-NULL we're in OnPaint() and this is the supplied canvas.
   gfx::Canvas* paint_canvas_;
+
+  // Used to record the last position of the mouse.
+  // While the mouse is locked, they store the last known position just as mouse
+  // lock was entered.
+  // Relative to the upper-left corner of the view.
+  gfx::Point unlocked_mouse_position_;
+  // Relative to the upper-left corner of the screen.
+  gfx::Point unlocked_global_mouse_position_;
+  // Last cursor position relative to screen. Used to compute movementX/Y.
+  gfx::Point global_mouse_position_;
+  // In mouse locked mode, we syntheticaly move the mouse cursor to the center
+  // of the window when it reaches the window borders to avoid it going outside.
+  // This flag is used to differentiate between these synthetic mouse move
+  // events vs. normal mouse move events.
+  bool synthetic_move_sent_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewAura);
 };
