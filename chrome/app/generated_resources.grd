@@ -4057,6 +4057,9 @@ Update checks have repeatedly failed for the extension "<ph name="EXTENSION_NAME
       <message name="IDS_EXTENSION_PACK_WARNING_TITLE" desc="Warning title message for pack extension">
         Pack Extension Warning
       </message>
+      <message name="IDS_EXTENSION_PACK_ERROR_TITLE" desc="Error title message for pack extension">
+        Pack Extension Error
+      </message>
       <message name="IDS_EXTENSION_CRX_EXISTS" desc="Warning displayed in pack dialog when the crx file already exists.">
         There is already a CRX file present with this name.
       </message>

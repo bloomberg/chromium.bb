@@ -45,6 +45,8 @@ void PackExtensionHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_EXTENSION_PROCEED_ANYWAY));
   localized_strings->SetString("packExtensionWarningTitle",
       l10n_util::GetStringUTF16(IDS_EXTENSION_PACK_WARNING_TITLE));
+  localized_strings->SetString("packExtensionErrorTitle",
+      l10n_util::GetStringUTF16(IDS_EXTENSION_PACK_ERROR_TITLE));
 }
 
 void PackExtensionHandler::RegisterMessages() {
@@ -119,5 +121,5 @@ void PackExtensionHandler::HandlePackMessage(const ListValue* args) {
 void PackExtensionHandler::ShowAlert(const std::string& message) {
   ListValue arguments;
   arguments.Append(Value::CreateStringValue(message));
-  web_ui()->CallJavascriptFunction("alert", arguments);
+  web_ui()->CallJavascriptFunction("PackExtensionOverlay.showError", arguments);
 }

@@ -89,8 +89,26 @@ cr.define('options', function() {
    * @param {String} message The message to show to the user.
    */
   PackExtensionOverlay.showSuccessMessage = function(message) {
-    alert(message);
     OptionsPage.closeOverlay();
+    AlertOverlay.show(localStrings.getString('packExtensionOverlay'),
+      message, localStrings.getString('ok'), "",
+      function() {
+        OptionsPage.closeOverlay();
+      }, null);
+  }
+
+  /**
+   * Post an alert overlay showing |message|, and upon acknowledgement, close
+   * the alert overlay and return to showing the PackExtensionOverlay.
+   */
+  PackExtensionOverlay.showError = function(message) {
+    OptionsPage.closeOverlay();
+    AlertOverlay.show(localStrings.getString('packExtensionErrorTitle'),
+      message, localStrings.getString('ok'), "",
+      function() {
+        OptionsPage.closeOverlay();
+        OptionsPage.showPageByName('packExtensionOverlay', false);
+      }, null);
   }
 
   // Export
