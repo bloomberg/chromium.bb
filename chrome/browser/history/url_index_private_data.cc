@@ -541,10 +541,10 @@ ScoredHistoryMatch URLIndexPrivateData::ScoredMatchForURL(
   // each of the URL and title are adjusted by the fraction of the
   // terms appearing in each.
   int url_score = ScoreComponentForMatches(match.url_matches, url.length()) *
-      match.url_matches.size() / terms.size();
+      std::min(match.url_matches.size(), terms.size()) / terms.size();
   int title_score =
       ScoreComponentForMatches(match.title_matches, title.length()) *
-      match.title_matches.size() / terms.size();
+      std::min(match.title_matches.size(), terms.size()) / terms.size();
   // Arbitrarily pick the best.
   // TODO(mrossetti): It might make sense that a term which appears in both the
   // URL and the Title should boost the score a bit.

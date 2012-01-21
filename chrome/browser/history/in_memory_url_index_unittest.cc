@@ -549,6 +549,12 @@ TEST_F(InMemoryURLIndexTest, Scoring) {
   ScoredHistoryMatch scored_h(URLIndexPrivateData::ScoredMatchForURL(
       row_d, ASCIIToUTF16("abc"), Make1Term("abc")));
   EXPECT_GT(scored_h.raw_score, scored_a.raw_score);
+  // Test scores based on a terms appearing multiple times.
+  URLRow row_i(MakeURLRow("http://csi.csi.csi/csi_csi",
+      "CSI Guide to CSI Las Vegas, CSI New York, CSI Provo", 3, 30, 10));
+  ScoredHistoryMatch scored_i(URLIndexPrivateData::ScoredMatchForURL(
+      row_i, ASCIIToUTF16("csi"), Make1Term("csi")));
+  EXPECT_LT(scored_i.raw_score, 1400);
 }
 
 TEST_F(InMemoryURLIndexTest, AddNewRows) {
