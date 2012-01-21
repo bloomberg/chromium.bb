@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -34,6 +34,13 @@ void WriteURLToClipboard(const GURL& url,
 GURL AppendQueryParameter(const GURL& url,
                           const std::string& name,
                           const std::string& value);
+
+// Looks for |search_key| in the query portion of |url|. Returns true if the
+// key is found and sets |out_value| to the unescaped value for the key.
+// Returns false if the key is not found.
+bool GetValueForKeyInQuery(const GURL& url,
+                           const std::string& search_key,
+                           std::string* out_value);
 
 }  // namespace chrome_browser_net
 
