@@ -9,7 +9,6 @@
 #include "ash/launcher/launcher_model.h"
 #include "ash/screenshot_delegate.h"
 #include "ash/shell.h"
-#include "ash/shell_delegate.h"
 #include "ash/shell_window_ids.h"
 #include "ash/wm/window_cycle_controller.h"
 #include "ui/aura/event.h"
@@ -26,7 +25,6 @@ namespace {
 enum AcceleratorAction {
   CYCLE_BACKWARD,
   CYCLE_FORWARD,
-  EXIT,
   TAKE_SCREENSHOT,
   TOGGLE_CAPS_LOCK,
 #if !defined(NDEBUG)
@@ -47,7 +45,6 @@ struct AcceleratorData {
   { ui::VKEY_TAB, false, false, true, CYCLE_FORWARD },
   { ui::VKEY_TAB, true, false, true, CYCLE_BACKWARD },
   { ui::VKEY_F5, false, false, false, CYCLE_FORWARD },
-  { ui::VKEY_Q, true, true, false, EXIT },
   { ui::VKEY_F5, true, false, false, CYCLE_BACKWARD },
   { ui::VKEY_F5, false, true, false, TAKE_SCREENSHOT },
   { ui::VKEY_PRINT, false, false, false, TAKE_SCREENSHOT },
@@ -68,14 +65,6 @@ bool HandleCycleWindow(ash::WindowCycleController::Direction direction,
   ash::Shell::GetInstance()->
       window_cycle_controller()->HandleCycleWindow(direction, is_alt_down);
   // Always report we handled the key, even if the window didn't change.
-  return true;
-}
-
-bool HandleExit() {
-  ash::ShellDelegate* delegate = ash::Shell::GetInstance()->delegate();
-  if (!delegate)
-    return false;
-  delegate->Exit();
   return true;
 }
 
@@ -197,8 +186,6 @@ bool AcceleratorController::AcceleratorPressed(
     case CYCLE_FORWARD:
       return HandleCycleWindow(WindowCycleController::FORWARD,
                                accelerator.IsAltDown());
-    case EXIT:
-      return HandleExit();
     case TAKE_SCREENSHOT:
       if (screenshot_delegate_.get())
         screenshot_delegate_->HandleTakeScreenshot();
