@@ -16,8 +16,8 @@
 
 using ::testing::_;
 using ::testing::Assign;
-using ::testing::AtLeast;
 using ::testing::Invoke;
+using ::testing::StrictMock;
 using ::testing::NiceMock;
 
 using WebKit::WebFrame;
@@ -83,6 +83,7 @@ class BufferedDataSourceTest : public testing::Test {
 
     data_source_ = new MockBufferedDataSource(message_loop_,
                                               view_->mainFrame());
+    data_source_->set_host(&host_);
   }
 
   virtual ~BufferedDataSourceTest() {
@@ -90,13 +91,6 @@ class BufferedDataSourceTest : public testing::Test {
   }
 
   void Initialize(media::PipelineStatus expected) {
-    Initialize(expected, true);
-  }
-
-  void Initialize(media::PipelineStatus expected, bool set_host) {
-    if (set_host)
-      data_source_->set_host(&host_);
-
     ExpectCreateResourceLoader();
     data_source_->Initialize(response_generator_.gurl(),
                              media::NewExpectedStatusCB(expected));
@@ -107,10 +101,8 @@ class BufferedDataSourceTest : public testing::Test {
   void InitializeWith206Response() {
     Initialize(media::PIPELINE_OK);
 
-    EXPECT_CALL(host_, SetTotalBytes(response_generator_.content_length()))
-        .Times(AtLeast(1));
-    EXPECT_CALL(host_, SetBufferedBytes(0))
-        .Times(AtLeast(1));
+    EXPECT_CALL(host_, SetTotalBytes(response_generator_.content_length()));
+    EXPECT_CALL(host_, SetBufferedBytes(0));
     Respond(response_generator_.Generate206(0));
   }
 
@@ -184,7 +176,7 @@ class BufferedDataSourceTest : public testing::Test {
   MockWebFrameClient client_;
   WebView* view_;
 
-  NiceMock<media::MockDataSourceHost> host_;
+  StrictMock<media::MockDataSourceHost> host_;
   MessageLoop* message_loop_;
 
  private:
@@ -447,10 +439,8 @@ TEST_F(BufferedDataSourceTest, Read) {
   ReadAt(0);
 
   // When the read completes we'll update our network status.
-  EXPECT_CALL(host_, SetBufferedBytes(kDataSize))
-      .Times(AtLeast(1));
-  EXPECT_CALL(host_, SetNetworkActivity(true))
-      .Times(AtLeast(1));
+  EXPECT_CALL(host_, SetBufferedBytes(kDataSize));
+  EXPECT_CALL(host_, SetNetworkActivity(true));
   EXPECT_CALL(*this, ReadCallback(kDataSize));
   FinishRead();
 
@@ -459,20 +449,6 @@ TEST_F(BufferedDataSourceTest, Read) {
   EXPECT_CALL(host_, SetBufferedBytes(kDataSize));
 
   EXPECT_TRUE(data_source_->loading());
-  Stop();
-}
-
-// Make sure information regarding loaded data propogates to the host even if it
-// gets initialized before the host is set.
-TEST_F(BufferedDataSourceTest, HostSetAfterResponse) {
-  Initialize(media::PIPELINE_OK, false);
-  Respond(response_generator_.Generate206(0));
-
-  EXPECT_CALL(host_, SetNetworkActivity(_));
-  EXPECT_CALL(host_, SetTotalBytes(_));
-  EXPECT_CALL(host_, SetBufferedBytes(_));
-  data_source_->set_host(&host_);
-
   Stop();
 }
 

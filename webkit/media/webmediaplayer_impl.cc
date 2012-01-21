@@ -701,7 +701,10 @@ void WebMediaPlayerImpl::OnPipelineInitialize(PipelineStatus status) {
       SetNetworkState(WebKit::WebMediaPlayer::Loaded);
 
     SetReadyState(WebKit::WebMediaPlayer::HaveMetadata);
-    SetReadyState(WebKit::WebMediaPlayer::HaveFutureData);
+    // Fire canplaythrough immediately after playback begins because of
+    // crbug.com/106480.
+    // TODO(vrk): set ready state to HaveFutureData when bug above is fixed.
+    SetReadyState(WebKit::WebMediaPlayer::HaveEnoughData);
   } else {
     // TODO(hclam): should use |status| to determine the state
     // properly and reports error using MediaError.
@@ -787,11 +790,13 @@ void WebMediaPlayerImpl::OnNetworkEvent(NetworkEvent type) {
       SetNetworkState(WebKit::WebMediaPlayer::Loading);
       break;
     case media::DOWNLOAD_PAUSED:
-      if (!pipeline_->IsLocalSource())
-        SetNetworkState(WebKit::WebMediaPlayer::Idle);
+      SetNetworkState(WebKit::WebMediaPlayer::Idle);
       break;
     case media::CAN_PLAY_THROUGH:
-      SetReadyState(WebKit::WebMediaPlayer::HaveEnoughData);
+      // Temporarily disable delayed firing of CAN_PLAY_THROUGH due to
+      // crbug.com/106480.
+      // TODO(vrk): uncomment code below when bug above is fixed.
+      // SetReadyState(WebKit::WebMediaPlayer::HaveEnoughData);
       break;
     default:
       NOTREACHED();
