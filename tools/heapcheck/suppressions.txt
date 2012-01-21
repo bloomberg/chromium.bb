@@ -1771,3 +1771,17 @@
    Heapcheck:Leak
    fun:AutofillProfileSyncableServiceTest::SetUp
 }
+{
+   bug_110955
+   Heapcheck:Leak
+   fun:browser_sync::TypedUrlDataTypeController::StopAssociationAsync
+   fun:browser_sync::NonFrontendDataTypeController::Stop
+   fun:browser_sync::DataTypeManagerImpl::FinishStop
+   fun:browser_sync::DataTypeManagerImpl::Stop
+   fun:ProfileSyncService::ShutdownImpl
+   fun:ProfileSyncService::Shutdown
+   fun:ProfileSyncService::~ProfileSyncService
+   fun:TestProfileSyncService::~TestProfileSyncService
+   fun:scoped_ptr::reset
+   fun:ProfileSyncServiceTypedUrlTest::TearDown
+}
