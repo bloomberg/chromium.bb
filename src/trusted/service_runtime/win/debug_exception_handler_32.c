@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -137,18 +137,6 @@ static BOOL HandleBreakpointException(HANDLE thread_handle) {
   return cs_limit == 0xfffff;
 }
 
-static BOOL GetAddrProtection(HANDLE process_handle, int addr, int *protect) {
-  MEMORY_BASIC_INFORMATION memory_info;
-  if (sizeof(memory_info) != VirtualQueryEx(
-                                 process_handle,
-                                 (LPCVOID)addr,
-                                 &memory_info, sizeof(memory_info))) {
-    return FALSE;
-  }
-  *protect = memory_info.Protect;
-  return TRUE;
-}
-
 static BOOL GetExceptionHandlingInfo(HANDLE process_handle,
                                      int base,
                                      CONTEXT *context,
@@ -240,7 +228,6 @@ static BOOL IsExceptionHandlerValid(HANDLE process_handle, DWORD base,
                                     DWORD cs_limit, DWORD ds_limit,
                                     DWORD stack_size, DWORD exception_handler,
                                     DWORD exception_stack) {
-  int protect;
   if (stack_size > 4096) {
     return FALSE;
   }
@@ -251,34 +238,9 @@ static BOOL IsExceptionHandlerValid(HANDLE process_handle, DWORD base,
   if (exception_handler % NACL_INSTR_BLOCK_SIZE != 0) {
     return FALSE;
   }
-  /* check exception_handler rights. */
-  if (!GetAddrProtection(process_handle, exception_handler + base, &protect)) {
-    return FALSE;
-  }
-  if ((protect & (PAGE_EXECUTE | PAGE_EXECUTE_READ)) == 0) {
-    return FALSE;
-  }
 
   if (exception_stack < stack_size || exception_stack / 4096 > ds_limit) {
     return FALSE;
-  }
-  /* check exception_stack rights. */
-  if (!GetAddrProtection(process_handle, exception_stack - stack_size + base,
-                         &protect)) {
-    return FALSE;
-  }
-  if (protect != PAGE_READWRITE) {
-    return FALSE;
-  }
-  if (((exception_stack - 1) / 4096) !=
-      ((exception_stack - stack_size) / 4096)) {
-    if (!GetAddrProtection(process_handle, exception_stack - 1 + base,
-                           &protect)) {
-      return FALSE;
-    }
-    if (protect != PAGE_READWRITE) {
-      return FALSE;
-    }
   }
   return TRUE;
 }
