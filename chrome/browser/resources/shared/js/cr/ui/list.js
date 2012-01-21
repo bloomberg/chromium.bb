@@ -488,11 +488,8 @@ cr.define('cr.ui', function() {
      * @private
      */
     handleElementFocus_: function(e) {
-      if (!this.hasElementFocus) {
+      if (!this.hasElementFocus)
         this.hasElementFocus = true;
-        // Force styles based on hasElementFocus to take effect.
-        this.forceRepaint_();
-      }
     },
 
     /**
@@ -510,25 +507,9 @@ cr.define('cr.ui', function() {
       var doc = e.target.ownerDocument;
       window.setTimeout(function() {
         var activeElement = doc.activeElement;
-        if (!list.contains(activeElement)) {
+        if (!list.contains(activeElement))
           list.hasElementFocus = false;
-          // Force styles based on hasElementFocus to take effect.
-          list.forceRepaint_();
-        }
       });
-    },
-
-    /**
-     * Forces a repaint of the list. Changing custom attributes, even if there
-     * are style rules depending on them, doesn't cause a repaint
-     * (<https://bugs.webkit.org/show_bug.cgi?id=12519>), so this can be called
-     * to force the list to repaint.
-     * @private
-     */
-    forceRepaint_: function(e) {
-      var dummyElement = document.createElement('div');
-      this.appendChild(dummyElement);
-      this.removeChild(dummyElement);
     },
 
     /**
