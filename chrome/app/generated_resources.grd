@@ -8021,7 +8021,7 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
 
       <if expr="pp_ifdef('use_titlecase')">
         <message name="IDS_OPTIONS2_STARTUP_PAGES_DIALOG_TITLE" desc="In Title Case: The title of the dialog where the user chooses the set of pages that will be shown at startup">
-          Set Startup Pages
+          Startup Pages
         </message>
         <message name="IDS_OPTIONS_STARTUP_USE_CURRENT" desc="In Title Case: The label of the 'Use Current' button for the custom startup urls list">
           Use Current Pages
@@ -8032,7 +8032,7 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
       </if>
       <if expr="not pp_ifdef('use_titlecase')">
         <message name="IDS_OPTIONS2_STARTUP_PAGES_DIALOG_TITLE" desc="In sentence case: The title of the dialog where the user chooses the set of pages that will be shown at startup">
-          Set startup pages
+          Startup pages
         </message>
         <message name="IDS_OPTIONS_STARTUP_USE_CURRENT" desc="In sentence case: The label of the 'Use Current' button for the custom startup urls list">
           Use current pages
@@ -8625,7 +8625,7 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
           Browsing data
         </message>
         <message name="IDS_OPTIONS_IMPORT_DATA_BUTTON" desc="In sentence case: Label for the import data button.">
-          Import data from another browser...
+          Import bookmarks and settings...
         </message>
       </if>
       <if expr="pp_ifdef('use_titlecase')">
@@ -8633,7 +8633,7 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
           Browsing Data
         </message>
         <message name="IDS_OPTIONS_IMPORT_DATA_BUTTON" desc="In Title Case: Label for the import data button.">
-          Import Data from Another Browser...
+          Import Bookmarks and Settings...
         </message>
       </if>
 
@@ -8816,7 +8816,7 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
 
       <!-- Cookies Window -->
       <message name="IDS_COOKIES_WEBSITE_PERMISSIONS_WINDOW_TITLE" desc="The title of the redesigned Cookies Window that lets you manage cookies, storage quota for websites and other permissions per-website">
-        Cookies and Other Data
+        Cookies and Site Data
       </message>
       <message name="IDS_COOKIES_SEARCH_COOKIES" desc="Placeholder text shown in the search box in the Cookies Window">
         Search cookies
