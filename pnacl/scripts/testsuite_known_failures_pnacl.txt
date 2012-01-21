@@ -23,7 +23,6 @@ lua arm
 almabench arm
 exception_spec_test arm
 spirit arm
-spirit x86-32
 AMGmk arm
 flops arm
 CrystalMk arm
