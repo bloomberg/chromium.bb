@@ -18,6 +18,16 @@
 
 namespace {
 
+// Color settings for text, backgrounds and cursor.
+// These are tentative, and should be derived from theme, system
+// settings and current settings.
+// TODO(oshima): Change this to match the standard chrome
+// before dogfooding textfield views.
+const SkColor kSelectedTextColor = SK_ColorWHITE;
+const SkColor kFocusedSelectionColor = SkColorSetRGB(30, 144, 255);
+const SkColor kUnfocusedSelectionColor = SK_ColorLTGRAY;
+const SkColor kCursorColor = SK_ColorBLACK;
+
 #ifndef NDEBUG
 // Check StyleRanges invariant conditions: sorted and non-overlapping ranges.
 void CheckStyleRanges(const gfx::StyleRanges& style_ranges, size_t length) {
@@ -340,42 +350,26 @@ void RenderText::SetCursorPosition(size_t position) {
   MoveCursorTo(position, false);
 }
 
-void RenderText::MoveCursorLeft(BreakType break_type, bool select) {
+void RenderText::MoveCursor(BreakType break_type,
+                            VisualCursorDirection direction,
+                            bool select) {
   SelectionModel position(selection_model());
   position.set_selection_start(GetCursorPosition());
   // Cancelling a selection moves to the edge of the selection.
   if (break_type != LINE_BREAK && !EmptySelection() && !select) {
-    // Use the selection start if it is left of the selection end.
     SelectionModel selection_start = GetSelectionModelForSelectionStart();
-    if (GetCursorBounds(selection_start, true).x() <
-        GetCursorBounds(position, true).x())
+    int start_x = GetCursorBounds(selection_start, true).x();
+    int cursor_x = GetCursorBounds(position, true).x();
+    // Use the selection start if it is left (when |direction| is CURSOR_LEFT)
+    // or right (when |direction| is CURSOR_RIGHT) of the selection end.
+    if (direction == CURSOR_RIGHT ? start_x > cursor_x : start_x < cursor_x)
       position = selection_start;
-    // For word breaks, use the nearest word boundary left of the selection.
+    // For word breaks, use the nearest word boundary in the appropriate
+    // |direction|.
     if (break_type == WORD_BREAK)
-      position = GetLeftSelectionModel(position, break_type);
+      position = GetAdjacentSelectionModel(position, break_type, direction);
   } else {
-    position = GetLeftSelectionModel(position, break_type);
-  }
-  if (select)
-    position.set_selection_start(GetSelectionStart());
-  MoveCursorTo(position);
-}
-
-void RenderText::MoveCursorRight(BreakType break_type, bool select) {
-  SelectionModel position(selection_model());
-  position.set_selection_start(GetCursorPosition());
-  // Cancelling a selection moves to the edge of the selection.
-  if (break_type != LINE_BREAK && !EmptySelection() && !select) {
-    // Use the selection start if it is right of the selection end.
-    SelectionModel selection_start = GetSelectionModelForSelectionStart();
-    if (GetCursorBounds(selection_start, true).x() >
-        GetCursorBounds(position, true).x())
-      position = selection_start;
-    // For word breaks, use the nearest word boundary right of the selection.
-    if (break_type == WORD_BREAK)
-      position = GetRightSelectionModel(position, break_type);
-  } else {
-    position = GetRightSelectionModel(position, break_type);
+    position = GetAdjacentSelectionModel(position, break_type, direction);
   }
   if (select)
     position.set_selection_start(GetSelectionStart());
@@ -395,10 +389,10 @@ bool RenderText::MoveCursorTo(const SelectionModel& model) {
     sel.set_caret_pos(0);
     sel.set_caret_placement(SelectionModel::LEADING);
   } else if (sel.caret_pos() >= text_length) {
-    SelectionModel end = GetTextDirection() == base::i18n::RIGHT_TO_LEFT ?
-        LeftEndSelectionModel() : RightEndSelectionModel();
-    sel.set_caret_pos(end.caret_pos());
-    sel.set_caret_placement(end.caret_placement());
+    SelectionModel end_selection =
+        EdgeSelectionModel(GetVisualDirectionOfLogicalEnd());
+    sel.set_caret_pos(end_selection.caret_pos());
+    sel.set_caret_placement(end_selection.caret_placement());
   }
 
   if (!IsCursorablePosition(sel.selection_start()) ||
@@ -429,14 +423,14 @@ bool RenderText::SelectRange(const ui::Range& range) {
   size_t pos = end;
   SelectionModel::CaretPlacement placement = SelectionModel::LEADING;
   if (start < end) {
-    pos = GetIndexOfPreviousGrapheme(end);
+    pos = IndexOfAdjacentGrapheme(end, CURSOR_BACKWARD);
     DCHECK_LT(pos, end);
     placement = SelectionModel::TRAILING;
   } else if (end == text_length) {
-    SelectionModel boundary = GetTextDirection() == base::i18n::RIGHT_TO_LEFT ?
-        LeftEndSelectionModel() : RightEndSelectionModel();
-    pos = boundary.caret_pos();
-    placement = boundary.caret_placement();
+    SelectionModel end_selection =
+        EdgeSelectionModel(GetVisualDirectionOfLogicalEnd());
+    pos = end_selection.caret_pos();
+    placement = end_selection.caret_placement();
   }
   SetSelectionModel(SelectionModel(start, end, pos, placement));
   return true;
@@ -459,8 +453,8 @@ void RenderText::ClearSelection() {
 }
 
 void RenderText::SelectAll() {
-  SelectionModel sel(RightEndSelectionModel());
-  sel.set_selection_start(LeftEndSelectionModel().selection_start());
+  SelectionModel sel = EdgeSelectionModel(CURSOR_RIGHT);
+  sel.set_selection_start(EdgeSelectionModel(CURSOR_LEFT).selection_start());
   SetSelectionModel(sel);
 }
 
@@ -529,10 +523,9 @@ void RenderText::ApplyDefaultStyle() {
   UpdateLayout();
 }
 
-base::i18n::TextDirection RenderText::GetTextDirection() {
-  if (base::i18n::IsRTL())
-    return base::i18n::RIGHT_TO_LEFT;
-  return base::i18n::LEFT_TO_RIGHT;
+VisualCursorDirection RenderText::GetVisualDirectionOfLogicalEnd() {
+  return GetTextDirection() == base::i18n::LEFT_TO_RIGHT ?
+      CURSOR_RIGHT : CURSOR_LEFT;
 }
 
 void RenderText::Draw(Canvas* canvas) {
@@ -562,10 +555,6 @@ const Rect& RenderText::GetUpdatedCursorBounds() {
   return cursor_bounds_;
 }
 
-size_t RenderText::GetIndexOfNextGrapheme(size_t position) {
-  return IndexOfAdjacentGrapheme(position, true);
-}
-
 SelectionModel RenderText::GetSelectionModelForSelectionStart() {
   size_t selection_start = GetSelectionStart();
   size_t selection_end = GetCursorPosition();
@@ -574,9 +563,10 @@ SelectionModel RenderText::GetSelectionModelForSelectionStart() {
                           selection_start,
                           SelectionModel::LEADING);
   else if (selection_start > selection_end)
-    return SelectionModel(selection_start,
-                          GetIndexOfPreviousGrapheme(selection_start),
-                          SelectionModel::TRAILING);
+    return SelectionModel(
+        selection_start,
+        IndexOfAdjacentGrapheme(selection_start, CURSOR_BACKWARD),
+        SelectionModel::TRAILING);
   return selection_model_;
 }
 
@@ -595,77 +585,18 @@ const Point& RenderText::GetUpdatedDisplayOffset() {
   return display_offset_;
 }
 
-SelectionModel RenderText::GetLeftSelectionModel(const SelectionModel& current,
-                                                 BreakType break_type) {
-  if (break_type == LINE_BREAK)
-    return LeftEndSelectionModel();
-  size_t pos = std::max<int>(current.selection_end() - 1, 0);
+SelectionModel RenderText::GetAdjacentSelectionModel(
+    const SelectionModel& current,
+    BreakType break_type,
+    VisualCursorDirection direction) {
+  EnsureLayout();
+
+  if (break_type == LINE_BREAK || text().empty())
+    return EdgeSelectionModel(direction);
   if (break_type == CHARACTER_BREAK)
-    return SelectionModel(pos, pos, SelectionModel::LEADING);
-
-  // Notes: We always iterate words from the beginning.
-  // This is probably fast enough for our usage, but we may
-  // want to modify WordIterator so that it can start from the
-  // middle of string and advance backwards.
-  base::i18n::BreakIterator iter(text(), base::i18n::BreakIterator::BREAK_WORD);
-  bool success = iter.Init();
-  DCHECK(success);
-  if (!success)
-    return current;
-  while (iter.Advance()) {
-    if (iter.IsWord()) {
-      size_t begin = iter.pos() - iter.GetString().length();
-      if (begin == current.selection_end()) {
-        // The cursor is at the beginning of a word.
-        // Move to previous word.
-        break;
-      } else if (iter.pos() >= current.selection_end()) {
-        // The cursor is in the middle or at the end of a word.
-        // Move to the top of current word.
-        pos = begin;
-        break;
-      } else {
-        pos = iter.pos() - iter.GetString().length();
-      }
-    }
-  }
-
-  return SelectionModel(pos, pos, SelectionModel::LEADING);
-}
-
-SelectionModel RenderText::GetRightSelectionModel(const SelectionModel& current,
-                                                  BreakType break_type) {
-  if (text_.empty())
-    return SelectionModel(0, 0, SelectionModel::LEADING);
-  if (break_type == LINE_BREAK)
-    return RightEndSelectionModel();
-  size_t pos = std::min(current.selection_end() + 1, text().length());
-  if (break_type == CHARACTER_BREAK)
-    return SelectionModel(pos, pos, SelectionModel::LEADING);
-
-  base::i18n::BreakIterator iter(text(), base::i18n::BreakIterator::BREAK_WORD);
-  bool success = iter.Init();
-  DCHECK(success);
-  if (!success)
-    return current;
-  while (iter.Advance()) {
-    pos = iter.pos();
-    if (iter.IsWord() && pos > current.selection_end())
-      break;
-  }
-  return SelectionModel(pos, pos, SelectionModel::LEADING);
-}
-
-SelectionModel RenderText::LeftEndSelectionModel() {
-  return SelectionModel(0, 0, SelectionModel::LEADING);
-}
-
-SelectionModel RenderText::RightEndSelectionModel() {
-  size_t cursor = text().length();
-  size_t caret_pos = GetIndexOfPreviousGrapheme(cursor);
-  SelectionModel::CaretPlacement placement = (caret_pos == cursor) ?
-      SelectionModel::LEADING : SelectionModel::TRAILING;
-  return SelectionModel(cursor, caret_pos, placement);
+    return AdjacentCharSelectionModel(current, direction);
+  DCHECK(break_type == WORD_BREAK);
+  return AdjacentWordSelectionModel(current, direction);
 }
 
 void RenderText::SetSelectionModel(const SelectionModel& model) {
@@ -678,10 +609,6 @@ void RenderText::SetSelectionModel(const SelectionModel& model) {
   selection_model_.set_caret_placement(model.caret_placement());
 
   cached_bounds_and_offset_valid_ = false;
-}
-
-size_t RenderText::GetIndexOfPreviousGrapheme(size_t position) {
-  return IndexOfAdjacentGrapheme(position, false);
 }
 
 void RenderText::ApplyCompositionAndSelectionStyles(
@@ -717,7 +644,8 @@ void RenderText::ApplyCompositionAndSelectionStyles(
     replacement_mode_style.foreground = kSelectedTextColor;
     size_t cursor = GetCursorPosition();
     replacement_mode_style.range.set_start(cursor);
-    replacement_mode_style.range.set_end(GetIndexOfNextGrapheme(cursor));
+    replacement_mode_style.range.set_end(
+        IndexOfAdjacentGrapheme(cursor, CURSOR_FORWARD));
     ApplyStyleRangeImpl(style_ranges, replacement_mode_style);
   }
 }
@@ -807,7 +735,7 @@ int RenderText::ApplyFadeEffects(internal::SkiaTextRenderer* renderer) {
 
 void RenderText::MoveCursorTo(size_t position, bool select) {
   size_t cursor = std::min(position, text().length());
-  size_t caret_pos = GetIndexOfPreviousGrapheme(cursor);
+  size_t caret_pos = IndexOfAdjacentGrapheme(cursor, CURSOR_BACKWARD);
   SelectionModel::CaretPlacement placement = (caret_pos == cursor) ?
       SelectionModel::LEADING : SelectionModel::TRAILING;
   size_t selection_start = select ? GetSelectionStart() : cursor;
@@ -857,16 +785,14 @@ void RenderText::UpdateCachedBoundsAndOffset() {
 }
 
 void RenderText::DrawSelection(Canvas* canvas) {
-  TRACE_EVENT0("gfx", "RenderText::DrawSelection");
-  std::vector<Rect> sel;
-  GetSubstringBounds(GetSelectionStart(), GetCursorPosition(), &sel);
+  std::vector<Rect> sel = GetSubstringBounds(
+      GetSelectionStart(), GetCursorPosition());
   SkColor color = focused() ? kFocusedSelectionColor : kUnfocusedSelectionColor;
   for (std::vector<Rect>::const_iterator i = sel.begin(); i < sel.end(); ++i)
     canvas->FillRect(color, *i);
 }
 
 void RenderText::DrawCursor(Canvas* canvas) {
-  TRACE_EVENT0("gfx", "RenderText::DrawCursor");
   // Paint cursor. Replace cursor is drawn as rectangle for now.
   // TODO(msw): Draw a better cursor with a better indication of association.
   if (cursor_visible() && focused()) {

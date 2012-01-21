@@ -28,15 +28,15 @@ class RenderTextLinux : public RenderText {
 
  protected:
   // Overridden from RenderText:
-  virtual SelectionModel GetLeftSelectionModel(const SelectionModel& current,
-                                               BreakType break_type) OVERRIDE;
-  virtual SelectionModel GetRightSelectionModel(const SelectionModel& current,
-                                                BreakType break_type) OVERRIDE;
-  virtual SelectionModel LeftEndSelectionModel() OVERRIDE;
-  virtual SelectionModel RightEndSelectionModel() OVERRIDE;
-  virtual void GetSubstringBounds(size_t from,
-                                  size_t to,
-                                  std::vector<Rect>* bounds) OVERRIDE;
+  virtual SelectionModel AdjacentCharSelectionModel(
+      const SelectionModel& selection,
+      VisualCursorDirection direction) OVERRIDE;
+  virtual SelectionModel AdjacentWordSelectionModel(
+      const SelectionModel& selection,
+      VisualCursorDirection direction) OVERRIDE;
+  virtual SelectionModel EdgeSelectionModel(
+      VisualCursorDirection direction) OVERRIDE;
+  virtual std::vector<Rect> GetSubstringBounds(size_t from, size_t to) OVERRIDE;
   virtual void SetSelectionModel(const SelectionModel& model) OVERRIDE;
   virtual bool IsCursorablePosition(size_t position) OVERRIDE;
   virtual void UpdateLayout() OVERRIDE;
@@ -44,19 +44,18 @@ class RenderTextLinux : public RenderText {
   virtual void DrawVisualText(Canvas* canvas) OVERRIDE;
 
  private:
-  virtual size_t IndexOfAdjacentGrapheme(size_t index, bool next) OVERRIDE;
+  virtual size_t IndexOfAdjacentGrapheme(
+      size_t index,
+      LogicalCursorDirection direction) OVERRIDE;
 
   // Returns the run that contains |position|. Return NULL if not found.
   GSList* GetRunContainingPosition(size_t position) const;
 
-  // Given |utf8_index_of_current_grapheme|, returns the UTF8 or UTF16 index of
-  // next grapheme in the text if |next| is true, otherwise, returns the index
-  // of previous grapheme. Returns 0 if there is no previous grapheme, and
-  // returns the |text_| length if there is no next grapheme.
+  // Given |utf8_index_of_current_grapheme|, returns the UTF-8 index of the
+  // |next| or previous grapheme in logical order. Returns 0 if there is no
+  // previous grapheme, or the |text_| length if there is no next grapheme.
   size_t Utf8IndexOfAdjacentGrapheme(size_t utf8_index_of_current_grapheme,
-                                     bool next) const;
-  size_t Utf16IndexOfAdjacentGrapheme(size_t utf8_index_of_current_grapheme,
-                                      bool next) const;
+                                     LogicalCursorDirection direction) const;
 
   // Given a |run|, returns the SelectionModel that contains the logical first
   // or last caret position inside (not at a boundary of) the run.
@@ -64,42 +63,27 @@ class RenderTextLinux : public RenderText {
   SelectionModel FirstSelectionModelInsideRun(const PangoItem* run) const;
   SelectionModel LastSelectionModelInsideRun(const PangoItem* run) const;
 
-  // Get the selection model visually left or right of |current| by one
-  // grapheme.
-  // The returned value represents a cursor/caret position without a selection.
-  SelectionModel LeftSelectionModel(const SelectionModel& current);
-  SelectionModel RightSelectionModel(const SelectionModel& current);
-
-  // Get the selection model visually left or right of |current| by one word.
-  // The returned value represents a cursor/caret position without a selection.
-  SelectionModel LeftSelectionModelByWord(const SelectionModel& current);
-  SelectionModel RightSelectionModelByWord(const SelectionModel& current);
-
   // Unref |layout_| and |pango_line_|. Set them to NULL.
   void ResetLayout();
 
   // Setup pango attribute: foreground, background, font, strike.
   void SetupPangoAttributes(PangoLayout* layout);
 
-  // Returns |run|'s visually previous run.
-  // The complexity is O(n) since it is a single-linked list.
-  PangoLayoutRun* GetPreviousRun(PangoLayoutRun* run) const;
-
-  // Returns the last run in |current_line_|.
-  // The complexity is O(n) since it is a single-linked list.
-  PangoLayoutRun* GetLastRun() const;
+  // Append one pango attribute |pango_attr| into pango attribute list |attrs|.
+  void AppendPangoAttribute(size_t start,
+                            size_t end,
+                            PangoAttribute* pango_attr,
+                            PangoAttrList* attrs);
 
   size_t Utf16IndexToUtf8Index(size_t index) const;
   size_t Utf8IndexToUtf16Index(size_t index) const;
 
   // Calculate the visual bounds containing the logical substring within |from|
-  // to |to| into |bounds|.
-  void CalculateSubstringBounds(size_t from,
-                                size_t to,
-                                std::vector<Rect>* bounds);
+  // to |to|.
+  std::vector<Rect> CalculateSubstringBounds(size_t from, size_t to);
 
-  // Save the visual bounds of logical selection into |bounds|.
-  void GetSelectionBounds(std::vector<Rect>* bounds);
+  // Get the visual bounds of the logical selection.
+  std::vector<Rect> GetSelectionBounds();
 
   // Pango Layout.
   PangoLayout* layout_;

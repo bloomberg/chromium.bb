@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/i18n/break_iterator.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/string_util.h"
@@ -129,11 +130,19 @@ RenderTextWin::RenderTextWin()
   DCHECK(SUCCEEDED(hr));
   script_control_.fMergeNeutralItems = true;
 
-  MoveCursorTo(LeftEndSelectionModel());
+  MoveCursorTo(EdgeSelectionModel(CURSOR_LEFT));
 }
 
 RenderTextWin::~RenderTextWin() {
   STLDeleteContainerPointers(runs_.begin(), runs_.end());
+}
+
+base::i18n::TextDirection RenderTextWin::GetTextDirection() {
+  // TODO(benrg): Code moved from RenderText::GetTextDirection. Needs to be
+  // replaced by a correct Windows implementation.
+  if (base::i18n::IsRTL())
+    return base::i18n::RIGHT_TO_LEFT;
+  return base::i18n::LEFT_TO_RIGHT;
 }
 
 int RenderTextWin::GetStringWidth() {
@@ -150,7 +159,7 @@ SelectionModel RenderTextWin::FindCursorPosition(const Point& point) {
   Point p(ToTextPoint(point));
   size_t run_index = GetRunContainingPoint(p);
   if (run_index == runs_.size())
-    return (p.x() < 0) ? LeftEndSelectionModel() : RightEndSelectionModel();
+    return EdgeSelectionModel((p.x() < 0) ? CURSOR_LEFT : CURSOR_RIGHT);
   internal::TextRun* run = runs_[run_index];
 
   int position = 0, trailing = 0;
@@ -226,82 +235,123 @@ Rect RenderTextWin::GetCursorBounds(const SelectionModel& selection,
   return rect;
 }
 
-SelectionModel RenderTextWin::GetLeftSelectionModel(
-    const SelectionModel& selection,
-    BreakType break_type) {
-  EnsureLayout();
+SelectionModel RenderTextWin::AdjacentCharSelectionModel(
+    const SelectionModel& selection, VisualCursorDirection direction) {
+  DCHECK(!needs_layout_);
+  size_t caret = selection.caret_pos();
+  SelectionModel::CaretPlacement caret_placement = selection.caret_placement();
+  size_t run_index = GetRunContainingPosition(caret);
+  DCHECK(run_index < runs_.size());
+  internal::TextRun* run = runs_[run_index];
 
-  if (break_type == LINE_BREAK || text().empty())
-    return LeftEndSelectionModel();
-  if (break_type == CHARACTER_BREAK)
-    return LeftSelectionModel(selection);
-  // TODO(msw): Implement word breaking.
-  return RenderText::GetLeftSelectionModel(selection, break_type);
+  bool forward_motion = run->script_analysis.fRTL == (direction == CURSOR_LEFT);
+  if (forward_motion) {
+    if (caret_placement == SelectionModel::LEADING) {
+      size_t cursor = IndexOfAdjacentGrapheme(caret, CURSOR_FORWARD);
+      return SelectionModel(cursor, caret, SelectionModel::TRAILING);
+    } else if (selection.selection_end() < run->range.end()) {
+      caret = IndexOfAdjacentGrapheme(caret, CURSOR_FORWARD);
+      size_t cursor = IndexOfAdjacentGrapheme(caret, CURSOR_FORWARD);
+      return SelectionModel(cursor, caret, SelectionModel::TRAILING);
+    }
+  } else {
+    if (caret_placement == SelectionModel::TRAILING)
+      return SelectionModel(caret, caret, SelectionModel::LEADING);
+    else if (caret > run->range.start()) {
+      caret = IndexOfAdjacentGrapheme(caret, CURSOR_BACKWARD);
+      return SelectionModel(caret, caret, SelectionModel::LEADING);
+    }
+  }
+
+  // The character is at the beginning/end of its run; go to the previous/next
+  // visual run.
+  size_t visual_index = logical_to_visual_[run_index];
+  if (visual_index == (direction == CURSOR_LEFT ? 0 : runs_.size() - 1))
+    return EdgeSelectionModel(direction);
+  internal::TextRun* adjacent = runs_[visual_to_logical_[
+      direction == CURSOR_LEFT ? visual_index - 1 : visual_index + 1]];
+  forward_motion = adjacent->script_analysis.fRTL == (direction == CURSOR_LEFT);
+  return forward_motion ? FirstSelectionModelInsideRun(adjacent) :
+                          LastSelectionModelInsideRun(adjacent);
 }
 
-SelectionModel RenderTextWin::GetRightSelectionModel(
+// TODO(msw): Implement word breaking for Windows.
+SelectionModel RenderTextWin::AdjacentWordSelectionModel(
     const SelectionModel& selection,
-    BreakType break_type) {
-  EnsureLayout();
+    VisualCursorDirection direction) {
+  base::i18n::BreakIterator iter(text(), base::i18n::BreakIterator::BREAK_WORD);
+  bool success = iter.Init();
+  DCHECK(success);
+  if (!success)
+    return selection;
 
-  if (break_type == LINE_BREAK || text().empty())
-    return RightEndSelectionModel();
-  if (break_type == CHARACTER_BREAK)
-    return RightSelectionModel(selection);
-  // TODO(msw): Implement word breaking.
-  return RenderText::GetRightSelectionModel(selection, break_type);
+  size_t pos;
+  if (direction == CURSOR_RIGHT) {
+    pos = std::min(selection.selection_end() + 1, text().length());
+    while (iter.Advance()) {
+      pos = iter.pos();
+      if (iter.IsWord() && pos > selection.selection_end())
+        break;
+    }
+  } else {  // direction == CURSOR_LEFT
+    // Notes: We always iterate words from the beginning.
+    // This is probably fast enough for our usage, but we may
+    // want to modify WordIterator so that it can start from the
+    // middle of string and advance backwards.
+    pos = std::max<int>(selection.selection_end() - 1, 0);
+    while (iter.Advance()) {
+      if (iter.IsWord()) {
+        size_t begin = iter.pos() - iter.GetString().length();
+        if (begin == selection.selection_end()) {
+          // The cursor is at the beginning of a word.
+          // Move to previous word.
+          break;
+        } else if (iter.pos() >= selection.selection_end()) {
+          // The cursor is in the middle or at the end of a word.
+          // Move to the top of current word.
+          pos = begin;
+          break;
+        } else {
+          pos = iter.pos() - iter.GetString().length();
+        }
+      }
+    }
+  }
+  return SelectionModel(pos, pos, SelectionModel::LEADING);
 }
 
-SelectionModel RenderTextWin::LeftEndSelectionModel() {
+SelectionModel RenderTextWin::EdgeSelectionModel(
+    VisualCursorDirection direction) {
   if (text().empty())
     return SelectionModel(0, 0, SelectionModel::LEADING);
 
   EnsureLayout();
-  size_t cursor = base::i18n::IsRTL() ? text().length() : 0;
-  internal::TextRun* run = runs_[visual_to_logical_[0]];
+  size_t cursor = (direction == GetVisualDirectionOfLogicalEnd()) ?
+      text().length() : 0;
+  internal::TextRun* run = runs_[
+      visual_to_logical_[direction == CURSOR_RIGHT ? runs_.size() - 1 : 0]];
   size_t caret;
   SelectionModel::CaretPlacement placement;
-  if (run->script_analysis.fRTL) {
-    caret = IndexOfAdjacentGrapheme(run->range.end(), false);
-    placement = SelectionModel::TRAILING;
-  } else {
-    caret = run->range.start();
-    placement = SelectionModel::LEADING;
-  }
-  return SelectionModel(cursor, caret, placement);
-}
-
-SelectionModel RenderTextWin::RightEndSelectionModel() {
-  if (text().empty())
-    return SelectionModel(0, 0, SelectionModel::LEADING);
-
-  EnsureLayout();
-  size_t cursor = base::i18n::IsRTL() ? 0 : text().length();
-  internal::TextRun* run = runs_[visual_to_logical_[runs_.size() - 1]];
-  size_t caret;
-  SelectionModel::CaretPlacement placement;
-  if (run->script_analysis.fRTL) {
+  if (run->script_analysis.fRTL == (direction == CURSOR_RIGHT)) {
     caret = run->range.start();
     placement = SelectionModel::LEADING;
   } else {
-    caret = IndexOfAdjacentGrapheme(run->range.end(), false);
+    caret = IndexOfAdjacentGrapheme(run->range.end(), CURSOR_BACKWARD);
     placement = SelectionModel::TRAILING;
   }
   return SelectionModel(cursor, caret, placement);
 }
 
-void RenderTextWin::GetSubstringBounds(size_t from,
-                                       size_t to,
-                                       std::vector<Rect>* bounds) {
+std::vector<Rect> RenderTextWin::GetSubstringBounds(size_t from, size_t to) {
   DCHECK(!needs_layout_);
   ui::Range range(from, to);
   DCHECK(ui::Range(0, text().length()).Contains(range));
   Point display_offset(GetUpdatedDisplayOffset());
   HRESULT hr = 0;
 
-  bounds->clear();
+  std::vector<Rect> bounds;
   if (from == to)
-    return;
+    return bounds;
 
   // Add a Rect for each run/selection intersection.
   // TODO(msw): The bounds should probably not always be leading the range ends.
@@ -340,13 +390,14 @@ void RenderTextWin::GetSubstringBounds(size_t from,
       rect.Offset(0, (display_rect().height() - rect.height()) / 2);
       rect.set_origin(ToViewPoint(rect.origin()));
       // Union this with the last rect if they're adjacent.
-      if (!bounds->empty() && rect.SharesEdgeWith(bounds->back())) {
-        rect = rect.Union(bounds->back());
-        bounds->pop_back();
+      if (!bounds.empty() && rect.SharesEdgeWith(bounds.back())) {
+        rect = rect.Union(bounds.back());
+        bounds.pop_back();
       }
-      bounds->push_back(rect);
+      bounds.push_back(rect);
     }
   }
+  return bounds;
 }
 
 void RenderTextWin::SetSelectionModel(const SelectionModel& model) {
@@ -428,14 +479,16 @@ void RenderTextWin::DrawVisualText(Canvas* canvas) {
   }
 }
 
-size_t RenderTextWin::IndexOfAdjacentGrapheme(size_t index, bool next) {
+size_t RenderTextWin::IndexOfAdjacentGrapheme(
+    size_t index,
+    LogicalCursorDirection direction) {
   EnsureLayout();
 
   if (text().empty())
     return 0;
 
   if (index >= text().length()) {
-    if (next || index > text().length()) {
+    if (direction == CURSOR_FORWARD || index > text().length()) {
       return text().length();
     } else {
       // The requested |index| is at the end of the text. Use the index of the
@@ -452,7 +505,7 @@ size_t RenderTextWin::IndexOfAdjacentGrapheme(size_t index, bool next) {
   size_t start = run->range.start();
   size_t ch = index - start;
 
-  if (!next) {
+  if (direction == CURSOR_BACKWARD) {
     // If |ch| is the start of the run, use the preceding run, if any.
     if (ch == 0) {
       if (run_index == 0)
@@ -467,7 +520,7 @@ size_t RenderTextWin::IndexOfAdjacentGrapheme(size_t index, bool next) {
     do {
       ch--;
     } while (ch > 0 && run->logical_clusters[ch - 1] == cluster);
-  } else {
+  } else {  // direction == CURSOR_FORWARD
     WORD cluster = run->logical_clusters[ch];
     while (ch < run->range.length() && run->logical_clusters[ch] == cluster)
       ch++;
@@ -668,88 +721,14 @@ size_t RenderTextWin::GetRunContainingPoint(const Point& point) const {
 SelectionModel RenderTextWin::FirstSelectionModelInsideRun(
     internal::TextRun* run) {
   size_t caret = run->range.start();
-  size_t cursor = IndexOfAdjacentGrapheme(caret, true);
+  size_t cursor = IndexOfAdjacentGrapheme(caret, CURSOR_FORWARD);
   return SelectionModel(cursor, caret, SelectionModel::TRAILING);
 }
 
 SelectionModel RenderTextWin::LastSelectionModelInsideRun(
     internal::TextRun* run) {
-  size_t caret = IndexOfAdjacentGrapheme(run->range.end(), false);
+  size_t caret = IndexOfAdjacentGrapheme(run->range.end(), CURSOR_BACKWARD);
   return SelectionModel(caret, caret, SelectionModel::LEADING);
-}
-
-SelectionModel RenderTextWin::LeftSelectionModel(
-    const SelectionModel& selection) {
-  DCHECK(!needs_layout_);
-  size_t caret = selection.caret_pos();
-  SelectionModel::CaretPlacement caret_placement = selection.caret_placement();
-  size_t run_index = GetRunContainingPosition(caret);
-  DCHECK(run_index < runs_.size());
-  internal::TextRun* run = runs_[run_index];
-
-  // If the caret's associated character is in a LTR run.
-  if (!run->script_analysis.fRTL) {
-    if (caret_placement == SelectionModel::TRAILING)
-      return SelectionModel(caret, caret, SelectionModel::LEADING);
-    else if (caret > run->range.start()) {
-      caret = IndexOfAdjacentGrapheme(caret, false);
-      return SelectionModel(caret, caret, SelectionModel::LEADING);
-    }
-  } else {  // The caret's associated character is in a RTL run.
-    if (caret_placement == SelectionModel::LEADING) {
-      size_t cursor = IndexOfAdjacentGrapheme(caret, true);
-      return SelectionModel(cursor, caret, SelectionModel::TRAILING);
-    } else if (selection.selection_end() < run->range.end()) {
-      caret = IndexOfAdjacentGrapheme(caret, true);
-      size_t cursor = IndexOfAdjacentGrapheme(caret, true);
-      return SelectionModel(cursor, caret, SelectionModel::TRAILING);
-    }
-  }
-
-  // The character is at the begin of its run; go to the previous visual run.
-  size_t visual_index = logical_to_visual_[run_index];
-  if (visual_index == 0)
-    return LeftEndSelectionModel();
-  internal::TextRun* prev = runs_[visual_to_logical_[visual_index - 1]];
-  return prev->script_analysis.fRTL ? FirstSelectionModelInsideRun(prev) :
-                                      LastSelectionModelInsideRun(prev);
-}
-
-SelectionModel RenderTextWin::RightSelectionModel(
-    const SelectionModel& selection) {
-  DCHECK(!needs_layout_);
-  size_t caret = selection.caret_pos();
-  SelectionModel::CaretPlacement caret_placement = selection.caret_placement();
-  size_t run_index = GetRunContainingPosition(caret);
-  DCHECK(run_index < runs_.size());
-  internal::TextRun* run = runs_[run_index];
-
-  // If the caret's associated character is in a LTR run.
-  if (!run->script_analysis.fRTL) {
-    if (caret_placement == SelectionModel::LEADING) {
-      size_t cursor = IndexOfAdjacentGrapheme(caret, true);
-      return SelectionModel(cursor, caret, SelectionModel::TRAILING);
-    } else if (selection.selection_end() < run->range.end()) {
-      caret = IndexOfAdjacentGrapheme(caret, true);
-      size_t cursor = IndexOfAdjacentGrapheme(caret, true);
-      return SelectionModel(cursor, caret, SelectionModel::TRAILING);
-    }
-  } else {  // The caret's associated character is in a RTL run.
-    if (caret_placement == SelectionModel::TRAILING)
-      return SelectionModel(caret, caret, SelectionModel::LEADING);
-    else if (caret > run->range.start()) {
-      caret = IndexOfAdjacentGrapheme(caret, false);
-      return SelectionModel(caret, caret, SelectionModel::LEADING);
-    }
-  }
-
-  // The character is at the end of its run; go to the next visual run.
-  size_t visual_index = logical_to_visual_[run_index];
-  if (visual_index == runs_.size() - 1)
-    return RightEndSelectionModel();
-  internal::TextRun* next = runs_[visual_to_logical_[visual_index + 1]];
-  return next->script_analysis.fRTL ? LastSelectionModelInsideRun(next) :
-                                      FirstSelectionModelInsideRun(next);
 }
 
 RenderText* RenderText::CreateRenderText() {

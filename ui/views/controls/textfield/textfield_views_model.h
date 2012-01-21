@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -127,8 +127,9 @@ class VIEWS_EXPORT TextfieldViewsModel {
 
   // Moves the cursor, see RenderText for additional details.
   // The current composition text will be confirmed.
-  void MoveCursorLeft(gfx::BreakType break_type, bool select);
-  void MoveCursorRight(gfx::BreakType break_type, bool select);
+  void MoveCursor(gfx::BreakType break_type,
+                  gfx::VisualCursorDirection direction,
+                  bool select);
 
   // Moves the selection to the specified selection in |selection|.
   // If there is composition text, it will be confirmed, which will update the

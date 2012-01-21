@@ -870,62 +870,44 @@ bool NativeTextfieldViews::HandleKeyEvent(const KeyEvent& key_event) {
           cursor_changed = text_changed = Paste();
         break;
       case ui::VKEY_RIGHT:
-        model_->MoveCursorRight(
-            control ? gfx::WORD_BREAK : gfx::CHARACTER_BREAK, selection);
-        cursor_changed = true;
-        break;
       case ui::VKEY_LEFT:
-        model_->MoveCursorLeft(
-            control ? gfx::WORD_BREAK : gfx::CHARACTER_BREAK, selection);
+        model_->MoveCursor(
+            control ? gfx::WORD_BREAK : gfx::CHARACTER_BREAK,
+            (key_code == ui::VKEY_RIGHT) ? gfx::CURSOR_RIGHT : gfx::CURSOR_LEFT,
+            selection);
         cursor_changed = true;
         break;
       case ui::VKEY_END:
       case ui::VKEY_HOME:
         if ((key_code == ui::VKEY_HOME) ==
             (GetRenderText()->GetTextDirection() == base::i18n::RIGHT_TO_LEFT))
-          model_->MoveCursorRight(gfx::LINE_BREAK, selection);
+          model_->MoveCursor(gfx::LINE_BREAK, gfx::CURSOR_RIGHT, selection);
         else
-          model_->MoveCursorLeft(gfx::LINE_BREAK, selection);
+          model_->MoveCursor(gfx::LINE_BREAK, gfx::CURSOR_LEFT, selection);
         cursor_changed = true;
         break;
       case ui::VKEY_BACK:
-        if (!editable)
-          break;
-        if (!model_->HasSelection()) {
-          if (selection && control) {
-            // If both shift and control are pressed, then erase upto the
-            // beginning of the buffer in ChromeOS. In windows, do nothing.
-#if defined(OS_WIN)
-            break;
-#else
-            model_->MoveCursorLeft(gfx::LINE_BREAK, true);
-#endif
-          } else if (control) {
-            // If only control is pressed, then erase the previous word.
-            model_->MoveCursorLeft(gfx::WORD_BREAK, true);
-          }
-        }
-        text_changed = model_->Backspace();
-        cursor_changed = true;
-        break;
       case ui::VKEY_DELETE:
         if (!editable)
           break;
         if (!model_->HasSelection()) {
+          gfx::VisualCursorDirection direction = (key_code == ui::VKEY_DELETE) ?
+              gfx::CURSOR_RIGHT : gfx::CURSOR_LEFT;
           if (selection && control) {
-            // If both shift and control are pressed, then erase upto the
-            // end of the buffer in ChromeOS. In windows, do nothing.
+            // If both shift and control are pressed, then erase up to the
+            // beginning/end of the buffer in ChromeOS. In windows, do nothing.
 #if defined(OS_WIN)
             break;
 #else
-            model_->MoveCursorRight(gfx::LINE_BREAK, true);
+            model_->MoveCursor(gfx::LINE_BREAK, direction, true);
 #endif
           } else if (control) {
-            // If only control is pressed, then erase the next word.
-            model_->MoveCursorRight(gfx::WORD_BREAK, true);
+            // If only control is pressed, then erase the previous/next word.
+            model_->MoveCursor(gfx::WORD_BREAK, direction, true);
           }
         }
-        cursor_changed = text_changed = model_->Delete();
+        cursor_changed = text_changed = (key_code == ui::VKEY_BACK) ?
+            model_->Backspace() : model_->Delete();
         break;
       case ui::VKEY_INSERT:
         GetRenderText()->ToggleInsertMode();

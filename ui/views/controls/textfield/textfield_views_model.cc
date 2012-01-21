@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -324,10 +324,9 @@ void TextfieldViewsModel::Append(const string16& text) {
   if (HasCompositionText())
     ConfirmCompositionText();
   size_t save = GetCursorPosition();
-  if (render_text_->GetTextDirection() == base::i18n::LEFT_TO_RIGHT)
-    MoveCursorRight(gfx::LINE_BREAK, false);
-  else
-    MoveCursorLeft(gfx::LINE_BREAK, false);
+  MoveCursor(gfx::LINE_BREAK,
+             render_text_->GetVisualDirectionOfLogicalEnd(),
+             false);
   InsertText(text);
   render_text_->SetCursorPosition(save);
   ClearSelection();
@@ -345,8 +344,8 @@ bool TextfieldViewsModel::Delete() {
   }
   if (GetText().length() > GetCursorPosition()) {
     size_t cursor_position = GetCursorPosition();
-    size_t next_grapheme_index =
-        render_text_->GetIndexOfNextGrapheme(cursor_position);
+    size_t next_grapheme_index = render_text_->IndexOfAdjacentGrapheme(
+        cursor_position, gfx::CURSOR_FORWARD);
     ExecuteAndRecordDelete(cursor_position, next_grapheme_index, true);
     return true;
   }
@@ -375,18 +374,12 @@ size_t TextfieldViewsModel::GetCursorPosition() const {
   return render_text_->GetCursorPosition();
 }
 
-void TextfieldViewsModel::MoveCursorLeft(gfx::BreakType break_type,
-                                         bool select) {
+void TextfieldViewsModel::MoveCursor(gfx::BreakType break_type,
+                                     gfx::VisualCursorDirection direction,
+                                     bool select) {
   if (HasCompositionText())
     ConfirmCompositionText();
-  render_text_->MoveCursorLeft(break_type, select);
-}
-
-void TextfieldViewsModel::MoveCursorRight(gfx::BreakType break_type,
-                                          bool select) {
-  if (HasCompositionText())
-    ConfirmCompositionText();
-  render_text_->MoveCursorRight(break_type, select);
+  render_text_->MoveCursor(break_type, direction, select);
 }
 
 bool TextfieldViewsModel::MoveCursorTo(const gfx::SelectionModel& selection) {
@@ -674,7 +667,8 @@ void TextfieldViewsModel::ReplaceTextInternal(const string16& text,
     const gfx::SelectionModel& model = render_text_->selection_model();
     // When there is no selection, the default is to replace the next grapheme
     // with |text|. So, need to find the index of next grapheme first.
-    size_t next = render_text_->GetIndexOfNextGrapheme(cursor);
+    size_t next =
+        render_text_->IndexOfAdjacentGrapheme(cursor, gfx::CURSOR_FORWARD);
     if (next == model.selection_end())
       render_text_->MoveCursorTo(model);
     else

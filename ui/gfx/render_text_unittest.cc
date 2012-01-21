@@ -288,16 +288,16 @@ void RunMoveCursorLeftRightTest(RenderText* render_text,
     SelectionModel sel = expected[i];
     EXPECT_TRUE(render_text->selection_model().Equals(sel));
     if (move_right)
-      render_text->MoveCursorRight(CHARACTER_BREAK, false);
+      render_text->MoveCursor(CHARACTER_BREAK, CURSOR_RIGHT, false);
     else
-      render_text->MoveCursorLeft(CHARACTER_BREAK, false);
+      render_text->MoveCursor(CHARACTER_BREAK, CURSOR_LEFT, false);
   }
 
   SelectionModel sel = expected[expected.size() - 1];
   if (move_right)
-    render_text->MoveCursorRight(LINE_BREAK, false);
+    render_text->MoveCursor(LINE_BREAK, CURSOR_RIGHT, false);
   else
-    render_text->MoveCursorLeft(LINE_BREAK, false);
+    render_text->MoveCursor(LINE_BREAK, CURSOR_LEFT, false);
   EXPECT_TRUE(render_text->selection_model().Equals(sel));
 }
 
@@ -380,7 +380,7 @@ TEST_F(RenderTextTest, MoveCursorLeftRightInRtl) {
   scoped_ptr<RenderText> render_text(RenderText::CreateRenderText());
   // Pure RTL.
   render_text->SetText(WideToUTF16(L"\x05d0\x05d1\x05d2"));
-  render_text->MoveCursorRight(LINE_BREAK, false);
+  render_text->MoveCursor(LINE_BREAK, CURSOR_RIGHT, false);
   std::vector<SelectionModel> expected;
 
 #if defined(OS_LINUX)
@@ -424,7 +424,7 @@ TEST_F(RenderTextTest, MoveCursorLeftRightInRtlLtr) {
   scoped_ptr<RenderText> render_text(RenderText::CreateRenderText());
   // RTL-LTR
   render_text->SetText(WideToUTF16(L"\x05d0\x05d1\x05d2"L"abc"));
-  render_text->MoveCursorRight(LINE_BREAK, false);
+  render_text->MoveCursor(LINE_BREAK, CURSOR_RIGHT, false);
   std::vector<SelectionModel> expected;
 #if defined(OS_LINUX)
   expected.push_back(SelectionModel(0, 0, SelectionModel::LEADING));
@@ -479,7 +479,7 @@ TEST_F(RenderTextTest, MoveCursorLeftRightInRtlLtrRtl) {
   scoped_ptr<RenderText> render_text(RenderText::CreateRenderText());
   // RTL-LTR-RTL.
   render_text->SetText(WideToUTF16(L"\x05d0"L"a"L"\x05d1"));
-  render_text->MoveCursorRight(LINE_BREAK, false);
+  render_text->MoveCursor(LINE_BREAK, CURSOR_RIGHT, false);
   std::vector<SelectionModel> expected;
 #if defined(OS_LINUX)
   expected.push_back(SelectionModel(0, 0, SelectionModel::LEADING));
@@ -526,22 +526,22 @@ TEST_F(RenderTextTest, MoveCursorLeftRight_ComplexScript) {
 
   render_text->SetText(WideToUTF16(L"\x0915\x093f\x0915\x094d\x0915"));
   EXPECT_EQ(0U, render_text->GetCursorPosition());
-  render_text->MoveCursorRight(CHARACTER_BREAK, false);
+  render_text->MoveCursor(CHARACTER_BREAK, CURSOR_RIGHT, false);
   EXPECT_EQ(2U, render_text->GetCursorPosition());
-  render_text->MoveCursorRight(CHARACTER_BREAK, false);
+  render_text->MoveCursor(CHARACTER_BREAK, CURSOR_RIGHT, false);
   EXPECT_EQ(4U, render_text->GetCursorPosition());
-  render_text->MoveCursorRight(CHARACTER_BREAK, false);
+  render_text->MoveCursor(CHARACTER_BREAK, CURSOR_RIGHT, false);
   EXPECT_EQ(5U, render_text->GetCursorPosition());
-  render_text->MoveCursorRight(CHARACTER_BREAK, false);
+  render_text->MoveCursor(CHARACTER_BREAK, CURSOR_RIGHT, false);
   EXPECT_EQ(5U, render_text->GetCursorPosition());
 
-  render_text->MoveCursorLeft(CHARACTER_BREAK, false);
+  render_text->MoveCursor(CHARACTER_BREAK, CURSOR_LEFT, false);
   EXPECT_EQ(4U, render_text->GetCursorPosition());
-  render_text->MoveCursorLeft(CHARACTER_BREAK, false);
+  render_text->MoveCursor(CHARACTER_BREAK, CURSOR_LEFT, false);
   EXPECT_EQ(2U, render_text->GetCursorPosition());
-  render_text->MoveCursorLeft(CHARACTER_BREAK, false);
+  render_text->MoveCursor(CHARACTER_BREAK, CURSOR_LEFT, false);
   EXPECT_EQ(0U, render_text->GetCursorPosition());
-  render_text->MoveCursorLeft(CHARACTER_BREAK, false);
+  render_text->MoveCursor(CHARACTER_BREAK, CURSOR_LEFT, false);
   EXPECT_EQ(0U, render_text->GetCursorPosition());
 }
 #endif
@@ -594,11 +594,13 @@ TEST_F(RenderTextTest, GraphemePositions) {
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); i++) {
     render_text->SetText(cases[i].text);
 
-    size_t next = render_text->GetIndexOfNextGrapheme(cases[i].index);
+    size_t next = render_text->IndexOfAdjacentGrapheme(cases[i].index,
+                                                       CURSOR_FORWARD);
     EXPECT_EQ(cases[i].expected_next, next);
     EXPECT_TRUE(render_text->IsCursorablePosition(next));
 
-    size_t previous = render_text->GetIndexOfPreviousGrapheme(cases[i].index);
+    size_t previous = render_text->IndexOfAdjacentGrapheme(cases[i].index,
+                                                           CURSOR_BACKWARD);
     EXPECT_EQ(cases[i].expected_previous, previous);
     EXPECT_TRUE(render_text->IsCursorablePosition(previous));
   }
@@ -647,12 +649,12 @@ TEST_F(RenderTextTest, SelectionModels) {
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); i++) {
     render_text->SetText(cases[i].text);
 
-    SelectionModel model = render_text->LeftEndSelectionModel();
+    SelectionModel model = render_text->EdgeSelectionModel(CURSOR_LEFT);
     EXPECT_EQ(cases[i].expected_left_end_caret, model.caret_pos());
     EXPECT_TRUE(render_text->IsCursorablePosition(model.caret_pos()));
     EXPECT_EQ(cases[i].expected_left_end_placement, model.caret_placement());
 
-    model = render_text->RightEndSelectionModel();
+    model = render_text->EdgeSelectionModel(CURSOR_RIGHT);
     EXPECT_EQ(cases[i].expected_right_end_caret, model.caret_pos());
     EXPECT_TRUE(render_text->IsCursorablePosition(model.caret_pos()));
     EXPECT_EQ(cases[i].expected_right_end_placement, model.caret_placement());
@@ -663,43 +665,43 @@ TEST_F(RenderTextTest, MoveCursorLeftRightWithSelection) {
   scoped_ptr<RenderText> render_text(RenderText::CreateRenderText());
   render_text->SetText(WideToUTF16(L"abc\x05d0\x05d1\x05d2"));
   // Left arrow on select ranging (6, 4).
-  render_text->MoveCursorRight(LINE_BREAK, false);
+  render_text->MoveCursor(LINE_BREAK, CURSOR_RIGHT, false);
   EXPECT_EQ(6U, render_text->GetCursorPosition());
-  render_text->MoveCursorLeft(CHARACTER_BREAK, false);
+  render_text->MoveCursor(CHARACTER_BREAK, CURSOR_LEFT, false);
   EXPECT_EQ(4U, render_text->GetCursorPosition());
-  render_text->MoveCursorLeft(CHARACTER_BREAK, false);
+  render_text->MoveCursor(CHARACTER_BREAK, CURSOR_LEFT, false);
   EXPECT_EQ(5U, render_text->GetCursorPosition());
-  render_text->MoveCursorLeft(CHARACTER_BREAK, false);
+  render_text->MoveCursor(CHARACTER_BREAK, CURSOR_LEFT, false);
   EXPECT_EQ(6U, render_text->GetCursorPosition());
-  render_text->MoveCursorRight(CHARACTER_BREAK, true);
+  render_text->MoveCursor(CHARACTER_BREAK, CURSOR_RIGHT, true);
   EXPECT_EQ(6U, render_text->GetSelectionStart());
   EXPECT_EQ(5U, render_text->GetCursorPosition());
-  render_text->MoveCursorRight(CHARACTER_BREAK, true);
+  render_text->MoveCursor(CHARACTER_BREAK, CURSOR_RIGHT, true);
   EXPECT_EQ(6U, render_text->GetSelectionStart());
   EXPECT_EQ(4U, render_text->GetCursorPosition());
-  render_text->MoveCursorLeft(CHARACTER_BREAK, false);
+  render_text->MoveCursor(CHARACTER_BREAK, CURSOR_LEFT, false);
   EXPECT_EQ(6U, render_text->GetCursorPosition());
 
   // Right arrow on select ranging (4, 6).
-  render_text->MoveCursorLeft(LINE_BREAK, false);
+  render_text->MoveCursor(LINE_BREAK, CURSOR_LEFT, false);
   EXPECT_EQ(0U, render_text->GetCursorPosition());
-  render_text->MoveCursorRight(CHARACTER_BREAK, false);
+  render_text->MoveCursor(CHARACTER_BREAK, CURSOR_RIGHT, false);
   EXPECT_EQ(1U, render_text->GetCursorPosition());
-  render_text->MoveCursorRight(CHARACTER_BREAK, false);
+  render_text->MoveCursor(CHARACTER_BREAK, CURSOR_RIGHT, false);
   EXPECT_EQ(2U, render_text->GetCursorPosition());
-  render_text->MoveCursorRight(CHARACTER_BREAK, false);
+  render_text->MoveCursor(CHARACTER_BREAK, CURSOR_RIGHT, false);
   EXPECT_EQ(3U, render_text->GetCursorPosition());
-  render_text->MoveCursorRight(CHARACTER_BREAK, false);
+  render_text->MoveCursor(CHARACTER_BREAK, CURSOR_RIGHT, false);
   EXPECT_EQ(5U, render_text->GetCursorPosition());
-  render_text->MoveCursorRight(CHARACTER_BREAK, false);
+  render_text->MoveCursor(CHARACTER_BREAK, CURSOR_RIGHT, false);
   EXPECT_EQ(4U, render_text->GetCursorPosition());
-  render_text->MoveCursorLeft(CHARACTER_BREAK, true);
+  render_text->MoveCursor(CHARACTER_BREAK, CURSOR_LEFT, true);
   EXPECT_EQ(4U, render_text->GetSelectionStart());
   EXPECT_EQ(5U, render_text->GetCursorPosition());
-  render_text->MoveCursorLeft(CHARACTER_BREAK, true);
+  render_text->MoveCursor(CHARACTER_BREAK, CURSOR_LEFT, true);
   EXPECT_EQ(4U, render_text->GetSelectionStart());
   EXPECT_EQ(6U, render_text->GetCursorPosition());
-  render_text->MoveCursorRight(CHARACTER_BREAK, false);
+  render_text->MoveCursor(CHARACTER_BREAK, CURSOR_RIGHT, false);
   EXPECT_EQ(4U, render_text->GetCursorPosition());
 }
 
@@ -710,13 +712,13 @@ void MoveLeftRightByWordVerifier(RenderText* render_text,
   render_text->SetText(WideToUTF16(str));
 
   // Test moving by word from left ro right.
-  render_text->MoveCursorLeft(LINE_BREAK, false);
+  render_text->MoveCursor(LINE_BREAK, CURSOR_LEFT, false);
   bool first_word = true;
   while (true) {
     // First, test moving by word from a word break position, such as from
     // "|abc def" to "abc| def".
     SelectionModel start = render_text->selection_model();
-    render_text->MoveCursorRight(WORD_BREAK, false);
+    render_text->MoveCursor(WORD_BREAK, CURSOR_RIGHT, false);
     SelectionModel end = render_text->selection_model();
     if (end.Equals(start))  // reach the end.
       break;
@@ -726,7 +728,7 @@ void MoveLeftRightByWordVerifier(RenderText* render_text,
     first_word = false;
     render_text->MoveCursorTo(start);
     for (int j = 0; j < num_of_character_moves; ++j)
-      render_text->MoveCursorRight(CHARACTER_BREAK, false);
+      render_text->MoveCursor(CHARACTER_BREAK, CURSOR_RIGHT, false);
     EXPECT_TRUE(render_text->selection_model().Equals(end));
 
     // Then, test moving by word from positions inside the word, such as from
@@ -734,18 +736,18 @@ void MoveLeftRightByWordVerifier(RenderText* render_text,
     for (int j = 1; j < num_of_character_moves; ++j) {
       render_text->MoveCursorTo(start);
       for (int k = 0; k < j; ++k)
-        render_text->MoveCursorRight(CHARACTER_BREAK, false);
-      render_text->MoveCursorRight(WORD_BREAK, false);
+        render_text->MoveCursor(CHARACTER_BREAK, CURSOR_RIGHT, false);
+      render_text->MoveCursor(WORD_BREAK, CURSOR_RIGHT, false);
       EXPECT_TRUE(render_text->selection_model().Equals(end));
     }
   }
 
   // Test moving by word from right to left.
-  render_text->MoveCursorRight(LINE_BREAK, false);
+  render_text->MoveCursor(LINE_BREAK, CURSOR_RIGHT, false);
   first_word = true;
   while (true) {
     SelectionModel start = render_text->selection_model();
-    render_text->MoveCursorLeft(WORD_BREAK, false);
+    render_text->MoveCursor(WORD_BREAK, CURSOR_LEFT, false);
     SelectionModel end = render_text->selection_model();
     if (end.Equals(start))  // reach the end.
       break;
@@ -754,14 +756,14 @@ void MoveLeftRightByWordVerifier(RenderText* render_text,
     first_word = false;
     render_text->MoveCursorTo(start);
     for (int j = 0; j < num_of_character_moves; ++j)
-      render_text->MoveCursorLeft(CHARACTER_BREAK, false);
+      render_text->MoveCursor(CHARACTER_BREAK, CURSOR_LEFT, false);
     EXPECT_TRUE(render_text->selection_model().Equals(end));
 
     for (int j = 1; j < num_of_character_moves; ++j) {
       render_text->MoveCursorTo(start);
       for (int k = 0; k < j; ++k)
-        render_text->MoveCursorLeft(CHARACTER_BREAK, false);
-      render_text->MoveCursorLeft(WORD_BREAK, false);
+        render_text->MoveCursor(CHARACTER_BREAK, CURSOR_LEFT, false);
+      render_text->MoveCursor(WORD_BREAK, CURSOR_LEFT, false);
       EXPECT_TRUE(render_text->selection_model().Equals(end));
     }
   }
@@ -810,21 +812,21 @@ TEST_F(RenderTextTest, MoveLeftRightByWordInBidiText_TestEndOfText) {
   // But since end of text is always treated as a word break, it returns
   // position "ab|C".
   // TODO(xji): Need to make it work as expected.
-  render_text->MoveCursorRight(LINE_BREAK, false);
-  render_text->MoveCursorLeft(WORD_BREAK, false);
+  render_text->MoveCursor(LINE_BREAK, CURSOR_RIGHT, false);
+  render_text->MoveCursor(WORD_BREAK, CURSOR_LEFT, false);
   // EXPECT_TRUE(render_text->selection_model().Equals(SelectionModel(0)));
 
   // Moving the cursor by word from "|abC" to the right returns "abC|".
-  render_text->MoveCursorLeft(LINE_BREAK, false);
-  render_text->MoveCursorRight(WORD_BREAK, false);
+  render_text->MoveCursor(LINE_BREAK, CURSOR_LEFT, false);
+  render_text->MoveCursor(WORD_BREAK, CURSOR_RIGHT, false);
   EXPECT_TRUE(render_text->selection_model().Equals(
       SelectionModel(3, 2, SelectionModel::LEADING)));
 
   render_text->SetText(WideToUTF16(L"\x05E1\x05E2"L"a"));
   // For logical text "BCa", moving the cursor by word from "aCB|" to the left
   // returns "|aCB".
-  render_text->MoveCursorRight(LINE_BREAK, false);
-  render_text->MoveCursorLeft(WORD_BREAK, false);
+  render_text->MoveCursor(LINE_BREAK, CURSOR_RIGHT, false);
+  render_text->MoveCursor(WORD_BREAK, CURSOR_LEFT, false);
   EXPECT_TRUE(render_text->selection_model().Equals(
       SelectionModel(3, 2, SelectionModel::LEADING)));
 
@@ -832,8 +834,8 @@ TEST_F(RenderTextTest, MoveLeftRightByWordInBidiText_TestEndOfText) {
   // But since end of text is always treated as a word break, it returns
   // position "a|CB".
   // TODO(xji): Need to make it work as expected.
-  render_text->MoveCursorLeft(LINE_BREAK, false);
-  render_text->MoveCursorRight(WORD_BREAK, false);
+  render_text->MoveCursor(LINE_BREAK, CURSOR_LEFT, false);
+  render_text->MoveCursor(WORD_BREAK, CURSOR_RIGHT, false);
   // EXPECT_TRUE(render_text->selection_model().Equals(SelectionModel(0)));
 }
 
@@ -841,28 +843,28 @@ TEST_F(RenderTextTest, MoveLeftRightByWordInTextWithMultiSpaces) {
   scoped_ptr<RenderText> render_text(RenderText::CreateRenderText());
   render_text->SetText(WideToUTF16(L"abc     def"));
   render_text->MoveCursorTo(SelectionModel(5));
-  render_text->MoveCursorRight(WORD_BREAK, false);
+  render_text->MoveCursor(WORD_BREAK, CURSOR_RIGHT, false);
   EXPECT_EQ(11U, render_text->GetCursorPosition());
 
   render_text->MoveCursorTo(SelectionModel(5));
-  render_text->MoveCursorLeft(WORD_BREAK, false);
+  render_text->MoveCursor(WORD_BREAK, CURSOR_LEFT, false);
   EXPECT_EQ(0U, render_text->GetCursorPosition());
 }
 
 TEST_F(RenderTextTest, MoveLeftRightByWordInChineseText) {
   scoped_ptr<RenderText> render_text(RenderText::CreateRenderText());
   render_text->SetText(WideToUTF16(L"\x6211\x4EEC\x53BB\x516C\x56ED\x73A9"));
-  render_text->MoveCursorLeft(LINE_BREAK, false);
+  render_text->MoveCursor(LINE_BREAK, CURSOR_LEFT, false);
   EXPECT_EQ(0U, render_text->GetCursorPosition());
-  render_text->MoveCursorRight(WORD_BREAK, false);
+  render_text->MoveCursor(WORD_BREAK, CURSOR_RIGHT, false);
   EXPECT_EQ(2U, render_text->GetCursorPosition());
-  render_text->MoveCursorRight(WORD_BREAK, false);
+  render_text->MoveCursor(WORD_BREAK, CURSOR_RIGHT, false);
   EXPECT_EQ(3U, render_text->GetCursorPosition());
-  render_text->MoveCursorRight(WORD_BREAK, false);
+  render_text->MoveCursor(WORD_BREAK, CURSOR_RIGHT, false);
   EXPECT_EQ(5U, render_text->GetCursorPosition());
-  render_text->MoveCursorRight(WORD_BREAK, false);
+  render_text->MoveCursor(WORD_BREAK, CURSOR_RIGHT, false);
   EXPECT_EQ(6U, render_text->GetCursorPosition());
-  render_text->MoveCursorRight(WORD_BREAK, false);
+  render_text->MoveCursor(WORD_BREAK, CURSOR_RIGHT, false);
   EXPECT_EQ(6U, render_text->GetCursorPosition());
 }
 
