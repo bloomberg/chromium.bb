@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -553,6 +553,14 @@ class AutocompleteResult {
 
  private:
   typedef std::map<AutocompleteProvider*, ACMatches> ProviderToMatches;
+
+#if defined(OS_ANDROID)
+  // iterator::difference_type is not defined in the STL that we compile with on
+  // Android.
+  typedef int matches_difference_type;
+#else
+  typedef ACMatches::iterator::difference_type matches_difference_type;
+#endif
 
   // Populates |provider_to_matches| from |matches_|.
   void BuildProviderToMatches(ProviderToMatches* provider_to_matches) const;

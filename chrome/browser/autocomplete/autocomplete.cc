@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -675,8 +675,7 @@ void AutocompleteResult::AddMatch(const AutocompleteMatch& match) {
             match.description);
   ACMatches::iterator insertion_point =
       std::upper_bound(begin(), end(), match, &AutocompleteMatch::MoreRelevant);
-  ACMatches::iterator::difference_type default_offset =
-      default_match_ - begin();
+  matches_difference_type default_offset = default_match_ - begin();
   if ((insertion_point - begin()) <= default_offset)
     ++default_offset;
   matches_.insert(insertion_point, match);
@@ -843,8 +842,11 @@ AutocompleteController::AutocompleteController(
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableHistoryURLProvider))
     providers_.push_back(new HistoryURLProvider(this, profile));
+#if !defined(OS_ANDROID)
+  // No search provider/"tab to search".
   keyword_provider_ = new KeywordProvider(this, profile);
   providers_.push_back(keyword_provider_);
+#endif  // !OS_ANDROID
   providers_.push_back(new HistoryContentsProvider(this, profile, hqp_enabled));
   providers_.push_back(new BuiltinProvider(this, profile));
   providers_.push_back(new ExtensionAppProvider(this, profile));
