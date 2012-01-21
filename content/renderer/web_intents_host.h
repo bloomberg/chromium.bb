@@ -1,10 +1,12 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef CONTENT_RENDERER_WEB_INTENTS_HOST_H_
 #define CONTENT_RENDERER_WEB_INTENTS_HOST_H_
 #pragma once
+
+#include <map>
 
 #include "base/memory/scoped_ptr.h"
 #include "content/public/renderer/render_view_observer.h"
@@ -15,6 +17,7 @@
 class RenderViewImpl;
 
 namespace WebKit {
+class WebIntentRequest;
 class WebFrame;
 }
 
@@ -31,6 +34,9 @@ class WebIntentsHost : public content::RenderViewObserver {
   explicit WebIntentsHost(RenderViewImpl* render_view);
   virtual ~WebIntentsHost();
 
+  // Called by the RenderView to register a new Web Intent invocation.
+  int RegisterWebIntent(const WebKit::WebIntentRequest& request);
+
   // Called by the bound intent object to register the result from the service
   // page.
   void OnResult(const WebKit::WebString& data);
@@ -38,6 +44,14 @@ class WebIntentsHost : public content::RenderViewObserver {
 
  private:
   class BoundDeliveredIntent;
+
+  // A counter used to assign unique IDs to web intents invocations in this
+  // renderer.
+  int id_counter_;
+
+  // Map tracking registered Web Intent requests by assigned ID numbers to
+  // correctly route any return data.
+  std::map<int, WebKit::WebIntentRequest> intent_requests_;
 
   // RenderView::Observer implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;

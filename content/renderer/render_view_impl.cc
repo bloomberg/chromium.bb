@@ -208,6 +208,8 @@ using WebKit::WebHistoryItem;
 using WebKit::WebIconURL;
 using WebKit::WebImage;
 using WebKit::WebInputElement;
+using WebKit::WebIntentRequest;
+using WebKit::WebIntentServiceInfo;
 using WebKit::WebMediaPlayer;
 using WebKit::WebMediaPlayerAction;
 using WebKit::WebMediaPlayerClient;
@@ -3185,7 +3187,7 @@ void RenderViewImpl::requestStorageQuota(
 }
 
 void RenderViewImpl::registerIntentService(
-    WebKit::WebFrame* frame, const WebKit::WebIntentServiceInfo& service) {
+    WebFrame* frame, const WebIntentServiceInfo& service) {
   string16 title = service.title();
   if (title.empty())
     title = webview()->mainFrame()->document().title();
@@ -3198,12 +3200,12 @@ void RenderViewImpl::registerIntentService(
                                                 service.disposition()));
 }
 
-void RenderViewImpl::dispatchIntent(WebKit::WebFrame* frame,
-                                    const WebKit::WebIntentRequest& request) {
-  WebKit::WebIntent intent(request.intent());
-  webkit_glue::WebIntentData intent_data(intent);
+void RenderViewImpl::dispatchIntent(
+    WebFrame* frame, const WebIntentRequest& intentRequest) {
+  webkit_glue::WebIntentData intent_data(intentRequest.intent());
+  int id = intents_host_->RegisterWebIntent(intentRequest);
   Send(new IntentsHostMsg_WebIntentDispatch(
-      routing_id_, intent_data, intent.identifier()));
+      routing_id_, intent_data, id));
 }
 
 // WebKit::WebPageSerializerClient implementation ------------------------------

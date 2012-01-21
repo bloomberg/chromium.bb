@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,15 +10,20 @@
 #include "content/renderer/render_view_impl.h"
 #include "ipc/ipc_message.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebCString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebSerializedScriptValue.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebIntentRequest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebCString.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebSerializedScriptValue.h"
 #include "v8/include/v8.h"
 #include "webkit/glue/cpp_bound_class.h"
 
+using WebKit::WebBindings;
 using WebKit::WebCString;
+using WebKit::WebFrame;
+using WebKit::WebIntentRequest;
 using WebKit::WebString;
+using WebKit::WebSerializedScriptValue;
 
 // This class encapsulates the API the Intent object will expose to Javascript.
 // It is made available to the Javascript runtime in the service page using
@@ -30,7 +35,7 @@ class WebIntentsHost::BoundDeliveredIntent : public CppBoundClass {
                        const string16& type,
                        const string16& data,
                        WebIntentsHost* parent,
-                       WebKit::WebFrame* frame) {
+                       WebFrame* frame) {
     action_ = WebString(action).utf8();
     type_ = WebString(type).utf8();
     parent_ = parent;
@@ -38,8 +43,8 @@ class WebIntentsHost::BoundDeliveredIntent : public CppBoundClass {
     v8::HandleScope scope;
     v8::Local<v8::Context> ctx = frame->mainWorldScriptContext();
     v8::Context::Scope cscope(ctx);
-    WebKit::WebSerializedScriptValue ssv =
-        WebKit::WebSerializedScriptValue::fromString(WebString(data));
+    WebSerializedScriptValue ssv =
+        WebSerializedScriptValue::fromString(WebString(data));
     // TODO(gbillock): use an exception handler instead? Need to
     // pass back error state to caller? This is a pretty unexpected
     // internal error...
@@ -48,9 +53,7 @@ class WebIntentsHost::BoundDeliveredIntent : public CppBoundClass {
         v8::Local<v8::Value>::New(ssv.deserialize());
 
     data_val_.reset(new CppVariant);
-    WebKit::WebBindings::toNPVariant(data_obj,
-                                     frame->windowObject(),
-                                     data_val_.get());
+    WebBindings::toNPVariant(data_obj, frame->windowObject(), data_val_.get());
 
     BindGetterCallback("action", base::Bind(&BoundDeliveredIntent::getAction,
                                             base::Unretained(this)));
@@ -67,12 +70,12 @@ class WebIntentsHost::BoundDeliveredIntent : public CppBoundClass {
   virtual ~BoundDeliveredIntent() {
   }
 
-  WebKit::WebString SerializeCppVariant(const CppVariant& val) {
+  WebString SerializeCppVariant(const CppVariant& val) {
     v8::HandleScope scope;
-    v8::Handle<v8::Value> v8obj = WebKit::WebBindings::toV8Value(&val);
+    v8::Handle<v8::Value> v8obj = WebBindings::toV8Value(&val);
 
-    WebKit::WebSerializedScriptValue ssv =
-        WebKit::WebSerializedScriptValue::serialize(v8obj);
+    WebSerializedScriptValue ssv =
+        WebSerializedScriptValue::serialize(v8obj);
     if (ssv.isNull())
       return WebKit::WebString();
 
@@ -81,8 +84,7 @@ class WebIntentsHost::BoundDeliveredIntent : public CppBoundClass {
 
   void postResult(const CppArgumentList& args, CppVariant* retval) {
     if (args.size() != 1) {
-      WebKit::WebBindings::setException(
-          NULL, "Must pass one argument to postResult");
+      WebBindings::setException(NULL, "Must pass one argument to postResult");
       return;
     }
 
@@ -92,8 +94,7 @@ class WebIntentsHost::BoundDeliveredIntent : public CppBoundClass {
 
   void postFailure(const CppArgumentList& args, CppVariant* retval) {
     if (args.size() != 1) {
-      WebKit::WebBindings::setException(
-          NULL, "Must pass one argument to postFailure");
+      WebBindings::setException(NULL, "Must pass one argument to postFailure");
       return;
     }
 
@@ -128,10 +129,19 @@ class WebIntentsHost::BoundDeliveredIntent : public CppBoundClass {
 };
 
 WebIntentsHost::WebIntentsHost(RenderViewImpl* render_view)
-    : content::RenderViewObserver(render_view) {
+    : content::RenderViewObserver(render_view),
+      id_counter_(0) {
 }
 
-WebIntentsHost::~WebIntentsHost() {}
+WebIntentsHost::~WebIntentsHost() {
+}
+
+int WebIntentsHost::RegisterWebIntent(
+    const WebIntentRequest& request) {
+  int id = id_counter_++;
+  intent_requests_[id] = request;
+  return id;
+}
 
 bool WebIntentsHost::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
@@ -151,13 +161,19 @@ void WebIntentsHost::OnWebIntentReply(
     webkit_glue::WebIntentReplyType reply_type,
     const WebKit::WebString& data,
     int intent_id) {
+  std::map<int, WebIntentRequest>::iterator request =
+      intent_requests_.find(intent_id);
+  if (request == intent_requests_.end())
+    return;
+  WebIntentRequest intent_request = request->second;
+  intent_requests_.erase(request);
+  WebSerializedScriptValue value =
+      WebSerializedScriptValue::fromString(data);
 
   if (reply_type == webkit_glue::WEB_INTENT_REPLY_SUCCESS) {
-    render_view()->GetWebView()->mainFrame()->handleIntentResult(
-        intent_id, data);
+    intent_request.postResult(value);
   } else {
-    render_view()->GetWebView()->mainFrame()->handleIntentFailure(
-        intent_id, data);
+    intent_request.postFailure(value);
   }
 }
 
@@ -175,7 +191,7 @@ void WebIntentsHost::OnFailure(const WebKit::WebString& data) {
 // should persist the data through redirects, and not deliver it to any
 // sub-frames. TODO(gbillock): This policy needs to be fine-tuned and
 // documented.
-void WebIntentsHost::DidClearWindowObject(WebKit::WebFrame* frame) {
+void WebIntentsHost::DidClearWindowObject(WebFrame* frame) {
   if (intent_.get() == NULL || frame->top() != frame)
     return;
 
