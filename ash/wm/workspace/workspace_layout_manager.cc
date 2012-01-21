@@ -1,8 +1,8 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/default_container_layout_manager.h"
+#include "ash/wm/workspace/workspace_layout_manager.h"
 
 #include "ash/wm/property_util.h"
 #include "ash/wm/show_state_controller.h"
@@ -23,29 +23,29 @@ namespace ash {
 namespace internal {
 
 ////////////////////////////////////////////////////////////////////////////////
-// DefaultContainerLayoutManager, public:
+// WorkspaceLayoutManager, public:
 
-DefaultContainerLayoutManager::DefaultContainerLayoutManager(
+WorkspaceLayoutManager::WorkspaceLayoutManager(
     WorkspaceManager* workspace_manager)
     : workspace_manager_(workspace_manager),
       show_state_controller_(new ShowStateController(workspace_manager)) {
 }
 
-DefaultContainerLayoutManager::~DefaultContainerLayoutManager() {}
+WorkspaceLayoutManager::~WorkspaceLayoutManager() {}
 
-void DefaultContainerLayoutManager::PrepareForMoveOrResize(
+void WorkspaceLayoutManager::PrepareForMoveOrResize(
     aura::Window* drag,
     aura::MouseEvent* event) {
   workspace_manager_->set_ignored_window(drag);
 }
 
-void DefaultContainerLayoutManager::CancelMoveOrResize(
+void WorkspaceLayoutManager::CancelMoveOrResize(
     aura::Window* drag,
     aura::MouseEvent* event) {
   workspace_manager_->set_ignored_window(NULL);
 }
 
-void DefaultContainerLayoutManager::ProcessMove(
+void WorkspaceLayoutManager::ProcessMove(
     aura::Window* drag,
     aura::MouseEvent* event) {
   // TODO(oshima): Just zooming out may (and will) move/swap window without
@@ -66,7 +66,7 @@ void DefaultContainerLayoutManager::ProcessMove(
     workspace_manager_->RotateWindows(drag, rotate_target);
 }
 
-void DefaultContainerLayoutManager::EndMove(
+void WorkspaceLayoutManager::EndMove(
     aura::Window* drag,
     aura::MouseEvent* evnet) {
   // TODO(oshima): finish moving window between workspaces.
@@ -77,7 +77,7 @@ void DefaultContainerLayoutManager::EndMove(
   workspace_manager_->SetOverview(false);
 }
 
-void DefaultContainerLayoutManager::EndResize(
+void WorkspaceLayoutManager::EndResize(
     aura::Window* drag,
     aura::MouseEvent* evnet) {
   workspace_manager_->set_ignored_window(NULL);
@@ -88,13 +88,13 @@ void DefaultContainerLayoutManager::EndResize(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// DefaultContainerLayoutManager, aura::LayoutManager implementation:
+// WorkspaceLayoutManager, aura::LayoutManager implementation:
 
-void DefaultContainerLayoutManager::OnWindowResized() {
+void WorkspaceLayoutManager::OnWindowResized() {
   // Workspace is updated via RootWindowObserver::OnRootWindowResized.
 }
 
-void DefaultContainerLayoutManager::OnWindowAddedToLayout(aura::Window* child) {
+void WorkspaceLayoutManager::OnWindowAddedToLayout(aura::Window* child) {
   if (child->type() != aura::client::WINDOW_TYPE_NORMAL ||
       child->transient_parent()) {
     return;
@@ -120,7 +120,7 @@ void DefaultContainerLayoutManager::OnWindowAddedToLayout(aura::Window* child) {
   new_workspace->Activate();
 }
 
-void DefaultContainerLayoutManager::OnWillRemoveWindowFromLayout(
+void WorkspaceLayoutManager::OnWillRemoveWindowFromLayout(
     aura::Window* child) {
   child->RemoveObserver(show_state_controller_.get());
   ClearRestoreBounds(child);
@@ -133,13 +133,13 @@ void DefaultContainerLayoutManager::OnWillRemoveWindowFromLayout(
     delete workspace;
 }
 
-void DefaultContainerLayoutManager::OnChildWindowVisibilityChanged(
+void WorkspaceLayoutManager::OnChildWindowVisibilityChanged(
     aura::Window* child,
     bool visible) {
   NOTIMPLEMENTED();
 }
 
-void DefaultContainerLayoutManager::SetChildBounds(
+void WorkspaceLayoutManager::SetChildBounds(
     aura::Window* child,
     const gfx::Rect& requested_bounds) {
   gfx::Rect adjusted_bounds = requested_bounds;

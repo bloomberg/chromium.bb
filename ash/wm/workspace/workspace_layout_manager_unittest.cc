@@ -1,8 +1,8 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/default_container_layout_manager.h"
+#include "ash/wm/workspace/workspace_layout_manager.h"
 
 #include "ash/wm/workspace/workspace.h"
 #include "ash/wm/workspace/workspace_manager.h"
@@ -24,12 +24,12 @@ namespace test {
 namespace {
 
 using views::Widget;
-using ash::internal::DefaultContainerLayoutManager;
+using ash::internal::WorkspaceLayoutManager;
 
-class DefaultContainerLayoutManagerTest : public aura::test::AuraTestBase {
+class WorkspaceLayoutManagerTest : public aura::test::AuraTestBase {
  public:
-  DefaultContainerLayoutManagerTest() : layout_manager_(NULL) {}
-  virtual ~DefaultContainerLayoutManagerTest() {}
+  WorkspaceLayoutManagerTest() : layout_manager_(NULL) {}
+  virtual ~WorkspaceLayoutManagerTest() {}
 
   virtual void SetUp() OVERRIDE {
     aura::test::AuraTestBase::SetUp();
@@ -38,7 +38,7 @@ class DefaultContainerLayoutManagerTest : public aura::test::AuraTestBase {
         CreateTestWindow(gfx::Rect(0, 0, 500, 400), root_window));
     workspace_controller_.reset(
         new ash::internal::WorkspaceController(container_.get()));
-    layout_manager_ = new DefaultContainerLayoutManager(
+    layout_manager_ = new WorkspaceLayoutManager(
         workspace_controller_->workspace_manager());
     container_->SetLayoutManager(layout_manager_);
 
@@ -66,7 +66,7 @@ class DefaultContainerLayoutManagerTest : public aura::test::AuraTestBase {
 
   aura::Window* container() { return container_.get(); }
 
-  DefaultContainerLayoutManager* default_container_layout_manager() {
+  WorkspaceLayoutManager* default_container_layout_manager() {
     return layout_manager_;
   }
 
@@ -79,10 +79,10 @@ class DefaultContainerLayoutManagerTest : public aura::test::AuraTestBase {
   scoped_ptr<aura::Window> container_;
   scoped_ptr<ash::internal::WorkspaceController> workspace_controller_;
   // LayoutManager is owned by |container|.
-  ash::internal::DefaultContainerLayoutManager* layout_manager_;
+  ash::internal::WorkspaceLayoutManager* layout_manager_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(DefaultContainerLayoutManagerTest);
+  DISALLOW_COPY_AND_ASSIGN(WorkspaceLayoutManagerTest);
 };
 
 // Utility functions to set and get show state on |window|.
@@ -106,7 +106,7 @@ ui::WindowShowState GetShowState(aura::Window* window) {
 
 }  // namespace
 
-TEST_F(DefaultContainerLayoutManagerTest, SetBounds) {
+TEST_F(WorkspaceLayoutManagerTest, SetBounds) {
   // Layout Manager moves the window to (0,0) to fit to draggable area.
   scoped_ptr<aura::Window> child(
       CreateTestWindow(gfx::Rect(0, -1000, 100, 100), container()));
@@ -128,7 +128,7 @@ TEST_F(DefaultContainerLayoutManagerTest, SetBounds) {
   EXPECT_EQ("0,0 500x400", child->bounds().ToString());
 }
 
-TEST_F(DefaultContainerLayoutManagerTest, DragWindow) {
+TEST_F(WorkspaceLayoutManagerTest, DragWindow) {
   scoped_ptr<aura::Window> child(
       CreateTestWindow(gfx::Rect(0, -1000, 50, 50), container()));
   gfx::Rect original_bounds = child->bounds();
@@ -144,7 +144,7 @@ TEST_F(DefaultContainerLayoutManagerTest, DragWindow) {
   EXPECT_EQ(original_bounds.ToString(), child->GetTargetBounds().ToString());
 }
 
-TEST_F(DefaultContainerLayoutManagerTest, Popup) {
+TEST_F(WorkspaceLayoutManagerTest, Popup) {
   scoped_ptr<aura::Window> popup(
       CreateTestWindowWithType(gfx::Rect(0, -1000, 100, 100),
                                container(),
@@ -163,7 +163,7 @@ TEST_F(DefaultContainerLayoutManagerTest, Popup) {
 
 // Make sure a window with a transient parent isn't resized by the layout
 // manager.
-TEST_F(DefaultContainerLayoutManagerTest, IgnoreTransient) {
+TEST_F(WorkspaceLayoutManagerTest, IgnoreTransient) {
   scoped_ptr<aura::Window> window(new aura::Window(NULL));
   window->SetType(aura::client::WINDOW_TYPE_NORMAL);
   window->Init(ui::Layer::LAYER_HAS_NO_TEXTURE);
@@ -175,7 +175,7 @@ TEST_F(DefaultContainerLayoutManagerTest, IgnoreTransient) {
   EXPECT_EQ("0,0 200x200", window->bounds().ToString());
 }
 
-TEST_F(DefaultContainerLayoutManagerTest, Fullscreen) {
+TEST_F(WorkspaceLayoutManagerTest, Fullscreen) {
   scoped_ptr<aura::Window> w(
       CreateTestWindow(gfx::Rect(0, 0, 100, 100), container()));
   gfx::Rect fullscreen_bounds =
@@ -215,7 +215,7 @@ TEST_F(DefaultContainerLayoutManagerTest, Fullscreen) {
   EXPECT_EQ(50, w->bounds().height());
 }
 
-TEST_F(DefaultContainerLayoutManagerTest, Maximized) {
+TEST_F(WorkspaceLayoutManagerTest, Maximized) {
   scoped_ptr<aura::Window> w(
       CreateTestWindow(gfx::Rect(0, 0, 100, 100), container()));
   gfx::Rect original_bounds = w->GetTargetBounds();
@@ -267,7 +267,7 @@ TEST_F(DefaultContainerLayoutManagerTest, Maximized) {
 }
 
 // Tests that fullscreen windows get resized after root window is resized.
-TEST_F(DefaultContainerLayoutManagerTest, FullscreenAfterRootWindowResize) {
+TEST_F(WorkspaceLayoutManagerTest, FullscreenAfterRootWindowResize) {
   scoped_ptr<aura::Window> w1(CreateTestWindow(gfx::Rect(300, 400),
                                                container()));
   gfx::Rect window_bounds = w1->GetTargetBounds();
@@ -303,7 +303,7 @@ TEST_F(DefaultContainerLayoutManagerTest, FullscreenAfterRootWindowResize) {
 }
 
 // Tests that maximized windows get resized after root_window is resized.
-TEST_F(DefaultContainerLayoutManagerTest, MaximizeAfterRootWindowResize) {
+TEST_F(WorkspaceLayoutManagerTest, MaximizeAfterRootWindowResize) {
   scoped_ptr<aura::Window> w1(CreateTestWindow(gfx::Rect(300, 400),
                                                container()));
   gfx::Rect window_bounds = w1->GetTargetBounds();

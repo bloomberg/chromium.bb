@@ -1,9 +1,9 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_DEFAULT_CONTAINER_LAYOUT_MANAGER_H_
-#define ASH_WM_DEFAULT_CONTAINER_LAYOUT_MANAGER_H_
+#ifndef ASH_WM_WORKSPACE_WORKSPACE_LAYOUT_MANAGER_H_
+#define ASH_WM_WORKSPACE_WORKSPACE_LAYOUT_MANAGER_H_
 #pragma once
 
 #include "base/basictypes.h"
@@ -28,11 +28,10 @@ class ShowStateController;
 class WorkspaceManager;
 
 // LayoutManager for the default window container.
-class ASH_EXPORT DefaultContainerLayoutManager
-    : public aura::LayoutManager {
+class ASH_EXPORT WorkspaceLayoutManager : public aura::LayoutManager {
  public:
-  explicit DefaultContainerLayoutManager(WorkspaceManager* workspace_manager);
-  virtual ~DefaultContainerLayoutManager();
+  explicit WorkspaceLayoutManager(WorkspaceManager* workspace_manager);
+  virtual ~WorkspaceLayoutManager();
 
   // Returns the workspace manager for this container.
   WorkspaceManager* workspace_manager() {
@@ -68,10 +67,10 @@ class ASH_EXPORT DefaultContainerLayoutManager
 
   scoped_ptr<ShowStateController> show_state_controller_;
 
-  DISALLOW_COPY_AND_ASSIGN(DefaultContainerLayoutManager);
+  DISALLOW_COPY_AND_ASSIGN(WorkspaceLayoutManager);
 };
 
 }  // namespace internal
 }  // namespace ash
 
-#endif  // ASH_WM_DEFAULT_CONTAINER_LAYOUT_MANAGER_H_
+#endif  // ASH_WM_WORKSPACE_WORKSPACE_LAYOUT_MANAGER_H_

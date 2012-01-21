@@ -20,8 +20,6 @@
 #include "ash/wm/activation_controller.h"
 #include "ash/wm/compact_layout_manager.h"
 #include "ash/wm/compact_status_area_layout_manager.h"
-#include "ash/wm/default_container_event_filter.h"
-#include "ash/wm/default_container_layout_manager.h"
 #include "ash/wm/dialog_frame_view.h"
 #include "ash/wm/system_modal_container_layout_manager.h"
 #include "ash/wm/power_button_controller.h"
@@ -33,11 +31,13 @@
 #include "ash/wm/status_area_layout_manager.h"
 #include "ash/wm/toplevel_layout_manager.h"
 #include "ash/wm/toplevel_window_event_filter.h"
+#include "ash/wm/video_detector.h"
 #include "ash/wm/window_cycle_controller.h"
 #include "ash/wm/window_modality_controller.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace_controller.h"
-#include "ash/wm/video_detector.h"
+#include "ash/wm/workspace/workspace_event_filter.h"
+#include "ash/wm/workspace/workspace_layout_manager.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "ui/aura/client/aura_constants.h"
@@ -432,9 +432,9 @@ void Shell::EnableWorkspaceManager() {
       new internal::WorkspaceController(default_container));
   workspace_controller_->SetLauncherModel(launcher_->model());
   default_container->SetEventFilter(
-      new internal::DefaultContainerEventFilter(default_container));
+      new internal::WorkspaceEventFilter(default_container));
   default_container->SetLayoutManager(
-      new internal::DefaultContainerLayoutManager(
+      new internal::WorkspaceLayoutManager(
           workspace_controller_->workspace_manager()));
 }
 

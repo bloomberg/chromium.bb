@@ -1,12 +1,12 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/default_container_event_filter.h"
+#include "ash/wm/workspace/workspace_event_filter.h"
 
-#include "ash/wm/default_container_layout_manager.h"
 #include "ash/wm/window_frame.h"
 #include "ash/wm/window_util.h"
+#include "ash/wm/workspace/workspace_layout_manager.h"
 #include "ui/aura/event.h"
 #include "ui/aura/window.h"
 #include "ui/base/hit_test.h"
@@ -31,19 +31,19 @@ void WindowHoverChanged(aura::Window* window, bool hovered) {
 namespace ash {
 namespace internal {
 
-DefaultContainerEventFilter::DefaultContainerEventFilter(aura::Window* owner)
+WorkspaceEventFilter::WorkspaceEventFilter(aura::Window* owner)
     : ToplevelWindowEventFilter(owner),
       drag_state_(DRAG_NONE),
       hovered_window_(NULL) {
 }
 
-DefaultContainerEventFilter::~DefaultContainerEventFilter() {
+WorkspaceEventFilter::~WorkspaceEventFilter() {
 }
 
-bool DefaultContainerEventFilter::PreHandleMouseEvent(aura::Window* target,
-                                                      aura::MouseEvent* event) {
-  DefaultContainerLayoutManager* layout_manager =
-      static_cast<DefaultContainerLayoutManager*>(owner()->layout_manager());
+bool WorkspaceEventFilter::PreHandleMouseEvent(aura::Window* target,
+                                               aura::MouseEvent* event) {
+  WorkspaceLayoutManager* layout_manager =
+      static_cast<WorkspaceLayoutManager*>(owner()->layout_manager());
   DCHECK(layout_manager);
 
   // TODO(oshima|derat): Incorporate the logic below and introduce DragObserver
@@ -95,7 +95,7 @@ bool DefaultContainerEventFilter::PreHandleMouseEvent(aura::Window* target,
   return handled;
 }
 
-bool DefaultContainerEventFilter::UpdateDragState() {
+bool WorkspaceEventFilter::UpdateDragState() {
   DCHECK_EQ(DRAG_NONE, drag_state_);
   switch (window_component()) {
     case HTCAPTION:
@@ -118,7 +118,7 @@ bool DefaultContainerEventFilter::UpdateDragState() {
   return true;
 }
 
-void DefaultContainerEventFilter::UpdateHoveredWindow(
+void WorkspaceEventFilter::UpdateHoveredWindow(
     aura::Window* toplevel_window) {
   if (toplevel_window == hovered_window_)
     return;

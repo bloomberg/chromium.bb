@@ -1,9 +1,9 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_DEFAULT_CONTAINER_EVENT_FILTER_H_
-#define ASH_WM_DEFAULT_CONTAINER_EVENT_FILTER_H_
+#ifndef ASH_WM_WORKSPACE_WORKSPACE_EVENT_FILTER_H_
+#define ASH_WM_WORKSPACE_WORKSPACE_EVENT_FILTER_H_
 #pragma once
 
 #include "ash/wm/toplevel_window_event_filter.h"
@@ -16,10 +16,10 @@ class Window;
 namespace ash {
 namespace internal {
 
-class DefaultContainerEventFilter : public ToplevelWindowEventFilter {
+class WorkspaceEventFilter : public ToplevelWindowEventFilter {
  public:
-  explicit DefaultContainerEventFilter(aura::Window* owner);
-  virtual ~DefaultContainerEventFilter();
+  explicit WorkspaceEventFilter(aura::Window* owner);
+  virtual ~WorkspaceEventFilter();
 
   // Overridden from ToplevelWindowEventFilter:
   virtual bool PreHandleMouseEvent(aura::Window* target,
@@ -46,10 +46,10 @@ class DefaultContainerEventFilter : public ToplevelWindowEventFilter {
   // Top-level window under the mouse cursor.
   aura::Window* hovered_window_;
 
-  DISALLOW_COPY_AND_ASSIGN(DefaultContainerEventFilter);
+  DISALLOW_COPY_AND_ASSIGN(WorkspaceEventFilter);
 };
 
 }  // namespace internal
 }  // namespace ash
 
-#endif  //  ASH_WM_DEFAULT_CONTAINER_EVENT_FILTER_H_
+#endif  // ASH_WM_WORKSPACE_WORKSPACE_EVENT_FILTER_H_
