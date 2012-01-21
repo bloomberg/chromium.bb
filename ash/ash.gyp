@@ -203,6 +203,7 @@
         '../ui/views/test/test_views_delegate.cc',
         '../ui/views/test/test_views_delegate.h',
         'accelerators/accelerator_controller_unittest.cc',
+        'accelerators/accelerator_filter_unittest.cc',
         'drag_drop/drag_drop_controller_unittest.cc',
         'ime/input_method_event_filter_unittest.cc',
         'launcher/launcher_model_unittest.cc',
