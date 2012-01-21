@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 
 #include "chrome/browser/chromeos/status/clock_menu_button.h"
 
+#include "base/basictypes.h"
 #include "base/i18n/time_formatting.h"
 #include "base/string_util.h"
 #include "base/time.h"
@@ -166,16 +167,17 @@ void ClockMenuButton::RunMenu(views::View* source, const gfx::Point& pt) {
   // View passed in must be a views::MenuButton, i.e. the ClockMenuButton.
   DCHECK_EQ(source, this);
 
-  EnsureMenu();
+  scoped_ptr<views::MenuRunner> menu_runner(CreateMenu());
 
   gfx::Point screen_location;
   views::View::ConvertPointToScreen(source, &screen_location);
   gfx::Rect bounds(screen_location, source->size());
-  if (menu_runner_->RunMenuAt(
-          source->GetWidget()->GetTopLevelWidget(), this, bounds,
-          views::MenuItemView::TOPRIGHT, views::MenuRunner::HAS_MNEMONICS) ==
-      views::MenuRunner::MENU_DELETED)
-    return;
+  ignore_result(menu_runner->RunMenuAt(
+                    source->GetWidget()->GetTopLevelWidget(),
+                    this,
+                    bounds,
+                    views::MenuItemView::TOPRIGHT,
+                    views::MenuRunner::HAS_MNEMONICS));
 }
 
 // ClockMenuButton, views::View implementation:
@@ -184,13 +186,10 @@ void ClockMenuButton::OnLocaleChanged() {
   UpdateText();
 }
 
-void ClockMenuButton::EnsureMenu() {
-  if (menu_runner_.get())
-    return;
-
+views::MenuRunner* ClockMenuButton::CreateMenu() {
   views::MenuItemView* menu = new views::MenuItemView(this);
-  // menu_runner_ takes ownership of menu.
-  menu_runner_.reset(new views::MenuRunner(menu));
+  // menu_runner takes ownership of menu.
+  views::MenuRunner* menu_runner = new views::MenuRunner(menu);
 
   // Text for this item will be set by GetLabel().
   menu->AppendDelegateMenuItem(CLOCK_DISPLAY_ITEM);
@@ -205,4 +204,5 @@ void ClockMenuButton::EnsureMenu() {
     menu->AppendMenuItemWithLabel(CLOCK_OPEN_OPTIONS_ITEM,
                                   clock_open_options_label);
   }
+  return menu_runner;
 }

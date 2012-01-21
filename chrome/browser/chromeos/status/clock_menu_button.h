@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -64,17 +64,13 @@ class ClockMenuButton : public StatusAreaButton,
   // Sets default use 24hour clock mode.
   void SetUse24HourClock(bool use_24hour_clock);
 
-  // Create and initialize menu if not already present.
-  void EnsureMenu();
+  // Create menu and return menu runner.
+  views::MenuRunner* CreateMenu();
 
   // Updates text and schedules the timer to fire at the next minute interval.
   void UpdateTextAndSetNextTimer();
 
   base::OneShotTimer<ClockMenuButton> timer_;
-
-  // The clock menu.
-  scoped_ptr<views::MenuRunner> menu_runner_;
-
   PrefService* pref_service_;
   scoped_ptr<PrefChangeRegistrar> registrar_;
 
