@@ -1,15 +1,15 @@
 Name: LevelDB: A Fast Persistent Key-Value Store
 Short Name: leveldb
 URL: http://code.google.com/p/leveldb/
-Version: r51
+Version: r55
 License: New BSD
 Security Critical: yes
 
 Description:
 Alternative to SQLite used as the backend for IndexedDB and internally by the
-FileSystem API implementation.
+FileSystem API implementation and others.
 
-Local Modifications:
+Local Additions:
 * gyp file for building in chromium
 * port/port_chromium.{h,cc} and env_chromium.cc provide chromium implementations
   of primitives used by leveldb.  E.g. threading, file handling, etc.
