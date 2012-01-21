@@ -11,6 +11,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/hash_tables.h"
 #include "base/logging.h"
 #include "chrome/browser/net/preconnect.h" // TODO: remove this.
 #include "chrome/browser/net/pref_proxy_config_tracker.h"
@@ -64,6 +65,10 @@ class Predictor;
 
 namespace content {
 class WebUI;
+}
+
+namespace android {
+class TabContentsProvider;
 }
 
 namespace fileapi {
@@ -143,6 +148,7 @@ class Profile : public content::BrowserContext {
     friend class SyncTest;
     friend class Toolbar5Importer;
     friend class TranslateManager;
+    friend class android::TabContentsProvider;
     friend class chromeos::LibCrosServiceLibraryImpl;
     friend class chromeos::ResetDefaultProxyConfigServiceTask;
 
@@ -565,7 +571,7 @@ class Profile : public content::BrowserContext {
 };
 
 #if defined(COMPILER_GCC)
-namespace __gnu_cxx {
+namespace BASE_HASH_NAMESPACE {
 
 template<>
 struct hash<Profile*> {
@@ -574,7 +580,7 @@ struct hash<Profile*> {
   }
 };
 
-}  // namespace __gnu_cxx
+}  // namespace BASE_HASH_NAMESPACE
 #endif
 
 #endif  // CHROME_BROWSER_PROFILES_PROFILE_H_

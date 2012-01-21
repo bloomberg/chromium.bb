@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -1174,7 +1174,7 @@ class FullScanFilter : public IdFilter {
 class SomeIdsFilter : public IdFilter {
  public:
   virtual bool ShouldConsider(const Id& id) const {
-    return binary_search(ids_.begin(), ids_.end(), id);
+    return std::binary_search(ids_.begin(), ids_.end(), id);
   }
   std::vector<Id> ids_;
 };
@@ -1215,7 +1215,7 @@ bool Directory::CheckTreeInvariants(syncable::BaseTransaction* trans,
         return false;
       filter.ids_.push_back(e.Get(ID));
     }
-    sort(filter.ids_.begin(), filter.ids_.end());
+    std::sort(filter.ids_.begin(), filter.ids_.end());
     if (!CheckTreeInvariants(trans, handles, filter))
       return false;
   }

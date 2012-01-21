@@ -42,7 +42,7 @@ namespace about_flags {
 
 namespace {
 
-const unsigned kOsAll = kOsMac | kOsWin | kOsLinux | kOsCrOS;
+const unsigned kOsAll = kOsMac | kOsWin | kOsLinux | kOsCrOS | kOsAndroid;
 
 // Adds a |StringValue| to |list| for each platform where |bitmask| indicates
 // whether the experiment is available on that platform.
@@ -785,6 +785,8 @@ int GetCurrentPlatform() {
   return kOsCrOS;
 #elif defined(OS_LINUX) || defined(OS_OPENBSD)
   return kOsLinux;
+#elif defined(OS_ANDROID)
+  return kOsAndroid;
 #else
 #error Unknown platform
 #endif

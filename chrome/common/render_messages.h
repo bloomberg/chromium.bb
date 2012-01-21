@@ -72,11 +72,12 @@ struct ChromeViewHostMsg_GetPluginInfo_Status {
 
 namespace IPC {
 
-#if defined(OS_POSIX) && !defined(USE_AURA)
+#if defined(OS_POSIX) && !defined(USE_AURA) && !defined(OS_ANDROID)
 
 // TODO(port): this shouldn't exist. However, the plugin stuff is really using
 // HWNDS (NativeView), and making Windows calls based on them. I've not figured
 // out the deal with plugins yet.
+// TODO(android): a gfx::NativeView is the same as a gfx::NativeWindow.
 template <>
 struct ParamTraits<gfx::NativeView> {
   typedef gfx::NativeView param_type;
@@ -95,7 +96,7 @@ struct ParamTraits<gfx::NativeView> {
   }
 };
 
-#endif  // defined(OS_POSIX) && !defined(USE_AURA)
+#endif  // defined(OS_POSIX) && !defined(USE_AURA) && !defined(OS_ANDROID)
 
 template <>
 struct ParamTraits<ContentSettingsPattern> {
