@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,7 +7,6 @@
 #include "base/file_path.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/browser/extensions/settings/settings_frontend.h"
-#include "chrome/browser/extensions/settings/settings_namespace.h"
 
 namespace extensions {
 
@@ -19,14 +18,21 @@ static void AssignStorage(SettingsStorage** dst, SettingsStorage* src) {
 }
 
 SettingsStorage* GetStorage(
-    const std::string& extension_id, SettingsFrontend* frontend) {
+    const std::string& extension_id,
+    settings_namespace::Namespace settings_namespace,
+    SettingsFrontend* frontend) {
   SettingsStorage* storage = NULL;
   frontend->RunWithStorage(
       extension_id,
-      settings_namespace::SYNC,
+      settings_namespace,
       base::Bind(&AssignStorage, &storage));
   MessageLoop::current()->RunAllPending();
   return storage;
+}
+
+SettingsStorage* GetStorage(
+    const std::string& extension_id, SettingsFrontend* frontend) {
+  return GetStorage(extension_id, settings_namespace::SYNC, frontend);
 }
 
 // MockExtensionService
@@ -45,9 +51,24 @@ const Extension* MockExtensionService::GetExtensionById(
 
 void MockExtensionService::AddExtensionWithId(
     const std::string& id, Extension::Type type) {
+  std::set<std::string> empty_permissions;
+  AddExtensionWithIdAndPermissions(id, type, empty_permissions);
+}
+
+void MockExtensionService::AddExtensionWithIdAndPermissions(
+    const std::string& id,
+    Extension::Type type,
+    const std::set<std::string>& permissions_set) {
   DictionaryValue manifest;
   manifest.SetString("name", std::string("Test extension ") + id);
   manifest.SetString("version", "1.0");
+
+  scoped_ptr<ListValue> permissions(new ListValue());
+  for (std::set<std::string>::const_iterator it = permissions_set.begin();
+      it != permissions_set.end(); ++it) {
+    permissions->Append(Value::CreateStringValue(*it));
+  }
+  manifest.Set("permissions", permissions.release());
 
   switch (type) {
     case Extension::TYPE_EXTENSION:
@@ -67,14 +88,21 @@ void MockExtensionService::AddExtensionWithId(
   }
 
   std::string error;
-  extensions_[id] = Extension::CreateWithId(
+  scoped_refptr<Extension> extension(Extension::CreateWithId(
       FilePath(),
       Extension::INTERNAL,
       manifest,
       Extension::NO_FLAGS,
       id,
-      &error);
+      &error));
+  DCHECK(extension.get());
   DCHECK(error.empty());
+  extensions_[id] = extension;
+
+  for (std::set<std::string>::const_iterator it = permissions_set.begin();
+      it != permissions_set.end(); ++it) {
+    DCHECK(extension->HasAPIPermission(*it));
+  }
 }
 
 // MockProfile

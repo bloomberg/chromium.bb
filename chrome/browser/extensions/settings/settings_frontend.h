@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,8 +17,6 @@
 #include "chrome/browser/extensions/settings/settings_namespace.h"
 #include "chrome/browser/extensions/settings/settings_observer.h"
 #include "chrome/browser/sync/api/syncable_service.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 
 class Profile;
 
@@ -45,7 +43,7 @@ class SettingsFrontend {
   typedef base::Callback<void(SettingsStorage*)> StorageCallback;
 
   // Runs |callback| on the FILE thread with the SyncableService for
-  // |model_type|, either SETTINGS or APP_SETTINGS.
+  // |model_type|, either EXTENSION_SETTINGS or APP_SETTINGS.
   void RunWithSyncableService(
       syncable::ModelType model_type, const SyncableServiceCallback& callback);
 

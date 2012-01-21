@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -94,10 +94,8 @@ class SettingsStorage {
     // Callers should usually use this.
     DEFAULTS,
 
-    // Ignore restrictions, such as quota.  It is still possible for the
-    // operation to fail, such as on hard drive failure or if the storage area
-    // is configured to fail.
-    FORCE
+    // Ignore any quota restrictions.
+    IGNORE_QUOTA,
   };
 
   virtual ~SettingsStorage() {}

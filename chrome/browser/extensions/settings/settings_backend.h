@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,6 +13,7 @@
 #include "base/observer_list_threadsafe.h"
 #include "chrome/browser/extensions/settings/settings_leveldb_storage.h"
 #include "chrome/browser/extensions/settings/settings_observer.h"
+#include "chrome/browser/extensions/settings/settings_storage_quota_enforcer.h"
 #include "chrome/browser/extensions/settings/syncable_settings_storage.h"
 #include "chrome/browser/sync/api/syncable_service.h"
 
@@ -30,15 +31,16 @@ class SettingsBackend : public SyncableService {
   SettingsBackend(
       const scoped_refptr<SettingsStorageFactory>& storage_factory,
       const FilePath& base_path,
+      const SettingsStorageQuotaEnforcer::Limits& quota,
       const scoped_refptr<SettingsObserverList>& observers);
 
   virtual ~SettingsBackend();
 
-  // Gets a weak reference to the storage area for a given extension.
+  // Gets a weak reference to the storage area for |extension_id|.
   // Must be run on the FILE thread.
   SettingsStorage* GetStorage(const std::string& extension_id) const;
 
-  // Deletes all setting data for an extension.  Call on the FILE thread.
+  // Deletes all setting data for an extension. Call on the FILE thread.
   void DeleteStorage(const std::string& extension_id);
 
   // SyncableService implementation.
@@ -55,24 +57,22 @@ class SettingsBackend : public SyncableService {
  private:
   // Gets a weak reference to the storage area for a given extension,
   // initializing sync with some initial data if sync enabled.
-  //
-  // By default this will be of a cached LEVELDB storage, but on failure to
-  // create a leveldb instance will fall back to cached NOOP storage.
   SyncableSettingsStorage* GetOrCreateStorageWithSyncData(
-      const std::string& extension_id, const DictionaryValue& sync_data) const;
+      const std::string& extension_id,
+      const DictionaryValue& sync_data) const;
 
   // Gets all extension IDs known to extension settings.  This may not be all
   // installed extensions.
   std::set<std::string> GetKnownExtensionIDs() const;
-
-  // Disable the syncing of the storage area for |extension_id|.
-  void DisableSyncForExtension(const std::string& extension_id) const;
 
   // The Factory to use for creating leveldb storage areas.
   const scoped_refptr<SettingsStorageFactory> storage_factory_;
 
   // The base file path to create any leveldb databases at.
   const FilePath base_path_;
+
+  // Quota limits (see SettingsStorageQuotaEnforcer).
+  const SettingsStorageQuotaEnforcer::Limits quota_;
 
   // The list of observers to settings changes.
   const scoped_refptr<SettingsObserverList> observers_;

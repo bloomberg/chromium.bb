@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_EXTENSIONS_SETTINGS_SETTINGS_TEST_UTIL_H_
 #pragma once
 
+#include <set>
 #include <string>
 
 #include "base/compiler_specific.h"
@@ -14,6 +15,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/extension_event_router.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/settings/settings_namespace.h"
 #include "chrome/browser/extensions/settings/settings_storage_factory.h"
 #include "chrome/browser/extensions/test_extension_service.h"
 #include "chrome/common/extensions/extension.h"
@@ -30,7 +32,14 @@ namespace settings_test_util {
 
 // Synchronously gets the storage area for an extension from |frontend|.
 SettingsStorage* GetStorage(
-    const std::string& extension_id, SettingsFrontend* frontend);
+    const std::string& extension_id,
+    settings_namespace::Namespace setting_namespace,
+    SettingsFrontend* frontend);
+
+// Synchronously gets the SYNC storage for an extension from |frontend|.
+SettingsStorage* GetStorage(
+    const std::string& extension_id,
+    SettingsFrontend* frontend);
 
 // An ExtensionService which allows extensions to be hand-added to be returned
 // by GetExtensionById.
@@ -41,6 +50,13 @@ class MockExtensionService : public TestExtensionService {
 
   // Adds an extension with id |id| to be returned by GetExtensionById.
   void AddExtensionWithId(const std::string& id, Extension::Type type);
+
+  // Adds an extension with id |id| to be returned by GetExtensionById, with
+  // a set of permissions.
+  void AddExtensionWithIdAndPermissions(
+      const std::string& id,
+      Extension::Type type,
+      const std::set<std::string>& permissions);
 
   virtual const Extension* GetExtensionById(
       const std::string& id, bool include_disabled) const OVERRIDE;

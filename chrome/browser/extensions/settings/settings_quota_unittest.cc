@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,15 +9,15 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/settings/settings_backend.h"
-#include "chrome/browser/extensions/settings/settings_storage_cache.h"
 #include "chrome/browser/extensions/settings/settings_storage_quota_enforcer.h"
 #include "chrome/browser/extensions/settings/testing_settings_storage.h"
 
 namespace extensions {
 
-// To save typing SettingsStorage::DEFAULTS/FORCE everywhere.
+// To save typing SettingsStorage::DEFAULTS/IGNORE_QUOTA everywhere.
 const SettingsStorage::WriteOptions DEFAULTS = SettingsStorage::DEFAULTS;
-const SettingsStorage::WriteOptions FORCE = SettingsStorage::FORCE;
+const SettingsStorage::WriteOptions IGNORE_QUOTA =
+    SettingsStorage::IGNORE_QUOTA;
 
 class ExtensionSettingsQuotaTest : public testing::Test {
  public:
@@ -25,7 +25,7 @@ class ExtensionSettingsQuotaTest : public testing::Test {
       : byte_value_1_(Value::CreateIntegerValue(1)),
         byte_value_16_(Value::CreateStringValue("sixteen bytes.")),
         byte_value_256_(new ListValue()),
-        delegate_(new SettingsStorageCache(new TestingSettingsStorage())) {
+        delegate_(new TestingSettingsStorage()) {
     for (int i = 1; i < 89; ++i) {
       byte_value_256_->Append(Value::CreateIntegerValue(i));
     }
@@ -51,9 +51,9 @@ class ExtensionSettingsQuotaTest : public testing::Test {
   void CreateStorage(
       size_t quota_bytes, size_t quota_bytes_per_setting, size_t max_keys) {
     ASSERT_TRUE(storage_.get() == NULL);
-    storage_.reset(
-        new SettingsStorageQuotaEnforcer(
-            quota_bytes, quota_bytes_per_setting, max_keys, delegate_));
+    SettingsStorageQuotaEnforcer::Limits limits =
+        { quota_bytes, quota_bytes_per_setting, max_keys };
+    storage_.reset(new SettingsStorageQuotaEnforcer(limits, delegate_));
   }
 
   // Returns whether the settings in |storage_| and |delegate_| are the same as
@@ -72,7 +72,7 @@ class ExtensionSettingsQuotaTest : public testing::Test {
   scoped_ptr<SettingsStorageQuotaEnforcer> storage_;
 
   // In-memory storage area being delegated to.  Always owned by |storage_|.
-  SettingsStorageCache* delegate_;
+  TestingSettingsStorage* delegate_;
 };
 
 TEST_F(ExtensionSettingsQuotaTest, ZeroQuotaBytes) {
@@ -527,8 +527,9 @@ TEST_F(ExtensionSettingsQuotaTest, QuotaBytesPerSettingWithInitialSettings) {
 
 TEST_F(ExtensionSettingsQuotaTest,
     QuotaBytesPerSettingWithInitialSettingsForced) {
-  // This is a lazy test to make sure FORCE lets through changes: the test above
-  // copied, but using FORCE and asserting nothing is ever rejected...
+  // This is a lazy test to make sure IGNORE_QUOTA lets through changes: the
+  // test above copied, but using IGNORE_QUOTA and asserting nothing is ever
+  // rejected...
   DictionaryValue settings;
 
   delegate_->Set(DEFAULTS, "a", *byte_value_1_);
@@ -536,18 +537,18 @@ TEST_F(ExtensionSettingsQuotaTest,
   delegate_->Set(DEFAULTS, "c", *byte_value_256_);
   CreateStorage(UINT_MAX, 20, UINT_MAX);
 
-  EXPECT_FALSE(storage_->Set(FORCE, "a", *byte_value_1_).HasError());
-  EXPECT_FALSE(storage_->Set(FORCE, "a", *byte_value_16_).HasError());
-  EXPECT_FALSE(storage_->Set(FORCE, "a", *byte_value_256_).HasError());
+  EXPECT_FALSE(storage_->Set(IGNORE_QUOTA, "a", *byte_value_1_).HasError());
+  EXPECT_FALSE(storage_->Set(IGNORE_QUOTA, "a", *byte_value_16_).HasError());
+  EXPECT_FALSE(storage_->Set(IGNORE_QUOTA, "a", *byte_value_256_).HasError());
   settings.Set("a", byte_value_256_->DeepCopy());
 
-  EXPECT_FALSE(storage_->Set(FORCE, "b", *byte_value_1_).HasError());
-  EXPECT_FALSE(storage_->Set(FORCE, "b", *byte_value_16_).HasError());
-  EXPECT_FALSE(storage_->Set(FORCE, "b", *byte_value_256_).HasError());
+  EXPECT_FALSE(storage_->Set(IGNORE_QUOTA, "b", *byte_value_1_).HasError());
+  EXPECT_FALSE(storage_->Set(IGNORE_QUOTA, "b", *byte_value_16_).HasError());
+  EXPECT_FALSE(storage_->Set(IGNORE_QUOTA, "b", *byte_value_256_).HasError());
   settings.Set("b", byte_value_256_->DeepCopy());
 
-  EXPECT_FALSE(storage_->Set(FORCE, "c", *byte_value_1_).HasError());
-  EXPECT_FALSE(storage_->Set(FORCE, "c", *byte_value_16_).HasError());
+  EXPECT_FALSE(storage_->Set(IGNORE_QUOTA, "c", *byte_value_1_).HasError());
+  EXPECT_FALSE(storage_->Set(IGNORE_QUOTA, "c", *byte_value_16_).HasError());
   settings.Set("c", byte_value_16_->DeepCopy());
 
   // ... except the last.  Make sure it can still fail.

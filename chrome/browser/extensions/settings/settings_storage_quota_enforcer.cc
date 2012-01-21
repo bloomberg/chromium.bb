@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -75,16 +75,9 @@ SettingsStorage::WriteResult QuotaExceededFor(Resource resource) {
 }  // namespace
 
 SettingsStorageQuotaEnforcer::SettingsStorageQuotaEnforcer(
-    size_t quota_bytes,
-    size_t quota_bytes_per_setting,
-    size_t max_keys,
-    SettingsStorage* delegate)
-    : quota_bytes_(quota_bytes),
-      quota_bytes_per_setting_(quota_bytes_per_setting),
-      max_keys_(max_keys),
-      delegate_(delegate),
-      used_total_(0) {
-  ReadResult maybe_settings = delegate->Get();
+    const Limits& limits, SettingsStorage* delegate)
+    : limits_(limits), delegate_(delegate), used_total_(0) {
+  ReadResult maybe_settings = delegate_->Get();
   if (maybe_settings.HasError()) {
     LOG(WARNING) << "Failed to get initial settings for quota: " <<
         maybe_settings.error();
@@ -93,7 +86,8 @@ SettingsStorageQuotaEnforcer::SettingsStorageQuotaEnforcer(
 
   for (DictionaryValue::Iterator it(maybe_settings.settings()); it.HasNext();
       it.Advance()) {
-    Allocate(it.key(), it.value(), &used_total_, &used_per_setting_);
+    Allocate(
+        it.key(), it.value(), &used_total_, &used_per_setting_);
   }
 }
 
@@ -119,14 +113,14 @@ SettingsStorage::WriteResult SettingsStorageQuotaEnforcer::Set(
   std::map<std::string, size_t> new_used_per_setting = used_per_setting_;
   Allocate(key, value, &new_used_total, &new_used_per_setting);
 
-  if (options != FORCE) {
-    if (new_used_total > quota_bytes_) {
+  if (options != IGNORE_QUOTA) {
+    if (new_used_total > limits_.quota_bytes) {
       return QuotaExceededFor(TOTAL_BYTES);
     }
-    if (new_used_per_setting[key] > quota_bytes_per_setting_) {
+    if (new_used_per_setting[key] > limits_.quota_bytes_per_setting) {
       return QuotaExceededFor(BYTES_PER_SETTING);
     }
-    if (new_used_per_setting.size() > max_keys_) {
+    if (new_used_per_setting.size() > limits_.max_keys) {
       return QuotaExceededFor(KEY_COUNT);
     }
   }
@@ -148,17 +142,17 @@ SettingsStorage::WriteResult SettingsStorageQuotaEnforcer::Set(
   for (DictionaryValue::Iterator it(values); it.HasNext(); it.Advance()) {
     Allocate(it.key(), it.value(), &new_used_total, &new_used_per_setting);
 
-    if (options != FORCE &&
-        new_used_per_setting[it.key()] > quota_bytes_per_setting_) {
+    if (options != IGNORE_QUOTA &&
+        new_used_per_setting[it.key()] > limits_.quota_bytes_per_setting) {
       return QuotaExceededFor(BYTES_PER_SETTING);
     }
   }
 
-  if (options != FORCE) {
-    if (new_used_total > quota_bytes_) {
+  if (options != IGNORE_QUOTA) {
+    if (new_used_total > limits_.quota_bytes) {
       return QuotaExceededFor(TOTAL_BYTES);
     }
-    if (new_used_per_setting.size() > max_keys_) {
+    if (new_used_per_setting.size() > limits_.max_keys) {
       return QuotaExceededFor(KEY_COUNT);
     }
   }

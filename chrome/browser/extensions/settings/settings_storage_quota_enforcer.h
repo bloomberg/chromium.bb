@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,12 +16,18 @@ namespace extensions {
 // of setting keys, for a delegate storage area.
 class SettingsStorageQuotaEnforcer : public SettingsStorage {
  public:
-  SettingsStorageQuotaEnforcer(
-      size_t quota_bytes,
-      size_t quota_bytes_per_setting,
-      size_t max_keys,
-      // Ownership taken.
-      SettingsStorage* delegate);
+  struct Limits {
+    // The storage quota in bytes.
+    size_t quota_bytes;
+
+    // The quota per individual setting in bytes.
+    size_t quota_bytes_per_setting;
+
+    // The maximum number of settings keys allowed.
+    size_t max_keys;
+  };
+
+  SettingsStorageQuotaEnforcer(const Limits& limits, SettingsStorage* delegate);
 
   virtual ~SettingsStorageQuotaEnforcer();
 
@@ -40,14 +46,8 @@ class SettingsStorageQuotaEnforcer : public SettingsStorage {
   virtual WriteResult Clear() OVERRIDE;
 
  private:
-  // The storage quota in bytes.
-  size_t const quota_bytes_;
-
-  // The quota per individual setting in bytes.
-  size_t const quota_bytes_per_setting_;
-
-  // The maximum number of settings keys allowed.
-  size_t const max_keys_;
+  // Limits configuration.
+  const Limits limits_;
 
   // The delegate storage area.
   scoped_ptr<SettingsStorage> const delegate_;

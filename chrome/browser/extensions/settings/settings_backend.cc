@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,7 +12,6 @@
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/settings/failing_settings_storage.h"
-#include "chrome/browser/extensions/settings/settings_storage_cache.h"
 #include "chrome/browser/extensions/settings/settings_storage_factory.h"
 #include "chrome/browser/extensions/settings/settings_storage_quota_enforcer.h"
 #include "chrome/browser/extensions/settings/settings_sync_util.h"
@@ -23,27 +22,14 @@ using content::BrowserThread;
 
 namespace extensions {
 
-namespace {
-
-// Total quota for all settings per extension, in bytes.  100K should be enough
-// for most uses, but this can be increased as demand increases.
-const size_t kTotalQuotaBytes = 100 * 1024;
-
-// Quota for each setting.  Sync supports 5k per setting, so be a bit more
-// restrictive than that.
-const size_t kQuotaPerSettingBytes = 2048;
-
-// Max number of settings per extension.  Keep low for sync.
-const size_t kMaxSettingKeys = 512;
-
-}  // namespace
-
 SettingsBackend::SettingsBackend(
     const scoped_refptr<SettingsStorageFactory>& storage_factory,
     const FilePath& base_path,
+    const SettingsStorageQuotaEnforcer::Limits& quota,
     const scoped_refptr<SettingsObserverList>& observers)
     : storage_factory_(storage_factory),
       base_path_(base_path),
+      quota_(quota),
       observers_(observers),
       sync_type_(syncable::UNSPECIFIED),
       sync_processor_(NULL) {
@@ -72,11 +58,9 @@ SyncableSettingsStorage* SettingsBackend::GetOrCreateStorageWithSyncData(
 
   SettingsStorage* storage = storage_factory_->Create(base_path_, extension_id);
   if (storage) {
-    storage = new SettingsStorageCache(storage);
     // It's fine to create the quota enforcer underneath the sync layer, since
     // sync will only go ahead if each underlying storage operation succeeds.
-    storage = new SettingsStorageQuotaEnforcer(
-        kTotalQuotaBytes, kQuotaPerSettingBytes, kMaxSettingKeys, storage);
+    storage = new SettingsStorageQuotaEnforcer(quota_, storage);
   } else {
     storage = new FailingSettingsStorage();
   }
@@ -92,7 +76,7 @@ SyncableSettingsStorage* SettingsBackend::GetOrCreateStorageWithSyncData(
     SyncError error =
         syncable_storage->StartSyncing(sync_type_, sync_data, sync_processor_);
     if (error.IsSet()) {
-      DisableSyncForExtension(extension_id);
+      syncable_storage.get()->StopSyncing();
     }
   }
 
@@ -101,24 +85,22 @@ SyncableSettingsStorage* SettingsBackend::GetOrCreateStorageWithSyncData(
 
 void SettingsBackend::DeleteStorage(const std::string& extension_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  StorageObjMap::iterator maybe_storage = storage_objs_.find(extension_id);
-  if (maybe_storage == storage_objs_.end()) {
-    return;
-  }
 
   // Clear settings when the extension is uninstalled.  Leveldb implementations
-  // will also delete the database from disk when the object is destroyed as
-  // a result of being removed from |storage_objs_|.
-  maybe_storage->second->Clear();
-  storage_objs_.erase(maybe_storage);
+  // will also delete the database from disk when the object is destroyed as a
+  // result of being removed from |storage_objs_|. Note that we always
+  // GetStorage here (rather than only clearing if it exists) since the storage
+  // area may have been unloaded, but we still want to clear the data from disk.
+  GetStorage(extension_id)->Clear();
+  storage_objs_.erase(extension_id);
 }
 
 std::set<std::string> SettingsBackend::GetKnownExtensionIDs() const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   std::set<std::string> result;
 
-  // Extension IDs live in-memory and/or on disk.  The cache will contain all
-  // that are in-memory.
+  // Storage areas can be in-memory as well as on disk. |storage_objs_| will
+  // contain all that are in-memory.
   for (StorageObjMap::iterator it = storage_objs_.begin();
       it != storage_objs_.end(); ++it) {
     result.insert(it->first);
@@ -140,13 +122,6 @@ std::set<std::string> SettingsBackend::GetKnownExtensionIDs() const {
   }
 
   return result;
-}
-
-void SettingsBackend::DisableSyncForExtension(
-    const std::string& extension_id) const {
-  linked_ptr<SyncableSettingsStorage> storage = storage_objs_[extension_id];
-  DCHECK(storage.get());
-  storage->StopSyncing();
 }
 
 static void AddAllSyncData(
@@ -231,7 +206,7 @@ SyncError SettingsBackend::MergeDataAndStartSyncing(
       error = it->second->StartSyncing(type, empty, sync_processor);
     }
     if (error.IsSet()) {
-      DisableSyncForExtension(it->first);
+      it->second->StopSyncing();
     }
   }
 
@@ -264,12 +239,11 @@ SyncError SettingsBackend::ProcessSyncChanges(
   DictionaryValue empty;
   for (std::map<std::string, SettingSyncDataList>::iterator
       it = grouped_sync_data.begin(); it != grouped_sync_data.end(); ++it) {
-    SyncError error =
-        GetOrCreateStorageWithSyncData(it->first, empty)->
-            ProcessSyncChanges(it->second);
-    if (error.IsSet()) {
-      DisableSyncForExtension(it->first);
-    }
+    SyncableSettingsStorage* storage =
+        GetOrCreateStorageWithSyncData(it->first, empty);
+    SyncError error = storage->ProcessSyncChanges(it->second);
+    if (error.IsSet())
+      storage->StopSyncing();
   }
 
   return SyncError();

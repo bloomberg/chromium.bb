@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,16 +9,19 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/scoped_temp_dir.h"
+#include "base/stringprintf.h"
 #include "chrome/browser/extensions/settings/settings_frontend.h"
+#include "chrome/browser/extensions/settings/settings_namespace.h"
 #include "chrome/browser/extensions/settings/settings_storage.h"
 #include "chrome/browser/extensions/settings/settings_test_util.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/test/test_browser_thread.h"
 
-namespace extensions {
-
 using content::BrowserThread;
 
+namespace extensions {
+
+using namespace settings_namespace;
 using namespace settings_test_util;
 
 namespace {
@@ -39,6 +42,24 @@ class NullSettingsStorageFactory : public SettingsStorageFactory {
   // SettingsStorageFactory is refcounted.
   virtual ~NullSettingsStorageFactory() {}
 };
+
+// Creates a kilobyte of data.
+scoped_ptr<Value> CreateKilobyte() {
+  std::string kilobyte_string;
+  for (int i = 0; i < 1024; ++i) {
+    kilobyte_string += "a";
+  }
+  return scoped_ptr<Value>(Value::CreateStringValue(kilobyte_string));
+}
+
+// Creates a megabyte of data.
+scoped_ptr<Value> CreateMegabyte() {
+  ListValue* megabyte = new ListValue();
+  for (int i = 0; i < 1000; ++i) {
+    megabyte->Append(CreateKilobyte().release());
+  }
+  return scoped_ptr<Value>(megabyte);
+}
 
 }
 
@@ -197,6 +218,91 @@ TEST_F(ExtensionSettingsFrontendTest,
   EXPECT_TRUE(storage->Clear().HasError());
   EXPECT_TRUE(storage->Set(DEFAULTS, "foo", bar).HasError());
   EXPECT_TRUE(storage->Remove("foo").HasError());
+}
+
+TEST_F(ExtensionSettingsFrontendTest,
+    QuotaLimitsEnforcedCorrectlyForSyncAndLocal) {
+  const std::string id = "ext";
+  profile_->GetMockExtensionService()->AddExtensionWithId(
+      id, Extension::TYPE_EXTENSION);
+
+  SettingsStorage* sync_storage = GetStorage(id, SYNC, frontend_.get());
+  SettingsStorage* local_storage = GetStorage(id, LOCAL, frontend_.get());
+
+  // Sync storage should run out after ~100K.
+  scoped_ptr<Value> kilobyte = CreateKilobyte();
+  for (int i = 0; i < 100; ++i) {
+    sync_storage->Set(
+        SettingsStorage::DEFAULTS, base::StringPrintf("%d", i), *kilobyte);
+  }
+
+  EXPECT_TRUE(sync_storage->Set(
+      SettingsStorage::DEFAULTS, "WillError", *kilobyte).HasError());
+
+  // Local storage shouldn't run out after ~100K.
+  for (int i = 0; i < 100; ++i) {
+    local_storage->Set(
+        SettingsStorage::DEFAULTS, base::StringPrintf("%d", i), *kilobyte);
+  }
+
+  EXPECT_FALSE(local_storage->Set(
+      SettingsStorage::DEFAULTS, "WontError", *kilobyte).HasError());
+
+  // Local storage should run out after ~5MB.
+  scoped_ptr<Value> megabyte = CreateMegabyte();
+  for (int i = 0; i < 5; ++i) {
+    local_storage->Set(
+        SettingsStorage::DEFAULTS, base::StringPrintf("%d", i), *megabyte);
+  }
+
+  EXPECT_TRUE(local_storage->Set(
+      SettingsStorage::DEFAULTS, "WillError", *megabyte).HasError());
+}
+
+// In other tests, we assume that the result of GetStorage is a pointer to the
+// a Storage owned by a Frontend object, but for the unlimitedStorage case, this
+// might not be true. So, write the tests in a "callback" style.
+// We should really rewrite all tests to be asynchronous in this way.
+
+static void UnlimitedSyncStorageTestCallback(SettingsStorage* sync_storage) {
+  // Sync storage should still run out after ~100K; the unlimitedStorage
+  // permission can't apply to sync.
+  scoped_ptr<Value> kilobyte = CreateKilobyte();
+  for (int i = 0; i < 100; ++i) {
+    sync_storage->Set(
+        SettingsStorage::DEFAULTS, base::StringPrintf("%d", i), *kilobyte);
+  }
+
+  EXPECT_TRUE(sync_storage->Set(
+      SettingsStorage::DEFAULTS, "WillError", *kilobyte).HasError());
+}
+
+static void UnlimitedLocalStorageTestCallback(SettingsStorage* local_storage) {
+  // Local storage should never run out.
+  scoped_ptr<Value> megabyte = CreateMegabyte();
+  for (int i = 0; i < 7; ++i) {
+    local_storage->Set(
+        SettingsStorage::DEFAULTS, base::StringPrintf("%d", i), *megabyte);
+  }
+
+  EXPECT_FALSE(local_storage->Set(
+      SettingsStorage::DEFAULTS, "WontError", *megabyte).HasError());
+}
+
+TEST_F(ExtensionSettingsFrontendTest,
+    UnlimitedStorageForLocalButNotSync) {
+  const std::string id = "ext";
+  std::set<std::string> permissions;
+  permissions.insert("unlimitedStorage");
+  profile_->GetMockExtensionService()->AddExtensionWithIdAndPermissions(
+      id, Extension::TYPE_EXTENSION, permissions);
+
+  frontend_->RunWithStorage(
+      id, SYNC, base::Bind(&UnlimitedSyncStorageTestCallback));
+  frontend_->RunWithStorage(
+      id, LOCAL, base::Bind(&UnlimitedLocalStorageTestCallback));
+
+  MessageLoop::current()->RunAllPending();
 }
 
 }  // namespace extensions

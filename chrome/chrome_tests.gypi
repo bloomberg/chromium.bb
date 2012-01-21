@@ -1463,7 +1463,6 @@
         'browser/extensions/settings/settings_frontend_unittest.cc',
         'browser/extensions/settings/settings_leveldb_storage_unittest.cc',
         'browser/extensions/settings/settings_quota_unittest.cc',
-        'browser/extensions/settings/settings_storage_cache_unittest.cc',
         'browser/extensions/settings/settings_storage_unittest.cc',
         'browser/extensions/settings/settings_storage_unittest.h',
         'browser/extensions/settings/settings_sync_unittest.cc',
