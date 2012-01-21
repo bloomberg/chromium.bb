@@ -35,18 +35,18 @@ class ModulePpapi : public pp::Module {
 
   virtual bool Init() {
     // Ask the browser for an interface which provides missing functions
-    const PPB_NaCl_Private* ptr = reinterpret_cast<const PPB_NaCl_Private*>(
+    private_interface_ = reinterpret_cast<const PPB_NaCl_Private*>(
         GetBrowserInterface(PPB_NACL_PRIVATE_INTERFACE));
 
-    if (NULL == ptr) {
+    if (NULL == private_interface_) {
       MODULE_PRINTF(("ModulePpapi::Init failed: "
                      "GetBrowserInterface returned NULL\n"));
       return false;
     }
 
     launch_nacl_process = reinterpret_cast<LaunchNaClProcessFunc>(
-        ptr->LaunchSelLdr);
-    get_urandom_fd = ptr->UrandomFD;
+        private_interface_->LaunchSelLdr);
+    get_urandom_fd = private_interface_->UrandomFD;
 
     // In the plugin, we don't need high resolution time of day.
     NaClAllowLowResolutionTimeOfDay();
@@ -63,6 +63,9 @@ class ModulePpapi : public pp::Module {
   virtual pp::Instance* CreateInstance(PP_Instance pp_instance) {
     MODULE_PRINTF(("ModulePpapi::CreateInstance (pp_instance=%"NACL_PRId32")\n",
                    pp_instance));
+    // This must be called from here rather than Init, as it relies on
+    // chrome state that is not set at the time Init runs.
+    private_interface_->EnableBackgroundSelLdrLaunch();
     Plugin* plugin = Plugin::New(pp_instance);
     MODULE_PRINTF(("ModulePpapi::CreateInstance (return %p)\n",
                    static_cast<void* >(plugin)));
@@ -71,6 +74,7 @@ class ModulePpapi : public pp::Module {
 
  private:
   bool init_was_successful_;
+  const PPB_NaCl_Private* private_interface_;
 };
 
 }  // namespace plugin

@@ -16,7 +16,8 @@ struct PPB_NaCl_Private {
   // write |socket_count| nacl::Handles to imc_handles and will write the
   // nacl::Handle of the created process to |nacl_process_handle|.  Finally,
   // the function will write the process ID of the created process to
-  // |nacl_process_id|.
+  // |nacl_process_id|.  Unless EnableBackgroundSelLdrLaunch is called, this
+  // method must be invoked from the main thread.
   bool (*LaunchSelLdr)(const char* alleged_url, int socket_count,
                        void* imc_handles, void* nacl_process_handle,
                        int* nacl_process_id);
@@ -29,6 +30,9 @@ struct PPB_NaCl_Private {
   // proxy. This is so paranoid admins can effectively prevent untrusted shader
   // code to be processed by the graphics stack.
   bool (*Are3DInterfacesDisabled)();
+
+  // Enables the creation of sel_ldr processes from other than the main thread.
+  void (*EnableBackgroundSelLdrLaunch)();
 };
 
 #endif  // PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_

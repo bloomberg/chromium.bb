@@ -67,6 +67,10 @@ std::string MockRenderThread::GetLocale() {
   return std::string();
 }
 
+IPC::SyncMessageFilter* MockRenderThread::GetSyncMessageFilter() {
+  return NULL;
+}
+
 void MockRenderThread::AddRoute(int32 routing_id,
                                 IPC::Channel::Listener* listener) {
   EXPECT_EQ(routing_id_, routing_id);

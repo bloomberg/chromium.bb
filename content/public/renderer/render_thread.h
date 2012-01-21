@@ -18,6 +18,7 @@ class MessageLoop;
 
 namespace IPC {
 class SyncChannel;
+class SyncMessageFilter;
 }
 
 namespace v8 {
@@ -41,6 +42,7 @@ class CONTENT_EXPORT RenderThread : public IPC::Message::Sender {
   virtual MessageLoop* GetMessageLoop() = 0;
   virtual IPC::SyncChannel* GetChannel() = 0;
   virtual std::string GetLocale() = 0;
+  virtual IPC::SyncMessageFilter* GetSyncMessageFilter() = 0;
 
   // Called to add or remove a listener for a particular message routing ID.
   // These methods normally get delegated to a MessageRouter.
