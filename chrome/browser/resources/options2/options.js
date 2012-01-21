@@ -62,25 +62,53 @@ function load() {
 
   localStrings = new LocalStrings();
 
+  // Top level pages.
   OptionsPage.register(SearchPage.getInstance());
   OptionsPage.register(BrowserOptions.getInstance());
 
-  OptionsPage.registerSubPage(SearchEngineManager.getInstance(),
-                              BrowserOptions.getInstance(),
-                              [$('defaultSearchManageEnginesButton')]);
+  // BrowserOptions sub-pages.
   OptionsPage.registerSubPage(AdvancedOptions.getInstance(),
                               BrowserOptions.getInstance(),
                               [$('advancedOptionsButton')]);
+  OptionsPage.registerSubPage(SearchEngineManager.getInstance(),
+                              BrowserOptions.getInstance(),
+                              [$('defaultSearchManageEnginesButton')]);
   if (cr.isChromeOS) {
     OptionsPage.registerSubPage(AccountsOptions.getInstance(),
                                 BrowserOptions.getInstance(),
                                 [$('manage-accounts-button')]);
+    OptionsPage.registerSubPage(ChangePictureOptions.getInstance(),
+                                BrowserOptions.getInstance(),
+                                [$('change-picture-button')]);
     OptionsPage.registerSubPage(InternetOptions.getInstance(),
                                 BrowserOptions.getInstance(),
                                 [$('internet-options-button')]);
-    OptionsPage.registerSubPage(LanguageOptions.getInstance(),
+  }
+
+  // AdvancedOptions sub-pages.
+  OptionsPage.registerSubPage(AutofillOptions.getInstance(),
+                              AdvancedOptions.getInstance(),
+                              [$('autofill-settings')]);
+  OptionsPage.registerSubPage(PasswordManager.getInstance(),
+                              AdvancedOptions.getInstance(),
+                              [$('manage-passwords')]);
+  OptionsPage.registerSubPage(ContentSettings.getInstance(),
+                              AdvancedOptions.getInstance(),
+                              [$('privacyContentSettingsButton')]);
+  OptionsPage.registerSubPage(FontSettings.getInstance(),
+                              AdvancedOptions.getInstance(),
+                              [$('fontSettingsCustomizeFontsButton')]);
+  OptionsPage.registerSubPage(LanguageOptions.getInstance(),
+                              AdvancedOptions.getInstance(),
+                              [$('language-button')]);
+  if (!cr.isWindows && !cr.isMac) {
+    OptionsPage.registerSubPage(CertificateManager.getInstance(),
                                 AdvancedOptions.getInstance(),
-                                [$('language-button')]);
+                                [$('certificatesManageButton')]);
+  }
+
+  // LanguageOptions sub-pages.
+  if (cr.isChromeOS) {
     OptionsPage.registerSubPage(
         new OptionsPage('languageChewing',
                         templateData.languageChewingPageTabTitle,
@@ -109,23 +137,15 @@ function load() {
                                   LanguageOptions.getInstance());
     }
   }
-  OptionsPage.registerSubPage(AutofillOptions.getInstance(),
-                              AdvancedOptions.getInstance(),
-                              [$('autofill-settings')]);
-  OptionsPage.registerSubPage(PasswordManager.getInstance(),
-                              AdvancedOptions.getInstance(),
-                              [$('manage-passwords')]);
-  OptionsPage.registerSubPage(ContentSettings.getInstance(),
-                              AdvancedOptions.getInstance(),
-                              [$('privacyContentSettingsButton')]);
+
+  // ContentSettings sub-pages.
   OptionsPage.registerSubPage(ContentSettingsExceptionsArea.getInstance(),
                               ContentSettings.getInstance());
   OptionsPage.registerSubPage(CookiesView.getInstance(),
                               ContentSettings.getInstance(),
                               [$('privacyContentSettingsButton'),
                                $('show-cookies-button')]);
-  // If HandlerOptions is null it means it got compiled out.
-  if (HandlerOptions) {
+  if (HandlerOptions && $('manage-handlers-button')) {
     OptionsPage.registerSubPage(HandlerOptions.getInstance(),
                                 ContentSettings.getInstance(),
                                 [$('manage-handlers-button')]);
@@ -135,22 +155,14 @@ function load() {
                                 ContentSettings.getInstance(),
                                 [$('manage-intents-button')]);
   }
-  OptionsPage.registerSubPage(FontSettings.getInstance(),
-                              AdvancedOptions.getInstance(),
-                              [$('fontSettingsCustomizeFontsButton')]);
-  if (!cr.isWindows && !cr.isMac) {
-    OptionsPage.registerSubPage(CertificateManager.getInstance(),
-                                AdvancedOptions.getInstance(),
-                                [$('certificatesManageButton')]);
-    OptionsPage.registerOverlay(CertificateRestoreOverlay.getInstance(),
-                                CertificateManager.getInstance());
-    OptionsPage.registerOverlay(CertificateBackupOverlay.getInstance(),
-                                CertificateManager.getInstance());
-    OptionsPage.registerOverlay(CertificateEditCaTrustOverlay.getInstance(),
-                                CertificateManager.getInstance());
-    OptionsPage.registerOverlay(CertificateImportErrorOverlay.getInstance(),
-                                CertificateManager.getInstance());
+
+  // InternetOptions sub-pages.
+  if (cr.isChromeOS) {
+    OptionsPage.registerSubPage(ProxyOptions.getInstance(),
+                                InternetOptions.getInstance());
   }
+
+  // Overlays.
   OptionsPage.registerOverlay(AddLanguageOverlay.getInstance(),
                               LanguageOptions.getInstance());
   OptionsPage.registerOverlay(AlertOverlay.getInstance());
@@ -168,19 +180,18 @@ function load() {
                               BrowserOptions.getInstance());
   OptionsPage.registerOverlay(InstantConfirmOverlay.getInstance(),
                               BrowserOptions.getInstance());
-  OptionsPage.registerOverlay(SyncSetupOverlay.getInstance(),
-                              BrowserOptions.getInstance());
   OptionsPage.registerOverlay(ManageProfileOverlay.getInstance(),
                               BrowserOptions.getInstance());
   OptionsPage.registerOverlay(StartupOverlay.getInstance(),
                               BrowserOptions.getInstance());
-
+  OptionsPage.registerOverlay(SyncSetupOverlay.getInstance(),
+                              BrowserOptions.getInstance());
   if (cr.isChromeOS) {
-    OptionsPage.registerSubPage(ProxyOptions.getInstance(),
-                                InternetOptions.getInstance());
-    OptionsPage.registerSubPage(ChangePictureOptions.getInstance(),
-                                BrowserOptions.getInstance(),
-                                [$('change-picture-button')]);
+    OptionsPage.registerOverlay(BluetoothOptions.getInstance(),
+                                AdvancedOptions.getInstance(),
+                                [$('bluetooth-add-device')]);
+    OptionsPage.registerOverlay(BluetoothPairing.getInstance(),
+                                AdvancedOptions.getInstance());
     OptionsPage.registerOverlay(DetailsInternetPage.getInstance(),
                                 InternetOptions.getInstance());
     OptionsPage.registerOverlay(KeyboardOverlay.getInstance(),
@@ -189,11 +200,18 @@ function load() {
     OptionsPage.registerOverlay(PointerOverlay.getInstance(),
                                 BrowserOptions.getInstance(),
                                 [$('pointer-settings-button')]);
-    OptionsPage.registerOverlay(BluetoothOptions.getInstance(),
-                                AdvancedOptions.getInstance(),
-                                [$('bluetooth-add-device')]);
-    OptionsPage.registerOverlay(BluetoothPairing.getInstance(),
-                                AdvancedOptions.getInstance());
+    OptionsPage.registerSubPage(ProxyOptions.getInstance(),
+                                InternetOptions.getInstance());
+  }
+  if (!cr.isWindows && !cr.isMac) {
+    OptionsPage.registerOverlay(CertificateBackupOverlay.getInstance(),
+                                CertificateManager.getInstance());
+    OptionsPage.registerOverlay(CertificateEditCaTrustOverlay.getInstance(),
+                                CertificateManager.getInstance());
+    OptionsPage.registerOverlay(CertificateImportErrorOverlay.getInstance(),
+                                CertificateManager.getInstance());
+    OptionsPage.registerOverlay(CertificateRestoreOverlay.getInstance(),
+                                CertificateManager.getInstance());
   }
 
   Preferences.getInstance().initialize();
