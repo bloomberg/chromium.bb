@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -98,6 +98,38 @@ TEST_F(ServerLogEntryTest, AddHostFields) {
 #elif defined(OS_LINUX)
   key_value_pairs["os-name"] = "Linux";
 #endif
+  ASSERT_TRUE(VerifyStanza(key_value_pairs, keys, stanza.get(), &error)) <<
+      error;
+}
+
+TEST_F(ServerLogEntryTest, AddModeField1) {
+  scoped_ptr<ServerLogEntry> entry(
+      ServerLogEntry::MakeSessionStateChange(true));
+  entry->AddModeField(ServerLogEntry::IT2ME);
+  scoped_ptr<XmlElement> stanza(entry->ToStanza());
+  std::string error;
+  std::map<std::string, std::string> key_value_pairs;
+  key_value_pairs["role"] = "host";
+  key_value_pairs["event-name"] = "session-state";
+  key_value_pairs["session-state"] = "connected";
+  key_value_pairs["mode"] = "it2me";
+  std::set<std::string> keys;
+  ASSERT_TRUE(VerifyStanza(key_value_pairs, keys, stanza.get(), &error)) <<
+      error;
+}
+
+TEST_F(ServerLogEntryTest, AddModeField2) {
+  scoped_ptr<ServerLogEntry> entry(
+      ServerLogEntry::MakeSessionStateChange(true));
+  entry->AddModeField(ServerLogEntry::ME2ME);
+  scoped_ptr<XmlElement> stanza(entry->ToStanza());
+  std::string error;
+  std::map<std::string, std::string> key_value_pairs;
+  key_value_pairs["role"] = "host";
+  key_value_pairs["event-name"] = "session-state";
+  key_value_pairs["session-state"] = "connected";
+  key_value_pairs["mode"] = "me2me";
+  std::set<std::string> keys;
   ASSERT_TRUE(VerifyStanza(key_value_pairs, keys, stanza.get(), &error)) <<
       error;
 }

@@ -25,8 +25,10 @@ const char kLogCommand[] = "log";
 }  // namespace
 
 LogToServer::LogToServer(ChromotingHost* host,
+                         ServerLogEntry::Mode mode,
                          SignalStrategy* signal_strategy)
     : host_(host),
+      mode_(mode),
       signal_strategy_(signal_strategy) {
   signal_strategy_->AddListener(this);
 
@@ -47,6 +49,7 @@ void LogToServer::LogSessionStateChange(bool connected) {
   scoped_ptr<ServerLogEntry> entry(ServerLogEntry::MakeSessionStateChange(
       connected));
   entry->AddHostFields();
+  entry->AddModeField(mode_);
   Log(*entry.get());
 }
 

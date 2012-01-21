@@ -176,7 +176,8 @@ class HostProcess {
     heartbeat_sender_.reset(
         new HeartbeatSender(host_id_, signal_strategy_.get(), &key_pair_));
 
-    log_to_server_.reset(new LogToServer(host_, signal_strategy_.get()));
+    log_to_server_.reset(
+        new LogToServer(host_, ServerLogEntry::ME2ME, signal_strategy_.get()));
     host_event_logger_.reset(new HostEventLogger(host_, kApplicationName));
 
     host_->Start();

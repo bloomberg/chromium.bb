@@ -35,6 +35,7 @@ class LogToServer : public base::NonThreadSafe,
                     public SignalStrategy::Listener {
  public:
   explicit LogToServer(ChromotingHost* host,
+                       ServerLogEntry::Mode mode,
                        SignalStrategy* signal_strategy);
   virtual ~LogToServer();
 
@@ -57,6 +58,7 @@ class LogToServer : public base::NonThreadSafe,
   void SendPendingEntries();
 
   scoped_refptr<ChromotingHost> host_;
+  ServerLogEntry::Mode mode_;
   SignalStrategy* signal_strategy_;
   scoped_ptr<IqSender> iq_sender_;
   std::deque<ServerLogEntry> pending_entries_;

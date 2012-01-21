@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,6 +24,10 @@ const char kValueEventNameSessionState[] = "session-state";
 
 const char kKeyRole[] = "role";
 const char kValueRoleHost[] = "host";
+
+const char kKeyMode[] = "mode";
+const char kValueModeIt2Me[] = "it2me";
+const char kValueModeMe2Me[] = "me2me";
 
 const char kKeySessionState[] = "session-state";
 const char kValueSessionStateConnected[] = "connected";
@@ -81,6 +85,22 @@ void ServerLogEntry::AddHostFields() {
 
   Set(kKeyCpu, SysInfo::CPUArchitecture().c_str());
 };
+
+void ServerLogEntry::AddModeField(ServerLogEntry::Mode mode) {
+  Set(kKeyMode, GetValueMode(mode));
+}
+
+const char* ServerLogEntry::GetValueMode(ServerLogEntry::Mode mode) {
+  switch(mode) {
+    case IT2ME:
+      return kValueModeIt2Me;
+    case ME2ME:
+      return kValueModeMe2Me;
+    default:
+      NOTREACHED();
+      return NULL;
+  }
+}
 
 XmlElement* ServerLogEntry::ToStanza() const {
   XmlElement* stanza = new XmlElement(QName(
