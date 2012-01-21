@@ -194,7 +194,7 @@ void VideoCaptureModuleImpl::OnBufferReadyOnCaptureThread(
       static_cast<WebRtc_Word32>(buf->buffer_size),
       frameInfo_,
       static_cast<WebRtc_Word64>(
-          (buf->timestamp - start_time_).InMicroseconds()));
+          (buf->timestamp - start_time_).InMilliseconds()));
 
   capture->FeedBuffer(buf);
 }
