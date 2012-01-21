@@ -82,6 +82,8 @@
           # IDR_BITMAP_BRUSH_IMAGE.
           'dependencies': [
             '<(DEPTH)/ui/ui.gyp:gfx_resources',
+            '<(DEPTH)/third_party/angle/src/build_angle.gyp:libEGL',
+            '<(DEPTH)/third_party/angle/src/build_angle.gyp:libGLESv2',
           ],
           'link_settings': {
             'libraries': [
