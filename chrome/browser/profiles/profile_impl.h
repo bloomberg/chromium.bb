@@ -216,14 +216,12 @@ class ProfileImpl : public Profile,
   scoped_ptr<PrefService> otr_prefs_;
   scoped_ptr<VisitedLinkEventListener> visited_link_event_listener_;
   scoped_ptr<VisitedLinkMaster> visited_link_master_;
+  ProfileImplIOData::Handle io_data_;
   // Keep extension_prefs_ on top of extension_service_ because the latter
   // maintains a pointer to the first and shall be destructed first.
   scoped_ptr<ExtensionPrefs> extension_prefs_;
   scoped_ptr<ExtensionService> extension_service_;
   scoped_refptr<UserScriptMaster> user_script_master_;
-
-  ProfileImplIOData::Handle io_data_;
-
   scoped_refptr<ExtensionDevToolsManager> extension_devtools_manager_;
   // extension_info_map_ needs to outlive extension_process_manager_.
   scoped_refptr<ExtensionInfoMap> extension_info_map_;

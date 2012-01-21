@@ -777,6 +777,8 @@ void ProfileImpl::OnPrefsLoaded(bool success) {
       prefs_->GetBoolean(prefs::kDisableExtensions) ||
       CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableExtensions);
 
+  ProfileDependencyManager::GetInstance()->CreateProfileServices(this, false);
+
   // Ensure that preferences set by extensions are restored in the profile
   // as early as possible. The constructor takes care of that.
   extension_prefs_.reset(new ExtensionPrefs(
@@ -784,8 +786,6 @@ void ProfileImpl::OnPrefsLoaded(bool success) {
       GetPath().AppendASCII(ExtensionService::kInstallDirectoryName),
       GetExtensionPrefValueMap()));
   extension_prefs_->Init(extensions_disabled);
-
-  ProfileDependencyManager::GetInstance()->CreateProfileServices(this, false);
 
   DCHECK(!net_pref_observer_.get());
   net_pref_observer_.reset(new NetPrefObserver(
