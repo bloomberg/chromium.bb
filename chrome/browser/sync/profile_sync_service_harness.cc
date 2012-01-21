@@ -20,9 +20,9 @@
 #include "base/memory/ref_counted.h"
 #include "base/message_loop.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/sync/glue/data_type_controller.h"
 #include "chrome/browser/sync/sessions/session_state.h"
+#include "chrome/browser/sync/signin_manager.h"
 #include "chrome/browser/sync/sync_ui_util.h"
 
 using browser_sync::sessions::SyncSessionSnapshot;

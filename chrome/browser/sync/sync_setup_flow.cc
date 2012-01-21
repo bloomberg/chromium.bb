@@ -14,7 +14,6 @@
 #include "base/values.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/sync_setup_flow_handler.h"
 #include "chrome/browser/sync/syncable/model_type.h"
@@ -239,15 +238,17 @@ SyncSetupFlow* SyncSetupFlow::Run(ProfileSyncService* service,
   return new SyncSetupFlow(start, end, container, service);
 }
 
-void SyncSetupFlow::GetArgsForGaiaLogin(DictionaryValue* args) {
-  const GoogleServiceAuthError& error = service_->GetAuthError();
-  if (!last_attempted_user_email_.empty()) {
-    args->SetString("user", last_attempted_user_email_);
+// static
+void SyncSetupFlow::GetArgsForGaiaLogin(const ProfileSyncService* service,
+                                        DictionaryValue* args) {
+  const GoogleServiceAuthError& error = service->GetAuthError();
+  if (!service->last_attempted_user_email().empty()) {
+    args->SetString("user", service->last_attempted_user_email());
     args->SetInteger("error", error.state());
     args->SetBoolean("editable_user", true);
   } else {
     string16 user;
-    user = UTF8ToUTF16(service_->profile()->GetPrefs()->GetString(
+    user = UTF8ToUTF16(service->profile()->GetPrefs()->GetString(
         prefs::kGoogleServicesUsername));
     args->SetString("user", user);
     args->SetInteger("error", 0);
@@ -257,20 +258,21 @@ void SyncSetupFlow::GetArgsForGaiaLogin(DictionaryValue* args) {
   args->SetString("captchaUrl", error.captcha().image_url.spec());
 }
 
-void SyncSetupFlow::GetArgsForConfigure(DictionaryValue* args) {
+void SyncSetupFlow::GetArgsForConfigure(ProfileSyncService* service,
+                                        DictionaryValue* args) {
   // The SYNC_EVERYTHING case will set this to true.
   args->SetBoolean("showSyncEverythingPage", false);
 
   args->SetBoolean("syncAllDataTypes",
-      service_->profile()->GetPrefs()->GetBoolean(
+      service->profile()->GetPrefs()->GetBoolean(
           prefs::kSyncKeepEverythingSynced));
 
   // Bookmarks, Preferences, and Themes are launched for good, there's no
   // going back now.  Check if the other data types are registered though.
   const syncable::ModelTypeSet registered_types =
-      service_->GetRegisteredDataTypes();
+      service->GetRegisteredDataTypes();
   const syncable::ModelTypeSet preferred_types =
-      service_->GetPreferredDataTypes();
+      service->GetPreferredDataTypes();
   args->SetBoolean("passwordsRegistered",
       registered_types.Has(syncable::PASSWORDS));
   args->SetBoolean("autofillRegistered",
@@ -306,21 +308,23 @@ void SyncSetupFlow::GetArgsForConfigure(DictionaryValue* args) {
       !CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableSyncEncryption));
 
-  bool encrypt_all = service_->EncryptEverythingEnabled();
-  if (service_->encryption_pending())
+  bool encrypt_all = service->EncryptEverythingEnabled();
+  if (service->encryption_pending())
     encrypt_all = true;
   args->SetBoolean("encryptAllData", encrypt_all);
 
   // Load the parameters for the encryption tab.
-  args->SetBoolean("usePassphrase", service_->IsUsingSecondaryPassphrase());
+  args->SetBoolean("usePassphrase", service->IsUsingSecondaryPassphrase());
 
   // Determine if we need a passphrase or not, and if so, prompt the user.
-  if (service_->IsPassphraseRequiredForDecryption()) {
-    // We need a passphrase, so we have to prompt the user.
+  if (service->IsPassphraseRequiredForDecryption() &&
+      (service->IsUsingSecondaryPassphrase() || cached_passphrase_.empty())) {
+    // We need a passphrase, and either it's an explicit passphrase, or we
+    // don't have a cached gaia passphrase, so we have to prompt the user.
     args->SetBoolean("show_passphrase", true);
     // Tell the UI layer what kind of passphrase we need.
     args->SetBoolean("need_google_passphrase",
-                     !service_->IsUsingSecondaryPassphrase());
+                     !service->IsUsingSecondaryPassphrase());
     args->SetBoolean("passphrase_creation_rejected",
                      user_tried_creating_explicit_passphrase_);
     args->SetBoolean("passphrase_setting_rejected",
@@ -399,7 +403,6 @@ void SyncSetupFlow::OnDialogClosed(const std::string& json_retval) {
       break;
   }
 
-  service_->SetUIShouldDepictAuthInProgress(false);
   service_->OnUserCancelledDialog();
   delete this;
 }
@@ -408,27 +411,16 @@ void SyncSetupFlow::OnUserSubmittedAuth(const std::string& username,
                                         const std::string& password,
                                         const std::string& captcha,
                                         const std::string& access_code) {
-  last_attempted_user_email_ = username;
-  service_->SetUIShouldDepictAuthInProgress(true);
-
-  // If we're just being called to provide an ASP, then pass it to the
-  // SigninManager and wait for the next step.
-  if (!access_code.empty()) {
-    service_->signin()->ProvideSecondFactorAccessCode(access_code);
-    return;
-  }
-
-  // Kick off a sign-in through the signin manager.
-  SigninManager* signin = service_->signin();
-  signin->StartSignIn(username,
-                      password,
-                      signin->GetLoginAuthError().captcha().token,
-                      captcha);
+  // It's possible to receive an empty password (e.g. for ASP's), in which case
+  // we don't want to overwrite any previously cached password.
+  if (!password.empty())
+    cached_passphrase_ = password;
+  service_->OnUserSubmittedAuth(username, password, captcha, access_code);
 }
 
 void SyncSetupFlow::OnUserSubmittedOAuth(
     const std::string& oauth1_request_token) {
-  service_->signin()->StartOAuthSignIn(oauth1_request_token);
+  service_->OnUserSubmittedOAuth(oauth1_request_token);
 }
 
 void SyncSetupFlow::OnUserConfigured(const SyncConfiguration& configuration) {
@@ -453,6 +445,22 @@ void SyncSetupFlow::OnUserConfigured(const SyncConfiguration& configuration) {
     // report an error if the passphrase setting failed.
     user_tried_setting_passphrase_ = true;
     set_new_decryption_passphrase = true;
+  } else if (!service_->IsUsingSecondaryPassphrase() &&
+             !cached_passphrase_.empty()) {
+    // Service needs a GAIA passphrase and we have one cached, so try it.
+    service_->SetPassphrase(cached_passphrase_, false);
+    cached_passphrase_.clear();
+    set_new_decryption_passphrase = true;
+  } else {
+    // We can get here if the user changes their GAIA passphrase but still has
+    // data encrypted with the old passphrase. The UI prompts the user for their
+    // passphrase, but they might just leave it blank/disable the encrypted
+    // types.
+    // No gaia passphrase cached or set, so make sure the ProfileSyncService
+    // wasn't expecting one.
+    DLOG_IF(WARNING, !service_->IsUsingSecondaryPassphrase() &&
+            service_->IsPassphraseRequiredForDecryption()) <<
+        "Google passphrase required but not provided by UI";
   }
 
   // Set the secondary passphrase, either as a decryption passphrase, or
@@ -575,14 +583,23 @@ void SyncSetupFlow::ActivateState(SyncSetupWizard::State state) {
     }
     case SyncSetupWizard::GAIA_LOGIN: {
       DictionaryValue args;
-      GetArgsForGaiaLogin(&args);
+      SyncSetupFlow::GetArgsForGaiaLogin(service_, &args);
       flow_handler_->ShowGaiaLogin(args);
       break;
     }
     case SyncSetupWizard::GAIA_SUCCESS:
-      // Authentication is complete now.
-      service_->SetUIShouldDepictAuthInProgress(false);
       if (end_state_ == SyncSetupWizard::GAIA_SUCCESS) {
+        // The user has just re-authed - set the passphrase so we can re-encrypt
+        // if necessary. If we are currently encrypting with an explicit
+        // passphrase, this does nothing.
+        // TODO(atwilson): Move all the code dealing with the implicit GAIA
+        // passphrase back into ProfileSyncService in a
+        // NOTIFICATION_GOOGLE_SIGNIN_SUCCESSFUL listener once we get rid of
+        // SyncSetupFlow.
+        if (!cached_passphrase_.empty()) {
+          service_->SetPassphrase(cached_passphrase_, false);
+          cached_passphrase_.clear();
+        }
         flow_handler_->ShowGaiaSuccessAndClose();
         break;
       }
@@ -590,20 +607,21 @@ void SyncSetupFlow::ActivateState(SyncSetupWizard::State state) {
       break;
     case SyncSetupWizard::SYNC_EVERYTHING: {
       DictionaryValue args;
-      GetArgsForConfigure(&args);
+      SyncSetupFlow::GetArgsForConfigure(service_, &args);
       args.SetBoolean("showSyncEverythingPage", true);
       flow_handler_->ShowConfigure(args);
       break;
     }
     case SyncSetupWizard::CONFIGURE: {
       DictionaryValue args;
-      GetArgsForConfigure(&args);
+      SyncSetupFlow::GetArgsForConfigure(service_, &args);
       flow_handler_->ShowConfigure(args);
       break;
     }
     case SyncSetupWizard::ENTER_PASSPHRASE: {
       DictionaryValue args;
-      GetArgsForConfigure(&args);
+      SyncSetupFlow::GetArgsForConfigure(service_, &args);
+      GetArgsForConfigure(service_, &args);
       // TODO(atwilson): Remove ShowPassphraseEntry in favor of using
       // ShowConfigure() - http://crbug.com/90786.
       flow_handler_->ShowPassphraseEntry(args);
@@ -614,7 +632,7 @@ void SyncSetupFlow::ActivateState(SyncSetupWizard::State state) {
       // SyncSetupFlowHandler (crbug.com/92722) but for now just transition
       // to the login state with a special error code.
       DictionaryValue args;
-      GetArgsForGaiaLogin(&args);
+      SyncSetupFlow::GetArgsForGaiaLogin(service_, &args);
       args.SetInteger("error", GoogleServiceAuthError::SERVICE_UNAVAILABLE);
       current_state_ = SyncSetupWizard::GAIA_LOGIN;
       flow_handler_->ShowGaiaLogin(args);
@@ -629,7 +647,7 @@ void SyncSetupFlow::ActivateState(SyncSetupWizard::State state) {
       // TODO(sync): Update this error handling to allow different platforms to
       // display the error appropriately (http://crbug.com/92722).
       DictionaryValue args;
-      GetArgsForGaiaLogin(&args);
+      SyncSetupFlow::GetArgsForGaiaLogin(service_, &args);
       args.SetBoolean("fatalError", true);
       current_state_ = SyncSetupWizard::GAIA_LOGIN;
       flow_handler_->ShowGaiaLogin(args);

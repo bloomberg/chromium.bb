@@ -6,15 +6,13 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
+#include "chrome/browser/net/gaia/token_service.h"
 #include "chrome/browser/prefs/pref_service.h"
-#include "chrome/browser/signin/signin_manager.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
-#include "chrome/browser/signin/signin_manager_fake.h"
-#include "chrome/browser/signin/token_service.h"
 #include "chrome/browser/sync/glue/data_type_manager.h"
 #include "chrome/browser/sync/glue/data_type_manager_mock.h"
 #include "chrome/browser/sync/profile_sync_components_factory_mock.h"
 #include "chrome/browser/sync/profile_sync_test_util.h"
+#include "chrome/browser/sync/signin_manager_fake.h"
 #include "chrome/browser/sync/test_profile_sync_service.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/net/gaia/gaia_auth_consumer.h"
@@ -71,10 +69,6 @@ class ProfileSyncServiceStartupTest : public testing::Test {
  protected:
   // Overridden below by ProfileSyncServiceStartupCrosTest.
   virtual void CreateSyncService() {
-    SigninManager* signin = static_cast<SigninManager*>(
-      SigninManagerFactory::GetInstance()->SetTestingFactoryAndUse(
-          profile_.get(), FakeSigninManager::Build));
-    signin->SetAuthenticatedUsername("test_user");
     service_.reset(new TestProfileSyncService(
         new ProfileSyncComponentsFactoryMock(),
         profile_.get(),
@@ -107,7 +101,7 @@ class ProfileSyncServiceStartupTest : public testing::Test {
 class ProfileSyncServiceStartupCrosTest : public ProfileSyncServiceStartupTest {
  protected:
   virtual void CreateSyncService() {
-    SigninManager* signin = SigninManagerFactory::GetForProfile(profile_.get());
+    SigninManager* signin = new SigninManager();
     signin->SetAuthenticatedUsername("test_user");
     service_.reset(new TestProfileSyncService(
         new ProfileSyncComponentsFactoryMock(),
@@ -125,9 +119,6 @@ TEST_F(ProfileSyncServiceStartupTest, StartFirstTime) {
 
   // We've never completed startup.
   profile_->GetPrefs()->ClearPref(prefs::kSyncHasSetupCompleted);
-  // Make sure SigninManager doesn't think we're signed in (undoes the call to
-  // SetAuthenticatedUsername() in CreateSyncService()).
-  SigninManagerFactory::GetForProfile(profile_.get())->SignOut();
 
   // Should not actually start, rather just clean things up and wait
   // to be enabled.
@@ -149,7 +140,7 @@ TEST_F(ProfileSyncServiceStartupTest, StartFirstTime) {
 
   // Create some tokens in the token service; the service will startup when
   // it is notified that tokens are available.
-  service_->signin()->StartSignIn("test_user", "", "", "");
+  service_->OnUserSubmittedAuth("test_user", "", "", "");
   profile_->GetTokenService()->IssueAuthTokenForTest(
       GaiaConstants::kSyncService, "sync_token");
   profile_->GetTokenService()->IssueAuthTokenForTest(

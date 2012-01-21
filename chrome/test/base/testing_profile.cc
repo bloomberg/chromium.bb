@@ -25,6 +25,7 @@
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_backend.h"
 #include "chrome/browser/history/top_sites.h"
+#include "chrome/browser/net/gaia/token_service.h"
 #include "chrome/browser/net/proxy_service_factory.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
@@ -35,7 +36,6 @@
 #include "chrome/browser/search_engines/template_url_fetcher.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
-#include "chrome/browser/signin/token_service.h"
 #include "chrome/browser/speech/chrome_speech_input_preferences.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "chrome/browser/ui/find_bar/find_bar_state.h"
@@ -576,6 +576,7 @@ PasswordStore* TestingProfile::GetPasswordStore(ServiceAccessType access) {
 }
 
 void TestingProfile::SetPrefService(PrefService* prefs) {
+  DCHECK(!prefs_.get());
   prefs_.reset(prefs);
 }
 

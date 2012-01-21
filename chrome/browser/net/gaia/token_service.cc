@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/signin/token_service.h"
+#include "chrome/browser/net/gaia/token_service.h"
 
 #include "base/command_line.h"
 #include "base/string_util.h"

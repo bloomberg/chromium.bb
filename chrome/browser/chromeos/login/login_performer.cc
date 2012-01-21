@@ -176,7 +176,7 @@ void LoginPerformer::OnProfileCreated(
   if (using_oauth_)
     LoginUtils::Get()->StartTokenServices(profile);
 
-  LoginUtils::Get()->StartSignedInServices(profile, credentials_);
+  LoginUtils::Get()->StartSync(profile, credentials_);
   credentials_ = GaiaAuthConsumer::ClientLoginResult();
 
   // Don't unlock screen if it was locked while we're waiting
