@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,14 +6,12 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/lazy_instance.h"
 #include "base/rand_util_c.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/chrome_ppb_pdf_impl.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/renderer/render_thread.h"
-#include "ipc/ipc_sync_message_filter.h"
 #include "ppapi/c/private/ppb_nacl_private.h"
 #include "ppapi/c/private/ppb_pdf.h"
 #include "webkit/plugins/ppapi/ppapi_interface_factory.h"
@@ -27,11 +25,6 @@ using content::RenderThread;
 
 namespace chrome {
 
-namespace {
-base::LazyInstance<scoped_refptr<IPC::SyncMessageFilter> >
-    g_background_thread_sender = LAZY_INSTANCE_INITIALIZER;
-}  // namespace
-
 #if !defined(DISABLE_NACL)
 // Launch NaCl's sel_ldr process.
 bool LaunchSelLdr(const char* alleged_url, int socket_count,
@@ -39,11 +32,7 @@ bool LaunchSelLdr(const char* alleged_url, int socket_count,
                   int* nacl_process_id) {
   std::vector<nacl::FileDescriptor> sockets;
   base::ProcessHandle nacl_process;
-  IPC::Message::Sender* sender = RenderThread::Get();
-  if (sender == NULL) {
-    sender = g_background_thread_sender.Pointer()->get();
-  }
-  if (!sender->Send(
+  if (!RenderThread::Get()->Send(
       new ChromeViewHostMsg_LaunchNaCl(
           ASCIIToWide(alleged_url),
           socket_count,
@@ -73,16 +62,10 @@ bool Are3DInterfacesDisabled() {
   return CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisable3DAPIs);
 }
 
-void EnableBackgroundSelLdrLaunch() {
-  g_background_thread_sender.Get() =
-      RenderThread::Get()->GetSyncMessageFilter();
-}
-
 const PPB_NaCl_Private ppb_nacl = {
   &LaunchSelLdr,
   &UrandomFD,
   &Are3DInterfacesDisabled,
-  &EnableBackgroundSelLdrLaunch,
 };
 
 class PPB_NaCl_Impl {

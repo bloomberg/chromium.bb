@@ -85,7 +85,6 @@ class CONTENT_EXPORT RenderThreadImpl : public content::RenderThread,
   virtual MessageLoop* GetMessageLoop() OVERRIDE;
   virtual IPC::SyncChannel* GetChannel() OVERRIDE;
   virtual std::string GetLocale() OVERRIDE;
-  virtual IPC::SyncMessageFilter* GetSyncMessageFilter() OVERRIDE;
   virtual void AddRoute(int32 routing_id,
                         IPC::Channel::Listener* listener) OVERRIDE;
   virtual void RemoveRoute(int32 routing_id) OVERRIDE;

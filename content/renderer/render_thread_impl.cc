@@ -361,10 +361,6 @@ std::string RenderThreadImpl::GetLocale() {
   return lang;
 }
 
-IPC::SyncMessageFilter* RenderThreadImpl::GetSyncMessageFilter() {
-  return sync_message_filter();
-}
-
 void RenderThreadImpl::AddRoute(int32 routing_id,
                                 IPC::Channel::Listener* listener) {
   widget_count_++;
