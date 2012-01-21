@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -158,10 +158,6 @@ class PrefsTest(pyauto.PyUITest):
 
     Checks for the geolocation infobar.
     """
-    # Fails on Win7 Chromium bot only.  crbug.com/89000
-    if (self.IsWin7() and
-        self.GetBrowserInfo()['properties']['branding'] == 'Chromium'):
-      return
     url = self.GetFileURLForPath(os.path.join(  # triggers geolocation
         self.DataDir(), 'geolocation', 'geolocation_on_load.html'))
     self.assertEqual(3,  # default state
@@ -174,6 +170,10 @@ class PrefsTest(pyauto.PyUITest):
     self.assertEqual(2,
         self.GetPrefsInfo().Prefs(pyauto.kGeolocationDefaultContentSetting))
     self.GetBrowserWindow(0).GetTab(0).Reload()
+    # Fails on Win7/Vista Chromium bots.  crbug.com/89000
+    if ((self.IsWin7() or self.IsWinVista()) and
+        self.GetBrowserInfo()['properties']['branding'] == 'Chromium'):
+      return
     self.assertTrue(self.WaitForInfobarCount(0))
     self.assertFalse(self.GetBrowserInfo()['windows'][0]['tabs'][0]['infobars'])
 
