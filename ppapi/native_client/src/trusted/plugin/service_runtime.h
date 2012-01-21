@@ -1,6 +1,6 @@
 /* -*- c++ -*- */
 /*
- * Copyright (c) 2011 The Chromium Authors. All rights reserved.
+ * Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -162,6 +162,7 @@ class ServiceRuntime {
   // Start method below.
   ServiceRuntime(Plugin* plugin,
                  const Manifest* manifest,
+                 bool should_report_uma,
                  pp::CompletionCallback init_done_cb,
                  pp::CompletionCallback crash_cb);
   // The destructor terminates the sel_ldr process.
@@ -197,6 +198,7 @@ class ServiceRuntime {
 
   NaClSrpcChannel command_channel_;
   Plugin* plugin_;
+  bool should_report_uma_;
   BrowserInterface* browser_interface_;
   nacl::ReverseService* reverse_service_;
   nacl::scoped_ptr<nacl::SelLdrLauncher> subprocess_;

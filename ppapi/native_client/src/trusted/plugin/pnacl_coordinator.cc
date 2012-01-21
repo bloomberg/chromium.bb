@@ -372,8 +372,6 @@ PnaclCoordinator::PnaclCoordinator(
     const pp::CompletionCallback& translate_notify_callback)
   : plugin_(plugin),
     translate_notify_callback_(translate_notify_callback),
-    llc_subprocess_(NULL),
-    ld_subprocess_(NULL),
     subprocesses_should_die_(false),
     file_system_(new pp::FileSystem(plugin, PP_FILESYSTEMTYPE_LOCALTEMPORARY)),
     manifest_(new ExtensionManifest(plugin->url_util())),
@@ -526,19 +524,6 @@ void PnaclCoordinator::RunTranslate(int32_t pp_error) {
     return;
   }
   pexe_wrapper_.reset(plugin_->wrapper_factory()->MakeFileDesc(fd, O_RDONLY));
-  // It would really be nice if we could create subprocesses from other than
-  // the main thread.  Until we can, we create them both up front.
-  // TODO(sehr): allow creation of subrpocesses from other threads.
-  llc_subprocess_ = StartSubprocess(kLlcUrl, manifest_.get());
-  if (llc_subprocess_ == NULL) {
-    ReportPpapiError(PP_ERROR_FAILED);
-    return;
-  }
-  ld_subprocess_ = StartSubprocess(kLdUrl, ld_manifest_.get());
-  if (ld_subprocess_ == NULL) {
-    ReportPpapiError(PP_ERROR_FAILED);
-    return;
-  }
   // Invoke llc followed by ld off the main thread.  This allows use of
   // blocking RPCs that would otherwise block the JavaScript main thread.
   translate_done_cb_ =
@@ -580,11 +565,16 @@ void WINAPI PnaclCoordinator::DoTranslateThread(void* arg) {
   Plugin* plugin = coordinator->plugin_;
   BrowserInterface* browser_interface = plugin->browser_interface();
 
+  nacl::scoped_ptr<NaClSubprocess> llc_subprocess(
+      coordinator->StartSubprocess(kLlcUrl, coordinator->manifest_.get()));
+  if (llc_subprocess == NULL) {
+    coordinator->TranslateFailed("Compile process could not be created.");
+  }
   // Run LLC.
   SrpcParams params;
   nacl::DescWrapper* llc_out_file = coordinator->obj_file_->write_wrapper();
   if (!PnaclSrpcLib::InvokeSrpcMethod(browser_interface,
-                                      coordinator->llc_subprocess_,
+                                      llc_subprocess.get(),
                                       "RunWithDefaultCommandLine",
                                       "hh",
                                       &params,
@@ -600,16 +590,22 @@ void WINAPI PnaclCoordinator::DoTranslateThread(void* arg) {
                  " is_shared_library=%d, soname='%s', lib_dependencies='%s')\n",
                  arg, is_shared_library, soname.c_str(),
                  lib_dependencies.c_str()));
+  // Shut down the llc subprocess.
+  llc_subprocess.release();
   if (coordinator->SubprocessesShouldDie()) {
     PLUGIN_PRINTF((
         "PnaclCoordinator::DoTranslateThread: killed by coordinator.\n"));
     NaClThreadExit(1);
   }
-  NaClSubprocess* ld_subprocess = coordinator->ld_subprocess_;
+  nacl::scoped_ptr<NaClSubprocess> ld_subprocess(
+      coordinator->StartSubprocess(kLdUrl, coordinator->ld_manifest_.get()));
+  if (ld_subprocess == NULL) {
+    coordinator->TranslateFailed("Link process could not be created.");
+  }
   nacl::DescWrapper* ld_in_file = coordinator->obj_file_->read_wrapper();
   nacl::DescWrapper* ld_out_file = coordinator->nexe_file_->write_wrapper();
   if (!PnaclSrpcLib::InvokeSrpcMethod(browser_interface,
-                                      ld_subprocess,
+                                      ld_subprocess.get(),
                                       "RunWithDefaultCommandLine",
                                       "hhiCC",
                                       &params,
@@ -621,6 +617,8 @@ void WINAPI PnaclCoordinator::DoTranslateThread(void* arg) {
     coordinator->TranslateFailed("link failed.");
   }
   PLUGIN_PRINTF(("PnaclCoordinator: link (coordinator=%p) succeeded\n", arg));
+  // Shut down the ld subprocess.
+  ld_subprocess.release();
   if (coordinator->SubprocessesShouldDie()) {
     PLUGIN_PRINTF((
         "PnaclCoordinator::DoTranslateThread: killed by coordinator.\n"));

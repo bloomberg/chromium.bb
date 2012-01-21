@@ -246,12 +246,7 @@ class PnaclCoordinator {
   pp::CompletionCallbackFactory<PnaclCoordinator,
                                 PnaclRefCount> callback_factory_;
 
-  // Helper subprocesses loaded by the plugin (deleted by the plugin).
-  // A nacl sandbox running the llc nexe.
-  NaClSubprocess* llc_subprocess_;
-  // A nacl sandbox running the ld nexe.
-  NaClSubprocess* ld_subprocess_;
-  // True if the translation thread and subprocesses should exit.
+  // True if the translation thread and related subprocesses should exit.
   bool subprocesses_should_die_;
   // Used to guard and publish subprocesses_should_die_.
   struct NaClMutex subprocess_mu_;

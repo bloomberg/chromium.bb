@@ -384,9 +384,11 @@ void PluginReverseInterface::ReportExitStatus(int exit_status) {
 
 ServiceRuntime::ServiceRuntime(Plugin* plugin,
                                const Manifest* manifest,
+                               bool should_report_uma,
                                pp::CompletionCallback init_done_cb,
                                pp::CompletionCallback crash_cb)
     : plugin_(plugin),
+      should_report_uma_(should_report_uma),
       browser_interface_(plugin->browser_interface()),
       reverse_service_(NULL),
       subprocess_(NULL),
@@ -495,7 +497,9 @@ bool ServiceRuntime::InitCommunication(nacl::DescWrapper* nacl_desc,
   }
   PLUGIN_PRINTF(("ServiceRuntime::InitCommunication (load_status=%d)\n",
                  load_status));
-  plugin_->ReportSelLdrLoadStatus(load_status);
+  if (should_report_uma_) {
+    plugin_->ReportSelLdrLoadStatus(load_status);
+  }
   if (LOAD_OK != load_status) {
     error_info->SetReport(
         ERROR_SEL_LDR_START_STATUS,
