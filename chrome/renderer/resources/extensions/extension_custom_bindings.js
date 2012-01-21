@@ -9,6 +9,13 @@
 native function GetChromeHidden();
 native function GetExtensionViews();
 
+// This should match chrome.windows.WINDOW_ID_NONE.
+//
+// We can't use chrome.windows.WINDOW_ID_NONE directly because the
+// chrome.windows API won't exist unless this extension has permission for it;
+// which may not be the case.
+var WINDOW_ID_NONE = -1;
+
 GetChromeHidden().registerCustomHook('extension', function(bindingsAPI) {
   // getTabContentses is retained for backwards compatibility.
   // See http://crbug.com/21433
@@ -17,7 +24,7 @@ GetChromeHidden().registerCustomHook('extension', function(bindingsAPI) {
   var apiFunctions = bindingsAPI.apiFunctions;
 
   apiFunctions.setHandleRequest("extension.getViews", function(properties) {
-    var windowId = chrome.windows.WINDOW_ID_NONE;
+    var windowId = WINDOW_ID_NONE;
     var type = "ALL";
     if (typeof(properties) != "undefined") {
       if (typeof(properties.type) != "undefined") {
@@ -37,7 +44,7 @@ GetChromeHidden().registerCustomHook('extension', function(bindingsAPI) {
   apiFunctions.setHandleRequest("extension.getExtensionTabs",
       function(windowId) {
     if (typeof(windowId) == "undefined")
-      windowId = chrome.windows.WINDOW_ID_NONE;
+      windowId = WINDOW_ID_NONE;
     return GetExtensionViews(windowId, "TAB");
   });
 });
