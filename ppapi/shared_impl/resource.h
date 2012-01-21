@@ -24,6 +24,7 @@
   F(PPB_Broker_API) \
   F(PPB_Buffer_API) \
   F(PPB_BufferTrusted_API) \
+  F(PPB_DeviceRef_API) \
   F(PPB_DirectoryReader_API) \
   F(PPB_FileChooser_API) \
   F(PPB_FileIO_API) \
