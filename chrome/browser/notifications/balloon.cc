@@ -7,7 +7,6 @@
 #include "base/logging.h"
 #include "chrome/browser/notifications/balloon_collection.h"
 #include "chrome/browser/notifications/notification.h"
-#include "content/browser/site_instance.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 

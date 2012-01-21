@@ -15,7 +15,6 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
-#include "content/browser/site_instance.h"
 #include "content/public/browser/notification_service.h"
 
 namespace {

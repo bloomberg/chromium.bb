@@ -17,7 +17,6 @@
 #include "content/browser/renderer_host/dummy_resource_handler.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "content/browser/renderer_host/resource_queue.h"
-#include "content/browser/site_instance.h"
 #include "content/public/browser/notification_service.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_test_job.h"
