@@ -20,7 +20,7 @@ typedef struct _IBusText IBusText;
 
 namespace ui {
 
-class CompositionText;
+struct CompositionText;
 
 namespace internal {
 
