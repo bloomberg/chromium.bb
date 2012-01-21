@@ -10800,7 +10800,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
       </if>
       <if expr="pp_ifdef('use_titlecase')">
         <message name="IDS_SYNC_SETUP_TITLE" desc="In title case: The title of the Sync Setup overlay.">
-          Sign In With Your Google Account
+          Sign in With Your Google Account
         </message>
       </if>
       <message name="IDS_SYNC_LOGIN_SIGNIN_PREFIX" desc="The first part of the sentence that is displayed after the login info">
