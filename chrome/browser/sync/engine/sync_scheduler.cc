@@ -838,36 +838,26 @@ void SyncScheduler::FinishSyncSessionJob(const SyncSessionJob& job) {
 void SyncScheduler::ScheduleNextSync(const SyncSessionJob& old_job) {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
   DCHECK(!old_job.session->HasMoreToSync());
-  // Note: |num_server_changes_remaining| > 0 here implies that we received a
-  // broken response while trying to download all updates, because the Syncer
-  // will loop until this value is exhausted. Also, if unsynced_handles exist
-  // but HasMoreToSync is false, this implies that the Syncer determined no
-  // forward progress was possible at this time (an error, such as an HTTP
-  // 500, is likely to have occurred during commit).
-  int num_server_changes_remaining =
-      old_job.session->status_controller().num_server_changes_remaining();
-  size_t num_unsynced_handles =
-      old_job.session->status_controller().unsynced_handles().size();
-  const bool work_to_do =
-      num_server_changes_remaining > 0 || num_unsynced_handles > 0;
-  SDVLOG(2) << "num server changes remaining: " << num_server_changes_remaining
-            << ", num unsynced handles: " << num_unsynced_handles
-            << ", syncer has work to do: " << work_to_do;
 
   AdjustPolling(&old_job);
 
-  // TODO(tim): Old impl had special code if notifications disabled. Needed?
-  if (!work_to_do) {
+  if (old_job.session->Succeeded()) {
     // Success implies backoff relief.  Note that if this was a
     // "one-off" job (i.e. purpose ==
     // SyncSessionJob::{CLEAR_USER_DATA,CLEANUP_DISABLED_TYPES}), if
-    // there was work_to_do before it ran this wont have changed, as
+    // there was work to do before it ran this wont have changed, as
     // jobs like this don't run a full sync cycle.  So we don't need
     // special code here.
     wait_interval_.reset();
     SDVLOG(2) << "Job succeeded so not scheduling more jobs";
     return;
   }
+
+  // TODO(rlarocque): There's no reason why we should blindly backoff and retry
+  // if we don't succeed.  Some types of errors are not likely to disappear on
+  // their own.  With the return values now available in the old_job.session, we
+  // should be able to detect such errors and only retry when we detect
+  // transient errors.
 
   // We are in backoff mode and our time did not run out. That means we had
   // a local change, notification from server or a network connection change

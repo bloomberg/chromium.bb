@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -653,7 +653,14 @@ bool ProfileSyncServiceHarness::AwaitMigration(
                << " after migration finish is not WAITING_FOR_NOTHING";
       return false;
     }
-    if (!AwaitFullSyncCompletion(
+    // We must use AwaitDataSyncCompletion rather than the more common
+    // AwaitFullSyncCompletion.  As long as crbug.com/97780 is open, we will
+    // rely on self-notifications to ensure that timestamps are udpated, which
+    // allows AwaitFullSyncCompletion to return.  However, in some migration
+    // tests these notifications are completely disabled, so the timestamps do
+    // not get updated.  This is why we must use the less strict condition,
+    // AwaitDataSyncCompletion.
+    if (!AwaitDataSyncCompletion(
             "Config sync cycle after migration cycle")) {
       return false;
     }
@@ -890,7 +897,7 @@ bool ProfileSyncServiceHarness::EnableSyncForDatatype(
 
   synced_datatypes.Put(syncable::ModelTypeFromInt(datatype));
   service()->OnUserChoseDatatypes(false, synced_datatypes);
-  if (AwaitFullSyncCompletion("Datatype configuration.")) {
+  if (AwaitDataSyncCompletion("Datatype configuration.")) {
     DVLOG(1) << "EnableSyncForDatatype(): Enabled sync for datatype "
              << syncable::ModelTypeToString(datatype)
              << " on " << profile_debug_name_ << ".";

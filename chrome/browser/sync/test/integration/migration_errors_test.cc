@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -171,7 +171,16 @@ class MigrationTest : public SyncTest {
     }
 
     // Phase 3: Wait for all clients to catch up.
-    ASSERT_TRUE(AwaitQuiescence());
+    //
+    // AwaitQuiescence() will not succeed when notifications are disabled.  We
+    // can safely avoid calling it because we know that, in the single client
+    // case, there is no one else to wait for.
+    //
+    // TODO(rlarocque, 97780): Remove the if condition when the test harness
+    // supports calling AwaitQuiescence() when notifications are disabled.
+    if (!do_test_without_notifications) {
+      AwaitQuiescence();
+    }
 
     // Re-enable notifications if we disabled it.
     if (do_test_without_notifications) {

@@ -238,7 +238,9 @@ namespace {
 // successfully.
 //
 bool IsError(SyncerError error) {
-  return error != UNSET && error != SYNCER_OK;
+  return error != UNSET
+      && error != SYNCER_OK
+      && error != SERVER_RETURN_MIGRATION_DONE;
 }
 }  // namespace
 
