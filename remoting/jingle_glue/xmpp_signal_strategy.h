@@ -48,6 +48,17 @@ class XmppSignalStrategy : public base::NonThreadSafe,
   // buzz::XmppStanzaHandler interface.
   virtual bool HandleStanza(const buzz::XmlElement* stanza) OVERRIDE;
 
+  // This method is used to update the auth info (for example when the OAuth
+  // access token is renewed). It is OK to call this even when we are in the
+  // CONNECTED state. It will be used on the next Connect() call.
+  void SetAuthInfo(const std::string& username,
+                   const std::string& auth_token,
+                   const std::string& auth_token_service);
+
+  // Use this method to override the default resource name used (optional).
+  // This will be used on the next Connect() call.
+  void SetResourceName(const std::string& resource_name);
+
  private:
   static buzz::PreXmppAuth* CreatePreXmppAuth(
       const buzz::XmppClientSettings& settings);
@@ -60,6 +71,7 @@ class XmppSignalStrategy : public base::NonThreadSafe,
   std::string username_;
   std::string auth_token_;
   std::string auth_token_service_;
+  std::string resource_name_;
   buzz::XmppClient* xmpp_client_;
 
   State state_;

@@ -12,6 +12,10 @@
 #include "third_party/libjingle/source/talk/xmpp/prexmppauth.h"
 #include "third_party/libjingle/source/talk/xmpp/saslcookiemechanism.h"
 
+namespace {
+const char kDefaultResourceName[] = "chromoting";
+}  // namespace
+
 namespace remoting {
 
 XmppSignalStrategy::XmppSignalStrategy(JingleThread* jingle_thread,
@@ -22,6 +26,7 @@ XmppSignalStrategy::XmppSignalStrategy(JingleThread* jingle_thread,
      username_(username),
      auth_token_(auth_token),
      auth_token_service_(auth_token_service),
+     resource_name_(kDefaultResourceName),
      xmpp_client_(NULL),
      state_(DISCONNECTED) {
 }
@@ -41,7 +46,7 @@ void XmppSignalStrategy::Connect() {
   buzz::Jid login_jid(username_);
   settings.set_user(login_jid.node());
   settings.set_host(login_jid.domain());
-  settings.set_resource("chromoting");
+  settings.set_resource(resource_name_);
   settings.set_use_tls(buzz::TLS_ENABLED);
   settings.set_token_service(auth_token_service_);
   settings.set_auth_cookie(auth_token_);
@@ -125,6 +130,20 @@ bool XmppSignalStrategy::HandleStanza(const buzz::XmlElement* stanza) {
       return true;
   }
   return false;
+}
+
+void XmppSignalStrategy::SetAuthInfo(const std::string& username,
+                                     const std::string& auth_token,
+                                     const std::string& auth_token_service) {
+  DCHECK(CalledOnValidThread());
+  username_ = username;
+  auth_token_ = auth_token;
+  auth_token_service_ = auth_token_service;
+}
+
+void XmppSignalStrategy::SetResourceName(const std::string &resource_name) {
+  DCHECK(CalledOnValidThread());
+  resource_name_ = resource_name;
 }
 
 void XmppSignalStrategy::OnConnectionStateChanged(
