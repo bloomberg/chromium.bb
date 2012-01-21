@@ -1,8 +1,9 @@
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 import copy
+import ctypes
 import email
 import logging
 import os
@@ -10,6 +11,7 @@ import platform
 import shutil
 import smtplib
 import subprocess
+import sys
 import types
 
 import pyauto_functional
@@ -162,6 +164,18 @@ def SendMail(send_from, send_to, subject, text, smtp, file_to_send=None):
   smtp_obj = smtplib.SMTP(smtp)
   smtp_obj.sendmail(send_from, send_to, msg.as_string())
   smtp_obj.close()
+
+
+def GetFreeSpace(path):
+  """Returns the free space (in bytes) on the drive containing |path|."""
+  if sys.platform == 'win32':
+    free_bytes = ctypes.c_ulonglong(0)
+    ctypes.windll.kernel32.GetDiskFreeSpaceExW(
+        ctypes.c_wchar_p(os.path.dirname(path)), None, None,
+        ctypes.pointer(free_bytes))
+    return free_bytes.value
+  fs_stat = os.statvfs(path)
+  return fs_stat.f_bsize * fs_stat.f_bavail
 
 
 def StripUnmatchedKeys(item_to_strip, reference_item):
