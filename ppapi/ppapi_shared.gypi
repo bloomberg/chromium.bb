@@ -3,7 +3,16 @@
 # found in the LICENSE file.
 
 {
-  'targets': [
+   'variables': {
+     'conditions': [
+        ['inside_chromium_build==0', {
+            'webkit_src_dir': '../../../..',
+        },{
+            'webkit_src_dir': '../third_party/WebKit',
+        }],
+      ],
+    },
+   'targets': [
     {
       'target_name': 'ppapi_shared',
       'type': '<(component)',
@@ -18,7 +27,7 @@
         '../skia/skia.gyp:skia',
         '../third_party/icu/icu.gyp:icuuc',
         # TODO(ananta) : The WebKit dependency needs to move to a new target for NACL.
-        '../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
+        '<(webkit_src_dir)/Source/WebKit/chromium/WebKit.gyp:webkit',
         '../ui/gfx/surface/surface.gyp:surface',
       ],
       'defines': [
@@ -30,7 +39,7 @@
       ],
       'export_dependent_settings': [
         '../base/base.gyp:base',
-        '../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',        
+        '<(webkit_src_dir)/Source/WebKit/chromium/WebKit.gyp:webkit',        
       ],
       'conditions': [
         ['OS=="mac"', {
