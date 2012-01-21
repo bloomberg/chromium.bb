@@ -34,7 +34,7 @@ testsuite-prereq() {
     echo "Please specify arch"
     exit 1
   fi
-  ./scons platform=$1 irt_core sel_ldr
+  ./scons platform=$1 irt_core sel_ldr -j${PNACL_CONCURRENCY}
 }
 
 testsuite-run() {
