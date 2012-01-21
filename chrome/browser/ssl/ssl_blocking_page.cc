@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -103,6 +103,9 @@ std::string SSLBlockingPage::GetHTMLContents() {
                       l10n_util::GetStringUTF16(IDS_SSL_ERROR_PAGE_TITLE));
     strings.SetString("back",
                       l10n_util::GetStringUTF16(IDS_SSL_ERROR_PAGE_BACK));
+    strings.SetString("cannotProceed",
+                      l10n_util::GetStringUTF16(
+                          IDS_SSL_ERROR_PAGE_CANNOT_PROCEED));
   }
 
   strings.SetString("textdirection", base::i18n::IsRTL() ? "rtl" : "ltr");

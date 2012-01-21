@@ -7575,6 +7575,9 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       <message name="IDS_SSL_ERROR_PAGE_BACK" desc="Back button text of the SSL error page.">
         Back
       </message>
+      <message name="IDS_SSL_ERROR_PAGE_CANNOT_PROCEED" desc="Message advising the user that they cannot proceed past the SSL error page.">
+        You cannot proceed because the website operator has requested heightened security for this domain.
+      </message>
 
       <!-- Misc strings for SSL UI -->
       <message name="IDS_UNSAFE_FRAME_MESSAGE" desc="The text displayed in the content that is subsituted to an unsafe frame.">
