@@ -367,8 +367,7 @@ cr.define('options', function() {
       var label = $('defaultBrowserState');
       label.textContent = statusString;
 
-      $('defaultBrowserUseAsDefaultButton').disabled = !canBeDefault ||
-                                                       isDefault;
+      $('defaultBrowserUseAsDefaultButton').hidden = !canBeDefault || isDefault;
     },
 
     /**

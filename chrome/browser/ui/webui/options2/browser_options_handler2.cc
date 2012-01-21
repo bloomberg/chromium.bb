@@ -217,10 +217,6 @@ void BrowserOptionsHandler::GetLocalizedValues(
       "autoLaunchText",
       l10n_util::GetStringFUTF16(IDS_AUTOLAUNCH_TEXT,
           l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
-  localized_strings->SetString(
-      "advancedGroupDescription",
-      l10n_util::GetStringFUTF16(IDS_OPTIONS_ADVANCED_GROUP_DESCRIPTION,
-          l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
 
 #if defined(OS_CHROMEOS)
   if (chromeos::UserManager::Get()->user_is_logged_in()) {
