@@ -19,6 +19,10 @@ body {
   margin: 0;
 }
 
+body.uber-frame {
+  -webkit-margin-start: 155px;
+}
+
 p {
   line-height: 22px;
 }

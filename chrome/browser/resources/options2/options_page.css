@@ -1,3 +1,12 @@
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+body {
+  position: relative;
+}
+
 #main-content {
   display: -webkit-box;
   position: absolute;
@@ -131,12 +140,6 @@ html[touch-optimized] body {
 }
 
 #overlay {
-  /* -155px hack compensates for uber navigation area.  */
-  left: -155px;
-  /* This padding keeps the dialog from moving too far to the left.
-   * 155px (navigation area) + 40px (dialog shadow) = 195px */
-  padding-left: 195px;
-  padding-right: 195px;
   z-index: 10;
 }
 

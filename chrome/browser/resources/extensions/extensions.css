@@ -71,11 +71,6 @@ body.hide-some-focus-outlines .extension-zippy-container {
 /* TODO(estade): rules above this line are old and should probably be
  * retired.*/
 
-body {
-  color: rgb(151, 156, 160);
-  margin-left: 27px;
-}
-
 .extension-list-item-wrapper {
   margin: 23px 0;
 }
@@ -105,6 +100,7 @@ html[dir="rtl"] .extension-list-item {
 
 .extension-description {
   -webkit-padding-end: 5px;
+  color: rgb(151, 156, 160);
   font-size: 13px;
   margin: 5px 0;
   white-space: normal;

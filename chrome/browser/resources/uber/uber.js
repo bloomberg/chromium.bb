@@ -8,36 +8,13 @@ cr.define('uber', function() {
    * Handles page initialization.
    */
   function onLoad() {
-    var navigationItems = document.querySelectorAll('#navigation li');
-    var iframes = document.querySelectorAll('.iframe-container');
-
-    for (var i = 0; i < navigationItems.length; ++i) {
-      var navItem = navigationItems[i];
-      navItem.associatedIframe = iframes[i];
-      iframes[i].associatedNavItem = navItem;
-      navItem.addEventListener('click', onNavItemClicked);
-    }
-
     // Update the URL if need be.
     if (window.location.pathname === '/') {
-      var selectedNavItem = document.querySelector('#navigation li.selected');
-      var pageId = selectedNavItem.associatedIframe.id;
+      var pageId = getSelectedIframe().id;
       window.history.replaceState({pageId: pageId}, '', '/' + pageId);
     }
 
     window.addEventListener('message', handleWindowMessage);
-  }
-
-  /**
-   * Handles clicks on the navigation controls (switches the page and updates
-   * the URL).
-   * @param {Event} e The click event.
-   */
-  function onNavItemClicked(e) {
-    if (selectPageForNavItem(e.currentTarget)) {
-      var pageId = e.currentTarget.associatedIframe.id;
-      window.history.pushState({pageId: pageId}, '', '/' + pageId);
-    }
   }
 
   /**
@@ -51,7 +28,7 @@ cr.define('uber', function() {
     // Note that |iframe| is the containing element of the underlying iframe, as
     // opposed to the iframe element itself.
     var iframe = navItem.associatedIframe;
-    var currentIframe = getSelectedIframe_();
+    var currentIframe = getSelectedIframe();
     if (currentIframe == iframe)
       return false;
 
@@ -75,14 +52,13 @@ cr.define('uber', function() {
    */
   function onPopHistoryState(e) {
     if (e.state && e.state.pageId)
-      selectPageForNavItem($(e.state.pageId).associatedNavItem);
+      showPage(e.state.pageId);
   }
 
   /**
    * @return {Object} The currently selected iframe container.
-   * @private
    */
-  function getSelectedIframe_() {
+  function getSelectedIframe() {
     return document.querySelector('.iframe-container.selected');
   }
 
@@ -102,35 +78,38 @@ cr.define('uber', function() {
    * @param {Event} e The posted object.
    */
   function handleWindowMessage(e) {
-    if (e.data.method === 'showOverlay')
-      showOverlay_();
-    else if (e.data.method === 'hideOverlay')
-      hideOverlay_();
+    if (e.data.method === 'beginInterceptingEvents')
+      backgroundNavigation();
+    else if (e.data.method === 'stopInterceptingEvents')
+      foregroundNavigation();
     else if (e.data.method === 'setTitle')
       setTitle_(e.origin, e.data.params);
+    else if (e.data.method === 'showPage')
+      showPage(e.data.params.pageId);
+    else if (e.data.method === 'navigationControlsLoaded')
+      onNavigationControlsLoaded();
     else
       console.error('Received unexpected message: ' + e.data);
   }
 
   /**
-   * @private
+   * Sends the navigation iframe to the background.
    */
-  function showOverlay_() {
-    document.querySelector('.overlay').classList.add('showing');
+  function backgroundNavigation() {
+    $('navigation').classList.add('background');
   }
 
   /**
-   * @private
+   * Retrieves the navigation iframe from the background.
    */
-  function hideOverlay_() {
-    document.querySelector('.overlay').classList.remove('showing');
+  function foregroundNavigation() {
+    $('navigation').classList.remove('background');
   }
 
   /**
    * Sets the title of the page.
    * @param {Object} origin The origin of the source iframe.
    * @param {Object} params Must contain a |title| property.
-   * @private
    */
   function setTitle_(origin, params) {
     // |iframe.src| always contains a trailing backslash while |origin| does not
@@ -144,8 +123,40 @@ cr.define('uber', function() {
     container.title = params.title;
 
     // Only update the currently displayed title if this is the visible frame.
-    if (container == getSelectedIframe_())
+    if (container == getSelectedIframe())
       document.title = params.title;
+  }
+
+  /**
+   * Selects a subpage. This is called from uber-frame.
+   * @param {String} pageId Should matche an id of one of the iframe containers.
+   */
+  function showPage(pageId) {
+    var container = $(pageId);
+    var lastSelected = document.querySelector('.iframe-container.selected');
+    if (lastSelected === container)
+      return;
+
+    lastSelected.classList.remove('selected');
+    container.classList.add('selected');
+    document.title = container.title;
+
+    window.history.pushState({pageId: pageId}, '', '/' + pageId);
+    updateNavigationControls();
+  }
+
+  function onNavigationControlsLoaded() {
+    updateNavigationControls();
+  }
+
+  /**
+   * Sends a message to uber-frame to update the appearance of the nav controls.
+   * It should be called whenever the selected iframe changes.
+   */
+  function updateNavigationControls() {
+    var iframe = getSelectedIframe();
+    uber.invokeMethodOnWindow($('navigation').firstChild.contentWindow,
+                              'changeSelection', {pageId: iframe.id});
   }
 
   return {

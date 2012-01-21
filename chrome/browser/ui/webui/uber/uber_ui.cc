@@ -29,7 +29,31 @@ ChromeWebUIDataSource* CreateUberHTMLSource() {
 
   source->set_json_path("strings.js");
   source->add_resource_path("uber.js", IDR_UBER_JS);
+  source->add_resource_path("uber_utils.js", IDR_UBER_UTILS_JS);
   source->set_default_resource(IDR_UBER_HTML);
+
+  // Hack alert: continue showing "Loading..." until a real title is set.
+  source->AddLocalizedString("pageTitle", IDS_TAB_LOADING_TITLE);
+
+  source->AddString("settingsHost",
+                    ASCIIToUTF16(chrome::kChromeUISettingsHost));
+  source->AddString("extensionsHost",
+                    ASCIIToUTF16(chrome::kChromeUIExtensionsHost));
+
+#if defined(OS_CHROMEOS)
+  source->AddString("aboutPageHost",
+                    ASCIIToUTF16(chrome::kAboutOptionsSubPage));
+#endif
+  return source;
+}
+
+ChromeWebUIDataSource* CreateUberFrameHTMLSource() {
+  ChromeWebUIDataSource* source =
+      new ChromeWebUIDataSource(chrome::kChromeUIUberFrameHost);
+
+  source->set_json_path("strings.js");
+  source->add_resource_path("uber_frame.js", IDR_UBER_FRAME_JS);
+  source->set_default_resource(IDR_UBER_FRAME_HTML);
 
   source->AddLocalizedString("shortProductName", IDS_SHORT_PRODUCT_NAME);
 
@@ -40,12 +64,12 @@ ChromeWebUIDataSource* CreateUberHTMLSource() {
                     ASCIIToUTF16(chrome::kChromeUIExtensionsHost));
   source->AddLocalizedString("extensionsDisplayName",
                              IDS_MANAGE_EXTENSIONS_SETTING_WINDOWS_TITLE);
-
 #if defined(OS_CHROMEOS)
   source->AddString("aboutPageHost",
                     ASCIIToUTF16(chrome::kAboutOptionsSubPage));
   source->AddLocalizedString("aboutPageDisplayName", IDS_ABOUT_TAB_TITLE);
 #endif
+
   return source;
 }
 
@@ -55,6 +79,7 @@ UberUI::UberUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   Profile* profile = Profile::FromWebUI(web_ui);
   profile->GetChromeURLDataManager()->AddDataSource(CreateUberHTMLSource());
 
+  RegisterSubpage(chrome::kChromeUIUberFrameURL);
   RegisterSubpage(chrome::kChromeUISettingsFrameURL);
   RegisterSubpage(chrome::kChromeUIExtensionsFrameURL);
 #if defined(OS_CHROMEOS)
@@ -112,4 +137,15 @@ bool UberUI::OverrideHandleWebUIMessage(const GURL& source_url,
     //  source_url, message, args);
   subpage->second->ProcessWebUIMessage(source_url, message, args);
   return true;
+}
+
+// UberFrameUI
+
+UberFrameUI::UberFrameUI(content::WebUI* web_ui) : WebUIController(web_ui) {
+  Profile* profile = Profile::FromWebUI(web_ui);
+  profile->GetChromeURLDataManager()->AddDataSource(
+      CreateUberFrameHTMLSource());
+}
+
+UberFrameUI::~UberFrameUI() {
 }

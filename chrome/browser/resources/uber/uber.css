@@ -2,55 +2,29 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-#navigation h1 {
-  -webkit-margin-start: 23px;
-  color: rgb(92, 97, 102);
+#navigation {
+  height: 100%;
+  left: 0;
+  position: absolute;
+  right: 0;
+  width: 155px;
+  z-index: 3;
 }
 
-#navigation ol {
-  list-style-type: none;
-  padding: 0;
-}
-
-#navigation li {
-  -webkit-border-start: 6px solid white;
-  -webkit-padding-start: 18px;
-  color: #999;
-  cursor: pointer;
-  line-height: 17px;
-  margin: 5px 0;
-  text-transform: uppercase;
-}
-
-#navigation li:hover {
-  color: #777;
-}
-
-#navigation li.selected {
-  -webkit-border-start-color: rgb(78, 87, 100);
-  color: rgb(70, 78, 90);
-}
-
-#navigation #aboutPageNavItem {
-  margin-top: 27px;
+#navigation.background {
+  z-index: 1;
 }
 
 .iframe-container {
   -webkit-margin-start: -20px;
   -webkit-transition: margin 100ms, opacity 100ms;
-  background-color: white;
   bottom: 0;
-  left: 155px;
+  left: 0;
   opacity: 0;
   position: absolute;
   right: 0;
   top: 0;
   z-index: 1;
-}
-
-html[dir="rtl"] .iframe-container {
-  left: 0;
-  right: 155px;
 }
 
 .iframe-container.selected {
@@ -61,20 +35,13 @@ html[dir="rtl"] .iframe-container {
   z-index: 2;
 }
 
+.iframe-container.expanded {
+  left: 0;
+}
+
 iframe {
   border: none;
   display: block;
   height: 100%;
   width: 100%;
-}
-
-#uber .overlay {
-  opacity: 0;
-  pointer-events: none;
-  z-index: 1;
-}
-
-#uber .overlay.showing {
-  opacity: 1;
-  pointer-events: visible;
 }

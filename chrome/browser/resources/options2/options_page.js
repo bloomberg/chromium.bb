@@ -25,6 +25,8 @@ cr.define('options', function() {
 
   const SUBPAGE_SHEET_COUNT = 2;
 
+  const HORIZONTAL_OFFSET = 155;
+
   /**
    * Main level option pages. Maps lower-case page names to the respective page
    * object.
@@ -273,8 +275,6 @@ cr.define('options', function() {
       if (overlay.didShowPage) overlay.didShowPage();
     }
 
-    uber.invokeMethodOnParent('showOverlay');
-
     return true;
   };
 
@@ -310,7 +310,6 @@ cr.define('options', function() {
       return;
 
     overlay.visible = false;
-    uber.invokeMethodOnParent('hideOverlay');
 
     if (overlay.didClosePage) overlay.didClosePage();
     this.updateHistoryState_();
@@ -322,10 +321,8 @@ cr.define('options', function() {
    */
   OptionsPage.hideOverlay_ = function() {
     var overlay = this.getVisibleOverlay_();
-    if (overlay) {
+    if (overlay)
       overlay.visible = false;
-      uber.invokeMethodOnParent('hideOverlay');
-    }
   };
 
   /**
@@ -652,18 +649,6 @@ cr.define('options', function() {
                                 true);
     }
 
-    // Calculate and store the horizontal locations of elements that may be
-    // frozen later.
-    var sidebarWidth =
-        parseInt(window.getComputedStyle($('mainview')).webkitPaddingStart, 10);
-    $('page-container').horizontalOffset = sidebarWidth +
-        parseInt(window.getComputedStyle(
-            $('mainview-content')).webkitPaddingStart, 10);
-    for (var level = 1; level <= SUBPAGE_SHEET_COUNT; level++) {
-      var containerId = 'subpage-sheet-container-' + level;
-      $(containerId).horizontalOffset = sidebarWidth;
-    }
-    $('subpage-backdrop').horizontalOffset = sidebarWidth;
     // Trigger the resize handler manually to set the initial state.
     this.handleResize_(null);
   };
@@ -720,7 +705,7 @@ cr.define('options', function() {
     // so only adjust in LTR mode (where scroll values will be positive).
     if (scrollHorizontalOffset >= 0) {
       var subpageBackdrop = $('subpage-backdrop');
-      subpageBackdrop.style.left = subpageBackdrop.horizontalOffset -
+      subpageBackdrop.style.left = HORIZONTAL_OFFSET -
           scrollHorizontalOffset + 'px';
       this.updateAllFrozenElementPositions_();
     }
@@ -744,9 +729,9 @@ cr.define('options', function() {
    */
   OptionsPage.updateFrozenElementHorizontalPosition_ = function(e) {
     if (document.documentElement.dir == 'rtl')
-      e.style.right = e.horizontalOffset + 'px';
+      e.style.right = HORIZONTAL_OFFSET + 'px';
     else
-      e.style.left = e.horizontalOffset - document.body.scrollLeft + 'px';
+      e.style.left = HORIZONTAL_OFFSET - document.body.scrollLeft + 'px';
   };
 
   /**
@@ -974,6 +959,9 @@ cr.define('options', function() {
       if (!container)
         return;
 
+      if (visible)
+        uber.invokeMethodOnParent('beginInterceptingEvents');
+
       if (container.hidden != visible) {
         if (visible) {
           // If the container is set hidden and then immediately set visible
@@ -1015,8 +1003,10 @@ cr.define('options', function() {
      * @private
      */
     fadeCompleted_: function(container) {
-      if (container.classList.contains('transparent'))
+      if (container.classList.contains('transparent')) {
         container.hidden = true;
+        uber.invokeMethodOnParent('stopInterceptingEvents');
+      }
     },
 
     /**

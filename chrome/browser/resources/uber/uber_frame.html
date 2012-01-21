@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html i18n-values="dir:textdirection;" id="uber">
+<head>
+<meta charset="utf-8">
+
+<link rel="stylesheet" href="chrome://resources/css/chrome_shared2.css">
+<link rel="stylesheet" href="uber_frame.css">
+
+<script src="chrome://resources/js/cr.js"></script>
+<script src="chrome://uber-frame/uber_frame.js"></script>
+</head>
+
+<body>
+
+<h1 i18n-content="shortProductName"></h1>
+<ol>
+  <li i18n-content="settingsDisplayName"
+      i18n-values="controls:settingsHost" class="selected"></li>
+  <li i18n-content="extensionsDisplayName"
+      i18n-values="controls:extensionsHost"></li>
+<if expr="pp_ifdef('chromeos')">
+  <li i18n-content="aboutPageDisplayName" id="aboutPageNavItem"
+      i18n-values="controls:aboutPageHost"></li>
+</if>
+</ol>
+
+<script src="chrome://uber-frame/strings.js"></script>
+<script src="chrome://resources/js/i18n_template.js"></script>
+<script src="chrome://resources/js/i18n_process.js"></script>
+
+</body>
+</html>

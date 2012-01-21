@@ -1,0 +1,40 @@
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+body {
+  overflow: hidden;
+}
+
+h1 {
+  -webkit-margin-start: 23px;
+  color: rgb(92, 97, 102);
+}
+
+ol {
+  list-style-type: none;
+  padding: 0;
+}
+
+li {
+  -webkit-border-start: 6px solid white;
+  -webkit-padding-start: 18px;
+  color: #999;
+  cursor: pointer;
+  line-height: 17px;
+  margin: 5px 0;
+  text-transform: uppercase;
+}
+
+li:hover {
+  color: #777;
+}
+
+li.selected {
+  -webkit-border-start-color: rgb(78, 87, 100);
+  color: rgb(70, 78, 90);
+}
+
+#aboutPageNavItem {
+  margin-top: 27px;
+}

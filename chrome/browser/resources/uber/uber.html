@@ -11,26 +11,13 @@
 <script src="chrome://resources/js/util.js"></script>
 
 <script src="chrome://chrome/uber.js"></script>
+<script src="chrome://chrome/uber_utils.js"></script>
 </head>
 
 <body>
 
-<div class="overlay"></div>
+<div id="navigation"><iframe src="chrome://uber-frame/"></iframe></div>
 
-<div id="navigation">
-  <h1 i18n-content="shortProductName"></h1>
-  <ol>
-    <li class="selected" i18n-content="settingsDisplayName"></li>
-    <li i18n-content="extensionsDisplayName"></li>
-<if expr="pp_ifdef('chromeos')">
-    <li i18n-content="aboutPageDisplayName" id="aboutPageNavItem"></li>
-</if>
-  </ol>
-</div>
-
-<!-- The order of these must match the order of their nav controls.
-     The ID (e.g. "settings") doubles as the display pathname
-     (e.g. chrome://chrome/settings). -->
 <div class="iframe-container selected" i18n-values="id:settingsHost">
   <iframe src="chrome://settings-frame/"></iframe></div>
 <div class="iframe-container" i18n-values="id:extensionsHost">

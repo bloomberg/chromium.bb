@@ -226,6 +226,8 @@ WebUIFactoryFunction GetWebUIFactoryFunction(content::WebUI* web_ui,
     return &NewWebUI<TaskManagerUI>;
   if (url.host() == chrome::kChromeUITracingHost)
     return &NewWebUI<TracingUI>;
+  if (url.host() == chrome::kChromeUIUberFrameHost)
+    return &NewWebUI<UberFrameUI>;
   if (url.host() == chrome::kChromeUIUberHost)
     return &NewWebUI<UberUI>;
   if (url.host() == chrome::kChromeUIWorkersHost)
