@@ -132,8 +132,13 @@ void RegisterPrefs(PrefService* prefs) {
 bool IsEnabled() {
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableProtector))
     return false;
+#if !defined(OS_CHROMEOS)
+  // Protector is always enabled on platforms other than ChromeOS.
+  return true;
+#else
   PrefService* local_state = g_browser_process->local_state();
   return local_state->GetBoolean(prefs::kProtectorEnabled);
+#endif
 }
 
 }  // namespace protector
