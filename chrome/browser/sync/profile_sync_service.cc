@@ -24,8 +24,10 @@
 #include "chrome/browser/about_flags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/net/chrome_cookie_notification_details.h"
-#include "chrome/browser/net/gaia/token_service.h"
+
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/signin_manager.h"
+#include "chrome/browser/signin/token_service.h"
 #include "chrome/browser/sync/api/sync_error.h"
 #include "chrome/browser/sync/backend_migrator.h"
 #include "chrome/browser/sync/glue/change_processor.h"
@@ -39,7 +41,6 @@
 #include "chrome/browser/sync/js/js_arg_list.h"
 #include "chrome/browser/sync/js/js_event_details.h"
 #include "chrome/browser/sync/profile_sync_components_factory_impl.h"
-#include "chrome/browser/sync/signin_manager.h"
 #include "chrome/browser/sync/sync_global_error.h"
 #include "chrome/browser/sync/util/cryptographer.h"
 #include "chrome/browser/sync/util/oauth.h"
@@ -222,6 +223,9 @@ void ProfileSyncService::RegisterAuthNotifications() {
                  content::Source<TokenService>(profile_->GetTokenService()));
   registrar_.Add(this,
                  chrome::NOTIFICATION_GOOGLE_SIGNIN_FAILED,
+                 content::Source<Profile>(profile_));
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_GOOGLE_SIGNIN_SUCCESSFUL,
                  content::Source<Profile>(profile_));
 }
 
@@ -437,7 +441,6 @@ void ProfileSyncService::ShutdownImpl(bool sync_disabled) {
   encrypt_everything_ = false;
   encrypted_types_ = browser_sync::Cryptographer::SensitiveTypes();
   passphrase_required_reason_ = sync_api::REASON_PASSPHRASE_NOT_REQUIRED;
-  last_attempted_user_email_.clear();
   last_auth_error_ = GoogleServiceAuthError::None();
 
   if (sync_global_error_.get()) {
@@ -466,7 +469,11 @@ void ProfileSyncService::DisableForUser() {
   ClearUnrecoverableError();
   ShutdownImpl(true);
 
-  signin_->SignOut();
+  // TODO(atwilson): Don't call SignOut() on *any* platform - move this into
+  // the UI layer if needed (sync activity should never result in the user
+  // being logged out of all chrome services).
+  if (!auto_start_enabled_)
+    signin_->SignOut();
 
   NotifyObservers();
 }
@@ -710,7 +717,6 @@ void ProfileSyncService::UpdateAuthErrorState(
     auth_start_time_ = base::TimeTicks();
   }
 
-  is_auth_in_progress_ = false;
   // Fan the notification out to interested UI-thread components.
   NotifyObservers();
 }
@@ -1038,6 +1044,17 @@ bool ProfileSyncService::UIShouldDepictAuthInProgress() const {
   return is_auth_in_progress_;
 }
 
+void ProfileSyncService::SetUIShouldDepictAuthInProgress(
+    bool auth_in_progress) {
+  is_auth_in_progress_ = auth_in_progress;
+  // TODO(atwilson): Figure out if we still need to track this or if we should
+  // move this up to the UI (or break it out into two stats that track GAIA
+  // auth and sync auth separately).
+  if (is_auth_in_progress_)
+    auth_start_time_ = base::TimeTicks::Now();
+  NotifyObservers();
+}
+
 bool ProfileSyncService::IsPassphraseRequired() const {
   return passphrase_required_reason_ !=
       sync_api::REASON_PASSPHRASE_NOT_REQUIRED;
@@ -1062,41 +1079,6 @@ string16 ProfileSyncService::GetLastSyncedTimeString() const {
     return l10n_util::GetStringUTF16(IDS_SYNC_TIME_JUST_NOW);
 
   return TimeFormat::TimeElapsed(last_synced);
-}
-
-void ProfileSyncService::OnUserSubmittedAuth(
-    const std::string& username, const std::string& password,
-    const std::string& captcha, const std::string& access_code) {
-  last_attempted_user_email_ = username;
-  is_auth_in_progress_ = true;
-  NotifyObservers();
-
-  auth_start_time_ = base::TimeTicks::Now();
-
-  if (!access_code.empty()) {
-    signin_->ProvideSecondFactorAccessCode(access_code);
-    return;
-  }
-
-  // The user has submitted credentials, which indicates they don't
-  // want to suppress start up anymore.
-  sync_prefs_.SetStartSuppressed(false);
-
-  signin_->StartSignIn(username,
-                       password,
-                       last_auth_error_.captcha().token,
-                       captcha);
-}
-
-void ProfileSyncService::OnUserSubmittedOAuth(
-    const std::string& oauth1_request_token) {
-  is_auth_in_progress_ = true;
-
-  // The user has submitted credentials, which indicates they don't
-  // want to suppress start up anymore.
-  sync_prefs_.SetStartSuppressed(false);
-
-  signin_->StartOAuthSignIn(oauth1_request_token);
 }
 
 void ProfileSyncService::OnUserChoseDatatypes(bool sync_everything,
@@ -1126,16 +1108,6 @@ void ProfileSyncService::OnUserCancelledDialog() {
   // allow them to cancel out.
   encryption_pending_ = false;
 
-  // Though an auth could still be in progress, once the dialog is closed we
-  // don't want the UI to stay stuck in the "waiting for authentication" state
-  // as that could take forever.  We set this to false so the buttons to re-
-  // login will appear until either a) the original request finishes and
-  // succeeds, calling OnAuthError(NONE), or b) the user clicks the button,
-  // and tries to re-authenticate. (b) is a little awkward as this second
-  // request will get queued behind the first and could wind up "undoing" the
-  // good if invalid creds were provided, but it's an edge case and the user
-  // can of course get themselves out of it.
-  is_auth_in_progress_ = false;
   NotifyObservers();
 }
 
@@ -1417,6 +1389,23 @@ void ProfileSyncService::Observe(int type,
       GoogleServiceAuthError error =
           *(content::Details<const GoogleServiceAuthError>(details).ptr());
       UpdateAuthErrorState(error);
+      break;
+    }
+    case chrome::NOTIFICATION_GOOGLE_SIGNIN_SUCCESSFUL: {
+      const GoogleServiceSigninSuccessDetails* successful =
+          content::Details<const GoogleServiceSigninSuccessDetails>(
+              details).ptr();
+      // The user has submitted credentials, which indicates they don't
+      // want to suppress start up anymore.
+      sync_prefs_.SetStartSuppressed(false);
+
+      // We pass 'false' to SetPassphrase to denote that this is an implicit
+      // request and shouldn't override an explicit one.  Thus, we either
+      // update the implicit passphrase (idempotent if the passphrase didn't
+      // actually change), or the user has an explicit passphrase set so this
+      // becomes a no-op.
+      if (!successful->password.empty())
+        SetPassphrase(successful->password, false);
       break;
     }
     case chrome::NOTIFICATION_TOKEN_REQUEST_FAILED: {

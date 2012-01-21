@@ -15,6 +15,9 @@
 #include "base/string_piece.h"
 #include "chrome/browser/prefs/pref_model_associator.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
+#include "chrome/browser/signin/signin_manager.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/token_service.h"
 #include "chrome/browser/sync/abstract_profile_sync_service_test.h"
 #include "chrome/browser/sync/api/sync_data.h"
 #include "chrome/browser/sync/glue/generic_change_processor.h"
@@ -28,7 +31,6 @@
 #include "chrome/browser/sync/internal_api/write_transaction.h"
 #include "chrome/browser/sync/profile_sync_test_util.h"
 #include "chrome/browser/sync/protocol/preference_specifics.pb.h"
-#include "chrome/browser/sync/signin_manager.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/test_profile_sync_service.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
@@ -119,7 +121,7 @@ class ProfileSyncServicePreferenceTest
     if (service_.get())
       return false;
 
-    SigninManager* signin = new SigninManager();
+    SigninManager* signin = SigninManagerFactory::GetForProfile(profile_.get());
     signin->SetAuthenticatedUsername("test");
     ProfileSyncComponentsFactoryMock* factory =
         new ProfileSyncComponentsFactoryMock();
