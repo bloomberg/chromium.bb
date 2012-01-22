@@ -89,6 +89,24 @@ class ChildWindowDelegateImpl : public DestroyTrackingDelegateImpl {
   DISALLOW_COPY_AND_ASSIGN(ChildWindowDelegateImpl);
 };
 
+// Used to verify that a Window is removed from its parent when
+// OnWindowDestroyed is called.
+class DestroyOrphanDelegate : public TestWindowDelegate {
+ public:
+  DestroyOrphanDelegate() : window_(NULL) {
+  }
+
+  void set_window(Window* window) { window_ = window; }
+
+  virtual void OnWindowDestroyed() OVERRIDE {
+    EXPECT_FALSE(window_->parent());
+  }
+
+ private:
+  Window* window_;
+  DISALLOW_COPY_AND_ASSIGN(DestroyOrphanDelegate);
+};
+
 // Used in verifying mouse capture.
 class CaptureWindowDelegateImpl : public TestWindowDelegate {
  public:
@@ -287,6 +305,19 @@ TEST_F(WindowTest, DestroyTest) {
   EXPECT_EQ(1, parent_delegate.destroyed_count());
   EXPECT_EQ(1, child_delegate.destroying_count());
   EXPECT_EQ(1, child_delegate.destroyed_count());
+}
+
+// Tests that a window is orphaned before OnWindowDestroyed is called.
+TEST_F(WindowTest, OrphanedBeforeOnDestroyed) {
+  TestWindowDelegate parent_delegate;
+  DestroyOrphanDelegate child_delegate;
+  {
+    scoped_ptr<Window> parent(
+        CreateTestWindowWithDelegate(&parent_delegate, 0, gfx::Rect(), NULL));
+    scoped_ptr<Window> child(CreateTestWindowWithDelegate(&child_delegate, 0,
+          gfx::Rect(), parent.get()));
+    child_delegate.set_window(child.get());
+  }
 }
 
 // Make sure StackChildAtTop moves both the window and layer to the front.
@@ -916,6 +947,7 @@ class WindowObserverTest : public WindowTest,
   }
 
   virtual void OnWindowDestroyed(Window* window) OVERRIDE {
+    EXPECT_FALSE(window->parent());
     destroyed_count_++;
   }
 

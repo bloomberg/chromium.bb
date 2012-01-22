@@ -73,14 +73,17 @@ Window::~Window() {
   if (transient_parent_)
     transient_parent_->RemoveTransientChild(this);
 
+  // The window needs to be removed from the parent before calling the
+  // WindowDestroyed callbacks of delegate and the observers.
+  if (parent_)
+    parent_->RemoveChild(this);
+
   // And let the delegate do any post cleanup.
   // TODO(beng): Figure out if this notification needs to happen here, or if it
   // can be moved down adjacent to the observer notification. If it has to be
   // done here, the reason why should be documented.
   if (delegate_)
     delegate_->OnWindowDestroyed();
-  if (parent_)
-    parent_->RemoveChild(this);
 
   // Destroy transient children, only after we've removed ourselves from our
   // parent, as destroying an active transient child may otherwise attempt to

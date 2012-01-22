@@ -51,11 +51,11 @@ class AURA_EXPORT WindowObserver {
                                       const gfx::Rect& region) {}
 
   // Invoked when the Window is being destroyed (i.e. from the start of its
-  // destructor).
+  // destructor). This is called before the window is removed from its parent.
   virtual void OnWindowDestroying(Window* window) {}
 
   // Invoked when the Window has been destroyed (i.e. at the end of its
-  // destructor).
+  // destructor). This is called after the window is removed from its parent.
   virtual void OnWindowDestroyed(Window* window) {}
 
  protected:
