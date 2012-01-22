@@ -807,6 +807,21 @@ TEST_F(WindowTest, TransientChildren) {
   EXPECT_EQ(w1.get(), parent->children()[1]);
 }
 
+// Tests that when a focused window is closed, its parent inherits the focus.
+TEST_F(WindowTest, FocusedWindowTest) {
+  scoped_ptr<Window> parent(CreateTestWindowWithId(0, NULL));
+  scoped_ptr<Window> child(CreateTestWindowWithId(1, parent.get()));
+
+  parent->Show();
+
+  child->Focus();
+  EXPECT_TRUE(child->HasFocus());
+  EXPECT_FALSE(parent->HasFocus());
+
+  child.reset();
+  EXPECT_TRUE(parent->HasFocus());
+}
+
 TEST_F(WindowTest, Property) {
   scoped_ptr<Window> w(CreateTestWindowWithId(0, NULL));
   const char* key = "test";

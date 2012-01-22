@@ -284,7 +284,7 @@ void RootWindow::WindowInitialized(Window* window) {
 void RootWindow::WindowDestroying(Window* window) {
   // Update the focused window state if the window was focused.
   if (focused_window_ == window)
-    SetFocusedWindow(NULL);
+    SetFocusedWindow(focused_window_->parent());
 
   // When a window is being destroyed it's likely that the WindowDelegate won't
   // want events, so we reset the mouse_pressed_handler_ and capture_window_ and
