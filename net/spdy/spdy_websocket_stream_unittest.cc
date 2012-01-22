@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -159,7 +159,7 @@ class SpdyWebSocketStreamEventRecorder : public SpdyWebSocketStream::Delegate {
 
 class SpdyWebSocketStreamTest : public testing::Test {
  public:
-  OrderedSocketData* data() { return data_; }
+  OrderedSocketData* data() { return data_.get(); }
 
   void DoSendHelloFrame(SpdyWebSocketStreamEvent* event) {
     websocket_stream_->SendData(kMessageFrame, kMessageFrameLength);
@@ -252,7 +252,8 @@ class SpdyWebSocketStreamTest : public testing::Test {
   int InitSession(MockRead* reads, size_t reads_count,
                   MockWrite* writes, size_t writes_count,
                   bool throttling) {
-    data_ = new OrderedSocketData(reads, reads_count, writes, writes_count);
+    data_.reset(new OrderedSocketData(reads, reads_count,
+                                      writes, writes_count));
     session_deps_.socket_factory->AddSocketDataProvider(data_.get());
     http_session_ = SpdySessionDependencies::SpdyCreateSession(&session_deps_);
     SpdySessionPool* spdy_session_pool(http_session_->spdy_session_pool());
@@ -289,7 +290,7 @@ class SpdyWebSocketStreamTest : public testing::Test {
   spdy::SpdySettings spdy_settings_to_set_;
   spdy::SpdySettings spdy_settings_to_send_;
   SpdySessionDependencies session_deps_;
-  scoped_refptr<OrderedSocketData> data_;
+  scoped_ptr<OrderedSocketData> data_;
   scoped_refptr<HttpNetworkSession> http_session_;
   scoped_refptr<SpdySession> session_;
   scoped_refptr<TransportSocketParams> transport_params_;

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -256,12 +256,12 @@ class MockURLRequestContext : public net::URLRequestContext {
 
 class MockHttpTransactionFactory : public net::HttpTransactionFactory {
  public:
-  MockHttpTransactionFactory(scoped_refptr<net::OrderedSocketData>& data) {
+  MockHttpTransactionFactory(net::OrderedSocketData* data) {
     data_ = data;
     net::MockConnect connect_data(false, net::OK);
     data_->set_connect_data(connect_data);
     session_deps_.reset(new net::SpdySessionDependencies);
-    session_deps_->socket_factory->AddSocketDataProvider(data_.get());
+    session_deps_->socket_factory->AddSocketDataProvider(data_);
     http_session_ =
         net::SpdySessionDependencies::SpdyCreateSession(session_deps_.get());
     host_port_pair_.set_host("example.com");
@@ -301,7 +301,7 @@ class MockHttpTransactionFactory : public net::HttpTransactionFactory {
     return http_session_.get();
   }
  private:
-  scoped_refptr<net::OrderedSocketData> data_;
+  net::OrderedSocketData* data_;
   scoped_ptr<net::SpdySessionDependencies> session_deps_;
   scoped_refptr<net::HttpNetworkSession> http_session_;
   scoped_refptr<net::TransportSocketParams> transport_params_;
@@ -368,7 +368,7 @@ class WebSocketJobTest : public PlatformTest {
 
     if (stream_type == STREAM_SOCKET || stream_type == STREAM_SPDY_WEBSOCKET) {
       if (stream_type == STREAM_SPDY_WEBSOCKET) {
-        http_factory_.reset(new MockHttpTransactionFactory(data_));
+        http_factory_.reset(new MockHttpTransactionFactory(data_.get()));
         context_->set_http_transaction_factory(http_factory_.get());
       }
 
@@ -448,7 +448,7 @@ class WebSocketJobTest : public PlatformTest {
   scoped_refptr<WebSocketJob> websocket_;
   scoped_refptr<SocketStream> socket_;
   scoped_ptr<MockClientSocketFactory> socket_factory_;
-  scoped_refptr<OrderedSocketData> data_;
+  scoped_ptr<OrderedSocketData> data_;
   TestCompletionCallback sync_test_callback_;
   scoped_refptr<MockSSLConfigService> ssl_config_service_;
   scoped_ptr<net::ProxyService> proxy_service_;
@@ -827,8 +827,8 @@ void WebSocketJobTest::TestConnectByWebSocket(ThrottlingOption throttling) {
              4),
     MockRead(false, 0, 5)  // EOF
   };
-  data_ = new OrderedSocketData(
-      reads, arraysize(reads), writes, arraysize(writes));
+  data_.reset(new OrderedSocketData(
+      reads, arraysize(reads), writes, arraysize(writes)));
 
   GURL url("ws://example.com/demo");
   MockSocketStreamDelegate delegate;
@@ -937,13 +937,13 @@ void WebSocketJobTest::TestConnectBySpdy(
   };
 
   if (spdy == SPDY_ON)
-    data_ = new OrderedSocketData(
+    data_.reset(new OrderedSocketData(
         reads_spdy, arraysize(reads_spdy),
-        writes_spdy, arraysize(writes_spdy));
+        writes_spdy, arraysize(writes_spdy)));
   else
-    data_ = new OrderedSocketData(
+    data_.reset(new OrderedSocketData(
         reads_websocket, arraysize(reads_websocket),
-        writes_websocket, arraysize(writes_websocket));
+        writes_websocket, arraysize(writes_websocket)));
 
   GURL url("ws://example.com/demo");
   MockSocketStreamDelegate delegate;
