@@ -83,11 +83,26 @@ class DeviceTokenFetcherTest : public testing::Test {
   content::TestBrowserThread file_thread_;
 };
 
+ACTION_P(VerifyRegisterRequest, known_machine_id) {
+  ASSERT_TRUE(arg0);
+  ASSERT_TRUE(arg0->GetRequest());
+  ASSERT_TRUE(arg0->GetRequest()->has_register_request());
+  const em::DeviceRegisterRequest& request =
+      arg0->GetRequest()->register_request();
+  if (known_machine_id) {
+    EXPECT_TRUE(request.has_known_machine_id());
+    EXPECT_TRUE(request.known_machine_id());
+  } else {
+    EXPECT_FALSE(request.has_known_machine_id());
+  }
+}
+
 TEST_F(DeviceTokenFetcherTest, FetchToken) {
   testing::InSequence s;
   EXPECT_CALL(service_,
               CreateJob(DeviceManagementRequestJob::TYPE_REGISTRATION))
       .WillOnce(service_.SucceedJob(successful_registration_response_));
+  EXPECT_CALL(service_, StartJob(_)).WillOnce(VerifyRegisterRequest(false));
   DeviceTokenFetcher fetcher(&service_, cache_.get(), data_store_.get(),
                              &notifier_);
   EXPECT_CALL(observer_, OnDeviceTokenChanged());
@@ -185,6 +200,26 @@ TEST_F(DeviceTokenFetcherTest, SetFetchingDoneOnFailures) {
   loop_.RunAllPending();
   // This is the opposite case of DontSetFetchingDone1.
   EXPECT_TRUE(cache_->IsReady());
+}
+
+TEST_F(DeviceTokenFetcherTest, SetKnownMachineId) {
+  EXPECT_CALL(service_,
+              CreateJob(DeviceManagementRequestJob::TYPE_REGISTRATION))
+      .WillOnce(service_.SucceedJob(successful_registration_response_));
+  EXPECT_CALL(service_, StartJob(_)).WillOnce(VerifyRegisterRequest(true));
+
+  DeviceTokenFetcher fetcher(&service_, cache_.get(), data_store_.get(),
+                             &notifier_);
+  EXPECT_CALL(observer_, OnDeviceTokenChanged());
+  EXPECT_EQ("", data_store_->device_token());
+
+  data_store_->set_known_machine_id(true);
+  FetchToken(&fetcher);
+  loop_.RunAllPending();
+
+  Mock::VerifyAndClearExpectations(&observer_);
+  std::string token = data_store_->device_token();
+  EXPECT_NE("", token);
 }
 
 }  // namespace policy

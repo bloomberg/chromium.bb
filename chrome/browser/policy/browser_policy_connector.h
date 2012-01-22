@@ -68,9 +68,13 @@ class BrowserPolicyConnector : public content::NotificationObserver {
     return user_cloud_policy_subsystem_.get();
   }
 
-  // Triggers registration for device policy.
+  // Triggers registration for device policy, using the |owner_email| account.
+  // |token| is an oauth token to authenticate the registration request, and
+  // |known_machine_id| is true if the server should do additional checks based
+  // on the machine_id used for the request.
   void RegisterForDevicePolicy(const std::string& owner_email,
-                               const std::string& token);
+                               const std::string& token,
+                               bool known_machine_id);
 
   // Returns true if this device is managed by an enterprise (as opposed to
   // a local owner).

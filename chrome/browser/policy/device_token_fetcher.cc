@@ -116,6 +116,8 @@ void DeviceTokenFetcher::FetchTokenInternal() {
     request->set_machine_id(data_store_->machine_id());
   if (!data_store_->machine_model().empty())
     request->set_machine_model(data_store_->machine_model());
+  if (data_store_->known_machine_id())
+    request->set_known_machine_id(true);
   request_job_->Start(base::Bind(&DeviceTokenFetcher::OnTokenFetchCompleted,
                                  base::Unretained(this)));
 }

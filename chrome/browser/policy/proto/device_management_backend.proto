@@ -37,6 +37,12 @@ message DeviceRegisterRequest {
   // model name is not available, client SHOULD send generic name like
   // "Android", or "Chrome OS".
   optional string machine_model = 4;
+
+  // When true, indicates that the |machine_id| field should be known to the
+  // server. The server can do additional checks based on this information.
+  // This is currently used for requests triggered by auto-enrollment.
+  // Defaults to false when not present.
+  optional bool known_machine_id = 5;
 }
 
 // Response from server to device register request.

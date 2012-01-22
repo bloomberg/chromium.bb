@@ -148,10 +148,12 @@ ConfigurationPolicyProvider*
 
 void BrowserPolicyConnector::RegisterForDevicePolicy(
     const std::string& owner_email,
-    const std::string& token) {
+    const std::string& token,
+    bool known_machine_id) {
 #if defined(OS_CHROMEOS)
   if (device_data_store_.get()) {
     device_data_store_->set_user_name(owner_email);
+    device_data_store_->set_known_machine_id(known_machine_id);
     device_data_store_->SetOAuthToken(token);
   }
 #endif

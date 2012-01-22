@@ -32,6 +32,7 @@ CloudPolicyDataStore::CloudPolicyDataStore(
     : user_affiliation_(USER_AFFILIATION_NONE),
       policy_register_type_(policy_register_type),
       policy_type_(policy_type),
+      known_machine_id_(false),
       token_cache_loaded_(false) {}
 
 void CloudPolicyDataStore::SetDeviceToken(const std::string& device_token,
@@ -106,6 +107,10 @@ void CloudPolicyDataStore::set_user_affiliation(
   user_affiliation_ = user_affiliation;
 }
 
+void CloudPolicyDataStore::set_known_machine_id(bool known_machine_id) {
+  known_machine_id_ = known_machine_id;
+}
+
 const std::string& CloudPolicyDataStore::device_token() const {
   return device_token_;
 }
@@ -149,6 +154,10 @@ const std::string& CloudPolicyDataStore::user_name() const {
 
 UserAffiliation CloudPolicyDataStore::user_affiliation() const {
   return user_affiliation_;
+}
+
+bool CloudPolicyDataStore::known_machine_id() const {
+  return known_machine_id_;
 }
 
 #if defined(OS_CHROMEOS)

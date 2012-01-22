@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -186,7 +186,7 @@ void EnterpriseEnrollmentScreen::RegisterForDevicePolicy(
 
   // Push the credentials to the policy infrastructure. It'll start enrollment
   // and notify us of progress through CloudPolicySubsystem::Observer.
-  connector->RegisterForDevicePolicy(user_, token);
+  connector->RegisterForDevicePolicy(user_, token, is_auto_enrollment_);
 }
 
 }  // namespace chromeos
