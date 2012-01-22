@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,17 +26,11 @@ const char kKeyBoolean[] = "BooleanPolicy";
 const char kKeyInteger[] = "IntegerPolicy";
 const char kKeyStringList[] = "StringListPolicy";
 
-// In order to have correct enum values, we alias these to some actual policies.
-const ConfigurationPolicyType kPolicyString = kPolicyHomepageLocation;
-const ConfigurationPolicyType kPolicyBoolean = kPolicyHomepageIsNewTabPage;
-const ConfigurationPolicyType kPolicyInteger = kPolicyRestoreOnStartup;
-const ConfigurationPolicyType kPolicyStringList = kPolicyRestoreOnStartupURLs;
-
 static const PolicyDefinitionList::Entry kEntries[] = {
-  { kPolicyString, base::Value::TYPE_STRING, kKeyString },
-  { kPolicyBoolean, base::Value::TYPE_BOOLEAN, kKeyBoolean },
-  { kPolicyInteger, base::Value::TYPE_INTEGER, kKeyInteger },
-  { kPolicyStringList, base::Value::TYPE_LIST, kKeyStringList },
+  { kKeyString,     base::Value::TYPE_STRING },
+  { kKeyBoolean,    base::Value::TYPE_BOOLEAN },
+  { kKeyInteger,    base::Value::TYPE_INTEGER },
+  { kKeyStringList, base::Value::TYPE_LIST },
 };
 
 const PolicyDefinitionList kList = {
@@ -79,7 +73,6 @@ void ConfigurationPolicyProviderTest::TearDown() {
 
 void ConfigurationPolicyProviderTest::CheckValue(
     const char* policy_name,
-    ConfigurationPolicyType policy_type,
     const base::Value& expected_value,
     base::Closure install_value) {
   // Install the value, reload policy and check the provider for the value.
@@ -90,7 +83,7 @@ void ConfigurationPolicyProviderTest::CheckValue(
   EXPECT_TRUE(provider_->Provide(&policy_map));
   EXPECT_EQ(1U, policy_map.size());
   EXPECT_TRUE(base::Value::Equals(&expected_value,
-                                  policy_map.Get(policy_type)));
+                                  policy_map.GetValue(policy_name)));
 }
 
 TEST_P(ConfigurationPolicyProviderTest, Empty) {
@@ -105,7 +98,6 @@ TEST_P(ConfigurationPolicyProviderTest, StringValue) {
   const char kTestString[] = "string_value";
   StringValue expected_value(kTestString);
   CheckValue(test_policy_definitions::kKeyString,
-             test_policy_definitions::kPolicyString,
              expected_value,
              base::Bind(&PolicyProviderTestHarness::InstallStringPolicy,
                         base::Unretained(test_harness_.get()),
@@ -116,7 +108,6 @@ TEST_P(ConfigurationPolicyProviderTest, StringValue) {
 TEST_P(ConfigurationPolicyProviderTest, BooleanValue) {
   base::FundamentalValue expected_value(true);
   CheckValue(test_policy_definitions::kKeyBoolean,
-             test_policy_definitions::kPolicyBoolean,
              expected_value,
              base::Bind(&PolicyProviderTestHarness::InstallBooleanPolicy,
                         base::Unretained(test_harness_.get()),
@@ -127,7 +118,6 @@ TEST_P(ConfigurationPolicyProviderTest, BooleanValue) {
 TEST_P(ConfigurationPolicyProviderTest, IntegerValue) {
   base::FundamentalValue expected_value(42);
   CheckValue(test_policy_definitions::kKeyInteger,
-             test_policy_definitions::kPolicyInteger,
              expected_value,
              base::Bind(&PolicyProviderTestHarness::InstallIntegerPolicy,
                         base::Unretained(test_harness_.get()),
@@ -140,7 +130,6 @@ TEST_P(ConfigurationPolicyProviderTest, StringListValue) {
   expected_value.Set(0U, base::Value::CreateStringValue("first"));
   expected_value.Set(1U, base::Value::CreateStringValue("second"));
   CheckValue(test_policy_definitions::kKeyStringList,
-             test_policy_definitions::kPolicyStringList,
              expected_value,
              base::Bind(&PolicyProviderTestHarness::InstallStringListPolicy,
                         base::Unretained(test_harness_.get()),
@@ -176,6 +165,32 @@ TEST_P(ConfigurationPolicyProviderTest, RefreshPolicies) {
   policy_map.Clear();
   EXPECT_TRUE(provider_->Provide(&policy_map));
   EXPECT_EQ(1U, policy_map.size());
+}
+
+TEST(ConfigurationPolicyProviderTest, FixDeprecatedPolicies) {
+  PolicyMap policy_map;
+  policy_map.Set(key::kProxyServerMode,
+                 POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER,
+                 Value::CreateIntegerValue(3));
+
+  // Both these policies should be ignored, since there's a higher priority
+  // policy available.
+  policy_map.Set(key::kProxyMode,
+                 POLICY_LEVEL_RECOMMENDED,
+                 POLICY_SCOPE_USER,
+                 Value::CreateStringValue("pac_script"));
+  policy_map.Set(key::kProxyPacUrl,
+                 POLICY_LEVEL_RECOMMENDED,
+                 POLICY_SCOPE_USER,
+                 Value::CreateStringValue("http://proxy.example.com/wpad.dat"));
+
+  ConfigurationPolicyProvider::FixDeprecatedPolicies(&policy_map);
+  DictionaryValue expected;
+  expected.SetInteger(key::kProxyServerMode, 3);
+  EXPECT_EQ(1U, policy_map.size());
+  EXPECT_TRUE(Value::Equals(&expected,
+                            policy_map.GetValue(key::kProxySettings)));
 }
 
 }  // namespace policy

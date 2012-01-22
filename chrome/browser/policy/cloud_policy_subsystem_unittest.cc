@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -167,7 +167,7 @@ class CloudPolicySubsystemTestBase : public testing::Test {
     // Test conditions.
     EXPECT_EQ(CloudPolicySubsystem::SUCCESS, cloud_policy_subsystem_->state());
     StringValue homepage_value(homepage_location);
-    VerifyPolicy(kPolicyHomepageLocation, &homepage_value);
+    VerifyPolicy(key::kHomepageLocation, &homepage_value);
     VerifyServerLoad();
   }
 
@@ -204,10 +204,9 @@ class CloudPolicySubsystemTestBase : public testing::Test {
 
  private:
   // Verifies for a given policy that it is provided by the subsystem.
-  void VerifyPolicy(enum ConfigurationPolicyType type, Value* expected) {
-    const PolicyMap* policy_map = cache_->policy(
-        CloudPolicyCacheBase::POLICY_LEVEL_MANDATORY);
-    ASSERT_TRUE(Value::Equals(expected, policy_map->Get(type)));
+  void VerifyPolicy(const char* policy_name, Value* expected) {
+    const PolicyMap* policy_map = cache_->policy();
+    ASSERT_TRUE(Value::Equals(expected, policy_map->GetValue(policy_name)));
   }
 
   // Verifies that the last recorded run of the subsystem did not issue

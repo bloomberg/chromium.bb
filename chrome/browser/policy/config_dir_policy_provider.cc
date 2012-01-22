@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -82,9 +82,12 @@ base::Time ConfigDirPolicyProviderDelegate::GetLastModification() {
 
 ConfigDirPolicyProvider::ConfigDirPolicyProvider(
     const PolicyDefinitionList* policy_list,
+    PolicyLevel level,
     const FilePath& config_dir)
     : FileBasedPolicyProvider(
         policy_list,
+        level,
+        POLICY_SCOPE_MACHINE,
         new ConfigDirPolicyProviderDelegate(config_dir)) {
 }
 

@@ -58,7 +58,9 @@ void TestHarness::SetUp() {}
 AsynchronousPolicyProvider* TestHarness::CreateProvider(
     const PolicyDefinitionList* policy_definition_list) {
   prefs_ = new MockPreferences();
-  return new ConfigurationPolicyProviderMac(policy_definition_list, prefs_);
+  return new ConfigurationPolicyProviderMac(policy_definition_list,
+                                            POLICY_LEVEL_MANDATORY,
+                                            prefs_);
 }
 
 void TestHarness::InstallEmptyPolicy() {}
@@ -123,7 +125,9 @@ class ConfigurationPolicyProviderMacTest : public AsynchronousPolicyTestBase {
  protected:
   ConfigurationPolicyProviderMacTest()
       : prefs_(new MockPreferences()),
-        provider_(&test_policy_definitions::kList, prefs_) {}
+        provider_(&test_policy_definitions::kList,
+                  POLICY_LEVEL_MANDATORY,
+                  prefs_) {}
   virtual ~ConfigurationPolicyProviderMacTest() {}
 
   MockPreferences* prefs_;

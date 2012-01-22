@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -42,7 +42,7 @@ class NetworkConfigurationUpdater
   // |network_library_| if it's different from |*cached_value| (which is
   // updated).
   void ApplyNetworkConfiguration(const PolicyMap& policy_map,
-                                 ConfigurationPolicyType policy_type,
+                                 const char* policy_name,
                                  chromeos::NetworkUIData::ONCSource onc_source,
                                  std::string* cached_value);
 

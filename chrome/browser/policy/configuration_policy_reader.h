@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,7 +11,6 @@
 #include "base/values.h"
 #include "chrome/browser/policy/configuration_policy_provider.h"
 #include "chrome/browser/policy/policy_status_info.h"
-#include "policy/configuration_policy_type.h"
 
 namespace policy {
 
@@ -35,8 +34,7 @@ class ConfigurationPolicyReader : public ConfigurationPolicyProvider::Observer {
     virtual ~Observer() {}
   };
 
-  ConfigurationPolicyReader(ConfigurationPolicyProvider* provider,
-                            PolicyStatusInfo::PolicyLevel policy_level);
+  explicit ConfigurationPolicyReader(ConfigurationPolicyProvider* provider);
   virtual ~ConfigurationPolicyReader();
 
   // ConfigurationPolicyProvider::Observer methods:
@@ -63,8 +61,7 @@ class ConfigurationPolicyReader : public ConfigurationPolicyProvider::Observer {
   // Returns a pointer to a DictionaryValue object containing policy status
   // information for the UI. Ownership of the return value is acquired by the
   // caller. Returns NULL if the reader is not aware of the given policy.
-  virtual DictionaryValue*
-      GetPolicyStatus(ConfigurationPolicyType policy) const;
+  virtual DictionaryValue* GetPolicyStatus(const char* policy) const;
 
  private:
   friend class MockConfigurationPolicyReader;
@@ -78,9 +75,6 @@ class ConfigurationPolicyReader : public ConfigurationPolicyProvider::Observer {
 
   // The policy provider from which policy settings are read.
   ConfigurationPolicyProvider* provider_;
-
-  // Whether this ConfigurationPolicyReader contains managed policies.
-  PolicyStatusInfo::PolicyLevel policy_level_;
 
   // Current policy status.
   scoped_ptr<ConfigurationPolicyStatusKeeper> policy_keeper_;
@@ -121,8 +115,7 @@ class PolicyStatus {
   // Add the policy information for |policy| to the ListValue pointed to be
   // |list| as it is returned by the different ConfigurationPolicyReader
   // objects. Returns true if a policy was added and false otherwise.
-  bool AddPolicyFromReaders(ConfigurationPolicyType policy,
-                            ListValue* list) const;
+  bool AddPolicyFromReaders(const char* policy, ListValue* list) const;
 
   scoped_ptr<ConfigurationPolicyReader> managed_platform_;
   scoped_ptr<ConfigurationPolicyReader> managed_cloud_;

@@ -13,7 +13,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/values.h"
-#include "policy/configuration_policy_type.h"
 
 namespace policy {
 
@@ -61,6 +60,11 @@ class ConfigurationPolicyProvider {
   // OnUpdatePolicy won't be called if that happens.
   virtual void RefreshPolicies() = 0;
 
+  // Utility method that converts deprecated policies into their corresponding
+  // actual policies. Subclasses can use this to fix deprecated policies in
+  // PolicyMaps that they obtained from elsewhere.
+  static void FixDeprecatedPolicies(PolicyMap* policies);
+
  protected:
   // Sends a policy update notification to observers.
   void NotifyPolicyUpdated();
@@ -69,11 +73,6 @@ class ConfigurationPolicyProvider {
   // values actually provided by |Provide| can be overridden using
   // |OverridePolicies|.
   virtual bool ProvideInternal(PolicyMap* result) = 0;
-
-  // Utility method that converts deprecated policies into their corresponding
-  // actual policies. Subclasses can use this to fix deprecated policies in
-  // PolicyMaps that they obtained from elsewhere.
-  static void FixDeprecatedPolicies(PolicyMap* policies);
 
   const PolicyDefinitionList* policy_definition_list() const {
     return policy_definition_list_;

@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -13,8 +13,6 @@
         '<(policy_out_dir)/policy/policy_constants.h',
     'policy_constant_source_path':
         '<(policy_out_dir)/policy/policy_constants.cc',
-    'configuration_policy_type_header_path':
-        '<(policy_out_dir)/policy/configuration_policy_type.h',
     'protobuf_decoder_path':
         '<(policy_out_dir)/policy/cloud_policy_generated.cc',
     'cloud_policy_proto_path': '<(policy_out_dir)/policy/cloud_policy.proto',
@@ -34,7 +32,6 @@
           'outputs': [
             '<(policy_constant_header_path)',
             '<(policy_constant_source_path)',
-            '<(configuration_policy_type_header_path)',
             '<(protobuf_decoder_path)',
             '<(cloud_policy_proto_path)',
           ],
@@ -44,7 +41,6 @@
             '<@(generate_policy_source_script_path)',
             '--policy-constants-header=<(policy_constant_header_path)',
             '--policy-constants-source=<(policy_constant_source_path)',
-            '--policy-type-header=<(configuration_policy_type_header_path)',
             '--policy-protobuf=<(cloud_policy_proto_path)',
             '--protobuf-decoder=<(protobuf_decoder_path)',
             '<(OS)',
@@ -149,7 +145,6 @@
       'sources': [
         '<(policy_constant_header_path)',
         '<(policy_constant_source_path)',
-        '<(configuration_policy_type_header_path)',
         '<(protobuf_decoder_path)',
         '<(protoc_out_dir)/<(proto_path_substr)/cloud_policy.pb.h',
         '<(protoc_out_dir)/<(proto_path_substr)/cloud_policy.pb.cc',
@@ -180,7 +175,6 @@
           'sources': [
             '<(policy_constant_header_path)',
             '<(policy_constant_source_path)',
-            '<(configuration_policy_type_header_path)',
           ],
           'include_dirs': [
             '<(DEPTH)',

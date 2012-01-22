@@ -9,7 +9,7 @@
 #include "chrome/browser/policy/cloud_policy_data_store.h"
 #include "chrome/browser/policy/enterprise_install_attributes.h"
 #include "content/test/test_browser_thread.h"
-#include "policy/configuration_policy_type.h"
+#include "policy/policy_constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -30,7 +30,7 @@ void CreatePolicy(em::PolicyFetchResponse* policy,
                   const std::string& user,
                   em::ChromeDeviceSettingsProto& settings) {
   // This method omits a few fields which currently aren't needed by tests:
-  // timestamp, machine_name, policy_type, public key info.
+  // timestamp, machine_name, public key info.
   em::PolicyData signed_response;
   signed_response.set_username(user);
   signed_response.set_request_token("dmtoken");
@@ -94,12 +94,8 @@ class DevicePolicyCacheTest : public testing::Test {
               install_attributes_.LockDevice(registration_user));
   }
 
-  const Value* GetMandatoryPolicy(ConfigurationPolicyType policy) {
-    return cache_->mandatory_policy_.Get(policy);
-  }
-
-  const Value* GetRecommendedPolicy(ConfigurationPolicyType policy) {
-    return cache_->recommended_policy_.Get(policy);
+  const Value* GetPolicy(const char* policy_name) {
+    return cache_->policy()->GetValue(policy_name);
   }
 
   scoped_ptr<chromeos::CryptohomeLibrary> cryptohome_;
@@ -126,8 +122,7 @@ TEST_F(DevicePolicyCacheTest, Startup) {
   testing::Mock::VerifyAndClearExpectations(&signed_settings_helper_);
   base::FundamentalValue expected(120);
   EXPECT_TRUE(Value::Equals(&expected,
-                            GetMandatoryPolicy(
-                                kPolicyDevicePolicyRefreshRate)));
+                            GetPolicy(key::kDevicePolicyRefreshRate)));
 }
 
 TEST_F(DevicePolicyCacheTest, SetPolicy) {
@@ -145,8 +140,7 @@ TEST_F(DevicePolicyCacheTest, SetPolicy) {
   testing::Mock::VerifyAndClearExpectations(&signed_settings_helper_);
   base::FundamentalValue expected(120);
   EXPECT_TRUE(Value::Equals(&expected,
-                            GetMandatoryPolicy(
-                                kPolicyDevicePolicyRefreshRate)));
+                            GetPolicy(key::kDevicePolicyRefreshRate)));
 
   // Set new policy information.
   em::PolicyFetchResponse new_policy;
@@ -160,8 +154,7 @@ TEST_F(DevicePolicyCacheTest, SetPolicy) {
   testing::Mock::VerifyAndClearExpectations(&signed_settings_helper_);
   base::FundamentalValue updated_expected(300);
   EXPECT_TRUE(Value::Equals(&updated_expected,
-                            GetMandatoryPolicy(
-                                kPolicyDevicePolicyRefreshRate)));
+                            GetPolicy(key::kDevicePolicyRefreshRate)));
 }
 
 TEST_F(DevicePolicyCacheTest, SetPolicyWrongUser) {
@@ -187,8 +180,7 @@ TEST_F(DevicePolicyCacheTest, SetPolicyWrongUser) {
 
   base::FundamentalValue expected(120);
   EXPECT_TRUE(Value::Equals(&expected,
-                            GetMandatoryPolicy(
-                                kPolicyDevicePolicyRefreshRate)));
+                            GetPolicy(key::kDevicePolicyRefreshRate)));
 }
 
 TEST_F(DevicePolicyCacheTest, SetPolicyNonEnterpriseDevice) {
@@ -212,8 +204,7 @@ TEST_F(DevicePolicyCacheTest, SetPolicyNonEnterpriseDevice) {
 
   base::FundamentalValue expected(120);
   EXPECT_TRUE(Value::Equals(&expected,
-                            GetMandatoryPolicy(
-                                kPolicyDevicePolicyRefreshRate)));
+                            GetPolicy(key::kDevicePolicyRefreshRate)));
 }
 
 TEST_F(DevicePolicyCacheTest, SetProxyPolicy) {
@@ -228,18 +219,13 @@ TEST_F(DevicePolicyCacheTest, SetProxyPolicy) {
                                              policy));
   cache_->Load();
   testing::Mock::VerifyAndClearExpectations(&signed_settings_helper_);
-  StringValue expected_proxy_mode("direct");
-  StringValue expected_proxy_server("http://proxy:8080");
-  StringValue expected_proxy_pac_url("http://proxy:8080/pac.js");
-  StringValue expected_proxy_bypass_list("127.0.0.1,example.com");
-  EXPECT_TRUE(Value::Equals(&expected_proxy_mode,
-                            GetRecommendedPolicy(kPolicyProxyMode)));
-  EXPECT_TRUE(Value::Equals(&expected_proxy_server,
-                            GetRecommendedPolicy(kPolicyProxyServer)));
-  EXPECT_TRUE(Value::Equals(&expected_proxy_pac_url,
-                            GetRecommendedPolicy(kPolicyProxyPacUrl)));
-  EXPECT_TRUE(Value::Equals(&expected_proxy_bypass_list,
-                            GetRecommendedPolicy(kPolicyProxyBypassList)));
+  DictionaryValue expected;
+  expected.SetString(key::kProxyMode, "direct");
+  expected.SetString(key::kProxyServer, "http://proxy:8080");
+  expected.SetString(key::kProxyPacUrl, "http://proxy:8080/pac.js");
+  expected.SetString(key::kProxyBypassList, "127.0.0.1,example.com");
+  EXPECT_TRUE(Value::Equals(&expected,
+                            GetPolicy(key::kProxySettings)));
 }
 
 TEST_F(DevicePolicyCacheTest, SetDeviceNetworkConfigurationPolicy) {
@@ -260,7 +246,7 @@ TEST_F(DevicePolicyCacheTest, SetDeviceNetworkConfigurationPolicy) {
   StringValue expected_config(fake_config);
   EXPECT_TRUE(
       Value::Equals(&expected_config,
-                    GetMandatoryPolicy(kPolicyDeviceOpenNetworkConfiguration)));
+                    GetPolicy(key::kDeviceOpenNetworkConfiguration)));
 }
 
 }  // namespace policy

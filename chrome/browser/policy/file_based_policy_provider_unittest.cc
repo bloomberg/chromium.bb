@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -38,17 +38,19 @@ TEST_F(AsynchronousPolicyTestBase, ProviderInit) {
   EXPECT_CALL(*provider_delegate, Load()).WillOnce(Return(
       new DictionaryValue));
   DictionaryValue* policies = new DictionaryValue();
-  policies->SetBoolean(policy::key::kSyncDisabled, true);
+  policies->SetBoolean(key::kSyncDisabled, true);
   // A second call to Load gets triggered during the provider's construction
   // when the file watcher is initialized, since this file may have changed
   // between the initial load and creating watcher.
   EXPECT_CALL(*provider_delegate, Load()).WillOnce(Return(policies));
   FileBasedPolicyProvider provider(GetChromePolicyDefinitionList(),
+                                   POLICY_LEVEL_MANDATORY,
+                                   POLICY_SCOPE_MACHINE,
                                    provider_delegate);
   loop_.RunAllPending();
   PolicyMap policy_map;
   provider.Provide(&policy_map);
-  EXPECT_TRUE(policy_map.Get(policy::kPolicySyncDisabled));
+  EXPECT_TRUE(policy_map.Get(key::kSyncDisabled));
   EXPECT_EQ(1U, policy_map.size());
 }
 
@@ -62,6 +64,8 @@ TEST_F(AsynchronousPolicyTestBase, ProviderRefresh) {
   EXPECT_CALL(*provider_delegate, Load()).WillOnce(Return(
       new DictionaryValue));
   FileBasedPolicyProvider file_based_provider(GetChromePolicyDefinitionList(),
+                                              POLICY_LEVEL_MANDATORY,
+                                              POLICY_SCOPE_MACHINE,
                                               provider_delegate);
   // A second call to Load gets triggered during the provider's construction
   // when the file watcher is initialized, since this file may have changed
@@ -72,7 +76,7 @@ TEST_F(AsynchronousPolicyTestBase, ProviderRefresh) {
   // A third and final call to Load is made by the explicit Reload. This
   // should be the one that provides the current policy.
   DictionaryValue* policies = new DictionaryValue();
-  policies->SetBoolean(policy::key::kSyncDisabled, true);
+  policies->SetBoolean(key::kSyncDisabled, true);
   EXPECT_CALL(*provider_delegate, Load()).WillOnce(Return(policies));
   MockConfigurationPolicyObserver observer;
   ConfigurationPolicyObserverRegistrar registrar;
@@ -82,7 +86,7 @@ TEST_F(AsynchronousPolicyTestBase, ProviderRefresh) {
   loop_.RunAllPending();
   PolicyMap policy_map;
   file_based_provider.Provide(&policy_map);
-  EXPECT_TRUE(policy_map.Get(policy::kPolicySyncDisabled));
+  EXPECT_TRUE(policy_map.Get(key::kSyncDisabled));
   EXPECT_EQ(1U, policy_map.size());
 }
 

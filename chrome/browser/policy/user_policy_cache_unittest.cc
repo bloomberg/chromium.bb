@@ -16,6 +16,7 @@
 #include "chrome/browser/policy/proto/device_management_local.pb.h"
 #include "chrome/browser/policy/proto/old_generic_format.pb.h"
 #include "content/test/test_browser_thread.h"
+#include "policy/policy_constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -26,11 +27,10 @@ namespace em = enterprise_management;
 
 namespace policy {
 
-// Decodes a CloudPolicySettings object into two maps with mandatory and
-// recommended settings, respectively. The implementation is generated code
-// in policy/cloud_policy_generated.cc.
+// Decodes a CloudPolicySettings object into a PolicyMap.
+// The implementation is generated code in policy/cloud_policy_generated.cc.
 void DecodePolicy(const em::CloudPolicySettings& policy,
-                  PolicyMap* mandatory, PolicyMap* recommended);
+                  PolicyMap* policies);
 
 // The implementations of these methods are in cloud_policy_generated.cc.
 Value* DecodeIntegerValue(google::protobuf::int64 value);
@@ -124,14 +124,6 @@ class UserPolicyCacheTest : public testing::Test {
     return temp_dir_.path().AppendASCII("UserPolicyCacheTest");
   }
 
-  const PolicyMap& mandatory_policy(const UserPolicyCache& cache) {
-    return cache.mandatory_policy_;
-  }
-
-  const PolicyMap& recommended_policy(const UserPolicyCache& cache) {
-    return cache.recommended_policy_;
-  }
-
   MessageLoop loop_;
   MockCloudPolicyCacheBaseObserver observer_;
 
@@ -159,17 +151,22 @@ TEST_F(UserPolicyCacheTest, DecodePolicy) {
   settings.mutable_homepageisnewtabpage()->mutable_policy_options()->set_mode(
       static_cast<em::PolicyOptions::PolicyMode>(-1));
 #endif
-  PolicyMap mandatory_policy;
-  PolicyMap recommended_policy;
-  DecodePolicy(settings, &mandatory_policy, &recommended_policy);
-  PolicyMap mandatory;
-  mandatory.Set(kPolicyHomepageLocation,
-                Value::CreateStringValue("chromium.org"));
-  mandatory.Set(kPolicyJavascriptEnabled, Value::CreateBooleanValue(true));
-  PolicyMap recommended;
-  recommended.Set(kPolicyPolicyRefreshRate, Value::CreateIntegerValue(5));
-  EXPECT_TRUE(mandatory.Equals(mandatory_policy));
-  EXPECT_TRUE(recommended.Equals(recommended_policy));
+  PolicyMap policy;
+  DecodePolicy(settings, &policy);
+  PolicyMap expected;
+  expected.Set(key::kHomepageLocation,
+               POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER,
+               Value::CreateStringValue("chromium.org"));
+  expected.Set(key::kJavascriptEnabled,
+               POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER,
+               Value::CreateBooleanValue(true));
+  expected.Set(key::kPolicyRefreshRate,
+               POLICY_LEVEL_RECOMMENDED,
+               POLICY_SCOPE_USER,
+               Value::CreateIntegerValue(5));
+  EXPECT_TRUE(policy.Equals(expected));
 }
 
 TEST_F(UserPolicyCacheTest, DecodeIntegerValue) {
@@ -210,8 +207,7 @@ TEST_F(UserPolicyCacheTest, DecodeStringList) {
 TEST_F(UserPolicyCacheTest, Empty) {
   UserPolicyCache cache(test_file(), false  /* wait_for_policy_fetch */);
   PolicyMap empty;
-  EXPECT_TRUE(empty.Equals(mandatory_policy(cache)));
-  EXPECT_TRUE(empty.Equals(recommended_policy(cache)));
+  EXPECT_TRUE(empty.Equals(*cache.policy()));
   EXPECT_EQ(base::Time(), cache.last_policy_refresh_time());
 }
 
@@ -220,7 +216,7 @@ TEST_F(UserPolicyCacheTest, LoadNoFile) {
   cache.Load();
   loop_.RunAllPending();
   PolicyMap empty;
-  EXPECT_TRUE(empty.Equals(mandatory_policy(cache)));
+  EXPECT_TRUE(empty.Equals(*cache.policy()));
   EXPECT_EQ(base::Time(), cache.last_policy_refresh_time());
 }
 
@@ -234,7 +230,7 @@ TEST_F(UserPolicyCacheTest, RejectFuture) {
   cache.Load();
   loop_.RunAllPending();
   PolicyMap empty;
-  EXPECT_TRUE(empty.Equals(mandatory_policy(cache)));
+  EXPECT_TRUE(empty.Equals(*cache.policy()));
   EXPECT_EQ(base::Time(), cache.last_policy_refresh_time());
 }
 
@@ -247,7 +243,7 @@ TEST_F(UserPolicyCacheTest, LoadWithFile) {
   cache.Load();
   loop_.RunAllPending();
   PolicyMap empty;
-  EXPECT_TRUE(empty.Equals(mandatory_policy(cache)));
+  EXPECT_TRUE(empty.Equals(*cache.policy()));
   EXPECT_NE(base::Time(), cache.last_policy_refresh_time());
   EXPECT_GE(base::Time::Now(), cache.last_policy_refresh_time());
 }
@@ -262,9 +258,11 @@ TEST_F(UserPolicyCacheTest, LoadWithData) {
   cache.Load();
   loop_.RunAllPending();
   PolicyMap expected;
-  expected.Set(kPolicyHomepageLocation,
+  expected.Set(key::kHomepageLocation,
+               POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER,
                Value::CreateStringValue("http://www.example.com"));
-  EXPECT_TRUE(expected.Equals(mandatory_policy(cache)));
+  EXPECT_TRUE(expected.Equals(*cache.policy()));
 }
 
 TEST_F(UserPolicyCacheTest, SetPolicy) {
@@ -280,17 +278,20 @@ TEST_F(UserPolicyCacheTest, SetPolicy) {
                            em::PolicyOptions::MANDATORY);
   SetPolicy(&cache, policy2);
   PolicyMap expected;
-  expected.Set(kPolicyHomepageLocation,
+  expected.Set(key::kHomepageLocation,
+               POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER,
                Value::CreateStringValue("http://www.example.com"));
-  PolicyMap empty;
-  EXPECT_TRUE(expected.Equals(mandatory_policy(cache)));
-  EXPECT_TRUE(empty.Equals(recommended_policy(cache)));
+  EXPECT_TRUE(expected.Equals(*cache.policy()));
   policy = CreateHomepagePolicy("http://www.example.com",
                                 base::Time::NowFromSystemTime(),
                                 em::PolicyOptions::RECOMMENDED);
   SetPolicy(&cache, policy);
-  EXPECT_TRUE(expected.Equals(recommended_policy(cache)));
-  EXPECT_TRUE(empty.Equals(mandatory_policy(cache)));
+  expected.Set(key::kHomepageLocation,
+               POLICY_LEVEL_RECOMMENDED,
+               POLICY_SCOPE_USER,
+               Value::CreateStringValue("http://www.example.com"));
+  EXPECT_TRUE(expected.Equals(*cache.policy()));
 }
 
 TEST_F(UserPolicyCacheTest, ResetPolicy) {
@@ -302,16 +303,18 @@ TEST_F(UserPolicyCacheTest, ResetPolicy) {
                            em::PolicyOptions::MANDATORY);
   SetPolicy(&cache, policy);
   PolicyMap expected;
-  expected.Set(kPolicyHomepageLocation,
+  expected.Set(key::kHomepageLocation,
+               POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER,
                Value::CreateStringValue("http://www.example.com"));
-  EXPECT_TRUE(expected.Equals(mandatory_policy(cache)));
+  EXPECT_TRUE(expected.Equals(*cache.policy()));
 
   em::PolicyFetchResponse* empty_policy =
       CreateHomepagePolicy("", base::Time::NowFromSystemTime(),
                            em::PolicyOptions::MANDATORY);
   SetPolicy(&cache, empty_policy);
   PolicyMap empty;
-  EXPECT_TRUE(empty.Equals(mandatory_policy(cache)));
+  EXPECT_TRUE(empty.Equals(*cache.policy()));
 }
 
 TEST_F(UserPolicyCacheTest, PersistPolicy) {
@@ -331,9 +334,11 @@ TEST_F(UserPolicyCacheTest, PersistPolicy) {
   cache.Load();
   loop_.RunAllPending();
   PolicyMap expected;
-  expected.Set(kPolicyHomepageLocation,
+  expected.Set(key::kHomepageLocation,
+               POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER,
                Value::CreateStringValue("http://www.example.com"));
-  EXPECT_TRUE(expected.Equals(mandatory_policy(cache)));
+  EXPECT_TRUE(expected.Equals(*cache.policy()));
 }
 
 TEST_F(UserPolicyCacheTest, FreshPolicyOverride) {
@@ -353,9 +358,11 @@ TEST_F(UserPolicyCacheTest, FreshPolicyOverride) {
   cache.Load();
   loop_.RunAllPending();
   PolicyMap expected;
-  expected.Set(kPolicyHomepageLocation,
+  expected.Set(key::kHomepageLocation,
+               POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER,
                Value::CreateStringValue("http://www.chromium.org"));
-  EXPECT_TRUE(expected.Equals(mandatory_policy(cache)));
+  EXPECT_TRUE(expected.Equals(*cache.policy()));
 }
 
 TEST_F(UserPolicyCacheTest, SetReady) {
@@ -398,18 +405,21 @@ TEST_F(UserPolicyCacheTest, OldStylePolicy) {
 
   SetPolicy(&cache, policy);
   PolicyMap expected;
-  expected.Set(kPolicyHomepageLocation,
+  expected.Set(key::kHomepageLocation,
+               POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER,
                Value::CreateStringValue("http://www.example.com"));
-  PolicyMap empty;
-  EXPECT_TRUE(expected.Equals(mandatory_policy(cache)));
-  EXPECT_TRUE(empty.Equals(recommended_policy(cache)));
+  EXPECT_TRUE(expected.Equals(*cache.policy()));
   // If new-style policy comes in, it should override old-style policy.
   policy = CreateHomepagePolicy("http://www.example.com",
                                 base::Time::NowFromSystemTime(),
                                 em::PolicyOptions::RECOMMENDED);
+  expected.Set(key::kHomepageLocation,
+               POLICY_LEVEL_RECOMMENDED,
+               POLICY_SCOPE_USER,
+               Value::CreateStringValue("http://www.example.com"));
   SetPolicy(&cache, policy);
-  EXPECT_TRUE(expected.Equals(recommended_policy(cache)));
-  EXPECT_TRUE(empty.Equals(mandatory_policy(cache)));
+  EXPECT_TRUE(expected.Equals(*cache.policy()));
 }
 
 TEST_F(UserPolicyCacheTest, CheckReadyNoWaiting) {

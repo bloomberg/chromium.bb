@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,8 +19,9 @@ class MockConfigurationPolicyProvider : public ConfigurationPolicyProvider {
   MockConfigurationPolicyProvider();
   virtual ~MockConfigurationPolicyProvider();
 
-  void AddPolicy(ConfigurationPolicyType policy, Value* value);
-  void RemovePolicy(ConfigurationPolicyType policy);
+  void AddMandatoryPolicy(const std::string& policy, Value* value);
+  void AddRecommendedPolicy(const std::string& policy, Value* value);
+  void RemovePolicy(const std::string& policy);
 
   void SetInitializationComplete(bool initialization_complete);
 

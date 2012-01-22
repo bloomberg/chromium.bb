@@ -15,7 +15,7 @@
 namespace policy {
 
 struct PolicyErrorMap::PendingError {
-  PendingError(ConfigurationPolicyType policy,
+  PendingError(const std::string& policy,
                const std::string& subkey,
                int message_id,
                const std::string& replacement)
@@ -25,7 +25,7 @@ struct PolicyErrorMap::PendingError {
         has_replacement(true),
         replacement(replacement) {}
 
-  PendingError(ConfigurationPolicyType policy,
+  PendingError(const std::string& policy,
                const std::string& subkey,
                int message_id)
       : policy(policy),
@@ -33,7 +33,7 @@ struct PolicyErrorMap::PendingError {
         message_id(message_id),
         has_replacement(false) {}
 
-  ConfigurationPolicyType policy;
+  std::string policy;
   std::string subkey;
   int message_id;
   bool has_replacement;
@@ -50,30 +50,30 @@ bool PolicyErrorMap::IsReady() const {
   return ui::ResourceBundle::HasSharedInstance();
 }
 
-void PolicyErrorMap::AddError(ConfigurationPolicyType policy, int message_id) {
+void PolicyErrorMap::AddError(const std::string& policy, int message_id) {
   AddError(PendingError(policy, std::string(), message_id));
 }
 
-void PolicyErrorMap::AddError(ConfigurationPolicyType policy,
+void PolicyErrorMap::AddError(const std::string& policy,
                               const std::string& subkey,
                               int message_id) {
   AddError(PendingError(policy, subkey, message_id));
 }
 
-void PolicyErrorMap::AddError(ConfigurationPolicyType policy,
+void PolicyErrorMap::AddError(const std::string& policy,
                               int message_id,
                               const std::string& replacement) {
   AddError(PendingError(policy, std::string(), message_id, replacement));
 }
 
-void PolicyErrorMap::AddError(ConfigurationPolicyType policy,
+void PolicyErrorMap::AddError(const std::string& policy,
                               const std::string& subkey,
                               int message_id,
                               const std::string& replacement) {
   AddError(PendingError(policy, subkey, message_id, replacement));
 }
 
-string16 PolicyErrorMap::GetErrors(ConfigurationPolicyType policy) {
+string16 PolicyErrorMap::GetErrors(const std::string& policy) {
   CheckReadyAndConvert();
   std::pair<const_iterator, const_iterator> range = map_.equal_range(policy);
   std::vector<string16> list;

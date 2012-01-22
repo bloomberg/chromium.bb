@@ -133,18 +133,25 @@ base::Time MacPreferencesPolicyProviderDelegate::GetLastModification() {
 }
 
 ConfigurationPolicyProviderMac::ConfigurationPolicyProviderMac(
-    const PolicyDefinitionList* policy_list)
-    : FileBasedPolicyProvider(policy_list,
+    const PolicyDefinitionList* policy_list,
+    PolicyLevel level)
+    : FileBasedPolicyProvider(
+          policy_list,
+          level,
+          POLICY_SCOPE_USER,
           new MacPreferencesPolicyProviderDelegate(new MacPreferences,
                                                    policy_list)) {
 }
 
 ConfigurationPolicyProviderMac::ConfigurationPolicyProviderMac(
     const PolicyDefinitionList* policy_list,
+    PolicyLevel level,
     MacPreferences* preferences)
-    : FileBasedPolicyProvider(policy_list,
-          new MacPreferencesPolicyProviderDelegate(preferences,
-                                                   policy_list)) {
+    : FileBasedPolicyProvider(
+          policy_list,
+          level,
+          POLICY_SCOPE_USER,
+          new MacPreferencesPolicyProviderDelegate(preferences, policy_list)) {
 }
 
 }  // namespace policy

@@ -11,6 +11,20 @@
 
 namespace policy {
 
+bool PolicyMap::Entry::has_higher_priority_than(
+    const PolicyMap::Entry& other) const {
+  if (level == other.level)
+    return scope > other.scope;
+  else
+    return level > other.level;
+}
+
+bool PolicyMap::Entry::Equals(const PolicyMap::Entry& other) const {
+  return level == other.level &&
+         scope == other.scope &&
+         Value::Equals(value, other.value);
+}
+
 PolicyMap::PolicyMap() {
 }
 
@@ -18,21 +32,32 @@ PolicyMap::~PolicyMap() {
   Clear();
 }
 
-const Value* PolicyMap::Get(ConfigurationPolicyType policy) const {
+const PolicyMap::Entry* PolicyMap::Get(const std::string& policy) const {
   PolicyMapType::const_iterator entry = map_.find(policy);
-  return entry == map_.end() ? NULL : entry->second;
+  return entry == map_.end() ? NULL : &entry->second;
 }
 
-void PolicyMap::Set(ConfigurationPolicyType policy, Value* value) {
-  std::swap(map_[policy], value);
-  delete value;
+const Value* PolicyMap::GetValue(const std::string& policy) const {
+  PolicyMapType::const_iterator entry = map_.find(policy);
+  return entry == map_.end() ? NULL : entry->second.value;
 }
 
-void PolicyMap::Erase(ConfigurationPolicyType policy) {
-  const const_iterator entry = map_.find(policy);
-  if (entry != map_.end()) {
-    delete entry->second;
-    map_.erase(entry->first);
+void PolicyMap::Set(const std::string& policy,
+                    PolicyLevel level,
+                    PolicyScope scope,
+                    Value* value) {
+  Entry& entry = map_[policy];
+  delete entry.value;
+  entry.level = level;
+  entry.scope = scope;
+  entry.value = value;
+}
+
+void PolicyMap::Erase(const std::string& policy) {
+  PolicyMapType::iterator it = map_.find(policy);
+  if (it != map_.end()) {
+    delete it->second.value;
+    map_.erase(it);
   }
 }
 
@@ -42,32 +67,76 @@ void PolicyMap::Swap(PolicyMap* other) {
 
 void PolicyMap::CopyFrom(const PolicyMap& other) {
   Clear();
-  for (const_iterator i = other.begin(); i != other.end(); ++i) {
-    Set(i->first, i->second->DeepCopy());
+  for (const_iterator it = other.begin(); it != other.end(); ++it) {
+    const Entry& entry = it->second;
+    Set(it->first, entry.level, entry.scope, entry.value->DeepCopy());
   }
 }
 
 void PolicyMap::MergeFrom(const PolicyMap& other) {
-  for (const_iterator i = other.begin(); i != other.end(); ++i) {
-    if (!Get(i->first))
-      Set(i->first, i->second->DeepCopy());
+  for (const_iterator it = other.begin(); it != other.end(); ++it) {
+    const Entry* entry = Get(it->first);
+    if (!entry || it->second.has_higher_priority_than(*entry)) {
+      Set(it->first, it->second.level, it->second.scope,
+          it->second.value->DeepCopy());
+    }
   }
 }
 
 void PolicyMap::LoadFrom(
     const DictionaryValue* policies,
-    const PolicyDefinitionList* list) {
+    const PolicyDefinitionList* list,
+    PolicyLevel level,
+    PolicyScope scope) {
   const PolicyDefinitionList::Entry* entry;
   for (entry = list->begin; entry != list->end; ++entry) {
     Value* value;
     if (policies->Get(entry->name, &value))
-      Set(entry->policy_type, value->DeepCopy());
+      Set(entry->name, level, scope, value->DeepCopy());
+  }
+}
+
+void PolicyMap::GetDifferingKeys(const PolicyMap& other,
+                                 std::set<std::string>* differing_keys) const {
+  // Walk over the maps in lockstep, adding everything that is different.
+  const_iterator iter_this(begin());
+  const_iterator iter_other(other.begin());
+  while (iter_this != end() && iter_other != other.end()) {
+    const int diff = iter_this->first.compare(iter_other->first);
+    if (diff == 0) {
+      if (!iter_this->second.Equals(iter_other->second))
+        differing_keys->insert(iter_this->first);
+      ++iter_this;
+      ++iter_other;
+    } else if (diff < 0) {
+      differing_keys->insert(iter_this->first);
+      ++iter_this;
+    } else {
+      differing_keys->insert(iter_other->first);
+      ++iter_other;
+    }
+  }
+
+  // Add the remaining entries.
+  for ( ; iter_this != end(); ++iter_this)
+      differing_keys->insert(iter_this->first);
+  for ( ; iter_other != other.end(); ++iter_other)
+      differing_keys->insert(iter_other->first);
+}
+
+void PolicyMap::FilterLevel(PolicyLevel level) {
+  PolicyMapType::iterator iter(map_.begin());
+  while (iter != map_.end()) {
+    if (iter->second.level != level)
+      map_.erase(iter++);
+    else
+      ++iter;
   }
 }
 
 bool PolicyMap::Equals(const PolicyMap& other) const {
-  return other.map_.size() == map_.size() &&
-      std::equal(map_.begin(), map_.end(), other.map_.begin(), MapEntryEquals);
+  return other.size() == size() &&
+      std::equal(begin(), end(), other.begin(), MapEntryEquals);
 }
 
 bool PolicyMap::empty() const {
@@ -87,13 +156,15 @@ PolicyMap::const_iterator PolicyMap::end() const {
 }
 
 void PolicyMap::Clear() {
-  STLDeleteValues(&map_);
+  for (PolicyMapType::iterator it = map_.begin(); it != map_.end(); ++it)
+    delete it->second.value;
+  map_.clear();
 }
 
 // static
 bool PolicyMap::MapEntryEquals(const PolicyMap::PolicyMapType::value_type& a,
                                const PolicyMap::PolicyMapType::value_type& b) {
-  return a.first == b.first && Value::Equals(a.second, b.second);
+  return a.first == b.first && a.second.Equals(b.second);
 }
 
 }  // namespace policy

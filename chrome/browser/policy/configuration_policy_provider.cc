@@ -4,6 +4,8 @@
 
 #include "chrome/browser/policy/configuration_policy_provider.h"
 
+#include <algorithm>
+
 #include "chrome/browser/policy/policy_map.h"
 #include "policy/policy_constants.h"
 
@@ -11,12 +13,12 @@ namespace policy {
 
 namespace {
 
-ConfigurationPolicyType kProxyPolicies[] = {
-  kPolicyProxyMode,
-  kPolicyProxyServerMode,
-  kPolicyProxyServer,
-  kPolicyProxyPacUrl,
-  kPolicyProxyBypassList,
+const char* kProxyPolicies[] = {
+  key::kProxyMode,
+  key::kProxyServerMode,
+  key::kProxyServer,
+  key::kProxyPacUrl,
+  key::kProxyBypassList,
 };
 
 }  // namespace
@@ -68,12 +70,6 @@ void ConfigurationPolicyProvider::OverridePolicies(PolicyMap* policies) {
 
 #endif
 
-void ConfigurationPolicyProvider::NotifyPolicyUpdated() {
-  FOR_EACH_OBSERVER(ConfigurationPolicyProvider::Observer,
-                    observer_list_,
-                    OnUpdatePolicy(this));
-}
-
 // static
 void ConfigurationPolicyProvider::FixDeprecatedPolicies(PolicyMap* policies) {
   // Proxy settings have been configured by 5 policies that didn't mix well
@@ -82,16 +78,37 @@ void ConfigurationPolicyProvider::FixDeprecatedPolicies(PolicyMap* policies) {
   // single Dictionary policy when all providers have support for that. For
   // now, the individual policies are mapped here to a single Dictionary policy
   // that the rest of the policy machinery uses.
+
+  // The highest (level, scope) pair for an existing proxy policy is determined
+  // first, and then only policies with those exact attributes are merged.
+  PolicyMap::Entry current_priority;  // Defaults to the lowest priority.
   scoped_ptr<DictionaryValue> proxy_settings(new DictionaryValue);
   for (size_t i = 0; i < arraysize(kProxyPolicies); ++i) {
-    const Value* value = policies->Get(kProxyPolicies[i]);
-    if (value) {
-      proxy_settings->Set(GetPolicyName(kProxyPolicies[i]), value->DeepCopy());
+    const PolicyMap::Entry* entry = policies->Get(kProxyPolicies[i]);
+    if (entry) {
+      if (entry->has_higher_priority_than(current_priority)) {
+        proxy_settings->Clear();
+        current_priority = *entry;
+      }
+      if (!entry->has_higher_priority_than(current_priority) &&
+          !current_priority.has_higher_priority_than(*entry)) {
+        proxy_settings->Set(kProxyPolicies[i], entry->value->DeepCopy());
+      }
       policies->Erase(kProxyPolicies[i]);
     }
   }
-  if (!proxy_settings->empty() && !policies->Get(kPolicyProxySettings))
-    policies->Set(kPolicyProxySettings, proxy_settings.release());
+  if (!proxy_settings->empty() && !policies->Get(key::kProxySettings)) {
+    policies->Set(key::kProxySettings,
+                  current_priority.level,
+                  current_priority.scope,
+                  proxy_settings.release());
+  }
+}
+
+void ConfigurationPolicyProvider::NotifyPolicyUpdated() {
+  FOR_EACH_OBSERVER(ConfigurationPolicyProvider::Observer,
+                    observer_list_,
+                    OnUpdatePolicy(this));
 }
 
 void ConfigurationPolicyProvider::AddObserver(Observer* observer) {

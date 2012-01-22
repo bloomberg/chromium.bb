@@ -21,6 +21,15 @@ namespace em = enterprise_management;
 
 namespace policy {
 
+namespace {
+
+// Utility function for tests.
+void SetPolicy(PolicyMap* map, const char* policy, Value* value) {
+  map->Set(policy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER, value);
+}
+
+}  // namespace
+
 class MockCloudPolicyCache : public CloudPolicyCacheBase {
  public:
   MockCloudPolicyCache() {}
@@ -30,8 +39,7 @@ class MockCloudPolicyCache : public CloudPolicyCacheBase {
   void Load() OVERRIDE {}
   void SetPolicy(const em::PolicyFetchResponse& policy) OVERRIDE {}
   bool DecodePolicyData(const em::PolicyData& policy_data,
-                        PolicyMap* mandatory,
-                        PolicyMap* recommended) OVERRIDE {
+                        PolicyMap* policies) OVERRIDE {
     return true;
   }
 
@@ -39,17 +47,16 @@ class MockCloudPolicyCache : public CloudPolicyCacheBase {
     is_unmanaged_ = true;
   }
 
-  // Non-const accessors for underlying PolicyMaps.
-  PolicyMap* raw_mandatory_policy() {
-    return &mandatory_policy_;
-  }
-
-  PolicyMap* raw_recommended_policy() {
-    return &recommended_policy_;
+  PolicyMap* mutable_policy() {
+    return &policies_;
   }
 
   void set_initialized(bool initialized) {
     initialization_complete_ = initialized;
+  }
+
+  void Set(const char *name, Value* value) {
+    policies_.Set(name, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER, value);
   }
 
  private:
@@ -60,10 +67,9 @@ class CloudPolicyProviderTest : public testing::Test {
  protected:
   void CreateCloudPolicyProvider() {
     cloud_policy_provider_.reset(
-        new CloudPolicyProviderImpl(
-            &browser_policy_connector_,
-            GetChromePolicyDefinitionList(),
-            CloudPolicyCacheBase::POLICY_LEVEL_MANDATORY));
+        new CloudPolicyProviderImpl(&browser_policy_connector_,
+                                    GetChromePolicyDefinitionList(),
+                                    POLICY_LEVEL_MANDATORY));
   }
 
   // Appends the caches to a provider and then provides the policies to
@@ -73,7 +79,7 @@ class CloudPolicyProviderTest : public testing::Test {
     CloudPolicyProviderImpl provider(
         &browser_policy_connector_,
         GetChromePolicyDefinitionList(),
-        CloudPolicyCacheBase::POLICY_LEVEL_MANDATORY);
+        POLICY_LEVEL_MANDATORY);
     for (int i = 0; i < n; i++) {
       provider.AppendCache(&caches[i]);
     }
@@ -84,9 +90,9 @@ class CloudPolicyProviderTest : public testing::Test {
                             const PolicyMap& overlay,
                             PolicyMap* out_map) {
     MockCloudPolicyCache caches[2];
-    caches[0].raw_mandatory_policy()->CopyFrom(base);
+    caches[0].mutable_policy()->CopyFrom(base);
     caches[0].set_initialized(true);
-    caches[1].raw_mandatory_policy()->CopyFrom(overlay);
+    caches[1].mutable_policy()->CopyFrom(overlay);
     caches[1].set_initialized(true);
     RunCachesThroughProvider(caches, 2, out_map);
   }
@@ -111,68 +117,60 @@ TEST_F(CloudPolicyProviderTest,
   MockCloudPolicyCache caches[n];
 
   // Prepare |cache[0]| to serve some non-proxy policies.
-  caches[0].raw_mandatory_policy()->Set(kPolicyShowHomeButton,
-                                        Value::CreateBooleanValue(true));
-  caches[0].raw_mandatory_policy()->Set(kPolicyIncognitoEnabled,
-                                        Value::CreateBooleanValue(true));
-  caches[0].raw_mandatory_policy()->Set(kPolicyTranslateEnabled,
-                                        Value::CreateBooleanValue(true));
+  caches[0].Set(key::kShowHomeButton, Value::CreateBooleanValue(true));
+  caches[0].Set(key::kIncognitoEnabled, Value::CreateBooleanValue(true));
+  caches[0].Set(key::kTranslateEnabled, Value::CreateBooleanValue(true));
   caches[0].set_initialized(true);
 
   // Prepare the other caches to serve one proxy-policy each.
-  caches[1].raw_mandatory_policy()->Set(kPolicyProxyMode,
-                                        Value::CreateStringValue("cache 1"));
+  caches[1].Set(key::kProxyMode, Value::CreateStringValue("cache 1"));
   caches[1].set_initialized(true);
-  caches[2].raw_mandatory_policy()->Set(kPolicyProxyServerMode,
-                                        Value::CreateIntegerValue(2));
+  caches[2].Set(key::kProxyServerMode, Value::CreateIntegerValue(2));
   caches[2].set_initialized(true);
-  caches[3].raw_mandatory_policy()->Set(kPolicyProxyServer,
-                                        Value::CreateStringValue("cache 3"));
+  caches[3].Set(key::kProxyServer, Value::CreateStringValue("cache 3"));
   caches[3].set_initialized(true);
-  caches[4].raw_mandatory_policy()->Set(kPolicyProxyPacUrl,
-                                        Value::CreateStringValue("cache 4"));
+  caches[4].Set(key::kProxyPacUrl, Value::CreateStringValue("cache 4"));
   caches[4].set_initialized(true);
-  caches[5].raw_mandatory_policy()->Set(kPolicyProxyMode,
-                                        Value::CreateStringValue("cache 5"));
+  caches[5].Set(key::kProxyMode, Value::CreateStringValue("cache 5"));
   caches[5].set_initialized(true);
 
   PolicyMap policies;
   RunCachesThroughProvider(caches, n, &policies);
 
   // Verify expectations.
-  EXPECT_TRUE(policies.Get(kPolicyProxyMode) == NULL);
-  EXPECT_TRUE(policies.Get(kPolicyProxyServerMode) == NULL);
-  EXPECT_TRUE(policies.Get(kPolicyProxyServer) == NULL);
-  EXPECT_TRUE(policies.Get(kPolicyProxyPacUrl) == NULL);
+  EXPECT_TRUE(policies.Get(key::kProxyMode) == NULL);
+  EXPECT_TRUE(policies.Get(key::kProxyServerMode) == NULL);
+  EXPECT_TRUE(policies.Get(key::kProxyServer) == NULL);
+  EXPECT_TRUE(policies.Get(key::kProxyPacUrl) == NULL);
 
-  const Value* value = policies.Get(kPolicyProxySettings);
+  const Value* value = policies.GetValue(key::kProxySettings);
   ASSERT_TRUE(value != NULL);
   ASSERT_TRUE(value->IsType(Value::TYPE_DICTIONARY));
   const DictionaryValue* settings = static_cast<const DictionaryValue*>(value);
   std::string mode;
-  EXPECT_TRUE(settings->GetString(GetPolicyName(kPolicyProxyMode), &mode));
+  EXPECT_TRUE(settings->GetString(key::kProxyMode, &mode));
   EXPECT_EQ("cache 1", mode);
 
   base::FundamentalValue expected(true);
   EXPECT_TRUE(base::Value::Equals(&expected,
-                                  policies.Get(kPolicyShowHomeButton)));
+                                  policies.GetValue(key::kShowHomeButton)));
   EXPECT_TRUE(base::Value::Equals(&expected,
-                                  policies.Get(kPolicyIncognitoEnabled)));
+                                  policies.GetValue(key::kIncognitoEnabled)));
   EXPECT_TRUE(base::Value::Equals(&expected,
-                                  policies.Get(kPolicyTranslateEnabled)));
+                                  policies.GetValue(key::kTranslateEnabled)));
 }
 
 // Combining two PolicyMaps.
 TEST_F(CloudPolicyProviderTest, CombineTwoPolicyMapsSame) {
   PolicyMap A, B, C;
-  A.Set(kPolicyHomepageLocation,
-        Value::CreateStringValue("http://www.chromium.org"));
-  B.Set(kPolicyHomepageLocation,
-        Value::CreateStringValue("http://www.google.com"));
-  A.Set(kPolicyApplicationLocaleValue, Value::CreateStringValue("hu"));
-  B.Set(kPolicyApplicationLocaleValue, Value::CreateStringValue("us"));
-  A.Set(kPolicyDevicePolicyRefreshRate, new base::FundamentalValue(100));
-  B.Set(kPolicyDevicePolicyRefreshRate, new base::FundamentalValue(200));
+  SetPolicy(&A, key::kHomepageLocation,
+            Value::CreateStringValue("http://www.chromium.org"));
+  SetPolicy(&B, key::kHomepageLocation,
+            Value::CreateStringValue("http://www.google.com"));
+  SetPolicy(&A, key::kApplicationLocaleValue, Value::CreateStringValue("hu"));
+  SetPolicy(&B, key::kApplicationLocaleValue, Value::CreateStringValue("us"));
+  SetPolicy(&A, key::kDevicePolicyRefreshRate, new base::FundamentalValue(100));
+  SetPolicy(&B, key::kDevicePolicyRefreshRate, new base::FundamentalValue(200));
   CombineTwoPolicyMaps(A, B, &C);
   EXPECT_TRUE(A.Equals(C));
 }
@@ -186,27 +184,27 @@ TEST_F(CloudPolicyProviderTest, CombineTwoPolicyMapsEmpty) {
 TEST_F(CloudPolicyProviderTest, CombineTwoPolicyMapsPartial) {
   PolicyMap A, B, C;
 
-  A.Set(kPolicyHomepageLocation,
-        Value::CreateStringValue("http://www.chromium.org"));
-  B.Set(kPolicyHomepageLocation,
-        Value::CreateStringValue("http://www.google.com"));
-  B.Set(kPolicyApplicationLocaleValue, Value::CreateStringValue("us"));
-  A.Set(kPolicyDevicePolicyRefreshRate, new base::FundamentalValue(100));
-  B.Set(kPolicyDevicePolicyRefreshRate, new base::FundamentalValue(200));
+  SetPolicy(&A, key::kHomepageLocation,
+            Value::CreateStringValue("http://www.chromium.org"));
+  SetPolicy(&B, key::kHomepageLocation,
+            Value::CreateStringValue("http://www.google.com"));
+  SetPolicy(&B, key::kApplicationLocaleValue, Value::CreateStringValue("us"));
+  SetPolicy(&A, key::kDevicePolicyRefreshRate, new base::FundamentalValue(100));
+  SetPolicy(&B, key::kDevicePolicyRefreshRate, new base::FundamentalValue(200));
   CombineTwoPolicyMaps(A, B, &C);
 
   const Value* value;
   std::string string_value;
   int int_value;
-  value = C.Get(kPolicyHomepageLocation);
+  value = C.GetValue(key::kHomepageLocation);
   ASSERT_TRUE(NULL != value);
   EXPECT_TRUE(value->GetAsString(&string_value));
   EXPECT_EQ("http://www.chromium.org", string_value);
-  value = C.Get(kPolicyApplicationLocaleValue);
+  value = C.GetValue(key::kApplicationLocaleValue);
   ASSERT_TRUE(NULL != value);
   EXPECT_TRUE(value->GetAsString(&string_value));
   EXPECT_EQ("us", string_value);
-  value = C.Get(kPolicyDevicePolicyRefreshRate);
+  value = C.GetValue(key::kDevicePolicyRefreshRate);
   ASSERT_TRUE(NULL != value);
   EXPECT_TRUE(value->GetAsInteger(&int_value));
   EXPECT_EQ(100, int_value);
@@ -217,12 +215,11 @@ TEST_F(CloudPolicyProviderTest, CombineTwoPolicyMapsProxies) {
   const int b_value = -1;
   PolicyMap A, B, C;
 
-  A.Set(kPolicyProxyMode, Value::CreateIntegerValue(a_value));
-
-  B.Set(kPolicyProxyServerMode, Value::CreateIntegerValue(b_value));
-  B.Set(kPolicyProxyServer, Value::CreateIntegerValue(b_value));
-  B.Set(kPolicyProxyPacUrl, Value::CreateIntegerValue(b_value));
-  B.Set(kPolicyProxyBypassList, Value::CreateIntegerValue(b_value));
+  SetPolicy(&A, key::kProxyMode, Value::CreateIntegerValue(a_value));
+  SetPolicy(&B, key::kProxyServerMode, Value::CreateIntegerValue(b_value));
+  SetPolicy(&B, key::kProxyServer, Value::CreateIntegerValue(b_value));
+  SetPolicy(&B, key::kProxyPacUrl, Value::CreateIntegerValue(b_value));
+  SetPolicy(&B, key::kProxyBypassList, Value::CreateIntegerValue(b_value));
 
   CombineTwoPolicyMaps(A, B, &C);
 

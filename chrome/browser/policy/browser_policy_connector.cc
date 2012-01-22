@@ -108,11 +108,11 @@ void BrowserPolicyConnector::Init() {
   managed_cloud_provider_.reset(new CloudPolicyProviderImpl(
       this,
       GetChromePolicyDefinitionList(),
-      CloudPolicyCacheBase::POLICY_LEVEL_MANDATORY));
+      POLICY_LEVEL_MANDATORY));
   recommended_cloud_provider_.reset(new CloudPolicyProviderImpl(
       this,
       GetChromePolicyDefinitionList(),
-      CloudPolicyCacheBase::POLICY_LEVEL_RECOMMENDED));
+      POLICY_LEVEL_RECOMMENDED));
 
 #if defined(OS_CHROMEOS)
   InitializeDevicePolicy();
@@ -455,14 +455,17 @@ ConfigurationPolicyProvider*
   const PolicyDefinitionList* policy_list = GetChromePolicyDefinitionList();
 #if defined(OS_WIN)
   return new ConfigurationPolicyProviderWin(policy_list,
-                                            policy::kRegistryMandatorySubKey);
+                                            policy::kRegistryMandatorySubKey,
+                                            POLICY_LEVEL_MANDATORY);
 #elif defined(OS_MACOSX)
-  return new ConfigurationPolicyProviderMac(policy_list);
+  return new ConfigurationPolicyProviderMac(policy_list,
+                                            POLICY_LEVEL_MANDATORY);
 #elif defined(OS_POSIX)
   FilePath config_dir_path;
   if (PathService::Get(chrome::DIR_POLICY_FILES, &config_dir_path)) {
     return new ConfigDirPolicyProvider(
         policy_list,
+        POLICY_LEVEL_MANDATORY,
         config_dir_path.Append(FILE_PATH_LITERAL("managed")));
   } else {
     return NULL;
@@ -478,13 +481,15 @@ ConfigurationPolicyProvider*
 #if defined(OS_WIN)
   const PolicyDefinitionList* policy_list = GetChromePolicyDefinitionList();
   return new ConfigurationPolicyProviderWin(policy_list,
-                                            policy::kRegistryRecommendedSubKey);
+                                            policy::kRegistryRecommendedSubKey,
+                                            POLICY_LEVEL_RECOMMENDED);
 #elif defined(OS_POSIX) && !defined(OS_MACOSX)
   const PolicyDefinitionList* policy_list = GetChromePolicyDefinitionList();
   FilePath config_dir_path;
   if (PathService::Get(chrome::DIR_POLICY_FILES, &config_dir_path)) {
     return new ConfigDirPolicyProvider(
         policy_list,
+        POLICY_LEVEL_RECOMMENDED,
         config_dir_path.Append(FILE_PATH_LITERAL("recommended")));
   } else {
     return NULL;

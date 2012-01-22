@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,126 +23,132 @@ namespace policy {
 class ConfigurationPolicyReaderTest : public testing::Test {
  protected:
   ConfigurationPolicyReaderTest() : provider_() {
-    managed_reader_.reset(
-        new ConfigurationPolicyReader(&provider_, PolicyStatusInfo::MANDATORY));
-    recommended_reader_.reset(new ConfigurationPolicyReader(&provider_,
-                                  PolicyStatusInfo::RECOMMENDED));
+    reader_.reset(new ConfigurationPolicyReader(&provider_));
     status_ok_ = ASCIIToUTF16("OK");
   }
 
   DictionaryValue* CreateDictionary(const char* policy_name,
                                     Value* policy_value) {
     DictionaryValue* dict = new DictionaryValue();
-    dict->SetString(std::string(PolicyStatusInfo::kNameDictPath),
-                    ASCIIToUTF16(policy_name));
-    dict->SetString(std::string(PolicyStatusInfo::kLevelDictPath),
-        PolicyStatusInfo::GetPolicyLevelString(PolicyStatusInfo::MANDATORY));
-    dict->SetString(std::string(PolicyStatusInfo::kSourceTypeDictPath),
-        PolicyStatusInfo::GetSourceTypeString(PolicyStatusInfo::USER));
-    dict->Set(std::string(PolicyStatusInfo::kValueDictPath), policy_value);
-    dict->SetBoolean(std::string(PolicyStatusInfo::kSetDictPath), true);
-    dict->SetString(std::string(PolicyStatusInfo::kStatusDictPath), status_ok_);
+    dict->SetString(PolicyStatusInfo::kNameDictPath, ASCIIToUTF16(policy_name));
+    dict->SetString(PolicyStatusInfo::kLevelDictPath,
+                    PolicyStatusInfo::GetPolicyLevelString(
+                        POLICY_LEVEL_MANDATORY));
+    dict->SetString(PolicyStatusInfo::kScopeDictPath,
+                    PolicyStatusInfo::GetPolicyScopeString(
+                        POLICY_SCOPE_USER));
+    dict->Set(PolicyStatusInfo::kValueDictPath, policy_value);
+    dict->SetBoolean(PolicyStatusInfo::kSetDictPath, true);
+    dict->SetString(PolicyStatusInfo::kStatusDictPath, status_ok_);
 
     return dict;
   }
 
   MockConfigurationPolicyProvider provider_;
-  scoped_ptr<ConfigurationPolicyReader> managed_reader_;
-  scoped_ptr<ConfigurationPolicyReader> recommended_reader_;
+  scoped_ptr<ConfigurationPolicyReader> reader_;
   string16 status_ok_;
 };
 
 TEST_F(ConfigurationPolicyReaderTest, GetDefault) {
-  EXPECT_EQ(NULL, managed_reader_->GetPolicyStatus(kPolicyHomepageLocation));
+  EXPECT_EQ(NULL, reader_->GetPolicyStatus(key::kHomepageLocation));
 }
 
 // Test for list-valued policy settings.
 TEST_F(ConfigurationPolicyReaderTest, SetListValue) {
-  ListValue* in_value = new ListValue();
-  in_value->Append(Value::CreateStringValue("test1"));
-  in_value->Append(Value::CreateStringValue("test2"));
-  provider_.AddPolicy(kPolicyRestoreOnStartupURLs, in_value);
-  managed_reader_->OnUpdatePolicy(&provider_);
+  ListValue mandatory_value;
+  mandatory_value.Append(Value::CreateStringValue("test1"));
+  mandatory_value.Append(Value::CreateStringValue("test2"));
+  ListValue recommended_value;
+  recommended_value.Append(Value::CreateStringValue("test3"));
+  recommended_value.Append(Value::CreateStringValue("test4"));
+  provider_.AddMandatoryPolicy(key::kRestoreOnStartupURLs,
+                               mandatory_value.DeepCopy());
+  provider_.AddRecommendedPolicy(key::kDisabledSchemes,
+                                 recommended_value.DeepCopy());
+  reader_->OnUpdatePolicy(&provider_);
 
-  scoped_ptr<DictionaryValue>
-      dict(CreateDictionary(key::kRestoreOnStartupURLs, in_value->DeepCopy()));
+  scoped_ptr<DictionaryValue> dict(
+      CreateDictionary(key::kRestoreOnStartupURLs,
+                       mandatory_value.DeepCopy()));
   scoped_ptr<DictionaryValue> result(
-      managed_reader_->GetPolicyStatus(kPolicyRestoreOnStartupURLs));
+      reader_->GetPolicyStatus(key::kRestoreOnStartupURLs));
   EXPECT_TRUE(dict->Equals(result.get()));
 
-  recommended_reader_->OnUpdatePolicy(&provider_);
-  dict->SetString("level",
-      PolicyStatusInfo::GetPolicyLevelString(PolicyStatusInfo::RECOMMENDED));
-  result.reset(
-      recommended_reader_->GetPolicyStatus(kPolicyRestoreOnStartupURLs));
+  dict.reset(CreateDictionary(key::kDisabledSchemes,
+                              recommended_value.DeepCopy()));
+  dict->SetString(
+      "level",
+      PolicyStatusInfo::GetPolicyLevelString(POLICY_LEVEL_RECOMMENDED));
+  result.reset(reader_->GetPolicyStatus(key::kDisabledSchemes));
   EXPECT_TRUE(dict->Equals(result.get()));
 }
 
 // Test for string-valued policy settings.
 TEST_F(ConfigurationPolicyReaderTest, SetStringValue) {
-  provider_.AddPolicy(kPolicyHomepageLocation,
-      Value::CreateStringValue("http://chromium.org"));
-  managed_reader_->OnUpdatePolicy(&provider_);
-  scoped_ptr<DictionaryValue> dict(CreateDictionary(key::kHomepageLocation,
-      Value::CreateStringValue("http://chromium.org")));
+  StringValue mandatory_value("http://chromium.org");
+  StringValue recommended_value("http://www.google.com/q={searchTerms}");
+  provider_.AddMandatoryPolicy(key::kHomepageLocation,
+                               mandatory_value.DeepCopy());
+  provider_.AddRecommendedPolicy(key::kDefaultSearchProviderSearchURL,
+                                 recommended_value.DeepCopy());
+  reader_->OnUpdatePolicy(&provider_);
+  scoped_ptr<DictionaryValue> dict(
+      CreateDictionary(key::kHomepageLocation,
+                       mandatory_value.DeepCopy()));
   scoped_ptr<DictionaryValue> result(
-      managed_reader_->GetPolicyStatus(kPolicyHomepageLocation));
+      reader_->GetPolicyStatus(key::kHomepageLocation));
   EXPECT_TRUE(dict->Equals(result.get()));
 
-  recommended_reader_->OnUpdatePolicy(&provider_);
-  dict->SetString("level",
-      PolicyStatusInfo::GetPolicyLevelString(PolicyStatusInfo::RECOMMENDED));
-  result.reset(
-      recommended_reader_->GetPolicyStatus(kPolicyHomepageLocation));
+  dict.reset(CreateDictionary(key::kDefaultSearchProviderSearchURL,
+                              recommended_value.DeepCopy()));
+  dict->SetString(
+      "level",
+      PolicyStatusInfo::GetPolicyLevelString(POLICY_LEVEL_RECOMMENDED));
+  result.reset(reader_->GetPolicyStatus(key::kDefaultSearchProviderSearchURL));
   EXPECT_TRUE(dict->Equals(result.get()));
 }
 
 // Test for boolean-valued policy settings.
 TEST_F(ConfigurationPolicyReaderTest, SetBooleanValue) {
-  provider_.AddPolicy(kPolicyShowHomeButton, Value::CreateBooleanValue(true));
-  managed_reader_->OnUpdatePolicy(&provider_);
-  scoped_ptr<DictionaryValue> dict(CreateDictionary(key::kShowHomeButton,
-      Value::CreateBooleanValue(true)));
+  provider_.AddMandatoryPolicy(key::kShowHomeButton,
+                               Value::CreateBooleanValue(true));
+  provider_.AddRecommendedPolicy(key::kHomepageIsNewTabPage,
+                                 Value::CreateBooleanValue(false));
+  reader_->OnUpdatePolicy(&provider_);
+  scoped_ptr<DictionaryValue> dict(
+      CreateDictionary(key::kShowHomeButton, Value::CreateBooleanValue(true)));
   scoped_ptr<DictionaryValue> result(
-      managed_reader_->GetPolicyStatus(kPolicyShowHomeButton));
+      reader_->GetPolicyStatus(key::kShowHomeButton));
   EXPECT_TRUE(dict->Equals(result.get()));
 
-  recommended_reader_->OnUpdatePolicy(&provider_);
-  dict->SetString("level",
-      PolicyStatusInfo::GetPolicyLevelString(PolicyStatusInfo::RECOMMENDED));
-  result.reset(recommended_reader_->GetPolicyStatus(kPolicyShowHomeButton));
-  EXPECT_TRUE(dict->Equals(result.get()));
-
-  provider_.AddPolicy(kPolicyShowHomeButton, Value::CreateBooleanValue(false));
-  managed_reader_->OnUpdatePolicy(&provider_);
-  dict->Set(
-      PolicyStatusInfo::kValueDictPath, Value::CreateBooleanValue(false));
-  dict->SetString("level",
-      PolicyStatusInfo::GetPolicyLevelString(PolicyStatusInfo::MANDATORY));
-  result.reset(managed_reader_->GetPolicyStatus(kPolicyShowHomeButton));
-  EXPECT_TRUE(dict->Equals(result.get()));
-
-  recommended_reader_->OnUpdatePolicy(&provider_);
-  dict->SetString("level",
-      PolicyStatusInfo::GetPolicyLevelString(PolicyStatusInfo::RECOMMENDED));
-  result.reset(recommended_reader_->GetPolicyStatus(kPolicyShowHomeButton));
+  dict.reset(CreateDictionary(key::kHomepageIsNewTabPage,
+                              Value::CreateBooleanValue(false)));
+  dict->SetString(
+      "level",
+      PolicyStatusInfo::GetPolicyLevelString(POLICY_LEVEL_RECOMMENDED));
+  result.reset(reader_->GetPolicyStatus(key::kHomepageIsNewTabPage));
   EXPECT_TRUE(dict->Equals(result.get()));
 }
 
 // Test for integer-valued policy settings.
 TEST_F(ConfigurationPolicyReaderTest, SetIntegerValue) {
-  provider_.AddPolicy(kPolicyRestoreOnStartup, Value::CreateIntegerValue(3));
-  managed_reader_->OnUpdatePolicy(&provider_);
-  scoped_ptr<DictionaryValue> dict(CreateDictionary(key::kRestoreOnStartup,
-      Value::CreateIntegerValue(3)));
+  provider_.AddMandatoryPolicy(key::kRestoreOnStartup,
+                               Value::CreateIntegerValue(3));
+  provider_.AddRecommendedPolicy(key::kIncognitoModeAvailability,
+                                 Value::CreateIntegerValue(2));
+  reader_->OnUpdatePolicy(&provider_);
+  scoped_ptr<DictionaryValue> dict(
+      CreateDictionary(key::kRestoreOnStartup, Value::CreateIntegerValue(3)));
   scoped_ptr<DictionaryValue> result(
-      managed_reader_->GetPolicyStatus(kPolicyRestoreOnStartup));
+      reader_->GetPolicyStatus(key::kRestoreOnStartup));
   EXPECT_TRUE(dict->Equals(result.get()));
 
-  recommended_reader_->OnUpdatePolicy(&provider_);
-  dict->SetString("level",
-      PolicyStatusInfo::GetPolicyLevelString(PolicyStatusInfo::RECOMMENDED));
-  result.reset(recommended_reader_->GetPolicyStatus(kPolicyRestoreOnStartup));
+  dict.reset(CreateDictionary(key::kIncognitoModeAvailability,
+                              Value::CreateIntegerValue(2)));
+  dict->SetString(
+      "level",
+      PolicyStatusInfo::GetPolicyLevelString(POLICY_LEVEL_RECOMMENDED));
+  result.reset(reader_->GetPolicyStatus(key::kIncognitoModeAvailability));
   EXPECT_TRUE(dict->Equals(result.get()));
 }
 
@@ -186,35 +192,30 @@ class PolicyStatusTest : public testing::Test {
     EXPECT_CALL(*recommended_cloud_, GetPolicyStatus(_))
         .WillRepeatedly(ReturnNull());
 
-    EXPECT_CALL(*managed_platform_, GetPolicyStatus(kPolicyInstantEnabled))
+    EXPECT_CALL(*managed_platform_, GetPolicyStatus(key::kInstantEnabled))
         .WillRepeatedly(Return(CreateDictionary(key::kInstantEnabled,
-                                                PolicyStatusInfo::MANDATORY)));
-    EXPECT_CALL(*managed_cloud_, GetPolicyStatus(kPolicyDisablePluginFinder))
+                                                POLICY_LEVEL_MANDATORY)));
+    EXPECT_CALL(*managed_cloud_, GetPolicyStatus(key::kDisablePluginFinder))
         .WillRepeatedly(Return(CreateDictionary(key::kDisablePluginFinder,
-                                                PolicyStatusInfo::MANDATORY)));
-    EXPECT_CALL(*recommended_platform_, GetPolicyStatus(kPolicySyncDisabled))
-        .WillRepeatedly(
-            Return(CreateDictionary(key::kSyncDisabled,
-                                    PolicyStatusInfo::RECOMMENDED)));
-    EXPECT_CALL(*recommended_cloud_, GetPolicyStatus(kPolicyTranslateEnabled))
-        .WillRepeatedly(
-            Return(CreateDictionary(key::kTranslateEnabled,
-                                    PolicyStatusInfo::RECOMMENDED)));
+                                                POLICY_LEVEL_MANDATORY)));
+    EXPECT_CALL(*recommended_platform_, GetPolicyStatus(key::kSyncDisabled))
+        .WillRepeatedly(Return(CreateDictionary(key::kSyncDisabled,
+                                                POLICY_LEVEL_RECOMMENDED)));
+    EXPECT_CALL(*recommended_cloud_, GetPolicyStatus(key::kTranslateEnabled))
+        .WillRepeatedly(Return(CreateDictionary(key::kTranslateEnabled,
+                                                POLICY_LEVEL_RECOMMENDED)));
   }
 
-  DictionaryValue* CreateDictionary(const char* name,
-                                    PolicyStatusInfo::PolicyLevel level) {
+  DictionaryValue* CreateDictionary(const char* name, PolicyLevel level) {
     DictionaryValue* value = new DictionaryValue();
-    value->SetString(std::string(PolicyStatusInfo::kNameDictPath),
-                     ASCIIToUTF16(name));
-    value->SetString(std::string(PolicyStatusInfo::kLevelDictPath),
+    value->SetString(PolicyStatusInfo::kNameDictPath, ASCIIToUTF16(name));
+    value->SetString(PolicyStatusInfo::kLevelDictPath,
                      PolicyStatusInfo::GetPolicyLevelString(level));
-    value->SetString(std::string(PolicyStatusInfo::kSourceTypeDictPath),
-        PolicyStatusInfo::GetSourceTypeString(PolicyStatusInfo::USER));
-    value->SetBoolean(std::string(PolicyStatusInfo::kValueDictPath), true);
-    value->SetBoolean(std::string(PolicyStatusInfo::kSetDictPath), true);
-    value->SetString(std::string(PolicyStatusInfo::kStatusDictPath),
-                     status_ok_);
+    value->SetString(PolicyStatusInfo::kScopeDictPath,
+                     PolicyStatusInfo::GetPolicyScopeString(POLICY_SCOPE_USER));
+    value->SetBoolean(PolicyStatusInfo::kValueDictPath, true);
+    value->SetBoolean(PolicyStatusInfo::kSetDictPath, true);
+    value->SetString(PolicyStatusInfo::kStatusDictPath, status_ok_);
 
     return value;
   }
@@ -222,11 +223,11 @@ class PolicyStatusTest : public testing::Test {
   void SetDictionaryPaths(DictionaryValue* dict,
                           const char* policy_name,
                           bool defined,
-                          PolicyStatusInfo::PolicyLevel level) {
+                          PolicyLevel level) {
     dict->SetString(PolicyStatusInfo::kNameDictPath,
                     ASCIIToUTF16(policy_name));
     if (defined) {
-      dict->SetString(std::string(PolicyStatusInfo::kLevelDictPath),
+      dict->SetString(PolicyStatusInfo::kLevelDictPath,
                       PolicyStatusInfo::GetPolicyLevelString(level));
     }
   }
@@ -259,27 +260,36 @@ TEST_F(PolicyStatusTest, GetPolicyStatusListSetPolicies) {
   EXPECT_EQ(policy_list_size_, status_list->GetSize());
 
   scoped_ptr<DictionaryValue> undefined_dict(new DictionaryValue());
-  undefined_dict->SetString(std::string(PolicyStatusInfo::kLevelDictPath),
+  undefined_dict->SetString(PolicyStatusInfo::kLevelDictPath,
                             PolicyStatusInfo::GetPolicyLevelString(
-                                PolicyStatusInfo::LEVEL_UNDEFINED));
-  undefined_dict->SetString(std::string(PolicyStatusInfo::kSourceTypeDictPath),
-                            PolicyStatusInfo::GetSourceTypeString(
-                                PolicyStatusInfo::SOURCE_TYPE_UNDEFINED));
-  undefined_dict->Set(std::string(PolicyStatusInfo::kValueDictPath),
+                                POLICY_LEVEL_MANDATORY));
+  undefined_dict->SetString(PolicyStatusInfo::kScopeDictPath,
+                            PolicyStatusInfo::GetPolicyScopeString(
+                                POLICY_SCOPE_USER));
+  undefined_dict->Set(PolicyStatusInfo::kValueDictPath,
                       Value::CreateNullValue());
-  undefined_dict->SetBoolean(std::string(PolicyStatusInfo::kSetDictPath),
-                             false);
-  undefined_dict->SetString(std::string(PolicyStatusInfo::kStatusDictPath),
-                            string16());
+  undefined_dict->SetBoolean(PolicyStatusInfo::kSetDictPath, false);
+  undefined_dict->SetString(PolicyStatusInfo::kStatusDictPath, string16());
 
   scoped_ptr<DictionaryValue> defined_dict(new DictionaryValue());
-  defined_dict->SetString(std::string(PolicyStatusInfo::kSourceTypeDictPath),
-      PolicyStatusInfo::GetSourceTypeString(PolicyStatusInfo::USER));
-  defined_dict->Set(std::string(PolicyStatusInfo::kValueDictPath),
+  defined_dict->SetString(PolicyStatusInfo::kScopeDictPath,
+                          PolicyStatusInfo::GetPolicyScopeString(
+                              POLICY_SCOPE_USER));
+  defined_dict->Set(PolicyStatusInfo::kValueDictPath,
                     Value::CreateBooleanValue(true));
-  defined_dict->SetBoolean(std::string(PolicyStatusInfo::kSetDictPath), true);
-  defined_dict->SetString(std::string(PolicyStatusInfo::kStatusDictPath),
-                          status_ok_);
+  defined_dict->SetBoolean(PolicyStatusInfo::kSetDictPath, true);
+  defined_dict->SetString(PolicyStatusInfo::kStatusDictPath, status_ok_);
+
+  struct {
+    const char *name;
+    PolicyLevel level;
+  } cases[] = {
+    { key::kInstantEnabled,       POLICY_LEVEL_MANDATORY },
+    { key::kDisablePluginFinder,  POLICY_LEVEL_MANDATORY },
+    { key::kSyncDisabled,         POLICY_LEVEL_RECOMMENDED },
+    { key::kTranslateEnabled,     POLICY_LEVEL_RECOMMENDED },
+    { NULL,                       POLICY_LEVEL_MANDATORY },
+  };
 
   for (const PolicyDefinitionList::Entry* entry = policy_list_->begin;
        entry != policy_list_->end; ++entry) {
@@ -293,52 +303,25 @@ TEST_F(PolicyStatusTest, GetPolicyStatusListSetPolicies) {
       string16 value;
       ASSERT_TRUE((*status_entry)->IsType(Value::TYPE_DICTIONARY));
       DictionaryValue* dict = static_cast<DictionaryValue*>(*status_entry);
-      ASSERT_TRUE(dict->GetString(std::string(PolicyStatusInfo::kNameDictPath),
+      ASSERT_TRUE(dict->GetString(PolicyStatusInfo::kNameDictPath,
                                   &value));
-
-      if (value == name) {
+      if (value == name)
         status_dict = *status_entry;
-      }
     }
 
     ASSERT_FALSE(status_dict == NULL);
 
-    switch (entry->policy_type) {
-      case kPolicyInstantEnabled:
-        SetDictionaryPaths(defined_dict.get(),
+    for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+      if (entry->name == cases[i].name || cases[i].name == NULL) {
+        DictionaryValue* dict =
+            cases[i].name ? defined_dict.get() : undefined_dict.get();
+        SetDictionaryPaths(dict,
                            entry->name,
-                           true,
-                           PolicyStatusInfo::MANDATORY);
-        EXPECT_TRUE(defined_dict->Equals(status_dict));
+                           cases[i].name != NULL,
+                           cases[i].level);
+        EXPECT_TRUE(dict->Equals(status_dict));
         break;
-      case kPolicyDisablePluginFinder:
-        SetDictionaryPaths(defined_dict.get(),
-                           entry->name,
-                           true,
-                           PolicyStatusInfo::MANDATORY);
-        EXPECT_TRUE(defined_dict->Equals(status_dict));
-        break;
-      case kPolicySyncDisabled:
-        SetDictionaryPaths(defined_dict.get(),
-                           entry->name,
-                           true,
-                           PolicyStatusInfo::RECOMMENDED);
-        EXPECT_TRUE(defined_dict->Equals(status_dict));
-        break;
-      case kPolicyTranslateEnabled:
-        SetDictionaryPaths(defined_dict.get(),
-                           entry->name,
-                           true,
-                           PolicyStatusInfo::RECOMMENDED);
-        EXPECT_TRUE(defined_dict->Equals(status_dict));
-        break;
-      default:
-        SetDictionaryPaths(undefined_dict.get(),
-                           entry->name,
-                           false,
-                           PolicyStatusInfo::LEVEL_UNDEFINED);
-        EXPECT_TRUE(undefined_dict->Equals(status_dict));
-        break;
+      }
     }
   }
 }

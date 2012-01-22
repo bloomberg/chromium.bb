@@ -1,10 +1,11 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/policy/configuration_policy_reader.h"
 
 #include <map>
+#include <string>
 #include <vector>
 
 #include "base/logging.h"
@@ -25,35 +26,30 @@ namespace policy {
 // ConfigurationPolicyProvider and maps them to their status information.
 class ConfigurationPolicyStatusKeeper {
  public:
-  ConfigurationPolicyStatusKeeper(ConfigurationPolicyProvider* provider,
-                                  PolicyStatusInfo::PolicyLevel policy_level);
+  explicit ConfigurationPolicyStatusKeeper(
+      ConfigurationPolicyProvider* provider);
   virtual ~ConfigurationPolicyStatusKeeper();
 
   // Returns a pointer to a DictionaryValue containing the status information
   // of the policy |policy|. The caller acquires ownership of the returned
   // value. Returns NULL if no such policy is stored in this keeper.
-  DictionaryValue* GetPolicyStatus(ConfigurationPolicyType policy) const;
+  DictionaryValue* GetPolicyStatus(const char* policy) const;
 
  private:
-  typedef std::map<ConfigurationPolicyType, PolicyStatusInfo*> PolicyStatusMap;
+  typedef std::map<std::string, PolicyStatusInfo*> PolicyStatusMap;
 
   // Calls Provide() on the passed in |provider| to get policy values.
   void GetPoliciesFromProvider(ConfigurationPolicyProvider* provider);
 
-  // Mapping from ConfigurationPolicyType to PolicyStatusInfo.
+  // Mapping from policy name to PolicyStatusInfo.
   PolicyStatusMap policy_map_;
-
-  // The level of the policies stored in this keeper (mandatory or
-  // recommended).
-  PolicyStatusInfo::PolicyLevel policy_level_;
 
   DISALLOW_COPY_AND_ASSIGN(ConfigurationPolicyStatusKeeper);
 };
 
 // ConfigurationPolicyStatusKeeper
 ConfigurationPolicyStatusKeeper::ConfigurationPolicyStatusKeeper(
-    ConfigurationPolicyProvider* provider,
-    PolicyStatusInfo::PolicyLevel policy_level) : policy_level_(policy_level) {
+    ConfigurationPolicyProvider* provider) {
   GetPoliciesFromProvider(provider);
 }
 
@@ -63,7 +59,7 @@ ConfigurationPolicyStatusKeeper::~ConfigurationPolicyStatusKeeper() {
 }
 
 DictionaryValue* ConfigurationPolicyStatusKeeper::GetPolicyStatus(
-    ConfigurationPolicyType policy) const {
+    const char* policy) const {
   PolicyStatusMap::const_iterator entry = policy_map_.find(policy);
   return entry != policy_map_.end() ?
       (entry->second)->GetDictionaryValue() : NULL;
@@ -83,33 +79,28 @@ void ConfigurationPolicyStatusKeeper::GetPoliciesFromProvider(
 
   PolicyMap::const_iterator policy = policies.begin();
   for ( ; policy != policies.end(); ++policy) {
-    string16 name = ASCIIToUTF16(GetPolicyName(policy->first));
+    string16 name = ASCIIToUTF16(policy->first);
+    const PolicyMap::Entry& entry = policy->second;
     string16 error_message = errors.GetErrors(policy->first);
     PolicyStatusInfo::PolicyStatus status =
         error_message.empty() ? PolicyStatusInfo::ENFORCED
                               : PolicyStatusInfo::FAILED;
-    // TODO(joaodasilva): determine whether this is a user or device policy.
-    // http://crbug.com/102114
-    PolicyStatusInfo* info = new PolicyStatusInfo(name,
-                                                  PolicyStatusInfo::USER,
-                                                  policy_level_,
-                                                  policy->second->DeepCopy(),
-                                                  status,
-                                                  error_message);
-    policy_map_[policy->first] = info;
+    policy_map_[policy->first] = new PolicyStatusInfo(name,
+                                                      entry.scope,
+                                                      entry.level,
+                                                      entry.value->DeepCopy(),
+                                                      status,
+                                                      error_message);
   }
 }
 
 // ConfigurationPolicyReader
 ConfigurationPolicyReader::ConfigurationPolicyReader(
-    ConfigurationPolicyProvider* provider,
-    PolicyStatusInfo::PolicyLevel policy_level)
-    : provider_(provider),
-      policy_level_(policy_level) {
+    ConfigurationPolicyProvider* provider)
+    : provider_(provider) {
   if (provider_) {
     // Read initial policy.
-    policy_keeper_.reset(
-        new ConfigurationPolicyStatusKeeper(provider_, policy_level));
+    policy_keeper_.reset(new ConfigurationPolicyStatusKeeper(provider_));
     registrar_.Init(provider_, this);
   }
 }
@@ -140,8 +131,7 @@ ConfigurationPolicyReader*
     ConfigurationPolicyReader::CreateManagedPlatformPolicyReader() {
   BrowserPolicyConnector* connector =
       g_browser_process->browser_policy_connector();
-  return new ConfigurationPolicyReader(
-    connector->GetManagedPlatformProvider(), PolicyStatusInfo::MANDATORY);
+  return new ConfigurationPolicyReader(connector->GetManagedPlatformProvider());
 }
 
 // static
@@ -149,8 +139,7 @@ ConfigurationPolicyReader*
     ConfigurationPolicyReader::CreateManagedCloudPolicyReader() {
   BrowserPolicyConnector* connector =
       g_browser_process->browser_policy_connector();
-  return new ConfigurationPolicyReader(
-      connector->GetManagedCloudProvider(), PolicyStatusInfo::MANDATORY);
+  return new ConfigurationPolicyReader(connector->GetManagedCloudProvider());
 }
 
 // static
@@ -159,8 +148,7 @@ ConfigurationPolicyReader*
   BrowserPolicyConnector* connector =
       g_browser_process->browser_policy_connector();
   return new ConfigurationPolicyReader(
-      connector->GetRecommendedPlatformProvider(),
-      PolicyStatusInfo::RECOMMENDED);
+      connector->GetRecommendedPlatformProvider());
 }
 
 // static
@@ -169,11 +157,11 @@ ConfigurationPolicyReader*
   BrowserPolicyConnector* connector =
       g_browser_process->browser_policy_connector();
   return new ConfigurationPolicyReader(
-      connector->GetRecommendedCloudProvider(), PolicyStatusInfo::RECOMMENDED);
+      connector->GetRecommendedCloudProvider());
 }
 
 DictionaryValue* ConfigurationPolicyReader::GetPolicyStatus(
-    ConfigurationPolicyType policy) const {
+    const char* policy) const {
   if (policy_keeper_.get())
     return policy_keeper_->GetPolicyStatus(policy);
   return NULL;
@@ -181,17 +169,13 @@ DictionaryValue* ConfigurationPolicyReader::GetPolicyStatus(
 
 ConfigurationPolicyReader::ConfigurationPolicyReader()
     : provider_(NULL),
-      policy_level_(PolicyStatusInfo::LEVEL_UNDEFINED),
       policy_keeper_(NULL) {
 }
 
 void ConfigurationPolicyReader::Refresh() {
   if (!provider_)
     return;
-
-  policy_keeper_.reset(
-      new ConfigurationPolicyStatusKeeper(provider_, policy_level_));
-
+  policy_keeper_.reset(new ConfigurationPolicyStatusKeeper(provider_));
   FOR_EACH_OBSERVER(Observer, observers_, OnPolicyValuesChanged());
 }
 
@@ -232,10 +216,10 @@ ListValue* PolicyStatus::GetPolicyStatusList(bool* any_policies_set) const {
       GetChromePolicyDefinitionList();
   const PolicyDefinitionList::Entry* policy = supported_policies->begin;
   for ( ; policy != supported_policies->end; ++policy) {
-    if (!AddPolicyFromReaders(policy->policy_type, result)) {
+    if (!AddPolicyFromReaders(policy->name, result)) {
       PolicyStatusInfo info(ASCIIToUTF16(policy->name),
-                            PolicyStatusInfo::SOURCE_TYPE_UNDEFINED,
-                            PolicyStatusInfo::LEVEL_UNDEFINED,
+                            POLICY_SCOPE_USER,
+                            POLICY_LEVEL_MANDATORY,
                             Value::CreateNullValue(),
                             PolicyStatusInfo::STATUS_UNDEFINED,
                             string16());
@@ -254,7 +238,7 @@ ListValue* PolicyStatus::GetPolicyStatusList(bool* any_policies_set) const {
 }
 
 bool PolicyStatus::AddPolicyFromReaders(
-    ConfigurationPolicyType policy, ListValue* list) const {
+    const char* policy, ListValue* list) const {
   DictionaryValue* mp_policy =
       managed_platform_->GetPolicyStatus(policy);
   DictionaryValue* mc_policy =

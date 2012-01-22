@@ -186,17 +186,18 @@ const char* EnterpriseStatusToString(
 // PolicyLevel (Mandatory or Recommended policies).
 DictionaryValue* CreateDictionaryWithPolicies(
     policy::CloudPolicySubsystem* policy_subsystem,
-    policy::CloudPolicyCacheBase::PolicyLevel policy_level) {
+    policy::PolicyLevel policy_level) {
   DictionaryValue* dict = new DictionaryValue;
   policy::CloudPolicyCacheBase* policy_cache =
       policy_subsystem->GetCloudPolicyCacheBase();
   if (policy_cache) {
-    const policy::PolicyMap* policy_map = policy_cache->policy(policy_level);
+    const policy::PolicyMap* policy_map = policy_cache->policy();
     if (policy_map) {
       policy::PolicyMap::const_iterator i;
-      for (i = policy_map->begin(); i != policy_map->end(); i++)
-        dict->Set(policy::GetPolicyName(i->first),
-                  i->second->DeepCopy());
+      for (i = policy_map->begin(); i != policy_map->end(); i++) {
+        if (i->second.level == policy_level)
+          dict->Set(i->first, i->second.value->DeepCopy());
+      }
     }
   }
   return dict;
@@ -986,16 +987,16 @@ void TestingAutomationProvider::GetEnterprisePolicyInfo(
   // Get PolicyMaps.
   return_value->Set("device_mandatory_policies",
                     CreateDictionaryWithPolicies(device_cloud_policy,
-                        policy::CloudPolicyCacheBase::POLICY_LEVEL_MANDATORY));
+                        policy::POLICY_LEVEL_MANDATORY));
   return_value->Set("user_mandatory_policies",
                     CreateDictionaryWithPolicies(user_cloud_policy,
-                        policy::CloudPolicyCacheBase::POLICY_LEVEL_MANDATORY));
+                        policy::POLICY_LEVEL_MANDATORY));
   return_value->Set("device_recommended_policies",
       CreateDictionaryWithPolicies(device_cloud_policy,
-          policy::CloudPolicyCacheBase::POLICY_LEVEL_RECOMMENDED));
+          policy::POLICY_LEVEL_RECOMMENDED));
   return_value->Set("user_recommended_policies",
       CreateDictionaryWithPolicies(user_cloud_policy,
-          policy::CloudPolicyCacheBase::POLICY_LEVEL_RECOMMENDED));
+          policy::POLICY_LEVEL_RECOMMENDED));
   reply.SendSuccess(return_value.get());
 }
 

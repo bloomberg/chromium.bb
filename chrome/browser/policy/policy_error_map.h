@@ -12,14 +12,13 @@
 
 #include "base/basictypes.h"
 #include "base/string16.h"
-#include "policy/configuration_policy_type.h"
 
 namespace policy {
 
 // Collects error messages and their associated policies.
 class PolicyErrorMap {
  public:
-  typedef std::multimap<ConfigurationPolicyType, string16> PolicyMapType;
+  typedef std::multimap<std::string, string16> PolicyMapType;
   typedef PolicyMapType::const_iterator const_iterator;
 
   PolicyErrorMap();
@@ -32,32 +31,32 @@ class PolicyErrorMap {
 
   // Adds an entry with key |policy| and the error message corresponding to
   // |message_id| in grit/generated_resources.h to the map.
-  void AddError(ConfigurationPolicyType policy, int message_id);
+  void AddError(const std::string& policy, int message_id);
 
   // Adds an entry with key |policy|, subkey |subkey|, and the error message
   // corresponding to |message_id| in grit/generated_resources.h to the map.
-  void AddError(ConfigurationPolicyType policy,
+  void AddError(const std::string& policy,
                 const std::string& subkey,
                 int message_id);
 
   // Adds an entry with key |policy| and the error message corresponding to
   // |message_id| in grit/generated_resources.h to the map and replaces the
   // placeholder within the error message with |replacement_string|.
-  void AddError(ConfigurationPolicyType policy,
+  void AddError(const std::string& policy,
                 int message_id,
                 const std::string& replacement_string);
 
   // Adds an entry with key |policy|, subkey |subkey| and the error message
   // corresponding to |message_id| in grit/generated_resources.h to the map.
   // Replaces the placeholder in the error message with |replacement_string|.
-  void AddError(ConfigurationPolicyType policy,
+  void AddError(const std::string& policy,
                 const std::string& subkey,
                 int message_id,
                 const std::string& replacement_string);
 
   // Returns all the error messages stored for |policy|, separated by a white
   // space. Returns an empty string if there are no errors for |policy|.
-  string16 GetErrors(ConfigurationPolicyType policy);
+  string16 GetErrors(const std::string& policy);
 
   bool empty();
   size_t size();

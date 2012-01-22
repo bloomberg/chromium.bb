@@ -26,7 +26,7 @@
 #include "chrome/browser/policy/policy_map.h"
 #include "chrome/browser/policy/proto/device_management_backend.pb.h"
 #include "chrome/browser/policy/proto/device_management_local.pb.h"
-#include "policy/configuration_policy_type.h"
+#include "policy/policy_constants.h"
 
 namespace em = enterprise_management;
 
@@ -225,14 +225,13 @@ void DevicePolicyCache::OnRetrievePolicyCompleted(
 }
 
 bool DevicePolicyCache::DecodePolicyData(const em::PolicyData& policy_data,
-                                         PolicyMap* mandatory,
-                                         PolicyMap* recommended) {
+                                         PolicyMap* policies) {
   em::ChromeDeviceSettingsProto policy;
   if (!policy.ParseFromString(policy_data.policy_value())) {
     LOG(WARNING) << "Failed to parse ChromeDeviceSettingsProto.";
     return false;
   }
-  DecodeDevicePolicy(policy, mandatory, recommended);
+  DecodeDevicePolicy(policy, policies);
   return true;
 }
 
@@ -312,44 +311,47 @@ void DevicePolicyCache::InstallInitialPolicy(
 // static
 void DevicePolicyCache::DecodeDevicePolicy(
     const em::ChromeDeviceSettingsProto& policy,
-    PolicyMap* mandatory,
-    PolicyMap* recommended) {
+    PolicyMap* policies) {
   if (policy.has_device_policy_refresh_rate()) {
     const em::DevicePolicyRefreshRateProto container =
         policy.device_policy_refresh_rate();
     if (container.has_device_policy_refresh_rate()) {
-      mandatory->Set(kPolicyDevicePolicyRefreshRate,
-                     DecodeIntegerValue(
-                         container.device_policy_refresh_rate()));
+      policies->Set(key::kDevicePolicyRefreshRate,
+                    POLICY_LEVEL_MANDATORY,
+                    POLICY_SCOPE_MACHINE,
+                    DecodeIntegerValue(container.device_policy_refresh_rate()));
     }
   }
 
   if (policy.has_device_proxy_settings()) {
     const em::DeviceProxySettingsProto container =
         policy.device_proxy_settings();
-    if (container.has_proxy_mode()) {
-      recommended->Set(kPolicyProxyMode,
-                       Value::CreateStringValue(container.proxy_mode()));
-    }
-    if (container.has_proxy_server()) {
-      recommended->Set(kPolicyProxyServer,
-                       Value::CreateStringValue(container.proxy_server()));
-    }
-    if (container.has_proxy_pac_url()) {
-      recommended->Set(kPolicyProxyPacUrl,
-                       Value::CreateStringValue(container.proxy_pac_url()));
-    }
+    scoped_ptr<DictionaryValue> proxy_settings(new DictionaryValue);
+    if (container.has_proxy_mode())
+      proxy_settings->SetString(key::kProxyMode, container.proxy_mode());
+    if (container.has_proxy_server())
+      proxy_settings->SetString(key::kProxyServer, container.proxy_server());
+    if (container.has_proxy_pac_url())
+      proxy_settings->SetString(key::kProxyPacUrl, container.proxy_pac_url());
     if (container.has_proxy_bypass_list()) {
-      recommended->Set(kPolicyProxyBypassList,
-                       Value::CreateStringValue(container.proxy_bypass_list()));
+      proxy_settings->SetString(key::kProxyBypassList,
+                                container.proxy_bypass_list());
+    }
+    if (!proxy_settings->empty()) {
+      policies->Set(key::kProxySettings,
+                    POLICY_LEVEL_RECOMMENDED,
+                    POLICY_SCOPE_MACHINE,
+                    proxy_settings.release());
     }
   }
 
   if (policy.has_release_channel() &&
       policy.release_channel().has_release_channel()) {
     std::string channel(policy.release_channel().release_channel());
-    mandatory->Set(kPolicyChromeOsReleaseChannel,
-                   Value::CreateStringValue(channel));
+    policies->Set(key::kChromeOsReleaseChannel,
+                  POLICY_LEVEL_MANDATORY,
+                  POLICY_SCOPE_MACHINE,
+                  Value::CreateStringValue(channel));
     // TODO(dubroy): Once http://crosbug.com/17015 is implemented, we won't
     // have to pass the channel in here, only ping the update engine to tell
     // it to fetch the channel from the policy.
@@ -361,8 +363,10 @@ void DevicePolicyCache::DecodeDevicePolicy(
       policy.open_network_configuration().has_open_network_configuration()) {
     std::string config(
         policy.open_network_configuration().open_network_configuration());
-    mandatory->Set(kPolicyDeviceOpenNetworkConfiguration,
-                   Value::CreateStringValue(config));
+    policies->Set(key::kDeviceOpenNetworkConfiguration,
+                  POLICY_LEVEL_MANDATORY,
+                  POLICY_SCOPE_MACHINE,
+                  Value::CreateStringValue(config));
   }
 }
 

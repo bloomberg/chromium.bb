@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -60,7 +60,9 @@ void TestHarness::SetUp() {
 
 AsynchronousPolicyProvider* TestHarness::CreateProvider(
     const PolicyDefinitionList* policy_definition_list) {
-  return new ConfigDirPolicyProvider(policy_definition_list, test_dir());
+  return new ConfigDirPolicyProvider(policy_definition_list,
+                                     POLICY_LEVEL_MANDATORY,
+                                     test_dir());
 }
 
 void TestHarness::InstallEmptyPolicy() {

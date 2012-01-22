@@ -21,7 +21,7 @@ class CloudPolicyProviderImpl : public CloudPolicyProvider,
  public:
   CloudPolicyProviderImpl(BrowserPolicyConnector* browser_policy_connector,
                           const PolicyDefinitionList* policy_list,
-                          CloudPolicyCacheBase::PolicyLevel level);
+                          PolicyLevel level);
   virtual ~CloudPolicyProviderImpl();
 
   // ConfigurationPolicyProvider implementation.
@@ -60,7 +60,7 @@ class CloudPolicyProviderImpl : public CloudPolicyProvider,
   ListType pending_update_caches_;
 
   // Policy level this provider will handle.
-  CloudPolicyCacheBase::PolicyLevel level_;
+  PolicyLevel level_;
 
   // Whether all caches are fully initialized.
   bool initialization_complete_;

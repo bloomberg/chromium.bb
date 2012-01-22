@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,9 +19,12 @@ const int kReloadIntervalMinutes = 15;
 
 ConfigurationPolicyProviderWin::ConfigurationPolicyProviderWin(
     const PolicyDefinitionList* policy_list,
-    const string16& registry_key)
+    const string16& registry_key,
+    PolicyLevel level)
     : AsynchronousPolicyProvider(
           policy_list,
+          level,
+          POLICY_SCOPE_USER,
           new ConfigurationPolicyLoaderWin(
               new ConfigurationPolicyProviderDelegateWin(policy_list,
                                                          registry_key),

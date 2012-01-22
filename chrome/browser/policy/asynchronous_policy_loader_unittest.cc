@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -120,7 +120,10 @@ TEST_F(AsynchronousPolicyLoaderTest, ProviderNotificationOnPolicyChange) {
 
   scoped_refptr<AsynchronousPolicyLoader> loader =
       new AsynchronousPolicyLoader(delegate, 10);
-  AsynchronousPolicyProvider provider(NULL, loader);
+  AsynchronousPolicyProvider provider(NULL,
+                                      POLICY_LEVEL_MANDATORY,
+                                      POLICY_SCOPE_USER,
+                                      loader);
   // |registrar| must be declared last so that it is destroyed first.
   ConfigurationPolicyObserverRegistrar registrar;
   registrar.Init(&provider, &observer);

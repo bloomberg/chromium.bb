@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "chrome/browser/policy/configuration_policy_provider.h"
+#include "chrome/browser/policy/policy_map.h"
 
 namespace policy {
 
@@ -35,6 +36,8 @@ class AsynchronousPolicyProvider
   // Assumes ownership of |loader|.
   AsynchronousPolicyProvider(
       const PolicyDefinitionList* policy_list,
+      PolicyLevel level,
+      PolicyScope scope,
       scoped_refptr<AsynchronousPolicyLoader> loader);
   virtual ~AsynchronousPolicyProvider();
 
@@ -52,6 +55,10 @@ class AsynchronousPolicyProvider
   // Callback from the loader. This is invoked whenever the loader has completed
   // a reload of the policies.
   void OnLoaderReloaded();
+
+  // The policy level and scope for policies loaded through this provider.
+  PolicyLevel level_;
+  PolicyScope scope_;
 
   // The loader object used internally.
   scoped_refptr<AsynchronousPolicyLoader> loader_;

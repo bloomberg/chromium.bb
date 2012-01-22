@@ -6057,11 +6057,20 @@ void TestingAutomationProvider::SetPolicies(
   struct {
     std::string name;
     policy::ConfigurationPolicyProvider* provider;
+    policy::PolicyLevel level;
   } providers[] = {
-    { "managed_cloud",        connector->GetManagedCloudProvider()        },
-    { "managed_platform",     connector->GetManagedPlatformProvider()     },
-    { "recommended_cloud",    connector->GetRecommendedCloudProvider()    },
-    { "recommended_platform", connector->GetRecommendedPlatformProvider() }
+    { "managed_cloud",
+      connector->GetManagedCloudProvider(),
+      policy::POLICY_LEVEL_MANDATORY },
+    { "managed_platform",
+      connector->GetManagedPlatformProvider(),
+      policy::POLICY_LEVEL_MANDATORY },
+    { "recommended_cloud",
+      connector->GetRecommendedCloudProvider(),
+      policy::POLICY_LEVEL_RECOMMENDED },
+    { "recommended_platform",
+      connector->GetRecommendedPlatformProvider(),
+      policy::POLICY_LEVEL_RECOMMENDED },
   };
   // Verify if all the requested providers exist before changing anything.
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(providers); ++i) {
@@ -6073,11 +6082,16 @@ void TestingAutomationProvider::SetPolicies(
       return;
     }
   }
+  // TODO(joaodasilva): POLICY_SCOPE_USER is currently hardcoded, and the
+  // level is determined by the provider. Change this interface to support
+  // per-policy level and scope once the PolicyService is ready.
+  // http://crbug.com/110588
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(providers); ++i) {
     DictionaryValue* policies = NULL;
     if (args->GetDictionary(providers[i].name, &policies) && policies) {
       policy::PolicyMap* map = new policy::PolicyMap;
-      map->LoadFrom(policies, list);
+      map->LoadFrom(policies, list, providers[i].level,
+                    policy::POLICY_SCOPE_USER);
       providers[i].provider->OverridePolicies(map);
     }
   }

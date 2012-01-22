@@ -14,7 +14,7 @@ namespace policy {
 CloudPolicyProviderImpl::CloudPolicyProviderImpl(
     BrowserPolicyConnector* browser_policy_connector,
     const PolicyDefinitionList* policy_list,
-    CloudPolicyCacheBase::PolicyLevel level)
+    PolicyLevel level)
     : CloudPolicyProvider(policy_list),
       browser_policy_connector_(browser_policy_connector),
       level_(level),
@@ -89,13 +89,15 @@ void CloudPolicyProviderImpl::RecombineCachesAndTriggerUpdate() {
   for (ListType::iterator i = caches_.begin(); i != caches_.end(); ++i) {
     if (!(*i)->IsReady())
       continue;
-    cache_policies.CopyFrom(*(*i)->policy(level_));
+    cache_policies.CopyFrom(*(*i)->policy());
     FixDeprecatedPolicies(&cache_policies);
     newly_combined.MergeFrom(cache_policies);
   }
 
-  // Trigger a notification.
+  newly_combined.FilterLevel(level_);
   combined_.Swap(&newly_combined);
+
+  // Trigger a notification.
   if (pending_update_caches_.empty())
     NotifyPolicyUpdated();
 }

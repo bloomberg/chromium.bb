@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -38,21 +38,21 @@ void NetworkConfigurationUpdater::Update() {
     return;
   }
 
-  ApplyNetworkConfiguration(policy, kPolicyDeviceOpenNetworkConfiguration,
+  ApplyNetworkConfiguration(policy, key::kDeviceOpenNetworkConfiguration,
                             chromeos::NetworkUIData::ONC_SOURCE_DEVICE_POLICY,
                             &device_network_config_);
-  ApplyNetworkConfiguration(policy, kPolicyOpenNetworkConfiguration,
+  ApplyNetworkConfiguration(policy, key::kOpenNetworkConfiguration,
                             chromeos::NetworkUIData::ONC_SOURCE_USER_POLICY,
                             &user_network_config_);
 }
 
 void NetworkConfigurationUpdater::ApplyNetworkConfiguration(
     const PolicyMap& policy_map,
-    ConfigurationPolicyType policy_type,
+    const char* policy_name,
     chromeos::NetworkUIData::ONCSource onc_source,
     std::string* cached_value) {
   std::string new_network_config;
-  const base::Value* value = policy_map.Get(policy_type);
+  const base::Value* value = policy_map.GetValue(policy_name);
   if (value != NULL) {
     // If the policy is not a string, we issue a warning, but still clear the
     // network configuration.

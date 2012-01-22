@@ -60,8 +60,7 @@ class UserPolicyCache : public CloudPolicyCacheBase,
   // CloudPolicyCacheBase implementation:
   virtual bool DecodePolicyData(
       const enterprise_management::PolicyData& policy_data,
-      PolicyMap* mandatory,
-      PolicyMap* recommended) OVERRIDE;
+      PolicyMap* policies) OVERRIDE;
 
   // Checks if this cache is ready, and invokes SetReady() if so.
   void CheckIfReady();
@@ -70,13 +69,12 @@ class UserPolicyCache : public CloudPolicyCacheBase,
   // The following member functions are needed to support old-style policy and
   // can be removed once all server-side components (CPanel, D3) have been
   // migrated to providing the new policy format.
-
-  // If |mandatory| and |recommended| are both empty, and |policy_data|
-  // contains a field named "repeated GenericNamedValue named_value = 2;",
-  // this field is decoded into |mandatory|.
+  //
+  // If |policies| is empty and |policy_data| contains a field named
+  // "repeated GenericNamedValue named_value = 2;", the policies in that field
+  // are added to |policies| as LEVEL_MANDATORY, SCOPE_USER policies.
   void MaybeDecodeOldstylePolicy(const std::string& policy_data,
-                                 PolicyMap* mandatory,
-                                 PolicyMap* recommended);
+                                 PolicyMap* policies);
 
   Value* DecodeIntegerValue(google::protobuf::int64 value) const;
   Value* DecodeValue(const enterprise_management::GenericValue& value) const;

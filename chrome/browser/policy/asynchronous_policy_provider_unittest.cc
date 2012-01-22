@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,15 +23,17 @@ namespace policy {
 TEST_F(AsynchronousPolicyTestBase, Provide) {
   InSequence s;
   DictionaryValue* policies = new DictionaryValue();
-  policies->SetBoolean(policy::key::kSyncDisabled, true);
+  policies->SetBoolean(key::kSyncDisabled, true);
   ProviderDelegateMock* delegate = new ProviderDelegateMock();
   EXPECT_CALL(*delegate, Load()).WillOnce(Return(policies));
   AsynchronousPolicyProvider provider(
       GetChromePolicyDefinitionList(),
+      POLICY_LEVEL_MANDATORY,
+      POLICY_SCOPE_USER,
       new AsynchronousPolicyLoader(delegate, 10));
   PolicyMap policy_map;
   provider.Provide(&policy_map);
-  EXPECT_TRUE(policy_map.Get(policy::kPolicySyncDisabled));
+  EXPECT_TRUE(policy_map.Get(key::kSyncDisabled));
   EXPECT_EQ(1U, policy_map.size());
 }
 
@@ -40,23 +42,23 @@ TEST_F(AsynchronousPolicyTestBase, Provide) {
 TEST_F(AsynchronousPolicyTestBase, ProvideAfterRefresh) {
   InSequence s;
   DictionaryValue* original_policies = new DictionaryValue();
-  original_policies->SetBoolean(policy::key::kSyncDisabled, true);
+  original_policies->SetBoolean(key::kSyncDisabled, true);
   ProviderDelegateMock* delegate = new ProviderDelegateMock();
   EXPECT_CALL(*delegate, Load()).WillOnce(Return(original_policies));
   DictionaryValue* refresh_policies = new DictionaryValue();
-  refresh_policies->SetBoolean(
-      policy::key::kJavascriptEnabled,
-      true);
+  refresh_policies->SetBoolean(key::kJavascriptEnabled, true);
   EXPECT_CALL(*delegate, Load()).WillOnce(Return(refresh_policies));
   AsynchronousPolicyLoader* loader = new AsynchronousPolicyLoader(delegate, 10);
-  AsynchronousPolicyProvider provider(GetChromePolicyDefinitionList(), loader);
-
+  AsynchronousPolicyProvider provider(GetChromePolicyDefinitionList(),
+                                      POLICY_LEVEL_MANDATORY,
+                                      POLICY_SCOPE_USER,
+                                      loader);
   // The original policies have been loaded.
   PolicyMap policy_map;
   provider.Provide(&policy_map);
   EXPECT_EQ(1U, policy_map.size());
-  EXPECT_TRUE(policy_map.Get(policy::kPolicySyncDisabled));
-  EXPECT_FALSE(policy_map.Get(policy::kPolicyJavascriptEnabled));
+  EXPECT_TRUE(policy_map.Get(key::kSyncDisabled));
+  EXPECT_FALSE(policy_map.Get(key::kJavascriptEnabled));
 
   MockConfigurationPolicyObserver observer;
   ConfigurationPolicyObserverRegistrar registrar;
@@ -68,8 +70,8 @@ TEST_F(AsynchronousPolicyTestBase, ProvideAfterRefresh) {
   policy_map.Clear();
   provider.Provide(&policy_map);
   EXPECT_EQ(1U, policy_map.size());
-  EXPECT_FALSE(policy_map.Get(policy::kPolicySyncDisabled));
-  EXPECT_TRUE(policy_map.Get(policy::kPolicyJavascriptEnabled));
+  EXPECT_FALSE(policy_map.Get(key::kSyncDisabled));
+  EXPECT_TRUE(policy_map.Get(key::kJavascriptEnabled));
 }
 
 }  // namespace policy

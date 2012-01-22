@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,27 +15,27 @@ namespace policy {
 
 const char PolicyStatusInfo::kLevelDictPath[] = "level";
 const char PolicyStatusInfo::kNameDictPath[] = "name";
+const char PolicyStatusInfo::kScopeDictPath[] = "scope";
 const char PolicyStatusInfo::kSetDictPath[] = "set";
-const char PolicyStatusInfo::kSourceTypeDictPath[] = "sourceType";
 const char PolicyStatusInfo::kStatusDictPath[] = "status";
 const char PolicyStatusInfo::kValueDictPath[] = "value";
 
 // PolicyStatusInfo
 PolicyStatusInfo::PolicyStatusInfo()
-    : source_type(SOURCE_TYPE_UNDEFINED),
-      level(LEVEL_UNDEFINED),
+    : scope(POLICY_SCOPE_USER),
+      level(POLICY_LEVEL_MANDATORY),
       status(STATUS_UNDEFINED) {
 }
 
 PolicyStatusInfo::PolicyStatusInfo(
     const string16& name,
-    PolicySourceType source_type,
+    PolicyScope scope,
     PolicyLevel level,
     Value* value,
     PolicyStatus status,
     const string16& error_message)
     : name(name),
-      source_type(source_type),
+      scope(scope),
       level(level),
       value(value),
       status(status),
@@ -47,15 +47,15 @@ PolicyStatusInfo::~PolicyStatusInfo() {
 
 DictionaryValue* PolicyStatusInfo::GetDictionaryValue() const {
   string16 level_string = GetPolicyLevelString(level);
-  string16 source_type_string = GetSourceTypeString(source_type);
+  string16 scope_string = GetPolicyScopeString(scope);
   string16 status_message =
       status == ENFORCED ? l10n_util::GetStringUTF16(IDS_OK) : error_message;
   DictionaryValue* result = new DictionaryValue();
   result->SetString(std::string(kNameDictPath), name);
   result->SetString(std::string(kLevelDictPath), level_string);
-  result->SetString(std::string(kSourceTypeDictPath), source_type_string);
+  result->SetString(std::string(kScopeDictPath), scope_string);
   result->Set(std::string(kValueDictPath), value->DeepCopy());
-  result->SetBoolean(std::string(kSetDictPath), level != LEVEL_UNDEFINED);
+  result->SetBoolean(std::string(kSetDictPath), status != STATUS_UNDEFINED);
   result->SetString(std::string(kStatusDictPath), status_message);
 
   return result;
@@ -63,7 +63,7 @@ DictionaryValue* PolicyStatusInfo::GetDictionaryValue() const {
 
 bool PolicyStatusInfo::Equals(const PolicyStatusInfo* other_info) const {
   return name == other_info->name &&
-         source_type == other_info->source_type &&
+         scope == other_info->scope &&
          level == other_info->level &&
          value->Equals(other_info->value.get()) &&
          status == other_info->status &&
@@ -71,16 +71,15 @@ bool PolicyStatusInfo::Equals(const PolicyStatusInfo* other_info) const {
 }
 
 // static
-string16 PolicyStatusInfo::GetSourceTypeString(
-    PolicySourceType source_type) {
-  static const char* strings[] = { "user", "device", "undefined" };
-  DCHECK(static_cast<size_t>(source_type) < arraysize(strings));
-  return ASCIIToUTF16(strings[source_type]);
+string16 PolicyStatusInfo::GetPolicyScopeString(PolicyScope scope) {
+  static const char* strings[] = { "User", "Machine" };
+  DCHECK(static_cast<size_t>(scope) < arraysize(strings));
+  return ASCIIToUTF16(strings[scope]);
 }
 
 // static
 string16 PolicyStatusInfo::GetPolicyLevelString(PolicyLevel level) {
-  static const char* strings[] = { "mandatory", "recommended", "undefined" };
+  static const char* strings[] = { "Recommended", "Mandatory" };
   DCHECK(static_cast<size_t>(level) < arraysize(strings));
   return ASCIIToUTF16(strings[level]);
 }

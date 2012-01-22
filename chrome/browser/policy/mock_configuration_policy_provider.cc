@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,13 +16,19 @@ MockConfigurationPolicyProvider::MockConfigurationPolicyProvider()
 
 MockConfigurationPolicyProvider::~MockConfigurationPolicyProvider() {}
 
-void MockConfigurationPolicyProvider::AddPolicy(ConfigurationPolicyType policy,
-                                                Value* value) {
-  policy_map_.Set(policy, value);
+void MockConfigurationPolicyProvider::AddMandatoryPolicy(
+    const std::string& policy,
+    Value* value) {
+  policy_map_.Set(policy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER, value);
 }
 
-void MockConfigurationPolicyProvider::RemovePolicy(
-    ConfigurationPolicyType policy) {
+void MockConfigurationPolicyProvider::AddRecommendedPolicy(
+    const std::string& policy,
+    Value* value) {
+  policy_map_.Set(policy, POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_USER, value);
+}
+
+void MockConfigurationPolicyProvider::RemovePolicy(const std::string& policy) {
   policy_map_.Erase(policy);
 }
 

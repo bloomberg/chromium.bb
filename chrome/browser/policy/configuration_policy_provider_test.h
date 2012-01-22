@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,7 +14,6 @@
 #include "base/message_loop.h"
 #include "chrome/browser/policy/asynchronous_policy_test_base.h"
 #include "content/test/test_browser_thread.h"
-#include "policy/configuration_policy_type.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
@@ -35,12 +34,6 @@ extern const char kKeyString[];
 extern const char kKeyBoolean[];
 extern const char kKeyInteger[];
 extern const char kKeyStringList[];
-
-// Corresponding type constants.
-extern const ConfigurationPolicyType kPolicyString;
-extern const ConfigurationPolicyType kPolicyBoolean;
-extern const ConfigurationPolicyType kPolicyInteger;
-extern const ConfigurationPolicyType kPolicyStringList;
 
 // Policy definition list that contains entries for the keys above.
 extern const PolicyDefinitionList kList;
@@ -96,7 +89,6 @@ class ConfigurationPolicyProviderTest
   // Installs a valid policy and checks whether the provider returns the
   // |expected_value|.
   void CheckValue(const char* policy_name,
-                  ConfigurationPolicyType policy_type,
                   const base::Value& expected_value,
                   base::Closure install_value);
 

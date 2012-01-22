@@ -136,7 +136,8 @@ void TestHarness::SetUp() {}
 AsynchronousPolicyProvider* TestHarness::CreateProvider(
     const PolicyDefinitionList* policy_definition_list) {
   return new ConfigurationPolicyProviderWin(policy_definition_list,
-                                            policy::kRegistryMandatorySubKey);
+                                            policy::kRegistryMandatorySubKey,
+                                            POLICY_LEVEL_MANDATORY);
 }
 
 void TestHarness::InstallEmptyPolicy() {}
@@ -204,7 +205,8 @@ class ConfigurationPolicyProviderWinTest : public AsynchronousPolicyTestBase {
  protected:
   ConfigurationPolicyProviderWinTest()
       : provider_(&test_policy_definitions::kList,
-                  policy::kRegistryMandatorySubKey) {}
+                  policy::kRegistryMandatorySubKey,
+                  POLICY_LEVEL_MANDATORY) {}
   virtual ~ConfigurationPolicyProviderWinTest() {}
 
   ScopedGroupPolicyRegistrySandbox registry_sandbox_;
@@ -228,7 +230,7 @@ TEST_F(ConfigurationPolicyProviderWinTest, HKLMOverHKCU) {
 
   PolicyMap policy_map;
   provider_.Provide(&policy_map);
-  const Value* value = policy_map.Get(test_policy_definitions::kPolicyString);
+  const Value* value = policy_map.GetValue(test_policy_definitions::kKeyString);
   EXPECT_TRUE(StringValue("hklm").Equals(value));
 }
 

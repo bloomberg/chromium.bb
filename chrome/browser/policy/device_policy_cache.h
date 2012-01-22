@@ -53,8 +53,7 @@ class DevicePolicyCache : public CloudPolicyCacheBase {
   // CloudPolicyCacheBase implementation:
   virtual bool DecodePolicyData(
       const enterprise_management::PolicyData& policy_data,
-      PolicyMap* mandatory,
-      PolicyMap* recommended) OVERRIDE;
+      PolicyMap* policies) OVERRIDE;
 
   void PolicyStoreOpCompleted(chromeos::SignedSettings::ReturnCode code);
 
@@ -71,8 +70,7 @@ class DevicePolicyCache : public CloudPolicyCacheBase {
 
   static void DecodeDevicePolicy(
       const enterprise_management::ChromeDeviceSettingsProto& policy,
-      PolicyMap* mandatory,
-      PolicyMap* recommended);
+      PolicyMap* policies);
 
   CloudPolicyDataStore* data_store_;
   EnterpriseInstallAttributes* install_attributes_;

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,7 @@
 #include "chrome/browser/prefs/proxy_prefs.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "policy/policy_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 void assertProxyMode(const ProxyConfigDictionary& dict,
@@ -69,11 +70,11 @@ TEST(ProxyPolicyTest, OverridesCommandLineOptions) {
       new policy::MockConfigurationPolicyProvider());
   Value* mode_name = Value::CreateStringValue(
       ProxyPrefs::kFixedServersProxyModeName);
-  provider->AddPolicy(policy::kPolicyProxyMode, mode_name);
-  provider->AddPolicy(policy::kPolicyProxyBypassList,
-                      Value::CreateStringValue("abc"));
-  provider->AddPolicy(policy::kPolicyProxyServer,
-                      Value::CreateStringValue("ghi"));
+  provider->AddMandatoryPolicy(policy::key::kProxyMode, mode_name);
+  provider->AddMandatoryPolicy(policy::key::kProxyBypassList,
+                               Value::CreateStringValue("abc"));
+  provider->AddMandatoryPolicy(policy::key::kProxyServer,
+                               Value::CreateStringValue("ghi"));
 
   // First verify that command-line options are set correctly when
   // there is no policy in effect.
@@ -109,7 +110,7 @@ TEST(ProxyPolicyTest, OverridesUnrelatedCommandLineOptions) {
       new policy::MockConfigurationPolicyProvider());
   Value* mode_name = Value::CreateStringValue(
       ProxyPrefs::kAutoDetectProxyModeName);
-  provider->AddPolicy(policy::kPolicyProxyMode, mode_name);
+  provider->AddMandatoryPolicy(policy::key::kProxyMode, mode_name);
 
   // First verify that command-line options are set correctly when
   // there is no policy in effect.
@@ -142,7 +143,7 @@ TEST(ProxyPolicyTest, OverridesCommandLineNoProxy) {
       new policy::MockConfigurationPolicyProvider());
   Value* mode_name = Value::CreateStringValue(
       ProxyPrefs::kAutoDetectProxyModeName);
-  provider->AddPolicy(policy::kPolicyProxyMode, mode_name);
+  provider->AddMandatoryPolicy(policy::key::kProxyMode, mode_name);
 
   // First verify that command-line options are set correctly when
   // there is no policy in effect.
@@ -171,7 +172,7 @@ TEST(ProxyPolicyTest, OverridesCommandLineAutoDetect) {
       new policy::MockConfigurationPolicyProvider());
   Value* mode_name = Value::CreateStringValue(
       ProxyPrefs::kDirectProxyModeName);
-  provider->AddPolicy(policy::kPolicyProxyMode, mode_name);
+  provider->AddMandatoryPolicy(policy::key::kProxyMode, mode_name);
 
   // First verify that the auto-detect is set if there is no managed
   // PrefStore.

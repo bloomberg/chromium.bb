@@ -22,14 +22,6 @@ class PolicyNotifier;
 // and makes it available via policy providers.
 class CloudPolicyCacheBase : public base::NonThreadSafe {
  public:
-  // Used to distinguish mandatory from recommended policies.
-  enum PolicyLevel {
-    // Policy is forced upon the user and should always take effect.
-    POLICY_LEVEL_MANDATORY,
-    // The value is just a recommendation that the user may override.
-    POLICY_LEVEL_RECOMMENDED,
-  };
-
   class Observer {
    public:
     virtual ~Observer() {}
@@ -79,8 +71,8 @@ class CloudPolicyCacheBase : public base::NonThreadSafe {
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
-  // Accessor for the underlying PolicyMaps.
-  const PolicyMap* policy(PolicyLevel level);
+  // Accessor for the underlying PolicyMap.
+  const PolicyMap* policy() { return &policies_; }
 
   // Resets the cache, clearing the policy currently stored in memory and the
   // last refresh time.
@@ -101,7 +93,7 @@ class CloudPolicyCacheBase : public base::NonThreadSafe {
   };
 
   // Decodes the given |policy| using |DecodePolicyResponse()|, applies the
-  // contents to |{mandatory,recommended}_policy_|, and notifies observers.
+  // contents to |policies_|, and notifies observers.
   // |timestamp| returns the timestamp embedded in |policy|, callers can pass
   // NULL if they don't care. |check_for_timestamp_validity| tells this method
   // to discard policy data with a timestamp from the future.
@@ -120,15 +112,13 @@ class CloudPolicyCacheBase : public base::NonThreadSafe {
   // the results.
   virtual bool DecodePolicyData(
       const enterprise_management::PolicyData& policy_data,
-      PolicyMap* mandatory,
-      PolicyMap* recommended) = 0;
+      PolicyMap* policies) = 0;
 
   // Decodes a PolicyFetchResponse into two PolicyMaps and a timestamp.
   // Also performs verification, returns NULL if any check fails.
   bool DecodePolicyResponse(
       const enterprise_management::PolicyFetchResponse& policy_response,
-      PolicyMap* mandatory,
-      PolicyMap* recommended,
+      PolicyMap* policies,
       base::Time* timestamp,
       PublicKeyVersion* public_key_version);
 
@@ -148,8 +138,7 @@ class CloudPolicyCacheBase : public base::NonThreadSafe {
   friend class MockCloudPolicyCache;
 
   // Policy key-value information.
-  PolicyMap mandatory_policy_;
-  PolicyMap recommended_policy_;
+  PolicyMap policies_;
 
   PolicyNotifier* notifier_;
 
