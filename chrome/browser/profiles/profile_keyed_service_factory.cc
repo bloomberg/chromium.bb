@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -50,20 +50,18 @@ void ProfileKeyedServiceFactory::RegisterUserPrefsOnProfile(Profile* profile) {
   // profiles, we just never register since incognito profiles share the same
   // pref services with their parent profiles.
   //
-  // Testing profiles throw two wrenches into the mix. One: PrefService isn't
-  // created at profile creation time so we have to move pref registration to
-  // service creation time when using a testing factory. We can't change
-  // PrefService because Two: some tests switch out the PrefService after the
-  // TestingProfile has been created but before it's ever used. So we key our
-  // check on Profile since there's already error checking code to prevent
-  // a secondary PrefService from existing.
+  // TestingProfiles throw a wrench into the mix, in that some tests will
+  // swap out the PrefService after we've registered user prefs on the original
+  // PrefService. Test code that does this is responsible for either manually
+  // invoking RegisterUserPrefs() on the appropriate ProfileKeyedServiceFactory
+  // associated with the prefs they need, or they can use SetTestingFactory()
+  // and create a service (since service creation with a factory method causes
+  // registration to happen at service creation time).
   //
-  // Even worse is Three: Now that services are responsible for declaring their
-  // preferences, we have to enforce a uniquenes check here because some tests
-  // create one profile and multiple services of the same type attached to that
-  // profile (serially, not parallel). This wasn't a problem when it was the
-  // Profile that was responsible for registering the preferences, but now is
-  // because of the timing issues introduced by One.
+  // Now that services are responsible for declaring their preferences, we have
+  // to enforce a uniquenes check here because some tests create one profile and
+  // multiple services of the same type attached to that profile (serially, not
+  // parallel) and we don't want to register multiple times on the same profile.
   DCHECK(!profile->IsOffTheRecord());
 
   std::set<Profile*>::iterator it = registered_preferences_.find(profile);

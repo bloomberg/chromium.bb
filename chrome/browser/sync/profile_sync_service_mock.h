@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,6 +20,7 @@
 
 class ProfileSyncServiceMock : public ProfileSyncService {
  public:
+  // no-arg constructor provided so TestingProfile can use NiceMock.
   ProfileSyncServiceMock();
   explicit ProfileSyncServiceMock(Profile* profile);
   virtual ~ProfileSyncServiceMock();

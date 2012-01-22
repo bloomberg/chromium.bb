@@ -13,9 +13,10 @@
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
+#include "chrome/browser/signin/signin_manager.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_components_factory_impl.h"
 #include "chrome/browser/sync/profile_sync_service.h"
-#include "chrome/browser/sync/signin_manager.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/global_error_service_factory.h"
 #include "chrome/common/pref_names.h"
@@ -46,13 +47,13 @@ ProfileSyncServiceFactory::ProfileSyncServiceFactory()
   DependsOn(ThemeServiceFactory::GetInstance());
   DependsOn(TabRestoreServiceFactory::GetInstance());
   DependsOn(GlobalErrorServiceFactory::GetInstance());
+  DependsOn(SigninManagerFactory::GetInstance());
 
   // The following have not been converted to ProfileKeyedServices yet, and for
   // now they are explicitly destroyed after the ProfileDependencyManager is
   // told to DestroyProfileServices, so they will be around when the
   // ProfileSyncService is destroyed.
 
-  // DependsOn(SigninManagerFactory::GetInstance());
   // DependsOn(WebDataServiceFactory::GetInstance());
   // DependsOn(HistoryServiceFactory::GetInstance());
   // DependsOn(BookmarkBarModelFactory::GetInstance());
@@ -70,10 +71,7 @@ ProfileKeyedService* ProfileSyncServiceFactory::BuildServiceInstanceFor(
       browser_defaults::kSyncAutoStarts ? ProfileSyncService::AUTO_START
                                         : ProfileSyncService::MANUAL_START;
 
-  PrefService* prefs = profile->GetPrefs();
-  SigninManager* signin = new SigninManager();
-  signin->SetAuthenticatedUsername(prefs->GetString(
-      prefs::kGoogleServicesUsername));
+  SigninManager* signin = SigninManagerFactory::GetForProfile(profile);
 
   // TODO(tim): Currently, AUTO/MANUAL settings refer to the *first* time sync
   // is set up and *not* a browser restart for a manual-start platform (where

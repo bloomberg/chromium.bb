@@ -21,6 +21,7 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/speech/speech_input_extension_manager.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 
@@ -76,10 +77,9 @@ void ProfileDependencyManager::CreateProfileServices(Profile* profile,
   for (std::vector<ProfileKeyedServiceFactory*>::reverse_iterator rit =
            destruction_order_.rbegin(); rit != destruction_order_.rend();
        ++rit) {
-    if (!profile->IsOffTheRecord() && !profile->AsTestingProfile()) {
+    if (!profile->IsOffTheRecord()) {
       // We only register preferences on normal profiles because the incognito
-      // profile shares the pref service with the normal one and the testing
-      // profile will often just insert its own PrefService.
+      // profile shares the pref service with the normal one.
       (*rit)->RegisterUserPrefsOnProfile(profile);
     }
 
@@ -156,6 +156,7 @@ void ProfileDependencyManager::AssertFactoriesBuilt() {
   prerender::PrerenderManagerFactory::GetInstance();
   ProfileSyncServiceFactory::GetInstance();
   SessionServiceFactory::GetInstance();
+  SigninManagerFactory::GetInstance();
   SpeechInputExtensionManager::InitializeFactory();
   TabRestoreServiceFactory::GetInstance();
   TemplateURLServiceFactory::GetInstance();

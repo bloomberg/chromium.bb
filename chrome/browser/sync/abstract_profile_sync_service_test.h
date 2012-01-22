@@ -12,7 +12,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
-#include "chrome/browser/net/gaia/token_service.h"
+#include "chrome/browser/signin/token_service.h"
 #include "chrome/browser/sync/internal_api/change_record.h"
 #include "chrome/browser/sync/profile_sync_components_factory_mock.h"
 #include "chrome/browser/sync/syncable/model_type.h"

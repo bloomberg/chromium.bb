@@ -103,7 +103,7 @@ class MockLoginUtils : public LoginUtils {
 
   virtual void StartTokenServices(Profile* profile) OVERRIDE {}
 
-  virtual void StartSync(
+  virtual void StartSignedInServices(
       Profile* profile,
       const GaiaAuthConsumer::ClientLoginResult& credentials) OVERRIDE {}
 

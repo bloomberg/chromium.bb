@@ -18,6 +18,8 @@
 #include "chrome/browser/history/history_backend.h"
 #include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/history/history_types.h"
+#include "chrome/browser/signin/signin_manager.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/abstract_profile_sync_service_test.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "chrome/browser/sync/glue/sync_backend_host_mock.h"
@@ -33,7 +35,6 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_test_util.h"
 #include "chrome/browser/sync/protocol/typed_url_specifics.pb.h"
-#include "chrome/browser/sync/signin_manager.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/test_profile_sync_service.h"
 #include "chrome/browser/sync/test/engine/test_id_factory.h"
@@ -180,7 +181,7 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
 
   void StartSyncService(const base::Closure& callback) {
     if (!service_.get()) {
-      SigninManager* signin = new SigninManager();
+      SigninManager* signin = SigninManagerFactory::GetForProfile(&profile_);
       signin->SetAuthenticatedUsername("test");
       ProfileSyncComponentsFactoryMock* factory =
           new ProfileSyncComponentsFactoryMock();
