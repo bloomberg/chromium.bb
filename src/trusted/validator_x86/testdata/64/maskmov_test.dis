@@ -1,0 +1,6 @@
+0000000000000000: 89 ff                                        mov %edi, %edi
+0000000000000002: 49 8d 3c 3f                                  lea %rdi, [%r15+%rdi*1]
+0000000000000006: 0f f7 d1                                     maskmovq %mmx2, %mmx1
+0000000000000009: 01 ff                                        add %edi, %edi
+000000000000000b: 49 8d 3c 3f                                  lea %rdi, [%r15+%rdi*1]
+000000000000000f: 0f f7 d1                                     maskmovq %mmx2, %mmx1

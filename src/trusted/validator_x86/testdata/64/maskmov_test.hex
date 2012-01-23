@@ -1,0 +1,17 @@
+# Show that we handle the expected sandboxing instructions for maskmov.
+
+# Case one: correct masking of segment DS:%rsi
+# 0000000000000000: 89 ff                                        mov %edi, %edi
+# 0000000000000002: 49 8d 3c 3f                                  lea %rdi, [%r15+%rdi*1]
+# 0000000000000006: 0f f7 d1                                     maskmovq %mmx2, %mmx1
+89 ff
+49 8d 3c 3f
+0f f7 d1
+# Case two: incorrect masking of segment DS:%rsi
+# 0000000000000009: 01 ff                                        add %edi, %edi
+# 000000000000000b: 49 8d 3c 3f                                  lea %rdi, [%r15+%rdi*1]
+# 000000000000000f: 0f f7 d1                                     maskmovq %mmx2, %mmx1
+01 ff
+49 8d 3c 3f
+0f f7 d1
+
