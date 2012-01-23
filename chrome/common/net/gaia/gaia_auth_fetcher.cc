@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -742,7 +742,8 @@ void GaiaAuthFetcher::OnOAuth2TokenPairFetched(
   if (status.is_success() && response_code == RC_REQUEST_OK) {
     std::string refresh_token;
     std::string access_token;
-    int expires_in_secs;
+    int expires_in_secs = 0;
+    // TODO: Check the return value of this function.
     ParseOAuth2TokenPairResponse(
         data, &refresh_token, &access_token, &expires_in_secs);
     consumer_->OnOAuthLoginTokenSuccess(
