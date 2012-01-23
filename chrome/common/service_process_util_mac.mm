@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -60,15 +60,6 @@ NSString* GetServiceProcessLaunchDSocketKey() {
   return @"ServiceProcessSocket";
 }
 
-NSString* GetServiceProcessLaunchDSocketEnvVar() {
-  NSString *label = GetServiceProcessLaunchDLabel();
-  NSString *env_var = [label stringByReplacingOccurrencesOfString:@"."
-                                                       withString:@"_"];
-  env_var = [env_var stringByAppendingString:@"_SOCKET"];
-  env_var = [env_var uppercaseString];
-  return env_var;
-}
-
 bool GetParentFSRef(const FSRef& child, FSRef* parent) {
   return FSGetCatalogInfo(&child, 0, NULL, NULL, NULL, parent) == noErr;
 }
@@ -95,6 +86,15 @@ class ExecFilePathWatcherDelegate : public FilePathWatcher::Delegate {
 };
 
 }  // namespace
+
+NSString* GetServiceProcessLaunchDSocketEnvVar() {
+  NSString *label = GetServiceProcessLaunchDLabel();
+  NSString *env_var = [label stringByReplacingOccurrencesOfString:@"."
+                                                       withString:@"_"];
+  env_var = [env_var stringByAppendingString:@"_SOCKET"];
+  env_var = [env_var uppercaseString];
+  return env_var;
+}
 
 // Gets the name of the service process IPC channel.
 IPC::ChannelHandle GetServiceProcessChannel() {

@@ -19,7 +19,6 @@
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/service/service_process_control.h"
 #include "chrome/browser/ui/browser_init.h"
-#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/service_messages.h"
@@ -40,6 +39,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/multiprocess_func_list.h"
 
+#if defined(OS_MACOSX)
+#include "chrome/common/mac/mock_launchd.h"
+#endif
 #if defined(OS_POSIX)
 #include "base/global_descriptors_posix.h"
 #endif
@@ -56,6 +58,17 @@ using ::testing::WithoutArgs;
 using ::testing::_;
 
 namespace {
+
+enum MockServiceProcessExitCodes {
+  kMissingSwitch = 1,
+  kInitializationFailure,
+  kExpectationsNotMet,
+  kShutdownNotGood
+};
+
+#if defined(OS_MACOSX)
+const char kTestExecutablePath[] = "test-executable-path";
+#endif
 
 bool g_good_shutdown = false;
 
@@ -182,12 +195,28 @@ bool MockServiceIPCServer::SendInfo() {
 typedef base::Callback<void(MockServiceIPCServer* server)>
     SetExpectationsCallback;
 
+// The return value from this routine is used as the exit code for the mock
+// service process. Any non-zero return value will be printed out and can help
+// determine the failure.
 int CloudPrintMockService_Main(SetExpectationsCallback set_expectations) {
   MessageLoopForUI main_message_loop;
   main_message_loop.set_thread_name("Main Thread");
 
+#if defined(OS_MACOSX)
+  CommandLine* cl = CommandLine::ForCurrentProcess();
+  if (!cl->HasSwitch(kTestExecutablePath))
+    return kMissingSwitch;
+  FilePath executable_path = cl->GetSwitchValuePath(kTestExecutablePath);
+  EXPECT_FALSE(executable_path.empty());
+  MockLaunchd mock_launchd(executable_path, &main_message_loop, true, true);
+  Launchd::ScopedInstance use_mock(&mock_launchd);
+#endif
+
   ServiceProcessState* state(new ServiceProcessState);
-  EXPECT_TRUE(state->Initialize());
+  bool service_process_state_initialized = state->Initialize();
+  EXPECT_TRUE(service_process_state_initialized);
+  if (!service_process_state_initialized)
+    return kInitializationFailure;
 
   TestServiceProcess service_process;
   EXPECT_EQ(&service_process, g_service_process);
@@ -204,6 +233,9 @@ int CloudPrintMockService_Main(SetExpectationsCallback set_expectations) {
   EXPECT_TRUE(server.Init());
   EXPECT_TRUE(state->SignalReady(service_process.IOMessageLoopProxy(),
                                  base::Bind(&ShutdownTask)));
+#if defined(OS_MACOSX)
+  mock_launchd.SignalReady();
+#endif
 
   // Connect up the parent/child IPC channel to signal that the test can
   // continue.
@@ -222,9 +254,9 @@ int CloudPrintMockService_Main(SetExpectationsCallback set_expectations) {
 
   main_message_loop.Run();
   if (!Mock::VerifyAndClearExpectations(&server))
-    return 1;
+    return kExpectationsNotMet;
   if (!g_good_shutdown)
-    return 2;
+    return kShutdownNotGood;
   return 0;
 }
 
@@ -285,6 +317,13 @@ class CloudPrintProxyPolicyStartupTest : public base::MultiProcessTest,
   std::string startup_channel_id_;
   scoped_ptr<IPC::ChannelProxy> startup_channel_;
 
+#if defined(OS_MACOSX)
+  ScopedTempDir temp_dir_;
+  FilePath executable_path_, bundle_path_;
+  scoped_ptr<MockLaunchd> mock_launchd_;
+  scoped_ptr<Launchd::ScopedInstance> scoped_launchd_instance_;
+#endif
+
  private:
   class WindowedChannelConnectionObserver {
    public:
@@ -313,7 +352,6 @@ class CloudPrintProxyPolicyStartupTest : public base::MultiProcessTest,
   WindowedChannelConnectionObserver observer_;
 };
 
-
 CloudPrintProxyPolicyStartupTest::CloudPrintProxyPolicyStartupTest()
     : ui_thread_(content::BrowserThread::UI, &message_loop_),
       io_thread_("CloudPrintProxyPolicyTestThread") {
@@ -325,6 +363,18 @@ CloudPrintProxyPolicyStartupTest::~CloudPrintProxyPolicyStartupTest() {
 void CloudPrintProxyPolicyStartupTest::SetUp() {
   base::Thread::Options options(MessageLoop::TYPE_IO, 0);
   ASSERT_TRUE(io_thread_.StartWithOptions(options));
+
+#if defined(OS_MACOSX)
+  EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());
+  EXPECT_TRUE(MockLaunchd::MakeABundle(temp_dir_.path(),
+                                       "CloudPrintProxyTest",
+                                       &bundle_path_,
+                                       &executable_path_));
+  mock_launchd_.reset(new MockLaunchd(executable_path_, &message_loop_,
+                                      true, false));
+  scoped_launchd_instance_.reset(
+      new Launchd::ScopedInstance(mock_launchd_.get()));
+#endif
 }
 
 base::ProcessHandle CloudPrintProxyPolicyStartupTest::Launch(
@@ -387,6 +437,9 @@ CommandLine CloudPrintProxyPolicyStartupTest::MakeCmdLine(
     bool debug_on_start) {
   CommandLine cl = MultiProcessTest::MakeCmdLine(procname, debug_on_start);
   cl.AppendSwitchASCII(switches::kProcessChannelID, startup_channel_id_);
+#if defined(OS_MACOSX)
+  cl.AppendSwitchASCII(kTestExecutablePath, executable_path_.value());
+#endif
   return cl;
 }
 

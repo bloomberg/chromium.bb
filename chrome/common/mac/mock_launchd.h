@@ -8,9 +8,13 @@
 
 #include <launch.h>
 
+#include <string>
+
 #include "base/file_path.h"
 #include "base/mac/scoped_cftyperef.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/common/mac/launchd.h"
+#include "chrome/common/multi_process_lock.h"
 
 class MessageLoop;
 
@@ -23,16 +27,9 @@ class MockLaunchd : public Launchd {
                           FilePath* bundle_root,
                           FilePath* executable);
 
-  MockLaunchd(const FilePath& file, MessageLoop* loop)
-      : file_(file),
-        message_loop_(loop),
-        restart_called_(false),
-        remove_called_(false),
-        checkin_called_(false),
-        write_called_(false),
-        delete_called_(false) {
-  }
-  virtual ~MockLaunchd() { }
+  MockLaunchd(const FilePath& file, MessageLoop* loop,
+              bool create_socket, bool as_service);
+  virtual ~MockLaunchd();
 
   virtual CFDictionaryRef CopyExports() OVERRIDE;
   virtual CFDictionaryRef CopyJobDictionary(CFStringRef label) OVERRIDE;
@@ -55,6 +52,8 @@ class MockLaunchd : public Launchd {
                            Type type,
                            CFStringRef name) OVERRIDE;
 
+  void SignalReady();
+
   bool restart_called() const { return restart_called_; }
   bool remove_called() const { return remove_called_; }
   bool checkin_called() const { return checkin_called_; }
@@ -63,9 +62,14 @@ class MockLaunchd : public Launchd {
 
  private:
   FilePath file_;
+  std::string pipe_name_;
   MessageLoop* message_loop_;
+  scoped_ptr<MultiProcessLock> running_lock_;
+  bool create_socket_;
+  bool as_service_;
   bool restart_called_;
   bool remove_called_;
+  bool job_called_;
   bool checkin_called_;
   bool write_called_;
   bool delete_called_;

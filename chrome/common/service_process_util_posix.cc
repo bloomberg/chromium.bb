@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,9 +9,31 @@
 #include "base/eintr_wrapper.h"
 #include "base/message_loop_proxy.h"
 #include "base/synchronization/waitable_event.h"
+#include "chrome/common/multi_process_lock.h"
 
 namespace {
 int g_signal_socket = -1;
+}
+
+// Attempts to take a lock named |name|. If |waiting| is true then this will
+// make multiple attempts to acquire the lock.
+// Caller is responsible for ownership of the MultiProcessLock.
+MultiProcessLock* TakeNamedLock(const std::string& name, bool waiting) {
+  scoped_ptr<MultiProcessLock> lock(MultiProcessLock::Create(name));
+  if (lock == NULL) return NULL;
+  bool got_lock = false;
+  for (int i = 0; i < 10; ++i) {
+    if (lock->TryLock()) {
+      got_lock = true;
+      break;
+    }
+    if (!waiting) break;
+    base::PlatformThread::Sleep(100 * i);
+  }
+  if (!got_lock) {
+    lock.reset();
+  }
+  return lock.release();
 }
 
 ServiceProcessTerminateMonitor::ServiceProcessTerminateMonitor(

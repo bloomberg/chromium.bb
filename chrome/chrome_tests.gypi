@@ -2758,6 +2758,8 @@
         'browser/ui/webui/web_ui_browsertest.h',
         'browser/ui/webui/web_ui_test_handler.cc',
         'browser/ui/webui/web_ui_test_handler.h',
+        'common/mac/mock_launchd.cc',
+        'common/mac/mock_launchd.h',
         'common/time_format_browsertest.cc',
         'renderer/autofill/autofill_browsertest.cc',
         'renderer/autofill/form_autocomplete_browsertest.cc',
@@ -3061,8 +3063,6 @@
             # TODO(hbono): This test depends on hunspell and we cannot run it on
             # Mac, which does not use hunspell by default.
             'browser/spellchecker/spellcheck_host_browsertest.cc',
-            # Blocked on having a full Launchd mock.
-            'browser/printing/cloud_print/test/cloud_print_proxy_process_browsertest.cc',
           ],
         }, { # else: OS != "mac"
           'sources!': [

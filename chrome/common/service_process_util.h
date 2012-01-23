@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,6 +15,15 @@
 #include "ipc/ipc_channel_handle.h"
 
 class CommandLine;
+class MultiProcessLock;
+
+#if defined(OS_MACOSX)
+#ifdef __OBJC__
+@class NSString;
+#else
+class NSString;
+#endif
+#endif
 
 namespace base {
 class MessageLoopProxy;
@@ -32,6 +41,19 @@ std::string GetServiceProcessScopedName(const std::string& append_str);
 // use the user-data-dir and the version as a scoping prefix.
 std::string GetServiceProcessScopedVersionedName(const std::string& append_str);
 #endif  // OS_MACOSX
+
+#if defined(OS_MACOSX)
+// Return the name that is used to extract the socket path out of the
+// dictionary provided by launchd.
+NSString* GetServiceProcessLaunchDSocketEnvVar();
+#endif
+
+#if defined(OS_POSIX)
+// Attempts to take a lock named |name|. If |waiting| is true then this will
+// make multiple attempts to acquire the lock.
+// Caller is responsible for ownership of the MultiProcessLock.
+MultiProcessLock* TakeNamedLock(const std::string& name, bool waiting);
+#endif
 
 // The following methods are used in a process that acts as a client to the
 // service process (typically the browser process).
