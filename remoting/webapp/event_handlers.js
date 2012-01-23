@@ -14,6 +14,13 @@ function onLoad() {
   var goEnterAccessCode = function() {
     remoting.setMode(remoting.AppMode.CLIENT_UNCONNECTED);
   };
+  var goFinishedIt2Me = function() {
+    if (remoting.currentMode == remoting.AppMode.CLIENT_CONNECT_FAILED_IT2ME) {
+      remoting.setMode(remoting.AppMode.CLIENT_UNCONNECTED);
+    } else {
+      remoting.setMode(remoting.AppMode.HOME);
+    }
+  };
   var reload = function() {
     window.location.reload();
   };
@@ -42,7 +49,7 @@ function onLoad() {
       { event: 'click', id: 'host-finished-button', fn: goHome },
       { event: 'click', id: 'client-cancel-button', fn: goHome },
       { event: 'click', id: 'client-finished-it2me-button',
-        fn: goEnterAccessCode },
+        fn: goFinishedIt2Me },
       { event: 'click', id: 'client-finished-me2me-button', fn: goHome },
       { event: 'click', id: 'client-reconnect-button', fn: reload },
       { event: 'click', id: 'cancel-button',
