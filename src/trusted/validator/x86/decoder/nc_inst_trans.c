@@ -1093,10 +1093,10 @@ static void NaClAppendEBX(NaClInstState* state) {
       NaClAppendReg(RegEBX, &state->nodes);
       break;
     case 64:
-      NaClAppendReg(RegRDX, &state->nodes);
+      NaClAppendReg(RegRBX, &state->nodes);
       break;
     default:
-      NaClFatal("Address size for %EDX not correctly defined", state);
+      NaClFatal("Address size for %EBX not correctly defined", state);
       break;
   }
 }
