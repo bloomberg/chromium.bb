@@ -61,7 +61,7 @@ deps = {
     'src/third_party/libjingle/source':
         Var('git_url') + '/external/libjingle.git@92a67556771eb2bd0ff4ccf30831bbffcc4ae31d',
     'src/third_party/libjpeg_turbo':
-        Var('git_url') + '/chromium/deps/libjpeg_turbo.git@c6beb74efd1b43982a5b6c957c57426442359c17',
+        Var('git_url') + '/chromium/deps/libjpeg_turbo.git@0ec930ec950c94f0319d5b94a201b7e61ef15130',
     'src/third_party/libphonenumber/src/phonenumbers':
         Var('git_url') + '/external/libphonenumber/cpp/src/phonenumbers.git@d7f0c9413b136b6e2304d923a51c61e521c28f53',
     'src/third_party/libphonenumber/src/resources':
