@@ -232,6 +232,9 @@ def SetUpArgumentBits(env):
   BitFromArgument(env, 'bitcode', default=False,
     desc='We are building bitcode')
 
+  BitFromArgument(env, 'translate_fast', default=False,
+    desc='When using pnacl TC (bitcode=1) use accelerated translation step')
+
   BitFromArgument(env, 'built_elsewhere', default=False,
     desc='The programs have already been built by another system')
 
@@ -1978,6 +1981,7 @@ def GetPerfEnvDescription(env):
   description_list = [env['TARGET_FULLARCH']]
   # Using a list to keep the order consistent.
   bit_to_description = [ ('bitcode', ('pnacl', 'nnacl')),
+                         ('translate_fast', ('fast', '')),
                          ('nacl_glibc', ('glibc', 'newlib')),
                          ('nacl_static_link', ('static', 'dynamic')),
                          ('irt', ('irt', '')) ]
@@ -2957,6 +2961,9 @@ if nacl_env.Bit('bitcode'):
   # optimizations at link time
   nacl_env.Append(LINKFLAGS=['-O3'])
 
+if nacl_env.Bit('bitcode') and nacl_env.Bit('translate_fast'):
+  nacl_env.Append(LINKFLAGS=['-Xlinker', '-translate-fast'])
+
 # When the compiler is clang, base/ code uses the "override" keyword.
 if nacl_env['PNACL_FRONTEND'] == 'clang':
   nacl_env.Append(CXXFLAGS=['-Wno-c++11-extensions'])
@@ -2979,6 +2986,7 @@ nacl_irt_env.Append(CPPPATH='${MAIN_DIR}/src/untrusted/pthread')
 # happen pretty early, because it affects any concretized directory names.
 target_variant_map = [
     ('bitcode', 'pnacl'),
+    ('translate_fast', 'fast'),
     ('nacl_pic', 'pic'),
     ('use_sandboxed_translator', 'sbtc'),
     ('nacl_glibc', 'glibc'),

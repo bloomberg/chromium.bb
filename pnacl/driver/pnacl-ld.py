@@ -198,6 +198,8 @@ LDPatterns = [
   ( '-O([0-3])',           "env.set('OPT_LEVEL', $0)"),
   ( '-O([0-9]+)',          "env.set('OPT_LEVEL', '3')"),
 
+  ( '(-translate-fast)',   "env.set('TRANSLATE_FLAGS', $0)"),
+
   ( '-s',                  "env.append('STRIP_MODE', 'all')"),
   ( '--strip-all',         "env.append('STRIP_MODE', 'all')"),
   ( '-S',                  "env.append('STRIP_MODE', 'debug')"),
