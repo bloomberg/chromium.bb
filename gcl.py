@@ -857,68 +857,69 @@ def CMDupload(change_info, args):
 
   upload_arg.extend(args)
 
-  desc_file = ""
-  if change_info.issue:  # Uploading a new patchset.
-    found_message = False
-    for arg in args:
-      if arg.startswith("--message") or arg.startswith("-m"):
-        found_message = True
-        break
-
-    if not found_message:
-      upload_arg.append("--message=''")
-
-    upload_arg.append("--issue=%d" % change_info.issue)
-  else: # First time we upload.
-    handle, desc_file = tempfile.mkstemp(text=True)
-    os.write(handle, change_info.description)
-    os.close(handle)
-
-    # Watchlist processing -- CC people interested in this changeset
-    # http://dev.chromium.org/developers/contributing-code/watchlists
-    if not no_watchlists:
-      import watchlists
-      watchlist = watchlists.Watchlists(change_info.GetLocalRoot())
-      watchers = watchlist.GetWatchersForPaths(change_info.GetFileNames())
-
-    cc_list = GetCodeReviewSetting("CC_LIST")
-    if not no_watchlists and watchers:
-      # Filter out all empty elements and join by ','
-      cc_list = ','.join(filter(None, [cc_list] + watchers))
-    if cc_list:
-      upload_arg.append("--cc=" + cc_list)
-    upload_arg.append("--description_file=" + desc_file + "")
-    if change_info.subject:
-      upload_arg.append("--message=" + change_info.subject)
-
-    if GetCodeReviewSetting("PRIVATE") == "True":
-      upload_arg.append("--private")
-
-  # If we have a lot of files with long paths, then we won't be able to fit
-  # the command to "svn diff".  Instead, we generate the diff manually for
-  # each file and concatenate them before passing it to upload.py.
-  if change_info.patch is None:
-    change_info.patch = GenerateDiff(change_info.GetFileNames())
-
-  # Change the current working directory before calling upload.py so that it
-  # shows the correct base.
-  previous_cwd = os.getcwd()
-  os.chdir(change_info.GetLocalRoot())
+  desc_file = None
   try:
-    try:
-      issue, patchset = upload.RealMain(upload_arg, change_info.patch)
-    except KeyboardInterrupt:
-      sys.exit(1)
-    if issue and patchset:
-      change_info.issue = int(issue)
-      change_info.patchset = int(patchset)
-      change_info.Save()
+    if change_info.issue:  # Uploading a new patchset.
+      found_message = False
+      for arg in args:
+        if arg.startswith("--message") or arg.startswith("-m"):
+          found_message = True
+          break
 
+      if not found_message:
+        upload_arg.append("--message=''")
+
+      upload_arg.append("--issue=%d" % change_info.issue)
+    else: # First time we upload.
+      handle, desc_file = tempfile.mkstemp(text=True)
+      os.write(handle, change_info.description)
+      os.close(handle)
+
+      # Watchlist processing -- CC people interested in this changeset
+      # http://dev.chromium.org/developers/contributing-code/watchlists
+      if not no_watchlists:
+        import watchlists
+        watchlist = watchlists.Watchlists(change_info.GetLocalRoot())
+        watchers = watchlist.GetWatchersForPaths(change_info.GetFileNames())
+
+      cc_list = GetCodeReviewSetting("CC_LIST")
+      if not no_watchlists and watchers:
+        # Filter out all empty elements and join by ','
+        cc_list = ','.join(filter(None, [cc_list] + watchers))
+      if cc_list:
+        upload_arg.append("--cc=" + cc_list)
+      upload_arg.append("--description_file=%s" % desc_file)
+      if change_info.subject:
+        upload_arg.append("--message=" + change_info.subject)
+
+      if GetCodeReviewSetting("PRIVATE") == "True":
+        upload_arg.append("--private")
+
+    # If we have a lot of files with long paths, then we won't be able to fit
+    # the command to "svn diff".  Instead, we generate the diff manually for
+    # each file and concatenate them before passing it to upload.py.
+    if change_info.patch is None:
+      change_info.patch = GenerateDiff(change_info.GetFileNames())
+
+    # Change the current working directory before calling upload.py so that it
+    # shows the correct base.
+    previous_cwd = os.getcwd()
+    os.chdir(change_info.GetLocalRoot())
+    try:
+      try:
+        issue, patchset = upload.RealMain(upload_arg, change_info.patch)
+      except KeyboardInterrupt:
+        sys.exit(1)
+      if issue and patchset:
+        change_info.issue = int(issue)
+        change_info.patchset = int(patchset)
+        change_info.Save()
+      change_info.PrimeLint()
+    finally:
+      os.chdir(previous_cwd)
+  finally:
     if desc_file:
       os.remove(desc_file)
-    change_info.PrimeLint()
-  finally:
-    os.chdir(previous_cwd)
   print "*** Upload does not submit a try; use gcl try to submit a try. ***"
   return 0
 
