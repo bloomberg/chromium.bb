@@ -207,6 +207,11 @@ class ExtensionWebstoreGetWebGLStatusTest : public InProcessBrowserTest {
 
 // Test cases where the user accepts the install confirmation dialog.
 IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, InstallAccepted) {
+  ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  FilePath temp_path = temp_dir.path();
+  WebstoreInstaller::SetDownloadDirectoryForTests(&temp_path);
+
   ASSERT_TRUE(RunInstallTest("accepted.html", "extension.crx"));
 }
 
@@ -241,6 +246,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, InstallCancelled) {
 
 IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest,
                        IncorrectManifest1) {
+  ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  FilePath temp_path = temp_dir.path();
+  WebstoreInstaller::SetDownloadDirectoryForTests(&temp_path);
+
   WebstoreInstallListener listener;
   WebstorePrivateApi::SetWebstoreInstallerDelegateForTesting(&listener);
   ASSERT_TRUE(RunInstallTest("incorrect_manifest1.html", "extension.crx"));
@@ -251,6 +261,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest,
 
 IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest,
                        IncorrectManifest2) {
+  ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  FilePath temp_path = temp_dir.path();
+  WebstoreInstaller::SetDownloadDirectoryForTests(&temp_path);
+
   WebstoreInstallListener listener;
   WebstorePrivateApi::SetWebstoreInstallerDelegateForTesting(&listener);
   ASSERT_TRUE(RunInstallTest("incorrect_manifest2.html", "extension.crx"));
