@@ -230,7 +230,13 @@ class UI_EXPORT NativeTheme {
     // MenuItem
     kColorId_EnabledMenuItemForegroundColor,
     kColorId_DisabledMenuItemForegroundColor,
-    kColorId_FocusedMenuItemBackgroundColor
+    kColorId_FocusedMenuItemBackgroundColor,
+    // Textfield
+    kColorId_TextfieldDefaultColor,
+    kColorId_TextfieldDefaultBackground,
+    kColorId_TextfieldSelectionColor,
+    kColorId_TextfieldSelectionBackgroundFocused,
+    kColorId_TextfieldSelectionBackgroundUnfocused,
     // TODO(benrg): move other hardcoded colors here.
   };
 

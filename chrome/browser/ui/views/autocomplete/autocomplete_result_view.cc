@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,6 +23,7 @@
 #include "ui/base/text/text_elider.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/color_utils.h"
+#include "ui/gfx/native_theme.h"
 
 #if defined(TOOLKIT_USES_GTK)
 #include "chrome/browser/ui/gtk/gtk_util.h"
@@ -135,11 +136,15 @@ SkColor AutocompleteResultView::GetColor(ResultViewState state,
     colors[NORMAL][TEXT] = color_utils::GetSysSkColor(COLOR_WINDOWTEXT);
     colors[SELECTED][TEXT] = color_utils::GetSysSkColor(COLOR_HIGHLIGHTTEXT);
 #elif defined(USE_AURA)
-    // TODO(beng): source from theme provider.
-    colors[NORMAL][BACKGROUND] = SK_ColorWHITE;
-    colors[SELECTED][BACKGROUND] = SK_ColorBLUE;
-    colors[NORMAL][TEXT] = SK_ColorBLACK;
-    colors[SELECTED][TEXT] = SK_ColorWHITE;
+    const gfx::NativeTheme* theme = gfx::NativeTheme::instance();
+    colors[SELECTED][BACKGROUND] = theme->GetSystemColor(
+        gfx::NativeTheme::kColorId_TextfieldSelectionBackgroundFocused);
+    colors[SELECTED][TEXT] = theme->GetSystemColor(
+        gfx::NativeTheme::kColorId_TextfieldSelectionColor);
+    colors[NORMAL][BACKGROUND] = theme->GetSystemColor(
+        gfx::NativeTheme::kColorId_TextfieldDefaultBackground);
+    colors[NORMAL][TEXT] = theme->GetSystemColor(
+        gfx::NativeTheme::kColorId_TextfieldDefaultColor);
 #elif defined(TOOLKIT_USES_GTK)
     GdkColor bg_color, selected_bg_color, text_color, selected_text_color;
     gtk_util::GetTextColors(

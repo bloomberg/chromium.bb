@@ -27,6 +27,7 @@
 
 namespace {
 
+// TODO: Obtain the correct colors using GetSysColor.
 // Theme colors returned by GetSystemColor().
 const SkColor kInvalidColorIdColor = SkColorSetRGB(255, 0, 128);
 // Dialogs:
@@ -44,6 +45,13 @@ const SkColor kTextButtonHoverColor = kTextButtonEnabledColor;
 const SkColor kEnabledMenuItemForegroundColor = kTextButtonEnabledColor;
 const SkColor kDisabledMenuItemForegroundColor = kTextButtonDisabledColor;
 const SkColor kFocusedMenuItemBackgroundColor = SkColorSetRGB(246, 249, 253);
+// Textfield:
+const SkColor kTextfieldDefaultColor = SK_ColorBLACK;
+const SkColor kTextfieldDefaultBackground = SK_ColorWHITE;
+const SkColor kTextfieldSelectionColor = SK_ColorWHITE;
+const SkColor kTextfieldSelectionBackgroundFocused =
+    SkColorSetRGB(0x1D, 0x90, 0xFF);
+const SkColor kTextfieldSelectionBackgroundUnfocused = SK_ColorLTGRAY;
 
 SkColor WinColorToSkColor(COLORREF color) {
   return SkColorSetRGB(GetRValue(color), GetGValue(color), GetBValue(color));
@@ -390,6 +398,18 @@ SkColor NativeThemeWin::GetSystemColor(ColorId color_id) const {
       return kDisabledMenuItemForegroundColor;
     case kColorId_FocusedMenuItemBackgroundColor:
       return kFocusedMenuItemBackgroundColor;
+
+    // Textfield
+    case kColorId_TextfieldDefaultColor:
+      return kTextfieldDefaultColor;
+    case kColorId_TextfieldDefaultBackground:
+      return kTextfieldDefaultBackground;
+    case kColorId_TextfieldSelectionColor:
+      return kTextfieldSelectionColor;
+    case kColorId_TextfieldSelectionBackgroundFocused:
+      return kTextfieldSelectionBackgroundFocused;
+    case kColorId_TextfieldSelectionBackgroundUnfocused:
+      return kTextfieldSelectionBackgroundUnfocused;
 
     default:
       NOTREACHED() << "Invalid color_id: " << color_id;

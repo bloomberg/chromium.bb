@@ -14,6 +14,7 @@
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/canvas_skia.h"
+#include "ui/gfx/native_theme.h"
 #include "unicode/uchar.h"
 
 namespace {
@@ -23,9 +24,6 @@ namespace {
 // settings and current settings.
 // TODO(oshima): Change this to match the standard chrome
 // before dogfooding textfield views.
-const SkColor kSelectedTextColor = SK_ColorWHITE;
-const SkColor kFocusedSelectionColor = SkColorSetRGB(30, 144, 255);
-const SkColor kUnfocusedSelectionColor = SK_ColorLTGRAY;
 const SkColor kCursorColor = SK_ColorBLACK;
 
 #ifndef NDEBUG
@@ -626,7 +624,8 @@ void RenderText::ApplyCompositionAndSelectionStyles(
   // Apply a selection style override to a copy of the style ranges.
   if (!EmptySelection()) {
     StyleRange selection_style(default_style_);
-    selection_style.foreground = kSelectedTextColor;
+    selection_style.foreground = NativeTheme::instance()->GetSystemColor(
+        NativeTheme::kColorId_TextfieldSelectionColor);
     selection_style.range.set_start(MinOfSelection());
     selection_style.range.set_end(MaxOfSelection());
     ApplyStyleRangeImpl(style_ranges, selection_style);
@@ -641,7 +640,8 @@ void RenderText::ApplyCompositionAndSelectionStyles(
   // http://crbug.com/110109
   if (!insert_mode_ && cursor_visible() && focused()) {
     StyleRange replacement_mode_style(default_style_);
-    replacement_mode_style.foreground = kSelectedTextColor;
+    replacement_mode_style.foreground = NativeTheme::instance()->GetSystemColor(
+        NativeTheme::kColorId_TextfieldSelectionColor);
     size_t cursor = GetCursorPosition();
     replacement_mode_style.range.set_start(cursor);
     replacement_mode_style.range.set_end(
@@ -787,7 +787,10 @@ void RenderText::UpdateCachedBoundsAndOffset() {
 void RenderText::DrawSelection(Canvas* canvas) {
   std::vector<Rect> sel = GetSubstringBounds(
       GetSelectionStart(), GetCursorPosition());
-  SkColor color = focused() ? kFocusedSelectionColor : kUnfocusedSelectionColor;
+  NativeTheme::ColorId color_id = focused() ?
+      NativeTheme::kColorId_TextfieldSelectionBackgroundFocused :
+      NativeTheme::kColorId_TextfieldSelectionBackgroundUnfocused;
+  SkColor color = NativeTheme::instance()->GetSystemColor(color_id);
   for (std::vector<Rect>::const_iterator i = sel.begin(); i < sel.end(); ++i)
     canvas->FillRect(color, *i);
 }

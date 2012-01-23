@@ -33,6 +33,13 @@ const SkColor kEnabledMenuItemForegroundColor = SK_ColorBLACK;
 const SkColor kDisabledMenuItemForegroundColor =
     SkColorSetRGB(0x80, 0x80, 0x80);
 const SkColor kFocusedMenuItemBackgroundColor = SkColorSetRGB(0xDC, 0xE4, 0xFA);
+// Textfield:
+const SkColor kTextfieldDefaultColor = SK_ColorBLACK;
+const SkColor kTextfieldDefaultBackground = SK_ColorWHITE;
+const SkColor kTextfieldSelectionColor = SK_ColorWHITE;
+const SkColor kTextfieldSelectionBackgroundFocused =
+    SkColorSetRGB(0x1D, 0x90, 0xFF);
+const SkColor kTextfieldSelectionBackgroundUnfocused = SK_ColorLTGRAY;
 
 }  // namespace
 
@@ -88,6 +95,18 @@ SkColor NativeThemeAura::GetSystemColor(ColorId color_id) const {
       return kDisabledMenuItemForegroundColor;
     case kColorId_FocusedMenuItemBackgroundColor:
       return kFocusedMenuItemBackgroundColor;
+
+    // Textfield
+    case kColorId_TextfieldDefaultColor:
+      return kTextfieldDefaultColor;
+    case kColorId_TextfieldDefaultBackground:
+      return kTextfieldDefaultBackground;
+    case kColorId_TextfieldSelectionColor:
+      return kTextfieldSelectionColor;
+    case kColorId_TextfieldSelectionBackgroundFocused:
+      return kTextfieldSelectionBackgroundFocused;
+    case kColorId_TextfieldSelectionBackgroundUnfocused:
+      return kTextfieldSelectionBackgroundUnfocused;
 
     default:
       NOTREACHED() << "Invalid color_id: " << color_id;
