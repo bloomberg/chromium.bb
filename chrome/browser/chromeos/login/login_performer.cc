@@ -268,7 +268,8 @@ void LoginPerformer::CompleteLogin(const std::string& username,
     }
   }
 
-  bool is_whitelisted = LoginUtils::IsWhitelisted(username);
+  bool is_whitelisted = LoginUtils::IsWhitelisted(
+      Authenticator::Canonicalize(username));
   if (ScreenLocker::default_screen_locker() || is_whitelisted) {
     // Starts authentication if guest login is allowed or online auth pending.
     StartLoginCompletion();
