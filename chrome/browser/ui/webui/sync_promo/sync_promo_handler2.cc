@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -204,10 +204,17 @@ void SyncPromoHandler2::HandleCloseSyncPromo(const base::ListValue* args) {
   if (!username.empty())
     prefs_->SetBoolean(prefs::kSyncPromoShowNTPBubble, true);
 
-  GURL url = SyncPromoUI::GetNextPageURLForSyncPromoURL(
-      web_ui_->tab_contents()->GetURL());
-  web_ui_->tab_contents()->OpenURL(url, GURL(), CURRENT_TAB,
-                                   content::PAGE_TRANSITION_LINK);
+  // If the browser window is being closed then don't try to navigate to
+  // another URL. This prevents the browser window from flashing during
+  // close.
+  Browser* browser =
+      BrowserList::FindBrowserWithWebContents(web_ui()->GetWebContents());
+  if (browser && !browser->IsAttemptingToCloseBrowser()) {
+    GURL url = SyncPromoUI::GetNextPageURLForSyncPromoURL(
+        web_ui_->tab_contents()->GetURL());
+    web_ui_->tab_contents()->OpenURL(url, GURL(), CURRENT_TAB,
+                                     content::PAGE_TRANSITION_LINK);
+  }
 }
 
 void SyncPromoHandler2::HandleInitializeSyncPromo(const base::ListValue* args) {
