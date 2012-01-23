@@ -61,8 +61,23 @@ cr.define('login', function() {
       var lockedPod = podRow.lockedPod;
       $('add-user-header-bar-item').hidden = !!lockedPod;
       $('sign-out-user-item').hidden = !lockedPod;
-      if (lockedPod)
-        podRow.focusPod(lockedPod);
+      if (lockedPod) {
+        var focusPod = function() {
+          podRow.focusPod(lockedPod);
+        }
+        // TODO(altimofeev): empirically I investigated that focus isn't
+        // set correctly if following CSS rules are present:
+        //
+        // podrow {
+        //   -webkit-transition: all 200ms ease-in-out;
+        // }
+        // .pod {
+        //  -webkit-transition: all 230ms ease;
+        // }
+        //
+        // Workaround is either delete these rules or delay the focus setting.
+        window.setTimeout(focusPod, 0);
+      }
 
       if (this.firstShown_) {
         this.firstShown_ = false;
