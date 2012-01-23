@@ -68,6 +68,7 @@
       'popups',
       'prefs',
       'process_count',
+      'protector',
       'pyauto_webdriver',
       'search_engines',
       'shortcuts',
@@ -283,6 +284,8 @@
       # this platform.
       '-policy',
       '-policy_prefs_ui',
+      # No Protector on ChromeOS.
+      '-protector',
 
       # ==================================================
       # Disabled tests that need to be investigated/fixed.

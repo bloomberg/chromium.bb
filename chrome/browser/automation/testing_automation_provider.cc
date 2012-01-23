@@ -75,6 +75,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/protector/protector_service.h"
+#include "chrome/browser/protector/protector_service_factory.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
@@ -2497,6 +2499,11 @@ void TestingAutomationProvider::SendJSONRequest(int handle,
   browser_handler_map["PerformActionOnSearchEngine"] =
       &TestingAutomationProvider::PerformActionOnSearchEngine;
 
+  browser_handler_map["GetProtectorState"] =
+      &TestingAutomationProvider::GetProtectorState;
+  browser_handler_map["PerformProtectorAction"] =
+      &TestingAutomationProvider::PerformProtectorAction;
+
   browser_handler_map["SetWindowDimensions"] =
       &TestingAutomationProvider::SetWindowDimensions;
 
@@ -3396,6 +3403,49 @@ void TestingAutomationProvider::PerformActionOnSearchEngine(
     AutomationJSONReply(this, reply_message)
         .SendError(StringPrintf("Invalid action: %s", action.c_str()));
   }
+}
+
+// Sample json output: { "enabled": true,
+//                       "showing_change": false }
+void TestingAutomationProvider::GetProtectorState(
+    Browser* browser,
+    DictionaryValue* args,
+    IPC::Message* reply_message) {
+  protector::ProtectorService* protector_service =
+      protector::ProtectorServiceFactory::GetForProfile(browser->profile());
+  scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
+  return_value->SetBoolean("enabled", protector::IsEnabled());
+  return_value->SetBoolean("showing_change",
+                           protector_service->IsShowingChange());
+  AutomationJSONReply(this, reply_message).SendSuccess(return_value.get());
+}
+
+// Sample json inputs:
+//    { "command": "PerformProtectorAction", "action": "apply_change" }
+//    { "command": "PerformProtectorAction", "action": "discard_change" }
+void TestingAutomationProvider::PerformProtectorAction(
+    Browser* browser,
+    base::DictionaryValue* args,
+    IPC::Message* reply_message) {
+  protector::ProtectorService* protector_service =
+      protector::ProtectorServiceFactory::GetForProfile(browser->profile());
+  AutomationJSONReply reply(this, reply_message);
+  if (!protector::IsEnabled()) {
+    reply.SendError("Protector is disabled");
+    return;
+  }
+  std::string action;
+  if (!args->GetString("action", &action)) {
+    reply.SendError("Missing 'action' value");
+    return;
+  }
+  if (action == "apply_change")
+    protector_service->ApplyChange();
+  else if (action == "discard_change")
+    protector_service->DiscardChange();
+  else
+    return reply.SendError("Invalid 'action' value");
+  reply.SendSuccess(NULL);
 }
 
 // Sample json input: { "command": "GetLocalStatePrefsInfo" }

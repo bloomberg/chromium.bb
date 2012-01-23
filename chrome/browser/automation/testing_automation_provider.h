@@ -489,6 +489,18 @@ class TestingAutomationProvider : public AutomationProvider,
                                    base::DictionaryValue* args,
                                    IPC::Message* reply_message);
 
+  // Get ProtectorService state.
+  // Uses the JSON interface for input/output.
+  void GetProtectorState(Browser* browser,
+                         base::DictionaryValue* args,
+                         IPC::Message* reply_message);
+
+  // Perform a given action on the ProtectorService.
+  // Uses the JSON interface for input/output.
+  void PerformProtectorAction(Browser* browser,
+                              base::DictionaryValue* args,
+                              IPC::Message* reply_message);
+
   // Get info about preferences stored in Local State.
   // Uses the JSON interface for input/output.
   void GetLocalStatePrefsInfo(base::DictionaryValue* args,

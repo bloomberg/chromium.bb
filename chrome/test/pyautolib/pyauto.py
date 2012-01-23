@@ -448,7 +448,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       return False
     return stat_result.st_ino != old_inode
 
-  def RestartBrowser(self, clear_profile=True):
+  def RestartBrowser(self, clear_profile=True, pre_launch_hook=None):
     """Restart the browser.
 
     For use with tests that require to restart the browser.
@@ -457,8 +457,11 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       clear_profile: If True, the browser profile is cleared before restart.
                      Defaults to True, that is restarts browser with a clean
                      profile.
+      pre_launch_hook: If specified, must be a callable that is invoked before
+                       the browser is started again. Not supported in ChromeOS.
     """
     if self.IsChromeOS():
+      assert pre_launch_hook is None, 'Not supported in ChromeOS'
       self.TearDown()
       if clear_profile:
         self.CleanupBrowserProfileOnChromeOS()
@@ -470,6 +473,8 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     orig_clear_state = self.get_clear_profile()
     self.CloseBrowserAndServer()
     self.set_clear_profile(clear_profile)
+    if pre_launch_hook:
+      pre_launch_hook()
     logging.debug('Restarting browser with clear_profile=%s' %
                   self.get_clear_profile())
     self.LaunchBrowserAndServer()
@@ -1139,6 +1144,48 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
                 'action': 'default'}
     self._GetResultFromJSONRequest(cmd_dict)
 
+  def _EnsureProtectorCheck(self):
+    """Ensure that Protector check for changed settings has been performed in
+    the current browser session.
+
+    No-op if Protector is disabled.
+    """
+    # Ensure that check for default search engine change has been performed.
+    self._GetResultFromJSONRequest({'command': 'LoadSearchEngineInfo'})
+
+  def GetProtectorState(self):
+    """Returns current Protector state.
+
+    This will trigger Protector's check for changed settings if it hasn't been
+    performed yet.
+
+    Returns:
+      A dictionary.
+      Example:
+        { u'enabled': True,
+          u'showing_change': False }
+    """
+    self._EnsureProtectorCheck()
+    cmd_dict = {'command': 'GetProtectorState'}
+    return self._GetResultFromJSONRequest(cmd_dict)
+
+  def ApplyProtectorChange(self):
+    """Applies the change shown by Protector and closes the bubble.
+
+    No-op if Protector is not showing any change.
+    """
+    cmd_dict = {'command': 'PerformProtectorAction',
+                'action': 'apply_change'}
+    self._GetResultFromJSONRequest(cmd_dict)
+
+  def DiscardProtectorChange(self):
+    """Discards the change shown by Protector and closes the bubble.
+
+    No-op if Protector is not showing any change.
+    """
+    cmd_dict = {'command': 'PerformProtectorAction',
+                'action': 'discard_change'}
+    self._GetResultFromJSONRequest(cmd_dict)
 
   def GetLocalStatePrefsInfo(self):
     """Return info about preferences.
