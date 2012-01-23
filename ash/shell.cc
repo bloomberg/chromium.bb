@@ -21,7 +21,7 @@
 #include "ash/wm/compact_layout_manager.h"
 #include "ash/wm/compact_status_area_layout_manager.h"
 #include "ash/wm/dialog_frame_view.h"
-#include "ash/wm/system_modal_container_layout_manager.h"
+#include "ash/wm/menu_container_layout_manager.h"
 #include "ash/wm/power_button_controller.h"
 #include "ash/wm/root_window_event_filter.h"
 #include "ash/wm/root_window_layout_manager.h"
@@ -29,6 +29,7 @@
 #include "ash/wm/shelf_layout_manager.h"
 #include "ash/wm/stacking_controller.h"
 #include "ash/wm/status_area_layout_manager.h"
+#include "ash/wm/system_modal_container_layout_manager.h"
 #include "ash/wm/toplevel_layout_manager.h"
 #include "ash/wm/toplevel_window_event_filter.h"
 #include "ash/wm/video_detector.h"
@@ -131,6 +132,7 @@ void CreateSpecialContainers(aura::Window::Windows* containers,
 
   aura::Window* menu_container = new aura::Window(NULL);
   menu_container->set_id(internal::kShellWindowId_MenuAndTooltipContainer);
+  menu_container->SetLayoutManager(new internal::MenuContainerLayoutManager);
   containers->push_back(menu_container);
 
   aura::Window* setting_bubble_container = new aura::Window(NULL);

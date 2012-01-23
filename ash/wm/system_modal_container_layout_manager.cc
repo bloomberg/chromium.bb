@@ -7,6 +7,7 @@
 #include "ash/ash_switches.h"
 #include "ash/shell.h"
 #include "ash/wm/system_modal_container_event_filter.h"
+#include "ash/wm/window_animations.h"
 #include "ash/wm/window_util.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -76,6 +77,9 @@ void SystemModalContainerLayoutManager::OnWindowResized() {
 
 void SystemModalContainerLayoutManager::OnWindowAddedToLayout(
     aura::Window* child) {
+  DCHECK((modal_screen_ && child == modal_screen_->GetNativeView()) ||
+         child->type() == aura::client::WINDOW_TYPE_NORMAL ||
+         child->type() == aura::client::WINDOW_TYPE_POPUP);
   child->AddObserver(this);
   if (child->GetIntProperty(aura::client::kModalKey))
     AddModalWindow(child);
@@ -91,6 +95,7 @@ void SystemModalContainerLayoutManager::OnWillRemoveWindowFromLayout(
 void SystemModalContainerLayoutManager::OnChildWindowVisibilityChanged(
     aura::Window* child,
     bool visible) {
+  AnimateOnChildWindowVisibilityChanged(child, visible);
 }
 
 void SystemModalContainerLayoutManager::SetChildBounds(

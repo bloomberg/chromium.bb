@@ -115,6 +115,8 @@
         'wm/dialog_frame_view.h',
         'wm/image_grid.cc',
         'wm/image_grid.h',
+        'wm/menu_container_layout_manager.cc',
+        'wm/menu_container_layout_manager.h',
         'wm/system_modal_container_layout_manager.cc',
         'wm/system_modal_container_layout_manager.h',
         'wm/system_modal_container_event_filter.cc',

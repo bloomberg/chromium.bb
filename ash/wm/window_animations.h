@@ -16,8 +16,11 @@ namespace ash {
 
 // A variety of canned animations for window transitions.
 enum WindowVisibilityAnimationType {
-  WINDOW_VISIBILITY_ANIMATION_TYPE_DROP = 0,  // Default. Window shrinks in.
-  WINDOW_VISIBILITY_ANIMATION_TYPE_VERTICAL   // Vertical Glenimation.
+  WINDOW_VISIBILITY_ANIMATION_TYPE_DEFAULT = 0, // Default. Lets the system
+                                                // decide based on window type.
+  WINDOW_VISIBILITY_ANIMATION_TYPE_DROP,        // Window shrinks in.
+  WINDOW_VISIBILITY_ANIMATION_TYPE_VERTICAL,    // Vertical Glenimation.
+  WINDOW_VISIBILITY_ANIMATION_TYPE_FADE         // Fades in/out.
 };
 
 void ASH_EXPORT SetWindowVisibilityAnimationType(
@@ -26,8 +29,7 @@ void ASH_EXPORT SetWindowVisibilityAnimationType(
 
 namespace internal {
 
-void AnimateShowWindow(aura::Window* window);
-void AnimateHideWindow(aura::Window* window);
+void AnimateOnChildWindowVisibilityChanged(aura::Window* window, bool visible);
 
 }  // namespace internal
 }  // namespace ash

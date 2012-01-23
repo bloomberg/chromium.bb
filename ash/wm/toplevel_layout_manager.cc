@@ -62,13 +62,7 @@ void ToplevelLayoutManager::OnWillRemoveWindowFromLayout(aura::Window* child) {
 void ToplevelLayoutManager::OnChildWindowVisibilityChanged(aura::Window* child,
                                                            bool visible) {
   BaseLayoutManager::OnChildWindowVisibilityChanged(child, visible);
-  if (visible) {
-    AnimateShowWindow(child);
-  } else {
-    // Don't start hiding the window again if it's already being hidden.
-    if (child->layer()->GetTargetOpacity() != 0.0f)
-      AnimateHideWindow(child);
-  }
+  AnimateOnChildWindowVisibilityChanged(child, visible);
   UpdateShelfVisibility();
 }
 

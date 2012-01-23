@@ -36,8 +36,15 @@ const float kWindowAnimation_Vertical_TranslateY = 15.f;
 // Gets/sets the WindowVisibilityAnimationType associated with a window.
 WindowVisibilityAnimationType GetWindowVisibilityAnimationType(
     aura::Window* window) {
-  return static_cast<WindowVisibilityAnimationType>(
-      window->GetIntProperty(kWindowVisibilityAnimationTypeKey));
+  WindowVisibilityAnimationType type =
+      static_cast<WindowVisibilityAnimationType>(
+          window->GetIntProperty(kWindowVisibilityAnimationTypeKey));
+  if (type == WINDOW_VISIBILITY_ANIMATION_TYPE_DEFAULT) {
+    return window->type() == aura::client::WINDOW_TYPE_MENU ?
+        WINDOW_VISIBILITY_ANIMATION_TYPE_FADE :
+        WINDOW_VISIBILITY_ANIMATION_TYPE_DROP;
+  }
+  return type;
 }
 
 // Observes a hide animation.
@@ -157,10 +164,14 @@ void AnimateHideWindow_Vertical(aura::Window* window) {
   AnimateHideWindowCommon(window, transform);
 }
 
-}  // namespace
+// Show/Hide windows using a fade.
+void AnimateShowWindow_Fade(aura::Window* window) {
+  AnimateShowWindowCommon(window, ui::Transform(), ui::Transform());
+}
 
-////////////////////////////////////////////////////////////////////////////////
-// WindowAnimation, public:
+void AnimateHideWindow_Fade(aura::Window* window) {
+  AnimateHideWindowCommon(window, ui::Transform());
+}
 
 void AnimateShowWindow(aura::Window* window) {
   switch (GetWindowVisibilityAnimationType(window)) {
@@ -169,6 +180,12 @@ void AnimateShowWindow(aura::Window* window) {
       break;
     case WINDOW_VISIBILITY_ANIMATION_TYPE_VERTICAL:
       AnimateShowWindow_Vertical(window);
+      break;
+    case WINDOW_VISIBILITY_ANIMATION_TYPE_FADE:
+      AnimateShowWindow_Fade(window);
+      break;
+    default:
+      NOTREACHED();
       break;
   }
 }
@@ -181,6 +198,27 @@ void AnimateHideWindow(aura::Window* window) {
     case WINDOW_VISIBILITY_ANIMATION_TYPE_VERTICAL:
       AnimateHideWindow_Vertical(window);
       break;
+    case WINDOW_VISIBILITY_ANIMATION_TYPE_FADE:
+      AnimateHideWindow_Fade(window);
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
+}
+
+}  // namespace
+
+////////////////////////////////////////////////////////////////////////////////
+// WindowAnimation, public:
+
+void AnimateOnChildWindowVisibilityChanged(aura::Window* window, bool visible) {
+  if (visible) {
+    AnimateShowWindow(window);
+  } else {
+    // Don't start hiding the window again if it's already being hidden.
+    if (window->layer()->GetTargetOpacity() != 0.0f)
+      AnimateHideWindow(window);
   }
 }
 
