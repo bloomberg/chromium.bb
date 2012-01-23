@@ -218,6 +218,8 @@ void ProfileShortcutManagerWin::AddProfileShortcut(
   ProfileInfoCache& cache =
       g_browser_process->profile_manager()->GetProfileInfoCache();
   size_t index = cache.GetIndexOfProfileWithPath(profile_path);
+  if (index == std::string::npos)
+    return;
 
   // Launch task to add shortcut to desktop on Windows. If this is the very
   // first profile created, don't add the user name to the shortcut.
@@ -294,8 +296,10 @@ void ProfileShortcutManagerWin::OnProfileWillBeRemoved(
     const FilePath& profile_path) {
   ProfileInfoCache& cache =
       g_browser_process->profile_manager()->GetProfileInfoCache();
-  string16 profile_name = cache.GetNameOfProfileAtIndex(
-      cache.GetIndexOfProfileWithPath(profile_path));
+  size_t index = cache.GetIndexOfProfileWithPath(profile_path);
+  if (index == std::string::npos)
+    return;
+  string16 profile_name = cache.GetNameOfProfileAtIndex(index);
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
   string16 shortcut;
   if (ShellUtil::GetChromeShortcutName(dist, false, profile_name, &shortcut)) {
@@ -347,8 +351,10 @@ void ProfileShortcutManagerWin::OnProfileNameChanged(
   // (see http://crbug.com/104463)
   ProfileInfoCache& cache =
       g_browser_process->profile_manager()->GetProfileInfoCache();
-  string16 new_profile_name = cache.GetNameOfProfileAtIndex(
-      cache.GetIndexOfProfileWithPath(profile_path));
+  size_t index = cache.GetIndexOfProfileWithPath(profile_path);
+  if (index == std::string::npos)
+    return;
+  string16 new_profile_name = cache.GetNameOfProfileAtIndex(index);
 
   string16 old_shortcut;
   string16 new_shortcut;
@@ -369,6 +375,8 @@ void ProfileShortcutManagerWin::OnProfileAvatarChanged(
   ProfileInfoCache& cache =
       g_browser_process->profile_manager()->GetProfileInfoCache();
   size_t index = cache.GetIndexOfProfileWithPath(profile_path);
+  if (index == std::string::npos)
+    return;
   string16 profile_name = cache.GetNameOfProfileAtIndex(index);
   string16 profile_base_dir =
       UTF8ToUTF16(profile_path.BaseName().MaybeAsASCII());
