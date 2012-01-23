@@ -73,7 +73,8 @@ MissingPlugin::MissingPlugin(RenderView* render_view,
                              WebFrame* frame,
                              const WebPluginParams& params,
                              const std::string& html_data)
-    : PluginPlaceholder(render_view, frame, params, html_data) {
+    : PluginPlaceholder(render_view, frame, params, html_data),
+      finished_loading_(false) {
   RenderThread::Get()->AddObserver(this);
 #if defined(ENABLE_PLUGIN_INSTALLATION)
   placeholder_routing_id_ = RenderThread::Get()->GenerateRoutingID();
@@ -96,12 +97,22 @@ void MissingPlugin::BindWebFrame(WebFrame* frame) {
   PluginPlaceholder::BindWebFrame(frame);
   BindCallback("hide", base::Bind(&MissingPlugin::HideCallback,
                                   base::Unretained(this)));
+  BindCallback("didFinishLoading",
+               base::Bind(&MissingPlugin::DidFinishLoadingCallback,
+               base::Unretained(this)));
 }
 
 void MissingPlugin::HideCallback(const CppArgumentList& args,
                                  CppVariant* result) {
   RenderThread::Get()->RecordUserMetrics("MissingPlugin_Hide_Click");
   HidePluginInternal();
+}
+
+void MissingPlugin::DidFinishLoadingCallback(const CppArgumentList& args,
+                                             CppVariant* result) {
+  finished_loading_ = true;
+  if (message_.length() > 0)
+    UpdateMessage();
 }
 
 void MissingPlugin::ShowContextMenu(const WebKit::WebMouseEvent& event) {
@@ -200,12 +211,11 @@ void MissingPlugin::PluginListChanged() {
 
 void MissingPlugin::SetMessage(const string16& message) {
   message_ = message;
-  if (!plugin()->web_view()->mainFrame()->isLoading())
+  if (finished_loading_)
     UpdateMessage();
 }
 
 void MissingPlugin::UpdateMessage() {
-  DCHECK(!plugin()->web_view()->mainFrame()->isLoading());
   std::string script = "window.setMessage(" +
                        base::GetDoubleQuotedJson(message_) + ")";
   plugin()->web_view()->mainFrame()->executeScript(
@@ -221,9 +231,4 @@ void MissingPlugin::ContextMenuAction(unsigned id) {
   } else {
     NOTREACHED();
   }
-}
-
-void MissingPlugin::DidFinishLoading() {
-  if (message_.length() > 0)
-    UpdateMessage();
 }

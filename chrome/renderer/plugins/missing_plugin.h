@@ -27,7 +27,6 @@ class MissingPlugin : public PluginPlaceholder,
   // WebViewPlugin::Delegate methods:
   virtual void BindWebFrame(WebKit::WebFrame* frame) OVERRIDE;
   virtual void ShowContextMenu(const WebKit::WebMouseEvent&) OVERRIDE;
-  virtual void DidFinishLoading() OVERRIDE;
 
 #if defined(ENABLE_PLUGIN_INSTALLATION)
   // IPC::Channel::Listener methods:
@@ -48,6 +47,8 @@ class MissingPlugin : public PluginPlaceholder,
   virtual ~MissingPlugin();
 
   void HideCallback(const CppArgumentList& args, CppVariant* result);
+  void DidFinishLoadingCallback(const CppArgumentList& args,
+                                CppVariant* result);
 
   void OnDidNotFindMissingPlugin();
 #if defined(ENABLE_PLUGIN_INSTALLATION)
@@ -66,6 +67,7 @@ class MissingPlugin : public PluginPlaceholder,
   int32 placeholder_routing_id_;
 #endif
 
+  bool finished_loading_;
   string16 message_;
 
   DISALLOW_COPY_AND_ASSIGN(MissingPlugin);
