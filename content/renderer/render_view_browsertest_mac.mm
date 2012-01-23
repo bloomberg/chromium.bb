@@ -42,8 +42,7 @@ NSEvent* CmdDeadKeyEvent(NSEventType type, unsigned short code) {
 
 // Test that cmd-up/down scrolls the page exactly if it is not intercepted by
 // javascript.
-// See http://crbug.com/110846
-TEST_F(RenderViewTest, FAILS_MacTestCmdUp) {
+TEST_F(RenderViewTest, MacTestCmdUp) {
   // Some preprocessor trickery so that we can have literal html in our source,
   // makes it easier to copy html to and from an html file for testing (the
   // preprocessor will remove the newlines at the line ends, turning this into
@@ -104,7 +103,7 @@ TEST_F(RenderViewTest, FAILS_MacTestCmdUp) {
   render_thread_->sink().ClearMessages();
 
   const char* kArrowDownScrollDown =
-      "40,false,false,true,false\n1936\np1\n\np2";
+      "40,false,false,true,false\n10128\np1\n\np2";
   view->OnSetEditCommandsForNextKeyEvent(
       EditCommands(1, EditCommand("moveToEndOfDocument", "")));
   SendNativeKeyEvent(NativeWebKeyboardEvent(arrowDownKeyDown));
