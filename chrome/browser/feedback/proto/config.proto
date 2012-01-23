@@ -1,6 +1,7 @@
-// Copyright 2009 Google Inc. All Rights Reserved.
-// Author: morgwai@google.com (Morgwai Kotarbinski)
-//
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 // Messages containing configuration of Feedback Service
 // that control classification and processing of submitted feedbacks.
 

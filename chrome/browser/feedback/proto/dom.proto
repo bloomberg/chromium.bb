@@ -1,6 +1,7 @@
-// Copyright 2009 Google Inc. All Rights Reserved.
-// Author: micapolos@google.com (Michal Pociecha-Los)
-//
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 // Messages containing DOM data captured from the browser.
 // It includes the structure of the HTML document and Navigator data.
 
