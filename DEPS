@@ -266,7 +266,7 @@ deps = {
     "/trunk/deps/third_party/flac@118218",
 
   "src/third_party/pyftpdlib/src":
-    (Var("googlecode_url") % "pyftpdlib") + "/trunk@888",
+    (Var("googlecode_url") % "pyftpdlib") + "/trunk@977",
 
   # Needed to support nacl browser test jig.
   "src/third_party/pylib":
