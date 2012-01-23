@@ -504,8 +504,10 @@
         '../third_party/skia/src/ports/sk_predefined_gamma.h',
 
         '../third_party/skia/include/utils/mac/SkCGUtils.h',
+        '../third_party/skia/include/utils/SkDeferredCanvas.h',
         '../third_party/skia/include/utils/SkMatrix44.h',
         '../third_party/skia/src/utils/mac/SkCreateCGImageRef.cpp',
+        '../third_party/skia/src/utils/SkDeferredCanvas.cpp',
         '../third_party/skia/src/utils/SkMatrix44.cpp',
 
         '../third_party/skia/include/core/Sk64.h',
@@ -953,6 +955,7 @@
           '../third_party/skia/include/pdf',
           '../third_party/skia/include/gpu',
           '../third_party/skia/include/ports',
+          '../third_party/skia/include/utils',
           'ext',
         ],
         'mac_framework_dirs': [
