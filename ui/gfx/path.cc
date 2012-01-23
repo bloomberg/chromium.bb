@@ -10,7 +10,6 @@ namespace gfx {
 
 Path::Path()
     : SkPath() {
-  moveTo(0, 0);
 }
 
 Path::Path(const Point* points, size_t count) {

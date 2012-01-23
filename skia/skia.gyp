@@ -736,8 +736,10 @@
         'GR_USE_OFFSCREEN_AA=0',
         'GR_AGGRESSIVE_SHADER_OPTS=1',
         'SK_DISABLE_FAST_AA_STROKE_RECT',
-        'SK_OLD_EMPTY_PATH_BEHAVIOR=1',
         'SK_DEFAULT_FONT_CACHE_LIMIT=(20*1024*1024)',
+
+        # temporary for landing Skia rev 3077 with minimal layout test breakage
+        'SK_SIMPLE_TWOCOLOR_VERTICAL_GRADIENTS',
 
         # skia uses static initializers to initialize the serialization logic
         # of its "pictures" library. This is currently not used in chrome; if
