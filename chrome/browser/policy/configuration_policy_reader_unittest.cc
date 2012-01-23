@@ -165,6 +165,7 @@ class PolicyStatusTest : public testing::Test {
                                           recommended_platform_,
                                           recommended_cloud_));
     status_ok_ = ASCIIToUTF16("OK");
+    status_not_set_ = ASCIIToUTF16("Not set.");
 
     policy_list_ = GetChromePolicyDefinitionList();
     policy_list_size_ =
@@ -240,6 +241,7 @@ class PolicyStatusTest : public testing::Test {
   const PolicyDefinitionList* policy_list_;
   size_t policy_list_size_;
   string16 status_ok_;
+  string16 status_not_set_;
 };
 
 TEST_F(PolicyStatusTest, GetPolicyStatusListNoSetPolicies) {
@@ -260,16 +262,11 @@ TEST_F(PolicyStatusTest, GetPolicyStatusListSetPolicies) {
   EXPECT_EQ(policy_list_size_, status_list->GetSize());
 
   scoped_ptr<DictionaryValue> undefined_dict(new DictionaryValue());
-  undefined_dict->SetString(PolicyStatusInfo::kLevelDictPath,
-                            PolicyStatusInfo::GetPolicyLevelString(
-                                POLICY_LEVEL_MANDATORY));
-  undefined_dict->SetString(PolicyStatusInfo::kScopeDictPath,
-                            PolicyStatusInfo::GetPolicyScopeString(
-                                POLICY_SCOPE_USER));
-  undefined_dict->Set(PolicyStatusInfo::kValueDictPath,
-                      Value::CreateNullValue());
+  undefined_dict->SetString(PolicyStatusInfo::kLevelDictPath, "");
+  undefined_dict->SetString(PolicyStatusInfo::kScopeDictPath, "");
+  undefined_dict->SetString(PolicyStatusInfo::kValueDictPath, "");
   undefined_dict->SetBoolean(PolicyStatusInfo::kSetDictPath, false);
-  undefined_dict->SetString(PolicyStatusInfo::kStatusDictPath, string16());
+  undefined_dict->SetString(PolicyStatusInfo::kStatusDictPath, status_not_set_);
 
   scoped_ptr<DictionaryValue> defined_dict(new DictionaryValue());
   defined_dict->SetString(PolicyStatusInfo::kScopeDictPath,

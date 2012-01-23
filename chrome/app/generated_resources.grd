@@ -4583,6 +4583,21 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_POLICY_NETWORK_CONFIG_PARSE_ERROR" desc="The text displayed in the status column when the corresponding network configuration policy failed to parse.">
         Network configuration failed to be parsed: <ph name="PARSE_ERROR_MESSAGE">$1<ex>Line: 1, column: 1, Root value must be an array or object.</ex></ph>
       </message>
+      <message name="IDS_POLICY_NOT_SET" desc="The text displayed in the status column when the corresponding policy has not been set by the administrator.">
+        Not set.
+      </message>
+      <message name="IDS_POLICY_LEVEL_MANDATORY" desc="The text displayed in the Level column, indicating that a policy is mandatory.">
+        Mandatory
+      </message>
+      <message name="IDS_POLICY_LEVEL_RECOMMENDED" desc="The text displayed in the Level column, indicating that a policy is recommended.">
+        Recommended
+      </message>
+      <message name="IDS_POLICY_SCOPE_USER" desc="The text displayed in the Applies To column, indicating that a policy applies to the current user.">
+        Current user
+      </message>
+      <message name="IDS_POLICY_SCOPE_MACHINE" desc="The text displayed in the Applies To column, indicating that a policy applies to everyone on the local machine.">
+        Machine
+      </message>
 
       <!-- about:flags -->
       <message name="IDS_FLAGS_LONG_TITLE" desc="Long version of the title for the about:flags page.">

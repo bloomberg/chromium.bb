@@ -4,8 +4,6 @@
 
 #include "chrome/browser/policy/policy_status_info.h"
 
-#include <string>
-
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
 #include "grit/generated_resources.h"
@@ -46,17 +44,25 @@ PolicyStatusInfo::~PolicyStatusInfo() {
 }
 
 DictionaryValue* PolicyStatusInfo::GetDictionaryValue() const {
-  string16 level_string = GetPolicyLevelString(level);
-  string16 scope_string = GetPolicyScopeString(scope);
-  string16 status_message =
-      status == ENFORCED ? l10n_util::GetStringUTF16(IDS_OK) : error_message;
   DictionaryValue* result = new DictionaryValue();
-  result->SetString(std::string(kNameDictPath), name);
-  result->SetString(std::string(kLevelDictPath), level_string);
-  result->SetString(std::string(kScopeDictPath), scope_string);
-  result->Set(std::string(kValueDictPath), value->DeepCopy());
-  result->SetBoolean(std::string(kSetDictPath), status != STATUS_UNDEFINED);
-  result->SetString(std::string(kStatusDictPath), status_message);
+  result->SetString(kNameDictPath, name);
+  result->SetBoolean(kSetDictPath, status != STATUS_UNDEFINED);
+
+  if (status == STATUS_UNDEFINED) {
+    result->SetString(kLevelDictPath, "");
+    result->SetString(kScopeDictPath, "");
+    result->SetString(kValueDictPath, "");
+    result->SetString(kStatusDictPath,
+                      l10n_util::GetStringUTF16(IDS_POLICY_NOT_SET));
+  } else {
+    result->SetString(kLevelDictPath, GetPolicyLevelString(level));
+    result->SetString(kScopeDictPath, GetPolicyScopeString(scope));
+    result->Set(kValueDictPath, value->DeepCopy());
+    if (status == ENFORCED)
+      result->SetString(kStatusDictPath, l10n_util::GetStringUTF16(IDS_OK));
+    else
+      result->SetString(kStatusDictPath, error_message);
+  }
 
   return result;
 }
@@ -72,16 +78,26 @@ bool PolicyStatusInfo::Equals(const PolicyStatusInfo* other_info) const {
 
 // static
 string16 PolicyStatusInfo::GetPolicyScopeString(PolicyScope scope) {
-  static const char* strings[] = { "User", "Machine" };
-  DCHECK(static_cast<size_t>(scope) < arraysize(strings));
-  return ASCIIToUTF16(strings[scope]);
+  switch (scope) {
+    case POLICY_SCOPE_USER:
+      return l10n_util::GetStringUTF16(IDS_POLICY_SCOPE_USER);
+    case POLICY_SCOPE_MACHINE:
+      return l10n_util::GetStringUTF16(IDS_POLICY_SCOPE_MACHINE);
+  }
+  NOTREACHED();
+  return string16();
 }
 
 // static
 string16 PolicyStatusInfo::GetPolicyLevelString(PolicyLevel level) {
-  static const char* strings[] = { "Recommended", "Mandatory" };
-  DCHECK(static_cast<size_t>(level) < arraysize(strings));
-  return ASCIIToUTF16(strings[level]);
+  switch (level) {
+    case POLICY_LEVEL_RECOMMENDED:
+      return l10n_util::GetStringUTF16(IDS_POLICY_LEVEL_RECOMMENDED);
+    case POLICY_LEVEL_MANDATORY:
+      return l10n_util::GetStringUTF16(IDS_POLICY_LEVEL_MANDATORY);
+  }
+  NOTREACHED();
+  return string16();
 }
 
 }  // namespace policy
