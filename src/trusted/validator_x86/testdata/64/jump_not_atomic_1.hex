@@ -1,3 +1,4 @@
 # Models a jump into the middle of an instruction.
+@1000
 EB 02
 83 e2 e0

@@ -1,4 +1,5 @@
 # Models a jump into the middle of an atomic instruction sequence.
+@1000
 EB 03
 83 e2 e0
 4D 8D 0C 17
