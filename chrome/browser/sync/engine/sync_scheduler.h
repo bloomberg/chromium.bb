@@ -394,6 +394,9 @@ class SyncScheduler : public sessions::SyncSession::Delegate,
   // Have we observed a valid server connection?
   bool server_connection_ok_;
 
+  // The latest connection code we got while trying to connect.
+  HttpResponse::ServerConnectionCode connection_code_;
+
   // Tracks in-flight nudges so we can coalesce.
   scoped_ptr<SyncSessionJob> pending_nudge_;
 

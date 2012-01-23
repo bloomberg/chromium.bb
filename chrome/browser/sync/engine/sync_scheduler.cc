@@ -191,6 +191,7 @@ SyncScheduler::SyncScheduler(const std::string& name,
           TimeDelta::FromSeconds(kDefaultSessionsCommitDelaySeconds)),
       mode_(NORMAL_MODE),
       server_connection_ok_(false),
+      connection_code_(HttpResponse::NONE),
       delay_provider_(new DelayProvider()),
       syncer_(syncer),
       session_context_(context) {
@@ -208,6 +209,9 @@ void SyncScheduler::CheckServerConnectionManagerStatus(
   SDVLOG(2) << "New server connection code: "
             << HttpResponse::GetServerConnectionCodeString(code);
   bool old_server_connection_ok = server_connection_ok_;
+  HttpResponse::ServerConnectionCode old_code = connection_code_;
+
+  connection_code_ = code;
 
   // Note, be careful when adding cases here because if the SyncScheduler
   // thinks there is no valid connection as determined by this method, it
@@ -224,7 +228,33 @@ void SyncScheduler::CheckServerConnectionManagerStatus(
     server_connection_ok_ = true;
     SDVLOG(2) << "Sync server connection is ok: "
               << "server connection is up, doing canary job";
-    DoCanaryJob();
+
+    // Now decide if we want to retry the job in exponential backoff, if any.
+    // We want to break out of the exponential backoff only if the connection
+    // was previously unavailable and we are able to connect now. If the
+    // previous error condition was something else(say like server error - http
+    // 500 ) we can't reliably expect that the next request of type A will
+    // succeed because a request of type B recently succeeded.
+    //  An example scenario is:
+    // If commit command has failed but the next GU succeeded we dont want to
+    // break out of exponential backoff. This is a conservative approach to
+    // protect the server. The aggressive approach would be to retry if any
+    // command succeeded.
+    // There is one issue with this as well. If the client could connect
+    // through 2 proxies and one proxy is broken and the other is
+    // not then it is possible we will get into a cycle. However
+    // for that to happen the sync request has to go through the broken
+    // proxy meaning the client could be doing extra work but the server
+    // is protected. i.e., the client is thrashing between 2 proxies.
+    // TODO(lipalani): The only exception here is that of AUTH_ERROR. We want
+    // to retry as soon as an auth error is fixed. However If the
+    // previous error was an auth error and the connection code is OK now it
+    // still does not mean the auth error was fixed. Because the connection
+    // might only have tried a GetTime call. We need to handle successful
+    // auth in this class seperately and kick off a sync. crbug.com/109654.
+    if (old_code == HttpResponse::CONNECTION_UNAVAILABLE ||
+        old_code == HttpResponse::IO_ERROR)
+      DoCanaryJob();
   }
 
   if (old_server_connection_ok != server_connection_ok_) {
