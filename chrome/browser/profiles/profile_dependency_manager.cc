@@ -12,18 +12,25 @@
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/background/background_contents_service_factory.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
+#include "chrome/browser/download/download_service_factory.h"
+#include "chrome/browser/intents/web_intents_registry_factory.h"
+#include "chrome/browser/notifications/desktop_notification_service_factory.h"
 #include "chrome/browser/plugin_prefs_factory.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/profiles/profile_keyed_service_factory.h"
+#include "chrome/browser/protector/protector_service_factory.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/speech/speech_input_extension_manager.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/themes/theme_service_factory.h"
+#include "chrome/browser/ui/global_error_service_factory.h"
+#include "chrome/browser/ui/webui/ntp/ntp_resource_cache_factory.h"
 
 class Profile;
 
@@ -150,16 +157,27 @@ void ProfileDependencyManager::AssertFactoriesBuilt() {
   BackgroundContentsServiceFactory::GetInstance();
   CloudPrintProxyServiceFactory::GetInstance();
   CookieSettings::Factory::GetInstance();
+  DesktopNotificationServiceFactory::GetInstance();
+  DownloadServiceFactory::GetInstance();
+  GlobalErrorServiceFactory::GetInstance();
   NetworkActionPredictorFactory::GetInstance();
+  NTPResourceCacheFactory::GetInstance();
   PersonalDataManagerFactory::GetInstance();
+  // TODO(erg): PinnedTabService deviates from the pattern of every other
+  // PKSF. It's broken and is registering itself twice.
+  //
+  // PinnedTabServiceFactory::GetInstance();
   PluginPrefsFactory::GetInstance();
+  protector::ProtectorServiceFactory::GetInstance();
   prerender::PrerenderManagerFactory::GetInstance();
   ProfileSyncServiceFactory::GetInstance();
   SessionServiceFactory::GetInstance();
   SigninManagerFactory::GetInstance();
   SpeechInputExtensionManager::InitializeFactory();
   TabRestoreServiceFactory::GetInstance();
+  ThemeServiceFactory::GetInstance();
   TemplateURLServiceFactory::GetInstance();
+  WebIntentsRegistryFactory::GetInstance();
 
   built_factories_ = true;
 }
