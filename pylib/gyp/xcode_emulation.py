@@ -29,6 +29,9 @@ class XcodeSettings(object):
     # This is only non-None temporarily during the execution of some methods.
     self.configname = None
 
+    # Used by _AdjustLibrary to match .a and .dylib entries in libraries.
+    self.library_re = re.compile(r'^lib([^/]+)\.(a|dylib)$')
+
   def _Settings(self):
     assert self.configname
     return self.xcode_settings[self.configname]
@@ -380,7 +383,7 @@ class XcodeSettings(object):
       ldflags.append('-isysroot ' + self._SdkPath())
 
     for library_path in self._Settings().get('LIBRARY_SEARCH_PATHS', []):
-      ldflags.append('-L' + library_path)
+      ldflags.append('-L' + gyp_to_build_path(library_path))
 
     if 'ORDER_FILE' in self._Settings():
       ldflags.append('-Wl,-order_file ' +
@@ -531,16 +534,22 @@ class XcodeSettings(object):
     return (self._GetDebugPostbuilds(configname, output, output_binary) +
             self._GetStripPostbuilds(configname, output_binary))
 
-  def AdjustFrameworkLibraries(self, libraries):
+  def _AdjustLibrary(self, library):
+    if library.endswith('.framework'):
+      l = '-framework ' + os.path.splitext(os.path.basename(library))[0]
+    else:
+      m = self.library_re.match(library)
+      if m:
+        l = '-l' + m.group(1)
+      else:
+        l = library
+    return l.replace('$(SDKROOT)', self._SdkPath())
+
+  def AdjustLibraries(self, libraries):
     """Transforms entries like 'Cocoa.framework' in libraries into entries like
-    '-framework Cocoa'.
+    '-framework Cocoa', 'libcrypto.dylib' into '-lcrypto', etc.
     """
-    libraries = [
-        '-framework ' + os.path.splitext(os.path.basename(library))[0]
-        if library.endswith('.framework') else library
-        for library in libraries]
-    libraries = [library.replace('$(SDKROOT)', self._SdkPath())
-        for library in libraries]
+    libraries = [ self._AdjustLibrary(library) for library in libraries]
     return libraries
 
 

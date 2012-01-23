@@ -699,7 +699,7 @@ class NinjaWriter:
     libraries = gyp.common.uniquer(map(self.ExpandSpecial,
                                        spec.get('libraries', [])))
     if self.flavor == 'mac':
-      libraries = self.xcode_settings.AdjustFrameworkLibraries(libraries)
+      libraries = self.xcode_settings.AdjustLibraries(libraries)
     self.WriteVariableList('libs', libraries)
 
     extra_bindings = []

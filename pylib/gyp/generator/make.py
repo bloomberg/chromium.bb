@@ -1429,7 +1429,7 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
         # Remove duplicate entries
         libraries = gyp.common.uniquer(libraries)
         if self.flavor == 'mac':
-          libraries = self.xcode_settings.AdjustFrameworkLibraries(libraries)
+          libraries = self.xcode_settings.AdjustLibraries(libraries)
       self.WriteList(libraries, 'LIBS')
       self.WriteLn('%s: GYP_LDFLAGS := $(LDFLAGS_$(BUILDTYPE))' %
           QuoteSpaces(self.output_binary))
