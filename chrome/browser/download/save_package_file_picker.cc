@@ -63,7 +63,8 @@ SavePackageFilePicker::SavePackageFilePicker(
     bool can_save_as_complete,
     DownloadPrefs* download_prefs,
     content::SaveFilePathPickedCallback callback)
-    : render_process_id_(web_contents->GetRenderProcessHost()->GetID()) {
+    : render_process_id_(web_contents->GetRenderProcessHost()->GetID()),
+      callback_(callback) {
   int file_type_index = SavePackageTypeToIndex(
       static_cast<SavePageType>(download_prefs->save_file_type()));
   DCHECK_NE(-1, file_type_index);
@@ -155,7 +156,7 @@ void SavePackageFilePicker::FileSelected(const FilePath& path,
          index <= kSelectFileCompleteIndex);
 
   RenderProcessHost* process = RenderProcessHost::FromID(render_process_id_);
-  if (process) {    
+  if (process) {
     SavePageType save_type = kIndexToSaveType[index];
     Profile* profile =
         Profile::FromBrowserContext(process->GetBrowserContext());
