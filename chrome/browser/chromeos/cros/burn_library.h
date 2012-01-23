@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,8 +7,12 @@
 #define CHROME_BROWSER_CHROMEOS_CROS_BURN_LIBRARY_H_
 
 #include <string>
+#include <vector>
 
 #include "base/file_path.h"
+#include "base/file_util.h"
+#include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 
 namespace chromeos {
 
@@ -38,9 +42,8 @@ class BurnLibrary {
  public:
   class Observer {
    public:
-    virtual void BurnProgressUpdated(BurnLibrary* object,
-                                     BurnEvent evt,
-                                     const ImageBurnStatus& status) = 0;
+    virtual void BurnProgressUpdated(BurnLibrary* object, BurnEvent evt,
+                                 const ImageBurnStatus& status) = 0;
   };
 
   virtual ~BurnLibrary() {}

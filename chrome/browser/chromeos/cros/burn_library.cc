@@ -1,11 +1,13 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/chromeos/cros/burn_library.h"
 
+#include <cstring>
+
 #include "base/bind.h"
-#include "base/observer_list.h"
+#include "base/memory/linked_ptr.h"
 #include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
 #include "chrome/browser/chromeos/dbus/image_burner_client.h"
 #include "chrome/browser/chromeos/disks/disk_mount_manager.h"
@@ -18,8 +20,6 @@ namespace chromeos {
 
 namespace {
 
-// Unzips |source_zip_file| and calls |callback| with the filename of
-// the unzipped image.
 void UnzipImage(
     const FilePath& source_zip_file,
     const std::string& image_name,
@@ -34,6 +34,8 @@ void UnzipImage(
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE, base::Bind(callback, source_image_file));
 }
+
+}  // namespace
 
 class BurnLibraryImpl : public BurnLibrary {
  public:
@@ -200,8 +202,8 @@ void BurnLibraryImpl::DevicesUnmountedCallback(void* object, bool success) {
 
 void BurnLibraryImpl::BurnImage() {
   DBusThreadManager::Get()->GetImageBurnerClient()->BurnImage(
-      source_image_file_,
-      target_file_path_,
+      source_image_file_.c_str(),
+      target_file_path_.c_str(),
       base::Bind(&BurnLibraryImpl::OnBurnImageFail,
                  weak_ptr_factory_.GetWeakPtr()));
 }
@@ -246,8 +248,6 @@ class BurnLibraryStubImpl : public BurnLibrary {
 
   DISALLOW_COPY_AND_ASSIGN(BurnLibraryStubImpl);
 };
-
-}  // namespace
 
 // static
 BurnLibrary* BurnLibrary::GetImpl(bool stub) {
