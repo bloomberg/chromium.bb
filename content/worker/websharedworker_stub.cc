@@ -81,13 +81,16 @@ const GURL& WebSharedWorkerStub::url() {
 }
 
 void WebSharedWorkerStub::OnStartWorkerContext(
-    const GURL& url, const string16& user_agent, const string16& source_code) {
+    const GURL& url, const string16& user_agent, const string16& source_code,
+    const string16& content_security_policy,
+    WebKit::WebContentSecurityPolicyType policy_type) {
   // Ignore multiple attempts to start this worker (can happen if two pages
   // try to start it simultaneously).
   if (started_)
     return;
 
-  impl_->startWorkerContext(url, name_, user_agent, source_code, 0);
+  impl_->startWorkerContext(url, name_, user_agent, source_code,
+                            content_security_policy, policy_type, 0);
   started_ = true;
   url_ = url;
 

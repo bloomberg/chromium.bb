@@ -17,6 +17,7 @@
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_message_utils.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebSharedWorker.h"
 
 // Singly-included section, not converted.
 #ifndef CONTENT_COMMON_WORKER_MESSAGES_H_
@@ -51,6 +52,8 @@ IPC_STRUCT_BEGIN(WorkerProcessMsg_CreateWorker_Params)
   IPC_STRUCT_MEMBER(int, creator_process_id)
   IPC_STRUCT_MEMBER(int64, shared_worker_appcache_id)
 IPC_STRUCT_END()
+
+IPC_ENUM_TRAITS(WebKit::WebContentSecurityPolicyType)
 
 //-----------------------------------------------------------------------------
 // WorkerProcess messages
@@ -135,10 +138,12 @@ IPC_SYNC_MESSAGE_CONTROL2_1(WorkerProcessHostMsg_AllowFileSystem,
 //-----------------------------------------------------------------------------
 // Worker messages
 // These are messages sent from the renderer process to the worker process.
-IPC_MESSAGE_ROUTED3(WorkerMsg_StartWorkerContext,
+IPC_MESSAGE_ROUTED5(WorkerMsg_StartWorkerContext,
                     GURL /* url */,
                     string16  /* user_agent */,
-                    string16  /* source_code */)
+                    string16  /* source_code */,
+                    string16  /* content_security_policy */,
+                    WebKit::WebContentSecurityPolicyType)
 
 IPC_MESSAGE_ROUTED0(WorkerMsg_TerminateWorkerContext)
 

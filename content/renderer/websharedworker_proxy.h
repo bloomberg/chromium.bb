@@ -37,11 +37,25 @@ class WebSharedWorkerProxy : public WebKit::WebSharedWorker,
   virtual bool isStarted();
   virtual void connect(WebKit::WebMessagePortChannel* channel,
                        ConnectListener* listener);
+
+  // API is evolving from first form to second.  This function must remain
+  // virtual to avoid conflicts on the webkit roll.
+  // DEPRECATED
   virtual void startWorkerContext(const WebKit::WebURL& script_url,
                                   const WebKit::WebString& name,
                                   const WebKit::WebString& user_agent,
                                   const WebKit::WebString& source_code,
                                   long long script_resource_appcache_id);
+
+  virtual void startWorkerContext(
+      const WebKit::WebURL& script_url,
+      const WebKit::WebString& name,
+      const WebKit::WebString& user_agent,
+      const WebKit::WebString& source_code,
+      const WebKit::WebString& content_security_policy,
+      WebKit::WebContentSecurityPolicyType policy_type,
+      long long script_resource_appcache_id);
+
   virtual void terminateWorkerContext();
   virtual void clientDestroyed();
 
@@ -70,6 +84,8 @@ class WebSharedWorkerProxy : public WebKit::WebSharedWorker,
                            const string16& name,
                            const string16& user_agent,
                            const string16& source_code,
+                           const string16& content_security_policy,
+                           WebKit::WebContentSecurityPolicyType policy_type,
                            int pending_route_id,
                            int64 script_resource_appcache_id);
   void OnWorkerCreated();

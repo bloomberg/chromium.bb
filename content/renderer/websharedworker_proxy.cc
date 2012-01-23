@@ -45,13 +45,16 @@ void WebSharedWorkerProxy::Disconnect() {
   route_id_ = MSG_ROUTING_NONE;
 }
 
-void WebSharedWorkerProxy::CreateWorkerContext(const GURL& script_url,
-                                        bool is_shared,
-                                        const string16& name,
-                                        const string16& user_agent,
-                                        const string16& source_code,
-                                        int pending_route_id,
-                                        int64 script_resource_appcache_id) {
+void WebSharedWorkerProxy::CreateWorkerContext(
+    const GURL& script_url,
+    bool is_shared,
+    const string16& name,
+    const string16& user_agent,
+    const string16& source_code,
+    const string16& content_security_policy,
+    WebKit::WebContentSecurityPolicyType policy_type,
+    int pending_route_id,
+    int64 script_resource_appcache_id) {
   DCHECK(route_id_ == MSG_ROUTING_NONE);
   ViewHostMsg_CreateWorker_Params params;
   params.url = script_url;
@@ -72,7 +75,8 @@ void WebSharedWorkerProxy::CreateWorkerContext(const GURL& script_url,
   // connect might have already been called.
   queued_messages_.insert(queued_messages_.begin(),
       new WorkerMsg_StartWorkerContext(
-          route_id_, script_url, user_agent, source_code));
+          route_id_, script_url, user_agent, source_code,
+          content_security_policy, policy_type));
 }
 
 bool WebSharedWorkerProxy::IsStarted() {
@@ -119,9 +123,24 @@ void WebSharedWorkerProxy::startWorkerContext(
     const WebKit::WebString& user_agent,
     const WebKit::WebString& source_code,
     long long script_resource_appcache_id) {
+  CreateWorkerContext(
+      script_url, true, name, user_agent, source_code, string16(),
+      WebKit::WebContentSecurityPolicyTypeReportOnly, pending_route_id_,
+      script_resource_appcache_id);
+}
+
+void WebSharedWorkerProxy::startWorkerContext(
+    const WebKit::WebURL& script_url,
+    const WebKit::WebString& name,
+    const WebKit::WebString& user_agent,
+    const WebKit::WebString& source_code,
+    const WebKit::WebString& content_security_policy,
+    WebKit::WebContentSecurityPolicyType policy_type,
+    long long script_resource_appcache_id) {
   DCHECK(!isStarted());
-  CreateWorkerContext(script_url, true, name, user_agent, source_code,
-                      pending_route_id_, script_resource_appcache_id);
+  CreateWorkerContext(
+      script_url, true, name, user_agent, source_code, content_security_policy,
+      policy_type, pending_route_id_, script_resource_appcache_id);
 }
 
 void WebSharedWorkerProxy::terminateWorkerContext() {

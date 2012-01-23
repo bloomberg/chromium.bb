@@ -11,6 +11,7 @@
 #include "content/worker/worker_webapplicationcachehost_impl.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_channel.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebSharedWorker.h"
 
 namespace WebKit {
 class WebSharedWorker;
@@ -51,7 +52,10 @@ class WebSharedWorkerStub : public IPC::Channel::Listener {
 
   void OnConnect(int sent_message_port_id, int routing_id);
   void OnStartWorkerContext(
-      const GURL& url, const string16& user_agent, const string16& source_code);
+      const GURL& url, const string16& user_agent, const string16& source_code,
+      const string16& content_security_policy,
+      WebKit::WebContentSecurityPolicyType policy_type);
+
   void OnTerminateWorkerContext();
 
   int route_id_;
