@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -49,12 +49,7 @@ void PrintPreviewDataSource::Init(bool is_dummy) {
 
   AddLocalizedString("title", IDS_PRINT_PREVIEW_TITLE);
   AddLocalizedString("loading", IDS_PRINT_PREVIEW_LOADING);
-#if defined(GOOGLE_CHROME_BUILD)
-  AddString("noPlugin", l10n_util::GetStringFUTF16(
-      IDS_PRINT_PREVIEW_NO_PLUGIN, ASCIIToUTF16("chrome://plugins/")));
-#else
   AddLocalizedString("noPlugin", IDS_PRINT_PREVIEW_NO_PLUGIN);
-#endif
   AddLocalizedString("launchNativeDialog", IDS_PRINT_PREVIEW_NATIVE_DIALOG);
   AddLocalizedString("previewFailed", IDS_PRINT_PREVIEW_FAILED);
   AddLocalizedString("invalidPrinterSettings",
