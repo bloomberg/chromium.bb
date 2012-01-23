@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -345,22 +345,29 @@ void ExtensionBrowserEventRouter::ActiveTabChanged(
     int index,
     bool user_gesture) {
   ListValue args;
-  args.Append(Value::CreateIntegerValue(
-      ExtensionTabUtil::GetTabId(new_contents->web_contents())));
+  int tab_id = ExtensionTabUtil::GetTabId(new_contents->web_contents());
+  args.Append(Value::CreateIntegerValue(tab_id));
 
   DictionaryValue* object_args = new DictionaryValue();
   object_args->Set(tab_keys::kWindowIdKey, Value::CreateIntegerValue(
       ExtensionTabUtil::GetWindowIdOfTab(new_contents->web_contents())));
   args.Append(object_args);
 
-  std::string json_args;
-  base::JSONWriter::Write(&args, false, &json_args);
+  // The onActivated event replaced onActiveChanged and onSelectionChanged. The
+  // deprecated events take two arguments: tabId, {windowId}.
+  std::string old_json_args;
+  base::JSONWriter::Write(&args, false, &old_json_args);
 
-  // The onTabSelectionChanged event has been deprecated by onActiveChanged.
-  DispatchEvent(new_contents->profile(), events::kOnTabSelectionChanged,
-                json_args);
-  DispatchEvent(new_contents->profile(), events::kOnTabActiveChanged,
-                json_args);
+  // The onActivated event takes one argument: {windowId, tabId}.
+  std::string new_json_args;
+  args.Remove(0, NULL);
+  object_args->Set(tab_keys::kTabIdKey, Value::CreateIntegerValue(tab_id));
+  base::JSONWriter::Write(&args, false, &new_json_args);
+
+  Profile* profile = new_contents->profile();
+  DispatchEvent(profile, events::kOnTabSelectionChanged, old_json_args);
+  DispatchEvent(profile, events::kOnTabActiveChanged, old_json_args);
+  DispatchEvent(profile, events::kOnTabActivated, new_json_args);
 }
 
 void ExtensionBrowserEventRouter::TabSelectionChanged(
@@ -391,8 +398,10 @@ void ExtensionBrowserEventRouter::TabSelectionChanged(
   std::string json_args;
   base::JSONWriter::Write(&args, false, &json_args);
 
-  DispatchEvent(tab_strip_model->profile(), events::kOnTabHighlightChanged,
-                json_args);
+  // The onHighlighted event replaced onHighlightChanged.
+  Profile* profile = tab_strip_model->profile();
+  DispatchEvent(profile, events::kOnTabHighlightChanged, json_args);
+  DispatchEvent(profile, events::kOnTabHighlighted, json_args);
 }
 
 void ExtensionBrowserEventRouter::TabMoved(TabContentsWrapper* contents,

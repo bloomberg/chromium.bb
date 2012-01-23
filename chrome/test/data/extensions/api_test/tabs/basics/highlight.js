@@ -46,6 +46,7 @@ chrome.test.runTests([
     chrome.tabs.query({windowId: testWindowId1, url: 'http://a.com/*'},
                       pass(function(tabs) {
       assertEq(4, tabs.length);
+      // Note: tabs.onHighlightChanged is deprecated.
       chrome.test.listenOnce(chrome.tabs.onHighlightChanged,
                              function(highlightInfo) {
         var tabIds = tabs.map(function(tab) { return tab.id; });
@@ -69,7 +70,7 @@ chrome.test.runTests([
     chrome.tabs.query({windowId: testWindowId1, url: 'http://b.com/*'},
                       pass(function(tabs) {
       assertEq(1, tabs.length);
-      chrome.test.listenOnce(chrome.tabs.onHighlightChanged,
+      chrome.test.listenOnce(chrome.tabs.onHighlighted,
                              function(highlightInfo) {
         var tabIds = tabs.map(function(tab) { return tab.id; });
         assertEq(highlightInfo.windowId, testWindowId1);
@@ -90,7 +91,7 @@ chrome.test.runTests([
     chrome.tabs.query({windowId: testWindowId2, url: 'http://a.com/*'},
                       pass(function(tabs) {
       assertEq(2, tabs.length);
-      chrome.test.listenOnce(chrome.tabs.onHighlightChanged,
+      chrome.test.listenOnce(chrome.tabs.onHighlighted,
                              function(highlightInfo) {
         var tabIds = tabs.map(function(tab) { return tab.id; });
         assertEq(highlightInfo.windowId, testWindowId2);
@@ -118,7 +119,7 @@ chrome.test.runTests([
         {windowId: testWindowId2, highlighted: true, active: false},
         pass(function(tabs) {
       var tabId = tabs[0].id;
-      chrome.test.listenOnce(chrome.tabs.onHighlightChanged,
+      chrome.test.listenOnce(chrome.tabs.onHighlighted,
                              function(highlightInfo) {
         assertEq(1, highlightInfo.tabIds.length);
         assertTrue(tabId != highlightInfo.tabIds[0]);

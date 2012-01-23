@@ -371,15 +371,19 @@
             <a href="#global-events">Events</a>
             <ol>
               <li>
-                <a href="#event-onActiveChanged">onActiveChanged</a>
+                <a href="#event-onActivated">onActivated</a>
+              </li><li style="display: none; ">
+                <a href="#event-anchor">eventName</a>
               </li><li>
                 <a href="#event-onAttached">onAttached</a>
               </li><li>
                 <a href="#event-onCreated">onCreated</a>
               </li><li>
                 <a href="#event-onDetached">onDetached</a>
+              </li><li style="display: none; ">
+                <a href="#event-anchor">eventName</a>
               </li><li>
-                <a href="#event-onHighlightChanged">onHighlightChanged</a>
+                <a href="#event-onHighlighted">onHighlighted</a>
               </li><li>
                 <a href="#event-onMoved">onMoved</a>
               </li><li>
@@ -6964,17 +6968,17 @@ For other examples and for help in viewing the source code, see
             <h3>Events</h3>
             <!-- iterates over all events -->
             <div class="apiItem">
-              <a name="event-onActiveChanged"></a>
-              <h4>onActiveChanged</h4>
+              <a name="event-onActivated"></a>
+              <h4>onActivated</h4>
 
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.tabs.</span><span>onActiveChanged</span><span class="subdued">.addListener</span>(function(<span>integer tabId, object selectInfo</span>) <span class="subdued">{...}</span><span></span>);
+                <span class="subdued">chrome.tabs.</span><span>onActivated</span><span class="subdued">.addListener</span>(function(<span>object activeInfo</span>) <span class="subdued">{...}</span><span></span>);
               </div>
 
               <div class="description">
                 <p class="todo" style="display: none; ">Undocumented.</p>
-                <p>Fires when the selected tab in a window changes. Note that the tab's URL may not be set at the time this event fired, but you can listen to onUpdated events to be notified when a URL is set.</p>
+                <p>Fires when the active tab in a window changes. Note that the tab's URL may not be set at the time this event fired, but you can listen to onUpdated events to be notified when a URL is set.</p>
 
                 <!-- LISTENER PARAMETERS -->
                 <div>
@@ -6982,6 +6986,53 @@ For other examples and for help in viewing the source code, see
                   <dl>
                     <div>
                       <div>
+          <dt>
+            <var>activeInfo</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional" style="display: none; ">optional</span>
+                    <span class="enum" style="display: none; ">enumerated</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
+                          array of <span><span></span></span>
+                        </span>
+                        <span>object</span>
+                        <span style="display: none; "></span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <dd style="display: none; ">
+            Description of this parameter from the json schema.
+          </dd>
+          <dd style="display: none; ">
+            This parameter was added in version
+            <b><span></span></b>.
+            You must omit this parameter in earlier versions,
+            and you may omit it in any version.  If you require this
+            parameter, the manifest key
+            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
+            can ensure that your extension won't be run in an earlier browser version.
+          </dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd>
+            <dl>
+              <div>
+                <div>
           <dt>
             <var>tabId</var>
               <em>
@@ -7048,54 +7099,7 @@ For other examples and for help in viewing the source code, see
           </dd>
 
         </div>
-                    </div><div>
-                      <div>
-          <dt>
-            <var>selectInfo</var>
-              <em>
-
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
-                    <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
-                      <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
-                        <span>object</span>
-                        <span style="display: none; "></span>
-                      </span>
-                    </span>
-                  )
-                </div>
-
-              </em>
-          </dt>
-          <dd class="todo">
-            Undocumented.
-          </dd>
-          <dd style="display: none; ">
-            Description of this parameter from the json schema.
-          </dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
-          <!-- OBJECT PROPERTIES -->
-          <dd>
-            <dl>
-              <div>
+              </div><div>
                 <div>
           <dt>
             <var>windowId</var>
@@ -7126,7 +7130,7 @@ For other examples and for help in viewing the source code, see
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>The ID of the window the selected tab changed inside of.</dd>
+          <dd>The ID of the window the active tab changed inside of.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -7202,6 +7206,53 @@ For other examples and for help in viewing the source code, see
                 <h4 style="display: none; ">Listener returns</h4>
                 <dl>
                   <div style="display: none; ">
+                    <div>
+                    </div>
+                  </div>
+                </dl>
+
+              </div> <!-- /description -->
+            </div><div class="apiItem" style="display: none; ">
+              <a></a>
+              <h4>event name</h4>
+
+              <div class="summary">
+                <!-- Note: intentionally longer 80 columns -->
+                <span class="subdued">chrome.bookmarks</span><span>onEvent</span><span class="subdued">.addListener</span>(function(<span>Type param1, Type param2</span>) <span class="subdued">{...}</span><span>, Type opt_param1, Type opt_param2</span>);
+              </div>
+
+              <div class="description">
+                <p class="todo">Undocumented.</p>
+                <p>
+                  A description from the json schema def of the event goes here.
+                </p>
+
+                <!-- LISTENER PARAMETERS -->
+                <div>
+                  <h4>Listener parameters</h4>
+                  <dl>
+                    <div>
+                      <div>
+                      </div>
+                    </div>
+                  </dl>
+                </div>
+
+                <!-- EXTRA PARAMETERS -->
+                <div>
+                  <h4>Extra parameters to addListener</h4>
+                  <dl>
+                    <div>
+                      <div>
+                      </div>
+                    </div>
+                  </dl>
+                </div>
+
+                <!-- LISTENER RETURN VALUE -->
+                <h4>Listener returns</h4>
+                <dl>
+                  <div>
                     <div>
                     </div>
                   </div>
@@ -7956,13 +8007,60 @@ For other examples and for help in viewing the source code, see
                 </dl>
 
               </div> <!-- /description -->
-            </div><div class="apiItem">
-              <a name="event-onHighlightChanged"></a>
-              <h4>onHighlightChanged</h4>
+            </div><div class="apiItem" style="display: none; ">
+              <a></a>
+              <h4>event name</h4>
 
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.tabs.</span><span>onHighlightChanged</span><span class="subdued">.addListener</span>(function(<span>object selectInfo</span>) <span class="subdued">{...}</span><span></span>);
+                <span class="subdued">chrome.bookmarks</span><span>onEvent</span><span class="subdued">.addListener</span>(function(<span>Type param1, Type param2</span>) <span class="subdued">{...}</span><span>, Type opt_param1, Type opt_param2</span>);
+              </div>
+
+              <div class="description">
+                <p class="todo">Undocumented.</p>
+                <p>
+                  A description from the json schema def of the event goes here.
+                </p>
+
+                <!-- LISTENER PARAMETERS -->
+                <div>
+                  <h4>Listener parameters</h4>
+                  <dl>
+                    <div>
+                      <div>
+                      </div>
+                    </div>
+                  </dl>
+                </div>
+
+                <!-- EXTRA PARAMETERS -->
+                <div>
+                  <h4>Extra parameters to addListener</h4>
+                  <dl>
+                    <div>
+                      <div>
+                      </div>
+                    </div>
+                  </dl>
+                </div>
+
+                <!-- LISTENER RETURN VALUE -->
+                <h4>Listener returns</h4>
+                <dl>
+                  <div>
+                    <div>
+                    </div>
+                  </div>
+                </dl>
+
+              </div> <!-- /description -->
+            </div><div class="apiItem">
+              <a name="event-onHighlighted"></a>
+              <h4>onHighlighted</h4>
+
+              <div class="summary">
+                <!-- Note: intentionally longer 80 columns -->
+                <span class="subdued">chrome.tabs.</span><span>onHighlighted</span><span class="subdued">.addListener</span>(function(<span>object highlightInfo</span>) <span class="subdued">{...}</span><span></span>);
               </div>
 
               <div class="description">
@@ -7976,7 +8074,7 @@ For other examples and for help in viewing the source code, see
                     <div>
                       <div>
           <dt>
-            <var>selectInfo</var>
+            <var>highlightInfo</var>
               <em>
 
                 <!-- TYPE -->

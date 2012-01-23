@@ -646,7 +646,7 @@
         "name": "onSelectionChanged",
         "nodoc": true,
         "type": "function",
-        "description": "Deprecated. Please use onActiveChanged.",
+        "description": "Deprecated. Please use onActivated.",
         "parameters": [
           {
             "type": "integer",
@@ -669,8 +669,9 @@
       },
       {
         "name": "onActiveChanged",
+        "nodoc": true,
         "type": "function",
-        "description": "Fires when the selected tab in a window changes. Note that the tab's URL may not be set at the time this event fired, but you can listen to onUpdated events to be notified when a URL is set.",
+        "description": "Deprecated. Please use onActivated.",
         "parameters": [
           {
             "type": "integer",
@@ -692,13 +693,61 @@
         ]
       },
       {
+        "name": "onActivated",
+        "type": "function",
+        "description": "Fires when the active tab in a window changes. Note that the tab's URL may not be set at the time this event fired, but you can listen to onUpdated events to be notified when a URL is set.",
+        "parameters": [
+          {
+            "type": "object",
+            "name": "activeInfo",
+            "properties": {
+              "tabId": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "The ID of the tab that has become active."
+              },
+              "windowId": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "The ID of the window the active tab changed inside of."
+              }
+            }
+          }
+        ]
+      },
+      {
         "name": "onHighlightChanged",
+        "type": "function",
+        "nodoc": true,
+        "description": "Deprecated. Please use onHighlighted.",
+        "parameters": [
+          {
+            "type": "object",
+            "name": "selectInfo",
+            "properties": {
+              "windowId": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "The window whose tabs changed."
+              },
+              "tabIds": {
+                "type": "array",
+                "name": "tabIds",
+                "items": {"type": "integer", "minimum": 0},
+                "description": "All highlighted tabs in the window."
+              }
+            }
+          }
+        ]
+      },
+      {
+        "name": "onHighlighted",
         "type": "function",
         "description": "Fired when the highlighted or selected tabs in a window changes.",
         "parameters": [
           {
             "type": "object",
-            "name": "selectInfo",
+            "name": "highlightInfo",
             "properties": {
               "windowId": {
                 "type": "integer",

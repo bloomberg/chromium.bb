@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -72,13 +72,38 @@ chrome.test.runTests([
   },
 
   function tabsOnSelectionChanged() {
+    // Note: tabs.onSelectionChanged is deprecated.
     chrome.test.listenOnce(chrome.tabs.onSelectionChanged,
       function(tabid, info) {
         assertEq(testTabId, tabid);
+        assertEq(firstWindowId, info.windowId);
       }
     );
 
     chrome.tabs.update(testTabId, {"selected": true}, pass());
+  },
+
+  function tabsOnActiveChanged() {
+    // Note: tabs.onActiveChanged is deprecated.
+    chrome.test.listenOnce(chrome.tabs.onActiveChanged,
+      function(tabid, info) {
+        assertEq(otherTabId, tabid);
+        assertEq(firstWindowId, info.windowId);
+      }
+    );
+
+    chrome.tabs.update(otherTabId, {"active": true}, pass());
+  },
+
+  function tabsOnActivated() {
+    chrome.test.listenOnce(chrome.tabs.onActivated,
+      function(info) {
+        assertEq(testTabId, info.tabId);
+        assertEq(firstWindowId, info.windowId);
+      }
+    );
+
+    chrome.tabs.update(testTabId, {"active": true}, pass());
   },
 
   function setupTabsOnAttachDetach() {
