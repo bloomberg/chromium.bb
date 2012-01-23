@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -55,7 +55,9 @@ TEST_F(FirstRunSearchEngineViewTest, ClosingSelectsFirstEngine) {
   EXPECT_EQ(template_urls.front(), service->GetDefaultSearchProvider());
 }
 
-TEST_F(FirstRunSearchEngineViewTest, ClosingBeforeServiceLoadedAbortsClose) {
+// http://code.google.com/p/chromium/issues/detail?id=111062
+TEST_F(FirstRunSearchEngineViewTest,
+       FLAKY_ClosingBeforeServiceLoadedAbortsClose) {
   // This ensures the current thread is named the UI thread, so code that checks
   // that this is the UI thread doesn't assert.
   base::Thread db_thread("tempdbthread");
