@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -75,7 +75,14 @@ void ExtensionsSyncPerfTest::RemoveExtensions(int profile) {
   }
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionsSyncPerfTest, P0) {
+// Flaky on Windows, see http://crbug.com/111072
+#if defined(OS_WIN)
+#define MAYBE_P0 DISABLED_P0
+#else
+#define MAYBE_P0 P0
+#endif
+
+IN_PROC_BROWSER_TEST_F(ExtensionsSyncPerfTest, MAYBE_P0) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   int num_default_extensions = GetExtensionCount(0);
   int expected_extension_count = num_default_extensions + kNumExtensions;
