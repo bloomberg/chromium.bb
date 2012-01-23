@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,7 +29,8 @@ PanelBoundsAnimation::PanelBoundsAnimation(ui::AnimationDelegate* target,
   // Initialize animation differently in this case, using fast-pause-slow
   // method, see below for more details.
   int duration = kSetBoundsAnimationMs;
-  if (panel_->expansion_state() == Panel::MINIMIZED) {
+  if (initial_bounds.height() > final_bounds.height() &&
+      panel_->expansion_state() == Panel::MINIMIZED) {
     double hidden_title_height =
         panel_->TitleOnlyHeight() - final_bounds.height();
     double distance_y = initial_bounds.height() - final_bounds.height();
