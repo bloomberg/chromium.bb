@@ -129,9 +129,11 @@ void CompactLayoutManager::UpdateStatusAreaVisibility() {
   if (!status_area_widget_)
     return;
   // Full screen windows should hide the status area widget.
-  if (window_util::HasFullscreenWindow(windows()))
+  bool has_fullscreen = window_util::HasFullscreenWindow(windows());
+  bool widget_visible = status_area_widget_->IsVisible();
+  if (has_fullscreen && widget_visible)
     status_area_widget_->Hide();
-  else
+  else if (!has_fullscreen && !widget_visible)
     status_area_widget_->Show();
 }
 
