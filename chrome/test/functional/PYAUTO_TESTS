@@ -427,6 +427,10 @@
       'nacl_sdk',
       'translate',
 
+      # Remove when a build after 18.0.1016.0 is available  on QA bots.
+      # Revisit 01/24/2012.
+      '-protector',
+
       # ==================================================
       # Disabled tests that need to be investigated/fixed.
       # ==================================================
