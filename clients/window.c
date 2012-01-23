@@ -1527,12 +1527,12 @@ input_handle_button(void *data,
 	if (input->focus_widget && input->grab == NULL && state)
 		input_grab(input, input->focus_widget, button);
 
-	widget = input->focus_widget;
+	widget = input->grab;
 	if (widget && widget->button_handler)
-		(*input->grab->button_handler)(widget,
-					       input, time,
-					       button, state,
-					       input->grab->user_data);
+		(*widget->button_handler)(widget,
+					  input, time,
+					  button, state,
+					  input->grab->user_data);
 
 	if (input->grab && input->grab_button == button && !state)
 		input_ungrab(input, time);
