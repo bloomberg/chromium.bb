@@ -86,9 +86,6 @@ std::string SignSetting(const std::string& value);
 // Returns true if the signature is valid for the specified key.
 bool IsSettingValid(const std::string& value, const std::string& signature);
 
-// Register related preferences in Local State.
-void RegisterPrefs(PrefService* prefs);
-
 // Whether the Protector feature is enabled.
 bool IsEnabled();
 

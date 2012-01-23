@@ -125,20 +125,8 @@ bool IsSettingValid(const std::string& value, const std::string& signature) {
   return hmac.Verify(value, signature);
 }
 
-void RegisterPrefs(PrefService* prefs) {
-  prefs->RegisterBooleanPref(prefs::kProtectorEnabled, false);
-}
-
 bool IsEnabled() {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableProtector))
-    return false;
-#if !defined(OS_CHROMEOS)
-  // Protector is always enabled on platforms other than ChromeOS.
-  return true;
-#else
-  PrefService* local_state = g_browser_process->local_state();
-  return local_state->GetBoolean(prefs::kProtectorEnabled);
-#endif
+  return !CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoProtector);
 }
 
 }  // namespace protector

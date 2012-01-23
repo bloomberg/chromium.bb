@@ -1730,9 +1730,4 @@ const char kRecoveryComponentVersion[] = "recovery_component.version";
 // troubleshooting.
 const char kComponentUpdaterState[] = "component_updater.state";
 
-// Set to true if Protector should be enabled.
-// TODO(ivankr): This is a temporary solution for testing and will be removed
-// soon.
-const char kProtectorEnabled[] = "protector.enabled";
-
 }  // namespace prefs

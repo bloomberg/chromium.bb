@@ -336,9 +336,6 @@ const char kDisablePreconnect[]             = "disable-preconnect";
 // disable that check. This switch is used during automated testing.
 const char kDisablePromptOnRepost[]         = "disable-prompt-on-repost";
 
-// Disables the Protector feature.
-const char kDisableProtector[]              = "disable-protector";
-
 // Disables remote web font support. SVG font should always work whether this
 // option is specified or not.
 const char kDisableRemoteFonts[]            = "disable-remote-fonts";
@@ -865,6 +862,9 @@ const char kNoFirstRun[]                    = "no-first-run";
 
 // Don't send hyperlink auditing pings
 const char kNoPings[]                       = "no-pings";
+
+// Disables the Protector feature.
+const char kNoProtector[]                   = "no-protector";
 
 // Don't use a proxy server, always make direct connections. Overrides any
 // other proxy server flags that are passed.
