@@ -392,6 +392,10 @@ bool Panel::IsToolbarVisible() const {
   return false;
 }
 
+gfx::Rect Panel::GetRootWindowResizerRect() const {
+  return gfx::Rect();
+}
+
 bool Panel::IsPanel() const {
   return true;
 }

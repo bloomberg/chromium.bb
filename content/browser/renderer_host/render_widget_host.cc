@@ -347,46 +347,34 @@ void RenderWidgetHost::WasResized() {
   }
 
 #if !defined(OS_MACOSX)
-  gfx::Size new_size = view_->GetViewBounds().size();
+  gfx::Rect view_bounds = view_->GetViewBounds();
 #else
   // When UI scaling is enabled on OS X, allocate a smaller bitmap and
   // pixel-scale it up.
   // TODO(thakis): Use pixel size on mac and set UI scale in renderer.
   // http://crbug.com/31960
-  gfx::Size new_size(view_->GetViewCocoaBounds().size());
+  gfx::Rect view_bounds(view_->GetViewCocoaBounds().size());
 #endif
-  gfx::Rect reserved_rect = view_->reserved_contents_rect();
+  gfx::Size new_size(view_bounds.size());
 
   // Avoid asking the RenderWidget to resize to its current size, since it
-  // won't send us a PaintRect message in that case, unless reserved area is
-  // changed, but even in this case PaintRect message won't be sent.
-  if (new_size == current_size_ && reserved_rect == current_reserved_rect_)
+  // won't send us a PaintRect message in that case.
+  if (new_size == current_size_)
     return;
 
-  if (in_flight_size_ != gfx::Size() && new_size == in_flight_size_ &&
-      in_flight_reserved_rect_ == reserved_rect) {
+  if (in_flight_size_ != gfx::Size() && new_size == in_flight_size_) {
     return;
   }
 
-  // We don't expect to receive an ACK when the requested size is empty or
-  // only reserved area is changed.
-  resize_ack_pending_ = !new_size.IsEmpty() && new_size != current_size_;
+  // We don't expect to receive an ACK when the requested size is empty.
+  if (!new_size.IsEmpty())
+    resize_ack_pending_ = true;
 
-  if (!Send(new ViewMsg_Resize(routing_id_, new_size, reserved_rect,
-                               IsFullscreen()))) {
+  if (!Send(new ViewMsg_Resize(routing_id_, new_size,
+          GetRootWindowResizerRect(), IsFullscreen()))) {
     resize_ack_pending_ = false;
   } else {
-    if (resize_ack_pending_) {
-      in_flight_size_ = new_size;
-      in_flight_reserved_rect_ = reserved_rect;
-    } else {
-      // Message was sent successfully, but we do not expect to receive an ACK,
-      // so update current values right away.
-      current_size_ = new_size;
-      // TODO(alekseys): send a message from renderer to ack a reserved rect
-      // changes only.
-      current_reserved_rect_ = reserved_rect;
-    }
+    in_flight_size_ = new_size;
   }
 }
 
@@ -778,9 +766,7 @@ void RenderWidgetHost::RendererExited(base::TerminationStatus status,
   repaint_ack_pending_ = false;
 
   in_flight_size_.SetSize(0, 0);
-  in_flight_reserved_rect_.SetRect(0, 0, 0, 0);
   current_size_.SetSize(0, 0);
-  current_reserved_rect_.SetRect(0, 0, 0, 0);
   is_hidden_ = false;
   is_accelerated_compositing_active_ = false;
 
@@ -841,6 +827,10 @@ void RenderWidgetHost::ImeConfirmComposition() {
 void RenderWidgetHost::ImeCancelComposition() {
   Send(new ViewMsg_ImeSetComposition(routing_id(), string16(),
             std::vector<WebKit::WebCompositionUnderline>(), 0, 0));
+}
+
+gfx::Rect RenderWidgetHost::GetRootWindowResizerRect() const {
+  return gfx::Rect();
 }
 
 void RenderWidgetHost::RequestToLockMouse() {
@@ -1009,15 +999,7 @@ void RenderWidgetHost::OnMsgUpdateRect(
       DCHECK(resize_ack_pending_);
       resize_ack_pending_ = false;
       in_flight_size_.SetSize(0, 0);
-      in_flight_reserved_rect_.SetRect(0, 0, 0, 0);
     }
-    // Update our knowledge of the RenderWidget's resizer rect.
-    // ViewMsg_Resize is acknowledged only when view size is actually changed,
-    // otherwise current_reserved_rect_ is updated immediately after sending
-    // ViewMsg_Resize to the RenderWidget and can be clobbered by
-    // OnMsgUpdateRect called for a paint that was initiated before the resize
-    // message was sent.
-    current_reserved_rect_ = params.resizer_rect;
   }
 
   bool is_repaint_ack =
@@ -1137,9 +1119,9 @@ void RenderWidgetHost::DidUpdateBackingStore(
   bool is_resize_ack =
       ViewHostMsg_UpdateRect_Flags::is_resize_ack(params.flags);
   if (is_resize_ack && view_) {
-    // WasResized checks the current size and sends the resize update only
-    // when something was actually changed.
-    WasResized();
+    gfx::Rect view_bounds = view_->GetViewBounds();
+    if (current_size_ != view_bounds.size())
+      WasResized();
   }
 
   // Log the time delta for processing a paint message.

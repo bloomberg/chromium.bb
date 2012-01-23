@@ -76,7 +76,6 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/user_metrics.h"
@@ -294,7 +293,6 @@ class ResizeCorner : public views::View {
       gfx::Size ps = GetPreferredSize();
       // No need to handle Right to left text direction here,
       // our parent must take care of it for us...
-      // TODO(alekseys): fix it.
       SetBounds(parent()->width() - ps.width(),
                 parent()->height() - ps.height(), ps.width(), ps.height());
     }
@@ -1028,6 +1026,27 @@ bool BrowserView::IsTabStripEditable() const {
 bool BrowserView::IsToolbarVisible() const {
   return browser_->SupportsWindowFeature(Browser::FEATURE_TOOLBAR) ||
          browser_->SupportsWindowFeature(Browser::FEATURE_LOCATIONBAR);
+}
+
+gfx::Rect BrowserView::GetRootWindowResizerRect() const {
+  if (frame_->IsMaximized() || frame_->IsFullscreen())
+    return gfx::Rect();
+
+  // We don't specify a resize corner size if we have a bottom shelf either.
+  // This is because we take care of drawing the resize corner on top of that
+  // shelf, so we don't want others to do it for us in this case.
+  // Currently, the only visible bottom shelf is the download shelf.
+  // Other tests should be added here if we add more bottom shelves.
+  if (IsDownloadShelfVisible())
+    return gfx::Rect();
+
+  gfx::Rect client_rect = contents_split_->bounds();
+  gfx::Size resize_corner_size = ResizeCorner::GetSize();
+  int x = client_rect.width() - resize_corner_size.width();
+  if (base::i18n::IsRTL())
+    x = 0;
+  return gfx::Rect(x, client_rect.height() - resize_corner_size.height(),
+                   resize_corner_size.width(), resize_corner_size.height());
 }
 
 bool BrowserView::IsPanel() const {

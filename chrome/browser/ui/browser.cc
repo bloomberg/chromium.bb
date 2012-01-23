@@ -3741,6 +3741,10 @@ void Browser::ConvertContentsToApplication(WebContents* contents) {
   app_browser->window()->Show();
 }
 
+gfx::Rect Browser::GetRootWindowResizerRect() const {
+  return window_->GetRootWindowResizerRect();
+}
+
 void Browser::BeforeUnloadFired(WebContents* tab,
                                 bool proceed,
                                 bool* proceed_to_fire_unload) {

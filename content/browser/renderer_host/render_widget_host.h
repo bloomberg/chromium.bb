@@ -26,7 +26,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebTextDirection.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 #include "ui/gfx/surface/transport_dib.h"
 
@@ -373,6 +372,10 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Channel::Listener,
   // Cancels an ongoing composition.
   void ImeCancelComposition();
 
+  // This is for derived classes to give us access to the resizer rect.
+  // And to also expose it to the RenderWidgetHostView.
+  virtual gfx::Rect GetRootWindowResizerRect() const;
+
   // Makes an IPC call to tell webkit to replace the currently selected word
   // or a word around the cursor.
   void Replace(const string16& word);
@@ -676,21 +679,12 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Channel::Listener,
   // The current size of the RenderWidget.
   gfx::Size current_size_;
 
-  // The current reserved area of the RenderWidget where contents should not be
-  // rendered to draw the resize corner, sidebar mini tabs etc.
-  gfx::Rect current_reserved_rect_;
-
   // The size we last sent as requested size to the renderer. |current_size_|
   // is only updated once the resize message has been ack'd. This on the other
   // hand is updated when the resize message is sent. This is very similar to
   // |resize_ack_pending_|, but the latter is not set if the new size has width
   // or height zero, which is why we need this too.
   gfx::Size in_flight_size_;
-
-  // The reserved area we last sent to the renderer. |current_reserved_rect_|
-  // is only updated once the resize message has been ack'd. This on the other
-  // hand is updated when the resize message is sent.
-  gfx::Rect in_flight_reserved_rect_;
 
   // True if the render widget host should track the render widget's size as
   // opposed to visa versa.

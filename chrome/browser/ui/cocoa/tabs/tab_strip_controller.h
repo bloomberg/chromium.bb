@@ -10,7 +10,6 @@
 
 #include "base/memory/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
-#import "chrome/browser/ui/cocoa/tab_contents/tab_contents_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_controller_target.h"
 #import "chrome/browser/ui/cocoa/url_drop_target.h"
 #include "chrome/browser/ui/tabs/hover_tab_selector.h"
@@ -60,8 +59,7 @@ class TabStripModel;
 @interface TabStripController :
   NSObject<TabControllerTarget,
            URLDropTargetController,
-           GTMWindowSheetControllerDelegate,
-           TabContentsControllerDelegate> {
+           GTMWindowSheetControllerDelegate> {
  @private
   scoped_nsobject<TabStripView> tabStripView_;
   NSView* switchView_;  // weak

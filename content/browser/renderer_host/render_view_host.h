@@ -372,6 +372,7 @@ class CONTENT_EXPORT RenderViewHost : public RenderWidgetHost {
   virtual void OnMouseActivate() OVERRIDE;
   virtual void ForwardKeyboardEvent(
       const NativeWebKeyboardEvent& key_event) OVERRIDE;
+  virtual gfx::Rect GetRootWindowResizerRect() const OVERRIDE;
 
   // Creates a new RenderView with the given route id.
   void CreateNewWindow(int route_id,

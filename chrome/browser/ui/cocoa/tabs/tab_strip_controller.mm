@@ -35,6 +35,7 @@
 #import "chrome/browser/ui/cocoa/image_button_cell.h"
 #import "chrome/browser/ui/cocoa/new_tab_button.h"
 #import "chrome/browser/ui/cocoa/tab_contents/favicon_util.h"
+#import "chrome/browser/ui/cocoa/tab_contents/tab_contents_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_drag_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_model_observer_bridge.h"
@@ -1159,8 +1160,8 @@ private:
   // Make a new tab. Load the contents of this tab from the nib and associate
   // the new controller with |contents| so it can be looked up later.
   scoped_nsobject<TabContentsController> contentsController(
-      [[TabContentsController alloc] initWithContents:contents->web_contents()
-                                             delegate:self]);
+      [[TabContentsController alloc]
+          initWithContents:contents->web_contents()]);
   [tabContentsArray_ insertObject:contentsController atIndex:index];
 
   // Make a new tab and add it to the strip. Keep track of its controller.
@@ -1278,8 +1279,7 @@ private:
   // will follow, at which point we will install the new view.
   scoped_nsobject<TabContentsController> newController(
       [[TabContentsController alloc]
-          initWithContents:newContents->web_contents()
-                  delegate:self]);
+          initWithContents:newContents->web_contents()]);
 
   // Bye bye, |oldController|.
   [tabContentsArray_ replaceObjectAtIndex:index withObject:newController];
@@ -2046,14 +2046,6 @@ private:
   // Make sure there are no open sheets.
   DCHECK_EQ(0U, [[sheetController_ viewsWithAttachedSheets] count]);
   sheetController_.reset();
-}
-
-// TabContentsControllerDelegate protocol.
-- (void)tabContentsViewFrameWillChange:(TabContentsController*)source
-                             frameRect:(NSRect)frameRect {
-  id<TabContentsControllerDelegate> controller =
-      [[switchView_ window] windowController];
-  [controller tabContentsViewFrameWillChange:source frameRect:frameRect];
 }
 
 - (TabContentsController*)activeTabContentsController {

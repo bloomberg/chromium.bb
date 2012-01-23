@@ -375,6 +375,11 @@ bool BrowserWindowCocoa::IsToolbarVisible() const {
          browser_->SupportsWindowFeature(Browser::FEATURE_LOCATIONBAR);
 }
 
+gfx::Rect BrowserWindowCocoa::GetRootWindowResizerRect() const {
+  NSRect tabRect = [controller_ selectedTabGrowBoxRect];
+  return gfx::Rect(NSRectToCGRect(tabRect));
+}
+
 bool BrowserWindowCocoa::IsPanel() const {
   return false;
 }

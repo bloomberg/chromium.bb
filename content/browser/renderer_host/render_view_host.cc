@@ -1238,6 +1238,10 @@ void RenderViewHost::OnMsgBlur() {
   delegate_->Deactivate();
 }
 
+gfx::Rect RenderViewHost::GetRootWindowResizerRect() const {
+  return delegate_->GetRootWindowResizerRect();
+}
+
 void RenderViewHost::ForwardMouseEvent(
     const WebKit::WebMouseEvent& mouse_event) {
 

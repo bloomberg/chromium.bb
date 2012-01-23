@@ -203,6 +203,10 @@ class CONTENT_EXPORT RenderViewHostDelegate : public IPC::Channel::Listener {
   // Return type of RenderView which is attached with this object.
   virtual content::ViewType GetRenderViewType() const = 0;
 
+  // Return the rect where to display the resize corner, if any, otherwise
+  // an empty rect.
+  virtual gfx::Rect GetRootWindowResizerRect() const = 0;
+
   // The RenderView is being constructed (message sent to the renderer process
   // to construct a RenderView).  Now is a good time to send other setup events
   // to the RenderView.  This precedes any other commands to the RenderView.

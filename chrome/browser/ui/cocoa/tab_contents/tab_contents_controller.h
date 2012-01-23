@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,24 +8,9 @@
 
 #include <Cocoa/Cocoa.h>
 
-#include "base/memory/scoped_ptr.h"
-
-class TabContentsNotificationBridge;
-@class TabContentsController;
-
 namespace content {
 class WebContents;
 }
-
-// The interface for the tab contents view controller's delegate.
-
-@protocol TabContentsControllerDelegate
-
-// Tells the delegate when the tab contents view's frame is about to change.
-- (void)tabContentsViewFrameWillChange:(TabContentsController*)source
-                             frameRect:(NSRect)frameRect;
-
-@end
 
 // A class that controls the WebContents view. It manages displaying the
 // native view for a given WebContents.
@@ -37,14 +22,11 @@ class WebContents;
 @interface TabContentsController : NSViewController {
  @private
    content::WebContents* contents_;  // weak
-  // Delegate to be notified about size changes.
-  id<TabContentsControllerDelegate> delegate_;  // weak
-  scoped_ptr<TabContentsNotificationBridge> tabContentsBridge_;
 }
 @property(readonly, nonatomic) content::WebContents* webContents;
 
-- (id)initWithContents:(content::WebContents*)contents
-              delegate:(id<TabContentsControllerDelegate>)delegate;
+// Create the contents of a tab represented by |contents|.
+- (id)initWithContents:(content::WebContents*)contents;
 
 // Call when the tab contents is about to be replaced with the currently
 // selected tab contents to do not trigger unnecessary content relayout.

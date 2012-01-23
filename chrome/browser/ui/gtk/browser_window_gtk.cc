@@ -1006,6 +1006,10 @@ bool BrowserWindowGtk::IsToolbarVisible() const {
   return IsToolbarSupported();
 }
 
+gfx::Rect BrowserWindowGtk::GetRootWindowResizerRect() const {
+  return gfx::Rect();
+}
+
 bool BrowserWindowGtk::IsPanel() const {
   return false;
 }

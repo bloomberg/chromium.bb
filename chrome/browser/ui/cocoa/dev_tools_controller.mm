@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,7 +33,7 @@ const int kMinContentsSize = 50;
 @interface DevToolsController (Private)
 - (void)showDevToolsContents:(WebContents*)devToolsContents
                  withProfile:(Profile*)profile;
-- (void)showDevToolsContainer:(Profile*)profile;
+- (void)showDevToolsContainer:(NSView*)container profile:(Profile*)profile;
 - (void)hideDevToolsContainer:(Profile*)profile;
 - (void)resizeDevTools:(CGFloat)size;
 @end
@@ -41,26 +41,16 @@ const int kMinContentsSize = 50;
 
 @implementation DevToolsController
 
-- (id)initWithDelegate:(id<TabContentsControllerDelegate>)delegate {
+- (id)init {
   if ((self = [super init])) {
     splitView_.reset([[NSSplitView alloc] initWithFrame:NSZeroRect]);
     [splitView_ setDividerStyle:NSSplitViewDividerStyleThin];
     [splitView_ setVertical:NO];
     [splitView_ setAutoresizingMask:NSViewWidthSizable|NSViewHeightSizable];
-    [splitView_ setDelegate:self];
 
     dockToRight_ = NO;
-
-    contentsController_.reset(
-        [[TabContentsController alloc] initWithContents:NULL
-                                               delegate:delegate]);
   }
   return self;
-}
-
-- (void)dealloc {
-  [splitView_ setDelegate:nil];
-  [super dealloc];
 }
 
 - (NSView*)view {
@@ -89,40 +79,34 @@ const int kMinContentsSize = 50;
 
   NSArray* subviews = [splitView_ subviews];
   if ([subviews count] == 2) {
+    scoped_nsobject<NSView> devToolsContentsView(
+        [[subviews objectAtIndex:1] retain]);
     [self hideDevToolsContainer:profile];
     dockToRight_ = dockToRight;
-    [self showDevToolsContainer:profile];
+    [self showDevToolsContainer:devToolsContentsView profile:profile];
   } else {
     dockToRight_ = dockToRight;
   }
 }
 
-- (void)ensureContentsVisible {
-  [contentsController_ ensureContentsVisible];
-}
-
 - (void)showDevToolsContents:(WebContents*)devToolsContents
                  withProfile:(Profile*)profile {
-  [contentsController_ ensureContentsSizeDoesNotChange];
-
   NSArray* subviews = [splitView_ subviews];
   if (devToolsContents) {
     // |devToolsView| is a TabContentsViewCocoa object, whose ViewID was
     // set to VIEW_ID_TAB_CONTAINER initially, so we need to change it to
     // VIEW_ID_DEV_TOOLS_DOCKED here.
-    view_id_util::SetID(devToolsContents->GetNativeView(),
-                        VIEW_ID_DEV_TOOLS_DOCKED);
-    [self showDevToolsContainer:profile];
+    NSView* devToolsView = devToolsContents->GetNativeView();
+    view_id_util::SetID(devToolsView, VIEW_ID_DEV_TOOLS_DOCKED);
+    [self showDevToolsContainer:devToolsView profile:profile];
   } else {
     if ([subviews count] > 1) {
       [self hideDevToolsContainer:profile];
     }
   }
-
-  [contentsController_ changeWebContents:devToolsContents];
 }
 
-- (void)showDevToolsContainer:(Profile*)profile {
+- (void)showDevToolsContainer:(NSView*)container profile:(Profile*)profile {
   NSArray* subviews = [splitView_ subviews];
   DCHECK_GE([subviews count], 1u);
 
@@ -140,7 +124,7 @@ const int kMinContentsSize = 50;
     if (splitOffset < 0)
       splitOffset = contentSize * 1 / 3;
 
-    [splitView_ addSubview:[contentsController_ view]];
+    [splitView_ addSubview:container];
   } else {
     DCHECK_EQ([subviews count], 2u);
     // If devtools are already visible, keep the current size.

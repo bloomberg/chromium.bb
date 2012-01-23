@@ -13,6 +13,7 @@
 #include "ui/aura/client/activation_delegate.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/base/ime/text_input_client.h"
+#include "ui/gfx/rect.h"
 #include "ui/gfx/compositor/compositor_observer.h"
 #include "webkit/glue/webcursor.h"
 

@@ -81,6 +81,7 @@ class BrowserWindowCocoa : public BrowserWindow,
   virtual bool IsBookmarkBarAnimating() const OVERRIDE;
   virtual bool IsTabStripEditable() const OVERRIDE;
   virtual bool IsToolbarVisible() const OVERRIDE;
+  virtual gfx::Rect GetRootWindowResizerRect() const OVERRIDE;
   virtual bool IsPanel() const OVERRIDE;
   virtual void ConfirmAddSearchProvider(const TemplateURL* template_url,
                                         Profile* profile) OVERRIDE;

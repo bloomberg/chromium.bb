@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,6 +24,7 @@
 #import "chrome/browser/ui/cocoa/find_bar/find_bar_cocoa_controller.h"
 #import "chrome/browser/ui/cocoa/menu_controller.h"
 #import "chrome/browser/ui/cocoa/tab_contents/favicon_util.h"
+#import "chrome/browser/ui/cocoa/tab_contents/tab_contents_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/throbber_view.h"
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_bounds_animation.h"
@@ -80,8 +81,7 @@ enum {
     animateOnBoundsChange_ = YES;
   }
   contentsController_.reset(
-      [[TabContentsController alloc] initWithContents:nil
-                                             delegate:nil]);
+      [[TabContentsController alloc] initWithContents:nil]);
   return self;
 }
 
@@ -259,7 +259,7 @@ enum {
 
 - (void)tabDetached:(WebContents*)contents {
   DCHECK(contents == [contentsController_ webContents]);
-  [contentsController_ changeWebContents:NULL];
+  [contentsController_ changeWebContents:nil];
   [[contentsController_ view] setHidden:YES];
 }
 

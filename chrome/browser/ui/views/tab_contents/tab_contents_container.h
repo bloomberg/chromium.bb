@@ -13,7 +13,6 @@
 
 class NativeTabContentsContainer;
 class RenderViewHost;
-class RenderWidgetHostView;
 
 namespace content {
 class WebContents;
@@ -39,10 +38,6 @@ class TabContentsContainer : public views::View,
   // Tells the container to update less frequently during resizing operations
   // so performance is better.
   void SetFastResize(bool fast_resize);
-
-  // Updates the current reserved rect in view coordinates where contents
-  // should not be rendered to draw the resize corner, etc.
-  void SetReservedContentsRect(const gfx::Rect& reserved_rect);
 
   // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
@@ -75,9 +70,6 @@ class TabContentsContainer : public views::View,
   // up our internal state if the TabContents is somehow destroyed before we
   // get notified.
   void TabContentsDestroyed(content::WebContents* contents);
-
-  // Called when the RenderWidgetHostView of the hosted TabContents has changed.
-  void RenderWidgetHostViewChanged(RenderWidgetHostView* new_view);
 
   // An instance of a NativeTabContentsContainer object that holds the native
   // view handle associated with the attached TabContents.

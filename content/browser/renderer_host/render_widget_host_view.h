@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,7 +24,6 @@
 #include "ui/base/ime/text_input_type.h"
 #include "ui/base/range/range.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/gfx/rect.h"
 #include "ui/gfx/surface/transport_dib.h"
 
 struct GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params;
@@ -330,13 +329,6 @@ class RenderWidgetHostView {
   BrowserAccessibilityManager* GetBrowserAccessibilityManager() const;
   void SetBrowserAccessibilityManager(BrowserAccessibilityManager* manager);
 
-  gfx::Rect reserved_contents_rect() const {
-    return reserved_rect_;
-  }
-  void set_reserved_contents_rect(const gfx::Rect& reserved_rect) {
-    reserved_rect_ = reserved_rect;
-  }
-
   bool mouse_locked() const { return mouse_locked_; }
 
  protected:
@@ -350,10 +342,6 @@ class RenderWidgetHostView {
   // A custom background to paint behind the web content. This will be tiled
   // horizontally. Can be null, in which case we fall back to painting white.
   SkBitmap background_;
-
-  // The current reserved area in view coordinates where contents should not be
-  // rendered to draw the resize corner, sidebar mini tabs etc.
-  gfx::Rect reserved_rect_;
 
   // While the mouse is locked, the cursor is hidden from the user. Mouse events
   // are still generated. However, the position they report is the last known

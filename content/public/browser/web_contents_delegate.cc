@@ -34,6 +34,10 @@ bool WebContentsDelegate::CanReloadContents(WebContents* source) const {
   return true;
 }
 
+gfx::Rect WebContentsDelegate::GetRootWindowResizerRect() const {
+  return gfx::Rect();
+}
+
 bool WebContentsDelegate::ShouldSuppressDialogs() {
   return false;
 }

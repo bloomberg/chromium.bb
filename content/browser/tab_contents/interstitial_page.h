@@ -111,6 +111,8 @@ class CONTENT_EXPORT InterstitialPage : public content::NotificationObserver,
 
   virtual content::ViewType GetRenderViewType() const OVERRIDE;
 
+  virtual gfx::Rect GetRootWindowResizerRect() const OVERRIDE;
+
   // See description above field.
   void set_reload_on_dont_proceed(bool value) {
     reload_on_dont_proceed_ = value;

@@ -382,36 +382,6 @@ int BrowserViewLayout::LayoutInfoBar(int top) {
   return overlapped_top + height;
 }
 
-// |browser_reserved_rect| is in browser_view_ coordinates.
-// |future_source_bounds| is in |source|'s parent coordinates.
-// |future_parent_offset| is required, since parent view is not moved yet.
-// Note that |future_parent_offset| is relative to browser_view_, not to
-// the parent view.
-void BrowserViewLayout::UpdateReservedContentsRect(
-    const gfx::Rect& browser_reserved_rect,
-    TabContentsContainer* source,
-    const gfx::Rect& future_source_bounds,
-    const gfx::Point& future_parent_offset) {
-  gfx::Point resize_corner_origin(browser_reserved_rect.origin());
-  // Convert |resize_corner_origin| from browser_view_ to source's parent
-  // coordinates.
-  views::View::ConvertPointToView(browser_view_, source->parent(),
-                                  &resize_corner_origin);
-  // Create |reserved_rect| in source's parent coordinates.
-  gfx::Rect reserved_rect(resize_corner_origin, browser_reserved_rect.size());
-  // Apply source's parent future offset to it.
-  reserved_rect.Offset(-future_parent_offset.x(), -future_parent_offset.y());
-  if (future_source_bounds.Intersects(reserved_rect)) {
-    // |source| is not properly positioned yet to use ConvertPointToView,
-    // so convert it into |source|'s coordinates manually.
-    reserved_rect.Offset(-future_source_bounds.x(), -future_source_bounds.y());
-  } else {
-    reserved_rect = gfx::Rect();
-  }
-
-  source->SetReservedContentsRect(reserved_rect);
-}
-
 void BrowserViewLayout::LayoutTabContents(int top, int bottom) {
   // The ultimate idea is to calculate bounds and reserved areas for all
   // contents views first and then resize them all, so every view
@@ -446,15 +416,6 @@ void BrowserViewLayout::LayoutTabContents(int top, int bottom) {
           gfx::Rect(resize_corner_origin, resize_corner_size);
     }
   }
-
-  UpdateReservedContentsRect(browser_reserved_rect,
-                             browser_view_->contents_container_,
-                             contents_bounds,
-                             contents_split_offset);
-  UpdateReservedContentsRect(browser_reserved_rect,
-                             browser_view_->devtools_container_,
-                             devtools_bounds,
-                             contents_split_offset);
 
   // Now it's safe to actually resize all contents views in the hierarchy.
   contents_split_->SetBoundsRect(contents_split_bounds);

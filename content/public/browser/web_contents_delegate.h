@@ -162,6 +162,10 @@ class CONTENT_EXPORT WebContentsDelegate {
   // Reloading can be disabled e. g. for the DevTools window.
   virtual bool CanReloadContents(WebContents* source) const;
 
+  // Return the rect where to display the resize corner, if any, otherwise
+  // an empty rect.
+  virtual gfx::Rect GetRootWindowResizerRect() const;
+
   // Invoked prior to showing before unload handler confirmation dialog.
   virtual void WillRunBeforeUnloadConfirm() {}
 

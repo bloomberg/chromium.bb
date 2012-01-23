@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -44,7 +44,6 @@ void TabContentsContainer::ChangeWebContents(WebContents* contents) {
   // When detaching the last tab of the browser ChangeWebContents is invoked
   // with NULL. Don't attempt to do anything in that case.
   if (web_contents_) {
-    RenderWidgetHostViewChanged(web_contents_->GetRenderWidgetHostView());
     native_container_->AttachContents(web_contents_);
     AddObservers();
   }
@@ -60,15 +59,6 @@ void TabContentsContainer::WebContentsFocused(WebContents* contents) {
 
 void TabContentsContainer::SetFastResize(bool fast_resize) {
   native_container_->SetFastResize(fast_resize);
-}
-
-void TabContentsContainer::SetReservedContentsRect(
-    const gfx::Rect& reserved_rect) {
-  cached_reserved_rect_ = reserved_rect;
-  if (web_contents_ && web_contents_->GetRenderWidgetHostView()) {
-    web_contents_->GetRenderWidgetHostView()->set_reserved_contents_rect(
-        reserved_rect);
-  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -187,8 +177,6 @@ void TabContentsContainer::RemoveObservers() {
 
 void TabContentsContainer::RenderViewHostChanged(RenderViewHost* old_host,
                                                  RenderViewHost* new_host) {
-  if (new_host)
-    RenderWidgetHostViewChanged(new_host->view());
   native_container_->RenderViewHostChanged(old_host, new_host);
 }
 
@@ -197,10 +185,4 @@ void TabContentsContainer::TabContentsDestroyed(WebContents* contents) {
   // us to clean up our state in case this happens.
   DCHECK(contents == web_contents_);
   ChangeWebContents(NULL);
-}
-
-void TabContentsContainer::RenderWidgetHostViewChanged(
-    RenderWidgetHostView* new_view) {
-  if (new_view)
-    new_view->set_reserved_contents_rect(cached_reserved_rect_);
 }

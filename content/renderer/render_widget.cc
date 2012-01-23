@@ -271,9 +271,6 @@ void RenderWidget::OnResize(const gfx::Size& new_size,
   if (!webwidget_)
     return;
 
-  // We shouldn't be asked to resize to our current size.
-  DCHECK(size_ != new_size || resizer_rect_ != resizer_rect);
-
   // Remember the rect where the resize corner will be drawn.
   resizer_rect_ = resizer_rect;
 
@@ -824,7 +821,6 @@ void RenderWidget::DoDeferredUpdate() {
   pending_update_params_->dy = update.scroll_delta.y();
   pending_update_params_->scroll_rect = update.scroll_rect;
   pending_update_params_->view_size = size_;
-  pending_update_params_->resizer_rect = resizer_rect_;
   pending_update_params_->plugin_window_moves.swap(plugin_window_moves_);
   pending_update_params_->flags = next_paint_flags_;
   pending_update_params_->scroll_offset = GetScrollOffset();
@@ -1049,7 +1045,6 @@ void RenderWidget::didCompleteSwapBuffers() {
 
   ViewHostMsg_UpdateRect_Params params;
   params.view_size = size_;
-  params.resizer_rect = resizer_rect_;
   params.plugin_window_moves.swap(plugin_window_moves_);
   params.flags = next_paint_flags_;
   params.scroll_offset = GetScrollOffset();

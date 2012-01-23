@@ -19,7 +19,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
-#include "chrome/browser/ui/views/tab_contents/tab_contents_container.h"
 #include "chrome/browser/ui/views/tabs/abstract_tab_strip_view.h"
 #include "chrome/browser/ui/views/unhandled_keyboard_event_handler.h"
 #include "ui/base/models/simple_menu_model.h"
@@ -49,6 +48,7 @@ class FullscreenExitBubbleViews;
 class InfoBarContainerView;
 class LocationBarView;
 class StatusBubbleViews;
+class TabContentsContainer;
 class TabContentsContainer;
 class TabStripModel;
 class ToolbarView;
@@ -274,6 +274,7 @@ class BrowserView : public BrowserWindow,
   virtual bool IsTabStripEditable() const OVERRIDE;
   virtual bool IsToolbarVisible() const OVERRIDE;
   virtual bool IsPanel() const OVERRIDE;
+  virtual gfx::Rect GetRootWindowResizerRect() const OVERRIDE;
   virtual void DisableInactiveFrame() OVERRIDE;
   virtual void ConfirmSetDefaultSearchProvider(
       content::WebContents* web_contents,

@@ -945,6 +945,7 @@ class Browser : public TabHandlerDelegate,
   virtual bool IsApplication() const OVERRIDE;
   virtual void ConvertContentsToApplication(
       content::WebContents* source) OVERRIDE;
+  virtual gfx::Rect GetRootWindowResizerRect() const OVERRIDE;
   virtual void BeforeUnloadFired(content::WebContents* source,
                                  bool proceed,
                                  bool* proceed_to_fire_unload) OVERRIDE;

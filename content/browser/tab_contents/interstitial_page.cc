@@ -553,6 +553,10 @@ content::ViewType InterstitialPage::GetRenderViewType() const {
   return content::VIEW_TYPE_INTERSTITIAL_PAGE;
 }
 
+gfx::Rect InterstitialPage::GetRootWindowResizerRect() const {
+  return gfx::Rect();
+}
+
 void InterstitialPage::Disable() {
   enabled_ = false;
 }

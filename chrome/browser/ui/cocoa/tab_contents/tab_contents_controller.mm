@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,109 +9,17 @@
 #include "base/memory/scoped_nsobject.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
-#include "content/public/browser/navigation_controller.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_source.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
 
-using content::NavigationController;
 using content::WebContents;
-
-@interface TabContentsController(Private)
-// Forwards frame update to |delegate_| (ResizeNotificationView calls it).
-- (void)tabContentsViewFrameWillChange:(NSRect)frameRect;
-// Notification from WebContents (forwarded by TabContentsNotificationBridge).
-- (void)tabContentsRenderViewHostChanged:(RenderViewHost*)oldHost
-                                 newHost:(RenderViewHost*)newHost;
-@end
-
-
-// A supporting C++ bridge object to register for TabContents notifications.
-
-class TabContentsNotificationBridge : public content::NotificationObserver {
- public:
-  explicit TabContentsNotificationBridge(TabContentsController* controller);
-
-  // Overriden from content::NotificationObserver.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
-  // Register for |contents|'s notifications, remove all prior registrations.
-  void ChangeWebContents(WebContents* contents);
- private:
-  content::NotificationRegistrar registrar_;
-  TabContentsController* controller_;  // weak, owns us
-};
-
-TabContentsNotificationBridge::TabContentsNotificationBridge(
-    TabContentsController* controller)
-    : controller_(controller) {
-}
-
-void TabContentsNotificationBridge::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  if (type == content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED) {
-    std::pair<RenderViewHost*, RenderViewHost*>* switched_details =
-        content::Details<std::pair<RenderViewHost*, RenderViewHost*> >(
-            details).ptr();
-    [controller_ tabContentsRenderViewHostChanged:switched_details->first
-                                          newHost:switched_details->second];
-  } else {
-    NOTREACHED();
-  }
-}
-
-void TabContentsNotificationBridge::ChangeWebContents(WebContents* contents) {
-  registrar_.RemoveAll();
-  if (contents) {
-    registrar_.Add(
-        this,
-        content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
-        content::Source<NavigationController>(&contents->GetController()));
-  }
-}
-
-
-// A custom view that notifies |controller| that view's frame is changing.
-
-@interface ResizeNotificationView : NSView {
-  TabContentsController* controller_;
-}
-- (id)initWithController:(TabContentsController*)controller;
-@end
-
-@implementation ResizeNotificationView
-
-- (id)initWithController:(TabContentsController*)controller {
-  if ((self = [super initWithFrame:NSZeroRect])) {
-    controller_ = controller;
-  }
-  return self;
-}
-
-- (void)setFrame:(NSRect)frameRect {
-  [controller_ tabContentsViewFrameWillChange:frameRect];
-  [super setFrame:frameRect];
-}
-
-@end
 
 
 @implementation TabContentsController
 @synthesize webContents = contents_;
 
-- (id)initWithContents:(WebContents*)contents
-              delegate:(id<TabContentsControllerDelegate>)delegate {
+- (id)initWithContents:(WebContents*)contents {
   if ((self = [super initWithNibName:nil bundle:nil])) {
     contents_ = contents;
-    delegate_ = delegate;
-    tabContentsBridge_.reset(new TabContentsNotificationBridge(self));
-    tabContentsBridge_->ChangeWebContents(contents);
   }
   return self;
 }
@@ -123,19 +31,16 @@ void TabContentsNotificationBridge::ChangeWebContents(WebContents* contents) {
 }
 
 - (void)loadView {
-  scoped_nsobject<ResizeNotificationView> view(
-      [[ResizeNotificationView alloc] initWithController:self]);
+  scoped_nsobject<NSView> view([[NSView alloc] initWithFrame:NSZeroRect]);
   [view setAutoresizingMask:NSViewHeightSizable|NSViewWidthSizable];
   [self setView:view];
 }
 
 - (void)ensureContentsSizeDoesNotChange {
-  if (contents_) {
-    NSView* contentsContainer = [self view];
-    NSArray* subviews = [contentsContainer subviews];
-    if ([subviews count] > 0)
-      [contents_->GetNativeView() setAutoresizingMask:NSViewNotSizable];
-  }
+  NSView* contentsContainer = [self view];
+  NSArray* subviews = [contentsContainer subviews];
+  if ([subviews count] > 0)
+    [contents_->GetNativeView() setAutoresizingMask:NSViewNotSizable];
 }
 
 // Call when the tab view is properly sized and the render widget host view
@@ -146,46 +51,26 @@ void TabContentsNotificationBridge::ChangeWebContents(WebContents* contents) {
   NSView* contentsContainer = [self view];
   NSArray* subviews = [contentsContainer subviews];
   NSView* contentsNativeView = contents_->GetNativeView();
-
-  NSRect contentsNativeViewFrame = [contentsContainer frame];
-  contentsNativeViewFrame.origin = NSZeroPoint;
-
-  [delegate_ tabContentsViewFrameWillChange:self
-                                  frameRect:contentsNativeViewFrame];
-
-  // Native view is resized to the actual size before it becomes visible
-  // to avoid flickering.
-  [contentsNativeView setFrame:contentsNativeViewFrame];
+  [contentsNativeView setFrame:[contentsContainer frame]];
   if ([subviews count] == 0) {
     [contentsContainer addSubview:contentsNativeView];
   } else if ([subviews objectAtIndex:0] != contentsNativeView) {
     [contentsContainer replaceSubview:[subviews objectAtIndex:0]
                                  with:contentsNativeView];
   }
-  // Restore autoresizing properties possibly stripped by
-  // ensureContentsSizeDoesNotChange call.
   [contentsNativeView setAutoresizingMask:NSViewWidthSizable|
                                           NSViewHeightSizable];
 }
 
 - (void)changeWebContents:(WebContents*)newContents {
   contents_ = newContents;
-  tabContentsBridge_->ChangeWebContents(contents_);
 }
 
-- (void)tabContentsViewFrameWillChange:(NSRect)frameRect {
-  [delegate_ tabContentsViewFrameWillChange:self frameRect:frameRect];
-}
-
-- (void)tabContentsRenderViewHostChanged:(RenderViewHost*)oldHost
-                                 newHost:(RenderViewHost*)newHost {
-  if (oldHost && newHost && oldHost->view() && newHost->view()) {
-    newHost->view()->set_reserved_contents_rect(
-        oldHost->view()->reserved_contents_rect());
-  } else {
-    [delegate_ tabContentsViewFrameWillChange:self
-                                    frameRect:[[self view] frame]];
-  }
+// Returns YES if the tab represented by this controller is the front-most.
+- (BOOL)isCurrentTab {
+  // We're the current tab if we're in the view hierarchy, otherwise some other
+  // tab is.
+  return [[self view] superview] ? YES : NO;
 }
 
 - (void)willBecomeUnselectedTab {
@@ -208,9 +93,8 @@ void TabContentsNotificationBridge::ChangeWebContents(WebContents* contents) {
   // the view may have, so avoid changing the view hierarchy unless
   // the view is different.
   if ([self webContents] != updatedContents) {
-    [self changeWebContents:updatedContents];
-    if ([self webContents])
-      [self ensureContentsVisible];
+    contents_ = updatedContents;
+    [self ensureContentsVisible];
   }
 }
 

@@ -287,8 +287,7 @@ enum {
 
     // Create a sub-controller for the docked devTools and add its view to the
     // hierarchy.
-    devToolsController_.reset(
-        [[DevToolsController alloc] initWithDelegate:self]);
+    devToolsController_.reset([[DevToolsController alloc] init]);
     [[devToolsController_ view] setFrame:[[self tabContentArea] bounds]];
     [[self tabContentArea] addSubview:[devToolsController_ view]];
 
@@ -521,7 +520,6 @@ enum {
 - (void)updateDevToolsForContents:(WebContents*)contents {
   [devToolsController_ updateDevToolsForWebContents:contents
                                         withProfile:browser_->profile()];
-  [devToolsController_ ensureContentsVisible];
 }
 
 - (void)setDevToolsDockToRight:(bool)dock_to_right {
@@ -1142,6 +1140,24 @@ enum {
   [toolbarController_ setStarredState:isStarred];
 }
 
+// Return the rect, in WebKit coordinates (flipped), of the window's grow box
+// in the coordinate system of the content area of the currently selected tab.
+// |windowGrowBox| needs to be in the window's coordinate system.
+- (NSRect)selectedTabGrowBoxRect {
+  NSWindow* window = [self window];
+  if (![window respondsToSelector:@selector(_growBoxRect)])
+    return NSZeroRect;
+
+  // Before we return a rect, we need to convert it from window coordinates
+  // to tab content area coordinates and flip the coordinate system.
+  NSRect growBoxRect =
+      [[self tabContentArea] convertRect:[window _growBoxRect] fromView:nil];
+  growBoxRect.origin.y =
+      [[self tabContentArea] frame].size.height - growBoxRect.size.height -
+      growBoxRect.origin.y;
+  return growBoxRect;
+}
+
 // Accept tabs from a BrowserWindowController with the same Profile.
 - (BOOL)canReceiveFrom:(TabWindowController*)source {
   if (![source isKindOfClass:[BrowserWindowController class]]) {
@@ -1456,47 +1472,6 @@ enum {
   return [self supportsWindowFeature:Browser::FEATURE_TABSTRIP];
 }
 
-// TabContentsControllerDelegate protocol.
-- (void)tabContentsViewFrameWillChange:(TabContentsController*)source
-                             frameRect:(NSRect)frameRect {
-  WebContents* contents = [source webContents];
-  RenderWidgetHostView* render_widget_host_view = contents ?
-      contents->GetRenderWidgetHostView() : NULL;
-  if (!render_widget_host_view)
-    return;
-
-  gfx::Rect reserved_rect;
-
-  NSWindow* window = [self window];
-  if ([window respondsToSelector:@selector(_growBoxRect)]) {
-    NSView* view = [source view];
-    if (view && [view superview]) {
-      NSRect windowGrowBoxRect = [window _growBoxRect];
-      NSRect viewRect = [[view superview] convertRect:frameRect toView:nil];
-      NSRect growBoxRect = NSIntersectionRect(windowGrowBoxRect, viewRect);
-      if (!NSIsEmptyRect(growBoxRect)) {
-        // Before we return a rect, we need to convert it from window
-        // coordinates to content area coordinates and flip the coordinate
-        // system.
-        // Superview is used here because, first, it's a frame rect, so it is
-        // specified in the parent's coordinates and, second, view is not
-        // positioned yet.
-        growBoxRect = [[view superview] convertRect:growBoxRect fromView:nil];
-        growBoxRect.origin.y =
-            NSHeight(frameRect) - NSHeight(growBoxRect);
-        growBoxRect =
-            NSOffsetRect(growBoxRect, -frameRect.origin.x, -frameRect.origin.y);
-
-        reserved_rect =
-            gfx::Rect(growBoxRect.origin.x, growBoxRect.origin.y,
-                      growBoxRect.size.width, growBoxRect.size.height);
-      }
-    }
-  }
-
-  render_widget_host_view->set_reserved_contents_rect(reserved_rect);
-}
-
 // TabStripControllerDelegate protocol.
 - (void)onActivateTabWithContents:(WebContents*)contents {
   // Update various elements that are interested in knowing the current
@@ -1519,9 +1494,6 @@ enum {
       TabContentsWrapper::GetCurrentWrapperForContents(contents);
   // Without the .get(), xcode fails.
   [infoBarContainerController_.get() changeTabContents:wrapper];
-
-  // Update devTools contents after size for all views is set.
-  [devToolsController_ ensureContentsVisible];
 }
 
 - (void)onReplaceTabWithContents:(WebContents*)contents {

@@ -227,6 +227,7 @@ class CONTENT_EXPORT TabContents
   virtual TabContents* GetAsTabContents() OVERRIDE;
   virtual WebContents* GetAsWebContents() OVERRIDE;
   virtual content::ViewType GetRenderViewType() const OVERRIDE;
+  virtual gfx::Rect GetRootWindowResizerRect() const OVERRIDE;
   virtual void RenderViewCreated(RenderViewHost* render_view_host) OVERRIDE;
   virtual void RenderViewReady(RenderViewHost* render_view_host) OVERRIDE;
   virtual void RenderViewGone(RenderViewHost* render_view_host,
@@ -420,6 +421,7 @@ class CONTENT_EXPORT TabContents
   void OnSaveURL(const GURL& url);
   void OnEnumerateDirectory(int request_id, const FilePath& path);
   void OnJSOutOfMemory();
+
   void OnRegisterProtocolHandler(const std::string& protocol,
                                  const GURL& url,
                                  const string16& title);

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,16 +10,18 @@
 
 #import "base/mac/cocoa_protocols.h"
 #include "base/memory/scoped_nsobject.h"
-#import "chrome/browser/ui/cocoa/tab_contents/tab_contents_controller.h"
 
 @class NSSplitView;
 @class NSView;
 
 class Profile;
-class TabContents;
+
+namespace content {
+class WebContents;
+}
 
 // A class that handles updates of the devTools view within a browser window.
-// It swaps in the relevant devTools contents for a given TabContents or removes
+// It swaps in the relevant devTools contents for a given WebContents or removes
 // the view, if there's no devTools contents to show.
 @interface DevToolsController : NSObject<NSSplitViewDelegate> {
  @private
@@ -27,12 +29,9 @@ class TabContents;
   scoped_nsobject<NSSplitView> splitView_;
 
   BOOL dockToRight_;
-
-  // Manages currently displayed devTools contents.
-  scoped_nsobject<TabContentsController> contentsController_;
 }
 
-- (id)initWithDelegate:(id<TabContentsControllerDelegate>)delegate;
+- (id)init;
 
 // This controller's view.
 - (NSView*)view;
@@ -50,11 +49,6 @@ class TabContents;
 // Specifies whether devtools should dock to right.
 - (void)setDockToRight:(BOOL)dock_to_right
            withProfile:(Profile*)profile;
-
-// Call when the devTools view is properly sized and the render widget host view
-// should be put into the view hierarchy.
-- (void)ensureContentsVisible;
-
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_DEV_TOOLS_CONTROLLER_H_

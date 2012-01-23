@@ -511,10 +511,6 @@ IPC_STRUCT_BEGIN(ViewHostMsg_UpdateRect_Params)
   // progress.
   IPC_STRUCT_MEMBER(gfx::Size, view_size)
 
-  // The area of the RenderView reserved for resize corner when this message
-  // was generated.  Reported for the same reason as view_size is.
-  IPC_STRUCT_MEMBER(gfx::Rect, resizer_rect)
-
   // New window locations for plugin child windows.
   IPC_STRUCT_MEMBER(std::vector<webkit::npapi::WebPluginGeometry>,
                     plugin_window_moves)

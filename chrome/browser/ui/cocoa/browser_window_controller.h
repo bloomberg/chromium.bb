@@ -20,7 +20,6 @@
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bubble_controller.h"
 #import "chrome/browser/ui/cocoa/browser_command_executor.h"
 #import "chrome/browser/ui/cocoa/fullscreen_exit_bubble_controller.h"
-#import "chrome/browser/ui/cocoa/tab_contents/tab_contents_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_window_controller.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
@@ -43,7 +42,6 @@ class LocationBarViewMac;
 @class PresentationModeController;
 @class PreviewableContentsController;
 class StatusBubbleMac;
-class TabContents;
 @class TabStripController;
 @class TabStripView;
 @class ToolbarController;
@@ -57,7 +55,6 @@ class WebContents;
                       BookmarkBarControllerDelegate,
                       BrowserCommandExecutor,
                       ViewResizer,
-                      TabContentsControllerDelegate,
                       TabStripControllerDelegate> {
  @private
   // The ordering of these members is important as it determines the order in
@@ -217,6 +214,10 @@ class WebContents;
 
 // Sets whether or not the current page in the frontmost tab is bookmarked.
 - (void)setStarredState:(BOOL)isStarred;
+
+// Return the rect, in WebKit coordinates (flipped), of the window's grow box
+// in the coordinate system of the content area of the currently selected tab.
+- (NSRect)selectedTabGrowBoxRect;
 
 // Called to tell the selected tab to update its loading state.
 // |force| is set if the update is due to changing tabs, as opposed to

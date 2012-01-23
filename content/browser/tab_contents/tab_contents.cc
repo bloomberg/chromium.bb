@@ -1657,6 +1657,12 @@ content::ViewType TabContents::GetRenderViewType() const {
   return view_type_;
 }
 
+gfx::Rect TabContents::GetRootWindowResizerRect() const {
+  if (delegate_)
+    return delegate_->GetRootWindowResizerRect();
+  return gfx::Rect();
+}
+
 void TabContents::RenderViewCreated(RenderViewHost* render_view_host) {
   content::NotificationService::current()->Notify(
       content::NOTIFICATION_RENDER_VIEW_HOST_CREATED_FOR_TAB,
