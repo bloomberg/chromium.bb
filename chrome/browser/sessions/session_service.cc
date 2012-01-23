@@ -462,7 +462,7 @@ void SessionService::Init() {
 
 bool SessionService::ShouldNewWindowStartSession() {
   if (!has_open_trackable_browsers_ && !BrowserInit::InProcessStartup() &&
-      !SessionRestore::IsRestoring()
+      !SessionRestore::IsRestoring(profile())
 #if defined(OS_MACOSX)
       // OSX has a fairly different idea of application lifetime than the
       // other platforms. We need to check that we aren't opening a window
