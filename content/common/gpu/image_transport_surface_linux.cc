@@ -451,7 +451,7 @@ bool EGLImageTransportSurface::PostSubBuffer(
 void EGLImageTransportSurface::SendPostSubBuffer(
     int x, int y, int width, int height) {
   GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params params;
-  params.surface_id = front_surface_->pixmap();
+  params.surface_handle = front_surface_->pixmap();
   params.x = x;
   params.y = y;
   params.width = width;
