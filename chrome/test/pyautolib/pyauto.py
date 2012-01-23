@@ -198,7 +198,8 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     # Sometimes flash files loaded too quickly after firing browser
     # ends up getting downloaded, which seems to indicate that the plugin
     # hasn't been registered yet.
-    self.GetPluginsInfo()
+    if not self.IsChromeOS():
+      self.GetPluginsInfo()
 
     # TODO(dtu): Remove this after crosbug.com/4558 is fixed.
     if self.IsChromeOS():
