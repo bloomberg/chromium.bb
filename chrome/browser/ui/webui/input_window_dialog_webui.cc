@@ -25,9 +25,9 @@ using content::WebUIMessageHandler;
 
 namespace {
 
-const int kInputWindowDialogWidth = 300;
-const int kInputWindowDialogBaseHeight = 90;
-const int kInputWindowDialogContentsHeight = 20;
+const int kInputWindowDialogWidth = 277;
+const int kInputWindowDialogBaseHeight = 57;
+const int kInputWindowDialogRowHeight = 35;
 
 }  // namespace
 
@@ -83,7 +83,7 @@ void InputWindowDialogWebUI::GetWebUIMessageHandlers(
 
 void InputWindowDialogWebUI::GetDialogSize(gfx::Size* size) const {
   const int height = kInputWindowDialogBaseHeight +
-      kInputWindowDialogContentsHeight * label_contents_pairs_.size();
+      kInputWindowDialogRowHeight * label_contents_pairs_.size();
   size->SetSize(kInputWindowDialogWidth, height);
 }
 

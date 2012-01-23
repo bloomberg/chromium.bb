@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -41,8 +41,6 @@ cr.define('inputWindowDialog', function() {
    * Inserts translated strings on loading.
    */
   function initialize() {
-    i18nTemplate.process(document, templateData);
-
     var args = JSON.parse(chrome.dialogArguments);
     $('name-label').textContent = args.nameLabel;
     $('name').value = args.name;

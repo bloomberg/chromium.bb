@@ -10,26 +10,28 @@
     <script src="chrome://resources/js/cr.js"></script>
     <script src="chrome://resources/js/cr/ui.js"></script>
     <script src="chrome://resources/js/i18n_template.js"></script>
+    <script src="chrome://resources/js/i18n_process.js"></script>
     <script src="chrome://resources/js/util.js"></script>
     <script src="input_window_dialog.js"></script>
   </head>
-  <body>
+  <body i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
     <div class="vbox">
-      <div>
-        <span id="name-label" class="label"></span>
-        <input id="name" type="text" autofocus>
+      <div id="name-area">
+        <div id="name-label" class="label"></div>
+        <div class="input-block">
+          <input id="name" type="text" autofocus>
+        </div>
       </div>
       <div id="url-area">
-        <span id="url-label" class="label"></span>
-        <input id="url" type="text">
+        <div id="url-label" class="label"></div>
+        <div class="input-block">
+          <input id="url" type="url">
+        </div>
       </div>
-      <div class="buttons-area">
-        <div>
-          <button id="cancel" type="reset" i18n-content="cancel">Cancel</button>
-        </div>
-        <div>
-          <button id="ok" type="submit" i18n-content="ok">OK</button>
-        </div>
+      <div class="spacer"></div>
+      <div id="buttons-area">
+        <button id="ok" type="submit" i18n-content="ok">OK</button>
+        <button id="cancel" type="reset" i18n-content="cancel">Cancel</button>
       </div>
     </div>
   </body>

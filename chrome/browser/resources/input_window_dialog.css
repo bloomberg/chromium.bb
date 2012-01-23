@@ -1,11 +1,10 @@
-/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
 
 html,
 body {
-  background-color: #EEE;
   height: 100%;
   margin: 0;
   overflow: hidden;
@@ -17,30 +16,62 @@ body {
   -webkit-box-pack: center;
   display: -webkit-box;
   height: 100%;
+  padding: 8px 0;
   width: 100%;
 }
 
 .vbox > div {
   -webkit-box-align: center;
-  -webkit-box-flex: 1;
-  -webkit-box-pack: center;
   display: -webkit-box;
-  width: 80%;
+  width: 90%;
 }
 
 .vbox > div.area-hidden {
   display: none;
 }
 
-.vbox > div.buttons-area {
-  -webkit-box-pack: end;
+.vbox > div.spacer {
+  -webkit-box-flex: 1;
 }
 
-.buttons-area > div {
-  padding: 3px;
-  width: 30%;
+.input-block {
+  -webkit-box-flex: 1;
 }
 
-button {
+.label {
+  width: 57px;
+}
+
+input {
   width: 100%;
+}
+
+#buttons-area,
+#name-area,
+#url-area {
+  height: 35px;
+}
+
+#name-area,
+#url-ara {
+  -webkit-margin-end: 14px;
+  display: -webkit-box;
+}
+
+#buttons-area {
+  -webkit-box-pack: end;
+  -webkit-margin-end: -2px;
+  margin-bottom: 13px;
+}
+
+#buttons-area > button {
+  -webkit-margin-start: 6px;
+  display: block;
+  height: 27px;
+  white-space: nowrap;
+  width: 75px;
+}
+
+#url {
+  direction: ltr;
 }
