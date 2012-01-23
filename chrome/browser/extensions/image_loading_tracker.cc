@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -156,9 +156,8 @@ void ImageLoadingTracker::LoadImage(const Extension* extension,
     return;
   }
 
-  if (cache == CACHE) {
+  if (cache == CACHE)
     load_map_[id] = extension;
-  }
 
   // Instruct the ImageLoader to load this on the File thread. LoadImage does
   // not block.
@@ -193,10 +192,9 @@ void ImageLoadingTracker::Observe(int type,
   // Remove all entries in the load_map_ referencing the extension. This ensures
   // we don't attempt to cache the image when the load completes.
   for (LoadMap::iterator i = load_map_.begin(); i != load_map_.end();) {
-    if (i->second == extension) {
+    if (i->second == extension)
       load_map_.erase(i++);
-    } else {
+    else
       ++i;
-    }
   }
 }
