@@ -45,6 +45,7 @@ class DevToolsClient : public content::RenderViewObserver,
   virtual void requestDockWindow() OVERRIDE;
   virtual void requestUndockWindow() OVERRIDE;
   virtual void requestSetDockSide(const WebKit::WebString& side) OVERRIDE;
+  virtual void openInNewTab(const WebKit::WebString& side) OVERRIDE;
   virtual void saveAs(const WebKit::WebString& file_name,
                       const WebKit::WebString& content) OVERRIDE;
 

@@ -74,6 +74,11 @@ void DevToolsClient::requestSetDockSide(const WebKit::WebString& side) {
   Send(new DevToolsHostMsg_RequestSetDockSide(routing_id(), side.utf8()));
 }
 
+void DevToolsClient::openInNewTab(const WebKit::WebString& url) {
+  Send(new DevToolsHostMsg_OpenInNewTab(routing_id(),
+                                        url.utf8()));
+}
+
 void DevToolsClient::saveAs(const WebKit::WebString& file_name,
                             const WebKit::WebString& content) {
   Send(new DevToolsHostMsg_SaveAs(routing_id(),

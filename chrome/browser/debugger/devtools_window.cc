@@ -45,6 +45,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/common/bindings_policy.h"
+#include "content/public/common/page_transition_types.h"
 #include "grit/generated_resources.h"
 
 typedef std::vector<DevToolsWindow*> DevToolsWindowList;
@@ -713,6 +714,25 @@ void DevToolsWindow::SetDockSide(const std::string& side) {
   if (inspected_window) {
     inspected_window->SetDevToolsDockSide(pref_value == kDockSideRight ?
             DEVTOOLS_DOCK_SIDE_RIGHT : DEVTOOLS_DOCK_SIDE_BOTTOM);
+  }
+}
+
+void DevToolsWindow::OpenInNewTab(const std::string& url) {
+  OpenURLParams params(GURL(url),
+                       content::Referrer(),
+                       NEW_FOREGROUND_TAB,
+                       content::PAGE_TRANSITION_LINK,
+                       false /* is_renderer_initiated */);
+  if (inspected_tab_) {
+    inspected_tab_->web_contents()->OpenURL(params);
+  } else {
+    for (BrowserList::const_iterator it = BrowserList::begin();
+         it != BrowserList::end(); ++it) {
+      if ((*it)->type() == Browser::TYPE_TABBED) {
+        (*it)->OpenURL(params);
+        break;
+      }
+    }
   }
 }
 

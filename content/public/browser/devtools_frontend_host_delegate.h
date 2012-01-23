@@ -36,10 +36,12 @@ class DevToolsFrontendHostDelegate {
   // Specifies side for devtools to dock to.
   virtual void SetDockSide(const std::string& side) = 0;
 
+  // Opens given |url| in the new tab.
+  virtual void OpenInNewTab(const std::string& url) = 0;
+
   // Shows "Save As..." dialog to save |content|.
   virtual void SaveToFile(const std::string& suggested_file_name,
                           const std::string& content) = 0;
-
 
   // This method is called when tab inspected by this devtools frontend is
   // closing.

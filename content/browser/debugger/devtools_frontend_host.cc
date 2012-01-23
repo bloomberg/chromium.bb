@@ -73,6 +73,8 @@ bool DevToolsFrontendHost::OnMessageReceived(
                         OnRequestUndockWindow)
     IPC_MESSAGE_HANDLER(DevToolsHostMsg_RequestSetDockSide,
                         OnRequestSetDockSide)
+    IPC_MESSAGE_HANDLER(DevToolsHostMsg_OpenInNewTab,
+                        OnOpenInNewTab)
     IPC_MESSAGE_HANDLER(DevToolsHostMsg_SaveAs,
                         OnSaveAs)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -96,6 +98,10 @@ void DevToolsFrontendHost::OnCloseWindow() {
 
 void DevToolsFrontendHost::OnMoveWindow(int x, int y) {
   delegate_->MoveWindow(x, y);
+}
+
+void DevToolsFrontendHost::OnOpenInNewTab(const std::string& url) {
+  delegate_->OpenInNewTab(url);
 }
 
 void DevToolsFrontendHost::OnSaveAs(

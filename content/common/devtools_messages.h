@@ -121,6 +121,10 @@ IPC_MESSAGE_ROUTED0(DevToolsHostMsg_RequestUndockWindow)
 IPC_MESSAGE_ROUTED1(DevToolsHostMsg_RequestSetDockSide,
                     std::string /* side */)
 
+// Opens given URL in the new tab.
+IPC_MESSAGE_ROUTED1(DevToolsHostMsg_OpenInNewTab,
+                    std::string /* url */)
+
 // Shows Save As dialog for content.
 IPC_MESSAGE_ROUTED2(DevToolsHostMsg_SaveAs,
                     std::string /* file_name */,
