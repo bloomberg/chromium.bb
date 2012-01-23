@@ -2900,7 +2900,10 @@ FileManager.prototype = {
   };
 
   FileManager.prototype.findListItemForEvent_ = function(event) {
-    var node = event.srcElement;
+    return this.findListItemForNode_(event.srcElement);
+  };
+
+  FileManager.prototype.findListItemForNode_ = function(node) {
     var list = this.currentList_;
     // Assume list items are direct children of the list.
     if (node == list)
@@ -3055,17 +3058,24 @@ FileManager.prototype = {
     if (!this.validateFileName_(newName))
       return;
 
+    var nameNode = this.findListItemForNode_(this.renameInput_).
+                   querySelector('.filename-label');
     function onError(err) {
+      nameNode.textContent = entry.name;
       this.alert.show(strf('ERROR_RENAMING', entry.name,
                            util.getFileErrorMnemonic(err.code)));
     }
 
     this.cancelRename_();
+    // Optimistically apply new name immediately to avoid flickering in
+    // case of success.
+    nameNode.textContent = newName;
 
     this.directoryModel_.doesExist(newName, function(exists, isFile) {
       if (!exists) {
         this.directoryModel_.renameEntry(entry, newName, onError.bind(this));
       } else {
+        nameNode.textContent = entry.name;
         var message = isFile ? 'FILE_ALREADY_EXISTS' :
                                'DIRECTORY_ALREADY_EXISTS';
         this.alert.show(strf(message, newName));

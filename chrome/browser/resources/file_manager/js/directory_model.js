@@ -314,23 +314,29 @@ DirectoryModel.prototype = {
   deleteEntries: function(entries, opt_callback) {
     var downcount = entries.length + 1;
 
-    var onComplete = function() {
-      if (--downcount == 0) {
-        this.rescan();
-        if (opt_callback)
-          opt_callback();
-      }
-    }.bind(this);
+    var onComplete = opt_callback ? function() {
+      if (--downcount == 0)
+        opt_callback();
+    } : function() {};
 
+    const fileList = this.fileList_;
     for (var i = 0; i < entries.length; i++) {
       var entry = entries[i];
+
+      function onSuccess() {
+        var index = fileList.indexOf(entry);
+        if (index >= 0)
+          fileList.splice(index, 1);
+        onComplete();
+      }
+
       if (entry.isFile) {
         entry.remove(
-            onComplete,
+            onSuccess,
             util.flog('Error deleting file: ' + entry.fullPath, onComplete));
       } else {
         entry.removeRecursively(
-            onComplete,
+            onSuccess,
             util.flog('Error deleting folder: ' + entry.fullPath, onComplete));
       }
     }
@@ -345,19 +351,27 @@ DirectoryModel.prototype = {
    * @param {Function} opt_successCallback Called on success.
    */
   renameEntry: function(entry, newName, errorCallback, opt_successCallback) {
-    function onRescan() {
-      this.selectEntry(newName);
-      if (opt_successCallback)
-        opt_successCallback();
+    var self = this;
+    function onSuccess(newEntry) {
+      self.prefetchCacheForSorting_([newEntry], function() {
+        const fileList = self.fileList_;
+        var index = fileList.indexOf(entry);
+        if (index >= 0)
+          fileList.splice(index, 1, newEntry);
+        self.selectEntry(newName);
+        // If the entry doesn't exist in the list it mean that it updated from
+        // outside (probably by directory rescan).
+        if (opt_successCallback)
+          opt_successCallback();
+      });
     }
-    var onSuccess = this.rescan.bind(this, onRescan.bind(this));
     entry.moveTo(this.currentEntry, newName,
                  onSuccess, errorCallback);
   },
 
   /**
    * Checks if current directory contains a file or directory with this name.
-   * @param {string} newName Name to cjeck.
+   * @param {string} newName Name to check.
    * @param {function(boolean, boolean?)} callback Called when the result's
    *     available. First parameter is true if the entry exists and second
    *     is true if it's a file.
@@ -374,10 +388,24 @@ DirectoryModel.prototype = {
    * Creates directory and updates the file list.
    */
   createDirectory: function(name, successCallback, errorCallback) {
-    var onSuccess = this.rescan.bind(this, function() {
-      this.selectEntry(name);
-      successCallback();
-    }.bind(this));
+    const self = this;
+    function onSuccess(newEntry) {
+      self.prefetchCacheForSorting_([newEntry], function() {
+        const fileList = self.fileList_;
+        var existing = fileList.slice().filter(
+            function(e) { return e.name == name; });
+
+        if (existing.length) {
+          self.selectEntry(name);
+          successCallback(existing[0]);
+        } else {
+          fileList.splice(0, 0, newEntry);
+          self.selectEntry(name);
+          successCallback(newEntry);
+        }
+      });
+    }
+
     this.currentEntry.getDirectory(name, {create: true, exclusive: true},
                                    onSuccess, errorCallback);
   },
