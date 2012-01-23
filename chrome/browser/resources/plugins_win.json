@@ -89,7 +89,7 @@
       "name": "Adobe Reader",
       "identifier": "adobe-reader",
       "help_url": "https://support.google.com/chrome/?p=plugin_pdf",
-      "url": "http://ardownload.adobe.com/pub/adobe/reader/win/9.x/9.1/enu/AdbeRdr910_en_US.exe"
+      "url": "http://ardownload.adobe.com/pub/adobe/reader/win/10.x/10.1.2/en_US/AdbeRdr1012_en_US.exe"
     },
     {
       "mime_types": [
@@ -147,7 +147,7 @@
       "name": "QuickTime Player",
       "identifier": "apple-quicktime",
       "help_url": "https://support.google.com/chrome/?p=plugin_quicktime",
-      "url": "http://appldnld.apple.com.edgesuite.net/content.info.apple.com/QuickTime/061-6118.20090601.Pq3V9/QuickTimeInstaller.exe"
+      "url": "http://appldnld.apple.com/QuickTime/041-3089.20111026.Sxpr4/QuickTimeInstaller.exe"
     },
     {
       "mime_types": [

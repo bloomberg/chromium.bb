@@ -51,7 +51,7 @@
       "lang": "en-US",
       "name": "RealPlayer",
       "identifier": "realplayer",
-      "url": "http://www.real.com/realplayer/download",
+      "url": "http://director.real.com/realplayer?type=rpsp_mac",
       "help_url": "https://support.google.com/chrome/?p=plugin_real"
     },
     {
