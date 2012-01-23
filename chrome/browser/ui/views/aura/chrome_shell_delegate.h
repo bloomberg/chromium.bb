@@ -42,7 +42,6 @@ class ChromeShellDelegate : public ash::ShellDelegate {
   // ash::ShellDelegate overrides;
   virtual void CreateNewWindow() OVERRIDE;
   virtual views::Widget* CreateStatusArea() OVERRIDE;
-  virtual void Exit() OVERRIDE;
   virtual void BuildAppListModel(ash::AppListModel* model) OVERRIDE;
   virtual ash::AppListViewDelegate* CreateAppListViewDelegate() OVERRIDE;
   virtual std::vector<aura::Window*> GetCycleWindowList(

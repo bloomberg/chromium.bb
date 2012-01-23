@@ -56,9 +56,6 @@ class ASH_EXPORT ShellDelegate {
   // Invoked to create a new status area. Can return NULL.
   virtual views::Widget* CreateStatusArea() = 0;
 
-  // Invoked when a user uses Ctrl-Shift-Q to close chrome.
-  virtual void Exit() = 0;
-
   // Invoked to ask the delegate to populate the |model|.
   virtual void BuildAppListModel(AppListModel* model) = 0;
 

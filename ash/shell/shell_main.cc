@@ -58,10 +58,6 @@ class ShellDelegateImpl : public ash::ShellDelegate {
     return ash::internal::CreateStatusArea();
   }
 
-  virtual void Exit() OVERRIDE {
-    MessageLoopForUI::current()->Quit();
-  }
-
   virtual void BuildAppListModel(ash::AppListModel* model) OVERRIDE {
     ash::shell::BuildAppListModel(model);
   }

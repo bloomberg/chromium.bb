@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -38,9 +38,7 @@ const AcceleratorMapping kAcceleratorMap[] = {
 #if !defined(OS_CHROMEOS)
   { ui::VKEY_F4,             false, false, true,  IDC_CLOSE_WINDOW },
 #endif
-#if !defined(USE_AURA)
   { ui::VKEY_Q,              true,  true,  false, IDC_EXIT },
-#endif
   { ui::VKEY_F,              false, true,  false, IDC_FIND },
   { ui::VKEY_G,              false, true,  false, IDC_FIND_NEXT },
 #if !defined(OS_CHROMEOS)
