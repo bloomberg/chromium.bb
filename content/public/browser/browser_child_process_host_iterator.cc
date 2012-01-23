@@ -5,7 +5,7 @@
 #include "content/public/browser/browser_child_process_host_iterator.h"
 
 #include "base/logging.h"
-#include "content/browser/browser_child_process_host.h"
+#include "content/browser/browser_child_process_host_impl.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace content {
@@ -14,7 +14,7 @@ BrowserChildProcessHostIterator::BrowserChildProcessHostIterator()
     : all_(true), type_(content::PROCESS_TYPE_UNKNOWN) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO)) <<
         "BrowserChildProcessHostIterator must be used on the IO thread.";
-  iterator_ = ::BrowserChildProcessHost::GetIterator()->begin();
+  iterator_ = BrowserChildProcessHostImpl::GetIterator()->begin();
 }
 
 BrowserChildProcessHostIterator::BrowserChildProcessHostIterator(
@@ -22,7 +22,7 @@ BrowserChildProcessHostIterator::BrowserChildProcessHostIterator(
     : all_(false), type_(type) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO)) <<
         "BrowserChildProcessHostIterator must be used on the IO thread.";
-  iterator_ = ::BrowserChildProcessHost::GetIterator()->begin();
+  iterator_ = BrowserChildProcessHostImpl::GetIterator()->begin();
   if (!Done() && (*iterator_)->GetData().type != type_)
     ++(*this);
 }
@@ -44,7 +44,7 @@ bool BrowserChildProcessHostIterator::operator++() {
 }
 
 bool BrowserChildProcessHostIterator::Done() {
-  return iterator_ == ::BrowserChildProcessHost::GetIterator()->end();
+  return iterator_ == BrowserChildProcessHostImpl::GetIterator()->end();
 }
 
 const ChildProcessData& BrowserChildProcessHostIterator::GetData() {

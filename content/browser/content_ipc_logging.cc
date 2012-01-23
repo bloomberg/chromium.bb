@@ -5,7 +5,6 @@
 #include "content/public/browser/content_ipc_logging.h"
 
 #include "base/bind.h"
-#include "content/browser/browser_child_process_host.h"
 #include "content/common/child_process_messages.h"
 #include "content/public/browser/browser_child_process_host_iterator.h"
 #include "content/public/browser/browser_thread.h"

@@ -21,7 +21,7 @@
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "content/browser/browser_child_process_host.h"
+#include "content/browser/browser_child_process_host_impl.h"
 #include "content/browser/plugin_service_impl.h"
 #include "content/common/child_process_host_impl.h"
 #include "content/common/plugin_messages.h"
@@ -120,8 +120,8 @@ PluginProcessHost::PluginProcessHost()
     : plugin_cursor_visible_(true)
 #endif
 {
-  process_.reset(new BrowserChildProcessHost(
-      content::PROCESS_TYPE_PLUGIN, this));
+  process_.reset(
+      new BrowserChildProcessHostImpl(content::PROCESS_TYPE_PLUGIN, this));
 }
 
 PluginProcessHost::~PluginProcessHost() {

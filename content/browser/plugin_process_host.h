@@ -23,7 +23,7 @@
 #include "webkit/plugins/webplugininfo.h"
 #include "ui/gfx/native_widget_types.h"
 
-class BrowserChildProcessHost;
+class BrowserChildProcessHostImpl;
 
 namespace content {
 class ResourceContext;
@@ -178,7 +178,7 @@ class CONTENT_EXPORT PluginProcessHost
   bool plugin_cursor_visible_;
 #endif
 
-  scoped_ptr<BrowserChildProcessHost> process_;
+  scoped_ptr<BrowserChildProcessHostImpl> process_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginProcessHost);
 };

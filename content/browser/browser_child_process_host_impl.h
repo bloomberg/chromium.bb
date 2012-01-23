@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_BROWSER_CHILD_PROCESS_HOST_H_
-#define CONTENT_BROWSER_BROWSER_CHILD_PROCESS_HOST_H_
+#ifndef CONTENT_BROWSER_BROWSER_CHILD_PROCESS_HOST_IMPL_H_
+#define CONTENT_BROWSER_BROWSER_CHILD_PROCESS_HOST_IMPL_H_
 #pragma once
 
 #include <list>
@@ -25,21 +25,22 @@ class BrowserChildProcessHostIterator;
 // Plugins/workers and other child processes that live on the IO thread use this
 // class. RenderProcessHostImpl is the main exception that doesn't use this
 /// class because it lives on the UI thread.
-class CONTENT_EXPORT BrowserChildProcessHost :
-    public NON_EXPORTED_BASE(content::BrowserChildProcessHost),
+class CONTENT_EXPORT BrowserChildProcessHostImpl :
+    public content::BrowserChildProcessHost,
     public NON_EXPORTED_BASE(content::ChildProcessHostDelegate),
     public ChildProcessLauncher::Client,
     public base::WaitableEventWatcher::Delegate {
  public:
-  BrowserChildProcessHost(content::ProcessType type,
-                          content::BrowserChildProcessHostDelegate* delegate);
-  virtual ~BrowserChildProcessHost();
+  BrowserChildProcessHostImpl(
+      content::ProcessType type,
+      content::BrowserChildProcessHostDelegate* delegate);
+  virtual ~BrowserChildProcessHostImpl();
 
   // Terminates all child processes and deletes each BrowserChildProcessHost
   // instance.
   static void TerminateAll();
 
-  // BrowserChildProcessHost implementation:
+  // BrowserChildProcessHostImpl implementation:
   virtual bool Send(IPC::Message* message) OVERRIDE;
   virtual void Launch(
 #if defined(OS_WIN)
@@ -75,7 +76,7 @@ class CONTENT_EXPORT BrowserChildProcessHost :
     return delegate_;
   }
 
-  typedef std::list<BrowserChildProcessHost*> BrowserChildProcessList;
+  typedef std::list<BrowserChildProcessHostImpl*> BrowserChildProcessList;
  private:
   friend class content::BrowserChildProcessHostIterator;
 
@@ -104,9 +105,9 @@ class CONTENT_EXPORT BrowserChildProcessHost :
 #if defined(OS_WIN)
   base::WaitableEventWatcher child_watcher_;
 #else
-  base::WeakPtrFactory<BrowserChildProcessHost> task_factory_;
+  base::WeakPtrFactory<BrowserChildProcessHostImpl> task_factory_;
 #endif
   bool disconnect_was_alive_;
 };
 
-#endif  // CONTENT_BROWSER_BROWSER_CHILD_PROCESS_HOST_H_
+#endif  // CONTENT_BROWSER_BROWSER_CHILD_PROCESS_HOST_IMPL_H_

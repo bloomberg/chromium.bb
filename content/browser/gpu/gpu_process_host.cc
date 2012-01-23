@@ -15,7 +15,7 @@
 #include "base/process_util.h"
 #include "base/string_piece.h"
 #include "base/threading/thread.h"
-#include "content/browser/browser_child_process_host.h"
+#include "content/browser/browser_child_process_host_impl.h"
 #include "content/browser/gpu/gpu_data_manager.h"
 #include "content/browser/gpu/gpu_process_host_ui_shim.h"
 #include "content/browser/renderer_host/render_widget_host.h"
@@ -271,7 +271,8 @@ GpuProcessHost::GpuProcessHost(int host_id)
       FROM_HERE,
       base::Bind(base::IgnoreResult(&GpuProcessHostUIShim::Create), host_id));
 
-  process_.reset(new BrowserChildProcessHost(content::PROCESS_TYPE_GPU, this));
+  process_.reset(
+      new BrowserChildProcessHostImpl(content::PROCESS_TYPE_GPU, this));
 }
 
 GpuProcessHost::~GpuProcessHost() {

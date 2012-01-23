@@ -9,7 +9,7 @@
 #include "base/command_line.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
-#include "content/browser/browser_child_process_host.h"
+#include "content/browser/browser_child_process_host_impl.h"
 #include "content/common/child_process_host_impl.h"
 #include "content/common/utility_messages.h"
 #include "content/public/browser/content_browser_client.h"
@@ -48,8 +48,8 @@ UtilityProcessHost::UtilityProcessHost(Client* client,
 #endif
       use_linux_zygote_(false),
       started_(false) {
-  process_.reset(new BrowserChildProcessHost(
-      content::PROCESS_TYPE_UTILITY, this));
+  process_.reset(
+      new BrowserChildProcessHostImpl(content::PROCESS_TYPE_UTILITY, this));
 }
 
 UtilityProcessHost::~UtilityProcessHost() {

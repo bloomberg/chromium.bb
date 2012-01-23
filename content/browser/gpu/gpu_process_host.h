@@ -23,7 +23,7 @@
 class GpuMainThread;
 struct GPUCreateCommandBufferConfig;
 
-class BrowserChildProcessHost;
+class BrowserChildProcessHostImpl;
 
 class GpuProcessHost : public content::BrowserChildProcessHostDelegate,
                        public IPC::Message::Sender,
@@ -157,7 +157,7 @@ class GpuProcessHost : public content::BrowserChildProcessHostDelegate,
   // existing tabs, just the future ones.
   CONTENT_EXPORT static bool gpu_enabled_;
 
-  scoped_ptr<BrowserChildProcessHost> process_;
+  scoped_ptr<BrowserChildProcessHostImpl> process_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuProcessHost);
 };

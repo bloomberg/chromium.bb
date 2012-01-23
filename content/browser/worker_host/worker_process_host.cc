@@ -16,7 +16,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "content/browser/appcache/appcache_dispatcher_host.h"
-#include "content/browser/browser_child_process_host.h"
+#include "content/browser/browser_child_process_host_impl.h"
 #include "content/browser/child_process_security_policy.h"
 #include "content/browser/debugger/worker_devtools_message_filter.h"
 #include "content/browser/file_system/file_system_dispatcher_host.h"
@@ -91,8 +91,8 @@ WorkerProcessHost::WorkerProcessHost(
     : resource_context_(resource_context) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(resource_context);
-  process_.reset(new BrowserChildProcessHost(
-      content::PROCESS_TYPE_WORKER, this));
+  process_.reset(
+      new BrowserChildProcessHostImpl(content::PROCESS_TYPE_WORKER, this));
 }
 
 WorkerProcessHost::~WorkerProcessHost() {

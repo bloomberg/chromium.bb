@@ -17,7 +17,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "ipc/ipc_message.h"
 
-class BrowserChildProcessHost;
+class BrowserChildProcessHostImpl;
 
 // This class acts as the browser-side host to a utility child process.  A
 // utility process is a short-lived sandboxed process that is created to run
@@ -115,7 +115,7 @@ class CONTENT_EXPORT UtilityProcessHost
 
   bool started_;
 
-  scoped_ptr<BrowserChildProcessHost> process_;
+  scoped_ptr<BrowserChildProcessHostImpl> process_;
 
   DISALLOW_COPY_AND_ASSIGN(UtilityProcessHost);
 };

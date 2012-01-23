@@ -9,7 +9,7 @@
 #include "base/file_path.h"
 #include "base/process_util.h"
 #include "base/utf_string_conversions.h"
-#include "content/browser/browser_child_process_host.h"
+#include "content/browser/browser_child_process_host_impl.h"
 #include "content/browser/plugin_service_impl.h"
 #include "content/browser/renderer_host/render_message_filter.h"
 #include "content/common/child_process_host_impl.h"
@@ -110,7 +110,7 @@ PpapiPluginProcessHost::PpapiPluginProcessHost(net::HostResolver* host_resolver)
       network_observer_(new PluginNetworkObserver(this)),
       is_broker_(false),
       process_id_(ChildProcessHostImpl::GenerateChildProcessUniqueId()) {
-  process_.reset(new BrowserChildProcessHost(
+  process_.reset(new BrowserChildProcessHostImpl(
       content::PROCESS_TYPE_PPAPI_PLUGIN, this));
   process_->GetHost()->AddFilter(filter_.get());
 }
@@ -118,7 +118,7 @@ PpapiPluginProcessHost::PpapiPluginProcessHost(net::HostResolver* host_resolver)
 PpapiPluginProcessHost::PpapiPluginProcessHost()
     : is_broker_(true),
       process_id_(ChildProcessHostImpl::GenerateChildProcessUniqueId()) {
-  process_.reset(new BrowserChildProcessHost(
+  process_.reset(new BrowserChildProcessHostImpl(
       content::PROCESS_TYPE_PPAPI_BROKER, this));
 }
 

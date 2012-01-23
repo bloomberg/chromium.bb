@@ -17,7 +17,7 @@
 #include "content/public/browser/browser_child_process_host_iterator.h"
 #include "ipc/ipc_message.h"
 
-class BrowserChildProcessHost;
+class BrowserChildProcessHostImpl;
 
 namespace content {
 struct PepperPluginInfo;
@@ -122,7 +122,7 @@ class PpapiPluginProcessHost : public content::BrowserChildProcessHostDelegate,
   // The unique id created for the process.
   int process_id_;
 
-  scoped_ptr<BrowserChildProcessHost> process_;
+  scoped_ptr<BrowserChildProcessHostImpl> process_;
 
   DISALLOW_COPY_AND_ASSIGN(PpapiPluginProcessHost);
 };

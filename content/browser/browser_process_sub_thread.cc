@@ -10,7 +10,7 @@
 
 #include "base/debug/leak_tracker.h"
 #include "build/build_config.h"
-#include "content/browser/browser_child_process_host.h"
+#include "content/browser/browser_child_process_host_impl.h"
 #include "content/browser/in_process_webkit/indexed_db_key_utility_client.h"
 #include "content/browser/notification_service_impl.h"
 #include "content/public/common/url_fetcher.h"
@@ -69,7 +69,7 @@ void BrowserProcessSubThread::IOThreadPreCleanUp() {
   // If any child processes are still running, terminate them and
   // and delete the BrowserChildProcessHost instances to release whatever
   // IO thread only resources they are referencing.
-  ::BrowserChildProcessHost::TerminateAll();
+  BrowserChildProcessHostImpl::TerminateAll();
 }
 
 void BrowserProcessSubThread::IOThreadPostCleanUp() {

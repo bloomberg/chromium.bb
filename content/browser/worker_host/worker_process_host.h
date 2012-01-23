@@ -19,7 +19,7 @@
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_message.h"
 
-class BrowserChildProcessHost;
+class BrowserChildProcessHostImpl;
 
 namespace content {
 class ResourceContext;
@@ -194,7 +194,7 @@ class WorkerProcessHost : public content::BrowserChildProcessHostDelegate,
   // process.
   scoped_refptr<WorkerMessageFilter> worker_message_filter_;
 
-  scoped_ptr<BrowserChildProcessHost> process_;
+  scoped_ptr<BrowserChildProcessHostImpl> process_;
 
   DISALLOW_COPY_AND_ASSIGN(WorkerProcessHost);
 };

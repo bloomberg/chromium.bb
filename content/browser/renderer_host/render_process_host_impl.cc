@@ -39,7 +39,6 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/tracked_objects.h"
 #include "content/browser/appcache/appcache_dispatcher_host.h"
-#include "content/browser/browser_child_process_host.h"
 #include "content/browser/browser_main.h"
 #include "content/browser/child_process_security_policy.h"
 #include "content/browser/device_orientation/message_filter.h"

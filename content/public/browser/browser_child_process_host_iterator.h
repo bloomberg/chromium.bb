@@ -11,7 +11,7 @@
 #include "content/common/content_export.h"
 #include "content/public/common/process_type.h"
 
-class BrowserChildProcessHost;
+class BrowserChildProcessHostImpl;
 
 namespace IPC {
 class Message;
@@ -42,7 +42,7 @@ class CONTENT_EXPORT BrowserChildProcessHostIterator {
  private:
   bool all_;
   content::ProcessType type_;
-  std::list<BrowserChildProcessHost*>::iterator iterator_;
+  std::list<BrowserChildProcessHostImpl*>::iterator iterator_;
 };
 
 // Helper class so that subclasses of BrowserChildProcessHostDelegate can be
