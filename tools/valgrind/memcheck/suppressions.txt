@@ -4769,8 +4769,7 @@
    bug_103192
    Memcheck:Leak
    fun:_Znw*
-   fun:_ZN13PluginService10GetPluginsERKN4base8CallbackIFvRKSt6vectorIN6webkit13WebPluginInfoESaIS4_EEEEE
-   fun:_ZN8chromeos12_GLOBAL__N_127GViewRequestInterceptorTest5SetUpEv
+   fun:_ZN17PluginServiceImpl10GetPluginsERKN4base8CallbackIFvRKSt6vectorIN6webkit13WebPluginInfoESaIS4_EEEEE
 }
 {
    bug_103467
@@ -5556,6 +5555,30 @@
    fun:_Znw*
    fun:_ZN15StartupTimeBomb3ArmERKN4base9TimeDeltaE
    fun:_ZN22ChromeBrowserMainParts25PreMainMessageLoopRunImplEv
+}
+{
+   bug_111037a
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN22PpapiPluginProcessHost16CreateBrokerHostERKN7content16PepperPluginInfoE
+   fun:_ZN17PluginServiceImpl29FindOrStartPpapiBrokerProcessERK8FilePath
+   fun:_ZN17PluginServiceImpl24OpenChannelToPpapiBrokerERK8FilePathPN22PpapiPluginProcessHost12BrokerClientE
+}
+{
+   bug_111037b
+   Memcheck:Leak
+   fun:_Znw*
+   ...
+   fun:_ZN22PpapiPluginProcessHost16CreatePluginHostERKN7content16PepperPluginInfoEPN3net12HostResolverE
+   fun:_ZN17PluginServiceImpl29FindOrStartPpapiPluginProcessERK8FilePathPN22PpapiPluginProcessHost12PluginClientE
+   fun:_ZN17PluginServiceImpl24OpenChannelToPpapiPluginERK8FilePathPN22PpapiPluginProcessHost12PluginClientE
+}
+{
+   bug_111037c
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN17PluginServiceImpl29FindOrStartNpapiPluginProcessERK8FilePath
+   fun:_ZN17PluginServiceImpl25FinishOpenChannelToPluginERK8FilePathPN17PluginProcessHost6ClientE
 }
 
 #-----------------------------------------------------------------------
