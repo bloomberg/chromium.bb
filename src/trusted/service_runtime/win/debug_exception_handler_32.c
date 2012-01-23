@@ -14,7 +14,11 @@
 static int HandleBreakpointException(HANDLE thread_handle);
 static int HandleException(HANDLE process_handle, HANDLE thread_handle);
 
-typedef DWORD exception_params[3];
+struct ExceptionFrame {
+  uint32_t return_addr;
+  uint32_t prog_ctr;
+  uint32_t stack_ptr;
+};
 
 /*
  * DebugLoop below handles debug events in NaCl program.
@@ -226,20 +230,26 @@ static BOOL SetExceptionFlag(HANDLE process_handle, void* nacl_context) {
 
 static BOOL IsExceptionHandlerValid(HANDLE process_handle, DWORD base,
                                     DWORD cs_limit, DWORD ds_limit,
-                                    DWORD stack_size, DWORD exception_handler,
+                                    DWORD exception_handler,
                                     DWORD exception_stack) {
-  if (stack_size > 4096) {
-    return FALSE;
-  }
+  uint32_t code_segment_size = (cs_limit + 1) << 12;
+  uint32_t data_segment_size = (ds_limit + 1) << 12;
+  uint32_t exception_frame_end;
+
   /* check exception_handler value */
-  if (exception_handler / 4096 > cs_limit) {
+  if (exception_handler >= code_segment_size) {
     return FALSE;
   }
   if (exception_handler % NACL_INSTR_BLOCK_SIZE != 0) {
     return FALSE;
   }
 
-  if (exception_stack < stack_size || exception_stack / 4096 > ds_limit) {
+  exception_frame_end = exception_stack + sizeof(struct ExceptionFrame);
+  if (exception_frame_end < exception_stack) {
+    /* Unsigned overflow. */
+    return FALSE;
+  }
+  if (exception_frame_end > data_segment_size) {
     return FALSE;
   }
   return TRUE;
@@ -251,15 +261,15 @@ static BOOL TransferControlToHandler(HANDLE process_handle,
                                      CONTEXT *context,
                                      DWORD exception_handler,
                                      DWORD exception_stack) {
-  exception_params new_stack;
+  struct ExceptionFrame new_stack;
   SIZE_T bytes_written;
 
-  new_stack[0] = 0;
-  new_stack[1] = context->Eip;
-  new_stack[2] = context->Esp;
+  new_stack.return_addr = 0;
+  new_stack.prog_ctr = context->Eip;
+  new_stack.stack_ptr = context->Esp;
   if (!WriteProcessMemory(
            process_handle,
-           (LPVOID)(exception_stack - sizeof(new_stack) + base),
+           (LPVOID) (base + exception_stack),
            &new_stack,
            sizeof(new_stack),
            &bytes_written)) {
@@ -270,7 +280,7 @@ static BOOL TransferControlToHandler(HANDLE process_handle,
   }
 
   context->Eip = exception_handler;
-  context->Esp = exception_stack - sizeof(new_stack);
+  context->Esp = exception_stack;
   return SetThreadContext(thread_handle, context);
 }
 
@@ -309,9 +319,17 @@ static BOOL HandleException(HANDLE process_handle, HANDLE thread_handle) {
   if (exception_flag) {
     return FALSE;
   }
+
+  /*
+   * Calculate the position of the exception stack frame, with
+   * suitable alignment.
+   */
+  exception_stack -= sizeof(struct ExceptionFrame) - NACL_STACK_PAD_BELOW_ALIGN;
+  exception_stack = exception_stack & ~NACL_STACK_ALIGN_MASK;
+  exception_stack -= NACL_STACK_PAD_BELOW_ALIGN;
+
   if (!IsExceptionHandlerValid(process_handle, base, cs_limit, ds_limit,
-                               sizeof(exception_params), exception_handler,
-                               exception_stack)) {
+                               exception_handler, exception_stack)) {
     return FALSE;
   }
   if (!SetExceptionFlag(process_handle, nacl_context)) {
