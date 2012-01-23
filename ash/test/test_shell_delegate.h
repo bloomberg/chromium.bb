@@ -20,6 +20,9 @@ class TestShellDelegate : public ShellDelegate {
   // Overridden from ShellDelegate:
   virtual void CreateNewWindow() OVERRIDE;
   virtual views::Widget* CreateStatusArea() OVERRIDE;
+#if defined(OS_CHROMEOS)
+  virtual void LockScreen() OVERRIDE;
+#endif
   virtual void Exit() OVERRIDE;
   virtual void BuildAppListModel(AppListModel* model) OVERRIDE;
   virtual AppListViewDelegate* CreateAppListViewDelegate() OVERRIDE;

@@ -58,6 +58,12 @@ class ShellDelegateImpl : public ash::ShellDelegate {
     return ash::internal::CreateStatusArea();
   }
 
+#if defined(OS_CHROMEOS)
+ virtual void LockScreen() OVERRIDE {
+   ash::shell::CreateLockScreen();
+ }
+#endif
+
   virtual void Exit() OVERRIDE {
     MessageLoopForUI::current()->Quit();
   }

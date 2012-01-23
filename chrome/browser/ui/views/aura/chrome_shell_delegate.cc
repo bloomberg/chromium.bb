@@ -19,6 +19,10 @@
 #include "grit/theme_resources.h"
 #include "ui/aura/window.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
+#include "chrome/browser/chromeos/dbus/power_manager_client.h"
+#endif
 namespace {
 
 // Returns a list of Aura windows from a BrowserList, using either a
@@ -87,6 +91,13 @@ views::Widget* ChromeShellDelegate::CreateStatusArea() {
       status_area_host_.get()->CreateStatusArea();
   return status_area_widget;
 }
+
+#if defined(OS_CHROMEOS)
+void ChromeShellDelegate::LockScreen() {
+  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->
+      NotifyScreenLockRequested();
+}
+#endif
 
 void ChromeShellDelegate::Exit() {
   BrowserList::AttemptUserExit();

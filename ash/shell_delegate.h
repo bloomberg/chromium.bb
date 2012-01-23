@@ -56,6 +56,11 @@ class ASH_EXPORT ShellDelegate {
   // Invoked to create a new status area. Can return NULL.
   virtual views::Widget* CreateStatusArea() = 0;
 
+#if defined(OS_CHROMEOS)
+  // Invoked when a user uses Ctrl-Shift-L to lock the screen.
+  virtual void LockScreen() = 0;
+#endif
+
   // Invoked when a user uses Ctrl-Shift-Q to close chrome.
   virtual void Exit() = 0;
 

@@ -324,6 +324,11 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
   EXPECT_TRUE(GetController()->Process(
       ui::Accelerator(ui::VKEY_Q, true, true ,false)));
 #endif
+
+#if defined(OS_CHROMEOS)
+  EXPECT_TRUE(GetController()->Process(
+      ui::Accelerator(ui::VKEY_L, true, true, false)));
+#endif
 }
 
 }  // namespace test

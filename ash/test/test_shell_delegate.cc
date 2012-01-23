@@ -27,6 +27,11 @@ views::Widget* TestShellDelegate::CreateStatusArea() {
   return NULL;
 }
 
+#if defined(OS_CHROMEOS)
+void TestShellDelegate::LockScreen() {
+}
+#endif
+
 void TestShellDelegate::Exit() {
 }
 

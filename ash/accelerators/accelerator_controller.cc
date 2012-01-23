@@ -26,6 +26,9 @@ namespace {
 enum AcceleratorAction {
   CYCLE_BACKWARD,
   CYCLE_FORWARD,
+#if defined(OS_CHROMEOS)
+  LOCK_SCREEN,
+#endif
   EXIT,
   TAKE_SCREENSHOT,
   TOGGLE_CAPS_LOCK,
@@ -47,6 +50,9 @@ struct AcceleratorData {
   { ui::VKEY_TAB, false, false, true, CYCLE_FORWARD },
   { ui::VKEY_TAB, true, false, true, CYCLE_BACKWARD },
   { ui::VKEY_F5, false, false, false, CYCLE_FORWARD },
+#if defined(OS_CHROMEOS)
+  { ui::VKEY_L, true, true, false, LOCK_SCREEN },
+#endif
   { ui::VKEY_Q, true, true, false, EXIT },
   { ui::VKEY_F5, true, false, false, CYCLE_BACKWARD },
   { ui::VKEY_F5, false, true, false, TAKE_SCREENSHOT },
@@ -70,6 +76,16 @@ bool HandleCycleWindow(ash::WindowCycleController::Direction direction,
   // Always report we handled the key, even if the window didn't change.
   return true;
 }
+
+#if defined(OS_CHROMEOS)
+bool HandleLock() {
+  ash::ShellDelegate* delegate = ash::Shell::GetInstance()->delegate();
+  if (!delegate)
+    return false;
+  delegate->LockScreen();
+  return true;
+}
+#endif
 
 bool HandleExit() {
   ash::ShellDelegate* delegate = ash::Shell::GetInstance()->delegate();
@@ -197,6 +213,10 @@ bool AcceleratorController::AcceleratorPressed(
     case CYCLE_FORWARD:
       return HandleCycleWindow(WindowCycleController::FORWARD,
                                accelerator.IsAltDown());
+#if defined(OS_CHROMEOS)
+    case LOCK_SCREEN:
+      return HandleLock();
+#endif
     case EXIT:
       return HandleExit();
     case TAKE_SCREENSHOT:

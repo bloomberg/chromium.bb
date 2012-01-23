@@ -42,6 +42,9 @@ class ChromeShellDelegate : public ash::ShellDelegate {
   // ash::ShellDelegate overrides;
   virtual void CreateNewWindow() OVERRIDE;
   virtual views::Widget* CreateStatusArea() OVERRIDE;
+#if defined(OS_CHROMEOS)
+  virtual void LockScreen() OVERRIDE;
+#endif
   virtual void Exit() OVERRIDE;
   virtual void BuildAppListModel(ash::AppListModel* model) OVERRIDE;
   virtual ash::AppListViewDelegate* CreateAppListViewDelegate() OVERRIDE;
