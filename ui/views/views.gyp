@@ -534,6 +534,7 @@
         'test/views_test_base.cc',
         'test/views_test_base.h',
         'view_unittest.cc',
+        'widget/native_widget_aura_unittest.cc',
         'widget/native_widget_test_utils.h',
         'widget/native_widget_test_utils_aura.cc',
         'widget/native_widget_test_utils_gtk.cc',
@@ -592,6 +593,7 @@
           'sources/': [
             ['exclude', '../aura/test/test_desktop_delegate.cc'],
             ['exclude', '../aura/test/test_desktop_delegate.h'],
+            ['exclude', 'widget/native_widget_aura_unittest.cc'],
           ],
         }],
         ['use_webkit_compositor==1', {
