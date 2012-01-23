@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,10 +35,8 @@ namespace {
 // single-process mode. TODO(avi): This Apple bug appears fixed in 10.7; when
 // 10.7 is the minimum required version for Chromium, remove this hack.
 
-base::LazyInstance<
-    base::ThreadLocalPointer<struct __CFSet>,
-    base::LeakyLazyInstanceTraits<base::ThreadLocalPointer<struct __CFSet> > >
-        thread_pdf_docs = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<base::ThreadLocalPointer<struct __CFSet> >::Leaky
+    thread_pdf_docs = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 
