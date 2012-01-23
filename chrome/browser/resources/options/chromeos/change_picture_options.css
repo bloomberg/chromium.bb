@@ -4,6 +4,7 @@
   margin: 10px;
   outline: none;
   padding: 10px;
+  width: 600px;
 }
 
 #images-grid * {
