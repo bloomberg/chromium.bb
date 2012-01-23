@@ -1,6 +1,7 @@
 Name: libxslt
 URL: http://xmlsoft.org/XSLT
 Version: 1.1.26
+Security Critical: yes
 
 Description:
 This directory contains a partial snapshot of the libxslt library
@@ -39,6 +40,7 @@ done ---
 
 Current version: 1.1.26, plus the following patches:
 - A fix to get more compact generated IDs (http://git.gnome.org/browse/libxslt/commit/?id=ecb6bcb8d1b7e44842edde3929f412d46b40c89f)
+- Import pattern parsing fix for commit: http://git.gnome.org/browse/libxslt/commit/?id=fe5a4fa33eb85bce3253ed3742b1ea6c4b59b41b 
 
 
 To import a new snapshot of libxslt:

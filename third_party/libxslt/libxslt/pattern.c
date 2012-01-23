@@ -1864,6 +1864,8 @@ xsltCompilePatternInternal(const xmlChar *pattern, xmlDocPtr doc,
 		while ((pattern[end] != 0) && (pattern[end] != '"'))
 		    end++;
 	    }
+      if (pattern[end] == 0)
+          break;
 	    end++;
 	}
 	if (current == end) {
