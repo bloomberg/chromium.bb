@@ -63,18 +63,6 @@ then
       CHROME_VALGRIND=""
     fi
   fi
-
-  if [ "$CHROME_VALGRIND" = "" ]
-  then
-    # Couldn't find the binaries checked out from SVN.
-    # Let's try to find out valgrind in /usr/local. Use the most recent one.
-    # See build-valgrind-for-chromium.sh and its history for these constants.
-    for SVNREV in '10880-redzone' '10880'
-    do
-      CHROME_VALGRIND=/usr/local/valgrind-$SVNREV
-      test -x $CHROME_VALGRIND/bin/valgrind && break
-    done
-  fi
 fi
 
 if ! test -x $CHROME_VALGRIND/bin/valgrind
