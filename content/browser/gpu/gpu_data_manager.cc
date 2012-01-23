@@ -160,7 +160,9 @@ GpuDataManager::UserFlags::UserFlags()
       disable_gl_multisampling_(false),
       disable_software_rasterizer_(false),
       ignore_gpu_blacklist_(false),
-      skip_gpu_data_loading_(false) {
+      skip_gpu_data_loading_(false),
+      blacklist_accelerated_compositing_(false),
+      blacklist_webgl_(false) {
 }
 
 void GpuDataManager::UserFlags::Initialize() {
@@ -184,6 +186,11 @@ void GpuDataManager::UserFlags::Initialize() {
       switches::kIgnoreGpuBlacklist);
   skip_gpu_data_loading_ = browser_command_line.HasSwitch(
       switches::kSkipGpuDataLoading);
+
+  blacklist_accelerated_compositing_ = browser_command_line.HasSwitch(
+      switches::kBlacklistAcceleratedCompositing);
+  blacklist_webgl_ = browser_command_line.HasSwitch(
+      switches::kBlacklistWebGL);
 
   use_gl_ = browser_command_line.GetSwitchValueASCII(switches::kUseGL);
 
@@ -579,9 +586,19 @@ void GpuDataManager::UpdateGpuFeatureFlags() {
 
   {
     base::AutoLock auto_lock(gpu_info_lock_);
-    gpu_feature_flags_ = gpu_blacklist->DetermineGpuFeatureFlags(
+    GpuFeatureFlags flags = gpu_blacklist->DetermineGpuFeatureFlags(
         GpuBlacklist::kOsAny, NULL, gpu_info_);
+
+    // Force disable using the GPU for these features, even if they would
+    // otherwise be allowed.
+    if (user_flags_.blacklist_accelerated_compositing())
+      flags.set_flags(flags.flags() |
+          GpuFeatureFlags::kGpuFeatureAcceleratedCompositing);
+    if (user_flags_.blacklist_webgl())
+      flags.set_flags(flags.flags() | GpuFeatureFlags::kGpuFeatureWebgl);
+    gpu_feature_flags_ = flags;
   }
+
 
   uint32 flags = gpu_feature_flags_.flags();
   uint32 max_entry_id = gpu_blacklist->max_entry_id();

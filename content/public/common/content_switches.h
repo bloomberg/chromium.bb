@@ -39,6 +39,8 @@ extern const char kDisableDataTransferItems[];
 extern const char kDisableDesktopNotifications[];
 CONTENT_EXPORT extern const char kDisableDeviceOrientation[];
 CONTENT_EXPORT extern const char kDisableExperimentalWebGL[];
+CONTENT_EXPORT extern const char kBlacklistAcceleratedCompositing[];
+CONTENT_EXPORT extern const char kBlacklistWebGL[];
 extern const char kDisableFileSystem[];
 extern const char kDisableGeolocation[];
 CONTENT_EXPORT extern const char kDisableGLMultisampling[];

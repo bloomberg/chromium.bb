@@ -169,6 +169,12 @@ class CONTENT_EXPORT GpuDataManager {
 
     const std::string& use_gl() const { return use_gl_; }
 
+    bool blacklist_accelerated_compositing() const {
+      return blacklist_accelerated_compositing_;
+    }
+
+    bool blacklist_webgl() const { return blacklist_webgl_; }
+
    private:
     // Manage the correlations between switches.
     void ApplyPolicies();
@@ -184,6 +190,11 @@ class CONTENT_EXPORT GpuDataManager {
     bool skip_gpu_data_loading_;
 
     std::string use_gl_;
+
+    // Flags to disallow running accelerated compositing or webgl on the GPU.
+    // Software rendering is still allowed.
+    bool blacklist_accelerated_compositing_;
+    bool blacklist_webgl_;
   };
 
   typedef ObserverListThreadSafe<GpuDataManager::Observer>

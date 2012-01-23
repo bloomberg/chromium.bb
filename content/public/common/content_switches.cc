@@ -89,6 +89,13 @@ const char kDisableDeviceOrientation[]      = "disable-device-orientation";
 // Disable experimental WebGL support.
 const char kDisableExperimentalWebGL[]      = "disable-webgl";
 
+// Blacklist the GPU for accelerated compositing.
+const char kBlacklistAcceleratedCompositing[] =
+    "blacklist-accelerated-compositing";
+
+// Blacklist the GPU for WebGL.
+const char kBlacklistWebGL[]                = "blacklist-webgl";
+
 // Disable FileSystem API.
 const char kDisableFileSystem[]             = "disable-file-system";
 
