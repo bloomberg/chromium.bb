@@ -18,6 +18,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_observer.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/canvas.h"
@@ -157,12 +158,10 @@ void ToolbarBackground::Paint(gfx::Canvas* canvas, views::View* view) const {
           views::NonClientFrameView::kClientEdgeThickness));
 }
 
-}  // namespace
-
 ////////////////////////////////////////////////////////////////////////////////
-// BrowserFrameAura::StatusAreaBoundsWatcher
+// StatusAreaBoundsWatcher
 
-class BrowserFrameAura::StatusAreaBoundsWatcher : public aura::WindowObserver {
+class StatusAreaBoundsWatcher : public aura::WindowObserver {
  public:
   explicit StatusAreaBoundsWatcher(BrowserFrame* frame)
       : frame_(frame),
@@ -215,6 +214,50 @@ class BrowserFrameAura::StatusAreaBoundsWatcher : public aura::WindowObserver {
   DISALLOW_COPY_AND_ASSIGN(StatusAreaBoundsWatcher);
 };
 
+}  // namespace
+
+////////////////////////////////////////////////////////////////////////////////
+// BrowserFrameAura::WindowPropertyWatcher
+
+class BrowserFrameAura::WindowPropertyWatcher : public aura::WindowObserver {
+ public:
+  explicit WindowPropertyWatcher(BrowserFrameAura* browser_frame_aura,
+                                 BrowserFrame* browser_frame)
+      : browser_frame_aura_(browser_frame_aura),
+        browser_frame_(browser_frame) {}
+
+  virtual void OnWindowPropertyChanged(aura::Window* window,
+                                       const char* key,
+                                       void* old) OVERRIDE {
+    if (key != aura::client::kShowStateKey)
+      return;
+
+    // When migrating from regular ChromeOS to Aura, windows can have saved
+    // restore bounds that are exactly equal to the maximized bounds.  Thus when
+    // you hit maximize, there is no resize and the layout doesn't get
+    // refreshed. This can also theoretically happen if a user drags a window to
+    // 0,0 then resizes it to fill the workspace, then hits maximize.  We need
+    // to force a layout on show state changes.  crbug.com/108073
+    if (browser_frame_->non_client_view())
+      browser_frame_->non_client_view()->Layout();
+
+    // Watch for status area bounds change for maximized browser window in Aura
+    // compact mode.
+    if (ash::Shell::GetInstance()->IsWindowModeCompact() &&
+        browser_frame_aura_->IsMaximized())
+      status_area_watcher_.reset(new StatusAreaBoundsWatcher(browser_frame_));
+    else
+      status_area_watcher_.reset();
+  }
+
+ private:
+  BrowserFrameAura* browser_frame_aura_;
+  BrowserFrame* browser_frame_;
+  scoped_ptr<StatusAreaBoundsWatcher> status_area_watcher_;
+
+  DISALLOW_COPY_AND_ASSIGN(WindowPropertyWatcher);
+};
+
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserFrameAura, public:
 
@@ -222,7 +265,7 @@ BrowserFrameAura::BrowserFrameAura(BrowserFrame* browser_frame,
                                    BrowserView* browser_view)
     : views::NativeWidgetAura(browser_frame),
       browser_view_(browser_view),
-      browser_frame_(browser_frame) {
+      window_property_watcher_(new WindowPropertyWatcher(this, browser_frame)) {
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(ash::switches::kAuraTranslucentFrames)) {
     // Aura paints layers behind this view, so this must be a layer also.
@@ -232,7 +275,7 @@ BrowserFrameAura::BrowserFrameAura(BrowserFrame* browser_frame,
     // Background only needed for Aura-style windows.
     browser_view_->set_background(new ToolbarBackground(browser_view));
   }
-  GetNativeWindow()->AddObserver(this);
+  GetNativeWindow()->AddObserver(window_property_watcher_.get());
 }
 
 BrowserFrameAura::~BrowserFrameAura() {
@@ -244,7 +287,7 @@ BrowserFrameAura::~BrowserFrameAura() {
 void BrowserFrameAura::OnWindowDestroying() {
   // Window is destroyed before our destructor is called, so clean up our
   // observer here.
-  GetNativeWindow()->RemoveObserver(this);
+  GetNativeWindow()->RemoveObserver(window_property_watcher_.get());
   views::NativeWidgetAura::OnWindowDestroying();
 }
 
@@ -264,32 +307,6 @@ int BrowserFrameAura::GetMinimizeButtonOffset() const {
 }
 
 void BrowserFrameAura::TabStripDisplayModeChanged() {
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// BrowserFrameAura, views::NativeWidgetAura overrides:
-
-void BrowserFrameAura::OnWindowPropertyChanged(aura::Window* window,
-                                               const char* key,
-                                               void* old) {
-  if (key != aura::client::kShowStateKey)
-    return;
-
-  // When migrating from regular ChromeOS to Aura, windows can have saved
-  // restore bounds that are exactly equal to the maximized bounds.  Thus when
-  // you hit maximize, there is no resize and the layout doesn't get refreshed.
-  // This can also theoretically happen if a user drags a window to 0,0 then
-  // resizes it to fill the workspace, then hits maximize.  We need to force
-  // a layout on show state changes.  crbug.com/108073
-  if (browser_frame_->non_client_view())
-    browser_frame_->non_client_view()->Layout();
-
-  // Watch for status area bounds change for maximized browser window in Aura
-  // compact mode.
-  if (ash::Shell::GetInstance()->IsWindowModeCompact() && IsMaximized())
-    status_area_watcher_.reset(new StatusAreaBoundsWatcher(browser_frame_));
-  else
-    status_area_watcher_.reset();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -9,7 +9,6 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/views/frame/native_browser_frame.h"
-#include "ui/aura/window_observer.h"
 #include "ui/views/widget/native_widget_aura.h"
 
 class BrowserFrame;
@@ -22,8 +21,7 @@ class BrowserView;
 //  frame for the Chrome browser window.
 //
 class BrowserFrameAura : public views::NativeWidgetAura,
-                         public NativeBrowserFrame,
-                         public aura::WindowObserver {
+                         public NativeBrowserFrame {
  public:
   BrowserFrameAura(BrowserFrame* browser_frame, BrowserView* browser_view);
   virtual ~BrowserFrameAura();
@@ -40,19 +38,13 @@ class BrowserFrameAura : public views::NativeWidgetAura,
   virtual int GetMinimizeButtonOffset() const OVERRIDE;
   virtual void TabStripDisplayModeChanged() OVERRIDE;
 
-  // Overridden from aura::WindowObserver:
-  virtual void OnWindowPropertyChanged(aura::Window* window,
-                                       const char* key,
-                                       void* old) OVERRIDE;
  private:
-  class StatusAreaBoundsWatcher;
+  class WindowPropertyWatcher;
 
   // The BrowserView is our ClientView. This is a pointer to it.
   BrowserView* browser_view_;
 
-  BrowserFrame* browser_frame_;
-
-  scoped_ptr<StatusAreaBoundsWatcher> status_area_watcher_;
+  scoped_ptr<WindowPropertyWatcher> window_property_watcher_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserFrameAura);
 };
