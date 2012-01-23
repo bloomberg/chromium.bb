@@ -250,7 +250,12 @@ weston_surface_update_transform(struct weston_surface *surface)
 	wl_list_for_each(tform, &surface->transform.list, link)
 		weston_matrix_multiply(matrix, &tform->matrix);
 
-	weston_matrix_invert(inverse, matrix);
+	if (weston_matrix_invert(inverse, matrix) < 0) {
+		/* Oops, bad total transformation, not invertible */
+		surface->transform.enabled = 0;
+		fprintf(stderr, "error: weston_surface %p"
+			" transformation not invertible.\n", surface);
+	}
 }
 
 WL_EXPORT void
