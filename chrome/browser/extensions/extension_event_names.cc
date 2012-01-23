@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -36,5 +36,5 @@ const char kOnDownloadCreated[] = "experimental.downloads.onCreated";
 const char kOnDownloadChanged[] = "experimental.downloads.onChanged";
 const char kOnDownloadErased[] = "experimental.downloads.onErased";
 
-const char kOnSettingsChanged[] = "experimental.storage.onChanged";
+const char kOnSettingsChanged[] = "storage.onChanged";
 }  // namespace extension_event_names

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,8 +14,8 @@ namespace settings_namespace {
 
 // The namespaces of the storage areas.
 enum Namespace {
-  LOCAL,  // "local" i.e. chrome.experimental.storage.local
-  SYNC,   // "sync"  i.e. chrome.experimental.storage.sync
+  LOCAL,  // "local" i.e. chrome.storage.local
+  SYNC,   // "sync"  i.e. chrome.storage.sync
   INVALID
 };
 

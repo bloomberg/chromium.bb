@@ -120,6 +120,7 @@ class ExtensionAPIPermission {
     kPlugin,
     kProxy,
     kSocket,
+    kStorage,
     kSystemPrivate,
     kTab,
     kTerminalPrivate,

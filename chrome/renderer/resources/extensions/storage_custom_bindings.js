@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Custom bindings for the experimental.storage API.
+// Custom bindings for the storage API.
 
 (function() {
 
@@ -22,8 +22,8 @@ chromeHidden.registerCustomType('StorageNamespace',
 
   function StorageNamespace(namespace, schema) {
     // Binds an API function for a namespace to its browser-side call, e.g.
-    // experimental.storage.sync.get('foo') -> (binds to) ->
-    // experimental.storage.get('sync', 'foo').
+    // storage.sync.get('foo') -> (binds to) ->
+    // storage.get('sync', 'foo').
     //
     // TODO(kalman): Put as a method on CustomBindingsObject and re-use (or
     // even generate) for other APIs that need to do this. Same for other
@@ -33,7 +33,7 @@ chromeHidden.registerCustomType('StorageNamespace',
         var schema = this.parameters[functionName];
         chromeHidden.validate(arguments, schema);
         return sendRequest(
-            'experimental.storage.' + functionName,
+            'storage.' + functionName,
             [namespace].concat(Array.prototype.slice.call(arguments)),
             extendSchema(schema));
       };

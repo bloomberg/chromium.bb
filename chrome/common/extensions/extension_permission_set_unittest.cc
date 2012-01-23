@@ -641,6 +641,7 @@ TEST(ExtensionPermissionSetTest, PermissionMessages) {
   skip.insert(ExtensionAPIPermission::kIdle);
   skip.insert(ExtensionAPIPermission::kNotification);
   skip.insert(ExtensionAPIPermission::kUnlimitedStorage);
+  skip.insert(ExtensionAPIPermission::kStorage);
   skip.insert(ExtensionAPIPermission::kTts);
 
   // TODO(erikkay) add a string for this permission.

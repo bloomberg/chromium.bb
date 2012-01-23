@@ -80,7 +80,6 @@ ExtensionAPI::ExtensionAPI() {
     IDR_EXTENSION_API_JSON_EXPERIMENTAL_SERIAL,
     IDR_EXTENSION_API_JSON_EXPERIMENTAL_SOCKET,
     IDR_EXTENSION_API_JSON_EXPERIMENTAL_SPEECHINPUT,
-    IDR_EXTENSION_API_JSON_EXPERIMENTAL_STORAGE,
     IDR_EXTENSION_API_JSON_EXPERIMENTAL_TOPSITES,
     IDR_EXTENSION_API_JSON_EXTENSION,
     IDR_EXTENSION_API_JSON_FILEBROWSERHANDLER,
@@ -98,6 +97,7 @@ ExtensionAPI::ExtensionAPI() {
     IDR_EXTENSION_API_JSON_PAGECAPTURE,
     IDR_EXTENSION_API_JSON_PERMISSIONS,
     IDR_EXTENSION_API_JSON_PROXY,
+    IDR_EXTENSION_API_JSON_STORAGE,
     IDR_EXTENSION_API_JSON_SYSTEMPRIVATE,
     IDR_EXTENSION_API_JSON_TABS,
     IDR_EXTENSION_API_JSON_TERMINALPRIVATE,
@@ -130,7 +130,7 @@ bool ExtensionAPI::IsPrivileged(const std::string& full_name) const {
   // HACK(kalman): explicitly mark all Storage API methods as unprivileged.
   // TODO(kalman): solve this in a more general way; the problem is that
   // functions-on-properties are not found with the following algorithm.
-  if (name_space == "experimental.storage")
+  if (name_space == "storage")
     return false;
 
   const base::DictionaryValue* name_space_node = GetSchema(name_space);

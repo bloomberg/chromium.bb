@@ -1,11 +1,11 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 function test(stage0) {
   var apis = [
-      chrome.experimental.storage.sync,
-      chrome.experimental.storage.local
+    chrome.storage.sync,
+    chrome.storage.local
   ];
   apis.forEach(function(api) {
     api.succeed = chrome.test.callbackPass(api.clear.bind(api));
@@ -294,7 +294,7 @@ chrome.test.runTests([
   function throttling() {
     // We can only really test one of the namespaces since they will all get
     // throttled together.
-    var api = chrome.experimental.storage.sync;
+    var api = chrome.storage.sync;
 
     // Should get throttled after 1000 calls.
     var maxRequests = 1001;

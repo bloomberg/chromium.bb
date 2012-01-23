@@ -80,7 +80,6 @@
     "chrome.experimental.speechInput.onSoundStart": "experimental.speechInput.html#event-onSoundStart",
     "chrome.experimental.speechInput.start": "experimental.speechInput.html#method-start",
     "chrome.experimental.speechInput.stop": "experimental.speechInput.html#method-stop",
-    "chrome.experimental.storage.onChanged": "experimental.storage.html#event-onChanged",
     "chrome.extension.connect": "extension.html#method-connect",
     "chrome.extension.getBackgroundPage": "extension.html#method-getBackgroundPage",
     "chrome.extension.getExtensionTabs": "extension.html#method-getExtensionTabs",
@@ -138,6 +137,7 @@
     "chrome.permissions.remove": "permissions.html#method-remove",
     "chrome.permissions.request": "permissions.html#method-request",
     "chrome.proxy.onProxyError": "proxy.html#event-onProxyError",
+    "chrome.storage.onChanged": "storage.html#event-onChanged",
     "chrome.tabs.captureVisibleTab": "tabs.html#method-captureVisibleTab",
     "chrome.tabs.connect": "tabs.html#method-connect",
     "chrome.tabs.create": "tabs.html#method-create",
@@ -2158,7 +2158,7 @@
         "popup.html",
         "popup.js"
       ],
-      "source_hash": "ace9d2fa9b1731f38c77d827b85548c425be92a7",
+      "source_hash": "d037912040032793d06755ea44f5e638e8bac10f",
       "zip_path": "examples\/api\/storage\/stylizr.zip"
     },
     {

@@ -1,9 +1,9 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 // Store settings in the synchronized repository.
-var storage = chrome.experimental.storage.sync;
+var storage = chrome.storage.sync;
 
 // Get at the DOM controls used in the sample.
 var resetButton = document.querySelector('button.reset');
@@ -24,7 +24,7 @@ function saveChanges() {
     message('Error: No CSS specified');
     return;
   }
-  // Save it locally (un-synchronized) using the Chrome extension storage API.
+  // Save it using the Chrome extension storage API.
   storage.set({'css': cssCode}, function() {
     // Notify that we saved.
     message('Settings saved');
