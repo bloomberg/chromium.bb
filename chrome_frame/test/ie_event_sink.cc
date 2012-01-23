@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,11 @@
 #include <shlguid.h>
 #include <shobjidl.h>
 
+#include <map>
+#include <utility>
+
+#include "base/lazy_instance.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
@@ -17,6 +22,114 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::win::ScopedBstr;
+
+namespace {
+
+// A lookup table from DISPID to DWebBrowserEvents and/or DWebBrowserEvents2
+// method name.
+class DispIdNameTable {
+ public:
+  DispIdNameTable();
+  ~DispIdNameTable();
+
+  // Returns the method name corresponding to |dispid| or, if none is known,
+  // the string "DISPID |dispid|".
+  std::string Lookup(DISPID dispid) const;
+
+ private:
+  std::map<DISPID,const char*> dispid_to_name_;
+  DISALLOW_COPY_AND_ASSIGN(DispIdNameTable);
+};
+
+DispIdNameTable::DispIdNameTable() {
+  static const struct {
+    DISPID dispid;
+    const char* name;
+  } kIdToName[] = {
+    // DWebBrowserEvents
+    { 100, "BeforeNavigate" },
+    { 101, "NavigateComplete" },
+    { 102, "StatusTextChange" },
+    { 108, "ProgressChange" },
+    { 104, "DownloadComplete" },
+    { 105, "CommandStateChange" },
+    { 106, "DownloadBegin" },
+    { 107, "NewWindow" },
+    { 113, "TitleChange" },
+    { 200, "FrameBeforeNavigate" },
+    { 201, "FrameNavigateComplete" },
+    { 204, "FrameNewWindow" },
+    { 103, "Quit" },
+    { 109, "WindowMove" },
+    { 110, "WindowResize" },
+    { 111, "WindowActivate" },
+    { 112, "PropertyChange" },
+    // DWebBrowserEvents2
+    { 250, "BeforeNavigate2" },
+    { 251, "NewWindow2" },
+    { 252, "NavigateComplete2" },
+    { 259, "DocumentComplete" },
+    { 253, "OnQuit" },
+    { 254, "OnVisible" },
+    { 255, "OnToolBar" },
+    { 256, "OnMenuBar" },
+    { 257, "OnStatusBar" },
+    { 258, "OnFullScreen" },
+    { 260, "OnTheaterMode" },
+    { 262, "WindowSetResizable" },
+    { 264, "WindowSetLeft" },
+    { 265, "WindowSetTop" },
+    { 266, "WindowSetWidth" },
+    { 267, "WindowSetHeight" },
+    { 263, "WindowClosing" },
+    { 268, "ClientToHostWindow" },
+    { 269, "SetSecureLockIcon" },
+    { 270, "FileDownload" },
+    { 271, "NavigateError" },
+    { 225, "PrintTemplateInstantiation" },
+    { 226, "PrintTemplateTeardown" },
+    { 227, "UpdatePageStatus" },
+    { 272, "PrivacyImpactedStateChange" },
+    { 273, "NewWindow3" },
+    { 282, "SetPhishingFilterStatus" },
+    { 283, "WindowStateChanged" },
+    { 284, "NewProcess" },
+    { 285, "ThirdPartyUrlBlocked" },
+    { 286, "RedirectXDomainBlocked" },
+    // Present in ExDispid.h but not ExDisp.idl
+    { 114, "TitleIconChange" },
+    { 261, "OnAddressBar" },
+    { 281, "ViewUpdate" },
+  };
+  size_t index_of_duplicate = 0;
+  DISPID duplicate_dispid = 0;
+  for (size_t i = 0; i < arraysize(kIdToName); ++i) {
+    if (!dispid_to_name_.insert(std::make_pair(kIdToName[i].dispid,
+                                               kIdToName[i].name)).second &&
+        index_of_duplicate == 0) {
+      index_of_duplicate = i;
+      duplicate_dispid = kIdToName[i].dispid;
+    }
+  }
+  DCHECK_EQ(static_cast<size_t>(0), index_of_duplicate)
+      << "Duplicate name for DISPID " << duplicate_dispid
+      << " at kIdToName[" << index_of_duplicate << "]";
+}
+
+DispIdNameTable::~DispIdNameTable() {
+}
+
+std::string DispIdNameTable::Lookup(DISPID dispid) const {
+  std::map<DISPID,const char*>::const_iterator it =
+      dispid_to_name_.find(dispid);
+  if (it != dispid_to_name_.end())
+    return it->second;
+  return std::string("DISPID ").append(base::IntToString(dispid));
+}
+
+base::LazyInstance<DispIdNameTable> g_dispIdToName = LAZY_INSTANCE_INITIALIZER;
+
+}  // namespace
 
 namespace chrome_frame_test {
 
@@ -549,6 +662,15 @@ STDMETHODIMP_(void) IEEventSink::OnQuit() {
 
   if (listener_)
     listener_->OnQuit();
+}
+
+STDMETHODIMP IEEventSink::Invoke(DISPID dispid, REFIID riid, LCID lcid,
+                                 WORD flags, DISPPARAMS* params,
+                                 VARIANT* result, EXCEPINFO* except_info,
+                                 UINT* arg_error) {
+  VLOG(1) << __FUNCTION__ << L" event: " << g_dispIdToName.Get().Lookup(dispid);
+  return DispEventsImpl::Invoke(dispid, riid, lcid, flags, params, result,
+                                except_info, arg_error);
 }
 
 HRESULT IEEventSink::OnLoad(const VARIANT* param) {

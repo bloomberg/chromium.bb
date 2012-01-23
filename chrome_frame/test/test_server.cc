@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -277,6 +277,8 @@ void HTTPTestServer::DidRead(net::ListenSocket* socket,
     std::string str(data, len);
     connection->r_.OnDataReceived(str);
     if (connection->r_.AllContentReceived()) {
+      VLOG(1) << __FUNCTION__ << ": " << connection->r_.method() << " "
+              << connection->r_.path();
       std::wstring path = UTF8ToWide(connection->r_.path());
       if (LowerCaseEqualsASCII(connection->r_.method(), "post"))
         this->Post(connection, path, connection->r_);
