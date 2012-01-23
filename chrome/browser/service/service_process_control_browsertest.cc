@@ -75,7 +75,9 @@ class ServiceProcessControlBrowserTest
     EXPECT_NE(static_cast<base::ProcessId>(0), service_pid);
     EXPECT_TRUE(base::OpenProcessHandleWithAccess(
         service_pid,
-        base::kProcessAccessWaitForTermination,
+        base::kProcessAccessWaitForTermination |
+        // we need query permission to get exit code
+        base::kProcessAccessQueryInformation,
         &service_process_handle_));
     // Quit the current message. Post a QuitTask instead of just calling Quit()
     // because this can get invoked in the context of a Launch() call and we
