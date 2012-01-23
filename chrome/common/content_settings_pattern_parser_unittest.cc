@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,13 +21,25 @@ class MockBuilder : public ContentSettingsPattern::BuilderInterface {
   MOCK_METHOD1(WithHost, BuilderInterface*(const std::string& host));
   MOCK_METHOD1(WithPort, BuilderInterface*(const std::string& port));
   MOCK_METHOD1(WithPath, BuilderInterface*(const std::string& path));
+  MOCK_METHOD0(WithPathWildcard, BuilderInterface*());
   MOCK_METHOD0(Invalid, BuilderInterface*());
   MOCK_METHOD0(Build, ContentSettingsPattern());
 };
 
 TEST(ContentSettingsPatternParserTest, ParsePatterns) {
   // Test valid patterns
-  MockBuilder builder;
+  ::testing::StrictMock<MockBuilder> builder;
+
+  // WithPathWildcard() is not called for "*". (Need a strict Mock for this
+  // case.)
+  EXPECT_CALL(builder, WithSchemeWildcard()).Times(1).WillOnce(
+      ::testing::Return(&builder));
+  EXPECT_CALL(builder, WithDomainWildcard()).Times(1).WillOnce(
+      ::testing::Return(&builder));
+  EXPECT_CALL(builder, WithPortWildcard()).Times(1).WillOnce(
+      ::testing::Return(&builder));
+  content_settings::PatternParser::Parse("*", &builder);
+  ::testing::Mock::VerifyAndClear(&builder);
 
   EXPECT_CALL(builder, WithScheme("http")).Times(1).WillOnce(
       ::testing::Return(&builder));
@@ -86,14 +98,6 @@ TEST(ContentSettingsPatternParserTest, ParsePatterns) {
   content_settings::PatternParser::Parse("http://127.0.0.1:8080", &builder);
   ::testing::Mock::VerifyAndClear(&builder);
 
-  EXPECT_CALL(builder, WithScheme("file")).Times(1).WillOnce(
-      ::testing::Return(&builder));
-  EXPECT_CALL(builder, WithPath("/foo/bar/test.html")).Times(1).WillOnce(
-      ::testing::Return(&builder));
-  content_settings::PatternParser::Parse(
-      "file:///foo/bar/test.html", &builder);
-  ::testing::Mock::VerifyAndClear(&builder);
-
   // Test valid pattern short forms
   EXPECT_CALL(builder, WithSchemeWildcard()).Times(1).WillOnce(
       ::testing::Return(&builder));
@@ -125,19 +129,82 @@ TEST(ContentSettingsPatternParserTest, ParsePatterns) {
   ::testing::Mock::VerifyAndClear(&builder);
 
   // Test invalid patterns
+  EXPECT_CALL(builder, WithSchemeWildcard()).Times(1).WillOnce(
+      ::testing::Return(&builder));
   EXPECT_CALL(builder, Invalid()).Times(1).WillOnce(
       ::testing::Return(&builder));
   content_settings::PatternParser::Parse("*youtube.com", &builder);
   ::testing::Mock::VerifyAndClear(&builder);
 
+  EXPECT_CALL(builder, WithSchemeWildcard()).Times(1).WillOnce(
+      ::testing::Return(&builder));
   EXPECT_CALL(builder, Invalid()).Times(1).WillOnce(
       ::testing::Return(&builder));
   content_settings::PatternParser::Parse("*.youtube.com", &builder);
   ::testing::Mock::VerifyAndClear(&builder);
 
+  EXPECT_CALL(builder, WithSchemeWildcard()).Times(1).WillOnce(
+      ::testing::Return(&builder));
   EXPECT_CALL(builder, Invalid()).Times(1).WillOnce(
       ::testing::Return(&builder));
   content_settings::PatternParser::Parse("www.youtube.com*", &builder);
+  ::testing::Mock::VerifyAndClear(&builder);
+}
+
+TEST(ContentSettingsPatternParserTest, ParseFilePatterns) {
+  ::testing::StrictMock<MockBuilder> builder;
+
+  EXPECT_CALL(builder, WithScheme("file")).Times(1).WillOnce(
+      ::testing::Return(&builder));
+  EXPECT_CALL(builder, WithPath("/foo/bar/test.html")).Times(1).WillOnce(
+      ::testing::Return(&builder));
+  content_settings::PatternParser::Parse(
+      "file:///foo/bar/test.html", &builder);
+  ::testing::Mock::VerifyAndClear(&builder);
+
+  EXPECT_CALL(builder, WithScheme("file")).Times(1).WillOnce(
+      ::testing::Return(&builder));
+  EXPECT_CALL(builder, WithDomainWildcard()).Times(1).WillOnce(
+      ::testing::Return(&builder));
+  content_settings::PatternParser::Parse(
+      "file://*", &builder);
+  ::testing::Mock::VerifyAndClear(&builder);
+
+  EXPECT_CALL(builder, WithScheme("file")).Times(1).WillOnce(
+      ::testing::Return(&builder));
+  EXPECT_CALL(builder, WithDomainWildcard()).Times(1).WillOnce(
+      ::testing::Return(&builder));
+  EXPECT_CALL(builder, WithPath("/")).Times(1).WillOnce(
+      ::testing::Return(&builder));
+  content_settings::PatternParser::Parse(
+      "file://*/", &builder);
+  ::testing::Mock::VerifyAndClear(&builder);
+
+  EXPECT_CALL(builder, WithScheme("file")).Times(1).WillOnce(
+      ::testing::Return(&builder));
+  EXPECT_CALL(builder, WithDomainWildcard()).Times(1).WillOnce(
+      ::testing::Return(&builder));
+  EXPECT_CALL(builder, WithPathWildcard()).Times(1).WillOnce(
+      ::testing::Return(&builder));
+  content_settings::PatternParser::Parse(
+      "file://*/*", &builder);
+  ::testing::Mock::VerifyAndClear(&builder);
+
+  EXPECT_CALL(builder, WithScheme("file")).Times(1).WillOnce(
+      ::testing::Return(&builder));
+  EXPECT_CALL(builder, WithPathWildcard()).Times(1).WillOnce(
+      ::testing::Return(&builder));
+  content_settings::PatternParser::Parse(
+      "file:///*", &builder);
+  ::testing::Mock::VerifyAndClear(&builder);
+
+  // Invalid file patterns.
+  EXPECT_CALL(builder, WithScheme("file")).Times(1).WillOnce(
+      ::testing::Return(&builder));
+  EXPECT_CALL(builder, Invalid()).Times(1).WillOnce(
+      ::testing::Return(&builder));
+  content_settings::PatternParser::Parse(
+      "file://**", &builder);
   ::testing::Mock::VerifyAndClear(&builder);
 }
 
@@ -154,4 +221,10 @@ TEST(ContentSettingsPatternParserTest, SerializePatterns) {
   parts.path = "/foo/bar/test.html";
   EXPECT_STREQ("file:///foo/bar/test.html",
                content_settings::PatternParser::ToString(parts).c_str());
+
+  parts = ContentSettingsPattern::PatternParts();
+  parts.scheme = "file";
+  parts.path = "";
+  parts.is_path_wildcard = true;
+  EXPECT_EQ("file:///*", content_settings::PatternParser::ToString(parts));
 }

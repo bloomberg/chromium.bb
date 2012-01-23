@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -130,6 +130,13 @@ BuilderInterface* ContentSettingsPattern::Builder::WithSchemeWildcard() {
 BuilderInterface* ContentSettingsPattern::Builder::WithPath(
     const std::string& path) {
   parts_.path = path;
+  parts_.is_path_wildcard = false;
+  return this;
+}
+
+BuilderInterface* ContentSettingsPattern::Builder::WithPathWildcard() {
+  parts_.path = "";
+  parts_.is_path_wildcard = true;
   return this;
 }
 
@@ -157,10 +164,11 @@ bool ContentSettingsPattern::Builder::Canonicalize(PatternParts* parts) {
   const std::string scheme(StringToLowerASCII(parts->scheme));
   parts->scheme = scheme;
 
-  if (parts->scheme == std::string(chrome::kFileScheme)) {
-    GURL url(std::string(chrome::kFileScheme) +
-             std::string(chrome::kStandardSchemeSeparator) + parts->path);
-    parts->path = url.path();
+  if (parts->scheme == std::string(chrome::kFileScheme) &&
+      !parts->is_path_wildcard) {
+      GURL url(std::string(chrome::kFileScheme) +
+               std::string(chrome::kStandardSchemeSeparator) + parts->path);
+      parts->path = url.path();
   }
 
   // Canonicalize the host part.
@@ -190,12 +198,15 @@ bool ContentSettingsPattern::Builder::Validate(const PatternParts& parts) {
   }
 
   // file:// URL patterns have an empty host and port.
-  if (parts.scheme == std::string(chrome::kFileScheme))
-    return parts.host.empty() &&
-           parts.port.empty() &&
-           !parts.path.empty() &&
-           parts.path != std::string("/") &&
-           parts.path.find("*") == std::string::npos;
+  if (parts.scheme == std::string(chrome::kFileScheme)) {
+    if (parts.has_domain_wildcard || !parts.host.empty() || !parts.port.empty())
+      return false;
+    if (parts.is_path_wildcard)
+      return parts.path.empty();
+    return (!parts.path.empty() &&
+            parts.path != "/" &&
+            parts.path.find("*") == std::string::npos);
+  }
 
   // If the pattern is for an extension URL test if it is valid.
   if (parts.scheme == std::string(chrome::kExtensionScheme) &&
@@ -267,7 +278,8 @@ bool ContentSettingsPattern::Builder::LegacyValidate(
 ContentSettingsPattern::PatternParts::PatternParts()
         : is_scheme_wildcard(false),
           has_domain_wildcard(false),
-          is_port_wildcard(false) {}
+          is_port_wildcard(false),
+          is_path_wildcard(false) {}
 
 ContentSettingsPattern::PatternParts::~PatternParts() {}
 
@@ -371,7 +383,8 @@ ContentSettingsPattern ContentSettingsPattern::LegacyFromString(
 ContentSettingsPattern ContentSettingsPattern::Wildcard() {
   scoped_ptr<ContentSettingsPattern::BuilderInterface> builder(
       ContentSettingsPattern::CreateBuilder(true));
-  builder->WithSchemeWildcard()->WithDomainWildcard()->WithPortWildcard();
+  builder->WithSchemeWildcard()->WithDomainWildcard()->WithPortWildcard()->
+           WithPathWildcard();
   return builder->Build();
 }
 
@@ -410,16 +423,10 @@ bool ContentSettingsPattern::Matches(
     return false;
   }
 
-  // File URLs have no host. For file URLs check if the url path matches the
-  // path in the pattern.
-  // TODO(markusheintz): This should change in the future. There should be only
-  // one setting for all file URLs. So the path should be ignored.
-  if (!parts_.is_scheme_wildcard &&
-      scheme == std::string(chrome::kFileScheme)) {
-    if (parts_.path == std::string(url.path()))
-      return true;
-    return false;
-  }
+  // File URLs have no host. Matches if the pattern has the path wildcard set,
+  // or if the path in the URL is identical to the one in the pattern.
+  if (!parts_.is_scheme_wildcard && scheme == chrome::kFileScheme)
+    return parts_.is_path_wildcard || parts_.path == std::string(url.path());
 
   // Match the host part.
   const std::string host(net::TrimEndingDot(url.host()));

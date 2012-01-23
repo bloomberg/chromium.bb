@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -86,7 +86,7 @@ TEST(ContentSettingsPatternTest, FromURL) {
 
   pattern = ContentSettingsPattern::FromURL(GURL("file:///foo/bar.html"));
   EXPECT_TRUE(pattern.IsValid());
-  EXPECT_STREQ("file:///foo/bar.html", pattern.ToString().c_str());
+  EXPECT_EQ("file:///foo/bar.html", pattern.ToString());
 }
 
 TEST(ContentSettingsPatternTest, FromURLNoWildcard) {
@@ -172,37 +172,52 @@ TEST(ContentSettingsPatternTest, FromString_WithNoWildcards) {
 }
 
 TEST(ContentSettingsPatternTest, FromString_FilePatterns) {
+  // "/" is an invalid file path.
   EXPECT_FALSE(Pattern("file:///").IsValid());
 
   // Non-empty domains aren't allowed in file patterns.
   EXPECT_FALSE(Pattern("file://foo/").IsValid());
-
-  // Domain wildcards aren't allowed in file patterns.
+  EXPECT_FALSE(Pattern("file://localhost/foo/bar/test.html").IsValid());
+  EXPECT_FALSE(Pattern("file://*").IsValid());
   EXPECT_FALSE(Pattern("file://*/").IsValid());
+  EXPECT_FALSE(Pattern("file://*/*").IsValid());
+  EXPECT_FALSE(Pattern("file://*/foo/bar/test.html").IsValid());
   EXPECT_FALSE(Pattern("file://[*.]/").IsValid());
 
-  // These specify a path that contains '*', which isn't allowed to avoid
-  // user confusion.
-  EXPECT_FALSE(Pattern("file:///*").IsValid());
+  // This is the only valid file path wildcard format.
+  EXPECT_TRUE(Pattern("file:///*").IsValid());
+  EXPECT_EQ("file:///*", Pattern("file:///*").ToString());
+
+  // Wildcards are not allowed anywhere in the file path.
+  EXPECT_FALSE(Pattern("file:///f*o/bar/file.html").IsValid());
+  EXPECT_FALSE(Pattern("file:///*/bar/file.html").IsValid());
+  EXPECT_FALSE(Pattern("file:///foo/*").IsValid());
   EXPECT_FALSE(Pattern("file:///foo/bar/*").IsValid());
+  EXPECT_FALSE(Pattern("file:///foo/*/file.html").IsValid());
+  EXPECT_FALSE(Pattern("file:///foo/bar/*.html").IsValid());
+  EXPECT_FALSE(Pattern("file:///foo/bar/file.*").IsValid());
 
   EXPECT_TRUE(Pattern("file:///tmp/test.html").IsValid());
-  EXPECT_STREQ("file:///tmp/file.html",
-               Pattern("file:///tmp/file.html").ToString().c_str());
+  EXPECT_EQ("file:///tmp/file.html",
+            Pattern("file:///tmp/file.html").ToString());
   EXPECT_TRUE(Pattern("file:///tmp/test.html").Matches(
       GURL("file:///tmp/test.html")));
   EXPECT_FALSE(Pattern("file:///tmp/test.html").Matches(
       GURL("file:///tmp/other.html")));
   EXPECT_FALSE(Pattern("file:///tmp/test.html").Matches(
       GURL("http://example.org/")));
+
+  EXPECT_TRUE(Pattern("file:///*").Matches(GURL("file:///tmp/test.html")));
+  EXPECT_TRUE(Pattern("file:///*").Matches(
+      GURL("file://localhost/tmp/test.html")));
 }
 
 TEST(ContentSettingsPatternTest, FromString_ExtensionPatterns) {
   EXPECT_TRUE(Pattern("chrome-extension://peoadpeiejnhkmpaakpnompolbglelel/")
       .IsValid());
-  EXPECT_STREQ("chrome-extension://peoadpeiejnhkmpaakpnompolbglelel/",
+  EXPECT_EQ("chrome-extension://peoadpeiejnhkmpaakpnompolbglelel/",
       Pattern("chrome-extension://peoadpeiejnhkmpaakpnompolbglelel/")
-          .ToString().c_str());
+          .ToString());
   EXPECT_TRUE(Pattern("chrome-extension://peoadpeiejnhkmpaakpnompolbglelel/")
       .Matches(GURL("chrome-extension://peoadpeiejnhkmpaakpnompolbglelel/")));
 }

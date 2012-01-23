@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -93,6 +93,9 @@ class ContentSettingsPattern {
     // specification. Only used for content settings pattern with a "file"
     // scheme part.
     std::string path;
+
+    // True if the path wildcard is set.
+    bool is_path_wildcard;
   };
 
   class BuilderInterface {
@@ -112,6 +115,8 @@ class ContentSettingsPattern {
     virtual BuilderInterface* WithSchemeWildcard() = 0;
 
     virtual BuilderInterface* WithPath(const std::string& path) = 0;
+
+    virtual BuilderInterface* WithPathWildcard() = 0;
 
     virtual BuilderInterface* Invalid() = 0;
 
@@ -214,9 +219,12 @@ class ContentSettingsPattern {
 
      virtual BuilderInterface* WithPath(const std::string& path) OVERRIDE;
 
+     virtual BuilderInterface* WithPathWildcard() OVERRIDE;
+
      virtual BuilderInterface* Invalid() OVERRIDE;
 
      virtual ContentSettingsPattern Build() OVERRIDE;
+
     private:
      // Canonicalizes the pattern parts so that they are ASCII only, either
      // in original (if it was already ASCII) or punycode form. Returns true if

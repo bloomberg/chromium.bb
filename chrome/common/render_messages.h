@@ -131,6 +131,7 @@ IPC_STRUCT_TRAITS_BEGIN(ContentSettingsPattern::PatternParts)
   IPC_STRUCT_TRAITS_MEMBER(port)
   IPC_STRUCT_TRAITS_MEMBER(is_port_wildcard)
   IPC_STRUCT_TRAITS_MEMBER(path)
+  IPC_STRUCT_TRAITS_MEMBER(is_path_wildcard)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(ContentSettingPatternSource)

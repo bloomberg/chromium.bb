@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -41,6 +41,8 @@ const char* PatternParser::kSchemeWildcard = "*";
 const char* PatternParser::kHostWildcard = "*";
 
 const char* PatternParser::kPortWildcard = "*";
+
+const char* PatternParser::kPathWildcard = "*";
 
 // static
 void PatternParser::Parse(const std::string& pattern_spec,
@@ -169,13 +171,18 @@ void PatternParser::Parse(const std::string& pattern_spec,
       builder->WithPort(port);
     }
   } else {
-    if (scheme != std::string(chrome::kExtensionScheme))
+    if (scheme != std::string(chrome::kExtensionScheme) &&
+        scheme != std::string(chrome::kFileScheme))
       builder->WithPortWildcard();
   }
 
   if (path_component.IsNonEmpty()) {
-    builder->WithPath(pattern_spec.substr(path_component.start,
-                                          path_component.len));
+    const std::string path = pattern_spec.substr(path_component.start,
+                                                 path_component.len);
+    if (path.substr(1) == kPathWildcard)
+      builder->WithPathWildcard();
+    else
+      builder->WithPath(path);
   }
 }
 
@@ -194,8 +201,12 @@ std::string PatternParser::ToString(
   if (!parts.is_scheme_wildcard)
     str += parts.scheme + chrome::kStandardSchemeSeparator;
 
-  if (parts.scheme == std::string(chrome::kFileScheme))
-    return str + parts.path;
+  if (parts.scheme == chrome::kFileScheme) {
+    if (parts.is_path_wildcard)
+      return str + kUrlPathSeparator + kPathWildcard;
+    else
+      return str + parts.path;
+  }
 
   if (parts.has_domain_wildcard) {
     if (parts.host.empty())
