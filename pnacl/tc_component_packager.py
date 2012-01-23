@@ -45,6 +45,7 @@ COMPONENTS['bitcode_newlib_frontend'] = [
     'newlib/bin/*tools.py',
     'newlib/bin/pnacl-driver',
     'newlib/bin/pnacl-clang*',
+    'newlib/bin/pnacl-dis',
     'newlib/bin/pnacl-nm',
     'newlib/bin/pnacl-opt',
     'newlib/bin/pnacl-ar',
@@ -57,6 +58,7 @@ COMPONENTS['bitcode_newlib_frontend'] = [
     # actual tools
     'pkg/llvm/bin/clang*',
     'pkg/llvm/bin/llvm-ar',
+    'pkg/llvm/bin/llvm-dis',
     'pkg/llvm/bin/llvm-nm',
     'pkg/llvm/bin/llvm-ranlib',
     'pkg/llvm/bin/llvm-ld',
