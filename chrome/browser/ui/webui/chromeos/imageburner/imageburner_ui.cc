@@ -190,7 +190,8 @@ void WebUIHandler::DiskChanged(
 
 void WebUIHandler::BurnProgressUpdated(chromeos::BurnLibrary* object,
                                        chromeos::BurnEvent evt,
-                                       const ImageBurnStatus& status) {
+                                       const chromeos::ImageBurnStatus& status)
+{
   switch (evt) {
     case(chromeos::BURN_SUCCESS):
       FinalizeBurn();

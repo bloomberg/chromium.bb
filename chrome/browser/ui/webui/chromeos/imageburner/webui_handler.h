@@ -104,7 +104,8 @@ class WebUIHandler
   // chromeos::BurnLibrary::Observer interface.
   virtual void BurnProgressUpdated(chromeos::BurnLibrary* object,
                                    chromeos::BurnEvent evt,
-                                   const ImageBurnStatus& status) OVERRIDE;
+                                   const chromeos::ImageBurnStatus& status)
+      OVERRIDE;
 
   // chromeos::NetworkLibrary::NetworkManagerObserver interface.
   virtual void OnNetworkManagerChanged(chromeos::NetworkLibrary* obj) OVERRIDE;
