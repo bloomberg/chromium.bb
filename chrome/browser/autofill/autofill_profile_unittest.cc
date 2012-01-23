@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -610,7 +610,6 @@ TEST_F(AutofillProfileTest, MultiValueNames) {
   // Update the values.
   AutofillProfile p2 = p;
   EXPECT_EQ(0, p.Compare(p2));
-  EXPECT_EQ(0, p.CompareMulti(p2));
   const string16 kNoOne(ASCIIToUTF16("No One"));
   set_values[1] = kNoOne;
   p.SetMultiInfo(NAME_FULL, set_values);
@@ -618,8 +617,7 @@ TEST_F(AutofillProfileTest, MultiValueNames) {
   ASSERT_EQ(2UL, get_values.size());
   EXPECT_EQ(kJohnDoe, get_values[0]);
   EXPECT_EQ(kNoOne, get_values[1]);
-  EXPECT_EQ(0, p.Compare(p2));
-  EXPECT_NE(0, p.CompareMulti(p2));
+  EXPECT_NE(0, p.Compare(p2));
 
   // Delete values.
   set_values.clear();
@@ -654,7 +652,6 @@ TEST_F(AutofillProfileTest, MultiValueEmails) {
   // Update the values.
   AutofillProfile p2 = p;
   EXPECT_EQ(0, p.Compare(p2));
-  EXPECT_EQ(0, p.CompareMulti(p2));
   const string16 kNoOne(ASCIIToUTF16("no@one.com"));
   set_values[1] = kNoOne;
   p.SetMultiInfo(EMAIL_ADDRESS, set_values);
@@ -662,8 +659,7 @@ TEST_F(AutofillProfileTest, MultiValueEmails) {
   ASSERT_EQ(2UL, get_values.size());
   EXPECT_EQ(kJohnDoe, get_values[0]);
   EXPECT_EQ(kNoOne, get_values[1]);
-  EXPECT_EQ(0, p.Compare(p2));
-  EXPECT_NE(0, p.CompareMulti(p2));
+  EXPECT_NE(0, p.Compare(p2));
 
   // Delete values.
   set_values.clear();
@@ -698,7 +694,6 @@ TEST_F(AutofillProfileTest, MultiValuePhone) {
   // Update the values.
   AutofillProfile p2 = p;
   EXPECT_EQ(0, p.Compare(p2));
-  EXPECT_EQ(0, p.CompareMulti(p2));
   const string16 kNoOne(ASCIIToUTF16("4152110000"));
   set_values[1] = kNoOne;
   p.SetMultiInfo(PHONE_HOME_WHOLE_NUMBER, set_values);
@@ -706,8 +701,7 @@ TEST_F(AutofillProfileTest, MultiValuePhone) {
   ASSERT_EQ(2UL, get_values.size());
   EXPECT_EQ(kJohnDoe, get_values[0]);
   EXPECT_EQ(kNoOne, get_values[1]);
-  EXPECT_EQ(0, p.Compare(p2));
-  EXPECT_NE(0, p.CompareMulti(p2));
+  EXPECT_NE(0, p.Compare(p2));
 
   // Delete values.
   set_values.clear();

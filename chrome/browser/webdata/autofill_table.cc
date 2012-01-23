@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -876,7 +876,7 @@ bool AutofillTable::UpdateAutofillProfileMulti(const AutofillProfile& profile) {
 
   // Preserve appropriate modification dates by not updating unchanged profiles.
   scoped_ptr<AutofillProfile> old_profile(tmp_profile);
-  if (old_profile->CompareMulti(profile) == 0)
+  if (old_profile->Compare(profile) == 0)
     return true;
 
   sql::Statement s(db_->GetUniqueStatement(

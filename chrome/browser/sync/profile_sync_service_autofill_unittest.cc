@@ -124,7 +124,7 @@ class AutofillTableMock : public AutofillTable {
 };
 
 MATCHER_P(MatchProfiles, profile, "") {
-  return (profile.CompareMulti(arg) == 0);
+  return (profile.Compare(arg) == 0);
 }
 
 
@@ -943,7 +943,7 @@ TEST_F(ProfileSyncServiceAutofillTest, HasNativeHasSyncMergeProfile) {
   ASSERT_TRUE(GetAutofillProfilesFromSyncDBUnderProfileNode(
       &new_sync_profiles));
   ASSERT_EQ(1U, new_sync_profiles.size());
-  EXPECT_EQ(0, sync_profile.CompareMulti(new_sync_profiles[0]));
+  EXPECT_EQ(0, sync_profile.Compare(new_sync_profiles[0]));
 }
 
 TEST_F(ProfileSyncServiceAutofillTest, HasNativeHasSyncMergeProfileCombine) {

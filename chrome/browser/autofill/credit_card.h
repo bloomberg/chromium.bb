@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -66,10 +66,6 @@ class CreditCard : public FormGroup {
   // GUIDs, labels, and unique IDs are not compared, only the values of the
   // credit cards themselves.
   int Compare(const CreditCard& credit_card) const;
-
-  // This is same as |Compare| for credit cards as they are single-valued.
-  // This is here to unify templated code that deals with |FormGroup|s.
-  int CompareMulti(const CreditCard& credit_card) const;
 
   // Used by tests.
   bool operator==(const CreditCard& credit_card) const;

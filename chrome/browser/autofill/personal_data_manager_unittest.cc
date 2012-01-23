@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -107,7 +107,7 @@ TEST_F(PersonalDataManagerTest, AddProfile) {
   // Verify the addition.
   const std::vector<AutofillProfile*>& results1 = personal_data_->profiles();
   ASSERT_EQ(1U, results1.size());
-  EXPECT_EQ(0, profile0.CompareMulti(*results1[0]));
+  EXPECT_EQ(0, profile0.Compare(*results1[0]));
 
   // Add profile with identical values.  Duplicates should not get saved.
   AutofillProfile profile0a = profile0;
@@ -120,7 +120,7 @@ TEST_F(PersonalDataManagerTest, AddProfile) {
   // Verify the non-addition.
   const std::vector<AutofillProfile*>& results2 = personal_data_->profiles();
   ASSERT_EQ(1U, results2.size());
-  EXPECT_EQ(0, profile0.CompareMulti(*results2[0]));
+  EXPECT_EQ(0, profile0.Compare(*results2[0]));
 
   // New profile with different email.
   AutofillProfile profile1 = profile0;
@@ -138,8 +138,8 @@ TEST_F(PersonalDataManagerTest, AddProfile) {
   // Verify the addition.
   const std::vector<AutofillProfile*>& results3 = personal_data_->profiles();
   ASSERT_EQ(2U, results3.size());
-  EXPECT_EQ(0, profile0.CompareMulti(*results3[0]));
-  EXPECT_EQ(0, profile1.CompareMulti(*results3[1]));
+  EXPECT_EQ(0, profile0.Compare(*results3[0]));
+  EXPECT_EQ(0, profile1.Compare(*results3[1]));
 }
 
 TEST_F(PersonalDataManagerTest, AddUpdateRemoveProfiles) {
@@ -857,7 +857,7 @@ TEST_F(PersonalDataManagerTest, AggregateTwoProfilesWithMultiValue) {
   expected.SetMultiInfo(EMAIL_ADDRESS, values);
 
   ASSERT_EQ(1U, results2.size());
-  EXPECT_EQ(0, expected.CompareMulti(*results2[0]));
+  EXPECT_EQ(0, expected.Compare(*results2[0]));
 }
 
 TEST_F(PersonalDataManagerTest, AggregateSameProfileWithConflict) {
@@ -967,7 +967,7 @@ TEST_F(PersonalDataManagerTest, AggregateSameProfileWithConflict) {
   expected.SetMultiInfo(PHONE_HOME_WHOLE_NUMBER, values);
   expected.SetInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("United States"));
   ASSERT_EQ(1U, results2.size());
-  EXPECT_EQ(0, expected.CompareMulti(*results2[0]));
+  EXPECT_EQ(0, expected.Compare(*results2[0]));
 }
 
 TEST_F(PersonalDataManagerTest, AggregateProfileWithMissingInfoInOld) {
@@ -1954,5 +1954,5 @@ TEST_F(PersonalDataManagerTest, CaseInsensitiveMultiValueAggregation) {
   expected.SetMultiInfo(PHONE_HOME_CITY_AND_NUMBER, values);
 
   ASSERT_EQ(1U, results2.size());
-  EXPECT_EQ(0, expected.CompareMulti(*results2[0]));
+  EXPECT_EQ(0, expected.Compare(*results2[0]));
 }

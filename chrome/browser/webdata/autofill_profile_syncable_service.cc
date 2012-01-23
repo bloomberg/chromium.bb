@@ -380,7 +380,7 @@ AutofillProfileSyncableService::CreateOrUpdateProfile(
     // Check if profile appears under a different guid.
     for (GUIDToProfileMap::iterator i = profile_map->begin();
          i != profile_map->end(); ++i) {
-      if (i->second->CompareMulti(*new_profile) == 0) {
+      if (i->second->Compare(*new_profile) == 0) {
         bundle->profiles_to_delete.push_back(i->second->guid());
         DVLOG(2) << "[AUTOFILL SYNC]"
                  << "Found in sync db but with a different guid: "
@@ -390,7 +390,8 @@ AutofillProfileSyncableService::CreateOrUpdateProfile(
                  << ". Profile to be deleted " << i->second->guid();
         profile_map->erase(i);
         break;
-      } else if (i->second->PrimaryValue() == new_profile->PrimaryValue()) {
+      } else if (!i->second->PrimaryValue().empty() &&
+                 i->second->PrimaryValue() == new_profile->PrimaryValue()) {
         // Add it to candidates for merge - if there is no profile with this
         // guid we will merge them.
         bundle->candidates_to_merge.insert(std::make_pair(i->second->guid(),
@@ -497,7 +498,7 @@ bool AutofillProfileSyncableService::MergeProfile(
     const AutofillProfile& merge_from,
     AutofillProfile* merge_into) {
   merge_into->OverwriteWithOrAddTo(merge_from);
-  return (merge_into->CompareMulti(merge_from) != 0);
+  return (merge_into->Compare(merge_from) != 0);
 }
 
 AutofillTable* AutofillProfileSyncableService::GetAutofillTable() const {

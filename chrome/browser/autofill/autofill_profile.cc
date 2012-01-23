@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -444,32 +444,6 @@ bool AutofillProfile::IsEmpty() const {
 }
 
 int AutofillProfile::Compare(const AutofillProfile& profile) const {
-  // The following Autofill field types are the only types we store in the WebDB
-  // so far, so we're only concerned with matching these types in the profile.
-  const AutofillFieldType types[] = { NAME_FIRST,
-                                      NAME_MIDDLE,
-                                      NAME_LAST,
-                                      EMAIL_ADDRESS,
-                                      COMPANY_NAME,
-                                      ADDRESS_HOME_LINE1,
-                                      ADDRESS_HOME_LINE2,
-                                      ADDRESS_HOME_CITY,
-                                      ADDRESS_HOME_STATE,
-                                      ADDRESS_HOME_ZIP,
-                                      ADDRESS_HOME_COUNTRY,
-                                      PHONE_HOME_NUMBER };
-
-  for (size_t index = 0; index < arraysize(types); ++index) {
-    int comparison = GetInfo(types[index]).compare(
-        profile.GetInfo(types[index]));
-    if (comparison != 0)
-      return comparison;
-  }
-
-  return 0;
-}
-
-int AutofillProfile::CompareMulti(const AutofillProfile& profile) const {
   const AutofillFieldType single_value_types[] = { COMPANY_NAME,
                                                    ADDRESS_HOME_LINE1,
                                                    ADDRESS_HOME_LINE2,

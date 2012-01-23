@@ -105,16 +105,10 @@ class AutofillProfile : public FormGroup {
   // culling duplicates.  The ordering is based on collation order of the
   // textual contents of the fields.
   // GUIDs are not compared, only the values of the contents themselves.
-  // DEPRECATED: Use |CompareMulti| instead.  |Compare| does not compare
-  // multi-valued items.
+  // Full profile comparision, comparison includes multi-valued fields.
   int Compare(const AutofillProfile& profile) const;
 
-  // Full profile comparision, use instead of |Compare|. Same as |Compare| but
-  // includes multi-valued fields.
-  int CompareMulti(const AutofillProfile& profile) const;
-
   // Equality operators compare GUIDs and the contents in the comparison.
-  // TODO(dhollowa): This needs to be made multi-profile once Sync updates.
   bool operator==(const AutofillProfile& profile) const;
   virtual bool operator!=(const AutofillProfile& profile) const;
 

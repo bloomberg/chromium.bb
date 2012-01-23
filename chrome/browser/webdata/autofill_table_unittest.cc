@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -682,7 +682,7 @@ TEST_F(AutofillTableTest, AutofillProfileMultiValueNames) {
   AutofillProfile* db_profile;
   ASSERT_TRUE(db.GetAutofillTable()->GetAutofillProfile(p.guid(), &db_profile));
   EXPECT_EQ(p, *db_profile);
-  EXPECT_EQ(0, p.CompareMulti(*db_profile));
+  EXPECT_EQ(0, p.Compare(*db_profile));
   delete db_profile;
 
   // Update the values.
@@ -692,7 +692,7 @@ TEST_F(AutofillTableTest, AutofillProfileMultiValueNames) {
   EXPECT_TRUE(db.GetAutofillTable()->UpdateAutofillProfileMulti(p));
   ASSERT_TRUE(db.GetAutofillTable()->GetAutofillProfile(p.guid(), &db_profile));
   EXPECT_EQ(p, *db_profile);
-  EXPECT_EQ(0, p.CompareMulti(*db_profile));
+  EXPECT_EQ(0, p.Compare(*db_profile));
   delete db_profile;
 
   // Delete values.
@@ -701,7 +701,7 @@ TEST_F(AutofillTableTest, AutofillProfileMultiValueNames) {
   EXPECT_TRUE(db.GetAutofillTable()->UpdateAutofillProfileMulti(p));
   ASSERT_TRUE(db.GetAutofillTable()->GetAutofillProfile(p.guid(), &db_profile));
   EXPECT_EQ(p, *db_profile);
-  EXPECT_EQ(0, p.CompareMulti(*db_profile));
+  EXPECT_EQ(0, p.Compare(*db_profile));
   EXPECT_EQ(string16(), db_profile->GetInfo(NAME_FULL));
   delete db_profile;
 }
@@ -723,20 +723,18 @@ TEST_F(AutofillTableTest, AutofillProfileSingleValue) {
   AutofillProfile* db_profile;
   ASSERT_TRUE(db.GetAutofillTable()->GetAutofillProfile(p.guid(), &db_profile));
   EXPECT_EQ(p, *db_profile);
-  EXPECT_EQ(0, p.CompareMulti(*db_profile));
+  EXPECT_EQ(0, p.Compare(*db_profile));
   delete db_profile;
 
-  // Update the values.  This update is the "single value" update, it should
-  // not perturb the multi-values following the zeroth entry.  This simulates
-  // the Sync use-case until Sync can be changed to be multi-value aware.
   const string16 kNoOne(ASCIIToUTF16("No One"));
   set_values.resize(1);
   set_values[0] = kNoOne;
   p.SetMultiInfo(NAME_FULL, set_values);
   EXPECT_TRUE(db.GetAutofillTable()->UpdateAutofillProfile(p));
   ASSERT_TRUE(db.GetAutofillTable()->GetAutofillProfile(p.guid(), &db_profile));
-  EXPECT_EQ(p, *db_profile);
-  EXPECT_NE(0, p.CompareMulti(*db_profile));
+  EXPECT_EQ(p.PrimaryValue(), db_profile->PrimaryValue());
+  EXPECT_EQ(p.guid(), db_profile->guid());
+  EXPECT_NE(0, p.Compare(*db_profile));
   db_profile->GetMultiInfo(NAME_FULL, &set_values);
   ASSERT_EQ(2UL, set_values.size());
   EXPECT_EQ(kNoOne, set_values[0]);
@@ -761,7 +759,7 @@ TEST_F(AutofillTableTest, AutofillProfileMultiValueEmails) {
   AutofillProfile* db_profile;
   ASSERT_TRUE(db.GetAutofillTable()->GetAutofillProfile(p.guid(), &db_profile));
   EXPECT_EQ(p, *db_profile);
-  EXPECT_EQ(0, p.CompareMulti(*db_profile));
+  EXPECT_EQ(0, p.Compare(*db_profile));
   delete db_profile;
 
   // Update the values.
@@ -771,7 +769,7 @@ TEST_F(AutofillTableTest, AutofillProfileMultiValueEmails) {
   EXPECT_TRUE(db.GetAutofillTable()->UpdateAutofillProfileMulti(p));
   ASSERT_TRUE(db.GetAutofillTable()->GetAutofillProfile(p.guid(), &db_profile));
   EXPECT_EQ(p, *db_profile);
-  EXPECT_EQ(0, p.CompareMulti(*db_profile));
+  EXPECT_EQ(0, p.Compare(*db_profile));
   delete db_profile;
 
   // Delete values.
@@ -780,7 +778,7 @@ TEST_F(AutofillTableTest, AutofillProfileMultiValueEmails) {
   EXPECT_TRUE(db.GetAutofillTable()->UpdateAutofillProfileMulti(p));
   ASSERT_TRUE(db.GetAutofillTable()->GetAutofillProfile(p.guid(), &db_profile));
   EXPECT_EQ(p, *db_profile);
-  EXPECT_EQ(0, p.CompareMulti(*db_profile));
+  EXPECT_EQ(0, p.Compare(*db_profile));
   EXPECT_EQ(string16(), db_profile->GetInfo(EMAIL_ADDRESS));
   delete db_profile;
 }
@@ -802,7 +800,7 @@ TEST_F(AutofillTableTest, AutofillProfileMultiValuePhone) {
   AutofillProfile* db_profile;
   ASSERT_TRUE(db.GetAutofillTable()->GetAutofillProfile(p.guid(), &db_profile));
   EXPECT_EQ(p, *db_profile);
-  EXPECT_EQ(0, p.CompareMulti(*db_profile));
+  EXPECT_EQ(0, p.Compare(*db_profile));
   delete db_profile;
 
   // Update the values.
@@ -812,7 +810,7 @@ TEST_F(AutofillTableTest, AutofillProfileMultiValuePhone) {
   EXPECT_TRUE(db.GetAutofillTable()->UpdateAutofillProfileMulti(p));
   ASSERT_TRUE(db.GetAutofillTable()->GetAutofillProfile(p.guid(), &db_profile));
   EXPECT_EQ(p, *db_profile);
-  EXPECT_EQ(0, p.CompareMulti(*db_profile));
+  EXPECT_EQ(0, p.Compare(*db_profile));
   delete db_profile;
 
   // Delete values.
@@ -821,7 +819,7 @@ TEST_F(AutofillTableTest, AutofillProfileMultiValuePhone) {
   EXPECT_TRUE(db.GetAutofillTable()->UpdateAutofillProfileMulti(p));
   ASSERT_TRUE(db.GetAutofillTable()->GetAutofillProfile(p.guid(), &db_profile));
   EXPECT_EQ(p, *db_profile);
-  EXPECT_EQ(0, p.CompareMulti(*db_profile));
+  EXPECT_EQ(0, p.Compare(*db_profile));
   EXPECT_EQ(string16(), db_profile->GetInfo(EMAIL_ADDRESS));
   delete db_profile;
 }
