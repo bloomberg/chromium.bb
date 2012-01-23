@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -358,7 +358,7 @@ bool IsChromeRegistered(BrowserDistribution* dist,
                         const std::wstring& suffix) {
   bool registered = true;
   std::list<RegistryEntry*> entries;
-  STLElementDeleter<std::list<RegistryEntry*>> entries_deleter(&entries);
+  STLElementDeleter<std::list<RegistryEntry*> > entries_deleter(&entries);
   RegistryEntry::GetProgIdEntries(dist, chrome_exe, suffix, &entries);
   RegistryEntry::GetSystemEntries(dist, chrome_exe, suffix, &entries);
   for (std::list<RegistryEntry*>::const_iterator itr = entries.begin();
@@ -377,7 +377,7 @@ bool IsChromeRegisteredForProtocol(BrowserDistribution* dist,
                                    const std::wstring& protocol) {
   bool registered = true;
   std::list<RegistryEntry*> entries;
-  STLElementDeleter<std::list<RegistryEntry*>> entries_deleter(&entries);
+  STLElementDeleter<std::list<RegistryEntry*> > entries_deleter(&entries);
   RegistryEntry::GetProtocolCapabilityEntries(dist, suffix, protocol, &entries);
   for (std::list<RegistryEntry*>::const_iterator itr = entries.begin();
        itr != entries.end() && registered; ++itr) {
@@ -532,7 +532,7 @@ bool ShellUtil::AdminNeededForRegistryCleanup(BrowserDistribution* dist,
                                               const std::wstring& suffix) {
   bool cleanup_needed = false;
   std::list<RegistryEntry*> entries;
-  STLElementDeleter<std::list<RegistryEntry*>> entries_deleter(&entries);
+  STLElementDeleter<std::list<RegistryEntry*> > entries_deleter(&entries);
   RegistryEntry::GetProgIdEntries(dist, L"chrome.exe", suffix, &entries);
   RegistryEntry::GetSystemEntries(dist, L"chrome.exe", suffix, &entries);
   for (std::list<RegistryEntry*>::const_iterator itr = entries.begin();
@@ -803,7 +803,7 @@ bool ShellUtil::MakeChromeDefault(BrowserDistribution* dist,
   // this on Vista also.
 
   std::list<RegistryEntry*> entries;
-  STLElementDeleter<std::list<RegistryEntry*>> entries_deleter(&entries);
+  STLElementDeleter<std::list<RegistryEntry*> > entries_deleter(&entries);
   std::wstring suffix;
   if (!GetUserSpecificDefaultBrowserSuffix(dist, &suffix))
     suffix = L"";
@@ -866,7 +866,7 @@ bool ShellUtil::MakeChromeDefaultProtocolClient(BrowserDistribution* dist,
   // Software\Classes\http key directly, we have to do this on Vista also.
 
   std::list<RegistryEntry*> entries;
-  STLElementDeleter<std::list<RegistryEntry*>> entries_deleter(&entries);
+  STLElementDeleter<std::list<RegistryEntry*> > entries_deleter(&entries);
   std::wstring suffix;
   if (!GetUserSpecificDefaultBrowserSuffix(dist, &suffix))
     suffix = L"";
@@ -908,7 +908,7 @@ bool ShellUtil::RegisterChromeBrowser(BrowserDistribution* dist,
   // If user is an admin try to register and return the status.
   if (IsUserAnAdmin()) {
     std::list<RegistryEntry*> entries;
-    STLElementDeleter<std::list<RegistryEntry*>> entries_deleter(&entries);
+    STLElementDeleter<std::list<RegistryEntry*> > entries_deleter(&entries);
     RegistryEntry::GetProgIdEntries(dist, chrome_exe, suffix, &entries);
     RegistryEntry::GetSystemEntries(dist, chrome_exe, suffix, &entries);
     return AddRegistryEntries(HKEY_LOCAL_MACHINE, entries);
@@ -923,7 +923,7 @@ bool ShellUtil::RegisterChromeBrowser(BrowserDistribution* dist,
   // If we got to this point then all we can do is create ProgIds under HKCU
   // on XP as well as Vista.
   std::list<RegistryEntry*> entries;
-  STLElementDeleter<std::list<RegistryEntry*>> entries_deleter(&entries);
+  STLElementDeleter<std::list<RegistryEntry*> > entries_deleter(&entries);
   RegistryEntry::GetProgIdEntries(dist, chrome_exe, L"", &entries);
   return AddRegistryEntries(HKEY_CURRENT_USER, entries);
 }
@@ -962,7 +962,7 @@ bool ShellUtil::RegisterChromeForProtocol(BrowserDistribution* dist,
 
     // Write in the capabillity for the protocol.
     std::list<RegistryEntry*> entries;
-    STLElementDeleter<std::list<RegistryEntry*>> entries_deleter(&entries);
+    STLElementDeleter<std::list<RegistryEntry*> > entries_deleter(&entries);
     RegistryEntry::GetProtocolCapabilityEntries(dist, suffix, protocol,
         &entries);
     return AddRegistryEntries(HKEY_LOCAL_MACHINE, entries);
