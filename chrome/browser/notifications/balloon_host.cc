@@ -7,6 +7,7 @@
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_preferences_util.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_factory.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -69,6 +70,18 @@ void BalloonHost::HandleMouseDown() {
 void BalloonHost::UpdatePreferredSize(WebContents* source,
                                       const gfx::Size& pref_size) {
   balloon_->SetContentPreferredSize(pref_size);
+}
+
+void BalloonHost::AddNewContents(WebContents* source,
+                                 WebContents* new_contents,
+                                 WindowOpenDisposition disposition,
+                                 const gfx::Rect& initial_pos,
+                                 bool user_gesture) {
+  Browser* browser = BrowserList::GetLastActiveWithProfile(
+      Profile::FromBrowserContext(new_contents->GetBrowserContext()));
+  if (!browser)
+    return;
+  browser->AddWebContents(new_contents, disposition, initial_pos, user_gesture);
 }
 
 void BalloonHost::RenderViewCreated(RenderViewHost* render_view_host) {

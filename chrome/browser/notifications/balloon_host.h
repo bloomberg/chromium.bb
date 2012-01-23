@@ -58,6 +58,11 @@ class BalloonHost : public content::WebContentsDelegate,
   virtual void HandleMouseDown() OVERRIDE;
   virtual void UpdatePreferredSize(content::WebContents* source,
                                    const gfx::Size& pref_size) OVERRIDE;
+  virtual void AddNewContents(content::WebContents* source,
+                              content::WebContents* new_contents,
+                              WindowOpenDisposition disposition,
+                              const gfx::Rect& initial_pos,
+                              bool user_gesture) OVERRIDE;
 
   // content::WebContentsObserver implementation:
   virtual void RenderViewCreated(RenderViewHost* render_view_host) OVERRIDE;
