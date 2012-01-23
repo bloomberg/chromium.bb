@@ -14,7 +14,6 @@
     '../third_party/icu/icu.gyp:icui18n',
     '../third_party/libjingle/libjingle.gyp:libjingle',
     '../third_party/libjingle/libjingle.gyp:libjingle_p2p',
-    '../third_party/libjingle/libjingle.gyp:libjingle_peerconnection',
     '../third_party/npapi/npapi.gyp:npapi',
     '../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
     '../ui/gfx/surface/surface.gyp:surface',
@@ -114,8 +113,6 @@
     'renderer/media/media_stream_dispatcher.h',
     'renderer/media/media_stream_dispatcher_eventhandler.h',
     'renderer/media/media_stream_impl.h',
-    'renderer/media/peer_connection_handler.cc',
-    'renderer/media/peer_connection_handler.h',
     'renderer/media/render_media_log.cc',
     'renderer/media/render_media_log.h',
     'renderer/media/rtc_video_decoder.cc',
@@ -262,6 +259,7 @@
     }],
     ['enable_webrtc==1', {
       'dependencies': [
+        '../third_party/libjingle/libjingle.gyp:libjingle_peerconnection',
         '../third_party/webrtc/modules/modules.gyp:video_capture_module',
         '../third_party/webrtc/system_wrappers/source/system_wrappers.gyp:system_wrappers',
         '../third_party/webrtc/video_engine/video_engine.gyp:video_engine_core',
@@ -270,6 +268,8 @@
       'sources': [
         'renderer/media/media_stream_dependency_factory.cc',
         'renderer/media/media_stream_impl.cc',
+        'renderer/media/peer_connection_handler.cc',
+        'renderer/media/peer_connection_handler.h',
         'renderer/media/video_capture_module_impl.cc',
         'renderer/media/video_capture_module_impl.h',
         'renderer/media/webrtc_audio_device_impl.cc',
