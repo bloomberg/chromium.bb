@@ -1749,6 +1749,7 @@
    fun:browser_sync::NonFrontendDataTypeController::Stop
    fun:browser_sync::DataTypeManagerImpl::FinishStop
    fun:browser_sync::DataTypeManagerImpl::Stop
+   ...
    fun:ProfileSyncService::Shutdown
 }
 {

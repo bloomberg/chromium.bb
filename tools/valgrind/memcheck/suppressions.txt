@@ -4727,12 +4727,12 @@
    bug_102327b
    Memcheck:Leak
    fun:_Znw*
-   fun:_ZN9__gnu_cxx13new_allocatorISt13_Rb_tree_nodeISt4pairIKPKN15tracked_objects6BirthsENS3_9DeathDataEEEE8allocateEmPKv
+   fun:_ZN9__gnu_cxx13new_allocatorISt13_Rb_tree_nodeISt4pairIKPKN15tracked_objects6BirthsENS3_9DeathDataEEEE8allocateE*
    ...
    fun:_ZNSt3mapIPKN15tracked_objects6BirthsENS0_9DeathDataESt4lessIS3_ESaISt4pairIKS3_S4_EEE6insertESt17_Rb_tree_iteratorIS9_ERKS9_
    fun:_ZNSt3mapIPKN15tracked_objects6BirthsENS0_9DeathDataESt4lessIS3_ESaISt4pairIKS3_S4_EEEixERS8_
    fun:_ZN15tracked_objects10ThreadData11TallyADeathERKNS_6Births*
-   fun:_ZN15tracked_objects10ThreadData3?TallyRunOn*ThreadIfTrackingE*
+   fun:_ZN15tracked_objects10ThreadData3?TallyRun*IfTrackingE*
 }
 {
    bug_102327c
@@ -4930,7 +4930,8 @@
    fun:_ZN12browser_sync29NonFrontendDataTypeController4StopEv
    fun:_ZN12browser_sync19DataTypeManagerImpl10FinishStopEv
    fun:_ZN12browser_sync19DataTypeManagerImpl4StopEv
-   fun:_ZN18ProfileSyncService8ShutdownEb
+   ...
+   fun:_ZN18ProfileSyncService8Shutdown*
    fun:_ZN18ProfileSyncServiceD2Ev
    fun:_ZN22TestProfileSyncServiceD0Ev
    fun:_ZN10scoped_ptrI22TestProfileSyncServiceE5resetEPS0_
@@ -5508,7 +5509,7 @@
    fun:_ZN7WebCore16SVGRenderSupport22finishRenderSVGContentEPNS_12RenderObjectERNS_9PaintInfoEPNS_15GraphicsContextE
    fun:_ZN7WebCore14RenderSVGShape5paintERNS_9PaintInfoERKNS_8IntPointE
    ...
-   fun:_ZN7WebCore13RenderSVGRoot5paintERNS_9PaintInfoERKNS_8IntPointE
+   fun:_ZN7WebCore13RenderSVGRoot*paint*PaintInfoERKNS_8IntPointE
 }
 {
    bug_109613
@@ -5579,6 +5580,12 @@
    fun:_Znw*
    fun:_ZN17PluginServiceImpl29FindOrStartNpapiPluginProcessERK8FilePath
    fun:_ZN17PluginServiceImpl25FinishOpenChannelToPluginERK8FilePathPN17PluginProcessHost6ClientE
+}
+{
+   bug_111037d
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN20KeyUtilityClientImpl27StartUtilityProcessInternalEv
 }
 
 #-----------------------------------------------------------------------
