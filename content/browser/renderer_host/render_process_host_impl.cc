@@ -667,6 +667,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kDisableFullScreen,
     switches::kEnablePepperTesting,
     switches::kEnablePointerLock,
+    switches::kEnablePreparsedJsCaching,
 #if defined(OS_MACOSX)
     // Allow this to be set when invoking the browser and relayed along.
     switches::kEnableSandboxLogging,
