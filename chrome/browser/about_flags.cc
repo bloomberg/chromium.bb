@@ -541,6 +541,13 @@ const Experiment kExperiments[] = {
 #endif
     SINGLE_VALUE_TYPE(switches::kDisableSoftwareRasterizer)
   },
+  {
+    "enable-media-stream",
+    IDS_FLAGS_MEDIA_STREAM_NAME,
+    IDS_FLAGS_MEDIA_STREAM_DESCRIPTION,
+    kOsWin | kOsLinux | kOsMac,
+    SINGLE_VALUE_TYPE(switches::kEnableMediaStream)
+  },
 };
 
 const Experiment* experiments = kExperiments;
