@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The WebM project authors. All Rights Reserved.
+// Copyright (c) 2012 The WebM project authors. All Rights Reserved.
 //
 // Use of this source code is governed by a BSD-style license
 // that can be found in the LICENSE file in the root of the source
@@ -1080,7 +1080,7 @@ bool Cluster::WriteClusterHeader() {
   if (finalized_)
     return false;
 
-  if (SerializeInt(writer_, kMkvCluster, 4))
+  if (WriteID(writer_, kMkvCluster))
     return false;
 
   // Save for later.
@@ -1680,9 +1680,6 @@ bool Segment::AddFrame(const uint8* frame,
         timecode = audio_timecode;
     }
 
-    // TODO(fgalligan): Add checks here to make sure the timestamps passed in
-    // are valid.
-
     cluster_list_[cluster_list_size_] =
         new (std::nothrow) Cluster(timecode, MaxOffset());
 
@@ -1837,7 +1834,7 @@ bool Segment::WriteSegmentHeader() {
 
   // Write "unknown" (-1) as segment size value. If mode is kFile, Segment
   // will write over duration when the file is finalized.
-  if (SerializeInt(writer_header_, kMkvSegment, 4))
+  if (WriteID(writer_header_, kMkvSegment))
     return false;
 
   // Save for later.

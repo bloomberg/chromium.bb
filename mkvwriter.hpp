@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The WebM project authors. All Rights Reserved.
+// Copyright (c) 2012 The WebM project authors. All Rights Reserved.
 //
 // Use of this source code is governed by a BSD-style license
 // that can be found in the LICENSE file in the root of the source
@@ -26,8 +26,8 @@ class MkvWriter : public IMkvWriter {
   virtual int64 Position() const;
   virtual int32 Position(int64 position);
   virtual bool Seekable() const;
-  virtual void ElementStartNotify(uint64 element_id, int64 position);
   virtual int32 Write(const void* buffer, uint32 length);
+  virtual void ElementStartNotify(uint64 element_id, int64 position);
 
   // Creates and opens a file for writing. |filename| is the name of the file
   // to open. This function will overwrite the contents of |filename|. Returns

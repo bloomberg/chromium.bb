@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The WebM project authors. All Rights Reserved.
+// Copyright (c) 2012 The WebM project authors. All Rights Reserved.
 //
 // Use of this source code is governed by a BSD-style license
 // that can be found in the LICENSE file in the root of the source
@@ -43,6 +43,10 @@ int32 WriteUIntSize(IMkvWriter* writer, uint64 value, int32 size);
 
 // Output an Mkv master element. Returns true if the element was written.
 bool WriteEbmlMasterElement(IMkvWriter* writer, uint64 value, uint64 size);
+
+// Outputs an Mkv ID, calls |IMkvWriter::ElementStartNotify|, and passes the
+// ID to |SerializeInt|. Returns 0 on success.
+int32 WriteID(IMkvWriter* writer, uint64 type);
 
 // Output an Mkv non-master element. Returns true if the element was written.
 bool WriteEbmlElement(IMkvWriter* writer, uint64 type, uint64 value);
