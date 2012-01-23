@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -69,6 +69,9 @@ void DropdownBarHost::Init(views::View* view,
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_CONTROL);
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.parent_widget = browser_view_->GetWidget();
+#if defined(USE_AURA)
+  params.transparent = true;
+#endif
   host_->Init(params);
   host_->SetContentsView(view_);
 

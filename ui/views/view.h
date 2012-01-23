@@ -271,13 +271,8 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   const ui::Transform& GetTransform() const;
 
-  // Clipping parameters. Clipping happens from the right and/or bottom. The
-  // clipping amount is in parent's coordinate system, as in, if the view is
-  // rotated, then the clipping will be applied after the rotation (and other
-  // transformations, if any).
-  void set_clip_x(float x) { clip_x_ = x; }
-  void set_clip_y(float y) { clip_y_ = y; }
-  void set_clip(float x, float y) { clip_x_ = x; clip_y_ = y; }
+  // Clipping parameters. Clipping is done relative to the view bounds.
+  void set_clip_insets(gfx::Insets clip_insets) { clip_insets_ = clip_insets; }
 
   // Sets the transform to the supplied transform.
   void SetTransform(const ui::Transform& transform);
@@ -1359,8 +1354,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   // Clipping parameters. skia transformation matrix does not give us clipping.
   // So we do it ourselves.
-  float clip_x_;
-  float clip_y_;
+  gfx::Insets clip_insets_;
 
   // Layout --------------------------------------------------------------------
 

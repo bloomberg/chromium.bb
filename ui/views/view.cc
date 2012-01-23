@@ -116,8 +116,7 @@ View::View()
       enabled_(true),
       painting_enabled_(true),
       registered_for_visible_bounds_notification_(false),
-      clip_x_(0.0),
-      clip_y_(0.0),
+      clip_insets_(0, 0, 0, 0),
       needs_layout_(true),
       flip_canvas_on_paint_for_rtl_ui_(false),
       paint_to_layer_(false),
@@ -681,11 +680,13 @@ void View::Paint(gfx::Canvas* canvas) {
   // Note that the X (or left) position we pass to ClipRectInt takes into
   // consideration whether or not the view uses a right-to-left layout so that
   // we paint our view in its mirrored position if need be.
-  if (!canvas->ClipRect(gfx::Rect(GetMirroredX(), y(),
-                                  width() - static_cast<int>(clip_x_),
-                                  height() - static_cast<int>(clip_y_)))) {
+  gfx::Rect clip_rect = bounds();
+  clip_rect.Inset(clip_insets_);
+  if (parent_)
+    clip_rect.set_x(parent_->GetMirroredXForRect(clip_rect));
+  if (!canvas->ClipRect(clip_rect))
     return;
-  }
+
   // Non-empty clip, translate the graphics such that 0,0 corresponds to
   // where this view is located (related to its parent).
   canvas->Translate(GetMirroredPosition());

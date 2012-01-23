@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,6 +16,7 @@ class Canvas;
 
 namespace views {
 
+class Painter;
 class View;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -46,6 +47,10 @@ class VIEWS_EXPORT Border {
   // Creates a border for reserving space. The returned border does not
   // paint anything.
   static Border* CreateEmptyBorder(int top, int left, int bottom, int right);
+
+  // Creates a Border from the specified Painter. The border owns the painter,
+  // thus the painter is deleted when the Border is deleted.
+  static Border* CreateBorderPainter(Painter* painter);
 
   // Renders the border for the specified view.
   virtual void Paint(const View& view, gfx::Canvas* canvas) const = 0;
