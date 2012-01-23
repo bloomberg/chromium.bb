@@ -676,6 +676,11 @@
     'browser/zygote_main_linux.cc',
   ],
   'conditions': [
+    ['OS!="win" and OS!="mac" and OS!="linux"', {
+      'sources': [
+        'browser/gamepad/platform_data_fetcher.cc',
+      ]
+    }],
     ['p2p_apis==1', {
       'sources': [
         'browser/renderer_host/p2p/socket_host.cc',

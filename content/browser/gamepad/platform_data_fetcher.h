@@ -8,6 +8,10 @@
 #ifndef CONTENT_BROWSER_GAMEPAD_PLATFORM_DATA_FETCHER_H_
 #define CONTENT_BROWSER_GAMEPAD_PLATFORM_DATA_FETCHER_H_
 
+#include "base/basictypes.h"
+#include "base/compiler_specific.h"
+#include "content/browser/gamepad/data_fetcher.h"
+
 #if defined(OS_WIN)
 #include "content/browser/gamepad/platform_data_fetcher_win.h"
 #elif defined(OS_MACOSX)
@@ -34,9 +38,13 @@ typedef GamepadPlatformDataFetcherLinux GamepadPlatformDataFetcher;
 
 class GamepadDataFetcherEmpty : public GamepadDataFetcher {
  public:
-  void GetGamepadData(WebKit::WebGamepads* pads, bool) {
-    pads->length = 0;
-  }
+  GamepadDataFetcherEmpty();
+
+  virtual void GetGamepadData(WebKit::WebGamepads* pads,
+                              bool devices_changed_hint) OVERRIDE;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(GamepadDataFetcherEmpty);
 };
 typedef GamepadDataFetcherEmpty GamepadPlatformDataFetcher;
 
