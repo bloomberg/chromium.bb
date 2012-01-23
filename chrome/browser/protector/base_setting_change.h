@@ -74,9 +74,9 @@ class BaseSettingChange {
 // TODO(ivankr): CompositeSettingChange that incapsulates multiple
 // BaseSettingChange instances.
 
-// Allocates and initializes SettingChange implementation for default search
-// provider setting. Both |actual| and |backup| may be NULL if corresponding
-// values are unknown or invalid.
+// Allocates and initializes BaseSettingChange implementation for default search
+// provider setting. Reports corresponding histograms. Both |actual| and
+// |backup| may be NULL if corresponding values are unknown or invalid.
 // |backup| will be owned by the returned |BaseSettingChange| instance. |actual|
 // is not owned and is safe to destroy after Protector::ShowChange has been
 // called for the returned instance.

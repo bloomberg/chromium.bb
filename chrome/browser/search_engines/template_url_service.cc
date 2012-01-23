@@ -23,14 +23,14 @@
 #include "chrome/browser/prefs/pref_set_observer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/protector/base_setting_change.h"
-#include "chrome/browser/protector/protector_service.h"
 #include "chrome/browser/protector/protector_service_factory.h"
+#include "chrome/browser/protector/protector_service.h"
 #include "chrome/browser/rlz/rlz.h"
 #include "chrome/browser/search_engines/search_host_to_urls_map.h"
 #include "chrome/browser/search_engines/search_terms_data.h"
 #include "chrome/browser/search_engines/template_url.h"
-#include "chrome/browser/search_engines/template_url_service_observer.h"
 #include "chrome/browser/search_engines/template_url_prepopulate_data.h"
+#include "chrome/browser/search_engines/template_url_service_observer.h"
 #include "chrome/browser/search_engines/util.h"
 #include "chrome/browser/sync/api/sync_change.h"
 #include "chrome/browser/sync/protocol/search_engine_specifics.pb.h"
@@ -624,14 +624,16 @@ void TemplateURLService::OnWebDataServiceRequestDone(
   // check at the beginning (overridden by Sync).
   if (is_default_search_hijacked &&
       default_search_provider_ == hijacked_default_search_provider) {
+    // The histograms should be reported even when Protector is disabled.
+    scoped_ptr<protector::BaseSettingChange> change(
+        protector::CreateDefaultSearchProviderChange(
+            hijacked_default_search_provider,
+            backup_default_search_provider.release()));
     if (protector::IsEnabled()) {
       protector::ProtectorService* protector_service =
           protector::ProtectorServiceFactory::GetForProfile(profile());
       DCHECK(protector_service);
-      protector_service->ShowChange(
-          protector::CreateDefaultSearchProviderChange(
-              hijacked_default_search_provider,
-              backup_default_search_provider.release()));
+      protector_service->ShowChange(change.release());
     } else {
       // Protector is turned off: set the current default search to itself
       // to update the backup and sign it. Otherwise, change will be reported

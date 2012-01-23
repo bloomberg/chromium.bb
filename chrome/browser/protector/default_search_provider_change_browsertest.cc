@@ -3,8 +3,10 @@
 // found in the LICENSE file.
 
 #include "base/memory/scoped_ptr.h"
+#include "base/metrics/histogram.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/protector/histograms.h"
 #include "chrome/browser/protector/mock_protector_service.h"
 #include "chrome/browser/protector/protector_service_factory.h"
 #include "chrome/browser/search_engines/template_url.h"
@@ -122,6 +124,17 @@ class DefaultSearchProviderChangeTest : public InProcessBrowserTest {
     EXPECT_CALL(*mock_protector_service_, OpenTab(settings_url));
   }
 
+  void ExpectHistogramCount(const std::string& name,
+                            size_t bucket,
+                            base::Histogram::Count count) {
+    base::Histogram* histogram;
+    EXPECT_TRUE(base::StatisticsRecorder::FindHistogram(name, &histogram));
+    base::Histogram::SampleSet sample;
+    histogram->SnapshotSample(&sample);
+    EXPECT_EQ(count, sample.counts(bucket)) <<
+        "Invalid " << name << " value for bucket " << bucket;
+  }
+
  protected:
   MockProtectorService* mock_protector_service_;
   TemplateURLService* turl_service_;
@@ -154,6 +167,12 @@ IN_PROC_BROWSER_TEST_F(DefaultSearchProviderChangeTest, BackupValid) {
   EXPECT_EQ(FindTemplateURL(http_example_info),
             turl_service_->GetDefaultSearchProvider());
 
+  // Verify histograms.
+  ExpectHistogramCount(kProtectorHistogramSearchProviderHijacked,
+                       SEARCH_ENGINE_OTHER, 1);
+  ExpectHistogramCount(kProtectorHistogramSearchProviderRestored,
+                       SEARCH_ENGINE_OTHER, 1);
+
   // Verify text messages.
   EXPECT_EQ(GetBubbleMessage(), change->GetBubbleMessage());
   EXPECT_EQ(GetChangeSearchButtonText(example_com),
@@ -165,11 +184,15 @@ IN_PROC_BROWSER_TEST_F(DefaultSearchProviderChangeTest, BackupValid) {
   change->Discard();
   EXPECT_EQ(FindTemplateURL(http_example_info),
             turl_service_->GetDefaultSearchProvider());
+  ExpectHistogramCount(kProtectorHistogramSearchProviderDiscarded,
+                       SEARCH_ENGINE_OTHER, 1);
 
   // Verify that Apply switches back to |current_url|.
   change->Apply();
   EXPECT_EQ(FindTemplateURL(http_example_com),
             turl_service_->GetDefaultSearchProvider());
+  ExpectHistogramCount(kProtectorHistogramSearchProviderApplied,
+                       SEARCH_ENGINE_OTHER, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(DefaultSearchProviderChangeTest, BackupValidLongNames) {
@@ -238,6 +261,14 @@ IN_PROC_BROWSER_TEST_F(DefaultSearchProviderChangeTest, BackupInvalid) {
   EXPECT_EQ(FindTemplateURL(prepopulated_url_->url()->url()),
             turl_service_->GetDefaultSearchProvider());
 
+  // Verify histograms.
+  ExpectHistogramCount(kProtectorHistogramSearchProviderCorrupt,
+                       SEARCH_ENGINE_OTHER, 1);
+  ExpectHistogramCount(kProtectorHistogramSearchProviderRestored,
+                       SEARCH_ENGINE_GOOGLE, 1);
+  ExpectHistogramCount(kProtectorHistogramSearchProviderFallback,
+                       SEARCH_ENGINE_GOOGLE, 1);
+
   // Verify text messages.
   EXPECT_EQ(GetBubbleMessage(prepopulated_url_->short_name()),
             change->GetBubbleMessage());
@@ -282,6 +313,16 @@ IN_PROC_BROWSER_TEST_F(DefaultSearchProviderChangeTest,
   EXPECT_EQ(FindTemplateURL(prepopulated_url_->url()->url()),
             turl_service_->GetDefaultSearchProvider());
 
+  // Verify histograms.
+  ExpectHistogramCount(kProtectorHistogramSearchProviderCorrupt,
+                       SEARCH_ENGINE_OTHER, 1);
+  ExpectHistogramCount(kProtectorHistogramSearchProviderRestored,
+                       SEARCH_ENGINE_GOOGLE, 1);
+  ExpectHistogramCount(kProtectorHistogramSearchProviderFallback,
+                       SEARCH_ENGINE_GOOGLE, 1);
+  ExpectHistogramCount(kProtectorHistogramSearchProviderMissing,
+                       SEARCH_ENGINE_GOOGLE, 1);
+
   // Verify text messages.
   EXPECT_EQ(GetBubbleMessage(prepopulated_url_->short_name()),
             change->GetBubbleMessage());
@@ -319,6 +360,12 @@ IN_PROC_BROWSER_TEST_F(DefaultSearchProviderChangeTest,
   EXPECT_EQ(FindTemplateURL(http_example_info),
             turl_service_->GetDefaultSearchProvider());
 
+  // Verify histograms.
+  ExpectHistogramCount(kProtectorHistogramSearchProviderHijacked,
+                       SEARCH_ENGINE_OTHER, 1);
+  ExpectHistogramCount(kProtectorHistogramSearchProviderRestored,
+                       SEARCH_ENGINE_OTHER, 1);
+
   // Verify text messages.
   EXPECT_EQ(GetBubbleMessage(), change->GetBubbleMessage());
   EXPECT_EQ(GetOpenSettingsButtonText(), change->GetApplyButtonText());
@@ -352,6 +399,14 @@ IN_PROC_BROWSER_TEST_F(DefaultSearchProviderChangeTest,
   EXPECT_EQ(FindTemplateURL(prepopulated_url_->url()->url()),
             turl_service_->GetDefaultSearchProvider());
 
+  // Verify histograms.
+  ExpectHistogramCount(kProtectorHistogramSearchProviderCorrupt,
+                       SEARCH_ENGINE_OTHER, 1);
+  ExpectHistogramCount(kProtectorHistogramSearchProviderRestored,
+                       SEARCH_ENGINE_GOOGLE, 1);
+  ExpectHistogramCount(kProtectorHistogramSearchProviderFallback,
+                       SEARCH_ENGINE_GOOGLE, 1);
+
   // Verify text messages.
   EXPECT_EQ(GetBubbleMessage(prepopulated_url_->short_name()),
             change->GetBubbleMessage());
@@ -382,6 +437,14 @@ IN_PROC_BROWSER_TEST_F(DefaultSearchProviderChangeTest,
 
   // Verify that the default search has not changed.
   EXPECT_EQ(current_url, turl_service_->GetDefaultSearchProvider());
+
+  // Verify histograms.
+  ExpectHistogramCount(kProtectorHistogramSearchProviderCorrupt,
+                       SEARCH_ENGINE_GOOGLE, 1);
+  ExpectHistogramCount(kProtectorHistogramSearchProviderRestored,
+                       SEARCH_ENGINE_GOOGLE, 1);
+  ExpectHistogramCount(kProtectorHistogramSearchProviderFallback,
+                       SEARCH_ENGINE_GOOGLE, 1);
 
   // Verify text messages.
   EXPECT_EQ(GetBubbleMessage(prepopulated_url_->short_name()),

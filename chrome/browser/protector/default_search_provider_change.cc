@@ -163,17 +163,7 @@ DefaultSearchProviderChange::DefaultSearchProviderChange(
       new_search_provider_(new_search_provider),
       default_search_provider_(NULL),
       backup_search_provider_(backup_search_provider) {
-}
-
-DefaultSearchProviderChange::~DefaultSearchProviderChange() {
-  GetTemplateURLService()->RemoveObserver(this);
-}
-
-bool DefaultSearchProviderChange::Init(Profile* profile) {
-  if (!BaseSettingChange::Init(profile))
-    return false;
-
-  if (backup_search_provider_.get()) {
+  if (backup_search_provider) {
     UMA_HISTOGRAM_ENUMERATION(
         kProtectorHistogramSearchProviderHijacked,
         new_histogram_id_,
@@ -183,6 +173,19 @@ bool DefaultSearchProviderChange::Init(Profile* profile) {
         kProtectorHistogramSearchProviderCorrupt,
         new_histogram_id_,
         kProtectorMaxSearchProviderID);
+  }
+}
+
+DefaultSearchProviderChange::~DefaultSearchProviderChange() {
+  if (profile())
+    GetTemplateURLService()->RemoveObserver(this);
+}
+
+bool DefaultSearchProviderChange::Init(Profile* profile) {
+  if (!BaseSettingChange::Init(profile))
+    return false;
+
+  if (!backup_search_provider_.get()) {
     // Fallback to a prepopulated default search provider, ignoring any
     // overrides in Prefs.
     backup_search_provider_.reset(
