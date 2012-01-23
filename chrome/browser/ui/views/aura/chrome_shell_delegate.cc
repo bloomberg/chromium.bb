@@ -88,6 +88,10 @@ views::Widget* ChromeShellDelegate::CreateStatusArea() {
   return status_area_widget;
 }
 
+void ChromeShellDelegate::Exit() {
+  BrowserList::AttemptUserExit();
+}
+
 void ChromeShellDelegate::BuildAppListModel(ash::AppListModel* model) {
   AppListModelBuilder builder(ProfileManager::GetDefaultProfile(),
                               model);
