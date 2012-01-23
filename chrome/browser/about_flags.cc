@@ -745,6 +745,16 @@ ListValue* GetFlagsExperimentsData(PrefService* prefs) {
                     l10n_util::GetStringUTF16(
                         experiment.visible_description_id));
     bool supported = !!(experiment.supported_platforms & current_platform);
+#if defined(USE_AURA) && defined(OS_CHROMEOS)
+    // Some Chrome OS devices currently require Aura compact window mode, so
+    // don't offer a choice of mode.
+    // TODO(jamescook): Remove after Aura supports normal mode on all devices,
+    // likely around M19.
+    if (experiment.visible_name_id == IDS_FLAGS_AURA_WINDOW_MODE_NAME &&
+        CommandLine::ForCurrentProcess()->
+            HasSwitch(ash::switches::kAuraForceCompactWindowMode))
+      supported = false;
+#endif
     data->SetBoolean("supported", supported);
 
     ListValue* supported_platforms = new ListValue();
