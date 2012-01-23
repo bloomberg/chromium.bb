@@ -192,6 +192,8 @@ void ProfileSyncService::Initialize() {
   if (!HasSyncSetupCompleted())
     DisableForUser();  // Clean up in case of previous crash / setup abort.
 
+  signin_->Initialize(profile_);
+
   TryStart();
 }
 

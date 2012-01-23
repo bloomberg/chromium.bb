@@ -43,6 +43,6 @@ void SigninManagerFactory::RegisterUserPrefs(PrefService* user_prefs) {
 ProfileKeyedService* SigninManagerFactory::BuildServiceInstanceFor(
     Profile* profile) const {
   SigninManager* service = new SigninManager();
-  service->Initialize(profile);
   return service;
 }
+
