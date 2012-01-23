@@ -50,10 +50,18 @@
 #define MAYBE_StartDownload DISABLED_StartDownload
 #define MAYBE_DownloadOverwriteTest DISABLED_DownloadOverwriteTest
 #define MAYBE_DownloadRemoveTest DISABLED_DownloadRemoveTest
+#define MAYBE_DownloadFileErrorTest DownloadFileErrorTest
+#elif defined(OS_LINUX)
+// http://crbug.com/110886 for Linux
+#define MAYBE_StartDownload DISABLED_StartDownload
+#define MAYBE_DownloadOverwriteTest DISABLED_DownloadOverwriteTest
+#define MAYBE_DownloadRemoveTest DISABLED_DownloadRemoveTest
+#define MAYBE_DownloadFileErrorTest DISABLED_DownloadFileErrorTest
 #else
 #define MAYBE_StartDownload StartDownload
 #define MAYBE_DownloadOverwriteTest DownloadOverwriteTest
 #define MAYBE_DownloadRemoveTest DownloadRemoveTest
+#define MAYBE_DownloadFileErrorTest DownloadFileErrorTest
 #endif
 
 using content::BrowserThread;
@@ -982,7 +990,7 @@ TEST_F(DownloadManagerTest, DownloadInterruptTest) {
 
 // Test the behavior of DownloadFileManager and DownloadManager in the event
 // of a file error while writing the download to disk.
-TEST_F(DownloadManagerTest, DownloadFileErrorTest) {
+TEST_F(DownloadManagerTest, MAYBE_DownloadFileErrorTest) {
   // Create a temporary file and a mock stream.
   FilePath path;
   ASSERT_TRUE(file_util::CreateTemporaryFile(&path));
