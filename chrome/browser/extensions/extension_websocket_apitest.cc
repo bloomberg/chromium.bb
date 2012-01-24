@@ -11,7 +11,7 @@
 
 // http://crbug.com/111165
 #if defined(OS_WIN)
-#define MAYBE_WebSocket FAILS_WebSocket
+#define MAYBE_WebSocket DISABLED_WebSocket
 #else
 #define MAYBE_WebSocket WebSocket
 #endif
