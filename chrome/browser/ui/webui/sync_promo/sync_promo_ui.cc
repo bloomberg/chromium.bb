@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,7 +9,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/google/google_util.h"
-#include "chrome/browser/net/browser_url_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
@@ -80,6 +79,29 @@ SyncPromoUIHTMLSource::SyncPromoUIHTMLSource(content::WebUI* web_ui)
   CoreOptionsHandler::GetStaticLocalizedValues(&localized_strings);
   SyncSetupHandler::GetStaticLocalizedValues(&localized_strings, web_ui);
   AddLocalizedStrings(localized_strings);
+}
+
+// Looks for |search_key| in the query portion of |url|. Returns true if the
+// key is found and sets |out_value| to the value for the key. Returns false if
+// the key is not found.
+bool GetValueForKeyInQuery(const GURL& url, const std::string& search_key,
+                           std::string* out_value) {
+  url_parse::Component query = url.parsed_for_possibly_invalid_spec().query;
+  url_parse::Component key, value;
+  while (url_parse::ExtractQueryKeyValue(
+      url.spec().c_str(), &query, &key, &value)) {
+    if (key.is_nonempty()) {
+      std::string key_string = url.spec().substr(key.begin, key.len);
+      if (key_string == search_key) {
+        if (value.is_nonempty())
+          *out_value = url.spec().substr(value.begin, value.len);
+        else
+          *out_value = "";
+        return true;
+      }
+    }
+  }
+  return false;
 }
 
 }  // namespace
@@ -233,19 +255,20 @@ bool SyncPromoUI::GetIsLaunchPageForSyncPromoURL(const GURL& url) {
   std::string value;
   // Show the title if the promo is currently the Chrome launch page (and not
   // the page accessed through the NTP).
-  if (chrome_browser_net::GetValueForKeyInQuery(url,
-      kSyncPromoQueryKeyIsLaunchPage, &value)) {
+  if (GetValueForKeyInQuery(url, kSyncPromoQueryKeyIsLaunchPage, &value))
     return value == "true";
-  }
   return false;
 }
 
 // static
 GURL SyncPromoUI::GetNextPageURLForSyncPromoURL(const GURL& url) {
   std::string value;
-  if (chrome_browser_net::GetValueForKeyInQuery(url,
-      kSyncPromoQueryKeyNextPage, &value)) {
-    return GURL(value);
+  if (GetValueForKeyInQuery(url, kSyncPromoQueryKeyNextPage, &value)) {
+    url_canon::RawCanonOutputT<char16> output;
+    url_util::DecodeURLEscapeSequences(value.c_str(), value.length(), &output);
+    std::string url;
+    UTF16ToUTF8(output.data(), output.length(), &url);
+    return GURL(url);
   }
   return GURL();
 }

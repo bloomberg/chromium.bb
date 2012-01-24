@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -380,7 +380,7 @@ TEST_F(GaiaAuthFetcherTest, CaptchaParse) {
       GaiaAuthFetcher::GenerateAuthError(data, status);
 
   std::string token = "CCTOKEN";
-  GURL image_url("http://accounts.google.com/Captcha?ctoken=CCTOKEN");
+  GURL image_url("http://www.google.com/accounts/Captcha?ctoken=CCTOKEN");
   GURL unlock_url("http://www.google.com/login/captcha");
 
   EXPECT_EQ(error.state(), GoogleServiceAuthError::CAPTCHA_REQUIRED);
