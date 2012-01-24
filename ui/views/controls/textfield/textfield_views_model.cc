@@ -281,7 +281,7 @@ TextfieldViewsModel::Delegate::~Delegate() {
 TextfieldViewsModel::TextfieldViewsModel(Delegate* delegate)
     : delegate_(delegate),
       render_text_(gfx::RenderText::CreateRenderText()),
-      is_password_(false),
+      is_obscured_(false),
       current_edit_(edit_history_.end()) {
 }
 
@@ -640,7 +640,7 @@ bool TextfieldViewsModel::HasCompositionText() const {
 
 string16 TextfieldViewsModel::GetVisibleText(size_t begin, size_t end) const {
   DCHECK(end >= begin);
-  if (is_password_)
+  if (is_obscured_)
     return string16(end - begin, '*');
   return GetText().substr(begin, end - begin);
 }

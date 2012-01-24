@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -499,7 +499,7 @@ TEST_F(NativeTextfieldViewsTest, InsertionDeletionTest) {
 }
 
 TEST_F(NativeTextfieldViewsTest, PasswordTest) {
-  InitTextfield(Textfield::STYLE_PASSWORD);
+  InitTextfield(Textfield::STYLE_OBSCURED);
 
   EXPECT_EQ(ui::TEXT_INPUT_TYPE_PASSWORD, GetTextInputType());
 
@@ -511,28 +511,28 @@ TEST_F(NativeTextfieldViewsTest, PasswordTest) {
   EXPECT_TRUE(last_contents_.empty());
 }
 
-TEST_F(NativeTextfieldViewsTest, InputTypeSetsPassword) {
+TEST_F(NativeTextfieldViewsTest, InputTypeSetsObscured) {
   InitTextfield(Textfield::STYLE_DEFAULT);
 
   // Defaults to TEXT
   EXPECT_EQ(ui::TEXT_INPUT_TYPE_TEXT, GetTextInputType());
 
-  // Setting to passwords also sets password state of textfield.
+  // Setting to TEXT_INPUT_TYPE_PASSWORD also sets obscured state of textfield.
   textfield_->SetTextInputType(ui::TEXT_INPUT_TYPE_PASSWORD);
   EXPECT_EQ(ui::TEXT_INPUT_TYPE_PASSWORD, GetTextInputType());
-  EXPECT_TRUE(textfield_->IsPassword());
+  EXPECT_TRUE(textfield_->IsObscured());
 }
 
-TEST_F(NativeTextfieldViewsTest, PasswordSetsInputType) {
+TEST_F(NativeTextfieldViewsTest, ObscuredSetsInputType) {
   InitTextfield(Textfield::STYLE_DEFAULT);
 
   // Defaults to TEXT
   EXPECT_EQ(ui::TEXT_INPUT_TYPE_TEXT, GetTextInputType());
 
-  textfield_->SetPassword(true);
+  textfield_->SetObscured(true);
   EXPECT_EQ(ui::TEXT_INPUT_TYPE_PASSWORD, GetTextInputType());
 
-  textfield_->SetPassword(false);
+  textfield_->SetObscured(false);
   EXPECT_EQ(ui::TEXT_INPUT_TYPE_TEXT, GetTextInputType());
 }
 
@@ -1114,7 +1114,7 @@ TEST_F(NativeTextfieldViewsTest, TextInputClientTest) {
 
   textfield_->SetReadOnly(false);
   input_method_->Clear();
-  textfield_->SetPassword(true);
+  textfield_->SetObscured(true);
   EXPECT_TRUE(input_method_->text_input_type_changed());
   EXPECT_TRUE(textfield_->GetTextInputClient());
 }

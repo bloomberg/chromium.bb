@@ -419,9 +419,9 @@ TEST_F(TextfieldViewsModelTest, SelectionAndEdit) {
   EXPECT_STR_EQ("BEE", model.GetText());
 }
 
-TEST_F(TextfieldViewsModelTest, Password) {
+TEST_F(TextfieldViewsModelTest, Obscured) {
   TextfieldViewsModel model(NULL);
-  model.set_is_password(true);
+  model.set_is_obscured(true);
   model.Append(ASCIIToUTF16("HELLO"));
   EXPECT_STR_EQ("*****", model.GetVisibleText());
   EXPECT_STR_EQ("HELLO", model.GetText());

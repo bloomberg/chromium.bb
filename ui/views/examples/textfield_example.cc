@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,7 +23,7 @@ TextfieldExample::~TextfieldExample() {
 
 void TextfieldExample::CreateExampleView(View* container) {
   name_ = new Textfield();
-  password_ = new Textfield(Textfield::STYLE_PASSWORD);
+  password_ = new Textfield(Textfield::STYLE_OBSCURED);
   password_->set_text_to_display_when_empty(ASCIIToUTF16("password"));
   show_password_ = new TextButton(this, ASCIIToUTF16("Show password"));
   clear_all_ = new TextButton(this, ASCIIToUTF16("Clear All"));

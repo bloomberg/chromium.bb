@@ -408,8 +408,8 @@ void NativeTextfieldViews::UpdateFont() {
 #endif
 }
 
-void NativeTextfieldViews::UpdateIsPassword() {
-  model_->set_is_password(textfield_->IsPassword());
+void NativeTextfieldViews::UpdateIsObscured() {
+  model_->set_is_obscured(textfield_->IsObscured());
   OnCaretBoundsChanged();
   SchedulePaint();
   OnTextInputTypeChanged();
@@ -715,8 +715,8 @@ bool NativeTextfieldViews::HasCompositionText() {
 }
 
 bool NativeTextfieldViews::GetTextRange(ui::Range* range) {
-  // We don't allow the input method to retrieve or delete content from a
-  // password box.
+  // We don't allow the input method to retrieve or delete content from an
+  // obscured textfield.
   if (GetTextInputType() != ui::TEXT_INPUT_TYPE_TEXT)
     return false;
 

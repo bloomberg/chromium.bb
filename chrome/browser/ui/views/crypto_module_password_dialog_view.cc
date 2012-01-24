@@ -75,7 +75,7 @@ void CryptoModulePasswordDialogView::Init(
   password_label_ = new views::Label(l10n_util::GetStringUTF16(
       IDS_CRYPTO_MODULE_AUTH_DIALOG_PASSWORD_FIELD));
 
-  password_entry_ = new views::Textfield(views::Textfield::STYLE_PASSWORD);
+  password_entry_ = new views::Textfield(views::Textfield::STYLE_OBSCURED);
   password_entry_->SetController(this);
 
   views::GridLayout* layout = views::GridLayout::CreatePanel(this);

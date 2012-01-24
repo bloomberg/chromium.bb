@@ -72,7 +72,7 @@ class VIEWS_EXPORT NativeTextfieldWrapper {
   virtual void UpdateFont() = 0;
 
   // Updates the visibility of the text in the native text field.
-  virtual void UpdateIsPassword() = 0;
+  virtual void UpdateIsObscured() = 0;
 
   // Updates the enabled state of the native text field.
   virtual void UpdateEnabled() = 0;

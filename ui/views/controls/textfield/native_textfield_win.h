@@ -74,7 +74,7 @@ class NativeTextfieldWin
   virtual void UpdateBackgroundColor() OVERRIDE;
   virtual void UpdateReadOnly() OVERRIDE;
   virtual void UpdateFont() OVERRIDE;
-  virtual void UpdateIsPassword() OVERRIDE;
+  virtual void UpdateIsObscured() OVERRIDE;
   virtual void UpdateEnabled() OVERRIDE;
   virtual gfx::Insets CalculateInsets() OVERRIDE;
   virtual void UpdateHorizontalMargins() OVERRIDE;

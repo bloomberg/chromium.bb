@@ -100,7 +100,7 @@ NativeTextfieldWin::NativeTextfieldWin(Textfield* textfield)
     did_load_library_ = !!LoadLibrary(L"riched20.dll");
 
   DWORD style = kDefaultEditStyle | ES_AUTOHSCROLL;
-  if (textfield_->style() & Textfield::STYLE_PASSWORD)
+  if (textfield_->style() & Textfield::STYLE_OBSCURED)
     style |= ES_PASSWORD;
 
   if (textfield_->read_only())
@@ -113,7 +113,7 @@ NativeTextfieldWin::NativeTextfieldWin(Textfield* textfield)
   Create(textfield_->GetWidget()->GetNativeView(), r, NULL, style, ex_style);
 
   if (textfield_->style() & Textfield::STYLE_LOWERCASE) {
-    DCHECK((textfield_->style() & Textfield::STYLE_PASSWORD) == 0);
+    DCHECK((textfield_->style() & Textfield::STYLE_OBSCURED) == 0);
     SetEditStyle(SES_LOWERCASE, SES_LOWERCASE);
   }
 
@@ -260,9 +260,9 @@ void NativeTextfieldWin::UpdateFont() {
   UpdateTextColor();
 }
 
-void NativeTextfieldWin::UpdateIsPassword() {
+void NativeTextfieldWin::UpdateIsObscured() {
   // TODO: Need to implement for Windows.
-  UpdateAccessibleState(STATE_SYSTEM_PROTECTED, textfield_->IsPassword());
+  UpdateAccessibleState(STATE_SYSTEM_PROTECTED, textfield_->IsObscured());
 }
 
 void NativeTextfieldWin::UpdateEnabled() {
@@ -399,8 +399,8 @@ bool NativeTextfieldWin::IsCommandIdEnabled(int command_id) const {
   switch (command_id) {
     case IDS_APP_UNDO:       return !textfield_->read_only() && !!CanUndo();
     case IDS_APP_CUT:        return !textfield_->read_only() &&
-                                    !textfield_->IsPassword() && !!CanCut();
-    case IDS_APP_COPY:       return !!CanCopy() && !textfield_->IsPassword();
+                                    !textfield_->IsObscured() && !!CanCut();
+    case IDS_APP_COPY:       return !!CanCopy() && !textfield_->IsObscured();
     case IDS_APP_PASTE:      return !textfield_->read_only() && !!CanPaste();
     case IDS_APP_SELECT_ALL: return !!CanSelectAll();
     default:                 NOTREACHED();
@@ -526,7 +526,7 @@ void NativeTextfieldWin::OnContextMenu(HWND window, const POINT& point) {
 }
 
 void NativeTextfieldWin::OnCopy() {
-  if (textfield_->IsPassword())
+  if (textfield_->IsObscured())
     return;
 
   const string16 text(GetSelectedText());
@@ -538,7 +538,7 @@ void NativeTextfieldWin::OnCopy() {
 }
 
 void NativeTextfieldWin::OnCut() {
-  if (textfield_->read_only() || textfield_->IsPassword())
+  if (textfield_->read_only() || textfield_->IsObscured())
     return;
 
   OnCopy();

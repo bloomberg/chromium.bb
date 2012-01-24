@@ -23,8 +23,8 @@
 
 namespace views {
 
-// A character used to hide a text in password mode.
-static const char kPasswordChar = '*';
+// A character used to hide a text in obscured mode.
+static const char kObscuredChar = '*';
 
 // Border width for GtkTextView.
 const int kTextViewBorderWidth = 4;
@@ -166,10 +166,10 @@ void NativeTextfieldGtk::UpdateFont() {
   pango_font_description_free(pfd);
 }
 
-void NativeTextfieldGtk::UpdateIsPassword() {
+void NativeTextfieldGtk::UpdateIsObscured() {
   if (!native_view())
     return;
-  gtk_entry_set_visibility(GTK_ENTRY(native_view()), !textfield_->IsPassword());
+  gtk_entry_set_visibility(GTK_ENTRY(native_view()), !textfield_->IsObscured());
 }
 
 void NativeTextfieldGtk::UpdateEnabled() {
@@ -399,7 +399,7 @@ void NativeTextfieldGtk::OnPasteClipboard(GtkWidget* widget) {
 void NativeTextfieldGtk::CreateNativeControl() {
   NativeControlCreated(gtk_views_entry_new(this));
   gtk_entry_set_invisible_char(GTK_ENTRY(native_view()),
-                                 static_cast<gunichar>(kPasswordChar));
+                                 static_cast<gunichar>(kObscuredChar));
   textfield_->UpdateAllProperties();
 }
 
@@ -424,8 +424,8 @@ void NativeTextfieldGtk::NativeControlCreated(GtkWidget* widget) {
                          G_CALLBACK(OnKeyPressEventAfterThunk), this);
 }
 
-bool NativeTextfieldGtk::IsPassword() {
-  return textfield_->IsPassword();
+bool NativeTextfieldGtk::IsObscured() {
+  return textfield_->IsObscured();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

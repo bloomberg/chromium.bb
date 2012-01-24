@@ -897,7 +897,7 @@ TEST_F(ViewTest, TextfieldCutCopyPaste) {
   Textfield* normal = new Textfield();
   Textfield* read_only = new Textfield();
   read_only->SetReadOnly(true);
-  Textfield* password = new Textfield(Textfield::STYLE_PASSWORD);
+  Textfield* password = new Textfield(Textfield::STYLE_OBSCURED);
 
   root_view->AddChildView(normal);
   root_view->AddChildView(read_only);
@@ -957,7 +957,7 @@ TEST_F(ViewTest, TextfieldCutCopyPaste) {
   ::SendMessage(password->GetTestingHandle(), WM_COPY, 0, 0);
   result.clear();
   clipboard.ReadText(ui::Clipboard::BUFFER_STANDARD, &result);
-  // We don't let you copy from a password field, clipboard should not have
+  // We don't let you copy from an obscured field, clipboard should not have
   // changed.
   EXPECT_EQ(kNormalText, result);
 

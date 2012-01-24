@@ -75,7 +75,7 @@ Textfield::Textfield(StyleFlags style)
       vertical_margins_were_set_(false),
       text_input_type_(ui::TEXT_INPUT_TYPE_TEXT) {
   set_focusable(true);
-  if (IsPassword())
+  if (IsObscured())
     SetTextInputType(ui::TEXT_INPUT_TYPE_PASSWORD);
 }
 
@@ -100,20 +100,20 @@ void Textfield::SetReadOnly(bool read_only) {
   }
 }
 
-bool Textfield::IsPassword() const {
-  return style_ & STYLE_PASSWORD;
+bool Textfield::IsObscured() const {
+  return style_ & STYLE_OBSCURED;
 }
 
-void Textfield::SetPassword(bool password) {
-  if (password) {
-    style_ = static_cast<StyleFlags>(style_ | STYLE_PASSWORD);
+void Textfield::SetObscured(bool obscured) {
+  if (obscured) {
+    style_ = static_cast<StyleFlags>(style_ | STYLE_OBSCURED);
     SetTextInputType(ui::TEXT_INPUT_TYPE_PASSWORD);
   } else {
-    style_ = static_cast<StyleFlags>(style_ & ~STYLE_PASSWORD);
+    style_ = static_cast<StyleFlags>(style_ & ~STYLE_OBSCURED);
     SetTextInputType(ui::TEXT_INPUT_TYPE_TEXT);
   }
   if (native_wrapper_)
-    native_wrapper_->UpdateIsPassword();
+    native_wrapper_->UpdateIsObscured();
 }
 
 
@@ -125,9 +125,9 @@ ui::TextInputType Textfield::GetTextInputType() const {
 
 void Textfield::SetTextInputType(ui::TextInputType type) {
   text_input_type_ = type;
-  bool should_be_password = type == ui::TEXT_INPUT_TYPE_PASSWORD;
-  if (IsPassword() != should_be_password)
-    SetPassword(should_be_password);
+  bool should_be_obscured = type == ui::TEXT_INPUT_TYPE_PASSWORD;
+  if (IsObscured() != should_be_obscured)
+    SetObscured(should_be_obscured);
 }
 
 void Textfield::SetText(const string16& text) {
@@ -248,7 +248,7 @@ void Textfield::UpdateAllProperties() {
     native_wrapper_->UpdateFont();
     native_wrapper_->UpdateEnabled();
     native_wrapper_->UpdateBorder();
-    native_wrapper_->UpdateIsPassword();
+    native_wrapper_->UpdateIsObscured();
     native_wrapper_->UpdateHorizontalMargins();
     native_wrapper_->UpdateVerticalMargins();
   }
@@ -403,7 +403,7 @@ void Textfield::GetAccessibleState(ui::AccessibleViewState* state) {
   state->name = accessible_name_;
   if (read_only())
     state->state |= ui::AccessibilityTypes::STATE_READONLY;
-  if (IsPassword())
+  if (IsObscured())
     state->state |= ui::AccessibilityTypes::STATE_PROTECTED;
   state->value = text_;
 

@@ -510,9 +510,9 @@ void WifiConfigView::ButtonPressed(views::Button* sender,
                                    const views::Event& event) {
   if (sender == passphrase_visible_button_) {
     if (passphrase_textfield_) {
-      passphrase_textfield_->SetPassword(!passphrase_textfield_->IsPassword());
+      passphrase_textfield_->SetObscured(!passphrase_textfield_->IsObscured());
       passphrase_visible_button_->SetToggled(
-          !passphrase_textfield_->IsPassword());
+          !passphrase_textfield_->IsObscured());
     }
   } else {
     NOTREACHED();
@@ -904,7 +904,7 @@ void WifiConfigView::Init(WifiNetwork* wifi, bool show_8021x) {
       l10n_util::GetStringUTF16(label_text_id));
   layout->AddView(passphrase_label_);
   passphrase_textfield_ = new views::Textfield(
-      views::Textfield::STYLE_PASSWORD);
+      views::Textfield::STYLE_OBSCURED);
   passphrase_textfield_->SetController(this);
   if (wifi && !wifi->GetPassphrase().empty())
     passphrase_textfield_->SetText(UTF8ToUTF16(wifi->GetPassphrase()));

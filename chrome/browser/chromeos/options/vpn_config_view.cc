@@ -482,7 +482,7 @@ void VPNConfigView::Init(VirtualNetwork* vpn) {
         IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_VPN_PSK_PASSPHRASE));
     layout->AddView(psk_passphrase_label_);
     psk_passphrase_textfield_ = new views::Textfield(
-        views::Textfield::STYLE_PASSWORD);
+        views::Textfield::STYLE_OBSCURED);
     psk_passphrase_textfield_->SetController(this);
     if (vpn && !vpn->psk_passphrase().empty())
       psk_passphrase_textfield_->SetText(UTF8ToUTF16(vpn->psk_passphrase()));
@@ -550,7 +550,7 @@ void VPNConfigView::Init(VirtualNetwork* vpn) {
   layout->AddView(new views::Label(l10n_util::GetStringUTF16(
       IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_VPN_USER_PASSPHRASE)));
   user_passphrase_textfield_ = new views::Textfield(
-      views::Textfield::STYLE_PASSWORD);
+      views::Textfield::STYLE_OBSCURED);
   user_passphrase_textfield_->SetController(this);
   user_passphrase_textfield_->SetEnabled(user_passphrase_ui_data_.editable());
   if (vpn && !vpn->user_passphrase().empty())

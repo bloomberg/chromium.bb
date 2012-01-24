@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -47,7 +47,7 @@ class VIEWS_EXPORT Textfield : public View {
 
   enum StyleFlags {
     STYLE_DEFAULT   = 0,
-    STYLE_PASSWORD  = 1 << 0,
+    STYLE_OBSCURED  = 1 << 0,
     STYLE_LOWERCASE = 1 << 1
   };
 
@@ -63,12 +63,13 @@ class VIEWS_EXPORT Textfield : public View {
   bool read_only() const { return read_only_; }
   void SetReadOnly(bool read_only);
 
-  // Gets/Sets whether or not this Textfield is a password field.
-  // TODO(bryeung): Currently this is only used in
+  // Gets/sets the STYLE_OBSCURED bit, controlling whether characters in this
+  // Textfield are displayed as asterisks/bullets.
+  // TODO(bryeung): Currently SetObscured is only used in
   // chrome/browser/chromeos/options/wifi_config_view.cc, which is being
-  // converted to WebUI.  Please remove this when that happens.
-  bool IsPassword() const;
-  void SetPassword(bool password);
+  // converted to WebUI.  Please remove it when that happens.
+  bool IsObscured() const;
+  void SetObscured(bool obscured);
 
   // Gets/Sets the input type of this textfield.
   ui::TextInputType GetTextInputType() const;
