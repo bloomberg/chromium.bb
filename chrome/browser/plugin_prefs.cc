@@ -487,7 +487,7 @@ void PluginPrefs::GetPreferencesDataOnFileThread() {
 }
 
 void PluginPrefs::OnUpdatePreferences(
-    std::vector<webkit::npapi::PluginGroup> groups) {
+    const std::vector<webkit::npapi::PluginGroup>& groups) {
   if (!prefs_)
     return;
 

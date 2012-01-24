@@ -127,7 +127,8 @@ class PluginPrefs : public base::RefCountedThreadSafe<PluginPrefs>,
   void GetPreferencesDataOnFileThread();
 
   // Called on the UI thread with the plugin data to save the preferences.
-  void OnUpdatePreferences(std::vector<webkit::npapi::PluginGroup> groups);
+  void OnUpdatePreferences(
+      const std::vector<webkit::npapi::PluginGroup>& groups);
 
   // Sends the notification that plugin data has changed.
   void NotifyPluginStatusChanged();
