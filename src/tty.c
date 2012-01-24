@@ -20,8 +20,6 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#define _GNU_SOURCE
-
 #include <termios.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -130,7 +128,6 @@ tty_create(struct weston_compositor *compositor, tty_vt_func_t vt_func,
 	struct wl_event_loop *loop;
 	struct stat buf;
 	char filename[16];
-	uid_t saved_uid, uid, euid;
 
 	tty = malloc(sizeof *tty);
 	if (tty == NULL)
@@ -139,8 +136,6 @@ tty_create(struct weston_compositor *compositor, tty_vt_func_t vt_func,
 	memset(tty, 0, sizeof *tty);
 	tty->compositor = compositor;
 	tty->vt_func = vt_func;
-	getresuid(&uid, &euid, &saved_uid);
-	seteuid(saved_uid);
 	if (tty_nr > 0) {
 		snprintf(filename, sizeof filename, "/dev/tty%d", tty_nr);
 		fprintf(stderr, "compositor: using %s\n", filename);
@@ -157,13 +152,11 @@ tty_create(struct weston_compositor *compositor, tty_vt_func_t vt_func,
 
 	if (tty->fd <= 0) {
 		fprintf(stderr, "failed to open tty: %m\n");
-		seteuid(euid);
 		return NULL;
 	}
 
 	if (tcgetattr(tty->fd, &tty->terminal_attributes) < 0) {
 		fprintf(stderr, "could not get terminal attributes: %m\n");
-		seteuid(euid);
 		return NULL;
 	}
 
@@ -185,7 +178,6 @@ tty_create(struct weston_compositor *compositor, tty_vt_func_t vt_func,
 	ret = ioctl(tty->fd, KDSETMODE, KD_GRAPHICS);
 	if (ret) {
 		fprintf(stderr, "failed to set KD_GRAPHICS mode on tty: %m\n");
-		seteuid(euid);
 		return NULL;
 	}
 
@@ -195,11 +187,8 @@ tty_create(struct weston_compositor *compositor, tty_vt_func_t vt_func,
 	mode.acqsig = SIGUSR1;
 	if (ioctl(tty->fd, VT_SETMODE, &mode) < 0) {
 		fprintf(stderr, "failed to take control of vt handling\n");
-		seteuid(euid);
 		return NULL;
 	}
-
-	seteuid(euid);
 
 	tty->vt_source =
 		wl_event_loop_add_signal(loop, SIGUSR1, vt_handler, tty);
