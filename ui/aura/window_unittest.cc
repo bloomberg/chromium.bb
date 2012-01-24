@@ -146,6 +146,24 @@ class CaptureWindowDelegateImpl : public TestWindowDelegate {
   DISALLOW_COPY_AND_ASSIGN(CaptureWindowDelegateImpl);
 };
 
+// Keeps track of the location of the gesture.
+class GestureTrackPositionDelegate : public TestWindowDelegate {
+ public:
+  GestureTrackPositionDelegate() {}
+
+  virtual ui::GestureStatus OnGestureEvent(GestureEvent* event) OVERRIDE {
+    position_ = event->location();
+    return ui::GESTURE_STATUS_CONSUMED;
+  }
+
+  const gfx::Point& position() const { return position_; }
+
+ private:
+  gfx::Point position_;
+
+  DISALLOW_COPY_AND_ASSIGN(GestureTrackPositionDelegate);
+};
+
 }  // namespace
 
 TEST_F(WindowTest, GetChildById) {
@@ -775,6 +793,28 @@ TEST_F(WindowTest, Transform) {
             root_window->bounds().ToString());
   EXPECT_EQ(gfx::Rect(transformed_size).ToString(),
             gfx::Screen::GetMonitorAreaNearestPoint(gfx::Point()).ToString());
+}
+
+// Tests that gesture events are transformed correctly.
+TEST_F(WindowTest, TransformGesture) {
+  RootWindow* root_window = RootWindow::GetInstance();
+  gfx::Size size = root_window->GetHostSize();
+
+  scoped_ptr<GestureTrackPositionDelegate> delegate(
+      new GestureTrackPositionDelegate);
+  scoped_ptr<Window> window(CreateTestWindowWithDelegate(delegate.get(), -1234,
+      gfx::Rect(0, 0, 20, 20), NULL));
+
+  // Rotate the root-window clock-wise 90 degrees.
+  ui::Transform transform;
+  transform.SetRotate(90.0f);
+  transform.ConcatTranslate(size.width(), 0);
+  root_window->SetTransform(transform);
+
+  TouchEvent press(ui::ET_TOUCH_PRESSED,
+      gfx::Point(size.height() - 10, 10), 0);
+  root_window->DispatchTouchEvent(&press);
+  EXPECT_EQ(gfx::Point(10, 10).ToString(), delegate->position().ToString());
 }
 
 // Various assertions for transient children.
