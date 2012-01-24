@@ -73,6 +73,20 @@ class WEBKIT_GLUE_EXPORT WebKitPlatformSupportImpl :
   virtual bool isTraceEventEnabled() const;
   virtual void traceEventBegin(const char* name, void* id, const char* extra);
   virtual void traceEventEnd(const char* name, void* id, const char* extra);
+  virtual const unsigned char* getCategoryEnabled(const char* category_name);
+  virtual int addTraceEvent(
+      char phase,
+      const unsigned char* category_enabled,
+      const char* name,
+      unsigned long long id,
+      int num_args,
+      const char** arg_names,
+      const unsigned char* arg_types,
+      const unsigned long long* arg_values,
+      int threshold_begin_id,
+      long long threshold,
+      unsigned char flags);
+  virtual unsigned long long manglePointerForTracing(void* pointer);
   virtual WebKit::WebData loadResource(const char* name);
   virtual bool loadAudioResource(
       WebKit::WebAudioBus* destination_bus, const char* audio_file_data,
