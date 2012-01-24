@@ -18,10 +18,26 @@
     <script type="text/javascript" src="js/sidebar.js"></script>
   <title>experimental.webInspector.resources
 API - Google Chrome Extensions - Google Code</title></head>
-  <body>  <div id="gc-container" class="labs">
-      <div id="devModeWarning">
-        You are viewing extension docs in chrome via the 'file:' scheme: are you expecting to see local changes when you refresh? You'll need run chrome with --allow-file-access-from-files.
-      </div>
+  <body>  <div id="devModeWarning" class="displayModeWarning">
+    You are viewing extension docs in chrome via the 'file:' scheme: are you expecting to see local changes when you refresh? You'll need run chrome with --allow-file-access-from-files.
+  </div>
+  <div id="branchWarning" class="displayModeWarning">
+    <span>WARNING: This is the <span id="branchName">BETA</span> documentation.
+    It may not work with the stable release of Chrome.</span>
+    <select id="branchChooser">
+      <option>Choose a different version...
+      </option><option value="">Stable
+      </option><option value="beta">Beta
+      </option><option value="dev">Dev
+      </option><option value="trunk">Trunk
+    </option></select>
+  </div>
+  <div id="unofficialWarning" class="displayModeWarning">
+    <span>WARNING: This is unofficial documentation. It may not work with the
+    current release of Chrome.</span>
+    <button id="goToOfficialDocs">Go to the official docs</button>
+  </div>
+  <div id="gc-container" class="labs">
       <!-- SUBTEMPLATES: DO NOT MOVE FROM THIS LOCATION -->
       <!-- In particular, sub-templates that recurse, must be used by allowing
            jstemplate to make a copy of the template in this section which

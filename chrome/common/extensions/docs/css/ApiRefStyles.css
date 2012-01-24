@@ -3,13 +3,16 @@
   display: none;
 }
 
-#devModeWarning {
-  background-color: gray;
-  color: #222222;
-  font-size: 10px;
-  padding: 8px 16px 8px 16px;
+.displayModeWarning {
+  background-color: #FF7735; /* Aaron's favorite color */
+  color: white;
+  font-weight: bold;
+  padding: 6px 8px;
   display: none;
-  border: 1px solid orange;
+}
+
+.displayModeWarning>span {
+  margin-right: 2ex;
 }
 
 .tbd { /* style for comments that should be visible to all devs */
@@ -48,7 +51,8 @@ body {
   font-size:small;
   color:#000;
   background-color:#fff;
-  margin:3px 8px
+  margin:0;
+  padding:0;
 }
 
 a,a:link {
@@ -617,7 +621,7 @@ p.backtotop {
 }
 
 #gc-container {
-  margin:0;
+  margin:3px 8px;
   padding:0;
   max-width:1160px;
   position:relative;

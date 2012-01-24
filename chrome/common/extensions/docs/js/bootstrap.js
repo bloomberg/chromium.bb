@@ -13,6 +13,23 @@ var fileXHREnabled = function() {
   return true;
 }();
 
+var officialURL = 'http://code.google.com/chrome/extensions/';
+
+function getCurrentBranch() {
+  var branchNames = ['beta', 'dev', 'trunk'];
+
+  if (location.href.indexOf(officialURL) != 0)
+    return '';
+
+  var branch = location.href.substring(
+      officialURL.length,
+      officialURL.indexOf('/', officialURL.length));
+  if (branchNames.indexOf(branch) == -1)
+    return 'stable';
+
+  return branch;
+}
+
 // Regenerate page if we are passed the "?regenerate" search param
 // or if the user-agent is chrome AND the document is being served
 // from the file:/// scheme.
@@ -45,5 +62,22 @@ if (window.location.search == "?regenerate" ||
   window.onload = function() {
     // Display the warning to use the --allow-file-access-from-files.
     document.getElementById("devModeWarning").style.display = "block";
+  }
+} else {
+  window.onload = function() {
+    var currentBranch = getCurrentBranch();
+    if (currentBranch == '') {
+      document.getElementById('unofficialWarning').style.display = 'block';
+      document.getElementById('goToOfficialDocs').onclick = function() {
+        location.href = officialURL;
+      };
+    } else if (currentBranch != 'stable') {
+      document.getElementById("branchName").textContent =
+          currentBranch.toUpperCase();
+      document.getElementById('branchWarning').style.display = 'block';
+      document.getElementById('branchChooser').onchange = function() {
+        location.href = officialURL + this.value;
+      };
+    }
   }
 }
