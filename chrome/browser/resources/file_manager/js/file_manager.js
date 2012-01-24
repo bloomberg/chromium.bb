@@ -1235,18 +1235,15 @@ FileManager.prototype = {
         this.clipboard_ = null;
       this.updateCommands_();
       self = this;
-      this.directoryModel_.rescan(function() {
-        var callback;
-        while (callback = self.pasteSuccessCallbacks_.shift()) {
-          try {
-            callback();
-          } catch (ex) {
-            console.error('Caught exception while inovking callback: ' +
-                          callback, ex);
-          }
+      var callback;
+      while (callback = self.pasteSuccessCallbacks_.shift()) {
+        try {
+          callback();
+        } catch (ex) {
+          console.error('Caught exception while inovking callback: ' +
+                        callback, ex);
         }
-      });
-
+      }
     } else if (event.reason == 'ERROR') {
       switch (event.error.reason) {
         case 'TARGET_EXISTS':
@@ -1266,13 +1263,10 @@ FileManager.prototype = {
           this.showButterError(strf('PASTE_UNEXPECTED_ERROR', event.error));
           break;
       }
-      this.directoryModel_.rescan();
     } else if (event.reason == 'CANCELLED') {
       this.showButter(str('PASTE_CANCELLED'));
-      this.directoryModel_.rescan();
     } else {
       console.log('Unknown event reason: ' + event.reason);
-      this.directoryModel_.rescan();
     }
 
   };

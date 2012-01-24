@@ -18,8 +18,12 @@ function DirectoryModel(root, singleSelection) {
   this.fileList_ = new cr.ui.ArrayDataModel([]);
   this.fileListSelection_ = singleSelection ?
       new cr.ui.ListSingleSelectionModel() : new cr.ui.ListSelectionModel();
-  this.pendingRescanQueue_ = [];
-  this.rescanRunning_ = false;
+
+  this.runningScan_ = null;
+  this.pendingScan_ = null;
+  this.rescanTimeout_ = undefined;
+  this.scanFailures_ = 0;
+
   // DirectoryEntry representing the current directory of the dialog.
   this.currentDirEntry_ = root;
 
@@ -133,122 +137,98 @@ DirectoryModel.prototype = {
   },
 
   /**
-   * Rescans the current directory, refreshing the list. It decreases the
-   * probability that two such calls are pending simultaneously.
-   *
-   * This method tries to queue request if rescan is already running, and
-   * processes this request later. Anyway callback would be called after
-   * processing.
-   *
-   * If no rescan is running, then method starts rescanning immediately.
-   *
-   * @param {function()} opt_callback Optional function to invoke when the
-   *     rescan is complete.
+   * Schedule rescan with delay. If another rescan has been scheduled does
+   * nothing. Designed to handle directory change notification. File operation
+   * may cause a few notifications what should cause a single refresh.
    */
-  rescan: function(opt_callback) {
-    // Clear the table first.
-    this.fileList_.splice(0, this.fileList_.length);
-    this.fileListSelection_.clear();
+  rescanLater: function() {
+    if (this.rescanTimeout_)
+      return;  // Rescan already scheduled.
 
-    if (this.currentDirEntry_.fullPath == '/' && this.rootPaths_) {
-      this.rescanRoot_(opt_callback);
-    } else {
-      // Add current request to pending result list
-      this.pendingRescanQueue_.push({
-            onSuccess:opt_callback,
-            onError:null
-          });
+    var self = this;
+    function onTimeout() {
+      self.rescanTimeout_ = undefined;
+      self.rescan();
+    }
+    this.rescanTimeout_ = setTimeout(onTimeout, SIMULTANEOUS_RESCAN_INTERVAL);
+  },
 
-      if (this.rescanRunning_)
-        return;
+  /**
+   * Rescan current directory. May be called indirectly through rescanLater or
+   * directly in order to reflect user action.
+   */
+  rescan: function() {
+    if (this.rescanTimeout_) {
+      clearTimeout(this.rescanTimeout_);
+      this.rescanTimeout_ = undefined;
+    }
 
-      this.rescanRunning_ = true;
-
-      // The current list of callbacks is saved and reset.  Subsequent
-      // calls to rescan while we're still pending will be
-      // saved and will cause an additional rescan to happen after a delay.
-      var callbacks = this.pendingRescanQueue_;
-
-      this.pendingRescanQueue_ = [];
-
-      var self = this;
-      var reader;
-
-      function onError() {
-        if (self.pendingRescanQueue_.length > 0) {
-          setTimeout(self.rescan.bind(self),
-              SIMULTANEOUS_RESCAN_INTERVAL);
-        }
-
-        self.rescanRunning_ = false;
-
-        for (var i= 0; i < callbacks.length; i++) {
-          if (callbacks[i].onError)
-            try {
-              callbacks[i].onError();
-            } catch (ex) {
-              console.error('Caught exception while notifying about error: ' +
-                          name, ex);
-            }
-        }
-      }
-
-      function onReadSome(entries) {
-        if (entries.length == 0) {
-          metrics.recordInterval('DirectoryScan');
-          if (self.currentDirEntry_.fullPath ==
-              '/' + DirectoryModel.DOWNLOADS_DIRECTORY) {
-            metrics.recordMediumCount("DownloadsCount", self.fileList_.length);
-          }
-
-          if (self.pendingRescanQueue_.length > 0) {
-            setTimeout(self.rescan.bind(self),
-                SIMULTANEOUS_RESCAN_INTERVAL);
-          }
-
-          self.rescanRunning_ = false;
-          for (var i= 0; i < callbacks.length; i++) {
-            if (callbacks[i].onSuccess)
-              try {
-                callbacks[i].onSuccess();
-              } catch (ex) {
-                console.error('Caught exception while notifying about error: ' +
-                            name, ex);
-              }
-          }
-
-          return;
-        }
-
-        // Splice takes the to-be-spliced-in array as individual parameters,
-        // rather than as an array, so we need to perform some acrobatics...
-        var spliceArgs = [].slice.call(entries);
-
-        // Hide files that start with a dot ('.').
-        // TODO(rginda): User should be able to override this. Support for other
-        // commonly hidden patterns might be nice too.
-        if (self.filterFiles_) {
-          spliceArgs = spliceArgs.filter(function(e) {
-              return e.name.substr(0, 1) != '.';
-            });
-        }
-
-        self.prefetchCacheForSorting_(spliceArgs, function() {
-          spliceArgs.unshift(0, 0);  // index, deleteCount
-          self.fileList_.splice.apply(self.fileList_, spliceArgs);
-
-          // Keep reading until entries.length is 0.
-          reader.readEntries(onReadSome, onError);
-        });
-      };
-
-      metrics.startInterval('DirectoryScan');
-
-      // If not the root directory, just read the contents.
-      reader = this.currentDirEntry_.createReader();
-      reader.readEntries(onReadSome, onError);
+    var fileList = [];
+    var successCallback = this.replaceFileList_.bind(this, fileList);
+    if (this.runningScan_) {
+      if (!this.pendingScan_)
+        this.pendingScan_ = this.createScanner_(fileList, successCallback);
       return;
     }
+
+    this.runningScan_ = this.createScanner_(fileList, successCallback);
+    this.runningScan_.run();
+  },
+
+  createScanner_: function(list, successCallback) {
+    var self = this;
+    function onSuccess() {
+      self.scanFailures_ = 0;
+      successCallback();
+      if (self.pendingScan_) {
+        self.runningScan_ = self.pendingScan_;
+        self.pendingScan_ = null;
+        self.runningScan_.run();
+      } else {
+        self.runningScan_ = null;
+      }
+    }
+
+    function onFailure() {
+      self.scanFailures_++;
+      if (self.scanFailures_ <= 1)
+        self.rescanLater();
+    }
+
+    return new DirectoryModel.Scanner(
+        this.currentDirEntry_,
+        list,
+        onSuccess,
+        onFailure,
+        this.prefetchCacheForSorting_.bind(this),
+        this.filterFiles_);
+  },
+
+  replaceFileList_: function(entries) {
+    // TODO(serya): Reinserting breaks renaming. Need to be merged gracefully.
+    var spliceArgs = [].slice.call(entries);
+    spliceArgs.unshift(0, this.fileList_.length);
+    this.fileList_.splice.apply(this.fileList_, spliceArgs);
+  },
+
+  /**
+   * Cancels waiting and scheduled rescans and starts new scan.
+   *
+   * @param {Function} callback Called when scan completed.
+   */
+  scan_: function(callback) {
+    if (this.rescanTimeout_) {
+      clearTimeout(this.rescanTimeout_);
+      this.rescanTimeout_ = 0;
+    }
+    if (this.runningScan_)
+      this.runningScan_.cancel();
+    this.pendingScan_ = null;
+
+    // Clear the table first.
+    this.fileList_.splice(0, this.fileList_.length);
+    this.runningScan_ = this.createScanner_(this.fileList_, callback);
+    this.runningScan_.run();
   },
 
   prefetchCacheForSorting_: function(entries, callback) {
@@ -258,50 +238,6 @@ DirectoryModel.prototype = {
     } else {
       callback();
       return;
-    }
-  },
-
-  // TODO(serya): With left panel we probably don't need it.
-  rescanRoot_: function(opt_callback) {
-    var dm = this.fileList_;
-    var spliceArgs = [0, 0];
-    var onDone = function() {
-      dm.splice.apply(dm, spliceArgs);
-      if (opt_callback)
-        opt_callback();
-    };
-
-    function onPathError(path, err) {
-      console.error('Error locating root path: ' + path + ': ' + err);
-    }
-
-    function onEntryFound(entry) {
-      if (entry)
-        spliceArgs.push(entry);
-      else
-        onDone();
-    }
-
-    util.getDirectories(this.root_, {create: false}, this.rootPaths_,
-                        onEntryFound, onPathError);
-  },
-
-  /**
-   * Rescans directory later.
-   * This method should be used if we just want rescan but not actually now.
-   * This helps us not to flood queue with rescan requests.
-   */
-  rescanLater: function() {
-    // It might be massive change, so let's note somehow, that we need
-    // rescanning and then wait some time
-
-    if (this.pendingRescanQueue_.length == 0) {
-      // If rescan isn't going to run without
-      // our interruption, then say that we need to run it
-      if (!this.rescanRunning_) {
-        setTimeout(this.rescan.bind(this),
-            SIMULTANEOUS_RESCAN_INTERVAL);
-      }
     }
   },
 
@@ -457,7 +393,7 @@ DirectoryModel.prototype = {
       chrome.test.sendMessage('directory-change-complete');
     }
     this.updateRootsListSelection_();
-    this.rescan(onRescanComplete);
+    this.scan_(onRescanComplete);
 
     var e = new cr.Event('directory-changed');
     e.previousDirEntry = this.currentEntry;
@@ -750,3 +686,88 @@ DirectoryModel.isRootPath = function(path) {
     path = path.substring(0, path.length - 1);
   return DirectoryModel.getRootPath(path) == path;
 };
+
+/**
+ * @constructor
+ * @param {DirectoryEntry} dir Directory to scan.
+ * @param {Array.<Entry>|cr.ui.ArrayDataModel} list Target to put the files.
+ * @param {Function} successCallback Callback to call when (and if) scan
+ *     successfully completed.
+ * @param {Function} errorCallback Callback to call in case of IO error.
+ * @param {function(Array.<Entry>):void, Function)} preprocessChunk
+ *     Callback to preprocess each chunk of files.
+ * @param {boolean} filterHidden True if files started with dots are ignored.
+ */
+DirectoryModel.Scanner = function(dir, list, successCallback, errorCallback,
+                                  preprocessChunk, filterHidden) {
+  this.cancelled_ = false;
+  this.list_ = list;
+  this.dir_ = dir;
+  this.reader_ = null;
+  this.filterHidden_ = !!filterHidden;
+  this.preprocessChunk_ = preprocessChunk;
+  this.successCallback_ = successCallback;
+  this.errorCallback_ = errorCallback;
+};
+
+DirectoryModel.Scanner.prototype = {
+  __proto__: cr.EventTarget.prototype,
+
+  cancel: function() {
+    this.cancelled_ = true;
+  },
+
+  run: function() {
+    metrics.startInterval('DirectoryScan');
+
+    this.reader_ = this.dir_.createReader();
+    this.readNextChunk_();
+  },
+
+  readNextChunk_: function() {
+    this.reader_.readEntries(this.onChunkComplete_.bind(this),
+                             this.errorCallback_);
+  },
+
+  onChunkComplete_: function(entries) {
+    if (this.cancelled_)
+      return;
+
+    if (entries.length == 0) {
+      this.successCallback_();
+      this.recordMetrics_();
+      return;
+    }
+
+    // Splice takes the to-be-spliced-in array as individual parameters,
+    // rather than as an array, so we need to perform some acrobatics...
+    var spliceArgs = [].slice.call(entries);
+
+    // Hide files that start with a dot ('.').
+    // TODO(rginda): User should be able to override this. Support for other
+    // commonly hidden patterns might be nice too.
+    if (this.filterFiles_) {
+      spliceArgs = spliceArgs.filter(function(e) {
+        return e.name.substr(0, 1) != '.';
+      });
+    }
+
+    var self = this;
+    self.preprocessChunk_(spliceArgs, function() {
+      spliceArgs.unshift(0, 0);  // index, deleteCount
+      self.list_.splice.apply(self.list_, spliceArgs);
+
+      // Keep reading until entries.length is 0.
+      self.readNextChunk_();
+    });
+  },
+
+  recordMetrics_: function() {
+    metrics.recordInterval('DirectoryScan');
+    if (this.dir_.fullPath ==
+        '/' + DirectoryModel.DOWNLOADS_DIRECTORY) {
+      metrics.recordMediumCount("DownloadsCount", this.list_.length);
+    }
+  }
+};
+
