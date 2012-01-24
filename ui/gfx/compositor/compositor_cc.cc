@@ -264,10 +264,19 @@ WebKit::WebGraphicsContext3D* CompositorCC::createContext3D() {
     // Use context that results in no rendering to the screen.
     context = new TestWebGraphicsContext3D();
   } else {
+#if defined(OS_MACOSX) && !defined(USE_AURA)
+    // Non-Aura builds compile this code but doesn't call it. Unfortunately
+    // this is where we translate gfx::AcceleratedWidget to
+    // gfx::PluginWindowHandle, and they are different on non-Aura Mac.
+    // TODO(piman): remove ifdefs when AcceleratedWidget is rationalized on Mac.
+    NOTIMPLEMENTED();
+    return NULL;
+#else
     gfx::GLShareGroup* share_group =
         SharedResourcesCC::GetInstance()->GetShareGroup();
     context = new webkit::gpu::WebGraphicsContext3DInProcessImpl(
         widget_, share_group);
+#endif
   }
   WebKit::WebGraphicsContext3D::Attributes attrs;
   context->initialize(attrs, 0, true);
