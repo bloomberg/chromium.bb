@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "net/base/completion_callback.h"
+#include "remoting/protocol/authenticator.h"
 #include "remoting/protocol/session.h"
 #include "third_party/libjingle/source/talk/base/sigslot.h"
 #include "third_party/libjingle/source/talk/p2p/base/session.h"
@@ -15,7 +16,6 @@
 namespace remoting {
 namespace protocol {
 
-class Authenticator;
 class JingleChannelConnector;
 class JingleSessionManager;
 
@@ -107,6 +107,8 @@ class JingleSession : public protocol::Session,
   const cricket::ContentInfo* GetContentInfo() const;
 
   void SetState(State new_state);
+
+  static Error RejectionReasonToError(Authenticator::RejectionReason reason);
 
   static scoped_ptr<cricket::SessionDescription> CreateSessionDescription(
       scoped_ptr<CandidateSessionConfig> candidate_config,

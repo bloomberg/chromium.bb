@@ -25,6 +25,7 @@ class V1ClientAuthenticator : public Authenticator {
 
   // Authenticator interface.
   virtual State state() const OVERRIDE;
+  virtual RejectionReason rejection_reason() const OVERRIDE;
   virtual void ProcessMessage(const buzz::XmlElement* message) OVERRIDE;
   virtual scoped_ptr<buzz::XmlElement> GetNextMessage() OVERRIDE;
   virtual scoped_ptr<ChannelAuthenticator>
@@ -35,6 +36,7 @@ class V1ClientAuthenticator : public Authenticator {
   std::string shared_secret_;
   std::string remote_cert_;
   State state_;
+  RejectionReason rejection_reason_;
 
   DISALLOW_COPY_AND_ASSIGN(V1ClientAuthenticator);
 };
@@ -50,6 +52,7 @@ class V1HostAuthenticator : public Authenticator {
 
   // Authenticator interface.
   virtual State state() const OVERRIDE;
+  virtual RejectionReason rejection_reason() const OVERRIDE;
   virtual void ProcessMessage(const buzz::XmlElement* message) OVERRIDE;
   virtual scoped_ptr<buzz::XmlElement> GetNextMessage() OVERRIDE;
   virtual scoped_ptr<ChannelAuthenticator>
@@ -61,6 +64,7 @@ class V1HostAuthenticator : public Authenticator {
   std::string shared_secret_;
   std::string remote_jid_;
   State state_;
+  RejectionReason rejection_reason_;
 
   DISALLOW_COPY_AND_ASSIGN(V1HostAuthenticator);
 };

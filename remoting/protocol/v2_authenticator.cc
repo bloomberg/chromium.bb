@@ -59,7 +59,8 @@ V2Authenticator::V2Authenticator(
     const std::string& shared_secret)
     : certificate_sent_(false),
       key_exchange_impl_(type, shared_secret),
-      state_(MESSAGE_READY) {
+      state_(MESSAGE_READY),
+      rejection_reason_(INVALID_CREDENTIALS) {
   pending_messages_.push(key_exchange_impl_.GetMessage());
 }
 
@@ -70,6 +71,11 @@ Authenticator::State V2Authenticator::state() const {
   if (state_ == ACCEPTED && !pending_messages_.empty())
     return MESSAGE_READY;
   return state_;
+}
+
+Authenticator::RejectionReason V2Authenticator::rejection_reason() const {
+  DCHECK_EQ(state(), REJECTED);
+  return rejection_reason_;
 }
 
 void V2Authenticator::ProcessMessage(const buzz::XmlElement* message) {
@@ -88,6 +94,7 @@ void V2Authenticator::ProcessMessage(const buzz::XmlElement* message) {
   if (!is_host_side() && remote_cert_.empty()) {
     LOG(WARNING) << "No valid host certificate.";
     state_ = REJECTED;
+    rejection_reason_ = PROTOCOL_ERROR;
     return;
   }
 
@@ -95,6 +102,7 @@ void V2Authenticator::ProcessMessage(const buzz::XmlElement* message) {
   if (!eke_element) {
     LOG(WARNING) << "No eke-message found.";
     state_ = REJECTED;
+    rejection_reason_ = PROTOCOL_ERROR;
     return;
   }
 
@@ -105,6 +113,7 @@ void V2Authenticator::ProcessMessage(const buzz::XmlElement* message) {
         !base::Base64Decode(base64_message, &spake_message)) {
       LOG(WARNING) << "Failed to decode auth message received from the peer.";
       state_ = REJECTED;
+      rejection_reason_ = PROTOCOL_ERROR;
       return;
     }
 
@@ -117,6 +126,7 @@ void V2Authenticator::ProcessMessage(const buzz::XmlElement* message) {
 
       case P224EncryptedKeyExchange::kResultFailed:
         state_ = REJECTED;
+        rejection_reason_ = INVALID_CREDENTIALS;
         return;
 
       case P224EncryptedKeyExchange::kResultSuccess:

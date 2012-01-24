@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -422,7 +422,8 @@ void JingleSession::AcceptConnection() {
   DCHECK(authenticator_->state() == Authenticator::WAITING_MESSAGE);
   authenticator_->ProcessMessage(auth_message);
   if (authenticator_->state() == Authenticator::REJECTED) {
-    CloseInternal(net::ERR_CONNECTION_FAILED, AUTHENTICATION_FAILED);
+    CloseInternal(net::ERR_CONNECTION_FAILED,
+                  RejectionReasonToError(authenticator_->rejection_reason()));
     return;
   }
 
@@ -454,7 +455,8 @@ void JingleSession::ProcessAuthenticationStep() {
   if (authenticator_->state() == Authenticator::ACCEPTED) {
     SetState(AUTHENTICATED);
   } else if (authenticator_->state() == Authenticator::REJECTED) {
-    CloseInternal(net::ERR_CONNECTION_ABORTED, AUTHENTICATION_FAILED);
+    CloseInternal(net::ERR_CONNECTION_FAILED,
+                  RejectionReasonToError(authenticator_->rejection_reason()));
   }
 }
 
@@ -517,6 +519,19 @@ void JingleSession::SetState(State new_state) {
     if (!state_change_callback_.is_null())
       state_change_callback_.Run(new_state);
   }
+}
+
+// static
+Session::Error JingleSession::RejectionReasonToError(
+    Authenticator::RejectionReason reason) {
+  switch (reason) {
+    case Authenticator::INVALID_CREDENTIALS:
+      return AUTHENTICATION_FAILED;
+    case Authenticator::PROTOCOL_ERROR:
+      return INCOMPATIBLE_PROTOCOL;
+  }
+  NOTREACHED();
+  return UNKNOWN_ERROR;
 }
 
 // static

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -53,6 +53,7 @@ class FakeAuthenticator : public Authenticator {
 
   // Authenticator interface.
   virtual State state() const OVERRIDE;
+  virtual RejectionReason rejection_reason() const OVERRIDE;
   virtual void ProcessMessage(const buzz::XmlElement* message) OVERRIDE;
   virtual scoped_ptr<buzz::XmlElement> GetNextMessage() OVERRIDE;
   virtual scoped_ptr<ChannelAuthenticator>

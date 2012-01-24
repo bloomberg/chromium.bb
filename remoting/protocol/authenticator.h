@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -55,6 +55,11 @@ class Authenticator {
     REJECTED,
   };
 
+  enum RejectionReason {
+    INVALID_CREDENTIALS,
+    PROTOCOL_ERROR,
+  };
+
   // Returns true if |message| is an Authenticator message.
   static bool IsAuthenticatorMessage(const buzz::XmlElement* message);
 
@@ -71,6 +76,9 @@ class Authenticator {
 
   // Returns current state of the authenticator.
   virtual State state() const = 0;
+
+  // Returns rejection reason. Can be called only when in REJECTED state.
+  virtual RejectionReason rejection_reason() const = 0;
 
   // Called in response to incoming message received from the peer.
   // Should only be called when in WAITING_MESSAGE state. Caller

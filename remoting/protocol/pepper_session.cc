@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -347,7 +347,14 @@ void PepperSession::ProcessAuthenticationStep() {
   if (authenticator_->state() == Authenticator::ACCEPTED) {
     SetState(AUTHENTICATED);
   } else if (authenticator_->state() == Authenticator::REJECTED) {
-    OnError(AUTHENTICATION_FAILED);
+    switch (authenticator_->rejection_reason()) {
+      case Authenticator::INVALID_CREDENTIALS:
+        OnError(AUTHENTICATION_FAILED);
+        break;
+      case Authenticator::PROTOCOL_ERROR:
+        OnError(INCOMPATIBLE_PROTOCOL);
+        break;
+    }
   }
 }
 
@@ -357,7 +364,7 @@ void PepperSession::OnSessionInfoResponse(const buzz::XmlElement* response) {
     LOG(ERROR) << "Received error in response to session-info message: \""
                << response->Str()
                << "\". Terminating the session.";
-    OnError(AUTHENTICATION_FAILED);
+    OnError(INCOMPATIBLE_PROTOCOL);
   }
 }
 

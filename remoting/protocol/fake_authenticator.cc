@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -87,6 +87,11 @@ Authenticator::State FakeAuthenticator::state() const{
   } else {
     return WAITING_MESSAGE;
   }
+}
+
+Authenticator::RejectionReason FakeAuthenticator::rejection_reason() const {
+  EXPECT_EQ(REJECTED, state());
+  return INVALID_CREDENTIALS;
 }
 
 void FakeAuthenticator::ProcessMessage(const buzz::XmlElement* message) {

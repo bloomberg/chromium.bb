@@ -28,7 +28,8 @@ V1ClientAuthenticator::V1ClientAuthenticator(
     const std::string& shared_secret)
     : local_jid_(local_jid),
       shared_secret_(shared_secret),
-      state_(MESSAGE_READY) {
+      state_(MESSAGE_READY),
+      rejection_reason_(INVALID_CREDENTIALS) {
 }
 
 V1ClientAuthenticator::~V1ClientAuthenticator() {
@@ -36,6 +37,11 @@ V1ClientAuthenticator::~V1ClientAuthenticator() {
 
 Authenticator::State V1ClientAuthenticator::state() const {
   return state_;
+}
+
+Authenticator::RejectionReason V1ClientAuthenticator::rejection_reason() const {
+  DCHECK_EQ(state_, REJECTED);
+  return rejection_reason_;
 }
 
 void V1ClientAuthenticator::ProcessMessage(const XmlElement* message) {
@@ -54,6 +60,7 @@ void V1ClientAuthenticator::ProcessMessage(const XmlElement* message) {
 
   if (remote_cert_.empty()) {
     state_ = REJECTED;
+    rejection_reason_ = PROTOCOL_ERROR;
   } else {
     state_ = ACCEPTED;
   }
@@ -93,7 +100,8 @@ V1HostAuthenticator::V1HostAuthenticator(
       local_private_key_(local_private_key.Copy()),
       shared_secret_(shared_secret),
       remote_jid_(remote_jid),
-      state_(WAITING_MESSAGE) {
+      state_(WAITING_MESSAGE),
+      rejection_reason_(INVALID_CREDENTIALS) {
 }
 
 V1HostAuthenticator::~V1HostAuthenticator() {
@@ -103,15 +111,27 @@ Authenticator::State V1HostAuthenticator::state() const {
   return state_;
 }
 
+Authenticator::RejectionReason V1HostAuthenticator::rejection_reason() const {
+  DCHECK_EQ(state_, REJECTED);
+  return rejection_reason_;
+}
+
 void V1HostAuthenticator::ProcessMessage(const XmlElement* message) {
   DCHECK_EQ(state_, WAITING_MESSAGE);
 
   std::string auth_token =
       message->TextNamed(buzz::QName(kChromotingXmlNamespace, kAuthTokenTag));
 
+  if (auth_token.empty()) {
+    state_ = REJECTED;
+    rejection_reason_ = PROTOCOL_ERROR;
+    return;
+  }
+
   if (!protocol::VerifySupportAuthToken(
           remote_jid_, shared_secret_, auth_token)) {
     state_ = REJECTED;
+    rejection_reason_ = INVALID_CREDENTIALS;
   } else {
     state_ = MESSAGE_READY;
   }
