@@ -80,11 +80,11 @@ class Edit {
   Edit(Type type,
        MergeType merge_type,
        size_t old_cursor_pos,
-       string16 old_text,
+       const string16& old_text,
        size_t old_text_start,
        bool delete_backward,
        size_t new_cursor_pos,
-       string16 new_text,
+       const string16& new_text,
        size_t new_text_start)
       : type_(type),
         merge_type_(merge_type),
