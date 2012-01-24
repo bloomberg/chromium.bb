@@ -7,6 +7,7 @@ This module contains classes that help to emulate xcodebuild behavior on top of
 other build systems, such as make and ninja.
 """
 
+import gyp.common
 import os.path
 import re
 import shlex
@@ -509,7 +510,7 @@ class XcodeSettings(object):
     self.configname = None
     return result
 
-  def _GetDebugPostbuilds(self, configname, output, output_binary):
+  def _GetDebugInfoPostbuilds(self, configname, output, output_binary):
     """Returns a list of shell commands that contain the shell commands
     neccessary to massage this target's debug information. These should be run
     as postbuilds before the actual postbuilds run."""
@@ -531,7 +532,7 @@ class XcodeSettings(object):
     """Returns a list of shell commands that contain the shell commands
     to run as postbuilds for this target, before the actual postbuilds."""
     # dSYMs need to build before stripping happens.
-    return (self._GetDebugPostbuilds(configname, output, output_binary) +
+    return (self._GetDebugInfoPostbuilds(configname, output, output_binary) +
             self._GetStripPostbuilds(configname, output_binary))
 
   def _AdjustLibrary(self, library):
@@ -926,3 +927,24 @@ def TopologicallySortedEnvVarKeys(env):
   sorted_nodes.extend(key_list)
 
   return sorted_nodes
+
+def GetSpecPostbuildCommands(spec, gyp_path_to_build_path):
+  """Returns the list of postbuilds explicitly defined on |spec|, in a form
+  executable by a shell."""
+  postbuilds = []
+  for postbuild in spec.get('postbuilds', []):
+    postbuilds.append('echo POSTBUILD\\(%s\\) %s' % (
+          spec['target_name'], postbuild['postbuild_name']))
+    shell_list = postbuild['action'][:]
+    # The first element is the command. If it's a relative path, it's
+    # a script in the source tree relative to the gyp file and needs to be
+    # absolutified. Else, it's in the PATH (e.g. install_name_tool, ln).
+    if os.path.sep in shell_list[0]:
+      shell_list[0] = gyp_path_to_build_path(shell_list[0])
+
+      # "script.sh" -> "./script.sh"
+      if not os.path.sep in shell_list[0]:
+        shell_list[0] = os.path.join('.', shell_list[0])
+    postbuilds.append(gyp.common.EncodePOSIXShellList(shell_list))
+
+  return postbuilds

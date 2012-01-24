@@ -891,7 +891,7 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
       # Same for environment.
       self.WriteLn("%s: obj := $(abs_obj)" % QuoteSpaces(outputs[0]))
       self.WriteLn("%s: builddir := $(abs_builddir)" % QuoteSpaces(outputs[0]))
-      self.WriteXcodeEnv(outputs[0])
+      self.WriteXcodeEnv(outputs[0], self.GetXcodeEnv())
 
       for input in inputs:
         assert ' ' not in input, (
@@ -1105,7 +1105,7 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
            '@plutil -convert xml1 $@ $@'])
       info_plist = intermediate_plist
     # plists can contain envvars and substitute them into the file.
-    self.WriteXcodeEnv(out, additional_settings=extra_env)
+    self.WriteXcodeEnv(out, self.GetXcodeEnv(additional_settings=extra_env))
     self.WriteDoCmd([out], [info_plist], 'mac_tool,,,copy-info-plist',
                     part_of_all=True)
     bundle_deps.append(out)
@@ -1426,45 +1426,20 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
           QuoteSpaces(self.output_binary))
       self.WriteLn('%s: LIBS := $(LIBS)' % QuoteSpaces(self.output_binary))
 
+    # Postbuild actions. Like actions, but implicitly depend on the target's
+    # output.
     postbuilds = []
     if self.flavor == 'mac':
       if target_postbuilds:
         postbuilds.append('$(TARGET_POSTBUILDS_$(BUILDTYPE))')
-      # Postbuild actions. Like actions, but implicitly depend on the target's
-      # output.
-      for postbuild in spec.get('postbuilds', []):
-        postbuilds.append('echo POSTBUILD\\(%s\\) %s' % (
-              self.target, postbuild['postbuild_name']))
-        shell_list = postbuild['action']
-        # The first element is the command. If it's a relative path, it's
-        # a script in the source tree relative to the gyp file and needs to be
-        # absolutified. Else, it's in the PATH (e.g. install_name_tool, ln).
-        if os.path.sep in shell_list[0]:
-          shell_list[0] = self.Absolutify(shell_list[0])
-
-          # "script.sh" -> "./script.sh"
-          if not os.path.sep in shell_list[0]:
-            shell_list[0] = os.path.join('.', shell_list[0])
-        postbuilds.append(gyp.common.EncodePOSIXShellList(shell_list))
+      postbuilds.extend(
+          gyp.xcode_emulation.GetSpecPostbuildCommands(spec, self.Absolutify))
 
     if postbuilds:
-      # Write an envvar for postbuilds.
-      # CHROMIUM_STRIP_SAVE_FILE is a chromium-specific hack.
-      # TODO(thakis): It would be nice to have some general mechanism instead.
-      # This variable may be referenced by TARGET_POSTBUILDS_$(BUILDTYPE),
+      # Envvars may be referenced by TARGET_POSTBUILDS_$(BUILDTYPE),
       # so we must output its definition first, since we declare variables
       # using ":=".
-      strip_save_file = self.xcode_settings.GetPerTargetSetting(
-          'CHROMIUM_STRIP_SAVE_FILE')
-      if strip_save_file:
-        strip_save_file = self.Absolutify(strip_save_file)
-      else:
-        # Explicitly clear this out, else a postbuild might pick up an export
-        # from an earlier target.
-        strip_save_file = ''
-      self.WriteXcodeEnv(
-          self.output,
-          additional_settings={'CHROMIUM_STRIP_SAVE_FILE': strip_save_file})
+      self.WriteXcodeEnv(self.output, self.GetXcodePostbuildEnv())
 
       for configname in target_postbuilds:
         self.WriteLn('%s: TARGET_POSTBUILDS_%s := %s' %
@@ -1803,8 +1778,22 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
         additional_settings)
 
 
-  def WriteXcodeEnv(self, target, additional_settings=None):
-    env = self.GetXcodeEnv(additional_settings)
+  def GetXcodePostbuildEnv(self):
+    # CHROMIUM_STRIP_SAVE_FILE is a chromium-specific hack.
+    # TODO(thakis): It would be nice to have some general mechanism instead.
+    strip_save_file = self.xcode_settings.GetPerTargetSetting(
+        'CHROMIUM_STRIP_SAVE_FILE')
+    if strip_save_file:
+      strip_save_file = self.Absolutify(strip_save_file)
+    else:
+      # Explicitly clear this out, else a postbuild might pick up an export
+      # from an earlier target.
+      strip_save_file = ''
+    return self.GetXcodeEnv(
+        additional_settings={'CHROMIUM_STRIP_SAVE_FILE': strip_save_file})
+
+
+  def WriteXcodeEnv(self, target, env):
     for k in gyp.xcode_emulation.TopologicallySortedEnvVarKeys(env):
       # For
       #  foo := a\ b
