@@ -23,7 +23,7 @@ var hasPageSizeStyle = false;
 const MANAGE_CLOUD_PRINTERS = 'manageCloudPrinters';
 const MANAGE_LOCAL_PRINTERS = 'manageLocalPrinters';
 const SIGN_IN = 'signIn';
-const PRINT_TO_PDF = 'Save to PDF';
+const PRINT_TO_PDF = 'Save as PDF';
 const PRINT_WITH_CLOUD_PRINT = 'printWithCloudPrint';
 
 // State of the print preview settings.

@@ -6435,8 +6435,8 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
         page range radio button
       </message>
       <message name="IDS_PRINT_PREVIEW_PRINT_TO_PDF"
-               desc="Option shown on printer drop-down list for saving previewed document to PDF.">
-        Save to PDF
+               desc="Option shown on printer drop-down list for saving previewed document as a PDF.">
+        Save as PDF
       </message>
       <message name="IDS_PRINT_PREVIEW_SIGN_IN"
           desc="Option shown in printer drop-down list when the user isn't signed in to cloud print.  Choosing it will display a sign in dialog.">
