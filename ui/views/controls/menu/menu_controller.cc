@@ -623,6 +623,14 @@ bool MenuController::OnMouseWheel(SubmenuView* source,
 }
 #endif
 
+ui::GestureStatus MenuController::OnGestureEvent(SubmenuView* source,
+                                    const GestureEvent& event) {
+  MenuPart part = GetMenuPart(source, event.location());
+  if (!part.submenu)
+    return ui::GESTURE_STATUS_UNKNOWN;
+  return part.submenu->OnGestureEvent(event);
+}
+
 bool MenuController::GetDropFormats(
       SubmenuView* source,
       int* formats,
