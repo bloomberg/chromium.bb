@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,7 +23,9 @@ AsynchronousPolicyLoader::AsynchronousPolicyLoader(
 
 void AsynchronousPolicyLoader::Init(const base::Closure& callback) {
   updates_callback_ = callback;
-  policy_.reset(delegate_->Load());
+  scoped_ptr<PolicyMap> policy(delegate_->Load());
+  if (policy.get())
+    policy_.Swap(policy.get());
   // Initialization can happen early when the file thread is not yet available,
   // but the subclass of the loader must do some of their initialization on the
   // file thread. Posting to the file thread directly before it is initialized
@@ -92,18 +94,16 @@ void AsynchronousPolicyLoader::StopOnFileThread() {
   CancelReloadTask();
 }
 
-void AsynchronousPolicyLoader::PostUpdatePolicyTask(
-    DictionaryValue* new_policy) {
+void AsynchronousPolicyLoader::PostUpdatePolicyTask(PolicyMap* new_policy) {
   // TODO(joaodasilva): make the callback own |new_policy|.
   origin_loop_->PostTask(
       FROM_HERE,
       base::Bind(&AsynchronousPolicyLoader::UpdatePolicy, this, new_policy));
 }
 
-void AsynchronousPolicyLoader::UpdatePolicy(DictionaryValue* new_policy_raw) {
-  scoped_ptr<DictionaryValue> new_policy(new_policy_raw);
-  DCHECK(policy_.get());
-  policy_.swap(new_policy);
+void AsynchronousPolicyLoader::UpdatePolicy(PolicyMap* new_policy_raw) {
+  scoped_ptr<PolicyMap> new_policy(new_policy_raw);
+  policy_.Swap(new_policy_raw);
   if (!stopped_)
     updates_callback_.Run();
 }

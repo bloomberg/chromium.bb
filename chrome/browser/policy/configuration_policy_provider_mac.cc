@@ -10,6 +10,7 @@
 #include "base/path_service.h"
 #include "base/platform_file.h"
 #include "base/sys_string_conversions.h"
+#include "chrome/browser/policy/policy_map.h"
 #include "chrome/browser/preferences_mac.h"
 #include "chrome/common/chrome_paths.h"
 #include "policy/policy_constants.h"
@@ -46,14 +47,13 @@ MacPreferencesPolicyProviderDelegate::MacPreferencesPolicyProviderDelegate(
     const PolicyDefinitionList* policy_list)
     : FileBasedPolicyProvider::ProviderDelegate(GetManagedPolicyPath()),
       policy_list_(policy_list),
-      preferences_(preferences) {
-}
+      preferences_(preferences) {}
 
 MacPreferencesPolicyProviderDelegate::~MacPreferencesPolicyProviderDelegate() {}
 
-DictionaryValue* MacPreferencesPolicyProviderDelegate::Load() {
+PolicyMap* MacPreferencesPolicyProviderDelegate::Load() {
   preferences_->AppSynchronize(kCFPreferencesCurrentApplication);
-  DictionaryValue* policy = new DictionaryValue;
+  PolicyMap* policy = new PolicyMap;
 
   const PolicyDefinitionList::Entry* current;
   for (current = policy_list_->begin; current != policy_list_->end; ++current) {
@@ -66,28 +66,28 @@ DictionaryValue* MacPreferencesPolicyProviderDelegate::Load() {
     if (!preferences_->AppValueIsForced(name, kCFPreferencesCurrentApplication))
       continue;
 
+    Value* policy_value = NULL;
     switch (current->value_type) {
       case Value::TYPE_STRING:
         if (CFGetTypeID(value) == CFStringGetTypeID()) {
-          std::string string_value =
-              base::SysCFStringRefToUTF8((CFStringRef)value.get());
-          policy->SetString(current->name, string_value);
+          policy_value = Value::CreateStringValue(
+              base::SysCFStringRefToUTF8((CFStringRef) value.get()));
         }
         break;
       case Value::TYPE_BOOLEAN:
         if (CFGetTypeID(value) == CFBooleanGetTypeID()) {
-          bool bool_value = CFBooleanGetValue((CFBooleanRef)value.get());
-          policy->SetBoolean(current->name, bool_value);
+          policy_value = Value::CreateBooleanValue(
+              CFBooleanGetValue((CFBooleanRef) value.get()));
         }
         break;
       case Value::TYPE_INTEGER:
         if (CFGetTypeID(value) == CFNumberGetTypeID()) {
           int int_value;
-          bool cast = CFNumberGetValue((CFNumberRef)value.get(),
+          bool cast = CFNumberGetValue((CFNumberRef) value.get(),
                                        kCFNumberIntType,
                                        &int_value);
           if (cast)
-            policy->SetInteger(current->name, int_value);
+            policy_value = Value::CreateIntegerValue(int_value);
         }
         break;
       case Value::TYPE_LIST:
@@ -108,7 +108,7 @@ DictionaryValue* MacPreferencesPolicyProviderDelegate::Load() {
             }
           }
           if (valid_array)
-            policy->Set(current->name, list_value.release());
+            policy_value = list_value.release();
         }
         break;
       case Value::TYPE_DICTIONARY:
@@ -116,6 +116,11 @@ DictionaryValue* MacPreferencesPolicyProviderDelegate::Load() {
         break;
       default:
         NOTREACHED();
+    }
+    if (policy_value) {
+      // TODO(joaodasilva): determine the policy level and scope.
+      policy->Set(current->name, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+                  policy_value);
     }
   }
 
@@ -133,25 +138,17 @@ base::Time MacPreferencesPolicyProviderDelegate::GetLastModification() {
 }
 
 ConfigurationPolicyProviderMac::ConfigurationPolicyProviderMac(
-    const PolicyDefinitionList* policy_list,
-    PolicyLevel level)
+    const PolicyDefinitionList* policy_list)
     : FileBasedPolicyProvider(
           policy_list,
-          level,
-          POLICY_SCOPE_USER,
           new MacPreferencesPolicyProviderDelegate(new MacPreferences,
-                                                   policy_list)) {
-}
+                                                   policy_list)) {}
 
 ConfigurationPolicyProviderMac::ConfigurationPolicyProviderMac(
     const PolicyDefinitionList* policy_list,
-    PolicyLevel level,
     MacPreferences* preferences)
     : FileBasedPolicyProvider(
           policy_list,
-          level,
-          POLICY_SCOPE_USER,
-          new MacPreferencesPolicyProviderDelegate(preferences, policy_list)) {
-}
+          new MacPreferencesPolicyProviderDelegate(preferences, policy_list)) {}
 
 }  // namespace policy

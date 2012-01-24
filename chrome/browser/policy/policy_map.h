@@ -90,21 +90,16 @@ class PolicyMap {
   // |this| becomes a copy of |other|. Any existing policies are dropped.
   void CopyFrom(const PolicyMap& other);
 
-  // Similar to CopyFrom, but doesn't Clear() |this| before merging, and only
-  // merges keys that aren't already contained in |this|.
-
   // Merges policies from |other| into |this|. Existing policies are only
   // overridden by those in |other| if they have a higher priority, as defined
   // by Entry::has_higher_priority_than(). If a policy is contained in both
   // maps with the same priority, the current value in |this| is preserved.
   void MergeFrom(const PolicyMap& other);
 
-  // Loads the values in |policies| into this PolicyMap, mapped to their
-  // corresponding policy type. The policies to load, and their types, are
-  // listed in |list|. All policies loaded will have |level| and |scope| in
-  // their entries.
+  // Loads the values in |policies| into this PolicyMap. All policies loaded
+  // will have |level| and |scope| in their entries. Existing entries are
+  // replaced.
   void LoadFrom(const DictionaryValue* policies,
-                const PolicyDefinitionList* list,
                 PolicyLevel level,
                 PolicyScope scope);
 

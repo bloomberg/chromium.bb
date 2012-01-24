@@ -85,15 +85,10 @@ void PolicyMap::MergeFrom(const PolicyMap& other) {
 
 void PolicyMap::LoadFrom(
     const DictionaryValue* policies,
-    const PolicyDefinitionList* list,
     PolicyLevel level,
     PolicyScope scope) {
-  const PolicyDefinitionList::Entry* entry;
-  for (entry = list->begin; entry != list->end; ++entry) {
-    Value* value;
-    if (policies->Get(entry->name, &value))
-      Set(entry->name, level, scope, value->DeepCopy());
-  }
+  for (DictionaryValue::Iterator it(*policies); it.HasNext(); it.Advance())
+    Set(it.key(), level, scope, it.value().DeepCopy());
 }
 
 void PolicyMap::GetDifferingKeys(const PolicyMap& other,

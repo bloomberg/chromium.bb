@@ -16,7 +16,6 @@
 #include "chrome/browser/policy/proto/cloud_policy.pb.h"
 #include "chrome/browser/policy/proto/device_management_local.pb.h"
 #include "chrome/browser/policy/proto/old_generic_format.pb.h"
-#include "policy/policy_constants.h"
 
 namespace em = enterprise_management;
 
@@ -154,10 +153,7 @@ void UserPolicyCache::MaybeDecodeOldstylePolicy(
         result.Set(named_value->name(), decoded_value);
     }
   }
-  policies->LoadFrom(&result,
-                     GetChromePolicyDefinitionList(),
-                     POLICY_LEVEL_MANDATORY,
-                     POLICY_SCOPE_USER);
+  policies->LoadFrom(&result, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER);
 }
 
 Value* UserPolicyCache::DecodeIntegerValue(

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/values.h"
 #include "chrome/browser/policy/asynchronous_policy_loader.h"
 #include "chrome/browser/policy/asynchronous_policy_test_base.h"
 #include "chrome/browser/policy/configuration_policy_pref_store.h"
@@ -24,7 +25,7 @@ class FileBasedPolicyProviderDelegateMock
  public:
   FileBasedPolicyProviderDelegateMock()
       : FileBasedPolicyProvider::ProviderDelegate(FilePath()) {}
-  MOCK_METHOD0(Load, DictionaryValue*());
+  MOCK_METHOD0(Load, PolicyMap*());
   MOCK_METHOD0(GetLastModification, base::Time());
 };
 
@@ -35,22 +36,22 @@ TEST_F(AsynchronousPolicyTestBase, ProviderInit) {
   EXPECT_CALL(*provider_delegate, GetLastModification()).WillRepeatedly(
       Return(last_modified));
   InSequence s;
-  EXPECT_CALL(*provider_delegate, Load()).WillOnce(Return(
-      new DictionaryValue));
-  DictionaryValue* policies = new DictionaryValue();
-  policies->SetBoolean(key::kSyncDisabled, true);
+  EXPECT_CALL(*provider_delegate, Load()).WillOnce(Return(new PolicyMap));
+  PolicyMap* policies = new PolicyMap();
+  policies->Set(key::kSyncDisabled, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+                Value::CreateBooleanValue(true));
   // A second call to Load gets triggered during the provider's construction
   // when the file watcher is initialized, since this file may have changed
   // between the initial load and creating watcher.
   EXPECT_CALL(*provider_delegate, Load()).WillOnce(Return(policies));
   FileBasedPolicyProvider provider(GetChromePolicyDefinitionList(),
-                                   POLICY_LEVEL_MANDATORY,
-                                   POLICY_SCOPE_MACHINE,
                                    provider_delegate);
   loop_.RunAllPending();
   PolicyMap policy_map;
   provider.Provide(&policy_map);
-  EXPECT_TRUE(policy_map.Get(key::kSyncDisabled));
+  base::FundamentalValue expected(true);
+  EXPECT_TRUE(Value::Equals(&expected,
+                            policy_map.GetValue(key::kSyncDisabled)));
   EXPECT_EQ(1U, policy_map.size());
 }
 
@@ -61,22 +62,19 @@ TEST_F(AsynchronousPolicyTestBase, ProviderRefresh) {
   EXPECT_CALL(*provider_delegate, GetLastModification()).WillRepeatedly(
       Return(last_modified));
   InSequence s;
-  EXPECT_CALL(*provider_delegate, Load()).WillOnce(Return(
-      new DictionaryValue));
+  EXPECT_CALL(*provider_delegate, Load()).WillOnce(Return(new PolicyMap));
   FileBasedPolicyProvider file_based_provider(GetChromePolicyDefinitionList(),
-                                              POLICY_LEVEL_MANDATORY,
-                                              POLICY_SCOPE_MACHINE,
                                               provider_delegate);
   // A second call to Load gets triggered during the provider's construction
   // when the file watcher is initialized, since this file may have changed
   // between the initial load and creating watcher.
-  EXPECT_CALL(*provider_delegate, Load()).WillOnce(Return(
-      new DictionaryValue));
+  EXPECT_CALL(*provider_delegate, Load()).WillOnce(Return(new PolicyMap));
   loop_.RunAllPending();
   // A third and final call to Load is made by the explicit Reload. This
   // should be the one that provides the current policy.
-  DictionaryValue* policies = new DictionaryValue();
-  policies->SetBoolean(key::kSyncDisabled, true);
+  PolicyMap* policies = new PolicyMap();
+  policies->Set(key::kSyncDisabled, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+                Value::CreateBooleanValue(true));
   EXPECT_CALL(*provider_delegate, Load()).WillOnce(Return(policies));
   MockConfigurationPolicyObserver observer;
   ConfigurationPolicyObserverRegistrar registrar;
@@ -86,7 +84,9 @@ TEST_F(AsynchronousPolicyTestBase, ProviderRefresh) {
   loop_.RunAllPending();
   PolicyMap policy_map;
   file_based_provider.Provide(&policy_map);
-  EXPECT_TRUE(policy_map.Get(key::kSyncDisabled));
+  base::FundamentalValue expected(true);
+  EXPECT_TRUE(Value::Equals(&expected,
+                            policy_map.GetValue(key::kSyncDisabled)));
   EXPECT_EQ(1U, policy_map.size());
 }
 

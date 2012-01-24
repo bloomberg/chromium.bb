@@ -23,11 +23,10 @@ ConfigurationPolicyProviderWin::ConfigurationPolicyProviderWin(
     PolicyLevel level)
     : AsynchronousPolicyProvider(
           policy_list,
-          level,
-          POLICY_SCOPE_USER,
           new ConfigurationPolicyLoaderWin(
               new ConfigurationPolicyProviderDelegateWin(policy_list,
-                                                         registry_key),
+                                                         registry_key,
+                                                         level),
               kReloadIntervalMinutes)) {}
 
 }  // namespace policy

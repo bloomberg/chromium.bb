@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,7 @@
 
 #include "base/files/file_path_watcher.h"
 #include "base/memory/ref_counted.h"
-#include "base/values.h"
+#include "chrome/browser/policy/policy_map.h"
 #include "content/public/browser/browser_thread.h"
 
 using ::base::files::FilePathWatcher;
@@ -86,7 +86,7 @@ void FileBasedPolicyLoader::Reload(bool force) {
   }
 
   // Load the policy definitions.
-  scoped_ptr<DictionaryValue> new_policy(delegate()->Load());
+  scoped_ptr<PolicyMap> new_policy(delegate()->Load());
 
   // Check again in case the directory has changed while reading it.
   if (!force && !IsSafeToReloadPolicy(now, &delay)) {

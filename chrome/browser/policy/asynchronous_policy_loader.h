@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,9 +11,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time.h"
-#include "base/values.h"
 #include "chrome/browser/policy/asynchronous_policy_provider.h"
 #include "chrome/browser/policy/configuration_policy_provider.h"
+#include "chrome/browser/policy/policy_map.h"
 
 class MessageLoop;
 
@@ -40,7 +40,7 @@ class AsynchronousPolicyLoader
   // anymore once the loader is stopped.
   virtual void Stop();
 
-  const DictionaryValue* policy() const { return policy_.get(); }
+  const PolicyMap& policy() const { return policy_; }
 
  protected:
   // AsynchronousPolicyLoader objects should only be deleted by
@@ -50,7 +50,7 @@ class AsynchronousPolicyLoader
 
   // Schedules a call to UpdatePolicy on |origin_loop_|. Takes ownership of
   // |new_policy|.
-  void PostUpdatePolicyTask(DictionaryValue* new_policy);
+  void PostUpdatePolicyTask(PolicyMap* new_policy);
 
   AsynchronousPolicyProvider::Delegate* delegate() {
     return delegate_.get();
@@ -86,13 +86,13 @@ class AsynchronousPolicyLoader
   // notification to the observers if there is a policy change. Must be called
   // on |origin_loop_| so that it's safe to call back into the provider, which
   // is not thread-safe. Takes ownership of |new_policy|.
-  void UpdatePolicy(DictionaryValue* new_policy);
+  void UpdatePolicy(PolicyMap* new_policy);
 
   // Provides the low-level mechanics for loading policy.
   scoped_ptr<AsynchronousPolicyProvider::Delegate> delegate_;
 
   // Current policy.
-  scoped_ptr<DictionaryValue> policy_;
+  PolicyMap policy_;
 
   // Used to create and invalidate WeakPtrs on the FILE thread. These are only
   // used to post reload tasks that can be cancelled.

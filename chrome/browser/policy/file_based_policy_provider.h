@@ -25,7 +25,7 @@ class FileBasedPolicyProvider : public AsynchronousPolicyProvider {
     virtual ~ProviderDelegate();
 
     // AsynchronousPolicyProvider::Delegate implementation:
-    virtual DictionaryValue* Load() = 0;
+    virtual PolicyMap* Load() = 0;
 
     // Gets the last modification timestamp for the policy information from the
     // filesystem. Returns base::Time() if the information is not present, in
@@ -42,8 +42,6 @@ class FileBasedPolicyProvider : public AsynchronousPolicyProvider {
 
   // Assumes ownership of |delegate|.
   FileBasedPolicyProvider(const PolicyDefinitionList* policy_list,
-                          PolicyLevel level,
-                          PolicyScope scope,
                           ProviderDelegate* delegate);
   virtual ~FileBasedPolicyProvider() {}
 

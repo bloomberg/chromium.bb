@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,13 +16,15 @@
 
 namespace policy {
 
+class PolicyMap;
+
 // A delegate for testing that can feed arbitrary information to the loader.
 class ProviderDelegateMock : public AsynchronousPolicyProvider::Delegate {
  public:
   ProviderDelegateMock();
   virtual ~ProviderDelegateMock();
 
-  MOCK_METHOD0(Load, DictionaryValue*());
+  MOCK_METHOD0(Load, PolicyMap*());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ProviderDelegateMock);

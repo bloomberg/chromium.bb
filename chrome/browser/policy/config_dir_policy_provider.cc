@@ -12,15 +12,19 @@
 #include "base/json/json_value_serializer.h"
 #include "base/logging.h"
 #include "base/platform_file.h"
+#include "chrome/browser/policy/policy_map.h"
 
 namespace policy {
 
 ConfigDirPolicyProviderDelegate::ConfigDirPolicyProviderDelegate(
-    const FilePath& config_dir)
-    : FileBasedPolicyProvider::ProviderDelegate(config_dir) {
-}
+    const FilePath& config_dir,
+    PolicyLevel level,
+    PolicyScope scope)
+    : FileBasedPolicyProvider::ProviderDelegate(config_dir),
+      level_(level),
+      scope_(scope) {}
 
-DictionaryValue* ConfigDirPolicyProviderDelegate::Load() {
+PolicyMap* ConfigDirPolicyProviderDelegate::Load() {
   // Enumerate the files and sort them lexicographically.
   std::set<FilePath> files;
   file_util::FileEnumerator file_enumerator(config_file_path(), false,
@@ -30,9 +34,12 @@ DictionaryValue* ConfigDirPolicyProviderDelegate::Load() {
     files.insert(config_file_path);
 
   // Start with an empty dictionary and merge the files' contents.
-  DictionaryValue* policy = new DictionaryValue;
-  for (std::set<FilePath>::iterator config_file_iter = files.begin();
-       config_file_iter != files.end(); ++config_file_iter) {
+  // The files are processed in reverse order because |MergeFrom| gives priority
+  // to existing keys, but the ConfigDirPolicyProvider gives priority to the
+  // last file in lexicographic order.
+  PolicyMap* policy = new PolicyMap;
+  for (std::set<FilePath>::reverse_iterator config_file_iter = files.rbegin();
+       config_file_iter != files.rend(); ++config_file_iter) {
     JSONFileValueSerializer deserializer(*config_file_iter);
     deserializer.set_allow_trailing_comma(true);
     int error_code = 0;
@@ -43,12 +50,15 @@ DictionaryValue* ConfigDirPolicyProviderDelegate::Load() {
                    << config_file_iter->value() << ": " << error_msg;
       continue;
     }
-    if (!value->IsType(Value::TYPE_DICTIONARY)) {
+    DictionaryValue* dictionary_value = NULL;
+    if (!value->GetAsDictionary(&dictionary_value)) {
       LOG(WARNING) << "Expected JSON dictionary in configuration file "
                    << config_file_iter->value();
       continue;
     }
-    policy->MergeDictionary(static_cast<DictionaryValue*>(value.get()));
+    PolicyMap file_policy;
+    file_policy.LoadFrom(dictionary_value, level_, scope_);
+    policy->MergeFrom(file_policy);
   }
 
   return policy;
@@ -83,12 +93,10 @@ base::Time ConfigDirPolicyProviderDelegate::GetLastModification() {
 ConfigDirPolicyProvider::ConfigDirPolicyProvider(
     const PolicyDefinitionList* policy_list,
     PolicyLevel level,
+    PolicyScope scope,
     const FilePath& config_dir)
     : FileBasedPolicyProvider(
         policy_list,
-        level,
-        POLICY_SCOPE_MACHINE,
-        new ConfigDirPolicyProviderDelegate(config_dir)) {
-}
+        new ConfigDirPolicyProviderDelegate(config_dir, level, scope)) {}
 
 }  // namespace policy

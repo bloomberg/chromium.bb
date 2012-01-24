@@ -16,13 +16,9 @@ FileBasedPolicyProvider::ProviderDelegate::~ProviderDelegate() {}
 
 FileBasedPolicyProvider::FileBasedPolicyProvider(
     const PolicyDefinitionList* policy_list,
-    PolicyLevel level,
-    PolicyScope scope,
     FileBasedPolicyProvider::ProviderDelegate* delegate)
     : AsynchronousPolicyProvider(
         policy_list,
-        level,
-        scope,
         new FileBasedPolicyLoader(delegate)) {}
 
 }  // namespace policy

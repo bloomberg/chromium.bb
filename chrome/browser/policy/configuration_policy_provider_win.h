@@ -8,6 +8,7 @@
 
 #include "base/string16.h"
 #include "chrome/browser/policy/asynchronous_policy_provider.h"
+#include "chrome/browser/policy/policy_map.h"
 
 namespace policy {
 

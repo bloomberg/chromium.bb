@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -59,7 +59,6 @@ AsynchronousPolicyProvider* TestHarness::CreateProvider(
     const PolicyDefinitionList* policy_definition_list) {
   prefs_ = new MockPreferences();
   return new ConfigurationPolicyProviderMac(policy_definition_list,
-                                            POLICY_LEVEL_MANDATORY,
                                             prefs_);
 }
 
@@ -126,7 +125,6 @@ class ConfigurationPolicyProviderMacTest : public AsynchronousPolicyTestBase {
   ConfigurationPolicyProviderMacTest()
       : prefs_(new MockPreferences()),
         provider_(&test_policy_definitions::kList,
-                  POLICY_LEVEL_MANDATORY,
                   prefs_) {}
   virtual ~ConfigurationPolicyProviderMacTest() {}
 

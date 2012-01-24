@@ -6100,8 +6100,6 @@ void TestingAutomationProvider::SetPolicies(
 #if !defined(ENABLE_CONFIGURATION_POLICY) || defined(OFFICIAL_BUILD)
   reply->SendError("Configuration Policy disabled");
 #else
-  const policy::PolicyDefinitionList* list =
-      policy::GetChromePolicyDefinitionList();
   policy::BrowserPolicyConnector* connector =
       g_browser_process->browser_policy_connector();
   struct {
@@ -6140,8 +6138,7 @@ void TestingAutomationProvider::SetPolicies(
     DictionaryValue* policies = NULL;
     if (args->GetDictionary(providers[i].name, &policies) && policies) {
       policy::PolicyMap* map = new policy::PolicyMap;
-      map->LoadFrom(policies, list, providers[i].level,
-                    policy::POLICY_SCOPE_USER);
+      map->LoadFrom(policies, providers[i].level, policy::POLICY_SCOPE_USER);
       providers[i].provider->OverridePolicies(map);
     }
   }

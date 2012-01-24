@@ -10,11 +10,11 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "chrome/browser/policy/configuration_policy_provider.h"
-#include "chrome/browser/policy/policy_map.h"
 
 namespace policy {
 
 class AsynchronousPolicyLoader;
+class PolicyMap;
 
 // Policy provider that loads policy asynchronously. Providers should subclass
 // from this class if loading the policy requires disk access or must for some
@@ -30,14 +30,14 @@ class AsynchronousPolicyProvider
    public:
     virtual ~Delegate() {}
 
-    virtual DictionaryValue* Load() = 0;
+    // Load policy from the delegate's source, and return a PolicyMap. Ownership
+    // is transferred to the caller.
+    virtual PolicyMap* Load() = 0;
   };
 
   // Assumes ownership of |loader|.
   AsynchronousPolicyProvider(
       const PolicyDefinitionList* policy_list,
-      PolicyLevel level,
-      PolicyScope scope,
       scoped_refptr<AsynchronousPolicyLoader> loader);
   virtual ~AsynchronousPolicyProvider();
 
@@ -55,10 +55,6 @@ class AsynchronousPolicyProvider
   // Callback from the loader. This is invoked whenever the loader has completed
   // a reload of the policies.
   void OnLoaderReloaded();
-
-  // The policy level and scope for policies loaded through this provider.
-  PolicyLevel level_;
-  PolicyScope scope_;
 
   // The loader object used internally.
   scoped_refptr<AsynchronousPolicyLoader> loader_;

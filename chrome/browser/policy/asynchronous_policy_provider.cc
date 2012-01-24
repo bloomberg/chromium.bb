@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "chrome/browser/policy/asynchronous_policy_loader.h"
+#include "chrome/browser/policy/policy_map.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
@@ -14,12 +15,8 @@ namespace policy {
 
 AsynchronousPolicyProvider::AsynchronousPolicyProvider(
     const PolicyDefinitionList* policy_list,
-    PolicyLevel level,
-    PolicyScope scope,
     scoped_refptr<AsynchronousPolicyLoader> loader)
     : ConfigurationPolicyProvider(policy_list),
-      level_(level),
-      scope_(scope),
       loader_(loader),
       pending_refreshes_(0),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
@@ -37,9 +34,7 @@ AsynchronousPolicyProvider::~AsynchronousPolicyProvider() {
 
 bool AsynchronousPolicyProvider::ProvideInternal(PolicyMap* map) {
   DCHECK(CalledOnValidThread());
-  if (!loader_->policy())
-    return false;
-  map->LoadFrom(loader_->policy(), policy_definition_list(), level_, scope_);
+  map->CopyFrom(loader_->policy());
   return true;
 }
 

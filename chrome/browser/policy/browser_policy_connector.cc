@@ -458,14 +458,14 @@ ConfigurationPolicyProvider*
                                             policy::kRegistryMandatorySubKey,
                                             POLICY_LEVEL_MANDATORY);
 #elif defined(OS_MACOSX)
-  return new ConfigurationPolicyProviderMac(policy_list,
-                                            POLICY_LEVEL_MANDATORY);
+  return new ConfigurationPolicyProviderMac(policy_list);
 #elif defined(OS_POSIX)
   FilePath config_dir_path;
   if (PathService::Get(chrome::DIR_POLICY_FILES, &config_dir_path)) {
     return new ConfigDirPolicyProvider(
         policy_list,
         POLICY_LEVEL_MANDATORY,
+        POLICY_SCOPE_MACHINE,
         config_dir_path.Append(FILE_PATH_LITERAL("managed")));
   } else {
     return NULL;
@@ -490,6 +490,7 @@ ConfigurationPolicyProvider*
     return new ConfigDirPolicyProvider(
         policy_list,
         POLICY_LEVEL_RECOMMENDED,
+        POLICY_SCOPE_MACHINE,
         config_dir_path.Append(FILE_PATH_LITERAL("recommended")));
   } else {
     return NULL;

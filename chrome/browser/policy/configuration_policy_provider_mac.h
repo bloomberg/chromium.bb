@@ -24,7 +24,7 @@ class MacPreferencesPolicyProviderDelegate
   virtual ~MacPreferencesPolicyProviderDelegate();
 
   // FileBasedPolicyLoader::Delegate implementation.
-  virtual DictionaryValue* Load() OVERRIDE;
+  virtual PolicyMap* Load() OVERRIDE;
   virtual base::Time GetLastModification() OVERRIDE;
 
  private:
@@ -44,11 +44,10 @@ class MacPreferencesPolicyProviderDelegate
 // provided by Mac OS X's managed preferences.
 class ConfigurationPolicyProviderMac : public FileBasedPolicyProvider {
  public:
-  ConfigurationPolicyProviderMac(const PolicyDefinitionList* policy_list,
-                                 PolicyLevel level);
+  ConfigurationPolicyProviderMac(const PolicyDefinitionList* policy_list);
+
   // For testing; takes ownership of |preferences|.
   ConfigurationPolicyProviderMac(const PolicyDefinitionList* policy_list,
-                                 PolicyLevel level,
                                  MacPreferences* preferences);
 
   DISALLOW_COPY_AND_ASSIGN(ConfigurationPolicyProviderMac);

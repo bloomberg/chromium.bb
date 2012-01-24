@@ -62,6 +62,7 @@ AsynchronousPolicyProvider* TestHarness::CreateProvider(
     const PolicyDefinitionList* policy_definition_list) {
   return new ConfigDirPolicyProvider(policy_definition_list,
                                      POLICY_LEVEL_MANDATORY,
+                                     POLICY_SCOPE_MACHINE,
                                      test_dir());
 }
 
@@ -133,8 +134,10 @@ class ConfigDirPolicyLoaderTest : public testing::Test {
 // The preferences dictionary is expected to be empty when there are no files to
 // load.
 TEST_F(ConfigDirPolicyLoaderTest, ReadPrefsEmpty) {
-  ConfigDirPolicyProviderDelegate loader(harness_.test_dir());
-  scoped_ptr<base::DictionaryValue> policy(loader.Load());
+  ConfigDirPolicyProviderDelegate loader(harness_.test_dir(),
+                                         POLICY_LEVEL_MANDATORY,
+                                         POLICY_SCOPE_MACHINE);
+  scoped_ptr<PolicyMap> policy(loader.Load());
   EXPECT_TRUE(policy.get());
   EXPECT_TRUE(policy->empty());
 }
@@ -144,8 +147,10 @@ TEST_F(ConfigDirPolicyLoaderTest, ReadPrefsEmpty) {
 TEST_F(ConfigDirPolicyLoaderTest, ReadPrefsNonExistentDirectory) {
   FilePath non_existent_dir(
       harness_.test_dir().Append(FILE_PATH_LITERAL("not_there")));
-  ConfigDirPolicyProviderDelegate loader(non_existent_dir);
-  scoped_ptr<base::DictionaryValue> policy(loader.Load());
+  ConfigDirPolicyProviderDelegate loader(non_existent_dir,
+                                         POLICY_LEVEL_MANDATORY,
+                                         POLICY_SCOPE_MACHINE);
+  scoped_ptr<PolicyMap> policy(loader.Load());
   EXPECT_TRUE(policy.get());
   EXPECT_TRUE(policy->empty());
 }
@@ -166,10 +171,14 @@ TEST_F(ConfigDirPolicyLoaderTest, ReadPrefsMergePrefs) {
   for (unsigned int i = 5; i <= 8; ++i)
     harness_.WriteConfigFile(test_dict_bar, base::IntToString(i));
 
-  ConfigDirPolicyProviderDelegate loader(harness_.test_dir());
-  scoped_ptr<base::DictionaryValue> policy(loader.Load());
+  ConfigDirPolicyProviderDelegate loader(harness_.test_dir(),
+                                         POLICY_LEVEL_MANDATORY,
+                                         POLICY_SCOPE_USER);
+  scoped_ptr<PolicyMap> policy(loader.Load());
   EXPECT_TRUE(policy.get());
-  EXPECT_TRUE(policy->Equals(&test_dict_foo));
+  PolicyMap expected;
+  expected.LoadFrom(&test_dict_foo, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER);
+  EXPECT_TRUE(policy->Equals(expected));
 }
 
 }  // namespace policy
