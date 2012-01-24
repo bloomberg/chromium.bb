@@ -16,12 +16,12 @@
 #include "content/browser/download/download_manager_impl.h"
 #include "content/browser/download/download_status_updater.h"
 #include "content/browser/file_system/browser_file_system_helper.h"
-#include "content/browser/geolocation/geolocation_permission_context.h"
 #include "content/browser/host_zoom_map.h"
 #include "content/browser/in_process_webkit/webkit_context.h"
 #include "content/browser/speech/speech_input_preferences.h"
 #include "content/browser/ssl/ssl_host_state.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/geolocation_permission_context.h"
 #include "content/shell/shell_browser_main.h"
 #include "content/shell/shell_download_manager_delegate.h"
 #include "content/shell/shell_resource_context.h"
@@ -36,6 +36,8 @@
 #endif
 
 using content::BrowserThread;
+
+namespace content {
 
 namespace {
 
@@ -89,8 +91,6 @@ class ShellSpeechInputPreferences : public SpeechInputPreferences {
 };
 
 }  // namespace
-
-namespace content {
 
 ShellBrowserContext::ShellBrowserContext(
     ShellBrowserMainParts* shell_main_parts)

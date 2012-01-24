@@ -933,7 +933,8 @@ HostZoomMap* ProfileImpl::GetHostZoomMap() {
   return host_zoom_map_.get();
 }
 
-GeolocationPermissionContext* ProfileImpl::GetGeolocationPermissionContext() {
+content::GeolocationPermissionContext*
+    ProfileImpl::GetGeolocationPermissionContext() {
   if (!geolocation_permission_context_.get()) {
     geolocation_permission_context_ =
         new ChromeGeolocationPermissionContext(this);

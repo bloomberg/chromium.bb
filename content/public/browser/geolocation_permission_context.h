@@ -12,6 +12,8 @@
 
 class GURL;
 
+namespace content {
+
 // GeolocationPermissionContext must be implemented by the embedder, to provide
 // the policy and logic for the Geolocation permissions flow.
 // This includes both prompting the user and persisting results, as required.
@@ -39,5 +41,7 @@ class CONTENT_EXPORT GeolocationPermissionContext
  private:
   friend class base::RefCountedThreadSafe<GeolocationPermissionContext>;
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_GEOLOCATION_GEOLOCATION_PERMISSION_CONTEXT_H_

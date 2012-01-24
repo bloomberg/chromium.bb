@@ -35,7 +35,6 @@ class ExtensionPrefValueMap;
 class ExtensionSpecialStoragePolicy;
 class FaviconService;
 class FindBarState;
-class GeolocationPermissionContext;
 class HistoryService;
 class HostContentSettingsMap;
 class PrefService;
@@ -230,7 +229,7 @@ class TestingProfile : public Profile {
   virtual UserStyleSheetWatcher* GetUserStyleSheetWatcher() OVERRIDE;
   virtual FindBarState* GetFindBarState() OVERRIDE;
   virtual HostContentSettingsMap* GetHostContentSettingsMap() OVERRIDE;
-  virtual GeolocationPermissionContext*
+  virtual content::GeolocationPermissionContext*
       GetGeolocationPermissionContext() OVERRIDE;
   virtual SpeechInputPreferences* GetSpeechInputPreferences() OVERRIDE;
   virtual HostZoomMap* GetHostZoomMap() OVERRIDE;
@@ -376,7 +375,8 @@ class TestingProfile : public Profile {
   scoped_refptr<webkit_database::DatabaseTracker> db_tracker_;
 
   scoped_refptr<HostContentSettingsMap> host_content_settings_map_;
-  scoped_refptr<GeolocationPermissionContext> geolocation_permission_context_;
+  scoped_refptr<content::GeolocationPermissionContext>
+      geolocation_permission_context_;
 
   scoped_refptr<SpeechInputPreferences> speech_input_preferences_;
 

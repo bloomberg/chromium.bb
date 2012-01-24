@@ -401,7 +401,7 @@ HostZoomMap* OffTheRecordProfileImpl::GetHostZoomMap() {
   return host_zoom_map_.get();
 }
 
-GeolocationPermissionContext*
+content::GeolocationPermissionContext*
     OffTheRecordProfileImpl::GetGeolocationPermissionContext() {
   return profile_->GetGeolocationPermissionContext();
 }

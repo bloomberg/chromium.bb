@@ -56,7 +56,7 @@ HostZoomMap* TestBrowserContext::GetHostZoomMap() {
   return NULL;
 }
 
-GeolocationPermissionContext*
+content::GeolocationPermissionContext*
 TestBrowserContext::GetGeolocationPermissionContext() {
   return NULL;
 }

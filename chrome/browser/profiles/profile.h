@@ -196,7 +196,8 @@ class Profile : public content::BrowserContext {
   virtual net::URLRequestContextGetter* GetRequestContextForMedia() = 0;
   virtual const content::ResourceContext& GetResourceContext() = 0;
   virtual HostZoomMap* GetHostZoomMap() = 0;
-  virtual GeolocationPermissionContext* GetGeolocationPermissionContext() = 0;
+  virtual content::GeolocationPermissionContext*
+      GetGeolocationPermissionContext() = 0;
   virtual SpeechInputPreferences* GetSpeechInputPreferences() = 0;
   virtual quota::QuotaManager* GetQuotaManager() = 0;
   virtual webkit_database::DatabaseTracker* GetDatabaseTracker() = 0;

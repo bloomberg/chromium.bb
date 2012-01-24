@@ -7,7 +7,7 @@
 #pragma once
 
 #include "base/memory/scoped_ptr.h"
-#include "content/browser/geolocation/geolocation_permission_context.h"
+#include "content/public/browser/geolocation_permission_context.h"
 
 class GeolocationInfoBarQueueController;
 class Profile;
@@ -15,7 +15,8 @@ class Profile;
 // Chrome specific implementation of GeolocationPermissionContext; manages
 // Geolocation permissions flow, and delegates UI handling via
 // GeolocationInfoBarQueueController.
-class ChromeGeolocationPermissionContext : public GeolocationPermissionContext {
+class ChromeGeolocationPermissionContext
+    : public content::GeolocationPermissionContext {
  public:
   explicit ChromeGeolocationPermissionContext(Profile* profile);
 
@@ -44,9 +45,6 @@ class ChromeGeolocationPermissionContext : public GeolocationPermissionContext {
 
  private:
   virtual ~ChromeGeolocationPermissionContext();
-
-  // Calls GeolocationArbitrator::OnPermissionGranted.
-  void NotifyArbitratorPermissionGranted(const GURL& requesting_frame);
 
   // Removes any pending InfoBar request.
   void CancelPendingInfoBarRequest(int render_process_id,

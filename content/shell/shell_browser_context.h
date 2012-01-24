@@ -15,7 +15,6 @@
 class DownloadIdFactory;
 class DownloadManager;
 class DownloadStatusUpdater;
-class GeolocationPermissionContext;
 class HostZoomMap;
 class SSLHostState;
 

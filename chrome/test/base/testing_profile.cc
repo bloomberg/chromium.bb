@@ -699,7 +699,7 @@ HostContentSettingsMap* TestingProfile::GetHostContentSettingsMap() {
   return host_content_settings_map_.get();
 }
 
-GeolocationPermissionContext*
+content::GeolocationPermissionContext*
 TestingProfile::GetGeolocationPermissionContext() {
   if (!geolocation_permission_context_.get()) {
     geolocation_permission_context_ =

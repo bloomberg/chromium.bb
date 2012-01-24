@@ -80,7 +80,7 @@ class OffTheRecordProfileImpl : public Profile,
   virtual net::SSLConfigService* GetSSLConfigService() OVERRIDE;
   virtual HostContentSettingsMap* GetHostContentSettingsMap() OVERRIDE;
   virtual HostZoomMap* GetHostZoomMap() OVERRIDE;
-  virtual GeolocationPermissionContext*
+  virtual content::GeolocationPermissionContext*
       GetGeolocationPermissionContext() OVERRIDE;
   virtual SpeechInputPreferences* GetSpeechInputPreferences() OVERRIDE;
   virtual UserStyleSheetWatcher* GetUserStyleSheetWatcher() OVERRIDE;

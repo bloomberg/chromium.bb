@@ -22,7 +22,6 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/pref_names.h"
-#include "content/browser/geolocation/geolocation_provider.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_details.h"
@@ -652,20 +651,6 @@ void ChromeGeolocationPermissionContext::NotifyPermissionSet(
   }
 
   callback.Run(allowed);
-
-  if (allowed) {
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::Bind(
-            &ChromeGeolocationPermissionContext::
-                NotifyArbitratorPermissionGranted, this, requesting_frame));
-  }
-}
-
-void ChromeGeolocationPermissionContext::NotifyArbitratorPermissionGranted(
-    const GURL& requesting_frame) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  GeolocationProvider::GetInstance()->OnPermissionGranted(requesting_frame);
 }
 
 void ChromeGeolocationPermissionContext::CancelPendingInfoBarRequest(

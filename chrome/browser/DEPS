@@ -64,8 +64,6 @@ include_rules = [
   "+content/browser/find_pasteboard.h",
   "+content/browser/font_list_async.h",
   "+content/browser/geolocation/arbitrator_dependency_factories_for_test.h",
-  "+content/browser/geolocation/geolocation_permission_context.h",
-  "+content/browser/geolocation/geolocation_provider.h",
   "+content/browser/geolocation/location_arbitrator.h",
   "+content/browser/geolocation/location_provider.h",
   "+content/browser/geolocation/mock_location_provider.h",

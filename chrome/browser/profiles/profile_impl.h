@@ -58,7 +58,7 @@ class ProfileImpl : public Profile,
   virtual net::URLRequestContextGetter* GetRequestContextForMedia() OVERRIDE;
   virtual const content::ResourceContext& GetResourceContext() OVERRIDE;
   virtual HostZoomMap* GetHostZoomMap() OVERRIDE;
-  virtual GeolocationPermissionContext*
+  virtual content::GeolocationPermissionContext*
       GetGeolocationPermissionContext() OVERRIDE;
   virtual SpeechInputPreferences* GetSpeechInputPreferences() OVERRIDE;
   virtual quota::QuotaManager* GetQuotaManager() OVERRIDE;
@@ -248,7 +248,7 @@ class ProfileImpl : public Profile,
 
   scoped_refptr<HostContentSettingsMap> host_content_settings_map_;
   scoped_refptr<HostZoomMap> host_zoom_map_;
-  scoped_refptr<GeolocationPermissionContext>
+  scoped_refptr<content::GeolocationPermissionContext>
       geolocation_permission_context_;
   scoped_refptr<SpeechInputPreferences> speech_input_preferences_;
   scoped_refptr<UserStyleSheetWatcher> user_style_sheet_watcher_;

@@ -30,8 +30,8 @@ class TestBrowserContext : public content::BrowserContext {
   virtual net::URLRequestContextGetter* GetRequestContextForMedia() OVERRIDE;
   virtual const content::ResourceContext& GetResourceContext() OVERRIDE;
   virtual HostZoomMap* GetHostZoomMap() OVERRIDE;
-  virtual GeolocationPermissionContext* GetGeolocationPermissionContext()
-      OVERRIDE;
+  virtual content::GeolocationPermissionContext*
+      GetGeolocationPermissionContext() OVERRIDE;
   virtual SpeechInputPreferences* GetSpeechInputPreferences() OVERRIDE;
   virtual bool DidLastSessionExitCleanly() OVERRIDE;
   virtual quota::QuotaManager* GetQuotaManager() OVERRIDE;
