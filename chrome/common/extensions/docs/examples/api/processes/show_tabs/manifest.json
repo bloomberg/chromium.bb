@@ -10,5 +10,5 @@
       "default_icon": "icon.png",
       "default_popup": "popup.html"
   },
-  "content_security_policy": "default-src 'none'; script-src 'self'; style-src 'self'; img-src chrome://favicon"
+  "manifest_version": 2
 }

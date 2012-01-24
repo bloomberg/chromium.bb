@@ -12,5 +12,5 @@
     "default_title": "Merge Windows"
   },
   "permissions": ["tabs"],
-  "content_security_policy": "default-src 'none'; script-src 'self'"
+  "manifest_version": 2
 }

@@ -12,5 +12,5 @@
     "48" : "sample-48.png",
     "128" : "sample-128.png"
   },
-  "content_security_policy": "default-src 'self'"
+  "manifest_version": 2
 }

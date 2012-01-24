@@ -232,7 +232,7 @@
         "background.js",
         "manifest.json"
       ],
-      "source_hash": "58d4488dcdfe78f59628c4b269750e81f2ddf234",
+      "source_hash": "45195dba917ba955930de5c556372f580579a12f",
       "zip_path": "examples\/api\/browserAction\/set_icon_path.zip"
     },
     {
@@ -289,7 +289,7 @@
         "background.js",
         "manifest.json"
       ],
-      "source_hash": "25e20f10264897e0a552abdc45ca7e0916878af6",
+      "source_hash": "5fca6db94d0a8732904b185562bbd65f55d8dd7a",
       "zip_path": "examples\/api\/browserAction\/make_page_red.zip"
     },
     {
@@ -378,7 +378,7 @@
         "popup.html",
         "popup.js"
       ],
-      "source_hash": "a557cefb7b3f3036cb65ff77b03538b6c6cdedf6",
+      "source_hash": "b4e9514244ade1245e288524fa44505274c404c0",
       "zip_path": "examples\/extensions\/app_launcher.zip"
     },
     {
@@ -426,7 +426,7 @@
         "popup.html",
         "popup.js"
       ],
-      "source_hash": "baa56eed23cb02c9fb88f73e15723bdfbb31ac4a",
+      "source_hash": "51bbc12404e8998ef817e211806e734f04e138ad",
       "zip_path": "examples\/api\/preferences\/enableReferrer.zip"
     },
     {
@@ -453,7 +453,7 @@
         "popup.html",
         "popup.js"
       ],
-      "source_hash": "fd25990fb70c9c6769f42dd93a569e117313d199",
+      "source_hash": "10d84072f653cfafc7796d5600d2f076a2398a4f",
       "zip_path": "examples\/api\/preferences\/allowThirdPartyCookies.zip"
     },
     {
@@ -758,7 +758,7 @@
         "popup.html",
         "popup.js"
       ],
-      "source_hash": "18befdb7d7db7b85c4dcf337b30445e83eba9e7c",
+      "source_hash": "3183d0ec866e6bb03da840334cc26df6493c950f",
       "zip_path": "examples\/api\/contentSettings.zip"
     },
     {
@@ -782,7 +782,7 @@
         "manifest.json",
         "sample.js"
       ],
-      "source_hash": "97006b952e174bd3a1968682d5935c2b8be07d13",
+      "source_hash": "c5db61c81caf131ac6b32c6a80a22a03cb45f34b",
       "zip_path": "examples\/api\/contextMenus\/basic.zip"
     },
     {
@@ -914,7 +914,7 @@
         "devtools.js",
         "manifest.json"
       ],
-      "source_hash": "9f3e6b8d3f324da6db156b4906cb01a5d7963ac9",
+      "source_hash": "0ced0f45a4369316e2f4402bdf9c85451be864b1",
       "zip_path": "examples\/api\/devtools\/network\/chrome-firephp.zip"
     },
     {
@@ -1280,7 +1280,7 @@
         "info.js",
         "manifest.json"
       ],
-      "source_hash": "1da923be937ca091e23f5adbc2038b127872df3d",
+      "source_hash": "14a1d263e019558e695419bdea8aef3346c1987b",
       "zip_path": "examples\/extensions\/imageinfo.zip"
     },
     {
@@ -1423,7 +1423,7 @@
         "popup.html",
         "popup.js"
       ],
-      "source_hash": "ba7d8e2fb01b599a5147bb2a59b234eba95f4407",
+      "source_hash": "2cf4545bf8ecb2526b65d47ec3dac88d88de7c1b",
       "zip_path": "examples\/extensions\/mappy.zip"
     },
     {
@@ -1454,7 +1454,7 @@
         "background.js",
         "manifest.json"
       ],
-      "source_hash": "0fb55c4b8d1830a854476609069e4b78e7028696",
+      "source_hash": "652481221bf66f04e9fcb48f9fb9906fa27aa260",
       "zip_path": "examples\/api\/windows\/merge_windows.zip"
     },
     {
@@ -1544,7 +1544,7 @@
         "feed_iframe.js",
         "manifest.json"
       ],
-      "source_hash": "94237b23194b8a616a2c653b44115f69b81dca23",
+      "source_hash": "f75bfa2711f6840a129496e7906d6c7aa9d5a1a0",
       "zip_path": "examples\/extensions\/news_a11y.zip"
     },
     {
@@ -1640,7 +1640,7 @@
         "options.js",
         "style.css"
       ],
-      "source_hash": "c95a37dfc5155f5b9577ce5273ecf53de1d7c090",
+      "source_hash": "a4052b597b547934e7c84ae39627a5378cd2e397",
       "zip_path": "examples\/api\/notifications.zip"
     },
     {
@@ -1744,7 +1744,7 @@
         "background.js",
         "manifest.json"
       ],
-      "source_hash": "94268e72caf481d89e8cb4e915ab4e418b54889a",
+      "source_hash": "2394e6f568855b9b5aedc49ce38f3942371ee317",
       "zip_path": "examples\/api\/pageAction\/pageaction_by_url.zip"
     },
     {
@@ -1854,7 +1854,7 @@
         "options\/js\/deletable_item_list.js",
         "options\/js\/inline_editable_list.js"
       ],
-      "source_hash": "744d8d50542b524d331da6c82e4c09decf1e61df",
+      "source_hash": "914933e586fe84d71ba8b01c88309288b9d4e515",
       "zip_path": "examples\/extensions\/plugin_settings.zip"
     },
     {
@@ -1948,7 +1948,7 @@
         "test\/proxy_form_controller_test.js",
         "test\/unittest.css"
       ],
-      "source_hash": "5ebd32895ceca85a72eb2b861538d5f90801f646",
+      "source_hash": "29b00b6d3543f33e302dcbee355e9449c3d8d210",
       "zip_path": "examples\/extensions\/proxy_configuration.zip"
     },
     {
@@ -2053,7 +2053,7 @@
         "popup.html",
         "popup.js"
       ],
-      "source_hash": "e9f60ed594a2b594ece02259a2835fe92476508d",
+      "source_hash": "062194cd7a1a907c4e9d442cfbe19a5db36916fa",
       "zip_path": "examples\/api\/processes\/show_tabs.zip"
     },
     {
@@ -2129,7 +2129,7 @@
         "background.js",
         "manifest.json"
       ],
-      "source_hash": "3009d832f7b44e66aa40ec6a00d84896ae3a3daa",
+      "source_hash": "298f4146dbeb4a9691756d3856710d2e41ae7ae7",
       "zip_path": "examples\/api\/speechInput\/basic.zip"
     },
     {
@@ -2281,7 +2281,7 @@
         "screenshot.html",
         "screenshot.js"
       ],
-      "source_hash": "e95cf03c38e42de2311d2994c77c3a2d2730b6db",
+      "source_hash": "93d631d1e714c910f5215fd8c22cd5725ab6e6cc",
       "zip_path": "examples\/api\/tabs\/screenshot.zip"
     },
     {
@@ -2341,7 +2341,7 @@
         "ttsdebug.html",
         "ttsdebug.js"
       ],
-      "source_hash": "0806af7ee646f2bae8dacd4f9fae16336e3e6807",
+      "source_hash": "b6d02dcc084985a5a37634f7efee96e759df3c2f",
       "zip_path": "examples\/extensions\/ttsdebug.zip"
     },
     {
@@ -2435,7 +2435,7 @@
         "popup.html",
         "popup.js"
       ],
-      "source_hash": "ea5756d0a3c177a59e5275f7f1916edb54d92e49",
+      "source_hash": "d2b40d0496b107609dd8288cb52f15aa5d36c312",
       "zip_path": "examples\/api\/webNavigation\/basic.zip"
     },
     {
@@ -2463,7 +2463,7 @@
         "popup.js",
         "sample.css"
       ],
-      "source_hash": "62ca453d8d1551ff63dd7c78b49d546bc3af17c6",
+      "source_hash": "8e51dc3a9577065d22ce92f3c838edc5ceaf4e65",
       "zip_path": "examples\/api\/extension\/isAllowedAccess.zip"
     }
   ]

@@ -8,5 +8,5 @@
      "default_title": "Take a screen shot!"
   },
   "permissions": ["tabs", "http://code.google.com/"],
-  "content_security_policy": "default-src 'none'; script-src 'self'; img-src data:"
+  "manifest_version": 2
 }

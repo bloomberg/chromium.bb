@@ -8,5 +8,5 @@
   "browser_action": {
       "name": "Click to change the icon's color"
   },
-  "content_security_policy": "default-src 'self'"
+  "manifest_version": 2
 }

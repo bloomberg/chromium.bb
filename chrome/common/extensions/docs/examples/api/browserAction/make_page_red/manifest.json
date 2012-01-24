@@ -9,5 +9,5 @@
     "name": "Make this page red",
     "icons": ["icon.png"]
   },
-  "content_security_policy": "default-src 'none'; script-src 'self'"
+  "manifest_version": 2
 }

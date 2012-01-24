@@ -23,5 +23,5 @@
   "permissions": [
     "proxy"
   ],
-  "content_security_policy": "default-src 'self'; img-src data:;"
+  "manifest_version": 2
 }

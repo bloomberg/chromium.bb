@@ -6,5 +6,5 @@
   "background": {
     "scripts": ["sample.js"]
   },
-  "content_security_policy": "default-src 'self'"
+  "manifest_version": 2
 }

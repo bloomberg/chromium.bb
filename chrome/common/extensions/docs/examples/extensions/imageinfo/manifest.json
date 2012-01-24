@@ -15,6 +15,5 @@
     "48" : "imageinfo-48.png",
     "128" : "imageinfo-128.png"
   },
-  "content_security_policy": "default-src 'self'; connect-src *; img-src *"
-
+  "manifest_version": 2
 }
