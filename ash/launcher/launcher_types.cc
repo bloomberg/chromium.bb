@@ -8,14 +8,14 @@ namespace ash {
 
 LauncherItem::LauncherItem()
     : type(TYPE_TABBED),
-      window(NULL),
-      num_tabs(1) {
+      num_tabs(1),
+      id(0) {
 }
 
-LauncherItem::LauncherItem(LauncherItemType type, aura::Window* window)
+LauncherItem::LauncherItem(LauncherItemType type)
     : type(type),
-      window(window),
-      num_tabs(1) {
+      num_tabs(0),
+      id(0) {
 }
 
 LauncherItem::~LauncherItem() {

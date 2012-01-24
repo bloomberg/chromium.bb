@@ -75,16 +75,9 @@ void WorkspaceController::WindowMoved(WorkspaceManager* manager,
                                       aura::Window* target) {
   if (ignore_move_event_ || !launcher_model_)
     return;
-  int start_index = launcher_model_->ItemIndexByWindow(source);
-  int target_index = launcher_model_->ItemIndexByWindow(target);
-  // The following condition may not be hold depending on future
-  // launcher design. Using DCHECK so that we can catch such change.
-  DCHECK(start_index >=0);
-  DCHECK(target_index >=0);
-
-  ignore_move_event_ = true;
-  launcher_model_->Move(start_index, target_index);
-  ignore_move_event_ = false;
+  // TODO: there is no longer a 1-1 mapping between the launcher and windows;
+  // decide how we want to handle it.
+  NOTIMPLEMENTED();
 }
 
 void WorkspaceController::ActiveWorkspaceChanged(WorkspaceManager* manager,
@@ -106,21 +99,15 @@ void WorkspaceController::LauncherItemRemoved(int index) {
 void WorkspaceController::LauncherItemMoved(int start_index, int target_index) {
   if (ignore_move_event_)
     return;
+  // TODO: there is no longer a 1-1 mapping between the launcher and windows;
+  // decide how we want to handle it.
   DCHECK(launcher_model_);
-  // Adjust target/source indices as the item positions in |launcher_model_|
-  // has already been updated.
-  aura::Window* start = launcher_model_->items()[target_index].window;
-  size_t target_index_in_model =
-      start_index < target_index ? target_index - 1 : target_index + 1;
-  DCHECK_LE(target_index_in_model, launcher_model_->items().size());
-  aura::Window* target = launcher_model_->items()[target_index_in_model].window;
-
-  ignore_move_event_ = true;
-  workspace_manager_->RotateWindows(start, target);
-  ignore_move_event_ = false;
+  NOTIMPLEMENTED();
 }
 
-void WorkspaceController::LauncherItemChanged(int index) {
+void WorkspaceController::LauncherItemChanged(
+    int index,
+    const ash::LauncherItem& old_item) {
 }
 
 }  // namespace internal

@@ -6,11 +6,8 @@
 #define ASH_LAUNCHER_LAUNCHER_H_
 #pragma once
 
-#include <map>
-
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "ui/aura/window_observer.h"
 #include "ash/ash_export.h"
 
 namespace aura {
@@ -25,10 +22,10 @@ namespace ash {
 
 class LauncherModel;
 
-class ASH_EXPORT Launcher : public aura::WindowObserver {
+class ASH_EXPORT Launcher {
  public:
   explicit Launcher(aura::Window* window_container);
-  virtual ~Launcher();
+  ~Launcher();
 
   // Sets the width of the status area.
   void SetStatusWidth(int width);
@@ -37,20 +34,14 @@ class ASH_EXPORT Launcher : public aura::WindowObserver {
   LauncherModel* model() { return model_.get(); }
   views::Widget* widget() { return widget_; }
 
+  aura::Window* window_container() { return window_container_; }
+
  private:
   class DelegateView;
-
-  typedef std::map<aura::Window*, bool> WindowMap;
 
   // If necessary asks the delegate if an entry should be created in the
   // launcher for |window|. This only asks the delegate once for a window.
   void MaybeAdd(aura::Window* window);
-
-  // WindowObserver overrides:
-  virtual void OnWindowAdded(aura::Window* new_window) OVERRIDE;
-  virtual void OnWillRemoveWindow(aura::Window* window) OVERRIDE;
-  virtual void OnWindowVisibilityChanged(aura::Window* window,
-                                         bool visibile) OVERRIDE;
 
   scoped_ptr<LauncherModel> model_;
 
@@ -59,10 +50,6 @@ class ASH_EXPORT Launcher : public aura::WindowObserver {
   views::Widget* widget_;
 
   aura::Window* window_container_;
-
-  // The set of windows we know about. The boolean indicates whether we've asked
-  // the delegate if the window should added to the launcher.
-  WindowMap known_windows_;
 
   // Contents view of the widget. Houses the LauncherView.
   DelegateView* delegate_view_;

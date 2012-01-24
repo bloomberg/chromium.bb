@@ -69,7 +69,8 @@ class ASH_EXPORT WorkspaceController :
   virtual void LauncherItemAdded(int index) OVERRIDE;
   virtual void LauncherItemRemoved(int index) OVERRIDE;
   virtual void LauncherItemMoved(int start_index, int target_index) OVERRIDE;
-  virtual void LauncherItemChanged(int index) OVERRIDE;
+  virtual void LauncherItemChanged(int index,
+                                   const ash::LauncherItem& old_item) OVERRIDE;
   virtual void LauncherItemWillChange(int index) OVERRIDE {}
 
  private:

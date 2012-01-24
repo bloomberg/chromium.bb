@@ -79,8 +79,8 @@ class LauncherView : public views::WidgetDelegateView,
   // Common setup done for all children.
   void ConfigureChildView(views::View* view);
 
-  // Returns the windows whose icon is not show because it doesn't fit.
-  void GetOverflowWindows(std::vector<aura::Window*>* names);
+  // Returns the items whose icons are not shown because they don't fit.
+  void GetOverflowItems(std::vector<LauncherItem>* items);
 
   // Shows the overflow menu.
   void ShowOverflowMenu();
@@ -96,7 +96,8 @@ class LauncherView : public views::WidgetDelegateView,
   // Overridden from LauncherModelObserver:
   virtual void LauncherItemAdded(int model_index) OVERRIDE;
   virtual void LauncherItemRemoved(int model_index) OVERRIDE;
-  virtual void LauncherItemChanged(int model_index) OVERRIDE;
+  virtual void LauncherItemChanged(int model_index,
+                                   const ash::LauncherItem& old_item) OVERRIDE;
   virtual void LauncherItemMoved(int start_index, int target_index) OVERRIDE;
   virtual void LauncherItemWillChange(int index) OVERRIDE;
 

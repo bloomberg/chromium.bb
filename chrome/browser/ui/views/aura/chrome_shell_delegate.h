@@ -12,7 +12,6 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 
-class Browser;
 class StatusAreaHostAura;
 class StatusAreaView;
 
@@ -33,14 +32,7 @@ class ChromeShellDelegate : public ash::ShellDelegate {
 
   StatusAreaView* GetStatusArea();
 
-  // Returns whether a launcher item should be created for |browser|. If an item
-  // should be created |type| is set to the launcher type to create.
-  static bool ShouldCreateLauncherItemForBrowser(
-      Browser* browser,
-      ash::LauncherItemType* type);
-
   // ash::ShellDelegate overrides;
-  virtual void CreateNewWindow() OVERRIDE;
   virtual views::Widget* CreateStatusArea() OVERRIDE;
 #if defined(OS_CHROMEOS)
   virtual void LockScreen() OVERRIDE;
@@ -51,10 +43,10 @@ class ChromeShellDelegate : public ash::ShellDelegate {
   virtual std::vector<aura::Window*> GetCycleWindowList(
       CycleSource source,
       CycleOrder order) const OVERRIDE;
-  virtual void LauncherItemClicked(
-      const ash::LauncherItem& item) OVERRIDE;
-  virtual bool ConfigureLauncherItem(ash::LauncherItem* item) OVERRIDE;
+  virtual void CreateNewWindow() OVERRIDE;
+  virtual void LauncherItemClicked(const ash::LauncherItem& item) OVERRIDE;
   virtual int GetBrowserShortcutResourceId() OVERRIDE;
+  virtual string16 GetLauncherItemTitle(const ash::LauncherItem& item) OVERRIDE;
 
  private:
   static ChromeShellDelegate* instance_;

@@ -41,7 +41,8 @@ class TestLauncherModelObserver : public LauncherModelObserver {
   virtual void LauncherItemRemoved(int index) OVERRIDE {
     removed_count_++;
   }
-  virtual void LauncherItemChanged(int index) OVERRIDE {
+  virtual void LauncherItemChanged(int index,
+                                   const LauncherItem& old_item) OVERRIDE {
     changed_count_++;
   }
   virtual void LauncherItemMoved(int start_index, int target_index) OVERRIDE {
@@ -75,17 +76,22 @@ TEST(LauncherModel, BasicAssertions) {
 
   // Model is initially populated with two items.
   EXPECT_EQ(2, model.item_count());
+  // Two initial items should have different ids.
+  EXPECT_NE(model.items()[0].id, model.items()[1].id);
 
   // Add an item.
   model.AddObserver(&observer);
   LauncherItem item;
   model.Add(0, item);
   EXPECT_EQ(3, model.item_count());
-  EXPECT_EQ("added=1",
-            observer.StateStringAndClear());
+  // New item should get a unique id.
+  EXPECT_NE(model.items()[1].id, model.items()[2].id);
+  EXPECT_EQ("added=1", observer.StateStringAndClear());
 
   // Change a tabbed image.
+  LauncherID original_id = model.items()[0].id;
   model.Set(0, LauncherItem());
+  EXPECT_EQ(original_id, model.items()[0].id);
   EXPECT_EQ("changed=1", observer.StateStringAndClear());
   EXPECT_EQ(TYPE_TABBED, model.items()[0].type);
 

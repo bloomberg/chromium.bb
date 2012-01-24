@@ -36,18 +36,22 @@ class ASH_EXPORT LauncherModel {
   // of the model *after* the item at |index| is removed.
   void Move(int index, int target_index);
 
-  // Reset everything but the type and window of the item at the specified
-  // index.
+  // Reset the item at the specified index. The item maintains its existing id.
   void Set(int index, const LauncherItem& item);
 
   // Sends LauncherItemWillChange() to the observers. Used when the images are
   // going to change for an item, but not for a while.
   void SetPendingUpdate(int index);
 
-  // Returns the index of the item with the specified window.
-  int ItemIndexByWindow(aura::Window* window);
+  // Returns the index of the item by id.
+  int ItemIndexByID(int id);
 
-  LauncherItems::const_iterator ItemByWindow(aura::Window* window) const;
+  // Returns the id assigned to the next item added.
+  LauncherID next_id() const { return next_id_; }
+
+  // Returns an iterator into items() for the item with the specified id, or
+  // items().end() if there is no item with the specified id.
+  LauncherItems::const_iterator ItemByID(LauncherID id) const;
 
   const LauncherItems& items() const { return items_; }
   int item_count() const { return static_cast<int>(items_.size()); }
@@ -56,6 +60,8 @@ class ASH_EXPORT LauncherModel {
   void RemoveObserver(LauncherModelObserver* observer);
 
  private:
+  // ID assigned to the next item.
+  LauncherID next_id_;
   LauncherItems items_;
   ObserverList<LauncherModelObserver> observers_;
 

@@ -3370,6 +3370,8 @@
         'browser/ui/views/aura/app_list/extension_app_item.h',
         'browser/ui/views/aura/chrome_shell_delegate.cc',
         'browser/ui/views/aura/chrome_shell_delegate.h',
+        'browser/ui/views/aura/launcher_app_icon_loader.cc',
+        'browser/ui/views/aura/launcher_app_icon_loader.h',
         'browser/ui/views/aura/launcher_icon_updater.cc',
         'browser/ui/views/aura/launcher_icon_updater.h',
         'browser/ui/views/aura/screen_orientation_listener.cc',

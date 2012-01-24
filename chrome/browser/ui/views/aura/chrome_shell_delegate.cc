@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/views/aura/app_list/app_list_model_builder.h"
 #include "chrome/browser/ui/views/aura/app_list/app_list_view_delegate.h"
+#include "chrome/browser/ui/views/aura/launcher_icon_updater.h"
 #include "chrome/browser/ui/views/aura/status_area_host_aura.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "grit/theme_resources.h"
@@ -40,7 +41,6 @@ std::vector<aura::Window*> GetTabbedBrowserWindows(IT begin, IT end) {
   return windows;
 }
 
-
 }  // namespace
 
 // static
@@ -57,32 +57,6 @@ ChromeShellDelegate::~ChromeShellDelegate() {
 
 StatusAreaView* ChromeShellDelegate::GetStatusArea() {
   return status_area_host_->GetStatusArea();
-}
-
-// static
-bool ChromeShellDelegate::ShouldCreateLauncherItemForBrowser(
-    Browser* browser,
-    ash::LauncherItemType* type) {
-  if (browser->type() == Browser::TYPE_TABBED) {
-    *type = ash::TYPE_TABBED;
-    return true;
-  }
-  if (browser->is_app()) {
-    *type = ash::TYPE_APP;
-    return true;
-  }
-  return false;
-}
-
-void ChromeShellDelegate::CreateNewWindow() {
-  Profile* profile = ProfileManager::GetDefaultProfile();
-  if (browser_defaults::kAlwaysOpenIncognitoWindow &&
-      IncognitoModePrefs::ShouldLaunchIncognito(
-          *CommandLine::ForCurrentProcess(),
-          profile->GetPrefs())) {
-    profile = profile->GetOffTheRecordProfile();
-  }
-  Browser::OpenEmptyWindow(profile);
 }
 
 views::Widget* ChromeShellDelegate::CreateStatusArea() {
@@ -137,18 +111,27 @@ std::vector<aura::Window*> ChromeShellDelegate::GetCycleWindowList(
   return windows;
 }
 
-void ChromeShellDelegate::LauncherItemClicked(
-    const ash::LauncherItem& item) {
-  ash::ActivateWindow(item.window);
+void ChromeShellDelegate::CreateNewWindow() {
+  Profile* profile = ProfileManager::GetDefaultProfile();
+  if (browser_defaults::kAlwaysOpenIncognitoWindow &&
+      IncognitoModePrefs::ShouldLaunchIncognito(
+          *CommandLine::ForCurrentProcess(),
+          profile->GetPrefs())) {
+    profile = profile->GetOffTheRecordProfile();
+  }
+  Browser::OpenEmptyWindow(profile);
 }
 
-bool ChromeShellDelegate::ConfigureLauncherItem(
-    ash::LauncherItem* item) {
-  BrowserView* view = BrowserView::GetBrowserViewForNativeWindow(item->window);
-  return view &&
-      ShouldCreateLauncherItemForBrowser(view->browser(), &(item->type));
+void ChromeShellDelegate::LauncherItemClicked(
+    const ash::LauncherItem& item) {
+  LauncherIconUpdater::ActivateByID(item.id);
 }
 
 int ChromeShellDelegate::GetBrowserShortcutResourceId() {
   return IDR_PRODUCT_LOGO_32;
+}
+
+string16 ChromeShellDelegate::GetLauncherItemTitle(
+    const ash::LauncherItem& item) {
+  return LauncherIconUpdater::GetTitleByID(item.id);
 }

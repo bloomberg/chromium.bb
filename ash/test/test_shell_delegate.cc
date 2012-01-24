@@ -20,9 +20,6 @@ TestShellDelegate::TestShellDelegate() {
 TestShellDelegate::~TestShellDelegate() {
 }
 
-void TestShellDelegate::CreateNewWindow() {
-}
-
 views::Widget* TestShellDelegate::CreateStatusArea() {
   return NULL;
 }
@@ -55,15 +52,18 @@ std::vector<aura::Window*> TestShellDelegate::GetCycleWindowList(
   return windows;
 }
 
-void TestShellDelegate::LauncherItemClicked(const LauncherItem& item) {
+void TestShellDelegate::CreateNewWindow() {
 }
 
-bool TestShellDelegate::ConfigureLauncherItem(LauncherItem* item) {
-  return true;
+void TestShellDelegate::LauncherItemClicked(const LauncherItem& item) {
 }
 
 int TestShellDelegate::GetBrowserShortcutResourceId() {
   return IDR_AURA_LAUNCHER_BROWSER_SHORTCUT;
+}
+
+string16 TestShellDelegate::GetLauncherItemTitle(const LauncherItem& item) {
+  return string16();
 }
 
 }  // namespace test

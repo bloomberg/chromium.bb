@@ -593,6 +593,11 @@ void BrowserView::Show() {
     return;
   }
 
+#if defined(USE_AURA)
+  if (!icon_updater_.get())
+    icon_updater_.reset(LauncherIconUpdater::Create(browser_.get()));
+#endif  // defined(USE_AURA)
+
   // Showing the window doesn't make the browser window active right away.
   // This can cause SetFocusToLocationBar() to skip setting focus to the
   // location bar. To avoid this we explicilty let SetFocusToLocationBar()
@@ -1947,19 +1952,6 @@ void BrowserView::Init() {
 
   // We're now initialized and ready to process Layout requests.
   ignore_layout_ = false;
-
-#if defined(USE_AURA)
-  // Add launcher item if we're using the launcher and this type of browser
-  // needs an item.
-  ash::LauncherItemType type;
-  if (ChromeShellDelegate::ShouldCreateLauncherItemForBrowser(browser_.get(),
-                                                              &type)) {
-    icon_updater_.reset(new LauncherIconUpdater(
-        browser_->tabstrip_model(),
-        ash::Shell::GetInstance()->launcher()->model(),
-        frame_->GetNativeWindow()));
-  }
-#endif  // defined(USE_AURA)
 }
 
 void BrowserView::LoadingAnimationCallback() {

@@ -399,29 +399,37 @@ void LauncherView::ConfigureChildView(views::View* view) {
   view->layer()->SetFillsBoundsOpaquely(false);
 }
 
-void LauncherView::GetOverflowWindows(std::vector<aura::Window*>* names) {
+void LauncherView::GetOverflowItems(std::vector<LauncherItem>* items) {
   int index = 0;
   while (index < view_model_->view_size() &&
          view_model_->view_at(index)->visible()) {
     index++;
   }
   while (index < view_model_->view_size()) {
-    names->push_back(model_->items()[index].window);
+    const LauncherItem& item = model_->items()[index];
+    if (item.type == TYPE_TABBED || item.type == TYPE_APP)
+      items->push_back(item);
     index++;
   }
 }
 
 void LauncherView::ShowOverflowMenu() {
 #if !defined(OS_MACOSX)
-  std::vector<aura::Window*> windows;
-  GetOverflowWindows(&windows);
-  if (windows.empty())
+  ShellDelegate* delegate = Shell::GetInstance()->delegate();
+  if (!delegate)
+    return;
+
+  std::vector<LauncherItem> items;
+  GetOverflowItems(&items);
+  if (items.empty())
     return;
 
   MenuDelegateImpl menu_delegate;
   ui::SimpleMenuModel menu_model(&menu_delegate);
-  for (size_t i = 0; i < windows.size(); ++i)
-    menu_model.AddItem(static_cast<int>(i), windows[i]->title());
+  for (size_t i = 0; i < items.size(); ++i) {
+    menu_model.AddItem(static_cast<int>(i),
+                       delegate->GetLauncherItemTitle(items[i]));
+  }
   views::MenuModelAdapter menu_adapter(&menu_model);
   overflow_menu_runner_.reset(new views::MenuRunner(menu_adapter.CreateMenu()));
   gfx::Rect bounds(overflow_button_->size());
@@ -433,13 +441,10 @@ void LauncherView::ShowOverflowMenu() {
       menu_delegate.activated_command_id() == -1)
     return;
 
-  aura::Window* activated_window =
-      windows[menu_delegate.activated_command_id()];
-  LauncherItems::const_iterator window_iter =
-      model_->ItemByWindow(activated_window);
+  LauncherID activated_id = items[menu_delegate.activated_command_id()].id;
+  LauncherItems::const_iterator window_iter = model_->ItemByID(activated_id);
   if (window_iter == model_->items().end())
     return;  // Window was deleted while menu was up.
-  ShellDelegate* delegate = Shell::GetInstance()->delegate();
   if (!delegate)
     return;
   delegate->LauncherItemClicked(*window_iter);
@@ -517,22 +522,44 @@ void LauncherView::LauncherItemRemoved(int model_index) {
       view, new FadeOutAnimationDelegate(this, view), true);
 }
 
-void LauncherView::LauncherItemChanged(int model_index) {
+void LauncherView::LauncherItemChanged(int model_index,
+                                       const ash::LauncherItem& old_item) {
   const LauncherItem& item(model_->items()[model_index]);
+  if (old_item.type != item.type) {
+    // Type changed, swap the views.
+    scoped_ptr<views::View> old_view(view_model_->view_at(model_index));
+    bounds_animator_->StopAnimatingView(old_view.get());
+    CancelDrag(old_view.get());
+    view_model_->Remove(model_index);
+    views::View* new_view = CreateViewForItem(item);
+    AddChildView(new_view);
+    view_model_->Add(new_view, model_index);
+    new_view->SetBoundsRect(old_view->bounds());
+    return;
+  }
+
   views::View* view = view_model_->view_at(model_index);
-  if (item.type == TYPE_TABBED) {
-    TabbedLauncherButton* button = static_cast<TabbedLauncherButton*>(view);
-    gfx::Size pref = button->GetPreferredSize();
-    button->SetTabImage(item.image, item.num_tabs);
-    if (pref != button->GetPreferredSize())
-      AnimateToIdealBounds();
-    else
+  switch (item.type) {
+    case TYPE_TABBED: {
+      TabbedLauncherButton* button = static_cast<TabbedLauncherButton*>(view);
+      gfx::Size pref = button->GetPreferredSize();
+      button->SetTabImage(item.image, item.num_tabs);
+      if (pref != button->GetPreferredSize())
+        AnimateToIdealBounds();
+      else
+        button->SchedulePaint();
+      break;
+    }
+
+    case TYPE_APP: {
+      AppLauncherButton* button = static_cast<AppLauncherButton*>(view);
+      button->SetAppImage(item.image);
       button->SchedulePaint();
-  } else {
-    DCHECK_EQ(TYPE_APP, item.type);
-    AppLauncherButton* button = static_cast<AppLauncherButton*>(view);
-    button->SetAppImage(item.image);
-    button->SchedulePaint();
+      break;
+    }
+
+    default:
+      break;
   }
 }
 
@@ -585,6 +612,9 @@ void LauncherView::MouseExitedButton(views::View* view) {
 
 void LauncherView::ButtonPressed(views::Button* sender,
                                  const views::Event& event) {
+  if (sender == overflow_button_)
+    ShowOverflowMenu();
+
   ShellDelegate* delegate = Shell::GetInstance()->delegate();
   if (!delegate)
     return;

@@ -17,6 +17,8 @@ class Window;
 
 namespace ash {
 
+typedef int LauncherID;
+
 // Type the LauncherItem represents.
 enum ASH_EXPORT LauncherItemType {
   // Represents a tabbed browser.
@@ -34,11 +36,10 @@ enum ASH_EXPORT LauncherItemType {
 
 struct ASH_EXPORT LauncherItem {
   LauncherItem();
-  LauncherItem(LauncherItemType type, aura::Window* window);
+  explicit LauncherItem(LauncherItemType type);
   ~LauncherItem();
 
   LauncherItemType type;
-  aura::Window* window;
 
   // Number of tabs. Only used if this is TYPE_TABBED.
   int num_tabs;
@@ -46,6 +47,9 @@ struct ASH_EXPORT LauncherItem {
   // Image to display in the launcher. If this item is TYPE_TABBED the image is
   // a favicon image.
   SkBitmap image;
+
+  // Assigned by the model when the item is added.
+  LauncherID id;
 };
 
 typedef std::vector<LauncherItem> LauncherItems;

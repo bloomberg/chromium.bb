@@ -18,7 +18,6 @@ class TestShellDelegate : public ShellDelegate {
   virtual ~TestShellDelegate();
 
   // Overridden from ShellDelegate:
-  virtual void CreateNewWindow() OVERRIDE;
   virtual views::Widget* CreateStatusArea() OVERRIDE;
 #if defined(OS_CHROMEOS)
   virtual void LockScreen() OVERRIDE;
@@ -29,9 +28,10 @@ class TestShellDelegate : public ShellDelegate {
   virtual std::vector<aura::Window*> GetCycleWindowList(
       CycleSource source,
       CycleOrder order) const OVERRIDE;
+  virtual void CreateNewWindow() OVERRIDE;
   virtual void LauncherItemClicked(const LauncherItem& item) OVERRIDE;
-  virtual bool ConfigureLauncherItem(LauncherItem* item) OVERRIDE;
   virtual int GetBrowserShortcutResourceId() OVERRIDE;
+  virtual string16 GetLauncherItemTitle(const LauncherItem& item) OVERRIDE;
 };
 
 }  // namespace test

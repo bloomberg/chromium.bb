@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <map>
+
+#include "ash/launcher/launcher.h"
+#include "ash/launcher/launcher_model.h"
 #include "ash/launcher/launcher_types.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
@@ -17,6 +21,7 @@
 #include "base/message_loop.h"
 #include "grit/ui_resources.h"
 #include "ui/aura/root_window.h"
+#include "ui/aura/window_observer.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/gfx/canvas.h"
@@ -42,10 +47,73 @@ class ShellViewsDelegate : public views::TestViewsDelegate {
   DISALLOW_COPY_AND_ASSIGN(ShellViewsDelegate);
 };
 
+// WindowWatcher is responsible for listening for newly created windows and
+// creating items on the Launcher for them.
+class WindowWatcher : public aura::WindowObserver {
+ public:
+  WindowWatcher()
+      : window_(ash::Shell::GetInstance()->launcher()->window_container()) {
+    window_->AddObserver(this);
+  }
+
+  virtual ~WindowWatcher() {
+    window_->RemoveObserver(this);
+  }
+
+  aura::Window* GetWindowByID(ash::LauncherID id) {
+    IDToWindow::const_iterator i = id_to_window_.find(id);
+    return i != id_to_window_.end() ? i->second : NULL;
+  }
+
+  // aura::WindowObserver overrides:
+  virtual void OnWindowAdded(aura::Window* new_window) OVERRIDE {
+    static int image_count = 0;
+    ash::LauncherModel* model = ash::Shell::GetInstance()->launcher()->model();
+    ash::LauncherItem item(ash::TYPE_TABBED);
+    id_to_window_[model->next_id()] = new_window;
+    item.num_tabs = image_count + 1;
+    item.image.setConfig(SkBitmap::kARGB_8888_Config, 16, 16);
+    item.image.allocPixels();
+    item.image.eraseARGB(255,
+                         image_count == 0 ? 255 : 0,
+                         image_count == 1 ? 255 : 0,
+                         image_count == 2 ? 255 : 0);
+    image_count = (image_count + 1) % 3;
+    model->Add(model->item_count(), item);
+  }
+
+  virtual void OnWillRemoveWindow(aura::Window* window) OVERRIDE {
+    for (IDToWindow::iterator i = id_to_window_.begin();
+         i != id_to_window_.end(); ++i) {
+      if (i->second == window) {
+        ash::LauncherModel* model =
+            ash::Shell::GetInstance()->launcher()->model();
+        int index = model->ItemIndexByID(i->first);
+        DCHECK_NE(-1, index);
+        model->RemoveItemAt(index);
+        id_to_window_.erase(i);
+        break;
+      }
+    }
+  }
+
+ private:
+  typedef std::map<ash::LauncherID, aura::Window*> IDToWindow;
+
+  // Window watching for newly created windows to be added to.
+  aura::Window* window_;
+
+  // Maps from window to the id we gave it.
+  IDToWindow id_to_window_;
+
+  DISALLOW_COPY_AND_ASSIGN(WindowWatcher);
+};
+
 class ShellDelegateImpl : public ash::ShellDelegate {
  public:
-  ShellDelegateImpl() {
-  }
+  ShellDelegateImpl() {}
+
+  void set_watcher(WindowWatcher* watcher) { watcher_ = watcher; }
 
   virtual void CreateNewWindow() OVERRIDE {
     ash::shell::ToplevelWindow::CreateParams create_params;
@@ -89,25 +157,23 @@ class ShellDelegateImpl : public ash::ShellDelegate {
 
   virtual void LauncherItemClicked(
       const ash::LauncherItem& item) OVERRIDE {
-    ash::ActivateWindow(item.window);
-  }
-
-  virtual bool ConfigureLauncherItem(ash::LauncherItem* item) OVERRIDE {
-    static int image_count = 0;
-    item->num_tabs = image_count + 1;
-    item->image.setConfig(SkBitmap::kARGB_8888_Config, 16, 16);
-    item->image.allocPixels();
-    item->image.eraseARGB(255,
-                          image_count == 0 ? 255 : 0,
-                          image_count == 1 ? 255 : 0,
-                          image_count == 2 ? 255 : 0);
-    image_count = (image_count + 1) % 3;
-    return true;  // Makes the entry show up in the launcher.
+    ash::ActivateWindow(watcher_->GetWindowByID(item.id));
   }
 
   virtual int GetBrowserShortcutResourceId() OVERRIDE {
     return IDR_AURA_LAUNCHER_BROWSER_SHORTCUT;
   }
+
+  virtual string16 GetLauncherItemTitle(
+      const ash::LauncherItem& item) OVERRIDE {
+    return watcher_->GetWindowByID(item.id)->title();
+  }
+
+ private:
+  // Used to update Launcher. Owned by main.
+  WindowWatcher* watcher_;
+
+  DISALLOW_COPY_AND_ASSIGN(ShellDelegateImpl);
 };
 
 }  // namespace
@@ -136,11 +202,17 @@ int main(int argc, char** argv) {
   if (!views::ViewsDelegate::views_delegate)
     views::ViewsDelegate::views_delegate = new ShellViewsDelegate;
 
-  ash::Shell::CreateInstance(new ShellDelegateImpl);
+  ShellDelegateImpl* delegate = new ShellDelegateImpl;
+  ash::Shell::CreateInstance(delegate);
+
+  scoped_ptr<WindowWatcher> window_watcher(new WindowWatcher);
+  delegate->set_watcher(window_watcher.get());
 
   ash::shell::InitWindowTypeLauncher();
 
   aura::RootWindow::GetInstance()->Run();
+
+  window_watcher.reset();
 
   ash::Shell::DeleteInstance();
 

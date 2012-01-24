@@ -93,8 +93,6 @@ Launcher::Launcher(aura::Window* window_container)
     : widget_(NULL),
       window_container_(window_container),
       delegate_view_(NULL) {
-  window_container->AddObserver(this);
-
   model_.reset(new LauncherModel);
 
   widget_ = new views::Widget;
@@ -119,11 +117,6 @@ Launcher::Launcher(aura::Window* window_container)
 
 Launcher::~Launcher() {
   widget_->CloseNow();
-  window_container_->RemoveObserver(this);
-  for (WindowMap::iterator i = known_windows_.begin();
-       i != known_windows_.end(); ++i) {
-    i->first->RemoveObserver(this);
-  }
 }
 
 void Launcher::SetStatusWidth(int width) {
@@ -132,52 +125,6 @@ void Launcher::SetStatusWidth(int width) {
 
 int Launcher::GetStatusWidth() {
   return delegate_view_->status_width();
-}
-
-void Launcher::MaybeAdd(aura::Window* window) {
-  if (known_windows_[window] == true)
-    return;  // We already tried to add this window.
-
-  known_windows_[window] = true;
-  ShellDelegate* delegate = Shell::GetInstance()->delegate();
-  if (!delegate)
-    return;
-  LauncherItem item;
-  item.window = window;
-  if (!delegate->ConfigureLauncherItem(&item))
-    return;  // The delegate doesn't want to show this item in the launcher.
-  model_->Add(model_->items().size(), item);
-}
-
-void Launcher::OnWindowAdded(aura::Window* new_window) {
-  if (new_window->parent() != window_container_)
-    return;
-
-  DCHECK(known_windows_.find(new_window) == known_windows_.end());
-  known_windows_[new_window] = false;
-  new_window->AddObserver(this);
-  // Windows are created initially invisible. Wait until the window is made
-  // visible before asking, as otherwise the delegate likely doesn't know about
-  // window (it's still creating it).
-  if (new_window->IsVisible())
-    MaybeAdd(new_window);
-}
-
-void Launcher::OnWillRemoveWindow(aura::Window* window) {
-  if (window->parent() != window_container_)
-    return;
-
-  window->RemoveObserver(this);
-  known_windows_.erase(window);
-  LauncherItems::const_iterator i = model_->ItemByWindow(window);
-  if (i != model_->items().end())
-    model_->RemoveItemAt(i - model_->items().begin());
-}
-
-void Launcher::OnWindowVisibilityChanged(aura::Window* window,
-                                         bool visibile) {
-  if (visibile && !known_windows_[window])
-    MaybeAdd(window);
 }
 
 }  // namespace ash

@@ -10,6 +10,7 @@
 
 #include "ash/ash_export.h"
 #include "base/callback.h"
+#include "base/string16.h"
 
 namespace aura {
 class Window;
@@ -49,10 +50,6 @@ class ASH_EXPORT ShellDelegate {
   // The Shell owns the delegate.
   virtual ~ShellDelegate() {}
 
-  // Invoked when the user clicks on button in the launcher to create a new
-  // window.
-  virtual void CreateNewWindow() = 0;
-
   // Invoked to create a new status area. Can return NULL.
   virtual views::Widget* CreateStatusArea() = 0;
 
@@ -80,17 +77,21 @@ class ASH_EXPORT ShellDelegate {
       CycleSource source,
       CycleOrder order) const = 0;
 
+  // Launcher related methods --------------------------------------------------
+
+  // Invoked when the user clicks on button in the launcher to create a new
+  // window.
+  virtual void CreateNewWindow() = 0;
+
   // Invoked when the user clicks on a window entry in the launcher.
   virtual void LauncherItemClicked(const LauncherItem& item) = 0;
-
-  // Invoked when a window is added. If the delegate wants the launcher to show
-  // an entry for |item->window| it should configure |item| appropriately and
-  // return true.
-  virtual bool ConfigureLauncherItem(LauncherItem* item) = 0;
 
   // Returns the resource id of the image to show on the browser shortcut
   // button.
   virtual int GetBrowserShortcutResourceId() = 0;
+
+  // Returns the title to display for the specified launcher item.
+  virtual string16 GetLauncherItemTitle(const LauncherItem& item) = 0;
 };
 
 }  // namespace ash

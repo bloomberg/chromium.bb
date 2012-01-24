@@ -9,9 +9,9 @@
 
 namespace ash {
 
-LauncherModel::LauncherModel() {
-  Add(0, LauncherItem(TYPE_APP_LIST, NULL));
-  Add(1, LauncherItem(TYPE_BROWSER_SHORTCUT, NULL));
+LauncherModel::LauncherModel() : next_id_(1) {
+  Add(0, LauncherItem(TYPE_APP_LIST));
+  Add(1, LauncherItem(TYPE_BROWSER_SHORTCUT));
 }
 
 LauncherModel::~LauncherModel() {
@@ -20,6 +20,7 @@ LauncherModel::~LauncherModel() {
 void LauncherModel::Add(int index, const LauncherItem& item) {
   DCHECK(index >= 0 && index <= item_count());
   items_.insert(items_.begin() + index, item);
+  items_[index].id = next_id_++;
   FOR_EACH_OBSERVER(LauncherModelObserver, observers_,
                     LauncherItemAdded(index));
 }
@@ -46,13 +47,11 @@ void LauncherModel::Move(int index, int target_index) {
 
 void LauncherModel::Set(int index, const LauncherItem& item) {
   DCHECK(index >= 0 && index < item_count());
-  LauncherItemType type = items_[index].type;
-  aura::Window* window = items_[index].window;
+  LauncherItem old_item(items_[index]);
   items_[index] = item;
-  items_[index].type = type;
-  items_[index].window = window;
+  items_[index].id = old_item.id;
   FOR_EACH_OBSERVER(LauncherModelObserver, observers_,
-                    LauncherItemChanged(index));
+                    LauncherItemChanged(index, old_item));
 }
 
 void LauncherModel::SetPendingUpdate(int index) {
@@ -60,16 +59,15 @@ void LauncherModel::SetPendingUpdate(int index) {
                     LauncherItemWillChange(index));
 }
 
-int LauncherModel::ItemIndexByWindow(aura::Window* window) {
-  LauncherItems::const_iterator i = ItemByWindow(window);
+int LauncherModel::ItemIndexByID(LauncherID id) {
+  LauncherItems::const_iterator i = ItemByID(id);
   return i == items_.end() ? -1 : static_cast<int>((i - items_.begin()));
 }
 
-LauncherItems::const_iterator LauncherModel::ItemByWindow(
-    aura::Window* window) const {
+LauncherItems::const_iterator LauncherModel::ItemByID(int id) const {
   for (LauncherItems::const_iterator i = items_.begin();
        i != items_.end(); ++i) {
-    if (i->window == window)
+    if (i->id == id)
       return i;
   }
   return items_.end();
