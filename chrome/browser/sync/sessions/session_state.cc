@@ -188,6 +188,11 @@ ConflictProgress::~ConflictProgress() {
   CleanupSets();
 }
 
+bool ConflictProgress::HasSimpleConflictItem(const syncable::Id& id) const {
+  return conflicting_item_ids_.count(id) > 0 &&
+         (IdToConflictSetFind(id) == IdToConflictSetEnd());
+}
+
 IdToConflictSetMap::const_iterator ConflictProgress::IdToConflictSetFind(
     const syncable::Id& the_id) const {
   return id_to_conflict_set_.find(the_id);

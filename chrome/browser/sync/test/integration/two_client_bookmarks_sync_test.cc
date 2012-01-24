@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -1834,4 +1834,65 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   EXPECT_TRUE(AllModelsMatch());
   ASSERT_EQ(0, GetClient(1)->GetLastSessionSnapshot()->
       num_conflicting_updates);
+}
+
+// Deliberately racy rearranging of bookmarks to test that our conflict resolver
+// code results in a consistent view across machines (no matter what the final
+// order is).
+IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest, RacyPositionChanges) {
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  ASSERT_TRUE(AllModelsMatchVerifier());
+
+  // Add initial bookmarks.
+  size_t num_bookmarks = 5;
+  for (size_t i = 0; i < num_bookmarks; ++i) {
+    ASSERT_TRUE(AddURL(0, i, IndexedURLTitle(i), GURL(IndexedURL(i))) != NULL);
+  }
+
+  // Once we make diverging changes the verifer is helpless.
+  ASSERT_TRUE(AwaitQuiescence());
+  ASSERT_TRUE(AllModelsMatchVerifier());
+  DisableVerifier();
+
+  // Make changes on client 0.
+  for (size_t i = 0; i < num_bookmarks; ++i) {
+    const BookmarkNode* node = GetUniqueNodeByURL(0, GURL(IndexedURL(i)));
+    int rand_pos = base::RandInt(0, num_bookmarks-1);
+    DVLOG(1) << "Moving client 0's bookmark " << i << " to position "
+             << rand_pos;
+    Move(0, node, node->parent(), rand_pos);
+  }
+
+  // Make changes on client 1.
+  for (size_t i = 0; i < num_bookmarks; ++i) {
+    const BookmarkNode* node = GetUniqueNodeByURL(1, GURL(IndexedURL(i)));
+    int rand_pos = base::RandInt(0, num_bookmarks-1);
+    DVLOG(1) << "Moving client 1's bookmark " << i << " to position "
+             << rand_pos;
+    Move(1, node, node->parent(), rand_pos);
+  }
+
+  ASSERT_TRUE(AwaitQuiescence());
+  ASSERT_TRUE(AllModelsMatch());
+
+  // Now make changes to client 1 first.
+  for (size_t i = 0; i < num_bookmarks; ++i) {
+    const BookmarkNode* node = GetUniqueNodeByURL(1, GURL(IndexedURL(i)));
+    int rand_pos = base::RandInt(0, num_bookmarks-1);
+    DVLOG(1) << "Moving client 1's bookmark " << i << " to position "
+             << rand_pos;
+    Move(1, node, node->parent(), rand_pos);
+  }
+
+  // Make changes on client 0.
+  for (size_t i = 0; i < num_bookmarks; ++i) {
+    const BookmarkNode* node = GetUniqueNodeByURL(0, GURL(IndexedURL(i)));
+    int rand_pos = base::RandInt(0, num_bookmarks-1);
+    DVLOG(1) << "Moving client 0's bookmark " << i << " to position "
+             << rand_pos;
+    Move(0, node, node->parent(), rand_pos);
+  }
+
+  ASSERT_TRUE(AwaitQuiescence());
+  ASSERT_TRUE(AllModelsMatch());
 }

@@ -174,6 +174,7 @@ class ConflictProgress {
   std::set<ConflictSet*>::const_iterator ConflictSetsBegin() const;
   std::set<ConflictSet*>::const_iterator ConflictSetsEnd() const;
   std::set<ConflictSet*>::size_type ConflictSetsSize() const;
+  bool HasSimpleConflictItem(const syncable::Id& id) const;
 
   // Various mutators for tracking commit conflicts.
   void AddConflictingItemById(const syncable::Id& the_id);
