@@ -1509,7 +1509,7 @@ bool RenderViewImpl::enumerateChosenDirectory(
 
 void RenderViewImpl::didStartLoading() {
   if (is_loading_) {
-    DLOG(WARNING) << "didStartLoading called while loading";
+    DVLOG(1) << "didStartLoading called while loading";
     return;
   }
 
@@ -1522,7 +1522,7 @@ void RenderViewImpl::didStartLoading() {
 
 void RenderViewImpl::didStopLoading() {
   if (!is_loading_) {
-    DLOG(WARNING) << "DidStopLoading called while not loading";
+    DVLOG(1) << "DidStopLoading called while not loading";
     return;
   }
 
