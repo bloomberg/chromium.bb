@@ -104,8 +104,6 @@ class VIEWS_EXPORT MenuController : public MessageLoop::Dispatcher {
 #if defined(OS_LINUX)
   bool OnMouseWheel(SubmenuView* source, const MouseWheelEvent& event);
 #endif
-  ui::GestureStatus OnGestureEvent(SubmenuView* source,
-                                   const GestureEvent& event);
 
   bool GetDropFormats(
       SubmenuView* source,

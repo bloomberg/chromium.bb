@@ -1,12 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "ui/views/controls/menu/submenu_view.h"
 
-#include <algorithm>
-
-#include "base/compiler_specific.h"
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/controls/menu/menu_config.h"
@@ -42,9 +39,7 @@ SubmenuView::SubmenuView(MenuItemView* parent)
       scroll_view_container_(NULL),
       max_accelerator_width_(0),
       minimum_preferred_width_(0),
-      resize_open_menu_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          scroll_animator_(new ScrollAnimator(this))) {
+      resize_open_menu_(false) {
   DCHECK(parent);
   // We'll delete ourselves, otherwise the ScrollView would delete us on close.
   set_parent_owned(false);
@@ -247,26 +242,6 @@ bool SubmenuView::OnMouseWheel(const MouseWheelEvent& e) {
   return true;
 }
 
-ui::GestureStatus SubmenuView::OnGestureEvent(const GestureEvent& e) {
-  ui::GestureStatus to_return = ui::GESTURE_STATUS_CONSUMED;
-  switch (e.type()) {
-    case ui::ET_GESTURE_SCROLL_BEGIN:
-      scroll_animator_->Stop();
-      break;
-    case ui::ET_GESTURE_SCROLL_UPDATE:
-      OnScroll(0, e.delta_y());
-      break;
-    case ui::ET_GESTURE_SCROLL_END:
-      if (e.delta_y() != 0.0f)
-        scroll_animator_->Start(0, e.delta_y());
-      break;
-    default:
-      to_return = ui::GESTURE_STATUS_UNKNOWN;
-      break;
-  }
-  return to_return;
-}
-
 bool SubmenuView::IsShowing() {
   return host_ && host_->IsMenuHostVisible();
 }
@@ -418,19 +393,6 @@ gfx::Rect SubmenuView::CalculateDropIndicatorBounds(
       // Don't render anything for on.
       return gfx::Rect();
   }
-}
-
-void SubmenuView::OnScroll(float dx, float dy) {
-  const gfx::Rect& vis_bounds = GetVisibleBounds();
-  const gfx::Rect& full_bounds = bounds();
-  int x = vis_bounds.x();
-  int y = vis_bounds.y() - static_cast<int>(dy);
-  // clamp y to [0, full_height - vis_height)
-  y = std::max(y, 0);
-  y = std::min(y, full_bounds.height() - vis_bounds.height() - 1);
-  gfx::Rect new_vis_bounds(x, y, vis_bounds.width(), vis_bounds.height());
-  if (new_vis_bounds != vis_bounds)
-    ScrollRectToVisible(new_vis_bounds);
 }
 
 }  // namespace views

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,7 +31,6 @@ class MenuHostRootView : public internal::RootView {
   virtual void OnMouseReleased(const MouseEvent& event) OVERRIDE;
   virtual void OnMouseMoved(const MouseEvent& event) OVERRIDE;
   virtual bool OnMouseWheel(const MouseWheelEvent& event) OVERRIDE;
-  virtual ui::GestureStatus OnGestureEvent(const GestureEvent& event) OVERRIDE;
 
  private:
   // Returns the MenuController for this MenuHostRootView.

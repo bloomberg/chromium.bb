@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,7 +9,6 @@
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "ui/views/animation/scroll_animator.h"
 #include "ui/views/controls/menu/menu_delegate.h"
 #include "ui/views/view.h"
 
@@ -34,8 +33,7 @@ class MenuScrollViewContainer;
 // MenuScrollViewContainer handles showing as much of the SubmenuView as the
 // screen allows. If the SubmenuView is taller than the screen, scroll buttons
 // are provided that allow the user to see all the menu items.
-class VIEWS_EXPORT SubmenuView : public View,
-                                 public ScrollDelegate {
+class VIEWS_EXPORT SubmenuView : public View {
  public:
   // The submenu's class name.
   static const char kViewClassName[];
@@ -75,9 +73,6 @@ class VIEWS_EXPORT SubmenuView : public View,
 
   // Scrolls on menu item boundaries.
   virtual bool OnMouseWheel(const MouseWheelEvent& e) OVERRIDE;
-
-  // Scrolls on menu item boundaries.
-  virtual ui::GestureStatus OnGestureEvent(const GestureEvent& e) OVERRIDE;
 
   // Returns true if the menu is showing.
   bool IsShowing();
@@ -175,9 +170,6 @@ class VIEWS_EXPORT SubmenuView : public View,
   gfx::Rect CalculateDropIndicatorBounds(MenuItemView* item,
                                          MenuDelegate::DropPosition position);
 
-  // Implementation of ScrollDelegate
-  virtual void OnScroll(float dx, float dy) OVERRIDE;
-
   // Parent menu item.
   MenuItemView* parent_menu_item_;
 
@@ -203,9 +195,6 @@ class VIEWS_EXPORT SubmenuView : public View,
 
   // Reposition open menu when contained views change size.
   bool resize_open_menu_;
-
-  // The submenu's scroll animator
-  scoped_ptr<ScrollAnimator> scroll_animator_;
 
   DISALLOW_COPY_AND_ASSIGN(SubmenuView);
 };
