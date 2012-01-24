@@ -23,6 +23,7 @@
         '<(DEPTH)/base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '<(DEPTH)/build/temp_gyp/googleurl.gyp:googleurl',
         '<(DEPTH)/net/net.gyp:net',
+        '<(webkit_src_dir)/Source/WebKit/chromium/WebKit.gyp:webkit',
       ],
       'defines': [
         'BLOB_IMPLEMENTATION'
@@ -52,14 +53,6 @@
         ['OS=="win" and component == "shared_library"', {
           'dependencies': [
             '<(DEPTH)/webkit/support/webkit_support.gyp:glue',
-          ],
-        }],
-        [# TODO(dpranke): Remove once the circular dependencies in
-         # WebKit.gyp are fixed on the mac.
-         # See https://bugs.webkit.org/show_bug.cgi?id=68463
-         'OS!="mac"', {
-          'dependencies': [
-           '<(webkit_src_dir)/Source/WebKit/chromium/WebKit.gyp:webkit',
           ],
         }],
       ],

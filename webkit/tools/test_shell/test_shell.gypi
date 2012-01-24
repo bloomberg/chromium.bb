@@ -22,6 +22,13 @@
   },
   'targets': [
     {
+      'target_name': 'pull_in_copy_TestNetscapePlugIn',
+      'type': 'none',
+      'dependencies': [
+        '../third_party/WebKit/Tools/DumpRenderTree/DumpRenderTree.gyp/DumpRenderTree.gyp:copy_TestNetscapePlugIn'
+      ],
+    },
+    {
       'target_name': 'test_shell_common',
       'type': 'static_library',
       'variables': {
