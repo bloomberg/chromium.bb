@@ -20,6 +20,7 @@ namespace extension_manifest_keys {
   extern const char kBackgroundPage[];
   extern const char kBackgroundPageLegacy[];
   extern const char kBackgroundScripts[];
+  extern const char kBackgroundPersistent[];
   extern const char kBrowserAction[];
   extern const char kBrowseURLs[];
   extern const char kChromeURLOverrides[];
@@ -156,6 +157,8 @@ namespace extension_manifest_errors {
   extern const char kInvalidBackgroundScript[];
   extern const char kInvalidBackgroundScripts[];
   extern const char kInvalidBackgroundInHostedApp[];
+  extern const char kInvalidBackgroundPersistent[];
+  extern const char kInvalidBackgroundPersistentNoPage[];
   extern const char kInvalidBrowserAction[];
   extern const char kInvalidBrowseURL[];
   extern const char kInvalidBrowseURLs[];

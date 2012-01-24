@@ -213,18 +213,15 @@ void ExtensionEventRouter::DispatchEventsToRenderersAcrossIncognito(
 
 bool ExtensionEventRouter::CanDispatchEventNow(
     const std::string& extension_id) {
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableLazyBackgroundPages))
-    return true;
-
   if (extension_id.empty())
-    // TODO(tessamac): Create all background pages. Wait for all to be loaded?
-    //                 or dispatch event to each extension when it's ready?
+    // TODO(mpcomplete): We need to test this per-extension, rather than
+    // globally.
     return true;
 
   const Extension* extension = profile_->GetExtensionService()->
-      GetExtensionById(extension_id, false);  // exclude disabled extensions
-  if (extension && extension->has_background_page()) {
+      GetExtensionById(extension_id, false);
+  if (extension && extension->has_background_page() &&
+      !extension->background_page_persists()) {
     ExtensionProcessManager* pm = profile_->GetExtensionProcessManager();
     if (!pm->GetBackgroundHostForExtension(extension_id)) {
       pm->CreateBackgroundHost(extension, extension->GetBackgroundURL());
@@ -298,28 +295,24 @@ void ExtensionEventRouter::DispatchEventImpl(
         DispatchEvent(listener->process, listener->extension_id,
                       event->event_name, event->cross_incognito_args,
                       event->event_url);
-        IncrementInFlightEvents(listener->extension_id);
+        IncrementInFlightEvents(extension);
       }
       continue;
     }
 
     DispatchEvent(listener->process, listener->extension_id,
                   event->event_name, event->event_args, event->event_url);
-    IncrementInFlightEvents(listener->extension_id);
+    IncrementInFlightEvents(extension);
   }
 }
 
-void ExtensionEventRouter::IncrementInFlightEvents(
-    const std::string& extension_id) {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableLazyBackgroundPages))
-    in_flight_events_[extension_id]++;
+void ExtensionEventRouter::IncrementInFlightEvents(const Extension* extension) {
+  if (!extension->background_page_persists())
+    in_flight_events_[extension->id()]++;
 }
 
 void ExtensionEventRouter::OnExtensionEventAck(
     const std::string& extension_id) {
-  CHECK(CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableLazyBackgroundPages));
   CHECK(in_flight_events_[extension_id] > 0);
   in_flight_events_[extension_id]--;
 }

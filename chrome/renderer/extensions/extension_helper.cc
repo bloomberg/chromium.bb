@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -208,9 +208,7 @@ void ExtensionHelper::OnExtensionResponse(int request_id,
       extension_dispatcher_->v8_context_set(), request_id, success,
       response, error, &extension_id);
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableLazyBackgroundPages))
-    extension_dispatcher_->CheckIdleStatus(extension_id);
+  extension_dispatcher_->CheckIdleStatus(extension_id);
 }
 
 void ExtensionHelper::OnExtensionMessageInvoke(const std::string& extension_id,

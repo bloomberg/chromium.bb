@@ -652,7 +652,6 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       switches::kEnableExperimentalExtensionApis,
       switches::kEnableInBrowserThumbnailing,
       switches::kEnableIPCFuzzing,
-      switches::kEnableLazyBackgroundPages,
       switches::kEnableNaCl,
       switches::kEnablePlatformApps,
       switches::kEnableSearchProviderApiV2,

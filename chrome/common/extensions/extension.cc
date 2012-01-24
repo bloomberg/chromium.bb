@@ -1287,6 +1287,29 @@ bool Extension::LoadBackgroundPage(
   return true;
 }
 
+bool Extension::LoadBackgroundPersistent(
+    const extensions::Manifest* manifest,
+    const ExtensionAPIPermissionSet& api_permissions,
+    string16* error) {
+  Value* background_persistent = NULL;
+  if (!api_permissions.count(ExtensionAPIPermission::kExperimental) ||
+      !manifest->Get(keys::kBackgroundPersistent, &background_persistent))
+    return true;
+
+  if (!background_persistent->IsType(Value::TYPE_BOOLEAN) ||
+      !background_persistent->GetAsBoolean(&background_page_persists_)) {
+    *error = ASCIIToUTF16(errors::kInvalidBackgroundPersistent);
+    return false;
+  }
+
+  if (!has_background_page()) {
+    *error = ASCIIToUTF16(errors::kInvalidBackgroundPersistentNoPage);
+    return false;
+  }
+
+  return true;
+}
+
 // static
 bool Extension::IsTrustedId(const std::string& id) {
   // See http://b/4946060 for more details.
@@ -1299,6 +1322,7 @@ Extension::Extension(const FilePath& path, Location location)
       offline_enabled_(false),
       location_(location),
       converted_from_user_script_(false),
+      background_page_persists_(true),
       is_storage_isolated_(false),
       launch_container_(extension_misc::LAUNCH_TAB),
       launch_width_(0),
@@ -2025,6 +2049,9 @@ bool Extension::InitFromValue(extensions::Manifest* manifest, int flags,
     return false;
 
   if (!LoadBackgroundPage(manifest, api_permissions, error))
+    return false;
+
+  if (!LoadBackgroundPersistent(manifest, api_permissions, error))
     return false;
 
   if (manifest->HasKey(keys::kDefaultLocale)) {

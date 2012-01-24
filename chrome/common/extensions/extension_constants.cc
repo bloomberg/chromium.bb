@@ -19,6 +19,7 @@ const char kBackground[] = "background";
 const char kBackgroundPage[] = "background.page";
 const char kBackgroundPageLegacy[] = "background_page";
 const char kBackgroundScripts[] = "background.scripts";
+const char kBackgroundPersistent[] = "background.persistent";
 const char kBrowserAction[] = "browser_action";
 const char kChromeURLOverrides[] = "chrome_url_overrides";
 const char kContentScripts[] = "content_scripts";
@@ -169,7 +170,7 @@ const char kInvalidAllFrames[] =
 const char kInvalidBackground[] =
     "Invalid value for 'background_page'.";
 const char kInvalidBackgroundCombination[] =
-    "The background.page and background.scripts properties cannot be used  at "
+    "The background.page and background.scripts properties cannot be used at "
     "the same time.";
 const char kInvalidBackgroundScript[] =
     "Invalid value for 'background.scripts[*]'.";
@@ -178,6 +179,11 @@ const char kInvalidBackgroundScripts[] =
 const char kInvalidBackgroundInHostedApp[] =
     "Invalid value for 'background_page'. Hosted apps must specify an "
     "absolute HTTPS URL for the background page.";
+const char kInvalidBackgroundPersistent[] =
+    "Invalid value for 'background.persistent'.";
+const char kInvalidBackgroundPersistentNoPage[] =
+    "Must specify one of background.page or background.scripts to use"
+    " background.persistent.";
 const char kInvalidBrowserAction[] =
     "Invalid value for 'browser_action'.";
 const char kInvalidChromeURLOverrides[] =

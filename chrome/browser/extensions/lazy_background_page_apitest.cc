@@ -23,14 +23,11 @@ class LazyBackgroundPageApiTest : public ExtensionApiTest {
 public:
   void SetUpCommandLine(CommandLine* command_line) {
     ExtensionApiTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kEnableLazyBackgroundPages);
+    command_line->AppendSwitch(switches::kEnableExperimentalExtensionApis);
   }
 };
 
 IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, BrowserActionCreateTab) {
-  ASSERT_TRUE(CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableLazyBackgroundPages));
-
   FilePath extdir = test_data_dir_.AppendASCII("lazy_background_page").
       AppendASCII("browser_action_create_tab");
   ASSERT_TRUE(LoadExtension(extdir));
@@ -62,9 +59,6 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, BrowserActionCreateTab) {
 
 IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest,
                        BrowserActionCreateTabAfterCallback) {
-  ASSERT_TRUE(CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableLazyBackgroundPages));
-
   FilePath extdir = test_data_dir_.AppendASCII("lazy_background_page").
       AppendASCII("browser_action_with_callback");
   ASSERT_TRUE(LoadExtension(extdir));
@@ -94,9 +88,6 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest,
 
 IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest,
                        BroadcastEvent) {
-  ASSERT_TRUE(CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableLazyBackgroundPages));
-
   FilePath extdir = test_data_dir_.AppendASCII("lazy_background_page").
       AppendASCII("broadcast_event");
   ASSERT_TRUE(LoadExtension(extdir));

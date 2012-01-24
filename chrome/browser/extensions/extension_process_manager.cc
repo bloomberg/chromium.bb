@@ -66,10 +66,8 @@ class IncognitoExtensionProcessManager : public ExtensionProcessManager {
 
 static void CreateBackgroundHostForExtensionLoad(
     ExtensionProcessManager* manager, const Extension* extension) {
-  // Start the process for the master page, if it exists and we're not lazy.
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableLazyBackgroundPages) &&
-      extension->has_background_page()) {
+  if (extension->has_background_page() &&
+      extension->background_page_persists()) {
     manager->CreateBackgroundHost(extension, extension->GetBackgroundURL());
   }
 }
@@ -481,9 +479,6 @@ void IncognitoExtensionProcessManager::Observe(
     const content::NotificationDetails& details) {
   switch (type) {
     case chrome::NOTIFICATION_BROWSER_WINDOW_READY: {
-      if (CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kEnableLazyBackgroundPages))
-        break;
       // We want to spawn our background hosts as soon as the user opens an
       // incognito window. Watch for new browsers and create the hosts if
       // it matches our profile.

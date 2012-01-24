@@ -3,9 +3,10 @@
   "description": "Warn the user when a stegosaurus might be present.",
   "version": "1",
   "manifest_version": 2,
-  "permissions": ["tabs"],
+  "permissions": ["tabs", "experimental"],
   "background": {
-    "scripts": ["background.js"]
+    "scripts": ["background.js"],
+    "persistent": false
   },
   "icons": {"48": "icon48.png"},
   "page_action": {
