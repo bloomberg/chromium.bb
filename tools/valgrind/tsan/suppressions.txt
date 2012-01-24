@@ -497,15 +497,6 @@
 }
 
 {
-  bug_87747
-  ThreadSanitizer:Race
-  fun:base::MessagePumpLibevent::FileDescriptorWatcher::~FileDescriptorWatcher
-  fun:ProcessSingleton::LinuxWatcher::SocketReader::~SocketReader
-  fun:ProcessSingleton::LinuxWatcher::RemoveSocketReader
-  fun:ProcessSingleton::LinuxWatcher::SocketReader::FinishWithACK
-  fun:ProcessSingleton::LinuxWatcher::HandleMessage
-}
-{
   bug_89141
   ThreadSanitizer:Race
   fun:base::Thread::message_loop
