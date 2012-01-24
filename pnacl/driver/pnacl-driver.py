@@ -281,6 +281,9 @@ GCCPatterns = [
   ( '(-pedantic-errors)',     AddCCFlag),
   ( '(-g.*)',                 AddCCFlag),
 
+  ( '(-pthread)',             "env.append('CC_FLAGS', $0),\n" +
+                              "env.append('INPUTS', '-lpthread')"),
+
   ( '-shared',                "env.set('SHARED', '1')"),
   ( '-static',                "env.set('STATIC', '1')"),
 
