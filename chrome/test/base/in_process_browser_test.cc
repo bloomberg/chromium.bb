@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -46,6 +46,7 @@
 
 #if defined(USE_AURA)
 #include "ui/aura/root_window.h"
+#include "ui/views/widget/widget.h"
 #endif
 
 namespace {
@@ -250,6 +251,14 @@ void InProcessBrowserTest::AddBlankTabAndShow(Browser* browser) {
   browser->AddSelectedTabWithURL(
       GURL(chrome::kAboutBlankURL), content::PAGE_TRANSITION_START_PAGE);
   observer.Wait();
+
+#if defined(USE_AURA)
+  // Disable animations on aura, otherwise any code that gets the bounds may get
+  // the wrong thing.
+  views::Widget* widget = views::Widget::GetWidgetForNativeView(
+      browser->window()->GetNativeHandle());
+  widget->SetVisibilityChangedAnimationsEnabled(false);
+#endif
 
   browser->window()->Show();
 }

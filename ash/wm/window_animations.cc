@@ -7,6 +7,7 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
 #include "ui/gfx/compositor/layer_animation_observer.h"
@@ -213,6 +214,8 @@ void AnimateHideWindow(aura::Window* window) {
 // WindowAnimation, public:
 
 void AnimateOnChildWindowVisibilityChanged(aura::Window* window, bool visible) {
+  if (window->GetIntProperty(aura::client::kAnimationsDisabledKey) == 1)
+    return;
   if (visible) {
     AnimateShowWindow(window);
   } else {

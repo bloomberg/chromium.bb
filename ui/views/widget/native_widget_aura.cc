@@ -588,7 +588,7 @@ void NativeWidgetAura::EndMoveLoop() {
 }
 
 void NativeWidgetAura::SetVisibilityChangedAnimationsEnabled(bool value) {
-  // Nothing needed on aura.
+  window_->SetIntProperty(aura::client::kAnimationsDisabledKey, value ? 0 : 1);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
