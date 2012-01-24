@@ -616,8 +616,8 @@ class BuildSpecsManager(object):
         version_info = self.GetCurrentVersionInfo()
         self.InitializeManifestVariables(version_info)
         if not self.latest_unprocessed:
-          new_manifest = self.CreateManifest()
           version = self.GetNextVersion(version_info)
+          new_manifest = self.CreateManifest()
           self.PublishManifest(new_manifest, version)
         else:
           version = self.latest_unprocessed
