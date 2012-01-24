@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
+#include "chrome/browser/ui/webui/options/pack_extension_handler.h"
 #include "chrome/browser/ui/webui/options/extension_settings_handler.h"
 #include "chrome/browser/ui/webui/shared_resources_data_source.h"
 #include "chrome/common/url_constants.h"
@@ -41,6 +42,10 @@ ExtensionsUI::ExtensionsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   ExtensionSettingsHandler* handler = new ExtensionSettingsHandler();
   handler->GetLocalizedValues(source->localized_strings());
   web_ui->AddMessageHandler(handler);
+
+  PackExtensionHandler* pack_handler = new PackExtensionHandler();
+  pack_handler->GetLocalizedValues(source->localized_strings());
+  web_ui->AddMessageHandler(pack_handler);
 }
 
 ExtensionsUI::~ExtensionsUI() {

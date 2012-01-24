@@ -4,9 +4,11 @@
 <meta charset="utf-8">
 
 <link rel="stylesheet" href="extensions.css">
+<link rel="stylesheet" href="pack_extension_overlay.css">
 <link rel="stylesheet" href="../shared/css/button.css">
 <link rel="stylesheet" href="../shared/css/checkbox.css">
 <link rel="stylesheet" href="../shared/css/chrome_shared2.css">
+<link rel="stylesheet" href="../shared/css/overlay.css">
 <link rel="stylesheet" href="../shared/css/trash.css">
 
 <script src="chrome://resources/js/cr.js"></script>
@@ -14,14 +16,16 @@
 <script src="chrome://resources/js/util.js"></script>
 <script src="chrome://resources/js/cr/ui.js"></script>
 
-<script src="chrome://extensions-frame/extension_list.js"></script>
 <script src="chrome://extensions-frame/extensions.js"></script>
-
 </head>
 
 <body class="uber-frame">
 
-<div>
+<div id="overlay" class="overlay" hidden>
+  <include src="pack_extension_overlay.html">
+</div>
+
+<div id="extension-settings">
   <h1 i18n-content="extensionSettings"></h1>
   <div id="dev-toggle">
     <input id="toggle-dev-on" type="checkbox" value="off">
@@ -103,7 +107,7 @@
           <a class="options-link" i18n-content="extensionSettingsOptions"
               href="#"></a>
           <a class="store-link" i18n-content="extensionSettingsVisitWebsite"
-              hidden></a>
+              target="_parent" hidden></a>
           <a class="reload-link" i18n-content="extensionSettingsReload"
               href="#" hidden></a>
         </div>

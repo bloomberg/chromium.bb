@@ -1,41 +1,30 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('options', function() {
-  const OptionsPage = options.OptionsPage;
-
+cr.define('extensions', function() {
   /**
    * PackExtensionOverlay class
    * Encapsulated handling of the 'Pack Extension' overlay page.
    * @constructor
    */
   function PackExtensionOverlay() {
-    OptionsPage.call(this, 'packExtensionOverlay',
-                     templateData.packExtensionOverlayTabTitle,
-                     'packExtensionOverlay');
   }
 
   cr.addSingletonGetter(PackExtensionOverlay);
 
   PackExtensionOverlay.prototype = {
-    // Inherit PackExtensionOverlay from OptionsPage.
-    __proto__: OptionsPage.prototype,
-
     /**
      * Initialize the page.
      */
     initializePage: function() {
-      // Call base class implementation to starts preference initialization.
-      OptionsPage.prototype.initializePage.call(this);
-
       $('packExtensionDismiss').onclick = function(event) {
-        OptionsPage.closeOverlay();
+        $('overlay').hidden = true;
       };
       $('packExtensionCommit').onclick = function(event) {
         var extensionPath = $('extensionRootDir').value;
         var privateKeyPath = $('extensionPrivateKey').value;
-        chrome.send('pack', [extensionPath, privateKeyPath]);
+        chrome.send('pack', [extensionPath, privateKeyPath, 0]);
       };
       $('browseExtensionDir').addEventListener('click',
           this.handleBrowseExtensionDir_.bind(this));
@@ -81,6 +70,16 @@ cr.define('options', function() {
         $('extensionPrivateKey').value = filePath;
       });
     },
+  };
+
+  /**
+   * Wrap up the pack process by showing the success |message| and closing
+   * the overlay.
+   * @param {String} message The message to show to the user.
+   */
+  PackExtensionOverlay.showSuccessMessage = function(message) {
+    alert(message);
+    $('overlay').hidden = true;
   };
 
   // Export

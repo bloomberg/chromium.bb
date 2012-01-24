@@ -1,7 +1,6 @@
 /* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file.
- */
+ * found in the LICENSE file. */
 
 /* This file holds CSS that should be shared, in theory, by all user-visible
  * chrome:// pages. This contrasts chrome_shared.css, which it is meant to
@@ -58,6 +57,21 @@ input[type=checkbox] ~ span {
   color: #444;
 }
 
+/* TEXT */
+input[type='password'],
+input[type='text'],
+input[type='url'],
+input:not([type]) {
+  border: 1px solid #aaa;
+  border-radius: 2px;
+  font-size: inherit;
+  padding: 3px;
+}
+
+input[type='text']:disabled {
+  color: #888;
+}
+
 /* Elements that need to be LTR even in an RTL context, but should align
  * right. (Namely, URLs, search engine names, etc.)
  */
@@ -99,23 +113,6 @@ html[dir='rtl'] select.weakrtl option {
 html[dir='rtl'] input.weakrtl::-webkit-input-placeholder,
 html[dir='rtl'] .weakrtl input::-webkit-input-placeholder {
   direction: rtl;
-}
-
-.overlay {
-  -webkit-box-align: center;
-  -webkit-box-orient: vertical;
-  -webkit-box-pack: center;
-  -webkit-transition: 200ms opacity;
-  background-color: rgba(255, 255, 255, 0.75);
-  bottom: 0;
-  display: -webkit-box;
-  left: 0;
-  overflow: auto;
-  padding: 20px;
-  padding-bottom: 130px;
-  position: fixed;
-  right: 0;
-  top: 0;
 }
 
 /* TODO(estade): remove this: http://crbug.com/109967

@@ -1,0 +1,74 @@
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+/* The shield that overlays the background. */
+.overlay {
+  -webkit-box-align: center;
+  -webkit-box-orient: vertical;
+  -webkit-box-pack: center;
+  -webkit-transition: 200ms opacity;
+  background-color: rgba(255, 255, 255, 0.75);
+  bottom: 0;
+  display: -webkit-box;
+  left: 0;
+  overflow: auto;
+  padding: 20px;
+  padding-bottom: 130px;
+  position: fixed;
+  right: 0;
+  top: 0;
+}
+
+/* The foregrounded dialog. */
+.overlay .page {
+  background: white;
+  box-shadow: 0 3px 15px rgba(0, 0, 0, 0.3), 0 3px 57px rgba(0, 0, 0, 0.3);
+  min-width: 400px;
+  padding: 0;
+  position: relative;
+}
+
+.overlay .page h1 {
+  -webkit-padding-end: 24px;
+  -webkit-user-select: none;
+  background: -webkit-linear-gradient(white, #F8F8F8);
+  border-bottom: 1px solid rgba(188, 193, 208, .5);
+  color: #333;
+  font-size: 105%;
+  font-weight: bold;
+  margin: 0;
+  padding: 10px 15px 8px;
+  text-shadow: white 0 1px 2px;
+}
+
+.overlay .page .content-area {
+  padding: 10px 15px 5px;
+}
+
+.overlay .page .action-area {
+  -webkit-box-align: center;
+  -webkit-box-orient: horizontal;
+  -webkit-box-pack: end;
+  border-top: 1px solid rgba(188, 193, 208, .5);
+  display: -webkit-box;
+  padding: 12px;
+}
+
+html[dir='rtl'] .overlay .page .action-area {
+  left: 0;
+}
+
+.overlay .page action-area-right {
+  display: -webkit-box;
+}
+
+.overlay .page .button-strip {
+  -webkit-box-orient: horizontal;
+  display: -webkit-box;
+}
+
+.overlay .page .button-strip > button {
+  -webkit-margin-start: 10px;
+  display: block;
+}

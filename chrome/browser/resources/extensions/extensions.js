@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 <include src="../uber/uber_utils.js"></include>
+<include src="extension_list.js"></include>
+<include src="pack_extension_overlay.js"></include>
 
 // Used for observing function of the backend datasource for this page by
 // tests.
@@ -28,6 +30,8 @@ cr.define('extensions', function() {
      * Perform initial setup.
      */
     initialize: function() {
+      cr.enablePlatformSpecificCSSRules();
+
       // Set the title.
       var title = localStrings.getString('extensionSettings');
       uber.invokeMethodOnParent('setTitle', {title: title});
@@ -54,6 +58,9 @@ cr.define('extensions', function() {
           this.handlePackExtension_.bind(this));
       $('update-extensions-now').addEventListener('click',
           this.handleUpdateExtensionNow_.bind(this));
+
+      var packExtensionOverlay = extensions.PackExtensionOverlay.getInstance();
+      packExtensionOverlay.initializePage();
     },
 
     /**
@@ -93,7 +100,8 @@ cr.define('extensions', function() {
      * @private
      */
     handlePackExtension_: function(e) {
-      // TODO(estade): figure out how to handle overlays.
+      $('overlay').hidden = false;
+
       chrome.send('coreOptionsUserMetricsAction', ['Options_PackExtension']);
     },
 
@@ -175,6 +183,25 @@ cr.define('extensions', function() {
 
     var extensionList = $('extension-settings-list');
     ExtensionsList.decorate(extensionList);
+  }
+
+  // Indicate that warning |message| has occured for pack of |crx_path| and
+  // |pem_path| files.  Ask if user wants override the warning.  Send
+  // |overrideFlags| to repeated 'pack' call to accomplish the override.
+  ExtensionSettings.askToOverrideWarning
+      = function(message, crx_path, pem_path, overrideFlags) {
+    OptionsPage.closeOverlay();
+    AlertOverlay.show(
+      localStrings.getString('packExtensionWarningTitle'),
+      message,
+      localStrings.getString('packExtensionProceedAnyway'),
+      localStrings.getString('cancel'),
+      function() {
+        chrome.send('pack', [crx_path, pem_path, overrideFlags]);
+      },
+      function() {
+        OptionsPage.closeOverlay();
+      });
   }
 
   // Export
