@@ -283,15 +283,6 @@ class NinjaWriter:
     config = spec['configurations'][config_name]
     self.target = Target(spec['type'])
 
-    if spec['type'] == 'settings':
-      # TODO: 'settings' is not actually part of gyp; it was
-      # accidentally introduced somehow into just the Linux build files.
-      # Remove this (or make it an error) once all the users are fixed.
-      print ("WARNING: %s uses invalid type 'settings'.  " % self.name +
-             "Please fix the source gyp file to use type 'none'.")
-      print "See http://code.google.com/p/chromium/issues/detail?id=96629 ."
-      spec['type'] = 'none'
-
     self.is_mac_bundle = gyp.xcode_emulation.IsMacBundle(self.flavor, spec)
     if self.flavor == 'mac':
       self.xcode_settings = gyp.xcode_emulation.XcodeSettings(spec)
