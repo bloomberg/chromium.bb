@@ -203,6 +203,25 @@ SyncScheduler::~SyncScheduler() {
   StopImpl(base::Closure());
 }
 
+void SyncScheduler::OnCredentialsUpdated() {
+  DCHECK_EQ(MessageLoop::current(), sync_loop_);
+
+  // TODO(lipalani): crbug.com/106262. One issue here is that if after
+  // the auth error we happened to do gettime and it succeeded then
+  // the |connection_code_| would be briefly OK however it would revert
+  // back to SYNC_AUTH_ERROR at the end of the sync cycle. The
+  // referenced bug explores the option of removing gettime calls
+  // altogethere.
+  if (HttpResponse::SYNC_AUTH_ERROR == connection_code_) {
+    DCHECK(!server_connection_ok_);
+    connection_code_ = HttpResponse::SERVER_CONNECTION_OK;
+    server_connection_ok_ = true;
+    PostTask(FROM_HERE, "DoCanaryJob",
+             base::Bind(&SyncScheduler::DoCanaryJob,
+                        weak_ptr_factory_.GetWeakPtr()));
+  }
+}
+
 void SyncScheduler::CheckServerConnectionManagerStatus(
     HttpResponse::ServerConnectionCode code) {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
@@ -239,7 +258,7 @@ void SyncScheduler::CheckServerConnectionManagerStatus(
     // If commit command has failed but the next GU succeeded we dont want to
     // break out of exponential backoff. This is a conservative approach to
     // protect the server. The aggressive approach would be to retry if any
-    // command succeeded.
+    // command succeeded
     // There is one issue with this as well. If the client could connect
     // through 2 proxies and one proxy is broken and the other is
     // not then it is possible we will get into a cycle. However

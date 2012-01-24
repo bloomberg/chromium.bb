@@ -1134,10 +1134,8 @@ void SyncManager::SyncInternal::UpdateCredentials(
     sync_notifier_->UpdateCredentials(
         credentials.email, credentials.sync_token);
     if (!setup_for_test_mode_ && initialized_) {
-      // Post a task so we don't block UpdateCredentials.
-      MessageLoop::current()->PostTask(
-          FROM_HERE, base::Bind(&SyncInternal::CheckServerReachable,
-                                weak_ptr_factory_.GetWeakPtr()));
+      if (scheduler())
+        scheduler()->OnCredentialsUpdated();
     }
   }
 }

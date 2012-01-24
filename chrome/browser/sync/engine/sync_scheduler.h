@@ -109,6 +109,9 @@ class SyncScheduler : public sessions::SyncSession::Delegate,
   // TODO(tim): Look at URLRequestThrottlerEntryInterface.
   static base::TimeDelta GetRecommendedDelay(const base::TimeDelta& base_delay);
 
+  // Called when credentials are updated by the user.
+  void OnCredentialsUpdated();
+
   // SyncSession::Delegate implementation.
   virtual void OnSilencedUntil(
       const base::TimeTicks& silenced_until) OVERRIDE;
