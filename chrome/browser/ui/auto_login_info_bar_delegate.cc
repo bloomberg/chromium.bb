@@ -24,6 +24,7 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/common/referrer.h"
+#include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources_standard.h"
 #include "net/base/escape.h"
@@ -201,7 +202,9 @@ InfoBarDelegate::Type ReverseAutoLoginInfoBarDelegate::GetInfoBarType() const {
 }
 
 string16 ReverseAutoLoginInfoBarDelegate::GetMessageText() const {
-  return l10n_util::GetStringUTF16(IDS_REVERSE_AUTOLOGIN_INFOBAR_MESSAGE);
+  return l10n_util::GetStringFUTF16(
+      IDS_REVERSE_AUTOLOGIN_INFOBAR_MESSAGE,
+      l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME));
 }
 
 string16 ReverseAutoLoginInfoBarDelegate::GetButtonLabel(

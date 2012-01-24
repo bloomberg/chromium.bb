@@ -57,9 +57,6 @@ AutoLoginPrompter::~AutoLoginPrompter() {
 void AutoLoginPrompter::ShowInfoBarIfPossible(net::URLRequest* request,
                                               int child_id,
                                               int route_id) {
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableAutologin))
-    return;
-
   // See if the response contains the X-Auto-Login header.  If so, this was
   // a request for a login page, and the server is allowing the browser to
   // suggest auto-login, if available.
@@ -132,6 +129,10 @@ void AutoLoginPrompter::ShowInfoBarUIThread(const std::string& account,
   const std::string& username = signin_manager->GetAuthenticatedUsername();
 
   if (use_normal_auto_login_infobar) {
+    if (!CommandLine::ForCurrentProcess()->
+        HasSwitch(switches::kEnableAutologin))
+      return;
+
     // Make sure that |account|, if specified, matches the logged in user.
     // However, |account| is usually empty.
     if (!account.empty() && (username != account))
