@@ -8,10 +8,14 @@
 #include "remoting/client/chromoting_view.h"
 #include "remoting/client/client_context.h"
 #include "remoting/client/rectangle_update_decoder.h"
+#include "remoting/protocol/authenticator.h"
+#include "remoting/protocol/authentication_method.h"
 #include "remoting/protocol/connection_to_host.h"
 #include "remoting/protocol/session_config.h"
 
 namespace remoting {
+
+using protocol::AuthenticationMethod;
 
 ChromotingClient::QueuedVideoPacket::QueuedVideoPacket(
     const VideoPacket* packet, const base::Closure& done)
@@ -44,8 +48,13 @@ ChromotingClient::~ChromotingClient() {
 void ChromotingClient::Start(scoped_refptr<XmppProxy> xmpp_proxy) {
   DCHECK(message_loop()->BelongsToCurrentThread());
 
+  scoped_ptr<protocol::Authenticator> authenticator =
+      config_.authentication_method.CreateAuthenticator(
+          config_.local_jid, config_.authentication_tag,
+          config_.shared_secret);
+
   connection_->Connect(xmpp_proxy, config_.local_jid, config_.host_jid,
-                       config_.host_public_key, config_.authentication_code,
+                       config_.host_public_key, authenticator.Pass(),
                        this, this, this);
 
   if (!view_->Initialize()) {

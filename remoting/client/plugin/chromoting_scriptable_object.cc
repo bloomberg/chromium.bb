@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop_proxy.h"
+#include "base/string_split.h"
 // TODO(wez): Remove this when crbug.com/86353 is complete.
 #include "ppapi/cpp/private/var_private.h"
 #include "remoting/base/auth_token_util.h"
@@ -57,7 +58,7 @@ void ChromotingScriptableObject::Init() {
 
   // Plugin API version.
   // This should be incremented whenever the API interface changes.
-  AddAttribute(kApiVersionAttribute, Var(3));
+  AddAttribute(kApiVersionAttribute, Var(4));
 
   // This should be updated whenever we remove support for an older version
   // of the API.
@@ -358,7 +359,9 @@ Var ChromotingScriptableObject::DoConnect(const std::vector<Var>& args,
   //   host_jid
   //   host_public_key
   //   client_jid
-  //   authentication_code (optional)
+  //   shared_secret
+  //   authentication_methods
+  //   authentication_tag
   unsigned int arg = 0;
   if (!args[arg].is_string()) {
     *exception = Var("The host_jid must be a string.");
@@ -378,13 +381,48 @@ Var ChromotingScriptableObject::DoConnect(const std::vector<Var>& args,
   }
   std::string client_jid = args[arg++].AsString();
 
-  std::string authentication_code;
+  if (!args[arg].is_string()) {
+    *exception = Var("The shared_secret must be a string.");
+    return Var();
+  }
+  std::string shared_secret = args[arg++].AsString();
+
+  // Older versions of the webapp do not supply the following two
+  // parameters.
+
+  // By default use V1 authentication.
+  protocol::AuthenticationMethod authentication_method =
+      protocol::AuthenticationMethod::V1Token();
   if (args.size() > arg) {
     if (!args[arg].is_string()) {
-      *exception = Var("The authentication code must be a string.");
+      *exception = Var("The authentication_method must be a string.");
       return Var();
     }
-    authentication_code = args[arg++].AsString();
+
+    authentication_method = protocol::AuthenticationMethod::Invalid();
+    std::string as_string = args[arg++].AsString();
+    std::vector<std::string> auth_methods;
+    base::SplitString(as_string, ',', &auth_methods);
+    for (std::vector<std::string>::iterator it = auth_methods.begin();
+         it != auth_methods.end(); ++it) {
+      authentication_method =
+          protocol::AuthenticationMethod::FromString(as_string);
+      if (authentication_method.is_valid())
+        break;
+    }
+    if (!authentication_method.is_valid()) {
+      *exception = Var("No valid authentication methods specified.");
+      return Var();
+    }
+  }
+
+  std::string authentication_tag;
+  if (args.size() > arg) {
+    if (!args[arg].is_string()) {
+      *exception = Var("The authentication_tag must be a string.");
+      return Var();
+    }
+    authentication_tag = args[arg++].AsString();
   }
 
   if (args.size() != arg) {
@@ -393,13 +431,14 @@ Var ChromotingScriptableObject::DoConnect(const std::vector<Var>& args,
   }
 
   VLOG(1) << "Connecting to host. "
-          << "client_jid: " << client_jid << ", host_jid: " << host_jid
-          << ", authentication_code: " << authentication_code;
+          << "client_jid: " << client_jid << ", host_jid: " << host_jid;
   ClientConfig config;
   config.local_jid = client_jid;
   config.host_jid = host_jid;
   config.host_public_key = host_public_key;
-  config.authentication_code = authentication_code;
+  config.shared_secret = shared_secret;
+  config.authentication_method = authentication_method;
+  config.authentication_tag = authentication_tag;
   instance_->Connect(config);
 
   return Var();

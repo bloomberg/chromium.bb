@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,6 +31,7 @@ class VideoPacket;
 
 namespace protocol {
 
+class Authenticator;
 class ClientControlDispatcher;
 class ClientEventDispatcher;
 class ClientStub;
@@ -72,10 +73,10 @@ class ConnectionToHost : public SignalStrategy::Listener,
   virtual ~ConnectionToHost();
 
   virtual void Connect(scoped_refptr<XmppProxy> xmpp_proxy,
-                       const std::string& your_jid,
+                       const std::string& local_jid,
                        const std::string& host_jid,
                        const std::string& host_public_key,
-                       const std::string& access_code,
+                       scoped_ptr<Authenticator> authenticator,
                        HostEventCallback* event_callback,
                        ClientStub* client_stub,
                        VideoStub* video_stub);
@@ -129,7 +130,7 @@ class ConnectionToHost : public SignalStrategy::Listener,
 
   std::string host_jid_;
   std::string host_public_key_;
-  std::string access_code_;
+  scoped_ptr<Authenticator> authenticator_;
 
   HostEventCallback* event_callback_;
 
