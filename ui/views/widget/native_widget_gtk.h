@@ -465,6 +465,7 @@ class VIEWS_EXPORT NativeWidgetGtk : public internal::NativeWidgetPrivate,
   bool is_menu_;
 
   scoped_ptr<ui::GtkSignalRegistrar> signal_registrar_;
+  scoped_ptr<ui::GtkSignalRegistrar> destroy_signal_registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeWidgetGtk);
 };

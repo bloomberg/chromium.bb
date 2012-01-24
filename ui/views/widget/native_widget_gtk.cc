@@ -361,7 +361,8 @@ NativeWidgetGtk::NativeWidgetGtk(internal::NativeWidgetDelegate* delegate)
       has_keyboard_grab_(false),
       grab_notify_signal_id_(0),
       is_menu_(false),
-      signal_registrar_(new ui::GtkSignalRegistrar) {
+      signal_registrar_(new ui::GtkSignalRegistrar),
+      destroy_signal_registrar_(new ui::GtkSignalRegistrar) {
   static bool installed_message_loop_observer = false;
   if (!installed_message_loop_observer) {
     installed_message_loop_observer = true;
@@ -372,19 +373,24 @@ NativeWidgetGtk::NativeWidgetGtk(internal::NativeWidgetDelegate* delegate)
 }
 
 NativeWidgetGtk::~NativeWidgetGtk() {
-  // We need to delete the input method before calling DestroyRootView(),
-  // because it'll set focus_manager_ to NULL.
   if (ownership_ == Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET) {
     DCHECK(widget_ == NULL);
     delete delegate_;
   } else {
-    // Disconnect from GObjectDestructorFILO because we're
-    // deleting the NativeWidgetGtk.
     bool has_widget = !!widget_;
-    if (has_widget)
+    if (has_widget) {
+      // Disconnect all signal handlers registered with this object,
+      // except one for "destroy", before deleting the NativeWidgetGtk.
       ui::GObjectDestructorFILO::GetInstance()->Disconnect(
           G_OBJECT(widget_), &OnDestroyedThunk, this);
+      signal_registrar_.reset();
+    }
     CloseNow();
+    // If gtk_widget_destroy didn't fire destroy signal for whatever reason,
+    // fail in debug build and call OnDestroy() for release build.
+    DCHECK(!widget_);
+    if (widget_)
+      OnDestroy(widget_);
     // Call OnNativeWidgetDestroyed because we're not calling
     // OnDestroyedThunk
     if (has_widget)
@@ -711,8 +717,12 @@ void NativeWidgetGtk::InitNativeWidget(const Widget::InitParams& params) {
                              G_CALLBACK(&OnFocusInThunk), this);
   signal_registrar_->Connect(widget_, "focus_out_event",
                              G_CALLBACK(&OnFocusOutThunk), this);
-  signal_registrar_->Connect(widget_, "destroy",
-                             G_CALLBACK(&OnDestroyThunk), this);
+
+  // Use the dedicated registrar for destory so that other handlers
+  // can be unregistered first.
+  destroy_signal_registrar_->Connect(widget_, "destroy",
+                                     G_CALLBACK(&OnDestroyThunk), this);
+
   signal_registrar_->Connect(widget_, "show",
                              G_CALLBACK(&OnShowThunk), this);
   signal_registrar_->Connect(widget_, "map",
@@ -1687,6 +1697,7 @@ void NativeWidgetGtk::OnGrabNotify(GtkWidget* widget, gboolean was_grabbed) {
 
 void NativeWidgetGtk::OnDestroy(GtkWidget* object) {
   signal_registrar_.reset();
+  destroy_signal_registrar_.reset();
   if (grab_notify_signal_id_) {
     g_signal_handler_disconnect(window_contents_, grab_notify_signal_id_);
     grab_notify_signal_id_ = 0;
@@ -1694,6 +1705,9 @@ void NativeWidgetGtk::OnDestroy(GtkWidget* object) {
   delegate_->OnNativeWidgetDestroying();
   if (!child_)
     ActiveWindowWatcherX::RemoveObserver(this);
+  if (widget_)
+    SetNativeWindowProperty(kNativeWidgetKey, NULL);
+
   // Note that this handler is hooked to GtkObject::destroy.
   // NULL out pointers here since we might still be in an observer list
   // until deletion happens.
