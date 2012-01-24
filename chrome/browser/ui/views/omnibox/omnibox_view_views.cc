@@ -132,14 +132,6 @@ void ApplyURLStyle(views::Textfield* textfield,
   textfield->ApplyStyleRange(style);
 }
 
-// TODO(oshima): I'm currently using slightly different color than
-// gtk/win omnibox so that I can tell which one is used from its color.
-// Fix this once we finish all features.
-const SkColor kFadedTextColor = SK_ColorGRAY;
-const SkColor kNormalTextColor = SK_ColorBLACK;
-const SkColor kSecureSchemeColor = SK_ColorGREEN;
-const SkColor kSecurityErrorSchemeColor = SK_ColorRED;
-
 // The following 2 const values are the same as in browser_defaults.
 const int kAutocompleteEditFontPixelSize = 15;
 const int kAutocompleteEditFontPixelSizeInPopup = 10;
@@ -791,28 +783,26 @@ void OmniboxViewViews::EmphasizeURLComponents() {
   AutocompleteInput::ParseForEmphasizeComponents(text, model_->GetDesiredTLD(),
                                                  &scheme, &host);
   const bool emphasize = model_->CurrentTextIsURL() && (host.len > 0);
-  SkColor base_color = emphasize ? kFadedTextColor : kNormalTextColor;
+
+  SkColor base_color = LocationBarView::GetColor(
+      security_level_,
+      emphasize ? LocationBarView::DEEMPHASIZED_TEXT : LocationBarView::TEXT);
   ApplyURLStyle(textfield_, 0, text.length(), base_color, false);
-  if (emphasize)
-    ApplyURLStyle(textfield_, host.begin, host.end(), kNormalTextColor, false);
+
+  if (emphasize) {
+    SkColor normal_color =
+        LocationBarView::GetColor(security_level_, LocationBarView::TEXT);
+    ApplyURLStyle(textfield_, host.begin, host.end(), normal_color, false);
+  }
+
   // Emphasize the scheme for security UI display purposes (if necessary).
   if (!model_->user_input_in_progress() && scheme.is_nonempty() &&
       (security_level_ != ToolbarModel::NONE)) {
-    const size_t start = scheme.begin, end = scheme.end();
-    switch (security_level_) {
-      case ToolbarModel::SECURITY_ERROR:
-        ApplyURLStyle(textfield_, start, end, kSecurityErrorSchemeColor, true);
-        break;
-      case ToolbarModel::SECURITY_WARNING:
-        ApplyURLStyle(textfield_, start, end, kFadedTextColor, false);
-        break;
-      case ToolbarModel::EV_SECURE:
-      case ToolbarModel::SECURE:
-        ApplyURLStyle(textfield_, start, end, kSecureSchemeColor, false);
-        break;
-      default:
-        NOTREACHED() << "Unknown SecurityLevel:" << security_level_;
-    }
+    SkColor security_color = LocationBarView::GetColor(
+        security_level_, LocationBarView::SECURITY_TEXT);
+    bool use_strikethrough = (security_level_ == ToolbarModel::SECURITY_ERROR);
+    ApplyURLStyle(textfield_, scheme.begin, scheme.end(),
+                  security_color, use_strikethrough);
   }
 }
 
