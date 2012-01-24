@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -118,6 +118,15 @@ DictionaryValue* ExtensionTabUtil::CreateTabValue(const WebContents* contents,
   result->SetString(keys::kTitleKey, contents->GetTitle());
   result->SetBoolean(keys::kIncognitoKey,
                      contents->GetBrowserContext()->IsOffTheRecord());
+
+  if (tab_strip) {
+    content::NavigationController* opener =
+        tab_strip->GetOpenerOfTabContentsAt(tab_index);
+    if (opener) {
+      result->SetInteger(keys::kOpenerTabIdKey,
+                         ExtensionTabUtil::GetTabId(opener->GetWebContents()));
+    }
+  }
 
   if (!is_loading) {
     NavigationEntry* entry = contents->GetController().GetActiveEntry();

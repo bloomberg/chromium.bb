@@ -1,10 +1,16 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 var secondWindowId;
 var thirdWindowId;
 var testTabId;
+
+function clickLink(id) {
+  var clickEvent = document.createEvent('MouseEvents');
+  clickEvent.initMouseEvent('click', true, true, window);
+  document.querySelector('#' + id).dispatchEvent(clickEvent);
+}
 
 chrome.test.runTests([
 
@@ -93,5 +99,17 @@ chrome.test.runTests([
       }));
     }));
   },
+
+  function openerTabId() {
+    chrome.test.listenOnce(
+        chrome.tabs.onCreated,
+        function(tab) {
+      chrome.tabs.getCurrent(pass(function(thisTab) {
+        assertEq(thisTab.id, tab.openerTabId);
+      }));
+    });
+    // Pretend to click a link (openers aren't tracked when using tabs.create).
+    clickLink("test_link");
+  }
 
 ]);

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,6 +25,7 @@ const char kNewPositionKey[] = "newPosition";
 const char kNewWindowIdKey[] = "newWindowId";
 const char kOldPositionKey[] = "oldPosition";
 const char kOldWindowIdKey[] = "oldWindowId";
+const char kOpenerTabIdKey[] = "openerTabId";
 const char kPinnedKey[] = "pinned";
 const char kPopulateKey[] = "populate";
 const char kQualityKey[] = "quality";
