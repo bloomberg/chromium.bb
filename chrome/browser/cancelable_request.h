@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -767,8 +767,8 @@ class CancelableRequest<base::Closure> : public CancelableRequestBase {
 };
 
 template<typename A1>
-class CancelableRequest<base::Callback<void(A1)> > :
-    public CancelableRequestBase {
+class CancelableRequest<base::Callback<void(A1)> >
+    : public CancelableRequestBase {
  public:
   typedef base::Callback<void(A1)> CallbackType;
 
@@ -798,8 +798,8 @@ class CancelableRequest<base::Callback<void(A1)> > :
 };
 
 template<typename A1, typename A2>
-class CancelableRequest<base::Callback<void(A1,A2)> > :
-    public CancelableRequestBase {
+class CancelableRequest<base::Callback<void(A1,A2)> >
+    : public CancelableRequestBase {
  public:
   typedef base::Callback<void(A1,A2)> CallbackType;
 
@@ -831,8 +831,8 @@ class CancelableRequest<base::Callback<void(A1,A2)> > :
 };
 
 template<typename A1, typename A2, typename A3>
-class CancelableRequest<base::Callback<void(A1,A2,A3)> > :
-    public CancelableRequestBase {
+class CancelableRequest<base::Callback<void(A1,A2,A3)> >
+    : public CancelableRequestBase {
  public:
   typedef base::Callback<void(A1,A2,A3)> CallbackType;
 
@@ -866,8 +866,8 @@ class CancelableRequest<base::Callback<void(A1,A2,A3)> > :
 };
 
 template<typename A1, typename A2, typename A3, typename A4>
-class CancelableRequest<base::Callback<void(A1, A2, A3, A4)> > :
-    public CancelableRequestBase {
+class CancelableRequest<base::Callback<void(A1, A2, A3, A4)> >
+    : public CancelableRequestBase {
  public:
   typedef base::Callback<void(A1, A2, A3, A4)> CallbackType;
 
@@ -903,8 +903,8 @@ class CancelableRequest<base::Callback<void(A1, A2, A3, A4)> > :
 };
 
 template<typename A1, typename A2, typename A3, typename A4, typename A5>
-class CancelableRequest<base::Callback<void(A1, A2, A3, A4, A5)> > :
-    public CancelableRequestBase {
+class CancelableRequest<base::Callback<void(A1, A2, A3, A4, A5)> >
+    : public CancelableRequestBase {
  public:
   typedef base::Callback<void(A1, A2, A3, A4, A5)> CallbackType;
 
@@ -943,8 +943,8 @@ class CancelableRequest<base::Callback<void(A1, A2, A3, A4, A5)> > :
 
 template<typename A1, typename A2, typename A3, typename A4, typename A5,
          typename A6>
-class CancelableRequest<base::Callback<void(A1, A2, A3, A4, A5, A6)> > :
-    public CancelableRequestBase {
+class CancelableRequest<base::Callback<void(A1, A2, A3, A4, A5, A6)> >
+    : public CancelableRequestBase {
  public:
   typedef base::Callback<void(A1, A2, A3, A4, A5, A6)> CallbackType;
 
@@ -1002,13 +1002,8 @@ template<typename CB, typename Type>
 class CancelableRequest1 : public CancelableRequest<CB> {
  public:
   explicit CancelableRequest1(
-      typename CancelableRequest<CB>::CallbackType* callback)
-      : CancelableRequest<CB>(callback) {
-  }
-
-  explicit CancelableRequest1(
       const typename CancelableRequest<CB>::CallbackType& callback)
-      : CancelableRequest<CB>(callback) {
+      : CancelableRequest<CB>(callback), value() {
   }
 
   // The value.
