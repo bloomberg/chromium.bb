@@ -75,6 +75,8 @@ xkb:ch::ger	ch	ger	!defined(USE_VIRTUAL_KEYBOARD)
 mozc	us	ja
 mozc-jp	jp	ja	!defined(USE_VIRTUAL_KEYBOARD)
 mozc-dv	us(dvorak)	ja	!defined(USE_VIRTUAL_KEYBOARD)
+# |kMozcJaInputMethodIds| in ibus_ui_controller.cc should also be updated when
+# a new Mozc Japanese IME for another keyboard layout is added.
 xkb:jp::jpn	jp	jpn	!defined(USE_VIRTUAL_KEYBOARD)
 zinnia-japanese	handwriting-vk,jp	ja	defined(USE_VIRTUAL_KEYBOARD)
 

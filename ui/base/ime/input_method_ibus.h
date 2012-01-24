@@ -46,15 +46,14 @@ class UI_EXPORT InputMethodIBus : public InputMethodBase {
   virtual base::i18n::TextDirection GetInputTextDirection() OVERRIDE;
   virtual bool IsActive() OVERRIDE;
 
- protected:
   // Sets |new_client| as a new IBusClient. InputMethodIBus owns the object.
-  // This method has to be called before InputMethodIBus::Init() is called.
-  // Protected: for testing.
+  // A client has to be set before InputMethodIBus::Init() is called.
   void set_ibus_client(scoped_ptr<internal::IBusClient> new_client);
 
-  // Protected: for testing. The caller is not allowed to deleted the object.
+  // The caller is not allowed to delete the object.
   internal::IBusClient* ibus_client() const;
 
+ protected:
   // Returns the global IBusBus instance. Protected: for testing.
   IBusBus* GetBus();
 

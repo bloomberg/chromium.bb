@@ -25,7 +25,6 @@ class TestableInputMethodIBus : public InputMethodIBus {
   }
 
   // Change access rights.
-  using InputMethodIBus::ibus_client;
   using InputMethodIBus::GetBus;
 };
 
