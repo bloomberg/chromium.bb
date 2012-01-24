@@ -7,7 +7,7 @@
 
     Permission to use, copy, modify, distribute, and sell this
     software and its documentation for any purpose is hereby granted
-    without fee, provided that\n the above copyright notice appear in
+    without fee, provided that the above copyright notice appear in
     all copies and that both that copyright notice and this permission
     notice appear in supporting documentation, and that the name of
     the copyright holders not be used in advertising or publicity
@@ -172,7 +172,7 @@
       A buffer provides the content for a wl_surface.  Buffers are
       created through factory interfaces such as wl_drm, wl_shm or
       similar.  It has a width and a height and can be attached to a
-      wl_surface, but the mechnism by which a client provides and
+      wl_surface, but the mechanism by which a client provides and
       updates the contents is defined by the buffer factory interface
     </description>
 
@@ -197,7 +197,7 @@
     </request>
 
     <event name="release">
-      <description summary="compositor releses buffer">
+      <description summary="compositor releases buffer">
 	Sent when an attached buffer is no longer used by the compositor.
       </description>
     </event>
@@ -589,7 +589,7 @@
 	Notification that this input device's pointer is focused on
 	certain surface. When an input_device enters a surface, the
 	pointer image is undefined and a client should respond to this
-	event by setting an apropriate pointer image.
+	event by setting an appropriate pointer image.
       </description>
 
       <arg name="time" type="uint"/>
@@ -643,7 +643,7 @@
 
 
   <interface name="wl_output" version="1">
-    <description summary="composior output region">
+    <description summary="compositor output region">
       An output describes part of the compositor geometry.  The
       compositor work in the 'compositor coordinate system' and an
       output corresponds to rectangular area in that space that is
