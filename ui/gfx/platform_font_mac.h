@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,7 +24,6 @@ class PlatformFontMac : public PlatformFont {
   virtual int GetHeight() const OVERRIDE;
   virtual int GetBaseline() const OVERRIDE;
   virtual int GetAverageCharacterWidth() const OVERRIDE;
-  virtual int GetStringWidth(const string16& text) const OVERRIDE;
   virtual int GetExpectedTextWidth(int length) const OVERRIDE;
   virtual int GetStyle() const OVERRIDE;
   virtual std::string GetFontName() const OVERRIDE;

@@ -70,6 +70,10 @@ class UI_EXPORT CanvasSkia : public Canvas {
                             int* width, int* height,
                             int flags);
 
+  // Returns the number of horizontal pixels needed to display the specified
+  // |text| with |font|.
+  static int GetStringWidth(const string16& text, const gfx::Font& font);
+
   // Returns the default text alignment to be used when drawing text on a
   // gfx::CanvasSkia based on the directionality of the system locale language.
   // This function is used by gfx::Canvas::DrawStringInt when the text alignment

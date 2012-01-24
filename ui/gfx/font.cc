@@ -1,10 +1,11 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "ui/gfx/font.h"
 
 #include "base/utf_string_conversions.h"
+#include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/platform_font.h"
 
 namespace gfx {
@@ -59,7 +60,7 @@ int Font::GetAverageCharacterWidth() const {
 }
 
 int Font::GetStringWidth(const string16& text) const {
-  return platform_font_->GetStringWidth(text);
+  return CanvasSkia::GetStringWidth(text, *this);
 }
 
 int Font::GetExpectedTextWidth(int length) const {

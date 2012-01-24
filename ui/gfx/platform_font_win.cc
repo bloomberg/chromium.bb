@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,7 +13,6 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/win_util.h"
-#include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/font.h"
 
 namespace {
@@ -100,13 +99,6 @@ int PlatformFontWin::GetBaseline() const {
 
 int PlatformFontWin::GetAverageCharacterWidth() const {
   return font_ref_->ave_char_width();
-}
-
-int PlatformFontWin::GetStringWidth(const string16& text) const {
-  int width = 0, height = 0;
-  CanvasSkia::SizeStringInt(text, Font(const_cast<PlatformFontWin*>(this)),
-                            &width, &height, gfx::Canvas::NO_ELLIPSIS);
-  return width;
 }
 
 int PlatformFontWin::GetExpectedTextWidth(int length) const {

@@ -77,6 +77,13 @@ CanvasSkia::~CanvasSkia() {
 }
 
 // static
+int CanvasSkia::GetStringWidth(const string16& text, const gfx::Font& font) {
+  int width = 0, height = 0;
+  CanvasSkia::SizeStringInt(text, font, &width, &height, Canvas::NO_ELLIPSIS);
+  return width;
+}
+
+// static
 int CanvasSkia::DefaultCanvasTextAlignment() {
   if (!base::i18n::IsRTL())
     return gfx::Canvas::TEXT_ALIGN_LEFT;

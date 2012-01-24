@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,7 +10,6 @@
 #include "base/memory/scoped_nsobject.h"
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
-#include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/font.h"
 
 namespace gfx {
@@ -54,13 +53,6 @@ int PlatformFontMac::GetBaseline() const {
 
 int PlatformFontMac::GetAverageCharacterWidth() const {
   return average_width_;
-}
-
-int PlatformFontMac::GetStringWidth(const string16& text) const {
-  int width = 0, height = 0;
-  CanvasSkia::SizeStringInt(text, Font(const_cast<PlatformFontMac*>(this)),
-                            &width, &height, gfx::Canvas::NO_ELLIPSIS);
-  return width;
 }
 
 int PlatformFontMac::GetExpectedTextWidth(int length) const {
