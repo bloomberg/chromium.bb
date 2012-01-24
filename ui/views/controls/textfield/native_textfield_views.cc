@@ -400,12 +400,14 @@ void NativeTextfieldViews::UpdateReadOnly() {
 }
 
 void NativeTextfieldViews::UpdateFont() {
-#if !defined(OS_CHROMEOS)
-  // For ChromeOS, we support a font list per locale, UpdateFont() should not
-  // take any effect.
+#if defined(OS_CHROMEOS)
+  // For ChromeOS, we support a pre-defined font list per locale. UpdateFont()
+  // only changes the font size, not the font family names.
+  GetRenderText()->SetFontSize(textfield_->font().GetFontSize());
+#else
   GetRenderText()->SetFontList(gfx::FontList(textfield_->font()));
-  OnCaretBoundsChanged();
 #endif
+  OnCaretBoundsChanged();
 }
 
 void NativeTextfieldViews::UpdateIsObscured() {

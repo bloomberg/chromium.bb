@@ -325,6 +325,12 @@ void RenderText::SetFontList(const FontList& font_list) {
   UpdateLayout();
 }
 
+void RenderText::SetFontSize(int size) {
+  font_list_ = font_list_.DeriveFontListWithSize(size);
+  cached_bounds_and_offset_valid_ = false;
+  UpdateLayout();
+}
+
 const Font& RenderText::GetFont() const {
   return font_list_.GetFonts()[0];
 }
@@ -671,6 +677,7 @@ Point RenderText::GetOriginForSkiaDrawing() {
   // TODO(msw): Establish a vertical baseline for strings of mixed font heights.
   const Font& font = GetFont();
   int height = font.GetHeight();
+  DCHECK_LE(height, display_rect().height());
   // Center the text vertically in the display area.
   origin.Offset(0, (display_rect().height() - height) / 2);
   // Offset by the font size to account for Skia expecting y to be the bottom.

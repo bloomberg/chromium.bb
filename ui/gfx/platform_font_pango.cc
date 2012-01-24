@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,8 +13,10 @@
 #include "base/logging.h"
 #include "base/string_piece.h"
 #include "base/utf_string_conversions.h"
+#include "grit/app_locale_settings.h"
 #include "third_party/skia/include/core/SkTypeface.h"
 #include "third_party/skia/include/core/SkPaint.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/linux_util.h"
@@ -95,7 +97,11 @@ std::string FindBestMatchFontFamilyName(const char* family_name) {
 
 std::string GetDefaultFont() {
 #if defined(USE_WAYLAND) || !defined(TOOLKIT_USES_GTK)
+#if defined(OS_CHROMEOS)
+  return l10n_util::GetStringUTF8(IDS_UI_FONT_FAMILY_CROS);
+#else
   return "sans 10";
+#endif    // defined(OS_CHROMEOS)
 #else
   GtkSettings* settings = gtk_settings_get_default();
 
@@ -109,7 +115,7 @@ std::string GetDefaultFont() {
   std::string default_font = std::string(font_name);
   g_free(font_name);
   return default_font;
-#endif
+#endif  // defined(USE_WAYLAND) || !defined(TOOLKIT_USES_GTK)
 }
 
 }  // namespace

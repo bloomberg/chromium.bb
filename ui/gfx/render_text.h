@@ -114,6 +114,10 @@ class UI_EXPORT RenderText {
 
   const FontList& font_list() const { return font_list_; }
   void SetFontList(const FontList& font_list);
+
+  // Set the font size to |size| in pixels.
+  void SetFontSize(int size);
+
   // Get the first font in |font_list_|.
   const Font& GetFont() const;
 

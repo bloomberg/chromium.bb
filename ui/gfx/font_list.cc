@@ -57,6 +57,15 @@ std::string FontStyleAndSizeToString(int font_style, int font_size) {
   return result;
 }
 
+// Returns font description from |font_names|, |font_style|, and |font_size|.
+std::string BuildFontDescription(const std::vector<std::string>& font_names,
+                                 int font_style,
+                                 int font_size) {
+  std::string description = JoinString(font_names, ',');
+  description += "," + FontStyleAndSizeToString(font_style, font_size);
+  return description;
+}
+
 }  // namespace
 
 namespace gfx {
@@ -107,9 +116,35 @@ FontList FontList::DeriveFontList(int font_style) const {
   int font_size;
   ParseFontDescriptionString(font_description_string_, &font_names,
                              &old_style, &font_size);
-  std::string description = JoinString(font_names, ',');
-  description += "," + FontStyleAndSizeToString(font_style, font_size);
-  return FontList(description);
+  return FontList(BuildFontDescription(font_names, font_style, font_size));
+}
+
+FontList FontList::DeriveFontListWithSize(int size) const {
+  DCHECK_GT(size, 0);
+
+  // If there is a font vector, derive from that.
+  int old_size = 0;
+  if (!fonts_.empty()) {
+    old_size = fonts_[0].GetFontSize();
+    if (old_size == size)
+      return FontList(fonts_);
+
+    std::vector<Font> fonts = fonts_;
+    for (size_t i = 0; i < fonts.size(); ++i)
+      fonts[i] = fonts[i].DeriveFont(size - old_size);
+    return FontList(fonts);
+  }
+
+  // Otherwise, parse the font description string to derive from it.
+  std::vector<std::string> font_names;
+  int font_style = 0;
+  ParseFontDescriptionString(font_description_string_, &font_names,
+                             &font_style, &old_size);
+
+  if (old_size == size)
+    return FontList(font_description_string_);
+
+  return FontList(BuildFontDescription(font_names, font_style, size));
 }
 
 int FontList::GetFontStyle() const {

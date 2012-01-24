@@ -212,4 +212,26 @@ TEST_F(FontListTest, Fonts_DeriveFontList) {
   EXPECT_EQ("Sans serif|8|bold|italic", FontToString(derived_fonts[1]));
 }
 
+TEST_F(FontListTest, FontDescString_DeriveFontListWithSize) {
+  FontList font_list = FontList("Arial,Sans serif,Bold Italic  8px");
+
+  FontList derived = font_list.DeriveFontListWithSize(10);
+  EXPECT_EQ("Arial,Sans serif,Bold Italic 10px",
+            derived.GetFontDescriptionString());
+}
+
+TEST_F(FontListTest, Fonts_DeriveFontListWithSize) {
+  std::vector<Font> fonts;
+  fonts.push_back(gfx::Font("Arial", 8));
+  fonts.push_back(gfx::Font("Sans serif", 8));
+  FontList font_list = FontList(fonts);
+
+  FontList derived = font_list.DeriveFontListWithSize(5);
+  const std::vector<Font>& derived_fonts = derived.GetFonts();
+
+  EXPECT_EQ(2U, derived_fonts.size());
+  EXPECT_EQ("Arial|5", FontToString(derived_fonts[0]));
+  EXPECT_EQ("Sans serif|5", FontToString(derived_fonts[1]));
+}
+
 }  // namespace gfx

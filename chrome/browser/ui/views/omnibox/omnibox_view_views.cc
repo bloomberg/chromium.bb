@@ -132,8 +132,6 @@ void ApplyURLStyle(views::Textfield* textfield,
   textfield->ApplyStyleRange(style);
 }
 
-const int kAutocompleteVerticalMargin = 4;
-
 // TODO(oshima): I'm currently using slightly different color than
 // gtk/win omnibox so that I can tell which one is used from its color.
 // Fix this once we finish all features.
@@ -141,6 +139,21 @@ const SkColor kFadedTextColor = SK_ColorGRAY;
 const SkColor kNormalTextColor = SK_ColorBLACK;
 const SkColor kSecureSchemeColor = SK_ColorGREEN;
 const SkColor kSecurityErrorSchemeColor = SK_ColorRED;
+
+// The following 2 const values are the same as in browser_defaults.
+const int kAutocompleteEditFontPixelSize = 15;
+const int kAutocompleteEditFontPixelSizeInPopup = 10;
+
+// The following 2 values are based on kAutocompleteEditFontPixelSize and
+// kAutocompleteEditFontPixelSizeInPopup. They should be changed accordingly
+// if font size for autocomplete edit (in popup) change.
+const int kAutocompleteVerticalMargin = 1;
+const int kAutocompleteVerticalMarginInPopup = 2;
+
+int GetEditFontPixelSize(bool popup_window_mode) {
+  return popup_window_mode ? kAutocompleteEditFontPixelSizeInPopup :
+                             kAutocompleteEditFontPixelSize;
+}
 
 }  // namespace
 
@@ -154,23 +167,16 @@ OmniboxViewViews::OmniboxViewViews(AutocompleteEditController* controller,
                                    CommandUpdater* command_updater,
                                    bool popup_window_mode,
                                    LocationBarView* location_bar)
-    : model_(new AutocompleteEditModel(this, controller, profile)),
-      popup_view_(CreatePopupView(location_bar)),
+    : popup_window_mode_(popup_window_mode),
+      model_(new AutocompleteEditModel(this, controller, profile)),
       controller_(controller),
       toolbar_model_(toolbar_model),
       command_updater_(command_updater),
-      popup_window_mode_(popup_window_mode),
       security_level_(ToolbarModel::NONE),
       ime_composing_before_change_(false),
       delete_at_end_pressed_(false),
       location_bar_view_(location_bar),
       ime_candidate_window_open_(false) {
-  set_border(views::Border::CreateEmptyBorder(kAutocompleteVerticalMargin, 0,
-                                              kAutocompleteVerticalMargin, 0));
-#if defined(OS_CHROMEOS)
-  chromeos::input_method::InputMethodManager::GetInstance()->
-      AddCandidateWindowObserver(this);
-#endif
 }
 
 OmniboxViewViews::~OmniboxViewViews() {
@@ -198,6 +204,25 @@ void OmniboxViewViews::Init() {
 
   if (popup_window_mode_)
     textfield_->SetReadOnly(true);
+
+  const int font_size = GetEditFontPixelSize(popup_window_mode_);
+  const int old_size = textfield_->font().GetFontSize();
+  if (font_size != old_size)
+    textfield_->SetFont(textfield_->font().DeriveFont(font_size - old_size));
+
+  // Create popup view using the same font as |textfield_|'s.
+  popup_view_.reset(
+      new AutocompletePopupContentsView(
+          textfield_->font(), this, model_.get(), location_bar_view_));
+
+  const int vertical_margin = !popup_window_mode_ ?
+      kAutocompleteVerticalMargin : kAutocompleteVerticalMarginInPopup;
+  set_border(views::Border::CreateEmptyBorder(vertical_margin, 0,
+                                              vertical_margin, 0));
+#if defined(OS_CHROMEOS)
+  chromeos::input_method::InputMethodManager::GetInstance()->
+      AddCandidateWindowObserver(this);
+#endif
 
   // Manually invoke SetBaseColor() because TOOLKIT_VIEWS doesn't observe
   // themes.
@@ -806,13 +831,6 @@ void OmniboxViewViews::SetTextAndSelectedRange(const string16& text,
 string16 OmniboxViewViews::GetSelectedText() const {
   // TODO(oshima): Support instant, IME.
   return textfield_->GetSelectedText();
-}
-
-AutocompletePopupView* OmniboxViewViews::CreatePopupView(
-    View* location_bar) {
-  typedef AutocompletePopupContentsView AutocompleteContentsView;
-  return new AutocompleteContentsView(gfx::Font(), this, model_.get(),
-                                      location_bar);
 }
 
 #if defined(USE_AURA)

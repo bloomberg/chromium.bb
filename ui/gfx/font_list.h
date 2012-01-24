@@ -55,6 +55,10 @@ class UI_EXPORT FontList {
   // Returns a new FontList with the given |font_style| flags.
   FontList DeriveFontList(int font_style) const;
 
+  // Returns a new FontList with the same font names and style but with the
+  // given font |size| in pixels.
+  FontList DeriveFontListWithSize(int size) const;
+
   // Returns the |gfx::Font::FontStyle| style flags for this font list.
   int GetFontStyle() const;
 

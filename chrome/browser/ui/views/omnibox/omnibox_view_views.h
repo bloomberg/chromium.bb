@@ -187,9 +187,11 @@ class OmniboxViewViews
   // Returns the selected text.
   string16 GetSelectedText() const;
 
-  AutocompletePopupView* CreatePopupView(View* location_bar);
-
   views::Textfield* textfield_;
+
+  // When true, the location bar view is read only and also is has a slightly
+  // different presentation (smaller font size). This is used for popups.
+  bool popup_window_mode_;
 
   scoped_ptr<AutocompleteEditModel> model_;
   scoped_ptr<AutocompletePopupView> popup_view_;
@@ -199,10 +201,6 @@ class OmniboxViewViews
   // The object that handles additional command functionality exposed on the
   // edit, such as invoking the keyword editor.
   CommandUpdater* command_updater_;
-
-  // When true, the location bar view is read only and also is has a slightly
-  // different presentation (smaller font size). This is used for popups.
-  bool popup_window_mode_;
 
   ToolbarModel::SecurityLevel security_level_;
 

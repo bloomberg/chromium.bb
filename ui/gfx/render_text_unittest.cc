@@ -920,14 +920,6 @@ TEST_F(RenderTextTest, OriginForSkiaDrawing) {
   origin = render_text->GetOriginForSkiaDrawing();
   EXPECT_EQ(origin.x(), 0);
   EXPECT_EQ(origin.y(), 14);
-
-  // Set display area's height less than font height.
-  display_rect = Rect(0, 0, 100, font_height - 2);
-  render_text->SetDisplayRect(display_rect);
-
-  origin = render_text->GetOriginForSkiaDrawing();
-  EXPECT_EQ(origin.x(), 0);
-  EXPECT_EQ(origin.y(), 12);
 }
 
 TEST_F(RenderTextTest, DisplayRectShowsCursorLTR) {
