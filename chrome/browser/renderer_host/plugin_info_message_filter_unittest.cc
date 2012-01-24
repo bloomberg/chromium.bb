@@ -61,7 +61,6 @@ bool FakePluginServiceFilter::ShouldUsePlugin(int render_process_id,
 class PluginInfoMessageFilterTest : public ::testing::Test {
  public:
   PluginInfoMessageFilterTest() :
-      default_plugin_path_(webkit::npapi::kDefaultPluginLibraryName),
       foo_plugin_path_(FILE_PATH_LITERAL("/path/to/foo")),
       bar_plugin_path_(FILE_PATH_LITERAL("/path/to/bar")),
       file_thread_(content::BrowserThread::FILE, &message_loop_),
@@ -86,16 +85,6 @@ class PluginInfoMessageFilterTest : public ::testing::Test {
     bar_plugin.mime_types.push_back(mimeType);
     plugin_list_.AddPluginToLoad(bar_plugin);
 
-    webkit::WebPluginInfo default_plugin(
-        ASCIIToUTF16("Default Plug-in"),
-        default_plugin_path_,
-        ASCIIToUTF16("1"),
-        ASCIIToUTF16("Provides functionality for installing third-party "
-                     "plug-ins"));
-    mimeType.mime_type = "*";
-    default_plugin.mime_types.push_back(mimeType);
-    plugin_list_.AddPluginToLoad(default_plugin);
-
     PluginService::GetInstance()->SetPluginListForTesting(&plugin_list_);
     PluginService::GetInstance()->SetFilter(&filter_);
 
@@ -106,7 +95,6 @@ class PluginInfoMessageFilterTest : public ::testing::Test {
   }
 
  protected:
-  FilePath default_plugin_path_;
   FilePath foo_plugin_path_;
   FilePath bar_plugin_path_;
   FakePluginServiceFilter filter_;
@@ -128,7 +116,6 @@ class PluginInfoMessageFilterTest : public ::testing::Test {
 TEST_F(PluginInfoMessageFilterTest, FindEnabledPlugin) {
   filter_.set_plugin_enabled(foo_plugin_path_, true);
   filter_.set_plugin_enabled(bar_plugin_path_, true);
-  filter_.set_plugin_enabled(default_plugin_path_, true);
   {
     ChromeViewHostMsg_GetPluginInfo_Status status;
     webkit::WebPluginInfo plugin;
@@ -137,15 +124,6 @@ TEST_F(PluginInfoMessageFilterTest, FindEnabledPlugin) {
         0, GURL(), GURL(), "foo/bar", &status, &plugin, &actual_mime_type));
     EXPECT_EQ(ChromeViewHostMsg_GetPluginInfo_Status::kAllowed, status.value);
     EXPECT_EQ(foo_plugin_path_.value(), plugin.path.value());
-  }
-  {
-    ChromeViewHostMsg_GetPluginInfo_Status status;
-    webkit::WebPluginInfo plugin;
-    std::string actual_mime_type;
-    EXPECT_FALSE(context_.FindEnabledPlugin(
-        0, GURL(), GURL(), "baz/blurp", &status, &plugin, &actual_mime_type));
-    EXPECT_EQ(ChromeViewHostMsg_GetPluginInfo_Status::kAllowed, status.value);
-    EXPECT_EQ(default_plugin_path_.value(), plugin.path.value());
   }
 
   filter_.set_plugin_enabled(foo_plugin_path_, false);
@@ -169,8 +147,6 @@ TEST_F(PluginInfoMessageFilterTest, FindEnabledPlugin) {
     EXPECT_EQ(ChromeViewHostMsg_GetPluginInfo_Status::kDisabled, status.value);
     EXPECT_EQ(foo_plugin_path_.value(), plugin.path.value());
   }
-
-  filter_.set_plugin_enabled(default_plugin_path_, false);
   {
     ChromeViewHostMsg_GetPluginInfo_Status status;
     webkit::WebPluginInfo plugin;

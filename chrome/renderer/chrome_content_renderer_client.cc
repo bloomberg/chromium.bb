@@ -334,10 +334,6 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
         orig_mime_type, url);
     return MissingPlugin::Create(render_view, frame, original_params);
   }
-  if (plugin.path.value() == webkit::npapi::kDefaultPluginLibraryName) {
-    MissingPluginReporter::GetInstance()->ReportPluginMissing(
-        orig_mime_type, url);
-  }
 
   scoped_ptr<webkit::npapi::PluginGroup> group(
       webkit::npapi::PluginList::Singleton()->GetPluginGroup(plugin));
@@ -399,8 +395,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
   bool is_nacl_plugin = (plugin.name == ASCIIToUTF16(
       chrome::ChromeContentClient::kNaClPluginName));
   if (status.value == ChromeViewHostMsg_GetPluginInfo_Status::kAllowed ||
-      observer->plugins_temporarily_allowed() ||
-      plugin.path.value() == webkit::npapi::kDefaultPluginLibraryName) {
+      observer->plugins_temporarily_allowed()) {
     // Delay loading plugins if prerendering.
     if (prerender::PrerenderHelper::IsPrerendering(render_view)) {
       return BlockedPlugin::Create(

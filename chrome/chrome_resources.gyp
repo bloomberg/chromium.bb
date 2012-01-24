@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 {
@@ -305,7 +305,6 @@
         # derive the dependencies from the output files.
         'chrome_resources',
         'chrome_strings',
-        'default_plugin/default_plugin.gyp:default_plugin_resources',
         'platform_locale_settings',
         'theme_resources',
         '<(DEPTH)/content/content_resources.gyp:content_resources',

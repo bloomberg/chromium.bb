@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -279,8 +279,6 @@ bool PluginProcessHost::Init(const webkit::WebPluginInfo& info) {
   // OnChannelError notification indicating that the browser plugin channel has
   // been destroyed.
   process_->SetTerminateChildOnShutdown(false);
-
-  content::GetContentClient()->browser()->PluginProcessHostCreated(this);
 
   return true;
 }

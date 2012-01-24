@@ -230,20 +230,15 @@ bool PluginInfoMessageFilter::Context::FindEnabledPlugin(
                                                       url,
                                                       top_origin_url,
                                                       &matching_plugins[i]);
-    bool is_default_plugin = matching_plugins[i].path ==
-                             FilePath(webkit::npapi::kDefaultPluginLibraryName);
-    if (enabled) {
-      if (!found || !is_default_plugin) {
-        // We have found an enabled plug-in. Return immediately.
-        *plugin = matching_plugins[i];
-        *actual_mime_type = mime_types[i];
-        return false;
-      }
-    } else if (!found && !is_default_plugin) {
-      // We have found a plug-in, but it's disabled. Keep looking for an
-      // enabled one.
+    if (!found || enabled) {
       *plugin = matching_plugins[i];
       *actual_mime_type = mime_types[i];
+      if (enabled) {
+        // We have found an enabled plug-in. Return immediately.
+        return false;
+      }
+      // We have found a plug-in, but it's disabled. Keep looking for an
+      // enabled one.
       found = true;
     }
   }

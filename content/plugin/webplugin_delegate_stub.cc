@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -181,16 +181,6 @@ void WebPluginDelegateStub::OnInit(const PluginMsg_Init_Params& params,
     std::vector<std::string> arg_names = params.arg_names;
     std::vector<std::string> arg_values = params.arg_values;
 
-    if (path.value() == webkit::npapi::kDefaultPluginLibraryName) {
-      // Add the renderer process id and Render view routing id to the list of
-      // parameters passed to the plugin.
-      arg_names.push_back(content::kDefaultPluginRenderViewId);
-      arg_values.push_back(base::IntToString(
-          params.host_render_view_routing_id));
-
-      arg_names.push_back(content::kDefaultPluginRenderProcessId);
-      arg_values.push_back(base::IntToString(channel_->renderer_id()));
-    }
     *result = delegate_->Initialize(params.url,
                                     arg_names,
                                     arg_values,

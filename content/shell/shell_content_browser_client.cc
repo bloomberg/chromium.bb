@@ -53,10 +53,6 @@ void ShellContentBrowserClient::RenderProcessHostCreated(
     RenderProcessHost* host) {
 }
 
-void ShellContentBrowserClient::PluginProcessHostCreated(
-    PluginProcessHost* host) {
-}
-
 WebUIFactory* ShellContentBrowserClient::GetWebUIFactory() {
   // Return an empty factory so callsites don't have to check for NULL.
   return EmptyWebUIFactory::GetInstance();

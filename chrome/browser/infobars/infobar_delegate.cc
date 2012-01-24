@@ -63,11 +63,6 @@ LinkInfoBarDelegate* InfoBarDelegate::AsLinkInfoBarDelegate() {
   return NULL;
 }
 
-PluginInstallerInfoBarDelegate*
-    InfoBarDelegate::AsPluginInstallerInfoBarDelegate() {
-  return NULL;
-}
-
 RegisterProtocolHandlerInfoBarDelegate*
     InfoBarDelegate::AsRegisterProtocolHandlerInfoBarDelegate() {
   return NULL;

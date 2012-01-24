@@ -96,11 +96,6 @@ class ContentBrowserClient {
   virtual void RenderProcessHostCreated(
       content::RenderProcessHost* host) = 0;
 
-  // Notifies that a PluginProcessHost has been created. This is called
-  // before the content layer adds its own message filters, so that the
-  // embedder's IPC filters have priority.
-  virtual void PluginProcessHostCreated(PluginProcessHost* host) = 0;
-
   // Gets the WebUIFactory which will be responsible for generating WebUIs.
   virtual WebUIFactory* GetWebUIFactory() = 0;
 

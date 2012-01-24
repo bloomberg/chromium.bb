@@ -22,7 +22,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   virtual void RenderViewHostCreated(RenderViewHost* render_view_host) OVERRIDE;
   virtual void RenderProcessHostCreated(
       content::RenderProcessHost* host) OVERRIDE;
-  virtual void PluginProcessHostCreated(PluginProcessHost* host) OVERRIDE;
   virtual content::WebUIFactory* GetWebUIFactory() OVERRIDE;
   virtual bool ShouldUseProcessPerSite(content::BrowserContext* browser_context,
                                        const GURL& effective_url) OVERRIDE;

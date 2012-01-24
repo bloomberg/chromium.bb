@@ -41,10 +41,6 @@ void MockContentBrowserClient::RenderProcessHostCreated(
     RenderProcessHost* host) {
 }
 
-void MockContentBrowserClient::PluginProcessHostCreated(
-    PluginProcessHost* host) {
-}
-
 WebUIFactory* MockContentBrowserClient::GetWebUIFactory() {
   // Return an empty factory so callsites don't have to check for NULL.
   return EmptyWebUIFactory::GetInstance();

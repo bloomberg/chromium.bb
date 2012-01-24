@@ -451,13 +451,6 @@ bool PluginServiceImpl::GetPluginInfo(int render_process_id,
       url, mime_type, allow_wildcard, &plugins, &mime_types);
   if (is_stale)
     *is_stale = stale;
-  if (plugins.size() > 1 &&
-      plugins.back().path ==
-          FilePath(webkit::npapi::kDefaultPluginLibraryName)) {
-    // If there is at least one plug-in handling the required MIME type (apart
-    // from the default plug-in), we don't need the default plug-in.
-    plugins.pop_back();
-  }
 
   for (size_t i = 0; i < plugins.size(); ++i) {
     if (!filter_ || filter_->ShouldUsePlugin(render_process_id,

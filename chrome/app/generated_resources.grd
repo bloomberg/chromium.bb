@@ -9527,9 +9527,6 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
         Proceed anyway
       </message>
 
-      <message name="IDS_PLUGININSTALLER_MISSINGPLUGIN_PROMPT" desc="Info Bar message to prompt installing missing plugin">
-        An additional plug-in is required to display some elements on this page.
-      </message>
       <message name="IDS_PLUGININSTALLER_INSTALLPLUGIN_PROMPT" desc="Info Bar message to prompt installing missing plugin">
         The <ph name="PLUGIN_NAME">$1<ex>Quicktime</ex></ph> plug-in is required to display some elements on this page.
       </message>

@@ -33,8 +33,6 @@ struct DefaultLazyInstanceTraits;
 namespace webkit {
 namespace npapi {
 
-WEBKIT_PLUGINS_EXPORT extern FilePath::CharType kDefaultPluginLibraryName[];
-
 // This struct holds entry points into a plugin.  The entry points are
 // slightly different between Win/Mac and Unixes.  Note that the interface for
 // querying plugins is synchronous and it is preferable to use a higher-level
@@ -139,8 +137,7 @@ class WEBKIT_PLUGINS_EXPORT PluginList {
   // The |allow_wildcard| parameter controls whether this function
   // returns plugins which support wildcard mime types (* as the mime
   // type).  The |info| parameter is required to be non-NULL.  The
-  // list is in order of "most desirable" to "least desirable",
-  // meaning that the default plugin is at the end of the list.
+  // list is in order of "most desirable" to "least desirable".
   // If |use_stale| is NULL, this will load the plug-in list if necessary.
   // If it is not NULL, the plug-in list will not be loaded, and |*use_stale|
   // will be true iff the plug-in list was stale.
@@ -296,9 +293,6 @@ class WEBKIT_PLUGINS_EXPORT PluginList {
   // Need synchronization for the above members since this object can be
   // accessed on multiple threads.
   base::Lock lock_;
-
-  // Set to true if the default plugin is enabled.
-  bool default_plugin_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginList);
 };

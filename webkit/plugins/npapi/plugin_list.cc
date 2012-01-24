@@ -53,9 +53,6 @@ bool AllowMimeTypeMismatch(const std::string& orig_mime_type,
 namespace webkit {
 namespace npapi {
 
-FilePath::CharType kDefaultPluginLibraryName[] =
-    FILE_PATH_LITERAL("default_plugin");
-
 // Some version ranges can be shared across operating systems. This should be
 // done where possible to avoid duplication.
 // This is up to date with
@@ -268,9 +265,6 @@ void PluginList::RegisterInternalPluginWithEntryPoints(
   } else {
     extra_plugin_paths_.push_back(info.path);
   }
-
-  if (info.path.value() == kDefaultPluginLibraryName)
-    default_plugin_enabled_ = true;
 }
 
 void PluginList::UnregisterInternalPlugin(const FilePath& path) {
@@ -360,8 +354,7 @@ bool PluginList::ParseMimeTypes(
 }
 
 PluginList::PluginList()
-    : plugins_need_refresh_(true),
-      default_plugin_enabled_(false) {
+    : plugins_need_refresh_(true) {
   PlatformInit();
   AddHardcodedPluginGroups(kGroupDefinitions,
                            ARRAYSIZE_UNSAFE(kGroupDefinitions));
@@ -369,8 +362,7 @@ PluginList::PluginList()
 
 PluginList::PluginList(const PluginGroupDefinition* definitions,
                        size_t num_definitions)
-    : plugins_need_refresh_(true),
-      default_plugin_enabled_(false) {
+    : plugins_need_refresh_(true) {
   // Don't do platform-dependend initialization in unit tests.
   AddHardcodedPluginGroups(definitions, num_definitions);
 }
@@ -436,11 +428,10 @@ void PluginList::LoadPlugin(const FilePath& path,
   if (!ShouldLoadPlugin(plugin_info, plugin_groups))
     return;
 
-  if (path.value() != kDefaultPluginLibraryName
 #if defined(OS_WIN) && !defined(NDEBUG)
-      && path.BaseName().value() != L"npspy.dll"  // Make an exception for NPSPY
+  if (path.BaseName().value() != L"npspy.dll")  // Make an exception for NPSPY
 #endif
-      ) {
+  {
     for (size_t i = 0; i < plugin_info.mime_types.size(); ++i) {
       // TODO: don't load global handlers for now.
       // WebKit hands to the Plugin before it tries
@@ -475,8 +466,6 @@ void PluginList::GetPluginPathsToLoad(std::vector<FilePath>* plugin_paths) {
         plugin_paths->end()) {
       continue;
     }
-    if (path.value() == kDefaultPluginLibraryName)
-      continue;
     plugin_paths->push_back(path);
   }
 
@@ -489,10 +478,6 @@ void PluginList::GetPluginPathsToLoad(std::vector<FilePath>* plugin_paths) {
 #if defined(OS_WIN)
   GetPluginPathsFromRegistry(plugin_paths);
 #endif
-
-  // Load the default plugin last.
-  if (default_plugin_enabled_)
-    plugin_paths->push_back(FilePath(kDefaultPluginLibraryName));
 }
 
 void PluginList::SetPlugins(const std::vector<webkit::WebPluginInfo>& plugins) {
@@ -565,8 +550,7 @@ void PluginList::GetPluginInfoArray(
     for (size_t i = 0; i < plugins.size(); ++i) {
       if (SupportsType(plugins[i], mime_type, allow_wildcard)) {
         FilePath path = plugins[i].path;
-        if (path.value() != kDefaultPluginLibraryName &&
-            visited_plugins.insert(path).second) {
+        if (visited_plugins.insert(path).second) {
           info->push_back(plugins[i]);
           if (actual_mime_types)
             actual_mime_types->push_back(mime_type);
@@ -587,35 +571,13 @@ void PluginList::GetPluginInfoArray(
       for (size_t i = 0; i < plugins.size(); ++i) {
         if (SupportsExtension(plugins[i], extension, &actual_mime_type)) {
           FilePath path = plugins[i].path;
-          if (path.value() != kDefaultPluginLibraryName &&
-              visited_plugins.insert(path).second &&
+          if (visited_plugins.insert(path).second &&
               AllowMimeTypeMismatch(mime_type, actual_mime_type)) {
             info->push_back(plugins[i]);
             if (actual_mime_types)
               actual_mime_types->push_back(actual_mime_type);
           }
         }
-      }
-    }
-  }
-
-  // Add the default plugin at the end if it supports the mime type given,
-  // and the default plugin is enabled.
-  for (size_t i = 0; i < plugin_groups_.size(); ++i) {
-#if defined(OS_WIN)
-    if (plugin_groups_[i]->identifier().compare(
-        WideToUTF8(kDefaultPluginLibraryName)) == 0) {
-#else
-    if (plugin_groups_[i]->identifier().compare(
-        kDefaultPluginLibraryName) == 0) {
-#endif
-      DCHECK_NE(0U, plugin_groups_[i]->web_plugin_infos().size());
-      const webkit::WebPluginInfo& default_info =
-          plugin_groups_[i]->web_plugin_infos()[0];
-      if (SupportsType(default_info, mime_type, allow_wildcard)) {
-        info->push_back(default_info);
-        if (actual_mime_types)
-          actual_mime_types->push_back(mime_type);
       }
     }
   }

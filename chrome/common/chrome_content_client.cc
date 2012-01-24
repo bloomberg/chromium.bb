@@ -19,7 +19,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/render_messages.h"
-#include "chrome/default_plugin/plugin_main.h"
 #include "content/public/common/pepper_plugin_info.h"
 #include "grit/common_resources.h"
 #include "remoting/client/plugin/pepper_entrypoints.h"
@@ -316,31 +315,6 @@ void ChromeContentClient::AddPepperPlugins(
 
 void ChromeContentClient::AddNPAPIPlugins(
     webkit::npapi::PluginList* plugin_list) {
-#if defined(OS_WIN) && !defined(USE_AURA)
-  // TODO(bauerb): On Windows the default plug-in can download and install
-  // missing plug-ins, which we don't support in the browser yet, so keep
-  // using the default plug-in on Windows until we do.
-  // Aura isn't going to support NPAPI plugins.
-  const webkit::npapi::PluginEntryPoints entry_points = {
-    default_plugin::NP_GetEntryPoints,
-    default_plugin::NP_Initialize,
-    default_plugin::NP_Shutdown
-  };
-
-  webkit::WebPluginInfo info;
-  info.path = FilePath(webkit::npapi::kDefaultPluginLibraryName);
-  info.name = ASCIIToUTF16("Default Plug-in");
-  info.version = ASCIIToUTF16("1");
-  info.desc = ASCIIToUTF16("Provides functionality for installing third-party "
-                           "plug-ins");
-
-  webkit::WebPluginMimeType mimeType;
-  mimeType.mime_type = "*";
-  info.mime_types.push_back(mimeType);
-
-  webkit::npapi::PluginList::Singleton()->RegisterInternalPluginWithEntryPoints(
-      info, false, entry_points);
-#endif
 }
 
 bool ChromeContentClient::CanSendWhileSwappedOut(const IPC::Message* msg) {

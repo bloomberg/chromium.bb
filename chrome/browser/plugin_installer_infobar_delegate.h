@@ -31,8 +31,6 @@ class PluginInstallerInfoBarDelegate : public ConfirmInfoBarDelegate,
 
   // ConfirmInfoBarDelegate:
   virtual gfx::Image* GetIcon() const OVERRIDE;
-  virtual PluginInstallerInfoBarDelegate*
-      AsPluginInstallerInfoBarDelegate() OVERRIDE;
   virtual string16 GetMessageText() const OVERRIDE;
   virtual int GetButtons() const OVERRIDE;
   virtual string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;

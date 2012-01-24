@@ -791,7 +791,6 @@
         'browser/browser_encoding_uitest.cc',
         'browser/custom_handlers/custom_handlers_uitest.cc',
         'browser/download/save_page_uitest.cc',
-        'browser/default_plugin_uitest.cc',
         'browser/fast_shutdown_uitest.cc',
         'browser/history/multipart_uitest.cc',
         'browser/history/redirect_uitest.cc',
@@ -872,7 +871,6 @@
           'sources!': [
             'test/automation/automation_proxy_uitest.cc',
             'test/ui/npapi_uitest.cc',
-            'browser/default_plugin_uitest.cc',
           ],
           'dependencies': [
             '../ui/aura/aura.gyp:aura',
@@ -903,12 +901,6 @@
               'dependencies': [
                 '<(allocator_target)',
               ],
-            }],
-            ['use_aura==0', {
-              'dependencies': [
-                # Runtime dependency
-                'default_plugin/default_plugin.gyp:default_plugin',
-              ]
             }],
           ],
           'link_settings': {

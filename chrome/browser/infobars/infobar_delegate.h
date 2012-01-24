@@ -88,7 +88,6 @@ class InfoBarDelegate {
   virtual ExtensionInfoBarDelegate* AsExtensionInfoBarDelegate();
   virtual InsecureContentInfoBarDelegate* AsInsecureContentInfoBarDelegate();
   virtual LinkInfoBarDelegate* AsLinkInfoBarDelegate();
-  virtual PluginInstallerInfoBarDelegate* AsPluginInstallerInfoBarDelegate();
   virtual RegisterProtocolHandlerInfoBarDelegate*
       AsRegisterProtocolHandlerInfoBarDelegate();
   virtual ThemeInstalledInfoBarDelegate* AsThemePreviewInfobarDelegate();

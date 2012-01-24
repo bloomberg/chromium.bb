@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -154,7 +154,8 @@
         ['OS=="win"', {
           'link_settings': {
             'libraries': [
-              '-lshdocvw.lib', '-loleacc.lib',
+              '-lshdocvw.lib',
+              '-loleacc.lib',
             ],
           },
           'msvs_settings': {
@@ -765,6 +766,9 @@
             # Crash Reporting
             'crash_reporting/crash_reporting.gyp:crash_report',
           ],
+          'link_settings': {
+            'libraries': ['-lurlmon.lib'],
+          },
         },],
       ],
       'rules': [

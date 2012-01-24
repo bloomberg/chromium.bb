@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 #
@@ -30,9 +30,6 @@
   },
   "chrome/common/common_resources.grd": {
     "includes": [2500],
-  },
-  "chrome/default_plugin/default_plugin_resources.grd": {
-    "includes": [3000],
   },
   "chrome/renderer/renderer_resources.grd": {
     "includes": [3500],

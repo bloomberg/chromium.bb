@@ -803,20 +803,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MAYBE_PluginLoadUnload) {
   const Extension* extension = LoadExtension(extension_dir);
   ASSERT_TRUE(extension);
   EXPECT_EQ(size_before + 1, service->extensions()->size());
-  // Now the plugin should be in the cache, but we have to reload the page for
-  // it to work.
-  ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-      tab->GetRenderViewHost(), L"", L"testPluginWorks()", &result));
-  EXPECT_FALSE(result);
-  {
-    ui_test_utils::WindowedNotificationObserver observer(
-        content::NOTIFICATION_LOAD_STOP,
-        content::Source<NavigationController>(
-            &browser()->GetSelectedTabContentsWrapper()->web_contents()->
-                GetController()));
-    browser()->Reload(CURRENT_TAB);
-    observer.Wait();
-  }
+  // Now the plugin should be in the cache.
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
       tab->GetRenderViewHost(), L"", L"testPluginWorks()", &result));
   EXPECT_TRUE(result);

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,11 +31,6 @@ extern const size_t kMaxTitleChars;
 // known operating systems if you dropped it into a UI control.
 CONTENT_EXPORT extern const size_t kMaxURLChars;
 CONTENT_EXPORT extern const size_t kMaxURLDisplayChars;
-
-// The render view and render process id associated with the default plugin
-// instance.
-CONTENT_EXPORT extern const char kDefaultPluginRenderViewId[];
-CONTENT_EXPORT extern const char kDefaultPluginRenderProcessId[];
 
 extern const char kStatsFilename[];
 extern const int kStatsMaxThreads;

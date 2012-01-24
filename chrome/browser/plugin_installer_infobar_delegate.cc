@@ -38,17 +38,9 @@ gfx::Image* PluginInstallerInfoBarDelegate::GetIcon() const {
       IDR_INFOBAR_PLUGIN_INSTALL);
 }
 
-PluginInstallerInfoBarDelegate*
-    PluginInstallerInfoBarDelegate::AsPluginInstallerInfoBarDelegate() {
-  return this;
-}
-
 string16 PluginInstallerInfoBarDelegate::GetMessageText() const {
-  // TODO(bauerb): Remove this check when removing the default plug-in.
-  return plugin_name_.empty() ?
-      l10n_util::GetStringUTF16(IDS_PLUGININSTALLER_MISSINGPLUGIN_PROMPT) :
-      l10n_util::GetStringFUTF16(IDS_PLUGININSTALLER_INSTALLPLUGIN_PROMPT,
-                                 plugin_name_);
+  return l10n_util::GetStringFUTF16(IDS_PLUGININSTALLER_INSTALLPLUGIN_PROMPT,
+                                    plugin_name_);
 }
 
 int PluginInstallerInfoBarDelegate::GetButtons() const {
@@ -73,7 +65,6 @@ string16 PluginInstallerInfoBarDelegate::GetLinkText() const {
 bool PluginInstallerInfoBarDelegate::LinkClicked(
     WindowOpenDisposition disposition) {
   GURL url(learn_more_url_);
-  // TODO(bauerb): Remove this check when removing the default plug-in.
   if (url.is_empty()) {
     url = google_util::AppendGoogleLocaleParam(GURL(
       "https://www.google.com/support/chrome/bin/answer.py?answer=142064"));

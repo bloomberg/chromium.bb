@@ -16,7 +16,6 @@
 #include "chrome/browser/browsing_data_remover.h"
 #include "chrome/browser/character_encoding.h"
 #include "chrome/browser/chrome_benchmarking_message_filter.h"
-#include "chrome/browser/chrome_plugin_message_filter.h"
 #include "chrome/browser/chrome_quota_permission_context.h"
 #include "chrome/browser/content_settings/content_settings_utils.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
@@ -357,13 +356,6 @@ void ChromeContentBrowserClient::RenderProcessHostCreated(
   RendererContentSettingRules rules;
   GetRendererContentSettingRules(profile->GetHostContentSettingsMap(), &rules);
   host->Send(new ChromeViewMsg_SetContentSettingRules(rules));
-}
-
-void ChromeContentBrowserClient::PluginProcessHostCreated(
-    PluginProcessHost* host) {
-#if !defined(USE_AURA)
-  host->AddFilter(new ChromePluginMessageFilter(host));
-#endif
 }
 
 content::WebUIFactory* ChromeContentBrowserClient::GetWebUIFactory() {

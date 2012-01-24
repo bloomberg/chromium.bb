@@ -1252,7 +1252,7 @@ const char kDisableVideoAndChat[] = "disable_video_chat";
 // Whether Extensions are enabled.
 const char kDisableExtensions[] = "extensions.disabled";
 
-// Whether the plugin finder in the default plugin is enabled.
+// Whether the plugin finder that lets you install missing plug-ins is enabled.
 const char kDisablePluginFinder[] = "plugins.disable_plugin_finder";
 
 // Integer boolean representing the width (in pixels) of the container for

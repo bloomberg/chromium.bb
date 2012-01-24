@@ -140,7 +140,6 @@ class Profile : public content::BrowserContext {
     friend bool IsGoogleGAIACookieInstalled();
 
     friend class AutofillDownloadManager;
-    friend class ChromePluginMessageFilter;
     friend class BrowserListTabContentsProvider;
     friend class MetricsService;
     friend class SafeBrowsingServiceTestHelper;

@@ -255,11 +255,6 @@
             '<(DEPTH)/third_party/wtl/include',
           ]
         }],
-        ['OS=="win" and use_aura==0', {
-          'dependencies': [
-            '<(DEPTH)/chrome/default_plugin/default_plugin.gyp:default_plugin',
-          ]
-        }],
         ['toolkit_uses_gtk == 1', {
           'dependencies': [
             '../build/linux/system.gyp:gtk',

@@ -164,7 +164,6 @@
         '../plugins/npapi/carbon_plugin_window_tracker_mac.cc',
         '../plugins/npapi/carbon_plugin_window_tracker_mac.h',
         '../plugins/npapi/coregraphics_private_symbols_mac.h',
-        '../plugins/npapi/default_plugin_shared.h',
         '../plugins/npapi/gtk_plugin_container.cc',
         '../plugins/npapi/gtk_plugin_container.h',
         '../plugins/npapi/gtk_plugin_container_manager.cc',
