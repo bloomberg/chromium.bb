@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "remoting/protocol/authentication_method.h"
 #include "remoting/protocol/authenticator.h"
 
 namespace crypto {
@@ -19,13 +20,25 @@ class RSAPrivateKey;
 namespace remoting {
 namespace protocol {
 
+// SharedSecretHash stores hash of a host secret paired with the type
+// of the hashing function.
+struct SharedSecretHash {
+  AuthenticationMethod::HashFunction hash_function;
+  std::string value;
+
+  // Parse string representation of a shared secret hash. The |as_string|
+  // must be in form "<hash_function>:<hash_value_base64>".
+  bool Parse(const std::string& as_string);
+};
+
 class Me2MeHostAuthenticatorFactory : public AuthenticatorFactory {
  public:
   // Doesn't take ownership of |local_private_key|.
-  Me2MeHostAuthenticatorFactory(const std::string& local_jid,
-                                const std::string& local_cert,
-                                const crypto::RSAPrivateKey& local_private_key,
-                                const std::string& shared_secret);
+  Me2MeHostAuthenticatorFactory(
+      const std::string& local_jid,
+      const std::string& local_cert,
+      const crypto::RSAPrivateKey& local_private_key,
+      const SharedSecretHash& shared_secret_hash);
   virtual ~Me2MeHostAuthenticatorFactory();
 
   // AuthenticatorFactory interface.
@@ -37,7 +50,7 @@ class Me2MeHostAuthenticatorFactory : public AuthenticatorFactory {
   std::string local_jid_prefix_;
   std::string local_cert_;
   scoped_ptr<crypto::RSAPrivateKey> local_private_key_;
-  std::string shared_secret_;
+  SharedSecretHash shared_secret_hash_;
 
   DISALLOW_COPY_AND_ASSIGN(Me2MeHostAuthenticatorFactory);
 };

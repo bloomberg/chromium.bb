@@ -4,6 +4,7 @@
 
 #include "remoting/protocol/me2me_host_authenticator_factory.h"
 
+#include "base/base64.h"
 #include "base/string_util.h"
 #include "crypto/rsa_private_key.h"
 #include "remoting/protocol/v1_authenticator.h"
@@ -12,14 +13,36 @@
 namespace remoting {
 namespace protocol {
 
+
+bool SharedSecretHash::Parse(const std::string& as_string) {
+  size_t separator = as_string.find(':');
+  if (separator == std::string::npos)
+    return false;
+
+  std::string function_name = as_string.substr(0, separator);
+  if (function_name == "plain") {
+    hash_function = AuthenticationMethod::NONE;
+  } else if (function_name == "hmac") {
+    hash_function = AuthenticationMethod::HMAC_SHA256;
+  } else {
+    return false;
+  }
+
+  if (!base::Base64Decode(as_string.substr(separator + 1), &value)) {
+    return false;
+  }
+
+  return true;
+}
+
 Me2MeHostAuthenticatorFactory::Me2MeHostAuthenticatorFactory(
     const std::string& local_jid,
     const std::string& local_cert,
     const crypto::RSAPrivateKey& local_private_key,
-    const std::string& shared_secret)
+    const SharedSecretHash& shared_secret_hash)
     : local_cert_(local_cert),
       local_private_key_(local_private_key.Copy()),
-      shared_secret_(shared_secret) {
+      shared_secret_hash_(shared_secret_hash) {
   // Verify that |local_jid| is bare.
   DCHECK_EQ(local_jid.find('/'), std::string::npos);
   local_jid_prefix_ = local_jid + '/';
@@ -45,19 +68,15 @@ scoped_ptr<Authenticator> Me2MeHostAuthenticatorFactory::CreateAuthenticator(
     return scoped_ptr<Authenticator>(NULL);
   }
 
-  // TODO(sergeyu): V2 authenticator is not finished yet. Enable it
-  // here when it is finished. crbug.com/105214
-  //
-  // if (V2Authenticator::IsEkeMessage(first_message)) {
-  //   return V2Authenticator::CreateForHost(
-  //       local_cert_, local_private_key_.get(), shared_secret_);
-  // }
+  if (V2Authenticator::IsEkeMessage(first_message)) {
+    return V2Authenticator::CreateForHost(
+        local_cert_, *local_private_key_, shared_secret_hash_.value);
+  }
 
   // TODO(sergeyu): Old clients still use V1 auth protocol. Remove
-  // this once we are done migrating to V2.
+  // this once we are done migrating to V2. crbug.com/110483 .
   return scoped_ptr<Authenticator>(new V1HostAuthenticator(
-      local_cert_, *local_private_key_,
-      shared_secret_, remote_jid));
+      local_cert_, *local_private_key_, "", remote_jid));
 }
 
 }  // namespace protocol

@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -8,13 +8,17 @@
 It asks for username/password and then writes these settings to config file.
 """
 
+import base64
 import getpass
+import hashlib
+import hmac
+import json
 import os
-import urllib
-import urllib2
 import random
 import socket
 import sys
+import urllib
+import urllib2
 
 import gaia_auth
 import keygen
@@ -47,15 +51,26 @@ def main():
   (private_key, public_key) = keygen.generateRSAKeyPair()
   print "Done"
 
-  params = ('{"data":{' +
-            '"hostId": "%(hostId)s",' +
-            '"hostName": "%(hostName)s",' +
-            '"publicKey": "%(publicKey)s"}}') % \
-            {'hostId': host_id, 'hostName': host_name,
-            'publicKey': public_key}
+  while 1:
+    pin = getpass.getpass("Host PIN (can be empty): ")
+    if len(pin) > 0 and len(pin) < 4:
+      print "PIN must be at least 4 characters long."
+      continue
+    break
+  if pin == "":
+    host_secret_hash = None
+  else:
+    host_secret_hash = "hmac:" + base64.b64encode(
+        hmac.new(str(host_id), pin, hashlib.sha256).digest())
+
+  params = { "data": {
+      "hostId": host_id,
+      "hostName": host_name,
+      "publicKey": public_key,
+      } }
   headers = {"Authorization": "GoogleLogin auth=" + auth_token,
-            "Content-Type": "application/json" }
-  request = urllib2.Request(url, params, headers)
+             "Content-Type": "application/json" }
+  request = urllib2.Request(url, json.dumps(params), headers)
 
   opener = urllib2.OpenerDirector()
   opener.add_handler(urllib2.HTTPDefaultErrorHandler())
@@ -79,13 +94,18 @@ def main():
   # Write settings file.
   os.umask(0066) # Set permission mask for created file.
   settings_file = open(settings_filepath, 'w')
-  settings_file.write('{\n');
-  settings_file.write('  "xmpp_login" : "' + email + '",\n')
-  settings_file.write('  "xmpp_auth_token" : "' + auth_token + '",\n')
-  settings_file.write('  "host_id" : "' + host_id + '",\n')
-  settings_file.write('  "host_name" : "' + host_name + '",\n')
-  settings_file.write('  "private_key" : "' + private_key + '",\n')
-  settings_file.write('}\n')
+  config = {
+      "xmpp_login" : email,
+      "xmpp_auth_token" : auth_token,
+      "host_id" : host_id,
+      "host_name" : host_name,
+      "private_key" : private_key,
+      }
+
+  if host_secret_hash:
+    config["host_secret_hash"] = host_secret_hash;
+
+  settings_file.write(json.dumps(config, indent=2))
   settings_file.close()
 
   print 'Configuration saved in', settings_filepath

@@ -121,6 +121,17 @@ class SimpleHost {
       return 1;
     }
 
+    std::string host_secret_hash_string;
+    if (!config->GetString(kHostSecretHashConfigPath,
+                           &host_secret_hash_string)) {
+      host_secret_hash_string = "plain:";
+    }
+
+    if (!host_secret_hash_.Parse(host_secret_hash_string)) {
+      LOG(ERROR) << "Invalid host_secret_hash.";
+      return false;
+    }
+
     // Use an XMPP connection to the Talk network for session signalling.
     if (!config->GetString(kXmppLoginConfigPath, &xmpp_login_) ||
         !config->GetString(kXmppAuthTokenConfigPath, &xmpp_auth_token_)) {
@@ -242,14 +253,11 @@ class SimpleHost {
     host_->Start();
 
     // Create a Me2Me authenticator factory.
-    //
-    // TODO(sergeyu): Currently empty PIN is used. This is a temporary
-    // hack pending us adding a way to set a PIN. crbug.com/105214 .
     if (!is_it2me_) {
       scoped_ptr<protocol::AuthenticatorFactory> factory(
           new protocol::Me2MeHostAuthenticatorFactory(
               xmpp_login_, key_pair_.GenerateCertificate(),
-              *key_pair_.private_key(), ""));
+              *key_pair_.private_key(), host_secret_hash_));
       host_->SetAuthenticatorFactory(factory.Pass());
     }
   }
@@ -267,6 +275,7 @@ class SimpleHost {
 
   std::string host_id_;
   HostKeyPair key_pair_;
+  protocol::SharedSecretHash host_secret_hash_;
   std::string xmpp_login_;
   std::string xmpp_auth_token_;
   std::string xmpp_auth_service_;

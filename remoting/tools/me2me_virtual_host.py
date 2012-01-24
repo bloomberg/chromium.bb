@@ -10,8 +10,10 @@
 # process, running under an ordinary (non-root) user account.
 
 import atexit
+import base64
 import getpass
 import hashlib
+import hmac
 import json
 import logging
 import optparse
@@ -115,13 +117,13 @@ class Host:
   Callers should instantiate a Host object (passing in a filename where the
   config will be kept), then should call either of the methods:
 
-  * create_config(auth): Create a new Host configuration and register it with
-  the Directory Service (the "auth" parameter is used to authenticate with the
-  Service).
+  * register(auth): Create a new Host configuration and register it
+  with the Directory Service (the "auth" parameter is used to
+  authenticate with the Service).
   * load_config(): Load a config from disk, with details of an existing Host
   registration.
 
-  After calling create_config() (or making any config changes) the method
+  After calling register() (or making any config changes) the method
   save_config() should be called to save the details to disk.
   """
 
@@ -130,11 +132,13 @@ class Host:
 
   def __init__(self, config_file):
     self.config_file = config_file
-
-  def create_config(self, auth):
     self.host_id = str(uuid.uuid1())
-    logging.info("HostId: " + self.host_id)
     self.host_name = socket.gethostname()
+    self.host_secret_hash = None
+    self.private_key = None
+
+  def register(self, auth):
+    logging.info("HostId: " + self.host_id)
     logging.info("HostName: " + self.host_name)
 
     logging.info("Generating RSA key pair...")
@@ -168,16 +172,31 @@ class Host:
       sys.exit(1)
     logging.info("Done")
 
+  def ask_pin(self):
+    while 1:
+      pin = getpass.getpass("Host PIN (can be empty): ")
+      if len(pin) > 0 and len(pin) < 4:
+        print "PIN must be at least 4 characters long."
+        continue
+      break
+    if pin == "":
+      self.host_secret_hash = None
+    else:
+      self.host_secret_hash = "hmac:" + base64.b64encode(
+          hmac.new(str(self.host_id), pin, hashlib.sha256).digest())
+
   def load_config(self):
     try:
       settings_file = open(self.config_file, 'r')
       data = json.load(settings_file)
       settings_file.close()
-      self.host_id = data["host_id"]
-      self.host_name = data["host_name"]
-      self.private_key = data["private_key"]
     except:
+      logging.info("Failed to load: " + self.config_file)
       return False
+    self.host_id = data["host_id"]
+    self.host_name = data["host_name"]
+    self.host_secret_hash = data.get("host_secret_hash")
+    self.private_key = data["private_key"]
     return True
 
   def save_config(self):
@@ -186,6 +205,9 @@ class Host:
         "host_name": self.host_name,
         "private_key": self.private_key,
     }
+    if self.host_secret_hash:
+      data["host_secret_hash"] = self.host_secret_hash,
+
     old_umask = os.umask(0066)
     settings_file = open(self.config_file, 'w')
     settings_file.write(json.dumps(data, indent=2))
@@ -503,7 +525,8 @@ def main():
   host = Host(os.path.join(CONFIG_DIR, "host#%s.json" % host_hash))
 
   if not host.load_config():
-    host.create_config(auth)
+    host.ask_pin()
+    host.register(auth)
     host.save_config()
 
   global g_pidfile

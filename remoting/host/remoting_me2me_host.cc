@@ -110,10 +110,10 @@ class HostProcess {
  private:
   // Read Host config from disk, returning true if successful.
   bool LoadConfig(base::MessageLoopProxy* io_message_loop) {
-    scoped_refptr<remoting::JsonHostConfig> host_config =
-        new remoting::JsonHostConfig(host_config_path_, io_message_loop);
-    scoped_refptr<remoting::JsonHostConfig> auth_config =
-        new remoting::JsonHostConfig(auth_config_path_, io_message_loop);
+    scoped_refptr<JsonHostConfig> host_config =
+        new JsonHostConfig(host_config_path_, io_message_loop);
+    scoped_refptr<JsonHostConfig> auth_config =
+        new JsonHostConfig(auth_config_path_, io_message_loop);
 
     std::string failed_path;
     if (!host_config->Read()) {
@@ -135,6 +135,17 @@ class HostProcess {
       return false;
     }
 
+    std::string host_secret_hash_string;
+    if (!host_config->GetString(kHostSecretHashConfigPath,
+                                &host_secret_hash_string)) {
+      host_secret_hash_string = "plain:";
+    }
+
+    if (!host_secret_hash_.Parse(host_secret_hash_string)) {
+      LOG(ERROR) << "Invalid host_secret_hash.";
+      return false;
+    }
+
     // Use an XMPP connection to the Talk network for session signalling.
     if (!auth_config->GetString(kXmppLoginConfigPath, &xmpp_login_) ||
         !auth_config->GetString(kXmppAuthTokenConfigPath, &xmpp_auth_token_)) {
@@ -142,13 +153,13 @@ class HostProcess {
       return false;
     }
 
-    if (!auth_config->GetString(remoting::kXmppAuthServiceConfigPath,
-                                 &xmpp_auth_service_)) {
+    if (!auth_config->GetString(kXmppAuthServiceConfigPath,
+                                &xmpp_auth_service_)) {
       // For the me2me host, we assume we use the ClientLogin token for
       // chromiumsync because we do not have an HTTP stack with which we can
       // easily request an OAuth2 access token even if we had a RefreshToken for
       // the account.
-      xmpp_auth_service_ = remoting::kChromotingTokenDefaultServiceName;
+      xmpp_auth_service_ = kChromotingTokenDefaultServiceName;
     }
 
     return true;
@@ -183,19 +194,16 @@ class HostProcess {
     host_->Start();
 
     // Create authenticator factory.
-    //
-    // TODO(sergeyu): Currently empty PIN is used. This is a temporary
-    // hack pending us adding a way to set a PIN. crbug.com/105214 .
     scoped_ptr<protocol::AuthenticatorFactory> factory(
         new protocol::Me2MeHostAuthenticatorFactory(
             xmpp_login_, key_pair_.GenerateCertificate(),
-            *key_pair_.private_key(), ""));
+            *key_pair_.private_key(), host_secret_hash_));
     host_->SetAuthenticatorFactory(factory.Pass());
   }
 
   MessageLoop message_loop_;
   base::Thread file_io_thread_;
-  remoting::ChromotingHostContext context_;
+  ChromotingHostContext context_;
   scoped_ptr<net::NetworkChangeNotifier> network_change_notifier_;
 
   FilePath auth_config_path_;
@@ -203,6 +211,7 @@ class HostProcess {
 
   std::string host_id_;
   HostKeyPair key_pair_;
+  protocol::SharedSecretHash host_secret_hash_;
   std::string xmpp_login_;
   std::string xmpp_auth_token_;
   std::string xmpp_auth_service_;
@@ -210,7 +219,7 @@ class HostProcess {
   scoped_ptr<SignalStrategy> signal_strategy_;
   scoped_ptr<SignalingConnector> signaling_connector_;
   scoped_ptr<DesktopEnvironment> desktop_environment_;
-  scoped_ptr<remoting::HeartbeatSender> heartbeat_sender_;
+  scoped_ptr<HeartbeatSender> heartbeat_sender_;
   scoped_ptr<LogToServer> log_to_server_;
   scoped_ptr<HostEventLogger> host_event_logger_;
   scoped_refptr<ChromotingHost> host_;
