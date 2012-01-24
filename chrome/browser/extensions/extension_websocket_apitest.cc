@@ -9,7 +9,13 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "net/base/mock_host_resolver.h"
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebSocket) {
+// http://crbug.com/111165
+#if defined(OS_WIN)
+#define MAYBE_WebSocket FAILS_WebSocket
+#else
+#define MAYBE_WebSocket WebSocket
+#endif
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_WebSocket) {
   FilePath websocket_root_dir;
   ASSERT_TRUE(PathService::Get(chrome::DIR_LAYOUT_TESTS, &websocket_root_dir));
   // TODO(toyoshim): Remove following logging after a bug investigation.
