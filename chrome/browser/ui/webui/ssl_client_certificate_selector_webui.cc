@@ -107,7 +107,8 @@ std::string FormatComboBoxText(
   rv += ']';
   return rv;
 }
-}
+
+}  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 // SSLClientCertificateSelectorWebUI
@@ -254,7 +255,6 @@ void SSLClientCertificateSelectorWebUI::RequestDetails(
       &nicknames);
 
   DCHECK_EQ(nicknames.size(), cert_request_info_->client_certs.size());
-
 
   DictionaryValue dict;
   dict.SetString("site", cert_request_info_->host_and_port.c_str());

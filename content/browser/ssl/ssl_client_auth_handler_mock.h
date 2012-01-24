@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,14 +13,13 @@ class SSLClientAuthHandlerMock : public SSLClientAuthHandler {
  public:
   SSLClientAuthHandlerMock(
       net::URLRequest* request,
-      net::SSLCertRequestInfo* cert_request_info)
-      : SSLClientAuthHandler(request, cert_request_info) {
-  }
-  ~SSLClientAuthHandlerMock() {
-    // Hack to avoid destructor calling request_->ContinueWithCertificate.
-    OnRequestCancelled();
-  }
+      net::SSLCertRequestInfo* cert_request_info);
+  ~SSLClientAuthHandlerMock();
+
   MOCK_METHOD1(CertificateSelectedNoNotify, void(net::X509Certificate* cert));
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SSLClientAuthHandlerMock);
 };
 
 

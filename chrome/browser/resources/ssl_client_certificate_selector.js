@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -40,15 +40,24 @@ cr.define('sslClientCertificateSelector', function() {
    * Gets the selected certificate index.
    * @return {number} The index of the selected certificate.
    */
-  function selectedCertificateIndex() {
+  function getSelectedCertificateIndex() {
     return Number($('certificates').value);
+  }
+
+  /**
+   * Updates the selected certificate index.
+   * @param {number} index The index of the certificate to select.
+   */
+  function setSelectedCertificateIndex(index) {
+    $('certificates').value = index;
+    $('certificates').onchange();
   }
 
   /**
    * Shows the certificate viewer for the selected certificate.
    */
   function viewCertificate() {
-    chrome.send('viewCertificate', [selectedCertificateIndex()]);
+    chrome.send('viewCertificate', [getSelectedCertificateIndex()]);
   }
 
   /**
@@ -61,7 +70,7 @@ cr.define('sslClientCertificateSelector', function() {
       closeWithResult();  // No arguments means cancel.
     };
     $('ok').onclick = function() {
-      closeWithResult(selectedCertificateIndex());
+      closeWithResult(getSelectedCertificateIndex());
     };
     $('certificates').onchange = updateDetails;
     chrome.send('requestDetails');
@@ -101,6 +110,8 @@ cr.define('sslClientCertificateSelector', function() {
   return {
     initialize: initialize,
     setDetails: setDetails,
+    getSelectedCertificateIndex: getSelectedCertificateIndex,
+    setSelectedCertificateIndex: setSelectedCertificateIndex
   };
 });
 
