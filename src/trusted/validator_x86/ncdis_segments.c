@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -115,7 +115,7 @@ static void NaClDisassembleSegmentUsingTables(
       if (print_internals) {
         NaClInstPrintOpcodeSeq(gout, state);
         NaClInstPrint(gout, state->decoder_tables, NaClInstStateInst(state));
-        NaClExpVectorPrint(gout, NaClInstStateExpVector(state));
+        NaClExpVectorPrint(gout, state);
       }
     }
     NaClInstIterDestroy(iter);

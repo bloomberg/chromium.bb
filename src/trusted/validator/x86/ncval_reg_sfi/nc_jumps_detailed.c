@@ -84,8 +84,8 @@ static void NaClInstLayoutCheck(NaClValidatorState* vstate) {
           case ExprConstant64:
             {
               /* Explicit jump value. Check if legal! */
-              NaClPcAddress target =
-                  (NaClPcAddress) NaClGetExpConstant(vector, i);
+              NaClPcAddress target = end
+                  + (NaClPcNumber) NaClGetExpConstant(vector, i);
               /* Don't report targets that are out of range. They should have
                * been reported in the first pass!
                */

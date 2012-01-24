@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -706,7 +706,7 @@ static Bool NaClValidatePrefixFlags(NaClInstState* state) {
       Bool has_lockable_dest = FALSE;
       NaClExpVector* vector = NaClInstStateExpVector(state);
       DEBUG(NaClLog(LOG_INFO, "checking if lock valid on:\n");
-            NaClExpVectorPrint(NaClLogGetGio(), vector));
+            NaClExpVectorPrint(NaClLogGetGio(), state));
       for (i = 0; i < vector->number_expr_nodes; ++i) {
         NaClExp* node = &vector->node[i];
         DEBUG(NaClLog(LOG_INFO, "  checking node %d\n", i));

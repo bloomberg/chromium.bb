@@ -168,7 +168,7 @@ static void NaClValidatorTrace(NaClValidatorState* vstate) {
                                          (void*) NaClInstStateInst(inst_state));
   }
   if (NaClValidatorStateGetTraceInstInternals(vstate)) {
-    NaClExpVectorPrint(g, NaClInstStateExpVector(inst_state));
+    NaClExpVectorPrint(g, inst_state);
   }
 }
 

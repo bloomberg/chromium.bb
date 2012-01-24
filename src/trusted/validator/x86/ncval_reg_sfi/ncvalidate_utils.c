@@ -89,7 +89,7 @@ Bool NaClOperandOneIsRegisterSet(NaClInstState* inst,
   DEBUG(NaClLog(LOG_INFO,
                 "->NaClOperandOneIsRegisterSet %s\n",
                 NaClOpKindName(reg_name)));
-  DEBUG(NaClExpVectorPrint(NaClLogGetGio(), vector));
+  DEBUG(NaClExpVectorPrint(NaClLogGetGio(), inst));
   if (vector->number_expr_nodes >= 2) {
     NaClExp* op_reg = &vector->node[1];
     result = (ExprRegister == op_reg->kind &&

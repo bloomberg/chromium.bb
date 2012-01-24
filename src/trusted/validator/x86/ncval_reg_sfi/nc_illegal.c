@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -436,7 +436,7 @@ void NaClValidateInstructionLegal(NaClValidatorState* state) {
       NaClLog(LOG_INFO, "->NaClValidateInstructionLegal\n");
       NaClInstPrint(g, state->decoder_tables,
                     NaClInstStateInst(state->cur_inst_state));
-      NaClExpVectorPrint(g, state->cur_inst_vector);
+      NaClExpVectorPrint(g, state);
     });
   NaClCheckForPrefixIssues(state, &is_legal, &disallows_flags);
   NaClCheckIfMarkedIllegal(state, &is_legal, &disallows_flags);

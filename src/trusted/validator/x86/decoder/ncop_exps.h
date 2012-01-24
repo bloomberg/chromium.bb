@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -46,6 +46,9 @@ typedef struct NaClExp {
   /* The type of node. */
   NaClExpKind kind;
   /* A value associated with the kind. */
+  /* WARNING the validator implicitly depends on "value" being signed. Don't
+   * monkey with value's signedness unless you know what you're doing.
+   */
   int32_t value;
   /* The set of flags associated with the node. */
   NaClExpFlags flags;
@@ -102,7 +105,7 @@ NaClOpKind NaClGetExpRegister(NaClExp* node);
 NaClOpKind NaClGetExpVectorRegister(NaClExpVector* vector, int node);
 
 /* Print out the contents of the given vector of nodes to the given file. */
-void NaClExpVectorPrint(struct Gio* file, NaClExpVector* vector);
+void NaClExpVectorPrint(struct Gio* file, struct NaClInstState* state);
 
 /* Print out the disassembled instruction in the given instruction state. */
 void NaClInstStateInstPrint(struct Gio* file, struct NaClInstState* state);

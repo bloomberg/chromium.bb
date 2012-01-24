@@ -362,7 +362,7 @@ void NaClMemoryReferenceValidator(NaClValidatorState* state) {
       NaClLog(LOG_INFO, "-> Validating store\n");
       NaClInstStateInstPrint(g, inst_state);
       NaClInstPrint(g, state->decoder_tables, state->cur_inst);
-      NaClExpVectorPrint(g, vector);
+      NaClExpVectorPrint(g, inst_state);
     });
 
   /* Look for assignments on a memory offset. */

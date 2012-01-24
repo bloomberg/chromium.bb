@@ -91,7 +91,7 @@ NaClOpKind NaClGetExpVectorRegister(NaClExpVector* vector,
 }
 
 static int NaClPrintDisassembledExp(struct Gio* file,
-                                    NaClExpVector* vector,
+                                    NaClInstState* state,
                                     uint32_t index);
 
 /* Print the characters in the given string using lower case. */
@@ -114,9 +114,14 @@ static int32_t NaClGetSignExtendedValue(NaClExp* node) {
 }
 
 /* Print out the given (constant) expression node to the given file. */
-static void NaClPrintDisassembledConst(struct Gio* file, NaClExp* node) {
+static void NaClPrintDisassembledConst(struct Gio* file, NaClInstState* state,
+                                       NaClExp* node) {
   assert(node->kind == ExprConstant);
-  if (node->flags & NACL_EFLAG(ExprUnsignedHex)) {
+  if (node->flags & NACL_EFLAG(ExprJumpTarget)) {
+    NaClPcAddress target = NaClInstStatePrintableAddress(state)
+        + state->bytes.length + (NaClPcNumber) NaClGetSignExtendedValue(node);
+    gprintf(file, "0x%"NACL_PRIxNaClPcAddress, target);
+  } else if (node->flags & NACL_EFLAG(ExprUnsignedHex)) {
     gprintf(file, "0x%"NACL_PRIx32, node->value);
   } else if (node->flags & NACL_EFLAG(ExprSignedHex)) {
     int32_t value = NaClGetSignExtendedValue(node);
@@ -136,13 +141,18 @@ static void NaClPrintDisassembledConst(struct Gio* file, NaClExp* node) {
 
 /* Print out the given (64-bit constant) expression node to the given file. */
 static void NaClPrintDisassembledConst64(
-    struct Gio* file, NaClExpVector* vector, int index) {
+    struct Gio* file, NaClInstState* state, int index) {
   NaClExp* node;
   uint64_t value;
+  NaClExpVector* vector = NaClInstStateExpVector(state);
   node = &vector->node[index];
   assert(node->kind == ExprConstant64);
   value = NaClGetExpConstant(vector, index);
-  if (node->flags & NACL_EFLAG(ExprUnsignedHex)) {
+  if (node->flags & NACL_EFLAG(ExprJumpTarget)) {
+    NaClPcAddress target = NaClInstStatePrintableAddress(state)
+        + state->bytes.length + (NaClPcNumber) value;
+    gprintf(file, "0x%"NACL_PRIxNaClPcAddress, target);
+  }else if (node->flags & NACL_EFLAG(ExprUnsignedHex)) {
     gprintf(file, "0x%"NACL_PRIx64, value);
   } else if (node->flags & NACL_EFLAG(ExprSignedHex)) {
     int64_t val = (int64_t) value;
@@ -206,8 +216,9 @@ static INLINE void NaClPrintDisassembledReg(struct Gio* file, NaClExp* node) {
   NaClPrintDisassembledRegKind(file, NaClGetExpRegisterInline(node));
 }
 
-void NaClExpVectorPrint(struct Gio* file, NaClExpVector* vector) {
+void NaClExpVectorPrint(struct Gio* file, NaClInstState* state) {
   uint32_t i;
+  NaClExpVector* vector = NaClInstStateExpVector(state);
   gprintf(file, "NaClExpVector[%d] = {\n", vector->number_expr_nodes);
   for (i = 0; i < vector->number_expr_nodes; i++) {
     NaClExp* node = &vector->node[i];
@@ -219,10 +230,10 @@ void NaClExpVectorPrint(struct Gio* file, NaClExpVector* vector) {
         NaClPrintDisassembledReg(file, node);
         break;
       case ExprConstant:
-        NaClPrintDisassembledConst(file, node);
+        NaClPrintDisassembledConst(file, state, node);
         break;
       case ExprConstant64:
-        NaClPrintDisassembledConst64(file, vector, i);
+        NaClPrintDisassembledConst64(file, state, i);
         break;
       default:
         gprintf(file, "%"NACL_PRIu32, node->value);
@@ -239,8 +250,9 @@ void NaClExpVectorPrint(struct Gio* file, NaClExpVector* vector) {
  * Returns the index of the node following the given (indexed) memory offset.
  */
 static int NaClPrintDisassembledMemOffset(struct Gio* file,
-                                      NaClExpVector* vector,
+                                      NaClInstState *state,
                                       int index) {
+  NaClExpVector* vector = NaClInstStateExpVector(state);
   int r1_index = index + 1;
   int r2_index = r1_index + NaClExpWidth(vector, r1_index);
   int scale_index = r2_index + NaClExpWidth(vector, r2_index);
@@ -267,10 +279,10 @@ static int NaClPrintDisassembledMemOffset(struct Gio* file,
       gprintf(file, "+");
     }
     /* Recurse to handle print using format flags. */
-    NaClPrintDisassembledExp(file, vector, disp_index);
+    NaClPrintDisassembledExp(file, state, disp_index);
   } else if (r1 == RegUnknown && r2 == RegUnknown) {
     /* be sure to generate case: [0x0]. */
-    NaClPrintDisassembledExp(file, vector, disp_index);
+    NaClPrintDisassembledExp(file, state, disp_index);
   }
   gprintf(file, "]");
   return disp_index + NaClExpWidth(vector, disp_index);
@@ -281,12 +293,12 @@ static int NaClPrintDisassembledMemOffset(struct Gio* file,
  * given (indexed) segment address.
  */
 static int NaClPrintDisassembledSegmentAddr(struct Gio* file,
-                                            NaClExpVector* vector,
+                                            NaClInstState* state,
                                             int index) {
-  assert(ExprSegmentAddress == vector->node[index].kind);
-  index = NaClPrintDisassembledExp(file, vector, index + 1);
+  assert(ExprSegmentAddress == NaClInstStateExpVector(state)->node[index].kind);
+  index = NaClPrintDisassembledExp(file, state, index + 1);
   gprintf(file, ":");
-  return NaClPrintDisassembledExp(file, vector, index);
+  return NaClPrintDisassembledExp(file, state, index);
 }
 
 /* Print out the given expression node to the given file.
@@ -294,9 +306,10 @@ static int NaClPrintDisassembledSegmentAddr(struct Gio* file,
  * expression.
  */
 static int NaClPrintDisassembledExp(struct Gio* file,
-                                    NaClExpVector* vector,
+                                    NaClInstState* state,
                                     uint32_t index) {
   NaClExp* node;
+  NaClExpVector* vector = NaClInstStateExpVector(state);
   assert(index < vector->number_expr_nodes);
   node = &vector->node[index];
   switch (node->kind) {
@@ -307,17 +320,17 @@ static int NaClPrintDisassembledExp(struct Gio* file,
       NaClPrintDisassembledReg(file, node);
       return index + 1;
     case OperandReference:
-      return NaClPrintDisassembledExp(file, vector, index + 1);
+      return NaClPrintDisassembledExp(file, state, index + 1);
     case ExprConstant:
-      NaClPrintDisassembledConst(file, node);
+      NaClPrintDisassembledConst(file, state, node);
       return index + 1;
     case ExprConstant64:
-      NaClPrintDisassembledConst64(file, vector, index);
+      NaClPrintDisassembledConst64(file, state, index);
       return index + 3;
     case ExprSegmentAddress:
-      return NaClPrintDisassembledSegmentAddr(file, vector, index);
+      return NaClPrintDisassembledSegmentAddr(file, state, index);
     case ExprMemOffset:
-      return NaClPrintDisassembledMemOffset(file, vector, index);
+      return NaClPrintDisassembledMemOffset(file, state, index);
   }
 }
 
@@ -359,6 +372,7 @@ static Bool NaClHasSegmentOverride(NaClExpVector* vector,
  */
 static void NaClPrintSegmentOverride(struct Gio* file,
                                      Bool* is_first,
+                                     NaClInstState* state,
                                      NaClExpVector* vector,
                                      int seg_addr_index) {
   int seg_index = seg_addr_index + 1;
@@ -368,7 +382,7 @@ static void NaClPrintSegmentOverride(struct Gio* file,
   } else {
     gprintf(file, ", ");
   }
-  NaClPrintDisassembledExp(file, vector, seg_index);
+  NaClPrintDisassembledExp(file, state, seg_index);
 }
 
 /* Print the flag name if the flag is defined for the corresponding operand.
@@ -423,7 +437,7 @@ static void NaClPrintDisassembled(struct Gio* file,
       } else {
         gprintf(file, ", ");
       }
-      NaClPrintDisassembledExp(file, vector, tree_index);
+      NaClPrintDisassembledExp(file, state, tree_index);
 
       /* If this is a partial instruction, add set/use information
        * so that that it is more clear what was matched.
@@ -454,10 +468,12 @@ static void NaClPrintDisassembled(struct Gio* file,
         if (ExprSegmentAddress == vector->node[seg_addr_index].kind) {
           if (NaClHasSegmentOverride(vector, seg_addr_index,
                                      ExprDSrCase, RegDS)) {
-            NaClPrintSegmentOverride(file, &is_first, vector, seg_addr_index);
+            NaClPrintSegmentOverride(file, &is_first, state, vector,
+                                     seg_addr_index);
           } else if (NaClHasSegmentOverride(vector, seg_addr_index,
                                             ExprESrCase, RegES)) {
-            NaClPrintSegmentOverride(file, &is_first, vector, seg_addr_index);
+            NaClPrintSegmentOverride(file, &is_first, state, vector,
+                                     seg_addr_index);
           }
         }
       }
@@ -476,7 +492,7 @@ void NaClInstStateInstPrint(struct Gio* file, NaClInstState* state) {
 
   DEBUG_OR_ERASE(
       NaClInstPrint(file, state->decoder_tables, NaClInstStateInst(state)));
-  DEBUG(NaClExpVectorPrint(file, NaClInstStateExpVector(state)));
+  DEBUG(NaClExpVectorPrint(file, state));
   gprintf(file, "%"NACL_PRIxNaClPcAddressAll": ",
           NaClInstStatePrintableAddress(state));
   for (i = 0; i < length; ++i) {
@@ -601,6 +617,9 @@ uint64_t NaClGetExpConstant(NaClExpVector* vector, int index) {
   NaClExp* node = &vector->node[index];
   switch (node->kind) {
     case ExprConstant:
+      /* WARNING the validator implicitly depends on value being sign extended
+       * in this case.  Be careful.
+       */
       return node->value;
     case ExprConstant64:
       return (uint64_t) (uint32_t) vector->node[index+1].value |

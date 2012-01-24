@@ -21,6 +21,7 @@
 #include "native_client/src/trusted/validator/x86/decoder/ncop_exps.h"
 #include "native_client/src/trusted/validator/x86/nacl_regs.h"
 
+#include "native_client/src/trusted/validator/x86/decoder/ncop_exps_inl.c"
 #include "native_client/src/trusted/validator/x86/decoder/ncopcode_desc_inl.c"
 #include "native_client/src/trusted/validator/x86/x86_insts_inl.c"
 
@@ -475,7 +476,6 @@ static INLINE NaClExp* NaClAppendReg(NaClOpKind r, NaClExpVector* vector) {
   NaClExp* node;
   DEBUG(NaClLog(LOG_INFO, "append register %s\n", NaClOpKindName(r)));
   node = NaClAppendExp(ExprRegister, r, NaClGetRegSize(r), vector);
-  DEBUG(NaClExpVectorPrint(NaClLogGetGio(), vector));
   return node;
 }
 
@@ -912,20 +912,21 @@ static NaClExp* NaClAppendMemoryOffsetImmed(NaClInstState* state) {
   return root;
 }
 
-/* Compute the (relative) immediate value defined by the difference
- * between the PC and the immedaite value of the instruction.
- */
 static NaClExp* NaClAppendRelativeImmed(NaClInstState* state) {
-  /* The types have been carefully chosen so the 32-bit version of ncdis
-   * behaves correctly.  The address must be unsigned, the offset signed, and
-   * both must match the size of the address space being validated.
-   */
-  NaClPcAddress next_pc = state->vpc + state->bytes.length;
   NaClPcNumber jump_offset = (NaClPcNumber) NaClExtractSignedImmediate(state);
-
   DEBUG(NaClLog(LOG_INFO, "append relative immediate\n"));
-
-  return NaClAppendConst(next_pc + jump_offset,
+  /* Awful hack: mask the jump offset so that a negative offset will be stored
+   * as a 32-bit value instead of a 64-bit value.  This is done because access
+   * to the expression vector has not been abstracted and some functions (for
+   * example NaClValidateInstReplacement) expect a particular internal encoding.
+   * Historically absolute targets were stored in the vector rather than offsets
+   * and the absolute targets were always positive 32-bit numbers.  Rather than
+   * trying to play wack-a-mole and running the risk of missing a breakage, it
+   * is safer to preserve the internal encoding.
+   * TODO(ncbray) simplify the vector's internal encoding and store everything
+   * as 64-bit values.
+   */
+  return NaClAppendConst(0xffffffff & jump_offset,
                          NACL_EFLAG(ExprUnsignedHex) |
                          NACL_EFLAG(ExprJumpTarget),
                          &state->nodes);
@@ -981,7 +982,7 @@ static NaClExp* NaClAppendMemoryOffset(NaClInstState* state,
   NaClAppendConst(scale, NACL_EFLAG(ExprSize8), &state->nodes);
   NaClAppendConst(displacement->value, displacement->flags, &state->nodes);
   DEBUG(NaClLog(LOG_INFO, "finished appending memory offset:\n"));
-  DEBUG(NaClExpVectorPrint(NaClLogGetGio(), &state->nodes));
+  DEBUG(NaClExpVectorPrint(NaClLogGetGio(), state));
   return root;
 }
 
@@ -1607,6 +1608,6 @@ void NaClBuildExpVector(struct NaClInstState* state) {
       n->flags |= NACL_EFLAG(ExprImplicit);
     }
     NaClAddOpSetUse(NaClAppendOperand(state, op), op);
-    DEBUG(NaClExpVectorPrint(NaClLogGetGio(), &state->nodes));
+    DEBUG(NaClExpVectorPrint(NaClLogGetGio(), state));
   }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -46,7 +46,7 @@ static void NaClSafeSegmentReference(NaClValidatorState* state,
       NaClLog(LOG_INFO, "Validating segments:\n");
       NaClInstStateInstPrint(g, inst_state);
       NaClInstPrint(g, state->decoder_tables, state->cur_inst);
-      NaClExpVectorPrint(g, vector);
+      NaClExpVectorPrint(g, inst_state);
     });
   /* Look for references to a segment address. */
   for (i = 0; i < vector->number_expr_nodes; ++i) {

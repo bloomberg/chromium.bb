@@ -61,11 +61,12 @@ Bool NaClJumpValidatorInitialize(NaClValidatorState* vstate) {
  * Parameters:
  *   vstate - The state of the validator.
  *   inst - The instruction that does the jump.
- *   to_address - The address that the instruction jumps to.
+ *   jump_offset - The jump offset, relative to the end of the instruction.
  */
 static void NaClAddJumpToJumpSets(NaClValidatorState* vstate,
                                   NaClInstState* inst,
-                                  NaClPcAddress to_address) {
+                                  NaClPcNumber jump_offset) {
+  NaClPcAddress to_address = inst->vpc + inst->bytes.length + jump_offset;
   /* If the address is in the code segment, assume good (unless we later find it
    * jumping into a pseudo instruction). Otherwise, only allow if 0 mod 32.
    */
@@ -430,7 +431,7 @@ static void NaClAddExprJumpTarget(NaClValidatorState* vstate) {
       case ExprConstant64:
         /* Direct jump. */
         NaClAddJumpToJumpSets(vstate, inst_state,
-                              (NaClPcAddress) NaClGetExpConstant(vector, i));
+                              (NaClPcNumber) NaClGetExpConstant(vector, i));
         break;
       default:
         NaClValidatorInstMessage(
