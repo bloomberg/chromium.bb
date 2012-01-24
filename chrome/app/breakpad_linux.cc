@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -38,6 +38,10 @@
 #include "chrome/common/env_vars.h"
 #include "content/common/chrome_descriptors.h"
 #include "seccompsandbox/linux_syscall_support.h"
+
+#ifndef PR_SET_PTRACER
+#define PR_SET_PTRACER 0x59616d61
+#endif
 
 // Some versions of gcc are prone to warn about unused return values. In cases
 // where we either a) know the call cannot fail, or b) there is nothing we
@@ -721,7 +725,7 @@ static bool CrashDone(const char* dump_path,
   google_breakpad::PageAllocator allocator;
   const unsigned dump_path_len = my_strlen(dump_path);
   const unsigned minidump_id_len = my_strlen(minidump_id);
-  char *const path = reinterpret_cast<char*>(allocator.Alloc(
+  char* const path = reinterpret_cast<char*>(allocator.Alloc(
       dump_path_len + 1 /* '/' */ + minidump_id_len +
       4 /* ".dmp" */ + 1 /* NUL */));
   memcpy(path, dump_path, dump_path_len);
@@ -790,9 +794,9 @@ void EnableCrashDumping(const bool unattended) {
 }
 
 // Non-Browser = Extension, Gpu, Plugins, Ppapi and Renderer
-static bool
-NonBrowserCrashHandler(const void* crash_context, size_t crash_context_size,
-                       void* context) {
+static bool NonBrowserCrashHandler(const void* crash_context,
+                                   size_t crash_context_size,
+                                   void* context) {
   const int fd = reinterpret_cast<intptr_t>(context);
   int fds[2] = { -1, -1 };
   if (sys_socketpair(AF_UNIX, SOCK_STREAM, 0, fds) < 0) {
@@ -800,6 +804,19 @@ NonBrowserCrashHandler(const void* crash_context, size_t crash_context_size,
     sys_write(2, msg, sizeof(msg)-1);
     return false;
   }
+
+  // On kernels with ptrace protection, e.g. Ubuntu 10.10+, the browser cannot
+  // ptrace this crashing process and crash dumping will fail. When using the
+  // SUID sandbox, this crashing process is likely to be in its own PID
+  // namespace, and thus there is no way to permit only the browser process to
+  // ptrace it.
+  // The workaround is to allow all processes to ptrace this process if we
+  // reach this point, by passing -1 as the allowed PID. However, support for
+  // passing -1 as the PID won't reach kernels until around the Ubuntu 12.04
+  // timeframe.
+  sys_prctl(PR_SET_PTRACER, -1);
+
+  // Start constructing the message to send to the browser.
   char guid[kGuidSize + 1] = {0};
   char crash_url[kMaxActiveURLSize + 1] = {0};
   char distro[kDistroSize + 1] = {0};
@@ -820,7 +837,9 @@ NonBrowserCrashHandler(const void* crash_context, size_t crash_context_size,
                             // browser to convert namespace tids.
 
   // The length of the control message:
-  static const unsigned kControlMsgSize = CMSG_SPACE(2*sizeof(int));
+  static const unsigned kControlMsgSize = sizeof(fds);
+  static const unsigned kControlMsgSpaceSize = CMSG_SPACE(kControlMsgSize);
+  static const unsigned kControlMsgLenSize = CMSG_LEN(kControlMsgSize);
 
   const size_t kIovSize = 7;
   struct kernel_msghdr msg;
@@ -843,15 +862,15 @@ NonBrowserCrashHandler(const void* crash_context, size_t crash_context_size,
 
   msg.msg_iov = iov;
   msg.msg_iovlen = kIovSize;
-  char cmsg[kControlMsgSize];
-  my_memset(cmsg, 0, kControlMsgSize);
+  char cmsg[kControlMsgSpaceSize];
+  my_memset(cmsg, 0, kControlMsgSpaceSize);
   msg.msg_control = cmsg;
   msg.msg_controllen = sizeof(cmsg);
 
   struct cmsghdr *hdr = CMSG_FIRSTHDR(&msg);
   hdr->cmsg_level = SOL_SOCKET;
   hdr->cmsg_type = SCM_RIGHTS;
-  hdr->cmsg_len = CMSG_LEN(2*sizeof(int));
+  hdr->cmsg_len = kControlMsgLenSize;
   ((int*) CMSG_DATA(hdr))[0] = fds[0];
   ((int*) CMSG_DATA(hdr))[1] = fds[1];
 
