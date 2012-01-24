@@ -427,6 +427,9 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // Convert a point from a View's coordinate system to that of the screen.
   static void ConvertPointToScreen(const View* src, gfx::Point* point);
 
+  // Convert a point from a View's coordinate system to that of the screen.
+  static void ConvertPointFromScreen(const View* dst, gfx::Point* point);
+
   // Applies transformation on the rectangle, which is in the view's coordinate
   // system, to convert it into the parent's coordinate system.
   gfx::Rect ConvertRectToParent(const gfx::Rect& rect) const;

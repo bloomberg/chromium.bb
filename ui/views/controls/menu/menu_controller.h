@@ -126,6 +126,9 @@ class VIEWS_EXPORT MenuController : public MessageLoop::Dispatcher {
   // to be canceled if the window manager changes the active window.
   void OnWidgetActivationChanged();
 
+  // Update the submenu's selection based on the current mouse location
+  void UpdateSubmenuSelection(SubmenuView* source);
+
  private:
   friend class internal::MenuRunnerImpl;
   friend class MenuHostRootView;
@@ -255,7 +258,7 @@ class VIEWS_EXPORT MenuController : public MessageLoop::Dispatcher {
   // when blocking. This schedules the loop to quit.
   void Accept(MenuItemView* item, int mouse_event_flags);
 
-  bool ShowSiblingMenu(SubmenuView* source, const MouseEvent& event);
+  bool ShowSiblingMenu(SubmenuView* source, const gfx::Point& mouse_location);
 
   // Closes all menus, including any menus of nested invocations of Run.
   void CloseAllNestedMenus();
@@ -417,8 +420,12 @@ class VIEWS_EXPORT MenuController : public MessageLoop::Dispatcher {
   // sets it to null.
   void SendMouseCaptureLostToActiveView();
 
-  // Set exit type.
+  // Sets exit type.
   void SetExitType(ExitType type);
+
+  // Handles the mouse location event on the submenu |source|.
+  void HandleMouseLocation(SubmenuView* source,
+                           const gfx::Point& mouse_location);
 
   // The active instance.
   static MenuController* active_instance_;

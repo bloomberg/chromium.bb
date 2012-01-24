@@ -635,6 +635,19 @@ void View::ConvertPointToScreen(const View* src, gfx::Point* p) {
   }
 }
 
+// static
+void View::ConvertPointFromScreen(const View* dst, gfx::Point* p) {
+  DCHECK(dst);
+  DCHECK(p);
+
+  const views::Widget* widget = dst->GetWidget();
+  if (!widget)
+    return;
+  const gfx::Rect r = widget->GetClientAreaScreenBounds();
+  p->Offset(-r.x(), -r.y());
+  views::View::ConvertPointFromWidget(dst, p);
+}
+
 gfx::Rect View::ConvertRectToParent(const gfx::Rect& rect) const {
   gfx::Rect x_rect = rect;
   GetTransform().TransformRect(&x_rect);

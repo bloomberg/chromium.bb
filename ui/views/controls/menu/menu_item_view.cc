@@ -458,6 +458,8 @@ void MenuItemView::ChildrenChanged() {
       // change to the submenu's size and no layout.
       submenu_->Layout();
       submenu_->SchedulePaint();
+      // Update the menu selection after layout.
+      controller->UpdateSubmenuSelection(submenu_);
     }
   }
 

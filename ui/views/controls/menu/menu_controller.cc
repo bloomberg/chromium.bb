@@ -514,7 +514,7 @@ void MenuController::OnMouseDragged(SubmenuView* source,
       mouse_menu = part.menu;
     SetSelection(part.menu ? part.menu : state_.item, SELECTION_OPEN_SUBMENU);
   } else if (part.type == MenuPart::NONE) {
-    ShowSiblingMenu(source, event);
+    ShowSiblingMenu(source, event.location());
   }
   UpdateActiveMouseView(source, event, mouse_menu);
 }
@@ -583,30 +583,7 @@ void MenuController::OnMouseReleased(SubmenuView* source,
 
 void MenuController::OnMouseMoved(SubmenuView* source,
                                   const MouseEvent& event) {
-  if (showing_submenu_)
-    return;
-
-  MenuPart part = GetMenuPart(source, event.location());
-
-  UpdateScrolling(part);
-
-  if (!blocking_run_)
-    return;
-
-  if (part.type == MenuPart::NONE && ShowSiblingMenu(source, event))
-    return;
-
-  if (part.type == MenuPart::MENU_ITEM && part.menu) {
-    SetSelection(part.menu, SELECTION_OPEN_SUBMENU);
-  } else if (!part.is_scroll() && pending_state_.item &&
-             pending_state_.item->GetParentMenuItem() &&
-             (!pending_state_.item->HasSubmenu() ||
-              !pending_state_.item->GetSubmenu()->IsShowing())) {
-    // On exit if the user hasn't selected an item with a submenu, move the
-    // selection back to the parent menu item.
-    SetSelection(pending_state_.item->GetParentMenuItem(),
-                 SELECTION_OPEN_SUBMENU);
-  }
+  HandleMouseLocation(source, event.location());
 }
 
 void MenuController::OnMouseEntered(SubmenuView* source,
@@ -779,6 +756,17 @@ void MenuController::OnDragExitedScrollButton(SubmenuView* source) {
 void MenuController::OnWidgetActivationChanged() {
   if (!drag_in_progress_)
     Cancel(EXIT_ALL);
+}
+
+void MenuController::UpdateSubmenuSelection(SubmenuView* submenu) {
+  if (submenu->IsShowing()) {
+    gfx::Point point = gfx::Screen::GetCursorScreenPoint();
+    const SubmenuView* root_submenu =
+        submenu->GetMenuItem()->GetRootMenuItem()->GetSubmenu();
+    views::View::ConvertPointFromScreen(
+        root_submenu->GetWidget()->GetRootView(), &point);
+    HandleMouseLocation(submenu, point);
+  }
 }
 
 void MenuController::SetSelection(MenuItemView* menu_item,
@@ -1125,13 +1113,15 @@ void MenuController::Accept(MenuItemView* item, int mouse_event_flags) {
 }
 
 bool MenuController::ShowSiblingMenu(SubmenuView* source,
-                                     const MouseEvent& event) {
+                                     const gfx::Point& mouse_location) {
   if (!menu_stack_.empty() || !menu_button_)
     return false;
 
   View* source_view = source->GetScrollViewContainer();
-  if (event.x() >= 0 && event.x() < source_view->width() && event.y() >= 0 &&
-      event.y() < source_view->height()) {
+  if (mouse_location.x() >= 0 &&
+      mouse_location.x() < source_view->width() &&
+      mouse_location.y() >= 0 &&
+      mouse_location.y() < source_view->height()) {
     // The mouse is over the menu, no need to continue.
     return false;
   }
@@ -1144,7 +1134,7 @@ bool MenuController::ShowSiblingMenu(SubmenuView* source,
 
   // The user moved the mouse outside the menu and over the owning window. See
   // if there is a sibling menu we should show.
-  gfx::Point screen_point(event.location());
+  gfx::Point screen_point(mouse_location);
   View::ConvertPointToScreen(source_view, &screen_point);
   MenuItemView::AnchorPosition anchor;
   bool has_mnemonics;
@@ -1406,6 +1396,8 @@ void MenuController::OpenMenu(MenuItemView* item) {
 }
 
 void MenuController::OpenMenuImpl(MenuItemView* item, bool show) {
+  // TODO(oshima|sky): Don't show the menu if drag is in progress and
+  // this menu doesn't support drag drop. See crbug.com/110495.
   if (show) {
     int old_count = item->GetSubmenu()->child_count();
     item->GetDelegate()->WillShowMenu(item);
@@ -1431,6 +1423,8 @@ void MenuController::OpenMenuImpl(MenuItemView* item, bool show) {
 
 void MenuController::MenuChildrenChanged(MenuItemView* item) {
   DCHECK(item);
+  // Menu shouldn't be updated during drag operation.
+  DCHECK(!active_mouse_view_);
 
   // If the current item or pending item is a descendant of the item
   // that changed, move the selection back to the changed item.
@@ -2001,5 +1995,32 @@ void MenuController::SetExitType(ExitType type) {
 #endif
 }
 
+void MenuController::HandleMouseLocation(SubmenuView* source,
+                                         const gfx::Point& mouse_location) {
+  if (showing_submenu_)
+    return;
+
+  MenuPart part = GetMenuPart(source, mouse_location);
+
+  UpdateScrolling(part);
+
+  if (!blocking_run_)
+    return;
+
+  if (part.type == MenuPart::NONE && ShowSiblingMenu(source, mouse_location))
+    return;
+
+  if (part.type == MenuPart::MENU_ITEM && part.menu) {
+    SetSelection(part.menu, SELECTION_OPEN_SUBMENU);
+  } else if (!part.is_scroll() && pending_state_.item &&
+             pending_state_.item->GetParentMenuItem() &&
+             (!pending_state_.item->HasSubmenu() ||
+              !pending_state_.item->GetSubmenu()->IsShowing())) {
+    // On exit if the user hasn't selected an item with a submenu, move the
+    // selection back to the parent menu item.
+    SetSelection(pending_state_.item->GetParentMenuItem(),
+                 SELECTION_OPEN_SUBMENU);
+  }
+}
 
 }  // namespace views
