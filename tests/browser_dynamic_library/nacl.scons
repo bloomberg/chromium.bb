@@ -27,6 +27,8 @@ toolchain_libraries = [
     'libgcc_s.so.1',
     get_lib('libpthread.so.*'),
     'libstdc++.so.6',
+    get_lib('libdl.so.*'),
+    'libmemusage.so', # For dlopen test only
     ]
 
 nacl_libraries = [
@@ -65,30 +67,63 @@ def generate_nmf(env, target, source):
 def make_mappings(libdir, libs):
   return [('%s' % lib, env.File(os.path.join(libdir, lib))) for lib in libs]
 
-file_mapping = (make_mappings('${NACL_SDK_LIB}', toolchain_libraries) +
-                make_mappings('${LIB_DIR}', nacl_libraries))
+base_file_mapping = (make_mappings('${NACL_SDK_LIB}', toolchain_libraries) +
+                     make_mappings('${LIB_DIR}', nacl_libraries))
+
+dynamic_library_file_mapping = list(base_file_mapping)
 
 test_prog_fname = 'ppapi_test_example_${TARGET_FULLARCH}${PROGSUFFIX}'
 test_prog = env.File('${STAGING_DIR}/' + test_prog_fname)
-file_mapping.append((test_prog_fname, test_prog))
-file_mapping.append(('dynamic_library_test.nmf',
+dynamic_library_file_mapping.append((test_prog_fname, test_prog))
+dynamic_library_file_mapping.append(('dynamic_library_test.nmf',
                      '${STAGING_DIR}/dynamic_library_test.nmf'))
-file_mapping.append(('ppapi_test_example.js',
+dynamic_library_file_mapping.append(('ppapi_test_example.js',
                      '../ppapi_test_example/ppapi_test_example.js'))
 
-nmf_node = env.Command(
+dynamic_library_nmf_node = env.Command(
     '${STAGING_DIR}/dynamic_library_test.nmf',
     ['dynamic_library_test.nmf', '${SCONSTRUCT_DIR}/DEPS'],
     generate_nmf,
-    manifest_mapping=file_mapping)
+    manifest_mapping=base_file_mapping)
 
-node = env.PPAPIBrowserTester(
+dynamic_library_node = env.PPAPIBrowserTester(
     'browser_dynamic_library_test.out', url='dynamic_library_test.html',
     files=[env.File('dynamic_library_test.html'),
            env.File('../ppapi_test_example/ppapi_test_example.js'),
-           nmf_node],
-    map_files=file_mapping)
+           dynamic_library_nmf_node],
+    map_files=dynamic_library_file_mapping)
 
-env.AddNodeToTestSuite(node, ['dynamic_library_browser_tests'],
+env.AddNodeToTestSuite(dynamic_library_node, ['dynamic_library_browser_tests'],
                        'run_browser_dynamic_library_test',
+                       is_broken=env.PPAPIBrowserTesterIsBroken())
+
+
+browser_dlopen_nexe_name = 'browser_dlopen_test_%s' % env.get('TARGET_FULLARCH')
+browser_dlopen_nexe = env.ComponentProgram(browser_dlopen_nexe_name,
+                                    'browser_dlopen_test.cc',
+                                    EXTRA_LIBS=[
+                                        '${PPAPI_LIBS}',
+                                        'ppapi_test_lib',
+                                        'platform',
+                                        'dl',
+                                        '${PTHREAD_LIBS}'])
+
+browser_dlopen_file_mapping = list(base_file_mapping)
+
+browser_dlopen_nmf_node = env.Command(
+    '${STAGING_DIR}/browser_dlopen_test.nmf',
+    ['browser_dlopen_test.nmf', '${SCONSTRUCT_DIR}/DEPS'],
+    generate_nmf,
+    manifest_mapping=base_file_mapping)
+
+env.Publish(browser_dlopen_nexe_name, 'run', ['browser_dlopen_test.html'])
+
+browser_dlopen_node = env.PPAPIBrowserTester(
+    'browser_dlopen_test.out', url='browser_dlopen_test.html',
+    files=env.ExtractPublishedFiles(browser_dlopen_nexe_name) +
+          browser_dlopen_nmf_node,
+    map_files=browser_dlopen_file_mapping)
+
+env.AddNodeToTestSuite(browser_dlopen_node, ['dynamic_library_browser_tests'],
+                       'run_browser_dlopen_test',
                        is_broken=env.PPAPIBrowserTesterIsBroken())

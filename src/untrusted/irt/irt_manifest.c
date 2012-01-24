@@ -18,6 +18,8 @@
 #include "native_client/src/untrusted/irt/irt_interfaces.h"
 #include "native_client/src/untrusted/irt/irt_private.h"
 
+__thread int g_is_main_thread = 0;
+
 static void print_error(const char *message) {
   write(2, message, strlen(message));
 }
@@ -78,6 +80,9 @@ int kFilesLen = 6;
 static int irt_open_resource(const char *file, int *fd) {
   int status;
   struct NaClSrpcChannel *manifest_channel;
+  if (g_is_main_thread) {
+    return EDEADLK;
+  }
   status = get_manifest_channel(&manifest_channel);
   if (0 != status) {
     return status;
