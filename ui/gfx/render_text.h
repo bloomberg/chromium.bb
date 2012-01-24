@@ -81,6 +81,13 @@ enum BreakType {
   LINE_BREAK,
 };
 
+// Horizontal text alignment styles.
+enum HorizontalAlignment {
+  ALIGN_LEFT,
+  ALIGN_CENTER,
+  ALIGN_RIGHT,
+};
+
 // VisualCursorDirection and LogicalCursorDirection represent directions of
 // motion of the cursor in BiDi text. The combinations that make sense are:
 //
@@ -112,6 +119,11 @@ class UI_EXPORT RenderText {
   const string16& text() const { return text_; }
   void SetText(const string16& text);
 
+  HorizontalAlignment horizontal_alignment() const {
+    return horizontal_alignment_;
+  }
+  void SetHorizontalAlignment(HorizontalAlignment alignment);
+
   const FontList& font_list() const { return font_list_; }
   void SetFontList(const FontList& font_list);
 
@@ -122,6 +134,9 @@ class UI_EXPORT RenderText {
   const Font& GetFont() const;
 
   const SelectionModel& selection_model() const { return selection_model_; }
+
+  bool cursor_enabled() const { return cursor_enabled_; }
+  void SetCursorEnabled(bool cursor_enabled);
 
   bool cursor_visible() const { return cursor_visible_; }
   void set_cursor_visible(bool visible) { cursor_visible_ = visible; }
@@ -312,21 +327,26 @@ class UI_EXPORT RenderText {
   // style (foreground) to selection range.
   void ApplyCompositionAndSelectionStyles(StyleRanges* style_ranges);
 
+  // Returns the text origin after applying text alignment and display offset.
+  Point GetTextOrigin();
+
   // Convert points from the text space to the view space and back.
   // Handles the display area, display offset, and the application LTR/RTL mode.
   Point ToTextPoint(const Point& point);
   Point ToViewPoint(const Point& point);
 
+  // Returns the width of content, which reserves room for the cursor if
+  // |cursor_enabled_| is true.
+  int GetContentWidth();
+
+  // Returns display offset based on current text alignment.
+  Point GetAlignmentOffset();
+
   // Returns the origin point for drawing text via Skia.
   Point GetOriginForSkiaDrawing();
 
-  // Applies fade effects to |renderer| and returns a text drawing offset when
-  // fading the head would cause the text to change alignment.
-  // TODO(asvitkine): Applying right-alignment in this way doesn't work well
-  //                  with drawing the text selection and cursor. Instead, we
-  //                  should make RenderText support horizontal alignment
-  //                  explicitly.
-  int ApplyFadeEffects(internal::SkiaTextRenderer* renderer);
+  // Applies fade effects to |renderer|.
+  void ApplyFadeEffects(internal::SkiaTextRenderer* renderer);
 
  private:
   friend class RenderTextTest;
@@ -357,6 +377,9 @@ class UI_EXPORT RenderText {
   // Logical UTF-16 string data to be drawn.
   string16 text_;
 
+  // Horizontal alignment of the text with respect to |display_rect_|.
+  HorizontalAlignment horizontal_alignment_;
+
   // A list of fonts used to render |text_|.
   FontList font_list_;
 
@@ -365,6 +388,10 @@ class UI_EXPORT RenderText {
 
   // The cached cursor bounds; get these bounds with GetUpdatedCursorBounds.
   Rect cursor_bounds_;
+
+  // Specifies whether the cursor is enabled. If disabled, no space is reserved
+  // for the cursor when positioning text.
+  bool cursor_enabled_;
 
   // The cursor visibility and insert mode.
   bool cursor_visible_;

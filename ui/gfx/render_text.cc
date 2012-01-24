@@ -319,6 +319,14 @@ void RenderText::SetText(const string16& text) {
   UpdateLayout();
 }
 
+void RenderText::SetHorizontalAlignment(HorizontalAlignment alignment) {
+  if (horizontal_alignment_ != alignment) {
+    horizontal_alignment_ = alignment;
+    display_offset_ = Point();
+    cached_bounds_and_offset_valid_ = false;
+  }
+}
+
 void RenderText::SetFontList(const FontList& font_list) {
   font_list_ = font_list;
   cached_bounds_and_offset_valid_ = false;
@@ -329,6 +337,11 @@ void RenderText::SetFontSize(int size) {
   font_list_ = font_list_.DeriveFontListWithSize(size);
   cached_bounds_and_offset_valid_ = false;
   UpdateLayout();
+}
+
+void RenderText::SetCursorEnabled(bool cursor_enabled) {
+  cursor_enabled_ = cursor_enabled;
+  cached_bounds_and_offset_valid_ = false;
 }
 
 const Font& RenderText::GetFont() const {
@@ -575,7 +588,9 @@ SelectionModel RenderText::GetSelectionModelForSelectionStart() {
 }
 
 RenderText::RenderText()
-    : cursor_visible_(false),
+    : horizontal_alignment_(base::i18n::IsRTL() ? ALIGN_RIGHT : ALIGN_LEFT),
+      cursor_enabled_(true),
+      cursor_visible_(false),
       insert_mode_(true),
       focused_(false),
       composition_range_(ui::Range::InvalidRange()),
@@ -656,24 +671,37 @@ void RenderText::ApplyCompositionAndSelectionStyles(
   }
 }
 
+Point RenderText::GetTextOrigin() {
+  Point origin = display_rect().origin();
+  origin = origin.Add(GetUpdatedDisplayOffset());
+  origin = origin.Add(GetAlignmentOffset());
+  return origin;
+}
+
 Point RenderText::ToTextPoint(const Point& point) {
-  Point p(point.Subtract(display_rect().origin()));
-  p = p.Subtract(GetUpdatedDisplayOffset());
-  if (base::i18n::IsRTL())
-    p.Offset(GetStringWidth() - display_rect().width() + 1, 0);
-  return p;
+  return point.Subtract(GetTextOrigin());
 }
 
 Point RenderText::ToViewPoint(const Point& point) {
-  Point p(point.Add(display_rect().origin()));
-  p = p.Add(GetUpdatedDisplayOffset());
-  if (base::i18n::IsRTL())
-    p.Offset(display_rect().width() - GetStringWidth() - 1, 0);
-  return p;
+  return point.Add(GetTextOrigin());
+}
+
+int RenderText::GetContentWidth() {
+  return GetStringWidth() + (cursor_enabled_ ? 1 : 0);
+}
+
+Point RenderText::GetAlignmentOffset() {
+  if (horizontal_alignment() != ALIGN_LEFT) {
+    int x_offset = display_rect().width() - GetContentWidth();
+    if (horizontal_alignment() == ALIGN_CENTER)
+      x_offset /= 2;
+    return Point(x_offset, 0);
+  }
+  return Point();
 }
 
 Point RenderText::GetOriginForSkiaDrawing() {
-  Point origin(ToViewPoint(Point()));
+  Point origin(GetTextOrigin());
   // TODO(msw): Establish a vertical baseline for strings of mixed font heights.
   const Font& font = GetFont();
   int height = font.GetHeight();
@@ -685,20 +713,20 @@ Point RenderText::GetOriginForSkiaDrawing() {
   return origin;
 }
 
-int RenderText::ApplyFadeEffects(internal::SkiaTextRenderer* renderer) {
+void RenderText::ApplyFadeEffects(internal::SkiaTextRenderer* renderer) {
   if (!fade_head() && !fade_tail())
-    return 0;
+    return;
 
   const int text_width = GetStringWidth();
   const int display_width = display_rect().width();
 
   // If the text fits as-is, no need to fade.
   if (text_width <= display_width)
-    return 0;
+    return;
 
   int gradient_width = CalculateFadeGradientWidth(GetFont(), display_width);
   if (gradient_width == 0)
-    return 0;
+    return;
 
   bool fade_left = fade_head();
   bool fade_right = fade_tail();
@@ -720,14 +748,8 @@ int RenderText::ApplyFadeEffects(internal::SkiaTextRenderer* renderer) {
     solid_part.Inset(0, 0, gradient_width, 0);
   }
 
-  // Right-align the text when fading left.
-  int x_offset = 0;
   gfx::Rect text_rect = display_rect();
-  if (fade_left && !fade_right) {
-    x_offset = display_width - text_width;
-    text_rect.Offset(x_offset, 0);
-    text_rect.set_width(text_width);
-  }
+  text_rect.Inset(GetAlignmentOffset().x(), 0, 0, 0);
 
   const SkColor color = default_style().foreground;
   SkAutoTUnref<SkShader> shader(
@@ -736,8 +758,6 @@ int RenderText::ApplyFadeEffects(internal::SkiaTextRenderer* renderer) {
     // |renderer| adds its own ref. So don't |release()| it from the ref ptr.
     renderer->SetShader(shader.get());
   }
-
-  return x_offset;
 }
 
 void RenderText::MoveCursorTo(size_t position, bool select) {
@@ -755,17 +775,21 @@ void RenderText::MoveCursorTo(size_t position, bool select) {
 void RenderText::UpdateCachedBoundsAndOffset() {
   if (cached_bounds_and_offset_valid_)
     return;
+
   // First, set the valid flag true to calculate the current cursor bounds using
   // the stale |display_offset_|. Applying |delta_offset| at the end of this
   // function will set |cursor_bounds_| and |display_offset_| to correct values.
   cached_bounds_and_offset_valid_ = true;
   cursor_bounds_ = GetCursorBounds(selection_model_, insert_mode_);
+
   // Update |display_offset_| to ensure the current cursor is visible.
-  int display_width = display_rect_.width();
-  int string_width = GetStringWidth();
+  const int display_width = display_rect_.width();
+  const int content_width = GetContentWidth();
+
   int delta_offset = 0;
-  if (string_width < display_width) {
-    // Show all text whenever it fits in the display width.
+  if (content_width <= display_width || !cursor_enabled()) {
+    // Don't pan if the text fits in the display width or when the cursor is
+    // disabled.
     delta_offset = -display_offset_.x();
   } else if (cursor_bounds_.right() >= display_rect_.right()) {
     // TODO(xji): when the character overflow is a RTL character, currently, if
@@ -780,13 +804,15 @@ void RenderText::UpdateCachedBoundsAndOffset() {
     //
     // Pan to show the cursor when it overflows to the left.
     delta_offset = display_rect_.x() - cursor_bounds_.x();
-  } else {
-    // Pan to show additional overflow text when the display width increases.
-    int negate_rtl = base::i18n::IsRTL() ? -1 : 1;
-    int offset = negate_rtl * display_offset_.x();
-    if (display_width > (string_width + offset))
-      delta_offset = negate_rtl * (display_width - (string_width + offset) - 1);
+  } else if (display_offset_.x() != 0) {
+    // Reduce the pan offset to show additional overflow text when the display
+    // width increases.
+    const int negate_rtl = horizontal_alignment_ == ALIGN_RIGHT ? -1 : 1;
+    const int offset = negate_rtl * display_offset_.x();
+    if (display_width > (content_width + offset))
+      delta_offset = negate_rtl * (display_width - (content_width + offset));
   }
+
   display_offset_.Offset(delta_offset, 0);
   cursor_bounds_.Offset(delta_offset, 0);
 }
@@ -805,7 +831,7 @@ void RenderText::DrawSelection(Canvas* canvas) {
 void RenderText::DrawCursor(Canvas* canvas) {
   // Paint cursor. Replace cursor is drawn as rectangle for now.
   // TODO(msw): Draw a better cursor with a better indication of association.
-  if (cursor_visible() && focused()) {
+  if (cursor_enabled() && cursor_visible() && focused()) {
     const Rect& bounds = GetUpdatedCursorBounds();
     if (bounds.width() != 0)
       canvas->FillRect(kCursorColor, bounds);

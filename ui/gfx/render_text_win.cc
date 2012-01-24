@@ -452,8 +452,7 @@ void RenderTextWin::DrawVisualText(Canvas* canvas) {
   std::vector<SkPoint> pos;
 
   internal::SkiaTextRenderer renderer(canvas);
-  // Fade effects may force right alignment, requiring an offset to |x|.
-  x += ApplyFadeEffects(&renderer);
+  ApplyFadeEffects(&renderer);
 
   for (size_t i = 0; i < runs_.size(); ++i) {
     // Get the run specified by the visual-to-logical map.

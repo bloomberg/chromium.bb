@@ -381,8 +381,7 @@ void RenderTextLinux::DrawVisualText(Canvas* canvas) {
   }
 
   internal::SkiaTextRenderer renderer(canvas);
-  // Fade effects may force right alignment, requiring an offset to |x|.
-  x += ApplyFadeEffects(&renderer);
+  ApplyFadeEffects(&renderer);
 
   for (GSList* it = current_line_->runs; it; it = it->next) {
     PangoLayoutRun* run = reinterpret_cast<PangoLayoutRun*>(it->data);
