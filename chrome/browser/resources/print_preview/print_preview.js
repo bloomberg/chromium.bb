@@ -819,6 +819,10 @@ function onPDFLoad() {
   if (previewModifiable) {
     setPluginPreviewPageCount();
   }
+  // Instruct the plugin which page numbers to display in the page number
+  // indicator.
+  previewArea.pdfPlugin.setPageNumbers(
+      JSON.stringify(pageSettings.selectedPagesSet));
   cr.dispatchSimpleEvent(document, customEvents.PDF_LOADED);
   isFirstPageLoaded = true;
   checkAndHideOverlayLayerIfValid();
@@ -1037,6 +1041,7 @@ function checkCompatiblePluginExists() {
                           dummyPlugin.pageXOffset,
                           dummyPlugin.pageYOffset,
                           dummyPlugin.setZoomLevel,
+                          dummyPlugin.setPageNumbers,
                           dummyPlugin.setPageXOffset,
                           dummyPlugin.setPageYOffset,
                           dummyPlugin.getHorizontalScrollbarThickness,

@@ -94,8 +94,9 @@ PrintPreviewWebUITest.prototype = {
 
         // Initializing |previewArea| object here because we need to replace a
         // method.
-        previewArea = print_preview.PreviewArea.getInstance();
-        this.previewArea.createOrReloadPDFPlugin = self.createOrReloadPDFPlugin;
+        this.previewArea = print_preview.PreviewArea.getInstance();
+        this.previewArea.createOrReloadPDFPlugin =
+            self.createOrReloadPDFPlugin.bind(previewArea);
       }
 
       this.checkCompatiblePluginExists =
@@ -145,6 +146,7 @@ PrintPreviewWebUITest.prototype = {
     pdfViewer.setZoomLevel = fakeFunction;
     pdfViewer.pageXOffset = fakeFunction;
     pdfViewer.pageYOffset = fakeFunction;
+    pdfViewer.setPageNumbers = fakeFunction;
     pdfViewer.setPageXOffset = fakeFunction;
     pdfViewer.setPageYOffset = fakeFunction;
     pdfViewer.getHeight = fakeFunction;
@@ -155,6 +157,7 @@ PrintPreviewWebUITest.prototype = {
     pdfViewer.getHorizontalScrollbarThickness = fakeFunction;
     pdfViewer.getVerticalScrollbarThickness = fakeFunction;
     $('mainview').appendChild(pdfViewer);
+    this.pdfPlugin_ = pdfViewer;
     onPDFLoad();
   },
 
