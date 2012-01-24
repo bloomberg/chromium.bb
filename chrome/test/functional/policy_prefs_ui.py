@@ -123,6 +123,7 @@ class PolicyPrefsUITest(policy_base.PolicyTestBase):
     # Note: this policy is only used internally for now.
     'ProxySettings': ({}, [], []),
     'EnableOriginBoundCerts': (False, []),
+    'DisableSSLRecordSplitting': (False, []),
     'AuthSchemes': ('AuthSchemes', []),
     'DisableAuthNegotiateCnameLookup': (True, []),
     'EnableAuthNegotiatePort': (False, []),

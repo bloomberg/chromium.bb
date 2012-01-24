@@ -256,8 +256,6 @@ void BrowserMainLoop::EarlyInitialization() {
   SetupSandbox(parsed_command_line_);
 #endif
 
-  if (parsed_command_line_.HasSwitch(switches::kDisableSSLFalseStart))
-    net::SSLConfigService::DisableFalseStart();
   if (parsed_command_line_.HasSwitch(switches::kEnableSSLCachedInfo))
     net::SSLConfigService::EnableCachedInfo();
   if (parsed_command_line_.HasSwitch(

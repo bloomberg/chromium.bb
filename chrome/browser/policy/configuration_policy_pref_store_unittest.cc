@@ -219,6 +219,8 @@ INSTANTIATE_TEST_CASE_P(
                       prefs::kSavingBrowserHistoryDisabled),
         PolicyAndPref(key::kEnableOriginBoundCerts,
                       prefs::kEnableOriginBoundCerts),
+        PolicyAndPref(key::kDisableSSLRecordSplitting,
+                      prefs::kDisableSSLRecordSplitting),
         PolicyAndPref(key::kDisableAuthNegotiateCnameLookup,
                       prefs::kDisableAuthNegotiateCnameLookup),
         PolicyAndPref(key::kEnableAuthNegotiatePort,

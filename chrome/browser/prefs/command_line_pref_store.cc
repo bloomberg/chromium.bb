@@ -51,6 +51,8 @@ const CommandLinePrefStore::BooleanSwitchToPreferenceMapEntry
       { switches::kDisableTLS1, prefs::kTLS1Enabled, false },
       { switches::kEnableOriginBoundCerts, prefs::kEnableOriginBoundCerts,
           true },
+      { switches::kDisableSSLFalseStart, prefs::kDisableSSLRecordSplitting,
+          true },
       { switches::kEnableMemoryInfo, prefs::kEnableMemoryInfo, false },
 #if defined(GOOGLE_CHROME_BUILD)
       { switches::kDisablePrintPreview, prefs::kPrintPreviewDisabled, true },

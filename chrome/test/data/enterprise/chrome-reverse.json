@@ -25,6 +25,7 @@
   "EnableAuthNegotiatePort": true,
   "EnableMemoryInfo": true,
   "EnableOriginBoundCerts": true,
+  "DisableSSLRecordSplitting": true,
   "HomepageIsNewTabPage": false,
   "HomepageLocation": "http://chromium.org",
   "IncognitoEnabled": false,
