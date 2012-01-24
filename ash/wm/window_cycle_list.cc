@@ -52,6 +52,8 @@ void WindowCycleList::Step(Direction direction) {
   // Wrap to window list size.
   current_index_ = (current_index_ + windows_.size()) % windows_.size();
   DCHECK(windows_[current_index_]);
+  // Make sure the next window is visible.
+  windows_[current_index_]->Show();
   ActivateWindow(windows_[current_index_]);
 }
 

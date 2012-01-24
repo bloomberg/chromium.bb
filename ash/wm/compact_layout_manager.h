@@ -10,6 +10,7 @@
 #include "ash/wm/base_layout_manager.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "ui/gfx/compositor/layer_animation_observer.h"
 
 namespace views {
 class Widget;
@@ -22,7 +23,8 @@ namespace internal {
 // which emulates the traditional Chrome OS window manager.  Windows are always
 // maximized, fill the screen, and only one tabbed browser window is visible at
 // a time.  The status area appears in the top-right corner of the screen.
-class ASH_EXPORT CompactLayoutManager : public BaseLayoutManager {
+class ASH_EXPORT CompactLayoutManager : public BaseLayoutManager,
+                                        public ui::LayerAnimationObserver {
  public:
   CompactLayoutManager();
   virtual ~CompactLayoutManager();
@@ -45,6 +47,14 @@ class ASH_EXPORT CompactLayoutManager : public BaseLayoutManager {
                                        void* old) OVERRIDE;
   virtual void OnWindowStackingChanged(aura::Window* window) OVERRIDE;
 
+  // ui::LayerAnimationObserver:
+  virtual void OnLayerAnimationEnded(
+      const ui::LayerAnimationSequence* animation) OVERRIDE;
+  virtual void OnLayerAnimationScheduled(
+      const ui::LayerAnimationSequence* animation) OVERRIDE;
+  virtual void OnLayerAnimationAborted(
+      const ui::LayerAnimationSequence* animation) OVERRIDE;
+
  private:
   // Hides the status area if we are managing it and full screen windows are
   // visible.
@@ -56,7 +66,14 @@ class ASH_EXPORT CompactLayoutManager : public BaseLayoutManager {
 
   // Layout all browser windows currently in the window cycle list.
   // skip |skip_this_window| if we do not want the window to be laid out.
-  void LayoutWindows(aura::Window* skip_this_window);
+  int LayoutWindows(aura::Window* skip_this_window);
+
+  // Hides all but the |current_window_| in the windows list. If we
+  // cannot determine the |current_window_|, we do not hide any.
+  void HideWindows();
+
+  // Returns the first window in the window cycle list.
+  aura::Window* FindFirstWindow();
 
   // Status area with clock, network, battery, etc. icons. May be NULL if the
   // shelf is managing the status area.

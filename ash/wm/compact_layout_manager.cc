@@ -4,6 +4,8 @@
 
 #include "ash/wm/compact_layout_manager.h"
 
+#include <vector>
+
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/shell_window_ids.h"
@@ -11,6 +13,7 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/compositor/scoped_layer_animation_settings.h"
+#include "ui/gfx/compositor/layer_animation_sequence.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/widget/widget.h"
 
@@ -18,6 +21,10 @@ namespace ash {
 namespace internal {
 
 namespace {
+
+typedef std::vector<aura::Window*> WindowList;
+typedef std::vector<aura::Window*>::const_iterator WindowListConstIter;
+
 // Convenience method to get the layer of this container.
 ui::Layer* GetDefaultContainerLayer() {
   return Shell::GetInstance()->GetContainer(
@@ -79,10 +86,19 @@ void CompactLayoutManager::OnChildWindowVisibilityChanged(aura::Window* child,
   BaseLayoutManager::OnChildWindowVisibilityChanged(child, visible);
   UpdateStatusAreaVisibility();
   if (ShouldAnimateOnEntrance(child)) {
-    LayoutWindows(visible ? NULL : child);
+    int total_width = LayoutWindows(visible ? NULL : child);
     if (visible) {
       AnimateSlideTo(child->bounds().x());
       current_window_ = child;
+    } else if (child == current_window_) {
+      current_window_ = NULL;
+      // If the rightmost window is going invisible, we need to animate
+      // the layer away from that location.
+      if (child->bounds().x() >= total_width) {
+        current_window_ = FindFirstWindow();
+        if (current_window_)
+          AnimateSlideTo(current_window_->bounds().x());
+      }
     }
   }
 }
@@ -117,9 +133,27 @@ void CompactLayoutManager::OnWindowPropertyChanged(aura::Window* window,
 
 void CompactLayoutManager::OnWindowStackingChanged(aura::Window* window) {
   if (current_window_ != window && ShouldAnimateOnEntrance(window)) {
+    LayoutWindows(current_window_);
     AnimateSlideTo(window->bounds().x());
     current_window_ = window;
   }
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// CompactLayoutManager, AnimationDelegate overrides:
+
+void CompactLayoutManager::OnLayerAnimationEnded(
+    const ui::LayerAnimationSequence* animation) {
+  if (!GetDefaultContainerLayer()->GetAnimator()->is_animating())
+    HideWindows();
+}
+
+void CompactLayoutManager::OnLayerAnimationScheduled(
+    const ui::LayerAnimationSequence* animation) {
+}
+
+void CompactLayoutManager::OnLayerAnimationAborted(
+    const ui::LayerAnimationSequence* animation) {
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -140,30 +174,55 @@ void CompactLayoutManager::UpdateStatusAreaVisibility() {
 void CompactLayoutManager::AnimateSlideTo(int offset_x) {
   ui::ScopedLayerAnimationSettings settings(
       GetDefaultContainerLayer()->GetAnimator());
+  settings.AddObserver(this);
   ui::Transform transform;
   transform.ConcatTranslate(-offset_x, 0);
   GetDefaultContainerLayer()->SetTransform(transform);  // Will be animated!
 }
 
-void CompactLayoutManager::LayoutWindows(aura::Window* skip) {
+int CompactLayoutManager::LayoutWindows(aura::Window* skip) {
   ShellDelegate* shell_delegate = ash::Shell::GetInstance()->delegate();
-  const std::vector<aura::Window*>& windows_list =
-      shell_delegate->GetCycleWindowList(
-          ShellDelegate::SOURCE_KEYBOARD,
-          ShellDelegate::ORDER_LINEAR);
+  const WindowList& windows_list = shell_delegate->GetCycleWindowList(
+      ShellDelegate::SOURCE_KEYBOARD,
+      ShellDelegate::ORDER_LINEAR);
   int new_x = 0;
-  for (std::vector<aura::Window*>::const_iterator const_it =
-           windows_list.begin();
+  for (WindowListConstIter const_it = windows_list.begin();
        const_it != windows_list.end();
        ++const_it) {
-    (*const_it)->Show();
-   if (*const_it == skip)
-      continue;
-    gfx::Rect new_bounds((*const_it)->bounds());
-    new_bounds.set_x(new_x);
-    SetChildBoundsDirect(*const_it, new_bounds);
-    new_x += (*const_it)->bounds().width();
+    if (*const_it != skip) {
+      gfx::Rect new_bounds((*const_it)->bounds());
+      new_bounds.set_x(new_x);
+      SetChildBoundsDirect(*const_it, new_bounds);
+      (*const_it)->layer()->SetVisible(true);
+      new_x += (*const_it)->bounds().width();
+    }
   }
+  return new_x;
+}
+
+void CompactLayoutManager::HideWindows() {
+  ShellDelegate* shell_delegate = ash::Shell::GetInstance()->delegate();
+  const WindowList& windows_list = shell_delegate->GetCycleWindowList(
+      ShellDelegate::SOURCE_KEYBOARD,
+      ShellDelegate::ORDER_LINEAR);
+  if (current_window_ == NULL) return;
+  for (WindowListConstIter const_it = windows_list.begin();
+       const_it != windows_list.end();
+       ++const_it) {
+    if (*const_it != current_window_)
+      (*const_it)->layer()->SetVisible(false);
+  }
+}
+
+aura::Window* CompactLayoutManager::FindFirstWindow() {
+  ShellDelegate* shell_delegate = ash::Shell::GetInstance()->delegate();
+  const WindowList& windows_list = shell_delegate->GetCycleWindowList(
+      ShellDelegate::SOURCE_KEYBOARD,
+      ShellDelegate::ORDER_LINEAR);
+  WindowListConstIter const_it = windows_list.begin();
+  if (const_it != windows_list.end())
+    return *const_it;
+  return NULL;
 }
 
 }  // namespace internal
