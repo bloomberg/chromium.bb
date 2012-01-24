@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 cr.define('print_preview', function() {
-  'strict';
+  'use strict';
 
   /**
    * Creates a PreviewArea object. It represents the area where the preview
@@ -294,6 +294,6 @@ cr.define('print_preview', function() {
   };
 
   return {
-    PreviewArea: PreviewArea,
+    PreviewArea: PreviewArea
   };
 });

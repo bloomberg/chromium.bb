@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 cr.define('print_preview', function() {
-  'strict';
+  'use strict';
 
   function MarginTextbox(groupName) {
     var box = document.createElement('input');

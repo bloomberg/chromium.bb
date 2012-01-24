@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,7 +31,7 @@ cr.define('print_preview', function() {
   Margins.roundToPrecision = function(value, precision) {
     return Math.round(value * Math.pow(10, precision)) /
         Math.pow(10, precision);
-  }
+  };
 
   Margins.prototype = {
     /**
@@ -80,7 +80,7 @@ cr.define('print_preview', function() {
             print_preview.convertPointsToLocaleUnitsAndBack(
                 this[indicesAsArray[i]]);
       }
-    },
+    }
   };
 
   /**
@@ -185,8 +185,9 @@ cr.define('print_preview', function() {
 
   MarginSettings.prototype = {
     /**
-     * Returns a dictionary of the four custom margin values.
-     * @return {object}
+     * Returns a dictionary containing the four custom margin values.
+     * @return {{marginLeft: number, marginTop: number, marginRight: number,
+     *     marginBottom: number}} The dictionary.
      */
     get customMargins() {
       var margins = {};
@@ -708,6 +709,6 @@ cr.define('print_preview', function() {
 
   return {
     MarginSettings: MarginSettings,
-    PageLayout: PageLayout,
+    PageLayout: PageLayout
   };
 });

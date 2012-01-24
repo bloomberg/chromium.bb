@@ -161,10 +161,10 @@ cr.define('print_preview', function() {
       // Removing extra spaces from within the string.
       html = html.replace(/\s{2,}/g, ' ');
       this.summary_.innerHTML = html;
-    },
+    }
   };
 
   return {
-    PrintHeader: PrintHeader,
+    PrintHeader: PrintHeader
   };
 });

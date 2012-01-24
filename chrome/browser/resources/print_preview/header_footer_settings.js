@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -51,7 +51,7 @@ cr.define('print_preview', function() {
 
     onMarginsSelectionChanged_: function(event) {
       this.headerFooterApplies_ = event.selectedMargins !=
-          print_preview.MarginSettings.MARGINS_VALUE_NO_MARGINS
+          print_preview.MarginSettings.MARGINS_VALUE_NO_MARGINS;
       this.setVisible_(this.headerFooterApplies_);
     },
 
@@ -75,7 +75,8 @@ cr.define('print_preview', function() {
 
     /**
      * Hides or shows |this.headerFooterOption|.
-     * @{param} visible True if |this.headerFooterOption| should be shown.
+     * @param {boolean} visible True if |this.headerFooterOption| should be
+     *     shown.
      * @private
      */
     setVisible_: function(visible) {
@@ -83,10 +84,10 @@ cr.define('print_preview', function() {
         fadeInOption(this.headerFooterOption_);
       else
         fadeOutOption(this.headerFooterOption_);
-    },
+    }
   };
 
   return {
-    HeaderFooterSettings: HeaderFooterSettings,
+    HeaderFooterSettings: HeaderFooterSettings
   };
 });

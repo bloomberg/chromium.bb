@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -61,12 +61,12 @@ cr.define('print_preview', function() {
       return marginValidationStates.WITHIN_RANGE;
     else if (value < 0)
       return marginValidationStates.TOO_SMALL;
-    else (value > limit)
+    else
       return marginValidationStates.TOO_BIG;
   }
 
   /**
-   * @param {sting} text The text to check in user's locale units.
+   * @param {string} text The text to check in user's locale units.
    * @param {number} limit The upper bound of the valid margin range (in
    *     points).
    * @return {number} An appropriate value from enum |marginValidationStates|.
@@ -120,7 +120,7 @@ cr.define('print_preview', function() {
   }
 
   /**
-   * @param {number} toConvert The value to convert in points.
+   * @param {number} value The value to convert in points.
    * @return {string} The equivalent text in user locale units with precision
    *     of two digits.
    */
@@ -182,6 +182,6 @@ cr.define('print_preview', function() {
     marginValidationStates: marginValidationStates,
     Rect: Rect,
     validateMarginText: validateMarginText,
-    validateMarginValue: validateMarginValue,
+    validateMarginValue: validateMarginValue
   };
 });

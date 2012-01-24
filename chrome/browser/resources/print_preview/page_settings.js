@@ -96,7 +96,7 @@ cr.define('print_preview', function() {
     /**
      * Returns the selected pages in ascending order without any duplicates.
      *
-     * @return {Array}
+     * @return {Array.<number>} The selected pages.
      */
     get selectedPagesSet() {
       var selectedPagesText = this.selectedPagesText;
@@ -113,7 +113,7 @@ cr.define('print_preview', function() {
      * Returns the previously selected pages in ascending order without any
      * duplicates.
      *
-     * @return {Array}
+     * @return {Array.<number>} The previously selected pages.
      */
     get previouslySelectedPages() {
       return this.previouslySelectedPages_;
@@ -122,7 +122,8 @@ cr.define('print_preview', function() {
     /**
      * Returns an array of objects describing the selected page ranges. See
      * documentation of pageSetToPageRanges() for more details.
-     * @return {Array}
+     * @return {Array.<{from: number, to: number}>} An array of page range
+     *     objects.
      */
     get selectedPageRanges() {
       return pageSetToPageRanges(this.selectedPagesSet);
@@ -372,6 +373,6 @@ cr.define('print_preview', function() {
   };
 
   return {
-    PageSettings: PageSettings,
+    PageSettings: PageSettings
   };
 });

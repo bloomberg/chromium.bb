@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -79,6 +79,7 @@ function fadeOutElement(el) {
  * @param {EventTracker} eventTracker The |EventTracker| object that was used
  *     for adding this listener.
  * @param {WebkitTransitionEvent} event The event that triggered this listener.
+ * @this {HTMLElement} The element where the transition occurred.
  */
 function onFadeOutTransitionEnd(animationName, eventTracker, event) {
   if (event.propertyName != 'height')
@@ -93,6 +94,7 @@ function onFadeOutTransitionEnd(animationName, eventTracker, event) {
  * @param {EventTracker} eventTracker The |EventTracker| object that was used
  *     for adding this listener.
  * @param {WebkitAnimationEvent} event The event that triggered this listener.
+ * @this {HTMLElement} The element where the transition occurred.
  */
 function onFadeInAnimationEnd(eventTracker, event) {
   this.style.height = '';
@@ -106,7 +108,7 @@ function onFadeInAnimationEnd(eventTracker, event) {
  * @param {string} animationName The name of the animation to be removed.
  */
 function fadeInOutCleanup(animationName) {
-  animEl = document.getElementById(animationName);
+  var animEl = document.getElementById(animationName);
   if (animEl)
     animEl.parentNode.removeChild(animEl);
 }

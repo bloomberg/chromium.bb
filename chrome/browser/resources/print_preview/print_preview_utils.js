@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -41,8 +41,8 @@ function areArraysEqual(array1, array2) {
 /**
  * Removes duplicate elements from |inArray| and returns a new array.
  * |inArray| is not affected. It assumes that |inArray| is already sorted.
- * @param {array} inArray The array to be processed.
- * @return {array} The array after processing.
+ * @param {Array.<number>} inArray The array to be processed.
+ * @return {Array.<number>} The array after processing.
  */
 function removeDuplicates(inArray) {
   var out = [];
@@ -116,7 +116,7 @@ function isPageRangeTextValid(pageRangeText, totalPageCount) {
  * returned.
  * @param {string} pageRangeText The text to be checked.
  * @param {number} totalPageCount The total number of pages.
- * @return {array} A list of all pages.
+ * @return {Array.<number>} A list of all pages.
  */
 function pageRangeTextToPageList(pageRangeText, totalPageCount) {
   var pageList = [];
@@ -139,9 +139,9 @@ function pageRangeTextToPageList(pageRangeText, totalPageCount) {
         pageList.push(j);
     } else {
       var singlePageNumber = parseInt(parts[i], 10);
-      if (isPositiveInteger(singlePageNumber) &&
+      if (isPositiveInteger(singlePageNumber.toString()) &&
           singlePageNumber <= totalPageCount) {
-        pageList.push(singlePageNumber);
+        pageList.push(singlePageNumber.toString());
       }
     }
   }
@@ -149,16 +149,18 @@ function pageRangeTextToPageList(pageRangeText, totalPageCount) {
 }
 
 /**
- * @param {array} pageList The list to be processed.
- * @return {array} The contents of |pageList| in ascending order and without any
- *     duplicates. |pageList| is not affected.
+ * @param {Array.<number>} pageList The list to be processed.
+ * @return {Array.<number>} The contents of |pageList| in ascending order and
+ *     without any duplicates. |pageList| is not affected.
  */
 function pageListToPageSet(pageList) {
   var pageSet = [];
   if (pageList.length == 0)
     return pageSet;
   pageSet = pageList.slice(0);
-  pageSet.sort(function(a, b) { return a - b; });
+  pageSet.sort(function(a, b) {
+    return (/** @type {number} */ a) - (/** @type {number} */ b);
+  });
   pageSet = removeDuplicates(pageSet);
   return pageSet;
 }
@@ -167,18 +169,17 @@ function pageListToPageSet(pageList) {
  * Converts |pageSet| to page ranges. It squashes whenever possible.
  * Example: '1-2,3,5-7' becomes 1-3,5-7.
  *
- * @param {array} pageSet The set of pages to be processed. Callers should
- *     ensure that no duplicates exist.
- * @return {Array} an array of page range objects. A page range object has
- *     fields 'from' and 'to'.
+ * @param {Array.<number>} pageSet The set of pages to be processed. Callers
+ *     should ensure that no duplicates exist.
+ * @return {Array.<{from: number, to: number}>} An array of page range objects.
  */
 function pageSetToPageRanges(pageSet) {
   var pageRanges = [];
   for (var i = 0; i < pageSet.length; ++i) {
-    tempFrom = pageSet[i];
+    var tempFrom = pageSet[i];
     while (i + 1 < pageSet.length && pageSet[i + 1] == pageSet[i] + 1)
       ++i;
-    tempTo = pageSet[i];
+    var tempTo = pageSet[i];
     pageRanges.push({'from': tempFrom, 'to': tempTo});
   }
   return pageRanges;
@@ -202,8 +203,8 @@ function getPageSrcURL(id, pageNumber) {
  * @return {number} The random integer.
  */
 function randomInteger(endPointA, endPointB) {
-  from = Math.min(endPointA, endPointB);
-  to = Math.max(endPointA, endPointB);
+  var from = Math.min(endPointA, endPointB);
+  var to = Math.max(endPointA, endPointB);
   return Math.floor(Math.random() * (to - from + 1) + from);
 }
 
@@ -252,7 +253,7 @@ function convertPointsToMillimeters(value) {
  * Parses |numberFormat| and extracts the symbols used for the thousands point
  * and decimal point.
  * @param {string} numberFormat The formatted version of the number 12345678.
- * @return {!array.<string>} The extracted symbols in the order
+ * @return {!Array.<string>} The extracted symbols in the order
  *     [thousandsSymbol, decimalSymbol]]. For example
  *     parseNumberFormat("123,456.78") returns [",", "."].
  */
@@ -260,6 +261,6 @@ function parseNumberFormat(numberFormat) {
   if (!numberFormat)
     numberFormat = '';
   var regex = /^(\d+)(\W{0,1})(\d+)(\W{0,1})(\d+)$/;
-  var matches = numberFormat.match(regex) || ['','',',','','.'];
+  var matches = numberFormat.match(regex) || ['', '', ',', '', '.'];
   return [matches[2], matches[4]];
 }

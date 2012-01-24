@@ -1,9 +1,9 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 cr.define('print_preview', function() {
-  'strict';
+  'use strict';
 
   function MarginsUI() {
     var marginsUI = document.createElement('div');
@@ -45,7 +45,7 @@ cr.define('print_preview', function() {
   /**
    * @param {{x: number, y: number}} point The point with respect to the top
    *     left corner of the webpage.
-   * @return {{x: number: y: number}} The point with respect to the top left
+   * @return {{x: number, y: number}} The point with respect to the top left
    *     corner of the plugin area.
    */
   MarginsUI.convert = function(point) {
@@ -79,9 +79,12 @@ cr.define('print_preview', function() {
 
     /**
      * Updates the state of the margins UI.
-     * @param {print_preview.Rect} marginsRectangle
+     * @param {print_preview.Rect} marginsRectangle A rectangle describing the
+     *     four margins.
      * @param {Margins} marginValues
-     * @param {array} valueLimits
+     * @param {Array.<number>} valueLimits
+     * @param {boolean} keepDisplayedValue
+     * @param {Array.<number>} valueLimitsInPercent
      */
     update: function(marginsRectangle, marginValues, valueLimits,
         keepDisplayedValue, valueLimitsInPercent) {
@@ -198,7 +201,7 @@ cr.define('print_preview', function() {
           this.lastClickedMarginsUIPair.getDragDisplacementFrom(point);
       dragEvent.destinationPoint = point;
       this.dispatchEvent(dragEvent);
-    },
+    }
   };
 
   return {
