@@ -55,6 +55,7 @@ void PrintPreviewDataSource::Init(bool is_dummy) {
   AddLocalizedString("invalidPrinterSettings",
                      IDS_PRINT_PREVIEW_INVALID_PRINTER_SETTINGS);
   AddLocalizedString("printButton", IDS_PRINT_PREVIEW_PRINT_BUTTON);
+  AddLocalizedString("saveButton", IDS_PRINT_PREVIEW_SAVE_BUTTON);
   AddLocalizedString("cancelButton", IDS_PRINT_PREVIEW_CANCEL_BUTTON);
   AddLocalizedString("printing", IDS_PRINT_PREVIEW_PRINTING);
   AddLocalizedString("printingToPDFInProgress",

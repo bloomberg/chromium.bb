@@ -50,6 +50,8 @@ cr.define('print_preview', function() {
                                 this.updatePrintButton_.bind(this));
       document.addEventListener(customEvents.PDF_GENERATION_ERROR,
                                 this.onPDFGenerationError_.bind(this));
+      document.addEventListener(customEvents.PRINTER_CAPABILITIES_UPDATED,
+                                this.onPrinterCapabilitiesUpdated_.bind(this));
     },
 
     /**
@@ -66,6 +68,16 @@ cr.define('print_preview', function() {
      */
     onPDFGenerationError_: function() {
       this.printButton_.disabled = true;
+    },
+
+    /**
+     * Executes when a |customEvents.PRINTER_CAPABILITIES_UPDATED| event occurs.
+     * @private
+     */
+    onPrinterCapabilitiesUpdated_: function() {
+      getSelectedPrinterName() == PRINT_TO_PDF ?
+          this.printButton.textContent = localStrings.getString('saveButton') :
+          this.printButton.textContent = localStrings.getString('printButton');
     },
 
     /**

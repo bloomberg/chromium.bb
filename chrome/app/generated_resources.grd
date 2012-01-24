@@ -6375,11 +6375,14 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       <message name="IDS_PRINT_PREVIEW_PRINT_BUTTON" desc="Print button.">
         Print
       </message>
+      <message name="IDS_PRINT_PREVIEW_SAVE_BUTTON" desc="Save button.">
+        Save
+      </message>
       <message name="IDS_PRINT_PREVIEW_PRINTING" desc="Text shown after the user clicks on the print button and before the print preview tab is closed to let him know that printing is in progress.">
         Printing...
       </message>
-      <message name="IDS_PRINT_PREVIEW_PRINTING_TO_PDF_IN_PROGRESS" desc="Text shown after the user clicks on the print button while Print To PDF is selected, but the PDF file is not ready yet.">
-        Printing to PDF in progress
+      <message name="IDS_PRINT_PREVIEW_PRINTING_TO_PDF_IN_PROGRESS" desc="Text shown after the user clicks on the print/save button while Save To PDF is selected, but the PDF file is not ready yet.">
+        Saving to PDF in progress
       </message>
       <if expr="is_macosx">
         <message name="IDS_PRINT_PREVIEW_OPENING_PDF_IN_PREVIEW" desc="Text shown after the user clicks on the open pdf in preview button while the pdf file is not ready yet.">
@@ -6433,7 +6436,7 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       </message>
       <message name="IDS_PRINT_PREVIEW_PRINT_TO_PDF"
                desc="Option shown on printer drop-down list for saving previewed document to PDF.">
-        Print to PDF
+        Save to PDF
       </message>
       <message name="IDS_PRINT_PREVIEW_SIGN_IN"
           desc="Option shown in printer drop-down list when the user isn't signed in to cloud print.  Choosing it will display a sign in dialog.">
