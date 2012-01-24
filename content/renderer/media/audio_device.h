@@ -157,7 +157,7 @@ class CONTENT_EXPORT AudioDevice
 
    private:
     // Magic required by ref_counted.h to avoid any code deleting the object
-    // accidently while there are references to it.
+    // accidentally while there are references to it.
     friend class base::RefCountedThreadSafe<AudioSocket>;
     ~AudioSocket() { }
 
@@ -177,7 +177,7 @@ class CONTENT_EXPORT AudioDevice
   void InitializeOnIOThread(const AudioParameters& params);
   void PlayOnIOThread();
   void PauseOnIOThread(bool flush);
-  void ShutDownOnIOThread(base::WaitableEvent* completion);
+  void ShutDownOnIOThread();
   void SetVolumeOnIOThread(double volume);
 
   void Send(IPC::Message* message);
@@ -220,12 +220,14 @@ class CONTENT_EXPORT AudioDevice
   double volume_;
 
   // Callbacks for rendering audio occur on this thread.
+  // Must only be modified on the IO thread and when the thread is not running.
   scoped_ptr<base::DelegateSimpleThread> audio_thread_;
 
   // Cached audio message filter (lives on the main render thread).
   scoped_refptr<AudioMessageFilter> filter_;
 
   // Our stream ID on the message filter. Only accessed on the IO thread.
+  // Must only be modified on the IO thread.
   int32 stream_id_;
 
   // State of Play() / Pause() calls before OnLowLatencyCreated() is called.
@@ -234,18 +236,16 @@ class CONTENT_EXPORT AudioDevice
   // Set to |true| when OnLowLatencyCreated() is called.
   // Set to |false| when ShutDownOnIOThread() is called.
   // This is for use with play_on_start_ to track Play() / Pause() state.
+  // Must only be touched from the IO thread.
   bool is_started_;
 
   // Data transfer between browser and render process uses a combination
   // of sync sockets and shared memory to provide lowest possible latency.
+  // These variables must only be set on the IO thread while the audio_thread_
+  // is not running.
   base::SharedMemoryHandle shared_memory_handle_;
   scoped_refptr<AudioSocket> audio_socket_;
   int memory_length_;
-
-  // Protects lifetime of:
-  // audio_socket_
-  // audio_thread_
-  base::Lock lock_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioDevice);
 };

@@ -106,17 +106,11 @@ void AudioDevice::Start() {
 
 void AudioDevice::Stop() {
   DCHECK(MessageLoop::current() != ChildProcess::current()->io_message_loop());
-  base::WaitableEvent completion(false, false);
 
+  // Stop and shutdown the audio thread from the IO thread.
   ChildProcess::current()->io_message_loop()->PostTask(
       FROM_HERE,
-      base::Bind(&AudioDevice::ShutDownOnIOThread, this, &completion));
-
-  // We wait here for the IO task to be completed to remove race conflicts
-  // with OnLowLatencyCreated() and to ensure that Stop() acts as a synchronous
-  // function call.
-  completion.Wait();
-  ShutDownAudioThread();
+      base::Bind(&AudioDevice::ShutDownOnIOThread, this));
 }
 
 void AudioDevice::Play() {
@@ -150,7 +144,7 @@ void AudioDevice::GetVolume(double* volume) {
 }
 
 void AudioDevice::InitializeOnIOThread(const AudioParameters& params) {
-  DCHECK(MessageLoop::current() == ChildProcess::current()->io_message_loop());
+  DCHECK_EQ(MessageLoop::current(), ChildProcess::current()->io_message_loop());
   // Make sure we don't create the stream more than once.
   DCHECK_EQ(0, stream_id_);
   if (stream_id_)
@@ -161,7 +155,7 @@ void AudioDevice::InitializeOnIOThread(const AudioParameters& params) {
 }
 
 void AudioDevice::PlayOnIOThread() {
-  DCHECK(MessageLoop::current() == ChildProcess::current()->io_message_loop());
+  DCHECK_EQ(MessageLoop::current(), ChildProcess::current()->io_message_loop());
   if (stream_id_ && is_started_)
     Send(new AudioHostMsg_PlayStream(stream_id_));
   else
@@ -169,7 +163,7 @@ void AudioDevice::PlayOnIOThread() {
 }
 
 void AudioDevice::PauseOnIOThread(bool flush) {
-  DCHECK(MessageLoop::current() == ChildProcess::current()->io_message_loop());
+  DCHECK_EQ(MessageLoop::current(), ChildProcess::current()->io_message_loop());
   if (stream_id_ && is_started_) {
     Send(new AudioHostMsg_PauseStream(stream_id_));
     if (flush)
@@ -181,27 +175,24 @@ void AudioDevice::PauseOnIOThread(bool flush) {
   }
 }
 
-void AudioDevice::ShutDownOnIOThread(base::WaitableEvent* completion) {
-  DCHECK(MessageLoop::current() == ChildProcess::current()->io_message_loop());
-  is_started_ = false;
+void AudioDevice::ShutDownOnIOThread() {
+  DCHECK_EQ(MessageLoop::current(), ChildProcess::current()->io_message_loop());
 
   // Make sure we don't call shutdown more than once.
-  if (!stream_id_) {
-    if (completion)
-      completion->Signal();
+  if (!stream_id_)
     return;
-  }
+
+  is_started_ = false;
 
   filter_->RemoveDelegate(stream_id_);
   Send(new AudioHostMsg_CloseStream(stream_id_));
   stream_id_ = 0;
 
-  if (completion)
-    completion->Signal();
+  ShutDownAudioThread();
 }
 
 void AudioDevice::SetVolumeOnIOThread(double volume) {
-  DCHECK(MessageLoop::current() == ChildProcess::current()->io_message_loop());
+  DCHECK_EQ(MessageLoop::current(), ChildProcess::current()->io_message_loop());
   if (stream_id_)
     Send(new AudioHostMsg_SetVolume(stream_id_, volume));
 }
@@ -225,7 +216,8 @@ void AudioDevice::OnLowLatencyCreated(
     base::SharedMemoryHandle handle,
     base::SyncSocket::Handle socket_handle,
     uint32 length) {
-  DCHECK(MessageLoop::current() == ChildProcess::current()->io_message_loop());
+  DCHECK_EQ(MessageLoop::current(), ChildProcess::current()->io_message_loop());
+  DCHECK_GE(length, buffer_size_ * sizeof(int16) * channels_);
 #if defined(OS_WIN)
   DCHECK(handle);
   DCHECK(socket_handle);
@@ -233,8 +225,6 @@ void AudioDevice::OnLowLatencyCreated(
   DCHECK_GE(handle.fd, 0);
   DCHECK_GE(socket_handle, 0);
 #endif
-  DCHECK(length);
-  DCHECK(!audio_thread_.get());
 
   // Takes care of the case when Stop() is called before OnLowLatencyCreated().
   if (!stream_id_) {
@@ -246,19 +236,11 @@ void AudioDevice::OnLowLatencyCreated(
 
   shared_memory_handle_ = handle;
   memory_length_ = length;
-
-  DCHECK_GE(length, buffer_size_ * sizeof(int16) * channels_);
-
   audio_socket_ = new AudioSocket(socket_handle);
-  {
-    // Synchronize with ShutDownAudioThread().
-    base::AutoLock auto_lock(lock_);
 
-    DCHECK(!audio_thread_.get());
-    audio_thread_.reset(
-        new base::DelegateSimpleThread(this, "renderer_audio_thread"));
-    audio_thread_->Start();
-  }
+  audio_thread_.reset(
+      new base::DelegateSimpleThread(this, "renderer_audio_thread"));
+  audio_thread_->Start();
 
   // We handle the case where Play() and/or Pause() may have been called
   // multiple times before OnLowLatencyCreated() gets called.
@@ -333,12 +315,13 @@ size_t AudioDevice::FireRenderCallback(int16* data) {
 }
 
 void AudioDevice::ShutDownAudioThread() {
-  // Synchronize with OnLowLatencyCreated().
-  base::AutoLock auto_lock(lock_);
+  DCHECK_EQ(MessageLoop::current(), ChildProcess::current()->io_message_loop());
+
   if (audio_thread_.get()) {
     // Close the socket to terminate the main thread function in the
     // audio thread.
     audio_socket_->Close();
+    audio_socket_ = NULL;
     audio_thread_->Join();
     audio_thread_.reset(NULL);
   }
