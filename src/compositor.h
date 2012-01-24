@@ -146,7 +146,6 @@ struct weston_compositor {
 	EGLContext context;
 	EGLConfig config;
 	GLuint fbo;
-	GLuint proj_uniform, tex_uniform, alpha_uniform;
 	uint32_t current_alpha;
 	struct weston_shader texture_shader;
 	struct weston_shader solid_shader;
