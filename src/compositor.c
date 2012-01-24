@@ -289,12 +289,10 @@ weston_surface_to_global(struct weston_surface *surface,
 	}
 }
 
-WL_EXPORT void
-weston_surface_from_global(struct weston_surface *surface,
-			   int32_t x, int32_t y, int32_t *sx, int32_t *sy)
+static void
+surface_from_global_float(struct weston_surface *surface,
+			  int32_t x, int32_t y, GLfloat *sx, GLfloat *sy)
 {
-	weston_surface_update_transform(surface);
-
 	if (surface->transform.enabled) {
 		struct weston_vector v = { { x, y, 0.0f, 1.0f } };
 
@@ -309,12 +307,25 @@ weston_surface_from_global(struct weston_surface *surface,
 			return;
 		}
 
-		*sx = floorf(v.f[0] / v.f[3] - surface->x);
-		*sy = floorf(v.f[1] / v.f[3] - surface->y);
+		*sx = v.f[0] / v.f[3] - surface->x;
+		*sy = v.f[1] / v.f[3] - surface->y;
 	} else {
 		*sx = x - surface->x;
 		*sy = y - surface->y;
 	}
+}
+
+WL_EXPORT void
+weston_surface_from_global(struct weston_surface *surface,
+			   int32_t x, int32_t y, int32_t *sx, int32_t *sy)
+{
+	GLfloat sxf, syf;
+
+	weston_surface_update_transform(surface);
+
+	surface_from_global_float(surface, x, y, &sxf, &syf);
+	*sx = floorf(sxf);
+	*sy = floorf(syf);
 }
 
 WL_EXPORT void
@@ -534,6 +545,7 @@ texture_region(struct weston_surface *es, pixman_region32_t *region)
 {
 	struct weston_compositor *ec = es->compositor;
 	GLfloat *v, inv_width, inv_height;
+	GLfloat sx, sy;
 	pixman_box32_t *rectangles;
 	unsigned int *p;
 	int i, n;
@@ -545,25 +557,33 @@ texture_region(struct weston_surface *es, pixman_region32_t *region)
 	inv_height = 1.0 / es->height;
 
 	for (i = 0; i < n; i++, v += 16, p += 6) {
+		surface_from_global_float(es, rectangles[i].x1,
+					  rectangles[i].y1, &sx, &sy);
 		v[ 0] = rectangles[i].x1;
 		v[ 1] = rectangles[i].y1;
-		v[ 2] = (GLfloat) (rectangles[i].x1 - es->x) * inv_width;
-		v[ 3] = (GLfloat) (rectangles[i].y1 - es->y) * inv_height;
+		v[ 2] = sx * inv_width;
+		v[ 3] = sy * inv_height;
 
+		surface_from_global_float(es, rectangles[i].x1,
+					  rectangles[i].y2, &sx, &sy);
 		v[ 4] = rectangles[i].x1;
 		v[ 5] = rectangles[i].y2;
-		v[ 6] = v[ 2];
-		v[ 7] = (GLfloat) (rectangles[i].y2 - es->y) * inv_height;
+		v[ 6] = sx * inv_width;
+		v[ 7] = sy * inv_height;
 
+		surface_from_global_float(es, rectangles[i].x2,
+					  rectangles[i].y1, &sx, &sy);
 		v[ 8] = rectangles[i].x2;
 		v[ 9] = rectangles[i].y1;
-		v[10] = (GLfloat) (rectangles[i].x2 - es->x) * inv_width;
-		v[11] = v[ 3];
+		v[10] = sx * inv_width;
+		v[11] = sy * inv_height;
 
+		surface_from_global_float(es, rectangles[i].x2,
+					  rectangles[i].y2, &sx, &sy);
 		v[12] = rectangles[i].x2;
 		v[13] = rectangles[i].y2;
-		v[14] = v[10];
-		v[15] = v[ 7];
+		v[14] = sx * inv_width;
+		v[15] = sy * inv_height;
 
 		p[0] = i * 4 + 0;
 		p[1] = i * 4 + 1;
@@ -574,56 +594,6 @@ texture_region(struct weston_surface *es, pixman_region32_t *region)
 	}
 
 	return n;
-}
-
-static void
-transform_vertex(struct weston_surface *surface,
-		 GLfloat sx, GLfloat sy,
-		 GLfloat tex_x, GLfloat tex_y, GLfloat *r)
-{
-	/* surface->transform.enabled must always be 1 here. */
-
-	struct weston_vector v = { { sx, sy, 0.0f, 1.0f } };
-
-	v.f[0] += surface->x;
-	v.f[1] += surface->y;
-
-	weston_matrix_transform(&surface->transform.matrix, &v);
-
-	if (fabsf(v.f[3]) < 1e-6) {
-		fprintf(stderr, "warning: numerical instability in "
-			"transform_vertex(), divisor = %g\n", v.f[3]);
-	}
-
-	r[ 0] = v.f[0] / v.f[3];
-	r[ 1] = v.f[1] / v.f[3];
-	r[ 2] = tex_x;
-	r[ 3] = tex_y;
-}
-
-static int
-texture_transformed_surface(struct weston_surface *es)
-{
-	struct weston_compositor *ec = es->compositor;
-	GLfloat *v;
-	unsigned int *p;
-
-	v = wl_array_add(&ec->vertices, 16 * sizeof *v);
-	p = wl_array_add(&ec->indices, 6 * sizeof *p);
-
-	transform_vertex(es, 0, 0, 0.0, 0.0, &v[0]);
-	transform_vertex(es, 0, es->height, 0.0, 1.0, &v[4]);
-	transform_vertex(es, es->width, 0, 1.0, 0.0, &v[8]);
-	transform_vertex(es, es->width, es->height, 1.0, 1.0, &v[12]);
-
-	p[0] = 0;
-	p[1] = 1;
-	p[2] = 2;
-	p[3] = 2;
-	p[4] = 1;
-	p[5] = 3;
-
-	return 1;
 }
 
 WL_EXPORT void
@@ -672,14 +642,17 @@ weston_surface_draw(struct weston_surface *es, struct weston_output *output)
 		ec->current_alpha = es->alpha;
 	}
 
+	if (es->shader->texwidth_uniform != GL_NONE)
+		glUniform1f(es->shader->texwidth_uniform,
+			    (GLfloat)es->width / es->pitch);
+
 	weston_surface_update_transform(es);
-	if (es->transform.enabled) {
+	if (es->transform.enabled)
 		filter = GL_LINEAR;
-		n = texture_transformed_surface(es);
-	} else {
+	else
 		filter = GL_NEAREST;
-		n = texture_region(es, &repaint);
-	}
+
+	n = texture_region(es, &repaint);
 
 	glBindTexture(GL_TEXTURE_2D, es->texture);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filter);
@@ -1717,8 +1690,12 @@ static const char texture_fragment_shader[] =
 	"varying vec2 v_texcoord;\n"
 	"uniform sampler2D tex;\n"
 	"uniform float alpha;\n"
+	"uniform float texwidth;\n"
 	"void main()\n"
 	"{\n"
+	"   if (v_texcoord.x < 0.0 || v_texcoord.x > texwidth ||\n"
+	"       v_texcoord.y < 0.0 || v_texcoord.y > 1.0)\n"
+	"      discard;\n"
 	"   gl_FragColor = texture2D(tex, v_texcoord)\n;"
 	"   gl_FragColor = alpha * gl_FragColor;\n"
 	"}\n";
@@ -1780,6 +1757,8 @@ weston_shader_init(struct weston_shader *shader,
 	shader->proj_uniform = glGetUniformLocation(shader->program, "proj");
 	shader->tex_uniform = glGetUniformLocation(shader->program, "tex");
 	shader->alpha_uniform = glGetUniformLocation(shader->program, "alpha");
+	shader->texwidth_uniform = glGetUniformLocation(shader->program,
+							"texwidth");
 
 	return 0;
 }

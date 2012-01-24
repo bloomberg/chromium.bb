@@ -102,6 +102,7 @@ struct weston_shader {
 	GLuint tex_uniform;
 	GLuint alpha_uniform;
 	GLuint color_uniform;
+	GLuint texwidth_uniform;
 };
 
 struct weston_animation {
