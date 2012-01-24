@@ -385,6 +385,7 @@ extern const char kTouchDevices[];
 extern const char kOAuthHostUrl[];
 extern const char kWebSocketLiveExperimentHost[];
 extern const char kFileManagerExtensionPath[];
+extern const char kDumpProfileDependencyGraph[];
 #endif
 
 #if defined(GOOGLE_CHROME_BUILD)

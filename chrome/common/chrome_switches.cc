@@ -1348,6 +1348,10 @@ const char kWebSocketLiveExperimentHost[]   = "websocket-live-experiment-host";
 
 // Enables overriding the path of file manager extension.
 const char kFileManagerExtensionPath[]      = "filemgr-ext-path";
+
+// Dumps dependency information about our profile services into a dot file in
+// the profile directory.
+const char kDumpProfileDependencyGraph[]    = "dump-profile-graph";
 #endif  // NDEBUG
 
 // Controls print preview in the browser process.

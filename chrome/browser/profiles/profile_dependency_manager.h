@@ -12,6 +12,7 @@
 
 #ifndef NDEBUG
 #include <set>
+#include <string>
 #endif
 
 class Profile;
@@ -75,7 +76,12 @@ class ProfileDependencyManager {
 
   // Using the dependency graph defined in |edges_|, fills |destruction_order_|
   // so that Observe() can notify each ProfileKeyedServiceFactory in order.
-  void BuildDestructionOrder();
+  void BuildDestructionOrder(Profile* profile);
+
+#ifndef NDEBUG
+  // Creates a dot file with our dependency information.
+  std::string DumpGraphvizDependency();
+#endif
 
   std::vector<ProfileKeyedServiceFactory*> all_components_;
 

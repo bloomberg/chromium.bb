@@ -23,7 +23,8 @@ ProtectorServiceFactory* ProtectorServiceFactory::GetInstance() {
 }
 
 ProtectorServiceFactory::ProtectorServiceFactory()
-    : ProfileKeyedServiceFactory(ProfileDependencyManager::GetInstance()) {
+    : ProfileKeyedServiceFactory("ProtectorService",
+                                 ProfileDependencyManager::GetInstance()) {
   DependsOn(GlobalErrorServiceFactory::GetInstance());
   DependsOn(TemplateURLServiceFactory::GetInstance());
 }

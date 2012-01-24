@@ -32,6 +32,12 @@
 #include "chrome/browser/ui/global_error_service_factory.h"
 #include "chrome/browser/ui/webui/ntp/ntp_resource_cache_factory.h"
 
+#ifndef NDEBUG
+#include "base/command_line.h"
+#include "base/file_util.h"
+#include "chrome/common/chrome_switches.h"
+#endif
+
 class Profile;
 
 void ProfileDependencyManager::AddComponent(
@@ -78,7 +84,7 @@ void ProfileDependencyManager::CreateProfileServices(Profile* profile,
   AssertFactoriesBuilt();
 
   if (destruction_order_.empty())
-    BuildDestructionOrder();
+    BuildDestructionOrder(profile);
 
   // Iterate in reverse destruction order for creation.
   for (std::vector<ProfileKeyedServiceFactory*>::reverse_iterator rit =
@@ -101,7 +107,7 @@ void ProfileDependencyManager::CreateProfileServices(Profile* profile,
 
 void ProfileDependencyManager::DestroyProfileServices(Profile* profile) {
   if (destruction_order_.empty())
-    BuildDestructionOrder();
+    BuildDestructionOrder(profile);
 
   for (std::vector<ProfileKeyedServiceFactory*>::const_iterator it =
            destruction_order_.begin(); it != destruction_order_.end(); ++it) {
@@ -182,7 +188,19 @@ void ProfileDependencyManager::AssertFactoriesBuilt() {
   built_factories_ = true;
 }
 
-void ProfileDependencyManager::BuildDestructionOrder() {
+void ProfileDependencyManager::BuildDestructionOrder(Profile* profile) {
+#if !defined(NDEBUG)
+  // Whenever we try to build a destruction ordering, we should also dump a
+  // dependency graph to "/path/to/profile/profile-dependencies.dot".
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDumpProfileDependencyGraph)) {
+    FilePath dot_file =
+        profile->GetPath().AppendASCII("profile-dependencies.dot");
+    std::string contents = DumpGraphvizDependency();
+    file_util::WriteFile(dot_file, contents.c_str(), contents.size());
+  }
+#endif
+
   // Step 1: Build a set of nodes with no incoming edges.
   std::deque<ProfileKeyedServiceFactory*> queue;
   std::copy(all_components_.begin(),
@@ -233,3 +251,50 @@ void ProfileDependencyManager::BuildDestructionOrder() {
   std::reverse(output.begin(), output.end());
   destruction_order_ = output;
 }
+
+#if !defined(NDEBUG)
+
+std::string ProfileDependencyManager::DumpGraphvizDependency() {
+  std::string result("digraph {\n");
+
+  // Make a copy of all components.
+  std::deque<ProfileKeyedServiceFactory*> components;
+  std::copy(all_components_.begin(),
+            all_components_.end(),
+            std::back_inserter(components));
+
+  // State all dependencies and remove |second| so we don't generate an
+  // implicit dependency on the Profile hard coded node.
+  std::deque<ProfileKeyedServiceFactory*>::iterator components_end =
+      components.end();
+  result.append("  /* Dependencies */\n");
+  for (EdgeMap::const_iterator it = edges_.begin(); it != edges_.end(); ++it) {
+    result.append("  ");
+    result.append(it->second->name());
+    result.append(" -> ");
+    result.append(it->first->name());
+    result.append(";\n");
+
+    components_end = std::remove(components.begin(), components_end,
+                                 it->second);
+  }
+  components.erase(components_end, components.end());
+
+  // Every node that doesn't depend on anything else will implicitly depend on
+  // the Profile.
+  result.append("\n  /* Toplevel attachments */\n");
+  for (std::deque<ProfileKeyedServiceFactory*>::const_iterator it =
+           components.begin(); it != components.end(); ++it) {
+    result.append("  ");
+    result.append((*it)->name());
+    result.append(" -> Profile;\n");
+  }
+
+  result.append("\n  /* Toplevel profile */\n");
+  result.append("  Profile [shape=box];\n");
+
+  result.append("}\n");
+  return result;
+}
+
+#endif

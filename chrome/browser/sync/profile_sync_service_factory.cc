@@ -37,7 +37,8 @@ ProfileSyncService* ProfileSyncServiceFactory::GetForProfile(
 }
 
 ProfileSyncServiceFactory::ProfileSyncServiceFactory()
-    : ProfileKeyedServiceFactory(ProfileDependencyManager::GetInstance()) {
+    : ProfileKeyedServiceFactory("ProfileSyncService",
+                                 ProfileDependencyManager::GetInstance()) {
 
   // The ProfileSyncService depends on various SyncableServices being around
   // when it is shut down.  Specify those dependencies here to build the proper

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -36,7 +36,7 @@ class TestService : public ProfileKeyedServiceFactory {
   TestService(const std::string& name,
               std::vector<std::string>* fill_on_shutdown,
               ProfileDependencyManager* manager)
-      : ProfileKeyedServiceFactory(manager),
+      : ProfileKeyedServiceFactory("TestService", manager),
         name_(name),
         fill_on_shutdown_(fill_on_shutdown) {
   }

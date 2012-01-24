@@ -72,8 +72,12 @@ void ProfileKeyedServiceFactory::RegisterUserPrefsOnProfile(Profile* profile) {
 }
 
 ProfileKeyedServiceFactory::ProfileKeyedServiceFactory(
-    ProfileDependencyManager* manager)
-    : dependency_manager_(manager) {
+    const char* name, ProfileDependencyManager* manager)
+    : dependency_manager_(manager)
+#ifndef NDEBUG
+    , service_name_(name)
+#endif
+{
   dependency_manager_->AddComponent(this);
 }
 
