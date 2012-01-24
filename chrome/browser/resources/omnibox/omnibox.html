@@ -1,0 +1,34 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Omnibox Debug Page</title>
+  <link rel="stylesheet" href="omnibox.css">
+  <script src="chrome://resources/js/cr.js"></script>
+  <script src="omnibox.js"></script>
+</head>
+<body>
+  <div class="input-section">
+    <form id="omnibox-input-form" action="">
+      <p>
+        Enter omnibox input text:
+        <input id="input-text" type="text" size="40" autofocus>
+        <input type="submit">
+      </p>
+      <p>
+        <label>
+          <input id="show-incomplete-results" type="checkbox">
+          Show incomplete results
+        </label>
+      </p>
+      <p>
+        <label>
+          <input id="show-details" type="checkbox">
+          Show all details
+        </label>
+      </p>
+    </form>
+  </div>
+  <div id="omnibox-debug-text"></div>
+</body>
+</html>

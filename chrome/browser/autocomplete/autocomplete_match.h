@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -92,7 +92,7 @@ struct AutocompleteMatch {
                     Type type);
   ~AutocompleteMatch();
 
-  // Converts |type| to a string representation.  Used in logging.
+  // Converts |type| to a string representation.  Used in logging and debugging.
   static std::string TypeToString(Type type);
 
   // Converts |type| to a resource identifier for the appropriate icon for this

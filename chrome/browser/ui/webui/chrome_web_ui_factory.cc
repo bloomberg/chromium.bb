@@ -34,6 +34,7 @@
 #include "chrome/browser/ui/webui/net_internals/net_internals_ui.h"
 #include "chrome/browser/ui/webui/network_action_predictor/network_action_predictor_ui.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
+#include "chrome/browser/ui/webui/omnibox/omnibox_ui.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
 #include "chrome/browser/ui/webui/options2/options_ui2.h"
 #include "chrome/browser/ui/webui/plugins_ui.h"
@@ -204,6 +205,8 @@ WebUIFactoryFunction GetWebUIFactoryFunction(content::WebUI* web_ui,
     return &NewWebUI<NetInternalsUI>;
   if (url.host() == chrome::kChromeUINetworkActionPredictorHost)
     return &NewWebUI<NetworkActionPredictorUI>;
+  if (url.host() == chrome::kChromeUIOmniboxHost)
+    return &NewWebUI<OmniboxUI>;
   if (url.host() == chrome::kChromeUIPluginsHost)
     return &NewWebUI<PluginsUI>;
   if (url.host() == chrome::kChromeUIProfilerHost)

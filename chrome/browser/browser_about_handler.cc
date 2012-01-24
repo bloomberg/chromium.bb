@@ -47,6 +47,7 @@ const char* const kChromePaths[] = {
   chrome::kChromeUINetworkActionPredictorHost,
   chrome::kChromeUINetworkViewCacheHost,
   chrome::kChromeUINewTabHost,
+  chrome::kChromeUIOmniboxHost,
   chrome::kChromeUIPluginsHost,
   chrome::kChromeUIPrintHost,
   chrome::kChromeUIProfilerHost,
