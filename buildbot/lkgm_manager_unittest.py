@@ -151,9 +151,9 @@ class LKGMManagerTest(mox.MoxTestBase):
 
     # Do manifest refresh work.
     lkgm_manager.LKGMManager.RefreshManifestCheckout()
-    lkgm_manager.LKGMManager.PrepSpecChanges()
     lkgm_manager.LKGMManager.GetCurrentVersionInfo().AndReturn(my_info)
     lkgm_manager.LKGMManager.InitializeManifestVariables(my_info)
+    lkgm_manager.LKGMManager.PrepSpecChanges()
 
     # Publish new candidate.
     lkgm_manager.LKGMManager.PublishManifest(new_manifest,
@@ -169,10 +169,19 @@ class LKGMManagerTest(mox.MoxTestBase):
     self.mox.StubOutWithMock(lkgm_manager.LKGMManager, 'CheckoutSourceCode')
     self.mox.StubOutWithMock(lkgm_manager.LKGMManager, 'HasCheckoutBeenBuilt')
     self.mox.StubOutWithMock(lkgm_manager.LKGMManager, 'CreateManifest')
+    self.mox.StubOutWithMock(lkgm_manager.LKGMManager, 'GetCurrentVersionInfo')
+    self.mox.StubOutWithMock(lkgm_manager.LKGMManager,
+                             'RefreshManifestCheckout')
+    self.mox.StubOutWithMock(lkgm_manager.LKGMManager,
+                             'InitializeManifestVariables')
 
     new_manifest = 'some_manifest'
+    my_info = lkgm_manager._LKGMCandidateInfo('1.2.3')
     lkgm_manager.LKGMManager.CheckoutSourceCode()
     lkgm_manager.LKGMManager.CreateManifest().AndReturn(new_manifest)
+    lkgm_manager.LKGMManager.RefreshManifestCheckout()
+    lkgm_manager.LKGMManager.GetCurrentVersionInfo().AndReturn(my_info)
+    lkgm_manager.LKGMManager.InitializeManifestVariables(my_info)
     lkgm_manager.LKGMManager.HasCheckoutBeenBuilt().AndReturn(True)
 
     self.mox.ReplayAll()

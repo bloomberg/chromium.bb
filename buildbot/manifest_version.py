@@ -606,15 +606,16 @@ class BuildSpecsManager(object):
     for index in range(0, retries + 1):
       try:
         self.CheckoutSourceCode()
+
+        # Refresh the manifest checkout.
+        self.RefreshManifestCheckout()
+        version_info = self.GetCurrentVersionInfo()
+        self.InitializeManifestVariables(version_info)
+
         if self.HasCheckoutBeenBuilt():
           return None
 
-        # Refresh the manifest checkout and prepare it for writing.
-        self.RefreshManifestCheckout()
         self.PrepSpecChanges()
-
-        version_info = self.GetCurrentVersionInfo()
-        self.InitializeManifestVariables(version_info)
         if not self.latest_unprocessed:
           version = self.GetNextVersion(version_info)
           new_manifest = self.CreateManifest()

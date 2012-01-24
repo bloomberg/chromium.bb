@@ -211,12 +211,8 @@ class LKGMManager(manifest_version.BuildSpecsManager):
     """
     self.CheckoutSourceCode()
     new_manifest = self.CreateManifest()
-    # Handle logic about the manifest we know as soon as we sync.
-    if not validation_pool:
-      # This isn't a commit queue, so we care only that the manifest is new.
-      if self.HasCheckoutBeenBuilt():
-        return None
-    else:
+    # For the Commit Queue, apply the validation pool as part of checkout.
+    if validation_pool:
       if not validation_pool.ApplyPoolIntoRepo(self.cros_source.directory):
         return None
 
@@ -228,8 +224,10 @@ class LKGMManager(manifest_version.BuildSpecsManager):
       try:
         # Refresh manifest logic from manifest_versions repository.
         self.RefreshManifestCheckout()
-        self.PrepSpecChanges()
         self.InitializeManifestVariables(version_info)
+        # For non-cq, we only care that the manifest is new.
+        if not validation_pool and self.HasCheckoutBeenBuilt():
+          return None
 
         # Check whether the latest spec available in manifest-versions is
         # newer than our current version number. If so, use it as the base
@@ -241,6 +239,7 @@ class LKGMManager(manifest_version.BuildSpecsManager):
               latest, chrome_branch=version_info.chrome_branch,
               incr_type=self.incr_type)
 
+        self.PrepSpecChanges()
         version = self.GetNextVersion(version_info)
         self.PublishManifest(new_manifest, version)
         self.current_version = version
