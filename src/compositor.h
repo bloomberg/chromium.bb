@@ -267,6 +267,14 @@ void
 weston_surface_update_transform(struct weston_surface *surface);
 
 void
+weston_surface_to_global(struct weston_surface *surface,
+			 int32_t sx, int32_t sy, int32_t *x, int32_t *y);
+
+void
+weston_surface_from_global(struct weston_surface *surface,
+			   int32_t x, int32_t y, int32_t *sx, int32_t *sy);
+
+void
 weston_device_repick(struct wl_input_device *device, uint32_t time);
 
 void

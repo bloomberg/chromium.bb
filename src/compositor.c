@@ -259,6 +259,65 @@ weston_surface_update_transform(struct weston_surface *surface)
 }
 
 WL_EXPORT void
+weston_surface_to_global(struct weston_surface *surface,
+			 int32_t sx, int32_t sy, int32_t *x, int32_t *y)
+{
+	weston_surface_update_transform(surface);
+
+	if (surface->transform.enabled) {
+		struct weston_vector v = { { sx, sy, 0.0f, 1.0f } };
+
+		v.f[0] += surface->x;
+		v.f[1] += surface->y;
+
+		weston_matrix_transform(&surface->transform.matrix, &v);
+
+		if (fabsf(v.f[3]) < 1e-6) {
+			fprintf(stderr, "warning: numerical instability in "
+				"weston_surface_to_global(), divisor = %g\n",
+				v.f[3]);
+			*x = 0;
+			*y = 0;
+			return;
+		}
+
+		*x = floorf(v.f[0] / v.f[3]);
+		*y = floorf(v.f[1] / v.f[3]);
+	} else {
+		*x = sx + surface->x;
+		*y = sy + surface->y;
+	}
+}
+
+WL_EXPORT void
+weston_surface_from_global(struct weston_surface *surface,
+			   int32_t x, int32_t y, int32_t *sx, int32_t *sy)
+{
+	weston_surface_update_transform(surface);
+
+	if (surface->transform.enabled) {
+		struct weston_vector v = { { x, y, 0.0f, 1.0f } };
+
+		weston_matrix_transform(&surface->transform.inverse, &v);
+
+		if (fabsf(v.f[3]) < 1e-6) {
+			fprintf(stderr, "warning: numerical instability in "
+				"weston_surface_from_global(), divisor = %g\n",
+				v.f[3]);
+			*sx = 0;
+			*sy = 0;
+			return;
+		}
+
+		*sx = floorf(v.f[0] / v.f[3] - surface->x);
+		*sy = floorf(v.f[1] / v.f[3] - surface->y);
+	} else {
+		*sx = x - surface->x;
+		*sy = y - surface->y;
+	}
+}
+
+WL_EXPORT void
 weston_surface_damage_rectangle(struct weston_surface *surface,
 			      int32_t x, int32_t y,
 			      int32_t width, int32_t height)
@@ -337,23 +396,6 @@ weston_surface_configure(struct weston_surface *surface,
 		pixman_region32_init(&surface->opaque);
 }
 
-static void
-weston_surface_transform(struct weston_surface *surface,
-		       int32_t x, int32_t y, int32_t *sx, int32_t *sy)
-{
-	weston_surface_update_transform(surface);
-
-	if (surface->transform.enabled) {
-		struct weston_vector v = { { x, y, 0.0f, 1.0f } };
-		weston_matrix_transform(&surface->transform.inverse, &v);
-		x = floorf(v.f[0] / v.f[3]);
-		y = floorf(v.f[1] / v.f[3]);
-	}
-
-	*sx = x - surface->x;
-	*sy = y - surface->y;
-}
-
 WL_EXPORT uint32_t
 weston_compositor_get_time(void)
 {
@@ -385,8 +427,8 @@ weston_device_repick(struct wl_input_device *device, uint32_t time)
 
 	focus = (struct weston_surface *) device->grab->focus;
 	if (focus)
-		weston_surface_transform(focus, device->x, device->y,
-					 &device->grab->x, &device->grab->y);
+		weston_surface_from_global(focus, device->x, device->y,
+					   &device->grab->x, &device->grab->y);
 }
 
 WL_EXPORT void
@@ -536,23 +578,27 @@ texture_region(struct weston_surface *es, pixman_region32_t *region)
 
 static void
 transform_vertex(struct weston_surface *surface,
-		 GLfloat x, GLfloat y, GLfloat u, GLfloat v, GLfloat *r)
+		 GLfloat sx, GLfloat sy,
+		 GLfloat tex_x, GLfloat tex_y, GLfloat *r)
 {
-	struct weston_vector t;
+	/* surface->transform.enabled must always be 1 here. */
 
-	t.f[0] = x;
-	t.f[1] = y;
-	t.f[2] = 0.0;
-	t.f[3] = 1.0;
+	struct weston_vector v = { { sx, sy, 0.0f, 1.0f } };
 
-	weston_matrix_transform(&surface->transform.matrix, &t);
+	v.f[0] += surface->x;
+	v.f[1] += surface->y;
 
-	/* XXX: assumes last row of matrix is [0 0 * 1] */
+	weston_matrix_transform(&surface->transform.matrix, &v);
 
-	r[ 0] = t.f[0];
-	r[ 1] = t.f[1];
-	r[ 2] = u;
-	r[ 3] = v;
+	if (fabsf(v.f[3]) < 1e-6) {
+		fprintf(stderr, "warning: numerical instability in "
+			"transform_vertex(), divisor = %g\n", v.f[3]);
+	}
+
+	r[ 0] = v.f[0] / v.f[3];
+	r[ 1] = v.f[1] / v.f[3];
+	r[ 2] = tex_x;
+	r[ 3] = tex_y;
 }
 
 static int
@@ -565,11 +611,10 @@ texture_transformed_surface(struct weston_surface *es)
 	v = wl_array_add(&ec->vertices, 16 * sizeof *v);
 	p = wl_array_add(&ec->indices, 6 * sizeof *p);
 
-	transform_vertex(es, es->x, es->y, 0.0, 0.0, &v[0]);
-	transform_vertex(es, es->x, es->y + es->height, 0.0, 1.0, &v[4]);
-	transform_vertex(es, es->x + es->width, es->y, 1.0, 0.0, &v[8]);
-	transform_vertex(es, es->x + es->width, es->y + es->height,
-			 1.0, 1.0, &v[12]);
+	transform_vertex(es, 0, 0, 0.0, 0.0, &v[0]);
+	transform_vertex(es, 0, es->height, 0.0, 1.0, &v[4]);
+	transform_vertex(es, es->width, 0, 1.0, 0.0, &v[8]);
+	transform_vertex(es, es->width, es->height, 1.0, 1.0, &v[12]);
 
 	p[0] = 0;
 	p[1] = 1;
@@ -1096,7 +1141,7 @@ weston_compositor_pick_surface(struct weston_compositor *compositor,
 	wl_list_for_each(surface, &compositor->surface_list, link) {
 		if (surface->surface.resource.client == NULL)
 			continue;
-		weston_surface_transform(surface, x, y, sx, sy);
+		weston_surface_from_global(surface, x, y, sx, sy);
 		if (0 <= *sx && *sx < surface->width &&
 		    0 <= *sy && *sy < surface->height)
 			return surface;
@@ -1484,7 +1529,7 @@ notify_touch(struct wl_input_device *device, uint32_t time, int touch_id,
 			touch_set_focus(wd, &es->surface, time);
 		} else if (wd->touch_focus) {
 			es = (struct weston_surface *) wd->touch_focus;
-			weston_surface_transform(es, x, y, &sx, &sy);
+			weston_surface_from_global(es, x, y, &sx, &sy);
 		}
 
 		if (wd->touch_focus_resource && wd->touch_focus)
@@ -1498,7 +1543,7 @@ notify_touch(struct wl_input_device *device, uint32_t time, int touch_id,
 		if (!es)
 			break;
 
-		weston_surface_transform(es, x, y, &sx, &sy);
+		weston_surface_from_global(es, x, y, &sx, &sy);
 		if (wd->touch_focus_resource)
 			wl_resource_post_event(wd->touch_focus_resource,
 					       touch_type, time,

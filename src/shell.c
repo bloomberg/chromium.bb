@@ -1037,7 +1037,6 @@ rotate_binding(struct wl_input_device *device, uint32_t time,
 		(struct weston_surface *) device->pointer_focus;
 	struct shell_surface *surface;
 	struct rotate_grab *rotate;
-	struct weston_vector center = { { 0.0f, 0.0f, 0.0f, 1.0f } };
 
 	if (base_surface == NULL)
 		return;
@@ -1056,21 +1055,17 @@ rotate_binding(struct wl_input_device *device, uint32_t time,
 			break;
 	}
 
-	center.f[0] = 0.5f * surface->surface->width;
-	center.f[1] = 0.5f * surface->surface->height;
-	weston_surface_update_transform(surface->surface);
-	weston_matrix_transform(&surface->surface->transform.matrix, &center);
-	if (fabsf(center.f[3]) < 1e-6)
-		return;
-
 	rotate = malloc(sizeof *rotate);
 	if (!rotate)
 		return;
 
 	rotate->grab.interface = &rotate_grab_interface;
 	rotate->surface = surface;
-	rotate->center.x = center.f[0] / center.f[3];
-	rotate->center.y = center.f[1] / center.f[3];
+
+	weston_surface_to_global(surface->surface,
+				 surface->surface->width / 2,
+				 surface->surface->height / 2,
+				 &rotate->center.x, &rotate->center.y);
 
 	wl_input_device_start_grab(device, &rotate->grab, time);
 	wl_input_device_set_pointer_focus(device, NULL, time, 0, 0, 0, 0);
