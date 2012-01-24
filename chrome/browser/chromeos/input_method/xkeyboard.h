@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,8 +6,6 @@
 #define CHROME_BROWSER_CHROMEOS_INPUT_METHOD_XKEYBOARD_H_
 #pragma once
 
-#include <queue>
-#include <set>
 #include <string>
 #include <vector>
 
@@ -55,24 +53,22 @@ class InputMethodUtil;
 
 class XKeyboard {
  public:
-  // Note: at this moment, classes other than InputMethodManager should not
-  // instantiate the XKeyboard class.
-  explicit XKeyboard(const InputMethodUtil& util);
-  ~XKeyboard();
+  virtual ~XKeyboard() {}
 
   // Sets the current keyboard layout to |layout_name|. This function does not
   // change the current mapping of the modifier keys. Returns true on success.
-  bool SetCurrentKeyboardLayoutByName(const std::string& layout_name);
+  virtual bool SetCurrentKeyboardLayoutByName(
+      const std::string& layout_name) = 0;
 
   // Remaps modifier keys. This function does not change the current keyboard
   // layout. Returns true on success. For now, you can't remap Left Control and
   // Left Alt keys to caps lock.
-  bool RemapModifierKeys(const ModifierMap& modifier_map);
+  virtual bool RemapModifierKeys(const ModifierMap& modifier_map) = 0;
 
   // Sets the current keyboard layout again. We have to call the function every
   // time when "XI_HierarchyChanged" XInput2 event is sent to Chrome. See
   // xinput_hierarchy_changed_event_listener.h for details.
-  bool ReapplyCurrentKeyboardLayout();
+  virtual bool ReapplyCurrentKeyboardLayout() = 0;
 
   // Updates keyboard LEDs on all keyboards.
   // XKB asymmetrically propagates keyboard modifier indicator state changes to
@@ -83,120 +79,77 @@ class XKeyboard {
   // state change down to that one keyboard.
   // This function changes LEDs on all keyboards by explicitly updating the
   // core/master keyboard.
-  void ReapplyCurrentModifierLockStatus();
+  virtual void ReapplyCurrentModifierLockStatus() = 0;
 
   // Sets the Caps Lock and Num Lock status. Do not call the function from
   // non-UI threads.
-  void SetLockedModifiers(ModifierLockStatus new_caps_lock_status,
-                          ModifierLockStatus new_num_lock_status);
+  virtual void SetLockedModifiers(ModifierLockStatus new_caps_lock_status,
+                                  ModifierLockStatus new_num_lock_status) = 0;
 
   // Sets the num lock status to |enable_num_lock|. Do not call the function
   // from non-UI threads.
-  void SetNumLockEnabled(bool enable_num_lock);
+  virtual void SetNumLockEnabled(bool enable_num_lock) = 0;
 
   // Sets the caps lock status to |enable_caps_lock|. Do not call the function
   // from non-UI threads.
-  void SetCapsLockEnabled(bool enable_caps_lock);
-
-  // Set true on |out_caps_lock_enabled| if Caps Lock is enabled. Set true on
-  // |out_num_lock_enabled| if Num Lock (or to be precise, the modifier
-  // specified by |num_lock_mask|) is enabled. Both 'out' parameters can be
-  // NULL. When |out_num_lock_enabled| is NULL, |num_lock_mask| is ignored (you
-  // can pass 0 in this case). Do not call the function from non-UI threads.
-  static void GetLockedModifiers(unsigned int num_lock_mask,
-                                 bool* out_caps_lock_enabled,
-                                 bool* out_num_lock_enabled);
+  virtual void SetCapsLockEnabled(bool enable_caps_lock) = 0;
 
   // Returns true if num lock is enabled. Do not call the function from non-UI
   // threads.
-  static bool NumLockIsEnabled(unsigned int num_lock_mask);
+  virtual bool NumLockIsEnabled() = 0;
 
   // Returns true if caps lock is enabled. Do not call the function from non-UI
   // threads.
-  static bool CapsLockIsEnabled();
+  virtual bool CapsLockIsEnabled() = 0;
+
+  // Creates a full XKB layout name like
+  //   "gb(extd)+chromeos(leftcontrol_disabled_leftalt),us"
+  // from modifier key mapping and |layout_name|, such as "us", "us(dvorak)",
+  // and "gb(extd)". Returns an empty string on error. Do not call this function
+  // directly: it is public for testability.
+  virtual std::string CreateFullXkbLayoutName(
+      const std::string& layout_name,
+      const ModifierMap& modifire_map) = 0;
+
+  // Returns a mask (e.g. 1U<<4) for Num Lock. On error, returns 0.
+  // TODO(yusukes): Move this and webdriver::GetXModifierMask() functions in
+  // chrome/test/webdriver/keycode_text_conversion_x.cc to ui/base/x/x11_util.
+  // The two functions are almost the same.
+  virtual unsigned int GetNumLockMask() = 0;
+
+  // Set true on |out_caps_lock_enabled| if Caps Lock is enabled. Set true on
+  // |out_num_lock_enabled| if Num Lock is enabled. Both out parameters can be
+  // NULL. Do not call the function from non-UI threads.
+  virtual void GetLockedModifiers(bool* out_caps_lock_enabled,
+                                  bool* out_num_lock_enabled) = 0;
 
   // Turns on and off the auto-repeat of the keyboard. Returns true on success.
   // Do not call the function from non-UI threads.
+  // TODO(yusukes): Make this function non-static so we can mock it.
   static bool SetAutoRepeatEnabled(bool enabled);
 
   // Sets the auto-repeat rate of the keyboard, initial delay in ms, and repeat
   // interval in ms.  Returns true on success. Do not call the function from
   // non-UI threads.
+  // TODO(yusukes): Make this function non-static so we can mock it.
   static bool SetAutoRepeatRate(const AutoRepeatRate& rate);
 
-  // Returns a mask (e.g. 1U<<4) for Num Lock. On error, returns 0.
-  static unsigned int GetNumLockMask();
+  // Returns true if auto repeat is enabled. This function is protected: for
+  // testability.
+  static bool GetAutoRepeatEnabledForTesting();
 
- protected:
-  // Creates a full XKB layout name like
-  //   "gb(extd)+chromeos(leftcontrol_disabled_leftalt),us"
-  // from modifier key mapping and |layout_name|, such as "us", "us(dvorak)",
-  // and "gb(extd)". Returns an empty string on error. This function is
-  // protected: for testability.
-  std::string CreateFullXkbLayoutName(const std::string& layout_name,
-                                      const ModifierMap& modifire_map);
+  // On success, set current auto repeat rate on |out_rate| and returns true.
+  // Returns false otherwise. This function is protected: for testability.
+  static bool GetAutoRepeatRateForTesting(AutoRepeatRate* out_rate);
 
-  // Returns true if |key| is in |modifier_map| as replacement. This function is
-  // protected: for testability.
+  // Returns true if |key| is in |modifier_map| as replacement. Do not call this
+  // function directly: it is public for testability.
   static bool ContainsModifierKeyAsReplacement(const ModifierMap& modifier_map,
                                                ModifierKey key);
 
-  // THIS FUNCTION IS ONLY FOR UNIT TESTS.
-  // Returns true if auto repeat is enabled. This function is protected: for
-  // testability.
-  static bool GetAutoRepeatEnabled();
-
-  // THIS FUNCTION IS ONLY FOR UNIT TESTS.
-  // On success, set current auto repeat rate on |out_rate| and returns true.
-  // Returns false otherwise. This function is protected: for testability.
-  static bool GetAutoRepeatRate(AutoRepeatRate* out_rate);
-
- private:
-  // This function is used by SetLayout() and RemapModifierKeys(). Calls
-  // setxkbmap command if needed, and updates the last_full_layout_name_ cache.
-  bool SetLayoutInternal(const std::string& layout_name,
-                         const ModifierMap& modifier_map,
-                         bool force);
-
-  // Executes 'setxkbmap -layout ...' command asynchronously using a layout name
-  // in the |execute_queue_|. Do nothing if the queue is empty.
-  // TODO(yusukes): Use libxkbfile.so instead of the command (crosbug.com/13105)
-  void MaybeExecuteSetLayoutCommand();
-
-  // Returns true if the XKB layout uses the right Alt key for special purposes
-  // like AltGr.
-  bool KeepRightAlt(const std::string& xkb_layout_name) const;
-
-  // Returns true if the XKB layout uses the CapsLock key for special purposes.
-  // For example, since US Colemak layout uses the key as back space,
-  // KeepCapsLock("us(colemak)") would return true.
-  bool KeepCapsLock(const std::string& xkb_layout_name) const;
-
-  // Converts |key| to a modifier key name which is used in
-  // /usr/share/X11/xkb/symbols/chromeos.
-  static std::string ModifierKeyToString(ModifierKey key);
-
-  // Called when execve'd setxkbmap process exits.
-  static void OnSetLayoutFinish(pid_t pid, int status, XKeyboard* self);
-
-  const bool is_running_on_chrome_os_;
-  unsigned int num_lock_mask_;
-
-  // The current Num Lock and Caps Lock status. If true, enabled.
-  bool current_num_lock_status_;
-  bool current_caps_lock_status_;
-  // The XKB layout name which we set last time like "us" and "us(dvorak)".
-  std::string current_layout_name_;
-  // The mapping of modifier keys we set last time.
-  ModifierMap current_modifier_map_;
-
-  // A queue for executing setxkbmap one by one.
-  std::queue<std::string> execute_queue_;
-
-  std::set<std::string> keep_right_alt_xkb_layout_names_;
-  std::set<std::string> caps_lock_remapped_xkb_layout_names_;
-
-  DISALLOW_COPY_AND_ASSIGN(XKeyboard);
+  // Note: At this moment, classes other than InputMethodManager should not
+  // instantiate the XKeyboard class.
+  static XKeyboard* Create(const InputMethodUtil& util);
 };
 
 }  // namespace input_method

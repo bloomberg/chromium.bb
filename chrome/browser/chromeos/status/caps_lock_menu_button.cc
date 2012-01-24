@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/input_method/xkeyboard.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/chromeos/status/status_area_bubble.h"
@@ -67,7 +68,10 @@ CapsLockMenuButton::CapsLockMenuButton(StatusAreaButton::Delegate* delegate)
   SetIcon(*ResourceBundle::GetSharedInstance().GetBitmapNamed(
       IDR_STATUSBAR_CAPS_LOCK));
   UpdateAccessibleName();
-  UpdateUIFromCurrentCapsLock(input_method::XKeyboard::CapsLockIsEnabled());
+
+  input_method::InputMethodManager* ime_manager =
+      input_method::InputMethodManager::GetInstance();
+  UpdateUIFromCurrentCapsLock(ime_manager->GetXKeyboard()->CapsLockIsEnabled());
 
   // Status bar should be initialized after SystemKeyEventListener on the
   // device. SystemKeyEventListener is never initialized on chrome for cros
@@ -87,7 +91,9 @@ CapsLockMenuButton::~CapsLockMenuButton() {
 // views::View implementation:
 
 void CapsLockMenuButton::OnLocaleChanged() {
-  UpdateUIFromCurrentCapsLock(input_method::XKeyboard::CapsLockIsEnabled());
+  input_method::InputMethodManager* ime_manager =
+      input_method::InputMethodManager::GetInstance();
+  UpdateUIFromCurrentCapsLock(ime_manager->GetXKeyboard()->CapsLockIsEnabled());
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -231,7 +231,9 @@ void ScreenLocker::OnLoginFailure(const LoginFailure& error) {
 
   // TODO(ivankr): use a format string instead of concatenation.
   // Display a warning if Caps Lock is on.
-  if (input_method::XKeyboard::CapsLockIsEnabled()) {
+  input_method::InputMethodManager* ime_manager =
+      input_method::InputMethodManager::GetInstance();
+  if (ime_manager->GetXKeyboard()->CapsLockIsEnabled()) {
     msg += ASCIIToUTF16("\n") +
         l10n_util::GetStringUTF16(IDS_LOGIN_ERROR_CAPS_LOCK_HINT);
   }

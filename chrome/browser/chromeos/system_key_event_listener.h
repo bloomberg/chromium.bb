@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -99,7 +99,7 @@ class SystemKeyEventListener : public MessageLoopForUI::Observer {
 
   bool stopped_;
 
-  const unsigned int num_lock_mask_;
+  unsigned int num_lock_mask_;
   bool num_lock_is_on_;
   bool caps_lock_is_on_;
   ObserverList<CapsLockObserver> caps_lock_observers_;

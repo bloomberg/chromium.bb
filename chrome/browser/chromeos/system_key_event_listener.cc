@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -76,10 +76,12 @@ SystemKeyEventListener* SystemKeyEventListener::GetInstance() {
 
 SystemKeyEventListener::SystemKeyEventListener()
     : stopped_(false),
-      num_lock_mask_(input_method::XKeyboard::GetNumLockMask()),
+      num_lock_mask_(0),
       xkb_event_base_(0) {
-  input_method::XKeyboard::GetLockedModifiers(
-      num_lock_mask_, &caps_lock_is_on_, &num_lock_is_on_);
+  input_method::XKeyboard* xkeyboard =
+      input_method::InputMethodManager::GetInstance()->GetXKeyboard();
+  num_lock_mask_ = xkeyboard->GetNumLockMask();
+  xkeyboard->GetLockedModifiers(&caps_lock_is_on_, &num_lock_is_on_);
 
   Display* display = ui::GetXDisplay();
   key_brightness_down_ = XKeysymToKeycode(display,

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -34,18 +34,6 @@ namespace input_method {
 
 namespace {
 
-class TestableXKeyboard : public XKeyboard {
- public:
-  explicit TestableXKeyboard(const InputMethodUtil& util) : XKeyboard(util) {
-  }
-
-  // Change access rights.
-  using XKeyboard::CreateFullXkbLayoutName;
-  using XKeyboard::ContainsModifierKeyAsReplacement;
-  using XKeyboard::GetAutoRepeatEnabled;
-  using XKeyboard::GetAutoRepeatRate;
-};
-
 class XKeyboardTest : public testing::Test {
  public:
   XKeyboardTest()
@@ -55,7 +43,7 @@ class XKeyboardTest : public testing::Test {
   }
 
   virtual void SetUp() {
-    xkey_.reset(new TestableXKeyboard(util_));
+    xkey_.reset(XKeyboard::Create(util_));
   }
 
   virtual void TearDown() {
@@ -64,7 +52,7 @@ class XKeyboardTest : public testing::Test {
 
   scoped_ptr<IBusController> controller_;
   InputMethodUtil util_;
-  scoped_ptr<TestableXKeyboard> xkey_;
+  scoped_ptr<XKeyboard> xkey_;
 
   MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
@@ -265,13 +253,13 @@ TEST_F(XKeyboardTest, TestSetCapsLockEnabled) {
   }
   const bool initial_lock_state = xkey_->CapsLockIsEnabled();
   xkey_->SetCapsLockEnabled(true);
-  EXPECT_TRUE(TestableXKeyboard::CapsLockIsEnabled());
+  EXPECT_TRUE(xkey_->CapsLockIsEnabled());
   xkey_->SetCapsLockEnabled(false);
-  EXPECT_FALSE(TestableXKeyboard::CapsLockIsEnabled());
+  EXPECT_FALSE(xkey_->CapsLockIsEnabled());
   xkey_->SetCapsLockEnabled(true);
-  EXPECT_TRUE(TestableXKeyboard::CapsLockIsEnabled());
+  EXPECT_TRUE(xkey_->CapsLockIsEnabled());
   xkey_->SetCapsLockEnabled(false);
-  EXPECT_FALSE(TestableXKeyboard::CapsLockIsEnabled());
+  EXPECT_FALSE(xkey_->CapsLockIsEnabled());
   xkey_->SetCapsLockEnabled(initial_lock_state);
 }
 
@@ -280,18 +268,18 @@ TEST_F(XKeyboardTest, TestSetNumLockEnabled) {
     LOG(INFO) << "X server is not available. Skip the test.";
     return;
   }
-  const unsigned int num_lock_mask = TestableXKeyboard::GetNumLockMask();
+  const unsigned int num_lock_mask = xkey_->GetNumLockMask();
   ASSERT_NE(0U, num_lock_mask);
 
-  const bool initial_lock_state = xkey_->NumLockIsEnabled(num_lock_mask);
+  const bool initial_lock_state = xkey_->NumLockIsEnabled();
   xkey_->SetNumLockEnabled(true);
-  EXPECT_TRUE(TestableXKeyboard::NumLockIsEnabled(num_lock_mask));
+  EXPECT_TRUE(xkey_->NumLockIsEnabled());
   xkey_->SetNumLockEnabled(false);
-  EXPECT_FALSE(TestableXKeyboard::NumLockIsEnabled(num_lock_mask));
+  EXPECT_FALSE(xkey_->NumLockIsEnabled());
   xkey_->SetNumLockEnabled(true);
-  EXPECT_TRUE(TestableXKeyboard::NumLockIsEnabled(num_lock_mask));
+  EXPECT_TRUE(xkey_->NumLockIsEnabled());
   xkey_->SetNumLockEnabled(false);
-  EXPECT_FALSE(TestableXKeyboard::NumLockIsEnabled(num_lock_mask));
+  EXPECT_FALSE(xkey_->NumLockIsEnabled());
   xkey_->SetNumLockEnabled(initial_lock_state);
 }
 
@@ -300,20 +288,18 @@ TEST_F(XKeyboardTest, TestSetCapsLockAndNumLockAtTheSameTime) {
     LOG(INFO) << "X server is not available. Skip the test.";
     return;
   }
-  const unsigned int num_lock_mask = TestableXKeyboard::GetNumLockMask();
+  const unsigned int num_lock_mask = xkey_->GetNumLockMask();
   ASSERT_NE(0U, num_lock_mask);
 
   const bool initial_caps_lock_state = xkey_->CapsLockIsEnabled();
-  const bool initial_num_lock_state = xkey_->NumLockIsEnabled(num_lock_mask);
+  const bool initial_num_lock_state = xkey_->NumLockIsEnabled();
 
   // Flip both.
   xkey_->SetLockedModifiers(
       initial_caps_lock_state ? kDisableLock : kEnableLock,
       initial_num_lock_state ? kDisableLock : kEnableLock);
-  EXPECT_EQ(!initial_caps_lock_state,
-            TestableXKeyboard::CapsLockIsEnabled());
-  EXPECT_EQ(!initial_num_lock_state,
-            TestableXKeyboard::NumLockIsEnabled(num_lock_mask));
+  EXPECT_EQ(!initial_caps_lock_state, xkey_->CapsLockIsEnabled());
+  EXPECT_EQ(!initial_num_lock_state, xkey_->NumLockIsEnabled());
 
   // Flip Caps Lock.
   xkey_->SetLockedModifiers(
@@ -321,7 +307,7 @@ TEST_F(XKeyboardTest, TestSetCapsLockAndNumLockAtTheSameTime) {
       kDontChange);
   // Use GetLockedModifiers() for verifying the result.
   bool c, n;
-  TestableXKeyboard::GetLockedModifiers(num_lock_mask, &c, &n);
+  xkey_->GetLockedModifiers(&c, &n);
   EXPECT_EQ(initial_caps_lock_state, c);
   EXPECT_EQ(!initial_num_lock_state, n);
 
@@ -329,16 +315,14 @@ TEST_F(XKeyboardTest, TestSetCapsLockAndNumLockAtTheSameTime) {
   xkey_->SetLockedModifiers(
       initial_caps_lock_state ? kDisableLock : kEnableLock,
       initial_num_lock_state ? kEnableLock : kDisableLock);
-  EXPECT_EQ(!initial_caps_lock_state,
-            TestableXKeyboard::CapsLockIsEnabled());
-  EXPECT_EQ(initial_num_lock_state,
-            TestableXKeyboard::NumLockIsEnabled(num_lock_mask));
+  EXPECT_EQ(!initial_caps_lock_state, xkey_->CapsLockIsEnabled());
+  EXPECT_EQ(initial_num_lock_state, xkey_->NumLockIsEnabled());
 
   // Flip Num Lock.
   xkey_->SetLockedModifiers(
       kDontChange,
       initial_num_lock_state ? kDisableLock : kEnableLock);
-  TestableXKeyboard::GetLockedModifiers(num_lock_mask, &c, &n);
+  xkey_->GetLockedModifiers(&c, &n);
   EXPECT_EQ(!initial_caps_lock_state, c);
   EXPECT_EQ(!initial_num_lock_state, n);
 
@@ -346,36 +330,32 @@ TEST_F(XKeyboardTest, TestSetCapsLockAndNumLockAtTheSameTime) {
   xkey_->SetLockedModifiers(
       initial_caps_lock_state ? kEnableLock : kDisableLock,
       initial_num_lock_state ? kEnableLock : kDisableLock);
-  EXPECT_EQ(initial_caps_lock_state,
-            TestableXKeyboard::CapsLockIsEnabled());
-  EXPECT_EQ(initial_num_lock_state,
-            TestableXKeyboard::NumLockIsEnabled(num_lock_mask));
+  EXPECT_EQ(initial_caps_lock_state, xkey_->CapsLockIsEnabled());
+  EXPECT_EQ(initial_num_lock_state, xkey_->NumLockIsEnabled());
 
   // No-op SetLockedModifiers call.
   xkey_->SetLockedModifiers(kDontChange, kDontChange);
-  EXPECT_EQ(initial_caps_lock_state,
-            TestableXKeyboard::CapsLockIsEnabled());
-  EXPECT_EQ(initial_num_lock_state,
-            TestableXKeyboard::NumLockIsEnabled(num_lock_mask));
+  EXPECT_EQ(initial_caps_lock_state, xkey_->CapsLockIsEnabled());
+  EXPECT_EQ(initial_num_lock_state, xkey_->NumLockIsEnabled());
 
   // No-op GetLockedModifiers call. Confirm it does not crash.
-  TestableXKeyboard::GetLockedModifiers(0, NULL, NULL);
+  xkey_->GetLockedModifiers(NULL, NULL);
 }
 
 TEST_F(XKeyboardTest, TestContainsModifierKeyAsReplacement) {
-  EXPECT_FALSE(TestableXKeyboard::ContainsModifierKeyAsReplacement(
+  EXPECT_FALSE(XKeyboard::ContainsModifierKeyAsReplacement(
       GetMap(kVoidKey, kVoidKey, kVoidKey), kCapsLockKey));
-  EXPECT_TRUE(TestableXKeyboard::ContainsModifierKeyAsReplacement(
+  EXPECT_TRUE(XKeyboard::ContainsModifierKeyAsReplacement(
       GetMap(kCapsLockKey, kVoidKey, kVoidKey), kCapsLockKey));
-  EXPECT_TRUE(TestableXKeyboard::ContainsModifierKeyAsReplacement(
+  EXPECT_TRUE(XKeyboard::ContainsModifierKeyAsReplacement(
       GetMap(kVoidKey, kCapsLockKey, kVoidKey), kCapsLockKey));
-  EXPECT_TRUE(TestableXKeyboard::ContainsModifierKeyAsReplacement(
+  EXPECT_TRUE(XKeyboard::ContainsModifierKeyAsReplacement(
       GetMap(kVoidKey, kVoidKey, kCapsLockKey), kCapsLockKey));
-  EXPECT_TRUE(TestableXKeyboard::ContainsModifierKeyAsReplacement(
+  EXPECT_TRUE(XKeyboard::ContainsModifierKeyAsReplacement(
       GetMap(kCapsLockKey, kCapsLockKey, kVoidKey), kCapsLockKey));
-  EXPECT_TRUE(TestableXKeyboard::ContainsModifierKeyAsReplacement(
+  EXPECT_TRUE(XKeyboard::ContainsModifierKeyAsReplacement(
       GetMap(kCapsLockKey, kCapsLockKey, kCapsLockKey), kCapsLockKey));
-  EXPECT_TRUE(TestableXKeyboard::ContainsModifierKeyAsReplacement(
+  EXPECT_TRUE(XKeyboard::ContainsModifierKeyAsReplacement(
       GetMap(kSearchKey, kVoidKey, kVoidKey), kSearchKey));
 }
 
@@ -384,12 +364,12 @@ TEST_F(XKeyboardTest, TestSetAutoRepeatEnabled) {
     LOG(INFO) << "X server is not available. Skip the test.";
     return;
   }
-  const bool state = TestableXKeyboard::GetAutoRepeatEnabled();
-  TestableXKeyboard::SetAutoRepeatEnabled(!state);
-  EXPECT_EQ(!state, TestableXKeyboard::GetAutoRepeatEnabled());
+  const bool state = XKeyboard::GetAutoRepeatEnabledForTesting();
+  XKeyboard::SetAutoRepeatEnabled(!state);
+  EXPECT_EQ(!state, XKeyboard::GetAutoRepeatEnabledForTesting());
   // Restore the initial state.
-  TestableXKeyboard::SetAutoRepeatEnabled(state);
-  EXPECT_EQ(state, TestableXKeyboard::GetAutoRepeatEnabled());
+  XKeyboard::SetAutoRepeatEnabled(state);
+  EXPECT_EQ(state, XKeyboard::GetAutoRepeatEnabledForTesting());
 }
 
 TEST_F(XKeyboardTest, TestSetAutoRepeatRate) {
@@ -398,19 +378,19 @@ TEST_F(XKeyboardTest, TestSetAutoRepeatRate) {
     return;
   }
   AutoRepeatRate rate;
-  EXPECT_TRUE(TestableXKeyboard::GetAutoRepeatRate(&rate));
+  EXPECT_TRUE(XKeyboard::GetAutoRepeatRateForTesting(&rate));
 
   AutoRepeatRate tmp(rate);
   ++tmp.initial_delay_in_ms;
   ++tmp.repeat_interval_in_ms;
-  EXPECT_TRUE(TestableXKeyboard::SetAutoRepeatRate(tmp));
-  EXPECT_TRUE(TestableXKeyboard::GetAutoRepeatRate(&tmp));
+  EXPECT_TRUE(XKeyboard::SetAutoRepeatRate(tmp));
+  EXPECT_TRUE(XKeyboard::GetAutoRepeatRateForTesting(&tmp));
   EXPECT_EQ(rate.initial_delay_in_ms + 1, tmp.initial_delay_in_ms);
   EXPECT_EQ(rate.repeat_interval_in_ms + 1, tmp.repeat_interval_in_ms);
 
   // Restore the initial state.
-  EXPECT_TRUE(TestableXKeyboard::SetAutoRepeatRate(rate));
-  EXPECT_TRUE(TestableXKeyboard::GetAutoRepeatRate(&tmp));
+  EXPECT_TRUE(XKeyboard::SetAutoRepeatRate(rate));
+  EXPECT_TRUE(XKeyboard::GetAutoRepeatRateForTesting(&tmp));
   EXPECT_EQ(rate.initial_delay_in_ms, tmp.initial_delay_in_ms);
   EXPECT_EQ(rate.repeat_interval_in_ms, tmp.repeat_interval_in_ms);
 }

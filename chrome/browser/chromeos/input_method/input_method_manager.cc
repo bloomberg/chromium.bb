@@ -11,6 +11,7 @@
 #include "unicode/uloc.h"
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/message_loop.h"
 #include "base/process_util.h"
@@ -147,7 +148,7 @@ class InputMethodManagerImpl
         shutting_down_(false),
         ibus_daemon_process_handle_(base::kNullProcessHandle),
         util_(ibus_controller_->GetSupportedInputMethods()),
-        xkeyboard_(util_) {
+        xkeyboard_(XKeyboard::Create(util_)) {
     // Observe APP_TERMINATING to stop input method daemon gracefully.
     // We should not use APP_EXITING here since logout might be canceled by
     // JavaScript after APP_EXITING is sent (crosbug.com/11055).
@@ -522,7 +523,7 @@ class InputMethodManagerImpl
   }
 
   virtual XKeyboard* GetXKeyboard() {
-    return &xkeyboard_;
+    return xkeyboard_.get();
   }
 
   virtual HotkeyManager* GetHotkeyManager() {
@@ -950,7 +951,7 @@ class InputMethodManagerImpl
       current_input_method_ = new_input_method;
 
       // Change the keyboard layout to a preferred layout for the input method.
-      if (!xkeyboard_.SetCurrentKeyboardLayoutByName(
+      if (!xkeyboard_->SetCurrentKeyboardLayoutByName(
               current_input_method_.keyboard_layout())) {
         LOG(ERROR) << "Failed to change keyboard layout to "
                    << current_input_method_.keyboard_layout();
@@ -1415,7 +1416,7 @@ class InputMethodManagerImpl
 
   // An object for switching XKB layouts and keyboard status like caps lock and
   // auto-repeat interval.
-  XKeyboard xkeyboard_;
+  scoped_ptr<XKeyboard> xkeyboard_;
 
   // An object which detects Control+space and Shift+Alt key presses.
   HotkeyManager hotkey_manager_;
