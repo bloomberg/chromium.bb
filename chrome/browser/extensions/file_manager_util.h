@@ -59,6 +59,8 @@ void ViewFile(const FilePath& full_path, bool enqueue);
 // can't directly handle this type of file.
 bool TryViewingFile(const FilePath& file, bool enqueue);
 
+void InstallCRX(Profile* profile, const FilePath& full_path);
+
 }  // namespace file_manager_util
 
 #endif  // CHROME_BROWSER_EXTENSIONS_FILE_MANAGER_UTIL_H_

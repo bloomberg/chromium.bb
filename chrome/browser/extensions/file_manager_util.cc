@@ -11,6 +11,9 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/extensions/crx_installer.h"
+#include "chrome/browser/extensions/extension_install_ui.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/plugin_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/simple_message_box.h"
@@ -57,6 +60,7 @@ const char kMediaPlayerPlaylistUrl[] = FILEBROWSER_URL("playlist.html");
 #undef FILEBROWSER_URL
 #undef FILEBROWSER_DOMAIN
 
+const char kCRXExtension[] = ".crx";
 const char kPdfExtension[] = ".pdf";
 // List of file extension we can open in tab.
 const char* kBrowserSupportedExtensions[] = {
@@ -86,27 +90,31 @@ const char* kUMATrackingExtensions[] = {
   ".mov", ".mpg", ".log"
 };
 
-bool IsSupportedBrowserExtension(const char* ext) {
+bool IsSupportedBrowserExtension(const char* file_extension) {
   for (size_t i = 0; i < arraysize(kBrowserSupportedExtensions); i++) {
-    if (base::strcasecmp(ext, kBrowserSupportedExtensions[i]) == 0) {
+    if (base::strcasecmp(file_extension, kBrowserSupportedExtensions[i]) == 0) {
       return true;
     }
   }
   return false;
 }
 
-bool IsSupportedAVExtension(const char* ext) {
+bool IsSupportedAVExtension(const char* file_extension) {
   for (size_t i = 0; i < arraysize(kAVExtensions); i++) {
-    if (base::strcasecmp(ext, kAVExtensions[i]) == 0) {
+    if (base::strcasecmp(file_extension, kAVExtensions[i]) == 0) {
       return true;
     }
   }
   return false;
+}
+
+bool IsCRXFile(const char* file_extension) {
+  return base::strcasecmp(file_extension, kCRXExtension) == 0;
 }
 
 // If pdf plugin is enabled, we should open pdf files in a tab.
-bool ShouldBeOpenedWithPdfPlugin(const char* ext) {
-  if (base::strcasecmp(ext, kPdfExtension) != 0)
+bool ShouldBeOpenedWithPdfPlugin(const char* file_extension) {
+  if (base::strcasecmp(file_extension, kPdfExtension) != 0)
     return false;
 
   Browser* browser = BrowserList::GetLastActive();
@@ -129,11 +137,11 @@ bool ShouldBeOpenedWithPdfPlugin(const char* ext) {
 
 // Returns index |ext| has in the |array|. If there is no |ext| in |array|, last
 // element's index is return (last element should have irrelevant value).
-int UMAExtensionIndex(const char *ext,
+int UMAExtensionIndex(const char *file_extension,
                       const char** array,
                       size_t array_size) {
   for (size_t i = 0; i < array_size; i++) {
-    if (base::strcasecmp(ext, array[i]) == 0) {
+    if (base::strcasecmp(file_extension, array[i]) == 0) {
       return i;
     }
   }
@@ -342,17 +350,17 @@ bool TryViewingFile(const FilePath& full_path, bool enqueue) {
   if (!browser)
     return true;
 
-  std::string ext = full_path.Extension();
+  std::string file_extension = full_path.Extension();
   // For things supported natively by the browser, we should open it
   // in a tab.
-  if (IsSupportedBrowserExtension(ext.data()) ||
-      ShouldBeOpenedWithPdfPlugin(ext.data())) {
+  if (IsSupportedBrowserExtension(file_extension.data()) ||
+      ShouldBeOpenedWithPdfPlugin(file_extension.data())) {
     browser->AddSelectedTabWithURL(net::FilePathToFileURL(full_path),
                                    content::PAGE_TRANSITION_LINK);
     return true;
   }
 #if defined(OS_CHROMEOS)
-  if (IsSupportedAVExtension(ext.data())) {
+  if (IsSupportedAVExtension(file_extension.data())) {
     MediaPlayer* mediaplayer = MediaPlayer::GetInstance();
 
     if (mediaplayer->GetPlaylist().empty())
@@ -370,14 +378,32 @@ bool TryViewingFile(const FilePath& full_path, bool enqueue) {
   }
 #endif  // OS_CHROMEOS
 
+  if (IsCRXFile(file_extension.data())) {
+    InstallCRX(browser->profile(), full_path);
+    return true;
+  }
+
   // Unknown file type. Record UMA and show an error message.
-  size_t extension_index = UMAExtensionIndex(ext.data(),
+  size_t extension_index = UMAExtensionIndex(file_extension.data(),
                                              kUMATrackingExtensions,
                                              arraysize(kUMATrackingExtensions));
   UMA_HISTOGRAM_ENUMERATION("FileBrowser.OpeningFileType",
                             extension_index,
                             arraysize(kUMATrackingExtensions) - 1);
   return false;
+}
+
+void InstallCRX(Profile* profile, const FilePath& full_path) {
+  ExtensionService* service = profile->GetExtensionService();
+  CHECK(service);
+  if (!service)
+    return;
+
+  scoped_refptr<CrxInstaller> installer(CrxInstaller::Create(service,
+                                            new ExtensionInstallUI(profile)));
+  installer->set_is_gallery_install(false);
+  installer->set_allow_silent_install(false);
+  installer->InstallCrx(full_path);
 }
 
 }  // namespace file_manager_util
