@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -433,6 +433,10 @@ void ParamTraits<base::FileDescriptor>::Log(const param_type& p,
 #endif  // defined(OS_POSIX)
 
 void ParamTraits<IPC::ChannelHandle>::Write(Message* m, const param_type& p) {
+#if defined(OS_WIN)
+  // On Windows marshalling pipe handle is not supported.
+  DCHECK(p.pipe.handle == NULL);
+#endif  // defined (OS_WIN)
   WriteParam(m, p.name);
 #if defined(OS_POSIX)
   WriteParam(m, p.socket);

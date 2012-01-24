@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -114,11 +114,39 @@ const std::wstring Channel::ChannelImpl::PipeName(
 bool Channel::ChannelImpl::CreatePipe(const IPC::ChannelHandle &channel_handle,
                                       Mode mode) {
   DCHECK_EQ(INVALID_HANDLE_VALUE, pipe_);
-  const std::wstring pipe_name = PipeName(channel_handle.name);
-  if (mode & MODE_SERVER_FLAG) {
+  string16 pipe_name;
+  // If we already have a valid pipe for channel just copy it.
+  if (channel_handle.pipe.handle) {
+    DCHECK(channel_handle.name.empty());
+    pipe_name = L"Not Available";  // Just used for LOG
+    // Check that the given pipe confirms to the specified mode.  We can
+    // only check for PIPE_TYPE_MESSAGE & PIPE_SERVER_END flags since the
+    // other flags (PIPE_TYPE_BYTE, and PIPE_CLIENT_END) are defined as 0.
+    DWORD flags = 0;
+    GetNamedPipeInfo(channel_handle.pipe.handle, &flags, NULL, NULL, NULL);
+    DCHECK(!(flags & PIPE_TYPE_MESSAGE));
+    if (((mode & MODE_SERVER_FLAG) && !(flags & PIPE_SERVER_END)) ||
+        ((mode & MODE_CLIENT_FLAG) && (flags & PIPE_SERVER_END))) {
+      LOG(WARNING) << "Inconsistent open mode. Mode :" << mode;
+      return false;
+    }
+    if (!DuplicateHandle(GetCurrentProcess(),
+                         channel_handle.pipe.handle,
+                         GetCurrentProcess(),
+                         &pipe_,
+                         0,
+                         FALSE,
+                         DUPLICATE_SAME_ACCESS)) {
+      LOG(WARNING) << "DuplicateHandle failed. Error :" << GetLastError();
+      return false;
+    }
+  } else if (mode & MODE_SERVER_FLAG) {
+    DCHECK(!channel_handle.pipe.handle);
+    const DWORD open_mode = PIPE_ACCESS_DUPLEX | FILE_FLAG_OVERLAPPED |
+                            FILE_FLAG_FIRST_PIPE_INSTANCE;
+    pipe_name = PipeName(channel_handle.name);
     pipe_ = CreateNamedPipeW(pipe_name.c_str(),
-                             PIPE_ACCESS_DUPLEX | FILE_FLAG_OVERLAPPED |
-                              FILE_FLAG_FIRST_PIPE_INSTANCE,
+                             open_mode,
                              PIPE_TYPE_BYTE | PIPE_READMODE_BYTE,
                              1,
                              Channel::kReadBufferSize,
@@ -126,6 +154,8 @@ bool Channel::ChannelImpl::CreatePipe(const IPC::ChannelHandle &channel_handle,
                              5000,
                              NULL);
   } else if (mode & MODE_CLIENT_FLAG) {
+    DCHECK(!channel_handle.pipe.handle);
+    pipe_name = PipeName(channel_handle.name);
     pipe_ = CreateFileW(pipe_name.c_str(),
                         GENERIC_READ | GENERIC_WRITE,
                         0,
@@ -137,6 +167,7 @@ bool Channel::ChannelImpl::CreatePipe(const IPC::ChannelHandle &channel_handle,
   } else {
     NOTREACHED();
   }
+
   if (pipe_ == INVALID_HANDLE_VALUE) {
     // If this process is being closed, the pipe may be gone already.
     LOG(WARNING) << "Unable to create pipe \"" << pipe_name <<

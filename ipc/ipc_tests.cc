@@ -240,6 +240,47 @@ TEST_F(IPCChannelTest, ChannelTest) {
   base::CloseProcessHandle(process_handle);
 }
 
+#if defined(OS_WIN)
+TEST_F(IPCChannelTest, ChannelTestExistingPipe) {
+  MyChannelListener channel_listener;
+  // Setup IPC channel with existing pipe. Specify name in Chrome format.
+  std::string name("\\\\.\\pipe\\chrome.");
+  name.append(kTestClientChannel);
+  const DWORD open_mode = PIPE_ACCESS_DUPLEX | FILE_FLAG_OVERLAPPED |
+                          FILE_FLAG_FIRST_PIPE_INSTANCE;
+  HANDLE pipe = CreateNamedPipeA(name.c_str(),
+                                 open_mode,
+                                 PIPE_TYPE_BYTE | PIPE_READMODE_BYTE,
+                                 1,
+                                 4096,
+                                 4096,
+                                 5000,
+                                 NULL);
+  IPC::Channel chan(IPC::ChannelHandle(pipe), IPC::Channel::MODE_SERVER,
+                    &channel_listener);
+  // Channel will duplicate the handle.
+  CloseHandle(pipe);
+  ASSERT_TRUE(chan.Connect());
+
+  channel_listener.Init(&chan);
+
+  base::ProcessHandle process_handle = SpawnChild(TEST_CLIENT, &chan);
+  ASSERT_TRUE(process_handle);
+
+  Send(&chan, "hello from parent");
+
+  // Run message loop.
+  MessageLoop::current()->Run();
+
+  // Close Channel so client gets its OnChannelError() callback fired.
+  chan.Close();
+
+  // Cleanup child process.
+  EXPECT_TRUE(base::WaitForSingleProcess(process_handle, 5000));
+  base::CloseProcessHandle(process_handle);
+}
+#endif  // defined (OS_WIN)
+
 TEST_F(IPCChannelTest, ChannelProxyTest) {
   MyChannelListener channel_listener;
 
