@@ -20,16 +20,12 @@ const uint64 kEbmlUnknownValue = 0x01FFFFFFFFFFFFFFULL;
 // Writes out |value| in Big Endian order. Returns 0 on success.
 int32 SerializeInt(IMkvWriter* writer, int64 value, int32 size);
 
-// Returns the size in bytes of the element. |master| must be set to true if
-// the element is an Mkv master element.
-// TODO(fgalligan): Change these functions so they are master element aware.
-uint64 EbmlElementSize(uint64 type, uint64 value, bool master);
-uint64 EbmlElementSize(uint64 type, float value, bool master);
-uint64 EbmlElementSize(uint64 type, const char* value, bool master);
-uint64 EbmlElementSize(uint64 type,
-                       const uint8* value,
-                       uint64 size,
-                       bool master);
+// Returns the size in bytes of the element.
+uint64 EbmlMasterElementSize(uint64 type, uint64 value);
+uint64 EbmlElementSize(uint64 type, uint64 value);
+uint64 EbmlElementSize(uint64 type, float value);
+uint64 EbmlElementSize(uint64 type, const char* value);
+uint64 EbmlElementSize(uint64 type, const uint8* value, uint64 size);
 
 // Creates an EBML coded number from |value| and writes it out. The size of
 // the coded number is determined by the value of |value|. |value| must not
