@@ -956,8 +956,8 @@ TEST_F(TranslateManagerTest, ServerReportsUnsupportedLanguage) {
   EXPECT_TRUE(GetTranslateInfoBar() == NULL);
 }
 
-// Tests that no translate infobar is shown when Chrome is in a language that
-// the translate server does not support.
+// Tests that no translate infobar is shown and context menu is disabled, when
+// Chrome is in a language that the translate server does not support.
 TEST_F(TranslateManagerTest, UnsupportedUILanguage) {
   std::string original_lang = g_browser_process->GetApplicationLocale();
   g_browser_process->SetApplicationLocale("qbz");
@@ -974,6 +974,13 @@ TEST_F(TranslateManagerTest, UnsupportedUILanguage) {
 
   // No info-bar should be shown.
   EXPECT_TRUE(GetTranslateInfoBar() == NULL);
+
+  // And the context menu option should be disabled too.
+  scoped_ptr<TestRenderViewContextMenu> menu(
+      TestRenderViewContextMenu::CreateContextMenu(contents()));
+  menu->Init();
+  EXPECT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_TRANSLATE));
+  EXPECT_FALSE(menu->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_TRANSLATE));
 
   g_browser_process->SetApplicationLocale(original_lang);
 }

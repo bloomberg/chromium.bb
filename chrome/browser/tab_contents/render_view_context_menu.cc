@@ -1131,7 +1131,10 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
                  TranslateManager::IsSupportedLanguage(original_lang)) &&
              !helper->language_state().IsPageTranslated() &&
              !source_web_contents_->GetInterstitialPage() &&
-             TranslateManager::IsTranslatableURL(params_.page_url);
+             TranslateManager::IsTranslatableURL(params_.page_url) &&
+             // There are some application locales which can't be used as a
+             // target language for translation.
+             TranslateManager::IsSupportedLanguage(target_lang);
     }
 
     case IDC_CONTENT_CONTEXT_OPENLINKNEWTAB:
