@@ -8,7 +8,7 @@ namespace extensions {
 
 // Item
 struct ProcessMap::Item {
-  Item() {
+  Item() : process_id(0), site_instance_id(0) {
   }
 
   // Purposely implicit constructor needed on older gcc's. See:

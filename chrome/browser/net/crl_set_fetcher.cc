@@ -20,7 +20,7 @@
 
 using content::BrowserThread;
 
-CRLSetFetcher::CRLSetFetcher() {
+CRLSetFetcher::CRLSetFetcher() : cus_(NULL) {
 }
 
 CRLSetFetcher::~CRLSetFetcher() {

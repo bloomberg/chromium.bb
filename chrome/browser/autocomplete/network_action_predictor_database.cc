@@ -65,7 +65,9 @@ void LogDatabaseStats(const FilePath& db_path, sql::Connection* db) {
 
 }
 
-NetworkActionPredictorDatabase::Row::Row() {
+NetworkActionPredictorDatabase::Row::Row()
+    : number_of_hits(0),
+      number_of_misses(0) {
 }
 
 NetworkActionPredictorDatabase::Row::Row(const Row::Id& id,

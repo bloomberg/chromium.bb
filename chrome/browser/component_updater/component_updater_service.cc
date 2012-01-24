@@ -209,7 +209,7 @@ struct CrxUpdateItem {
 
 typedef ComponentUpdateService::Configurator Config;
 
-CrxComponent::CrxComponent() {}
+CrxComponent::CrxComponent() : installer(NULL) {}
 CrxComponent::~CrxComponent() {}
 
 //////////////////////////////////////////////////////////////////////////////

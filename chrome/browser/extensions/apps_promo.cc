@@ -58,7 +58,7 @@ std::string GetStringPref(const char* path, const std::string& fallback) {
 
 } // namespace
 
-AppsPromo::PromoData::PromoData() {}
+AppsPromo::PromoData::PromoData() : user_group(AppsPromo::USERS_NONE) {}
 AppsPromo::PromoData::PromoData(const std::string& id,
                                 const std::string& header,
                                 const std::string& button,

@@ -160,7 +160,8 @@ void MakeBitmapOpaque(const SkBitmap& bitmap) {
 
 }  // namespace
 
-Clipboard::FormatType::FormatType() {
+// '0' is not a valid clip board data format.
+Clipboard::FormatType::FormatType() : data_(0) {
 }
 
 Clipboard::FormatType::FormatType(UINT native_format) : data_(native_format) {

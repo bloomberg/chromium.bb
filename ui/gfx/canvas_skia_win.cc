@@ -464,8 +464,8 @@ void CanvasSkia::DrawFadeTruncatingString(
   int flags = NO_ELLIPSIS;
 
   // If the whole string fits in the destination then just draw it directly.
-  int total_string_width;
-  int total_string_height;
+  int total_string_width = 0;
+  int total_string_height = 0;
   SizeStringInt(text, font, &total_string_width, &total_string_height,
                 flags | TEXT_VALIGN_TOP);
 

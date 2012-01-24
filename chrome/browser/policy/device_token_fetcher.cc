@@ -37,7 +37,9 @@ DeviceTokenFetcher::DeviceTokenFetcher(
     DeviceManagementService* service,
     CloudPolicyCacheBase* cache,
     CloudPolicyDataStore* data_store,
-    PolicyNotifier* notifier) {
+    PolicyNotifier* notifier)
+    : effective_token_fetch_error_delay_ms_(
+          kTokenFetchErrorDelayMilliseconds) {
   Initialize(service,
              cache,
              data_store,
@@ -50,7 +52,9 @@ DeviceTokenFetcher::DeviceTokenFetcher(
     CloudPolicyCacheBase* cache,
     CloudPolicyDataStore* data_store,
     PolicyNotifier* notifier,
-    DelayedWorkScheduler* scheduler) {
+    DelayedWorkScheduler* scheduler)
+    : effective_token_fetch_error_delay_ms_(
+          kTokenFetchErrorDelayMilliseconds) {
   Initialize(service, cache, data_store, notifier, scheduler);
 }
 

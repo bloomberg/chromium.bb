@@ -11,7 +11,7 @@
 #include "chrome/browser/ui/browser_window.h"
 
 BookmarkEditor::EditDetails::EditDetails(Type node_type)
-    : type(node_type), existing_node(NULL), parent_node(NULL) {
+    : type(node_type), existing_node(NULL), parent_node(NULL), index(-1) {
 }
 
 BookmarkEditor::EditDetails BookmarkEditor::EditDetails::EditNode(

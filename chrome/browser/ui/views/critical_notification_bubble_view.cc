@@ -51,7 +51,10 @@ const int kRefreshBubbleEvery = 1000;  // Millisecond.
 
 CriticalNotificationBubbleView::CriticalNotificationBubbleView(
     views::View* anchor_view)
-    : BubbleDelegateView(anchor_view, views::BubbleBorder::TOP_RIGHT) {
+    : BubbleDelegateView(anchor_view, views::BubbleBorder::TOP_RIGHT),
+      headline_(NULL),
+      restart_button_(NULL),
+      dismiss_button_(NULL) {
   set_close_on_deactivate(false);
 }
 

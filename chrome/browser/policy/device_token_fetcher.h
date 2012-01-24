@@ -115,10 +115,7 @@ class DeviceTokenFetcher {
   PolicyNotifier* notifier_;
 
   // Refresh parameters.
-  int64 token_fetch_error_delay_ms_;
-  int64 token_fetch_error_max_delay_ms_;
   int64 effective_token_fetch_error_delay_ms_;
-  int64 unmanaged_device_refresh_rate_ms_;
 
   // State the fetcher is currently in.
   FetcherState state_;

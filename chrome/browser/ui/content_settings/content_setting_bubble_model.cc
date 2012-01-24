@@ -35,6 +35,7 @@ using content::WebContents;
 using content_settings::SettingInfo;
 using content_settings::SettingSource;
 using content_settings::SETTING_SOURCE_USER;
+using content_settings::SETTING_SOURCE_NONE;
 
 namespace {
 struct ContentSettingsTypeIdEntry {
@@ -262,7 +263,7 @@ class ContentSettingSingleRadioGroup
     HostContentSettingsMap* map = profile()->GetHostContentSettingsMap();
     CookieSettings* cookie_settings = CookieSettings::GetForProfile(profile());
     ContentSetting most_restrictive_setting;
-    SettingSource most_restrictive_setting_source;
+    SettingSource most_restrictive_setting_source = SETTING_SOURCE_NONE;
 
     if (resources.empty()) {
       if (content_type() == CONTENT_SETTINGS_TYPE_COOKIES) {
@@ -557,7 +558,8 @@ ContentSettingBubbleModel::DomainList::DomainList() {}
 ContentSettingBubbleModel::DomainList::~DomainList() {}
 
 ContentSettingBubbleModel::BubbleContent::BubbleContent()
-    : custom_link_enabled(false) {
+    : radio_group_enabled(false),
+      custom_link_enabled(false) {
 }
 
 ContentSettingBubbleModel::BubbleContent::~BubbleContent() {}

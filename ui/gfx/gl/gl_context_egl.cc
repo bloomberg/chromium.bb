@@ -34,8 +34,9 @@ std::string GLContextEGL::GetExtensions() {
 
 GLContextEGL::GLContextEGL(GLShareGroup* share_group)
     : GLContext(share_group),
-      context_(NULL)
-{
+      context_(NULL),
+      display_(NULL),
+      config_(NULL) {
 }
 
 GLContextEGL::~GLContextEGL() {

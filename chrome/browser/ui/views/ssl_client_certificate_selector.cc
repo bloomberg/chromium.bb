@@ -95,7 +95,10 @@ SSLClientCertificateSelector::SSLClientCertificateSelector(
       delegate_(delegate),
       model_(new CertificateSelectorTableModel(cert_request_info)),
       wrapper_(wrapper),
-      window_(NULL) {
+      window_(NULL),
+      table_(NULL),
+      view_cert_button_(NULL),
+      view_cert_button_container_(NULL) {
   DVLOG(1) << __FUNCTION__;
 }
 

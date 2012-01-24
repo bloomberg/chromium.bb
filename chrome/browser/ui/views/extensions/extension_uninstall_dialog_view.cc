@@ -96,7 +96,9 @@ class ExtensionUninstallDialogDelegateView : public views::DialogDelegateView {
 
 ExtensionUninstallDialogViews::ExtensionUninstallDialogViews(
     Profile* profile, ExtensionUninstallDialog::Delegate* delegate)
-    : ExtensionUninstallDialog(profile, delegate) {}
+    : ExtensionUninstallDialog(profile, delegate),
+      view_(NULL) {
+}
 
 ExtensionUninstallDialogViews::~ExtensionUninstallDialogViews() {
   // Close the widget (the views framework will delete view_).

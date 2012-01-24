@@ -251,6 +251,11 @@ BookmarkBubbleView::BookmarkBubbleView(views::View* anchor_view,
       parent_model_(
           profile_->GetBookmarkModel(),
           profile_->GetBookmarkModel()->GetMostRecentlyAddedNodeForURL(url)),
+      remove_link_(NULL),
+      edit_button_(NULL),
+      close_button_(NULL),
+      title_tf_(NULL),
+      parent_combobox_(NULL),
       remove_bookmark_(false),
       apply_edits_(true) {
 }

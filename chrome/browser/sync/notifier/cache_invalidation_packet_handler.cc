@@ -121,7 +121,6 @@ class CacheInvalidationListenTask : public buzz::XmppTask {
     return true;
   }
 
-  std::string* channel_context_;
   base::Callback<void(const std::string&)> callback_;
   base::Callback<void(const std::string&)> context_change_callback_;
   DISALLOW_COPY_AND_ASSIGN(CacheInvalidationListenTask);
