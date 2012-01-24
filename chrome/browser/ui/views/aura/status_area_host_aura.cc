@@ -30,8 +30,8 @@
 #include "chrome/browser/chromeos/login/proxy_settings_dialog.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/status/clock_updater.h"
 #include "chrome/browser/chromeos/status/status_area_view_chromeos.h"
-#include "chrome/browser/chromeos/status/timezone_clock_updater.h"
 #include "ui/gfx/native_widget_types.h"
 #endif
 
@@ -71,8 +71,8 @@ views::Widget* StatusAreaHostAura::CreateStatusArea() {
   chromeos::StatusAreaViewChromeos::AddChromeosButtons(status_area_view_,
                                                        this,
                                                        &clock);
-  DCHECK(clock);
-  timezone_clock_updater_.reset(new TimezoneClockUpdater(clock));
+  if (clock)
+    clock_updater_.reset(new ClockUpdater(clock));
 #else
   const bool border = true;
   const bool no_border = false;

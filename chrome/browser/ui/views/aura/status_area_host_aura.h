@@ -17,8 +17,8 @@
 #include "chrome/browser/chromeos/login/login_html_dialog.h"
 #endif
 
+class ClockUpdater;
 class StatusAreaView;
-class TimezoneClockUpdater;
 
 namespace views {
 class Views;
@@ -69,7 +69,7 @@ class StatusAreaHostAura : public StatusAreaButton::Delegate,
   // Proxy settings dialog that can be invoked from network menu.
   scoped_ptr<chromeos::LoginHtmlDialog> proxy_settings_dialog_;
 
-  scoped_ptr<TimezoneClockUpdater> timezone_clock_updater_;
+  scoped_ptr<ClockUpdater> clock_updater_;
 #endif
 
   content::NotificationRegistrar registrar_;
