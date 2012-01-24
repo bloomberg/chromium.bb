@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "remoting/protocol/authentication_method.h"
 
 namespace remoting {
 
@@ -20,7 +21,9 @@ struct ClientConfig {
   std::string host_jid;
   std::string host_public_key;
 
-  std::string authentication_code;
+  std::string shared_secret;
+  protocol::AuthenticationMethod authentication_method;
+  std::string authentication_tag;
 };
 
 }  // namespace remoting

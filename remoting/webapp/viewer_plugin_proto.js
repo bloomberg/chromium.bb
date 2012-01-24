@@ -26,12 +26,17 @@ remoting.ViewerPlugin.prototype.releaseAllKeys = function() {};
  * @param {string} hostJid The host's JID.
  * @param {string} hostPublicKey The host's public key.
  * @param {string} clientJid The client's JID.
- * @param {string} authenticationCode The access code for IT2Me or the
- * PIN for Me2Me.
+ * @param {string} sharedSecret The access code for IT2Me or the
+ *     PIN for Me2Me.
+ * @param {string=} authenticationMethods Comma-separated list of
+ *     authentication methods the client should attempt to use.
+ * @param {string=} authenticationTag A host-specific tag to mix into
+ *     authentication hashes.
  * @return {void} Nothing.
 */
 remoting.ViewerPlugin.prototype.connect =
-    function(hostJid, hostPublicKey, clientJid, authenticationCode) {};
+    function(hostJid, hostPublicKey, clientJid, sharedSecret,
+             authenticationMethod, authenticationTag) {};
 
 /** @type {function(number, number): void} State change callback function. */
 remoting.ViewerPlugin.prototype.connectionInfoUpdate;

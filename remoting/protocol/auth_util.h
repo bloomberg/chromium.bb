@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,8 +23,15 @@ extern const char kHostAuthSslExporterLabel[];
 // Fake hostname used for SSL connections.
 extern const char kSslFakeHostName[];
 
-// Size of the HMAC-SHA-256 authentication digest.
+// Size of the HMAC-SHA-256 hash used as shared secret in SPAKE2.
+const size_t kSharedSecretHashLength = 32;
+
+// Size of the HMAC-SHA-256 digest used for channel authentication.
 const size_t kAuthDigestLength = 32;
+
+// TODO(sergeyu): The following two methods are used for V1
+// authentication. Remove them when we finally switch to V2
+// authentication method. crbug.com/110483 .
 
 // Generates auth token for the specified |jid| and |access_code|.
 std::string GenerateSupportAuthToken(const std::string& jid,

@@ -12,12 +12,12 @@
 #include "remoting/jingle_glue/javascript_signal_strategy.h"
 #include "remoting/jingle_glue/xmpp_signal_strategy.h"
 #include "remoting/protocol/auth_util.h"
+#include "remoting/protocol/authenticator.h"
 #include "remoting/protocol/client_control_dispatcher.h"
 #include "remoting/protocol/client_event_dispatcher.h"
 #include "remoting/protocol/client_stub.h"
 #include "remoting/protocol/jingle_session_manager.h"
 #include "remoting/protocol/pepper_session_manager.h"
-#include "remoting/protocol/v1_authenticator.h"
 #include "remoting/protocol/video_reader.h"
 #include "remoting/protocol/video_stub.h"
 #include "remoting/protocol/util.h"
@@ -51,24 +51,24 @@ HostStub* ConnectionToHost::host_stub() {
 }
 
 void ConnectionToHost::Connect(scoped_refptr<XmppProxy> xmpp_proxy,
-                               const std::string& your_jid,
+                               const std::string& local_jid,
                                const std::string& host_jid,
                                const std::string& host_public_key,
-                               const std::string& access_code,
+                               scoped_ptr<Authenticator> authenticator,
                                HostEventCallback* event_callback,
                                ClientStub* client_stub,
                                VideoStub* video_stub) {
   event_callback_ = event_callback;
   client_stub_ = client_stub;
   video_stub_ = video_stub;
-  access_code_ = access_code;
+  authenticator_ = authenticator.Pass();
 
   // Save jid of the host. The actual connection is created later after
   // |signal_strategy_| is connected.
   host_jid_ = host_jid;
   host_public_key_ = host_public_key;
 
-  JavascriptSignalStrategy* strategy = new JavascriptSignalStrategy(your_jid);
+  JavascriptSignalStrategy* strategy = new JavascriptSignalStrategy(local_jid);
   strategy->AttachXmppProxy(xmpp_proxy);
   signal_strategy_.reset(strategy);
   signal_strategy_->AddListener(this);
@@ -126,10 +126,8 @@ void ConnectionToHost::OnSessionManagerReady() {
   // After SessionManager is initialized we can try to connect to the host.
   scoped_ptr<CandidateSessionConfig> candidate_config =
       CandidateSessionConfig::CreateDefault();
-  scoped_ptr<Authenticator> authenticator(
-      new V1ClientAuthenticator(signal_strategy_->GetLocalJid(), access_code_));
   session_ = session_manager_->Connect(
-      host_jid_, authenticator.Pass(), candidate_config.Pass(),
+      host_jid_, authenticator_.Pass(), candidate_config.Pass(),
       base::Bind(&ConnectionToHost::OnSessionStateChange,
                  base::Unretained(this)));
 }
