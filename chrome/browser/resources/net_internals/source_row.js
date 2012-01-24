@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -228,6 +228,8 @@ var SourceRow = (function() {
     onClicked_: function() {
       this.parentView_.clearSelection();
       this.setSelected(true);
+      if (this.isSelected())
+        this.parentView_.scrollToSourceId(this.getSourceId());
     },
 
     onMouseover_: function() {
@@ -246,6 +248,8 @@ var SourceRow = (function() {
 
     onCheckboxToggled_: function() {
       this.setSelected(this.getSelectionCheckbox().checked);
+      if (this.isSelected())
+        this.parentView_.scrollToSourceId(this.getSourceId());
     },
 
     getSelectionCheckbox: function() {

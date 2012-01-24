@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,6 @@
  *               the old net-internals is replaced.
  */
 
-var paintLogView;
 var printLogEntriesAsText;
 var proxySettingsToString;
 var stripCookiesAndLoginInfo;
@@ -16,36 +15,6 @@ var stripCookiesAndLoginInfo;
 // Start of anonymous namespace.
 (function() {
 'use strict';
-
-paintLogView = function(sourceEntries, node) {
-  for (var i = 0; i < sourceEntries.length; ++i) {
-    if (i != 0)
-      addNode(node, 'hr');
-    addSourceEntry_(node, sourceEntries[i]);
-  }
-}
-
-/**
- * Outputs descriptive text for |sourceEntry| and its events to |node|.
- */
-function addSourceEntry_(node, sourceEntry) {
-  var div = addNode(node, 'div');
-  div.className = 'logSourceEntry';
-
-  var p = addNode(div, 'p');
-  addNodeWithText(p, 'h4',
-                  sourceEntry.getSourceId() + ': ' +
-                      sourceEntry.getSourceTypeString());
-
-  if (sourceEntry.getDescription())
-    addNodeWithText(p, 'h4', sourceEntry.getDescription());
-
-  var logEntries = sourceEntry.getLogEntries();
-  var startDate = timeutil.convertTimeTicksToDate(logEntries[0].time);
-  addNodeWithText(p, 'div', 'Start Time: ' + startDate.toLocaleString());
-
-  sourceEntry.printAsText(div);
-}
 
 function canCollapseBeginWithEnd(beginEntry) {
   return beginEntry &&
@@ -230,7 +199,19 @@ function addRowsForExtraParams(tablePrinter, entry, enableSecurityStripping) {
           continue;
         }
 
-        var paramStr = ' --> ' + k + ' = ' + JSON.stringify(value);
+        var paramStr = ' --> ' + k + ' = ';
+
+        // Handle source_dependency entries - add link and map source type to
+        // string.
+        if (k == 'source_dependency' && typeof value == 'object') {
+          var link = '#events&s=' + value.id;
+          var sourceType = getKeyWithValue(LogSourceType, value.type);
+          paramStr += value.id + ' (' + sourceType + ')';
+          addTextRows(tablePrinter, paramStr, link);
+          continue;
+        }
+
+        paramStr += JSON.stringify(value);
 
         // Append the symbolic name for certain constants. (This relies
         // on particular naming of event parameters to infer the type).
@@ -242,12 +223,7 @@ function addRowsForExtraParams(tablePrinter, entry, enableSecurityStripping) {
           }
         }
 
-        var link = null;
-        // Add link to source_dependency entries.
-        if (k == 'source_dependency' && typeof value == 'object')
-          link = '#events&s=' + value.id;
-
-        addTextRows(tablePrinter, paramStr, link);
+        addTextRows(tablePrinter, paramStr, null);
       }
   }
 }
