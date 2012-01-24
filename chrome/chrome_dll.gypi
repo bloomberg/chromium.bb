@@ -1,4 +1,4 @@
-# Copyright (c) 2012 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 {
@@ -16,7 +16,7 @@
             'app/policy/cloud_policy_codegen.gyp:policy',
           ],
           'conditions': [
-            ['use_webkit_compositor==1 and views_compositor==1', {
+            ['use_webkit_compositor==1', {
               'dependencies': [
                 '../ui/gfx/compositor/compositor.gyp:compositor',
               ],
