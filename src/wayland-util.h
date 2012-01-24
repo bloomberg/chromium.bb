@@ -107,32 +107,32 @@ int wl_list_empty(struct wl_list *list);
 void wl_list_insert_list(struct wl_list *list, struct wl_list *other);
 
 #ifdef __GNUC__
-#define __container_of(ptr, sample, member)				\
+#define __wl_container_of(ptr, sample, member)				\
 	(__typeof__(sample))((char *)(ptr)	-			\
 		 ((char *)&(sample)->member - (char *)(sample)))
 #else
-#define __container_of(ptr, sample, member)				\
+#define __wl_container_of(ptr, sample, member)				\
 	(void *)((char *)(ptr)	-				        \
 		 ((char *)&(sample)->member - (char *)(sample)))
 #endif
 
 #define wl_list_for_each(pos, head, member)				\
-	for (pos = 0, pos = __container_of((head)->next, pos, member);	\
+	for (pos = 0, pos = __wl_container_of((head)->next, pos, member);	\
 	     &pos->member != (head);					\
-	     pos = __container_of(pos->member.next, pos, member))
+	     pos = __wl_container_of(pos->member.next, pos, member))
 
 #define wl_list_for_each_safe(pos, tmp, head, member)			\
 	for (pos = 0, tmp = 0, 						\
-	     pos = __container_of((head)->next, pos, member),		\
-	     tmp = __container_of((pos)->member.next, tmp, member);	\
+	     pos = __wl_container_of((head)->next, pos, member),		\
+	     tmp = __wl_container_of((pos)->member.next, tmp, member);	\
 	     &pos->member != (head);					\
 	     pos = tmp,							\
-	     tmp = __container_of(pos->member.next, tmp, member))
+	     tmp = __wl_container_of(pos->member.next, tmp, member))
 
 #define wl_list_for_each_reverse(pos, head, member)			\
-	for (pos = 0, pos = __container_of((head)->prev, pos, member);	\
+	for (pos = 0, pos = __wl_container_of((head)->prev, pos, member);	\
 	     &pos->member != (head);					\
-	     pos = __container_of(pos->member.prev, pos, member))
+	     pos = __wl_container_of(pos->member.prev, pos, member))
 
 struct wl_array {
 	uint32_t size;
