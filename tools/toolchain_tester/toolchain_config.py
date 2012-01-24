@@ -232,14 +232,14 @@ PNACL_FRONTEND = PNACL_ROOT + '/bin/pnacl-clang'
 # NOTE: Our driver supports going from .c to .nexe in one go
 #       but it maybe useful to inspect the bitcode file so we
 #       split the compilation into two steps.
-PNACL_LD = PNACL_ROOT + '/bin/pnacl-clang'
+PNACL_LD = PNACL_ROOT + '/bin/pnacl-translate'
 
 COMMANDS_llvm_pnacl_arm = [
-    ('compile-bc',
-     '%(CC)s %(src)s %(CFLAGS)s -c -o %(tmp)s.bc',
+    ('compile-pexe',
+     '%(CC)s %(src)s %(CFLAGS)s -o %(tmp)s.pexe -lm -lstdc++',
      ),
     ('translate-arm',
-     '%(LD)s %(tmp)s.bc -lm -lstdc++ -o %(tmp)s.nexe',
+     '%(LD)s %(tmp)s.pexe -o %(tmp)s.nexe',
      ),
     ('qemu-sel_ldr',
      '%(EMU)s run %(SEL_LDR)s -B %(IRT)s -Q %(tmp)s.nexe',
@@ -283,11 +283,11 @@ TOOLCHAIN_CONFIGS['llvm_pnacl_arm_O3'] = ToolchainConfig(
 
 # NOTE: this is used for both x86 flavors
 COMMANDS_llvm_pnacl_x86_O0 = [
-    ('compile-bc',
-     '%(CC)s %(src)s %(CFLAGS)s -c -o %(tmp)s.bc',
+    ('compile-pexe',
+     '%(CC)s %(src)s %(CFLAGS)s -o %(tmp)s.pexe -lm -lstdc++',
      ),
     ('translate-x86',
-     '%(LD)s %(tmp)s.bc -lm -lstdc++ -o %(tmp)s.nexe ',
+     '%(LD)s %(tmp)s.pexe -o %(tmp)s.nexe ',
      ),
     ('sel_ldr',
      '%(SEL_LDR)s -B %(IRT)s %(tmp)s.nexe',
