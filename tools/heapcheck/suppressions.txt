@@ -923,7 +923,7 @@
    Heapcheck:Leak
    ...
    fun:gfx::CanvasSkia::SizeStringInt
-   fun:gfx::PlatformFont*::GetStringWidth
+   fun:gfx::CanvasSkia::GetStringWidth
    fun:gfx::Font::GetStringWidth
    ...
    fun:ui::TextEliderTest_*_Test::TestBody
