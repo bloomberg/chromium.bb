@@ -73,19 +73,16 @@
 #include <stdio.h>
 #include <sys/mman.h>
 #include <sys/prctl.h>
+#include <sys/syscall.h>
+#include <sys/wait.h>
+#include <unistd.h>
+
 #if !defined(__ANDROID__)
 #include <sys/signal.h>
-#endif
-#include <sys/syscall.h>
-#if !defined(__ANDROID__)
 #include <sys/ucontext.h>
 #include <sys/user.h>
-#endif
-#include <sys/wait.h>
-#if !defined(__ANDROID__)
 #include <ucontext.h>
 #endif
-#include <unistd.h>
 
 #include <algorithm>
 #include <utility>
@@ -400,7 +397,7 @@ bool ExceptionHandler::GenerateDump(CrashContext *context) {
       &thread_arg, NULL, NULL, NULL);
   int r, status;
   // Allow the child to ptrace us
-  prctl(PR_SET_PTRACER, child, 0, 0, 0);
+  sys_prctl(PR_SET_PTRACER, child);
   SendContinueSignalToChild();
   do {
     r = sys_waitpid(child, &status, __WALL);
