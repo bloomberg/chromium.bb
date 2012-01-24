@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
+#include "chrome/browser/download/download_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/common/chrome_paths.h"
@@ -413,6 +414,9 @@ void Downloader::OnFileStreamCreatedOnUIThread(const GURL& url,
     save_info.file_path = file_path;
     save_info.file_stream = linked_ptr<net::FileStream>(created_file_stream);
     DownloadStarted(true, url);
+
+    download_util::RecordDownloadCount(
+        download_util::INITIATED_BY_IMAGE_BURNER_COUNT);
     download_manager->DownloadUrlToFile(
         url,
         web_contents->GetURL(),

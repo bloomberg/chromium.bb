@@ -26,9 +26,11 @@ namespace download_stats {
 enum DownloadCountTypes {
   // The download was initiated by navigating to a URL (e.g. by user
   // click).
+  // This is now unused, but left around so that the values don't change.
   INITIATED_BY_NAVIGATION_COUNT = 0,
 
   // The download was initiated by invoking a context menu within a page.
+  // This is now unused, but left around so that the values don't change.
   INITIATED_BY_CONTEXT_MENU_COUNT,
 
   // The download was initiated when the SavePackage system rejected
@@ -117,11 +119,6 @@ void RecordHistorySize(int size);
 
 // Record whether or not the server accepts ranges, and the download size.
 void RecordAcceptsRanges(const std::string& accepts_ranges, int64 download_len);
-
-// Record the total number of items and the number of in-progress items showing
-// in the shelf when it closes.  Set |autoclose| to true when the shelf is
-// closing itself, false when the user explicitly closed it.
-CONTENT_EXPORT void RecordShelfClose(int size, int in_progress, bool autoclose);
 
 // Record the number of downloads removed by ClearAll.
 void RecordClearAllSize(int size);

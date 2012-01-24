@@ -12,6 +12,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_prefs.h"
+#include "chrome/browser/download/download_util.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
@@ -202,6 +203,8 @@ void WebstoreInstaller::StartDownload(FilePath file) {
   // The download url for the given extension is contained in |download_url_|.
   // We will navigate the current tab to this url to start the download. The
   // download system will then pass the crx to the CrxInstaller.
+  download_util::RecordDownloadCount(
+        download_util::INITIATED_BY_WEBSTORE_INSTALLER_COUNT);
   profile_->GetDownloadManager()->DownloadUrlToFile(
       download_url_, referrer, "", save_info, controller_->GetWebContents());
 }

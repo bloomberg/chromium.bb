@@ -50,7 +50,6 @@ include_rules = [
   "+content/browser/download/download_persistent_store_info.h",
   "+content/browser/download/download_request_handle.h",
   "+content/browser/download/download_state_info.h",
-  "+content/browser/download/download_stats.h",
   "+content/browser/download/download_status_updater.h",
   "+content/browser/download/download_types.h",
   "+content/browser/download/drag_download_file.h",

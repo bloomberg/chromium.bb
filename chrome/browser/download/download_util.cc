@@ -15,6 +15,7 @@
 #include "base/i18n/rtl.h"
 #include "base/i18n/time_formatting.h"
 #include "base/lazy_instance.h"
+#include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "base/string16.h"
 #include "base/string_number_conversions.h"
@@ -607,6 +608,30 @@ bool IsSavableURL(const GURL& url) {
     }
   }
   return false;
+}
+
+void RecordShelfClose(int size, int in_progress, bool autoclose) {
+  static const int kMaxShelfSize = 16;
+  if (autoclose) {
+    UMA_HISTOGRAM_ENUMERATION("Download.ShelfSizeOnAutoClose",
+                              size,
+                              kMaxShelfSize);
+    UMA_HISTOGRAM_ENUMERATION("Download.ShelfInProgressSizeOnAutoClose",
+                              in_progress,
+                              kMaxShelfSize);
+  } else {
+    UMA_HISTOGRAM_ENUMERATION("Download.ShelfSizeOnUserClose",
+                              size,
+                              kMaxShelfSize);
+    UMA_HISTOGRAM_ENUMERATION("Download.ShelfInProgressSizeOnUserClose",
+                              in_progress,
+                              kMaxShelfSize);
+  }
+}
+
+void RecordDownloadCount(ChromeDownloadCountTypes type) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "ChromeDownload.Counts", type, DOWNLOAD_COUNT_TYPES_LAST_ENTRY);
 }
 
 }  // namespace download_util

@@ -282,25 +282,6 @@ void RecordHistorySize(int size) {
                               32/*num_buckets*/);
 }
 
-void RecordShelfClose(int size, int in_progress, bool autoclose) {
-  static const int kMaxShelfSize = 16;
-  if (autoclose) {
-    UMA_HISTOGRAM_ENUMERATION("Download.ShelfSizeOnAutoClose",
-                              size,
-                              kMaxShelfSize);
-    UMA_HISTOGRAM_ENUMERATION("Download.ShelfInProgressSizeOnAutoClose",
-                              in_progress,
-                              kMaxShelfSize);
-  } else {
-    UMA_HISTOGRAM_ENUMERATION("Download.ShelfSizeOnUserClose",
-                              size,
-                              kMaxShelfSize);
-    UMA_HISTOGRAM_ENUMERATION("Download.ShelfInProgressSizeOnUserClose",
-                              in_progress,
-                              kMaxShelfSize);
-  }
-}
-
 void RecordClearAllSize(int size) {
   UMA_HISTOGRAM_CUSTOM_COUNTS("Download.ClearAllSize",
                               size,

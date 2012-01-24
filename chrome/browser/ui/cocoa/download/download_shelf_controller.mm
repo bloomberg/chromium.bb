@@ -7,6 +7,7 @@
 #include "base/mac/bundle_locations.h"
 #include "base/mac/mac_util.h"
 #include "base/sys_string_conversions.h"
+#include "chrome/browser/download/download_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
@@ -19,7 +20,6 @@
 #import "chrome/browser/ui/cocoa/download/download_shelf_view.h"
 #import "chrome/browser/ui/cocoa/hover_button.h"
 #import "chrome/browser/ui/cocoa/presentation_mode_controller.h"
-#include "content/browser/download/download_stats.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
 #import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
@@ -254,7 +254,7 @@ const NSSize kHoverCloseButtonDefaultSize = { 16, 16 };
     if ([[downloadItemControllers_ objectAtIndex:i]download]->IsInProgress())
       ++numInProgress;
   }
-  download_stats::RecordShelfClose(
+  download_util::RecordShelfClose(
       [downloadItemControllers_ count], numInProgress, auto_closed);
   if (auto_closed)
     [self showDownloadShelf:NO];

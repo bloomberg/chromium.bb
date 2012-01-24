@@ -10,12 +10,12 @@
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/download/download_item_model.h"
+#include "chrome/browser/download/download_util.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/download/download_item_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
-#include "content/browser/download/download_stats.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
 #include "grit/generated_resources.h"
@@ -399,7 +399,7 @@ void DownloadShelfView::DoClose() {
     if (download_views_[i]->download()->IsInProgress())
       ++num_in_progress;
   }
-  download_stats::RecordShelfClose(
+  download_util::RecordShelfClose(
       download_views_.size(), num_in_progress, auto_closed_);
   parent_->SetDownloadShelfVisible(false);
   shelf_animation_->Hide();
