@@ -27,6 +27,7 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
+#include "net/base/escape.h"
 #include "net/url_request/url_request.h"
 
 using content::BrowserThread;
@@ -78,9 +79,11 @@ void AutoLoginPrompter::ShowInfoBarIfPossible(net::URLRequest* request,
   for (size_t i = 0; i < pairs.size(); ++i) {
     const std::pair<std::string, std::string>& pair = pairs[i];
     if (pair.first == "realm") {
-      realm = pair.second;
+      realm = net::UnescapeURLComponent(pair.second,
+                                        net::UnescapeRule::URL_SPECIAL_CHARS);
     } else if (pair.first == "account") {
-      account = pair.second;
+      account = net::UnescapeURLComponent(pair.second,
+                                          net::UnescapeRule::URL_SPECIAL_CHARS);
     } else if (pair.first == "args") {
       args = pair.second;
     }
