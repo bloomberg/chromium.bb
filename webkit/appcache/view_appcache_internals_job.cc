@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -433,7 +433,7 @@ class ViewAppCacheJob : public BaseInternalsJob,
  public:
   ViewAppCacheJob(
       net::URLRequest* request, AppCacheService* service,
-      const GURL manifest_url)
+      const GURL& manifest_url)
       : BaseInternalsJob(request, service),
         manifest_url_(manifest_url) {}
 
