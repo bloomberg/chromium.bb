@@ -486,14 +486,14 @@ class BuildSpecsManager(object):
   def HasCheckoutBeenBuilt(self):
     """Checks to see if we've previously created a manifest with this checkout.
     """
-    if self.latest:
+    if self.latest_processed and self.latest == self.latest_processed:
       latest_spec_file = '%s.xml' % os.path.join(
-          self.all_specs_dir, self.latest)
+          self.all_specs_dir, self.latest_processed)
       # We've built this checkout before if the manifest isn't different than
       # the last one we've built.
       return not self.cros_source.IsManifestDifferent(latest_spec_file)
     else:
-      # We've never built something before so this checkout is always new.
+      # We've never built this manifest before so this checkout is always new.
       return False
 
   def CreateManifest(self):
