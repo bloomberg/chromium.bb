@@ -203,6 +203,10 @@
 #include "chrome/browser/ui/webui/active_downloads_ui.h"
 #endif
 
+#if defined(USE_AURA)
+#include "ash/shell.h"
+#endif
+
 #if !defined(OS_CHROMEOS) || defined(USE_AURA)
 #include "chrome/browser/download/download_shelf.h"
 #endif
@@ -4444,10 +4448,11 @@ gfx::Rect Browser::GetInstantBounds() {
 BrowserWindow* Browser::CreateBrowserWindow() {
   bool create_panel = false;
 #if defined(OS_CHROMEOS) && defined(USE_AURA)
-  // For R18, panels and popups in Aura ChromeOS use the PanelManager.
+  // For R18, panels and popups in Aura ChromeOS in compact mode use the
+  // PanelManager.
   // TODO(stevenjb): Clean this up after R18.
-  if (is_type_panel() || is_type_popup())
-    create_panel = true;
+  create_panel = is_type_panel() ||
+      (ash::Shell::GetInstance()->IsWindowModeCompact() && is_type_popup());
 #elif !defined(OS_CHROMEOS)
   // PanelManager is used for panels in non-ChromeOS environments.
   if (is_type_panel())
