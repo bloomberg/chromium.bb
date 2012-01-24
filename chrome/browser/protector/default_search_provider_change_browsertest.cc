@@ -265,9 +265,9 @@ IN_PROC_BROWSER_TEST_F(DefaultSearchProviderChangeTest, BackupInvalid) {
   ExpectHistogramCount(kProtectorHistogramSearchProviderCorrupt,
                        SEARCH_ENGINE_OTHER, 1);
   ExpectHistogramCount(kProtectorHistogramSearchProviderRestored,
-                       SEARCH_ENGINE_GOOGLE, 1);
+                       prepopulated_url_->search_engine_type(), 1);
   ExpectHistogramCount(kProtectorHistogramSearchProviderFallback,
-                       SEARCH_ENGINE_GOOGLE, 1);
+                       prepopulated_url_->search_engine_type(), 1);
 
   // Verify text messages.
   EXPECT_EQ(GetBubbleMessage(prepopulated_url_->short_name()),
@@ -317,11 +317,11 @@ IN_PROC_BROWSER_TEST_F(DefaultSearchProviderChangeTest,
   ExpectHistogramCount(kProtectorHistogramSearchProviderCorrupt,
                        SEARCH_ENGINE_OTHER, 1);
   ExpectHistogramCount(kProtectorHistogramSearchProviderRestored,
-                       SEARCH_ENGINE_GOOGLE, 1);
+                       prepopulated_url_->search_engine_type(), 1);
   ExpectHistogramCount(kProtectorHistogramSearchProviderFallback,
-                       SEARCH_ENGINE_GOOGLE, 1);
+                       prepopulated_url_->search_engine_type(), 1);
   ExpectHistogramCount(kProtectorHistogramSearchProviderMissing,
-                       SEARCH_ENGINE_GOOGLE, 1);
+                       prepopulated_url_->search_engine_type(), 1);
 
   // Verify text messages.
   EXPECT_EQ(GetBubbleMessage(prepopulated_url_->short_name()),
@@ -362,7 +362,7 @@ IN_PROC_BROWSER_TEST_F(DefaultSearchProviderChangeTest,
 
   // Verify histograms.
   ExpectHistogramCount(kProtectorHistogramSearchProviderHijacked,
-                       SEARCH_ENGINE_OTHER, 1);
+                       SEARCH_ENGINE_NONE, 1);
   ExpectHistogramCount(kProtectorHistogramSearchProviderRestored,
                        SEARCH_ENGINE_OTHER, 1);
 
@@ -401,11 +401,11 @@ IN_PROC_BROWSER_TEST_F(DefaultSearchProviderChangeTest,
 
   // Verify histograms.
   ExpectHistogramCount(kProtectorHistogramSearchProviderCorrupt,
-                       SEARCH_ENGINE_OTHER, 1);
+                       SEARCH_ENGINE_NONE, 1);
   ExpectHistogramCount(kProtectorHistogramSearchProviderRestored,
-                       SEARCH_ENGINE_GOOGLE, 1);
+                       prepopulated_url_->search_engine_type(), 1);
   ExpectHistogramCount(kProtectorHistogramSearchProviderFallback,
-                       SEARCH_ENGINE_GOOGLE, 1);
+                       prepopulated_url_->search_engine_type(), 1);
 
   // Verify text messages.
   EXPECT_EQ(GetBubbleMessage(prepopulated_url_->short_name()),
@@ -440,11 +440,11 @@ IN_PROC_BROWSER_TEST_F(DefaultSearchProviderChangeTest,
 
   // Verify histograms.
   ExpectHistogramCount(kProtectorHistogramSearchProviderCorrupt,
-                       SEARCH_ENGINE_GOOGLE, 1);
+                       prepopulated_url_->search_engine_type(), 1);
   ExpectHistogramCount(kProtectorHistogramSearchProviderRestored,
-                       SEARCH_ENGINE_GOOGLE, 1);
+                       prepopulated_url_->search_engine_type(), 1);
   ExpectHistogramCount(kProtectorHistogramSearchProviderFallback,
-                       SEARCH_ENGINE_GOOGLE, 1);
+                       prepopulated_url_->search_engine_type(), 1);
 
   // Verify text messages.
   EXPECT_EQ(GetBubbleMessage(prepopulated_url_->short_name()),
