@@ -690,7 +690,11 @@ weston_surface_draw(struct weston_surface *es, struct weston_output *output)
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof *v, &v[2]);
 	glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(1);
+
 	glDrawElements(GL_TRIANGLES, n * 6, GL_UNSIGNED_INT, ec->indices.data);
+
+	glDisableVertexAttribArray(1);
+	glDisableVertexAttribArray(0);
 
 	ec->vertices.size = 0;
 	ec->indices.size = 0;
