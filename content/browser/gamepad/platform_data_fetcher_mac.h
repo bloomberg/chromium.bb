@@ -10,6 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "content/browser/gamepad/data_fetcher.h"
+#include "content/browser/gamepad/gamepad_standard_mappings.h"
 #include "content/common/gamepad_hardware_buffer.h"
 
 #include <CoreFoundation/CoreFoundation.h>
@@ -66,6 +67,9 @@ class GamepadPlatformDataFetcherMac : public GamepadDataFetcher {
     IOHIDElementRef axis_elements[WebKit::WebGamepad::buttonsLengthCap];
     CFIndex axis_minimums[WebKit::WebGamepad::axesLengthCap];
     CFIndex axis_maximums[WebKit::WebGamepad::axesLengthCap];
+    // Function to map from device data to standard layout, if available. May
+    // be null if no mapping is available.
+    GamepadStandardMappingFunction mapper;
   };
   AssociatedData associated_[WebKit::WebGamepads::itemsLengthCap];
 };

@@ -43,6 +43,7 @@ const uint32_t kAxisMaximumUsageNumber = 0x35;
 
 GamepadPlatformDataFetcherMac::GamepadPlatformDataFetcherMac()
     : enabled_(true) {
+  memset(associated_, 0, sizeof(associated_));
   hid_manager_ref_.reset(IOHIDManagerCreate(kCFAllocatorDefault,
                                             kIOHIDOptionsTypeNone));
   if (CFGetTypeID(hid_manager_ref_) != IOHIDManagerGetTypeID()) {
@@ -200,12 +201,21 @@ void GamepadPlatformDataFetcherMac::DeviceAdd(IOHIDDeviceRef device) {
       IOHIDDeviceGetProperty(device, CFSTR(kIOHIDProductIDKey))));
   NSString* product = CFToNSCast(CFCastStrict<CFStringRef>(
       IOHIDDeviceGetProperty(device, CFSTR(kIOHIDProductKey))));
+  int vendor_int = [vendor_id intValue];
+  int product_int = [product_id intValue];
 
-  NSString* ident([NSString stringWithFormat:
-      @"%@ (Vendor: %04x Product: %04x)",
+  char vendor_as_str[5], product_as_str[5];
+  snprintf(vendor_as_str, sizeof(vendor_as_str), "%04x", vendor_int);
+  snprintf(product_as_str, sizeof(product_as_str), "%04x", product_int);
+  associated_[slot].mapper =
+      GetGamepadStandardMappingFunction(vendor_as_str, product_as_str);
+
+  NSString* ident = [NSString stringWithFormat:
+      @"%@ (%sVendor: %04x Product: %04x)",
       product,
-      [vendor_id intValue],
-      [product_id intValue]]);
+      associated_[slot].mapper ? "STANDARD GAMEPAD " : "",
+      vendor_int,
+      product_int];
   NSData* as16 = [ident dataUsingEncoding:NSUTF16StringEncoding];
 
   const size_t kOutputLengthBytes = sizeof(data_.items[slot].id);
@@ -285,7 +295,16 @@ void GamepadPlatformDataFetcherMac::GetGamepadData(
     pads->length = 0;
     return;
   }
-  memcpy(pads, &data_, sizeof(WebKit::WebGamepads));
+
+  // Copy to the current state to the output buffer, using the mapping
+  // function, if there is one available.
+  pads->length = data_.length;
+  for (size_t i = 0; i < WebKit::WebGamepads::itemsLengthCap; ++i) {
+    if (associated_[i].mapper)
+      associated_[i].mapper(data_.items[i], &pads->items[i]);
+    else
+      pads->items[i] = data_.items[i];
+  }
 }
 
 }  // namespace content

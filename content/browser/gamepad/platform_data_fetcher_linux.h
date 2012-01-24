@@ -11,7 +11,7 @@
 #include "base/message_pump_libevent.h"
 #include "build/build_config.h"
 #include "content/browser/gamepad/data_fetcher.h"
-#include "content/browser/gamepad/gamepad_standard_mappings_linux.h"
+#include "content/browser/gamepad/gamepad_standard_mappings.h"
 #include "content/common/gamepad_hardware_buffer.h"
 
 extern "C" {

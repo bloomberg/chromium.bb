@@ -2,48 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/gamepad/gamepad_standard_mappings_linux.h"
+#include "content/browser/gamepad/gamepad_standard_mappings.h"
 
 #include "content/common/gamepad_hardware_buffer.h"
 
 namespace content {
 
 namespace {
-
-// This defines our canonical mapping order for gamepad-like devices. If these
-// items cannot all be satisfied, it is a case-by-case judgement as to whether
-// it is better to leave the device unmapped, or to partially map it. In
-// general, err towards leaving it *unmapped* so that content can handle
-// appropriately.
-
-enum CanonicalButtonIndex {
-  kButtonPrimary,
-  kButtonSecondary,
-  kButtonTertiary,
-  kButtonQuaternary,
-  kButtonLeftShoulder,
-  kButtonRightShoulder,
-  kButtonLeftTrigger,
-  kButtonRightTrigger,
-  kButtonBackSelect,
-  kButtonStart,
-  kButtonLeftThumbstick,
-  kButtonRightThumbstick,
-  kButtonDpadUp,
-  kButtonDpadDown,
-  kButtonDpadLeft,
-  kButtonDpadRight,
-  kButtonMeta,
-  kNumButtons
-};
-
-enum CanonicalAxisIndex {
-  kAxisLeftStickX,
-  kAxisLeftStickY,
-  kAxisRightStickX,
-  kAxisRightStickY,
-  kNumAxes
-};
 
 float AxisToButton(float input) {
   return (input + 1.f) / 2.f;

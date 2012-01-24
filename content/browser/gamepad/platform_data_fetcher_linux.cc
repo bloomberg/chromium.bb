@@ -159,18 +159,12 @@ void GamepadPlatformDataFetcherLinux::RefreshDevice(udev_device* dev) {
 
     // Driver returns utf-8 strings here, so combine in utf-8 and then convert
     // to WebUChar to build the id string.
-    std::string id;
-    if (mapper) {
-      id = base::StringPrintf("%s %s (STANDARD GAMEPAD)",
-          manufacturer,
-          product);
-    } else {
-      id = base::StringPrintf("%s %s (Vendor: %s Product: %s)",
+    std::string id = base::StringPrintf("%s %s (%sVendor: %s Product: %s)",
           manufacturer,
           product,
+          mapper ? "STANDARD GAMEPAD " : "",
           vendor_id,
           product_id);
-    }
     TruncateUTF8ToByteSize(id, WebGamepad::idLengthCap - 1, &id);
     string16 tmp16 = UTF8ToUTF16(id);
     memset(pad.id, 0, sizeof(pad.id));
