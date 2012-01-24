@@ -118,6 +118,44 @@
 #      ],
     },
     {
+      'target_name': 'ppapi_unittest_shared',
+      'type': 'static_library',
+      'dependencies': [
+        'ppapi_proxy',
+        'ppapi_shared',
+        '../base/base.gyp:test_support_base',
+        '../ipc/ipc.gyp:ipc',
+        '../ipc/ipc.gyp:test_support_ipc',
+        '../testing/gmock.gyp:gmock',
+        '../testing/gtest.gyp:gtest',
+      ],
+      'sources': [
+        'proxy/ppapi_proxy_test.cc',
+        'proxy/ppapi_proxy_test.h',
+        'shared_impl/test_globals.cc',
+        'shared_impl/test_globals.h',
+      ],
+    },
+
+    {
+      'target_name': 'ppapi_perftests',
+      'type': 'executable',
+      'variables': {
+        'chromium_code': 1,
+      },
+      'dependencies': [
+        'ppapi_proxy',
+        'ppapi_shared',
+        'ppapi_unittest_shared',
+        '../base/base.gyp:test_support_base',
+        '../testing/gtest.gyp:gtest',
+      ],
+      'sources': [
+        'proxy/ppapi_perftests.cc',
+        'proxy/ppp_messaging_proxy_perftest.cc',
+      ],
+    },
+    {
       'target_name': 'ppapi_unittests',
       'type': 'executable',
       'variables': {
@@ -126,6 +164,7 @@
       'dependencies': [
         'ppapi_proxy',
         'ppapi_shared',
+        'ppapi_unittest_shared',
         '../base/base.gyp:test_support_base',
         '../gpu/gpu.gyp:gpu_ipc',
         '../ipc/ipc.gyp:ipc',
@@ -142,16 +181,12 @@
         'proxy/plugin_dispatcher_unittest.cc',
         'proxy/plugin_resource_tracker_unittest.cc',
         'proxy/plugin_var_tracker_unittest.cc',
-        'proxy/ppapi_proxy_test.cc',
-        'proxy/ppapi_proxy_test.h',
         'proxy/ppb_var_unittest.cc',
         'proxy/ppp_instance_private_proxy_unittest.cc',
         'proxy/ppp_instance_proxy_unittest.cc',
         'proxy/ppp_messaging_proxy_unittest.cc',
         'proxy/serialized_var_unittest.cc',
         'shared_impl/resource_tracker_unittest.cc',
-        'shared_impl/test_globals.cc',
-        'shared_impl/test_globals.h',
         'shared_impl/tracked_callback_unittest.cc',
         'shared_impl/var_tracker_unittest.cc',
       ],
