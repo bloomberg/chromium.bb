@@ -20,6 +20,8 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#define _GNU_SOURCE
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -439,6 +441,7 @@ evdev_input_device_create(struct evdev_input *master,
 	struct evdev_input_device *device;
 	struct wl_event_loop *loop;
 	struct weston_compositor *ec;
+	uid_t saved_uid, uid, euid;
 
 	device = malloc(sizeof *device);
 	if (device == NULL)
@@ -456,7 +459,10 @@ evdev_input_device_create(struct evdev_input *master,
 	device->rel.dx = 0;
 	device->rel.dy = 0;
 
+	getresuid(&uid, &euid, &saved_uid);
+	seteuid(saved_uid);
 	device->fd = open(path, O_RDONLY);
+	seteuid(euid);
 	if (device->fd < 0)
 		goto err0;
 

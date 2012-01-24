@@ -2088,6 +2088,9 @@ int main(int argc, char *argv[])
 		{ NULL, }
 	};
 
+	/* Drop privilidges early, use getresuid when needed again */
+	seteuid(getuid());
+
 	while (o = getopt_long(argc, argv, opts, longopts, &o), o > 0) {
 		switch (o) {
 		case 'B':
