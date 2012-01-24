@@ -1185,7 +1185,6 @@ WebPreferences ChromeContentBrowserClient::GetWebkitPrefs(RenderViewHost* rvh) {
     web_prefs.javascript_enabled =
         !command_line.HasSwitch(switches::kDisableJavaScript) &&
         prefs->GetBoolean(prefs::kWebKitGlobalJavascriptEnabled);
-    web_prefs.dart_enabled = !command_line.HasSwitch(switches::kDisableDart);
     web_prefs.web_security_enabled =
         !command_line.HasSwitch(switches::kDisableWebSecurity) &&
         prefs->GetBoolean(prefs::kWebKitWebSecurityEnabled);

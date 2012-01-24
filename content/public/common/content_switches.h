@@ -33,7 +33,6 @@ CONTENT_EXPORT extern const char kDisableAltWinstation[];
 CONTENT_EXPORT extern const char kDisableApplicationCache[];
 extern const char kDisableAudio[];
 extern const char kDisableBackingStoreLimit[];
-extern const char kDisableDart[];
 CONTENT_EXPORT extern const char kDisableDatabases[];
 extern const char kDisableDataTransferItems[];
 extern const char kDisableDesktopNotifications[];

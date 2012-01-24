@@ -71,9 +71,6 @@ const char kDisableAudio[]                  = "disable-audio";
 // users with many windows/tabs and lots of memory.
 const char kDisableBackingStoreLimit[]      = "disable-backing-store-limit";
 
-// Prevent Dart from running.
-const char kDisableDart[]                   = "disable-dart";
-
 // Disables HTML5 DB support.
 const char kDisableDatabases[]              = "disable-databases";
 
