@@ -3,6 +3,8 @@
 # Abort on error.
 set -e
 
+export DEPOT_TOOLS_UPDATE=0
+
 PWD=`pwd`
 REPO_URL=file://$PWD/svnrepo
 TRUNK_URL=$REPO_URL/trunk
