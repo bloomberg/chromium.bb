@@ -75,14 +75,7 @@ void ExtensionsSyncPerfTest::RemoveExtensions(int profile) {
   }
 }
 
-// Flaky on Windows, see http://crbug.com/111072
-#if defined(OS_WIN)
-#define MAYBE_P0 DISABLED_P0
-#else
-#define MAYBE_P0 P0
-#endif
-
-IN_PROC_BROWSER_TEST_F(ExtensionsSyncPerfTest, MAYBE_P0) {
+IN_PROC_BROWSER_TEST_F(ExtensionsSyncPerfTest, P0) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   int num_default_extensions = GetExtensionCount(0);
   int expected_extension_count = num_default_extensions + kNumExtensions;
