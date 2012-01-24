@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,13 +20,13 @@ class DecoderVp8 : public Decoder {
   // Decoder implementations.
   virtual void Initialize(scoped_refptr<media::VideoFrame> frame) OVERRIDE;
   virtual DecodeResult DecodePacket(const VideoPacket* packet) OVERRIDE;
-  virtual void GetUpdatedRects(RectVector* rects) OVERRIDE;
+  virtual void GetUpdatedRegion(SkRegion* region) OVERRIDE;
   virtual bool IsReadyForData() OVERRIDE;
   virtual void Reset() OVERRIDE;
   virtual VideoPacketFormat::Encoding Encoding() OVERRIDE;
   virtual void SetOutputSize(const SkISize& size) OVERRIDE;
   virtual void SetClipRect(const SkIRect& clip_rect) OVERRIDE;
-  virtual void RefreshRects(const RectVector& rects) OVERRIDE;
+  virtual void RefreshRegion(const SkRegion& region) OVERRIDE;
 
  private:
   enum State {
@@ -38,16 +38,15 @@ class DecoderVp8 : public Decoder {
   // Return true if scaling is enabled
   bool DoScaling() const;
 
-  // Perform color space conversion on the specified rectangles.
-  // Write the updated rectangles to |output_rects|.
-  void ConvertRects(const RectVector& rects,
-                    RectVector* output_rects);
+  // Perform color space conversion on the specified region.
+  // Writes the updated region to |output_region|.
+  void ConvertRegion(const SkRegion& region,
+                     SkRegion* output_region);
 
   // Perform scaling and color space conversion on the specified
-  // rectangles.
-  // Write the updated rectangles to |output_rects|.
-  void ScaleAndConvertRects(const RectVector& rects,
-                            RectVector* output_rects);
+  // region.  Writes the updated rectangles to |output_region|.
+  void ScaleAndConvertRegion(const SkRegion& region,
+                             SkRegion* output_region);
 
   // The internal state of the decoder.
   State state_;
@@ -60,8 +59,8 @@ class DecoderVp8 : public Decoder {
   // Pointer to the last decoded image.
   vpx_image_t* last_image_;
 
-  // Record the updated rects in the last decode.
-  RectVector updated_rects_;
+  // The region updated by the most recent decode.
+  SkRegion updated_region_;
 
   // Clipping rect for the output of the decoder.
   SkIRect clip_rect_;
