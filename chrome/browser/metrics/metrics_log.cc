@@ -508,6 +508,9 @@ void MetricsLog::RecordOmniboxOpenedURL(const AutocompleteLog& log) {
     OPEN_ELEMENT_FOR_SCOPE("autocomplete");
 
     WriteIntAttribute("typedlength", static_cast<int>(log.text.length()));
+    std::vector<string16> terms;
+    WriteIntAttribute("numterms",
+        static_cast<int>(Tokenize(log.text, kWhitespaceUTF16, &terms)));
     WriteIntAttribute("selectedindex", static_cast<int>(log.selected_index));
     WriteIntAttribute("completedlength",
                       static_cast<int>(log.inline_autocompleted_length));
