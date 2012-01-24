@@ -979,7 +979,7 @@ rotate_grab_motion(struct wl_grab *grab,
 	r = sqrtf(dx * dx + dy * dy);
 
 	wl_list_remove(&surface->rotation.transform.link);
-	surface->surface->transform.dirty = 1;
+	surface->surface->geometry.dirty = 1;
 
 	if (r > 20.0f) {
 		struct weston_matrix roto;
@@ -999,8 +999,9 @@ rotate_grab_motion(struct wl_grab *grab,
 		weston_matrix_translate(matrix, rotate->center.x,
 					rotate->center.y, 0.0f);
 
-		wl_list_insert(surface->surface->transform.list.prev,
-			       &surface->rotation.transform.link);
+		wl_list_insert(
+			surface->surface->geometry.transformation_list.prev,
+			&surface->rotation.transform.link);
 	} else {
 		wl_list_init(&surface->rotation.transform.link);
 	}

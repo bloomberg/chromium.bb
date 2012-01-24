@@ -224,14 +224,27 @@ struct weston_surface {
 	uint32_t visual;
 	int overlapped;
 
+	/* Surface geometry state, mutable.
+	 * If you change anything, set dirty = 1.
+	 * That includes the transformations referenced from the list.
+	 */
 	struct {
-		struct wl_list list;
-		int dirty;
+		/* struct weston_transform */
+		struct wl_list transformation_list;
 
-		/* derived state, set up by weston_surface_update_transform */
+		int dirty;
+	} geometry;
+
+	/* State derived from geometry state, read-only.
+	 * This is updated by weston_surface_update_transform().
+	 */
+	struct {
+		/* matrix and inverse are used only if enabled = 1.
+		 * If enabled = 0, use x, y, width, height directly.
+		 */
+		int enabled;
 		struct weston_matrix matrix;
 		struct weston_matrix inverse;
-		int enabled;
 	} transform;
 
 	/*

@@ -205,8 +205,8 @@ weston_surface_create(struct weston_compositor *compositor,
 
 	surface->buffer_destroy_listener.func = surface_handle_buffer_destroy;
 
-	wl_list_init(&surface->transform.list);
-	surface->transform.dirty = 1;
+	wl_list_init(&surface->geometry.transformation_list);
+	surface->geometry.dirty = 1;
 
 	return surface;
 }
@@ -234,12 +234,12 @@ weston_surface_update_transform(struct weston_surface *surface)
 	struct weston_matrix *inverse = &surface->transform.inverse;
 	struct weston_transform *tform;
 
-	if (!surface->transform.dirty)
+	if (!surface->geometry.dirty)
 		return;
 
-	surface->transform.dirty = 0;
+	surface->geometry.dirty = 0;
 
-	if (wl_list_empty(&surface->transform.list)) {
+	if (wl_list_empty(&surface->geometry.transformation_list)) {
 		surface->transform.enabled = 0;
 		return;
 	}
@@ -247,7 +247,7 @@ weston_surface_update_transform(struct weston_surface *surface)
 	surface->transform.enabled = 1;
 
 	weston_matrix_init(matrix);
-	wl_list_for_each(tform, &surface->transform.list, link)
+	wl_list_for_each(tform, &surface->geometry.transformation_list, link)
 		weston_matrix_multiply(matrix, &tform->matrix);
 
 	if (weston_matrix_invert(inverse, matrix) < 0) {

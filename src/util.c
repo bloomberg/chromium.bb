@@ -99,7 +99,7 @@ weston_zoom_destroy(struct weston_zoom *zoom)
 	wl_list_remove(&zoom->animation.link);
 	wl_list_remove(&zoom->listener.link);
 	wl_list_remove(&zoom->transform.link);
-	zoom->surface->transform.dirty = 1;
+	zoom->surface->geometry.dirty = 1;
 	if (zoom->done)
 		zoom->done(zoom, zoom->data);
 	free(zoom);
@@ -146,7 +146,7 @@ weston_zoom_frame(struct weston_animation *animation,
 	if (es->alpha > 255)
 		es->alpha = 255;
 
-	zoom->surface->transform.dirty = 1;
+	zoom->surface->geometry.dirty = 1;
 
 	weston_compositor_damage_all(es->compositor);
 }
@@ -166,7 +166,8 @@ weston_zoom_run(struct weston_surface *surface, GLfloat start, GLfloat stop,
 	zoom->data = data;
 	zoom->start = start;
 	zoom->stop = stop;
-	wl_list_insert(&surface->transform.list, &zoom->transform.link);
+	wl_list_insert(&surface->geometry.transformation_list,
+		       &zoom->transform.link);
 	weston_spring_init(&zoom->spring, 200.0, 0.0, 1.0);
 	zoom->spring.friction = 700;
 	zoom->spring.timestamp = weston_compositor_get_time();
