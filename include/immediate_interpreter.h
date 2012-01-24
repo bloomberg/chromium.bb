@@ -123,10 +123,6 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   // pressure required depends on exactly how close to the edge the contact is.
   bool FingerInPalmEnvelope(const FingerState& fs);
 
-  // Returns true iff fs is within the edge specified by
-  // tap_prohibited_border_width_.
-  bool FingerInTapProhibitedEnvelope(const FingerState& fs);
-
   // Updates *palm_, pointing_ below.
   void UpdatePalmState(const HardwareState& hwstate);
 
@@ -272,8 +268,6 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   BoolProperty drag_lock_enable_;
   // Distance [mm] a finger can move and still register a tap
   DoubleProperty tap_move_dist_;
-  // Border around which taps from tap to click are prohibited [mm]
-  DoubleProperty tap_prohibited_border_width_;
   // Maximum pressure above which a finger is considered a palm
   DoubleProperty palm_pressure_;
   // The smaller of two widths around the edge for palm detection. Any contact

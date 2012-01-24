@@ -131,7 +131,6 @@ ImmediateInterpreter::ImmediateInterpreter(PropRegistry* prop_reg)
       tap_drag_timeout_(prop_reg, "Tap Drag Timeout", 0.7),
       drag_lock_enable_(prop_reg, "Tap Drag Lock Enable", 0),
       tap_move_dist_(prop_reg, "Tap Move Distance", 2.0),
-      tap_prohibited_border_width_(prop_reg, "Tap Prohibited Width", 18.0),
       palm_pressure_(prop_reg, "Palm Pressure", 200.0),
       palm_edge_min_width_(prop_reg, "Tap Exclusion Border Width", 8.0),
       palm_edge_width_(prop_reg, "Palm Edge Zone Width", 14.0),
@@ -258,14 +257,6 @@ bool ImmediateInterpreter::FingerInPalmEnvelope(const FingerState& fs) {
       fs.position_x > (hw_props_.right - limit) ||
       fs.position_y < limit ||
       fs.position_y > (hw_props_.bottom - limit);
-}
-
-bool ImmediateInterpreter::FingerInTapProhibitedEnvelope(
-    const FingerState& fs) {
-  return fs.position_x < tap_prohibited_border_width_.val_ ||
-      fs.position_x > (hw_props_.right - tap_prohibited_border_width_.val_) ||
-      fs.position_y < tap_prohibited_border_width_.val_ ||
-      fs.position_y > (hw_props_.bottom - tap_prohibited_border_width_.val_);
 }
 
 void ImmediateInterpreter::UpdatePalmState(const HardwareState& hwstate) {
@@ -655,10 +646,8 @@ void ImmediateInterpreter::UpdateTapState(
         Err("Missing finger state?!");
         continue;
       }
-      if (!FingerInTapProhibitedEnvelope(*fs)) {
-        Log("GS: %d", *it);
-        tap_gs_fingers.insert(*it);
-      }
+      Log("GS: %d", *it);
+      tap_gs_fingers.insert(*it);
     }
   }
   set<short, kMaxTapFingers> added_fingers;
