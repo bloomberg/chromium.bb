@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,7 @@
 
 #include "chrome/browser/chromeos/login/login_html_dialog.h"
 #include "chrome/browser/chromeos/status/status_area_button.h"
+#include "chrome/browser/chromeos/status/status_area_view_chromeos.h"
 #include "chrome/browser/tab_first_render_watcher.h"
 #include "chrome/browser/ui/views/unhandled_keyboard_event_handler.h"
 #include "content/public/browser/web_contents_delegate.h"
@@ -97,6 +98,9 @@ class WebUILoginView : public views::WidgetDelegateView,
 
   // Creates and adds the status area (separate window).
   virtual void InitStatusArea();
+
+  // Returns the screen mode to set on the status area view.
+  virtual StatusAreaViewChromeos::ScreenMode GetScreenMode();
 
   // Returns the type to use for the status area widget.
   virtual views::Widget::InitParams::Type GetStatusAreaWidgetType();

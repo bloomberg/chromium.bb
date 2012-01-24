@@ -16,7 +16,6 @@
 #include "chrome/browser/chromeos/login/proxy_settings_dialog.h"
 #include "chrome/browser/chromeos/login/webui_login_display.h"
 #include "chrome/browser/chromeos/status/status_area_view.h"
-#include "chrome/browser/chromeos/status/status_area_view_chromeos.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/views/dom_view.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
@@ -290,8 +289,7 @@ void WebUILoginView::OnTabMainFrameLoaded() {
 
 void WebUILoginView::OnTabMainFrameFirstRender() {
   VLOG(1) << "WebUI login main frame rendered.";
-  StatusAreaViewChromeos::SetScreenMode(
-      StatusAreaViewChromeos::LOGIN_MODE_WEBUI);
+  StatusAreaViewChromeos::SetScreenMode(GetScreenMode());
   // In aura there's a global status area shown already.
 #if defined(USE_AURA)
   status_area_ = ChromeShellDelegate::instance()->GetStatusArea();
@@ -371,6 +369,10 @@ void WebUILoginView::InitStatusArea() {
   contents_view->AddChildView(status_area_);
   status_window_->SetContentsView(contents_view);
   status_window_->Show();
+}
+
+StatusAreaViewChromeos::ScreenMode WebUILoginView::GetScreenMode() {
+  return StatusAreaViewChromeos::LOGIN_MODE_WEBUI;
 }
 
 views::Widget::InitParams::Type WebUILoginView::GetStatusAreaWidgetType() {

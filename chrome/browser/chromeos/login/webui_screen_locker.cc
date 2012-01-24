@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,6 +13,7 @@
 #include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/webui_login_display.h"
+#include "chrome/browser/chromeos/status/status_area_view_chromeos.h"
 #include "chrome/browser/ui/views/dom_view.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -125,6 +126,11 @@ WebUIScreenLocker::~WebUIScreenLocker() {
     static_cast<OobeUI*>(GetWebUI()->GetController())->
         ResetSigninScreenHandlerDelegate();
   }
+  // WebUILoginView::OnTabMainFrameFirstRender sets the screen mode to
+  // WebUIScreenLocker::GetScreenMode() = SCREEN_LOCKER_MODE. We need to reset
+  // the screen mode when the lock screen is hidden here.
+  chromeos::StatusAreaViewChromeos::SetScreenMode(
+      chromeos::StatusAreaViewChromeos::BROWSER_MODE);
   SetStatusAreaEnabled(true);
 }
 
@@ -204,6 +210,10 @@ void WebUIScreenLocker::OnLockWindowReady() {
 
 ////////////////////////////////////////////////////////////////////////////////
 // Overridden from WebUILoginView:
+
+StatusAreaViewChromeos::ScreenMode WebUIScreenLocker::GetScreenMode() {
+  return StatusAreaViewChromeos::SCREEN_LOCKER_MODE;
+}
 
 views::Widget::InitParams::Type WebUIScreenLocker::GetStatusAreaWidgetType() {
   return views::Widget::InitParams::TYPE_POPUP;
