@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -142,17 +142,21 @@ const Extension* ExtensionBrowserTest::LoadExtensionIncognito(
   return LoadExtensionWithOptions(path, true, true);
 }
 
-bool ExtensionBrowserTest::LoadExtensionAsComponent(const FilePath& path) {
+const Extension* ExtensionBrowserTest::LoadExtensionAsComponent(
+    const FilePath& path) {
   ExtensionService* service = browser()->profile()->GetExtensionService();
 
   std::string manifest;
   if (!file_util::ReadFileToString(path.Append(Extension::kManifestFilename),
                                    &manifest))
-    return false;
+    return NULL;
 
-  service->component_loader()->Add(manifest, path);
-
-  return true;
+  const Extension* extension =
+      service->component_loader()->Add(manifest, path);
+  if (!extension)
+    return NULL;
+  last_loaded_extension_id_ = extension->id();
+  return extension;
 }
 
 FilePath ExtensionBrowserTest::PackExtension(const FilePath& dir_path) {

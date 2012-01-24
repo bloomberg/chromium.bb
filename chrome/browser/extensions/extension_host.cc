@@ -400,6 +400,10 @@ void ExtensionHost::CloseContents(WebContents* contents) {
   }
 }
 
+bool ExtensionHost::ShouldSuppressDialogs() {
+  return extension_->is_platform_app();
+}
+
 WebContents* ExtensionHost::OpenURLFromTab(WebContents* source,
                                            const OpenURLParams& params) {
   // Whitelist the dispositions we will allow to be opened.

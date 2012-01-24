@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -38,7 +38,7 @@ class ExtensionBrowserTest
                                             bool fileaccess_enabled);
 
   // Loads extension and imitates that it is a component extension.
-  bool LoadExtensionAsComponent(const FilePath& path);
+  const Extension* LoadExtensionAsComponent(const FilePath& path);
 
   // Pack the extension in |dir_path| into a crx file and return its path.
   // Return an empty FilePath if there were errors.

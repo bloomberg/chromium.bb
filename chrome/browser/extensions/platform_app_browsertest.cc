@@ -5,6 +5,7 @@
 #include "base/command_line.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -44,7 +45,7 @@ class PlatformAppContextMenu : public RenderViewContextMenu {
 
 }  // namespace
 
-class PlatformAppBrowserTest : public ExtensionBrowserTest {
+class PlatformAppBrowserTest : public ExtensionApiTest {
  public:
   virtual void SetUpCommandLine(CommandLine* command_line) {
     ExtensionBrowserTest::SetUpCommandLine(command_line);
@@ -183,7 +184,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MAYBE_AppWithContextMenu) {
 #define MAYBE_DisallowNavigation DISABLED_DisallowNavigation
 #endif
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MAYBE_DisallowNavigation) {
-   ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(test_server()->Start());
 
   LoadAndLaunchPlatformApp("navigation");
   WebContents* web_contents = GetFirstPlatformAppWebContents();
@@ -198,4 +199,14 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MAYBE_DisallowNavigation) {
       web_contents->GetRenderViewHost(), L"",
       UTF8ToWide(script), &result));
   EXPECT_TRUE(result);
+}
+
+// Disabled until shell windows are implemented for non-GTK, non-Views toolkits.
+#if defined(TOOLKIT_GTK) || defined(TOOLKIT_VIEWS)
+#define MAYBE_DisallowModalDialogs DisallowModalDialogs
+#else
+#define MAYBE_DisallowModalDialogs DISABLED_DisallowModalDialogs
+#endif
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MAYBE_DisallowModalDialogs) {
+  ASSERT_TRUE(RunPlatformAppTest("platform_apps/modal_dialogs")) << message_;
 }
