@@ -245,6 +245,7 @@ bool RootWindow::DispatchTouchEvent(TouchEvent* event) {
 }
 
 bool RootWindow::DispatchGestureEvent(GestureEvent* event) {
+  event->UpdateForTransform(layer()->transform());
   Window* target = gesture_handler_ ? gesture_handler_ : capture_window_;
   if (!target)
     target = GetEventHandlerForPoint(event->location());
