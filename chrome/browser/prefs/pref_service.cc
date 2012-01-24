@@ -180,6 +180,7 @@ PrefService* PrefService::CreatePrefService(const FilePath& pref_filename,
 
 PrefService* PrefService::CreateIncognitoPrefService(
     PrefStore* incognito_extension_prefs) {
+  pref_service_forked_ = true;
   PrefNotifierImpl* pref_notifier = new PrefNotifierImpl();
   OverlayUserPrefStore* incognito_pref_store =
       new OverlayUserPrefStore(user_pref_store_.get());
@@ -187,15 +188,15 @@ PrefService* PrefService::CreateIncognitoPrefService(
   return new PrefService(
       pref_notifier,
       pref_value_store_->CloneAndSpecialize(
-          NULL, // managed_platform_prefs
-          NULL, // managed_cloud_prefs
+          NULL,  // managed_platform_prefs
+          NULL,  // managed_cloud_prefs
           incognito_extension_prefs,
-          NULL, // command_line_prefs
+          NULL,  // command_line_prefs
           incognito_pref_store,
-          NULL, // recommended_platform_prefs
-          NULL, // recommended_cloud_prefs
+          NULL,  // recommended_platform_prefs
+          NULL,  // recommended_cloud_prefs
           default_store_.get(),
-          NULL, // pref_sync_associator
+          NULL,  // pref_sync_associator
           pref_notifier),
       incognito_pref_store,
       default_store_.get(),
@@ -204,6 +205,7 @@ PrefService* PrefService::CreateIncognitoPrefService(
 }
 
 PrefService* PrefService::CreatePrefServiceWithPerTabPrefStore() {
+  pref_service_forked_ = true;
   PrefNotifierImpl* pref_notifier = new PrefNotifierImpl();
   OverlayUserPrefStore* per_tab_pref_store =
       new OverlayUserPrefStore(user_pref_store_.get());
@@ -212,13 +214,13 @@ PrefService* PrefService::CreatePrefServiceWithPerTabPrefStore() {
   return new PrefService(
       pref_notifier,
       pref_value_store_->CloneAndSpecialize(
-          NULL, // managed_platform_prefs
-          NULL, // managed_cloud_prefs
-          NULL, // extension_prefs
-          NULL, // command_line_prefs
+          NULL,  // managed_platform_prefs
+          NULL,  // managed_cloud_prefs
+          NULL,  // extension_prefs
+          NULL,  // command_line_prefs
           per_tab_pref_store,
-          NULL, // recommended_platform_prefs
-          NULL, // recommended_cloud_prefs
+          NULL,  // recommended_platform_prefs
+          NULL,  // recommended_cloud_prefs
           default_store,
           NULL,
           pref_notifier),
@@ -238,7 +240,8 @@ PrefService::PrefService(PrefNotifierImpl* pref_notifier,
       pref_value_store_(pref_value_store),
       user_pref_store_(user_prefs),
       default_store_(default_store),
-      pref_sync_associator_(pref_sync_associator) {
+      pref_sync_associator_(pref_sync_associator),
+      pref_service_forked_(false) {
   pref_notifier_->SetPrefService(this);
   if (pref_sync_associator_.get())
     pref_sync_associator_->SetPrefService(this);
@@ -284,14 +287,14 @@ void PrefService::CommitPendingWrite() {
 namespace {
 
 // If there's no g_browser_process or no local state, return true (for testing).
-bool IsLocalStatePrefService(PrefService* prefs){
+bool IsLocalStatePrefService(PrefService* prefs) {
   return (!g_browser_process ||
           !g_browser_process->local_state() ||
           g_browser_process->local_state() == prefs);
 }
 
 // If there's no g_browser_process, return true (for testing).
-bool IsProfilePrefService(PrefService* prefs){
+bool IsProfilePrefService(PrefService* prefs) {
   // TODO(zea): uncomment this once all preferences are only ever registered
   // with either the local_state's pref service or the profile's pref service.
   // return (!g_browser_process || g_browser_process->local_state() != prefs);
@@ -519,7 +522,7 @@ void PrefService::RegisterLocalizedBooleanPref(const char* path,
   DCHECK(IsProfilePrefService(this));
   RegisterPreference(
       path,
-      CreateLocaleDefaultValue(Value::TYPE_BOOLEAN,locale_default_message_id),
+      CreateLocaleDefaultValue(Value::TYPE_BOOLEAN, locale_default_message_id),
       sync_status);
 }
 
@@ -881,6 +884,14 @@ void PrefService::SetUserPrefValue(const char* path, Value* new_value) {
 
 SyncableService* PrefService::GetSyncableService() {
   return pref_sync_associator_.get();
+}
+
+void PrefService::UpdateCommandLinePrefStore(CommandLine* command_line) {
+  // If |pref_service_forked_| is true, then this PrefService and the forked
+  // copies will be out of sync.
+  DCHECK(!pref_service_forked_);
+  pref_value_store_->UpdateCommandLinePrefStore(
+      new CommandLinePrefStore(command_line));
 }
 
 ///////////////////////////////////////////////////////////////////////////////

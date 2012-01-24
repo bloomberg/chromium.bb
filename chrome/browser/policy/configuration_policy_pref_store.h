@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_POLICY_CONFIGURATION_POLICY_PREF_STORE_H_
 #pragma once
 
+#include <string>
+
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
@@ -31,6 +33,7 @@ class ConfigurationPolicyPrefStore
   // PrefStore methods:
   virtual void AddObserver(PrefStore::Observer* observer) OVERRIDE;
   virtual void RemoveObserver(PrefStore::Observer* observer) OVERRIDE;
+  virtual size_t NumberOfObservers() const OVERRIDE;
   virtual bool IsInitializationComplete() const OVERRIDE;
   virtual ReadResult GetValue(const std::string& key,
                               const Value** result) const OVERRIDE;

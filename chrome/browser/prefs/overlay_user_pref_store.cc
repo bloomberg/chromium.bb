@@ -29,6 +29,10 @@ void OverlayUserPrefStore::RemoveObserver(PrefStore::Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
+size_t OverlayUserPrefStore::NumberOfObservers() const {
+  return observers_.size();
+}
+
 bool OverlayUserPrefStore::IsInitializationComplete() const {
   return underlay_->IsInitializationComplete();
 }

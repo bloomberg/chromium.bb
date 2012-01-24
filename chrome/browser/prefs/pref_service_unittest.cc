@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,7 +21,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
-#include "chrome/test/base/testing_pref_service.h"
 #include "chrome/test/base/testing_pref_service.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
@@ -148,6 +147,37 @@ TEST(PrefServiceTest, GetValueChangedType) {
   int actual_int_value = -1;
   EXPECT_TRUE(value->GetAsInteger(&actual_int_value));
   EXPECT_EQ(kTestValue, actual_int_value);
+}
+
+TEST(PrefServiceTest, UpdateCommandLinePrefStore) {
+  TestingPrefService prefs;
+  prefs.RegisterBooleanPref(prefs::kCloudPrintProxyEnabled, false);
+
+  // Check to make sure the value is as expected.
+  const PrefService::Preference* pref =
+      prefs.FindPreference(prefs::kCloudPrintProxyEnabled);
+  ASSERT_TRUE(pref);
+  const Value* value = pref->GetValue();
+  ASSERT_TRUE(value);
+  EXPECT_EQ(Value::TYPE_BOOLEAN, value->GetType());
+  bool actual_bool_value = true;
+  EXPECT_TRUE(value->GetAsBoolean(&actual_bool_value));
+  EXPECT_EQ(false, actual_bool_value);
+
+  // Change the command line.
+  CommandLine cmd_line(CommandLine::NO_PROGRAM);
+  cmd_line.AppendSwitch(switches::kEnableCloudPrintProxy);
+
+  // Call UpdateCommandLinePrefStore and check to see if the value has changed.
+  prefs.UpdateCommandLinePrefStore(&cmd_line);
+  pref = prefs.FindPreference(prefs::kCloudPrintProxyEnabled);
+  ASSERT_TRUE(pref);
+  value = pref->GetValue();
+  ASSERT_TRUE(value);
+  EXPECT_EQ(Value::TYPE_BOOLEAN, value->GetType());
+  actual_bool_value = false;
+  EXPECT_TRUE(value->GetAsBoolean(&actual_bool_value));
+  EXPECT_EQ(true, actual_bool_value);
 }
 
 class PrefServiceSetValueTest : public testing::Test {

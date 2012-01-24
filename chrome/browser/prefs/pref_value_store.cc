@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,8 +25,10 @@ void PrefValueStore::PrefStoreKeeper::Initialize(
     PrefValueStore* store,
     PrefStore* pref_store,
     PrefValueStore::PrefStoreType type) {
-  if (pref_store_.get())
+  if (pref_store_.get()) {
     pref_store_->RemoveObserver(this);
+    DCHECK_EQ(0U, pref_store_->NumberOfObservers());
+  }
   type_ = type;
   pref_value_store_ = store;
   pref_store_ = pref_store;
@@ -183,6 +185,10 @@ bool PrefValueStore::PrefValueExtensionModifiable(const char* name) const {
   PrefStoreType effective_store = ControllingPrefStoreForPref(name);
   return effective_store >= EXTENSION_STORE ||
          effective_store == INVALID_STORE;
+}
+
+void PrefValueStore::UpdateCommandLinePrefStore(PrefStore* command_line_prefs) {
+  InitPrefStore(COMMAND_LINE_STORE, command_line_prefs);
 }
 
 bool PrefValueStore::PrefValueInStore(

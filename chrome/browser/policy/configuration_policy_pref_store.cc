@@ -65,6 +65,10 @@ void ConfigurationPolicyPrefStore::RemoveObserver(
   observers_.RemoveObserver(observer);
 }
 
+size_t ConfigurationPolicyPrefStore::NumberOfObservers() const {
+  return observers_.size();
+}
+
 bool ConfigurationPolicyPrefStore::IsInitializationComplete() const {
   return initialization_complete_;
 }

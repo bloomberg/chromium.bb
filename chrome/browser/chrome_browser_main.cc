@@ -58,7 +58,6 @@
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
 #include "chrome/browser/plugin_prefs.h"
-#include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/pref_value_store.h"
 #include "chrome/browser/prerender/prerender_field_trial.h"
@@ -466,7 +465,7 @@ void InitializeGpuDataManager(const CommandLine& parsed_command_line) {
 
 #if defined(OS_MACOSX)
 OSStatus KeychainCallback(SecKeychainEvent keychain_event,
-                          SecKeychainCallbackInfo *info, void *context) {
+                          SecKeychainCallbackInfo* info, void* context) {
   return noErr;
 }
 #endif
@@ -1263,6 +1262,7 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
   // Convert active labs into switches. Modifies the current command line.
   about_flags::ConvertFlagsToSwitches(local_state_,
                                       CommandLine::ForCurrentProcess());
+  local_state_->UpdateCommandLinePrefStore(CommandLine::ForCurrentProcess());
 
   // Reset the command line in the crash report details, since we may have
   // just changed it to include experiments.

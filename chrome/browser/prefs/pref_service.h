@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,6 +17,7 @@
 #include "base/values.h"
 #include "chrome/common/json_pref_store.h"
 
+class CommandLine;
 class DefaultPrefStore;
 class FilePath;
 class PersistentPrefStore;
@@ -52,7 +53,6 @@ class PrefService : public base::NonThreadSafe {
   // A helper class to store all the information associated with a preference.
   class Preference {
    public:
-
     // The type of the preference is determined by the type with which it is
     // registered. This type needs to be a boolean, integer, double, string,
     // dictionary (a branch), or list.  You shouldn't need to construct this on
@@ -297,6 +297,10 @@ class PrefService : public base::NonThreadSafe {
   // TODO(zea): Have PrefService implement SyncableService directly.
   SyncableService* GetSyncableService();
 
+  // Tell our PrefValueStore to update itself using |command_line|.
+  // Do not call this after having derived an incognito or per tab pref service.
+  void UpdateCommandLinePrefStore(CommandLine* command_line);
+
  protected:
   // Construct a new pref service. This constructor is what
   // factory methods end up calling and what is used for unit tests.
@@ -389,6 +393,11 @@ class PrefService : public base::NonThreadSafe {
 
   // The model associator that maintains the links with the sync db.
   scoped_ptr<PrefModelAssociator> pref_sync_associator_;
+
+  // Whether CreateIncognitoPrefService() or
+  // CreatePrefServiceWithPerTabPrefStore() have been called to create a
+  // "forked" PrefService.
+  bool pref_service_forked_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefService);
 };

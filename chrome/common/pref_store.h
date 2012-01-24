@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -50,6 +50,7 @@ class PrefStore : public base::RefCounted<PrefStore> {
   // Add and remove observers.
   virtual void AddObserver(Observer* observer) {}
   virtual void RemoveObserver(Observer* observer) {}
+  virtual size_t NumberOfObservers() const;
 
   // Whether the store has completed all asynchronous initialization.
   virtual bool IsInitializationComplete() const;
