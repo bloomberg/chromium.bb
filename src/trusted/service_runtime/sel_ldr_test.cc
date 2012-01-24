@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -196,4 +196,59 @@ TEST_F(SelLdrTest, MinimumThreadGenerationTest) {
   // of threads.num_entries it will miss thread2 and not return 300.
   NaClRemoveThread(&app, 0);
   ASSERT_EQ(300, NaClMinimumThreadGeneration(&app));
+}
+
+TEST_F(SelLdrTest, NaClUserToSysAddrRangeTest) {
+  struct NaClApp app;
+
+  ASSERT_EQ(1, NaClAppCtor(&app));
+  /*
+   * addr_bits set appropriately.  mem_start is 0, which is bogus but
+   * doesn't matter wrt to what this is testing.
+   */
+  uintptr_t addr_test;
+  size_t obj_size;
+
+  obj_size = 16;
+
+  /*
+   * small object placement
+   */
+  addr_test = 65536;
+  ASSERT_EQ(addr_test,
+            NaClUserToSysAddrRange(&app, addr_test, obj_size));
+
+  addr_test = ((uintptr_t) 1U << app.addr_bits) - obj_size;
+  ASSERT_EQ(addr_test,
+            NaClUserToSysAddrRange(&app, addr_test, obj_size));
+
+  addr_test = ((uintptr_t) 1U << app.addr_bits) - obj_size + 1;
+  ASSERT_EQ(kNaClBadAddress,
+            NaClUserToSysAddrRange(&app, addr_test, obj_size));
+
+  /* size-based exceed range */
+  addr_test = 65536;
+  obj_size = ((uintptr_t) 1U << app.addr_bits) - addr_test;
+  ASSERT_EQ(addr_test,
+            NaClUserToSysAddrRange(&app, addr_test, obj_size));
+
+  addr_test = 65536;
+  obj_size = ((uintptr_t) 1U << app.addr_bits) - addr_test + 1;
+  ASSERT_EQ(kNaClBadAddress,
+            NaClUserToSysAddrRange(&app, addr_test, obj_size));
+
+  /*
+   * wraparound; assumes ~(uintptr_t) 0 is greater than
+   * ((uintptr_t) 1U) << app.addr_bits
+   */
+
+  addr_test = 65536;
+  obj_size = ~(uintptr_t) 0U - addr_test;
+  ASSERT_EQ(kNaClBadAddress,
+            NaClUserToSysAddrRange(&app, addr_test, obj_size));
+
+  addr_test = 65536;
+  obj_size = ~(uintptr_t) 0U - addr_test + 1;
+  ASSERT_EQ(kNaClBadAddress,
+            NaClUserToSysAddrRange(&app, addr_test, obj_size));
 }
