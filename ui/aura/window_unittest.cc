@@ -796,7 +796,13 @@ TEST_F(WindowTest, Transform) {
 }
 
 // Tests that gesture events are transformed correctly.
-TEST_F(WindowTest, TransformGesture) {
+// See http://crbug.com/111262
+#if defined(OS_WIN)
+#define MAYBE_TransformGesture FAILS_TransformGesture
+#else
+#define MAYBE_TransformGesture TransformGesture
+#endif
+TEST_F(WindowTest, MAYBE_TransformGesture) {
   RootWindow* root_window = RootWindow::GetInstance();
   gfx::Size size = root_window->GetHostSize();
 
