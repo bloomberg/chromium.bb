@@ -130,6 +130,8 @@ const int kMinContentsSize = 50;
     // If devtools are already visible, keep the current size.
     splitOffset = dockToRight_ ? NSWidth([[subviews objectAtIndex:1] frame])
                                : NSHeight([[subviews objectAtIndex:1] frame]);
+    [splitView_ replaceSubview:[subviews objectAtIndex:1]
+                          with:container];
   }
 
   // Make sure |splitOffset| isn't too large or too small.
