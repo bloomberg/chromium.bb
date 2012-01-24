@@ -945,7 +945,8 @@ TEST_P(VideoDecodeAcceleratorTest, TestSimpleDecode) {
 
   // Read in the video data.
   std::string data_str;
-  CHECK(file_util::ReadFileToString(FilePath(test_video_file), &data_str));
+  CHECK(file_util::ReadFileToString(FilePath(test_video_file), &data_str))
+      << "test_video_file: " << test_video_file;
 
   // Initialize the rendering helper.
   base::Thread rendering_thread("EglRenderingVDAClientThread");
@@ -1147,6 +1148,7 @@ int main(int argc, char **argv) {
        it != switches.end(); ++it) {
     if (it->first == "test_video_data") {
       test_video_data = it->second.c_str();
+      continue;
     }
     LOG(FATAL) << "Unexpected switch: " << it->first << ":" << it->second;
   }
