@@ -602,7 +602,6 @@ int32_t WebRtcAudioDeviceImpl::StartPlayout() {
 
 int32_t WebRtcAudioDeviceImpl::StopPlayout() {
   DVLOG(1) << "StopPlayout()";
-  DCHECK(audio_output_device_);
   if (!playing_) {
     // webrtc::VoiceEngine assumes that it is OK to call Stop() just in case.
     return 0;
@@ -628,7 +627,7 @@ int32_t WebRtcAudioDeviceImpl::StartRecording() {
     LOG(WARNING) << session_id_ << " is an invalid session id.";
     // TODO(xians): enable the return -1 when MediaStreamManager can handle
     // AudioInputDeviceManager.
-//    return -1;
+    // return -1;
   }
 
   base::AutoLock auto_lock(lock_);
@@ -647,12 +646,11 @@ int32_t WebRtcAudioDeviceImpl::StartRecording() {
 
 int32_t WebRtcAudioDeviceImpl::StopRecording() {
   DVLOG(1) << "StopRecording()";
-  DCHECK(audio_input_device_);
-
   {
     base::AutoLock auto_lock(lock_);
     if (!recording_) {
-      // webrtc::VoiceEngine assumes that it is OK to call Stop() just in case.
+      // webrtc::VoiceEngine assumes that it is OK to call Stop()
+      // more than once.
       return 0;
     }
   }
