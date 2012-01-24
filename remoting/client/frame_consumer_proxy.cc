@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -48,17 +48,17 @@ void FrameConsumerProxy::ReleaseFrame(media::VideoFrame* frame) {
 }
 
 void FrameConsumerProxy::OnPartialFrameOutput(media::VideoFrame* frame,
-                                              SkRegion* region,
+                                              RectVector* rects,
                                               const base::Closure& done) {
   if (!frame_consumer_message_loop_->BelongsToCurrentThread()) {
     frame_consumer_message_loop_->PostTask(FROM_HERE, base::Bind(
         &FrameConsumerProxy::OnPartialFrameOutput, this,
-        make_scoped_refptr(frame), region, done));
+        make_scoped_refptr(frame), rects, done));
     return;
   }
 
   if (frame_consumer_)
-    frame_consumer_->OnPartialFrameOutput(frame, region, done);
+    frame_consumer_->OnPartialFrameOutput(frame, rects, done);
 }
 
 void FrameConsumerProxy::Detach() {

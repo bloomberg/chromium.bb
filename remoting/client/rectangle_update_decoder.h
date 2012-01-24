@@ -71,14 +71,14 @@ class RectangleUpdateDecoder :
   void DoRefresh();
 
   // Callback for FrameConsumer::OnPartialFrameOutput()
-  void OnFrameConsumed(SkRegion* region);
+  void OnFrameConsumed(RectVector* rects);
 
   scoped_refptr<base::MessageLoopProxy> message_loop_;
   FrameConsumer* consumer_;
 
   SkISize screen_size_;
   SkIRect clip_rect_;
-  SkRegion refresh_region_;
+  RectVector refresh_rects_;
 
   scoped_ptr<Decoder> decoder_;
   bool decoder_needs_reset_;

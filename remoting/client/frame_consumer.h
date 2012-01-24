@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -40,13 +40,13 @@ class FrameConsumer {
   virtual void ReleaseFrame(media::VideoFrame* frame) = 0;
 
   // OnPartialFrameOutput() is called every time at least one rectangle of
-  // output is produced.  The |frame| is guaranteed to have valid data for all
-  // of |region|.
+  // output is produced.  The |frame| is guaranteed to have valid data for every
+  // region included in the |rects| list.
   //
-  // Both |frame| and |region| are guaranteed to be valid until the |done|
+  // Both |frame| and |rects| are guaranteed to be valid until the |done|
   // callback is invoked.
   virtual void OnPartialFrameOutput(media::VideoFrame* frame,
-                                    SkRegion* region,
+                                    RectVector* rects,
                                     const base::Closure& done) = 0;
 
  private:

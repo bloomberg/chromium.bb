@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -48,7 +48,7 @@ class PepperView : public ChromotingView,
                              const base::Closure& done) OVERRIDE;
   virtual void ReleaseFrame(media::VideoFrame* frame) OVERRIDE;
   virtual void OnPartialFrameOutput(media::VideoFrame* frame,
-                                    SkRegion* region,
+                                    RectVector* rects,
                                     const base::Closure& done) OVERRIDE;
 
   // Sets the display size of this view.  Returns true if plugin size has
@@ -69,7 +69,7 @@ class PepperView : public ChromotingView,
   // Set the dimension of the entire host screen.
   void SetHostSize(const SkISize& host_size);
 
-  void PaintFrame(media::VideoFrame* frame, const SkRegion& region);
+  void PaintFrame(media::VideoFrame* frame, RectVector* rects);
 
   // Render the rectangle of |frame| to the backing store.
   // Returns true if this rectangle is not clipped.

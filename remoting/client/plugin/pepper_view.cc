@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -110,7 +110,7 @@ void PepperView::SetHostSize(const SkISize& host_size) {
       host_size.width(), host_size.height());
 }
 
-void PepperView::PaintFrame(media::VideoFrame* frame, const SkRegion& region) {
+void PepperView::PaintFrame(media::VideoFrame* frame, RectVector* rects) {
   DCHECK(context_->main_message_loop()->BelongsToCurrentThread());
 
   SetHostSize(SkISize::Make(frame->width(), frame->height()));
@@ -124,8 +124,8 @@ void PepperView::PaintFrame(media::VideoFrame* frame, const SkRegion& region) {
 
   // Copy updated regions to the backing store and then paint the regions.
   bool changes_made = false;
-  for (SkRegion::Iterator i(region); !i.done(); i.next())
-    changes_made |= PaintRect(frame, i.rect());
+  for (size_t i = 0; i < rects->size(); ++i)
+    changes_made |= PaintRect(frame, (*rects)[i]);
 
   if (changes_made)
     FlushGraphics(start_time);
@@ -313,13 +313,13 @@ void PepperView::ReleaseFrame(media::VideoFrame* frame) {
 }
 
 void PepperView::OnPartialFrameOutput(media::VideoFrame* frame,
-                                      SkRegion* region,
+                                      RectVector* rects,
                                       const base::Closure& done) {
   DCHECK(context_->main_message_loop()->BelongsToCurrentThread());
 
   // TODO(ajwong): Clean up this API to be async so we don't need to use a
   // member variable as a hack.
-  PaintFrame(frame, *region);
+  PaintFrame(frame, rects);
   done.Run();
 }
 

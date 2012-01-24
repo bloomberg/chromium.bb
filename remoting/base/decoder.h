@@ -1,16 +1,20 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef REMOTING_BASE_DECODER_H_
 #define REMOTING_BASE_DECODER_H_
 
+#include <vector>
+
 #include "base/memory/scoped_ptr.h"
 #include "media/base/video_frame.h"
 #include "remoting/proto/video.pb.h"
-#include "third_party/skia/include/core/SkRegion.h"
+#include "third_party/skia/include/core/SkRect.h"
 
 namespace remoting {
+
+typedef std::vector<SkIRect> RectVector;
 
 // Interface for a decoder that takes a stream of bytes from the network and
 // outputs frames of data.
@@ -38,10 +42,10 @@ class Decoder {
   // Feeds more data into the decoder.
   virtual DecodeResult DecodePacket(const VideoPacket* packet) = 0;
 
-  // Returns the region affected by the most recent frame.  Can be called only
+  // Returns rects that were updated in the last frame. Can be called only
   // after DecodePacket returned DECODE_DONE. Caller keeps ownership of
-  // |region|.
-  virtual void GetUpdatedRegion(SkRegion* region) = 0;
+  // |rects|. |rects| is kept empty if whole screen needs to be updated.
+  virtual void GetUpdatedRects(RectVector* rects) = 0;
 
   // Reset the decoder to an uninitialized state. Release all references to
   // the initialized |frame|.  Initialize() must be called before the decoder
@@ -61,12 +65,14 @@ class Decoder {
   // Set the clipping rectangle to the decoder. Decoder should respect this and
   // only output changes in this rectangle. The new clipping rectangle will be
   // effective on the next decoded video frame.
+  //
+  // When scaling is enabled clipping rectangles are ignored.
   virtual void SetClipRect(const SkIRect& clip_rect) {}
 
-  // Force decoder to output a frame based on the specified |region| of the
-  // most recently decoded video frame.  |region| is expressed in video frame
-  // rather than output coordinates.
-  virtual void RefreshRegion(const SkRegion& region) {}
+  // Force decoder to output a video frame with content in |rects| using the
+  // last decoded video frame.  |rects| are expressed in video frame rather
+  // than output coordinates.
+  virtual void RefreshRects(const RectVector& rects) {}
 };
 
 }  // namespace remoting

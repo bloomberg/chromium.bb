@@ -140,7 +140,7 @@ void RectangleUpdateDecoder::SetOutputSize(const SkISize& size) {
   // TODO(wez): Refresh the frame only if the ratio has changed.
   if (frame_) {
     SkIRect frame_rect = SkIRect::MakeWH(frame_->width(), frame_->height());
-    refresh_region_.op(frame_rect, SkRegion::kUnion_Op);
+    refresh_rects_.push_back(frame_rect);
   }
 
   // TODO(hclam): If the scale ratio has changed we should reallocate a
@@ -166,7 +166,7 @@ void RectangleUpdateDecoder::UpdateClipRect(const SkIRect& new_clip_rect) {
   // TODO(wez): Only refresh newly-exposed portions of the frame.
   if (frame_) {
     SkIRect frame_rect = SkIRect::MakeWH(frame_->width(), frame_->height());
-    refresh_region_.op(frame_rect, SkRegion::kUnion_Op);
+    refresh_rects_.push_back(frame_rect);
   }
 
   clip_rect_ = new_clip_rect;
@@ -188,9 +188,9 @@ void RectangleUpdateDecoder::RefreshFullFrame() {
   if (!frame_ || !decoder_.get())
     return;
 
-  SkIRect frame_rect = SkIRect::MakeWH(frame_->width(), frame_->height());
-  refresh_region_.op(frame_rect, SkRegion::kUnion_Op);
-
+  refresh_rects_.push_back(
+      SkIRect::MakeWH(static_cast<int>(frame_->width()),
+                      static_cast<int>(frame_->height())));
   DoRefresh();
 }
 
@@ -200,33 +200,33 @@ void RectangleUpdateDecoder::SubmitToConsumer() {
   if (!frame_)
     return;
 
-  SkRegion* dirty_region = new SkRegion;
-  decoder_->GetUpdatedRegion(dirty_region);
+  RectVector* dirty_rects = new RectVector();
+  decoder_->GetUpdatedRects(dirty_rects);
 
-  consumer_->OnPartialFrameOutput(frame_, dirty_region, base::Bind(
-      &RectangleUpdateDecoder::OnFrameConsumed, this, dirty_region));
+  consumer_->OnPartialFrameOutput(frame_, dirty_rects, base::Bind(
+      &RectangleUpdateDecoder::OnFrameConsumed, this, dirty_rects));
 }
 
 void RectangleUpdateDecoder::DoRefresh() {
   DCHECK(message_loop_->BelongsToCurrentThread());
 
-  if (refresh_region_.isEmpty())
+  if (refresh_rects_.empty())
     return;
 
-  decoder_->RefreshRegion(refresh_region_);
-  refresh_region_.setEmpty();
+  decoder_->RefreshRects(refresh_rects_);
+  refresh_rects_.clear();
   SubmitToConsumer();
 }
 
-void RectangleUpdateDecoder::OnFrameConsumed(SkRegion* region) {
+void RectangleUpdateDecoder::OnFrameConsumed(RectVector* rects) {
   if (!message_loop_->BelongsToCurrentThread()) {
     message_loop_->PostTask(
         FROM_HERE, base::Bind(&RectangleUpdateDecoder::OnFrameConsumed,
-                              this, region));
+                              this, rects));
     return;
   }
 
-  delete region;
+  delete rects;
 
   DoRefresh();
 }
