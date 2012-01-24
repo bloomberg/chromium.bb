@@ -1,0 +1,5 @@
+VALIDATOR: 0000000000000000: 66 ff e0                                     jmp %ax
+VALIDATOR: ERROR: Invalid indirect jump
+VALIDATOR: Checking jump targets: 0 to 3
+VALIDATOR: Checking that basic blocks are aligned
+*** <input> IS UNSAFE ***

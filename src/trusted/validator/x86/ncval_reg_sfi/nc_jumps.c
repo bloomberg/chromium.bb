@@ -314,18 +314,19 @@ static Bool NaClIsAddRbaseToReg64(NaClValidatorState* vstate,
 static void NaClAddRegisterJumpIndirect64(NaClValidatorState* vstate,
                                           NaClExp* reg) {
   NaClOpKind jump_reg, and_reg32, and_reg64;
-  DEBUG(NaClLog(LOG_INFO, "checking indirect jump: ");
-        NaClInstStateInstPrint(NaClLogGetGio(), vstate->cur_inst_state);
-        gprintf(NaClLogGetGio(), "jump_reg = %s\n", NaClOpKindName(jump_reg)));
 
   /* Do the following block exactly once. Use loop so that "break" can
    * be used for premature exit of block.
    */
   do {
     /* Check that jump register is 64-bit. */
-    if (!NaClHasBit(reg->flags, NACL_EFLAG(ExprSize64))) return;
+    if (!NaClHasBit(reg->flags, NACL_EFLAG(ExprSize64))) break;
     jump_reg = NaClGetExpRegisterInline(reg);
-    if (RegUnknown == jump_reg) return;
+    if (RegUnknown == jump_reg) break;
+    DEBUG(NaClLog(LOG_INFO, "checking indirect jump: ");
+          NaClInstStateInstPrint(NaClLogGetGio(), vstate->cur_inst_state);
+          gprintf(NaClLogGetGio(), "jump_reg = %s\n",
+                  NaClOpKindName(jump_reg)));
 
     /* Check that sequence begins with an appropriate and instruction. */
     and_reg32 = NaClGetAndMaskReg32(vstate, 2);
@@ -375,18 +376,19 @@ static void NaClAddRegisterJumpIndirect64(NaClValidatorState* vstate,
 static void NaClAddRegisterJumpIndirect32(NaClValidatorState* vstate,
                                           NaClExp* reg) {
   NaClOpKind jump_reg, and_reg;
-  DEBUG(NaClLog(LOG_INFO, "checking indirect jump: ");
-        NaClInstStateInstPrint(NaClLogGetGio(), vstate->cur_inst_state);
-        gprintf(NaClLogGetGio(), "jump_reg = %s\n", NaClOpKindName(jump_reg)));
 
   /* Do the following block exactly once. Use loop so that "break" can
    * be used for premature exit of block.
    */
   do {
     /* Check that jump register is 32-bit. */
-    if (!NaClHasBit(reg->flags, NACL_EFLAG(ExprSize32))) return;
+    if (!NaClHasBit(reg->flags, NACL_EFLAG(ExprSize32))) break;
     jump_reg = NaClGetExpRegisterInline(reg);
-    if (RegUnknown == jump_reg) return;
+    if (RegUnknown == jump_reg) break;
+    DEBUG(NaClLog(LOG_INFO, "checking indirect jump: ");
+          NaClInstStateInstPrint(NaClLogGetGio(), vstate->cur_inst_state);
+          gprintf(NaClLogGetGio(), "jump_reg = %s\n",
+                  NaClOpKindName(jump_reg)));
 
     /* Check that sequence begins with an appropriate and instruction. */
     and_reg = NaClGetAndMaskReg32(vstate, 1);
