@@ -44,7 +44,7 @@ class AccessTokenStore : public base::RefCountedThreadSafe<AccessTokenStore> {
   // in Chrome the call to obtain this must also be performed on the UI thread
   // so it is efficient to piggyback it onto this request.
   // Takes ownership of |callback|.
-  CONTENT_EXPORT virtual void LoadAccessTokens(
+  virtual void LoadAccessTokens(
       const LoadAccessTokensCallbackType& callback) = 0;
 
   virtual void SaveAccessToken(
@@ -52,11 +52,8 @@ class AccessTokenStore : public base::RefCountedThreadSafe<AccessTokenStore> {
 
  protected:
   friend class base::RefCountedThreadSafe<AccessTokenStore>;
-  CONTENT_EXPORT AccessTokenStore();
-  CONTENT_EXPORT virtual ~AccessTokenStore();
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(AccessTokenStore);
+  CONTENT_EXPORT AccessTokenStore() {}
+  CONTENT_EXPORT virtual ~AccessTokenStore() {}
 };
 
 }  // namespace content

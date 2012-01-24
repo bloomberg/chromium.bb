@@ -19,15 +19,12 @@
 #include "chrome/browser/ui/tab_contents/test_tab_contents_wrapper.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/browser/geolocation/arbitrator_dependency_factories_for_test.h"
-#include "content/browser/geolocation/location_arbitrator.h"
-#include "content/browser/geolocation/location_provider.h"
-#include "content/browser/geolocation/mock_location_provider.h"
 #include "content/browser/renderer_host/mock_render_process_host.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
+#include "content/test/mock_geolocation.h"
 #include "content/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -142,7 +139,7 @@ class GeolocationPermissionContextTests : public TabContentsWrapperTestHarness {
   virtual void TearDown();
 
   content::TestBrowserThread ui_thread_;
-  scoped_refptr<GeolocationArbitratorDependencyFactory> dependency_factory_;
+  content::MockGeolocation mock_geolocation_;
 
   // A map between renderer child id and a pair represending the bridge id and
   // whether the requested permission was allowed.
@@ -151,10 +148,7 @@ class GeolocationPermissionContextTests : public TabContentsWrapperTestHarness {
 
 GeolocationPermissionContextTests::GeolocationPermissionContextTests()
     : TabContentsWrapperTestHarness(),
-      ui_thread_(BrowserThread::UI, MessageLoop::current()),
-      dependency_factory_(
-          new GeolocationArbitratorDependencyFactoryWithLocationProvider(
-              &NewAutoSuccessMockNetworkLocationProvider)) {
+      ui_thread_(BrowserThread::UI, MessageLoop::current()) {
 }
 
 GeolocationPermissionContextTests::~GeolocationPermissionContextTests() {
@@ -235,14 +229,13 @@ void GeolocationPermissionContextTests::CheckTabContentsState(
 
 void GeolocationPermissionContextTests::SetUp() {
   TabContentsWrapperTestHarness::SetUp();
-  GeolocationArbitrator::SetDependencyFactoryForTest(
-      dependency_factory_.get());
+  mock_geolocation_.Setup();
   geolocation_permission_context_ =
       new ChromeGeolocationPermissionContext(profile());
 }
 
 void GeolocationPermissionContextTests::TearDown() {
-  GeolocationArbitrator::SetDependencyFactoryForTest(NULL);
+  mock_geolocation_.TearDown();
   TabContentsWrapperTestHarness::TearDown();
 }
 

@@ -24,14 +24,13 @@
 #include "chrome/common/content_settings_pattern.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/browser/geolocation/arbitrator_dependency_factories_for_test.h"
-#include "content/browser/geolocation/location_arbitrator.h"
-#include "content/browser/geolocation/mock_location_provider.h"
 #include "content/browser/renderer_host/render_view_host.h"
+#include "content/common/geoposition.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/web_contents.h"
+#include "content/test/mock_geolocation.h"
 #include "net/base/net_util.h"
 #include "net/test/test_server.h"
 
@@ -191,12 +190,6 @@ class GeolocationNotificationObserver : public content::NotificationObserver {
   std::string javascript_response_;
 };
 
-void NotifyGeoposition(const Geoposition& geoposition) {
-  DCHECK(MockLocationProvider::instance_);
-  MockLocationProvider::instance_->HandlePositionChanged(geoposition);
-  LOG(WARNING) << "MockLocationProvider listeners updated";
-}
-
 // This is a browser test for Geolocation.
 // It exercises various integration points from javascript <-> browser:
 // 1. Infobar is displayed when a geolocation is requested from an unauthorized
@@ -212,23 +205,19 @@ class GeolocationBrowserTest : public InProcessBrowserTest {
     : infobar_(NULL),
       current_browser_(NULL),
       html_for_tests_("files/geolocation/simple.html"),
-      started_test_server_(false),
-      dependency_factory_(
-          new GeolocationArbitratorDependencyFactoryWithLocationProvider(
-              &NewAutoSuccessMockNetworkLocationProvider)) {
+      started_test_server_(false) {
     EnableDOMAutomation();
   }
 
   // InProcessBrowserTest
   virtual void SetUpInProcessBrowserTestFixture() {
-    GeolocationArbitrator::SetDependencyFactoryForTest(
-        dependency_factory_.get());
+    mock_geolocation_.Setup();
   }
 
   // InProcessBrowserTest
   virtual void TearDownInProcessBrowserTestFixture() {
     LOG(WARNING) << "TearDownInProcessBrowserTestFixture. Test Finished.";
-    GeolocationArbitrator::SetDependencyFactoryForTest(NULL);
+    mock_geolocation_.TearDown();
   }
 
   enum InitializationOptions {
@@ -366,6 +355,11 @@ class GeolocationBrowserTest : public InProcessBrowserTest {
         expected, function, current_browser_->GetSelectedWebContents());
   }
 
+  void NotifyGeoposition(const Geoposition& geoposition) {
+    mock_geolocation_.SetCurrentPosition(geoposition);
+    LOG(WARNING) << "MockLocationProvider listeners updated";
+  }
+
   InfoBarDelegate* infobar_;
   Browser* current_browser_;
   // path element of a URL referencing the html content for this test.
@@ -381,7 +375,7 @@ class GeolocationBrowserTest : public InProcessBrowserTest {
   // TODO(phajdan.jr): Remove after we can ask TestServer whether it is started.
   bool started_test_server_;
 
-  scoped_refptr<GeolocationArbitratorDependencyFactory> dependency_factory_;
+  content::MockGeolocation mock_geolocation_;
 };
 
 IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, DisplaysPermissionBar) {
@@ -393,7 +387,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, Geoposition) {
   ASSERT_TRUE(Initialize(INITIALIZATION_NONE));
   AddGeolocationWatch(true);
   SetInfobarResponse(current_url_, true);
-  CheckGeoposition(MockLocationProvider::instance_->position_);
+  CheckGeoposition(mock_geolocation_.GetCurrentPosition());
 }
 
 // Crashy, http://crbug.com/70585.
@@ -422,7 +416,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, MAYBE_NoInfobarForSecondTab) {
   // Checks infobar will not be created a second tab.
   ASSERT_TRUE(Initialize(INITIALIZATION_NEWTAB));
   AddGeolocationWatch(false);
-  CheckGeoposition(MockLocationProvider::instance_->position_);
+  CheckGeoposition(mock_geolocation_.GetCurrentPosition());
 }
 
 // http://crbug.com/44589. Hangs on Mac, crashes on Windows
@@ -464,7 +458,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, MAYBE_NoInfobarForAllowedOrigin) 
                         CONTENT_SETTING_ALLOW);
   // Checks no infobar will be created and there's no error callback.
   AddGeolocationWatch(false);
-  CheckGeoposition(MockLocationProvider::instance_->position_);
+  CheckGeoposition(mock_geolocation_.GetCurrentPosition());
 }
 
 IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, NoInfobarForOffTheRecord) {
@@ -473,13 +467,13 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, NoInfobarForOffTheRecord) {
   AddGeolocationWatch(true);
   // Response will be persisted
   SetInfobarResponse(current_url_, true);
-  CheckGeoposition(MockLocationProvider::instance_->position_);
+  CheckGeoposition(mock_geolocation_.GetCurrentPosition());
   // Disables further prompts from this tab.
   CheckStringValueFromJavascript("0", "geoSetMaxNavigateCount(0)");
   // Go incognito, and checks no infobar will be created.
   ASSERT_TRUE(Initialize(INITIALIZATION_OFFTHERECORD));
   AddGeolocationWatch(false);
-  CheckGeoposition(MockLocationProvider::instance_->position_);
+  CheckGeoposition(mock_geolocation_.GetCurrentPosition());
 }
 
 // Test fails: http://crbug.com/90927
@@ -493,7 +487,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest,
   iframe_xpath_ = L"//iframe[@id='iframe_0']";
   AddGeolocationWatch(true);
   SetInfobarResponse(iframe_urls_[0], true);
-  CheckGeoposition(MockLocationProvider::instance_->position_);
+  CheckGeoposition(mock_geolocation_.GetCurrentPosition());
   // Disables further prompts from this iframe.
   CheckStringValueFromJavascript("0", "geoSetMaxNavigateCount(0)");
 
@@ -505,8 +499,6 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest,
   // Back to the first frame, enable navigation and refresh geoposition.
   iframe_xpath_ = L"//iframe[@id='iframe_0']";
   CheckStringValueFromJavascript("1", "geoSetMaxNavigateCount(1)");
-  // MockLocationProvider must have been created.
-  ASSERT_TRUE(MockLocationProvider::instance_);
   Geoposition fresh_position = GeopositionFromLatLong(3.17, 4.23);
   ui_test_utils::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
@@ -538,12 +530,10 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest,
   iframe_xpath_ = L"//iframe[@id='iframe_0']";
   AddGeolocationWatch(true);
   SetInfobarResponse(iframe_urls_[0], true);
-  CheckGeoposition(MockLocationProvider::instance_->position_);
+  CheckGeoposition(mock_geolocation_.GetCurrentPosition());
 
   // Refresh geoposition, but let's not yet create the watch on the second frame
   // so that it'll fetch from cache.
-  // MockLocationProvider must have been created.
-  ASSERT_TRUE(MockLocationProvider::instance_);
   Geoposition cached_position = GeopositionFromLatLong(5.67, 8.09);
   ui_test_utils::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
@@ -578,7 +568,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest,
   iframe_xpath_ = L"//iframe[@id='iframe_0']";
   AddGeolocationWatch(true);
   SetInfobarResponse(iframe_urls_[0], true);
-  CheckGeoposition(MockLocationProvider::instance_->position_);
+  CheckGeoposition(mock_geolocation_.GetCurrentPosition());
   // Disables further prompts from this iframe.
   CheckStringValueFromJavascript("0", "geoSetMaxNavigateCount(0)");
 
@@ -622,14 +612,14 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, DISABLED_NoInfoBarBeforeStart) {
   iframe_xpath_ = L"//iframe[@id='iframe_0']";
   AddGeolocationWatch(true);
   SetInfobarResponse(iframe_urls_[0], true);
-  CheckGeoposition(MockLocationProvider::instance_->position_);
+  CheckGeoposition(mock_geolocation_.GetCurrentPosition());
   CheckStringValueFromJavascript("0", "geoSetMaxNavigateCount(0)");
 
   // Permission should be requested after adding a watch.
   iframe_xpath_ = L"//iframe[@id='iframe_1']";
   AddGeolocationWatch(true);
   SetInfobarResponse(iframe_urls_[1], true);
-  CheckGeoposition(MockLocationProvider::instance_->position_);
+  CheckGeoposition(mock_geolocation_.GetCurrentPosition());
 }
 
 IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, TwoWatchesInOneFrame) {
@@ -649,7 +639,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, TwoWatchesInOneFrame) {
   // Send a position which both geolocation watches will receive.
   AddGeolocationWatch(true);
   SetInfobarResponse(current_url_, true);
-  CheckGeoposition(MockLocationProvider::instance_->position_);
+  CheckGeoposition(mock_geolocation_.GetCurrentPosition());
 
   // The second watch will now have cancelled. Ensure an update still makes
   // its way through to the first watcher.

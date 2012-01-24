@@ -25,7 +25,6 @@
     '<(INTERMEDIATE_DIR)',
   ],
   'sources': [
-    'public/browser/access_token_store.cc',
     'public/browser/access_token_store.h',
     'public/browser/browser_child_process_host.h',
     'public/browser/browser_child_process_host_delegate.cc',

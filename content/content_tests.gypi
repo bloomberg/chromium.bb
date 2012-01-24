@@ -86,6 +86,8 @@
         'test/content_test_suite.cc',
         'test/content_test_suite.h',
         'test/js_injection_ready_observer.h',
+        'test/mock_geolocation.cc',
+        'test/mock_geolocation.h',
         'test/mock_keyboard.cc',
         'test/mock_keyboard.h',
         'test/mock_keyboard_driver_win.cc',
