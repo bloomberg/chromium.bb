@@ -38,15 +38,6 @@ class WebSharedWorkerProxy : public WebKit::WebSharedWorker,
   virtual void connect(WebKit::WebMessagePortChannel* channel,
                        ConnectListener* listener);
 
-  // API is evolving from first form to second.  This function must remain
-  // virtual to avoid conflicts on the webkit roll.
-  // DEPRECATED
-  virtual void startWorkerContext(const WebKit::WebURL& script_url,
-                                  const WebKit::WebString& name,
-                                  const WebKit::WebString& user_agent,
-                                  const WebKit::WebString& source_code,
-                                  long long script_resource_appcache_id);
-
   virtual void startWorkerContext(
       const WebKit::WebURL& script_url,
       const WebKit::WebString& name,

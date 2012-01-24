@@ -122,18 +122,6 @@ void WebSharedWorkerProxy::startWorkerContext(
     const WebKit::WebString& name,
     const WebKit::WebString& user_agent,
     const WebKit::WebString& source_code,
-    long long script_resource_appcache_id) {
-  CreateWorkerContext(
-      script_url, true, name, user_agent, source_code, string16(),
-      WebKit::WebContentSecurityPolicyTypeReportOnly, pending_route_id_,
-      script_resource_appcache_id);
-}
-
-void WebSharedWorkerProxy::startWorkerContext(
-    const WebKit::WebURL& script_url,
-    const WebKit::WebString& name,
-    const WebKit::WebString& user_agent,
-    const WebKit::WebString& source_code,
     const WebKit::WebString& content_security_policy,
     WebKit::WebContentSecurityPolicyType policy_type,
     long long script_resource_appcache_id) {
