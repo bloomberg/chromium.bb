@@ -425,9 +425,11 @@ PP_Bool PPB_WebSocket_Impl::SetBinaryType(
     default:
       return PP_FALSE;
   }
-  if (!websocket_.get())
-    return PP_FALSE;
-  websocket_->setBinaryType(binary_type_);
+  // WebKit API setBinaryType() is called when Connect() is called.
+  // If the websocket_ contains an object; it means Connect() is already
+  // called, call WebKit API here to reflect the setting as soon as possible.
+  if (websocket_.get())
+    websocket_->setBinaryType(binary_type_);
   return PP_TRUE;
 }
 

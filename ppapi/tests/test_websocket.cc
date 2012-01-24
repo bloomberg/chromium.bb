@@ -572,7 +572,7 @@ std::string TestWebSocket::TestCcInterfaces() {
   ASSERT_TRUE(AreEqualWithString(ws.GetURL().pp_var(), ""));
 
   // Check communication interfaces (connect, send, receive, and close).
-  ws.SetBinaryType(PP_WEBSOCKETBINARYTYPE_ARRAYBUFFER_DEV);
+  ASSERT_TRUE(ws.SetBinaryType(PP_WEBSOCKETBINARYTYPE_ARRAYBUFFER_DEV));
   TestCompletionCallback connect_callback(instance_->pp_instance());
   int32_t result = ws.Connect(pp::Var(std::string(kCloseServerURL)), NULL, 0U,
       connect_callback);
