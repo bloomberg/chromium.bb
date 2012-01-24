@@ -525,7 +525,17 @@ TEST_PPAPI_NACL_VIA_HTTP(PostMessage_SendingData)
 TEST_PPAPI_NACL_VIA_HTTP(PostMessage_SendingArrayBuffer)
 TEST_PPAPI_NACL_VIA_HTTP(PostMessage_MessageEvent)
 TEST_PPAPI_NACL_VIA_HTTP(PostMessage_NoHandler)
+#if defined(OS_WIN)
+// Flaky: http://crbug.com/111209
+//
+// Note from sheriffs miket and syzm: we're not convinced that this test is
+// directly to blame for the flakiness. It's possible that it's a more general
+// problem that is exposing itself only with one of the later tests in this
+// series.
+TEST_PPAPI_NACL_VIA_HTTP(FLAKY_PostMessage_ExtraParam)
+#else
 TEST_PPAPI_NACL_VIA_HTTP(PostMessage_ExtraParam)
+#endif
 
 TEST_PPAPI_IN_PROCESS(Memory)
 TEST_PPAPI_OUT_OF_PROCESS(Memory)
