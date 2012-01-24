@@ -2125,13 +2125,20 @@ void RenderWidgetHostViewWin::AccessibilityDoDefaultAction(int acc_obj_id) {
   render_widget_host_->AccessibilityDoDefaultAction(acc_obj_id);
 }
 
-void RenderWidgetHostViewWin::AccessibilityChangeScrollPosition(
-    int acc_obj_id, int scroll_x, int scroll_y) {
+void RenderWidgetHostViewWin::AccessibilityScrollToMakeVisible(
+    int acc_obj_id, gfx::Rect subfocus) {
   if (!render_widget_host_)
     return;
 
-  render_widget_host_->AccessibilityChangeScrollPosition(
-      acc_obj_id, scroll_x, scroll_y);
+  render_widget_host_->AccessibilityScrollToMakeVisible(acc_obj_id, subfocus);
+}
+
+void RenderWidgetHostViewWin::AccessibilityScrollToPoint(
+    int acc_obj_id, gfx::Point point) {
+  if (!render_widget_host_)
+    return;
+
+  render_widget_host_->AccessibilityScrollToPoint(acc_obj_id, point);
 }
 
 void RenderWidgetHostViewWin::AccessibilitySetTextSelection(

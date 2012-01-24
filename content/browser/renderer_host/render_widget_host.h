@@ -418,9 +418,18 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Channel::Listener,
   // Relay a request from assistive technology to set focus to a given node.
   void AccessibilitySetFocus(int object_id);
 
-  // Relay a request from assistive technology to scroll.
-  void AccessibilityChangeScrollPosition(
-      int acc_obj_id, int scroll_x, int scroll_y);
+  // Relay a request from assistive technology to make a given object
+  // visible by scrolling as many scrollable containers as necessary.
+  // In addition, if it's not possible to make the entire object visible,
+  // scroll so that the |subfocus| rect is visible at least. The subfocus
+  // rect is in local coordinates of the object itself.
+  void AccessibilityScrollToMakeVisible(
+      int acc_obj_id, gfx::Rect subfocus);
+
+  // Relay a request from assistive technology to move a given object
+  // to a specific location, in the tab content area coordinate space, i.e.
+  // (0, 0) is the top-left corner of the tab contents.
+  void AccessibilityScrollToPoint(int acc_obj_id, gfx::Point point);
 
   // Relay a request from assistive technology to set text selection.
   void AccessibilitySetTextSelection(

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -83,6 +83,8 @@ class RendererAccessibility : public content::RenderViewObserver {
   void OnAccessibilityDoDefaultAction(int acc_obj_id);
   void OnAccessibilityNotificationsAck();
   void OnChangeScrollPosition(int acc_obj_id, int scroll_x, int scroll_y);
+  void OnScrollToMakeVisible(int acc_obj_id, gfx::Rect subfocus);
+  void OnScrollToPoint(int acc_obj_id, gfx::Point point);
   void OnEnableAccessibility();
   void OnSetAccessibilityFocus(int acc_obj_id);
 

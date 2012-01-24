@@ -1429,10 +1429,16 @@ void RenderWidgetHost::AccessibilitySetFocus(int object_id) {
   Send(new ViewMsg_SetAccessibilityFocus(routing_id(), object_id));
 }
 
-void RenderWidgetHost::AccessibilityChangeScrollPosition(
-    int object_id, int scroll_x, int scroll_y) {
-  Send(new ViewMsg_AccessibilityChangeScrollPosition(
-      routing_id(), object_id, scroll_x, scroll_y));
+void RenderWidgetHost::AccessibilityScrollToMakeVisible(
+    int acc_obj_id, gfx::Rect subfocus) {
+  Send(new ViewMsg_AccessibilityScrollToMakeVisible(
+      routing_id(), acc_obj_id, subfocus));
+}
+
+void RenderWidgetHost::AccessibilityScrollToPoint(
+    int acc_obj_id, gfx::Point point) {
+  Send(new ViewMsg_AccessibilityScrollToPoint(
+      routing_id(), acc_obj_id, point));
 }
 
 void RenderWidgetHost::AccessibilitySetTextSelection(

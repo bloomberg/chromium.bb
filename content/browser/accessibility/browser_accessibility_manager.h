@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,8 +30,10 @@ class CONTENT_EXPORT BrowserAccessibilityDelegate {
   virtual ~BrowserAccessibilityDelegate() {}
   virtual void SetAccessibilityFocus(int acc_obj_id) = 0;
   virtual void AccessibilityDoDefaultAction(int acc_obj_id) = 0;
-  virtual void AccessibilityChangeScrollPosition(
-      int acc_obj_id, int scroll_x, int scroll_y) = 0;
+  virtual void AccessibilityScrollToMakeVisible(
+      int acc_obj_id, gfx::Rect subfocus) = 0;
+  virtual void AccessibilityScrollToPoint(
+      int acc_obj_id, gfx::Point point) = 0;
   virtual void AccessibilitySetTextSelection(
       int acc_obj_id, int start_offset, int end_offset) = 0;
   virtual bool HasFocus() const = 0;
@@ -104,9 +106,17 @@ class CONTENT_EXPORT BrowserAccessibilityManager {
   // Tell the renderer to do the default action for this node.
   void DoDefaultAction(const BrowserAccessibility& node);
 
-  // Tell the renderer to scroll this node to the given position.
-  void ChangeScrollPosition(
-      const BrowserAccessibility& node, int scroll_x, int scroll_y);
+  // Tell the renderer to scroll to make |node| visible.
+  // In addition, if it's not possible to make the entire object visible,
+  // scroll so that the |subfocus| rect is visible at least. The subfocus
+  // rect is in local coordinates of the object itself.
+  void ScrollToMakeVisible(
+      const BrowserAccessibility& node, gfx::Rect subfocus);
+
+  // Tell the renderer to scroll such that |node| is at |point|,
+  // where |point| is in global coordinates of the tab contents.
+  void ScrollToPoint(
+      const BrowserAccessibility& node, gfx::Point point);
 
   // Tell the renderer to set the text selection on a node.
   void SetTextSelection(

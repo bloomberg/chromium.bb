@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,6 +21,8 @@ using WebKit::WebAccessibilityObject;
 using WebKit::WebDocument;
 using WebKit::WebFrame;
 using WebKit::WebNode;
+using WebKit::WebPoint;
+using WebKit::WebRect;
 using WebKit::WebSize;
 using WebKit::WebView;
 using webkit_glue::WebAccessibility;
@@ -107,8 +109,10 @@ bool RendererAccessibility::OnMessageReceived(const IPC::Message& message) {
                         OnAccessibilityDoDefaultAction)
     IPC_MESSAGE_HANDLER(ViewMsg_AccessibilityNotifications_ACK,
                         OnAccessibilityNotificationsAck)
-    IPC_MESSAGE_HANDLER(ViewMsg_AccessibilityChangeScrollPosition,
-                        OnChangeScrollPosition)
+    IPC_MESSAGE_HANDLER(ViewMsg_AccessibilityScrollToMakeVisible,
+                        OnScrollToMakeVisible)
+    IPC_MESSAGE_HANDLER(ViewMsg_AccessibilityScrollToPoint,
+                        OnScrollToPoint)
     IPC_MESSAGE_HANDLER(ViewMsg_AccessibilitySetTextSelection,
                         OnSetTextSelection)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -373,8 +377,8 @@ void RendererAccessibility::OnAccessibilityDoDefaultAction(int acc_obj_id) {
   obj.performDefaultAction();
 }
 
-void RendererAccessibility::OnChangeScrollPosition(
-    int acc_obj_id, int scroll_x, int scroll_y) {
+void RendererAccessibility::OnScrollToMakeVisible(
+    int acc_obj_id, gfx::Rect subfocus) {
   if (!WebAccessibilityObject::accessibilityEnabled())
     return;
 
@@ -382,34 +386,54 @@ void RendererAccessibility::OnChangeScrollPosition(
   if (document.isNull())
     return;
 
-  WebAccessibilityObject root = document.accessibilityObject();
-
-  // TODO(dmazzoni): Support scrolling of any scrollable container,
-  // not just the main document frame.
-  if (acc_obj_id != root.axID())
+  WebAccessibilityObject obj = document.accessibilityObjectFromID(acc_obj_id);
+  if (!obj.isValid()) {
+#ifndef NDEBUG
+    if (logging_)
+      LOG(WARNING) << "ScrollToMakeVisible on invalid object id " << acc_obj_id;
+#endif
     return;
+  }
 
-  WebFrame* frame = document.frame();
-  if (!frame)
-    return;
-
-  WebSize min_offset = frame->minimumScrollOffset();
-  WebSize max_offset = frame->maximumScrollOffset();
-  scroll_x = std::max(min_offset.width, scroll_x);
-  scroll_x = std::min(max_offset.width, scroll_x);
-  scroll_y = std::max(min_offset.height, scroll_y);
-  scroll_y = std::min(max_offset.height, scroll_y);
-
-  frame->setScrollOffset(WebSize(scroll_x, scroll_y));
-  if (frame->view())
-    frame->view()->layout();
+  obj.scrollToMakeVisibleWithSubFocus(
+      WebRect(subfocus.x(), subfocus.y(),
+              subfocus.width(), subfocus.height()));
 
   // Make sure the browser gets a notification when the scroll
   // position actually changes.
   // TODO(dmazzoni): remove this once this bug is fixed:
   // https://bugs.webkit.org/show_bug.cgi?id=73460
   PostAccessibilityNotification(
-      root,
+      document.accessibilityObject(),
+      WebKit::WebAccessibilityNotificationLayoutComplete);
+}
+
+void RendererAccessibility::OnScrollToPoint(
+    int acc_obj_id, gfx::Point point) {
+  if (!WebAccessibilityObject::accessibilityEnabled())
+    return;
+
+  const WebDocument& document = GetMainDocument();
+  if (document.isNull())
+    return;
+
+  WebAccessibilityObject obj = document.accessibilityObjectFromID(acc_obj_id);
+  if (!obj.isValid()) {
+#ifndef NDEBUG
+    if (logging_)
+      LOG(WARNING) << "ScrollToPoint on invalid object id " << acc_obj_id;
+#endif
+    return;
+  }
+
+  obj.scrollToGlobalPoint(WebPoint(point.x(), point.y()));
+
+  // Make sure the browser gets a notification when the scroll
+  // position actually changes.
+  // TODO(dmazzoni): remove this once this bug is fixed:
+  // https://bugs.webkit.org/show_bug.cgi?id=73460
+  PostAccessibilityNotification(
+      document.accessibilityObject(),
       WebKit::WebAccessibilityNotificationLayoutComplete);
 }
 

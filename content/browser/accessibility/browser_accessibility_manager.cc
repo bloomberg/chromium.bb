@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -206,11 +206,17 @@ void BrowserAccessibilityManager::DoDefaultAction(
     delegate_->AccessibilityDoDefaultAction(node.renderer_id());
 }
 
-void BrowserAccessibilityManager::ChangeScrollPosition(
-    const BrowserAccessibility& node, int scroll_x, int scroll_y) {
+void BrowserAccessibilityManager::ScrollToMakeVisible(
+    const BrowserAccessibility& node, gfx::Rect subfocus) {
   if (delegate_) {
-    delegate_->AccessibilityChangeScrollPosition(
-        node.renderer_id(), scroll_x, scroll_y);
+    delegate_->AccessibilityScrollToMakeVisible(node.renderer_id(), subfocus);
+  }
+}
+
+void BrowserAccessibilityManager::ScrollToPoint(
+    const BrowserAccessibility& node, gfx::Point point) {
+  if (delegate_) {
+    delegate_->AccessibilityScrollToPoint(node.renderer_id(), point);
   }
 }
 

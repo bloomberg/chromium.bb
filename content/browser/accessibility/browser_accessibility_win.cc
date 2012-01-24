@@ -737,44 +737,34 @@ STDMETHODIMP BrowserAccessibilityWin::scrollTo(enum IA2ScrollType scroll_type) {
   if (!instance_active_)
     return E_FAIL;
 
-  // TODO(dmazzoni): Extend this to scroll every scrollable element as
-  // needed, not just the root.
-  BrowserAccessibility* root = this;
-  while (root->parent())
-    root = root->parent();
-
   gfx::Rect r = location_;
-  gfx::Rect view = manager_->GetViewBounds();
-  view.set_origin(gfx::Point(0, 0));
-
   switch(scroll_type) {
     case IA2_SCROLL_TYPE_TOP_LEFT:
-      root->ScrollToMakeVisible(
-          gfx::Rect(r.x(), r.y(), 0, 0), r, view);
+      manager_->ScrollToMakeVisible(*this, gfx::Rect(r.x(), r.y(), 0, 0));
       break;
     case IA2_SCROLL_TYPE_BOTTOM_RIGHT:
-      root->ScrollToMakeVisible(
-          gfx::Rect(r.right(), r.bottom(), 0, 0), r, view);
+      manager_->ScrollToMakeVisible(
+          *this, gfx::Rect(r.right(), r.bottom(), 0, 0));
       break;
     case IA2_SCROLL_TYPE_TOP_EDGE:
-      root->ScrollToMakeVisible(
-          gfx::Rect(r.x(), r.y(), r.width(), 0), r, view);
+      manager_->ScrollToMakeVisible(
+          *this, gfx::Rect(r.x(), r.y(), r.width(), 0));
       break;
     case IA2_SCROLL_TYPE_BOTTOM_EDGE:
-      root->ScrollToMakeVisible(
-          gfx::Rect(r.x(), r.bottom(), r.width(), 0), r, view);
+      manager_->ScrollToMakeVisible(
+          *this, gfx::Rect(r.x(), r.bottom(), r.width(), 0));
     break;
     case IA2_SCROLL_TYPE_LEFT_EDGE:
-      root->ScrollToMakeVisible(
-          gfx::Rect(r.x(), r.y(), 0, r.height()), r, view);
+      manager_->ScrollToMakeVisible(
+          *this, gfx::Rect(r.x(), r.y(), 0, r.height()));
       break;
     case IA2_SCROLL_TYPE_RIGHT_EDGE:
-      root->ScrollToMakeVisible(
-          gfx::Rect(r.right(), r.y(), 0, r.height()), r, view);
+      manager_->ScrollToMakeVisible(
+          *this, gfx::Rect(r.right(), r.y(), 0, r.height()));
       break;
     case IA2_SCROLL_TYPE_ANYWHERE:
     default:
-      root->ScrollToMakeVisible(r, r, view);
+      manager_->ScrollToMakeVisible(*this, r);
       break;
   }
 
@@ -787,12 +777,6 @@ STDMETHODIMP BrowserAccessibilityWin::scrollToPoint(
     LONG y) {
   if (!instance_active_)
     return E_FAIL;
-
-  // TODO(dmazzoni): Extend this to scroll every scrollable element as
-  // needed, not just the root.
-  BrowserAccessibility* root = this;
-  while (root->parent())
-    root = root->parent();
 
   if (coordinate_type == IA2_COORDTYPE_SCREEN_RELATIVE) {
     gfx::Point top_left = manager_->GetViewBounds().origin();
@@ -809,9 +793,7 @@ STDMETHODIMP BrowserAccessibilityWin::scrollToPoint(
   }
 
   gfx::Rect r = location_;
-  root->ScrollToMakeVisible(gfx::Rect(r.x(), r.y(), 0, 0),
-                            r,
-                            gfx::Rect(x, y, 0, 0));
+  manager_->ScrollToPoint(*this, gfx::Point(x, y));
 
   return S_OK;
 }

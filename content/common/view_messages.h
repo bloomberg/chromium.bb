@@ -36,6 +36,7 @@
 #include "ui/base/ime/text_input_type.h"
 #include "ui/base/javascript_message_type.h"
 #include "ui/base/range/range.h"
+#include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
 #include "webkit/glue/context_menu.h"
 #include "webkit/glue/webcookie.h"
@@ -1142,12 +1143,21 @@ IPC_MESSAGE_ROUTED1(ViewMsg_SetAccessibilityFocus,
 IPC_MESSAGE_ROUTED1(ViewMsg_AccessibilityDoDefaultAction,
                     int /* object id */)
 
-// Relay a request from assistive technology to change the scroll position
-// of a scrollable container (like the whole page, an iframe, etc.).
-IPC_MESSAGE_ROUTED3(ViewMsg_AccessibilityChangeScrollPosition,
+// Relay a request from assistive technology to make a given object
+// visible by scrolling as many scrollable containers as possible.
+// In addition, if it's not possible to make the entire object visible,
+// scroll so that the |subfocus| rect is visible at least. The subfocus
+// rect is in local coordinates of the object itself.
+IPC_MESSAGE_ROUTED2(ViewMsg_AccessibilityScrollToMakeVisible,
                     int /* object id */,
-                    int /* New x scroll position */,
-                    int /* New y scroll position */)
+                    gfx::Rect /* subfocus */)
+
+// Relay a request from assistive technology to move a given object
+// to a specific location, in the tab content area coordinate space, i.e.
+// (0, 0) is the top-left corner of the tab contents.
+IPC_MESSAGE_ROUTED2(ViewMsg_AccessibilityScrollToPoint,
+                    int /* object id */,
+                    gfx::Point /* new location */)
 
 // Relay a request from assistive technology to set the cursor or
 // selection within an editable text element.
