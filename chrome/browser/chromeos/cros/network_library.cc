@@ -2724,6 +2724,7 @@ void NetworkLibraryImplBase::NetworkConnectCompleted(
       network->set_error(ERROR_CONNECT_FAILED);
     }
     NotifyNetworkManagerChanged(true);  // Forced update.
+    NotifyNetworkChanged(network);
     return;
   }
 
@@ -2740,6 +2741,7 @@ void NetworkLibraryImplBase::NetworkConnectCompleted(
   // Notify observers.
   NotifyNetworkManagerChanged(true);  // Forced update.
   NotifyUserConnectionInitiated(network);
+  NotifyNetworkChanged(network);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -5235,6 +5237,16 @@ void NetworkLibraryImplStub::Init() {
   cellular4_ui_data.FillDictionary(cellular4->ui_data());
   AddStubNetwork(cellular4, PROFILE_NONE);
 
+  CellularNetwork* cellular5 = new CellularNetwork("cellular5");
+  cellular5->set_name("Fake Cellular Low Data");
+  cellular5->set_strength(100);
+  cellular5->set_activation_state(ACTIVATION_STATE_ACTIVATED);
+  cellular5->set_payment_url(std::string("http://www.google.com"));
+  cellular5->set_usage_url(std::string("http://www.google.com"));
+  cellular5->set_network_technology(NETWORK_TECHNOLOGY_EVDO);
+  cellular5->set_data_left(CellularNetwork::DATA_LOW);
+  AddStubNetwork(cellular5, PROFILE_NONE);
+
   CellularDataPlan* base_plan = new CellularDataPlan();
   base_plan->plan_name = "Base plan";
   base_plan->plan_type = CELLULAR_DATA_PLAN_METERED_BASE;
@@ -5247,10 +5259,21 @@ void NetworkLibraryImplStub::Init() {
   paid_plan->plan_data_bytes = 5ll * 1024 * 1024 * 1024;
   paid_plan->data_bytes_used = paid_plan->plan_data_bytes / 2;
 
-  CellularDataPlanVector* data_plan_vector = new CellularDataPlanVector;
-  data_plan_vector->push_back(base_plan);
-  data_plan_vector->push_back(paid_plan);
-  UpdateCellularDataPlan(cellular1->service_path(), data_plan_vector);
+  CellularDataPlanVector* data_plan_vector1 = new CellularDataPlanVector;
+  data_plan_vector1->push_back(base_plan);
+  data_plan_vector1->push_back(paid_plan);
+  UpdateCellularDataPlan(cellular1->service_path(), data_plan_vector1);
+
+  CellularDataPlan* low_data_plan = new CellularDataPlan();
+  low_data_plan->plan_name = "Low Data plan";
+  low_data_plan->plan_type = CELLULAR_DATA_PLAN_METERED_PAID;
+  low_data_plan->plan_data_bytes = 5ll * 1024 * 1024 * 1024;
+  low_data_plan->data_bytes_used =
+      low_data_plan->plan_data_bytes - kCellularDataVeryLowBytes;
+
+  CellularDataPlanVector* data_plan_vector2 = new CellularDataPlanVector;
+  data_plan_vector2->push_back(low_data_plan);
+  UpdateCellularDataPlan(cellular5->service_path(), data_plan_vector2);
 
   VirtualNetwork* vpn1 = new VirtualNetwork("vpn1");
   vpn1->set_name("Fake VPN1");
@@ -5366,6 +5389,19 @@ void NetworkLibraryImplStub::AddStubRememberedNetwork(Network* network) {
 }
 
 void NetworkLibraryImplStub::ConnectToNetwork(Network* network) {
+  if (network->type() == TYPE_WIFI) {
+    WifiNetwork* wifi = static_cast<WifiNetwork*>(network);
+    if (wifi->encryption() != SECURITY_NONE) {
+      if (wifi->passphrase().find("bad") == 0) {
+        NetworkConnectCompleted(network, CONNECT_BAD_PASSPHRASE);
+        return;
+      } else if (wifi->passphrase().find("error") == 0) {
+        NetworkConnectCompleted(network, CONNECT_FAILED);
+        return;
+      }
+    }
+  }
+
   // Set connected state.
   network->set_connected(true);
   network->set_connection_started(false);
@@ -5387,6 +5423,19 @@ void NetworkLibraryImplStub::ConnectToNetwork(Network* network) {
     }
   }
 
+  // Cycle data left to trigger notifications.
+  if (network->type() == TYPE_CELLULAR) {
+    if (network->name().find("Low Data") != std::string::npos) {
+      CellularNetwork* cellular = static_cast<CellularNetwork*>(network);
+      // Simulate a transition to very low data.
+      cellular->set_data_left(CellularNetwork::DATA_LOW);
+      NotifyCellularDataPlanChanged();
+      cellular->set_data_left(CellularNetwork::DATA_VERY_LOW);
+      active_cellular_ = cellular;
+      NotifyCellularDataPlanChanged();
+    }
+  }
+
   // Remember connected network.
   if (network->profile_type() == PROFILE_NONE) {
     NetworkProfileType profile_type = PROFILE_USER;
@@ -5401,8 +5450,6 @@ void NetworkLibraryImplStub::ConnectToNetwork(Network* network) {
 
   // Call Completed and signal observers.
   NetworkConnectCompleted(network, CONNECT_SUCCESS);
-  SignalNetworkManagerObservers();
-  NotifyNetworkChanged(network);
 }
 
 //////////////////////////////////////////////////////////////////////////////
