@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -36,7 +36,9 @@ void InitSSL(SSLState* state,
   PrintSslError();
 
   state->ssl_method = SSLv23_method();
-  state->ssl_ctx = SSL_CTX_new(state->ssl_method);
+  // TODO(joth): Remove const_cast when the openssl 1.0.0 upgrade is complete.
+  // (See http://codereview.chromium.org/9254031).
+  state->ssl_ctx = SSL_CTX_new(const_cast<SSL_METHOD*>(state->ssl_method));
   if (!state->ssl_ctx) {
     PrintSslError();
     LOG(FATAL) << "Unable to create SSL context";
