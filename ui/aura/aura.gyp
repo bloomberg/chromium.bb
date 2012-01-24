@@ -62,7 +62,7 @@
         'event.h',
         'event_filter.cc',
         'event_filter.h',
-        'event_mac.cc',
+        'event_mac.mm',
         'event_mac.h',
         'focus_manager.h',
         'layout_manager.cc',
