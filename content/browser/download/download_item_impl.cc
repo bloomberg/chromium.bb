@@ -34,6 +34,7 @@ using content::BrowserThread;
 using content::DownloadFile;
 using content::DownloadItem;
 using content::DownloadManager;
+using content::WebContents;
 
 // A DownloadItem normally goes through the following states:
 //      * Created (when download starts)
@@ -201,8 +202,7 @@ DownloadItemImpl::DownloadItemImpl(
     bool is_otr)
     : state_info_(info.original_name, info.save_info.file_path,
                   info.has_user_gesture, info.transition_type,
-                  info.prompt_user_for_save_location, info.path_uniquifier,
-                  DownloadStateInfo::NOT_DANGEROUS),
+                  info.prompt_user_for_save_location),
       request_handle_(request_handle),
       download_id_(info.download_id),
       full_path_(info.path),
@@ -360,7 +360,7 @@ void DownloadItemImpl::DangerousDownloadValidated() {
 
   UMA_HISTOGRAM_ENUMERATION("Download.DangerousDownloadValidated",
                             GetDangerType(),
-                            DownloadStateInfo::DANGEROUS_TYPE_MAX);
+                            content::DOWNLOAD_DANGER_TYPE_MAX);
 
   safety_state_ = DANGEROUS_BUT_VALIDATED;
   UpdateObservers();
@@ -547,12 +547,14 @@ void DownloadItemImpl::Delete(DeleteReason reason) {
 
   switch (reason) {
     case DELETE_DUE_TO_USER_DISCARD:
-      UMA_HISTOGRAM_ENUMERATION("Download.UserDiscard", GetDangerType(),
-                                DownloadStateInfo::DANGEROUS_TYPE_MAX);
+      UMA_HISTOGRAM_ENUMERATION(
+          "Download.UserDiscard", GetDangerType(),
+          content::DOWNLOAD_DANGER_TYPE_MAX);
       break;
     case DELETE_DUE_TO_BROWSER_SHUTDOWN:
-      UMA_HISTOGRAM_ENUMERATION("Download.Discard", GetDangerType(),
-                                DownloadStateInfo::DANGEROUS_TYPE_MAX);
+      UMA_HISTOGRAM_ENUMERATION(
+          "Download.Discard", GetDangerType(),
+          content::DOWNLOAD_DANGER_TYPE_MAX);
       break;
     default:
       NOTREACHED();
@@ -651,8 +653,9 @@ void DownloadItemImpl::OnDownloadCompleting(DownloadFileManager* file_manager) {
   // If we prompted the user for save location, then we should overwrite the
   // target.  Otherwise, if the danger state was NOT_DANGEROUS, we already
   // uniquified the path and should overwrite.
-  bool should_overwrite = (PromptUserForSaveLocation() ||
-                           GetDangerType() == DownloadStateInfo::NOT_DANGEROUS);
+  bool should_overwrite =
+      (PromptUserForSaveLocation() ||
+       GetDangerType() == content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
   if (NeedsRename()) {
     BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
         base::Bind(&DownloadFileManager::RenameCompletingDownloadFile,
@@ -725,7 +728,7 @@ void DownloadItemImpl::SetFileCheckResults(const DownloadStateInfo& state) {
   UpdateSafetyState();
 }
 
-DownloadStateInfo::DangerType DownloadItemImpl::GetDangerType() const {
+content::DownloadDangerType DownloadItemImpl::GetDangerType() const {
   return state_info_.danger;
 }
 
@@ -736,21 +739,21 @@ bool DownloadItemImpl::IsDangerous() const {
 void DownloadItemImpl::MarkFileDangerous() {
   // TODO(rdsmith): Change to DCHECK after http://crbug.com/85408 resolved.
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  state_info_.danger = DownloadStateInfo::DANGEROUS_FILE;
+  state_info_.danger = content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE;
   UpdateSafetyState();
 }
 
 void DownloadItemImpl::MarkUrlDangerous() {
   // TODO(rdsmith): Change to DCHECK after http://crbug.com/85408 resolved.
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  state_info_.danger = DownloadStateInfo::DANGEROUS_URL;
+  state_info_.danger = content::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL;
   UpdateSafetyState();
 }
 
 void DownloadItemImpl::MarkContentDangerous() {
   // TODO(rdsmith): Change to DCHECK after http://crbug.com/85408 resolved.
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  state_info_.danger = DownloadStateInfo::DANGEROUS_CONTENT;
+  state_info_.danger = content::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT;
   UpdateSafetyState();
 }
 
@@ -767,7 +770,7 @@ DownloadPersistentStoreInfo DownloadItemImpl::GetPersistentStoreInfo() const {
                                      GetOpened());
 }
 
-TabContents* DownloadItemImpl::GetTabContents() const {
+WebContents* DownloadItemImpl::GetWebContents() const {
   // TODO(rdsmith): Remove null check after removing GetTabContents() from
   // paths that might be used by DownloadItems created from history import.
   // Currently such items have null request_handle_s, where other items

@@ -171,7 +171,7 @@ class CONTENT_EXPORT DownloadItemImpl : public content::DownloadItem {
   virtual void SetOpenWhenComplete(bool open) OVERRIDE;
   virtual bool GetFileExternallyRemoved() const OVERRIDE;
   virtual SafetyState GetSafetyState() const OVERRIDE;
-  virtual DownloadStateInfo::DangerType GetDangerType() const OVERRIDE;
+  virtual content::DownloadDangerType GetDangerType() const OVERRIDE;
   virtual bool IsDangerous() const OVERRIDE;
   virtual void MarkFileDangerous() OVERRIDE;
   virtual void MarkUrlDangerous() OVERRIDE;
@@ -190,7 +190,7 @@ class CONTENT_EXPORT DownloadItemImpl : public content::DownloadItem {
   virtual DownloadPersistentStoreInfo GetPersistentStoreInfo() const OVERRIDE;
   virtual DownloadStateInfo GetStateInfo() const OVERRIDE;
   virtual content::BrowserContext* GetBrowserContext() const OVERRIDE;
-  virtual TabContents* GetTabContents() const OVERRIDE;
+  virtual content::WebContents* GetWebContents() const OVERRIDE;
   virtual FilePath GetTargetFilePath() const OVERRIDE;
   virtual FilePath GetFileNameToReportUser() const OVERRIDE;
   virtual FilePath GetUserVerifiedFilePath() const OVERRIDE;

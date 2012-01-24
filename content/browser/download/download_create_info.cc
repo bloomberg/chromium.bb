@@ -20,7 +20,6 @@ DownloadCreateInfo::DownloadCreateInfo(const FilePath& path,
                                        content::PageTransition transition_type)
     : path(path),
       url_chain(1, url),
-      path_uniquifier(0),
       start_time(start_time),
       received_bytes(received_bytes),
       total_bytes(total_bytes),
@@ -33,8 +32,7 @@ DownloadCreateInfo::DownloadCreateInfo(const FilePath& path,
 }
 
 DownloadCreateInfo::DownloadCreateInfo()
-    : path_uniquifier(0),
-      received_bytes(0),
+    : received_bytes(0),
       total_bytes(0),
       state(-1),
       download_id(DownloadId::Invalid()),

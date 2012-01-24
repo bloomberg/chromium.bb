@@ -84,7 +84,7 @@ class MockDownloadItem : public content::DownloadItem {
   MOCK_METHOD1(SetOpenWhenComplete, void(bool));
   MOCK_CONST_METHOD0(GetFileExternallyRemoved, bool());
   MOCK_CONST_METHOD0(GetSafetyState, SafetyState());
-  MOCK_CONST_METHOD0(GetDangerType, DownloadStateInfo::DangerType());
+  MOCK_CONST_METHOD0(GetDangerType, content::DownloadDangerType());
   MOCK_CONST_METHOD0(IsDangerous, bool());
   MOCK_METHOD0(MarkFileDangerous, void());
   MOCK_METHOD0(MarkUrlDangerous, void());
@@ -103,7 +103,7 @@ class MockDownloadItem : public content::DownloadItem {
   MOCK_CONST_METHOD0(GetPersistentStoreInfo, DownloadPersistentStoreInfo());
   MOCK_CONST_METHOD0(GetStateInfo, DownloadStateInfo());
   MOCK_CONST_METHOD0(GetBrowserContext, content::BrowserContext*());
-  MOCK_CONST_METHOD0(GetTabContents, TabContents*());
+  MOCK_CONST_METHOD0(GetWebContents, content::WebContents*());
   MOCK_CONST_METHOD0(GetTargetFilePath, FilePath());
   MOCK_CONST_METHOD0(GetFileNameToReportUser, FilePath());
   MOCK_CONST_METHOD0(GetUserVerifiedFilePath, FilePath());

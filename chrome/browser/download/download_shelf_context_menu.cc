@@ -31,9 +31,10 @@ ui::SimpleMenuModel* DownloadShelfContextMenu::GetMenuModel() {
   ui::SimpleMenuModel* model = NULL;
 
   if (download_item_->GetSafetyState() == DownloadItem::DANGEROUS) {
-    if (download_item_->GetDangerType() == DownloadStateInfo::DANGEROUS_URL ||
+    if (download_item_->GetDangerType() ==
+            content::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL ||
         download_item_->GetDangerType() ==
-            DownloadStateInfo::DANGEROUS_CONTENT) {
+            content::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT) {
       model = GetMaliciousMenuModel();
     } else {
       NOTREACHED();
@@ -53,7 +54,7 @@ bool DownloadShelfContextMenu::IsCommandIdEnabled(int command_id) const {
       return download_item_->CanShowInFolder();
     case ALWAYS_OPEN_TYPE:
       return download_item_->CanOpenDownload() &&
-          !Extension::IsExtension(download_item_->GetStateInfo().target_name);
+          !Extension::IsExtension(download_item_->GetTargetName());
     case CANCEL:
       return download_item_->IsPartialDownload();
     case TOGGLE_PAUSE:

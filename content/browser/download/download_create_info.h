@@ -50,10 +50,6 @@ struct CONTENT_EXPORT DownloadCreateInfo {
   // The URL that referred us.
   GURL referrer_url;
 
-  // A number that should be added to the suggested path to make it unique.
-  // 0 means no number should be appended.  Not actually stored in the db.
-  int path_uniquifier;
-
   // The time when the download started.
   base::Time start_time;
 

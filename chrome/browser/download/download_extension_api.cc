@@ -34,7 +34,6 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/webui/web_ui_util.h"
 #include "content/browser/download/download_id.h"
-#include "content/browser/download/download_state_info.h"
 #include "content/browser/download/download_types.h"
 #include "content/browser/download/interrupt_reasons.h"
 #include "content/browser/renderer_host/render_view_host.h"
@@ -94,13 +93,13 @@ const char kStateKey[] = "state";
 const char kTotalBytesKey[] = "totalBytes";
 const char kUrlKey[] = "url";
 
-const char* DangerString(DownloadStateInfo::DangerType danger) {
+const char* DangerString(content::DownloadDangerType danger) {
   switch (danger) {
-    case DownloadStateInfo::MAYBE_DANGEROUS_CONTENT:
-    case DownloadStateInfo::NOT_DANGEROUS: return kDangerSafe;
-    case DownloadStateInfo::DANGEROUS_FILE: return kDangerFile;
-    case DownloadStateInfo::DANGEROUS_URL: return kDangerUrl;
-    case DownloadStateInfo::DANGEROUS_CONTENT: return kDangerContent;
+    case content::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT:
+    case content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS: return kDangerSafe;
+    case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE: return kDangerFile;
+    case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL: return kDangerUrl;
+    case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT: return kDangerContent;
     default:
       NOTREACHED();
       return "";

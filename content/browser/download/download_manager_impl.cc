@@ -334,7 +334,7 @@ void DownloadManagerImpl::RestartDownload(int32 download_id) {
 
   if (download->PromptUserForSaveLocation()) {
     // We must ask the user for the place to put the download.
-    WebContents* contents = download->GetTabContents();
+    WebContents* contents = download->GetWebContents();
 
     // |id_ptr| will be deleted in either FileSelected() or
     // FileSelectionCancelled().
@@ -344,7 +344,8 @@ void DownloadManagerImpl::RestartDownload(int32 download_id) {
     // If |download| is a potentially dangerous file, then |suggested_path|
     // contains the intermediate name instead of the final download
     // filename. The latter is GetTargetName().
-    if (download->GetDangerType() != DownloadStateInfo::NOT_DANGEROUS)
+    if (download->GetDangerType() !=
+            content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS)
       target_path = suggested_path.DirName().Append(download->GetTargetName());
     else
       target_path = suggested_path;
@@ -600,7 +601,7 @@ void DownloadManagerImpl::OnDownloadRenamedToFinalName(
   if (!item)
     return;
 
-  if (item->GetDangerType() == DownloadStateInfo::NOT_DANGEROUS ||
+  if (item->GetDangerType() == content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS ||
       item->PromptUserForSaveLocation()) {
     DCHECK_EQ(0, uniquifier)
         << "We should not uniquify user supplied filenames or safe filenames "
@@ -1011,7 +1012,7 @@ void DownloadManagerImpl::OnDownloadItemAddedToPersistentStore(
 void DownloadManagerImpl::ShowDownloadInBrowser(DownloadItem* download) {
   // The 'contents' may no longer exist if the user closed the tab before we
   // get this start completion event.
-  WebContents* content = download->GetTabContents();
+  WebContents* content = download->GetWebContents();
 
   // If the contents no longer exists, we ask the embedder to suggest another
   // tab.

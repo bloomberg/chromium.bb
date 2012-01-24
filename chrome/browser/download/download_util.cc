@@ -33,7 +33,6 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/time_format.h"
 #include "content/browser/download/download_create_info.h"
-#include "content/browser/download/download_state_info.h"
 #include "content/browser/download/download_types.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
@@ -93,13 +92,13 @@ namespace {
 // CreateDownloadItemValue().  We only return strings for DANGEROUS_FILE,
 // DANGEROUS_URL and DANGEROUS_CONTENT because the |danger_type| value is only
 // defined if the value of |state| is |DANGEROUS|.
-const char* GetDangerTypeString(DownloadStateInfo::DangerType danger_type) {
+const char* GetDangerTypeString(content::DownloadDangerType danger_type) {
   switch (danger_type) {
-    case DownloadStateInfo::DANGEROUS_FILE:
+    case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE:
       return "DANGEROUS_FILE";
-    case DownloadStateInfo::DANGEROUS_URL:
+    case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL:
       return "DANGEROUS_URL";
-    case DownloadStateInfo::DANGEROUS_CONTENT:
+    case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT:
       return "DANGEROUS_CONTENT";
     default:
       // We shouldn't be returning a danger type string if it is
@@ -458,9 +457,12 @@ DictionaryValue* CreateDownloadItemValue(DownloadItem* download, int id) {
       file_value->SetString("state", "DANGEROUS");
       // These are the only danger states we expect to see (and the UI is
       // equipped to handle):
-      DCHECK(download->GetDangerType() == DownloadStateInfo::DANGEROUS_FILE ||
-             download->GetDangerType() == DownloadStateInfo::DANGEROUS_URL ||
-             download->GetDangerType() == DownloadStateInfo::DANGEROUS_CONTENT);
+      DCHECK(download->GetDangerType() ==
+                 content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE ||
+             download->GetDangerType() ==
+                 content::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL ||
+             download->GetDangerType() ==
+                 content::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT);
       const char* danger_type_value =
           GetDangerTypeString(download->GetDangerType());
       file_value->SetString("danger_type", danger_type_value);

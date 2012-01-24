@@ -386,29 +386,31 @@ const struct {
 
 const struct {
   FilePath::StringType suggested_path;
-  DownloadStateInfo::DangerType danger;
+  content::DownloadDangerType danger;
   bool finish_before_rename;
   int expected_rename_count;
 } kDownloadRenameCases[] = {
   // Safe download, download finishes BEFORE file name determined.
   // Renamed twice (linear path through UI).  Crdownload file does not need
   // to be deleted.
-  { FILE_PATH_LITERAL("foo.zip"), DownloadStateInfo::NOT_DANGEROUS, true, 2, },
+  { FILE_PATH_LITERAL("foo.zip"), content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+    true, 2, },
   // Potentially dangerous download (e.g., file is dangerous), download finishes
   // BEFORE file name determined. Needs to be renamed only once.
   { FILE_PATH_LITERAL("Unconfirmed xxx.crdownload"),
-    DownloadStateInfo::MAYBE_DANGEROUS_CONTENT, true, 1, },
+    content::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT, true, 1, },
   { FILE_PATH_LITERAL("Unconfirmed xxx.crdownload"),
-    DownloadStateInfo::DANGEROUS_FILE, true, 1, },
+    content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE, true, 1, },
   // Safe download, download finishes AFTER file name determined.
   // Needs to be renamed twice.
-  { FILE_PATH_LITERAL("foo.zip"), DownloadStateInfo::NOT_DANGEROUS, false, 2, },
+  { FILE_PATH_LITERAL("foo.zip"), content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+    false, 2, },
   // Potentially dangerous download, download finishes AFTER file name
   // determined. Needs to be renamed only once.
   { FILE_PATH_LITERAL("Unconfirmed xxx.crdownload"),
-    DownloadStateInfo::MAYBE_DANGEROUS_CONTENT, false, 1, },
+    content::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT, false, 1, },
   { FILE_PATH_LITERAL("Unconfirmed xxx.crdownload"),
-    DownloadStateInfo::DANGEROUS_FILE, false, 1, },
+    content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE, false, 1, },
 };
 
 // This is an observer that records what download IDs have opened a select
@@ -548,7 +550,7 @@ const struct DownloadFilenameTestCase {
   const FilePath::CharType*     suggested_path;
   const FilePath::CharType*     target_name;
   PromptForSaveLocation         prompt_user_for_save_location;
-  DownloadStateInfo::DangerType danger_type;
+  content::DownloadDangerType   danger_type;
 
   // If we receive a ChooseDownloadPath() call to prompt the user for a download
   // location, |prompt_path| is the expected prompt path. The
@@ -571,7 +573,7 @@ const struct DownloadFilenameTestCase {
     FILE_PATH_LITERAL("$dl/foo.txt"),
     FILE_PATH_LITERAL(""),
     DONT_PROMPT,
-    DownloadStateInfo::NOT_DANGEROUS,
+    content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
     FILE_PATH_LITERAL(""),
     FILE_PATH_LITERAL("$dl/foo.txt.crdownload"),
     FILE_PATH_LITERAL("$dl/foo.txt"),
@@ -582,7 +584,7 @@ const struct DownloadFilenameTestCase {
     FILE_PATH_LITERAL("$dl/foo.txt"),
     FILE_PATH_LITERAL(""),
     PROMPT,
-    DownloadStateInfo::NOT_DANGEROUS,
+    content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
     FILE_PATH_LITERAL("$dl/foo.txt"),
     FILE_PATH_LITERAL("$dl/foo.txt.crdownload"),
     FILE_PATH_LITERAL("$dl/foo.txt"),
@@ -594,7 +596,7 @@ const struct DownloadFilenameTestCase {
     FILE_PATH_LITERAL("$dl/foo.txt"),
     FILE_PATH_LITERAL(""),
     PROMPT,
-    DownloadStateInfo::NOT_DANGEROUS,
+    content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
     FILE_PATH_LITERAL("$dl/foo.txt"),
     FILE_PATH_LITERAL("$dl/bar.txt.crdownload"),
     FILE_PATH_LITERAL("$dl/bar.txt"),
@@ -606,7 +608,7 @@ const struct DownloadFilenameTestCase {
     FILE_PATH_LITERAL("$dl/foo.txt"),
     FILE_PATH_LITERAL(""),
     PROMPT,
-    DownloadStateInfo::NOT_DANGEROUS,
+    content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
     FILE_PATH_LITERAL("$dl/foo.txt"),
     FILE_PATH_LITERAL("$alt/bar.txt.crdownload"),
     FILE_PATH_LITERAL("$alt/bar.txt"),
@@ -617,7 +619,7 @@ const struct DownloadFilenameTestCase {
     FILE_PATH_LITERAL("$dl/Unconfirmed xxx.download"),
     FILE_PATH_LITERAL("foo.exe"),
     DONT_PROMPT,
-    DownloadStateInfo::MAYBE_DANGEROUS_CONTENT,
+    content::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT,
     FILE_PATH_LITERAL(""),
     FILE_PATH_LITERAL("$dl/Unconfirmed xxx.download"),
     FILE_PATH_LITERAL("$dl/foo.exe"),
@@ -628,7 +630,7 @@ const struct DownloadFilenameTestCase {
     FILE_PATH_LITERAL("$dl/Unconfirmed xxx.download"),
     FILE_PATH_LITERAL("foo.exe"),
     PROMPT,
-    DownloadStateInfo::MAYBE_DANGEROUS_CONTENT,
+    content::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT,
     FILE_PATH_LITERAL("$dl/foo.exe"),
     FILE_PATH_LITERAL("$dl/Unconfirmed xxx.download"),
     FILE_PATH_LITERAL("$dl/foo.exe"),
@@ -640,7 +642,7 @@ const struct DownloadFilenameTestCase {
     FILE_PATH_LITERAL("$dl/Unconfirmed xxx.download"),
     FILE_PATH_LITERAL("foo.exe"),
     PROMPT,
-    DownloadStateInfo::MAYBE_DANGEROUS_CONTENT,
+    content::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT,
     FILE_PATH_LITERAL("$dl/foo.exe"),
     FILE_PATH_LITERAL("$dl/Unconfirmed xxx.download"),
     FILE_PATH_LITERAL("$dl/bar.exe"),
@@ -652,7 +654,7 @@ const struct DownloadFilenameTestCase {
     FILE_PATH_LITERAL("$dl/Unconfirmed xxx.download"),
     FILE_PATH_LITERAL("foo.exe"),
     PROMPT,
-    DownloadStateInfo::MAYBE_DANGEROUS_CONTENT,
+    content::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT,
     FILE_PATH_LITERAL("$dl/foo.exe"),
     FILE_PATH_LITERAL("$alt/Unconfirmed xxx.download"),
     FILE_PATH_LITERAL("$alt/bar.exe"),
@@ -663,7 +665,7 @@ const struct DownloadFilenameTestCase {
     FILE_PATH_LITERAL("$dl/Unconfirmed xxx.download"),
     FILE_PATH_LITERAL("foo.exe"),
     PROMPT,
-    DownloadStateInfo::DANGEROUS_URL,
+    content::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL,
     FILE_PATH_LITERAL(""),
     FILE_PATH_LITERAL("$dl/Unconfirmed xxx.download"),
     FILE_PATH_LITERAL("$dl/foo.exe"),
@@ -674,7 +676,7 @@ const struct DownloadFilenameTestCase {
     FILE_PATH_LITERAL("$dl/Unconfirmed xxx.download"),
     FILE_PATH_LITERAL("foo.exe"),
     DONT_PROMPT,
-    DownloadStateInfo::DANGEROUS_URL,
+    content::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL,
     FILE_PATH_LITERAL(""),
     FILE_PATH_LITERAL("$dl/Unconfirmed xxx.download"),
     FILE_PATH_LITERAL(""),
@@ -686,7 +688,7 @@ const struct DownloadFilenameTestCase {
     FILE_PATH_LITERAL("$dl/Unconfirmed xxx.download"),
     FILE_PATH_LITERAL("foo.exe"),
     PROMPT,
-    DownloadStateInfo::DANGEROUS_URL,
+    content::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL,
     FILE_PATH_LITERAL("$dl/foo.exe"),
     FILE_PATH_LITERAL("$alt/Unconfirmed xxx.download"),
     FILE_PATH_LITERAL("$alt/bar.exe"),
@@ -699,7 +701,7 @@ const struct DownloadFilenameTestCase {
     FILE_PATH_LITERAL("$dl/exists.txt"),
     FILE_PATH_LITERAL(""),
     DONT_PROMPT,
-    DownloadStateInfo::NOT_DANGEROUS,
+    content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
     FILE_PATH_LITERAL(""),
     FILE_PATH_LITERAL("$dl/exists.txt.crdownload"),
     FILE_PATH_LITERAL("$dl/exists.txt"),
@@ -711,7 +713,7 @@ const struct DownloadFilenameTestCase {
     FILE_PATH_LITERAL("$dl/Unconfirmed xxx.download"),
     FILE_PATH_LITERAL("exists.exe"),
     DONT_PROMPT,
-    DownloadStateInfo::MAYBE_DANGEROUS_CONTENT,
+    content::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT,
     FILE_PATH_LITERAL(""),
     FILE_PATH_LITERAL("$dl/Unconfirmed xxx.download"),
     FILE_PATH_LITERAL("$dl/exists (1).exe"),
@@ -723,7 +725,7 @@ const struct DownloadFilenameTestCase {
     FILE_PATH_LITERAL("$dl/Unconfirmed xxx.download"),
     FILE_PATH_LITERAL("exists.exe"),
     DONT_PROMPT,
-    DownloadStateInfo::DANGEROUS_CONTENT,
+    content::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT,
     FILE_PATH_LITERAL(""),
     FILE_PATH_LITERAL("$dl/Unconfirmed xxx.download"),
     FILE_PATH_LITERAL("$dl/exists (1).exe"),
@@ -736,7 +738,7 @@ const struct DownloadFilenameTestCase {
     FILE_PATH_LITERAL("$dl/Unconfirmed xxx.download"),
     FILE_PATH_LITERAL("exists.exe"),
     PROMPT,
-    DownloadStateInfo::MAYBE_DANGEROUS_CONTENT,
+    content::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT,
     FILE_PATH_LITERAL("$dl/exists.exe"),
     FILE_PATH_LITERAL("$dl/Unconfirmed xxx.download"),
     FILE_PATH_LITERAL("$dl/exists.exe"),
@@ -815,10 +817,10 @@ TEST_F(DownloadManagerTest, DownloadFilenameTest) {
     state.prompt_user_for_save_location =
         (kDownloadFilenameTestCases[i].prompt_user_for_save_location == PROMPT);
     state.target_name = FilePath(kDownloadFilenameTestCases[i].target_name);
-    if (state.danger == DownloadStateInfo::DANGEROUS_CONTENT) {
+    if (state.danger == content::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT) {
       // DANGEROUS_CONTENT will only be known once we have all the data. We let
       // our TestDownloadManagerDelegate handle it.
-      state.danger = DownloadStateInfo::MAYBE_DANGEROUS_CONTENT;
+      state.danger = content::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT;
       download_manager_delegate_->SetMarkContentsDangerous(true);
     }
     download->SetFileCheckResults(state);
@@ -898,7 +900,7 @@ TEST_F(DownloadManagerTest, DownloadRenameTest) {
       OnResponseCompleted(i, 1024, std::string("fake_hash"));
     }
     // Validating the download item, so it will complete.
-    if (state.danger == DownloadStateInfo::DANGEROUS_FILE)
+    if (state.danger == content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE)
       download->DangerousDownloadValidated();
     message_loop_.RunAllPending();
   }

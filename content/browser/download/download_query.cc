@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/file_path.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
@@ -22,6 +23,7 @@
 #include "googleurl/src/gurl.h"
 #include "unicode/regex.h"
 
+using content::DownloadDangerType;
 using content::DownloadItem;
 
 namespace {
@@ -74,7 +76,7 @@ static DownloadItem::DownloadState GetState(const DownloadItem& item) {
   return item.GetState();
 }
 
-static DownloadStateInfo::DangerType GetDangerType(const DownloadItem& item) {
+static DownloadDangerType GetDangerType(const DownloadItem& item) {
   return item.GetDangerType();
 }
 
@@ -208,10 +210,9 @@ void DownloadQuery::AddFilter(DownloadItem::DownloadState state) {
       InnerCallback<DownloadItem::DownloadState>(base::Bind(&GetState))));
 }
 
-void DownloadQuery::AddFilter(DownloadStateInfo::DangerType danger) {
-  AddFilter(base::Bind(&FieldMatches<DownloadStateInfo::DangerType>, danger, EQ,
-      InnerCallback<DownloadStateInfo::DangerType>(base::Bind(
-          &GetDangerType))));
+void DownloadQuery::AddFilter(DownloadDangerType danger) {
+  AddFilter(base::Bind(&FieldMatches<DownloadDangerType>, danger, EQ,
+      InnerCallback<content::DownloadDangerType>(base::Bind(&GetDangerType))));
 }
 
 bool DownloadQuery::AddFilter(DownloadQuery::FilterType type,
@@ -339,7 +340,7 @@ void DownloadQuery::AddSorter(DownloadQuery::SortType type,
       sorters_.push_back(Sorter::Build<string16>(direction, &GetFilename));
       break;
     case SORT_DANGER:
-      sorters_.push_back(Sorter::Build<DownloadStateInfo::DangerType>(
+      sorters_.push_back(Sorter::Build<DownloadDangerType>(
           direction, &GetDangerType));
       break;
     case SORT_DANGER_ACCEPTED:

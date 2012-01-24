@@ -24,12 +24,12 @@
 #include "base/string16.h"
 #include "content/browser/download/download_state_info.h"
 #include "content/browser/download/interrupt_reasons.h"
+#include "content/public/browser/download_danger_type.h"
 
 class DownloadId;
 class DownloadFileManager;
 class FilePath;
 class GURL;
-class TabContents;
 struct DownloadCreateInfo;
 struct DownloadPersistentStoreInfo;
 
@@ -42,6 +42,7 @@ namespace content {
 
 class BrowserContext;
 class DownloadManager;
+class WebContents;
 
 // One DownloadItem per download. This is the model class that stores all the
 // state for a download. Multiple views, such as a tab's download shelf and the
@@ -281,7 +282,7 @@ class CONTENT_EXPORT DownloadItem {
   virtual bool GetFileExternallyRemoved() const = 0;
   virtual SafetyState GetSafetyState() const = 0;
   // Why |safety_state_| is not SAFE.
-  virtual DownloadStateInfo::DangerType GetDangerType() const = 0;
+  virtual DownloadDangerType GetDangerType() const = 0;
   virtual bool IsDangerous() const = 0;
   virtual void MarkContentDangerous() = 0;
   virtual void MarkFileDangerous() = 0;
@@ -303,7 +304,7 @@ class CONTENT_EXPORT DownloadItem {
   virtual DownloadPersistentStoreInfo GetPersistentStoreInfo() const = 0;
   virtual DownloadStateInfo GetStateInfo() const = 0;
   virtual BrowserContext* GetBrowserContext() const = 0;
-  virtual TabContents* GetTabContents() const = 0;
+  virtual WebContents* GetWebContents() const = 0;
 
   // Returns the final target file path for the download.
   virtual FilePath GetTargetFilePath() const = 0;

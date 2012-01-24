@@ -193,8 +193,8 @@ TEST_F(DownloadQueryTest, DownloadQueryAllFilters) {
         17, DownloadItem::CANCELLED,
             DownloadItem::IN_PROGRESS)));
     EXPECT_CALL(mock(i), GetDangerType()).WillRepeatedly(Return(SWITCH2(i,
-        18, DownloadStateInfo::DANGEROUS_FILE,
-            DownloadStateInfo::NOT_DANGEROUS)));
+        18, content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE,
+            content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS)));
   }
   for (size_t i = 0; i < kNumItems; ++i) {
     switch (i) {
@@ -223,7 +223,8 @@ TEST_F(DownloadQueryTest, DownloadQueryAllFilters) {
                          match_url.spec().c_str()); break;
       case 16: CHECK(query()->AddFilter(base::Bind(&IdNotEqual, 16))); break;
       case 17: query()->AddFilter(DownloadItem::IN_PROGRESS); break;
-      case 18: query()->AddFilter(DownloadStateInfo::NOT_DANGEROUS); break;
+      case 18: query()->AddFilter(content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
+        break;
       default: NOTREACHED(); break;
     }
     Search();
@@ -254,15 +255,15 @@ TEST_F(DownloadQueryTest, DownloadQuerySortBytesReceived) {
 TEST_F(DownloadQueryTest, DownloadQuerySortDanger) {
   CreateMocks(2);
   EXPECT_CALL(mock(0), GetDangerType()).WillRepeatedly(Return(
-        DownloadStateInfo::DANGEROUS_FILE));
+        content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE));
   EXPECT_CALL(mock(1), GetDangerType()).WillRepeatedly(Return(
-        DownloadStateInfo::NOT_DANGEROUS));
+        content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS));
   query()->AddSorter(
       DownloadQuery::SORT_DANGER, DownloadQuery::ASCENDING);
   Search();
-  EXPECT_EQ(DownloadStateInfo::NOT_DANGEROUS,
+  EXPECT_EQ(content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
             results()->at(0)->GetDangerType());
-  EXPECT_EQ(DownloadStateInfo::DANGEROUS_FILE,
+  EXPECT_EQ(content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE,
             results()->at(1)->GetDangerType());
 }
 

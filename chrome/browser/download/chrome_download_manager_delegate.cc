@@ -137,7 +137,7 @@ void ChromeDownloadManagerDelegate::ChooseDownloadPath(
 bool ChromeDownloadManagerDelegate::OverrideIntermediatePath(
     DownloadItem* item,
     FilePath* intermediate_path) {
-  if (item->GetDangerType() != DownloadStateInfo::NOT_DANGEROUS) {
+  if (item->GetDangerType() != content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS) {
     if (item->PromptUserForSaveLocation()) {
       // When we prompt the user, we overwrite the FullPath with what the user
       // wanted to use. Construct a file path using the previously determined
@@ -458,7 +458,7 @@ void ChromeDownloadManagerDelegate::CheckVisitedReferrerBeforeDone(
   if (!state.prompt_user_for_save_location &&
       state.force_file_name.empty() &&
       IsDangerousFile(*download, state, visited_referrer_before)) {
-    state.danger = DownloadStateInfo::DANGEROUS_FILE;
+    state.danger = content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE;
   }
 
 #if defined(ENABLE_SAFE_BROWSING)
@@ -470,7 +470,7 @@ void ChromeDownloadManagerDelegate::CheckVisitedReferrerBeforeDone(
     // TODO(noelutz): if the user changes the extension name in the UI to
     // something like .exe SafeBrowsing will currently *not* check if the
     // download is malicious.
-    state.danger = DownloadStateInfo::MAYBE_DANGEROUS_CONTENT;
+    state.danger = content::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT;
   }
 #endif
 
@@ -508,7 +508,7 @@ void ChromeDownloadManagerDelegate::CheckIfSuggestedPathExists(
   }
 
   // If the download is possibly dangerous, we'll use a temporary name for it.
-  if (state.danger != DownloadStateInfo::NOT_DANGEROUS) {
+  if (state.danger != content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS) {
     state.target_name = FilePath(state.suggested_path).BaseName();
     // Create a temporary file to hold the file until the user approves its
     // download.
@@ -560,7 +560,7 @@ void ChromeDownloadManagerDelegate::CheckIfSuggestedPathExists(
   // See: http://code.google.com/p/chromium/issues/detail?id=3662
   if (!state.prompt_user_for_save_location &&
       state.force_file_name.empty()) {
-    if (state.danger != DownloadStateInfo::NOT_DANGEROUS)
+    if (state.danger != content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS)
       file_util::WriteFile(state.suggested_path, "", 0);
     else
       file_util::WriteFile(download_util::GetCrDownloadPath(

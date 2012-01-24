@@ -23,7 +23,6 @@
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/views/download/download_shelf_context_menu_view.h"
 #include "chrome/browser/ui/views/download/download_shelf_view.h"
-#include "content/browser/download/download_state_info.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/accessibility/accessible_view_state.h"
@@ -1005,11 +1004,14 @@ void DownloadItemView::ClearWarningDialog() {
 
 void DownloadItemView::ShowWarningDialog() {
   DCHECK(mode_ != DANGEROUS_MODE && mode_ != MALICIOUS_MODE);
-  if (download_->GetDangerType() == DownloadStateInfo::DANGEROUS_URL ||
-      download_->GetDangerType() == DownloadStateInfo::DANGEROUS_CONTENT) {
+  if (download_->GetDangerType() ==
+          content::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL ||
+      download_->GetDangerType() ==
+          content::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT) {
     mode_ = MALICIOUS_MODE;
   } else {
-    DCHECK(download_->GetDangerType() == DownloadStateInfo::DANGEROUS_FILE);
+    DCHECK(download_->GetDangerType() ==
+           content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE);
     mode_ = DANGEROUS_MODE;
   }
   body_state_ = NORMAL;
@@ -1060,33 +1062,39 @@ void DownloadItemView::ShowWarningDialog() {
   if (mode_ == MALICIOUS_MODE) {
     warning_icon_ = rb.GetBitmapNamed(IDR_SAFEBROWSING_WARNING);
   } else {
-    DCHECK(download_->GetDangerType() == DownloadStateInfo::DANGEROUS_FILE);
+    DCHECK(download_->GetDangerType() ==
+           content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE);
     // The download file has dangerous file type (e.g.: an executable).
     warning_icon_ = rb.GetBitmapNamed(IDR_WARNING);
   }
   string16 dangerous_label;
-  if (download_->GetDangerType() == DownloadStateInfo::DANGEROUS_URL) {
+  if (download_->GetDangerType() ==
+          content::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL) {
     // Safebrowsing shows the download URL or content leads to malicious file.
     dangerous_label = l10n_util::GetStringUTF16(
         IDS_PROMPT_MALICIOUS_DOWNLOAD_URL);
-  } else if (download_->GetDangerType() == DownloadStateInfo::DANGEROUS_FILE &&
+  } else if (download_->GetDangerType() ==
+                 content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE &&
              ChromeDownloadManagerDelegate::IsExtensionDownload(download_)) {
     dangerous_label =
         l10n_util::GetStringUTF16(IDS_PROMPT_DANGEROUS_DOWNLOAD_EXTENSION);
   } else {
     // The download file has dangerous file type (e.g.: an executable) or the
     // file content is known to be malicious.
-    DCHECK(download_->GetDangerType() == DownloadStateInfo::DANGEROUS_FILE ||
-           download_->GetDangerType() == DownloadStateInfo::DANGEROUS_CONTENT);
+    DCHECK(download_->GetDangerType() ==
+               content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE ||
+           download_->GetDangerType() ==
+               content::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT);
     ui::ElideString(rootname,
                     kFileNameMaxLength - extension.length(),
                     &rootname);
     string16 filename = rootname + ASCIIToUTF16(".") + extension;
     filename = base::i18n::GetDisplayStringInLTRDirectionality(filename);
     dangerous_label = l10n_util::GetStringFUTF16(
-        download_->GetDangerType() == DownloadStateInfo::DANGEROUS_FILE ?
-            IDS_PROMPT_DANGEROUS_DOWNLOAD :
-            IDS_PROMPT_MALICIOUS_DOWNLOAD_CONTENT,
+        download_->GetDangerType() ==
+            content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE ?
+                IDS_PROMPT_DANGEROUS_DOWNLOAD :
+                IDS_PROMPT_MALICIOUS_DOWNLOAD_CONTENT,
         filename);
   }
 

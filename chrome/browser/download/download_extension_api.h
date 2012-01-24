@@ -14,7 +14,6 @@
 #include "base/memory/singleton.h"
 #include "base/string16.h"
 #include "chrome/browser/extensions/extension_function.h"
-#include "content/browser/download/download_state_info.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
 
