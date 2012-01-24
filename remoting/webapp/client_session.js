@@ -20,12 +20,8 @@ var remoting = remoting || {};
  * @param {string} hostJid The jid of the host to connect to.
  * @param {string} hostPublicKey The base64 encoded version of the host's
  *     public key.
- * @param {string} sharedSecret The access code for IT2Me or the PIN
- *     for Me2Me.
- * @param {string} authenticationMethods Comma-separated list of
- *     authentication methods the client should attempt to use.
- * @param {string} authenticationTag A host-specific tag to mix into
- *     authentication hashes.
+ * @param {string} authenticationCode The access code for IT2Me or the
+ *     PIN for Me2Me.
  * @param {string} email The username for the talk network.
  * @param {remoting.ClientSession.Mode} mode The mode of this connection.
  * @param {function(remoting.ClientSession.State,
@@ -33,16 +29,13 @@ var remoting = remoting || {};
  *     The callback to invoke when the session changes state.
  * @constructor
  */
-remoting.ClientSession = function(hostJid, hostPublicKey, sharedSecret,
-                                  authenticationMethods, authenticationTag,
+remoting.ClientSession = function(hostJid, hostPublicKey, authenticationCode,
                                   email, mode, onStateChange) {
   this.state = remoting.ClientSession.State.CREATED;
 
   this.hostJid = hostJid;
   this.hostPublicKey = hostPublicKey;
-  this.sharedSecret = sharedSecret;
-  this.authenticationMethods = authenticationMethods;
-  this.authenticationTag = authenticationTag;
+  this.authenticationCode = authenticationCode;
   this.email = email;
   this.mode = mode;
   this.clientJid = '';
@@ -121,7 +114,7 @@ remoting.ClientSession.prototype.error =
  * @const
  * @private
  */
-remoting.ClientSession.prototype.API_VERSION_ = 4;
+remoting.ClientSession.prototype.API_VERSION_ = 3;
 
 /**
  * The oldest API version that we support.
@@ -131,7 +124,7 @@ remoting.ClientSession.prototype.API_VERSION_ = 4;
  * @const
  * @private
  */
-remoting.ClientSession.prototype.API_MIN_VERSION_ = 2;
+remoting.ClientSession.prototype.API_MIN_VERSION_ = 1;
 
 /**
  * The id of the client plugin
@@ -346,16 +339,8 @@ remoting.ClientSession.prototype.connectPluginToWcs_ =
     }
   }
   remoting.wcs.setOnIq(onIq);
-  if (that.plugin.apiVersion < 4) {
-    // Client plugin versions prior to 4 didn't support the last two
-    // parameters.
-    that.plugin.connect(this.hostJid, this.hostPublicKey, this.clientJid,
-                        this.sharedSecret);
-  } else {
-    that.plugin.connect(this.hostJid, this.hostPublicKey, this.clientJid,
-                        this.sharedSecret, this.authenticationMethods,
-                        this.authenticationTag);
-  }
+  that.plugin.connect(this.hostJid, this.hostPublicKey, this.clientJid,
+                      this.authenticationCode);
 };
 
 /**
