@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,41 +7,19 @@
 #define CHROME_BROWSER_CHROMEOS_CROS_BURN_LIBRARY_H_
 
 #include <string>
-#include <vector>
 
 #include "base/file_path.h"
-#include "base/file_util.h"
-#include "base/memory/weak_ptr.h"
-#include "base/observer_list.h"
-#include "third_party/cros/chromeos_imageburn.h"
 
 struct ImageBurnStatus {
-  ImageBurnStatus() : target_path(),
-                      amount_burnt(0),
-                      total_size(0),
-                      error() {
+  ImageBurnStatus() : amount_burnt(0), total_size(0) {
   }
 
-  explicit ImageBurnStatus(const chromeos::BurnStatus& status)
-      : amount_burnt(status.amount_burnt), total_size(status.total_size) {
-    if (status.target_path)
-      target_path = status.target_path;
-    if (status.error)
-      error = status.error;
+  ImageBurnStatus(int64 burnt, int64 total)
+      : amount_burnt(burnt), total_size(total) {
   }
 
-  ImageBurnStatus(const char* path, int64 burnt, int64 total, const char* err)
-      : total_size(total) {
-    if (path)
-      target_path = path;
-    if (err)
-      error = err;
-  }
-
-  std::string target_path;
   int64 amount_burnt;
   int64 total_size;
-  std::string error;
 };
 
 namespace chromeos {
@@ -60,8 +38,9 @@ class BurnLibrary {
  public:
   class Observer {
    public:
-    virtual void BurnProgressUpdated(BurnLibrary* object, BurnEvent evt,
-                                 const ImageBurnStatus& status) = 0;
+    virtual void BurnProgressUpdated(BurnLibrary* object,
+                                     BurnEvent evt,
+                                     const ImageBurnStatus& status) = 0;
   };
 
   virtual ~BurnLibrary() {}
