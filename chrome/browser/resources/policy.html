@@ -16,16 +16,16 @@
 </head>
 <body i18n-values=".style.fontFamily:fontfamily; .style.fontSize:fontsize">
   <h1 id="about-policy-title" i18n-content="policyTitle"></h1>
+  <div id="fetch-policies">
+    <button id="fetch-policies-button" i18n-content="fetchPoliciesText">
+    </button>
+  </div>
   <div id="main-content">
     <div id="data-template">
       <section id="status-section" jsselect="status" hidden
           jsdisplay="displayStatusSection">
         <div class="separator">
           <span id="status-title" i18n-content="statusPaneTitle"></span>
-          <div id="fetch-policies">
-            <button id="fetch-policies-button" i18n-content="fetchPoliciesText">
-            </button>
-          </div>
         </div>
           <div id="status-pane">
             <fieldset class="status-box" jsdisplay="displayDeviceStatus">

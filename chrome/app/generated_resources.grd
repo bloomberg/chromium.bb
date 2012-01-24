@@ -4450,8 +4450,8 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_POLICY_TITLE" desc="The title for the about:policies page.">
         Policies
       </message>
-      <message name="IDS_POLICY_FETCH" desc="The label for the button that fetches policies.">
-        Fetch policies now
+      <message name="IDS_POLICY_FETCH" desc="The label for the button that reloads policies.">
+        Reload policies
       </message>
       <message name="IDS_POLICY_STATUS_TITLE" desc="The title for the status section.">
         Status
