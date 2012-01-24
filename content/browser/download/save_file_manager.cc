@@ -181,7 +181,8 @@ SavePackage* SaveFileManager::GetSavePackageFromRenderIds(
   if (!render_view_host)
     return NULL;
 
-  TabContents* tab = render_view_host->delegate()->GetAsTabContents();
+  TabContents* tab = static_cast<TabContents*>(
+      render_view_host->delegate()->GetAsWebContents());
   if (!tab)
     return NULL;
 

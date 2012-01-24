@@ -61,7 +61,8 @@ TabContents* DownloadRequestHandle::GetTabContents() const {
   if (!render_view_host)
     return NULL;
 
-  return render_view_host->delegate()->GetAsTabContents();
+  return static_cast<TabContents*>(
+      render_view_host->delegate()->GetAsWebContents());
 }
 
 DownloadManager* DownloadRequestHandle::GetDownloadManager() const {

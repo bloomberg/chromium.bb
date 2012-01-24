@@ -197,7 +197,6 @@ class CONTENT_EXPORT RenderViewHostDelegate : public IPC::Channel::Listener {
   // Return this object cast to a TabContents, if it is one. If the object is
   // not a TabContents, returns NULL. DEPRECATED: Be sure to include brettw or
   // jam as reviewers before you use this method. http://crbug.com/82582
-  virtual TabContents* GetAsTabContents();
   virtual content::WebContents* GetAsWebContents();
 
   // Return type of RenderView which is attached with this object.

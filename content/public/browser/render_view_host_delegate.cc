@@ -26,10 +26,6 @@ const GURL& RenderViewHostDelegate::GetURL() const {
   return GURL::EmptyGURL();
 }
 
-TabContents* RenderViewHostDelegate::GetAsTabContents() {
-  return NULL;
-}
-
 WebContents* RenderViewHostDelegate::GetAsWebContents() {
   return NULL;
 }

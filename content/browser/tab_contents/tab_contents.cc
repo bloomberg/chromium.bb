@@ -1645,10 +1645,6 @@ content::RendererPreferences TabContents::GetRendererPrefs(
   return renderer_preferences_;
 }
 
-TabContents* TabContents::GetAsTabContents() {
-  return this;
-}
-
 WebContents* TabContents::GetAsWebContents() {
   return this;
 }

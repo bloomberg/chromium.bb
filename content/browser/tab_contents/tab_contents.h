@@ -224,7 +224,6 @@ class CONTENT_EXPORT TabContents
       GetRendererManagementDelegate() OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual const GURL& GetURL() const OVERRIDE;
-  virtual TabContents* GetAsTabContents() OVERRIDE;
   virtual WebContents* GetAsWebContents() OVERRIDE;
   virtual content::ViewType GetRenderViewType() const OVERRIDE;
   virtual gfx::Rect GetRootWindowResizerRect() const OVERRIDE;
