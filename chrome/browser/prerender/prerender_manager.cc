@@ -84,6 +84,19 @@ const int kHistoryLength = 100;
 // Indicates whether a Prerender has been cancelled such that we need
 // a dummy replacement for the purpose of recording the correct PPLT for
 // the Match Complete case.
+// Traditionally, "Match" means that a prerendered page was actually visited &
+// the prerender was used.  Our goal is to have "Match" cases line up in the
+// control group & the experiment group, so that we can make meaningful
+// comparisons of improvements.  However, in the control group, since we don't
+// actually perform prerenders, many of the cancellation reasons cannot be
+// detected.  Therefore, in the Prerender group, when we cancel for one of these
+// reasons, we keep track of a dummy Prerender representing what we would
+// have in the control group.  If that dummy prerender in the prerender group
+// would then be swapped in (but isn't actually b/c it's a dummy), we record
+// this as a MatchComplete.  This allows us to compare MatchComplete's
+// across Prerender & Control group which ideally should be lining up.
+// This ensures that there is no bias in terms of the page load times
+// of the pages forming the difference between the two sets.
 
 bool NeedMatchCompleteDummyForFinalStatus(FinalStatus final_status) {
   return final_status != FINAL_STATUS_USED &&
@@ -96,7 +109,9 @@ bool NeedMatchCompleteDummyForFinalStatus(FinalStatus final_status) {
       final_status != FINAL_STATUS_FRAGMENT_MISMATCH &&
       final_status != FINAL_STATUS_CACHE_OR_HISTORY_CLEARED &&
       final_status != FINAL_STATUS_CANCELLED &&
-      final_status != FINAL_STATUS_MATCH_COMPLETE_DUMMY;
+      final_status != FINAL_STATUS_SESSION_STORAGE_NAMESPACE_MISMATCH &&
+      final_status != FINAL_STATUS_DEVTOOLS_ATTACHED &&
+      final_status != FINAL_STATUS_CROSS_SITE_NAVIGATION_PENDING;
 }
 
 }  // namespace
@@ -437,9 +452,7 @@ bool PrerenderManager::AddPrerender(
 
   prerender_list_.push_back(data);
 
-  if (IsControlGroup()) {
-    data.contents_->set_final_status(FINAL_STATUS_CONTROL_GROUP);
-  } else {
+  if (!IsControlGroup()) {
     last_prerender_start_time_ = GetCurrentTimeTicks();
     data.contents_->StartPrerendering(source_render_view_host,
                                       session_storage_namespace);
@@ -534,6 +547,18 @@ PrerenderContents* PrerenderManager::GetEntry(const GURL& url) {
   return GetEntryButNotSpecifiedWC(url, NULL);
 }
 
+void PrerenderManager::DestroyAndMarkMatchCompleteAsUsed(
+    PrerenderContents* prerender_contents,
+    FinalStatus final_status) {
+  prerender_contents->set_match_complete_status(
+      PrerenderContents::MATCH_COMPLETE_REPLACED);
+  histograms_->RecordFinalStatus(prerender_contents->origin(),
+                                 prerender_contents->experiment_id(),
+                                 PrerenderContents::MATCH_COMPLETE_REPLACEMENT,
+                                 FINAL_STATUS_WOULD_HAVE_BEEN_USED);
+  prerender_contents->Destroy(final_status);
+}
+
 bool PrerenderManager::MaybeUsePrerenderedPage(WebContents* web_contents,
                                                const GURL& url,
                                                const GURL& opener_url) {
@@ -569,20 +594,23 @@ bool PrerenderManager::MaybeUsePrerenderedPage(WebContents* web_contents,
   // would be showing a prerendered contents, but otherwise, don't do anything.
   if (!prerender_contents->prerendering_has_started()) {
     MarkWebContentsAsWouldBePrerendered(web_contents);
+    prerender_contents.release()->Destroy(FINAL_STATUS_WOULD_HAVE_BEEN_USED);
     return false;
   }
 
   // Don't use prerendered pages if debugger is attached to the tab.
   // See http://crbug.com/98541
   if (content::DevToolsAgentHostRegistry::IsDebuggerAttached(web_contents)) {
-    prerender_contents.release()->Destroy(FINAL_STATUS_DEVTOOLS_ATTACHED);
+    DestroyAndMarkMatchCompleteAsUsed(prerender_contents.release(),
+                                      FINAL_STATUS_DEVTOOLS_ATTACHED);
     return false;
   }
 
   // If the prerendered page is in the middle of a cross-site navigation,
   // don't swap it in because there isn't a good way to merge histories.
   if (prerender_contents->IsCrossSiteNavigationPending()) {
-    prerender_contents.release()->Destroy(
+    DestroyAndMarkMatchCompleteAsUsed(
+        prerender_contents.release(),
         FINAL_STATUS_CROSS_SITE_NAVIGATION_PENDING);
     return false;
   }
@@ -596,7 +624,8 @@ bool PrerenderManager::MaybeUsePrerenderedPage(WebContents* web_contents,
   DCHECK(new_render_view_host);
   if (old_render_view_host->session_storage_namespace() !=
       new_render_view_host->session_storage_namespace()) {
-    prerender_contents.release()->Destroy(
+    DestroyAndMarkMatchCompleteAsUsed(
+        prerender_contents.release(),
         FINAL_STATUS_SESSION_STORAGE_NAMESPACE_MISMATCH);
     return false;
   }
@@ -606,7 +635,7 @@ bool PrerenderManager::MaybeUsePrerenderedPage(WebContents* web_contents,
   // reflect that it would have been prerendered.
   if (GetMode() == PRERENDER_MODE_EXPERIMENT_NO_USE_GROUP) {
     MarkWebContentsAsWouldBePrerendered(web_contents);
-    prerender_contents.release()->Destroy(FINAL_STATUS_NO_USE_GROUP);
+    prerender_contents.release()->Destroy(FINAL_STATUS_WOULD_HAVE_BEEN_USED);
     return false;
   }
 
@@ -705,13 +734,17 @@ void PrerenderManager::MoveEntryToPendingDelete(PrerenderContents* entry,
       // for the Match Complete group.
       // This is the case if the cancellation is for any reason that would not
       // occur in the control group case.
-      if (NeedMatchCompleteDummyForFinalStatus(final_status)) {
+      if (entry->match_complete_status() ==
+          PrerenderContents::MATCH_COMPLETE_DEFAULT &&
+          NeedMatchCompleteDummyForFinalStatus(final_status)) {
         // TODO(tburkard): I'd like to DCHECK that we are actually prerendering.
         // However, what if new conditions are added and
         // NeedMatchCompleteDummyForFinalStatus, is not being updated.  Not sure
         // what's the best thing to do here.  For now, I will just check whether
         // we are actually prerendering.
         if (ActuallyPrerendering()) {
+          entry->set_match_complete_status(
+              PrerenderContents::MATCH_COMPLETE_REPLACED);
           PrerenderContents* dummy_replacement_prerender_contents =
               CreatePrerenderContents(
                   entry->prerender_url(),
@@ -722,8 +755,9 @@ void PrerenderManager::MoveEntryToPendingDelete(PrerenderContents* entry,
               dummy_replacement_prerender_contents->Init()) {
             dummy_replacement_prerender_contents->
                 AddAliasURLsFromOtherPrerenderContents(entry);
+            dummy_replacement_prerender_contents->set_match_complete_status(
+                PrerenderContents::MATCH_COMPLETE_REPLACEMENT);
             it->contents_ = dummy_replacement_prerender_contents;
-            it->contents_->set_final_status(FINAL_STATUS_MATCH_COMPLETE_DUMMY);
             swapped_in_dummy_replacement = true;
           }
         }
@@ -1099,11 +1133,26 @@ void PrerenderManager::DestroyAllContents(FinalStatus final_status) {
   DeletePendingDeleteEntries();
 }
 
+void PrerenderManager::RecordFinalStatusWithMatchCompleteStatus(
+    Origin origin,
+    uint8 experiment_id,
+    PrerenderContents::MatchCompleteStatus mc_status,
+    FinalStatus final_status) const {
+  histograms_->RecordFinalStatus(origin,
+                                 experiment_id,
+                                 mc_status,
+                                 final_status);
+}
+
 void PrerenderManager::RecordFinalStatus(Origin origin,
                                          uint8 experiment_id,
                                          FinalStatus final_status) const {
-  histograms_->RecordFinalStatus(origin, experiment_id, final_status);
+  RecordFinalStatusWithMatchCompleteStatus(
+      origin, experiment_id,
+      PrerenderContents::MATCH_COMPLETE_DEFAULT,
+      final_status);
 }
+
 
 PrerenderManager* FindPrerenderManagerUsingRenderProcessId(
     int render_process_id) {

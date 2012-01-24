@@ -81,6 +81,23 @@ class PrerenderContents : public content::NotificationObserver,
   };
   typedef std::list<PendingPrerenderData> PendingPrerenderList;
 
+  // Indicates how this PrerenderContents relates to MatchComplete.
+  // This is important to figure out in what histograms to record the
+  // FinalStatus in, as described below.
+  enum MatchCompleteStatus {
+    // A regular prerender which will be recorded both in Match and
+    // MatchComplete.
+    MATCH_COMPLETE_DEFAULT,
+    // A prerender that used to be a regular prerender, but has since
+    // been replaced by a MatchComplete dummy.  Therefore, we will record
+    // this only for Match, but not for MatchComplete.
+    MATCH_COMPLETE_REPLACED,
+    // A prerender that is a MatchComplete dummy replacing a regular
+    // prerender.  Therefore, we will record this only for MatchComplete,
+    // but not Match.
+    MATCH_COMPLETE_REPLACEMENT
+  };
+
   virtual ~PrerenderContents();
 
   bool Init();
@@ -106,6 +123,12 @@ class PrerenderContents : public content::NotificationObserver,
   const content::Referrer& referrer() const { return referrer_; }
   bool has_stopped_loading() const { return has_stopped_loading_; }
   bool prerendering_has_started() const { return prerendering_has_started_; }
+  MatchCompleteStatus match_complete_status() const {
+    return match_complete_status_;
+  }
+  void set_match_complete_status(MatchCompleteStatus status) {
+    match_complete_status_ = status;
+  }
 
   // Sets the parameter to the value of the associated RenderViewHost's child id
   // and returns a boolean indicating the validity of that id.
@@ -268,6 +291,11 @@ class PrerenderContents : public content::NotificationObserver,
   FinalStatus final_status_;
 
   bool prerendering_has_started_;
+
+  // The MatchComplete status of the prerender, indicating how it relates
+  // to being a MatchComplete dummy (see definition of MatchCompleteStatus
+  // above).
+  MatchCompleteStatus match_complete_status_;
 
   // Tracks whether or not prerendering has been cancelled by calling Destroy.
   // Used solely to prevent double deletion.

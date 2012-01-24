@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/time.h"
+#include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/prerender/prerender_final_status.h"
 #include "chrome/browser/prerender/prerender_origin.h"
 #include "googleurl/src/gurl.h"
@@ -49,8 +50,8 @@ class PrerenderHistograms {
   // Record a final status of a prerendered page in a histogram.
   void RecordFinalStatus(Origin origin,
                          uint8 experiment_id,
+                         PrerenderContents::MatchCompleteStatus mc_status,
                          FinalStatus final_status) const;
-
 
   // To be called when a new prerender is added.
   void RecordPrerender(Origin origin, const GURL& url);

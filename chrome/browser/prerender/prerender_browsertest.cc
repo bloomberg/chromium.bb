@@ -137,17 +137,21 @@ class TestPrerenderContents : public PrerenderContents {
         quit_message_loop_on_destruction_(
             expected_final_status != FINAL_STATUS_EVICTED &&
             expected_final_status != FINAL_STATUS_APP_TERMINATING &&
-            expected_final_status != FINAL_STATUS_MATCH_COMPLETE_DUMMY),
+            expected_final_status != FINAL_STATUS_MAX),
         expected_pending_prerenders_(0) {
     if (expected_number_of_loads == 0)
       MessageLoopForUI::current()->Quit();
   }
 
   virtual ~TestPrerenderContents() {
-    EXPECT_EQ(expected_final_status_, final_status()) <<
-              " when testing URL " << prerender_url().path() <<
-              " (Expected: " << NameFromFinalStatus(expected_final_status_) <<
-              ", Actual: " << NameFromFinalStatus(final_status()) << ")";
+    if (expected_final_status_ == FINAL_STATUS_MAX) {
+      EXPECT_EQ(match_complete_status(), MATCH_COMPLETE_REPLACEMENT);
+    } else {
+      EXPECT_EQ(expected_final_status_, final_status()) <<
+          " when testing URL " << prerender_url().path() <<
+          " (Expected: " << NameFromFinalStatus(expected_final_status_) <<
+          ", Actual: " << NameFromFinalStatus(final_status()) << ")";
+    }
     // Prerendering RenderViewHosts should be hidden before the first
     // navigation, so this should be happen for every PrerenderContents for
     // which a RenderViewHost is created, regardless of whether or not it's
@@ -313,7 +317,7 @@ class WaitForLoadPrerenderContentsFactory : public PrerenderContents::Factory {
       const content::Referrer& referrer,
       Origin origin,
       uint8 experiment_id) OVERRIDE {
-    FinalStatus expected_final_status = FINAL_STATUS_MATCH_COMPLETE_DUMMY;
+    FinalStatus expected_final_status = FINAL_STATUS_MAX;
     if (!expected_final_status_queue_.empty()) {
       expected_final_status = expected_final_status_queue_.front();
       expected_final_status_queue_.pop_front();

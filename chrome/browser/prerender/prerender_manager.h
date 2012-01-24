@@ -201,9 +201,13 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   void ClearData(int clear_flags);
 
   // Record a final status of a prerendered page in a histogram.
-  void RecordFinalStatus(Origin origin,
-                         uint8 experiment_id,
-                         FinalStatus final_status) const;
+  // This variation allows specifying whether prerendering had been started
+  // (necessary to flag MatchComplete dummies).
+  void RecordFinalStatusWithMatchCompleteStatus(
+      Origin origin,
+      uint8 experiment_id,
+      PrerenderContents::MatchCompleteStatus mc_status,
+      FinalStatus final_status) const;
 
   const Config& config() const { return config_; }
   Config& mutable_config() { return config_; }
@@ -243,6 +247,8 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   FRIEND_TEST_ALL_PREFIXES(PrerenderManagerTest, FragmentMatchesPageTest);
   FRIEND_TEST_ALL_PREFIXES(PrerenderManagerTest, PageMatchesFragmentTest);
   FRIEND_TEST_ALL_PREFIXES(PrerenderManagerTest, PendingPrerenderTest);
+  FRIEND_TEST_ALL_PREFIXES(PrerenderManagerTest, ControlGroupVisited);
+  FRIEND_TEST_ALL_PREFIXES(PrerenderManagerTest, NoUseGroupVisited);
   FRIEND_TEST_ALL_PREFIXES(PrerenderManagerTest, RateLimitInWindowTest);
   FRIEND_TEST_ALL_PREFIXES(PrerenderManagerTest, RateLimitOutsideWindowTest);
   FRIEND_TEST_ALL_PREFIXES(PrerenderManagerTest, SourceRenderViewClosed);
@@ -367,6 +373,19 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   // well as any swapped out TabContents queued for destruction.
   // Used both on destruction, and when clearing the browsing history.
   void DestroyAllContents(FinalStatus final_status);
+
+  // Helper function to destroy a PrerenderContents with the specified
+  // final_status, while at the same time recording that for the MatchComplete
+  // case, that this prerender would have been used.
+  void DestroyAndMarkMatchCompleteAsUsed(PrerenderContents* prerender_contents,
+                                         FinalStatus final_status);
+
+  // Record a final status of a prerendered page in a histogram.
+  // This is a helper function which will ultimately call
+  // RecordFinalStatusWthMatchCompleteStatus, using MATCH_COMPLETE_DEFAULT.
+  void RecordFinalStatus(Origin origin,
+                         uint8 experiment_id,
+                         FinalStatus final_status) const;
 
   // The configuration.
   Config config_;

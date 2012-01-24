@@ -222,6 +222,7 @@ PrerenderContents::PrerenderContents(
       has_stopped_loading_(false),
       final_status_(FINAL_STATUS_MAX),
       prerendering_has_started_(false),
+      match_complete_status_(MATCH_COMPLETE_DEFAULT),
       prerendering_has_been_cancelled_(false),
       child_id_(-1),
       route_id_(-1),
@@ -344,16 +345,7 @@ bool PrerenderContents::GetRouteId(int* route_id) const {
 
 void PrerenderContents::set_final_status(FinalStatus final_status) {
   DCHECK(final_status >= FINAL_STATUS_USED && final_status < FINAL_STATUS_MAX);
-  DCHECK(final_status_ == FINAL_STATUS_MAX ||
-         final_status_ == FINAL_STATUS_CONTROL_GROUP ||
-         final_status_ == FINAL_STATUS_MATCH_COMPLETE_DUMMY);
-
-  // Don't override final_status_ if it's FINAL_STATUS_CONTROL_GROUP or
-  // FINAL_STATUS_MATCH_COMPLETE_DUMMY, otherwise data will be collected
-  // in the Prerender.FinalStatus histogram.
-  if (final_status_ == FINAL_STATUS_CONTROL_GROUP ||
-      final_status_ == FINAL_STATUS_MATCH_COMPLETE_DUMMY)
-    return;
+  DCHECK(final_status_ == FINAL_STATUS_MAX);
 
   final_status_ = final_status;
 }
@@ -361,17 +353,14 @@ void PrerenderContents::set_final_status(FinalStatus final_status) {
 PrerenderContents::~PrerenderContents() {
   DCHECK(final_status_ != FINAL_STATUS_MAX);
   DCHECK(prerendering_has_been_cancelled_ ||
-         final_status_ == FINAL_STATUS_USED ||
-         final_status_ == FINAL_STATUS_CONTROL_GROUP ||
-         final_status_ == FINAL_STATUS_MATCH_COMPLETE_DUMMY);
+         final_status_ == FINAL_STATUS_USED);
   DCHECK(origin_ != ORIGIN_MAX);
 
-  // If we haven't even started prerendering, we were just in the control
-  // group (or a match complete dummy), which means we do not want to record
-  // the status.
-  if (prerendering_has_started())
-    prerender_manager_->RecordFinalStatus(origin_, experiment_id_,
-                                          final_status_);
+  prerender_manager_->RecordFinalStatusWithMatchCompleteStatus(
+      origin_,
+      experiment_id_,
+      match_complete_status_,
+      final_status_);
 
   if (child_id_ != -1 && route_id_ != -1)
     prerender_tracker_->OnPrerenderingFinished(child_id_, route_id_);

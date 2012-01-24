@@ -52,6 +52,7 @@ const char* kFinalStatusNames[] = {
   "Match Complete Dummy",
   "Duplicate",
   "OpenURL",
+  "WouldHaveBeenUsed",
   "Max",
 };
 COMPILE_ASSERT(arraysize(kFinalStatusNames) == FINAL_STATUS_MAX + 1,

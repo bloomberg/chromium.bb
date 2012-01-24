@@ -169,6 +169,29 @@ base::TimeTicks PrerenderHistograms::GetCurrentTimeTicks() const {
         100)); \
 }
 
+// Summary of all histograms Perceived PLT histograms:
+// (all prefixed PerceivedPLT)
+// PerceivedPLT -- Perceived Pageloadtimes (PPLT) for all pages in the group.
+// ...Windowed -- PPLT for pages in the 30s after a prerender is created.
+// ...Matched -- A prerendered page that was swapped in.  In the NoUse
+// and Control group cases, while nothing ever gets swapped in, we do keep
+// track of what would be prerendered and would be swapped in -- and those
+// cases are what is classified as Match for these groups.
+// ...MatchedComplete -- A prerendered page that was swapped in + a few
+// that were not swapped in so that the set of pages lines up more closely with
+// the control group.
+// ...FirstAfterMiss -- First page to finish loading after a prerender, which
+// is different from the page that was prerendered.
+// ...FirstAfterMissNonOverlapping -- Same as FirstAfterMiss, but only
+// triggering for the first page to finish after the prerender that also started
+// after the prerender started.
+// ...FirstAfterMissBoth -- pages meeting
+// FirstAfterMiss AND FirstAfterMissNonOverlapping
+// ...FirstAfterMissAnyOnly -- pages meeting
+// FirstAfterMiss but NOT FirstAfterMissNonOverlapping
+// ..FirstAfterMissNonOverlappingOnly -- pages meeting
+// FirstAfterMissNonOverlapping but NOT FirstAfterMiss
+
 void PrerenderHistograms::RecordPerceivedPageLoadTime(
     base::TimeDelta perceived_page_load_time, bool was_prerender,
     bool was_complete_prerender, const GURL& url) {
@@ -256,14 +279,36 @@ void PrerenderHistograms::RecordTimeBetweenPrerenderRequests(
       UMA_HISTOGRAM_TIMES(name, time));
 }
 
-void PrerenderHistograms::RecordFinalStatus(Origin origin,
-                                            uint8 experiment_id,
-                                            FinalStatus final_status) const {
+void PrerenderHistograms::RecordFinalStatus(
+    Origin origin,
+    uint8 experiment_id,
+    PrerenderContents::MatchCompleteStatus mc_status,
+    FinalStatus final_status) const {
   DCHECK(final_status != FINAL_STATUS_MAX);
-  PREFIXED_HISTOGRAM_ORIGIN_EXPERIMENT(
-      base::FieldTrial::MakeName("FinalStatus", "Prerender"),
-      origin, experiment_id,
-      UMA_HISTOGRAM_ENUMERATION(name, final_status, FINAL_STATUS_MAX));
+
+  // There are three cases for MatchCompleteStatus:
+  // MATCH_COMPLETE_DEFAULT:
+  // In this case, Match & MatchComplete line up.  So we record this in both
+  // histograms.
+  // MATCH_COMPLETE_REPLACED: The actual prerender was replaced by a dummy.
+  // So we only record it in (the actual) FinalStatus, but not MatchComplete.
+  // MATCH_COMPLETE_REPLACEMENT: This is a pseudo element to emulate what
+  // the control group would do.  Since it won't actually be swapped in,
+  // it may not go into FinalStatus.  Since in the control group it would be
+  // swapped in though, it must go into MatchComplete.
+
+  if (mc_status != PrerenderContents::MATCH_COMPLETE_REPLACEMENT) {
+    PREFIXED_HISTOGRAM_ORIGIN_EXPERIMENT(
+        base::FieldTrial::MakeName("FinalStatus", "Prerender"),
+        origin, experiment_id,
+        UMA_HISTOGRAM_ENUMERATION(name, final_status, FINAL_STATUS_MAX));
+  }
+  if (mc_status != PrerenderContents::MATCH_COMPLETE_REPLACED) {
+    PREFIXED_HISTOGRAM_ORIGIN_EXPERIMENT(
+        base::FieldTrial::MakeName("FinalStatusMatchComplete", "Prerender"),
+        origin, experiment_id,
+        UMA_HISTOGRAM_ENUMERATION(name, final_status, FINAL_STATUS_MAX));
+  }
 }
 
 uint8 PrerenderHistograms::GetCurrentExperimentId() const {
