@@ -25,8 +25,8 @@ void PackExtensionHandler::Initialize() {
 void PackExtensionHandler::GetLocalizedValues(
     DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
-  RegisterTitle(localized_strings, "clearBrowserDataOverlay",
-                IDS_CLEAR_BROWSING_DATA_TITLE);
+  RegisterTitle(localized_strings, "packExtensionOverlay",
+                IDS_EXTENSION_PACK_DIALOG_TITLE);
 
   localized_strings->SetString("packExtensionOverlay",
       l10n_util::GetStringUTF16(IDS_EXTENSION_PACK_DIALOG_TITLE));
