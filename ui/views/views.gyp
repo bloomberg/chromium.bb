@@ -51,6 +51,8 @@
         'accessible_pane_view.h',
         'animation/bounds_animator.cc',
         'animation/bounds_animator.h',
+        'animation/scroll_animator.cc',
+        'animation/scroll_animator.h',
         'background.cc',
         'background.h',
         'border.cc',

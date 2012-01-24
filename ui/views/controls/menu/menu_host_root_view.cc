@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -60,6 +60,14 @@ bool MenuHostRootView::OnMouseWheel(const MouseWheelEvent& event) {
   // focused view, so we need to override this then forward to the menu.
   return submenu_->OnMouseWheel(event);
 #endif
+}
+
+ui::GestureStatus MenuHostRootView::OnGestureEvent(const GestureEvent& event) {
+  // ChromeOS uses MenuController to forward events like other
+  // mouse events.
+  if (!GetMenuController())
+    return ui::GESTURE_STATUS_UNKNOWN;
+  return GetMenuController()->OnGestureEvent(submenu_, event);
 }
 
 MenuController* MenuHostRootView::GetMenuController() {
