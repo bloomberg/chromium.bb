@@ -679,7 +679,7 @@ void PrintWebViewHelper::PrintPage(WebKit::WebFrame* frame) {
   if (is_preview_enabled_) {
     print_preview_context_.InitWithFrame(frame);
 
-    RequestPrintPreview(true);
+    RequestPrintPreview(PRINT_PREVIEW_SCRIPTED);
   } else {
     Print(frame, WebNode());
   }
@@ -974,7 +974,7 @@ void PrintWebViewHelper::OnInitiatePrintPreview() {
   WebFrame* frame;
   if (GetPrintFrame(&frame)) {
     print_preview_context_.InitWithFrame(frame);
-    RequestPrintPreview(false);
+    RequestPrintPreview(PRINT_PREVIEW_USER_INITIATED_ENTIRE_FRAME);
   }
 }
 
@@ -988,7 +988,7 @@ void PrintWebViewHelper::PrintNode(const WebNode& node) {
   // its |context_menu_node_|.
   if (is_preview_enabled_) {
     print_preview_context_.InitWithNode(node);
-    RequestPrintPreview(false);
+    RequestPrintPreview(PRINT_PREVIEW_USER_INITIATED_CONTEXT_NODE);
   } else {
     WebNode duplicate_node(node);
     Print(duplicate_node.document().frame(), duplicate_node);
@@ -1466,16 +1466,31 @@ void PrintWebViewHelper::DisplayPrintJobError() {
       l10n_util::GetStringUTF16(IDS_PRINT_SPOOL_FAILED_ERROR_TEXT));
 }
 
-void PrintWebViewHelper::RequestPrintPreview(bool is_script_initiated) {
+void PrintWebViewHelper::RequestPrintPreview(PrintPreviewRequestType type) {
   const bool is_modifiable = print_preview_context_.IsModifiable();
   old_print_pages_params_.reset();
-  if (is_script_initiated) {
-    IPC::SyncMessage* msg = new PrintHostMsg_ScriptedPrintPreview(
-        routing_id(), is_modifiable);
-    msg->EnableMessagePumping();
-    Send(msg);
-  } else {
-    Send(new PrintHostMsg_RequestPrintPreview(routing_id(), is_modifiable));
+  switch (type) {
+    case PRINT_PREVIEW_USER_INITIATED_ENTIRE_FRAME: {
+      Send(new PrintHostMsg_RequestPrintPreview(routing_id(), is_modifiable,
+                                                false));
+      break;
+    }
+    case PRINT_PREVIEW_USER_INITIATED_CONTEXT_NODE: {
+      Send(new PrintHostMsg_RequestPrintPreview(routing_id(), is_modifiable,
+                                                true));
+      break;
+    }
+    case PRINT_PREVIEW_SCRIPTED: {
+      IPC::SyncMessage* msg =
+          new PrintHostMsg_ScriptedPrintPreview(routing_id(), is_modifiable);
+      msg->EnableMessagePumping();
+      Send(msg);
+      break;
+    }
+    default: {
+      NOTREACHED();
+      return;
+    }
   }
 }
 

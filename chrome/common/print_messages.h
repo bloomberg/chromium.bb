@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -351,7 +351,13 @@ IPC_MESSAGE_CONTROL1(PrintHostMsg_TempFileForPrintingWritten,
 #endif
 
 // Asks the browser to do print preview.
-IPC_MESSAGE_ROUTED1(PrintHostMsg_RequestPrintPreview, bool /* is_modifiable */)
+// |is_modifiable| is set to true when the request is for a web page, and false
+// for a PDF.
+// |webnode_only| is set to true if the document being printed is a specific
+// WebNode, and false if the document is a full WebFrame.
+IPC_MESSAGE_ROUTED2(PrintHostMsg_RequestPrintPreview,
+                    bool /* is_modifiable */,
+                    bool /* webnode_only */)
 
 // Notify the browser the number of pages in the print preview document.
 IPC_MESSAGE_ROUTED1(PrintHostMsg_DidGetPreviewPageCount,

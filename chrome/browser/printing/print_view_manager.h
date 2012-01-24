@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -55,6 +55,10 @@ class PrintViewManager : public content::NotificationObserver,
   // will not be completed on the return of this function. Returns false if
   // print preview is impossible at the moment.
   bool PrintPreviewNow();
+
+  // Notify PrintViewManager that print preview is starting in the renderer for
+  // a particular WebNode.
+  void PrintPreviewForWebNode();
 
   // Notify PrintViewManager that print preview has finished. Unfreeze the
   // renderer in the case of scripted print preview.

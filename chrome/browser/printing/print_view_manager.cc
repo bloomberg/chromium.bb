@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -122,10 +122,14 @@ bool PrintViewManager::PrintPreviewNow() {
   return PrintNowInternal(new PrintMsg_InitiatePrintPreview(routing_id()));
 }
 
+void PrintViewManager::PrintPreviewForWebNode() {
+  DCHECK_EQ(NOT_PREVIEWING, print_preview_state_);
+  print_preview_state_ = USER_INITIATED_PREVIEW;
+}
+
 void PrintViewManager::PrintPreviewDone() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  // DCHECK_NE(NOT_PREVIEWING, print_preview_state_);
-  // TODO(thestig) Fix this. http://crbug.com/105640
+  DCHECK_NE(NOT_PREVIEWING, print_preview_state_);
 
   if (print_preview_state_ == SCRIPTED_PREVIEW) {
     ScriptedPrintPreviewClosureMap& map =

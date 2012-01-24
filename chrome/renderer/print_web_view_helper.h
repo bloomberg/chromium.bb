@@ -126,6 +126,12 @@ class PrintWebViewHelper
     PREVIEW_ERROR_LAST_ENUM  // Always last.
   };
 
+  enum PrintPreviewRequestType {
+    PRINT_PREVIEW_USER_INITIATED_ENTIRE_FRAME,
+    PRINT_PREVIEW_USER_INITIATED_CONTEXT_NODE,
+    PRINT_PREVIEW_SCRIPTED  // triggered by window.print().
+  };
+
   // RenderViewObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void PrintPage(WebKit::WebFrame* frame) OVERRIDE;
@@ -321,8 +327,7 @@ class PrintWebViewHelper
   // Displays the print job error message to the user.
   void DisplayPrintJobError();
 
-  // If triggered by a window.print() |is_script_initiated| is set to true.
-  void RequestPrintPreview(bool is_script_initiated);
+  void RequestPrintPreview(PrintPreviewRequestType type);
 
   // Checks whether print preview should continue or not.
   // Returns true if cancelling, false if continuing.

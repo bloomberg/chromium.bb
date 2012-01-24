@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -102,8 +102,11 @@ PrintPreviewUI* PrintPreviewMessageHandler::OnFailure(int document_cookie) {
 }
 
 void PrintPreviewMessageHandler::OnRequestPrintPreview(
-    bool source_is_modifiable) {
-  PrintPreviewTabController::PrintPreview(tab_contents_wrapper());
+    bool source_is_modifiable, bool webnode_only) {
+  TabContentsWrapper* tab = tab_contents_wrapper();
+  if (webnode_only)
+    tab->print_view_manager()->PrintPreviewForWebNode();
+  PrintPreviewTabController::PrintPreview(tab);
   PrintPreviewUI::SetSourceIsModifiable(GetPrintPreviewTab(),
                                         source_is_modifiable);
 }

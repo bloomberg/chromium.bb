@@ -440,9 +440,14 @@ void PrintPreviewHandler::HandlePrint(const ListValue* args) {
     settings->Remove(printing::kSettingPageRange, NULL);
     RenderViewHost* rvh = web_ui()->GetWebContents()->GetRenderViewHost();
     rvh->Send(new PrintMsg_PrintForPrintPreview(rvh->routing_id(), *settings));
+
+    // For all other cases above, the tab will stay open until the printing has
+    // finished. Then the tab closes and PrintPreviewDone() gets called. Here,
+    // since we are hiding the tab, and not closing it, we need to make this
+    // call.
+    if (initiator_tab)
+      initiator_tab->print_view_manager()->PrintPreviewDone();
   }
-  if (initiator_tab)
-    initiator_tab->print_view_manager()->PrintPreviewDone();
 }
 
 void PrintPreviewHandler::HandlePrintToPdf(
