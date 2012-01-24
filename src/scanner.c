@@ -661,8 +661,9 @@ emit_structs(struct wl_list *message_list, struct interface *interface)
 		if (mdesc) {
 			printf("\t * ");
 			desc_dump(mdesc->text, 8);
+			printf("\n");
 		}
-		printf("\n\t */\n");
+		printf("\t */\n");
 		printf("\tvoid (*%s)(", m->name);
 
 		n = strlen(m->name) + 17;
