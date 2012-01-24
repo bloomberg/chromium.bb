@@ -86,7 +86,6 @@ class CONTENT_EXPORT ChildThread : public IPC::Channel::Listener,
   void OnProcessFinalRelease();
 
   virtual bool OnControlMessageReceived(const IPC::Message& msg);
-  virtual void OnAskBeforeShutdown();
   virtual void OnShutdown();
 
 #ifdef IPC_MESSAGE_LOG_ENABLED
@@ -124,11 +123,6 @@ class CONTENT_EXPORT ChildThread : public IPC::Channel::Listener,
 
   // Handles SocketStream for this process.
   scoped_ptr<SocketStreamDispatcher> socket_stream_dispatcher_;
-
-  // If true, checks with the browser process before shutdown.  This avoids race
-  // conditions if the process refcount is 0 but there's an IPC message inflight
-  // that would addref it.
-  bool check_with_browser_before_shutdown_;
 
   // The OnChannelError() callback was invoked - the channel is dead, don't
   // attempt to communicate.

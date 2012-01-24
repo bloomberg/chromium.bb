@@ -18,9 +18,6 @@
 
 // Messages sent from the browser to the child process.
 
-// Tells the child process it should stop.
-IPC_MESSAGE_CONTROL0(ChildProcessMsg_AskBeforeShutdown)
-
 // Sent in response to ChildProcessHostMsg_ShutdownRequest to tell the child
 // process that it's safe to shutdown.
 IPC_MESSAGE_CONTROL0(ChildProcessMsg_Shutdown)

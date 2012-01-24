@@ -170,8 +170,6 @@ std::string ChildProcessHostImpl::CreateChannel() {
   Send(new ChildProcessMsg_SetIPCLoggingEnabled(enabled));
 #endif
 
-  Send(new ChildProcessMsg_AskBeforeShutdown());
-
   opening_channel_ = true;
 
   return channel_id_;

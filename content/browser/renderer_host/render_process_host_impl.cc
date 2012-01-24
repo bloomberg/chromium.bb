@@ -909,10 +909,6 @@ void RenderProcessHostImpl::OnChannelConnected(int32 peer_pid) {
 
   bool enable = tracked_objects::ThreadData::tracking_status();
   Send(new ChildProcessMsg_SetProfilerStatus(enable));
-
-  // Make sure the child checks with us before exiting, so that we do not try
-  // to schedule a new navigation in a swapped out and exiting renderer.
-  Send(new ChildProcessMsg_AskBeforeShutdown());
 }
 
 void RenderProcessHostImpl::OnChannelError() {

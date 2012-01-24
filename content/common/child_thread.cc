@@ -40,7 +40,6 @@ ChildThread::ChildThread(const std::string& channel_name)
 }
 
 void ChildThread::Init() {
-  check_with_browser_before_shutdown_ = false;
   on_channel_error_called_ = false;
   message_loop_ = MessageLoop::current();
   channel_.reset(new IPC::SyncChannel(channel_name_,
@@ -180,7 +179,6 @@ bool ChildThread::OnMessageReceived(const IPC::Message& msg) {
 
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ChildThread, msg)
-    IPC_MESSAGE_HANDLER(ChildProcessMsg_AskBeforeShutdown, OnAskBeforeShutdown)
     IPC_MESSAGE_HANDLER(ChildProcessMsg_Shutdown, OnShutdown)
 #if defined(IPC_MESSAGE_LOG_ENABLED)
     IPC_MESSAGE_HANDLER(ChildProcessMsg_SetIPCLoggingEnabled,
@@ -205,10 +203,6 @@ bool ChildThread::OnMessageReceived(const IPC::Message& msg) {
 
 bool ChildThread::OnControlMessageReceived(const IPC::Message& msg) {
   return false;
-}
-
-void ChildThread::OnAskBeforeShutdown() {
-  check_with_browser_before_shutdown_ = true;
 }
 
 void ChildThread::OnShutdown() {
@@ -259,7 +253,7 @@ ChildThread* ChildThread::current() {
 }
 
 void ChildThread::OnProcessFinalRelease() {
-  if (on_channel_error_called_ || !check_with_browser_before_shutdown_) {
+  if (on_channel_error_called_) {
     MessageLoop::current()->Quit();
     return;
   }
@@ -267,6 +261,8 @@ void ChildThread::OnProcessFinalRelease() {
   // The child process shutdown sequence is a request response based mechanism,
   // where we send out an initial feeler request to the child process host
   // instance in the browser to verify if it's ok to shutdown the child process.
-  // The browser then sends back a response if it's ok to shutdown.
+  // The browser then sends back a response if it's ok to shutdown. This avoids
+  // race conditions if the process refcount is 0 but there's an IPC message
+  // inflight that would addref it.
   Send(new ChildProcessHostMsg_ShutdownRequest);
 }
