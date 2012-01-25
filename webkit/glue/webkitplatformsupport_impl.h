@@ -73,7 +73,8 @@ class WEBKIT_GLUE_EXPORT WebKitPlatformSupportImpl :
   virtual bool isTraceEventEnabled() const;
   virtual void traceEventBegin(const char* name, void* id, const char* extra);
   virtual void traceEventEnd(const char* name, void* id, const char* extra);
-  virtual const unsigned char* getCategoryEnabled(const char* category_name);
+  virtual const unsigned char* getTraceCategoryEnabledFlag(
+      const char* category_name);
   virtual int addTraceEvent(
       char phase,
       const unsigned char* category_enabled,
