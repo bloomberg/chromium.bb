@@ -25,9 +25,9 @@
 
 namespace {
 
-static Value* CreateColumnValue(const TaskManagerModel* tm,
-                                const std::string column_name,
-                                const int i) {
+Value* CreateColumnValue(const TaskManagerModel* tm,
+                         const std::string column_name,
+                         const int i) {
   if (column_name == "uniqueId")
     return Value::CreateIntegerValue(tm->GetResourceUniqueId(i));
   if (column_name == "type")
@@ -129,20 +129,54 @@ static Value* CreateColumnValue(const TaskManagerModel* tm,
   return NULL;
 }
 
-static void CreateGroupColumnList(const TaskManagerModel* tm,
-                                  const std::string& column_name,
-                                  const int index,
-                                  const int length,
-                                  DictionaryValue* val) {
+void CreateGroupColumnList(const TaskManagerModel* tm,
+                           const std::string& column_name,
+                           const int index,
+                           const int length,
+                           DictionaryValue* val) {
   ListValue *list = new ListValue();
-  for (int i = index; i < (index + length); i++) {
+  for (int i = index; i < (index + length); ++i) {
     list->Append(CreateColumnValue(tm, column_name, i));
   }
   val->Set(column_name, list);
 }
 
-static DictionaryValue* CreateTaskGroupValue(const TaskManagerModel* tm,
-                                            const int group_index) {
+struct ColumnType {
+  const char* column_id;
+  // Whether the column has the real value separately or not, instead of the
+  // formatted value to display.
+  const bool has_real_value;
+  // Whether the column has single datum or multiple data in each group.
+  const bool has_multiple_data;
+};
+
+const ColumnType kColumnsList[] = {
+  {"type", false, false},
+  {"processId", true, false},
+  {"cpuUsage", true, false},
+  {"physicalMemory", true, false},
+  {"sharedMemory", true, false},
+  {"privateMemory", true, false},
+  {"webCoreImageCacheSize", true, false},
+  {"webCoreImageCacheSize", true, false},
+  {"webCoreScriptsCacheSize", true, false},
+  {"webCoreCSSCacheSize", true, false},
+  {"sqliteMemoryUsed", true, false},
+  {"v8MemoryAllocatedSize", true, false},
+  {"icon", false, true},
+  {"title", false, true},
+  {"profileName", false, true},
+  {"networkUsage", true, true},
+  {"fps", true, true},
+  {"goatsTeleported", true, true},
+  {"canInspect", false, true},
+  {"canActivate", false, true}
+};
+
+DictionaryValue* CreateTaskGroupValue(
+    const TaskManagerModel* tm,
+    const int group_index,
+    const std::set<std::string>& columns) {
   DictionaryValue* val = new DictionaryValue();
 
   const int group_count = tm->GroupCount();
@@ -154,46 +188,25 @@ static DictionaryValue* CreateTaskGroupValue(const TaskManagerModel* tm,
   group_range = tm->GetGroupRangeForResource(index);
   int length = group_range.second;
 
+  // Forces to set following 3 columns regardless of |enable_columns|.
   val->SetInteger("index", index);
   val->SetBoolean("isBackgroundResource",
                   tm->IsBackgroundResource(index));
-
-  // Columns which have one datum in each group.
-  CreateGroupColumnList(tm, "type", index, 1, val);
-  CreateGroupColumnList(tm, "processId", index, 1, val);
-  CreateGroupColumnList(tm, "processIdValue", index, 1, val);
-  CreateGroupColumnList(tm, "cpuUsage", index, 1, val);
-  CreateGroupColumnList(tm, "cpuUsageValue", index, 1, val);
-  CreateGroupColumnList(tm, "physicalMemory", index, 1, val);
-  CreateGroupColumnList(tm, "physicalMemoryValue", index, 1, val);
-  CreateGroupColumnList(tm, "sharedMemory", index, 1, val);
-  CreateGroupColumnList(tm, "sharedMemoryValue", index, 1, val);
-  CreateGroupColumnList(tm, "privateMemory", index, 1, val);
-  CreateGroupColumnList(tm, "privateMemoryValue", index, 1, val);
-  CreateGroupColumnList(tm, "webCoreImageCacheSize", index, 1, val);
-  CreateGroupColumnList(tm, "webCoreImageCacheSizeValue", index, 1, val);
-  CreateGroupColumnList(tm, "webCoreScriptsCacheSize", index, 1, val);
-  CreateGroupColumnList(tm, "webCoreScriptsCacheSizeValue", index, 1, val);
-  CreateGroupColumnList(tm, "webCoreCSSCacheSize", index, 1, val);
-  CreateGroupColumnList(tm, "webCoreCSSCacheSizeValue", index, 1, val);
-  CreateGroupColumnList(tm, "sqliteMemoryUsed", index, 1, val);
-  CreateGroupColumnList(tm, "sqliteMemoryUsedValue", index, 1, val);
-  CreateGroupColumnList(tm, "v8MemoryAllocatedSize", index, 1, val);
-  CreateGroupColumnList(tm, "v8MemoryAllocatedSizeValue", index, 1, val);
-
-  // Columns which have some data in each group.
   CreateGroupColumnList(tm, "uniqueId", index, length, val);
-  CreateGroupColumnList(tm, "icon", index, length, val);
-  CreateGroupColumnList(tm, "title", index, length, val);
-  CreateGroupColumnList(tm, "profileName", index, length, val);
-  CreateGroupColumnList(tm, "networkUsage", index, length, val);
-  CreateGroupColumnList(tm, "networkUsageValue", index, length, val);
-  CreateGroupColumnList(tm, "fps", index, length, val);
-  CreateGroupColumnList(tm, "fpsValue", index, length, val);
-  CreateGroupColumnList(tm, "goatsTeleported", index, length, val);
-  CreateGroupColumnList(tm, "goatsTeleportedValue", index, length, val);
-  CreateGroupColumnList(tm, "canInspect", index, length, val);
-  CreateGroupColumnList(tm, "canActivate", index, length, val);
+  CreateGroupColumnList(tm, "processId", index, 1, val);
+
+  for (size_t i = 0; i < arraysize(kColumnsList); ++i) {
+    const std::string column_id = kColumnsList[i].column_id;
+
+    if (columns.find(column_id) == columns.end())
+      continue;
+
+    int column_length = kColumnsList[i].has_multiple_data ? length : 1;
+    CreateGroupColumnList(tm, column_id, index, column_length, val);
+
+    if (kColumnsList[i].has_real_value)
+      CreateGroupColumnList(tm, column_id + "Value", index, column_length, val);
+  }
 
   return val;
 }
@@ -219,7 +232,7 @@ void TaskManagerHandler::OnModelChanged() {
   base::FundamentalValue length_value(count);
   base::ListValue tasks_value;
   for (int i = 0; i < count; ++i)
-    tasks_value.Append(CreateTaskGroupValue(model_, i));
+    tasks_value.Append(CreateTaskGroupValue(model_, i, enabled_columns_));
 
   if (is_enabled_) {
     web_ui()->CallJavascriptFunction("taskChanged",
@@ -324,6 +337,9 @@ void TaskManagerHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("disableTaskManager",
       base::Bind(&TaskManagerHandler::DisableTaskManager,
                  base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("setUpdateColumn",
+      base::Bind(&TaskManagerHandler::HandleSetUpdateColumn,
+                 base::Unretained(this)));
 }
 
 static int parseIndex(const Value* value) {
@@ -416,6 +432,22 @@ void TaskManagerHandler::OpenAboutMemory(const ListValue* indexes) {
   task_manager_->OpenAboutMemory();
 }
 
+void TaskManagerHandler::HandleSetUpdateColumn(const ListValue* args) {
+  DCHECK_EQ(2U, args->GetSize());
+
+  bool ret = true;
+  std::string column_id;
+  ret &= args->GetString(0, &column_id);
+  bool is_enabled;
+  ret &= args->GetBoolean(1, &is_enabled);
+  DCHECK(ret);
+
+  if (is_enabled)
+    enabled_columns_.insert(column_id);
+  else
+    enabled_columns_.erase(column_id);
+}
+
 // TaskManagerHandler, private: -----------------------------------------------
 
 bool TaskManagerHandler::is_alive() {
@@ -432,7 +464,7 @@ void TaskManagerHandler::UpdateResourceGroupTable(int start, int length) {
   std::vector<int>::iterator it = resource_to_group_table_.begin() + start;
   resource_to_group_table_.insert(it, static_cast<size_t>(length), -1);
 
-  for (int i = start; i < start + length; i++) {
+  for (int i = start; i < start + length; ++i) {
     const int group_index = model_->GetGroupIndexForResource(i);
     resource_to_group_table_[i] = group_index;
   }
@@ -445,7 +477,8 @@ void TaskManagerHandler::OnGroupChanged(const int group_start,
   base::ListValue tasks_value;
 
   for (int i = 0; i < group_length; ++i)
-    tasks_value.Append(CreateTaskGroupValue(model_, group_start + i));
+    tasks_value.Append(
+        CreateTaskGroupValue(model_, group_start + i, enabled_columns_));
 
   if (is_enabled_ && is_alive()) {
     web_ui()->CallJavascriptFunction("taskChanged",
@@ -459,7 +492,8 @@ void TaskManagerHandler::OnGroupAdded(const int group_start,
   base::FundamentalValue length_value(group_length);
   base::ListValue tasks_value;
   for (int i = 0; i < group_length; ++i)
-    tasks_value.Append(CreateTaskGroupValue(model_, group_start + i));
+    tasks_value.Append(
+        CreateTaskGroupValue(model_, group_start + i, enabled_columns_));
 
   if (is_enabled_ && is_alive()) {
     web_ui()->CallJavascriptFunction("taskAdded",

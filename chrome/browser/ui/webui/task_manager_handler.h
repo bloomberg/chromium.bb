@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,10 @@
 #define CHROME_BROWSER_UI_WEBUI_TASK_MANAGER_HANDLER_H_
 #pragma once
 
+#include <set>
+#include <string>
 #include <vector>
+
 #include "content/public/browser/web_ui_message_handler.h"
 #include "chrome/browser/task_manager/task_manager.h"
 
@@ -46,6 +49,9 @@ class TaskManagerHandler : public content::WebUIMessageHandler,
   void DisableTaskManager(const base::ListValue* indexes);
   void OpenAboutMemory(const base::ListValue* indexes);
 
+  // Callback for the "setUpdateColumn" message.
+  void HandleSetUpdateColumn(const base::ListValue* args);
+
  private:
   bool is_alive();
 
@@ -57,6 +63,9 @@ class TaskManagerHandler : public content::WebUIMessageHandler,
 
   // Table to cache the group index of the resource index.
   std::vector<int> resource_to_group_table_;
+
+  // Set to store the enabled columns.
+  std::set<std::string> enabled_columns_;
 
   // Invoked when group(s) are added/changed/removed.
   // These method are called from OnItemAdded/-Changed/-Removed internally.

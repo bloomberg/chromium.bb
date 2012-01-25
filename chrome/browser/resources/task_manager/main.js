@@ -141,6 +141,18 @@ TaskManager.prototype = {
   },
 
   /**
+   * Sends command to enable or disable the given columns to update the data.
+   * @public
+   */
+  setUpdateColumn: function(columnId, isEnabled) {
+    chrome.send('setUpdateColumn', [columnId, isEnabled]);
+
+    // The 'title' column contains the icon.
+    if (columnId == 'title')
+      chrome.send('setUpdateColumn', ['icon', isEnabled]);
+  },
+
+  /**
    * Initializes taskmanager.
    */
   initialize: function (dialogDom, opt) {
@@ -154,7 +166,6 @@ TaskManager.prototype = {
     this.opt_ = opt;
 
     this.initialized_ = true;
-    this.enableTaskManager();
 
     this.elementsCache_ = {};
     this.dialogDom_ = dialogDom;
@@ -215,6 +226,11 @@ TaskManager.prototype = {
 
     this.initTable_();
 
+    // enableTaskManager() must be called after enabling columns using
+    // setUpdateColumn() because it is necessary to tell the handler which
+    // columns to display before updating.
+    this.enableTaskManager();
+
     // Populate the static localized strings.
     i18nTemplate.process(this.document_, templateData);
 
@@ -257,11 +273,15 @@ TaskManager.prototype = {
 
     var dm = this.dataModel_;
     for (var i = 0; i < dm.length; i++) {
+      var processId = dm.item(i)['processId'][0];
       for (var j = 0; j < DEFAULT_COLUMNS.length; j++) {
         var columnId = DEFAULT_COLUMNS[j][0];
+
         var row = dm.item(i)[columnId];
+        if (!row)
+          continue;
+
         for (var k = 0; k < row.length; k++) {
-          var processId = dm.item(i)['processId'][0];
           var labelId = 'detail-' + columnId + '-pid' + processId + '-' + k;
           var label = $(labelId);
 
@@ -285,9 +305,12 @@ TaskManager.prototype = {
         continue;
 
       var column = DEFAULT_COLUMNS[i];
-      table_columns.push(new cr.ui.table.TableColumn(column[0],
+      var columnId = column[0];
+      table_columns.push(new cr.ui.table.TableColumn(columnId,
                                                      this.localized_column_[i],
                                                      column[2]));
+
+      this.setUpdateColumn(columnId, true);
     }
 
     for (var i = 0; i < table_columns.length; i++) {
@@ -363,6 +386,9 @@ TaskManager.prototype = {
 
     this.document_.body.appendChild(this.tableContextMenu_);
     cr.ui.Menu.decorate(this.tableContextMenu_);
+
+    this.setUpdateColumn('canInspect', true);
+    this.setUpdateColumn('canActivate', true);
   },
 
   initTable_: function () {
@@ -440,6 +466,10 @@ TaskManager.prototype = {
       var columnId = cm.getId(i);
       var columnData = data[columnId];
       var oldColumnData = listItemElement.data[columnId];
+      var columnElements = cache.columns[columnId];
+
+      if (!columnData || !oldColumnData || !columnElements)
+        return null;
 
       // Sets new width of the cell.
       var cellElement = cache.cell[i];
@@ -448,19 +478,23 @@ TaskManager.prototype = {
       for (var j = 0; j < columnData.length; j++) {
         // Sets the new text, if the text has been changed.
         if (oldColumnData[j] != columnData[j]) {
-          var textElement = cache.columns[columnId][j];
+          var textElement = columnElements[j];
           textElement.textContent = columnData[j];
         }
       }
     }
 
     // Updates icon of the task if necessary.
-    for (var j = 0; j < columnData.length; j++) {
-      var oldIcon = listItemElement.data['icon'][j];
-      var newIcon = data['icon'][j];
-      if (oldIcon != newIcon) {
-        var iconElement = cache.icon[j];
-        iconElement.src = newIcon;
+    var oldIcons = listItemElement.data['icon'];
+    var newIcons = data['icon'];
+    if (oldIcons && newIcons) {
+      for (var j = 0; j < columnData.length; j++) {
+        var oldIcon = oldIcons[j];
+        var newIcon = newIcons[j];
+        if (oldIcon != newIcon) {
+          var iconElement = cache.icon[j];
+          iconElement.src = newIcon;
+        }
       }
     }
     listItemElement.data = data;
@@ -756,10 +790,13 @@ TaskManager.prototype = {
       var column = DEFAULT_COLUMNS[i];
       if (column[0] == id) {
         this.is_column_shown_[i] = !this.is_column_shown_[i];
-        menuitem.checked = this.is_column_shown_[i];
+        var checked = this.is_column_shown_[i];
+        menuitem.checked = checked;
         this.initColumnModel_()
         this.table_.columnModel = this.columnModel_;
         this.table_.redraw();
+
+        this.setUpdateColumn(column[0], checked);
         return;
       }
     }
