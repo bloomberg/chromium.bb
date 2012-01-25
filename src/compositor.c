@@ -206,6 +206,9 @@ weston_surface_create(struct weston_compositor *compositor,
 	surface->buffer_destroy_listener.func = surface_handle_buffer_destroy;
 
 	wl_list_init(&surface->geometry.transformation_list);
+	wl_list_insert(&surface->geometry.transformation_list,
+		       &surface->transform.position.link);
+	weston_matrix_init(&surface->transform.position.matrix);
 	surface->geometry.dirty = 1;
 
 	return surface;
@@ -239,12 +242,19 @@ weston_surface_update_transform(struct weston_surface *surface)
 
 	surface->geometry.dirty = 0;
 
-	if (wl_list_empty(&surface->geometry.transformation_list)) {
+	/* transform.position is always in transformation_list */
+	if (surface->geometry.transformation_list.next ==
+	    &surface->transform.position.link &&
+	    surface->geometry.transformation_list.prev ==
+	    &surface->transform.position.link) {
 		surface->transform.enabled = 0;
 		return;
 	}
 
 	surface->transform.enabled = 1;
+
+	surface->transform.position.matrix.d[12] = surface->x;
+	surface->transform.position.matrix.d[13] = surface->y;
 
 	weston_matrix_init(matrix);
 	wl_list_for_each(tform, &surface->geometry.transformation_list, link)
@@ -266,9 +276,6 @@ weston_surface_to_global(struct weston_surface *surface,
 
 	if (surface->transform.enabled) {
 		struct weston_vector v = { { sx, sy, 0.0f, 1.0f } };
-
-		v.f[0] += surface->x;
-		v.f[1] += surface->y;
 
 		weston_matrix_transform(&surface->transform.matrix, &v);
 
@@ -307,8 +314,8 @@ surface_from_global_float(struct weston_surface *surface,
 			return;
 		}
 
-		*sx = v.f[0] / v.f[3] - surface->x;
-		*sy = v.f[1] / v.f[3] - surface->y;
+		*sx = v.f[0] / v.f[3];
+		*sy = v.f[1] / v.f[3];
 	} else {
 		*sx = x - surface->x;
 		*sy = y - surface->y;
@@ -394,6 +401,7 @@ weston_surface_configure(struct weston_surface *surface,
 	surface->y = y;
 	surface->width = width;
 	surface->height = height;
+	surface->geometry.dirty = 1;
 
 	weston_surface_assign_output(surface);
 	weston_surface_damage(surface);
@@ -1231,6 +1239,7 @@ notify_motion(struct wl_input_device *device, uint32_t time, int x, int y)
 
 		wd->sprite->x = device->x - wd->hotspot_x;
 		wd->sprite->y = device->y - wd->hotspot_y;
+		wd->sprite->geometry.dirty = 1;
 
 		weston_surface_damage(wd->sprite);
 	}
@@ -1585,6 +1594,7 @@ input_device_attach(struct wl_client *client,
 	device->sprite->height = buffer->height;
 	device->sprite->x = device->input_device.x - device->hotspot_x;
 	device->sprite->y = device->input_device.y - device->hotspot_y;
+	device->sprite->geometry.dirty = 1;
 
 	weston_surface_damage(device->sprite);
 }

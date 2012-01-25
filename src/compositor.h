@@ -245,6 +245,8 @@ struct weston_surface {
 		int enabled;
 		struct weston_matrix matrix;
 		struct weston_matrix inverse;
+
+		struct weston_transform position; /* matrix from x, y */
 	} transform;
 
 	/*
