@@ -81,7 +81,8 @@ class WebstoreInlineInstallTest : public InProcessBrowserTest {
   std::string test_gallery_url_;
 };
 
-IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallTest, Install) {
+// flaky: http://crbug.com/111308
+IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallTest, FLAKY_Install) {
   CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kAppsGalleryInstallAutoConfirmForTests, "accept");
 
@@ -161,7 +162,8 @@ class WebstoreInlineInstallUnpackFailureTest
   }
 };
 
-IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallUnpackFailureTest, Test) {
+// flaky: http://crbug.com/111308
+IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallUnpackFailureTest, FLAKY_Test) {
   CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kAppsGalleryInstallAutoConfirmForTests, "accept");
 
