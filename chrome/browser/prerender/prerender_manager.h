@@ -247,8 +247,6 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   FRIEND_TEST_ALL_PREFIXES(PrerenderManagerTest, FragmentMatchesPageTest);
   FRIEND_TEST_ALL_PREFIXES(PrerenderManagerTest, PageMatchesFragmentTest);
   FRIEND_TEST_ALL_PREFIXES(PrerenderManagerTest, PendingPrerenderTest);
-  FRIEND_TEST_ALL_PREFIXES(PrerenderManagerTest, ControlGroupVisited);
-  FRIEND_TEST_ALL_PREFIXES(PrerenderManagerTest, NoUseGroupVisited);
   FRIEND_TEST_ALL_PREFIXES(PrerenderManagerTest, RateLimitInWindowTest);
   FRIEND_TEST_ALL_PREFIXES(PrerenderManagerTest, RateLimitOutsideWindowTest);
   FRIEND_TEST_ALL_PREFIXES(PrerenderManagerTest, SourceRenderViewClosed);

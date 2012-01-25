@@ -460,38 +460,6 @@ TEST_F(PrerenderManagerTest, ControlGroup) {
   EXPECT_FALSE(prerender_contents->has_started());
 }
 
-// Tests that a PrerenderManager created for a browser session in the control
-// group works as expected if the site gets visited.
-TEST_F(PrerenderManagerTest, ControlGroupVisited) {
-  RestorePrerenderMode restore_prerender_mode;
-  PrerenderManager::SetMode(
-      PrerenderManager::PRERENDER_MODE_EXPERIMENT_CONTROL_GROUP);
-  GURL url("http://www.google.com/");
-  DummyPrerenderContents* prerender_contents =
-      prerender_manager()->CreateNextPrerenderContents(
-          url,
-          FINAL_STATUS_WOULD_HAVE_BEEN_USED);
-  EXPECT_TRUE(prerender_manager()->AddSimplePrerender(url));
-  EXPECT_FALSE(prerender_contents->has_started());
-  ASSERT_EQ(prerender_contents, prerender_manager()->GetEntry(url));
-}
-
-// Tests that a PrerenderManager correctly handles the case of visitiung a page
-// when the NoUseGroup is enabled.
-TEST_F(PrerenderManagerTest, NoUseGroupVisited) {
-  RestorePrerenderMode restore_prerender_mode;
-  PrerenderManager::SetMode(
-      PrerenderManager::PRERENDER_MODE_EXPERIMENT_NO_USE_GROUP);
-  GURL url("http://www.google.com/");
-  DummyPrerenderContents* prerender_contents =
-      prerender_manager()->CreateNextPrerenderContents(
-          url,
-          FINAL_STATUS_WOULD_HAVE_BEEN_USED);
-  EXPECT_TRUE(prerender_manager()->AddSimplePrerender(url));
-  EXPECT_TRUE(prerender_contents->has_started());
-  ASSERT_EQ(prerender_contents, prerender_manager()->GetEntry(url));
-}
-
 // Tests that prerendering is cancelled when the source render view does not
 // exist.  On failure, the DCHECK in CreatePrerenderContents() above should be
 // triggered.
