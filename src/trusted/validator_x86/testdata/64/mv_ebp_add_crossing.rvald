@@ -1,4 +1,4 @@
-VALIDATOR: Checking block alignment and jump targets: 0 to 23
-VALIDATOR: 0000000000000020: 4c 01 fd                                     add %rbp, %r15
+VALIDATOR: Checking block alignment and jump targets: 1000 to 1023
+VALIDATOR: 0000000000001020: 4c 01 fd                                     add %rbp, %r15
 VALIDATOR: ERROR: Instruction begins basic block, but in middle of nacl pattern
 *** <input> IS UNSAFE ***
