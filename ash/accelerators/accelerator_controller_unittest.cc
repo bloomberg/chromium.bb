@@ -314,6 +314,9 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
   // RotateScreen
   EXPECT_TRUE(GetController()->Process(
       ui::Accelerator(ui::VKEY_HOME, false, true, false)));
+  // ToggleCompactWindowMode
+  EXPECT_TRUE(GetController()->Process(
+      ui::Accelerator(ui::VKEY_A, false, true, true)));
 #if !defined(OS_LINUX)
   // ToggleDesktopFullScreen (not implemented yet on Linux)
   EXPECT_TRUE(GetController()->Process(

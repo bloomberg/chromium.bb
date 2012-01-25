@@ -147,7 +147,17 @@ void Window::SetTransform(const ui::Transform& transform) {
 }
 
 void Window::SetLayoutManager(LayoutManager* layout_manager) {
+  if (layout_manager == layout_manager_.get())
+    return;
   layout_manager_.reset(layout_manager);
+  if (!layout_manager)
+    return;
+  // If we're changing to a new layout manager, ensure it is aware of all the
+  // existing child windows.
+  for (Windows::const_iterator it = children_.begin();
+       it != children_.end();
+       ++it)
+    layout_manager_->OnWindowAddedToLayout(*it);
 }
 
 void Window::SetBounds(const gfx::Rect& new_bounds) {

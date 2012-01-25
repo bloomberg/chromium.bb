@@ -3,9 +3,11 @@
 // found in the LICENSE file.
 
 #include "ash/ash_switches.h"
+#include "ash/launcher/launcher.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/test/aura_shell_test_base.h"
+#include "ash/wm/root_window_layout_manager.h"
 #include "base/command_line.h"
 #include "base/utf_string_conversions.h"
 #include "ui/aura/test/aura_test_base.h"
@@ -33,6 +35,33 @@ aura::Window* GetDefaultContainer() {
 aura::Window* GetAlwaysOnTopContainer() {
   return Shell::GetInstance()->GetContainer(
         ash::internal::kShellWindowId_AlwaysOnTopContainer);
+}
+
+// Expect ALL the containers!
+void ExpectAllContainers() {
+  Shell* shell = Shell::GetInstance();
+  EXPECT_TRUE(
+      shell->GetContainer(internal::kShellWindowId_DesktopBackgroundContainer));
+  EXPECT_TRUE(
+      shell->GetContainer(internal::kShellWindowId_DefaultContainer));
+  EXPECT_TRUE(
+      shell->GetContainer(internal::kShellWindowId_AlwaysOnTopContainer));
+  EXPECT_TRUE(
+      shell->GetContainer(internal::kShellWindowId_PanelContainer));
+  EXPECT_TRUE(
+      shell->GetContainer(internal::kShellWindowId_LauncherContainer));
+  EXPECT_TRUE(
+      shell->GetContainer(internal::kShellWindowId_SystemModalContainer));
+  EXPECT_TRUE(
+      shell->GetContainer(internal::kShellWindowId_LockScreenContainer));
+  EXPECT_TRUE(
+      shell->GetContainer(internal::kShellWindowId_LockSystemModalContainer));
+  EXPECT_TRUE(
+      shell->GetContainer(internal::kShellWindowId_StatusContainer));
+  EXPECT_TRUE(
+      shell->GetContainer(internal::kShellWindowId_MenuAndTooltipContainer));
+  EXPECT_TRUE(
+      shell->GetContainer(internal::kShellWindowId_SettingBubbleContainer));
 }
 
 void TestCreateWindow(views::Widget::InitParams::Type type,
@@ -299,6 +328,59 @@ TEST_F(ShellTest, ComputeWindowMode) {
                                  ash::switches::kAuraWindowModeCompact);
   EXPECT_EQ(Shell::COMPACT_MODE,
             shell->ComputeWindowMode(monitor_size, &command_line2));
+}
+
+TEST_F(ShellTest, ChangeWindowMode) {
+  // We start with the usual window containers.
+  ExpectAllContainers();
+  // We're not in compact window mode by default.
+  Shell* shell = Shell::GetInstance();
+  EXPECT_FALSE(shell->IsWindowModeCompact());
+  // We have a default container event filter (for window drags).
+  EXPECT_TRUE(GetDefaultContainer()->event_filter());
+  // We have a launcher.
+  EXPECT_TRUE(shell->launcher()->widget()->IsVisible());
+  // We have a desktop background.
+  EXPECT_TRUE(shell->root_window_layout_->background_widget());
+
+  // Create a normal window.  It is not maximized.
+  views::Widget::InitParams widget_params(
+      views::Widget::InitParams::TYPE_WINDOW);
+  widget_params.bounds.SetRect(11, 22, 300, 400);
+  views::Widget* widget = CreateTestWindow(widget_params);
+  widget->Show();
+  EXPECT_FALSE(widget->IsMaximized());
+
+  // Set our new mode.
+  shell->ChangeWindowMode(Shell::COMPACT_MODE);
+  EXPECT_TRUE(shell->IsWindowModeCompact());
+  // Compact mode does not use a default container event filter.
+  EXPECT_FALSE(GetDefaultContainer()->event_filter());
+  // We still have all the usual containers.
+  ExpectAllContainers();
+
+  // In compact window mode, all windows are maximized.
+  EXPECT_TRUE(widget->IsMaximized());
+  // Window bounds got updated to fill the work area.
+  EXPECT_EQ(widget->GetWorkAreaBoundsInScreen(),
+            widget->GetWindowScreenBounds());
+  // Launcher is hidden.
+  EXPECT_FALSE(shell->launcher()->widget()->IsVisible());
+  // Desktop background is gone.
+  EXPECT_FALSE(shell->root_window_layout_->background_widget());
+
+  // Switch back to normal mode.
+  shell->ChangeWindowMode(Shell::NORMAL_MODE);
+  EXPECT_FALSE(shell->IsWindowModeCompact());
+  // Event filter came back.
+  EXPECT_TRUE(GetDefaultContainer()->event_filter());
+  // Launcher is visible again.
+  EXPECT_TRUE(shell->launcher()->widget()->IsVisible());
+  // Desktop background is back.
+  EXPECT_TRUE(shell->root_window_layout_->background_widget());
+
+  // Clean up.
+  widget->Close();
 }
 
 }  // namespace ash

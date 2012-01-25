@@ -94,6 +94,8 @@ LauncherIconUpdater* LauncherIconUpdater::Create(Browser* browser) {
     type = TYPE_APP;
   else
     return NULL;
+  // TODO(jamescook): Make this tolerate not having a launcher and ensure
+  // we rebuild the icon set properly if we subsequently create a launcher.
   ash::LauncherModel* model = ash::Shell::GetInstance()->launcher()->model();
   LauncherIconUpdater* icon_updater =
       new LauncherIconUpdater(browser->window()->GetNativeHandle(),

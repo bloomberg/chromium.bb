@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,9 +30,11 @@ class RootWindowLayoutManager : public aura::LayoutManager {
   explicit RootWindowLayoutManager(aura::Window* owner);
   virtual ~RootWindowLayoutManager();
 
-  void set_background_widget(views::Widget* background_widget) {
-    background_widget_ = background_widget;
-  }
+  views::Widget* background_widget() { return background_widget_; }
+
+  // Sets the background to |widget|. Closes and destroys the old widget if it
+  // exists and differs from the new widget.
+  void SetBackgroundWidget(views::Widget* widget);
 
   // Overridden from aura::LayoutManager:
   virtual void OnWindowResized() OVERRIDE;

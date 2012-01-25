@@ -44,6 +44,9 @@ ShelfLayoutManager::ShelfLayoutManager(views::Widget* launcher,
 
 ShelfLayoutManager::~ShelfLayoutManager() {
   GetLayer(launcher_)->GetAnimator()->RemoveObserver(this);
+  // Without a shelf we don't need special insets anymore.
+  aura::RootWindow::GetInstance()->
+      screen()->set_work_area_insets(gfx::Insets());
 }
 
 void ShelfLayoutManager::LayoutShelf() {

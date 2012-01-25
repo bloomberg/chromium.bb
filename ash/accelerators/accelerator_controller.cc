@@ -35,6 +35,7 @@ enum AcceleratorAction {
 #if !defined(NDEBUG)
   ROTATE_SCREEN,
   PRINT_LAYER_HIERARCHY,
+  TOGGLE_COMPACT_WINDOW_MODE,
   TOGGLE_ROOT_WINDOW_FULL_SCREEN,
 #endif
 };
@@ -61,6 +62,7 @@ struct AcceleratorData {
   { ui::VKEY_LWIN, true, false, false, TOGGLE_CAPS_LOCK },
 #if !defined(NDEBUG)
   { ui::VKEY_HOME, false, true, false, ROTATE_SCREEN },
+  { ui::VKEY_A, false, true, true, TOGGLE_COMPACT_WINDOW_MODE },
   { ui::VKEY_F11, false, true, false, TOGGLE_ROOT_WINDOW_FULL_SCREEN },
   { ui::VKEY_L, false, false, true, PRINT_LAYER_HIERARCHY },
   // For testing on systems where Alt-Tab is already mapped.
@@ -124,6 +126,14 @@ bool HandleRotateScreen() {
   screen_rotation->AddObserver(aura::RootWindow::GetInstance());
   aura::RootWindow::GetInstance()->layer()->GetAnimator()->StartAnimation(
       screen_rotation.release());
+  return true;
+}
+
+bool HandleToggleCompactWindowMode() {
+  if (ash::Shell::GetInstance()->IsWindowModeCompact())
+    ash::Shell::GetInstance()->ChangeWindowMode(ash::Shell::NORMAL_MODE);
+  else
+    ash::Shell::GetInstance()->ChangeWindowMode(ash::Shell::COMPACT_MODE);
   return true;
 }
 
@@ -231,6 +241,8 @@ bool AcceleratorController::AcceleratorPressed(
 #if !defined(NDEBUG)
     case ROTATE_SCREEN:
       return HandleRotateScreen();
+    case TOGGLE_COMPACT_WINDOW_MODE:
+      return HandleToggleCompactWindowMode();
     case TOGGLE_ROOT_WINDOW_FULL_SCREEN:
       return HandleToggleRootWindowFullScreen();
     case PRINT_LAYER_HIERARCHY:

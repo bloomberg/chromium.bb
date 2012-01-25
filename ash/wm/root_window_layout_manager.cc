@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,6 +19,14 @@ RootWindowLayoutManager::RootWindowLayoutManager(aura::Window* owner)
 }
 
 RootWindowLayoutManager::~RootWindowLayoutManager() {
+}
+
+void RootWindowLayoutManager::SetBackgroundWidget(views::Widget* widget) {
+  if (widget == background_widget_)
+    return;
+  if (background_widget_)
+    background_widget_->Close();
+  background_widget_ = widget;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -39,6 +39,12 @@ ASH_EXPORT bool IsWindowMaximized(aura::Window* window);
 // Returns true if |window| is in the fullscreen state.
 ASH_EXPORT bool IsWindowFullscreen(aura::Window* window);
 
+// Maximizes |window|, which must not be NULL.
+ASH_EXPORT void MaximizeWindow(aura::Window* window);
+
+// Restores |window|, which must not be NULL.
+ASH_EXPORT void RestoreWindow(aura::Window* window);
+
 // Returns true if the set of |windows| contains a full-screen window.
 typedef std::set<aura::Window*> WindowSet;
 ASH_EXPORT bool HasFullscreenWindow(const WindowSet& windows);

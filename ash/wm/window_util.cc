@@ -46,6 +46,14 @@ bool IsWindowFullscreen(aura::Window* window) {
       ui::SHOW_STATE_FULLSCREEN;
 }
 
+void MaximizeWindow(aura::Window* window) {
+  window->SetIntProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
+}
+
+void RestoreWindow(aura::Window* window) {
+  window->SetIntProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
+}
+
 bool HasFullscreenWindow(const WindowSet& windows) {
   for (WindowSet::const_iterator i = windows.begin(); i != windows.end(); ++i) {
     if ((*i)->GetIntProperty(aura::client::kShowStateKey)

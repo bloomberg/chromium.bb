@@ -47,6 +47,7 @@ class AcceleratorFilter;
 class AppList;
 class DragDropController;
 class InputMethodEventFilter;
+class RootWindowLayoutManager;
 class ShadowController;
 class StackingController;
 class TooltipController;
@@ -56,10 +57,18 @@ class WorkspaceController;
 
 // Shell is a singleton object that presents the Shell API and implements the
 // RootWindow's delegate interface.
+//
+// Upon creation, the Shell sets itself as the RootWindow's delegate, which
+// takes ownership of the Shell.
 class ASH_EXPORT Shell {
  public:
-  // Upon creation, the Shell sets itself as the RootWindow's delegate, which
-  // takes ownership of the Shell.
+  // In compact window mode we fill the screen with a single maximized window,
+  // similar to ChromeOS R17 and earlier.  In normal mode we have draggable
+  // windows.
+  enum WindowMode {
+    NORMAL_MODE,
+    COMPACT_MODE
+  };
 
   // A shell must be explicitly created so that it can call |Init()| with the
   // delegate set. |delegate| can be NULL (if not required for initialization).
@@ -83,6 +92,11 @@ class ASH_EXPORT Shell {
 
   // Toggles app list.
   void ToggleAppList();
+
+  // Changes the current window mode, which will cause all the open windows
+  // to be laid out in the new mode and layout managers and event filters to be
+  // installed or removed.
+  void ChangeWindowMode(WindowMode mode);
 
   // Returns true if the screen is locked.
   bool IsScreenLocked() const;
@@ -125,16 +139,9 @@ class ASH_EXPORT Shell {
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ShellTest, ComputeWindowMode);
+  FRIEND_TEST_ALL_PREFIXES(ShellTest, ChangeWindowMode);
 
   typedef std::pair<aura::Window*, gfx::Rect> WindowAndBoundsPair;
-
-  // In compact window mode we fill the screen with a single maximized window,
-  // similar to ChromeOS R17 and earlier.  In normal mode we have draggable
-  // windows.
-  enum WindowMode {
-    NORMAL_MODE,
-    COMPACT_MODE
-  };
 
   explicit Shell(ShellDelegate* delegate);
   virtual ~Shell();
@@ -146,10 +153,10 @@ class ASH_EXPORT Shell {
   WindowMode ComputeWindowMode(const gfx::Size& monitor_size,
                                CommandLine* command_line) const;
 
-  void InitLayoutManagers(aura::RootWindow* root_window);
-
-  // Enables WorkspaceManager.
-  void EnableWorkspaceManager();
+  // Initializes or re-initializes the layout managers and event filters needed
+  // to support a given window mode and cleans up the unneeded ones.
+  void SetupCompactWindowMode();
+  void SetupNormalWindowMode();
 
   // Sets the LayoutManager of the container with the specified id to NULL. This
   // has the effect of deleting the current LayoutManager.
@@ -185,9 +192,14 @@ class ASH_EXPORT Shell {
   // An event filter that pre-handles global accelerators.
   scoped_ptr<internal::AcceleratorFilter> accelerator_filter_;
 
-  // The |window_mode_| never changes after the shell is initialized.
-  // Switching modes requires a restart.
+  // Can change at runtime.
   WindowMode window_mode_;
+
+  // Owned by aura::RootWindow, cached here for type safety.
+  internal::RootWindowLayoutManager* root_window_layout_;
+
+  // Status area with clock, Wi-Fi signal, etc.
+  views::Widget* status_widget_;
 
   DISALLOW_COPY_AND_ASSIGN(Shell);
 };
