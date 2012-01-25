@@ -821,16 +821,35 @@
           ],
         },  # target helper_app
         {
+          # A library containing the actual code for the app mode app, shared
+          # by unit tests.
+          'target_name': 'app_mode_app_support',
+          'type': 'static_library',
+          'variables': { 'enable_wexit_time_destructors': 1, },
+          'product_name': 'app_mode_app_support',
+          'dependencies': [
+            '../base/base.gyp:base',
+          ],
+          'sources': [
+            'common/mac/app_mode_common.h',
+            'common/mac/app_mode_common.mm',
+          ],
+          'include_dirs': [
+            '..',
+          ],
+        },  # target app_mode_app_support
+        {
           # This produces the app mode loader, but not as a bundle. Chromium
           # itself is responsible for producing bundles.
           'target_name': 'app_mode_app',
           'type': 'executable',
           'variables': { 'enable_wexit_time_destructors': 1, },
           'product_name': '<(mac_product_name) App Mode Loader',
+          'dependencies': [
+            'app_mode_app_support',
+          ],
           'sources': [
             'app/app_mode_loader_mac.mm',
-            'common/mac/app_mode_common.h',
-            'common/mac/app_mode_common.mm',
           ],
           'include_dirs': [
             '..',

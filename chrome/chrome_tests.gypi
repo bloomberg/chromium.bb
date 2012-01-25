@@ -4182,7 +4182,30 @@
               '$(SDKROOT)/System/Library/Frameworks/Cocoa.framework',
             ],
           },
-        },
+        },  # target renderer_sandbox_tests
+        {
+          # Tests for Mac app launcher.
+          'target_name': 'app_mode_app_tests',
+          'type': 'executable',
+          'product_name': 'App Mode Loader Tests',
+          'dependencies': [
+            '../base/base.gyp:test_support_base',
+            '../testing/gtest.gyp:gtest',
+            'app_mode_app_support',
+          ],
+          'sources': [
+            'test/base/app_mode_app_tests.cc',
+          ],
+          'include_dirs': [
+            '..',
+          ],
+          'link_settings': {
+            'libraries': [
+              '$(SDKROOT)/System/Library/Frameworks/CoreFoundation.framework',
+              '$(SDKROOT)/System/Library/Frameworks/Foundation.framework',
+            ],
+          },
+        },  # target app_mode_app_tests
       ],
     }],
     ['OS!="mac"', {
