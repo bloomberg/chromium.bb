@@ -582,9 +582,10 @@
         "bg.js",
         "content.js",
         "manifest.json",
-        "options.html"
+        "options.html",
+        "options.js"
       ],
-      "source_hash": "3079fc551f4fbdbcc1a224fcba31f22020711321",
+      "source_hash": "d611e0909f40d9131545755a3e2e342faf8b2657",
       "zip_path": "examples\/extensions\/fx.zip"
     },
     {
@@ -2000,7 +2001,7 @@
         "contacts.js",
         "manifest.json"
       ],
-      "source_hash": "760ff59a48b7f758e9a80a6485cc0eb0c092841a",
+      "source_hash": "3dc54318943ee65fca84c06c4e1249820a485cb1",
       "zip_path": "examples\/extensions\/oauth_contacts.zip"
     },
     {
@@ -2108,7 +2109,7 @@
         "options.js",
         "tabs.js"
       ],
-      "source_hash": "9ef5dd34467a74abe48382348ec1ecde65466fd1",
+      "source_hash": "6f2d935d106c39c574d219babcd793cba480dbc0",
       "zip_path": "examples\/extensions\/speak_selection.zip"
     },
     {
@@ -2257,7 +2258,7 @@
         "popup.html",
         "popup.js"
       ],
-      "source_hash": "d5b5b987c7ea37bd7ec1fe7048ff58b4aef2e99d",
+      "source_hash": "0f81e576201c057a090c921450482ba762aca919",
       "zip_path": "examples\/extensions\/talking_alarm_clock.zip"
     },
     {
