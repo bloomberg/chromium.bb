@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,7 +18,8 @@ const int kReadBufferSize = 256;
 
 enum ProcessOutputType {
   PROCESS_OUTPUT_TYPE_OUT,
-  PROCESS_OUTPUT_TYPE_ERR
+  PROCESS_OUTPUT_TYPE_ERR,
+  PROCESS_OUTPUT_TYPE_EXIT
 };
 
 typedef base::Callback<void(ProcessOutputType, const std::string&)>
@@ -28,7 +29,7 @@ typedef base::Callback<void(ProcessOutputType, const std::string&)>
 // underlying thread block. It deletes itself when watching is stopped.
 class ProcessOutputWatcher {
  public:
-  ProcessOutputWatcher(int out_fd, int err_fd, int stop_fd,
+  ProcessOutputWatcher(int out_fd, int stop_fd,
                        const ProcessOutputCallback& callback);
 
   // This will block current thread!!!!
@@ -47,7 +48,7 @@ class ProcessOutputWatcher {
   void VerifyFileDescriptor(int fd);
 
   // Reads data from fd, and when it's done, invokes callback function.
-  void ReadFromFd(ProcessOutputType type, int fd);
+  void ReadFromFd(ProcessOutputType type, int* fd);
 
   // It will just delete this.
   void OnStop();
@@ -56,7 +57,6 @@ class ProcessOutputWatcher {
   ssize_t read_buffer_size_;
 
   int out_fd_;
-  int err_fd_;
   int stop_fd_;
   int max_fd_;
 

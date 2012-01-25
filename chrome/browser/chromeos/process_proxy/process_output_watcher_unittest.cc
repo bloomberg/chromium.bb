@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -75,13 +75,12 @@ class ProcessWatcherExpectations {
 
 class ProcessOutputWatcherTest : public testing::Test {
 public:
-  void StartWatch(int out, int err, int stop,
+  void StartWatch(int pt, int stop,
                   const std::vector<TestCase>& expectations) {
     expectations_.Init(expectations);
 
     // This will delete itself.
-    ProcessOutputWatcher* crosh_watcher = new ProcessOutputWatcher(
-        out, err, stop,
+    ProcessOutputWatcher* crosh_watcher = new ProcessOutputWatcher(pt, stop,
         base::Bind(&ProcessOutputWatcherTest::OnRead, base::Unretained(this)));
     crosh_watcher->Start();
   }
@@ -114,40 +113,41 @@ TEST_F(ProcessOutputWatcherTest, OutputWatcher) {
   base::Thread output_watch_thread("ProcessOutpuWatchThread");
   ASSERT_TRUE(output_watch_thread.Start());
 
-  int out_pipe[2], err_pipe[2], stop_pipe[2], foo_pipe[2];
-  ASSERT_FALSE(HANDLE_EINTR(pipe(out_pipe)));
-  ASSERT_FALSE(HANDLE_EINTR(pipe(err_pipe)));
+  int pt_pipe[2], stop_pipe[2];
+  ASSERT_FALSE(HANDLE_EINTR(pipe(pt_pipe)));
   ASSERT_FALSE(HANDLE_EINTR(pipe(stop_pipe)));
-  ASSERT_FALSE(HANDLE_EINTR(pipe(foo_pipe)));
 
+  // TODO(tbarzic): We don't support stderr anymore, so this can be simplified.
   std::vector<TestCase> test_cases;
   test_cases.push_back(TestCase("testing output\n", PROCESS_OUTPUT_TYPE_OUT));
-  test_cases.push_back(TestCase("testing error\n", PROCESS_OUTPUT_TYPE_ERR));
-  test_cases.push_back(TestCase("testing error1\n", PROCESS_OUTPUT_TYPE_ERR));
+  test_cases.push_back(TestCase("testing error\n", PROCESS_OUTPUT_TYPE_OUT));
+  test_cases.push_back(TestCase("testing error1\n", PROCESS_OUTPUT_TYPE_OUT));
   test_cases.push_back(TestCase("testing output1\n", PROCESS_OUTPUT_TYPE_OUT));
   test_cases.push_back(TestCase("testing output2\n", PROCESS_OUTPUT_TYPE_OUT));
   test_cases.push_back(TestCase("testing output3\n", PROCESS_OUTPUT_TYPE_OUT));
   test_cases.push_back(TestCase(VeryLongString(), PROCESS_OUTPUT_TYPE_OUT));
-  test_cases.push_back(TestCase("testing error2\n", PROCESS_OUTPUT_TYPE_ERR));
+  test_cases.push_back(TestCase("testing error2\n", PROCESS_OUTPUT_TYPE_OUT));
 
   output_watch_thread.message_loop()->PostTask(FROM_HERE,
       base::Bind(&ProcessOutputWatcherTest::StartWatch, base::Unretained(this),
-                 out_pipe[0], err_pipe[0], stop_pipe[0], test_cases));
+                 pt_pipe[0], stop_pipe[0], test_cases));
 
   for (size_t i = 0; i < test_cases.size(); i++) {
-    int fd = (test_cases[i].type == PROCESS_OUTPUT_TYPE_OUT) ? out_pipe[1]
-                                                             : err_pipe[1];
     // Let's make inputs not NULL terminated.
     const std::string& test_str = test_cases[i].str;
     ssize_t test_size = test_str.length() * sizeof(*test_str.c_str());
     EXPECT_EQ(test_size,
-              file_util::WriteFileDescriptor(fd, test_str.c_str(), test_size));
+              file_util::WriteFileDescriptor(pt_pipe[1], test_str.c_str(),
+                                             test_size));
   }
 
   all_data_received_->Wait();
 
   // Send stop signal. It is not important which string we send.
   EXPECT_EQ(1, file_util::WriteFileDescriptor(stop_pipe[1], "q", 1));
+
+  EXPECT_NE(-1, HANDLE_EINTR(close(stop_pipe[1])));
+  EXPECT_NE(-1, HANDLE_EINTR(close(pt_pipe[1])));
 
   output_watch_thread.Stop();
 };

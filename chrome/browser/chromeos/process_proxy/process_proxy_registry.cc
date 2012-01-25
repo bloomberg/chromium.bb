@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,6 +13,20 @@ const char kWatcherThreadName[] = "ProcessWatcherThread";
 
 const char kStdoutOutputType[] = "stdout";
 const char kStderrOutputType[] = "stderr";
+const char kExitOutputType[] = "exit";
+
+const char* ProcessOutputTypeToString(ProcessOutputType type) {
+  switch (type) {
+    case PROCESS_OUTPUT_TYPE_OUT:
+      return kStdoutOutputType;
+    case PROCESS_OUTPUT_TYPE_ERR:
+      return kStderrOutputType;
+    case PROCESS_OUTPUT_TYPE_EXIT:
+      return kExitOutputType;
+    default:
+      return NULL;
+  }
+}
 
 static base::LazyInstance<ProcessProxyRegistry> g_process_proxy_registry =
     LAZY_INSTANCE_INITIALIZER;
@@ -103,12 +117,17 @@ bool ProcessProxyRegistry::CloseProcess(pid_t pid) {
 
 void ProcessProxyRegistry::OnProcessOutput(pid_t pid,
     ProcessOutputType type, const std::string& data) {
-  std::string type_str = (type == PROCESS_OUTPUT_TYPE_OUT) ? kStdoutOutputType
-                                                           : kStderrOutputType;
+  const char* type_str = ProcessOutputTypeToString(type);
+  DCHECK(type_str);
 
   std::map<pid_t, ProcessProxyInfo>::iterator it = proxy_map_.find(pid);
   if (it == proxy_map_.end())
     return;
-  it->second.callback.Run(pid, type_str, data);
+  it->second.callback.Run(pid, std::string(type_str), data);
+
+  // Contact with the slave end of the terminal has been lost. We have to close
+  // the process.
+  if (type == PROCESS_OUTPUT_TYPE_EXIT)
+    CloseProcess(pid);
 }
 

@@ -98,8 +98,8 @@
           {
             "name": "type",
             "type": "string",
-            "description": "Type of the output stream from which output came.",
-            "enum": ["stdout", "stderr"]
+            "description": "Type of the output stream from which output came. When process exits, output type will be set to exit",
+            "enum": ["stdout", "stderr", "exit"]
           },
           {
             "name": "text",

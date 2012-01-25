@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,8 @@
 
 #include <cstdio>
 #include <fcntl.h>
-#include <signal.h>
+#include <stdlib.h>
+#include <sys/ioctl.h>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -25,6 +26,11 @@ enum PipeEnd {
   PIPE_END_WRITE
 };
 
+enum PseudoTerminalFd {
+  PT_MASTER_FD,
+  PT_SLAVE_FD
+};
+
 const int kInvalidFd = -1;
 
 }  // namespace
@@ -34,35 +40,26 @@ ProcessProxy::ProcessProxy(): process_launched_(false),
                               watcher_started_(false) {
   // Set pipes to initial, invalid value so we can easily know if a pipe was
   // opened by us.
-  ClearAllPipes();
+  ClearAllFdPairs();
 };
 
 bool ProcessProxy::Open(const std::string& command, pid_t* pid) {
   if (process_launched_)
     return false;
 
-  if (HANDLE_EINTR(pipe(out_pipe_)) || HANDLE_EINTR(pipe(err_pipe_)) ||
-      HANDLE_EINTR(pipe(in_pipe_))) {
-    CloseAllPipes();
+  if (!CreatePseudoTerminalPair(pt_pair_)) {
     return false;
   }
 
-  process_launched_ = LaunchProcess(command,
-                                    in_pipe_[PIPE_END_READ],
-                                    out_pipe_[PIPE_END_WRITE],
-                                    err_pipe_[PIPE_END_WRITE],
-                                    &pid_);
+  process_launched_ = LaunchProcess(command, pt_pair_[PT_SLAVE_FD], &pid_);
 
   if (process_launched_) {
     // We won't need these anymore. These will be used by the launched process.
-    CloseFd(&(in_pipe_[PIPE_END_READ]));
-    CloseFd(&(out_pipe_[PIPE_END_WRITE]));
-    CloseFd(&(err_pipe_[PIPE_END_WRITE]));
-
+    CloseFd(&pt_pair_[PT_SLAVE_FD]);
     *pid = pid_;
     LOG(WARNING) << "Process launched: " << pid_;
   } else {
-    CloseAllPipes();
+    CloseFdPair(pt_pair_);
   }
   return process_launched_;
 }
@@ -75,17 +72,26 @@ bool ProcessProxy::StartWatchingOnThread(base::Thread* watch_thread,
   if (pipe(shutdown_pipe_))
     return false;
 
+  // We give ProcessOutputWatcher a copy of master to make life easier during
+  // tear down.
+  // TODO(tbarzic): improve fd managment.
+  int master_copy = HANDLE_EINTR(dup(pt_pair_[PT_MASTER_FD]));
+  if (master_copy == -1)
+    return false;
+
   callback_set_ = true;
   callback_ = callback;
 
   // This object will delete itself once watching is stopped.
   // It also takes ownership of the passed fds.
   ProcessOutputWatcher* output_watcher =
-      new ProcessOutputWatcher(out_pipe_[PIPE_END_READ],
-                               err_pipe_[PIPE_END_READ],
+      new ProcessOutputWatcher(master_copy,
                                shutdown_pipe_[PIPE_END_READ],
                                base::Bind(&ProcessProxy::OnProcessOutput,
                                           this));
+
+  // Output watcher took ownership of the read end of shutdown pipe.
+  shutdown_pipe_[PIPE_END_READ] = -1;
 
   // |watch| thread is blocked by |output_watcher| from now on.
   watch_thread->message_loop()->PostTask(FROM_HERE,
@@ -130,20 +136,12 @@ void ProcessProxy::Close() {
   process_launched_ = false;
   callback_set_ = false;
 
-  // Wait to ensure process dies before we call StopWatching and close read
-  // end of the pipe the process writes to.
   base::KillProcess(pid_, 0, true /* wait */);
 
   // TODO(tbarzic): What if this fails?
   StopWatching();
 
-  // Close all fds owned by us that may still be opened. If wather had been
-  // started, it took ownership of some fds.
-  if (!watcher_started_) {
-    CloseAllPipes();
-  } else {
-    CloseUsedWriteFds();
-  }
+  CloseAllFdPairs();
 }
 
 bool ProcessProxy::Write(const std::string& text) {
@@ -153,7 +151,7 @@ bool ProcessProxy::Write(const std::string& text) {
   // We don't want to write '\0' to the pipe.
   size_t data_size = text.length() * sizeof(*text.c_str());
   int bytes_written =
-      file_util::WriteFileDescriptor(in_pipe_[PIPE_END_WRITE],
+      file_util::WriteFileDescriptor(pt_pair_[PT_MASTER_FD],
                                      text.c_str(), data_size);
   return (bytes_written == static_cast<int>(data_size));
 }
@@ -165,39 +163,59 @@ ProcessProxy::~ProcessProxy() {
   // process_output_watcher until Close is called, so we know Close has been
   // called  by now (and pipes have been cleaned).
   if (!watcher_started_)
-    CloseAllPipes();
+    CloseAllFdPairs();
 }
 
-bool ProcessProxy::LaunchProcess(const std::string& command,
-                                 int in_fd, int out_fd, int err_fd,
+bool ProcessProxy::CreatePseudoTerminalPair(int *pt_pair) {
+  ClearFdPair(pt_pair);
+
+  // Open Master.
+  pt_pair[PT_MASTER_FD] = HANDLE_EINTR(posix_openpt(O_RDWR | O_NOCTTY));
+  if (pt_pair[PT_MASTER_FD] == -1)
+    return false;
+
+  if (grantpt(pt_pair_[PT_MASTER_FD]) != 0 ||
+      unlockpt(pt_pair_[PT_MASTER_FD]) != 0) {
+    CloseFd(&pt_pair[PT_MASTER_FD]);
+    return false;
+  }
+  char* slave_name = NULL;
+  // Per man page, slave_name must not be freed.
+  slave_name = ptsname(pt_pair_[PT_MASTER_FD]);
+  if (slave_name)
+    pt_pair_[PT_SLAVE_FD] = HANDLE_EINTR(open(slave_name, O_RDWR | O_NOCTTY));
+
+  if (pt_pair_[PT_SLAVE_FD] == -1) {
+    CloseFdPair(pt_pair);
+    return false;
+  }
+
+  return true;
+}
+
+bool ProcessProxy::LaunchProcess(const std::string& command, int slave_fd,
                                  pid_t *pid) {
   // Redirect crosh  process' output and input so we can read it.
   base::file_handle_mapping_vector fds_mapping;
-  fds_mapping.push_back(std::make_pair(in_fd, STDIN_FILENO));
-  fds_mapping.push_back(std::make_pair(out_fd, STDOUT_FILENO));
-  fds_mapping.push_back(std::make_pair(err_fd, STDERR_FILENO));
+  fds_mapping.push_back(std::make_pair(slave_fd, STDIN_FILENO));
+  fds_mapping.push_back(std::make_pair(slave_fd, STDOUT_FILENO));
+  fds_mapping.push_back(std::make_pair(slave_fd, STDERR_FILENO));
   base::LaunchOptions options;
   options.fds_to_remap = &fds_mapping;
+  options.ctrl_terminal_fd = slave_fd;
 
   // Launch the process.
   return base::LaunchProcess(CommandLine(FilePath(command)), options, pid);
 }
 
-void ProcessProxy::CloseAllPipes() {
-  ClosePipe(in_pipe_);
-  ClosePipe(out_pipe_);
-  ClosePipe(err_pipe_);
-  ClosePipe(shutdown_pipe_);
+void ProcessProxy::CloseAllFdPairs() {
+  CloseFdPair(pt_pair_);
+  CloseFdPair(shutdown_pipe_);
 }
 
-void ProcessProxy::ClosePipe(int* pipe) {
+void ProcessProxy::CloseFdPair(int* pipe) {
   CloseFd(&(pipe[PIPE_END_READ]));
   CloseFd(&(pipe[PIPE_END_WRITE]));
-}
-
-void ProcessProxy::CloseUsedWriteFds() {
-  CloseFd(&(in_pipe_[PIPE_END_WRITE]));
-  CloseFd(&(shutdown_pipe_[PIPE_END_WRITE]));
 }
 
 void ProcessProxy::CloseFd(int* fd) {
@@ -208,14 +226,12 @@ void ProcessProxy::CloseFd(int* fd) {
   *fd = kInvalidFd;
 }
 
-void ProcessProxy::ClearAllPipes() {
-  ClearPipe(in_pipe_);
-  ClearPipe(out_pipe_);
-  ClearPipe(err_pipe_);
-  ClearPipe(shutdown_pipe_);
+void ProcessProxy::ClearAllFdPairs() {
+  ClearFdPair(pt_pair_);
+  ClearFdPair(shutdown_pipe_);
 }
 
-void ProcessProxy::ClearPipe(int* pipe) {
+void ProcessProxy::ClearFdPair(int* pipe) {
   pipe[PIPE_END_READ] = kInvalidFd;
   pipe[PIPE_END_WRITE] = kInvalidFd;
 }

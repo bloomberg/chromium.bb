@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -46,9 +46,13 @@ class ProcessProxy : public base::RefCountedThreadSafe<ProcessProxy> {
   // We want this be used as ref counted object only.
   ~ProcessProxy();
 
-  bool LaunchProcess(const std::string& command,
-                     int in_fd, int out_fd, int err_fd,
-                     pid_t* pid);
+  // Create master and slave end of pseudo terminal that will be used to
+  // communicate with process.
+  // pt_pair[0] -> master, pt_pair[1] -> slave.
+  // pt_pair must be allocated (to size at least 2).
+  bool CreatePseudoTerminalPair(int *pt_pair);
+
+  bool LaunchProcess(const std::string& command, int slave_fd, pid_t* pid);
 
   // Gets called by output watcher when the process writes something to its
   // output streams.
@@ -57,15 +61,14 @@ class ProcessProxy : public base::RefCountedThreadSafe<ProcessProxy> {
   bool StopWatching();
 
   // Methods for cleaning up pipes.
-  void CloseAllPipes();
+  void CloseAllFdPairs();
   // Expects array of 2 file descripters.
-  void ClosePipe(int* pipe);
-  void CloseUsedWriteFds();
+  void CloseFdPair(int* pipe);
   // Expects pointer to single file descriptor.
   void CloseFd(int* fd);
-  void ClearAllPipes();
+  void ClearAllFdPairs();
   // Expects array of 2 file descripters.
-  void ClearPipe(int* pipe);
+  void ClearFdPair(int* pipe);
 
   bool process_launched_;
   pid_t pid_;
@@ -75,9 +78,7 @@ class ProcessProxy : public base::RefCountedThreadSafe<ProcessProxy> {
 
   bool watcher_started_;
 
-  int out_pipe_[2];
-  int err_pipe_[2];
-  int in_pipe_[2];
+  int pt_pair_[2];
   int shutdown_pipe_[2];
 
   DISALLOW_COPY_AND_ASSIGN(ProcessProxy);
