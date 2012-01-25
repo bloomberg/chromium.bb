@@ -97,8 +97,8 @@ drm_output_prepare_scanout_surface(struct drm_output *output)
 			  struct weston_surface, link);
 
 	if (es->visual != WESTON_RGB_VISUAL ||
-	    es->x != output->base.x ||
-	    es->y != output->base.y ||
+	    es->geometry.x != output->base.x ||
+	    es->geometry.y != output->base.y ||
 	    es->width != output->base.current->width ||
 	    es->height != output->base.current->height ||
 	    es->image == EGL_NO_IMAGE_KHR)
@@ -231,7 +231,8 @@ drm_output_set_cursor(struct weston_output *output_base,
 	}
 
 	pixman_region32_init_rect(&cursor_region,
-				  eid->sprite->x, eid->sprite->y,
+				  eid->sprite->geometry.x,
+				  eid->sprite->geometry.y,
 				  eid->sprite->width, eid->sprite->height);
 
 	pixman_region32_intersect_rect(&cursor_region, &cursor_region,
@@ -272,8 +273,8 @@ drm_output_set_cursor(struct weston_output *output_base,
 	}
 
 	ret = drmModeMoveCursor(c->drm.fd, output->crtc_id,
-				eid->sprite->x - output->base.x,
-				eid->sprite->y - output->base.y);
+				eid->sprite->geometry.x - output->base.x,
+				eid->sprite->geometry.y - output->base.y);
 	if (ret) {
 		fprintf(stderr, "failed to move cursor: %s\n", strerror(-ret));
 		goto out;

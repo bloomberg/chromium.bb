@@ -110,8 +110,9 @@ tablet_shell_map(struct weston_shell *base, struct weston_surface *surface,
 	struct tablet_shell *shell =
 		container_of(base, struct tablet_shell, shell);
 
-	surface->x = 0;
-	surface->y = 0;
+	surface->geometry.x = 0;
+	surface->geometry.y = 0;
+	surface->geometry.dirty = 1;
 
 	if (surface == shell->lockscreen_surface) {
 		/* */
@@ -133,7 +134,8 @@ tablet_shell_map(struct weston_shell *base, struct weston_surface *surface,
 	}
 
 	wl_list_insert(&shell->compositor->surface_list, &surface->link);
-	weston_surface_configure(surface, surface->x, surface->y, width, height);
+	weston_surface_configure(surface, surface->geometry.x,
+				 surface->geometry.y, width, height);
 }
 
 static void
@@ -165,8 +167,9 @@ tablet_shell_set_lockscreen(struct wl_client *client,
 	struct tablet_shell *shell = resource->data;
 	struct weston_surface *es = surface_resource->data;
 
-	es->x = 0;
-	es->y = 0;
+	es->geometry.x = 0;
+	es->geometry.y = 0;
+	es->geometry.dirty = 1;
 	shell->lockscreen_surface = es;
 	shell->lockscreen_listener.func = handle_lockscreen_surface_destroy;
 	wl_list_insert(es->surface.resource.destroy_listener_list.prev,
@@ -199,8 +202,9 @@ tablet_shell_set_switcher(struct wl_client *client,
 	 * layer idea, we should be able to hit the framerate on the
 	 * fade/zoom in. */
 	shell->switcher_surface = es;
-	shell->switcher_surface->x = 0;
-	shell->switcher_surface->y = 0;
+	shell->switcher_surface->geometry.x = 0;
+	shell->switcher_surface->geometry.y = 0;
+	shell->switcher_surface->geometry.dirty = 1;
 
 	shell->switcher_listener.func = handle_switcher_surface_destroy;
 	wl_list_insert(es->surface.resource.destroy_listener_list.prev,
@@ -215,8 +219,9 @@ tablet_shell_set_homescreen(struct wl_client *client,
 	struct tablet_shell *shell = resource->data;
 
 	shell->home_surface = surface_resource->data;
-	shell->home_surface->x = 0;
-	shell->home_surface->y = 0;
+	shell->home_surface->geometry.x = 0;
+	shell->home_surface->geometry.y = 0;
+	shell->home_surface->geometry.dirty = 1;
 }
 
 static void

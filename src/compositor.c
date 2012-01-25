@@ -189,8 +189,8 @@ weston_surface_create(struct weston_compositor *compositor,
 	surface->compositor = compositor;
 	surface->visual = WESTON_NONE_VISUAL;
 	surface->image = EGL_NO_IMAGE_KHR;
-	surface->x = x;
-	surface->y = y;
+	surface->geometry.x = x;
+	surface->geometry.y = y;
 	surface->width = width;
 	surface->height = height;
 	surface->alpha = 255;
@@ -253,8 +253,8 @@ weston_surface_update_transform(struct weston_surface *surface)
 
 	surface->transform.enabled = 1;
 
-	surface->transform.position.matrix.d[12] = surface->x;
-	surface->transform.position.matrix.d[13] = surface->y;
+	surface->transform.position.matrix.d[12] = surface->geometry.x;
+	surface->transform.position.matrix.d[13] = surface->geometry.y;
 
 	weston_matrix_init(matrix);
 	wl_list_for_each(tform, &surface->geometry.transformation_list, link)
@@ -291,8 +291,8 @@ weston_surface_to_global(struct weston_surface *surface,
 		*x = floorf(v.f[0] / v.f[3]);
 		*y = floorf(v.f[1] / v.f[3]);
 	} else {
-		*x = sx + surface->x;
-		*y = sy + surface->y;
+		*x = sx + surface->geometry.x;
+		*y = sy + surface->geometry.y;
 	}
 }
 
@@ -317,8 +317,8 @@ surface_from_global_float(struct weston_surface *surface,
 		*sx = v.f[0] / v.f[3];
 		*sy = v.f[1] / v.f[3];
 	} else {
-		*sx = x - surface->x;
-		*sy = y - surface->y;
+		*sx = x - surface->geometry.x;
+		*sy = y - surface->geometry.y;
 	}
 }
 
@@ -344,7 +344,8 @@ weston_surface_damage_rectangle(struct weston_surface *surface,
 
 	pixman_region32_union_rect(&surface->damage,
 				   &surface->damage,
-				   surface->x + x, surface->y + y,
+				   surface->geometry.x + x,
+				   surface->geometry.y + y,
 				   width, height);
 	weston_compositor_schedule_repaint(compositor);
 }
@@ -371,7 +372,7 @@ weston_surface_damage_below(struct weston_surface *surface)
 
 	pixman_region32_union_rect(&below->damage,
 				   &below->damage,
-				   surface->x, surface->y,
+				   surface->geometry.x, surface->geometry.y,
 				   surface->width, surface->height);
 	weston_compositor_schedule_repaint(surface->compositor);
 }
@@ -397,8 +398,8 @@ weston_surface_configure(struct weston_surface *surface,
 {
 	weston_surface_damage_below(surface);
 
-	surface->x = x;
-	surface->y = y;
+	surface->geometry.x = x;
+	surface->geometry.y = y;
 	surface->width = width;
 	surface->height = height;
 	surface->geometry.dirty = 1;
@@ -409,7 +410,8 @@ weston_surface_configure(struct weston_surface *surface,
 	pixman_region32_fini(&surface->opaque);
 	if (surface->visual == WESTON_RGB_VISUAL)
 		pixman_region32_init_rect(&surface->opaque,
-					  surface->x, surface->y,
+					  surface->geometry.x,
+					  surface->geometry.y,
 					  surface->width, surface->height);
 	else
 		pixman_region32_init(&surface->opaque);
@@ -614,7 +616,8 @@ weston_surface_draw(struct weston_surface *es, struct weston_output *output)
 	int n;
 
 	pixman_region32_init_rect(&repaint,
-				  es->x, es->y, es->width, es->height);
+				  es->geometry.x, es->geometry.y,
+				  es->width, es->height);
 	pixman_region32_intersect(&repaint, &repaint, &output->region);
 	pixman_region32_intersect(&repaint, &repaint, &es->damage);
 
@@ -791,7 +794,8 @@ weston_output_set_cursor(struct weston_output *output,
 		return;
 
 	pixman_region32_init_rect(&cursor_region,
-				  device->sprite->x, device->sprite->y,
+				  device->sprite->geometry.x,
+				  device->sprite->geometry.y,
 				  device->sprite->width,
 				  device->sprite->height);
 
@@ -846,11 +850,13 @@ weston_output_repaint(struct weston_output *output, int msecs)
 	wl_list_for_each(es, &ec->surface_list, link) {
 		pixman_region32_init(&surface_overlap);
 		pixman_region32_intersect_rect(&surface_overlap,
-					       &overlap, es->x, es->y,
+					       &overlap,
+					       es->geometry.x, es->geometry.y,
 					       es->width, es->height);
 		es->overlapped = pixman_region32_not_empty(&surface_overlap);
 		pixman_region32_fini(&surface_overlap);
-		pixman_region32_union_rect(&overlap, &overlap, es->x, es->y,
+		pixman_region32_union_rect(&overlap, &overlap,
+					   es->geometry.x, es->geometry.y,
 					   es->width, es->height);
 	}
 
@@ -981,7 +987,8 @@ weston_surface_assign_output(struct weston_surface *es)
 	max = 0;
 	wl_list_for_each(output, &ec->output_list, link) {
 		pixman_region32_init_rect(&region,
-					  es->x, es->y, es->width, es->height);
+					  es->geometry.x, es->geometry.y,
+					  es->width, es->height);
 		pixman_region32_intersect(&region, &region, &output->region);
 
 		e = pixman_region32_extents(&region);
@@ -1027,7 +1034,9 @@ surface_attach(struct wl_client *client,
 	} else if (x != 0 || y != 0 ||
 		   es->width != buffer->width ||
 		   es->height != buffer->height) {
-		shell->configure(shell, es, es->x + x, es->y + y,
+		/* FIXME: the x,y delta should be in surface-local coords */
+		shell->configure(shell, es, es->geometry.x + x,
+				 es->geometry.y + y,
 				 buffer->width, buffer->height);
 	}
 
@@ -1237,8 +1246,8 @@ notify_motion(struct wl_input_device *device, uint32_t time, int x, int y)
 	if (wd->sprite) {
 		weston_surface_damage_below(wd->sprite);
 
-		wd->sprite->x = device->x - wd->hotspot_x;
-		wd->sprite->y = device->y - wd->hotspot_y;
+		wd->sprite->geometry.x = device->x - wd->hotspot_x;
+		wd->sprite->geometry.y = device->y - wd->hotspot_y;
 		wd->sprite->geometry.dirty = 1;
 
 		weston_surface_damage(wd->sprite);
@@ -1592,8 +1601,8 @@ input_device_attach(struct wl_client *client,
 	device->hotspot_y = y;
 	device->sprite->width = buffer->width;
 	device->sprite->height = buffer->height;
-	device->sprite->x = device->input_device.x - device->hotspot_x;
-	device->sprite->y = device->input_device.y - device->hotspot_y;
+	device->sprite->geometry.x = device->input_device.x - device->hotspot_x;
+	device->sprite->geometry.y = device->input_device.y - device->hotspot_y;
 	device->sprite->geometry.dirty = 1;
 
 	weston_surface_damage(device->sprite);
