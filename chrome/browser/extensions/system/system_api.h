@@ -27,6 +27,7 @@ class GetUpdateStatusFunction : public SyncExtensionFunction {
   DECLARE_EXTENSION_FUNCTION_NAME("systemPrivate.getUpdateStatus")
 };
 
+void DispatchBrightnessChangedEvent(int brightness, bool user_initiated);
 void DispatchVolumeChangedEvent(double volume, bool is_volume_muted);
 void DispatchScreenUnlockedEvent();
 void DispatchWokeUpEvent();

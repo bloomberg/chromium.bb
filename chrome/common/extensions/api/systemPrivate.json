@@ -27,6 +27,21 @@
           "volume": {"type": "double", "description": "The value of the volume percent. This must be between 0.0 and 100.0."},
           "isVolumeMuted": {"type": "boolean", "description": "True if the volume is muted."}
         }
+      },
+      {
+        "id": "BrightnessChangeInfo",
+        "type": "object",
+        "description": "Information about a change to the screen brightness.",
+        "properties": {
+          "brightness": {
+            "type": "number",
+            "description": "The value of the current screen brightness in percent, between 0.0 and 100.0."
+          },
+          "userInitiated": {
+            "type": "boolean",
+            "description": "Whether this change was initiated by user."
+          }
+        }
       }
     ],
     "functions": [
@@ -79,6 +94,18 @@
             "$ref": "VolumeInfo",
             "name": "volume",
             "description": "Information about the current state of the system volume control, including whether it is muted."
+          }
+        ]
+      },
+      {
+        "name": "onBrightnessChanged",
+        "type": "function",
+        "description": "Fired when the screen brightness is changed.",
+        "parameters": [
+          {
+            "$ref": "BrightnessChangeInfo",
+            "name": "brightness",
+            "description": "Information about a change to the screen brightness."
           }
         ]
       },

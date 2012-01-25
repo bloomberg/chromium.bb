@@ -30,9 +30,11 @@ const char* kIncognitoModeAvailabilityStrings[] = {
 };
 
 // Property keys.
+const char kBrightnessKey[] = "brightness";
 const char kDownloadProgressKey[] = "downloadProgress";
 const char kIsVolumeMutedKey[] = "isVolumeMuted";
 const char kStateKey[] = "state";
+const char kUserInitiatedKey[] = "userInitiated";
 const char kVolumeKey[] = "volume";
 
 // System update states.
@@ -41,6 +43,7 @@ const char kUpdatingState[] = "Updating";
 const char kNeedRestartState[] = "NeedRestart";
 
 // Event names.
+const char kOnBrightnessChanged[] = "systemPrivate.onBrightnessChanged";
 const char kOnVolumeChanged[] = "systemPrivate.onVolumeChanged";
 const char kOnScreenUnlocked[] = "systemPrivate.onScreenUnlocked";
 const char kOnWokeUp[] = "systemPrivate.onWokeUp";
@@ -136,6 +139,15 @@ void DispatchVolumeChangedEvent(double volume, bool is_volume_muted) {
   dict->SetBoolean(kIsVolumeMutedKey, is_volume_muted);
   args.Append(dict);
   DispatchEvent(kOnVolumeChanged, args);
+}
+
+void DispatchBrightnessChangedEvent(int brightness, bool user_initiated) {
+  ListValue args;
+  DictionaryValue* dict = new DictionaryValue();
+  dict->SetInteger(kBrightnessKey, brightness);
+  dict->SetBoolean(kUserInitiatedKey, user_initiated);
+  args.Append(dict);
+  DispatchEvent(kOnBrightnessChanged, args);
 }
 
 void DispatchScreenUnlockedEvent() {
