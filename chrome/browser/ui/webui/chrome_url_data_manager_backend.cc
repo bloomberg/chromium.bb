@@ -52,10 +52,17 @@ const char kChromeURLContentSecurityPolicyHeader[] =
     "chrome-extension://mndnfokpggljbaajbnioimlmbfngpief "
     "'self' 'unsafe-eval'";
 
+// If you are inserting new exemptions into this list, then you have a bug.
+// It is not acceptable to disable content-security-policy on chrome:// pages
+// to permit functionality excluded by the above policy, such as inline script.
+// Instead, you must go back and change your WebUI page so that it is compliant
+// with the policy. This typically involves ensuring that all script is
+// delivered through the data manager backend.
 class ChromeURLContentSecurityPolicyExceptionSet
     : public std::set<std::string> {
  public:
   ChromeURLContentSecurityPolicyExceptionSet() : std::set<std::string>() {
+    // TODO(tsepez) whittle this list down to nothing.
     insert(chrome::kChromeUICloudPrintResourcesHost);
     insert(chrome::kChromeUICloudPrintSetupHost);
     insert(chrome::kChromeUICreditsHost);

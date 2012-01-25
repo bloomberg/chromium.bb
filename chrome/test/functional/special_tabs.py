@@ -276,7 +276,9 @@ class SpecialTabsTest(pyauto.PyUITest):
     """Test special tabs created by URLs like chrome://downloads,
        chrome://settings/extensionSettings, chrome://history etc.
        Also ensures they specify content-security-policy and not inline
-       scripts for those pages that are expected to do so."""
+       scripts for those pages that are expected to do so.  Patches which
+       break this test by including new inline javascript are security
+       vulnerabilities and should be reverted."""
     tabs = self._GetPlatformSpecialURLTabs()
     for url, properties in tabs.iteritems():
       logging.debug('Testing URL %s.' % url)
