@@ -174,6 +174,10 @@ gfx::NativeViewId TestRenderWidgetHostView::GetNativeViewId() const {
   return 0;
 }
 
+gfx::NativeViewAccessible TestRenderWidgetHostView::GetNativeViewAccessible() {
+  return NULL;
+}
+
 bool TestRenderWidgetHostView::HasFocus() const {
   return true;
 }

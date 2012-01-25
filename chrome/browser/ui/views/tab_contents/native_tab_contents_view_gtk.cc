@@ -135,27 +135,28 @@ void NativeTabContentsViewGtk::Unparent() {
 
 RenderWidgetHostView* NativeTabContentsViewGtk::CreateRenderWidgetHostView(
     RenderWidgetHost* render_widget_host) {
-  RenderWidgetHostViewGtk* view =
-      new RenderWidgetHostViewGtk(render_widget_host);
-  view->InitAsChild();
-  g_signal_connect(view->native_view(), "focus",
+  RenderWidgetHostView* view =
+      RenderWidgetHostView::CreateViewForWidget(render_widget_host);
+  view->InitAsChild(NULL);
+  g_signal_connect(view->GetNativeView(), "focus",
                    G_CALLBACK(OnFocus), delegate_->GetWebContents());
-  g_signal_connect(view->native_view(), "scroll-event",
+  g_signal_connect(view->GetNativeView(), "scroll-event",
                    G_CALLBACK(OnMouseScroll), delegate_);
 
   // Let widget know that the tab contents has been painted.
-  views::NativeWidgetGtk::RegisterChildExposeHandler(view->native_view());
+  views::NativeWidgetGtk::RegisterChildExposeHandler(view->GetNativeView());
 
   // Renderer target DnD.
   if (delegate_->GetWebContents()->ShouldAcceptDragAndDrop()) {
     drag_dest_.reset(new content::WebDragDestGtk(delegate_->GetWebContents(),
-                                                 view->native_view()));
+                                                 view->GetNativeView()));
     bookmark_handler_gtk_.reset(new WebDragBookmarkHandlerGtk);
     drag_dest_->set_delegate(bookmark_handler_gtk_.get());
   }
 
-  gtk_fixed_put(GTK_FIXED(GetWidget()->GetNativeView()), view->native_view(), 0,
-                0);
+  gtk_fixed_put(GTK_FIXED(GetWidget()->GetNativeView()),
+                view->GetNativeView(),
+                0, 0);
   return view;
 }
 

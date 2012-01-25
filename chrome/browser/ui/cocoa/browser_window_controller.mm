@@ -586,7 +586,7 @@ enum {
 // Called when we are activated (when we gain focus).
 - (void)windowDidBecomeKey:(NSNotification*)notification {
   // We need to activate the controls (in the "WebView"). To do this, get the
-  // selected WebContents's RenderWidgetHostViewMac and tell it to activate.
+  // selected WebContents's RenderWidgetHostView and tell it to activate.
   if (WebContents* contents = browser_->GetSelectedWebContents()) {
     if (RenderWidgetHostView* rwhv = contents->GetRenderWidgetHostView())
       rwhv->SetActive(true);

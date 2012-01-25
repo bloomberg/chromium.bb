@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -96,7 +96,7 @@ void RenderViewContextMenuGtk::PlatformInit() {
       gboolean show_input_method_menu = TRUE;
 
       g_object_get(
-          gtk_widget_get_settings(GTK_WIDGET(rwhv->native_view())),
+          gtk_widget_get_settings(GTK_WIDGET(rwhv->GetNativeView())),
           "gtk-show-input-method-menu", &show_input_method_menu, NULL);
       if (!show_input_method_menu)
         return;

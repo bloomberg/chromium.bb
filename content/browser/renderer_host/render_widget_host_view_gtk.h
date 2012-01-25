@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -46,13 +46,10 @@ typedef struct _GtkSelectionData GtkSelectionData;
 // -----------------------------------------------------------------------------
 class CONTENT_EXPORT RenderWidgetHostViewGtk : public RenderWidgetHostView {
  public:
-  explicit RenderWidgetHostViewGtk(RenderWidgetHost* widget);
   virtual ~RenderWidgetHostViewGtk();
 
-  // Initialize this object for use as a drawing area.
-  void InitAsChild();
-
   // RenderWidgetHostView implementation.
+  virtual void InitAsChild(gfx::NativeView parent_view) OVERRIDE;
   virtual void InitAsPopup(RenderWidgetHostView* parent_host_view,
                            const gfx::Rect& pos) OVERRIDE;
   virtual void InitAsFullscreen(
@@ -64,6 +61,7 @@ class CONTENT_EXPORT RenderWidgetHostViewGtk : public RenderWidgetHostView {
   virtual void SetBounds(const gfx::Rect& rect) OVERRIDE;
   virtual gfx::NativeView GetNativeView() const OVERRIDE;
   virtual gfx::NativeViewId GetNativeViewId() const OVERRIDE;
+  virtual gfx::NativeViewAccessible GetNativeViewAccessible() OVERRIDE;
   virtual void MovePluginWindows(
       const std::vector<webkit::npapi::WebPluginGeometry>& moves) OVERRIDE;
   virtual void Focus() OVERRIDE;
@@ -115,8 +113,6 @@ class CONTENT_EXPORT RenderWidgetHostViewGtk : public RenderWidgetHostView {
   virtual bool LockMouse() OVERRIDE;
   virtual void UnlockMouse() OVERRIDE;
 
-  gfx::NativeView native_view() const { return view_.get(); }
-
   // If the widget is aligned with an edge of the monitor its on and the user
   // attempts to drag past that edge we track the number of times it has
   // occurred, so that we can force the widget to scroll when it otherwise
@@ -148,6 +144,12 @@ class CONTENT_EXPORT RenderWidgetHostViewGtk : public RenderWidgetHostView {
   // Builds a submenu containing all the gtk input method commands.
   GtkWidget* BuildInputMethodsGtkMenu();
 #endif
+
+ protected:
+  friend class RenderWidgetHostView;
+
+  // Should construct only via RenderWidgetHostView::CreateViewForWidget.
+  explicit RenderWidgetHostViewGtk(RenderWidgetHost* widget);
 
  private:
   friend class RenderWidgetHostViewGtkWidget;

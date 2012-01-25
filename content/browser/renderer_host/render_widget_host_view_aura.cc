@@ -135,13 +135,14 @@ RenderWidgetHostViewAura::~RenderWidgetHostViewAura() {
 #endif
 }
 
-void RenderWidgetHostViewAura::InitAsChild() {
+////////////////////////////////////////////////////////////////////////////////
+// RenderWidgetHostViewAura, RenderWidgetHostView implementation:
+
+void RenderWidgetHostViewAura::InitAsChild(
+    gfx::NativeView parent_view) {
   window_->Init(ui::Layer::LAYER_HAS_TEXTURE);
   window_->SetName("RenderWidgetHostViewAura");
 }
-
-////////////////////////////////////////////////////////////////////////////////
-// RenderWidgetHostViewAura, RenderWidgetHostView implementation:
 
 void RenderWidgetHostViewAura::InitAsPopup(
     RenderWidgetHostView* parent_host_view,
@@ -218,6 +219,11 @@ gfx::NativeView RenderWidgetHostViewAura::GetNativeView() const {
 
 gfx::NativeViewId RenderWidgetHostViewAura::GetNativeViewId() const {
   return static_cast<gfx::NativeViewId>(NULL);
+}
+
+gfx::NativeViewAccessible RenderWidgetHostViewAura::GetNativeViewAccessible() {
+  NOTIMPLEMENTED();
+  return static_cast<gfx::NativeViewAccessible>(NULL);
 }
 
 void RenderWidgetHostViewAura::MovePluginWindows(

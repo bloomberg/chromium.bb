@@ -59,6 +59,7 @@ class TestRenderWidgetHostView : public RenderWidgetHostView {
   explicit TestRenderWidgetHostView(RenderWidgetHost* rwh);
   virtual ~TestRenderWidgetHostView();
 
+  virtual void InitAsChild(gfx::NativeView parent_view) OVERRIDE {}
   virtual void InitAsPopup(RenderWidgetHostView* parent_host_view,
                            const gfx::Rect& pos) OVERRIDE {}
   virtual void InitAsFullscreen(
@@ -70,6 +71,7 @@ class TestRenderWidgetHostView : public RenderWidgetHostView {
   virtual void SetBounds(const gfx::Rect& rect) OVERRIDE {}
   virtual gfx::NativeView GetNativeView() const OVERRIDE;
   virtual gfx::NativeViewId GetNativeViewId() const OVERRIDE;
+  virtual gfx::NativeViewAccessible GetNativeViewAccessible() OVERRIDE;
   virtual void MovePluginWindows(
       const std::vector<webkit::npapi::WebPluginGeometry>& moves) OVERRIDE {}
   virtual void Focus() OVERRIDE {}

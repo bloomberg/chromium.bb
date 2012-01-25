@@ -117,10 +117,10 @@ RenderWidgetHostView* TabContentsViewGtk::CreateViewForWidget(
     return render_widget_host->view();
   }
 
-  RenderWidgetHostViewGtk* view =
-      new RenderWidgetHostViewGtk(render_widget_host);
-  view->InitAsChild();
-  gfx::NativeView content_view = view->native_view();
+  RenderWidgetHostView* view =
+      RenderWidgetHostView::CreateViewForWidget(render_widget_host);
+  view->InitAsChild(NULL);
+  gfx::NativeView content_view = view->GetNativeView();
   g_signal_connect(content_view, "focus", G_CALLBACK(OnFocusThunk), this);
   g_signal_connect(content_view, "leave-notify-event",
                    G_CALLBACK(OnLeaveNotify), tab_contents_);

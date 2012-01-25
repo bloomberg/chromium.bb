@@ -586,7 +586,8 @@ RenderWidgetHostViewGtk::~RenderWidgetHostViewGtk() {
   view_.Destroy();
 }
 
-void RenderWidgetHostViewGtk::InitAsChild() {
+void RenderWidgetHostViewGtk::InitAsChild(
+    gfx::NativeView parent_view) {
   DoSharedInit();
   gtk_widget_show(view_.get());
 }
@@ -728,6 +729,11 @@ gfx::NativeView RenderWidgetHostViewGtk::GetNativeView() const {
 
 gfx::NativeViewId RenderWidgetHostViewGtk::GetNativeViewId() const {
   return GtkNativeViewManager::GetInstance()->GetIdForWidget(view_.get());
+}
+
+gfx::NativeViewAccessible RenderWidgetHostViewGtk::GetNativeViewAccessible() {
+  NOTIMPLEMENTED();
+  return NULL;
 }
 
 void RenderWidgetHostViewGtk::MovePluginWindows(

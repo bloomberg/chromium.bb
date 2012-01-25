@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,7 +7,7 @@
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/tab_contents/tab_contents_container.h"
 #include "chrome/browser/ui/views/tab_contents/tab_contents_view_views.h"
-#include "content/browser/renderer_host/render_widget_host_view_win.h"
+#include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/browser/tab_contents/interstitial_page.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/accessibility/accessible_view_state.h"
@@ -149,11 +149,9 @@ gfx::NativeViewAccessible
     NativeTabContentsContainerWin::GetNativeViewAccessible() {
   WebContents* web_contents = container_->web_contents();
   if (web_contents) {
-    RenderWidgetHostViewWin* host_view_win =
-        static_cast<RenderWidgetHostViewWin*>(
-            web_contents->GetRenderWidgetHostView());
-    if (host_view_win)
-      return host_view_win->GetIAccessible();
+    RenderWidgetHostView* host_view = web_contents->GetRenderWidgetHostView();
+    if (host_view)
+      return host_view->GetNativeViewAccessible();
   }
 
   return View::GetNativeViewAccessible();

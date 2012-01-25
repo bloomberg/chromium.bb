@@ -113,7 +113,7 @@ RenderWidgetHostView* TabContentsViewMac::CreateViewForWidget(
   // with us. In case there are other siblings of the content area, we want
   // to make sure the content area is on the bottom so other things draw over
   // it.
-  NSView* view_view = view->native_view();
+  NSView* view_view = view->GetNativeView();
   [view_view setFrame:[cocoa_view_.get() bounds]];
   [view_view setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
   // Add the new view below all other views; this also keeps it below any
@@ -287,7 +287,7 @@ void TabContentsViewMac::CreateNewWidget(
   // to allow it to survive the trip without being hosted.
   RenderWidgetHostViewMac* widget_view_mac =
       static_cast<RenderWidgetHostViewMac*>(widget_view);
-  [widget_view_mac->native_view() retain];
+  [widget_view_mac->GetNativeView() retain];
 }
 
 void TabContentsViewMac::CreateNewFullscreenWidget(int route_id) {
@@ -301,7 +301,7 @@ void TabContentsViewMac::CreateNewFullscreenWidget(int route_id) {
   // to allow it to survive the trip without being hosted.
   RenderWidgetHostViewMac* widget_view_mac =
       static_cast<RenderWidgetHostViewMac*>(widget_view);
-  [widget_view_mac->native_view() retain];
+  [widget_view_mac->GetNativeView() retain];
 }
 
 void TabContentsViewMac::ShowCreatedWindow(int route_id,
@@ -325,7 +325,7 @@ void TabContentsViewMac::ShowCreatedWidget(
   // took in CreateNewWidgetInternal().
   RenderWidgetHostViewMac* widget_view_mac =
       static_cast<RenderWidgetHostViewMac*>(widget_host_view);
-  [widget_view_mac->native_view() release];
+  [widget_view_mac->GetNativeView() release];
 }
 
 void TabContentsViewMac::ShowCreatedFullscreenWidget(int route_id) {
@@ -340,7 +340,7 @@ void TabContentsViewMac::ShowCreatedFullscreenWidget(int route_id) {
   // in CreateNewFullscreenWidgetInternal().
   RenderWidgetHostViewMac* widget_view_mac =
       static_cast<RenderWidgetHostViewMac*>(widget_host_view);
-  [widget_view_mac->native_view() release];
+  [widget_view_mac->GetNativeView() release];
 }
 
 void TabContentsViewMac::ShowContextMenu(const ContextMenuParams& params) {

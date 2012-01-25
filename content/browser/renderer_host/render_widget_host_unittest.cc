@@ -428,7 +428,7 @@ TEST_F(RenderWidgetHostTest, Background) {
       RenderWidgetHostView::CreateViewForWidget(host_.get()));
 #if defined(USE_AURA)
   // TODO(derat): Call this on all platforms: http://crbug.com/102450.
-  static_cast<RenderWidgetHostViewAura*>(view.get())->InitAsChild();
+  static_cast<RenderWidgetHostViewAura*>(view.get())->InitAsChild(NULL);
 #endif
   host_->SetView(view.get());
 

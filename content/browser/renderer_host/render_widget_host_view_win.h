@@ -89,15 +89,11 @@ class RenderWidgetHostViewWin
       public content::NotificationObserver,
       public BrowserAccessibilityDelegate {
  public:
-  // The view will associate itself with the given widget.
-  CONTENT_EXPORT explicit RenderWidgetHostViewWin(RenderWidgetHost* widget);
   virtual ~RenderWidgetHostViewWin();
 
   CONTENT_EXPORT void CreateWnd(HWND parent);
 
   void ScheduleComposite();
-
-  CONTENT_EXPORT IAccessible* GetIAccessible();
 
   DECLARE_WND_CLASS_EX(kRenderWidgetHostHWNDClass, CS_DBLCLKS, 0);
 
@@ -153,6 +149,7 @@ class RenderWidgetHostViewWin
   END_MSG_MAP()
 
   // Implementation of RenderWidgetHostView:
+  virtual void InitAsChild(gfx::NativeView parent_view) OVERRIDE;
   virtual void InitAsPopup(RenderWidgetHostView* parent_host_view,
                            const gfx::Rect& pos) OVERRIDE;
   virtual void InitAsFullscreen(
@@ -164,6 +161,7 @@ class RenderWidgetHostViewWin
   virtual void SetBounds(const gfx::Rect& rect) OVERRIDE;
   virtual gfx::NativeView GetNativeView() const OVERRIDE;
   virtual gfx::NativeViewId GetNativeViewId() const OVERRIDE;
+  virtual gfx::NativeViewAccessible GetNativeViewAccessible() OVERRIDE;
   virtual void MovePluginWindows(
       const std::vector<webkit::npapi::WebPluginGeometry>& moves) OVERRIDE;
   virtual void Focus() OVERRIDE;
@@ -228,6 +226,13 @@ class RenderWidgetHostViewWin
       int acc_obj_id, int start_offset, int end_offset) OVERRIDE;
 
  protected:
+  friend class RenderWidgetHostView;
+
+  // Should construct only via RenderWidgetHostView::CreateViewForWidget.
+  //
+  // The view will associate itself with the given widget.
+  explicit RenderWidgetHostViewWin(RenderWidgetHost* widget);
+
   // Windows Message Handlers
   LRESULT OnCreate(CREATESTRUCT* create_struct);
   void OnActivate(UINT, BOOL, HWND);

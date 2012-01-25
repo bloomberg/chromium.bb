@@ -81,6 +81,11 @@ class RenderWidgetHostView {
   CONTENT_EXPORT static RenderWidgetHostView* CreateViewForWidget(
       RenderWidgetHost* widget);
 
+  // Initialize this object for use as a drawing area.  |parent_view| may be
+  // left as NULL on platforms where a parent view is not required to initialize
+  // a child window.
+  virtual void InitAsChild(gfx::NativeView parent_view) = 0;
+
   // Perform all the initialization steps necessary for this object to represent
   // a popup (such as a <select> dropdown), then shows the popup at |pos|.
   virtual void InitAsPopup(RenderWidgetHostView* parent_host_view,
@@ -112,6 +117,7 @@ class RenderWidgetHostView {
   // renderer in IPC messages.
   virtual gfx::NativeView GetNativeView() const = 0;
   virtual gfx::NativeViewId GetNativeViewId() const = 0;
+  virtual gfx::NativeViewAccessible GetNativeViewAccessible() = 0;
 
   // Moves all plugin windows as described in the given list.
   virtual void MovePluginWindows(

@@ -543,7 +543,7 @@ enum {
   BrowserList::SetLastActive(windowShim_->browser());
 
   // We need to activate the controls (in the "WebView"). To do this, get the
-  // selected TabContents's RenderWidgetHostViewMac and tell it to activate.
+  // selected TabContents's RenderWidgetHostView and tell it to activate.
   if (WebContents* contents = [contentsController_ webContents]) {
     if (RenderWidgetHostView* rwhv = contents->GetRenderWidgetHostView())
       rwhv->SetActive(true);

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -28,9 +28,9 @@ class RenderWidgetHostViewMacTest : public RenderViewHostTestHarness {
     // stored view in |TearDown()|.
     old_rwhv_ = rvh()->view();
 
-    // Owned by its |native_view()|, i.e. |rwhv_cocoa_|.
+    // Owned by its |cocoa_view()|, i.e. |rwhv_cocoa_|.
     rwhv_mac_ = new RenderWidgetHostViewMac(rvh());
-    rwhv_cocoa_.reset([rwhv_mac_->native_view() retain]);
+    rwhv_cocoa_.reset([rwhv_mac_->cocoa_view() retain]);
   }
   virtual void TearDown() {
     // See comment in SetUp().

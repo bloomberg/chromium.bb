@@ -88,7 +88,7 @@ GtkIMContextWrapper::GtkIMContextWrapper(RenderWidgetHostViewGtk* host_view)
   g_signal_connect(context_simple_, "retrieve-surrounding",
                    G_CALLBACK(HandleRetrieveSurroundingThunk), this);
 
-  GtkWidget* widget = host_view->native_view();
+  GtkWidget* widget = host_view->GetNativeView();
   DCHECK(widget);
 
   g_signal_connect(widget, "realize",

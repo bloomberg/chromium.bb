@@ -47,14 +47,10 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
       public aura::WindowDelegate,
       public aura::client::ActivationDelegate {
  public:
-  explicit RenderWidgetHostViewAura(RenderWidgetHost* host);
   virtual ~RenderWidgetHostViewAura();
 
-  // TODO(derat): Add an abstract RenderWidgetHostView::InitAsChild() method and
-  // update callers: http://crbug.com/102450.
-  void InitAsChild();
-
   // Overridden from RenderWidgetHostView:
+  virtual void InitAsChild(gfx::NativeView parent_host_view) OVERRIDE;
   virtual void InitAsPopup(RenderWidgetHostView* parent_host_view,
                            const gfx::Rect& pos) OVERRIDE;
   virtual void InitAsFullscreen(
@@ -66,6 +62,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   virtual void SetBounds(const gfx::Rect& rect) OVERRIDE;
   virtual gfx::NativeView GetNativeView() const OVERRIDE;
   virtual gfx::NativeViewId GetNativeViewId() const OVERRIDE;
+  virtual gfx::NativeViewAccessible GetNativeViewAccessible() OVERRIDE;
   virtual void MovePluginWindows(
       const std::vector<webkit::npapi::WebPluginGeometry>& moves) OVERRIDE;
   virtual void Focus() OVERRIDE;
@@ -163,6 +160,12 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   virtual bool ShouldActivate(aura::Event* event) OVERRIDE;
   virtual void OnActivated() OVERRIDE;
   virtual void OnLostActive() OVERRIDE;
+
+ protected:
+  friend class RenderWidgetHostView;
+
+  // Should construct only via RenderWidgetHostView::CreateViewForWidget.
+  explicit RenderWidgetHostViewAura(RenderWidgetHost* host);
 
  private:
 #if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -174,7 +174,7 @@ class InfobarBridge : public ExtensionInfoBarDelegate::DelegateObserver,
   extensionView_ = delegate_->AsExtensionInfoBarDelegate()->extension_host()->
       view()->native_view();
 
-  // Add the extension's RenderWidgetHostViewMac to the view hierarchy of the
+  // Add the extension's RenderWidgetHostView to the view hierarchy of the
   // InfoBar and make sure to place it below the Close button.
   [infoBarView_ addSubview:extensionView_
                 positioned:NSWindowBelow

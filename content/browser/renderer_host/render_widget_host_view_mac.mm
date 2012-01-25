@@ -240,9 +240,9 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget)
       accelerated_compositing_active_(false),
       needs_gpu_visibility_update_after_repaint_(false),
       compositing_surface_(gfx::kNullPluginWindow) {
-  // |cocoa_view_| owns us and we will be deleted when |cocoa_view_| goes away.
-  // Since we autorelease it, our caller must put |native_view()| into the view
-  // hierarchy right after calling us.
+  // |cocoa_view_| owns us and we will be deleted when |cocoa_view_|
+  // goes away.  Since we autorelease it, our caller must put
+  // |GetNativeView()| into the view hierarchy right after calling us.
   cocoa_view_ = [[[RenderWidgetHostViewCocoa alloc]
                   initWithRenderWidgetHostViewMac:this] autorelease];
   render_widget_host_->SetView(this);
@@ -264,6 +264,10 @@ RenderWidgetHostView *CreateRenderWidgetHostView(RenderWidgetHost *widget) {
 
 ///////////////////////////////////////////////////////////////////////////////
 // RenderWidgetHostViewMac, RenderWidgetHostView implementation:
+
+void RenderWidgetHostViewMac::InitAsChild(
+    gfx::NativeView parent_view) {
+}
 
 void RenderWidgetHostViewMac::InitAsPopup(
     RenderWidgetHostView* parent_host_view,
@@ -380,11 +384,16 @@ void RenderWidgetHostViewMac::SetBounds(const gfx::Rect& rect) {
 }
 
 gfx::NativeView RenderWidgetHostViewMac::GetNativeView() const {
-  return native_view();
+  return cocoa_view_;
 }
 
 gfx::NativeViewId RenderWidgetHostViewMac::GetNativeViewId() const {
-  return reinterpret_cast<gfx::NativeViewId>(native_view());
+  return reinterpret_cast<gfx::NativeViewId>(GetNativeView());
+}
+
+gfx::NativeViewAccessible RenderWidgetHostViewMac::GetNativeViewAccessible() {
+  NOTIMPLEMENTED();
+  return static_cast<gfx::NativeViewAccessible>(NULL);
 }
 
 void RenderWidgetHostViewMac::MovePluginWindows(

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -37,7 +37,7 @@ void PopupMenuHelper::ShowPopupMenu(
   RenderWidgetHostViewMac* rwhvm =
       static_cast<RenderWidgetHostViewMac*>(render_view_host_->view());
   scoped_nsobject<RenderWidgetHostViewCocoa> cocoa_view
-      ([rwhvm->native_view() retain]);
+      ([rwhvm->cocoa_view() retain]);
 
   // Display the menu.
   scoped_nsobject<WebMenuRunner> menu_runner;

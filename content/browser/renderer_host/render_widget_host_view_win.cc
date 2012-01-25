@@ -369,6 +369,12 @@ void RenderWidgetHostViewWin::CreateWnd(HWND parent) {
 ///////////////////////////////////////////////////////////////////////////////
 // RenderWidgetHostViewWin, RenderWidgetHostView implementation:
 
+void RenderWidgetHostViewWin::InitAsChild(
+    gfx::NativeView parent_view) {
+  parent_hwnd_ = parent_view;
+  CreateWnd(parent_view);
+}
+
 void RenderWidgetHostViewWin::InitAsPopup(
     RenderWidgetHostView* parent_host_view, const gfx::Rect& pos) {
   close_on_deactivate_ = true;
@@ -450,6 +456,26 @@ gfx::NativeView RenderWidgetHostViewWin::GetNativeView() const {
 
 gfx::NativeViewId RenderWidgetHostViewWin::GetNativeViewId() const {
   return reinterpret_cast<gfx::NativeViewId>(m_hWnd);
+}
+
+gfx::NativeViewAccessible
+RenderWidgetHostViewWin::GetNativeViewAccessible() {
+  if (render_widget_host_ && !render_widget_host_->renderer_accessible()) {
+    // Attempt to detect screen readers by sending an event with our custom id.
+    NotifyWinEvent(EVENT_SYSTEM_ALERT, m_hWnd, kIdCustom, CHILDID_SELF);
+  }
+
+  if (!GetBrowserAccessibilityManager()) {
+    // Return busy document tree while renderer accessibility tree loads.
+    WebAccessibility::State busy_state =
+        static_cast<WebAccessibility::State>(1 << WebAccessibility::STATE_BUSY);
+    SetBrowserAccessibilityManager(
+        BrowserAccessibilityManager::CreateEmptyDocument(
+            m_hWnd, busy_state, this));
+  }
+
+  return GetBrowserAccessibilityManager()->GetRoot()->
+      toBrowserAccessibilityWin();
 }
 
 void RenderWidgetHostViewWin::MovePluginWindows(
@@ -2150,25 +2176,6 @@ void RenderWidgetHostViewWin::AccessibilitySetTextSelection(
       acc_obj_id, start_offset, end_offset);
 }
 
-IAccessible* RenderWidgetHostViewWin::GetIAccessible() {
-  if (render_widget_host_ && !render_widget_host_->renderer_accessible()) {
-    // Attempt to detect screen readers by sending an event with our custom id.
-    NotifyWinEvent(EVENT_SYSTEM_ALERT, m_hWnd, kIdCustom, CHILDID_SELF);
-  }
-
-  if (!GetBrowserAccessibilityManager()) {
-    // Return busy document tree while renderer accessibility tree loads.
-    WebAccessibility::State busy_state =
-        static_cast<WebAccessibility::State>(1 << WebAccessibility::STATE_BUSY);
-    SetBrowserAccessibilityManager(
-        BrowserAccessibilityManager::CreateEmptyDocument(
-            m_hWnd, busy_state, this));
-  }
-
-  return GetBrowserAccessibilityManager()->GetRoot()->
-      toBrowserAccessibilityWin();
-}
-
 LRESULT RenderWidgetHostViewWin::OnGetObject(UINT message, WPARAM wparam,
                                              LPARAM lparam, BOOL& handled) {
   if (kIdCustom == lparam) {
@@ -2186,7 +2193,7 @@ LRESULT RenderWidgetHostViewWin::OnGetObject(UINT message, WPARAM wparam,
     return static_cast<LRESULT>(0L);
   }
 
-  IAccessible* iaccessible = GetIAccessible();
+  IAccessible* iaccessible = GetNativeViewAccessible();
   if (iaccessible)
     return LresultFromObject(IID_IAccessible, wparam, iaccessible);
 

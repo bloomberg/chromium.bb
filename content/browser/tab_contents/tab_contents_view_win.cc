@@ -84,7 +84,8 @@ RenderWidgetHostView* TabContentsViewWin::CreateViewForWidget(
     return render_widget_host->view();
   }
 
-  view_ = new RenderWidgetHostViewWin(render_widget_host);
+  view_ = static_cast<RenderWidgetHostViewWin*>(
+      RenderWidgetHostView::CreateViewForWidget(render_widget_host));
   view_->CreateWnd(GetNativeView());
   view_->ShowWindow(SW_SHOW);
   view_->SetSize(initial_size_);
