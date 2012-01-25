@@ -32,7 +32,6 @@ class DownloadThrottlingResourceHandler : public ResourceHandler {
                                     ResourceDispatcherHost* host,
                                     DownloadRequestLimiter* limiter,
                                     net::URLRequest* request,
-                                    const GURL& url,
                                     int render_process_host_id,
                                     int render_view_id,
                                     int request_id);
@@ -68,7 +67,6 @@ class DownloadThrottlingResourceHandler : public ResourceHandler {
 
   ResourceDispatcherHost* host_;
   net::URLRequest* request_;
-  GURL url_;
   int render_process_host_id_;
   int render_view_id_;
   int request_id_;
@@ -78,15 +76,6 @@ class DownloadThrottlingResourceHandler : public ResourceHandler {
 
   // Set to true when we know that the request is allowed to start.
   bool request_allowed_;
-
-  // Response supplied to OnResponseStarted. Only non-null if OnResponseStarted
-  // is invoked.
-  scoped_refptr<content::ResourceResponse> response_;
-
-  // If we're created by way of BufferedEventHandler we'll get one request for
-  // a buffer. This is that buffer.
-  scoped_refptr<net::IOBuffer> tmp_buffer_;
-  int tmp_buffer_length_;
 
   // Have we received OnRequestClosed()?  If so, we shouldn't act on
   // CancelDownload()/ContinueDownload().

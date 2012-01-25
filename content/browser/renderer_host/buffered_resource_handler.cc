@@ -72,6 +72,8 @@ BufferedResourceHandler::BufferedResourceHandler(ResourceHandler* handler,
       sniff_content_(false),
       wait_for_plugins_(false),
       buffering_(false),
+      next_handler_needs_response_started_(false),
+      next_handler_needs_will_read_(false),
       finished_(false) {
 }
 
@@ -115,6 +117,9 @@ bool BufferedResourceHandler::OnWillRead(int request_id, net::IOBuffer** buf,
 }
 
 bool BufferedResourceHandler::OnReadCompleted(int request_id, int* bytes_read) {
+  ResourceDispatcherHostRequestInfo* info =
+      ResourceDispatcherHost::InfoForRequest(request_);
+
   if (sniff_content_) {
     if (KeepBuffering(*bytes_read))
       return true;
@@ -126,13 +131,16 @@ bool BufferedResourceHandler::OnReadCompleted(int request_id, int* bytes_read) {
       return false;
 
     // The next handler might have paused the request in OnResponseStarted.
-    ResourceDispatcherHostRequestInfo* info =
-        ResourceDispatcherHost::InfoForRequest(request_);
     if (info->pause_count())
       return true;
   } else if (wait_for_plugins_) {
     return true;
   }
+
+  if (!ForwardPendingEventsToNextHandler(request_id))
+    return false;
+  if (info->pause_count())
+    return true;
 
   // Release the reference that we acquired at OnWillRead.
   read_buffer_ = NULL;
@@ -274,7 +282,8 @@ bool BufferedResourceHandler::CompleteResponseStarted(int request_id) {
     X509UserCertResourceHandler* x509_cert_handler =
         new X509UserCertResourceHandler(host_, request_,
                                         info->child_id(), info->route_id());
-    UseAlternateResourceHandler(request_id, x509_cert_handler);
+    if (!UseAlternateResourceHandler(request_id, x509_cert_handler))
+      return false;
   }
 
   // Check to see if we should forward the data from this request to the
@@ -315,8 +324,13 @@ bool BufferedResourceHandler::CompleteResponseStarted(int request_id) {
           info->route_id(), info->request_id(), false);
     }
 
-    UseAlternateResourceHandler(request_id, handler);
+    if (!UseAlternateResourceHandler(request_id, handler))
+      return false;
   }
+
+  if (info->pause_count())
+    return true;
+
   return next_handler_->OnResponseStarted(request_id, response_);
 }
 
@@ -407,35 +421,71 @@ bool BufferedResourceHandler::ShouldDownload(bool* need_plugin_list) {
   return !found;
 }
 
-void BufferedResourceHandler::UseAlternateResourceHandler(
+bool BufferedResourceHandler::UseAlternateResourceHandler(
     int request_id,
     ResourceHandler* handler) {
-  ResourceDispatcherHostRequestInfo* info =
-      ResourceDispatcherHost::InfoForRequest(request_);
-  if (bytes_read_) {
-    // A Read has already occured and we need to copy the data into the new
-    // ResourceHandler.
-    net::IOBuffer* buf = NULL;
-    int buf_len = 0;
-    handler->OnWillRead(request_id, &buf, &buf_len, bytes_read_);
-    CHECK((buf_len >= bytes_read_) && (bytes_read_ >= 0));
-    memcpy(buf->data(), read_buffer_->data(), bytes_read_);
-  }
-
   // Inform the original ResourceHandler that this will be handled entirely by
   // the new ResourceHandler.
-  next_handler_->OnResponseStarted(info->request_id(), response_);
+  // TODO(darin): We should probably check the return values of these.
+  next_handler_->OnResponseStarted(request_id, response_);
   net::URLRequestStatus status(net::URLRequestStatus::HANDLED_EXTERNALLY, 0);
-  next_handler_->OnResponseCompleted(info->request_id(), status, std::string());
+  next_handler_->OnResponseCompleted(request_id, status, std::string());
 
   // Remove the non-owning pointer to the CrossSiteResourceHandler, if any,
   // from the extra request info because the CrossSiteResourceHandler (part of
   // the original ResourceHandler chain) will be deleted by the next statement.
+  ResourceDispatcherHostRequestInfo* info =
+      ResourceDispatcherHost::InfoForRequest(request_);
   info->set_cross_site_handler(NULL);
 
   // This is handled entirely within the new ResourceHandler, so just reset the
   // original ResourceHandler.
   next_handler_ = handler;
+
+  next_handler_needs_response_started_ = true;
+  next_handler_needs_will_read_ = true;
+
+  return ForwardPendingEventsToNextHandler(request_id);
+}
+
+bool BufferedResourceHandler::ForwardPendingEventsToNextHandler(
+    int request_id) {
+  ResourceDispatcherHostRequestInfo* info =
+      ResourceDispatcherHost::InfoForRequest(request_);
+  if (info->pause_count())
+    return true;
+
+  if (next_handler_needs_response_started_) {
+    if (!next_handler_->OnResponseStarted(request_id, response_))
+      return false;
+    // If the request was paused during OnResponseStarted, we need to avoid
+    // calling OnResponseStarted again.
+    next_handler_needs_response_started_ = false;
+    if (info->pause_count())
+      return true;
+  }
+
+  if (next_handler_needs_will_read_) {
+    CopyReadBufferToNextHandler(request_id);
+    // If the request was paused during OnWillRead, we need to be sure to try
+    // calling OnWillRead again.
+    if (info->pause_count())
+      return true;
+    next_handler_needs_will_read_ = false;
+  }
+  return true;
+}
+
+void BufferedResourceHandler::CopyReadBufferToNextHandler(int request_id) {
+  if (!bytes_read_)
+    return;
+
+  net::IOBuffer* buf = NULL;
+  int buf_len = 0;
+  if (next_handler_->OnWillRead(request_id, &buf, &buf_len, bytes_read_)) {
+    CHECK((buf_len >= bytes_read_) && (bytes_read_ >= 0));
+    memcpy(buf->data(), read_buffer_->data(), bytes_read_);
+  }
 }
 
 void BufferedResourceHandler::OnPluginsLoaded(

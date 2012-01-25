@@ -207,7 +207,7 @@ ResourceHandler* ChromeResourceDispatcherHostDelegate::DownloadStarting(
 
   return new DownloadThrottlingResourceHandler(
       handler, resource_dispatcher_host_, download_request_limiter_, request,
-      request->url(), child_id, route_id, request_id);
+      child_id, route_id, request_id);
 }
 
 bool ChromeResourceDispatcherHostDelegate::ShouldDeferStart(

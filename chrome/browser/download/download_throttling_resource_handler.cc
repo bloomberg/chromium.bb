@@ -18,19 +18,16 @@ DownloadThrottlingResourceHandler::DownloadThrottlingResourceHandler(
     ResourceDispatcherHost* host,
     DownloadRequestLimiter* limiter,
     net::URLRequest* request,
-    const GURL& url,
     int render_process_host_id,
     int render_view_id,
     int request_id)
     : host_(host),
       request_(request),
-      url_(url),
       render_process_host_id_(render_process_host_id),
       render_view_id_(render_view_id),
       request_id_(request_id),
       next_handler_(next_handler),
       request_allowed_(false),
-      tmp_buffer_length_(0),
       request_closed_(false) {
   // Pause the request.
   host_->PauseRequest(render_process_host_id_, request_id_, true);
@@ -63,7 +60,6 @@ bool DownloadThrottlingResourceHandler::OnRequestRedirected(
   if (request_allowed_) {
     return next_handler_->OnRequestRedirected(request_id, url, response, defer);
   }
-  url_ = url;
   return true;
 }
 
@@ -73,8 +69,9 @@ bool DownloadThrottlingResourceHandler::OnResponseStarted(
   DCHECK(!request_closed_);
   if (request_allowed_)
     return next_handler_->OnResponseStarted(request_id, response);
-  response_ = response;
-  return true;
+
+  NOTREACHED();
+  return false;
 }
 
 bool DownloadThrottlingResourceHandler::OnWillStart(int request_id,
@@ -94,18 +91,8 @@ bool DownloadThrottlingResourceHandler::OnWillRead(int request_id,
   if (request_allowed_)
     return next_handler_->OnWillRead(request_id, buf, buf_size, min_size);
 
-  // We should only have this invoked once, as such we only deal with one
-  // tmp buffer.
-  DCHECK(!tmp_buffer_.get());
-  // If the caller passed a negative |min_size| then chose an appropriate
-  // default. The BufferedResourceHandler requires this to be at least 2 times
-  // the size required for mime detection.
-  if (min_size < 0)
-    min_size = 2 * net::kMaxBytesToSniff;
-  tmp_buffer_ = new net::IOBuffer(min_size);
-  *buf = tmp_buffer_.get();
-  *buf_size = min_size;
-  return true;
+  NOTREACHED();
+  return false;
 }
 
 bool DownloadThrottlingResourceHandler::OnReadCompleted(int request_id,
@@ -114,16 +101,11 @@ bool DownloadThrottlingResourceHandler::OnReadCompleted(int request_id,
   if (!*bytes_read)
     return true;
 
-  if (tmp_buffer_.get()) {
-    DCHECK(!tmp_buffer_length_);
-    tmp_buffer_length_ = *bytes_read;
-    if (request_allowed_)
-      CopyTmpBufferToDownloadHandler();
-    return true;
-  }
   if (request_allowed_)
     return next_handler_->OnReadCompleted(request_id, bytes_read);
-  return true;
+
+  NOTREACHED();
+  return false;
 }
 
 bool DownloadThrottlingResourceHandler::OnResponseCompleted(
@@ -160,29 +142,9 @@ void DownloadThrottlingResourceHandler::ContinueDownload(bool allow) {
 
   request_allowed_ = allow;
   if (allow) {
-    if (response_.get())
-      next_handler_->OnResponseStarted(request_id_, response_.get());
-
-    if (tmp_buffer_length_)
-      CopyTmpBufferToDownloadHandler();
-
     // And let the request continue.
     host_->PauseRequest(render_process_host_id_, request_id_, false);
   } else {
     host_->CancelRequest(render_process_host_id_, request_id_, false);
   }
-}
-
-void DownloadThrottlingResourceHandler::CopyTmpBufferToDownloadHandler() {
-  // Copy over the tmp buffer.
-  net::IOBuffer* buffer;
-  int buf_size;
-  if (next_handler_->OnWillRead(request_id_, &buffer, &buf_size,
-                                tmp_buffer_length_)) {
-    CHECK(buf_size >= tmp_buffer_length_);
-    memcpy(buffer->data(), tmp_buffer_->data(), tmp_buffer_length_);
-    next_handler_->OnReadCompleted(request_id_, &tmp_buffer_length_);
-  }
-  tmp_buffer_length_ = 0;
-  tmp_buffer_ = NULL;
 }

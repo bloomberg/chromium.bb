@@ -64,10 +64,18 @@ class BufferedResourceHandler : public LayeredResourceHandler {
   // loaded.
   bool ShouldDownload(bool* need_plugin_list);
 
-  // Informs the original ResourceHandler |real_handler_| that the response will
-  // be handled entirely by the new ResourceHandler |handler|.
-  // A reference to |handler| is acquired.
-  void UseAlternateResourceHandler(int request_id, ResourceHandler* handler);
+  // Informs the original ResourceHandler |next_handler_| that the response
+  // will be handled entirely by the new ResourceHandler |handler|.  A
+  // reference to |handler| is acquired.  Returns false to indicate an error,
+  // which will result in the request being cancelled.
+  bool UseAlternateResourceHandler(int request_id, ResourceHandler* handler);
+
+  // Forwards any queued events to |next_handler_|.  Returns false to indicate
+  // an error, which will result in the request being cancelled.
+  bool ForwardPendingEventsToNextHandler(int request_id);
+
+  // Copies data from |read_buffer_| to |next_handler_|.
+  void CopyReadBufferToNextHandler(int request_id);
 
   // Called on the IO thread once the list of plugins has been loaded.
   void OnPluginsLoaded(const std::vector<webkit::WebPluginInfo>& plugins);
@@ -82,6 +90,8 @@ class BufferedResourceHandler : public LayeredResourceHandler {
   bool sniff_content_;
   bool wait_for_plugins_;
   bool buffering_;
+  bool next_handler_needs_response_started_;
+  bool next_handler_needs_will_read_;
   bool finished_;
 
   DISALLOW_COPY_AND_ASSIGN(BufferedResourceHandler);
