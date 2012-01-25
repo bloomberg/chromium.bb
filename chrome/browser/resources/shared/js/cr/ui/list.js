@@ -609,8 +609,7 @@ cr.define('cr.ui', function() {
      * We need to
      *  - adjust the cache.
      *  - adjust selection.
-     *  - redraw.
-     *  - scroll the list to show selection.
+     *  - redraw. (called in this.endBatchUpdates())
      *  It is important that the cache adjustment happens before selection model
      *  adjustments.
      * @param {Event} e The 'permuted' event.
@@ -642,9 +641,6 @@ cr.define('cr.ui', function() {
       sm.adjustToReordering(e.permutation);
 
       this.endBatchUpdates();
-
-      if (sm.leadIndex != -1)
-        this.scrollIndexIntoView(sm.leadIndex);
     },
 
     handleDataModelChange_: function(e) {
