@@ -19,8 +19,8 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/site_instance.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/base/animation/slide_animation.h"
@@ -193,8 +193,7 @@ KeyboardWidget::KeyboardWidget()
 
   // Setup the DOM view to host the keyboard.
   Profile* profile = ProfileManager::GetDefaultProfile();
-  dom_view_->Init(profile,
-      SiteInstance::CreateSiteInstanceForURL(profile, keyboard_url_));
+  dom_view_->Init(profile, SiteInstance::CreateForURL(profile, keyboard_url_));
   dom_view_->LoadURL(keyboard_url_);
   dom_view_->SetVisible(true);
   SetContentsView(dom_view_);

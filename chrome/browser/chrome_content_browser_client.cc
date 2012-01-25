@@ -71,12 +71,12 @@
 #include "content/browser/plugin_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/resource_context.h"
-#include "content/browser/site_instance.h"
 #include "content/browser/ssl/ssl_cert_error_handler.h"
 #include "content/browser/ssl/ssl_client_auth_handler.h"
 #include "content/browser/worker_host/worker_process_host.h"
 #include "content/public/browser/browser_main_parts.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "grit/generated_resources.h"
@@ -133,6 +133,7 @@
 
 using content::AccessTokenStore;
 using content::BrowserThread;
+using content::SiteInstance;
 using content::WebContents;
 
 namespace {
@@ -485,20 +486,20 @@ void ChromeContentBrowserClient::SiteInstanceGotProcess(
 
   const Extension* extension =
       service->extensions()->GetExtensionOrAppByURL(ExtensionURLInfo(
-          site_instance->site()));
+          site_instance->GetSite()));
   if (!extension)
     return;
 
   service->process_map()->Insert(extension->id(),
                                  site_instance->GetProcess()->GetID(),
-                                 site_instance->id());
+                                 site_instance->GetId());
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&ExtensionInfoMap::RegisterExtensionProcess,
                  profile->GetExtensionInfoMap(),
                  extension->id(),
                  site_instance->GetProcess()->GetID(),
-                 site_instance->id()));
+                 site_instance->GetId()));
 }
 
 void ChromeContentBrowserClient::SiteInstanceDeleting(
@@ -514,20 +515,20 @@ void ChromeContentBrowserClient::SiteInstanceDeleting(
 
   const Extension* extension =
       service->extensions()->GetExtensionOrAppByURL(
-          ExtensionURLInfo(site_instance->site()));
+          ExtensionURLInfo(site_instance->GetSite()));
   if (!extension)
     return;
 
   service->process_map()->Remove(extension->id(),
                                  site_instance->GetProcess()->GetID(),
-                                 site_instance->id());
+                                 site_instance->GetId());
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&ExtensionInfoMap::UnregisterExtensionProcess,
                  profile->GetExtensionInfoMap(),
                  extension->id(),
                  site_instance->GetProcess()->GetID(),
-                 site_instance->id()));
+                 site_instance->GetId()));
 }
 
 bool ChromeContentBrowserClient::ShouldSwapProcessesForNavigation(
@@ -1346,7 +1347,7 @@ WebPreferences ChromeContentBrowserClient::GetWebkitPrefs(RenderViewHost* rvh) {
   ExtensionService* service = profile->GetExtensionService();
   if (service) {
     const Extension* extension = service->extensions()->GetByID(
-        rvh->site_instance()->site().host());
+        rvh->site_instance()->GetSite().host());
     extension_webkit_preferences::SetPreferences(
         extension, rvh->delegate()->GetRenderViewType(), &web_prefs);
   }

@@ -43,6 +43,7 @@
 
 using content::BrowserThread;
 using content::NavigationController;
+using content::SiteInstance;
 using content::WebContents;
 using testing::_;
 

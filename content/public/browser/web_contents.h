@@ -21,7 +21,6 @@ class InterstitialPage;
 class RenderViewHost;
 class RenderWidgetHostView;
 class SessionStorageNamespace;
-class SiteInstance;
 
 namespace base {
 class PropertyBag;
@@ -44,6 +43,7 @@ class NavigationController;
 class RenderProcessHost;
 class WebContentsDelegate;
 struct RendererPreferences;
+class SiteInstance;
 struct SSLStatus;
 // TODO(jam): of course we will have to rename WebContentsView etc to use
 // WebContents.
@@ -136,7 +136,8 @@ class WebContents : public PageNavigator {
 
   // The max page ID for any page that the given SiteInstance has loaded in
   // this TabContents.
-  virtual int32 GetMaxPageIDForSiteInstance(SiteInstance* site_instance) = 0;
+  virtual int32 GetMaxPageIDForSiteInstance(
+      SiteInstance* site_instance) = 0;
 
   // Returns the SiteInstance associated with the current page.
   virtual SiteInstance* GetSiteInstance() const = 0;

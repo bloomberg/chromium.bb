@@ -23,12 +23,11 @@ typedef struct _GtkToolItem GtkToolItem;
 #endif
 
 class GURL;
-class SiteInstance;
 class TabContents;
 
 namespace content {
-
 class BrowserContext;
+class SiteInstance;
 
 // This represents one window of the Content Shell, i.e. all the UI including
 // buttons and url bar, as well as the web content area.

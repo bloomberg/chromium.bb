@@ -8,8 +8,10 @@
 #import "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
-#include "content/browser/site_instance.h"
+#include "content/public/browser/site_instance.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using content::SiteInstance;
 
 class TabposeWindowTest : public CocoaProfileTest {
  public:
@@ -17,7 +19,7 @@ class TabposeWindowTest : public CocoaProfileTest {
     CocoaProfileTest::SetUp();
     ASSERT_TRUE(profile());
 
-    site_instance_ = SiteInstance::CreateSiteInstance(profile());
+    site_instance_ = SiteInstance::Create(profile());
   }
 
   void AppendTabToStrip() {

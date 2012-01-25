@@ -14,13 +14,13 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_type.h"
 
-class SiteInstance;
 class TabContents;
 struct ViewHostMsg_FrameNavigate_Params;
 
 namespace content {
 class NavigationEntryImpl;
 struct LoadCommittedDetails;
+class SiteInstance;
 }
 
 class CONTENT_EXPORT NavigationControllerImpl
@@ -100,13 +100,14 @@ class CONTENT_EXPORT NavigationControllerImpl
 
   // Return the index of the entry with the corresponding instance and page_id,
   // or -1 if not found.
-  int GetEntryIndexWithPageID(SiteInstance* instance,
+  int GetEntryIndexWithPageID(content::SiteInstance* instance,
                               int32 page_id) const;
 
   // Return the entry with the corresponding instance and page_id, or NULL if
   // not found.
-  content::NavigationEntryImpl* GetEntryWithPageID(SiteInstance* instance,
-                                                   int32 page_id) const;
+  content::NavigationEntryImpl* GetEntryWithPageID(
+      content::SiteInstance* instance,
+      int32 page_id) const;
 
   // Transient entry -----------------------------------------------------------
 

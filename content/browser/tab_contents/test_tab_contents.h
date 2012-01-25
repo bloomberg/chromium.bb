@@ -10,6 +10,7 @@
 #include "content/public/common/page_transition_types.h"
 #include "webkit/glue/webpreferences.h"
 
+class SiteInstanceImpl;
 class TestRenderViewHost;
 
 // Subclass TabContents to ensure it creates TestRenderViewHosts and does
@@ -17,7 +18,7 @@ class TestRenderViewHost;
 class TestTabContents : public TabContents {
  public:
   TestTabContents(content::BrowserContext* browser_context,
-                  SiteInstance* instance);
+                  content::SiteInstance* instance);
   virtual ~TestTabContents();
 
   TestRenderViewHost* pending_rvh() const;
@@ -81,22 +82,24 @@ class TestTabContents : public TabContents {
   // Establish expected arguments for |SetHistoryLengthAndPrune()|. When
   // |SetHistoryLengthAndPrune()| is called, the arguments are compared
   // with the expected arguments specified here.
-  void ExpectSetHistoryLengthAndPrune(const SiteInstance* site_instance,
-                                      int history_length,
-                                      int32 min_page_id);
+  void ExpectSetHistoryLengthAndPrune(
+      const content::SiteInstance* site_instance,
+      int history_length,
+      int32 min_page_id);
 
   // Compares the arguments passed in with the expected arguments passed in
   // to |ExpectSetHistoryLengthAndPrune()|.
-  virtual void SetHistoryLengthAndPrune(const SiteInstance* site_instance,
-                                        int history_length,
-                                        int32 min_page_id) OVERRIDE;
+  virtual void SetHistoryLengthAndPrune(
+      const content::SiteInstance* site_instance,
+      int history_length,
+      int32 min_page_id) OVERRIDE;
 
  private:
   content::RenderViewHostDelegate::View* delegate_view_override_;
 
   // Expectations for arguments of |SetHistoryLengthAndPrune()|.
   bool expect_set_history_length_and_prune_;
-  scoped_refptr<const SiteInstance>
+  scoped_refptr<const SiteInstanceImpl>
     expect_set_history_length_and_prune_site_instance_;
   int expect_set_history_length_and_prune_history_length_;
   int32 expect_set_history_length_and_prune_min_page_id_;

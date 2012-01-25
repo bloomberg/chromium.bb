@@ -9,6 +9,8 @@
 #include "chrome/browser/ui/tabs/dock_info.h"
 #include "ui/gfx/rect.h"
 
+using content::SiteInstance;
+
 TestTabStripModelDelegate::TestTabStripModelDelegate() {
 }
 

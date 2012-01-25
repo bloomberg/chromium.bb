@@ -8,8 +8,9 @@
 
 class GURL;
 class Profile;
-class SiteInstance;
+
 namespace content {
+class SiteInstance;
 class WebContents;
 }
 
@@ -24,9 +25,10 @@ content::WebContents* GetWebContentsByID(int render_process_id,
 // Returns a new SiteInstance for WebUI and app URLs. Returns the SiteInstance
 // for |source_contents| if it represents the same website as |url|. Returns
 // NULL otherwise.
-SiteInstance* GetSiteInstanceForNewTab(content::WebContents* source_contents,
-                                       Profile* profile,
-                                       const GURL& url);
+content::SiteInstance* GetSiteInstanceForNewTab(
+    content::WebContents* source_contents,
+    Profile* profile,
+    const GURL& url);
 
 }  // namespace tab_util
 

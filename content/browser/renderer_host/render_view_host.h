@@ -16,6 +16,7 @@
 #include "base/process_util.h"
 #include "base/values.h"
 #include "content/browser/renderer_host/render_widget_host.h"
+#include "content/browser/site_instance_impl.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/common/stop_find_action.h"
@@ -34,7 +35,6 @@ class FilePath;
 class GURL;
 class PowerSaveBlocker;
 class SessionStorageNamespace;
-class SiteInstance;
 class SkBitmap;
 class ViewMsg_Navigate;
 struct ContextMenuParams;
@@ -139,13 +139,13 @@ class CONTENT_EXPORT RenderViewHost : public RenderWidgetHost {
   // tab contentses to share the same session storage (part of the WebStorage
   // spec) space. This is useful when restoring tabs, but most callers should
   // pass in NULL which will cause a new SessionStorageNamespace to be created.
-  RenderViewHost(SiteInstance* instance,
+  RenderViewHost(content::SiteInstance* instance,
                  content::RenderViewHostDelegate* delegate,
                  int routing_id,
                  SessionStorageNamespace* session_storage_namespace);
   virtual ~RenderViewHost();
 
-  SiteInstance* site_instance() const { return instance_; }
+  content::SiteInstance* site_instance() const { return instance_; }
   content::RenderViewHostDelegate* delegate() const { return delegate_; }
   void set_delegate(content::RenderViewHostDelegate* d) {
     CHECK(d);  // http://crbug.com/82827
@@ -612,7 +612,7 @@ class CONTENT_EXPORT RenderViewHost : public RenderWidgetHost {
   // The SiteInstance associated with this RenderViewHost.  All pages drawn
   // in this RenderViewHost are part of this SiteInstance.  Should not change
   // over time.
-  scoped_refptr<SiteInstance> instance_;
+  scoped_refptr<SiteInstanceImpl> instance_;
 
   // Our delegate, which wants to know about changes in the RenderView.
   content::RenderViewHostDelegate* delegate_;

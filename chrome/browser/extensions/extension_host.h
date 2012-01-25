@@ -31,11 +31,11 @@ class Browser;
 class Extension;
 class PrefsTabHelper;
 class RenderWidgetHostView;
-class SiteInstance;
 struct WebPreferences;
 
 namespace content {
 class RenderProcessHost;
+class SiteInstance;
 }
 
 // This class is the browser component of an extension component's RenderView.
@@ -49,7 +49,8 @@ class ExtensionHost : public content::WebContentsDelegate,
  public:
   class ProcessCreationQueue;
 
-  ExtensionHost(const Extension* extension, SiteInstance* site_instance,
+  ExtensionHost(const Extension* extension,
+                content::SiteInstance* site_instance,
                 const GURL& url, content::ViewType host_type);
   virtual ~ExtensionHost();
 

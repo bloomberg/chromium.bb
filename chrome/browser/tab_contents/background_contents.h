@@ -16,7 +16,10 @@
 #include "webkit/glue/window_open_disposition.h"
 
 class Profile;
+
+namespace content {
 class SiteInstance;
+};
 
 // This class consumes TabContents. It can host a renderer, but does not
 // have any visible display.
@@ -38,7 +41,7 @@ class BackgroundContents : public content::WebContentsDelegate,
     virtual ~Delegate() {}
   };
 
-  BackgroundContents(SiteInstance* site_instance,
+  BackgroundContents(content::SiteInstance* site_instance,
                      int routing_id,
                      Delegate* delegate);
   virtual ~BackgroundContents();

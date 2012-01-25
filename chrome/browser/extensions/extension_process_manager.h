@@ -22,7 +22,10 @@ class ExtensionHost;
 class GURL;
 class Profile;
 class RenderViewHost;
+
+namespace content {
 class SiteInstance;
+};
 
 // Manages dynamic state of running Chromium extensions. There is one instance
 // of this class per Profile. OTR Profiles have a separate instance that keeps
@@ -69,7 +72,7 @@ class ExtensionProcessManager : public content::NotificationObserver {
   // Returns the SiteInstance that the given URL belongs to.
   // TODO(aa): This only returns correct results for extensions and packaged
   // apps, not hosted apps.
-  virtual SiteInstance* GetSiteInstanceForURL(const GURL& url);
+  virtual content::SiteInstance* GetSiteInstanceForURL(const GURL& url);
 
   // Registers a RenderViewHost as hosting a given extension.
   void RegisterRenderViewHost(RenderViewHost* render_view_host,
@@ -124,7 +127,7 @@ class ExtensionProcessManager : public content::NotificationObserver {
   // A SiteInstance related to the SiteInstance for all extensions in
   // this profile.  We create it in such a way that a new
   // browsing instance is created.  This controls process grouping.
-  scoped_refptr<SiteInstance> site_instance_;
+  scoped_refptr<content::SiteInstance> site_instance_;
 
  private:
   // Contains all extension-related RenderViewHost instances for all extensions.

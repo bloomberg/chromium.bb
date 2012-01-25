@@ -22,17 +22,18 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/site_instance.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host_delegate.h"
+#include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/renderer_preferences.h"
 
 using content::BrowserThread;
 using content::OpenURLParams;
 using content::Referrer;
+using content::SiteInstance;
 
 namespace {
 
@@ -94,7 +95,7 @@ ExtensionProcessManager* ExtensionProcessManager::Create(Profile* profile) {
 }
 
 ExtensionProcessManager::ExtensionProcessManager(Profile* profile)
-    : site_instance_(SiteInstance::CreateSiteInstance(profile)) {
+    : site_instance_(SiteInstance::Create(profile)) {
   Profile* original_profile = profile->GetOriginalProfile();
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSIONS_READY,
                  content::Source<Profile>(original_profile));
@@ -280,7 +281,8 @@ void ExtensionProcessManager::UnregisterRenderViewHost(
   all_extension_views_.erase(render_view_host);
 }
 
-SiteInstance* ExtensionProcessManager::GetSiteInstanceForURL(const GURL& url) {
+SiteInstance* ExtensionProcessManager::GetSiteInstanceForURL(
+    const GURL& url) {
   return site_instance_->GetRelatedSiteInstance(url);
 }
 
@@ -303,7 +305,7 @@ bool ExtensionProcessManager::HasVisibleViews(const std::string& extension_id) {
   for (std::set<RenderViewHost*>::const_iterator it = views.begin();
        it != views.end(); ++it) {
     const RenderViewHost* host = *it;
-    if (host->site_instance()->site().host() == extension_id &&
+    if (host->site_instance()->GetSite().host() == extension_id &&
         host->delegate()->GetRenderViewType() !=
         chrome::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE) {
       return true;

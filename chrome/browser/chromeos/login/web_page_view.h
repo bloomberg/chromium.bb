@@ -16,6 +16,7 @@
 class Profile;
 
 namespace content {
+class SiteInstance;
 class WebContentsDelegate;
 }
 
@@ -50,7 +51,7 @@ class WebPageView : public views::View {
 
   // Initialize the DOM view, creating the contents. This should be
   // called once the view has been added to a container.
-  void InitDOM(Profile* profile, SiteInstance* site_instance);
+  void InitDOM(Profile* profile, content::SiteInstance* site_instance);
 
   // Loads the given URL into the page.
   // You must have previously called Init() and SetWebContentsDelegate.

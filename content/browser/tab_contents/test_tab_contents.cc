@@ -10,7 +10,7 @@
 #include "content/browser/renderer_host/mock_render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
-#include "content/browser/site_instance.h"
+#include "content/browser/site_instance_impl.h"
 #include "content/browser/tab_contents/navigation_entry_impl.h"
 #include "content/common/view_messages.h"
 #include "content/public/common/page_transition_types.h"
@@ -18,6 +18,7 @@
 #include "webkit/forms/password_form.h"
 
 using content::NavigationEntry;
+using content::SiteInstance;
 using content::WebContents;
 
 TestTabContents::TestTabContents(content::BrowserContext* browser_context,
@@ -86,7 +87,7 @@ bool TestTabContents::CreateRenderViewForRenderManager(
 WebContents* TestTabContents::Clone() {
   TabContents* tc = new TestTabContents(
       GetBrowserContext(),
-      SiteInstance::CreateSiteInstance(GetBrowserContext()));
+      SiteInstance::Create(GetBrowserContext()));
   tc->GetControllerImpl().CopyStateFrom(controller_);
   return tc;
 }
@@ -148,13 +149,15 @@ void TestTabContents::ExpectSetHistoryLengthAndPrune(
     int history_length,
     int32 min_page_id) {
   expect_set_history_length_and_prune_ = true;
-  expect_set_history_length_and_prune_site_instance_ = site_instance;
+  expect_set_history_length_and_prune_site_instance_ =
+      static_cast<const SiteInstanceImpl*>(site_instance);
   expect_set_history_length_and_prune_history_length_ = history_length;
   expect_set_history_length_and_prune_min_page_id_ = min_page_id;
 }
 
 void TestTabContents::SetHistoryLengthAndPrune(
-    const SiteInstance* site_instance, int history_length, int32 min_page_id) {
+    const SiteInstance* site_instance, int history_length,
+    int32 min_page_id) {
   EXPECT_TRUE(expect_set_history_length_and_prune_);
   expect_set_history_length_and_prune_ = false;
   EXPECT_EQ(expect_set_history_length_and_prune_site_instance_, site_instance);

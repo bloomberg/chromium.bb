@@ -148,7 +148,6 @@
 #include "content/browser/child_process_security_policy.h"
 #include "content/browser/host_zoom_map.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/site_instance.h"
 #include "content/browser/tab_contents/interstitial_page.h"
 #include "content/public/browser/devtools_manager.h"
 #include "content/public/browser/download_item.h"
@@ -159,6 +158,7 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/plugin_service.h"
+#include "content/public/browser/site_instance.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
@@ -221,6 +221,7 @@ using content::NavigationEntry;
 using content::OpenURLParams;
 using content::PluginService;
 using content::Referrer;
+using content::SiteInstance;
 using content::SSLStatus;
 using content::UserMetricsAction;
 using content::WebContents;

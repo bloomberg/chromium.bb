@@ -14,10 +14,10 @@ class Browser;
 class DockInfo;
 class GURL;
 class Profile;
-class SiteInstance;
 class TabContents;
 class TabContentsWrapper;
 namespace content {
+class SiteInstance;
 struct Referrer;
 }
 namespace gfx {
@@ -72,7 +72,7 @@ class TabStripModelDelegate {
       Profile* profile,
       content::PageTransition transition,
       bool defer_load,
-      SiteInstance* instance) const = 0;
+      content::SiteInstance* instance) const = 0;
 
   // Returns whether some contents can be duplicated.
   virtual bool CanDuplicateContentsAt(int index) = 0;

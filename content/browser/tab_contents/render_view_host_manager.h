@@ -9,7 +9,7 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "content/browser/site_instance.h"
+#include "content/browser/site_instance_impl.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -101,7 +101,7 @@ class CONTENT_EXPORT RenderViewHostManager
 
   // For arguments, see TabContents constructor.
   void Init(content::BrowserContext* browser_context,
-            SiteInstance* site_instance,
+            content::SiteInstance* site_instance,
             int routing_id);
 
   // Returns the currently active RenderViewHost.
@@ -220,14 +220,14 @@ class CONTENT_EXPORT RenderViewHostManager
   // Returns an appropriate SiteInstance object for the given NavigationEntry,
   // possibly reusing the current SiteInstance.
   // Never called if --process-per-tab is used.
-  SiteInstance* GetSiteInstanceForEntry(
+  content::SiteInstance* GetSiteInstanceForEntry(
       const content::NavigationEntryImpl& entry,
-      SiteInstance* curr_instance);
+      content::SiteInstance* curr_instance);
 
   // Helper method to create a pending RenderViewHost for a cross-site
   // navigation.
   bool CreatePendingRenderView(const content::NavigationEntryImpl& entry,
-                               SiteInstance* instance);
+                               content::SiteInstance* instance);
 
   // Sets up the necessary state for a new RenderViewHost navigating to the
   // given entry.

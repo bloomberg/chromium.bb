@@ -10,12 +10,14 @@
 #include "base/platform_file.h"
 #include "base/stl_util.h"
 #include "base/string_util.h"
+#include "content/browser/site_instance_impl.h"
 #include "content/public/browser/content_browser_client.h"
-#include "content/browser/site_instance.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/url_constants.h"
 #include "googleurl/src/gurl.h"
 #include "net/url_request/url_request.h"
+
+using content::SiteInstance;
 
 static const int kReadFilePermissions =
     base::PLATFORM_FILE_OPEN |
@@ -103,7 +105,7 @@ class ChildProcessSecurityPolicy::SecurityState {
   bool CanUseCookiesForOrigin(const GURL& gurl) {
     if (origin_lock_.is_empty())
       return true;
-    GURL site_gurl = SiteInstance::GetSiteForURL(NULL, gurl);
+    GURL site_gurl = SiteInstanceImpl::GetSiteForURL(NULL, gurl);
     return origin_lock_ == site_gurl;
   }
 
@@ -478,7 +480,7 @@ bool ChildProcessSecurityPolicy::CanUseCookiesForOrigin(int child_id,
 
 void ChildProcessSecurityPolicy::LockToOrigin(int child_id, const GURL& gurl) {
   // "gurl" can be currently empty in some cases, such as file://blah.
-  DCHECK(SiteInstance::GetSiteForURL(NULL, gurl) == gurl);
+  DCHECK(SiteInstanceImpl::GetSiteForURL(NULL, gurl) == gurl);
   base::AutoLock lock(lock_);
   SecurityStateMap::iterator state = security_state_.find(child_id);
   DCHECK(state != security_state_.end());

@@ -5,7 +5,7 @@
 #include "base/string16.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "content/browser/site_instance.h"
+#include "content/browser/site_instance_impl.h"
 #include "content/browser/tab_contents/navigation_entry_impl.h"
 #include "content/public/browser/ssl_status.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -20,7 +20,7 @@ class NavigationEntryTest : public testing::Test {
   virtual void SetUp() {
     entry1_.reset(new NavigationEntryImpl);
 
-    instance_ = SiteInstance::CreateSiteInstance(NULL);
+    instance_ = static_cast<SiteInstanceImpl*>(SiteInstance::Create(NULL));
     entry2_.reset(new NavigationEntryImpl(
           instance_, 3,
           GURL("test:url"),
@@ -37,7 +37,7 @@ class NavigationEntryTest : public testing::Test {
   scoped_ptr<NavigationEntryImpl> entry1_;
   scoped_ptr<NavigationEntryImpl> entry2_;
   // SiteInstances are deleted when their NavigationEntries are gone.
-  SiteInstance* instance_;
+  SiteInstanceImpl* instance_;
 };
 
 // Test unique ID accessors

@@ -19,7 +19,10 @@
 
 class Balloon;
 class Browser;
+
+namespace content {
 class SiteInstance;
+};
 
 class BalloonHost : public content::WebContentsDelegate,
                     public content::WebContentsObserver,
@@ -89,7 +92,7 @@ class BalloonHost : public content::WebContentsDelegate,
   bool should_notify_on_disconnect_;
 
   // Site instance for the balloon/profile, to be used for opening new links.
-  scoped_refptr<SiteInstance> site_instance_;
+  scoped_refptr<content::SiteInstance> site_instance_;
 
   // A flag to enable Web UI.
   bool enable_web_ui_;

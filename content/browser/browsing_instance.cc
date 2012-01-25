@@ -6,12 +6,14 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "content/browser/site_instance.h"
+#include "content/browser/site_instance_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/web_ui_factory.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
+
+using content::SiteInstance;
 
 // static
 base::LazyInstance<
@@ -56,8 +58,8 @@ bool BrowsingInstance::ShouldUseProcessPerSite(const GURL& url) {
 
 BrowsingInstance::SiteInstanceMap* BrowsingInstance::GetSiteInstanceMap(
     content::BrowserContext* browser_context, const GURL& url) {
-  if (!ShouldUseProcessPerSite(SiteInstance::GetEffectiveURL(browser_context,
-                                                             url))) {
+  if (!ShouldUseProcessPerSite(
+      SiteInstanceImpl::GetEffectiveURL(browser_context, url))) {
     // Not using process-per-site, so use a map specific to this instance.
     return &site_instance_map_;
   }
@@ -69,7 +71,7 @@ BrowsingInstance::SiteInstanceMap* BrowsingInstance::GetSiteInstanceMap(
 
 bool BrowsingInstance::HasSiteInstance(const GURL& url) {
   std::string site =
-      SiteInstance::GetSiteForURL(browser_context_, url)
+      SiteInstanceImpl::GetSiteForURL(browser_context_, url)
           .possibly_invalid_spec();
 
   SiteInstanceMap* map = GetSiteInstanceMap(browser_context_, url);
@@ -79,7 +81,7 @@ bool BrowsingInstance::HasSiteInstance(const GURL& url) {
 
 SiteInstance* BrowsingInstance::GetSiteInstanceForURL(const GURL& url) {
   std::string site =
-      SiteInstance::GetSiteForURL(browser_context_, url)
+      SiteInstanceImpl::GetSiteForURL(browser_context_, url)
           .possibly_invalid_spec();
 
   SiteInstanceMap* map = GetSiteInstanceMap(browser_context_, url);
@@ -89,7 +91,7 @@ SiteInstance* BrowsingInstance::GetSiteInstanceForURL(const GURL& url) {
   }
 
   // No current SiteInstance for this site, so let's create one.
-  SiteInstance* instance = new SiteInstance(this);
+  SiteInstanceImpl* instance = new SiteInstanceImpl(this);
 
   // Set the site of this new SiteInstance, which will register it with us.
   instance->SetSite(url);
@@ -97,9 +99,10 @@ SiteInstance* BrowsingInstance::GetSiteInstanceForURL(const GURL& url) {
 }
 
 void BrowsingInstance::RegisterSiteInstance(SiteInstance* site_instance) {
-  DCHECK(site_instance->browsing_instance_ == this);
-  DCHECK(site_instance->has_site());
-  std::string site = site_instance->site().possibly_invalid_spec();
+  DCHECK(static_cast<SiteInstanceImpl*>(site_instance)->
+         browsing_instance_ == this);
+  DCHECK(static_cast<SiteInstanceImpl*>(site_instance)->HasSite());
+  std::string site = site_instance->GetSite().possibly_invalid_spec();
 
   // Only register if we don't have a SiteInstance for this site already.
   // It's possible to have two SiteInstances point to the same site if two
@@ -107,7 +110,7 @@ void BrowsingInstance::RegisterSiteInstance(SiteInstance* site_instance) {
   // register them until DidNavigate.)  If there is a previously existing
   // SiteInstance for this site, we just won't register the new one.
   SiteInstanceMap* map = GetSiteInstanceMap(browser_context_,
-                                            site_instance->site());
+                                            site_instance->GetSite());
   SiteInstanceMap::iterator i = map->find(site);
   if (i == map->end()) {
     // Not previously registered, so register it.
@@ -116,9 +119,10 @@ void BrowsingInstance::RegisterSiteInstance(SiteInstance* site_instance) {
 }
 
 void BrowsingInstance::UnregisterSiteInstance(SiteInstance* site_instance) {
-  DCHECK(site_instance->browsing_instance_ == this);
-  DCHECK(site_instance->has_site());
-  std::string site = site_instance->site().possibly_invalid_spec();
+  DCHECK(static_cast<SiteInstanceImpl*>(site_instance)->
+         browsing_instance_ == this);
+  DCHECK(static_cast<SiteInstanceImpl*>(site_instance)->HasSite());
+  std::string site = site_instance->GetSite().possibly_invalid_spec();
 
   // Only unregister the SiteInstance if it is the same one that is registered
   // for the site.  (It might have been an unregistered SiteInstance.  See the
@@ -139,9 +143,10 @@ void BrowsingInstance::UnregisterSiteInstance(SiteInstance* site_instance) {
   }
 }
 
-bool BrowsingInstance::RemoveSiteInstanceFromMap(SiteInstanceMap* map,
-                                                 const std::string& site,
-                                                 SiteInstance* site_instance) {
+bool BrowsingInstance::RemoveSiteInstanceFromMap(
+    SiteInstanceMap* map,
+    const std::string& site,
+    SiteInstance* site_instance) {
   SiteInstanceMap::iterator i = map->find(site);
   if (i != map->end() && i->second == site_instance) {
     // Matches, so erase it.

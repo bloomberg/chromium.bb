@@ -13,6 +13,7 @@
 #include "chrome/browser/chromeos/login/rounded_rect_painter.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/browser/child_process_security_policy.h"
+#include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/bindings_policy.h"
@@ -29,6 +30,7 @@
 #include "ui/views/controls/throbber.h"
 
 using base::TimeDelta;
+using content::SiteInstance;
 using views::Label;
 using views::View;
 

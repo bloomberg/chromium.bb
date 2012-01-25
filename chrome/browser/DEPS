@@ -112,7 +112,6 @@ include_rules = [
   "+content/browser/renderer_host/test_render_view_host.h",
   "+content/browser/resource_context.h",
   "+content/browser/sensors/sensors_provider.h",
-  "+content/browser/site_instance.h",
   "+content/browser/speech/speech_input_manager.h",
   "+content/browser/speech/speech_input_preferences.h",
   "+content/browser/speech/speech_recognizer.h",

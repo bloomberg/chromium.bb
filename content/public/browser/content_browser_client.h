@@ -23,7 +23,6 @@ class PluginProcessHost;
 class QuotaPermissionContext;
 class RenderViewHost;
 class ResourceDispatcherHost;
-class SiteInstance;
 class SSLCertErrorHandler;
 class SSLClientAuthHandler;
 class SkBitmap;
@@ -34,6 +33,7 @@ namespace content {
 class AccessTokenStore;
 class BrowserMainParts;
 class RenderProcessHost;
+class SiteInstance;
 class WebContents;
 class WebContentsView;
 struct MainFunctionParams;
@@ -123,10 +123,11 @@ class ContentBrowserClient {
                               const GURL& site_url) = 0;
 
   // Called when a site instance is first associated with a process.
-  virtual void SiteInstanceGotProcess(SiteInstance* site_instance) = 0;
+  virtual void SiteInstanceGotProcess(
+      content::SiteInstance* site_instance) = 0;
 
   // Called from a site instance's destructor.
-  virtual void SiteInstanceDeleting(SiteInstance* site_instance) = 0;
+  virtual void SiteInstanceDeleting(content::SiteInstance* site_instance) = 0;
 
   // Returns true if for the navigation from |current_url| to |new_url|,
   // processes should be swapped (even if we are in a process model that

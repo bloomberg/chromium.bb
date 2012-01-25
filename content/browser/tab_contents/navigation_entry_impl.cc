@@ -6,11 +6,12 @@
 
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "content/browser/site_instance.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/net_util.h"
 #include "ui/base/text/text_elider.h"
+
+using content::SiteInstance;
 
 // Use this to get a new unique ID for a NavigationEntry during construction.
 // The returned ID is guaranteed to be nonzero (which is the "no ID" indicator).
@@ -46,7 +47,7 @@ NavigationEntryImpl::NavigationEntryImpl()
       is_renderer_initiated_(false) {
 }
 
-NavigationEntryImpl::NavigationEntryImpl(SiteInstance* instance,
+NavigationEntryImpl::NavigationEntryImpl(SiteInstanceImpl* instance,
                                          int page_id,
                                          const GURL& url,
                                          const Referrer& referrer,
@@ -129,7 +130,7 @@ int32 NavigationEntryImpl::GetPageID() const {
   return page_id_;
 }
 
-void NavigationEntryImpl::set_site_instance(SiteInstance* site_instance) {
+void NavigationEntryImpl::set_site_instance(SiteInstanceImpl* site_instance) {
   site_instance_ = site_instance;
 }
 

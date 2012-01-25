@@ -12,7 +12,7 @@
 #include "base/string_util.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/site_instance.h"
+#include "content/browser/site_instance_impl.h"
 #include "content/browser/ssl/ssl_cert_error_handler.h"
 #include "content/browser/ssl/ssl_request_info.h"
 #include "content/browser/tab_contents/navigation_entry_impl.h"
@@ -25,6 +25,7 @@
 #include "webkit/glue/resource_type.h"
 
 using content::NavigationEntryImpl;
+using content::SiteInstance;
 using content::SSLStatus;
 
 namespace {

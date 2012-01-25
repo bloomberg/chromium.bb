@@ -774,7 +774,7 @@ class Browser : public TabHandlerDelegate,
   // all its supporting objects and observers.
   static TabContentsWrapper*
       TabContentsFactory(Profile* profile,
-                         SiteInstance* site_instance,
+                         content::SiteInstance* site_instance,
                          int routing_id,
                          const content::WebContents* base_web_contents,
                          SessionStorageNamespace* session_storage_namespace);
@@ -800,7 +800,7 @@ class Browser : public TabHandlerDelegate,
       Profile* profile,
       content::PageTransition transition,
       bool defer_load,
-      SiteInstance* instance) const;
+      content::SiteInstance* instance) const;
   virtual bool CanDuplicateContentsAt(int index);
   virtual void DuplicateContentsAt(int index);
   virtual void CloseFrameAfterDragSession();
@@ -1293,7 +1293,7 @@ class Browser : public TabHandlerDelegate,
   // Creates a BackgroundContents if appropriate; return true if one was
   // created.
   bool MaybeCreateBackgroundContents(int route_id,
-                                     SiteInstance* site,
+                                     content::SiteInstance* site,
                                      const GURL& opener_url,
                                      const string16& frame_name);
 

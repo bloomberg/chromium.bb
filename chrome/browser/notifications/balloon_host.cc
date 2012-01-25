@@ -16,17 +16,18 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/common/chrome_view_type.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/site_instance.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/renderer_preferences.h"
 #include "ipc/ipc_message.h"
 #include "webkit/glue/webpreferences.h"
 
+using content::SiteInstance;
 using content::WebContents;
 
 BalloonHost::BalloonHost(Balloon* balloon)
@@ -36,7 +37,7 @@ BalloonHost::BalloonHost(Balloon* balloon)
       enable_web_ui_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(
           extension_function_dispatcher_(balloon_->profile(), this)) {
-  site_instance_ = SiteInstance::CreateSiteInstanceForURL(
+  site_instance_ = SiteInstance::CreateForURL(
       balloon_->profile(), balloon_->notification().content_url());
 }
 

@@ -8,7 +8,7 @@
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
-#include "content/browser/site_instance.h"
+#include "content/browser/site_instance_impl.h"
 #include "content/browser/tab_contents/interstitial_page.h"
 #include "content/browser/tab_contents/navigation_entry_impl.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
@@ -29,6 +29,7 @@
 using content::BrowserThread;
 using content::NavigationEntry;
 using content::NavigationEntryImpl;
+using content::SiteInstance;
 using content::WebContents;
 using content::WebUIController;
 using webkit::forms::PasswordForm;
@@ -168,7 +169,7 @@ class TestInterstitialPage : public InterstitialPage {
  protected:
   virtual RenderViewHost* CreateRenderViewHost() {
     return new TestRenderViewHost(
-        SiteInstance::CreateSiteInstance(tab()->GetBrowserContext()),
+        SiteInstance::Create(tab()->GetBrowserContext()),
         this, MSG_ROUTING_NONE);
   }
 
@@ -278,7 +279,7 @@ TEST_F(TabContentsTest, NTPViewSource) {
 // Test to ensure UpdateMaxPageID is working properly.
 TEST_F(TabContentsTest, UpdateMaxPageID) {
   SiteInstance* instance1 = contents()->GetSiteInstance();
-  scoped_refptr<SiteInstance> instance2(SiteInstance::CreateSiteInstance(NULL));
+  scoped_refptr<SiteInstance> instance2(SiteInstance::Create(NULL));
 
   // Starts at -1.
   EXPECT_EQ(-1, contents()->GetMaxPageID());

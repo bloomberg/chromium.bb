@@ -14,7 +14,7 @@
 #include "content/browser/child_process_security_policy.h"
 #include "content/browser/in_process_webkit/session_storage_namespace.h"
 #include "content/browser/renderer_host/render_view_host.h"  // Temporary
-#include "content/browser/site_instance.h"
+#include "content/browser/site_instance_impl.h"
 #include "content/browser/tab_contents/interstitial_page.h"
 #include "content/browser/tab_contents/navigation_entry_impl.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -37,6 +37,7 @@ using content::GlobalRequestID;
 using content::NavigationController;
 using content::NavigationEntry;
 using content::NavigationEntryImpl;
+using content::SiteInstance;
 using content::UserMetricsAction;
 using content::WebContents;
 
@@ -291,7 +292,7 @@ bool NavigationControllerImpl::IsInitialNavigation() {
 }
 
 NavigationEntryImpl* NavigationControllerImpl::GetEntryWithPageID(
-    SiteInstance* instance, int32 page_id) const {
+  SiteInstance* instance, int32 page_id) const {
   int index = GetEntryIndexWithPageID(instance, page_id);
   return (index != -1) ? entries_[index].get() : NULL;
 }
@@ -724,7 +725,7 @@ content::NavigationType NavigationControllerImpl::ClassifyNavigation(
       temp.append(base::IntToString(entries_[i]->GetPageID()));
       temp.append("_");
       if (entries_[i]->site_instance())
-        temp.append(base::IntToString(entries_[i]->site_instance()->id()));
+        temp.append(base::IntToString(entries_[i]->site_instance()->GetId()));
       else
         temp.append("N");
       if (entries_[i]->site_instance() != tab_contents_->GetSiteInstance())
@@ -813,7 +814,8 @@ void NavigationControllerImpl::RendererDidNavigateToNewPage(
   new_entry->SetReferrer(params.referrer);
   new_entry->SetPageID(params.page_id);
   new_entry->SetTransitionType(params.transition);
-  new_entry->set_site_instance(tab_contents_->GetSiteInstance());
+  new_entry->set_site_instance(
+      static_cast<SiteInstanceImpl*>(tab_contents_->GetSiteInstance()));
   new_entry->SetHasPostData(params.is_post);
 
   InsertOrReplaceEntry(new_entry, *did_replace_entry);
@@ -841,7 +843,8 @@ void NavigationControllerImpl::RendererDidNavigateToExistingPage(
     UpdateVirtualURLToURL(entry, params.url);
   DCHECK(entry->site_instance() == NULL ||
          entry->site_instance() == tab_contents_->GetSiteInstance());
-  entry->set_site_instance(tab_contents_->GetSiteInstance());
+  entry->set_site_instance(
+      static_cast<SiteInstanceImpl*>(tab_contents_->GetSiteInstance()));
 
   entry->SetHasPostData(params.is_post);
 
@@ -1248,7 +1251,8 @@ void NavigationControllerImpl::NavigateToPendingEntry(ReloadType reload_type) {
   // navigations to restored entries in TabContents::OnGoToEntryAtOffset.
   if (pending_entry_ && !pending_entry_->site_instance() &&
       pending_entry_->restore_type() != NavigationEntryImpl::RESTORE_NONE) {
-    pending_entry_->set_site_instance(tab_contents_->GetPendingSiteInstance());
+    pending_entry_->set_site_instance(static_cast<SiteInstanceImpl*>(
+        tab_contents_->GetPendingSiteInstance()));
     pending_entry_->set_restore_type(NavigationEntryImpl::RESTORE_NONE);
   }
 }

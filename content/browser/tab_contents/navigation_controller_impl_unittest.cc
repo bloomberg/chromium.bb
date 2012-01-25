@@ -17,7 +17,7 @@
 //  #include "chrome/browser/sessions/session_service_test_helper.h"
 //  #include "chrome/browser/sessions/session_types.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
-#include "content/browser/site_instance.h"
+#include "content/browser/site_instance_impl.h"
 #include "content/browser/tab_contents/navigation_controller_impl.h"
 #include "content/browser/tab_contents/navigation_entry_impl.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -37,6 +37,7 @@ using base::Time;
 using content::NavigationController;
 using content::NavigationEntry;
 using content::NavigationEntryImpl;
+using content::SiteInstance;
 using content::WebContents;
 
 // NavigationControllerTest ----------------------------------------------------
@@ -760,8 +761,9 @@ TEST_F(NavigationControllerTest, Back_OtherBackPending) {
 
   // We know all the entries have the same site instance, so we can just grab
   // a random one for looking up other entries.
-  SiteInstance* site_instance = NavigationEntryImpl::FromNavigationEntry(
-      controller.GetLastCommittedEntry())->site_instance();
+  SiteInstance* site_instance =
+      NavigationEntryImpl::FromNavigationEntry(
+          controller.GetLastCommittedEntry())->site_instance();
 
   // That second URL should be the last committed and it should have gotten the
   // new title.
@@ -1578,7 +1580,7 @@ TEST_F(NavigationControllerTest, RestoreNavigate) {
   EXPECT_EQ(url,
             NavigationEntryImpl::FromNavigationEntry(
                 our_controller.GetLastCommittedEntry())->site_instance()->
-                    site());
+                    GetSite());
   EXPECT_EQ(NavigationEntryImpl::RESTORE_NONE,
             NavigationEntryImpl::FromNavigationEntry(
                 our_controller.GetEntryAtIndex(0))->restore_type());
@@ -1658,7 +1660,7 @@ TEST_F(NavigationControllerTest, RestoreNavigateAfterFailure) {
   EXPECT_EQ(url,
             NavigationEntryImpl::FromNavigationEntry(
                 our_controller.GetLastCommittedEntry())->site_instance()->
-                    site());
+                    GetSite());
   EXPECT_EQ(NavigationEntryImpl::RESTORE_NONE,
             NavigationEntryImpl::FromNavigationEntry(
                 our_controller.GetEntryAtIndex(0))->restore_type());

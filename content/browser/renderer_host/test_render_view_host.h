@@ -21,13 +21,13 @@ namespace content {
 class BrowserContext;
 class NavigationController;
 class RenderProcessHostFactory;
+class SiteInstance;
 }
 
 namespace gfx {
 class Rect;
 }
 
-class SiteInstance;
 class TestTabContents;
 struct ViewHostMsg_FrameNavigate_Params;
 
@@ -175,7 +175,7 @@ class TestRenderViewHost : public RenderViewHost {
   static TestRenderViewHost* GetPendingForController(
       content::NavigationController* controller);
 
-  TestRenderViewHost(SiteInstance* instance,
+  TestRenderViewHost(content::SiteInstance* instance,
                      content::RenderViewHostDelegate* delegate,
                      int routing_id);
   virtual ~TestRenderViewHost();
@@ -276,7 +276,7 @@ class TestRenderViewHostFactory : public RenderViewHostFactory {
   virtual void set_render_process_host_factory(
       content::RenderProcessHostFactory* rph_factory);
   virtual RenderViewHost* CreateRenderViewHost(
-      SiteInstance* instance,
+      content::SiteInstance* instance,
       content::RenderViewHostDelegate* delegate,
       int routing_id,
       SessionStorageNamespace* session_storage) OVERRIDE;

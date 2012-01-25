@@ -34,9 +34,9 @@
 #include "chrome/common/pref_names.h"
 #include "content/browser/child_process_security_policy.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/site_instance.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
@@ -50,6 +50,7 @@
 #include "webkit/fileapi/file_system_util.h"
 
 using content::BrowserThread;
+using content::SiteInstance;
 using content::WebContents;
 
 namespace {
@@ -729,7 +730,8 @@ class ExecuteTasksFileBrowserFunction::ExecuteTasksFileSystemCallbackDispatcher
         Extension::GetBaseURLFromExtensionId(target_extension_id_);
     ExtensionProcessManager* manager = profile_->GetExtensionProcessManager();
 
-    SiteInstance* site_instance = manager->GetSiteInstanceForURL(extension_url);
+    SiteInstance* site_instance = manager->GetSiteInstanceForURL(
+        extension_url);
     if (!site_instance || !site_instance->HasProcess())
       return;
     content::RenderProcessHost* process = site_instance->GetProcess();

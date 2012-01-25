@@ -6,7 +6,7 @@
 #include "content/browser/browser_url_handler.h"
 #include "content/browser/mock_content_browser_client.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
-#include "content/browser/site_instance.h"
+#include "content/browser/site_instance_impl.h"
 #include "content/browser/tab_contents/navigation_controller_impl.h"
 #include "content/browser/tab_contents/navigation_entry_impl.h"
 #include "content/browser/tab_contents/render_view_host_manager.h"
@@ -31,6 +31,7 @@ using content::BrowserThreadImpl;
 using content::NavigationController;
 using content::NavigationEntry;
 using content::NavigationEntryImpl;
+using content::SiteInstance;
 using content::WebContents;
 using content::WebUIController;
 
@@ -198,8 +199,10 @@ TEST_F(RenderViewHostManagerTest, NewTabPageProcesses) {
   // The two RVH's should be different in every way.
   EXPECT_NE(active_rvh()->process(), dest_rvh2->process());
   EXPECT_NE(active_rvh()->site_instance(), dest_rvh2->site_instance());
-  EXPECT_NE(active_rvh()->site_instance()->browsing_instance_,
-            dest_rvh2->site_instance()->browsing_instance_);
+  EXPECT_NE(static_cast<SiteInstanceImpl*>(active_rvh()->site_instance())->
+                browsing_instance_,
+            static_cast<SiteInstanceImpl*>(dest_rvh2->site_instance())->
+                browsing_instance_);
 
   // Navigate both to the new tab page, and verify that they share a
   // SiteInstance.
@@ -272,8 +275,9 @@ TEST_F(RenderViewHostManagerTest, AlwaysSendEnableViewSourceMode) {
 // Tests the Init function by checking the initial RenderViewHost.
 TEST_F(RenderViewHostManagerTest, Init) {
   // Using TestBrowserContext.
-  SiteInstance* instance = SiteInstance::CreateSiteInstance(browser_context());
-  EXPECT_FALSE(instance->has_site());
+  SiteInstanceImpl* instance =
+      static_cast<SiteInstanceImpl*>(SiteInstance::Create(browser_context()));
+  EXPECT_FALSE(instance->HasSite());
 
   TestTabContents tab_contents(browser_context(), instance);
   RenderViewHostManager manager(&tab_contents, &tab_contents);
@@ -293,7 +297,7 @@ TEST_F(RenderViewHostManagerTest, Init) {
 TEST_F(RenderViewHostManagerTest, Navigate) {
   TestNotificationTracker notifications;
 
-  SiteInstance* instance = SiteInstance::CreateSiteInstance(browser_context());
+  SiteInstance* instance = SiteInstance::Create(browser_context());
 
   TestTabContents tab_contents(browser_context(), instance);
   notifications.ListenFor(
@@ -325,8 +329,9 @@ TEST_F(RenderViewHostManagerTest, Navigate) {
   // Commit to SiteInstance should be delayed until RenderView commit.
   EXPECT_TRUE(host == manager.current_host());
   ASSERT_TRUE(host);
-  EXPECT_FALSE(host->site_instance()->has_site());
-  host->site_instance()->SetSite(kUrl1);
+  EXPECT_FALSE(static_cast<SiteInstanceImpl*>(host->site_instance())->
+      HasSite());
+  static_cast<SiteInstanceImpl*>(host->site_instance())->SetSite(kUrl1);
 
   // 2) Navigate to next site. -------------------------
   const GURL kUrl2("http://www.google.com/foo");
@@ -345,7 +350,8 @@ TEST_F(RenderViewHostManagerTest, Navigate) {
   manager.DidNavigateMainFrame(host);
   EXPECT_TRUE(host == manager.current_host());
   ASSERT_TRUE(host);
-  EXPECT_TRUE(host->site_instance()->has_site());
+  EXPECT_TRUE(static_cast<SiteInstanceImpl*>(host->site_instance())->
+      HasSite());
 
   // 3) Cross-site navigate to next site. --------------
   const GURL kUrl3("http://webkit.org/");
@@ -366,7 +372,8 @@ TEST_F(RenderViewHostManagerTest, Navigate) {
   manager.DidNavigateMainFrame(manager.pending_render_view_host());
   EXPECT_TRUE(host == manager.current_host());
   ASSERT_TRUE(host);
-  EXPECT_TRUE(host->site_instance()->has_site());
+  EXPECT_TRUE(static_cast<SiteInstanceImpl*>(host->site_instance())->
+      HasSite());
   // Check the pending RenderViewHost has been committed.
   EXPECT_FALSE(manager.pending_render_view_host());
 
@@ -382,7 +389,7 @@ TEST_F(RenderViewHostManagerTest, Navigate) {
 TEST_F(RenderViewHostManagerTest, NavigateWithEarlyReNavigation) {
   TestNotificationTracker notifications;
 
-  SiteInstance* instance = SiteInstance::CreateSiteInstance(browser_context());
+  SiteInstance* instance = SiteInstance::Create(browser_context());
 
   TestTabContents tab_contents(browser_context(), instance);
   notifications.ListenFor(
@@ -418,8 +425,9 @@ TEST_F(RenderViewHostManagerTest, NavigateWithEarlyReNavigation) {
   // Commit to SiteInstance should be delayed until RenderView commit.
   EXPECT_TRUE(host == manager.current_host());
   ASSERT_TRUE(host);
-  EXPECT_FALSE(host->site_instance()->has_site());
-  host->site_instance()->SetSite(kUrl1);
+  EXPECT_FALSE(static_cast<SiteInstanceImpl*>(host->site_instance())->
+      HasSite());
+  static_cast<SiteInstanceImpl*>(host->site_instance())->SetSite(kUrl1);
 
   // 2) Cross-site navigate to next site. -------------------------
   const GURL kUrl2("http://www.example.com");
@@ -502,7 +510,8 @@ TEST_F(RenderViewHostManagerTest, NavigateWithEarlyReNavigation) {
   manager.DidNavigateMainFrame(host3);
   EXPECT_TRUE(host3 == manager.current_host());
   ASSERT_TRUE(host3);
-  EXPECT_TRUE(host3->site_instance()->has_site());
+  EXPECT_TRUE(static_cast<SiteInstanceImpl*>(host3->site_instance())->
+      HasSite());
   // Check the pending RenderViewHost has been committed.
   EXPECT_FALSE(manager.pending_render_view_host());
 
@@ -515,7 +524,7 @@ TEST_F(RenderViewHostManagerTest, NavigateWithEarlyReNavigation) {
 TEST_F(RenderViewHostManagerTest, WebUI) {
   set_should_create_webui(true);
   BrowserThreadImpl ui_thread(BrowserThread::UI, MessageLoop::current());
-  SiteInstance* instance = SiteInstance::CreateSiteInstance(browser_context());
+  SiteInstance* instance = SiteInstance::Create(browser_context());
 
   TestTabContents tab_contents(browser_context(), instance);
   RenderViewHostManager manager(&tab_contents, &tab_contents);
@@ -537,8 +546,9 @@ TEST_F(RenderViewHostManagerTest, WebUI) {
   // as the navigation starts, rather than lazily after it commits, so we don't
   // try to re-use the SiteInstance/process for non DOM-UI things that may
   // get loaded in between.
-  EXPECT_TRUE(host->site_instance()->has_site());
-  EXPECT_EQ(kUrl, host->site_instance()->site());
+  EXPECT_TRUE(static_cast<SiteInstanceImpl*>(host->site_instance())->
+      HasSite());
+  EXPECT_EQ(kUrl, host->site_instance()->GetSite());
 
   // The Web UI is committed immediately because the RenderViewHost has not been
   // used yet. UpdateRendererStateForNavigate() took the short cut path.
@@ -555,7 +565,7 @@ TEST_F(RenderViewHostManagerTest, WebUI) {
 // Regression test for bug 46290.
 TEST_F(RenderViewHostManagerTest, NonWebUIChromeURLs) {
   BrowserThreadImpl thread(BrowserThread::UI, &message_loop_);
-  SiteInstance* instance = SiteInstance::CreateSiteInstance(browser_context());
+  SiteInstance* instance = SiteInstance::Create(browser_context());
   TestTabContents tab_contents(browser_context(), instance);
   RenderViewHostManager manager(&tab_contents, &tab_contents);
   manager.Init(browser_context(), instance, MSG_ROUTING_NONE);

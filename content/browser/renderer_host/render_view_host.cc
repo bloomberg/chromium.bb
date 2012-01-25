@@ -26,7 +26,6 @@
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
-#include "content/browser/site_instance.h"
 #include "content/common/desktop_notification_messages.h"
 #include "content/common/drag_messages.h"
 #include "content/common/speech_input_messages.h"
@@ -58,6 +57,7 @@ using base::TimeDelta;
 using content::BrowserMessageFilter;
 using content::BrowserThread;
 using content::RenderViewHostDelegate;
+using content::SiteInstance;
 using content::UserMetricsAction;
 using WebKit::WebConsoleMessage;
 using WebKit::WebDragOperation;
@@ -110,7 +110,7 @@ RenderViewHost::RenderViewHost(SiteInstance* instance,
                                int routing_id,
                                SessionStorageNamespace* session_storage)
     : RenderWidgetHost(instance->GetProcess(), routing_id),
-      instance_(instance),
+      instance_(static_cast<SiteInstanceImpl*>(instance)),
       delegate_(delegate),
       waiting_for_drag_context_response_(false),
       enabled_bindings_(0),

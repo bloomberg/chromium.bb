@@ -31,7 +31,7 @@ class TestTabStripModelDelegate : public TabStripModelDelegate {
       Profile* profile,
       content::PageTransition transition,
       bool defer_load,
-      SiteInstance* instance) const OVERRIDE;
+      content::SiteInstance* instance) const OVERRIDE;
   virtual bool CanDuplicateContentsAt(int index) OVERRIDE;
   virtual void DuplicateContentsAt(int index) OVERRIDE;
   virtual void CloseFrameAfterDragSession() OVERRIDE;

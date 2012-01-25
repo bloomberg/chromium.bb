@@ -35,11 +35,11 @@ class LoadNotificationDetails;
 class RenderViewHost;
 class SavePackage;
 class SessionStorageNamespace;
-class SiteInstance;
 struct ViewHostMsg_DidFailProvisionalLoadWithError_Params;
 
 namespace content {
 class DownloadItem;
+class SiteInstance;
 class WebContentsObserver;
 class WebContentsDelegate;
 class WebContentsView;
@@ -57,7 +57,7 @@ class CONTENT_EXPORT TabContents
  public:
   // See WebContents::Create for a description of these parameters.
   TabContents(content::BrowserContext* browser_context,
-              SiteInstance* site_instance,
+              content::SiteInstance* site_instance,
               int routing_id,
               const TabContents* base_tab_contents,
               SessionStorageNamespace* session_storage_namespace);
@@ -72,7 +72,7 @@ class CONTENT_EXPORT TabContents
 
   // Updates the max page ID for the given SiteInstance in this TabContents
   // to be at least |page_id|.
-  void UpdateMaxPageIDForSiteInstance(SiteInstance* site_instance,
+  void UpdateMaxPageIDForSiteInstance(content::SiteInstance* site_instance,
                                       int32 page_id);
 
   // Copy the current map of SiteInstance ID to max page ID from another tab.
@@ -140,9 +140,9 @@ class CONTENT_EXPORT TabContents
   virtual const string16& GetTitle() const OVERRIDE;
   virtual int32 GetMaxPageID() OVERRIDE;
   virtual int32 GetMaxPageIDForSiteInstance(
-      SiteInstance* site_instance) OVERRIDE;
-  virtual SiteInstance* GetSiteInstance() const OVERRIDE;
-  virtual SiteInstance* GetPendingSiteInstance() const OVERRIDE;
+      content::SiteInstance* site_instance) OVERRIDE;
+  virtual content::SiteInstance* GetSiteInstance() const OVERRIDE;
+  virtual content::SiteInstance* GetPendingSiteInstance() const OVERRIDE;
   virtual bool IsLoading() const OVERRIDE;
   virtual bool IsWaitingForResponse() const OVERRIDE;
   virtual const net::LoadStateWithParam& GetLoadState() const OVERRIDE;
@@ -484,9 +484,10 @@ class CONTENT_EXPORT TabContents
   // moves the current page_id to the last entry in the list if it's valid.
   // This is mainly used when a prerendered page is swapped into the current
   // tab. The method is virtual for testing.
-  virtual void SetHistoryLengthAndPrune(const SiteInstance* site_instance,
-                                        int merge_history_length,
-                                        int32 minimum_page_id);
+  virtual void SetHistoryLengthAndPrune(
+      const content::SiteInstance* site_instance,
+      int merge_history_length,
+      int32 minimum_page_id);
 
   // Misc non-view stuff -------------------------------------------------------
 

@@ -27,7 +27,7 @@
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/renderer_host/resource_request_details.h"
-#include "content/browser/site_instance.h"
+#include "content/browser/site_instance_impl.h"
 #include "content/browser/tab_contents/interstitial_page.h"
 #include "content/browser/tab_contents/navigation_entry_impl.h"
 #include "content/browser/tab_contents/provisional_load_details.h"
@@ -121,6 +121,7 @@ using content::NavigationEntry;
 using content::NavigationEntryImpl;
 using content::OpenURLParams;
 using content::RenderViewHostDelegate;
+using content::SiteInstance;
 using content::SSLStatus;
 using content::UserMetricsAction;
 using content::WebContents;
@@ -504,20 +505,20 @@ int32 TabContents::GetMaxPageID() {
 }
 
 int32 TabContents::GetMaxPageIDForSiteInstance(SiteInstance* site_instance) {
-  if (max_page_ids_.find(site_instance->id()) == max_page_ids_.end())
-    max_page_ids_[site_instance->id()] = -1;
+  if (max_page_ids_.find(site_instance->GetId()) == max_page_ids_.end())
+    max_page_ids_[site_instance->GetId()] = -1;
 
-  return max_page_ids_[site_instance->id()];
+  return max_page_ids_[site_instance->GetId()];
 }
 
 void TabContents::UpdateMaxPageID(int32 page_id) {
   UpdateMaxPageIDForSiteInstance(GetSiteInstance(), page_id);
 }
 
-void TabContents::UpdateMaxPageIDForSiteInstance(SiteInstance* site_instance,
-                                                 int32 page_id) {
+void TabContents::UpdateMaxPageIDForSiteInstance(
+    SiteInstance* site_instance, int32 page_id) {
   if (GetMaxPageIDForSiteInstance(site_instance) < page_id)
-    max_page_ids_[site_instance->id()] = page_id;
+    max_page_ids_[site_instance->GetId()] = page_id;
 }
 
 void TabContents::CopyMaxPageIDsFrom(TabContents* tab_contents) {
@@ -672,7 +673,7 @@ WebContents* TabContents::Clone() {
   // processes for some reason.
   TabContents* tc = new TabContents(
       GetBrowserContext(),
-      SiteInstance::CreateSiteInstance(GetBrowserContext()),
+      SiteInstance::Create(GetBrowserContext()),
       MSG_ROUTING_NONE, this, NULL);
   tc->GetControllerImpl().CopyStateFrom(controller_);
   return tc;
@@ -878,9 +879,10 @@ bool TabContents::NavigateToEntry(
   return true;
 }
 
-void TabContents::SetHistoryLengthAndPrune(const SiteInstance* site_instance,
-                                           int history_length,
-                                           int32 minimum_page_id) {
+void TabContents::SetHistoryLengthAndPrune(
+    const SiteInstance* site_instance,
+    int history_length,
+    int32 minimum_page_id) {
   // SetHistoryLengthAndPrune doesn't work when there are pending cross-site
   // navigations. Callers should ensure that this is the case.
   if (render_manager_.pending_render_view_host()) {
@@ -1396,7 +1398,8 @@ void TabContents::OnGoToEntryAtOffset(int offset) {
     // it in now that we know. This allows us to find the entry when it commits.
     if (!entry->site_instance() &&
         entry->restore_type() != NavigationEntryImpl::RESTORE_NONE) {
-      entry->set_site_instance(GetPendingSiteInstance());
+      entry->set_site_instance(
+          static_cast<SiteInstanceImpl*>(GetPendingSiteInstance()));
     }
   }
 }
@@ -1735,8 +1738,8 @@ void TabContents::DidNavigate(RenderViewHost* rvh,
     render_manager_.DidNavigateMainFrame(rvh);
 
   // Update the site of the SiteInstance if it doesn't have one yet.
-  if (!GetSiteInstance()->has_site())
-    GetSiteInstance()->SetSite(params.url);
+  if (!static_cast<SiteInstanceImpl*>(GetSiteInstance())->HasSite())
+    static_cast<SiteInstanceImpl*>(GetSiteInstance())->SetSite(params.url);
 
   // Need to update MIME type here because it's referred to in
   // UpdateNavigationCommands() called by RendererDidNavigate() to

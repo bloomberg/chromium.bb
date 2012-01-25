@@ -7,6 +7,8 @@
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/browser.h"
 
+using content::SiteInstance;
+
 ////////////////////////////////////////////////////////////////////////////////
 // DefaultTabHandler, public:
 

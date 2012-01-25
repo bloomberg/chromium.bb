@@ -32,11 +32,11 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/site_instance.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "grit/browser_resources.h"
@@ -53,6 +53,7 @@
 using WebKit::WebDragOperation;
 using WebKit::WebDragOperationsMask;
 using content::OpenURLParams;
+using content::SiteInstance;
 using content::WebContents;
 
 // Helper class that rate-limits the creation of renderer processes for

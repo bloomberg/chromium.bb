@@ -12,7 +12,7 @@
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_view_host_factory.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
-#include "content/browser/site_instance.h"
+#include "content/browser/site_instance_impl.h"
 #include "content/browser/tab_contents/navigation_controller_impl.h"
 #include "content/browser/tab_contents/navigation_entry_impl.h"
 #include "content/browser/webui/web_ui_impl.h"
@@ -30,6 +30,7 @@
 using content::NavigationController;
 using content::NavigationEntry;
 using content::NavigationEntryImpl;
+using content::SiteInstance;
 
 RenderViewHostManager::RenderViewHostManager(
     content::RenderViewHostDelegate* render_view_delegate,
@@ -66,7 +67,7 @@ void RenderViewHostManager::Init(content::BrowserContext* browser_context,
   // immediately give this SiteInstance to a RenderViewHost so that it is
   // ref counted.
   if (!site_instance)
-    site_instance = SiteInstance::CreateSiteInstance(browser_context);
+    site_instance = SiteInstance::Create(browser_context);
   render_view_host_ = RenderViewHostFactory::Create(
       site_instance, render_view_delegate_, routing_id, delegate_->
       GetControllerForRenderManager().GetSessionStorageNamespace());
@@ -345,7 +346,7 @@ bool RenderViewHostManager::ShouldSwapProcessesForNavigation(
   // page and one isn't.  If there's no cur_entry, check the current RVH's
   // site, which might already be committed to a Web UI URL (such as the NTP).
   const GURL& current_url = (cur_entry) ? cur_entry->GetURL() :
-      render_view_host_->site_instance()->site();
+      render_view_host_->site_instance()->GetSite();
   content::BrowserContext* browser_context =
       delegate_->GetControllerForRenderManager().GetBrowserContext();
   const content::WebUIFactory* web_ui_factory =
@@ -407,26 +408,29 @@ SiteInstance* RenderViewHostManager::GetSiteInstanceForEntry(
       entry.GetTransitionType() == content::PAGE_TRANSITION_GENERATED)
     return curr_instance;
 
+  SiteInstanceImpl* curr_site_instance =
+      static_cast<SiteInstanceImpl*>(curr_instance);
+
   // If we haven't used our SiteInstance (and thus RVH) yet, then we can use it
   // for this entry.  We won't commit the SiteInstance to this site until the
   // navigation commits (in DidNavigate), unless the navigation entry was
   // restored or it's a Web UI as described below.
-  if (!curr_instance->has_site()) {
+  if (!curr_site_instance->HasSite()) {
     // If we've already created a SiteInstance for our destination, we don't
     // want to use this unused SiteInstance; use the existing one.  (We don't
     // do this check if the curr_instance has a site, because for now, we want
     // to compare against the current URL and not the SiteInstance's site.  In
     // this case, there is no current URL, so comparing against the site is ok.
     // See additional comments below.)
-    if (curr_instance->HasRelatedSiteInstance(dest_url))
-      return curr_instance->GetRelatedSiteInstance(dest_url);
+    if (curr_site_instance->HasRelatedSiteInstance(dest_url))
+      return curr_site_instance->GetRelatedSiteInstance(dest_url);
 
     // For extensions, Web UI URLs (such as the new tab page), and apps we do
     // not want to use the curr_instance if it has no site, since it will have a
     // RenderProcessHost of PRIV_NORMAL.  Create a new SiteInstance for this
     // URL instead (with the correct process type).
-    if (curr_instance->HasWrongProcessForURL(dest_url))
-      return curr_instance->GetRelatedSiteInstance(dest_url);
+    if (curr_site_instance->HasWrongProcessForURL(dest_url))
+      return curr_site_instance->GetRelatedSiteInstance(dest_url);
 
     // Normally the "site" on the SiteInstance is set lazily when the load
     // actually commits. This is to support better process sharing in case
@@ -437,9 +441,9 @@ SiteInstance* RenderViewHostManager::GetSiteInstanceForEntry(
     // we need to set the site first, otherwise after a restore none of the
     // pages would share renderers in process-per-site.
     if (entry.restore_type() != NavigationEntryImpl::RESTORE_NONE)
-      curr_instance->SetSite(dest_url);
+      curr_site_instance->SetSite(dest_url);
 
-    return curr_instance;
+    return curr_site_instance;
   }
 
   // Otherwise, only create a new SiteInstance for cross-site navigation.
@@ -469,13 +473,14 @@ SiteInstance* RenderViewHostManager::GetSiteInstanceForEntry(
   // the page to a different same-site URL.  (This seems very unlikely in
   // practice.)
   const GURL& current_url = (curr_entry) ? curr_entry->GetURL() :
-      curr_instance->site();
+      curr_instance->GetSite();
 
   // Use the current SiteInstance for same site navigations, as long as the
   // process type is correct.  (The URL may have been installed as an app since
   // the last time we visited it.)
   if (SiteInstance::IsSameWebSite(browser_context, current_url, dest_url) &&
-      !curr_instance->HasWrongProcessForURL(dest_url)) {
+      !static_cast<SiteInstanceImpl*>(curr_instance)->HasWrongProcessForURL(
+          dest_url)) {
     return curr_instance;
   } else if (ShouldSwapProcessesForNavigation(curr_entry, &entry)) {
     // When we're swapping, we need to force the site instance AND browsing
@@ -484,7 +489,7 @@ SiteInstance* RenderViewHostManager::GetSiteInstanceForEntry(
     // Pages), keeping them in the same process. When you navigate away from
     // that page, we want to explicity ignore that BrowsingInstance and group
     // this page into the appropriate SiteInstance for its URL.
-    return SiteInstance::CreateSiteInstanceForURL(browser_context, dest_url);
+    return SiteInstance::CreateForURL(browser_context, dest_url);
   } else {
     // Start the new renderer in a new SiteInstance, but in the current
     // BrowsingInstance.  It is important to immediately give this new
@@ -496,7 +501,7 @@ SiteInstance* RenderViewHostManager::GetSiteInstanceForEntry(
 }
 
 bool RenderViewHostManager::CreatePendingRenderView(
-    const NavigationEntryImpl& entry, SiteInstance* instance) {
+  const NavigationEntryImpl& entry, SiteInstance* instance) {
   NavigationEntry* curr_entry =
       delegate_->GetControllerForRenderManager().GetLastCommittedEntry();
   if (curr_entry) {
@@ -508,7 +513,7 @@ bool RenderViewHostManager::CreatePendingRenderView(
   // Check if we've already created an RVH for this SiteInstance.
   CHECK(instance);
   RenderViewHostMap::iterator iter =
-      swapped_out_hosts_.find(instance->id());
+      swapped_out_hosts_.find(instance->GetId());
   if (iter != swapped_out_hosts_.end()) {
     // Re-use the existing RenderViewHost, which has already been initialized.
     // We'll remove it from the list of swapped out hosts if it commits.
@@ -613,7 +618,7 @@ void RenderViewHostManager::CommitPending() {
       content::Details<std::pair<RenderViewHost*, RenderViewHost*> >(&details));
 
   // If the pending view was on the swapped out list, we can remove it.
-  swapped_out_hosts_.erase(render_view_host_->site_instance()->id());
+  swapped_out_hosts_.erase(render_view_host_->site_instance()->GetId());
 
   // If the old RVH is live, we are swapping it out and should keep track of it
   // in case we navigate back to it.
@@ -623,7 +628,7 @@ void RenderViewHostManager::CommitPending() {
     // sure we don't get different rvh instances for the same site instance
     // in the same rvhmgr.
     // TODO(creis): Clean this up.
-    int32 old_site_instance_id = old_render_view_host->site_instance()->id();
+    int32 old_site_instance_id = old_render_view_host->site_instance()->GetId();
     RenderViewHostMap::iterator iter =
         swapped_out_hosts_.find(old_site_instance_id);
     if (iter != swapped_out_hosts_.end() &&
@@ -815,6 +820,6 @@ bool RenderViewHostManager::IsSwappedOut(RenderViewHost* rvh) {
   if (!rvh->site_instance())
     return false;
 
-  return swapped_out_hosts_.find(rvh->site_instance()->id()) !=
+  return swapped_out_hosts_.find(rvh->site_instance()->GetId()) !=
       swapped_out_hosts_.end();
 }

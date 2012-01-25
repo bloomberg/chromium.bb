@@ -16,7 +16,10 @@
 #include "ui/views/events/event.h"
 
 class Profile;
+
+namespace content {
 class SiteInstance;
+};
 
 class DOMView : public views::NativeViewHost {
  public:
@@ -34,7 +37,7 @@ class DOMView : public views::NativeViewHost {
   //
   // If |instance| is not null, then the view will be loaded in the same
   // process as the given instance.
-  bool Init(Profile* profile, SiteInstance* instance);
+  bool Init(Profile* profile, content::SiteInstance* instance);
 
   // Loads the given URL into the page. You must have previously called Init().
   void LoadURL(const GURL& url);
@@ -57,7 +60,7 @@ class DOMView : public views::NativeViewHost {
   // Returns new allocated TabContents instance, caller is responsible deleting.
   // Override in derived classes to replace TabContents with derivative.
   virtual content::WebContents* CreateTabContents(
-      Profile* profile, SiteInstance* instance);
+    Profile* profile, content::SiteInstance* instance);
 
   scoped_ptr<TabContentsWrapper> dom_contents_;
 

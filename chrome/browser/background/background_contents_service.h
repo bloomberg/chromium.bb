@@ -74,7 +74,7 @@ class BackgroundContentsService : private content::NotificationObserver,
   // A BACKGROUND_CONTENTS_OPENED notification will be generated with the passed
   // |frame_name| and |application_id| values, using the passed |profile| as the
   // Source..
-  BackgroundContents* CreateBackgroundContents(SiteInstance* site,
+  BackgroundContents* CreateBackgroundContents(content::SiteInstance* site,
                                                int route_id,
                                                Profile* profile,
                                                const string16& frame_name,

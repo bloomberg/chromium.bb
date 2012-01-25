@@ -5,9 +5,12 @@
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/browser/site_instance.h"
+#include "content/public/browser/render_process_host.h"
+#include "content/public/browser/site_instance.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
+
+using content::SiteInstance;
 
 namespace {
 

@@ -6,7 +6,7 @@
 #include "content/browser/browser_url_handler.h"
 #include "content/browser/renderer_host/test_backing_store.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
-#include "content/browser/site_instance.h"
+#include "content/browser/site_instance_impl.h"
 #include "content/browser/tab_contents/navigation_controller_impl.h"
 #include "content/browser/tab_contents/navigation_entry_impl.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
@@ -23,6 +23,7 @@
 using content::NavigationController;
 using content::NavigationEntry;
 using content::RenderViewHostDelegate;
+using content::SiteInstance;
 using webkit::forms::PasswordForm;
 
 void InitNavigateParams(ViewHostMsg_FrameNavigate_Params* params,
@@ -312,7 +313,8 @@ RenderViewHost* TestRenderViewHostFactory::CreateRenderViewHost(
     int routing_id,
     SessionStorageNamespace* session_storage) {
   // See declaration of render_process_host_factory_ below.
-  instance->set_render_process_host_factory(render_process_host_factory_);
+  static_cast<SiteInstanceImpl*>(instance)->
+      set_render_process_host_factory(render_process_host_factory_);
   return new TestRenderViewHost(instance, delegate, routing_id);
 }
 
@@ -370,8 +372,7 @@ TestTabContents* RenderViewHostTestHarness::CreateTestTabContents() {
     browser_context_.reset(new TestBrowserContext());
 
   // This will be deleted when the TabContents goes away.
-  SiteInstance* instance =
-      SiteInstance::CreateSiteInstance(browser_context_.get());
+  SiteInstance* instance = SiteInstance::Create(browser_context_.get());
 
   return new TestTabContents(browser_context_.get(), instance);
 }

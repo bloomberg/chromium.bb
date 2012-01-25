@@ -8,12 +8,11 @@
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
+#include "content/browser/site_instance_impl.h"
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/ssl_status.h"
-
-class SiteInstance;
 
 namespace content {
 
@@ -23,7 +22,7 @@ class CONTENT_EXPORT NavigationEntryImpl
   static NavigationEntryImpl* FromNavigationEntry(NavigationEntry* entry);
 
   NavigationEntryImpl();
-  NavigationEntryImpl(SiteInstance* instance,
+  NavigationEntryImpl(SiteInstanceImpl* instance,
                       int page_id,
                       const GURL& url,
                       const Referrer& referrer,
@@ -71,9 +70,9 @@ class CONTENT_EXPORT NavigationEntryImpl
   // Note that the SiteInstance should usually not be changed after it is set,
   // but this may happen if the NavigationEntry was cloned and needs to use a
   // different SiteInstance.
-  void set_site_instance(SiteInstance* site_instance);
-  SiteInstance* site_instance() const {
-    return site_instance_;
+  void set_site_instance(SiteInstanceImpl* site_instance);
+  SiteInstanceImpl* site_instance() const {
+    return site_instance_.get();
   }
 
   void set_page_type(PageType page_type) {
@@ -152,7 +151,7 @@ class CONTENT_EXPORT NavigationEntryImpl
 
   // See the accessors above for descriptions.
   int unique_id_;
-  scoped_refptr<SiteInstance> site_instance_;
+  scoped_refptr<SiteInstanceImpl> site_instance_;
   PageType page_type_;
   GURL url_;
   Referrer referrer_;

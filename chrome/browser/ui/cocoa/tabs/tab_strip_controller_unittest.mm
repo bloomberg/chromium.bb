@@ -14,11 +14,12 @@
 #import "chrome/browser/ui/cocoa/tabs/tab_view.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_controller.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
-#include "content/browser/site_instance.h"
+#include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
+using content::SiteInstance;
 using content::WebContents;
 
 @interface TestTabStripControllerDelegate
@@ -168,7 +169,7 @@ class TabStripControllerTest : public CocoaProfileTest {
 // the tab strip.
 TEST_F(TabStripControllerTest, AddRemoveTabs) {
   EXPECT_TRUE(model_->empty());
-  SiteInstance* instance = SiteInstance::CreateSiteInstance(profile());
+  SiteInstance* instance = SiteInstance::Create(profile());
   TabContentsWrapper* tab_contents =
       Browser::TabContentsFactory(profile(), instance,
           MSG_ROUTING_NONE, NULL, NULL);
@@ -192,14 +193,14 @@ TEST_F(TabStripControllerTest, Notifications) {
 
 TEST_F(TabStripControllerTest, CorrectToolTipText) {
   // Create tab 1.
-  SiteInstance* instance = SiteInstance::CreateSiteInstance(profile());
+  SiteInstance* instance = SiteInstance::Create(profile());
   TabContentsWrapper* tab_contents =
   Browser::TabContentsFactory(profile(), instance,
                               MSG_ROUTING_NONE, NULL, NULL);
   model_->AppendTabContents(tab_contents, true);
 
   // Create tab 2.
-  SiteInstance* instance2 = SiteInstance::CreateSiteInstance(profile());
+  SiteInstance* instance2 = SiteInstance::Create(profile());
   TabContentsWrapper* tab_contents2 =
   Browser::TabContentsFactory(profile(), instance2,
                               MSG_ROUTING_NONE, NULL, NULL);

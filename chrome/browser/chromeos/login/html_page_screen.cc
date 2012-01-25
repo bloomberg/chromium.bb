@@ -12,10 +12,11 @@
 #include "chrome/browser/chromeos/login/screen_observer.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/site_instance.h"
+#include "content/public/browser/site_instance.h"
 #include "googleurl/src/gurl.h"
 #include "ui/views/events/event.h"
 
+using content::SiteInstance;
 using content::WebContents;
 
 namespace chromeos {
@@ -50,8 +51,7 @@ void HTMLPageScreen::Refresh() {
   StartTimeoutTimer();
   GURL url(url_);
   Profile* profile = ProfileManager::GetDefaultProfile();
-  view()->InitDOM(profile,
-                  SiteInstance::CreateSiteInstanceForURL(profile, url));
+  view()->InitDOM(profile, SiteInstance::CreateForURL(profile, url));
   view()->SetWebContentsDelegate(this);
   view()->LoadURL(url);
 }

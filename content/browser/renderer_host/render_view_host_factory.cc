@@ -7,6 +7,8 @@
 #include "base/logging.h"
 #include "content/browser/renderer_host/render_view_host.h"
 
+using content::SiteInstance;
+
 // static
 RenderViewHostFactory* RenderViewHostFactory::factory_ = NULL;
 

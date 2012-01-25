@@ -8,14 +8,15 @@
 #include "chrome/browser/ui/tab_contents/test_tab_contents_wrapper.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/browser/site_instance.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
 #include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/site_instance.h"
 #include "content/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserThread;
 using content::NavigationController;
+using content::SiteInstance;
 using content::WebContents;
 
 class WebUITest : public TabContentsWrapperTestHarness {
@@ -170,7 +171,7 @@ TEST_F(WebUITest, FocusOnNavigate) {
   // Setup.  |tc| will be used to track when we try to focus the location bar.
   TabContentsForFocusTest* tc = new TabContentsForFocusTest(
       contents()->GetBrowserContext(),
-      SiteInstance::CreateSiteInstance(contents()->GetBrowserContext()));
+      SiteInstance::Create(contents()->GetBrowserContext()));
   tc->GetController().CopyStateFrom(controller());
   SetContents(tc);
   int page_id = 200;
