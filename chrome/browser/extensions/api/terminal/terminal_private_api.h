@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,13 +10,27 @@
 
 #include "chrome/browser/extensions/extension_function.h"
 
+// Base class for all terminalPrivate function classes. Main purpose is to run
+// permission check before calling actual function implementation.
+class TerminalPrivateFunction : public AsyncExtensionFunction {
+ public:
+  TerminalPrivateFunction();
+  virtual ~TerminalPrivateFunction();
+
+  virtual bool RunImpl() OVERRIDE;
+
+  // Override with actual extension function implementation.
+  virtual bool RunTerminalFunction() = 0;
+
+};
+
 // Opens new terminal process. Returns the new process id.
-class OpenTerminalProcessFunction : public AsyncExtensionFunction {
+class OpenTerminalProcessFunction : public TerminalPrivateFunction {
  public:
   OpenTerminalProcessFunction();
   virtual ~OpenTerminalProcessFunction();
 
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunTerminalFunction() OVERRIDE;
 
  private:
   void OpenOnFileThread();
@@ -28,9 +42,9 @@ class OpenTerminalProcessFunction : public AsyncExtensionFunction {
 };
 
 // Send input to the terminal process specified by the pid sent as an argument.
-class SendInputToTerminalProcessFunction : public AsyncExtensionFunction {
+class SendInputToTerminalProcessFunction : public TerminalPrivateFunction {
  public:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunTerminalFunction() OVERRIDE;
 
  private:
   void SendInputOnFileThread(pid_t pid, const std::string& input);
@@ -40,9 +54,9 @@ class SendInputToTerminalProcessFunction : public AsyncExtensionFunction {
 };
 
 // Closes terminal process with given pid.
-class CloseTerminalProcessFunction : public AsyncExtensionFunction {
+class CloseTerminalProcessFunction : public TerminalPrivateFunction {
  public:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunTerminalFunction() OVERRIDE;
 
  private:
   void CloseOnFileThread(pid_t pid);

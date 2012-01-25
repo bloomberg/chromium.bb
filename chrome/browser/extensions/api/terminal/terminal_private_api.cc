@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,7 +9,9 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/process_proxy/process_proxy_registry.h"
 #include "chrome/browser/chromeos/system/runtime_environment.h"
+#include "chrome/browser/extensions/extension_event_names.h"
 #include "chrome/browser/extensions/extension_event_router.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -19,6 +21,32 @@ const char kCroshName[] = "crosh";
 const char kCroshCommand[] = "/usr/bin/crosh";
 // We make stubbed crosh just echo back input.
 const char kStubbedCroshCommand[] = "cat";
+
+const char kPermissionError[] =
+    "Extension does not have the permission to use this API";
+
+const char* kAllowedExtensionIds[] ={
+    "okddffdblfhhnmhodogpojmfkjmhinfp",  // test SSH/Crosh Client
+    "pnhechapfaindjhompbnflcldabbghjo"  // HTerm App
+};
+
+// Allow component and whitelisted extensions.
+bool AllowAccessToExtension(Profile* profile, const std::string& extension_id) {
+  ExtensionService* service = profile->GetExtensionService();
+  const Extension* extension = service->GetExtensionById(extension_id, false);
+
+  if (!extension)
+    return false;
+
+  if (extension->location() == Extension::COMPONENT)
+    return true;
+
+  for (size_t i = 0; i < arraysize(kAllowedExtensionIds); i++) {
+    if (extension->id() == kAllowedExtensionIds[i])
+      return true;
+  }
+  return false;
+}
 
 const char* GetCroshPath() {
   if (chromeos::system::runtime_environment::IsRunningOnChromeOS())
@@ -36,14 +64,18 @@ const char* GetProcessCommandForName(const std::string& name) {
 }
 
 void NotifyProcessOutput(Profile* profile,
+                         const std::string& extension_id,
                          pid_t pid,
                          const std::string& output_type,
                          const std::string& output) {
   if (!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI)) {
     content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
-        base::Bind(&NotifyProcessOutput, profile, pid, output_type, output));
+        base::Bind(&NotifyProcessOutput, profile, extension_id,
+                                         pid, output_type, output));
     return;
   }
+
+  CHECK(AllowAccessToExtension(profile, extension_id));
 
   base::ListValue args;
   args.Append(new base::FundamentalValue(pid));
@@ -53,14 +85,29 @@ void NotifyProcessOutput(Profile* profile,
   std::string args_json;
   base::JSONWriter::Write(&args, false /* pretty_print */, &args_json);
 
-  // TODO(tbarzic): Send event only to the renderer that runs process pid.
   if (profile && profile->GetExtensionEventRouter()) {
-    profile->GetExtensionEventRouter()->DispatchEventToRenderers(
-        "terminalPrivate.onProcessOutput", args_json, NULL, GURL());
+    profile->GetExtensionEventRouter()->DispatchEventToExtension(
+        extension_id, extension_event_names::kOnTerminalProcessOutput,
+        args_json, NULL, GURL());
   }
 }
 
 }  // namespace
+
+TerminalPrivateFunction::TerminalPrivateFunction() {
+}
+
+TerminalPrivateFunction::~TerminalPrivateFunction() {
+}
+
+bool TerminalPrivateFunction::RunImpl() {
+  if (!AllowAccessToExtension(profile_, extension_id())) {
+    error_ = kPermissionError;
+    return false;
+  }
+
+  return RunTerminalFunction();
+}
 
 OpenTerminalProcessFunction::OpenTerminalProcessFunction() : command_(NULL) {
 }
@@ -68,7 +115,7 @@ OpenTerminalProcessFunction::OpenTerminalProcessFunction() : command_(NULL) {
 OpenTerminalProcessFunction::~OpenTerminalProcessFunction() {
 }
 
-bool OpenTerminalProcessFunction::RunImpl() {
+bool OpenTerminalProcessFunction::RunTerminalFunction() {
   if (args_->GetSize() != 1)
     return false;
 
@@ -94,7 +141,7 @@ void OpenTerminalProcessFunction::OpenOnFileThread() {
   ProcessProxyRegistry* registry = ProcessProxyRegistry::Get();
   pid_t pid;
   if (!registry->OpenProcess(command_, &pid,
-                             base::Bind(&NotifyProcessOutput, profile_))) {
+          base::Bind(&NotifyProcessOutput, profile_, extension_id()))) {
     // If new process could not be opened, we return -1.
     pid = -1;
   }
@@ -108,7 +155,7 @@ void OpenTerminalProcessFunction::RespondOnUIThread(pid_t pid) {
   SendResponse(true);
 }
 
-bool SendInputToTerminalProcessFunction::RunImpl() {
+bool SendInputToTerminalProcessFunction::RunTerminalFunction() {
   if (args_->GetSize() != 2)
     return false;
 
@@ -138,7 +185,7 @@ void SendInputToTerminalProcessFunction::RespondOnUIThread(bool success) {
   SendResponse(true);
 }
 
-bool CloseTerminalProcessFunction::RunImpl() {
+bool CloseTerminalProcessFunction::RunTerminalFunction() {
   if (args_->GetSize() != 1)
     return false;
   pid_t pid;

@@ -1,0 +1,9 @@
+{
+  "name": "chrome.terminalPrivate.apitest.permissions",
+  "version": "0.1",
+  "description": "Test that non-component extension cannot use the terminalPrivateApi.",
+  "background": {
+    "scripts": ["test.js"]
+  },
+  "permissions": ["terminalPrivate"]
+}

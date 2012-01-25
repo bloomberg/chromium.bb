@@ -262,6 +262,9 @@ void ExtensionAPIPermission::RegisterAllPermissions(
       ExtensionPermissionMessage::kTabs, kFlagNone,
       kTypeDefault - kTypePlatformApp);
   info->RegisterPermission(
+      kTerminalPrivate, "terminalPrivate", 0,
+      ExtensionPermissionMessage::kNone, kFlagCannotBeOptional, kTypeDefault);
+  info->RegisterPermission(
       kTts, "tts", 0,
       ExtensionPermissionMessage::kNone, kFlagCannotBeOptional, kTypeDefault);
   info->RegisterPermission(
@@ -303,10 +306,6 @@ void ExtensionAPIPermission::RegisterAllPermissions(
       kFlagComponentOnly | kFlagCannotBeOptional, kTypeDefault);
   info->RegisterPermission(
       kSystemPrivate, "systemPrivate", 0,
-      ExtensionPermissionMessage::kNone,
-      kFlagComponentOnly | kFlagCannotBeOptional, kTypeDefault);
-  info->RegisterPermission(
-      kTerminalPrivate, "terminalPrivate", 0,
       ExtensionPermissionMessage::kNone,
       kFlagComponentOnly | kFlagCannotBeOptional, kTypeDefault);
 

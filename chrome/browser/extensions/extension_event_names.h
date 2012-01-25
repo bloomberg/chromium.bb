@@ -50,6 +50,9 @@ extern const char kOnDownloadErased[];
 // Settings.
 extern const char kOnSettingsChanged[];
 
+// TerminalPrivate.
+extern const char kOnTerminalProcessOutput[];
+
 };  // namespace extension_event_names
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_EVENT_NAMES_H_
