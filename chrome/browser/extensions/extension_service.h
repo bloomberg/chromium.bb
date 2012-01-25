@@ -533,8 +533,7 @@ class ExtensionService
 
   // Marks alertable extensions as acknowledged, after the user presses the
   // accept button.
-  void HandleExtensionAlertAccept(const ExtensionGlobalError& global_error,
-                                  Browser* browser);
+  void HandleExtensionAlertAccept();
 
   // Given a (presumably just-installed) extension id, mark that extension as
   // acknowledged.
@@ -542,11 +541,10 @@ class ExtensionService
 
   // Opens the Extensions page because the user wants to get more details
   // about the alerts.
-  void HandleExtensionAlertDetails(const ExtensionGlobalError& global_error,
-                                   Browser* browser);
+  void HandleExtensionAlertDetails(Browser* browser);
 
-  // Displays the extension alert in the last-active browser window.
-  void ShowExtensionAlert(ExtensionGlobalError* global_error);
+  // Called when the extension alert is closed.
+  void HandleExtensionAlertClosed();
 
   // content::NotificationObserver
   virtual void Observe(int type,
@@ -846,6 +844,8 @@ class ExtensionService
   // Fields used when installing application shortcuts.
   ShellIntegration::ShortcutInfo shortcut_info_;
   ImageLoadingTracker tracker_;
+
+  scoped_ptr<ExtensionGlobalError> extension_global_error_;
 
   FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest,
                            InstallAppsWithUnlimtedStorage);

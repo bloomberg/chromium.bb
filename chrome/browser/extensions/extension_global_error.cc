@@ -13,13 +13,12 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
-ExtensionGlobalError::ExtensionGlobalError(
-      base::WeakPtr<ExtensionService> extension_service)
-    : should_delete_self_on_close_(true),
-      extension_service_(extension_service),
+ExtensionGlobalError::ExtensionGlobalError(ExtensionService* extension_service)
+    : extension_service_(extension_service),
       external_extension_ids_(new ExtensionIdSet),
       blacklisted_extension_ids_(new ExtensionIdSet),
       orphaned_extension_ids_(new ExtensionIdSet) {
+  DCHECK(extension_service_);
 }
 
 ExtensionGlobalError::~ExtensionGlobalError() {
@@ -35,21 +34,6 @@ void ExtensionGlobalError::AddBlacklistedExtension(const std::string& id) {
 
 void ExtensionGlobalError::AddOrphanedExtension(const std::string& id) {
   orphaned_extension_ids_->insert(id);
-}
-
-void ExtensionGlobalError::set_accept_callback(
-    ExtensionGlobalErrorCallback callback) {
-  accept_callback_ = callback;
-}
-
-void ExtensionGlobalError::set_cancel_callback(
-    ExtensionGlobalErrorCallback callback) {
-  cancel_callback_ = callback;
-}
-
-void ExtensionGlobalError::set_closed_callback(
-    ExtensionGlobalErrorCallback callback) {
-  cancel_callback_ = callback;
 }
 
 bool ExtensionGlobalError::HasBadge() {
@@ -99,17 +83,12 @@ string16 ExtensionGlobalError::GenerateMessageSection(
 }
 
 string16 ExtensionGlobalError::GenerateMessage() {
-  if (extension_service_.get()) {
-    return
-        GenerateMessageSection(external_extension_ids_.get(),
-                               IDS_EXTENSION_ALERT_ITEM_EXTERNAL) +
-        GenerateMessageSection(blacklisted_extension_ids_.get(),
-                               IDS_EXTENSION_ALERT_ITEM_EXTERNAL) +
-        GenerateMessageSection(orphaned_extension_ids_.get(),
-                               IDS_EXTENSION_ALERT_ITEM_EXTERNAL);
-  } else {
-    return string16();
-  }
+  return GenerateMessageSection(external_extension_ids_.get(),
+                                IDS_EXTENSION_ALERT_ITEM_EXTERNAL) +
+         GenerateMessageSection(blacklisted_extension_ids_.get(),
+                                IDS_EXTENSION_ALERT_ITEM_EXTERNAL) +
+         GenerateMessageSection(orphaned_extension_ids_.get(),
+                                IDS_EXTENSION_ALERT_ITEM_EXTERNAL);
 }
 
 string16 ExtensionGlobalError::GetBubbleViewMessage() {
@@ -128,22 +107,13 @@ string16 ExtensionGlobalError::GetBubbleViewCancelButtonLabel() {
 }
 
 void ExtensionGlobalError::OnBubbleViewDidClose(Browser* browser) {
-  if (!closed_callback_.is_null()) {
-    closed_callback_.Run(*this, browser);
-  }
-  if (should_delete_self_on_close_) {
-    delete this;
-  }
+  extension_service_->HandleExtensionAlertClosed();
 }
 
 void ExtensionGlobalError::BubbleViewAcceptButtonPressed(Browser* browser) {
-  if (!accept_callback_.is_null()) {
-    accept_callback_.Run(*this, browser);
-  }
+  extension_service_->HandleExtensionAlertAccept();
 }
 
 void ExtensionGlobalError::BubbleViewCancelButtonPressed(Browser* browser) {
-  if (!cancel_callback_.is_null()) {
-    cancel_callback_.Run(*this, browser);
-  }
+  extension_service_->HandleExtensionAlertDetails(browser);
 }

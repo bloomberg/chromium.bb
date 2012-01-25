@@ -7,9 +7,7 @@
 #pragma once
 
 #include "base/basictypes.h"
-#include "base/callback.h"
 #include "base/compiler_specific.h"
-#include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/global_error.h"
 #include "chrome/common/extensions/extension.h"
 
@@ -20,26 +18,8 @@ class ExtensionService;
 // occur related to installed extensions.
 class ExtensionGlobalError : public GlobalError {
  public:
-  explicit ExtensionGlobalError(
-      base::WeakPtr<ExtensionService> extension_service);
+  explicit ExtensionGlobalError(ExtensionService* extension_service);
   virtual ~ExtensionGlobalError();
-
-  // Indicate whether this instance should manage its own lifetime. Because
-  // the GlobalError class can be used in several different ways, it's
-  // important to understand who has responsibility for memory management.
-  //
-  // Briefly: if the GlobalError has a menu item, or if it's added to the
-  // GlobalErrorService queue, then it's externally managed. If your code
-  // calls ShowBubbleView(), then you manage it.
-  //
-  // The default value is true; in case the default is wrong, we prefer to
-  // crash during development than to leak in production (fail fast).
-  //
-  // TODO(sail): This could be handled automatically with a few changes to the
-  // GlobalError interface.
-  void set_should_delete_self_on_close(bool value) {
-    should_delete_self_on_close_ = value;
-  }
 
   // Inform us that a given extension is of a certain type that the user
   // hasn't yet acknowledged.
@@ -61,19 +41,6 @@ class ExtensionGlobalError : public GlobalError {
     return orphaned_extension_ids_.get();
   }
 
-  typedef base::Callback<void(const ExtensionGlobalError&, Browser* browser)>
-      ExtensionGlobalErrorCallback;
-
-  // Called when the user presses the "Accept" button on the alert.
-  void set_accept_callback(ExtensionGlobalErrorCallback callback);
-
-  // Called when the user presses the "Cancel" button on the alert.
-  void set_cancel_callback(ExtensionGlobalErrorCallback callback);
-
-  // Called when the alert is dismissed with no direct user action
-  // (e.g., the browser exits).
-  void set_closed_callback(ExtensionGlobalErrorCallback callback);
-
   // GlobalError methods.
   virtual bool HasBadge() OVERRIDE;
   virtual bool HasMenuItem() OVERRIDE;
@@ -91,13 +58,10 @@ class ExtensionGlobalError : public GlobalError {
 
  private:
   bool should_delete_self_on_close_;
-  base::WeakPtr<ExtensionService> extension_service_;
+  ExtensionService* extension_service_;
   scoped_ptr<ExtensionIdSet> external_extension_ids_;
   scoped_ptr<ExtensionIdSet> blacklisted_extension_ids_;
   scoped_ptr<ExtensionIdSet> orphaned_extension_ids_;
-  ExtensionGlobalErrorCallback accept_callback_;
-  ExtensionGlobalErrorCallback cancel_callback_;
-  ExtensionGlobalErrorCallback closed_callback_;
   string16 message_;  // Displayed in the body of the alert.
 
   // For a given set of extension IDs, generates appropriate text

@@ -1820,72 +1820,69 @@ void ExtensionService::IdentifyAlertableExtensions() {
   // Build up the lists of extensions that require acknowledgment.
   // If this is the first time, grandfather extensions that would have
   // caused notification.
-  scoped_ptr<ExtensionGlobalError> global_error(
-      new ExtensionGlobalError(AsWeakPtr()));
+  extension_global_error_.reset(new ExtensionGlobalError(this));
   bool needs_alert = false;
   for (ExtensionSet::const_iterator iter = extensions_.begin();
        iter != extensions_.end(); ++iter) {
     const Extension* e = *iter;
     if (Extension::IsExternalLocation(e->location())) {
       if (!extension_prefs_->IsExternalExtensionAcknowledged(e->id())) {
-        global_error->AddExternalExtension(e->id());
+        extension_global_error_->AddExternalExtension(e->id());
         needs_alert = true;
       }
     }
     if (extension_prefs_->IsExtensionBlacklisted(e->id())) {
       if (!extension_prefs_->IsBlacklistedExtensionAcknowledged(e->id())) {
-        global_error->AddBlacklistedExtension(e->id());
+        extension_global_error_->AddBlacklistedExtension(e->id());
         needs_alert = true;
       }
     }
     if (extension_prefs_->IsExtensionOrphaned(e->id())) {
       if (!extension_prefs_->IsOrphanedExtensionAcknowledged(e->id())) {
-        global_error->AddOrphanedExtension(e->id());
+        extension_global_error_->AddOrphanedExtension(e->id());
         needs_alert = true;
       }
     }
   }
 
+  bool did_show_alert = false;
   if (needs_alert) {
     if (extension_prefs_->SetAlertSystemFirstRun()) {
-      global_error->set_accept_callback(
-          base::Bind(&ExtensionService::HandleExtensionAlertAccept,
-                     base::Unretained(this)));
-      global_error->set_cancel_callback(
-          base::Bind(&ExtensionService::HandleExtensionAlertDetails,
-                     base::Unretained(this)));
-      ShowExtensionAlert(global_error.release());
+      CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+      Browser* browser = BrowserList::GetLastActiveWithProfile(profile_);
+      if (browser) {
+        extension_global_error_->ShowBubbleView(browser);
+        did_show_alert = true;
+      }
     } else {
       // First run. Just acknowledge all the extensions, silently, by
       // shortcutting the display of the UI and going straight to the
       // callback for pressing the Accept button.
-      HandleExtensionAlertAccept(*global_error.get(), NULL);
+      HandleExtensionAlertAccept();
     }
   }
+
+  if (!did_show_alert)
+    extension_global_error_.reset();
 }
 
-void ExtensionService::ShowExtensionAlert(ExtensionGlobalError* global_error) {
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  Browser* browser = BrowserList::GetLastActiveWithProfile(profile_);
-  if (browser) {
-    global_error->ShowBubbleView(browser);
-  }
+void ExtensionService::HandleExtensionAlertClosed() {
+  extension_global_error_.reset();
 }
 
-void ExtensionService::HandleExtensionAlertAccept(
-    const ExtensionGlobalError& global_error, Browser* browser) {
+void ExtensionService::HandleExtensionAlertAccept() {
   const ExtensionIdSet *extension_ids =
-      global_error.get_external_extension_ids();
+      extension_global_error_->get_external_extension_ids();
   for (ExtensionIdSet::const_iterator iter = extension_ids->begin();
        iter != extension_ids->end(); ++iter) {
     AcknowledgeExternalExtension(*iter);
   }
-  extension_ids = global_error.get_blacklisted_extension_ids();
+  extension_ids = extension_global_error_->get_blacklisted_extension_ids();
   for (ExtensionIdSet::const_iterator iter = extension_ids->begin();
        iter != extension_ids->end(); ++iter) {
     extension_prefs_->AcknowledgeBlacklistedExtension(*iter);
   }
-  extension_ids = global_error.get_orphaned_extension_ids();
+  extension_ids = extension_global_error_->get_orphaned_extension_ids();
   for (ExtensionIdSet::const_iterator iter = extension_ids->begin();
        iter != extension_ids->end(); ++iter) {
     extension_prefs_->AcknowledgeOrphanedExtension(*iter);
@@ -1896,11 +1893,9 @@ void ExtensionService::AcknowledgeExternalExtension(const std::string& id) {
   extension_prefs_->AcknowledgeExternalExtension(id);
 }
 
-void ExtensionService::HandleExtensionAlertDetails(
-    const ExtensionGlobalError& global_error, Browser* browser) {
-  if (browser) {
-    browser->ShowExtensionsTab();
-  }
+void ExtensionService::HandleExtensionAlertDetails(Browser* browser) {
+  DCHECK(browser);
+  browser->ShowExtensionsTab();
 }
 
 void ExtensionService::UnloadExtension(
