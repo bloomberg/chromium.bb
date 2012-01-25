@@ -47,9 +47,13 @@
   position: relative;
 }
 
+#customHomePageGroup > div.radio {
+  margin-top: 0;
+}
+
 #homepageURL {
   box-sizing: border-box;
-  padding-top: 3px;
+  margin-top: -4px;
   width: 100%;
 }
 
