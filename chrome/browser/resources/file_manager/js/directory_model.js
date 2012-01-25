@@ -137,6 +137,62 @@ DirectoryModel.prototype = {
   },
 
   /**
+   * Names of selected files.
+   * @type {Array.<string>}
+   */
+  get selectedNames() {
+    var indexes = this.fileListSelection_.selectedIndexes;
+    var dataModel = this.fileList_;
+    if (dataModel) {
+      return indexes.map(function(i) {
+        return dataModel.item(i).name;
+      });
+    }
+    return [];
+  },
+
+  set selectedNames(value) {
+    var indexes = [];
+    var dataModel = this.fileList_;
+
+    function safeKey(key) {
+      // The transformation must:
+      // 1. Never generate a reserved name ('__proto__')
+      // 2. Keep different keys different.
+      return '#' + key;
+    }
+
+    var hash = {};
+
+    for (var i = 0; i < value.length; i++)
+      hash[safeKey(value[i])] = 1;
+
+    for (var i = 0; i < dataModel.length; i++) {
+      if (hash.hasOwnProperty(safeKey(dataModel.item(i).name)))
+        indexes.push(i);
+    }
+    this.fileListSelection_.selectedIndexes = indexes;
+  },
+
+  /**
+   * Lead item file name.
+   * @type {string?}
+   */
+  get leadName() {
+    var index = this.fileListSelection_.leadIndex;
+    return index >= 0 && this.fileList_.item(index).name;
+  },
+
+  set leadName(value) {
+    for (var i = 0; i < this.fileList_.length; i++) {
+      if (this.fileList_.item(i).name == value) {
+        this.fileListSelection_.leadIndex = i;
+        return;
+      }
+    }
+  },
+
+  /**
    * Schedule rescan with delay. If another rescan has been scheduled does
    * nothing. Designed to handle directory change notification. File operation
    * may cause a few notifications what should cause a single refresh.
@@ -206,9 +262,21 @@ DirectoryModel.prototype = {
 
   replaceFileList_: function(entries) {
     // TODO(serya): Reinserting breaks renaming. Need to be merged gracefully.
+    this.fileListSelection_.beginChange();
+
+    var selectedNames = this.selectedNames;
+    // Restore leadIndex in case leadName no longer exists.
+    var leadIndex = this.fileListSelection_.leadIndex;
+    var leadName = this.leadName;
+
     var spliceArgs = [].slice.call(entries);
     spliceArgs.unshift(0, this.fileList_.length);
     this.fileList_.splice.apply(this.fileList_, spliceArgs);
+
+    this.selectedNames = selectedNames;
+    this.fileListSelection_.leadIndex = leadIndex;
+    this.leadName = leadName;
+    this.fileListSelection_.endChange();
   },
 
   /**
