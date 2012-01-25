@@ -1,11 +1,21 @@
-noinst_PROGRAMS = $(clients_programs) 		\
-	$(poppler_programs) 			\
+bin_PROGRAMS =					\
+	$(terminal)
+
+noinst_PROGRAMS =				\
+	$(clients_programs)			\
+	$(poppler_programs)			\
 	$(simple_clients_programs)
 
-libexec_PROGRAMS = $(desktop_shell) $(tablet_shell)
+libexec_PROGRAMS =				\
+	$(desktop_shell)			\
+	$(tablet_shell)
 
 if BUILD_SIMPLE_CLIENTS
-simple_clients_programs = simple-egl simple-shm simple-touch
+simple_clients_programs =			\
+	simple-egl				\
+	simple-shm				\
+	simple-touch
+
 simple_egl_SOURCES = simple-egl.c
 simple_egl_LDADD = $(SIMPLE_CLIENT_LIBS) -lm
 
@@ -17,10 +27,11 @@ simple_touch_LDADD = $(SIMPLE_CLIENT_LIBS)
 endif
 
 if BUILD_CLIENTS
+terminal = weston-terminal
+
 clients_programs =				\
 	flower					\
 	screenshot				\
-	terminal				\
 	image					\
 	dnd					\
 	smoke					\
@@ -54,8 +65,8 @@ flower_LDADD = $(toolkit_libs)
 screenshot_SOURCES = screenshot.c screenshooter-protocol.c
 screenshot_LDADD = $(toolkit_libs)
 
-terminal_SOURCES = terminal.c
-terminal_LDADD = $(toolkit_libs) -lutil
+weston_terminal_SOURCES = terminal.c
+weston_terminal_LDADD = $(toolkit_libs) -lutil
 
 image_SOURCES = image.c
 image_LDADD = $(toolkit_libs)
