@@ -101,6 +101,7 @@ drm_output_prepare_scanout_surface(struct drm_output *output)
 	    es->geometry.y != output->base.y ||
 	    es->width != output->base.current->width ||
 	    es->height != output->base.current->height ||
+	    es->transform.enabled ||
 	    es->image == EGL_NO_IMAGE_KHR)
 		return -1;
 
