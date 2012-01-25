@@ -25,6 +25,7 @@ PepperSessionManager::PepperSessionManager(pp::Instance* pp_instance)
       listener_(NULL),
       allow_nat_traversal_(false),
       ready_(false) {
+  transport_config_.nat_traversal = allow_nat_traversal_;
 }
 
 PepperSessionManager::~PepperSessionManager() {
