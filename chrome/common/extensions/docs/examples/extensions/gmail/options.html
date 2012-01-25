@@ -47,6 +47,7 @@ body {
   margin-top:4em;
 }
 </style>
+<script src="options.js"></script>
 </head>
 <body>
 
@@ -59,39 +60,9 @@ body {
     <em>(eg a/mydomain.com)</em>
 
 <div id="footer">
-  <button id="save-button" style="font-weight:bold" onclick="save()"
-    >Save</button>
-  <button onclick="init()">Cancel</button>
+  <button id="save-button" style="font-weight:bold">Save</button>
+  <button id="cancel-button">Cancel</button>
 </div>
 
-<script>
-var customDomainsTextbox;
-var saveButton;
-
-init();
-
-function init() {
-  customDomainsTextbox = document.getElementById("custom-domain");
-  saveButton = document.getElementById("save-button");
-
-  customDomainsTextbox.value = localStorage.customDomain || "";
-  markClean();
-}
-
-function save() {
-  localStorage.customDomain = customDomainsTextbox.value;
-  markClean();
-
-  chrome.extension.getBackgroundPage().init();
-}
-
-function markDirty() {
-  saveButton.disabled = false;
-}
-
-function markClean() {
-  saveButton.disabled = true;
-}
-</script>
 </body>
 </html>

@@ -1127,10 +1127,12 @@
         "_locales\/zh_CN\/messages.json",
         "_locales\/zh_TW\/messages.json",
         "background.html",
+        "background.js",
         "manifest.json",
-        "options.html"
+        "options.html",
+        "options.js"
       ],
-      "source_hash": "0444302416c0220269a5ae3dc9bc0b1d93fb0f5a",
+      "source_hash": "13f0a37272c82d2fd1f0ea295ebf46ce99018337",
       "zip_path": "examples\/extensions\/gmail.zip"
     },
     {
