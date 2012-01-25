@@ -1,20 +1,23 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// MediaStreamManager is used to open media capture devices (video supported
-// now). Call flow:
+// MediaStreamManager is used to open/enumerate media capture devices (video
+// supported now). Call flow:
 // 1. GenerateStream is called when a render process wants to use a capture
 //    device.
 // 2. MediaStreamManager will ask MediaStreamDeviceSettings for permission to
 //    use devices and for which device to use.
-// 3. MediaStreamDeviceSettings will request list(s) of available devices, the
-//    requests will be relayed to the corresponding media device manager and the
-//    result will be given to MediaStreamDeviceSettings.
+// 3. MediaStreamManager will request the corresponding media device manager(s)
+//    to enumerate available devices. The result will be given to
+//    MediaStreamDeviceSettings.
 // 4. MediaStreamDeviceSettings will, by using user settings, pick devices which
 //    devices to use and let MediaStreamManager know the result.
 // 5. MediaStreamManager will call the proper media device manager to open the
 //    device and let the MediaStreamRequester know it has been done.
+
+// When enumeration and open are done in separate operations,
+// MediaStreamDeviceSettings is not involved as in steps.
 
 #ifndef CONTENT_BROWSER_RENDERER_HOST_MEDIA_MEDIA_STREAM_MANAGER_H_
 #define CONTENT_BROWSER_RENDERER_HOST_MEDIA_MEDIA_STREAM_MANAGER_H_
@@ -71,6 +74,27 @@ class CONTENT_EXPORT MediaStreamManager
   // Closes generated stream.
   void StopGeneratedStream(const std::string& label);
 
+  // Gets a list of devices of |type|.
+  // The request is identified using |label|, which is pointing to a
+  // std::string.
+  void EnumerateDevices(MediaStreamRequester* requester,
+                        int render_process_id,
+                        int render_view_id,
+                        MediaStreamType type,
+                        const std::string& security_origin,
+                        std::string* label);
+
+  // Open a device identified by |device_id|.
+  // The request is identified using |label|, which is pointing to a
+  // std::string.
+  void OpenDevice(MediaStreamRequester* requester,
+                  int render_process_id,
+                  int render_view_id,
+                  const std::string& device_id,
+                  MediaStreamType type,
+                  const std::string& security_origin,
+                  std::string* label);
+
   // Implements MediaStreamProviderListener.
   virtual void Opened(MediaStreamType stream_type,
                       int capture_session_id) OVERRIDE;
@@ -83,8 +107,6 @@ class CONTENT_EXPORT MediaStreamManager
                      MediaStreamProviderError error) OVERRIDE;
 
   // Implements SettingsRequester.
-  virtual void GetDevices(const std::string& label,
-                          MediaStreamType stream_type) OVERRIDE;
   virtual void DevicesAccepted(const std::string& label,
                                const StreamDeviceInfoArray& devices) OVERRIDE;
   virtual void SettingsError(const std::string& label) OVERRIDE;
@@ -100,6 +122,11 @@ class CONTENT_EXPORT MediaStreamManager
   // Helpers.
   bool RequestDone(const MediaStreamManager::DeviceRequest& request) const;
   MediaStreamProvider* GetDeviceManager(MediaStreamType stream_type);
+  void StartEnumeration(DeviceRequest* new_request,
+                        int render_process_id,
+                        int render_view_id,
+                        const std::string& security_origin,
+                        std::string* label);
 
   scoped_ptr<MediaStreamDeviceSettings> device_settings_;
   scoped_ptr<VideoCaptureManager> video_capture_manager_;

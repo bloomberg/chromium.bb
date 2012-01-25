@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -66,13 +66,6 @@ void MediaStreamDeviceSettings::RequestCaptureDeviceUsage(
                                                              render_view_id,
                                                              security_origin,
                                                              request_options)));
-  // Ask for available devices.
-  if (request_options.audio) {
-    requester_->GetDevices(label, kAudioCapture);
-  }
-  if (request_options.video_option != StreamOptions::kNoCamera) {
-    requester_->GetDevices(label, kVideoCapture);
-  }
 }
 
 void MediaStreamDeviceSettings::AvailableDevices(

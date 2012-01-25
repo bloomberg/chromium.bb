@@ -437,6 +437,9 @@ RenderViewImpl::RenderViewImpl(
     p2p_socket_dispatcher_ = new content::P2PSocketDispatcher(this);
 #endif
 
+  if (!media_stream_dispatcher_)
+    media_stream_dispatcher_ = new MediaStreamDispatcher(this);
+
   new MHTMLGenerator(this);
 #if defined(OS_MACOSX)
   new TextInputClientObserver(this);

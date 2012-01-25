@@ -351,6 +351,35 @@ void MediaStreamImpl::OnAudioDeviceFailed(const std::string& label,
   NOTIMPLEMENTED();
 }
 
+void MediaStreamImpl::OnDevicesEnumerated(
+    int request_id,
+    const media_stream::StreamDeviceInfoArray& device_array) {
+  DVLOG(1) << "MediaStreamImpl::OnDevicesEnumerated("
+           << request_id << ")";
+  NOTIMPLEMENTED();
+}
+
+void MediaStreamImpl::OnDevicesEnumerationFailed(int request_id) {
+  DVLOG(1) << "MediaStreamImpl::OnDevicesEnumerationFailed("
+           << request_id << ")";
+  NOTIMPLEMENTED();
+}
+
+void MediaStreamImpl::OnDeviceOpened(
+    int request_id,
+    const std::string& label,
+    const media_stream::StreamDeviceInfo& video_device) {
+  DVLOG(1) << "MediaStreamImpl::OnDeviceOpened("
+           << request_id << ", " << label << ")";
+  NOTIMPLEMENTED();
+}
+
+void MediaStreamImpl::OnDeviceOpenFailed(int request_id) {
+  DVLOG(1) << "MediaStreamImpl::VideoDeviceOpenFailed("
+           << request_id << ")";
+  NOTIMPLEMENTED();
+}
+
 void MediaStreamImpl::InitializeWorkerThread(talk_base::Thread** thread,
                                              base::WaitableEvent* event) {
   jingle_glue::JingleThreadWrapper::EnsureForCurrentThread();

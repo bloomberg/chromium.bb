@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,6 +32,23 @@ class CONTENT_EXPORT MediaStreamDispatcherEventHandler {
   // error occurs.
   virtual void OnAudioDeviceFailed(const std::string& label,
                                    int index) = 0;
+
+  // A new list of devices have been enumerated.
+  virtual void OnDevicesEnumerated(
+      int request_id,
+      const media_stream::StreamDeviceInfoArray& device_array) = 0;
+
+  // Failed to enumerate devices.
+  virtual void OnDevicesEnumerationFailed(int request_id) = 0;
+
+  // A device has been opened.
+  virtual void OnDeviceOpened(
+      int request_id,
+      const std::string& label,
+      const media_stream::StreamDeviceInfo& device_info) = 0;
+
+  // Failed to open the device.
+  virtual void OnDeviceOpenFailed(int request_id) = 0;
 
  protected:
   virtual ~MediaStreamDispatcherEventHandler();

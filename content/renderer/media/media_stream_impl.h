@@ -104,6 +104,15 @@ class CONTENT_EXPORT MediaStreamImpl
   virtual void OnAudioDeviceFailed(
       const std::string& label,
       int index) OVERRIDE;
+  virtual void OnDevicesEnumerated(
+      int request_id,
+      const media_stream::StreamDeviceInfoArray& device_array) OVERRIDE;
+  virtual void OnDevicesEnumerationFailed(int request_id) OVERRIDE;
+  virtual void OnDeviceOpened(
+      int request_id,
+      const std::string& label,
+      const media_stream::StreamDeviceInfo& device_info) OVERRIDE;
+  virtual void OnDeviceOpenFailed(int request_id) OVERRIDE;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(MediaStreamImplTest, Basic);

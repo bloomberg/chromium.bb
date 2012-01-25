@@ -79,3 +79,20 @@ void MediaStreamImpl::OnVideoDeviceFailed(const std::string& label,
 void MediaStreamImpl::OnAudioDeviceFailed(const std::string& label,
                                           int index) {
 }
+
+void MediaStreamImpl::OnDevicesEnumerated(
+    int request_id,
+    const media_stream::StreamDeviceInfoArray& device_array) {
+}
+
+void MediaStreamImpl::OnDevicesEnumerationFailed(int request_id) {
+}
+
+void MediaStreamImpl::OnDeviceOpened(
+    int request_id,
+    const std::string& label,
+    const media_stream::StreamDeviceInfo& video_device) {
+}
+
+void MediaStreamImpl::OnDeviceOpenFailed(int request_id) {
+}

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -51,21 +51,6 @@ static bool Requested(const StreamOptions& options,
 }
 
 struct MediaStreamManager::DeviceRequest {
-  DeviceRequest()
-      : requester(NULL),
-        state(kNumMediaStreamTypes, kNotRequested) {
-    options.audio = false;
-    options.video_option = StreamOptions::kNoCamera;
-  }
-  DeviceRequest(MediaStreamRequester* requester,
-                const StreamOptions& request_options)
-      : requester(requester),
-        options(request_options),
-        state(kNumMediaStreamTypes, kNotRequested) {
-    DCHECK(requester);
-  }
-  ~DeviceRequest() {}
-
   enum RequestState {
     kNotRequested = 0,
     kRequested,
@@ -74,9 +59,36 @@ struct MediaStreamManager::DeviceRequest {
     kError
   };
 
+  enum RequestType {
+    kGenerateStream = 0,
+    kEnumerateDevices,
+    kOpenDevice
+  };
+
+  DeviceRequest()
+      : requester(NULL),
+        state(kNumMediaStreamTypes, kNotRequested),
+        type(kGenerateStream) {
+    options.audio = false;
+    options.video_option = StreamOptions::kNoCamera;
+  }
+
+  DeviceRequest(MediaStreamRequester* requester,
+                const StreamOptions& request_options)
+      : requester(requester),
+        options(request_options),
+        state(kNumMediaStreamTypes, kNotRequested),
+        type(kGenerateStream) {
+    DCHECK(requester);
+  }
+
+  ~DeviceRequest() {}
+
   MediaStreamRequester* requester;
   StreamOptions options;
   std::vector<RequestState> state;
+  RequestType type;
+  std::string requested_device_id;
   StreamDeviceInfoArray audio_devices;
   StreamDeviceInfoArray video_devices;
 };
@@ -122,34 +134,8 @@ void MediaStreamManager::GenerateStream(MediaStreamRequester* requester,
 
   // Create a new request based on options.
   DeviceRequest new_request = DeviceRequest(requester, options);
-  if (Requested(new_request.options, kAudioCapture)) {
-    new_request.state[kAudioCapture] = DeviceRequest::kRequested;
-  }
-  if (Requested(new_request.options, kVideoCapture)) {
-    new_request.state[kVideoCapture] = DeviceRequest::kRequested;
-  }
-
-  // Create a label for this request and verify it is unique.
-  std::string request_label;
-  do {
-    request_label = RandomLabel();
-  } while (requests_.find(request_label) != requests_.end());
-
-  requests_.insert(std::make_pair(request_label, new_request));
-
-  // Get user confirmation to use capture devices.
-  // Need to make an asynchronous call to make sure the |requester| gets the
-  // |label| before it would receive any event.
-  BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(&MediaStreamDeviceSettings::RequestCaptureDeviceUsage,
-                 base::Unretained(device_settings_.get()),
-                 request_label, render_process_id,
-                 render_view_id, options,
-                 security_origin));
-
-  (*label) = request_label;
+  StartEnumeration(&new_request, render_process_id, render_view_id,
+                   security_origin, label);
 }
 
 void MediaStreamManager::CancelRequests(MediaStreamRequester* requester) {
@@ -205,6 +191,101 @@ void MediaStreamManager::StopGeneratedStream(const std::string& label) {
   }
 }
 
+void MediaStreamManager::EnumerateDevices(
+    MediaStreamRequester* requester,
+    int render_process_id,
+    int render_view_id,
+    MediaStreamType type,
+    const std::string& security_origin,
+    std::string* label) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  // Create a new request.
+  StreamOptions options;
+  if (type == media_stream::kAudioCapture)
+    options.audio = true;
+  else
+    options.video_option = StreamOptions::kFacingUser;
+
+  DeviceRequest new_request = DeviceRequest(requester, options);
+  new_request.type = DeviceRequest::kEnumerateDevices;
+
+  StartEnumeration(&new_request, render_process_id, render_view_id,
+                   security_origin, label);
+}
+
+void MediaStreamManager::OpenDevice(
+    MediaStreamRequester* requester,
+    int render_process_id,
+    int render_view_id,
+    const std::string& device_id,
+    MediaStreamType type,
+    const std::string& security_origin,
+    std::string* label) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  // Create a new request.
+  StreamOptions options;
+  if (type == media_stream::kAudioCapture)
+    options.audio = true;
+  else
+    options.video_option = StreamOptions::kFacingUser;
+
+  DeviceRequest new_request = DeviceRequest(requester, options);
+  new_request.type = DeviceRequest::kOpenDevice;
+  new_request.requested_device_id = device_id;
+
+  StartEnumeration(&new_request, render_process_id, render_view_id,
+                   security_origin, label);
+}
+
+void MediaStreamManager::StartEnumeration(
+    DeviceRequest* new_request,
+    int render_process_id,
+    int render_view_id,
+    const std::string& security_origin,
+    std::string* label) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  if (Requested(new_request->options, kAudioCapture)) {
+    new_request->state[kAudioCapture] = DeviceRequest::kRequested;
+    if (!enumeration_in_progress_[kAudioCapture]) {
+      enumeration_in_progress_[kAudioCapture] = true;
+      GetDeviceManager(kAudioCapture)->EnumerateDevices();
+    }
+  }
+  if (Requested(new_request->options, kVideoCapture)) {
+    new_request->state[kVideoCapture] = DeviceRequest::kRequested;
+    if (!enumeration_in_progress_[kVideoCapture]) {
+      enumeration_in_progress_[kVideoCapture] = true;
+      GetDeviceManager(kVideoCapture)->EnumerateDevices();
+    }
+  }
+
+  // Create a label for this request and verify it is unique.
+  std::string request_label;
+  do {
+    request_label = RandomLabel();
+  } while (requests_.find(request_label) != requests_.end());
+
+  requests_.insert(std::make_pair(request_label, *new_request));
+
+  // Get user confirmation to use capture devices.
+  // Need to make an asynchronous call to make sure the |requester| gets the
+  // |label| before it would receive any event.
+  if (new_request->type == DeviceRequest::kGenerateStream) {
+    BrowserThread::PostTask(BrowserThread::IO,
+        FROM_HERE,
+        base::Bind(&MediaStreamDeviceSettings::RequestCaptureDeviceUsage,
+                   base::Unretained(device_settings_.get()),
+                   request_label, render_process_id,
+                   render_view_id, new_request->options,
+                   security_origin));
+  }
+
+  (*label) = request_label;
+}
+
 void MediaStreamManager::Opened(MediaStreamType stream_type,
                                 int capture_session_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -257,8 +338,17 @@ void MediaStreamManager::Opened(MediaStreamType stream_type,
     return;
   }
 
-  request->requester->StreamGenerated(label, request->audio_devices,
-                                      request->video_devices);
+  switch (request->type) {
+    case DeviceRequest::kOpenDevice:
+      request->requester->DeviceOpened(label, (*devices)[0]);
+      break;
+    case DeviceRequest::kGenerateStream:
+      request->requester->StreamGenerated(label, request->audio_devices,
+                                          request->video_devices);
+      break;
+    default:
+      NOTREACHED();
+  }
 }
 
 void MediaStreamManager::Closed(MediaStreamType stream_type,
@@ -284,7 +374,36 @@ void MediaStreamManager::DevicesEnumerated(
   }
   for (std::list<std::string>::iterator it = label_list.begin();
        it != label_list.end(); ++it) {
-    device_settings_->AvailableDevices(*it, stream_type, devices);
+    DeviceRequest& request = requests_[*it];
+    switch (request.type) {
+      case DeviceRequest::kEnumerateDevices:
+        request.requester->DevicesEnumerated(*it, devices);
+        requests_.erase(*it);
+        break;
+      case DeviceRequest::kOpenDevice:
+        for (StreamDeviceInfoArray::const_iterator device_it = devices.begin();
+             device_it != devices.end(); device_it++) {
+          if (request.requested_device_id == device_it->device_id) {
+            StreamDeviceInfo device = *device_it;
+            device.in_use = false;
+            device.session_id =
+                GetDeviceManager(device_it->stream_type)->Open(device);
+            request.state[device_it->stream_type] = DeviceRequest::kOpening;
+            if (stream_type == kAudioCapture)
+              request.audio_devices.push_back(device);
+            else
+              request.video_devices.push_back(device);
+            break;
+          }
+        }
+        break;
+      default:
+        BrowserThread::PostTask(BrowserThread::IO,
+            FROM_HERE,
+            base::Bind(&MediaStreamDeviceSettings::AvailableDevices,
+                       base::Unretained(device_settings_.get()),
+                       *it, stream_type, devices));
+    }
   }
   label_list.clear();
   enumeration_in_progress_[stream_type] = false;
@@ -339,15 +458,6 @@ void MediaStreamManager::Error(MediaStreamType stream_type,
   }
 }
 
-void MediaStreamManager::GetDevices(const std::string& label,
-                                    MediaStreamType stream_type) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  if (!enumeration_in_progress_[stream_type]) {
-    enumeration_in_progress_[stream_type] = true;
-    GetDeviceManager(stream_type)->EnumerateDevices();
-  }
-}
-
 void MediaStreamManager::DevicesAccepted(const std::string& label,
                                          const StreamDeviceInfoArray& devices) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -399,6 +509,7 @@ void MediaStreamManager::SettingsError(const std::string& label) {
   // Erase this request and report an error.
   DeviceRequests::iterator it = requests_.find(label);
   if (it != requests_.end()) {
+    DCHECK_EQ(it->second.type, DeviceRequest::kGenerateStream);
     it->second.requester->StreamGenerationFailed(label);
     requests_.erase(it);
     return;

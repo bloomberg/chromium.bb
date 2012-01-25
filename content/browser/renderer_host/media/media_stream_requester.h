@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,6 +29,17 @@ class CONTENT_EXPORT MediaStreamRequester {
   // VideoDeviceFailed is called if an already opened video device encounters
   // an error.
   virtual void VideoDeviceFailed(const std::string& label, int index) = 0;
+
+  // Called as a reply of a successful call to EnumerateDevices.
+  virtual void DevicesEnumerated(const std::string& label,
+                                 const StreamDeviceInfoArray& devices) = 0;
+  // Called if EnumerateDevices failed.
+  virtual void DevicesEnumerationFailed(const std::string& label) = 0;
+  // Called as a reply of a successful call to OpenDevice.
+  virtual void DeviceOpened(const std::string& label,
+                            const StreamDeviceInfo& device_info) = 0;
+  // Called if OpenDevice failed.
+  virtual void DeviceOpenFailed(const std::string& label) = 0;
 
  protected:
   virtual ~MediaStreamRequester() {

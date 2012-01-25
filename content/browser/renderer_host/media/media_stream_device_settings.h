@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -51,8 +51,8 @@ class MediaStreamDeviceSettings {
                                  const StreamOptions& stream_components,
                                  const std::string& security_origin);
 
-  // Called as response to SettingsRequester::GetDevices. One response for each
-  // call to |GetDevices| is expected.
+  // Called to pass in an array of available devices for a request represented
+  // by |label|. There could be multiple calls for a request.
   void AvailableDevices(const std::string& label, MediaStreamType stream_type,
                         const StreamDeviceInfoArray& devices);
 

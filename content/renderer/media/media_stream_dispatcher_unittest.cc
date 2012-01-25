@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,6 +19,8 @@ const int kAudioSessionId = 3;
 const int kVideoSessionId = 5;
 const int kRequestId1 = 10;
 const int kRequestId2 = 20;
+const int kRequestId3 = 30;
+const int kRequestId4 = 40;
 
 class MockMediaStreamDispatcherEventHandler
     : public MediaStreamDispatcherEventHandler {
@@ -32,23 +34,45 @@ class MockMediaStreamDispatcherEventHandler
       int request_id,
       const std::string &label,
       const media_stream::StreamDeviceInfoArray& audio_device_array,
-      const media_stream::StreamDeviceInfoArray& video_device_array) {
+      const media_stream::StreamDeviceInfoArray& video_device_array) OVERRIDE {
     request_id_ = request_id;
     label_ = label;
   }
 
-  virtual void OnStreamGenerationFailed(int request_id) {
+  virtual void OnStreamGenerationFailed(int request_id) OVERRIDE {
     request_id_ = request_id;
   }
 
   virtual void OnAudioDeviceFailed(const std::string& label,
-                                   int index) {
+                                   int index) OVERRIDE {
     audio_failed = true;
   }
 
   virtual void OnVideoDeviceFailed(const std::string& label,
-                                   int index) {
+                                   int index) OVERRIDE {
     video_failed = true;
+  }
+
+  virtual void OnDevicesEnumerated(
+      int request_id,
+      const media_stream::StreamDeviceInfoArray& device_array) OVERRIDE {
+    request_id_ = request_id;
+  }
+
+  virtual void OnDevicesEnumerationFailed(int request_id) OVERRIDE {
+    request_id_ = request_id;
+  }
+
+  virtual void OnDeviceOpened(
+      int request_id,
+      const std::string& label,
+      const media_stream::StreamDeviceInfo& video_device) OVERRIDE {
+    request_id_ = request_id;
+    label_ = label;
+  }
+
+  virtual void OnDeviceOpenFailed(int request_id) OVERRIDE {
+    request_id_ = request_id;
   }
 
   int request_id_;
@@ -61,7 +85,7 @@ class MockMediaStreamDispatcherEventHandler
 
 }  // namespace
 
-TEST(MediaStreamDispatcherTest, Basic) {
+TEST(MediaStreamDispatcherTest, BasicStream) {
   scoped_ptr<MediaStreamDispatcher> dispatcher(new MediaStreamDispatcher(NULL));
   scoped_ptr<MockMediaStreamDispatcherEventHandler>
       handler(new MockMediaStreamDispatcherEventHandler);
@@ -126,6 +150,88 @@ TEST(MediaStreamDispatcherTest, Basic) {
   dispatcher->StopStream(stream_label1);
   EXPECT_EQ(dispatcher->audio_session_id(stream_label1, 0),
             media_stream::StreamDeviceInfo::kNoId);
+  EXPECT_EQ(dispatcher->video_session_id(stream_label1, 0),
+            media_stream::StreamDeviceInfo::kNoId);
+  EXPECT_EQ(dispatcher->label_stream_map_.size(), size_t(0));
+
+  // Verify that the request have been completed.
+  EXPECT_EQ(dispatcher->label_stream_map_.size(), size_t(0));
+  EXPECT_EQ(dispatcher->requests_.size(), size_t(0));
+}
+
+TEST(MediaStreamDispatcherTest, BasicVideoDevice) {
+  scoped_ptr<MediaStreamDispatcher> dispatcher(new MediaStreamDispatcher(NULL));
+  scoped_ptr<MockMediaStreamDispatcherEventHandler>
+      handler(new MockMediaStreamDispatcherEventHandler);
+  std::string security_origin;
+
+  int ipc_request_id1 = dispatcher->next_ipc_id_;
+  dispatcher->EnumerateDevices(kRequestId1, handler.get(),
+                               media_stream::kVideoCapture, security_origin);
+  int ipc_request_id2 = dispatcher->next_ipc_id_;
+  EXPECT_NE(ipc_request_id1, ipc_request_id2);
+  dispatcher->EnumerateDevices(kRequestId2, handler.get(),
+                               media_stream::kVideoCapture, security_origin);
+  EXPECT_EQ(dispatcher->requests_.size(), size_t(2));
+
+  media_stream::StreamDeviceInfoArray video_device_array(1);
+  media_stream::StreamDeviceInfo video_device_info;
+  video_device_info.name = "Camera";
+  video_device_info.device_id = "device_path";
+  video_device_info.stream_type = media_stream::kVideoCapture;
+  video_device_info.session_id = kVideoSessionId;
+  video_device_array[0] = video_device_info;
+
+  // Complete the enumeration of request 1.
+  dispatcher->OnMessageReceived(MediaStreamMsg_DevicesEnumerated(
+      kRouteId, ipc_request_id1, video_device_array));
+  EXPECT_EQ(handler->request_id_, kRequestId1);
+
+  // Complete the enumeration of request 2.
+  dispatcher->OnMessageReceived(MediaStreamMsg_DevicesEnumerated(
+      kRouteId, ipc_request_id2, video_device_array));
+  EXPECT_EQ(handler->request_id_, kRequestId2);
+
+  EXPECT_EQ(dispatcher->requests_.size(), size_t(0));
+  EXPECT_EQ(dispatcher->label_stream_map_.size(), size_t(0));
+
+  int ipc_request_id3 = dispatcher->next_ipc_id_;
+  dispatcher->OpenDevice(kRequestId3, handler.get(),
+                         video_device_info.device_id,
+                         media_stream::kVideoCapture, security_origin);
+  int ipc_request_id4 = dispatcher->next_ipc_id_;
+  EXPECT_NE(ipc_request_id3, ipc_request_id4);
+  dispatcher->OpenDevice(kRequestId4, handler.get(),
+                         video_device_info.device_id,
+                         media_stream::kVideoCapture, security_origin);
+  EXPECT_EQ(dispatcher->requests_.size(), size_t(2));
+
+  // Complete the OpenDevice of request 1.
+  std::string stream_label1 = std::string("stream1");
+  dispatcher->OnMessageReceived(MediaStreamMsg_DeviceOpened(
+      kRouteId, ipc_request_id3, stream_label1, video_device_info));
+  EXPECT_EQ(handler->request_id_, kRequestId3);
+
+  // Complete the OpenDevice of request 2.
+  std::string stream_label2 = std::string("stream2");
+  dispatcher->OnMessageReceived(MediaStreamMsg_DeviceOpened(
+      kRouteId, ipc_request_id4, stream_label2, video_device_info));
+  EXPECT_EQ(handler->request_id_, kRequestId4);
+
+  EXPECT_EQ(dispatcher->requests_.size(), size_t(0));
+  EXPECT_EQ(dispatcher->label_stream_map_.size(), size_t(2));
+
+  // Check the video_session_id.
+  EXPECT_EQ(dispatcher->video_session_id(stream_label1, 0), kVideoSessionId);
+  EXPECT_EQ(dispatcher->video_session_id(stream_label2, 0), kVideoSessionId);
+
+  // Stop stream2.
+  dispatcher->StopStream(stream_label2);
+  EXPECT_EQ(dispatcher->video_session_id(stream_label2, 0),
+            media_stream::StreamDeviceInfo::kNoId);
+
+  // Stop stream1.
+  dispatcher->StopStream(stream_label1);
   EXPECT_EQ(dispatcher->video_session_id(stream_label1, 0),
             media_stream::StreamDeviceInfo::kNoId);
   EXPECT_EQ(dispatcher->label_stream_map_.size(), size_t(0));

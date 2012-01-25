@@ -41,6 +41,22 @@ class CONTENT_EXPORT MediaStreamDispatcher
   // Stop a started stream. Label is the label provided in OnStreamGenerated.
   virtual void StopStream(const std::string& label);
 
+  // Request to enumerate devices.
+  void EnumerateDevices(int request_id,
+                        MediaStreamDispatcherEventHandler* event_handler,
+                        media_stream::MediaStreamType type,
+                        const std::string& security_origin);
+
+  // Request to open a device.
+  void OpenDevice(int request_id,
+                  MediaStreamDispatcherEventHandler* event_handler,
+                  const std::string& device_id,
+                  media_stream::MediaStreamType type,
+                  const std::string& security_origin);
+
+  // Close a started device. |label| is provided in OnDeviceOpened.
+  void CloseDevice(const std::string& label);
+
   // Check if the label is a valid stream.
   virtual bool IsStream(const std::string& label);
   // Get the video session_id given a label. The label identifies a stream.
@@ -50,7 +66,8 @@ class CONTENT_EXPORT MediaStreamDispatcher
   virtual int audio_session_id(const std::string& label, int index);
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(MediaStreamDispatcherTest, Basic);
+  FRIEND_TEST_ALL_PREFIXES(MediaStreamDispatcherTest, BasicStream);
+  FRIEND_TEST_ALL_PREFIXES(MediaStreamDispatcherTest, BasicVideoDevice);
   FRIEND_TEST_ALL_PREFIXES(MediaStreamDispatcherTest, TestFailure);
 
   struct Request;
@@ -69,6 +86,15 @@ class CONTENT_EXPORT MediaStreamDispatcher
   void OnStreamGenerationFailed(int request_id);
   void OnVideoDeviceFailed(const std::string& label, int index);
   void OnAudioDeviceFailed(const std::string& label, int index);
+  void OnDevicesEnumerated(
+      int request_id,
+      const media_stream::StreamDeviceInfoArray& device_array);
+  void OnDevicesEnumerationFailed(int request_id);
+  void OnDeviceOpened(
+      int request_id,
+      const std::string& label,
+      const media_stream::StreamDeviceInfo& device_info);
+  void OnDeviceOpenFailed(int request_id);
 
   int next_ipc_id_;
   typedef std::map<std::string, Stream> LabelStreamMap;

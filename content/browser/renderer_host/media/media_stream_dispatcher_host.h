@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -37,10 +37,15 @@ class CONTENT_EXPORT MediaStreamDispatcherHost
       const std::string& label,
       const StreamDeviceInfoArray& audio_devices,
       const StreamDeviceInfoArray& video_devices) OVERRIDE;
-
   virtual void StreamGenerationFailed(const std::string& label) OVERRIDE;
   virtual void AudioDeviceFailed(const std::string& label, int index) OVERRIDE;
   virtual void VideoDeviceFailed(const std::string& label, int index) OVERRIDE;
+  virtual void DevicesEnumerated(const std::string& label,
+                                 const StreamDeviceInfoArray& devices) OVERRIDE;
+  virtual void DevicesEnumerationFailed(const std::string& label) OVERRIDE;
+  virtual void DeviceOpened(const std::string& label,
+                            const StreamDeviceInfo& video_device) OVERRIDE;
+  virtual void DeviceOpenFailed(const std::string& label) OVERRIDE;
 
   // content::BrowserMessageFilter implementation.
   virtual bool OnMessageReceived(const IPC::Message& message,
@@ -56,6 +61,17 @@ class CONTENT_EXPORT MediaStreamDispatcherHost
                         const std::string& security_origin);
 
   void OnStopGeneratedStream(int render_view_id, const std::string& label);
+
+  void OnEnumerateDevices(int render_view_id,
+                          int page_request_id,
+                          media_stream::MediaStreamType type,
+                          const std::string& security_origin);
+
+  void OnOpenDevice(int render_view_id,
+                    int page_request_id,
+                    const std::string& device_id,
+                    media_stream::MediaStreamType type,
+                    const std::string& security_origin);
 
   // Returns the media stream manager to forward events to,
   // creating one if needed.
