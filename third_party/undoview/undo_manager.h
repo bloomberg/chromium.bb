@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef CHROME_BROWSER_AUTOCOMPLETE_UNDO_MANAGER_H_
-#define CHROME_BROWSER_AUTOCOMPLETE_UNDO_MANAGER_H_
+#ifndef UNDOVIEW_UNDO_MANAGER_H_
+#define UNDOVIEW_UNDO_MANAGER_H_
 
 #include <gtk/gtk.h>
 
@@ -82,5 +82,5 @@ void      gtk_source_undo_manager_set_max_undo_levels(GtkSourceUndoManager   *um
 
 G_END_DECLS
 
-#endif  // CHROME_BROWSER_AUTOCOMPLETE_UNDO_MANAGER_H_
+#endif  // UNDOVIEW_UNDO_MANAGER_H_
 
