@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -317,6 +317,10 @@ class SyncTest : public InProcessBrowserTest {
 
   // The URLFetcherImplFactory instance used to instantiate |fake_factory_|.
   scoped_ptr<URLFetcherImplFactory> factory_;
+
+  // Number of default entries (as determined by the existing entries at setup
+  // time on client 0).
+  size_t number_of_default_sync_items_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncTest);
 };

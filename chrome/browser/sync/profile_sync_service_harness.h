@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -185,6 +185,14 @@ class ProfileSyncServiceHarness
 
   // Check if |type| is being synced.
   bool IsTypePreferred(syncable::ModelType type);
+
+  // Get the number of sync entries this client has. This includes all top
+  // level or permanent items, and can include recently deleted entries.
+  size_t GetNumEntries() const;
+
+  // Get the number of sync datatypes registered (ignoring whatever state
+  // they're in).
+  size_t GetNumDatatypes() const;
 
  private:
   friend class StateChangeTimeoutEvent;

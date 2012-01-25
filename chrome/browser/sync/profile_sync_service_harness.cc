@@ -1093,6 +1093,16 @@ bool ProfileSyncServiceHarness::IsTypePreferred(syncable::ModelType type) {
   return service_->GetPreferredDataTypes().Has(type);
 }
 
+size_t ProfileSyncServiceHarness::GetNumEntries() const {
+  return GetLastSessionSnapshot()->num_entries;
+}
+
+size_t ProfileSyncServiceHarness::GetNumDatatypes() const {
+  browser_sync::DataTypeController::StateMap state_map;
+  service_->GetDataTypeControllerStates(&state_map);
+  return state_map.size();
+}
+
 std::string ProfileSyncServiceHarness::GetServiceStatus() {
   DictionaryValue value;
   sync_ui_util::ConstructAboutInformation(service_, &value);
