@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -36,19 +36,16 @@ class NativeViewGLSurfaceOSMesa : public GLSurfaceOSMesa {
 
   static bool InitializeOneOff();
 
-  // Initializes the GL context.
-  bool Initialize();
-
   // Implement a subset of GLSurface.
-  virtual void Destroy();
-  virtual bool IsOffscreen();
-  virtual bool SwapBuffers();
-  virtual std::string GetExtensions();
-  virtual bool PostSubBuffer(int x, int y, int width, int height);
+  virtual bool Initialize() OVERRIDE;
+  virtual void Destroy() OVERRIDE;
+  virtual bool Resize(const gfx::Size& new_size) OVERRIDE;
+  virtual bool IsOffscreen() OVERRIDE;
+  virtual bool SwapBuffers() OVERRIDE;
+  virtual std::string GetExtensions() OVERRIDE;
+  virtual bool PostSubBuffer(int x, int y, int width, int height) OVERRIDE;
 
  private:
-  bool UpdateSize();
-
   GC window_graphics_context_;
   gfx::PluginWindowHandle window_;
   GC pixmap_graphics_context_;
@@ -92,7 +89,7 @@ bool GLSurface::InitializeOneOffInternal() {
 
 NativeViewGLSurfaceOSMesa::NativeViewGLSurfaceOSMesa(
     gfx::PluginWindowHandle window)
-  : GLSurfaceOSMesa(OSMESA_BGRA, gfx::Size()),
+  : GLSurfaceOSMesa(OSMESA_BGRA, gfx::Size(1, 1)),
     window_graphics_context_(0),
     window_(window),
     pixmap_graphics_context_(0),
@@ -133,8 +130,6 @@ bool NativeViewGLSurfaceOSMesa::Initialize() {
     return false;
   }
 
-  UpdateSize();
-
   return true;
 }
 
@@ -155,18 +150,52 @@ void NativeViewGLSurfaceOSMesa::Destroy() {
   }
 }
 
+bool NativeViewGLSurfaceOSMesa::Resize(const gfx::Size& new_size) {
+  if (!GLSurfaceOSMesa::Resize(new_size))
+    return false;
+
+  XWindowAttributes attributes;
+  if (!XGetWindowAttributes(g_osmesa_display, window_, &attributes)) {
+    LOG(ERROR) << "XGetWindowAttributes failed for window " << window_ << ".";
+    return false;
+  }
+
+  // Destroy the previous pixmap and graphics context.
+  if (pixmap_graphics_context_) {
+    XFreeGC(g_osmesa_display, pixmap_graphics_context_);
+    pixmap_graphics_context_ = NULL;
+  }
+  if (pixmap_) {
+    XFreePixmap(g_osmesa_display, pixmap_);
+    pixmap_ = 0;
+  }
+
+  // Recreate a pixmap to hold the frame.
+  pixmap_ = XCreatePixmap(g_osmesa_display,
+                          window_,
+                          new_size.width(),
+                          new_size.height(),
+                          attributes.depth);
+  if (!pixmap_) {
+    LOG(ERROR) << "XCreatePixmap failed.";
+    return false;
+  }
+
+  // Recreate a graphics context for the pixmap.
+  pixmap_graphics_context_ = XCreateGC(g_osmesa_display, pixmap_, 0, NULL);
+  if (!pixmap_graphics_context_) {
+    LOG(ERROR) << "XCreateGC failed";
+    return false;
+  }
+
+  return true;
+}
+
 bool NativeViewGLSurfaceOSMesa::IsOffscreen() {
   return false;
 }
 
 bool NativeViewGLSurfaceOSMesa::SwapBuffers() {
-  // Update the size before blitting so that the blit size is exactly the same
-  // as the window.
-  if (!UpdateSize()) {
-    LOG(ERROR) << "Failed to update size of GLContextOSMesa.";
-    return false;
-  }
-
   gfx::Size size = GetSize();
 
   XWindowAttributes attributes;
@@ -206,13 +235,6 @@ std::string NativeViewGLSurfaceOSMesa::GetExtensions() {
 
 bool NativeViewGLSurfaceOSMesa::PostSubBuffer(
     int x, int y, int width, int height) {
-  // Update the size before blitting so that the blit size is exactly the same
-  // as the window.
-  if (!UpdateSize()) {
-    LOG(ERROR) << "Failed to update size of GLContextOSMesa.";
-    return false;
-  }
-
   gfx::Size size = GetSize();
 
   // Move (0,0) from lower-left to upper-left
@@ -246,55 +268,6 @@ bool NativeViewGLSurfaceOSMesa::PostSubBuffer(
             x, y,
             width, height,
             x, y);
-
-  return true;
-}
-
-bool NativeViewGLSurfaceOSMesa::UpdateSize() {
-  // Get the window size.
-  XWindowAttributes attributes;
-  if (!XGetWindowAttributes(g_osmesa_display, window_, &attributes)) {
-    LOG(ERROR) << "XGetWindowAttributes failed for window " << window_ << ".";
-    return false;
-  }
-  gfx::Size window_size = gfx::Size(std::max(1, attributes.width),
-                                    std::max(1, attributes.height));
-
-  // Early out if the size has not changed.
-  gfx::Size osmesa_size = GetSize();
-  if (pixmap_graphics_context_ && pixmap_ && window_size == osmesa_size)
-    return true;
-
-  // Change osmesa surface size to that of window.
-  Resize(window_size);
-
-  // Destroy the previous pixmap and graphics context.
-  if (pixmap_graphics_context_) {
-    XFreeGC(g_osmesa_display, pixmap_graphics_context_);
-    pixmap_graphics_context_ = NULL;
-  }
-  if (pixmap_) {
-    XFreePixmap(g_osmesa_display, pixmap_);
-    pixmap_ = 0;
-  }
-
-  // Recreate a pixmap to hold the frame.
-  pixmap_ = XCreatePixmap(g_osmesa_display,
-                          window_,
-                          window_size.width(),
-                          window_size.height(),
-                          attributes.depth);
-  if (!pixmap_) {
-    LOG(ERROR) << "XCreatePixmap failed.";
-    return false;
-  }
-
-  // Recreate a graphics context for the pixmap.
-  pixmap_graphics_context_ = XCreateGC(g_osmesa_display, pixmap_, 0, NULL);
-  if (!pixmap_graphics_context_) {
-    LOG(ERROR) << "XCreateGC failed";
-    return false;
-  }
 
   return true;
 }

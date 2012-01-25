@@ -254,10 +254,14 @@ void PassThroughImageTransportSurface::OnPostSubBufferACK() {
 }
 
 void PassThroughImageTransportSurface::OnResizeViewACK() {
+  Resize(new_size_);
+
   helper_->SetScheduled(true);
 }
 
 void PassThroughImageTransportSurface::OnResize(gfx::Size size) {
+  new_size_ = size;
+
   helper_->SendResizeView(size);
   helper_->SetScheduled(false);
 }

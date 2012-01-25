@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,19 +23,15 @@ class NativeViewGLSurfaceOSMesa : public GLSurfaceOSMesa {
   explicit NativeViewGLSurfaceOSMesa(gfx::PluginWindowHandle window);
   virtual ~NativeViewGLSurfaceOSMesa();
 
-  // Initializes the GL context.
-  bool Initialize();
-
   // Implement subset of GLSurface.
-  virtual void Destroy();
-  virtual bool IsOffscreen();
-  virtual bool SwapBuffers();
-  virtual std::string GetExtensions();
-  virtual bool PostSubBuffer(int x, int y, int width, int height);
+  virtual bool Initialize() OVERRIDE;
+  virtual void Destroy() OVERRIDE;
+  virtual bool IsOffscreen() OVERRIDE;
+  virtual bool SwapBuffers() OVERRIDE;
+  virtual std::string GetExtensions() OVERRIDE;
+  virtual bool PostSubBuffer(int x, int y, int width, int height) OVERRIDE;
 
  private:
-  void UpdateSize();
-
   gfx::PluginWindowHandle window_;
   HDC device_context_;
 
@@ -64,7 +60,7 @@ bool GLSurface::InitializeOneOffInternal() {
 
 NativeViewGLSurfaceOSMesa::NativeViewGLSurfaceOSMesa(
     gfx::PluginWindowHandle window)
-  : GLSurfaceOSMesa(OSMESA_RGBA, gfx::Size()),
+  : GLSurfaceOSMesa(OSMESA_RGBA, gfx::Size(1, 1)),
     window_(window),
     device_context_(NULL) {
   DCHECK(window);
@@ -79,7 +75,6 @@ bool NativeViewGLSurfaceOSMesa::Initialize() {
     return false;
 
   device_context_ = GetDC(window_);
-  UpdateSize();
   return true;
 }
 
@@ -98,10 +93,6 @@ bool NativeViewGLSurfaceOSMesa::IsOffscreen() {
 
 bool NativeViewGLSurfaceOSMesa::SwapBuffers() {
   DCHECK(device_context_);
-
-  // Update the size before blitting so that the blit size is exactly the same
-  // as the window.
-  UpdateSize();
 
   gfx::Size size = GetSize();
 
@@ -147,10 +138,6 @@ bool NativeViewGLSurfaceOSMesa::PostSubBuffer(
     int x, int y, int width, int height) {
   DCHECK(device_context_);
 
-  // Update the size before blitting so that the blit size is exactly the same
-  // as the window.
-  UpdateSize();
-
   gfx::Size size = GetSize();
 
   // Note: negating the height below causes GDI to treat the bitmap data as row
@@ -182,19 +169,6 @@ bool NativeViewGLSurfaceOSMesa::PostSubBuffer(
                 SRCCOPY);
 
   return true;
-}
-
-void NativeViewGLSurfaceOSMesa::UpdateSize() {
-  // Change back buffer size to that of window. If window handle is invalid, do
-  // not change the back buffer size.
-  RECT rect;
-  if (!GetClientRect(window_, &rect))
-    return;
-
-  gfx::Size window_size = gfx::Size(
-    std::max(1, static_cast<int>(rect.right - rect.left)),
-    std::max(1, static_cast<int>(rect.bottom - rect.top)));
-  Resize(window_size);
 }
 
 scoped_refptr<GLSurface> GLSurface::CreateViewGLSurface(

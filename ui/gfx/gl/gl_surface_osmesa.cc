@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,10 +18,15 @@ GLSurfaceOSMesa::~GLSurfaceOSMesa() {
   Destroy();
 }
 
-bool GLSurfaceOSMesa::Resize(const gfx::Size& new_size) {
-  if (new_size == size_)
-    return true;
+bool GLSurfaceOSMesa::Initialize() {
+  return Resize(size_);
+}
 
+void GLSurfaceOSMesa::Destroy() {
+  buffer_.reset();
+}
+
+bool GLSurfaceOSMesa::Resize(const gfx::Size& new_size) {
   GLContext* current_context = GLContext::GetCurrent();
   bool was_current = current_context && current_context->IsCurrent(this);
   if (was_current)
@@ -31,14 +36,17 @@ bool GLSurfaceOSMesa::Resize(const gfx::Size& new_size) {
   scoped_array<int32> old_buffer(buffer_.release());
 
   // Allocate a new one.
-  AllocateBuffer(new_size);
+  buffer_.reset(new int32[new_size.GetArea()]);
+  memset(buffer_.get(), 0, new_size.GetArea() * sizeof(buffer_[0]));
 
   // Copy the old back buffer into the new buffer.
-  int copy_width = std::min(size_.width(), new_size.width());
-  int copy_height = std::min(size_.height(), new_size.height());
-  for (int y = 0; y < copy_height; ++y) {
-    for (int x = 0; x < copy_width; ++x) {
-      buffer_[y * new_size.width() + x] = old_buffer[y * size_.width() + x];
+  if (old_buffer.get()) {
+    int copy_width = std::min(size_.width(), new_size.width());
+    int copy_height = std::min(size_.height(), new_size.height());
+    for (int y = 0; y < copy_height; ++y) {
+      for (int x = 0; x < copy_width; ++x) {
+        buffer_[y * new_size.width() + x] = old_buffer[y * size_.width() + x];
+      }
     }
   }
 
@@ -48,15 +56,6 @@ bool GLSurfaceOSMesa::Resize(const gfx::Size& new_size) {
     return current_context->MakeCurrent(this);
 
   return true;
-}
-
-bool GLSurfaceOSMesa::Initialize() {
-  AllocateBuffer(size_);
-  return true;
-}
-
-void GLSurfaceOSMesa::Destroy() {
-  buffer_.reset();
 }
 
 bool GLSurfaceOSMesa::IsOffscreen() {
@@ -78,11 +77,6 @@ void* GLSurfaceOSMesa::GetHandle() {
 
 unsigned GLSurfaceOSMesa::GetFormat() {
   return format_;
-}
-
-void GLSurfaceOSMesa::AllocateBuffer(const Size& size) {
-  buffer_.reset(new int32[size.GetArea()]);
-  memset(buffer_.get(), 0, size.GetArea() * sizeof(buffer_[0]));
 }
 
 }  // namespace gfx

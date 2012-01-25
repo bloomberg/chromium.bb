@@ -163,6 +163,7 @@ class PassThroughImageTransportSurface
 
  private:
   scoped_ptr<ImageTransportHelper> helper_;
+  gfx::Size new_size_;
 
   DISALLOW_COPY_AND_ASSIGN(PassThroughImageTransportSurface);
 };
