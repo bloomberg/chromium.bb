@@ -103,7 +103,7 @@ def main():
       }
 
   if host_secret_hash:
-    config["host_secret_hash"] = host_secret_hash;
+    config["host_secret_hash"] = host_secret_hash
 
   settings_file.write(json.dumps(config, indent=2))
   settings_file.close()

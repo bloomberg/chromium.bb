@@ -206,7 +206,7 @@ class Host:
         "private_key": self.private_key,
     }
     if self.host_secret_hash:
-      data["host_secret_hash"] = self.host_secret_hash,
+      data["host_secret_hash"] = self.host_secret_hash
 
     old_umask = os.umask(0066)
     settings_file = open(self.config_file, 'w')
