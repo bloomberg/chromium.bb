@@ -941,6 +941,8 @@
         'jingle_glue/jingle_thread_unittest.cc',
         'jingle_glue/mock_objects.cc',
         'jingle_glue/mock_objects.h',
+        'protocol/authenticator_test_base.cc',
+        'protocol/authenticator_test_base.h',
         'protocol/connection_tester.cc',
         'protocol/connection_tester.h',
         'protocol/connection_to_client_unittest.cc',
