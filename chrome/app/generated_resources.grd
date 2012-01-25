@@ -12020,13 +12020,11 @@ Some features may be unavailable.  Please check that the profile exists and you 
         Your Google Account password has changed since the last time you signed in on this computer.
       </message>
       <message name="IDS_LOGIN_PASSWORD_CHANGED_RESET" desc="Reset option of the password changed dialog">
-Synchronize all settings and data
-(may take some time)
+        Only retrieve synced settings and data
       </message>
       <message name="IDS_LOGIN_PASSWORD_CHANGED_MIGRATE" desc="Migrate option of the password changed dialog">
-Only synchronize settings and data that have
-changed since last sign in
-(requires your previous password)
+        Migrate all Chrome OS data to the new password
+(requires previous password)
       </message>
       <message name="IDS_LOGIN_PREVIOUS_PASSWORD" desc="Password field text on the password changed dialog">
         Previous password

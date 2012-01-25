@@ -54,12 +54,8 @@ int PasswordChangedView::GetDialogButtons() const {
 }
 
 views::View* PasswordChangedView::GetInitiallyFocusedView() {
-  if (!full_sync_disabled_) {
-    return views::DialogDelegate::GetInitiallyFocusedView();
-  } else {
-    DCHECK(old_password_field_);
-    return old_password_field_;
-  }
+  DCHECK(old_password_field_);
+  return old_password_field_;
 }
 
 ui::ModalType PasswordChangedView::GetModalType() const {
@@ -146,10 +142,6 @@ void PasswordChangedView::Init() {
   layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
   layout->StartRow(0, 0);
-  layout->AddView(full_sync_radio_);
-  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
-
-  layout->StartRow(0, 0);
   layout->AddView(delta_sync_radio_);
   layout->AddPaddingRow(0, views::kRelatedControlSmallVerticalSpacing);
 
@@ -159,17 +151,13 @@ void PasswordChangedView::Init() {
   layout->AddPaddingRow(0, views::kUnrelatedControlVerticalSpacing);
 
   layout->StartRow(0, 0);
-  layout->AddView(old_password_field_);
+  layout->AddView(full_sync_radio_);
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
+  delta_sync_radio_->SetChecked(true);
   // Disable options if needed.
-  if (!full_sync_disabled_) {
-    full_sync_radio_->SetChecked(true);
-    old_password_field_->SetEnabled(false);
-  } else {
+  if (full_sync_disabled_)
     full_sync_radio_->SetEnabled(false);
-    delta_sync_radio_->SetChecked(true);
-    old_password_field_->SetEnabled(true);
-  }
 }
 
 bool PasswordChangedView::ExitDialog() {
