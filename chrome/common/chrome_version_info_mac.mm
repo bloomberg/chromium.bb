@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/basictypes.h"
+#include "base/mac/bundle_locations.h"
 #include "base/sys_string_conversions.h"
 
 namespace chrome {
@@ -14,9 +15,9 @@ namespace chrome {
 // static
 std::string VersionInfo::GetVersionStringModifier() {
 #if defined(GOOGLE_CHROME_BUILD)
-  // Use the main application bundle and not the framework bundle. Keystone
-  // keys don't live in the framework.
-  NSBundle* bundle = [NSBundle mainBundle];
+  // Use the main Chrome application bundle and not the framework bundle.
+  // Keystone keys don't live in the framework.
+  NSBundle* bundle = base::mac::OuterBundle();
   NSString* channel = [bundle objectForInfoDictionaryKey:@"KSChannelID"];
 
   // Only ever return "", "unknown", "beta", "dev", or "canary" in a branded

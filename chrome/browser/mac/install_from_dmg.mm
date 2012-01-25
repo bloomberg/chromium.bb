@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -235,7 +235,7 @@ bool IsPathOnReadOnlyDiskImage(const char path[],
 // the disk image's device, in "diskNsM" form.
 bool IsAppRunningFromReadOnlyDiskImage(std::string* dmg_bsd_device_name) {
   return IsPathOnReadOnlyDiskImage(
-      [[[NSBundle mainBundle] bundlePath] fileSystemRepresentation],
+      [[base::mac::OuterBundle() bundlePath] fileSystemRepresentation],
       dmg_bsd_device_name);
 }
 
@@ -425,7 +425,7 @@ bool MaybeInstallFromDiskImage() {
     return false;
   }
 
-  NSString* source_path = [[NSBundle mainBundle] bundlePath];
+  NSString* source_path = [base::mac::OuterBundle() bundlePath];
   NSString* application_name = [source_path lastPathComponent];
   NSString* target_path =
       [application_directory stringByAppendingPathComponent:application_name];

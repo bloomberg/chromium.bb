@@ -1,9 +1,10 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "chrome/browser/ui/cocoa/dock_icon.h"
 
+#include "base/mac/bundle_locations.h"
 #include "base/memory/scoped_nsobject.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 
@@ -42,7 +43,7 @@ static const float kBadgeIndent = 5.0f;
 - (void)drawRect:(NSRect)dirtyRect {
   // Not -[NSApplication applicationIconImage]; that fails to return a pasted
   // custom icon.
-  NSString* appPath = [[NSBundle mainBundle] bundlePath];
+  NSString* appPath = [base::mac::MainBundle() bundlePath];
   NSImage* appIcon = [[NSWorkspace sharedWorkspace] iconForFile:appPath];
   [appIcon drawInRect:[self bounds]
              fromRect:NSZeroRect

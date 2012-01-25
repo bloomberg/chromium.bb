@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 #include "base/sys_string_conversions.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/mac/bundle_locations.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
@@ -44,7 +45,7 @@ void OverrideLocaleWithCocoaLocale() {
   // "Today" are in the same language as raw dates like "March 20, 1999" (Chrome
   // strings resources vs ICU generated strings).  This also makes the Mac acts
   // like other Chrome platforms.
-  NSArray* languageList = [[NSBundle mainBundle] preferredLocalizations];
+  NSArray* languageList = [base::mac::OuterBundle() preferredLocalizations];
   NSString* firstLocale = [languageList objectAtIndex:0];
   // Mac OS X uses "_" instead of "-", so swap to get a real locale value.
   std::string locale_value =

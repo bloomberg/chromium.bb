@@ -14,7 +14,6 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/mac/bundle_locations.h"
-#include "base/mac/foundation_util.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/mac/scoped_nsexception_enabler.h"
@@ -262,16 +261,16 @@ NSString* const kVersionKey = @"KSVersion";
 }
 
 - (NSDictionary*)infoDictionary {
-  // Use [NSBundle mainBundle] to get the application's own bundle identifier
+  // Use base::mac::OuterBundle() to get the Chrome app's own bundle identifier
   // and path, not the framework's.  For auto-update, the application is
   // what's significant here: it's used to locate the outermost part of the
   // application for the existence checker and other operations that need to
   // see the entire application bundle.
-  return [[NSBundle mainBundle] infoDictionary];
+  return [base::mac::OuterBundle() infoDictionary];
 }
 
 - (void)loadParameters {
-  NSBundle* appBundle = [NSBundle mainBundle];
+  NSBundle* appBundle = base::mac::OuterBundle();
   NSDictionary* infoDictionary = [self infoDictionary];
 
   NSString* productID = [infoDictionary objectForKey:@"KSProductID"];
@@ -746,7 +745,7 @@ NSString* const kVersionKey = @"KSVersion";
   // authenticating, may actually result in different ownership being applied
   // to files and directories.
   NSFileManager* fileManager = [NSFileManager defaultManager];
-  NSString* executablePath = [[NSBundle mainBundle] executablePath];
+  NSString* executablePath = [base::mac::OuterBundle() executablePath];
   NSString* frameworkPath = [base::mac::FrameworkBundle() bundlePath];
   return ![fileManager isWritableFileAtPath:appPath_] ||
          ![fileManager isWritableFileAtPath:executablePath] ||
