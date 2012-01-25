@@ -1,10 +1,11 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef REMOTING_HOST_HOST_MOCK_OBJECTS_H_
 #define REMOTING_HOST_HOST_MOCK_OBJECTS_H_
 
+#include "net/base/ip_endpoint.h"
 #include "remoting/host/capturer.h"
 #include "remoting/host/curtain.h"
 #include "remoting/host/chromoting_host_context.h"
@@ -103,6 +104,10 @@ class MockClientSessionEventHandler : public ClientSession::EventHandler {
   MOCK_METHOD1(OnSessionFailed, void(ClientSession* client));
   MOCK_METHOD2(OnSessionSequenceNumber, void(ClientSession* client,
                                              int64 sequence_number));
+  MOCK_METHOD3(OnSessionIpAddress, void(ClientSession* client,
+                                        const std::string& channel_name,
+                                        const net::IPEndPoint& end_point));
+
  private:
   DISALLOW_COPY_AND_ASSIGN(MockClientSessionEventHandler);
 };

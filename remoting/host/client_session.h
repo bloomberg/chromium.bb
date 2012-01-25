@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -46,6 +46,12 @@ class ClientSession : public protocol::HostStub,
     // callback must not tear down this object.
     virtual void OnSessionSequenceNumber(ClientSession* client,
                                          int64 sequence_number) = 0;
+
+    // Called on notification of a route change event, when a channel is
+    // connected.
+    virtual void OnSessionIpAddress(ClientSession* client,
+                                    const std::string& channel_name,
+                                    const net::IPEndPoint& end_point) = 0;
   };
 
   // Takes ownership of |connection|. Does not take ownership of
@@ -69,6 +75,9 @@ class ClientSession : public protocol::HostStub,
                                   protocol::Session::Error error) OVERRIDE;
   virtual void OnSequenceNumberUpdated(
       protocol::ConnectionToClient* connection, int64 sequence_number) OVERRIDE;
+  virtual void OnClientIpAddress(protocol::ConnectionToClient* connection,
+                                 const std::string& channel_name,
+                                 const net::IPEndPoint& end_point) OVERRIDE;
 
   // Disconnects the session and destroys the transport. Event handler
   // is guaranteed not to be called after this method is called. Can

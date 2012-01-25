@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -123,6 +123,14 @@ void ClientSession::OnSequenceNumberUpdated(
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(connection_.get(), connection);
   event_handler_->OnSessionSequenceNumber(this, sequence_number);
+}
+
+void ClientSession::OnClientIpAddress(protocol::ConnectionToClient* connection,
+                                      const std::string& channel_name,
+                                      const net::IPEndPoint& end_point) {
+  DCHECK(CalledOnValidThread());
+  DCHECK_EQ(connection_.get(), connection);
+  event_handler_->OnSessionIpAddress(this, channel_name, end_point);
 }
 
 void ClientSession::Disconnect() {

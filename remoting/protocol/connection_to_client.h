@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 #define REMOTING_PROTOCOL_CONNECTION_TO_CLIENT_H_
 
 #include <deque>
+#include <string>
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
@@ -13,6 +14,10 @@
 #include "base/threading/non_thread_safe.h"
 #include "remoting/protocol/session.h"
 #include "remoting/protocol/video_writer.h"
+
+namespace net {
+class IPEndPoint;
+}  // namespace net
 
 namespace remoting {
 namespace protocol {
@@ -45,6 +50,12 @@ class ConnectionToClient : public base::NonThreadSafe {
     // Called when sequence number is updated.
     virtual void OnSequenceNumberUpdated(ConnectionToClient* connection,
                                          int64 sequence_number) = 0;
+
+    // Called on notification of a route change event, which happens when a
+    // channel is connected.
+    virtual void OnClientIpAddress(ConnectionToClient* connection,
+                                   const std::string& channel_name,
+                                   const net::IPEndPoint& end_point) = 0;
   };
 
   // Constructs a ConnectionToClient object for the |session|. Takes
@@ -52,9 +63,8 @@ class ConnectionToClient : public base::NonThreadSafe {
   explicit ConnectionToClient(Session* session);
   virtual ~ConnectionToClient();
 
-  // Set |event_handler| for connection events. |event_handler| is
-  // guaranteed to be used only on the network thread. Must be called
-  // once when this object is created.
+  // Set |event_handler| for connection events. Must be called once when this
+  // object is created.
   void SetEventHandler(EventHandler* event_handler);
 
   // Returns the connection in use.
@@ -80,6 +90,9 @@ class ConnectionToClient : public base::NonThreadSafe {
  private:
   // Callback for protocol Session.
   void OnSessionStateChange(Session::State state);
+
+  void OnSessionRouteChange(const std::string& channel_name,
+                            const net::IPEndPoint& end_point);
 
   // Callback for channel initialization.
   void OnChannelInitialized(bool successful);

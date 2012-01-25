@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,6 +24,9 @@ ConnectionToClient::ConnectionToClient(protocol::Session* session)
       session_(session) {
   session_->SetStateChangeCallback(
       base::Bind(&ConnectionToClient::OnSessionStateChange,
+                 base::Unretained(this)));
+  session_->SetRouteChangeCallback(
+      base::Bind(&ConnectionToClient::OnSessionRouteChange,
                  base::Unretained(this)));
 }
 
@@ -129,6 +132,11 @@ void ConnectionToClient::OnSessionStateChange(Session::State state) {
       CloseOnError();
       break;
   }
+}
+
+void ConnectionToClient::OnSessionRouteChange(
+    const std::string& channel_name, const net::IPEndPoint& end_point) {
+  handler_->OnClientIpAddress(this, channel_name, end_point);
 }
 
 void ConnectionToClient::OnChannelInitialized(bool successful) {

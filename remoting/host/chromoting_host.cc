@@ -225,6 +225,13 @@ void ChromotingHost::OnSessionSequenceNumber(ClientSession* session,
     recorder_->UpdateSequenceNumber(sequence_number);
 }
 
+void ChromotingHost::OnSessionIpAddress(ClientSession* session,
+                                        const std::string& channel_name,
+                                        const net::IPEndPoint& end_point) {
+  // TODO(lambroslambrou): Notify the HostStatusObservers via a new interface
+  // method.
+}
+
 void ChromotingHost::OnSessionManagerReady() {
   DCHECK(context_->network_message_loop()->BelongsToCurrentThread());
   // Don't need to do anything here, just wait for incoming

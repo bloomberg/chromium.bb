@@ -110,6 +110,9 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   virtual void OnSessionClosed(ClientSession* session) OVERRIDE;
   virtual void OnSessionSequenceNumber(ClientSession* session,
                                        int64 sequence_number) OVERRIDE;
+  virtual void OnSessionIpAddress(ClientSession* session,
+                                  const std::string& channel_name,
+                                  const net::IPEndPoint& end_point) OVERRIDE;
 
   // SessionManager::Listener implementation.
   virtual void OnSessionManagerReady() OVERRIDE;

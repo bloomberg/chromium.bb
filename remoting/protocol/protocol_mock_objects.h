@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "net/base/ip_endpoint.h"
 #include "remoting/proto/internal.pb.h"
 #include "remoting/protocol/client_stub.h"
 #include "remoting/protocol/connection_to_client.h"
@@ -48,6 +49,9 @@ class MockConnectionToClientEventHandler :
                                         Session::Error error));
   MOCK_METHOD2(OnSequenceNumberUpdated, void(ConnectionToClient* connection,
                                              int64 sequence_number));
+  MOCK_METHOD3(OnClientIpAddress, void(ConnectionToClient* connection,
+                                       const std::string& channel_name,
+                                       const net::IPEndPoint& end_point));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockConnectionToClientEventHandler);

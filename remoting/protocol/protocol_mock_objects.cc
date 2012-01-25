@@ -1,10 +1,11 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "remoting/protocol/protocol_mock_objects.h"
 
 #include "base/message_loop_proxy.h"
+#include "net/base/ip_endpoint.h"
 
 namespace remoting {
 namespace protocol {
