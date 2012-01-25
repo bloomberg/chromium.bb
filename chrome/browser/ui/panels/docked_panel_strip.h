@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_PANELS_PANEL_STRIP_H_
-#define CHROME_BROWSER_UI_PANELS_PANEL_STRIP_H_
+#ifndef CHROME_BROWSER_UI_PANELS_DOCKED_PANEL_STRIP_H_
+#define CHROME_BROWSER_UI_PANELS_DOCKED_PANEL_STRIP_H_
 #pragma once
 
 #include <set>
@@ -22,12 +22,12 @@ class PanelManager;
 // positioning the panels and controlling how they are displayed.
 // Panels in the strip appear minimized, showing title-only or expanded.
 // All panels in the strip are contained within the bounds of the strip.
-class PanelStrip : public PanelMouseWatcherObserver {
+class DockedPanelStrip : public PanelMouseWatcherObserver {
  public:
   typedef std::vector<Panel*> Panels;
 
-  explicit PanelStrip(PanelManager* panel_manager);
-  virtual ~PanelStrip();
+  explicit DockedPanelStrip(PanelManager* panel_manager);
+  virtual ~DockedPanelStrip();
 
   // Sets the bounds of the panel strip.
   // |area| is in screen coordinates.
@@ -172,7 +172,7 @@ class PanelStrip : public PanelMouseWatcherObserver {
   TitlebarAction delayed_titlebar_action_;
 
   // Owned by MessageLoop after posting.
-  base::WeakPtrFactory<PanelStrip> titlebar_action_factory_;
+  base::WeakPtrFactory<DockedPanelStrip> titlebar_action_factory_;
 
   static const int kPanelsHorizontalSpacing = 4;
 
@@ -182,7 +182,7 @@ class PanelStrip : public PanelMouseWatcherObserver {
   static const int kPanelMinWidth;
   static const int kPanelMinHeight;
 
-  DISALLOW_COPY_AND_ASSIGN(PanelStrip);
+  DISALLOW_COPY_AND_ASSIGN(DockedPanelStrip);
 };
 
-#endif  // CHROME_BROWSER_UI_PANELS_PANEL_STRIP_H_
+#endif  // CHROME_BROWSER_UI_PANELS_DOCKED_PANEL_STRIP_H_

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_PANELS_PANEL_OVERFLOW_STRIP_H_
-#define CHROME_BROWSER_UI_PANELS_PANEL_OVERFLOW_STRIP_H_
+#ifndef CHROME_BROWSER_UI_PANELS_OVERFLOW_PANEL_STRIP_H_
+#define CHROME_BROWSER_UI_PANELS_OVERFLOW_PANEL_STRIP_H_
 #pragma once
 
 #include <vector>
@@ -19,13 +19,13 @@ class SlideAnimation;
 }
 
 // Manipulates all the panels that are placed on the left-most overflow area.
-class PanelOverflowStrip : public PanelMouseWatcherObserver,
+class OverflowPanelStrip : public PanelMouseWatcherObserver,
                            public ui::AnimationDelegate {
  public:
   typedef std::vector<Panel*> Panels;
 
-  explicit PanelOverflowStrip(PanelManager* panel_manager);
-  virtual ~PanelOverflowStrip();
+  explicit OverflowPanelStrip(PanelManager* panel_manager);
+  virtual ~OverflowPanelStrip();
 
   // Sets the display area of the overflow strip.
   // |display_area| is in screen coordinates.
@@ -107,7 +107,7 @@ class PanelOverflowStrip : public PanelMouseWatcherObserver,
                                       : max_visible_panels_;
   }
 
-  // Weak pointer since PanelManager owns PanelOverflowStrip instance.
+  // Weak pointer since PanelManager owns OverflowPanelStrip instance.
   PanelManager* panel_manager_;
 
   // The queue for storing all panels.
@@ -143,7 +143,7 @@ class PanelOverflowStrip : public PanelMouseWatcherObserver,
   // Invalid panel index.
   static const size_t kInvalidPanelIndex = static_cast<size_t>(-1);
 
-  DISALLOW_COPY_AND_ASSIGN(PanelOverflowStrip);
+  DISALLOW_COPY_AND_ASSIGN(OverflowPanelStrip);
 };
 
-#endif  // CHROME_BROWSER_UI_PANELS_PANEL_OVERFLOW_STRIP_H_
+#endif  // CHROME_BROWSER_UI_PANELS_OVERFLOW_PANEL_STRIP_H_

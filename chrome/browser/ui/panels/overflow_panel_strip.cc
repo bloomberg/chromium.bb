@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/panels/panel_overflow_strip.h"
+#include "chrome/browser/ui/panels/overflow_panel_strip.h"
 
 #include "base/logging.h"
+#include "chrome/browser/ui/panels/docked_panel_strip.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/browser/ui/panels/panel_mouse_watcher.h"
 #include "chrome/browser/ui/panels/panel_overflow_indicator.h"
-#include "chrome/browser/ui/panels/panel_strip.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_service.h"
 #include "ui/base/animation/slide_animation.h"
@@ -31,7 +31,7 @@ const double kHeightRatioForMaxVisibleOverflowPanelsOnHover = 0.67;
 const int kOverflowHoverAnimationMs = 180;
 }
 
-PanelOverflowStrip::PanelOverflowStrip(PanelManager* panel_manager)
+OverflowPanelStrip::OverflowPanelStrip(PanelManager* panel_manager)
     : panel_manager_(panel_manager),
       current_display_width_(0),
       max_visible_panels_(kMaxVisibleOverflowPanels),
@@ -41,12 +41,12 @@ PanelOverflowStrip::PanelOverflowStrip(PanelManager* panel_manager)
       overflow_hover_animator_end_width_(0) {
 }
 
-PanelOverflowStrip::~PanelOverflowStrip() {
+OverflowPanelStrip::~OverflowPanelStrip() {
   DCHECK(panels_.empty());
   DCHECK(!overflow_indicator_.get());
 }
 
-void PanelOverflowStrip::SetDisplayArea(const gfx::Rect& display_area) {
+void OverflowPanelStrip::SetDisplayArea(const gfx::Rect& display_area) {
   if (display_area_ == display_area)
     return;
   display_area_ = display_area;
@@ -62,7 +62,7 @@ void PanelOverflowStrip::SetDisplayArea(const gfx::Rect& display_area) {
   Refresh();
 }
 
-void PanelOverflowStrip::UpdateMaxVisiblePanelsOnHover() {
+void OverflowPanelStrip::UpdateMaxVisiblePanelsOnHover() {
   // No need to recompute this value.
   if (max_visible_panels_on_hover_ || panels_.empty())
     return;
@@ -73,12 +73,12 @@ void PanelOverflowStrip::UpdateMaxVisiblePanelsOnHover() {
       panels_.front()->IconOnlySize().height();
 }
 
-void PanelOverflowStrip::UpdateCurrentWidth() {
+void OverflowPanelStrip::UpdateCurrentWidth() {
   current_display_width_ = are_overflow_titles_shown_ ? kOverflowAreaHoverWidth
                                                       : display_area_.width();
 }
 
-void PanelOverflowStrip::AddPanel(Panel* panel) {
+void OverflowPanelStrip::AddPanel(Panel* panel) {
   // TODO(jianli): consider using other container to improve the perf for
   // inserting to the front. http://crbug.com/106222
   DCHECK_EQ(Panel::IN_OVERFLOW, panel->expansion_state());
@@ -110,7 +110,7 @@ void PanelOverflowStrip::AddPanel(Panel* panel) {
   }
 }
 
-bool PanelOverflowStrip::Remove(Panel* panel) {
+bool OverflowPanelStrip::Remove(Panel* panel) {
   size_t index = 0;
   Panels::iterator iter = panels_.begin();
   for (; iter != panels_.end(); ++iter, ++index)
@@ -136,7 +136,7 @@ bool PanelOverflowStrip::Remove(Panel* panel) {
   return true;
 }
 
-void PanelOverflowStrip::RemoveAll() {
+void OverflowPanelStrip::RemoveAll() {
   // Make a copy of the iterator as closing panels can modify the vector.
   Panels panels_copy = panels_;
 
@@ -146,29 +146,29 @@ void PanelOverflowStrip::RemoveAll() {
     (*iter)->Close();
 }
 
-void PanelOverflowStrip::OnPanelExpansionStateChanged(Panel* panel) {
+void OverflowPanelStrip::OnPanelExpansionStateChanged(Panel* panel) {
   // Only care about new state being overflow.
   if (panel->expansion_state() != Panel::IN_OVERFLOW)
     return;
 
-  panel_manager_->panel_strip()->Remove(panel);
+  panel_manager_->docked_strip()->Remove(panel);
   AddPanel(panel);
   panel->SetAppIconVisibility(false);
   panel->set_draggable(false);
 }
 
-void PanelOverflowStrip::OnPanelAttentionStateChanged(Panel* panel) {
+void OverflowPanelStrip::OnPanelAttentionStateChanged(Panel* panel) {
   DCHECK(panel->expansion_state() == Panel::IN_OVERFLOW);
   UpdateOverflowIndicatorAttention();
 }
 
-void PanelOverflowStrip::Refresh() {
+void OverflowPanelStrip::Refresh() {
   if (panels_.empty())
     return;
   DoRefresh(0, panels_.size() - 1);
 }
 
-void PanelOverflowStrip::DoRefresh(size_t start_index, size_t end_index) {
+void OverflowPanelStrip::DoRefresh(size_t start_index, size_t end_index) {
   if (panels_.empty() || start_index == panels_.size())
     return;
 
@@ -182,7 +182,7 @@ void PanelOverflowStrip::DoRefresh(size_t start_index, size_t end_index) {
   }
 }
 
-void PanelOverflowStrip::UpdateOverflowIndicatorCount() {
+void OverflowPanelStrip::UpdateOverflowIndicatorCount() {
   if (!overflow_indicator_.get())
     return;
 
@@ -208,7 +208,7 @@ void PanelOverflowStrip::UpdateOverflowIndicatorCount() {
   UpdateOverflowIndicatorAttention();
 }
 
-void PanelOverflowStrip::UpdateOverflowIndicatorAttention() {
+void OverflowPanelStrip::UpdateOverflowIndicatorAttention() {
   if (!overflow_indicator_.get())
     return;
 
@@ -229,7 +229,7 @@ void PanelOverflowStrip::UpdateOverflowIndicatorAttention() {
     overflow_indicator_->StopDrawingAttention();
 }
 
-gfx::Rect PanelOverflowStrip::ComputeLayout(
+gfx::Rect OverflowPanelStrip::ComputeLayout(
     size_t index, const gfx::Size& iconified_size) const {
   DCHECK(index != kInvalidPanelIndex);
 
@@ -251,12 +251,12 @@ gfx::Rect PanelOverflowStrip::ComputeLayout(
   return bounds;
 }
 
-void PanelOverflowStrip::OnMouseMove(const gfx::Point& mouse_position) {
+void OverflowPanelStrip::OnMouseMove(const gfx::Point& mouse_position) {
   bool show_overflow_titles = ShouldShowOverflowTitles(mouse_position);
   ShowOverflowTitles(show_overflow_titles);
 }
 
-bool PanelOverflowStrip::ShouldShowOverflowTitles(
+bool OverflowPanelStrip::ShouldShowOverflowTitles(
     const gfx::Point& mouse_position) const {
   if (panels_.empty())
     return false;
@@ -268,7 +268,7 @@ bool PanelOverflowStrip::ShouldShowOverflowTitles(
          mouse_position.y() <= display_area_.bottom();
 }
 
-void PanelOverflowStrip::ShowOverflowTitles(bool show_overflow_titles) {
+void OverflowPanelStrip::ShowOverflowTitles(bool show_overflow_titles) {
   if (show_overflow_titles == are_overflow_titles_shown_)
     return;
   are_overflow_titles_shown_ = show_overflow_titles;
@@ -308,14 +308,14 @@ void PanelOverflowStrip::ShowOverflowTitles(bool show_overflow_titles) {
   UpdateOverflowIndicatorCount();
 }
 
-void PanelOverflowStrip::AnimationEnded(const ui::Animation* animation) {
+void OverflowPanelStrip::AnimationEnded(const ui::Animation* animation) {
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_PANEL_BOUNDS_ANIMATIONS_FINISHED,
-      content::Source<PanelOverflowStrip>(this),
+      content::Source<OverflowPanelStrip>(this),
       content::NotificationService::NoDetails());
 }
 
-void PanelOverflowStrip::AnimationProgressed(const ui::Animation* animation) {
+void OverflowPanelStrip::AnimationProgressed(const ui::Animation* animation) {
   int current_display_width = overflow_hover_animator_->CurrentValueBetween(
       overflow_hover_animator_start_width_, overflow_hover_animator_end_width_);
   bool end_of_shrinking = current_display_width == display_area_.width();
@@ -347,7 +347,7 @@ void PanelOverflowStrip::AnimationProgressed(const ui::Animation* animation) {
   }
 }
 
-void PanelOverflowStrip::OnFullScreenModeChanged(bool is_full_screen) {
+void OverflowPanelStrip::OnFullScreenModeChanged(bool is_full_screen) {
   for (size_t i = 0; i < panels_.size(); ++i)
     panels_[i]->FullScreenModeChanged(is_full_screen);
 }

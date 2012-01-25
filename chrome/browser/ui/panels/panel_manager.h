@@ -17,8 +17,8 @@
 
 class Browser;
 class PanelMouseWatcher;
-class PanelOverflowStrip;
-class PanelStrip;
+class OverflowPanelStrip;
+class DockedPanelStrip;
 
 // This class manages a set of panels.
 class PanelManager : public AutoHidingDesktopBar::Observer {
@@ -86,13 +86,13 @@ class PanelManager : public AutoHidingDesktopBar::Observer {
     return panel_mouse_watcher_.get();
   }
 
-  PanelStrip* panel_strip() const {
-    return panel_strip_.get();
+  DockedPanelStrip* docked_strip() const {
+    return docked_strip_.get();
   }
 
   bool is_full_screen() const { return is_full_screen_; }
-  PanelOverflowStrip* panel_overflow_strip() const {
-    return panel_overflow_strip_.get();
+  OverflowPanelStrip* overflow_strip() const {
+    return overflow_strip_.get();
   }
 
   // Reduces time interval in tests to shorten test run time.
@@ -162,8 +162,8 @@ class PanelManager : public AutoHidingDesktopBar::Observer {
   // Tests may want to shorten time intervals to reduce running time.
   static bool shorten_time_intervals_;
 
-  scoped_ptr<PanelStrip> panel_strip_;
-  scoped_ptr<PanelOverflowStrip> panel_overflow_strip_;
+  scoped_ptr<DockedPanelStrip> docked_strip_;
+  scoped_ptr<OverflowPanelStrip> overflow_strip_;
 
   // Use a mouse watcher to know when to bring up titlebars to "peek" at
   // minimized panels. Mouse movement is only tracked when there is a minimized

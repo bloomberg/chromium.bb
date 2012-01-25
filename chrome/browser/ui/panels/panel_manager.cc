@@ -10,9 +10,9 @@
 #include "chrome/browser/fullscreen.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/panels/docked_panel_strip.h"
+#include "chrome/browser/ui/panels/overflow_panel_strip.h"
 #include "chrome/browser/ui/panels/panel_mouse_watcher.h"
-#include "chrome/browser/ui/panels/panel_overflow_strip.h"
-#include "chrome/browser/ui/panels/panel_strip.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
@@ -63,8 +63,8 @@ PanelManager::PanelManager()
     : panel_mouse_watcher_(PanelMouseWatcher::Create()),
       auto_sizing_enabled_(true),
       is_full_screen_(false) {
-  panel_strip_.reset(new PanelStrip(this));
-  panel_overflow_strip_.reset(new PanelOverflowStrip(this));
+  docked_strip_.reset(new DockedPanelStrip(this));
+  overflow_strip_.reset(new OverflowPanelStrip(this));
   auto_hiding_desktop_bar_ = AutoHidingDesktopBar::Create(this);
   OnDisplayChanged();
 }
@@ -96,24 +96,24 @@ void PanelManager::SetWorkArea(const gfx::Rect& work_area) {
 void PanelManager::Layout() {
   int height =
       static_cast<int>(adjusted_work_area_.height() * kPanelStripHeightFactor);
-  gfx::Rect panel_strip_bounds;
-  panel_strip_bounds.set_x(adjusted_work_area_.x() + kPanelStripLeftMargin);
-  panel_strip_bounds.set_y(adjusted_work_area_.bottom() - height);
-  panel_strip_bounds.set_width(adjusted_work_area_.width() -
-                               kPanelStripLeftMargin - kPanelStripRightMargin);
-  panel_strip_bounds.set_height(height);
-  panel_strip_->SetDisplayArea(panel_strip_bounds);
+  gfx::Rect docked_strip_bounds;
+  docked_strip_bounds.set_x(adjusted_work_area_.x() + kPanelStripLeftMargin);
+  docked_strip_bounds.set_y(adjusted_work_area_.bottom() - height);
+  docked_strip_bounds.set_width(adjusted_work_area_.width() -
+                                kPanelStripLeftMargin - kPanelStripRightMargin);
+  docked_strip_bounds.set_height(height);
+  docked_strip_->SetDisplayArea(docked_strip_bounds);
 
   gfx::Rect overflow_area(adjusted_work_area_);
   overflow_area.set_width(kOverflowStripThickness);
-  panel_overflow_strip_->SetDisplayArea(overflow_area);
+  overflow_strip_->SetDisplayArea(overflow_area);
 }
 
 Panel* PanelManager::CreatePanel(Browser* browser) {
   int width = browser->override_bounds().width();
   int height = browser->override_bounds().height();
   Panel* panel = new Panel(browser, gfx::Size(width, height));
-  panel_strip_->AddPanel(panel);
+  docked_strip_->AddPanel(panel);
 
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_PANEL_ADDED,
@@ -135,7 +135,7 @@ Panel* PanelManager::CreatePanel(Browser* browser) {
 }
 
 int PanelManager::StartingRightPosition() const {
-  return panel_strip_->StartingRightPosition();
+  return docked_strip_->StartingRightPosition();
 }
 
 void PanelManager::CheckFullScreenMode() {
@@ -143,8 +143,8 @@ void PanelManager::CheckFullScreenMode() {
   if (is_full_screen_ == is_full_screen_new)
     return;
   is_full_screen_ = is_full_screen_new;
-  panel_strip_->OnFullScreenModeChanged(is_full_screen_);
-  panel_overflow_strip_->OnFullScreenModeChanged(is_full_screen_);
+  docked_strip_->OnFullScreenModeChanged(is_full_screen_);
+  overflow_strip_->OnFullScreenModeChanged(is_full_screen_);
 }
 
 void PanelManager::Remove(Panel* panel) {
@@ -153,9 +153,9 @@ void PanelManager::Remove(Panel* panel) {
     full_screen_mode_timer_.Stop();
 #endif
 
-  if (panel_strip_->Remove(panel))
+  if (docked_strip_->Remove(panel))
     return;
-  bool removed = panel_overflow_strip_->Remove(panel);
+  bool removed = overflow_strip_->Remove(panel);
   DCHECK(removed);
 }
 
@@ -167,32 +167,32 @@ void PanelManager::OnPanelRemoved(Panel* panel) {
 }
 
 void PanelManager::StartDragging(Panel* panel) {
-  panel_strip_->StartDragging(panel);
+  docked_strip_->StartDragging(panel);
 }
 
 void PanelManager::Drag(int delta_x) {
-  panel_strip_->Drag(delta_x);
+  docked_strip_->Drag(delta_x);
 }
 
 void PanelManager::EndDragging(bool cancelled) {
-  panel_strip_->EndDragging(cancelled);
+  docked_strip_->EndDragging(cancelled);
 }
 
 void PanelManager::OnPanelExpansionStateChanged(Panel* panel) {
-  panel_strip_->OnPanelExpansionStateChanged(panel);
-  panel_overflow_strip_->OnPanelExpansionStateChanged(panel);
+  docked_strip_->OnPanelExpansionStateChanged(panel);
+  overflow_strip_->OnPanelExpansionStateChanged(panel);
 }
 
 void PanelManager::OnPanelAttentionStateChanged(Panel* panel) {
   if (panel->expansion_state() == Panel::IN_OVERFLOW)
-    panel_overflow_strip_->OnPanelAttentionStateChanged(panel);
+    overflow_strip_->OnPanelAttentionStateChanged(panel);
 }
 
 void PanelManager::OnPreferredWindowSizeChanged(
     Panel* panel, const gfx::Size& preferred_window_size) {
   if (!auto_sizing_enabled_)
     return;
-  panel_strip_->OnWindowSizeChanged(panel, preferred_window_size);
+  docked_strip_->OnWindowSizeChanged(panel, preferred_window_size);
 }
 
 void PanelManager::ResizePanel(Panel* panel, const gfx::Size& new_size) {
@@ -202,15 +202,15 @@ void PanelManager::ResizePanel(Panel* panel, const gfx::Size& new_size) {
     LOG(INFO) << "Resizing auto-resizable Panels is not supported yet.";
     return;
   }
-  panel_strip_->OnWindowSizeChanged(panel, new_size);
+  docked_strip_->OnWindowSizeChanged(panel, new_size);
 }
 
 bool PanelManager::ShouldBringUpTitlebars(int mouse_x, int mouse_y) const {
-  return panel_strip_->ShouldBringUpTitlebars(mouse_x, mouse_y);
+  return docked_strip_->ShouldBringUpTitlebars(mouse_x, mouse_y);
 }
 
 void PanelManager::BringUpOrDownTitlebars(bool bring_up) {
-  panel_strip_->BringUpOrDownTitlebars(bring_up);
+  docked_strip_->BringUpOrDownTitlebars(bring_up);
 }
 
 void PanelManager::AdjustWorkAreaForAutoHidingDesktopBars() {
@@ -252,23 +252,23 @@ void PanelManager::OnAutoHidingDesktopBarThicknessChanged() {
 void PanelManager::OnAutoHidingDesktopBarVisibilityChanged(
     AutoHidingDesktopBar::Alignment alignment,
     AutoHidingDesktopBar::Visibility visibility) {
-  panel_strip_->OnAutoHidingDesktopBarVisibilityChanged(alignment, visibility);
+  docked_strip_->OnAutoHidingDesktopBarVisibilityChanged(alignment, visibility);
 }
 
 void PanelManager::RemoveAll() {
-  panel_strip_->RemoveAll();
-  panel_overflow_strip_->RemoveAll();
+  docked_strip_->RemoveAll();
+  overflow_strip_->RemoveAll();
 }
 
 int PanelManager::num_panels() const {
-  return panel_strip_->num_panels() + panel_overflow_strip_->num_panels();
+  return docked_strip_->num_panels() + overflow_strip_->num_panels();
 }
 
 std::vector<Panel*> PanelManager::panels() const {
-  std::vector<Panel*> panels = panel_strip_->panels();
-  for (PanelOverflowStrip::Panels::const_iterator iter =
-           panel_overflow_strip_->panels().begin();
-       iter != panel_overflow_strip_->panels().end(); ++iter)
+  std::vector<Panel*> panels = docked_strip_->panels();
+  for (OverflowPanelStrip::Panels::const_iterator iter =
+           overflow_strip_->panels().begin();
+       iter != overflow_strip_->panels().end(); ++iter)
     panels.push_back(*iter);
   return panels;
 }

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/panels/panel_strip.h"
+#include "chrome/browser/ui/panels/docked_panel_strip.h"
 
 #include <algorithm>
 
@@ -10,9 +10,9 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/panels/overflow_panel_strip.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/browser/ui/panels/panel_mouse_watcher.h"
-#include "chrome/browser/ui/panels/panel_overflow_strip.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
@@ -47,10 +47,10 @@ const int kMillisecondsBeforeCollapsingFromTitleOnlyState = 0;
 }  // namespace
 
 // static
-const int PanelStrip::kPanelMinWidth = 100;
-const int PanelStrip::kPanelMinHeight = 20;
+const int DockedPanelStrip::kPanelMinWidth = 100;
+const int DockedPanelStrip::kPanelMinHeight = 20;
 
-PanelStrip::PanelStrip(PanelManager* panel_manager)
+DockedPanelStrip::DockedPanelStrip(PanelManager* panel_manager)
     : panel_manager_(panel_manager),
       minimized_panel_count_(0),
       are_titlebars_up_(false),
@@ -60,14 +60,14 @@ PanelStrip::PanelStrip(PanelManager* panel_manager)
       titlebar_action_factory_(this) {
 }
 
-PanelStrip::~PanelStrip() {
+DockedPanelStrip::~DockedPanelStrip() {
   DCHECK(panels_.empty());
   DCHECK(panels_pending_to_remove_.empty());
   DCHECK(panels_in_temporary_layout_.empty());
   DCHECK_EQ(0, minimized_panel_count_);
 }
 
-void PanelStrip::SetDisplayArea(const gfx::Rect& new_area) {
+void DockedPanelStrip::SetDisplayArea(const gfx::Rect& new_area) {
   if (display_area_ == new_area)
     return;
 
@@ -80,7 +80,7 @@ void PanelStrip::SetDisplayArea(const gfx::Rect& new_area) {
   Rearrange();
 }
 
-void PanelStrip::AddPanel(Panel* panel) {
+void DockedPanelStrip::AddPanel(Panel* panel) {
   DCHECK_NE(Panel::IN_OVERFLOW, panel->expansion_state());
 
   // Always update limits, even for exiting panels, in case the maximums changed
@@ -141,7 +141,7 @@ void PanelStrip::AddPanel(Panel* panel) {
       panel->set_draggable(false);
       MessageLoop::current()->PostDelayedTask(
           FROM_HERE,
-          base::Bind(&PanelStrip::DelayedMovePanelToOverflow,
+          base::Bind(&DockedPanelStrip::DelayedMovePanelToOverflow,
                      base::Unretained(this),
                      panel),
                      PanelManager::AdjustTimeInterval(
@@ -157,24 +157,24 @@ void PanelStrip::AddPanel(Panel* panel) {
     panels_.push_back(panel);
 }
 
-int PanelStrip::GetMaxPanelWidth() const {
+int DockedPanelStrip::GetMaxPanelWidth() const {
   return static_cast<int>(display_area_.width() * kPanelMaxWidthFactor);
 }
 
-int PanelStrip::GetMaxPanelHeight() const {
+int DockedPanelStrip::GetMaxPanelHeight() const {
   return display_area_.height();
 }
 
-int PanelStrip::StartingRightPosition() const {
+int DockedPanelStrip::StartingRightPosition() const {
   return display_area_.right();
 }
 
-int PanelStrip::GetRightMostAvailablePosition() const {
+int DockedPanelStrip::GetRightMostAvailablePosition() const {
   return panels_.empty() ? StartingRightPosition() :
       (panels_.back()->GetBounds().x() - kPanelsHorizontalSpacing);
 }
 
-bool PanelStrip::Remove(Panel* panel) {
+bool DockedPanelStrip::Remove(Panel* panel) {
   if (panel->has_temporary_layout()) {
     panels_in_temporary_layout_.erase(panel);
     return true;
@@ -199,14 +199,14 @@ bool PanelStrip::Remove(Panel* panel) {
   return true;
 }
 
-void PanelStrip::DelayedRemove() {
+void DockedPanelStrip::DelayedRemove() {
   for (size_t i = 0; i < panels_pending_to_remove_.size(); ++i)
     DoRemove(panels_pending_to_remove_[i]);
   panels_pending_to_remove_.clear();
   Rearrange();
 }
 
-bool PanelStrip::DoRemove(Panel* panel) {
+bool DockedPanelStrip::DoRemove(Panel* panel) {
   Panels::iterator iter = find(panels_.begin(), panels_.end(), panel);
   if (iter == panels_.end())
     return false;
@@ -220,7 +220,7 @@ bool PanelStrip::DoRemove(Panel* panel) {
   return true;
 }
 
-void PanelStrip::StartDragging(Panel* panel) {
+void DockedPanelStrip::StartDragging(Panel* panel) {
   for (size_t i = 0; i < panels_.size(); ++i) {
     if (panels_[i] == panel) {
       dragging_panel_index_ = i;
@@ -231,7 +231,7 @@ void PanelStrip::StartDragging(Panel* panel) {
   }
 }
 
-void PanelStrip::Drag(int delta_x) {
+void DockedPanelStrip::Drag(int delta_x) {
   DCHECK(dragging_panel_index_ != kInvalidPanelIndex);
 
   if (!delta_x)
@@ -250,7 +250,7 @@ void PanelStrip::Drag(int delta_x) {
     DragLeft();
 }
 
-void PanelStrip::DragLeft() {
+void DockedPanelStrip::DragLeft() {
   Panel* dragging_panel = panels_[dragging_panel_index_];
 
   // This is the left corner of the dragging panel. We use it to check against
@@ -293,7 +293,7 @@ void PanelStrip::DragLeft() {
   }
 }
 
-void PanelStrip::DragRight() {
+void DockedPanelStrip::DragRight() {
   Panel* dragging_panel = panels_[dragging_panel_index_];
 
   // This is the right corner of the dragging panel. We use it to check against
@@ -335,7 +335,7 @@ void PanelStrip::DragRight() {
   }
 }
 
-void PanelStrip::EndDragging(bool cancelled) {
+void DockedPanelStrip::EndDragging(bool cancelled) {
   DCHECK(dragging_panel_index_ != kInvalidPanelIndex);
 
   if (cancelled) {
@@ -351,12 +351,12 @@ void PanelStrip::EndDragging(bool cancelled) {
   DelayedRemove();
 }
 
-void PanelStrip::OnPanelExpansionStateChanged(Panel* panel) {
+void DockedPanelStrip::OnPanelExpansionStateChanged(Panel* panel) {
   gfx::Size size = panel->restored_size();
   Panel::ExpansionState expansion_state = panel->expansion_state();
   Panel::ExpansionState old_state = panel->old_expansion_state();
   if (old_state == Panel::IN_OVERFLOW) {
-    panel_manager_->panel_overflow_strip()->Remove(panel);
+    panel_manager_->overflow_strip()->Remove(panel);
     AddPanel(panel);
     panel->SetAppIconVisibility(true);
     panel->set_draggable(true);
@@ -394,21 +394,21 @@ void PanelStrip::OnPanelExpansionStateChanged(Panel* panel) {
                 size.height()));
 }
 
-void PanelStrip::IncrementMinimizedPanels() {
+void DockedPanelStrip::IncrementMinimizedPanels() {
   minimized_panel_count_++;
   if (minimized_panel_count_ == 1)
     panel_manager_->mouse_watcher()->AddObserver(this);
   DCHECK_LE(minimized_panel_count_, num_panels());
 }
 
-void PanelStrip::DecrementMinimizedPanels() {
+void DockedPanelStrip::DecrementMinimizedPanels() {
   minimized_panel_count_--;
   DCHECK_GE(minimized_panel_count_, 0);
   if (minimized_panel_count_ == 0)
     panel_manager_->mouse_watcher()->RemoveObserver(this);
 }
 
-void PanelStrip::OnWindowSizeChanged(
+void DockedPanelStrip::OnWindowSizeChanged(
     Panel* panel, const gfx::Size& preferred_window_size) {
   // The panel width:
   // * cannot grow or shrink to go beyond [min_width, max_width]
@@ -455,7 +455,7 @@ void PanelStrip::OnWindowSizeChanged(
     Rearrange();
 }
 
-bool PanelStrip::ShouldBringUpTitlebars(int mouse_x, int mouse_y) const {
+bool DockedPanelStrip::ShouldBringUpTitlebars(int mouse_x, int mouse_y) const {
   // We should always bring up the titlebar if the mouse is over the
   // visible auto-hiding bottom bar.
   AutoHidingDesktopBar* desktop_bar = panel_manager_->auto_hiding_desktop_bar();
@@ -492,7 +492,7 @@ bool PanelStrip::ShouldBringUpTitlebars(int mouse_x, int mouse_y) const {
   return false;
 }
 
-void PanelStrip::BringUpOrDownTitlebars(bool bring_up) {
+void DockedPanelStrip::BringUpOrDownTitlebars(bool bring_up) {
   if (are_titlebars_up_ == bring_up)
     return;
   are_titlebars_up_ = bring_up;
@@ -540,12 +540,12 @@ void PanelStrip::BringUpOrDownTitlebars(bool bring_up) {
   titlebar_action_factory_.InvalidateWeakPtrs();
   MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&PanelStrip::DelayedBringUpOrDownTitlebarsCheck,
+      base::Bind(&DockedPanelStrip::DelayedBringUpOrDownTitlebarsCheck,
                  titlebar_action_factory_.GetWeakPtr()),
                  PanelManager::AdjustTimeInterval(task_delay_milliseconds));
 }
 
-void PanelStrip::DelayedBringUpOrDownTitlebarsCheck() {
+void DockedPanelStrip::DelayedBringUpOrDownTitlebarsCheck() {
   // Task was already processed or cancelled - bail out.
   if (delayed_titlebar_action_ == NO_ACTION)
     return;
@@ -563,7 +563,7 @@ void PanelStrip::DelayedBringUpOrDownTitlebarsCheck() {
   DoBringUpOrDownTitlebars(need_to_bring_up_titlebars);
 }
 
-void PanelStrip::DoBringUpOrDownTitlebars(bool bring_up) {
+void DockedPanelStrip::DoBringUpOrDownTitlebars(bool bring_up) {
   for (Panels::const_iterator iter = panels_.begin();
        iter != panels_.end(); ++iter) {
     Panel* panel = *iter;
@@ -582,7 +582,7 @@ void PanelStrip::DoBringUpOrDownTitlebars(bool bring_up) {
   }
 }
 
-int PanelStrip::GetBottomPositionForExpansionState(
+int DockedPanelStrip::GetBottomPositionForExpansionState(
     Panel::ExpansionState expansion_state) const {
   int bottom = display_area_.bottom();
   // If there is an auto-hiding desktop bar aligned to the bottom edge, we need
@@ -596,13 +596,13 @@ int PanelStrip::GetBottomPositionForExpansionState(
   return bottom;
 }
 
-void PanelStrip::OnMouseMove(const gfx::Point& mouse_position) {
+void DockedPanelStrip::OnMouseMove(const gfx::Point& mouse_position) {
   bool bring_up_titlebars = ShouldBringUpTitlebars(mouse_position.x(),
                                                    mouse_position.y());
   BringUpOrDownTitlebars(bring_up_titlebars);
 }
 
-void PanelStrip::OnAutoHidingDesktopBarVisibilityChanged(
+void DockedPanelStrip::OnAutoHidingDesktopBarVisibilityChanged(
     AutoHidingDesktopBar::Alignment alignment,
     AutoHidingDesktopBar::Visibility visibility) {
   if (delayed_titlebar_action_ == NO_ACTION)
@@ -618,12 +618,12 @@ void PanelStrip::OnAutoHidingDesktopBarVisibilityChanged(
   delayed_titlebar_action_ = NO_ACTION;
 }
 
-void PanelStrip::OnFullScreenModeChanged(bool is_full_screen) {
+void DockedPanelStrip::OnFullScreenModeChanged(bool is_full_screen) {
   for (size_t i = 0; i < panels_.size(); ++i)
     panels_[i]->FullScreenModeChanged(is_full_screen);
 }
 
-void PanelStrip::Rearrange() {
+void DockedPanelStrip::Rearrange() {
   int rightmost_position = StartingRightPosition();
 
   size_t panel_index = 0;
@@ -660,7 +660,7 @@ void PanelStrip::Rearrange() {
       panels_[overflow_index]->SetExpansionState(Panel::IN_OVERFLOW);
   } else {
     // Attempt to add more panels from overflow to the strip.
-    PanelOverflowStrip* overflow_strip = panel_manager_->panel_overflow_strip();
+    OverflowPanelStrip* overflow_strip = panel_manager_->overflow_strip();
     Panel* overflow_panel;
     while ((overflow_panel = overflow_strip->first_panel()) &&
            GetRightMostAvailablePosition() >=
@@ -679,14 +679,14 @@ void PanelStrip::Rearrange() {
 #endif
 }
 
-void PanelStrip::DelayedMovePanelToOverflow(Panel* panel) {
+void DockedPanelStrip::DelayedMovePanelToOverflow(Panel* panel) {
   if (panels_in_temporary_layout_.erase(panel)) {
       DCHECK(panel->has_temporary_layout());
       panel->SetExpansionState(Panel::IN_OVERFLOW);
   }
 }
 
-void PanelStrip::RemoveAll() {
+void DockedPanelStrip::RemoveAll() {
   // This should only be called at the end of tests to clean up.
   DCHECK(dragging_panel_index_ == kInvalidPanelIndex);
   DCHECK(panels_in_temporary_layout_.empty());
@@ -700,6 +700,6 @@ void PanelStrip::RemoveAll() {
     (*iter)->Close();
 }
 
-bool PanelStrip::is_dragging_panel() const {
+bool DockedPanelStrip::is_dragging_panel() const {
   return dragging_panel_index_ != kInvalidPanelIndex;
 }
