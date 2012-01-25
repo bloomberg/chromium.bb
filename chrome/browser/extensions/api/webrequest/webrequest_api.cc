@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extension_webrequest_api.h"
+#include "chrome/browser/extensions/api/webrequest/webrequest_api.h"
 
 #include <algorithm>
 
@@ -16,14 +16,14 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_content_browser_client.h"
+#include "chrome/browser/extensions/api/webrequest/webrequest_api_constants.h"
+#include "chrome/browser/extensions/api/webrequest/webrequest_api_helpers.h"
+#include "chrome/browser/extensions/api/webrequest/webrequest_time_tracker.h"
 #include "chrome/browser/extensions/extension_event_router.h"
 #include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_id_map.h"
-#include "chrome/browser/extensions/extension_webrequest_api_constants.h"
-#include "chrome/browser/extensions/extension_webrequest_api_helpers.h"
-#include "chrome/browser/extensions/extension_webrequest_time_tracker.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/renderer_host/chrome_render_message_filter.h"

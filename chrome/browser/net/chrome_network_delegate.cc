@@ -6,10 +6,10 @@
 
 #include "base/logging.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
+#include "chrome/browser/extensions/api/webrequest/webrequest_api.h"
 #include "chrome/browser/extensions/extension_event_router_forwarder.h"
 #include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/browser/extensions/extension_proxy_api.h"
-#include "chrome/browser/extensions/extension_webrequest_api.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/task_manager/task_manager.h"
 #include "chrome/common/pref_names.h"

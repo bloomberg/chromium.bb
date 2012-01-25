@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_WEBREQUEST_API_H_
-#define CHROME_BROWSER_EXTENSIONS_EXTENSION_WEBREQUEST_API_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_API_WEBREQUEST_WEBREQUEST_API_H_
+#define CHROME_BROWSER_EXTENSIONS_API_WEBREQUEST_WEBREQUEST_API_H_
 #pragma once
 
 #include <list>
@@ -14,8 +14,8 @@
 
 #include "base/memory/singleton.h"
 #include "base/time.h"
+#include "chrome/browser/extensions/api/webrequest/webrequest_api_helpers.h"
 #include "chrome/browser/extensions/extension_function.h"
-#include "chrome/browser/extensions/extension_webrequest_api_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/url_pattern_set.h"
 #include "ipc/ipc_message.h"
@@ -380,4 +380,4 @@ class WebRequestHandlerBehaviorChanged : public SyncIOThreadExtensionFunction {
 // TODO(mpcomplete): remove. http://crbug.com/100411
 void SendExtensionWebRequestStatusToHost(content::RenderProcessHost* host);
 
-#endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_WEBREQUEST_API_H_
+#endif  // CHROME_BROWSER_EXTENSIONS_API_WEBREQUEST_WEBREQUEST_API_H_

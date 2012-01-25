@@ -1,11 +1,11 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 // Helper classes and functions used for the WebRequest API.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_WEBREQUEST_API_HELPERS_H_
-#define CHROME_BROWSER_EXTENSIONS_EXTENSION_WEBREQUEST_API_HELPERS_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_API_WEBREQUEST_WEBREQUEST_API_HELPERS_H_
+#define CHROME_BROWSER_EXTENSIONS_API_WEBREQUEST_WEBREQUEST_API_HELPERS_H_
 #pragma once
 
 #include <list>
@@ -180,4 +180,4 @@ bool MergeOnAuthRequiredResponses(
 
 }  // namespace extension_webrequest_api_helpers
 
-#endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_WEBREQUEST_API_HELPERS_H_
+#endif  // CHROME_BROWSER_EXTENSIONS_API_WEBREQUEST_WEBREQUEST_API_HELPERS_H_
