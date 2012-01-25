@@ -76,7 +76,8 @@ static const char kNextDownloadId[] = "next_download_id";
 DownloadDatabase::DownloadDatabase()
     : owning_thread_set_(false),
       owning_thread_(0),
-      next_id_(0) {
+      next_id_(0),
+      next_db_handle_(0) {
 }
 
 DownloadDatabase::~DownloadDatabase() {
@@ -120,6 +121,8 @@ void DownloadDatabase::QueryDownloads(
     std::vector<DownloadPersistentStoreInfo>* results) {
   CheckThread();
   results->clear();
+  if (next_db_handle_ < 1)
+    next_db_handle_ = 1;
 
   sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
       "SELECT id, full_path, url, start_time, received_bytes, "
@@ -130,7 +133,6 @@ void DownloadDatabase::QueryDownloads(
   while (statement.Step()) {
     DownloadPersistentStoreInfo info;
     info.db_handle = statement.ColumnInt64(0);
-
     info.path = ColumnFilePath(statement, 1);
     info.url = GURL(statement.ColumnString(2));
     info.start_time = base::Time::FromTimeT(statement.ColumnInt64(3));
@@ -140,14 +142,8 @@ void DownloadDatabase::QueryDownloads(
     info.end_time = base::Time::FromTimeT(statement.ColumnInt64(7));
     info.opened = statement.ColumnInt(8) != 0;
     results->push_back(info);
-
-    // TODO(rdsmith): Remove when http://crbug.com/96627 is resolved.
-    // This path is used for the initial loading of the downloads
-    // from the history.  Insert ids into returned_ids_ to initialize it.
-    // We don't assert on the id not already being there in case
-    // this call is used on some path other than the initialization path.
-    if (returned_ids_.count(info.db_handle) == 0)
-      returned_ids_.insert(info.db_handle);
+    if (info.db_handle >= next_db_handle_)
+      next_db_handle_ = info.db_handle + 1;
   }
 }
 
@@ -192,46 +188,37 @@ int64 DownloadDatabase::CreateDownload(
     const DownloadPersistentStoreInfo& info) {
   CheckThread();
 
+  if (next_db_handle_ == 0) {
+    // This is unlikely. All current known tests and users already call
+    // QueryDownloads() before CreateDownload().
+    std::vector<DownloadPersistentStoreInfo> results;
+    QueryDownloads(&results);
+    CHECK_NE(0, next_db_handle_);
+  }
+
   sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
       "INSERT INTO downloads "
-      "(full_path, url, start_time, received_bytes, total_bytes, state, "
+      "(id, full_path, url, start_time, received_bytes, total_bytes, state, "
       "end_time, opened) "
-      "VALUES (?, ?, ?, ?, ?, ?, ?, ?)"));
-  BindFilePath(statement, info.path, 0);
-  statement.BindString(1, info.url.spec());
-  statement.BindInt64(2, info.start_time.ToTimeT());
-  statement.BindInt64(3, info.received_bytes);
-  statement.BindInt64(4, info.total_bytes);
-  statement.BindInt(5, info.state);
-  statement.BindInt64(6, info.end_time.ToTimeT());
-  statement.BindInt(7, info.opened ? 1 : 0);
+      "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"));
+
+  int db_handle = next_db_handle_++;
+
+  statement.BindInt64(0, db_handle);
+  BindFilePath(statement, info.path, 1);
+  statement.BindString(2, info.url.spec());
+  statement.BindInt64(3, info.start_time.ToTimeT());
+  statement.BindInt64(4, info.received_bytes);
+  statement.BindInt64(5, info.total_bytes);
+  statement.BindInt(6, info.state);
+  statement.BindInt64(7, info.end_time.ToTimeT());
+  statement.BindInt(8, info.opened ? 1 : 0);
 
   if (statement.Run()) {
-    int64 id = GetDB().GetLastInsertRowId();
-
-    if (returned_ids_.count(id) != 0) {
-      // We have an invariant violation and we're going to crash.  Take a
-      // moment more before crashing to figure out if it's a returned_ids_/DB
-      // inconsistency, or an inconsistency inside the DB.
-      sql::Statement dbg_statement(GetDB().GetCachedStatement(
-          SQL_FROM_HERE,
-          "SELECT id FROM downloads;"));
-      CHECK_96627(dbg_statement.is_valid());
-
-      std::set<int64> database_ids;
-      while (dbg_statement.Step()) {
-        bool success = database_ids.insert(dbg_statement.ColumnInt64(0)).second;
-        CHECK_96627(success);
-      }
-      CHECK_96627(false);
-    }
-
-    returned_ids_.insert(id);
-
     // TODO(benjhayden) if(info.id>next_id_){setvalue;next_id_=info.id;}
     meta_table_.SetValue(kNextDownloadId, ++next_id_);
 
-    return id;
+    return db_handle;
   }
   return 0;
 }
@@ -241,12 +228,7 @@ void DownloadDatabase::RemoveDownload(DownloadID db_handle) {
   sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
       "DELETE FROM downloads WHERE id=?"));
   statement.BindInt64(0, db_handle);
-
-  if (!statement.Run())
-    return;
-
-  // TODO(rdsmith): Remove when http://crbug.com/96627 is resolved.
-  returned_ids_.erase(db_handle);
+  statement.Run();
 }
 
 bool DownloadDatabase::RemoveDownloadsBetween(base::Time delete_begin,
@@ -254,32 +236,6 @@ bool DownloadDatabase::RemoveDownloadsBetween(base::Time delete_begin,
   CheckThread();
   time_t start_time = delete_begin.ToTimeT();
   time_t end_time = delete_end.ToTimeT();
-
-  // TODO(rdsmith): Remove when http://crbug.com/96627 is resolved.
-  {
-    sql::Statement dbg_statement(GetDB().GetCachedStatement(
-        SQL_FROM_HERE,
-        "SELECT id FROM downloads WHERE start_time >= ? AND start_time < ? "
-        "AND (State = ? OR State = ? OR State = ?)"));
-    dbg_statement.BindInt64(0, start_time);
-    dbg_statement.BindInt64(
-        1,
-        end_time ? end_time : std::numeric_limits<int64>::max());
-    dbg_statement.BindInt(2, DownloadItem::COMPLETE);
-    dbg_statement.BindInt(3, DownloadItem::CANCELLED);
-    dbg_statement.BindInt(4, DownloadItem::INTERRUPTED);
-
-    if (!dbg_statement.is_valid())
-      return false;
-
-    while (dbg_statement.Step()) {
-      int64 id_to_delete = dbg_statement.ColumnInt64(0);
-      returned_ids_.erase(id_to_delete);
-    }
-    int last_error_code = GetDB().GetErrorCode();
-    base::debug::Alias(&last_error_code);
-    CHECK_96627(dbg_statement.Succeeded());
-  }
 
   // This does not use an index. We currently aren't likely to have enough
   // downloads where an index by time will give us a lot of benefit.

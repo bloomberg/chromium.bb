@@ -77,12 +77,11 @@ class DownloadDatabase {
 
   bool EnsureColumnExists(const std::string& name, const std::string& type);
 
-  // TODO(rdsmith): Remove after http://crbug.com/96627 has been resolved.
-  std::set<int64> returned_ids_;
   bool owning_thread_set_;
   base::PlatformThreadId owning_thread_;
 
   int next_id_;
+  int next_db_handle_;
   sql::MetaTable meta_table_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadDatabase);
