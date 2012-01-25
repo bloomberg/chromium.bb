@@ -75,7 +75,6 @@
 #include "chrome/browser/speech/chrome_speech_input_preferences.h"
 #include "chrome/browser/spellchecker/spellcheck_profile.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
-#include "chrome/browser/tabs/pinned_tab_service_factory.h"
 #include "chrome/browser/transport_security_persister.h"
 #include "chrome/browser/ui/browser_init.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -344,8 +343,6 @@ void ProfileImpl::DoFinalInit() {
   PrefService* local_state = g_browser_process->local_state();
   ssl_config_service_manager_.reset(
       SSLConfigServiceManager::CreateDefaultManager(local_state));
-
-  PinnedTabServiceFactory::InitForProfile(this);
 
   // Initialize the BackgroundModeManager - this has to be done here before
   // InitExtensions() is called because it relies on receiving notifications

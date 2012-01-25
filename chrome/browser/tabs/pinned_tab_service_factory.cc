@@ -8,14 +8,15 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 
-namespace {
-base::LazyInstance<PinnedTabServiceFactory> g_pinned_tab_service_factory =
-    LAZY_INSTANCE_INITIALIZER;
+// static
+PinnedTabService* PinnedTabServiceFactory::GetForProfile(
+    Profile* profile) {
+  return static_cast<PinnedTabService*>(
+      GetInstance()->GetServiceForProfile(profile, true));
 }
 
-// static
-void PinnedTabServiceFactory::InitForProfile(Profile* profile) {
-  g_pinned_tab_service_factory.Get().GetServiceForProfile(profile, true);
+PinnedTabServiceFactory* PinnedTabServiceFactory::GetInstance() {
+  return Singleton<PinnedTabServiceFactory>::get();
 }
 
 PinnedTabServiceFactory::PinnedTabServiceFactory()
@@ -29,4 +30,12 @@ PinnedTabServiceFactory::~PinnedTabServiceFactory() {
 ProfileKeyedService* PinnedTabServiceFactory::BuildServiceInstanceFor(
     Profile* profile) const {
   return new PinnedTabService(profile);
+}
+
+bool PinnedTabServiceFactory::ServiceIsCreatedWithProfile() {
+  return true;
+}
+
+bool PinnedTabServiceFactory::ServiceIsNULLWhileTesting() {
+  return true;
 }

@@ -28,6 +28,7 @@
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/speech/speech_input_extension_manager.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/tabs/pinned_tab_service_factory.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/global_error_service_factory.h"
 #include "chrome/browser/ui/webui/ntp/ntp_resource_cache_factory.h"
@@ -169,10 +170,7 @@ void ProfileDependencyManager::AssertFactoriesBuilt() {
   NetworkActionPredictorFactory::GetInstance();
   NTPResourceCacheFactory::GetInstance();
   PersonalDataManagerFactory::GetInstance();
-  // TODO(erg): PinnedTabService deviates from the pattern of every other
-  // PKSF. It's broken and is registering itself twice.
-  //
-  // PinnedTabServiceFactory::GetInstance();
+  PinnedTabServiceFactory::GetInstance();
   PluginPrefsFactory::GetInstance();
   protector::ProtectorServiceFactory::GetInstance();
   prerender::PrerenderManagerFactory::GetInstance();
