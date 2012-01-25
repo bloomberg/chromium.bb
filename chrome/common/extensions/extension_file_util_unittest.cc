@@ -19,10 +19,6 @@
 
 namespace keys = extension_manifest_keys;
 
-#if defined(OS_WIN)
-// http://crbug.com/106381
-#define InstallUninstallGarbageCollect DISABLED_InstallUninstallGarbageCollect
-#endif
 TEST(ExtensionFileUtil, InstallUninstallGarbageCollect) {
   ScopedTempDir temp;
   ASSERT_TRUE(temp.CreateUniqueTempDir());
@@ -108,11 +104,6 @@ TEST(ExtensionFileUtil, LoadExtensionWithoutLocalesFolder) {
   EXPECT_TRUE(error.empty());
 }
 
-#if defined(OS_WIN)
-// http://crbug.com/106381
-#define CheckIllegalFilenamesNoUnderscores \
-    DISABLED_CheckIllegalFilenamesNoUnderscores
-#endif
 TEST(ExtensionFileUtil, CheckIllegalFilenamesNoUnderscores) {
   ScopedTempDir temp;
   ASSERT_TRUE(temp.CreateUniqueTempDir());
@@ -128,11 +119,6 @@ TEST(ExtensionFileUtil, CheckIllegalFilenamesNoUnderscores) {
                                                             &error));
 }
 
-#if defined(OS_WIN)
-// http://crbug.com/106381
-#define CheckIllegalFilenamesOnlyReserved \
-    DISABLED_CheckIllegalFilenamesOnlyReserved
-#endif
 TEST(ExtensionFileUtil, CheckIllegalFilenamesOnlyReserved) {
   ScopedTempDir temp;
   ASSERT_TRUE(temp.CreateUniqueTempDir());
@@ -145,11 +131,6 @@ TEST(ExtensionFileUtil, CheckIllegalFilenamesOnlyReserved) {
                                                             &error));
 }
 
-#if defined(OS_WIN)
-// http://crbug.com/106381
-#define CheckIllegalFilenamesReservedAndIllegal \
-    DISABLED_CheckIllegalFilenamesReservedAndIllegal
-#endif
 TEST(ExtensionFileUtil, CheckIllegalFilenamesReservedAndIllegal) {
   ScopedTempDir temp;
   ASSERT_TRUE(temp.CreateUniqueTempDir());
