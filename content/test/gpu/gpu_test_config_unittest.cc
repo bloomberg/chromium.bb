@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/test/gpu/gpu_test_config.h"
+#include "content/test/gpu/gpu_test_config.h"
 #include "content/public/common/gpu_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

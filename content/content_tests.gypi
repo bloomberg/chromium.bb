@@ -85,6 +85,8 @@
         'test/browser_test_base.h',
         'test/content_test_suite.cc',
         'test/content_test_suite.h',
+        'test/gpu/gpu_test_config.cc',
+        'test/gpu/gpu_test_config.h',
         'test/js_injection_ready_observer.h',
         'test/mock_geolocation.cc',
         'test/mock_geolocation.h',
@@ -286,6 +288,7 @@
         'renderer/paint_aggregator_unittest.cc',
         'renderer/pepper_plugin_delegate_impl_unittest.cc',
         'renderer/v8_value_converter_impl_unittest.cc',
+        'test/gpu/gpu_test_config_unittest.cc',
         'test/run_all_unittests.cc',
       ],
       'conditions': [
