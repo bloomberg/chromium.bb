@@ -542,6 +542,9 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Channel::Listener,
   // initialization.
   bool renderer_initialized_;
 
+  // This value indicates how long to wait before we consider a renderer hung.
+  int hung_renderer_delay_ms_;
+
  private:
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostTest, Resize);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostTest, ResizeThenCrash);
@@ -751,6 +754,10 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Channel::Listener,
   // The following value indicates a time in the future when we would consider
   // the renderer hung if it does not generate an appropriate response message.
   base::Time time_when_considered_hung_;
+
+  // This value denotes the number of input events yet to be acknowledged
+  // by the renderer.
+  int in_flight_event_count_;
 
   // This timer runs to check if time_when_considered_hung_ has past.
   base::OneShotTimer<RenderWidgetHost> hung_renderer_timer_;

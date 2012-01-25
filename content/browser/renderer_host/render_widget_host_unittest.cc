@@ -181,6 +181,10 @@ class MockRenderWidgetHost : public RenderWidgetHost {
     return unresponsive_timer_fired_;
   }
 
+  void set_hung_renderer_delay_ms(int delay_ms) {
+    hung_renderer_delay_ms_ = delay_ms;
+  }
+
  protected:
   virtual bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
                                       bool* is_keyboard_shortcut) {
@@ -735,6 +739,27 @@ TEST_F(RenderWidgetHostTest, StopAndStartHangMonitorTimeout) {
   // Start it again to ensure it still works.
   EXPECT_FALSE(host_->unresponsive_timer_fired());
   host_->StartHangMonitorTimeout(TimeDelta::FromMilliseconds(10));
+
+  // Wait long enough for first timeout and see if it fired.
+  MessageLoop::current()->PostDelayedTask(FROM_HERE,
+                                          MessageLoop::QuitClosure(), 40);
+  MessageLoop::current()->Run();
+  EXPECT_TRUE(host_->unresponsive_timer_fired());
+}
+
+// Test that the hang monitor catches two input events but only one ack.
+// This can happen if the second input event causes the renderer to hang.
+// This test will catch a regression of crbug.com/111185 and will only
+// pass when the compositor thread is being used.
+TEST_F(RenderWidgetHostTest, FAILS_MultipleInputEvents) {
+  // Configure the host to wait 10ms before considering
+  // the renderer hung.
+  host_->set_hung_renderer_delay_ms(10);
+
+  // Send two events but only one ack.
+  SimulateKeyboardEvent(WebInputEvent::RawKeyDown);
+  SimulateKeyboardEvent(WebInputEvent::RawKeyDown);
+  SendInputEventACK(WebInputEvent::RawKeyDown, true);
 
   // Wait long enough for first timeout and see if it fired.
   MessageLoop::current()->PostDelayedTask(FROM_HERE,

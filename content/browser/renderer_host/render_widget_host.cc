@@ -77,6 +77,7 @@ bool ShouldCoalesceMouseWheelEvents(const WebMouseWheelEvent& last_event,
 RenderWidgetHost::RenderWidgetHost(content::RenderProcessHost* process,
                                    int routing_id)
     : renderer_initialized_(false),
+      hung_renderer_delay_ms_(kHungRendererDelayMs),
       renderer_accessible_(false),
       view_(NULL),
       process_(process),
@@ -94,6 +95,7 @@ RenderWidgetHost::RenderWidgetHost(content::RenderProcessHost* process,
       touch_event_is_queued_(false),
       needs_repainting_on_restore_(false),
       is_unresponsive_(false),
+      in_flight_event_count_(0),
       in_get_backing_store_(false),
       view_being_painted_(false),
       ignore_input_events_(false),
@@ -538,13 +540,13 @@ void RenderWidgetHost::StartHangMonitorTimeout(TimeDelta delay) {
 void RenderWidgetHost::RestartHangMonitorTimeout() {
   // Setting to null will cause StartHangMonitorTimeout to restart the timer.
   time_when_considered_hung_ = Time();
-  StartHangMonitorTimeout(TimeDelta::FromMilliseconds(kHungRendererDelayMs));
+  StartHangMonitorTimeout(
+      TimeDelta::FromMilliseconds(hung_renderer_delay_ms_));
 }
 
 void RenderWidgetHost::StopHangMonitorTimeout() {
   time_when_considered_hung_ = Time();
   RendererIsResponsive();
-
   // We do not bother to stop the hung_renderer_timer_ here in case it will be
   // started again shortly, which happens to be the common use case.
 }
@@ -719,7 +721,9 @@ void RenderWidgetHost::ForwardInputEvent(const WebInputEvent& input_event,
   // after this line.
   next_mouse_move_.reset();
 
-  StartHangMonitorTimeout(TimeDelta::FromMilliseconds(kHungRendererDelayMs));
+  in_flight_event_count_++;
+  StartHangMonitorTimeout(
+      TimeDelta::FromMilliseconds(hung_renderer_delay_ms_));
 }
 
 void RenderWidgetHost::ForwardTouchEvent(
@@ -769,6 +773,9 @@ void RenderWidgetHost::RendererExited(base::TerminationStatus status,
   current_size_.SetSize(0, 0);
   is_hidden_ = false;
   is_accelerated_compositing_active_ = false;
+
+  // Reset this to ensure the hung renderer mechanism is working properly.
+  in_flight_event_count_ = 0;
 
   if (view_) {
     view_->RenderViewGone(status, exit_code);
@@ -1149,7 +1156,8 @@ void RenderWidgetHost::OnMsgInputEventAck(WebInputEvent::Type event_type,
   UMA_HISTOGRAM_TIMES("MPArch.RWH_InputEventDelta", delta);
 
   // Cancel pending hung renderer checks since the renderer is responsive.
-  StopHangMonitorTimeout();
+  if (--in_flight_event_count_ == 0)
+    StopHangMonitorTimeout();
 
   int type = static_cast<int>(event_type);
   if (type < WebInputEvent::Undefined) {
