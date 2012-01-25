@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -506,6 +506,11 @@ class TemplateURLService : public WebDataServiceConsumer,
   // and database copies have valid sync_guids. This is to fix crbug.com/102038,
   // where old entries were being pushed to Sync without a sync_guid.
   void PatchMissingSyncGUIDs(std::vector<TemplateURL*>* template_urls);
+
+  // Overwrites |dst|'s synced fields with values from |sync_data|. This does
+  // commit |dst| to the TemplateURLService.
+  static void UpdateTemplateURLWithSyncData(TemplateURL* dst,
+                                            const SyncData& sync_data);
 
   content::NotificationRegistrar registrar_;
 

@@ -782,10 +782,12 @@ SyncError TemplateURLService::ProcessSyncChanges(
                existing_turl) {
       // Possibly resolve a keyword conflict if they have the same keywords but
       // are not the same entry.
+      TemplateURL updated_turl(*existing_turl);
+      UpdateTemplateURLWithSyncData(&updated_turl, iter->sync_data());
       if (existing_keyword_turl && existing_keyword_turl != existing_turl)
-        ResolveSyncKeywordConflict(turl.get(), &new_changes);
-      ResetTemplateURL(existing_turl, turl->short_name(), turl->keyword(),
-          turl->url() ? turl->url()->url() : std::string());
+        ResolveSyncKeywordConflict(&updated_turl, &new_changes);
+      UpdateNoNotify(existing_turl, updated_turl);
+      NotifyObservers();
     } else {
       // Something really unexpected happened. Either we received an
       // ACTION_INVALID, or Sync is in a crazy state:
@@ -858,13 +860,14 @@ SyncError TemplateURLService::MergeDataAndStartSyncing(
       // from Sync, we need to update locally or to the cloud. Note that if the
       // timestamps are equal, we touch neither.
       if (sync_turl->last_modified() > local_turl->last_modified()) {
-        // We've received an update from Sync. We should replace all existing
-        // values with the ones from sync except the local TemplateURLID. Note
-        // that this means that the TemplateURL may have to be reparsed. This
+        // We've received an update from Sync. We should replace all synced
+        // fields in the local TemplateURL. Note that this includes the
+        // TemplateURLID and the TemplateURL may have to be reparsed. This
         // also makes the local data's last_modified timestamp equal to Sync's,
         // avoiding an Update on the next MergeData call.
-        sync_turl->set_id(local_turl->id());
-        UpdateNoNotify(local_turl, *sync_turl);
+        TemplateURL updated_turl(*local_turl);
+        UpdateTemplateURLWithSyncData(&updated_turl, iter->second);
+        UpdateNoNotify(local_turl, updated_turl);
         NotifyObservers();
       } else if (sync_turl->last_modified() < local_turl->last_modified()) {
         // Otherwise, we know we have newer data, so update Sync with our
@@ -984,28 +987,8 @@ SyncData TemplateURLService::CreateSyncDataFromTemplateURL(
 // static
 TemplateURL* TemplateURLService::CreateTemplateURLFromSyncData(
     const SyncData& sync_data) {
-  sync_pb::SearchEngineSpecifics specifics =
-      sync_data.GetSpecifics().GetExtension(sync_pb::search_engine);
   TemplateURL* turl = new TemplateURL();
-  turl->set_short_name(UTF8ToUTF16(specifics.short_name()));
-  turl->set_keyword(UTF8ToUTF16(specifics.keyword()));
-  turl->SetFaviconURL(GURL(specifics.favicon_url()));
-  turl->SetURL(specifics.url(), 0, 0);
-  turl->set_safe_for_autoreplace(specifics.safe_for_autoreplace());
-  turl->set_originating_url(GURL(specifics.originating_url()));
-  turl->set_date_created(
-      base::Time::FromInternalValue(specifics.date_created()));
-  std::vector<std::string> input_encodings;
-  base::SplitString(specifics.input_encodings(), ';', &input_encodings);
-  turl->set_input_encodings(input_encodings);
-  turl->set_show_in_default_list(specifics.show_in_default_list());
-  turl->SetSuggestionsURL(specifics.suggestions_url(), 0, 0);
-  turl->SetPrepopulateId(specifics.prepopulate_id());
-  turl->set_autogenerate_keyword(specifics.autogenerate_keyword());
-  turl->SetInstantURL(specifics.instant_url(), 0, 0);
-  turl->set_last_modified(
-      base::Time::FromInternalValue(specifics.last_modified()));
-  turl->set_sync_guid(specifics.sync_guid());
+  UpdateTemplateURLWithSyncData(turl, sync_data);
   return turl;
 }
 
@@ -1789,8 +1772,10 @@ bool TemplateURLService::ResolveSyncKeywordConflict(
     change_list->push_back(SyncChange(SyncChange::ACTION_UPDATE, sync_data));
   } else {
     string16 new_keyword = UniquifyKeyword(*existing_turl);
-    ResetTemplateURL(existing_turl, existing_turl->short_name(), new_keyword,
-        existing_turl->url() ? existing_turl->url()->url() : std::string());
+    TemplateURL new_turl(*existing_turl);
+    new_turl.set_keyword(new_keyword);
+    UpdateNoNotify(existing_turl, new_turl);
+    NotifyObservers();
   }
   return true;
 }
@@ -1892,4 +1877,31 @@ void TemplateURLService::PatchMissingSyncGUIDs(
         service_->UpdateKeyword(*template_url);
     }
   }
+}
+
+// static
+void TemplateURLService::UpdateTemplateURLWithSyncData(
+    TemplateURL* dst,
+    const SyncData& sync_data) {
+  sync_pb::SearchEngineSpecifics specifics =
+      sync_data.GetSpecifics().GetExtension(sync_pb::search_engine);
+  dst->set_short_name(UTF8ToUTF16(specifics.short_name()));
+  dst->set_keyword(UTF8ToUTF16(specifics.keyword()));
+  dst->SetFaviconURL(GURL(specifics.favicon_url()));
+  dst->SetURL(specifics.url(), 0, 0);
+  dst->set_safe_for_autoreplace(specifics.safe_for_autoreplace());
+  dst->set_originating_url(GURL(specifics.originating_url()));
+  dst->set_date_created(
+      base::Time::FromInternalValue(specifics.date_created()));
+  std::vector<std::string> input_encodings;
+  base::SplitString(specifics.input_encodings(), ';', &input_encodings);
+  dst->set_input_encodings(input_encodings);
+  dst->set_show_in_default_list(specifics.show_in_default_list());
+  dst->SetSuggestionsURL(specifics.suggestions_url(), 0, 0);
+  dst->SetPrepopulateId(specifics.prepopulate_id());
+  dst->set_autogenerate_keyword(specifics.autogenerate_keyword());
+  dst->SetInstantURL(specifics.instant_url(), 0, 0);
+  dst->set_last_modified(
+      base::Time::FromInternalValue(specifics.last_modified()));
+  dst->set_sync_guid(specifics.sync_guid());
 }

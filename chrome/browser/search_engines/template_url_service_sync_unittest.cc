@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -417,13 +417,19 @@ TEST_F(TemplateURLServiceSyncTest, ResolveSyncKeywordConflict) {
   changes.clear();
 
   // Sync is newer. Original TemplateURL keyword is uniquified, no SyncChange
-  // is added.
+  // is added. Also ensure that this does not change the safe_for_autoreplace
+  // flag or the TemplateURLID in the original.
+  EXPECT_TRUE(original_turl->safe_for_autoreplace());
+  original_turl->set_id(1337);
+  sync_turl->set_id(1);
   sync_turl->set_keyword(original_turl->keyword());
   sync_keyword = sync_turl->keyword();
   sync_turl->set_last_modified(Time::FromTimeT(9001));
   EXPECT_TRUE(model()->ResolveSyncKeywordConflict(sync_turl.get(), &changes));
   EXPECT_EQ(sync_keyword, sync_turl->keyword());
   EXPECT_NE(original_turl_keyword, original_turl->keyword());
+  EXPECT_TRUE(original_turl->safe_for_autoreplace());
+  EXPECT_EQ(1337, original_turl->id());
   EXPECT_EQ(NULL, model()->GetTemplateURLForKeyword(sync_turl->keyword()));
   EXPECT_EQ(0U, changes.size());
 
