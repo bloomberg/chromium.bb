@@ -462,16 +462,15 @@ class BuildSpecsManager(object):
     self.inflight_dir = os.path.join(specs_for_build,
                                      BuildSpecsManager.STATUS_INFLIGHT, dir_pfx)
 
-    # Calculate latest spec that passed.
-    self.latest_passed = self._LatestSpecFromDir(version_info, self.pass_dir)
-
-    # Calculate latest processed spec.
-    dirs = (self.pass_dir, self.fail_dir, self.inflight_dir)
-    self.latest_processed = self._LatestSpecFromList(
-        filter(None, [self._LatestSpecFromDir(version_info, d) for d in dirs]))
+    # Calculate latest build that passed or failed.
+    dirs = (self.pass_dir, self.fail_dir)
+    specs = [self._LatestSpecFromDir(version_info, d) for d in dirs]
+    self.latest_processed = self._LatestSpecFromList(filter(None, specs))
+    self.latest_passed = specs[0]
 
     # Calculate latest unprocessed spec (that is newer than
-    # LONG_MAX_TIMEOUT_SECONDS)
+    # LONG_MAX_TIMEOUT_SECONDS). We only consider a spec unprocessed if we
+    # have not finished a build with that spec yet.
     self.latest = self._LatestSpecFromDir(version_info, self.all_specs_dir)
     self.latest_unprocessed = None
     if (self.latest != self.latest_processed and
@@ -484,7 +483,7 @@ class BuildSpecsManager(object):
     return VersionInfo(version_file=version_file_path, incr_type=self.incr_type)
 
   def HasCheckoutBeenBuilt(self):
-    """Checks to see if we've previously created a manifest with this checkout.
+    """Checks to see if we've previously built this checkout.
     """
     if self.latest_processed and self.latest == self.latest_processed:
       latest_spec_file = '%s.xml' % os.path.join(
