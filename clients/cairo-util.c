@@ -25,6 +25,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <math.h>
+#include <setjmp.h>
 #include <cairo.h>
 #include "cairo-util.h"
 
@@ -304,6 +305,12 @@ swizzle_row(JSAMPLE *row, JDIMENSION width)
 	}
 }
 
+static void
+error_exit(j_common_ptr cinfo)
+{
+	longjmp(cinfo->client_data, 1);
+}
+
 cairo_surface_t *
 load_jpeg(const char *filename)
 {
@@ -312,8 +319,14 @@ load_jpeg(const char *filename)
 	FILE *fp;
 	int stride, i, first;
 	JSAMPLE *data, *rows[4];
+	jmp_buf env;
 
 	cinfo.err = jpeg_std_error(&jerr);
+	jerr.error_exit = error_exit;
+	cinfo.client_data = env;
+	if (setjmp(env))
+		return NULL;
+
 	jpeg_create_decompress(&cinfo);
 
 	fp = fopen(filename, "rb");
