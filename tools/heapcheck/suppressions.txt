@@ -1786,3 +1786,13 @@
    fun:scoped_ptr::reset
    fun:ProfileSyncServiceTypedUrlTest::TearDown
 }
+{
+   bug_111317
+   Heapcheck:Leak
+   ...
+   fun:PORT_Alloc_Util
+   ...
+   fun:crypto::::SignData
+   fun:crypto::ECSignatureCreator::Sign
+   fun:ECSignatureCreatorTest_BasicTest_Test::TestBody
+}
