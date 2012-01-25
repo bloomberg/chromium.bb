@@ -16,5 +16,7 @@
   "icons": {
     "128": "images/icon-128.gif",
     "16":"images/icon-16.gif"
-  }
+  },
+
+  "manifest_version": 2
 }

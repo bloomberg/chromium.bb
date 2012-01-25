@@ -1,7 +1,7 @@
 /**
- * Copyright (c) 2010 The Chromium Authors. All rights reserved.  Use of this
- * source code is governed by a BSD-style license that can be found in the
- * LICENSE file.
+ * Copyright (c) 2012 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 //Contains true if multiple calendar option is checked, false otherwise.
@@ -12,9 +12,9 @@ window.addEventListener('load', init, false);
 
 /**
  * Sets the value of multiple calendar checkbox based on value from
- * local storage.
+ * local storage, and sets up the `save` event handler.
  */
- function init() {
+function init() {
   isMultiCalendar = JSON.parse(localStorage.multiCalendar || false);
   $('multiCalendar').checked = isMultiCalendar;
   $('multiCalendarText').innerHTML =
@@ -28,6 +28,7 @@ window.addEventListener('load', init, false);
   if (chrome.i18n.getMessage('direction') == 'rtl') {
     document.querySelector('body').style.direction = 'rtl';
   }
+  document.querySelector('#multiCalendar').addEventListener('click', save);
 };
 
 /**
