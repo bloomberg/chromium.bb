@@ -23,6 +23,29 @@ table#aboutDetails tr:nth-child(odd) {
 table#routingInfo tr:nth-child(odd) {
   background: #ccffcc;
 }
+
+@-webkit-keyframes highlight1 {
+  0% { background: #ffff00; }
+  100% { background: #ffffff; }
+}
+
+@-webkit-keyframes highlight2 {
+  0% { background: #9b9ea6; }
+  100% { background: #eff3ff; }
+}
+
+table#aboutDetails tr[highlighted] {
+  -webkit-animation-name: highlight1;
+  -webkit-animation-duration: 3s;
+  -webkit-animation-timing-function: linear;
+}
+
+table#aboutDetails tr[highlighted]:nth-child(odd) {
+  -webkit-animation-name: highlight2;
+  -webkit-animation-duration: 3s;
+  -webkit-animation-timing-function: linear;
+}
+
 </style>
 
 <div id='aboutInfo'>
@@ -57,7 +80,7 @@ table#routingInfo tr:nth-child(odd) {
       <td>Last Synced</td>
       <td jscontent="time_since_sync"/>
     </tr>
-    <tr jsselect="details">
+    <tr jsselect="details" jseval='highlightIfChanged(this, this.children[1].innerText, stat_value)'>
       <td jscontent="stat_name"/>
       <td jscontent="stat_value"/>
     </tr>
