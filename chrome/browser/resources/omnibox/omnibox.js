@@ -20,12 +20,24 @@ cr.define('omniboxDebug', function() {
   'use strict';
 
   /**
-   * Register our event handler.
+   * Register our event handlers.
    */
   function initialize() {
     document.getElementById('omnibox-input-form').addEventListener(
         'submit', startOmniboxQuery, false);
+    document.getElementById('show-details').addEventListener(
+        'change', refresh);
+    document.getElementById('show-incomplete-results').addEventListener(
+        'change', refresh);
   }
+
+  /**
+   * @type {Array.<Object>} an array of all autocomplete results we've seen
+   *     for this query.  We append to this list once for every call to
+   *     handleNewAutocompleteResult.  For details on the structure of
+   *     the object inside, see the comments by addResultToOutput.
+   */
+  var progressiveAutocompleteResults = [];
 
   /**
    * Extracts the input text from the text field and sends it to the
@@ -34,7 +46,7 @@ cr.define('omniboxDebug', function() {
    */
   function startOmniboxQuery(event) {
     // First, clear the results of past calls (if any).
-    document.getElementById('omnibox-debug-text').innerHTML = '';
+    progressiveAutocompleteResults = [];
     // Then, call chrome with a one-element list: the value in the text box.
     chrome.send('startOmniboxQuery',
                 [document.getElementById('input-text').value]);
@@ -48,7 +60,7 @@ cr.define('omniboxDebug', function() {
    * autocomplete result data field.
    * @param {string} header the label for the top of the column/table.
    * @param {string} urlLabelForHeader the URL that the header should point
-   *    to (if non-empty).
+   *     to (if non-empty).
    * @param {string} propertyName the name of the property in the autocomplete
    *     result record that we lookup.
    * @param {boolean} displayAlways whether the property should be displayed
@@ -131,9 +143,7 @@ cr.define('omniboxDebug', function() {
    * @param {string} propertyName the particular property of the autocomplete
    *     suggestion that should go in this cell.
    * @return {HTMLTableCellElement} that contains the value within this
-   *     autocompleteSuggestion associated with propertyName.  In the process,
-   *     remove propertyName from autocompleteSuggestion so we know we've
-   *     outputted it.
+   *     autocompleteSuggestion associated with propertyName.
    */
   function createCellForPropertyAndRemoveProperty(autocompleteSuggestion,
                                                   propertyName) {
@@ -154,24 +164,28 @@ cr.define('omniboxDebug', function() {
         // normal toString() output.
         cell.textContent = autocompleteSuggestion[propertyName];
       }
-      // Prune this propertyName so we know it's been displayed.
-      delete autocompleteSuggestion[propertyName];
     }  // else: if propertyName is undefined, we leave the cell blank
     return cell;
   }
 
   /**
    * Called by C++ code when we get an update from the
-   * AutocompleteController.  result is an complex Object with lots of
-   * information about various autocomplete matches.  The function
-   * takes result and puts it in human-readable form in the HTML node
-   * omnibox-debug-text.  It may clobber what's already there
-   * depending on parameters.  The current human-readable form a few
-   * lines about general autocomplete result statistics followed by a
-   * table with one line for each autocomplete result.  For an example
-   * of the output, try it with chrome://omnibox/.  As for the
-   * input parameter (result), here's an example of what it looks
-   * like:
+   * AutocompleteController.  We simply append the result to
+   * progressiveAutocompleteResults and refresh the page.
+   */
+  function handleNewAutocompleteResult(result) {
+    progressiveAutocompleteResults.push(result);
+    refresh();
+  }
+
+  /**
+   * Appends some human-readable information about the provided
+   * autocomplete result to the HTML node with id omnibox-debug-text.
+   * The current human-readable form is a few lines about general
+   * autocomplete result statistics followed by a table with one line
+   * for each autocomplete match.  The input parameter result is a
+   * complex Object with lots of information about various
+   * autocomplete matches.  Here's an example of what it looks like:
    * <pre>
    * {@code
    * { 'done': false,
@@ -194,16 +208,11 @@ cr.define('omniboxDebug', function() {
    * For information on how the result is packed, see the
    * corresponding code in chrome/browser/ui/webui/omnibox_ui.cc
    */
-  function handleNewAutocompleteResult(result) {
-    var showIncompleteResults =
-        document.getElementById('show-incomplete-results').checked;
-    // If we're asked not to show intermediate results, then clear
-    // whatever results are already there.
-    if (!showIncompleteResults)
-      document.getElementById('omnibox-debug-text').innerHTML = '';
-
+  function addResultToOutput(result) {
     var output = document.getElementById('omnibox-debug-text');
     var inDetailedMode = document.getElementById('show-details').checked;
+    var showIncompleteResults =
+        document.getElementById('show-incomplete-results').checked;
 
     // Output the result-level features in detailed mode and in
     // show incomplete results mode.  We do the latter because without
@@ -229,10 +238,13 @@ cr.define('omniboxDebug', function() {
       var row = document.createElement('tr');
       // Loop over all the columns/properties and output either them
       // all (if we're in detailed mode) or only the ones marked displayAlways.
+      // Keep track of which properties we displayed.
+      var displayedProperties = {};
       for (var j = 0; j < PROPERTY_OUTPUT_ORDER.length; j++) {
         if (inDetailedMode || PROPERTY_OUTPUT_ORDER[j].displayAlways) {
           row.appendChild(createCellForPropertyAndRemoveProperty(
               autocompleteSuggestion, PROPERTY_OUTPUT_ORDER[j].propertyName));
+          displayedProperties[PROPERTY_OUTPUT_ORDER[j].propertyName] = true;
         }
       }
 
@@ -246,15 +258,38 @@ cr.define('omniboxDebug', function() {
       // Javascript?  In any case, we want to display them.)
       if (inDetailedMode) {
         for (var key in autocompleteSuggestion) {
-          var cell = document.createElement('td');
-          cell.textContent = key + '=' + autocompleteSuggestion[key];
-          row.appendChild(cell);
+          if (!displayedProperties[key]) {
+            var cell = document.createElement('td');
+            cell.textContent = key + '=' + autocompleteSuggestion[key];
+            row.appendChild(cell);
+          }
         }
       }
 
       table.appendChild(row);
     }
     output.appendChild(table);
+  }
+
+  /* Repaints the page based on the contents of the array
+   * progressiveAutocompleteResults, which represents consecutive
+   * autocomplete results.  We only display the last (most recent)
+   * entry unless we're asked to display incomplete results.  For an
+   * example of the output, play with chrome://omnibox/
+   */
+  function refresh() {
+    // Erase whatever is currently being displayed.
+    var output = document.getElementById('omnibox-debug-text');
+    output.innerHTML = '';
+
+    // Display the results.
+    var showIncompleteResults =
+        document.getElementById('show-incomplete-results').checked;
+    var startIndex = showIncompleteResults ? 0 :
+        progressiveAutocompleteResults.length - 1;
+    for (var i = startIndex; i < progressiveAutocompleteResults.length; i++) {
+      addResultToOutput(progressiveAutocompleteResults[i]);
+    }
   }
 
   return {
