@@ -453,15 +453,28 @@ HWND IEEventSink::GetRendererWindowSafe() {
   return renderer_window;
 }
 
-HRESULT IEEventSink::LaunchIEAndNavigate(
-    const std::wstring& navigate_url, IEEventListener* listener) {
+HRESULT IEEventSink::LaunchIEAndNavigate(const std::wstring& navigate_url,
+                                         IEEventListener* listener) {
   listener_ = listener;
   HRESULT hr = LaunchIEAsComServer(web_browser2_.Receive());
   if (SUCCEEDED(hr)) {
     web_browser2_->put_Visible(VARIANT_TRUE);
-    Attach(web_browser2_);
-    hr = Navigate(navigate_url);
+    hr = Attach(web_browser2_);
+    if (SUCCEEDED(hr)) {
+      hr = Navigate(navigate_url);
+      if (FAILED(hr)) {
+        LOG(ERROR) << "Failed to navigate IE to " << navigate_url << ", hr = 0x"
+                   << std::hex << hr;
+      }
+    } else {
+      LOG(ERROR) << "Failed to attach to web browser event sink for "
+                 << navigate_url << ", hr = 0x" << std::hex << hr;
+    }
+  } else {
+    LOG(ERROR) << "Failed to Launch IE for " << navigate_url << ", hr = 0x"
+               << std::hex << hr;
   }
+
   return hr;
 }
 

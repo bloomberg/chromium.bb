@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -207,13 +207,13 @@ void MockIEEventSinkTest::LaunchIENavigateAndLoop(const std::wstring& url,
 
   EXPECT_CALL(ie_mock_, OnQuit())
       .WillOnce(QUIT_LOOP(loop_));
+
   HRESULT hr = ie_mock_.event_sink()->LaunchIEAndNavigate(url, &ie_mock_);
   ASSERT_HRESULT_SUCCEEDED(hr);
-  if (hr == S_FALSE)
-    return;
-
-  ASSERT_TRUE(ie_mock_.event_sink()->web_browser2() != NULL);
-  loop_.RunFor(timeout);
+  if (hr != S_FALSE) {
+    ASSERT_TRUE(ie_mock_.event_sink()->web_browser2() != NULL);
+    loop_.RunFor(timeout);
+  }
 
   IEEventSink::SetAbnormalShutdown(hung_call_detector_->is_hung());
   hung_call_detector_->TearDown();
