@@ -241,6 +241,8 @@ struct weston_surface {
 	 * This is updated by weston_surface_update_transform().
 	 */
 	struct {
+		pixman_region32_t boundingbox;
+
 		/* matrix and inverse are used only if enabled = 1.
 		 * If enabled = 0, use x, y, width, height directly.
 		 */

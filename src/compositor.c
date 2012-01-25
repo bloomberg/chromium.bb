@@ -209,6 +209,7 @@ weston_surface_create(struct weston_compositor *compositor,
 	wl_list_insert(&surface->geometry.transformation_list,
 		       &surface->transform.position.link);
 	weston_matrix_init(&surface->transform.position.matrix);
+	pixman_region32_init(&surface->transform.boundingbox);
 	surface->geometry.dirty = 1;
 
 	return surface;
@@ -230,6 +231,40 @@ weston_surface_set_color(struct weston_surface *surface,
 	surface->shader = &surface->compositor->solid_shader;
 }
 
+static void
+surface_compute_bbox(struct weston_surface *surface, int32_t sx, int32_t sy,
+		     int32_t width, int32_t height,
+		     pixman_region32_t *bbox)
+{
+	int min_x = INT_MAX, min_y = INT_MAX, max_x = INT_MIN, max_y = INT_MIN;
+	int32_t s[4][2] = {
+		{ sx,         sy },
+		{ sx,         sy + height },
+		{ sx + width, sy },
+		{ sx + width, sy + height }
+	};
+	int i;
+
+	for (i = 0; i < 4; ++i) {
+		int32_t x, y;
+		weston_surface_to_global(surface, s[i][0], s[i][1], &x, &y);
+		if (x < min_x)
+			min_x = x;
+		if (x > max_x)
+			max_x = x;
+		if (y < min_y)
+			min_y = y;
+		if (y > max_y)
+			max_y = y;
+	}
+
+	/* weston_surface_to_global rounds with floor(), add the
+	 * minimum required safety margin.
+	 */
+	pixman_region32_init_rect(bbox, min_x, min_y,
+				  max_x - min_x + 1, max_y - min_y + 1);
+}
+
 WL_EXPORT void
 weston_surface_update_transform(struct weston_surface *surface)
 {
@@ -242,12 +277,19 @@ weston_surface_update_transform(struct weston_surface *surface)
 
 	surface->geometry.dirty = 0;
 
+	pixman_region32_fini(&surface->transform.boundingbox);
+
 	/* transform.position is always in transformation_list */
 	if (surface->geometry.transformation_list.next ==
 	    &surface->transform.position.link &&
 	    surface->geometry.transformation_list.prev ==
 	    &surface->transform.position.link) {
 		surface->transform.enabled = 0;
+
+		pixman_region32_init_rect(&surface->transform.boundingbox,
+					  surface->geometry.x,
+					  surface->geometry.y,
+					  surface->width, surface->height);
 		return;
 	}
 
@@ -266,6 +308,9 @@ weston_surface_update_transform(struct weston_surface *surface)
 		fprintf(stderr, "error: weston_surface %p"
 			" transformation not invertible.\n", surface);
 	}
+
+	surface_compute_bbox(surface, 0, 0, surface->width, surface->height,
+			     &surface->transform.boundingbox);
 }
 
 WL_EXPORT void
@@ -491,6 +536,7 @@ destroy_surface(struct wl_resource *resource)
 
 	wl_list_remove(&surface->buffer_link);
 
+	pixman_region32_fini(&surface->transform.boundingbox);
 	pixman_region32_fini(&surface->damage);
 	pixman_region32_fini(&surface->opaque);
 
