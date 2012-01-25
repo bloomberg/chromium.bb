@@ -65,10 +65,6 @@ class VIEWS_EXPORT TextfieldViewsModel {
   explicit TextfieldViewsModel(Delegate* delegate);
   virtual ~TextfieldViewsModel();
 
-  void set_is_obscured(bool is_obscured) {
-    is_obscured_ = is_obscured;
-  }
-
   // Edit related methods.
 
   const string16& GetText() const;
@@ -183,10 +179,6 @@ class VIEWS_EXPORT TextfieldViewsModel {
   // Redo edit. Returns true if redo changed the text.
   bool Redo();
 
-  // Returns visible text. If the field is obscured, it returns the
-  // sequence of "*".
-  string16 GetVisibleText() const;
-
   // Cuts the currently selected text and puts it to clipboard. Returns true
   // if text has changed after cutting.
   bool Cut();
@@ -251,9 +243,6 @@ class VIEWS_EXPORT TextfieldViewsModel {
   FRIEND_TEST_ALL_PREFIXES(TextfieldViewsModelTest, UndoRedo_CutCopyPasteTest);
   FRIEND_TEST_ALL_PREFIXES(TextfieldViewsModelTest, UndoRedo_ReplaceTest);
 
-  // Returns the visible text given |start| and |end|.
-  string16 GetVisibleText(size_t start, size_t end) const;
-
   // Insert the given |text|. |mergeable| indicates if this insert
   // operation can be merged to previous edit in the edit history.
   void InsertTextInternal(const string16& text, bool mergeable);
@@ -303,9 +292,6 @@ class VIEWS_EXPORT TextfieldViewsModel {
 
   // The stylized text, cursor, selection, and the visual layout model.
   scoped_ptr<gfx::RenderText> render_text_;
-
-  // True if the text is obscured (e.g., a password).
-  bool is_obscured_;
 
   typedef std::list<internal::Edit*> EditHistory;
   EditHistory edit_history_;

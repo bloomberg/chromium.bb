@@ -249,7 +249,6 @@ TEST_F(TextfieldViewsModelTest, EmptyString) {
   TextfieldViewsModel model(NULL);
   EXPECT_EQ(string16(), model.GetText());
   EXPECT_EQ(string16(), model.GetSelectedText());
-  EXPECT_EQ(string16(), model.GetVisibleText());
 
   model.MoveCursor(gfx::CHARACTER_BREAK, gfx::CURSOR_LEFT, true);
   EXPECT_EQ(0U, model.GetCursorPosition());
@@ -419,27 +418,6 @@ TEST_F(TextfieldViewsModelTest, SelectionAndEdit) {
   EXPECT_STR_EQ("BEE", model.GetText());
 }
 
-TEST_F(TextfieldViewsModelTest, Obscured) {
-  TextfieldViewsModel model(NULL);
-  model.set_is_obscured(true);
-  model.Append(ASCIIToUTF16("HELLO"));
-  EXPECT_STR_EQ("*****", model.GetVisibleText());
-  EXPECT_STR_EQ("HELLO", model.GetText());
-  EXPECT_TRUE(model.Delete());
-
-  EXPECT_STR_EQ("****", model.GetVisibleText());
-  EXPECT_STR_EQ("ELLO", model.GetText());
-  EXPECT_EQ(0U, model.GetCursorPosition());
-
-  model.SelectAll();
-  EXPECT_STR_EQ("ELLO", model.GetSelectedText());
-  EXPECT_EQ(4U, model.GetCursorPosition());
-
-  model.InsertChar('X');
-  EXPECT_STR_EQ("*", model.GetVisibleText());
-  EXPECT_STR_EQ("X", model.GetText());
-}
-
 TEST_F(TextfieldViewsModelTest, Word) {
   TextfieldViewsModel model(NULL);
   model.Append(
@@ -484,7 +462,7 @@ TEST_F(TextfieldViewsModelTest, Word) {
   EXPECT_STR_EQ("The answer to Life", model.GetSelectedText());
   model.ReplaceChar('4');
   EXPECT_EQ(string16(), model.GetSelectedText());
-  EXPECT_STR_EQ("42", model.GetVisibleText());
+  EXPECT_STR_EQ("42", model.GetText());
 }
 
 TEST_F(TextfieldViewsModelTest, SetText) {

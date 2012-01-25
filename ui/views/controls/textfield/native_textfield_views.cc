@@ -411,7 +411,7 @@ void NativeTextfieldViews::UpdateFont() {
 }
 
 void NativeTextfieldViews::UpdateIsObscured() {
-  model_->set_is_obscured(textfield_->IsObscured());
+  // TODO(benrg): GetRenderText()->SetObscured(textfield_->IsObscured());
   OnCaretBoundsChanged();
   SchedulePaint();
   OnTextInputTypeChanged();

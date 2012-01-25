@@ -281,7 +281,6 @@ TextfieldViewsModel::Delegate::~Delegate() {
 TextfieldViewsModel::TextfieldViewsModel(Delegate* delegate)
     : delegate_(delegate),
       render_text_(gfx::RenderText::CreateRenderText()),
-      is_obscured_(false),
       current_edit_(edit_history_.end()) {
 }
 
@@ -498,10 +497,6 @@ bool TextfieldViewsModel::Redo() {
   return old != GetText() || old_cursor != GetCursorPosition();
 }
 
-string16 TextfieldViewsModel::GetVisibleText() const {
-  return GetVisibleText(0U, GetText().length());
-}
-
 bool TextfieldViewsModel::Cut() {
   if (!HasCompositionText() && HasSelection()) {
     ui::ScopedClipboardWriter(views::ViewsDelegate::views_delegate
@@ -637,13 +632,6 @@ bool TextfieldViewsModel::HasCompositionText() const {
 
 /////////////////////////////////////////////////////////////////
 // TextfieldViewsModel: private
-
-string16 TextfieldViewsModel::GetVisibleText(size_t begin, size_t end) const {
-  DCHECK(end >= begin);
-  if (is_obscured_)
-    return string16(end - begin, '*');
-  return GetText().substr(begin, end - begin);
-}
 
 void TextfieldViewsModel::InsertTextInternal(const string16& text,
                                              bool mergeable) {
