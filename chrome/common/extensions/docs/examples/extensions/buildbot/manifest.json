@@ -1,6 +1,6 @@
 {
   "name": "Chromium Buildbot Monitor",
-  "version": "0.7.6",
+  "version": "0.7.7",
   "description": "Displays the status of the Chromium buildbot in the toolbar.  Click to see more detailed status in a popup.",
   "icons": { "128": "icon.png" },
   "background": {
@@ -16,5 +16,7 @@
     "default_icon": "chromium.png",
     "default_popup": "popup.html"
   },
-  "options_page": "options.html"
+  "options_page": "options.html",
+
+  "manifest_version": 2
 }

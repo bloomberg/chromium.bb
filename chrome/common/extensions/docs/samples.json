@@ -615,9 +615,11 @@
         "bg.js",
         "manifest.json",
         "options.html",
-        "popup.html"
+        "options.js",
+        "popup.html",
+        "popup.js"
       ],
-      "source_hash": "9d3e6c7c84e41758e7733eab6d34e10eb0776005",
+      "source_hash": "7844fc4d1252ba91973367fa1aeff5fba78ad7b3",
       "zip_path": "examples\/extensions\/buildbot.zip"
     },
     {
