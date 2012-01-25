@@ -360,7 +360,7 @@ void NaClValidatorPcAddressMessage(int level,
                                    ...) {
   va_list ap;
   va_start(ap, format);
-  NaClValidatorPcAddressMess(level, vstate, addr, format, ap);
+  NaClValidatorPcAddressMess(level, vstate, vstate->vbase + addr, format, ap);
   va_end(ap);
 }
 
@@ -745,8 +745,8 @@ static Bool NaClValidateInstReplacement(NaClInstIter *iter_old,
   istate_old = NaClInstIterGetStateInline(iter_old);
   istate_new = NaClInstIterGetStateInline(iter_new);
 
-  /* Location/length must match */
-  if (istate_new->vpc != istate_old->vpc ||
+  /* Location/length must match.  Assumes vbase is the same. */
+  if (istate_new->inst_addr != istate_old->inst_addr ||
       istate_new->bytes.length != istate_old->bytes.length) {
     NaClValidatorTwoInstMessage(LOG_ERROR, vstate, istate_old, istate_new,
           "Code modification: instructions length/addresses do not match");

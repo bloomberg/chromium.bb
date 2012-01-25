@@ -66,19 +66,20 @@ Bool NaClJumpValidatorInitialize(NaClValidatorState* vstate) {
 static void NaClAddJumpToJumpSets(NaClValidatorState* vstate,
                                   NaClInstState* inst,
                                   NaClPcNumber jump_offset) {
-  NaClPcAddress to_address = inst->vpc + inst->bytes.length + jump_offset;
+  NaClPcAddress to_address = inst->inst_addr + inst->bytes.length + jump_offset;
   /* If the address is in the code segment, assume good (unless we later find it
    * jumping into a pseudo instruction). Otherwise, only allow if 0 mod 32.
    */
   DEBUG(NaClLog(LOG_INFO, "Add jump to jump sets: %"
                 NACL_PRIxNaClPcAddress" -> %"NACL_PRIxNaClPcAddress"\n",
-                NaClInstStatePrintableAddress(inst), to_address));
-  if (vstate->vbase <= to_address
-      && to_address < vstate->vbase + vstate->codesize) {
+                NaClInstStatePrintableAddress(inst),
+                vstate->vbase + to_address));
+  if (to_address < vstate->codesize) {
     /* Remember address for checking later. */
     DEBUG(NaClLog(LOG_INFO, "Add jump to target: %"NACL_PRIxNaClPcAddress
                   " -> %"NACL_PRIxNaClPcAddress"\n",
-                  NaClInstStatePrintableAddress(inst), to_address));
+                  NaClInstStatePrintableAddress(inst),
+                  vstate->vbase + to_address));
     NaClAddressSetAddInline(vstate->jump_sets.actual_targets,
                             to_address, vstate);
   } else if ((to_address & vstate->alignment_mask) == 0) {
@@ -452,8 +453,8 @@ static void NaClValidateCallAlignment(NaClValidatorState* vstate) {
   /* The return is safe only if it begins at an aligned address (since
    * return instructions are not explicit jumps).
    */
-  NaClPcAddress next_addr =
-      vstate->cur_inst_state->vpc + NaClInstStateLength(vstate->cur_inst_state);
+  NaClPcAddress next_addr = vstate->cur_inst_state->inst_addr
+      + NaClInstStateLength(vstate->cur_inst_state);
   if (next_addr & vstate->alignment_mask) {
     NaClPcAddress printable_addr =
         NaClInstStatePrintableAddress(vstate->cur_inst_state);
@@ -476,8 +477,7 @@ static void NaClValidateCallAlignment(NaClValidatorState* vstate) {
  */
 static INLINE Bool NaClInstructionInCodeSegment(NaClValidatorState* vstate,
                                                 NaClInstState *inst) {
-  return vstate->vbase <= inst->vpc
-      && inst->vpc < vstate->vbase + vstate->codesize;
+  return inst->inst_addr < vstate->codesize;
 }
 
 /* Record that the given address of the given instruction is the beginning of
@@ -495,7 +495,7 @@ static void NaClRememberInstructionBoundary(NaClValidatorState* vstate,
     DEBUG(NaClLog(LOG_INFO,
                   "Add possible jump address: %"NACL_PRIxNaClPcAddress"\n",
                   NaClInstStatePrintableAddress(inst)));
-    NaClAddressSetAddInline(vstate->jump_sets.possible_targets, inst->vpc,
+    NaClAddressSetAddInline(vstate->jump_sets.possible_targets, inst->inst_addr,
                             vstate);
   }
 }
@@ -546,23 +546,6 @@ void NaClJumpValidatorSummarize(NaClValidatorState* vstate) {
       " to %"NACL_PRIxNaClPcAddress"\n",
       vstate->vbase, vstate->vbase + vstate->codesize);
 
-  /* Note: The following is the high-level code that has been commented
-   * out, because it is too slow. It represents slightly more than
-   * 15% of the overall validator time.
-   *
-  for (addr = vstate->vbase; addr < vstate->vbase + vstate->codesize; addr++) {
-    if (NaClAddressSetContains(jump_sets->actual_targets, addr, vstate)) {
-      DEBUG(NaClLog(LOG_INFO,
-                    "Checking jump address: %"NACL_PRIxNaClPcAddress"\n",
-                    addr));
-      if (!IsNaClReachableAddress(vstate, addr, jump_sets)) {
-        NaClValidatorPcAddressMessage(LOG_ERROR, vstate, addr,
-                                      "Bad jump target\n");
-      }
-    }
-  }
-  */
-
   /* (Low level) Walk the collected sets to find address that correspond
    * to branches into an atomic sequence of instructions.
    */
@@ -575,14 +558,14 @@ void NaClJumpValidatorSummarize(NaClValidatorState* vstate) {
        * to code like the above and test each bit separately.
        */
       NaClPcAddress j;
-      NaClPcAddress base = (i << 3) + vstate->vbase;
+      NaClPcAddress base = (i << 3);
       for (j = 0; j < 8; ++j) {
         addr = base + j;
-        if (addr < vstate->vbase + vstate->codesize) {
+        if (addr < vstate->codesize) {
           if (NaClAddressSetContains(jump_sets->actual_targets, addr, vstate)) {
             DEBUG(NaClLog(LOG_INFO,
                           "Checking jump address: %"NACL_PRIxNaClPcAddress"\n",
-                          addr));
+                          vstate->vbase + addr));
             if (!IsNaClReachableAddress(vstate, addr)) {
               NaClValidatorPcAddressMessage(LOG_ERROR, vstate, addr,
                                             "Bad jump target\n");
@@ -602,14 +585,13 @@ void NaClJumpValidatorSummarize(NaClValidatorState* vstate) {
                          "which isn't aligned properly.\n",
                          vstate->vbase);
   } else {
-    for (addr = vstate->vbase; addr < vstate->vbase + vstate->codesize;
-         addr += vstate->alignment) {
+    for (addr = 0; addr < vstate->codesize; addr += vstate->alignment) {
       DEBUG(NaClLog(LOG_INFO,
                     "Checking block address: %"NACL_PRIxNaClPcAddress"\n",
-                   addr));
+                    vstate->vbase + addr));
       if (!IsNaClReachableAddress(vstate, addr)) {
-        NaClValidatorPcAddressMessage(
-            LOG_ERROR, vstate, addr, "Bad basic block alignment.\n");
+        NaClValidatorPcAddressMessage(LOG_ERROR, vstate, addr,
+                                      "Bad basic block alignment.\n");
       }
     }
   }
@@ -640,7 +622,7 @@ static INLINE void NaClMarkInstructionJumpIllegalInline(
                   "Mark instruction as jump illegal: %"NACL_PRIxNaClPcAddress
                  "\n",
                  NaClInstStatePrintableAddress(inst)));
-    NaClAddressSetAddInline(vstate->jump_sets.removed_targets, inst->vpc,
+    NaClAddressSetAddInline(vstate->jump_sets.removed_targets, inst->inst_addr,
                             vstate);
   }
 }

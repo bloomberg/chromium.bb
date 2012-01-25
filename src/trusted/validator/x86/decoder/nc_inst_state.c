@@ -195,7 +195,7 @@ const NaClInst* NaClInstStateInst(NaClInstState* state) {
 }
 
 NaClPcAddress NaClInstStatePrintableAddress(NaClInstState* state) {
-  return state->vpc;
+  return state->iter->segment->vbase + state->inst_addr;
 }
 
 NaClExpVector* NaClInstStateExpVector(NaClInstState* state) {

@@ -30,13 +30,7 @@
  */
 static Bool NaClCheckAddressRange(NaClPcAddress address,
                                   NaClValidatorState* vstate) {
-  if (address < vstate->vbase) {
-    return FALSE;
-  }
-  if (address >= vstate->vbase + vstate->codesize) {
-    return FALSE;
-  }
-  return TRUE;
+  return address < vstate->codesize;
 }
 
 static void NaClInstLayoutCheck(NaClValidatorState* vstate) {
@@ -49,7 +43,7 @@ static void NaClInstLayoutCheck(NaClValidatorState* vstate) {
         NaClInstStateInstPrint(NaClLogGetGio(), vstate->cur_inst_state));
 
   /* Check basic block boundaries. */
-  start = vstate->cur_inst_state->vpc;
+  start = vstate->cur_inst_state->inst_addr;
 
   /* Check that if first instruction in a basic block, it isn't in the
    * middle of a pattern.

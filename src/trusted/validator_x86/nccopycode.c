@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -344,7 +344,7 @@ int NaClCopyCodeIter(uint8_t *dst, uint8_t *src,
     istate_new = NaClInstIterGetState(iter_new);
     if (istate_old->bytes.length != istate_new->bytes.length ||
         iter_old->memory.read_length != iter_new->memory.read_length ||
-        istate_new->vpc != istate_old->vpc) {
+        istate_new->inst_addr != istate_old->inst_addr) {
       /* Sanity check: this should never happen based on checks in
        * NaClValidateInstReplacement.
        */

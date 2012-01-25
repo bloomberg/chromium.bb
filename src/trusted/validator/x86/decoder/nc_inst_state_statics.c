@@ -37,8 +37,9 @@ EXTERN_C_BEGIN
 static void NaClInstStateInit(NaClInstIter* iter, NaClInstState* state) {
   NaClMemorySize limit;
   NCInstBytesInitInline(&state->bytes);
+  state->iter = iter;
   state->decoder_tables = iter->decoder_tables;
-  state->vpc = iter->segment->vbase + iter->index;
+  state->inst_addr = iter->index;
   limit = iter->segment->size - iter->index;
   if (limit > NACL_MAX_BYTES_PER_X86_INSTRUCTION) {
     limit = NACL_MAX_BYTES_PER_X86_INSTRUCTION;
