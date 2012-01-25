@@ -135,12 +135,10 @@ weston_zoom_frame(struct weston_animation *animation,
 		(zoom->stop - zoom->start) * zoom->spring.current;
 	weston_matrix_init(&zoom->transform.matrix);
 	weston_matrix_translate(&zoom->transform.matrix,
-			      -(es->geometry.x + es->width / 2.0),
-			      -(es->geometry.y + es->height / 2.0), 0);
+				-0.5f * es->width, -0.5f * es->height, 0);
 	weston_matrix_scale(&zoom->transform.matrix, scale, scale, scale);
 	weston_matrix_translate(&zoom->transform.matrix,
-			      es->geometry.x + es->width / 2.0,
-			      es->geometry.y + es->height / 2.0, 0);
+				0.5f * es->width, 0.5f * es->height, 0);
 
 	es->alpha = zoom->spring.current * 255;
 	if (es->alpha > 255)
@@ -178,7 +176,7 @@ weston_zoom_run(struct weston_surface *surface, GLfloat start, GLfloat stop,
 	wl_list_insert(surface->surface.resource.destroy_listener_list.prev,
 		       &zoom->listener.link);
 
-	wl_list_insert(surface->compositor->animation_list.prev,
+	wl_list_insert(&surface->compositor->animation_list,
 		       &zoom->animation.link);
 
 	return zoom;
