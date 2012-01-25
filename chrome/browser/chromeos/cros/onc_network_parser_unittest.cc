@@ -12,7 +12,6 @@
 #include "base/json/json_value_serializer.h"
 #include "base/lazy_instance.h"
 #include "base/path_service.h"
-#include "base/scoped_temp_dir.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/stringprintf.h"
 #include "base/values.h"
@@ -56,18 +55,15 @@ net::CertType GetCertType(const net::X509Certificate* cert) {
 class OncNetworkParserTest : public testing::Test {
  public:
   static void SetUpTestCase() {
-    ASSERT_TRUE(temp_db_dir_.Get().CreateUniqueTempDir());
     // Ideally, we'd open a test DB for each test case, and close it
     // again, removing the temp dir, but unfortunately, there's a
     // bug in NSS that prevents this from working, so we just open
     // it once, and empty it for each test case.  Here's the bug:
     // https://bugzilla.mozilla.org/show_bug.cgi?id=588269
-    ASSERT_TRUE(
-        crypto::OpenTestNSSDB(temp_db_dir_.Get().path(), g_token_name));
-  }
-
-  static void TearDownTestCase() {
-    ASSERT_TRUE(temp_db_dir_.Get().Delete());
+    ASSERT_TRUE(crypto::OpenTestNSSDB());
+    // There is no matching TearDownTestCase call to close the test NSS DB
+    // because that would leave NSS in a potentially broken state for further
+    // tests, due to https://bugzilla.mozilla.org/show_bug.cgi?id=588269
   }
 
   virtual void SetUp() {
@@ -141,7 +137,6 @@ class OncNetworkParserTest : public testing::Test {
     return ok;
   }
 
-  static base::LazyInstance<ScopedTempDir> temp_db_dir_;
   ScopedStubCrosEnabler stub_cros_enabler_;
 };
 
@@ -206,10 +201,6 @@ void OncNetworkParserTest::TestProxySettings(const std::string test_blob,
   EXPECT_TRUE(PrefProxyConfigTrackerImpl::PrefConfigToNetConfig(proxy_dict,
                                                                 net_config));
 }
-
-// static
-base::LazyInstance<ScopedTempDir> OncNetworkParserTest::temp_db_dir_ =
-    LAZY_INSTANCE_INITIALIZER;
 
 TEST_F(OncNetworkParserTest, TestCreateNetworkWifi) {
   std::string test_blob;

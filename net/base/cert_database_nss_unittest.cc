@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,7 +11,6 @@
 #include "base/file_util.h"
 #include "base/lazy_instance.h"
 #include "base/path_service.h"
-#include "base/scoped_temp_dir.h"
 #include "base/string16.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -39,14 +38,10 @@ namespace net {
 class CertDatabaseNSSTest : public testing::Test {
  public:
   static void SetUpTestCase() {
-    ASSERT_TRUE(temp_db_dir_.Get().CreateUniqueTempDir());
-    ASSERT_TRUE(
-        crypto::OpenTestNSSDB(temp_db_dir_.Get().path(),
-                              "CertDatabaseNSSTest db"));
-  }
-
-  static void TearDownTestCase() {
-    ASSERT_TRUE(temp_db_dir_.Get().Delete());
+    ASSERT_TRUE(crypto::OpenTestNSSDB());
+    // There is no matching TearDownTestCase call to close the test NSS DB
+    // because that would leave NSS in a potentially broken state for further
+    // tests, due to https://bugzilla.mozilla.org/show_bug.cgi?id=588269
   }
 
   virtual void SetUp() {
@@ -129,13 +124,7 @@ class CertDatabaseNSSTest : public testing::Test {
     }
     return ok;
   }
-
-  static base::LazyInstance<ScopedTempDir> temp_db_dir_;
 };
-
-// static
-base::LazyInstance<ScopedTempDir> CertDatabaseNSSTest::temp_db_dir_ =
-    LAZY_INSTANCE_INITIALIZER;
 
 TEST_F(CertDatabaseNSSTest, ListCerts) {
   // This test isn't terribly useful, though it will at least let valgrind test
