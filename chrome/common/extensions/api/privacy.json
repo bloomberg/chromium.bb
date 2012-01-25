@@ -1,6 +1,6 @@
 [
   {
-    "namespace": "experimental.privacy",
+    "namespace": "privacy",
     "dependencies": [ "types" ],
     "properties": {
       "network": {
@@ -34,11 +34,6 @@
             "$ref": "ChromeSetting",
             "value": ["instantEnabled", {"type":"boolean"}],
             "description": "If enabled, Chrome automatically performs and displays search requests for text you type into the Omnibox as you type it. This preference's value is a boolean, defaulting to <code>true</code>."
-          },
-          "metricsReportingEnabled": {
-            "$ref": "ChromeSetting",
-            "value": ["metricsReportingEnabled", {"type":"boolean"}],
-            "description": "If enabled, Chrome automatically sends usage statistics and crash reports to Google. This preference's value is a boolean, defaulting to <code>false</code>."
           },
           "safeBrowsingEnabled": {
             "$ref": "ChromeSetting",

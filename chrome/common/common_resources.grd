@@ -29,7 +29,6 @@
       <include name="IDR_EXTENSION_API_JSON_EXPERIMENTAL_INPUT_IME" file="extensions\api\experimental.input.ime.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_EXPERIMENTAL_INPUT_UI" file="extensions\api\experimental.input.ui.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_EXPERIMENTAL_INPUT_VIRTUALKEYBOARD" file="extensions\api\experimental.input.virtualKeyboard.json" type="BINDATA" />
-      <include name="IDR_EXTENSION_API_JSON_EXPERIMENTAL_PRIVACY" file="extensions\api\experimental.privacy.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_EXPERIMENTAL_PROCESSES" file="extensions\api\experimental.processes.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_EXPERIMENTAL_RLZ" file="extensions\api\experimental.rlz.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_EXPERIMENTAL_SERIAL" file="extensions\api\experimental.serial.json" type="BINDATA" />
@@ -51,6 +50,7 @@
       <include name="IDR_EXTENSION_API_JSON_PAGEACTIONS" file="extensions\api\pageActions.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_PAGECAPTURE" file="extensions\api\pageCapture.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_PERMISSIONS" file="extensions\api\permissions.json" type="BINDATA" />
+      <include name="IDR_EXTENSION_API_JSON_PRIVACY" file="extensions\api\privacy.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_PROXY" file="extensions\api\proxy.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_STORAGE" file="extensions\api\storage.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_SYSTEMPRIVATE" file="extensions\api\systemPrivate.json" type="BINDATA" />

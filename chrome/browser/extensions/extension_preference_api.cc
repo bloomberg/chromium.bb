@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -55,28 +55,23 @@ const char kOnPrefChangeFormat[] = "types.ChromeSetting.%s.onChange";
 PrefMappingEntry kPrefMapping[] = {
   { "alternateErrorPagesEnabled",
     prefs::kAlternateErrorPagesEnabled,
-    ExtensionAPIPermission::kExperimental
+    ExtensionAPIPermission::kPrivacy
   },
   { "autofillEnabled",
     prefs::kAutofillEnabled,
-    ExtensionAPIPermission::kExperimental
+    ExtensionAPIPermission::kPrivacy
   },
   { "hyperlinkAuditingEnabled",
     prefs::kEnableHyperlinkAuditing,
-    ExtensionAPIPermission::kExperimental
+    ExtensionAPIPermission::kPrivacy
   },
   { "instantEnabled",
     prefs::kInstantEnabled,
-    ExtensionAPIPermission::kExperimental
+    ExtensionAPIPermission::kPrivacy
   },
-  // TODO(mkwst): come back to this once the UMA discussion has been resolved.
-  // { "metricsReportingEnabled",
-  //   prefs::kMetricsReportingEnabled,
-  //   ExtensionAPIPermission::kMetrics
-  // },
   { "networkPredictionEnabled",
     prefs::kNetworkPredictionEnabled,
-    ExtensionAPIPermission::kExperimental
+    ExtensionAPIPermission::kPrivacy
   },
   { "proxy",
     prefs::kProxy,
@@ -84,23 +79,23 @@ PrefMappingEntry kPrefMapping[] = {
   },
   { "referrersEnabled",
     prefs::kEnableReferrers,
-    ExtensionAPIPermission::kExperimental
+    ExtensionAPIPermission::kPrivacy
   },
   { "searchSuggestEnabled",
     prefs::kSearchSuggestEnabled,
-    ExtensionAPIPermission::kExperimental
+    ExtensionAPIPermission::kPrivacy
   },
   { "safeBrowsingEnabled",
     prefs::kSafeBrowsingEnabled,
-    ExtensionAPIPermission::kExperimental
+    ExtensionAPIPermission::kPrivacy
   },
   { "thirdPartyCookiesAllowed",
     prefs::kBlockThirdPartyCookies,
-    ExtensionAPIPermission::kExperimental
+    ExtensionAPIPermission::kPrivacy
   },
   { "translationServiceEnabled",
     prefs::kEnableTranslate,
-    ExtensionAPIPermission::kExperimental
+    ExtensionAPIPermission::kPrivacy
   }
 };
 

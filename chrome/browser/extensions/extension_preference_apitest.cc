@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,9 +12,6 @@
 #include "webkit/plugins/npapi/mock_plugin_list.h"
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, PreferenceApi) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableExperimentalExtensionApis);
-
   PrefService* pref_service = browser()->profile()->GetPrefs();
   pref_service->SetBoolean(prefs::kAlternateErrorPagesEnabled, false);
   pref_service->SetBoolean(prefs::kAutofillEnabled, false);
@@ -46,9 +43,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, PreferenceApi) {
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, PreferencePersistentIncognito) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableExperimentalExtensionApis);
-
   PrefService* prefs = browser()->profile()->GetPrefs();
   prefs->SetBoolean(prefs::kBlockThirdPartyCookies, false);
 
@@ -75,16 +69,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, PreferencePersistentIncognito) {
 
 // Flakily times out: http://crbug.com/106144
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_PreferenceIncognitoDisabled) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableExperimentalExtensionApis);
-
   EXPECT_FALSE(RunExtensionTest("preference/persistent_incognito"));
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, PreferenceSessionOnlyIncognito) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableExperimentalExtensionApis);
-
   PrefService* prefs = browser()->profile()->GetPrefs();
   prefs->SetBoolean(prefs::kBlockThirdPartyCookies, false);
 
@@ -109,9 +97,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, PreferenceSessionOnlyIncognito) {
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, PreferenceClear) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableExperimentalExtensionApis);
-
   PrefService* pref_service = browser()->profile()->GetPrefs();
   pref_service->SetBoolean(prefs::kBlockThirdPartyCookies, true);
 
@@ -125,9 +110,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, PreferenceClear) {
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, PreferenceOnChange) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableExperimentalExtensionApis);
-
   PrefService* prefs = browser()->profile()->GetPrefs();
   prefs->SetBoolean(prefs::kBlockThirdPartyCookies, false);
 

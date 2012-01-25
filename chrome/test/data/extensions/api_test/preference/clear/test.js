@@ -1,11 +1,11 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 // Content settings API test
 // Run with browser_tests --gtest_filter=ExtensionApiTest.PreferenceClear
 
-var pw = chrome.experimental.privacy.websites;
+var pw = chrome.privacy.websites;
 chrome.test.runTests([
   function getThirdPartyCookiesAllowed() {
     pw.thirdPartyCookiesAllowed.get({}, chrome.test.callbackPass(

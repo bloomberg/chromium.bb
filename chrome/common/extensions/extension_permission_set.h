@@ -48,6 +48,7 @@ class ExtensionPermissionMessage {
     kTtsEngine,
     kContentSettings,
     kAllPageContent,
+    kPrivacy,
     kEnumBoundary
   };
 
@@ -118,6 +119,7 @@ class ExtensionAPIPermission {
     kNotification,
     kPageCapture,
     kPlugin,
+    kPrivacy,
     kProxy,
     kSocket,
     kStorage,

@@ -255,6 +255,9 @@ void ExtensionAPIPermission::RegisterAllPermissions(
       IDS_EXTENSION_PROMPT_WARNING_ALL_PAGES_CONTENT,
       ExtensionPermissionMessage::kAllPageContent, kFlagNone, kTypeDefault);
   info->RegisterPermission(
+      kPrivacy, "privacy", IDS_EXTENSION_PROMPT_WARNING_PRIVACY,
+      ExtensionPermissionMessage::kPrivacy, kFlagNone, kTypeDefault);
+  info->RegisterPermission(
       kStorage, "storage", 0,
       ExtensionPermissionMessage::kNone, kFlagNone, kTypeDefault);
   info->RegisterPermission(

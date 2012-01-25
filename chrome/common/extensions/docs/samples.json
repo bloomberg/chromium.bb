@@ -410,7 +410,6 @@
       "description": "Sample extension which demonstrates how to access a preference.",
       "features": [
         "browser_action",
-        "experimental",
         "privacy"
       ],
       "icon": null,
@@ -419,14 +418,14 @@
       "packaged_app": false,
       "path": "examples\/api\/preferences\/enableReferrer\/",
       "protocols": [],
-      "search_string": "BLOCK\/ALLOW REFERRER API EXAMPLE EXTENSION SAMPLE EXTENSION WHICH DEMONSTRATES HOW TO ACCESS A PREFERENCE. BROWSER_ACTION EXPERIMENTAL PRIVACY CHROME.EXTENSION.ISALLOWEDINCOGNITOACCESS",
+      "search_string": "BLOCK\/ALLOW REFERRER API EXAMPLE EXTENSION SAMPLE EXTENSION WHICH DEMONSTRATES HOW TO ACCESS A PREFERENCE. BROWSER_ACTION PRIVACY CHROME.EXTENSION.ISALLOWEDINCOGNITOACCESS",
       "source_files": [
         "manifest.json",
         "popup.css",
         "popup.html",
         "popup.js"
       ],
-      "source_hash": "51bbc12404e8998ef817e211806e734f04e138ad",
+      "source_hash": "463b9acbbe50a9c6a62e7cd6546087dc06df1b4f",
       "zip_path": "examples\/api\/preferences\/enableReferrer.zip"
     },
     {
@@ -437,7 +436,6 @@
       "description": "Sample extension which demonstrates how to access a preference.",
       "features": [
         "browser_action",
-        "experimental",
         "privacy"
       ],
       "icon": null,
@@ -446,14 +444,14 @@
       "packaged_app": false,
       "path": "examples\/api\/preferences\/allowThirdPartyCookies\/",
       "protocols": [],
-      "search_string": "BLOCK\/ALLOW THIRD-PARTY COOKIES API EXAMPLE EXTENSION SAMPLE EXTENSION WHICH DEMONSTRATES HOW TO ACCESS A PREFERENCE. BROWSER_ACTION EXPERIMENTAL PRIVACY CHROME.EXTENSION.ISALLOWEDINCOGNITOACCESS",
+      "search_string": "BLOCK\/ALLOW THIRD-PARTY COOKIES API EXAMPLE EXTENSION SAMPLE EXTENSION WHICH DEMONSTRATES HOW TO ACCESS A PREFERENCE. BROWSER_ACTION PRIVACY CHROME.EXTENSION.ISALLOWEDINCOGNITOACCESS",
       "source_files": [
         "manifest.json",
         "popup.css",
         "popup.html",
         "popup.js"
       ],
-      "source_hash": "10d84072f653cfafc7796d5600d2f076a2398a4f",
+      "source_hash": "b9f3b8723ecc125ddf47f49987bfcd089591e0d2",
       "zip_path": "examples\/api\/preferences\/allowThirdPartyCookies.zip"
     },
     {
