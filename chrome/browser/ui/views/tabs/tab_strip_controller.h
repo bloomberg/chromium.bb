@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -89,6 +89,9 @@ class TabStripController {
   // Informs that an active tab is selected when already active (ie - clicked
   // when already active/foreground).
   virtual void ClickActiveTab(int index) = 0;
+
+  // Returns true if the tab strip is in an incognito window.
+  virtual bool IsIncognito() = 0;
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_TABS_TAB_STRIP_CONTROLLER_H_

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -149,7 +149,8 @@ SkBitmap SkBitmapOperations::CreateMaskedBitmap(const SkBitmap& rgb,
 
     for (int x = 0; x < masked.width(); ++x) {
       SkColor rgb_pixel = SkUnPreMultiply::PMColorToColor(rgb_row[x]);
-      int alpha = SkAlphaMul(SkColorGetA(rgb_pixel), SkColorGetA(alpha_row[x]));
+      SkColor alpha_pixel = SkUnPreMultiply::PMColorToColor(alpha_row[x]);
+      int alpha = SkAlphaMul(SkColorGetA(rgb_pixel), SkColorGetA(alpha_pixel));
       dst_row[x] = SkColorSetARGB(alpha,
                                   SkAlphaMul(SkColorGetR(rgb_pixel), alpha),
                                   SkAlphaMul(SkColorGetG(rgb_pixel), alpha),
