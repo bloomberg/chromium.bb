@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,6 +13,7 @@
 static const char kRegisterDllFlag[] = "register";
 
 int main(int argc, char **argv) {
+  ScopedChromeFrameRegistrar::RegisterAndExitProcessIfDirected();
   // We create this slightly early as it is the one who instantiates THE
   // AtExitManager which some of the other stuff below relies on.
   ReliabilityTestSuite test_suite(argc, argv);

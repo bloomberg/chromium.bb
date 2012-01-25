@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,8 @@
 #include <atlbase.h>
 #include <atlcom.h>
 
+#include "base/string16.h"
+
 class FilePath;
 
 extern const wchar_t kChromeFrameDllName[];
@@ -17,7 +19,9 @@ extern const wchar_t kChromeLauncherExeName[];
 
 // Helper class used to register different chrome frame DLLs while running
 // tests. The default constructor registers the DLL found in the build path.
-
+// Programs that use this class MUST include a call to the class's
+// RegisterAndExitProcessIfDirected method at the top of their main entrypoint.
+//
 // At destruction, again registers the DLL found in the build path if another
 // DLL has since been registered. Triggers GTEST asserts on failure.
 //
@@ -48,7 +52,27 @@ class ScopedChromeFrameRegistrar {
   static void RegisterDefaults();
   static FilePath GetReferenceChromeFrameDllPath();
 
+  // Registers or unregisters a COM DLL and exits the process if the process's
+  // command line is:
+  // this.exe --call-registration-entrypoint path_to_dll entrypoint
+  // Otherwise simply returns. This method should be invoked at the start of the
+  // entrypoint in each executable that uses ScopedChromeFrameRegistrar to
+  // register or unregister DLLs.
+  static void RegisterAndExitProcessIfDirected();
+
  private:
+  enum RegistrationOperation {
+    REGISTER,
+    UNREGISTER,
+  };
+
+  // The string "--call-registration-entrypoint".
+  static const wchar_t kCallRegistrationEntrypointSwitch[];
+
+  static void DoRegistration(const string16& path,
+                             RegistrationType registration_type,
+                             RegistrationOperation registration_operation);
+
   // Contains the path of the most recently registered Chrome Frame DLL.
   std::wstring new_chrome_frame_dll_path_;
 

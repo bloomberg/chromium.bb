@@ -34,6 +34,7 @@ void PureCall() {
 }
 
 int main(int argc, char **argv) {
+  ScopedChromeFrameRegistrar::RegisterAndExitProcessIfDirected();
   base::EnableTerminationOnHeapCorruption();
   base::PlatformThread::SetName("ChromeFrame tests");
 

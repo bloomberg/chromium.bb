@@ -1,21 +1,25 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-
-#include <algorithm>
 
 #include "chrome_frame/test_utils.h"
 
 #include <atlbase.h>
 #include <atlwin.h>
+#include <shellapi.h>
 #include <winternl.h>
 
+#include <algorithm>
+
+#include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
+#include "base/utf_string_conversions.h"
 #include "base/win/scoped_handle.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -24,6 +28,9 @@
 
 const wchar_t kChromeFrameDllName[] = L"npchrome_frame.dll";
 const wchar_t kChromeLauncherExeName[] = L"chrome_launcher.exe";
+// How long to wait for DLLs to register or unregister themselves before killing
+// the registrar.
+const int64 kDllRegistrationTimeoutMs = 30 * 1000;
 
 FilePath GetChromeFrameBuildPath() {
   FilePath build_path;
@@ -44,6 +51,9 @@ FilePath GetChromeFrameBuildPath() {
   return dll_path;
 }
 
+const wchar_t ScopedChromeFrameRegistrar::kCallRegistrationEntrypointSwitch[] =
+    L"--call-registration-entrypoint";
+
 bool ScopedChromeFrameRegistrar::register_chrome_path_provider_ = false;
 
 // static
@@ -54,57 +64,87 @@ void ScopedChromeFrameRegistrar::RegisterDefaults() {
   }
 }
 
+// Registers or unregisters the DLL at |path| by calling out to the current
+// executable with --call-registration-entrypoint.  Loading the DLL into the
+// test process is problematic for component=shared_library builds since
+// singletons in base.dll aren't designed to handle multiple initialization.
+// Use of rundll32.exe is problematic since it does not return useful error
+// information.
+// static
+void ScopedChromeFrameRegistrar::DoRegistration(
+    const string16& path,
+    RegistrationType registration_type,
+    RegistrationOperation registration_operation) {
+  static const char* const kEntrypoints[] = {
+    "DllRegisterServer",
+    "DllUnregisterServer",
+    "DllRegisterUserServer",
+    "DllUnregisterUserServer",
+  };
+
+  DCHECK(!path.empty());
+  DCHECK(registration_type == PER_USER || registration_type == SYSTEM_LEVEL);
+  DCHECK(registration_operation == REGISTER ||
+         registration_operation == UNREGISTER);
+
+  int entrypoint_index = 0;
+  base::LaunchOptions launch_options;
+  base::ProcessHandle process_handle = INVALID_HANDLE_VALUE;
+  int exit_code = -1;
+
+  if (registration_type == PER_USER)
+    entrypoint_index += 2;
+  if (registration_operation == UNREGISTER)
+    entrypoint_index += 1;
+  string16 registration_command(ASCIIToUTF16("\""));
+  registration_command +=
+      CommandLine::ForCurrentProcess()->GetProgram().value();
+  registration_command += ASCIIToUTF16("\" ");
+  registration_command += kCallRegistrationEntrypointSwitch;
+  registration_command += ASCIIToUTF16(" \"");
+  registration_command += path;
+  registration_command += ASCIIToUTF16("\" ");
+  registration_command += ASCIIToUTF16(kEntrypoints[entrypoint_index]);
+  launch_options.wait = true;
+  if (!base::LaunchProcess(registration_command, launch_options,
+                           &process_handle)) {
+    PLOG(FATAL)
+        << "Failed to register or unregister DLL with command: "
+        << registration_command;
+  } else {
+    base::win::ScopedHandle rundll32(process_handle);
+    if (!base::WaitForExitCodeWithTimeout(process_handle, &exit_code,
+                                          kDllRegistrationTimeoutMs)) {
+      LOG(ERROR) << "Timeout waiting to register or unregister DLL with "
+                    "command: " << registration_command;
+      base::KillProcess(process_handle, 0, false);
+      NOTREACHED() << "Aborting test due to registration failure.";
+    }
+  }
+  if (exit_code != 0) {
+    if (registration_operation == REGISTER) {
+      LOG(FATAL)
+          << "DLL registration failed (exit code: 0x" << std::hex << exit_code
+          << ", command: " << registration_command
+          << "). Make sure you are running as Admin.";
+    } else {
+      LOG(WARNING)
+          << "DLL unregistration failed (exit code: 0x" << std::hex << exit_code
+          << ", command: " << registration_command << ").";
+    }
+  }
+}
+
 // static
 void ScopedChromeFrameRegistrar::RegisterAtPath(
     const std::wstring& path, RegistrationType registration_type) {
-
-  ASSERT_FALSE(path.empty());
-  HMODULE dll_handle = LoadLibrary(path.c_str());
-  ASSERT_TRUE(dll_handle != NULL) << "Failed to load " << path
-                                  << " , gle = " << GetLastError();
-
-  typedef HRESULT (STDAPICALLTYPE* DllRegisterServerFn)();
-  DllRegisterServerFn register_server = NULL;
-
-  if (registration_type == PER_USER) {
-      register_server = reinterpret_cast<DllRegisterServerFn>(GetProcAddress(
-          dll_handle, "DllRegisterUserServer"));
-  } else {
-      register_server = reinterpret_cast<DllRegisterServerFn>(GetProcAddress(
-          dll_handle, "DllRegisterServer"));
-  }
-  ASSERT_TRUE(register_server != NULL);
-  HRESULT reg_result = (*register_server)();
-  ASSERT_TRUE(FreeLibrary(dll_handle));
-
-  // Assert here after the FreeLibrary since otherwise we hit a
-  // multiple AtExitMananger crash for modules that use base.
-  ASSERT_HRESULT_SUCCEEDED(reg_result) << "Failed to register DLL at "
-                                       << path
-                                       << " , are you running as Admin?";
+  DoRegistration(path, registration_type, REGISTER);
 }
 
 // static
 void ScopedChromeFrameRegistrar::UnregisterAtPath(
     const std::wstring& path, RegistrationType registration_type) {
-
-  ASSERT_FALSE(path.empty());
-  HMODULE dll_handle = LoadLibrary(path.c_str());
-  ASSERT_TRUE(dll_handle != NULL);
-
-  typedef HRESULT (STDAPICALLTYPE* DllUnregisterServerFn)();
-  DllUnregisterServerFn unregister_server = NULL;
-  if (registration_type == PER_USER) {
-    unregister_server = reinterpret_cast<DllUnregisterServerFn>
-        (GetProcAddress(dll_handle, "DllUnregisterUserServer"));
-  } else {
-    unregister_server = reinterpret_cast<DllUnregisterServerFn>
-        (GetProcAddress(dll_handle, "DllUnregisterServer"));
-  }
-  ASSERT_TRUE(unregister_server != NULL);
-  EXPECT_HRESULT_SUCCEEDED((*unregister_server)());
-
-  ASSERT_TRUE(FreeLibrary(dll_handle));
+  DoRegistration(path, registration_type, UNREGISTER);
 }
 
 FilePath ScopedChromeFrameRegistrar::GetReferenceChromeFrameDllPath() {
@@ -122,6 +162,53 @@ FilePath ScopedChromeFrameRegistrar::GetReferenceChromeFrameDllPath() {
   reference_build_dir = reference_build_dir.AppendASCII("servers");
   reference_build_dir = reference_build_dir.Append(kChromeFrameDllName);
   return reference_build_dir;
+}
+
+// static
+void ScopedChromeFrameRegistrar::RegisterAndExitProcessIfDirected() {
+  // This method is invoked before any Chromium helpers have been initialized.
+  // Take pains to use only Win32 and CRT functions.
+  int argc = 0;
+  const wchar_t* const* argv = ::CommandLineToArgvW(::GetCommandLine(), &argc);
+  if (argc < 2 || ::lstrcmp(argv[1], kCallRegistrationEntrypointSwitch) != 0)
+    return;
+  if (argc != 4) {
+    printf("Usage: %S %S <path to dll> <entrypoint>\n", argv[0],
+           kCallRegistrationEntrypointSwitch);
+    return;
+  }
+
+  // The only way to leave from here on down is ExitProcess.
+  const wchar_t* dll_path = argv[2];
+  const wchar_t* wide_entrypoint = argv[3];
+  char entrypoint[256];
+  HRESULT exit_code = 0;
+  int entrypoint_len = lstrlen(wide_entrypoint);
+  if (entrypoint_len <= 0 || entrypoint_len >= arraysize(entrypoint)) {
+    exit_code = HRESULT_FROM_WIN32(ERROR_PROC_NOT_FOUND);
+  } else {
+    // Convert wide to narrow. Since the entrypoint must be a narrow string
+    // anyway, it is safe to truncate each character like this.
+    std::copy(wide_entrypoint, wide_entrypoint + entrypoint_len + 1,
+              &entrypoint[0]);
+    HMODULE dll_module = ::LoadLibrary(dll_path);
+    if (dll_module == NULL) {
+      exit_code = HRESULT_FROM_WIN32(::GetLastError());
+    } else {
+      typedef HRESULT (STDAPICALLTYPE *RegisterFp)();
+      RegisterFp register_func =
+          reinterpret_cast<RegisterFp>(::GetProcAddress(dll_module,
+                                                        entrypoint));
+      if (register_func == NULL) {
+        exit_code = HRESULT_FROM_WIN32(::GetLastError());
+      } else {
+        exit_code = register_func();
+      }
+      ::FreeLibrary(dll_module);
+    }
+  }
+
+  ::ExitProcess(exit_code);
 }
 
 // Non-statics
