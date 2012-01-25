@@ -106,10 +106,6 @@ class SyncBackendHost::Core
   // SyncBackendHost::Initialize.
   void DoInitialize(const DoInitializeOptions& options);
 
-  // Called to check server reachability after initialization is
-  // fully completed.
-  void DoCheckServerReachable();
-
   // Called to perform credential update on behalf of
   // SyncBackendHost::UpdateCredentials
   void DoUpdateCredentials(const sync_api::SyncCredentials& credentials);
@@ -936,11 +932,6 @@ void SyncBackendHost::Core::DoInitialize(const DoInitializeOptions& options) {
   LOG_IF(ERROR, !success) << "Syncapi initialization failed!";
 }
 
-void SyncBackendHost::Core::DoCheckServerReachable() {
-  DCHECK_EQ(MessageLoop::current(), sync_loop_);
-  sync_manager_->CheckServerReachable();
-}
-
 void SyncBackendHost::Core::DoUpdateCredentials(
     const SyncCredentials& credentials) {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
@@ -1117,12 +1108,6 @@ void SyncBackendHost::HandleInitializationCompletedOnFrontendLoop(
       // the frontend to ensure they're visible in the customize screen.
       AddExperimentalTypes();
       frontend_->OnBackendInitialized(js_backend, true);
-      // Now that we're fully initialized, kick off a server
-      // reachability check.
-      sync_thread_.message_loop()->PostTask(
-          FROM_HERE,
-          base::Bind(&SyncBackendHost::Core::DoCheckServerReachable,
-                     core_.get()));
       break;
     default:
       NOTREACHED();

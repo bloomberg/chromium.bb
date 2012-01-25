@@ -197,14 +197,6 @@ class SyncManager::SyncInternal
             bool setup_for_test_mode,
             UnrecoverableErrorHandler* unrecoverable_error_handler);
 
-  void CheckServerReachable() {
-    if (connection_manager()) {
-      connection_manager()->CheckServerReachable();
-    } else {
-      NOTREACHED() << "Should be valid connection manager!";
-    }
-  }
-
   // Sign into sync with given credentials.
   // We do not verify the tokens given. After this call, the tokens are set
   // and the sync DB is open. True if successful, false if something
@@ -719,11 +711,6 @@ bool SyncManager::Init(
                      restored_key_for_bootstrapping,
                      setup_for_test_mode,
                      unrecoverable_error_handler);
-}
-
-void SyncManager::CheckServerReachable() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  data_->CheckServerReachable();
 }
 
 void SyncManager::UpdateCredentials(const SyncCredentials& credentials) {
@@ -1517,7 +1504,8 @@ void SyncManager::SyncInternal::OnIPAddressChanged() {
 
 void SyncManager::SyncInternal::OnIPAddressChangedImpl() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  CheckServerReachable();
+  if (scheduler())
+    scheduler()->OnConnectionStatusChange();
 }
 
 void SyncManager::SyncInternal::OnServerConnectionEvent(

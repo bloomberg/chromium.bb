@@ -1074,17 +1074,20 @@ TEST_F(SyncSchedulerTest, DISABLED_NoConfigDuringNormal) {
 // break things when a connection is detected.
 TEST_F(SyncSchedulerTest, StartWhenNotConnected) {
   connection()->SetServerNotReachable();
-  EXPECT_CALL(*syncer(), SyncShare(_,_,_)).WillOnce(QuitLoopNowAction());
+  EXPECT_CALL(*syncer(), SyncShare(_,_,_))
+    .WillOnce(Invoke(sessions::test_util::SimulateDownloadUpdatesFailed))
+    .WillOnce(QuitLoopNowAction());
   StartSyncScheduler(SyncScheduler::NORMAL_MODE);
-  RunLoop();
+  MessageLoop::current()->RunAllPending();
 
   scheduler()->ScheduleNudge(
       zero(), NUDGE_SOURCE_LOCAL, ModelTypeSet(), FROM_HERE);
   // Should save the nudge for until after the server is reachable.
-  PumpLoop();
+  MessageLoop::current()->RunAllPending();
 
   connection()->SetServerReachable();
-  PumpLoop();
+  scheduler()->OnConnectionStatusChange();
+  MessageLoop::current()->RunAllPending();
 }
 
 TEST_F(SyncSchedulerTest, SetsPreviousRoutingInfo) {

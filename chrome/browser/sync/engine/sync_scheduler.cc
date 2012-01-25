@@ -190,8 +190,10 @@ SyncScheduler::SyncScheduler(const std::string& name,
       sessions_commit_delay_(
           TimeDelta::FromSeconds(kDefaultSessionsCommitDelaySeconds)),
       mode_(NORMAL_MODE),
-      server_connection_ok_(false),
-      connection_code_(HttpResponse::NONE),
+      // Start with assuming everything is fine with the connection.
+      // At the end of the sync cycle we would have the correct status.
+      server_connection_ok_(true),
+      connection_code_(HttpResponse::SERVER_CONNECTION_OK),
       delay_provider_(new DelayProvider()),
       syncer_(syncer),
       session_context_(context) {
@@ -211,24 +213,36 @@ void SyncScheduler::OnCredentialsUpdated() {
   // the |connection_code_| would be briefly OK however it would revert
   // back to SYNC_AUTH_ERROR at the end of the sync cycle. The
   // referenced bug explores the option of removing gettime calls
-  // altogethere.
+  // altogethere
   if (HttpResponse::SYNC_AUTH_ERROR == connection_code_) {
-    DCHECK(!server_connection_ok_);
-    connection_code_ = HttpResponse::SERVER_CONNECTION_OK;
-    server_connection_ok_ = true;
-    PostTask(FROM_HERE, "DoCanaryJob",
-             base::Bind(&SyncScheduler::DoCanaryJob,
-                        weak_ptr_factory_.GetWeakPtr()));
+    OnServerConnectionErrorFixed();
   }
 }
 
-void SyncScheduler::CheckServerConnectionManagerStatus(
+void SyncScheduler::OnConnectionStatusChange() {
+  if (HttpResponse::CONNECTION_UNAVAILABLE  == connection_code_) {
+    // Optimistically assume that the connection is fixed and try
+    // connecting.
+    OnServerConnectionErrorFixed();
+  }
+}
+
+void SyncScheduler::OnServerConnectionErrorFixed() {
+  DCHECK(!server_connection_ok_);
+  connection_code_ = HttpResponse::SERVER_CONNECTION_OK;
+  server_connection_ok_ = true;
+  PostTask(FROM_HERE, "DoCanaryJob",
+           base::Bind(&SyncScheduler::DoCanaryJob,
+                      weak_ptr_factory_.GetWeakPtr()));
+
+}
+
+void SyncScheduler::UpdateServerConnectionManagerStatus(
     HttpResponse::ServerConnectionCode code) {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
   SDVLOG(2) << "New server connection code: "
             << HttpResponse::GetServerConnectionCodeString(code);
   bool old_server_connection_ok = server_connection_ok_;
-  HttpResponse::ServerConnectionCode old_code = connection_code_;
 
   connection_code_ = code;
 
@@ -237,7 +251,7 @@ void SyncScheduler::CheckServerConnectionManagerStatus(
   // will drop out of *all* forward progress sync loops (it won't poll and it
   // will queue up Talk notifications but not actually call SyncShare) until
   // some external action causes a ServerConnectionManager to broadcast that
-  // a valid connection has been re-established.
+  // a valid connection has been re-established
   if (HttpResponse::CONNECTION_UNAVAILABLE == code ||
       HttpResponse::SYNC_AUTH_ERROR == code) {
     server_connection_ok_ = false;
@@ -247,33 +261,6 @@ void SyncScheduler::CheckServerConnectionManagerStatus(
     server_connection_ok_ = true;
     SDVLOG(2) << "Sync server connection is ok: "
               << "server connection is up, doing canary job";
-
-    // Now decide if we want to retry the job in exponential backoff, if any.
-    // We want to break out of the exponential backoff only if the connection
-    // was previously unavailable and we are able to connect now. If the
-    // previous error condition was something else(say like server error - http
-    // 500 ) we can't reliably expect that the next request of type A will
-    // succeed because a request of type B recently succeeded.
-    //  An example scenario is:
-    // If commit command has failed but the next GU succeeded we dont want to
-    // break out of exponential backoff. This is a conservative approach to
-    // protect the server. The aggressive approach would be to retry if any
-    // command succeeded
-    // There is one issue with this as well. If the client could connect
-    // through 2 proxies and one proxy is broken and the other is
-    // not then it is possible we will get into a cycle. However
-    // for that to happen the sync request has to go through the broken
-    // proxy meaning the client could be doing extra work but the server
-    // is protected. i.e., the client is thrashing between 2 proxies.
-    // TODO(lipalani): The only exception here is that of AUTH_ERROR. We want
-    // to retry as soon as an auth error is fixed. However If the
-    // previous error was an auth error and the connection code is OK now it
-    // still does not mean the auth error was fixed. Because the connection
-    // might only have tried a GetTime call. We need to handle successful
-    // auth in this class seperately and kick off a sync. crbug.com/109654.
-    if (old_code == HttpResponse::CONNECTION_UNAVAILABLE ||
-        old_code == HttpResponse::IO_ERROR)
-      DoCanaryJob();
   }
 
   if (old_server_connection_ok != server_connection_ok_) {
@@ -292,7 +279,6 @@ void SyncScheduler::Start(Mode mode, const base::Closure& callback) {
             << thread_name << " with mode " << GetModeString(mode);
   if (!started_) {
     started_ = true;
-    WatchConnectionManager();
     PostTask(FROM_HERE, "SendInitialSnapshot",
              base::Bind(&SyncScheduler::SendInitialSnapshot,
                         weak_ptr_factory_.GetWeakPtr()));
@@ -311,16 +297,6 @@ void SyncScheduler::SendInitialSnapshot() {
   sessions::SyncSessionSnapshot snapshot(dummy->TakeSnapshot());
   event.snapshot = &snapshot;
   session_context_->NotifyListeners(event);
-}
-
-void SyncScheduler::WatchConnectionManager() {
-  DCHECK_EQ(MessageLoop::current(), sync_loop_);
-  ServerConnectionManager* scm = session_context_->connection_manager();
-  PostTask(FROM_HERE, "CheckServerConnectionManagerStatus",
-           base::Bind(&SyncScheduler::CheckServerConnectionManagerStatus,
-                      weak_ptr_factory_.GetWeakPtr(),
-                      scm->server_status()));
-  scm->AddListener(this);
 }
 
 void SyncScheduler::StartImpl(Mode mode, const base::Closure& callback) {
@@ -871,6 +847,19 @@ void SyncScheduler::FinishSyncSessionJob(const SyncSessionJob& job) {
     }
   }
   last_sync_session_end_time_ = now;
+
+  // Now update the status of the connection from SCM. We need this
+  // to decide whether we need to save/run future jobs. The notifications
+  // from SCM are not reliable.
+  // TODO(rlarocque): crbug.com/110954
+  // We should get rid of the notifications and
+  // it is probably not needed to maintain this status variable
+  // in 2 places. We should query it directly from SCM when needed.
+  // But that would need little more refactoring(including a method to
+  // query if the auth token is invalid) from SCM side.
+  ServerConnectionManager* scm = session_context_->connection_manager();
+  UpdateServerConnectionManagerStatus(scm->server_status());
+
   UpdateCarryoverSessionState(job);
   if (IsSyncingCurrentlySilenced()) {
     SDVLOG(2) << "We are currently throttled; not scheduling the next sync.";
@@ -1055,7 +1044,6 @@ void SyncScheduler::StopImpl(const base::Closure& callback) {
   wait_interval_.reset();
   poll_timer_.Stop();
   if (started_) {
-    session_context_->connection_manager()->RemoveListener(this);
     started_ = false;
   }
   if (!callback.is_null())
@@ -1209,16 +1197,6 @@ void SyncScheduler::OnSyncProtocolError(
   }
   if (IsActionableError(snapshot.errors.sync_protocol_error))
     OnActionableError(snapshot);
-}
-
-
-void SyncScheduler::OnServerConnectionEvent(
-    const ServerConnectionEvent& event) {
-  DCHECK_EQ(MessageLoop::current(), sync_loop_);
-  PostTask(FROM_HERE, "CheckServerConnectionManagerStatus",
-           base::Bind(&SyncScheduler::CheckServerConnectionManagerStatus,
-                      weak_ptr_factory_.GetWeakPtr(),
-                      event.connection_code));
 }
 
 void SyncScheduler::set_notifications_enabled(bool notifications_enabled) {

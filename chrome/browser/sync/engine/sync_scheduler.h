@@ -37,8 +37,7 @@ namespace browser_sync {
 
 struct ServerConnectionEvent;
 
-class SyncScheduler : public sessions::SyncSession::Delegate,
-                      public ServerConnectionEventListener {
+class SyncScheduler : public sessions::SyncSession::Delegate {
  public:
   enum Mode {
     // In this mode, the thread only performs configuration tasks.  This is
@@ -112,6 +111,9 @@ class SyncScheduler : public sessions::SyncSession::Delegate,
   // Called when credentials are updated by the user.
   void OnCredentialsUpdated();
 
+  // Called when the network layer detects a connection status change.
+  void OnConnectionStatusChange();
+
   // SyncSession::Delegate implementation.
   virtual void OnSilencedUntil(
       const base::TimeTicks& silenced_until) OVERRIDE;
@@ -125,11 +127,6 @@ class SyncScheduler : public sessions::SyncSession::Delegate,
   virtual void OnShouldStopSyncingPermanently() OVERRIDE;
   virtual void OnSyncProtocolError(
       const sessions::SyncSessionSnapshot& snapshot) OVERRIDE;
-
-  // ServerConnectionEventListener implementation.
-  // TODO(tim): schedule a nudge when valid connection detected? in 1 minute?
-  virtual void OnServerConnectionEvent(
-      const ServerConnectionEvent& event) OVERRIDE;
 
  private:
   enum JobProcessDecision {
@@ -330,6 +327,9 @@ class SyncScheduler : public sessions::SyncSession::Delegate,
   // re-established, mode changes etc.
   void DoPendingJobIfPossible(bool is_canary_job);
 
+  // Called when the root cause of the current connection error is fixed.
+  void OnServerConnectionErrorFixed();
+
   // The pointer is owned by the caller.
   browser_sync::sessions::SyncSession* CreateSyncSession(
       const browser_sync::sessions::SyncSourceInfo& info);
@@ -343,11 +343,8 @@ class SyncScheduler : public sessions::SyncSession::Delegate,
                                 SyncerStep* start,
                                 SyncerStep* end);
 
-  // Initializes the hookup between the ServerConnectionManager and us.
-  void WatchConnectionManager();
-
   // Used to update |server_connection_ok_|, see below.
-  void CheckServerConnectionManagerStatus(
+  void UpdateServerConnectionManagerStatus(
       HttpResponse::ServerConnectionCode code);
 
   // Called once the first time thread_ is started to broadcast an initial
