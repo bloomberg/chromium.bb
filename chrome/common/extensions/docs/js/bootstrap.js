@@ -23,7 +23,7 @@ function getCurrentBranch() {
 
   var branch = location.href.substring(
       officialURL.length,
-      officialURL.indexOf('/', officialURL.length));
+      location.href.indexOf('/', officialURL.length));
   if (branchNames.indexOf(branch) == -1)
     return 'stable';
 
