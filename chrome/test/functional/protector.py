@@ -23,9 +23,9 @@ class ProtectorTest(pyauto.PyUITest):
     self.assertTrue(profiles['profiles'])
     self._profile_path = profiles['profiles'][0]['path']
     self.assertTrue(self._profile_path)
-    # Set to the name of the new default search engine after a successful
+    # Set to the keyword of the new default search engine after a successful
     # _GetDefaultSearchEngine call.
-    self._new_default_search_name = None
+    self._new_default_search_keyword = None
 
   def _GetDefaultSearchEngine(self):
     """Returns the default search engine, if any; None otherwise.
@@ -93,8 +93,8 @@ class ProtectorTest(pyauto.PyUITest):
   def _ChangeDefaultSearchEngine(self):
     """Replaces the default search engine in Web Data database with another one.
 
-    Name of the new default search engine is saved to
-    self._new_default_search_name.
+    Keywords of the new default search engine is saved to
+    self._new_default_search_keyword.
     """
     web_database = self._OpenDatabase('Web Data')
     default_id = int(self._FetchSingleValue(
@@ -111,12 +111,12 @@ class ProtectorTest(pyauto.PyUITest):
     self._UpdateSingleRow(web_database,
                           'UPDATE meta SET value = ? WHERE key = ?',
                           (new_default_id, self._default_search_id_key))
-    self._new_default_search_name = self._FetchSingleValue(
+    self._new_default_search_keyword = self._FetchSingleValue(
         web_database,
-        'SELECT short_name FROM keywords WHERE id = ?',
+        'SELECT keyword FROM keywords WHERE id = ?',
         (new_default_id,))
     logging.info('Update default search ID: %d -> %d (%s)' %
-                  (default_id, new_default_id, self._new_default_search_name))
+                 (default_id, new_default_id, self._new_default_search_keyword))
     web_database.close()
 
   def testNoChangeOnCleanProfile(self):
@@ -140,9 +140,9 @@ class ProtectorTest(pyauto.PyUITest):
     # Now the search engine must have changed to the new one.
     default_search = self._GetDefaultSearchEngine()
     self.assertNotEqual(old_default_search, default_search)
-    self.assertEqual(self._new_default_search_name,
-                     default_search['short_name'])
-    # No longer showing the change:
+    self.assertEqual(self._new_default_search_keyword,
+                     default_search['keyword'])
+    # No longer showing the change.
     self.assertFalse(self.GetProtectorState()['showing_change'])
 
   def testDetectSearchEngineChangeAndDiscard(self):
@@ -162,7 +162,28 @@ class ProtectorTest(pyauto.PyUITest):
     # Old search engine remains active.
     default_search = self._GetDefaultSearchEngine()
     self.assertEqual(old_default_search, default_search)
-    # No longer showing the change:
+    # No longer showing the change.
+    self.assertFalse(self.GetProtectorState()['showing_change'])
+
+  def testSearchEngineChangeDismissedOnEdit(self):
+    """Test that default search engine change is dismissed when default search
+    engine is changed by user.
+    """
+    # Get current search engine.
+    old_default_search = self._GetDefaultSearchEngine()
+    self.assertTrue(old_default_search)
+    # Close browser, change the search engine and start it again.
+    self.RestartBrowser(clear_profile=False,
+                        pre_launch_hook=self._ChangeDefaultSearchEngine)
+    # The change must be detected by Protector.
+    self.assertTrue(self.GetProtectorState()['showing_change'])
+    # Change default search engine.
+    self.MakeSearchEngineDefault(self._new_default_search_keyword)
+    # Change is successful.
+    default_search = self._GetDefaultSearchEngine()
+    self.assertEqual(self._new_default_search_keyword,
+                     default_search['keyword'])
+    # No longer showing the change.
     self.assertFalse(self.GetProtectorState()['showing_change'])
 
 
