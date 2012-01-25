@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,6 +13,7 @@
 #include "remoting/protocol/session_config.h"
 
 namespace net {
+class IPEndPoint;
 class Socket;
 class StreamSocket;
 }  // namespace net
@@ -68,6 +69,12 @@ class Session : public base::NonThreadSafe {
   // handler unless |state| is CLOSED or FAILED.
   typedef base::Callback<void(State state)> StateChangeCallback;
 
+  // TODO(lambroslambrou): Merge this together with StateChangeCallback into a
+  // single interface.
+  typedef base::Callback<void(
+      const std::string& channel_name,
+      const net::IPEndPoint& end_point)> RouteChangeCallback;
+
   // TODO(sergeyu): Specify connection error code when channel
   // connection fails.
   typedef base::Callback<void(net::StreamSocket*)> StreamChannelCallback;
@@ -77,8 +84,12 @@ class Session : public base::NonThreadSafe {
   virtual ~Session() { }
 
   // Set callback that is called when state of the connection is changed.
-  // Must be called on the jingle thread only.
   virtual void SetStateChangeCallback(const StateChangeCallback& callback) = 0;
+
+  // Set callback that is called when the route for a channel is changed.
+  // The callback must be registered immediately after
+  // JingleSessionManager::Connect() or from OnIncomingSession() callback.
+  virtual void SetRouteChangeCallback(const RouteChangeCallback& callback) = 0;
 
   // Returns error code for a failed session.
   virtual Error error() = 0;

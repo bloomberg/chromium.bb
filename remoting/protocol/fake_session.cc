@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -241,6 +241,10 @@ FakeUdpSocket* FakeSession::GetDatagramChannel(const std::string& name) {
 
 void FakeSession::SetStateChangeCallback(const StateChangeCallback& callback) {
   callback_ = callback;
+}
+
+void FakeSession::SetRouteChangeCallback(const RouteChangeCallback& callback) {
+  NOTIMPLEMENTED();
 }
 
 Session::Error FakeSession::error() {

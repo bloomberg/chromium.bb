@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -150,6 +150,9 @@ class FakeSession : public Session {
   // Session implementation.
   virtual void SetStateChangeCallback(
       const StateChangeCallback& callback) OVERRIDE;
+
+  virtual void SetRouteChangeCallback(
+      const RouteChangeCallback& callback) OVERRIDE;
 
   virtual Session::Error error() OVERRIDE;
 

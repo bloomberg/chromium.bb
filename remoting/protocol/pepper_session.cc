@@ -49,6 +49,12 @@ void PepperSession::SetStateChangeCallback(
   state_change_callback_ = callback;
 }
 
+void PepperSession::SetRouteChangeCallback(
+    const RouteChangeCallback& callback) {
+  // This callback is not used on the client side yet.
+  NOTREACHED();
+}
+
 Session::Error PepperSession::error() {
   DCHECK(CalledOnValidThread());
   return error_;

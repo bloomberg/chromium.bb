@@ -7,11 +7,15 @@
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/logging.h"
 #include "base/message_loop_proxy.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
 #include "crypto/hmac.h"
+#include "jingle/glue/utils.h"
+#include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
+#include "net/base/net_util.h"
 #include "net/socket/stream_socket.h"
 #include "remoting/base/constants.h"
 #include "remoting/protocol/auth_util.h"
@@ -130,6 +134,12 @@ void JingleSession::SetStateChangeCallback(
   DCHECK(CalledOnValidThread());
   DCHECK(!callback.is_null());
   state_change_callback_ = callback;
+}
+
+void JingleSession::SetRouteChangeCallback(
+    const RouteChangeCallback& callback) {
+  DCHECK(CalledOnValidThread());
+  route_change_callback_ = callback;
 }
 
 Session::Error JingleSession::error() {
@@ -468,6 +478,8 @@ void JingleSession::AddChannelConnector(
   cricket::TransportChannel* raw_channel =
       cricket_session_->CreateChannel(content_name, name);
 
+  raw_channel->SignalRouteChange.connect(this, &JingleSession::OnRouteChange);
+
   if (!jingle_session_manager_->allow_nat_traversal_ &&
       !cricket_session_->initiator()) {
     // Don't make outgoing connections from the host to client when
@@ -491,6 +503,19 @@ void JingleSession::OnChannelConnectorFinished(
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(channel_connectors_[name], connector);
   channel_connectors_.erase(name);
+}
+
+void JingleSession::OnRouteChange(cricket::TransportChannel* channel,
+                                  const cricket::Candidate& candidate) {
+  net::IPEndPoint end_point;
+  if (!jingle_glue::SocketAddressToIPEndPoint(candidate.address(),
+                                              &end_point)) {
+    NOTREACHED();
+    return;
+  }
+
+  if (!route_change_callback_.is_null())
+    route_change_callback_.Run(channel->name(), end_point);
 }
 
 const cricket::ContentInfo* JingleSession::GetContentInfo() const {

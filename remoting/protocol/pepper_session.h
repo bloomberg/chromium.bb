@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -42,6 +42,8 @@ class PepperSession : public Session {
   // Session interface.
   virtual void SetStateChangeCallback(
       const StateChangeCallback& callback) OVERRIDE;
+  virtual void SetRouteChangeCallback(
+      const RouteChangeCallback& callback) OVERRIDE;
   virtual Error error() OVERRIDE;
   virtual void CreateStreamChannel(
       const std::string& name,

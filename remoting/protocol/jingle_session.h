@@ -30,6 +30,8 @@ class JingleSession : public protocol::Session,
   // Session interface.
   virtual void SetStateChangeCallback(
       const StateChangeCallback& callback) OVERRIDE;
+  virtual void SetRouteChangeCallback(
+      const RouteChangeCallback& callback) OVERRIDE;
   virtual Error error() OVERRIDE;
   virtual void CreateStreamChannel(
       const std::string& name,
@@ -104,6 +106,9 @@ class JingleSession : public protocol::Session,
   void OnChannelConnectorFinished(const std::string& name,
                                   JingleChannelConnector* connector);
 
+  void OnRouteChange(cricket::TransportChannel* channel,
+                     const cricket::Candidate& candidate);
+
   const cricket::ContentInfo* GetContentInfo() const;
 
   void SetState(State new_state);
@@ -122,6 +127,7 @@ class JingleSession : public protocol::Session,
 
   State state_;
   StateChangeCallback state_change_callback_;
+  RouteChangeCallback route_change_callback_;
 
   Error error_;
 
