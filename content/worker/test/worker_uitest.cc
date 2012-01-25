@@ -474,7 +474,12 @@ TEST_F(WorkerTest, DISABLED_WorkerHttpLayoutTests) {
 
 // TODO(toyoshim): Enable disabled tests.
 // http://crbug.com/111165 .
-TEST_F(WorkerTest, DISABLED_WorkerWebSocketLayoutTests) {
+#if defined(OS_WIN)
+#define MAYBE_WorkerWebSocketLayoutTests DISABLED_WorkerWebSocketLayoutTests
+#else
+#define MAYBE_WorkerWebSocketLayoutTests WorkerWebSocketLayoutTests
+#endif
+TEST_F(WorkerTest, MAYBE_WorkerWebSocketLayoutTests) {
   static const char* kLayoutTestFiles[] = {
     "close-in-onmessage-crash.html",
     "close-in-shared-worker.html",
