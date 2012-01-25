@@ -12,6 +12,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/net/gaia/gaia_oauth_fetcher.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/signin_manager.h"
@@ -22,6 +23,7 @@
 #include "chrome/browser/sync/util/oauth.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -428,7 +430,12 @@ void SyncSetupFlow::OnUserSubmittedAuth(const std::string& username,
 
 void SyncSetupFlow::OnUserSubmittedOAuth(
     const std::string& oauth1_request_token) {
-  service_->signin()->StartOAuthSignIn(oauth1_request_token);
+  GaiaOAuthFetcher* fetcher = new GaiaOAuthFetcher(
+      service_->signin(),
+      service_->profile()->GetRequestContext(),
+      service_->profile(),
+      GaiaConstants::kSyncServiceOAuth);
+  service_->signin()->StartOAuthSignIn(oauth1_request_token, fetcher);
 }
 
 void SyncSetupFlow::OnUserConfigured(const SyncConfiguration& configuration) {

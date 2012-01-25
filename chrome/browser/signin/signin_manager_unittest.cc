@@ -21,7 +21,31 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_status.h"
 
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+class MockGaiaOAuthFetcher : public GaiaOAuthFetcher {
+ public:
+  MockGaiaOAuthFetcher(GaiaOAuthConsumer* consumer,
+                       net::URLRequestContextGetter* getter,
+                       Profile* profile,
+                       const std::string& service_scope)
+      : GaiaOAuthFetcher(
+          consumer, getter, profile, service_scope) {}
+
+  ~MockGaiaOAuthFetcher() {}
+
+  MOCK_METHOD1(StartOAuthGetAccessToken,
+               void(const std::string& oauth1_request_token));
+
+  MOCK_METHOD4(StartOAuthWrapBridge,
+               void(const std::string& oauth1_access_token,
+                    const std::string& oauth1_access_token_secret,
+                    const std::string& wrap_token_duration,
+                    const std::string& oauth2_scope));
+
+  MOCK_METHOD1(StartUserInfo, void(const std::string& oauth2_access_token));
+};
 
 class SigninManagerTest : public TokenServiceTestHarness {
  public:
@@ -69,6 +93,14 @@ class SigninManagerTest : public TokenServiceTestHarness {
   void SimulateSigninStartOAuth() {
     DCHECK(browser_sync::IsUsingOAuth());
     // Simulate a valid OAuth-based signin
+    MockGaiaOAuthFetcher* fetcher = new MockGaiaOAuthFetcher(
+        manager_.get(),
+        profile_->GetRequestContext(),
+        profile_.get(),
+        std::string());
+    std::string request_token ="oauth1_request_token";
+    EXPECT_CALL(*fetcher, StartOAuthGetAccessToken(request_token)).Times(1);
+    manager_->StartOAuthSignIn(request_token, fetcher);
     manager_->OnGetOAuthTokenSuccess("oauth_token-Ev1Vu1hv");
     manager_->OnOAuthGetAccessTokenSuccess("oauth1_access_token-qOAmlrSM",
                                            "secret-NKKn1DuR");
@@ -287,7 +319,6 @@ TEST_F(SigninManagerTest, SignOutOnUserInfoSucessRaceTest) {
   browser_sync::SetIsUsingOAuthForTest(true);
   manager_->Initialize(profile_.get());
   EXPECT_TRUE(manager_->GetAuthenticatedUsername().empty());
-
   SimulateSigninStartOAuth();
   manager_->SignOut();
   SimulateOAuthUserInfoSuccess();

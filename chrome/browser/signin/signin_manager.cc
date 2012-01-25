@@ -28,6 +28,8 @@ SigninManager::SigninManager()
 SigninManager::~SigninManager() {}
 
 void SigninManager::Initialize(Profile* profile) {
+  // Should never call Initialize() twice.
+  DCHECK(!IsInitialized());
   profile_ = profile;
 
   std::string user = profile_->GetPrefs()->GetString(
@@ -97,14 +99,12 @@ void SigninManager::PrepareForOAuthSignin() {
 }
 
 // Users must always sign out before they sign in again.
-void SigninManager::StartOAuthSignIn(const std::string& oauth1_request_token) {
+void SigninManager::StartOAuthSignIn(const std::string& oauth1_request_token,
+                                     GaiaOAuthFetcher* fetcher) {
   DCHECK(browser_sync::IsUsingOAuth());
   PrepareForOAuthSignin();
   oauth1_request_token_.assign(oauth1_request_token);
-  oauth_login_.reset(new GaiaOAuthFetcher(this,
-                                          profile_->GetRequestContext(),
-                                          profile_,
-                                          GaiaConstants::kSyncServiceOAuth));
+  oauth_login_.reset(fetcher);
   oauth_login_->StartOAuthGetAccessToken(oauth1_request_token_);
   // TODO(rogerta?): Bug 92325: Expand Autologin to include OAuth signin
 }
@@ -159,8 +159,7 @@ void SigninManager::ProvideSecondFactorAccessCode(
 }
 
 void SigninManager::ClearTransientSigninData() {
-  if (!profile_)
-    return;
+  DCHECK(IsInitialized());
 
   CleanupNotificationRegistration();
   client_login_.reset();
@@ -171,8 +170,15 @@ void SigninManager::ClearTransientSigninData() {
 }
 
 void SigninManager::SignOut() {
-  if (!profile_)
+  DCHECK(IsInitialized());
+  if (authenticated_username_.empty() &&
+      !client_login_.get() &&
+      !oauth_login_.get()) {
+    // Just exit if we aren't signed in (or in the process of signing in).
+    // This avoids a perf regression because SignOut() is invoked on startup to
+    // clean up any incomplete previous signin attempts.
     return;
+  }
 
   ClearTransientSigninData();
   authenticated_username_.clear();

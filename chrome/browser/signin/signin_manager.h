@@ -71,8 +71,9 @@ class SigninManager : public GaiaAuthConsumer,
 
   // Attempt to sign in this user with OAuth. If successful, set a preference
   // indicating the signed in user and send out a notification, then start
-  // fetching tokens for the user.
-  virtual void StartOAuthSignIn(const std::string& oauth1_request_token);
+  // fetching tokens for the user. SigninManager takes ownership of |fetcher|.
+  virtual void StartOAuthSignIn(const std::string& oauth1_request_token,
+                                GaiaOAuthFetcher* fetcher);
 
   // Attempt to sign in this user with ClientLogin. If successful, set a
   // preference indicating the signed in user and send out a notification,
