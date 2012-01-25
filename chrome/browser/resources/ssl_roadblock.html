@@ -3,71 +3,73 @@
 <head>
 <title i18n-content="title"></title>
 <style type="text/css">
+
+html {
+  background-color: rgb(92, 0, 0);
+  background-image: url("ssl_roadblock_background.png");
+  background-repeat: repeat-x;
+  height: 100%;
+}
+
 body {
-  background-color:#500;
-  font-family:Helvetica,Arial,sans-serif;
-  margin:0px;
+  font-family: Helvetica, Arial, sans-serif;
+  margin: 0;
 }
-.background {
-  position:absolute;
-  width:100%;
-  height:100%;
-}
+
 .cell {
-  padding:40px;
+  padding: 40px;
 }
+
 .box {
-  width:80%;
-  background-color:white;
-  color:black;
-  font-size:10pt;
-  line-height:16pt;
-  text-align:left;
-  padding:20px;
-  position:relative;
-  -webkit-box-shadow:3px 3px 8px #200;
-  border-radius:5px;
+  -webkit-box-shadow: 3px 3px 8px #200;
+  background-color: white;
+  border-radius: 5px;
+  color: black;
+  font-size: 10pt;
+  line-height: 16pt;
+  min-width: 500px;
+  max-width: 800px;
+  padding: 20px;
+  position: relative;
+  text-align: start;
+  width: 80%;
 }
-html[dir='rtl'] .box {
-  text-align:right;
+
+#twisty_closed {
+  display: inline;
+}
+
+html[dir='rtl'] #twisty_closed {
+  -webkit-transform: scaleX(-1);
 }
 
 .icon {
   position:absolute;
 }
+
 .title {
-  margin: 0px 77px 0px;
-  font-size:18pt;
+  color: #660000;
+  font-size: 18pt;
+  font-weight: bold;
   line-height: 140%;
-  margin-bottom:6pt;
-  font-weight:bold;
-  color:#660000;
-}
-.main {
-  margin:0px 80px 0px;
+  margin: 0 77px 6pt;
 }
 
-.submission {
-  margin:15px 5px 15px 0px;
-  padding:0px;
+.main {
+  margin: 1em 80px;
 }
-input {
-  margin:0px;
-}
-.proceedbutton {
-}
-.helpbutton {
-  float:right;
-}
+
 .example {
-  margin:30px 80px 0px;
-  border-top:1px solid #ccc;
-  padding-top:6px;
+  border-top: 1px solid #ccc;
+  margin: 0 80px;
+  padding-top: 6px;
 }
+
 .moreinfotitle {
-  margin-left:5px;
-  margin-right:5px;
+  margin-left: 5px;
+  margin-right: 5px;
 }
+
 </style>
 
 <script>
@@ -79,55 +81,37 @@ input {
   }
 
   function toggleMoreInfo(collapse) {
-    if (collapse) {
-      $("more_info_long").style.display = "none";
-      $("more_info_short").style.display = "block";
-    } else {
-      $("more_info_long").style.display = "block";
-      $("more_info_short").style.display = "none";
-    }
-  }
-  function setDirectionSensitiveImages() {
-    if (document.documentElement.dir == 'rtl') {
-      $("twisty_closed_rtl").style.display = "inline";
-    } else {
-      $("twisty_closed").style.display = "inline";
-    }
+    $('more_info_long').hidden = collapse;
+    $('more_info_short').hidden = !collapse;
   }
 </script>
 </head>
 <body oncontextmenu="return false;">
-<script>
-document.addEventListener('DOMContentLoaded', setDirectionSensitiveImages);
-</script>
-<div class="background"><img src="ssl_roadblock_background.png" width="100%" height="100%" alt="background" onmousedown="return false;"></div>
 <table width="100%" cellspacing="0" cellpadding="0">
   <td class="cell" valign="middle" align="center">
     <div class="box">
-      <div class="icon"><img src="ssl_roadblock_icon.png" alt="SSL Error Icon" onmousedown="return false;"></div>
+      <div class="icon"><img src="ssl_roadblock_icon.png" alt="SSL Error Icon"
+          onmousedown="return false;"></div>
       <div class="title" i18n-content="headLine"></div>
-      <div class="main" i18n-values=".innerHTML:description"></div>
+      <div class="main" i18n-values=".innerHTML:description;dir:textdirection"></div>
       <div class="main" i18n-values=".innerHTML:shouldNotProceed"></div>
       <div class="main">
-        <form class="submission">
-          <input type="button" i18n-values="value:proceed" name="proceed" class="proceedbutton" onClick="sendCommand(1);">
-          <input type="button" i18n-values="value:exit" name="exit" onClick="sendCommand(0);">
-        </form>
+        <button i18n-content="proceed" onclick="sendCommand(1);">
+        </button>
+        <button i18n-content="exit" onclick="sendCommand(0);">
+        </button>
       </div>
       <div class="example" id="more_info_short">
-      <!--
-       // The img madness here is due to the inlining of the html file
-       // resources. The script that does this looks for subresources like
-       // images and inlines them, so we need to have references to both the
-       // ltr and rtl versions statically. Just doing
-       // i18n-values="src:path_to_correct_image_set_by_c++" won't work, since
-       // the inlined version will just end up with that path string rather
-       // than the inlined image.
-      -->
-        <a href="#" onclick="toggleMoreInfo(false); return false;" onmousedown="return false;"><img id="twisty_closed" src="twisty_closed.png" border="0" style="display:none"><img id="twisty_closed_rtl" src="twisty_closed_rtl.png" border="0" style="display:none"><span i18n-content="moreInfoTitle" class="moreinfotitle"></span></a>
+        <a href="#" onclick="toggleMoreInfo(false); return false;"
+            onmousedown="return false;">
+            <img id="twisty_closed" src="twisty_closed.png" border="0"><span i18n-content="moreInfoTitle" class="moreinfotitle"></span>
+        </a>
       </div>
-      <div class="example" id="more_info_long" style="display:none;">
-        <a href="#" onclick="toggleMoreInfo(true); return false;" onmousedown="return false;"><img src="twisty_open.png" border="0"><span i18n-content="moreInfoTitle" class="moreinfotitle"></span></a>
+      <div class="example" id="more_info_long" hidden>
+        <a href="#" onclick="toggleMoreInfo(true); return false;"
+            onmousedown="return false;">
+            <img src="twisty_open.png" border="0"><span i18n-content="moreInfoTitle" class="moreinfotitle"></span>
+        </a>
         <p i18n-values=".innerHTML:moreInfo1"></p>
         <p i18n-values=".innerHTML:moreInfo2"></p>
         <p i18n-values=".innerHTML:moreInfo3"></p>
