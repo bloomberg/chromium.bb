@@ -33,6 +33,7 @@ public:
   virtual void FocusIn(IBusInputContext* context) OVERRIDE;
   virtual void FocusOut(IBusInputContext* context) OVERRIDE;
   virtual void Reset(IBusInputContext* context) OVERRIDE;
+  virtual InputMethodType GetInputMethodType() OVERRIDE;
   virtual void SetCursorLocation(IBusInputContext* context,
                                  int32 x,
                                  int32 y,
@@ -66,6 +67,8 @@ public:
 
   // A value which IsConnected() will return.
   bool is_connected_;
+  // A value which GetInputMethodType() will return.
+  InputMethodType input_method_type_;
   // A text which ExtractCompositionText() will return.
   CompositionText composition_text_;
   // A text which ExtractCommitText() will return.

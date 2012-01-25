@@ -293,7 +293,9 @@ void InputMethodIBus::DispatchKeyEvent(const base::NativeEvent& native_event) {
   // Note: We need to send the key event to ibus even if the |context_| is not
   // enabled, so that ibus can have a chance to enable the |context_|.
   if (!context_focused_ ||
-      GetTextInputType() == TEXT_INPUT_TYPE_PASSWORD) {
+      GetTextInputType() == TEXT_INPUT_TYPE_PASSWORD ||
+      ibus_client_->GetInputMethodType() ==
+      internal::IBusClient::INPUT_METHOD_XKB_LAYOUT) {
     if (native_event->type == KeyPress)
       ProcessUnfilteredKeyPressEvent(native_event, ibus_keyval);
     else

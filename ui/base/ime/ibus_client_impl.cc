@@ -119,6 +119,11 @@ void IBusClientImpl::Reset(IBusInputContext* context) {
   ibus_input_context_reset(context);
 }
 
+IBusClient::InputMethodType IBusClientImpl::GetInputMethodType() {
+  // This object cannot know the type of the current IME, hence return NORMAL.
+  return INPUT_METHOD_NORMAL;
+}
+
 void IBusClientImpl::SetCursorLocation(IBusInputContext* context,
                                        int32 x,
                                        int32 y,

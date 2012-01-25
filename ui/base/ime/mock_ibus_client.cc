@@ -194,6 +194,10 @@ void MockIBusClient::Reset(IBusInputContext* context) {
   ++reset_call_count_;
 }
 
+IBusClient::InputMethodType MockIBusClient::GetInputMethodType() {
+  return input_method_type_;
+}
+
 void MockIBusClient::SetCursorLocation(IBusInputContext* context,
                                        int32 x,
                                        int32 y,
@@ -225,6 +229,7 @@ void MockIBusClient::ResetFlags() {
   create_ic_request_.reset();
 
   is_connected_ = false;
+  input_method_type_ = INPUT_METHOD_NORMAL;
   composition_text_.Clear();
   commit_text_.clear();
 

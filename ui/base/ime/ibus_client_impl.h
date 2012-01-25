@@ -34,6 +34,7 @@ public:
   virtual void FocusIn(IBusInputContext* context) OVERRIDE;
   virtual void FocusOut(IBusInputContext* context) OVERRIDE;
   virtual void Reset(IBusInputContext* context) OVERRIDE;
+  virtual InputMethodType GetInputMethodType() OVERRIDE;
   virtual void SetCursorLocation(IBusInputContext* context,
                                  int32 x,
                                  int32 y,

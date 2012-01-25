@@ -53,6 +53,14 @@ class UI_EXPORT IBusClient {
     INLINE_COMPOSITION = 1,
   };
 
+  // The type of IME which is currently selected. Implementations should return
+  // the former when no IME is selected or the type of the current IME is
+  // unknown.
+  enum InputMethodType {
+    INPUT_METHOD_NORMAL = 0,
+    INPUT_METHOD_XKB_LAYOUT,
+  };
+
   virtual ~IBusClient() {}
 
   // Gets a D-Bus connection to ibus-daemon. An implementation should establish
@@ -83,6 +91,9 @@ class UI_EXPORT IBusClient {
   virtual void FocusOut(IBusInputContext* context) = 0;
   // Resets the |context| asynchronously.
   virtual void Reset(IBusInputContext* context) = 0;
+
+  // Returns the current input method type.
+  virtual InputMethodType GetInputMethodType() = 0;
 
   // Resets the cursor location asynchronously.
   virtual void SetCursorLocation(IBusInputContext* context,

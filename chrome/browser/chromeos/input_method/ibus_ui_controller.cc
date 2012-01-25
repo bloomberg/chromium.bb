@@ -16,6 +16,7 @@
 
 #if defined(HAVE_IBUS) && defined(USE_AURA)
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
+#include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
 #include "ui/base/ime/ibus_client_impl.h"
@@ -286,6 +287,12 @@ class IBusUiControllerImpl : public IBusUiController {
     }
 
     // ui::IBusClient override.
+    virtual InputMethodType GetInputMethodType() OVERRIDE {
+      const std::string current_input_method_id = GetCurrentInputMethodId();
+      return InputMethodUtil::IsKeyboardLayout(current_input_method_id) ?
+          INPUT_METHOD_XKB_LAYOUT : INPUT_METHOD_NORMAL;
+    }
+
     virtual void SetCursorLocation(IBusInputContext* context,
                                    int32 x,
                                    int32 y,
@@ -294,10 +301,7 @@ class IBusUiControllerImpl : public IBusUiController {
       if (!ui_)
         return;
 
-      InputMethodManager* manager = InputMethodManager::GetInstance();
-      const std::string current_input_method_id =
-          manager->current_input_method().id();
-
+      const std::string current_input_method_id = GetCurrentInputMethodId();
       for (size_t i = 0; i < arraysize(kMozcJaInputMethodIds); ++i) {
         if (kMozcJaInputMethodIds[i] == current_input_method_id) {
           // Mozc Japanese IMEs require cursor location information to show the
@@ -318,6 +322,11 @@ class IBusUiControllerImpl : public IBusUiController {
     }
 
    private:
+    std::string GetCurrentInputMethodId() {
+      InputMethodManager* manager = InputMethodManager::GetInstance();
+      return manager->current_input_method().id();
+    }
+
     IBusUiControllerImpl* ui_;
   };
 
