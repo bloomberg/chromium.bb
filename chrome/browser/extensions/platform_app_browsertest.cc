@@ -210,3 +210,14 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MAYBE_DisallowNavigation) {
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MAYBE_DisallowModalDialogs) {
   ASSERT_TRUE(RunPlatformAppTest("platform_apps/modal_dialogs")) << message_;
 }
+
+// Tests that localStorage and WebSQL are disabled for platform apps.
+// Disabled until shell windows are implemented for non-GTK, non-Views toolkits.
+#if defined(TOOLKIT_GTK) || defined(TOOLKIT_VIEWS)
+#define MAYBE_DisallowStorage DisallowStorage
+#else
+#define MAYBE_DisallowStorage DISABLED_DisallowStorage
+#endif
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MAYBE_DisallowStorage) {
+  ASSERT_TRUE(RunPlatformAppTest("platform_apps/storage")) << message_;
+}

@@ -12,7 +12,10 @@ namespace extension_webkit_preferences {
 void SetPreferences(const Extension* extension,
                     content::ViewType render_view_type,
                     WebPreferences* webkit_prefs) {
-  if (extension && !extension->is_hosted_app()) {
+  if (!extension)
+    return;
+
+  if (!extension->is_hosted_app()) {
     // Extensions are trusted so we override any user preferences for disabling
     // javascript or images.
     webkit_prefs->loads_images_automatically = true;
@@ -30,11 +33,15 @@ void SetPreferences(const Extension* extension,
       webkit_prefs->accelerated_2d_canvas_enabled = false;
     }
   }
-  if (extension) {
-    // Enable WebGL features that regular pages can't access, since they add
-    // more risk of fingerprinting.
-    webkit_prefs->privileged_webgl_extensions_enabled = true;
+
+  if (extension->is_platform_app()) {
+    webkit_prefs->databases_enabled = false;
+    webkit_prefs->local_storage_enabled = false;
   }
+
+  // Enable WebGL features that regular pages can't access, since they add
+  // more risk of fingerprinting.
+  webkit_prefs->privileged_webgl_extensions_enabled = true;
 }
 
 }  // extension_webkit_preferences
