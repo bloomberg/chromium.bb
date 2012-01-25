@@ -7851,7 +7851,7 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
 
       <!-- First run bubble popup -->
       <message name="IDS_FR_BUBBLE_TITLE" desc="Bubble-like popup dialog title">
-        You can search from here with <ph name="SEARCH_ENGINE">$1<ex>Google</ex></ph>!
+        You can search from here with <ph name="SEARCH_ENGINE">$1<ex>Google</ex></ph>
       </message>
       <message name="IDS_FR_BUBBLE_SUBTEXT" desc="Text under the title for the bubble">
         Type to search or enter a URL to navigate - everything just works.
