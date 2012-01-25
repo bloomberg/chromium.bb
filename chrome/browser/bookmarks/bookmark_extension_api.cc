@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -869,7 +869,7 @@ void BookmarksIOFunction::SelectFile(SelectFileDialog::Type type) {
 }
 
 void BookmarksIOFunction::ShowSelectFileDialog(SelectFileDialog::Type type,
-                                               FilePath default_path) {
+                                               const FilePath& default_path) {
   // Balanced in one of the three callbacks of SelectFileDialog:
   // either FileSelectionCanceled, MultiFilesSelected, or FileSelected
   AddRef();
