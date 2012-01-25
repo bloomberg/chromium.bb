@@ -9,9 +9,7 @@
 <translation id="7400722733683201933">Kuhusu Google Chrome</translation>
 <translation id="7781002470561365167">Toleo jipya la Google Chrome linapatikana.</translation>
 <translation id="7101265395643981223">Anzisha Google Chrome</translation>
-<translation id="647902066410369402">Faili yako ya mapendeleo imevurugika au sio halali. \n\nGoogle Chrome haiwezi kuopoa mipangilio yako.</translation>
 <translation id="2370289711218562573">Google Chrome sasa inaingiza Vipendwa/Alamisho.</translation>
-<translation id="8970027151245482499">Google Chrome haijasakinishwa au imeshindwa kupata saraka ya usakinishaji.Tafadhali pakua Google Chrome tena.</translation>
 <translation id="2040709530900803995">Kionyeshi cha Google Chrome</translation>
 <translation id="4281844954008187215">Sheria na Masharti</translation>
 <translation id="3555616473548901994">Kusanidua kumekamilika.</translation>
@@ -34,7 +32,6 @@
 <translation id="6009537148180854585">Ulijaribu kufikia &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, lakini cheti kilichowasilishwa na seva kina hitilafu. Google Chrome haiwezi kutumia cheti kilicho na hitilafu na haiwezi kuthibitisha utambulisho wa tovuti uliyojaribu kufikia. Muunganisho wako si salama na hufai kuendelea.</translation>
 <translation id="8738921060445980047">Toleo lisilojulikana.</translation>
 <translation id="2485422356828889247">Ondoa</translation>
-<translation id="3324235665723428530">Malezo yako mafupi hayawezi kutumika kwa sababu ni ya kutoka toleo jipya zaidi la Google Chrome. \n\nBaadhi ya nduni huenda zisipatikane. Tafadhali taja saraka tofauti ya maelezo-mafupi au utumie toleo jipya zaidi la Google Chrome.</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="911206726377975832">Futa historia yako ya kuvinjari pia?</translation>
 <translation id="2044287590254833138">Upau wa Google Chrome</translation>
@@ -43,11 +40,9 @@
 <translation id="8862326446509486874">Huna haki zifaazo ili kufanya usakinishaji wa kiwango cha mfumo. Jaribu kutumia kisakinishi kama msimamiaji kompyuta.</translation>
 <translation id="595871952790078940">Kifaa cha Chrome</translation>
 <translation id="2874156562296220396">Google Chrome imefanikishwa na mradi wa programu huria wa <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> na <ph name="BEGIN_LINK_OSS"/>programu huria<ph name="END_LINK_OSS"/> zingine.</translation>
-<translation id="7100330187273168372">Google Chrome haiwezi kusoma na kuandika kwenye saraka yake ya data:\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
 <translation id="6757767188268205357">Usinisumbue</translation>
 <translation id="2290095356545025170">Je, una hakika kuwa ungependa kusanidua Google Chrome?</translation>
 <translation id="5941830788786076944">Fanya Google Chrome iwe kivinjari chaguo-msingi</translation>
-<translation id="5947389362804196214">Mapendeleo yako hayawezi kusomwa. \n\nBaadhi ya vipengele huenda vikawa havipatikani na mabadiliko kwa mapendeleo yako hayatahifadhiwa.</translation>
 <translation id="4127951844153999091">Mara hii, anwani iliyo kwenye cheti hailingani na anwani ya tovuti ambayo kivinjari chako kilijaribu kwenda. Sababu mojawapo huenda ikawa kuwa mawasiliano yako yananaswa na mshambulizi anayetoa cheti cha tovuti tofauti, hivi kusababisha kutolingana. Sababu nyingine yaweza kuwa seva imepangwa kutoa cheti kimoja kwa tovuti nyingi, pamoja na ile unayojaribu kutembelea, ingawa cheti hicho sio sahihi kwa tovuti hizo zote. Google Chrome inaweza kusema kwa uhakika kuwa umefika &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, lakini haiwezi kuthibitisha kuwa hiyo ni tovuti sawa na &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; uliyotaka kufikia. Iwapo utaendelea, Google Chrome haitachunguza kutolingana kwa majina tena. Kijumla, ni kheri usiendelee kupita hapa.</translation>
 <translation id="2712549016134575851">Mgongano na programu nyingine iliyosanidiwa umetambuliwa.</translation>
 <translation id="7018032895891496381">Google Chrome hutumia injini tafuti yako chaguo msingi, ambayo kwa sasa ni <ph name="PAGE_TITLE"/>. Je, ungependa kudumisha ijini tafuti yako chaguo msingi?</translation>
@@ -58,7 +53,6 @@
 <translation id="5046764976540625289">Ondoka Chrome</translation>
 <translation id="9039578207253536065">Google Chrome Worker</translation>
 <translation id="8865765905101981392">Kivinjari Wavuti</translation>
-<translation id="8776515774046280928">Google Chrome tayari imesakinishwa na inapatikana kwa watumiaji wote wa kompyuta hii. Ikiwa ungependa kusakinisha Google Chrome kwa kiwago cha mtumiaji, sharti usanidue toleo la kiwango cha mfumo lilosakinishwa na msimamizi wa kompyuta kwanza.</translation>
 <translation id="2189123953385179981">Google ChromeOS haiauni kuzindua programu ya nje kushughulikia viungo vya <ph name="SCHEME"/>. Kiungo kilichoitishwa ni <ph name="PROTOLINK"/>.</translation>
 <translation id="7196020411877309443">Ni kwa kwa nini ninaona hii?</translation>
 <translation id="2769762047821873045">Google Chrome sio kivinjari chako cha chaguo-msingi</translation>

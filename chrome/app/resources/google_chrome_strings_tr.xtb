@@ -2,19 +2,19 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="tr">
 <translation id="8000275528373650868">Google Chrome, Windows Vista veya Windows XP SP2 veya daha ileri bir sürümü gerektirir.</translation>
+<translation id="5430073640787465221">Tercih dosyanız bozuk veya geçersiz. Google Chrome, ayarlarınızı kurtaramıyor.</translation>
 <translation id="6676384891291319759">İnternet'e erişin</translation>
 <translation id="5453904507266736060">Google Chrome'un Arka Planda Çalışmasına İzin Ver</translation>
 <translation id="2383457833405848421">Chrome Frame Hakkında...</translation>
 <translation id="386202838227397562">Lütfen tüm Google Chrome pencerelerini kapatıp tekrar deneyin.</translation>
 <translation id="2770231113462710648">Varsayılan tarayıcıyı şuna dönüştür:</translation>
 <translation id="7400722733683201933">Google Chrome hakkında</translation>
+<translation id="1065672644894730302">Tercihleriniz okunamıyor. Bazı özellikler kullanılamayabilir. Tercihlerde yapılan değişiklikler kaydedilmeyecektir.</translation>
 <translation id="7781002470561365167">Google Chrome'un yeni bir sürümü çıktı.</translation>
 <translation id="7101265395643981223">Google Chrome'u başlat</translation>
-<translation id="647902066410369402">Tercih dosyanız bozuk veya geçersiz.\n\nGoogle Chrome, ayarlarınızı kurtaramıyor.</translation>
 <translation id="4891791193823137474">Google Chrome'un arka planda çalışmasına izin ver</translation>
 <translation id="2879385160622431163">Google Chrome Anında Arama</translation>
 <translation id="2370289711218562573">Google Chrome şu anda Sık Kullanılanları/Yer İmlerini içe aktarıyor.</translation>
-<translation id="8970027151245482499">Google Chrome yüklenmedi veya yükleme dizinini bulamadı. Lütfen Google Chrome'u yeniden indirin.</translation>
 <translation id="1761870329818521071">Şu anda çalışmakta olan Google Chrome Frame ile aynı sürüm yüklenemez. Lütfen Google Chrome Frame'i kapatın ve tekrar deneyin.</translation>
 <translation id="2040709530900803995">Google Chrome Renderer</translation>
 <translation id="5339639696978861456">Chrome Frame güncellendi. Lütfen tarayıcınızı yeniden başlatın. Chrome sürümü: <ph name="TODO_0001"/>, Chrome Frame sürümü: <ph name="TODO_0002"/></translation>
@@ -27,6 +27,7 @@
 <translation id="4149882025268051530">Yükleyici arşivi açamadı. Lütfen Google Chrome'u yeniden indirin.</translation>
 <translation id="6989339256997917931">Google Chrome güncellendi, ancak programı en azından 30 gündür kullanmıyorsunuz.</translation>
 <translation id="5744005218040929396">Google Chrome Utility</translation>
+<translation id="1682634494516646069">Google Chrome, veri dizini üzerinde okuma ve yazma işlemi yapamıyor: <ph name="USER_DATA_DIRECTORY"/></translation>
 <translation id="4343226815564935778">Google Chrome kurulum dizininin kullanımda olduğu görülüyor. Lütfen bilgisayarınızı yeniden başlatın ve tekrar deneyin.</translation>
 <translation id="8227755444512189073">Google Chrome'un <ph name="SCHEME"/> bağlantılarını işleyebilmek için harici bir uygulama başlatması gerekiyor. İstenen bağlantı <ph name="PROTOLINK"/>.</translation>
 <translation id="8290100596633877290">Hata! Google Chrome kilitlendi. Şimdi yeniden başlatılsın mı?</translation>
@@ -48,11 +49,13 @@
 <translation id="1195935957447623558">Google Chrome, gerektiği gibi kapanmadı. Daha önce açık olan sayfaların tekrar açılması için Geri Yükle'yi tıklayın.</translation>
 <translation id="2580411288591421699">Şu anda çalışmakta olan Google Chrome ile aynı sürüm yüklenemez. Lütfen Google Chrome'u kapatın ve tekrar deneyin.</translation>
 <translation id="7747138024166251722">Yükleyici geçici bir dizin oluşturamadı. Lütfen, kullanılabilir disk alanını ve yazılım yükleme iznini kontrol edin.</translation>
+<translation id="5170938038195470297">Profiliniz daha yeni bir Google Chrome sürümünden geldiği için kullanılamıyor.
+
+Bazı özellikler kullanılamayabilir. Lütfen farklı bir profil dizini belirtin veya daha yeni bir Chrome sürümü kullanın.</translation>
 <translation id="6009537148180854585">&lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; etki alanına ulaşmayı denediniz, ancak sunucunun sunduğu sertifika hata içeriyor. Google Chrome, hatalı bir sertifika kullanamaz ve bağlanmayı denediğiniz sitenin kimliğini doğrulayamıyor. Bağlantınız güvenli değil. Devam etmemelisiniz.</translation>
 <translation id="8738921060445980047">Bilinmeyen sürüm.</translation>
 <translation id="2485422356828889247">Yüklemeyi Kaldır</translation>
 <translation id="2748463065602559597">Güvenli bir Google Chrome sayfasını görüntülüyorsunuz.</translation>
-<translation id="3324235665723428530">Profiliniz, Google Chrome'un daha yeni bir sürümünden olduğu için kullanılamıyor.\n\nBazı özellikler kullanılamayabilir. Lütfen farklı bir profil dizini belirtin veya Chrome'un daha yeni bir sürümünü kullanın.</translation>
 <translation id="9073088951656332330">Google Chrome veya Google Chrome Frame'in güncellenecek yüklemesi bulunamadı.</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="911206726377975832">Tarama verileriniz de silinsin mi?</translation>
@@ -64,17 +67,14 @@
 <translation id="2874156562296220396">Google Chrome, <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> açık kaynak projesi ve diğer <ph name="BEGIN_LINK_OSS"/>açık kaynak yazılımlar<ph name="END_LINK_OSS"/> ile oluşturulmuştur.</translation>
 <translation id="3847841918622877581">Google Chrome, tarama deneyiminizi iyileştirmek için Web hizmetlerinden yararlanabilir.</translation>
 <translation id="7436949144778751379">Google Chrome, Windows XP veya sonrasını gerektirir. Bazı özellikler çalışmayabilir.</translation>
-<translation id="7100330187273168372">Google Chrome, veri dizini üzerinde okuma ve yazma işlemi yapamaz:\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
 <translation id="7938170099933661772">Google Chrome, yerleşik PDF görüntüleyici devre dışıyken yazdırma önizlemesini gösteremez. Önizlemeyi görebilmek için lütfen <ph name="BEGIN_LINK"/>$1<ph name="END_LINK"/> sayfasını ziyaret edin, &quot;Chrome PDF Görüntüleyici&quot; seçeneğini etkinleştirin ve tekrar deneyin.</translation>
 <translation id="6757767188268205357">Beni rahatsız etmeyin</translation>
 <translation id="2290095356545025170">Google Chrome'u kaldırmak istediğinizden emin misiniz?</translation>
-<translation id="1243097286641060337">Google Chrome veya Google Chrome Frame, tutarsız Google Güncelleme Grup Politikası ayarları bulunan hesaplarda güncellenemez. Google Chrome Binaries uygulaması için güncelleme politikasını geçersiz kılmayı ayarlamak üzere Grup Politikası Düzenleyici'yi kullanın ve tekrar deneyin.</translation>
 <translation id="5941830788786076944">Google Chrome varsayılan tarayıcı olsun</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Google Chrome web'de bir telefon numarasını tıklayarak Skype ile aramanıza olanak sağlar!</translation>
 <translation id="3612333635265770873">Aynı isme sahip bir modülün Google Chrome'la çakıştığı bilinmektedir.</translation>
 <translation id="2679385451463308372">Sistem iletişim kutusunu kullanarak yazdır…</translation>
-<translation id="5947389362804196214">Tercihleriniz okunamıyor.\n\nBazı özellikler kullanılamayabilir. Tercihlerde yapılan değişiklikler kaydedilmeyecektir.</translation>
 <translation id="6650142020817594541">Bu site, Google Chrome Frame kullanmanızı tavsiye eder (zaten yüklü).</translation>
 <translation id="4127951844153999091">Bu durumda, sertifikada listelenen adres, tarayıcınızın gitmeye çalıştığı web sitesinin adresiyle eşleşmez. Bunun olası nedenlerinden biri, iletişimlerinizin, farklı bir web sitesine ait sertifikayı sunan bir saldırgan tarafından kesilmesi olabilir, bu da hatalı eşleşmeye yol açabilir. Diğer olası bir nedense, sunucunun, ziyaret etmeye çalıştığınız web sitesi dahil olmak üzere birden çok web sitesi için, bu sertifika söz konusu web sitelerinin tümü için geçerli olmadığı halde, aynı sertifikayı döndürecek şekilde ayarlanmış olmasıdır. Google Chrome, kesin olarak &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; etki alanına ulaştığınızı belirtebilir, ancak bunun ulaşmak istediğiniz &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; etki alanıyla aynı site olduğunu doğrulayamaz. Devam ederseniz Chrome daha fazla hatalı ad eşleşmesi aramaz. Genellikle bu noktadan sonra ilerlememek en iyisidir.</translation>
 <translation id="2712549016134575851">Yüklü başka bir uygulamayla çakışma tespit edildi.</translation>
@@ -85,7 +85,6 @@
 <translation id="1399397803214730675">Bu bilgisayarda Google Chrome'un daha yeni bir sürümü zaten var. Yazılım çalışmıyorsa, lütfen Google Chrome'un yüklemesini kaldırın ve tekrar deneyin.</translation>
 <translation id="3444832043240812445"><ph name="BEGIN_LINK"/>Kilitlenme bildirmeyi etkinleştirdiyseniz<ph name="END_LINK"/>, bu sayfada yalnızca, karşılaştığınız son kilitlenme olayları hakkında bilgiler gösterilir.</translation>
 <translation id="8614913330719544658">Google Chrome yanıt vermiyor. Yeniden başlatılsın mı?</translation>
-<translation id="2681064822612051220">Sistemde çakışan bir Google Chrome yüklemesi bulundu. Lütfen yüklemeyi kaldırıp tekrar deneyin.</translation>
 <translation id="5318056482164160049">Google Chrome Eklenti Ana Makinesi</translation>
 <translation id="6126631249883707068">Google Chrome'un şifrenizi kaydetmesini istiyor musunuz?</translation>
 <translation id="5046764976540625289">Chrome'dan Çık</translation>
@@ -93,20 +92,22 @@
 <translation id="9039578207253536065">Google Chrome Worker</translation>
 <translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
 <translation id="8865765905101981392">İnternet Tarayıcı</translation>
-<translation id="8776515774046280928">Google Chrome zaten yüklü ve bu bilgisayarın tüm kullanıcıları için kullanılabilir durumda. Google Chrome'u kullanıcı düzeyinde yüklemek istiyorsanız, yönetici tarafından yüklenmiş olan sistem düzeyindeki sürümü kaldırmanız gerekir.</translation>
 <translation id="2189123953385179981">Google ChromeOS, <ph name="SCHEME"/> bağlantılarını kullanmak için bir dış uygulamanın başlatılmasını desteklemez. İstenen bağlantı:  <ph name="PROTOLINK"/>.</translation>
+<translation id="711654979569750606">Telif Hakkı © 2006-2012 Google Inc. Tüm Hakları Saklıdır.</translation>
 <translation id="8205111949707227942">İsteğe Bağlı: Kullanıcı istatistiklerini ve çökme raporlarını Google'a otomatik olarak göndererek Chrome OS'in iyileştirilmesine yardımcı olun.</translation>
 <translation id="7196020411877309443">Neden bunu görüyorum?</translation>
 <translation id="2769762047821873045">Google Chrome varsayılan tarayıcınız değil.</translation>
 <translation id="7825851276765848807">Yükleme belirtilmeyen bir hata nedeniyle başarısız oldu. Lütfen Google Chrome'u tekrar yükleyin.</translation>
 <translation id="3335672657969596251">Google Chrome, <ph name="OS_NAME"/> işletim sistemini desteklemez.</translation>
 <translation id="5334545119300433702">Bu modülün Google Chrome'la çakıştığı biliniyor.</translation>
+<translation id="4084877369264707540">Google Chrome Frame zaten yüklü ve bu bilgisayarın tüm kullanıcıları tarafından kullanılabilir. Google Chrome Frame'i kullanıcı düzeyinde yüklemek istiyorsanız, öncelikle bir yönetici tarafından yüklenen sistem düzeyindeki sürümü kaldırmanız gerekir.</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
 <translation id="1001534784610492198">Yükleyici arşivi bozuk veya geçersiz. Lütfen Google Chrome'u yeniden indirin.</translation>
 <translation id="6626317981028933585">Maalesef bu tarayıcı çalışırken Mozilla Firefox ayarlarınız kullanılamaz. Bu ayarları Google Chrome'a almak için çalışmanızı kaydedin ve tüm Firefox pencerelerini kapatın. Ardından Devam Et'i tıklayın.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="1698376642261615901">Google Chrome, web sayfalarını ve uygulamaları yıldırım hızıyla çalıştıran bir web tarayıcısıdır. Hızlı, dengeli ve kullanımı kolaydır. Kötü amaçlı yazılımlara ve e-dolandırıcılığa karşı Google Chrome'un içinde yerleşik olarak bulunan koruma özellikleriyle web'de daha güvenli bir şekilde gezinin.</translation>
 <translation id="3419750618886995598">Chrome Frame Güncellemesi.</translation>
+<translation id="3336524238463733095">Google Chrome veya Google Chrome Frame, tutarsız Google Güncelleme Grup Politikası ayarları nedeniyle güncellenemiyor. Google Chrome Binaries uygulamasına ilişkin güncelleme politikasını geçersiz kılmak üzere ayarlamak için Grup Politikası Düzenleyici'yi kullanıp işlemi tekrar deneyin; ayrıntılı bilgi için bkz. http://goo.gl/uJ9gV.</translation>
 <translation id="6049075767726609708">Bir yönetici Google Chrome'u bu sisteme yükledi ve ürün tüm kullanıcılar için kullanılabilir durumda. Sistem düzeyindeki Google Chrome artık kullanıcı düzeyindeki yüklemenin yerini alacak.</translation>
 <translation id="7123348595797445166">Deneyin (zaten yüklü)</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
@@ -116,6 +117,5 @@
 <translation id="852884188147941900">Chrome Worker</translation>
 <translation id="3396977131400919238">Yükleme sırasında bir işletim sistemi hatası oluştu. Lütfen Google Chrome'u yeniden indirin.</translation>
 <translation id="5495581687705680288">Google Chrome'a yüklenen modüller</translation>
-<translation id="3586272666307004550">Telif Hakkı © 2006-2011 Google Inc. Tüm Hakları Saklıdır.</translation>
 <translation id="1144950271450340860">&lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; etki alanına ulaşmayı denediniz, ancak sunucu, bilgisayarınızın işletim sistemi tarafından güvenilmeyen bir kurum tarafından verilen bir sertifika sundu. Bu, sunucunun kendi güvenlik kimlik bilgilerini oluşturmuş olabileceği (Google Chrome, kimlik bilgileri için bu bilgilere güvenemez) veya bir saldırganın iletişiminizi kesmeye çalışıyor olabileceği anlamına gelir. &lt;strong&gt;Özellikle&lt;/strong&gt; daha önce bu site için bu uyarıyla hiç karşılaşmadıysanız ilerlememelisiniz.</translation>
 </translationbundle>

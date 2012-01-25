@@ -5,39 +5,45 @@
 <translation id="2463365186486772703">应用程序语言区域</translation>
 <translation id="1397855852561539316">默认搜索服务提供商建议网址</translation>
 <translation id="7040229947030068419">值示例：</translation>
+<translation id="1213523811751486361">指定用于提供搜索建议的搜索引擎的网址，其中应包含字符串“<ph name="SEARCH_TERM_MARKER"/>”，系统会在查询时将该字符串替换为用户输入的文字。此政策是可选的，如果未设置，就不会使用任何建议网址。要实施此政策，必须先启用“DefaultSearchProviderEnabled”政策。</translation>
 <translation id="6106630674659980926">启用密码管理器</translation>
-<translation id="7337927025691881244">可让您指定禁止用户安装的扩展程序。已安装的扩展程序如果列入了黑名单，则会被删除。黑名单值“*”表示除了白名单中明确列出的扩展程序以外，所有扩展程序均已列入黑名单。</translation>
-<translation id="7755528767666760533">指定用于提供即搜即得结果的搜索引擎的网址，其中应包含字符串“<ph name="SEARCH_TERM_MARKER"/>”，系统会在查询时将该字符串替换为用户即时输入的文字（可选）。</translation>
+<translation id="9150416707757015439">此政策已弃用，请改用 IncognitoModeAvailability。在 <ph name="PRODUCT_NAME"/>中启用隐身模式。如果已启用或未配置此设置，用户就可以在隐身模式下打开网页。如果停用此设置，用户就无法在隐身模式下打开网页。如果未设置此政策，将会启用此设置，用户便能使用隐身模式。</translation>
 <translation id="7614663184588396421">已停用协议方案的列表</translation>
 <translation id="2309390639296060546">默认地理位置设置</translation>
+<translation id="7443616896860707393">跨域 HTTP 基本身份验证提示</translation>
+<translation id="2337466621458842053">可让您设置网址格式的列表，这些网址格式用于指定允许显示图片的网站。在未设置此政策的情况下，如果设置了“DefaultImagesSetting”政策，那么将对该政策中的所有网站使用全局默认值，否则将对用户个人配置中的所有网站使用全局默认值。</translation>
 <translation id="4680961954980851756">启用自动填充</translation>
 <translation id="5183383917553127163">可让您指定不受黑名单影响的扩展程序。黑名单值“*”表示所有扩展程序均已列入黑名单，用户只能安装白名单中列出的扩展程序。默认情况下，所有扩展程序都列在白名单中，但如果所有扩展程序均已根据某个政策列入黑名单，则白名单可用于覆盖相关政策。</translation>
 <translation id="3185009703220253572">从版本 <ph name="SINCE_VERSION"/> 开始</translation>
+<translation id="3214164532079860003">如果启用此政策，就会强制从当前默认浏览器导入主页。如果停用此政策，就不会导入主页。如果未设置此政策，系统就会询问用户是否导入主页，或者系统自动进行导入。</translation>
 <translation id="5469825884154817306">在这些网站上阻止图片</translation>
-<translation id="7812822355979915508">指定用户能否在 <ph name="PRODUCT_NAME"/>中以隐身模式打开网页。如果选择“启用”，则可在隐身模式下打开网页。如果选择“停用”，则无法在隐身模式下打开网页。如果选择“强制”，则只能在隐身模式下打开网页。</translation>
 <translation id="2908277604670530363">可同时连接到代理服务器的连接数上限</translation>
-<translation id="3512877396423730277">控制是否允许页面上的第三方子内容弹出“HTTP 基本身份验证”对话框。通常，为防御网上诱骗攻击，系统会将其停用。</translation>
 <translation id="1438955478865681012">配置关于扩展程序的政策。用户无法安装列入黑名单的扩展程序（除非相应程序列入了白名单）。您也可以在“<ph name="EXTENSIONINSTALLFORCELIST_POLICY_NAME"/>”中指定某些扩展程序，从而强制“<ph name="PRODUCT_NAME"/>”自动安装这些扩展程序。黑名单的优先级高于强制安装的扩展程序列表。</translation>
-<translation id="4070280487546651935">指定关键字，用作在多功能框中触发此服务提供商的搜索的快捷方式（可选）。</translation>
+<translation id="8668394701842594241">指定在 <ph name="PRODUCT_NAME"/>中启用的插件的列表，并禁止用户更改此设置。可使用通配符“*”和“?”匹配任意字符序列。“*”可匹配任意数量的字符，而“?”可指定单个可选的字符，即匹配零个或一个字符。转义字符为“\”，因此要匹配实际的“*”、“?”或“\”字符，您可以在这些字符前加上“\”。列表中指定的插件如果已安装，就会始终在 <ph name="PRODUCT_NAME"/>中使用。这些插件在“about:plugins”中标记为“已启用”，而且用户无法停用它们。请注意，此政策可替换 DisabledPlugins 和 DisabledPluginsExceptions 这两者。如果未设置此政策，用户就可以停用系统中安装的任何插件。</translation>
+<translation id="7331962793961469250">设置为“True”时，新标签页中不会显示 Chrome 网上应用店应用程序的推广内容。如果将此选项设置为“False”或不做任何设置，新标签页中就会显示 Chrome 网上应用店应用程序的推广内容。</translation>
 <translation id="7271085005502526897">首次运行时，从默认浏览器导入主页</translation>
 <translation id="6036523166753287175">支持通过远程访问主机穿越防火墙</translation>
 <translation id="1096105751829466145">默认搜索服务提供商</translation>
 <translation id="7567380065339179813">在这些网站上允许插件</translation>
 <translation id="5290940294294002042">指定该用户可启用或停用的插件的列表</translation>
+<translation id="3153348162326497318">可让您指定哪些扩展程序是用户无法安装的。已安装的扩展程序如果列入黑名单，就会遭到删除。黑名单中的“*”值表示：除了在白名单中明确列出的扩展程序，其他所有扩展程序均列入黑名单。如果未设置此政策，用户就可以在 <ph name="PRODUCT_NAME"/>中安装任何扩展程序。</translation>
+<translation id="2129233336491582973">允许 <ph name="PRODUCT_NAME"/>作为 <ph name="CLOUD_PRINT_NAME"/>与连接到该计算机的传统打印机之间的代理。如果已启用或未配置此设置，用户就可以用自己的 Google 帐户进行身份验证，从而启用云打印代理。如果已停用此设置，用户将无法启用代理，该计算机也就无法与 <ph name="CLOUD_PRINT_NAME"/>共享其打印机。如果未设置此政策，就会启用此设置，不过用户也可以更改此设置。</translation>
+<translation id="6236112779188162585">此政策将替换“关闭浏览器时清除 Cookie 和其他网站数据”内容设置选项。如果启用此政策，<ph name="PRODUCT_NAME"/>就会在关闭时从浏览器中删除所有本地存储的数据。如果停用此政策，就不会在退出时清除网站数据。如果未设置此政策，<ph name="PRODUCT_NAME"/>就会使用默认设置，也就是在关闭时保留网站数据并且允许用户更改此设置。</translation>
 <translation id="1427655258943162134">代理服务器的地址或网址</translation>
 <translation id="1827523283178827583">使用固定的代理服务器</translation>
 <translation id="3021409116652377124">停用插件查找器</translation>
+<translation id="5423001109873148185">如果启用此政策，就会强制从当前默认浏览器导入搜索引擎，还会影响导入对话框。如果停用此政策，就不会导入默认搜索引擎。如果未设置此政策，系统就会询问用户是否导入默认搜索引擎，或者系统自动进行导入。</translation>
 <translation id="3288595667065905535">发布版</translation>
+<translation id="6513756852541213407">可让您指定 <ph name="PRODUCT_NAME"/>使用的代理服务器，并禁止用户更改代理设置。如果您选择永不使用代理服务器，而总是直接连接，就会忽略其他所有选项。如果您选择使用系统代理设置或自动检测代理服务器，就会忽略其他所有选项。如果您选择固定服务器代理模式，可在“代理服务器的地址或网址”以及“代理绕过规则的逗号分隔列表”中进一步指定选项。如果您选择使用 .pac 代理脚本，必须在“代理 .pac 文件的网址”中指定该脚本的网址。要查看详细示例，请访问：<ph name="PROXY_HELP_URL"/>。如果您启用了此设置，<ph name="PRODUCT_NAME"/>就会忽略通过命令行指定的所有代理相关选项。如果未设置此政策，用户就可以自行选择代理设置。</translation>
+<translation id="7763311235717725977">可让您设置是否允许网站显示图片。可以针对所有网站允许或拒绝显示图片。如果未设置此政策，系统将使用“AllowImages”并允许用户更改此设置。</translation>
 <translation id="2455652143675149114">可让您指定启动时的行为。如果您选择“打开主页”，那么当您启动“<ph name="PRODUCT_NAME"/>”时总会打开主页。如果您选择“重新打开最后一次打开的网页”，则会重新打开“<ph name="PRODUCT_NAME"/>”最后一次关闭时已打开的网址。如果您选择“打开以下网页：”，则在用户启动“<ph name="PRODUCT_NAME"/>”时会打开“启动时要打开的网址”列表。如果您启用了此设置，则用户无法在“<ph name="PRODUCT_NAME"/>”中更改或替换此设置。停用此设置相当于不进行配置。用户仍然可以在“<ph name="PRODUCT_NAME"/>”中更改此设置。</translation>
 <translation id="4980635395568992380">数据类型：</translation>
 <translation id="3096595567015595053">已启用插件的列表</translation>
-<translation id="7998998292074133333">当 Chrome 操作系统设备处于空闲或暂停状态启用锁定。如果您启用了此设置，则用户需要输入密码才能将处于睡眠状态的 Chrome 操作系统设备解锁。如果您停用了此设置，则用户无需输入密码即可唤醒处于睡眠状态的 Chrome 操作系统设备。如果您启用或停用了此设置，则用户无法在“<ph name="PRODUCT_OS_NAME"/>”中更改或替换此设置。</translation>
-<translation id="8781881969636812184">在远程客户端尝试与此计算机建立连接时启用 STUN 服务器和中继服务器。如果启用此设置，那么即使远程客户端受到防火墙隔离，也仍然可以检测到并连接到此计算机。如果停用此设置，并且防火墙过滤了外发 UDP 连接，那么此计算机将只能与本地网络内的客户端机器建立连接。</translation>
 <translation id="5912364507361265851">允许用户在“密码管理器”中显示密码</translation>
+<translation id="510186355068252378">使用 Google 托管的同步服务在 <ph name="PRODUCT_NAME"/>中停用数据同步功能，并禁止用户更改此设置。如果您启用了此设置，用户就无法在 <ph name="PRODUCT_NAME"/>中更改或替换此设置。如果未设置此政策，用户就可以选择是否使用 Google Sync。</translation>
 <translation id="8828766846428537606">在“<ph name="PRODUCT_NAME"/>”中配置默认主页，并禁止用户更改主页。只有将主页设置为新标签页或某个特定的主页网址，才能完全锁定用户的主页设置。如果您没有指定主页网址，那么用户仍然可以通过指定“chrome://newtab”，将主页设置为新标签页。</translation>
 <translation id="2231817271680715693">首次运行时，从默认浏览器导入浏览记录</translation>
 <translation id="1353966721814789986">启动页</translation>
-<translation id="1969043432858293299">如果启用该政策，则会强制从当前默认浏览器导入浏览记录。如果停用，则不会导入浏览记录。如果未配置，则会采用默认行为。启用该政策还会影响导入对话框。</translation>
 <translation id="5564962323737505851">配置密码管理器。如果密码管理器已启用，您可以选择是否允许用户以明文形式显示存储的密码。</translation>
 <translation id="4668325077104657568">默认图片设置</translation>
 <translation id="7161193985878519056">隐身模式已停用。</translation>
@@ -46,254 +52,265 @@
 <translation id="8104962233214241919">自动选择这些网站的客户端证书</translation>
 <translation id="3758249152301468420">停用开发人员工具</translation>
 <translation id="8665076741187546529">配置强制安装的扩展程序的列表</translation>
-<translation id="6242542007132978836">可让您设置是否允许网站自动运行插件。可以针对所有网站允许或拒绝自动运行插件。</translation>
-<translation id="5233161357000953961">在“<ph name="PRODUCT_NAME"/>”中停用 SPDY 协议。</translation>
 <translation id="4899708173828500852">启用安全浏览</translation>
 <translation id="3570008976476035109">在这些网站上阻止插件</translation>
 <translation id="2884728160143956392">在这些网站上允许仅限会话的 Cookie</translation>
+<translation id="4655130238810647237">在 <ph name="PRODUCT_NAME"/>中启用或停用修改书签的功能。如果您启用了此设置，可添加、删除或修改书签（默认情况下以及未设置此政策的情况下都是启用的）。如果您停用了此设置，则无法添加、删除或修改书签，但仍可以访问现有的书签。</translation>
 <translation id="3496296378755072552">密码管理器</translation>
-<translation id="7118495359694701769">指定生成的 Kerberos SPN 是否应包括非标准端口。如果您启用了此设置，并输入某个非标准端口（即除 80 或 443 以外的端口），则该端口会包括在生成的 Kerberos SPN 中。如果您停用了此设置，则生成的 Kerberos SPN 在任何情况下都不会包括端口。</translation>
+<translation id="2565967352111237512">允许向 Google 匿名报告有关 <ph name="PRODUCT_NAME"/>的使用情况和崩溃相关的数据，并禁止用户更改此设置。如果您启用了此设置，系统就会将使用情况和崩溃相关的数据匿名报告给 Google。如果您启用或停用了此设置，用户就无法在 <ph name="PRODUCT_NAME"/>中更改或替换此设置。如果未设置此政策，该设置将由用户在安装或首次运行时选择。</translation>
 <translation id="9135033364005346124">启用“<ph name="CLOUD_PRINT_NAME"/>”代理</translation>
-<translation id="4276147605137721961">在“<ph name="PRODUCT_NAME"/>”中启用或停用修改书签的功能。如果您启用了此设置，则可添加、删除或修改书签（默认情况下启用）。如果您停用了此设置，则无法添加、删除或修改书签，但仍可以访问现有的书签。</translation>
 <translation id="6943577887654905793">Mac/Linux 偏好设置名称：</translation>
-<translation id="8621457834803281393">可让您设置网址格式的列表，此类网址格式用于指定不允许设置 Cookie 的网站。</translation>
 <translation id="254524874071906077">将“Chrome 浏览器”设为默认浏览器</translation>
+<translation id="8764119899999036911">指定 Kerberos SPN 是基于规范 DNS 名称还是基于输入的原始名称。如果您启用了此设置，系统将跳过 CNAME 查找步骤，并使用输入的服务器名称。如果您停用或未配置此设置，系统将通过 CNAME 查找来确定服务器的规范名称。</translation>
 <translation id="4377599627073874279">允许所有网站显示所有图片</translation>
 <translation id="3915395663995367577">代理 .pac 文件的网址</translation>
-<translation id="7191531985645073769">使用 Google 托管的同步服务，在“<ph name="PRODUCT_NAME"/>”中停用数据同步功能，并禁止用户更改此设置。如果您启用了此设置，则用户无法在“<ph name="PRODUCT_NAME"/>”中更改或替换此设置。</translation>
 <translation id="1022361784792428773">应禁止用户安装的扩展程序的 ID（或者用“*”表示禁止安装所有扩展程序）</translation>
-<translation id="5026128159812446244">允许“<ph name="PRODUCT_NAME"/>”显示文件选择对话框，从而允许用户访问计算机上的本地文件。如果您启用了此设置，则用户可以正常地打开文件选择对话框。如果您停用了此设置，那么只要用户执行了会触发文件选择对话框的操作（如导入书签、上传文件、保存链接等），系统就会显示一条讯息，并且假定用户已在该文件选择对话框中点击了“取消”。如果您未设定此设置，则用户可以正常地打开文件选择对话框。</translation>
 <translation id="7683777542468165012">动态政策刷新</translation>
-<translation id="43195497515906639">配置“<ph name="PRODUCT_NAME"/>”用于存储用户数据的目录。如果您设置了此政策，“<ph name="PRODUCT_NAME"/>”将会使用提供的目录。</translation>
-<translation id="6228640147633317529">可让您设置网址格式的列表，此类网址格式用于指定允许显示图片的网站。</translation>
+<translation id="4529945827292143461">自定义应始终由托管浏览器呈现的网址格式的列表。如果未设置此政策，系统将按照“ChromeFrameRendererSettings”政策的规定，对所有网站使用默认呈现器。要查看示例格式，请访问 http://www.chromium.org/developers/how-tos/chrome-frame-getting-started。</translation>
+<translation id="1942957375738056236">您可以在此指定代理服务器的网址。只有当您在“选择如何指定代理服务器设置”中选择了手动代理设置后，此政策才会生效。如果您选择了其他任何模式来设置代理政策，就不应设置此政策。要查看更多选项和详细示例，请访问：<ph name="PROXY_HELP_URL"/></translation>
+<translation id="8642088216849640113">启用 <ph name="PRODUCT_NAME"/>的安全浏览功能，并禁止用户更改此设置。如果您启用了此设置，就会始终使用安全浏览功能。如果您停用了此设置，就永远不会使用安全浏览功能。如果您启用或停用了此设置，用户就无法在 <ph name="PRODUCT_NAME"/>中更改或替换此设置。如果未设置此政策，就会启用此设置，不过用户也可以更改此设置。</translation>
 <translation id="2711603272213076156">允许调用文件选择对话框。</translation>
 <translation id="1426410128494586442">是</translation>
+<translation id="4962195944157514011">指定要在执行默认搜索时使用的搜索引擎的网址，其中应包含字符串“<ph name="SEARCH_TERM_MARKER"/>”，系统会在查询时将该字符串替换为用户搜索的字词。在启用了“DefaultSearchProviderEnabled”政策的情况下，此选项是必须设置的，而且只有在这种情况下才应遵循。</translation>
+<translation id="6009903244351574348">允许 <ph name="PRODUCT_FRAME_NAME"/>处理列出的内容类型。如果未设置此政策，系统将按照“ChromeFrameRendererSettings”政策的规定，对所有网站使用默认呈现器。</translation>
 <translation id="3381968327636295719">默认情况下托管主机浏览器</translation>
 <translation id="6520802717075138474">首次运行时，从默认浏览器导入搜索引擎</translation>
+<translation id="4039085364173654945">控制是否允许网页上的第三方子内容弹出 HTTP 基本身份认证对话框。通常情况下，为了防止网上诱骗，此设置是停用的。如果未设置此政策，就会停用此设置，而不允许第三方子内容弹出 HTTP 基本身份认证对话框。</translation>
+<translation id="7447786363267535722">允许在 <ph name="PRODUCT_NAME"/>中保存密码并使用已保存的密码。如果您启用了此设置，用户就可以让 <ph name="PRODUCT_NAME"/>记住密码，并在下次登录相关网站时自动填充密码。如果您停用了此设置，用户就无法保存密码，也无法使用已保存的密码。如果您启用或停用了此设置，用户就无法在 <ph name="PRODUCT_NAME"/>中更改或替换此设置。如果未设置此政策，就会启用此设置，不过用户也可以更改此设置。</translation>
 <translation id="6368011194414932347">配置主页网址</translation>
-<translation id="3423023819976532001">允许在“<ph name="PRODUCT_NAME"/>”中保存密码以及使用已保存的密码。如果您启用了此设置，则用户可让“<ph name="PRODUCT_NAME"/>”记住密码，并在下次登录同一网站时自动填充密码。如果您停用了此设置，则用户无法保存密码，也无法使用已保存的密码。如果您启用或停用了此设置，则用户无法在“<ph name="PRODUCT_NAME"/>”中更改或替换此设置。</translation>
 <translation id="2877225735001246144">在协商 Kerberos 身份验证时停用 CNAME 查找</translation>
-<translation id="6200084307932433394">在“<ph name="PRODUCT_NAME"/>”中启用集成的“Google 翻译”服务。如果您启用了此设置，则“<ph name="PRODUCT_NAME"/>”会显示相应的集成工具栏，在合适的网页上为用户提供翻译功能。如果您停用了此设置，则系统不会显示翻译栏。如果您启用或停用了此设置，则用户无法在“<ph name="PRODUCT_NAME"/>”中更改或替换此设置。</translation>
-<translation id="5059221739913673172">配置“<ph name="PRODUCT_NAME"/>”用于存储用户数据的目录。如果您设置了此政策，那么无论用户是否已指定“--user-data-dir”标记，“<ph name="PRODUCT_NAME"/>”都会使用提供的目录。</translation>
 <translation id="6378014222084506939">隐身模式的可用情况。</translation>
 <translation id="3528000905991875314">启用备用的错误页面</translation>
-<translation id="4084327080063933392">指定默认搜索服务提供程商的名称。如果留空，则会使用由搜索网址指定的主机名称。</translation>
+<translation id="1283072268083088623">指定 <ph name="PRODUCT_NAME"/>所支持的 HTTP 身份验证方案。可用的值有“basic”、“digest”、“ntlm”和“negotiate”。多个值之间用英文逗号分隔。如果未设置此政策，系统将会使用所有这四种方案。</translation>
 <translation id="6114416803310251055">已弃用</translation>
 <translation id="8493645415242333585">停用保存浏览器历史记录的功能</translation>
+<translation id="6417861582779909667">可让您设置网址格式的列表，这些网址格式用于指定不允许设置 Cookie 的网站。在未设置此政策的情况下，如果设置了“DefaultCookiesSetting”政策，那么将对该政策中的所有网站使用全局默认值，否则将对用户个人配置中的所有网站使用全局默认值。</translation>
+<translation id="5457296720557564923">允许网页访问 JavaScript 内存使用情况统计信息。此设置可让网页访问来自开发人员工具分析面板的内存统计信息。</translation>
+<translation id="3390940575626654915">企业的网上应用店名称</translation>
 <translation id="5776485039795852974">每次网站尝试显示桌面通知时都询问</translation>
+<translation id="5052081091120171147">如果启用此政策，就会强制从当前默认浏览器导入浏览历史记录，还会影响导入对话框。如果停用此政策，就不会导入浏览历史记录。如果未设置此政策，系统就会询问用户是否导入浏览历史记录，或者系统自动进行导入。</translation>
 <translation id="6786747875388722282">扩展程序</translation>
-<translation id="6417878201680958437">可让您指定“<ph name="PRODUCT_NAME"/>”使用的代理服务器，并禁止用户更改代理设置。如果您选择永不使用代理服务器，而总是直接连接，则会忽略其他所有选项。如果您选择使用系统代理设置或自动检测代理服务器，则会忽略其他所有选项。如果您选择固定服务器代理模式，则可在“代理服务器的地址或网址”以及“代理绕过规则的逗号分隔列表”中指定其他选项。如果您选择使用 .pac 代理脚本，则必须在“代理 .pac 文件的网址”中指定该脚本的网址。要查看详细示例，请访问：<ph name="PROXY_HELP_URL"/>。如果您启用了此设置，则“<ph name="PRODUCT_NAME"/>”会忽略通过命令行指定的所有代理相关选项。</translation>
 <translation id="6899705656741990703">自动检测代理设置</translation>
 <translation id="4101772068965291327">打开主页</translation>
-<translation id="6932480224480511443">如果启用该政策，则会强制从当前默认浏览器导入书签。如果停用，则不会导入书签。如果未配置，则会采用默认行为。启用该政策还会影响导入对话框。</translation>
+<translation id="7003334574344702284">如果启用此政策，就会强制从先前的默认浏览器导入已保存的密码，还会影响导入对话框。如果停用此政策，就不会导入已保存的密码。如果未设置此政策，系统就会询问用户是否导入已保存的密码，或者系统自动进行导入。</translation>
+<translation id="6258193603492867656">指定生成的 Kerberos SPN 是否应包括非标准端口。如果您启用了此设置，并输入某个非标准端口（即除 80 或 443 以外的端口），该端口就会包括在生成的 Kerberos SPN 中。如果您停用或未配置此设置，生成的 Kerberos SPN 在任何情况下都不会包括端口。</translation>
+<translation id="6467600784527692462">指定向设备管理服务查询设备政策信息的周期（以毫秒为单位）。设置此政策会替换默认值（3 小时）。此政策的有效值范围为 1800000（30 分钟）至 86400000（1 天）。任何超出此范围的值都会强制调整到相应范围内。如果未设置此政策，<ph name="PRODUCT_FRAME_NAME"/>就会使用默认值（3 小时）。</translation>
 <translation id="8992176907758534924">不允许任何网站显示图片</translation>
+<translation id="262740370354162807">允许将文档提交到 <ph name="CLOUD_PRINT_NAME"/></translation>
 <translation id="8704831857353097849">已停用插件的列表</translation>
 <translation id="467449052039111439">打开网址列表</translation>
 <translation id="5883015257301027298">默认 Cookie 设置</translation>
-<translation id="1222189289457045659">启用默认搜索服务提供商。如果您启用了此设置，则当用户在多功能框中输入非网址的文字时，系统会执行默认搜索。您可以设置其余的默认搜索政策，从而指定要使用的默认搜索服务提供商。如果这些选项都留空，则用户可以选择默认的服务提供商。如果您停用了此设置，则当用户在多功能框中输入非网址的文字时，系统不会执行任何搜索。如果您启用或停用了此设置，则用户无法在“<ph name="PRODUCT_NAME"/>”中更改或替换此设置。</translation>
+<translation id="3413139738214204027">在 <ph name="PRODUCT_NAME"/>中配置默认主页网址，并禁止用户更改此设置。您可将主页类型设置为此处指定的网址，也可以设置为新标签页。如果您选择了新标签页，就会忽略此政策。如果您启用了此设置，用户就无法在 <ph name="PRODUCT_NAME"/>中更改自己的主页网址，但是仍可以选择新标签页作为主页。如果既没有设置此政策，也没有设置 HomepageIsNewTabPage，用户就可以自行选择主页。</translation>
 <translation id="8955719471735800169">返回页首</translation>
-<translation id="6845930317830839162">可让您设置是否允许网站运行 JavaScript。可以针对所有网站允许或拒绝运行 JavaScript。</translation>
+<translation id="2322733497952278056">允许访问列出的网址（黑名单中的网址除外）。有关此列表中条目的格式，请参见网址黑名单政策的说明。此政策可用于对限制性黑名单设置例外情况。例如，将“*”列入黑名单可阻止所有请求，而使用此政策可允许访问一系列有限的网址。此政策可用于对某些方案、其他域的子域、端口或特定路径设置例外情况。最具体的过滤条件将决定某个网址是否遭到阻止。白名单的优先级高于黑名单。此政策的条目上限为 100，超出的条目将被忽略。如果未设置此政策，来自“URLBlacklist”政策的黑名单就不存在任何例外情况。</translation>
+<translation id="5316405756476735914">可让您设置是否允许网站设置本地数据。可以针对所有网站允许或拒绝设置本地数据。如果未设置此政策，系统将使用“AllowCookies”并允许用户更改此设置。</translation>
 <translation id="4250680216510889253">否</translation>
 <translation id="1522425503138261032">允许网站跟踪用户的地理位置</translation>
-<translation id="6569553007023490040">在“<ph name="PRODUCT_NAME"/>”中配置默认主页的网址，并禁止用户更改此网址。主页类型可以设置为您在此处指定的网址，也可以设置为“新标签页”。如果您选择了“新标签页”，则系统会忽略该政策。如果您启用了此设置，则用户无法在“<ph name="PRODUCT_NAME"/>”中更改主页网址，但仍然可以选择“新标签页”作为主页。</translation>
+<translation id="6467433935902485842">可让您设置网址格式的列表，这些网址格式用于指定不允许运行插件的网站。在未设置此政策的情况下，如果设置了“DefaultPluginsSetting”政策，那么将对该政策中的所有网站使用全局默认值，否则将对用户个人配置中的所有网站使用全局默认值。</translation>
 <translation id="4423597592074154136">手动指定代理设置</translation>
 <translation id="209586405398070749">稳定版</translation>
-<translation id="3137734558440858947">可让您设置是否允许网站显示图片。可以针对所有网站允许或拒绝显示图片。</translation>
+<translation id="8170878842291747619">在 <ph name="PRODUCT_NAME"/>中启用集成的 Google 翻译服务。如果您启用了此设置，<ph name="PRODUCT_NAME"/>将显示一个集成的工具栏，以便在合适的情况下帮助用户翻译网页。如果您停用了此设置，系统就不会显示翻译栏。如果您启用或停用了此设置，用户就无法在 <ph name="PRODUCT_NAME"/>中更改或替换此设置。如果未进行设置，用户就可以自行决定是否使用此功能。</translation>
 <translation id="9035964157729712237">要从黑名单中排除的扩展程序 ID</translation>
-<translation id="3523486089716697173">可让您设置网址格式的列表，此类网址格式用于指定不允许显示图片的网站。</translation>
-<translation id="751265277672445578">在“<ph name="PRODUCT_NAME"/>”中配置应用程序的语言区域，并禁止用户更改语言区域。如果您启用了此设置，则“<ph name="PRODUCT_NAME"/>”会使用指定的语言区域。如果配置的语言区域不受支持，则使用“en-US”。如果此设置已停用或未配置，则“<ph name="PRODUCT_NAME"/>”会使用由用户指定的首选语言区域（如果已配置）、系统语言区域或备用的语言区域“en-US”。</translation>
 <translation id="3964909636571393861">允许访问网址列表</translation>
+<translation id="9102979059463597405">启用 TLS 来源绑定证书扩展程序</translation>
 <translation id="6022948604095165524">启动时的操作</translation>
-<translation id="3704185423155638353">可让您设置网址格式的列表，此类网址格式用于指定不允许运行 JavaScript 的网站。</translation>
-<translation id="7628741187268592472">指定要用于 HTTP 身份验证的 GSSAPI 库。您可以仅设置库名称，也可以设置完整的路径。如果未提供任何设置，则“<ph name="PRODUCT_NAME"/>”会使用后备的默认库名称。</translation>
-<translation id="1247111313041645019">如果启用该政策，则会强制从当前默认浏览器导入保存的密码。如果停用，则不会导入保存的密码。如果未配置，则会采用默认行为。启用该政策还会影响导入对话框。</translation>
-<translation id="605147781209875705">此政策已弃用，请改用 ProxyMode。可让您指定“<ph name="PRODUCT_NAME"/>”使用的代理服务器，并禁止用户更改代理设置。如果您选择永不使用代理服务器，而总是直接连接，则系统会忽略其他所有选项。如果您选择使用系统代理设置或自动检测代理服务器，则会忽略其他所有选项。如果您选择手动代理设置，则可在“代理服务器的地址或网址”、“代理 .pac 文件的网址”以及“代理绕过规则的逗号分隔列表”中指定其他选项。要查看详细示例，请访问：<ph name="PROXY_HELP_URL"/>。如果您启用了此设置，则“<ph name="PRODUCT_NAME"/>”会忽略通过命令行指定的所有代理相关选项。</translation>
-<translation id="6516561898504323308">阻止第三方 Cookie。启用此设置后，如果网页元素并非来自浏览器地址栏中的域，则不能设置 Cookie；停用此设置可取消此限制，并禁止用户更改此设置。</translation>
+<translation id="7625444193696794922">指定该设备应锁定到的发布渠道。</translation>
+<translation id="2240879329269430151">可让您设置是否允许网站显示弹出式窗口。可以针对所有网站允许或拒绝显示弹出式窗口。如果未设置此政策，系统将使用“BlockPopups”并允许用户更改此设置。</translation>
+<translation id="5289914968905023866">阻止访问列出的网址。该政策禁止用户从列入黑名单的网址加载网页。网址格式为“scheme://host:port/path”。其中可选的 scheme 部分可以是 HTTP、HTTPS 或 FTP。只有指定的 scheme 会遭到阻止；如果未指定，则会阻止所有 scheme。host 部分可以是主机名，也可以是 IP 地址。主机名的子域也会遭到阻止。如果不想阻止子域，请在主机名前加上“.”。特殊的主机名“*”会阻止所有域。可选的 port 部分是介于 1 与 65535 之间的有效端口号。如果未指定，则会阻止所有端口。如果指定了可选的 path 部分，只会阻止带有相应前缀的路径。您可在网址白名单政策中定义例外。这些政策的条目上限为 100，超出的条目将被忽略。如果未设置此政策，浏览器就不会将任何网址列入黑名单。</translation>
+<translation id="3586489081967749966">指定可同时连接到代理服务器的连接数上限。某些代理服务器无法处理同一客户端同时发出的大量连接，在此情况下，您只需将此策略设为较低的值即可解决此问题。此策略值应介于 6 和 100 之间，默认值为 32。某些网络应用程序采用了挂起 GET 的方式，这样会消耗大量连接，因此如果打开的此类网络应用程序过多，将该值设为小于 32 就可能会导致浏览器网络挂起。对于设置值小于默认值所产生的风险，您需要自行承担。如果未设置此政策，系统将使用默认值 32。</translation>
 <translation id="3864818549971490907">默认插件设置</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 或更高版本</translation>
-<translation id="6886010724297701888">“<ph name="PRODUCT_NAME"/>”会绕过在此处指定的主机列表中的任何代理。只有当您在“选择如何指定代理服务器设置”中选择了手动代理设置后，该政策才会生效。要查看更多详细示例，请访问：<ph name="PROXY_HELP_URL"/>。</translation>
+<translation id="2694541305803182600">允许锁定待机或暂停状态下的 Chrome 操作系统设备。如果您启用了此设置，用户需提供密码，才能将 Chrome 操作系统设备从睡眠状态解锁。如果您停用了此设置，用户无需提供密码即可唤醒处于睡眠状态的 Chrome 操作系统设备。如果您启用或停用了此设置，用户就无法在 <ph name="PRODUCT_OS_NAME"/>中更改或替换此设置。如果未设置此政策，用户就可以选择是否要通过输入密码来解锁设备。</translation>
+<translation id="2646290749315461919">可让您设置是否允许网站跟踪用户的地理位置。默认情况下，可以允许或拒绝跟踪用户的地理位置，也可以在每次网站请求地理位置时询问用户。如果未设置此政策，系统将使用“AskGeolocation”并允许用户更改此设置。</translation>
 <translation id="5770738360657678870">开发人员版（可能不稳定）</translation>
 <translation id="2959898425599642200">代理绕过规则</translation>
 <translation id="7337941689192402544">设置“<ph name="PRODUCT_NAME"/>”用户数据目录</translation>
 <translation id="896575211736907134">强制使用隐身模式。</translation>
-<translation id="5326137997741385453">配置“<ph name="PRODUCT_NAME"/>”用于在磁盘存储缓存文件的目录。如果您设置了此政策，“<ph name="PRODUCT_NAME"/>”将使用提供的目录，无论用户是否已指定了“--disk-cache-dir”标记。</translation>
-<translation id="4752274243117690301">如果您将此设置设为“True”，则会在“<ph name="PRODUCT_NAME"/>”中停用自动搜索和安装缺失插件的功能。</translation>
-<translation id="3292147213643666827">允许“<ph name="PRODUCT_NAME"/>”在“<ph name="CLOUD_PRINT_NAME"/>”与连接到计算机的传统打印机之间充当代理。如果此设置已启用或未配置，则用户可以通过对自己的 Google 帐户进行身份验证，启用云打印代理。如果此设置已停用，则用户无法启用代理，且计算机无法与“<ph name="CLOUD_PRINT_NAME"/>”共享打印机。</translation>
-<translation id="617204585863800180">在“<ph name="PRODUCT_NAME"/>”中启用网络预测功能，并禁止用户更改此设置。如果您启用或停用了此设置，则用户无法在“<ph name="PRODUCT_NAME"/>”中更改或替换此设置。</translation>
 <translation id="6641981670621198190">停用对 3D 图形 API 的支持</translation>
-<translation id="6375011473383446094">可让您指定网址格式的列表，这些网址格式用于指定 <ph name="PRODUCT_NAME"/>在网站需要证书时应自动为其选择客户端证书的网站。</translation>
 <translation id="2741921267428646309">这是“<ph name="PRODUCT_NAME"/>”所遵循的政策的列表。您无需手动更改这些设置！您可以访问 <ph name="POLICY_TEMPLATE_DOWNLOAD_URL"/>，下载易于使用的模板。Chromium 和“Google Chrome 浏览器”的支持政策的列表相同，但它们的 Windows 注册表位置不同。Chromium 政策和“Google Chrome 浏览器”政策的注册表路径开头分别为 <ph name="CHROMIUM_KEY"/> 和 <ph name="GOOGLE_CHROME_KEY"/>。</translation>
+<translation id="7929480864713075819">启用向网页报告内存信息（JS 堆大小）的功能</translation>
 <translation id="7003746348783715221">“<ph name="PRODUCT_NAME"/>”偏好设置</translation>
 <translation id="4723829699367336876">支持通过远程访问客户端穿越防火墙</translation>
 <translation id="7082208731926398296">允许将推送网络配置按用户应用到安装了 <ph name="PRODUCT_OS_NAME"/>的设备上。根据“开放网络配置”格式（网址为：https://sites.google.com/a/chromium.org/dev/chromium-os/chromiumos-design-docs/open-network-configuration）的定义，该网络配置是采用 JSON 格式的字符串。</translation>
 <translation id="9096086085182305205">身份验证服务器白名单</translation>
 <translation id="7063895219334505671">在这些网站上允许弹出式窗口</translation>
+<translation id="4052765007567912447">控制用户是否可以在密码管理器中以明文显示密码。如果您停用了此设置，就不允许在密码管理器窗口中以明文显示存储的密码。如果您启用或未设置此策略，用户就可以在密码管理器中以明文查看自己的密码。</translation>
 <translation id="2824715612115726353">启用隐身模式</translation>
 <translation id="1757688868319862958">允许“<ph name="PRODUCT_NAME"/>”运行需要授权的插件。如果启用了此设置，则未过期的插件会一直运行。如果停用或未设置此设置，系统会要求用户提供运行需要授权的插件的权限。这些插件可能会危及安全性。</translation>
+<translation id="6392973646875039351">启用 <ph name="PRODUCT_NAME"/>的自动填充功能，并允许用户使用以前存储的信息（例如地址或信用卡信息）自动填写网络表单。如果您停用了此设置，用户就无法使用自动填充功能。如果您启用了此设置或未设置值，那么自动填充功能仍由用户控制。这样，用户就可以配置自动填充个人资料，并自行决定是启用还是停用自动填充功能。</translation>
 <translation id="6157537876488211233">代理绕过规则的逗号分隔列表</translation>
 <translation id="7091198954851103976">始终运行需要授权的插件</translation>
 <translation id="8870318296973696995">主页</translation>
-<translation id="996560596616541671">可获得“<ph name="PRODUCT_NAME"/>”授权的服务器。</translation>
+<translation id="1240643596769627465">指定用于提供即搜即得结果的搜索引擎的网址，其中应包含字符串“<ph name="SEARCH_TERM_MARKER"/>”，系统会在查询时将该字符串替换为用户输入的文字。此政策是可选的，如果未设置，就不会提供任何即搜即得结果。要实施此政策，必须先启用“DefaultSearchProviderEnabled”政策。</translation>
+<translation id="6693751878507293182">如果您启用了此设置，<ph name="PRODUCT_NAME"/>就不会自动搜索和安装缺少的插件。如果停用或未设置此选项，就会启用插件查找程序。</translation>
+<translation id="7880891067740158163">可让您指定网址格式的列表，这些网址格式用于指定在网站请求证书时，应由 <ph name="PRODUCT_NAME"/>自动选择客户端证书的网站。如果未设置此政策，系统就不会对任何网站自动选择证书。</translation>
 <translation id="3866249974567520381">说明</translation>
+<translation id="5192837635164433517">允许使用 <ph name="PRODUCT_NAME"/>中内置的备用错误网页（例如“找不到网页”），并禁止用户更改此设置。如果您启用了此设置，系统就会使用备用错误网页。如果您停用了此设置，系统就不会使用备用错误网页。如果您启用或停用了此设置，用户就无法在 <ph name="PRODUCT_NAME"/>中更改或替换此设置。如果未设置此政策，就会启用此设置，不过用户也可以更改此设置。</translation>
 <translation id="2236488539271255289">不允许任何网站设置本地数据</translation>
 <translation id="4467952432486360968">阻止第三方 Cookie</translation>
-<translation id="1722705282440676367">可让您指定“<ph name="PRODUCT_NAME"/>”使用的代理服务器，并阻止用户更改代理设置。如果您选择永不使用代理服务器而总是直接连接，则系统会忽略其他所有选项。如果您选择自动检测代理服务器，则系统会忽略其他所有选项。要查看详细示例，请访问：<ph name="PROXY_HELP_URL"/>。如果您启用了此设置，则“<ph name="PRODUCT_NAME"/>”会忽略通过命令行指定的所有代理相关选项。</translation>
-<translation id="8470053727907466464">指定搜索服务提供商支持的字符编码。编码是代码页的名称，例如 UTF-8、GB2312 和 ISO-8859-1。上述顺序即尝试使用的顺序，默认使用 UTF-8。</translation>
-<translation id="2537063115727103969">这项政策用于替换“当我关闭浏览器时清除 Cookie 和其他网站的数据”选项，如果设置为“True”，则“<ph name="PRODUCT_NAME"/>”会在关闭时从浏览器中删除所有本地存储的数据。</translation>
+<translation id="7754863709994542614">在 <ph name="PRODUCT_NAME"/>中停用列出的协议方案。对于使用了此列表中方案的网址，系统不会加载，也无法导航。如果未设置此政策或者该列表为空，则可在 <ph name="PRODUCT_NAME"/>中访问所有方案。</translation>
+<translation id="5317965872570843334">当远程客户端尝试与此计算机建立连接时，允许使用 STUN 和中继服务器。如果启用此设置，那么即使远程客户端受到防火墙隔离，也仍然可以检测到并连接到此计算机。如果停用此设置，并且防火墙过滤了外发 UDP 连接，那么此计算机将只能与本地网络内的客户端计算机建立连接。如果未设置此政策，就会启用此设置。</translation>
 <translation id="5365946944967967336">在工具栏上显示“主页”按钮</translation>
 <translation id="3709266154059827597">配置扩展程序安装黑名单</translation>
 <translation id="8451988835943702790">使用“新标签页”作为主页</translation>
-<translation id="823695959636476037">控制用户是否可在密码管理器中以明文形式显示密码。如果您停用了此设置，则密码管理器不允许在其窗口中以明文形式显示存储的密码。如果您已启用或未配置此设置，则用户可以在密码管理器中以明文形式查看其密码。</translation>
+<translation id="8469342921412620373">启用默认搜索服务提供商。如果您启用了此设置，当用户在多功能框中输入非网址的文字时，系统会执行默认搜索。您可以设置其余的默认搜索政策，从而指定要使用的默认搜索服务提供商。如果这些选项都留空，用户就可以选择默认的服务提供商。如果您停用了此设置，当用户在多功能框中输入非网址的文字时，系统不会执行任何搜索。如果您启用或停用了此设置，用户就无法在 <ph name="PRODUCT_NAME"/>中更改或替换此设置。如果未设置此政策，就会启用默认搜索服务提供商，而用户也可以设置搜索服务提供商的列表。</translation>
 <translation id="8731693562790917685">“内容设置”可让您指定特定类型的内容（例如 Cookie、图片或 JavaScript）的处理方式。</translation>
 <translation id="2411919772666155530">阻止在这些网站上显示通知</translation>
+<translation id="6923366716660828830">指定默认搜索服务提供商的名称。如果留空或未设置，系统就会使用由搜索网址指定的主机名。要考虑此政策，必须先启用“DefaultSearchProviderEnabled”政策。</translation>
 <translation id="467236746355332046">支持的功能：</translation>
 <translation id="7632724434767231364">GSSAPI 库名称</translation>
-<translation id="4985088509112317247">可让您设置是否允许网站设置本地数据。可以针对所有网站允许或拒绝设置本地数据。</translation>
 <translation id="6244210204546589761">启动时打开的网址</translation>
 <translation id="7468416082528382842">Windows 注册表位置：</translation>
-<translation id="6119099935390640260">您可以在此指定某个代理 .pac 文件的网址。只有当您在“选择如何指定代理服务器设置”中选择了手动代理设置后，该政策才会生效。要查看详细示例，请访问：<ph name="PROXY_HELP_URL"/>。</translation>
 <translation id="1808715480127969042">在这些网站上阻止 Cookie</translation>
-<translation id="1115048775745697549">跨域 HTTP 基本身份验证提示</translation>
+<translation id="267596348720209223">指定搜索服务提供商支持的字符编码。编码是指类似于 UTF-8、GB2312 和 ISO-8859-1 的代码页名称，并按此顺序进行尝试。此政策是可选的，如果未设置，将使用默认值 UTF-8。要实施此政策，必须先启用“DefaultSearchProviderEnabled”政策。</translation>
 <translation id="2745445908503591390">在浏览器关闭时清除网站数据</translation>
-<translation id="8665913667133665583">指定在进行集成身份验证时应列入白名单的服务器。只有当“<ph name="PRODUCT_NAME"/>”收到来自代理或来自此允许列表中服务器的身份验证质询时，才会启用集成身份验证。各个服务器名称之间用逗号隔开。允许使用通配符 (*)。</translation>
+<translation id="1454846751303307294">可让您设置网址格式的列表，这些网址格式用于指定不允许运行 JavaScript 的网站。在未设置此政策的情况下，如果设置了“DefaultJavaScriptSetting”政策，那么将对该政策中的所有网站使用全局默认值，否则将对用户个人配置中的所有网站使用全局默认值。</translation>
+<translation id="8818028108855269021">指定是否应启用 TLS 来源绑定证书扩展程序。此设置用于启用 TLS 来源绑定证书扩展程序，以便进行测试。以后将删除这一实验性设置。</translation>
 <translation id="538108065117008131">允许“<ph name="PRODUCT_FRAME_NAME"/>”处理以下内容类型。</translation>
-<translation id="2886164457168401177">可让您设置网址格式的列表，此类网址格式用于指定允许显示通知的网站。</translation>
+<translation id="717221064259627503">配置 <ph name="PRODUCT_NAME"/>用于在磁盘上存储缓存文件的目录。如果您设置了此政策，那么无论用户是否指定“--disk-cache-dir”标记，<ph name="PRODUCT_NAME"/>都会使用提供的目录。如果未设置此政策，系统将使用默认缓存目录，并允许用户通过“--disk-cache-dir”命令行标记替换此目录。</translation>
 <translation id="2312134445771258233">允许您配置在启动时载入的页面。除非您在“启动时的操作”中选择“打开网址列表”，否则系统会忽略“启动时打开的网址”列表中的内容。</translation>
+<translation id="2538628396238281971">配置 <ph name="PRODUCT_NAME"/>用于下载文件的目录。如果您设置了此政策，那么无论用户是否指定某个目录，也无论用户是否启用在每次下载时都提示下载位置的标记，<ph name="PRODUCT_NAME"/>都会使用提供的目录。如果未设置此政策，系统将使用默认下载目录，并允许用户更改此目录。</translation>
 <translation id="8344454543174932833">首次运行时，从默认浏览器导入书签</translation>
-<translation id="7931766636395791713">可让您设置网址格式的列表，此类网址格式用于指定允许运行 JavaScript 的网站。</translation>
 <translation id="1019101089073227242">设置用户数据目录</translation>
+<translation id="5826047473100157858">指定用户是否可以在 <ph name="PRODUCT_NAME"/>中以隐身模式打开网页。如果选择“已启用”或未设置此政策，则允许以隐身模式打开网页。如果选择“已停用”，则不能以隐身模式打开网页。如果选择“强制”，则只能以隐身模式打开网页。</translation>
 <translation id="2030905906517501646">默认搜索服务提供商关键字</translation>
-<translation id="4290189791053175631">您可以在此指定代理服务器的网址。只有当您在“选择如何指定代理服务器设置”中选择了手动代理设置后，该政策才会生效。要查看更多选项和详细示例，请访问：<ph name="PROXY_HELP_URL"/>。</translation>
+<translation id="2949818985084413317">可让您设置网址格式的列表，这些网址格式用于指定允许设置仅限会话期间使用的 Cookie 的网站。在未设置此政策的情况下，如果设置了“DefaultCookiesSetting”政策，那么将对该政策中的所有网站使用全局默认值，否则将对用户个人配置中的所有网站使用全局默认值。</translation>
+<translation id="7393895128271703858">此政策已弃用，请改用 DefaultJavaScriptSetting。在 <ph name="PRODUCT_NAME"/>中启用 JavaScript，并禁止用户更改此设置。如果已启用或未配置此设置，网页就可以使用 JavaScript。如果停用此设置，网页就无法使用 JavaScript。如果未设置此政策，系统将使用默认值（即启用）并允许用户更改此设置。如果未设置此政策，就会启用此设置，不过用户也可以更改此设置。</translation>
+<translation id="8079569179819932120">指定应将哪些服务器列入集成身份验证的白名单。只有当 <ph name="PRODUCT_NAME"/>从代理或允许列表中的服务器接收身份验证质询时，才会启用集成身份验证。用英文逗号分隔多个服务器名称。允许使用通配符 (*)。如果您未设置此政策，集成身份验证将接受任何服务器。</translation>
 <translation id="350797926066071931">启用翻译</translation>
-<translation id="2267204956165795704">指定要在执行默认搜索时使用的搜索引擎的网址，其中应包含字符串“<ph name="SEARCH_TERM_MARKER"/>”，系统会在查询时将该字符串替换为用户搜索的字词。</translation>
 <translation id="4518251772179446575">每次网站尝试跟踪用户的地理位置时都询问我</translation>
 <translation id="402759845255257575">不允许任何网站运行 JavaScript</translation>
+<translation id="5457924070961220141">可让您在安装 <ph name="PRODUCT_FRAME_NAME"/>时配置默认 HTML 呈现器。如果未设置此政策，则使用默认设置，即允许托管浏览器进行呈现。不过您可以视情况替换此设置，让 <ph name="PRODUCT_FRAME_NAME"/>默认呈现 HTML 网页。</translation>
 <translation id="706669471845501145">允许网站显示桌面通知</translation>
+<translation id="2188979373208322108">在 <ph name="PRODUCT_NAME"/>中启用书签栏。如果您启用了此设置，<ph name="PRODUCT_NAME"/>就会显示书签栏。如果您停用了此设置，用户就从不会看到书签栏。如果您启用或停用了此设置，用户就无法在 <ph name="PRODUCT_NAME"/>中更改或替换此设置。如果未进行此设置，用户就可以决定是否使用此功能。</translation>
 <translation id="5475361623548884387">启用打印功能</translation>
 <translation id="3653237928288822292">默认搜索服务提供商图标</translation>
-<translation id="8496973106638946974">启用“<ph name="PRODUCT_NAME"/>”的“安全浏览”功能，并禁止用户更改此设置。如果您启用了此设置，则“安全浏览”会一直有效。如果您停用了此设置，则“安全浏览”从不生效。如果您启用或停用了此设置，则用户无法在“<ph name="PRODUCT_NAME"/>”中更改或替换此设置。</translation>
+<translation id="4445684791305970001">停用开发人员工具和 JavaScript 控制台。如果您启用了此设置，用户就无法再访问开发人员工具和查看网站元素了。用于启动开发人员工具和 JavaScript 控制台的任何键盘快捷键以及任何菜单或右键菜单条目都会停用。如果停用或未设置此选项，用户就可以使用开发人员工具和 JavaScript 控制台。</translation>
 <translation id="13356285923490863">政策名称</translation>
 <translation id="557658534286111200">启用或停用书签修改功能</translation>
-<translation id="3473585733246847076">可让您设置网址格式的列表，此类网址格式用于指定允许设置 Cookie 的网站。</translation>
-<translation id="2493647325461842868">在“<ph name="PRODUCT_NAME"/>”的多功能框中启用搜索建议功能，并禁止用户更改此设置。如果您启用了此设置，则会使用搜索建议。如果您停用了此设置，则从不使用搜索建议。如果您启用或停用了此设置，则用户无法在“<ph name="PRODUCT_NAME"/>”中更改或替换此设置。</translation>
-<translation id="6775978436824155661">在“<ph name="PRODUCT_NAME"/>”中启用打印功能，并禁止用户更改此设置。如果此设置已启用或未配置，则用户可以打印。如果此设置已停用，则用户无法通过“<ph name="PRODUCT_NAME"/>”打印。用户可通过扳手菜单、扩展程序、JavaScript 应用程序等停用打印功能。打印时，系统仍有可能通过绕过“<ph name="PRODUCT_NAME"/>”的插件进行打印。例如某些 Flash 应用程序在自己的右键菜单中提供了打印选项，这些选项不会停用。</translation>
+<translation id="5378985487213287085">可让您设置是否允许网站显示桌面通知。默认情况下，可以允许或拒绝显示桌面通知，也可以在每次网站要显示桌面通知时询问用户。如果未设置此政策，系统将使用“AskNotifications”并允许用户更改此设置。</translation>
 <translation id="6908640907898649429">配置默认搜索服务提供商。您可以指定用户会使用的默认搜索服务提供商，或选择停用默认搜索。</translation>
-<translation id="8621254262912103717">指定可同时连接到该代理服务器的连接数上限。某些代理服务器无法处理同一客户端同时发出的大量连接，在此情况下，您只需将此策略设为较低的值即可解决此问题。此策略值应介于 6 和 100 之间，默认值为 32。某些网络应用程序采用了挂起 GET 的方式，这样会消耗大量连接，因此如果打开的此类网络应用程序过多，则将该值设为小于 32 的值可能会导致浏览器网络挂起。设置的值小于默认值所产生的风险，您需要自行承担。</translation>
+<translation id="389421284571827139">可让您指定 <ph name="PRODUCT_NAME"/>使用的代理服务器，并禁止用户更改代理设置。如果您选择从不使用代理服务器，而总是直接连接，就会忽略其他所有选项。如果您选择自动检测代理服务器，就会忽略其他所有选项。要查看详细示例，请访问：<ph name="PROXY_HELP_URL"/>。如果您启用了此设置， <ph name="PRODUCT_NAME"/>就会忽略通过命令行指定的所有代理相关选项。如果未设置此政策，用户就可以自行选择代理设置。</translation>
 <translation id="681446116407619279">支持的身份验证方案</translation>
 <translation id="4027608872760987929">启用默认搜索服务提供商</translation>
 <translation id="2223598546285729819">默认通知设置</translation>
-<translation id="2417932194355389637">如果启用该政策，则会强制从当前默认浏览器导入搜索引擎。如果停用，则不会导入默认搜索引擎。如果未配置，则会采用默认行为。启用该政策还会影响导入对话框。</translation>
 <translation id="3793095274466276777">在“<ph name="PRODUCT_NAME"/>”中配置默认浏览器检查，并禁止用户更改此设置。如果您启用了此设置，则“<ph name="PRODUCT_NAME"/>”在启动时总是会检查自己是否为默认浏览器，并会自动注册（如果可以）。如果此设置已停用，则“<ph name="PRODUCT_NAME"/>”永远不会检查自己是否为默认浏览器，并会禁止用户设置此选项。如果此设置未配置，则“<ph name="PRODUCT_NAME"/>”会让用户控制是否将它设为默认浏览器，并控制是否在它不是默认浏览器的情况下显示用户通知。</translation>
+<translation id="7529100000224450960">可让您设置网址格式的列表，这些网址格式用于指定允许打开弹出式窗口的网站。在未设置此政策的情况下，如果设置了“DefaultPopupsSetting”政策，那么将对该政策中的所有网站使用全局默认值，否则将对用户个人配置中的所有网站使用全局默认值。</translation>
 <translation id="1530812829012954197">总是通过托管浏览器呈现以下网址格式</translation>
 <translation id="913195841488580904">阻止访问网址列表</translation>
 <translation id="6190022522129724693">默认弹出式窗口设置</translation>
 <translation id="847472800012384958">不允许任何网站显示弹出式窗口</translation>
 <translation id="4733471537137819387">与集成 HTTP 身份验证相关的政策。</translation>
-<translation id="5428100326165690555">不推荐使用该政策，请改用 IncognitoModeAvailability。在 <ph name="PRODUCT_NAME"/>中启用隐身模式。如果此设置启用或未配置，则用户可在隐身模式下打开网页。如果此设置停用，则用户无法在隐身模式下打开网页。</translation>
-<translation id="4608714268466689965">可让您设置是否允许网站显示桌面通知。可以默认允许或拒绝显示桌面通知，也可以在每次网站尝试显示桌面通知时都询问用户。</translation>
 <translation id="8951350807133946005">设置磁盘缓存目录</translation>
-<translation id="3866571346358522601">指定向设备的管理服务查询用户策略信息的周期（以毫秒为单位）。设置此策略会替换默认值（3 小时）。此策略的有效值范围为 1800000（30 分钟）至 86400000（1 天）。任何超出此范围的值都会被强制调整到相应范围内。</translation>
-<translation id="1334051495529796396">指定生成的 Kerberos SPN 是基于规范的 DNS 名称还是输入的原始名称。如果您启用了此设置，则会跳过 CNAME 查找并使用输入的服务器名称。如果您停用了此设置，则会通过 CNAME 查找确定服务器的规范名称。</translation>
-<translation id="7117773566421450481">阻止访问列出的网址。该政策阻止用户从列入黑名单的网址加载网页。网址格式为“scheme://host:port/path”。其中可选的 scheme 部分可以是 HTTP、HTTPS 或 FTP。只有指定的 scheme 会遭到阻止；如果未指定，则会阻止所有 scheme。host 部分可以是主机名，也可以是 IP 地址。主机名的子域也会遭到阻止。如果不想阻止子域，请在主机名前加上“.”。特殊的主机名“*”会阻止所有域。可选的 port 部分是介于 1 与 65535 之间的有效端口号。如果未指定，则会阻止所有端口。如果指定了可选的 path 部分，则只会阻止带有相应前缀的路径。您可在网址白名单政策中定义例外。这些政策的上限为 100 个条目，超出的条目会被忽略。</translation>
 <translation id="166427968280387991">代理服务器</translation>
 <translation id="2805707493867224476">允许所有网站显示弹出式窗口</translation>
 <translation id="1727394138581151779">阻止所有插件</translation>
+<translation id="8118665053362250806">设置媒体磁盘缓存大小</translation>
 <translation id="7079519252486108041">在这些网站上阻止弹出式窗口</translation>
 <translation id="7433714841194914373">启用“即搜即得”</translation>
 <translation id="4983201894483989687">允许运行过期的插件</translation>
-<translation id="7492608050778218564">停用对 3D 图形 API 的支持。启用此设置可禁止网页访问图形处理单元 (GPU)。具体地讲，就是网页无法访问 WebGL API，并且插件无法使用 Pepper 3D API。停用此设置可能会允许网页使用 WebGL API，并且允许插件使用 Pepper 3D API。浏览器的默认设置可能仍然需要传递命令行参数才能使用这些 API。</translation>
+<translation id="3823029528410252878">在 <ph name="PRODUCT_NAME"/>中停用浏览器历史记录保存功能，并禁止用户更改此设置。如果启用此设置，系统就不会保存浏览记录。如果停用或未配置此设置，系统就会保存浏览记录。</translation>
 <translation id="7202926611616207807">允许所有网站设置本地数据。</translation>
+<translation id="3034580675120919256">可让您设置是否允许网站运行 JavaScript。可以针对所有网站允许或拒绝运行 JavaScript。如果未设置此政策，系统将使用“AllowJavaScript”并允许用户更改此设置。</translation>
 <translation id="5868414965372171132">用户级网络配置</translation>
-<translation id="678228246386317063">可让您设置网址格式的列表，此类网址格式用于指定允许设置仅限会话的 Cookie 的网站。</translation>
+<translation id="5493552890659553833">在 <ph name="PRODUCT_NAME"/>的多功能框中启用搜索建议功能，并禁止用户更改此设置。如果您启用了此设置，系统就会使用搜索建议功能。如果您停用了此设置，系统就不会使用搜索建议功能。如果您启用或停用了此设置，用户就无法在 <ph name="PRODUCT_NAME"/>中更改或替换此设置。如果未设置此政策，就会启用此设置，不过用户也可以更改此设置。</translation>
+<translation id="8711086062295757690">指定关键字，该关键字在多功能框中作为快捷方式来触发针对此提供商的搜索。此政策是可选的，如果未设置，就没有任何关键字可激活搜索服务提供商。要实施此政策，必须先启用“DefaultSearchProviderEnabled”政策。</translation>
 <translation id="5774856474228476867">默认搜索服务提供商的搜索网址</translation>
 <translation id="4650759511838826572">停用网址协议方案</translation>
 <translation id="6524941558928880715">重新打开最后一次打开的网址</translation>
-<translation id="3167247709504138314">指定用于提供搜索建议的搜索引擎的网址，其中应包含字符串“<ph name="SEARCH_TERM_MARKER"/>”，系统会在查询时将该字符串替换为用户即时输入的文字（可选）。</translation>
 <translation id="602728333950205286">默认搜索服务提供商的即搜即得网址</translation>
-<translation id="3087595738450590532">如果启用该政策，则会强制从当前默认浏览器导入主页。如果停用，则不会导入主页。如果未配置，则会采用默认行为。</translation>
+<translation id="24485093530245771">设置磁盘缓存大小 (MB)</translation>
 <translation id="1675002386741412210">支持的环境：</translation>
-<translation id="5417368737700340683">启用“<ph name="PRODUCT_NAME"/>”的即搜即得功能，并禁止用户更改此设置。如果您启用了此设置，则会启用“<ph name="PRODUCT_NAME"/>”即搜即得。如果您停用了此设置，则会停用“<ph name="PRODUCT_NAME"/>”即搜即得。如果您启用或停用了此设置，则用户无法更改或替换此设置。</translation>
+<translation id="4482640907922304445">在 <ph name="PRODUCT_NAME"/>的工具栏上显示“主页”按钮。如果您启用了此设置，则会始终显示“主页”按钮。如果您停用了此设置，则从不显示“主页”按钮。如果您启用或停用了此设置，用户就无法在 <ph name="PRODUCT_NAME"/>中更改或替换此设置。如果未设置此政策，用户就可以选择是否显示“主页”按钮。</translation>
+<translation id="7547044444554936129">启用 <ph name="PRODUCT_NAME"/>的即搜即得功能，并禁止用户更改此设置。如果您启用了此设置，就会启用 <ph name="PRODUCT_NAME"/>即搜即得功能。如果您停用了此设置，就会停用 <ph name="PRODUCT_NAME"/>即搜即得功能。如果您启用或停用了此设置，用户就无法更改或替换此设置。如果未进行此设置，用户就可以决定是否使用此功能。</translation>
 <translation id="3264793472749429012">默认搜索服务提供商的编码</translation>
-<translation id="2371550098059356219">指定在“<ph name="PRODUCT_NAME"/>”中启用的插件的列表，并禁止用户更改此设置。可使用通配符“*”和“?”匹配任意字符序列。“*”可匹配任意数量的字符，而“?”可指定单个可选的字符，即匹配零个或一个字符。转义字符为“\”，因此要匹配实际的“*”、“?”或“\”字符，您可以在这些字符前加上“\”。列表中指定的插件如果已安装，则会总是在“<ph name="PRODUCT_NAME"/>”中使用。这些插件在“about:plugins”中标记为已启用，而且用户无法停用它们。请注意，此政策可替换 DisabledPlugins 和 DisabledPluginsExceptions。</translation>
+<translation id="3366530054462553357">指定 <ph name="PRODUCT_NAME"/>中停用的插件列表，并禁止用户更改此设置。可使用通配符“*”和“?”匹配任意字符序列。“*”可匹配任意数量的字符，而“?”可指定单个可选的字符，即匹配零个或一个字符。转义字符为“\”，因此要匹配实际的“*”、“?”或“\”字符，您可以在这些字符前加上“\”。如果您启用了此设置，指定列表中的插件就从不会在 <ph name="PRODUCT_NAME"/>中使用。这些插件在“about:plugins”中标记为“已停用”，而且用户无法启用它们。请注意，此政策可由 EnabledPlugins 和 DisabledPluginsExceptions 替换。如果未设置此政策，用户就可以使用系统中安装的任何插件（硬编码的不兼容、过期或危险插件除外）。</translation>
+<translation id="5469484020713359236">可让您设置网址格式的列表，这些网址格式用于指定允许设置 Cookie 的网站。在未设置此政策的情况下，如果设置了“DefaultCookiesSetting”政策，那么将对该政策中的所有网站使用全局默认值，否则将对用户个人配置中的所有网站使用全局默认值。</translation>
+<translation id="5208240613060747912">可让您设置网址格式的列表，这些网址格式用于指定不允许显示通知的网站。在未设置此政策的情况下，如果设置了“DefaultNotificationsSetting”政策，那么将对该政策中的所有网站使用全局默认值，否则将对用户个人配置中的所有网站使用全局默认值。</translation>
+<translation id="8592105098257899882">配置 <ph name="PRODUCT_NAME"/>用于在磁盘上存储缓存文件的缓存大小。如果您设置了此政策，那么无论用户是否指定“--disk-cache-size”标记，<ph name="PRODUCT_NAME"/>都会使用提供的缓存大小。如果此政策的值为 0，系统将使用默认缓存大小，但不允许用户更改大小。如果未设置此政策，系统将使用默认缓存大小，并允许用户通过“--disk-cache-size”标记替换该值。</translation>
 <translation id="308285197738484705">启用网络预测功能。</translation>
 <translation id="5765780083710877561">说明：</translation>
-<translation id="3319991432361168617">配置“<ph name="PRODUCT_NAME"/>”用于下载文件的目录。如果您设置了此政策，那么无论用户是否指定了目录或启用了每次下载时都提示下载位置的标记，“<ph name="PRODUCT_NAME"/>”都会使用提供的目录。</translation>
-<translation id="8284208534498422489">可让您设置网址格式的列表，此类网址格式用于指定允许打开弹出式窗口的网站。</translation>
+<translation id="7796141075993499320">可让您设置网址格式的列表，这些网址格式用于指定允许运行插件的网站。在未设置此政策的情况下，如果设置了“DefaultPluginsSetting”政策，那么将对该政策中的所有网站使用全局默认值，否则将对用户个人配置中的所有网站使用全局默认值。</translation>
+<translation id="3809527282695568696">如果选择“打开网址列表”作为启动时的操作，您就可以指定要打开的网址的列表。如果未设置，启动时就不会打开任何网址。此政策只有在“RestoreOnStartup”政策设为“RestoreOnStartupIsURLs”的情况下才有效。</translation>
+<translation id="649418342108050703">停用对 3D 图形 API 的支持。启用此设置可禁止网页访问图形处理单元 (GPU)。具体而言，就是网页无法访问 WebGL API，并且插件无法使用 Pepper 3D API。停用或未配置此设置可能会允许网页使用 WebGL API，并且允许插件使用 Pepper 3D API。浏览器的默认设置可能仍然需要传递命令行参数才能使用这些 API。</translation>
+<translation id="237494535617297575">可让您设置网址格式的列表，这些网址格式用于指定允许显示通知的网站。在未设置此政策的情况下，如果设置了“DefaultNotificationsSetting”政策，那么将对该政策中的所有网站使用全局默认值，否则将对用户个人配置中的所有网站使用全局默认值。</translation>
+<translation id="944817693306670849">设置磁盘缓存大小</translation>
 <translation id="8544375438507658205">默认 HTML 呈现器为“<ph name="PRODUCT_FRAME_NAME"/>”</translation>
 <translation id="7424751532654212117">已停用插件列表的例外列表</translation>
 <translation id="6233173491898450179">设置下载目录</translation>
-<translation id="2158989228646115511">设置为 True 时，新标签页上不会显示 Chrome 网上应用店的应用程序宣传信息。</translation>
+<translation id="9191982992032190929">指定企业网上应用店的网址。启用此设置后，应用程序将显示在新标签页上，而用户点击此页后将转至指定的网址。用户可以通过此页安装扩展程序和应用程序，同时不会看到多余的警告信息。如果设置了此政策，也应设置 EnterpriseWebStoreName。如果停用了此设置，新标签页上就不会显示企业网上应用店应用程序。</translation>
+<translation id="8889026535261486875"><ph name="PRODUCT_NAME"/>可授权的服务器。用英文逗号分隔多个服务器名称。允许使用通配符 (*)。如果您未设置此政策，集成身份验证将接受任何服务器。</translation>
 <translation id="2299220924812062390">指定已启用插件的列表</translation>
 <translation id="924557436754151212">首次运行时，从默认浏览器导入保存的密码</translation>
-<translation id="8754704265300028644">在“<ph name="PRODUCT_NAME"/>”中停用浏览器历史记录保存功能，并禁止用户更改此设置。如果此设置已启用，则系统不会保存浏览记录。如果此设置已停用或未配置，则系统会保存浏览记录。</translation>
 <translation id="1897365952389968758">允许所有网站运行 JavaScript</translation>
 <translation id="3963316686348464884">允许将推送网络配置应用到所有用户的安装了 <ph name="PRODUCT_OS_NAME"/>的设备上。根据“开放网络配置”格式（网址为：https://sites.google.com/a/chromium.org/dev/chromium-os/chromiumos-design-docs/open-network-configuration）的定义，该网络配置是采用 JSON 格式的字符串。</translation>
-<translation id="560746250309032104">在 <ph name="PRODUCT_NAME"/>上启用书签栏。如果您启用了此设置，则 <ph name="PRODUCT_NAME"/>会显示书签栏。如果您停用了此设置，则用户将无法看到书签栏。如果您启用或停用了此设置，则用户将无法在 <ph name="PRODUCT_NAME"/>中进行更改或替换。</translation>
 <translation id="6931242315485576290">停用与 Google 同步数据的功能</translation>
+<translation id="36674322972891584">在 <ph name="PRODUCT_NAME"/>中启用网络预测，并禁止用户更改此设置。如果您启用或停用了此设置，用户就无法在 <ph name="PRODUCT_NAME"/>中更改或替换此设置。如果未设置此政策，就会启用此设置，不过用户也可以更改此设置。</translation>
 <translation id="7006788746334555276">内容设置</translation>
-<translation id="3676473196461789250">可让您设置网址格式的列表，此类网址格式用于指定允许运行插件的网站。</translation>
-<translation id="5671281984733584565">在“<ph name="PRODUCT_NAME"/>”的工具栏上显示“主页”按钮。如果您启用了此设置，则一直显示“主页”按钮。如果您停用了此设置，则从不显示“主页”按钮。如果您启用或停用了此设置，则用户无法在“<ph name="PRODUCT_NAME"/>”中更改或替换此设置。</translation>
 <translation id="5142301680741828703">总是通过“<ph name="PRODUCT_FRAME_NAME"/>”呈现以下网址格式</translation>
-<translation id="805526450642067726">可让您设置网址格式的列表，此类网址格式用于指定不允许运行插件的网站。</translation>
+<translation id="2794522310070714259">指定向设备管理服务查询设备政策信息的周期（以毫秒为单位）。设置此政策会替换默认值（3 小时）。此政策的有效值范围为 1800000（30 分钟）至 86400000（1 天）。任何超出此范围的值都会强制调整到相应范围内。如果未设置此政策，<ph name="PRODUCT_FRAME_NAME"/>就会使用默认值（3 小时）。</translation>
 <translation id="4625915093043961294">配置扩展程序安装白名单</translation>
+<translation id="187819629719252111">允许 <ph name="PRODUCT_NAME"/>显示文件选择对话框，从而允许用户访问计算机上的本地文件。如果您启用了此设置，用户就可以正常地打开文件选择对话框。如果您停用了此设置，那么只要用户执行了会触发文件选择对话框的操作（如导入书签、上传文件、保存链接等），系统就会显示一条讯息，并且假定用户已在该文件选择对话框中点击了“取消”。如果您未设定此设置，用户就可以正常地打开文件选择对话框。</translation>
+<translation id="4507081891926866240">自定义应始终由 <ph name="PRODUCT_FRAME_NAME"/>呈现的网址格式的列表。如果未设置此政策，系统将按照“ChromeFrameRendererSettings”政策的规定，对所有网站使用默认呈现器。要查看示例格式，请访问 http://www.chromium.org/developers/how-tos/chrome-frame-getting-started。</translation>
 <translation id="3101501961102569744">选择如何指定代理服务器设置</translation>
 <translation id="7774768074957326919">使用系统代理设置</translation>
 <translation id="3891357445869647828">启用 JavaScript</translation>
 <translation id="868187325500643455">允许所有网站自动运行插件</translation>
 <translation id="5226033722357981948">指定是否应停用插件查找器</translation>
-<translation id="9068358498333390522">可让您设置是否允许网站显示弹出式窗口。可以针对所有网站允许或拒绝显示弹出式窗口。</translation>
+<translation id="6145799962557135888">可让您设置网址格式的列表，这些网址格式用于指定允许运行 JavaScript 的网站。在未设置此政策的情况下，如果设置了“DefaultJavaScriptSetting”政策，那么将对该政策中的所有网站使用全局默认值，否则将对用户个人配置中的所有网站使用全局默认值。</translation>
+<translation id="7053678646221257043">如果启用此政策，就会强制从当前默认浏览器导入书签，还会影响导入对话框。如果停用此政策，就不会导入书签。如果未设置此政策，系统就会询问用户是否导入书签，或者系统自动进行导入。</translation>
 <translation id="3612784419634427880">可以使用隐身模式。</translation>
+<translation id="2514328368635166290">指定默认搜索服务提供商的首选图标网址。此政策是可选的，如果未设置，搜索服务提供商就不会显示任何图标。要实施此政策，必须启用“DefaultSearchProviderEnabled”政策。</translation>
 <translation id="7194407337890404814">默认搜索服务提供商名称</translation>
 <translation id="1843117931376765605">用户策略的更新频率</translation>
 <translation id="5535973522252703021">Kerberos 授权服务器白名单</translation>
-<translation id="4554678280250165996">指定“<ph name="PRODUCT_NAME"/>”支持的 HTTP 身份验证方案。可用的值包括“basic”、“digest”、“ntlm”和“negotiate”。各个值之间用逗号隔开。</translation>
-<translation id="5034323863800401760">停用“开发人员工具”和 JavaScript 控制台。如果您启用了此设置，则无法再使用“开发人员工具”，也无法再查看网站元素。用于打开“开发人员工具”或 JavaScript 控制台的所有键盘快捷键和菜单或右键菜单项都会停用。</translation>
-<translation id="6013842521938070987">在“<ph name="PRODUCT_NAME"/>”中停用列出的协议方案。使用此列表中协议方案的网址无法载入，也无法访问。</translation>
-<translation id="4845434807154973261">在计算机尝试与远程客户端建立连接时启用 STUN 服务器和中继服务器。如果启用此设置，那么即使远程客户端受到防火墙隔离，也仍然可以检测到并连接到此计算机。如果停用此设置，并且防火墙过滤了外发 UDP 连接，那么此计算机将只能与本地网络内的客户端机器建立连接。</translation>
 <translation id="4056910949759281379">停用 SPDY 协议</translation>
+<translation id="1991398966873139530">指定可由用户在 <ph name="PRODUCT_NAME"/>中启用或停用的插件的列表。可使用通配符“*”和“?”匹配任意字符序列。“*”可匹配任意数量的字符，而“?”可指定单个可选的字符，即匹配零个或一个字符。转义字符为“\”，因此要匹配实际的“*”、“?”或“\”字符，您可以在这些字符前加上“\”。如果您启用了此设置，则可在 <ph name="PRODUCT_NAME"/>中使用指定列表中的插件。即使某些插件同时匹配 DisabledPlugins 中的模式，用户也可以在“about:plugins”中启用和停用它们。用户还可以启用和停用与 DisabledPlugins、DisabledPluginsExceptions 和 EnabledPlugins 中的任何模式均不匹配的插件。此政策的目的是针对以下情况实现严格的插件黑名单设置：“DisabledPlugins”列表包含带通配符的条目，例如停用所有插件 (*) 或停用所有 Java 插件 (*Java*)，但是管理员又希望启用某些特定版本，例如“IcedTea Java 2.3”。此类特定版本可在此政策中指定。如果未设置此政策，那么与“DisabledPlugins”中的模式匹配的所有插件都会遭到锁定和停用，而且用户将无法启用这些插件。</translation>
 <translation id="3808945828600697669">指定已停用插件的列表</translation>
-<translation id="2187975305444384964">可让您设置是否允许网站跟踪用户的地理位置。可以默认允许或拒绝跟踪用户的地理位置，也可以在每次网站请求地理位置时都询问用户。</translation>
-<translation id="8397112610813153899">自定义应总是通过“<ph name="PRODUCT_FRAME_NAME"/>”呈现的网址格式的列表。关于格式示例，请访问 http://www.chromium.org/developers/how-tos/chrome-frame-getting-started。</translation>
+<translation id="4525521128313814366">可让您设置网址格式的列表，这些网址格式用于指定不允许显示图片的网站。在未设置此政策的情况下，如果设置了“DefaultImagesSetting”政策，那么将对该政策中的所有网站使用全局默认值，否则将对用户个人配置中的所有网站使用全局默认值。</translation>
 <translation id="2098658257603918882">启用关于使用情况和崩溃相关数据的报告</translation>
 <translation id="1151353063931113432">在这些网站上允许图片</translation>
-<translation id="4498075447689127727">可让您设置网址格式的列表，c网址格式用于指定不允许打开弹出式窗口的网站。</translation>
-<translation id="5807843250244274844">指定该设备应锁定到的发布版。此策略仍处于试验阶段；目前，即使该策略已指定了发布版，用户仍能对其进行更改。</translation>
 <translation id="1297182715641689552">使用 .pac 代理脚本</translation>
 <translation id="8631434304112909927">到版本 <ph name="UNTIL_VERSION"/> 为止</translation>
 <translation id="7469554574977894907">启用搜索建议</translation>
 <translation id="4906194810004762807">设备策略的更新频率</translation>
+<translation id="7974114691960514888">此政策已不再受支持。在连接到远程客户端时，允许使用 STUN 和中继服务器。如果启用此设置，那么即使远程客户端受到防火墙隔离，也仍然可以检测到并连接到此计算机。如果停用此设置，并且防火墙过滤了外发 UDP 连接，那么此计算机将只能与本地网络内的客户端计算机建立连接。</translation>
 <translation id="5511702823008968136">启用书签栏</translation>
-<translation id="3653673712530669976">可让您配置安装“<ph name="PRODUCT_FRAME_NAME"/>”时默认使用的 HTML 呈现器。默认设置是允许托管浏览器进行呈现，但您可以选择替换此设置，并默认让“<ph name="PRODUCT_FRAME_NAME"/>”呈现 HTML 页面。</translation>
+<translation id="1775332090152062460">禁止在 <ph name="PRODUCT_NAME"/>中使用 SPDY 协议。如果启用了此政策，就无法在 <ph name="PRODUCT_NAME"/>中使用 SPDY 协议。如果停用了此政策，就可以使用 SPDY 协议。如果未设置此政策，就可以使用 SPDY 协议，不过用户也可以更改此设置。</translation>
 <translation id="7848840259379156480">可让您配置安装“<ph name="PRODUCT_FRAME_NAME"/>”时默认使用的 HTML 呈现器。默认设置是允许托管浏览器进行呈现，但您可以选择替换此设置，并默认让“<ph name="PRODUCT_FRAME_NAME"/>”呈现 HTML 页面。</translation>
+<translation id="9142678351429467783">在 <ph name="PRODUCT_NAME"/>中启用打印功能，并禁止用户更改此设置。如果已启用或未配置此设置，用户就可以进行打印。如果已停用此设置，用户就无法通过 <ph name="PRODUCT_NAME"/>进行打印。用户可通过扳手菜单、扩展程序、JavaScript 应用程序等停用打印功能。打印时，系统仍有可能通过绕过 <ph name="PRODUCT_NAME"/>的插件进行打印。例如某些 Flash 应用程序在自身的右键菜单中提供了打印选项，这些选项是不会停用的。如果未设置此政策，就会启用此设置，不过用户也可以更改此设置。</translation>
 <translation id="4121350739760194865">阻止在新标签页上显示应用程序宣传信息</translation>
 <translation id="2127599828444728326">允许在这些网站上显示通知</translation>
-<translation id="4486602758942612946">自定义应总是通过托管浏览器呈现的网址格式的列表。关于示例格式，请访问 http://www.chromium.org/developers/how-tos/chrome-frame-getting-started。</translation>
-<translation id="2257451316169619209">指定向设备的管理服务查询设备策略信息的周期（以毫秒为单位）。设置此策略会替换默认值（3 小时）。此策略的有效值范围为 1800000（30 分钟）至 86400000（1 天）。任何超出此范围的值都会被强制调整到相应范围内。</translation>
+<translation id="7635471475589566552">在 <ph name="PRODUCT_NAME"/>中配置应用程序的语言区域，并禁止用户更改语言区域。如果您启用了此设置，<ph name="PRODUCT_NAME"/>就会使用指定的语言区域。如果配置的语言区域不受支持，就会改用“en-US”。如果已停用或未配置此设置，<ph name="PRODUCT_NAME"/>就会使用由用户指定的首选语言区域（如果已配置）、系统语言区域或备用语言区域“en-US”。</translation>
+<translation id="7271483295221961083">可让您设置是否允许网站自动运行插件。可以针对所有网站允许或拒绝自动运行插件。如果未设置此政策，系统将使用“AllowPlugins”并允许用户更改此设置。</translation>
+<translation id="6985168562472482191">企业网上应用店的名称，它将显示在新标签页上的应用程序图标下方。如果未设置 EnterpriseWebStoreURL，此设置就不会生效。如果已停用此设置，企业网上应用店应用程序（如果存在）就会标明其网址。</translation>
 <translation id="1734716591049455502">配置远程访问选项</translation>
-<translation id="4346795218451526495">指定可由用户在“<ph name="PRODUCT_NAME"/>”中启用或停用的插件的列表。可使用通配符“*”和“?”匹配任意字符序列。“*”可匹配任意数量的字符，而“?”可指定可选的单个字符，即匹配零个或一个字符。转义字符为“\”，因此要匹配实际的“*”、“?”或“\”字符，您可以在这些字符前加上“\”。如果您启用了此设置，则可在“<ph name="PRODUCT_NAME"/>”中使用列表中指定的插件。即使这些插件同时与 DisabledPlugins 中的格式匹配，用户也可在“about:plugins”中启用或停用它们。即使插件与 DisabledPlugins、DisabledPluginsExceptions 和 EnabledPlugins 中的任何格式均不匹配，用户也可以启用或停用它们。</translation>
 <translation id="8777120694819070607">允许“<ph name="PRODUCT_NAME"/>”运行过期插件。如果您启用了此设置，则过期插件可作为正常插件使用。如果您停用了此设置，则过期插件将无法使用，并且系统不会要求用户提供运行过期插件的权限。如果此设置未配置，则系统会要求用户提供运行过期插件的权限。</translation>
 <translation id="2629448496147630947">在<ph name="PRODUCT_NAME"/>中配置远程访问选项。除非安装了远程访问网络应用程序，否则这些功能将被忽略。</translation>
-<translation id="407895324478579198">可让您指定将要静默安装（无需用户干预）的扩展程序的列表。列表中的每一项都是一个字符串，其中包含由分号分隔的扩展程序 ID 和更新网址 (<ph name="SEMICOLON"/>)。例如，<ph name="EXTENSION_POLICY_EXAMPLE"/>。对于每一项，“<ph name="PRODUCT_NAME"/>”会从指定的网址检索由 ID 指定的扩展程序，然后进行静默安装。以下页面介绍了如何在您自己的服务器上托管扩展程序。关于更新网址，请参阅：<ph name="LINK_TO_EXTENSION_DOC1"/>，关于一般情况下的托管扩展程序，请参阅：<ph name="LINK_TO_EXTENSION_DOC2"/>。用户无法卸载由此政策指定的扩展程序。如果您从该列表中删除了某个扩展程序，则“<ph name="PRODUCT_NAME"/>”会自动卸载该扩展程序。如果扩展程序在“ExtensionInstallBlacklist”中列入了黑名单而没有列入白名单，则无法根据此政策强制安装。</translation>
-<translation id="3300906985144143927">指定默认​​搜索服务提供商的收藏图标网址（可选）。</translation>
+<translation id="1310699457130669094">您可以在此指定代理 .pac 文件的网址。只有当您在“选择如何指定代理服务器设置”中选择了手动代理设置后，此政策才会生效。如果您选择了其他任何模式来设置代理政策，就不应设置此政策。要查看详细示例，请访问：<ph name="PROXY_HELP_URL"/></translation>
+<translation id="3406810703404235731">企业的网上应用店网址</translation>
+<translation id="7782879802219764346">配置 <ph name="PRODUCT_NAME"/>将用于存储用户数据的目录。如果您设置了此政策，那么无论用户是否指定“--user-data-dir”标记，<ph name="PRODUCT_NAME"/>都会使用提供的目录。如果未设置此政策，系统将使用默认个人资料路径，并允许用户通过“--user-data-dir”命令行标记替换此路径。</translation>
 <translation id="1583248206450240930">默认情况下使用“<ph name="PRODUCT_FRAME_NAME"/>”</translation>
 <translation id="1047128214168693844">不允许任何网站跟踪用户的地理位置</translation>
+<translation id="4101778963403261403">在 <ph name="PRODUCT_NAME"/>中配置默认主页的类型，并禁止用户更改主页偏好设置。您既可以将主页设为指定的网址，也可以将其设为新标签页。如果您启用了此设置，系统就会始终使用新标签页作为主页，并忽略主页网址。如果您停用了此设置，那么除非将用户的主页设为“chrome://newtab”，否则主页永远不会是新标签页。如果您启用或停用了此设置，用户就无法在 <ph name="PRODUCT_NAME"/>中更改自己的主页类型。如果未设置此政策，用户就可以自行选择是否将新标签页作为主页。</translation>
 <translation id="3273221114520206906">默认 JavaScript 设置</translation>
+<translation id="4025586928523884733">阻止第三方 Cookie。启用此设置后，如果网页元素并非来自浏览器的地址栏中的域名，就无法设置 Cookie。停用此设置后，并非来自浏览器地址栏中的域名的网页元素也可以设置 Cookie，并且用户无法更改此设置。如果未设置此政策，将启用第三方 Cookie，不过用户也可以更改此设置。</translation>
 <translation id="6810445994095397827">在这些网站上阻止 JavaScript</translation>
-<translation id="6510914645829248303">如果您选择“打开网址列表”作为启动时的操作，则可指定要打开的网址列表。</translation>
+<translation id="6672934768721876104">此政策已弃用，请改用 ProxyMode。可让您指定 <ph name="PRODUCT_NAME"/>使用的代理服务器，并禁止用户更改代理设置。如果您选择从不使用代理服务器，而总是直接连接，就会忽略其他所有选项。如果您选择使用系统代理设置或自动检测代理服务器，就会忽略其他所有选项。如果您选择手动代理设置，可在“代理服务器的地址或网址”、“代理 .pac 文件的网址”以及“代理绕过规则的逗号分隔列表”中进一步指定选项。要查看详细示例，请访问：<ph name="PROXY_HELP_URL"/>。如果您启用了此设置， <ph name="PRODUCT_NAME"/>就会忽略通过命令行指定的所有代理相关选项。如果未设置此政策，用户就可以自行选择代理设置。</translation>
 <translation id="3780152581321609624">在 Kerberos SPN 中加入非标准端口</translation>
+<translation id="5883954255534074144">允许 <ph name="PRODUCT_FRAME_NAME"/>处理列出的内容类型。</translation>
 <translation id="2660846099862559570">从不使用代理</translation>
 <translation id="1435659902881071157">设备级网络配置</translation>
 <translation id="5512418063782665071">主页网址</translation>
-<translation id="6049075103826767200">允许向 Google 匿名报告关于“<ph name="PRODUCT_NAME"/>”的使用情况和崩溃相关数据，并禁止用户更改此设置。如果您启用了此设置，则会向 Google 发送关于使用情况和崩溃相关数据的匿名报告。如果您停用了此设置，则从不会向 Google 发送关于使用情况和崩溃相关数据的匿名报告。如果您启用或停用了此设置，则用户无法在“<ph name="PRODUCT_NAME"/>”中更改或替换此设置。</translation>
+<translation id="2948381198510798695"><ph name="PRODUCT_NAME"/>将对于此处给定的主机列表绕过任何代理。只有当您在“选择如何指定代理服务器设置”中选择了手动代理设置后，此政策才会生效。如果您选择了其他任何模式来设置代理政策，就不应设置此政策。要查看详细示例，请访问：<ph name="PROXY_HELP_URL"/>。</translation>
 <translation id="2263362640517427542">当 Chrome 操作系统设备处于空闲或暂停状态时启用锁定功能。</translation>
-<translation id="6808666497110319299">启用“<ph name="PRODUCT_NAME"/>”内置的备用错误页面（如“未找到网页”），并禁止用户更改此设置。如果您启用了此设置，则系统会使用备用错误页面。如果您停用了此设置，则系统从不使用备用错误页面。如果您启用或停用了此设置，则用户无法在“<ph name="PRODUCT_NAME"/>”中更改或替换此设置。</translation>
 <translation id="1948757837129151165">HTTP 身份验证的政策</translation>
 <translation id="5946082169633555022">测试版</translation>
-<translation id="817926804885880359">启用“<ph name="PRODUCT_NAME"/>”的自动填充功能，并允许用户使用以前存储的信息（例如地址或信用卡信息）自动填写网络表单。如果您停用了此设置，则用户无法使用自动填充功能。如果您启用了此设置或未配置值，则自动填充功能仍由用户控制。这样，用户就可以配置自动填充的资料，并自行决定是启用还是停用自动填充功能。</translation>
-<translation id="6938581770853731947">配置“<ph name="PRODUCT_NAME"/>”中默认主页的类型，并阻止用户更改主页偏好设置。主页可以设置为您指定的网址，也可以设置为“新标签页”。如果您启用了此设置，则总是使用“新标签页”作为主页，并忽略主页网址位置。如果您停用了此设置，则用户的主页从不会是“新标签页”，除非将主页网址设置为“chrome://newtab”。如果您启用或停用了此设置，则用户无法在“<ph name="PRODUCT_NAME"/>”中更改其主页类型。</translation>
-<translation id="2844287278346661435">允许访问列出的网址（它们属于网址黑名单例外情况）。有关该列表中条目的格式，请参阅网址黑名单政策的说明。此政策可用于对受限黑名单设置例外情况。例如，可将“*”列入黑名单以阻止所有请求，而使用此政策即可允许访问一些指定的网址。此政策可用于对某些协议、其他域的子域、端口或特定路径设置例外情况。是否阻止网址取决于限定性最强的过滤条件。白名单的优先级高于黑名单。此政策的上限是 100 个条目，超出的条目会被忽略。</translation>
+<translation id="8303314579975657113">指定要用于 HTTP 身份验证的 GSSAPI 库。您可以仅设置库名称，也可以设置完整路径。如果未提供任何设置，<ph name="PRODUCT_NAME"/>就会使用后备的默认库名称。</translation>
+<translation id="384743459174066962">可让您设置网址格式的列表，这些网址格式用于指定不允许打开弹出式窗口的网站。在未设置此政策的情况下，如果设置了“DefaultPopupsSetting”政策，那么将对该政策中的所有网站使用全局默认值，否则将对用户个人配置中的所有网站使用全局默认值。</translation>
 <translation id="5645779841392247734">在这些网站上允许 Cookie</translation>
-<translation id="791491514268619407">可让您设置网址格式的列表，此类网址格式用于指定不允许显示通知的网站。</translation>
-<translation id="3906388518501362918">在“<ph name="PRODUCT_NAME"/>”中启用 JavaScript，并禁止用户更改此设置。如果此设置已启用或未配置，则网页可以使用 JavaScript。如果此设置已停用，则网页无法使用 JavaScript。</translation>
-<translation id="4821854788360803313">指定在“<ph name="PRODUCT_NAME"/>”中停用的插件的列表，并禁止用户更改此设置。可使用通配符“*”和“?”匹配任意字符序列。“*”可匹配任意数量的字符，而“?”可指定单个可选的字符，即匹配零个或一个字符。转义字符为“\”，因此要匹配实际的“*”、“?”或“\”字符，您可以在这些字符前加上“\”。如果您启用了此设置，则“<ph name="PRODUCT_NAME"/>”从不会使用列表中指定的插件。这些插件在“about:plugins”中标记为已停用，而且用户无法启用它们。请注意，EnabledPlugins 和 DisabledPluginsExceptions 可替换此政策。</translation>
+<translation id="8220342550735772883">配置 <ph name="PRODUCT_NAME"/>用于在磁盘上存储缓存媒体文件的缓存大小。如果您设置了此政策，那么无论用户是否指定“--media-cache-size”标记，<ph name="PRODUCT_NAME"/>都会使用提供的缓存大小。如果此政策的值为 0，系统将使用默认缓存大小，但不允许用户更改大小。如果未设置此政策，系统将使用默认缓存大小，并允许用户通过“--media-cache-size”标记替换此大小。</translation>
+<translation id="7049373494483449255">允许 <ph name="PRODUCT_NAME"/>将文档提交到 <ph name="CLOUD_PRINT_NAME"/>进行打印。请注意：这只会影响 <ph name="PRODUCT_NAME"/>中的 <ph name="CLOUD_PRINT_NAME"/>支持，并不会禁止用户在网站上提交打印作业。如果启用或未配置此设置，用户就可以通过 <ph name="PRODUCT_NAME"/>的打印对话框使用 <ph name="CLOUD_PRINT_NAME"/>进行打印。如果停用此设置，用户就无法通过 <ph name="PRODUCT_NAME"/>的打印对话框使用 <ph name="CLOUD_PRINT_NAME"/>进行打印。</translation>
+<translation id="8879211610210555624">可让您指定要静默安装（无需用户干预）的扩展程序的列表。列表中的每一项都是一个字符串，其中包含由分号 (<ph name="SEMICOLON"/>) 分隔的扩展程序 ID 和更新网址，例如：<ph name="EXTENSION_POLICY_EXAMPLE"/>。对于每一项，<ph name="PRODUCT_NAME"/>都会从指定的网址检索由 ID 指定的扩展程序，然后进行静默安装。以下页面介绍了如何在您自己的服务器上托管扩展程序。关于更新网址，请访问：<ph name="LINK_TO_EXTENSION_DOC1"/>，关于托管扩展程序的一般信息，请访问：<ph name="LINK_TO_EXTENSION_DOC2"/>。用户无法卸载由此政策指定的扩展程序。如果您从该列表中删除了某个扩展程序，<ph name="PRODUCT_NAME"/>就会自动卸载该扩展程序。如果扩展程序在“ExtensionInstallBlacklist”中列入了黑名单而没有列入白名单，则无法根据此政策强制安装。如果未设置此政策，用户就可以在 <ph name="PRODUCT_NAME"/>中卸载任何扩展程序。</translation>
+<translation id="7855654568917742889">配置 <ph name="PRODUCT_NAME"/>用于存储用户数据的目录。如果您设置了此政策，<ph name="PRODUCT_NAME"/>就会使用提供的目录。如果未设置此政策，就会使用默认的个人资料目录。</translation>
 </translationbundle>
