@@ -228,6 +228,9 @@ class VIEWS_EXPORT NativeTextfieldViews : public TouchSelectionClientView,
   // Handles mouse press events.
   void HandleMousePressEvent(const MouseEvent& event);
 
+  // Returns true if the current text input type allows access by the IME.
+  bool ImeEditingAllowed() const;
+
   // Checks if a char is ok to be inserted into the textfield. The |ch| is a
   // modified character, i.e., modifiers took effect when generating this char.
   static bool ShouldInsertChar(char16 ch, int flags);

@@ -717,9 +717,7 @@ bool NativeTextfieldViews::HasCompositionText() {
 }
 
 bool NativeTextfieldViews::GetTextRange(ui::Range* range) {
-  // We don't allow the input method to retrieve or delete content from an
-  // obscured textfield.
-  if (GetTextInputType() != ui::TEXT_INPUT_TYPE_TEXT)
+  if (!ImeEditingAllowed())
     return false;
 
   model_->GetTextRange(range);
@@ -727,7 +725,7 @@ bool NativeTextfieldViews::GetTextRange(ui::Range* range) {
 }
 
 bool NativeTextfieldViews::GetCompositionTextRange(ui::Range* range) {
-  if (GetTextInputType() != ui::TEXT_INPUT_TYPE_TEXT)
+  if (!ImeEditingAllowed())
     return false;
 
   model_->GetCompositionTextRange(range);
@@ -735,7 +733,7 @@ bool NativeTextfieldViews::GetCompositionTextRange(ui::Range* range) {
 }
 
 bool NativeTextfieldViews::GetSelectionRange(ui::Range* range) {
-  if (GetTextInputType() != ui::TEXT_INPUT_TYPE_TEXT)
+  if (!ImeEditingAllowed())
     return false;
 
   gfx::SelectionModel sel;
@@ -746,7 +744,7 @@ bool NativeTextfieldViews::GetSelectionRange(ui::Range* range) {
 }
 
 bool NativeTextfieldViews::SetSelectionRange(const ui::Range& range) {
-  if (GetTextInputType() != ui::TEXT_INPUT_TYPE_TEXT || !range.IsValid())
+  if (!ImeEditingAllowed() || !range.IsValid())
     return false;
 
   OnBeforeUserAction();
@@ -756,7 +754,7 @@ bool NativeTextfieldViews::SetSelectionRange(const ui::Range& range) {
 }
 
 bool NativeTextfieldViews::DeleteRange(const ui::Range& range) {
-  if (GetTextInputType() != ui::TEXT_INPUT_TYPE_TEXT || range.is_empty())
+  if (!ImeEditingAllowed() || range.is_empty())
     return false;
 
   OnBeforeUserAction();
@@ -772,7 +770,7 @@ bool NativeTextfieldViews::DeleteRange(const ui::Range& range) {
 bool NativeTextfieldViews::GetTextFromRange(
     const ui::Range& range,
     string16* text) {
-  if (GetTextInputType() != ui::TEXT_INPUT_TYPE_TEXT || !range.IsValid())
+  if (!ImeEditingAllowed() || !range.IsValid())
     return false;
 
   ui::Range text_range;
@@ -1097,6 +1095,13 @@ void NativeTextfieldViews::HandleMousePressEvent(const MouseEvent& event) {
     }
     SchedulePaint();
   }
+}
+
+bool NativeTextfieldViews::ImeEditingAllowed() const {
+  // We don't allow the input method to retrieve or delete content from a
+  // password field.
+  ui::TextInputType t = GetTextInputType();
+  return (t != ui::TEXT_INPUT_TYPE_NONE && t != ui::TEXT_INPUT_TYPE_PASSWORD);
 }
 
 // static
