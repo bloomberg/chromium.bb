@@ -21,7 +21,7 @@ if sys.platform == 'darwin':
   test.build('test.gyp', test.ALL, chdir='app-bundle')
 
   # Touch a source file, rebuild, and check that the app target is up-to-date.
-  os.utime('app-bundle/TestApp/main.m', None)
+  test.touch('app-bundle/TestApp/main.m', None)
   test.build('test.gyp', test.ALL, chdir='app-bundle')
 
   test.up_to_date('test.gyp', test.ALL, chdir='app-bundle')
