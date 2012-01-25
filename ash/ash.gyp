@@ -260,6 +260,11 @@
             '../build/linux/system.gyp:ibus',
           ],
         }],
+        ['OS=="mac"', {
+          'sources/': [
+            ['exclude', 'drag_drop/drag_drop_controller_unittest.cc'],
+          ],
+        }],
       ],
     },
     {
