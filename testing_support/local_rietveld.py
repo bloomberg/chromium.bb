@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -12,11 +12,17 @@ if necessary and starts the server on a free inbound TCP port.
 
 import optparse
 import os
+import shutil
 import socket
 import sys
 import time
 
-import subprocess2
+try:
+  import subprocess2
+except ImportError:
+  sys.path.append(
+      os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
+  import subprocess2
 
 
 class Failure(Exception):
@@ -73,20 +79,27 @@ class LocalRietveld(object):
       raise Failure(
           'Install google_appengine sdk in %s or higher up' % self.base_dir)
 
+    if os.path.isdir(os.path.join(self.rietveld, '.svn')):
+      # Left over from subversion. Delete it.
+      shutil.rmtree(self.rietveld)
+
     # Second, checkout rietveld if not available.
+    rev = '9349cab9a3bb'
     if not os.path.isdir(self.rietveld):
       print('Checking out rietveld...')
       try:
         subprocess2.check_call(
-            ['svn', 'co', '-q', 'http://rietveld.googlecode.com/svn/trunk@681',
-             self.rietveld])
+            [ 'hg', 'clone', '-q', '-u', rev, '-r', rev,
+              'https://code.google.com/p/rietveld/', self.rietveld])
       except (OSError, subprocess2.CalledProcessError), e:
-        raise Failure('Failed to checkout rietveld\n%s' % e)
+        raise Failure(
+            'Failed to checkout rietveld. Do you have mercurial installed?\n'
+            '%s' % e)
     else:
       print('Syncing rietveld...')
       try:
         subprocess2.check_call(
-            ['svn', 'up', '-q', '-r', '681'], cwd=self.rietveld)
+            ['hg', 'co', '-q', '-C', rev], cwd=self.rietveld)
       except (OSError, subprocess2.CalledProcessError), e:
         raise Failure('Failed to sync rietveld\n%s' % e)
 
