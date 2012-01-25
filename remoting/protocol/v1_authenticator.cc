@@ -88,7 +88,7 @@ V1ClientAuthenticator::CreateChannelAuthenticator() const {
       SslHmacChannelAuthenticator::CreateForClient(
           remote_cert_, shared_secret_);
   result->SetLegacyOneWayMode(SslHmacChannelAuthenticator::SEND_ONLY);
-  return scoped_ptr<ChannelAuthenticator>(result.Pass());
+  return result.PassAs<ChannelAuthenticator>();
 };
 
 V1HostAuthenticator::V1HostAuthenticator(
@@ -161,7 +161,7 @@ V1HostAuthenticator::CreateChannelAuthenticator() const {
       SslHmacChannelAuthenticator::CreateForHost(
           local_cert_, local_private_key_.get(), shared_secret_);
   result->SetLegacyOneWayMode(SslHmacChannelAuthenticator::RECEIVE_ONLY);
-  return scoped_ptr<ChannelAuthenticator>(result.Pass());
+  return result.PassAs<ChannelAuthenticator>();
 };
 
 }  // namespace remoting

@@ -79,7 +79,7 @@ scoped_ptr<Session> PepperSessionManager::Connect(
   session->StartConnection(host_jid, authenticator.Pass(), config.Pass(),
                            state_change_callback);
   sessions_[session->session_id_] = session.get();
-  return scoped_ptr<Session>(session.Pass());
+  return session.PassAs<Session>();
 }
 
 void PepperSessionManager::Close() {

@@ -141,7 +141,7 @@ scoped_ptr<Session> JingleSessionManager::Connect(
 
   jingle_session->SendSessionInitiate();
 
-  return scoped_ptr<Session>(jingle_session.Pass());
+  return jingle_session.PassAs<Session>();
 }
 
 void JingleSessionManager::OnSessionCreate(
