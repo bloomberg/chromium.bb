@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -63,6 +63,10 @@ def main(argv):
   tsan_mac = suppressions.ReadSuppressionsFromFile(supp_filename)
   mac_suppressions = vg_mac + tsan_mac
 
+  supp_filename = JOIN(suppressions_root, "tsan", "suppressions_win32.txt")
+  tsan_win = suppressions.ReadSuppressionsFromFile(supp_filename)
+  win_suppressions = tsan_win
+
   supp_filename = JOIN(suppressions_root, "..", "heapcheck", "suppressions.txt")
   heapcheck_suppressions = suppressions.ReadSuppressionsFromFile(supp_filename)
 
@@ -88,6 +92,9 @@ def main(argv):
             for url in all_reports[r]]):
       # Include mac suppressions if the report is only present on Mac
       cur_supp += mac_suppressions
+    elif all([re.search("Windows%20", url) for url in all_reports[r]]):
+      # Include win32 suppressions if the report is only present on Windows
+      cur_supp += win_suppressions
     elif all([re.search("%20Heapcheck", url)
               for url in all_reports[r]]):
       cur_supp += heapcheck_suppressions
