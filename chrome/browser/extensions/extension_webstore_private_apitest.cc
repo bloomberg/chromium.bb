@@ -206,7 +206,9 @@ class ExtensionWebstoreGetWebGLStatusTest : public InProcessBrowserTest {
 };
 
 // Test cases where the user accepts the install confirmation dialog.
-IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, InstallAccepted) {
+//
+// flaky: http://crbug.com/111308
+IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, FLAKY_InstallAccepted) {
   ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   FilePath temp_path = temp_dir.path();
@@ -233,7 +235,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, MissingDownloadDir) {
 }
 
 // Tests passing a localized name.
-IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, InstallLocalized) {
+//
+// flaky: http://crbug.com/111308
+IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest,
+                       FLAKY_InstallLocalized) {
   ASSERT_TRUE(RunInstallTest("localized.html", "localized_extension.crx"));
 }
 
@@ -276,8 +281,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest,
 
 // Tests that we can request an app installed bubble (instead of the default
 // UI when an app is installed).
+//
+// flaky: http://crbug.com/111308
 IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest,
-                       AppInstallBubble) {
+                       FLAKY_AppInstallBubble) {
   WebstoreInstallListener listener;
   WebstorePrivateApi::SetWebstoreInstallerDelegateForTesting(&listener);
   ASSERT_TRUE(RunInstallTest("app_install_bubble.html", "app.crx"));
