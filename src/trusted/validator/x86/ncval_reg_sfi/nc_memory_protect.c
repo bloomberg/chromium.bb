@@ -87,6 +87,19 @@ static Bool NaClIsMov32UsingReg(NaClValidatorState* state,
   NaClExpVector* vector;
   NaClInstState* inst_state;
 
+#ifdef NCVAL_TESTING
+  /* Add precondition if needed from previous instruction. */
+  if (1 == distance) {
+    char* buffer;
+    size_t buffer_size;
+    char reg_name[kMaxBufferSize];
+    NaClOpRegName(reg, reg_name, kMaxBufferSize);
+    NaClConditionAppend(state->precond, &buffer, &buffer_size);
+    SNPRINTF(buffer, buffer_size, "ZeroExtends(%s)", reg_name);
+    return TRUE;
+  }
+#endif
+
   /* Get the instruction to be checked. */
   inst_state = NaClGetValInstStateAt(state, distance);
   if (NULL == inst_state) return FALSE;
@@ -282,8 +295,23 @@ static Bool NaClMatchLeaSafeAddress(
   NaClInstState* inst_state;
   const NaClInst* inst;
 
-  DEBUG(NaClLog(LOG_INFO, "reg64 = %s\n", NaClOpKindName(reg64)));
+  DEBUG(NaClLog(LOG_INFO, "reg64 = %s, distance = %d\n",
+                NaClOpKindName(reg64), (int) distance));
 
+#if NCVAL_TESTING
+  if (1 == distance) {
+    /* Assume that previous instruction is an LEA, since
+     * we want to only generate pre/post conditions.
+     */
+    char* buffer;
+    size_t buffer_size;
+    char reg_name[kMaxBufferSize];
+    NaClOpRegName(reg64, reg_name, kMaxBufferSize);
+    NaClConditionAppend(state->precond, &buffer, &buffer_size);
+    SNPRINTF(buffer, buffer_size, "SafeAddress(%s)", reg_name);
+    return TRUE;
+  }
+#endif
   /* Get the instruction to be checked. */
   inst_state = NaClGetValInstStateAt(state, distance);
   if (NULL == inst_state) return FALSE;
@@ -511,9 +539,30 @@ void NaClMemoryReferenceValidator(NaClValidatorState* state) {
         "Multiple memory references not allowed in this context\n");
   }
 
+#ifndef NCVAL_TESTING
   /* Mark all but first instruction of pattern illegal to jump into. */
   if (0 < pattern_length) {
     NaClMarkInstructionsJumpRangeIllegal(state, pattern_length);
   }
+#endif
   DEBUG(NaClLog(LOG_INFO, "<- Validating store\n"));
 }
+
+#ifdef NCVAL_TESTING
+void NaClAcceptLeaSafeAddress(struct NaClValidatorState* state) {
+  const NaClInst* inst;
+
+  /* Check that it is an LEA instruction. */
+  inst = NaClInstStateInst(state->cur_inst_state);
+  if (InstLea != inst->name) return;
+
+  /* Note that first argument of LEA is always a register,
+   * (under an OperandReference), and hence is always at
+   * index 1.
+   */
+  NaClMatchLeaSafeAddress(state, 0,
+                          NaClGetExpVectorRegister(
+                              NaClInstStateExpVector(state->cur_inst_state),
+                              1));
+}
+#endif

@@ -81,8 +81,7 @@ void NaClAddLeaSafeAddressPostconds(
         NaClAcceptLeaWithMoveLea32To64(state, reg);
       }
     } else {
-      NaClIsLeaSafeAddress(state, 0, state->cur_inst_state,
-                           NaClGetExpRegisterInline(node));
+      NaClAcceptLeaSafeAddress(state);
     }
   }
   DEBUG(NaClValidatorMessage(
