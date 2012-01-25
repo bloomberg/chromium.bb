@@ -561,7 +561,7 @@ bool ChromeRenderViewObserver::allowRunningInsecureContent(
     const WebKit::WebURL& resource_url) {
   // Single value to control permissive mixed content behaviour.  We flip
   // this at the present between beta / stable releases.
-  const bool block_insecure_content_on_all_domains = false;
+  const bool block_insecure_content_on_all_domains = true;
 
   std::string origin_host(origin.host().utf8());
   GURL frame_gurl(frame->document().url());
