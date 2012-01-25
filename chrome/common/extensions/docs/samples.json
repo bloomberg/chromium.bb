@@ -855,9 +855,10 @@
         "background.js",
         "content_script.js",
         "manifest.json",
-        "options.html"
+        "options.html",
+        "options.js"
       ],
-      "source_hash": "06c9cd22fddedb3a0f10e1884270eea652622267",
+      "source_hash": "270fca47d275f5713835f280b4ef665e700d8b03",
       "zip_path": "examples\/extensions\/email_this_page.zip"
     },
     {

@@ -1,6 +1,6 @@
 <!DOCTYPE>
 <!--
- * Copyright (c) 2009 The Chromium Authors. All rights reserved.  Use of this
+ * Copyright (c) 2012 The Chromium Authors. All rights reserved.  Use of this
  * source code is governed by a BSD-style license that can be found in the
  * LICENSE file.
 -->
@@ -13,39 +13,9 @@
   font-size: 10pt;
 }
 </style>
-<script>
-  var gmail = "https://mail.google.com/mail/?extsrc=mailto&url=%s";
-
-function toggle(radioButton) {
-  if (window.localStorage == null) {
-    alert('Local storage is required for changing providers');
-    return;
-  }
-
-  var selected = radioButton.value;
-  if (selected == "gmail") {
-    window.localStorage.customMailtoUrl = gmail;
-  } else {
-    window.localStorage.customMailtoUrl = "";
-  }
-}
-
-function main() {
-  if (window.localStorage == null) {
-    alert("LocalStorage must be enabled for changing options.");
-    document.getElementById('default').disabled = true;
-    document.getElementById('gmail').disabled = true;
-    return;
-  }
-
-  // Default handler is checked. If we've chosen another provider, we must
-  // change the checkmark.
-  if (window.localStorage.customMailtoUrl == gmail)
-    document.getElementById('gmail').checked = true;
-}
-</script>
+<script src="options.js"></script>
 </head>
-<body onload="main()">
+<body>
 <table border="0">
 <tr>
   <td rowspan="2" valign="top" align="center" width="80">
@@ -58,10 +28,14 @@ function main() {
     <div id="providerSelection">
     <strong>Select provider to use when emailing a web page address:</strong>
     <br /><br />
-    <input id="default" type="radio" name="mailto" value="mailto"
-           onclick="toggle(this)" checked>Your default mail handler<br>
-    <input id="gmail" type="radio" name="mailto" value="gmail"
-           onclick="toggle(this)">Gmail<br>
+    <label>
+      <input id="default" type="radio" name="mailto" value="mailto" checked>
+      Your default mail handler<br>
+    </label>
+
+    <label>
+      <input id="gmail" type="radio" name="mailto" value="gmail">Gmail<br>
+    </label>
     </div>
   </td>
 </tr>
