@@ -603,6 +603,7 @@ x86_internal_pfq = internal.derive(pfq,
 x86_internal_pfq.add_config('x86-zgb-private-bin',
   board='x86-zgb',
   description='ZGB PFQ',
+  important=False,
 )
 
 x86_internal_pfq.add_config('x86-alex-private-bin',
