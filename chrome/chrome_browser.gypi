@@ -3035,6 +3035,8 @@
         'browser/ui/gtk/chrome_gtk_frame.h',
         'browser/ui/gtk/collected_cookies_gtk.cc',
         'browser/ui/gtk/collected_cookies_gtk.h',
+        'browser/ui/gtk/confirm_bubble_view.cc',
+        'browser/ui/gtk/confirm_bubble_view.h',
         'browser/ui/gtk/constrained_html_delegate_gtk.cc',
         'browser/ui/gtk/constrained_window_gtk.cc',
         'browser/ui/gtk/constrained_window_gtk.h',
