@@ -37,7 +37,8 @@ class ScopedShutdownWebKit {
 };
 
 // Sanity test, check the function call directly outside the sandbox.
-TEST(IDBKeyPathWithoutSandbox, Value) {
+// TODO(jsbell): Disabled to land WK76487; http://crbug.com/110956 has fix.
+TEST(IDBKeyPathWithoutSandbox, DISABLED_Value) {
   content::WebKitPlatformSupportImpl webkit_platform_support;
   WebKit::initialize(&webkit_platform_support);
   ScopedShutdownWebKit shutdown_webkit;

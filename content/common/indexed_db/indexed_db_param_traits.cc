@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -62,6 +62,9 @@ void ParamTraits<IndexedDBKey>::Write(Message* m, const param_type& p) {
       WriteParam(m, p.number());
       return;
     case WebKit::WebIDBKey::InvalidType:
+    default:
+      // TODO(jsbell): Remove "default" label once WebKit bug 76487 has rolled.
+      // http://crbug.com/110956
       return;
   }
   NOTREACHED();
@@ -108,6 +111,9 @@ bool ParamTraits<IndexedDBKey>::Read(const Message* m,
         return true;
       }
     case WebKit::WebIDBKey::InvalidType:
+    default:
+      // TODO(jsbell): Remove "default" label once WebKit bug 76487 has rolled.
+      // http://crbug.com/110956
       r->SetInvalid();
       return true;
   }
