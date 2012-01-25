@@ -5616,6 +5616,14 @@
    fun:_ZN6crypto18ECSignatureCreator4SignEPKhiPSt6vectorIhSaIhEE
    fun:_ZN37ECSignatureCreatorTest_BasicTest_Test8TestBodyEv
 }
+{
+   bug_111341
+   Memcheck:Leak
+   fun:malloc
+   fun:_ZN3WTF10fastMallocEm
+   fun:_ZN7WebCore17ClipboardChromiumnwEm
+   fun:_ZN7WebCore17ClipboardChromium6createENS_9Clipboard13ClipboardTypeEN3WTF10PassRefPtrINS_18ChromiumDataObjectEEENS_21ClipboardAccessPolicyEPNS_5FrameE
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
