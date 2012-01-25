@@ -28,7 +28,7 @@ remoting.ViewerPlugin.prototype.releaseAllKeys = function() {};
  * @param {string} clientJid The client's JID.
  * @param {string} sharedSecret The access code for IT2Me or the
  *     PIN for Me2Me.
- * @param {string=} authenticationMethods Comma-separated list of
+ * @param {string=} authenticationMethod Comma-separated list of
  *     authentication methods the client should attempt to use.
  * @param {string=} authenticationTag A host-specific tag to mix into
  *     authentication hashes.
