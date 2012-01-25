@@ -47,6 +47,8 @@
 #define NACL_sys_gettimeofday           40
 #define NACL_sys_clock                  41
 #define NACL_sys_nanosleep              42
+#define NACL_sys_clock_getres           43
+#define NACL_sys_clock_gettime          44
 
 /* 50-58 previously used for multimedia syscalls */
 

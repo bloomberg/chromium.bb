@@ -3103,6 +3103,7 @@ nacl_env.Append(
 # These are tests that are worthwhile to run in IRT variant only.
 irt_only_tests = [
     #### ALPHABETICALLY SORTED ####
+    'tests/clock/nacl.scons',
     'tests/irt/nacl.scons',
     'tests/random/nacl.scons',
     ]

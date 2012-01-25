@@ -30,7 +30,7 @@ int NaClClockInit(void) {
 
 void NaClClockFini(void) {}
 
-int NaClClockGetRes(nacl_abi_clockid_t        clk_id,
+int NaClClockGetRes(nacl_clockid_t            clk_id,
                     struct nacl_abi_timespec  *res) {
   int             rv = -NACL_ABI_EINVAL;
   uint64_t        t_resolution_ns;
@@ -41,13 +41,13 @@ int NaClClockGetRes(nacl_abi_clockid_t        clk_id,
             "NaClClockGetRes invoked without successful NaClClockInit\n");
   }
   switch (clk_id) {
-    case NACL_ABI_CLOCK_REALTIME:
+    case NACL_CLOCK_REALTIME:
       t_resolution_ns = NaClTimerResolutionNanoseconds();
       host_res.tv_sec = (time_t) (t_resolution_ns / NACL_NANOS_PER_UNIT);
       host_res.tv_nsec = (long)  (t_resolution_ns % NACL_NANOS_PER_UNIT);
       rv = 0;
       break;
-    case NACL_ABI_CLOCK_MONOTONIC:
+    case NACL_CLOCK_MONOTONIC:
       host_res.tv_sec = 0;
       /* round up */
       host_res.tv_nsec = ((g_NaCl_time_base_info.numer
@@ -55,8 +55,8 @@ int NaClClockGetRes(nacl_abi_clockid_t        clk_id,
                           / g_NaCl_time_base_info.denom);
       rv = 0;
       break;
-    case NACL_ABI_CLOCK_PROCESS_CPUTIME_ID:
-    case NACL_ABI_CLOCK_THREAD_CPUTIME_ID:
+    case NACL_CLOCK_PROCESS_CPUTIME_ID:
+    case NACL_CLOCK_THREAD_CPUTIME_ID:
       rv = -NACL_ABI_EINVAL;
       break;
   }
@@ -67,7 +67,7 @@ int NaClClockGetRes(nacl_abi_clockid_t        clk_id,
   return rv;
 }
 
-int NaClClockGetTime(nacl_abi_clockid_t        clk_id,
+int NaClClockGetTime(nacl_clockid_t            clk_id,
                      struct nacl_abi_timespec  *tp) {
   int                     rv = -NACL_ABI_EINVAL;
   struct nacl_abi_timeval tv;
@@ -79,14 +79,14 @@ int NaClClockGetTime(nacl_abi_clockid_t        clk_id,
             "NaClClockGetTime invoked without successful NaClClockInit\n");
   }
   switch (clk_id) {
-    case NACL_ABI_CLOCK_REALTIME:
+    case NACL_CLOCK_REALTIME:
       rv = NaClGetTimeOfDay(&tv);
       if (0 == rv) {
         tp->tv_sec = tv.nacl_abi_tv_sec;
         tp->tv_nsec = tv.nacl_abi_tv_usec * 1000;
       }
       break;
-    case NACL_ABI_CLOCK_MONOTONIC:
+    case NACL_CLOCK_MONOTONIC:
       tick_cur = mach_absolute_time();
       /*
        * mach_absolute_time() returns ticks since boot, with enough
@@ -100,8 +100,8 @@ int NaClClockGetTime(nacl_abi_clockid_t        clk_id,
       tp->tv_nsec = tick_ns % 1000000000;
       rv = 0;
       break;
-    case NACL_ABI_CLOCK_PROCESS_CPUTIME_ID:
-    case NACL_ABI_CLOCK_THREAD_CPUTIME_ID:
+    case NACL_CLOCK_PROCESS_CPUTIME_ID:
+    case NACL_CLOCK_THREAD_CPUTIME_ID:
       rv = -NACL_ABI_EINVAL;
       break;
   }

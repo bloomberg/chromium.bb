@@ -20,12 +20,12 @@
 
 EXTERN_C_BEGIN
 
-typedef enum NaClAbiClockIdEnum {
-  NACL_ABI_CLOCK_REALTIME,
-  NACL_ABI_CLOCK_MONOTONIC,
-  NACL_ABI_CLOCK_PROCESS_CPUTIME_ID,
-  NACL_ABI_CLOCK_THREAD_CPUTIME_ID,
-} nacl_abi_clockid_t;
+typedef enum NaClClockIdEnum {
+  NACL_CLOCK_REALTIME = NACL_ABI_CLOCK_REALTIME,
+  NACL_CLOCK_MONOTONIC = NACL_ABI_CLOCK_MONOTONIC,
+  NACL_CLOCK_PROCESS_CPUTIME_ID = NACL_ABI_CLOCK_PROCESS_CPUTIME_ID,
+  NACL_CLOCK_THREAD_CPUTIME_ID = NACL_ABI_CLOCK_THREAD_CPUTIME_ID,
+} nacl_clockid_t;
 
 /*
  * NaClClockInit should be invoked *after* NaClTimeInit.  Using
@@ -39,10 +39,10 @@ int NaClClockInit(void);
 
 void NaClClockFini(void);
 
-int NaClClockGetRes(nacl_abi_clockid_t        clk_id,
+int NaClClockGetRes(nacl_clockid_t            clk_id,
                     struct nacl_abi_timespec  *res) NACL_WUR;
 
-int NaClClockGetTime(nacl_abi_clockid_t       clk_id,
+int NaClClockGetTime(nacl_clockid_t           clk_id,
                      struct nacl_abi_timespec *tp) NACL_WUR;
 
 EXTERN_C_END

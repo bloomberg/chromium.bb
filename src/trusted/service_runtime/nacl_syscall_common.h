@@ -31,16 +31,16 @@ int32_t NaClSetBreak(struct NaClAppThread *natp,
                      uintptr_t            new_break);
 
 /*
- * Entering kernel mode from user mde.  Makes thread unkillable
+ * Entering kernel mode from user mode.  Makes thread unkillable
  * because while switched to kernel mode, we may be holding kernel
  * locks and in the middle of mutating protected objects, and killing
  * the thread will leave the service runtime in an inconsistent state.
  * Must invoke the correspondng Leave function, except if the thread
  * is exiting anyway.
  *
- * Not all syscalls need to invoke the Enter function -- those that we
- * know definitely does not grab any locks (even implicitly, in libc
- * routines such as malloc).
+ * Not all syscalls need to invoke the Enter function -- e.g., those
+ * that we know definitely does not grab any locks (even implicitly,
+ * in libc routines such as malloc).
  */
 void NaClSysCommonThreadSyscallEnter(struct NaClAppThread *natp);
 
@@ -49,6 +49,9 @@ void NaClSysCommonThreadSyscallEnter(struct NaClAppThread *natp);
  * if a kill request was made, and if so commit suicide.  Must be
  * invoked if there was a corresponding Enter; not harmful if called
  * without a corresponding Enter.
+ *
+ * This is likely to also be used in the future to implement thread
+ * suspension for user-space garbage collection.
  */
 void NaClSysCommonThreadSyscallLeave(struct NaClAppThread *natp);
 
@@ -118,14 +121,14 @@ int32_t NaClCommonSysStat(struct NaClAppThread *natp,
                           const char           *path,
                           struct nacl_abi_stat *nasp);
 
-void NaClCommonUtilUpdateAddrMap(struct NaClApp       *nap,
-                                 uintptr_t            sysaddr,
-                                 size_t               nbytes,
-                                 int                  sysprot,
-                                 struct NaClDesc      *backing_desc,
-                                 nacl_off64_t         backing_bytes,
-                                 nacl_off64_t         offset_bytes,
-                                 int                  delete_mem);
+void NaClCommonUtilUpdateAddrMap(struct NaClApp   *nap,
+                                 uintptr_t        sysaddr,
+                                 size_t           nbytes,
+                                 int              sysprot,
+                                 struct NaClDesc  *backing_desc,
+                                 nacl_off64_t     backing_bytes,
+                                 nacl_off64_t     offset_bytes,
+                                 int              delete_mem);
 
 /* bool */
 int NaClSysCommonAddrRangeContainsExecutablePages_mu(struct NaClApp *nap,
@@ -140,13 +143,13 @@ int32_t NaClCommonSysMmap(struct NaClAppThread  *natp,
                           int                   d,
                           nacl_abi_off_t        *offp);
 
-int32_t NaClCommonSysMmapIntern(struct NaClApp        *nap,
-                                void                  *start,
-                                size_t                length,
-                                int                   prot,
-                                int                   flags,
-                                int                   d,
-                                nacl_abi_off_t        offset);
+int32_t NaClCommonSysMmapIntern(struct NaClApp  *nap,
+                                void            *start,
+                                size_t          length,
+                                int             prot,
+                                int             flags,
+                                int             d,
+                                nacl_abi_off_t  offset);
 
 int32_t NaClSysMmap(struct NaClAppThread  *natp,
                     void                  *start,
@@ -164,6 +167,14 @@ int32_t NaClCommonSysGetdents(struct NaClAppThread  *natp,
                               int                   d,
                               void                  *dirp,
                               size_t                count);
+
+int32_t NaClCommonSysClockGetRes(struct NaClAppThread *natp,
+                                 int                  clk_id,
+                                 uint32_t             tsp);
+
+int32_t NaClCommonSysClockGetTime(struct NaClAppThread  *natp,
+                                  int                   clk_id,
+                                  uint32_t              tsp);
 
 int32_t NaClCommonSysImc_MakeBoundSock(struct NaClAppThread *natp,
                                        int32_t              *sap);

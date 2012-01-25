@@ -1,7 +1,7 @@
 /*
- * Copyright 2008  The Native Client Authors.  All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2012 The Native Client Authors.  All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -58,6 +58,15 @@ struct nacl_abi_timezone {
  * it is void *.
  */
 extern int nacl_abi_gettimeofday(struct nacl_abi_timeval *tv, void *tz);
+
+/*
+ * POSIX defined clock id values for clock_getres andn clock_gettime.
+ */
+
+#define NACL_ABI_CLOCK_REALTIME           (0)
+#define NACL_ABI_CLOCK_MONOTONIC          (1)
+#define NACL_ABI_CLOCK_PROCESS_CPUTIME_ID (2)
+#define NACL_ABI_CLOCK_THREAD_CPUTIME_ID  (3)
 
 #ifdef __cplusplus
 }

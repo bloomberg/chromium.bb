@@ -19,6 +19,7 @@
 #include "native_client/src/include/nacl_platform.h"
 #include "native_client/src/include/portability_string.h"
 
+#include "native_client/src/shared/platform/nacl_clock.h"
 #include "native_client/src/shared/platform/nacl_exit.h"
 #include "native_client/src/shared/platform/nacl_host_desc.h"
 #include "native_client/src/shared/platform/nacl_host_dir.h"
@@ -2344,7 +2345,7 @@ int32_t NaClCommonSysMutex_Create(struct NaClAppThread *natp) {
     goto cleanup;
   }
 
-  retval = NaClSetAvail(natp->nap, (struct NaClDesc *)desc);
+  retval = NaClSetAvail(natp->nap, (struct NaClDesc *) desc);
   desc = NULL;
 cleanup:
   free(desc);
@@ -2846,3 +2847,61 @@ int32_t NaClCommonSysTest_InfoLeak(struct NaClAppThread *natp) {
 
   return -NACL_ABI_ENOSYS;
 }
+
+static int NaClIsValidClockId(int clk_id) {
+  switch (clk_id) {
+    case NACL_ABI_CLOCK_REALTIME:
+    case NACL_ABI_CLOCK_MONOTONIC:
+    case NACL_ABI_CLOCK_PROCESS_CPUTIME_ID:
+    case NACL_ABI_CLOCK_THREAD_CPUTIME_ID:
+      return 1;
+  }
+  return 0;
+}
+
+int32_t NaClCommonSysClockGetCommon(struct NaClAppThread  *natp,
+                                    int                   clk_id,
+                                    uint32_t              ts_addr,
+                                    int                   (*timefunc)(
+                                        nacl_clockid_t            clk_id,
+                                        struct nacl_abi_timespec  *tp)) {
+  int                       retval = -NACL_ABI_EINVAL;
+  uintptr_t                 sysaddr;
+  struct nacl_abi_timespec  out_buf;
+
+  NaClSysCommonThreadSyscallEnter(natp);
+  if (!NaClIsValidClockId(clk_id)) {
+    goto done;
+  }
+  sysaddr = NaClUserToSysAddrRange(natp->nap,
+                                   (uintptr_t) ts_addr, sizeof(out_buf));
+  if (kNaClBadAddress == sysaddr) {
+    NaClLog(1,
+            ("NaClSysCommonSysClockGetCommon: bad timespec address "
+             " (0x%08"NACL_PRIx32")\n"),
+            ts_addr);
+    retval = -NACL_ABI_EFAULT;
+    goto done;
+  }
+  retval = (*timefunc)((nacl_clockid_t) clk_id, &out_buf);
+  if (0 == retval) {
+    *(struct nacl_abi_timespec volatile *) sysaddr = out_buf;
+  }
+ done:
+  return retval;
+}
+
+int32_t NaClCommonSysClockGetRes(struct NaClAppThread *natp,
+                                 int                  clk_id,
+                                 uint32_t             tsp) {
+  return NaClCommonSysClockGetCommon(natp, clk_id, (uintptr_t) tsp,
+                                     NaClClockGetRes);
+}
+
+int32_t NaClCommonSysClockGetTime(struct NaClAppThread  *natp,
+                                  int                   clk_id,
+                                  uint32_t              tsp) {
+  return NaClCommonSysClockGetCommon(natp, clk_id, (uintptr_t) tsp,
+                                     NaClClockGetTime);
+}
+

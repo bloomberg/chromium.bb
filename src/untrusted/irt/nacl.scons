@@ -52,6 +52,7 @@ irt_common_interfaces = [
     'irt_sem.c',
     'irt_tls.c',
     'irt_blockhook.c',
+    'irt_clock.c',
     ]
 
 # These are the objects and libraries that go into every IRT image.

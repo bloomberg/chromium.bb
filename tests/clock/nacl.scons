@@ -1,0 +1,20 @@
+# -*- python -*-
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# This is a basic functionality test to exercise the irt plumbing.
+
+Import('env')
+
+clock_irt_test_nexe = env.ComponentProgram('clock_irt_test',
+                                           'clock_irt_test.c',
+                                           EXTRA_LIBS=['${NONIRT_LIBS}'],
+                                           )
+
+node = env.CommandSelLdrTestNacl(
+    'clock_irt_test.out',
+    clock_irt_test_nexe,
+    )
+
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_clock_irt_test')

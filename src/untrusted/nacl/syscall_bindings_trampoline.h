@@ -165,6 +165,12 @@ typedef clock_t (*TYPE_nacl_clock) (void);
 typedef int (*TYPE_nacl_nanosleep) (const struct timespec *req,
                                     struct timespec *rem);
 
+typedef int (*TYPE_nacl_clock_getres) (clockid_t clk_id,
+                                       struct timespec *res);
+
+typedef int (*TYPE_nacl_clock_gettime) (clockid_t clk_id,
+                                        struct timespec *tp);
+
 #ifdef __GNUC__
 typedef void (*TYPE_nacl_exit) (int status) __attribute__((noreturn));
 #else

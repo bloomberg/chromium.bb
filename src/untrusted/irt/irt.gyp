@@ -25,6 +25,7 @@
       'irt_sem.c',
       'irt_tls.c',
       'irt_blockhook.c',
+      'irt_clock.c',
 # support_srcs
       '../pthread/nc_mutex.c',
       '../pthread/nc_condvar.c',

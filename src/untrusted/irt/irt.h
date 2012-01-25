@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -159,6 +159,12 @@ struct nacl_irt_resource_open {
 #define NACL_IRT_RANDOM_v0_1 "nacl-irt-random-0.1"
 struct nacl_irt_random {
   int (*get_random_bytes)(void *buf, size_t count, size_t *nread);
+};
+
+#define NACL_IRT_CLOCK_v0_1 "nacl-irt-clock_get-0.1"
+struct nacl_irt_clock {
+  int (*getres)(clockid_t clk_id, struct timespec *res);
+  int (*gettime)(clockid_t clk_id, struct timespec *tp);
 };
 
 #if __cplusplus

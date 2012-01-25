@@ -34,6 +34,7 @@ static const struct nacl_interface_table irt_interfaces[] = {
   { NACL_IRT_PPAPIHOOK_v0_1, &nacl_irt_ppapihook, sizeof(nacl_irt_ppapihook) },
   { NACL_IRT_RANDOM_v0_1, &nacl_irt_random, sizeof(nacl_irt_random) },
 #endif
+  { NACL_IRT_CLOCK_v0_1, &nacl_irt_clock, sizeof(nacl_irt_clock) },
 };
 
 size_t nacl_irt_interface(const char *interface_ident,

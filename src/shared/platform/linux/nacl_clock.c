@@ -24,7 +24,7 @@ static int g_NaClClock_is_initialized = 0;
 int NaClClockInit(void) { g_NaClClock_is_initialized = 1; return 1; }
 void NaClClockFini(void) {}
 
-int NaClClockGetRes(nacl_abi_clockid_t        clk_id,
+int NaClClockGetRes(nacl_clockid_t            clk_id,
                     struct nacl_abi_timespec  *res) {
   int             rv = -NACL_ABI_EINVAL;
   struct timespec host_res;
@@ -35,16 +35,16 @@ int NaClClockGetRes(nacl_abi_clockid_t        clk_id,
             "NaClClockGetRes invoked without successful NaClClockInit\n");
   }
   switch (clk_id) {
-    case NACL_ABI_CLOCK_REALTIME:
+    case NACL_CLOCK_REALTIME:
       host_clk_id = CLOCK_REALTIME;
       rv = 0;
       break;
-    case NACL_ABI_CLOCK_MONOTONIC:
+    case NACL_CLOCK_MONOTONIC:
       host_clk_id = CLOCK_MONOTONIC;
       rv = 0;
       break;
-    case NACL_ABI_CLOCK_PROCESS_CPUTIME_ID:
-    case NACL_ABI_CLOCK_THREAD_CPUTIME_ID:
+    case NACL_CLOCK_PROCESS_CPUTIME_ID:
+    case NACL_CLOCK_THREAD_CPUTIME_ID:
       rv = -NACL_ABI_EINVAL;
       break;
   }
@@ -60,7 +60,7 @@ int NaClClockGetRes(nacl_abi_clockid_t        clk_id,
   return rv;
 }
 
-int NaClClockGetTime(nacl_abi_clockid_t        clk_id,
+int NaClClockGetTime(nacl_clockid_t            clk_id,
                      struct nacl_abi_timespec  *tp) {
   int             rv = -NACL_ABI_EINVAL;
   struct timespec host_time;
@@ -70,22 +70,22 @@ int NaClClockGetTime(nacl_abi_clockid_t        clk_id,
             "NaClClockGetTime invoked without successful NaClClockInit\n");
   }
   switch (clk_id) {
-    case NACL_ABI_CLOCK_REALTIME:
+    case NACL_CLOCK_REALTIME:
       if (0 != clock_gettime(CLOCK_REALTIME, &host_time)) {
         rv = -NaClXlateErrno(errno);
       } else {
         rv = 0;
       }
       break;
-    case NACL_ABI_CLOCK_MONOTONIC:
+    case NACL_CLOCK_MONOTONIC:
       if (0 != clock_gettime(CLOCK_MONOTONIC, &host_time)) {
         rv = -NaClXlateErrno(errno);
       } else {
         rv = 0;
       }
       break;
-    case NACL_ABI_CLOCK_PROCESS_CPUTIME_ID:
-    case NACL_ABI_CLOCK_THREAD_CPUTIME_ID:
+    case NACL_CLOCK_PROCESS_CPUTIME_ID:
+    case NACL_CLOCK_THREAD_CPUTIME_ID:
       rv = -NACL_ABI_EINVAL;
       break;
   }

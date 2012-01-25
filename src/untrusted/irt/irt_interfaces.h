@@ -25,5 +25,6 @@ extern const struct nacl_irt_blockhook nacl_irt_blockhook;
 extern const struct nacl_irt_ppapihook nacl_irt_ppapihook;
 extern const struct nacl_irt_resource_open nacl_irt_resource_open;
 extern const struct nacl_irt_random nacl_irt_random;
+extern const struct nacl_irt_clock nacl_irt_clock;
 
 #endif  /* NATIVE_CLIENT_SRC_UNTRUSTED_IRT_IRT_INTERFACES_H_ */

@@ -42,7 +42,7 @@ void NaClClockFini(void) {
   NaClMutexDtor(&g_nacl_clock_mu);
 }
 
-int NaClClockGetRes(nacl_abi_clockid_t        clk_id,
+int NaClClockGetRes(nacl_clockid_t            clk_id,
                     struct nacl_abi_timespec  *res) {
   int       rv = -NACL_ABI_EINVAL;
   uint64_t  t_resolution_ns;
@@ -52,8 +52,8 @@ int NaClClockGetRes(nacl_abi_clockid_t        clk_id,
             "NaClClockGetRes invoked without successful NaClClockInit\n");
   }
   switch (clk_id) {
-    case NACL_ABI_CLOCK_REALTIME:
-    case NACL_ABI_CLOCK_MONOTONIC:
+    case NACL_CLOCK_REALTIME:
+    case NACL_CLOCK_MONOTONIC:
       t_resolution_ns = NaClTimerResolutionNanoseconds();
       res->tv_sec  = (nacl_abi_time_t) (t_resolution_ns / NACL_NANOS_PER_UNIT);
       res->tv_nsec = (int32_t)         (t_resolution_ns % NACL_NANOS_PER_UNIT);
@@ -63,15 +63,15 @@ int NaClClockGetRes(nacl_abi_clockid_t        clk_id,
        */
       rv = 0;
       break;
-    case NACL_ABI_CLOCK_PROCESS_CPUTIME_ID:
-    case NACL_ABI_CLOCK_THREAD_CPUTIME_ID:
+    case NACL_CLOCK_PROCESS_CPUTIME_ID:
+    case NACL_CLOCK_THREAD_CPUTIME_ID:
       break;
   }
 
   return rv;
 }
 
-int NaClClockGetTime(nacl_abi_clockid_t       clk_id,
+int NaClClockGetTime(nacl_clockid_t           clk_id,
                      struct nacl_abi_timespec *tp) {
   int                     rv = -NACL_ABI_EINVAL;
   struct nacl_abi_timeval tv;
@@ -83,14 +83,14 @@ int NaClClockGetTime(nacl_abi_clockid_t       clk_id,
             "NaClClockGetTime invoked without successful NaClClockInit\n");
   }
   switch (clk_id) {
-    case NACL_ABI_CLOCK_REALTIME:
+    case NACL_CLOCK_REALTIME:
       rv = NaClGetTimeOfDay(&tv);
       if (0 == rv) {
         tp->tv_sec = tv.nacl_abi_tv_sec;
         tp->tv_nsec = tv.nacl_abi_tv_usec * 1000;
       }
       break;
-    case NACL_ABI_CLOCK_MONOTONIC:
+    case NACL_CLOCK_MONOTONIC:
       /*
        * Get real time, compare with last monotonic time.  If later
        * than last monotonic time, set last monotonic time to real
@@ -125,8 +125,8 @@ int NaClClockGetTime(nacl_abi_clockid_t       clk_id,
         rv = 0;
       }
       break;
-    case NACL_ABI_CLOCK_PROCESS_CPUTIME_ID:
-    case NACL_ABI_CLOCK_THREAD_CPUTIME_ID:
+    case NACL_CLOCK_PROCESS_CPUTIME_ID:
+    case NACL_CLOCK_THREAD_CPUTIME_ID:
       break;
   }
   return rv;
