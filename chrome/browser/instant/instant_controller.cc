@@ -260,6 +260,13 @@ bool InstantController::PrepareForCommit() {
     return false;
   }
 
+  // In the HIDDEN and SUGGEST experiments (but not SILENT), we must have sent
+  // an Update() by now, so check if the loader failed to process it.
+  if (!InstantFieldTrial::IsSilentExperiment(tab_contents_->profile()) &&
+      (!loader_->ready() || !loader_->http_status_ok())) {
+    return false;
+  }
+
   // Ignore the suggested text, as we are about to commit the verbatim query.
   string16 suggested_text;
   UpdateLoader(template_url, last_url_, last_transition_type_, last_user_text_,
