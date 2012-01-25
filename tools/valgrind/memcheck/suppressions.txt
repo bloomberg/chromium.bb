@@ -5624,6 +5624,20 @@
    fun:_ZN7WebCore17ClipboardChromiumnwEm
    fun:_ZN7WebCore17ClipboardChromium6createENS_9Clipboard13ClipboardTypeEN3WTF10PassRefPtrINS_18ChromiumDataObjectEEENS_21ClipboardAccessPolicyEPNS_5FrameE
 }
+{
+   bug_111371
+   Memcheck:Unaddressable
+   fun:__GI_strlen
+   fun:_ZNSsC1EPKcRKSaIcE
+   fun:_ZN12_GLOBAL__N_115GetVariableInfoEPv12ShShaderInfoPN9__gnu_cxx8hash_mapISsN3gpu5gles225ShaderTranslatorInterface12VariableInfoENS2_4hashISsEESt8equal_toISsESaIS7_EEE
+   fun:_ZN3gpu5gles216ShaderTranslator9TranslateEPKc
+   fun:_ZN3gpu5gles216GLES2DecoderImpl15DoCompileShaderEj
+   fun:_ZN3gpu5gles216GLES2DecoderImpl19HandleCompileShaderEjRKNS0_13CompileShaderE
+   fun:_ZN3gpu5gles216GLES2DecoderImpl9DoCommandEjjPKv
+   fun:_ZN3gpu13CommandParser14ProcessCommandEv
+   fun:_ZN3gpu12GpuScheduler10PutChangedEv
+   fun:_ZN6webkit3gpu18GLInProcessContext12PumpCommandsEv
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
