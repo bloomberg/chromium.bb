@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,7 +15,8 @@ namespace ui {
 #if !defined(VIEWS_COMPOSITOR)
 // To centralize the ifdef to this file we define the function as doing nothing
 // on all platforms that don't use a compositor.
-COMPOSITOR_EXPORT void SetupTestCompositor() {}
+static inline void SetupTestCompositor() {}
+static inline void DisableTestCompositor() {}
 #else
 COMPOSITOR_EXPORT void SetupTestCompositor();
 

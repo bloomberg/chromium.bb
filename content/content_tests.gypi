@@ -137,7 +137,7 @@
             '../build/linux/system.gyp:glib',
           ],
         }],
-        ['use_webkit_compositor==1', {
+        ['use_webkit_compositor==1 and views_compositor==1', {
           'dependencies': [
             '../ui/gfx/compositor/compositor.gyp:compositor',
           ],
