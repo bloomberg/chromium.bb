@@ -1,10 +1,9 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-
-#ifndef CHROME_BROWSER_UI_WEBUI_CHROMEOS_IMAGEBURNER_IMAGEBURNER_UTILS_H_
-#define CHROME_BROWSER_UI_WEBUI_CHROMEOS_IMAGEBURNER_IMAGEBURNER_UTILS_H_
+#ifndef CHROME_BROWSER_CHROMEOS_IMAGEBURNER_BURN_MANAGER_H_
+#define CHROME_BROWSER_CHROMEOS_IMAGEBURNER_BURN_MANAGER_H_
 
 #include <list>
 #include <map>
@@ -13,18 +12,13 @@
 #include <vector>
 
 #include "base/file_path.h"
-#include "base/file_util.h"
-#include "base/memory/singleton.h"
 #include "base/observer_list.h"
-#include "chrome/browser/download/download_util.h"
-#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/file_stream.h"
-#include "ui/base/dragdrop/download_file_interface.h"
 
-
+namespace chromeos {
 namespace imageburner {
 
 // Config file properties.
@@ -224,7 +218,14 @@ class BurnManager
         bool success) = 0;
   };
 
-  // Returns the singleton instance.
+  // Creates the global BurnManager instance.
+  static void Initialize();
+
+  // Destroys the global BurnManager instance if it exists.
+  static void Shutdown();
+
+  // Returns the global BurnManager instance.
+  // Initialize() should already have been called.
   static BurnManager* GetInstance();
 
   // content::DownloadItem::Observer interface.
@@ -284,8 +285,6 @@ class BurnManager
   }
 
  private:
-  friend struct DefaultSingletonTraits<BurnManager>;
-
   BurnManager();
   virtual ~BurnManager();
 
@@ -312,6 +311,6 @@ class BurnManager
   DISALLOW_COPY_AND_ASSIGN(BurnManager);
 };
 
-}  // namespace imageburner.
-#endif  // CHROME_BROWSER_UI_WEBUI_CHROMEOS_IMAGEBURNER_IMAGEBURNER_UTILS_H_
-
+}  // namespace imageburner
+}  // namespace chromeos
+#endif  // CHROME_BROWSER_CHROMEOS_IMAGEBURNER_BURN_MANAGER_H_

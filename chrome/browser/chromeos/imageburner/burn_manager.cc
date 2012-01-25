@@ -1,18 +1,19 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/chromeos/imageburner/imageburner_utils.h"
+#include "chrome/browser/chromeos/imageburner/burn_manager.h"
 
 #include "base/bind.h"
+#include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "chrome/browser/download/download_util.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/common/chrome_paths.h"
 #include "content/browser/download/download_types.h"
 #include "content/browser/renderer_host/render_view_host.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
@@ -22,17 +23,24 @@ using content::DownloadItem;
 using content::DownloadManager;
 using content::WebContents;
 
+namespace chromeos {
 namespace imageburner {
 
-const char kName[] = "name";
-const char kHwid[] = "hwid";
-const char kFileName[] = "file";
-const char kUrl[] = "url";
+namespace {
 
 const char kConfigFileUrl[] =
     "https://dl.google.com/dl/edgedl/chromeos/recovery/recovery.conf";
 const char kTempImageFolderName[] = "chromeos_image";
 const char kConfigFileName[] = "recovery.conf";
+
+BurnManager* g_burn_manager = NULL;
+
+}  // namespace
+
+const char kName[] = "name";
+const char kHwid[] = "hwid";
+const char kFileName[] = "file";
+const char kUrl[] = "url";
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -236,9 +244,31 @@ BurnManager::~BurnManager() {
     download_manager_->RemoveObserver(this);
 }
 
+
+// static
+void BurnManager::Initialize() {
+  if (g_burn_manager) {
+    LOG(WARNING) << "BurnManager was already initialized";
+    return;
+  }
+  g_burn_manager = new BurnManager();
+  VLOG(1) << "BurnManager initialized";
+}
+
+// static
+void BurnManager::Shutdown() {
+  if (!g_burn_manager) {
+    LOG(WARNING) << "BurnManager::Shutdown() called with NULL manager";
+    return;
+  }
+  delete g_burn_manager;
+  g_burn_manager = NULL;
+  VLOG(1) << "BurnManager Shutdown completed";
+}
+
 // static
 BurnManager* BurnManager::GetInstance() {
-  return Singleton<BurnManager>::get();
+  return g_burn_manager;
 }
 
 void BurnManager::OnDownloadUpdated(DownloadItem* download) {
@@ -445,3 +475,4 @@ void Downloader::DownloadStarted(bool success, const GURL& url) {
 }
 
 }  // namespace imageburner
+}  // namespace chromeos

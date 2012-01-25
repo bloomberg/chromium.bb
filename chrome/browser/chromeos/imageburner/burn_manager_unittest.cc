@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,8 +6,9 @@
 #include <gtest/gtest.h>
 
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/ui/webui/chromeos/imageburner/imageburner_utils.h"
+#include "chrome/browser/chromeos/imageburner/burn_manager.h"
 
+namespace chromeos {
 namespace imageburner {
 
 using ::testing::_;
@@ -79,10 +80,10 @@ const std::string kSampleConfigFile =
     "name=another_block_with_no_hwid\n"
     "version=version\n";
 
-TEST(ImageBurnerUtilsTest, ConfigFileTest) {
+TEST(BurnManagerTest, ConfigFileTest) {
   scoped_ptr<ConfigFile> cf(new ConfigFile());
   EXPECT_TRUE(cf->empty());
-  
+
   cf.reset(new ConfigFile(""));
   EXPECT_TRUE(cf->empty());
 
@@ -137,7 +138,7 @@ class MockStateMachineObserver : public StateMachine::Observer {
   MOCK_METHOD1(OnError, void(int));
 };
 
-TEST(ImageBurnerUtilsTest, StateMachineNormalWorkflow) {
+TEST(BurnManagerTest, StateMachineNormalWorkflow) {
   scoped_ptr<StateMachine> state_machine(new StateMachine());
   EXPECT_EQ(StateMachine::INITIAL, state_machine->state());
 
@@ -146,22 +147,22 @@ TEST(ImageBurnerUtilsTest, StateMachineNormalWorkflow) {
   EXPECT_CALL(observer, OnBurnStateChanged(StateMachine::DOWNLOADING))
     .Times(1)
     .RetiresOnSaturation();
-  
+
   EXPECT_CALL(observer, OnBurnStateChanged(StateMachine::BURNING))
     .Times(1)
     .RetiresOnSaturation();
-  
+
   EXPECT_CALL(observer, OnBurnStateChanged(StateMachine::INITIAL))
     .Times(1)
     .RetiresOnSaturation();
-  
+
   EXPECT_FALSE(state_machine->image_download_requested());
   EXPECT_FALSE(state_machine->download_started());
   EXPECT_FALSE(state_machine->download_finished());
   EXPECT_TRUE(state_machine->new_burn_posible());
-  
+
   state_machine->OnImageDownloadRequested();
-  
+
   EXPECT_EQ(StateMachine::INITIAL, state_machine->state());
   EXPECT_TRUE(state_machine->image_download_requested());
   EXPECT_FALSE(state_machine->download_started());
@@ -175,7 +176,7 @@ TEST(ImageBurnerUtilsTest, StateMachineNormalWorkflow) {
   EXPECT_TRUE(state_machine->download_started());
   EXPECT_FALSE(state_machine->download_finished());
   EXPECT_FALSE(state_machine->new_burn_posible());
-  
+
   state_machine->OnDownloadFinished();
 
   // TODO(tbarzic): make this pass.
@@ -184,7 +185,7 @@ TEST(ImageBurnerUtilsTest, StateMachineNormalWorkflow) {
   EXPECT_TRUE(state_machine->download_started());
   EXPECT_TRUE(state_machine->download_finished());
   EXPECT_FALSE(state_machine->new_burn_posible());
-  
+
   state_machine->OnBurnStarted();
 
   EXPECT_EQ(StateMachine::BURNING, state_machine->state());
@@ -192,7 +193,7 @@ TEST(ImageBurnerUtilsTest, StateMachineNormalWorkflow) {
   EXPECT_TRUE(state_machine->download_started());
   EXPECT_TRUE(state_machine->download_finished());
   EXPECT_FALSE(state_machine->new_burn_posible());
-  
+
   state_machine->OnSuccess();
 
   EXPECT_EQ(StateMachine::INITIAL, state_machine->state());
@@ -202,8 +203,8 @@ TEST(ImageBurnerUtilsTest, StateMachineNormalWorkflow) {
   EXPECT_TRUE(state_machine->new_burn_posible());
 }
 
-TEST(ImageBurnerUtilsTest, StateMachineError) {
-  scoped_ptr<StateMachine> state_machine(new StateMachine());  
+TEST(BurnManagerTest, StateMachineError) {
+  scoped_ptr<StateMachine> state_machine(new StateMachine());
 
   MockStateMachineObserver observer;
   // We don't want state change to INITIAL due to error to be reported to
@@ -254,8 +255,8 @@ TEST(ImageBurnerUtilsTest, StateMachineError) {
   EXPECT_TRUE(state_machine->new_burn_posible());
 }
 
-TEST(ImageBurnerUtilsTest, StateaAchineCancelation) {
-  scoped_ptr<StateMachine> state_machine(new StateMachine());  
+TEST(BurnManagerTest, StateaAchineCancelation) {
+  scoped_ptr<StateMachine> state_machine(new StateMachine());
 
   MockStateMachineObserver observer;
   EXPECT_CALL(observer, OnBurnStateChanged(StateMachine::INITIAL))
@@ -268,7 +269,7 @@ TEST(ImageBurnerUtilsTest, StateaAchineCancelation) {
       .Times(3);
   state_machine->AddObserver(&observer);
 
-  state_machine->OnCancelation();  
+  state_machine->OnCancelation();
   EXPECT_EQ(StateMachine::INITIAL, state_machine->state());
 
   // Let's change state to DOWNLOADING.
@@ -278,7 +279,7 @@ TEST(ImageBurnerUtilsTest, StateaAchineCancelation) {
   state_machine->OnCancelation();
 
   EXPECT_EQ(StateMachine::DOWNLOADING, state_machine->state());
-  
+
   // Let's change state to BURNING.
   state_machine->OnBurnStarted();
   EXPECT_EQ(StateMachine::BURNING, state_machine->state());
@@ -288,11 +289,11 @@ TEST(ImageBurnerUtilsTest, StateaAchineCancelation) {
   EXPECT_EQ(StateMachine::BURNING, state_machine->state());
 }
 
-TEST(ImageBurnerUtilsTest, StateMachineObservers) {
+TEST(BurnManagerTest, StateMachineObservers) {
   scoped_ptr<StateMachine> state_machine(new StateMachine());
-  
+
   MockStateMachineObserver observer1, observer2;
-  
+
   EXPECT_CALL(observer1, OnBurnStateChanged(_))
       .Times(0);
   EXPECT_CALL(observer2, OnBurnStateChanged(_))
@@ -315,10 +316,10 @@ TEST(ImageBurnerUtilsTest, StateMachineObservers) {
       .Times(1);
   EXPECT_CALL(observer2, OnError(_))
       .Times(1);
-  
+
   state_machine->OnDownloadStarted();
   state_machine->OnError(1);
-  
+
   state_machine->RemoveObserver(&observer1);
   EXPECT_CALL(observer1, OnBurnStateChanged(_))
       .Times(0);
@@ -332,9 +333,5 @@ TEST(ImageBurnerUtilsTest, StateMachineObservers) {
   state_machine->OnError(1);
 }
 
-}  // namespace imageburner.
-
-
-
-
-
+}  // namespace imageburner
+}  // namespace chromeos

@@ -22,6 +22,7 @@
 #include "chrome/browser/chromeos/dbus/session_manager_client.h"
 #include "chrome/browser/chromeos/disks/disk_mount_manager.h"
 #include "chrome/browser/chromeos/external_metrics.h"
+#include "chrome/browser/chromeos/imageburner/burn_manager.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/input_method/xkeyboard.h"
 #include "chrome/browser/chromeos/login/authenticator.h"
@@ -217,6 +218,8 @@ ChromeBrowserMainPartsChromeos::ChromeBrowserMainPartsChromeos(
 }
 
 ChromeBrowserMainPartsChromeos::~ChromeBrowserMainPartsChromeos() {
+  chromeos::imageburner::BurnManager::Shutdown();
+
   chromeos::disks::DiskMountManager::Shutdown();
 
   chromeos::DBusThreadManager::Shutdown();
@@ -281,6 +284,9 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopStart() {
 
   // Initialize the disk mount manager.
   chromeos::disks::DiskMountManager::Initialize();
+
+  // Initialize the burn manager.
+  chromeos::imageburner::BurnManager::Initialize();
 
   // Initialize the system event observer.
   chromeos::system::SystemEventObserver::Initialize();

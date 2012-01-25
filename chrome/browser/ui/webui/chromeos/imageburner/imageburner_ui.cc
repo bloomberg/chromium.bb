@@ -18,10 +18,10 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/disks/disk_mount_manager.h"
+#include "chrome/browser/chromeos/imageburner/burn_manager.h"
 #include "chrome/browser/chromeos/system/statistics_provider.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
-#include "chrome/browser/ui/webui/chromeos/imageburner/imageburner_utils.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/time_format.h"
 #include "chrome/common/url_constants.h"
@@ -44,6 +44,7 @@ using content::BrowserThread;
 using content::DownloadItem;
 using content::WebContents;
 
+namespace chromeos {
 namespace imageburner {
 
 namespace {
@@ -118,7 +119,6 @@ ChromeWebUIDataSource* CreateImageburnerUIHTMLSource() {
   source->set_default_resource(IDR_IMAGEBURNER_HTML);
   return source;
 }
-
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -752,7 +752,8 @@ class WebUIHandler
 
 }  // namespace
 
-}  // namespace imageburner.
+}  // namespace imageburner
+}  // namespace chromeos
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -761,11 +762,11 @@ class WebUIHandler
 ////////////////////////////////////////////////////////////////////////////////
 
 ImageBurnUI::ImageBurnUI(content::WebUI* web_ui) : WebUIController(web_ui) {
-  imageburner::WebUIHandler* handler =
-      new imageburner::WebUIHandler(web_ui->GetWebContents());
+  chromeos::imageburner::WebUIHandler* handler =
+      new chromeos::imageburner::WebUIHandler(web_ui->GetWebContents());
   web_ui->AddMessageHandler(handler);
 
   Profile* profile = Profile::FromWebUI(web_ui);
   profile->GetChromeURLDataManager()->AddDataSource(
-      imageburner::CreateImageburnerUIHTMLSource());
+      chromeos::imageburner::CreateImageburnerUIHTMLSource());
 }
