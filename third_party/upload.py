@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# coding: utf-8
 #
 # Copyright 2007 Google Inc.
 #
@@ -215,7 +216,7 @@ class AbstractRpcServer(object):
   def _CreateRequest(self, url, data=None):
     """Creates a new urllib request."""
     logging.debug("Creating request for: '%s' with payload:\n%s", url, data)
-    req = urllib2.Request(url, data=data)
+    req = urllib2.Request(url, data=data, headers={"Accept": "text/plain"})
     if self.host_override:
       req.add_header("Host", self.host_override)
     for key, value in self.extra_headers.iteritems():
@@ -399,14 +400,13 @@ class AbstractRpcServer(object):
             raise
           elif e.code == 401 or e.code == 302:
             self._Authenticate()
-##           elif e.code >= 500 and e.code < 600:
-##             # Server Error - try again.
-##             continue
           elif e.code == 301:
             # Handle permanent redirect manually.
             url = e.info()["location"]
             url_loc = urlparse.urlparse(url)
             self.host = '%s://%s' % (url_loc[0], url_loc[1])
+          elif e.code >= 500:
+            ErrorExit(e.read())
           else:
             raise
     finally:
@@ -532,14 +532,13 @@ group.add_option("--account_type", action="store", dest="account_type",
                        "valid choices are 'GOOGLE' and 'HOSTED')."))
 # Issue
 group = parser.add_option_group("Issue options")
-group.add_option("-d", "--description", action="store", dest="description",
-                 metavar="DESCRIPTION", default=None,
-                 help="Optional description when creating an issue.")
-group.add_option("-f", "--description_file", action="store",
-                 dest="description_file", metavar="DESCRIPTION_FILE",
+group.add_option("-t", "--title", action="store", dest="title",
+                 help="New issue subject or new patch set title")
+group.add_option("-m", "--message", action="store", dest="message",
                  default=None,
-                 help="Optional path of a file that contains "
-                      "the description when creating an issue.")
+                 help="New issue description or new patch set message")
+group.add_option("-F", "--file", action="store", dest="file",
+                 default=None, help="Read the message above from file.")
 group.add_option("-r", "--reviewers", action="store", dest="reviewers",
                  metavar="REVIEWERS", default=None,
                  help="Add reviewers (comma separated email addresses).")
@@ -551,10 +550,6 @@ group.add_option("--private", action="store_true", dest="private",
                  help="Make the issue restricted to reviewers and those CCed")
 # Upload options
 group = parser.add_option_group("Patch options")
-group.add_option("-m", "--message", action="store", dest="message",
-                 metavar="MESSAGE", default=None,
-                 help="A message to identify the patch. "
-                      "Will prompt if omitted.")
 group.add_option("-i", "--issue", type="int", action="store",
                  metavar="ISSUE", default=None,
                  help="Issue number to which to add. Defaults to new issue.")
@@ -1464,8 +1459,8 @@ class MercurialVCS(VersionControlSystem):
   def _GetRelPath(self, filename):
     """Get relative path of a file according to the current directory,
     given its logical path in the repo."""
-    assert filename.startswith(self.subdir), (filename, self.subdir)
-    return filename[len(self.subdir):].lstrip(r"\/")
+    absname = os.path.join(self.repo_dir, filename)
+    return os.path.relpath(absname)
 
   def GenerateDiff(self, extra_args):
     cmd = ["hg", "diff", "--git", "-r", self.base_rev] + extra_args
@@ -1504,9 +1499,8 @@ class MercurialVCS(VersionControlSystem):
     return unknown_files
 
   def GetBaseFile(self, filename):
-    # "hg status" and "hg cat" both take a path relative to the current subdir
-    # rather than to the repo root, but "hg diff" has given us the full path
-    # to the repo root.
+    # "hg status" and "hg cat" both take a path relative to the current subdir,
+    # but "hg diff" has given us the path relative to the repo root.
     base_content = ""
     new_content = None
     is_binary = False
@@ -1575,15 +1569,15 @@ class PerforceVCS(VersionControlSystem):
 
     ConfirmLogin()
 
-    if not options.message:
+    if not options.title:
       description = self.RunPerforceCommand(["describe", self.p4_changelist],
                                             marshal_output=True)
       if description and "desc" in description:
         # Rietveld doesn't support multi-line descriptions
-        raw_message = description["desc"].strip()
-        lines = raw_message.splitlines()
+        raw_title = description["desc"].strip()
+        lines = raw_title.splitlines()
         if len(lines):
-          options.message = lines[0]
+          options.title = lines[0]
 
   def GetGUID(self):
     """For now we don't know how to get repository ID for Perforce"""
@@ -1974,10 +1968,12 @@ def GuessVCSName(options):
   if res != None:
     return res
 
-  # Subversion has a .svn in all working directories.
-  if os.path.isdir('.svn'):
-    logging.info("Guessed VCS = Subversion")
-    return (VCS_SUBVERSION, None)
+  # Subversion from 1.7 has a single centralized .svn folder 
+  # ( see http://subversion.apache.org/docs/release-notes/1.7.html#wc-ng )
+  # That's why we use 'svn info' instead of checking for .svn dir
+  res = RunDetectCommand(VCS_SUBVERSION, ["svn", "info"])
+  if res != None:
+    return res
 
   # Git has a command to test if you're in a git tree.
   # Try running it, but don't die if we don't have git installed.
@@ -2219,20 +2215,13 @@ def RealMain(argv, data=None):
   files = vcs.GetBaseFiles(data)
   if verbosity >= 1:
     print "Upload server:", options.server, "(change with -s/--server)"
-  if options.issue:
-    prompt = "Message describing this patch set: "
-  else:
-    prompt = "New issue subject: "
-  message = options.message or raw_input(prompt).strip()
-  if not message:
-    ErrorExit("A non-empty message is required")
   rpc_server = GetRpcServer(options.server,
                             options.email,
                             options.host,
                             options.save_cookies,
                             options.account_type)
-  form_fields = [("subject", message)]
-  
+  form_fields = []
+
   repo_guid = vcs.GetGUID()
   if repo_guid:
     form_fields.append(("repo_guid", repo_guid))
@@ -2256,15 +2245,37 @@ def RealMain(argv, data=None):
     for cc in options.cc.split(','):
       CheckReviewer(cc)
     form_fields.append(("cc", options.cc))
-  description = options.description
-  if options.description_file:
-    if options.description:
-      ErrorExit("Can't specify description and description_file")
-    file = open(options.description_file, 'r')
-    description = file.read()
+
+  # Process --message, --title and --file.
+  message = options.message or ""
+  title = options.title or ""
+  if options.file:
+    if options.message:
+      ErrorExit("Can't specify both message and message file options")
+    file = open(options.file, 'r')
+    message = file.read()
     file.close()
-  if description:
-    form_fields.append(("description", description))
+  if options.issue:
+    prompt = "Title describing this patch set: "
+  else:
+    prompt = "New issue subject: "
+  title = (
+      title or message.split('\n', 1)[0].strip() or raw_input(prompt)).strip()
+  if not title:
+    ErrorExit("A non-empty title is required")
+  if len(title) > 100:
+    title = title[:99] + '…'
+  if title and not options.issue:
+    message = message or title
+
+  form_fields.append(("subject", title))
+  if message:
+    if not options.issue:
+      form_fields.append(("description", message))
+    else:
+      # TODO: [ ] Use /<issue>/publish to add a commen
+      pass
+
   # Send a hash of all the base file so the server can determine if a copy
   # already exists in an earlier patchset.
   base_hashes = ""
@@ -2282,10 +2293,6 @@ def RealMain(argv, data=None):
       form_fields.append(("private", "1"))
   if options.send_patch:
     options.send_mail = True
-  # If we're uploading base files, don't send the email before the uploads, so
-  # that it contains the file status.
-  if options.send_mail and options.download_base:
-    form_fields.append(("send_mail", "1"))
   if not options.download_base:
     form_fields.append(("content_upload", "1"))
   if len(data) > MAX_UPLOAD_SIZE:
@@ -2320,11 +2327,15 @@ def RealMain(argv, data=None):
 
   if not options.download_base:
     vcs.UploadBaseFiles(issue, rpc_server, patches, patchset, options, files)
-    if options.send_mail:
-      payload = ""
-      if options.send_patch:
-        payload=urllib.urlencode({"attach_patch": "yes"})
-      rpc_server.Send("/" + issue + "/mail", payload=payload)
+
+  payload = {}  # payload for final request
+  if options.send_mail:
+    payload["send_mail"] = "yes"
+    if options.send_patch:
+      payload["attach_patch"] = "yes"
+  payload = urllib.urlencode(payload)
+  rpc_server.Send("/" + issue + "/upload_complete/" + (patchset or ""),
+                  payload=payload)
   return issue, patchset
 
 
