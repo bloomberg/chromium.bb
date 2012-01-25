@@ -66,16 +66,67 @@ struct LockOnEntry<true> {
   }
 };
 
+// Keep non-templatized since we need non-inline functions here.
+class PPAPI_THUNK_EXPORT EnterBase {
+ public:
+  EnterBase();
+  explicit EnterBase(const PP_CompletionCallback& callback);
+  virtual ~EnterBase();
+
+  // Sets the result.
+  //
+  // Returns the "retval()". This is to support the typical usage of
+  //   return enter.SetResult(...);
+  // without having to write a separate "return enter.retval();" line.
+  int32_t SetResult(int32_t result);
+
+  // Use this value as the return value for the function.
+  int32_t retval() const { return retval_; }
+
+ protected:
+  // Helper function to return a function group from a PP_Instance. Having this
+  // code be in the non-templatized base keeps us from having to instantiate
+  // it in every template.
+  FunctionGroupBase* GetFunctions(PP_Instance instance, ApiID id) const;
+
+  // Helper function to return a Resource from a PP_Resource. Having this
+  // code be in the non-templatized base keeps us from having to instantiate
+  // it in every template.
+  Resource* GetResource(PP_Resource resource) const;
+
+  // Does error handling associated with entering a resource. The resource_base
+  // is the result of looking up the given pp_resource. The object is the
+  // result of converting the base to the desired object (converted back to a
+  // Resource* so this function doesn't have to be templatized). The reason for
+  // passing both resource_base and object is that we can differentiate "bad
+  // resource ID" from "valid resource ID not of the currect type."
+  //
+  // This will set retval_ = PP_ERROR_BADRESOURCE if the object is invalid, and
+  // if report_error is set, log a message to the programmer.
+  void SetStateForResourceError(PP_Resource pp_resource,
+                                Resource* resource_base,
+                                void* object,
+                                bool report_error);
+
+ private:
+  // Holds the callback. The function will only be non-NULL when the
+  // callback is requried. Optional callbacks don't require any special
+  // handling from us at this layer.
+  PP_CompletionCallback callback_;
+
+  int32_t retval_;
+};
+
 }  // namespace subtle
 
 
 template<typename FunctionsT, bool lock_on_entry = true>
-class EnterFunction : subtle::LockOnEntry<lock_on_entry> {
+class EnterFunction : public subtle::EnterBase,
+                      public subtle::LockOnEntry<lock_on_entry> {
  public:
   EnterFunction(PP_Instance instance, bool report_error)
       : functions_(NULL) {
-    FunctionGroupBase* base = PpapiGlobals::Get()->GetFunctionAPI(
-        instance, FunctionsT::kApiID);
+    FunctionGroupBase* base = GetFunctions(instance, FunctionsT::kApiID);
     if (base)
       functions_ = base->GetAs<FunctionsT>();
     // TODO(brettw) check error and if report_error is set, do something.
@@ -124,15 +175,18 @@ class EnterFunctionGivenResource : public EnterFunction<FunctionsT> {
 // EnterResource ---------------------------------------------------------------
 
 template<typename ResourceT, bool lock_on_entry = true>
-class EnterResource : subtle::LockOnEntry<lock_on_entry> {
+class EnterResource : public subtle::EnterBase,
+                      public subtle::LockOnEntry<lock_on_entry> {
  public:
   EnterResource(PP_Resource resource, bool report_error)
-      : object_(NULL) {
-    resource_ =
-        PpapiGlobals::Get()->GetResourceTracker()->GetResource(resource);
-    if (resource_)
-      object_ = resource_->GetAs<ResourceT>();
-    // TODO(brettw) check error and if report_error is set, do something.
+      : EnterBase() {
+    Init(resource, report_error);
+  }
+  EnterResource(PP_Resource resource,
+                const PP_CompletionCallback& callback,
+                bool report_error)
+      : EnterBase(callback) {
+    Init(resource, report_error);
   }
   ~EnterResource() {}
 
@@ -143,6 +197,15 @@ class EnterResource : subtle::LockOnEntry<lock_on_entry> {
   Resource* resource() { return resource_; }
 
  private:
+  void Init(PP_Resource resource, bool report_error) {
+    resource_ = GetResource(resource);
+    if (resource_)
+      object_ = resource_->GetAs<ResourceT>();
+    else
+      object_ = NULL;
+    SetStateForResourceError(resource, resource_, object_, report_error);
+  }
+
   Resource* resource_;
   ResourceT* object_;
 

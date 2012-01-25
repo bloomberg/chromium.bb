@@ -15,41 +15,41 @@ namespace thunk {
 
 namespace {
 
+typedef EnterResource<PPB_URLLoader_API> EnterURLLoader;
+
 PP_Resource Create(PP_Instance instance) {
-  EnterFunction<ResourceCreationAPI> enter(instance, true);
+  EnterResourceCreation enter(instance);
   if (enter.failed())
     return 0;
   return enter.functions()->CreateURLLoader(instance);
 }
 
 PP_Bool IsURLLoader(PP_Resource resource) {
-  EnterResource<PPB_URLLoader_API> enter(resource, false);
+  EnterURLLoader enter(resource, false);
   return PP_FromBool(enter.succeeded());
 }
 
 int32_t Open(PP_Resource loader,
              PP_Resource request_id,
              PP_CompletionCallback callback) {
-  EnterResource<PPB_URLLoader_API> enter(loader, true);
+  EnterURLLoader enter(loader, callback, true);
   if (enter.failed())
-    return MayForceCallback(callback, PP_ERROR_BADRESOURCE);
-  int32_t result = enter.object()->Open(request_id, callback);
-  return MayForceCallback(callback, result);
+    return enter.retval();
+  return enter.SetResult(enter.object()->Open(request_id, callback));
 }
 
 int32_t FollowRedirect(PP_Resource loader,
                        PP_CompletionCallback callback) {
-  EnterResource<PPB_URLLoader_API> enter(loader, true);
+  EnterURLLoader enter(loader, callback, true);
   if (enter.failed())
-    return MayForceCallback(callback, PP_ERROR_BADRESOURCE);
-  int32_t result = enter.object()->FollowRedirect(callback);
-  return MayForceCallback(callback, result);
+    return enter.retval();
+  return enter.SetResult(enter.object()->FollowRedirect(callback));
 }
 
 PP_Bool GetUploadProgress(PP_Resource loader,
                           int64_t* bytes_sent,
                           int64_t* total_bytes_to_be_sent) {
-  EnterResource<PPB_URLLoader_API> enter(loader, true);
+  EnterURLLoader enter(loader, true);
   if (enter.failed()) {
     *bytes_sent = 0;
     *total_bytes_to_be_sent = 0;
@@ -62,7 +62,7 @@ PP_Bool GetUploadProgress(PP_Resource loader,
 PP_Bool GetDownloadProgress(PP_Resource loader,
                             int64_t* bytes_received,
                             int64_t* total_bytes_to_be_received) {
-  EnterResource<PPB_URLLoader_API> enter(loader, true);
+  EnterURLLoader enter(loader, true);
   if (enter.failed()) {
     *bytes_received = 0;
     *total_bytes_to_be_received = 0;
@@ -73,7 +73,7 @@ PP_Bool GetDownloadProgress(PP_Resource loader,
 }
 
 PP_Resource GetResponseInfo(PP_Resource loader) {
-  EnterResource<PPB_URLLoader_API> enter(loader, true);
+  EnterURLLoader enter(loader, true);
   if (enter.failed())
     return 0;
   return enter.object()->GetResponseInfo();
@@ -83,38 +83,36 @@ int32_t ReadResponseBody(PP_Resource loader,
                          void* buffer,
                          int32_t bytes_to_read,
                          PP_CompletionCallback callback) {
-  EnterResource<PPB_URLLoader_API> enter(loader, true);
+  EnterURLLoader enter(loader, callback, true);
   if (enter.failed())
-    return MayForceCallback(callback, PP_ERROR_BADRESOURCE);
-  int32_t result = enter.object()->ReadResponseBody(buffer, bytes_to_read,
-                                                    callback);
-  return MayForceCallback(callback, result);
+    return enter.retval();
+  return enter.SetResult(enter.object()->ReadResponseBody(buffer, bytes_to_read,
+                                                         callback));
 }
 
 int32_t FinishStreamingToFile(PP_Resource loader,
                               PP_CompletionCallback callback) {
-  EnterResource<PPB_URLLoader_API> enter(loader, true);
+  EnterURLLoader enter(loader, callback, true);
   if (enter.failed())
-    return MayForceCallback(callback, PP_ERROR_BADRESOURCE);
-  int32_t result = enter.object()->FinishStreamingToFile(callback);
-  return MayForceCallback(callback, result);
+    return enter.retval();
+  return enter.SetResult(enter.object()->FinishStreamingToFile(callback));
 }
 
 void Close(PP_Resource loader) {
-  EnterResource<PPB_URLLoader_API> enter(loader, true);
+  EnterURLLoader enter(loader, true);
   if (enter.succeeded())
     enter.object()->Close();
 }
 
 void GrantUniversalAccess(PP_Resource loader) {
-  EnterResource<PPB_URLLoader_API> enter(loader, true);
+  EnterURLLoader enter(loader, true);
   if (enter.succeeded())
     enter.object()->GrantUniversalAccess();
 }
 
 void SetStatusCallback(PP_Resource loader,
                        PP_URLLoaderTrusted_StatusCallback cb) {
-  EnterResource<PPB_URLLoader_API> enter(loader, true);
+  EnterURLLoader enter(loader, true);
   if (enter.succeeded())
     enter.object()->SetStatusCallback(cb);
 }
