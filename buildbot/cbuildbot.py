@@ -231,13 +231,26 @@ class Builder(object):
     """
     return stage(self.bot_id, self.options, self.build_config, *args, **kwargs)
 
+  def _SetReleaseTag(self):
+    """Sets the release tag from the manifest_manager.
+
+    Must be run after sync stage as syncing enables us to have a release tag.
+    """
+    # Extract version we have decided to build into self.release_tag.
+    manifest_manager = stages.ManifestVersionedSyncStage.manifest_manager
+    if manifest_manager:
+      self.release_tag = manifest_manager.current_version
+
   def _RunStage(self, stage, *args, **kwargs):
     """Wrapper to run a stage."""
     stage_instance = self._GetStageInstance(stage, *args, **kwargs)
     return stage_instance.Run()
 
-  def Sync(self):
-    """Subclasses must override this method.  Syncs the appropriate code."""
+  def GetSyncInstance(self):
+    """Returns an instance of a SyncStage that should be run.
+
+    Subclasses must override this method.
+    """
     raise NotImplementedError()
 
   def RunStages(self):
@@ -251,18 +264,18 @@ class Builder(object):
 
   def _ShouldReExecuteInBuildRoot(self):
     """Returns True if this build should be re-executed in the buildroot."""
-    # TODO(sosa): Re-enable re-execution in buildroot on the commit queue once
-    # http://crosbug.com/23813 is fixed.
     abs_buildroot = os.path.abspath(self.options.buildroot)
-    return (self.build_config['build_type'] != constants.COMMIT_QUEUE_TYPE and
-      not os.path.abspath(__file__).startswith(abs_buildroot))
+    return not os.path.abspath(__file__).startswith(abs_buildroot)
 
-  def _ReExecuteInBuildroot(self):
+  def _ReExecuteInBuildroot(self, sync_instance):
     """Reexecutes self in buildroot and returns True if build succeeds.
 
     This allows the buildbot code to test itself when changes are patched for
     buildbot-related code.  This is a no-op if the buildroot == buildroot
     of the running chromite checkout.
+
+    Args:
+      sync_instance:  Instance of the sync stage that was run to sync.
 
     Returns:
       True if the Build succeeded.
@@ -282,6 +295,9 @@ class Builder(object):
       ver = stages.ManifestVersionedSyncStage.manifest_manager.current_version
       args_to_append += ['--version', ver]
 
+    if isinstance(sync_instance, stages.CommitQueueSyncStage):
+      vp_file = sync_instance.SaveValidationPool()
+      args_to_append += ['--validation_pool', vp_file]
 
     # Re-run the command in the buildroot.
     return_obj = cros_lib.RunCommand(
@@ -295,14 +311,17 @@ class Builder(object):
     success = True
     try:
       self.Initialize()
-      self.Sync()
+      sync_instance = self.GetSyncInstance()
+      sync_instance.Run()
+      self._SetReleaseTag()
+
       if self.gerrit_patches or self.local_patches:
         self._RunStage(stages.PatchChangesStage,
                        self.gerrit_patches, self.local_patches)
 
       if self._ShouldReExecuteInBuildRoot():
         print_report = False
-        success = self._ReExecuteInBuildroot()
+        success = self._ReExecuteInBuildroot(sync_instance)
       else:
         self.RunStages()
 
@@ -319,12 +338,18 @@ class Builder(object):
 
 class SimpleBuilder(Builder):
   """Builder that performs basic vetting operations."""
-  def Sync(self):
-    """Sync to lkgm or TOT as necessary."""
+
+  def GetSyncInstance(self):
+    """Sync to lkgm or TOT as necessary.
+
+    Returns: the instance of the sync stage that was run.
+    """
     if self.options.lkgm or self.build_config['use_lkgm']:
-      self._RunStage(stages.LKGMSyncStage)
+      sync_stage = self._GetStageInstance(stages.LKGMSyncStage)
     else:
-      self._RunStage(stages.SyncStage)
+      sync_stage = self._GetStageInstance(stages.SyncStage)
+
+    return sync_stage
 
   def RunStages(self):
     """Runs through build process."""
@@ -406,26 +431,24 @@ class DistributedBuilder(SimpleBuilder):
     super(DistributedBuilder, self).__init__(bot_id, options, build_config)
     self.completion_stage_class = None
 
-  def Sync(self):
-    """Syncs the tree using one of the distributed sync logic paths."""
+  def GetSyncInstance(self):
+    """Syncs the tree using one of the distributed sync logic paths.
+
+    Returns: the instance of the sync stage that was run.
+    """
     # Determine sync class to use.
     if self.build_config['build_type'] in (constants.PFQ_TYPE,
                                            constants.CHROME_PFQ_TYPE):
-      sync_stage_class = stages.LKGMCandidateSyncStage
+      sync_stage = self._GetStageInstance(stages.LKGMCandidateSyncStage)
       self.completion_stage_class = stages.LKGMCandidateSyncCompletionStage
     elif self.build_config['build_type'] == constants.COMMIT_QUEUE_TYPE:
-      sync_stage_class = stages.CommitQueueSyncStage
+      sync_stage = self._GetStageInstance(stages.CommitQueueSyncStage)
       self.completion_stage_class = stages.CommitQueueCompletionStage
     else:
-      sync_stage_class = stages.ManifestVersionedSyncStage
+      sync_stage = self._GetStageInstance(stages.ManifestVersionedSyncStage)
       self.completion_stage_class = stages.ManifestVersionedSyncCompletionStage
 
-    self._RunStage(sync_stage_class)
-
-    # Extract version we have decided to build into self.release_tag.
-    manifest_manager = stages.ManifestVersionedSyncStage.manifest_manager
-    if manifest_manager:
-      self.release_tag = manifest_manager.current_version
+    return sync_stage
 
   def Publish(self, was_build_successful):
     """Completes build by publishing any required information."""
@@ -761,6 +784,9 @@ def _CreateParser():
   group.add_option('--resume', action='store_true',
                     default=False,
                     help='Skip stages already successfully completed.')
+  group.add_option('--validation_pool', default=None,
+                   help='Path to a pickled validation pool. Intended for use '
+                   'only with the commit queue.')
   group.add_option('--version', dest='force_version', default=None,
                    help='Used with manifest logic.  Forces use of this version '
                         'rather than create or get latest.')

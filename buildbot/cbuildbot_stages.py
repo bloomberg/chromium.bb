@@ -4,6 +4,7 @@
 
 """Module containing the various stages that a builder runs."""
 
+import cPickle
 import multiprocessing
 import os
 import Queue
@@ -291,6 +292,11 @@ class CommitQueueSyncStage(LKGMCandidateSyncStage):
   other builders and finding the Gerrit Reviews ready to be committed and
   applying them into its out checkout.
   """
+
+  # Path relative to the buildroot of where to store the pickled validation
+  # pool.
+  PICKLED_POOL_FILE = 'validation_pool.dump'
+
   pool = None
 
   def __init__(self, bot_id, options, build_config):
@@ -303,10 +309,29 @@ class CommitQueueSyncStage(LKGMCandidateSyncStage):
     # checkout.
     self.skip_sync = True
 
+  def SaveValidationPool(self):
+    """Serializes the validation pool.
+
+    Returns: returns a path to the serialized form of the validation pool.
+    """
+    path_to_file = os.path.join(self._build_root, self.PICKLED_POOL_FILE)
+    with open(path_to_file, 'wb') as p_file:
+      cPickle.dump(self.pool, p_file, protocol=cPickle.HIGHEST_PROTOCOL)
+
+    return path_to_file
+
+  def LoadValidationPool(self, path_to_file):
+    """Loads the validation pool from the file."""
+    with open(path_to_file, 'rb') as p_file:
+      CommitQueueSyncStage.pool = cPickle.load(p_file)
+
   def HandleSkip(self):
     """Handles skip and initializes validation pool from manifest."""
     super(CommitQueueSyncStage, self).HandleSkip()
-    self.SetPoolFromManifest(self.manifest_manager.GetLocalManifest())
+    if self._options.validation_pool:
+      self.LoadValidationPool(self._options.validation_pool)
+    else:
+      self.SetPoolFromManifest(self.manifest_manager.GetLocalManifest())
 
   def SetPoolFromManifest(self, manifest):
     """Sets validation pool based on manifest path passed in."""
@@ -340,7 +365,6 @@ class CommitQueueSyncStage(LKGMCandidateSyncStage):
           pool.SubmitNonManifestChanges()
         except validation_pool.FailedToSubmitAllChangesException as e:
           cros_lib.Warning(str(e))
-          pass
 
         CommitQueueSyncStage.pool = pool
 

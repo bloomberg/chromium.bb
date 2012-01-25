@@ -51,7 +51,9 @@ class ValidationPool(object):
 
   GLOBAL_DRYRUN = False
 
-  def __init__(self, internal, build_number, builder_name, is_master, dryrun):
+  def __init__(self, internal, build_number, builder_name, is_master, dryrun,
+               changes=None, non_os_changes=None,
+               conflicting_changes=None):
     """Initializes an instance by setting default valuables to instance vars.
 
     Generally use AcquirePool as an entry pool to a pool rather than this
@@ -63,22 +65,37 @@ class ValidationPool(object):
       builder_name:  Builder name on buildbot dashboard.
       is_master: True if this is the master builder for the Commit Queue.
       dryrun: If set to True, do not submit anything to Gerrit.
+    Optional Args:
+      changes: List of changes for this validation pool.
+      non_manifest_changes: List of changes that are part of this validation
+        pool but aren't part of the cros checkout.
+      changes_that_failed_to_apply_earlier: Changes that failed to apply but
+        we're keeping around because they conflict with other changes in
+        flight.
     """
     build_dashboard = _BUILD_DASHBOARD if not internal else _BUILD_INT_DASHBOARD
-    self.build_log = (build_dashboard + '/builders/%s/builds/' % builder_name +
-                      str(build_number))
-    # Changes that are ready for the Commit Queue and part of the existing
-    # checkout.
-    self.changes = []
-    # Changes that are ready for the Commit Queue and not part of the existing
-    # checkout i.e. cannot be applied onto checkout.
-    self.non_manifest_changes = []
-    # Changes we are keeping around because they conflicted with an older
-    # change in the same validation pool.
-    self.changes_that_failed_to_apply_earlier = []
-    self.gerrit_helper = None
+    self.build_log = '%s/builders/%s/builds/%s' % (
+        build_dashboard, builder_name, str(build_number))
+    self.gerrit_helper = gerrit_helper.GerritHelper(internal)
     self.is_master = is_master
     self.dryrun = dryrun | self.GLOBAL_DRYRUN
+
+    # See optional args for types of changes.
+    self.changes = changes or []
+    self.non_manifest_changes = non_os_changes or []
+    self.changes_that_failed_to_apply_earlier = conflicting_changes or []
+
+    # Private vars only used for pickling.
+    self._internal = internal
+    self._build_number = build_number
+    self._builder_name = builder_name
+
+  def __getnewargs__(self):
+    """Used for pickling to re-create validation pool."""
+    return (self._internal, self._build_number, self._builder_name,
+            self.is_master, self.dryrun, self.changes,
+            self.non_manifest_changes,
+            self.changes_that_failed_to_apply_earlier)
 
   @classmethod
   def _IsTreeOpen(cls, max_timeout=600):

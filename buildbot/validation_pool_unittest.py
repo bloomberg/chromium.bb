@@ -98,9 +98,9 @@ class TestValidationPool(mox.MoxTestBase):
     patch1.PaladinDependencies(build_root).AndReturn([])
 
     patch2.Apply(build_root, trivial=True)
-    patch2.HandleApplied(None, pool.build_log, dryrun=False)
+    patch2.HandleApplied(pool.gerrit_helper, pool.build_log, dryrun=False)
     patch1.Apply(build_root, trivial=True)
-    patch1.HandleApplied(None, pool.build_log, dryrun=False)
+    patch1.HandleApplied(pool.gerrit_helper, pool.build_log, dryrun=False)
 
     self.mox.ReplayAll()
     self.assertTrue(pool.ApplyPoolIntoRepo(build_root))
@@ -199,7 +199,7 @@ class TestValidationPool(mox.MoxTestBase):
     patch3.GerritDependencies(build_root).AndReturn([])
     patch3.PaladinDependencies(build_root).AndReturn([])
     patch3.Apply(build_root, trivial=True)
-    patch3.HandleApplied(None, pool.build_log, dryrun=False)
+    patch3.HandleApplied(pool.gerrit_helper, pool.build_log, dryrun=False)
 
     # This one should be handled later (not where patch1 is handled.
     patch4.GerritDependencies(build_root).AndReturn([])
@@ -210,7 +210,7 @@ class TestValidationPool(mox.MoxTestBase):
             patch_type=\
                 cros_patch.ApplyPatchException.TYPE_REBASE_TO_PATCH_INFLIGHT))
 
-    patch1.HandleCouldNotApply(None, pool.build_log, dryrun=False)
+    patch1.HandleCouldNotApply(pool.gerrit_helper, pool.build_log, dryrun=False)
 
     self.mox.ReplayAll()
     self.assertTrue(pool.ApplyPoolIntoRepo(build_root))
@@ -238,9 +238,9 @@ class TestValidationPool(mox.MoxTestBase):
     patch2.GerritDependencies(build_root).AndReturn([])
     patch2.PaladinDependencies(build_root).AndReturn([])
     patch2.Apply(build_root, trivial=True)
-    patch2.HandleApplied(None, pool.build_log, dryrun=False)
+    patch2.HandleApplied(pool.gerrit_helper, pool.build_log, dryrun=False)
 
-    patch1.HandleCouldNotApply(None, pool.build_log, dryrun=False)
+    patch1.HandleCouldNotApply(pool.gerrit_helper, pool.build_log, dryrun=False)
 
     self.mox.ReplayAll()
     self.assertTrue(pool.ApplyPoolIntoRepo(build_root))
@@ -288,15 +288,15 @@ class TestValidationPool(mox.MoxTestBase):
     patch4.PaladinDependencies(build_root).AndReturn(['ChangeId5'])
 
     patch2.Apply(build_root, trivial=True)
-    patch2.HandleApplied(None, pool.build_log, dryrun=False)
+    patch2.HandleApplied(pool.gerrit_helper, pool.build_log, dryrun=False)
     patch1.Apply(build_root, trivial=True)
-    patch1.HandleApplied(None, pool.build_log, dryrun=False)
+    patch1.HandleApplied(pool.gerrit_helper, pool.build_log, dryrun=False)
     patch3.Apply(build_root, trivial=True)
-    patch3.HandleApplied(None, pool.build_log, dryrun=False)
+    patch3.HandleApplied(pool.gerrit_helper, pool.build_log, dryrun=False)
     patch5.Apply(build_root, trivial=True)
-    patch5.HandleApplied(None, pool.build_log, dryrun=False)
+    patch5.HandleApplied(pool.gerrit_helper, pool.build_log, dryrun=False)
     patch4.Apply(build_root, trivial=True)
-    patch4.HandleApplied(None, pool.build_log, dryrun=False)
+    patch4.HandleApplied(pool.gerrit_helper, pool.build_log, dryrun=False)
 
     self.mox.ReplayAll()
     self.assertTrue(pool.ApplyPoolIntoRepo(build_root))
@@ -325,10 +325,10 @@ class TestValidationPool(mox.MoxTestBase):
     patch2.PaladinDependencies(build_root).AndReturn([])
 
     patch1.Apply(build_root, trivial=True)
-    patch1.HandleApplied(None, pool.build_log, dryrun=False)
+    patch1.HandleApplied(pool.gerrit_helper, pool.build_log, dryrun=False)
 
     patch2.Apply(build_root, trivial=True)
-    patch2.HandleApplied(None, pool.build_log, dryrun=False)
+    patch2.HandleApplied(pool.gerrit_helper, pool.build_log, dryrun=False)
 
     self.mox.ReplayAll()
     self.assertTrue(pool.ApplyPoolIntoRepo(build_root))

@@ -125,7 +125,9 @@ class GerritPatch(Patch):
       patch_dict: A dictionary containing the parsed JSON gerrit query results.
       internal: Whether the CL is an internal CL.
     """
-    Patch.__init__(self, patch_dict['project'], patch_dict['branch'])
+    super(GerritPatch, self).__init__(patch_dict['project'],
+                                      patch_dict['branch'])
+    self.patch_dict = patch_dict
     self.internal = internal
     # id - The CL's ChangeId
     self.id = patch_dict['id']
@@ -146,6 +148,9 @@ class GerritPatch(Patch):
     self.apply_error_message = ('Please re-sync, rebase, and re-upload your '
                                 'change.')
 
+  def __getnewargs__(self):
+    """Used for pickling to re-create patch object."""
+    return self.patch_dict, self.internal
 
   def IsAlreadyMerged(self):
     """Returns whether the patch has already been merged in Gerrit."""
