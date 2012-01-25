@@ -97,6 +97,7 @@ struct unlock_dialog {
 
 static char *key_background_image;
 static uint32_t key_panel_color;
+static uint32_t key_background_color;
 static char *key_launcher_icon;
 static char *key_launcher_path;
 static void launcher_section_done(void *data);
@@ -105,6 +106,7 @@ static int key_locking = 1;
 static const struct config_key shell_config_keys[] = {
 	{ "background-image", CONFIG_KEY_STRING, &key_background_image },
 	{ "panel-color", CONFIG_KEY_INTEGER, &key_panel_color },
+	{ "background-color", CONFIG_KEY_INTEGER, &key_background_color },
 	{ "locking", CONFIG_KEY_BOOLEAN, &key_locking },
 };
 
@@ -372,8 +374,10 @@ background_draw(struct widget *widget, void *data)
 	cairo_paint(cr);
 
 	widget_get_allocation(widget, &allocation);
-	if (key_background_image) {
+	image = NULL;
+	if (key_background_image)
 		image = load_jpeg(key_background_image);
+	if (image) {
 		pattern = cairo_pattern_create_for_surface(image);
 		sx = (double) cairo_image_surface_get_width(image) /
 			allocation.width;
@@ -383,10 +387,12 @@ background_draw(struct widget *widget, void *data)
 		cairo_pattern_set_matrix(pattern, &matrix);
 		cairo_set_source(cr, pattern);
 		cairo_pattern_destroy (pattern);
-		cairo_paint(cr);
 		cairo_surface_destroy(image);
+	} else {
+		set_hex_color(cr, key_background_color);
 	}
 
+	cairo_paint(cr);
 	cairo_destroy(cr);
 	cairo_surface_destroy(surface);
 }
