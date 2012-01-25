@@ -1,0 +1,27 @@
+// Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// This protobuf is intended to be used by powerd to communicate with the
+// browser. Perdiodically the browser requests the current power state of the
+// system by sending a request for all power supply properties. This structure
+// contains all the values that are of interest. In regular use this should be
+// completely filled by the sender. If you want to only send part of the
+// protobuf you should refactor it instead of just partiall filling it.
+
+message PowerSupplyProperties {
+    optional bool line_power_on = 1;  // Are using AC?
+    optional double battery_energy = 2;  // Current battery energy, in Wh
+    // Rate of charge/discharge of the battery, in W
+    optional double battery_energy_rate = 3;
+    optional double battery_voltage = 4;  // Current battery Voltage, in V
+    // Calculated time to battery complete discharge, in S
+    optional int64 battery_time_to_empty = 5;
+    // Calculated time to battery complete charge, in S
+    optional int64 battery_time_to_full = 6;
+    // Calculated percentage of capacity available
+    optional double battery_percentage = 7;
+    optional bool battery_is_present = 8;  // Is a battery attached?
+    // Is the battery already at full capacity?
+    optional bool battery_is_charged = 9;
+}

@@ -150,6 +150,7 @@ const char kRequestUnlockScreenMethod[] = "RequestUnlockScreen";
 const char kScreenIsLockedMethod[] = "ScreenIsLocked";
 const char kScreenIsUnlockedMethod[] = "ScreenIsUnlocked";
 const char kGetAllPropertiesMethod[] = "GetAllProperties";
+const char kGetPowerSupplyPropertiesMethod[] = "GetPowerSupplyProperties";
 // DEPRECATED
 const char kPowerManagerDecreaseScreenBrightness[] =
     "DecreaseScreenBrightness";
