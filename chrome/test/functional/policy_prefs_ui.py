@@ -90,7 +90,7 @@ class PolicyPrefsUITest(policy_base.PolicyTestBase):
     'PrintingEnabled': (False, []),
     # Note: supported_on is empty for this policy.
     'CloudPrintProxyEnabled': (True, [], []),
-    'CloudPrintSubmitEnabled': (False, [], ['win', 'mac', 'linux']),
+    'CloudPrintSubmitEnabled': (False, [], [ 'win', 'mac', 'linux' ]),
     'SafeBrowsingEnabled': (False, [ ADVANCED ]),
     # TODO(joaodasilva): This is only in place on official builds, but the
     # SetUserCloudPolicy call is a nop on official builds. Should be ADVANCED.
@@ -122,7 +122,7 @@ class PolicyPrefsUITest(policy_base.PolicyTestBase):
     'ProxyBypassList': ('localhost', [], [ 'win', 'mac', 'linux' ]),
     # Note: this policy is only used internally for now.
     'ProxySettings': ({}, [], []),
-    'EnableOriginBoundCerts': (False, []),
+    'EnableOriginBoundCerts': (False, [], [ 'win', 'mac', 'linux' ]),
     'DisableSSLRecordSplitting': (False, []),
     'AuthSchemes': ('AuthSchemes', []),
     'DisableAuthNegotiateCnameLookup': (True, []),
@@ -200,7 +200,7 @@ class PolicyPrefsUITest(policy_base.PolicyTestBase):
     'EnterpriseWebStoreURL': ('', []),
     'EnterpriseWebStoreName': ('', []),
     'EnableMemoryInfo': (True, []),
-    'DisablePrintPreview': (True, []),
+    'DisablePrintPreview': (True, [], [ 'win', 'mac', 'linux' ]),
 
     # ChromeOS-only policies:
     'ChromeOsLockOnIdleSuspend': (True, [ PERSONAL ], [ 'chromeos' ]),

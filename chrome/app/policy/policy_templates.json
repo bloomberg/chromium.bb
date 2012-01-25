@@ -2103,7 +2103,7 @@
     {
       'name': 'MaxConnectionsPerProxy',
       'type': 'int',
-      'supported_on': ['chrome.*:14-','chrome_os:0.14-'],
+      'supported_on': ['chrome.*:14-', 'chrome_os:0.14-'],
       'features': {'dynamic_refresh': False},
       'example_value': 32,
       'id': 92,
@@ -2211,7 +2211,7 @@
     {
       'name': 'EnterpriseWebStoreURL',
       'type': 'string',
-      'supported_on': ['chrome.*:17-','chrome_os:0.17-'],
+      'supported_on': ['chrome.*:17-', 'chrome_os:0.17-'],
       'features': {'dynamic_refresh': True},
       'example_value': 'http://company-intranet/chromeapps',
       'id': 112,
@@ -2223,7 +2223,7 @@
     {
       'name': 'EnterpriseWebStoreName',
       'type': 'string',
-      'supported_on': ['chrome.*:17-','chrome_os:0.17-'],
+      'supported_on': ['chrome.*:17-', 'chrome_os:0.17-'],
       'features': {'dynamic_refresh': True},
       'example_value': 'WidgCo Chrome Apps',
       'id': 113,
@@ -2248,7 +2248,7 @@
     {
       'name': 'EnableMemoryInfo',
       'type': 'main',
-      'supported_on': ['chrome.*:16-'],
+      'supported_on': ['chrome.*:17-', 'chrome_os:0.18-'],
       'features': {'dynamic_refresh': True},
       'future': True,
       'example_value': False,
@@ -2273,7 +2273,7 @@
     {
       'name': 'DisableSSLRecordSplitting',
       'type': 'main',
-      'supported_on': ['chrome.*:18-','chrome_os:0.18-'],
+      'supported_on': ['chrome.*:18-', 'chrome_os:0.18-'],
       'features': {'dynamic_refresh': True},
       'example_value': True,
       'id': 118,
