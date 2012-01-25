@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,6 +18,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/url_pattern.h"
+#include "chrome/common/url_constants.h"
 #include "content/browser/utility_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_fetcher.h"
@@ -294,19 +295,13 @@ void WebstoreInlineInstaller::OnWebstoreResponseParseSuccess(
 
   // Verified site is required
   if (webstore_data->HasKey(kVerifiedSiteKey)) {
-    std::string verified_site_domain;
-    if (!webstore_data->GetString(kVerifiedSiteKey, &verified_site_domain)) {
+    std::string verified_site;
+    if (!webstore_data->GetString(kVerifiedSiteKey, &verified_site)) {
       CompleteInstall(kInvalidWebstoreResponseError);
       return;
     }
 
-    URLPattern verified_site_pattern(URLPattern::SCHEME_ALL);
-    verified_site_pattern.SetScheme("*");
-    verified_site_pattern.SetHost(verified_site_domain);
-    verified_site_pattern.SetMatchSubdomains(true);
-    verified_site_pattern.SetPath("/*");
-
-    if (!verified_site_pattern.MatchesURL(requestor_url_)) {
+    if (!IsRequestorURLInVerifiedSite(requestor_url_, verified_site)) {
       CompleteInstall(kNotFromVerifiedSiteError);
       return;
     }
@@ -326,6 +321,31 @@ void WebstoreInlineInstaller::OnWebstoreResponseParseSuccess(
   // The helper will call us back via OnWebstoreParseSucces or
   // OnWebstoreParseFailure.
   helper->Start();
+}
+
+// static
+bool WebstoreInlineInstaller::IsRequestorURLInVerifiedSite(
+    const GURL& requestor_url,
+    const std::string& verified_site) {
+  // Turn the verified site (which may be a bare domain, or have a port and/or a
+  // path) into a URL that can be parsed by URLPattern.
+  std::string verified_site_url =
+      StringPrintf("http://*.%s%s",
+          verified_site.c_str(),
+          verified_site.find('/') == std::string::npos ? "/*" : "*");
+
+  URLPattern verified_site_pattern(
+      URLPattern::SCHEME_HTTP | URLPattern::SCHEME_HTTPS);
+  URLPattern::ParseResult parse_result =
+      verified_site_pattern.Parse(verified_site_url);
+  if (parse_result != URLPattern::PARSE_SUCCESS) {
+    DLOG(WARNING) << "Could not parse " << verified_site_url <<
+        " as URL pattern " << parse_result;
+    return false;
+  }
+  verified_site_pattern.SetScheme("*");
+
+  return verified_site_pattern.MatchesURL(requestor_url);
 }
 
 void WebstoreInlineInstaller::OnWebstoreResponseParseFailure(

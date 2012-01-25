@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -52,6 +52,7 @@ class WebstoreInlineInstaller
  private:
   friend class base::RefCountedThreadSafe<WebstoreInlineInstaller>;
   friend class SafeWebstoreResponseParser;
+  FRIEND_TEST_ALL_PREFIXES(WebstoreInlineInstallerTest, DomainVerification);
 
   virtual ~WebstoreInlineInstaller();
 
@@ -99,6 +100,11 @@ class WebstoreInlineInstaller
                                          const std::string& error) OVERRIDE;
 
   void CompleteInstall(const std::string& error);
+
+  // Checks whether the install is initiated by a page in the verified site
+  // (which is at least a domain, but can also have a port or a path).
+  static bool IsRequestorURLInVerifiedSite(const GURL& requestor_url,
+                                           const std::string& verified_site);
 
   int install_id_;
   std::string id_;

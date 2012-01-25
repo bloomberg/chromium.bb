@@ -1465,6 +1465,7 @@
         'browser/extensions/settings/testing_settings_storage_unittest.cc',
         'browser/extensions/user_script_listener_unittest.cc',
         'browser/extensions/user_script_master_unittest.cc',
+        'browser/extensions/webstore_inline_installer_unittest.cc',
         'browser/external_protocol/external_protocol_handler_unittest.cc',
         'browser/favicon/favicon_handler_unittest.cc',
         'browser/first_run/first_run_unittest.cc',
