@@ -96,6 +96,7 @@ struct unlock_dialog {
 };
 
 static char *key_background_image;
+static char *key_background_type;
 static uint32_t key_panel_color;
 static uint32_t key_background_color;
 static char *key_launcher_icon;
@@ -105,6 +106,7 @@ static int key_locking = 1;
 
 static const struct config_key shell_config_keys[] = {
 	{ "background-image", CONFIG_KEY_STRING, &key_background_image },
+	{ "background-type", CONFIG_KEY_STRING, &key_background_type },
 	{ "panel-color", CONFIG_KEY_INTEGER, &key_panel_color },
 	{ "background-color", CONFIG_KEY_INTEGER, &key_background_color },
 	{ "locking", CONFIG_KEY_BOOLEAN, &key_locking },
@@ -355,6 +357,11 @@ panel_add_launcher(struct panel *panel, const char *icon, const char *path)
 				  panel_launcher_redraw_handler);
 }
 
+enum {
+	BACKGROUND_SCALE,
+	BACKGROUND_TILE
+};
+
 static void
 background_draw(struct widget *widget, void *data)
 {
@@ -365,6 +372,7 @@ background_draw(struct widget *widget, void *data)
 	cairo_t *cr;
 	double sx, sy;
 	struct rectangle allocation;
+	int type = -1;
 
 	surface = window_get_surface(background->window);
 
@@ -377,14 +385,30 @@ background_draw(struct widget *widget, void *data)
 	image = NULL;
 	if (key_background_image)
 		image = load_image(key_background_image);
-	if (image) {
+
+	if (strcmp(key_background_type, "scale") == 0)
+		type = BACKGROUND_SCALE;
+	else if (strcmp(key_background_type, "tile") == 0)
+		type = BACKGROUND_TILE;
+	else
+		fprintf(stderr, "invalid background-type: %s\n",
+			key_background_type);
+
+	if (image && type != -1) {
 		pattern = cairo_pattern_create_for_surface(image);
-		sx = (double) cairo_image_surface_get_width(image) /
-			allocation.width;
-		sy = (double) cairo_image_surface_get_height(image) /
-			allocation.height;
-		cairo_matrix_init_scale(&matrix, sx, sy);
-		cairo_pattern_set_matrix(pattern, &matrix);
+		switch (type) {
+		case BACKGROUND_SCALE:
+			sx = (double) cairo_image_surface_get_width(image) /
+				allocation.width;
+			sy = (double) cairo_image_surface_get_height(image) /
+				allocation.height;
+			cairo_matrix_init_scale(&matrix, sx, sy);
+			cairo_pattern_set_matrix(pattern, &matrix);
+			break;
+		case BACKGROUND_TILE:
+			cairo_pattern_set_extend(pattern, CAIRO_EXTEND_REPEAT);
+			break;
+		}
 		cairo_set_source(cr, pattern);
 		cairo_pattern_destroy (pattern);
 		cairo_surface_destroy(image);
