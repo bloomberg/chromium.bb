@@ -1083,7 +1083,10 @@ cr.define('cr.ui', function() {
           this.removeChild(this.pinnedItem_);
         this.pinnedItem_ = undefined;
       }
-      this.pinnedItem_ = this.pinnedItem_ || cachedItems[leadIndex];
+      if (!this.pinnedItem_ && cachedItems[leadIndex] &&
+          cachedItems[leadIndex].parentNode == this) {
+        this.pinnedItem_ = cachedItems[leadIndex];
+      }
 
       this.mergeItems(firstIndex, lastIndex, cachedItems, newCachedItems);
 
