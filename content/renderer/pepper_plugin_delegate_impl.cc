@@ -820,13 +820,11 @@ void PpapiBrokerImpl::ConnectPluginToBroker(
   base::SyncSocket::Handle plugin_handle = base::kInvalidPlatformFileValue;
   int32_t result = PP_OK;
 
-  base::SyncSocket* sockets[2] = {0};
-  if (base::SyncSocket::CreatePair(sockets)) {
-    // The socket objects will be deleted when this function exits, closing the
-    // handles. Any uses of the socket must duplicate them.
-    scoped_ptr<base::SyncSocket> broker_socket(sockets[0]);
-    scoped_ptr<base::SyncSocket> plugin_socket(sockets[1]);
-
+  // The socket objects will be deleted when this function exits, closing the
+  // handles. Any uses of the socket must duplicate them.
+  scoped_ptr<base::SyncSocket> broker_socket(new base::SyncSocket());
+  scoped_ptr<base::SyncSocket> plugin_socket(new base::SyncSocket());
+  if (base::SyncSocket::CreatePair(broker_socket.get(), plugin_socket.get())) {
     result = dispatcher_->SendHandleToBroker(client->pp_instance(),
                                              broker_socket->handle());
 

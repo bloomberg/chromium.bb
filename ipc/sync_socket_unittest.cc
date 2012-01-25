@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,8 +8,10 @@
 #include <string>
 #include <sstream>
 
+#include "base/bind.h"
 #include "base/message_loop.h"
 #include "base/process_util.h"
+#include "base/threading/thread.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_tests.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -52,7 +54,7 @@ const size_t kHelloStringLength = arraysize(kHelloString);
 // messages from the client.
 class SyncSocketServerListener : public IPC::Channel::Listener {
  public:
-     SyncSocketServerListener() : chan_(NULL) {
+  SyncSocketServerListener() : chan_(NULL) {
   }
 
   void Init(IPC::Channel* chan) {
@@ -171,25 +173,25 @@ TEST_F(SyncSocketTest, SanityTest) {
   base::ProcessHandle server_process = SpawnChild(SYNC_SOCKET_SERVER, &chan);
   ASSERT_TRUE(server_process);
   // Create a pair of SyncSockets.
-  base::SyncSocket* pair[2];
-  base::SyncSocket::CreatePair(pair);
+  base::SyncSocket pair[2];
+  base::SyncSocket::CreatePair(&pair[0], &pair[1]);
   // Immediately after creation there should be no pending bytes.
-  EXPECT_EQ(0U, pair[0]->Peek());
-  EXPECT_EQ(0U, pair[1]->Peek());
+  EXPECT_EQ(0U, pair[0].Peek());
+  EXPECT_EQ(0U, pair[1].Peek());
   base::SyncSocket::Handle target_handle;
   // Connect the channel and listener.
   ASSERT_TRUE(chan.Connect());
-  listener.Init(pair[0], &chan);
+  listener.Init(&pair[0], &chan);
 #if defined(OS_WIN)
   // On windows we need to duplicate the handle into the server process.
-  BOOL retval = DuplicateHandle(GetCurrentProcess(), pair[1]->handle(),
+  BOOL retval = DuplicateHandle(GetCurrentProcess(), pair[1].handle(),
                                 server_process, &target_handle,
                                 0, FALSE, DUPLICATE_SAME_ACCESS);
   EXPECT_TRUE(retval);
   // Set up a message to pass the handle to the server.
   IPC::Message* msg = new MsgClassSetHandle(target_handle);
 #else
-  target_handle = pair[1]->handle();
+  target_handle = pair[1].handle();
   // Set up a message to pass the handle to the server.
   base::FileDescriptor filedesc(target_handle, false);
   IPC::Message* msg = new MsgClassSetHandle(filedesc);
@@ -198,8 +200,45 @@ TEST_F(SyncSocketTest, SanityTest) {
   // Use the current thread as the I/O thread.
   MessageLoop::current()->Run();
   // Shut down.
-  delete pair[0];
-  delete pair[1];
+  pair[0].Close();
+  pair[1].Close();
   EXPECT_TRUE(base::WaitForSingleProcess(server_process, 5000));
   base::CloseProcessHandle(server_process);
+}
+
+static void BlockingRead(base::SyncSocket* socket, size_t* received) {
+  // Notify the parent thread that we're up and running.
+  socket->Send(kHelloString, kHelloStringLength);
+  char buf[0xff]; // Won't ever be filled.
+  *received = socket->Receive(buf, arraysize(buf));
+}
+
+// Tests that we can safely end a blocking Receive operation on one thread
+// from another thread by disconnecting (but not closing) the socket.
+TEST_F(SyncSocketTest, DisconnectTest) {
+  base::CancelableSyncSocket pair[2];
+  ASSERT_TRUE(base::CancelableSyncSocket::CreatePair(&pair[0], &pair[1]));
+
+  base::Thread worker("BlockingThread");
+  worker.Start();
+
+  // Try to do a blocking read from one of the sockets on the worker thread.
+  size_t received = 1U;  // Initialize to an unexpected value.
+  worker.message_loop()->PostTask(FROM_HERE,
+      base::Bind(&BlockingRead, &pair[0], &received));
+
+  // Wait for the worker thread to say hello.
+  char hello[kHelloStringLength] = {0};
+  pair[1].Receive(&hello[0], sizeof(hello));
+  VLOG(1) << "Received: " << hello;
+  // Give the worker a chance to start Receive().
+  base::PlatformThread::YieldCurrentThread();
+
+  // Now shut down the socket that the thread is issuing a blocking read on
+  // which should cause Receive to return with an error.
+  pair[0].Shutdown();
+
+  worker.Stop();
+
+  EXPECT_EQ(0U, received);
 }

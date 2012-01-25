@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -92,13 +92,9 @@ void AudioSyncReader::Close() {
 }
 
 bool AudioSyncReader::Init() {
-  base::SyncSocket* sockets[2] = {0};
-  if (base::SyncSocket::CreatePair(sockets)) {
-    socket_.reset(sockets[0]);
-    foreign_socket_.reset(sockets[1]);
-    return true;
-  }
-  return false;
+  socket_.reset(new base::SyncSocket());
+  foreign_socket_.reset(new base::SyncSocket());
+  return base::SyncSocket::CreatePair(socket_.get(), foreign_socket_.get());
 }
 
 #if defined(OS_WIN)
