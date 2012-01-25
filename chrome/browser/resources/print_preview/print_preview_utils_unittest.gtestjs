@@ -81,6 +81,8 @@ TEST_F('PrintPreviewUtilsUnitTest', 'IsPageRangeTextValid2', function() {
 
 TEST_F('PrintPreviewUtilsUnitTest', 'PageRangeTextToPageList', function() {
   var totalPageCount = 10;
+  assertTrue(areArraysEqual([1],
+                            pageRangeTextToPageList("1", totalPageCount)));
   assertTrue(areArraysEqual([1,2,3,4],
                             pageRangeTextToPageList("1-4", totalPageCount)));
   assertTrue(areArraysEqual([1,2,3,4,2,3,4],

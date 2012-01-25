@@ -33,7 +33,7 @@ function areArraysEqual(array1, array2) {
   if (array1.length != array2.length)
     return false;
   for (var i = 0; i < array1.length; i++)
-    if (array1[i] != array2[i])
+    if (array1[i] !== array2[i])
       return false;
   return true;
 }
@@ -141,7 +141,7 @@ function pageRangeTextToPageList(pageRangeText, totalPageCount) {
       var singlePageNumber = parseInt(parts[i], 10);
       if (isPositiveInteger(singlePageNumber.toString()) &&
           singlePageNumber <= totalPageCount) {
-        pageList.push(singlePageNumber.toString());
+        pageList.push(singlePageNumber);
       }
     }
   }
