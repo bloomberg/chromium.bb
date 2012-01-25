@@ -659,17 +659,18 @@ MAJOR_TEST_SUITES = set([
 # These test suites are essentially shortcuts that run a specific subset of the
 # test cases.
 ACCEPTABLE_TEST_SUITES = set([
-  'validator_tests',
-  'validator_modeling',
-  'sel_ldr_tests',
-  'sel_ldr_sled_tests',
   'barebones_tests',
-  'toolchain_tests',
-  'pnacl_abi_tests',
-  'performance_tests',
-  'exit_status_tests',
   'dynamic_load_tests',
-  ])
+  'exception_tests',
+  'exit_status_tests',
+  'performance_tests',
+  'pnacl_abi_tests',
+  'sel_ldr_sled_tests',
+  'sel_ldr_tests',
+  'toolchain_tests',
+  'validator_modeling',
+  'validator_tests',
+])
 
 # Under --mode=nacl_irt_test we build variants of numerous tests normally
 # built under --mode=nacl.  The test names and suite names for these
